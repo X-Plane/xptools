@@ -3,7 +3,7 @@
 -------------------------------------------------------------------------------
 
 WorldEditor is Laminar Research's free, open source airport and overlay scenery
-editor for X-Plane.  You can download the latest version of WorldEditor, as 
+editor for X-Plane.  You can download the latest version of WorldEditor, as
 well as past stable releases here:
 
 http://developer.x-plane.com/tools/worldeditor/
@@ -14,7 +14,7 @@ menu to view it online.
 CHANGE HISTORY
 
 WED 1.8.0
-	- add your stuff above this line
+	- WED-1060 Recommend using Rgnl, do not flag use of Regl in airport names
 
 WED 1.7.1 r2 8/1/18
 	- Fixed bug when splitting facades
@@ -72,7 +72,7 @@ WED 1.7.0 Beta1 2/26/18
 	Features:
 	- WED-515: Validate polygons (incl. holes), Apt Boundaries for crossing & self-intersecting segments
 	- WED-774: Smart Runway Rename: automatically fix TaxiSigns, Flows, Rules & Taxi Routes upon rwy name changes
-	- WED-898: Improve flow validation: each flow must have at least one departure and one arrival rwy specified  
+	- WED-898: Improve flow validation: each flow must have at least one departure and one arrival rwy specified
 	- XSG-8227: Validate runway names and locations against list of CIFP required rwys obtained from Gateway
 	- WED-918: Print units expected along with property value for ATCFlow Ceiling & Visibility, ATCWindRule wind speed
 	- WED-761: Bring up warning box if the apt.dat is imported for Gateway scenery airports
@@ -114,7 +114,7 @@ WED 1.7.0 Beta1 2/26/18
 	- WED-801: Fix GatewayExport on Win & OSX not always creating a temporary directory for the MasterZipBlob
 	- fix Select Local/Laminar/3rd Party/Missing Items menu function only catching objects, but no polygons/lines etc
 	- runway ATC route validation not running on some runways mentioned in flow, name starting w/no leading zero
-	
+
 WED 1.6.1r1 12/11/17
 	Features:
 	- XPD-8877: Validation change to allow some XP 11.10 draped orthos on Gateway
@@ -123,7 +123,7 @@ WED 1.6.1r1 12/11/17
 	- WED-899: Add category 'SEMI-DEPRECATED' for library.txt
 	Bug fixes:
 	- XSG-3343: Stop changing ATC taxi runway segment width, when already set, upon Gateway/apt.dat import
-	- WED 888: Make "Vehicles Drive on Left" airport property readable 
+	- WED 888: Make "Vehicles Drive on Left" airport property readable
 	- WED-855: Fix taxi sign editor problems with separator glyphs
 	- WED-903: Fix missing texturing in WED for .OBJ that use ATTR_draped with TEXTURE and no TEXTURE_DRAPED commands.
 	- WED-909: Rename 'ICAO Identifier' to 'Airport ID' for consistency with the Gateway
@@ -181,13 +181,13 @@ WED 1.6.0a2 12/13/16
 WED 1.6.0a1 12/02/16
 	Bug fixes:
 	- WED-740,741,743,744,730,736,747,753: internal issues during WED 1.6 development
-	- WED-726: enable processing of library.txt file paths including spaces 
+	- WED-726: enable processing of library.txt file paths including spaces
 	- WED-724: Prevent cursor in TaxiSignEditor changing due to items in windows underneath it
 	- WED-712, WED-531, WED-367: Reverse function will now preserve line/light attributes on airport lines and taxiways
 	- WED-701: Print debugging info to console if airport meta data download from Gateway is corrupt
 	- WED-605: Adding WordWrap to make full Gateway server error messages readable
 	- WED-567: Adding validation for CW wound polygons to prevent crashes on DSF export
-	- WED-726: enable processing of library.txt file paths including spaces 
+	- WED-726: enable processing of library.txt file paths including spaces
 	- WED-740,741,743,744,730,736,747,753: internal issues during WED 1.6 development
 	- WED-757: fix import for GeoTIFF's using jpeg compression (reversed/flipped)
 	- WED-758: allow tiff and jpeg suffixes to be used for ImportOrthos and OverlayImages
@@ -198,14 +198,14 @@ WED 1.6.0a1 12/02/16
 	- Support new XP11 features: Ground Traffic routes, Service Truck starts and destinations
 	- Support for UTF-8 characters in GUI on Windows builds
 	- WED-702: Automatic recalculation of UVmapping for distortion free editing of DrapedOrthohotos
-	- Capability to select predefined 'subtextures" in PreviewPanel and Texture tab (TCE) 
+	- Capability to select predefined 'subtextures" in PreviewPanel and Texture tab (TCE)
 		for .POL definitions that support this
-	- WED-658, WED-568, WED-659, WED-123, WED-107, WED-14: 
+	- WED-658, WED-568, WED-659, WED-123, WED-107, WED-14:
 		Add 3 new editing functions in 'Edit" menu:
 		Align ... nodes to fall into a straight line
-		Othogonalize ... all sides of a polygon e.g. to align building footprints, 
+		Othogonalize ... all sides of a polygon e.g. to align building footprints,
 			  make exact rectangles, L-shapes, staircase patterns etc.
-		Make Regular Polygon ... turns polygons into rotationally or axially symmetric 
+		Make Regular Polygon ... turns polygons into rotationally or axially symmetric
 			  shapes, e.g. circles, squares, equilateral triangles, octagons etc.
 		new feature for Vertex tool :
 			holding CTRL-Key while dragging a edge line moves the segment in parallel.
@@ -328,7 +328,7 @@ WED 1.5b1 7/13/16
 	- Animation kf loop support in OBJ read/write code
 	- Disallow ATC frequencies outside the usable range
 	- Disallow helipad names longer than 3 characters
-	- GUI text "Filter:" is now replaced with "Search:" 
+	- GUI text "Filter:" is now replaced with "Search:"
 	- Gateway Export dialog no longer opens instructions page after exporting an airport. Link is accessible through button
 	- ICAO filtering implemented in DSFs
 	- Merge command merges clusters of ATC nodes
@@ -350,16 +350,16 @@ WED 1.4.1r1 12/17/15
 
 WED 1.4r2 6/3/15
 	Bugs fixed for release candidate 2
-	
-			 Fixed crash when exporting line features that surround an 
+
+			 Fixed crash when exporting line features that surround an
 			 entire DSF tile.
-			 
+
 			 Turned off verbose CURL logging.
-			 
+
 			 Added parent ID to Gateway version import table.
-			 
+
 			 Improved responsiveness of airport list download slightly.
-			 
+
 WED 1.4r1 5/30/15
 
 	Bugs fixed for release candidate 1
@@ -372,7 +372,7 @@ WED 1.4r1 5/30/15
 
 	WED-428: fixed misaligned text when uploading to Gateway on Linux
 
-			 Updated SSL certificate to match new X-Plane scenery Gateway 
+			 Updated SSL certificate to match new X-Plane scenery Gateway
 			 certificate.
 
 WED 1.4b2 3/31/15
@@ -381,7 +381,7 @@ WED 1.4b2 3/31/15
 
     WED-429: Bring new windows to front on Ubuntu14.04-default
 
-    WED-426: use non-power-of-2 textures for scenery (but not UI) to save 
+    WED-426: use non-power-of-2 textures for scenery (but not UI) to save
              memory
 
     WED-423: disabled snapping of taxi lines to locked objects
@@ -390,7 +390,7 @@ WED 1.4b2 3/31/15
 
     WED-393: fixed error handling on bad DSF or APT.dat import.
 
-    WED-402: disallow use of private and deprecated library resources when 
+    WED-402: disallow use of private and deprecated library resources when
              uploading to the gaetway
 
     WED-395: fixed menu bar being disabled after closing a Window on OSX
