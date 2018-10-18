@@ -2030,8 +2030,6 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 								const char * mesh_folder,
 								ProgressFunc	inProg)
 {
-	DebugAssertWithExplanation(gMeshPrefs != s_mesh_prefs_mobile || OLD_SERGIO_RULES, "Since you're not building a mobile mesh, you almost certainly want turn off the old Sergio rules compile flag.");
-
 		CDT::Finite_faces_iterator tri;
 		CDT::Finite_vertices_iterator vert;
 

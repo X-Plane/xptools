@@ -25,6 +25,7 @@
 #include "EnumSystem.h"
 #include "DEMDefs.h"
 #include "Zoning.h"
+#include "GISTool_Globals.h"
 #include <ctype.h>
 //#include "CoverageFinder.h"
 
@@ -412,7 +413,7 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 			
 		}
 
-		info.regionalization = OLD_SERGIO_RULES ? 0 : -1;
+		info.regionalization = gMobile ? 0 : -1;
 		string ter_string(FetchTokenString(ter_name));
 		for(int r = 0; r < gRegionalizations.size(); ++r)
 		{
@@ -494,7 +495,6 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 		return false;
 }
 
-#if OLD_SERGIO_RULES
 
 // auto-variation codes for the AUTO_VARY flag of "sterrain" records. These control how auto-vary terrains are built and how scre is managed.  Tyler's orthos are jammed in here too.
 // This code JUST controls how rules are processed - it does NOT end up in the final run-time 'rules'!
@@ -861,7 +861,6 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 
 	return true;
 }
-#endif
 
 static bool HandleTranslate(const vector<string>& inTokenLine, void * inRef)
 {
@@ -935,11 +934,12 @@ void	LoadDEMTables(void)
 	RegisterLineHandler("COLOR_BAND", ReadEnumBand, NULL);
 	RegisterLineHandler("COLOR_ENUM_DEM", ReadEnumDEM, NULL);
 	RegisterLineHandler("BEACH", ReadBeachInfo, NULL);
-#if OLD_SERGIO_RULES	
-	RegisterLineHandler("NTERRAIN", ReadNaturalTerrainInfo, NULL);
-	RegisterLineHandler("STERRAIN", ReadNaturalTerrainInfo, NULL);
-	RegisterLineHandler("MTERRAIN", ReadNaturalTerrainInfo, NULL);
-#endif	
+	if(gMobile) // mobile uses Sergio's old ruleset
+	{
+		RegisterLineHandler("NTERRAIN", ReadNaturalTerrainInfo, NULL);
+		RegisterLineHandler("STERRAIN", ReadNaturalTerrainInfo, NULL);
+		RegisterLineHandler("MTERRAIN", ReadNaturalTerrainInfo, NULL);
+	}
 	RegisterLineHandler("TERRAIN_RULE", ReadNewTerrainInfo, NULL);
 	RegisterLineHandler("REGIONALIZATION", ReadNewTerrainInfo, NULL);	
 	RegisterLineHandler("TERRAIN_INFO", ReadNewTerrainInfo, NULL);
