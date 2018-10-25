@@ -157,6 +157,4 @@ void	ReadXESFile(
 			(*inDEM)[demID] = aDem;
 		}
 	}
-	verify_triangulation_bounds(gDem[dem_Elevation], gTriangulationHi);
-	verify_map_bounds();
 }
