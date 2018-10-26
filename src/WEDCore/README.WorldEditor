@@ -14,7 +14,8 @@ menu to view it online.
 CHANGE HISTORY
 
 WED 1.8.0
-	- WED-1060 Recommend using Rgnl, do not flag use of Regl in airport names
+	- WED-1080: Prevent crash when importing invalid data from gateway
+	- WED-1060: Recommend using Rgnl, do not flag use of Regl in airport names
 
 WED 1.7.1 r2 8/1/18
 	- Fixed bug when splitting facades
