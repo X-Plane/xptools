@@ -405,8 +405,66 @@ static void ValidateOnePointSequence(WED_Thing* who, validation_error_vector& ms
 		parent = who;   // non-area linear features do not have a meaningfull parent
 		return;         // don't check anything else like lines/strings/etc. Comment this out to enable checks.
 	}
-#if CHECK_ZERO_LENGTH
+
 	vector<WED_Thing*> problem_children;
+
+	if ((parent) && parent->GetClass() == WED_DrapedOrthophoto::sClass)
+    {
+        // Find UV coordinate combinations that are out of range know to cause OGL tesselator crashes, i.e. can not be exported to DSF
+        problem_children.clear();
+       	for(int n = 0; n < nn; ++n)
+        {
+            Point2 p;
+            IGISPoint * ptr = ps->GetNthPoint(n);
+            ptr->GetLocation(gis_UV,p);
+
+			if(p.x() < -65535.0 || p.x() > 65535.0 ||
+				p.y() < -65535.0 || p.y() > 65535.0)
+            {
+                // add first node of each zero length segment to list
+                problem_children.push_back(dynamic_cast<WED_Thing *>(ps->GetNthPoint(n)));
+            }
+        }
+
+        if (problem_children.size() > 0)
+        {
+            string msg = string(parent->HumanReadableType()) + string(" has nodes with UV coordinates out of bounds.");
+            msgs.push_back(validation_error_t(msg, err_orthophoto_bad_uv_map, problem_children, apt));
+        }
+
+        // Find UV coordinates that a nearly or truely co-located. During tessalation - any two modes in the polygon may end up
+        // as vertices in the same triangle. SO we dont
+        problem_children.clear();
+       	for(int n = 0; n < nn; ++n)
+        {
+            Point2 p1;
+            IGISPoint * ptr = ps->GetNthPoint(n);
+            ptr->GetLocation(gis_UV,p1);
+
+            for(int m = n+1; m < nn; ++m)
+            {
+                Point2 p2;
+                ptr = ps->GetNthPoint(m);
+                ptr->GetLocation(gis_UV,p2);
+
+                if(p1.squared_distance(p2) < 1E-10)   // that is less than 1/25 of a pixel even on a 4k texture
+                {
+                    // add first node of each zero length segment to list
+                    problem_children.push_back(dynamic_cast<WED_Thing *>(ps->GetNthPoint(n)));
+                }
+            }
+
+        }
+        if (problem_children.size() > 0)
+        {
+            string msg = string(parent->HumanReadableType()) + string(" has nodes with UV coordinates too close together.");
+            msgs.push_back(validation_error_t(msg, err_orthophoto_bad_uv_map, problem_children, apt));
+        }
+
+    }
+
+#if CHECK_ZERO_LENGTH
+    problem_children.clear();
 	nn = ps->GetNumSides();
 	for(int n = 0; n < nn; ++n)
 	{
@@ -460,7 +518,7 @@ static void ValidateOneFacadePlacement(WED_Thing* who, validation_error_vector& 
 		wet_xplane_900 rules
 		  - Custom facade wall choices are only in X-Plane 10 and newer
 		  - Curved facades are only supported in X-Plane 10 and newer
-		Other rules
+		Other rulesOnly real application that get
 		  - Facades may not have holes in them
 	 */
 
@@ -2281,36 +2339,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 			}
 		}
 	}
-	else  // target is NOT the gateway
-	{
-		vector<WED_TextureNode *>			tex_nodes;
-		vector<WED_TextureBezierNode *>	tex_nodes_curved;
-		CollectRecursive(apt, back_inserter(tex_nodes),WED_TextureNode::sClass);
-		CollectRecursive(apt, back_inserter(tex_nodes_curved),WED_TextureBezierNode::sClass);
-		for(vector<WED_TextureNode *>::iterator t = tex_nodes.begin(); t != tex_nodes.end(); ++t)
-		{
-			Point2 p;
-			(*t)->GetLocation(gis_UV, p);
-			if(p.x() < -65536.0 || p.x() > 65536.0 ||
-				p.y() < -65536.0 || p.y() > 65536.0)
-			{
-					msgs.push_back(validation_error_t(string("The UV map point is out of bounds."),
-					err_orthophoto_bad_uv_map, *t, apt));
-			}
-		}
 
-		for(vector<WED_TextureBezierNode *>::iterator t = tex_nodes_curved.begin(); t != tex_nodes_curved.end(); ++t)
-		{
-			Point2 p;
-			(*t)->GetLocation(gis_UV, p);
-			if(p.x() < -65536.0 || p.x() > 65536.0 ||
-				p.y() < -65536.0 || p.y() > 65536.0)
-			{
-					msgs.push_back(validation_error_t(string("The UV map point is out of bounds."),
-					err_orthophoto_bad_uv_map, *t, apt));
-			}
-		}
-	}
 	ValidatePointSequencesRecursive(apt, msgs,apt);
 	ValidateDSFRecursive(apt, lib_mgr, msgs, apt);
 }
