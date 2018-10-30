@@ -148,7 +148,7 @@ inline P	ben2cgal(const Point2& p) { return P(p.x(),p.y()); }
 template <typename P>
 inline Point2	cgal2ben(const P& p) { return Point2(CGAL::to_double(p.x()),CGAL::to_double(p.y())); }
 inline Segment2	cgal2ben(const Segment_2& s) { return Segment2(cgal2ben(s.source()),cgal2ben(s.target())); }
-
+inline Bbox2    cgal2ben(const Bbox_2 &cgal) { return Bbox2(cgal.xmin(), cgal.ymin(), cgal.xmax(), cgal.ymax()); }
 
 
 #endif /* CGALDefs_H */

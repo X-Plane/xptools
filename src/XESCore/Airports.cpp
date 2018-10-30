@@ -292,6 +292,8 @@ void BurnInAirport(
 
 			Traits_2 traits;
 			DebugAssert(CGAL::is_valid_polygon(poly,traits));
+			DebugAssert(poly.is_counterclockwise_oriented());
+			DebugAssert(cgal2ben(poly.bbox()).area() > 0);
 			poly_vec.push_back(poly);
 
 		}
@@ -594,7 +596,24 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 		DebugAssert(foo.arrangement().unbounded_face()->contained() == false);
 		if(!foo.is_empty())																// Check for empty airport (e.g. all sea plane lanes or somthing.)
 		{
-			SimplifyAirportAreasAndSplat(ioMap, foo, apts[n].boundaries.empty(), simple_faces, fill_dirt2apt, NULL);
+			try {
+				SimplifyAirportAreasAndSplat(ioMap, foo, apts[n].boundaries.empty(), simple_faces, fill_dirt2apt, NULL);
+			} catch(const char * cgal_exception) {
+				fprintf(stderr, "CGAL Error processing airport %s; skipping this airport!\n", apts[n].icao.c_str());
+				#if DEV
+					throw cgal_exception;
+				#else
+					continue;
+				#endif
+			} catch(const std::exception &e) {
+				fprintf(stderr, "Internal error processing airport %s; skipping this airport!\n", apts[n].icao.c_str());
+				#if DEV
+					throw e;
+				#else
+					continue;
+				#endif
+			}
+
 			if (dems)
 			{
 				working = DEM_NO_DATA;

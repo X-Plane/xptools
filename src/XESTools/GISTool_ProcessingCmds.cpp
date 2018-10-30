@@ -58,6 +58,7 @@
 #include "PlatformUtils.h"
 #include "FileUtils.h"
 #include "Agp.h"
+#include "AssertUtils.h"
 
 // Hack to avoid forest pre-processing - to be used to speed up --instobjs for testing AG algos when
 // we don't NEED good forest fill.
@@ -970,7 +971,7 @@ int choose_nearest_terrain(const ortho_urbanization &tile, const map<ortho_urban
 		++s_count_nonexact;
 		s_sum_nonexact_scores += best_score;
 
-		#if DEV
+		#if 0
 			if(best_score > 1)
 			{
 				printf("Nonexact match to %s with score %d\n", abbreviated_ortho_str(best_match->second), best_score);
@@ -1146,7 +1147,7 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 	// Add transitions between types
 	//--------------------------------------------------------------------------------------------------------
 
-#if DEV
+#if 0
 	//--------------------------------------------------------------------------------------------------------
 	// Debugging: output an image that joins all this together
 	//--------------------------------------------------------------------------------------------------------
@@ -1529,7 +1530,19 @@ static	GISTool_RegCmd_t		sProcessCmds[] = {
 { 0, 0, 0, 0, 0, 0 }
 };
 
+void rf_assert_handler(const char * condition, const char * file, int line)
+{
+	const DEMGeo & climate_style(gDem[dem_ClimStyle]);
+	fprintf(stderr, "ERROR: Assertion failed for DSF %+0.0f%+0.0f: %s (%s:%d)\n", climate_style.mWest, climate_style.mSouth, condition, file, line);
+	throw std::exception();
+}
+
 void	RegisterProcessingCmds(void)
 {
 	GISTool_RegisterCommands(sProcessCmds);
+
+#if DEV
+	InstallDebugAssertHandler(rf_assert_handler);
+#endif
+	InstallAssertHandler(rf_assert_handler);
 }
