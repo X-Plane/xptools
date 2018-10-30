@@ -406,7 +406,7 @@ void BurnInAirport(
 void	SimplifyAirportAreasAndSplat(Pmwx& inDstMap, Polygon_set_2& in_area, bool do_simplify, set<Face_handle>& outDstFaces, apt_fill_mode inFillWater, Locator * loc)
 {
 	DebugAssert(inDstMap.number_of_faces() > 0);
-	DebugAssert(inDstMap.unbounded_face()->number_of_holes() == 1);
+	DebugAssert(inDstMap.unbounded_face()->number_of_holes() >= 1);
 	Polygon_set_2	area(in_area);
 	if(do_simplify)
 	{
