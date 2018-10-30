@@ -90,8 +90,8 @@
 #include <iomanip>
 #include <istream>
 
-#define MAX_LON_SPAN_GATEWAY 0.2
-#define MAX_LAT_SPAN_GATEWAY 0.2
+#define MAX_LON_SPAN_GATEWAY 0.15
+#define MAX_LAT_SPAN_GATEWAY 0.15
 
 // Checks for zero length sides - can be turned off for grandfathered airports.
 #define CHECK_ZERO_LENGTH 1
@@ -243,10 +243,10 @@ static bool cmp_frequency_type(WED_ATCFrequency* freq1, WED_ATCFrequency* freq2)
 
 static string format_freq(int f)
 {
-	int mhz = f / 100;
-	int khz10 = f % 100;
+	int mhz = f / 1000;
+	int khz = f % 1000;
 	stringstream ss;
-	ss << mhz << "." << std::setw(2) << std::setfill('0') << khz10;
+	ss << mhz << "." << std::setw(3) << std::setfill('0') << khz;
 	return ss.str();
 }
 
@@ -774,8 +774,6 @@ static void ValidateAirportFrequencies(WED_Airport* who, validation_error_vector
 		for(vector<WED_ATCFrequency*>::iterator freq = itr->begin(); freq != itr->end(); ++freq)
 		{
 			(*freq)->Export(freq_info);
-			int mhz = freq_info.freq / 100;
-			int last_digit = freq_info.freq % 10;
 			string freq_str = format_freq(freq_info.freq);
 
 			all_freqs[freq_info.freq].push_back(*freq);
@@ -788,32 +786,47 @@ static void ValidateAirportFrequencies(WED_Airport* who, validation_error_vector
 			else if(is_xplane_atc_related)
 				has_atc.push_back(*freq);
 
-			if(mhz < 0 || mhz > 1000)
+			if(freq_info.freq <= 136 || freq_info.freq >= 1000000)
 			{
-				msgs.push_back(validation_error_t(string("Frequency ") + freq_str + " not between 0 and 1000 Mhz.", err_freq_not_between_0_and_1000_mhz, *freq,who));
+				msgs.push_back(validation_error_t(string("Frequency ") + freq_str + " not between 136 kHz and 1000 MHz.", err_freq_not_between_0_and_1000_mhz, *freq,who));
 				continue;
 			}
 
-			bool in_civilian_band = mhz >= 118 && mhz <= 136;
-
-			//We only care about Delivery, Ground, and Tower frequencies
-			if(is_xplane_atc_related)
+			if(freq_info.freq < 118000 || freq_info.freq >= 137000)
 			{
-				if(in_civilian_band == false)
+				found_one_oob = true;
+			}
+			else
+			{
+				if (freq_info.freq > 121475 && freq_info.freq < 121525)
+						msgs.push_back(validation_error_t(string("The ATC frequency ") + freq_str + " is within the guardband of the emergency frequency.",
+								err_atc_freq_must_be_on_25khz_spacing,	*freq, who));
+								
+				int mod25 = freq_info.freq % 25;
+				bool is_25k_raster	= mod25 == 0;
+				bool is_833k_chan = mod25 == 5 || mod25 == 10 || mod25 == 15;
+				
+				if(!is_833k_chan && !is_25k_raster)
 				{
-					found_one_oob = true;
+					msgs.push_back(validation_error_t(string("The ATC frequency ") + freq_str + " is not a valid 8.33kHz channel number.",
+						err_atc_freq_must_be_on_8p33khz_spacing, *freq, who));
+				}
+				else if(!is_25k_raster && gExportTarget < wet_xplane_1130)
+				{
+					msgs.push_back(validation_error_t(string("The ATC frequency ") + freq_str + " is not a multiple of 25kHz as required prior to X-plane 11.30.",
+						err_atc_freq_must_be_on_25khz_spacing,	*freq, who));
 				}
 				else
 				{
-					if(last_digit == 0 || last_digit == 2 || last_digit == 5 || last_digit == 7)
-					{
+					if(is_xplane_atc_related)
 						found_one_valid = true;
-					}
-					else
+					
+					Bbox2 bounds;
+					who->GetBounds(gis_Geo, bounds);
+					if(!is_25k_raster && (bounds.ymin() < 34.0 || bounds.xmin() < -11.0 || bounds.xmax() > 35.0) )     // rougly the outline of europe
 					{
-						msgs.push_back(validation_error_t(string("The ATC frequency ") + freq_str + " is illegal. (Clearance Delivery, Ground, and Tower frequencies in the civilian band must be on 25 khz spacing.)",
-							err_freq_del_grnd_twr_in_civilian_band_must_be_on_25khz_spacing,
-							*freq, who));
+						msgs.push_back(validation_error_t(string("ATC frequency ") + freq_str + " on 8.33kHz raster is used outside of Europe.",
+							warn_atc_freq_on_8p33khz_spacing,	*freq, who));
 					}
 				}
 			}
@@ -822,8 +835,8 @@ static void ValidateAirportFrequencies(WED_Airport* who, validation_error_vector
 		if(found_one_valid == false && is_xplane_atc_related)
 		{
 			stringstream ss;
-			ss  << "Could not find at least one valid ATC Frequency for group " << ENUM_Desc(ENUM_Import(ATCFrequency, freq_info.atc_type)) << ". "
-			    << "Ensure all frequencies in this group end in 0, 2, 5, or 7.";
+			ss  << "Could not find at least one VHF band ATC Frequency for group " << ENUM_Desc(ENUM_Import(ATCFrequency, freq_info.atc_type)) << ". "
+			    << "VHF band is 118 - 137 MHz and frequency raster 25/8.33kHz depending on targeted X-plane version.";
 			msgs.push_back(validation_error_t(ss.str(), err_freq_could_not_find_at_least_one_valid_freq_for_group, *itr, who));
 		}
 	}
@@ -861,7 +874,7 @@ static void ValidateAirportFrequencies(WED_Airport* who, validation_error_vector
 
 }
 
-static void ValidateOneATCRunwayUse(WED_ATCRunwayUse* use, validation_error_vector& msgs, WED_Airport * apt)
+static void ValidateOneATCRunwayUse(WED_ATCRunwayUse* use, validation_error_vector& msgs, WED_Airport * apt, const vector<int> dep_freqs)
 {
 	AptRunwayRule_t urule;
 	use->Export(urule);
@@ -869,6 +882,12 @@ static void ValidateOneATCRunwayUse(WED_ATCRunwayUse* use, validation_error_vect
 		msgs.push_back(validation_error_t("ATC runway use must support at least one operation type.", err_rwy_use_must_have_at_least_one_op,  use, apt));
 	else if(urule.equipment == 0)
 		msgs.push_back(validation_error_t("ATC runway use must support at least one equipment type.", err_rwy_use_must_have_at_least_one_equip, use, apt));
+
+					
+	if(find(dep_freqs.begin(), dep_freqs.end(), urule.dep_freq) == dep_freqs.end())
+	{
+		msgs.push_back(validation_error_t("ATC runway use departure frequency is not matching any ATC departure frequency defined at this airport.", err_rwy_use_no_matching_dept_freq, use, apt));
+	}
 }
 
 static void TJunctionTest(vector<WED_TaxiRoute*> all_taxiroutes, validation_error_vector& msgs, WED_Airport * apt)
@@ -959,7 +978,7 @@ static void TJunctionTest(vector<WED_TaxiRoute*> all_taxiroutes, validation_erro
 	}
 }
 
-static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs, set<int>& legal_rwy_oneway, WED_Airport * apt)
+static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs, set<int>& legal_rwy_oneway, WED_Airport * apt, const vector<int>& dep_freqs)
 {
 	// Check ATC Flow visibility > 0, ceiling > 0, ICAO code is set, at least one arrival and one departure runway and
 	// is not using any runway in opposing directions simultaneously fro either arr or dep
@@ -1025,7 +1044,7 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 	for(vector<WED_ATCRunwayUse*>::iterator r = ruse.begin(); r != ruse.end(); ++r)
 	{
 		WED_ATCRunwayUse * use = *r;
-		ValidateOneATCRunwayUse(use,msgs,apt);
+		ValidateOneATCRunwayUse(use,msgs,apt,dep_freqs);
 		int rwy = use->GetRunway();
 		if(rwy == atc_Runway_None)
 		{
@@ -1082,9 +1101,23 @@ static void ValidateATC(WED_Airport* apt, validation_error_vector& msgs, set<int
 		return;
 	}
 
+	vector<WED_ATCFrequency*> ATC_freqs;
+	CollectRecursive(apt, back_inserter<vector<WED_ATCFrequency*> >(ATC_freqs), IgnoreVisiblity, TakeAlways);
+
+	vector<int> departure_freqs;
+	for(vector<WED_ATCFrequency*>::iterator d = ATC_freqs.begin(); d != ATC_freqs.end(); ++d)
+	{
+		AptATCFreq_t freq_info;
+		(*d)->Export(freq_info);
+		if(ENUM_Import(ATCFrequency, freq_info.atc_type) == atc_Departure)
+		{
+			departure_freqs.push_back(freq_info.freq);
+		}
+	}
+
 	for(vector<WED_ATCFlow *>::iterator f = flows.begin(); f != flows.end(); ++f)
 	{
-		ValidateOneATCFlow(*f, msgs, legal_rwy_oneway, apt);
+		ValidateOneATCFlow(*f, msgs, legal_rwy_oneway, apt, departure_freqs);
 	}
 
 	for(vector<WED_TaxiRoute *>::iterator t = taxi_routes.begin(); t != taxi_routes.end(); ++t)

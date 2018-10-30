@@ -80,6 +80,7 @@ static const GUI_MenuItem_t kExportTargetMenu[] = {
 {	"X-Plane 10.21",		0,		0,								0,	wed_Export1021,		},
 {	"X-Plane 10.50",		0,		0,								0,	wed_Export1050,		},
 {	"X-Plane 11.00",		0,		0,								0,	wed_Export1100,		},
+{	"X-Plane 11.30",		0,		0,								0,	wed_Export1130,		},
 {	"Airport Scenery Gateway",0,	0,								0,	wed_ExportGateway	},
 {	NULL,					0,		0,								0,	0					}
 };

@@ -69,7 +69,8 @@ enum validate_error_t
 	err_flow_visibility_negative,
 	err_freq_airport_has_gnd_or_del_but_no_tower,
 	err_freq_could_not_find_at_least_one_valid_freq_for_group,
-	err_freq_del_grnd_twr_in_civilian_band_must_be_on_25khz_spacing,
+	err_atc_freq_must_be_on_25khz_spacing,
+	err_atc_freq_must_be_on_8p33khz_spacing,
 	err_freq_duplicate_freq,
 	err_freq_not_between_0_and_1000_mhz,
 	err_gateway_orthophoto_cannot_be_exported,
@@ -126,6 +127,7 @@ enum validate_error_t
 	err_rwy_unrealistically_small,
 	err_rwy_use_must_have_at_least_one_equip,
 	err_rwy_use_must_have_at_least_one_op,
+	err_rwy_use_no_matching_dept_freq,
 	err_rwy_use_no_runway_selected,
 	err_sign_error,
 	err_taxi_route_has_hot_zones_not_present,
@@ -141,6 +143,7 @@ enum validate_error_t
 	err_truck_parking_no_ground_taxi_routes,
 	warnings_start_here,
 	warn_airport_name_style,
+	warn_atc_freq_on_8p33khz_spacing,
 	warn_truckroutes_but_no_starts,
 	warn_runway_matching_cifp_mislocated
 };

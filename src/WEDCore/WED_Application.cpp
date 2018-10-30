@@ -53,7 +53,7 @@ public:
 
 RadioButton::RadioButton(int x0, int y0, WED_Settings * parent,  int * var, const string& desc, const char * text0, const char * text1)
 {
-	char * texture = "check_buttons.png";
+	const char * texture = "check_buttons.png";
 	int r_yes[4] = { 0, 1, 1, 3 };
 	int r_nil[4] = { 0, 0, 1, 3 };
 

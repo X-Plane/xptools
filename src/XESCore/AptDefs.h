@@ -69,9 +69,18 @@ enum {
 	apt_flow_ceil		= 1002,			// 1002 <metar icao> <ceiling minimum>
 	apt_flow_vis		= 1003,			// 1003 <metar icao> <vis minimum>
 	apt_flow_time		= 1004,			// 1004 <zulu time start> <zulu time end>
+
+	apt_freq_awos_1k	= 1050,         // XP 1130 1kHz resolution freq
+	apt_freq_ctaf_1k	= 1051,
+	apt_freq_del_1k 	= 1052,
+	apt_freq_gnd_1k		= 1053,
+	apt_freq_twr_1k		= 1054,
+	apt_freq_app_1k		= 1055,
+	apt_freq_dep_1k		= 1056,
 	
 	apt_flow_rwy_rule	= 1100,
 	apt_flow_pattern	= 1101,
+	apt_flow_rwy_rule1k	= 1110,         // XP 1130 1kHz resolution freq
 	
 	apt_taxi_header		= 1200,			// 1200 <name>
 	apt_taxi_node		= 1201,			// 1201 <lat> <lon> <type> <id, 0 based sequence, ascending> <name>
@@ -438,7 +447,7 @@ struct	AptSign_t {
 typedef vector<AptSign_t>		AptSignVector;
 
 struct	AptATCFreq_t {
-	int			freq;
+	int			freq;          // since WED 171 has a base of 1kHz, not 10kHz
 	int			atc_type;
 	string		name;
 };

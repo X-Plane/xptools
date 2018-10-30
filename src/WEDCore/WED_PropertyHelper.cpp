@@ -286,7 +286,6 @@ void		WED_PropDoubleText::GetPropertyInfo(PropertyInfo_t& info)
 	info.prop_name = mTitle;
 	info.digits = mDigits;
 	info.decimals = mDecimals;
-	info.round_down = false;
 	info.synthetic = 0;
 	info.units = mUnit;
 }
@@ -349,26 +348,48 @@ bool		WED_PropDoubleText::WantsAttribute(const char * ele, const char * att_name
 	return false;
 }
 
-void		WED_PropFrequencyText::GetPropertyInfo(PropertyInfo_t& info)
+void		WED_PropFrequencyText::SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent)
 {
-	WED_PropDoubleText::GetPropertyInfo(info);
-	info.round_down = true;
+	DebugAssert(val.prop_kind == prop_Double);
+	if (value !=  val.double_val)
+	{
+		parent->PropEditCallback(1);
+		AssignFrom1Khz(1000.0 * val.double_val);
+		parent->PropEditCallback(0);
+	}
 }
 
-int		WED_PropFrequencyText::GetAs10Khz(void) const
+int		WED_PropFrequencyText::GetAs1Khz(void) const
 {
-	// This is kind of a fuck-fest and some explanation is needed.  Unfortunately ATC frequencies are stored in decimal mhz
-	// in WED's internal data model, so 123.125 might be 123.124999999999, and there might be other similar rounding crap.
-	// We want to TRUNCATE the 1's digit of the khz frequency, e.g.
-	// XP treats 123.125 and 123.12.  
+	// Unfortunately ATC frequencies are stored in decimal Mhz in WED's internal data model, 
+	// so 123.125 might be 123.124999999999, and there might be other similar rounding crap.
+	// Plus there is that 8.33kHz logic with most but not all 5kHz raster numbers allowed
 	
-	int freq_khz = round(this->value * 1000.0);
-	return freq_khz / 10;	// Intentional floor - 123.125 -> 12312.
+	return round(this->value * 1000.0);
 }
 
-void	WED_PropFrequencyText::AssignFrom10Khz(int freq_10khz)
+void	WED_PropFrequencyText::AssignFrom1Khz(int freq_1khz)
 {
-	double mhz = (double) freq_10khz / 100.0;
+	if (freq_1khz >= 118000 && freq_1khz < 137000)
+	{
+		// round to 5kHz
+		freq_1khz = 5 * ((freq_1khz + 2) / 5);
+		
+		int last_two_dig = freq_1khz % 100;
+		if(last_two_dig == 20 || last_two_dig == 70)
+			freq_1khz += 5;
+			
+		if(freq_1khz % 25 == 0)
+			strncpy(mUnit,"(25k)",6);
+		else
+			strncpy(mUnit,"(8.3k)",6);
+	}
+	else
+	{
+		strncpy(mUnit,"MHz",6);
+	}
+		
+	double mhz = (double) freq_1khz / 1000.0;
 	*this = mhz;
 }
 
