@@ -147,13 +147,13 @@ static const GUI_MenuItem_t kViewMenu[] = {
 {	"&Object Density",			0,	0,										0,	0					},
 {	"-",						0,	0,										0,	0					},
 {	"&Pick Overlay Image...",	0,	0,										0,	wed_PickOverlay		},
-//{	"Toggle &Overlay Image",	0,	0,										0,	wed_ToggleOverlay	},
 {	"Toggle &World Map",		0,	0,										0,	wed_ToggleWorldMap	},
+{	"Toggle &Navaids",			0,	0,										0,	wed_ToggleNavaidMap	},
+{	"S&lippy Map",				0,	0,										0,	0                   },
 {	"To&ggle Preview",			0,	0,										0,	wed_TogglePreview	},
 #if WANT_TERRASEVER
 {	"Toggle &Terraserver",		0,	0,										0,	wed_ToggleTerraserver },
 #endif
-{	"S&lippy Map",				0,	0,										0,	0 },
 #if WITHNWLINK
 {	"Toggle LiveMode",		    0,	0,										0,	wed_ToggleLiveView },
 #endif
@@ -299,7 +299,7 @@ void WED_MakeMenus(GUI_Application * inApp)
 
 	GUI_Menu  view_menu = inApp->CreateMenu(
 		"&View", kViewMenu, inApp->GetMenuBar(), 0);
-	
+
 	GUI_Menu	pave_menu = inApp->CreateMenu(
 		"Pavement T&ransparency",	kPavementMenu, view_menu, 6);
 
@@ -308,13 +308,13 @@ void WED_MakeMenus(GUI_Application * inApp)
 
 	GUI_Menu	slippy_menu = inApp->CreateMenu(
 		"S&lippy Map",	kSlippyMapMenu, view_menu, 12);
-		
+
 	GUI_Menu  sel_menu = inApp->CreateMenu(
 		"&Select", kSelectMenu, inApp->GetMenuBar(), 0);
 
 	GUI_Menu	airport_menu = inApp->CreateMenu(
 		"&Airport", kAirportMenu, inApp->GetMenuBar(), 0);
-	
+
 	for (KeyEnum key_enum = wed_AddMetaDataBegin + 1; key_enum < wed_AddMetaDataEnd; ++key_enum)
 	{
 		int index = key_enum - wed_AddMetaDataBegin - 1;

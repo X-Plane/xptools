@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-#include "WED_OSMSlippyMap.h"
+#include "WED_SlippyMap.h"
 
 #include <sstream>
 
@@ -75,24 +75,24 @@ WED_URL_ESRI_TILES "${z}/${y}/${x}.jpg" };
 static const int max_zoom[PREDEFINED_MAPS] = {
 16,        // OSM tiles below this zoom are not cached, but on-demand generated. Openstreetmap foundation asks to limit their use.
 17 };      // ESRI maps are available down to this level in general
- 
 
-static inline int long2tilex(double lon, int z) 
-{ 
-	return (int)(floor((lon + 180.0) / 360.0 * pow(2.0, z))); 
+
+static inline int long2tilex(double lon, int z)
+{
+	return (int)(floor((lon + 180.0) / 360.0 * pow(2.0, z)));
 }
- 
+
 static inline int lat2tiley(double lat, int z)
-{ 
-	return (int)(floor((1.0 - log( tan(lat * M_PI/180.0) + 1.0 / cos(lat * M_PI/180.0)) / M_PI) / 2.0 * pow(2.0, z))); 
+{
+	return (int)(floor((1.0 - log( tan(lat * M_PI/180.0) + 1.0 / cos(lat * M_PI/180.0)) / M_PI) / 2.0 * pow(2.0, z)));
 }
- 
-static inline double tilex2long(int x, int z) 
+
+static inline double tilex2long(int x, int z)
 {
 	return x / pow(2.0, z) * 360.0 - 180;
 }
 
-static inline double tiley2lat(int y, int z) 
+static inline double tiley2lat(int y, int z)
 {
 	double n = M_PI - 2.0 * M_PI * y / pow(2.0, z);
 	return 180.0 / M_PI * atan(0.5 * (exp(n) - exp(-n)));
@@ -104,7 +104,7 @@ int WED_SlippyMap::get_zl_for_map_ppm(double in_ppm)
 	double zl_mpp = 156543.03 * TILE_FACTOR / 2.0;
 	int zl = 0;
 	int max_zl = mMapMode <= PREDEFINED_MAPS ? max_zoom[mMapMode-1] : MAX_ZOOM;
-	
+
 	while(zl < max_zl && zl_mpp > mpp)
 	{
 		zl_mpp *= 0.5;
@@ -146,7 +146,7 @@ WED_SlippyMap::~WED_SlippyMap()
 	delete m_cache_request;
 	m_cache_request = NULL;
 }
-	
+
 void	WED_SlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 {
 	if (mMapMode ==0) return;
@@ -154,7 +154,7 @@ void	WED_SlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 
 	double map_bounds[4];
 	double	s, n, e, w;
-	
+
 	WED_MapZoomerNew * zoomer = GetZoomer();
 	zoomer->GetMapVisibleBounds(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3]);
 	map_bounds[0] = doblim(map_bounds[0],-180.0,180.0);
@@ -165,14 +165,14 @@ void	WED_SlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 	double ppm = zoomer->GetPPM();
 	int z_max = get_zl_for_map_ppm(ppm);
 	if(z_max < MIN_ZOOM) return;
-	
+
 	int want = 0, got = 0, bad = 0;
 	for(int z = max(MIN_ZOOM,z_max-1); z <= z_max; ++z)      // Display only the next lower zoom level
 	{                                                        // avoids having to load up to 4x14 extra tiles at ZL16
 		int tiles[4];
-		
+
 		get_tile_range_for_box(map_bounds,z,tiles);
-		
+
 		for(int y = tiles[3]; y <= tiles[1]; ++y)
 		for (int x = tiles[0]; x <= tiles[2]; ++x)
 		{
@@ -272,20 +272,20 @@ void	WED_SlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 	}
 
 	stringstream zoom_msg;
-	zoom_msg << "ZL" << z_max << ": " 
+	zoom_msg << "ZL" << z_max << ": "
 			 << got << " of " << want
 			 << " (" << (float)got * 100.0f / (float)want << "% done, " << bad << " errors). "
 			 << (int)m_cache.size() << " tiles cached (" << (int)m_cache.size() / 4 << " MB)";
-	
+
 	int bnds[4];
 	GetHost()->GetBounds(bnds);
 	GLfloat white[4] = { 1, 1, 1, 1 };
 	GUI_FontDraw(g, font_UI_Basic, white, bnds[0] + 10, bnds[1] + 40, zoom_msg.str().c_str());
-	
+
 	if(mMapMode <= PREDEFINED_MAPS)
 	{
 		int txtWidth = GUI_MeasureRange(font_UI_Small,attributions[mMapMode-1],attributions[mMapMode-1]+strlen(attributions[mMapMode-1]));
-		
+
 		g->SetState(0, 0, 0, 0, 1, 0, 0);
 		glColor4f(0,0,0,0.65);
 		glBegin(GL_QUADS);
@@ -321,7 +321,7 @@ void	WED_SlippyMap::finish_loading_tile()
 				if (info.channels == 3)                                                        // apply to color changes
 					for (int x = 0; x < info.height * (info.width+info.pad) * info.channels; x += info.channels)
 						{
-							double BRIGHTNESS = -20; 
+							double BRIGHTNESS = -20;
 							double SATURATION = 1.0;
 							if(mMapMode == 1) { BRIGHTNESS = -140.0; SATURATION = 0.4; }
 
@@ -329,7 +329,7 @@ void	WED_SlippyMap::finish_loading_tile()
 							for (int c = 0; c < info.channels; ++c)
 								info.data[x+c] = intlim((1.0-SATURATION) * val + SATURATION * info.data[x+c] + BRIGHTNESS, 0, 255);
 						}
-			
+
 				GLuint tex_id;
 				glGenTextures(1, &tex_id);
 				if (LoadTextureFromImage(info, tex_id, tex_Linear, NULL, NULL, NULL, NULL))
@@ -370,7 +370,7 @@ void	WED_SlippyMap::TimerFired()
 	GetHost()->Refresh();
 }
 
-static bool replace_token(string& str, const string& from, const string& to) 
+static bool replace_token(string& str, const string& from, const string& to)
 {
     size_t start_pos = str.find(from);
     if(start_pos == string::npos)
@@ -387,22 +387,22 @@ void	WED_SlippyMap::SetMode(int mode)
 		SetVisible(0);
 		return;
 	}
-	
+
 	if(mode <= PREDEFINED_MAPS)
 		url_printf_fmt = tile_url[mode-1];
 	else
 		url_printf_fmt = gCustomSlippyMap;
-		
+
 	if(replace_token(url_printf_fmt, "${x}", "%1$d") &&
 	   replace_token(url_printf_fmt, "${y}", "%2$d") &&
 	   replace_token(url_printf_fmt, "${z}", "%3$d"))
-	{	
+	{
 		dir_printf_fmt = url_printf_fmt.substr(url_printf_fmt.find("//")+2);
 		replace(dir_printf_fmt.begin(), dir_printf_fmt.end(), '/', DIR_CHAR);
-		
+
 		mMapMode = mode;
 		SetVisible(1);
-		
+
 		string suffix = url_printf_fmt.substr(url_printf_fmt.length()-4);
 		if (suffix == ".jpg" || suffix == ".JPG" || suffix == "jpeg")
 			is_jpg_not_png = true;

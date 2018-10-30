@@ -218,7 +218,8 @@
     <ClCompile Include="..\..\src\WEDMap\WED_MapToolNew.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_MapZoomerNew.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_MarqueeTool.cpp" />
-    <ClCompile Include="..\..\src\WEDMap\WED_OSMSlippyMap.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_SlippyMap.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_NavaidLayer.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_PreviewLayer.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_StructureLayer.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_ToolInfoAdapter.cpp" />
@@ -480,7 +481,8 @@
     <ClInclude Include="..\..\src\WEDMap\WED_MapToolNew.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_MapZoomerNew.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_MarqueeTool.h" />
-    <ClInclude Include="..\..\src\WEDMap\WED_OSMSlippyMap.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_SlippyMap.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_NavaidLayer.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_PreviewLayer.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_StructureLayer.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_ToolInfoAdapter.h" />

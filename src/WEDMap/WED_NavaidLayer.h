@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2015, Laminar Research.
- *
- * Created by Ben Supnik on 12/18/15.
+ * Copyright (c) 2007, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -20,42 +18,38 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
+ *
  */
 
-#ifndef WED_OSMSlippyMap_h
-#define WED_OSMSlippyMap_h
+#ifndef WED_NavaidLayer_H
+#define WED_NavaidLayer_H
 
-class	WED_file_cache_request;
-
-#include "GUI_Timer.h"
 #include "WED_MapLayer.h"
+#include "CompGeomDefs2.h"
 
-class	WED_SlippyMap : public WED_MapLayer, public GUI_Timer {
+struct navaid_t {
+	int		type;
+	Point2	lonlat;
+	float	heading;
+	string	name;
+	string	icao;
+	int     freq;
+	string	rwy;
+};
+
+class WED_NavaidLayer : public WED_MapLayer {
 public:
 
-					 WED_SlippyMap(GUI_Pane * h, WED_MapZoomerNew * zoomer, IResolver * resolver);
-	virtual			~WED_SlippyMap();
-	
-	virtual	void	DrawVisualization(bool inCurrent, GUI_GraphState * g);
-	virtual	void	GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks);
-	virtual	void	TimerFired(void);
-			void	SetMode(int mode);  // mode 0 = custom map string, 1..2 OSM and ERSI maps
-			int		GetMode(void);
+						 WED_NavaidLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver);
+	virtual				~WED_NavaidLayer();
+
+	virtual	void		DrawVisualization		(bool inCurrent, GUI_GraphState * g);
+	virtual	void		GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks);
 
 private:
 
-			void	finish_loading_tile();
-			int 	get_zl_for_map_ppm(double in_ppm);
-
-	WED_file_cache_request* m_cache_request;
-
-	//The texture cache, where they key is the tile texture path on disk and the value is the texture id
-	map<string,int>				m_cache;
-
-			int		mMapMode;
-			string	url_printf_fmt;
-			string	dir_printf_fmt;
-			bool	is_jpg_not_png;
+	bool			mVisible;
+	vector<navaid_t>	mNavaids;
 };
 
-#endif /* WED_OSMSlippyMap_h */
+#endif /* WED_NavaidLayer_H */
