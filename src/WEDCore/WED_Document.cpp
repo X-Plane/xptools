@@ -562,12 +562,14 @@ void	WED_Document::ReadGlobalPrefs(void)
 	
 	*(int *) &gIsFeet  = atoi(GUI_GetPrefString("preferences","use_feet","0"));    // This is ugly, but I really wanna override the write protection 
 	*(int *) &gInfoDMS = atoi(GUI_GetPrefString("preferences","InfoDMS","0"));     // given in WED_Globals.h to these variables here.
+	gCustomSlippyMap = GUI_GetPrefString("preferences","CustomSlippyMap","");
 }
 
 void	WED_Document::WriteGlobalPrefs(void)
 {
 	GUI_SetPrefString("preferences","use_feet",gIsFeet ? "1" : "0");
 	GUI_SetPrefString("preferences","InfoDMS",gInfoDMS ? "1" : "0");
+	GUI_SetPrefString("preferences","CustomSlippyMap",gCustomSlippyMap.c_str());
 	
 	for (map<string,string>::iterator i = sGlobalPrefs.begin(); i != sGlobalPrefs.end(); ++i)
 		GUI_SetPrefString("doc_prefs", i->first.c_str(), i->second.c_str());

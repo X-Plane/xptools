@@ -49,13 +49,10 @@ void	debug_mesh_polygon(const Polygon2& p1, float r1, float g1, float b1);
 #else
 	/* Is WED running in English or metric units?  (feet == 0 -> metric.) */
 	extern const int gIsFeet;
-
 	/* Infobar at bottom of Map in DD.DDD == 0 or DD MM SS == 1 */
 	extern const int gInfoDMS;
-
 	/* Changes the listing in the gateway Import for GW moderation purposes */
 	extern const int gModeratorMode;
-
 #endif
 
 enum WED_Export_Target {
@@ -72,6 +69,7 @@ enum WED_Export_Target {
 /* What target output format does WED want? */
 extern WED_Export_Target gExportTarget;
 
-
+/* Changes the listing in the gateway Import for GW moderation purposes */
+extern string gCustomSlippyMap;
 
 #endif

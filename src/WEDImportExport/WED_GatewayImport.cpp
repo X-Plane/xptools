@@ -219,7 +219,7 @@ private:
 	WED_Document *		mResolver;
 	WED_MapPane *		mMapPane;
 
-	//Our curl handle we'll be using to get the json files, note the s
+	//The cache request info struct for requesting files
 	WED_file_cache_request	mCacheRequest;
 
 	//The number of times we request a file, reset before each download

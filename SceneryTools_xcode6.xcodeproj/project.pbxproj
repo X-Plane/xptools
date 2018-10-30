@@ -856,6 +856,7 @@
 		D6F762E210891CC6003D881F /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */; };
 		D6F762E310891CCC003D881F /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */; };
 		D6F762E510891CD7003D881F /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */; };
+		D6F88E111C24973600057F4D /* WED_OSMSlippyMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F88E0F1C24973600057F4D /* WED_OSMSlippyMap.cpp */; };
 		D6F88E0E1C20A6BD00057F4D /* WED_RoadNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F88E0C1C20A6BD00057F4D /* WED_RoadNode.cpp */; };
 		D6F8E4B90C3C861C007A2EA7 /* WED_OverlayImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F8E4B50C3C861C007A2EA7 /* WED_OverlayImage.cpp */; };
 		D6F8E4BA0C3C861C007A2EA7 /* WED_TextureNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F8E4B70C3C861C007A2EA7 /* WED_TextureNode.cpp */; };
@@ -2044,6 +2045,8 @@
 		D6F3F0891D072BE800188B28 /* CSVParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CSVParser.cpp; sourceTree = "<group>"; };
 		D6F3F08A1D072BE800188B28 /* CSVParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CSVParser.h; sourceTree = "<group>"; };
 		D6F72EAF18A1489700DB1193 /* WED_Sign_Parser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Sign_Parser.cpp; sourceTree = "<group>"; };
+		D6F88E0F1C24973600057F4D /* WED_OSMSlippyMap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_OSMSlippyMap.cpp; sourceTree = "<group>"; };
+		D6F88E101C24973600057F4D /* WED_OSMSlippyMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_OSMSlippyMap.h; sourceTree = "<group>"; };
 		D6F88E0C1C20A6BD00057F4D /* WED_RoadNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_RoadNode.cpp; sourceTree = "<group>"; };
 		D6F88E0D1C20A6BD00057F4D /* WED_RoadNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_RoadNode.h; sourceTree = "<group>"; };
 		D6F8E4B50C3C861C007A2EA7 /* WED_OverlayImage.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_OverlayImage.cpp; sourceTree = "<group>"; };
@@ -3137,6 +3140,8 @@
 				D6AC154C0F12866E0006E096 /* WED_DrawUtils.cpp */,
 				D653D6D21054552100A502FF /* WED_DebugLayer.h */,
 				D653D6D31054552100A502FF /* WED_DebugLayer.cpp */,
+				D6F88E0F1C24973600057F4D /* WED_OSMSlippyMap.cpp */,
+				D6F88E101C24973600057F4D /* WED_OSMSlippyMap.h */,
 				D60075361C56A30E0096D4D9 /* WED_ATCLayer.cpp */,
 				D60075371C56A30E0096D4D9 /* WED_ATCLayer.h */,
 			);
@@ -4645,6 +4650,7 @@
 				D6F3F0881D07294E00188B28 /* WED_MetadataUpdate.cpp in Sources */,
 				D629FADF0B95DE3E00A2FB57 /* WED_MapBkgnd.cpp in Sources */,
 				D629FB020B95E38900A2FB57 /* WED_HandleToolBase.cpp in Sources */,
+				D6F88E111C24973600057F4D /* WED_OSMSlippyMap.cpp in Sources */,
 				D629FB3D0B960A7200A2FB57 /* WED_MarqueeTool.cpp in Sources */,
 				D6A17E1A0BA5994900BBCD0C /* WED_EnumSystem.cpp in Sources */,
 				D6A17F9C0BA5E2A200BBCD0C /* WED_AirportBeacon.cpp in Sources */,

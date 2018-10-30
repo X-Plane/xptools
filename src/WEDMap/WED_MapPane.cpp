@@ -65,6 +65,7 @@
 #include "WED_Server.h"
 #include "WED_NWInfoLayer.h"
 #endif
+#include "WED_OSMSlippyMap.h"
 
 char	kToolKeys[] = {
 	0, 0,
@@ -138,6 +139,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	// Visualization layers
 	mLayers.push_back(					new WED_MapBkgnd(mMap, mMap, resolver));
 	mLayers.push_back(mWorldMap =		new WED_WorldMapLayer(mMap, mMap, resolver));
+	mLayers.push_back(mSlippyMap=	new WED_SlippyMap(mMap, mMap, resolver));
 #if WANT_TERRASEVER	
 	mLayers.push_back(mTerraserver = 	new WED_TerraserverLayer(mMap, mMap, resolver));
 #endif	
@@ -375,8 +377,11 @@ int		WED_MapPane::Map_HandleCommand(int command)
 #if WANT_TERRASEVER
 	case wed_ToggleTerraserver:	mTerraserver->ToggleVisible(); return 1;
 #endif	
-//	case wed_ToggleTileserver: mTileserver->ToggleVis(); return 1;
-	case wed_TogglePreview:	mPreview->ToggleVisible(); return 1;
+	case wed_TogglePreview:	mPreview->ToggleVisible(); 			return 1;
+	case wed_SlippyMapNone:	mSlippyMap->SetMode(0);	 		return 1;
+	case wed_SlippyMapOSM:	mSlippyMap->SetMode(1);	 		return 1;
+	case wed_SlippyMapESRI: mSlippyMap->SetMode(2);			return 1;
+	case wed_SlippyMapCustom: mSlippyMap->SetMode(3);		return 1;
 
 	case wed_Pavement0:		mPreview->SetPavementTransparency(0.0f);  return 1;
 	case wed_Pavement25:	mPreview->SetPavementTransparency(0.25f); return 1;
@@ -407,14 +412,17 @@ int		WED_MapPane::Map_CanHandleCommand(int command, string& ioName, int& ioCheck
 	Bbox2	box;
 
 	switch(command) {
-	case wed_PickOverlay:																	return 1;
-	case wed_ToggleWorldMap:ioCheck = mWorldMap->IsVisible();								return 1;
+	case wed_PickOverlay:															return 1;
+	case wed_ToggleWorldMap:ioCheck = mWorldMap->IsVisible();						return 1;
 //	case wed_ToggleOverlay:	if (mImageOverlay->CanShow()) { ioCheck = mImageOverlay->IsVisible(); return 1; }	break;
 #if WANT_TERRASEVER
-	case wed_ToggleTerraserver: ioCheck = mTerraserver->IsVisible();							return 1;
-#endif	
-//	case wed_ToggleTileserver: ioCheck = mTileserver->IsVis();								return 1;
-	case wed_TogglePreview: ioCheck = mPreview->IsVisible();								return 1;
+	case wed_ToggleTerraserver: ioCheck = mTerraserver->IsVisible();				return 1;
+#endif
+	case wed_SlippyMapNone: ioCheck = mSlippyMap->GetMode() == 0;				return 1;
+	case wed_SlippyMapOSM:  ioCheck = mSlippyMap->GetMode() == 1;				return 1;
+	case wed_SlippyMapESRI: ioCheck = mSlippyMap->GetMode() == 2;				return 1;
+	case wed_SlippyMapCustom: ioCheck = mSlippyMap->GetMode() == 3;				return gCustomSlippyMap.empty() ? 0 : 1;
+	case wed_TogglePreview: ioCheck = mPreview->IsVisible();						return 1;
 	case wed_Pavement0:		ioCheck = mPreview->GetPavementTransparency() == 0.0f;	return 1;
 	case wed_Pavement25:	ioCheck = mPreview->GetPavementTransparency() == 0.25f;	return 1;
 	case wed_Pavement50:	ioCheck = mPreview->GetPavementTransparency() == 0.5f;	return 1;
@@ -428,8 +436,8 @@ int		WED_MapPane::Map_CanHandleCommand(int command, string& ioName, int& ioCheck
 	case wed_ObjDensity5:	ioCheck = mPreview->GetObjDensity() == 5;	return 1;
 	case wed_ObjDensity6:	ioCheck = mPreview->GetObjDensity() == 6;	return 1;
 
-	case wed_ToggleLines:	ioCheck = mStructureLayer->GetRealLinesShowing();				return 1;
-	case wed_ToggleVertices:ioCheck = mStructureLayer->GetVerticesShowing();				return 1;
+	case wed_ToggleLines:	ioCheck = mStructureLayer->GetRealLinesShowing();		return 1;
+	case wed_ToggleVertices:ioCheck = mStructureLayer->GetVerticesShowing();		return 1;
 
 	case wed_ZoomWorld:		return 1;
 	case wed_ZoomAll:		GetExtentAll(box, mResolver); return !box.is_empty()  && !box.is_null();
@@ -462,11 +470,12 @@ void	WED_MapPane::ReceiveMessage(
 
 void			WED_MapPane::FromPrefs(IDocPrefs * prefs)
 {
-	if ((mWorldMap->IsVisible()     ? 1 : 0) != prefs->ReadIntPref("map/world_map_vis",  mWorldMap->IsVisible()     ? 1 : 0))		mWorldMap->ToggleVisible();
+	if ((mWorldMap->IsVisible()  ? 1 : 0) != prefs->ReadIntPref("map/world_map_vis",mWorldMap->IsVisible()  ? 1 : 0)) mWorldMap->ToggleVisible();
 #if WANT_TERRASEVER
 	if ((mTerraserver->IsVisible () ? 1 : 0) != prefs->ReadIntPref("map/terraserver_vis",mTerraserver->IsVisible()  ? 1 : 0))		mTerraserver->ToggleVisible();
 #endif	
-	if ((mPreview->IsVisible ()     ? 1 : 0) != prefs->ReadIntPref("map/preview_vis"    ,mPreview->IsVisible()      ? 1 : 0))		mPreview->ToggleVisible();
+	if ((mPreview->IsVisible ()  ? 1 : 0) != prefs->ReadIntPref("map/preview_vis"  ,mPreview->IsVisible()   ? 1 : 0)) mPreview->ToggleVisible();
+	if ((mSlippyMap->IsVisible() ? 1 : 0) != prefs->ReadIntPref("map/slippy_vis"   ,mSlippyMap->IsVisible() ? 1 : 0)) mSlippyMap->ToggleVisible();
 
 	mPreview->SetPavementTransparency(prefs->ReadIntPref("map/pavement_alpha",mPreview->GetPavementTransparency()*4) * 0.25f);
 	mPreview->SetObjDensity(prefs->ReadIntPref("map/obj_density",mPreview->GetObjDensity()));
@@ -539,6 +548,7 @@ void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
 #if WANT_TERRASEVER
 	prefs->WriteIntPref("map/terraserver_vis",mTerraserver->IsVisible() ? 1 : 0);
 #endif	
+	prefs->WriteIntPref("map/slippy_vis",mSlippyMap->IsVisible() ? 1 : 0);
 	prefs->WriteIntPref("map/preview_vis",mPreview->IsVisible() ? 1 : 0);
 	prefs->WriteIntPref("map/pavement_alpha",mPreview->GetPavementTransparency()*4);
 	prefs->WriteIntPref("map/obj_density",mPreview->GetObjDensity());

@@ -18,6 +18,7 @@ WED 1.8.0
         - support X-Plane 1130 apt.dat format: 8.33kHz channel ATC frequencies
         - validate Runway Use Departure Frequency has matching ATC Departure Frequency
         - warn if using 8.33k raster frequencies outside of Europe
+	- WED-501, WED-477, WED-188, WED-118 : Add OSM maps and ESRI orthos as background images
 	Bug Fixes:
 	- WED-1080: Prevent crash when importing invalid data from gateway
 	- WED-1075: Validate for bad/illegal UV map coordinates that will make tesselator crash
@@ -67,6 +68,7 @@ WED 1.7.0 Beta1 2/26/18
 	- WED-988: Add validation warnings if no truckroutes but not vehicle parking position available
 	- WED-917: Move meter/feet settings a new "Preferences" Menu, add D.M.S choices for info bar
 	- Julians moderator mode can now be selected in the preferences, affects GW import listing only
+	- OSM SlippyMap Display
 	- WED-78: Increase resolution of World Map background display
 	Bug fixes:
 	- WED 923: fix aspect ratio of non-rectangular textures shown in PreviewPane

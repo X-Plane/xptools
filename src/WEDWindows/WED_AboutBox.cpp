@@ -64,10 +64,16 @@ void		WED_AboutBox::Draw(GUI_GraphState * state)
 	const char * main_text[] = {
 		"",
 		"WorldEditor " WED_VERSION_STRING_SHORT,
-		"©Copyright 2007-2018, Laminar Research.",
+		"© Copyright 2007-2018, Laminar Research.",
 		"",
 		"This software is available under an open license.",
 		"Visit http://developer.x-plane.com/code/ for more info.",
+		"",
+		"OSM map data available under CC-BY-SA 2.0 license,",
+		"see http://www.openstreetmap.org/copyright",
+		"",
+		"World Imagery provided by ESRI http://www.esri.com,",
+		"see 'Permitted Uses' in the Help menu",
 		0
 	};
 	
