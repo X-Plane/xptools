@@ -47,24 +47,24 @@ WED_NavaidLayer::WED_NavaidLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IRe
 {
 
 // ToDo: move this into PackageMgr, so its updated when XPlaneFolder changes and re-used when another scenery is opened
-
+    SetVisible(false);
 	string resourcePath;
 	gPackageMgr->GetXPlaneFolder(resourcePath);
-	
+
 	// deliberately ignoring any Custom Data/earth_424.dat or Custom Data/earth_nav.dat files that a user may have ... to avoid confusion
 	string globalNavaids  = resourcePath + DIR_STR "Resources" DIR_STR "default data" DIR_STR "earth_nav.dat";
 	string airportNavaids = resourcePath + DIR_STR "Custom Scenery" DIR_STR "Global Airports" DIR_STR "Earth nav data" DIR_STR "earth_nav.dat";
-	
+
 	MFMemFile * str = MemFile_Open(globalNavaids.c_str());
 	if(str)
 	{
 		MFScanner	s;
 		MFS_init(&s, str);
-		
+
 		int versions[] = { 740, 810, 1100, 0 };
-		
+
 		mNavaids.reserve(25000);    // about 3 MBytes, as of 2018 its some 20,200 navaids
-		
+
 		if(MFS_xplane_header(&s,versions,NULL,NULL))
 			while(!MFS_done(&s))
 			{
@@ -90,7 +90,7 @@ WED_NavaidLayer::WED_NavaidLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IRe
 					{
 						double slope = floor(n.heading / 1000.0);
 						n.heading -= slope * 1000.0;
-					}	
+					}
 					mNavaids.push_back(n);
 				}
 				MFS_string_eol(&s,NULL);
@@ -103,9 +103,9 @@ WED_NavaidLayer::WED_NavaidLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IRe
 	{
 		MFScanner	s;
 		MFS_init(&s, str);
-		
+
 		int versions[] = { 740, 810, 1100, 0 };
-		
+
 		if(MFS_xplane_header(&s,versions,NULL,NULL))
 			while(!MFS_done(&s))
 			{
@@ -140,7 +140,7 @@ WED_NavaidLayer::WED_NavaidLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IRe
 						if(n.type == i->type && n.icao == i->icao)
 						{
 							float d = LonLatDistMeters(n.lonlat, i->lonlat);
-							if (n.name == i->name) 
+							if (n.name == i->name)
 							{
 #if DEV
 								printf("Replacing exact type %d, icao %s & name %s match. d=%5.1lfm\n", n.type, n.icao.c_str(), n.name.c_str(), d);
@@ -159,7 +159,7 @@ WED_NavaidLayer::WED_NavaidLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IRe
 						}
 						++i;
 					}
-					
+
 					if (i == mNavaids.end())
 					{
 						if (closest_d < 20.0)
@@ -184,7 +184,7 @@ WED_NavaidLayer::WED_NavaidLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IRe
 			}
 		MemFile_Close(str);
 	}
-	
+
 // Todo: speedup drawing by converting mNavaids into list sorted by longitude (aka map / multimap) - for quicker selection of visible navaids
 //       improve data locality - store coords as 32 bit fixed point (9mm resolution is plenty), heading, type as short = 12 bytes total (now 96)
 //       although for now Navaid map drawing is under 1 msec on a 3.6 GHz CPU at all times == good enough
@@ -219,7 +219,7 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 	if (PPM > 0.001)          // stop displaying navaids when zoomed out - gets too crowded
 		for(vector<navaid_t>::iterator i = mNavaids.begin(); i != mNavaids.end(); ++i)  // this is brain dead - use list sorted by longitude
 		{
-			if(i->lonlat.x() > vl && i->lonlat.x() < vr && 
+			if(i->lonlat.x() > vl && i->lonlat.x() < vr &&
 			   i->lonlat.y() > vb && i->lonlat.y() < vt)
 			{
 				glColor4fv(red);
@@ -256,7 +256,7 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 				else if(i->type == 6)
 				{
 					if(PPM > 0.1)
-						GUI_PlotIcon(g,"nav_gs.png", pt.x(), pt.y(), i->heading, scale);	
+						GUI_PlotIcon(g,"nav_gs.png", pt.x(), pt.y(), i->heading, scale);
 				}
 				else
 					GUI_PlotIcon(g,"nav_mark.png", pt.x(), pt.y(), i->heading, scale);

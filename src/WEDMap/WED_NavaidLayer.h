@@ -48,7 +48,6 @@ public:
 
 private:
 
-	bool			mVisible;
 	vector<navaid_t>	mNavaids;
 };
 
