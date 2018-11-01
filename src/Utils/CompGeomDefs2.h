@@ -33,6 +33,7 @@
 #include <algorithm>
 
 #include "AssertUtils.h"
+#include "STLUtils.h"
 
 using std::vector;
 using std::swap;
@@ -53,6 +54,11 @@ struct Bezier2;
 		else
 			return -pow(-x, 1.0/3.0);
 	}
+#endif
+#if IBM || !DEV
+	#define ATTR_USED
+#else
+	#define ATTR_USED __attribute__((used))
 #endif
 
 enum {
@@ -133,6 +139,9 @@ struct Point2 {
 
 	inline double x() const { return x_; }
 	inline double y() const { return y_; }
+
+	string		wolfram_alpha() const ATTR_USED;		// Representation of this point you can pass to WolframAlpha to print it
+
 	double	x_;
 	double	y_;
 };
@@ -352,6 +361,8 @@ struct	Line2 {
 	bool	collinear(const Point2& p) const { return (a * p.x_ + b * p.y_ + c) == 0; }
 	int		side_of_line(const Point2& p) const { double v = (a * p.x_ + b * p.y_ + c); if (v > 0.0) return LEFT_TURN; if (v < 0.0) return RIGHT_TURN; return COLLINEAR; }
 
+	string	wolfram_alpha() const ATTR_USED;		// Representation of this line you can pass to WolframAlpha to print it
+
 	double	a;
 	double	b;
 	double	c;
@@ -435,6 +446,10 @@ struct	Bbox2 {
 	double		rescale_to_xv_projected(const Bbox2& new_box, double x) const;
 	double		rescale_to_yv(const Bbox2& new_box, double y) const;
 
+	vector<Point2> points() const;
+
+	string		wolfram_alpha() const ATTR_USED;		// Representation of this polygon you can pass to WolframAlpha to print it
+
 	Point2	p1;
 	Point2	p2;
 
@@ -497,6 +512,7 @@ struct	Polygon2 : public vector<Point2> {
 
 	bool		is_ccw(void) const;
 
+	string		wolfram_alpha() const ATTR_USED;		// Representation of this polygon you can pass to WolframAlpha to print it
 };
 
 /****************************************************************************************************
@@ -696,12 +712,26 @@ struct greater_x_then_y {
 /****************************************************************************************************
  * Inline Funcs
  ****************************************************************************************************/
+inline string make_wolfram_alpha_polygon(const vector<Point2> * points)
+{
+	string out = "polygon ";
+	for(vector<Point2>::const_iterator point_it = points->begin(); point_it != points->end(); ++point_it)
+	{
+		out += stl_printf("(%0.18f,%0.18f)", point_it->x(), point_it->y());
+	}
+	return out;
+}
 
 // These must be defined below because Point2 is declared before Vector2.
 inline Point2& Point2::operator += (const Vector2& v) { x_ += v.dx; y_ += v.dy; return *this; }
 inline Point2& Point2::operator -= (const Vector2& v) { x_ -= v.dx; y_ -= v.dy; return *this; }
 inline Point2 Point2::operator+(const Vector2& v) const { return Point2(x_ + v.dx, y_ + v.dy); }
 inline Point2 Point2::operator-(const Vector2& v) const { return Point2(x_ - v.dx, y_ - v.dy); }
+
+inline string Point2::wolfram_alpha() const
+{
+	return stl_printf("point (%0.18f, %0.18f)", x_, y_);
+}
 
 inline void	Vector2::rotate_by_degrees(const double& degrees)
 {
@@ -964,6 +994,11 @@ inline void Line2::normalize()
 	}
 }
 
+inline string Line2::wolfram_alpha() const
+{
+	return stl_printf("%0.18fx + %0.18fy + %0.18f", a, b, c);
+}
+
 inline Bbox2& Bbox2::operator+=(const Point2& rhs)
 {
 	if (is_null())	p1 = p2 = rhs;
@@ -1069,6 +1104,23 @@ inline double		Bbox2::rescale_to_yv(const Bbox2& new_box, double y) const
 {
 	if (p2.y_ == p1.y_) return y;
 	return y * (new_box.p2.y_ - new_box.p1.y_) / (p2.y_ - p1.y_);
+}
+
+inline vector<Point2> Bbox2::points() const
+{
+	vector<Point2> pts;
+	pts.reserve(4);
+	pts.push_back(bottom_left());
+	pts.push_back(top_left());
+	pts.push_back(top_right());
+	pts.push_back(bottom_right());
+	return pts;
+};
+
+inline string Bbox2::wolfram_alpha() const
+{
+	const vector<Point2> p2 = points();
+	return make_wolfram_alpha_polygon(&p2);
 }
 
 
@@ -1202,6 +1254,11 @@ inline bool Polygon2::is_ccw(void) const
 	if(at(p).y() == at(b).y())	return false;				// prev is same height? - top is flat, we are CW
 	
 	return Vector2(at(p),at(b)).left_turn(Vector2(at(b),at(n)));	// we are truly highest.  Check for left-turn.
+}
+
+inline string Polygon2::wolfram_alpha() const
+{
+	return make_wolfram_alpha_polygon(this);
 }
 
 inline	Bezier2::Bezier2(const Point2& ip1, const Point2& ic, const Point2& ip2) :
