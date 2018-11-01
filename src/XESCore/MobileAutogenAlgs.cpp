@@ -80,6 +80,22 @@ grid_coord_desc get_ortho_grid_xy(const Point2 &point, ag_terrain_style style)
 	return out;
 }
 
+bool points_are_real_close(const Point2 &p0, const Point2 &p1)
+{
+	#define REALLY_REALLY_CLOSE 0.00000001
+	return  dob_abs(p0.x() - p1.x()) < REALLY_REALLY_CLOSE &&
+			dob_abs(p0.y() - p1.y()) < REALLY_REALLY_CLOSE;
+}
+
+bool tri_is_sliver(const Polygon2 &ben_tri)
+{
+	DebugAssert(ben_tri.size() == 3);
+	return  points_are_real_close(ben_tri.at(0), ben_tri.at(1)) ||
+			points_are_real_close(ben_tri.at(0), ben_tri.at(2)) ||
+			points_are_real_close(ben_tri.at(1), ben_tri.at(2));
+
+}
+
 Bbox2 get_ortho_grid_square_bounds(const CDT::Face_handle &tri, const Bbox2 &containing_dsf)
 {
 	DebugAssertWithExplanation(dob_abs(containing_dsf.xspan() - 1) < 0.01, "Your 'DSF' is not 1x1 degree");
@@ -88,9 +104,18 @@ Bbox2 get_ortho_grid_square_bounds(const CDT::Face_handle &tri, const Bbox2 &con
 	const Polygon2 ben_tri = cgal_tri_to_ben(tri, containing_dsf);
 	DebugAssert(containing_dsf.contains(ben_tri.bounds()));
 	const Point2 centroid = ben_tri.centroid();
-	DebugAssert(ben_tri.inside(centroid));
 
-	const grid_coord_desc grid_pt = get_ortho_grid_xy(centroid, style);
+	// Only case when the centroid might not be inside the tri: if the tri is a sliver, and our floating point math blows up
+	DebugAssert(ben_tri.inside(centroid) || tri_is_sliver(ben_tri));
+	#if DEV
+	static size_t s_slivers = 0;
+	if(tri_is_sliver(ben_tri))
+	{
+		printf("Warning: found sliver #%ld\n", s_slivers++);
+	}
+	#endif
+
+	const grid_coord_desc grid_pt = get_ortho_grid_xy(ben_tri.inside(centroid) ? centroid : ben_tri.front(), style);
 
 	Bbox2 out(
 			containing_dsf.xmin() + ((double)grid_pt.x / grid_pt.dx),
