@@ -38,7 +38,7 @@ WED_PropertyPane::WED_PropertyPane(
 						const char **			filter) :
 	GUI_Commander(inCommander),
 	mTextTable(this,WED_UIMeasurement("table_indent_width"),0),
-	mPropertyTable(resolver, col_names, def_col_widths,
+	mPropertyTable(this, resolver, col_names, def_col_widths,
 			pane_style == propPane_Selection || pane_style == propPane_FilteredVertical,
 			pane_style == propPane_Selection,
 			pane_style == propPane_Selection,

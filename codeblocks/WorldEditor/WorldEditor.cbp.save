@@ -311,6 +311,8 @@
 		<Unit filename="../../src/WEDCore/WED_Validate.h" />
 		<Unit filename="../../src/WEDCore/WED_ValidateATCRunwayChecks.cpp" />
 		<Unit filename="../../src/WEDCore/WED_ValidateATCRunwayChecks.h" />
+		<Unit filename="../../src/WEDCore/WED_ValidateList.cpp" />
+		<Unit filename="../../src/WEDCore/WED_ValidateList.h" />
 		<Unit filename="../../src/WEDCore/WED_Version.h" />
 		<Unit filename="../../src/WEDCore/WED_XMLReader.cpp" />
 		<Unit filename="../../src/WEDCore/WED_XMLReader.h" />

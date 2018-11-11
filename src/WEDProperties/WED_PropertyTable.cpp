@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- */ 
+ */
 
 #include "WED_PropertyTable.h"
 #include "WED_Archive.h"
@@ -48,6 +48,8 @@
 #include "WED_GroupCommands.h"
 #include "WED_UIMeasurements.h"
 #include "WED_EnumSystem.h"
+#include "GUI_Commander.h"
+#include "WED_Menus.h"
 
 inline int count_strs(const char ** p) { if (!p) return 0; int n = 0; while(*p) ++p, ++n; return n; }
 
@@ -70,6 +72,7 @@ inline bool AnyHidden(WED_Thing * t)
 }
 
 WED_PropertyTable::WED_PropertyTable(
+									GUI_Commander *         cmdr,
 									IResolver *				resolver,
 									const char **			col_names,
 									int *					def_col_widths,
@@ -81,6 +84,7 @@ WED_PropertyTable::WED_PropertyTable(
 				count_strs(col_names),
 				def_col_widths,
 				WED_UIMeasurement("table_row_height")),
+	GUI_Commander(cmdr),
 	mVertical(vertical),
 	mDynamicCols(dynamic_cols),
 	mSelOnly(sel_only),
@@ -114,7 +118,7 @@ void	WED_PropertyTable::GetCellContent(
 	//  1. Abilities - can_edit, can_disclose, can_drag, etc...
 	//  2. State - is_disclosed, is_selected, indent_level
 	//  3. Content - content_type, its corrisponding value filled in
-	
+
 	//Our default assumptions
 	the_content.content_type = gui_Cell_None;
 	the_content.string_is_resource = 0;
@@ -324,7 +328,7 @@ void	WED_PropertyTable::AcceptEdit(
 		if (inf.prop_kind == prop_Enum		&& content.content_type != gui_Cell_Enum	)	continue;
 		if (inf.prop_kind == prop_EnumSet	&& ( content.content_type != gui_Cell_EnumSet &&
 												 content.content_type != gui_Cell_LineEnumSet ))	continue;
-		
+
 		switch(inf.prop_kind) {
 		case prop_Int:
 			val.prop_kind = prop_Int;
@@ -389,7 +393,7 @@ void	WED_PropertyTable::DoDeleteCell(
 {
 	//Get the airport
 	WED_Airport * airport = static_cast<WED_Airport * >(FetchNth(0));
-	
+
 	airport->StartCommand("Delete Meta Data Key");
 	//To be in uniform with other IPropertyMethods we'll transform cell_y->NS_META_DATA
 	int ns_meta_data = (airport->WED_GISComposite::CountProperties());
@@ -523,6 +527,9 @@ void	WED_PropertyTable::SelectionEnd(void)
 	IOperation * op = dynamic_cast<IOperation *>(s);
 	op->CommitOperation();
 	mSelSave.clear();
+
+    if(gModeratorMode)
+        DispatchHandleCommand(wed_ZoomSelection);
 }
 
 int		WED_PropertyTable::SelectDisclose(
@@ -615,7 +622,7 @@ int		WED_PropertyTable::TabAdvance(
 		}
 		if (reverse==0)reverse=1;
 		++tries;
-	} while ((start_x != io_x || start_y != io_y || tries <= 1) 
+	} while ((start_x != io_x || start_y != io_y || tries <= 1)
 				&& tries < 100);                 // prevent infinite loop if nothing in table is "advanceable" to, e.g. a taxi route edge runway segment
 	return 0;
 }

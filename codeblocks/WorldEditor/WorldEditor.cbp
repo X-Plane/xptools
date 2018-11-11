@@ -510,12 +510,12 @@
 		<Unit filename="../../src/WEDMap/WED_MapZoomerNew.h" />
 		<Unit filename="../../src/WEDMap/WED_MarqueeTool.cpp" />
 		<Unit filename="../../src/WEDMap/WED_MarqueeTool.h" />
-		<Unit filename="../../src/WEDMap/WED_OSMSlippyMap.cpp" />
-		<Unit filename="../../src/WEDMap/WED_OSMSlippyMap.h" />
 		<Unit filename="../../src/WEDMap/WED_NavaidLayer.cpp" />
 		<Unit filename="../../src/WEDMap/WED_NavaidLayer.h" />
 		<Unit filename="../../src/WEDMap/WED_PreviewLayer.cpp" />
 		<Unit filename="../../src/WEDMap/WED_PreviewLayer.h" />
+		<Unit filename="../../src/WEDMap/WED_SlippyMap.cpp" />
+		<Unit filename="../../src/WEDMap/WED_SlippyMap.h" />
 		<Unit filename="../../src/WEDMap/WED_StructureLayer.cpp" />
 		<Unit filename="../../src/WEDMap/WED_StructureLayer.h" />
 		<Unit filename="../../src/WEDMap/WED_ToolInfoAdapter.cpp" />
