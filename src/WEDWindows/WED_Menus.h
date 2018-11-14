@@ -40,17 +40,17 @@ enum {
 	wed_ImportApt,
 	wed_ExportApt,
 	wed_ExportPack,
-#if HAS_GATEWAY	
+#if HAS_GATEWAY
 	wed_ExportToGateway,
-#endif	
+#endif
 	wed_ImportDSF,
 	wed_ImportOrtho,
-#if HAS_GATEWAY	
+#if HAS_GATEWAY
 	wed_ImportGateway,
-#endif	
+#endif
 #if GATEWAY_IMPORT_FEATURES
 	wed_ImportGatewayExtract,
-#endif	
+#endif
 	// Export Target Submenu
 	wed_Export900,
 	wed_Export1000,
@@ -105,6 +105,11 @@ enum {
 	wed_ZoomWorld,
 	wed_ZoomAll,
 	wed_ZoomSelection,
+
+	wed_Map3D,
+	wed_MapATC,
+	wed_MapPavement,
+	wed_MapSelection,
 //	wed_UnitFeet,
 //	wed_UnitMeters,
 	wed_ToggleLines,
@@ -113,9 +118,9 @@ enum {
 //	wed_ToggleOverlay,
 	wed_ToggleWorldMap,
 	wed_ToggleNavaidMap,
-#if WANT_TERRASEVER	
+#if WANT_TERRASEVER
 	wed_ToggleTerraserver,
-#endif	
+#endif
 	wed_SlippyMapNone,
 	wed_SlippyMapOSM,
 	wed_SlippyMapESRI,

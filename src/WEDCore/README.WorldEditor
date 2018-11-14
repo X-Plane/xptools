@@ -68,7 +68,8 @@ WED 1.7.0 Beta1 2/26/18
 	- Windows and Linux menu bars removed from modal windows - so appearance is more "native"
 	- WED-988: Add validation warnings if no truckroutes but not vehicle parking position available
 	- WED-917: Move meter/feet settings a new "Preferences" Menu, add D.M.S choices for info bar
-	- Julians moderator mode can now be selected in the preferences, affects GW import listing only
+	- Julians moderator mode can now be selected in the preferences, which affects
+        GW import listing and hierachy list selection
 	- OSM SlippyMap Display
 	- WED-78: Increase resolution of World Map background display
 	Bug fixes:

@@ -203,11 +203,7 @@ private:
 
 	vector<string>				mColNames;
 
-//	WED_Archive *				mArchive;
-//	int							mEntity;
-//	int							mSelect;
 	IResolver *					mResolver;
-
 
 	hash_map<int,int>			mOpen;
 

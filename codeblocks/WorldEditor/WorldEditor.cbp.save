@@ -193,6 +193,8 @@
 		<Unit filename="../../src/Network/curl_http.h" />
 		<Unit filename="../../src/OGLE/ogle.cpp" />
 		<Unit filename="../../src/OGLE/ogle.h" />
+		<Unit filename="../../src/Obj/ObjConvert.cpp" />
+		<Unit filename="../../src/Obj/ObjConvert.h" />
 		<Unit filename="../../src/Obj/ObjDraw.cpp" />
 		<Unit filename="../../src/Obj/ObjDraw.h" />
 		<Unit filename="../../src/Obj/ObjPointPool.cpp" />

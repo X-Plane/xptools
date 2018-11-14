@@ -50,6 +50,12 @@
 #include "WED_EnumSystem.h"
 #include "GUI_Commander.h"
 #include "WED_Menus.h"
+#include "WED_RampPosition.h"
+#include "WED_FacadePlacement.h"
+#include "WED_ObjPlacement.h"
+#include "WED_PolygonPlacement.h"
+#include "WED_Taxiway.h"
+#include "WED_Runway.h"
 
 inline int count_strs(const char ** p) { if (!p) return 0; int n = 0; while(*p) ++p, ++n; return n; }
 
@@ -528,8 +534,34 @@ void	WED_PropertyTable::SelectionEnd(void)
 	op->CommitOperation();
 	mSelSave.clear();
 
-    if(gModeratorMode)
+    if(gModeratorMode) // special behavior requested by Julian
+    {
         DispatchHandleCommand(wed_ZoomSelection);
+
+        ISelectable * sel0 = s->GetNthSelection(0);
+
+        if (SAFE_CAST(WED_RampPosition, sel0))
+        {
+             //mMapPane->SetTabFilterMode(tab_ATC);
+                DispatchHandleCommand(wed_MapATC);
+        }
+        else if (SAFE_CAST(WED_FacadePlacement, sel0) || SAFE_CAST(WED_ObjPlacement, sel0))
+        {
+//             mMapPane->SetTabFilterMode(tab_3D);
+            DispatchHandleCommand(wed_Map3D);
+        }
+        else if (SAFE_CAST(WED_Taxiway, sel0) || SAFE_CAST(WED_PolygonPlacement, sel0)
+                || SAFE_CAST(WED_Runway, sel0) )
+        {
+//             mMapPane->SetTabFilterMode(tab_Pavement);
+            DispatchHandleCommand(wed_MapPavement);
+        }
+        else
+        {
+//            mMapPane->SetTabFilterMode(tab_Selection);
+            DispatchHandleCommand(wed_MapSelection);
+        }
+    }
 }
 
 int		WED_PropertyTable::SelectDisclose(

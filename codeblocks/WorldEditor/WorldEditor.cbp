@@ -193,6 +193,8 @@
 		<Unit filename="../../src/Network/curl_http.h" />
 		<Unit filename="../../src/OGLE/ogle.cpp" />
 		<Unit filename="../../src/OGLE/ogle.h" />
+		<Unit filename="../../src/Obj/ObjConvert.cpp" />
+		<Unit filename="../../src/Obj/ObjConvert.h" />
 		<Unit filename="../../src/Obj/ObjDraw.cpp" />
 		<Unit filename="../../src/Obj/ObjDraw.h" />
 		<Unit filename="../../src/Obj/ObjPointPool.cpp" />
@@ -311,6 +313,8 @@
 		<Unit filename="../../src/WEDCore/WED_Validate.h" />
 		<Unit filename="../../src/WEDCore/WED_ValidateATCRunwayChecks.cpp" />
 		<Unit filename="../../src/WEDCore/WED_ValidateATCRunwayChecks.h" />
+		<Unit filename="../../src/WEDCore/WED_ValidateList.cpp" />
+		<Unit filename="../../src/WEDCore/WED_ValidateList.h" />
 		<Unit filename="../../src/WEDCore/WED_Version.h" />
 		<Unit filename="../../src/WEDCore/WED_XMLReader.cpp" />
 		<Unit filename="../../src/WEDCore/WED_XMLReader.h" />

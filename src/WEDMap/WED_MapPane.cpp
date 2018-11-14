@@ -80,6 +80,16 @@ char	kToolKeys[] = {
 	'r', 's', 'v', 'm'
 };
 
+enum //Must be kept in sync with TabPane
+{
+    tab_Selection,
+    tab_Pavement,
+    tab_ATC,
+    tab_Lights,
+    tab_3D,
+    tab_Exclusions,
+    tab_Texture
+};
 
 // A bit of a hack...zoom to selection sets the zoom so that the screen is filled with the sel.  If the sel size is 0 in both
 // dimensions, our zoom is NaN, which is bad. But try telling that to users!
@@ -403,7 +413,11 @@ int		WED_MapPane::Map_HandleCommand(int command)
 
 	case wed_ZoomWorld:		mMap->ZoomShowArea(-180,-90,180,90);	mMap->Refresh(); return 1;
 	case wed_ZoomAll:		GetExtentAll(box, mResolver); mMap->ZoomShowArea(box.p1.x(),box.p1.y(),box.p2.x(),box.p2.y());	mMap->Refresh(); return 1;
-	case wed_ZoomSelection:	ZoomShowSel(); return 1;
+	case wed_ZoomSelection:	ZoomShowSel();              return 1;
+	case wed_Map3D:         SetTabFilterMode(tab_3D);   return 1;
+	case wed_MapATC:        SetTabFilterMode(tab_ATC);  return 1;
+	case wed_MapPavement:   SetTabFilterMode(tab_Pavement);  return 1;
+	case wed_MapSelection:  SetTabFilterMode(tab_Selection); return 1;
 
 	default:		return 0;
 	}
@@ -769,17 +783,6 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 {
 	string title;
 	vector<const char *> hide_list, lock_list;
-
-	enum //Must be kept in sync with TabPane
-	{
-		tab_Selection,
-		tab_Pavement,
-		tab_ATC,
-		tab_Lights,
-		tab_3D,
-		tab_Exclusions,
-		tab_Texture
-	};
 
 	hide_all_persistents(hide_list);
 	mATCLayer->SetVisible(false);
