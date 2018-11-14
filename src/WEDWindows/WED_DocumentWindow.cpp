@@ -127,7 +127,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 //	GUI_Pane::GetBounds(splitter_b);
 //	mMainSplitter->SetBounds(splitter_b);
 	mMainSplitter->SetSticky(1,1,1,1);
-	
+
 	/****************************************************************************************************************************************************************
 	 * LIBRARY-SIDE
 	****************************************************************************************************************************************************************/
@@ -147,7 +147,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	libprev->SetParent(mLibSplitter);
 	libprev->Show();
 	libprev->SetSticky(1,1,1,0);
-	
+
 	WED_LibraryPane * lib = new WED_LibraryPane(this, inDocument->GetLibrary());
 	lib->SetParent(mLibSplitter);
 	lib->Show();
@@ -242,7 +242,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	// --------------- Hierarchy  View ---------------
 
 	static const char * titles[] =  { "Locked", "Hidden", "Name", 0 };
-	static int widths[] =			{ 50,		50,		200		};
+	static int widths[] =			{ 35,		35,		200		};
 
 	mPropPane = new WED_PropertyPane(this, inDocument, titles, widths,inDocument->GetArchive(), propPane_Hierarchy, 0);
 	mPropPane->SetParent(mPropSplitter);
@@ -257,7 +257,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	int zw[2];
 	XWin::GetBounds(zw,zw+1);
 	XWin::GetWindowLoc(xy,xy+1);
-	
+
 	// This is a safety-hack.  The user's prefs may specify the window at a location that
 	// is off screen,either because the prefs are borked or because the doc came from
 	// a machine with a much larger dekstop.  So...
@@ -268,13 +268,13 @@ WED_DocumentWindow::WED_DocumentWindow(
 	//
 	// TODO: someday check the window against the real desktop per platform.
 	int safe_rect[4] = { xy[0] ,xy[1], xy[0] + zw[0], xy[1] + zw[1] };
-	
+
 	xy[0]  = inDocument->ReadIntPref("window/x_loc",xy[0]);
 	xy[1]  = inDocument->ReadIntPref("window/y_loc",xy[1]);
 	zw[0] = inDocument->ReadIntPref("window/width",zw[0]);
 	zw[1] = inDocument->ReadIntPref("window/height",zw[1]);
-	
-	if(xy[0] < safe_rect[2] && xy[1] < safe_rect[3] && 
+
+	if(xy[0] < safe_rect[2] && xy[1] < safe_rect[3] &&
 	  (xy[0] + zw[0]) >= safe_rect[0] && (xy[1] + zw[1]) >= safe_rect[1])
 	{
 		SetBounds(xy[0],xy[1],xy[0]+zw[0],xy[1]+zw[1]);
@@ -297,7 +297,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	mPropPane->FromPrefs(inDocument,0);
 	// doc/use_feet and doc/InfoDMS are global only preferences now, not read from each document any more
 	gExportTarget = (WED_Export_Target) inDocument->ReadIntPref("doc/export_target",gExportTarget);
-	
+
 	//#if DEV
 	//	PrintDebugInfo(0);
 	//#endif
@@ -378,7 +378,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_AddATCFlow: WED_DoMakeNewATCFlow(mDocument); return 1;
 	case wed_AddATCRunwayUse:WED_DoMakeNewATCRunwayUse(mDocument); return 1;
 	case wed_AddATCTimeRule: WED_DoMakeNewATCTimeRule(mDocument); return 1;
-	case wed_AddATCWindRule: WED_DoMakeNewATCWindRule(mDocument); return 1;	
+	case wed_AddATCWindRule: WED_DoMakeNewATCWindRule(mDocument); return 1;
 #endif
 	case wed_UpgradeRamps:	WED_UpgradeRampStarts(mDocument);	return 1;
 	case wed_AlignApt:	WED_AlignAirports(mDocument);	return 1;
@@ -401,7 +401,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_SelectZeroLength:	if(!WED_DoSelectZeroLength(mDocument))		DoUserAlert("Your project has no zero-length ATC routing lines.");	return 1;
 	case wed_SelectDoubles:		if(!WED_DoSelectDoubles(mDocument))			DoUserAlert("Your project has no doubled ATC routing nodes.");	return 1;
 	case wed_SelectCrossing:	if(!WED_DoSelectCrossing(mDocument))		DoUserAlert("Your project has no crossed ATC routing lines.");	return 1;
-	
+
 	case wed_SelectLocalObjects:		WED_DoSelectLocalObjects(mDocument); return 1;
 	case wed_SelectLibraryObjects:		WED_DoSelectLibraryObjects(mDocument); return 1;
 	case wed_SelectDefaultObjects:		WED_DoSelectDefaultObjects(mDocument); return 1;
@@ -411,20 +411,20 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_UpdateMetadata:     WED_DoUpdateMetadata(mDocument); return 1;
 	case wed_ExportApt:		WED_DoExportApt(mDocument, mMapPane); return 1;
 	case wed_ExportPack:	WED_DoExportPack(mDocument, mMapPane); return 1;
-#if HAS_GATEWAY	
+#if HAS_GATEWAY
 	case wed_ExportToGateway:		WED_DoExportToGateway(mDocument); return 1;
-#endif	
+#endif
 	case wed_ImportApt:		WED_DoImportApt(mDocument,mDocument->GetArchive(), mMapPane); return 1;
 	case wed_ImportDSF:		WED_DoImportDSF(mDocument); return 1;
 	case wed_ImportOrtho:
 		mMapPane->Map_HandleCommand(command);
 		return 1;
-#if HAS_GATEWAY		
+#if HAS_GATEWAY
 	case wed_ImportGateway: WED_DoImportFromGateway(mDocument, mMapPane); return 1;
-#endif	
+#endif
 #if GATEWAY_IMPORT_FEATURES
 	case wed_ImportGatewayExtract:	WED_DoImportDSFText(mDocument); return 1;
-#endif	
+#endif
 	case wed_Validate:		if (WED_ValidateApt(mDocument, mMapPane) == validation_clean) DoUserAlert("Your layout is valid - no problems were found."); return 1;
 
 	case wed_Export900:	gExportTarget = wet_xplane_900;	Refresh(); return 1;
@@ -434,7 +434,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_Export1100:gExportTarget = wet_xplane_1100;	Refresh(); return 1;
 	case wed_Export1130:gExportTarget = wet_xplane_1130;	Refresh(); return 1;
 	case wed_ExportGateway:gExportTarget = wet_gateway;	Refresh(); return 1;
-	
+
 #if WITHNWLINK
 	case wed_ToggleLiveView :
 		{
@@ -455,7 +455,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioCheck)
 {
 	WED_UndoMgr * um = mDocument->GetUndoMgr();
-	
+
 	//--Add Meta Data Sub Menu-----------------
 	if(command > wed_AddMetaDataBegin && command < wed_AddMetaDataEnd)
 	{
@@ -524,7 +524,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 #if AIRPORT_ROUTING
 	case wed_SelectZeroLength:
 	case wed_SelectDoubles:
-	case wed_SelectCrossing:	
+	case wed_SelectCrossing:
 	case wed_SelectLocalObjects:
 	case wed_SelectLibraryObjects:
 	case wed_SelectDefaultObjects:
@@ -534,18 +534,18 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 
 	case wed_ExportApt:		return WED_CanExportApt(mDocument);
 	case wed_ExportPack:	return WED_CanExportPack(mDocument);
-#if HAS_GATEWAY	
+#if HAS_GATEWAY
 	case wed_ExportToGateway:	return WED_CanExportToGateway(mDocument);
-#endif	
+#endif
 	case wed_ImportApt:		return WED_CanImportApt(mDocument);
 	case wed_ImportDSF:		return WED_CanImportApt(mDocument);
 	case wed_ImportOrtho:	return 1;
 #if HAS_GATEWAY
 	case wed_ImportGateway:	return WED_CanImportFromGateway(mDocument);
-#endif	
+#endif
 #if GATEWAY_IMPORT_FEATURES
 	case wed_ImportGatewayExtract: return 1;
-#endif	
+#endif
 	case wed_Validate:		return 1;
 
 	case wed_Export900:	ioCheck = gExportTarget == wet_xplane_900;	return 1;
@@ -554,9 +554,9 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_Export1050:ioCheck = gExportTarget == wet_xplane_1050;	return 1;
 	case wed_Export1100:ioCheck = gExportTarget == wet_xplane_1100;	return 1;
 	case wed_Export1130:ioCheck = gExportTarget == wet_xplane_1130;	return 1;
-	
+
 	case wed_ExportGateway:ioCheck = gExportTarget == wet_gateway;	return 1;
-	
+
 #if WITHNWLINK
 	case wed_ToggleLiveView :
 		{
@@ -589,12 +589,12 @@ void	WED_DocumentWindow::ReceiveMessage(
 		prefs->WriteIntPref("window/main_split2",mMainSplitter2->GetSplitPoint());
 		prefs->WriteIntPref("window/prop_split",mPropSplitter->GetSplitPoint());
 		prefs->WriteIntPref("window/prev_split",mLibSplitter->GetSplitPoint());
-		
+
 		int xy[2];
 		int zw[2];
 		XWin::GetBounds(zw,zw+1);
 		XWin::GetWindowLoc(xy,xy+1);
-		
+
 		prefs->WriteIntPref("window/x_loc",xy[0]);
 		prefs->WriteIntPref("window/y_loc",xy[1]);
 		prefs->WriteIntPref("window/width",zw[0]);
@@ -613,7 +613,7 @@ void	WED_DocumentWindow::ReceiveMessage(
 	}
 	if(inMsg == msg_ArchiveChanged)
 		XWin::SetFilePath(NULL,mDocument->IsDirty());
-	
+
 }
 
 bool	WED_DocumentWindow::Closed(void)
