@@ -19,7 +19,8 @@ WED 1.8.0
     - validate Runway Use Departure Frequency has matching ATC Departure Frequency
     - warn if using 8.33k raster frequencies outside of Europe
 	- WED-501, WED-477, WED-188, WED-118: Add OSM maps and ESRI orthos as background images
-	- WED-50, WED-950: Add navaid overlay to backgroup images
+	- WED-50, WED-950: Add navaid overlay to background images
+    - WED-891: Support S,T and W suffixes for runway names
 	Bug Fixes:
 	- WED-1080: Prevent crash when importing invalid data from gateway
 	- WED-1075: Validate for bad/illegal UV map coordinates that will make tesselator crash

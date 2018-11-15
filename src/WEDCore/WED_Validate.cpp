@@ -117,115 +117,30 @@ static int strlen_utf8(const string& str)
     return q;
 }
 
-// This table is used to find the matching opposite direction for a given runway
-// to detect head-on collisions.
-
-static const int k_rwy_enums[73][2] = {
-	{	atc_1,		atc_19		},
-	{	atc_1L,		atc_19R		},
-	{	atc_1C,		atc_19C		},
-	{	atc_1R,		atc_19L		},
-
-	{	atc_2,		atc_20		},
-	{	atc_2L,		atc_20R		},
-	{	atc_2C,		atc_20C		},
-	{	atc_2R,		atc_20L		},
-
-	{	atc_3,		atc_21		},
-	{	atc_3L,		atc_21R		},
-	{	atc_3C,		atc_21C		},
-	{	atc_3R,		atc_21L		},
-
-	{	atc_4,		atc_22		},
-	{	atc_4L,		atc_22R		},
-	{	atc_4C,		atc_22C		},
-	{	atc_4R,		atc_22L		},
-
-	{	atc_5,		atc_23		},
-	{	atc_5L,		atc_23R		},
-	{	atc_5C,		atc_23C		},
-	{	atc_5R,		atc_23L		},
-
-	{	atc_6,		atc_24		},
-	{	atc_6L,		atc_24R		},
-	{	atc_6C,		atc_24C		},
-	{	atc_6R,		atc_24L		},
-
-	{	atc_7,		atc_25		},
-	{	atc_7L,		atc_25R		},
-	{	atc_7C,		atc_25C		},
-	{	atc_7R,		atc_25L		},
-
-	{	atc_8,		atc_26		},
-	{	atc_8L,		atc_26R		},
-	{	atc_8C,		atc_26C		},
-	{	atc_8R,		atc_26L		},
-
-	{	atc_9,		atc_27		},
-	{	atc_9L,		atc_27R		},
-	{	atc_9C,		atc_27C		},
-	{	atc_9R,		atc_27L		},
-
-	{	atc_10,		atc_28		},
-	{	atc_10L,		atc_28R		},
-	{	atc_10C,		atc_28C		},
-	{	atc_10R,		atc_28L		},
-
-	{	atc_11,		atc_29		},
-	{	atc_11L,		atc_29R		},
-	{	atc_11C,		atc_29C		},
-	{	atc_11R,		atc_29L		},
-
-	{	atc_12,		atc_30		},
-	{	atc_12L,		atc_30R		},
-	{	atc_12C,		atc_30C		},
-	{	atc_12R,		atc_30L		},
-
-	{	atc_13,		atc_31		},
-	{	atc_13L,		atc_31R		},
-	{	atc_13C,		atc_31C		},
-	{	atc_13R,		atc_31L		},
-
-	{	atc_14,		atc_32		},
-	{	atc_14L,		atc_32R		},
-	{	atc_14C,		atc_32C		},
-	{	atc_14R,		atc_32L		},
-
-	{	atc_15,		atc_33		},
-	{	atc_15L,		atc_33R		},
-	{	atc_15C,		atc_33C		},
-	{	atc_15R,		atc_33L		},
-
-	{	atc_16,		atc_34		},
-	{	atc_16L,		atc_34R		},
-	{	atc_16C,		atc_34C		},
-	{	atc_16R,		atc_34L		},
-
-	{	atc_17,		atc_35		},
-	{	atc_17L,		atc_35R		},
-	{	atc_17C,		atc_35C		},
-	{	atc_17R,		atc_35L		},
-
-	{	atc_18,		atc_36		},
-	{	atc_18L,		atc_36R		},
-	{	atc_18C,		atc_36C		},
-	{	atc_18R,		atc_36L		},
-
-	{ 0, 0 },
-};
 
 static int get_opposite_rwy(int rwy_enum)
 {
 	DebugAssert(rwy_enum != atc_Runway_None);
 	int p = 0;
-	while(k_rwy_enums[p][0])
-	{
-		if(rwy_enum == k_rwy_enums[p][0])
-			return k_rwy_enums[p][1];
-		if(rwy_enum == k_rwy_enums[p][1])
-			return k_rwy_enums[p][0];
-		++p;
-	}
+
+    if(rwy_enum >= atc_1 && rwy_enum <= atc_18)
+    {
+        if((rwy_enum % 10) == 1)
+            return rwy_enum + 180 + 2;
+        else if((rwy_enum % 10) == 3)
+            return rwy_enum + 180 - 2;
+        else
+            return rwy_enum + 180;
+    }
+    else if(rwy_enum >= atc_19 && rwy_enum <= atc_36)
+    {
+        if((rwy_enum % 10) == 1)
+            return rwy_enum - 180 + 2;
+        else if((rwy_enum % 10) == 3)
+            return rwy_enum - 180 - 2;
+        else
+            return rwy_enum - 180;
+    }
 	DebugAssert(!"Bad enum");
 	return atc_Runway_None;
 }
@@ -801,11 +716,11 @@ static void ValidateAirportFrequencies(WED_Airport* who, validation_error_vector
 				if (freq_info.freq > 121475 && freq_info.freq < 121525)
 						msgs.push_back(validation_error_t(string("The ATC frequency ") + freq_str + " is within the guardband of the emergency frequency.",
 								err_atc_freq_must_be_on_25khz_spacing,	*freq, who));
-								
+
 				int mod25 = freq_info.freq % 25;
 				bool is_25k_raster	= mod25 == 0;
 				bool is_833k_chan = mod25 == 5 || mod25 == 10 || mod25 == 15;
-				
+
 				if(!is_833k_chan && !is_25k_raster)
 				{
 					msgs.push_back(validation_error_t(string("The ATC frequency ") + freq_str + " is not a valid 8.33kHz channel number.",
@@ -820,7 +735,7 @@ static void ValidateAirportFrequencies(WED_Airport* who, validation_error_vector
 				{
 					if(is_xplane_atc_related)
 						found_one_valid = true;
-					
+
 					Bbox2 bounds;
 					who->GetBounds(gis_Geo, bounds);
 					if(!is_25k_raster && (bounds.ymin() < 34.0 || bounds.xmin() < -11.0 || bounds.xmax() > 35.0) )     // rougly the outline of europe
@@ -883,7 +798,7 @@ static void ValidateOneATCRunwayUse(WED_ATCRunwayUse* use, validation_error_vect
 	else if(urule.equipment == 0)
 		msgs.push_back(validation_error_t("ATC runway use must support at least one equipment type.", err_rwy_use_must_have_at_least_one_equip, use, apt));
 
-					
+
 	if(find(dep_freqs.begin(), dep_freqs.end(), urule.dep_freq) == dep_freqs.end())
 	{
 		msgs.push_back(validation_error_t("ATC runway use departure frequency is not matching any ATC departure frequency defined at this airport.", err_rwy_use_no_matching_dept_freq, use, apt));
@@ -1293,7 +1208,7 @@ static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& 
 		int suffix = n1[n1.length()-1];
 		if (suffix < '0' || suffix > '9')
 		{
-			if (suffix == 'L' || suffix == 'R' || suffix == 'C' || suffix == 'S') suf1 = suffix;
+			if (suffix == 'L' || suffix == 'R' || suffix == 'C' || suffix == 'S' || suffix == 'T' || suffix == 'W') suf1 = suffix;
 			else msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' has an illegal suffix for the low-end runway.", err_rwy_name_low_illegal_suffix, who,apt));
 			n1.erase(n1.length()-1);
 		}
@@ -1323,7 +1238,7 @@ static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& 
 			int suffix = n2[n2.length()-1];
 			if (suffix < '0' || suffix > '9')
 			{
-				if (suffix == 'L' || suffix == 'R' || suffix == 'C' || suffix == 'S') suf2 = suffix;
+				if (suffix == 'L' || suffix == 'R' || suffix == 'C' || suffix == 'S' || suffix == 'T' || suffix == 'W' ) suf2 = suffix;
 				else msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' has an illegal suffix for the high-end runway.", err_rwy_name_high_illegal_suffix, who,apt));
 				n2.erase(n2.length()-1);
 			}
@@ -1352,7 +1267,9 @@ static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& 
 		if ((suf1 == 'L' && suf2 != 'R') ||
 			(suf1 == 'R' && suf2 != 'L') ||
 			(suf1 == 'C' && suf2 != 'C') ||
-			(suf1 == 'S' && suf2 != 'S'))
+			(suf1 == 'S' && suf2 != 'S') ||
+			(suf1 == 'T' && suf2 != 'T') ||
+			(suf1 == 'W' && suf2 != 'W'))
 			msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' has mismatched suffixes.", err_rwy_name_suffixes_match, who,apt));
 	}
 	else if((suf1 == 0) != (suf2 == 0))
@@ -1412,7 +1329,7 @@ static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& 
 				double heading_delta = fabs(dobwrap(approx_heading - heading, -180.0, 180.0));
 				if(heading_delta > 135.0)
 					msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' needs to be reversed to match its name.", err_rwy_must_be_reversed_to_match_name, who,apt));
-				else if(heading_delta > 45.0)
+				else if(heading_delta > ( name[name.length()-1] == 'T' ? 6.0 : 45.0))         // true north runways are'nt allowed to deviate for magnetic deviation
 					msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' is misaligned with its runway name.", err_rwy_misaligned_with_name, who,apt));
 			#endif
 		}
