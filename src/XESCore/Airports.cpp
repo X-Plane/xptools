@@ -498,6 +498,26 @@ static void mask_with(DEMGeo& dst, const DEMGeo& src)
 		*d = DEM_NO_DATA;
 }
 
+#if DEV
+	#define catch_airport_exception(debug_identifier) \
+		catch(const char * cgal_exception) { \
+			fprintf(stderr, "CGAL Error processing airport %s (%s); skipping this airport!\n", apts[n].icao.c_str(), debug_identifier); \
+			throw cgal_exception; \
+		} catch(const std::exception &e) { \
+			fprintf(stderr, "Internal error processing airport %s (%s); skipping this airport!\n", apts[n].icao.c_str(), debug_identifier); \
+			throw e; \
+		}
+#else
+	#define catch_airport_exception(debug_identifier) \
+		catch(const char * cgal_exception) { \
+			fprintf(stderr, "CGAL Error processing airport %s (%s); skipping this airport!\n", apts[n].icao.c_str(), debug_identifier); \
+			continue; \
+		} catch(const std::exception &e) { \
+			fprintf(stderr, "Internal error processing airport %s (%s); skipping this airport!\n", apts[n].icao.c_str(), debug_identifier); \
+			continue; \
+		}
+#endif
+
 void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMGeo& transport, bool crop, bool dems, bool kill_rivers, ProgressFunc prog)
 {
 //	double wet_area = 0;
@@ -592,27 +612,15 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 	{
 		PROGRESS_SHOW(prog, 0, 1, "Burning in airports...", n+apts.size(), apts.size()*2);
 		Polygon_set_2	foo;
-		BurnInAirport(&apts[n], foo, fill_dirt2apt);
+		try {
+			BurnInAirport(&apts[n], foo, fill_dirt2apt);
+		}  catch_airport_exception("in BurnInAirport()");
 		DebugAssert(foo.arrangement().unbounded_face()->contained() == false);
 		if(!foo.is_empty())																// Check for empty airport (e.g. all sea plane lanes or somthing.)
 		{
 			try {
 				SimplifyAirportAreasAndSplat(ioMap, foo, apts[n].boundaries.empty(), simple_faces, fill_dirt2apt, NULL);
-			} catch(const char * cgal_exception) {
-				fprintf(stderr, "CGAL Error processing airport %s; skipping this airport!\n", apts[n].icao.c_str());
-				#if DEV
-					throw cgal_exception;
-				#else
-					continue;
-				#endif
-			} catch(const std::exception &e) {
-				fprintf(stderr, "Internal error processing airport %s; skipping this airport!\n", apts[n].icao.c_str());
-				#if DEV
-					throw e;
-				#else
-					continue;
-				#endif
-			}
+			} catch_airport_exception("in SimplifyAirportAreasAndSplat()");
 
 			if (dems)
 			{
