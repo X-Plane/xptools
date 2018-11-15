@@ -539,9 +539,13 @@ void	WED_PropertyTable::SelectionEnd(void)
         DispatchHandleCommand(wed_ZoomSelection);
 
         ISelectable * sel0 = s->GetNthSelection(0);
-
+		WED_Group * grp = SAFE_CAST(WED_Group, sel0);
+		string grpnam;
+		if (grp) grp->GetName(grpnam);
+		
         if (SAFE_CAST(WED_RampPosition, sel0) || SAFE_CAST(WED_TaxiRoute, sel0) ||  SAFE_CAST(WED_TaxiRouteNode, sel0) ||
-            SAFE_CAST(WED_TruckParkingLocation, sel0) || SAFE_CAST(WED_TruckDestination, sel0))
+            SAFE_CAST(WED_TruckParkingLocation, sel0) || SAFE_CAST(WED_TruckDestination, sel0) ||
+			grpnam == "Ramp Starts" || grpnam == "Ground Vehicles" || grpnam == "Taxi Routes" || grpnam == "Ground Routes" )
         {
                 DispatchHandleCommand(wed_MapATC);
         }
@@ -550,7 +554,7 @@ void	WED_PropertyTable::SelectionEnd(void)
 //             mMapPane->SetTabFilterMode(tab_3D);
 //            DispatchHandleCommand(wed_Map3D);
 //        }
-        else if(SAFE_CAST(WED_Runway, sel0) )
+        else if(SAFE_CAST(WED_Runway, sel0) || grpnam == "Runways" )
         {
             DispatchHandleCommand(wed_MapPavement);
         }
