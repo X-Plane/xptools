@@ -22,7 +22,9 @@ WED 1.8.0
 	- WED-50, WED-950: Add navaid overlay to background images
     - WED-891: Support S,T and W suffixes for runway names
     - WED-1105: Moderator mode improvements
+	- show more particular pictograms for XP11.25 added yellow line types
 	Bug Fixes:
+	- wide ILS critical centerline showing wrong icon
 	- WED-1080: Prevent crash when importing invalid data from gateway
 	- WED-1075: Validate for bad/illegal UV map coordinates that will make tesselator crash
 	- WED-1060: Recommend using Rgnl, do not flag use of Regl in airport names
