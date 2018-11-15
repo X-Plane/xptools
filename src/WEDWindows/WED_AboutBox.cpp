@@ -94,7 +94,7 @@ void		WED_AboutBox::Draw(GUI_GraphState * state)
 
 	const char * credits[] = {
 		//Sorted alphabetically, no exceptions
-		"Thanks to Ted Greene, Janos Laube, Christiano Maggi,",
+		"Thanks to Martin Boehme, Ted Greene, Janos Laube, Christiano Maggi,",
 		"Michael Minnhaar, Mathias Roedel, Ben Supnik, Tyler Young,",
 		"and everyone else who has contributed to WorldEditor's development.",
 		0 };

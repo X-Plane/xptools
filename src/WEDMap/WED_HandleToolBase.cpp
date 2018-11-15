@@ -717,12 +717,13 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 			Point2	np(GetZoomer()->XPixelToLon(   inX),GetZoomer()->YPixelToLat(   inY));
 			Vector2 delta(op,np);
 			mDragX = inX; mDragY = inY;
+			Bbox2 old_b;
+			GetSelTotalBounds(old_b);
+			Bbox2 new_b(old_b);
+			new_b += delta;
+
 			for (vector<IGISEntity *>::iterator e =	mSelManip.begin(); e != mSelManip.end(); ++e)
 			{
-				Bbox2	old_b;
-				(*e)->GetBounds(gis_Geo,old_b);
-				Bbox2	new_b(old_b);
-				new_b+=delta;
 				(*e)->Rescale(gis_Geo,old_b, new_b);
 			}
 		}
@@ -858,6 +859,16 @@ void		WED_HandleToolBase::KillOperation(bool mouse_is_down)
 	}
 	GUI_Commander::UnregisterNotifiable(this);
 	mDragType = drag_None;
+}
+
+void		WED_HandleToolBase::GetSelTotalBounds(Bbox2 &bounds)
+{
+	for(vector<IGISEntity *>::iterator ei = mSelManip.begin(); ei != mSelManip.end(); ++ei)
+	{
+		Bbox2 local;
+		(*ei)->GetBounds(gis_Geo,local);
+		bounds += local;
+	}
 }
 
 void		WED_HandleToolBase::GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks)
