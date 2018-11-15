@@ -285,7 +285,7 @@ static bool ShapeLineImporter(const vector<string>& inTokenLine, void * inRef)
 		if((inTokenLine[0] == "SHAPE_ARC_REVERSE" && inTokenLine.size() != 3) ||
 		    (inTokenLine[0] != "SHAPE_ARC_REVERSE" && inTokenLine.size() != 4))
 		{
-			printf("Bad shape import line.\n");
+			fprintf(stderr, "Bad shape import line.\n");
 			return false;
 		}
 		shape_pattern_t		pat;
@@ -325,7 +325,7 @@ static bool ShapeLineImporter(const vector<string>& inTokenLine, void * inRef)
 
 		if(pat.values.size() != pat.columns.size())
 		{
-			printf("mismatch in number of columns vs. patterns.\n");
+			fprintf(stderr, "mismatch in number of columns vs. patterns.\n");
 			return false;
 		}
 
@@ -341,7 +341,7 @@ static bool ShapeLineImporter(const vector<string>& inTokenLine, void * inRef)
 	{
 		if(inTokenLine.size() != 2)
 		{
-			printf("Bad shape import line.\n");
+			fprintf(stderr, "Bad shape import line.\n");
 			return false;
 		}
 		sLayerTag=inTokenLine[1];
@@ -545,7 +545,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 		sLayerTag.clear();
 		if (!LoadConfigFile(feature_desc))
 		{
-			printf("Could not load shape mapping file %s\n", feature_desc);
+			fprintf(stderr, "Could not load shape mapping file %s\n", feature_desc);
 			SHPClose(file);
 			return false;
 		}
@@ -582,7 +582,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 		db = DBFOpen(in_file,"rb");
 		if(db == NULL)
 		{
-			printf("Could not open shape DB file.n\n");
+			fprintf(stderr, "Could not open shape DB file.n\n");
 			SHPClose(file);
 			return false;
 		}

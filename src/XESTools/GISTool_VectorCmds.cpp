@@ -602,7 +602,7 @@ static int DoShapeImport(const vector<const char *>& args)
 			}
 			else
 			{
-				if(gVerbose) printf("Failed to load shape file: %s\n", args[n]);
+				fprintf(stderr, "Failed to load shape file: %s\n", args[n]);
 				return 1;
 			}
 		}
