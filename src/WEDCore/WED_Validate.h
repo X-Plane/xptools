@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2013, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -143,6 +143,7 @@ enum validate_error_t
 	err_truck_parking_no_ground_taxi_routes,
 	warnings_start_here,
 	warn_airport_name_style,
+	warn_airport_no_rwys_sealanes_or_helipads,
 	warn_atc_freq_on_8p33khz_spacing,
 	warn_truckroutes_but_no_starts,
 	warn_runway_matching_cifp_mislocated
@@ -151,18 +152,18 @@ enum validate_error_t
 // The validation error record stores a single validation problem for reporting.
 // This consists of:
 // - One error message loosely describing what went wrong and
-// - An error code defined in the validation_error_t enum	
+// - An error code defined in the validation_error_t enum
 // - One or more objects participating in the problem.  At least one object is mandatory.
 // - If the objects are within an airport, the parent airport that is now effectively invalid/unexportable.
 
 struct	validation_error_t {
 
 	validation_error_t() : airport(NULL) { }
-	
+
 	// This constructor creates a validation error with a single object ("who") participating.  Due to C++ weirdness
 	// we have to template; the assumption is that "who" is a WED_Thing derivative.
 	template <typename T>
-	validation_error_t(const string& m, validate_error_t error_code, T * who, WED_Airport * a) : 
+	validation_error_t(const string& m, validate_error_t error_code, T * who, WED_Airport * a) :
 	msg(m), airport(a), err_code(error_code) { bad_objects.push_back(who); }
 
 	// This constructor takes an arbitrary container of ptrs to WED_Thing derivatives and builds a single validation

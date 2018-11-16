@@ -798,7 +798,7 @@ static void ValidateOneATCRunwayUse(WED_ATCRunwayUse* use, validation_error_vect
 	else if(urule.equipment == 0)
 		msgs.push_back(validation_error_t("ATC runway use must support at least one equipment type.", err_rwy_use_must_have_at_least_one_equip, use, apt));
 
-
+    if(gExportTarget == wet_gateway)
 	if(find(dep_freqs.begin(), dep_freqs.end(), urule.dep_freq) == dep_freqs.end())
 	{
 		msgs.push_back(validation_error_t("ATC runway use departure frequency is not matching any ATC departure frequency defined at this airport.", err_rwy_use_no_matching_dept_freq, use, apt));
@@ -1925,16 +1925,22 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	string name, icao;
 	apt->GetName(name);
 	apt->GetICAO(icao);
+	validate_error_t err_type;
 
 	if(name.empty())
 		msgs.push_back(validation_error_t("Airport has no name.", err_airport_name, apt,apt));
 	else
 	{
+	    if(gExportTarget == wet_gateway)
+            err_type = err_airport_name;
+        else
+            err_type = warn_airport_name_style;
+
 		if(strlen_utf8(name) > 30)
-			msgs.push_back(validation_error_t("Airport name is longer than 30 characters.", err_airport_name, apt,apt));
+			msgs.push_back(validation_error_t("Airport name is longer than 30 characters.", err_type, apt,apt));
 
 		if(name[0] == ' ' || name[name.length()-1] == ' ')
-			msgs.push_back(validation_error_t("Airport name includes leading or trailing spaces.", err_airport_name, apt,apt));
+			msgs.push_back(validation_error_t("Airport name includes leading or trailing spaces.", err_type, apt,apt));
 
 		int lcase = count_if(name.begin(), name.end(), ::islower);
 		int ucase = count_if(name.begin(), name.end(), ::isupper);
@@ -2009,19 +2015,24 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	WED_GetAllRunwaysOneway(apt,legal_rwy_oneway);
 	WED_GetAllRunwaysTwoway(apt,legal_rwy_twoway);
 
+    if(gExportTarget == wet_gateway)
+        err_type = err_airport_no_rwys_sealanes_or_helipads;
+    else
+        err_type = warn_airport_no_rwys_sealanes_or_helipads;
+
 	switch(apt->GetAirportType())
 	{
 		case type_Airport:
 			if(runways.empty())
-				msgs.push_back(validation_error_t("The airport contains no runways.", err_airport_no_rwys_sealanes_or_helipads, apt,apt));
+				msgs.push_back(validation_error_t("The airport contains no runways.", err_type, apt,apt));
 			break;
 		case type_Heliport:
 			if(helipads.empty())
-				msgs.push_back(validation_error_t("The heliport contains no helipads.", err_airport_no_rwys_sealanes_or_helipads, apt,apt));
+				msgs.push_back(validation_error_t("The heliport contains no helipads.", err_type, apt,apt));
 			break;
 		case type_Seaport:
 			if(sealanes.empty())
-				msgs.push_back(validation_error_t("The seaport contains no sea lanes.", err_airport_no_rwys_sealanes_or_helipads, apt,apt));
+				msgs.push_back(validation_error_t("The seaport contains no sea lanes.", err_type, apt,apt));
 			break;
 		default:
 			Assert("Unknown Airport Type");
@@ -2088,7 +2099,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 
 		// require any land airport (i.e. at least one runway) to have an airport boundary defined
 		if(!runways.empty() && boundaries.empty())
-			msgs.push_back(validation_error_t("This airport contains runway(s) but no airport boundary.", 	err_airport_no_boundary, apt,apt));
+            msgs.push_back(validation_error_t("This airport contains runway(s) but no airport boundary.", 	err_airport_no_boundary, apt,apt));
 
 		vector<WED_Taxiway *>	GT_routes;
 		CollectRecursive(apt, back_inserter(GT_routes), ThingNotHidden, is_of_type_ground_vehicles, WED_TaxiRoute::sClass);
