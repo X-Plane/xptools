@@ -86,6 +86,8 @@
 #include "WED_FileCache.h"
 #include "WED_Url.h"
 #include "GUI_Resources.h"
+#include "XESConstants.h"
+
 
 #include <iomanip>
 #include <istream>
@@ -1078,7 +1080,7 @@ static void ValidateATC(WED_Airport* apt, validation_error_vector& msgs, set<int
 //------------------------------------------------------------------------------------------------------------------------------------
 #pragma mark -
 
-static void ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vector& msgs, WED_Airport * apt)
+static void ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vector& msgs, WED_Airport * apt, const vector<WED_Runway *>& runways)
 {
 	AptGate_t	g;
 	ramp->Export(g);
@@ -1100,6 +1102,43 @@ static void ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vec
 				msgs.push_back(validation_error_t("Ramp operation types and airlines are only allowed at real ramp types, e.g. gates and tie-downs, not misc and hangars.", err_ramp_op_type_and_airlines_only_allowed_at_gates_and_tie_downs, ramp,apt));
 			}
 		}
+
+		if((g.type == atc_ramp_gate || g.type == atc_ramp_tie_down) && (apt->GetAirportType() == type_Airport))
+        {
+            double req_rwy_len = 0.0;
+            double req_rwy_wid = 0.0;
+            bool   unpaved_OK = false;
+
+            switch(g.width)
+            {
+                case  atc_width_F:
+                case  atc_width_E:
+                    req_rwy_len = 6000.0; req_rwy_wid = 100.0; break;
+                case  atc_width_D:
+                case  atc_width_C:
+                    req_rwy_len = 3000.0; req_rwy_wid =  70.0; break;
+                default:
+                    unpaved_OK = true;
+            }
+            req_rwy_len *= FT_TO_MTR;
+            req_rwy_wid *= FT_TO_MTR;
+
+            vector<WED_Runway *>::const_iterator r(runways.begin());
+            while(r != runways.end())
+            {
+                WED_GISLine_Width * lw = dynamic_cast<WED_GISLine_Width *>(*r);
+
+                if(((*r)->GetSurface() <= surf_Concrete || unpaved_OK) && lw->GetLength() >= req_rwy_len && lw->GetWidth() >= req_rwy_wid)
+                        break;
+                ++r;
+            }
+
+            if(r == runways.end())
+            {
+                msgs.push_back(validation_error_t("Ramp size is implausibly large given largest available runway at this airport.", warn_ramp_start_size_implausible, ramp, apt));
+            }
+        }
+
 
 		string airlines_str = WED_RampPosition::CorrectAirlinesString(g.airlines);
 		string orig_airlines_str = ramp->GetAirlines();
@@ -2079,7 +2118,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 
 	for(vector<WED_RampPosition *>::iterator r = ramps.begin(); r != ramps.end(); ++r)
 	{
-		ValidateOneRampPosition(*r,msgs,apt);
+		ValidateOneRampPosition(*r,msgs,apt, runways);
 	}
 
 	if(gExportTarget >= wet_xplane_1050)
