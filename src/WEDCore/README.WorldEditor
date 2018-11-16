@@ -1,4 +1,4 @@
--------------------------------------------------------------------------------
+﻿-------------------------------------------------------------------------------
                          WorldEditor Release Notes
 -------------------------------------------------------------------------------
 
@@ -24,6 +24,7 @@ WED 1.8.0
     - WED-1105: Moderator mode improvements
 	- show more particular pictograms for XP11.25 added yellow line types
 	Bug Fixes:
+	- WED-1066,1069,1093: Fix error messages/crashes when miving whole airports
 	- wide ILS critical centerline showing wrong icon
 	- WED-1080: Prevent crash when importing invalid data from gateway
 	- WED-1075: Validate for bad/illegal UV map coordinates that will make tesselator crash

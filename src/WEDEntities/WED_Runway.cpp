@@ -521,8 +521,8 @@ void  WED_Runway::PropEditCallback(int before)
 		
 		if (new_enum == atc_rwy_None)
 		{
-			int	res = ConfirmMessage("New Runway Name is illegal, Smart Runway Rename can not be applied.", 
-						"Proceed with new name", "Keep old name");
+			int	res = ConfirmMessage("New runway name is illegal, Smart Runway Rename can not be applied. Really use new name ?", 
+						"Yes, use new name", "Keep old name");
 			if(res == 0)
 				SetName(string(ENUM_Desc(old_enum)));
 			return;
