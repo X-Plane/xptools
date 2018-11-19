@@ -49,6 +49,10 @@
 /* Begin PBXBuildFile section */
 		02198CB4219F6929008FDB0C /* WED_NavaidLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02198CAE219F68B8008FDB0C /* WED_NavaidLayer.cpp */; };
 		02198CB5219F6946008FDB0C /* WED_SlippyMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02198CB0219F68B8008FDB0C /* WED_SlippyMap.cpp */; };
+		02198CBE21A275EA008FDB0C /* nav_gs.png in Resources */ = {isa = PBXBuildFile; fileRef = 02198CB621A2759E008FDB0C /* nav_gs.png */; };
+		02198CBF21A275F0008FDB0C /* nav_mark.png in Resources */ = {isa = PBXBuildFile; fileRef = 02198CB721A2759F008FDB0C /* nav_mark.png */; };
+		02198CC021A275F7008FDB0C /* nav_ndb.png in Resources */ = {isa = PBXBuildFile; fileRef = 02198CB821A2759F008FDB0C /* nav_ndb.png */; };
+		02198CC121A275FC008FDB0C /* nav_vor.png in Resources */ = {isa = PBXBuildFile; fileRef = 02198CB921A2759F008FDB0C /* nav_vor.png */; };
 		0224ED2A20048CA0004729CD /* WED_ValidateList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0224ED2720048B7F004729CD /* WED_ValidateList.cpp */; };
 		0236B9732034264A0046900C /* check_buttons.png in Resources */ = {isa = PBXBuildFile; fileRef = 0236B971203425CE0046900C /* check_buttons.png */; };
 		0269A8551FF5F8F00085A37C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
@@ -1024,6 +1028,10 @@
 		02198CAF219F68B8008FDB0C /* WED_NavaidLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_NavaidLayer.h; sourceTree = "<group>"; };
 		02198CB0219F68B8008FDB0C /* WED_SlippyMap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_SlippyMap.cpp; sourceTree = "<group>"; };
 		02198CB1219F68B8008FDB0C /* WED_SlippyMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_SlippyMap.h; sourceTree = "<group>"; };
+		02198CB621A2759E008FDB0C /* nav_gs.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = nav_gs.png; sourceTree = "<group>"; };
+		02198CB721A2759F008FDB0C /* nav_mark.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = nav_mark.png; sourceTree = "<group>"; };
+		02198CB821A2759F008FDB0C /* nav_ndb.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = nav_ndb.png; sourceTree = "<group>"; };
+		02198CB921A2759F008FDB0C /* nav_vor.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = nav_vor.png; sourceTree = "<group>"; };
 		0224ED2720048B7F004729CD /* WED_ValidateList.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ValidateList.cpp; sourceTree = "<group>"; };
 		0224ED2820048B7F004729CD /* WED_ValidateList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ValidateList.h; sourceTree = "<group>"; };
 		0236B971203425CE0046900C /* check_buttons.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = check_buttons.png; sourceTree = "<group>"; };
@@ -2322,6 +2330,10 @@
 				D60BFC450C03619A00AD5EB7 /* map_taxisign.png */,
 				D60BFC460C03619A00AD5EB7 /* map_towerview.png */,
 				D60BFC470C03619A00AD5EB7 /* map_windsock.png */,
+				02198CB621A2759E008FDB0C /* nav_gs.png */,
+				02198CB721A2759F008FDB0C /* nav_mark.png */,
+				02198CB821A2759F008FDB0C /* nav_ndb.png */,
+				02198CB921A2759F008FDB0C /* nav_vor.png */,
 			);
 			path = icons;
 			sourceTree = "<group>";
@@ -3022,70 +3034,70 @@
 		D6BC37BB0AB22C85003949C5 /* WEDCore */ = {
 			isa = PBXGroup;
 			children = (
-				0224ED2720048B7F004729CD /* WED_ValidateList.cpp */,
-				0224ED2820048B7F004729CD /* WED_ValidateList.h */,
-				D60628DE1EA110D90007CC13 /* WED_HierarchyUtils.cpp */,
-				D60628DF1EA110D90007CC13 /* WED_HierarchyUtils.h */,
-				D652F3E21D5B5A46008566F8 /* WED_ValidateATCRunwayChecks.cpp */,
-				D652F3E31D5B5A46008566F8 /* WED_ValidateATCRunwayChecks.h */,
-				D6110F981C32136000A37784 /* WED_Sign_Parser.h */,
-				D6F72EAF18A1489700DB1193 /* WED_Sign_Parser.cpp */,
-				D6956ED00F82E91100F6718E /* WED_Assert.cpp */,
-				D6956ED10F82E91100F6718E /* WED_Assert.h */,
-				D6956ED20F82E91100F6718E /* WED_Globals.cpp */,
-				D6956ED30F82E91100F6718E /* WED_Globals.h */,
-				D6AC14E70F127AFE0006E096 /* WED_ResourceMgr.cpp */,
-				D6AC14E80F127AFE0006E096 /* WED_ResourceMgr.h */,
-				D6E023E80C39841200BD789F /* WED_PackageMgr.cpp */,
-				D6E023E90C39841200BD789F /* WED_PackageMgr.h */,
+				D6DA657F1ACC593D007B6A75 /* README.WorldEditor */,
+				D6BC37BD0AB22C85003949C5 /* WED_Application.cpp */,
+				D6BC37BE0AB22C85003949C5 /* WED_Application.h */,
+				D6ED39B10B67D08F00D5484E /* WED_AppMain.cpp */,
 				D6ED40370B6AD47300D5484E /* WED_Archive.cpp */,
 				D6ED40380B6AD47300D5484E /* WED_Archive.h */,
+				D6956ED00F82E91100F6718E /* WED_Assert.cpp */,
+				D6956ED10F82E91100F6718E /* WED_Assert.h */,
 				D6ED40390B6AD47300D5484E /* WED_Buffer.cpp */,
 				D6ED403A0B6AD47300D5484E /* WED_Buffer.h */,
+				D691EE74170A1DAD00AD6E4C /* WED_Clipping.cpp */,
+				D691EE73170A1DAD00AD6E4C /* WED_Clipping.h */,
+				D6BC37C30AB22C85003949C5 /* WED_Document.cpp */,
+				D6BC37C40AB22C85003949C5 /* WED_Document.h */,
+				D6A17E240BA59EF900BBCD0C /* WED_Enums.h */,
+				D6A17E190BA5994900BBCD0C /* WED_EnumSystem.cpp */,
+				D6A17E180BA5994900BBCD0C /* WED_EnumSystem.h */,
+				D6BC37C50AB22C85003949C5 /* WED_Errors.cpp */,
+				D6BC37C60AB22C85003949C5 /* WED_Errors.h */,
+				D60C07E10C2328B700783179 /* WED_FastBuffer.cpp */,
+				D60C07E00C2328B700783179 /* WED_FastBuffer.h */,
+				D680AA1D0FCD85B400712B5B /* WED_GISUtils.cpp */,
+				D680AA1C0FCD85B400712B5B /* WED_GISUtils.h */,
+				D6956ED20F82E91100F6718E /* WED_Globals.cpp */,
+				D6956ED30F82E91100F6718E /* WED_Globals.h */,
+				D60628DE1EA110D90007CC13 /* WED_HierarchyUtils.cpp */,
+				D60628DF1EA110D90007CC13 /* WED_HierarchyUtils.h */,
+				D6226F240E4C6A48005BD1D7 /* WED_LibraryMgr.cpp */,
+				D6226F230E4C6A48005BD1D7 /* WED_LibraryMgr.h */,
+				D6BC37C90AB22C85003949C5 /* WED_Messages.h */,
+				D60B0ECC0FCC886A001E8DD3 /* WED_Orthophoto.cpp */,
+				D60B0ECB0FCC886A001E8DD3 /* WED_Orthophoto.h */,
+				D6BC37CC0AB22C85003949C5 /* WED_Package.cpp */,
+				D6BC37CD0AB22C85003949C5 /* WED_Package.h */,
+				D6E023E80C39841200BD789F /* WED_PackageMgr.cpp */,
+				D6E023E90C39841200BD789F /* WED_PackageMgr.h */,
 				D6ED403B0B6AD47300D5484E /* WED_Persistent.cpp */,
 				D6ED403C0B6AD47300D5484E /* WED_Persistent.h */,
+				D6FF28610B6E4A3600960D5E /* WED_PropertyHelper.cpp */,
+				D6FF28600B6E4A3600960D5E /* WED_PropertyHelper.h */,
+				D6AC14E70F127AFE0006E096 /* WED_ResourceMgr.cpp */,
+				D6AC14E80F127AFE0006E096 /* WED_ResourceMgr.h */,
+				D653D6851054371B00A502FF /* WED_Routing.cpp */,
+				D653D6841054371B00A502FF /* WED_Routing.h */,
+				D6F72EAF18A1489700DB1193 /* WED_Sign_Parser.cpp */,
+				D6110F981C32136000A37784 /* WED_Sign_Parser.h */,
+				D6536E9B0C3D7F3100005385 /* WED_TexMgr.cpp */,
+				D6536E9A0C3D7F3100005385 /* WED_TexMgr.h */,
 				D6ED403D0B6AD47300D5484E /* WED_UndoLayer.cpp */,
 				D6ED403E0B6AD47300D5484E /* WED_UndoLayer.h */,
 				D6ED403F0B6AD47300D5484E /* WED_UndoMgr.cpp */,
 				D6ED40400B6AD47300D5484E /* WED_UndoMgr.h */,
-				D6ED39B10B67D08F00D5484E /* WED_AppMain.cpp */,
-				D6BC37BD0AB22C85003949C5 /* WED_Application.cpp */,
-				D6BC37BE0AB22C85003949C5 /* WED_Application.h */,
-				D6BC37C30AB22C85003949C5 /* WED_Document.cpp */,
-				D6BC37C40AB22C85003949C5 /* WED_Document.h */,
-				D6BC37C50AB22C85003949C5 /* WED_Errors.cpp */,
-				D6BC37C60AB22C85003949C5 /* WED_Errors.h */,
-				D6BC37C90AB22C85003949C5 /* WED_Messages.h */,
-				D6BC37CC0AB22C85003949C5 /* WED_Package.cpp */,
-				D6BC37CD0AB22C85003949C5 /* WED_Package.h */,
-				D6FF28600B6E4A3600960D5E /* WED_PropertyHelper.h */,
-				D6FF28610B6E4A3600960D5E /* WED_PropertyHelper.cpp */,
-				D6A17E180BA5994900BBCD0C /* WED_EnumSystem.h */,
-				D6A17E190BA5994900BBCD0C /* WED_EnumSystem.cpp */,
-				D6A17E240BA59EF900BBCD0C /* WED_Enums.h */,
-				D60C07E00C2328B700783179 /* WED_FastBuffer.h */,
-				D60C07E10C2328B700783179 /* WED_FastBuffer.cpp */,
-				D6C37B880C2796850023B35C /* WED_Version.h */,
-				D6536E9A0C3D7F3100005385 /* WED_TexMgr.h */,
-				D6536E9B0C3D7F3100005385 /* WED_TexMgr.cpp */,
-				D6226F230E4C6A48005BD1D7 /* WED_LibraryMgr.h */,
-				D6226F240E4C6A48005BD1D7 /* WED_LibraryMgr.cpp */,
-				D60B0ECB0FCC886A001E8DD3 /* WED_Orthophoto.h */,
-				D60B0ECC0FCC886A001E8DD3 /* WED_Orthophoto.cpp */,
-				D680AA1C0FCD85B400712B5B /* WED_GISUtils.h */,
-				D680AA1D0FCD85B400712B5B /* WED_GISUtils.cpp */,
-				D653D6841054371B00A502FF /* WED_Routing.h */,
-				D653D6851054371B00A502FF /* WED_Routing.cpp */,
-				D63CC9F513E85B8B00468132 /* WED_XMLWriter.h */,
-				D63CC9F613E85B8B00468132 /* WED_XMLWriter.cpp */,
-				D6282EFB13EC782B00FD236C /* WED_XMLReader.h */,
-				D6282EFC13EC782B00FD236C /* WED_XMLReader.cpp */,
-				D691EDF71709F4DC00AD6E4C /* WED_Validate.h */,
-				D691EDF81709F4DC00AD6E4C /* WED_Validate.cpp */,
-				D691EE73170A1DAD00AD6E4C /* WED_Clipping.h */,
-				D691EE74170A1DAD00AD6E4C /* WED_Clipping.cpp */,
 				D6B80CD019A24B220005C1FF /* WED_Url.h */,
-				D6DA657F1ACC593D007B6A75 /* README.WorldEditor */,
+				D691EDF81709F4DC00AD6E4C /* WED_Validate.cpp */,
+				D691EDF71709F4DC00AD6E4C /* WED_Validate.h */,
+				D652F3E21D5B5A46008566F8 /* WED_ValidateATCRunwayChecks.cpp */,
+				D652F3E31D5B5A46008566F8 /* WED_ValidateATCRunwayChecks.h */,
+				0224ED2720048B7F004729CD /* WED_ValidateList.cpp */,
+				0224ED2820048B7F004729CD /* WED_ValidateList.h */,
+				D6C37B880C2796850023B35C /* WED_Version.h */,
+				D6282EFC13EC782B00FD236C /* WED_XMLReader.cpp */,
+				D6282EFB13EC782B00FD236C /* WED_XMLReader.h */,
+				D63CC9F613E85B8B00468132 /* WED_XMLWriter.cpp */,
+				D63CC9F513E85B8B00468132 /* WED_XMLWriter.h */,
 			);
 			path = WEDCore;
 			sourceTree = "<group>";
@@ -3966,6 +3978,7 @@
 				D6B69CE81C582B6A005C78C5 /* ClassD.png in Resources */,
 				02B03C3520C720E2000F81F0 /* line_BSolidBlue.png in Resources */,
 				D6B69CE61C582B6A005C78C5 /* ClassB.png in Resources */,
+				02198CBE21A275EA008FDB0C /* nav_gs.png in Resources */,
 				02B03C3420C720DE000F81F0 /* line_BrokenRed.png in Resources */,
 				D682DE5D0C10985100BBE1A0 /* startup_bar.png in Resources */,
 				D682DE5E0C10985100BBE1A0 /* startup_bkgnd.png in Resources */,
@@ -3996,6 +4009,7 @@
 				02F4A70C204E6F4700E241B3 /* worldmap.jpg in Resources */,
 				D67B214E0C5536A300A21ABC /* snow.png in Resources */,
 				D67B21680C553A3A00A21ABC /* water.png in Resources */,
+				02198CC121A275FC008FDB0C /* nav_vor.png in Resources */,
 				D67B29F60C5661A100A21ABC /* line_BBrokenYellow.png in Resources */,
 				D67B29F70C5661A100A21ABC /* line_BDoubleSolidYellow.png in Resources */,
 				D67B29F80C5661A100A21ABC /* line_BILSCriticalCenter.png in Resources */,
@@ -4013,6 +4027,7 @@
 				D67B2A010C5661A100A21ABC /* line_BWideBrokenSingle.png in Resources */,
 				D67B2A020C5661A100A21ABC /* line_Chequered.png in Resources */,
 				D67B2A030C5661A100A21ABC /* line_DoubleSolidYellow.png in Resources */,
+				02198CBF21A275F0008FDB0C /* nav_mark.png in Resources */,
 				D67B2A040C5661A100A21ABC /* line_HoldLights.png in Resources */,
 				D604AEB91C0EAEF1006DC1F0 /* WEDMainMenu.xib in Resources */,
 				D67B2A050C5661A100A21ABC /* line_HoldLightsPulse.png in Resources */,
@@ -4027,6 +4042,7 @@
 				D67B2A0D0C5661A100A21ABC /* line_TaxiCenter.png in Resources */,
 				D67B2A0E0C5661A100A21ABC /* line_TaxiEdge.png in Resources */,
 				D67B2A0F0C5661A100A21ABC /* line_WideBrokenDouble.png in Resources */,
+				02198CC021A275F7008FDB0C /* nav_ndb.png in Resources */,
 				D67B2A100C5661A100A21ABC /* line_WideBrokenSingle.png in Resources */,
 				D6C390020FA0D93400EFA56C /* sans.ttf in Resources */,
 				D6E30557105F8EE7009E6E7F /* tce_tools.png in Resources */,
