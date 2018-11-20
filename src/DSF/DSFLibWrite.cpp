@@ -841,7 +841,7 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 	int shared = 0;
 	for(DSFSharedPointPoolMap::iterator i = terrainPool.begin(); i != terrainPool.end(); ++i)
 		shared += i->second.Count();
-	printf("Contiguous vertices: %d.  Individual vertices: %d (%d)\n", total_prim_v_contig, total_prim_v_shared, shared);
+	printf("%s: Contiguous vertices: %d.  Individual vertices: %d (%d)\n", inPath, total_prim_v_contig, total_prim_v_shared, shared);
 #endif
 
 	// Compact final pool data.
@@ -1170,12 +1170,14 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 		vectorPoolCurved.WriteScaleAtoms(fi, def_PointScale32Atom);
 	}
 
+#if !TYLER_MODE
 	printf("3-d Objs pool starts at: %d\n", offset_to_3d_objs);
 	for (TPDOM::iterator i = offset_to_terrain_pool_of_depth.begin(); i != offset_to_terrain_pool_of_depth.end(); ++i)
 		printf("Terrain pool depth %d starts at %d\n", i->first, i->second);
 	for (TPDOM::iterator i = offset_to_poly_pool_of_depth.begin(); i != offset_to_poly_pool_of_depth.end(); ++i)
 		printf("Poly pool depth %d starts at %d\n", i->first, i->second);
 	printf("next pool would be at %d\n", last_pool_offset);
+#endif
 
 
 	/************************************************************************************************************/
@@ -1404,8 +1406,8 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 		}
 
 #if ENCODING_STATS
-		printf("Total cross-pool primitives: %d.  Total range primitives: %d.  Total enumerated primitives: %d.\n",
-			total_prim_p_crosspool,total_prim_p_range, total_prim_p_individual);
+		printf("%s: Total cross-pool primitives: %d.  Total range primitives: %d.  Total enumerated primitives: %d.\n",
+				inPath, total_prim_p_crosspool, total_prim_p_range, total_prim_p_individual);
 #endif
 
 

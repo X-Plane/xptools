@@ -37,7 +37,6 @@
 #include "WED_Document.h"
 
 
-#if TYLER_MODE || 1
 #include "WED_RampPosition.h"
 #include "WED_TruckDestination.h"
 #include "WED_TruckParkingLocation.h"
@@ -48,7 +47,6 @@
 #include "WED_Validate.h"
 #include "WED_Airport.h"
 #include "WED_ObjPlacement.h"
-#endif
 
 void	WED_ExportPackToPath(WED_Thing * root, IResolver * resolver, const string& in_path, set<WED_Thing *>& problem_children)
 {

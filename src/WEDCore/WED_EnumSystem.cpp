@@ -234,7 +234,7 @@ int					ENUM_LookupDesc(int domain, const char * value)
 	map<pair<int,string>, int>::iterator i = sEnumsReverse.find(pair<int,string>(domain,v));
 	if (i == sEnumsReverse.end())	
 	{
-#if DEV
+#if DEV && !TYLER_MODE
 		printf("Cannot find enum '%s' in domain %d\n",value, domain);
 #endif
 		return -1;
