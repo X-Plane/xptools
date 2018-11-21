@@ -65,10 +65,10 @@ void PointSequenceToVector(
 			vector<Point2>&			pts,
 			bool					get_uv,
 			vector<int>&			contours,
-			int						is_hole)
+			int						is_hole,
+			bool					dupFirst)
 {
 	int n = ps->GetNumSides();
-	double zb[4]; z->GetPixelBounds(zb[0], zb[1], zb[2], zb[3]);
 
 	for (int i = 0; i < n; ++i)
 	{
@@ -92,7 +92,7 @@ void PointSequenceToVector(
 				contours.push_back((k == 0 && i == 0) ? is_hole : 0);
 			}
 
-			if (i == n-1 && !ps->IsClosed())
+			if (i == n-1 && (!ps->IsClosed() || dupFirst))
 			{
 							pts.push_back(b.p2);
 				if(get_uv)	pts.push_back(buv.p2);
@@ -104,7 +104,7 @@ void PointSequenceToVector(
 							pts.push_back(z->LLToPixel(b.p1));
 			if(get_uv)		pts.push_back(buv.p1);
 			contours.push_back(i == 0 ? is_hole : 0);
-			if (i == n-1 && !ps->IsClosed())
+			if (i == n-1 && (!ps->IsClosed() || dupFirst))
 			{
 							pts.push_back(z->LLToPixel(b.p2));
 				if(get_uv)	pts.push_back(buv.p2);
@@ -482,6 +482,14 @@ void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count, const 
 		glLineStipple(1,0x7000);
 		glShapeOffset2v(GL_LINE_STRIP, pts, count, -5);
 		break;
+	default:
+		if(ENUM_Export(*a) < 100)
+		{
+			glColor4f(1,1,1,1);
+			glLineWidth(1);
+			glDisable(GL_LINE_STIPPLE);
+			glShape2v(GL_LINE_STRIP, pts, count);
+		}
 	}
 
 	glLineWidth(1);

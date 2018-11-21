@@ -65,10 +65,8 @@
     <ClCompile Include="..\..\src\Obj\ObjConvert.cpp" />
     <ClCompile Include="..\..\src\Obj\ObjDraw.cpp" />
     <ClCompile Include="..\..\src\Obj\ObjPointPool.cpp" />
-    <ClCompile Include="..\..\src\Obj\XObjBuilder.cpp" />
     <ClCompile Include="..\..\src\Obj\XObjDefs.cpp" />
     <ClCompile Include="..\..\src\Obj\XObjReadWrite.cpp" />
-    <ClCompile Include="..\..\src\Obj\XObjWriteEmbedded.cpp" />
     <ClCompile Include="..\..\src\OGLE\ogle.cpp" />
     <ClCompile Include="..\..\src\UI\XWin.win.cpp" />
     <ClCompile Include="..\..\src\UI\XWin32DND.cpp" />
@@ -244,6 +242,7 @@
     <ClCompile Include="..\..\src\WEDWindows\WED_GroupCommands.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_HierarchyFilterBar.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_LibraryFilterBar.cpp" />
+    <ClCompile Include="..\..\src\WEDWindows\WED_Line_Selector.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_Menus.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_PackageListAdapter.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_PackageStatusPane.cpp" />
@@ -325,10 +324,8 @@
     <ClInclude Include="..\..\src\Obj\ObjDraw.h" />
     <ClInclude Include="..\..\src\Obj\ObjPointPool.h" />
     <ClInclude Include="..\..\src\Obj\XDefs.h" />
-    <ClInclude Include="..\..\src\Obj\XObjBuilder.h" />
     <ClInclude Include="..\..\src\Obj\XObjDefs.h" />
     <ClInclude Include="..\..\src\Obj\XObjReadWrite.h" />
-    <ClInclude Include="..\..\src\Obj\XObjWriteEmbedded.h" />
     <ClInclude Include="..\..\src\OGLE\ogle.h" />
     <ClInclude Include="..\..\src\UI\XWin.h" />
     <ClInclude Include="..\..\src\UI\XWin32DND.h" />
@@ -505,6 +502,7 @@
     <ClInclude Include="..\..\src\WEDWindows\WED_GroupCommands.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_HierarchyFilterBar.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_LibraryFilterBar.h" />
+    <ClInclude Include="..\..\src\WEDWindows\WED_Line_Selector.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_Menus.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_PackageListAdapter.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_PackageStatusPane.h" />

@@ -13,18 +13,48 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 1.7.0 r3
-	- fix bezier handle rotation in TCE windows vertex tool
-	- WED-1006: adjust airport overall size validation for lattitude
-	- WED-1007: fix inability to export to DSF w/validation warnings present
-	- WED-1008: prevent ability to open multiple validation windows on OSX
-	- WED-943,1003 fix crashes on export of certain Draped Runway Signs
-	- WED 1009: fix crash on OSX when exporting Orthophotos
+WED 1.8.0
+	- add your stuff above this line
 
-WED 1.7.0 r2 3/29/18
-	- WED-1001: fix crash when clearing hierarchy search box
-	- fix bug (windows only) preventing gateway submission for some users
-	- Fix for infinite loop when word-wrapping long strings that have no newlines
+WED 1.7.1 r2 8/1/18
+	- Fixed bug when splitting facades
+
+WED 1.7.1 r1 7/17/18
+	- WED-1054: Fix multi-property edits (ALT-click) not working with new line/light GUI selection
+	- Fix issue creating malformed polygon after merging two open facades
+
+WED 1.7.1 b2 7/13/18
+	- WED-1052: Fix "New" button hanging under windows
+	- WED-1040: Fix crash when validating un-parseable runway names under Windows
+
+WED 1.7.1 b1
+	Bug Fixes:
+	- WED-1018: Make validation for at least one run/sealane, heliport specific to airport type
+	- fix typo in CCW wound polygon error text
+	- WED-1024: Prevent some nodes turning into Bezier nodes after Marquee tool rotations under OSX
+	- WED-1032: Raise non-modal windows at re-activation to foreground (Windows, Lin/OSX do that already)
+	- WED-1000: Fix window deactivation issue on Linux
+	- WED-1036: Keep "Upgrade Ramps" from altering ramp start OpsType if such is already set
+	- Fix preview panel display for lines w/ multiple, differing width layers
+	- Validate Datum meta tags to be within the airport's bounding box
+	- Make listing order leading-numbers sensitive, so 10_line.lin is listed below 2_line.lin
+	- WED-1042: Suppress listing of .ags and .agb in the library pane until proper support for these is added
+	- Fix splitting of bezier segments for curves that run nearly vertical
+	- Fix symbolic links for directories not recognized with certain versions of mfc100.dll
+
+	Features:
+	- Add pre-select for 'Split Walls' when placing facades
+	- Split line/area features into 2 separate things (select non-adjacent nodes, Edit->Split)
+	- Merge two line features into one (select end-nodes Edit-Merge)
+	- Merge two area features into one (select 2 nodes in each, Edit-Merge)
+	- Convert taxiline open/closed (select single node, Edit->Split or endpoints, Edit->Merge)
+	- Add matching of two line/area objects (select both objects, snap 2 nodes, Edit->Match Bezier Handles)
+	- Create parallel running bezier curved lines (duplicate bezier curve, shift-drag one of its segments)
+	- Real-time preview of lines, strings and taxilines on the map
+	- WED-1039: support new line & light types for taxilines if available in LR default libraries
+	- WED-998: Extend hierarchical locking effectiveness, highlight interior of selected items, confirm moving airports
+	- Make taxiway & taxiline "lights", "lines" attributes selectable with the hierarchy pane filter function
+	- WED-1013: Drag & scale operations use projection, prevents distortion when moving across large latitude range
 
 WED 1.7.0 r1 3/17/18
 	- WED-995: fix update of runway textures & properties not showing immediately
@@ -43,22 +73,22 @@ WED 1.7.0 Beta1 2/26/18
 	- WED-515: Validate polygons (incl. holes), Apt Boundaries for crossing & self-intersecting segments
 	- WED-774: Smart Runway Rename: automatically fix TaxiSigns, Flows, Rules & Taxi Routes upon rwy name changes
 	- WED-898: Improve flow validation: each flow must have at least one departure and one arrival rwy specified  
-	- XSG-8227: Validate runway names and locations against list of CIFP required rwys obtained from gateway
-	- WED-918: Print units expected along with property value for ATCFow Ceiling & Visibility, ATCWindRule wind speed
-	- WED-761: Bring up warning box if the apt.dat is imported for gateway scenery airports
-	- WED-926: Allow viewving of full/long property name by clicking on it
+	- XSG-8227: Validate runway names and locations against list of CIFP required rwys obtained from Gateway
+	- WED-918: Print units expected along with property value for ATCFlow Ceiling & Visibility, ATCWindRule wind speed
+	- WED-761: Bring up warning box if the apt.dat is imported for Gateway scenery airports
+	- WED-926: Allow viewing of full/long property name by clicking on it
 	- WED-954: Bring ATC taxi route validations inline with other validations and report in validation_error.txt
-	- WED-938: Add validation *warnings* if the airport name include akronyms, ICAO codes or the word 'Airport'
-	- XPD-8201: Clearify runway REIL property name by including the word 'strobes'
-	- Warn about unreleased X-plane versions at gateway export
-	- Include X-plane version info as "validatedAgainst" = "11.10b8" in JSON string for gatewy submissions
-	- Flow editing enhancements: Preset METAR ICAO, create meaningfull wind/time rules names
+	- WED-938: Add validation *warnings* if the airport name include acronyms, ICAO codes or the word 'Airport'
+	- XPD-8201: Clarify runway REIL property name by including the word 'strobes'
+	- Warn about unreleased X-plane versions at Gateway export
+	- Include X-plane version info as "validatedAgainst" = "11.10b8" in JSON string for Gateway submissions
+	- Flow editing enhancements: Preset METAR ICAO, create meaningful wind/time rules names
 	- geotiff import enhancements: decode almost any format currently use to encode coordinates, not only WGS84
 	- Previews allow to cycle through all variants for multi-exported items
 	- Previews show textual info on many objects
-	- Primitve, incomplete type 1 facade preview
+	- Primitive, incomplete type 1 facade preview
 	- Validation errors and warnings come up in a browser window to access full list of messages
-	- WED-973: change single-click selection to go by type-basaed priority rather than design hierachy
+	- WED-973: change single-click selection to go by type-based priority rather than design hierarchy
 	- show green shadow around flinear fill mode forests, aka Facade wall selection
 	- WED-912: Warn about airports currently not accepting submissions at Gateway im/export
 	- WED-929: Print names of ATC Taxiroutes in ATC+Taxi view
@@ -87,44 +117,44 @@ WED 1.7.0 Beta1 2/26/18
 	
 WED 1.6.1r1 12/11/17
 	Features:
-	- XPD-8877: Validation change to allow some XP 11.10 draped orthos on gateway
+	- XPD-8877: Validation change to allow some XP 11.10 draped orthos on Gateway
 	- WED-837: Add new Library Filter "Newly Release Items", hide libraries w/no public resources
 	- WED-825: Add meta-tags and validation for 'local_code' and 'local_authorithy'
-	- WED-899: Add categorie 'SEMI-DEPRECATED' for library.txt
+	- WED-899: Add category 'SEMI-DEPRECATED' for library.txt
 	Bug fixes:
-	- XSG-3343: Stop changing ATC taxi runway segment width, when already set, upon gateway/apt.dat import
+	- XSG-3343: Stop changing ATC taxi runway segment width, when already set, upon Gateway/apt.dat import
 	- WED 888: Make "Vehicles Drive on Left" airport property readable 
 	- WED-855: Fix taxi sign editor problems with separator glyphs
 	- WED-903: Fix missing texturing in WED for .OBJ that use ATTR_draped with TEXTURE and no TEXTURE_DRAPED commands.
-	- WED-909: Rename 'ICAO Identifier' to 'Airport ID' for consistency with the gateway
-	- WED-910: Fix crash at import of erroneous apt.dat or gateway airport that were created with WED 1.6.0 beta1
+	- WED-909: Rename 'ICAO Identifier' to 'Airport ID' for consistency with the Gateway
+	- WED-910: Fix crash at import of erroneous apt.dat or Gateway airport that were created with WED 1.6.0 beta1
 	- Increase number of different facade walls selectable from 10 to 16
 
 WED 1.6r1 6/7/17
 	Bug fixes
 	- WED-787: Prevent apt.dat read in from deleting co-located non-bezier nodes
 	- WED-872: Validation test to ensure that if there are truck parking location(s), there are also ground truck taxi routes present
-	- WED-854: Hiearchry search filter now also searches and matches object's resources
-	- WED-836: EXPORT_BACKUP directively was previously not respected
+	- WED-854: Hierarchy search filter now also searches and matches object's resources
+	- WED-836: EXPORT_BACKUP directive was previously not respected
 	- WED-860: Improper color used for ground trucks route and taxi route
 	- WED-864: Adds special order of AptIE imports and separates out ground truck routes and aircraft taxi routes into two categories.
 	- WED-559: Bezier nodes can't be edited on Mac.
 	- WED-776: Disabled .net resources in resource list until we ship roads.
 	- WED-852: Fixed crash when dragging vertices out of their container polygons by accident.
-	- WED-851: Fixed crash when importaing apt.dat in full screen mode on Mac OS.
+	- WED-851: Fixed crash when importing apt.dat in full screen mode on Mac OS.
 	- WED-828: Fixed marquee bounds drawing wrong after multiple undo of resizing a polygon.
 	- WED-845: Fixed crash when corner of photo reference image is deleted by accident.
-	- Preformance Boost: Unneci-A srcssary drawing removed when the hierachry search filter is in use
+	- Performance Boost: Unnecessary drawing removed when the hierarchy search filter is in use
 	- Added support for trucks-drive-on-left meta-tag for v11 airports.
 	- Added validation to detect corrupt UV-map coordinates on orthophotos.
 
 WED 1.6b2 5/1/17
 	Bug fixes:
-	- WED-766: extend validation error message to clearify corrective action
-	- WED-767: prevent uncommanded rotation OrthoPhotos placed in WED 1.5
+	- WED-766: extend validation error message to clarify corrective action
+	- WED-767: prevent uncommanded rotation of OrthoPhotos placed in WED 1.5
 	- WED-758: recognize .jpeg and .tiff as valid image suffixes
 	- WED-757: fix jpg compressed GeoTiff's imported upside down
-	- WED-784: import WED 1.5 created DrapedOrthos with redraping turned off
+	- WED-784: import WED 1.5-created DrapedOrthos with re-draping turned off
         - WED-565: Add validation for Airport name and ICAO identifier
         - WED-760: Check XSystem path upon submission to be a valid X-plane base directory
 	- WED-780: Fixed WED crashing on tooltips longer than 80 characters on Windows
@@ -137,7 +167,7 @@ WED 1.6.0a3 12/17/16
 	Bug fixes:
 	- WED-746: Split algorithm is buggy, was replaced
 	- WED-728: No more crash in rare undo of edge split
-	- Updates the about box with better formated credits
+	- Updates the about box with better formatted credits
 	- WED-762: Remove strange characters when previewing .obj definitions
 
 WED 1.6.0a2 12/13/16
@@ -154,8 +184,8 @@ WED 1.6.0a1 12/02/16
 	- WED-726: enable processing of library.txt file paths including spaces 
 	- WED-724: Prevent cursor in TaxiSignEditor changing due to items in windows underneath it
 	- WED-712, WED-531, WED-367: Reverse function will now preserve line/light attributes on airport lines and taxiways
-	- WED-701: Print debugging info to console if airport meta data download from gateway is corrupt
-	- WED-605: Adding WordWrap to make full gateway server error messages readable
+	- WED-701: Print debugging info to console if airport meta data download from Gateway is corrupt
+	- WED-605: Adding WordWrap to make full Gateway server error messages readable
 	- WED-567: Adding validation for CW wound polygons to prevent crashes on DSF export
 	- WED-726: enable processing of library.txt file paths including spaces 
 	- WED-740,741,743,744,730,736,747,753: internal issues during WED 1.6 development
@@ -181,11 +211,11 @@ WED 1.6.0a1 12/02/16
 			holding CTRL-Key while dragging a edge line moves the segment in parallel.
 	- WED-710: Show runway numbers in map view
 	- WED-704: Validate parameters in ATC flow, wind & time rules to be XP-legal
-	- WED-696: Validate (gateway only) land airports to have a airport boundary
+	- WED-696: Validate (Gateway only) land airports to have a airport boundary
 	- WED-430: Display a scale bar at bottom of map view
 	- WED-297,364,491: Preview line definitions in LinraryPreviewPane
-	- WED-285: Add search bar for items in the right side hierachy pane
-	- WED-42, WED-183: Preview forest definitions in LinraryPreviewPane
+	- WED-285: Add search bar for items in the right side hierarchy pane
+	- WED-42, WED-183: Preview forest definitions in LibraryPreviewPane
 	- XSG-2043, XSG-1964: Display 'hitbox" ATC Runway validation error.
 
 WED 1.5.1r1 10/11/16
@@ -253,7 +283,7 @@ WED 1.5b2 8/31/16
 	- WED-607: Fixed load of legacy packs
 	- WED-602: Flows allow decimals in minimum visibility field
 	- WED-594: Metric spacing in facades, strings and objects follows UI feet/meters display
-	- WED-584: Restored file-cleanup on gateway import
+	- WED-584: Restored file-cleanup on Gateway import
 	- WED-580: Leave ATC layer off when we start
 	- WED-575: Restored +/- zoom
 	- WED-517: Fixed cut-copy-paste in Gateway upload box
@@ -303,7 +333,7 @@ WED 1.5b1 7/13/16
 	- ICAO filtering implemented in DSFs
 	- Merge command merges clusters of ATC nodes
 	- Option-click splits bezier as well as linear edges
-	- Support for AG-type mesh declarations in the gateway importer's search bar
+	- Support for AG-type mesh declarations in the Gateway importer's search bar
 	- Gateway Import/Export dialog boxes show message that a file is loading from the hard drive instead of presenting a blank screen
 
 WED 1.4.1r1 12/17/15
@@ -326,7 +356,7 @@ WED 1.4r2 6/3/15
 			 
 			 Turned off verbose CURL logging.
 			 
-			 Added parent ID to gateway version import table.
+			 Added parent ID to Gateway version import table.
 			 
 			 Improved responsiveness of airport list download slightly.
 			 
@@ -336,13 +366,13 @@ WED 1.4r1 5/30/15
 
 	WED-383: ATC layout validations are run as part of main validations
 
-	WED-433: fixed alignment of art assets that are not powers of tow.
+	WED-433: fixed alignment of art assets that are not powers of two.
 
 	WED-434: fixed skewed RGB jpegs on Mac/Linux
 
-	WED-428: fixed misaligned text when uploading to gateway on Linux
+	WED-428: fixed misaligned text when uploading to Gateway on Linux
 
-			 Updated SSL certificate to match new X-Plane scenery gateway 
+			 Updated SSL certificate to match new X-Plane scenery Gateway 
 			 certificate.
 
 WED 1.4b2 3/31/15
