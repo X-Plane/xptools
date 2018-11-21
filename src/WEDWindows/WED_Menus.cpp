@@ -94,7 +94,7 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	"&Copy",				'C',	gui_ControlFlag,				0,	gui_Copy		},
 {	"&Paste",				'V',	gui_ControlFlag,				0,	gui_Paste		},
 {	"Cl&ear",				0,		0,								0,	gui_Clear		},	// we could use GUI_KEY_DELETE but having del as cmd key screws up text fields.
-{	"&Duplicate",			'D',	gui_ControlFlag+gui_ShiftFlag,	0,	gui_Duplicate	},
+{	"&Duplicate",			0,	    0,                          	0,	0           	},
 {	"-",					0,  	0,								0,	0				},
 {	"&Group",				'G',	gui_ControlFlag,				0,	wed_Group		},
 {	"U&ngroup",				'G'	,	gui_ControlFlag+gui_ShiftFlag,	0,	wed_Ungroup		},
@@ -123,6 +123,12 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	"Explode Special Agps",   0,    0,                              0,  wed_BreakApartSpecialAgps  },
 {	"Replace Vehicle Objects", 0,	0,								0,  wed_ReplaceVehicleObj	},
 {	NULL,					0,		0,								0,	0				},
+};
+
+static const GUI_MenuItem_t kDuplicateMenu[] = {
+{	"&Duplicate in place",		'D',gui_ControlFlag+gui_ShiftFlag,0,gui_Duplicate	    },
+{	"Copy into current airport",0,	0,							0,	wed_CopyToAirport   },
+{	NULL,						0,	0,							0,	0					}
 };
 
 static const GUI_MenuItem_t kConvertToMenu[] = {
@@ -289,6 +295,9 @@ void WED_MakeMenus(GUI_Application * inApp)
 
 	GUI_Menu edit_menu = inApp->CreateMenu(
 		"&Edit", kEditMenu, inApp->GetMenuBar(), 0);
+
+	GUI_Menu duplicate_menu = inApp->CreateMenu(
+		"Duplicate", kDuplicateMenu, edit_menu, 7);
 
 	GUI_Menu convert_to_menu = inApp->CreateMenu(
 #if AIRPORT_ROUTING

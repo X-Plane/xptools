@@ -14,6 +14,8 @@ menu to view it online.
 CHANGE HISTORY
 
 WED 1.8.0 a2
+    Features:
+    - WED-1029: New flavor of duplicate command to support Julians LEGO 'modules'
 	Bug Fixes:
 	- Opening pre-WED 1.8 xml files won't always convert ATC frequencies to propper 8.33k values
 	- add missing NDB icon to OSX app bundle
