@@ -15,6 +15,7 @@ CHANGE HISTORY
 
 WED 1.8.0 a3 11/21/18
     Features:
+    - leave exportTarget = "Gateway" after gateway export failed for validation errors
     - WED-1029: New flavor of duplicate command to support Julians LEGO 'modules'
     - WED-1020: support X-Plane 1130 apt.dat format: 8.33kHz channel ATC frequencies
     - validate Runway Use Departure Frequency has matching ATC Departure Frequency
