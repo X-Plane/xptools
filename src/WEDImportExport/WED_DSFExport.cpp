@@ -81,7 +81,7 @@ int zip_printf(void * fi, const char * fmt, ...)
 	char tmp[4000];
 	int l = vsprintf(tmp,fmt,args);
 	va_end(args);
-	
+
 	zipWriteInFileInZip((zipFile) fi, tmp, l);
 	return l;
 }
@@ -139,7 +139,7 @@ static void gentle_crop(Point2& p, const Bbox2& bounds, bool& hard_crop)
 {
 	Point2 op(p);
 	p = bounds.clamp(p);
-	if(op != p) 
+	if(op != p)
 		hard_crop = true;
 }
 
@@ -155,9 +155,9 @@ static bool is_backout_path(const string& p)
 {
 	vector<string> comps;
 	tokenize_string_func(p.begin(), p.end(), back_inserter(comps), is_dir_sep);
-	
-	comps.erase(remove(comps.begin(),comps.end(),string(".")),comps.end());	
-	
+
+	comps.erase(remove(comps.begin(),comps.end(),string(".")),comps.end());
+
 	bool did_work = false;
 	do {
 		did_work = false;
@@ -168,9 +168,9 @@ static bool is_backout_path(const string& p)
 			comps.erase(comps.begin()+i-1,comps.begin()+i+1);
 			did_work = true;
 			break;
-		}	
+		}
 	} while(did_work);
-	
+
 	for(int i = 0; i < comps.size(); ++i)
 	{
 		if(comps[i] == string(".."))
@@ -210,7 +210,7 @@ public:
 		int end_level;
 		int subtype;
 		vector<Bezier2>	path;
-		
+
 		bool level_is_uniform() { return start_level == end_level; }
 		int level_for_node(int n)
 		{
@@ -225,7 +225,7 @@ public:
 	node_index				m_node_index;
 	vector<node>			m_nodes;
 	vector<edge>			m_edges;
-	
+
 	void add_segment(WED_RoadEdge * e);
 
 	void remove_dupes();
@@ -244,7 +244,7 @@ void dsf_road_grid_helper::add_segment(WED_RoadEdge * e)
 
 	node_index::iterator si = m_node_index.find(start);
 	node_index::iterator ei = m_node_index.find(end);
-	
+
 	edge new_edge;
 	new_edge.start_level = e->GetStartLayer();
 	new_edge.end_level = e->GetEndLayer();
@@ -259,7 +259,7 @@ void dsf_road_grid_helper::add_segment(WED_RoadEdge * e)
 	{
 		new_edge.start_node = si->second;
 	}
-	
+
 	if(ei == m_node_index.end())
 	{
 		new_edge.end_node = m_nodes.size();
@@ -270,10 +270,10 @@ void dsf_road_grid_helper::add_segment(WED_RoadEdge * e)
 	{
 		new_edge.end_node = ei->second;
 	}
-	
+
 	m_nodes[si->second].edges.push_back(m_edges.size());
 	m_nodes[ei->second].edges.push_back(m_edges.size());
-	
+
 	Bezier2 b;
 	if(e->GetSide(gis_Geo, 0, b)) // We are a real bezier:
 	{
@@ -287,7 +287,7 @@ void dsf_road_grid_helper::add_segment(WED_RoadEdge * e)
 		}
 	}
 	new_edge.path.push_back(b);
-	
+
 	m_edges.push_back(new_edge);
 }
 
@@ -305,7 +305,7 @@ void dsf_road_grid_helper::remove_dupes()
 			{
 				edge * ee1 = &m_edges[e1];
 				edge * ee2 = &m_edges[e2];
-				
+
 				if(ee1->level_is_uniform() && ee2->level_is_uniform())
 				if(ee1->level_for_node(n) == ee2->level_for_node(n) && ee1->subtype == ee2->subtype)	// Only merge if level and subtype matches
 				{
@@ -313,10 +313,10 @@ void dsf_road_grid_helper::remove_dupes()
 					DebugAssert(ee2->start_node == n || ee2->end_node == n);
 					DebugAssert(ee1->start_node != n || ee1->end_node != n);
 					DebugAssert(ee2->start_node != n || ee2->end_node != n);
-					
+
 					int incoming1 = ee1->end_node == n;
 					int incoming2 = ee2->end_node == n;
-					
+
 					if(incoming1 != incoming2)									// Only merge if one is in and one is out - so direction isn't reversed.
 					{
 						if(!incoming1)
@@ -330,7 +330,7 @@ void dsf_road_grid_helper::remove_dupes()
 						// Now we have e1->e2 for sure
 						// merge 1 then 2
 						DebugAssert(ee1->end_node == ee2->start_node);
-						
+
 						// Find the final destination of e2, and mark it as having e1 coming in.
 						node * dest = &m_nodes[ee2->end_node];
 						vector<int>::iterator i = find(dest->edges.begin(), dest->edges.end(), e2);
@@ -339,9 +339,9 @@ void dsf_road_grid_helper::remove_dupes()
 						{
 							*i = e1;
 						}
-						
+
 						// Now merge - ee1 get's ee2's path and destination
-						
+
 						ee1->path.insert(ee1->path.end(),ee2->path.begin(), ee2->path.end());
 						ee1->end_node = ee2->end_node;
 						ee1->end_level = ee2->end_level;
@@ -350,7 +350,7 @@ void dsf_road_grid_helper::remove_dupes()
 						ee2->start_node = -1;
 						ee2->end_node = -1;
 						ee2->path.clear();
-						
+
 						// Mark ourselves as dead - no adjacent edges
 						m_nodes[n].edges.clear();
 					}
@@ -407,7 +407,7 @@ void dsf_road_grid_helper::export_to_dsf(
 				coords[2] = 0;
 				cbs->AddSegmentShapePoint_f(coords, false, writer);
 			}
-			
+
 			if(b->p1 != b->c1 || b->p2 != b->c2)
 			{
 				coords[2] = 1;
@@ -419,7 +419,7 @@ void dsf_road_grid_helper::export_to_dsf(
 				cbs->AddSegmentShapePoint_f(coords, false, writer);
 			}
 		}
-		
+
 		coords[2] = e->end_level;
 		coords[0] = e->path.back().p2.x();
 		coords[1] = e->path.back().p2.y();
@@ -458,11 +458,11 @@ struct	DSF_ResourceTable {
 #endif
 	vector<string>				filters;
 	map<string, int>			filter_idx;
-	
+
 	map<int, vector<pair<string, string> > > exclusions;
-	
+
 	int							cur_filter;
-	
+
 	int show_level_obj[7];
 	int show_level_pol[7];
 
@@ -508,7 +508,7 @@ struct	DSF_ResourceTable {
 			net_grids.push_back(dsf_road_grid_helper());
 			ret = net_defs.size()-1;
 		}
-		
+
 		list<dsf_road_grid_helper>::iterator it = net_grids.begin();
 		advance(it, ret);
 		return &*it;
@@ -522,7 +522,7 @@ struct	DSF_ResourceTable {
 		filters.push_back(icao_filter);
 		return filters.size()-1;
 	}
-	
+
 	void write_tables(DSFCallbacks_t& cbs, void * writer)
 	{
 		for(vector<string>::iterator s = obj_defs.begin(); s != obj_defs.end(); ++s)
@@ -564,7 +564,7 @@ struct	DSF_ResourceTable {
 				sprintf(buf,"%d/%d",i,show_level_pol[i]);
 				cbs.AcceptProperty_f("sim/require_facade", buf, writer);
 			}
-		}		
+		}
 
 	}
 };
@@ -584,7 +584,7 @@ static void strip_path(string& f)
 
 // stacking is lon, lat, control_lon, control_lat
 void assemble_dsf_pt(double c[4], const Point2& pt, const Point2 * bez, const Bbox2& bounds)
-{	
+{
 	Point2	p = pt;
 	gentle_crop(p, bounds, g_dropped_pts);
 	c[0] = p.x();
@@ -601,12 +601,12 @@ void assemble_dsf_pt(double c[4], const Point2& pt, const Point2 * bez, const Bb
 
 // DSF stacking is lon, lat, param, u, v
 void assemble_dsf_pt_param(double c[8], const Point2& pt, int pt_param, const Point2 * bez, const Bbox2& bounds)
-{	
+{
 	Point2	p = pt;
 	gentle_crop(p, bounds, g_dropped_pts);
 	c[0] = p.x();
 	c[1] = p.y();
-	
+
 	if(bez)
 	{
 		Point2 b = *bez;
@@ -615,27 +615,27 @@ void assemble_dsf_pt_param(double c[8], const Point2& pt, int pt_param, const Po
 		c[4] = b.y();
 	}
 	c[2] = pt_param;
-}	
+}
 
 // stacking is either:
 // lon, lat, u, v or
 // lon, lat, control lon, control lat, u, v, control u, control v
 void assemble_dsf_pt_uv(double c[8], const Point2& pt, const Point2& uv, const Point2 * bez, const Point2 * bez_uv, const Bbox2& bounds)
-{	
+{
 	Point2	p = pt;
 	gentle_crop(p, bounds, g_dropped_pts);
 	c[0] = p.x();
 	c[1] = p.y();
-	
+
 	DebugAssert((bez == NULL) == (bez_uv == NULL));
-	
+
 	if(bez)
 	{
 		Point2 b = *bez;
 		gentle_crop(b, bounds, g_dropped_pts);
 		c[2] = b.x();
 		c[3] = b.y();
-		
+
 		c[4] = uv.x();
 		c[5] = uv.y();
 		c[6] = bez_uv->x();
@@ -654,14 +654,14 @@ static void	DSF_AccumChainBezier(
 						vector<Bezier2>::const_iterator	start,
 						vector<Bezier2>::const_iterator	end,
 						const Bbox2&							bounds,
-						const DSFCallbacks_t *					cbs, 
+						const DSFCallbacks_t *					cbs,
 						void *									writer,
 						int										idx,
 						int										param,
-						int										auto_closed)						
+						int										auto_closed)
 {
 	vector<Bezier2>::const_iterator n = start;
-	
+
 	while(n != end)
 	{
 		vector<Bezier2>::const_iterator e = find_contiguous_beziers(n,end);
@@ -669,21 +669,21 @@ static void	DSF_AccumChainBezier(
 		{
 			cbs->BeginPolygon_f(idx, param, 4, writer);
 			cbs->BeginPolygonWinding_f(writer);
-			
+
 			double c[4];
 			vector<BezierPoint2>	pts,pts_triple;
 			BezierToBezierPointSeq(n,e,back_inserter(pts));
 			BezierPointSeqToTriple(pts.begin(),pts.end(),back_inserter(pts_triple));
-			
+
 			for(int i = 0; i < pts_triple.size(); ++i)
 			{
 				assemble_dsf_pt(c, pts_triple[i].pt, &pts_triple[i].hi, bounds);
 				if(!auto_closed || i != (pts_triple.size()-1))
 				{
 					cbs->AddPolygonPoint_f(c,writer);
-				}	
+				}
 			}
-			
+
 			cbs->EndPolygonWinding_f(writer);
 			cbs->EndPolygon_f(writer);
 		}
@@ -696,14 +696,14 @@ static void	DSF_AccumChainBezier(
 						vector<Bezier2p>::const_iterator		start,
 						vector<Bezier2p>::const_iterator		end,
 						const Bbox2&							bounds,
-						const DSFCallbacks_t *					cbs, 
+						const DSFCallbacks_t *					cbs,
 						void *									writer,
 						int										idx,
 						int										param,
-						int										auto_closed)						
+						int										auto_closed)
 {
 	vector<Bezier2p>::const_iterator n = start;
-	
+
 	while(n != end)
 	{
 		vector<Bezier2p>::const_iterator e = find_contiguous_beziers(n,end);
@@ -711,7 +711,7 @@ static void	DSF_AccumChainBezier(
 		{
 			cbs->BeginPolygon_f(idx, param, 5, writer);
 			cbs->BeginPolygonWinding_f(writer);
-			
+
 			double c[5];
 			vector<BezierPoint2p>	pts,pts_triple;
 			BezierToBezierPointSeq(n,e,back_inserter(pts));
@@ -719,17 +719,17 @@ static void	DSF_AccumChainBezier(
 
 			for(int i = 0; i < pts_triple.size(); ++i)
 			{
-				assemble_dsf_pt_param(c, 
-						pts_triple[i].pt, 
+				assemble_dsf_pt_param(c,
+						pts_triple[i].pt,
 						pts_triple[i].param,
-						&pts_triple[i].hi, 
+						&pts_triple[i].hi,
 						bounds);
 				if(!auto_closed || i != (pts_triple.size()-1))
 				{
-					cbs->AddPolygonPoint_f(c,writer);							
-				}	
+					cbs->AddPolygonPoint_f(c,writer);
+				}
 			}
-			
+
 			cbs->EndPolygonWinding_f(writer);
 			cbs->EndPolygon_f(writer);
 		}
@@ -740,10 +740,10 @@ static void	DSF_AccumChainBezier(
 
 
 static void	DSF_AccumChain(
-						vector<Segment2>::const_iterator	start,		// This is a list of segments that may or may not 
+						vector<Segment2>::const_iterator	start,		// This is a list of segments that may or may not
 						vector<Segment2>::const_iterator	end,		// be end-to-end.
 						const Bbox2&						bounds,
-						const DSFCallbacks_t *				cbs, 
+						const DSFCallbacks_t *				cbs,
 						void *								writer,
 						int									idx,
 						int									param,
@@ -755,7 +755,7 @@ static void	DSF_AccumChain(
 		next = i;
 		++next;
 		double c[4];
-		
+
 		if(i == start)																	// First segment?  Open the primitive.
 		{
 			cbs->BeginPolygon_f(idx, param, 2, writer);
@@ -763,12 +763,12 @@ static void	DSF_AccumChain(
 		}
 
 		assemble_dsf_pt(c, i->source(), NULL, bounds);							// Start point _always_ written - it has the line type.
-		cbs->AddPolygonPoint_f(c,writer);			
+		cbs->AddPolygonPoint_f(c,writer);
 
 		if(next != end && i->target() != next->source())								// Discontinuity mid-line?  Write the end, close and open.
 		{
 			assemble_dsf_pt(c, i->target(), NULL, bounds);
-			cbs->AddPolygonPoint_f(c,writer);			
+			cbs->AddPolygonPoint_f(c,writer);
 			cbs->EndPolygonWinding_f(writer);
 			cbs->EndPolygon_f(writer);
 			cbs->BeginPolygon_f(idx, param, 2, writer);
@@ -777,24 +777,24 @@ static void	DSF_AccumChain(
 		else if(next == end && (i->target() != start->source() || !auto_closed))		// If we are ending AND we need a last point, write it.
 		{																				// We need that last pt if we are not closed or if the
 			assemble_dsf_pt(c, i->target(), NULL, bounds);						// closure is not part of the DSF
-			cbs->AddPolygonPoint_f(c,writer);			
-		}	
+			cbs->AddPolygonPoint_f(c,writer);
+		}
 
 		DebugAssert(!(next == end && i->target() != start->source() && auto_closed));	// If we are on the last segment but discontinuous back to the start AND we auto close, it's an error by the caller - segment lists that are auto-close must be, well, loops!
-		
+
 		if(next == end)																	// Always cap at end
 		{
 			cbs->EndPolygonWinding_f(writer);
 			cbs->EndPolygon_f(writer);
-		}	
-	}	
+		}
+	}
 }
 
 static void	DSF_AccumChain(
 						vector<Segment2p>::const_iterator	start,
 						vector<Segment2p>::const_iterator	end,
 						const Bbox2&						bounds,
-						const DSFCallbacks_t *				cbs, 
+						const DSFCallbacks_t *				cbs,
 						void *								writer,
 						int									idx,
 						int									param,
@@ -806,7 +806,7 @@ static void	DSF_AccumChain(
 		next = i;
 		++next;
 		double c[4];
-		
+
 		if(i == start)
 		{
 			cbs->BeginPolygon_f(idx, param, 3, writer);
@@ -815,13 +815,13 @@ static void	DSF_AccumChain(
 
 		assemble_dsf_pt(c, i->source(), NULL, bounds);
 		c[2] = i->param;
-		cbs->AddPolygonPoint_f(c,writer);			
+		cbs->AddPolygonPoint_f(c,writer);
 
 		if(next != end && i->target() != next->source())
 		{
 			assemble_dsf_pt(c, i->target(), NULL, bounds);
 			c[2] = i->param;
-			cbs->AddPolygonPoint_f(c,writer);			
+			cbs->AddPolygonPoint_f(c,writer);
 			cbs->EndPolygonWinding_f(writer);
 			cbs->EndPolygon_f(writer);
 			cbs->BeginPolygon_f(idx, param, 3, writer);
@@ -831,14 +831,14 @@ static void	DSF_AccumChain(
 		{
 			assemble_dsf_pt(c, i->target(), NULL, bounds);
 			c[2] = i->param;
-			cbs->AddPolygonPoint_f(c,writer);			
-		}	
-		
+			cbs->AddPolygonPoint_f(c,writer);
+		}
+
 		if(next == end)
 		{
 			cbs->EndPolygonWinding_f(writer);
 			cbs->EndPolygon_f(writer);
-		}	
+		}
 	}
 }
 
@@ -846,7 +846,7 @@ static void	DSF_AccumChain(
 void DSF_AccumPts(		vector<Point2>::const_iterator		begin,
 						vector<Point2>::const_iterator		end,
 						const Bbox2&						bounds,
-						const DSFCallbacks_t *				cbs, 
+						const DSFCallbacks_t *				cbs,
 						void *								writer,
 						int									idx,
 						int									param)
@@ -857,12 +857,12 @@ void DSF_AccumPts(		vector<Point2>::const_iterator		begin,
 	for(vector<Point2>::const_iterator i = begin; i != end; ++i)
 	{
 		assemble_dsf_pt(c, *i, NULL, bounds);
-		cbs->AddPolygonPoint_f(c,writer);			
+		cbs->AddPolygonPoint_f(c,writer);
 	}
-	
+
 	cbs->EndPolygonWinding_f(writer);
 	cbs->EndPolygon_f(writer);
-}				  
+}
 
 /************************************************************************************************************************************************
  * DSF EXPORT CENTRAL
@@ -871,117 +871,117 @@ void DSF_AccumPts(		vector<Point2>::const_iterator		begin,
 void DSF_AccumPolygonBezier(
 						BezierPolygon2&						poly,
 						const Bbox2&						bounds,
-						const DSFCallbacks_t *				cbs, 
+						const DSFCallbacks_t *				cbs,
 						void *								writer)
 {
 	vector<BezierPoint2>	pts, pts3;
-	
+
 	BezierToBezierPointSeq(poly.begin(),poly.end(),back_inserter(pts));
 	BezierPointSeqToTriple(pts.begin(),pts.end(),back_inserter(pts3));
 
 	DebugAssert(pts3.front() == pts3.back());
 	pts3.pop_back();
-	
+
 	for(int p = 0; p < pts3.size(); ++p)
-	{	
+	{
 		double crd[8];
 
 		assemble_dsf_pt(crd, pts3[p].pt, &pts3[p].hi, bounds);
-		cbs->AddPolygonPoint_f(crd,writer);		
+		cbs->AddPolygonPoint_f(crd,writer);
 	}
-}						
+}
 
 void DSF_AccumPolygonBezier(
 						const BezierPolygon2p&				poly,
 						const Bbox2&						bounds,
-						const DSFCallbacks_t *				cbs, 
+						const DSFCallbacks_t *				cbs,
 						void *								writer)
 {
 	vector<BezierPoint2p>	pts, pts3;
-	
+
 	BezierToBezierPointSeq(poly.begin(),poly.end(),back_inserter(pts));
 	BezierPointSeqToTriple(pts.begin(),pts.end(),back_inserter(pts3));
 
 	pts3.pop_back();
-	
+
 	for(int p = 0; p < pts3.size(); ++p)
-	{	
+	{
 		double crd[8];
 
 		assemble_dsf_pt_param(crd, pts3[p].pt, pts3[p].param, &pts3[p].hi, bounds);
-		cbs->AddPolygonPoint_f(crd,writer);		
+		cbs->AddPolygonPoint_f(crd,writer);
 	}
-}						
+}
 
 void DSF_AccumPolygonBezier(
 						const BezierPolygon2uv&				poly,
 						const Bbox2&						bounds,
-						const DSFCallbacks_t *				cbs, 
+						const DSFCallbacks_t *				cbs,
 						void *								writer)
 {
 	vector<BezierPoint2uv>	pts, pts3;
-	
+
 	BezierToBezierPointSeq(poly.begin(),poly.end(),back_inserter(pts));
 	BezierPointSeqToTriple(pts.begin(),pts.end(),back_inserter(pts3));
 
 	pts3.pop_back();
-	
+
 	for(int p = 0; p < pts3.size(); ++p)
-	{	
+	{
 		double crd[8];
 
 		assemble_dsf_pt_uv(crd, pts3[p].pt, pts3[p].uv.pt, &pts3[p].hi, &pts3[p].uv.hi, bounds);
-		cbs->AddPolygonPoint_f(crd,writer);		
+		cbs->AddPolygonPoint_f(crd,writer);
 	}
-}						
+}
 
 void DSF_AccumPolygon(
 						Polygon2&							poly,
 						const Bbox2&						bounds,
-						const DSFCallbacks_t *				cbs, 
+						const DSFCallbacks_t *				cbs,
 						void *								writer)
-{	
+{
 	for(Polygon2::iterator v = poly.begin(); v != poly.end(); ++v)
 	{
 		double c[4];
 		assemble_dsf_pt(c, *v, NULL, bounds);
 		cbs->AddPolygonPoint_f(c,writer);
 	}
-}						
+}
 
 void DSF_AccumPolygon(
 						const vector<Segment2p>&			poly,
 						const Bbox2&						bounds,
-						const DSFCallbacks_t *				cbs, 
+						const DSFCallbacks_t *				cbs,
 						void *								writer)
-{	
+{
 	for(vector<Segment2p>::const_iterator s = poly.begin(); s != poly.end(); ++s)
 	{
 		double c[4];
 		assemble_dsf_pt_param(c, s->source(), s->param, NULL, bounds);
 		cbs->AddPolygonPoint_f(c,writer);
 	}
-}						
+}
 
 void DSF_AccumPolygon(
 						const vector<Segment2uv>&			poly,
 						const Bbox2&						bounds,
-						const DSFCallbacks_t *				cbs, 
+						const DSFCallbacks_t *				cbs,
 						void *								writer)
-{	
+{
 	for(vector<Segment2uv>::const_iterator s = poly.begin(); s != poly.end(); ++s)
 	{
 		double c[4];
 		assemble_dsf_pt_uv(c, s->p1, s->uv.p1, NULL, NULL, bounds);
 		cbs->AddPolygonPoint_f(c,writer);
 	}
-}						
+}
 
 
 void DSF_AccumPolygonWithHolesBezier(
 						vector<BezierPolygon2>&				poly,
 						const Bbox2&						bounds,
-						const DSFCallbacks_t *				cbs, 
+						const DSFCallbacks_t *				cbs,
 						void *								writer)
 {
 	for(vector<BezierPolygon2>::iterator w = poly.begin(); w != poly.end(); ++w)
@@ -989,13 +989,13 @@ void DSF_AccumPolygonWithHolesBezier(
 		cbs->BeginPolygonWinding_f(writer);
 		DSF_AccumPolygonBezier(*w, bounds, cbs, writer);
 		cbs->EndPolygonWinding_f(writer);
-	}	
-}	
+	}
+}
 
 void DSF_AccumPolygonWithHolesBezier(
 						vector<BezierPolygon2p>&			poly,
 						const Bbox2&						bounds,
-						const DSFCallbacks_t *				cbs, 
+						const DSFCallbacks_t *				cbs,
 						void *								writer)
 {
 	for(int n = 0; n < poly.size(); ++n)
@@ -1004,12 +1004,12 @@ void DSF_AccumPolygonWithHolesBezier(
 		DSF_AccumPolygonBezier(poly[n], bounds, cbs, writer);
 		cbs->EndPolygonWinding_f(writer);
 	}
-}	
+}
 
 void DSF_AccumPolygonWithHolesBezier(
 						vector<BezierPolygon2uv>&			poly,
 						const Bbox2&						bounds,
-						const DSFCallbacks_t *				cbs, 
+						const DSFCallbacks_t *				cbs,
 						void *								writer)
 {
 	for(int n = 0; n < poly.size(); ++n)
@@ -1018,13 +1018,13 @@ void DSF_AccumPolygonWithHolesBezier(
 		DSF_AccumPolygonBezier(poly[n], bounds, cbs, writer);
 		cbs->EndPolygonWinding_f(writer);
 	}
-}	
+}
 
 
 void DSF_AccumPolygonWithHoles(
 						vector<Polygon2>&					poly,
 						const Bbox2&						bounds,
-						const DSFCallbacks_t *				cbs, 
+						const DSFCallbacks_t *				cbs,
 						void *								writer)
 {
 	for(vector<Polygon2>::iterator h = poly.begin(); h != poly.end(); ++h)
@@ -1032,14 +1032,14 @@ void DSF_AccumPolygonWithHoles(
 		cbs->BeginPolygonWinding_f(writer);
 		DSF_AccumPolygon(*h, bounds, cbs, writer);
 		cbs->EndPolygonWinding_f(writer);
-	}	
+	}
 
 }
 
 void DSF_AccumPolygonWithHoles(
 						vector<Polygon2p>&					poly,
 						const Bbox2&						bounds,
-						const DSFCallbacks_t *				cbs, 
+						const DSFCallbacks_t *				cbs,
 						void *								writer)
 {
 	for(int n = 0; n < poly.size(); ++n)
@@ -1053,7 +1053,7 @@ void DSF_AccumPolygonWithHoles(
 void DSF_AccumPolygonWithHoles(
 						vector<Polygon2uv>&					poly,
 						const Bbox2&						bounds,
-						const DSFCallbacks_t *				cbs, 
+						const DSFCallbacks_t *				cbs,
 						void *								writer)
 {
 	for(int n = 0; n < poly.size(); ++n)
@@ -1079,19 +1079,19 @@ static int	DSF_HeightRangeRecursive(WED_Thing * what, double& out_msl_min, doubl
 		if(!cbounds.overlap(bounds))
 			return -1;
 	}
-	
-	
+
+
 	if((obj = dynamic_cast<WED_ObjPlacement *>(what)) != NULL)
 	{
-#if AIRPORT_ROUTING	
+#if AIRPORT_ROUTING
 		if(obj->HasCustomMSL())
 		{
 			out_msl_min = out_msl_max = obj->GetCustomMSL();
 			return 1;
 		}
-#endif		
+#endif
 	}
-	
+
 	int found = 0;		// true if we found at least 1 min/max
 	int any_inside = 0;	// true if we found ANYTHING inside at all?
 	int nn = what->CountChildren();
@@ -1120,7 +1120,7 @@ static int	DSF_HeightRangeRecursive(WED_Thing * what, double& out_msl_min, doubl
 
 	if(!any_inside && ent && ent->GetGISClass() != gis_Composite)
 		return 0;
-	
+
 	return found ? 1 : (any_inside ? 0 : -1);
 }
 //A wrapper around MakePol to reduce the amount of repetition that goes on.
@@ -1133,12 +1133,12 @@ static void ExportPOL(const char * relativeDDSP, const char * relativePOLP, WED_
 	const char * n = relativeDDSP;
 	while(*p) { if (*p == '/' || *p == ':' || *p == '\\') n = p+1; ++p; }
 
-			
+
 	Point2 p1;
 	Point2 p2;
 	orth->GetOuterRing()->GetNthPoint(0)->GetLocation(gis_Geo,p1);
 	orth->GetOuterRing()->GetNthPoint(2)->GetLocation(gis_Geo,p2);
-			
+
 	float centerLat = (p2.y() + p1.y())/2;
 	float centerLon = (p2.x() + p1.x())/2;
 	//-------------------------------------------
@@ -1147,21 +1147,21 @@ static void ExportPOL(const char * relativeDDSP, const char * relativePOLP, WED_
 	rmgr->MakePol(relativePOLP,out_info);
 }
 
-//Returns -1 for abort, or n where n > 0 for the number of 
+//Returns -1 for abort, or n where n > 0 for the number of
 static int	DSF_ExportTileRecursive(
 						WED_Thing *					what,
 						IResolver *					resolver,
-						const string&				pkg, 
+						const string&				pkg,
 						const Bbox2&				cull_bounds,		// This is the area for which we are TRYING to get scenery.
 						const Bbox2&				safe_bounds,		// This is the 'safe' area into which we CAN write scenery without exploding.
-						DSF_ResourceTable&			io_table, 
-						const DSFCallbacks_t *		cbs, 
+						DSF_ResourceTable&			io_table,
+						const DSFCallbacks_t *		cbs,
 						void *						writer,
 						set<WED_Thing *>&			problem_children,
 						int							show_level)
 {
 	int real_thingies = 0;
-	
+
 	WED_ObjPlacement * obj;
 	WED_FacadePlacement * fac;
 	WED_ForestPlacement * fst;
@@ -1190,13 +1190,13 @@ static int	DSF_ExportTileRecursive(
 	}
 
 	IGISEntity * e = dynamic_cast<IGISEntity *>(what);
-	
+
 	Bbox2	ent_box;
 	e->GetBounds(gis_Geo,ent_box);
-	
+
 	if(!ent_box.overlap(cull_bounds))
 		return 0;
-		
+
 	Point2	centroid = ent_box.centroid();
 	bool centroid_ob = false;
 	if(centroid.x() < cull_bounds.xmin() ||
@@ -1211,9 +1211,9 @@ static int	DSF_ExportTileRecursive(
 	{
 		string id;
 		apt->GetICAO(id);
-		
+
 		int filter_idx = io_table.accum_filter(id.c_str());
-		
+
 		cbs->SetFilter_f(filter_idx,writer);
 		io_table.set_filter(filter_idx);
 	}
@@ -1226,10 +1226,10 @@ static int	DSF_ExportTileRecursive(
 		Point2 minp, maxp;
 		xcl->GetMin()->GetLocation(gis_Geo,minp);
 		xcl->GetMax()->GetLocation(gis_Geo,maxp);
-		
+
 		if(minp.x_ > maxp.x_)	swap(minp.x_, maxp.x_);
 		if(minp.y_ > maxp.y_)	swap(minp.y_, maxp.y_);
-		
+
 		for(set<int>::iterator xt = xtypes.begin(); xt != xtypes.end(); ++xt)
 		{
 			const char * pname = NULL;
@@ -1253,10 +1253,10 @@ static int	DSF_ExportTileRecursive(
 			}
 		}
 	}
-	
+
 	//------------------------------------------------------------------------------------------------------------
 	// OBJECT EXPORTER
-	//------------------------------------------------------------------------------------------------------------	
+	//------------------------------------------------------------------------------------------------------------
 
 	if((obj = dynamic_cast<WED_ObjPlacement *>(what)) != NULL)
 	if(show_level == obj->GetShowLevel())
@@ -1283,11 +1283,11 @@ static int	DSF_ExportTileRecursive(
 				cbs->AddObject_f(idx, xyrz, 3, writer);
 		}
 	}
-	
+
 	//------------------------------------------------------------------------------------------------------------
 	// FACADE EXPORTER
 	//------------------------------------------------------------------------------------------------------------
-	
+
 	if((fac = dynamic_cast<WED_FacadePlacement *>(what)) != NULL)
 	if(show_level == fac->GetShowLevel())
 	{
@@ -1295,7 +1295,7 @@ static int	DSF_ExportTileRecursive(
 		idx = io_table.accum_pol(r,show_level);
 		bool bez = WED_HasBezierPol(fac);
 		bool fac_is_auto_closed = fac->GetTopoMode() != WED_FacadePlacement::topo_Chain;
-		
+
 		if(fac->GetTopoMode() == WED_FacadePlacement::topo_Area && fac->HasCustomWalls())
 		{
 			if(bez)
@@ -1303,7 +1303,7 @@ static int	DSF_ExportTileRecursive(
 				vector<BezierPolygon2p>				fac_area;
 				vector<vector<BezierPolygon2p> >	fac_cut;
 				WED_BezierPolygonWithHolesForPolygon(fac, fac_area);
-				
+
 				if(gExportTarget < wet_xplane_1021)
 				{
 					if(!clip_polygon(fac_area,fac_cut,cull_bounds))
@@ -1311,14 +1311,14 @@ static int	DSF_ExportTileRecursive(
 						problem_children.insert(what);
 						fac_cut.clear();
 					}
-				} 
+				}
 				else if(!centroid_ob)
 					fac_cut.push_back(fac_area);
 
 				for(vector<vector<BezierPolygon2p> >::iterator i = fac_cut.begin(); i != fac_cut.end(); ++i)
-				{				
+				{
 					++real_thingies;
-					cbs->BeginPolygon_f(idx,fac->GetHeight(),5,writer);			
+					cbs->BeginPolygon_f(idx,fac->GetHeight(),5,writer);
 					DSF_AccumPolygonWithHolesBezier(*i, safe_bounds, cbs, writer);
 					cbs->EndPolygon_f(writer);
 				}
@@ -1334,7 +1334,7 @@ static int	DSF_ExportTileRecursive(
 					if (!clip_polygon(fac_area,fac_cut,cull_bounds))
 					{
 						fac_cut.clear();
-						problem_children.insert(what);						
+						problem_children.insert(what);
 					}
 				} else if(!centroid_ob)
 					fac_cut.push_back(fac_area);
@@ -1346,16 +1346,16 @@ static int	DSF_ExportTileRecursive(
 					DSF_AccumPolygonWithHoles(*i, safe_bounds, cbs, writer);
 					cbs->EndPolygon_f(writer);
 				}
-			}		
-		}		
+			}
+		}
 		else if(fac->GetTopoMode() == WED_FacadePlacement::topo_Area)
-		{		
+		{
 			if(bez)
 			{
 				vector<BezierPolygon2> fac_area;
 				vector<vector<BezierPolygon2> > fac_cut;
 				WED_BezierPolygonWithHolesForPolygon(fac, fac_area);
-				
+
 				if(gExportTarget < wet_xplane_1021)
 				{
 					if(!clip_polygon(fac_area,fac_cut,cull_bounds))
@@ -1366,11 +1366,11 @@ static int	DSF_ExportTileRecursive(
 				}
 				else if(!centroid_ob)
 					fac_cut.push_back(fac_area);
-			
+
 				for(vector<vector<BezierPolygon2> >::iterator i = fac_cut.begin(); i != fac_cut.end(); ++i)
-				{					
+				{
 					++real_thingies;
-					cbs->BeginPolygon_f(idx,fac->GetHeight(),4,writer);			
+					cbs->BeginPolygon_f(idx,fac->GetHeight(),4,writer);
 					DSF_AccumPolygonWithHolesBezier(*i, safe_bounds, cbs, writer);
 					cbs->EndPolygon_f(writer);
 				}
@@ -1386,11 +1386,11 @@ static int	DSF_ExportTileRecursive(
 					if (!clip_polygon(fac_area,fac_cut,cull_bounds))
 					{
 						fac_cut.clear();
-						problem_children.insert(what);					
+						problem_children.insert(what);
 					}
 				} else if(!centroid_ob)
 					fac_cut.push_back(fac_area);
-			
+
 				for(vector<vector<Polygon2> >::iterator i = fac_cut.begin(); i != fac_cut.end(); ++i)
 				{
 					++real_thingies;
@@ -1410,7 +1410,7 @@ static int	DSF_ExportTileRecursive(
 				if(bez)
 				{
 					vector<Bezier2p>	chain;
-				
+
 					WED_BezierVectorForPointSequence(seq,chain);
 					if(gExportTarget < wet_xplane_1021)
 						clip_segments(chain,cull_bounds);
@@ -1427,9 +1427,9 @@ static int	DSF_ExportTileRecursive(
 					}
 				}
 				else
-				{		
+				{
 					vector<Segment2p>	chain;
-				
+
 					WED_VectorForPointSequence(seq,chain);
 					// We normally reject zero length segments, but for grandfathered global airports, we'll try to clean this.
 					remove_all_zero_length_segments(chain);
@@ -1437,20 +1437,20 @@ static int	DSF_ExportTileRecursive(
 						clip_segments(chain,cull_bounds);
 					else if(centroid_ob)
 						chain.clear();
-					
+
 					if(!chain.empty())
-					{					
+					{
 						++real_thingies;
 						if(fac_is_auto_closed && bad_match(chain.front(),chain.back()))
 							problem_children.insert(what);
-						else						
+						else
 							DSF_AccumChain(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
 					}
 				}
 			}
 		}
 		else
-		{			
+		{
 			for(int h = -1; h < fac->GetNumHoles(); ++h)
 			{
 				IGISPointSequence * seq = (h == -1) ? fac->GetOuterRing() : fac->GetNthHole(h);
@@ -1458,7 +1458,7 @@ static int	DSF_ExportTileRecursive(
 				if(bez)
 				{
 					vector<Bezier2>	chain;
-				
+
 					WED_BezierVectorForPointSequence(seq,chain);
 					if(gExportTarget < wet_xplane_1021)
 						clip_segments(chain,cull_bounds);
@@ -1475,9 +1475,9 @@ static int	DSF_ExportTileRecursive(
 					}
 				}
 				else
-				{		
+				{
 					vector<Segment2>	chain;
-				
+
 					WED_VectorForPointSequence(seq,chain);
 					// We normally reject zero length segments, but for grandfathered global airports, we'll try to clean this.
 					remove_all_zero_length_segments(chain);
@@ -1497,7 +1497,7 @@ static int	DSF_ExportTileRecursive(
 			}
 		}
 	}
-	
+
 	//------------------------------------------------------------------------------------------------------------
 	// FOREST EXPORTER
 	//------------------------------------------------------------------------------------------------------------
@@ -1526,7 +1526,7 @@ static int	DSF_ExportTileRecursive(
 					fst_clipped.clear();
 					problem_children.insert(what);
 				}
-				
+
 				for(vector<vector<Polygon2> >::iterator i = fst_clipped.begin(); i != fst_clipped.end(); ++i)
 				{
 					++real_thingies;
@@ -1537,16 +1537,16 @@ static int	DSF_ExportTileRecursive(
 			}
 			break;
 		case dsf_fill_line:
-			{		
+			{
 				for(int h = -1; h < fst->GetNumHoles(); ++h)
 				{
 					IGISPointSequence * seq = (h == -1) ? fst->GetOuterRing() : fst->GetNthHole(h);
 					vector<Segment2>	chain;
-				
+
 					WED_VectorForPointSequence(seq,chain);
 					// We normally reject zero length segments, but for grandfathered global airports, we'll try to clean this.
 					remove_all_zero_length_segments(chain);
-				
+
 					clip_segments(chain, cull_bounds);
 					if(!chain.empty())
 					{
@@ -1561,7 +1561,7 @@ static int	DSF_ExportTileRecursive(
 			{
 				IGISPointSequence * seq = (h == -1) ? fst->GetOuterRing() : fst->GetNthHole(h);
 				vector<Point2>	pts;
-				
+
 				for(int p = 0; p < seq->GetNumPoints(); ++p)
 				{
 					Point2 x;
@@ -1578,14 +1578,14 @@ static int	DSF_ExportTileRecursive(
 				}
 			}
 			break;
-		}		
+		}
 	}
-	
+
 	//------------------------------------------------------------------------------------------------------------
 	// OBJ STRING EXPORTER
 	//------------------------------------------------------------------------------------------------------------
-	
-	
+
+
 	if((str = dynamic_cast<WED_StringPlacement *>(what)) != NULL)
 	if(show_level == 6)
 	{
@@ -1596,7 +1596,7 @@ static int	DSF_ExportTileRecursive(
 		if(bez)
 		{
 			vector<Bezier2>	chain;
-		
+
 			WED_BezierVectorForPointSequence(str,chain);
 			clip_segments(chain, cull_bounds);
 			if(!chain.empty())
@@ -1606,9 +1606,9 @@ static int	DSF_ExportTileRecursive(
 			}
 		}
 		else
-		{		
+		{
 			vector<Segment2>	chain;
-		
+
 			WED_VectorForPointSequence(str,chain);
 			// We normally reject zero length segments, but for grandfathered global airports, we'll try to clean this.
 			remove_all_zero_length_segments(chain);
@@ -1620,7 +1620,7 @@ static int	DSF_ExportTileRecursive(
 			}
 		}
 	}
-	
+
 	//------------------------------------------------------------------------------------------------------------
 	// OBJ LINE EXPORTER
 	//------------------------------------------------------------------------------------------------------------
@@ -1635,7 +1635,7 @@ static int	DSF_ExportTileRecursive(
 		if(bez)
 		{
 			vector<Bezier2>	chain;
-		
+
 			WED_BezierVectorForPointSequence(lin,chain);
 
 			clip_segments(chain, cull_bounds);
@@ -1668,9 +1668,9 @@ static int	DSF_ExportTileRecursive(
 			}
 		}
 		else
-		{		
+		{
 			vector<Segment2>	chain;
-		
+
 			WED_VectorForPointSequence(lin,chain);
 			// We normally reject zero length segments, but for grandfathered global airports, we'll try to clean this.
 			remove_all_zero_length_segments(chain);
@@ -1693,10 +1693,10 @@ static int	DSF_ExportTileRecursive(
 						chain.pop_back();
 					}
 				}
-				++real_thingies;					
+				++real_thingies;
 				if(closed && bad_match(chain.front(),chain.back()))
 				{
-					DebugAssert(!"We should not get here - it's a logic error, not a precision error!");			
+					DebugAssert(!"We should not get here - it's a logic error, not a precision error!");
 					problem_children.insert(what);
 				}
 				else
@@ -1720,7 +1720,7 @@ static int	DSF_ExportTileRecursive(
 		{
 			vector<BezierPolygon2>			pol_area;
 			vector<vector<BezierPolygon2> >	pol_cuts;
-			
+
 			WED_BezierPolygonWithHolesForPolygon(pol, pol_area);
 
 			if(!clip_polygon(pol_area,pol_cuts,cull_bounds))
@@ -1728,7 +1728,7 @@ static int	DSF_ExportTileRecursive(
 				problem_children.insert(what);
 				pol_cuts.clear();
 			}
-			
+
 			for(vector<vector<BezierPolygon2> >::iterator i = pol_cuts.begin(); i != pol_cuts.end(); ++i)
 			{
 				++real_thingies;
@@ -1748,7 +1748,7 @@ static int	DSF_ExportTileRecursive(
 			{
 				problem_children.insert(what);
 				pol_cuts.clear();
-				
+
 			}
 			for(vector<vector<Polygon2> >::iterator i = pol_cuts.begin(); i != pol_cuts.end(); ++i)
 			{
@@ -1759,11 +1759,11 @@ static int	DSF_ExportTileRecursive(
 			}
 		}
 	}
-	
+
 	//------------------------------------------------------------------------------------------------------------
 	// UV-MAPPED DRAPED POLYGON
 	//------------------------------------------------------------------------------------------------------------
-	
+
 	if((orth = dynamic_cast<WED_DrapedOrthophoto *>(what)) != NULL)
 	if(show_level == 6)
 	{
@@ -1771,23 +1771,25 @@ static int	DSF_ExportTileRecursive(
 		orth->GetResource(r);
 
 		if(orth->IsNew())
-		{
-			if(GetSupportedType(r.c_str()) == -1)
-			{
-				string msg = string("The polygon '") + r + string("' cannot be converted to an orthophoto.");
-				DoUserAlert(msg.c_str());
-				return -1;
-			}
+        {
+			string msg;
+			what->GetName(msg);
 
-			//Various Strings, it may be a lot but it ensures one never get confused
-			string::size_type suf = r.find_last_of(".")+1;
-			string relativePathDDS = r.substr(0,suf) + "dds";
-			string relativePathPOL = r.substr(0,suf) + "pol";
+			// can't use the image name any more to determine the .pol/.dds names, as the same image could be used for multiple Orthos.
+			// So we assume the 'Name" contains the image name plus some suffix to make it unique
 			
+			string relativePath(FILE_get_dir_name(r) + FILE_get_file_name_wo_extensions(msg));
+			
+			string relativePathDDS = relativePath + ".dds";
+			string relativePathPOL = relativePath + ".pol";
+			
+			msg = string("The polygon '") + msg + "' cannot be converted to an orthophoto: ";
+
 			if(is_backout_path(relativePathPOL))
 			{
-				string msg = string("The path '") + relativePathPOL + string("' is illegal because it backs out of your scenery pack.");
-				DoUserAlert(msg.c_str());
+//				relativePathDDS = FILE_get_file_name(relativePathDDS);
+//				relativePathPOL = FILE_get_file_name(relativePathPOL);
+				DoUserAlert((msg + "The image is outside of the scenery directory, the .pol and .dds to be created would not be local resources.").c_str());
 				return -1;
 			}
 
@@ -1805,32 +1807,24 @@ static int	DSF_ExportTileRecursive(
 			* Use the number of channels to decide the compression level
 			* Create a DDS from that file format
 			* Create the .pol with the file format in mind
-			* Enjoy your new Torthophoto
-			*
-			* Currently supported image file types (including # channel based compression)
-			* JPEG2000 (.jp2)
-			* TIFF (.tif)
+			* Enjoy your new orthophoto
 			*/
-			//File extenstion
 
 			if(date_cmpr_res == dcr_firstIsNew || date_cmpr_res == dcr_same)
 			{
 				WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 				ImageInfo imgInfo;
-				ImageInfo smaller;
-				int inWidth = 1;
-				int inHeight = 1;
-				
+				ImageInfo DDSInfo;
+
 				int DXTMethod = 0;
-				
+
 				int res = MakeSupportedType(absPathIMG.c_str(),&imgInfo);
 				if(res != 0)
 				{
-					string msg = string("Unable to convert the image file '") + absPathIMG + string("'to a DDS file.");
-					DoUserAlert(msg.c_str());
+					DoUserAlert((msg + "Unable to convert the image file '" + absPathIMG + "'to a DDS file.").c_str());
 					return -1;
 				}
-				
+
 				//If only RGB
 				if(imgInfo.channels == 3)
 				{
@@ -1841,23 +1835,33 @@ static int	DSF_ExportTileRecursive(
 				{
 					DXTMethod = 5;
 				}
-				while(inWidth < imgInfo.width && inWidth < 2048) inWidth <<= 1;
+
+				Bbox2 UVbounds; orth->GetBounds(gis_UV, UVbounds);
+
+				int UVMwidth  = imgInfo.width * UVbounds.xspan();
+				int UVMheight = imgInfo.height * UVbounds.yspan();
+				int UVMleft   = imgInfo.width * UVbounds.xmin();
+				int UVMright  = imgInfo.width * UVbounds.xmax();
+				int UVMtop    = imgInfo.height * UVbounds.ymax();
+				int UVMbottom = imgInfo.height * UVbounds.ymin();
 				
-				while(inHeight < imgInfo.height && inHeight < 2048) inHeight <<= 1;
+				int DDSwidth = 1;
+				int DDSheight = 1;
 
-				if (CreateNewBitmap(inWidth,inHeight, 4, &smaller) == 0)
+				while(DDSwidth < UVMwidth && DDSwidth < 2048) DDSwidth <<= 1;      // round up dimensions under 2k to a power of 2 AND limit to 2k
+				while(DDSheight < UVMheight && DDSheight < 2048) DDSheight <<= 1;
+
+				if (CreateNewBitmap(DDSwidth, DDSheight, 4, &DDSInfo) == 0)       // create array to hold upsized image
 				{
-					int isize = 2048;
-					isize = max(smaller.width,smaller.height);
+					CopyBitmapSection(&imgInfo,&DDSInfo, UVMleft, UVMbottom, UVMright, UVMtop,
+                                                         0,       0,         DDSwidth,  DDSheight);
 
-					CopyBitmapSection(&imgInfo,&smaller, 0,0,imgInfo.width,imgInfo.height, 0, 0, smaller.width,smaller.height);    
-		 
-					MakeMipmapStack(&smaller);
-					WriteBitmapToDDS(smaller, DXTMethod, absPathDDS.c_str(), 1);
-					DestroyBitmap(&smaller);
+					MakeMipmapStack(&DDSInfo);
+					WriteBitmapToDDS(DDSInfo, DXTMethod, absPathDDS.c_str(), 1);
+					DestroyBitmap(&DDSInfo);
 				}
 				DestroyBitmap(&imgInfo);
-				ExportPOL(relativePathDDS.c_str(),relativePathPOL.c_str(),orth,inHeight,rmgr);
+				ExportPOL(relativePathDDS.c_str(), relativePathPOL.c_str(), orth, DDSheight, rmgr);
 			}
 			else if(date_cmpr_res == dcr_error)
 			{
@@ -1879,7 +1883,7 @@ static int	DSF_ExportTileRecursive(
 			if(!clip_polygon(orth_area,orth_cuts,cull_bounds))
 			{
 				problem_children.insert(what);
-				orth_cuts.clear();				
+				orth_cuts.clear();
 			}
 
 			for(vector<vector<BezierPolygon2uv> >::iterator i = orth_cuts.begin(); i != orth_cuts.end(); ++i)
@@ -1901,7 +1905,7 @@ static int	DSF_ExportTileRecursive(
 				problem_children.insert(what);
 				orth_cuts.clear();
 			}
-			
+
 			for(vector<vector<Polygon2uv> >::iterator i = orth_cuts.begin(); i != orth_cuts.end(); ++i)
 			{
 				++real_thingies;
@@ -1948,7 +1952,7 @@ static int	DSF_ExportTileRecursive(
 	if(apt)
 	{
 		cbs->SetFilter_f(-1,writer);
-		io_table.set_filter(-1);		
+		io_table.set_filter(-1);
 	}
 
 	return real_thingies;
@@ -1961,14 +1965,14 @@ static int DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& 
 	char	prop_buf[256];
 
 	double msl_min, msl_max;
-	
+
 	Bbox2	cull(x,y,x+1,y+1);
-	
+
 	int cull_code = DSF_HeightRangeRecursive(base,msl_min,msl_max, cull);
-	
+
 	if(cull_code < 0)
 		return 0;
-	
+
 	if(cull_code > 0)
 	{
 		msl_min = floor(msl_min);
@@ -1978,7 +1982,7 @@ static int DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& 
 	}
 	else
 		msl_min = -32768.0, msl_max = 32767.0;
-	
+
 
 	writer = DSFCreateWriter(x,y,x+1,y+1, msl_min,msl_max,DSF_DIVISIONS);
 	DSFGetWriterCallbacks(&cbs);
@@ -1998,8 +2002,8 @@ static int DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& 
 	Bbox2	safe_bounds(cull_bounds);
 	if(gExportTarget >= wet_xplane_1021)
 		safe_bounds.expand(DSF_EXTRA_1021);
-	
-	
+
+
 	int entities = 0;
 	for (int show_level = 6; show_level >= 1; --show_level)
 	{
@@ -2026,14 +2030,14 @@ static int DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& 
 		FILE_make_dir_exist(full_dir.c_str());
 		DSFWriteToFile(full_path.c_str(), writer);
 	}
-	
-	/* 
+
+	/*
 	// test code to make sure culling works - asserts if we false-cull.
-	if(cull_code == -1)	
+	if(cull_code == -1)
 	{
 		if(entities > 0)
 		{
-			int cull_code = DSF_HeightRangeRecursive(base,msl_min,msl_max, cull);			
+			int cull_code = DSF_HeightRangeRecursive(base,msl_min,msl_max, cull);
 		}
 		Assert(entities == 0);
 	}
@@ -2050,12 +2054,12 @@ int DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, se
 #endif
 	g_dropped_pts = false;
 	Bbox2	wrl_bounds;
-	
+
 	IGISEntity * ent = dynamic_cast<IGISEntity *>(base);
 	DebugAssert(ent);
-	if(!ent) 
+	if(!ent)
 		return 0;
-	
+
 	ent->GetBounds(gis_Geo,wrl_bounds);
 	int tile_west  = floor(wrl_bounds.p1.x());
 	int tile_east  = ceil (wrl_bounds.p2.x());
@@ -2099,19 +2103,19 @@ int DSF_ExportAirportOverlay(IResolver * resolver, WED_Airport  * apt, const str
 	apt->GetICAO(icao);
 
 	string dsf_path = package + icao + ".txt";
-	
+
 	FILE * dsf = fopen(dsf_path.c_str(),"w");
 	if(dsf)
 	{
-				
+
 		DSFCallbacks_t	cbs;
 		DSF2Text_CreateWriterCallbacks(&cbs);
 		print_funcs_s pf;
 		pf.print_func = (int (*)(void *, const char *, ...)) fprintf;
 		pf.ref = dsf;
-		
+
 		void * writer = &pf;
-		
+
 		Bbox2	cull_bounds(-180,-90,180,90);
 		Bbox2	safe_bounds(-180,-90,180,90);
 
@@ -2125,9 +2129,9 @@ int DSF_ExportAirportOverlay(IResolver * resolver, WED_Airport  * apt, const str
 		cbs.AcceptProperty_f("sim/overlay", "1", writer);
 
 		DSF_ResourceTable	rsrc;
-		
+
 		int entities = 0;
-		for(int show_level = 6; show_level >= 1; --show_level)	
+		for(int show_level = 6; show_level >= 1; --show_level)
 			entities += DSF_ExportTileRecursive(apt, resolver, package, cull_bounds, safe_bounds, rsrc, &cbs, writer,problem_children,show_level);
 
 		rsrc.write_tables(cbs,writer);

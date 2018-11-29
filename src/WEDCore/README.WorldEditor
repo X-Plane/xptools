@@ -13,8 +13,9 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 1.8.0 a3 11/21/18
+WED 1.8.0 a4 11/28/18
     Features:
+    - add automatic image splitting for large orthophotos
     - leave exportTarget = "Gateway" after gateway export failed for validation errors
     - WED-1029: New flavor of duplicate command to support Julians LEGO 'modules'
     - WED-1020: support X-Plane 1130 apt.dat format: 8.33kHz channel ATC frequencies
