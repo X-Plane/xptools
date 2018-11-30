@@ -657,13 +657,12 @@ void WED_GatewayExportDialog::Submit()
 			}
 		}
 
-		FILE_compress_dir(preview_folder, preview_zip, icao + "_Scenery_Pack/");
-
+		Assert(FILE_compress_dir(preview_folder, preview_zip, icao + "_Scenery_Pack/") == 0);
+//		FILE_compress_dir(preview_folder, preview_zip, icao + "_Scenery_Pack/");
 		FILE_delete_dir_recursive(preview_folder);
 
-		FILE_compress_dir(targ_folder, targ_folder_zip, string());
-
-		int r = FILE_delete_dir_recursive(targ_folder);
+		Assert(FILE_compress_dir(targ_folder, targ_folder_zip, string()) == 0);
+		FILE_delete_dir_recursive(targ_folder);
 
 		string uu64;
 		file_to_uu64(targ_folder_zip, uu64);
