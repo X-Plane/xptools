@@ -765,6 +765,8 @@ void	WED_DoReorder (IResolver * resolver, int direction, int to_end)
 
 int		WED_CanMoveSelectionTo(IResolver * resolver, WED_Thing * dest, int dest_slot)
 {
+	if (!dest) return 0; // on empty archives, the initial selection is a NULL ptr
+
 	ISelection * sel = WED_GetSelect(resolver);
 
 	// If the selection is nested, e.g. a parent of the selection is part of the selection, well, we can't
@@ -3665,20 +3667,18 @@ int WED_CanCopyToAirport(IResolver * resolver, string& aptName)
     bool good_selection = WED_CanDuplicate(resolver);
 
    	WED_Airport * curApt = WED_GetCurrentAirport(resolver);
-    bool can_move = WED_CanMoveSelectionTo(resolver, curApt, 0);
+	if (curApt)
+	{
+		bool can_move = WED_CanMoveSelectionTo(resolver, curApt, 0);
 
 // do we want to allow moving items that are already at this airport ? Might confuse user to copy *into* the LEGO airport
 
-// dont want locked or other non-moveable stuff there either
-//            if (went)
-//            {
-//                if(IsLockedNow(went))		continue;
-//                if(!IsVisibleNow(went))	continue;
-//            }
-
-    curApt->GetName(aptName);
-    aptName = string("Duplicate + Move to Airport '") + aptName + "'";
-    return good_selection && can_move;
+		curApt->GetName(aptName);
+		aptName = string("Duplicate + Move to Airport '") + aptName + "'";
+		return good_selection && can_move;
+	}
+	else
+		return 0;
 }
 
 #define PAD_POINTS_FOR_ZOOM_MTR 50.0
