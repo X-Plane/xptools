@@ -1798,7 +1798,9 @@ static int	DSF_ExportTileRecursive(
 			string absPathPOL = pkg + relativePathPOL;
 
 			r = relativePathPOL;		// Resource name comes from the pol no matter what we compress to disk.
-
+			
+			Bbox2 UVbounds; orth->GetBounds(gis_UV, UVbounds);
+	
 			date_cmpr_result_t date_cmpr_res = FILE_date_cmpr(absPathIMG.c_str(),absPathDDS.c_str());
 			//-----------------
 			/* How to export a orthophoto
@@ -1836,8 +1838,6 @@ static int	DSF_ExportTileRecursive(
 					DXTMethod = 5;
 				}
 
-				Bbox2 UVbounds; orth->GetBounds(gis_UV, UVbounds);
-
 				int UVMwidth  = imgInfo.width * UVbounds.xspan();
 				int UVMheight = imgInfo.height * UVbounds.yspan();
 				int UVMleft   = imgInfo.width * UVbounds.xmin();
@@ -1869,23 +1869,27 @@ static int	DSF_ExportTileRecursive(
 				DoUserAlert(msg.c_str());
 				return -1;
 			}
+
+			what->StartOperation("Norm Ortho");
+			orth->Rescale(gis_UV, UVbounds, Bbox2(0,0,1,1));
 		}
 
 		idx = io_table.accum_pol(r,show_level);
 		bool bez = WED_HasBezierPol(orth);
-
+		
 		if(bez)
 		{
 			vector<BezierPolygon2uv>			orth_area;
 			vector<vector<BezierPolygon2uv> >	orth_cuts;
+			
 			WED_BezierPolygonWithHolesForPolygon(orth, orth_area);
-
+			
 			if(!clip_polygon(orth_area,orth_cuts,cull_bounds))
 			{
 				problem_children.insert(what);
 				orth_cuts.clear();
 			}
-
+			
 			for(vector<vector<BezierPolygon2uv> >::iterator i = orth_cuts.begin(); i != orth_cuts.end(); ++i)
 			{
 				++real_thingies;
@@ -1914,6 +1918,10 @@ static int	DSF_ExportTileRecursive(
 				cbs->EndPolygon_f(writer);
 			}
 		}
+		
+		if(orth->IsNew())
+			what->AbortOperation(); // this will nicely undo the UV mapping rescaling we did :)
+
 	}
 #if ROAD_EDITING
 	if ((roa = dynamic_cast<WED_RoadEdge*>(what)) != NULL)
