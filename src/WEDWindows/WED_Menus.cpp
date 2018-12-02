@@ -90,9 +90,9 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	"&Undo",				'Z',	gui_ControlFlag,				0,	gui_Undo		},
 {	"&Redo",				'Z',	gui_ControlFlag+gui_ShiftFlag,	0,	gui_Redo		},
 {	"-",					0,  	0,								0,	0				},
-{	"Cu&t",					'X',	gui_ControlFlag,				0,	gui_Cut			},
-{	"&Copy",				'C',	gui_ControlFlag,				0,	gui_Copy		},
-{	"&Paste",				'V',	gui_ControlFlag,				0,	gui_Paste		},
+{	"Cu&t text",			'X',	gui_ControlFlag,				0,	gui_Cut			},
+{	"&Copy  text",			'C',	gui_ControlFlag,				0,	gui_Copy		},
+{	"&Paste text",			'V',	gui_ControlFlag,				0,	gui_Paste		},
 {	"Cl&ear",				0,		0,								0,	gui_Clear		},	// we could use GUI_KEY_DELETE but having del as cmd key screws up text fields.
 {	"&Duplicate",			0,	    0,                          	0,	0           	},
 {	"-",					0,  	0,								0,	0				},
