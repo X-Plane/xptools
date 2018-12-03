@@ -23,6 +23,7 @@
 #include "ILibrarian.h"
 #include "GISUtils.h"
 #include "DEMIO.h"
+#include "FileUtils.h"
 
 #define KPIXELS 2     // maximum texture size per side in kibi-pixels before splitting up orthos at import into smaller chunks
 
@@ -133,6 +134,7 @@ static int largest_pow2(int x, int pow2)  // return largest power-of-2 upto pow2
     return 0;
 }
 
+
 void	WED_MakeOrthos(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 {
 	char * path = GetMultiFilePathFromUser("Please pick image files", "Open", FILE_DIALOG_PICK_IMAGE_OVERLAY);
@@ -149,18 +151,15 @@ void	WED_MakeOrthos(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 
 		while(*path)
 		{
-			string base_tex(path);
-			string::size_type pp = base_tex.find_last_of("/:\\");
-			if(pp != base_tex.npos)
-				base_tex.erase(0,pp+1);
-			if (base_tex.find(" ") == base_tex.npos)
+			string base_tex(FILE_get_file_name(path));
+			string img_path(path);
+			lib->ReducePath(img_path);
+				
+			if (base_tex.find(" ") == base_tex.npos && img_path[0] != '.' && img_path[0] != DIR_CHAR && img_path[1] != ':')
 			{
 				WED_Ring * rng0 = WED_RingfromImage(path, arch, zoomer, true);
 				if (rng0)
 				{
-					string img_path(path);
-					lib->ReducePath(img_path);
-
 					ITexMgr *	tman = WED_GetTexMgr(inResolver);
 					TexRef tref = tman->LookupTexture(img_path.c_str(),false, 0);
 
@@ -211,6 +210,7 @@ void	WED_MakeOrthos(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 								dpol->SetParent(wrl,0);
 								sel->Insert(dpol);
 								dpol->SetResource(img_path);
+								dpol->SetSubTexture(b);             // do we want that ? Yes, so one can at least punch holes into them gracefully.
 
 								string::size_type pos = base_tex.find_last_of('.');
 								char s[10] = ""; if(x0 > 0 || y0 > 0) snprintf(s,10,"+%dk+%dk", x0, y0);
@@ -229,7 +229,7 @@ void	WED_MakeOrthos(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 			}
 			else
 			{
-				DoUserAlert("XP does not support spaces in texture names.");
+				DoUserAlert("Orthoimages may not contain spaces in name or subdirectory names, must be located inside the scenery directory.");
 			}
 			path += strlen(path) + 1;
 		}

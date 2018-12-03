@@ -1785,11 +1785,9 @@ static int	DSF_ExportTileRecursive(
 			
 			msg = string("The polygon '") + msg + "' cannot be converted to an orthophoto: ";
 
-			if(is_backout_path(relativePathPOL))
+			if(is_backout_path(relativePath) || is_dir_sep(relativePath[0]) || relativePath[1] == ':')
 			{
-//				relativePathDDS = FILE_get_file_name(relativePathDDS);
-//				relativePathPOL = FILE_get_file_name(relativePathPOL);
-				DoUserAlert((msg + "The image is outside of the scenery directory, the .pol and .dds to be created would not be local resources.").c_str());
+				DoUserAlert((msg + "The image resource must be a relative path to a location within the scenery directory.").c_str());
 				return -1;
 			}
 
