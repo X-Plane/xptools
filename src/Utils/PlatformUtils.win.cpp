@@ -146,8 +146,6 @@ int		GetFilePathFromUser(
 	return 0;
 }
 
-#include <Shobjidl.h>
-
 char *	GetMultiFilePathFromUser(
 					const char * 		inPrompt,
 					const char *		inAction,
