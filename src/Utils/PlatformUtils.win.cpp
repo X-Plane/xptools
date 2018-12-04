@@ -146,6 +146,7 @@ int		GetFilePathFromUser(
 	return 0;
 }
 
+#include <Shobjidl.h>
 
 char *	GetMultiFilePathFromUser(
 					const char * 		inPrompt,
@@ -158,15 +159,16 @@ char *	GetMultiFilePathFromUser(
 
 	ofn.lStructSize = sizeof(ofn);
 	ofn.lpstrFilter = L"All Files\000*.*\000";
-	ofn.nFilterIndex = 1;	// Start with .acf files
+	ofn.nFilterIndex = 1;
 	ofn.lpstrFile = buf;
 	buf[0] = 0;		// No initialization for open.
 	ofn.nMaxFile = 1024 * 1024;		// Guess string length?
 	ofn.lpstrFileTitle = NULL;	// Don't want file name w/out path
 	ofn.lpstrTitle = convert_str_to_utf16(inPrompt).c_str();
-	ofn.Flags =  OFN_ALLOWMULTISELECT | OFN_EXPLORER;
-
+	ofn.Flags =  OFN_ALLOWMULTISELECT | OFN_EXPLORER | OFN_FILEMUSTEXIST;
+	
 	result = GetOpenFileNameW(&ofn);
+
 	if(result)
 	{
 		vector<string>	files;
