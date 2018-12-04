@@ -28,6 +28,7 @@ WED 1.8.0 a5 11/30/18
 	- show more particular pictograms for XP11.25 added yellow line types
 	- WED-939: Warn about "silly" large ramp starts at airports with way to small runways
 	Bug Fixes:
+	- dial back the WED 1.7 map drawing speedup by one notch to help pavement display
 	- crash when clicking menu bar after starting with a new, empty airport
 	- WED-1110: fix gateway export failing under windows with "Error 400 invalid parameter"
 	- Opening pre-WED 1.8 xml files won't always convert ATC frequencies to propper 8.33k values
