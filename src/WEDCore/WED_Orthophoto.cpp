@@ -229,7 +229,9 @@ void	WED_MakeOrthos(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 			}
 			else
 			{
-				DoUserAlert("Orthoimages may not contain spaces in name or subdirectory names, must be located inside the scenery directory.");
+				char msg[200]; snprintf(msg,200,"Orthoimage name/path not acceptable:\n\n%s\n\n"
+					    "Spaces are not allowed and location must be inside the scenery directory.", img_path);
+				DoUserAlert(msg);
 			}
 			path += strlen(path) + 1;
 		}
