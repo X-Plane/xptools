@@ -1123,29 +1123,6 @@ static int	DSF_HeightRangeRecursive(WED_Thing * what, double& out_msl_min, doubl
 
 	return found ? 1 : (any_inside ? 0 : -1);
 }
-//A wrapper around MakePol to reduce the amount of repetition that goes on.
-//Takes the relative DDS string, the relative POL path string, an orthophoto, a height, and the resourcemanager
-static void ExportPOL(const char * relativeDDSP, const char * relativePOLP, WED_DrapedOrthophoto * orth, int inHeight, WED_ResourceMgr * rmgr)
-{
-	//-------------------Information for the .pol
-	//Find most reduced path
-	const char * p = relativeDDSP;
-	const char * n = relativeDDSP;
-	while(*p) { if (*p == '/' || *p == ':' || *p == '\\') n = p+1; ++p; }
-
-
-	Point2 p1;
-	Point2 p2;
-	orth->GetOuterRing()->GetNthPoint(0)->GetLocation(gis_Geo,p1);
-	orth->GetOuterRing()->GetNthPoint(2)->GetLocation(gis_Geo,p2);
-
-	float centerLat = (p2.y() + p1.y())/2;
-	float centerLon = (p2.x() + p1.x())/2;
-	//-------------------------------------------
-	pol_info_t out_info = {n,false,25.000000,25.000000,false,false,"",0,
-		/*<LOAD_CENTER>*/centerLat,centerLon,LonLatDistMeters(p1.x(),p1.y(),p2.x(),p2.y()),inHeight/*/>*/};
-	rmgr->MakePol(relativePOLP,out_info);
-}
 
 //Returns -1 for abort, or n where n > 0 for the number of
 static int	DSF_ExportTileRecursive(
@@ -1798,7 +1775,8 @@ static int	DSF_ExportTileRecursive(
 			r = relativePathPOL;		// Resource name comes from the pol no matter what we compress to disk.
 			
 			Bbox2 UVbounds; orth->GetBounds(gis_UV, UVbounds);
-	
+			WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
+			
 			date_cmpr_result_t date_cmpr_res = FILE_date_cmpr(absPathIMG.c_str(),absPathDDS.c_str());
 			//-----------------
 			/* How to export a orthophoto
@@ -1809,10 +1787,9 @@ static int	DSF_ExportTileRecursive(
 			* Create the .pol with the file format in mind
 			* Enjoy your new orthophoto
 			*/
-
+			
 			if(date_cmpr_res == dcr_firstIsNew || date_cmpr_res == dcr_same)
 			{
-				WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 				ImageInfo imgInfo;
 				ImageInfo DDSInfo;
 
@@ -1859,13 +1836,31 @@ static int	DSF_ExportTileRecursive(
 					DestroyBitmap(&DDSInfo);
 				}
 				DestroyBitmap(&imgInfo);
-				ExportPOL(relativePathDDS.c_str(), relativePathPOL.c_str(), orth, DDSheight, rmgr);
 			}
 			else if(date_cmpr_res == dcr_error)
 			{
 				string msg = string("The file '") + absPathIMG + string("' is missing.");
 				DoUserAlert(msg.c_str());
 				return -1;
+			}
+			
+			if(!FILE_exists(absPathPOL.c_str()))
+			{
+				ImageInfo DDSInfo;
+				if(CreateBitmapFromDDS(absPathDDS.c_str(), &DDSInfo) == 0)
+				{
+					Bbox2 b;
+					orth->GetBounds(gis_Geo, b);
+					Point2 center = b.centroid();
+					//-------------------------------------------
+					pol_info_t out_info = {relativePathDDS, false,
+						/*SCALE*/ LonLatDistMeters(b.p1,Point2(b.p2.x(), b.p1.y())), LonLatDistMeters(b.p1,Point2(b.p1.x(), b.p2.y())),  // althought its irrelevant here
+						false, false, 
+						/*LAYER_GROUP*/ "", 0,
+						/*LOAD_CENTER*/ center.y(), center.x(), LonLatDistMeters(b.p1,b.p2), intmax2(DDSInfo.height,DDSInfo.width) };
+					rmgr->WritePol(absPathPOL, out_info);
+					DestroyBitmap(&DDSInfo);
+				}
 			}
 
 			what->StartOperation("Norm Ortho");

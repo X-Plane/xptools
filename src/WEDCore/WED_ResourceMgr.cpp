@@ -26,6 +26,7 @@
 #include "WED_Messages.h"
 #include "WED_LibraryMgr.h"
 #include "WED_Globals.h"
+#include "WED_Version.h"
 
 #include "MemFileUtils.h"
 #include "XObjReadWrite.h"
@@ -456,33 +457,22 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t& out_info)
 	return true;
 }
 
-void WED_ResourceMgr::MakePol(const string& path, const pol_info_t& out_info)
+void WED_ResourceMgr::WritePol(const string& abspath, const pol_info_t& out_info)
 {
-	map<string,pol_info_t>::iterator i = mPol.find(path);
-	if(i != mPol.end())
-	{
-		return;
-	}
-
-	string p = mLibrary->CreateLocalResourcePath(path);
-	//Makes sure that the file will end in .pol
-	int pp = p.find_last_of(".");
-	p = p.substr(0,pp+1) + "pol";
-	
-	FILE * fi = fopen(p.c_str(), "w");
+	FILE * fi = fopen(abspath.c_str(), "w");
 	if(!fi)	return;
 	fprintf(fi,"A\n850\nDRAPED_POLYGON\n\n");
-	
+	fprintf(fi,"# Created by WED " WED_VERSION_STRING "\n");
 	fprintf(fi,out_info.wrap ? "TEXTURE %s\n" : "TEXTURE_NOWRAP %s\n", out_info.base_tex.c_str());
-	fprintf(fi,"SCALE %lf %lf\n",out_info.proj_s,out_info.proj_t);
-		/*float		latitude;
-	float		longitude;
-	double		height_Meters;
-	int			ddsHeight_Pxls;*/
-	fprintf(fi,"LOAD_CENTER %lf %lf %f %d", out_info.latitude, out_info.longitude,out_info.height_Meters,out_info.ddsHeight_Pxls);
+	fprintf(fi,"SCALE %.1lf %.1lf\n",out_info.proj_s,out_info.proj_t);
+	fprintf(fi,"LOAD_CENTER %lf %lf %.1f %d", out_info.latitude, out_info.longitude,out_info.height_Meters,out_info.ddsHeight_Pxls);
 	if(out_info.kill_alpha)
 		fprintf(fi,"NO_ALPHA\n");
-	fclose(fi);	
+	if(!out_info.group.empty())
+		fprintf(fi,"LAYER_GROUP %s %d\n",out_info.group.c_str(), out_info.group_offset);
+//	if(has_decal)
+//		fprintf(fi,"DECAL_LIB lib/g10/decals/grass_and_stony_dirt_1.dcl");
+	fclose(fi);
 	gPackageMgr->Rescan();
 }
 

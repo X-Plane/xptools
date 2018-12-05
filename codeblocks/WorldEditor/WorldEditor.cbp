@@ -675,7 +675,9 @@
 		<Unit filename="../../src/XESCore/AptIO.cpp" />
 		<Unit filename="../../src/XESCore/AptIO.h" />
 		<Extensions>
-			<code_completion />
+			<code_completion>
+				<search_path add="../../libs/local/include" />
+			</code_completion>
 			<envvars set="default" />
 			<debugger />
 			<lib_finder disable_auto="1" />
