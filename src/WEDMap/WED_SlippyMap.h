@@ -30,6 +30,8 @@ class	WED_file_cache_request;
 #include "GUI_Timer.h"
 #include "WED_MapLayer.h"
 
+enum yCoord_t { yNone, yNormal, yYahoo, yOSGeo };
+
 class	WED_SlippyMap : public WED_MapLayer, public GUI_Timer {
 public:
 
@@ -50,12 +52,12 @@ private:
 	WED_file_cache_request* m_cache_request;
 
 	//The texture cache, where they key is the tile texture path on disk and the value is the texture id
-	map<string,int>				m_cache;
+	map<string,int>	m_cache;
 
 			int		mMapMode;
 			string	url_printf_fmt;
 			string	dir_printf_fmt;
-			bool	is_jpg_not_png;
+			yCoord_t	y_coordinate_math;
 };
 
 #endif /* WED_SlippyMap_h */

@@ -54,7 +54,7 @@
 #define SHOW_DEBUG_INFO 0
 
 #define MIN_ZOOM  13        // stop displaying OSM at all below this level
-#define MAX_ZOOM  16        // for custom mode maps (predefined maps have their own limits below)
+#define MAX_ZOOM  17        // for custom mode maps (predefined maps have their own limits below)
 
 #define TILE_FACTOR 0.7     // save tiles by zooming in a bit later than at 1:1 pixel ratio.
 							// Since zoom goes by 1.2x steps - it matters little w.r.t "sharpness"
@@ -66,7 +66,7 @@ static const char * attributions[PREDEFINED_MAPS] = {
 "© OpenStreetMap Contributors",
 // ToDo: use shorter specific ESRI attribution by downloading https://static.arcgis.com/attribution/World_Imagery
 //       and decode it per https://github.com/Esri/esri-leaflet  (which is java code)
-"© Esri, DigitalGlobe, GeoEye, Earthstar Geographics, CNES/Airbus DS, USDA, USGS, AeroGRID, IGN and the GIS User Community" };
+"© Esri, DigitalGlobe, GeoEye, Earthstar Geographics, CNES/Airbus DS, USDA, USGS, AeroGRID and the GIS User Community" };
 
 static const char * tile_url[PREDEFINED_MAPS] = {
 WED_URL_OSM_TILES  "${z}/${x}/${y}.png",
@@ -209,12 +209,19 @@ void	WED_SlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 				GUI_FontDraw(g, font_UI_Basic, black, (pbounds[0] + pbounds[2]) / 2, (pbounds[1] + pbounds[3]) / 2, msg);
 			}
 #endif
+			int yTransformed;
+			switch(y_coordinate_math)
+			{
+				case yYahoo: yTransformed = (1 << (z-1)) - 1 - y;
+				case yOSGeo: yTransformed = (1 << z) - 1 - y;
+				default: yTransformed = y;
+			}
 #if IBM
-			char url[200]; _sprintf_p(url,200,url_printf_fmt.c_str(),x,y,z);
-			char dir[200]; _sprintf_p(dir,200,dir_printf_fmt.c_str(),x,y,z);     // make sure ALL args are referenced in the format string
+			char url[200]; _sprintf_p(url, 200, url_printf_fmt.c_str(), x, yTransformed, z);
+			char dir[200]; _sprintf_p(dir, 200, dir_printf_fmt.c_str(), x, yTransformed, z);
 #else
-			char url[200]; snprintf(url,200,url_printf_fmt.c_str(),x,y,z);
-			char dir[200]; snprintf(dir,200,dir_printf_fmt.c_str(),x,y,z);      // make sure ALL args are referenced in the format string
+			char url[200]; snprintf(url, 200, url_printf_fmt.c_str(), x, yTransformed, z);
+			char dir[200]; snprintf(dir, 200, dir_printf_fmt.c_str(), x, yTransformed, z);  // make sure ALL args are referenced in the format string
 #endif
 			string folder_prefix(dir); folder_prefix.erase(folder_prefix.find_last_of(DIR_STR));
 
@@ -311,12 +318,10 @@ void	WED_SlippyMap::finish_loading_tile()
 		if (res.out_status == cache_status_available)
 		{
 			struct ImageInfo info;
-			int r;
-			if(is_jpg_not_png)
+			int r = CreateBitmapFromPNG(res.out_path.c_str(), &info, false, 0);
+			if(r != 0)
 				r = CreateBitmapFromJPEG(res.out_path.c_str(), &info);
-			else
-				r = CreateBitmapFromPNG(res.out_path.c_str(), &info, false, 0);
-			if (r == 0)
+			if(r == 0)
 			{
 				if (info.channels == 3)                                                        // apply to color changes
 					for (int x = 0; x < info.height * (info.width+info.pad) * info.channels; x += info.channels)
@@ -344,7 +349,7 @@ void	WED_SlippyMap::finish_loading_tile()
 			}
 			else
 			{
-				printf("Bad JPG or PNG data.\n");
+				printf("Can not read image tile - bad PNG or JPG data.\n");
 				m_cache[res.out_path] = 0;
 			}
 
@@ -375,7 +380,7 @@ static bool replace_token(string& str, const string& from, const string& to)
     size_t start_pos = str.find(from);
     if(start_pos == string::npos)
         return false;
-    str.replace(start_pos, from.length(), to);
+    str = str.substr(0,start_pos) + to + str.substr(start_pos+from.length());
     return true;
 }
 
@@ -392,9 +397,15 @@ void	WED_SlippyMap::SetMode(int mode)
 		url_printf_fmt = tile_url[mode-1];
 	else
 		url_printf_fmt = gCustomSlippyMap;
+		
+	y_coordinate_math = yNone;
+	if     (replace_token(url_printf_fmt, "${y}",  "%2$d")) 	y_coordinate_math = yNormal;
+	else if(replace_token(url_printf_fmt, "${!y}", "%2$d")) 	y_coordinate_math = yYahoo;
+	else if(replace_token(url_printf_fmt, "${-y}", "%2$d")) 	y_coordinate_math = yOSGeo;
+
 
 	if(replace_token(url_printf_fmt, "${x}", "%1$d") &&
-	   replace_token(url_printf_fmt, "${y}", "%2$d") &&
+	   y_coordinate_math != yNone &&
 	   replace_token(url_printf_fmt, "${z}", "%3$d"))
 	{
 		dir_printf_fmt = url_printf_fmt.substr(url_printf_fmt.find("//")+2);
@@ -402,12 +413,6 @@ void	WED_SlippyMap::SetMode(int mode)
 
 		mMapMode = mode;
 		SetVisible(1);
-
-		string suffix = url_printf_fmt.substr(url_printf_fmt.length()-4);
-		if (suffix == ".jpg" || suffix == ".JPG" || suffix == "jpeg")
-			is_jpg_not_png = true;
-		else
-			is_jpg_not_png = false;
 	}
 	else
 	{
