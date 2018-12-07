@@ -58,6 +58,8 @@ nav_ndb.png			GUI_RES		icons\nav_ndb.png
 nav_vor.png			GUI_RES		icons\nav_vor.png
 nav_mark.png			GUI_RES		icons\nav_mark.png
 nav_gs.png			GUI_RES		icons\nav_gs.png
+navmap_airport.png		GUI_RES		icons\navmap_airport.png
+navmap_heliport.png		GUI_RES		icons\navmap_heliport.png
 
 /* table artwork */
 eye.png					GUI_RES		tables\eye.png
