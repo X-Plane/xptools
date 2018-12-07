@@ -42,7 +42,7 @@
 	#include <GL/gl.h>
 #endif
 
-static void parse_apt_dat(MFMemFile * str, map<string, navaid_t>& tAirports)
+static void parse_apt_dat(MFMemFile * str, map<string, navaid_t>& tAirports, const string& status)
 	{
 		MFScanner	s;
 		MFS_init(&s, str);
@@ -69,12 +69,12 @@ static void parse_apt_dat(MFMemFile * str, map<string, navaid_t>& tAirports)
 					apt_bounds = Bbox2();
 					n.type = 10000 + rowcode;
 					MFS_int(&s);   // skip elevation
-					int twr = MFS_int(&s);
-					if(twr) n.type += 100;
+					n.heading = MFS_int(&s); // ATC tower
 					MFS_int(&s);
 
 					MFS_string(&s,&n.icao);
 					MFS_string_eol(&s,&n.name);
+					n.rwy = status;
 				}
 				else if(apt_type)
 				{
@@ -242,11 +242,11 @@ WED_NavaidLayer::WED_NavaidLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IRe
 	map<string,navaid_t> tAirports;
 	
 	str = MemFile_Open(defaultApts.c_str());
-	if(str) parse_apt_dat(str, tAirports);
+	if(str) parse_apt_dat(str, tAirports, "");
 	
 	str = MemFile_Open(globalApts.c_str());
-	if(str) parse_apt_dat(str, tAirports);
-	
+	if(str) parse_apt_dat(str, tAirports, "(2D/3D)");
+
 // Todo: speedup drawing by converting mNavaids into a multimap sorted by longitude - for quicker selection of visible navaids
 //       improve data locality - store coords as 32 bit fixed point (9mm resolution is plenty), heading, type as short = 12 bytes total (now 96)
 //       although for now Navaid map drawing is under 2 msec on a 3.6 GHz CPU at all times == good enough
@@ -330,13 +330,12 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 				{
 					if(PPM > 0.005)
 					{
-						if (i->type > 10100) glColor4fv(vfr_blue);
-						else                 glColor4fv(vfr_purple);
-						if (i->type % 100 == 17)
+						glColor4fv(i->heading ? vfr_blue : vfr_purple);
+						if (i->type == 10017)
 						{
 							if(PPM > 0.03) GUI_PlotIcon(g,"map_helipad.png", pt.x(), pt.y(), 0.0, scale);
 						}
-						else if (i->type % 100 == 16)
+						else if (i->type == 10016)
 							GUI_PlotIcon(g,"navmap_seaport.png", pt.x(), pt.y(), 0.0, scale);
 						else
 							GUI_PlotIcon(g,"navmap_airport.png", pt.x(), pt.y(), 0.0, scale);
@@ -347,9 +346,9 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 				{
 					if(i->type >10000)
 					{
-						const float * color = i->type > 10100 ? vfr_blue : vfr_purple;
+						const float * color = i->heading ? vfr_blue : vfr_purple;
 						GUI_FontDraw(g, font_UI_Basic, color, pt.x()+15.0,pt.y()-20.0, i->name.c_str());
-						GUI_FontDraw(g, font_UI_Basic, color, pt.x()+15.0,pt.y()-35.0, (string("Airport ID: ") + i->icao).c_str());
+						GUI_FontDraw(g, font_UI_Basic, color, pt.x()+15.0,pt.y()-35.0, (string("Airport ID: ") + i->icao + " " + i->rwy).c_str());
 					}
 					else if(PPM > 0.5)
 					{

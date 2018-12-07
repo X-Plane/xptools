@@ -33,8 +33,8 @@ struct navaid_t {
 	float	heading;
 	string	name;
 	string	icao;
-	int     freq;
-	string	rwy;
+	int     freq;     // ATC tower freq for airports
+	string	rwy;      // Gateway 2D/3D status for airports
 };
 
 class WED_NavaidLayer : public WED_MapLayer {
