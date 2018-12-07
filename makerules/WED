@@ -494,3 +494,6 @@ RESOURCES += ./src/WEDResources/parking_spots/ClassC.png
 RESOURCES += ./src/WEDResources/parking_spots/ClassD.png
 RESOURCES += ./src/WEDResources/parking_spots/ClassE.png
 RESOURCES += ./src/WEDResources/parking_spots/ClassF.png
+RESOURCES += ./src/WEDResources/icons/navmap_airport.png
+RESOURCES += ./src/WEDResources/icons/navmap_seaport.png
+

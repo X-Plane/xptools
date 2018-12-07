@@ -42,6 +42,58 @@
 	#include <GL/gl.h>
 #endif
 
+static void parse_apt_dat(MFMemFile * str, map<string, navaid_t>& tAirports)
+	{
+		MFScanner	s;
+		MFS_init(&s, str);
+
+		int versions[] = { 1000, 1021, 1050, 1100, 0 };
+		
+		if(MFS_xplane_header(&s,versions,NULL,NULL))
+		{
+			int apt_type = 0;
+			Bbox2 apt_bounds;
+			navaid_t n;
+
+			while(!MFS_done(&s))
+			{
+				int rowcode = MFS_int(&s);
+				if (rowcode == 1 || rowcode == 16 || rowcode == 17 || rowcode == 99)   // look only for accept only ILS component overrides
+				{
+					if(apt_type)
+					{
+						n.lonlat = apt_bounds.centroid();
+						tAirports[n.icao]= n;
+					}
+					apt_type = rowcode;
+					apt_bounds = Bbox2();
+					n.type = 10000 + rowcode;
+					MFS_int(&s);   // skip elevation
+					int twr = MFS_int(&s);
+					if(twr) n.type += 100;
+					MFS_int(&s);
+
+					MFS_string(&s,&n.icao);
+					MFS_string_eol(&s,&n.name);
+				}
+				else if(apt_type)
+				{
+					if((rowcode >=  111 && rowcode <=  116) ||
+						rowcode == 1201 || rowcode == 1300  ||
+					   (rowcode >=   18 && rowcode <=   21))
+					{
+						double lat = MFS_double(&s);
+						double lon = MFS_double(&s);
+						apt_bounds += Point2(lon,lat);
+					}
+				}
+				MFS_string_eol(&s,NULL);
+			}
+		MemFile_Close(str);
+		}
+	}
+
+
 WED_NavaidLayer::WED_NavaidLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver) :
 	WED_MapLayer(host,zoomer,resolver)
 {
@@ -129,8 +181,7 @@ WED_NavaidLayer::WED_NavaidLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IRe
 						double slope = floor(n.heading / 1000.0);
 						n.heading -= slope * 1000.0;
 					}
-
-					// now check for duplicates before adding this one:
+					// check for duplicates before adding this new one
 					float closest_d = 9999.0;
 					vector<navaid_t>::iterator closest_i;
 
@@ -185,9 +236,23 @@ WED_NavaidLayer::WED_NavaidLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IRe
 		MemFile_Close(str);
 	}
 
-// Todo: speedup drawing by converting mNavaids into list sorted by longitude (aka map / multimap) - for quicker selection of visible navaids
+	string defaultApts  = resourcePath + DIR_STR "Resources" DIR_STR "default scenery" DIR_STR "default apt dat" DIR_STR "Earth nav data" DIR_STR "apt.dat";
+	string globalApts   = resourcePath + DIR_STR "Custom Scenery" DIR_STR "Global Airports" DIR_STR "Earth nav data" DIR_STR "apt.dat";
+
+	map<string,navaid_t> tAirports;
+	
+	str = MemFile_Open(defaultApts.c_str());
+	if(str) parse_apt_dat(str, tAirports);
+	
+	str = MemFile_Open(globalApts.c_str());
+	if(str) parse_apt_dat(str, tAirports);
+	
+// Todo: speedup drawing by converting mNavaids into a multimap sorted by longitude - for quicker selection of visible navaids
 //       improve data locality - store coords as 32 bit fixed point (9mm resolution is plenty), heading, type as short = 12 bytes total (now 96)
-//       although for now Navaid map drawing is under 1 msec on a 3.6 GHz CPU at all times == good enough
+//       although for now Navaid map drawing is under 2 msec on a 3.6 GHz CPU at all times == good enough
+
+	for(map<string, navaid_t>::iterator i = tAirports.begin(); i != tAirports.end(); ++i)
+		mNavaids.push_back(i->second);
 }
 
 WED_NavaidLayer::~WED_NavaidLayer()
@@ -213,7 +278,9 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 	double scale = GetAirportIconScale();
 	double beam_len = 3300.0/scale * PPM;
 
-	float red[4] = { 1.0, 0.4, 0.4, 0.66 };
+	const float red[4]        = { 1.0, 0.4, 0.4, 0.66 };
+	const float vfr_purple[4] = { 0.9, 0.4, 0.9, 0.8 };
+	const float vfr_blue[4]   = { 0.4, 0.4, 1.0, 0.8 };
 	glLineWidth(1.8);
 
 	if (PPM > 0.001)          // stop displaying navaids when zoomed out - gets too crowded
@@ -232,7 +299,6 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 				}
 				else if(i->type <= 5)
 				{
-//					GUI_PlotIcon(g,"map_airport.png", pt.x(), pt.y(), i->heading, scale);
 					Vector2 beam_dir(0.0, beam_len);
 					beam_dir.rotate_by_degrees(180.0-i->heading);
 					Vector2 beam_perp(beam_dir.perpendicular_cw()*0.1);
@@ -258,13 +324,38 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 					if(PPM > 0.1)
 						GUI_PlotIcon(g,"nav_gs.png", pt.x(), pt.y(), i->heading, scale);
 				}
-				else
+				else if(i->type < 100)
 					GUI_PlotIcon(g,"nav_mark.png", pt.x(), pt.y(), i->heading, scale);
-
-				if (PPM  > 1.0)
+				else
 				{
-					GUI_FontDraw(g, font_UI_Basic, red, pt.x()+20.0,pt.y()-25.0, i->name.c_str());
-					GUI_FontDraw(g, font_UI_Basic, red, pt.x()+20.0,pt.y()-40.0, (i->icao + " " + i->rwy).c_str());
+					if(PPM > 0.005)
+					{
+						if (i->type > 10100) glColor4fv(vfr_blue);
+						else                 glColor4fv(vfr_purple);
+						if (i->type % 100 == 17)
+						{
+							if(PPM > 0.03) GUI_PlotIcon(g,"map_helipad.png", pt.x(), pt.y(), 0.0, scale);
+						}
+						else if (i->type % 100 == 16)
+							GUI_PlotIcon(g,"navmap_seaport.png", pt.x(), pt.y(), 0.0, scale);
+						else
+							GUI_PlotIcon(g,"navmap_airport.png", pt.x(), pt.y(), 0.0, scale);
+					}
+				}
+
+				if (PPM  > 0.05)
+				{
+					if(i->type >10000)
+					{
+						const float * color = i->type > 10100 ? vfr_blue : vfr_purple;
+						GUI_FontDraw(g, font_UI_Basic, color, pt.x()+15.0,pt.y()-20.0, i->name.c_str());
+						GUI_FontDraw(g, font_UI_Basic, color, pt.x()+15.0,pt.y()-35.0, (string("Airport ID: ") + i->icao).c_str());
+					}
+					else if(PPM > 0.5)
+					{
+						GUI_FontDraw(g, font_UI_Basic, red, pt.x()+20.0,pt.y()-25.0, i->name.c_str());
+						GUI_FontDraw(g, font_UI_Basic, red, pt.x()+20.0,pt.y()-40.0, (i->icao + " " + i->rwy).c_str());
+					}
 				}
 			}
 		}
