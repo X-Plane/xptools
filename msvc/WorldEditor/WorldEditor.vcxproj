@@ -544,6 +544,25 @@
     <Image Include="..\..\src\WEDResources\WED.ico" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\src\WEDResources\icons\map_airport.png" />
+    <None Include="..\..\src\WEDResources\icons\map_beacon.png" />
+    <None Include="..\..\src\WEDResources\icons\map_helipad.png" />
+    <None Include="..\..\src\WEDResources\icons\map_heliport.png" />
+    <None Include="..\..\src\WEDResources\icons\map_light.png" />
+    <None Include="..\..\src\WEDResources\icons\map_missing_obj.png" />
+    <None Include="..\..\src\WEDResources\icons\map_rampstart.png" />
+    <None Include="..\..\src\WEDResources\icons\map_seaport.png" />
+    <None Include="..\..\src\WEDResources\icons\map_servicedest.png" />
+    <None Include="..\..\src\WEDResources\icons\map_taxisign.png" />
+    <None Include="..\..\src\WEDResources\icons\map_towerview.png" />
+    <None Include="..\..\src\WEDResources\icons\map_tree.png" />
+    <None Include="..\..\src\WEDResources\icons\map_windsock.png" />
+    <None Include="..\..\src\WEDResources\icons\navmap_airport.png" />
+    <None Include="..\..\src\WEDResources\icons\navmap_seaport.png" />
+    <None Include="..\..\src\WEDResources\icons\nav_gs.png" />
+    <None Include="..\..\src\WEDResources\icons\nav_mark.png" />
+    <None Include="..\..\src\WEDResources\icons\nav_ndb.png" />
+    <None Include="..\..\src\WEDResources\icons\nav_vor.png" />
     <None Include="..\..\src\WEDResources\map_tools.psd" />
     <None Include="..\..\src\WEDResources\tables\arrows.png" />
     <None Include="..\..\src\WEDResources\tables\check.png" />

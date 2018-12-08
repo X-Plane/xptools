@@ -42,149 +42,95 @@
 	#include <GL/gl.h>
 #endif
 
-static void parse_apt_dat(MFMemFile * str, map<string, navaid_t>& tAirports, const string& status)
-	{
-		MFScanner	s;
-		MFS_init(&s, str);
-
-		int versions[] = { 1000, 1021, 1050, 1100, 0 };
-		
-		if(MFS_xplane_header(&s,versions,NULL,NULL))
-		{
-			int apt_type = 0;
-			Bbox2 apt_bounds;
-			navaid_t n;
-
-			while(!MFS_done(&s))
-			{
-				int rowcode = MFS_int(&s);
-				if (rowcode == 1 || rowcode == 16 || rowcode == 17 || rowcode == 99)   // look only for accept only ILS component overrides
-				{
-					if(apt_type)
-					{
-						n.lonlat = apt_bounds.centroid();
-						tAirports[n.icao]= n;
-					}
-					apt_type = rowcode;
-					apt_bounds = Bbox2();
-					n.type = 10000 + rowcode;
-					MFS_int(&s);   // skip elevation
-					n.heading = MFS_int(&s); // ATC tower
-					MFS_int(&s);
-
-					MFS_string(&s,&n.icao);
-					MFS_string_eol(&s,&n.name);
-					n.rwy = status;
-				}
-				else if(apt_type)
-				{
-					if((rowcode >=  111 && rowcode <=  116) ||
-						rowcode == 1201 || rowcode == 1300  ||
-					   (rowcode >=   18 && rowcode <=   21))
-					{
-						double lat = MFS_double(&s);
-						double lon = MFS_double(&s);
-						apt_bounds += Point2(lon,lat);
-					}
-				}
-				MFS_string_eol(&s,NULL);
-			}
-		MemFile_Close(str);
-		}
-	}
-
-
-WED_NavaidLayer::WED_NavaidLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver) :
-	WED_MapLayer(host,zoomer,resolver)
+static void parse_apt_dat(MFMemFile * str, map<string, navaid_t>& tAirports, const string& source)
 {
-
-// ToDo: move this into PackageMgr, so its updated when XPlaneFolder changes and re-used when another scenery is opened
-    SetVisible(false);
-	string resourcePath;
-	gPackageMgr->GetXPlaneFolder(resourcePath);
-
-	// deliberately ignoring any Custom Data/earth_424.dat or Custom Data/earth_nav.dat files that a user may have ... to avoid confusion
-	string globalNavaids  = resourcePath + DIR_STR "Resources" DIR_STR "default data" DIR_STR "earth_nav.dat";
-	string airportNavaids = resourcePath + DIR_STR "Custom Scenery" DIR_STR "Global Airports" DIR_STR "Earth nav data" DIR_STR "earth_nav.dat";
-
-	MFMemFile * str = MemFile_Open(globalNavaids.c_str());
-	if(str)
+	MFScanner	s;
+	MFS_init(&s, str);
+	int versions[] = { 1000, 1021, 1050, 1100, 1130, 0 };
+		
+	if(MFS_xplane_header(&s,versions,NULL,NULL))
 	{
-		MFScanner	s;
-		MFS_init(&s, str);
+		int apt_type = 0;
+		Bbox2 apt_bounds;
+		navaid_t n;
 
-		int versions[] = { 740, 810, 1100, 0 };
-
-		mNavaids.reserve(25000);    // about 3 MBytes, as of 2018 its some 20,200 navaids
-
-		if(MFS_xplane_header(&s,versions,NULL,NULL))
-			while(!MFS_done(&s))
+		while(!MFS_done(&s))
+		{
+			int rowcode = MFS_int(&s);
+			if (rowcode == 1 || rowcode == 16 || rowcode == 17 || rowcode == 99)   // look only for accept only ILS component overrides
 			{
-				int type = MFS_int(&s);
-				if (type >= 2 && type <= 9)   // NDB, VOR and ILS components
+				if(apt_type)
 				{
-					navaid_t n;
-					n.type = type;
-					n.lonlat.y_ = MFS_double(&s);
-					n.lonlat.x_ = MFS_double(&s);
-					MFS_int(&s);   // skip elevation
-					n.freq  = MFS_int(&s);
-					MFS_int(&s);   // skip range
-					n.heading   = MFS_double(&s);
-					MFS_string(&s, &n.name);
-					MFS_string(&s, &n.icao);
-					if (type >= 4 && type <= 9)   // ILS components
-					{
-						MFS_string(&s, NULL);  // skip region
-						MFS_string(&s, &n.rwy);
-					}
-					if (type == 6)
-					{
-						double slope = floor(n.heading / 1000.0);
-						n.heading -= slope * 1000.0;
-					}
-					mNavaids.push_back(n);
+					n.lonlat = apt_bounds.centroid();
+					tAirports[n.icao]= n;
 				}
-				MFS_string_eol(&s,NULL);
+				apt_type = rowcode;
+				apt_bounds = Bbox2();
+				n.type = 10000 + rowcode;
+				MFS_int(&s);			 // skip elevation
+				n.heading = MFS_int(&s); // has ATC tower
+				MFS_int(&s);
+
+				MFS_string(&s,&n.icao);
+				MFS_string_eol(&s,&n.name);
+				n.rwy = source;
 			}
-		MemFile_Close(str);
-	}
-
-	str = MemFile_Open(airportNavaids.c_str());
-	if(str)
-	{
-		MFScanner	s;
-		MFS_init(&s, str);
-
-		int versions[] = { 740, 810, 1100, 0 };
-
-		if(MFS_xplane_header(&s,versions,NULL,NULL))
-			while(!MFS_done(&s))
+			else if(apt_type)
 			{
-				int type = MFS_int(&s);
-				if (type >= 4 && type <= 9)   // accept only ILS component overrides
+				if((rowcode >=  111 && rowcode <=  116) ||
+					rowcode == 1201 || rowcode == 1300  ||
+					(rowcode >=   18 && rowcode <=   21))
 				{
-					navaid_t n;
-					n.type = type;
-					n.lonlat.y_ = MFS_double(&s);
-					n.lonlat.x_ = MFS_double(&s);
-					MFS_int(&s);   // skip elevation
-					n.freq = MFS_int(&s);   // skip frequency
-					MFS_int(&s);   // skip range
-					n.heading   = MFS_double(&s);
-					MFS_string(&s, &n.name);
-					MFS_string(&s, &n.icao);
+					double lat = MFS_double(&s);
+					double lon = MFS_double(&s);
+					apt_bounds += Point2(lon,lat);
+				}
+			}
+			MFS_string_eol(&s,NULL);
+		}
+	MemFile_Close(str);
+	}
+}
+
+static void parse_nav_dat(MFMemFile * str, vector<navaid_t>& mNavaids, bool merge)
+{
+	MFScanner	s;
+	MFS_init(&s, str);
+	int versions[] = { 1000, 1021, 1050, 1100, 1130, 0 };
+		
+	if(MFS_xplane_header(&s,versions,NULL,NULL))
+	{
+		while(!MFS_done(&s))
+		{
+			int type = MFS_int(&s);
+			int first_type = merge ? 4 : 2;         // accept only ILS component overrides when merging
+			if (type >= first_type && type <= 9)    // NDB, VOR and ILS components
+			{
+				navaid_t n;
+				n.type = type;
+				n.lonlat.y_ = MFS_double(&s);
+				n.lonlat.x_ = MFS_double(&s);
+				MFS_int(&s);   // skip elevation
+				n.freq  = MFS_int(&s);
+				MFS_int(&s);   // skip range
+				n.heading   = MFS_double(&s);
+				MFS_string(&s, &n.name);
+				MFS_string(&s, &n.icao);
+				if (type >= 4 && type <= 9)   // ILS components
+				{
 					MFS_string(&s, NULL);  // skip region
 					MFS_string(&s, &n.rwy);
-					if (type == 6)
-					{
-						double slope = floor(n.heading / 1000.0);
-						n.heading -= slope * 1000.0;
-					}
+				}
+				if (type == 6)
+				{
+					double slope = floor(n.heading / 1000.0);
+					n.heading -= slope * 1000.0;
+				}
+				if(merge)
+				{
 					// check for duplicates before adding this new one
 					float closest_d = 9999.0;
 					vector<navaid_t>::iterator closest_i;
-
 					vector<navaid_t>::iterator i = mNavaids.begin();
 					while(i != mNavaids.end())
 					{
@@ -210,7 +156,6 @@ WED_NavaidLayer::WED_NavaidLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IRe
 						}
 						++i;
 					}
-
 					if (i == mNavaids.end())
 					{
 						if (closest_d < 20.0)
@@ -231,21 +176,55 @@ WED_NavaidLayer::WED_NavaidLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IRe
 						}
 					}
 				}
-				MFS_string_eol(&s,NULL);
+				else // not mergin, take them all
+					mNavaids.push_back(n);
 			}
-		MemFile_Close(str);
+			MFS_string_eol(&s,NULL);
+		}
 	}
+	MemFile_Close(str);
+}
 
-	string defaultApts  = resourcePath + DIR_STR "Resources" DIR_STR "default scenery" DIR_STR "default apt dat" DIR_STR "Earth nav data" DIR_STR "apt.dat";
-	string globalApts   = resourcePath + DIR_STR "Custom Scenery" DIR_STR "Global Airports" DIR_STR "Earth nav data" DIR_STR "apt.dat";
+WED_NavaidLayer::WED_NavaidLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver) :
+	WED_MapLayer(host,zoomer,resolver)
+{
+    SetVisible(false);
+	// ToDo: when mmoving to using the gateway JSON data, initiate asynchronous load/update here.
+}
+
+WED_NavaidLayer::~WED_NavaidLayer()
+{
+}
+
+void WED_NavaidLayer::LoadNavaids()
+{
+// ToDo: move this into PackageMgr, so its updated when XPlaneFolder changes and re-used when another scenery is opened
+	string resourcePath;
+	gPackageMgr->GetXPlaneFolder(resourcePath);
+
+	mNavaids.reserve(25000);    // about 3 MBytes, as of 2018 its some 20,200 navaids
+	mNavaids.push_back(navaid_t());
+
+	// deliberately ignoring any Custom Data/earth_424.dat or Custom Data/earth_nav.dat files that a user may have ... to avoid confusion
+	string defaultNavaids  = resourcePath + DIR_STR "Resources" DIR_STR "default data" DIR_STR "earth_nav.dat";
+	string globalNavaids = resourcePath + DIR_STR "Custom Scenery" DIR_STR "Global Airports" DIR_STR "Earth nav data" DIR_STR "earth_nav.dat";
+
+	MFMemFile * str = MemFile_Open(defaultNavaids.c_str());
+	if(str) parse_nav_dat(str, mNavaids, false);
+
+	str = MemFile_Open(globalNavaids.c_str());
+	if(str)	parse_nav_dat(str, mNavaids, true);
+
+	string defaultApts = resourcePath + DIR_STR "Resources" DIR_STR "default scenery" DIR_STR "default apt dat" DIR_STR "Earth nav data" DIR_STR "apt.dat";
+	string globalApts  = resourcePath + DIR_STR "Custom Scenery" DIR_STR "Global Airports" DIR_STR "Earth nav data" DIR_STR "apt.dat";
 
 	map<string,navaid_t> tAirports;
 	
 	str = MemFile_Open(defaultApts.c_str());
 	if(str) parse_apt_dat(str, tAirports, "");
-	
+
 	str = MemFile_Open(globalApts.c_str());
-	if(str) parse_apt_dat(str, tAirports, "(2D/3D)");
+	if(str) parse_apt_dat(str, tAirports, " (GW)");
 
 // Todo: speedup drawing by converting mNavaids into a multimap sorted by longitude - for quicker selection of visible navaids
 //       improve data locality - store coords as 32 bit fixed point (9mm resolution is plenty), heading, type as short = 12 bytes total (now 96)
@@ -255,16 +234,14 @@ WED_NavaidLayer::WED_NavaidLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IRe
 		mNavaids.push_back(i->second);
 }
 
-WED_NavaidLayer::~WED_NavaidLayer()
-{
-}
-
 #define NAVAID_EXTRA_RANGE 0.03  // degree's lon/lat, allows ILS beams to show even if the ILS is outside of the map window
 
 void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 {
 	double ll,lb,lr,lt;	// logical boundary
 	double vl,vb,vr,vt;	// visible boundry
+
+	if(mNavaids.empty()) LoadNavaids();
 
 	GetZoomer()->GetMapLogicalBounds(ll,lb,lr,lt);
 	GetZoomer()->GetMapVisibleBounds(vl,vb,vr,vt);
@@ -348,7 +325,7 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 					{
 						const float * color = i->heading ? vfr_blue : vfr_purple;
 						GUI_FontDraw(g, font_UI_Basic, color, pt.x()+15.0,pt.y()-20.0, i->name.c_str());
-						GUI_FontDraw(g, font_UI_Basic, color, pt.x()+15.0,pt.y()-35.0, (string("Airport ID: ") + i->icao + " " + i->rwy).c_str());
+						GUI_FontDraw(g, font_UI_Basic, color, pt.x()+15.0,pt.y()-35.0, (string("Airport ID") + i->rwy + ": " + i->icao).c_str());
 					}
 					else if(PPM > 0.5)
 					{

@@ -48,6 +48,7 @@ public:
 
 private:
 
+	void				LoadNavaids();
 	vector<navaid_t>	mNavaids;
 };
 

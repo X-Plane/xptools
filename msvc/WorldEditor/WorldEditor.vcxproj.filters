@@ -73,6 +73,9 @@
     <Filter Include="WEDFileCache">
       <UniqueIdentifier>{402bfda5-9fe6-4337-960e-11e7be115962}</UniqueIdentifier>
     </Filter>
+    <Filter Include="WEDResources\icons">
+      <UniqueIdentifier>{da9ae7de-498c-4715-984a-0fdb557b8cc4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\WEDCore\WED_Application.cpp">
@@ -1696,6 +1699,63 @@
     </None>
     <None Include="..\..\src\WEDResources\worldmap.jpg">
       <Filter>WEDResources</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\map_airport.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\map_beacon.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\map_helipad.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\map_heliport.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\map_light.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\map_missing_obj.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\map_rampstart.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\map_seaport.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\map_servicedest.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\map_taxisign.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\map_towerview.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\map_tree.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\map_windsock.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\nav_gs.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\nav_mark.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\nav_ndb.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\nav_vor.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\navmap_airport.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\navmap_seaport.png">
+      <Filter>WEDResources\icons</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
