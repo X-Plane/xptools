@@ -57,20 +57,11 @@ string ChooseStatus(const VerInfo_t & info)
 
 string ChooseDate(const VerInfo_t & info)
 {	
-	if(info.dateAccepted > info.dateApproved)
-	{
-		//Dates come in the format YYYY-MM-DDTHH:MM:SS.000Z, which we'll be shortening to YY-MM-DD HH:MM:SS
-		//The total length is 24
-		string s = info.dateAccepted.substr(2,info.dateAccepted.size()-7);//cut of the .000Z
-		s[8] = ' ';//Cut out the T
-		return s;
-	}
-	else
-	{
-		string s = info.dateApproved.substr(2,info.dateApproved.size()-7);//cut of the .000Z
-		s[8] = ' ';//Cut out the T
-		return s;
-	}
+	//Dates come in the format YYYY-MM-DDTHH:MM:SS.000Z, which we'll be shortening to YY-MM-DD HH:MM:SS
+	//The total length is 24
+	string s = info.dateAccepted.substr(2,info.dateAccepted.size()-7);//cut of the .000Z
+	s[8] = ' ';//Cut out the T
+	return s;
 }
 
 
