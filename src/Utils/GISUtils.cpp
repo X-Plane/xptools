@@ -25,7 +25,7 @@
 #include <geotiffio.h>
 #include <geo_normalize.h>
 #define PVALUE LIBPROJ_PVALUE
-#include <projects.h>
+#include <proj_api.h>
 #include <cpl_serv.h>
 #include <xtiffio.h>
 #endif
