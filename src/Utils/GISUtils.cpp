@@ -21,11 +21,14 @@
  *
  */
 #include "GISUtils.h"
+#if USE_TIF
 #include <geotiffio.h>
 #include <geo_normalize.h>
 #define PVALUE LIBPROJ_PVALUE
 #include <projects.h>
 #include <cpl_serv.h>
+#include <xtiffio.h>
+#endif
 #include "XESConstants.h"
 #include "CompGeomUtils.h"
 #include "DEMIO.h"
@@ -37,20 +40,16 @@
 #include <jasper/jasper.h>
 #endif
 
-// set to 1 to save geotiff inside geojp2 to disk
-#define DUMP_GTIF 0
-
 #if IBM
 	#include "GUI_Unicode.h"
 #endif
-#include <xtiffio.h>
 
 void	make_cache_file_path(const char * cache_base, int west, int south, const char * cache_name, char path[1024])
 {
 	sprintf(path, "%s%s%+03d%+04d%s%+03d%+04d.%s.txt", cache_base, DIR_STR, latlon_bucket (south), latlon_bucket (west), DIR_STR, (int) south, (int) west, cache_name);
 }
 
-
+#if USE_TIF
 static	bool	TransformTiffCorner(GTIF * gtif, GTIFDefn * defn, double x, double y, double& outLon, double& outLat)
 {
     /* Try to transform the coordinate into PCS space */
@@ -131,10 +130,12 @@ static	bool	TransformTiffCorner(GTIF * gtif, GTIFDefn * defn, double x, double y
 	}
 	return false;
 }
+#endif
 
 bool	FetchTIFFCorners(const char * inFileName, double corners[8], int& post_pos)
 {
 	bool retVal = false;
+#if USE_TIF
 	TIFF * tiffFile;
 #if SUPPORT_UNICODE
 	XTIFFInitialize();
@@ -147,12 +148,14 @@ bool	FetchTIFFCorners(const char * inFileName, double corners[8], int& post_pos)
 		retVal = FetchTIFFCornersWithTIFF(tiffFile, corners, post_pos);
 		XTIFFClose(tiffFile);
 	}
+#endif
 	return retVal;
 }
 
 bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos, int width, int height)
 {
 	bool retVal = false;
+#if USE_TIF
 	GTIF * gtif = GTIFNew(tiffFile);
 	if (gtif)
 	{
@@ -245,6 +248,7 @@ bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos,
 		}
 		GTIFFree(gtif);
 	}
+#endif
 	return retVal;
 }
 #if USE_GEOJPEG2K
@@ -417,6 +421,7 @@ bool	FetchTIFFCornersWithJP2K(const char * inFileName, double corners[8], int& p
 }
 #endif
 
+#if USE_TIF
 hash_map<int, projPJ>	sUTMProj;
 struct CTABLE *		sNADGrid = NULL;
 
@@ -458,6 +463,7 @@ void	UTMToLonLat(double x, double y, int zone, double * outLon, double * outLat)
 	if (outLon) *outLon = sUV.u * RAD_TO_DEG;
 	if (outLat) *outLat = sUV.v * RAD_TO_DEG;
 }
+#endif
 
 double	LonLatDistMeters(Point2 lonlat1, Point2 lonlat2)
 {
