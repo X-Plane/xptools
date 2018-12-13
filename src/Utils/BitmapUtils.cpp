@@ -1887,8 +1887,8 @@ inline void swap_mem(unsigned char * p1, unsigned char * p2, int len)
 {
 	while(len--)
 	{
-		register unsigned char a = *p1;
-		register unsigned char b = *p2;
+		unsigned char a = *p1;
+		unsigned char b = *p2;
 		*p1 = b;
 		*p2 = a;
 		++p1;

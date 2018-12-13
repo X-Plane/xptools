@@ -46,19 +46,19 @@ void	GenerateOGL(AptInfo_t * a);
 #endif
 
 #define NUM_RAMP_TYPES 4
-const char * ramp_type_strings[] = { "misc", "gate", "tie_down","hangar", 0 };
+const char * ramp_type_strings[] = { "misc", "gate", "tie_down","hangar", NULL };
 
 #define NUM_RAMP_OP_TYPES 6
 //The human readable types that will get saved 
-const char * ramp_operation_type_strings[] = { "none", "general_aviation", "airline", "cargo", "military", 0 };
+const char * ramp_operation_type_strings[] = { "none", "general_aviation", "airline", "cargo", "military", NULL };
 
-const char * pattern_strings[] = { "left", "right", 0 };
-const char * equip_strings[] = { "heavy", "jets", "turboprops", "props", "helos", "fighters", 0 };
-const char * equip_strings_gate[] = { "heavy", "jets", "turboprops", "props", "helos", "fighters","all","A","B","C","D","E","F", 0 };
-const char * op_strings[] = { "arrivals", "departures", 0 };
+const char * pattern_strings[] = { "left", "right", NULL };
+const char * equip_strings[] = { "heavy", "jets", "turboprops", "props", "helos", "fighters", NULL };
+const char * equip_strings_gate[] = { "heavy", "jets", "turboprops", "props", "helos", "fighters","all","A","B","C","D","E","F", NULL };
+const char * op_strings[] = { "arrivals", "departures", NULL };
 // TODO:
 // find a way to not have to keep this string in the same sequence with service enums defined in AptDefs.h and WED_Enums.h
-const char * truck_type_strings[] = { "baggage_loader", "baggage_train", "crew_car", "crew_ferrari", "crew_limo", "fuel_jets", "fuel_liners", "fuel_props", "food", "gpu", "pushback", 0 }; 
+const char * truck_type_strings[] = { "baggage_loader", "baggage_train", "crew_car", "crew_ferrari", "crew_limo", "fuel_jets", "fuel_liners", "fuel_props", "food", "gpu", "pushback", NULL };
 
 // LLLHHH
 void divide_heading(int * lo, int * hi)
@@ -706,7 +706,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 						{
 							//If we've loop through the whole array of ramp_ai_opperation_types
 							//we have a problem
-							if(ramp_operation_type_strings[i] == '\0')
+							if(ramp_operation_type_strings[i] == NULL)
 							{
 								ok = string("Error: ") + ramp_op_type_human_string + "is not a real Ramp Operation Type";
 								break;
@@ -987,7 +987,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				}
 
 				const char** str = truck_type_strings;
-				while(*str != '\0')
+				while(*str != NULL)
 				{
 					if (strcmp(truck_type_str.c_str(),*str)==0)
 					{
@@ -995,7 +995,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 						break;
 					}
 					++str;
-					if (*str == '\0')
+					if (*str == NULL)
 					{
 						ok = ("Error: Truck type " + truck_type_str + " is not supported.");
 					}
@@ -1033,7 +1033,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				for (vector<string>::iterator itr = tokenized.begin(); itr != tokenized.end(); ++itr)
 				{
 					const char** str = truck_type_strings;
-					while (*str != '\0')
+					while (*str != NULL)
 					{
 						if (strcmp(itr->c_str(), *str) == 0)
 						{
@@ -1041,7 +1041,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 							break;
 						}
 						++str;
-						if (*str == '\0')
+						if (*str == NULL)
 						{
 							ok = ("Error: Truck type " + *itr + " is not supported.");
 						}
