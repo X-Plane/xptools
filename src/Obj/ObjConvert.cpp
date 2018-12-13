@@ -25,6 +25,7 @@
 #include <math.h>
 #include <string.h>
 
+#include "stdafx.h"
 #include "tri_stripper.h"
 using namespace	triangle_stripper;
 

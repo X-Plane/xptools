@@ -966,16 +966,16 @@ MF_GetDirectoryBulk(
 {
 #if IBM
 
-	WCHAR				searchPath[MAX_PATH];
+	string_utf16		searchPath;
 	WIN32_FIND_DATAW	findData;
 	HANDLE				hFind;
 	int					total = 0;
 	unsigned long long	when;
 
-	::wcscpy(searchPath,(const WCHAR*)path);
-	::wcscat(searchPath,L"\\*.*");
+	searchPath = convert_str_to_utf16(path);
+	searchPath += convert_str_to_utf16("\\*.*");
 
-	hFind = FindFirstFileW(searchPath,&findData);
+	hFind = FindFirstFileW(searchPath.c_str(),&findData);
 	if (hFind == INVALID_HANDLE_VALUE) return 0;
 
 	++total;
