@@ -100,6 +100,20 @@
 
 #define DOUBLE_PT_DIST (1.0 * MTR_TO_DEG_LAT)
 
+namespace std
+{
+	template <> struct less<Point2>
+	{
+		bool operator()(const Point2 & lhs, const Point2 & rhs) const
+		{
+			if (lhs.x() != rhs.x())
+				return lhs.x() < rhs.x();
+			else
+				return lhs.y() < rhs.y();
+		}
+	};
+}
+
 int		WED_CanGroup(IResolver * inResolver)
 {
 	ISelection * sel = WED_GetSelect(inResolver);
