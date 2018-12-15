@@ -300,7 +300,7 @@ struct	XObj8 {
 	string 					texture;
 	string 					texture_normal_map;
 	string 					texture_lit;
-	string					texture_nrm;
+// AC unused	string					texture_nrm;
 	string 					texture_draped;
 	int						use_metalness;
 	int						glass_blending;

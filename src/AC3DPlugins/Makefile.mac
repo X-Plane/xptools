@@ -27,7 +27,7 @@ XPINC=-I../../src/DSF -I../../src/DSF/tri_stripper_101 -I../../src/DSFTools -I..
 INCLUDE=-I../src -I../../sdk/ac3d -I../../src/Obj $(XPINC) -I/usr/include/c++/4.2.1
 
 # -Wno-write-strings surpresses 'warning: deprecated conversion from string constant to ‘char*’'
-CFLAGS=  -dynamic -DMAC -DMACINTOSH -DAPL $(INCLUDE) $(ARCH) -Wno-write-strings -g
+CFLAGS=  -dynamic -DMAC -DMACINTOSH -DAPL $(INCLUDE) $(ARCH) -Wno-write-strings -mmacosx-version-min=10.6
 
 CC=gcc
 LD=gcc

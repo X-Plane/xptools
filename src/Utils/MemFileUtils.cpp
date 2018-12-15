@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2004, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -114,7 +114,7 @@
 #endif
 
 #include <zlib.h>
-#include <unzip.h>
+#include "unzip.h"
 
 #define REGTYPE	 '0'		/* regular file */
 #define AREGTYPE '\0'		/* regular file */
@@ -628,9 +628,8 @@ bool			TextScanner_IsDone		(MFTextScanner * inScanner)
 
 void			TextScanner_Next		(MFTextScanner * s)
 {
-	if (s->mRunBegin == s->mFileEnd)	return;
-
 	s->mRunBegin = s->mRunEnd;
+	if (s->mRunBegin == s->mFileEnd)	return;
 	if (*(s->mRunBegin) == '\r')
 	{
 		s->mRunBegin++;

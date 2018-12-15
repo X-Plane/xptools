@@ -597,9 +597,6 @@
     <ClCompile Include="..\..\src\Obj\XObjReadWrite.cpp">
       <Filter>Obj</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Obj\ObjConvert.cpp">
-      <Filter>Obj</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Obj\ObjDraw.cpp">
       <Filter>Obj</Filter>
     </ClCompile>
@@ -1363,9 +1360,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\DSFTools\DSFToolsPrefix.h">
       <Filter>DSFTools</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Obj\ObjConvert.h">
-      <Filter>Obj</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Obj\ObjDraw.h">
       <Filter>Obj</Filter>

@@ -27,6 +27,10 @@
 #include "obj_model.h"
 #include <math.h>
 #include "XDefs.h"
+
+
+
+
 #if IBM
 	// fix this if there is a 64bit version of ac3d somewhen
 	#define	intptr_t	int
