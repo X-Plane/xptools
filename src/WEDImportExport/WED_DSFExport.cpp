@@ -1400,7 +1400,7 @@ static int	DSF_ExportTileRecursive(
 						if(fac_is_auto_closed && bad_match(chain.front(),chain.back()))
 							problem_children.insert(what);
 						else
-							DSF_AccumChainBezier(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
+							DSF_AccumChainBezier(chain.cbegin(),chain.cend(), safe_bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
 					}
 				}
 				else
@@ -1421,7 +1421,7 @@ static int	DSF_ExportTileRecursive(
 						if(fac_is_auto_closed && bad_match(chain.front(),chain.back()))
 							problem_children.insert(what);
 						else
-							DSF_AccumChain(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
+							DSF_AccumChain(chain.cbegin(),chain.cend(), safe_bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
 					}
 				}
 			}
@@ -1854,10 +1854,10 @@ static int	DSF_ExportTileRecursive(
 					Point2 center = b.centroid();
 					//-------------------------------------------
 					pol_info_t out_info = {relativePathDDS, false,
-						/*SCALE*/ LonLatDistMeters(b.p1,Point2(b.p2.x(), b.p1.y())), LonLatDistMeters(b.p1,Point2(b.p1.x(), b.p2.y())),  // althought its irrelevant here
+						/*SCALE*/ (float) LonLatDistMeters(b.p1,Point2(b.p2.x(), b.p1.y())), (float) LonLatDistMeters(b.p1,Point2(b.p1.x(), b.p2.y())),  // althought its irrelevant here
 						false, false, 
 						/*LAYER_GROUP*/ "", 0,
-						/*LOAD_CENTER*/ center.y(), center.x(), LonLatDistMeters(b.p1,b.p2), intmax2(DDSInfo.height,DDSInfo.width) };
+						/*LOAD_CENTER*/ (float) center.y(), (float) center.x(), LonLatDistMeters(b.p1,b.p2), intmax2(DDSInfo.height,DDSInfo.width) };
 					rmgr->WritePol(absPathPOL, out_info);
 					DestroyBitmap(&DDSInfo);
 				}

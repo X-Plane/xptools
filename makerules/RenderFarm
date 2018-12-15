@@ -23,7 +23,6 @@ LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjasper.a
 
 ifdef PLAT_LINUX
 LIBS		+= -lpthread -lrt

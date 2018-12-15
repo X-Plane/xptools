@@ -30,6 +30,7 @@ WED 1.8.0 a7 12/4/18
 	- show more particular pictograms for XP11.25 added yellow line types
 	- WED-939: Warn about "silly" large ramp starts at airports with way to small runways
 	Bug Fixes:
+	- fix missing symbolic light styles when drawing certain of the new XP11.25 line styles
 	- WED-1111: Fix date shown at gateway import scenery version selection
 	- dial back the WED 1.7 map drawing speedup by one notch to help pavement display
 	- crash when clicking menu bar after starting with a new, empty airport

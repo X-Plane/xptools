@@ -283,8 +283,8 @@ void	GUI_PlotIconBulk(
 	glBegin(GL_QUADS);
 	while(count--)
 	{
-		register int xx = *x++;
-		register int yy = *y++;
+		int xx = *x++;
+		int yy = *y++;
 		glColor4fv(c);
 		c += 4;
 		glTexCoord2f(0.0f			  ,0.0f				);				glVertex2i(xx - width1, yy - height1);
