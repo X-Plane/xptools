@@ -9,21 +9,18 @@ DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1 -DOPENGL_MAP=1
 FORCEREBUILD_SUFFIX := _rfui
 
 ifdef PLAT_LINUX
-LDFLAGS		+= -nodefaultlibs -rdynamic
-#LDFLAGS	+= -pie
-LIBS		+= -Wl,--as-needed
-LIBS		+= -Wl,-Bstatic -Wl,--start-group
-LIBS		+= -lexpat -lsquish -lshp -lgeotiff
-LIBS		+= -lCGAL -lCGAL_Core -lproj -lfreetype -ltiff -ljpeg -lpng -lz
-LIBS		+= -lgmp -lmpfr -lstdc++ -lgcc -lgcc_eh
-LIBS		+= -Wl,--end-group -Wl,-Bdynamic
-LIBS		+= -lQtCore -lQtGui -lQtOpenGL -lGL -lGLU -ldl -lc -lm
-LIBS		+= -lboost_thread -lboost_system -lpthread
+LDFLAGS		+= -rdynamic
+LDFLAGS		+= -Wl,--exclude-libs,ALL
+LIBS		+= -lQtCore -lQtGui -lQtOpenGL -lGL -lGLU -ldl
+LIBS		+= -lpthread
+LIBS		+= -Wl,-Bdynamic
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN
 LDFLAGS		+= -framework Carbon -framework OpenGL -framework AppKit
-LIBS		:= ./libs/local/lib/libCGAL.a
+endif #PLAT_DARWIN
+
+LIBS		+= ./libs/local/lib/libCGAL.a
 LIBS		+= ./libs/local/lib/libCGAL_Core.a
 LIBS		+= ./libs/local/lib/libboost_thread.a
 LIBS		+= ./libs/local/lib/libboost_system.a
@@ -39,7 +36,7 @@ LIBS		+= ./libs/local/lib/libpng.a
 LIBS		+= ./libs/local/lib/libfreetype.a
 LIBS		+= ./libs/local/lib/libexpat.a
 LIBS		+= ./libs/local/lib/libz.a
-endif #PLAT_DARWIN
+
 
 ##
 # sources
