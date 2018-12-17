@@ -179,6 +179,7 @@
       <AdditionalLibraryDirectories>..\..\SDK\ac3d</AdditionalLibraryDirectories>
       <AdditionalDependencies>ac3d64.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
