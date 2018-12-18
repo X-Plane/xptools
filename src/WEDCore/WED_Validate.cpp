@@ -800,7 +800,9 @@ static void ValidateOneATCRunwayUse(WED_ATCRunwayUse* use, validation_error_vect
 	else if(urule.equipment == 0)
 		msgs.push_back(validation_error_t("ATC runway use must support at least one equipment type.", err_rwy_use_must_have_at_least_one_equip, use, apt));
 
-    if(gExportTarget == wet_gateway)
+	AptInfo_t ainfo;
+	apt->Export(ainfo);
+    if(gExportTarget == wet_gateway && ainfo.has_atc_twr)
 	if(find(dep_freqs.begin(), dep_freqs.end(), urule.dep_freq) == dep_freqs.end())
 	{
 		msgs.push_back(validation_error_t("ATC runway use departure frequency is not matching any ATC departure frequency defined at this airport.", err_rwy_use_no_matching_dept_freq, use, apt));
@@ -2198,9 +2200,12 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 			}
 		}
 
+		// verify existence of required runways
 		map<int,Point3> CIFP_rwys;
 		set<int> rwys_missing;
-
+		string icao_meta = apt->GetMetaDataValue(wed_AddMetaDataICAO);
+		if(!icao_meta.empty()) icao = icao_meta; // go by ICAO meta tag if it exists
+		
 		if (mf)
 		{
 			MFScanner	s;
@@ -2227,7 +2232,6 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 				MFS_string_eol(&s,NULL);
 			}
 		}
-		// verify existence of required runways
 		for(set<int>::iterator i = legal_rwy_oneway.begin(); i != legal_rwy_oneway.end(); ++i)
 		{
 			rwys_missing.erase(*i);    // remove those runways that can be found in the scenery for this airport
