@@ -15,6 +15,7 @@ CHANGE HISTORY
 
 WED 1.8.0 a7 12/4/18
     Features:
+    - WED-1115: KEDW exemption for airport size
     - toughen language used in apt.dat import warning to increase effectiveness
     - add automatic image splitting for large orthophotos
     - improve error reporting and 'marginal' path handling in orthophoto im/export

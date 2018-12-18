@@ -2130,8 +2130,9 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	{
 		Bbox2 bounds;
 		apt->GetBounds(gis_Geo, bounds);
-		if(bounds.xspan() > MAX_LON_SPAN_GATEWAY / cos(bounds.centroid().y() * M_PI / 180.0) ||         // correction for higher lattitudes
-				bounds.yspan() > MAX_LAT_SPAN_GATEWAY)
+		int lg_apt_mult = ( name == "KEDW" ? 2.0 : 1.0);  // because this one has the runways on all surrounding salt flats included
+		if(bounds.xspan() > lg_apt_mult * MAX_LON_SPAN_GATEWAY / cos(bounds.centroid().y() * DEG_TO_RAD) ||     // correction for higher lattitudes
+				bounds.yspan() > lg_apt_mult* MAX_LAT_SPAN_GATEWAY)
 		{
 			msgs.push_back(validation_error_t("This airport is impossibly large. Perhaps a part of the airport has been accidentally moved far away or is not correctly placed in the hierarchy?", err_airport_impossible_size, apt,apt));
 		}
