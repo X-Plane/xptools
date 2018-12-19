@@ -290,7 +290,12 @@ void WED_NavaidLayer::LoadNavaids()
 	str = MemFile_Open(globalNavaids.c_str());
 	if(str)	parse_nav_dat(str, mNavaids, true);
 	
-	string defaultATC  = resourcePath + DIR_STR "Resources" DIR_STR "default scenery" DIR_STR "default atc" DIR_STR "Earth nav data" DIR_STR "atc.dat";
+#if IBM
+	// on the windows platform there is an extra "dat" in the path name. Really, really odd.
+	string defaultATC = resourcePath + DIR_STR "Resources" DIR_STR "default scenery" DIR_STR "default atc dat" DIR_STR "Earth nav data" DIR_STR "atc.dat";
+#else
+	string defaultATC = resourcePath + DIR_STR "Resources" DIR_STR "default scenery" DIR_STR "default atc" DIR_STR "Earth nav data" DIR_STR "atc.dat";
+#endif
 	string seattleATC  = resourcePath + DIR_STR "Custom Scenery" DIR_STR "KSEA Demo Area" DIR_STR "Earth nav data" DIR_STR "atc.dat";
 
 	str = MemFile_Open(defaultATC.c_str());

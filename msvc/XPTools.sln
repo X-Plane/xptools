@@ -76,7 +76,7 @@ Global
 		{A23070DD-2C26-48CC-B062-65B3B7293766}.Debug|x64.ActiveCfg = Debug|Win32
 		{A23070DD-2C26-48CC-B062-65B3B7293766}.Release|Win32.ActiveCfg = Release|Win32
 		{A23070DD-2C26-48CC-B062-65B3B7293766}.Release|Win32.Build.0 = Release|Win32
-		{A23070DD-2C26-48CC-B062-65B3B7293766}.Release|x64.ActiveCfg = Release|Win32
+		{A23070DD-2C26-48CC-B062-65B3B7293766}.Release|x64.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
