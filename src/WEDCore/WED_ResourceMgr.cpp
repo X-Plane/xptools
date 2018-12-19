@@ -584,7 +584,7 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& out_info, int varia
 			}
 			else if (MFS_string_match(&s,"ROOF_SLOPE", false))
 			{
-				out_info.roof = true;
+//				out_info.roof = true;   // ignore it, many ring-type facades specify this, erroneously
 				out_info.roof_slope = MFS_double(&s);
 			}
 			else if (MFS_string_match(&s,"SHADER_ROOF", false))
