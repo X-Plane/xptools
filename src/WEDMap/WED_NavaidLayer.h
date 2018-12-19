@@ -29,12 +29,13 @@
 
 struct navaid_t {
 	int		type;
-	Point2	lonlat;
+	vector<Point2> lonlat;
+	//Point2 lonlat;
 	float	heading;
 	string	name;
 	string	icao;
-	int     freq;     // ATC tower freq for airports
-	string	rwy;      // Gateway 2D/3D status for airports
+	int     freq;     // ATC tower freq for airports, in kHz
+	string	rwy;      // Or some other informative text
 };
 
 class WED_NavaidLayer : public WED_MapLayer {
