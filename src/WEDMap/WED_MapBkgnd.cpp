@@ -104,6 +104,7 @@ void		WED_MapBkgnd::DrawStructure(bool inCurrent, GUI_GraphState * g)
 	g->SetState(false,false,false, true,true, false,false);
 	// Gridline time...
 	glColor4fv(WED_Color_RGBA(wed_Map_Gridlines));
+	glLineWidth(1.0);
 	g->SetState(false,false,false, false,true, false,false);
 
 	double lon_span = vr - vl;

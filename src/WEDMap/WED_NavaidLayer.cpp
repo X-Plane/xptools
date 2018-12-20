@@ -42,6 +42,9 @@
 	#include <GL/gl.h>
 #endif
 
+#define SHOW_TOWERS 1
+#define NAVAID_EXTRA_RANGE 0.1  // degree's lon/lat, allows ILS beams to show even if the ILS is outside of the map window
+
 static void parse_apt_dat(MFMemFile * str, map<string, navaid_t>& tAirports, const string& source)
 {
 	MFScanner	s;
@@ -197,6 +200,7 @@ static void parse_atc_dat(MFMemFile * str, vector<navaid_t>& mNavaids)
 	if(MFS_xplane_header(&s,versions,"ATCFILE",NULL))
 	{
 		navaid_t n;
+		int num_rings;
 		while(!MFS_done(&s))
 		{
 			if(MFS_string_match(&s, "CONTROLLER", 1))
@@ -205,16 +209,20 @@ static void parse_atc_dat(MFMemFile * str, vector<navaid_t>& mNavaids)
 				n.lonlat.clear();
 				n.lonlat.push_back(Point2(180.0,0.0));
 				n.rwy.clear();
+				num_rings = 0;
 			}
 			if(MFS_string_match(&s, "ROLE", 0))
 			{
 				string role;
 				MFS_string(&s, &role);
 				n.type = role == "tracon" ? 9999 : 0; // navaid pseudo code for TRACON areas
+#if SHOW_TOWERS
+				if(role == "twr") n.type = 9998;
+#endif
 			}
 			else if(MFS_string_match(&s, "NAME", 0))
 			{
-				MFS_string(&s, &n.name);
+				MFS_string_eol(&s, &n.name);
 			}
 			else if(MFS_string_match(&s, "FACILITY_ID", 0))
 			{
@@ -234,7 +242,7 @@ static void parse_atc_dat(MFMemFile * str, vector<navaid_t>& mNavaids)
 				if(!n.rwy.empty()) n.rwy += ", ";
 				n.rwy += tmp.substr(0,tmp.size()-3) + "." + tmp.substr(tmp.size()-3);
 			}
-			else if(n.type == 9999)
+			else if(n.type)
 			{
 				if(MFS_string_match(&s, "POINT", 0))
 				{
@@ -244,13 +252,25 @@ static void parse_atc_dat(MFMemFile * str, vector<navaid_t>& mNavaids)
 					if( lon < n.lonlat.front().x_)
 						n.lonlat.front() = Point2(lon,lat);  // get the left side of the area
 				}
+				else if(MFS_string_match(&s, "AIRSPACE_POLYGON_BEGIN", 1))
+				{
+					num_rings++;
+				}
 				else if(MFS_string_match(&s, "AIRSPACE_POLYGON_END", 1))
 				{
 #if DEV
 					printf("Adding new %d %s %s %d\n", n.type, n.name.c_str(), n.icao.c_str(), (int) n.lonlat.size());
 #endif
-					n.name += " TRACON";
-					n.rwy += " MHz";
+					if (num_rings == 1)
+					{
+#if SHOW_TOWERS
+						if (n.type == 9998)
+							n.name += " TOWER";
+						else
+#endif					
+						n.name += " APPROACH";
+						n.rwy += " MHz";
+					}
 					mNavaids.push_back(n);
 				}
 			}
@@ -290,15 +310,17 @@ void WED_NavaidLayer::LoadNavaids()
 	str = MemFile_Open(globalNavaids.c_str());
 	if(str)	parse_nav_dat(str, mNavaids, true);
 	
-#if IBM
-	// on the windows platform there is an extra "dat" in the path name. Really, really odd.
 	string defaultATC = resourcePath + DIR_STR "Resources" DIR_STR "default scenery" DIR_STR "default atc dat" DIR_STR "Earth nav data" DIR_STR "atc.dat";
-#else
-	string defaultATC = resourcePath + DIR_STR "Resources" DIR_STR "default scenery" DIR_STR "default atc" DIR_STR "Earth nav data" DIR_STR "atc.dat";
-#endif
 	string seattleATC  = resourcePath + DIR_STR "Custom Scenery" DIR_STR "KSEA Demo Area" DIR_STR "Earth nav data" DIR_STR "atc.dat";
 
 	str = MemFile_Open(defaultATC.c_str());
+
+	// on the linux and OSX platforms this path was different before XP11.30 for some unknown reasons. So try that.
+	if(!str)
+	{
+		defaultATC = resourcePath + DIR_STR "Resources" DIR_STR "default scenery" DIR_STR "default atc" DIR_STR "Earth nav data" DIR_STR "atc.dat";
+		str = MemFile_Open(defaultATC.c_str());
+	}
 	if(str)	parse_atc_dat(str, mNavaids);
 	str = MemFile_Open(seattleATC.c_str());
 	if(str)	parse_atc_dat(str, mNavaids);
@@ -322,8 +344,6 @@ void WED_NavaidLayer::LoadNavaids()
 #endif
 }
 
-#define NAVAID_EXTRA_RANGE 0.03  // degree's lon/lat, allows ILS beams to show even if the ILS is outside of the map window
-
 void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 {
 	double ll,lb,lr,lt;	// logical boundary
@@ -346,8 +366,10 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 	const float red[4]        = { 1.0, 0.4, 0.4, 0.66 };
 	const float vfr_purple[4] = { 0.9, 0.4, 0.9, 0.8 };
 	const float vfr_blue[4]   = { 0.4, 0.4, 1.0, 0.8 };
-	glLineWidth(1.8);
-
+	glLineWidth(1.6);
+	glLineStipple(1, 0xF0F0);
+	glDisable(GL_LINE_STIPPLE);
+	
 	if (PPM > 0.001)          // stop displaying navaids when zoomed out - gets too crowded
 		for(vector<navaid_t>::iterator i = mNavaids.begin(); i != mNavaids.end(); ++i)  // this is brain dead - use list sorted by longitude
 		{
@@ -394,14 +416,21 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 				}
 				else if(i->type < 100)
 					GUI_PlotIcon(g,"nav_mark.png", pt.x(), pt.y(), i->heading, scale);
-				else if(i->type == 9999)
+				else if(i->type <= 9999)
 				{
 					glColor4fv(vfr_blue);
+#if SHOW_TOWERS
+					if (i->type == 9998)
+						glEnable(GL_LINE_STIPPLE);
+#endif					
 					int pts = i->lonlat.size()-1;
 					vector<Point2> c(pts);
 					GetZoomer()->LLToPixelv(&(c[0]),&(i->lonlat[1]),pts);
 					g->SetState(0, 0, 0, 0, 1, 0, 0);
 					glShape2v(GL_LINE_LOOP, &(c[0]), pts);
+#if SHOW_TOWERS
+					glDisable(GL_LINE_STIPPLE);
+#endif					
 				}
 				else
 				{
@@ -419,7 +448,7 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 					}
 				}
 				// draw text labels, be carefull not to clutter things
-				if(i->type == 9999)
+				if((i->type == 9998 && PPM  > 0.01) || i->type == 9999)
 				{
 					const float * color = vfr_blue;
 					GUI_FontDraw(g, font_UI_Basic, color, pt.x()+8.0,pt.y()-15.0, i->name.c_str());
