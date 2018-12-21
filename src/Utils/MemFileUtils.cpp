@@ -1096,7 +1096,14 @@ bail:
 	return success;
 }
 
-inline int iseoln(const char c) { return c == '\n' || c == '\r'; }
+/* these macros beat speedwise the crap out of any stdlib implementation. 
+  All the code here is written under the (wrong) assumption that isspace is not considering CR/LF as whitespace.
+  ( !isspace() && !ieoln() ) checks for CR/LF _twice_. See also XObjread - its done correctly there and this
+  code was obviously dereived from there.
+*/
+
+#define isspace(c) ( c == ' ' || c == '\t' )
+#define iseoln(c)  ( c == '\n' || c == '\r' )
 
 void	MFS_init(MFScanner * scanner, MFMemFile * inFile)
 {
@@ -1178,7 +1185,7 @@ double	MFS_double(MFScanner * s)
 
 	double	sign_mult	=1;
 	double	ret_val		=0;
-#if 1                                   // this optimization reduces apt.dat reading time by -42% !!!
+#if 1                            // this version reduces CPU time reading 200MB apt.dat by 0.32 sec on 3.6 GHz CPU !!!!
 	double	decimals = 0.0;
 
 	if(s->cur >= s->end) return 0.0;
@@ -1186,7 +1193,7 @@ double	MFS_double(MFScanner * s)
 		 if(*s->cur=='-') { sign_mult =-1.0; s->cur++; }
 	else if(*s->cur=='+') { s->cur++; }
 		
-	while(s->cur<s->end && !isspace(*s->cur) && !iseoln(*s->cur))
+	while(s->cur < s->end && !isspace(*s->cur) && !iseoln(*s->cur))
 	{
 		if(decimals != 0.0)
 		{
