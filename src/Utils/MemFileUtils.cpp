@@ -1178,9 +1178,33 @@ double	MFS_double(MFScanner * s)
 
 	double	sign_mult	=1;
 	double	ret_val		=0;
+#if 1                                   // this optimization reduces apt.dat reading time by -42% !!!
+	double	decimals = 0.0;
+
+	if(s->cur >= s->end) return 0.0;
+	
+		 if(*s->cur=='-') { sign_mult =-1.0; s->cur++; }
+	else if(*s->cur=='+') { s->cur++; }
+		
+	while(s->cur<s->end && !isspace(*s->cur) && !iseoln(*s->cur))
+	{
+		if(decimals != 0.0)
+		{
+			ret_val += ((*s->cur)-'0') * decimals;
+			decimals *= 0.1;
+		}
+		else if(*s->cur == '.')
+			decimals = 0.1;
+		else
+			ret_val = (10.0 * ret_val) + (*s->cur)-'0';
+
+		s->cur++;
+	}
+	return ret_val * sign_mult;
+#else
 	int		decimals	=0;
 	int		has_decimal	=0;
-
+	
 	while(s->cur<s->end && !isspace(*s->cur) && !iseoln(*s->cur))
 	{
 			 if(*s->cur=='-')sign_mult   =-1.0;
@@ -1193,6 +1217,7 @@ double	MFS_double(MFScanner * s)
 		s->cur++;
 	}
 	return ret_val/pow((double)10,(double)decimals)*sign_mult;
+#endif
 }
 
 // X-Plane uses standard headers for most of its files...the format is:
