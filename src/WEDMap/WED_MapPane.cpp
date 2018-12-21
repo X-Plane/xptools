@@ -673,6 +673,8 @@ void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
 #include "WED_ATCTimeRule.h"
 #include "WED_ATCWindRule.h"
 #include "WED_ATCRunwayUse.h"
+#include "WED_TruckDestination.h"
+#include "WED_TruckParkingLocation.h"
 #include "WED_RoadEdge.h"
 
 //Note: Replace WED_Airport or WED_Group with WED_GISComposite or it won't work when nested underneath
@@ -740,6 +742,9 @@ void hide_all_persistents(vector<const char*>& hide_list)
 	hide_list.push_back(WED_ATCTimeRule::sClass);
 	hide_list.push_back(WED_ATCWindRule::sClass);
 	hide_list.push_back(WED_ATCRunwayUse::sClass);
+	hide_list.push_back(WED_TruckDestination::sClass);
+	hide_list.push_back(WED_TruckParkingLocation::sClass);
+	
 #if ROAD_EDITING
 	hide_list.push_back(WED_RoadEdge::sClass);
 #endif // ROAD_EDITING
@@ -811,8 +816,6 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 		title = "ATC Taxi + Flow Mode";
 
 		lock_list.push_back(WED_DrapedOrthophoto::sClass);
-		lock_list.push_back(WED_FacadePlacement::sClass);
-		lock_list.push_back(WED_ForestPlacement::sClass);
 		lock_list.push_back(WED_ObjPlacement::sClass);
 		lock_list.push_back(WED_PolygonPlacement::sClass);
 		lock_list.push_back(WED_Runway::sClass);
@@ -824,6 +827,8 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 		unhide_persistent(hide_list, WED_RampPosition::sClass);
 		unhide_persistent(hide_list, WED_TaxiRoute::sClass);
 		unhide_persistent(hide_list, WED_TaxiRouteNode::sClass);
+		unhide_persistent(hide_list, WED_TruckDestination::sClass);
+		unhide_persistent(hide_list, WED_TruckParkingLocation::sClass);
 	}
 	else if(mode == tab_Lights)
 	{
@@ -855,6 +860,7 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 		unhide_persistent(hide_list, WED_FacadePlacement::sClass);
 		unhide_persistent(hide_list, WED_ForestPlacement::sClass);
 		unhide_persistent(hide_list, WED_ObjPlacement::sClass);
+		unhide_persistent(hide_list, WED_TruckParkingLocation::sClass);
 	}
 	else if(mode == tab_Exclusions)
 	{

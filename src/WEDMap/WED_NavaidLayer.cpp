@@ -340,24 +340,17 @@ void WED_NavaidLayer::LoadNavaids()
 	if(str)	parse_atc_dat(str, mNavaids);
 	
 #if SHOW_APTS_FROM_APTDAT
-
 	string defaultApts = resourcePath + DIR_STR "Resources" DIR_STR "default scenery" DIR_STR "default apt dat" DIR_STR "Earth nav data" DIR_STR "apt.dat";
 	string globalApts  = resourcePath + DIR_STR "Custom Scenery" DIR_STR "Global Airports" DIR_STR "Earth nav data" DIR_STR "apt.dat";
 
 	map<string,navaid_t> tAirports;
 	str = MemFile_Open(defaultApts.c_str());
-auto t0 = std::chrono::high_resolution_clock::now();
 	if(str) parse_apt_dat(str, tAirports, "");
-auto t1 = std::chrono::high_resolution_clock::now();
 	str = MemFile_Open(globalApts.c_str());
 	if(str) parse_apt_dat(str, tAirports, " (GW)");
 
 	for(map<string, navaid_t>::iterator i = tAirports.begin(); i != tAirports.end(); ++i)
 		mNavaids.push_back(i->second);
-		
-chrono::duration<double> elapsed = t1-t0;
-printf("0 to 1 time: %lf\n", elapsed.count());
-
 #endif
 
 // Todo: speedup drawing by sorting mNavaids into longitude buckets, so the preview function only have to go through a smalller part of the overall list.
