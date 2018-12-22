@@ -816,6 +816,7 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 		title = "ATC Taxi + Flow Mode";
 
 		lock_list.push_back(WED_DrapedOrthophoto::sClass);
+		lock_list.push_back(WED_FacadePlacement::sClass);
 		lock_list.push_back(WED_ObjPlacement::sClass);
 		lock_list.push_back(WED_PolygonPlacement::sClass);
 		lock_list.push_back(WED_Runway::sClass);
