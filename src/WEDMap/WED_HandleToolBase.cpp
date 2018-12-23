@@ -564,11 +564,15 @@ void WED_HandleToolBase::ProcessSelection(
 				printf("FYI, nothing to select here.\n");
 			else
 			{	
-				printf("duh - this should not happen. Multiple items are selected,\nbut none of them are in the priority list for object selection:\n");
+				printf("duh - this should only happen if a mLockedItems list is active. Multiple items are selected,\nbut none of them are in the priority list for object selection:\n");
 				for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)
 					printf("Selected are GISClass #%d Subtype %s\n", (*i)->GetGISClass()-gis_Point, (*i)->GetGISSubtype());
+				result.clear();
 			}
 		}
+#else
+		else
+			result.clear();
 #endif		
 //	result.insert(result_old.begin(), result_old.end());   // merge back in what we took out initially
 	}
