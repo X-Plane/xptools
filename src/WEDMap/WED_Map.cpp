@@ -105,6 +105,7 @@ void		WED_Map::SetBounds(int inBounds[4])
 	SetPixelBounds(inBounds[0],inBounds[1],inBounds[2],inBounds[3]);
 
 }
+#include <chrono>
 
 void		WED_Map::Draw(GUI_GraphState * state)
 {
@@ -117,6 +118,8 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	GetMapVisibleBounds(bounds.p1.x_,bounds.p1.y_,bounds.p2.x_,bounds.p2.y_);
 	ISelection * sel = GetSel();
 	IGISEntity * base = GetGISBase();
+	
+auto t0 = chrono::high_resolution_clock::now();
 
 	vector<WED_MapLayer *>::iterator l;
 	for (l = mLayers.begin(); l != mLayers.end(); ++l)
@@ -126,6 +129,8 @@ void		WED_Map::Draw(GUI_GraphState * state)
 		if (base && draw_ent_v) DrawVisFor(*l, cur == *l, bounds, base, state, wants_sel ? sel : NULL, 0);
 		(*l)->DrawVisualization(cur == *l, state);
 	}
+	
+auto t1 = chrono::high_resolution_clock::now();
 
 	for (l = mLayers.begin(); l != mLayers.end(); ++l)
 	if((*l)->IsVisible())
@@ -135,15 +140,23 @@ void		WED_Map::Draw(GUI_GraphState * state)
 		(*l)->DrawStructure(cur == *l, state);
 	}
 
+auto t2 = chrono::high_resolution_clock::now();
+
 	for (l = mLayers.begin(); l != mLayers.end(); ++l)
 	if((*l)->IsVisible())
 	{
 		(*l)->DrawSelected(cur == *l, state);
 	}
 
+auto t3 = chrono::high_resolution_clock::now();
+
 	int x, y;
 	GetMouseLocNow(&x,&y);
 
+chrono::duration<double> tm_vis = t1-t0;
+chrono::duration<double> tm_str = t2-t1;
+chrono::duration<double> tm_sel = t3-t2;
+//printf("WED_Map::Draw Vis %6.4lf  Str %6.4lf  Sel %6.4lf\n", tm_vis.count(), tm_str.count(), tm_sel.count());
 
 	if (mIsDownExtraCount)
 	{
