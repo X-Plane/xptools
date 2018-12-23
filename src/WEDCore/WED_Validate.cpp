@@ -2203,9 +2203,11 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		// verify existence of required runways
 		map<int,Point3> CIFP_rwys;
 		set<int> rwys_missing;
-		string icao_meta = apt->GetMetaDataValue(wed_AddMetaDataICAO);
-		if(!icao_meta.empty()) icao = icao_meta; // go by ICAO meta tag if it exists
-		
+		if(apt->ContainsMetaDataKey(wed_AddMetaDataICAO))
+		{
+			string icao_meta = apt->GetMetaDataValue(wed_AddMetaDataICAO);
+			if(!icao_meta.empty()) icao = icao_meta;
+		}
 		if (mf)
 		{
 			MFScanner	s;
