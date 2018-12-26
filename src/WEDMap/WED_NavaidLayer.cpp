@@ -58,10 +58,10 @@ printf("1 to 2 time: %lf\n", elapsed.count());
 	#include <GL/gl.h>
 #endif
 
-#define SHOW_TOWERS 1
-#define SHOW_APTS_FROM_APTDAT 1
+#define SHOW_TOWERS 0
+#define SHOW_APTS_FROM_APTDAT 0
 
-#define NAVAID_EXTRA_RANGE 0.1  // degree's lon/lat, allows ILS beams to show even if the ILS is outside of the map window
+#define NAVAID_EXTRA_RANGE  GLOBAL_WED_ART_ASSET_FUDGE_FACTOR  // degree's lon/lat, allows ILS beams to show even if the ILS is outside of the map window
 
 static void parse_apt_dat(MFMemFile * str, map<string, navaid_t>& tAirports, const string& source)
 {
@@ -379,6 +379,8 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 	const float red[4]        = { 1.0, 0.4, 0.4, 0.66 };
 	const float vfr_purple[4] = { 0.9, 0.4, 0.9, 0.8 };
 	const float vfr_blue[4]   = { 0.4, 0.4, 1.0, 0.8 };
+
+	g->SetState(false,0,false,false,true,false,false);
 	glLineWidth(1.6);
 	glLineStipple(1, 0xF0F0);
 	glDisable(GL_LINE_STIPPLE);
@@ -438,6 +440,7 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 					int pts = i->shape.size();
 					vector<Point2> c(pts);
 					GetZoomer()->LLToPixelv(&(c[0]),&(i->shape[0]),pts);
+					g->SetState(0, 0, 0, 0, 1, 0, 0);
 					glShape2v(GL_LINE_LOOP, &(c[0]), pts);
 #if SHOW_TOWERS
 					glDisable(GL_LINE_STIPPLE);

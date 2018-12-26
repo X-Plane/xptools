@@ -56,7 +56,7 @@
 #endif
 
 // display Frames Per Second. Will peg CPU/GPU load at 100%, only useable for diaganostic purposes.
-#define SHOW_FPS 0
+#define SHOW_FPS 1
 
 WED_Map::WED_Map(IResolver * in_resolver) :
 	mResolver(in_resolver)
@@ -83,7 +83,7 @@ void		WED_Map::AddLayer(WED_MapLayer * layer)
 	mLayers.push_back(layer);
 }
 
-void		WED_Map::SetFilter(const string& filterName, const vector<const char *>& hide_filter, const vector<const char *>& lock_filter)
+void		WED_Map::SetFilter(const string& filterName, const MapFilter_t& hide_filter, const MapFilter_t& lock_filter)
 {
 	mFilterName = filterName;
 	mHideFilter = hide_filter;
@@ -105,8 +105,7 @@ void		WED_Map::SetBounds(int inBounds[4])
 	SetPixelBounds(inBounds[0],inBounds[1],inBounds[2],inBounds[3]);
 
 }
-#include <chrono>
-
+//#include <chrono>
 void		WED_Map::Draw(GUI_GraphState * state)
 {
 	WED_MapLayer * cur = mTool;
@@ -119,7 +118,7 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	ISelection * sel = GetSel();
 	IGISEntity * base = GetGISBase();
 	
-auto t0 = chrono::high_resolution_clock::now();
+//auto t0 = chrono::high_resolution_clock::now();
 
 	vector<WED_MapLayer *>::iterator l;
 	for (l = mLayers.begin(); l != mLayers.end(); ++l)
@@ -129,8 +128,7 @@ auto t0 = chrono::high_resolution_clock::now();
 		if (base && draw_ent_v) DrawVisFor(*l, cur == *l, bounds, base, state, wants_sel ? sel : NULL, 0);
 		(*l)->DrawVisualization(cur == *l, state);
 	}
-	
-auto t1 = chrono::high_resolution_clock::now();
+//auto t1 = chrono::high_resolution_clock::now();
 
 	for (l = mLayers.begin(); l != mLayers.end(); ++l)
 	if((*l)->IsVisible())
@@ -139,24 +137,22 @@ auto t1 = chrono::high_resolution_clock::now();
 		if (base && draw_ent_s) DrawStrFor(*l, cur == *l, bounds, base, state, wants_sel ? sel : NULL, 0);
 		(*l)->DrawStructure(cur == *l, state);
 	}
-
-auto t2 = chrono::high_resolution_clock::now();
+//auto t2 = chrono::high_resolution_clock::now();
 
 	for (l = mLayers.begin(); l != mLayers.end(); ++l)
 	if((*l)->IsVisible())
 	{
 		(*l)->DrawSelected(cur == *l, state);
 	}
+//auto t3 = chrono::high_resolution_clock::now();
 
-auto t3 = chrono::high_resolution_clock::now();
+//chrono::duration<double> tm_vis = t1-t0;
+//chrono::duration<double> tm_str = t2-t1;
+//chrono::duration<double> tm_sel = t3-t2;
+//printf("WED_Map::Draw Vis %6.4lf  Str %6.4lf  Sel %6.4lf\n", tm_vis.count(), tm_str.count(), tm_sel.count());
 
 	int x, y;
 	GetMouseLocNow(&x,&y);
-
-chrono::duration<double> tm_vis = t1-t0;
-chrono::duration<double> tm_str = t2-t1;
-chrono::duration<double> tm_sel = t3-t2;
-//printf("WED_Map::Draw Vis %6.4lf  Str %6.4lf  Sel %6.4lf\n", tm_vis.count(), tm_str.count(), tm_sel.count());
 
 	if (mIsDownExtraCount)
 	{
@@ -340,8 +336,8 @@ void		WED_Map::DrawVisFor(WED_MapLayer * layer, int current, const Bbox2& bounds
 		Point2 p1 = this->LLToPixel(on_screen.p1);
 		Point2 p2 = this->LLToPixel(on_screen.p2);
 		Vector2 span(p1,p2);
-		if(max(span.dx, span.dy) > TOO_SMALL_TO_GO_IN || (p1 == p2) || depth == 0)		// Why p1 == p2?  If the composite contains ONLY ONE POINT it is zero-size.  We'd LOD out.  But if it contains one thing
-		{																				// then we might as well ALWAYS draw it - it's relatively cheap!
+		if(max(span.dx, span.dy) > TOO_SMALL_TO_GO_IN || (p1 == p2) || depth == 0)		// Why p1 == p2?  If the composite contains ONLY ONE POINT it is zero-size.  We'd LOD out.  But if
+		{																				// it contains one thing then we might as well ALWAYS draw it - it's relatively cheap!
 			int t = c->GetNumEntities();												// Depth == 0 means we draw ALL top level objects -- good for airports.
 			for (int n = t-1; n >= 0; --n)
 				DrawVisFor(layer, current, bounds, c->GetNthEntity(n), g, sel, depth+1);

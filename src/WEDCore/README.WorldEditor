@@ -13,8 +13,9 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 1.8.0 a11 12/23/18
+WED 1.8.0 a11 12/26/18
     Features:
+    - display code cleanup - redraws map 2x to 3x faster
     - WED-1115: KEDW exemption for airport size
     - toughen language used in apt.dat import warning to increase effectiveness
     - add automatic image splitting for large orthophotos

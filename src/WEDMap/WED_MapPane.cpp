@@ -150,7 +150,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	// Visualization layers
 	mLayers.push_back(					new WED_MapBkgnd(mMap, mMap, resolver));
 	mLayers.push_back(mWorldMap =		new WED_WorldMapLayer(mMap, mMap, resolver));
-	mLayers.push_back(mSlippyMap=	new WED_SlippyMap(mMap, mMap, resolver));
+	mLayers.push_back(mSlippyMap =		new WED_SlippyMap(mMap, mMap, resolver));
 #if WANT_TERRASEVER
 	mLayers.push_back(mTerraserver = 	new WED_TerraserverLayer(mMap, mMap, resolver));
 #endif
@@ -638,6 +638,7 @@ void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
 #include "WED_Ring.h"
 #include "WED_AirportNode.h"
 #include "WED_AirportSign.h"
+#include "WED_Group.h"
 #include "WED_Helipad.h"
 #include "WED_KeyObjects.h"
 #include "WED_LightFixture.h"
@@ -677,24 +678,18 @@ void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
 #include "WED_TruckParkingLocation.h"
 #include "WED_RoadEdge.h"
 
-//Note: Replace WED_Airport or WED_Group with WED_GISComposite or it won't work when nested underneath
-const char * k_show_taxiline_chain = "WED_AirportChain/WED_GISComposite";
-const char * k_show_taxiline_nodes = "WED_AirportNode/WED_AirportChain/WED_GISComposite";
+//Note: Replace WED_Airport with WED_Group or it won't work when nested underneath
+#define k_show_taxiline_chain  FilterSpec(WED_AirportChain::sClass,WED_Group::sClass)
+#define k_show_taxiline_nodes  FilterSpec(WED_AirportNode::sClass,WED_AirportChain::sClass,WED_Group::sClass)
 
-const char * k_show_boundary_chain = "WED_AirportChain/WED_AirportBoundary";
-const char * k_show_boundary_nodes = "WED_AirportNode/WED_AirportChain/WED_AirportBoundary";
+#define k_show_boundary_chain  FilterSpec(WED_AirportChain::sClass,WED_AirportBoundary::sClass)
+#define k_show_boundary_nodes  FilterSpec(WED_AirportNode::sClass,WED_AirportChain::sClass,WED_AirportBoundary::sClass)
 
-void hide_all_persistents(vector<const char*>& hide_list)
+void hide_all_persistents(MapFilter_t& hide_list)
 {
 	//Commenting an item here makes it "white listed", aka always shown.
 	//Most white listed items are vertex nodes, and
 	//persistents that compose more concrete persistents.
-
-	//If a pattern is here, it is hazy. Tread carefully, debug from the top-down or bottom-up.
-	//Minimizing the size of the hide_list will likely speed things up for you.
-
-	//See also WED_MapLayer::Is(Visible|Locked)Now and WED_MapLayer.cpp's ::matches_filter
-	//  -Ted 07/06/2016
 
 	hide_list.push_back(WED_AirportSign::sClass);
 	hide_list.push_back(WED_AirportBeacon::sClass);
@@ -751,9 +746,9 @@ void hide_all_persistents(vector<const char*>& hide_list)
 
 }
 
-void unhide_persistent(vector<const char*>& hide_list, const char* to_unhide)
+void unhide_persistent(MapFilter_t& hide_list, const FilterSpec& to_unhide)
 {
-	for(vector<const char*>::iterator hide_itr = hide_list.begin();
+	for(MapFilter_t::iterator hide_itr = hide_list.begin();
 		hide_itr != hide_list.end();
 		++hide_itr)
 	{
@@ -765,13 +760,13 @@ void unhide_persistent(vector<const char*>& hide_list, const char* to_unhide)
 	}
 }
 
-void unhide_persistent(vector<const char*>& hide_list, const vector<const char*>& to_unhide)
+void unhide_persistent(MapFilter_t& hide_list, const MapFilter_t& to_unhide)
 {
-	for (vector<const char*>::const_iterator unhide_itr = to_unhide.begin();
+	for (MapFilter_t::const_iterator unhide_itr = to_unhide.begin();
 		 unhide_itr != to_unhide.end();
 		 ++unhide_itr)
 	{
-		for(vector<const char*>::iterator hide_itr = hide_list.begin();
+		for(MapFilter_t::iterator hide_itr = hide_list.begin();
 			hide_itr != hide_list.end();
 			++hide_itr)
 		{
@@ -787,7 +782,7 @@ void unhide_persistent(vector<const char*>& hide_list, const vector<const char*>
 void		WED_MapPane::SetTabFilterMode(int mode)
 {
 	string title;
-	vector<const char *> hide_list, lock_list;
+	MapFilter_t hide_list, lock_list;
 
 	hide_all_persistents(hide_list);
 	mATCLayer->SetVisible(false);
