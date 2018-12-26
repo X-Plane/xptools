@@ -36,8 +36,6 @@
 #include "PlatformUtils.h"
 #include "GISUtils.h"
 
-#include <chrono>
-
 #if 0
 #include <chrono>
 auto t0 = std::chrono::high_resolution_clock::now();
@@ -59,7 +57,7 @@ printf("1 to 2 time: %lf\n", elapsed.count());
 #endif
 
 #define SHOW_TOWERS 0
-#define SHOW_APTS_FROM_APTDAT 0
+#define SHOW_APTS_FROM_APTDAT 1
 
 #define NAVAID_EXTRA_RANGE  GLOBAL_WED_ART_ASSET_FUDGE_FACTOR  // degree's lon/lat, allows ILS beams to show even if the ILS is outside of the map window
 

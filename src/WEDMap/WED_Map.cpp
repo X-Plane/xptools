@@ -56,7 +56,7 @@
 #endif
 
 // display Frames Per Second. Will peg CPU/GPU load at 100%, only useable for diaganostic purposes.
-#define SHOW_FPS 1
+#define SHOW_FPS 0
 
 WED_Map::WED_Map(IResolver * in_resolver) :
 	mResolver(in_resolver)
