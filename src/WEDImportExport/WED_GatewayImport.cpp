@@ -325,7 +325,7 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_Ma
 	mResolver(resolver),
 	mMapPane(pane),
 	mPhase(imp_dialog_download_airport_metadata),
-	mICAO_AptProvider(&mICAO_Apts),
+	mICAO_AptProvider(&mICAO_Apts, gModeratorMode ? "Date Accepted" : "Checkout until", gModeratorMode ? "User Name": "by Artist"),
 	mICAO_TextTable(this,100,0),
 	mVersions_VerProvider(&mVersions_Vers),
 	mVersions_TextTable(this,100,0)
@@ -687,8 +687,8 @@ void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
 		{
 			AptInfo_t cur_airport;
 			cur_airport.icao = tmp["AirportCode"].asString();
-			cur_airport.default_buildings = tmp["ExcludeSubmissions"].asInt();  // mis-using that property for warnings
-
+			cur_airport.name = tmp["AirportName"].asString();
+			
 			if(gModeratorMode)
 			{
 				cur_airport.kind_code = 0;           // we put the scenery-ID to download in here
@@ -720,15 +720,15 @@ void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
 
 					WED_file_cache_response res = WED_file_cache_request_file(mCacheRequest);
 
-					for (int i = 0; i < 5; ++i) // try downloading version info for 5sec. Should normally be enough.
+					for (int i = 0; i < 10; ++i) // try downloading version info for 3sec. Should normally be enough.
 					{
 						if(res.out_status == cache_status_downloading)
 						{
 							printf("Downloading version info for %s, hang on %d\n", cur_airport.icao.c_str(), i);
 							#if IBM
-							Sleep(1000);
+							Sleep(300);
 							#else
-							sleep(1);     // really dumb, as it makes the program unresponsible during this download.
+							usleep(300000);     // really dumb, as it makes the program unresponsible during this download.
 							#endif
 							res = WED_file_cache_request_file(mCacheRequest);
 						}
@@ -738,7 +738,7 @@ void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
 					if(res.out_status == cache_status_available && FILE_read_file_to_string(res.out_path, vers_info) == 0)
 					{
 						string AcceptDate;
-
+						string Artist;
 						Json::Value root2;
 						Json::Reader reader2;
 						bool success = reader2.parse(vers_info,root2);
@@ -753,22 +753,29 @@ void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
 							if(curScenery["Status"].asString() == "Accepted")
 							{
 								AcceptDate = curScenery.operator[]("dateAccepted").asString();
-								if (AcceptDate == "") AcceptDate = "(No date)";
+								if (AcceptDate == "") 
+									AcceptDate = "Unknown";
+								Artist = curScenery.operator[]("userName").asString();
 								cur_airport.kind_code = curScenery.operator[]("sceneryId").asInt();
 								break;
 							}
 						}
-						cur_airport.name = string("Accepted ") + AcceptDate.substr(0,10) + ": " + tmp["AirportName"].asString();
+						cur_airport.meta_data.push_back(make_pair(AcceptDate.substr(0,10), Artist));
 					}
 					else
-						cur_airport.name = string("Accepted (download error): ") + tmp["AirportName"].asString();
+						cur_airport.meta_data.push_back(make_pair("Unknown", "Dnld timed out"));
 				}
-				else
-					cur_airport.name = string("Nothing to do: ") + tmp["AirportName"].asString();
 			}
 			else
 			{
-				cur_airport.name = tmp["AirportName"].asString();
+				if(tmp["ExcludeSubmissions"].asInt())
+					cur_airport.meta_data.push_back(make_pair("Indefinitely", "Gateway Moderator"));
+				else
+				{
+					string reserved = tmp["checkedOutBy"].asString();
+					if (!reserved.empty())
+						cur_airport.meta_data.push_back(make_pair(tmp["checkOutEndDate"].asString().substr(0,10), reserved));
+				}
 				cur_airport.kind_code = tmp["RecommendedSceneryId"].asInt();        // mis-using that property to support multi-airport import
 			}
 			//Add the current scenery object's airport code
@@ -776,6 +783,7 @@ void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
 		}
 	}
 	mICAO_AptProvider.AptVectorChanged();
+	if(gModeratorMode) mICAO_AptProvider.SelectHeaderCell(2);
 }
 
 void WED_GatewayImportDialog::FillVersionsFromJSON(const string& json_string)

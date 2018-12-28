@@ -13,8 +13,9 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 1.8.0 a11 12/26/18
+WED 1.8.0 a11 12/27/18
     Features:
+    - XSG-6494: Show Gateway Checkout Info in Gateway Import Dialog
     - display code cleanup - redraws map 2x to 3x faster
     - WED-1115: KEDW exemption for airport size
     - toughen language used in apt.dat import warning to increase effectiveness
@@ -32,7 +33,7 @@ WED 1.8.0 a11 12/26/18
 	- show more particular pictograms for XP11.25 added yellow line types
 	- WED-939: Warn about "silly" large ramp starts at airports with way to small runways
 	Bug Fixes:
-	- fix WED-1116 - undesired selection of ALL items in TAXI/Light views
+	- fix WED-1116: fix undesired selection of ALL items in TAXI/Light views
 	- CIFP validation to use ICAO code meta tag if available
 	- fix missing symbolic light styles when drawing certain of the new XP11.25 line styles
 	- WED-1111: Fix date shown at gateway import scenery version selection
