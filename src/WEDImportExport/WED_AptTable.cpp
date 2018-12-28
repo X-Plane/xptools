@@ -258,8 +258,8 @@ struct sort_by_apt {
 		
 		if(invert_sort_)
 		{
-			if(xs.empty()) xs = "\xFFFF";
-			if(ys.empty()) ys = "\xFFFF";
+			if(xs.empty()) xs = "\xFF";
+			if(ys.empty()) ys = "\xFF";
 			return ys < xs;
 		}
 		else
