@@ -1243,7 +1243,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		if(taxi)	
 		{
 			mPreviewItems.push_back(new preview_taxiway(taxi,mTaxiLayer++));
-			if(GetZoomer()->GetPPM() * 0.3 > MIN_PIXELS_LINE_PREVIEW)        // there can be so many, make visibility decision here already for performance
+			if(GetZoomer()->GetPPM() > MIN_PIXELS_LINE_PREVIEW / 0.3)        // there can be so many, make visibility decision here already for performance
 			{
 				IGISPointSequence * ps = taxi->GetOuterRing();
 				mPreviewItems.push_back(new preview_airportlines(ps, group_Markings, GetResolver()));
@@ -1318,7 +1318,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		if(chn)
 		{
 			double ppm = GetZoomer()->GetPPM();       // there can be so many, make visibility decision here already for performance
-			if(ppm * 0.3 > MIN_PIXELS_LINE_PREVIEW)
+			if(ppm > MIN_PIXELS_LINE_PREVIEW / 0.3)
 			{
 				mPreviewItems.push_back(new preview_airportlines(chn, group_Markings, GetResolver()));
 				mPreviewItems.push_back(new preview_airportlights(chn, group_Objects, GetResolver()));
@@ -1345,8 +1345,11 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	}
 	else if (sub_class == WED_TruckParkingLocation::sClass)
 	{
-		WED_TruckParkingLocation * trk = SAFE_CAST(WED_TruckParkingLocation, entity);
-		if (trk)	mPreviewItems.push_back(new preview_truck(trk, group_Objects, GetResolver()));
+		if(GetZoomer()->GetPPM() > MIN_PIXELS_LINE_PREVIEW / 5.0)        // there can be so many, make visibility decision here already for performance
+		{
+			WED_TruckParkingLocation * trk = SAFE_CAST(WED_TruckParkingLocation, entity);
+			if (trk)	mPreviewItems.push_back(new preview_truck(trk, group_Objects, GetResolver()));
+		}
 	}
 	return true;
 }
