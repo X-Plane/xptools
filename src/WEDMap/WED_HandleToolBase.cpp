@@ -944,7 +944,7 @@ void		WED_HandleToolBase::DrawStructure			(bool inCurrent, GUI_GraphState * g)
 				HandleType_t	ht;
 				bool			isActive;
 				mHandles->GetNthControlHandle(eid,cp, &isActive, &ht, &cpt, &dir, NULL);
-				if (!isActive) continue;
+				if (ht == handle_None || ht == handle_Icon || (ht == handle_Bezier && !isActive)) continue;
 				
 				scrpt = GetZoomer()->LLToPixel(cpt);
 				Vector2	orient;
