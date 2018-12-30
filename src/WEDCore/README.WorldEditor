@@ -13,8 +13,9 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 1.8.0 a11 12/27/18
+WED 1.8.0 a12 t.b.d.  2019 
     Features:
+    - WED-1117: Add white ring around the first node of open line facades
     - XSG-6494: Show Gateway Checkout Info in Gateway Import Dialog
     - display code cleanup - redraws map 2x to 3x faster
     - WED-1115: KEDW exemption for airport size

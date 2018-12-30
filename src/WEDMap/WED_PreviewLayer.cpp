@@ -767,7 +767,6 @@ struct	preview_airportlights : WED_PreviewItem {
 		WED_LibraryMgr  * lmgr = WED_GetLibraryMgr(res);
 		ITexMgr         * tman = WED_GetTexMgr(res);
 		                  
-//		if(zoomer->GetPPM() * 0.2 < MIN_PIXELS_PREVIEW) return;   // cutoff size for real preview, the average light wodth is 0.2m
 		int i = 0;
 		while (i < ps->GetNumSides())
 		{
@@ -835,17 +834,25 @@ struct	preview_facade : public preview_polygon {
 	preview_facade(WED_FacadePlacement * f, int l) : preview_polygon(f,l,false), fac(f) { }
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
 	{
-		g->SetState(false,0,false,false, false,false,false);       // grey fill. Do actual texture instead ??
-		glColor3f(0.7,0.7,0.7);
-		if(fac->GetTopoMode() == WED_FacadePlacement::topo_Area)
+		g->SetState(false,0,false,true,true,false,false);       // grey fill. Do actual texture instead ??
+		glColor4f(0.7,0.7,0.7,0.75);
+		int t = fac->GetTopoMode();
+		if(t == WED_FacadePlacement::topo_Area)
 			preview_polygon::draw_it(zoomer,g,mPavementAlpha);
 
-		g->SetState(false,0,false,true,true,false,false);
 		const float colors[18] = {  1, 0, 0,	1, 1, 0,
 									0, 1, 0,	0, 1, 1,
 									0, 0, 1,	1, 0, 1,};
-		glLineWidth(2);
 		IGISPointSequence * ps = fac->GetOuterRing();
+		if(t == WED_FacadePlacement::topo_Chain)
+		{
+			Point2 p;
+			ps->GetNthPoint(0)->GetLocation(gis_Geo,p);
+			p=zoomer->LLToPixel(p);
+			GUI_PlotIcon(g,"handle_closeloop.png", p.x(), p.y(),0.0,1.0);
+		}
+		glLineWidth(2);
+		g->SetState(false,0,false,true,true,false,false);
 		int n = ps->GetNumSides();
 		for(int i = 0; i < n; ++i)
 		{
