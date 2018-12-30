@@ -142,7 +142,8 @@ static bool setup_taxi_texture(int surface_code, double heading, const Point2& c
 	}
 }
 
-static bool setup_pol_texture(ITexMgr * tman, pol_info_t& pol, double heading, bool no_proj, const Point2& centroid, GUI_GraphState * g, WED_MapZoomerNew * z, float alpha)
+static bool setup_pol_texture(ITexMgr * tman, pol_info_t& pol, double heading, bool no_proj, const Point2& centroid, GUI_GraphState * g,
+							WED_MapZoomerNew * z, float alpha, bool isAbsPath = true)
 {
 	TexRef	ref = tman->LookupTexture(pol.base_tex.c_str(),true, pol.wrap ? (tex_Compress_Ok|tex_Wrap|tex_Always_Pad) : tex_Compress_Ok|tex_Always_Pad);
 	if(ref == NULL) return false;
@@ -906,21 +907,30 @@ struct	preview_ortho : public preview_polygon {
 	{
 		WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 		ITexMgr *	tman = WED_GetTexMgr(resolver);
-		pol_info_t	pol_info;
+		
 		
 		//If this ortho is new
 		if(orth->IsNew() == true)
 		{
-			orth->GetResource(pol_info.base_tex);
-			pol_info.wrap = false;
+			string rpath;
+			orth->GetResource(rpath);
+			TexRef	tref = tman->LookupTexture(rpath.c_str(), false, tex_Linear);   // no mipmaps, compression etc as it could be some off size
+			if(tref == NULL) return;
+			if(int tex_id = tman->GetTexID(tref))
+			{
+				g->SetState(false,1,false,true,true,false,false);
+				glColor4f(1,1,1,1);
+				g->BindTex(tex_id,0);
+			}
 		}
 		else
 		{
 			string vpath;
+			pol_info_t	pol_info;
 			orth->GetResource(vpath);
 			if(!rmgr->GetPol(vpath,pol_info)) return;
+			setup_pol_texture(tman, pol_info, 0.0, true, Point2(), g, zoomer, mPavementAlpha);
 		}
-		setup_pol_texture(tman, pol_info, 0.0, true, Point2(), g, zoomer, mPavementAlpha);
 		preview_polygon::draw_it(zoomer,g,mPavementAlpha);
 		kill_transform();
 	}

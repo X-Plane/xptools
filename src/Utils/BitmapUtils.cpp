@@ -381,12 +381,14 @@ int GetSupportedType(const char * path)
 	return -1;
 }
 
+// should really be called "CreateBitmapFromFileAccordingToSuffix"
 int MakeSupportedType(const char * path, ImageInfo * inImage)
 {
 	int error = -1;//Guilty until proven innocent
 	switch(GetSupportedType(path))
 	{
 	case WED_BMP:
+// should really be called "CreateBitmapFromBMP"
 		error = CreateBitmapFromFile(path,inImage);
 		break;
 	case WED_DDS:
