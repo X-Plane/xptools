@@ -224,29 +224,29 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 			WED_TowerViewpoint *	tower;
 			WED_Windsock *			sock;
 			WED_AirportBeacon *		beacon;
-			IGISPoint *				pt;
+			IGISPoint *				pt = NULL;
 			const char *			icon = NULL;
 			
 				 if (sub_class == WED_TowerViewpoint::sClass&& (tower  = SAFE_CAST(WED_TowerViewpoint, entity)) != NULL) pt = tower , icon = "map_towerview.png";
 			else if (sub_class == WED_Windsock::sClass		&& (sock   = SAFE_CAST(WED_Windsock		 , entity)) != NULL) pt = sock  , icon = "map_windsock.png" ;
 			else if (sub_class == WED_AirportBeacon::sClass && (beacon = SAFE_CAST(WED_AirportBeacon , entity)) != NULL) pt = beacon, icon = "map_beacon.png"   ;
 			else if (sub_class == WED_SimpleBoundaryNode::sClass && (pt = SAFE_CAST(IGISPoint, entity)) != NULL) icon = "map_tree.png";
-			else pt = SAFE_CAST(IGISPoint,entity);
+//			else pt = SAFE_CAST(IGISPoint,entity);
 			if (pt)
 			{
-				Point2			l;
-				pt->GetLocation(gis_Geo,l);
-				l = GetZoomer()->LLToPixel(l);
 				if (icon) 
 				{
 					// Pretty much all non-heading single point entities should have SOME kind of icon!!
 					// Off-hand I think windsocks, tower viewpoints and airport-beacons are the only ones 
 					// we have right now.
+					Point2			l;
+					pt->GetLocation(gis_Geo,l);
+					l = GetZoomer()->LLToPixel(l);
 					GUI_PlotIcon(g,icon, l.x(),l.y(),0,GetFurnitureIconScale());
 					g->SetState(false,0,false,   false,true,false,false);
 				}
+#if 0
 				else {
-								
 					// Special case: for taxi routes, we are going to draw them here IF
 					// vertex-preview is on.  This way we can use the selection state of the 
 					// node itself to color the node.
@@ -261,7 +261,20 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 					//
 					// So we will special-case taxi routes for now.  When we get road grids in 
 					// we may need a better heuristic for this case than the actual obj type.
-								
+
+					// Michael says - this attempt to prevent GIS edge nodes to NOT be colored 
+					// like is not always working because GIS_Edges can have _anything_ as a
+					// source - not only TaxiRouteNodes. This happens when one merges or
+					// otherwise connect GIS edges to other things like ramp starts.
+					// And these non-TaxiRouteNode items can be anywhere in the hierachy, i.e.
+					// be plotted before or afterthis here
+					// e.g. KSEA is full of TaxiRoutes that have AirportNodes as sources.
+					// So at the end - all GIS_Edge nodes are drawn TWICE for connected edges,
+					// TRIPLE of the node isnt a taxiroute node.
+					//
+					// So I'd rather forego the separate taxinode treatment here and get the
+					// TaxiEdgeNode highlighting "right" where the TaxiEdges are drawn ...
+
 					if (sub_class == WED_TaxiRouteNode::sClass
 #if ROAD_EDITING 
 						|| sub_class == WED_RoadNode::sClass
@@ -294,6 +307,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 						*/
 					}
 				}
+#endif
 			}
 		}
 		break;
@@ -316,20 +330,21 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 			if (pth)
 			{
 				Point2		l;
-				Vector2		dir;
 				pth->GetLocation(gis_Geo,l);
-				NorthHeading2VectorMeters(l,l,pth->GetHeading(),dir);
-				Vector2 r(dir.perpendicular_cw());
 				l = GetZoomer()->LLToPixel(l);
-				if (icon)	
+				if (icon)
 				{
-					GUI_PlotIcon(g,icon, l.x(),l.y(),atan2(dir.dx,dir.dy) * RAD_TO_DEG,GetFurnitureIconScale());
+					GUI_PlotIcon(g,icon, l.x(),l.y(),pth->GetHeading(),GetFurnitureIconScale());
 					g->SetState(false,0,false,   false,true,false,false);
 				}
-				else {
+				else // if(!selected)         	// selection layer will draw a big cross with handles over it, anyways. Does not save anything measureable.
+				{
+					Vector2		dir(0.0,3.0);
+					dir.rotate_by_degrees(-pth->GetHeading());
+					Vector2 r(dir.perpendicular_cw());
 					glBegin(GL_LINES);
-					glVertex2(l - dir * 3.0);			glVertex2(l + dir * 6.0);
-					glVertex2(l - r   * 3.0);			glVertex2(l + r   * 3.0);
+					glVertex2(l - dir);			glVertex2(l + dir * 2.0);
+					glVertex2(l - r);			glVertex2(l + r);
 					glEnd();
 				}
 			}
@@ -402,7 +417,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 				WED_MapZoomerNew * z = GetZoomer();
 
 				bool showRealLines = mRealLines > 0 && z->GetPPM() * 0.3 <= MIN_PIXELS_LINE_PREVIEW;
-				
+
 				for (i = 0; i < n; ++i)
 				{
 					set<int>		attrs;
@@ -412,7 +427,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 						if (apt_node) apt_node->GetAttributes(attrs);
 					}
 					vector<Point2> pts;
-					
+
 					Bezier2		b;
 					if (ps->GetSide(gis_Geo,i,b))
 					{
@@ -447,16 +462,20 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 						}
 					}
 				}
-				if (mVertices && kind != gis_Edge)	// Gis EDGE points will be picked up separately!  That way we can get their hilite right.
-				{
+
+//				if (mVertices && kind != gis_Edge)	  // Gis EDGE points will be picked up separately!  That way we can get their hilite right.
+
+				if (mVertices && !selected)           // that separate treatment just causes dupli & triplicate drawing and is obsolete:
+				{                                     // The selection layer draws a highlight ontop of all vertices, anyways ...
+//					glColor4fv(WED_Color_RGBA(struct_color));  // Do this if green EdgeNdodes when unselected are desired
 					n = ps->GetNumPoints();
 					glPointSize(5);
 					glBegin(GL_POINTS);
 					for (i = 0; i < n; ++i)
 					{
 						IGISPoint * pt = ps->GetNthPoint(i);
-						WED_Entity * e = dynamic_cast<WED_Entity *>(pt);
-						if(!e || !e->GetHidden())
+//						WED_Entity * e = dynamic_cast<WED_Entity *>(pt);   // How could a non-entity ever get into a polygon ring ??
+//						if(!e || !e->GetHidden())
 						{
 							Point2 p;
 							pt->GetLocation(gis_Geo,p);

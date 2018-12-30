@@ -907,8 +907,8 @@ void		WED_HandleToolBase::DrawStructure			(bool inCurrent, GUI_GraphState * g)
 				{
 					switch(lt) {
 					case link_Solid:		glColor4fv(WED_Color_RGBA(wed_Link));			break;
-					case link_Ghost:		glColor4fv(WED_Color_RGBA(wed_GhostLink));		break;
 					case link_BezierCtrl:	glColor4fv(WED_Color_RGBA(wed_ControlLink));	break;
+					case link_Ghost:		glColor4fv(WED_Color_RGBA(wed_GhostLink));		break;
 					case link_Marquee:		glColor4fv(WED_Color_RGBA(wed_Marquee));		break;
 					}
 					if (ControlLinkToCurve(mHandles,eid,l,b,s,GetZoomer()))
@@ -917,8 +917,8 @@ void		WED_HandleToolBase::DrawStructure			(bool inCurrent, GUI_GraphState * g)
 
 						for (int n = 0; n < point_count; ++n)
 						{
-							float t1 = (float) n / (float) point_count;
-							float t2 = (float) (n+1) / (float) point_count;
+							double t1 = (double) n / (double) point_count;
+							double t2 = (double) (n+1) / (double) point_count;
 							Point2	p1 = b.midpoint(t1);
 							Point2	p2 = b.midpoint(t2);
 							glVertex2d(p1.x(),p1.y());
@@ -933,23 +933,21 @@ void		WED_HandleToolBase::DrawStructure			(bool inCurrent, GUI_GraphState * g)
 				}
 			}
 			glEnd();
+			
+			if(inCurrent) glColor4fv(WED_Color_RGBA(wed_ControlHandle));
 
 			if(inCurrent)
-			for (int cp = 0; cp < ch_count; ++cp)
-			{
+			for (int cp = 0; cp < ch_count; ++cp)   // this loop is causing a lot of state switching for icon and line plotting. 
+			{										// Cuts draw speed in half when selecting with VertexTool all of KSEA
 				Vector2		dir;
 				Point2	cpt, scrpt;
 				HandleType_t	ht;
-				mHandles->GetNthControlHandle(eid,cp,NULL, &ht, &cpt, &dir, NULL);
+				bool			isActive;
+				mHandles->GetNthControlHandle(eid,cp, &isActive, &ht, &cpt, &dir, NULL);
+				if (!isActive) continue;
+				
 				scrpt = GetZoomer()->LLToPixel(cpt);
-
 				Vector2	orient;
-
-				if (ht == handle_None || ht == handle_Icon) continue;
-
-				glColor4fv(WED_Color_RGBA(wed_ControlHandle));
-
-
 				if (ht == handle_ArrowHead || ht == handle_Arrow || ht == handle_Bezier || ht == handle_RotateHead || ht == handle_Rotate)
 				{
 					Point2 bscrp = GetZoomer()->LLToPixel(cpt - dir);
