@@ -29,7 +29,7 @@
 
 struct	AptMarking_t;
 
-class	WED_AirportChain : public WED_GISChain, public IHasResourceOrAttr {
+class	WED_AirportChain : public WED_GISChain, public IHasAttr {
 
 DECLARE_PERSISTENT(WED_AirportChain)
 

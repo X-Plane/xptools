@@ -1099,25 +1099,26 @@ int collect_recusive(WED_Thing * thing, const ci_string& isearch_filter, vector<
 	thing->GetName(thing_name);
 	ci_string ithing_name(thing_name.begin(),thing_name.end());
 	bool is_match = ithing_name.find(isearch_filter) != ci_string::npos;
-	IHasResourceOrAttr * has_resource_thing = NULL;
-
+	IHasResource * has_resource;
+	IHasAttr * has_attr;
+	
 	if (is_match == false)
 	{
-		has_resource_thing = dynamic_cast<IHasResourceOrAttr*>(thing);
-		if (has_resource_thing)
+		string res;
+		has_resource = dynamic_cast<IHasResource*>(thing);
+		if (has_resource) has_resource->GetResource(res);
+		else
 		{
-			string res;
-			has_resource_thing->GetResource(res);
-//			string n; thing->GetName(n);
-//			printf("%s: r=%s\n",n.c_str(), res.c_str());
-			res = string ("^") + res + "$";       // Adding ^ and $ are to emulate regex-style line start/end makers, so to
-			                                      // allow macthing one of "Red Line", "Red Line (Black)" or "Wide Red Line"
-			is_match |= ci_string(res.begin(), res.end()).find(isearch_filter) != ci_string::npos;
+			has_attr = dynamic_cast<IHasAttr*>(thing);
+			if (has_attr) has_attr->GetResource(res);
 		}
+		res = string ("^") + res + "$";           // Adding ^ and $ are to emulate regex-style line start/end makers, so to
+			                                      // allow macthing one of "Red Line", "Red Line (Black)" or "Wide Red Line"
+		is_match = ci_string(res.begin(), res.end()).find(isearch_filter) != ci_string::npos;
 	}
 
 	int nc = thing->CountChildren();
-	if (nc == 0 || (has_resource_thing && is_match))    // prevent showing nodes for uniformly set taxilines or taxiways
+	if (nc == 0 || ((has_resource || has_attr) && is_match))    // prevent showing nodes for uniformly set taxilines or taxiways
 	{
 		if (is_match)
 		{

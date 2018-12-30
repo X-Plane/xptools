@@ -29,7 +29,7 @@
 
 struct	AptTaxiway_t;
 
-class	WED_Taxiway : public WED_GISPolygon, public IHasResourceOrAttr {
+class	WED_Taxiway : public WED_GISPolygon, public IHasAttr {
 
 DECLARE_PERSISTENT(WED_Taxiway)
 public:
