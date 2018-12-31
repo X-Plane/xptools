@@ -43,6 +43,7 @@ struct  gl_info_t {
 	bool	has_tex_compression;
 	bool	has_edge_clamp;
 	bool	has_non_pots;
+	bool	has_bgra;
 	int		max_tex_size;
 };
 
@@ -66,16 +67,10 @@ static void init_gl_info(gl_info_t * i)
 	i->has_edge_clamp = true;		// If a user runs WED on a machine with less than GL 1.2, I will find that user and punch him directly in the throat.
 	i->has_tex_compression = (glv >= 130) || strstr(ext_str,"GL_ARB_texture_compression") != NULL;
 	i->has_non_pots = (glv >= 200) || strstr(ext_str,"GL_ARB_texture_non_power_of_two") != NULL;
+	i->has_bgra = strstr(ext_str,"GL_EXT_bgra") != NULL;
+
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE,&i->max_tex_size);
-	if(i->max_tex_size > 8192)
-		i->max_tex_size = 8192;
-	if(i->has_tex_compression)
-	{
-		glHint(GL_TEXTURE_COMPRESSION_HINT,GL_NICEST);
-	}
-	
-	
-	
+	if(i->has_tex_compression)	glHint(GL_TEXTURE_COMPRESSION_HINT,GL_NICEST);
 }
 
 /*****************************************************************************************
@@ -159,15 +154,11 @@ bool LoadTextureFromFile(
  *****************************************************************************************/
 bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWidth, int * outHeight, float * outS, float * outT)
 {
-	
 	INIT_GL_INFO
 	
-	long				count = 0;
-	unsigned char * 	p;
 	bool				ok = false;
 
 	/* PREP */
-
 
 	// Process alpha.  Then remove padding.  Finally, figure out the next biggest power of 2.  If we aren't
 	// a power of 2, we need to resize.  That will be done with rescaling if the user wants.  Also if the bitmap
@@ -178,11 +169,11 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 
 	int non_pots = ((inFlags & tex_Always_Pad) == 0) && gl_info.has_non_pots;
 
-	int		res_x = non_pots ? im.width : NextPowerOf2(im.width);
-	int		res_y = non_pots ? im.height : NextPowerOf2(im.height);
+	int		res_x = non_pots ? min((int) im.width, gl_info.max_tex_size) : NextPowerOf2(im.width);
+	int		res_y = non_pots ? min((int) im.height,gl_info.max_tex_size) : NextPowerOf2(im.height);
 	bool	resize = (res_x != im.width || res_y != im.height);
 	bool	rescale = resize && (inFlags & tex_Rescale);
-	if (resize && (im.width > res_x || im.height > res_y))	// Always rescale if the image is too big for the max tex!!
+	if (im.width > res_x || im.height > res_y)	// Always rescale if the image is too big for the max tex!!
 		rescale = true;
 
 	ImageInfo *	useIt = &im;
@@ -220,26 +211,38 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 	if (outWidth) *outWidth = useIt->width;
 	if (outHeight) *outHeight = useIt->height;
 
-
 	glBindTexture(GL_TEXTURE_2D, inTexNum);
 
-	p = useIt->data;
-	count = useIt->width * useIt->height;
-	if(useIt->channels > 2)
-	while (count--)
+	int	iformat, glformat;
+	if (useIt->channels == 1)
 	{
-		swap(p[0], p[2]);						// Ben says: since we get BGR or BGRA, swap red and blue channesl to make RGB or RGBA.  Some day we could
-		p += useIt->channels;					// use our brains and use GL_BGR_EXT and GL_BGRA_EXT; literally all GL cards from Radeon/GeForce on support this.
+		iformat = glformat = GL_ALPHA; 
+	}
+	else if(gl_info.has_bgra)
+	{	
+									iformat = GL_RGB;  glformat = GL_BGR;
+		if (useIt->channels == 4) { iformat = GL_RGBA; glformat = GL_BGRA; }
+	}
+	else
+	{
+		long cnt = useIt->width * useIt->height;
+		unsigned char * p = useIt->data;
+		while (cnt--)
+		{
+			swap(p[0], p[2]);						// Ben says: since we get BGR or BGRA, swap red and blue channesl to make RGB or RGBA.  Some day we could
+			p += useIt->channels;					// use our brains and use GL_BGR_EXT and GL_BGRA_EXT; literally all GL cards from Radeon/GeForce on support this.
+			}
+													// Michael says: that day was the last day of 2018. Eight years, 4 months and EXA bytes swapped by CPUs later.
+													// But, its just a drop into the ocean: ALL images except BMP are channel order swapped when loading in BitmapUtils,
+													// the real architectural misfortune was choosing the ImageInfo data format to be BGR rather than RGB.
+													
+								  iformat = glformat = GL_RGB;
+		if (useIt->channels == 4) iformat = glformat = GL_RGBA;
 	}
 
-	int							glformat = GL_RGB;
-	if (useIt->channels == 4)	glformat = GL_RGBA;
-	if (useIt->channels == 1)	glformat = GL_ALPHA;
-
-	int iformat = glformat;
 	if(gl_info.has_tex_compression && (inFlags & tex_Compress_Ok))
 	{
-		switch (glformat) {
+		switch (iformat) {
 		case GL_RGB:	iformat = GL_COMPRESSED_RGB;	break;
 		case GL_RGBA:	iformat = GL_COMPRESSED_RGBA;	break;
 		}
