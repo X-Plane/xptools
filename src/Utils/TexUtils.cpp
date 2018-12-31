@@ -220,8 +220,8 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 	}
 	else if(gl_info.has_bgra)
 	{	
-									iformat = GL_RGB;  glformat = GL_BGR;
-		if (useIt->channels == 4) { iformat = GL_RGBA; glformat = GL_BGRA; }
+									iformat = GL_RGB;  glformat = GL_BGR_EXT;
+		if (useIt->channels == 4) { iformat = GL_RGBA; glformat = GL_BGRA_EXT; }
 	}
 	else
 	{

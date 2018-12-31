@@ -356,7 +356,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 		 ******************************************************************************************************************************************************/
 		{
 			IGISPoint_WidthLength *			ptwl;
-			WED_Helipad * 					helipad;
+			WED_Helipad * 					helipad = NULL;
 			if (sub_class == WED_Helipad::sClass && (helipad = SAFE_CAST(WED_Helipad		 , entity)))	ptwl = helipad;
 			else									 ptwl    = SAFE_CAST(IGISPoint_WidthLength,entity)					  ;
 

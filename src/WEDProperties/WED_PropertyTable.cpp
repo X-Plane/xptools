@@ -1099,8 +1099,8 @@ int collect_recusive(WED_Thing * thing, const ci_string& isearch_filter, vector<
 	thing->GetName(thing_name);
 	ci_string ithing_name(thing_name.begin(),thing_name.end());
 	bool is_match = ithing_name.find(isearch_filter) != ci_string::npos;
-	IHasResource * has_resource;
-	IHasAttr * has_attr;
+	IHasResource * has_resource = NULL;
+	IHasAttr * has_attr = NULL;
 	
 	if (is_match == false)
 	{
@@ -1118,7 +1118,7 @@ int collect_recusive(WED_Thing * thing, const ci_string& isearch_filter, vector<
 	}
 
 	int nc = thing->CountChildren();
-	if (nc == 0 || ((has_resource || has_attr) && is_match))    // prevent showing nodes for uniformly set taxilines or taxiways
+	if (nc == 0 || (is_match && (has_resource || has_attr)))    // prevent showing nodes for uniformly set taxilines or taxiways
 	{
 		if (is_match)
 		{
