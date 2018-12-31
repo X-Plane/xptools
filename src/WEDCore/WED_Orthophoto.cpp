@@ -162,11 +162,12 @@ void	WED_MakeOrthos(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 				if (rng0)
 				{
 					ITexMgr *	tman = WED_GetTexMgr(inResolver);
-					TexRef tref = tman->LookupTexture(img_path.c_str(), false, tex_Linear);
+					TexRef tref = tman->LookupTexture(img_path.c_str(), false, tex_Compress_Ok|tex_Linear);
 
 					if(tref != NULL)
 					{
 						int org_x, org_y;
+
 						tman->GetTexInfo(tref, NULL, NULL, NULL, NULL, &org_x, &org_y);
 						int kpix_x = ceil(org_x / 1024.0);  // rounded up result
 						int kpix_y = ceil(org_y / 1024.0);

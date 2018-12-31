@@ -914,7 +914,7 @@ struct	preview_ortho : public preview_polygon {
 		{
 			string rpath;
 			orth->GetResource(rpath);
-			TexRef	tref = tman->LookupTexture(rpath.c_str(), false, tex_Linear);   // no mipmaps, compression etc as it could be some off size
+			TexRef	tref = tman->LookupTexture(rpath.c_str(), false, tex_Compress_Ok|tex_Linear);
 			if(tref == NULL) return;
 			if(int tex_id = tman->GetTexID(tref))
 			{
