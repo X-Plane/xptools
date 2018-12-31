@@ -922,9 +922,6 @@ bool WED_GatewayImportDialog::StartVersionsDownload()
 	//Current airport selected
 	AptInfo_t current_apt = mICAO_Apts.at(*out_selection.begin());
 
-	if(current_apt.default_buildings)
-		DoUserAlert("Submissions for this airport are not being accepted on the Gateway currently. Further development of this scenery pack for Gateway purposes is therefore not recommended.");
-
 	string url = WED_URL_GATEWAY_API;
 	//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airport/ICAO"
 	url += "airport/" + current_apt.icao;
