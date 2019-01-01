@@ -154,7 +154,7 @@ void			WED_Thing::ToXML(WED_XMLElement * parent)
 			vi->add_attr_int("id",*v);
 		}
 	}
-	if(child_id.size())
+//	if(child_id.size())  // would be nice to skip this, too. But wed-O-maker won't like that for now.
 	{
 		WED_XMLElement * chld = obj->add_sub_element("children");
 		for(int n = 0; n < child_id.size(); ++n)
