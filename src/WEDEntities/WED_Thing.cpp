@@ -136,27 +136,33 @@ void			WED_Thing::ToXML(WED_XMLElement * parent)
 	obj->add_attr_int("id",GetID());
 	obj->add_attr_int("parent_id",parent_id);
 	
-	WED_XMLElement * src = obj->add_sub_element("sources");
-	for(int n = 0; n < source_id.size(); ++n)
+	if(source_id.size())
 	{
-		WED_XMLElement * s = src->add_sub_element("source");
-		s->add_attr_int("id",source_id[n]);
+		WED_XMLElement * src = obj->add_sub_element("sources");
+		for(int n = 0; n < source_id.size(); ++n)
+		{
+			WED_XMLElement * s = src->add_sub_element("source");
+			s->add_attr_int("id",source_id[n]);
+		}
 	}
-
-	WED_XMLElement * vwr = obj->add_sub_element("viewers");
-	for(set<int>::iterator v = viewer_id.begin(); v != viewer_id.end(); ++v)
+	if(viewer_id.size())
 	{
-		WED_XMLElement * vi = vwr->add_sub_element("viewer");
-		vi->add_attr_int("id",*v);
+		WED_XMLElement * vwr = obj->add_sub_element("viewers");
+		for(set<int>::iterator v = viewer_id.begin(); v != viewer_id.end(); ++v)
+		{
+			WED_XMLElement * vi = vwr->add_sub_element("viewer");
+			vi->add_attr_int("id",*v);
+		}
 	}
-
-	WED_XMLElement * chld = obj->add_sub_element("children");
-	for(int n = 0; n < child_id.size(); ++n)
+	if(child_id.size())
 	{
-		WED_XMLElement * c = chld->add_sub_element("child");
-		c->add_attr_int("id",child_id[n]);
+		WED_XMLElement * chld = obj->add_sub_element("children");
+		for(int n = 0; n < child_id.size(); ++n)
+		{
+			WED_XMLElement * c = chld->add_sub_element("child");
+			c->add_attr_int("id",child_id[n]);
+		}
 	}
-	
 	WED_PropertyHelper::PropsToXML(obj);
 	this->AddExtraXML(obj);
 }

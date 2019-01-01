@@ -51,6 +51,7 @@
 #include "WED_LibraryMgr.h"
 #include "WED_ResourceMgr.h"
 #include "WED_GroupCommands.h"
+#include "WED_Version.h"
 
 #if IBM
 #include "GUI_Unicode.h"
@@ -678,6 +679,7 @@ void		WED_Document::WriteXML(FILE * xml_file)
 {
 	//print to file the xml file passed in with the following encoding
 	fprintf(xml_file,"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+	fprintf(xml_file,"<!-- written by WED " WED_VERSION_STRING " -->\n");
 	{
 		WED_XMLElement	top_level("doc",0,xml_file);
 		mArchive.SaveToXML(&top_level);

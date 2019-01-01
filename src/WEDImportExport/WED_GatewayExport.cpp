@@ -98,15 +98,6 @@
 #define ATC_TAXI_ROUTE_TAG 2
 #define ATC_GROUND_ROUTES_TAG 8
 
-// Curse C++98 for not having this.
-template<typename T>
-static std::string to_string(const T& value)
-{
-    std::ostringstream oss;
-    oss << value;
-    return oss.str();
-}
-
 /*
 
 		progress bar
