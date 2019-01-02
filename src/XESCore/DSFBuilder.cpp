@@ -1095,15 +1095,10 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 		double x = CGAL::to_double(fi->vertex(n)->point().x());
 		double y = CGAL::to_double(fi->vertex(n)->point().y());
 
-		if(x < inElevation.mWest)
-			DebugAssert(fi->vertex(n)->point().x() == inElevation.mWest);
-		if(x > inElevation.mEast)
-			DebugAssert(fi->vertex(n)->point().x() == inElevation.mEast);
-
-		if(y < inElevation.mSouth)
-			DebugAssert(fi->vertex(n)->point().y() == inElevation.mSouth);
-		if(y > inElevation.mNorth)
-			DebugAssert(fi->vertex(n)->point().y() == inElevation.mNorth);
+		DebugAssert(x >= inElevation.mWest  || fi->vertex(n)->point().x() >= inElevation.mWest);
+		DebugAssert(x <= inElevation.mEast  || fi->vertex(n)->point().x() <= inElevation.mEast);
+		DebugAssert(y >= inElevation.mSouth || fi->vertex(n)->point().y() >= inElevation.mSouth);
+		DebugAssert(y <= inElevation.mNorth || fi->vertex(n)->point().y() <= inElevation.mNorth);
 
 		if(fi->vertex(n)->point().y() > inElevation.mNorth)
 			printf("WARNING: out of bounds pt: %lf\n", CGAL::to_double(fi->vertex(n)->point().y()));
