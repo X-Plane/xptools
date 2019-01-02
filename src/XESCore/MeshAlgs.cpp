@@ -43,6 +43,8 @@
 #include "MeshSimplify.h"
 #include "NetHelpers.h"
 #include "Zoning.h"	// for urban cheat table.
+#include "GISTool_Globals.h"
+
 #if OPENGL_MAP
 #include "GISTool_Globals.h"
 #endif
@@ -348,7 +350,7 @@ static void border_find_edge_tris(CDT& ioMesh, mesh_match_t& ioBorder)
 inline void AddZeroMixIfNeeded(CDT::Face_handle f, int layer)
 {
 	if (f->info().terrain == terrain_Water) return;
-	DebugAssert(!IsCustom(f->info().terrain));
+	DebugAssert(gMobile || !IsCustom(f->info().terrain));
 	DebugAssert(layer != -1);
 	f->info().terrain_border.insert(layer);
 	for (int i = 0; i < 3; ++i)
