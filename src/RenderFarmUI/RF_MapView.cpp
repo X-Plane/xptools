@@ -1728,7 +1728,12 @@ char * RF_MapView::MonitorCaption(void)
 	if (lt == CDT::FACE)
 	{
 		int ts = recent->info().terrain;
-		n += sprintf(buf+n, "Tri:%s ", FetchTokenString(ts));
+		const bool has_orig_face = recent->info().orig_face.ptr();
+		n += sprintf(buf+n, "Tri:%s Has orig_face? %s ", FetchTokenString(ts), has_orig_face ? "Y" : "N");
+		if(has_orig_face)
+		{
+			n += sprintf(buf+n, "Orig terrain type: %s ", FetchTokenString(recent->info().orig_face->data().mTerrainType));
+		}
 
 		int slope = acos(recent->info().normal[2]) * RAD_TO_DEG;
 		float slope_head_f = recent->info().normal[1];

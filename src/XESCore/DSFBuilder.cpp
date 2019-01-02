@@ -1361,7 +1361,7 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 			{
 				CDT::Face_handle f = hiResTris[tri];
 				const int ter_enum = f->info().terrain;
-				const int rotation = f->info().orig_face->data().mRotationDeg;
+				const int rotation = f->info().orig_face.ptr() ? f->info().orig_face->data().mRotationDeg : 0;
 				if (ter_enum == lu_ranked->first ||
 					(IsCustomOverWaterHard(ter_enum) && lu_ranked->first == terrain_VisualWater) ||		// Take hard cus tris when doing vis water
 					(IsCustomOverWaterSoft(ter_enum) && lu_ranked->first == terrain_Water))				// Take soft cus tris when doing real water
@@ -1520,6 +1520,7 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 
 							if(is_mobile_ortho)
 							{
+								DebugAssertWithExplanation(f->info().orig_face.ptr(), "How did you get a mobile orthophoto without having induced a face from your Pmwx?");
 								const int rotation = f->info().orig_face->data().mRotationDeg;
 								// COPY PASTA WARNING - this is stolen from the base mesh case.
 								tex_proj_info ortho_projection = project_ortho(f, inElevation, rotation);
