@@ -2148,6 +2148,11 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				float	tmr3 = inTempRng.value_linear(x2,y2);
 				float	tmr = SAFE_AVERAGE(tmr1, tmr2, tmr3);	// Could be safe max.
 
+				if(tmr == DEM_NO_DATA)
+				{
+					tmr = inTempRng.search_nearest(x0, y0); // we need *some* data!
+				}
+
 				float	rn1 = inRain.value_linear(x0,y0);
 				float	rn2 = inRain.value_linear(x1,y1);
 				float	rn3 = inRain.value_linear(x2,y2);
