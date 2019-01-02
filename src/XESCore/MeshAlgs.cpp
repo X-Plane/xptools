@@ -3092,10 +3092,10 @@ void verify_triangulation_bounds(const DEMGeo &dem, CDT &inMesh)
 		const double x = CGAL::to_double(fi->vertex(n)->point().x());
 		const double y = CGAL::to_double(fi->vertex(n)->point().y());
 
-		DebugAssert(x >= dem.mWest  || fi->vertex(n)->point().x() == dem.mWest);
-		DebugAssert(x <= dem.mEast  || fi->vertex(n)->point().x() == dem.mEast);
-		DebugAssert(y >= dem.mSouth || fi->vertex(n)->point().y() == dem.mSouth);
-		DebugAssert(y <= dem.mNorth || fi->vertex(n)->point().y() == dem.mNorth);
+		DebugAssert(x >= dem.mWest  || fi->vertex(n)->point().x() >= dem.mWest);
+		DebugAssert(x <= dem.mEast  || fi->vertex(n)->point().x() <= dem.mEast);
+		DebugAssert(y >= dem.mSouth || fi->vertex(n)->point().y() >= dem.mSouth);
+		DebugAssert(y <= dem.mNorth || fi->vertex(n)->point().y() <= dem.mNorth);
 	}
 #endif
 }
