@@ -43,6 +43,11 @@ int divisions_longitude_per_degree(double desired_division_width_m, double latit
 
 Polygon2 cgal_tri_to_ben(const CDT::Face_handle &tri, const Bbox2 &containing_dsf)
 {
+	// Ensure none of the points are colocated
+	DebugAssert(tri->vertex(0)->point() != tri->vertex(1)->point());
+	DebugAssert(tri->vertex(0)->point() != tri->vertex(2)->point());
+	DebugAssert(tri->vertex(1)->point() != tri->vertex(2)->point());
+
 	Polygon2 out;
 	out.reserve(3);
 	for(int vert_idx = 0; vert_idx < 3; ++vert_idx)
@@ -116,6 +121,11 @@ Bbox2 get_ortho_grid_square_bounds(const CDT::Face_handle &tri, const Bbox2 &con
 	if(tri_is_sliver(ben_tri))
 	{
 		printf("Warning: found sliver #%ld\n", s_slivers++);
+		printf("Bounds:\n");
+		for(int v = 0; v < 3; ++v)
+		{
+			printf("- (%0.18f, %0.18f)\n", ben_tri[v].x(), ben_tri[v].y());
+		}
 	}
 	#endif
 
