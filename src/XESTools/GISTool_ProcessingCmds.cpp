@@ -1087,8 +1087,8 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 			if(ben_poly.area() > 0) // <= 0 is possible when the face extends beyond the DSF boundary, or when its points are "real" close together
 			{
 				const Point2 centroid = ben_poly.centroid();
-				DebugAssert(s_dsf_desc.dsf_lon == floor(centroid.x()));
-				DebugAssert(s_dsf_desc.dsf_lat == floor(centroid.y()));
+				DebugAssert(s_dsf_desc.dsf_lon == floor(centroid.x()) || centroid.x() == s_dsf_desc.dsf_lon + 1);
+				DebugAssert(s_dsf_desc.dsf_lat == floor(centroid.y()) || centroid.y() == s_dsf_desc.dsf_lat + 1);
 				{
 					const grid_coord_desc grid_pt = get_ortho_grid_xy(centroid, s_dsf_desc.style);
 					tile_assignment &assignment = ortho_terrain_assignments[grid_pt.x][grid_pt.y];

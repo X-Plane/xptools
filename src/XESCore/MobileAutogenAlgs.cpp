@@ -80,9 +80,9 @@ grid_coord_desc get_ortho_grid_xy(const Point2 &point, ag_terrain_style style)
 	return out;
 }
 
+#define REALLY_REALLY_CLOSE 0.00000001
 bool points_are_real_close(const Point2 &p0, const Point2 &p1)
 {
-	#define REALLY_REALLY_CLOSE 0.00000001
 	return  dob_abs(p0.x() - p1.x()) < REALLY_REALLY_CLOSE &&
 			dob_abs(p0.y() - p1.y()) < REALLY_REALLY_CLOSE;
 }
@@ -90,9 +90,13 @@ bool points_are_real_close(const Point2 &p0, const Point2 &p1)
 bool tri_is_sliver(const Polygon2 &ben_tri)
 {
 	DebugAssert(ben_tri.size() == 3);
+	// A sliver can come from *either* having two points of your tri be "really really close,"
+	// or from *one* coordinate of *all three* points being "really close", even if the *other*
+	// coordinate is not. E.g., the points (0, 1); (0.000000000001, 2); (0.000000000002, 3)
 	return  points_are_real_close(ben_tri.at(0), ben_tri.at(1)) ||
 			points_are_real_close(ben_tri.at(0), ben_tri.at(2)) ||
-			points_are_real_close(ben_tri.at(1), ben_tri.at(2));
+			points_are_real_close(ben_tri.at(1), ben_tri.at(2)) ||
+			ben_tri.area() < (REALLY_REALLY_CLOSE * REALLY_REALLY_CLOSE);
 
 }
 
