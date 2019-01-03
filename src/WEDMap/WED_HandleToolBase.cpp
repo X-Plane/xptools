@@ -914,7 +914,6 @@ void		WED_HandleToolBase::DrawStructure			(bool inCurrent, GUI_GraphState * g)
 					if (ControlLinkToCurve(mHandles,eid,l,b,s,GetZoomer()))
 					{
 						int point_count = BezierPtsCount(b,GetZoomer());
-
 						for (int n = 0; n < point_count; ++n)
 						{
 							double t1 = (double) n / (double) point_count;
@@ -944,14 +943,15 @@ void		WED_HandleToolBase::DrawStructure			(bool inCurrent, GUI_GraphState * g)
 				HandleType_t	ht;
 				bool			isActive;
 				mHandles->GetNthControlHandle(eid,cp, &isActive, &ht, &cpt, &dir, NULL);
-				if (ht == handle_None || ht == handle_Icon || (ht == handle_Bezier && !isActive)) continue;
-				
+				if(ht == handle_None || ht == handle_Icon || (ht == handle_Bezier && !isActive)) continue;
+
 				scrpt = GetZoomer()->LLToPixel(cpt);
 				Vector2	orient;
 				if (ht == handle_ArrowHead || ht == handle_Arrow || ht == handle_Bezier || ht == handle_RotateHead || ht == handle_Rotate)
 				{
 					Point2 bscrp = GetZoomer()->LLToPixel(cpt - dir);
-					if (ht == handle_Arrow || ht == handle_Rotate)
+					orient = Vector2(bscrp,scrpt);
+					if (ht == handle_Rotate && orient.squared_length() >260.0)  // skip drawing the full cross unless handles are dragged out a bit
 					{
 						g->SetState(0,0,0,   0, 0, 0, 0);
 						glBegin(GL_LINES);
@@ -959,7 +959,6 @@ void		WED_HandleToolBase::DrawStructure			(bool inCurrent, GUI_GraphState * g)
 						glVertex2d(scrpt.x(), scrpt.y());
 						glEnd();
 					}
-					orient = Vector2(bscrp,scrpt);
 				}
 
 				switch(ht) {
