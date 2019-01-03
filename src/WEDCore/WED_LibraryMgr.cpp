@@ -278,6 +278,7 @@ void		WED_LibraryMgr::Rescan()
 
 	for(int p = 0; p < np; ++p)
 	{
+		if(gPackageMgr->IsDisabled(p)) continue;
 		//the physical directory of the scenery pack
 		string pack_base;
 		//Get the pack's physical location
@@ -303,14 +304,12 @@ void		WED_LibraryMgr::Rescan()
 			while(!MFS_done(&s))
 			{
 				string vpath, rpath;
-
-				bool is_export_export  = MFS_string_match(&s,"EXPORT",false);
-				bool is_export_extend  = MFS_string_match(&s,"EXPORT_EXTEND",false);
-				bool is_export_exclude = MFS_string_match(&s,"EXPORT_EXCLUDE",false);
-				bool is_export_backup  = MFS_string_match(&s,"EXPORT_BACKUP",false);
-
-				if(is_export_export || is_export_extend ||
-				   is_export_exclude || is_export_backup )
+				bool is_export_backup = false;
+				
+				if( MFS_string_match(&s,"EXPORT",false) ||
+				    MFS_string_match(&s,"EXPORT_EXTEND",false) ||
+				    MFS_string_match(&s,"EXPORT_EXCLUDE",false) ||
+					(is_export_backup  = MFS_string_match(&s,"EXPORT_BACKUP",false)))
 				{
 					MFS_string(&s,&vpath);
 					MFS_string_eol(&s,&rpath);
@@ -593,7 +592,7 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 #endif
 	else return;
 
-	if (package >= 0 && status >= status_Public) gPackageMgr->HasPublicItems(package);
+	if (package >= 0 && status >= status_Public) gPackageMgr->AddPublicItems(package);
 
 	string p(path);
 	while(!p.empty())

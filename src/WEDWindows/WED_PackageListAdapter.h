@@ -25,10 +25,11 @@
 #define WED_PackageListAdapter_H
 
 #include "GUI_TextTable.h"
+#include "GUI_SimpleTableGeometry.h"
 #include "GUI_Broadcaster.h"
 #include "GUI_Listener.h"
 
-class WED_PackageListAdapter : public GUI_TextTableProvider, public GUI_TableGeometry, public GUI_Broadcaster, public GUI_Listener {
+class WED_PackageListAdapter : public GUI_TextTableProvider, public GUI_SimpleTableGeometry, public GUI_Broadcaster, public GUI_Listener {
 public:
 
 					 WED_PackageListAdapter(GUI_Commander * cmd_target);
@@ -141,24 +142,6 @@ public:
 
 	virtual	int			GetColCount(void);
 	virtual	int			GetRowCount(void);
-
-	virtual	int			GetCellLeft (int n);
-	virtual	int			GetCellRight(int n);
-	virtual	int			GetCellWidth(int n);
-
-	virtual	int			GetCellBottom(int n);
-	virtual	int			GetCellTop	 (int n);
-	virtual	int			GetCellHeight(int n);
-
-	// Index
-	virtual	int			ColForX(int n);
-	virtual	int			RowForY(int n);
-
-	// Setting geometry
-	virtual	bool		CanSetCellWidth (void) const;
-	virtual	bool		CanSetCellHeight(void) const;
-	virtual	void		SetCellWidth (int n, int w);
-	virtual	void		SetCellHeight(int n, int h);
 
 	virtual	void	ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
