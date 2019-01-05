@@ -1,4 +1,4 @@
--------------------------------------------------------------------------------
+﻿-------------------------------------------------------------------------------
                          WorldEditor Release Notes
 -------------------------------------------------------------------------------
 
@@ -12,6 +12,10 @@ WorldEditor's user's manual is online; pick "WED User's Guide" from the help
 menu to view it online.
 
 CHANGE HISTORY
+
+WED 1.7.2 r1 1/5/19
+	Bug Fixes:
+	- WED-1123: Prevent Custom Libs from elevating visibilities of LR default lib items
 
 WED 1.7.1 r2 8/1/18
 	- Fixed bug when splitting facades
