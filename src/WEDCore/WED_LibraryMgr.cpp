@@ -613,7 +613,13 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 		{
 			DebugAssert(i->second.res_type == rt);
 			i->second.packages.insert(package);
-			i->second.status = max(i->second.status, status);	// upgrade status if we just found a public version!
+			if(is_default && !i->second.is_default)
+			{
+				i->second.status = status;               // LR libs will always override/downgrade Custom Libs visibility
+				i->second.is_default = true;             // But they can still elevate any prior LR lib's visiblity, as some do
+			}
+			else
+				i->second.status = max(i->second.status, status);	// upgrade status if we just found a public version!
 			if(i->second.is_backup && !is_backup)
 			{
 				i->second.is_backup = false;
@@ -622,9 +628,6 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 			// add only unique paths, but need to preserve first path added as first element, so deliberately not using a set<string> !
 			if(std::find(i->second.real_paths.begin(), i->second.real_paths.end(), rpath) == i->second.real_paths.end())
 				i->second.real_paths.push_back(rpath);
-
-			if(is_default && !i->second.is_default)
-				i->second.is_default = true;
 		}
 
 		string par, f;
