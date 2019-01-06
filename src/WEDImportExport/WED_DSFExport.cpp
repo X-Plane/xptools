@@ -1853,7 +1853,7 @@ static int	DSF_ExportTileRecursive(
 					orth->GetBounds(gis_Geo, b);
 					Point2 center = b.centroid();
 					//-------------------------------------------
-					pol_info_t out_info = {relativePathDDS, false,
+					pol_info_t out_info = { FILE_get_file_name(relativePathDDS), false,
 						/*SCALE*/ (float) LonLatDistMeters(b.p1,Point2(b.p2.x(), b.p1.y())), (float) LonLatDistMeters(b.p1,Point2(b.p1.x(), b.p2.y())),  // althought its irrelevant here
 						false, false, 
 						/*LAYER_GROUP*/ "", 0,
