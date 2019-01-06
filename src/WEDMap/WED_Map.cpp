@@ -332,7 +332,7 @@ void		WED_Map::DrawVisFor(WED_MapLayer * layer, int current, const Bbox2& bounds
 	{
 		Bbox2	on_screen;
 		what->GetBounds(gis_Geo, on_screen);
-		on_screen.expand(GLOBAL_WED_ART_ASSET_FUDGE_FACTOR);
+//		on_screen.expand(GLOBAL_WED_ART_ASSET_FUDGE_FACTOR);
 		Point2 p1 = this->LLToPixel(on_screen.p1);
 		Point2 p2 = this->LLToPixel(on_screen.p2);
 		Vector2 span(p1,p2);
@@ -357,7 +357,7 @@ void		WED_Map::DrawStrFor(WED_MapLayer * layer, int current, const Bbox2& bounds
 	{
 		Bbox2	on_screen;
 		what->GetBounds(gis_Geo, on_screen);
-		on_screen.expand(GLOBAL_WED_ART_ASSET_FUDGE_FACTOR);
+//		on_screen.expand(GLOBAL_WED_ART_ASSET_FUDGE_FACTOR);
 		
 		Point2 p1 = this->LLToPixel(on_screen.p1);
 		Point2 p2 = this->LLToPixel(on_screen.p2);
