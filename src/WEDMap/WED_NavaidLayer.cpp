@@ -61,7 +61,8 @@ static void parse_apt_dat(MFMemFile * str, map<string, navaid_t>& tAirports, con
 			{
 				if(apt_type)
 				{
-					n.lonlat = apt_bounds.centroid();
+					n.lonlat.clear();
+					n.lonlat.push_back(apt_bounds.centroid());
 					tAirports[n.icao]= n;
 				}
 				apt_type = rowcode;
@@ -108,8 +109,9 @@ static void parse_nav_dat(MFMemFile * str, vector<navaid_t>& mNavaids, bool merg
 			{
 				navaid_t n;
 				n.type = type;
-				n.lonlat.y_ = MFS_double(&s);
-				n.lonlat.x_ = MFS_double(&s);
+				double lat = MFS_double(&s);
+				double lon = MFS_double(&s);
+				n.lonlat.push_back(Point2(lon,lat));
 				MFS_int(&s);   // skip elevation
 				n.freq  = MFS_int(&s);
 				MFS_int(&s);   // skip range
@@ -136,7 +138,8 @@ static void parse_nav_dat(MFMemFile * str, vector<navaid_t>& mNavaids, bool merg
 					{
 						if(n.type == i->type && n.icao == i->icao)
 						{
-							float d = LonLatDistMeters(n.lonlat, i->lonlat);
+							float d = LonLatDistMeters(n.lonlat[0], i->lonlat[0]);
+//							float d = LonLatDistMeters(n.lonlat, i->lonlat);
 							if (n.name == i->name)
 							{
 #if DEV
@@ -185,11 +188,84 @@ static void parse_nav_dat(MFMemFile * str, vector<navaid_t>& mNavaids, bool merg
 	MemFile_Close(str);
 }
 
+static void parse_atc_dat(MFMemFile * str, vector<navaid_t>& mNavaids)
+{
+	MFScanner	s;
+	MFS_init(&s, str);
+	int versions[] = { 1000, 1130, 0 };
+		
+	if(MFS_xplane_header(&s,versions,"ATCFILE",NULL))
+	{
+		navaid_t n;
+		while(!MFS_done(&s))
+		{
+			if(MFS_string_match(&s, "CONTROLLER", 1))
+			{
+				n.type = 0;
+				n.lonlat.clear();
+				n.lonlat.push_back(Point2(180.0,0.0));
+				n.rwy.clear();
+			}
+			if(MFS_string_match(&s, "ROLE", 0))
+			{
+				string role;
+				MFS_string(&s, &role);
+				n.type = role == "tracon" ? 9999 : 0; // navaid pseudo code for TRACON areas
+			}
+			else if(MFS_string_match(&s, "NAME", 0))
+			{
+				MFS_string(&s, &n.name);
+			}
+			else if(MFS_string_match(&s, "FACILITY_ID", 0))
+			{
+				MFS_string(&s, &n.icao);
+			}
+			else if(MFS_string_match(&s, "FREQ", 0))
+			{
+				string tmp;
+				MFS_string(&s, &tmp);
+				if(!n.rwy.empty()) n.rwy += ", ";
+				n.rwy += tmp.substr(0,tmp.size()-2) + "." + tmp.substr(tmp.size()-2);
+			}
+			else if(MFS_string_match(&s, "CHAN", 0))
+			{
+				string tmp;
+				MFS_string(&s, &tmp);
+				if(!n.rwy.empty()) n.rwy += ", ";
+				n.rwy += tmp.substr(0,tmp.size()-3) + "." + tmp.substr(tmp.size()-3);
+			}
+			else if(n.type == 9999)
+			{
+				if(MFS_string_match(&s, "POINT", 0))
+				{
+					double lat = MFS_double(&s);
+					double lon = MFS_double(&s);
+					n.lonlat.push_back(Point2(lon,lat));
+					if( lon < n.lonlat.front().x_)
+						n.lonlat.front() = Point2(lon,lat);  // get the left side of the area
+				}
+				else if(MFS_string_match(&s, "AIRSPACE_POLYGON_END", 1))
+				{
+#if DEV
+					printf("Adding new %d %s %s %d\n", n.type, n.name.c_str(), n.icao.c_str(), (int) n.lonlat.size());
+#endif
+					n.name += " TRACON";
+					n.rwy += " MHz";
+					mNavaids.push_back(n);
+				}
+			}
+			MFS_string_eol(&s,NULL);
+		}
+	}
+	MemFile_Close(str);
+}
+
+
 WED_NavaidLayer::WED_NavaidLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver) :
 	WED_MapLayer(host,zoomer,resolver)
 {
     SetVisible(false);
-	// ToDo: when mmoving to using the gateway JSON data, initiate asynchronous load/update here.
+	// ToDo: when using the gateway JSON data, initiate asynchronous load/update here.
 }
 
 WED_NavaidLayer::~WED_NavaidLayer()
@@ -211,18 +287,24 @@ void WED_NavaidLayer::LoadNavaids()
 
 	MFMemFile * str = MemFile_Open(defaultNavaids.c_str());
 	if(str) parse_nav_dat(str, mNavaids, false);
-
 	str = MemFile_Open(globalNavaids.c_str());
 	if(str)	parse_nav_dat(str, mNavaids, true);
+	
+	string defaultATC  = resourcePath + DIR_STR "Resources" DIR_STR "default scenery" DIR_STR "default atc" DIR_STR "Earth nav data" DIR_STR "atc.dat";
+	string seattleATC  = resourcePath + DIR_STR "Custom Scenery" DIR_STR "KSEA Demo Area" DIR_STR "Earth nav data" DIR_STR "atc.dat";
 
+	str = MemFile_Open(defaultATC.c_str());
+	if(str)	parse_atc_dat(str, mNavaids);
+	str = MemFile_Open(seattleATC.c_str());
+	if(str)	parse_atc_dat(str, mNavaids);
+
+#if 1
 	string defaultApts = resourcePath + DIR_STR "Resources" DIR_STR "default scenery" DIR_STR "default apt dat" DIR_STR "Earth nav data" DIR_STR "apt.dat";
 	string globalApts  = resourcePath + DIR_STR "Custom Scenery" DIR_STR "Global Airports" DIR_STR "Earth nav data" DIR_STR "apt.dat";
 
 	map<string,navaid_t> tAirports;
-	
 	str = MemFile_Open(defaultApts.c_str());
 	if(str) parse_apt_dat(str, tAirports, "");
-
 	str = MemFile_Open(globalApts.c_str());
 	if(str) parse_apt_dat(str, tAirports, " (GW)");
 
@@ -232,6 +314,7 @@ void WED_NavaidLayer::LoadNavaids()
 
 	for(map<string, navaid_t>::iterator i = tAirports.begin(); i != tAirports.end(); ++i)
 		mNavaids.push_back(i->second);
+#endif
 }
 
 #define NAVAID_EXTRA_RANGE 0.03  // degree's lon/lat, allows ILS beams to show even if the ILS is outside of the map window
@@ -263,11 +346,14 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 	if (PPM > 0.001)          // stop displaying navaids when zoomed out - gets too crowded
 		for(vector<navaid_t>::iterator i = mNavaids.begin(); i != mNavaids.end(); ++i)  // this is brain dead - use list sorted by longitude
 		{
-			if(i->lonlat.x() > vl && i->lonlat.x() < vr &&
-			   i->lonlat.y() > vb && i->lonlat.y() < vt)
+			if(i->lonlat.size() >0)
+			if(i->lonlat[0].x() > vl && i->lonlat[0].x() < vr &&
+			   i->lonlat[0].y() > vb && i->lonlat[0].y() < vt)
 			{
 				glColor4fv(red);
-				Point2 pt = GetZoomer()->LLToPixel(i->lonlat);
+				Point2 pt = GetZoomer()->LLToPixel(i->lonlat[0]);
+				
+				// draw icons
 				if(i->type == 2)
 					GUI_PlotIcon(g,"nav_ndb.png", pt.x(), pt.y(), 0.0, scale);
 				else if(i->type == 3)
@@ -303,6 +389,15 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 				}
 				else if(i->type < 100)
 					GUI_PlotIcon(g,"nav_mark.png", pt.x(), pt.y(), i->heading, scale);
+				else if(i->type == 9999)
+				{
+					glColor4fv(vfr_blue);
+					int pts = i->lonlat.size()-1;
+					vector<Point2> c(pts);
+					GetZoomer()->LLToPixelv(&(c[0]),&(i->lonlat[1]),pts);
+					g->SetState(0, 0, 0, 0, 1, 0, 0);
+					glShape2v(GL_LINE_LOOP, &(c[0]), pts);
+				}
 				else
 				{
 					if(PPM > 0.005)
@@ -318,10 +413,16 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 							GUI_PlotIcon(g,"navmap_airport.png", pt.x(), pt.y(), 0.0, scale);
 					}
 				}
-
-				if (PPM  > 0.05)
+				// draw text labels, be carefull not to clutter things
+				if(i->type == 9999)
 				{
-					if(i->type >10000)
+					const float * color = vfr_blue;
+					GUI_FontDraw(g, font_UI_Basic, color, pt.x()+8.0,pt.y()-15.0, i->name.c_str());
+					GUI_FontDraw(g, font_UI_Basic, color, pt.x()+8.0,pt.y()-30.0, i->rwy.c_str());
+				}
+				else if (PPM  > 0.05)
+				{
+					if(i->type > 10000)
 					{
 						const float * color = i->heading ? vfr_blue : vfr_purple;
 						GUI_FontDraw(g, font_UI_Basic, color, pt.x()+15.0,pt.y()-20.0, i->name.c_str());
