@@ -35,7 +35,7 @@ TRIVIAL_COPY(WED_ATCRunwayUse,WED_Thing)
 WED_ATCRunwayUse::WED_ATCRunwayUse(WED_Archive * a, int i) :
 	WED_Thing(a,i),
 	rwy            (this,PROP_Name("Runway",                   XML_Name("runway_use","rwy")),	    ATCRunwayOneway, atc_4L),
-	dep_frq        (this,PROP_Name("Departure Frequency",      XML_Name("runway_use","dep_frq")),   133.0, 6, 2),
+	dep_frq        (this,PROP_Name("Departure Frequency",      XML_Name("runway_use","dep_frq")),   133.0, 7, 3),
 	traffic        (this,PROP_Name("Traffic Type",             XML_Name("runway_use","traffic")),   ATCTrafficType, 0),
 	operations     (this,PROP_Name("Operations",               XML_Name("runway_use","operations")),ATCOperationType, 0),
 	dep_heading_min(this,PROP_Name("min. legal On-Course hdg", XML_Name("runway_use","dep_min")),	0, 3),
@@ -81,7 +81,7 @@ void	WED_ATCRunwayUse::Import(const AptRunwayRule_t& info, void (* print_func)(v
 	rwy = rwy_int;
 	ENUM_ImportSet(operations.domain,info.operations,operations.value);
 	ENUM_ImportSet(traffic.domain,info.equipment,traffic.value);
-	dep_frq.AssignFrom10Khz(info.dep_freq);
+	dep_frq.AssignFrom1Khz(info.dep_freq);
 	dep_heading_min = info.dep_heading_lo;
 	dep_heading_max = info.dep_heading_hi;
 	vec_heading_min = info.ini_heading_lo;
@@ -94,7 +94,7 @@ void	WED_ATCRunwayUse::Export(		 AptRunwayRule_t& info) const
 	info.runway = ENUM_Desc(rwy.value);
 	info.operations = ENUM_ExportSet(operations.value);
 	info.equipment = ENUM_ExportSet(traffic.value);
-	info.dep_freq = dep_frq.GetAs10Khz();
+	info.dep_freq = dep_frq.GetAs1Khz();
 	info.dep_heading_lo = dep_heading_min;
 	info.dep_heading_hi = dep_heading_max;
 	info.ini_heading_lo = vec_heading_min;

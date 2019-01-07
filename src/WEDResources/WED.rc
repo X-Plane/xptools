@@ -54,6 +54,12 @@ map_towerview.png		GUI_RES		icons\map_towerview.png
 map_servicedest.png		GUI_RES		icons\map_servicedest.png
 map_missing_obj.png		GUI_RES		icons\map_missing_obj.png
 map_tree.png			GUI_RES		icons\map_tree.png
+nav_ndb.png				GUI_RES		icons\nav_ndb.png
+nav_vor.png				GUI_RES		icons\nav_vor.png
+nav_mark.png			GUI_RES		icons\nav_mark.png
+nav_gs.png				GUI_RES		icons\nav_gs.png
+navmap_airport.png		GUI_RES		icons\navmap_airport.png
+navmap_seaport.png		GUI_RES		icons\navmap_seaport.png
 
 /* table artwork */
 eye.png					GUI_RES		tables\eye.png
@@ -134,8 +140,6 @@ ClassC.png						GUI_RES		parking_spots/ClassC.png
 ClassD.png						GUI_RES		parking_spots/ClassD.png
 ClassE.png						GUI_RES		parking_spots/ClassE.png
 ClassF.png						GUI_RES		parking_spots/ClassF.png
-
-/*WEDManual.pdf					GUI_RES	WEDManual.pdf */
 
 /* Versioning info */
 #include "..\WEDCore\WED_Version.h"

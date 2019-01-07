@@ -33,6 +33,10 @@ enum CACHE_domain
 	cache_domain_airport_versions_json,
 	cache_domain_scenery_pack,
 	//----------------------------------------
+	cache_domain_osm_tile,
+#if DEV
+	cache_domain_debug,
+#endif
 	cache_domain_end //do not use!
 };
 

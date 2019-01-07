@@ -45,6 +45,7 @@ class	WED_StructureLayer;
 class	WED_ATCLayer;
 class	WED_PreviewLayer;
 class	WED_WorldMapLayer;
+class	WED_NavaidLayer;
 //class	WED_TileServerLayer;
 
 class	WED_CreatePointTool;
@@ -54,6 +55,7 @@ class	IDocPrefs;
 class	WED_Archive;
 class	GUI_Commander;
 class	WED_LibraryListAdapter;
+class	WED_SlippyMap;
 #if WITHNWLINK
 class	WED_NWInfoLayer;
 #endif
@@ -104,11 +106,13 @@ private:
 #if WANT_TERRASEVER
 	WED_TerraserverLayer *	mTerraserver;
 #endif	
+	WED_SlippyMap *			mSlippyMap;
 //	WED_TileServerLayer *	mTileserver;
 	WED_StructureLayer *	mStructureLayer;
 	WED_ATCLayer *			mATCLayer;
 	WED_PreviewLayer *		mPreview;
 	WED_WorldMapLayer *		mWorldMap;
+	WED_NavaidLayer *		mNavaidMap;
 #if WITHNWLINK
 	WED_NWInfoLayer *		mNWInfoLayer;
 #endif

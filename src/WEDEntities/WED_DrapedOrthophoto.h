@@ -67,14 +67,11 @@ public:
 protected:
 
 	virtual	bool		IsInteriorFilled(void) const { return true; }
-			void		SetSizeDisp(double w, double l);
 
 private:
 
 	WED_PropDoubleText        heading;
 	WED_PropStringText        resource;
-	WED_PropDoubleTextMeters  width;
-	WED_PropDoubleTextMeters  length;
 
 	// This specifies the part of a texture to be used for textureing.
 	WED_PropDoubleText        top;

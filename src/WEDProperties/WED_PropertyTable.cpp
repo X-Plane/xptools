@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- */ 
+ */
 
 #include "WED_PropertyTable.h"
 #include "WED_Archive.h"
@@ -48,6 +48,14 @@
 #include "WED_GroupCommands.h"
 #include "WED_UIMeasurements.h"
 #include "WED_EnumSystem.h"
+#include "GUI_Commander.h"
+#include "WED_Menus.h"
+#include "WED_RampPosition.h"
+#include "WED_TaxiRoute.h"
+#include "WED_TaxiRouteNode.h"
+#include "WED_TruckDestination.h"
+#include "WED_TruckParkingLocation.h"
+#include "WED_Runway.h"
 
 inline int count_strs(const char ** p) { if (!p) return 0; int n = 0; while(*p) ++p, ++n; return n; }
 
@@ -70,6 +78,7 @@ inline bool AnyHidden(WED_Thing * t)
 }
 
 WED_PropertyTable::WED_PropertyTable(
+									GUI_Commander *         cmdr,
 									IResolver *				resolver,
 									const char **			col_names,
 									int *					def_col_widths,
@@ -81,6 +90,7 @@ WED_PropertyTable::WED_PropertyTable(
 				count_strs(col_names),
 				def_col_widths,
 				WED_UIMeasurement("table_row_height")),
+	GUI_Commander(cmdr),
 	mVertical(vertical),
 	mDynamicCols(dynamic_cols),
 	mSelOnly(sel_only),
@@ -114,7 +124,7 @@ void	WED_PropertyTable::GetCellContent(
 	//  1. Abilities - can_edit, can_disclose, can_drag, etc...
 	//  2. State - is_disclosed, is_selected, indent_level
 	//  3. Content - content_type, its corrisponding value filled in
-	
+
 	//Our default assumptions
 	the_content.content_type = gui_Cell_None;
 	the_content.string_is_resource = 0;
@@ -167,20 +177,7 @@ void	WED_PropertyTable::GetCellContent(
 		the_content.content_type = gui_Cell_Double;
 		the_content.double_val = val.double_val;
 		sprintf(fmt,"%%%d.%dlf %.6s",inf.digits, inf.decimals, inf.units);  // info.units may be not zero terminated
-		if(inf.round_down)
-		{
-			// We are going to shift our fractional part left 1 more decimal digit to the left than needed.  Why?
-			// The answer: we have to round to nearest to reconstruct numbers like 128.839999999 (as 128.84444444.
-			// But we don't want the round to bump our last digit up (128.825 should NOT become 128.83).  So we do
-			// the round with one EXTRA digit of precision to catch the floating point sliver case.
-			double fract = pow(10.0,inf.decimals);
-			double v = floor(fract * (val.double_val) + 0.05) / fract;
-			snprintf(buf,sizeof(buf),fmt,v);
-		}
-		else
-		{
-			snprintf(buf,sizeof(buf),fmt,val.double_val);
-		}
+		snprintf(buf,sizeof(buf),fmt,val.double_val);
 		the_content.text_val = buf;
 		break;
 	case prop_String:
@@ -337,7 +334,7 @@ void	WED_PropertyTable::AcceptEdit(
 		if (inf.prop_kind == prop_Enum		&& content.content_type != gui_Cell_Enum	)	continue;
 		if (inf.prop_kind == prop_EnumSet	&& ( content.content_type != gui_Cell_EnumSet &&
 												 content.content_type != gui_Cell_LineEnumSet ))	continue;
-		
+
 		switch(inf.prop_kind) {
 		case prop_Int:
 			val.prop_kind = prop_Int;
@@ -402,7 +399,7 @@ void	WED_PropertyTable::DoDeleteCell(
 {
 	//Get the airport
 	WED_Airport * airport = static_cast<WED_Airport * >(FetchNth(0));
-	
+
 	airport->StartCommand("Delete Meta Data Key");
 	//To be in uniform with other IPropertyMethods we'll transform cell_y->NS_META_DATA
 	int ns_meta_data = (airport->WED_GISComposite::CountProperties());
@@ -536,6 +533,36 @@ void	WED_PropertyTable::SelectionEnd(void)
 	IOperation * op = dynamic_cast<IOperation *>(s);
 	op->CommitOperation();
 	mSelSave.clear();
+
+    if(gModeratorMode) // special behavior requested by Julian
+    {
+        DispatchHandleCommand(wed_ZoomSelection);
+
+        ISelectable * sel0 = s->GetNthSelection(0);
+		WED_Group * grp = SAFE_CAST(WED_Group, sel0);
+		string grpnam;
+		if (grp) grp->GetName(grpnam);
+		
+        if (SAFE_CAST(WED_RampPosition, sel0) || SAFE_CAST(WED_TaxiRoute, sel0) ||  SAFE_CAST(WED_TaxiRouteNode, sel0) ||
+            SAFE_CAST(WED_TruckParkingLocation, sel0) || SAFE_CAST(WED_TruckDestination, sel0) ||
+			grpnam == "Ramp Starts" || grpnam == "Ground Vehicles" || grpnam == "Taxi Routes" || grpnam == "Ground Routes" )
+        {
+                DispatchHandleCommand(wed_MapATC);
+        }
+//        else if (SAFE_CAST(WED_FacadePlacement, sel0) || SAFE_CAST(WED_ObjPlacement, sel0))
+//        {
+//             mMapPane->SetTabFilterMode(tab_3D);
+//            DispatchHandleCommand(wed_Map3D);
+//        }
+        else if(SAFE_CAST(WED_Runway, sel0) || grpnam == "Runways" )
+        {
+            DispatchHandleCommand(wed_MapPavement);
+        }
+        else
+        {
+            DispatchHandleCommand(wed_MapSelection);
+        }
+    }
 }
 
 int		WED_PropertyTable::SelectDisclose(
@@ -628,7 +655,7 @@ int		WED_PropertyTable::TabAdvance(
 		}
 		if (reverse==0)reverse=1;
 		++tries;
-	} while ((start_x != io_x || start_y != io_y || tries <= 1) 
+	} while ((start_x != io_x || start_y != io_y || tries <= 1)
 				&& tries < 100);                 // prevent infinite loop if nothing in table is "advanceable" to, e.g. a taxi route edge runway segment
 	return 0;
 }

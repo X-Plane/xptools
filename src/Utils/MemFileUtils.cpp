@@ -899,6 +899,8 @@ MF_FileType	MF_GetFileType(const char * path, int analysis_level)
 	if (ret < 0)               // MSFT in 2013 said, stat is broken for symlinks. Their hotfix for mfc100.dll published in 2013
 	{                          // works, but the mfc100 version included since 2017 in Win 10 won't do anymore. So we try Plan B
 		ret = GetFileAttributesW(c_path);
+		if (ret == INVALID_FILE_ATTRIBUTES) 
+			return mf_BadFile;
 		if (ret & FILE_ATTRIBUTE_DIRECTORY)
 			return mf_Directory;
 		WIN32_FILE_ATTRIBUTE_DATA data;

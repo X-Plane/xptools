@@ -295,7 +295,7 @@ string		WED_PackageMgr::ReducePath(const string& package, const string& full_fil
 		int p = prefix.find_first_of("\\/:", n);
 		if(p == prefix.npos) break;
 		++p;
-		if(p != prefix.npos && p <= prefix.size() && p <= partial.size() && strncmp(prefix.c_str(), partial.c_str(), p) == 0)
+		if(p != prefix.npos && p <= prefix.size() && p <= partial.size() && strncasecmp(prefix.c_str(), partial.c_str(), p) == 0)
 			n = p;
 		else
 			break;

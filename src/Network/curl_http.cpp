@@ -264,7 +264,10 @@ curl_http_get_file::thread_proc(void * param)
 	curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0);
 	
 	curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, "");  // empty string is expanded into all methods supported by this version of curl.
-
+#if WED
+#include "WED_Version.h"
+	curl_easy_setopt(curl,  CURLOPT_USERAGENT, "WorldEditor/" WED_VERSION_STRING_SHORT );  // OSM tile server requires a referer string
+#endif
 #if DEV	
 	curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
 #endif	

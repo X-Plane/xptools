@@ -65,10 +65,8 @@
     <ClCompile Include="..\..\src\Obj\ObjConvert.cpp" />
     <ClCompile Include="..\..\src\Obj\ObjDraw.cpp" />
     <ClCompile Include="..\..\src\Obj\ObjPointPool.cpp" />
-    <ClCompile Include="..\..\src\Obj\XObjBuilder.cpp" />
     <ClCompile Include="..\..\src\Obj\XObjDefs.cpp" />
     <ClCompile Include="..\..\src\Obj\XObjReadWrite.cpp" />
-    <ClCompile Include="..\..\src\Obj\XObjWriteEmbedded.cpp" />
     <ClCompile Include="..\..\src\OGLE\ogle.cpp" />
     <ClCompile Include="..\..\src\UI\XWin.win.cpp" />
     <ClCompile Include="..\..\src\UI\XWin32DND.cpp" />
@@ -218,7 +216,9 @@
     <ClCompile Include="..\..\src\WEDMap\WED_MapToolNew.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_MapZoomerNew.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_MarqueeTool.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_NavaidLayer.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_PreviewLayer.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_SlippyMap.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_StructureLayer.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_ToolInfoAdapter.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_ToolUtils.cpp" />
@@ -326,10 +326,8 @@
     <ClInclude Include="..\..\src\Obj\ObjDraw.h" />
     <ClInclude Include="..\..\src\Obj\ObjPointPool.h" />
     <ClInclude Include="..\..\src\Obj\XDefs.h" />
-    <ClInclude Include="..\..\src\Obj\XObjBuilder.h" />
     <ClInclude Include="..\..\src\Obj\XObjDefs.h" />
     <ClInclude Include="..\..\src\Obj\XObjReadWrite.h" />
-    <ClInclude Include="..\..\src\Obj\XObjWriteEmbedded.h" />
     <ClInclude Include="..\..\src\OGLE\ogle.h" />
     <ClInclude Include="..\..\src\UI\XWin.h" />
     <ClInclude Include="..\..\src\UI\XWin32DND.h" />
@@ -479,7 +477,9 @@
     <ClInclude Include="..\..\src\WEDMap\WED_MapToolNew.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_MapZoomerNew.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_MarqueeTool.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_NavaidLayer.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_PreviewLayer.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_SlippyMap.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_StructureLayer.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_ToolInfoAdapter.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_ToolUtils.h" />
@@ -544,6 +544,25 @@
     <Image Include="..\..\src\WEDResources\WED.ico" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\src\WEDResources\icons\map_airport.png" />
+    <None Include="..\..\src\WEDResources\icons\map_beacon.png" />
+    <None Include="..\..\src\WEDResources\icons\map_helipad.png" />
+    <None Include="..\..\src\WEDResources\icons\map_heliport.png" />
+    <None Include="..\..\src\WEDResources\icons\map_light.png" />
+    <None Include="..\..\src\WEDResources\icons\map_missing_obj.png" />
+    <None Include="..\..\src\WEDResources\icons\map_rampstart.png" />
+    <None Include="..\..\src\WEDResources\icons\map_seaport.png" />
+    <None Include="..\..\src\WEDResources\icons\map_servicedest.png" />
+    <None Include="..\..\src\WEDResources\icons\map_taxisign.png" />
+    <None Include="..\..\src\WEDResources\icons\map_towerview.png" />
+    <None Include="..\..\src\WEDResources\icons\map_tree.png" />
+    <None Include="..\..\src\WEDResources\icons\map_windsock.png" />
+    <None Include="..\..\src\WEDResources\icons\navmap_airport.png" />
+    <None Include="..\..\src\WEDResources\icons\navmap_seaport.png" />
+    <None Include="..\..\src\WEDResources\icons\nav_gs.png" />
+    <None Include="..\..\src\WEDResources\icons\nav_mark.png" />
+    <None Include="..\..\src\WEDResources\icons\nav_ndb.png" />
+    <None Include="..\..\src\WEDResources\icons\nav_vor.png" />
     <None Include="..\..\src\WEDResources\map_tools.psd" />
     <None Include="..\..\src\WEDResources\tables\arrows.png" />
     <None Include="..\..\src\WEDResources\tables\check.png" />
