@@ -289,8 +289,6 @@
 		<Unit filename="../../src/WEDCore/WED_Messages.h" />
 		<Unit filename="../../src/WEDCore/WED_Orthophoto.cpp" />
 		<Unit filename="../../src/WEDCore/WED_Orthophoto.h" />
-		<Unit filename="../../src/WEDCore/WED_Package.cpp" />
-		<Unit filename="../../src/WEDCore/WED_Package.h" />
 		<Unit filename="../../src/WEDCore/WED_PackageMgr.cpp" />
 		<Unit filename="../../src/WEDCore/WED_PackageMgr.h" />
 		<Unit filename="../../src/WEDCore/WED_Persistent.cpp" />
@@ -663,10 +661,6 @@
 		<Unit filename="../../src/WEDWindows/WED_Menus.h" />
 		<Unit filename="../../src/WEDWindows/WED_PackageListAdapter.cpp" />
 		<Unit filename="../../src/WEDWindows/WED_PackageListAdapter.h" />
-		<Unit filename="../../src/WEDWindows/WED_PackageStatusPane.cpp" />
-		<Unit filename="../../src/WEDWindows/WED_PackageStatusPane.h" />
-		<Unit filename="../../src/WEDWindows/WED_PackageWindow.cpp" />
-		<Unit filename="../../src/WEDWindows/WED_PackageWindow.h" />
 		<Unit filename="../../src/WEDWindows/WED_Sign_Editor.cpp" />
 		<Unit filename="../../src/WEDWindows/WED_Sign_Editor.h" />
 		<Unit filename="../../src/WEDWindows/WED_StartWindow.cpp" />

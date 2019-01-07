@@ -105,7 +105,6 @@ endif #PLAT_DARWIN
 SOURCES += ./src/WEDCore/WED_AppMain.cpp
 SOURCES += ./src/WEDCore/WED_Application.cpp
 SOURCES += ./src/WEDCore/WED_PackageMgr.cpp
-SOURCES += ./src/WEDCore/WED_Package.cpp
 SOURCES += ./src/WEDCore/WED_Archive.cpp
 SOURCES += ./src/WEDCore/WED_Buffer.cpp
 SOURCES += ./src/WEDCore/WED_Clipping.cpp
@@ -262,8 +261,6 @@ SOURCES += ./src/WEDWindows/WED_GroupCommands.cpp
 SOURCES += ./src/WEDWindows/WED_HierarchyFilterBar.cpp
 SOURCES += ./src/WEDWindows/WED_Menus.cpp
 SOURCES += ./src/WEDWindows/WED_PackageListAdapter.cpp
-SOURCES += ./src/WEDWindows/WED_PackageStatusPane.cpp
-SOURCES += ./src/WEDWindows/WED_PackageWindow.cpp
 SOURCES += ./src/WEDWindows/WED_StartWindow.cpp
 SOURCES += ./src/WEDWindows/WED_Sign_Editor.cpp
 SOURCES += ./src/WEDWindows/WED_Line_Selector.cpp

@@ -462,12 +462,6 @@
     <ClCompile Include="..\..\src\WEDWindows\WED_PackageListAdapter.cpp">
       <Filter>WEDWindows</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\WEDWindows\WED_PackageStatusPane.cpp">
-      <Filter>WEDWindows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\WEDWindows\WED_PackageWindow.cpp">
-      <Filter>WEDWindows</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\WEDWindows\WED_StartWindow.cpp">
       <Filter>WEDWindows</Filter>
     </ClCompile>
@@ -637,9 +631,6 @@
       <Filter>DSF</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\WEDCore\WED_GISUtils.cpp">
-      <Filter>WEDCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\WEDCore\WED_Package.cpp">
       <Filter>WEDCore</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Utils\GISUtils.cpp">
@@ -843,9 +834,6 @@
       <Filter>WEDCore</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDCore\WED_Orthophoto.h">
-      <Filter>WEDCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\WEDCore\WED_Package.h">
       <Filter>WEDCore</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDCore\WED_PackageMgr.h">
@@ -1203,12 +1191,6 @@
       <Filter>WEDWindows</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDWindows\WED_PackageListAdapter.h">
-      <Filter>WEDWindows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\WEDWindows\WED_PackageStatusPane.h">
-      <Filter>WEDWindows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\WEDWindows\WED_PackageWindow.h">
       <Filter>WEDWindows</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDWindows\WED_StartWindow.h">

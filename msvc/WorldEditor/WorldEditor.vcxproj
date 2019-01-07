@@ -104,7 +104,6 @@
     <ClCompile Include="..\..\src\WEDCore\WED_Globals.cpp" />
     <ClCompile Include="..\..\src\WEDCore\WED_LibraryMgr.cpp" />
     <ClCompile Include="..\..\src\WEDCore\WED_Orthophoto.cpp" />
-    <ClCompile Include="..\..\src\WEDCore\WED_Package.cpp" />
     <ClCompile Include="..\..\src\WEDCore\WED_PackageMgr.cpp" />
     <ClCompile Include="..\..\src\WEDCore\WED_Persistent.cpp" />
     <ClCompile Include="..\..\src\WEDCore\WED_PropertyHelper.cpp" />
@@ -247,8 +246,6 @@
     <ClCompile Include="..\..\src\WEDWindows\WED_Line_Selector.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_Menus.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_PackageListAdapter.cpp" />
-    <ClCompile Include="..\..\src\WEDWindows\WED_PackageStatusPane.cpp" />
-    <ClCompile Include="..\..\src\WEDWindows\WED_PackageWindow.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_Sign_Editor.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_StartWindow.cpp" />
     <ClCompile Include="..\..\src\XESCore\AptIO.cpp" />
@@ -364,7 +361,6 @@
     <ClInclude Include="..\..\src\WEDCore\WED_LibraryMgr.h" />
     <ClInclude Include="..\..\src\WEDCore\WED_Messages.h" />
     <ClInclude Include="..\..\src\WEDCore\WED_Orthophoto.h" />
-    <ClInclude Include="..\..\src\WEDCore\WED_Package.h" />
     <ClInclude Include="..\..\src\WEDCore\WED_PackageMgr.h" />
     <ClInclude Include="..\..\src\WEDCore\WED_Persistent.h" />
     <ClInclude Include="..\..\src\WEDCore\WED_PropertyHelper.h" />
@@ -509,8 +505,6 @@
     <ClInclude Include="..\..\src\WEDWindows\WED_Line_Selector.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_Menus.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_PackageListAdapter.h" />
-    <ClInclude Include="..\..\src\WEDWindows\WED_PackageStatusPane.h" />
-    <ClInclude Include="..\..\src\WEDWindows\WED_PackageWindow.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_Sign_Editor.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_StartWindow.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_UIDefs.h" />

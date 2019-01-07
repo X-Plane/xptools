@@ -28,15 +28,10 @@
 #endif
 
 #include "WED_AboutBox.h"
-// Stuff we need to init
-//#include "XESInit.h"
 #include "WED_Document.h"
 #include "WED_Assert.h"
-//#include "DEMTables.h"
 #include "WED_StartWindow.h"
-//#include "ObjTables.h"
 #include "GUI_Clipboard.h"
-#include "WED_Package.h"
 #include "GUI_Resources.h"
 #include "WED_Application.h"
 #include "WED_PackageMgr.h"

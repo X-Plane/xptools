@@ -815,9 +815,6 @@
 		D6ED36FE0B67964D00D5484E /* WED_Errors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37C50AB22C85003949C5 /* WED_Errors.cpp */; };
 		D6ED37020B67964D00D5484E /* WED_MapPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37E30AB22C85003949C5 /* WED_MapPane.cpp */; };
 		D6ED37030B67964D00D5484E /* WED_Menus.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37ED0AB22C85003949C5 /* WED_Menus.cpp */; };
-		D6ED37050B67964D00D5484E /* WED_Package.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37CC0AB22C85003949C5 /* WED_Package.cpp */; };
-		D6ED37060B67964D00D5484E /* WED_PackageStatusPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37EF0AB22C85003949C5 /* WED_PackageStatusPane.cpp */; };
-		D6ED37070B67964D00D5484E /* WED_PackageWindow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37F10AB22C85003949C5 /* WED_PackageWindow.cpp */; };
 		D6ED37080B67964D00D5484E /* ObjConvert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E10AB22C84003949C5 /* ObjConvert.cpp */; };
 		D6ED37090B67964D00D5484E /* ObjPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E50AB22C84003949C5 /* ObjPointPool.cpp */; };
 		D6ED370A0B67964D00D5484E /* XObjDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36EE0AB22C84003949C5 /* XObjDefs.cpp */; };
@@ -1813,18 +1810,12 @@
 		D6BC37C50AB22C85003949C5 /* WED_Errors.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Errors.cpp; sourceTree = "<group>"; };
 		D6BC37C60AB22C85003949C5 /* WED_Errors.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_Errors.h; sourceTree = "<group>"; };
 		D6BC37C90AB22C85003949C5 /* WED_Messages.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_Messages.h; sourceTree = "<group>"; };
-		D6BC37CC0AB22C85003949C5 /* WED_Package.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Package.cpp; sourceTree = "<group>"; };
-		D6BC37CD0AB22C85003949C5 /* WED_Package.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_Package.h; sourceTree = "<group>"; };
 		D6BC37E30AB22C85003949C5 /* WED_MapPane.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_MapPane.cpp; sourceTree = "<group>"; };
 		D6BC37E40AB22C85003949C5 /* WED_MapPane.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_MapPane.h; sourceTree = "<group>"; };
 		D6BC37E90AB22C85003949C5 /* WED_DocumentWindow.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_DocumentWindow.cpp; sourceTree = "<group>"; };
 		D6BC37EA0AB22C85003949C5 /* WED_DocumentWindow.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_DocumentWindow.h; sourceTree = "<group>"; };
 		D6BC37ED0AB22C85003949C5 /* WED_Menus.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Menus.cpp; sourceTree = "<group>"; };
 		D6BC37EE0AB22C85003949C5 /* WED_Menus.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_Menus.h; sourceTree = "<group>"; };
-		D6BC37EF0AB22C85003949C5 /* WED_PackageStatusPane.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_PackageStatusPane.cpp; sourceTree = "<group>"; };
-		D6BC37F00AB22C85003949C5 /* WED_PackageStatusPane.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_PackageStatusPane.h; sourceTree = "<group>"; };
-		D6BC37F10AB22C85003949C5 /* WED_PackageWindow.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_PackageWindow.cpp; sourceTree = "<group>"; };
-		D6BC37F20AB22C85003949C5 /* WED_PackageWindow.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_PackageWindow.h; sourceTree = "<group>"; };
 		D6BC37F30AB22C85003949C5 /* WED_UIDefs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_UIDefs.h; sourceTree = "<group>"; };
 		D6BC38300AB22C85003949C5 /* Airports.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = Airports.cpp; sourceTree = "<group>"; };
 		D6BC38310AB22C85003949C5 /* Airports.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = Airports.h; sourceTree = "<group>"; };
@@ -3069,8 +3060,6 @@
 				D6BC37C90AB22C85003949C5 /* WED_Messages.h */,
 				D60B0ECC0FCC886A001E8DD3 /* WED_Orthophoto.cpp */,
 				D60B0ECB0FCC886A001E8DD3 /* WED_Orthophoto.h */,
-				D6BC37CC0AB22C85003949C5 /* WED_Package.cpp */,
-				D6BC37CD0AB22C85003949C5 /* WED_Package.h */,
 				D6E023E80C39841200BD789F /* WED_PackageMgr.cpp */,
 				D6E023E90C39841200BD789F /* WED_PackageMgr.h */,
 				D6ED403B0B6AD47300D5484E /* WED_Persistent.cpp */,
@@ -3183,10 +3172,6 @@
 				D6BC37EA0AB22C85003949C5 /* WED_DocumentWindow.h */,
 				D6BC37ED0AB22C85003949C5 /* WED_Menus.cpp */,
 				D6BC37EE0AB22C85003949C5 /* WED_Menus.h */,
-				D6BC37EF0AB22C85003949C5 /* WED_PackageStatusPane.cpp */,
-				D6BC37F00AB22C85003949C5 /* WED_PackageStatusPane.h */,
-				D6BC37F10AB22C85003949C5 /* WED_PackageWindow.cpp */,
-				D6BC37F20AB22C85003949C5 /* WED_PackageWindow.h */,
 				D6BC37F30AB22C85003949C5 /* WED_UIDefs.h */,
 				D6C690360BF0B91100C9F880 /* WED_GroupCommands.h */,
 				D6C690370BF0B91100C9F880 /* WED_GroupCommands.cpp */,
@@ -4614,10 +4599,7 @@
 				D6ED36FE0B67964D00D5484E /* WED_Errors.cpp in Sources */,
 				D6ED37020B67964D00D5484E /* WED_MapPane.cpp in Sources */,
 				D6ED37030B67964D00D5484E /* WED_Menus.cpp in Sources */,
-				D6ED37050B67964D00D5484E /* WED_Package.cpp in Sources */,
 				02198CB5219F6946008FDB0C /* WED_SlippyMap.cpp in Sources */,
-				D6ED37060B67964D00D5484E /* WED_PackageStatusPane.cpp in Sources */,
-				D6ED37070B67964D00D5484E /* WED_PackageWindow.cpp in Sources */,
 				D6ED37080B67964D00D5484E /* ObjConvert.cpp in Sources */,
 				D6ED37090B67964D00D5484E /* ObjPointPool.cpp in Sources */,
 				D6ED370A0B67964D00D5484E /* XObjDefs.cpp in Sources */,
