@@ -329,12 +329,12 @@ void		WED_PackageMgr::Rescan(void)
 					}
 				}
 				MemFile_Close(ini);
+			
+				for(auto dis : disabledSceneries)
+					for(auto& scn : custom_packages)
+						if(scn.name == dis) scn.isDisabled = true;
 			}
-			
-			for(auto dis : disabledSceneries)
-				for(auto& scn : custom_packages)
-					if(scn.name == dis) scn.isDisabled = true;
-			
+
 			sort(custom_packages.begin(),custom_packages.end(),SortPackageList);
 		}
 
