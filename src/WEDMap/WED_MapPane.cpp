@@ -47,7 +47,6 @@
 #include "WED_PreviewLayer.h"
 #include "WED_DebugLayer.h"
 #include "WED_VertexTool.h"
-//#include "WED_TileServerLayer.h"
 #include "WED_TerraserverLayer.h"
 #include "GUI_Fonts.h"
 #include "GUI_Table.h"
@@ -55,7 +54,6 @@
 #include "WED_Colors.h"
 #include "GUI_Resources.h"
 #include "WED_ToolInfoAdapter.h"
-#include "WED_UIMeasurements.h"
 #include "WED_GroupCommands.h"
 #include "WED_LibraryListAdapter.h"
 #include "WED_LibraryMgr.h"
@@ -219,7 +217,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	mTools.push_back(					new WED_MarqueeTool("Marquee",mMap, mMap, resolver));
 
 	mInfoAdapter = new WED_ToolInfoAdapter(GUI_GetImageResourceHeight("property_bar.png") / 2);
-	mTextTable = new GUI_TextTable(cmdr,10,0);
+	mTextTable = new GUI_TextTable(cmdr,12,0);
 	mTable = new GUI_Table(1);
 
 	mTextTable->SetColors(
@@ -598,16 +596,16 @@ void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
 			key += inf.prop_name;
 
 			string v;
-			char buf[256];
+			char buf[16];
 			switch(val.prop_kind) {
 			case prop_Int:
 			case prop_Bool:
 			case prop_Enum:
-				sprintf(buf,"%d",val.int_val);
+				snprintf(buf,16,"%d",val.int_val);
 				v = buf;
 				break;
 			case prop_Double:
-				sprintf(buf,"%lf",val.double_val);
+				snprintf(buf,16,"%lf",val.double_val);
 				v = buf;
 				break;
 			case prop_String:
@@ -619,7 +617,7 @@ void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
 				for (set<int>::iterator it = val.set_val.begin(); it != val.set_val.end(); ++it)
 				{
 					if (!v.empty()) v += ",";
-					sprintf(buf,"%d",*it);
+					snprintf(buf,16,"%d",*it);
 					v += buf;
 				}
 				break;

@@ -29,7 +29,7 @@
 
 static int kDefCols[] = {75, 100, 300 };
 
-WED_PackageListAdapter::WED_PackageListAdapter(GUI_Commander * cmd_target) :  GUI_SimpleTableGeometry(3, kDefCols, 20), mSel(-1), mCmdTarget(cmd_target)
+WED_PackageListAdapter::WED_PackageListAdapter(GUI_Commander * cmd_target) :  GUI_SimpleTableGeometry(3, kDefCols), mSel(-1), mCmdTarget(cmd_target)
 
 {
 	gPackageMgr->AddListener(this);

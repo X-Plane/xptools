@@ -46,7 +46,6 @@
 #include "WED_Messages.h"
 #include "WED_ToolUtils.h"
 #include "WED_GroupCommands.h"
-#include "WED_UIMeasurements.h"
 #include "WED_EnumSystem.h"
 #include "GUI_Commander.h"
 #include "WED_Menus.h"
@@ -88,8 +87,7 @@ WED_PropertyTable::WED_PropertyTable(
 									const char **			filter)
 	:	GUI_SimpleTableGeometry(
 				count_strs(col_names),
-				def_col_widths,
-				WED_UIMeasurement("table_row_height")),
+				def_col_widths),
 	GUI_Commander(cmdr),
 	mVertical(vertical),
 	mDynamicCols(dynamic_cols),

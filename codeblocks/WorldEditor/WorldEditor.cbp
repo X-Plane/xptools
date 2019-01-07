@@ -525,8 +525,6 @@
 		<Unit filename="../../src/WEDMap/WED_ToolInfoAdapter.h" />
 		<Unit filename="../../src/WEDMap/WED_ToolUtils.cpp" />
 		<Unit filename="../../src/WEDMap/WED_ToolUtils.h" />
-		<Unit filename="../../src/WEDMap/WED_UIMeasurements.cpp" />
-		<Unit filename="../../src/WEDMap/WED_UIMeasurements.h" />
 		<Unit filename="../../src/WEDMap/WED_VertexTool.cpp" />
 		<Unit filename="../../src/WEDMap/WED_VertexTool.h" />
 		<Unit filename="../../src/WEDMap/WED_WorldMapLayer.cpp" />
@@ -630,7 +628,6 @@
 		<Unit filename="../../src/WEDResources/taxi_sign.png" />
 		<Unit filename="../../src/WEDResources/tce_tools.png" />
 		<Unit filename="../../src/WEDResources/tce_tools_blank.png" />
-		<Unit filename="../../src/WEDResources/ui_measurements.txt" />
 		<Unit filename="../../src/WEDTCE/WED_TCE.cpp" />
 		<Unit filename="../../src/WEDTCE/WED_TCE.h" />
 		<Unit filename="../../src/WEDTCE/WED_TCELayer.cpp" />

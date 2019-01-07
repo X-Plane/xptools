@@ -51,9 +51,9 @@ float *		WED_Color_RGBA(WED_Color c)
 			colors[n*4+1] = (float) ptr[1] / 255.0;
 			colors[n*4+2] = (float) ptr[0] / 255.0;
 			colors[n*4+3] = (float) ptr[3] / 255.0;
-
 		}
-
+		colors[wed_pure_white*4] = colors[wed_pure_white*4+1] = colors[wed_pure_white*4+2] = colors[wed_pure_white*4+3] = 1.0f;
+		
 		DestroyBitmap(&im);
 	}
 

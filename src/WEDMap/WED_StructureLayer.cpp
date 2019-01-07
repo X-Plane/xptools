@@ -49,7 +49,6 @@
 #include "WED_TowerViewpoint.h"
 #include "WED_TruckDestination.h"
 #include "WED_Airport.h"
-#include "WED_UIMeasurements.h"
 #include "WED_RampPosition.h"
 #include "WED_Windsock.h"
 #include "WED_AirportBeacon.h"
@@ -172,9 +171,9 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 			if (has_blas1)				glShape2v(GL_LINE_LOOP, blas1,4);
 			if (has_blas2)				glShape2v(GL_LINE_LOOP, blas2, 4);
 
-			float white[4] = { 1,1,1,1 };
+			float * white = locked ? WED_Color_RGBA(wed_StructureLocked) : WED_Color_RGBA(wed_pure_white);
 			
-			if (mRealLines) glColor4fv(locked ? WED_Color_RGBA(wed_StructureLocked): white);
+			if (mRealLines) glColor4fv(white);
 			if (has_disp1)				glShape2v(GL_LINE_LOOP, disp1,4);
 			if (has_disp2)				glShape2v(GL_LINE_LOOP, disp2,4);
 
@@ -199,7 +198,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 					glPushMatrix();                  // rotate the numbers properly
 					glTranslatef(Th1.x(), Th1.y(), 0);
 					glRotatef(-hdg,0,0,1);
-					GUI_FontDraw(g, font_UI_Basic, locked ? WED_Color_RGBA(wed_StructureLocked) : white, -8, 10, ENUM_Desc(e.first));
+					GUI_FontDraw(g, font_UI_Basic, white, 0, 10, ENUM_Desc(e.first), align_Center);
 					glPopMatrix();
 				}
 				if(e.second != atc_Runway_None) 
@@ -207,7 +206,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 					glPushMatrix();
 					glTranslatef(Th2.x(), Th2.y(), 0);
 					glRotatef(180-hdg,0,0,1);
-					GUI_FontDraw(g, font_UI_Basic, locked ? WED_Color_RGBA(wed_StructureLocked) : white, -8, 10, ENUM_Desc(e.second));
+					GUI_FontDraw(g, font_UI_Basic, white, 0, 10, ENUM_Desc(e.second), align_Center);
 					glPopMatrix();
 				}
 				g->SetState(false,0,false,false,true,false,false);

@@ -13,7 +13,7 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 1.8.0 a13 1/5/19
+WED 1.8.0 a13 1/6/19
     Features:
     - WED-1119: Speed up map display by culling objects preview based on their actual size
     - WED-682: Skip SCENERY_PACK_DISABLED libraries, display status on opening screen
@@ -38,7 +38,7 @@ WED 1.8.0 a13 1/5/19
 	Bug Fixes:
 	- WED-271: fix PropertyPane not showing all available Columns upon startup
 	- WED-1123: Prevent Custom Libs from elevating visibilities of LR default lib items
-	- fix very large ortho images, exceeding the GPU's max texture size, from displaying
+	- scale down very large ortho images exceeding the GPU's max texture size to still display
 	- WED-1116: fix undesired selection of ALL items in TAXI/Light views
 	- CIFP validation to use ICAO code meta tag if available
 	- fix missing symbolic light styles when drawing certain of the new XP11.25 line styles

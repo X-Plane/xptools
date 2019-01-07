@@ -29,6 +29,7 @@
 #include "WED_Globals.h"
 #include "WED_Airport.h"
 #include "GUI_GraphState.h"
+#include "WED_Colors.h"
 #include "GUI_Fonts.h"
 #include "XESConstants.h"
 #include "IGIS.h"
@@ -105,7 +106,7 @@ void		WED_Map::SetBounds(int inBounds[4])
 	SetPixelBounds(inBounds[0],inBounds[1],inBounds[2],inBounds[3]);
 
 }
-//#include <chrono>
+
 void		WED_Map::Draw(GUI_GraphState * state)
 {
 	WED_MapLayer * cur = mTool;
@@ -118,8 +119,6 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	ISelection * sel = GetSel();
 	IGISEntity * base = GetGISBase();
 	
-//auto t0 = chrono::high_resolution_clock::now();
-
 	vector<WED_MapLayer *>::iterator l;
 	for (l = mLayers.begin(); l != mLayers.end(); ++l)
 	if((*l)->IsVisible())
@@ -128,7 +127,6 @@ void		WED_Map::Draw(GUI_GraphState * state)
 		if (base && draw_ent_v) DrawVisFor(*l, cur == *l, bounds, base, state, wants_sel ? sel : NULL, 0);
 		(*l)->DrawVisualization(cur == *l, state);
 	}
-//auto t1 = chrono::high_resolution_clock::now();
 
 	for (l = mLayers.begin(); l != mLayers.end(); ++l)
 	if((*l)->IsVisible())
@@ -137,19 +135,12 @@ void		WED_Map::Draw(GUI_GraphState * state)
 		if (base && draw_ent_s) DrawStrFor(*l, cur == *l, bounds, base, state, wants_sel ? sel : NULL, 0);
 		(*l)->DrawStructure(cur == *l, state);
 	}
-//auto t2 = chrono::high_resolution_clock::now();
 
 	for (l = mLayers.begin(); l != mLayers.end(); ++l)
 	if((*l)->IsVisible())
 	{
 		(*l)->DrawSelected(cur == *l, state);
 	}
-//auto t3 = chrono::high_resolution_clock::now();
-
-//chrono::duration<double> tm_vis = t1-t0;
-//chrono::duration<double> tm_str = t2-t1;
-//chrono::duration<double> tm_sel = t3-t2;
-//printf("WED_Map::Draw Vis %6.4lf  Str %6.4lf  Sel %6.4lf\n", tm_vis.count(), tm_str.count(), tm_sel.count());
 
 	int x, y;
 	GetMouseLocNow(&x,&y);
@@ -166,8 +157,10 @@ void		WED_Map::Draw(GUI_GraphState * state)
 
 	int b[4];
 	GetBounds(b);
-	float white[4] = { 1.0, 1.0, 1.0, 1.0 };
-	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[3] - 15, mTool ? mTool->GetToolName() : "");
+	
+	float * white = WED_Color_RGBA(wed_pure_white);
+	float textH = GUI_GetLineHeight(font_UI_Basic);
+	GUI_FontDraw(state, font_UI_Basic, white, b[0] + 5, b[3] - textH, mTool ? mTool->GetToolName() : "");
 
 	{
 		WED_Airport * apt = WED_GetCurrentAirport(mResolver);
@@ -179,15 +172,15 @@ void		WED_Map::Draw(GUI_GraphState * state)
 			apt->GetICAO(icao);
 			n = an + string("(") + icao + string(")");
 		}
-		GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[3] - 45, n.c_str());
+		GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[3] - 3.0*textH, n.c_str());
 	}
 	
 	if(!mFilterName.empty())
-		GUI_FontDraw(state, font_UI_Basic, white, b[0]+5, b[3] - 30, mFilterName.c_str());
+		GUI_FontDraw(state, font_UI_Basic, white, b[0]+5, b[3] - 2.0*textH, mFilterName.c_str());
 
 	const char * status = mTool ? mTool->GetStatusText() : NULL;
 	if (status)
-	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 49, status);
+	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 3.0*textH, status);
 
 	char mouse_loc[350];
 	char * p = mouse_loc;
@@ -251,7 +244,7 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	if (has_d)				p += sprintf(p," %.1lf %s",dist * (gIsFeet ? MTR_TO_FT : 1.0), gIsFeet? "feet" : "meters");
 	if (has_h)				p += sprintf(p," heading: %.1lf", head);
 
-	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 25, mouse_loc);
+	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + textH + 5, mouse_loc);
 	
 	p = mouse_loc;
 	
@@ -295,7 +288,8 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	
 	float scale = MIN_BAR_LEN * (gIsFeet ? MTR_TO_FT : 1.0) / cur->mZoomer->GetPPM();
 	int bar_len;
-
+	int bar_Yoff = textH * 0.75;
+	
 	if      (scale < 1.0)   bar_len = 1;
 	else if (scale < 3.0)   bar_len = 3;
 	else if (scale < 10.0)  bar_len = 10;
@@ -307,13 +301,13 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	state->SetState(0,0,0,1,1,0,0);
 	glColor4fv(white);
 	glBegin(GL_LINES);
-	glVertex2i(b[0]+ 50 + SHOW_FPS*140, b[1] + 15);
-	glVertex2i(b[0]+ 50 + SHOW_FPS*140 + (int)(MIN_BAR_LEN * bar_len / scale), b[1] + 15);
-	glVertex2i(b[0]+ 50 + SHOW_FPS*140 + (int)(MIN_BAR_LEN * bar_len / scale), b[1] + 14);
-	glVertex2i(b[0]+ 50 + SHOW_FPS*140, b[1] + 14);
+	glVertex2i(b[0]+ 50 + SHOW_FPS*140, b[1] + bar_Yoff + 1);
+	glVertex2i(b[0]+ 50 + SHOW_FPS*140 + (int)(MIN_BAR_LEN * bar_len / scale), b[1] + bar_Yoff + 1);
+	glVertex2i(b[0]+ 50 + SHOW_FPS*140 + (int)(MIN_BAR_LEN * bar_len / scale), b[1] + bar_Yoff);
+	glVertex2i(b[0]+ 50 + SHOW_FPS*140, b[1] + bar_Yoff);
 	glEnd();
 	
-    GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 10, mouse_loc);
+    GUI_FontDraw(state, font_UI_Basic, white, b[0] + 5, b[1] + 5, mouse_loc);
 	#if SHOW_FPS
         Refresh();
 	#endif

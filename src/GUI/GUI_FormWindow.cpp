@@ -262,19 +262,11 @@ void		GUI_FormWindow::AddField(
 	text->SetVKAllowed(GUI_VK_ESCAPE, false);
 	text->SetVKAllowed(GUI_VK_ENTER, false);
 	
-	float	cell_h = 20;
 	float	line_h = GUI_GetLineHeight(font_UI_Basic);
-	int		descent = GUI_GetLineDescent(font_UI_Basic);
-	float	cell2line = (cell_h - line_h + descent) * 0.5f;
+	float	cell_h = line_h + 4.0f;
+	float descent = GUI_GetLineDescent(font_UI_Basic);
+	float	cell2line = (cell_h - line_h ) * 0.5f + descent;
 
-	float pad_bottom = cell2line - descent;
-	float pad_top = cell_h - line_h - pad_bottom;
-
-	text->SetMargins(3,pad_bottom,3,pad_top);
-
-
-	
-	
 	mInsertY -= (10+fh);
 	
 	label->SetColors(WED_Color_RGBA(wed_Table_Text));

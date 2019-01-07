@@ -37,7 +37,6 @@
 #include "WED_AptIE.h"
 #include "GUI_TabPane.h"
 #include "WED_Thing.h"
-#include "WED_UIMeasurements.h"
 #include "WED_Menus.h"
 #include "WED_Select.h"
 #include "WED_Colors.h"
@@ -65,6 +64,8 @@
 #if WITHNWLINK
 #include "WED_Server.h"
 #endif
+
+#define ONE_BIG_GRADIENT 0   // define his if wanting a single gradient for map + both sidepanes
 
 namespace
 {
@@ -120,8 +121,11 @@ WED_DocumentWindow::WED_DocumentWindow(
 	//BEWARE! HORIZONTAL IS VERTICAL AND VERTICAL IS HORIZONTAL!
 	mMainSplitter  = new GUI_Splitter(gui_Split_Horizontal);
 	mMainSplitter2 = new GUI_Splitter(gui_Split_Horizontal);
-	if (WED_UIMeasurement("one_big_gradient"))		mMainSplitter->SetImage ("gradient.png");
-	else											mMainSplitter->SetImage1("gradient.png");
+#if ONE_BIG_GRADIENT
+	mMainSplitter->SetImage ("gradient.png");
+#else
+	mMainSplitter->SetImage1("gradient.png");
+#endif
 	mMainSplitter->SetParent(packer);
 	mMainSplitter->Show();
 //	GUI_Pane::GetBounds(splitter_b);
@@ -133,10 +137,10 @@ WED_DocumentWindow::WED_DocumentWindow(
 	****************************************************************************************************************************************************************/
 
 	mLibSplitter = new GUI_Splitter(gui_Split_Vertical);
-	if (!WED_UIMeasurement("one_big_gradient")) {
+#if ONE_BIG_GRADIENT == 0
 		mLibSplitter->SetImage1("gradient.png");
 		mLibSplitter->SetImage2("gradient.png");
-	}
+#endif
 	mLibSplitter->SetParent(mMainSplitter);
 	mLibSplitter->Show();
 	GUI_Pane::GetBounds(splitter_b);
@@ -185,10 +189,10 @@ WED_DocumentWindow::WED_DocumentWindow(
 	// --------------- Splitter and tabs ---------------
 
 	mPropSplitter = new GUI_Splitter(gui_Split_Vertical);
-	if (!WED_UIMeasurement("one_big_gradient")) {
+	#if ONE_BIG_GRADIENT == 0
 		mPropSplitter->SetImage1("gradient.png");
 		mPropSplitter->SetImage2("gradient.png");
-	}
+	#endif
 	mPropSplitter->SetParent(mMainSplitter2);
 	mPropSplitter->Show();
 	GUI_Pane::GetBounds(splitter_b);
@@ -242,7 +246,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	// --------------- Hierarchy  View ---------------
 
 	static const char * titles[] =  { "Locked", "Hidden", "Name", 0 };
-	static int widths[] =			{ 35,		35,		200		};
+	static int widths[] =			{ 30,		30,		200		};
 
 	mPropPane = new WED_PropertyPane(this, inDocument, titles, widths,inDocument->GetArchive(), propPane_Hierarchy, 0);
 	mPropPane->SetParent(mPropSplitter);

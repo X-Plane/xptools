@@ -24,7 +24,6 @@
 #include "WED_MapLayer.h"
 #include "MathUtils.h"
 #include "GUI_Resources.h"
-#include "WED_UIMeasurements.h"
 #include "IGIS.h"
 #include "WED_Entity.h"
 
@@ -46,10 +45,17 @@ WED_MapLayer::WED_MapLayer(GUI_Pane * h, WED_MapZoomerNew * z, IResolver * i) :
 	GUI_GetImageResourceSize("map_towerview.png",dims);
 	mFurnitureRadius = 0.5 * (double)(intmin2(dims[0],dims[1]));
 
-	mAirportFactor = WED_UIMeasurement("airport_icon_scale");
-	mFurnitureFactor = WED_UIMeasurement("furniture_icon_scale");
-
-	mAirportTransWidth = WED_UIMeasurement("airport_trans_width");
+	// This is the scale of the icons for airports themselves.  It is a multiplier.
+	// When this is "1" one pixel of the airport icon = one meter on the map.
+	mAirportFactor = 20.0;
+	
+	// This is the scale of the icons for all of the parts of an airport - VASI lights,
+	// signs, windsocks, parking spots.  It is a multiplier.
+	// When this is "1" one pixel of the airport icon = one meter on the map.
+	mFurnitureFactor = 2.0;  
+	
+	// This is the width at which we transition from full airports to icons
+	mAirportTransWidth = 20.0;
 	mVisible = true;
 }
 
