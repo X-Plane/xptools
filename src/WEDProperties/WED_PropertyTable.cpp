@@ -103,14 +103,47 @@ WED_PropertyTable::WED_PropertyTable(
 	while(*col_names)
 		mColNames.push_back(*col_names++);
 
+	RecalculateColumns();
+
 	if (filter)
 	while (*filter)
 		mFilter.insert(*filter++);
-//	selection->AddListener(this);
+
 }
 
 WED_PropertyTable::~WED_PropertyTable()
 {
+}
+
+void WED_PropertyTable::RecalculateColumns()
+{
+	if (mDynamicCols)
+	{
+		set<string>	cols;
+		cols.insert("Name");
+		mColNames.clear();
+		mColNames.push_back("Name");
+		int total_objs = mVertical ? GetColCount() : GetRowCount();
+		for (int i = 0; i < total_objs; ++i)
+		{
+			WED_Thing * t = FetchNth(i);
+			if (t)
+			{
+				int pcount = t->CountProperties();
+				for (int p = 0; p < pcount; ++p)
+				{
+					PropertyInfo_t info;
+					t->GetNthPropertyInfo(p,info);
+					if(!info.prop_name.empty() && info.prop_name[0] != '.')
+					if (cols.count(info.prop_name) == 0)
+					{
+						cols.insert(info.prop_name);
+						mColNames.insert(mColNames.begin(), info.prop_name);
+					}
+				}
+			}
+		}
+	}
 }
 
 void	WED_PropertyTable::GetCellContent(
@@ -993,33 +1026,7 @@ void	WED_PropertyTable::ReceiveMessage(
 		if (mSelOnly && (inParam & wed_Change_Selection))
 			mCacheValid = false;
 
-		if (mDynamicCols)
-		{
-			set<string>	cols;
-			cols.insert("Name");
-			mColNames.clear();
-			mColNames.push_back("Name");
-			int total_objs = mVertical ? GetColCount() : GetRowCount();
-			for (int i = 0; i < total_objs; ++i)
-			{
-				WED_Thing * t = FetchNth(i);
-				if (t)
-				{
-					int pcount = t->CountProperties();
-					for (int p = 0; p < pcount; ++p)
-					{
-						PropertyInfo_t info;
-						t->GetNthPropertyInfo(p,info);
-						if(!info.prop_name.empty() && info.prop_name[0] != '.')
-						if (cols.count(info.prop_name) == 0)
-						{
-							cols.insert(info.prop_name);
-							mColNames.insert(mColNames.begin(), info.prop_name);
-						}
-					}
-				}
-			}
-		}
+		RecalculateColumns();
 		BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);
 	}
 }

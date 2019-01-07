@@ -192,6 +192,8 @@ private:
 									int&	can_disclose,
 									int&	is_disclose);
 
+			void			RecalculateColumns(void);
+
 			void	Resort();
 
 	vector<WED_Thing *>			mThingCache;
