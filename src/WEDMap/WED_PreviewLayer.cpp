@@ -850,6 +850,7 @@ struct	preview_facade : public preview_polygon {
 			Point2 p;
 			ps->GetNthPoint(0)->GetLocation(gis_Geo,p);
 			p=zoomer->LLToPixel(p);
+			glColor4f(1,1,1,1);
 			GUI_PlotIcon(g,"handle_closeloop.png", p.x(), p.y(),0.0,1.0);
 		}
 		glLineWidth(2);
