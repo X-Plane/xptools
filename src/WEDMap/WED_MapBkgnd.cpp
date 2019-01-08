@@ -24,6 +24,7 @@
 #include "WED_MapBkgnd.h"
 #include "WED_MapZoomerNew.h"
 #include "GUI_GraphState.h"
+#include "GUI_Fonts.h"
 #include "WED_Colors.h"
 
 #if APL
@@ -42,20 +43,26 @@ WED_MapBkgnd::~WED_MapBkgnd()
 
 void		WED_MapBkgnd::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 {
-	double pl,pr,pb,pt;	// pixel boundary
+//	double pl,pr,pb,pt;	// pixel boundary
 	double ll,lb,lr,lt;	// logical boundary
+	double vl,vb,vr,vt;	// visible boundry
 
-
-	GetZoomer()->GetPixelBounds(pl,pb,pr,pt);
+//	GetZoomer()->GetPixelBounds(pl,pb,pr,pt);
 	GetZoomer()->GetMapLogicalBounds(ll,lb,lr,lt);
+	GetZoomer()->GetMapVisibleBounds(vl,vb,vr,vt);
+
+	vl = max(vl,ll);
+	vb = max(vb,lb);
+	vr = min(vr,lr);
+	vt = min(vt,lt);
 
 	ll = GetZoomer()->LonToXPixel(ll);
 	lr = GetZoomer()->LonToXPixel(lr);
 	lb = GetZoomer()->LatToYPixel(lb);
 	lt = GetZoomer()->LatToYPixel(lt);
 
+	g->SetState(false,false,false, false, false, false,false); 
 	glBegin(GL_QUADS);
-	g->SetState(false,false,false, true,true, false,false);
 #if 0
 	//This is really obsolete - we have that nice background gradient already - lets show it iff !!
 
@@ -76,17 +83,15 @@ void		WED_MapBkgnd::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 	glVertex2d(lr,lt);
 	glVertex2d(lr,lb);
 	glEnd();
-
+	glGetError();  // swallow any error that may be created - eases debugging down the line
 }
 
 void		WED_MapBkgnd::DrawStructure(bool inCurrent, GUI_GraphState * g)
 {
-//	double pl,pr,pb,pt;	// pixel boundary
 	double ll,lb,lr,lt;	// logical boundary
 	double vl,vb,vr,vt;	// visible boundry
 
 
-//	GetZoomer()->GetPixelBounds(pl,pb,pr,pt);
 	GetZoomer()->GetMapLogicalBounds(ll,lb,lr,lt);
 	GetZoomer()->GetMapVisibleBounds(vl,vb,vr,vt);
 
@@ -100,7 +105,6 @@ void		WED_MapBkgnd::DrawStructure(bool inCurrent, GUI_GraphState * g)
 	lb = GetZoomer()->LatToYPixel(lb);
 	lt = GetZoomer()->LatToYPixel(lt);
 
-	g->SetState(false,false,false, true,true, false,false);
 	// Gridline time...
 	glColor4fv(WED_Color_RGBA(wed_Map_Gridlines));
 	glLineWidth(1.0);
@@ -109,28 +113,36 @@ void		WED_MapBkgnd::DrawStructure(bool inCurrent, GUI_GraphState * g)
 	double lon_span = vr - vl;
 	double lat_span = vt - vb;
 	double longest_span = max(lon_span,lat_span);
-	double divisions = 1;
+	int divisions = 1;
 	if (longest_span > 20)	divisions = 10;
 	if (longest_span > 90)	divisions = 45;
 
-	double cl = floor(vl / divisions) * divisions;
-	double cb = floor(vb / divisions) * divisions;
-	double cr = ceil (vr / divisions) * divisions;
-	double ct = ceil (vt / divisions) * divisions;
+	int cl = floor(vl / divisions) * divisions;
+	int cb = floor(vb / divisions) * divisions;
+	int cr = ceil(vr / divisions) * divisions;
+	int ct = ceil(vt / divisions) * divisions;
 
 	glBegin(GL_LINES);
-	for(double t = cl; t <= cr; t += divisions)
+	for(int t = cl; t <= cr; t += divisions)
 	{
 		glVertex2d(GetZoomer()->LonToXPixel(t), lb);
 		glVertex2d(GetZoomer()->LonToXPixel(t), lt);
 	}
-	for(double t = cb; t <= ct; t += divisions)
+	for(int t = cb; t <= ct; t += divisions)
 	{
-		glVertex2d(ll,GetZoomer()->LatToYPixel(t));
-		glVertex2d(lr,GetZoomer()->LatToYPixel(t));
+		glVertex2d(ll, GetZoomer()->LatToYPixel(t));
+		glVertex2d(lr, GetZoomer()->LatToYPixel(t));
 	}
 	glEnd();
-
+	
+	if(longest_span > 1.0 && longest_span < 5.0)
+		for(int lon = cl; lon < cr; lon += divisions)
+			for(int lat = cb; lat < ct; lat += divisions)
+			{
+				char tilename[16];
+				snprintf(tilename,16,"%+02d%+03d.dsf",lat,lon);
+				GUI_FontDraw(g,font_UI_Small,WED_Color_RGBA(wed_Map_Gridlines),GetZoomer()->LonToXPixel(lon)+1.0,GetZoomer()->LatToYPixel(lat)+3.0,tilename, align_Left);
+			}
 }
 
 void		WED_MapBkgnd::GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks)
