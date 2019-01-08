@@ -27,7 +27,7 @@
 
 GUI_SimpleTableGeometry::GUI_SimpleTableGeometry(
 			int		num_cols,
-			int *	default_col_widths,
+	const	int *	default_col_widths,
 			int		row_height)
 {
 	mRowHeight = row_height;

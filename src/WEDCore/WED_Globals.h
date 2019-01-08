@@ -41,19 +41,14 @@ void	debug_mesh_polygon(const Polygon2& p1, float r1, float g1, float b1);
 
 #endif /* DEV */
 
-#if IBM 	
-	/* msvc 2010 is not thinking that extern const int and int are the same */
-	extern	int	gIsFeet;
-	extern	int	gInfoDMS;
-	extern	int	gModeratorMode;
-#else
-	/* Is WED running in English or metric units?  (feet == 0 -> metric.) */
-	extern const int gIsFeet;
-	/* Infobar at bottom of Map in DD.DDD == 0 or DD MM SS == 1 */
-	extern const int gInfoDMS;
-	/* Changes the listing in the gateway Import for GW moderation purposes */
-	extern const int gModeratorMode;
-#endif
+/* Is WED running in English or metric units?  (feet == 0 -> metric.) */
+extern int gIsFeet;
+/* Infobar at bottom of Map in DD.DDD == 0 or DD MM SS == 1 */
+extern int gInfoDMS;
+/* Changes the listing in the gateway Import for GW moderation purposes */
+extern int gModeratorMode;
+/* Changes the listing in the gateway Import for GW moderation purposes */
+extern int gFontSize;
 
 enum WED_Export_Target {
 		wet_xplane_900,		// X-Plane 9-compatible DSFs.

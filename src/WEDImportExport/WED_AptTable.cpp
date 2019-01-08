@@ -25,12 +25,12 @@
 #include "GUI_Messages.h"
 #include "STLUtils.h"
 
-static int kDefCols[] = { 90, 400, 120, 100 };
+static int kDefCols[] = { 95, 400, 130, 100 };
 
 WED_AptTable::WED_AptTable(
 						const AptVector * apts,
 						const char * hdr3, 
-						const char * hdr4) : GUI_SimpleTableGeometry(2+ (hdr3 != nullptr) + (hdr4 != nullptr), kDefCols, 20),
+						const char * hdr4) : GUI_SimpleTableGeometry(2+ (hdr3 != nullptr) + (hdr4 != nullptr), kDefCols),
 	mApts(apts), 
 	mSortColumn(1), 
 	mInvertSort(1)

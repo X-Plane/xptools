@@ -13,8 +13,9 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 1.8.0 a13 1/6/19
+WED 1.8.0 a14 1/?/19
     Features:
+    - WED-916: Support user specified text size
     - WED-1119: Speed up map display by culling objects preview based on their actual size
     - WED-682: Skip SCENERY_PACK_DISABLED libraries, display status on opening screen
     - WED-1117: Add white ring around the first node of open line facades

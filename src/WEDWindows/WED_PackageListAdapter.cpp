@@ -27,7 +27,7 @@
 #include "GUI_Messages.h"
 #include "WED_Menus.h"
 
-static int kDefCols[] = {75, 100, 300 };
+static int kDefCols[] = {85, 115, 300 };
 
 WED_PackageListAdapter::WED_PackageListAdapter(GUI_Commander * cmd_target) :  GUI_SimpleTableGeometry(3, kDefCols), mSel(-1), mCmdTarget(cmd_target)
 

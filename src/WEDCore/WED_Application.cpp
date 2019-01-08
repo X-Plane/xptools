@@ -28,6 +28,7 @@
 #include "WED_Messages.h"
 
 #include "WED_AboutBox.h"
+#include "WED_Colors.h"
 
 #include "GUI_Resources.h"
 #include "GUI_Fonts.h"
@@ -37,11 +38,7 @@
 #include "GUI_Label.h"
 #include "GUI_TextField.h"
 
-//#include "WED_Globals.h"
-int gIsFeet = 0;
-int gInfoDMS = 0;
-int gModeratorMode = 0;
-string gCustomSlippyMap = "";
+#include "WED_Globals.h"
 
 static int settings_bounds[4] = { 0, 0, 512, 384};
 
@@ -49,37 +46,37 @@ enum { kMsg_Close = WED_PRIVATE_MSG_BASE };
 
 class RadioButton {
 public:
-	RadioButton(int x0, int y0, WED_Settings * parent,  int * var, const string& desc, const char * text0, const char * text1);
+	RadioButton(int x0, int y0, WED_Settings * parent,  const int * var, const string& desc, const char * text0, const char * text1);
 	~RadioButton() {};
 };
 
-RadioButton::RadioButton(int x0, int y0, WED_Settings * parent,  int * var, const string& desc, const char * text0, const char * text1)
+RadioButton::RadioButton(int x0, int y0, WED_Settings * parent,  const int * var, const string& desc, const char * text0, const char * text1)
 {
 	const char * texture = "check_buttons.png";
 	int r_yes[4] = { 0, 1, 1, 3 };
 	int r_nil[4] = { 0, 0, 1, 3 };
 
-	int h = GUI_GetImageResourceHeight(texture)/3;
+	int h = GUI_GetImageResourceHeight(texture) * 0.4;
 
 	float white[4] = { 1, 1, 1, 1 };
 	
-	int x1 = x0 + 130;
+	int x1 = x0 + 120;
 
 	GUI_Label * label = new GUI_Label();
-	label->SetBounds(x0,y0-h,x1,y0+h);
+	label->SetBounds(x0,y0-h,x1,y0+h+2);
 	label->SetColors(white);
 	label->SetDescriptor(desc);
 	label->SetParent(parent);
 	label->Show();
 	
 	GUI_Button * btn_0 = new GUI_Button(texture, btn_Radio, r_nil, r_nil, r_yes, r_yes);
-	btn_0->SetBounds(x1,y0,x1+100,y0+h);
+	btn_0->SetBounds(x1,y0,x1+220,y0+h);
 	btn_0->SetDescriptor(text0);
 	btn_0->SetParent(parent);
 	btn_0->Show();
 
 	GUI_Button * btn_1 = new GUI_Button(texture, btn_Radio, r_nil, r_nil, r_yes, r_yes);
-	btn_1->SetBounds(x1,y0-h,x1+200,y0);
+	btn_1->SetBounds(x1,y0-h,x1+220,y0);
 	btn_1->SetDescriptor(text1);
 	btn_1->SetParent(parent);
 	btn_1->Show();
@@ -128,6 +125,13 @@ void WED_Settings::ReceiveMessage(
 			 ((GUI_TextField *) inParam)->GetDescriptor(gCustomSlippyMap);
 			 printf("%s\n",gCustomSlippyMap.c_str());
 	}
+	else if(inMsg == (intptr_t) &gFontSize)
+	{
+			string new_val;
+			((GUI_TextField *) inParam)->GetDescriptor(new_val);
+			gFontSize = max(10,min(18,stoi(new_val)));
+			GUI_SetFontSizes(gFontSize);
+	}
 /*	else if (inMsg == kMsg_Close)
 	{
 		Hide();
@@ -150,10 +154,11 @@ WED_Settings::WED_Settings(GUI_Commander * cmdr) : GUI_Window("WED Preferences",
 	
 	int k_yes[4] = { 0, 1, 1, 3 };
 	int k_no[4]  = { 0, 2, 1, 3 };
-	float white[4] = { 1, 1, 1, 1 };
+	
+	float * white = WED_Color_RGBA(wed_Table_Text);
 
 	GUI_Button * moderator_btn = new GUI_Button("check_buttons.png",btn_Check,k_no, k_no, k_yes, k_yes);
-	moderator_btn->SetBounds(350,250,500,250+GUI_GetImageResourceHeight("check_buttons.png")/3);
+	moderator_btn->SetBounds(340,250,510,250+GUI_GetImageResourceHeight("check_buttons.png")/3);
 	moderator_btn->Show();
 	moderator_btn->SetDescriptor("Moderator Mode");
 	moderator_btn->SetParent(this);
@@ -162,9 +167,8 @@ WED_Settings::WED_Settings(GUI_Commander * cmdr) : GUI_Window("WED Preferences",
 	
 	GUI_TextField * custom_box = new GUI_TextField(true, this);
 	GUI_Label * label = new GUI_Label();
-	custom_box->SetBounds(20,144,490,162);
-	label->SetBounds     (20,164,300,180);
-	custom_box->SetMargins(3,1,3,1);
+	custom_box->SetBounds(20,140,490,160);
+	label->SetBounds     (20,162,300,180);
 	custom_box->SetWidth(1000);
 	custom_box->SetParent(this);
 	custom_box->AddListener(this);
@@ -174,12 +178,29 @@ WED_Settings::WED_Settings(GUI_Commander * cmdr) : GUI_Window("WED Preferences",
 	custom_box->SetKeyAllowed(GUI_KEY_RETURN, false);
 	custom_box->SetKeyAllowed(GUI_VK_ESCAPE, false);
 	custom_box->SetKeyAllowed('\\', false);
-
 	label->SetColors(white);
 	label->SetParent(this);
 	label->SetDescriptor("Tile Server Custom URL");
 	label->Show();
 
+	GUI_TextField * font_box = new GUI_TextField(false, this);
+	GUI_Label * label2 = new GUI_Label();
+	font_box->SetBounds(340,210,400,230);
+	label2->SetBounds  (220,210,350,230);
+	font_box->SetParent(this);
+	font_box->AddListener(this);
+	font_box->SetKeyMsg((intptr_t) &gFontSize, (intptr_t) font_box);
+	font_box->SetDescriptor(to_string(gFontSize));
+	font_box->Show();
+	font_box->SetKeyAllowed(GUI_KEY_RETURN, false);
+	font_box->SetKeyAllowed(GUI_VK_ESCAPE, false);
+	font_box->SetKeyAllowed('\\', false);
+	label2->SetColors(white);
+	label2->SetParent(this);
+	label2->SetDescriptor("Font Size");
+	label2->Show();
+
+	
 /*	GUI_Button * close_btn = new GUI_Button("push_buttons.png",btn_Push,k_no, k_yes, k_no, k_yes);
 	close_btn->SetBounds(220,5,290,5+GUI_GetImageResourceHeight("push_buttons.png")/3);
 	close_btn->Show();

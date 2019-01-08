@@ -356,21 +356,21 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_Ma
 		int k_hil[4] = { 0, 1, 1, 3 };
 
 		mNextButton = new GUI_Button("push_buttons.png",btn_Push,k_reg, k_hil,k_reg,k_hil);
-		mNextButton->SetBounds(105,5,205,GUI_GetImageResourceHeight("push_buttons.png") / 3);
+		mNextButton->SetBounds(105,5,205,GUI_GetImageResourceHeight("push_buttons.png") / 2);
 		mNextButton->Show();
 		mNextButton->SetSticky(0,1,1,0);
 		mNextButton->SetDescriptor("Next");
 		mNextButton->SetMsg(click_next,0);
 
 		mBackButton = new GUI_Button("push_buttons.png",btn_Push,k_reg, k_hil,k_reg,k_hil);
-		mBackButton->SetBounds(5,5,105,GUI_GetImageResourceHeight("push_buttons.png") / 3);
+		mBackButton->SetBounds(5,5,105,GUI_GetImageResourceHeight("push_buttons.png") / 2);
 		mBackButton->Show();
 		mBackButton->SetSticky(1,1,0,0);
 		mBackButton->SetDescriptor("Cancel");
 		mBackButton->SetMsg(click_back,0);
 
 		mButtonHolder = new GUI_Pane;
-		mButtonHolder->SetBounds(0,0,210,GUI_GetImageResourceHeight("push_buttons.png") / 3 + 10);
+		mButtonHolder->SetBounds(0,0,210,GUI_GetImageResourceHeight("push_buttons.png") / 2 );
 
 		mNextButton->SetParent(mButtonHolder);
 		mNextButton->AddListener(this);

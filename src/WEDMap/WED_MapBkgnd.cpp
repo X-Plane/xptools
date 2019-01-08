@@ -54,18 +54,19 @@ void		WED_MapBkgnd::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 	lb = GetZoomer()->LatToYPixel(lb);
 	lt = GetZoomer()->LatToYPixel(lt);
 
-
+	glBegin(GL_QUADS);
+	g->SetState(false,false,false, true,true, false,false);
+#if 0
+	//This is really obsolete - we have that nice background gradient already - lets show it iff !!
 
 	// First: splat the whole area with the matte color.  This is clipped to
 	// pixel bounds cuz we don't need to draw where we can't see.
-	g->SetState(false,false,false, true,true, false,false);
 	glColor4fv(WED_Color_RGBA(wed_Map_Matte));
-	glBegin(GL_QUADS);
 	glVertex2d(pl,pb);
 	glVertex2d(pl,pt);
 	glVertex2d(pr,pt);
 	glVertex2d(pr,pb);
-
+#endif
 	// Next, splat the whole world area with the world background color.  No need
 	// to intersect this to the visible area - graphics ard culls good enough.
 
@@ -99,8 +100,6 @@ void		WED_MapBkgnd::DrawStructure(bool inCurrent, GUI_GraphState * g)
 	lb = GetZoomer()->LatToYPixel(lb);
 	lt = GetZoomer()->LatToYPixel(lt);
 
-	// First: splat the whole area with the matte color.  This is clipped to
-	// pixel bounds cuz we don't need to draw where we can't see.
 	g->SetState(false,false,false, true,true, false,false);
 	// Gridline time...
 	glColor4fv(WED_Color_RGBA(wed_Map_Gridlines));

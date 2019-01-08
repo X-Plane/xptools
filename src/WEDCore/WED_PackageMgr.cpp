@@ -46,7 +46,7 @@ struct WED_PackageInfo
 	WED_PackageInfo(const char * n) : name(n), hasPublicItems(false), hasAnyItems(false), hasXML(false), hasAPT(false), isDisabled(false) { }
 };
 
-WED_PackageMgr::WED_PackageMgr(const char *		in_xplane_folder)
+WED_PackageMgr::WED_PackageMgr(const char * in_xplane_folder) : system_exists(false)
 {
 	DebugAssert(gPackageMgr==NULL);
 	gPackageMgr=this;

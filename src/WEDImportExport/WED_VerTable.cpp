@@ -27,24 +27,9 @@
 #include "STLUtils.h"
 #include <sstream>
 
-static int kDefCols[] = { 100, 100 };
-
-/* Columns for table (in order of left to right)
-User Name - people will want to find their own fast
-
-[Status] - Uploaded, Accepted, Approved, Declined. Determined by which every of the dateX has the most recent date
-[Date] - When that dateX was. Presented in the much more reasonable 2014-07-31, 14:34:47 instead of 2014-07-31T14:34:47.000Z
-(Developer Mode has all of the date columns)
-
-artistComments
-moderatorComments
-
-Relavent code sections:
-GetHeaderContent
-GetColCount
-GetCellContent
-sort_by_ver::operator()
-*/
+const int kDefCols[7] = { 110, 100, 110, 120,   120, 110, 110 };
+const char * kHeaders[7] = { "Scenery ID", "Parent ID", "User Name", "Status",
+							"Date Uploaded", "Artist Comments", "Moderator Comments" };
 
 string ChooseStatus(const VerInfo_t & info)
 {
@@ -65,11 +50,10 @@ string ChooseDate(const VerInfo_t & info)
 }
 
 
-WED_VerTable::WED_VerTable(
-						const VerVector *			apts) :
-	GUI_SimpleTableGeometry(2,kDefCols,20),	
+WED_VerTable::WED_VerTable(const VerVector * apts) :
+	GUI_SimpleTableGeometry(7,kDefCols),
 	mVers(apts),
-	mSortColumn(2),//Start with sorting by the date
+	mSortColumn(3),       //Start with sorting by the date
 	mInvertSort(false)
 {
 }	
@@ -111,38 +95,14 @@ void	WED_VerTable::SelectHeaderCell(
 	resort();
 }
 
-void	WED_VerTable::GetHeaderContent(
-						int							cell_x,
-						GUI_HeaderContent&			the_content)
+void	WED_VerTable::GetHeaderContent(int cell_x, GUI_HeaderContent& the_content)
 {
 	the_content.is_selected = (cell_x == mSortColumn);
 	the_content.can_resize = 1;
 	the_content.can_select = 1;
 
-	//For all the cells
-	switch(cell_x) 
-	{
-	case 0:
-		the_content.title = "Scenery ID";
-		break;
-	case 1:
-		the_content.title = "User Name";
-		break;
-	case 2:
-		the_content.title = "Status";
-		break;
-	case 3:
-		the_content.title = "Date Uploaded";
-		break;
-	case 4:
-		the_content.title = "Artist Comments";
-		break;
-	case 5:
-		the_content.title = "Moderator Comments";
-		break;
-	case 6: 
-		the_content.title = "Parent ID";
-	}		
+	if (cell_x < 7) 
+		the_content.title = kHeaders[cell_x];
 }
 
 int		WED_VerTable::GetColCount(void)
@@ -180,35 +140,26 @@ void	WED_VerTable::GetCellContent(
 
 	switch(cell_x) {
 	case 0:
-		{
-			stringstream ss;
-			ss << mVers->at(ver_id).sceneryId;
-			the_content.text_val = ss.str();
-		}
+		the_content.text_val = to_string(mVers->at(ver_id).sceneryId);
 		break;
-	case 1:		
-		the_content.text_val = mVers->at(ver_id).userName;
+	case 1:
+		the_content.text_val = to_string(mVers->at(ver_id).parentId);
 		break;
 	case 2:		
+		the_content.text_val = mVers->at(ver_id).userName;
+		break;
+	case 3:		
 		the_content.text_val = ChooseStatus(mVers->at(ver_id));
 		break;
-	case 3:
+	case 4:
 		the_content.text_val = ChooseDate(mVers->at(ver_id));
 		break;
-	case 4:
+	case 5:
 		the_content.text_val = mVers->at(ver_id).artistComments;
 		break;
-	case 5:
+	case 6:
 		the_content.text_val = mVers->at(ver_id).moderatorComments;
 		break;
-	case 6:
-		{
-			stringstream ss;
-			ss << mVers->at(ver_id).parentId;
-			the_content.text_val = ss.str();
-		}
-		break;
-	
 	}
 	the_content.string_is_resource = 0;
 }
@@ -341,12 +292,8 @@ struct sort_by_ver {
 
 		}
 
-		//Make them all uper case
-		for(int i = 0; i < xs.size(); ++i)
-			xs[i] = toupper(xs[i]);
-
-		for(int i = 0; i < ys.size(); ++i)
-			ys[i] = toupper(ys[i]);
+		for(auto &c: xs) c = toupper(c);
+		for(auto &c: ys) c = toupper(c);
 	
 		if(invert_sort_)
 			return ys < xs;
@@ -368,13 +315,8 @@ void		WED_VerTable::resort(void)
 	mSorted.clear();
 	for(int i = 0; i < mVers->size(); ++i)
 	{
-		stringstream ss;
-		ss << mVers->at(i).sceneryId;
-		string idStr = ss.str();
-
-		stringstream ss2;
-		ss2 << mVers->at(i).parentId;
-		string parentIdStr = ss2.str();
+		string idStr = to_string(mVers->at(i).sceneryId);
+		string parentIdStr = to_string(mVers->at(i).parentId);
 	
 		if (filters.empty() || 
 				filter_match(idStr, filters.begin(),filters.end())		||
