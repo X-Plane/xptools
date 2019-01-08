@@ -209,7 +209,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	// --------------- Selection ---------------
 
 	static const char * sel_t[] = { "Name", "Type", NULL };
-	static		 int	sel_w[] = { 100, 100 };
+	static		 int	sel_w[] = { 120, 120 };
 
 	WED_PropertyPane * prop_pane1 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sel_t, sel_w,inDocument->GetArchive(), propPane_Selection, 0);
 	prop_tabs->AddPane(prop_pane1, "Selection");

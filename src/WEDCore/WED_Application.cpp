@@ -129,7 +129,7 @@ void WED_Settings::ReceiveMessage(
 	{
 			string new_val;
 			((GUI_TextField *) inParam)->GetDescriptor(new_val);
-			gFontSize = max(10,min(18,stoi(new_val)));
+			gFontSize = max(10,min(18,atoi(new_val.c_str())));
 			GUI_SetFontSizes(gFontSize);
 	}
 /*	else if (inMsg == kMsg_Close)

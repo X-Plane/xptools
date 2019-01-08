@@ -456,16 +456,15 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 						if(gisedge->IsOneway())
 						{
 							Vector2 orient(pts[pts.size()-2],pts[pts.size()-1]);
-							GUI_PlotIcon(g,"handle_arrowhead.png", pts.back().x(), pts.back().y(),atan2(orient.dx,orient.dy) * RAD_TO_DEG,1.0);
+							GUI_PlotIcon(g,"handle_arrowhead.png", pts.back().x(), pts.back().y(),atan2(orient.dx,orient.dy) * RAD_TO_DEG, 1.0);
 							g->SetState(false,0,false,   false,true,false,false);
 						}
 					}
 				}
 
 //				if (mVertices && kind != gis_Edge)	  // Gis EDGE points will be picked up separately!  That way we can get their hilite right.
-
-				if (mVertices && !selected)           // that separate treatment just causes dupli & triplicate drawing and is obsolete:
-				{                                     // The selection layer draws a highlight ontop of all vertices, anyways ...
+				if (mVertices )
+				{
 //					glColor4fv(WED_Color_RGBA(struct_color));  // Do this if green EdgeNdodes when unselected are desired
 					n = ps->GetNumPoints();
 					glPointSize(5);
