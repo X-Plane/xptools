@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+f﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
@@ -240,7 +240,6 @@
     <ClCompile Include="..\..\src\WEDWindows\WED_AboutBox.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_DocumentWindow.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_GroupCommands.cpp" />
-    <ClCompile Include="..\..\src\WEDWindows\WED_HierarchyFilterBar.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_LibraryFilterBar.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_Line_Selector.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_Menus.cpp" />
@@ -498,7 +497,6 @@
     <ClInclude Include="..\..\src\WEDWindows\WED_AboutBox.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_DocumentWindow.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_GroupCommands.h" />
-    <ClInclude Include="..\..\src\WEDWindows\WED_HierarchyFilterBar.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_LibraryFilterBar.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_Line_Selector.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_Menus.h" />

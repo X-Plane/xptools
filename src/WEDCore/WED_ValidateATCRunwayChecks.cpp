@@ -23,7 +23,6 @@
 #include "WED_ATCRunwayUse.h"
 #include "WED_Runway.h"
 #include "WED_TaxiRoute.h"
-#include "WED_TaxiRouteNode.h"
 
 #include "CompGeomDefs2.h"
 #include "CompGeomUtils.h"

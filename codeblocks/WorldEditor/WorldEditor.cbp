@@ -648,8 +648,6 @@
 		<Unit filename="../../src/WEDWindows/WED_DocumentWindow.h" />
 		<Unit filename="../../src/WEDWindows/WED_GroupCommands.cpp" />
 		<Unit filename="../../src/WEDWindows/WED_GroupCommands.h" />
-		<Unit filename="../../src/WEDWindows/WED_HierarchyFilterBar.cpp" />
-		<Unit filename="../../src/WEDWindows/WED_HierarchyFilterBar.h" />
 		<Unit filename="../../src/WEDWindows/WED_LibraryFilterBar.cpp" />
 		<Unit filename="../../src/WEDWindows/WED_LibraryFilterBar.h" />
 		<Unit filename="../../src/WEDWindows/WED_Line_Selector.cpp" />
