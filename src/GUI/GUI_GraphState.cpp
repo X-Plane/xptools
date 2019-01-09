@@ -35,6 +35,14 @@
 
 #include "XWinGL.h"
 
+#if DEV
+	void GraphState_GL_ERR(int err)
+	{
+		if (err != 0)
+			printf("GL ERROR: %d\n", err);
+	}
+#endif
+
 void		GUI_GraphState::Init(void)
 {
 	glEnable(GL_CULL_FACE);

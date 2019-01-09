@@ -278,6 +278,7 @@ void		WED_LibraryMgr::Rescan()
 
 	for(int p = 0; p < np; ++p)
 	{
+		if(gPackageMgr->IsDisabled(p)) continue;
 		//the physical directory of the scenery pack
 		string pack_base;
 		//Get the pack's physical location
@@ -303,14 +304,12 @@ void		WED_LibraryMgr::Rescan()
 			while(!MFS_done(&s))
 			{
 				string vpath, rpath;
-
-				bool is_export_export  = MFS_string_match(&s,"EXPORT",false);
-				bool is_export_extend  = MFS_string_match(&s,"EXPORT_EXTEND",false);
-				bool is_export_exclude = MFS_string_match(&s,"EXPORT_EXCLUDE",false);
-				bool is_export_backup  = MFS_string_match(&s,"EXPORT_BACKUP",false);
-
-				if(is_export_export || is_export_extend ||
-				   is_export_exclude || is_export_backup )
+				bool is_export_backup = false;
+				
+				if( MFS_string_match(&s,"EXPORT",false) ||
+				    MFS_string_match(&s,"EXPORT_EXTEND",false) ||
+				    MFS_string_match(&s,"EXPORT_EXCLUDE",false) ||
+					(is_export_backup  = MFS_string_match(&s,"EXPORT_BACKUP",false)))
 				{
 					MFS_string(&s,&vpath);
 					MFS_string_eol(&s,&rpath);
@@ -593,7 +592,7 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 #endif
 	else return;
 
-	if (package >= 0 && status >= status_Public) gPackageMgr->HasPublicItems(package);
+	if (package >= 0 && status >= status_Public) gPackageMgr->AddPublicItems(package);
 
 	string p(path);
 	while(!p.empty())
@@ -614,7 +613,13 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 		{
 			DebugAssert(i->second.res_type == rt);
 			i->second.packages.insert(package);
-			i->second.status = max(i->second.status, status);	// upgrade status if we just found a public version!
+			if(is_default && !i->second.is_default)
+			{
+				i->second.status = status;               // LR libs will always override/downgrade Custom Libs visibility
+				i->second.is_default = true;             // But they can still elevate any prior LR lib's visiblity, as some do
+			}
+			else
+				i->second.status = max(i->second.status, status);	// upgrade status if we just found a public version!
 			if(i->second.is_backup && !is_backup)
 			{
 				i->second.is_backup = false;
@@ -623,9 +628,6 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 			// add only unique paths, but need to preserve first path added as first element, so deliberately not using a set<string> !
 			if(std::find(i->second.real_paths.begin(), i->second.real_paths.end(), rpath) == i->second.real_paths.end())
 				i->second.real_paths.push_back(rpath);
-
-			if(is_default && !i->second.is_default)
-				i->second.is_default = true;
 		}
 
 		string par, f;

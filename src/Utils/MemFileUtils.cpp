@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2004, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -114,7 +114,7 @@
 #endif
 
 #include <zlib.h>
-#include <unzip.h>
+#include "unzip.h"
 
 #define REGTYPE	 '0'		/* regular file */
 #define AREGTYPE '\0'		/* regular file */
@@ -628,9 +628,8 @@ bool			TextScanner_IsDone		(MFTextScanner * inScanner)
 
 void			TextScanner_Next		(MFTextScanner * s)
 {
-	if (s->mRunBegin == s->mFileEnd)	return;
-
 	s->mRunBegin = s->mRunEnd;
+	if (s->mRunBegin == s->mFileEnd)	return;
 	if (*(s->mRunBegin) == '\r')
 	{
 		s->mRunBegin++;
@@ -966,16 +965,16 @@ MF_GetDirectoryBulk(
 {
 #if IBM
 
-	WCHAR				searchPath[MAX_PATH];
+	string_utf16		searchPath;
 	WIN32_FIND_DATAW	findData;
 	HANDLE				hFind;
 	int					total = 0;
 	unsigned long long	when;
 
-	::wcscpy(searchPath,(const WCHAR*)path);
-	::wcscat(searchPath,L"\\*.*");
+	searchPath = convert_str_to_utf16(path);
+	searchPath += convert_str_to_utf16("\\*.*");
 
-	hFind = FindFirstFileW(searchPath,&findData);
+	hFind = FindFirstFileW(searchPath.c_str(),&findData);
 	if (hFind == INVALID_HANDLE_VALUE) return 0;
 
 	++total;
@@ -1097,7 +1096,14 @@ bail:
 	return success;
 }
 
-inline int iseoln(const char c) { return c == '\n' || c == '\r'; }
+/* these macros beat speedwise the crap out of any stdlib implementation. 
+  All the code here is written under the (wrong) assumption that isspace is not considering CR/LF as whitespace.
+  ( !isspace() && !ieoln() ) checks for CR/LF _twice_. See also XObjread - its done correctly there and this
+  code was obviously dereived from there.
+*/
+
+#define isspace(c) ( c == ' ' || c == '\t' )
+#define iseoln(c)  ( c == '\n' || c == '\r' )
 
 void	MFS_init(MFScanner * scanner, MFMemFile * inFile)
 {
@@ -1179,9 +1185,33 @@ double	MFS_double(MFScanner * s)
 
 	double	sign_mult	=1;
 	double	ret_val		=0;
+#if 1                            // this version reduces CPU time reading 200MB apt.dat by 0.32 sec on 3.6 GHz CPU !!!!
+	double	decimals = 0.0;
+
+	if(s->cur >= s->end) return 0.0;
+	
+		 if(*s->cur=='-') { sign_mult =-1.0; s->cur++; }
+	else if(*s->cur=='+') { s->cur++; }
+		
+	while(s->cur < s->end && !isspace(*s->cur) && !iseoln(*s->cur))
+	{
+		if(decimals != 0.0)
+		{
+			ret_val += ((*s->cur)-'0') * decimals;
+			decimals *= 0.1;
+		}
+		else if(*s->cur == '.')
+			decimals = 0.1;
+		else
+			ret_val = (10.0 * ret_val) + (*s->cur)-'0';
+
+		s->cur++;
+	}
+	return ret_val * sign_mult;
+#else
 	int		decimals	=0;
 	int		has_decimal	=0;
-
+	
 	while(s->cur<s->end && !isspace(*s->cur) && !iseoln(*s->cur))
 	{
 			 if(*s->cur=='-')sign_mult   =-1.0;
@@ -1194,6 +1224,7 @@ double	MFS_double(MFScanner * s)
 		s->cur++;
 	}
 	return ret_val/pow((double)10,(double)decimals)*sign_mult;
+#endif
 }
 
 // X-Plane uses standard headers for most of its files...the format is:

@@ -60,6 +60,7 @@ private:
 	WED_PropStringText			resource;
 	WED_PropIntEnum				show_level;
 
+	float						visibleWithinDeg;     // for culling in the map_view
 };
 
 

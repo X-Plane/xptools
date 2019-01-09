@@ -32,10 +32,10 @@ public:
 };
 
 
-// Use this class if it's not really returning avalid resource name, but rather 
+// Use this class if it's not really returning valid resource name, but rather 
 // just a property converted to a pseudo-resource name, to be searchable
 
-class IHasResourceOrAttr
+class IHasAttr
 {
 public:
 	virtual void GetResource(string& r) const = 0;

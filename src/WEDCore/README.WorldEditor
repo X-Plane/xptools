@@ -13,8 +13,14 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 1.8.0 a10 12/18/18
+WED 1.8.0 a14 1/?/19
     Features:
+    - WED-916: Support user specified text size
+    - WED-1119: Speed up map display by culling objects preview based on their actual size
+    - WED-682: Skip SCENERY_PACK_DISABLED libraries, display status on opening screen
+    - WED-1117: Add white ring around the first node of open line facades
+    - XSG-6494: Show Gateway Checkout Info in Gateway Import Dialog
+    - display code cleanup - redraws map 2x to 3x faster
     - WED-1115: KEDW exemption for airport size
     - toughen language used in apt.dat import warning to increase effectiveness
     - add automatic image splitting for large orthophotos
@@ -31,6 +37,10 @@ WED 1.8.0 a10 12/18/18
 	- show more particular pictograms for XP11.25 added yellow line types
 	- WED-939: Warn about "silly" large ramp starts at airports with way to small runways
 	Bug Fixes:
+	- WED-271: fix PropertyPane not showing all available Columns upon startup
+	- WED-1123: Prevent Custom Libs from elevating visibilities of LR default lib items
+	- scale down very large ortho images exceeding the GPU's max texture size to still display
+	- WED-1116: fix undesired selection of ALL items in TAXI/Light views
 	- CIFP validation to use ICAO code meta tag if available
 	- fix missing symbolic light styles when drawing certain of the new XP11.25 line styles
 	- WED-1111: Fix date shown at gateway import scenery version selection

@@ -36,11 +36,30 @@
 #include "PlatformUtils.h"
 #include "GISUtils.h"
 
+#if 0
+#include <chrono>
+auto t0 = std::chrono::high_resolution_clock::now();
+auto t1 = std::chrono::high_resolution_clock::now();
+auto t2 = chrono::high_resolution_clock::now();
+
+
+chrono::duration<double> elapsed = t1-t0;
+printf("0 to 1 time: %lf\n", elapsed.count());
+
+elapsed = t2-t1;
+printf("1 to 2 time: %lf\n", elapsed.count());
+#endif
+
 #if APL
 	#include <OpenGL/gl.h>
 #else
 	#include <GL/gl.h>
 #endif
+
+#define SHOW_TOWERS 0
+#define SHOW_APTS_FROM_APTDAT 1
+
+#define NAVAID_EXTRA_RANGE  GLOBAL_WED_ART_ASSET_FUDGE_FACTOR  // degree's lon/lat, allows ILS beams to show even if the ILS is outside of the map window
 
 static void parse_apt_dat(MFMemFile * str, map<string, navaid_t>& tAirports, const string& source)
 {
@@ -61,8 +80,7 @@ static void parse_apt_dat(MFMemFile * str, map<string, navaid_t>& tAirports, con
 			{
 				if(apt_type)
 				{
-					n.lonlat.clear();
-					n.lonlat.push_back(apt_bounds.centroid());
+					n.lonlat = apt_bounds.centroid();
 					tAirports[n.icao]= n;
 				}
 				apt_type = rowcode;
@@ -111,7 +129,7 @@ static void parse_nav_dat(MFMemFile * str, vector<navaid_t>& mNavaids, bool merg
 				n.type = type;
 				double lat = MFS_double(&s);
 				double lon = MFS_double(&s);
-				n.lonlat.push_back(Point2(lon,lat));
+				n.lonlat = Point2(lon,lat);
 				MFS_int(&s);   // skip elevation
 				n.freq  = MFS_int(&s);
 				MFS_int(&s);   // skip range
@@ -125,8 +143,7 @@ static void parse_nav_dat(MFMemFile * str, vector<navaid_t>& mNavaids, bool merg
 				}
 				if (type == 6)
 				{
-					double slope = floor(n.heading / 1000.0);
-					n.heading -= slope * 1000.0;
+					n.heading -= floor(n.heading / 1000.0) * 1000.0; // zero out the lowest 3 digits
 				}
 				if(merge)
 				{
@@ -138,8 +155,7 @@ static void parse_nav_dat(MFMemFile * str, vector<navaid_t>& mNavaids, bool merg
 					{
 						if(n.type == i->type && n.icao == i->icao)
 						{
-							float d = LonLatDistMeters(n.lonlat[0], i->lonlat[0]);
-//							float d = LonLatDistMeters(n.lonlat, i->lonlat);
+							float d = LonLatDistMeters(n.lonlat, i->lonlat);
 							if (n.name == i->name)
 							{
 #if DEV
@@ -197,24 +213,29 @@ static void parse_atc_dat(MFMemFile * str, vector<navaid_t>& mNavaids)
 	if(MFS_xplane_header(&s,versions,"ATCFILE",NULL))
 	{
 		navaid_t n;
+		int num_rings;
 		while(!MFS_done(&s))
 		{
 			if(MFS_string_match(&s, "CONTROLLER", 1))
 			{
 				n.type = 0;
-				n.lonlat.clear();
-				n.lonlat.push_back(Point2(180.0,0.0));
+				n.shape.clear();
+				n.lonlat = Point2(180.0,0.0);
 				n.rwy.clear();
+				num_rings = 0;
 			}
 			if(MFS_string_match(&s, "ROLE", 0))
 			{
 				string role;
 				MFS_string(&s, &role);
 				n.type = role == "tracon" ? 9999 : 0; // navaid pseudo code for TRACON areas
+#if SHOW_TOWERS
+				if(role == "twr") n.type = 9998;
+#endif
 			}
 			else if(MFS_string_match(&s, "NAME", 0))
 			{
-				MFS_string(&s, &n.name);
+				MFS_string_eol(&s, &n.name);
 			}
 			else if(MFS_string_match(&s, "FACILITY_ID", 0))
 			{
@@ -234,23 +255,35 @@ static void parse_atc_dat(MFMemFile * str, vector<navaid_t>& mNavaids)
 				if(!n.rwy.empty()) n.rwy += ", ";
 				n.rwy += tmp.substr(0,tmp.size()-3) + "." + tmp.substr(tmp.size()-3);
 			}
-			else if(n.type == 9999)
+			else if(n.type)
 			{
 				if(MFS_string_match(&s, "POINT", 0))
 				{
 					double lat = MFS_double(&s);
 					double lon = MFS_double(&s);
-					n.lonlat.push_back(Point2(lon,lat));
-					if( lon < n.lonlat.front().x_)
-						n.lonlat.front() = Point2(lon,lat);  // get the left side of the area
+					n.shape.push_back(Point2(lon,lat));
+					if( lon < n.lonlat.x())
+						n.lonlat = Point2(lon,lat);  // get the left side of the area
+				}
+				else if(MFS_string_match(&s, "AIRSPACE_POLYGON_BEGIN", 1))
+				{
+					num_rings++;
 				}
 				else if(MFS_string_match(&s, "AIRSPACE_POLYGON_END", 1))
 				{
 #if DEV
-					printf("Adding new %d %s %s %d\n", n.type, n.name.c_str(), n.icao.c_str(), (int) n.lonlat.size());
+					printf("Adding new %d %s %s %d\n", n.type, n.name.c_str(), n.icao.c_str(), (int) n.shape.size());
 #endif
-					n.name += " TRACON";
-					n.rwy += " MHz";
+					if (num_rings == 1)
+					{
+#if SHOW_TOWERS
+						if (n.type == 9998)
+							n.name += " TOWER";
+						else
+#endif					
+						n.name += " APPROACH";
+						n.rwy += " MHz";
+					}
 					mNavaids.push_back(n);
 				}
 			}
@@ -279,26 +312,32 @@ void WED_NavaidLayer::LoadNavaids()
 	gPackageMgr->GetXPlaneFolder(resourcePath);
 
 	mNavaids.reserve(25000);    // about 3 MBytes, as of 2018 its some 20,200 navaids
-	mNavaids.push_back(navaid_t());
 
 	// deliberately ignoring any Custom Data/earth_424.dat or Custom Data/earth_nav.dat files that a user may have ... to avoid confusion
 	string defaultNavaids  = resourcePath + DIR_STR "Resources" DIR_STR "default data" DIR_STR "earth_nav.dat";
 	string globalNavaids = resourcePath + DIR_STR "Custom Scenery" DIR_STR "Global Airports" DIR_STR "Earth nav data" DIR_STR "earth_nav.dat";
-
+	
 	MFMemFile * str = MemFile_Open(defaultNavaids.c_str());
 	if(str) parse_nav_dat(str, mNavaids, false);
 	str = MemFile_Open(globalNavaids.c_str());
 	if(str)	parse_nav_dat(str, mNavaids, true);
 	
-	string defaultATC  = resourcePath + DIR_STR "Resources" DIR_STR "default scenery" DIR_STR "default atc" DIR_STR "Earth nav data" DIR_STR "atc.dat";
+	string defaultATC = resourcePath + DIR_STR "Resources" DIR_STR "default scenery" DIR_STR "default atc dat" DIR_STR "Earth nav data" DIR_STR "atc.dat";
 	string seattleATC  = resourcePath + DIR_STR "Custom Scenery" DIR_STR "KSEA Demo Area" DIR_STR "Earth nav data" DIR_STR "atc.dat";
 
 	str = MemFile_Open(defaultATC.c_str());
+
+	// on the linux and OSX platforms this path was different before XP11.30 for some unknown reasons. So try that.
+	if(!str)
+	{
+		defaultATC = resourcePath + DIR_STR "Resources" DIR_STR "default scenery" DIR_STR "default atc" DIR_STR "Earth nav data" DIR_STR "atc.dat";
+		str = MemFile_Open(defaultATC.c_str());
+	}
 	if(str)	parse_atc_dat(str, mNavaids);
 	str = MemFile_Open(seattleATC.c_str());
 	if(str)	parse_atc_dat(str, mNavaids);
-
-#if 1
+	
+#if SHOW_APTS_FROM_APTDAT
 	string defaultApts = resourcePath + DIR_STR "Resources" DIR_STR "default scenery" DIR_STR "default apt dat" DIR_STR "Earth nav data" DIR_STR "apt.dat";
 	string globalApts  = resourcePath + DIR_STR "Custom Scenery" DIR_STR "Global Airports" DIR_STR "Earth nav data" DIR_STR "apt.dat";
 
@@ -308,16 +347,13 @@ void WED_NavaidLayer::LoadNavaids()
 	str = MemFile_Open(globalApts.c_str());
 	if(str) parse_apt_dat(str, tAirports, " (GW)");
 
-// Todo: speedup drawing by converting mNavaids into a multimap sorted by longitude - for quicker selection of visible navaids
-//       improve data locality - store coords as 32 bit fixed point (9mm resolution is plenty), heading, type as short = 12 bytes total (now 96)
-//       although for now Navaid map drawing is under 2 msec on a 3.6 GHz CPU at all times == good enough
-
 	for(map<string, navaid_t>::iterator i = tAirports.begin(); i != tAirports.end(); ++i)
 		mNavaids.push_back(i->second);
 #endif
-}
 
-#define NAVAID_EXTRA_RANGE 0.03  // degree's lon/lat, allows ILS beams to show even if the ILS is outside of the map window
+// Todo: speedup drawing by sorting mNavaids into longitude buckets, so the preview function only have to go through a smalller part of the overall list.
+//       although for now Navaid map drawing is under 1 msec on a 3.6 GHz CPU at all times == good enough
+}
 
 void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 {
@@ -341,17 +377,20 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 	const float red[4]        = { 1.0, 0.4, 0.4, 0.66 };
 	const float vfr_purple[4] = { 0.9, 0.4, 0.9, 0.8 };
 	const float vfr_blue[4]   = { 0.4, 0.4, 1.0, 0.8 };
-	glLineWidth(1.8);
 
+	g->SetState(false,0,false,false,true,false,false);
+	glLineWidth(1.6);
+	glLineStipple(1, 0xF0F0);
+	glDisable(GL_LINE_STIPPLE);
+	
 	if (PPM > 0.001)          // stop displaying navaids when zoomed out - gets too crowded
 		for(vector<navaid_t>::iterator i = mNavaids.begin(); i != mNavaids.end(); ++i)  // this is brain dead - use list sorted by longitude
 		{
-			if(i->lonlat.size() >0)
-			if(i->lonlat[0].x() > vl && i->lonlat[0].x() < vr &&
-			   i->lonlat[0].y() > vb && i->lonlat[0].y() < vt)
+			if(i->lonlat.x() > vl && i->lonlat.x() < vr &&
+			   i->lonlat.y() > vb && i->lonlat.y() < vt)
 			{
 				glColor4fv(red);
-				Point2 pt = GetZoomer()->LLToPixel(i->lonlat[0]);
+				Point2 pt = GetZoomer()->LLToPixel(i->lonlat);
 				
 				// draw icons
 				if(i->type == 2)
@@ -389,14 +428,21 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 				}
 				else if(i->type < 100)
 					GUI_PlotIcon(g,"nav_mark.png", pt.x(), pt.y(), i->heading, scale);
-				else if(i->type == 9999)
+				else if(i->type <= 9999)
 				{
 					glColor4fv(vfr_blue);
-					int pts = i->lonlat.size()-1;
+#if SHOW_TOWERS
+					if (i->type == 9998)
+						glEnable(GL_LINE_STIPPLE);
+#endif					
+					int pts = i->shape.size();
 					vector<Point2> c(pts);
-					GetZoomer()->LLToPixelv(&(c[0]),&(i->lonlat[1]),pts);
+					GetZoomer()->LLToPixelv(&(c[0]),&(i->shape[0]),pts);
 					g->SetState(0, 0, 0, 0, 1, 0, 0);
 					glShape2v(GL_LINE_LOOP, &(c[0]), pts);
+#if SHOW_TOWERS
+					glDisable(GL_LINE_STIPPLE);
+#endif					
 				}
 				else
 				{
@@ -414,7 +460,11 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 					}
 				}
 				// draw text labels, be carefull not to clutter things
+#if SHOW_TOWERS
+				if((i->type == 9998 && PPM  > 0.01) || i->type == 9999)
+#else
 				if(i->type == 9999)
+#endif					
 				{
 					const float * color = vfr_blue;
 					GUI_FontDraw(g, font_UI_Basic, color, pt.x()+8.0,pt.y()-15.0, i->name.c_str());
@@ -436,6 +486,7 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 				}
 			}
 		}
+
 }
 
 void		WED_NavaidLayer::GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks)

@@ -46,7 +46,6 @@
 #include "WED_Messages.h"
 #include "WED_ToolUtils.h"
 #include "WED_GroupCommands.h"
-#include "WED_UIMeasurements.h"
 #include "WED_EnumSystem.h"
 #include "GUI_Commander.h"
 #include "WED_Menus.h"
@@ -88,8 +87,7 @@ WED_PropertyTable::WED_PropertyTable(
 									const char **			filter)
 	:	GUI_SimpleTableGeometry(
 				count_strs(col_names),
-				def_col_widths,
-				WED_UIMeasurement("table_row_height")),
+				def_col_widths),
 	GUI_Commander(cmdr),
 	mVertical(vertical),
 	mDynamicCols(dynamic_cols),
@@ -103,14 +101,47 @@ WED_PropertyTable::WED_PropertyTable(
 	while(*col_names)
 		mColNames.push_back(*col_names++);
 
+	RecalculateColumns();
+
 	if (filter)
 	while (*filter)
 		mFilter.insert(*filter++);
-//	selection->AddListener(this);
+
 }
 
 WED_PropertyTable::~WED_PropertyTable()
 {
+}
+
+void WED_PropertyTable::RecalculateColumns()
+{
+	if (mDynamicCols)
+	{
+		set<string>	cols;
+		cols.insert("Name");
+		mColNames.clear();
+		mColNames.push_back("Name");
+		int total_objs = mVertical ? GetColCount() : GetRowCount();
+		for (int i = 0; i < total_objs; ++i)
+		{
+			WED_Thing * t = FetchNth(i);
+			if (t)
+			{
+				int pcount = t->CountProperties();
+				for (int p = 0; p < pcount; ++p)
+				{
+					PropertyInfo_t info;
+					t->GetNthPropertyInfo(p,info);
+					if(!info.prop_name.empty() && info.prop_name[0] != '.')
+					if (cols.count(info.prop_name) == 0)
+					{
+						cols.insert(info.prop_name);
+						mColNames.insert(mColNames.begin(), info.prop_name);
+					}
+				}
+			}
+		}
+	}
 }
 
 void	WED_PropertyTable::GetCellContent(
@@ -993,33 +1024,7 @@ void	WED_PropertyTable::ReceiveMessage(
 		if (mSelOnly && (inParam & wed_Change_Selection))
 			mCacheValid = false;
 
-		if (mDynamicCols)
-		{
-			set<string>	cols;
-			cols.insert("Name");
-			mColNames.clear();
-			mColNames.push_back("Name");
-			int total_objs = mVertical ? GetColCount() : GetRowCount();
-			for (int i = 0; i < total_objs; ++i)
-			{
-				WED_Thing * t = FetchNth(i);
-				if (t)
-				{
-					int pcount = t->CountProperties();
-					for (int p = 0; p < pcount; ++p)
-					{
-						PropertyInfo_t info;
-						t->GetNthPropertyInfo(p,info);
-						if(!info.prop_name.empty() && info.prop_name[0] != '.')
-						if (cols.count(info.prop_name) == 0)
-						{
-							cols.insert(info.prop_name);
-							mColNames.insert(mColNames.begin(), info.prop_name);
-						}
-					}
-				}
-			}
-		}
+		RecalculateColumns();
 		BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);
 	}
 }
@@ -1099,25 +1104,26 @@ int collect_recusive(WED_Thing * thing, const ci_string& isearch_filter, vector<
 	thing->GetName(thing_name);
 	ci_string ithing_name(thing_name.begin(),thing_name.end());
 	bool is_match = ithing_name.find(isearch_filter) != ci_string::npos;
-	IHasResourceOrAttr * has_resource_thing = NULL;
-
+	IHasResource * has_resource = NULL;
+	IHasAttr * has_attr = NULL;
+	
 	if (is_match == false)
 	{
-		has_resource_thing = dynamic_cast<IHasResourceOrAttr*>(thing);
-		if (has_resource_thing)
+		string res;
+		has_resource = dynamic_cast<IHasResource*>(thing);
+		if (has_resource) has_resource->GetResource(res);
+		else
 		{
-			string res;
-			has_resource_thing->GetResource(res);
-//			string n; thing->GetName(n);
-//			printf("%s: r=%s\n",n.c_str(), res.c_str());
-			res = string ("^") + res + "$";       // Adding ^ and $ are to emulate regex-style line start/end makers, so to
-			                                      // allow macthing one of "Red Line", "Red Line (Black)" or "Wide Red Line"
-			is_match |= ci_string(res.begin(), res.end()).find(isearch_filter) != ci_string::npos;
+			has_attr = dynamic_cast<IHasAttr*>(thing);
+			if (has_attr) has_attr->GetResource(res);
 		}
+		res = string ("^") + res + "$";           // Adding ^ and $ are to emulate regex-style line start/end makers, so to
+			                                      // allow macthing one of "Red Line", "Red Line (Black)" or "Wide Red Line"
+		is_match = ci_string(res.begin(), res.end()).find(isearch_filter) != ci_string::npos;
 	}
 
 	int nc = thing->CountChildren();
-	if (nc == 0 || (has_resource_thing && is_match))    // prevent showing nodes for uniformly set taxilines or taxiways
+	if (nc == 0 || (is_match && (has_resource || has_attr)))    // prevent showing nodes for uniformly set taxilines or taxiways
 	{
 		if (is_match)
 		{
@@ -1211,10 +1217,7 @@ void		WED_PropertyTable::GetFilterStatus(WED_Thing * what, ISelection * sel,
 	visible = recurse_children = can_disclose = is_disclose = 0;
 	if (what == NULL) return;
 
-	int is_composite = 0;
-	visible = 0;
-
-	is_composite = WED_IsFolder(what);
+	int is_composite = WED_IsFolder(what);
 
 //	IGISEntity * e = SAFE_CAST(IGISEntity, what);
 //	if (e) is_composite = e->GetGISClass() == gis_Composite;
@@ -1239,4 +1242,5 @@ void		WED_PropertyTable::GetFilterStatus(WED_Thing * what, ISelection * sel,
 			recurse_children = 0;
 		}
 	}
+	if(!mVertical && IsGraphNode(what)) visible = 0;
 }

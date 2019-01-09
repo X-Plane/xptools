@@ -17,7 +17,6 @@ endif
 
 LDFLAGS		+= -rdynamic
 LDFLAGS		+= -Wl,--exclude-libs,ALL
-#LDFLAGS		+= -Wl,--verbose
 LIBS		+= -lQtCore
 LIBS		+= -lQtGui
 LIBS		+= -lQtOpenGL
@@ -25,9 +24,7 @@ LIBS		+= -lGL
 LIBS		+= -lGLU
 LIBS		+= -ldl
 LIBS		+= -lpthread
-LIBS		+= -lcurl
-LIBS		+= -lssl
-LIBS		+= -lcrypto
+LIBS		+= -lcurl -lssl -lcrypto
 LIBS		+= -Wl,-Bdynamic
 endif #PLAT_LINUX
 
@@ -68,7 +65,6 @@ LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
-#LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjasper.a
 
 
 ##
@@ -109,7 +105,6 @@ endif #PLAT_DARWIN
 SOURCES += ./src/WEDCore/WED_AppMain.cpp
 SOURCES += ./src/WEDCore/WED_Application.cpp
 SOURCES += ./src/WEDCore/WED_PackageMgr.cpp
-SOURCES += ./src/WEDCore/WED_Package.cpp
 SOURCES += ./src/WEDCore/WED_Archive.cpp
 SOURCES += ./src/WEDCore/WED_Buffer.cpp
 SOURCES += ./src/WEDCore/WED_Clipping.cpp
@@ -266,8 +261,6 @@ SOURCES += ./src/WEDWindows/WED_GroupCommands.cpp
 SOURCES += ./src/WEDWindows/WED_HierarchyFilterBar.cpp
 SOURCES += ./src/WEDWindows/WED_Menus.cpp
 SOURCES += ./src/WEDWindows/WED_PackageListAdapter.cpp
-SOURCES += ./src/WEDWindows/WED_PackageStatusPane.cpp
-SOURCES += ./src/WEDWindows/WED_PackageWindow.cpp
 SOURCES += ./src/WEDWindows/WED_StartWindow.cpp
 SOURCES += ./src/WEDWindows/WED_Sign_Editor.cpp
 SOURCES += ./src/WEDWindows/WED_Line_Selector.cpp
@@ -395,7 +388,7 @@ RESOURCES += ./src/WEDResources/handles/handle_cross.png
 RESOURCES += ./src/WEDResources/handles/handle_square.png
 RESOURCES += ./src/WEDResources/handles/handle_vertexround.png
 RESOURCES += ./src/WEDResources/handles/handle_arrowhead.png
-RESOURCES += ./src/WEDResources/handles/handle_arrowhead_lg.png
+//RESOURCES += ./src/WEDResources/handles/handle_arrowhead_lg.png
 RESOURCES += ./src/WEDResources/handles/handle_rotatehead.png
 RESOURCES += ./src/WEDResources/handles/handle_closeloop.png
 RESOURCES += ./src/WEDResources/handles/handle_control.png

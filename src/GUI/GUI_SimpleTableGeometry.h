@@ -31,8 +31,8 @@ public:
 
 						 GUI_SimpleTableGeometry(
 										int		num_cols,
-										int *	default_col_widths,
-										int		row_height);
+								const int *	default_col_widths,
+										int		row_height = 0);   // i.e. adjust to a single line of text height
 
 	virtual				~GUI_SimpleTableGeometry();
 

@@ -112,7 +112,7 @@ void	WED_LibraryFilterBar::GetEnumDictionary(
 		string temp = "";
 		gPackageMgr->GetNthPackageName(i,temp);
 
-		if(gPackageMgr->IsPackagePublicItems(i))
+		if(gPackageMgr->HasPublicItems(i))
 		{
 			out_dictionary.insert(GUI_EnumDictionary::value_type(i,make_pair(temp,true)));
 		}

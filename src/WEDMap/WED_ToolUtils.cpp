@@ -60,6 +60,8 @@
 #include "WED_ATCWindRule.h"
 #include "WED_TaxiRoute.h"
 #include "WED_TaxiRouteNode.h"
+#include "WED_TruckDestination.h"
+#include "WED_TruckParkingLocation.h"
 #include "WED_RoadNode.h"
 #include "WED_LibraryMgr.h"
 
@@ -410,6 +412,9 @@ const char *	WED_GetParentForClass(const char * in_class)
 
 	if(strcmp(in_class,WED_TaxiRoute::sClass)==0)			return WED_Airport::sClass;
 	if(strcmp(in_class,WED_TaxiRouteNode::sClass)==0)		return WED_Airport::sClass;
+
+	if(strcmp(in_class,WED_TruckDestination::sClass)==0)	return WED_Airport::sClass;
+	if(strcmp(in_class,WED_TruckParkingLocation::sClass)==0)return WED_Airport::sClass;
 
 #endif
 	return NULL;

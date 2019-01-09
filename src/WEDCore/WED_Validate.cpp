@@ -1980,7 +1980,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		if(strlen_utf8(name) > 30)
 			msgs.push_back(validation_error_t("Airport name is longer than 30 characters.", err_type, apt,apt));
 
-		if(name[0] == ' ' || name[name.length()-1] == ' ')
+		if(isspace(name[0]) || isspace(name[name.length()-1]))
 			msgs.push_back(validation_error_t("Airport name includes leading or trailing spaces.", err_type, apt,apt));
 
 		int lcase = count_if(name.begin(), name.end(), ::islower);
@@ -2203,9 +2203,11 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		// verify existence of required runways
 		map<int,Point3> CIFP_rwys;
 		set<int> rwys_missing;
-		string icao_meta = apt->GetMetaDataValue(wed_AddMetaDataICAO);
-		if(!icao_meta.empty()) icao = icao_meta; // go by ICAO meta tag if it exists
-		
+		if(apt->ContainsMetaDataKey(wed_AddMetaDataICAO))
+		{
+			string icao_meta = apt->GetMetaDataValue(wed_AddMetaDataICAO);
+			if(!icao_meta.empty()) icao = icao_meta;
+		}
 		if (mf)
 		{
 			MFScanner	s;

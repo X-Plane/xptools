@@ -289,8 +289,6 @@
 		<Unit filename="../../src/WEDCore/WED_Messages.h" />
 		<Unit filename="../../src/WEDCore/WED_Orthophoto.cpp" />
 		<Unit filename="../../src/WEDCore/WED_Orthophoto.h" />
-		<Unit filename="../../src/WEDCore/WED_Package.cpp" />
-		<Unit filename="../../src/WEDCore/WED_Package.h" />
 		<Unit filename="../../src/WEDCore/WED_PackageMgr.cpp" />
 		<Unit filename="../../src/WEDCore/WED_PackageMgr.h" />
 		<Unit filename="../../src/WEDCore/WED_Persistent.cpp" />
@@ -527,8 +525,6 @@
 		<Unit filename="../../src/WEDMap/WED_ToolInfoAdapter.h" />
 		<Unit filename="../../src/WEDMap/WED_ToolUtils.cpp" />
 		<Unit filename="../../src/WEDMap/WED_ToolUtils.h" />
-		<Unit filename="../../src/WEDMap/WED_UIMeasurements.cpp" />
-		<Unit filename="../../src/WEDMap/WED_UIMeasurements.h" />
 		<Unit filename="../../src/WEDMap/WED_VertexTool.cpp" />
 		<Unit filename="../../src/WEDMap/WED_VertexTool.h" />
 		<Unit filename="../../src/WEDMap/WED_WorldMapLayer.cpp" />
@@ -632,7 +628,6 @@
 		<Unit filename="../../src/WEDResources/taxi_sign.png" />
 		<Unit filename="../../src/WEDResources/tce_tools.png" />
 		<Unit filename="../../src/WEDResources/tce_tools_blank.png" />
-		<Unit filename="../../src/WEDResources/ui_measurements.txt" />
 		<Unit filename="../../src/WEDTCE/WED_TCE.cpp" />
 		<Unit filename="../../src/WEDTCE/WED_TCE.h" />
 		<Unit filename="../../src/WEDTCE/WED_TCELayer.cpp" />
@@ -663,10 +658,6 @@
 		<Unit filename="../../src/WEDWindows/WED_Menus.h" />
 		<Unit filename="../../src/WEDWindows/WED_PackageListAdapter.cpp" />
 		<Unit filename="../../src/WEDWindows/WED_PackageListAdapter.h" />
-		<Unit filename="../../src/WEDWindows/WED_PackageStatusPane.cpp" />
-		<Unit filename="../../src/WEDWindows/WED_PackageStatusPane.h" />
-		<Unit filename="../../src/WEDWindows/WED_PackageWindow.cpp" />
-		<Unit filename="../../src/WEDWindows/WED_PackageWindow.h" />
 		<Unit filename="../../src/WEDWindows/WED_Sign_Editor.cpp" />
 		<Unit filename="../../src/WEDWindows/WED_Sign_Editor.h" />
 		<Unit filename="../../src/WEDWindows/WED_StartWindow.cpp" />

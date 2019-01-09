@@ -405,9 +405,6 @@
     <ClCompile Include="..\..\src\WEDMap\WED_ToolUtils.cpp">
       <Filter>WEDMap</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\WEDMap\WED_UIMeasurements.cpp">
-      <Filter>WEDMap</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\WEDMap\WED_VertexTool.cpp">
       <Filter>WEDMap</Filter>
     </ClCompile>
@@ -460,12 +457,6 @@
       <Filter>WEDWindows</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\WEDWindows\WED_PackageListAdapter.cpp">
-      <Filter>WEDWindows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\WEDWindows\WED_PackageStatusPane.cpp">
-      <Filter>WEDWindows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\WEDWindows\WED_PackageWindow.cpp">
       <Filter>WEDWindows</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\WEDWindows\WED_StartWindow.cpp">
@@ -597,9 +588,6 @@
     <ClCompile Include="..\..\src\Obj\XObjReadWrite.cpp">
       <Filter>Obj</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Obj\ObjConvert.cpp">
-      <Filter>Obj</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Obj\ObjDraw.cpp">
       <Filter>Obj</Filter>
     </ClCompile>
@@ -640,9 +628,6 @@
       <Filter>DSF</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\WEDCore\WED_GISUtils.cpp">
-      <Filter>WEDCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\WEDCore\WED_Package.cpp">
       <Filter>WEDCore</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Utils\GISUtils.cpp">
@@ -846,9 +831,6 @@
       <Filter>WEDCore</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDCore\WED_Orthophoto.h">
-      <Filter>WEDCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\WEDCore\WED_Package.h">
       <Filter>WEDCore</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDCore\WED_PackageMgr.h">
@@ -1142,9 +1124,6 @@
     <ClInclude Include="..\..\src\WEDMap\WED_ToolUtils.h">
       <Filter>WEDMap</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\WEDMap\WED_UIMeasurements.h">
-      <Filter>WEDMap</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\WEDMap\WED_VertexTool.h">
       <Filter>WEDMap</Filter>
     </ClInclude>
@@ -1206,12 +1185,6 @@
       <Filter>WEDWindows</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDWindows\WED_PackageListAdapter.h">
-      <Filter>WEDWindows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\WEDWindows\WED_PackageStatusPane.h">
-      <Filter>WEDWindows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\WEDWindows\WED_PackageWindow.h">
       <Filter>WEDWindows</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDWindows\WED_StartWindow.h">
@@ -1363,9 +1336,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\DSFTools\DSFToolsPrefix.h">
       <Filter>DSFTools</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Obj\ObjConvert.h">
-      <Filter>Obj</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Obj\ObjDraw.h">
       <Filter>Obj</Filter>
@@ -1589,11 +1559,6 @@
     <ClInclude Include="..\..\src\WEDMap\WED_SlippyMap.h">
       <Filter>WEDMap</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="..\..\src\WEDResources\ui_measurements.txt">
-      <Filter>WEDResources</Filter>
-    </Text>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\src\WEDResources\about.png">

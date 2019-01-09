@@ -23,6 +23,12 @@
 
 #include "WED_ObjPlacement.h"
 #include "WED_EnumSystem.h"
+#include "WED_ResourceMgr.h"
+#include "WED_ToolUtils.h"
+#include "XObjDefs.h"
+#include "MathUtils.h"
+#include "CompGeomDefs2.h"
+#include "XESConstants.h"
 
 DEFINE_PERSISTENT(WED_ObjPlacement)
 TRIVIAL_COPY(WED_ObjPlacement,WED_GISPoint_Heading)
@@ -34,8 +40,8 @@ WED_ObjPlacement::WED_ObjPlacement(WED_Archive * a, int i) :
 	msl    (this,PROP_Name("MSL",     XML_Name("obj_placement","msl")), 0, 5,3),
 #endif
 	resource  (this,PROP_Name("Resource",  XML_Name("obj_placement","resource")),""),
-	show_level(this,PROP_Name("Show with", XML_Name("obj_placement","show_level")),ShowLevel, show_Level1)
-
+	show_level(this,PROP_Name("Show with", XML_Name("obj_placement","show_level")),ShowLevel, show_Level1),
+	visibleWithinDeg(-1.0)
 {
 }
 
@@ -61,6 +67,7 @@ void		WED_ObjPlacement::GetResource(	  string& r) const
 void		WED_ObjPlacement::SetResource(const string& r)
 {
 	resource = r;
+	visibleWithinDeg = -1.0; // force re-evaluation when object is changed
 }
 
 bool		WED_ObjPlacement::Cull(const Bbox2& b) const
@@ -68,10 +75,46 @@ bool		WED_ObjPlacement::Cull(const Bbox2& b) const
 	Point2	my_loc;
 	GetLocation(gis_Geo,my_loc);
 
-	// 20 km - if your OBJ is bigger than that, you are REALLY doing it wrong.
-	// In fact, if your OBJ is bigger than 5 km you're doing it wrong.
-	Bbox2	my_bounds(my_loc - Vector2(GLOBAL_WED_ART_ASSET_FUDGE_FACTOR,GLOBAL_WED_ART_ASSET_FUDGE_FACTOR), 
-					  my_loc + Vector2(GLOBAL_WED_ART_ASSET_FUDGE_FACTOR, GLOBAL_WED_ART_ASSET_FUDGE_FACTOR));	
+	// caching the objects dimension here for off-display culling in the map view. Its disregarding object rotation
+	// and any lattitude dependency in the conversion, so the value will be choosen sufficiently pessimistic.
+
+	if(visibleWithinDeg < 0.0)                            // so we only do this once for each object, ever
+	{
+		float * f = (float *) &visibleWithinDeg;          // tricking the compiler, breaking all rules. But Cull() must be const ...
+		*f = GLOBAL_WED_ART_ASSET_FUDGE_FACTOR;           // the old, brain-dead visibility rule of thumb
+		IResolver * res = GetArchive()->GetResolver();
+		if(res)
+		{
+			WED_ResourceMgr * rmgr = WED_GetResourceMgr(res);
+			if(rmgr)
+			{
+				XObj8 * o;
+				agp_t agp;
+	//			int n = GetNumVariants(resource.value);   // no need to cycle through these - only the first variant is used for preview
+				if(rmgr->GetObj(resource.value,o))
+				{
+					double x_max = max(fabs(o->xyz_max[0]), fabs(o->xyz_min[0]));
+					double y_max = max(fabs(o->xyz_max[2]), fabs(o->xyz_min[2]));
+					*f = pythag(x_max,y_max) * MTR_TO_DEG_LAT * 3.0;      // pessimistic at least up to 70 deg lattitude
+				}
+				else if(rmgr->GetAGP(resource.value,agp))
+				{
+					double x_max = 0.0;
+					double y_max = 0.0;
+					for(int n = 0; n < agp.tile.size(); n += 4)
+					{
+						x_max = max(x_max,fabs(agp.tile[n]));
+						y_max = max(y_max,fabs(agp.tile[n+1]));
+					}
+					*f = pythag(x_max,y_max) * MTR_TO_DEG_LAT * 3.0;      // pessimistic at least up to 70 deg lattitude
+				}
+			}
+		}
+	}
+
+	Bbox2	my_bounds(my_loc - Vector2(visibleWithinDeg,visibleWithinDeg), 
+					  my_loc + Vector2(visibleWithinDeg,visibleWithinDeg));
+
 	return b.overlap(my_bounds);
 }
 

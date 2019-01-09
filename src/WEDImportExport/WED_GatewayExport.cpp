@@ -98,15 +98,6 @@
 #define ATC_TAXI_ROUTE_TAG 2
 #define ATC_GROUND_ROUTES_TAG 8
 
-// Curse C++98 for not having this.
-template<typename T>
-static std::string to_string(const T& value)
-{
-    std::ostringstream oss;
-    oss << value;
-    return oss.str();
-}
-
 /*
 
 		progress bar
@@ -485,15 +476,13 @@ WED_GatewayExportDialog::WED_GatewayExportDialog(WED_Airport * apt, WED_Document
 	apt->GetICAO(icao);
 	apt->GetName(name);
 
-	char par_id[32];
-	sprintf(par_id,"%d", apt->GetSceneryID());
-
 	this->AddFieldNoEdit(gw_icao,icao,name);
 	this->AddField(gw_username,"User Name",saved_uname);
 	this->AddField(gw_password,"Password",saved_passwd,ft_password);
 	this->AddField(gw_comments,"Comments",saved_comment,ft_big);
+
 	if(apt->GetSceneryID() >= 0)
-		mParID = par_id;
+		mParID = to_string(apt->GetSceneryID());
 	else
 		mParID = "";
 	StartCSVDownload();
