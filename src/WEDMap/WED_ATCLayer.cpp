@@ -183,7 +183,12 @@ bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, G
 		
 		if (seg->AllowAircraft())              // display name of taxi route
 		{
-			string nam; 	seg->GetName(nam);
+			string nam; 	
+			if(seg->GetRunway() != atc_rwy_None)   // ideally this would not be needed, but cant figure a way to fix up name upon earth.wed.xml import
+				nam = ENUM_Desc(seg->GetRunway());
+			else
+				seg->GetName(nam);
+			
 			if(!nam.empty())
 			{ 
 				if (d[1].squared_distance(d[2]) > 20*20 &&         // draw labels only if segment wide enough

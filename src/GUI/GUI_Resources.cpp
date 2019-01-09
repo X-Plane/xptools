@@ -59,8 +59,7 @@ static char* mangle_name (const char* filename, const char* suffix)
 
 	buf = new char[size];
 	if (buf == 0) return 0;
-	memset(buf, 0, size);
-	sprintf(buf, "_binary_%s_%s", filename, suffix);
+	snprintf(buf, size, "_binary_%s_%s", filename, suffix);
 
 	for (p = buf; *p; p++)
 	if (!isalnum(*p)) *p = '_';
@@ -484,7 +483,8 @@ std::string WordWrap( std::string str, size_t width )
 	#endif
 		{
 			spacePos = str.rfind(' ', maxPos);     // look for a space just before the line gets too long
-			if( spacePos == std::string::npos || spacePos <= lastCR)   // no joy, i.e. a very long word
+			if( spacePos == std::string::npos ||
+			   (lastCR != string::npos && spacePos <= lastCR))   // no joy, i.e. a very long word
 			{
 				spacePos = str.find(' ', maxPos);  // so we look for a good place after that word,
 			}                                      // as we have no better choice here.

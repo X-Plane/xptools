@@ -58,4 +58,4 @@ void	debug_mesh_polygon(const Polygon2& p1, float r1, float g1, float b1)
 }
 #endif
 
-WED_Export_Target gExportTarget = wet_xplane_1050;
+WED_Export_Target gExportTarget = wet_latest_xplane;

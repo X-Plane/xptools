@@ -28,7 +28,6 @@
     <ClCompile Include="..\..\src\Utils\md5.c" />
     <ClCompile Include="..\..\src\Utils\MemFileUtils.cpp" />
     <ClCompile Include="..\..\src\Utils\PlatformUtils.win.cpp" />
-    <ClCompile Include="..\..\src\Utils\SQLUtils.cpp" />
     <ClCompile Include="..\..\src\Utils\TexUtils.cpp" />
     <ClCompile Include="..\..\src\Utils\unzip.c" />
     <ClCompile Include="..\..\src\Utils\XChunkyFileUtils.cpp" />
@@ -55,7 +54,6 @@
     <ClInclude Include="..\..\src\Utils\md5.h" />
     <ClInclude Include="..\..\src\Utils\MemFileUtils.h" />
     <ClInclude Include="..\..\src\Utils\PlatformUtils.h" />
-    <ClInclude Include="..\..\src\Utils\SQLUtils.h" />
     <ClInclude Include="..\..\src\Utils\TexUtils.h" />
     <ClInclude Include="..\..\src\Utils\unzip.h" />
     <ClInclude Include="..\..\src\Utils\XChunkyFileUtils.h" />

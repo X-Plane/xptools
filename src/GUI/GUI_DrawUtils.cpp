@@ -138,8 +138,8 @@ void	GUI_DrawCentered(
 					sts[0],sts[1],sts[2],sts[3]);
 	glEnd();
 
-	if (out_width)	*out_width = metrics.real_width;
-	if (out_height)	*out_height = metrics.real_height;
+	if (out_width)	*out_width = metrics.real_width / tile_sel[2];
+	if (out_height)	*out_height = metrics.real_height / tile_sel[3];
 }
 
 void	GUI_DrawStretched(
@@ -283,8 +283,8 @@ void	GUI_PlotIconBulk(
 	glBegin(GL_QUADS);
 	while(count--)
 	{
-		register int xx = *x++;
-		register int yy = *y++;
+		int xx = *x++;
+		int yy = *y++;
 		glColor4fv(c);
 		c += 4;
 		glTexCoord2f(0.0f			  ,0.0f				);				glVertex2i(xx - width1, yy - height1);

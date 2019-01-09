@@ -21,6 +21,7 @@
  *
  */
 
+#include "WED_Airport.h"
 #include "WED_HandleToolBase.h"
 #include "WED_MapZoomerNew.h"
 #include "WED_ToolUtils.h"
@@ -40,6 +41,8 @@
 #include "IOperation.h"
 #include "WED_UIDefs.h"
 #include "MathUtils.h"
+#include "PlatformUtils.h"
+
 #if APL
 	#include <OpenGL/gl.h>
 #else
@@ -51,8 +54,8 @@
 // selection circle radius for control handles, in pixels
 #define	HANDLE_RAD 5
 
-// distance a drag_Move needs to drag before actually moving selection, i.e. item is initially "sticky"
-#define DRAG_START_DIST 4
+// distance in pixels a drag_Move needs to drag before actually moving selection, i.e. item is initially "sticky"
+#define DRAG_START_DIST 6
 
 #if DEV
 #define DEBUG_PRINTF_N_LINES 0
@@ -223,60 +226,60 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 	//-------------------------------- CONTROL LINK TAG-UP -------------------------------------------------------
 
 	if (mDragType == drag_None && ei_count > 0)
-	for (ei = 0; ei < ei_count && mDragType == drag_None; ++ei)
-	{
-		eid = mHandles->GetNthEntityID(ei);
-		l_count = mHandles->GetLinks(eid);
-		for (n = 0; n < l_count; ++n)
+		for (ei = 0; ei < ei_count && mDragType == drag_None; ++ei)
 		{
-			bool active;
-			mHandles->GetNthLinkInfo(eid,n,&active, NULL);
-			if (!active) continue;
+			eid = mHandles->GetNthEntityID(ei);
+			l_count = mHandles->GetLinks(eid);
+			for (n = 0; n < l_count; ++n)
+			{
+				bool active;
+				mHandles->GetNthLinkInfo(eid,n,&active, NULL);
+				if (!active) continue;
 
-			Bezier2		b;
-			Segment2	s;
-			if (ControlLinkToCurve(mHandles,eid,n,b,s,GetZoomer()))
-			{
-				if (b.is_near(click_pt, LINE_DIST))
+				Bezier2		b;
+				Segment2	s;
+				if (ControlLinkToCurve(mHandles,eid,n,b,s,GetZoomer()))
 				{
-					mHandleIndex = n;
-					mDragType = drag_Links;
-					mHandleEntity = eid;
-					mHandles->BeginEdit();
-					mTrackPoint = GetZoomer()->PixelToLL(click_pt);
-					break;
+					if (b.is_near(click_pt, LINE_DIST))
+					{
+						mHandleIndex = n;
+						mDragType = drag_Links;
+						mHandleEntity = eid;
+						mHandles->BeginEdit();
+						mTrackPoint = GetZoomer()->PixelToLL(click_pt);
+						break;
+					}
 				}
-			}
-			else
-			{
-				if (within_seg(s,click_pt,LINE_DIST))
+				else
 				{
-					mHandleIndex = n;
-					mDragType = drag_Links;
-					mHandleEntity = eid;
-					mHandles->BeginEdit();
-					mTrackPoint = GetZoomer()->PixelToLL(click_pt);
-					break;
+					if (within_seg(s,click_pt,LINE_DIST))
+					{
+						mHandleIndex = n;
+						mDragType = drag_Links;
+						mHandleEntity = eid;
+						mHandles->BeginEdit();
+						mTrackPoint = GetZoomer()->PixelToLL(click_pt);
+						break;
+					}
 				}
 			}
 		}
-	}
 	//----------------------------------- ENTITY DRAG ------------------------------------------------------------
 
 	click_pt = GetZoomer()->PixelToLL(click_pt);
 	if (mDragType == drag_None && ei_count > 0)
-	for (ei = 0; ei < ei_count; ++ei)
-	{
-		eid = mHandles->GetNthEntityID(ei);
-		if (mHandles->PointOnStructure(eid, click_pt))
+		for (ei = 0; ei < ei_count; ++ei)
 		{
-			mDragType = drag_Ent;
-			mHandleEntity = eid;
-			mHandles->BeginEdit();
-			mTrackPoint = click_pt;
-			break;
+			eid = mHandles->GetNthEntityID(ei);
+			if (mHandles->PointOnStructure(eid, click_pt))
+			{
+				mDragType = drag_PreEnt;
+				mHandleEntity = eid;
+				mHandles->BeginEdit();
+				mTrackPoint = click_pt;
+				break;
+			}
 		}
-	}
 
 	//----------------------------------- CREATION DRAG ----------------------------------------------------------
 
@@ -548,6 +551,7 @@ void WED_HandleToolBase::ProcessSelection(
 
 		//	gis_PointSequence,  gis_Composite - not expected to ever come up.
 		
+#undef printf
 #if DEBUG_PRINTF_N_LINES
 		for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)
 			printf("Total selected GISClass #%d Subtype %s\n", (*i)->GetGISClass()-gis_Point, (*i)->GetGISSubtype());
@@ -675,6 +679,18 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 	if (inButton > 0) return;
 
 	switch(mDragType) {
+	case drag_PreEnt:
+		if(WantSticky())
+		{
+			Point2 mSel(mSelX, mSelY);
+			double drag_dist = mSel.squared_distance(Point2(inX,inY));
+
+			if (drag_dist <	DRAG_START_DIST * DRAG_START_DIST)	// see if we drag'd far enough to "break loose" and actually move the object
+			{
+				break;
+			}
+		}
+		mDragType = drag_Ent;
 	case drag_Handles:
 	case drag_Links:
 	case drag_Ent:
@@ -701,10 +717,11 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 			Point2	np(GetZoomer()->XPixelToLon(   inX),GetZoomer()->YPixelToLat(   inY));
 			Vector2 delta(op,np);
 			mDragX = inX; mDragY = inY;
-			Bbox2	old_b(0,0,1,1);
-			Bbox2	new_b(0,0,1,1);
-			new_b.p1 += delta;
-			new_b.p2 += delta;
+			Bbox2 old_b;
+			GetSelTotalBounds(old_b);
+			Bbox2 new_b(old_b);
+			new_b += delta;
+
 			for (vector<IGISEntity *>::iterator e =	mSelManip.begin(); e != mSelManip.end(); ++e)
 			{
 				(*e)->Rescale(gis_Geo,old_b, new_b);
@@ -725,7 +742,6 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 				break;
 			else 			// its a drag-move, but we really did not drag a single pixel. So we instead execute a single click select
 			{
-				printf("HandleClickDrag re-select\n");
 				IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));
 				if(op)
 				{
@@ -778,11 +794,24 @@ void		WED_HandleToolBase::HandleClickUp			(int inX, int inY, int inButton, GUI_K
 	this->HandleClickDrag(inX, inY, inButton, modifiers);
 	if (mDragType == drag_Move)
 	{
-		IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));
-		if(op) op->CommitOperation();
+		ISelection * sel = WED_GetSelect(GetResolver());
+		IOperation * op = SAFE_CAST(IOperation, sel);
+		if (op)
+		{
+			int includes_airport = sel->IterateSelectionOr(Iterate_IsClass, (void*) WED_Airport::sClass);
+			if (includes_airport)
+			{
+				if(ConfirmMessage("This will move a whole Airport !", "Yes, move it", "No, cancel move"))
+					op->CommitOperation();
+				else
+					op->AbortOperation();
+			}
+			else
+				op->CommitOperation();
+		}
 		mSelManip.clear();
 	}
-	else if (mDragType == drag_PreMove)
+	else if (mDragType == drag_PreMove || mDragType == drag_PreEnt)
 	{
 		IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));
 		if(op) op->AbortOperation();
@@ -823,12 +852,23 @@ void		WED_HandleToolBase::KillOperation(bool mouse_is_down)
 		mSelSave.clear();
 	} else if ( mDragType == drag_Links ||
 				mDragType == drag_Handles ||
-				mDragType == drag_Ent)
+				mDragType == drag_Ent ||
+				mDragType == drag_PreEnt )
 	{
 		mHandles->EndEdit();
 	}
 	GUI_Commander::UnregisterNotifiable(this);
 	mDragType = drag_None;
+}
+
+void		WED_HandleToolBase::GetSelTotalBounds(Bbox2 &bounds)
+{
+	for(vector<IGISEntity *>::iterator ei = mSelManip.begin(); ei != mSelManip.end(); ++ei)
+	{
+		Bbox2 local;
+		(*ei)->GetBounds(gis_Geo,local);
+		bounds += local;
+	}
 }
 
 void		WED_HandleToolBase::GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks)
@@ -957,7 +997,8 @@ void		WED_HandleToolBase::PreCommandNotification(GUI_Commander * focus_target, i
 		mSelSave.clear();
 	} else if ( mDragType == drag_Links ||
 				mDragType == drag_Handles ||
-				mDragType == drag_Ent)
+				mDragType == drag_Ent ||
+				mDragType == drag_PreEnt )
 	{
 		mHandles->EndEdit();
 	}

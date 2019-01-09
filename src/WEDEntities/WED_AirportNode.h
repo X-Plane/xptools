@@ -25,8 +25,9 @@
 #define WED_AIRPORTNODE_H
 
 #include "WED_GISPoint_Bezier.h"
+#include "IHasResource.h"
 
-class	WED_AirportNode : public WED_GISPoint_Bezier {
+class	WED_AirportNode : public WED_GISPoint_Bezier, public IHasResourceOrAttr {
 
 DECLARE_PERSISTENT(WED_AirportNode)
 
@@ -35,13 +36,15 @@ public:
 			void		GetAttributes(		set<int>& attrs) const;
 			void		SetAttributes(const set<int>& attrs)	  ;
 
+	virtual void 		GetResource(string& r) const;
+
 	virtual const char *	HumanReadableType(void) const { return "Airport Line Node"; }
 
 private:
 
 	WED_PropIntEnumSet			attrs;
-	WED_PropIntEnumSetFilter	lines;
-	WED_PropIntEnumSetFilter	lights;
+	WED_PropIntEnumSetFilterVal	lines;
+	WED_PropIntEnumSetFilterVal	lights;
 
 };
 

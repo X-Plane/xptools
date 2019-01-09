@@ -384,7 +384,7 @@ float GUI_MeasureRange(int inFontID, const char * inStart, const char * inEnd)
 	while(p < e){
 		UTF32 c = UTF8_decode(p);
 		str_width += tt_font[inFontID]->require_char(c,1.0f);
-		p=UTF8_next(p);
+		p=UTF8_next(p, (const UTF8 *)inEnd);
 	}
 	return str_width;
 }
@@ -402,7 +402,7 @@ int GUI_FitForward(int inFontID, const char* inStart, const char* inEnd,float wi
 		so_far += tt_font[inFontID]->require_char(c,1.0f);
 		if(so_far > width)
 			break;
-		p=UTF8_next(p);
+		p=UTF8_next(p, (const UTF8 *)inEnd);
 	}
 	return (const char *) p - inStart;
 }
@@ -498,7 +498,7 @@ void	GUI_FontDrawScaled(
 				const char *					inEnd,
 				int								inAlign)
 {
-	float l, b, r, t, scale;
+	float l, b, scale;
 
 	TT_establish_font(inFontID);
 	TT_font_info * inFont = tt_font[inFontID];
@@ -542,7 +542,7 @@ void	GUI_FontDrawScaled(
 	glColor4fv(color);
 	glBegin(GL_QUADS);
 
-	for(const UTF8 * c = (const UTF8 *) inStart; c < (const UTF8 *) inEnd; c=UTF8_next(c))
+	for(const UTF8 * c = (const UTF8 *) inStart; c < (const UTF8 *) inEnd; c=UTF8_next(c, (const UTF8 *)inEnd))
 	{
 		float w = inFont->draw_char(UTF8_decode(c),l,b, scale);
 		l += w;

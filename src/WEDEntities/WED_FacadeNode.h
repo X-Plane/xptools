@@ -42,6 +42,7 @@ public:
 
 	virtual void	GetNthPropertyDict(int n, PropertyDict_t& dict) const;
 	virtual	void	GetNthPropertyDictItem(int n, int e, string& item) const;
+	virtual	void	PropEditCallback(int before);
 #endif
 			int		GetWallType(void) const;
 #if AIRPORT_ROUTING

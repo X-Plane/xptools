@@ -35,20 +35,17 @@
 #include "AssertUtils.h"
 #include "WED_Sign_Editor.h"
 
+#if WED
+#define USE_LINE_SELECTOR_POPUP 1
+#include "WED_Line_Selector.h"
+#endif
+
 #define RESIZE_MARGIN 4
 
 #if APL
 	#include <OpenGL/gl.h>
 #else
 	#include <GL/gl.h>
-#endif
-
-#if BENTODO
-	numeric precision control?
-#endif
-
-#if OPTIMIZE
-	provider to provide content IN BULK?
 #endif
 
 #define CELL_MARGIN 3
@@ -81,8 +78,8 @@ GUI_TextTable::GUI_TextTable(GUI_Commander * parent, int indent, int live_edit) 
 	mClickCellY(-1),
 	mParent(NULL),
 	mTextField(NULL),
-	mSignField(NULL),
 	mCatcher(NULL),
+	mEditor(NULL),
 	mSelStartX(-1),
 	mSelStartY(-1),
 	mDragX(-1),
@@ -337,7 +334,7 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 	if (!HasEdit() || mClickCellX != cell_x || mClickCellY != cell_y)
 	{
 		int trunc_width = cell_bounds[2] - cell_bounds[0] - (CELL_MARGIN*2);
-		if (c.content_type == gui_Cell_Enum || c.content_type == gui_Cell_EnumSet)
+		if (c.content_type == gui_Cell_Enum || c.content_type == gui_Cell_EnumSet  || c.content_type == gui_Cell_LineEnumSet)
 			trunc_width -= GUI_GetImageResourceWidth("arrows.png");
 
 		if (c.string_is_resource)
@@ -390,7 +387,7 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 	}
 
 	//--Draws all enums
-	if (c.content_type == gui_Cell_Enum || c.content_type == gui_Cell_EnumSet)
+	if (c.content_type == gui_Cell_Enum || c.content_type == gui_Cell_EnumSet || c.content_type == gui_Cell_LineEnumSet)
 	{
 		int tile[4] = { 0, 0, 1, 1 };
 		glColor4fv((c.is_selected||cell_type) ? mColorTextSelect : mColorText);
@@ -472,6 +469,38 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 	}
 	glColor4fv(mColorGridlines);
 	//-----------------------------------------------------------------
+}
+
+int GUI_TextTable::CreateMenuFromDict(vector<GUI_MenuItem_t>& items, vector<int>& enum_vals, GUI_EnumDictionary& dict)
+{
+	for(GUI_EnumDictionary::iterator di = dict.begin(); di != dict.end(); ++di)
+	if(!di->second.second)
+		di->second.first.insert(0,";");
+
+	int i = 0;
+	int current_sel = -1;
+	for (GUI_EnumDictionary::iterator it = dict.begin(); it != dict.end(); ++it, ++i)
+	{
+		enum_vals[i] = it->first;
+		items[i].name = it->second.first.c_str();
+		items[i].key = 0;
+		items[i].flags = 0;
+		items[i].cmd = 0;
+		if (mEditInfo.content_type == gui_Cell_Enum)
+		{
+			items[i].checked = (mEditInfo.int_val == it->first);
+			if (items[i].checked)
+			{
+				//Saves the selected enum's text value to mEditInfo
+				//So the value can be used in whatever calls Accept Edit
+				mEditInfo.text_val = it->second.first.c_str();
+			}
+		}
+		else
+			items[i].checked = mEditInfo.int_set_val.count(it->first) > 0;
+		if(items[i].checked && current_sel == -1) current_sel = i;            // select the first already selected item
+	}
+	return current_sel;
 }
 
 int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button, GUI_KeyFlags flags, int& want_lock)
@@ -674,7 +703,7 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 		if (mParent)
 		{
 			cell_bounds[0] -= mEditInfo.indent_level * mCellIndent;	// clean out bounds...will get changed again later anyway
-			CreateEdit(cell_bounds, mEditInfo.text_val, mEditInfo.content_type == gui_Cell_TaxiText);
+			CreateEdit(cell_bounds);
 			mClickCellX = cell_x;
 			mClickCellY = cell_y;
 			return 1;
@@ -686,76 +715,64 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 			mContent->GetEnumDictionary(cell_x, cell_y,dict);
 			if (!dict.empty())
 			{
-				for(GUI_EnumDictionary::iterator di = dict.begin(); di != dict.end(); ++di)
-				if(!di->second.second)
-					di->second.first.insert(0,";");
-			
 				vector<GUI_MenuItem_t>	items(dict.size()+1);
 				vector<int>				enum_vals(dict.size());
-				int i = 0;
-				int cur = -1;
-				for (GUI_EnumDictionary::iterator it = dict.begin(); it != dict.end(); ++it, ++i)
+				int cur = CreateMenuFromDict(items, enum_vals, dict);
+#if USE_LINE_SELECTOR_POPUP
+				if(mEditInfo.content_type == gui_Cell_LineEnumSet)
 				{
-					enum_vals[i] = it->first;
-					items[i].name = it->second.first.c_str();
-					items[i].key = 0;
-					items[i].flags = 0;
-					items[i].cmd = 0;
-					if (mEditInfo.int_val == it->first)
-					{
-						cur = i;
-						
-						//Saves the selected enum's text value to mEditInfo
-						//So the value can be used in whatever calls Accept Edit
-						mEditInfo.text_val = it->second.first.c_str();
-					}
-					items[i].checked = (mEditInfo.int_val == it->first) ? 1 : 0;
+					cell_bounds[0] -= mEditInfo.indent_level * mCellIndent;	// clean out bounds...will get changed again later anyway
+					CreateEdit(cell_bounds,&items);
+					mClickCellX = cell_x;
+					mClickCellY = cell_y;
+					return 1;
 				}
-				int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0],cell_bounds[3],button, cur);
-				
-				if (choice >= 0 && choice < enum_vals.size())
+				else
+#endif
 				{
-					mEditInfo.int_val = enum_vals[choice];
-
-					mContent->AcceptEdit(cell_x, cell_y, mEditInfo, all_edit);
+					int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0],cell_bounds[3],button, cur);
+					if (choice >= 0 && choice < enum_vals.size())
+					{
+						mEditInfo.int_val = enum_vals[choice];
+						mContent->AcceptEdit(cell_x, cell_y, mEditInfo, all_edit);
+					}
 				}
 			}
 			mEditInfo.content_type = gui_Cell_None;
 		}
 		break;
 	case gui_Cell_EnumSet:
+	case gui_Cell_LineEnumSet:
 		{
 			GUI_EnumDictionary	dict;
 			mContent->GetEnumDictionary(cell_x, cell_y,dict);
 			if (!dict.empty())
 			{
-				for(GUI_EnumDictionary::iterator di = dict.begin(); di != dict.end(); ++di)
-				if(!di->second.second)
-					di->second.first.insert(0,";");
-			
 				vector<GUI_MenuItem_t>	items(dict.size()+1);
 				vector<int>				enum_vals(dict.size());
-				int i = 0;
-				int cur = -1;
-				for (GUI_EnumDictionary::iterator it = dict.begin(); it != dict.end(); ++it, ++i)
+				int cur = CreateMenuFromDict(items, enum_vals, dict);
+#if USE_LINE_SELECTOR_POPUP
+				if(mEditInfo.content_type == gui_Cell_LineEnumSet)
 				{
-					enum_vals[i] = it->first;
-					items[i].name = it->second.first.c_str();
-					items[i].key = 0;
-					items[i].flags = 0;
-					items[i].cmd = 0;
-					items[i].checked = (mEditInfo.int_set_val.count(it->first) > 0);
-					if (items[i].checked && cur == -1) cur = i;
+					cell_bounds[0] -= mEditInfo.indent_level * mCellIndent;	// clean out bounds...will get changed again later anyway
+					CreateEdit(cell_bounds,&items);
+					mClickCellX = cell_x;
+					mClickCellY = cell_y;
+					return 1;
 				}
-				int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0],cell_bounds[3],button, cur);
-				if (choice >= 0 && choice < enum_vals.size())
-				{
-					mEditInfo.int_val=enum_vals[choice];
-					if(mEditInfo.int_set_val.count(enum_vals[choice]) > 0)
-						mEditInfo.int_set_val.erase(enum_vals[choice]);
-					else
-						mEditInfo.int_set_val.insert(enum_vals[choice]);
-					mContent->AcceptEdit(cell_x, cell_y, mEditInfo, all_edit);
+				else
+#endif
+				{	
+					int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0],cell_bounds[3],button, cur);
+					if (choice >= 0 && choice < enum_vals.size())
+					{
+						mEditInfo.int_val=enum_vals[choice];
+						if(mEditInfo.int_set_val.count(enum_vals[choice]) > 0)
+							mEditInfo.int_set_val.erase(enum_vals[choice]);
+						else
+							mEditInfo.int_set_val.insert(enum_vals[choice]);
+						mContent->AcceptEdit(cell_x, cell_y, mEditInfo, all_edit);
+					}
 				}
 			}
 			mEditInfo.content_type = gui_Cell_None;
@@ -909,8 +926,10 @@ int			GUI_TextTable::CellGetHelpTip(int cell_bounds[4], int cell_x, int cell_y, 
 	case gui_Cell_Integer:
 	case gui_Cell_Double:
 	case gui_Cell_Enum:
-	case gui_Cell_EnumSet:	tip = c.text_val;	return 1;
-	default:									return 0;
+	case gui_Cell_EnumSet:
+	case gui_Cell_LineEnumSet:
+		tip = c.text_val;	return 1;
+	default:				return 0;
 	}
 }
 
@@ -1109,87 +1128,87 @@ GUI_DragOperation	GUI_TextTable::CellDrop		(int cell_bounds[4], int cell_x, int 
 	return mLastOp;
 }
 
-
-
-void		GUI_TextTable::CreateEdit(int cell_bounds[4], const string& text, bool is_sign)
+void		GUI_TextTable::CreateEdit(int cell_bounds[4], const vector<GUI_MenuItem_t> * dict)
 {
-	if(is_sign)
+	if(mEditInfo.content_type == gui_Cell_TaxiText || mEditInfo.content_type == gui_Cell_LineEnumSet)
 	{
-		if(!mSignField)
+		int pb[4];
+		GUI_Pane * parent = mParent;
+		while(parent->GetParent())
+			parent = parent->GetParent();
+		parent->GetBounds(pb);
+
+		if(!mEditor)
 		{
-			mSignField = new WED_Sign_Editor(this);
 			if(mCatcher == NULL) 
 			{
 				mCatcher = new GUI_MouseCatcher(GUI_MOUSE_OUTSIDE_BOUNDS);
 				mCatcher->AddListener(this);
 			}
-						
-			GUI_Pane * parent = mParent;
-			while(parent->GetParent())
-				parent = parent->GetParent();
-			mSignField->SetParent(mCatcher);
+			if(mEditInfo.content_type == gui_Cell_TaxiText)
+			{
+				mEditor = new WED_Sign_Editor(this);
+			}
+#if USE_LINE_SELECTOR_POPUP
+			else
+			{
+				if (dict == NULL) return;
+				WED_Line_Selector * mLineField = new WED_Line_Selector(this);
+				mLineField->SetChoices(dict);
+				mEditor = mLineField;
+			}
+#endif
+			mEditor->SetParent(mCatcher);
 			mCatcher->SetParent(parent);
-			
-			int pb[4];
-			parent->GetBounds(pb);
 			mCatcher->SetBounds(pb);
 			mCatcher->Show();
 		}
 
-//		float	cell_h = cell_bounds[3] - cell_bounds[1];
-//		float	line_h = GUI_GetLineHeight(mFont);
-//		int		descent = GUI_GetLineDescent(mFont);
-//		float	cell2line = (cell_h - line_h + descent) * 0.5f;
-
-//		float pad_bottom = cell2line - descent;
-//		float pad_top = cell_h - line_h - pad_bottom;
-			
-		int cb[4];
-		memcpy(cb,cell_bounds,sizeof(cb));
-			
-		int wb[4];
-		mCatcher->GetBounds(wb);
-						
-		cb[0] += mEditInfo.indent_level * mCellIndent;
+		int w,h;
+		mEditor->GetSizeHint(&w, &h);
+		int eb[4];
+		eb[0] = cell_bounds[0];      // ideally, editor aligns with top left corner of cell to edit
+		eb[1] = cell_bounds[3] - h;
+		eb[2] = cell_bounds[0] + w;
+		eb[3] = cell_bounds[3];
 		
-		cb[1] = cb[3] - 280;
-		cb[2] = cb[0] + 600;
-		
-		int dx = 0, dy = 0;
-		if(cb[2] > wb[2])
-			dx = wb[2] - cb[2];
-		if(cb[0] < wb[0])
-			dx = wb[0] - cb[0];
-		cb[0] += dx;
-		cb[2] += dx;
-		
-		if(cb[1] < wb[1])
-			dy = wb[1] - cb[1];
-		if(cb[3] > wb[3])
-			dy = wb[3] - cb[3];
-		cb[1] += dy;
-		cb[3] += dy;
-		
-		mSignField->SetBounds(cb);
-
-		if(!mSignField->SetSignText(text))
+		if (eb[2] > pb[2])           // does right fit ? If not, make flush with right side
 		{
-			is_sign = false;
-			mSignField->Hide();
-			delete mSignField;
-			mSignField = NULL;
+			eb[2] = pb[2];
+			eb[0] = eb[2] - w;
+		}
+		if (eb[0] < pb[0])           // does left fit ? If not, make flush with left side
+		{
+			eb[0] = pb[0];
+			eb[2] = eb[0] + w;
+		}
+		if (eb[1] < pb[1])           // does bottom fit ? If not, move up
+		{
+			eb[1] = pb[1];
+			eb[3] = eb[1] + h;
+		}
+		if (eb[3] > pb[3])           // does top fit ? If not, move down
+		{
+			eb[3] = pb[3];
+			eb[1] = eb[3] - h;
+		}                            // At the end - the top left corner of the EditorInsert is always visible
+		mEditor->SetBounds(eb);      // even if the EditorInsert does not completely fit into the DocumentWindow
+		
+		if(!mEditor->SetData(mEditInfo))
+		{
+			mEditor->Hide();
+			delete mEditor;
+			mEditor = NULL;
 			mCatcher->Hide();
 		}
 		else
 		{
 			mCatcher->Show();
-			mSignField->Show();
-			mSignField->TakeFocus();
-			mSignField->Refresh();			
+			mEditor->Show();
+			mEditor->TakeFocus();
 		}
 	}
-	
-	if(!is_sign)
+	else
 	{
 		if (!mTextField)
 		{
@@ -1230,20 +1249,22 @@ void		GUI_TextTable::CreateEdit(int cell_bounds[4], const string& text, bool is_
 
 		mParent->TrapFocus();	
 		
-		mTextField->SetDescriptor(text);
-		mTextField->SetSelection(0,text.size());
+		mTextField->SetDescriptor(mEditInfo.text_val);
+		mTextField->SetSelection(0,mEditInfo.text_val.size());
 		mTextField->Refresh();
 	}
 }
 
 int			GUI_TextTable::TerminateEdit(bool inSave, bool in_all, bool in_close)
 {
-	GUI_Commander * cmd_field = mTextField ? (GUI_Commander *) mTextField : (GUI_Commander *) mSignField;
+	GUI_Commander * cmd_field = NULL;
+	if     (mTextField) cmd_field = (GUI_Commander *) mTextField;
+	else if(mEditor)    cmd_field = (GUI_Commander *) mEditor;
 	
 	if (cmd_field && cmd_field->IsFocused() &&
-		(mEditInfo.content_type == gui_Cell_EditText || mEditInfo.content_type == gui_Cell_TaxiText ||  mEditInfo.content_type == gui_Cell_Integer || mEditInfo.content_type == gui_Cell_Double))
+		(mEditInfo.content_type == gui_Cell_EditText || mEditInfo.content_type == gui_Cell_TaxiText ||  mEditInfo.content_type == gui_Cell_Integer || 
+		 mEditInfo.content_type == gui_Cell_Double || mEditInfo.content_type == gui_Cell_LineEnumSet ))
 	{
-
 		// This is a bit tricky: _if_ we are going to kill off the text field later, memorize the field and mark our member var
 		// as null now.  The reason: sometimes the call to our content's AcceptEdit below in the in_save block can cause a message like
 		// "size changed" which in turn terminates editing anyway.  If this happens then our text field is removed out from under us and
@@ -1253,20 +1274,22 @@ int			GUI_TextTable::TerminateEdit(bool inSave, bool in_all, bool in_close)
 		// If we are in continuous edit and the field is nuked the in_close block wouldn't be called anyway.
 		//
 		// This is, at best, hokey...maybe revisit someday?
+		
 		GUI_TextField * f = mTextField;
-		WED_Sign_Editor * s = mSignField;
+		GUI_EditorInsert * e = mEditor;
 		if(in_close) {
 			mTextField = NULL;
-			mSignField = NULL;
+			mEditor = NULL;
 		}
-		DebugAssert(f != NULL || s != NULL);	
+		DebugAssert(f != NULL || e != NULL);
 			
 		if (inSave)
 		{
 			if(f)
 				f->GetDescriptor(mEditInfo.text_val);
-			else	
-				s->GetSignText(mEditInfo.text_val);
+			else
+				e->GetData(mEditInfo);
+				
 			switch(mEditInfo.content_type) {
 			case gui_Cell_Integer:
 				mEditInfo.int_val = atoi(mEditInfo.text_val.c_str());
@@ -1280,17 +1303,17 @@ int			GUI_TextTable::TerminateEdit(bool inSave, bool in_all, bool in_close)
 		if(in_close)
 		{
 			mTextField = NULL;
-			mSignField = NULL;
+			mEditor = NULL;
 			this->TakeFocus();
 			if(f)
 			{
 				f->Hide();
 				delete f;
 			}
-			if(s)
+			else
 			{
-				s->Hide();
-				delete s;
+				e->Hide();
+				delete e;
 				mCatcher->Hide();
 			}
 			mEditInfo.content_type = gui_Cell_None;
@@ -1414,13 +1437,14 @@ int			GUI_TextTable::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFla
 				mParent->CalcCellBounds(x,y,cell_bounds);
 				mClickCellX = x;
 				mClickCellY = y;
-				CreateEdit(cell_bounds, mEditInfo.text_val,mEditInfo.content_type == gui_Cell_TaxiText);
+				CreateEdit(cell_bounds);
 			}
 		}
 	}
 
 	if(inVK == GUI_VK_RETURN && HasEdit())
 	{
+//	printf("RX TermEdit Return\n");
 		TerminateEdit(true, inFlags & (gui_OptionAltFlag | gui_ControlFlag), true);
 		return 1;
 	}
@@ -1436,13 +1460,14 @@ int			GUI_TextTable::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFla
 				mParent->CalcCellBounds(x1,y2,cell_bounds);
 				mClickCellX = x1;
 				mClickCellY = y2;
-				CreateEdit(cell_bounds, mEditInfo.text_val,mEditInfo.content_type == gui_Cell_TaxiText);
+				CreateEdit(cell_bounds);
 			}
 		}
 	}
 
 	if(inKey == GUI_KEY_ESCAPE && HasEdit())
 	{
+//	printf("RX TermEdit Escape\n");
 		TerminateEdit(false, false, true);
 		return 1;
 	}

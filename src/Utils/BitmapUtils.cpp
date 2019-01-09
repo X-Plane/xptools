@@ -36,6 +36,7 @@
 #include <jasper/jasper.h>
 #endif
 #include "AssertUtils.h"
+#include <stdint.h>
 
 #if IBM
 #include "GUI_Unicode.h"
@@ -61,23 +62,23 @@
 struct	BMPHeader {
 	char			signature1;
 	char			signature2;
-	long			fileSize;
-	long			reserved;
-	long			dataOffset;
+	int32_t			fileSize;
+	int32_t			reserved;
+	int32_t			dataOffset;
 };
 
 struct	BMPImageDesc {
-	long			structSize;
-	long			imageWidth;
-	long			imageHeight;
-	short			planes;
-	short			bitCount;
-	long			compressionType;
-	long			imageSize;
-	long			xPixelsPerM;	//130B0000?  B013 = 45075?
-	long			yPixelsPerM;
-	long			colorsUsed;
-	long			colorsImportant;
+	int32_t			structSize;
+	int32_t			imageWidth;
+	int32_t			imageHeight;
+	int16_t			planes;
+	int16_t			bitCount;
+	int32_t			compressionType;
+	int32_t			imageSize;
+	int32_t			xPixelsPerM;	//130B0000?  B013 = 45075?
+	int32_t			yPixelsPerM;
+	int32_t			colorsUsed;
+	int32_t			colorsImportant;
 };
 
 #if APL
@@ -1886,8 +1887,8 @@ inline void swap_mem(unsigned char * p1, unsigned char * p2, int len)
 {
 	while(len--)
 	{
-		register unsigned char a = *p1;
-		register unsigned char b = *p2;
+		unsigned char a = *p1;
+		unsigned char b = *p2;
 		*p1 = b;
 		*p2 = a;
 		++p1;

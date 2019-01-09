@@ -30,28 +30,28 @@
 
 #ifndef Endian16_Swap
 #define Endian16_Swap(value)                 \
-        (((((unsigned short)value)<<8) & 0xFF00)   | \
-         ((((unsigned short)value)>>8) & 0x00FF))
+        (((((uint16_t)value)<<8) & 0xFF00)   | \
+         ((((uint16_t)value)>>8) & 0x00FF))
 #endif
 
 #ifndef Endian32_Swap
 #define Endian32_Swap(value)                     \
-        (((((unsigned long)value)<<24) & 0xFF000000)  | \
-         ((((unsigned long)value)<< 8) & 0x00FF0000)  | \
-         ((((unsigned long)value)>> 8) & 0x0000FF00)  | \
-         ((((unsigned long)value)>>24) & 0x000000FF))
+        (((((uint32_t)value)<<24) & 0xFF000000)  | \
+         ((((uint32_t)value)<< 8) & 0x00FF0000)  | \
+         ((((uint32_t)value)>> 8) & 0x0000FF00)  | \
+         ((((uint32_t)value)>>24) & 0x000000FF))
 #endif
 
 #ifndef Endian64_Swap
 #define Endian64_Swap(value)                                \
-                (((((unsigned long long)value)<<56) & 0xFF00000000000000ULL)  | \
-                 ((((unsigned long long)value)<<40) & 0x00FF000000000000ULL)  | \
-                 ((((unsigned long long)value)<<24) & 0x0000FF0000000000ULL)  | \
-                 ((((unsigned long long)value)<< 8) & 0x000000FF00000000ULL)  | \
-                 ((((unsigned long long)value)>> 8) & 0x00000000FF000000ULL)  | \
-                 ((((unsigned long long)value)>>24) & 0x0000000000FF0000ULL)  | \
-                 ((((unsigned long long)value)>>40) & 0x000000000000FF00ULL)  | \
-                 ((((unsigned long long)value)>>56) & 0x00000000000000FFULL))
+                (((((uint64_t)value)<<56) & 0xFF00000000000000ULL)  | \
+                 ((((uint64_t)value)<<40) & 0x00FF000000000000ULL)  | \
+                 ((((uint64_t)value)<<24) & 0x0000FF0000000000ULL)  | \
+                 ((((uint64_t)value)<< 8) & 0x000000FF00000000ULL)  | \
+                 ((((uint64_t)value)>> 8) & 0x00000000FF000000ULL)  | \
+                 ((((uint64_t)value)>>24) & 0x0000000000FF0000ULL)  | \
+                 ((((uint64_t)value)>>40) & 0x000000000000FF00ULL)  | \
+                 ((((uint64_t)value)>>56) & 0x00000000000000FFULL))
 #endif
 
 
@@ -86,16 +86,16 @@ void	EndianSwapBuffer(
 			{
 				switch(*inFormat) {
 				case 2:
-					*((short *) buf) =
-						Endian16_Swap(*((short *) buf));
+					*((int16_t *) buf) =
+						Endian16_Swap(*((int16_t *) buf));
 					break;
 				case 4:
-					*((long *) buf) =
-						Endian32_Swap(*((long *) buf));
+					*((int32_t *) buf) =
+						Endian32_Swap(*((int32_t *) buf));
 					break;
 				case 8:
-					*((long long *) buf) =
-						Endian64_Swap(*((long long *) buf));
+					*((int64_t *) buf) =
+						Endian64_Swap(*((int64_t *) buf));
 /*				default:
 					DebugAssert(!"Bad format for EndianSwapBuffer!");
 */
@@ -130,21 +130,21 @@ void	EndianSwapArray(
 		case 2:
 			while (inCount--)
 			{
-				*((short *) buf) = Endian16_Swap(*((short *) buf));
+				*((int16_t *) buf) = Endian16_Swap(*((int16_t *) buf));
 				buf += 2;
 			}
 			break;
 		case 4:
 			while (inCount--)
 			{
-				*((long *) buf) = Endian32_Swap(*((long *) buf));
+				*((int32_t *) buf) = Endian32_Swap(*((int32_t *) buf));
 				buf += 4;
 			}
 			break;
 		case 8:
 			while (inCount--)
 			{
-				*((long long *) buf) = Endian64_Swap(*((long long *) buf));
+				*((int64_t *) buf) = Endian64_Swap(*((int64_t *) buf));
 				buf += 8;
 			}
 			break;
@@ -154,14 +154,14 @@ void	EndianSwapArray(
 
 /* Endian routines for the Mac use Apple's Endian macros. */
 
-void	EndianFlipShort(short * ioShort)
+void	EndianFlipShort(int16_t * ioShort)
 {
 	#if BIG
 		*ioShort = Endian16_Swap(*ioShort);
 	#endif
 }
 
-void	EndianFlipLong(long * ioLong)
+void	EndianFlipLong(int32_t * ioLong)
 {
 	#if BIG
 		*ioLong = Endian32_Swap(*ioLong);

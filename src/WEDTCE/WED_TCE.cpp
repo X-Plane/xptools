@@ -285,7 +285,6 @@ void WED_TCE::CalcBgknd(void)
 {
 	TexRef old = mTex;
 	ISelection * sel = WED_GetSelect(mResolver);
-	WED_DrapedOrthophoto * ortho;
 	mTex = NULL;
 	vector<IGISEntity *> possibles;
 	sel->IterateSelectionOr(Iterate_CollectEntities, &possibles);
@@ -297,6 +296,7 @@ void WED_TCE::CalcBgknd(void)
 
 	for(vector<IGISEntity*>::iterator e = possibles.begin(); e != possibles.end(); ++e)
 	{
+		WED_DrapedOrthophoto * ortho;
 		if ((ortho = dynamic_cast<WED_DrapedOrthophoto*>(*e)) != NULL)
 		{
 			string vpath;

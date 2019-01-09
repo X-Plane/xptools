@@ -865,6 +865,160 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 	return;
 }
 
+// Solves the 2x2 linear system
+//
+// / a11 a12 \   / x \   / rhs.dx \
+// |         | * |   | = |        |
+// \ a21 a22 /   \ y /   \ rhs.dy /
+//
+// and returns the vector (x, y).
+static Vector2 solve_2x2(double a11, double a12, double a21, double a22, const Vector2 & rhs)
+{
+	double d_recip = 1.0 / (a11*a22 - a12*a21);
+	Vector2 result;
+	result.dx = d_recip * (rhs.dx * a22 - rhs.dy * a12);
+	result.dy = d_recip * (-rhs.dx * a21 + rhs.dy * a11);
+
+	return result;
+}
+
+// Returns the intersection between the lines p1 + a1 * v1 and p2 + a2 * v2.
+static Vector2 find_intersection(const Vector2 & p1, const Vector2 & v1, const Vector2 & p2, const Vector2 & v2)
+{
+	Vector2 alpha = solve_2x2(v1.dx, -v2.dx, v1.dy, -v2.dy, p2 - p1);
+	return p1 + v1 * alpha.dx;
+}
+
+// Offsets the Bezier curve 'src' by the given distance (in meters) and returns the result in 'dst'.
+// 'closed' specified whether the curve is closed. A positive distance offsets the curve to the
+// left relative to the direction of lower to higher point indexes.
+//
+// The routine uses the Tiller-Hanson algorithm, which offsets each side of the control polygon in
+// a perpendicular direction, then computes the new control points as the intersections of the
+// resulting lines.
+//
+// There are more accurate algorithms than Tiller-Hanson, but it is accurate enough for our
+// purposes, yields visually pleasing results and is easy to implement.
+static void offset_bezier(const vector<BezierPoint2> & src, vector<BezierPoint2> & dst, bool closed, double distance_m)
+{
+	// Square of the minimum length for a control polygon edge (0.1 mm). Below this, we will
+	// consider the two points of the edge to be conincident to avoid numerical problems arising
+	// from very short edges.
+	const double MIN_SQUARED_LENGTH = 1e-10;
+
+	// Scalar product corresponding to the minimum angle between two adjacent edges for which we
+	// will intersect them (about 0.1 degrees). Again, this is to avoid numerical problems with
+	// almost collinear edges.
+	const double MAX_SCALAR_PRODUCT = 0.999998;
+
+	size_t np = src.size();
+
+	// Guard against degenerate curves.
+	if (np < 2)
+	{
+		dst = src;
+		return;
+	}
+
+	// Gather the points of the source control polygon.
+	vector<Point2> src_pts(3 * src.size());
+	for (size_t i = 0; i < np; ++i)
+	{
+		src_pts[3 * i] = src[i].lo;
+		src_pts[3 * i + 1] = src[i].pt;
+		src_pts[3 * i + 2] = src[i].hi;
+	}
+
+	// Determine each point of the destination control polygon by offsetting its two adjacent edges,
+	// then intersecting them.
+	vector<Point2> dst_pts(src_pts.size());
+	for (size_t i = 0; i < src_pts.size(); ++i)
+	{
+		// Find the previous point that is at least the required distance away.
+		size_t i_prev_lim = closed ? (i + 2) % src_pts.size() : 0;
+		Vector2 t_prev;
+		size_t i_prev = i;
+		while(i_prev != i_prev_lim && t_prev.squared_length() < MIN_SQUARED_LENGTH)
+		{
+			if (i_prev == 0)
+				i_prev = src_pts.size() - 1;
+			else
+				--i_prev;
+			t_prev = VectorLLToMeters(src_pts[i], Vector2(src_pts[i], src_pts[i_prev]));
+		}
+
+		// Find the next point that is at least the required distance away.
+		size_t i_next_lim = closed ? (i + src_pts.size() - 2) % src_pts.size() : src_pts.size() - 1;
+		Vector2 t_next;
+		size_t i_next = i;
+		while(i_next != i_next_lim && t_next.squared_length() < MIN_SQUARED_LENGTH)
+		{
+			if (i_next == src_pts.size() - 1)
+				i_next = 0;
+			else
+				++i_next;
+			t_next = VectorLLToMeters(src_pts[i], Vector2(src_pts[i], src_pts[i_next]));
+		}
+
+		// New point, in meters relative to the current point.
+		Vector2 p_m_new;
+
+		double t_prev_sqr_len = t_prev.squared_length();
+		double t_next_sqr_len = t_next.squared_length();
+		if (t_prev_sqr_len < MIN_SQUARED_LENGTH && t_next_sqr_len < MIN_SQUARED_LENGTH)
+		{
+			// Could't find a proper adjacent edge. Give up and leave the point as it is.
+			p_m_new = Vector2();
+		}
+		else if (t_prev_sqr_len < MIN_SQUARED_LENGTH)
+		{
+			// We have only one adjacent edge -- so simply offset the point perpendicular to it.
+			Vector2 n_next = t_next.perpendicular_ccw();
+			n_next.normalize();
+			p_m_new = n_next * distance_m;
+		}
+		else if (t_next_sqr_len < MIN_SQUARED_LENGTH)
+		{
+			// Ditto.
+			Vector2 n_prev = t_prev.perpendicular_cw();
+			n_prev.normalize();
+			p_m_new = n_prev * distance_m;
+		}
+		else
+		{
+			// We have two adjacent edges. Compute their normals.
+			Vector2 n_prev = t_prev.perpendicular_cw();
+			n_prev.normalize();
+			Vector2 n_next = t_next.perpendicular_ccw();
+			n_next.normalize();
+
+			// Do we have at least the required angle between the two edges?
+			if (fabs(n_prev.dot(n_next)) < MAX_SCALAR_PRODUCT)
+			{
+				p_m_new = find_intersection(n_prev * distance_m, t_prev, n_next * distance_m, t_next);
+			}
+			else
+			{
+				// Edges are almost collinear. Offset along the angle bisector of their normals.
+				Vector2 n_sum = (n_prev + n_next) * 0.5;
+				n_sum.normalize();
+				p_m_new = n_sum * distance_m;
+			}
+		}
+
+		dst_pts[i] = src_pts[i] + VectorMetersToLL(src_pts[i], p_m_new);
+	}
+
+	// Assemble the points of the destination curve.
+	dst.resize(np);
+	for (size_t i = 0; i < np; ++i)
+	{
+		dst[i].lo = dst_pts[3 * i];
+		dst[i].pt = dst_pts[3 * i + 1];
+		dst[i].hi = dst_pts[3 * i + 2];
+	}
+}
+
 void	WED_VertexTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta, Point2& io_pt)
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
@@ -887,6 +1041,28 @@ void	WED_VertexTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta,
 		else
 		{
 			mNewSplitPoint = NULL;
+		}
+
+		if (mods & gui_ShiftFlag)
+		{
+			// Store anchor point and Bezier curve.
+			mAnchor = io_pt;
+			mSrcBezier.resize(np);
+			for (int i = 0; i < np; ++i)
+			{
+				IGISPoint * gp = seq->GetNthPoint(i);
+				IGISPoint_Bezier * gp_bezier = dynamic_cast<IGISPoint_Bezier *>(gp);
+				if (gp_bezier)
+				{
+					gp_bezier->GetBezierLocation(gis_Geo, mSrcBezier[i]);
+				}
+				else
+				{
+					gp->GetLocation(gis_Geo, mSrcBezier[i].pt);
+					mSrcBezier[i].lo = mSrcBezier[i].pt;
+					mSrcBezier[i].hi = mSrcBezier[i].pt;
+				}
+			}
 		}
 	}
 
@@ -922,6 +1098,35 @@ void	WED_VertexTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta,
 
 			gp1->Rescale(gis_Geo, old_b, new_b);
 			gp2->Rescale(gis_Geo, old_b, new_b);
+		}
+		else if (mods & gui_ShiftFlag)
+		{
+			// Bail out if for some reason the number of points in mSrcBezier isn't what we expect.
+			if (mSrcBezier.size() != np)
+			{
+				DebugAssert(false);
+				return;
+			}
+
+			// Determine distance by which to offset the curve.
+			Vector2 n = VectorLLToMeters(p1,Vector2(p1,p2));
+			n = n.perpendicular_ccw();
+			n.normalize();
+			Vector2 delta_m = VectorLLToMeters(p1, Vector2(mAnchor, io_pt));
+			double distance = n.dot(delta_m);
+
+			vector<BezierPoint2> dst;
+			offset_bezier(mSrcBezier, dst, seq->IsClosed(), distance);
+
+			for (int i = 0; i < np; ++i)
+			{
+				IGISPoint * gp = seq->GetNthPoint(i);
+				IGISPoint_Bezier * gp_bezier = dynamic_cast<IGISPoint_Bezier *>(gp);
+				if (gp_bezier)
+					gp_bezier->SetBezierLocation(gis_Geo, dst[i]);
+				else
+					gp->SetLocation(gis_Geo, dst[i].pt);
+			}
 		}
 		else
 		{

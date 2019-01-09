@@ -259,7 +259,6 @@ using namespace std;
 	#define ENOERR 0
 	#define snprintf _snprintf
 	#define strdup _strdup
-	#define mkstemp _mktemp
 
 #if __cplusplus
 	static __inline double round(double v) { return floor(v+0.5); }
@@ -270,46 +269,51 @@ using namespace std;
 #endif
 
 #if IBM
-#define WINDOWS_LEAN_AND_MEAN
-#include <winsock2.h>
-#include <windows.h>
+	#define WINDOWS_LEAN_AND_MEAN
+	#include <winsock2.h>
+	#include <windows.h>
 
-#if (WED || OBJVIEW)
-#define SUPPORT_UNICODE 1
-#endif
+	#if (WED || OBJVIEW)
+	#define SUPPORT_UNICODE 1
+	#endif
 
-#if __cplusplus && SUPPORT_UNICODE
-#include <fstream>
+	#if SUPPORT_UNICODE
+		// This is to convert filenames from UTF-8 to UTF16/wchar_t under windows, see in FileUtils.cpp
+		#define fopen x_fopen
+		#ifdef __cplusplus
+			extern "C" FILE* x_fopen(const char * _Filename, const char * _Mode);
+		#else
+			extern FILE* x_fopen(const char * _Filename, const char * _Mode);
+		#endif
 
-#define fopen x_fopen
-#define ofstream x_ofstream
-extern FILE* x_fopen(const char * _Filename, const char * _Mode);
-//extern FILE* x_fopen(const WCHAR* _Filename, const wchar_t * _Mode);
+		#if __cplusplus
+			// This class is a replacement for ofstreams. X-Plane uses ofstreams in various places
+			// but it always initializes them with std::strings which have UTF-8 characters jammed
+			// into them. On windows however, we need UTF-16 characters in wide format for our file
+			// paths. We want the conversion to be automatic and in one place so this was easier than
+			// modifying the client code in numerous places.
+			#include <fstream>
+			#define ofstream x_ofstream
+			class x_ofstream : public basic_ostream<char, char_traits<char>> 
+			{
+			public:
+				typedef basic_ofstream<char, char_traits<char>> _Myt;
+				typedef basic_ostream<char, char_traits<char>> _Mybase;
+				typedef basic_filebuf<char, char_traits<char>> _Myfb;
+				typedef basic_ios<char, char_traits<char>> _Myios;
 
-// This class is a replacement for ofstreams. X-Plane uses ofstreams in various places
-// but it always initializes them with std::strings which have UTF-8 characters jammed
-// into them. On windows however, we need UTF-16 characters in wide format for our file
-// paths. We want the conversion to be automatic and in one place so this was easier than
-// modifying the client code in numerous places.
-class x_ofstream : public basic_ostream<char, char_traits<char>> {
-public:
-	typedef basic_ofstream<char, char_traits<char>> _Myt;
-	typedef basic_ostream<char, char_traits<char>> _Mybase;
-	typedef basic_filebuf<char, char_traits<char>> _Myfb;
-	typedef basic_ios<char, char_traits<char>> _Myios;
+				x_ofstream() :_Mybase(&_Filebuffer) {}
+				virtual ~x_ofstream() {}
 
-	x_ofstream() :_Mybase(&_Filebuffer) {}
-	virtual ~x_ofstream() {}
-
-	// Implementation is in FILE_ops.cpp
-	void open(const char *_Filename, ios_base::openmode _Mode = ios_base::out, int _Prot = (int)ios_base::_Openprot);
-	void open(const wchar_t *_Filename, ios_base::openmode _Mode = ios_base::out, int _Prot = (int)ios_base::_Openprot);
-	void close();
-
-private:
-	_Myfb _Filebuffer;
-};
-#endif
+				// Implementation is in FILE_ops.cpp
+				void open(const char *_Filename, ios_base::openmode _Mode = ios_base::out, int _Prot = (int)ios_base::_Openprot);
+				void open(const wchar_t *_Filename, ios_base::openmode _Mode = ios_base::out, int _Prot = (int)ios_base::_Openprot);
+				void close();
+			private:
+				_Myfb _Filebuffer;
+			};
+		#endif
+	#endif
 #endif
 
 #if LIN

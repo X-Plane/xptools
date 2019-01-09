@@ -151,11 +151,11 @@ void	WED_TaxiRoute::Import(const AptRouteEdge_t& info, void (* print_func)(void 
 			print_func(ref,"Runway name %s is illegal.\n", info.name.c_str());
 			runway = atc_rwy_None;
 		} else
-			runway = r;
+		runway = r;
 	}
 	else
 		runway = atc_rwy_None;
-
+		
 	width = ENUM_Import(ATCIcaoWidth, info.width);
 	if(width == -1)
 	{
@@ -361,6 +361,8 @@ bool	WED_TaxiRoute::HasHotArrival(void) const
 	// BEN SAYS: we used to treat being a runway as being hot.  But the UI needs to distinguish between
 	// "I am a runway and hot because I am a runway" and "Ia m a runway and hot for a CROSSING runway" -e.g.
 	// a LAHSO marking.  So only return TRUE hotness.
+	if(!AllowAircraft()) return 0;
+	
 	set<int>	runway_parts;
 	get_runway_parts(runway.value,runway_parts);
 
@@ -372,6 +374,8 @@ bool	WED_TaxiRoute::HasHotArrival(void) const
 
 bool	WED_TaxiRoute::HasHotDepart(void) const
 {
+	if(!AllowAircraft()) return 0;
+	
 	set<int>	runway_parts;
 	get_runway_parts(runway.value,runway_parts);
 
@@ -383,6 +387,8 @@ bool	WED_TaxiRoute::HasHotDepart(void) const
 
 bool	WED_TaxiRoute::HasHotILS(void) const
 {
+	if(!AllowAircraft()) return 0;
+	
 	set<int>	runway_parts;
 	get_runway_parts(runway.value,runway_parts);
 
@@ -451,6 +457,7 @@ void  WED_TaxiRoute::PropEditCallback(int before)
 
 	if (before)
 	{
+		StateChanged(wed_Change_Properties);
 		old_rwy_tag = runway.value;
 	}
 	else if(old_rwy_tag != runway.value)

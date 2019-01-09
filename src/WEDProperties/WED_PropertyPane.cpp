@@ -26,8 +26,7 @@
 #include "WED_Colors.h"
 #include "GUI_Resources.h"
 #include "GUI_Messages.h"
-
-#include "WED_HierarchyFilterBar.h"
+#include "GUI_FilterBar.h"
 
 WED_PropertyPane::WED_PropertyPane(
 						GUI_Commander *			inCommander,
@@ -39,7 +38,7 @@ WED_PropertyPane::WED_PropertyPane(
 						const char **			filter) :
 	GUI_Commander(inCommander),
 	mTextTable(this,WED_UIMeasurement("table_indent_width"),0),
-	mPropertyTable(resolver, col_names, def_col_widths,
+	mPropertyTable(this, resolver, col_names, def_col_widths,
 			pane_style == propPane_Selection || pane_style == propPane_FilteredVertical,
 			pane_style == propPane_Selection,
 			pane_style == propPane_Selection,
@@ -84,7 +83,7 @@ WED_PropertyPane::WED_PropertyPane(
 
 	if (pane_style == propPane_Hierarchy)
 	{
-		mFilter = new WED_HierarchyFilterBar(this);
+		mFilter = new GUI_FilterBar(this, GUI_FILTER_FIELD_CHANGED, 0, "Search:", "", false);
 		mFilter->Show();
 		mFilter->SetParent(this);
 		mFilter->AddListener(this);

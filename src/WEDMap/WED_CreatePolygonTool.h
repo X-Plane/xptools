@@ -68,8 +68,8 @@ protected:
 		WED_PropDoubleText				mRoughness;
 		WED_PropDoubleText				mHeading;
 		WED_PropIntEnumSet				mMarkings;
-		WED_PropIntEnumSetFilter		mMarkingsLines;
-		WED_PropIntEnumSetFilter		mMarkingsLights;
+		WED_PropIntEnumSetFilterVal		mMarkingsLines;
+		WED_PropIntEnumSetFilterVal		mMarkingsLights;
 
 		WED_PropStringText				mResource;
 		WED_PropDoubleText				mHeight;
@@ -77,6 +77,7 @@ protected:
 		WED_PropDoubleText				mSpacing;
 		
 		WED_PropBoolText				mUVMap;
+		WED_PropBoolText				mPickWalls;
 
 	virtual	void		AcceptPath(
 							const vector<Point2>&	pts,

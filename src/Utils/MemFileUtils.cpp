@@ -896,13 +896,25 @@ MF_FileType	MF_GetFileType(const char * path, int analysis_level)
 	string_utf16 utf_path = convert_str_to_utf16(path);
 	const wchar_t* c_path = utf_path.c_str();
 	int ret = _wstat(c_path, &ss);
-	if (ret < 0)
-	{
-		return mf_BadFile;
+	if (ret < 0)               // MSFT in 2013 said, stat is broken for symlinks. Their hotfix for mfc100.dll published in 2013
+	{                          // works, but the mfc100 version included since 2017 in Win 10 won't do anymore. So we try Plan B
+		ret = GetFileAttributesW(c_path);
+		if (ret == INVALID_FILE_ATTRIBUTES) 
+			return mf_BadFile;
+		if (ret & FILE_ATTRIBUTE_DIRECTORY)
+			return mf_Directory;
+		WIN32_FILE_ATTRIBUTE_DATA data;
+		ret = GetFileAttributesExW(c_path, GetFileExInfoStandard, &data);
+		if (ret)
+			file_size = data.nFileSizeLow;
+		else
+			return mf_BadFile;
 	}
-
-	if (S_ISDIR(ss.st_mode) != 0) return mf_Directory;
-	file_size = ss.st_size;
+	else
+	{
+		if (S_ISDIR(ss.st_mode) != 0) return mf_Directory;
+		file_size = ss.st_size;
+	}
 #else
 	#error PLATFORM NOT KNOWN
 #endif

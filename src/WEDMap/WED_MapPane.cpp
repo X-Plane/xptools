@@ -43,6 +43,7 @@
 #include "WED_StructureLayer.h"
 #include "WED_ATCLayer.h"
 #include "WED_WorldMapLayer.h"
+#include "WED_NavaidLayer.h"
 #include "WED_PreviewLayer.h"
 #include "WED_DebugLayer.h"
 #include "WED_VertexTool.h"
@@ -65,6 +66,7 @@
 #include "WED_Server.h"
 #include "WED_NWInfoLayer.h"
 #endif
+#include "WED_SlippyMap.h"
 
 char	kToolKeys[] = {
 	0, 0,
@@ -78,13 +80,23 @@ char	kToolKeys[] = {
 	'r', 's', 'v', 'm'
 };
 
+enum //Must be kept in sync with TabPane
+{
+    tab_Selection,
+    tab_Pavement,
+    tab_ATC,
+    tab_Lights,
+    tab_3D,
+    tab_Exclusions,
+    tab_Texture
+};
 
 // A bit of a hack...zoom to selection sets the zoom so that the screen is filled with the sel.  If the sel size is 0 in both
 // dimensions, our zoom is NaN, which is bad. But try telling that to users!
 //
-// So....IF the selected entity is a point AND it doesn't have an overloaded bounds that gives it some thickness, we apply this 
+// So....IF the selected entity is a point AND it doesn't have an overloaded bounds that gives it some thickness, we apply this
 // extra padding (in meters) around it.  The result is that we always zoom out enough to show 50 meters around point objects.
-// In practice this should be okay - you probably want to see SOME of what's happening, and padding a small distance around your 
+// In practice this should be okay - you probably want to see SOME of what's happening, and padding a small distance around your
 // airport when you have perimeter objects isn't going to kill anything.  We can tune the dimensions as desired.
 #define PAD_POINTS_FOR_ZOOM_MTR 50.0
 
@@ -138,12 +150,14 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	// Visualization layers
 	mLayers.push_back(					new WED_MapBkgnd(mMap, mMap, resolver));
 	mLayers.push_back(mWorldMap =		new WED_WorldMapLayer(mMap, mMap, resolver));
-#if WANT_TERRASEVER	
+	mLayers.push_back(mSlippyMap=	new WED_SlippyMap(mMap, mMap, resolver));
+#if WANT_TERRASEVER
 	mLayers.push_back(mTerraserver = 	new WED_TerraserverLayer(mMap, mMap, resolver));
-#endif	
+#endif
 	mLayers.push_back(mStructureLayer = new WED_StructureLayer(mMap, mMap, resolver));
 	mLayers.push_back(mATCLayer =		new WED_ATCLayer(mMap, mMap, resolver));
 	mLayers.push_back(mPreview =		new WED_PreviewLayer(mMap, mMap, resolver));
+	mLayers.push_back(mNavaidMap =		new WED_NavaidLayer(mMap, mMap, resolver));
 //	mLayers.push_back(mTileserver =		new WED_TileServerLayer(mMap, mMap, resolver));
 	mLayers.push_back(					new WED_DebugLayer(mMap, mMap, resolver));
 #if WITHNWLINK
@@ -339,7 +353,7 @@ void	WED_MapPane::ZoomShowAll(void)
 void WED_MapPane::ZoomShowSel(double scale)   // by default show just a bit more than the objects size
 {
 	Bbox2 box;
-	GetExtentSel(box, mResolver); 
+	GetExtentSel(box, mResolver);
 	if(!box.is_empty() && !box.is_null())
 	{
 		double x = max(box.xspan(),box.yspan()) * max(0.0, scale - 1.0);  // limit zoom to show at least full selection
@@ -366,17 +380,20 @@ int		WED_MapPane::Map_KeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)
 int		WED_MapPane::Map_HandleCommand(int command)
 {
 	Bbox2 box;
-	
+
 	switch(command) {
 	case wed_ImportOrtho:	WED_MakeOrthos(mResolver, mMap); return 1;
 	case wed_PickOverlay:	WED_DoMakeNewOverlay(mResolver, mMap); return 1;
 	case wed_ToggleWorldMap:mWorldMap->ToggleVisible(); return 1;
-//	case wed_ToggleOverlay:	if (mImageOverlay->CanShow()) { mImageOverlay->ToggleVisible(); return 1; }
+	case wed_ToggleNavaidMap:mNavaidMap->ToggleVisible(); return 1;
 #if WANT_TERRASEVER
 	case wed_ToggleTerraserver:	mTerraserver->ToggleVisible(); return 1;
-#endif	
-//	case wed_ToggleTileserver: mTileserver->ToggleVis(); return 1;
-	case wed_TogglePreview:	mPreview->ToggleVisible(); return 1;
+#endif
+	case wed_TogglePreview:	mPreview->ToggleVisible(); 			return 1;
+	case wed_SlippyMapNone:	mSlippyMap->SetMode(0);	 		return 1;
+	case wed_SlippyMapOSM:	mSlippyMap->SetMode(1);	 		return 1;
+	case wed_SlippyMapESRI: mSlippyMap->SetMode(2);			return 1;
+	case wed_SlippyMapCustom: mSlippyMap->SetMode(3);		return 1;
 
 	case wed_Pavement0:		mPreview->SetPavementTransparency(0.0f);  return 1;
 	case wed_Pavement25:	mPreview->SetPavementTransparency(0.25f); return 1;
@@ -396,7 +413,11 @@ int		WED_MapPane::Map_HandleCommand(int command)
 
 	case wed_ZoomWorld:		mMap->ZoomShowArea(-180,-90,180,90);	mMap->Refresh(); return 1;
 	case wed_ZoomAll:		GetExtentAll(box, mResolver); mMap->ZoomShowArea(box.p1.x(),box.p1.y(),box.p2.x(),box.p2.y());	mMap->Refresh(); return 1;
-	case wed_ZoomSelection:	ZoomShowSel(); return 1;
+	case wed_ZoomSelection:	ZoomShowSel();              return 1;
+	case wed_Map3D:         SetTabFilterMode(tab_3D);   return 1;
+	case wed_MapATC:        SetTabFilterMode(tab_ATC);  return 1;
+	case wed_MapPavement:   SetTabFilterMode(tab_Pavement);  return 1;
+	case wed_MapSelection:  SetTabFilterMode(tab_Selection); return 1;
 
 	default:		return 0;
 	}
@@ -407,14 +428,17 @@ int		WED_MapPane::Map_CanHandleCommand(int command, string& ioName, int& ioCheck
 	Bbox2	box;
 
 	switch(command) {
-	case wed_PickOverlay:																	return 1;
+	case wed_PickOverlay:															return 1;
 	case wed_ToggleWorldMap:ioCheck = mWorldMap->IsVisible();								return 1;
-//	case wed_ToggleOverlay:	if (mImageOverlay->CanShow()) { ioCheck = mImageOverlay->IsVisible(); return 1; }	break;
+	case wed_ToggleNavaidMap:ioCheck = mNavaidMap->IsVisible();								return 1;
 #if WANT_TERRASEVER
-	case wed_ToggleTerraserver: ioCheck = mTerraserver->IsVisible();							return 1;
-#endif	
-//	case wed_ToggleTileserver: ioCheck = mTileserver->IsVis();								return 1;
-	case wed_TogglePreview: ioCheck = mPreview->IsVisible();								return 1;
+	case wed_ToggleTerraserver: ioCheck = mTerraserver->IsVisible();				return 1;
+#endif
+	case wed_SlippyMapNone: ioCheck = mSlippyMap->GetMode() == 0;				return 1;
+	case wed_SlippyMapOSM:  ioCheck = mSlippyMap->GetMode() == 1;				return 1;
+	case wed_SlippyMapESRI: ioCheck = mSlippyMap->GetMode() == 2;				return 1;
+	case wed_SlippyMapCustom: ioCheck = mSlippyMap->GetMode() == 3;				return gCustomSlippyMap.empty() ? 0 : 1;
+	case wed_TogglePreview: ioCheck = mPreview->IsVisible();						return 1;
 	case wed_Pavement0:		ioCheck = mPreview->GetPavementTransparency() == 0.0f;	return 1;
 	case wed_Pavement25:	ioCheck = mPreview->GetPavementTransparency() == 0.25f;	return 1;
 	case wed_Pavement50:	ioCheck = mPreview->GetPavementTransparency() == 0.5f;	return 1;
@@ -428,8 +452,8 @@ int		WED_MapPane::Map_CanHandleCommand(int command, string& ioName, int& ioCheck
 	case wed_ObjDensity5:	ioCheck = mPreview->GetObjDensity() == 5;	return 1;
 	case wed_ObjDensity6:	ioCheck = mPreview->GetObjDensity() == 6;	return 1;
 
-	case wed_ToggleLines:	ioCheck = mStructureLayer->GetRealLinesShowing();				return 1;
-	case wed_ToggleVertices:ioCheck = mStructureLayer->GetVerticesShowing();				return 1;
+	case wed_ToggleLines:	ioCheck = mStructureLayer->GetRealLinesShowing();		return 1;
+	case wed_ToggleVertices:ioCheck = mStructureLayer->GetVerticesShowing();		return 1;
 
 	case wed_ZoomWorld:		return 1;
 	case wed_ZoomAll:		GetExtentAll(box, mResolver); return !box.is_empty()  && !box.is_null();
@@ -462,11 +486,13 @@ void	WED_MapPane::ReceiveMessage(
 
 void			WED_MapPane::FromPrefs(IDocPrefs * prefs)
 {
-	if ((mWorldMap->IsVisible()     ? 1 : 0) != prefs->ReadIntPref("map/world_map_vis",  mWorldMap->IsVisible()     ? 1 : 0))		mWorldMap->ToggleVisible();
+	if ((mWorldMap->IsVisible()  ? 1 : 0) != prefs->ReadIntPref("map/world_map_vis",mWorldMap->IsVisible()  ? 1 : 0)) mWorldMap->ToggleVisible();
 #if WANT_TERRASEVER
 	if ((mTerraserver->IsVisible () ? 1 : 0) != prefs->ReadIntPref("map/terraserver_vis",mTerraserver->IsVisible()  ? 1 : 0))		mTerraserver->ToggleVisible();
-#endif	
-	if ((mPreview->IsVisible ()     ? 1 : 0) != prefs->ReadIntPref("map/preview_vis"    ,mPreview->IsVisible()      ? 1 : 0))		mPreview->ToggleVisible();
+#endif
+	if ((mSlippyMap->IsVisible() ? 1 : 0) != prefs->ReadIntPref("map/slippy_vis"   ,mSlippyMap->IsVisible() ? 1 : 0)) mSlippyMap->ToggleVisible();
+	if ((mNavaidMap->IsVisible() ? 1 : 0) != prefs->ReadIntPref("map/navaid_map_vis",  mNavaidMap->IsVisible()  ? 1 : 0))	mNavaidMap->ToggleVisible();
+	if ((mPreview->IsVisible ()  ? 1 : 0) != prefs->ReadIntPref("map/preview_vis"  ,mPreview->IsVisible()   ? 1 : 0)) mPreview->ToggleVisible();
 
 	mPreview->SetPavementTransparency(prefs->ReadIntPref("map/pavement_alpha",mPreview->GetPavementTransparency()*4) * 0.25f);
 	mPreview->SetObjDensity(prefs->ReadIntPref("map/obj_density",mPreview->GetObjDensity()));
@@ -536,9 +562,11 @@ void			WED_MapPane::FromPrefs(IDocPrefs * prefs)
 void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
 {
 	prefs->WriteIntPref("map/world_map_vis",mWorldMap->IsVisible() ? 1 : 0);
+	prefs->WriteIntPref("map/navaid_map_vis",mNavaidMap->IsVisible() ? 1 : 0);
 #if WANT_TERRASEVER
 	prefs->WriteIntPref("map/terraserver_vis",mTerraserver->IsVisible() ? 1 : 0);
-#endif	
+#endif
+	prefs->WriteIntPref("map/slippy_vis",mSlippyMap->IsVisible() ? 1 : 0);
 	prefs->WriteIntPref("map/preview_vis",mPreview->IsVisible() ? 1 : 0);
 	prefs->WriteIntPref("map/pavement_alpha",mPreview->GetPavementTransparency()*4);
 	prefs->WriteIntPref("map/obj_density",mPreview->GetObjDensity());
@@ -755,18 +783,7 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 {
 	string title;
 	vector<const char *> hide_list, lock_list;
-	
-	enum //Must be kept in sync with TabPane
-	{
-		tab_Selection,
-		tab_Pavement,
-		tab_ATC,
-		tab_Lights,
-		tab_3D,
-		tab_Exclusions,
-		tab_Texture
-	};
-	
+
 	hide_all_persistents(hide_list);
 	mATCLayer->SetVisible(false);
 

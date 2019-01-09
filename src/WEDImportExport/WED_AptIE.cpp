@@ -95,6 +95,9 @@ static int get_apt_export_version()
 	case wet_xplane_1100:
 		version = 1100;
 		break;
+	case wet_xplane_1130:
+		version = 1130;
+		break;
 	default:
 		DebugAssert(!"You forgot to add a case!");
 		break;
@@ -1146,10 +1149,10 @@ void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane
 		string parent_dir = FILE_get_dir_name(*f);
 		parent_dir = parent_dir + ".." + DIR_STR;
 		
-		if( FILE_exists((parent_dir + "COPYING").c_str()) && 
-				(FILE_exists((parent_dir + "README.txt").c_str()) || FILE_exists((parent_dir + "README").c_str())) )
-			if(!ConfirmMessage("Warning !\nIt is not recommended to import the apt.dat for scenery gateway airports.\n"
-			                   "Use File->Import the from scenery gateway instead.", "Proceed import of apt.dat", "Cancel"))
+		if( parent_dir.find("default apt dat") != string::npos || (FILE_exists((parent_dir + "COPYING").c_str()) && 
+				(FILE_exists((parent_dir + "README.txt").c_str()) || FILE_exists((parent_dir + "README").c_str()))) )
+			if(!ConfirmMessage("Warning !\nIt is strongly discouraged to import the apt.dat for scenery gateway airports. Numerous problems can be caused by this.\n\n"
+			                   "Use File->Import from Scenery Gateway whenever possible.", "Proceed import of apt.dat", "Cancel"))
 				return;
 		
 		string result = ReadAptFile(f->c_str(), one_apt);
