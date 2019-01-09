@@ -1217,10 +1217,7 @@ void		WED_PropertyTable::GetFilterStatus(WED_Thing * what, ISelection * sel,
 	visible = recurse_children = can_disclose = is_disclose = 0;
 	if (what == NULL) return;
 
-	int is_composite = 0;
-	visible = 0;
-
-	is_composite = WED_IsFolder(what);
+	int is_composite = WED_IsFolder(what);
 
 //	IGISEntity * e = SAFE_CAST(IGISEntity, what);
 //	if (e) is_composite = e->GetGISClass() == gis_Composite;
@@ -1245,4 +1242,5 @@ void		WED_PropertyTable::GetFilterStatus(WED_Thing * what, ISelection * sel,
 			recurse_children = 0;
 		}
 	}
+	if(!mVertical && IsGraphNode(what)) visible = 0;
 }
