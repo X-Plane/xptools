@@ -547,7 +547,7 @@ struct	preview_line : WED_PreviewItem {
 
 		IGISPointSequence * ps = SAFE_CAST(IGISPointSequence,lin);
 		if(ps)
-			if(linfo.eff_width * zoomer->GetPPM() < MIN_PIXELS_LINE_PREVIEW || !tex_id)             // cutoff size for real preview
+			if(linfo.eff_width * zoomer->GetPPM() < MIN_PIXELS_PREVIEW || !tex_id)             // cutoff size for real preview
 			{
 				g->SetState(false,0,false,false,false,false,false);
 				
@@ -647,7 +647,7 @@ struct	preview_string : WED_PreviewItem {
 					sinfo.previews[0]->xyz_max[0]- sinfo.previews[0]->xyz_min[0],
 					sinfo.previews[0]->xyz_max[2]- sinfo.previews[0]->xyz_min[2]);
 
-			if(real_radius * zoomer->GetPPM() > MIN_PIXELS_LINE_PREVIEW)             // cutoff size for real preview
+			if(real_radius * zoomer->GetPPM() > MIN_PIXELS_PREVIEW)             // cutoff size for real preview
 			{
 				ITexMgr * tman = WED_GetTexMgr(resolver);
 				g->SetState(false,1,false,false,true,false,false);
@@ -1261,7 +1261,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		if(taxi)	
 		{
 			mPreviewItems.push_back(new preview_taxiway(taxi,mTaxiLayer++));
-			if(GetZoomer()->GetPPM() > MIN_PIXELS_LINE_PREVIEW / 0.3)        // there can be so many, make visibility decision here already for performance
+			if(GetZoomer()->GetPPM() * 0.3 > MIN_PIXELS_PREVIEW)        // there can be so many, make visibility decision here already for performance
 			{
 				IGISPointSequence * ps = taxi->GetOuterRing();
 				mPreviewItems.push_back(new preview_airportlines(ps, group_Markings, GetResolver()));
@@ -1306,10 +1306,10 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 			pol_info_t	pol_info;
 			int lg = group_TaxiwaysBegin;
 			WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetResolver());
-			
+
+			orth->GetResource(vpath);
 			if(!vpath.empty() && rmgr->GetPol(vpath,pol_info) && !pol_info.group.empty())
 				lg = layer_group_for_string(pol_info.group.c_str(),pol_info.group_offset, lg);
-			orth->GetResource(vpath);
 			mPreviewItems.push_back(new preview_ortho(orth,lg, GetResolver()));
 		}
 	}	
@@ -1336,7 +1336,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		if(chn)
 		{
 			double ppm = GetZoomer()->GetPPM();       // there can be so many, make visibility decision here already for performance
-			if(ppm > MIN_PIXELS_LINE_PREVIEW / 0.3)
+			if(ppm * 0.3 > MIN_PIXELS_PREVIEW)	      // criteria matches where mRealLines disappear in StructureLayer
 			{
 				mPreviewItems.push_back(new preview_airportlines(chn, group_Markings, GetResolver()));
 				mPreviewItems.push_back(new preview_airportlights(chn, group_Objects, GetResolver()));
@@ -1359,11 +1359,16 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		WED_ObjPlacement * obj = SAFE_CAST(WED_ObjPlacement, entity);
 		if(obj)
 			if(obj->GetShowLevel() <= mObjDensity) 	
-				mPreviewItems.push_back(new preview_object(obj,group_Objects, mObjDensity, GetResolver()));
+			{
+				double n,s,e,w;
+				GetZoomer()->GetMapVisibleBounds(w,s,e,n);
+				if(obj->GetVisibleDeg() > (e-w) * 0.005)        // skip below 1/2% map width. Obj's also tend to overestimate their size
+					mPreviewItems.push_back(new preview_object(obj,group_Objects, mObjDensity, GetResolver()));
+			}
 	}
 	else if (sub_class == WED_TruckParkingLocation::sClass)
 	{
-		if(GetZoomer()->GetPPM() > MIN_PIXELS_LINE_PREVIEW / 5.0)        // there can be so many, make visibility decision here already for performance
+		if(GetZoomer()->GetPPM() * 5.0 > MIN_PIXELS_PREVIEW)   // there can be so many, make visibility decision here already for performance
 		{
 			WED_TruckParkingLocation * trk = SAFE_CAST(WED_TruckParkingLocation, entity);
 			if (trk)	mPreviewItems.push_back(new preview_truck(trk, group_Objects, GetResolver()));
