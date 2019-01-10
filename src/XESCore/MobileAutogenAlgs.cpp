@@ -56,8 +56,15 @@ Polygon2 cgal_tri_to_ben(const CDT::Face_handle &tri, const Bbox2 &containing_ds
 		out.push_back(Point2(doblim(CGAL::to_double(vert->point().x()), containing_dsf.xmin(), containing_dsf.xmax()),
 							 doblim(CGAL::to_double(vert->point().y()), containing_dsf.ymin(), containing_dsf.ymax())));
 	}
-	DebugAssert(out.is_ccw());
-	DebugAssert(out.area() > 0);
+	DebugAssert(out.is_ccw() || out.area() == 0);
+#if DEV
+	// Tyler says: zero-area tris sometimes happen due to rounding to double... the CGAL version had (super small) positive area, but the double version does not
+	if(out.area() == 0)
+	{
+		static size_t zero_area_tris = 0;
+		fprintf(stderr, "Found zero-area tri #%ld\n", zero_area_tris++);
+	}
+#endif
 	return out;
 }
 
