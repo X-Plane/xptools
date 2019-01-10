@@ -558,19 +558,18 @@ static inline int MAJORITY_RULES(vector<int> values)
 	return MAJORITY_RULES(values[0], values[1], values[2], values[3]);
 }
 
-inline Polygon2 cgal_face_to_ben(Pmwx::Face_handle f)
+inline Polygon2 cgal_face_to_ben(Pmwx::Face_handle f, double dsf_min_lon, double dsf_min_lat)
 {
 	Polygon2 out;
 	Pmwx::Ccb_halfedge_circulator edge = f->outer_ccb();
 	Point2 source_ben = cgal2ben(edge->source()->point());
-	const double dsf_min_lon = floor(source_ben.x());
-	const double dsf_min_lat = floor(source_ben.y());
 	do {
 		out.push_back(Point2(doblim(source_ben.x(), dsf_min_lon, dsf_min_lon + 1),
 							 doblim(source_ben.y(), dsf_min_lat, dsf_min_lat + 1)));
-		--edge;
+		++edge;
 		source_ben = cgal2ben(edge->source()->point());
 	} while(edge != f->outer_ccb());
+	DebugAssert(out.is_ccw());
 	return out;
 }
 
@@ -688,8 +687,8 @@ void dump_histogram(const vector<double> &vals)
 Pmwx s_autogen_grid;
 
 struct ag_terrain_dsf_description {
-	int dsf_lon;
-	int dsf_lat;
+	int dsf_lon; // the min longitude in the DSF
+	int dsf_lat; // the min latitude  in the DSF
 	int divisions_lon;
 	int divisions_lat;
 	ag_terrain_style style;
@@ -727,10 +726,35 @@ static ag_terrain_dsf_description initialize_autogen_pmwx()
 		grid_params.push_back(Segment_2(Point_2(lon_min, lat), Point_2(lon_min + 1, lat)));
 	}
 
+#if DEV
+	for(vector<Segment_2>::const_iterator i = grid_params.begin(); i != grid_params.end(); ++i)
+	for(vector<Segment_2>::const_iterator j = grid_params.begin(); j != grid_params.end(); ++j)
+	{
+		DebugAssert(i == j || *i != *j); // ensure no duplicate segments!
+	}
+#endif
+
+
 	// These are effectively the gridlines for every grid square
 	vector<vector<Pmwx::Halfedge_handle> >	halfedge_handles;
 	// Edges will be adjacent to faces where we want to set the terrain type
 	Map_CreateReturnEdges(s_autogen_grid, grid_params, halfedge_handles);
+
+#if DEV
+	// Sanity check: No zero area faces in the AG grid!
+	for(Pmwx::Face_handle f = s_autogen_grid.faces_begin(); f != s_autogen_grid.faces_end(); ++f)
+	{
+		if(!f->is_unbounded())
+		{
+			const Polygon2 ben_face = cgal_face_to_ben(f, lon_min, lat_min);
+			if(ben_face.area() <  0) { cout << "Negative area: " << ben_face.wolfram_alpha() << "\n"; }
+			if(ben_face.area() == 0) { cout << "Zero area: "     << ben_face.wolfram_alpha() << "\n";
+				cout << "GetMapFaceAreaMeters(f): " << GetMapFaceAreaMeters(f) << "\n"; }
+			DebugAssert(ben_face.is_ccw());
+			DebugAssert(ben_face.area() > 0);
+		}
+	}
+#endif
 
 	return {lon_min, lat_min, divisions_lon, divisions_lat, style};
 }
@@ -1083,7 +1107,7 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 		if(!f->is_unbounded())
 		{
 			const GIS_face_data &fd = f->data();
-			Polygon2 ben_poly = cgal_face_to_ben(f);
+			Polygon2 ben_poly = cgal_face_to_ben(f, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat);
 			if(ben_poly.area() > 0) // <= 0 is possible when the face extends beyond the DSF boundary, or when its points are "real" close together
 			{
 				const Point2 centroid = ben_poly.centroid();
@@ -1269,7 +1293,12 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 				memset(fd.mGLColor, sizeof(fd.mGLColor), 0);
 			#endif
 
-			const Polygon2 ben_face = cgal_face_to_ben(f); // not *that* Ben face! https://secure.gravatar.com/ben2212171
+			Polygon2 ben_face = cgal_face_to_ben(f, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat); // not *that* Ben face! https://secure.gravatar.com/ben2212171
+			if(!ben_face.is_ccw())
+			{
+				sort(ben_face.begin(), ben_face.end(), less<Point2>());
+				DebugAssert(ben_face.is_ccw());
+			}
 			const Point2 centroid = ben_face.centroid();
 			const grid_coord_desc grid_pt = get_ortho_grid_xy(centroid, s_dsf_desc.style);
 			{
@@ -1417,7 +1446,7 @@ static int MergeTylersAg(const vector<const char *>& args)
 		const int ter_enum = fd.mOverlayType == NO_VALUE ? fd.mTerrainType : fd.mOverlayType;
 		if(ter_enum != NO_VALUE)
 		{
-			const Polygon2 ben_face = cgal_face_to_ben(f); // not *that* Ben face! https://secure.gravatar.com/ben2212171
+			const Polygon2 ben_face = cgal_face_to_ben(f, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat); // not *that* Ben face! https://secure.gravatar.com/ben2212171
 
 			// Place the associated OBJs based on this tile's AGP spec
 			map<int, agp_t>::const_iterator agp = agps.find(ter_enum);
