@@ -53,8 +53,6 @@
 #include "WED_ATCWindRule.h"
 #include "WED_ATCTimeRule.h"
 #include "WED_GISPoint.h"
-#include "WED_TextureNode.h"
-#include "WED_TextureBezierNode.h"
 
 #include "WED_GISUtils.h"
 #include "WED_ToolUtils.h"
@@ -87,12 +85,11 @@
 #include "GUI_Resources.h"
 #include "XESConstants.h"
 
-
 #include <iomanip>
-#include <istream>
 
-#define MAX_LON_SPAN_GATEWAY 0.15
-#define MAX_LAT_SPAN_GATEWAY 0.15
+// maximum airport size allowed for gateway, only warned about for custom scenery
+// 7 nm = 13 km = 42500 feet
+#define MAX_SPAN_GATEWAY_NM 7
 
 // Checks for zero length sides - can be turned off for grandfathered airports.
 #define CHECK_ZERO_LENGTH 1
@@ -896,10 +893,33 @@ static void TJunctionTest(vector<WED_TaxiRoute*> all_taxiroutes, validation_erro
 	}
 }
 
+// figures out how much tailwind a given windrule allows for a given runway heading
+static double getMaxTailwind(double thisUseHdg, WED_ATCWindRule * w) 
+{
+	AptWindRule_t wr_data;
+	w->Export(wr_data);
+	double worstRelWindDir = min(fabs(wr_data.dir_lo_degs_mag - thisUseHdg), fabs(wr_data.dir_hi_degs_mag - thisUseHdg));
+	if (wr_data.dir_lo_degs_mag < wr_data.dir_hi_degs_mag)
+	{
+		if(thisUseHdg > wr_data.dir_lo_degs_mag || thisUseHdg < wr_data.dir_hi_degs_mag) worstRelWindDir = 0.0;
+	}
+	else
+	{
+		if(thisUseHdg > wr_data.dir_lo_degs_mag && thisUseHdg < wr_data.dir_hi_degs_mag) worstRelWindDir = 0.0;
+	}
+	if(worstRelWindDir < 90.0)
+	{
+		double maxWindConsidered = min(wr_data.max_speed_knots, 50);      // if rule allows hurricanes - don't base tailwind on that. Assume plausible winds only.
+		return maxWindConsidered * cos(worstRelWindDir * DEG_TO_RAD);
+	}
+	return 0.0;
+}
+
 static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs, set<int>& legal_rwy_oneway, WED_Airport * apt, const vector<int>& dep_freqs)
 {
 	// Check ATC Flow visibility > 0, ceiling > 0, ICAO code is set, at least one arrival and one departure runway and
-	// is not using any runway in opposing directions simultaneously fro either arr or dep
+	// is not using any runway in opposing directions simultaneously for either arr or dep
+	// warn if tailwind component is large, i.e. user mixed up wind direction vs landing directions
 
 	string name;
 	flow->GetName(name);
@@ -913,44 +933,42 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 	if(name.empty())
 		msgs.push_back(validation_error_t("An ATC Flow has a blank name. You must name every flow.", err_flow_blank_name, flow, apt));
 
-	vector<WED_ATCWindRule*>	wind;
+	vector<WED_ATCWindRule*>	windR;
 	vector<WED_ATCTimeRule*>	timeR;
-	vector<WED_ATCRunwayUse*>	ruse;
+	vector<WED_ATCRunwayUse*>	useR;
 
-	CollectRecursive(flow, back_inserter(wind),  IgnoreVisiblity, TakeAlways, WED_ATCWindRule::sClass);
+	CollectRecursive(flow, back_inserter(windR),  IgnoreVisiblity, TakeAlways, WED_ATCWindRule::sClass);
 	CollectRecursive(flow, back_inserter(timeR), IgnoreVisiblity, TakeAlways, WED_ATCTimeRule::sClass);
-	CollectRecursive(flow, back_inserter(ruse),  IgnoreVisiblity, TakeAlways, WED_ATCRunwayUse::sClass);
+	CollectRecursive(flow, back_inserter(useR),  IgnoreVisiblity, TakeAlways, WED_ATCRunwayUse::sClass);
 
 	if(legal_rwy_oneway.count(flow->GetPatternRunway()) == 0)
 		msgs.push_back(validation_error_t(string("The pattern runway ") + string(ENUM_Desc(flow->GetPatternRunway())) + " is illegal for the ATC flow '" + name + "' because it is not a runway at this airport.", err_flow_pattern_runway_not_in_airport, flow, apt));
 
 	// Check ATC Wind rules having directions within 0 ..360 deg, speed from 1..99 knots.  Otherweise XP 10.51 will give an error.
 
-	for(vector<WED_ATCWindRule*>::iterator w = wind.begin(); w != wind.end(); ++w)
+	for(auto wrule : windR)
 	{
-		WED_ATCWindRule * wrule = *w;
-		AptWindRule_t exp;
-		wrule->Export(exp);
-		if(exp.icao.empty())
+		AptWindRule_t windData;
+		wrule->Export(windData);
+		if(windData.icao.empty())
 			msgs.push_back(validation_error_t(string("ATC wind rule '") + name + "' has a blank ICAO code for its METAR source.", err_atc_rule_wind_blank_ICAO_for_METAR, wrule, apt));
 
-		if((exp.dir_lo_degs_mag < 0) || (exp.dir_lo_degs_mag > 359) || (exp.dir_hi_degs_mag < 0) || (exp.dir_hi_degs_mag > 360) // 360 is ok with XP10.51, but as a 'from' direction its poor style.
-							|| (exp.dir_lo_degs_mag == exp.dir_hi_degs_mag))
+		if((windData.dir_lo_degs_mag < 0) || (windData.dir_lo_degs_mag > 359) || (windData.dir_hi_degs_mag < 0) || (windData.dir_hi_degs_mag > 360) // 360 is ok with XP10.51, but as a 'from' direction its poor style.
+							|| (windData.dir_lo_degs_mag == windData.dir_hi_degs_mag))
 			msgs.push_back(validation_error_t(string("ATC wind rule '") + name + "' has invalid from and/or to directions.", err_atc_rule_wind_invalid_directions, wrule, apt));
 
-		if((exp.max_speed_knots < 1) || (exp.max_speed_knots >999))
+		if((windData.max_speed_knots < 1) || (windData.max_speed_knots >999))
 			msgs.push_back(validation_error_t(string("ATC wind rule '") + name + "' has maximum wind speed outside 1..999 knots range.", err_atc_rule_wind_invalid_speed, wrule, apt));
 	}
 
 	// Check ATC Time rules having times being within 00:00 .. 24:00 hrs, 0..59 minutes and start != end time. Otherweise XP will give an error.
 
-	for(vector<WED_ATCTimeRule*>::iterator w = timeR.begin(); w != timeR.end(); ++w)
+	for(auto trule : timeR)
 	{
-		WED_ATCTimeRule * trule = *w;
-		AptTimeRule_t exp;
-		trule->Export(exp);
-		if((exp.start_zulu < 0) || (exp.start_zulu > 2359) || (exp.end_zulu < 0) || (exp.end_zulu > 2400)     // yes, 24:00z is OK with XP 10.51
-							|| (exp.start_zulu == exp.end_zulu) || (exp.start_zulu % 100 > 59) || (exp.end_zulu % 100 > 59))
+		AptTimeRule_t timeData;
+		trule->Export(timeData);
+		if((timeData.start_zulu < 0) || (timeData.start_zulu > 2359) || (timeData.end_zulu < 0) || (timeData.end_zulu > 2400)     // yes, 24:00z is OK with XP 10.51
+							|| (timeData.start_zulu == timeData.end_zulu) || (timeData.start_zulu % 100 > 59) || (timeData.end_zulu % 100 > 59))
 			msgs.push_back(validation_error_t(string("ATC time rule '") + name + "' has invalid start and/or stop time.", err_atc_rule_time_invalid_times, trule, apt));
 	}
 
@@ -959,34 +977,49 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 	map<int,vector<WED_ATCRunwayUse*> >		arrival_rwys;
 	map<int,vector<WED_ATCRunwayUse*> >		departure_rwys;
 
-	for(vector<WED_ATCRunwayUse*>::iterator r = ruse.begin(); r != ruse.end(); ++r)
+	for(auto u : useR)
 	{
-		WED_ATCRunwayUse * use = *r;
-		ValidateOneATCRunwayUse(use,msgs,apt,dep_freqs);
-		int rwy = use->GetRunway();
+		ValidateOneATCRunwayUse(u,msgs,apt,dep_freqs);
+		int rwy = u->GetRunway();
 		if(rwy == atc_Runway_None)
 		{
-			msgs.push_back(validation_error_t("Runway use has no runway selected.", err_rwy_use_no_runway_selected, use, apt));
+			msgs.push_back(validation_error_t("Runway use has no runway selected.", err_rwy_use_no_runway_selected, u, apt));
 		}
 		else
 		{
-			if(use->HasArrivals())
+			if(u->HasArrivals())
 			{
 				if(arrival_rwys.count(get_opposite_rwy(rwy)))
 				{
 					msgs.push_back(validation_error_t("Airport flow has opposite direction arrivals.", err_flow_has_opposite_arrivals, arrival_rwys[get_opposite_rwy(rwy)], apt));
-					msgs.back().bad_objects.push_back(use);
+					msgs.back().bad_objects.push_back(u);
 				}
-				arrival_rwys[rwy].push_back(use);
+				arrival_rwys[rwy].push_back(u);
 			}
-			if(use->HasDepartures())
+			if(u->HasDepartures())
 			{
 				if(departure_rwys.count(get_opposite_rwy(rwy)))
 				{
 					msgs.push_back(validation_error_t("Airport flow has opposite direction departures.", err_flow_has_opposite_departures, departure_rwys[get_opposite_rwy(rwy)], apt));
-					msgs.back().bad_objects.push_back(use);
+					msgs.back().bad_objects.push_back(u);
 				}
-				departure_rwys[rwy].push_back(use);
+				departure_rwys[rwy].push_back(u);
+			}
+			
+			double maxTailwind(0);
+			double thisUseHdgMag = ((rwy - atc_1)/(atc_2 - atc_1) + 2) * 10;
+			for(auto w : windR)
+			{
+				double tw = getMaxTailwind(thisUseHdgMag, w);
+				maxTailwind	= max(maxTailwind, tw);
+			}
+			// if this is a propper "catch all" last flow, it should have no wind rules at all defined, so maxTailwind is still zero here.
+			if(maxTailwind > 10.0)
+			{
+					string txt("Wind Rules in this flow (not accounting for winds caught by prior flows) allow Runway ");
+					txt += ENUM_Desc(rwy);
+					txt += " to be used with up to " + to_string((int) maxTailwind) + " kts tailwind component.";
+					msgs.push_back(validation_error_t(txt, warn_atc_flow_excessive_tailwind, u, apt));
 			}
 		}
 	}
@@ -994,6 +1027,7 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 
 	if (arrival_rwys.empty() || departure_rwys.empty())
 		msgs.push_back(validation_error_t("Airport flow must specify at least one active arrival and one departure runway", err_flow_no_arr_or_no_dep_runway, flow, apt));
+		
 
 }
 
@@ -2055,11 +2089,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	WED_GetAllRunwaysOneway(apt,legal_rwy_oneway);
 	WED_GetAllRunwaysTwoway(apt,legal_rwy_twoway);
 
-    if(gExportTarget == wet_gateway)
-        err_type = err_airport_no_rwys_sealanes_or_helipads;
-    else
-        err_type = warn_airport_no_rwys_sealanes_or_helipads;
-
+   err_type = gExportTarget == wet_gateway ? err_airport_no_rwys_sealanes_or_helipads : warn_airport_no_rwys_sealanes_or_helipads;
 	switch(apt->GetAirportType())
 	{
 		case type_Airport:
@@ -2127,17 +2157,20 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		ValidateAirportMetadata(apt,msgs,apt);
 	}
 
-	if(gExportTarget == wet_gateway)
+	err_type = gExportTarget == wet_gateway ? err_airport_impossible_size : warn_airport_impossible_size;
 	{
 		Bbox2 bounds;
 		apt->GetBounds(gis_Geo, bounds);
-		int lg_apt_mult = ( name == "KEDW" ? 2.0 : 1.0);  // because this one has the runways on all surrounding salt flats included
-		if(bounds.xspan() > lg_apt_mult * MAX_LON_SPAN_GATEWAY / cos(bounds.centroid().y() * DEG_TO_RAD) ||     // correction for higher lattitudes
-				bounds.yspan() > lg_apt_mult* MAX_LAT_SPAN_GATEWAY)
+		int lg_apt_mult = ( name == "KEDW" ? 3.0 : 1.0);  // because this one has the runways on all surrounding salt flats included
+		if(bounds.xspan() > lg_apt_mult * MAX_SPAN_GATEWAY_NM / 60.0 / cos(bounds.centroid().y() * DEG_TO_RAD) ||     // correction for higher lattitudes
+				bounds.yspan() > lg_apt_mult* MAX_SPAN_GATEWAY_NM / 60.0)
 		{
-			msgs.push_back(validation_error_t("This airport is impossibly large. Perhaps a part of the airport has been accidentally moved far away or is not correctly placed in the hierarchy?", err_airport_impossible_size, apt,apt));
+			msgs.push_back(validation_error_t("This airport is impossibly large. Perhaps a part of the airport has been accidentally moved far away or is not correctly placed in the hierarchy?", err_type, apt,apt));
 		}
-
+	}
+	
+	if(gExportTarget == wet_gateway)
+	{
 		// require any land airport (i.e. at least one runway) to have an airport boundary defined
 		if(!runways.empty() && boundaries.empty())
             msgs.push_back(validation_error_t("This airport contains runway(s) but no airport boundary.", 	err_airport_no_boundary, apt,apt));
