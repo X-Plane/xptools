@@ -372,7 +372,7 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 				RenderSign(inState, 
 							cell_bounds[0]+CELL_MARGIN, (float) cell_bounds[1] + cell2line(cell_bounds[3] - cell_bounds[1], mFont),
 							c.text_val.c_str(),
-							0.5f, mFont,
+							0.4*GUI_GetLineHeight(mFont)/12.0, mFont,
 							(c.is_selected||cell_type) ? mColorTextSelect : mColorText);
 			}
 			else
