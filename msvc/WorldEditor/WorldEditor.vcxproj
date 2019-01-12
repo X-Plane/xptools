@@ -1,4 +1,4 @@
-f﻿<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
@@ -221,6 +221,7 @@ f﻿<?xml version="1.0" encoding="utf-8"?>
     <ClCompile Include="..\..\src\WEDMap\WED_StructureLayer.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_ToolInfoAdapter.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_ToolUtils.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_UIMeasurements.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_VertexTool.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_WorldMapLayer.cpp" />
     <ClCompile Include="..\..\src\WEDNetwork\RAII_Classes.cpp" />
@@ -477,6 +478,7 @@ f﻿<?xml version="1.0" encoding="utf-8"?>
     <ClInclude Include="..\..\src\WEDMap\WED_StructureLayer.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_ToolInfoAdapter.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_ToolUtils.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_UIMeasurements.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_VertexTool.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_WorldMapLayer.h" />
     <ClInclude Include="..\..\src\WEDNetwork\RAII_Classes.h" />

@@ -405,6 +405,9 @@
     <ClCompile Include="..\..\src\WEDMap\WED_ToolUtils.cpp">
       <Filter>WEDMap</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\WEDMap\WED_UIMeasurements.cpp">
+      <Filter>WEDMap</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\WEDMap\WED_VertexTool.cpp">
       <Filter>WEDMap</Filter>
     </ClCompile>
@@ -783,6 +786,7 @@
     <ClCompile Include="..\..\src\WEDMap\WED_SlippyMap.cpp">
       <Filter>WEDMap</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Obj\ObjConvert.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\WEDCore\WED_Application.h">
@@ -1119,6 +1123,9 @@
       <Filter>WEDMap</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDMap\WED_ToolUtils.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDMap\WED_UIMeasurements.h">
       <Filter>WEDMap</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDMap\WED_VertexTool.h">
@@ -1553,6 +1560,7 @@
     <ClInclude Include="..\..\src\WEDMap\WED_SlippyMap.h">
       <Filter>WEDMap</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\Obj\ObjConvert.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\src\WEDResources\about.png">
