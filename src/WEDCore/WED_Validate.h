@@ -147,6 +147,7 @@ enum validate_error_t
 	warn_airport_no_rwys_sealanes_or_helipads,
 	warn_atc_freq_on_8p33khz_spacing,
 	warn_atc_flow_excessive_tailwind,
+	warn_atc_flow_never_reached,
 	warn_truckroutes_but_no_starts,
 	warn_ramp_start_size_implausible,
 	warn_runway_matching_cifp_mislocated

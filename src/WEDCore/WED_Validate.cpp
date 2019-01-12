@@ -91,6 +91,9 @@
 // 7 nm = 13 km = 42500 feet
 #define MAX_SPAN_GATEWAY_NM 7
 
+// ATC flow tailwind components and wind rule coverage tested up to this windspeed
+#define ATC_FLOW_MAX_WIND 35
+
 // Checks for zero length sides - can be turned off for grandfathered airports.
 #define CHECK_ZERO_LENGTH 1
 
@@ -893,29 +896,9 @@ static void TJunctionTest(vector<WED_TaxiRoute*> all_taxiroutes, validation_erro
 	}
 }
 
-// figures out how much tailwind a given windrule allows for a given runway heading
-static double getMaxTailwind(double thisUseHdg, WED_ATCWindRule * w) 
-{
-	AptWindRule_t wr_data;
-	w->Export(wr_data);
-	double worstRelWindDir = min(fabs(wr_data.dir_lo_degs_mag - thisUseHdg), fabs(wr_data.dir_hi_degs_mag - thisUseHdg));
-	if (wr_data.dir_lo_degs_mag < wr_data.dir_hi_degs_mag)
-	{
-		if(thisUseHdg > wr_data.dir_lo_degs_mag || thisUseHdg < wr_data.dir_hi_degs_mag) worstRelWindDir = 0.0;
-	}
-	else
-	{
-		if(thisUseHdg > wr_data.dir_lo_degs_mag && thisUseHdg < wr_data.dir_hi_degs_mag) worstRelWindDir = 0.0;
-	}
-	if(worstRelWindDir < 90.0)
-	{
-		double maxWindConsidered = min(wr_data.max_speed_knots, 50);      // if rule allows hurricanes - don't base tailwind on that. Assume plausible winds only.
-		return maxWindConsidered * cos(worstRelWindDir * DEG_TO_RAD);
-	}
-	return 0.0;
-}
+typedef vector<int> surfWindVec_t;  // the maximum amount of wind from any given direction that should be tested for
 
-static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs, set<int>& legal_rwy_oneway, WED_Airport * apt, const vector<int>& dep_freqs)
+static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs, set<int>& legal_rwy_oneway, WED_Airport * apt, const vector<int>& dep_freqs, surfWindVec_t& sWinds)
 {
 	// Check ATC Flow visibility > 0, ceiling > 0, ICAO code is set, at least one arrival and one departure runway and
 	// is not using any runway in opposing directions simultaneously for either arr or dep
@@ -945,6 +928,8 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 		msgs.push_back(validation_error_t(string("The pattern runway ") + string(ENUM_Desc(flow->GetPatternRunway())) + " is illegal for the ATC flow '" + name + "' because it is not a runway at this airport.", err_flow_pattern_runway_not_in_airport, flow, apt));
 
 	// Check ATC Wind rules having directions within 0 ..360 deg, speed from 1..99 knots.  Otherweise XP 10.51 will give an error.
+	
+	surfWindVec_t sWindThisFlow(360, 0);
 
 	for(auto wrule : windR)
 	{
@@ -959,10 +944,30 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 
 		if((windData.max_speed_knots < 1) || (windData.max_speed_knots >999))
 			msgs.push_back(validation_error_t(string("ATC wind rule '") + name + "' has maximum wind speed outside 1..999 knots range.", err_atc_rule_wind_invalid_speed, wrule, apt));
+			
+		int minWindFixed = max(0,windData.dir_lo_degs_mag);
+		int maxWindFixed = min(359,windData.dir_hi_degs_mag);
+		
+		bool doesWrap360 = windData.dir_lo_degs_mag > windData.dir_hi_degs_mag;
+			
+		// get all winds that the rules allow for this flow and and are still "available, i.e. not handled by prior flows already
+		if(doesWrap360)
+		{
+			for(int i = minWindFixed; i <= 359; ++i)
+				sWindThisFlow[i] = max(sWindThisFlow[i],min(sWinds[i], windData.max_speed_knots));
+			for(int i = 0; i <= maxWindFixed; ++i)
+				sWindThisFlow[i] = max(sWindThisFlow[i],min(sWinds[i], windData.max_speed_knots));
+		}
+		else
+		{
+			for(int i = minWindFixed; i <= maxWindFixed; ++i)
+				sWindThisFlow[i] = max(sWindThisFlow[i],min(sWinds[i], windData.max_speed_knots));
+		}
 	}
 
 	// Check ATC Time rules having times being within 00:00 .. 24:00 hrs, 0..59 minutes and start != end time. Otherweise XP will give an error.
 
+	bool isActive24_7 = true;
 	for(auto trule : timeR)
 	{
 		AptTimeRule_t timeData;
@@ -970,7 +975,22 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 		if((timeData.start_zulu < 0) || (timeData.start_zulu > 2359) || (timeData.end_zulu < 0) || (timeData.end_zulu > 2400)     // yes, 24:00z is OK with XP 10.51
 							|| (timeData.start_zulu == timeData.end_zulu) || (timeData.start_zulu % 100 > 59) || (timeData.end_zulu % 100 > 59))
 			msgs.push_back(validation_error_t(string("ATC time rule '") + name + "' has invalid start and/or stop time.", err_atc_rule_time_invalid_times, trule, apt));
+			
+		if(timeData.start_zulu > 0 || timeData.end_zulu < 2359)
+			isActive24_7 = false;
 	}
+
+	// for subsequent tested ATC flows, remove all winds that are fully covered in this flow
+	bool flowCanBeReached = false;
+	for(int i = 0; i <360; i++)
+		if(sWindThisFlow[i] >= sWinds[i]) 
+		{
+			if (isActive24_7) sWinds[i] = 0;        // we are not going to figure out if there are other flows that cover the remaining times. We rather balk at ya for unreachable flows downstream
+			if(sWindThisFlow[i] > 0) flowCanBeReached = true;
+		}
+	if (!flowCanBeReached)
+		msgs.push_back(validation_error_t(string("ATC Flow '") + name + "' can never be reached. All winds up to " + to_string(ATC_FLOW_MAX_WIND) + " kts are covered by flows listed ahead of it. This is not taking time and ceiling restrictions into account", 	
+						warn_atc_flow_never_reached, flow, apt));
 
 	#if !GATEWAY_IMPORT_FEATURES
 
@@ -1006,19 +1026,21 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 				departure_rwys[rwy].push_back(u);
 			}
 			
+			
+			
 			double maxTailwind(0);
-			double thisUseHdgMag = ((rwy - atc_1)/(atc_2 - atc_1) + 2) * 10;
-			for(auto w : windR)
+			int thisUseHdgMag = ((rwy - atc_1 + 1)/(atc_2 - atc_1) + 1) * 10;
+			for(int i = 0; i <360; i++)
 			{
-				double tw = getMaxTailwind(thisUseHdgMag, w);
-				maxTailwind	= max(maxTailwind, tw);
+				double relTailWindAngle = i-thisUseHdgMag;
+				maxTailwind	= max(maxTailwind, -sWindThisFlow[i] * cos(relTailWindAngle * DEG_TO_RAD));
 			}
 			// if this is a propper "catch all" last flow, it should have no wind rules at all defined, so maxTailwind is still zero here.
 			if(maxTailwind > 10.0)
 			{
-					string txt("Wind Rules in this flow (not accounting for winds caught by prior flows) allow Runway ");
+					string txt("Wind Rules in this flow allow Runway ");
 					txt += ENUM_Desc(rwy);
-					txt += " to be used with up to " + to_string((int) maxTailwind) + " kts tailwind component.";
+					txt += " to be used with up to " + to_string((int) maxTailwind) + " kts tailwind component @ " + to_string(ATC_FLOW_MAX_WIND) + " kts winds";
 					msgs.push_back(validation_error_t(txt, warn_atc_flow_excessive_tailwind, u, apt));
 			}
 		}
@@ -1066,10 +1088,11 @@ static void ValidateATC(WED_Airport* apt, validation_error_vector& msgs, set<int
 			departure_freqs.push_back(freq_info.freq);
 		}
 	}
+	surfWindVec_t maxSurfWinds(360, ATC_FLOW_MAX_WIND);  // the maximum amount of wind from any given direction that should be tested for
 
 	for(vector<WED_ATCFlow *>::iterator f = flows.begin(); f != flows.end(); ++f)
 	{
-		ValidateOneATCFlow(*f, msgs, legal_rwy_oneway, apt, departure_freqs);
+		ValidateOneATCFlow(*f, msgs, legal_rwy_oneway, apt, departure_freqs, maxSurfWinds);
 	}
 
 	for(vector<WED_TaxiRoute *>::iterator t = taxi_routes.begin(); t != taxi_routes.end(); ++t)
