@@ -148,6 +148,7 @@ enum validate_error_t
 	warn_atc_freq_on_8p33khz_spacing,
 	warn_atc_flow_excessive_tailwind,
 	warn_atc_flow_never_reached,
+	warn_atc_flow_insufficient_coverage,
 	warn_truckroutes_but_no_starts,
 	warn_ramp_start_size_implausible,
 	warn_runway_matching_cifp_mislocated
