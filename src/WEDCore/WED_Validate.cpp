@@ -978,10 +978,11 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 	}
 	if(windR.empty())
 		for(int i = 0; i < 360; ++i)
-		{
-			sWindThisFlow[i] = ATC_FLOW_MAX_WIND;
-			if(sWindThisFlow[i] > sWindsCov[i]) flowCanBeReached = true;
-		}
+			if(ATC_FLOW_MAX_WIND > sWindsCov[i])
+			{
+				flowCanBeReached = true;
+				sWindThisFlow[i] = ATC_FLOW_MAX_WIND;
+			}
 
 	if (!flowCanBeReached)
 		msgs.push_back(validation_error_t(string("ATC Flow '") + name + "' can never be reached. All winds up to " + to_string(ATC_FLOW_MAX_WIND) + " kts are covered by flows listed ahead of it. This is not taking time and ceiling restrictions into account", 	
@@ -1053,8 +1054,8 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 			// if this is a propper "catch all" last flow, it should have no wind rules at all defined, so maxTailwind is still zero here.
 			if(maxTailwind > 10.0)
 			{
-					string txt("Wind Rules in this flow allow Runway ");
-					txt += ENUM_Desc(rwy);
+					string txt("Wind Rules in flow '");
+					txt += name + "' allow Runway " + ENUM_Desc(rwy);
 					txt += " to be used with up to " + to_string((int) maxTailwind) + " kts tailwind component @ " + to_string(ATC_FLOW_MAX_WIND) + " kts winds";
 					msgs.push_back(validation_error_t(txt, warn_atc_flow_excessive_tailwind, u, apt));
 			}
