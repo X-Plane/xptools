@@ -216,6 +216,7 @@
 		<Unit filename="../../src/Utils/BitmapUtils.h" />
 		<Unit filename="../../src/Utils/CSVParser.cpp" />
 		<Unit filename="../../src/Utils/CSVParser.h" />
+		<Unit filename="../../src/Utils/CompGeomDefs2.h" />
 		<Unit filename="../../src/Utils/CompGeomUtils.cpp" />
 		<Unit filename="../../src/Utils/CompGeomUtils.h" />
 		<Unit filename="../../src/Utils/EndianUtils.c">
