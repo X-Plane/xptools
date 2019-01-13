@@ -937,14 +937,14 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 		AptWindRule_t windData;
 		wrule->Export(windData);
 		if(windData.icao.empty())
-			msgs.push_back(validation_error_t(string("ATC wind rule '") + name + "' has a blank ICAO code for its METAR source.", err_atc_rule_wind_blank_ICAO_for_METAR, wrule, apt));
+			msgs.push_back(validation_error_t("ATC wind rule has a blank ICAO code for its METAR source.", err_atc_rule_wind_blank_ICAO_for_METAR, wrule, apt));
 
 		if((windData.dir_lo_degs_mag < 0) || (windData.dir_lo_degs_mag > 359) || (windData.dir_hi_degs_mag < 0) || (windData.dir_hi_degs_mag > 360) // 360 is ok with XP10.51, but as a 'from' direction its poor style.
 							|| (windData.dir_lo_degs_mag == windData.dir_hi_degs_mag))
-			msgs.push_back(validation_error_t(string("ATC wind rule '") + name + "' has invalid from and/or to directions.", err_atc_rule_wind_invalid_directions, wrule, apt));
+			msgs.push_back(validation_error_t("ATC wind rule has invalid from and/or to directions.", err_atc_rule_wind_invalid_directions, wrule, apt));
 
 		if((windData.max_speed_knots < 1) || (windData.max_speed_knots >999))
-			msgs.push_back(validation_error_t(string("ATC wind rule '") + name + "' has maximum wind speed outside 1..999 knots range.", err_atc_rule_wind_invalid_speed, wrule, apt));
+			msgs.push_back(validation_error_t("ATC wind rule has maximum wind speed outside 1..999 knots range.", err_atc_rule_wind_invalid_speed, wrule, apt));
 			
 		int minWindFixed = intlim(windData.dir_lo_degs_mag,0,359);
 		int maxWindFixed = intlim(windData.dir_hi_degs_mag,0,359);
@@ -995,15 +995,19 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 		trule->Export(timeData);
 		if((timeData.start_zulu < 0) || (timeData.start_zulu > 2359) || (timeData.end_zulu < 0) || (timeData.end_zulu > 2400)     // yes, 24:00z is OK with XP 10.51
 							|| (timeData.start_zulu == timeData.end_zulu) || (timeData.start_zulu % 100 > 59) || (timeData.end_zulu % 100 > 59))
-			msgs.push_back(validation_error_t(string("ATC time rule '") + name + "' has invalid start and/or stop time.", err_atc_rule_time_invalid_times, trule, apt));
+			msgs.push_back(validation_error_t("ATC time rule has invalid start and/or stop time.", err_atc_rule_time_invalid_times, trule, apt));
 			
 		if(timeData.start_zulu > 0 || timeData.end_zulu < 2359)
 			isActive24_7 = false;
+
+		int wrapped_end_zulu = timeData.start_zulu < timeData.end_zulu ? timeData.end_zulu : timeData.end_zulu + 2400;
+		if(wrapped_end_zulu - timeData.start_zulu < 100)
+			msgs.push_back(validation_error_t("ATC time rule specifies suspicious short duration.", warn_atc_flow_short_time, trule, apt));
 	}
 	
-	if(isActive24_7)
-		for(int i = 0; i < 360; ++i)
-			sWindsCov[i] = max(sWindThisFlow[i], sWindsCov[i]);
+	if(isActive24_7 && exp.visibility_sm < 0.1 && exp.ceiling_ft == 0)    // only consider winds covered from now on if its a no vis/time condition flow. May cause a few false tailwind warnings 
+		for(int i = 0; i < 360; ++i)                                       // in complex multi-time or ceiling flows settings when ALL prior flows have time rules that together cover 24hrs.
+			sWindsCov[i] = max(sWindThisFlow[i], sWindsCov[i]);             // Such is bad style - one shold rather have one flow with a time rule followed by a time-unlimited flow.
 
 	#if !GATEWAY_IMPORT_FEATURES
 
@@ -1113,9 +1117,9 @@ static void ValidateATC(WED_Airport* apt, validation_error_vector& msgs, set<int
 	{
 		int i=0;
 		while(i<360)
-		{ 
+		{
 			int uncovHdgMin = -1, uncovHdgMax = -1;
-			
+
 			while (i<360 && covSurfWinds[i] != 	uncovSpd) i++;
 			uncovHdgMin = i;
 			while (i<360 && covSurfWinds[i] == 	uncovSpd) i++;
