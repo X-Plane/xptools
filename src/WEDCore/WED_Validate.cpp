@@ -1111,8 +1111,9 @@ static void ValidateATC(WED_Airport* apt, validation_error_vector& msgs, set<int
 	}
 	
 	int uncovSpd = ATC_FLOW_MAX_WIND;
-	for(int i = 0; i < 360; i++)
-		uncovSpd = min(uncovSpd, covSurfWinds[i]);
+	if(!flows.empty())
+		for(int i = 0; i < 360; i++)
+			uncovSpd = min(uncovSpd, covSurfWinds[i]);
 	
 	if(uncovSpd < ATC_FLOW_MAX_WIND)
 	{
