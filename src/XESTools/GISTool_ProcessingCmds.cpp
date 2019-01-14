@@ -1418,7 +1418,6 @@ static int MergeTylersAg(const vector<const char *>& args)
 			const string agp_disk_path = ter_lib_path_to_agp_disk_path(ter_lib_path);
 			agp_t agp;
 			const bool loaded = load_agp(agp_disk_path, agp);
-			DebugAssert(loaded);
 			if(loaded)
 			{
 				agps.insert(make_pair(ter, agp));
@@ -1430,6 +1429,11 @@ static int MergeTylersAg(const vector<const char *>& args)
 					obj_tokens.insert(make_pair(obj->name, token));
 				}
 			}
+			else
+			{
+				fprintf(stderr, "Couldn't find AGP %s", agp_disk_path.c_str());
+			}
+			DebugAssert(loaded);
 		}
 	}
 
