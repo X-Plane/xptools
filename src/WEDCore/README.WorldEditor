@@ -21,7 +21,8 @@ WED 1.8.0 a16 1/15/19
 	- remove ability to lock+hide polygon inner/outer rings to reduce confusion
 	- WED-916: Support user specified text size
 	- WED-1119: Speed up map display by culling objects preview based on their actual size
-	- WED-682: Skip SCENERY_PACK_DISABLED libraries, display status on opening screen
+	- WED-682: Skip SCENERY_PACK_DISABLED libraries, display status on opening screendd3dcy
+	
 	- WED-1117: Add white ring around the first node of open line facades
 	- XSG-6494: Show Gateway Checkout Info in Gateway Import Dialog
 	- display code cleanup - redraws map 2x to 3x faster

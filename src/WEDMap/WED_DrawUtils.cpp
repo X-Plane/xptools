@@ -469,10 +469,10 @@ void DrawLineAttrs(const Point2 * pts, int cnt, const set<int>& attrs)
 				glColor4f(0.3,1,0.3,1);
 				glLineWidth(3);
 				glEnable(GL_LINE_STIPPLE);
-				glLineStipple(1,0x7000);
+				glLineStipple(3,0x1010);
 				glShape2v(GL_LINE_STRIP, pts, cnt);
 				glColor4f(1,0.5,0,1);
-				glLineStipple(1,0x0070);
+				glLineStipple(3,0x0101);
 				glShape2v(GL_LINE_STRIP, pts, cnt);
 				break;
 			case line_BoundaryEdge:
