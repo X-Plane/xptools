@@ -34,6 +34,7 @@
 #include "STLUtils.h"
 
 #include "WED_GISComposite.h"
+#include "WED_GISPolygon.h"
 #include "WED_Airport.h"
 #include "WED_AirportNode.h"
 #include "WED_Group.h"
@@ -230,6 +231,13 @@ void	WED_PropertyTable::GetCellContent(
 		the_content.bool_partial = 0;
 		if (mColNames[mVertical ? cell_y : cell_x] == "Locked")	{ the_content.bool_val = gui_Bool_Lock;		if (!the_content.int_val)	the_content.bool_partial = AnyLocked(t); }
 		if (mColNames[mVertical ? cell_y : cell_x] == "Hidden")	{ the_content.bool_val = gui_Bool_Visible;	if (!the_content.int_val)	the_content.bool_partial = AnyHidden(t); }
+		
+		if((mColNames[mVertical ? cell_y : cell_x] == "Locked" || mColNames[mVertical ? cell_y : cell_x] == "Hidden") &&
+			SAFE_CAST(WED_GISPolygon,my_parent))
+			{
+				the_content.bool_partial = 1;    // don't give the impression the inner/outer rings of polygons could/should be hidden or locked, ever
+				return;
+			}
 		break;
 	case prop_Enum:
 		the_content.content_type = gui_Cell_Enum;
@@ -282,9 +290,6 @@ void	WED_PropertyTable::GetCellContent(
 			the_content.is_disclosed = true;
 		}
 	}
-//	the_content.can_disclose = !mVertical && (cell_x == 0) && t->CountChildren() > 0;
-//	the_content.can_disclose = !mVertical && (cell_x == 0) && e->GetGISClass() == gis_Composite;
-//	the_content.is_disclosed = 	GetOpen(t->GetID()) && the_content.can_disclose;
 	#if DEV
 		//the_content.printCellInfo(true,true,false,true,false,false,true,false,true,false,false,false,false,false);
 	#endif
@@ -390,6 +395,11 @@ void	WED_PropertyTable::AcceptEdit(
 		case prop_Bool:
 			val.prop_kind = prop_Bool;
 			val.int_val = content.int_val;
+			if((mColNames[mVertical ? cell_y : cell_x] == "Locked" || mColNames[mVertical ? cell_y : cell_x] == "Hidden") &&
+				 SAFE_CAST(WED_GISPolygon,t->GetParent()) )
+				{
+					val.int_val = 0;    // don't let anyone ever set polygon inner/outer rings to be hidden or locked.
+				}
 			break;
 		case prop_Enum:
 			val.prop_kind = prop_Enum;
