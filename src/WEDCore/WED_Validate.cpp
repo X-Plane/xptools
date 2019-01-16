@@ -1692,14 +1692,11 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 			}
 			if(is_a_number(datum_lon) && is_a_number(datum_lat))
 			{
-				Point2 apt_datum;
 				Bbox2 apt_bounds;
 				apt->GetBounds(gis_Geo, apt_bounds);
-
-				istringstream iss_lon (datum_lon);
-				istringstream iss_lat (datum_lat);
-				iss_lon >> apt_datum.x_;
-				iss_lat >> apt_datum.y_;
+				apt_bounds.expand(1.0/60.0 / cos(apt_bounds.centroid().x() * DEG_TO_RAD), 1.0/60.0);
+				
+				Point2 apt_datum(stod(datum_lon), stod(datum_lat));
 
 				if(apt_bounds.contains(apt_datum))
 				{
@@ -1709,10 +1706,10 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 				{
 					if(apt_datum.x() < apt_bounds.xmin() || apt_datum.x() > apt_bounds.xmax())
 						add_formated_metadata_error(error_template, wed_AddMetaDataDatumLon,
-						"Coordinates not within the airport's area. Delete both datum meta tags.", who, msgs, apt);
+						"Coordinate not within 1 nm of the airport.", who, msgs, apt);
 					if(apt_datum.y() < apt_bounds.ymin() || apt_datum.y() > apt_bounds.ymax())
 						add_formated_metadata_error(error_template, wed_AddMetaDataDatumLat,
-						"Coordinates not within the airport's area. Delete both datum meta tags.", who, msgs, apt);
+						"Coordinate not within 1 nm of the airport.", who, msgs, apt);
 				}
 			}
 		}
