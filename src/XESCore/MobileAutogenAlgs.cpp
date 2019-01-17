@@ -47,6 +47,7 @@ Polygon2 cgal_tri_to_ben(const CDT::Face_handle &tri, const Bbox2 &containing_ds
 	DebugAssert(tri->vertex(0)->point() != tri->vertex(1)->point());
 	DebugAssert(tri->vertex(0)->point() != tri->vertex(2)->point());
 	DebugAssert(tri->vertex(1)->point() != tri->vertex(2)->point());
+	DebugAssert(tri->is_valid());
 
 	Polygon2 out;
 	out.reserve(3);

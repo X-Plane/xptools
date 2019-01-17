@@ -560,6 +560,7 @@ static inline int MAJORITY_RULES(vector<int> values)
 
 inline Polygon2 cgal_face_to_ben(Pmwx::Face_handle f, double dsf_min_lon, double dsf_min_lat)
 {
+	DebugAssert(CGAL::is_valid(f));
 	Polygon2 out;
 	Pmwx::Ccb_halfedge_circulator edge = f->outer_ccb();
 	Point2 source_ben = cgal2ben(edge->source()->point());
