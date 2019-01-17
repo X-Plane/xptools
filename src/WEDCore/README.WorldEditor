@@ -13,16 +13,16 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 1.8.0 a16 1/15/19
+WED 1.8.0 a17 1/17/19
 	Features:
+	- warn about polygons used to draw rwy markings or transparent rwy for gateway targets
 	- WED-898: Warn about ATC flow rules resulting in runway use with high tailwinds
 	- WED-1064: distinguish the "locked" icon by a touch of red color
 	- WED-203: Hide ATC taxi nodes in hierachy pane
 	- remove ability to lock+hide polygon inner/outer rings to reduce confusion
 	- WED-916: Support user specified text size
 	- WED-1119: Speed up map display by culling objects preview based on their actual size
-	- WED-682: Skip SCENERY_PACK_DISABLED libraries, display status on opening screendd3dcy
-	
+	- WED-682: Skip SCENERY_PACK_DISABLED libraries, display status on opening screen
 	- WED-1117: Add white ring around the first node of open line facades
 	- XSG-6494: Show Gateway Checkout Info in Gateway Import Dialog
 	- display code cleanup - redraws map 2x to 3x faster
