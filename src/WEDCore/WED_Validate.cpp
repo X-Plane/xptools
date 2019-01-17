@@ -1694,7 +1694,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 			{
 				Bbox2 apt_bounds;
 				apt->GetBounds(gis_Geo, apt_bounds);
-				apt_bounds.expand(1.0/60.0 / cos(apt_bounds.centroid().x() * DEG_TO_RAD), 1.0/60.0);
+				apt_bounds.expand(1.0/60.0 / cos(apt_bounds.centroid().y() * DEG_TO_RAD), 1.0/60.0);
 				
 				Point2 apt_datum(stod(datum_lon), stod(datum_lat));
 
