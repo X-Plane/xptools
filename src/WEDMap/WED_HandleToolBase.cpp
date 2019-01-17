@@ -178,10 +178,6 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 	Point2	click_pt(inX, inY);	//GetZoomer()->XPixelToLon(inX),GetZoomer()->YPixelToLat(inY));
 
 	int ei_count = mHandles ? mHandles->CountEntities() : 0;
-	int  c_count;
-	int  l_count;
-	intptr_t eid;
-	int ei, n;
 
 	DebugAssert(mDragType == drag_None);
 	mDragType = drag_None;
@@ -191,46 +187,48 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 	mHandleEntity = -1;
 	mHandleIndex = -1;
 	double best_dist = 9.9e9;
-	double this_dist;
 
-	for (ei = 0; ei < ei_count; ++ei)
+	GUI_KeyFlags mods = GetHost()->GetModifiersNow();
+
+	for (int ei = 0; ei < ei_count; ++ei)
 	{
-		eid = mHandles->GetNthEntityID(ei);
-		c_count = mHandles->CountControlHandles(eid);
-		for (n = 0; n < c_count; ++n)
-		{
-			bool active;
-			Point2	cloc;
-			Point2	cloc_pixels;
-			HandleType_t ht;
-			float radius = HANDLE_RAD;
-			mHandles->GetNthControlHandle(eid, n, &active, &ht, &cloc, NULL, &radius);
-			if (!active) continue;
-
-			radius *= radius;
-			cloc_pixels = GetZoomer()->LLToPixel(cloc);
-			if ((this_dist=click_pt.squared_distance(cloc_pixels)) < best_dist)
-			if (this_dist < radius)
+		intptr_t eid = mHandles->GetNthEntityID(ei);
+		int c_count = mHandles->CountControlHandles(eid);
+		if(c_count > 1 || !(mods & gui_ControlFlag))     // ignore ctrl_click's on point-type items, to use those as toggle clicks later
+			for (int n = 0; n < c_count; ++n)
 			{
-				mHandleEntity = eid;
-				mHandleIndex = n;
-				best_dist = this_dist;
-				if (mDragType == drag_None)
-					mHandles->BeginEdit();
-				mDragType = drag_Handles;
-				mTrackPoint = cloc;
+				bool active;
+				Point2	cloc;
+				Point2	cloc_pixels;
+				HandleType_t ht;
+				float radius = HANDLE_RAD;
+				mHandles->GetNthControlHandle(eid, n, &active, &ht, &cloc, NULL, &radius);
+				if (!active) continue;
+
+				radius *= radius;
+				cloc_pixels = GetZoomer()->LLToPixel(cloc);
+				double this_dist = click_pt.squared_distance(cloc_pixels);
+				if (this_dist < best_dist && this_dist < radius)
+				{
+					mHandleEntity = eid;
+					mHandleIndex = n;
+					best_dist = this_dist;
+					if (mDragType == drag_None)
+						mHandles->BeginEdit();
+					mDragType = drag_Handles;
+					mTrackPoint = cloc;
+				}
 			}
-		}
 	}
 
 	//-------------------------------- CONTROL LINK TAG-UP -------------------------------------------------------
 
 	if (mDragType == drag_None && ei_count > 0)
-		for (ei = 0; ei < ei_count && mDragType == drag_None; ++ei)
+		for (int ei = 0; ei < ei_count && mDragType == drag_None; ++ei)
 		{
-			eid = mHandles->GetNthEntityID(ei);
-			l_count = mHandles->GetLinks(eid);
-			for (n = 0; n < l_count; ++n)
+			intptr_t eid = mHandles->GetNthEntityID(ei);
+			int l_count = mHandles->GetLinks(eid);
+			for (int n = 0; n < l_count; ++n)
 			{
 				bool active;
 				mHandles->GetNthLinkInfo(eid,n,&active, NULL);
@@ -268,9 +266,9 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 
 	click_pt = GetZoomer()->PixelToLL(click_pt);
 	if (mDragType == drag_None && ei_count > 0)
-		for (ei = 0; ei < ei_count; ++ei)
+		for (int ei = 0; ei < ei_count; ++ei)
 		{
-			eid = mHandles->GetNthEntityID(ei);
+			intptr_t eid = mHandles->GetNthEntityID(ei);
 			if (mHandles->PointOnStructure(eid, click_pt))
 			{
 				mDragType = drag_PreEnt;
@@ -339,7 +337,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 				}
 			}
 		}
-		if (has_click)
+		if (has_click && !(mods & gui_ControlFlag))      // ignore ctrl_click's so the selection isn't reset and a single item can be toggle clicked later
 		{
 			mDragType = drag_PreMove;
 			mTrackPoint = click_pt;
@@ -404,7 +402,6 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 			ProcessSelection(ent_base, bounds, sel_set);
 			if(op) op->StartOperation("Change Selection");
 
-			GUI_KeyFlags mods = GetHost()->GetModifiersNow();
 			if ((mods & (gui_ShiftFlag + gui_ControlFlag)) == 0)
 				sel->Clear();
 			mSelToggle = (mods & gui_ControlFlag) != 0;
