@@ -21,6 +21,7 @@
 #include "WED_Airport.h"
 #include "WED_ATCFlow.h"
 #include "WED_ATCRunwayUse.h"
+#include "WED_PolygonPlacement.h"
 #include "WED_Runway.h"
 #include "WED_TaxiRoute.h"
 
@@ -993,6 +994,66 @@ static void AnyTruckRouteNearRunway( const RunwayInfo& runway_info,
 }
 
 
+static void	AnyPolgonsOnRunway( const RunwayInfo& runway_info,
+							 const vector<WED_PolygonPlacement *>& all_polygons,
+							 validation_error_vector& msgs,
+							 WED_Airport* apt)
+{
+
+	Polygon2 runway_hit_box(runway_info.corners_geo);
+
+	Vector2 side_ext = runway_info.width_vec_1m * -1.0;  // Allow any polygon to overlap runway by 1m on all sides
+	Vector2 len_ext  = runway_info.dir_vec_1m   * -1.0;
+
+	runway_hit_box[0] -= len_ext + side_ext;
+	runway_hit_box[1] += len_ext - side_ext;
+	runway_hit_box[2] += len_ext + side_ext;
+	runway_hit_box[3] -= len_ext - side_ext;
+
+	Bbox2	runway_bounds;
+	runway_info.runway_ptr->GetBounds(gis_Geo,runway_bounds);
+	
+	for(auto pp : all_polygons)
+	{
+		if(pp->Cull(runway_bounds))
+		{
+			bool isOnRunway = false;
+			Polygon2 pol;
+			IGISPointSequence * ps = pp->GetOuterRing();
+			int numsides = ps->GetNumSides();
+			for( int i = 0 ; i < numsides ; ++i )
+			{
+				Bezier2 b;
+				ps->GetSide(gis_Geo,i,b);
+				if(runway_hit_box.inside(b.p1) || runway_hit_box.intersects(b.as_segment()))
+				{
+					isOnRunway = true; 
+					break;
+				}
+				pol.push_back(b.p1);
+			}
+			
+			if(!isOnRunway)
+			{                    // check for runway is enclosed by polygon
+				for(auto pt : runway_hit_box)
+					if(pol.inside(pt))
+					{
+						isOnRunway = true; 
+						break;
+					}
+				// todo: check if the runway is completely inside a hole in the polygon ... that would be OK
+			}
+			if (isOnRunway)
+			{
+				string msg ;
+				pp->GetName(msg);
+				msg = "The gateway discourages user created runway markings. DrapedPolygon '" + msg + "' intersects with runway " + runway_info.runway_name;
+				msgs.push_back(validation_error_t(msg, warn_atcrwy_marking, pp, apt));
+			}
+		}
+	}
+}
+
 static bool is_ground_traffic_route(WED_Thing * r)
 {
 	return static_cast<WED_TaxiRoute*>(r)->AllowTrucks();
@@ -1033,7 +1094,7 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs)
 			int original_num_errors = msgs.size();
 			TaxiRouteInfoVec_t matching_taxiroutes = FilterMatchingRunways(*runway_info_itr, all_taxiroutes);
 
-			if (matching_taxiroutes.empty() == false)
+			if (!matching_taxiroutes.empty())
 			{
 				if (AllTaxiRouteNodesInRunway(*runway_info_itr, matching_taxiroutes, msgs, &apt))
 				{
@@ -1070,24 +1131,27 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs)
 	TaxiRouteVec_t all_truckroutes_plain;
 	CollectRecursive(&apt,back_inserter<TaxiRouteVec_t>(all_truckroutes_plain), ThingNotHidden, is_ground_traffic_route, WED_TaxiRoute::sClass);
 	
-	if(!all_truckroutes_plain.empty())
+	vector<WED_PolygonPlacement *> all_polys;
+	if(gExportTarget == wet_gateway)
+		CollectRecursive(&apt,back_inserter(all_polys), WED_PolygonPlacement::sClass);
+	
+	if(!all_truckroutes_plain.empty() || !all_polys.empty())
 	{
 //      So we validate even harsher: _all_ runways, even the inactive ones ...
 		RunwayVec_t all_runways;
 		CollectRecursive(&apt,back_inserter<RunwayVec_t>(all_runways),WED_Runway::sClass);
 		RunwayInfoVec_t runway_info_vec;
-		for(RunwayVec_t::const_iterator itr = all_runways.begin(); itr != all_runways.end(); ++itr)
-			runway_info_vec.push_back(RunwayInfo(*itr,translator));
+		for(auto itr : all_runways)
+			runway_info_vec.push_back(RunwayInfo(itr,translator));
 
 		TaxiRouteInfoVec_t all_truckroutes;
-		for(TaxiRouteVec_t::const_iterator itr = all_truckroutes_plain.begin(); itr != all_truckroutes_plain.end(); ++itr)
-			all_truckroutes.push_back(TaxiRouteInfo(*itr,translator));
-	
-		for(RunwayInfoVec_t::iterator runway_info_itr = runway_info_vec.begin();
-			runway_info_itr != runway_info_vec.end();
-			++runway_info_itr)
+		for(auto itr : all_truckroutes_plain)
+			all_truckroutes.push_back(TaxiRouteInfo(itr,translator));
+			
+		for(auto runway_info_itr : runway_info_vec)
 		{
-			AnyTruckRouteNearRunway(*runway_info_itr, all_truckroutes, msgs, &apt);
+			AnyTruckRouteNearRunway(runway_info_itr, all_truckroutes, msgs, &apt);
+			AnyPolgonsOnRunway(runway_info_itr, all_polys, msgs, &apt);
 		}
 	}
 	
