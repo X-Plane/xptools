@@ -86,6 +86,16 @@ bool	WED_Runway::Cull(const Bbox2& b) const
 	if(GetCornersShoulders(c))	
 	for(n=0;n<8;++n)
 		me+=c[n];
+	if(appl1.value || appl2.value)
+	{
+		Point2 p1, p2;
+		GetSource()->GetLocation(gis_Geo,p1);
+		GetTarget()->GetLocation(gis_Geo,p2);
+		Vector2 dir(p1, p2);
+		double rwy_len = LonLatDistMeters(p1, p2);
+		if(appl1.value) me += p1 - dir / rwy_len * 735;  // covers 2400' ALSF
+		if(appl2.value) me += p2 + dir / rwy_len * 735;
+	}
 	return b.overlap(me);	
 }
 

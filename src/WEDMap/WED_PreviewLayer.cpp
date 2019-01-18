@@ -22,41 +22,44 @@
  */
 
 #include "WED_PreviewLayer.h"
+
 #include "ILibrarian.h"
-#include "WED_ResourceMgr.h"
-#include "WED_LibraryMgr.h"
-#include "WED_TexMgr.h"
-#include "WED_PolygonPlacement.h"
-#include "WED_DrapedOrthophoto.h"
+#include "AptDefs.h"
+#include "GISUtils.h"
+#include "MathUtils.h"
 #include "MatrixUtils.h"
-#include "GUI_GraphState.h"
-#include "GUI_DrawUtils.h"
-#include "WED_ToolUtils.h"
-#include "WED_MapZoomerNew.h"
-#include "WED_DrawUtils.h"
-#include "WED_Runway.h"
-#include "WED_Taxiway.h"
-#include "WED_Sealane.h"
-#include "WED_Helipad.h"
-#include "WED_LinePlacement.h"
-#include "WED_StringPlacement.h"
-#include "WED_AirportChain.h"
-#include "WED_AirportNode.h"
-#include "WED_ObjPlacement.h"
-#include "WED_ForestPlacement.h"
-#include "WED_FacadePlacement.h"
 #include "TexUtils.h"
 #include "ObjDraw.h"
 #include "XObjDefs.h"
-#include "MathUtils.h"
-#include "WED_UIDefs.h"
-#include "WED_EnumSystem.h"
-#include "AptDefs.h"
-#include "GUI_Resources.h"
 #include "XESConstants.h"
-#include "WED_TruckParkingLocation.h"
+
+#include "GUI_Resources.h"
+#include "GUI_GraphState.h"
+#include "GUI_DrawUtils.h"
+
+#include "WED_ResourceMgr.h"
+#include "WED_LibraryMgr.h"
+#include "WED_TexMgr.h"
+#include "WED_UIDefs.h"
+#include "WED_DrawUtils.h"
 #include "WED_EnumSystem.h"
-#include "GISUtils.h"
+#include "WED_MapZoomerNew.h"
+#include "WED_ToolUtils.h"
+
+#include "WED_AirportChain.h"
+#include "WED_AirportNode.h"
+#include "WED_ForestPlacement.h"
+#include "WED_FacadePlacement.h"
+#include "WED_DrapedOrthophoto.h"
+#include "WED_Runway.h"
+#include "WED_Sealane.h"
+#include "WED_Helipad.h"
+#include "WED_LinePlacement.h"
+#include "WED_ObjPlacement.h"
+#include "WED_PolygonPlacement.h"
+#include "WED_StringPlacement.h"
+#include "WED_Taxiway.h"
+#include "WED_TruckParkingLocation.h"
 
 #if APL
 #include <OpenGL/gl.h>
@@ -363,7 +366,85 @@ struct	preview_runway : public WED_PreviewItem {
 			}
 			kill_transform();
 			g->SetState(false,0,false, true,true, false,false);
-		}	
+		}
+		double z = zoomer->GetPPM();
+//		if (0 z > 0.3)                     // draw some well know sign and light positions
+		{
+			AptRunway_t info;
+			rwy->Export(info);
+			if(info.has_distance_remaining)
+			{
+				glColor3ub(25,25,25);
+				for(int dir = 0 ; dir <= 1; dir++)
+				{
+					Point2 lpos = corners[2*dir];
+					Vector2 direction(corners[2*dir], corners[1+2*dir]);
+					double rwy_len = direction.normalize();
+					direction *= z * 1000*FT_TO_MTR;
+					Vector2 offset = direction.perpendicular_ccw() * 15.0/1000;
+					Point2 rpos = corners[3-2*dir] - offset;
+					rpos += offset;
+					int num_signs = rwy_len / (z * 1000*FT_TO_MTR);
+
+					double sign_hdg = RAD_TO_DEG * atan2(direction.x(),direction.y());
+					for(int n = 0; n < num_signs; n++)
+					{
+						lpos += direction;
+						rpos += direction;
+						GUI_PlotIcon(g,"map_taxisign.png",lpos.x(),lpos.y(),sign_hdg, max(0.4, z * 0.05));
+						GUI_PlotIcon(g,"map_taxisign.png",rpos.x(),rpos.y(),sign_hdg, max(0.4, z * 0.05));
+					}
+				}
+			}
+//			vector<int> x,y; vector<float> c;
+			for(int dir = 0 ; dir <= 1; dir++)
+				if(info.app_light_code[dir])
+				{
+					glColor4ub(255,255,255,128);
+ 
+					double spacing = 200*FT_TO_MTR;
+					double length = 1400*FT_TO_MTR;
+					if(info.app_light_code[dir] == apt_app_ALSFI || info.app_light_code[dir] == apt_app_ALSFII ||
+						info.app_light_code[dir] == apt_app_MALSR || info.app_light_code[dir] == apt_app_SSALR)
+					{
+						spacing = 100*FT_TO_MTR;
+						length = 2400*FT_TO_MTR;
+					}
+					Point2 lpos = Segment2(corners[3-2*dir],corners[2*dir]).midpoint(0.5);
+					Vector2 direction(corners[1+2*dir], corners[2*dir]);
+					direction.normalize();
+					Vector2 offset = direction.perpendicular_ccw() * z * 8.0;
+					direction *= z * spacing;
+					int num_lgts = length / spacing;
+					double sign_hdg = RAD_TO_DEG * atan2(direction.x(),direction.y());
+
+//					x.clear(); y.clear(); c.clear();
+					if(info.app_light_code[dir] <= apt_app_MALS)    // 1000' roll bar
+					{
+						Vector2 dir2(direction);
+						dir2.normalize();
+						dir2 *= z * 1000*FT_TO_MTR;
+						Point2 rollbar = lpos + dir2;
+
+						rollbar -= offset * 2;
+						for(int n = 0; n < 5; n++)
+						{
+							if(n != 2)
+//							{ x.push_back(rollbar.x());	y.push_back(rollbar.y()); c.push_back(sign_hdg); }
+								GUI_PlotIcon(g,"map_light.png",rollbar.x(),rollbar.y(),sign_hdg, max(0.3, z * 0.05));
+							rollbar += offset;
+						}
+					}
+					for(int n = 0; n < num_lgts; n++)
+					{
+						lpos += direction;
+//						{ x.push_back(lpos.x());	y.push_back(lpos.y()); c.push_back(sign_hdg); }
+						GUI_PlotIcon(g,"map_light.png",lpos.x(),lpos.y(),sign_hdg, max(0.3, z * 0.05));
+					}
+//					GUI_PlotIconBulk(g,"map_light.png",x.size(),x.data(),y.data(),c.data(), max(0.35, z * 0.05));
+				}
+			g->SetState(false,0,false, true,true, false,false);
+		}
 	}
 };
 
@@ -1146,10 +1227,7 @@ struct	preview_truck : public WED_PreviewItem {
 			Point2 loc;
 			trk->GetLocation(gis_Geo,loc);
 			double trk_heading = trk->GetHeading();
-			if(!cull_obj(zoomer,o1, loc, trk_heading))
-			{
-				draw_obj_at_ll(tman, o1, loc, trk_heading, g, zoomer);
-			}
+			draw_obj_at_ll(tman, o1, loc, trk_heading, g, zoomer);
 
 			if(trk->GetTruckType() == atc_ServiceTruck_Baggage_Train)
 			{
@@ -1159,10 +1237,8 @@ struct	preview_truck : public WED_PreviewItem {
 					double gap = 3.899;
 					Vector2 dirv(sin(trk_heading * DEG_TO_RAD),
 								 cos(trk_heading * DEG_TO_RAD));
-					
 					Vector2 llv = VectorMetersToLL(loc, dirv);
-				
-					
+
 					for(int c = 0; c < trk->GetNumberOfCars(); ++c)
 					{
 						loc -= (llv * gap);
@@ -1179,10 +1255,8 @@ struct	preview_truck : public WED_PreviewItem {
 					double gap = 4.247;
 					Vector2 dirv(sin(trk_heading * DEG_TO_RAD),
 								 cos(trk_heading * DEG_TO_RAD));
-					
 					Vector2 llv = VectorMetersToLL(loc, dirv);
-				
-					
+
 					loc -= (llv * gap);
 					draw_obj_at_ll(tman, o2, loc, trk_heading, g, zoomer);
 				}
