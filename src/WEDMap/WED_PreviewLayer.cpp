@@ -314,7 +314,7 @@ const struct { const char * name; int group_lo;  int group_hi; }	kGroupNames[] =
 };
 
 
-static int layer_group_for_string(const char * s, int o, int def)
+int layer_group_for_string(const char * s, int o, int def)
 {
 	int n = 0;
 	while(kGroupNames[n].name)
@@ -396,7 +396,6 @@ struct	preview_runway : public WED_PreviewItem {
 					}
 				}
 			}
-//			vector<int> x,y; vector<float> c;
 			for(int dir = 0 ; dir <= 1; dir++)
 				if(info.app_light_code[dir])
 				{
@@ -407,8 +406,9 @@ struct	preview_runway : public WED_PreviewItem {
 					if(info.app_light_code[dir] == apt_app_ALSFI || info.app_light_code[dir] == apt_app_ALSFII ||
 						info.app_light_code[dir] == apt_app_MALSR || info.app_light_code[dir] == apt_app_SSALR)
 					{
-						spacing = 100*FT_TO_MTR;
 						length = 2400*FT_TO_MTR;
+						if(info.app_light_code[dir] == apt_app_ALSFI || info.app_light_code[dir] == apt_app_ALSFII)
+							spacing = 100*FT_TO_MTR;
 					}
 					Point2 lpos = Segment2(corners[3-2*dir],corners[2*dir]).midpoint(0.5);
 					Vector2 direction(corners[1+2*dir], corners[2*dir]);
@@ -418,7 +418,6 @@ struct	preview_runway : public WED_PreviewItem {
 					int num_lgts = length / spacing;
 					double sign_hdg = RAD_TO_DEG * atan2(direction.x(),direction.y());
 
-//					x.clear(); y.clear(); c.clear();
 					if(info.app_light_code[dir] <= apt_app_MALS)    // 1000' roll bar
 					{
 						Vector2 dir2(direction);
@@ -430,7 +429,6 @@ struct	preview_runway : public WED_PreviewItem {
 						for(int n = 0; n < 5; n++)
 						{
 							if(n != 2)
-//							{ x.push_back(rollbar.x());	y.push_back(rollbar.y()); c.push_back(sign_hdg); }
 								GUI_PlotIcon(g,"map_light.png",rollbar.x(),rollbar.y(),sign_hdg, max(0.3, z * 0.05));
 							rollbar += offset;
 						}
@@ -438,10 +436,8 @@ struct	preview_runway : public WED_PreviewItem {
 					for(int n = 0; n < num_lgts; n++)
 					{
 						lpos += direction;
-//						{ x.push_back(lpos.x());	y.push_back(lpos.y()); c.push_back(sign_hdg); }
 						GUI_PlotIcon(g,"map_light.png",lpos.x(),lpos.y(),sign_hdg, max(0.3, z * 0.05));
 					}
-//					GUI_PlotIconBulk(g,"map_light.png",x.size(),x.data(),y.data(),c.data(), max(0.35, z * 0.05));
 				}
 			g->SetState(false,0,false, true,true, false,false);
 		}
