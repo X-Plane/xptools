@@ -2172,7 +2172,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	}
 
 	#if !GATEWAY_IMPORT_FEATURES
-	WED_DoATCRunwayChecks(*apt, msgs);
+	WED_DoATCRunwayChecks(*apt, msgs, res_mgr);
 	#endif
 
 	ValidateATC(apt, msgs, legal_rwy_oneway, legal_rwy_twoway);
