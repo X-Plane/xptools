@@ -40,8 +40,18 @@
 
 // This is a hack - by converting our buffer pts to double, we shorten their mantissas, which cuts down the computing 
 // we must do on the planar map build-up by, well, a lot!
-#define PROCESS(x) (ben2cgal<Point_2>(cgal2ben((x))))
+//#define PROCESS(x) (ben2cgal<Point_2>(cgal2ben((x))))
 //#define PROCESS(x) (x)
+
+inline Point_2 PROCESS(Point_2 p)
+{
+	Point2 pp = cgal2ben(p);
+	if(fabs(pp.x() - round(pp.x())) < 0.00001)
+		pp.x_ = round(pp.x());
+	if(fabs(pp.y() - round(pp.y())) < 0.00001)
+		pp.y_ = round(pp.y());
+	return ben2cgal<Point_2>(pp);
+}
 
 /***************************************************************************************************************************************
  * POLYGON TAGGING
