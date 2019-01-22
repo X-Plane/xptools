@@ -27,7 +27,6 @@
 #include "WED_HierarchyUtils.h"
 #include "CompGeomUtils.h"
 #include "GISUtils.h"
-#include "WED_GISUtils.h"
 #include "WED_PreviewLayer.h"
 
 static CoordTranslator2 translator;
@@ -934,7 +933,6 @@ static bool DoHotZoneChecks( const RunwayInfo& runway_info,
 	return msgs.size() - original_num_errors == 0 ? true : false;
 }
 
-
 // flag all ground traffic routes that cross a runways hitbox
 
 static void AnyTruckRouteNearRunway( const RunwayInfo& runway_info,
@@ -1012,12 +1010,8 @@ static void	AnyPolgonsOnRunway( const RunwayInfo& runway_info,	 const vector<WED
 	Bbox2	runway_bounds;
 	runway_info.runway_ptr->GetBounds(gis_Geo,runway_bounds);
 	
-	// this code all skips bezier segment expansion. Assuming that overlaps created by sur curved segment will be small and
-	// false positives rae - as things near to runway perimeter are most likely all straight non-bezier segments
-	 
 	for(auto pp : all_polygons)
 	{
-		Polygon2 pol;
 		if(pp->Cull(runway_bounds))
 		{
 			string vpath;
@@ -1030,48 +1024,8 @@ static void	AnyPolgonsOnRunway( const RunwayInfo& runway_info,	 const vector<WED
 				
 			if(lg <= group_RunwaysEnd ) break;  // don't worry about polygons drawn underneath the runway
 			
-			bool isOnRunway = false;
-			pol.clear();
-			IGISPointSequence * ps = pp->GetOuterRing();
-			int numsides = ps->GetNumSides();
-			for( int i = 0 ; i < numsides ; ++i )
-			{
-				Bezier2 b;
-				ps->GetSide(gis_Geo,i,b);
-				if(runway_hit_box.inside(b.p1) || runway_hit_box.intersects(b.as_segment()))
-				{
-					isOnRunway = true; 
-					break;
-				}
-				pol.push_back(b.p1);
-			}
-			if(!isOnRunway)
-			{                    // check for runway is enclosed by polygon
-				for(auto pt : runway_hit_box)
-					if(pol.inside(pt)) { isOnRunway = true; break; }
-				// now check if runway is completely inside a hole- that would be OK.
-				int numHoles = pp->GetNumHoles();
-				if(isOnRunway && numHoles)
-				{
-					for(int h = 0; h < numHoles; h++)
-					{
-						IGISPointSequence * hs = pp->GetNthHole(h);
-						bool isInsideHole = true;
-						int numsides = hs->GetNumSides();
-						for( int i = 0 ; i < numsides ; ++i )
-						{
-							Bezier2 b;
-							hs->GetSide(gis_Geo,i,b);
-							if(runway_hit_box.inside(b.p1) || runway_hit_box.intersects(b.as_segment()))
-							{
-								isInsideHole = false; 
-								break;
-							}
-						}
-						if(isInsideHole) { isOnRunway = false; break; }
-					}
-				}
-			}
+			bool isOnRunway = pp->Overlaps(gis_Geo, runway_hit_box);
+
 			if (isOnRunway)
 			{
 				string msg ;
