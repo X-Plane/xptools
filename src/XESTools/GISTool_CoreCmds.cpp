@@ -45,6 +45,52 @@
 #include "RF_Msgs.h"
 #endif
 
+static void check_map_sanity()
+{
+	if(gVerbose)
+		printf("Checking map bounds...\n");
+	if(gMapEast - gMapWest == 1 && gMapNorth - gMapSouth == 1)
+	{
+		for(Pmwx::Vertex_const_iterator v = gMap.vertices_begin(); v != gMap.vertices_end(); ++v)
+		{
+			Point_2 p(v->point());
+			Assert(p.x() >= gMapWest );
+			Assert(p.x() <= gMapEast );
+			Assert(p.y() >= gMapSouth);
+			Assert(p.y() <= gMapNorth);
+		}
+		
+		for(Pmwx::Hole_iterator h = gMap.unbounded_face()->holes_begin(); h !=
+										gMap.unbounded_face()->holes_end(); ++h)
+		{
+			Pmwx::Ccb_halfedge_circulator circ, stop;
+			circ = stop = *h;
+			
+			cerr << "Circ " << circ->source()->point() << "," << circ->target()->point() << "\n";
+			cerr << "stop " << stop->source()->point() << "," << stop->target()->point() << "\n";
+
+			do {
+				Point_2 p = circ->target()->point();
+				bool bad_x = p.x() != gMapWest && p.x() != gMapEast;
+				bool bad_y = p.y() != gMapSouth && p.y() != gMapNorth;
+				cerr << p;
+				cerr.flush();
+
+				if(bad_x && bad_y)
+				{
+					cerr << p << "\n";
+					cerr.flush();
+					Assert(!"BAD XY");
+				}
+				
+			} while(++circ != stop);
+		
+		}
+	}
+}
+
+
+
 static int DoExtent(const vector<const char *>& args)
 {
 	gMapWest = atoi(args[0]);
@@ -160,7 +206,7 @@ static int DoCropGrid(const vector<const char *>& args)
 
 static int DoCrop(const vector<const char *>& args)
 {
-	if (gMap.number_of_halfedges() > 0)
+	if (gMap.number_of_halfedges() > 0 || args.size() > 0)
 		CropMap(gMap, gMapWest, gMapSouth, gMapEast, gMapNorth, false, gProgress);
 
 	printf("Map contains: %llu faces, %llu half edges, %llu vertices.\n",
@@ -227,6 +273,7 @@ static int DoValidate(const vector<const char *>& args)
 		fprintf(stderr,"Validation check failed for map %d,%d -> %d,%d\n", gMapWest, gMapSouth, gMapEast, gMapNorth);
 		return 1;
 	}
+	check_map_sanity();
 	return 0;
 }
 
@@ -338,6 +385,7 @@ static int DoSave(const vector<const char *>& args)
 	if (/*!gDem.empty() || */(nland > 0) || distance(gMap.unbounded_face()->holes_begin(),gMap.unbounded_face()->holes_end()) > 1)
 	{
 		if (gVerbose) printf("Saving file %s\n", args[0]);
+		check_map_sanity();
 		WriteXESFile(args[0], gMap, gTriangulationHi, gDem, gApts, gProgress);
 		return 0;
 	} else {
@@ -350,6 +398,7 @@ static int DoSave(const vector<const char *>& args)
 static int DoSaveForce(const vector<const char *>& args)
 {
 	if (gVerbose) printf("Saving file %s (always)\n", args[0]);
+	check_map_sanity();
 	WriteXESFile(args[0], gMap, gTriangulationHi, gDem, gApts, gProgress);
 	return 0;
 }
@@ -448,6 +497,14 @@ static int DoTagOrigin(const vector<const char *>& args)
 		f->data().mParams[af_OriginCode] = o;
 	if (gVerbose)
 		printf("Set %llu faces to have origin ode %f\n",(unsigned long long)gMap.number_of_faces(), o);
+	return 0;
+}
+
+static int DoClearDebug(const vector<const char *>& args)
+{
+	gMeshPoints.clear();
+	gMeshLines.clear();
+	gMeshBeziers.clear();
 	return 0;
 }
 
@@ -2990,7 +3047,7 @@ static int DoInitWithRegion(const vector<const char *>& args)
 
 static	GISTool_RegCmd_t		sCoreCmds[] = {
 { "-region",		1, 1, DoInitWithRegion,	"Init RF to a particular set of region presets.", "" },
-{ "-crop", 			0, 0, DoCrop, 			"Crop the map and DEMs to the current extent.", "" },
+{ "-crop", 			0, 1, DoCrop, 			"Crop the map and DEMs to the current extent.", "" },
 { "-cropgrid",		0, 0, DoCropGrid, 		"Crop the map along 1x1 degree grid lines.", "" },
 { "-bbox", 			0, 0, DoBbox, 			"Show bounds of all maps.", "" },
 //{ "-nearest_dist",  0, 0, DoNearest, 		"Returns closest two pts on map.", "" },
@@ -3006,6 +3063,7 @@ static	GISTool_RegCmd_t		sCoreCmds[] = {
 { "-merge", 		1, 1, DoMerge,			"Superimpose/merge a second vector map.", "" },
 { "-simplify",		0, 0, DoSimplify,		"Remove unneeded vectors.", "" },
 { "-tag_origin",	1, 1, DoTagOrigin,		"Apply origin code X to this map.", "" },
+{ "-clear_debug",	0, 0, DoClearDebug,		"Clear all debug marks.", "" },
 
 { 0, 0, 0, 0, 0, 0 }
 };
