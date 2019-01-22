@@ -221,6 +221,7 @@
     <ClCompile Include="..\..\src\WEDMap\WED_StructureLayer.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_ToolInfoAdapter.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_ToolUtils.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_UIMeasurements.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_VertexTool.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_WorldMapLayer.cpp" />
     <ClCompile Include="..\..\src\WEDNetwork\RAII_Classes.cpp" />
@@ -240,7 +241,6 @@
     <ClCompile Include="..\..\src\WEDWindows\WED_AboutBox.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_DocumentWindow.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_GroupCommands.cpp" />
-    <ClCompile Include="..\..\src\WEDWindows\WED_HierarchyFilterBar.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_LibraryFilterBar.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_Line_Selector.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_Menus.cpp" />
@@ -478,6 +478,7 @@
     <ClInclude Include="..\..\src\WEDMap\WED_StructureLayer.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_ToolInfoAdapter.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_ToolUtils.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_UIMeasurements.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_VertexTool.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_WorldMapLayer.h" />
     <ClInclude Include="..\..\src\WEDNetwork\RAII_Classes.h" />
@@ -498,7 +499,6 @@
     <ClInclude Include="..\..\src\WEDWindows\WED_AboutBox.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_DocumentWindow.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_GroupCommands.h" />
-    <ClInclude Include="..\..\src\WEDWindows\WED_HierarchyFilterBar.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_LibraryFilterBar.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_Line_Selector.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_Menus.h" />

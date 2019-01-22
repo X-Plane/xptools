@@ -72,7 +72,7 @@ static float cell2line(int cell_h, int font)
 {
 	float	line_h = GUI_GetLineHeight(font);
 	float descent = GUI_GetLineDescent(font);
-	return (cell_h - line_h) * 0.5f + descent;
+	return (cell_h - line_h ) * 0.5f + descent;
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------------------
@@ -372,7 +372,7 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 				RenderSign(inState, 
 							cell_bounds[0]+CELL_MARGIN, (float) cell_bounds[1] + cell2line(cell_bounds[3] - cell_bounds[1], mFont),
 							c.text_val.c_str(),
-							0.5f, mFont,
+							0.4*GUI_GetLineHeight(mFont)/12.0, mFont,
 							(c.is_selected||cell_type) ? mColorTextSelect : mColorText);
 			}
 			else
@@ -1229,6 +1229,10 @@ void		GUI_TextTable::CreateEdit(int cell_bounds[4], const vector<GUI_MenuItem_t>
 				mTextField->SetColors(mTFColorText,mTFColorHilite,mTFColorBkgnd,mTFColorBox);
 			}
 		}
+
+		float pad_bottom = cell2line(cell_bounds[3] - cell_bounds[1],mFont);
+		float pad_top = pad_bottom - GUI_GetLineDescent(mFont);
+		mTextField->SetMargins(CELL_MARGIN,pad_bottom,CELL_MARGIN,pad_top);
 
 		cell_bounds[0] += mEditInfo.indent_level * mCellIndent;
 		mTextField->SetBounds(cell_bounds);

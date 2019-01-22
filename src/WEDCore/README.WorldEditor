@@ -13,30 +13,39 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 1.8.0 a14 1/?/19
-    Features:
-    - WED-916: Support user specified text size
-    - WED-1119: Speed up map display by culling objects preview based on their actual size
-    - WED-682: Skip SCENERY_PACK_DISABLED libraries, display status on opening screen
-    - WED-1117: Add white ring around the first node of open line facades
-    - XSG-6494: Show Gateway Checkout Info in Gateway Import Dialog
-    - display code cleanup - redraws map 2x to 3x faster
-    - WED-1115: KEDW exemption for airport size
-    - toughen language used in apt.dat import warning to increase effectiveness
-    - add automatic image splitting for large orthophotos
-    - improve error reporting and 'marginal' path handling in orthophoto im/export
-    - leave exportTarget = "Gateway" after gateway export failed for validation errors
-    - WED-1029: New flavor of duplicate command to support Julians LEGO 'modules'
-    - WED-1020: support X-Plane 1130 apt.dat format: 8.33kHz channel ATC frequencies
-    - validate Runway Use Departure Frequency has matching ATC Departure Frequency
-    - warn if using 8.33k raster frequencies outside of Europe
+WED 1.8.0 a17 1/17/19
+	Features:
+	- don't write apt.dat if there are no airports for it - rather delete it
+	- XST-69: include distance signs and approach lights in runway preview
+	- make CTRL-Click toggle (most) item's selection status, just as CRTL-Drag does
+	- warn about polygons used to draw rwy markings or transparent rwy for gateway targets
+	- WED-898: Warn about ATC flow rules resulting in runway use with high tailwinds
+	- WED-1064: distinguish the "locked" icon by a touch of red color
+	- WED-203: Hide ATC taxi nodes in hierachy pane
+	- remove ability to lock+hide polygon inner/outer rings to reduce confusion
+	- WED-916: Support user specified text size
+	- WED-1119: Speed up map display by culling objects preview based on their actual size
+	- WED-682: Skip SCENERY_PACK_DISABLED libraries, display status on opening screen
+	- WED-1117: Add white ring around the first node of open line facades
+	- XSG-6494: Show Gateway Checkout Info in Gateway Import Dialog
+	- display code cleanup - redraws map 2x to 3x faster
+	- WED-1115: KEDW exemption for airport size
+	- toughen language used in apt.dat import warning to increase effectiveness
+	- add automatic image splitting for large orthophotos
+	- improve error reporting and 'marginal' path handling in orthophoto im/export
+	- leave exportTarget = "Gateway" after gateway export failed for validation errors
+	- WED-1029: New flavor of duplicate command to support Julians LEGO 'modules'
+	- WED-1020: support X-Plane 1130 apt.dat format: 8.33kHz channel ATC frequencies
+	- validate Runway Use Departure Frequency has matching ATC Departure Frequency
+	- warn if using 8.33k raster frequencies outside of Europe
 	- WED-501, WED-477, WED-188, WED-118: Add OSM maps and ESRI orthos as background images
 	- WED-50, WED-950: Add navaid overlay to background images
-    - WED-891: Support S,T and W suffixes for runway names
-    - WED-1105: Moderator mode improvements
+	- WED-891: Support S,T and W suffixes for runway names
+	- WED-1105: Moderator mode improvements
 	- show more particular pictograms for XP11.25 added yellow line types
 	- WED-939: Warn about "silly" large ramp starts at airports with way to small runways
 	Bug Fixes:
+	- fix incorrect line style stipples, add stipples for more linetypes
 	- WED-271: fix PropertyPane not showing all available Columns upon startup
 	- WED-1123: Prevent Custom Libs from elevating visibilities of LR default lib items
 	- scale down very large ortho images exceeding the GPU's max texture size to still display

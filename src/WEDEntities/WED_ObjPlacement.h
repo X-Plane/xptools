@@ -48,6 +48,7 @@ public:
 #endif			
 			void		SetShowLevel(int show_level);
 			int			GetShowLevel(void) const;
+			double 	GetVisibleDeg(void) const;
 
 	virtual const char *	HumanReadableType(void) const { return "Object"; }
 

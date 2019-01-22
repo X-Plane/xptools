@@ -216,6 +216,7 @@
 		<Unit filename="../../src/Utils/BitmapUtils.h" />
 		<Unit filename="../../src/Utils/CSVParser.cpp" />
 		<Unit filename="../../src/Utils/CSVParser.h" />
+		<Unit filename="../../src/Utils/CompGeomDefs2.h" />
 		<Unit filename="../../src/Utils/CompGeomUtils.cpp" />
 		<Unit filename="../../src/Utils/CompGeomUtils.h" />
 		<Unit filename="../../src/Utils/EndianUtils.c">
@@ -648,8 +649,6 @@
 		<Unit filename="../../src/WEDWindows/WED_DocumentWindow.h" />
 		<Unit filename="../../src/WEDWindows/WED_GroupCommands.cpp" />
 		<Unit filename="../../src/WEDWindows/WED_GroupCommands.h" />
-		<Unit filename="../../src/WEDWindows/WED_HierarchyFilterBar.cpp" />
-		<Unit filename="../../src/WEDWindows/WED_HierarchyFilterBar.h" />
 		<Unit filename="../../src/WEDWindows/WED_LibraryFilterBar.cpp" />
 		<Unit filename="../../src/WEDWindows/WED_LibraryFilterBar.h" />
 		<Unit filename="../../src/WEDWindows/WED_Line_Selector.cpp" />

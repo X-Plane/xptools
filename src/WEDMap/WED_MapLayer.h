@@ -26,7 +26,8 @@
 
 #include "GUI_Defs.h"
 
-#define MIN_PIXELS_LINE_PREVIEW 5.0
+#define MIN_PIXELS_PREVIEW 5.0   // cutt off preview if object is (roughly) smaller than this many pixels.
+											// For airport lines/light, show structural preview if they are smaller than this instead
 
 class	WED_MapZoomerNew;
 class	GUI_GraphState;

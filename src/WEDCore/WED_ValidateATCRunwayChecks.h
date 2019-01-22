@@ -25,10 +25,11 @@
 #define WED_VALIDATEATCRUNWAYCHECKS_H
 
 #include "CompGeomUtils.h"
-#include "CompGeomDefs2.h"
 #include "GISUtils.h"
 
 class WED_Airport;
+class WED_ResourceMgr;
+
 #include "AptDefs.h"
 #include "WED_Runway.h"
 #include "WED_TaxiRoute.h"
@@ -158,8 +159,6 @@ struct TaxiRouteInfo
 	
 };
 
-
-void WED_DoATCRunwayChecks(WED_Airport& apt,
-						   vector<validation_error_t>& msgs);
+void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs, WED_ResourceMgr * res_mgr);
 
 #endif

@@ -23,11 +23,10 @@
 
 #include "GUI_FilterBar.h"
 #include "WED_Colors.h"
-#include "WED_Globals.h"
 #include "GUI_Fonts.h"
 #include "GUI_Resources.h"
 
-static int cols[2] = { 90, 100 };
+static int cols[2] = { 100, 100 };
 
 GUI_FilterBar::GUI_FilterBar(
 			GUI_Commander *	cmdr,
@@ -63,7 +62,7 @@ GUI_FilterBar::GUI_FilterBar(
 				WED_Color_RGBA(wed_Table_Drag_Into));
 	mTextTable.SetFont(font_UI_Small);
 	this->AddListener(this);
-	if(gFontSize > 14) SetCellWidth(0, 115);
+	SetCellWidth(0, GUI_MeasureRange(font_UI_Small,"property_bar.png", "property_bar.png"+strlen("property_bar.png")));
 }
 
 int			GUI_FilterBar::GetColCount(void)
