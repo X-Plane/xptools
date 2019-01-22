@@ -30,6 +30,7 @@
 			buildPhases = (
 			);
 			dependencies = (
+				D68801C321F7784E00A66577 /* PBXTargetDependency */,
 				D60734350D197A2700E08F61 /* PBXTargetDependency */,
 				D6C68DED0BEFB3BE00C9F880 /* PBXTargetDependency */,
 				D6C68DE90BEFB3BE00C9F880 /* PBXTargetDependency */,
@@ -930,6 +931,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = D6C579BC0C7E3C7B00FCB4C1;
 			remoteInfo = DDSTool;
+		};
+		D68801C221F7784E00A66577 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D6A2665D0F99266D00E1E754;
+			remoteInfo = ac3d;
 		};
 		D6C68DDB0BEFB3A400C9F880 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -4834,6 +4842,11 @@
 			target = D6C579BC0C7E3C7B00FCB4C1 /* DDSTool */;
 			targetProxy = D66FD8790C933D39004AD565 /* PBXContainerItemProxy */;
 		};
+		D68801C321F7784E00A66577 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D6A2665D0F99266D00E1E754 /* ac3d */;
+			targetProxy = D68801C221F7784E00A66577 /* PBXContainerItemProxy */;
+		};
 		D6C68DDC0BEFB3A400C9F880 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = D6ED369A0B67964D00D5484E /* WED */;
@@ -5531,7 +5544,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				BUNDLE_LOADER = /Applications/ac3dmac/ac3d.app/Contents/MacOS/ac3d;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -5545,9 +5557,9 @@
 				);
 				MACH_O_TYPE = mh_bundle;
 				OTHER_LDFLAGS = (
-					SDK/mac_i386/lib/libz.a,
-					SDK/mac_i386/lib/libsquish.a,
-					SDK/mac_i386/lib/libpng.a,
+					libs/local/lib/libsquish.a,
+					libs/local/lib/libpng.a,
+					libs/local/lib/libz.a,
 				);
 				PRODUCT_NAME = XPlaneSupportMac;
 			};
@@ -5557,7 +5569,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				BUNDLE_LOADER = /Applications/ac3dmac/ac3d.app/Contents/MacOS/ac3d;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -5576,9 +5587,9 @@
 				);
 				MACH_O_TYPE = mh_bundle;
 				OTHER_LDFLAGS = (
-					SDK/mac_i386/lib/libz.a,
-					SDK/mac_i386/lib/libsquish.a,
-					SDK/mac_i386/lib/libpng.a,
+					libs/local/lib/libsquish.a,
+					libs/local/lib/libpng.a,
+					libs/local/lib/libz.a,
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = XPlaneSupportMac;
@@ -5589,7 +5600,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				BUNDLE_LOADER = /Applications/ac3dmac/ac3d.app/Contents/MacOS/ac3d;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -5608,9 +5618,9 @@
 				);
 				MACH_O_TYPE = mh_bundle;
 				OTHER_LDFLAGS = (
-					SDK/mac_i386/lib/libz.a,
-					SDK/mac_i386/lib/libsquish.a,
-					SDK/mac_i386/lib/libpng.a,
+					libs/local/lib/libsquish.a,
+					libs/local/lib/libpng.a,
+					libs/local/lib/libz.a,
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = XPlaneSupportMac;
@@ -5621,7 +5631,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				BUNDLE_LOADER = /Applications/ac3dmac/ac3d.app/Contents/MacOS/ac3d;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -5636,9 +5645,9 @@
 				);
 				MACH_O_TYPE = mh_bundle;
 				OTHER_LDFLAGS = (
-					SDK/mac_i386/lib/libz.a,
-					SDK/mac_i386/lib/libsquish.a,
-					SDK/mac_i386/lib/libpng.a,
+					libs/local/lib/libsquish.a,
+					libs/local/lib/libpng.a,
+					libs/local/lib/libz.a,
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = XPlaneSupportMac;

@@ -38,7 +38,7 @@ void	PatchCountryRoads(Pmwx& ioMap, CDT& mesh, const DEMGeo& inUrbanDensity);
 #if OPENGL_MAP && DEV
 void	debug_network(Pmwx& io_map);
 #endif
-void	repair_network(Pmwx& io_map);
+void	repair_network(Pmwx& io_map, bool verbose);
 
 int score_for_junction(Pmwx::Vertex_handle v);
 int optimize_one_junction(Pmwx::Vertex_handle v);

@@ -96,6 +96,8 @@ int	main(int argc, char * argv[])
 	{
 		exit(0);
 	}
+	
+	rf_region region = rf_usa;
 
 	try {
 
@@ -103,7 +105,7 @@ int	main(int argc, char * argv[])
 		// call exit!
 		CGAL::set_error_handler(CGALFailure);
 
-		XESInit(false);			// no forests
+		XESInit(region,false);			// no forests
 		MakeDirectRules();
 
 		if(argc != 6)
@@ -400,7 +402,7 @@ int	main(int argc, char * argv[])
 
 		MT_FinishCreate();
 
-		MT_MakeDSF(argv[4], argv[5]);
+		MT_MakeDSF(region, argv[4], argv[5]);
 
 
 	} catch (std::exception& e) {

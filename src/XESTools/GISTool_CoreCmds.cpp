@@ -3041,7 +3041,7 @@ static int DoInitWithRegion(const vector<const char *>& args)
 	else
 		gRegion = rf_usa;
 	
-	XESInit(true);
+	XESInit(gRegion, true);
 	return 0;
 }
 
