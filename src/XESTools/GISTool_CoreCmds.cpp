@@ -451,6 +451,14 @@ static int DoTagOrigin(const vector<const char *>& args)
 	return 0;
 }
 
+static int DoClearDebug(const vector<const char *>& args)
+{
+	gMeshPoints.clear();
+	gMeshLines.clear();
+	gMeshBeziers.clear();
+	return 0;
+}
+
 static int DoSimplify(const vector<const char *>& args)
 {
 	if (gVerbose)
@@ -3006,6 +3014,7 @@ static	GISTool_RegCmd_t		sCoreCmds[] = {
 { "-merge", 		1, 1, DoMerge,			"Superimpose/merge a second vector map.", "" },
 { "-simplify",		0, 0, DoSimplify,		"Remove unneeded vectors.", "" },
 { "-tag_origin",	1, 1, DoTagOrigin,		"Apply origin code X to this map.", "" },
+{ "-clear_debug",	0, 0, DoClearDebug,		"Clear all debug marks.", "" },
 
 { 0, 0, 0, 0, 0, 0 }
 };
