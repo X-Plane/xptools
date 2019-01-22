@@ -43,7 +43,7 @@ float *		WED_Color_RGBA(WED_Color c)
 
 		colors.resize(wed_Last*4);
 		int row_bytes = im.width * im.channels + im.pad;
-		for (int n = 0; n < wed_Last; ++n)
+		for (int n = 0; n < wed_pure_white; ++n)
 		{
 			unsigned char * ptr = im.data + row_bytes * (n*SWATCH_HEIGHT+SWATCH_HEIGHT/2) + im.channels * (SWATCH_HEIGHT/2);
 
