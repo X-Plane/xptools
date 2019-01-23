@@ -123,7 +123,6 @@ Bbox2 get_ortho_grid_square_bounds(const CDT::Face_handle &tri, const Bbox2 &con
 	const Point2 centroid = ben_tri.centroid();
 
 	// Only case when the centroid might not be inside the tri: if the tri is a sliver, and our floating point math blows up
-	DebugAssert(ben_tri.inside(centroid) || tri_is_sliver(ben_tri));
 	#if DEV
 	static size_t s_slivers = 0;
 	if(tri_is_sliver(ben_tri))
@@ -136,6 +135,8 @@ Bbox2 get_ortho_grid_square_bounds(const CDT::Face_handle &tri, const Bbox2 &con
 		}
 	}
 	#endif
+	DebugAssert(!tri_is_sliver(ben_tri));
+	DebugAssert(ben_tri.inside(centroid));
 
 	const grid_coord_desc grid_pt = get_ortho_grid_xy(ben_tri.inside(centroid) ? centroid : ben_tri.front(), style);
 
