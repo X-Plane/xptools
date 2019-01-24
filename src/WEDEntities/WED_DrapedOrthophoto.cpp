@@ -33,8 +33,6 @@ TRIVIAL_COPY(WED_DrapedOrthophoto,WED_GISPolygon)
 WED_DrapedOrthophoto::WED_DrapedOrthophoto(WED_Archive * a, int i) : WED_GISPolygon(a,i),
 	resource(this,PROP_Name("Resource",       XML_Name("draped_orthophoto","resource")),  ""),
 	heading (this,PROP_Name("Texture Heading",XML_Name("draped_orthophoto","heading")),   0.0,5,1),
-	width   (this,PROP_Name("Texture Width",  XML_Name("draped_orthophoto","width")),     0.0,5,2),
-	length  (this,PROP_Name("Texture Length", XML_Name("draped_orthophoto","length")),    0.0,5,2),
 	top     (this,PROP_Name("Texture Top",    XML_Name("draped_orthophoto","tex_top")),   0.0,5,3),
 	bottom  (this,PROP_Name("Texture Bottom", XML_Name("draped_orthophoto","tex_bottom")),0.0,5,3),
 	left    (this,PROP_Name("Texture Left",   XML_Name("draped_orthophoto","tex_left")),  0.0,5,3),
@@ -64,12 +62,6 @@ double WED_DrapedOrthophoto::GetHeading(void) const
 void WED_DrapedOrthophoto::SetHeading(double h)
 {
 	heading = h;
-}
-
-void WED_DrapedOrthophoto::SetSizeDisp(double w, double l)
-{
-	length = l;
-	width = w;
 }
 
 // this function tells if the resource is a .POL definition (true) or
@@ -166,7 +158,6 @@ void WED_DrapedOrthophoto::Redrape(bool updProp)
 				ring->GetBounds(gis_Geo, ll_box);     // get the bounding box in _rotated_ coordinates
 				double w=ll_box.xspan()*DEG_TO_MTR_LAT*cos(ctr.y()*DEG_TO_RAD);
 				double l=ll_box.yspan()*DEG_TO_MTR_LAT;
-				if (updProp) SetSizeDisp(w,l);
 			}
 			for(int n = 0; n < np; ++n)
 			{

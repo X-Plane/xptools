@@ -170,7 +170,7 @@ static void print_mesh_stats(void)
 	printf("mean=%f min=%f max=%f std dev = %f", mean, minv, maxv, devsq);
 }
 
-void MT_MakeDSF(const char * dump, const char * out_dsf)
+void MT_MakeDSF(rf_region region, const char * dump, const char * out_dsf)
 {
 	// -simplify
 	SimplifyMap(*the_map, true, ConsoleProgressFunc);
@@ -214,7 +214,7 @@ void MT_MakeDSF(const char * dump, const char * out_dsf)
 	#endif
 
 	// -exportDSF
-	BuildDSF(out_dsf, NULL, sDem[dem_Elevation],sDem[dem_Bathymetry],sDem[dem_UrbanDensity],sMesh, /*sTriangulationLo,*/ *the_map, ConsoleProgressFunc);
+	BuildDSF(out_dsf, NULL, sDem[dem_Elevation],sDem[dem_Bathymetry],sDem[dem_UrbanDensity],sMesh, /*sTriangulationLo,*/ *the_map, region, ConsoleProgressFunc);
 }
 
 void MT_Cleanup(void)

@@ -302,7 +302,7 @@ static bool ReadLandFillRule(const vector<string>& tokens, void * ref)
 	return true;
 }
 
-void LoadZoningRules(void)
+void LoadZoningRules(rf_region inRegion)
 {
 	gLandClassInfo.clear();
 	gZoningRules.clear();
@@ -323,7 +323,7 @@ void LoadZoningRules(void)
 	RegisterLineHandler("FACADE_TILE", ReadFacadeRule, NULL);
 	RegisterLineHandler("FACADE_SPELLING", ReadFacadeRule, NULL);
 
-	LoadConfigFile(gRegion == rf_eu ? "zoning_eu.txt" : "zoning_us.txt");
+	LoadConfigFile(inRegion == rf_eu ? "zoning_eu.txt" : "zoning_us.txt");
 
 	for(FacadeSpellingTable::iterator sp = gFacadeSpellings.begin(); sp != gFacadeSpellings.end(); ++sp)
 	{

@@ -29,17 +29,12 @@
 #include "AptDefs.h"
 #include "CompGeomDefs2.h"
 #include "CompGeomDefs3.h"
+#include "XESConstants.h"
 
 //class Pmwx;
 class CDT;
 class DEMGeoMap;
 struct	PmwxIndex_t;
-
-
-enum rf_region {
-	rf_usa = 0,
-	rf_eu = 1
-};
 
 extern bool					gMobile; // true if we're building for Mobile; false if we're building for Desktop
 extern rf_region			gRegion;

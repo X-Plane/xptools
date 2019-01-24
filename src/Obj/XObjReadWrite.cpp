@@ -530,7 +530,8 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 
 	outObj.texture.clear();
 	outObj.texture_lit.clear();
-	outObj.texture_nrm.clear();
+	outObj.texture_normal_map.clear();
+//	outObj.texture_nrm.clear();
 	outObj.indices.clear();
 	outObj.geo_tri.clear(8);
 	outObj.geo_lines.clear(6);
@@ -616,7 +617,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		// TEXTURE_NORMAL <tex>
 		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "TEXTURE_NORMAL", xfals))
 		{
-			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &outObj.texture_nrm);
+			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &outObj.texture_normal_map);
 		}
 		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "TEXTURE_DRAPED", xfals))
 		{
@@ -1508,17 +1509,13 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 	// TEXTURES
 									fprintf(fi, "TEXTURE %s" CRLF, outObj.texture.c_str());
 	if (!outObj.texture_lit.empty())fprintf(fi, "TEXTURE_LIT %s" CRLF, outObj.texture_lit.c_str());
-	if (!outObj.texture_nrm.empty())fprintf(fi, "TEXTURE_NORMAL %s" CRLF, outObj.texture_nrm.c_str());
+	if (!outObj.texture_normal_map.empty())fprintf(fi, "TEXTURE_NORMAL %s" CRLF, outObj.texture_normal_map.c_str());
 
 	if(outObj.use_metalness)
 		fprintf(fi,"NORMAL_METALNESS" CRLF);
 	if(outObj.glass_blending)
 		fprintf(fi,"BLEND_GLASS" CRLF);
 
-	if(outObj.use_metalness)
-		fprintf(fi,"NORMAL_METALNESS" CRLF);
-	if(outObj.glass_blending)
-		fprintf(fi,"BLEND_GLASS" CRLF);
 
 	if(!outObj.particle_system.empty())
 	fprintf(fi,"PARTICLE_SYSTEM %s" CRLF, outObj.particle_system.c_str());

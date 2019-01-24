@@ -984,6 +984,7 @@ void	BuildDSF(
 			CDT&			inHiresMesh,
 //			CDT&			inLoresMesh,
 			Pmwx&			inVectorMap,
+			rf_region		inRegion,
 			ProgressFunc	inProgress)
 {
 
@@ -2076,7 +2077,7 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 
 			CleanupNetworkTopology(junctions, chains);
 			if (inProgress && inProgress(3, 5, "Compiling Vectors", 1.0)) return;
-			if(gRegion == rf_eu)
+			if(inRegion == rf_eu)
 				cbs.AcceptNetworkDef_f("lib/g10/roads_EU.net", writer2);
 			else
 				cbs.AcceptNetworkDef_f("lib/g10/roads.net", writer2);			

@@ -87,7 +87,7 @@ grid_coord_desc get_ortho_grid_xy(const Point2 &point, ag_terrain_style style)
 	const int x_grid_coord = delta_lon * divisions_lon;
 	const int y_grid_coord = delta_lat * divisions_lat;
 
-	grid_coord_desc out = { x_grid_coord, y_grid_coord, divisions_lon, divisions_lat, dsf_min_lon, dsf_min_lat };
+	grid_coord_desc out = { x_grid_coord, y_grid_coord, divisions_lon, divisions_lat, intround(dsf_min_lon), intround(dsf_min_lat) };
 	DebugAssert(out.x < out.dx);
 	DebugAssert(out.y < out.dy);
 	return out;

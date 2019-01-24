@@ -84,11 +84,11 @@ static void	CFStringToSTL(CFStringRef cfstr, string& stl_str, CFStringEncoding e
 	stl_str = string(buf.begin(),buf.end());
 }
 
-UTF32 script_to_utf32(int c)
+UTF32 script_to_utf32(char c)
 {
-	char buf[2] = { c, 0 };
+	char buf[2] = { c, '\0' };
 	CFStringRef	s = CFStringCreateWithCString(kCFAllocatorDefault,buf,CFStringGetSystemEncoding());
-	if(s== NULL) return (c < 0x80 ? c : 0);
+	if(s== NULL) return (c & 0x80 ? 0 : c);
 	
 	string utf8;
 	CFStringToSTL(s,utf8,kCFStringEncodingUTF8);

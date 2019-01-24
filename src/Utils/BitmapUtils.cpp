@@ -381,12 +381,14 @@ int GetSupportedType(const char * path)
 	return -1;
 }
 
+// should really be called "CreateBitmapFromFileAccordingToSuffix"
 int MakeSupportedType(const char * path, ImageInfo * inImage)
 {
 	int error = -1;//Guilty until proven innocent
 	switch(GetSupportedType(path))
 	{
 	case WED_BMP:
+// should really be called "CreateBitmapFromBMP"
 		error = CreateBitmapFromFile(path,inImage);
 		break;
 	case WED_DDS:
@@ -1887,8 +1889,8 @@ inline void swap_mem(unsigned char * p1, unsigned char * p2, int len)
 {
 	while(len--)
 	{
-		register unsigned char a = *p1;
-		register unsigned char b = *p2;
+		unsigned char a = *p1;
+		unsigned char b = *p2;
 		*p1 = b;
 		*p2 = a;
 		++p1;

@@ -815,7 +815,7 @@ int DoCheckRoads(const vector<const char *>& args)
 
 int DoFixRoads(const vector<const char *>& args)
 {
-	repair_network(gMap);
+	repair_network(gMap, gVerbose);
 	return 0;
 }
 

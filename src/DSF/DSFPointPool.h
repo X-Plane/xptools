@@ -101,19 +101,10 @@ private:
 };
 
 HASH_MAP_NAMESPACE_START
-#if MSC
-template<> inline
-size_t hash_value<DSFTuple>(const DSFTuple& _Keyval)
-{
-	return _Keyval.hash();
-}
-
-#else
 template <>
 struct hash<DSFTuple> HASH_PARENT(DSFTuple, std::size_t) {
 	std::size_t operator()(const DSFTuple& key) const { return key.hash(); }
 };
-#endif
 HASH_MAP_NAMESPACE_END
 
 typedef	vector<DSFTuple>			DSFTupleVector;

@@ -31,13 +31,16 @@
 #include <stdio.h>
 #include <algorithm>
 
-#define	CHECK_GL_ERR		GL_ERR(glGetError());
-
-static void GL_ERR(int err)
-{
-	if (err != 0)
-		fprintf(stderr, "GL ERROR: %d\n", err);
-}
+#if DEV
+	static void GL_ERR(int err)
+	{
+		if (err != 0)
+			printf("GL ERROR: %d\n", err);
+	}
+	#define	CHECK_GL_ERR		GL_ERR(glGetError());
+#else
+	#define	CHECK_GL_ERR	
+#endif
 
 static void	Default_SetupPoly(void * ref)
 {

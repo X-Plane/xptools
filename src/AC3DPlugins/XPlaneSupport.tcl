@@ -29,8 +29,11 @@
 # switched off the ---- tearoff menu item from popup menus
 # added (Ben): magnet to light options
 # added (Ben): Manipulators: rotate axis-detent command-knob-2way command-switch-up/down-2way command-switch-left/right-2way
+# some repositioning of widgets in object section
 
 
+# 17th Jan 2019 removed variable traces on xplane_anim_keyframe_count$* andy xplane_manip_detent_count+*  caused infinite update loop on some objects.
+# added ";xplane_inspector_sync" to add/del buttons (translation/rotation/manip) so that UI updates (because variable trace was removed)
 
 
 
@@ -1146,34 +1149,54 @@ proc xplane_inspector {} {
 #				$container.obj.anim_type_btn.menu add radiobutton -label $anim_mode -variable xplane_anim_type$idx -command "xplane_obj_sync_all"
 #			}		
 #			pack $container.obj.anim_type_btn
+
+
+			proc labelspin { w label from inc to var } {
+
+				frame $w
+				label $w.label -text $label
+				spinbox $w.spin -from $from -increment $inc -to $to -textvariable $var -width 6
+				pack $w.label $w.spin -side left
+				return $w
+			}
+
 			
 			labelframe $container.obj.none -text "Object:"		
-				label	$container.obj.none.poly_os_label -text "Polygon Offset:"
-				spinbox $container.obj.none.poly_os_value -from 0 -increment 1 -to 5 -textvariable xplane_poly_os$idx -width 6
-				pack	$container.obj.none.poly_os_label	$container.obj.none.poly_os_value
-				label $container.obj.none.hard_surf_label -text "Surface:"
-				menubutton $container.obj.none.hard_surf_btn -menu $container.obj.none.hard_surf_btn.menu -direction flush -textvariable xplane_hard_surf$idx
-				menu $container.obj.none.hard_surf_btn.menu
+
+			pack [labelspin $container.obj.none.polyoffset "Polygon Offset" 0 1 5 xplane_poly_os$idx ] -anchor w
+
+#				label	$container.obj.none.poly_os_label -text "Polygon Offset:"
+#				spinbox $container.obj.none.poly_os_value -from 0 -increment 1 -to 5 -textvariable xplane_poly_os$idx -width 6
+#				pack	$container.obj.none.poly_os_label	$container.obj.none.poly_os_value
+				
+			label $container.obj.none.hard_surf_label -text "Surface:"
+				
+			menubutton $container.obj.none.hard_surf_btn -menu $container.obj.none.hard_surf_btn.menu -direction flush -textvariable xplane_hard_surf$idx
+
+			menu $container.obj.none.hard_surf_btn.menu
 				foreach surf $xplane_hard_surface_options {
 					$container.obj.none.hard_surf_btn.menu add radiobutton -label $surf -variable xplane_hard_surf$idx -command "xplane_obj_sync_all"
 				}
+			    pack $container.obj.none.hard_surf_label $container.obj.none.hard_surf_btn -anchor w
+
 				checkbutton $container.obj.none.is_deck -text "Deck" -variable xplane_is_deck$idx
-				pack $container.obj.none.hard_surf_label $container.obj.none.hard_surf_btn 
+				
 				pack $container.obj.none.is_deck
+
 				checkbutton $container.obj.none.use_materials -text "Use AC3D Materials" -variable xplane_use_materials$idx
-				pack $container.obj.none.use_materials
+				pack $container.obj.none.use_materials -anchor w
 				checkbutton $container.obj.none.blend_enable -text "Blending" -variable xplane_blend_enable$idx -command "xplane_obj_sync_all"
-				pack $container.obj.none.blend_enable
+				pack $container.obj.none.blend_enable -anchor w
 				frame $container.obj.none.blend_level
 					make_labeled_entry $container.obj.none.blend_level "blend cutoff" xplane_blend_level$idx 10
-				pack $container.obj.none.blend_level
+				pack $container.obj.none.blend_level -anchor w
 				
 				checkbutton $container.obj.none.hard_wall -text "Wall" -variable xplane_wall$idx
-				pack $container.obj.none.hard_wall
+				pack $container.obj.none.hard_wall -anchor w
 				checkbutton $container.obj.none.draw_disable -text "Disable Drawing" -variable xplane_draw_disable$idx
-				pack $container.obj.none.draw_disable
+				pack $container.obj.none.draw_disable -anchor w
 				checkbutton $container.obj.none.mod_lit -text "Dynamic LIT" -variable xplane_mod_lit$idx -command "xplane_obj_sync_all"
-				pack $container.obj.none.mod_lit
+				pack $container.obj.none.mod_lit -anchor w
 				build_listbox_dref $container.obj.none.dref_list $container.obj.none.scroll xplane_lit_dataref$idx
 				make_labeled_entry $container.obj.none "v1" xplane_lit_v1$idx 10
 				make_labeled_entry $container.obj.none "v2" xplane_lit_v2$idx 10				
@@ -1228,14 +1251,15 @@ proc xplane_inspector {} {
 
 					for {set x 0} {$x<$MAX_DETENTS} {incr x} {
 						make_labeled_entry_triplet $container.obj.none.manip.detents "lo $x" xplane_manip_detent_lo$x$idx "hi $x" xplane_manip_detent_hi$x$idx "height $x" xplane_manip_detent_hgt$x$idx
-						button $container.obj.none.manip.detents.xplane_manip_detent_lo$x$idx.delete -text "Delete" -command "ac3d xplane_delete_detent $x $idx"
-						button $container.obj.none.manip.detents.xplane_manip_detent_lo$x$idx.add -text "Add" -command "ac3d xplane_add_detent $x $idx"
+# 16th Jan 2018 - added ";xplane_inspector_sync" to add/del buttons so that UI updates (because variable trace was removed)
+						button $container.obj.none.manip.detents.xplane_manip_detent_lo$x$idx.delete -text "Delete" -command "ac3d xplane_delete_detent $x $idx; xplane_inspector_sync"
+						button $container.obj.none.manip.detents.xplane_manip_detent_lo$x$idx.add -text "Add" -command "ac3d xplane_add_detent $x $idx; xplane_inspector_sync"
 						pack $container.obj.none.manip.detents.xplane_manip_detent_lo$x$idx.delete $container.obj.none.manip.detents.xplane_manip_detent_lo$x$idx.add -side left -anchor nw
 					}
 
 					pack $container.obj.none.manip.detents
 
-				pack $container.obj.none.manip
+				pack $container.obj.none.manip -anchor w -fill x
 				
 			pack $container.obj.none
 			
@@ -1243,8 +1267,9 @@ proc xplane_inspector {} {
 				for {set x 0} {$x<$MAX_KEYFRAMES} {incr x} {
 					make_labeled_entry_pair $container.obj.rotate "value $x" xplane_anim_value$x$idx "angle $x" xplane_anim_angle$x$idx
 					if {$USE_KEYFRAMES} {
-						button $container.obj.rotate.xplane_anim_value$x$idx.delete -text "Delete" -command "ac3d xplane_delete_keyframe $x $idx"
-						button $container.obj.rotate.xplane_anim_value$x$idx.add -text "Add" -command "ac3d xplane_add_keyframe $x $idx"
+# 16th Jan 2018 - added ";xplane_inspector_sync" to add/del buttons so that UI updates (because variable trace was removed)
+						button $container.obj.rotate.xplane_anim_value$x$idx.delete -text "Delete" -command "ac3d xplane_delete_keyframe $x $idx ; xplane_inspector_sync"
+						button $container.obj.rotate.xplane_anim_value$x$idx.add -text "Add" -command "ac3d xplane_add_keyframe $x $idx ; xplane_inspector_sync"
 					}
 					button $container.obj.rotate.xplane_anim_value$x$idx.go -text "Go" -command "ac3d xplane_set_anim_keyframe $x $idx"
 					if {$USE_KEYFRAMES} {
@@ -1265,8 +1290,9 @@ proc xplane_inspector {} {
 				for {set x 0} {$x<$MAX_KEYFRAMES} {incr x} {
 					make_labeled_entry $container.obj.trans "value $x" xplane_anim_value$x$idx 10
 					if {$USE_KEYFRAMES} {
-						button $container.obj.trans.xplane_anim_value$x$idx.delete -text "Delete" -command "ac3d xplane_delete_keyframe $x $idx"
-						button $container.obj.trans.xplane_anim_value$x$idx.add -text "Add" -command "ac3d xplane_add_keyframe $x $idx"
+					#  16t Jan 2018 -  added ";xplane_inspector_sync" to add/del buttons
+						button $container.obj.trans.xplane_anim_value$x$idx.delete -text "Delete" -command "ac3d xplane_delete_keyframe $x $idx ; xplane_inspector_sync"
+						button $container.obj.trans.xplane_anim_value$x$idx.add -text "Add" -command "ac3d xplane_add_keyframe $x $idx ; xplane_inspector_sync"
 					}
 					button $container.obj.trans.xplane_anim_value$x$idx.go -text "Go" -command "ac3d xplane_set_anim_keyframe $x $idx"
 					if {$USE_KEYFRAMES} {						
@@ -1402,10 +1428,12 @@ set xplane_manip_types [list none panel axis axis_2d command command_axis no_op 
 
 
 trace add variable select_info write xplane_inspector_update
-for {set idx 0} {$idx<$MAX_SEL} {incr idx} {
-	trace add variable xplane_anim_keyframe_count$idx write xplane_inspector_update
-	trace add variable xplane_manip_detent_count$idx write xplane_inspector_update
-}
+
+# These traces caused in infinite update loop
+#for {set idx 0} {$idx<$MAX_SEL} {incr idx} {
+#	trace add variable xplane_anim_keyframe_count$idx write xplane_inspector_update
+#	trace add variable xplane_manip_detent_count$idx write xplane_inspector_update
+#}
 
 ##########################################################################################################################################################
 # PANEL SUB-REGION SYSTEM

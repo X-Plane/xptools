@@ -26,6 +26,8 @@
 
 #include "GUI_Broadcaster.h"
 
+struct WED_PackageInfo;
+
 class WED_PackageMgr : public GUI_Broadcaster {
 public:
 
@@ -38,22 +40,25 @@ public:
 	bool		SetXPlaneFolder(const string& root);
 
 	int			CountCustomPackages(void) const;
-	void		GetNthCustomPackageName(int n, string& package) const;
-	void		GetNthCustomPackagePath(int n, string& package) const;
-
+	
 	int			CountPackages(void) const;
 	void		GetNthPackageName(int n, string& package) const;
 	/*Get the a package's path by passing in a number and the name of said package,
 	changes the string passed in into the real physical filepath.*/
 	void		GetNthPackagePath(int n, string& package) const;
 	
-	bool		IsPackageDefault(int n) const;
-	bool		IsPackagePublicItems(int n) const;        // library has at least one public item declared in it
-	void		HasPublicItems(int n);
-
+	bool		IsPackageDefault(int n) const;		  // library is a LR default Library, i.e. not Global or Custom Scenery
+	bool		HasPublicItems(int n) const;          // library has at least one public item declared in it
+	
+	// functions only effective on custom packages
+	bool		HasXML(int n) const;                  // includes earth.wed.xml
+	bool		HasAPT(int n) const;                  // includes apt.dat
+	bool		IsDisabled(int n) const;              // marked as disabled in the scenerypacks.ini
+	bool		HasLibrary(int n) const;          	  // includes library.txt
+	void		AddPublicItems(int n);
 	void		RenameCustomPackage(int n, const string& new_name);
-
 	int			CreateNewCustomPackage(void);
+	
 	void		Rescan(void);
 
 	string		ComputePath(const string& package, const string& rel_file) const;
@@ -63,16 +68,16 @@ public:
 	bool		IsSameXPVersion( const string& version) const;
 
 private:
+	
+	static	bool	AccumAnyDir(const char * fileName, bool isDir, void * ref);
+	static	bool	AccumLibDir(const char * fileName, bool isDir, void * ref);
 
 	string			system_path;
 	bool			system_exists;
-	vector<string>	custom_package_names;
-	vector<string>	global_package_names;
-	vector<string>	default_package_names;
-	
-	vector<bool>	custom_package_hasPublicItems;
-	vector<bool>	global_package_hasPublicItems;
-	vector<bool>	default_package_hasPublicItems;
+
+	vector<WED_PackageInfo> custom_packages;
+	vector<WED_PackageInfo> global_packages;
+	vector<WED_PackageInfo> default_packages;
 
 	string			XPversion;     // apparent version of XP install, from examining Log.txt
 };

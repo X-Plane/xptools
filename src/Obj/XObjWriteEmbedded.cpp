@@ -1041,7 +1041,7 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj)
 
 	string tex_day(inObj.texture);
 	string tex_lit(inObj.texture_lit);
-	string tex_nrm(inObj.texture_nrm);
+	string tex_nrm(inObj.texture_normal_map);
 	if(!tex_day.empty()) make_res_path(tex_day);
 	if(!tex_lit.empty()) make_res_path(tex_lit);
 	if(!tex_nrm.empty()) make_res_path(tex_nrm);
@@ -1054,7 +1054,7 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj)
 		embed_props.tex_lit = 0;
 	else
 		{embed_props.tex_lit = accum_str_hi(str,tex_lit);}
-	if(inObj.texture_nrm.empty())
+	if(inObj.texture_normal_map.empty())
 		embed_props.tex_nrm = 0;
 	else
 		{embed_props.tex_nrm = accum_str_hi(str,tex_nrm);}

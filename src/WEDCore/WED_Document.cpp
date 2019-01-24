@@ -28,12 +28,11 @@
 #include "WED_NWLinkAdapter.h"
 #endif
 #include "WED_Document.h"
-#include "GUI_Resources.h"
 #include "WED_PackageMgr.h"
 #include "FileUtils.h"
-//#include "XESIO.h"
+#include "MathUtils.h"
+#include "PlatformUtils.h"
 #include "AptIO.h"
-//#include "MapAlgs.h"
 #include "WED_Thing.h"
 #include "WED_Group.h"
 #include "WED_KeyObjects.h"
@@ -43,14 +42,15 @@
 #include "WED_EnumSystem.h"
 #include "WED_XMLWriter.h"
 #include "WED_Errors.h"
-#include "GUI_Resources.h"
-#include "GUI_Prefs.h"
-#include "WED_Globals.h"
-#include "PlatformUtils.h"
 #include "WED_TexMgr.h"
 #include "WED_LibraryMgr.h"
 #include "WED_ResourceMgr.h"
 #include "WED_GroupCommands.h"
+#include "WED_Version.h"
+
+#include "GUI_Fonts.h"
+#include "GUI_Resources.h"
+#include "GUI_Prefs.h"
 
 #if IBM
 #include "GUI_Unicode.h"
@@ -59,9 +59,14 @@
 // migrate all old stuff
 // wire dirty to obj persistence
 
+#include "WED_Globals.h"
+int gIsFeet;
+int gInfoDMS;
+int gModeratorMode;
+int gFontSize;
+string gCustomSlippyMap;
 
 static set<WED_Document *> sDocuments;
-
 static map<string,string>	sGlobalPrefs;
 
 WED_Document::WED_Document(
@@ -560,14 +565,21 @@ void	WED_Document::ReadGlobalPrefs(void)
 {
 	GUI_EnumSection("doc_prefs", PrefCB, NULL);
 	
-	*(int *) &gIsFeet  = atoi(GUI_GetPrefString("preferences","use_feet","0"));    // This is ugly, but I really wanna override the write protection 
-	*(int *) &gInfoDMS = atoi(GUI_GetPrefString("preferences","InfoDMS","0"));     // given in WED_Globals.h to these variables here.
+	gIsFeet  = atoi(GUI_GetPrefString("preferences","use_feet","0"));
+	gInfoDMS = atoi(GUI_GetPrefString("preferences","InfoDMS","0"));
+	gCustomSlippyMap = GUI_GetPrefString("preferences","CustomSlippyMap","");
+	int FontSize = atoi(GUI_GetPrefString("preferences","FontSize","12"));
+	gFontSize = intlim(FontSize, 10, 18);
+	GUI_SetFontSizes(gFontSize);
 }
 
 void	WED_Document::WriteGlobalPrefs(void)
 {
 	GUI_SetPrefString("preferences","use_feet",gIsFeet ? "1" : "0");
 	GUI_SetPrefString("preferences","InfoDMS",gInfoDMS ? "1" : "0");
+	GUI_SetPrefString("preferences","CustomSlippyMap",gCustomSlippyMap.c_str());
+	string FontSize(to_string(gFontSize));
+	GUI_SetPrefString("preferences","FontSize",FontSize.c_str());
 	
 	for (map<string,string>::iterator i = sGlobalPrefs.begin(); i != sGlobalPrefs.end(); ++i)
 		GUI_SetPrefString("doc_prefs", i->first.c_str(), i->second.c_str());
@@ -676,6 +688,7 @@ void		WED_Document::WriteXML(FILE * xml_file)
 {
 	//print to file the xml file passed in with the following encoding
 	fprintf(xml_file,"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+	fprintf(xml_file,"<!-- written by WED " WED_VERSION_STRING " -->\n");
 	{
 		WED_XMLElement	top_level("doc",0,xml_file);
 		mArchive.SaveToXML(&top_level);

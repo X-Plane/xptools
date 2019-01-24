@@ -356,23 +356,40 @@ float TT_font_info::draw_char(UTF32 inChar, float x, float y, float s)
 #define tt_dim font_Max
 typedef int tt_t;
 
-static TT_font_info*	tt_font [tt_dim]={0};
-static const float		tt_sizes[tt_dim]={12.0, 10.0};																// Fonts are both 10.5, but if they weren't from the same family, we might need to compensate!
-static const char *		tt_names[tt_dim]={"sans.ttf", "sans.ttf" };
+static TT_font_info *	tt_font [tt_dim] = { nullptr };
+static float				tt_sizes[tt_dim] = { 12.0, 10.0 };
+static const char *		tt_names[tt_dim] = {"sans.ttf", "sans.ttf"};
 
-inline void TT_reset_font(tt_t c){
-	if(c==tt_dim){
-		for(int i=0;i<tt_dim;i++)TT_reset_font((tt_t)i);
-		return;}
-	if(	tt_font [c]){
-		tt_font [c]->clear(
-		tt_names[c],
-		tt_sizes[c]);}}
+inline void TT_reset_font(tt_t c)
+{
+	if(c==tt_dim)
+	{
+		for(int i=0;i<tt_dim;i++)
+			TT_reset_font((tt_t) i);
+		return;
+	}
+	if(tt_font[c])
+	{
+		tt_font[c]->clear(tt_names[c],	tt_sizes[c]);
+	}
+}
 
-inline void TT_establish_font(tt_t c){
-	if(	tt_font[c]==NULL){
+inline void TT_establish_font(tt_t c)
+{
+	if(	tt_font[c]==NULL)
+	{
 		tt_font[c]=new TT_font_info();
-		TT_reset_font(c);}}
+		TT_reset_font(c);
+	}
+}
+		
+void 	GUI_SetFontSizes(float sizePix)
+{
+	tt_sizes[0] =  sizePix;
+	tt_sizes[1] =  max(10.0f,sizePix * 0.75f);
+	TT_reset_font(font_Max);
+}
+
 
 float GUI_MeasureRange(int inFontID, const char * inStart, const char * inEnd)
 {
@@ -458,7 +475,10 @@ void	GUI_TruncateText(
 	int chars = GUI_FitForward(inFontID, &*ioText.begin(), &*ioText.end(), inSpace);
 	if (chars == ioText.length()) return;
 	if (chars < 0) { ioText.clear(); return; }
-	ioText.erase(chars);
+	if (chars > 2)
+		ioText.erase(chars + 1);   // dont cut too much, three dots are narrower than two letters
+	else
+		ioText.erase(chars);
 	if (ioText.length() > 0)	ioText[ioText.length()-1] = '.';
 	if (ioText.length() > 1)	ioText[ioText.length()-2] = '.';
 	if (ioText.length() > 2)	ioText[ioText.length()-3] = '.';

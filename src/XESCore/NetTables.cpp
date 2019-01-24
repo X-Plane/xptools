@@ -219,7 +219,7 @@ bool ReadTwinRule(const vector<string>& tokens, void * ref)
 	return true;
 }
 
-void	LoadNetFeatureTables(void)
+void	LoadNetFeatureTables(rf_region inRegion)
 {
 	gNetFeatures.clear();
 	gNetReps.clear();
@@ -243,7 +243,7 @@ void	LoadNetFeatureTables(void)
 	RegisterLineHandler("ROAD_PROMOTE", ReadRoadPromote, NULL);
 	RegisterLineHandler("LEVEL_CROSSING", ReadLevelCrossing, NULL);
 	RegisterLineHandler("ROAD_COUNTRY", ReadRoadCountry, NULL);
-	LoadConfigFile(gRegion == rf_eu ? "road_properties_eu.txt" : "road_properties_us.txt");
+	LoadConfigFile(inRegion == rf_eu ? "road_properties_eu.txt" : "road_properties_us.txt");
 }
 
 //bool	IsSeparatedHighway(int feat_type)

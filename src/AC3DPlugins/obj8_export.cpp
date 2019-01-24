@@ -849,6 +849,7 @@ int do_obj8_save_common(char * fname, ACObject * obj, convert_choice convert, in
 		obj8.texture_normal_map = tex_nm;
 		}
 
+
 	if (!obj8.texture.empty())		obj8.texture.insert(0,get_texture_prefix());
 	if (!obj8.texture_lit.empty())	obj8.texture_lit.insert(0,get_texture_prefix());
 	if (!obj8.texture_normal_map.empty())	obj8.texture_normal_map.insert(0,get_texture_prefix());

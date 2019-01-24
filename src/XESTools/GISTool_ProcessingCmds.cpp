@@ -757,7 +757,7 @@ static ag_terrain_dsf_description initialize_autogen_pmwx()
 	}
 #endif
 
-	return {lon_min, lat_min, divisions_lon, divisions_lat, style};
+	return {intround(lon_min), intround(lat_min), divisions_lon, divisions_lat, style};
 }
 
 
@@ -1020,6 +1020,12 @@ map<int, ortho_urbanization> fucking_reverse_map(const map<ortho_urbanization, i
 
 
 static ag_terrain_dsf_description s_dsf_desc;
+
+// less operator for Point
+inline bool operator< (const Point2 & lhs, const Point2 & rhs)
+{
+	return std::tie (lhs.x_, lhs.y_) < std::tie (rhs.x_, rhs.y_);
+}
 
 static int DoMobileAutogenTerrain(const vector<const char *> &args)
 {
@@ -1297,7 +1303,7 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 			Polygon2 ben_face = cgal_face_to_ben(f, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat); // not *that* Ben face! https://secure.gravatar.com/ben2212171
 			if(!ben_face.is_ccw())
 			{
-				sort(ben_face.begin(), ben_face.end(), less<Point2>());
+				sort(ben_face.begin(), ben_face.end());
 				DebugAssert(ben_face.is_ccw());
 			}
 			const Point2 centroid = ben_face.centroid();
@@ -1486,7 +1492,7 @@ static int DoBuildRoads(const vector<const char *>& args)
 {
 	if (gVerbose) printf("Building roads...\n");
 	CalcRoadTypes(gMap, gDem[dem_Elevation], gDem[dem_UrbanDensity],gDem[dem_Temperature],gDem[dem_Rainfall],gProgress);
-	repair_network(gMap);
+	repair_network(gMap, gVerbose);
 	return 0;
 }
 
@@ -1531,8 +1537,7 @@ static int DoBuildDSF(const vector<const char *>& args)
 //		gDem[dem_WaterSurface],
 		gDem[dem_Bathymetry],
 		gDem[dem_UrbanDensity],
-		gTriangulationHi, /*gTriangulationLo,*/ gMap, gProgress);
-
+		gTriangulationHi, /*gTriangulationLo,*/ gMap, gRegion, gProgress);
 	verify_triangulation_bounds(gDem[dem_Elevation], gTriangulationHi);
 	verify_map_bounds();
 	return 0;

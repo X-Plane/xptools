@@ -24,13 +24,15 @@
 #ifndef MeshTool_Create_H
 #define MeshTool_Create_H
 
+#include "XESConstants.h"
+
 struct	DEMGeo;
 
 typedef	void (* MT_Error_f)(const char * fmt,va_list args);
 
 void MT_StartCreate(const char * xes_path, const DEMGeo& in_dem, MT_Error_f err_handler);
 void MT_FinishCreate(void);
-void MT_MakeDSF(const char * dump_dir, const char * file_name);
+void MT_MakeDSF(rf_region region, const char * dump_dir, const char * file_name);
 void MT_Cleanup(void);
 
 int MT_CreateCustomTerrain(

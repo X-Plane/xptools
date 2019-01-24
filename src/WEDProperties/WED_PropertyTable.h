@@ -34,18 +34,24 @@ class	IResolver;
 class	WED_Thing;
 class	WED_Archive;
 class	WED_Select;
+class   GUI_Commander;
 
-class	WED_PropertyTable : public GUI_TextTableProvider, public GUI_SimpleTableGeometry, public GUI_Listener, public GUI_TextTableHeaderProvider, public GUI_Broadcaster {
+class	WED_PropertyTable : public GUI_TextTableProvider, public GUI_SimpleTableGeometry, public GUI_Listener,
+        public GUI_TextTableHeaderProvider, public GUI_Broadcaster, public GUI_Commander {
+
 public:
 
 					 WED_PropertyTable(
+									GUI_Commander *         cmdr,
 									IResolver *				resolver,
 									const char **			col_names,
 									int *					def_col_widths,
 									int						vertical,
 									int						dynamic_cols,
 									int						sel_only,
-									const char **			filter);
+									const char **			filter
+);
+
 	virtual			~WED_PropertyTable();
 
 	virtual    void	GetCellContent(
@@ -68,7 +74,7 @@ public:
 	virtual void	DoDeleteCell(
 						int							cell_x,
 						int							cell_y);
-	
+
 	virtual	void	DoDrag(
 						GUI_Pane *					drag_emitter,
 						int							mouse_x,
@@ -186,6 +192,8 @@ private:
 									int&	can_disclose,
 									int&	is_disclose);
 
+			void			RecalculateColumns(void);
+
 			void	Resort();
 
 	vector<WED_Thing *>			mThingCache;
@@ -197,11 +205,7 @@ private:
 
 	vector<string>				mColNames;
 
-//	WED_Archive *				mArchive;
-//	int							mEntity;
-//	int							mSelect;
 	IResolver *					mResolver;
-
 
 	hash_map<int,int>			mOpen;
 
@@ -211,6 +215,7 @@ private:
 	set<string>					mFilter;
 
 	vector<ISelectable *>		mSelSave;
+
 };
 
 

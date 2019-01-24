@@ -35,7 +35,18 @@
 
 WED_PackageMgr * gPackageMgr = NULL;
 
-WED_PackageMgr::WED_PackageMgr(const char *		in_xplane_folder)
+struct WED_PackageInfo
+{
+	string name;
+	bool hasAnyItems;
+	bool hasPublicItems;
+	bool hasXML;
+	bool hasAPT;
+	bool isDisabled;
+	WED_PackageInfo(const char * n) : name(n), hasPublicItems(false), hasAnyItems(false), hasXML(false), hasAPT(false), isDisabled(false) { }
+};
+
+WED_PackageMgr::WED_PackageMgr(const char * in_xplane_folder) : system_exists(false)
 {
 	DebugAssert(gPackageMgr==NULL);
 	gPackageMgr=this;
@@ -60,11 +71,46 @@ bool		WED_PackageMgr::GetXPlaneFolder(string& root) const
 	return system_exists;
 }
 
-static bool package_scan_func(const char * fileName, bool is_dir, void * ref)
+bool		WED_PackageMgr::AccumAnyDir(const char * fileName, bool isDir, void * ref)
 {
-	vector<string> * container = (vector<string> *) ref;
-	if(is_dir && fileName[0] != '.') container->push_back(fileName);
+	if(isDir && fileName[0] != '.') 
+	{
+		vector<WED_PackageInfo> * container = (vector<WED_PackageInfo> *) ref;
+		container->push_back(fileName);
+	}
 	return false;
+}
+
+static void analyze_package(const string& abspath, WED_PackageInfo& pkginfo)
+{
+	string fp(abspath);
+	
+	if(FILE_exists((fp + DIR_STR "library.txt").c_str()))
+		pkginfo.hasAnyItems = true;
+	if(FILE_exists((fp + DIR_STR "earth.wed.xml").c_str()))
+		pkginfo.hasXML = true;
+	if(FILE_exists((fp + DIR_STR "Earth nav data" + DIR_STR + "apt.dat").c_str()))
+		pkginfo.hasAPT = true;
+}
+
+struct package_local_scan_t {
+	string	fullpath;
+	vector<WED_PackageInfo> * who;
+};
+
+bool		WED_PackageMgr::AccumLibDir(const char * fileName, bool isDir, void * ref)
+{
+	if(isDir && fileName[0] != '.')
+	{
+		package_local_scan_t * info = reinterpret_cast<package_local_scan_t *>(ref);
+		if(info) 
+		{
+			info->who->push_back(fileName);
+			analyze_package(info->fullpath + DIR_STR + fileName, info->who->back());
+// printf("scan %s for %s = %d\n",fileName, f.c_str(),  info->who->back().hasPublicItems);
+		}
+	}
+	return false;  // keep looking for more such files in this directory
 }
 
 bool		WED_PackageMgr::SetXPlaneFolder(const string& root)
@@ -85,78 +131,100 @@ bool		WED_PackageMgr::SetXPlaneFolder(const string& root)
 
 int			WED_PackageMgr::CountCustomPackages(void) const
 {
-	return custom_package_names.size();
-}
-
-void		WED_PackageMgr::GetNthCustomPackageName(int n, string& package) const
-{
-	package = custom_package_names[n];
-}
-
-void		WED_PackageMgr::GetNthCustomPackagePath(int n, string& package) const
-{
-	package = system_path + DIR_STR CUSTOM_PACKAGE_PATH DIR_STR + custom_package_names[n];
+	return custom_packages.size();
 }
 
 int			WED_PackageMgr::CountPackages(void) const
 {
-	return custom_package_names.size() +
-		   global_package_names.size() +
-		   default_package_names.size();
+	return custom_packages.size() +
+		   global_packages.size() +
+		   default_packages.size();
 }
 
 void		WED_PackageMgr::GetNthPackageName(int n, string& package) const
 {
-	if (n < custom_package_names.size())	{ package = custom_package_names[n]; return; }
-	n -= custom_package_names.size();
+	if (n < custom_packages.size())	{ package = custom_packages[n].name; return; }
+	n -= custom_packages.size();
 
-	if (n < global_package_names.size())	{ package = global_package_names[n]; return; }
-	n -= global_package_names.size();
+	if (n < global_packages.size())	{ package = global_packages[n].name; return; }
+	n -= global_packages.size();
 
-	package = default_package_names[n];
+	package = default_packages[n].name;
 }
 
 void		WED_PackageMgr::GetNthPackagePath(int n, string& package) const
 {
-	if (n < custom_package_names.size())	{ package = system_path + DIR_STR CUSTOM_PACKAGE_PATH DIR_STR +  custom_package_names[n]; return; }
-	n -= custom_package_names.size();
+	if (n < custom_packages.size())	{ package = system_path + DIR_STR CUSTOM_PACKAGE_PATH DIR_STR +  custom_packages[n].name; return; }
+	n -= custom_packages.size();
 
-	if (n < global_package_names.size())	{ package = system_path + DIR_STR GLOBAL_PACKAGE_PATH DIR_STR + global_package_names[n]; return; }
-	n -= global_package_names.size();
+	if (n < global_packages.size())	{ package = system_path + DIR_STR GLOBAL_PACKAGE_PATH DIR_STR + global_packages[n].name; return; }
+	n -= global_packages.size();
 
-	package = system_path + DIR_STR DEFAULT_PACKAGE_PATH DIR_STR + default_package_names[n];
+	package = system_path + DIR_STR DEFAULT_PACKAGE_PATH DIR_STR + default_packages[n].name;
 }
 
 bool		WED_PackageMgr::IsPackageDefault(int n) const
 {
-	return n >= (custom_package_names.size() + global_package_names.size());
+	return n >= (custom_packages.size() + global_packages.size());
 }
 
-bool		WED_PackageMgr::IsPackagePublicItems(int n) const
+bool		WED_PackageMgr::HasXML(int n) const
 {
-	if (n < custom_package_names.size())	return custom_package_hasPublicItems[n];
-	n -= custom_package_names.size();
-
-	if (n < global_package_names.size())	return global_package_hasPublicItems[n];
-	n -= global_package_names.size();
-
-	return default_package_hasPublicItems[n];
+	if (n < custom_packages.size())	
+		return custom_packages[n].hasXML;
+	else 
+		return false;
 }
 
-void		WED_PackageMgr::HasPublicItems(int n)
+bool		WED_PackageMgr::HasAPT(int n) const
 {
-	if (n < custom_package_names.size())	{ custom_package_hasPublicItems[n] = true; return; }
-	n -= custom_package_names.size();
+	if (n < custom_packages.size())	
+		return custom_packages[n].hasAPT;
+	else 
+		return false;
+}
 
-	if (n < global_package_names.size())	{ global_package_hasPublicItems[n] = true; return; }
-	n -= global_package_names.size();
+bool		WED_PackageMgr::HasLibrary(int n) const
+{
+	if (n < custom_packages.size())	
+		return custom_packages[n].hasAnyItems;
+	else 
+		return false;
+}
 
-	default_package_hasPublicItems[n] = true;
+bool		WED_PackageMgr::IsDisabled(int n) const
+{
+	if (n < custom_packages.size())	
+		return custom_packages[n].isDisabled;
+	else 
+		return false;
+}
+
+bool		WED_PackageMgr::HasPublicItems(int n) const
+{
+	if (n < custom_packages.size())	return custom_packages[n].hasPublicItems;
+	n -= custom_packages.size();
+
+	if (n < global_packages.size())	return global_packages[n].hasPublicItems;
+	n -= global_packages.size();
+
+	return default_packages[n].hasPublicItems;
+}
+
+void		WED_PackageMgr::AddPublicItems(int n)
+{
+	if (n < custom_packages.size())	{ custom_packages[n].hasPublicItems = true; return; }
+	n -= custom_packages.size();
+
+	if (n < global_packages.size())	{ global_packages[n].hasPublicItems = true; return; }
+	n -= global_packages.size();
+
+	default_packages[n].hasPublicItems = true;
 }
 
 void		WED_PackageMgr::RenameCustomPackage(int n, const string& new_name)
 {
-	string oldn = system_path + DIR_STR CUSTOM_PACKAGE_PATH DIR_STR + custom_package_names[n];
+	string oldn = system_path + DIR_STR CUSTOM_PACKAGE_PATH DIR_STR + custom_packages[n].name;
 	string newn = system_path + DIR_STR CUSTOM_PACKAGE_PATH DIR_STR + new_name;
 	int res = FILE_rename_file(oldn.c_str(), newn.c_str());
 	if (res != 0)
@@ -164,7 +232,7 @@ void		WED_PackageMgr::RenameCustomPackage(int n, const string& new_name)
 		wed_error_exception e(res, __FILE__ , __LINE__);
 		WED_ReportExceptionUI(e, "Unable to rename package %s to %s",oldn.c_str(), newn.c_str());
 	} else
-		custom_package_names[n] = new_name;
+		custom_packages[n].name = new_name;
 
 	BroadcastMessage(msg_SystemFolderUpdated,0);
 }
@@ -182,8 +250,8 @@ int WED_PackageMgr::CreateNewCustomPackage(void)
 		path = system_path + DIR_STR CUSTOM_PACKAGE_PATH DIR_STR + name;
 
 		int found_in_our_list = 0;
-		for(int p = 0; p < custom_package_names.size(); ++p)
-		if (strcasecmp(name.c_str(), custom_package_names[p].c_str()) == 0)
+		for(int p = 0; p < custom_packages.size(); ++p)
+		if (strcasecmp(name.c_str(), custom_packages[n].name.c_str()) == 0)
 		{
 			found_in_our_list = 1;
 			break;
@@ -200,60 +268,92 @@ int WED_PackageMgr::CreateNewCustomPackage(void)
 			return -1;
 		}
 
-		custom_package_names.push_back(name);
-		custom_package_hasPublicItems.push_back(false);  // that may not always be true, but rescan() will fix that later
+		custom_packages.push_back(name.c_str());
 		BroadcastMessage(msg_SystemFolderUpdated,0);
-		return custom_package_names.size()-1;
+		return custom_packages.size()-1;
 	} while (1);
 	return -1;
 }
 
-static bool CompareNoCase(const string& s1, const string& s2) { return strcasecmp(s1.c_str(), s2.c_str()) < 0; }
+static bool SortPackageList(const WED_PackageInfo& p1, const WED_PackageInfo& p2) 
+{ 
+//	if(p1.hasXML != p2.hasXML) return p1.hasXML;     // packages with earth.wed.xml come first
+//	if(p1.hasAPT != p2.hasAPT) return p1.hasAPT;     // then all package with any apt.dat
+
+	bool p1_inclAPT = p1.hasXML || p1.hasAPT;
+	bool p2_inclAPT = p2.hasXML || p2.hasAPT;
+	if(p1_inclAPT != p2_inclAPT) return p1_inclAPT;              // packages with any airport come first
+	if(p1.hasAnyItems != p2.hasAnyItems) return p2.hasAnyItems;  // pure Libraries come last
+	return strcasecmp(p1.name.c_str(), p2.name.c_str()) < 0; 
+}
 
 void		WED_PackageMgr::Rescan(void)
 {
-	custom_package_names.clear();
-	global_package_names.clear();
-	default_package_names.clear();
+	custom_packages.clear();
+	global_packages.clear();
+	default_packages.clear();
 	
 	system_exists=false;
 	if (MF_GetFileType(system_path.c_str(),mf_CheckType) == mf_Directory)
 	{
 		string cus_dir = system_path + DIR_STR CUSTOM_PACKAGE_PATH;
+		
 		if (MF_GetFileType(cus_dir.c_str(),mf_CheckType) == mf_Directory)
 		{
 			system_exists=true;
-			MF_IterateDirectory(cus_dir.c_str(), package_scan_func, &custom_package_names);
-			sort(custom_package_names.begin(),custom_package_names.end(),CompareNoCase);
+			package_local_scan_t info;
+			info.fullpath = cus_dir;
+			info.who = &custom_packages;
+			MF_IterateDirectory(cus_dir.c_str(), AccumLibDir, (void*) &info);
+			
+			vector<string> disabledSceneries;
+			MFMemFile * ini = MemFile_Open((cus_dir + DIR_STR "scenery_packs.ini").c_str());
+			if(ini)
+			{
+				MFScanner	s;
+				MFS_init(&s, ini);
+				int versions[] = { 1000, 0 };
+				if(MFS_xplane_header(&s,versions,"SCENERY",NULL))
+				{
+					while(!MFS_done(&s))
+					{
+						if (MFS_string_match(&s,"SCENERY_PACK_DISABLED", false))
+						{
+							string dis;
+							MFS_string_eol(&s,&dis);
+							size_t  p_end = dis.find_last_of("\\/");
+							size_t  p_beg = dis.find_last_of("\\/",p_end-1);
+							disabledSceneries.push_back(dis.substr(p_beg+1,p_end-p_beg-1));
+						}
+						MFS_string_eol(&s,NULL);
+					}
+				}
+				MemFile_Close(ini);
+			
+				for(auto dis : disabledSceneries)
+					for(auto& scn : custom_packages)
+						if(scn.name == dis) scn.isDisabled = true;
+			}
+
+			sort(custom_packages.begin(),custom_packages.end(),SortPackageList);
 		}
 
 		string glb_dir = system_path + DIR_STR GLOBAL_PACKAGE_PATH;
 		if (MF_GetFileType(glb_dir.c_str(),mf_CheckType) == mf_Directory)
 		{
 			system_exists=true;
-			MF_IterateDirectory(glb_dir.c_str(), package_scan_func, &global_package_names);
-			sort(global_package_names.begin(),global_package_names.end(),CompareNoCase);
+			MF_IterateDirectory(glb_dir.c_str(), AccumAnyDir, &global_packages);
+			sort(global_packages.begin(),global_packages.end(),SortPackageList);
 		}
 
 		string def_dir = system_path + DIR_STR DEFAULT_PACKAGE_PATH;
 		if (MF_GetFileType(def_dir.c_str(),mf_CheckType) == mf_Directory)
 		{
 			system_exists=true;
-			MF_IterateDirectory(def_dir.c_str(), package_scan_func, &default_package_names);
-			sort(default_package_names.begin(),default_package_names.end(),CompareNoCase);
+			MF_IterateDirectory(def_dir.c_str(), AccumAnyDir, &default_packages);
+			sort(default_packages.begin(),default_packages.end(),SortPackageList);
 		}
 	}
-	
-	custom_package_hasPublicItems.clear();
-	global_package_hasPublicItems.clear();
-	default_package_hasPublicItems.clear();
-	
-	for (int i=0; i<custom_package_names.size(); ++i)
-			custom_package_hasPublicItems.push_back(false);
-	for (int i=0; i<global_package_names.size(); ++i)
-			global_package_hasPublicItems.push_back(false);
-	for (int i=0; i<default_package_names.size(); ++i)
-			default_package_hasPublicItems.push_back(false);
 
 	XPversion = "Unknown";
 	string logfile_name = system_path + DIR_STR "Log.txt";
@@ -295,7 +395,7 @@ string		WED_PackageMgr::ReducePath(const string& package, const string& full_fil
 		int p = prefix.find_first_of("\\/:", n);
 		if(p == prefix.npos) break;
 		++p;
-		if(p != prefix.npos && p <= prefix.size() && p <= partial.size() && strncmp(prefix.c_str(), partial.c_str(), p) == 0)
+		if(p != prefix.npos && p <= prefix.size() && p <= partial.size() && strncasecmp(prefix.c_str(), partial.c_str(), p) == 0)
 			n = p;
 		else
 			break;
