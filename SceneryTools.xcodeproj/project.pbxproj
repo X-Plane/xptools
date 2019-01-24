@@ -1891,7 +1891,6 @@
 		D6BC387B0AB22C85003949C5 /* XESIO.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = XESIO.h; sourceTree = "<group>"; };
 		D6BC387C0AB22C85003949C5 /* Zoning.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = Zoning.cpp; sourceTree = "<group>"; };
 		D6BC387D0AB22C85003949C5 /* Zoning.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = Zoning.h; sourceTree = "<group>"; };
-		D6BC38800AB22C85003949C5 /* GISTool copy.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = "GISTool copy.cpp"; sourceTree = "<group>"; };
 		D6BC38810AB22C85003949C5 /* GISTool.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = GISTool.cpp; sourceTree = "<group>"; };
 		D6BC38820AB22C85003949C5 /* GISTool_CoreCmds.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = GISTool_CoreCmds.cpp; sourceTree = "<group>"; };
 		D6BC38830AB22C85003949C5 /* GISTool_CoreCmds.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = GISTool_CoreCmds.h; sourceTree = "<group>"; };
@@ -3315,7 +3314,6 @@
 			isa = PBXGroup;
 			children = (
 				D604AEBB1C0F4821006DC1F0 /* RFMainMenu.xib */,
-				D6BC38800AB22C85003949C5 /* GISTool copy.cpp */,
 				D6BC38810AB22C85003949C5 /* GISTool.cpp */,
 				D6BC38820AB22C85003949C5 /* GISTool_CoreCmds.cpp */,
 				D6BC38830AB22C85003949C5 /* GISTool_CoreCmds.h */,
