@@ -835,66 +835,53 @@ static void TJunctionTest(vector<WED_TaxiRoute*> all_taxiroutes, validation_erro
 
 	for (vector<WED_TaxiRoute*>::iterator edge_a_itr = all_taxiroutes.begin(); edge_a_itr != all_taxiroutes.end(); ++edge_a_itr)
 	{
+		// most of this data isn't needed. At most the location of the two ends is needed - as a segment
+		// TaxiRouteInfo edge_a(*edge_a_itr,translator);
+		Bezier2 b;
+		(*edge_a_itr)->GetSide(gis_Geo, 0, b);
+		Segment2 edge_a( translator.Forward(b.p1) , translator.Forward(b.p2) );
+		
 		for (vector<WED_TaxiRoute*>::iterator edge_b_itr = all_taxiroutes.begin(); edge_b_itr != all_taxiroutes.end(); ++edge_b_itr)
 		{
-			//Skip over the same ones
-			if (edge_a_itr == edge_b_itr)
-			{
-				continue;
-			}
+			// Don't test an edge against itself
+			if (edge_a_itr == edge_b_itr)	continue;
 
-			TaxiRouteInfo edge_a(*edge_a_itr,translator);
-			TaxiRouteInfo edge_b(*edge_b_itr,translator);
+			// most of this data isn't needed. At most the location of the two ends is needed - as a segment
+			// TaxiRouteInfo edge_b(*edge_b_itr,translator);
+			
+			(*edge_b_itr)->GetSide(gis_Geo, 0, b);
+			Segment2 edge_b( translator.Forward(b.p1) , translator.Forward(b.p2) );
 
-			//tmp doesn't matter to us
+			// Skip crossing edges
+			// Note - its validated elsewhere - why duplicate this effort ???
 			Point2 tmp;
-			if (edge_a.taxiroute_segment_m.intersect(edge_b.taxiroute_segment_m,tmp) == true)
-			{
-				//An intersection is different from a T junction
-				continue;
-			}
+			if (edge_a.intersect(edge_b,tmp)) continue;
 
-			bool found_duplicate = false;
-			for (int i = 0; i < 2 && found_duplicate == false; i++)
-			{
-				for (int j = 0; j < 2 && found_duplicate == false; j++)
-				{
-					if (edge_a.nodes_m[i] == edge_b.nodes_m[j])
-					{
-						//This is a duplicate of the doubled up vertex test
-						found_duplicate = true;
-					}
-				}
-			}
-
-			if (found_duplicate == true)
-			{
-				//Try another one
-				continue;
-			}
+			// Skip if the edges are joint at at least one end
+			// Note - its validated elsewhere - why dyplicate this effort ???
+			if (edge_a.p1 == edge_b.p1 || edge_a.p1 == edge_b.p2 ||
+				 edge_a.p2 == edge_b.p1 || edge_a.p2 == edge_b.p2 ) continue;
 
 			const double TJUNCTION_THRESHOLD = 1.00;
 			for (int i = 0; i < 2; i++)
 			{
-				set<WED_Thing*> node_viewers;
-				edge_b.nodes[i]->GetAllViewers(node_viewers);
+				// its also worth changing this to Bezier2.is_near() to prepare for future curved edges
+				double dist_b_node_to_a_edge = i ? edge_a.squared_distance(edge_b.p2) : edge_a.squared_distance(edge_b.p1);
 
-				int valence = node_viewers.size();
-				if (valence == 1)
+				if (dist_b_node_to_a_edge < TJUNCTION_THRESHOLD * TJUNCTION_THRESHOLD)
 				{
-					double dist_b_node_to_a_edge = sqrt(edge_a.taxiroute_segment_m.squared_distance(edge_b.nodes_m[i]));
+					set<WED_Thing*> node_viewers;
+					(*edge_b_itr)->GetNthSource(i)->GetAllViewers(node_viewers);
 
-					if (dist_b_node_to_a_edge < TJUNCTION_THRESHOLD)
-					{
+					int valence = node_viewers.size();
+					if (valence == 1)
+					{	
 						vector<WED_Thing*> problem_children;
 						problem_children.push_back(*edge_a_itr);
+						problem_children.push_back((*edge_b_itr)->GetNthSource(i));
+						string name; (*edge_a_itr)->GetName(name);
 
-						string problem_node_name;
-
-						problem_children.push_back((edge_b.nodes[i]));
-						edge_b.nodes[i]->GetName(problem_node_name);
-
-						msgs.push_back(validation_error_t("Taxi route " + edge_a.taxiroute_name + " is not joined to a destination route.", err_taxi_route_not_joined_to_dest_route, problem_children, apt));
+						msgs.push_back(validation_error_t("Taxi route " + name + " is not joined to a destination route.", err_taxi_route_not_joined_to_dest_route, problem_children, apt));
 					}
 				}
 			}
@@ -1178,8 +1165,11 @@ static void ValidateATC(WED_Airport* apt, validation_error_vector& msgs, set<int
 #endif
 		}
 	}
-
+auto t0 = std::chrono::high_resolution_clock::now();
 	TJunctionTest(taxi_routes, msgs, apt);
+auto t1 = std::chrono::high_resolution_clock::now();
+chrono::duration<double> elapsed = t1-t0;
+printf("Time: %lf ms\n", 1000.0*elapsed.count());
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------
@@ -2147,11 +2137,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	WED_DoATCRunwayChecks(*apt, msgs, res_mgr);
 	#endif
 
-auto t0 = std::chrono::high_resolution_clock::now();
 	ValidateATC(apt, msgs, legal_rwy_oneway, legal_rwy_twoway);
-auto t1 = std::chrono::high_resolution_clock::now();
-chrono::duration<double> elapsed = t1-t0;
-printf("Time: %lf ms\n", 1000.0*elapsed.count());
 
 	ValidateAirportFrequencies(apt,msgs);
 
