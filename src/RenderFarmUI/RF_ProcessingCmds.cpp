@@ -46,7 +46,6 @@
 #include "ObjPlacement.h"
 #include "ObjTables.h"
 #include "Airports.h"
-#include "Beaches.h"
 #include "RF_Assert.h"
 #include "PlatformUtils.h"
 #include "Forests.h"

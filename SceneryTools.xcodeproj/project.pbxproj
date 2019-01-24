@@ -123,7 +123,6 @@
 		D60734520D197B1100E08F61 /* MeshTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60734510D197B1100E08F61 /* MeshTool.cpp */; };
 		D60734700D197BA200E08F61 /* XESInit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38780AB22C85003949C5 /* XESInit.cpp */; };
 		D60734800D197BD700E08F61 /* AptIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38330AB22C85003949C5 /* AptIO.cpp */; };
-		D60734810D197BD800E08F61 /* Beaches.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38350AB22C85003949C5 /* Beaches.cpp */; };
 		D60734830D197BDE00E08F61 /* ConfigSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC383A0AB22C85003949C5 /* ConfigSystem.cpp */; };
 		D60734840D197BE000E08F61 /* DEMAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC383E0AB22C85003949C5 /* DEMAlgs.cpp */; };
 		D60734850D197BE100E08F61 /* DEMDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38400AB22C85003949C5 /* DEMDefs.cpp */; };
@@ -281,7 +280,6 @@
 		D62435D50AE403A4004F00E3 /* AptElev.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37330AB22C85003949C5 /* AptElev.cpp */; };
 		D62435EC0AE403F4004F00E3 /* Airports.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38300AB22C85003949C5 /* Airports.cpp */; };
 		D62435ED0AE403F4004F00E3 /* AptIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38330AB22C85003949C5 /* AptIO.cpp */; };
-		D62435EE0AE403F4004F00E3 /* Beaches.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38350AB22C85003949C5 /* Beaches.cpp */; };
 		D62435F00AE403F4004F00E3 /* ConfigSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC383A0AB22C85003949C5 /* ConfigSystem.cpp */; };
 		D62435F10AE403F4004F00E3 /* DEMAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC383E0AB22C85003949C5 /* DEMAlgs.cpp */; };
 		D62435F20AE403F4004F00E3 /* DEMDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38400AB22C85003949C5 /* DEMDefs.cpp */; };
@@ -441,7 +439,6 @@
 		D65E4BB20B654563004D7887 /* DEMDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38400AB22C85003949C5 /* DEMDefs.cpp */; };
 		D65E4BB30B654565004D7887 /* DEMAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC383E0AB22C85003949C5 /* DEMAlgs.cpp */; };
 		D65E4BB40B654567004D7887 /* ConfigSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC383A0AB22C85003949C5 /* ConfigSystem.cpp */; };
-		D65E4BB60B654570004D7887 /* Beaches.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38350AB22C85003949C5 /* Beaches.cpp */; };
 		D65E4BB70B654572004D7887 /* AptIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38330AB22C85003949C5 /* AptIO.cpp */; };
 		D65E4BB80B654574004D7887 /* Airports.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38300AB22C85003949C5 /* Airports.cpp */; };
 		D65E4BCC0B6546B3004D7887 /* PolyRasterUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37970AB22C85003949C5 /* PolyRasterUtils.cpp */; };
@@ -1837,8 +1834,6 @@
 		D6BC38320AB22C85003949C5 /* AptDefs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = AptDefs.h; sourceTree = "<group>"; };
 		D6BC38330AB22C85003949C5 /* AptIO.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = AptIO.cpp; sourceTree = "<group>"; };
 		D6BC38340AB22C85003949C5 /* AptIO.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = AptIO.h; sourceTree = "<group>"; };
-		D6BC38350AB22C85003949C5 /* Beaches.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = Beaches.cpp; sourceTree = "<group>"; };
-		D6BC38360AB22C85003949C5 /* Beaches.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = Beaches.h; sourceTree = "<group>"; };
 		D6BC38370AB22C85003949C5 /* CGALTypes.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = CGALTypes.h; sourceTree = "<group>"; };
 		D6BC383A0AB22C85003949C5 /* ConfigSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = ConfigSystem.cpp; sourceTree = "<group>"; };
 		D6BC383B0AB22C85003949C5 /* ConfigSystem.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = ConfigSystem.h; sourceTree = "<group>"; };
@@ -3207,8 +3202,6 @@
 				D6BC38340AB22C85003949C5 /* AptIO.h */,
 				D6DEB3441055994000C378BE /* AptAlgs.h */,
 				D6DEB3451055994000C378BE /* AptAlgs.cpp */,
-				D6BC38350AB22C85003949C5 /* Beaches.cpp */,
-				D6BC38360AB22C85003949C5 /* Beaches.h */,
 				D63F7255117FAB3500AB7C1F /* BlockDefs.h */,
 				D63F725A117FB60900AB7C1F /* BlockAlgs.h */,
 				D63F725B117FB60900AB7C1F /* BlockAlgs.cpp */,
@@ -4108,7 +4101,6 @@
 				D60734520D197B1100E08F61 /* MeshTool.cpp in Sources */,
 				D60734700D197BA200E08F61 /* XESInit.cpp in Sources */,
 				D60734800D197BD700E08F61 /* AptIO.cpp in Sources */,
-				D60734810D197BD800E08F61 /* Beaches.cpp in Sources */,
 				D60734830D197BDE00E08F61 /* ConfigSystem.cpp in Sources */,
 				D60734840D197BE000E08F61 /* DEMAlgs.cpp in Sources */,
 				D60734850D197BE100E08F61 /* DEMDefs.cpp in Sources */,
@@ -4192,7 +4184,6 @@
 				D62435D50AE403A4004F00E3 /* AptElev.cpp in Sources */,
 				D62435EC0AE403F4004F00E3 /* Airports.cpp in Sources */,
 				D62435ED0AE403F4004F00E3 /* AptIO.cpp in Sources */,
-				D62435EE0AE403F4004F00E3 /* Beaches.cpp in Sources */,
 				D62435F00AE403F4004F00E3 /* ConfigSystem.cpp in Sources */,
 				D62435F10AE403F4004F00E3 /* DEMAlgs.cpp in Sources */,
 				D62435F20AE403F4004F00E3 /* DEMDefs.cpp in Sources */,
@@ -4382,7 +4373,6 @@
 				D65E4BB20B654563004D7887 /* DEMDefs.cpp in Sources */,
 				D65E4BB30B654565004D7887 /* DEMAlgs.cpp in Sources */,
 				D65E4BB40B654567004D7887 /* ConfigSystem.cpp in Sources */,
-				D65E4BB60B654570004D7887 /* Beaches.cpp in Sources */,
 				D65E4BB70B654572004D7887 /* AptIO.cpp in Sources */,
 				D65E4BB80B654574004D7887 /* Airports.cpp in Sources */,
 				D65E4BCC0B6546B3004D7887 /* PolyRasterUtils.cpp in Sources */,
