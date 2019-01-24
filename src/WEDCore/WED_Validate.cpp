@@ -20,6 +20,7 @@
  * THE SOFTWARE.
  *
  */
+#include <chrono>
 
 #include "WED_Validate.h"
 #include "WED_ValidateList.h"
@@ -239,11 +240,15 @@ static bool IsThingResource(WED_Thing * who)
 	return GetThingResource(who,r);
 }
 
-static bool is_of_type_ground_vehicles(WED_Thing* route)
+bool isGroundRoute(WED_Thing* taxi_route)
 {
-	return static_cast<WED_TaxiRoute*>(route)->AllowTrucks();
+	WED_TaxiRoute* ground_rt = static_cast<WED_TaxiRoute*>(taxi_route);
+	if (ground_rt)
+	{
+		if (ground_rt->AllowTrucks())	return true;
+	}
+	return false;
 }
-
 
 // This template buidls an error list for a subset of objects that have the same name - one validation error is generated
 // for each set of same-named objects.
@@ -1984,53 +1989,19 @@ static void ValidateOneTruckDestination(WED_TruckDestination* destination,valida
 	}
 }
 
-bool is_ground_route(WED_Thing* taxi_route)
-{
-	WED_TaxiRoute* ground_rt = dynamic_cast<WED_TaxiRoute*>(taxi_route);
-	if (ground_rt != NULL)
-	{
-		if (ground_rt->AllowTrucks())
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
 static void ValidateOneTruckParking(WED_TruckParkingLocation* truck_parking,validation_error_vector& msgs, WED_Airport* apt)
 {
 	string name;
 	truck_parking->GetName(name);
 	int num_cars = truck_parking->GetNumberOfCars();
 
-	if (num_cars < 0)
-	{
-		stringstream ss;
-		ss  << "Truck parking location "
-			<< name
-			<< " cannot have negative car count of "
-			<< num_cars;
-		msgs.push_back(validation_error_t(ss.str(), err_truck_parking_cannot_have_negative_car_count, truck_parking, apt));
-	}
-
 	int MAX_CARS = 10;
-	if (truck_parking->GetNumberOfCars() > MAX_CARS)
-	{
-		stringstream ss;
-		ss  << "Truck parking location "
-			<< name
-			<< " has more than  "
-			<< MAX_CARS
-			<< " baggage cars";
-		msgs.push_back(validation_error_t(ss.str(), err_truck_parking_car_count_exceeds_max, truck_parking, apt));
-	}
 
-	vector<WED_TaxiRoute*> truck_routes;
-	CollectRecursive(apt, back_inserter(truck_routes), EntityNotHidden, is_ground_route, WED_TaxiRoute::sClass);
-
-	if (truck_routes.empty() == true)
+	if (num_cars < 0 || num_cars > MAX_CARS)
 	{
-		msgs.push_back(validation_error_t("Truck parking location '" + name + "' is invalid. Its airport does not contain any taxi routes for ground trucks", err_truck_parking_no_ground_taxi_routes, truck_parking, apt));
+		string ss("Truck parking location ") ;
+		ss += name +" must have a car count between 0 and " + to_string(MAX_CARS);
+		msgs.push_back(validation_error_t(ss, err_truck_parking_car_count, truck_parking, apt));
 	}
 }
 //------------------------------------------------------------------------------------------------------------------------------------
@@ -2176,10 +2147,13 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	WED_DoATCRunwayChecks(*apt, msgs, res_mgr);
 	#endif
 
+auto t0 = std::chrono::high_resolution_clock::now();
 	ValidateATC(apt, msgs, legal_rwy_oneway, legal_rwy_twoway);
+auto t1 = std::chrono::high_resolution_clock::now();
+chrono::duration<double> elapsed = t1-t0;
+printf("Time: %lf ms\n", 1000.0*elapsed.count());
 
 	ValidateAirportFrequencies(apt,msgs);
-
 
 	for(vector<WED_AirportSign *>::iterator s = signs.begin(); s != signs.end(); ++s)
 	{
@@ -2232,18 +2206,19 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 			msgs.push_back(validation_error_t("This airport is impossibly large. Perhaps a part of the airport has been accidentally moved far away or is not correctly placed in the hierarchy?", err_type, apt,apt));
 		}
 	}
+	vector<WED_TaxiRoute *>	GT_routes;
+	CollectRecursive(apt, back_inserter(GT_routes), ThingNotHidden, isGroundRoute, WED_TaxiRoute::sClass);
+
+	if (truck_parking_locs.size() && GT_routes.empty())
+		msgs.push_back(validation_error_t("Truck parking locations require at least one taxi route for ground trucks", err_truck_parking_no_ground_taxi_routes, truck_parking_locs.front(), apt));
 	
 	if(gExportTarget == wet_gateway)
 	{
-		// require any land airport (i.e. at least one runway) to have an airport boundary defined
-		if(!runways.empty() && boundaries.empty())
-            msgs.push_back(validation_error_t("This airport contains runway(s) but no airport boundary.", 	err_airport_no_boundary, apt,apt));
-
-		vector<WED_Taxiway *>	GT_routes;
-		CollectRecursive(apt, back_inserter(GT_routes), ThingNotHidden, is_of_type_ground_vehicles, WED_TaxiRoute::sClass);
 		if(GT_routes.size() && truck_parking_locs.empty())
 			msgs.push_back(validation_error_t("Ground routes are defined, but no service vehicle starts. This disables all ground traffic, including auto generated pushback vehicles.", warn_truckroutes_but_no_starts, apt,apt));
-
+		
+		if(!runways.empty() && boundaries.empty())
+            msgs.push_back(validation_error_t("This airport contains runway(s) but no airport boundary.", 	err_airport_no_boundary, apt,apt));
 
 #if !GATEWAY_IMPORT_FEATURES
 		vector<WED_AirportBoundary *>	boundaries;
