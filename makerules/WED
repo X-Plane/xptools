@@ -258,7 +258,6 @@ SOURCES += ./src/WEDWindows/WED_AboutBox.cpp
 SOURCES += ./src/WEDWindows/WED_DocumentWindow.cpp
 SOURCES += ./src/WEDWindows/WED_LibraryFilterBar.cpp
 SOURCES += ./src/WEDWindows/WED_GroupCommands.cpp
-SOURCES += ./src/WEDWindows/WED_HierarchyFilterBar.cpp
 SOURCES += ./src/WEDWindows/WED_Menus.cpp
 SOURCES += ./src/WEDWindows/WED_PackageListAdapter.cpp
 SOURCES += ./src/WEDWindows/WED_StartWindow.cpp

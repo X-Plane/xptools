@@ -33,7 +33,7 @@
 #include "DEMTables.h"
 #include "ForestTables.h"
 #include "MapBuffer.h"
-#include <md5.h>
+#include "md5.h"
 #include "Zoning.h"
 #include "SceneryPackages.h"
 #include "MapRaster.h"

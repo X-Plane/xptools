@@ -56,7 +56,6 @@
 #include "WED_DrawUtils.h"
 #include "GUI_DrawUtils.h"
 #include "WED_TaxiRoute.h"
-#include "WED_TaxiRouteNode.h"
 #include "WED_RoadNode.h"
 #include "WED_AirportBoundary.h"
 
@@ -244,69 +243,6 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 					GUI_PlotIcon(g,icon, l.x(),l.y(),0,GetFurnitureIconScale());
 					g->SetState(false,0,false,   false,true,false,false);
 				}
-#if 0
-				else {
-					// Special case: for taxi routes, we are going to draw them here IF
-					// vertex-preview is on.  This way we can use the selection state of the 
-					// node itself to color the node.
-					//
-					// Note that for "line" types like taxi lines if vertex preview is on and we
-					// are using a random tool (not the vertex tool) this code does not kick in -
-					// instead we sub-iterate our chain.  The result is a bug we'll ship with for 
-					// now: incorrect node hilighting.  For line types, I think this is pretty 
-					// unimportant: a user has pretty much no reason to hilight a line vertex
-					// with a tool other than the vertex tool for editing, which is why no one
-					// reported the bug in the several years of WED's history.  
-					//
-					// So we will special-case taxi routes for now.  When we get road grids in 
-					// we may need a better heuristic for this case than the actual obj type.
-
-					// Michael says - this attempt to prevent GIS edge nodes to NOT be colored 
-					// like is not always working because GIS_Edges can have _anything_ as a
-					// source - not only TaxiRouteNodes. This happens when one merges or
-					// otherwise connect GIS edges to other things like ramp starts.
-					// And these non-TaxiRouteNode items can be anywhere in the hierachy, i.e.
-					// be plotted before or afterthis here
-					// e.g. KSEA is full of TaxiRoutes that have AirportNodes as sources.
-					// So at the end - all GIS_Edge nodes are drawn TWICE for connected edges,
-					// TRIPLE of the node isnt a taxiroute node.
-					//
-					// So I'd rather forego the separate taxinode treatment here and get the
-					// TaxiEdgeNode highlighting "right" where the TaxiEdges are drawn ...
-
-					if (sub_class == WED_TaxiRouteNode::sClass
-#if ROAD_EDITING 
-						|| sub_class == WED_RoadNode::sClass
-#endif
-						)
-					{
-						if(mVertices)
-						{
-							glPointSize(5);
-							glBegin(GL_POINTS);
-							Point2 p;
-							pt->GetLocation(gis_Geo,p);
-							glVertex2(GetZoomer()->LLToPixel(p));
-							glEnd();
-							glPointSize(1);
-						}
-					}
-					else 
-					{
-						// Ideally if anything falls into here we'd like to know and fixit.  It probably
-						// means we need an icon but we are missing one.
-						//printf("Skipped preview of %s\n", sub_class);
-						/*
-							glBegin(GL_LINES);
-							glVertex2f(l.x(), l.y() - 3);
-							glVertex2f(l.x(), l.y() + 3);
-							glVertex2f(l.x() - 3, l.y());
-							glVertex2f(l.x() + 3, l.y());
-							glEnd();
-						*/
-					}
-				}
-#endif
 			}
 		}
 		break;
@@ -415,7 +351,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 				int i, n = ps->GetNumSides();
 				WED_MapZoomerNew * z = GetZoomer();
 
-				bool showRealLines = mRealLines > 0 && z->GetPPM() * 0.3 <= MIN_PIXELS_LINE_PREVIEW;
+				bool showRealLines = mRealLines > 0 && z->GetPPM() * 0.3 <= MIN_PIXELS_PREVIEW;
 
 				for (i = 0; i < n; ++i)
 				{

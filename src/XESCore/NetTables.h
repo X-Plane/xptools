@@ -23,6 +23,8 @@
 #ifndef NETTABLES_H
 #define NETTABLES_H
 
+#include "XESConstants.h"
+
 /*
 	Terminology note:
 	
@@ -148,7 +150,7 @@ extern	BridgeInfoTable					gBridgeInfo;
 
 extern map<int,int>						gTwinRules;
 
-void	LoadNetFeatureTables(void);
+void	LoadNetFeatureTables(rf_region inRegion);
 
 //bool	IsSeparatedHighway(int feat_type);
 //int		SeparatedToOneway(int feat_type);

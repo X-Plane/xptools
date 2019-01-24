@@ -518,7 +518,7 @@ static int DoBuildRoads(const vector<const char *>& args)
 {
 	if (gVerbose) printf("Building roads...\n");
 	CalcRoadTypes(gMap, gDem[dem_Elevation], gDem[dem_UrbanDensity],gDem[dem_Temperature],gDem[dem_Rainfall],gProgress);
-	repair_network(gMap);
+	repair_network(gMap, gVerbose);
 	return 0;
 }
 
@@ -556,7 +556,7 @@ static int DoBuildDSF(const vector<const char *>& args)
 //		gDem[dem_WaterSurface],
 		gDem[dem_Bathymetry],
 		gDem[dem_UrbanDensity],
-		gTriangulationHi, /*gTriangulationLo,*/ gMap, gProgress);
+		gTriangulationHi, /*gTriangulationLo,*/ gMap, gRegion, gProgress);
 	return 0;
 }
 

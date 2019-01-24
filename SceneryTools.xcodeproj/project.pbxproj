@@ -30,6 +30,7 @@
 			buildPhases = (
 			);
 			dependencies = (
+				D68801C321F7784E00A66577 /* PBXTargetDependency */,
 				D60734350D197A2700E08F61 /* PBXTargetDependency */,
 				D6C68DED0BEFB3BE00C9F880 /* PBXTargetDependency */,
 				D6C68DE90BEFB3BE00C9F880 /* PBXTargetDependency */,
@@ -39,7 +40,6 @@
 				D6CB54840CEC9DCB000E4393 /* PBXTargetDependency */,
 				D6C68DE10BEFB3BE00C9F880 /* PBXTargetDependency */,
 				D6C68DDF0BEFB3BE00C9F880 /* PBXTargetDependency */,
-				D6A2674F0F992EF800E1E754 /* PBXTargetDependency */,
 			);
 			name = "Build All";
 			productName = "Build All";
@@ -168,7 +168,6 @@
 		D6080505154659A7001BE1A9 /* push_buttons.png in Resources */ = {isa = PBXBuildFile; fileRef = D6080504154659A7001BE1A9 /* push_buttons.png */; };
 		D60808821546E5F6001BE1A9 /* WED_LibraryPreviewPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60808811546E5F6001BE1A9 /* WED_LibraryPreviewPane.cpp */; };
 		D60826581C3622AC001CC3CF /* WED_Sign_Editor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60826561C3622AC001CC3CF /* WED_Sign_Editor.cpp */; };
-		D608C9841E01B8F8002E68F9 /* WED_HierarchyFilterBar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D608C9801E01B8F8002E68F9 /* WED_HierarchyFilterBar.cpp */; };
 		D608C9851E01B8F8002E68F9 /* WED_LibraryFilterBar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D608C9821E01B8F8002E68F9 /* WED_LibraryFilterBar.cpp */; };
 		D608C9881E01B906002E68F9 /* GUI_FilterBar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D608C9861E01B906002E68F9 /* GUI_FilterBar.cpp */; };
 		D608C98A1E01BC09002E68F9 /* map_servicedest.png in Resources */ = {isa = PBXBuildFile; fileRef = D608C9891E01BC09002E68F9 /* map_servicedest.png */; };
@@ -933,7 +932,7 @@
 			remoteGlobalIDString = D6C579BC0C7E3C7B00FCB4C1;
 			remoteInfo = DDSTool;
 		};
-		D6A2674E0F992EF800E1E754 /* PBXContainerItemProxy */ = {
+		D68801C221F7784E00A66577 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
 			proxyType = 1;
@@ -1103,8 +1102,6 @@
 		D60808811546E5F6001BE1A9 /* WED_LibraryPreviewPane.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_LibraryPreviewPane.cpp; sourceTree = "<group>"; };
 		D60826561C3622AC001CC3CF /* WED_Sign_Editor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Sign_Editor.cpp; sourceTree = "<group>"; };
 		D60826571C3622AC001CC3CF /* WED_Sign_Editor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Sign_Editor.h; sourceTree = "<group>"; };
-		D608C9801E01B8F8002E68F9 /* WED_HierarchyFilterBar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_HierarchyFilterBar.cpp; sourceTree = "<group>"; };
-		D608C9811E01B8F8002E68F9 /* WED_HierarchyFilterBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_HierarchyFilterBar.h; sourceTree = "<group>"; };
 		D608C9821E01B8F8002E68F9 /* WED_LibraryFilterBar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_LibraryFilterBar.cpp; sourceTree = "<group>"; };
 		D608C9831E01B8F8002E68F9 /* WED_LibraryFilterBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_LibraryFilterBar.h; sourceTree = "<group>"; };
 		D608C9861E01B906002E68F9 /* GUI_FilterBar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_FilterBar.cpp; sourceTree = "<group>"; };
@@ -1136,6 +1133,13 @@
 		D60C07E00C2328B700783179 /* WED_FastBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_FastBuffer.h; sourceTree = "<group>"; };
 		D60C07E10C2328B700783179 /* WED_FastBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_FastBuffer.cpp; sourceTree = "<group>"; };
 		D6110F981C32136000A37784 /* WED_Sign_Parser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Sign_Parser.h; sourceTree = "<group>"; };
+		D612485321E5AA5D00FA030C /* WED_ATCWindRule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ATCWindRule.h; sourceTree = "<group>"; };
+		D612485421E5AA5D00FA030C /* WED_ATCTimeRule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ATCTimeRule.h; sourceTree = "<group>"; };
+		D612485521E5AA5D00FA030C /* WED_FacadePreview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_FacadePreview.h; sourceTree = "<group>"; };
+		D612485621E5B2C300FA030C /* CGALDefs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGALDefs.h; sourceTree = "<group>"; };
+		D612485721E5B35300FA030C /* RTree2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RTree2.h; sourceTree = "<group>"; };
+		D612485821E5B39300FA030C /* UTL_interval.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UTL_interval.h; sourceTree = "<group>"; };
+		D612485921E5B41A00FA030C /* Hydro2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Hydro2.h; sourceTree = "<group>"; };
 		D6139E1E0BD5793500D50803 /* WED_StructureLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_StructureLayer.h; sourceTree = "<group>"; };
 		D6139E1F0BD5793500D50803 /* WED_StructureLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_StructureLayer.cpp; sourceTree = "<group>"; };
 		D613A2DE0BD64C1800D50803 /* WED_TerraserverLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_TerraserverLayer.h; sourceTree = "<group>"; };
@@ -2913,6 +2917,8 @@
 		D6BC376A0AB22C85003949C5 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				D612485821E5B39300FA030C /* UTL_interval.h */,
+				D612485721E5B35300FA030C /* RTree2.h */,
 				D6F3F0891D072BE800188B28 /* CSVParser.cpp */,
 				D6F3F08A1D072BE800188B28 /* CSVParser.h */,
 				D62FD75B110E14E900C5D48E /* QuiltUtils.cpp */,
@@ -3155,8 +3161,6 @@
 			children = (
 				02B03C0D20C71DE5000F81F0 /* WED_Line_Selector.cpp */,
 				02B03C0E20C71DE5000F81F0 /* WED_Line_Selector.h */,
-				D608C9801E01B8F8002E68F9 /* WED_HierarchyFilterBar.cpp */,
-				D608C9811E01B8F8002E68F9 /* WED_HierarchyFilterBar.h */,
 				D608C9821E01B8F8002E68F9 /* WED_LibraryFilterBar.cpp */,
 				D608C9831E01B8F8002E68F9 /* WED_LibraryFilterBar.h */,
 				D6E023EC0C39842700BD789F /* WED_PackageListAdapter.cpp */,
@@ -3181,6 +3185,8 @@
 		D6BC382D0AB22C85003949C5 /* XESCore */ = {
 			isa = PBXGroup;
 			children = (
+				D612485921E5B41A00FA030C /* Hydro2.h */,
+				D612485621E5B2C300FA030C /* CGALDefs.h */,
 				D6BC020B146CC17800A941C6 /* Hydro2.cpp */,
 				D6D408271406C6A20061EBF9 /* BezierApprox.cpp */,
 				D6D408281406C6A20061EBF9 /* BezierApprox.h */,
@@ -3509,6 +3515,9 @@
 		D6ED413C0B6ADE0100D5484E /* WEDEntities */ = {
 			isa = PBXGroup;
 			children = (
+				D612485421E5AA5D00FA030C /* WED_ATCTimeRule.h */,
+				D612485321E5AA5D00FA030C /* WED_ATCWindRule.h */,
+				D612485521E5AA5D00FA030C /* WED_FacadePreview.h */,
 				D6AF0A511F44E7B400CC7328 /* WED_FacadePreview.cpp */,
 				D6240D6B1476EAAE00A28A6F /* WED_ATCTimeRule.cpp */,
 				D6240D6C1476EAAE00A28A6F /* WED_ATCWindRule.cpp */,
@@ -4672,7 +4681,6 @@
 				D62FCEE20BD51B2900ED6CF8 /* WED_RampPosition.cpp in Sources */,
 				D62FCEEC0BD51BBE00ED6CF8 /* WED_LightFixture.cpp in Sources */,
 				D62FCEFE0BD51D9200ED6CF8 /* WED_Helipad.cpp in Sources */,
-				D608C9841E01B8F8002E68F9 /* WED_HierarchyFilterBar.cpp in Sources */,
 				D62FCF310BD535AA00ED6CF8 /* WED_Runway.cpp in Sources */,
 				D62FCF6B0BD539EE00ED6CF8 /* WED_Sealane.cpp in Sources */,
 				D62FCF8D0BD53C7F00ED6CF8 /* WED_Airport.cpp in Sources */,
@@ -4834,10 +4842,10 @@
 			target = D6C579BC0C7E3C7B00FCB4C1 /* DDSTool */;
 			targetProxy = D66FD8790C933D39004AD565 /* PBXContainerItemProxy */;
 		};
-		D6A2674F0F992EF800E1E754 /* PBXTargetDependency */ = {
+		D68801C321F7784E00A66577 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = D6A2665D0F99266D00E1E754 /* ac3d */;
-			targetProxy = D6A2674E0F992EF800E1E754 /* PBXContainerItemProxy */;
+			targetProxy = D68801C221F7784E00A66577 /* PBXContainerItemProxy */;
 		};
 		D6C68DDC0BEFB3A400C9F880 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -5253,7 +5261,6 @@
 					libs/local/lib/libCGAL_Core.a,
 					libs/local/lib/libshp.a,
 					libs/local/lib/libsquish.a,
-					libs/local/lib/libjasper.a,
 				);
 			};
 			name = Phone;
@@ -5449,7 +5456,6 @@
 					libs/local/lib/libCGAL_Core.a,
 					libs/local/lib/libshp.a,
 					libs/local/lib/libsquish.a,
-					libs/local/lib/libjasper.a,
 				);
 			};
 			name = Debug;
@@ -5478,7 +5484,6 @@
 					libs/local/lib/libCGAL_Core.a,
 					libs/local/lib/libshp.a,
 					libs/local/lib/libsquish.a,
-					libs/local/lib/libjasper.a,
 				);
 			};
 			name = Release;
@@ -5539,7 +5544,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				BUNDLE_LOADER = /Applications/ac3dmac/ac3d.app/Contents/MacOS/ac3d;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -5553,9 +5557,9 @@
 				);
 				MACH_O_TYPE = mh_bundle;
 				OTHER_LDFLAGS = (
-					SDK/mac_i386/lib/libz.a,
-					SDK/mac_i386/lib/libsquish.a,
-					SDK/mac_i386/lib/libpng.a,
+					libs/local/lib/libsquish.a,
+					libs/local/lib/libpng.a,
+					libs/local/lib/libz.a,
 				);
 				PRODUCT_NAME = XPlaneSupportMac;
 			};
@@ -5565,7 +5569,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				BUNDLE_LOADER = /Applications/ac3dmac/ac3d.app/Contents/MacOS/ac3d;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -5584,9 +5587,9 @@
 				);
 				MACH_O_TYPE = mh_bundle;
 				OTHER_LDFLAGS = (
-					SDK/mac_i386/lib/libz.a,
-					SDK/mac_i386/lib/libsquish.a,
-					SDK/mac_i386/lib/libpng.a,
+					libs/local/lib/libsquish.a,
+					libs/local/lib/libpng.a,
+					libs/local/lib/libz.a,
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = XPlaneSupportMac;
@@ -5597,7 +5600,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				BUNDLE_LOADER = /Applications/ac3dmac/ac3d.app/Contents/MacOS/ac3d;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -5616,9 +5618,9 @@
 				);
 				MACH_O_TYPE = mh_bundle;
 				OTHER_LDFLAGS = (
-					SDK/mac_i386/lib/libz.a,
-					SDK/mac_i386/lib/libsquish.a,
-					SDK/mac_i386/lib/libpng.a,
+					libs/local/lib/libsquish.a,
+					libs/local/lib/libpng.a,
+					libs/local/lib/libz.a,
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = XPlaneSupportMac;
@@ -5629,7 +5631,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				BUNDLE_LOADER = /Applications/ac3dmac/ac3d.app/Contents/MacOS/ac3d;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -5644,9 +5645,9 @@
 				);
 				MACH_O_TYPE = mh_bundle;
 				OTHER_LDFLAGS = (
-					SDK/mac_i386/lib/libz.a,
-					SDK/mac_i386/lib/libsquish.a,
-					SDK/mac_i386/lib/libpng.a,
+					libs/local/lib/libsquish.a,
+					libs/local/lib/libpng.a,
+					libs/local/lib/libz.a,
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = XPlaneSupportMac;
@@ -5928,7 +5929,6 @@
 					libs/local/lib/libCGAL_Core.a,
 					libs/local/lib/libshp.a,
 					libs/local/lib/libsquish.a,
-					libs/local/lib/libjasper.a,
 				);
 			};
 			name = DebugOpt;

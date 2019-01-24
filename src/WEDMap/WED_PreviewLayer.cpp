@@ -22,41 +22,44 @@
  */
 
 #include "WED_PreviewLayer.h"
+
 #include "ILibrarian.h"
-#include "WED_ResourceMgr.h"
-#include "WED_LibraryMgr.h"
-#include "WED_TexMgr.h"
-#include "WED_PolygonPlacement.h"
-#include "WED_DrapedOrthophoto.h"
+#include "AptDefs.h"
+#include "GISUtils.h"
+#include "MathUtils.h"
 #include "MatrixUtils.h"
-#include "GUI_GraphState.h"
-#include "GUI_DrawUtils.h"
-#include "WED_ToolUtils.h"
-#include "WED_MapZoomerNew.h"
-#include "WED_DrawUtils.h"
-#include "WED_Runway.h"
-#include "WED_Taxiway.h"
-#include "WED_Sealane.h"
-#include "WED_Helipad.h"
-#include "WED_LinePlacement.h"
-#include "WED_StringPlacement.h"
-#include "WED_AirportChain.h"
-#include "WED_AirportNode.h"
-#include "WED_ObjPlacement.h"
-#include "WED_ForestPlacement.h"
-#include "WED_FacadePlacement.h"
 #include "TexUtils.h"
 #include "ObjDraw.h"
 #include "XObjDefs.h"
-#include "MathUtils.h"
-#include "WED_UIDefs.h"
-#include "WED_EnumSystem.h"
-#include "AptDefs.h"
-#include "GUI_Resources.h"
 #include "XESConstants.h"
-#include "WED_TruckParkingLocation.h"
+
+#include "GUI_Resources.h"
+#include "GUI_GraphState.h"
+#include "GUI_DrawUtils.h"
+
+#include "WED_ResourceMgr.h"
+#include "WED_LibraryMgr.h"
+#include "WED_TexMgr.h"
+#include "WED_UIDefs.h"
+#include "WED_DrawUtils.h"
 #include "WED_EnumSystem.h"
-#include "GISUtils.h"
+#include "WED_MapZoomerNew.h"
+#include "WED_ToolUtils.h"
+
+#include "WED_AirportChain.h"
+#include "WED_AirportNode.h"
+#include "WED_ForestPlacement.h"
+#include "WED_FacadePlacement.h"
+#include "WED_DrapedOrthophoto.h"
+#include "WED_Runway.h"
+#include "WED_Sealane.h"
+#include "WED_Helipad.h"
+#include "WED_LinePlacement.h"
+#include "WED_ObjPlacement.h"
+#include "WED_PolygonPlacement.h"
+#include "WED_StringPlacement.h"
+#include "WED_Taxiway.h"
+#include "WED_TruckParkingLocation.h"
 
 #if APL
 #include <OpenGL/gl.h>
@@ -311,7 +314,7 @@ const struct { const char * name; int group_lo;  int group_hi; }	kGroupNames[] =
 };
 
 
-static int layer_group_for_string(const char * s, int o, int def)
+int layer_group_for_string(const char * s, int o, int def)
 {
 	int n = 0;
 	while(kGroupNames[n].name)
@@ -363,7 +366,81 @@ struct	preview_runway : public WED_PreviewItem {
 			}
 			kill_transform();
 			g->SetState(false,0,false, true,true, false,false);
-		}	
+		}
+		double z = zoomer->GetPPM();
+//		if (0 z > 0.3)                     // draw some well know sign and light positions
+		{
+			AptRunway_t info;
+			rwy->Export(info);
+			if(info.has_distance_remaining)
+			{
+				glColor3ub(25,25,25);
+				for(int dir = 0 ; dir <= 1; dir++)
+				{
+					Point2 lpos = corners[2*dir];
+					Vector2 direction(corners[2*dir], corners[1+2*dir]);
+					double rwy_len = direction.normalize();
+					direction *= z * 1000*FT_TO_MTR;
+					Vector2 offset = direction.perpendicular_ccw() * 15.0/1000;
+					Point2 rpos = corners[3-2*dir] - offset;
+					rpos += offset;
+					int num_signs = rwy_len / (z * 1000*FT_TO_MTR);
+
+					double sign_hdg = RAD_TO_DEG * atan2(direction.x(),direction.y());
+					for(int n = 0; n < num_signs; n++)
+					{
+						lpos += direction;
+						rpos += direction;
+						GUI_PlotIcon(g,"map_taxisign.png",lpos.x(),lpos.y(),sign_hdg, max(0.4, z * 0.05));
+						GUI_PlotIcon(g,"map_taxisign.png",rpos.x(),rpos.y(),sign_hdg, max(0.4, z * 0.05));
+					}
+				}
+			}
+			for(int dir = 0 ; dir <= 1; dir++)
+				if(info.app_light_code[dir])
+				{
+					glColor4ub(255,255,255,128);
+ 
+					double spacing = 200*FT_TO_MTR;
+					double length = 1400*FT_TO_MTR;
+					if(info.app_light_code[dir] == apt_app_ALSFI || info.app_light_code[dir] == apt_app_ALSFII ||
+						info.app_light_code[dir] == apt_app_MALSR || info.app_light_code[dir] == apt_app_SSALR)
+					{
+						length = 2400*FT_TO_MTR;
+						if(info.app_light_code[dir] == apt_app_ALSFI || info.app_light_code[dir] == apt_app_ALSFII)
+							spacing = 100*FT_TO_MTR;
+					}
+					Point2 lpos = Segment2(corners[3-2*dir],corners[2*dir]).midpoint(0.5);
+					Vector2 direction(corners[1+2*dir], corners[2*dir]);
+					direction.normalize();
+					Vector2 offset = direction.perpendicular_ccw() * z * 8.0;
+					direction *= z * spacing;
+					int num_lgts = length / spacing;
+					double sign_hdg = RAD_TO_DEG * atan2(direction.x(),direction.y());
+
+					if(info.app_light_code[dir] <= apt_app_MALS)    // 1000' roll bar
+					{
+						Vector2 dir2(direction);
+						dir2.normalize();
+						dir2 *= z * 1000*FT_TO_MTR;
+						Point2 rollbar = lpos + dir2;
+
+						rollbar -= offset * 2;
+						for(int n = 0; n < 5; n++)
+						{
+							if(n != 2)
+								GUI_PlotIcon(g,"map_light.png",rollbar.x(),rollbar.y(),sign_hdg, max(0.3, z * 0.05));
+							rollbar += offset;
+						}
+					}
+					for(int n = 0; n < num_lgts; n++)
+					{
+						lpos += direction;
+						GUI_PlotIcon(g,"map_light.png",lpos.x(),lpos.y(),sign_hdg, max(0.3, z * 0.05));
+					}
+				}
+			g->SetState(false,0,false, true,true, false,false);
+		}
 	}
 };
 
@@ -547,7 +624,7 @@ struct	preview_line : WED_PreviewItem {
 
 		IGISPointSequence * ps = SAFE_CAST(IGISPointSequence,lin);
 		if(ps)
-			if(linfo.eff_width * zoomer->GetPPM() < MIN_PIXELS_LINE_PREVIEW || !tex_id)             // cutoff size for real preview
+			if(linfo.eff_width * zoomer->GetPPM() < MIN_PIXELS_PREVIEW || !tex_id)             // cutoff size for real preview
 			{
 				g->SetState(false,0,false,false,false,false,false);
 				
@@ -647,7 +724,7 @@ struct	preview_string : WED_PreviewItem {
 					sinfo.previews[0]->xyz_max[0]- sinfo.previews[0]->xyz_min[0],
 					sinfo.previews[0]->xyz_max[2]- sinfo.previews[0]->xyz_min[2]);
 
-			if(real_radius * zoomer->GetPPM() > MIN_PIXELS_LINE_PREVIEW)             // cutoff size for real preview
+			if(real_radius * zoomer->GetPPM() > MIN_PIXELS_PREVIEW)             // cutoff size for real preview
 			{
 				ITexMgr * tman = WED_GetTexMgr(resolver);
 				g->SetState(false,1,false,false,true,false,false);
@@ -1146,10 +1223,7 @@ struct	preview_truck : public WED_PreviewItem {
 			Point2 loc;
 			trk->GetLocation(gis_Geo,loc);
 			double trk_heading = trk->GetHeading();
-			if(!cull_obj(zoomer,o1, loc, trk_heading))
-			{
-				draw_obj_at_ll(tman, o1, loc, trk_heading, g, zoomer);
-			}
+			draw_obj_at_ll(tman, o1, loc, trk_heading, g, zoomer);
 
 			if(trk->GetTruckType() == atc_ServiceTruck_Baggage_Train)
 			{
@@ -1159,10 +1233,8 @@ struct	preview_truck : public WED_PreviewItem {
 					double gap = 3.899;
 					Vector2 dirv(sin(trk_heading * DEG_TO_RAD),
 								 cos(trk_heading * DEG_TO_RAD));
-					
 					Vector2 llv = VectorMetersToLL(loc, dirv);
-				
-					
+
 					for(int c = 0; c < trk->GetNumberOfCars(); ++c)
 					{
 						loc -= (llv * gap);
@@ -1179,10 +1251,8 @@ struct	preview_truck : public WED_PreviewItem {
 					double gap = 4.247;
 					Vector2 dirv(sin(trk_heading * DEG_TO_RAD),
 								 cos(trk_heading * DEG_TO_RAD));
-					
 					Vector2 llv = VectorMetersToLL(loc, dirv);
-				
-					
+
 					loc -= (llv * gap);
 					draw_obj_at_ll(tman, o2, loc, trk_heading, g, zoomer);
 				}
@@ -1261,7 +1331,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		if(taxi)	
 		{
 			mPreviewItems.push_back(new preview_taxiway(taxi,mTaxiLayer++));
-			if(GetZoomer()->GetPPM() > MIN_PIXELS_LINE_PREVIEW / 0.3)        // there can be so many, make visibility decision here already for performance
+			if(GetZoomer()->GetPPM() * 0.3 > MIN_PIXELS_PREVIEW)        // there can be so many, make visibility decision here already for performance
 			{
 				IGISPointSequence * ps = taxi->GetOuterRing();
 				mPreviewItems.push_back(new preview_airportlines(ps, group_Markings, GetResolver()));
@@ -1306,10 +1376,10 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 			pol_info_t	pol_info;
 			int lg = group_TaxiwaysBegin;
 			WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetResolver());
-			
+
+			orth->GetResource(vpath);
 			if(!vpath.empty() && rmgr->GetPol(vpath,pol_info) && !pol_info.group.empty())
 				lg = layer_group_for_string(pol_info.group.c_str(),pol_info.group_offset, lg);
-			orth->GetResource(vpath);
 			mPreviewItems.push_back(new preview_ortho(orth,lg, GetResolver()));
 		}
 	}	
@@ -1336,7 +1406,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		if(chn)
 		{
 			double ppm = GetZoomer()->GetPPM();       // there can be so many, make visibility decision here already for performance
-			if(ppm > MIN_PIXELS_LINE_PREVIEW / 0.3)
+			if(ppm * 0.3 > MIN_PIXELS_PREVIEW)	      // criteria matches where mRealLines disappear in StructureLayer
 			{
 				mPreviewItems.push_back(new preview_airportlines(chn, group_Markings, GetResolver()));
 				mPreviewItems.push_back(new preview_airportlights(chn, group_Objects, GetResolver()));
@@ -1359,11 +1429,16 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		WED_ObjPlacement * obj = SAFE_CAST(WED_ObjPlacement, entity);
 		if(obj)
 			if(obj->GetShowLevel() <= mObjDensity) 	
-				mPreviewItems.push_back(new preview_object(obj,group_Objects, mObjDensity, GetResolver()));
+			{
+				double n,s,e,w;
+				GetZoomer()->GetMapVisibleBounds(w,s,e,n);
+				if(obj->GetVisibleDeg() > (e-w) * 0.005)        // skip below 1/2% map width. Obj's also tend to overestimate their size
+					mPreviewItems.push_back(new preview_object(obj,group_Objects, mObjDensity, GetResolver()));
+			}
 	}
 	else if (sub_class == WED_TruckParkingLocation::sClass)
 	{
-		if(GetZoomer()->GetPPM() > MIN_PIXELS_LINE_PREVIEW / 5.0)        // there can be so many, make visibility decision here already for performance
+		if(GetZoomer()->GetPPM() * 5.0 > MIN_PIXELS_PREVIEW)   // there can be so many, make visibility decision here already for performance
 		{
 			WED_TruckParkingLocation * trk = SAFE_CAST(WED_TruckParkingLocation, entity);
 			if (trk)	mPreviewItems.push_back(new preview_truck(trk, group_Objects, GetResolver()));

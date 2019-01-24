@@ -93,7 +93,7 @@ static void analyze_package(const string& abspath, WED_PackageInfo& pkginfo)
 		pkginfo.hasAPT = true;
 }
 
-struct local_scan_t {
+struct package_local_scan_t {
 	string	fullpath;
 	vector<WED_PackageInfo> * who;
 };
@@ -102,7 +102,7 @@ bool		WED_PackageMgr::AccumLibDir(const char * fileName, bool isDir, void * ref)
 {
 	if(isDir && fileName[0] != '.')
 	{
-		local_scan_t * info = reinterpret_cast<local_scan_t *>(ref);
+		package_local_scan_t * info = reinterpret_cast<package_local_scan_t *>(ref);
 		if(info) 
 		{
 			info->who->push_back(fileName);
@@ -301,7 +301,7 @@ void		WED_PackageMgr::Rescan(void)
 		if (MF_GetFileType(cus_dir.c_str(),mf_CheckType) == mf_Directory)
 		{
 			system_exists=true;
-			local_scan_t info;
+			package_local_scan_t info;
 			info.fullpath = cus_dir;
 			info.who = &custom_packages;
 			MF_IterateDirectory(cus_dir.c_str(), AccumLibDir, (void*) &info);

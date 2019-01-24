@@ -1142,6 +1142,11 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 
 bool	WriteAptFile(const char * inFileName, const AptVector& inApts, int version)
 {
+	if (inApts.empty())
+	{
+		remove(inFileName);
+		return true;
+	}
 	FILE * fi = fopen(inFileName, "wb");
 	if (fi == NULL) return false;
 	bool ok = WriteAptFileOpen(fi, inApts, version);

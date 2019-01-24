@@ -190,7 +190,7 @@ IGISPoint *	WED_GISChain::SplitSide   (const Point2& p, double dist)
 			Bezier2 b1, b2;
 			best_b.partition(b1,b2,t);
 			IGISPoint_Bezier * prev = dynamic_cast<IGISPoint_Bezier *>(GetNthPoint(best));
-			IGISPoint_Bezier * next = dynamic_cast<IGISPoint_Bezier *>(GetNthPoint((best+1) % s));
+			IGISPoint_Bezier * next = dynamic_cast<IGISPoint_Bezier *>(GetNthPoint( IsClosed() ? (best+1) % s : best+1 ));
 			DebugAssert(prev);
 			DebugAssert(next);
 			prev->SetSplit(true);
