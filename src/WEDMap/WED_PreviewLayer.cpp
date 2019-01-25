@@ -383,7 +383,7 @@ struct	preview_runway : public WED_PreviewItem {
 					direction *= z * 1000*FT_TO_MTR;
 					Vector2 offset = direction.perpendicular_ccw() * 15.0/1000;
 					Point2 rpos = corners[3-2*dir] - offset;
-					rpos += offset;
+					lpos += offset;
 					int num_signs = rwy_len / (z * 1000*FT_TO_MTR);
 
 					double sign_hdg = RAD_TO_DEG * atan2(direction.x(),direction.y());
