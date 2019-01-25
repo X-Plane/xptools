@@ -1209,7 +1209,7 @@ void		GUI_TextTable::CreateEdit(int cell_bounds[4], const vector<GUI_MenuItem_t>
 			mEditor->TakeFocus();
 		}
 	}
-	else
+	if(!mEditor)
 	{
 		if (!mTextField)
 		{

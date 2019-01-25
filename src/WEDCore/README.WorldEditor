@@ -13,6 +13,10 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 2.0.0 ??
+	Bug Fixes:
+	- WED-1131: fix illegal taxi signs not edit/deleteable with bare text editor
+
 WED 2.0.0 b1 1/24/19
 	Features:
 	- don't write apt.dat if there are no airports for it - rather delete it
