@@ -263,82 +263,84 @@ ortho_urbanization ortho_urbanization::rotate(int deg) const
 
 map<ortho_urbanization, int> get_terrain_transition_descriptions_us()
 {
-	map<ortho_urbanization, int> ter_with_transitions; // maps desired urb levels in the corners to the terrain enum
-	//										Bottom left						Bottom right					Top right						Top left
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoInner,		terrain_PseudoOrthoInner,		terrain_PseudoOrthoInner,		terrain_PseudoOrthoInner		)] = terrain_PseudoOrthoInner1;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown			)] = terrain_PseudoOrthoTown1;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter		)] = terrain_PseudoOrthoOuter1;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoIndustrial	)] = terrain_PseudoOrthoIndustrial1;
+	map<ortho_urbanization, int> ter_with_transitions = { // maps desired urb levels in the corners to the terrain enum
+			//							Bottom left						Bottom right					Top right						Top left
+			{ortho_urbanization(terrain_PseudoOrthoInner,		terrain_PseudoOrthoInner,		terrain_PseudoOrthoInner,		terrain_PseudoOrthoInner		), terrain_PseudoOrthoInner1 },
+			{ortho_urbanization(terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown			), terrain_PseudoOrthoTown1 },
+			{ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter		), terrain_PseudoOrthoOuter1 },
+			{ortho_urbanization(terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoIndustrial	), terrain_PseudoOrthoIndustrial1 },
 	
-	ter_with_transitions[ortho_urbanization(NO_VALUE,						NO_VALUE,						terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown			)] = terrain_PseudoOrthoTownTransBottom;
-	ter_with_transitions[ortho_urbanization(NO_VALUE,						terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown,		NO_VALUE						)] = terrain_PseudoOrthoTownTransLeft;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoTown,		NO_VALUE,						NO_VALUE,						terrain_PseudoOrthoTown			)] = terrain_PseudoOrthoTownTransRight;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown,		NO_VALUE,						NO_VALUE						)] = terrain_PseudoOrthoTownTransUpper;
-	ter_with_transitions[ortho_urbanization(NO_VALUE,						NO_VALUE,						terrain_PseudoOrthoTown,		NO_VALUE						)] = terrain_PseudoOrthoTownTransLL_Half;
-	ter_with_transitions[ortho_urbanization(NO_VALUE,						terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown			)] = terrain_PseudoOrthoTownTransLL_Full;
-	ter_with_transitions[ortho_urbanization(NO_VALUE,						NO_VALUE,						NO_VALUE,						terrain_PseudoOrthoTown			)] = terrain_PseudoOrthoTownTransLR_Half;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoTown,		NO_VALUE,						terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown			)] = terrain_PseudoOrthoTownTransLR_Full;
-	ter_with_transitions[ortho_urbanization(NO_VALUE,						terrain_PseudoOrthoTown,		NO_VALUE,						NO_VALUE						)] = terrain_PseudoOrthoTownTransUL_Half;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown,		NO_VALUE						)] = terrain_PseudoOrthoTownTransUL_Full;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoTown,		NO_VALUE,						NO_VALUE,						NO_VALUE						)] = terrain_PseudoOrthoTownTransUR_Half;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown,		NO_VALUE,						terrain_PseudoOrthoTown			)] = terrain_PseudoOrthoTownTransUR_Full;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter		)] = terrain_PseudoOrthoOuterTransBottom;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoTown,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoTown			)] = terrain_PseudoOrthoOuterTransLeft;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown,		terrain_PseudoOrthoOuter		)] = terrain_PseudoOrthoOuterTransRight;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown			)] = terrain_PseudoOrthoOuterTransUpper;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoTown			)] = terrain_PseudoOrthoOuterTransLL_Half;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoTown,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter		)] = terrain_PseudoOrthoOuterTransLL_Full;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown,		terrain_PseudoOrthoOuter		)] = terrain_PseudoOrthoOuterTransLR_Half;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoTown,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter		)] = terrain_PseudoOrthoOuterTransLR_Full;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoTown,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown			)] = terrain_PseudoOrthoOuterTransUL_Half;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoTown			)] = terrain_PseudoOrthoOuterTransUL_Full;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown			)] = terrain_PseudoOrthoOuterTransUR_Half;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoTown,		terrain_PseudoOrthoOuter		)] = terrain_PseudoOrthoOuterTransUR_Full;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoIndustrial	)] = terrain_PseudoOrthoIndTransBottom;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoOuter		)] = terrain_PseudoOrthoIndTransLeft;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoIndustrial	)] = terrain_PseudoOrthoIndTransRight;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter		)] = terrain_PseudoOrthoIndTransUpper;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoOuter		)] = terrain_PseudoOrthoIndTransLL_Half;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoIndustrial	)] = terrain_PseudoOrthoIndTransLL_Full;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoIndustrial	)] = terrain_PseudoOrthoIndTransLR_Half;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoOuter,		terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoIndustrial	)] = terrain_PseudoOrthoIndTransLR_Full;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter		)] = terrain_PseudoOrthoIndTransUL_Half;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoOuter		)] = terrain_PseudoOrthoIndTransUL_Full;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter		)] = terrain_PseudoOrthoIndTransUR_Half;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoOuter,		terrain_PseudoOrthoIndustrial	)] = terrain_PseudoOrthoIndTransUR_Full;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoInner,		terrain_PseudoOrthoInner		)] = terrain_PseudoOrthoInnerTransBottom;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoInner,		terrain_PseudoOrthoInner,		terrain_PseudoOrthoOuter		)] = terrain_PseudoOrthoInnerTransLeft;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoInner,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoInner		)] = terrain_PseudoOrthoInnerTransRight;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoInner,		terrain_PseudoOrthoInner,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter		)] = terrain_PseudoOrthoInnerTransUpper;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoInner,		terrain_PseudoOrthoOuter		)] = terrain_PseudoOrthoInnerTransLL_Half;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoInner,		terrain_PseudoOrthoInner,		terrain_PseudoOrthoInner		)] = terrain_PseudoOrthoInnerTransLL_Full;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoInner		)] = terrain_PseudoOrthoInnerTransLR_Half;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoInner,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoInner,		terrain_PseudoOrthoInner		)] = terrain_PseudoOrthoInnerTransLR_Full;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoInner,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter		)] = terrain_PseudoOrthoInnerTransUL_Half;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoInner,		terrain_PseudoOrthoInner,		terrain_PseudoOrthoInner,		terrain_PseudoOrthoOuter		)] = terrain_PseudoOrthoInnerTransUL_Full;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoInner,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter		)] = terrain_PseudoOrthoInnerTransUR_Half;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoInner,		terrain_PseudoOrthoInner,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoInner		)] = terrain_PseudoOrthoInnerTransUR_Full;
+			{ortho_urbanization(NO_VALUE,						NO_VALUE,						terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown			), terrain_PseudoOrthoTownTransBottom },
+			{ortho_urbanization(NO_VALUE,						terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown,		NO_VALUE						), terrain_PseudoOrthoTownTransLeft },
+			{ortho_urbanization(terrain_PseudoOrthoTown,		NO_VALUE,						NO_VALUE,						terrain_PseudoOrthoTown			), terrain_PseudoOrthoTownTransRight },
+			{ortho_urbanization(terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown,		NO_VALUE,						NO_VALUE						), terrain_PseudoOrthoTownTransUpper },
+			{ortho_urbanization(NO_VALUE,						NO_VALUE,						terrain_PseudoOrthoTown,		NO_VALUE						), terrain_PseudoOrthoTownTransLL_Half },
+			{ortho_urbanization(NO_VALUE,						terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown			), terrain_PseudoOrthoTownTransLL_Full },
+			{ortho_urbanization(NO_VALUE,						NO_VALUE,						NO_VALUE,						terrain_PseudoOrthoTown			), terrain_PseudoOrthoTownTransLR_Half },
+			{ortho_urbanization(terrain_PseudoOrthoTown,		NO_VALUE,						terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown			), terrain_PseudoOrthoTownTransLR_Full },
+			{ortho_urbanization(NO_VALUE,						terrain_PseudoOrthoTown,		NO_VALUE,						NO_VALUE						), terrain_PseudoOrthoTownTransUL_Half },
+			{ortho_urbanization(terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown,		NO_VALUE						), terrain_PseudoOrthoTownTransUL_Full },
+			{ortho_urbanization(terrain_PseudoOrthoTown,		NO_VALUE,						NO_VALUE,						NO_VALUE						), terrain_PseudoOrthoTownTransUR_Half },
+			{ortho_urbanization(terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown,		NO_VALUE,						terrain_PseudoOrthoTown			), terrain_PseudoOrthoTownTransUR_Full },
+			{ortho_urbanization(terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter		), terrain_PseudoOrthoOuterTransBottom },
+			{ortho_urbanization(terrain_PseudoOrthoTown,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoTown			), terrain_PseudoOrthoOuterTransLeft },
+			{ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown,		terrain_PseudoOrthoOuter		), terrain_PseudoOrthoOuterTransRight },
+			{ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown			), terrain_PseudoOrthoOuterTransUpper },
+			{ortho_urbanization(terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoTown			), terrain_PseudoOrthoOuterTransLL_Half },
+			{ortho_urbanization(terrain_PseudoOrthoTown,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter		), terrain_PseudoOrthoOuterTransLL_Full },
+			{ortho_urbanization(terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown,		terrain_PseudoOrthoOuter		), terrain_PseudoOrthoOuterTransLR_Half },
+			{ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoTown,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter		), terrain_PseudoOrthoOuterTransLR_Full },
+			{ortho_urbanization(terrain_PseudoOrthoTown,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown			), terrain_PseudoOrthoOuterTransUL_Half },
+			{ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoTown			), terrain_PseudoOrthoOuterTransUL_Full },
+			{ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown,		terrain_PseudoOrthoTown			), terrain_PseudoOrthoOuterTransUR_Half },
+			{ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoTown,		terrain_PseudoOrthoOuter		), terrain_PseudoOrthoOuterTransUR_Full },
+			{ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoIndustrial	), terrain_PseudoOrthoIndTransBottom },
+			{ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoOuter		), terrain_PseudoOrthoIndTransLeft },
+			{ortho_urbanization(terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoIndustrial	), terrain_PseudoOrthoIndTransRight },
+			{ortho_urbanization(terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter		), terrain_PseudoOrthoIndTransUpper },
+			{ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoOuter		), terrain_PseudoOrthoIndTransLL_Half },
+			{ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoIndustrial	), terrain_PseudoOrthoIndTransLL_Full },
+			{ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoIndustrial	), terrain_PseudoOrthoIndTransLR_Half },
+			{ortho_urbanization(terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoOuter,		terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoIndustrial	), terrain_PseudoOrthoIndTransLR_Full },
+			{ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter		), terrain_PseudoOrthoIndTransUL_Half },
+			{ortho_urbanization(terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoOuter		), terrain_PseudoOrthoIndTransUL_Full },
+			{ortho_urbanization(terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter		), terrain_PseudoOrthoIndTransUR_Half },
+			{ortho_urbanization(terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoIndustrial,	terrain_PseudoOrthoOuter,		terrain_PseudoOrthoIndustrial	), terrain_PseudoOrthoIndTransUR_Full },
+			{ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoInner,		terrain_PseudoOrthoInner		), terrain_PseudoOrthoInnerTransBottom },
+			{ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoInner,		terrain_PseudoOrthoInner,		terrain_PseudoOrthoOuter		), terrain_PseudoOrthoInnerTransLeft },
+			{ortho_urbanization(terrain_PseudoOrthoInner,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoInner		), terrain_PseudoOrthoInnerTransRight },
+			{ortho_urbanization(terrain_PseudoOrthoInner,		terrain_PseudoOrthoInner,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter		), terrain_PseudoOrthoInnerTransUpper },
+			{ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoInner,		terrain_PseudoOrthoOuter		), terrain_PseudoOrthoInnerTransLL_Half },
+			{ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoInner,		terrain_PseudoOrthoInner,		terrain_PseudoOrthoInner		), terrain_PseudoOrthoInnerTransLL_Full },
+			{ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoInner		), terrain_PseudoOrthoInnerTransLR_Half },
+			{ortho_urbanization(terrain_PseudoOrthoInner,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoInner,		terrain_PseudoOrthoInner		), terrain_PseudoOrthoInnerTransLR_Full },
+			{ortho_urbanization(terrain_PseudoOrthoOuter,		terrain_PseudoOrthoInner,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter		), terrain_PseudoOrthoInnerTransUL_Half },
+			{ortho_urbanization(terrain_PseudoOrthoInner,		terrain_PseudoOrthoInner,		terrain_PseudoOrthoInner,		terrain_PseudoOrthoOuter		), terrain_PseudoOrthoInnerTransUL_Full },
+			{ortho_urbanization(terrain_PseudoOrthoInner,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoOuter		), terrain_PseudoOrthoInnerTransUR_Half },
+			{ortho_urbanization(terrain_PseudoOrthoInner,		terrain_PseudoOrthoInner,		terrain_PseudoOrthoOuter,		terrain_PseudoOrthoInner		), terrain_PseudoOrthoInnerTransUR_Full },
+	};
 	return ter_with_transitions;
 }
 
 map<ortho_urbanization, int> get_terrain_transition_descriptions_euro()
 {
-	map<ortho_urbanization, int> ter_with_transitions; // maps desired urb levels in the corners to the terrain enum
-	//										Bottom left						Bottom right					Top right						Top left
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoEuro,		terrain_PseudoOrthoEuro,		terrain_PseudoOrthoEuro,		terrain_PseudoOrthoEuro		)] = terrain_PseudoOrthoEuro1;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoEuroSortaIndustrial,		terrain_PseudoOrthoEuroSortaIndustrial,		terrain_PseudoOrthoEuroSortaIndustrial,		terrain_PseudoOrthoEuroSortaIndustrial		)] = terrain_PseudoOrthoEuroSemiInd;
-	ter_with_transitions[ortho_urbanization(NO_VALUE,						NO_VALUE,						terrain_PseudoOrthoEuro,		terrain_PseudoOrthoEuro		)] = terrain_PseudoOrthoEuroTransBottom;
-	ter_with_transitions[ortho_urbanization(NO_VALUE,						terrain_PseudoOrthoEuro,		terrain_PseudoOrthoEuro,		NO_VALUE					)] = terrain_PseudoOrthoEuroTransLeft;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoEuro,		NO_VALUE,						NO_VALUE,						terrain_PseudoOrthoEuro		)] = terrain_PseudoOrthoEuroTransRight;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoEuro,		terrain_PseudoOrthoEuro,		NO_VALUE,						NO_VALUE					)] = terrain_PseudoOrthoEuroTransUpper;
-	ter_with_transitions[ortho_urbanization(NO_VALUE,						NO_VALUE,						terrain_PseudoOrthoEuro,		NO_VALUE					)] = terrain_PseudoOrthoEuroTransLL_Half;
-	ter_with_transitions[ortho_urbanization(NO_VALUE,						terrain_PseudoOrthoEuro,		terrain_PseudoOrthoEuro,		terrain_PseudoOrthoEuro		)] = terrain_PseudoOrthoEuroTransLL_Full;
-	ter_with_transitions[ortho_urbanization(NO_VALUE,						NO_VALUE,						NO_VALUE,						terrain_PseudoOrthoEuro		)] = terrain_PseudoOrthoEuroTransLR_Half;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoEuro,		NO_VALUE,						terrain_PseudoOrthoEuro,		terrain_PseudoOrthoEuro		)] = terrain_PseudoOrthoEuroTransLR_Full;
-	ter_with_transitions[ortho_urbanization(NO_VALUE,						terrain_PseudoOrthoEuro,		NO_VALUE,						NO_VALUE					)] = terrain_PseudoOrthoEuroTransUL_Half;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoEuro,		terrain_PseudoOrthoEuro,		terrain_PseudoOrthoEuro,		NO_VALUE					)] = terrain_PseudoOrthoEuroTransUL_Full;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoEuro,		NO_VALUE,						NO_VALUE,						NO_VALUE					)] = terrain_PseudoOrthoEuroTransUR_Half;
-	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoEuro,		terrain_PseudoOrthoEuro,		NO_VALUE,						terrain_PseudoOrthoEuro		)] = terrain_PseudoOrthoEuroTransUR_Full;
+	map<ortho_urbanization, int> ter_with_transitions = { // maps desired urb levels in the corners to the terrain enum
+			//						Bottom left								Bottom right							Top right								Top left
+			{ortho_urbanization(terrain_PseudoOrthoEuro,				terrain_PseudoOrthoEuro,				terrain_PseudoOrthoEuro,				terrain_PseudoOrthoEuro					), terrain_PseudoOrthoEuro1},
+			{ortho_urbanization(terrain_PseudoOrthoEuroSortaIndustrial,	terrain_PseudoOrthoEuroSortaIndustrial,	terrain_PseudoOrthoEuroSortaIndustrial,	terrain_PseudoOrthoEuroSortaIndustrial	), terrain_PseudoOrthoEuroSemiInd},
+			{ortho_urbanization(NO_VALUE,								NO_VALUE,								terrain_PseudoOrthoEuro,				terrain_PseudoOrthoEuro					), terrain_PseudoOrthoEuroTransBottom},
+			{ortho_urbanization(NO_VALUE,								terrain_PseudoOrthoEuro,				terrain_PseudoOrthoEuro,				NO_VALUE								), terrain_PseudoOrthoEuroTransLeft},
+			{ortho_urbanization(terrain_PseudoOrthoEuro,				NO_VALUE,								NO_VALUE,								terrain_PseudoOrthoEuro					), terrain_PseudoOrthoEuroTransRight},
+			{ortho_urbanization(terrain_PseudoOrthoEuro,				terrain_PseudoOrthoEuro,				NO_VALUE,								NO_VALUE								), terrain_PseudoOrthoEuroTransUpper},
+			{ortho_urbanization(NO_VALUE,								NO_VALUE,								terrain_PseudoOrthoEuro,				NO_VALUE								), terrain_PseudoOrthoEuroTransLL_Half},
+			{ortho_urbanization(NO_VALUE,								terrain_PseudoOrthoEuro,				terrain_PseudoOrthoEuro,				terrain_PseudoOrthoEuro					), terrain_PseudoOrthoEuroTransLL_Full},
+			{ortho_urbanization(NO_VALUE,								NO_VALUE,								NO_VALUE,								terrain_PseudoOrthoEuro					), terrain_PseudoOrthoEuroTransLR_Half},
+			{ortho_urbanization(terrain_PseudoOrthoEuro,				NO_VALUE,								terrain_PseudoOrthoEuro,				terrain_PseudoOrthoEuro					), terrain_PseudoOrthoEuroTransLR_Full},
+			{ortho_urbanization(NO_VALUE,								terrain_PseudoOrthoEuro,				NO_VALUE,								NO_VALUE								), terrain_PseudoOrthoEuroTransUL_Half},
+			{ortho_urbanization(terrain_PseudoOrthoEuro,				terrain_PseudoOrthoEuro,				terrain_PseudoOrthoEuro,				NO_VALUE								), terrain_PseudoOrthoEuroTransUL_Full},
+			{ortho_urbanization(terrain_PseudoOrthoEuro,				NO_VALUE,								NO_VALUE,								NO_VALUE								), terrain_PseudoOrthoEuroTransUR_Half},
+			{ortho_urbanization(terrain_PseudoOrthoEuro,				terrain_PseudoOrthoEuro,				NO_VALUE,								terrain_PseudoOrthoEuro					), terrain_PseudoOrthoEuroTransUR_Full},
+	};
 	return ter_with_transitions;
 }
 map<ortho_urbanization, int> get_terrain_transition_descriptions(ag_terrain_style style)
