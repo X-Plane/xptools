@@ -60,6 +60,8 @@ extern vector<pair<Point2,Point3> >					gMeshPoints;
 extern vector<pair<Point2,Point3> >					gMeshLines;
 extern vector<pair<Bezier2,pair<Point3, Point3> > >	gMeshBeziers;
 
+constexpr bool enable_shitty_old_beaches() { return true; } // used to be !gMobile
+
 #if OPENGL_MAP
 extern PmwxIndex_t			gMapIndex;
 #endif

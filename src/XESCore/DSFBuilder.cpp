@@ -668,7 +668,7 @@ double edge_angle(const CDT::Edge& e1, const CDT::Edge& e2)
 
 int	has_beach(const CDT::Edge& inEdge, const CDT& inMesh, int& kind)
 {
-	if(gMobile)
+	if(!enable_shitty_old_beaches())
 	{
 		return false;
 	}
@@ -1590,7 +1590,7 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 	/****************************************************************
 	 * BEACH EXPORT
 	 ****************************************************************/
-	if(!gMobile && writer1)
+	if(enable_shitty_old_beaches() && writer1)
 	{
 		// Beach export - we are going to export polygon rings/chains out of
 		// every homogenous continous coastline type.  Two issues:
