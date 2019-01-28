@@ -1252,5 +1252,5 @@ void		WED_PropertyTable::GetFilterStatus(WED_Thing * what, ISelection * sel,
 			recurse_children = 0;
 		}
 	}
-	if(!mVertical && IsGraphNode(what)) visible = 0;
+//	if(!mVertical && IsGraphNode(what)) visible = 0;  // this allows to drag taxiroutes into a subgroup and leave the (invisible) nodes behind. Then lock that group and the nodes are still selectable. No good.
 }
