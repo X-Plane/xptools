@@ -558,11 +558,11 @@ static inline int MAJORITY_RULES(vector<int> values)
 	return MAJORITY_RULES(values[0], values[1], values[2], values[3]);
 }
 
-inline Polygon2 cgal_face_to_ben(Pmwx::Face_handle f, double dsf_min_lon, double dsf_min_lat)
+inline Polygon2 cgal_face_to_ben(const Pmwx::Face_const_handle &f, double dsf_min_lon, double dsf_min_lat)
 {
 	DebugAssert(CGAL::is_valid(f));
 	Polygon2 out;
-	Pmwx::Ccb_halfedge_circulator edge = f->outer_ccb();
+	Pmwx::Ccb_halfedge_const_circulator edge = f->outer_ccb();
 	Point2 source_ben = cgal2ben(edge->source()->point());
 	do {
 		out.push_back(Point2(doblim(source_ben.x(), dsf_min_lon, dsf_min_lon + 1),
@@ -752,7 +752,7 @@ static ag_terrain_dsf_description initialize_autogen_pmwx()
 			if(ben_face.area() == 0) { cout << "Zero area: "     << ben_face.wolfram_alpha() << "\n";
 				cout << "GetMapFaceAreaMeters(f): " << GetMapFaceAreaMeters(f) << "\n"; }
 			DebugAssert(ben_face.is_ccw());
-			DebugAssert(ben_face.area() > 0);
+			DebugAssert(ben_face.area() > 0.00000001);
 		}
 	}
 #endif
@@ -1397,6 +1397,7 @@ static int MergeTylersAg(const vector<const char *>& args)
 	terrain_types_to_keep.push_back(terrain_Airport);
 	for(Pmwx::Face_handle f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
 	{
+		DebugAssert(f->is_unbounded() || cgal_face_to_ben(f, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat).area() > 0.00000001);
 		GIS_face_data &fd = f->data();
 		if(!f->is_unbounded() && contains(terrain_types_to_keep, fd.mTerrainType))
 		{
@@ -1450,14 +1451,15 @@ static int MergeTylersAg(const vector<const char *>& args)
 	//--------------------------------------------------------------------------------------------------------
 	const int lon_min = gDem[dem_ClimStyle].mWest;
 	const int lat_min = gDem[dem_ClimStyle].mSouth;
-	const ag_terrain_style style = choose_style(lon_min, lat_min);
 	for(Pmwx::Face_handle f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
 	{
 		GIS_face_data &fd = f->data();
 		const int ter_enum = fd.mOverlayType == NO_VALUE ? fd.mTerrainType : fd.mOverlayType;
+		DebugAssert(ter_enum == NO_VALUE || !f->is_unbounded());
 		if(ter_enum != NO_VALUE)
 		{
 			const Polygon2 ben_face = cgal_face_to_ben(f, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat); // not *that* Ben face! https://secure.gravatar.com/ben2212171
+			DebugAssert(ben_face.area() > 0.000000001);
 
 			// Place the associated OBJs based on this tile's AGP spec
 			map<int, agp_t>::const_iterator agp = agps.find(ter_enum);
