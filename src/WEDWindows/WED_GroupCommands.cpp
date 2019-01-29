@@ -59,6 +59,7 @@
 #include "WED_RoadNode.h"
 #include "WED_TextureNode.h"
 #include "WED_TaxiRouteNode.h"
+#include "WED_TaxiRoute.h"
 
 #include "WED_EnumSystem.h"
 #include "WED_GISUtils.h"
@@ -487,17 +488,17 @@ static bool WED_NoLongerViable(WED_Thing * t, bool strict)
 		if (parent && dynamic_cast<WED_OverlayImage *>(parent))
 			min_children = 4;
 		else if (parent && (facade = dynamic_cast<WED_FacadePlacement *>(parent)))
-			min_children = facade->GetTopoMode() == WED_FacadePlacement::topo_Chain ? 2 : 3;  // allow some 2-node facades. No strict check, as hafaces can not have holes
+			min_children = facade->GetTopoMode() == WED_FacadePlacement::topo_Chain ? 2 : 3;  // allow some 2-node facades. No strict check, as facades can not have holes
 		else if (parent && dynamic_cast<WED_GISPolygon *>(parent))		// Strict rules for delete key require 3 points to a polygon - prevents degenerate holes.
 			min_children = strict ? 3 : 2;								// Loose requirements for repair require 2 - matches minimum apt.dat spec.
 		if(t->CountSources() == 2 && t->GetNthSource(0) == NULL) return true;
 		if(t->CountSources() == 2 && t->GetNthSource(1) == NULL) return true;
-
+		if(t->CountSources() < 2 && SAFE_CAST(WED_TaxiRoute,t)) return true;   // clean out "new" style Edges where the nodes get deleted first
 		if ((t->CountChildren() + t->CountSources()) < min_children)
 			return true;
 	}
 
-	if(SAFE_CAST(WED_TaxiRouteNode,t) &&
+	if(SAFE_CAST(WED_TaxiRouteNode,t) &&                                  // clean out "old" style Edges where the edges get deleted until a unconnected node is left
 		SAFE_CAST(IGISComposite,t->GetParent()) &&
 		t->CountViewers() == 0)
 		return true;
@@ -3794,17 +3795,75 @@ static void accum_unviable_recursive(WED_Thing * who, set<WED_Thing *>& unviable
 		accum_unviable_recursive(who->GetNthChild(n), unviable);
 }
 
+static bool TakeParentNoRoute(WED_Thing * t)
+{
+	WED_Thing * parent = t->GetParent();
+	if(parent && parent->GetClass() ==  WED_TaxiRoute::sClass) return false;
+	return true;
+}
+
+static bool reparentOneApt(WED_Thing * apt)
+{
+	vector<WED_TaxiRoute *> routes;
+	CollectRecursive(apt,back_inserter(routes), WED_TaxiRoute::sClass);
+
+	vector<WED_TaxiRouteNode *> nodes;
+	CollectRecursive(apt,back_inserter(nodes), TakeAlways, TakeParentNoRoute, WED_TaxiRouteNode::sClass);
+
+	bool didReparent = false;
+	for(auto r : routes)
+	{
+		WED_Thing *	src = r->GetNthSource(0);
+		WED_TaxiRouteNode * trp = SAFE_CAST(WED_TaxiRouteNode, src);
+		vector<WED_TaxiRouteNode *>::iterator n_itr = find(nodes.begin(), nodes.end(), trp);
+		if(n_itr != nodes.end())
+		{
+			(*n_itr)->SetParent(r,0);
+			didReparent = true;
+			nodes.erase(n_itr);
+		}
+		src = r->GetNthSource(1);
+		trp = SAFE_CAST(WED_TaxiRouteNode, src);
+		n_itr = find(nodes.begin(), nodes.end(), trp);
+		if(n_itr != nodes.end())
+		{
+			(*n_itr)->SetParent(r,0);
+			didReparent = true;
+			nodes.erase(n_itr);
+		}
+	}
+	return didReparent;
+}
+
+static bool reparentTaxiRouteNodes(WED_Thing * wrl)
+{
+	vector<WED_Airport *> apts;
+	CollectRecursive(wrl,back_inserter(apts), WED_Airport::sClass);
+	bool didReparent = false;
+	for(auto a : apts)
+		didReparent |= reparentOneApt(a);
+	return didReparent;
+}
+
 int		WED_Repair(IResolver * resolver)
 {
 	WED_Thing * root = WED_GetWorld(resolver);
 	set<WED_Thing *> unviable;
 	accum_unviable_recursive(root,unviable);
-	if(unviable.empty())
-		return false;
-	root->StartOperation("Repair");
-	WED_RecursiveDelete(unviable);
-	WED_SetAnyAirport(resolver);
-	root->CommitOperation();
+	if(!unviable.empty())
+	{
+		root->StartOperation("Repair");
+		WED_RecursiveDelete(unviable);
+		WED_SetAnyAirport(resolver);
+		root->CommitOperation();
+	}
+	root->StartOperation("ReParent TaxiRouteNodes");
+	if (reparentTaxiRouteNodes(root))
+		root->CommitOperation();
+	else
+		root->AbortOperation();
+
+	if(unviable.empty()) return false;
 	return 1;
 }
 

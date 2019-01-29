@@ -214,10 +214,9 @@ void		WED_CreateEdgeTool::AcceptPath(
 	int start = 0;
 
 	WED_GISPoint * c = NULL;
-	WED_Thing * src = NULL, * dst = NULL;
+	WED_Thing * src = NULL;
 	double	dist=frame_dist*frame_dist;
-	if(src == NULL)	
-		FindNear(host_for_merging, NULL, edge_class,pts[start % pts.size()],src,dist);
+	FindNear(host_for_merging, NULL, edge_class,pts[start % pts.size()],src,dist);
 	if(src == NULL)
 	{
 #if ROAD_EDITING
@@ -225,7 +224,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 #else
 		src = c = (WED_GISPoint *)WED_TaxiRouteNode::CreateTyped(GetArchive());
 #endif
-		src->SetParent(host_for_parent,idx);
+//		src->SetParent(host_for_parent,idx);
 		src->SetName(mName.value + "_start");
 		c->SetLocation(gis_Geo,pts[0]);
 	}
@@ -261,8 +260,9 @@ void		WED_CreateEdgeTool::AcceptPath(
 		}
 	
 		new_edge->AddSource(src,0);
-		dst = NULL;
-		
+		if(c) { src->SetParent(new_edge,0); c = NULL; }
+
+		WED_Thing *	dst = NULL;
 		dist=frame_dist*frame_dist;
 		FindNear(host_for_merging, NULL, edge_class,pts[dp],dst,dist);
 		if(dst == NULL)
@@ -277,10 +277,12 @@ void		WED_CreateEdgeTool::AcceptPath(
 				break;
 #endif
 			}
-			dst->SetParent(host_for_parent,idx);
+//			dst->SetParent(host_for_parent,idx);
+			dst->SetParent(new_edge,1);
 			dst->SetName(mName.value+"_stop");
 			c->SetLocation(gis_Geo,pts[dp]);
-		}		
+			c = NULL;
+		}
 		new_edge->AddSource(dst,1);
 		
 		if(has_dirs[sp])

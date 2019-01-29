@@ -36,6 +36,7 @@
 #include "WED_Document.h"
 #include "WED_MapPane.h"
 #include "WED_Airport.h"
+#include "WED_GroupCommands.h"
 
 static int import_bounds_default[4] = { 0, 0, 500, 500 };
 
@@ -219,6 +220,9 @@ void WED_AptImportDialog::DoIt(void)
 		}
 
 		wrl->CommitOperation();
+
+		if(WED_Repair(mResolver))
+			DoUserAlert("There was a problem with the apt.dat import. Some items may have been removed !");
 		mMapPane->ZoomShowSel();
 	}
 }

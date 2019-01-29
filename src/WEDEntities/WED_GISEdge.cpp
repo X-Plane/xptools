@@ -269,7 +269,6 @@ IGISPoint *	WED_GISEdge::SplitSide   (const Point2& p, double dist)
 	WED_Thing * p2 = GetNthSource(1);
 
 	WED_Thing * np = CreateSplitNode();
-	np->SetParent(p1->GetParent(), p1->GetMyPosition()+1);
 	
 	string name;
 	p1->GetName(name);
@@ -285,7 +284,9 @@ IGISPoint *	WED_GISEdge::SplitSide   (const Point2& p, double dist)
 	
 	me2->AddSource(np,0);
 	me2->RemoveSource(p1);
-	
+	np->SetParent(me2, 0);
+	if(p2->GetParent() == this) p2->SetParent(me2, 1); // prevent re-parenting (= hideing from hierachy) something that isn't already a child of a GisEdge, e.g. RampStart connected to a GisEdge by accident
+
 	if(is_b)
 	{
 		double t = b.approx_t_for_xy(p.x(), p.y());
@@ -337,9 +338,9 @@ void		WED_GISEdge::Validate(void)
 {
 	WED_Entity::Validate();
 	
-	DebugAssert(CountSources() == 2);
+//	DebugAssert(CountSources() == 2);    //   this can now happen while deleting the edge ...
 	DebugAssert(CountViewers() == 0);
-	DebugAssert(CountChildren() == 0);
+//	DebugAssert(CountChildren() == 0);
 	
 	IGISPoint * p = SAFE_CAST(IGISPoint, GetNthSource(0));
 	DebugAssert(p);
