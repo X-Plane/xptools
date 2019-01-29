@@ -49,10 +49,10 @@ void	CGALFailure(
 {
 	fprintf(stdout,"Terminating due to a CGAL exception.\n");
 	fprintf(stdout,"****************************************************************************\n");
-	fprintf(stdout,"ERROR  (%d,%d) %s: %s (%s:%d).%s\n", gMapWest, gMapSouth, what, expr, file, line, msg ? msg : "");
+	fprintf(stdout,"ERROR  (%d,%d) %s: %s (%s:%d).%s\n", gMapSouth, gMapWest, what, expr, file, line, msg ? msg : "");
 	fprintf(stdout,"****************************************************************************\n");
 
-	fprintf(stderr,"ERROR  (%d,%d) %s: %s (%s:%d).%s\n", gMapWest, gMapSouth, what, expr, file, line, msg ? msg : "");
+	fprintf(stderr,"ERROR  (%d,%d) %s: %s (%s:%d).%s\n", gMapSouth, gMapWest, what, expr, file, line, msg ? msg : "");
 	throw what;
 }
 
