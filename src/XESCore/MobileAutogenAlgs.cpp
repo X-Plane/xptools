@@ -261,6 +261,8 @@ ortho_urbanization ortho_urbanization::rotate(int deg) const
 	return out;
 }
 
+// TODO: When we have C++14, make this a frozen::map (constexpr)
+// https://github.com/serge-sans-paille/frozen
 map<ortho_urbanization, int> get_terrain_transition_descriptions_us()
 {
 	map<ortho_urbanization, int> ter_with_transitions = { // maps desired urb levels in the corners to the terrain enum
