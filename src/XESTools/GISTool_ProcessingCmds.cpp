@@ -752,7 +752,7 @@ static ag_terrain_dsf_description initialize_autogen_pmwx()
 			if(ben_face.area() == 0) { cout << "Zero area: "     << ben_face.wolfram_alpha() << "\n";
 				cout << "GetMapFaceAreaMeters(f): " << GetMapFaceAreaMeters(f) << "\n"; }
 			DebugAssert(ben_face.is_ccw());
-			DebugAssert(ben_face.area() > 0.00000001);
+			DebugAssert(ben_face.area() > one_square_meter_in_degrees);
 		}
 	}
 #endif
@@ -1397,7 +1397,7 @@ static int MergeTylersAg(const vector<const char *>& args)
 	terrain_types_to_keep.push_back(terrain_Airport);
 	for(Pmwx::Face_handle f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
 	{
-		DebugAssert(f->is_unbounded() || cgal_face_to_ben(f, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat).area() > 0.00000001);
+		DebugAssert(f->is_unbounded() || cgal_face_to_ben(f, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat).area() > one_square_meter_in_degrees);
 		GIS_face_data &fd = f->data();
 		if(!f->is_unbounded() && contains(terrain_types_to_keep, fd.mTerrainType))
 		{
@@ -1459,7 +1459,7 @@ static int MergeTylersAg(const vector<const char *>& args)
 		if(ter_enum != NO_VALUE)
 		{
 			const Polygon2 ben_face = cgal_face_to_ben(f, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat); // not *that* Ben face! https://secure.gravatar.com/ben2212171
-			DebugAssert(ben_face.area() > 0.000000001);
+			DebugAssert(ben_face.area() > one_square_meter_in_degrees);
 
 			// Place the associated OBJs based on this tile's AGP spec
 			map<int, agp_t>::const_iterator agp = agps.find(ter_enum);

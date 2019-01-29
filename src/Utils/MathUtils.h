@@ -252,18 +252,22 @@ inline int lcm(int a,	int b)														{ return a * b / greatest_common_denom
 inline int least_common_multiple(const int * range_begin, const int * range_end)	{ return std::accumulate(range_begin + 1, range_end, *range_begin, lcm); }
 inline int least_common_multiple(const vector<int> &numbers)						{ return least_common_multiple(&*numbers.begin(), &*numbers.begin() + numbers.size()); }
 
-const double degrees_to_radians = 3.14159265358979 / 180;
+constexpr double degrees_to_radians = 3.14159265358979 / 180;
 
 // Degrees of latitude are parallel, so the distance between each degree remains (almost) constant.
 // This is approximate, however, since the true length of a degree latitude varies
 // (due to Earth's slightly ellipsoid shape) from 110.567 km at the equator to 111.699 km at the poles.
-const int degree_latitude_to_m = 111133;
+// Search keywords: meters per degree, degree to meters
+constexpr int degree_latitude_to_m = 111133;
+
+constexpr double latitude_degrees_per_meter = 1.0 / degree_latitude_to_m;
+constexpr double one_square_meter_in_degrees = latitude_degrees_per_meter * latitude_degrees_per_meter;
 
 // Degrees of longitude are farthest apart at the equator and converge at the poles,
 // so their distance varies greatly with the latitude you're at.
 inline double degree_longitude_to_m(double degrees_latitude)
 {
-	const int degree_longitude_to_m_at_equator = 111321;
+	constexpr int degree_longitude_to_m_at_equator = 111321;
 	return cos((long double)degrees_latitude * degrees_to_radians) * degree_longitude_to_m_at_equator;
 }
 
