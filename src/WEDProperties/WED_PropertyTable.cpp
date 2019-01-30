@@ -575,35 +575,36 @@ void	WED_PropertyTable::SelectionEnd(void)
 	op->CommitOperation();
 	mSelSave.clear();
 
-    if(gModeratorMode) // special behavior requested by Julian
-    {
-        DispatchHandleCommand(wed_ZoomSelection);
+   if(gModeratorMode) // special behavior requested by Julian
+   {
+      DispatchHandleCommand(wed_ZoomSelection);
 
-        ISelectable * sel0 = s->GetNthSelection(0);
+      ISelectable * sel0 = s->GetNthSelection(0);
 		WED_Group * grp = SAFE_CAST(WED_Group, sel0);
 		string grpnam;
 		if (grp) grp->GetName(grpnam);
-		
-        if (SAFE_CAST(WED_RampPosition, sel0) || SAFE_CAST(WED_TaxiRoute, sel0) ||  SAFE_CAST(WED_TaxiRouteNode, sel0) ||
-            SAFE_CAST(WED_TruckParkingLocation, sel0) || SAFE_CAST(WED_TruckDestination, sel0) ||
-			grpnam == "Ramp Starts" || grpnam == "Ground Vehicles" || grpnam == "Taxi Routes" || grpnam == "Ground Routes" )
-        {
-                DispatchHandleCommand(wed_MapATC);
-        }
+
+		if (SAFE_CAST(WED_RampPosition, sel0) || SAFE_CAST(WED_TaxiRoute, sel0) ||  SAFE_CAST(WED_TaxiRouteNode, sel0) ||
+          SAFE_CAST(WED_TruckParkingLocation, sel0) || SAFE_CAST(WED_TruckDestination, sel0) ||
+			 SAFE_CAST(WED_Runway, sel0) || grpnam == "Runways" ||
+			 grpnam == "Ramp Starts" || grpnam == "Ground Vehicles" || grpnam == "Taxi Routes" || grpnam == "Ground Routes" )
+		{
+			DispatchHandleCommand(wed_MapATC);
+		}
 //        else if (SAFE_CAST(WED_FacadePlacement, sel0) || SAFE_CAST(WED_ObjPlacement, sel0))
 //        {
 //             mMapPane->SetTabFilterMode(tab_3D);
 //            DispatchHandleCommand(wed_Map3D);
 //        }
-        else if(SAFE_CAST(WED_Runway, sel0) || grpnam == "Runways" )
-        {
-            DispatchHandleCommand(wed_MapPavement);
-        }
-        else
-        {
-            DispatchHandleCommand(wed_MapSelection);
-        }
-    }
+//        else if(SAFE_CAST(WED_Runway, sel0) || grpnam == "Runways" )
+//        {
+//            DispatchHandleCommand(wed_MapPavement);
+//        }
+      else
+		{
+			DispatchHandleCommand(wed_MapSelection);
+		}
+	}
 }
 
 int		WED_PropertyTable::SelectDisclose(
