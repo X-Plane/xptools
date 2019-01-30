@@ -149,13 +149,19 @@ protected:
 private:
 
 	int				parent_id;
-	vector<int>		child_id;
+	set<int>			viewer_id;		// these are sort of "god parents", things using me as a source, but I'm not one of their children
 	
-	vector<int>		source_id;				// These are MY sources!  I am watching them.
-	set<int>		viewer_id;				// These are MY vieweres!  They are watching me.
+	vector<int>		child_id;
+//	vector<int>		source_id;		// These things I'm refering to as I normally to do with children, but they are not my children as per hierachy
 
-	WED_TypeField				type;
-	WED_PropStringText			name;
+						// the sources are now gone - we rather store a *negative* child_id. So this way sources can have specific
+						// position relative to other children. This will be important once we start using sources for snapping nodes
+						
+	int 				sources;			// just to keep track of the number of "real" children, in case somethings want to know those. 
+	                              // Not sure if we want to differentiate between souces and real children, though. But the GisEdges rely on that for now
+
+	WED_TypeField			type;
+	WED_PropStringText	name;
 	
 friend class WED_TaxiRoute;
 friend class WED_AirportSign;

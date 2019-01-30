@@ -276,15 +276,12 @@ IGISPoint *	WED_GISEdge::SplitSide   (const Point2& p, double dist)
 	np->SetName(name);
 	
 	WED_GISEdge * me2 = dynamic_cast<WED_GISEdge*>(this->Clone());
-	
 	me2->SetParent(this->GetParent(),this->GetMyPosition()+1);
-	
-	this->AddSource(np,1);
-	this->RemoveSource(p2);
-	
-	me2->AddSource(np,0);
-	me2->RemoveSource(p1);
 	np->SetParent(me2, 0);
+	
+	me2->ReplaceSource(p1,np);
+	this->ReplaceSource(p2,np);
+	
 	if(p2->GetParent() == this) p2->SetParent(me2, 1); // prevent re-parenting (= hideing from hierachy) something that isn't already a child of a GisEdge, e.g. RampStart connected to a GisEdge by accident
 
 	if(is_b)
