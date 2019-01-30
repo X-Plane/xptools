@@ -574,6 +574,19 @@ inline Polygon2 cgal_face_to_ben(const Pmwx::Face_const_handle &f, double dsf_mi
 	return out;
 }
 
+template<typename HalfEdge>
+double halfedge_length(const HalfEdge &he)
+{
+	return sqrt(
+			CGAL::to_double(
+					CGAL::squared_distance(
+							he->source()->point(),
+							he->target()->point()
+					)
+			)
+	);
+}
+
 int choose_ortho_terrain_us(int land_use, double mean_urbanization)
 {
 	static const double min_urbanization_for_any_ortho = 0.001;
@@ -1378,9 +1391,104 @@ static Point2 obj_rel_placement_to_lat_lon(const agp_t::obj & obj, const agp_t &
 	return out;
 }
 
+int count_tiny_faces(Pmwx &map)
+{
+	int tiny_faces = 0;
+	for(const auto &f : gMap.face_handles())
+	if(!f->is_unbounded() && cgal_face_to_ben(f, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat).area() <= one_square_meter_in_degrees)
+	{
+		++tiny_faces;
+	}
+	return tiny_faces;
+}
+
+// Go through the map and clean up any teeny tiny faces that we've inadvertently induced.
+// This generally happens due to an unlucky intersection between water and our grid, like this:
+// ---------------------------------------\               \----------------
+// |                   |                   \  Bastard of   \      |
+// |                   |                    \   a lake      |     |
+// |                   |                    |\  that cut a  |     |
+// |  AG terrain grid  |      AG square 2   |/  tiiiiiiny   |     |
+// |       square      |                    /  piece out   /      |
+// |                   |                   /  of the grid /   AG  |
+// |                   |                  \______________/ square |
+// |                   |                    |                 3   |
+// ------------------------------------------------------------------------
+// If the cut this lake made is small enough (1 square meter is our cut off) it can cause perf issues.
+//
+// Our solution: merge the tiny pieces into the AG terrain that matches the neighbor on their longest side,
+// then ask CGAL to simplify the mesh. This eliminates the teeny tiny face that *would* have gone all the
+// way through the pipeline into the output DSF.
+//
+// @return The number of tiny faces we attempted to merge into their neighbors
+static int simplify_tiny_faces_into_their_neighbors(Pmwx &map)
+{
+	int tiny_faces = 0;
+	for(const auto &f : map.face_handles())
+	if(!f->is_unbounded())
+	{
+		const Polygon2 ben_face = cgal_face_to_ben(f, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat);
+		if(ben_face.area() <= one_square_meter_in_degrees)
+		{
+			++tiny_faces;
+
+			// Find our longest side *not* touching water
+			Pmwx::Ccb_halfedge_const_circulator edge = f->outer_ccb();
+			pair<GIS_face_data, double> longest_non_water_neighbor = make_pair(GIS_face_data(), 0);
+			do {
+				const GIS_face_data &twin_face_data = edge->twin()->face()->data();
+				const int ter_enum = twin_face_data.mOverlayType == NO_VALUE ? twin_face_data.mTerrainType : twin_face_data.mOverlayType;
+				if(ter_enum != terrain_Water) // if our twin face has anything *not* water ("no terrain" is fine!)
+				{
+					const double length = halfedge_length(edge);
+					if(length > longest_non_water_neighbor.second)
+					{
+						longest_non_water_neighbor = make_pair(twin_face_data, length);
+					}
+				}
+
+				++edge;
+			} while(edge != f->outer_ccb());
+
+			DebugAssert(longest_non_water_neighbor.second > 0);
+
+			// Change our terrain type to match that longest-side neighbor
+			GIS_face_data &face_data = f->data();
+			face_data = longest_non_water_neighbor.first;
+			face_data.mPointFeatures.clear();
+			face_data.mPolygonFeatures.clear();
+			face_data.mAreaFeature = GISAreaFeature_t{};
+			face_data.mObjs.clear();
+			face_data.mPolyObjs.clear();
+			f->set_contained(false); // mark this face as no longer being essential
+
+			printf("Nuking face: ");
+			for(const auto &p : ben_face)
+			{
+				printf("(%0.20f, %0.20f) ", p.x(), p.y());
+			}
+			printf("\n");
+		}
+	}
+
+	if(tiny_faces)
+	{
+		SimplifyMap(map, false, nullptr);
+	}
+	return tiny_faces;
+}
 
 static int MergeTylersAg(const vector<const char *>& args)
 {
+#if DEV
+	for(const auto &f : gMap.face_handles())
+	{
+		DebugAssertWithExplanation(f->is_unbounded() || cgal_face_to_ben(f, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat).area() > one_square_meter_in_degrees,
+								   "There was a tiny face in your input data");
+	}
+#endif
+
+
 	// Tyler says:
 	// I think we need 3 layers here (from bottom to top):
 	// 0. The global map as it exists before we manipulate it---no faces marked as "contained"
@@ -1444,6 +1552,25 @@ static int MergeTylersAg(const vector<const char *>& args)
 			DebugAssert(loaded);
 		}
 	}
+
+	// Now go through the map and clean up any teeny tiny faces that we've inadvertently induced.
+	// We potentially repeat this a few times, since the first merge may end up just joining two
+	// tiny faces to produce a *still* tiny face.
+	constexpr int max_simplification_attempts = 10;
+	const int initial_tiny_faces = simplify_tiny_faces_into_their_neighbors(gMap);
+	if(initial_tiny_faces)
+	{
+		for(int simplification_attempt = 0;
+			simplify_tiny_faces_into_their_neighbors(gMap) > 0 && simplification_attempt < max_simplification_attempts;
+			++simplification_attempt)
+		{ }
+	}
+
+#if DEV
+	const int remaining_tiny_faces = count_tiny_faces(gMap);
+	fprintf(stderr, "Tiny faces: %d (had %d before our simplification attempt)\n", remaining_tiny_faces, initial_tiny_faces);
+	DebugAssertWithExplanation(remaining_tiny_faces == 0, "It appears Tyler screwed up the simplification step for tiny faces (above)");
+#endif
 
 	//--------------------------------------------------------------------------------------------------------
 	// Place OBJs
