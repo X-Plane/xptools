@@ -114,7 +114,7 @@ bool 			WED_Thing::ReadFrom(IOReader * reader)
 	return false;
 }
 
-void 			WED_Thing::WriteTo(IOWriter * writer)
+void 			WED_Thing::WriteTo(IOWriter * writer)   // MMNote: ONLY used for UndoLayer w/no implications on gateway or apt.dat export. So we CAN change this, anytime.
 {
 	writer->WriteInt(parent_id);
 
@@ -150,11 +150,15 @@ void			WED_Thing::ToXML(WED_XMLElement * parent)
 	}
 //	if(child_id.size())  // would be nice to skip this, too. But wed-O-maker won't like that for now.
 	{
-		WED_XMLElement * chld = obj->add_sub_element("children");
-		for(int n = 0; n < child_id.size(); ++n)
+		WED_XMLElement * chld = obj->add_sub_element("children");   // MMnote: this irritates older WED versions - they read this fine, but can't stomach Edges w/children when deleting taxi nodes.
+		for(auto c : child_id)
 		{
-			WED_XMLElement * c = chld->add_sub_element("child_src");
-			c->add_attr_int("id",child_id[n]);
+			WED_XMLElement * ci;
+			if (c < 0)
+				ci = chld->add_sub_element("source");
+			else
+				ci = chld->add_sub_element("child");
+			ci->add_attr_int("id",abs(c));
 		}
 	}
 	WED_PropertyHelper::PropsToXML(obj);
@@ -195,20 +199,12 @@ void		WED_Thing::StartElement(
 		child_id.push_back(-atoi(id));
 		sources++;
 	} 
-	else if(strcasecmp(name,"child") == 0)
+	else if(strcasecmp(name,"child")==0)
 	{
 		const char * id = get_att("id",atts);
 		if(!id)
 			reader->FailWithError("no id");
 		child_id.push_back(atoi(id));
-	}
-	else if(strcasecmp(name,"child_src") == 0)
-	{
-		const char * id = get_att("id",atts);
-		if(!id)
-			reader->FailWithError("no id");
-		child_id.push_back(atoi(id));
-		if(atoi(id)<0) sources++;
 	}
 	else
 		WED_PropertyHelper::StartElement(reader,name,atts);

@@ -185,19 +185,6 @@ void	WED_BezierPolygonWithHolesForPolygon(IGISPolygon * in_poly, vector<BezierPo
 template<typename __BezierSeqIter, class __NodeType>
 void	WED_SetSequenceForIterator(__BezierSeqIter start, __BezierSeqIter end, WED_Thing * parent, bool is_ring);
 
-/********************************************************************************************************************************************
- * MORE COMPLEX IGIS-BASED OPERATIONS
- ********************************************************************************************************************************************/
- 
-// This will attempt to merge the above points, connecting any attached edges.
-bool	WED_MergePoints(const vector<IGISEntity *>& in_points);
-
-// This splits an edge at a given internal pt, forming two new edges.
-bool	WED_SplitEdgeIfNeeded(WED_Thing * pt, const string& in_cross_name);
-
-
-
-
 
 /********************************************************************************************************************************************
  * INLINES

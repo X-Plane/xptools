@@ -258,7 +258,6 @@ WED_Thing *		WED_GISEdge::CreateSplitNode()
 }
 
 
-
 IGISPoint *	WED_GISEdge::SplitSide   (const Point2& p, double dist)
 {
 	Bezier2		b;
@@ -268,21 +267,27 @@ IGISPoint *	WED_GISEdge::SplitSide   (const Point2& p, double dist)
 	WED_Thing * p1 = GetNthSource(0);
 	WED_Thing * p2 = GetNthSource(1);
 
-	WED_Thing * np = CreateSplitNode();
+	WED_Thing * np = dynamic_cast<WED_Thing*>(p1->Clone());
+	WED_GISEdge * ne = dynamic_cast<WED_GISEdge*>(this->Clone());  // This also creates copies of all (real) children that this edge may have.
+	while(ne->CountChildren())                                     // So we delete all those. We only want to have a bare new edge to wire up ourselves
+	{
+		WED_Thing * k = ne->GetNthChild(0);
+		k->SetParent(NULL,0);
+		k->Delete();
+	}
 	
 	string name;
 	p1->GetName(name);
 //	name += "(split)";
 	np->SetName(name);
+	np->SetParent(ne, 0);
 	
-	WED_GISEdge * me2 = dynamic_cast<WED_GISEdge*>(this->Clone());
-	me2->SetParent(this->GetParent(),this->GetMyPosition()+1);
-	np->SetParent(me2, 0);
-	
-	me2->ReplaceSource(p1,np);
+	ne->SetParent(this->GetParent(),this->GetMyPosition()+1);
+
+	ne->ReplaceSource(p1,np);
 	this->ReplaceSource(p2,np);
 	
-	if(p2->GetParent() == this) p2->SetParent(me2, 1); // prevent re-parenting (= hideing from hierachy) something that isn't already a child of a GisEdge, e.g. RampStart connected to a GisEdge by accident
+	if(p2->GetParent() == this) p2->SetParent(ne, 1); // prevent re-parenting og things that are not already a child of a GisEdge, e.g. RampStart connected to a GisEdge by accident
 
 	if(is_b)
 	{
@@ -290,7 +295,7 @@ IGISPoint *	WED_GISEdge::SplitSide   (const Point2& p, double dist)
 		Bezier2 b1, b2;
 		b.partition(b1, b2, t);
 		this->SetSideBezier(gis_Geo, b1);
-		me2->SetSideBezier(gis_Geo,b2);
+		ne->SetSideBezier(gis_Geo,b2);
 	}
 	else
 	{
@@ -302,7 +307,7 @@ IGISPoint *	WED_GISEdge::SplitSide   (const Point2& p, double dist)
 		s2.p2 = b.p2;
 		
 		this->SetSide(gis_Geo, s1);
-		me2->SetSide(gis_Geo, s2);
+		ne->SetSide(gis_Geo, s2);
 	}
 
 	return dynamic_cast<IGISPoint *>(np);	
