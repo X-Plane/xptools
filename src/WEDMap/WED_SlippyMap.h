@@ -47,7 +47,7 @@ public:
 private:
 
 			void	finish_loading_tile();
-			int 	get_zl_for_map_ppm(double in_ppm);
+			int 	get_zl_for_map(double in_ppm, double lattitude);
 
 	WED_file_cache_request* m_cache_request;
 

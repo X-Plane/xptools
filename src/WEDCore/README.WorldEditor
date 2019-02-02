@@ -17,6 +17,7 @@ WED 2.0.0 ??
 	Bug Fixes:
 	- WED-1131: fix illegal taxi signs not edit/deleteable with bare text editor
 	- fix listing of non-TaxiRouteNodes connected to TaxiRoutes in HierachyPane
+	- make slippy map zoom range scale better with lattitude
 
 WED 2.0.0 b1 1/24/19
 	Features:
