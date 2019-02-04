@@ -1531,17 +1531,17 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 								coords8[5] = vi == border_pass ? 0.0 : bblend[vi];
 								coords8[6] = GetTightnessBlend(inHiresMesh, f, f->vertex(vi), lu_ranked->first);
 							}
-							DebugAssert(coords8[5] >= 0.0);
-							DebugAssert(coords8[5] <= 1.0);
-							DebugAssert(coords8[6] >= 0.0);
-							DebugAssert(coords8[6] <= 1.0);
+							DebugAssert(coords8[5] >= 0.0 || is_mobile_ortho); // relaxed rules for mobile orthos due to our policy of blending in super-small faces to the existing, large face
+							DebugAssert(coords8[5] <= 1.0 || is_mobile_ortho);
+							DebugAssert(coords8[6] >= 0.0 || is_mobile_ortho);
+							DebugAssert(coords8[6] <= 1.0 || is_mobile_ortho);
 							DebugAssert(!is_water);
 	//						if (is_composite)
 	//							coords8[7] = is_water ? GetWaterBlend(f->vertex(vi), waterType) : f->vertex(vi)->info().vege_density;
-							DebugAssert(coords8[3] >= -1.0);
-							DebugAssert(coords8[3] <=  1.0);
-							DebugAssert(coords8[4] >= -1.0);
-							DebugAssert(coords8[4] <=  1.0);
+							DebugAssert(coords8[3] >= -1.0 || is_mobile_ortho);
+							DebugAssert(coords8[3] <=  1.0 || is_mobile_ortho);
+							DebugAssert(coords8[4] >= -1.0 || is_mobile_ortho);
+							DebugAssert(coords8[4] <=  1.0 || is_mobile_ortho);
 							cbs.AddPatchVertex_f(coords8, writer1);
 						}
 						++total_tris;

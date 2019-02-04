@@ -151,22 +151,10 @@ Bbox2 get_ortho_grid_square_bounds(const CDT::Face_handle &tri, const Bbox2 &con
 	DebugAssert(out.contains(centroid));
 	DebugAssert(out.area() > 0);
 
-#if DEV
-	vector<Point2> ensure_within_bounds = ben_tri;
-	for(vector<Point2>::const_iterator pt = ensure_within_bounds.begin(); pt != ensure_within_bounds.end(); ++pt)
-	{
-		const Point2 &p = *pt;
-		// Tyler says: We can't actually guarantee this due to double precision limits.
-		//             If the vertex is on the edge of the grid square, it may be "outside"
-		//             the grid square's bounds by, say, 3 x 10^-10.
-		//             This appears not to end up mattering...
-		//DebugAssert(out.contains(*pt));
-		DebugAssert(out.xmin() - pt->x() <  0.001);
-		DebugAssert(out.xmax() - pt->x() > -0.001);
-		DebugAssert(out.ymin() - pt->y() <  0.001);
-		DebugAssert(out.ymax() - pt->y() > -0.001);
-	}
-#endif
+	// Tyler says: We can't actually guarantee the bounds on the point due to both double precision limits.
+	//             and the fact that we now allow the ortho to go a little outside its "legal" bounds
+	//             for the sake of covering up sub-1-square-meter faces that would have
+	//             otherwise made it into the mesh.
 
 	return out;
 }

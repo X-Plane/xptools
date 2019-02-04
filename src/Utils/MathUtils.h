@@ -85,6 +85,11 @@ inline int fltrange(const float x ,const float x1,const float x2){
 	if(x>x2)return false;
 			return true;}
 
+constexpr bool dobrange(double x, double range_low, double range_high)
+{
+	return x >= range_low && x <= range_high;
+}
+
 inline int fltbox (const float x ,const float y ,const float x1,const float y1,const float x2,const float y2){
 	if(x<x1)return false;
 	if(x>x2)return false;

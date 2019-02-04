@@ -1402,6 +1402,13 @@ int count_tiny_faces(Pmwx &map)
 	return tiny_faces;
 }
 
+int ag_terrain_type(const GIS_face_data & face_data) // we can stick the AG terrain type in one of two places... this pulls it out, if applicable
+{
+	return face_data.mOverlayType == NO_VALUE ? face_data.mTerrainType : face_data.mOverlayType;
+}
+
+const array<int, 3> s_terrain_types_to_not_touch = {terrain_Water, terrain_VisualWater, terrain_Airport};
+
 // Go through the map and clean up any teeny tiny faces that we've inadvertently induced.
 // This generally happens due to an unlucky intersection between water and our grid, like this:
 // ---------------------------------------\               \----------------
@@ -1433,47 +1440,45 @@ static int simplify_tiny_faces_into_their_neighbors(Pmwx &map)
 			++tiny_faces;
 
 			// Find our longest side *not* touching water
-			Pmwx::Ccb_halfedge_const_circulator edge = f->outer_ccb();
-			pair<GIS_face_data, double> longest_non_water_neighbor = make_pair(GIS_face_data(), 0);
-			do {
-				const GIS_face_data &twin_face_data = edge->twin()->face()->data();
-				const int ter_enum = twin_face_data.mOverlayType == NO_VALUE ? twin_face_data.mTerrainType : twin_face_data.mOverlayType;
-				if(ter_enum != terrain_Water) // if our twin face has anything *not* water ("no terrain" is fine!)
+			Pmwx::Ccb_halfedge_circulator edge = f->outer_ccb();
+			pair<Pmwx::Ccb_halfedge_circulator, double> edge_to_nuke = make_pair(edge, halfedge_length(edge));
+			++edge;
+			while(edge != f->outer_ccb())
+			{
+				GIS_face_data &twin_face_data = edge->twin()->face()->data();
+				const int ter_enum = ag_terrain_type(twin_face_data);
+				if(!contains(s_terrain_types_to_not_touch, ter_enum) && // if our twin face has anything *not* water ("no terrain" is fine!)
+						(ter_enum != NO_VALUE || ag_terrain_type(twin_face_data) == NO_VALUE)) // this would be an acceptable terrain... we really want to merge into AG terrain
 				{
 					const double length = halfedge_length(edge);
-					if(length > longest_non_water_neighbor.second)
+					if(length > edge_to_nuke.second)
 					{
-						longest_non_water_neighbor = make_pair(twin_face_data, length);
+						edge_to_nuke = make_pair(edge, length);
 					}
 				}
-
 				++edge;
-			} while(edge != f->outer_ccb());
-
-			DebugAssert(longest_non_water_neighbor.second > 0);
-
-			// Change our terrain type to match that longest-side neighbor
-			GIS_face_data &face_data = f->data();
-			face_data = longest_non_water_neighbor.first;
-			face_data.mPointFeatures.clear();
-			face_data.mPolygonFeatures.clear();
-			face_data.mAreaFeature = GISAreaFeature_t{};
-			face_data.mObjs.clear();
-			face_data.mPolyObjs.clear();
-			f->set_contained(false); // mark this face as no longer being essential
-
-			printf("Nuking face: ");
-			for(const auto &p : ben_face)
-			{
-				printf("(%0.20f, %0.20f) ", p.x(), p.y());
 			}
-			printf("\n");
+
+			Point2 s = cgal2ben(edge_to_nuke.first->source()->point());
+			Point2 d = cgal2ben(edge_to_nuke.first->target()->point());
+			printf("Nuking edge: (%0.20f, %0.20f) -> (%0.20f, %0.20f)\n", s.x(), s.y(), d.x(), d.y());
+
+			DebugAssert(edge_to_nuke.second > 0);
+
+			edge_to_nuke.first->data().mParams.erase(he_MustBurn);
+			edge_to_nuke.first->twin()->data().mParams.erase(he_MustBurn);
+
+			GIS_face_data &face_data = f->data();
+			face_data = edge_to_nuke.first->twin()->face()->data();
+			face_data.mParams.erase(he_MustBurn);
+			f->set_contained(false); // mark this face as no longer being essential
 		}
 	}
 
 	if(tiny_faces)
 	{
 		SimplifyMap(map, false, nullptr);
+		DebugAssert(count_tiny_faces(map) < tiny_faces);
 	}
 	return tiny_faces;
 }
@@ -1481,11 +1486,8 @@ static int simplify_tiny_faces_into_their_neighbors(Pmwx &map)
 static int MergeTylersAg(const vector<const char *>& args)
 {
 #if DEV
-	for(const auto &f : gMap.face_handles())
-	{
-		DebugAssertWithExplanation(f->is_unbounded() || cgal_face_to_ben(f, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat).area() > one_square_meter_in_degrees,
-								   "There was a tiny face in your input data");
-	}
+	DebugAssertWithExplanation(!count_tiny_faces(gMap), "There were one or more tiny faces in your input data");
+	DebugAssertWithExplanation(!count_tiny_faces(s_autogen_grid), "There were one or more tiny faces in your autogen grid data");
 #endif
 
 
@@ -1499,15 +1501,11 @@ static int MergeTylersAg(const vector<const char *>& args)
 	Pmwx intermediate_autogen_on_top;
 	MapOverlay(gMap, s_autogen_grid, intermediate_autogen_on_top);
 
-	vector<int> terrain_types_to_keep;
-	terrain_types_to_keep.push_back(terrain_Water);
-	terrain_types_to_keep.push_back(terrain_VisualWater);
-	terrain_types_to_keep.push_back(terrain_Airport);
 	for(Pmwx::Face_handle f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
 	{
 		DebugAssert(f->is_unbounded() || cgal_face_to_ben(f, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat).area() > one_square_meter_in_degrees);
 		GIS_face_data &fd = f->data();
-		if(!f->is_unbounded() && contains(terrain_types_to_keep, fd.mTerrainType))
+		if(!f->is_unbounded() && contains(s_terrain_types_to_not_touch, fd.mTerrainType))
 		{
 			f->set_contained(true);
 		}
@@ -1553,6 +1551,7 @@ static int MergeTylersAg(const vector<const char *>& args)
 		}
 	}
 
+	SimplifyMap(gMap, false, nullptr);
 	// Now go through the map and clean up any teeny tiny faces that we've inadvertently induced.
 	// We potentially repeat this a few times, since the first merge may end up just joining two
 	// tiny faces to produce a *still* tiny face.
@@ -1568,8 +1567,11 @@ static int MergeTylersAg(const vector<const char *>& args)
 
 #if DEV
 	const int remaining_tiny_faces = count_tiny_faces(gMap);
-	fprintf(stderr, "Tiny faces: %d (had %d before our simplification attempt)\n", remaining_tiny_faces, initial_tiny_faces);
-	DebugAssertWithExplanation(remaining_tiny_faces == 0, "It appears Tyler screwed up the simplification step for tiny faces (above)");
+	if(remaining_tiny_faces)
+	{
+		fprintf(stderr, "Tiny faces: %d (had %d before our simplification attempt)\n", remaining_tiny_faces, initial_tiny_faces);
+		DebugAssertWithExplanation(remaining_tiny_faces == 0, "It appears Tyler screwed up the simplification step for tiny faces (above)");
+	}
 #endif
 
 	//--------------------------------------------------------------------------------------------------------
@@ -1581,7 +1583,7 @@ static int MergeTylersAg(const vector<const char *>& args)
 	for(Pmwx::Face_handle f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
 	{
 		GIS_face_data &fd = f->data();
-		const int ter_enum = fd.mOverlayType == NO_VALUE ? fd.mTerrainType : fd.mOverlayType;
+		const int ter_enum = ag_terrain_type(fd);
 		DebugAssert(ter_enum == NO_VALUE || !f->is_unbounded());
 		if(ter_enum != NO_VALUE)
 		{
