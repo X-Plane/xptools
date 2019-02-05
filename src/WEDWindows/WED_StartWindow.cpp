@@ -225,7 +225,7 @@ void	WED_StartWindow::Draw(GUI_GraphState * state)
 			gPackageMgr->GetXPlaneFolder(m);
 			m = string("Scenery packages in: ") + m;
 			m += "  ( X-Plane version " + string(gPackageMgr->GetXPversion()) + " )";
-			child[3] = me[3] - MARGIN_AT_TOP + (MARGIN_AT_TOP-f) * 0.5;
+			child[3] = me[3] - MARGIN_AT_TOP + (MARGIN_AT_TOP-f) * 0.5 + 3 ;
 		} 
 		else 
 		{
