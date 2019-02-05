@@ -192,6 +192,27 @@ void remove_all_zero_length_segments(vector<Segment> &in_out_chain)
 	in_out_chain.erase(remove_if(in_out_chain.begin(), in_out_chain.end(), kill_zero_length_segment()), in_out_chain.end());
 }
 
+static bool usesAlpha(ImageInfo * info)
+{
+	if(info->channels < 4) return false;
+	int usesAlpha = 0;
+	
+	unsigned char * src = info->data;
+	for(int y = info->height; y > 0; y--)
+		for(int x = info->width; x > 0; x--)
+		{
+			if(x < info->pad)
+			{
+				src += 4 * info->pad;
+				break;
+			}
+			if(*(src+3) < 250) usesAlpha++; // deliberately ignore almost opaque pixels. Some tools create such
+			src += 4;
+		}
+printf("Aplphas %d\n",usesAlpha);
+	return usesAlpha;
+}
+
 /************************************************************************************************************************************************
  * ROAD PROCESSOR
  ************************************************************************************************************************************************/
@@ -1764,7 +1785,7 @@ static int	DSF_ExportTileRecursive(
 
 			if(is_backout_path(relativePath) || is_dir_sep(relativePath[0]) || relativePath[1] == ':')
 			{
-				DoUserAlert((msg + "The image resource must be a relative path to a location within the scenery directory.").c_str());
+				DoUserAlert((msg + "The image resource must be a relative path to a location within the scenery directory, aborting DSF Export.").c_str());
 				return -1;
 			}
 
@@ -1793,24 +1814,11 @@ static int	DSF_ExportTileRecursive(
 				ImageInfo imgInfo;
 				ImageInfo DDSInfo;
 
-				int DXTMethod = 0;
-
 				int res = MakeSupportedType(absPathIMG.c_str(),&imgInfo);
 				if(res != 0)
 				{
-					DoUserAlert((msg + "Unable to convert the image file '" + absPathIMG + "'to a DDS file.").c_str());
+					DoUserAlert((msg + "Unable to convert the image file '" + absPathIMG + "'to a DDS file, aborting DSF Export.").c_str());
 					return -1;
-				}
-
-				//If only RGB
-				if(imgInfo.channels == 3)
-				{
-					ConvertBitmapToAlpha(&imgInfo,false);
-					DXTMethod = 1;
-				}
-				else
-				{
-					DXTMethod = 5;
 				}
 
 				int UVMwidth  = imgInfo.width * UVbounds.xspan();
@@ -1826,11 +1834,13 @@ static int	DSF_ExportTileRecursive(
 				while(DDSwidth < UVMwidth && DDSwidth < 2048) DDSwidth <<= 1;      // round up dimensions under 2k to a power of 2 AND limit to 2k
 				while(DDSheight < UVMheight && DDSheight < 2048) DDSheight <<= 1;
 
-				if (CreateNewBitmap(DDSwidth, DDSheight, 4, &DDSInfo) == 0)       // create array to hold upsized image
+				if (CreateNewBitmap(DDSwidth, DDSheight, imgInfo.channels, &DDSInfo) == 0)       // create array to hold upsized image
 				{
 					CopyBitmapSection(&imgInfo,&DDSInfo, UVMleft, UVMbottom, UVMright, UVMtop,
                                                          0,       0,         DDSwidth,  DDSheight);
-
+					if(DDSInfo.channels == 3)
+						ConvertBitmapToAlpha(&DDSInfo,false);
+					int DXTMethod = usesAlpha(&DDSInfo) ? 5 : 1;
 					MakeMipmapStack(&DDSInfo);
 					WriteBitmapToDDS(DDSInfo, DXTMethod, absPathDDS.c_str(), 1);
 					DestroyBitmap(&DDSInfo);
@@ -1839,7 +1849,7 @@ static int	DSF_ExportTileRecursive(
 			}
 			else if(date_cmpr_res == dcr_error)
 			{
-				string msg = string("The file '") + absPathIMG + string("' is missing.");
+				string msg = string("The file '") + absPathIMG + string("' is missing, aborting DSF Export.");
 				DoUserAlert(msg.c_str());
 				return -1;
 			}
