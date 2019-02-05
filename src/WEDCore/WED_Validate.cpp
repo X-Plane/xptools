@@ -1225,7 +1225,7 @@ static void ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vec
             {
                 WED_GISLine_Width * lw = dynamic_cast<WED_GISLine_Width *>(*r);
 
-                if(((*r)->GetSurface() <= surf_Concrete || unpaved_OK) && lw->GetLength() >= req_rwy_len && lw->GetWidth() >= req_rwy_wid)
+                if(((*r)->GetSurface() <= surf_Concrete || (*r)->GetSurface() == surf_Trans || unpaved_OK) && lw->GetLength() >= req_rwy_len && lw->GetWidth() >= req_rwy_wid)
                         break;
                 ++r;
             }
@@ -2185,7 +2185,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	{
 		Bbox2 bounds;
 		apt->GetBounds(gis_Geo, bounds);
-		int lg_apt_mult = ( name == "KEDW" ? 3.0 : 1.0);  // because this one has the runways on all surrounding salt flats included
+		int lg_apt_mult = ( icao == "KEDW" ? 3.0 : 1.0);  // because this one has the runways on all surrounding salt flats included
 		if(bounds.xspan() > lg_apt_mult * MAX_SPAN_GATEWAY_NM / 60.0 / cos(bounds.centroid().y() * DEG_TO_RAD) ||     // correction for higher lattitudes
 				bounds.yspan() > lg_apt_mult* MAX_SPAN_GATEWAY_NM / 60.0)
 		{
