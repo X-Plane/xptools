@@ -71,7 +71,6 @@
 // something on the ragged edge.
 #define DSF_EXTRA_1021 0.25
 
-
 //---------------------------------------------------------------------------------------------------------------------------------------
 
 int zip_printf(void * fi, const char * fmt, ...)
@@ -85,8 +84,6 @@ int zip_printf(void * fi, const char * fmt, ...)
 	zipWriteInFileInZip((zipFile) fi, tmp, l);
 	return l;
 }
-
-
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 
@@ -197,19 +194,16 @@ static bool usesAlpha(ImageInfo * info)
 	if(info->channels < 4) return false;
 	int usesAlpha = 0;
 	
-	unsigned char * src = info->data;
+	unsigned char * src = info->data + 3;
 	for(int y = info->height; y > 0; y--)
+	{
 		for(int x = info->width; x > 0; x--)
 		{
-			if(x < info->pad)
-			{
-				src += 4 * info->pad;
-				break;
-			}
-			if(*(src+3) < 250) usesAlpha++; // deliberately ignore almost opaque pixels. Some tools create such
+			if(*src < 250) usesAlpha++; // deliberately ignore almost opaque pixels. Some tools create such
 			src += 4;
 		}
-printf("Aplphas %d\n",usesAlpha);
+		src += 4 * info->pad;
+	}
 	return usesAlpha;
 }
 
@@ -1821,12 +1815,12 @@ static int	DSF_ExportTileRecursive(
 					return -1;
 				}
 
-				int UVMwidth  = imgInfo.width * UVbounds.xspan();
-				int UVMheight = imgInfo.height * UVbounds.yspan();
-				int UVMleft   = imgInfo.width * UVbounds.xmin();
-				int UVMright  = imgInfo.width * UVbounds.xmax();
-				int UVMtop    = imgInfo.height * UVbounds.ymax();
-				int UVMbottom = imgInfo.height * UVbounds.ymin();
+				int UVMleft   = intround(imgInfo.width * UVbounds.xmin());
+				int UVMright  = intround(imgInfo.width * UVbounds.xmax());
+				int UVMtop    = intround(imgInfo.height * UVbounds.ymax());
+				int UVMbottom = intround(imgInfo.height * UVbounds.ymin());
+				int UVMwidth  = UVMright - UVMleft;
+				int UVMheight = UVMtop - UVMbottom;
 				
 				int DDSwidth = 1;
 				int DDSheight = 1;
@@ -1836,8 +1830,17 @@ static int	DSF_ExportTileRecursive(
 
 				if (CreateNewBitmap(DDSwidth, DDSheight, imgInfo.channels, &DDSInfo) == 0)       // create array to hold upsized image
 				{
-					CopyBitmapSection(&imgInfo,&DDSInfo, UVMleft, UVMbottom, UVMright, UVMtop,
-                                                         0,       0,         DDSwidth,  DDSheight);
+					if(UVMwidth == DDSwidth && UVMheight == DDSheight)
+					{
+						CopyBitmapSectionDirect(imgInfo,DDSInfo, UVMleft, UVMbottom, 0, 0, DDSwidth, DDSheight);
+						printf("fastpath\n");
+					}
+					else
+					{
+						printf("scale %dx%d -> %dx%d\n",UVMright-UVMleft, UVMtop-UVMbottom,DDSwidth,DDSheight);
+						CopyBitmapSection(&imgInfo,&DDSInfo, UVMleft, UVMbottom, UVMright, UVMtop,
+                                                         0,       0,    DDSwidth, DDSheight);
+					}
 					if(DDSInfo.channels == 3)
 						ConvertBitmapToAlpha(&DDSInfo,false);
 					int DXTMethod = usesAlpha(&DDSInfo) ? 5 : 1;

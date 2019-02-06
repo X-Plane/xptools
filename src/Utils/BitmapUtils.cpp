@@ -1703,10 +1703,10 @@ int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name,
 		squish::CompressImage(img.data, img.width, img.height, dst_mem, flags|squish::kColourIterativeClusterFit);
 		len = squish::GetStorageRequirements(img.width,img.height,flags);
 		fwrite(dst_mem,len,1,fi);
-
+#if !WED
 		// Put it back before we advance...really necessary??!
 		swap_bgra_y(img);
-
+#endif
 		if(!AdvanceMipmapStack(&img))
 			break;
 
