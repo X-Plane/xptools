@@ -54,7 +54,7 @@
 #define SHOW_DEBUG_INFO 0
 
 #define MIN_ZOOM  13        // stop displaying OSM at all below this level
-#define MAX_ZOOM  17        // for custom mode maps (predefined maps have their own limits below)
+#define MAX_ZOOM  21        // for custom mode maps (predefined maps have their own limits below)
 
 #define TILE_FACTOR 0.8     // save tiles by zooming in a bit later than at 1:1 pixel ratio.
 							// Since zoom goes by 1.2x steps - it matters little w.r.t "sharpness"
