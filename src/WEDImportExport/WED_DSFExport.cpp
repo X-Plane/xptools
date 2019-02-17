@@ -59,7 +59,7 @@
 #include "STLUtils.h"
 #include "WED_RoadEdge.h"
 
-#if DEV
+#if 1 // DEV
 #include "PerfUtils.h"
 #endif
 
@@ -70,6 +70,17 @@
 // If we lose a bit or 2 in the DSF encoder, we won't have written
 // something on the ragged edge.
 #define DSF_EXTRA_1021 0.25
+
+// various pieces of information about the currently running export
+
+struct DSF_export_info_t
+{
+	ImageInfo	orthoImg;      // in case an orthoimage is to be converted/exported, store its info so it does not need to be loaded it repeatedly
+	string		orthoFile;     // path to last orthoImage - so we know if there is a 2nd one to deal with - in which case we drop the first
+
+	DSF_export_info_t() { orthoImg.data = NULL; }
+};
+
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 
@@ -443,8 +454,6 @@ void dsf_road_grid_helper::export_to_dsf(
 	}
 }
 #endif
-
-
 
 
 /************************************************************************************************************************************************
@@ -1150,7 +1159,8 @@ static int	DSF_ExportTileRecursive(
 						const DSFCallbacks_t *		cbs,
 						void *						writer,
 						set<WED_Thing *>&			problem_children,
-						int							show_level)
+						int							show_level,
+						DSF_export_info_t&		export_info )
 {
 	int real_thingies = 0;
 
@@ -1803,17 +1813,32 @@ static int	DSF_ExportTileRecursive(
 			* Enjoy your new orthophoto
 			*/
 			
-			if(date_cmpr_res == dcr_firstIsNew || date_cmpr_res == dcr_same)
+			if(1) // date_cmpr_res == dcr_firstIsNew || date_cmpr_res == dcr_same)
 			{
-				ImageInfo imgInfo;
-				ImageInfo DDSInfo;
-
-				int res = MakeSupportedType(absPathIMG.c_str(),&imgInfo);
-				if(res != 0)
+#if 1 // DEV
+				StElapsedTime	etime("DDS export time");
+#endif
+				if(export_info.orthoFile != absPathIMG)
 				{
-					DoUserAlert((msg + "Unable to convert the image file '" + absPathIMG + "'to a DDS file, aborting DSF Export.").c_str());
-					return -1;
+					if(!export_info.orthoFile.empty())
+					{
+						Assert(export_info.orthoImg.data);
+						free(export_info.orthoImg.data);
+						export_info.orthoImg.data = NULL;
+						export_info.orthoFile = "";
+					}
+					if(MakeSupportedType(absPathIMG.c_str(),&export_info.orthoImg))
+					{
+						DoUserAlert((msg + "Unable to convert the image file '" + absPathIMG + "'to a DDS file, aborting DSF Export.").c_str());
+						return -1;
+					}
+					else
+					{
+						export_info.orthoFile = absPathIMG;
+					}
 				}
+				ImageInfo imgInfo(export_info.orthoImg);
+				ImageInfo DDSInfo;
 
 				int UVMleft   = intround(imgInfo.width * UVbounds.xmin());
 				int UVMright  = intround(imgInfo.width * UVbounds.xmax());
@@ -1831,24 +1856,17 @@ static int	DSF_ExportTileRecursive(
 				if (CreateNewBitmap(DDSwidth, DDSheight, imgInfo.channels, &DDSInfo) == 0)       // create array to hold upsized image
 				{
 					if(UVMwidth == DDSwidth && UVMheight == DDSheight)
-					{
 						CopyBitmapSectionDirect(imgInfo,DDSInfo, UVMleft, UVMbottom, 0, 0, DDSwidth, DDSheight);
-						printf("fastpath\n");
-					}
 					else
 					{
-						printf("scale %dx%d -> %dx%d\n",UVMright-UVMleft, UVMtop-UVMbottom,DDSwidth,DDSheight);
 						CopyBitmapSection(&imgInfo,&DDSInfo, UVMleft, UVMbottom, UVMright, UVMtop,
                                                          0,       0,    DDSwidth, DDSheight);
 					}
 					if(DDSInfo.channels == 3)
 						ConvertBitmapToAlpha(&DDSInfo,false);
 					int DXTMethod = usesAlpha(&DDSInfo) ? 5 : 1;
-					MakeMipmapStack(&DDSInfo);
-					WriteBitmapToDDS(DDSInfo, DXTMethod, absPathDDS.c_str(), 1);
-					DestroyBitmap(&DDSInfo);
+					WriteBitmapToDDS_MT(DDSInfo, DXTMethod, absPathDDS.c_str());
 				}
-				DestroyBitmap(&imgInfo);
 			}
 			else if(date_cmpr_res == dcr_error)
 			{
@@ -1951,7 +1969,7 @@ static int	DSF_ExportTileRecursive(
 	int cc = what->CountChildren();
 	for (int c = 0; c < cc; ++c)
 	{
-		int result = DSF_ExportTileRecursive(what->GetNthChild(c), resolver, pkg, cull_bounds, safe_bounds, io_table, cbs, writer, problem_children, show_level);
+		int result = DSF_ExportTileRecursive(what->GetNthChild(c), resolver, pkg, cull_bounds, safe_bounds, io_table, cbs, writer, problem_children, show_level, export_info);
 		if (result == -1)
 		{
 			real_thingies = -1; //Abort!
@@ -1972,7 +1990,7 @@ static int	DSF_ExportTileRecursive(
 	return real_thingies;
 }
 
-static int DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& pkg, int x, int y, set <WED_Thing *>& problem_children)
+static int DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& pkg, int x, int y, set <WED_Thing *>& problem_children, DSF_export_info_t& export_info)
 {
 	void *			writer;
 	DSFCallbacks_t	cbs;
@@ -2021,7 +2039,7 @@ static int DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& 
 	int entities = 0;
 	for (int show_level = 6; show_level >= 1; --show_level)
 	{
-		int result = DSF_ExportTileRecursive(base, resolver, pkg, cull_bounds, safe_bounds, rsrc, &cbs, writer, problem_children, show_level);
+		int result = DSF_ExportTileRecursive(base, resolver, pkg, cull_bounds, safe_bounds, rsrc, &cbs, writer, problem_children, show_level, export_info);
 		if (result == -1)
 		{
 			DSFDestroyWriter(writer);
@@ -2063,7 +2081,7 @@ static int DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& 
 
 int DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, set<WED_Thing *>& problem_children)
 {
-#if DEV
+#if 1 // DEV
 	StElapsedTime	etime("Export time");
 #endif
 	g_dropped_pts = false;
@@ -2081,23 +2099,22 @@ int DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, se
 	int tile_north = ceil (wrl_bounds.p2.y());
 
 	int DSF_export_tile_res = 0;
+
+	DSF_export_info_t DSF_export_info;
+
 	for (int y = tile_south; y < tile_north; ++y)
 	{
 		for (int x = tile_west; x < tile_east; ++x)
 		{
-			DSF_export_tile_res = DSF_ExportTile(base, resolver, package, x, y, problem_children);
-			if (DSF_export_tile_res == -1)
-			{
-				break;
-			}
+			DSF_export_tile_res = DSF_ExportTile(base, resolver, package, x, y, problem_children, DSF_export_info);
+			if (DSF_export_tile_res == -1) break;
 		}
-
-		if (DSF_export_tile_res == -1)
-		{
-			break;
-		}
+		if (DSF_export_tile_res == -1) break;
 	}
-
+	if (DSF_export_info.orthoImg.data) 
+	{
+		free(DSF_export_info.orthoImg.data);
+	}
 	if (g_dropped_pts)
 	{
 		DoUserAlert("Warning: you have bezier curves that cross a DSF tile boundary.  X-Plane 9 cannot handle this case.  To fix this, only use non-curved polygons to cross a tile boundary.");
@@ -2143,10 +2160,13 @@ int DSF_ExportAirportOverlay(IResolver * resolver, WED_Airport  * apt, const str
 		cbs.AcceptProperty_f("sim/overlay", "1", writer);
 
 		DSF_ResourceTable	rsrc;
+		DSF_export_info_t DSF_export_info;
 
 		int entities = 0;
 		for(int show_level = 6; show_level >= 1; --show_level)
-			entities += DSF_ExportTileRecursive(apt, resolver, package, cull_bounds, safe_bounds, rsrc, &cbs, writer,problem_children,show_level);
+			entities += DSF_ExportTileRecursive(apt, resolver, package, cull_bounds, safe_bounds, rsrc, &cbs, writer, problem_children, show_level, DSF_export_info);
+			
+		Assert(DSF_export_info.orthoImg.data == NULL); //  In this type of export - orthoimages are not allowed. So this should never happen.
 
 		rsrc.write_tables(cbs,writer);
 
