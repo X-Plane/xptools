@@ -20,7 +20,6 @@
  * THE SOFTWARE.
  *
  */
-#include <chrono>
 
 #include "WED_Validate.h"
 #include "WED_ValidateList.h"
@@ -1165,11 +1164,7 @@ static void ValidateATC(WED_Airport* apt, validation_error_vector& msgs, set<int
 #endif
 		}
 	}
-auto t0 = std::chrono::high_resolution_clock::now();
 	TJunctionTest(taxi_routes, msgs, apt);
-auto t1 = std::chrono::high_resolution_clock::now();
-chrono::duration<double> elapsed = t1-t0;
-printf("Time: %lf ms\n", 1000.0*elapsed.count());
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------
