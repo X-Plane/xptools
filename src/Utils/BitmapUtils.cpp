@@ -29,13 +29,10 @@
 #include <errno.h>
 #include <string.h>
 #include "Interpolation.h"
+
 #include <squish.h>
+
 #include <pthread.h>
-
-#if USE_GEOJPEG2K
-#include <jasper/jasper.h>
-#endif
-
 
 #if IBM
 #include "GUI_Unicode.h"
@@ -432,11 +429,6 @@ int MakeSupportedType(const char * path, ImageInfo * inImage)
 	case WED_DDS:
 		error = CreateBitmapFromDDS(path,inImage);
 		break;
-	#if USE_GEOJPEG2K
-	case WED_JP2K:
-		error = CreateBitmapFromJP2K(path,inImage);
-		break;
-	#endif
 	#if USE_JPEG
 	case WED_JPEG:
 		error = CreateBitmapFromJPEG(path,inImage);
@@ -1436,109 +1428,6 @@ bail:
 
 #endif
 
-#if USE_GEOJPEG2K
-int CreateBitmapFromJP2K(const char * inFilePath, struct ImageInfo * outImageInfo)
-{
-	//Clean out the image info
-	outImageInfo->data = NULL;
-	
-	//Initialize JasPerGEO
-	if(jas_init() != 0 )
-	{
-		//If it failed then return error
-		return -1;
-	}
-
-	//Create the data stream
-	jas_stream_t * inStream;
-	
-	//If the data stream cannot be created
-	if((inStream = jas_stream_fopen(inFilePath,"rb"))==false)
-	{
-		return -1;
-	}
-
-	//Get the format ID
-	int formatId;
-
-	//If there are any errors in getting the format
-	if((formatId = jas_image_getfmt(inStream)) < 0)
-	{
-		//It is an invalid format
-		return -2;
-	}
-	
-	
-	//Create an image from the stream
-	jas_image_t * image;
-
-	//If the image cannot be decoded
-	if((image = jas_image_decode(inStream, formatId, 0)) == false)
-	{
-		//Return an error
-		return -3;
-	}
-
-	//Set the properties of the outImageInfo that we can
-	outImageInfo->width = jas_image_width(image);
-	outImageInfo->height = jas_image_height(image);
-	outImageInfo->pad = 0;
-
-	//Get the red green and blue of each image
-	int channels[4] = {	
-		jas_image_getcmptbytype(image, JAS_IMAGE_CT_RGB_B),
-		jas_image_getcmptbytype(image, JAS_IMAGE_CT_RGB_G),
-		jas_image_getcmptbytype(image, JAS_IMAGE_CT_RGB_R), 
-		jas_image_getcmptbytype(image, JAS_IMAGE_CT_OPACITY) };
-
-	if(image->numcmpts_ > 3 && channels[3] == -1)
-		channels[3] = 3;
-
-
-	//If it has 3 channels it will later be filled in the DSF export, else it is filled in with it's values
-	outImageInfo->channels = channels[3] != -1 ? 4 : 3;
-
-
-	//Allocate a place in memory equal to the width*height*channels, aka just right
-	outImageInfo->data = (unsigned char*) malloc(outImageInfo->width*outImageInfo->height*outImageInfo->channels);
-
-		
-	//If the precision is more than 8 create shift values
-	
-	for(int chan_idx = 0; chan_idx < outImageInfo->channels; ++ chan_idx)
-	{
-		int chan_id = channels[chan_idx];
-		int chan_shift = max(jas_image_cmptprec(image, chan_id) - 8, 0);
-
-		jas_matrix_t * comp = jas_matrix_create(outImageInfo->height, outImageInfo->width);
-
-		jas_image_readcmpt(image, chan_id, 0, 0, outImageInfo->width, outImageInfo->height, comp);
-	
-		//Save the original pointer
-		unsigned char * p = outImageInfo->data + chan_idx;
-
-		//For the width and height of the image
-		//(This way makes sure the image is of the correct orientation
-		for (int j = outImageInfo->height - 1; j >= 0; j--) 
-		{
-			for (int i = 0; i < outImageInfo->width; i++) 
-			{
-				int px = jas_matrix_get(comp, j, i) >> chan_shift;
-				
-				*p = px;
-				p += outImageInfo->channels;				
-			}
-		}
-		jas_matrix_destroy(comp);
-		
-	}
-	//Clean up jas_stuff. Since we havea working image 
-	jas_cleanup();
-
-	return 0;
-}
-#endif
-
 static void	in_place_scaleXY(int x, int y, unsigned char * src, unsigned char * dst, int channels)
 {
 	int rb = x * channels;
@@ -1621,16 +1510,14 @@ static void	in_place_scaleY(int x, int y, unsigned char * src, unsigned char * d
 
 #if 1 // serial floating point math
 	#if 0 // exact gamma:   1.2 seconds !! to calculate all mimmaps for a 2x2k texture
-		inline int to_srgb(float p, int chan)
+		inline int to_srgb(float p)
 		{
-			if (chan == 3) return 255.0f * p;                     // don't gamma correct alpha channel
 			if(p <= 0.0031308f)	return 255.0f * 12.92f * p;
 			else return 255.0f * 1.055f * powf(p,1.0/2.4) - 0.055f;
 		}
-		inline float from_srgb(int p, int chan)
+		inline float from_srgb(int p)
 		{
 			p /= 255.0f;
-			if (chan == 3)    return p;
 			if(p <= 0.04045f)	return p / 12.92f;
 			else              return powf(p * (1.0f/1.055f) + (0.055f/1.055f),2.4);
 		}
@@ -1658,50 +1545,67 @@ static void	in_place_scaleY(int x, int y, unsigned char * src, unsigned char * d
 		{
 			return fastpow2(p * fastlog2(x));
 		}
-		inline int to_srgb(float p, int chan)
+		inline int to_srgb(float p)
 		{
-			if (chan == 3)       return 255.0f * p;
 			if(p <= 0.0031308f)	return 255.0f * 12.92f * p;
 			else                 return 255.0f * 1.055f * fastpow(p,1.0/2.4) - 0.055f;
 		}
-		inline float from_srgb(int p, int chan)
+		inline float from_srgb(int p)
 		{
 			p /= 255.0f;
-			if(chan == 3)     return p;
 			if(p <= 0.04045f)	return p / 12.92f;
 			else              return fastpow(p * (1.0f/1.055f) + (0.055f/1.055f),2.4);
 		} 
-	#elif 1 // gamma=2.4 aproximation, no scaling: 28 msec
+	#elif 1 // gamma=2.4 aproximation, no scaling: 50 msec
 	   // WC relative gamma error 9% and maintains to_srgb(from_srgb(x)) == x  for all x
 	   // aproximation is to use (x-5)^2 and x^0.5+5 for x^2.4, x^(1/2.4) as a pretty close fit for x > 30/255,
 	   // and adjust the slope & intercept for the linear part of the curve as well
-		inline int to_srgb(float p, int chan)
+		inline int to_srgb(float p)
 		{
-			 if (chan == 3 || p < (31-5)*(31-5)) return p * 11.8/255.0 + 0.5;
+			 if (p < (31-5)*(31-5)) return p * 11.8/255.0 + 0.5;
 			return sqrtf(p) + 5 + 0.5;
 		}
-		inline float from_srgb(int p, int chan)
+		inline float from_srgb(int p)
 		{
-			if (chan == 3 || p < 31) return p * 255.0/11.8;
+			if (p < 31) return p * 255.0/11.8;
 			p -= 5;
 			return p * p;
 		}
-	#else // gamma=2.0, no scaling:  25 msec
-		inline int to_srgb(float p, int chan) { return chan == 3 ? p : sqrtf(p); }
-		inline float from_srgb(int p, int chan) { return chan == 3 ? p : p * p; }
+	#else // gamma=2.0, no scaling:  45 msec
+		inline int to_srgb(float p) { return sqrtf(p); }
+		inline float from_srgb(int p) { return p * p; }
 	#endif
+	
+	unsigned char average_with_gamma(unsigned char * src, int cnt, int chan, int level)
+	{
+		if(chan < 3)
+		{
+			float tmp;
+			switch(cnt)
+			{
+				case 1: tmp = from_srgb(*src); break;
+				case 2: tmp = (from_srgb(*src++) + from_srgb(*src)) * 0.5; break;
+				case 4: tmp = (from_srgb(*src++) + from_srgb(*src++) + from_srgb(*src++) + from_srgb(*src)) * 0.25;
+			}
+			return intlim(to_srgb(tmp), 0, 255);
+		}
+		else
+		{
+			switch(cnt)
+			{
+				case 1: return *src; break;
+				case 2: return ((int) *src++ + (int) *src) >> 1; break;
+				case 4: return ((int) *src++ +( int) *src++ + (int) *src++ + (int) *src) >> 2;
+			}
+		}
+	}
 #else  // SSE gamma=2.0, alpha channel is also gamma corrected to save any separate treatment:  15 msec
 	#include <emmintrin.h>
 	#define SCALE_SSE 1
-#endif
 
-
-static void	in_place_scale_sRGBA(int x, int y, unsigned char * __restrict src, unsigned char * __restrict d)
+static void	copy_scale_SSE(int x, int y, unsigned char * __restrict src, unsigned char * __restrict dst)
 {
-
-	unsigned char *	dst = d;
-	
-	int rb = x * 4;
+	int 					rb = x * 4;
 	unsigned char *	s1 = src;
 	unsigned char *	s2 = src + ((y > 1) ? rb : 0);
 
@@ -1713,7 +1617,6 @@ static void	in_place_scale_sRGBA(int x, int y, unsigned char * __restrict src, u
 		int ctr = x;
 		while(ctr--)
 		{
-#if SCALE_SSE
 			__m64  u1 = _m_from_int(*(int*)s1);
 			__m128 f1 = _mm_cvtpu8_ps(u1);
 					 f1 = _mm_mul_ps(f1,f1);
@@ -1743,21 +1646,11 @@ static void	in_place_scale_sRGBA(int x, int y, unsigned char * __restrict src, u
 					 u1 = _mm_packs_pu16(u1,u1);
 			*(int *) dst = _m_to_int(u1);
 					 dst += 4;
-#else
-			for(int i = 0; i < 4; i++)
-			{
-				float tmp;
-				tmp =  from_srgb(s1[i],i) + from_srgb(s1[i+4],i);
-				tmp += from_srgb(s2[i],i) + from_srgb(s2[i+4],i);
-				tmp *= 0.25;
-				*dst++ = intlim(to_srgb(tmp,i), 0, 255);
-			}
-			s1 += 8; s2 += 8;
-#endif
 		}
 		s1 += rb; s2 += rb;
 	}
 }
+#endif
 
 static void copy_mip_with_filter(const ImageInfo& src, ImageInfo& dst,int level, unsigned char (* filter)(unsigned char src[], int count, int channel, int level))
 {
@@ -1876,72 +1769,69 @@ static void * CompressImageWorker(void * args)
 #define SHP2    0
 #define AMOUNT 16            // photoshop equiv. shapening amount = 4*(SHP1+SHP2) / AMOUNT
 
-inline void unsharpPixel(unsigned char * __restrict sharp, const unsigned char * __restrict orig, int stride)
+inline void unsharpPixel(unsigned char * sharp, const unsigned char * orig, int stride)
 {
-	for(int i = 0; i < 4; i++)
-		sharp[i] = intlim((((short) orig[i] * (AMOUNT - 4*SHP1 - 4*SHP2))
-					 + SHP1 * ((short) orig[i-4]        + (short) orig[i-4]        + (short) orig[i+stride]   + (short) orig[i-stride])
-//					 + SHP2 * ((short) orig[i+stride-4] + (short) orig[i+stride+4] + (short) orig[i-stride-4] + (short) orig[i-stride+4])
-			) / AMOUNT,0,255);
+	*sharp = intlim((((short) *orig * (AMOUNT - 4*SHP1 - 4*SHP2))
+					 + SHP1 * ((short) *(orig+4)        + (short) *(orig-4)        + (short) *(orig+stride)   + (short) *(orig-stride))
+//					 + SHP2 * ((short) *(orig+stride-4])+ (short) *(orig+stride+4) + (short) *(orig-stride-4) + (short) *(orig-stride+4))
+					) / AMOUNT,0,255);
 }
 
 inline void unsharpPixelV(unsigned char * sharp, const unsigned char * orig, int stride)
 {
-	*sharp = intlim(((((short) *orig) * (AMOUNT - 2*SHP1)) +
-	   SHP1 * ((short) *(orig+stride)   + (short) *(orig-stride))
-			) / AMOUNT,0,255);
+	for(int i = 0; i < 3; i++)
+		sharp[i] = intlim(((((short) orig[i]) * (AMOUNT - 2*SHP1))
+					  + SHP1 * ((short) orig[stride]   + (short) orig[-stride])
+					) / AMOUNT,0,255);
+	sharp[3] = orig[3];
 }
 
 inline void unsharpPixelH(unsigned char * sharp, const unsigned char * orig)
 {
-	*sharp = intlim(((((short) *orig) * (AMOUNT - 2*SHP1)) +
-	   SHP1 * ((short) *(orig+4)   + (short) *(orig-4))
-			) / AMOUNT,0,255);
+	for(int i = 0; i < 3; i++)
+		sharp[i] = intlim(((((short) orig[i]) * (AMOUNT - 2*SHP1))
+					  + SHP1 * ((short) orig[4]   + (short) orig[-4])
+					) / AMOUNT,0,255);
+	sharp[3] = orig[3];
 }
 
-static void in_place_sharpen(int x, int y, const unsigned char * __restrict b4sharp, unsigned char * __restrict sharp)
+static void in_place_sharpen(int x, int y, const unsigned char * b4sharp, unsigned char * sharp)
 {
 	int rb = x * 4;
-
-	*((int *) sharp) = *((int *) b4sharp);
+	// top row
+	*((int *) sharp) = *((int *) b4sharp);       // top left corner - just copy
 	sharp += 4; b4sharp += 4;
 	for(int xx = 1; xx < x-1; xx++)
 	{
-		unsharpPixelH(sharp++, b4sharp++);
-		unsharpPixelH(sharp++, b4sharp++);
-		unsharpPixelH(sharp++, b4sharp++);
-		*(sharp++) = *(b4sharp++);
+		unsharpPixelH(sharp, b4sharp);
+		sharp += 4; b4sharp += 4;
 	}
-	*((int *) sharp) =  *((int *) b4sharp);
+	*((int *) sharp) =  *((int *) b4sharp);       // top right corner - just copy
 	sharp += 4; b4sharp += 4;
-
+	// middle rows
 	for(int yy = 1; yy < y-1; yy++)
 	{
-		unsharpPixelV(sharp++, b4sharp++, rb);
-		unsharpPixelV(sharp++, b4sharp++, rb);
-		unsharpPixelV(sharp++, b4sharp++, rb);
-		*(sharp++) = *(b4sharp++);                  // don't sharpen alpha-channel
+		unsharpPixelV(sharp, b4sharp, rb);
+		sharp += 4; b4sharp += 4;
 		for(int xx = 1; xx < x-1; xx++)
 		{
-			unsharpPixel(sharp, b4sharp, rb);
-			sharp += 4; b4sharp += 4;
+			unsharpPixel(sharp++, b4sharp++, rb);
+			unsharpPixel(sharp++, b4sharp++, rb);
+			unsharpPixel(sharp++, b4sharp++, rb);
+			*sharp++ = *b4sharp++;
 		}
-		unsharpPixelV(sharp++, b4sharp++, rb);
-		unsharpPixelV(sharp++, b4sharp++, rb);
-		unsharpPixelV(sharp++, b4sharp++, rb);
-		*(sharp++) = *(b4sharp++);
+		unsharpPixelV(sharp, b4sharp, rb);
+		sharp += 4; b4sharp += 4;
 	}
-
-	*((int *) sharp) =  *((int *) b4sharp);
+	// bottom row
+	*((int *) sharp) =  *((int *) b4sharp);       // bottom left corner - just copy
 	sharp += 4; b4sharp += 4;
 	for(int xx = 1; xx < x-1; xx++)
 	{
-		unsharpPixelH(sharp++, b4sharp++);
-		unsharpPixelH(sharp++, b4sharp++);
-		unsharpPixelH(sharp++, b4sharp++);
-		*(sharp++) = *(b4sharp++);
+		unsharpPixelH(sharp, b4sharp);
+		sharp += 4; b4sharp += 4;
 	}
-	*((int *) sharp) =  *((int *) b4sharp);
+	*((int *) sharp) =  *((int *) b4sharp);       // bottom right corner - just copy
 }
 
 int	WriteBitmapToDDS_MT(struct ImageInfo& ioImage, int dxt, const char * file_name)
@@ -1952,9 +1842,9 @@ int	WriteBitmapToDDS_MT(struct ImageInfo& ioImage, int dxt, const char * file_na
 	FILE * fi = fopen(file_name,"wb");
 	if (fi == NULL) return -1;
 
-/* The very simply parallel processing of the full resolution texture only is beneficial up to 3 threads, as
-   the remaining  mipmap levels all together use ~1/3 as many pixels as the full resolution texture.
-	But the mipmap creation itself takes a bit time, so 3 threads for the main texture is only 15% faster. */
+/* The very simply parallel processing of the full resolution texture only is beneficial up to 3 threads, as the
+   remaining  mipmap levels all together use ~1/3 as many pixels as the full resolution texture. But the mipmap creation
+	itself takes time, 3 threads for the main texture is not mesureably faster unless using SSE optimized mipmap scaling */
 
 	#define MAX_WORKER_THREADS 2
 	pthread_t threads[MAX_WORKER_THREADS];
@@ -1977,49 +1867,58 @@ int	WriteBitmapToDDS_MT(struct ImageInfo& ioImage, int dxt, const char * file_na
 		args[i].dst_mem = aligned_alloc(64, args[i].dst_size);     // not strictly required, but when multi-threading - nice to know no chance of cache trashing here
 		int result_code = pthread_create(&threads[i], NULL, CompressImageWorker, &args[i]);
 		Assert(!result_code);
+//		CompressImageWorker(&args[i]);
 	}
 	
 	// scale down the mipmaps using sRGB gamma (aproximation) and sharpen the result a bit. Create the next map starting from the sharpened map.
 	
 	ImageInfo ioMips(ioImage);
 	ioMips.data = (unsigned char *) aligned_alloc(64, ioImage.width * ioImage.height  * 2);
-	printf("malloc mips %p\n",ioMips.data);
 	ioMips.width /= 2;
 	ioMips.height /= 2;
 
-	unsigned char * src_ptr = ioImage.data;
+	ImageInfo src(ioImage);
 	unsigned char * mip_ptr = ioMips.data;
-	int x = ioImage.width;
-	int y = ioImage.height;
 	int mips = 1;
 	
-	while(x > 1 || y > 1)
+	while(src.width > 1 || src.height > 1)
 	{
-		unsigned char * b4sharp = mip_ptr + x * y;     // we create the reduced size image out-of-place, putting it into-place during the sharpening
-		in_place_scale_sRGBA(x, y ,src_ptr, b4sharp);
-		if(x > 1) x >>= 1;
-		if(y > 1) y >>= 1;
-#if 1
-		if(x > 4 && y > 4)                             // don't sharpen the last few mipmaps, as its mostly border pixels that won't sharpen that well
-			in_place_sharpen(x, y, b4sharp, mip_ptr);
+		ImageInfo dst(src); 
+		dst.data = mip_ptr + src.width * src.height;          // we create the reduced size image out-of-place, putting it into-place during the sharpening
+		dst.pad = 0;
+		if(dst.width > 1) dst.width >>= 1;
+		if(dst.height > 1) dst.height >>= 1;
+		
+#if SCALE_SSE
+		copy_scale_SSE(src.width, src.height ,src.data, dst.data);
+#else
+		copy_mip_with_filter(src, dst, mips, average_with_gamma);
+#endif
+		src = dst;
+
+#if 1  // sharpen
+		if(src.width > 4 && src.height > 4)                             // don't sharpen the last few mipmaps, as its mostly border pixels that won't sharpen that well
+			in_place_sharpen(src.width, src.height, src.data, mip_ptr);
 		else
 #endif
-			memcpy(mip_ptr, b4sharp, x * y * 4);        // nothing gets sharpened, still need to move the data to the location its expected to be
-
-		src_ptr = mip_ptr;
-		mip_ptr += x * y * 4;
+			memcpy(mip_ptr, src.data, src.width * src.height * 4);        // nothing gets sharpened, still need to move the data to the location its expected to be
+				
+		src.data = mip_ptr;
+		mip_ptr += src.width * src.height * 4;
 		++mips;
 	}
 	
 	void * dst_mem = aligned_alloc(64, 2 * squish::GetStorageRequirements(ioMips.width,ioMips.height,flags)); // its a bit more than needed ...
-	src_ptr = ioMips.data;
 	mip_ptr = (unsigned char *) dst_mem;
+	unsigned char * src_ptr = ioMips.data;
 
 	do
 	{
 		squish::CompressImage(ioMips.data, ioMips.width, ioMips.height, mip_ptr, flags);
 		mip_ptr += squish::GetStorageRequirements(ioMips.width, ioMips.height, flags);
-	} while (AdvanceMipmapStack(&ioMips));
+	} 
+	while (AdvanceMipmapStack(&ioMips));
+	
 	free(src_ptr);
 
 	TEX_dds_desc header(ioImage.width, ioImage.height, mips, dxt);
@@ -2031,7 +1930,6 @@ int	WriteBitmapToDDS_MT(struct ImageInfo& ioImage, int dxt, const char * file_na
 		fwrite(args[i].dst_mem, args[i].dst_size, 1, fi);
 		free(args[i].dst_mem);
 	}
-printf("th3\n"); fflush(stdout);
 	fwrite(dst_mem, mip_ptr - (unsigned char *) dst_mem, 1, fi);
 	free(dst_mem);
 
