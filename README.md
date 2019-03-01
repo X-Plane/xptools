@@ -14,16 +14,16 @@ Developer site](https://developer.x-plane.com/code/).
 Licensing and Copyright
 -------------------------------------------------------------------------------
 
-The code original to Laminar Research lives in the sub-directory "src" and is licensed under the
+The code original to Laminar Research lives in the sub-directory `src` and is licensed under the
 MIT/X11 license.  If you find a source file with no copyright, or double/
 conflicting copyright, please report this (see contact info below)---this is 
 probably a clerical error.
 
-The directory "libs" contains tarballs of a number of publicly available open
+The directory `libs` contains tarballs of a number of publicly available open
 source libraries---they are included for convenience in building.  I believe
 that all of the libsrc libraries are under either an MIT/X11-type or GPL-type
 license---if you find a library that is incompatible with WED's licensing,
-pleaes report this.
+please report this.
 
 Build materials are in the root directory.
 
@@ -64,8 +64,8 @@ Documentation
 -------------------------------------------------------------------------------
 
 Documentation about sub-modules of the code are typically in a file called
-README in the directory being documented.  For example, see src/README.txt for
-an overview of the code tree structure, or src/XESCore/README.txt for notes
+README in the directory being documented.  For example, see `src/README.txt` for
+an overview of the code tree structure, or `src/XESCore/README.txt` for notes
 on the XESCore package.
 
 Contact

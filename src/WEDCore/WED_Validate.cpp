@@ -118,30 +118,31 @@ static int strlen_utf8(const string& str)
     return q;
 }
 
-
 static int get_opposite_rwy(int rwy_enum)
 {
 	DebugAssert(rwy_enum != atc_Runway_None);
-	int p = 0;
 
-    if(rwy_enum >= atc_1 && rwy_enum <= atc_18)
-    {
-        if((rwy_enum % 10) == 1)
-            return rwy_enum + 180 + 2;
-        else if((rwy_enum % 10) == 3)
-            return rwy_enum + 180 - 2;
-        else
-            return rwy_enum + 180;
-    }
-    else if(rwy_enum >= atc_19 && rwy_enum <= atc_36)
-    {
-        if((rwy_enum % 10) == 1)
-            return rwy_enum - 180 + 2;
-        else if((rwy_enum % 10) == 3)
-            return rwy_enum - 180 - 2;
-        else
-            return rwy_enum - 180;
-    }
+	int r = ENUM_Export(rwy_enum);
+	int o = atc_19 - atc_1;
+
+	if(rwy_enum >= atc_1 && rwy_enum < atc_19)
+	{
+		if((r % 10) == 1)
+			return rwy_enum + o + 2;
+		else if((r % 10) == 3)
+			return rwy_enum + o - 2;
+		else
+			return rwy_enum + o;
+	}
+	else if(rwy_enum >= atc_19 && rwy_enum <= atc_36W)
+	{
+		if((r % 10) == 1)
+			return rwy_enum - o + 2;
+		else if((r % 10) == 3)
+			return rwy_enum - o - 2;
+		else
+			return rwy_enum - o;
+	}
 	DebugAssert(!"Bad enum");
 	return atc_Runway_None;
 }
