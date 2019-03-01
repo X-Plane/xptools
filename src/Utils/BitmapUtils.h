@@ -96,14 +96,6 @@ int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInf
 
 #endif
 
-#if USE_GEOJPEG2K
-//Creates a bit map from a GeoJPEG2K, requires GeoJASPER
-//-1 means bad jas_init(), -2 means bad format ID, -3 means bad image. 0 means good, relates to #channels
-int CreateBitmapFromJP2K(const char * inFilePath, struct ImageInfo * outImageInfo);
-
-#endif
-
-
 
 /* Given an imageInfo structure, this routine writes it to disk as a .bmp file.
  * Note that only 3-channel bitmaps may be written as .bmp files!! 

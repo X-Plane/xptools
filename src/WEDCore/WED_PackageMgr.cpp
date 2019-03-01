@@ -283,7 +283,7 @@ static bool SortPackageList(const WED_PackageInfo& p1, const WED_PackageInfo& p2
 	bool p1_inclAPT = p1.hasXML || p1.hasAPT;
 	bool p2_inclAPT = p2.hasXML || p2.hasAPT;
 	if(p1_inclAPT != p2_inclAPT) return p1_inclAPT;              // packages with any airport come first
-	if(p1.hasAnyItems != p2.hasAnyItems) return p2.hasAnyItems;  // pure Libraries come last
+	if(p1.hasAnyItems != p2.hasAnyItems && !(p1_inclAPT || p2_inclAPT)) return p2.hasAnyItems;  // pure Libraries come last
 	return strcasecmp(p1.name.c_str(), p2.name.c_str()) < 0; 
 }
 

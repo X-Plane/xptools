@@ -13,7 +13,16 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 1.8.0 a17 1/17/19
+WED 2.0.0 b2 2/5/19
+	Features:
+	- add warning when opening xml files created with future/incompatible WED versions
+	
+	Bug Fixes:
+	- WED-1131: fix illegal taxi signs not edit/deleteable with bare text editor
+	- fix listing of non-TaxiRouteNodes connected to TaxiRoutes in HierachyPane
+	- make slippy map zoom range scale better with lattitude
+
+WED 2.0.0 b1 1/24/19
 	Features:
 	- don't write apt.dat if there are no airports for it - rather delete it
 	- XST-69: include distance signs and approach lights in runway preview
@@ -21,7 +30,6 @@ WED 1.8.0 a17 1/17/19
 	- warn about polygons used to draw rwy markings or transparent rwy for gateway targets
 	- WED-898: Warn about ATC flow rules resulting in runway use with high tailwinds
 	- WED-1064: distinguish the "locked" icon by a touch of red color
-	- WED-203: Hide ATC taxi nodes in hierachy pane
 	- remove ability to lock+hide polygon inner/outer rings to reduce confusion
 	- WED-916: Support user specified text size
 	- WED-1119: Speed up map display by culling objects preview based on their actual size
