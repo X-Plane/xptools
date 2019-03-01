@@ -41,19 +41,19 @@ Top Level File Structure
 -------------------------------------------------------------------------------
 
 - SceneryTools.xcodeproj
-    - Xcode project file for all tools on macOS.
+    - Xcode project files for all tools on macOS.
 - msvc
     - Microsoft Visual Studio 2017 project files for Windows
 - codeblocks
     - code::blocks project files for Linux
 
 - msvc_libs
-    - subrepo with pre-compiled 3rd party libraries, only used under windows
+    - subrepo with pre-compiled 3rd party libraries, only used under Window. 
        The file "howto_build.txt" documents in this directory documents how the
        libraries were originally compiled from the included source.
 - libs
-    - subrepo with source code for 3rd part libraries, only used under OSX and Linux
-      The makefile at the toplevl will unpack the tarball, apply patches; when done
+    - subrepo with source code for 3rd part libraries, only used under OSX and Linux. 
+      The makefile at the toplevel will unpack the tarball, apply patches; when done
       the libs directory contains the static archives we use and headers. The
       XPTools code does not require you to install the libraries globally on your system.
 - makerules
@@ -62,7 +62,7 @@ Top Level File Structure
     - The main source tree for the various tools and exewcutable of XPtools.
 
 - test
-    - collection of test files for regression testing of WED
+    - Collection of files for regression testing of WED
 - scripts
     - A collection of scripts we use to package distros, and other things.
 - SDK
@@ -80,4 +80,4 @@ see src/XESCore/README.txt for notes on the XESCore package.
 Contact
 -------------------------------------------------------------------------------
 
-ben @ x-plane.com
+ben at x-plane.com
