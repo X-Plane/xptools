@@ -32,9 +32,7 @@
 #include "Interpolation.h"
 #include <squish.h>
 #include <zlib.h>
-#if USE_GEOJPEG2K
-#include <jasper/jasper.h>
-#endif
+
 #include "AssertUtils.h"
 #include <stdint.h>
 
@@ -394,11 +392,6 @@ int MakeSupportedType(const char * path, ImageInfo * inImage)
 	case WED_DDS:
 		error = CreateBitmapFromDDS(path,inImage);
 		break;
-	#if USE_GEOJPEG2K
-	case WED_JP2K:
-		error = CreateBitmapFromJP2K(path,inImage);
-		break;
-	#endif
 	#if USE_JPEG
 	case WED_JPEG:
 		error = CreateBitmapFromJPEG(path,inImage);
@@ -1398,109 +1391,6 @@ bail:
 
 #endif
 
-#if USE_GEOJPEG2K
-int CreateBitmapFromJP2K(const char * inFilePath, struct ImageInfo * outImageInfo)
-{
-	//Clean out the image info
-	outImageInfo->data = NULL;
-	
-	//Initialize JasPerGEO
-	if(jas_init() != 0 )
-	{
-		//If it failed then return error
-		return -1;
-	}
-
-	//Create the data stream
-	jas_stream_t * inStream;
-	
-	//If the data stream cannot be created
-	if((inStream = jas_stream_fopen(inFilePath,"rb"))==false)
-	{
-		return -1;
-	}
-
-	//Get the format ID
-	int formatId;
-
-	//If there are any errors in getting the format
-	if((formatId = jas_image_getfmt(inStream)) < 0)
-	{
-		//It is an invalid format
-		return -2;
-	}
-	
-	
-	//Create an image from the stream
-	jas_image_t * image;
-
-	//If the image cannot be decoded
-	if((image = jas_image_decode(inStream, formatId, 0)) == false)
-	{
-		//Return an error
-		return -3;
-	}
-
-	//Set the properties of the outImageInfo that we can
-	outImageInfo->width = jas_image_width(image);
-	outImageInfo->height = jas_image_height(image);
-	outImageInfo->pad = 0;
-
-	//Get the red green and blue of each image
-	int channels[4] = {	
-		jas_image_getcmptbytype(image, JAS_IMAGE_CT_RGB_B),
-		jas_image_getcmptbytype(image, JAS_IMAGE_CT_RGB_G),
-		jas_image_getcmptbytype(image, JAS_IMAGE_CT_RGB_R), 
-		jas_image_getcmptbytype(image, JAS_IMAGE_CT_OPACITY) };
-
-	if(image->numcmpts_ > 3 && channels[3] == -1)
-		channels[3] = 3;
-
-
-	//If it has 3 channels it will later be filled in the DSF export, else it is filled in with it's values
-	outImageInfo->channels = channels[3] != -1 ? 4 : 3;
-
-
-	//Allocate a place in memory equal to the width*height*channels, aka just right
-	outImageInfo->data = (unsigned char*) malloc(outImageInfo->width*outImageInfo->height*outImageInfo->channels);
-
-		
-	//If the precision is more than 8 create shift values
-	
-	for(int chan_idx = 0; chan_idx < outImageInfo->channels; ++ chan_idx)
-	{
-		int chan_id = channels[chan_idx];
-		int chan_shift = max(jas_image_cmptprec(image, chan_id) - 8, 0);
-
-		jas_matrix_t * comp = jas_matrix_create(outImageInfo->height, outImageInfo->width);
-
-		jas_image_readcmpt(image, chan_id, 0, 0, outImageInfo->width, outImageInfo->height, comp);
-	
-		//Save the original pointer
-		unsigned char * p = outImageInfo->data + chan_idx;
-
-		//For the width and height of the image
-		//(This way makes sure the image is of the correct orientation
-		for (int j = outImageInfo->height - 1; j >= 0; j--) 
-		{
-			for (int i = 0; i < outImageInfo->width; i++) 
-			{
-				int px = jas_matrix_get(comp, j, i) >> chan_shift;
-				
-				*p = px;
-				p += outImageInfo->channels;				
-			}
-		}
-		jas_matrix_destroy(comp);
-		
-	}
-	//Clean up jas_stuff. Since we havea working image 
-	jas_cleanup();
-
-	return 0;
-}
-#endif
-
 static void	in_place_scaleXY(int x, int y, unsigned char * src, unsigned char * dst, int channels)
 {
 	int rb = x * channels;
@@ -1703,10 +1593,10 @@ int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name,
 		squish::CompressImage(img.data, img.width, img.height, dst_mem, flags|squish::kColourIterativeClusterFit);
 		len = squish::GetStorageRequirements(img.width,img.height,flags);
 		fwrite(dst_mem,len,1,fi);
-
+#if !WED
 		// Put it back before we advance...really necessary??!
 		swap_bgra_y(img);
-
+#endif
 		if(!AdvanceMipmapStack(&img))
 			break;
 

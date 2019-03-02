@@ -46,18 +46,6 @@ WED_Ring * WED_RingfromImage(char * path, WED_Archive * arch, WED_MapZoomerNew *
 
 	switch(GetSupportedType(path))
 	{
-	#if USE_GEOJPEG2K
-	case WED_JP2K:
-		if(FetchTIFFCornersWithJP2K(path,c,align))
-		{
-			coords[0] = Point2(c[0],c[1]);
-			coords[1] = Point2(c[2],c[3]);
-			coords[3] = Point2(c[4],c[5]);
-			coords[2] = Point2(c[6],c[7]);
-			has_geo = 1;
-		}
-		break;
-	#endif
 	case WED_TIF:
 		if (FetchTIFFCorners(path, c, align))
 		{

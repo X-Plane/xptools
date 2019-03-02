@@ -210,8 +210,6 @@
 		<Unit filename="../../src/UI/XWinGL.lin.cpp" />
 		<Unit filename="../../src/Utils/AssertUtils.cpp" />
 		<Unit filename="../../src/Utils/AssertUtils.h" />
-		<Unit filename="../../src/Utils/BWImage.cpp" />
-		<Unit filename="../../src/Utils/BWImage.h" />
 		<Unit filename="../../src/Utils/BitmapUtils.cpp" />
 		<Unit filename="../../src/Utils/BitmapUtils.h" />
 		<Unit filename="../../src/Utils/CSVParser.cpp" />
@@ -237,8 +235,6 @@
 		<Unit filename="../../src/Utils/ObjUtils.h" />
 		<Unit filename="../../src/Utils/PlatformUtils.h" />
 		<Unit filename="../../src/Utils/PlatformUtils.lin.cpp" />
-		<Unit filename="../../src/Utils/PolyRasterUtils.cpp" />
-		<Unit filename="../../src/Utils/PolyRasterUtils.h" />
 		<Unit filename="../../src/Utils/STLUtils.cpp" />
 		<Unit filename="../../src/Utils/STLUtils.h" />
 		<Unit filename="../../src/Utils/TexUtils.cpp" />

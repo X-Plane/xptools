@@ -239,11 +239,15 @@ static bool IsThingResource(WED_Thing * who)
 	return GetThingResource(who,r);
 }
 
-static bool is_of_type_ground_vehicles(WED_Thing* route)
+bool isGroundRoute(WED_Thing* taxi_route)
 {
-	return static_cast<WED_TaxiRoute*>(route)->AllowTrucks();
+	WED_TaxiRoute* ground_rt = static_cast<WED_TaxiRoute*>(taxi_route);
+	if (ground_rt)
+	{
+		if (ground_rt->AllowTrucks())	return true;
+	}
+	return false;
 }
-
 
 // This template buidls an error list for a subset of objects that have the same name - one validation error is generated
 // for each set of same-named objects.
@@ -830,66 +834,53 @@ static void TJunctionTest(vector<WED_TaxiRoute*> all_taxiroutes, validation_erro
 
 	for (vector<WED_TaxiRoute*>::iterator edge_a_itr = all_taxiroutes.begin(); edge_a_itr != all_taxiroutes.end(); ++edge_a_itr)
 	{
+		// most of this data isn't needed. At most the location of the two ends is needed - as a segment
+		// TaxiRouteInfo edge_a(*edge_a_itr,translator);
+		Bezier2 b;
+		(*edge_a_itr)->GetSide(gis_Geo, 0, b);
+		Segment2 edge_a( translator.Forward(b.p1) , translator.Forward(b.p2) );
+		
 		for (vector<WED_TaxiRoute*>::iterator edge_b_itr = all_taxiroutes.begin(); edge_b_itr != all_taxiroutes.end(); ++edge_b_itr)
 		{
-			//Skip over the same ones
-			if (edge_a_itr == edge_b_itr)
-			{
-				continue;
-			}
+			// Don't test an edge against itself
+			if (edge_a_itr == edge_b_itr)	continue;
 
-			TaxiRouteInfo edge_a(*edge_a_itr,translator);
-			TaxiRouteInfo edge_b(*edge_b_itr,translator);
+			// most of this data isn't needed. At most the location of the two ends is needed - as a segment
+			// TaxiRouteInfo edge_b(*edge_b_itr,translator);
+			
+			(*edge_b_itr)->GetSide(gis_Geo, 0, b);
+			Segment2 edge_b( translator.Forward(b.p1) , translator.Forward(b.p2) );
 
-			//tmp doesn't matter to us
+			// Skip crossing edges
+			// Note - its validated elsewhere - why duplicate this effort ???
 			Point2 tmp;
-			if (edge_a.taxiroute_segment_m.intersect(edge_b.taxiroute_segment_m,tmp) == true)
-			{
-				//An intersection is different from a T junction
-				continue;
-			}
+			if (edge_a.intersect(edge_b,tmp)) continue;
 
-			bool found_duplicate = false;
-			for (int i = 0; i < 2 && found_duplicate == false; i++)
-			{
-				for (int j = 0; j < 2 && found_duplicate == false; j++)
-				{
-					if (edge_a.nodes_m[i] == edge_b.nodes_m[j])
-					{
-						//This is a duplicate of the doubled up vertex test
-						found_duplicate = true;
-					}
-				}
-			}
-
-			if (found_duplicate == true)
-			{
-				//Try another one
-				continue;
-			}
+			// Skip if the edges are joint at at least one end
+			// Note - its validated elsewhere - why dyplicate this effort ???
+			if (edge_a.p1 == edge_b.p1 || edge_a.p1 == edge_b.p2 ||
+				 edge_a.p2 == edge_b.p1 || edge_a.p2 == edge_b.p2 ) continue;
 
 			const double TJUNCTION_THRESHOLD = 1.00;
 			for (int i = 0; i < 2; i++)
 			{
-				set<WED_Thing*> node_viewers;
-				edge_b.nodes[i]->GetAllViewers(node_viewers);
+				// its also worth changing this to Bezier2.is_near() to prepare for future curved edges
+				double dist_b_node_to_a_edge = i ? edge_a.squared_distance(edge_b.p2) : edge_a.squared_distance(edge_b.p1);
 
-				int valence = node_viewers.size();
-				if (valence == 1)
+				if (dist_b_node_to_a_edge < TJUNCTION_THRESHOLD * TJUNCTION_THRESHOLD)
 				{
-					double dist_b_node_to_a_edge = sqrt(edge_a.taxiroute_segment_m.squared_distance(edge_b.nodes_m[i]));
+					set<WED_Thing*> node_viewers;
+					(*edge_b_itr)->GetNthSource(i)->GetAllViewers(node_viewers);
 
-					if (dist_b_node_to_a_edge < TJUNCTION_THRESHOLD)
-					{
+					int valence = node_viewers.size();
+					if (valence == 1)
+					{	
 						vector<WED_Thing*> problem_children;
 						problem_children.push_back(*edge_a_itr);
+						problem_children.push_back((*edge_b_itr)->GetNthSource(i));
+						string name; (*edge_a_itr)->GetName(name);
 
-						string problem_node_name;
-
-						problem_children.push_back((edge_b.nodes[i]));
-						edge_b.nodes[i]->GetName(problem_node_name);
-
-						msgs.push_back(validation_error_t("Taxi route " + edge_a.taxiroute_name + " is not joined to a destination route.", err_taxi_route_not_joined_to_dest_route, problem_children, apt));
+						msgs.push_back(validation_error_t("Taxi route " + name + " is not joined to a destination route.", err_taxi_route_not_joined_to_dest_route, problem_children, apt));
 					}
 				}
 			}
@@ -1173,7 +1164,6 @@ static void ValidateATC(WED_Airport* apt, validation_error_vector& msgs, set<int
 #endif
 		}
 	}
-
 	TJunctionTest(taxi_routes, msgs, apt);
 }
 
@@ -1230,7 +1220,7 @@ static void ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vec
             {
                 WED_GISLine_Width * lw = dynamic_cast<WED_GISLine_Width *>(*r);
 
-                if(((*r)->GetSurface() <= surf_Concrete || unpaved_OK) && lw->GetLength() >= req_rwy_len && lw->GetWidth() >= req_rwy_wid)
+                if(((*r)->GetSurface() <= surf_Concrete || (*r)->GetSurface() == surf_Trans || unpaved_OK) && lw->GetLength() >= req_rwy_len && lw->GetWidth() >= req_rwy_wid)
                         break;
                 ++r;
             }
@@ -1984,53 +1974,19 @@ static void ValidateOneTruckDestination(WED_TruckDestination* destination,valida
 	}
 }
 
-bool is_ground_route(WED_Thing* taxi_route)
-{
-	WED_TaxiRoute* ground_rt = dynamic_cast<WED_TaxiRoute*>(taxi_route);
-	if (ground_rt != NULL)
-	{
-		if (ground_rt->AllowTrucks())
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
 static void ValidateOneTruckParking(WED_TruckParkingLocation* truck_parking,validation_error_vector& msgs, WED_Airport* apt)
 {
 	string name;
 	truck_parking->GetName(name);
 	int num_cars = truck_parking->GetNumberOfCars();
 
-	if (num_cars < 0)
-	{
-		stringstream ss;
-		ss  << "Truck parking location "
-			<< name
-			<< " cannot have negative car count of "
-			<< num_cars;
-		msgs.push_back(validation_error_t(ss.str(), err_truck_parking_cannot_have_negative_car_count, truck_parking, apt));
-	}
-
 	int MAX_CARS = 10;
-	if (truck_parking->GetNumberOfCars() > MAX_CARS)
-	{
-		stringstream ss;
-		ss  << "Truck parking location "
-			<< name
-			<< " has more than  "
-			<< MAX_CARS
-			<< " baggage cars";
-		msgs.push_back(validation_error_t(ss.str(), err_truck_parking_car_count_exceeds_max, truck_parking, apt));
-	}
 
-	vector<WED_TaxiRoute*> truck_routes;
-	CollectRecursive(apt, back_inserter(truck_routes), EntityNotHidden, is_ground_route, WED_TaxiRoute::sClass);
-
-	if (truck_routes.empty() == true)
+	if (num_cars < 0 || num_cars > MAX_CARS)
 	{
-		msgs.push_back(validation_error_t("Truck parking location '" + name + "' is invalid. Its airport does not contain any taxi routes for ground trucks", err_truck_parking_no_ground_taxi_routes, truck_parking, apt));
+		string ss("Truck parking location ") ;
+		ss += name +" must have a car count between 0 and " + to_string(MAX_CARS);
+		msgs.push_back(validation_error_t(ss, err_truck_parking_car_count, truck_parking, apt));
 	}
 }
 //------------------------------------------------------------------------------------------------------------------------------------
@@ -2180,7 +2136,6 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 
 	ValidateAirportFrequencies(apt,msgs);
 
-
 	for(vector<WED_AirportSign *>::iterator s = signs.begin(); s != signs.end(); ++s)
 	{
 		ValidateOneTaxiSign(*s, msgs,apt);
@@ -2225,25 +2180,26 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	{
 		Bbox2 bounds;
 		apt->GetBounds(gis_Geo, bounds);
-		int lg_apt_mult = ( name == "KEDW" ? 3.0 : 1.0);  // because this one has the runways on all surrounding salt flats included
+		int lg_apt_mult = ( icao == "KEDW" ? 3.0 : 1.0);  // because this one has the runways on all surrounding salt flats included
 		if(bounds.xspan() > lg_apt_mult * MAX_SPAN_GATEWAY_NM / 60.0 / cos(bounds.centroid().y() * DEG_TO_RAD) ||     // correction for higher lattitudes
 				bounds.yspan() > lg_apt_mult* MAX_SPAN_GATEWAY_NM / 60.0)
 		{
 			msgs.push_back(validation_error_t("This airport is impossibly large. Perhaps a part of the airport has been accidentally moved far away or is not correctly placed in the hierarchy?", err_type, apt,apt));
 		}
 	}
+	vector<WED_TaxiRoute *>	GT_routes;
+	CollectRecursive(apt, back_inserter(GT_routes), ThingNotHidden, isGroundRoute, WED_TaxiRoute::sClass);
+
+	if (truck_parking_locs.size() && GT_routes.empty())
+		msgs.push_back(validation_error_t("Truck parking locations require at least one taxi route for ground trucks", err_truck_parking_no_ground_taxi_routes, truck_parking_locs.front(), apt));
 	
 	if(gExportTarget == wet_gateway)
 	{
-		// require any land airport (i.e. at least one runway) to have an airport boundary defined
-		if(!runways.empty() && boundaries.empty())
-            msgs.push_back(validation_error_t("This airport contains runway(s) but no airport boundary.", 	err_airport_no_boundary, apt,apt));
-
-		vector<WED_Taxiway *>	GT_routes;
-		CollectRecursive(apt, back_inserter(GT_routes), ThingNotHidden, is_of_type_ground_vehicles, WED_TaxiRoute::sClass);
 		if(GT_routes.size() && truck_parking_locs.empty())
 			msgs.push_back(validation_error_t("Ground routes are defined, but no service vehicle starts. This disables all ground traffic, including auto generated pushback vehicles.", warn_truckroutes_but_no_starts, apt,apt));
-
+		
+		if(!runways.empty() && boundaries.empty())
+            msgs.push_back(validation_error_t("This airport contains runway(s) but no airport boundary.", 	err_airport_no_boundary, apt,apt));
 
 #if !GATEWAY_IMPORT_FEATURES
 		vector<WED_AirportBoundary *>	boundaries;

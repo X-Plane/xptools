@@ -56,7 +56,7 @@
 #define MIN_ZOOM  13        // stop displaying OSM at all below this level
 #define MAX_ZOOM  17        // for custom mode maps (predefined maps have their own limits below)
 
-#define TILE_FACTOR 0.7     // save tiles by zooming in a bit later than at 1:1 pixel ratio.
+#define TILE_FACTOR 0.8     // save tiles by zooming in a bit later than at 1:1 pixel ratio.
 							// Since zoom goes by 1.2x steps - it matters little w.r.t "sharpness"
 							// but saves on average 34% of all tile loads
 
@@ -98,10 +98,10 @@ static inline double tiley2lat(int y, int z)
 	return 180.0 / M_PI * atan(0.5 * (exp(n) - exp(-n)));
 }
 
-int WED_SlippyMap::get_zl_for_map_ppm(double in_ppm)
+int WED_SlippyMap::get_zl_for_map(double in_ppm, double lattitude)
 {
 	double mpp = 1.0 / in_ppm;
-	double zl_mpp = 156543.03 * TILE_FACTOR / 2.0;
+	double zl_mpp = 156543.03 * TILE_FACTOR / 1.4 * cos(lattitude * 3.14/180.0);
 	int zl = 0;
 	int max_zl = mMapMode <= PREDEFINED_MAPS ? max_zoom[mMapMode-1] : MAX_ZOOM;
 
@@ -163,11 +163,12 @@ void	WED_SlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 	map_bounds[3] = doblim(map_bounds[3],-85.0,85.0);
 
 	double ppm = zoomer->GetPPM();
-	int z_max = get_zl_for_map_ppm(ppm);
-	if(z_max < MIN_ZOOM) return;
+	int z_max = get_zl_for_map(ppm, map_bounds[1]);
+	int min_zoom = abs(map_bounds[1]) > 60.0 ? MIN_ZOOM-1 : MIN_ZOOM; // get those ant/artic designers a bit more visibility
+	if(z_max < min_zoom) return;
 
 	int want = 0, got = 0, bad = 0;
-	for(int z = max(MIN_ZOOM,z_max-1); z <= z_max; ++z)      // Display only the next lower zoom level
+	for(int z = max(min_zoom,z_max-1); z <= z_max; ++z)      // Display only the next lower zoom level
 	{                                                        // avoids having to load up to 4x14 extra tiles at ZL16
 		int tiles[4];
 

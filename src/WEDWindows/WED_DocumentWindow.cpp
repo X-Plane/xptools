@@ -23,10 +23,7 @@
 
 #include "WED_DocumentWindow.h"
 #include "WED_Document.h"
-//#include "WED_Progress.h"
-//#include "XESIO.h"
 #include "AptIO.h"
-//#include "MapAlgs.h"
 #include "WED_Messages.h"
 #include "GUI_Menus.h"
 #include "WED_UndoMgr.h"
@@ -43,6 +40,7 @@
 #include "GUI_Splitter.h"
 #include "WED_GroupCommands.h"
 #include "WED_SceneryPackExport.h"
+#include "WED_Version.h"
 
 #include "WED_MetadataUpdate.h"
 #include "WED_GatewayExport.h"
@@ -54,7 +52,6 @@
 #include "WED_LibraryPane.h"
 #include "WED_LibraryPreviewPane.h"
 #include "WED_LinePlacement.h"
-//#include "WED_Orthophoto.h"
 #include "WED_PolygonPlacement.h"
 #include "WED_Routing.h"
 #include "WED_Taxiway.h"
@@ -301,6 +298,15 @@ WED_DocumentWindow::WED_DocumentWindow(
 	mPropPane->FromPrefs(inDocument,0);
 	// doc/use_feet and doc/InfoDMS are global only preferences now, not read from each document any more
 	gExportTarget = (WED_Export_Target) inDocument->ReadIntPref("doc/export_target",gExportTarget);
+	
+	int wedXMLversion = inDocument->ReadIntPref("doc/xml_compatibility",0);
+	int wedTHISversion[4] = { WED_VERSION_BIN };
+	if(wedTHISversion[0] * 100 + wedTHISversion[1] < wedXMLversion)
+	{
+		string msg("Warning: This earth.wed.xml was written by a newer version of WED, some content may get corrupted or may make this version crash.\nUse WED ");
+		msg += to_string(wedXMLversion / 100) + "." + to_string(wedXMLversion % 100) + " or newer to read or edit this file.";
+		DoUserAlert(msg.c_str());
+	}
 
 	//#if DEV
 	//	PrintDebugInfo(0);
@@ -591,6 +597,8 @@ void	WED_DocumentWindow::ReceiveMessage(
 
 		// not writing doc/use_feet any more. Its a global preference now.
 		prefs->WriteIntPref("doc/export_target",gExportTarget);
+		prefs->WriteIntPref("doc/xml_compatibility",107);     // minimum WED version expected to read this .xml correctly - 1.7 added new airport line marking styles
+		                                                      // 8.33k freqs added in 2.0 are fine back to at least 1.5, saved with 3 decimal places ever since
 		prefs->WriteIntPref("window/main_split",mMainSplitter->GetSplitPoint());
 		prefs->WriteIntPref("window/main_split2",mMainSplitter2->GetSplitPoint());
 		prefs->WriteIntPref("window/prop_split",mPropSplitter->GetSplitPoint());
