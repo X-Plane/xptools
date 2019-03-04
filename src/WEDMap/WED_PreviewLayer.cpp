@@ -930,6 +930,19 @@ struct	preview_facade : public preview_polygon {
 			glColor4f(1,1,1,1);
 			GUI_PlotIcon(g,"handle_closeloop.png", p.x(), p.y(),0.0,1.0);
 		}
+		else
+		{
+			vector<Point2>	pts;
+			SideToPoints(fac->GetOuterRing(), 0, zoomer, pts);
+			glColor3f(1,1,1);
+			glLineWidth(3);
+			glBegin(GL_LINES);
+			for(vector<Point2>::iterator p = pts.begin(); p != pts.end(); ++p)
+				glVertex2(*p);
+			glEnd();
+			glLineWidth(1);
+		}
+
 		glLineWidth(2);
 		g->SetState(false,0,false,true,true,false,false);
 		int n = ps->GetNumSides();
