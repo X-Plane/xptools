@@ -236,6 +236,7 @@ void		GUI_FormWindow::AddField(
 	text->SetID(id);
 	label->SetDescriptor(label_text);
 	text->SetDescriptor(default_text);
+	text->SetMargins(3,0,3,1);
 
 	int wbounds[4];
 	this->GUI_Pane::GetBounds(wbounds);

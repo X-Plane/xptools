@@ -13,10 +13,14 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 2.0.0 r2 ?/?/??
+	Bug Fixes:
+	- WED-1117: Color first segment of facades always white
+	- WED-1151: Make cursor in gateway submission forms always visible
+
 WED 2.0.0 b2 2/5/19
 	Features:
 	- add warning when opening xml files created with future/incompatible WED versions
-	
 	Bug Fixes:
 	- WED-1131: fix illegal taxi signs not edit/deleteable with bare text editor
 	- fix listing of non-TaxiRouteNodes connected to TaxiRoutes in HierachyPane
