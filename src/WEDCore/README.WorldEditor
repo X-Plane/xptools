@@ -17,6 +17,7 @@ WED 2.0.0 r2 ?/?/??
 	Bug Fixes:
 	- WED-1117: Color first segment of facades always white
 	- WED-1151: Make cursor in gateway submission forms always visible
+	- WED-1152: Make 1st column in property pane a bit wider
 
 WED 2.0.0 b2 2/5/19
 	Features:
