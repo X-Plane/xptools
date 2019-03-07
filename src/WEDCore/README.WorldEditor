@@ -19,6 +19,7 @@ WED 2.0.0 r2 ?/?/??
 	- WED-1151: Make cursor in gateway submission forms always visible
 	- WED-1152: Make 1st column in property pane a bit wider
 	- fix gaps between textures when importing rotated Orthophotos
+	- WED-1153: Fix import of facades with split bezier nodes and wall style selection
 
 WED 2.0.0 b2 2/5/19
 	Features:
