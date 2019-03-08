@@ -735,7 +735,11 @@ public:
 				for(auto p : me->pts)
 				{
 					wc.push_back(*w++);
-					if(p.is_split()) w++;
+					if(p.is_split())
+					{
+						w++;
+						if(p.has_lo() && p.has_hi()) w++;
+					}
 				}
 				me->walls.swap(wc);
 			}
