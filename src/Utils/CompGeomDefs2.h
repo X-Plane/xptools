@@ -137,6 +137,8 @@ struct Point2 {
 	double	y_;
 };
 
+//MSVC 2017 - Error	C2888	'std::less<cgd::Point2>' : symbol cannot be defined within namespace 'std'	CompGeomDefs2.h	143	
+/**
 namespace std
 {
 template <> struct less<Point2>
@@ -150,6 +152,7 @@ template <> struct less<Point2>
 	}
 };
 }
+**/
 
 /****************************************************************************************************
  * Vector2
