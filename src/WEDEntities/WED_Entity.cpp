@@ -45,11 +45,14 @@ void WED_Entity::CopyFrom(const WED_Entity * rhs)
 
 int		WED_Entity::GetLocked(void) const
 {
+	if (locked.value)
+		return 1;
+	
 	WED_Entity * e = SAFE_CAST(WED_Entity,this->GetParent());
 	if (e)
-		return e->GetLocked() || locked.value;
+		return e->GetLocked();
 	else
-		return locked.value;
+		return 0;
 }
 
 int		WED_Entity::GetHidden(void) const

@@ -40,8 +40,18 @@
 
 // This is a hack - by converting our buffer pts to double, we shorten their mantissas, which cuts down the computing 
 // we must do on the planar map build-up by, well, a lot!
-#define PROCESS(x) (ben2cgal<Point_2>(cgal2ben((x))))
+//#define PROCESS(x) (ben2cgal<Point_2>(cgal2ben((x))))
 //#define PROCESS(x) (x)
+
+inline Point_2 PROCESS(Point_2 p)
+{
+	Point2 pp = cgal2ben(p);
+	if(fabs(pp.x() - round(pp.x())) < 0.00001)
+		pp.x_ = round(pp.x());
+	if(fabs(pp.y() - round(pp.y())) < 0.00001)
+		pp.y_ = round(pp.y());
+	return ben2cgal<Point_2>(pp);
+}
 
 /***************************************************************************************************************************************
  * POLYGON TAGGING
@@ -221,39 +231,26 @@ static void	BuildPointSequence(
 			#if SHOW_VERTEX_CHOICE
 				debug_mesh_point(cgal2ben(input_seq[n]),0,1,0);
 			#endif
-			// We form two rays, each pointing toward the vertex.  This way if the two segments can in intersect by extending toward
-			// the vertex, we find that intersection.  We do not intersect lines, because for very small line segment and very large insets,
-			// the two lines will be on the wrong sides of each other, and an infinite line intersection will be "behind" the vertex (e.g. in the
-			// open side).  To keep the topology correct, when the rays do not interset, we insert the segment end points and the vertex itself.  This
-			// forms a clcokwise winding of "bogus" geometry - the topology check later makes the clockwise winding into negative space, which just
-			// removes area close to the vertex, which is fine.
+			// We form a "loop" by going from the source offset edge back to the target, to the target offset edge and proceed.  This has
+			// a bunch of win:
+			// - Since the angle is a left turn, the loop we make is CW turns and is thus "negative" space.  This guarantees that any other
+			// random part of our polygon that crashes into our line segment will be _subtracted away and we don't get spontaneous clumps
+			// of area.
+			// - If the sides are really short (e.g. a big inset on a many short sided polygon) we get a clean continuous line even if the
+			// offset edges fail to intersect.  So we don't have to worry about correctness.
 			//
-			// (This "reverse" ring has the property of being N meters from the edge, so IF it were to crash into
-			// another part of the polygon, that part of the polygon would technically not be in the buffered area.)
-			//
-			// Note that in all likelinhood if the rays do not intersect, the angle _must_ be accute, but we don't need to utilize this fact.
-//			Ray_2	ray1(segments[outgoing].source(),segments[outgoing].target());
-//			Ray_2	ray2(segments[incoming].target(),segments[incoming].source());	// Turn around outgoing so it points toward the vertex.
-//			Point_2	p;
-//			CGAL::Object r = CGAL::intersection(ray1, ray2);
-//			if (CGAL::assign(p, r))
-//				out_curves.push_back(PROCESS(p));											// Found an intersection, use it
-//			else
-			{
-				++count_windings;
-				out_curves.push_back(PROCESS(segments[outgoing].target()));					// Build the CW winding
-				out_curves.push_back(PROCESS(input_seq[n]));
-				out_curves.push_back(PROCESS(segments[incoming].source()));
-			}
+			// These loops are basically how we handle the degenerate event of insetting a many-sided polygon and getting a fewer sided one
+			// because small edges were eroded away.
+			++count_windings;
+			out_curves.push_back(PROCESS(segments[outgoing].target()));					// Build the CW winding
+			out_curves.push_back(PROCESS(input_seq[n]));
+			out_curves.push_back(PROCESS(segments[incoming].source()));
 		}
 		else if (CGAL::right_turn(input_seq[prev],input_seq[n], input_seq[next]))
 		{
 			//printf("R");
 			// CASE 3: RIGHT TURN (REFLEX VERTEX)
-			#if SHOW_VERTEX_CHOICE
-				debug_mesh_point(cgal2ben(input_seq[n]),1,0,0);
-			#endif
-			// Right turn is a reflex turn.  We are going to build out each edge by its offset, the intersect.  These offsets help make a nice angular
+			// Right turn is a reflex turn.  We are going to build out each edge by its offset, then intersect.  These offsets help make a nice angular
 			// connection - if they don't intersect, we add both, but see below.
 
 			// S1 and S2 are like the outgoing and incoming offset segments, but extended on the vertex end a bit.
@@ -263,7 +260,14 @@ static void	BuildPointSequence(
 			Point_2	p;
 			CGAL::Object r = CGAL::intersection(s1, s2);
 			if (CGAL::assign(p, r))
+			{
+				// This is the easy case - there is an intersection of our offset segments.  Our offset segments are adjacent and have been extended 'toward'
+				// each other by the offset distance, so for most moderate obtuse reflex vertices, we hit this case.
+				#if SHOW_VERTEX_CHOICE
+					debug_mesh_point(cgal2ben(input_seq[n]),1,0,0);
+				#endif
 				out_curves.push_back(PROCESS(p));
+			}
 			else
 			{
 				Point2	p1(cgal2ben(input_seq[prev])),
@@ -273,21 +277,43 @@ static void	BuildPointSequence(
 				Vector2	v2(p2,p3);
 				v1.normalize();
 				v2.normalize();
-
+				double dot = v1.dot(v2);
 				bool got_tight_corner = false;
-				if(v1.dot(v2) > -0.35)		// < 70 degrees or greater turn?  Just take a straight intersection IF we can.  Frankly I'm not sure why the assign() would fail but just be paranoid.
+				if(v1.dot(v2) > 0.8)
 				{
+					// Fail case: if the two sides are nearly colinear sometimes the intersection fails due to rounding error e.g. the segments are parallel to
+					// each other.  If we find the corner is obtuse, just take a mid-point and call it a day.
+					p = CGAL::midpoint(s1.target(),s2.source());
+					out_curves.push_back(PROCESS(p));
+					#if SHOW_VERTEX_CHOICE
+						debug_mesh_point(cgal2ben(p),1,1,1);
+						debug_mesh_point(cgal2ben(input_seq[n]),1,1,0);
+					#endif
+					got_tight_corner = true;
+				}
+				else if(v1.dot(v2) > -0.35)		// < 70 degrees or greater turn?  Just take a straight intersection IF we can.  Frankly I'm not sure why the assign() would fail but just be paranoid.
+				{
+					// This case hits for accute but not SUPER-tight turns - here we probably missed our extended edges intersecting by a VERY small amount.
+					// Since we KNOW our angle range is fairly 'square'-ish (the dot product is between -.35 and .8, so this is a -110 -> 35 degree angle)
+					// we can extend the edge lines and not be too worried about an insane intersection.
 					Line_2 l1(s1);
 					Line_2 l2(s2);
 					r = CGAL::intersection(l1,l2);
 					if(CGAL::assign(p,r))
 					{
+						#if SHOW_VERTEX_CHOICE
+							debug_mesh_point(cgal2ben(input_seq[n]),1,0,1);
+						#endif
 						out_curves.push_back(PROCESS(p));
 						got_tight_corner = true;	
 					}
 				}
 				if(!got_tight_corner)
 				{
+					#if SHOW_VERTEX_CHOICE
+						debug_mesh_point(cgal2ben(input_seq[n]),1,0,1);
+					#endif
+
 					++count_angle;
 					// If the angle is less than 90 degrees, the lack of intersection of the segments with "extra end cap" can mean that
 					// connecting them arbitrarily will cause a CCW ring, which is bad - it adds positive space to the boundary, causing

@@ -17,7 +17,6 @@ endif
 
 LDFLAGS		+= -rdynamic
 LDFLAGS		+= -Wl,--exclude-libs,ALL
-#LDFLAGS		+= -Wl,--verbose
 LIBS		+= -lQtCore
 LIBS		+= -lQtGui
 LIBS		+= -lQtOpenGL
@@ -25,9 +24,7 @@ LIBS		+= -lGL
 LIBS		+= -lGLU
 LIBS		+= -ldl
 LIBS		+= -lpthread
-LIBS		+= -lcurl
-LIBS		+= -lssl
-LIBS		+= -lcrypto
+LIBS		+= -lcurl -lssl -lcrypto
 LIBS		+= -Wl,-Bdynamic
 endif #PLAT_LINUX
 
@@ -68,7 +65,6 @@ LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
-#LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjasper.a
 
 
 ##
@@ -109,7 +105,6 @@ endif #PLAT_DARWIN
 SOURCES += ./src/WEDCore/WED_AppMain.cpp
 SOURCES += ./src/WEDCore/WED_Application.cpp
 SOURCES += ./src/WEDCore/WED_PackageMgr.cpp
-SOURCES += ./src/WEDCore/WED_Package.cpp
 SOURCES += ./src/WEDCore/WED_Archive.cpp
 SOURCES += ./src/WEDCore/WED_Buffer.cpp
 SOURCES += ./src/WEDCore/WED_Clipping.cpp
@@ -239,9 +234,11 @@ SOURCES += ./src/WEDMap/WED_ToolUtils.cpp
 SOURCES += ./src/WEDMap/WED_UIMeasurements.cpp
 SOURCES += ./src/WEDMap/WED_VertexTool.cpp
 SOURCES += ./src/WEDMap/WED_WorldMapLayer.cpp
+SOURCES += ./src/WEDMap/WED_NavaidLayer.cpp
 SOURCES += ./src/WEDMap/WED_DrawUtils.cpp
 SOURCES += ./src/WEDMap/WED_PreviewLayer.cpp
 SOURCES += ./src/WEDMap/WED_ATCLayer.cpp
+SOURCES += ./src/WEDMap/WED_SlippyMap.cpp
 #SOURCES += ./src/WEDNetwork/WED_Connection.cpp
 #SOURCES += ./src/WEDNetwork/WED_NWInfoLayer.cpp
 #SOURCES += ./src/WEDNetwork/WED_NWLinkAdapter.cpp
@@ -261,11 +258,8 @@ SOURCES += ./src/WEDWindows/WED_AboutBox.cpp
 SOURCES += ./src/WEDWindows/WED_DocumentWindow.cpp
 SOURCES += ./src/WEDWindows/WED_LibraryFilterBar.cpp
 SOURCES += ./src/WEDWindows/WED_GroupCommands.cpp
-SOURCES += ./src/WEDWindows/WED_HierarchyFilterBar.cpp
 SOURCES += ./src/WEDWindows/WED_Menus.cpp
 SOURCES += ./src/WEDWindows/WED_PackageListAdapter.cpp
-SOURCES += ./src/WEDWindows/WED_PackageStatusPane.cpp
-SOURCES += ./src/WEDWindows/WED_PackageWindow.cpp
 SOURCES += ./src/WEDWindows/WED_StartWindow.cpp
 SOURCES += ./src/WEDWindows/WED_Sign_Editor.cpp
 SOURCES += ./src/WEDWindows/WED_Line_Selector.cpp
@@ -315,7 +309,7 @@ SOURCES += ./src/Utils/EndianUtils.c
 SOURCES += ./src/Utils/md5.c
 SOURCES += ./src/Utils/XChunkyFileUtils.cpp
 SOURCES += ./src/Utils/CompGeomUtils.cpp
-SOURCES += ./src/Utils/PolyRasterUtils.cpp
+#SOURCES += ./src/Utils/PolyRasterUtils.cpp
 SOURCES += ./src/Utils/zip.c
 SOURCES += ./src/Utils/unzip.c
 #SOURCES += ./src/Utils/XUtils.cpp
@@ -393,7 +387,7 @@ RESOURCES += ./src/WEDResources/handles/handle_cross.png
 RESOURCES += ./src/WEDResources/handles/handle_square.png
 RESOURCES += ./src/WEDResources/handles/handle_vertexround.png
 RESOURCES += ./src/WEDResources/handles/handle_arrowhead.png
-RESOURCES += ./src/WEDResources/handles/handle_arrowhead_lg.png
+//RESOURCES += ./src/WEDResources/handles/handle_arrowhead_lg.png
 RESOURCES += ./src/WEDResources/handles/handle_rotatehead.png
 RESOURCES += ./src/WEDResources/handles/handle_closeloop.png
 RESOURCES += ./src/WEDResources/handles/handle_control.png
@@ -410,6 +404,10 @@ RESOURCES += ./src/WEDResources/icons/map_taxisign.png
 RESOURCES += ./src/WEDResources/icons/map_towerview.png
 RESOURCES += ./src/WEDResources/icons/map_servicedest.png
 RESOURCES += ./src/WEDResources/icons/map_tree.png
+RESOURCES += ./src/WEDResources/icons/nav_ndb.png
+RESOURCES += ./src/WEDResources/icons/nav_vor.png
+RESOURCES += ./src/WEDResources/icons/nav_mark.png
+RESOURCES += ./src/WEDResources/icons/nav_gs.png
 RESOURCES += ./src/WEDResources/tables/eye.png
 RESOURCES += ./src/WEDResources/tables/lock.png
 RESOURCES += ./src/WEDResources/tables/check.png
@@ -488,3 +486,6 @@ RESOURCES += ./src/WEDResources/parking_spots/ClassC.png
 RESOURCES += ./src/WEDResources/parking_spots/ClassD.png
 RESOURCES += ./src/WEDResources/parking_spots/ClassE.png
 RESOURCES += ./src/WEDResources/parking_spots/ClassF.png
+RESOURCES += ./src/WEDResources/icons/navmap_airport.png
+RESOURCES += ./src/WEDResources/icons/navmap_seaport.png
+

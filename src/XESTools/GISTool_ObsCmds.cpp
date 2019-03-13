@@ -142,13 +142,27 @@ static int DoAptExport(const vector<const char *>& args)
 static int DoAptBulkExport(const vector<const char *>& args)
 {
 	if (gProgress)		gProgress(0, 1, "Indexing apt.dat", 0.0);
-	for (int y = -90; y < 90; ++y)
+	
+	int step = 1;
+	if(args.size() > 1)
+		step = atoi(args[1]);
+
+		set<int>	apts;
+
+	if(step != 1)
 	{
-		for (int x = -180; x < 180; ++x)
+		for(int i = 0; i < gApts.size(); ++i)
+			apts.insert(i);
+	}
+
+	for (int y = -90; y < 90; y += step)
+	{
+		for (int x = -180; x < 180; x += step)
 		{
-			Bbox2	bounds(x, y, x+1,y+1);
-			set<int>	apts;
-			FindAirports(bounds, gAptIndex, apts);
+			Bbox2	bounds(x, y, x+step,y+step);
+			
+			if(step == 1)
+				FindAirports(bounds, gAptIndex, apts);
 
 			AptVector	aptCopy;
 			for (set<int>::iterator iter = apts.begin(); iter != apts.end(); ++iter)
@@ -157,15 +171,33 @@ static int DoAptBulkExport(const vector<const char *>& args)
 					aptCopy.push_back(gApts[*iter]);
 			}
 
-			if (!aptCopy.empty())
+			if (!aptCopy.empty() || step != 1)
 			{
 				char	path[1024];
-				sprintf(path, "%s%+03d%+04d%c", args[0],
-								latlon_bucket(y), latlon_bucket(x), DIR_CHAR);
-				FILE_make_dir_exist(path);
-				sprintf(path, "%s%+03d%+04d%c%+03d%+04d.apt", args[0],
-								latlon_bucket(y), latlon_bucket(x), DIR_CHAR, y, x);
-				WriteAptFile(path, aptCopy, LATEST_APT_VERSION);
+				if(step == 1)
+				{
+					sprintf(path, "%s%+03d%+04d%c", args[0],
+									latlon_bucket(y), latlon_bucket(x), DIR_CHAR);
+					FILE_make_dir_exist(path);
+					sprintf(path, "%s%+03d%+04d%c%+03d%+04d.apt", args[0],
+									latlon_bucket(y), latlon_bucket(x), DIR_CHAR, y, x);
+				}
+				else
+				{
+					sprintf(path, "%sapt.dat.%+d.%+d", args[0],
+									latlon_bucket(y)/10, latlon_bucket(x)/10);
+				}
+				FILE * fi = fopen(path,"wb");
+				if(fi)
+				{
+					WriteAptFileOpen(fi, aptCopy, LATEST_APT_VERSION);
+					fclose(fi);
+				}
+				else
+				{
+					fprintf(stderr,"Could not open %s for writing.\n", path);
+					return 1;
+				}
 			}
 		}
 		if (gProgress)	gProgress(0, 1, "Indexing apt.dat", (double) (y+90) / 180.0);
@@ -424,7 +456,7 @@ static	GISTool_RegCmd_t		sObsCmds[] = {
 			"arsr   Import an FAA ARSR file from the digital aero chart suplement (DAC) - pull out the arsr data from asr.dat.\n" },
 { "-apt", 			1, -1, DoAptImport, 			"Import airport data.", "-apt <file>\nClear loaded airports and load from this file." },
 { "-aptwrite", 		1, 1, DoAptExport, 			"Export airport data.", "-aptwrite <file>\nExports all loaded airports to one apt.dat file." },
-{ "-aptindex", 		1, 1, DoAptBulkExport, 		"Export airport data.", "-aptindex <export_dir>/\nExport all loaded airports to a directory as individual tiled apt.dat files." },
+{ "-aptindex", 		1, 2, DoAptBulkExport, 		"Export airport data.", "-aptindex <export_dir> <grid>/\nExport all loaded airports to a directory as individual tiled apt.dat files." },
 { "-apttest", 		0, 0, DoAptTest, 			"Test airport procesing code.", "-apttest\nThis command processes each loaded airport against an empty DSF to confirm that the polygon cutting logic works.  While this isn't a perfect proxy for the real render, it can identify airport boundaries that have sliver problems (since this is done before the airport is cut into the DSF." },
 { "-aptinfo", 		0, 0, DoAptInfo, 			"Test airport procesing code.", "-apttest\nThis command prints out diagnostics about all airports." },
 { "-aptfilter",		2, 2, DoAptFilter,			"Filter airports.", "-aptfilter <810|850> <yes|no>\nFilters airports to only take ones with taxiways of a certain version and boundaries (or not).\n" },

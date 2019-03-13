@@ -39,7 +39,7 @@ static bool HandleVocab(const vector<string>& inTokenLine, void * inRef)
 	return true;
 }
 
-void	XESInit(bool want_forests)
+void	XESInit(rf_region inRegion, bool want_forests)
 {
 	InitEnumSystem();
 	RegisterLineHandler("VOCAB", HandleVocab, NULL);
@@ -50,12 +50,12 @@ void	XESInit(bool want_forests)
 	if(want_forests)
 	{
 		LoadForestTables();
-		LoadZoningRules();
+		LoadZoningRules(inRegion);
 	}
 	#endif
 
 	int old_mark = gTokens.size();
-	LoadNetFeatureTables();
+	LoadNetFeatureTables(inRegion);
 	LoadDEMTables();
 	LoadObjTables();
 	int new_mark = gTokens.size();

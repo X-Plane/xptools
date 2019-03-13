@@ -27,7 +27,7 @@
 #include "WED_GISPoint_Bezier.h"
 #include "IHasResource.h"
 
-class	WED_AirportNode : public WED_GISPoint_Bezier, public IHasResourceOrAttr {
+class	WED_AirportNode : public WED_GISPoint_Bezier, public IHasAttr {
 
 DECLARE_PERSISTENT(WED_AirportNode)
 

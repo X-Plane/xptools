@@ -196,9 +196,7 @@ void					WED_XMLElement::add_attr_int(const char * name, int value)
 	DebugAssert(name && *name);	
 #endif
 	DebugAssert(!flushed);
-	char buf[256];
-	sprintf(buf,"%d",value);
-	attrs[name] = buf;
+	attrs[name] = to_string(value);
 }
 
 void					WED_XMLElement::add_attr_double(const char * name, double value, int dec)
@@ -209,10 +207,14 @@ void					WED_XMLElement::add_attr_double(const char * name, double value, int de
 	DebugAssert(name && *name);	
 #endif
 	DebugAssert(!flushed);
-	char fmt[15], buf[256];
-	sprintf(fmt,"%%.%dlf",dec);
-	sprintf(buf,fmt,value);
-	attrs[name] = buf;
+	if(value == 0.0)
+		attrs[name] = "0.0";
+	else
+	{
+		char buf[32];
+		snprintf(buf,32,"%.*lf",dec,value);
+		attrs[name] = buf;
+	}
 }
 
 void					WED_XMLElement::add_attr_c_str(const char * name, const char * str)
@@ -246,7 +248,7 @@ WED_XMLElement *		WED_XMLElement::add_sub_element(const char * name)
 	DebugAssert(name && *name);	
 #endif
 
-	WED_XMLElement * child = new WED_XMLElement(name, indent + 4, file);
+	WED_XMLElement * child = new WED_XMLElement(name, indent + 2, file);
 	children.push_back(child);
 	child->parent = this;
 	return child;
@@ -266,7 +268,7 @@ WED_XMLElement *		WED_XMLElement::add_or_find_sub_element(const char * name)
 	if(children[i]->name == n)
 		return children[i];
 		
-	WED_XMLElement * child = new WED_XMLElement(name, indent + 4, file);
+	WED_XMLElement * child = new WED_XMLElement(name, indent + 2, file);
 	children.push_back(child);
 	child->parent = this;
 	return child;

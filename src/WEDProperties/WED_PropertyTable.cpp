@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- */ 
+ */
 
 #include "WED_PropertyTable.h"
 #include "WED_Archive.h"
@@ -34,6 +34,7 @@
 #include "STLUtils.h"
 
 #include "WED_GISComposite.h"
+#include "WED_GISPolygon.h"
 #include "WED_Airport.h"
 #include "WED_AirportNode.h"
 #include "WED_Group.h"
@@ -46,8 +47,15 @@
 #include "WED_Messages.h"
 #include "WED_ToolUtils.h"
 #include "WED_GroupCommands.h"
-#include "WED_UIMeasurements.h"
 #include "WED_EnumSystem.h"
+#include "GUI_Commander.h"
+#include "WED_Menus.h"
+#include "WED_RampPosition.h"
+#include "WED_TaxiRoute.h"
+#include "WED_TaxiRouteNode.h"
+#include "WED_TruckDestination.h"
+#include "WED_TruckParkingLocation.h"
+#include "WED_Runway.h"
 
 inline int count_strs(const char ** p) { if (!p) return 0; int n = 0; while(*p) ++p, ++n; return n; }
 
@@ -70,6 +78,7 @@ inline bool AnyHidden(WED_Thing * t)
 }
 
 WED_PropertyTable::WED_PropertyTable(
+									GUI_Commander *         cmdr,
 									IResolver *				resolver,
 									const char **			col_names,
 									int *					def_col_widths,
@@ -79,8 +88,8 @@ WED_PropertyTable::WED_PropertyTable(
 									const char **			filter)
 	:	GUI_SimpleTableGeometry(
 				count_strs(col_names),
-				def_col_widths,
-				WED_UIMeasurement("table_row_height")),
+				def_col_widths),
+	GUI_Commander(cmdr),
 	mVertical(vertical),
 	mDynamicCols(dynamic_cols),
 	mSelOnly(sel_only),
@@ -93,14 +102,47 @@ WED_PropertyTable::WED_PropertyTable(
 	while(*col_names)
 		mColNames.push_back(*col_names++);
 
+	RecalculateColumns();
+
 	if (filter)
 	while (*filter)
 		mFilter.insert(*filter++);
-//	selection->AddListener(this);
+
 }
 
 WED_PropertyTable::~WED_PropertyTable()
 {
+}
+
+void WED_PropertyTable::RecalculateColumns()
+{
+	if (mDynamicCols)
+	{
+		set<string>	cols;
+		cols.insert("Name");
+		mColNames.clear();
+		mColNames.push_back("Name");
+		int total_objs = mVertical ? GetColCount() : GetRowCount();
+		for (int i = 0; i < total_objs; ++i)
+		{
+			WED_Thing * t = FetchNth(i);
+			if (t)
+			{
+				int pcount = t->CountProperties();
+				for (int p = 0; p < pcount; ++p)
+				{
+					PropertyInfo_t info;
+					t->GetNthPropertyInfo(p,info);
+					if(!info.prop_name.empty() && info.prop_name[0] != '.')
+					if (cols.count(info.prop_name) == 0)
+					{
+						cols.insert(info.prop_name);
+						mColNames.insert(mColNames.begin(), info.prop_name);
+					}
+				}
+			}
+		}
+	}
 }
 
 void	WED_PropertyTable::GetCellContent(
@@ -114,7 +156,7 @@ void	WED_PropertyTable::GetCellContent(
 	//  1. Abilities - can_edit, can_disclose, can_drag, etc...
 	//  2. State - is_disclosed, is_selected, indent_level
 	//  3. Content - content_type, its corrisponding value filled in
-	
+
 	//Our default assumptions
 	the_content.content_type = gui_Cell_None;
 	the_content.string_is_resource = 0;
@@ -167,20 +209,7 @@ void	WED_PropertyTable::GetCellContent(
 		the_content.content_type = gui_Cell_Double;
 		the_content.double_val = val.double_val;
 		sprintf(fmt,"%%%d.%dlf %.6s",inf.digits, inf.decimals, inf.units);  // info.units may be not zero terminated
-		if(inf.round_down)
-		{
-			// We are going to shift our fractional part left 1 more decimal digit to the left than needed.  Why?
-			// The answer: we have to round to nearest to reconstruct numbers like 128.839999999 (as 128.84444444.
-			// But we don't want the round to bump our last digit up (128.825 should NOT become 128.83).  So we do
-			// the round with one EXTRA digit of precision to catch the floating point sliver case.
-			double fract = pow(10.0,inf.decimals);
-			double v = floor(fract * (val.double_val) + 0.05) / fract;
-			snprintf(buf,sizeof(buf),fmt,v);
-		}
-		else
-		{
-			snprintf(buf,sizeof(buf),fmt,val.double_val);
-		}
+		snprintf(buf,sizeof(buf),fmt,val.double_val);
 		the_content.text_val = buf;
 		break;
 	case prop_String:
@@ -202,6 +231,13 @@ void	WED_PropertyTable::GetCellContent(
 		the_content.bool_partial = 0;
 		if (mColNames[mVertical ? cell_y : cell_x] == "Locked")	{ the_content.bool_val = gui_Bool_Lock;		if (!the_content.int_val)	the_content.bool_partial = AnyLocked(t); }
 		if (mColNames[mVertical ? cell_y : cell_x] == "Hidden")	{ the_content.bool_val = gui_Bool_Visible;	if (!the_content.int_val)	the_content.bool_partial = AnyHidden(t); }
+		
+		if((mColNames[mVertical ? cell_y : cell_x] == "Locked" || mColNames[mVertical ? cell_y : cell_x] == "Hidden") &&
+			SAFE_CAST(WED_GISPolygon,my_parent))
+			{
+				the_content.bool_partial = 1;    // don't give the impression the inner/outer rings of polygons could/should be hidden or locked, ever
+				return;
+			}
 		break;
 	case prop_Enum:
 		the_content.content_type = gui_Cell_Enum;
@@ -254,9 +290,6 @@ void	WED_PropertyTable::GetCellContent(
 			the_content.is_disclosed = true;
 		}
 	}
-//	the_content.can_disclose = !mVertical && (cell_x == 0) && t->CountChildren() > 0;
-//	the_content.can_disclose = !mVertical && (cell_x == 0) && e->GetGISClass() == gis_Composite;
-//	the_content.is_disclosed = 	GetOpen(t->GetID()) && the_content.can_disclose;
 	#if DEV
 		//the_content.printCellInfo(true,true,false,true,false,false,true,false,true,false,false,false,false,false);
 	#endif
@@ -337,7 +370,7 @@ void	WED_PropertyTable::AcceptEdit(
 		if (inf.prop_kind == prop_Enum		&& content.content_type != gui_Cell_Enum	)	continue;
 		if (inf.prop_kind == prop_EnumSet	&& ( content.content_type != gui_Cell_EnumSet &&
 												 content.content_type != gui_Cell_LineEnumSet ))	continue;
-		
+
 		switch(inf.prop_kind) {
 		case prop_Int:
 			val.prop_kind = prop_Int;
@@ -362,6 +395,11 @@ void	WED_PropertyTable::AcceptEdit(
 		case prop_Bool:
 			val.prop_kind = prop_Bool;
 			val.int_val = content.int_val;
+			if((mColNames[mVertical ? cell_y : cell_x] == "Locked" || mColNames[mVertical ? cell_y : cell_x] == "Hidden") &&
+				 SAFE_CAST(WED_GISPolygon,t->GetParent()) )
+				{
+					val.int_val = 0;    // don't let anyone ever set polygon inner/outer rings to be hidden or locked.
+				}
 			break;
 		case prop_Enum:
 			val.prop_kind = prop_Enum;
@@ -402,7 +440,7 @@ void	WED_PropertyTable::DoDeleteCell(
 {
 	//Get the airport
 	WED_Airport * airport = static_cast<WED_Airport * >(FetchNth(0));
-	
+
 	airport->StartCommand("Delete Meta Data Key");
 	//To be in uniform with other IPropertyMethods we'll transform cell_y->NS_META_DATA
 	int ns_meta_data = (airport->WED_GISComposite::CountProperties());
@@ -536,6 +574,37 @@ void	WED_PropertyTable::SelectionEnd(void)
 	IOperation * op = dynamic_cast<IOperation *>(s);
 	op->CommitOperation();
 	mSelSave.clear();
+
+   if(gModeratorMode) // special behavior requested by Julian
+   {
+      DispatchHandleCommand(wed_ZoomSelection);
+
+      ISelectable * sel0 = s->GetNthSelection(0);
+		WED_Group * grp = SAFE_CAST(WED_Group, sel0);
+		string grpnam;
+		if (grp) grp->GetName(grpnam);
+
+		if (SAFE_CAST(WED_RampPosition, sel0) || SAFE_CAST(WED_TaxiRoute, sel0) ||  SAFE_CAST(WED_TaxiRouteNode, sel0) ||
+          SAFE_CAST(WED_TruckParkingLocation, sel0) || SAFE_CAST(WED_TruckDestination, sel0) ||
+			 SAFE_CAST(WED_Runway, sel0) || grpnam == "Runways" ||
+			 grpnam == "Ramp Starts" || grpnam == "Ground Vehicles" || grpnam == "Taxi Routes" || grpnam == "Ground Routes" )
+		{
+			DispatchHandleCommand(wed_MapATC);
+		}
+//        else if (SAFE_CAST(WED_FacadePlacement, sel0) || SAFE_CAST(WED_ObjPlacement, sel0))
+//        {
+//             mMapPane->SetTabFilterMode(tab_3D);
+//            DispatchHandleCommand(wed_Map3D);
+//        }
+//        else if(SAFE_CAST(WED_Runway, sel0) || grpnam == "Runways" )
+//        {
+//            DispatchHandleCommand(wed_MapPavement);
+//        }
+      else
+		{
+			DispatchHandleCommand(wed_MapSelection);
+		}
+	}
 }
 
 int		WED_PropertyTable::SelectDisclose(
@@ -628,7 +697,7 @@ int		WED_PropertyTable::TabAdvance(
 		}
 		if (reverse==0)reverse=1;
 		++tries;
-	} while ((start_x != io_x || start_y != io_y || tries <= 1) 
+	} while ((start_x != io_x || start_y != io_y || tries <= 1)
 				&& tries < 100);                 // prevent infinite loop if nothing in table is "advanceable" to, e.g. a taxi route edge runway segment
 	return 0;
 }
@@ -966,33 +1035,7 @@ void	WED_PropertyTable::ReceiveMessage(
 		if (mSelOnly && (inParam & wed_Change_Selection))
 			mCacheValid = false;
 
-		if (mDynamicCols)
-		{
-			set<string>	cols;
-			cols.insert("Name");
-			mColNames.clear();
-			mColNames.push_back("Name");
-			int total_objs = mVertical ? GetColCount() : GetRowCount();
-			for (int i = 0; i < total_objs; ++i)
-			{
-				WED_Thing * t = FetchNth(i);
-				if (t)
-				{
-					int pcount = t->CountProperties();
-					for (int p = 0; p < pcount; ++p)
-					{
-						PropertyInfo_t info;
-						t->GetNthPropertyInfo(p,info);
-						if(!info.prop_name.empty() && info.prop_name[0] != '.')
-						if (cols.count(info.prop_name) == 0)
-						{
-							cols.insert(info.prop_name);
-							mColNames.insert(mColNames.begin(), info.prop_name);
-						}
-					}
-				}
-			}
-		}
+		RecalculateColumns();
 		BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);
 	}
 }
@@ -1072,25 +1115,26 @@ int collect_recusive(WED_Thing * thing, const ci_string& isearch_filter, vector<
 	thing->GetName(thing_name);
 	ci_string ithing_name(thing_name.begin(),thing_name.end());
 	bool is_match = ithing_name.find(isearch_filter) != ci_string::npos;
-	IHasResourceOrAttr * has_resource_thing = NULL;
-
+	IHasResource * has_resource = NULL;
+	IHasAttr * has_attr = NULL;
+	
 	if (is_match == false)
 	{
-		has_resource_thing = dynamic_cast<IHasResourceOrAttr*>(thing);
-		if (has_resource_thing)
+		string res;
+		has_resource = dynamic_cast<IHasResource*>(thing);
+		if (has_resource) has_resource->GetResource(res);
+		else
 		{
-			string res;
-			has_resource_thing->GetResource(res);
-//			string n; thing->GetName(n);
-//			printf("%s: r=%s\n",n.c_str(), res.c_str());
-			res = string ("^") + res + "$";       // Adding ^ and $ are to emulate regex-style line start/end makers, so to
-			                                      // allow macthing one of "Red Line", "Red Line (Black)" or "Wide Red Line"
-			is_match |= ci_string(res.begin(), res.end()).find(isearch_filter) != ci_string::npos;
+			has_attr = dynamic_cast<IHasAttr*>(thing);
+			if (has_attr) has_attr->GetResource(res);
 		}
+		res = string ("^") + res + "$";           // Adding ^ and $ are to emulate regex-style line start/end makers, so to
+			                                      // allow macthing one of "Red Line", "Red Line (Black)" or "Wide Red Line"
+		is_match = ci_string(res.begin(), res.end()).find(isearch_filter) != ci_string::npos;
 	}
 
 	int nc = thing->CountChildren();
-	if (nc == 0 || (has_resource_thing && is_match))    // prevent showing nodes for uniformly set taxilines or taxiways
+	if (nc == 0 || (is_match && (has_resource || has_attr)))    // prevent showing nodes for uniformly set taxilines or taxiways
 	{
 		if (is_match)
 		{
@@ -1184,10 +1228,7 @@ void		WED_PropertyTable::GetFilterStatus(WED_Thing * what, ISelection * sel,
 	visible = recurse_children = can_disclose = is_disclose = 0;
 	if (what == NULL) return;
 
-	int is_composite = 0;
-	visible = 0;
-
-	is_composite = WED_IsFolder(what);
+	int is_composite = WED_IsFolder(what);
 
 //	IGISEntity * e = SAFE_CAST(IGISEntity, what);
 //	if (e) is_composite = e->GetGISClass() == gis_Composite;
@@ -1212,4 +1253,5 @@ void		WED_PropertyTable::GetFilterStatus(WED_Thing * what, ISelection * sel,
 			recurse_children = 0;
 		}
 	}
+//	if(!mVertical && IsGraphNode(what)) visible = 0;  // this allows to drag taxiroutes into a subgroup and leave the (invisible) nodes behind. Then lock that group and the nodes are still selectable. No good.
 }

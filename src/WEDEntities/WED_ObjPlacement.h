@@ -48,6 +48,7 @@ public:
 #endif			
 			void		SetShowLevel(int show_level);
 			int			GetShowLevel(void) const;
+			double 	GetVisibleDeg(void) const;
 
 	virtual const char *	HumanReadableType(void) const { return "Object"; }
 
@@ -60,6 +61,7 @@ private:
 	WED_PropStringText			resource;
 	WED_PropIntEnum				show_level;
 
+	float						visibleWithinDeg;     // for culling in the map_view
 };
 
 

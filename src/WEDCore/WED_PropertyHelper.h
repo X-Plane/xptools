@@ -184,7 +184,7 @@ public:
 						operator double() const { return value; }
 	WED_PropDoubleText& operator=(double v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
 
-	WED_PropDoubleText(WED_PropertyHelper * parent, const char * title, double initial, int digits, int decimals, const char * unit = "") 
+	WED_PropDoubleText(WED_PropertyHelper * parent, const char * title, double initial, int digits, int decimals, const char * unit = "")
 		: WED_PropertyItem(parent, title), mDigits(digits), mDecimals(decimals), value(initial) { strncpy(mUnit,unit,6); }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
@@ -200,15 +200,17 @@ public:
 
 class	WED_PropFrequencyText : public WED_PropDoubleText {
 public:
-	WED_PropFrequencyText(WED_PropertyHelper * parent, const char * title, double initial, int digits, int decimals)  : WED_PropDoubleText(parent, title, initial, digits, decimals, "MHz") { }
+	WED_PropFrequencyText(WED_PropertyHelper * parent, const char * title, double initial, int digits, int decimals)
+		: WED_PropDoubleText(parent, title, initial, digits, decimals) { AssignFrom1Khz(GetAs1Khz()); }
+
 
 	WED_PropFrequencyText& operator=(double v) { WED_PropDoubleText::operator=(v); return *this; }
 
-	virtual void		GetPropertyInfo(PropertyInfo_t& info);
-	virtual	void		ToXML(WED_XMLElement * parent);
-	
-	int		GetAs10Khz(void) const;
-	void	AssignFrom10Khz(int freq_10khz);
+	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
+	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value);
+
+	int		GetAs1Khz(void) const;
+	void	AssignFrom1Khz(int freq_1khz);
 
 };
 
@@ -341,7 +343,7 @@ public:
 	set<int>	value;
 	int			domain;
 	int			can_be_none;
-						
+
 						operator set<int>&() { return value; }
 						operator set<int>() const { return value; }
 	WED_PropIntEnumBitfield& operator=(const set<int>& v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
@@ -388,7 +390,7 @@ public:
 	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value);
 };
 
-// VIRTUAL ITEM: a UNION display.  Property helpers can contain "sub" property helpers.  For the WED hierarchy, each hierarchy item (WED_Thing) is a 
+// VIRTUAL ITEM: a UNION display.  Property helpers can contain "sub" property helpers.  For the WED hierarchy, each hierarchy item (WED_Thing) is a
 // property helper (with properties inside it) and the sub-items in the hierarchy are the sub-helpers.  Thus a property item's parent (the "helper" sub-class)
 // gives access to sub-items.  This filter looks at all enums on all children and unions them.
 // We use this to let a user edit the marking attributes of all lines by editing the taxiway itself.
@@ -418,7 +420,7 @@ public:
 class	WED_PropIntEnumSetFilterVal : public WED_PropIntEnumSetFilter {
 public:
 
-	WED_PropIntEnumSetFilterVal(WED_PropertyHelper * parent, const char * title, const char * ihost, int iminv, int imaxv, int iexclusive)  : 
+	WED_PropIntEnumSetFilterVal(WED_PropertyHelper * parent, const char * title, const char * ihost, int iminv, int imaxv, int iexclusive)  :
 		WED_PropIntEnumSetFilter(parent, title, ihost, iminv, imaxv, iexclusive) { }
 
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);

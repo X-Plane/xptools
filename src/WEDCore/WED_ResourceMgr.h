@@ -140,7 +140,7 @@ public:
 			int		GetNumVariants(const string& path);
 
 			//path is a RELATIVE PATH
-			void	MakePol(const string& path, const pol_info_t& out_info); // side note: shouldn't this be in_info?
+			void	WritePol(const string& abspath, const pol_info_t& out_info); // side note: shouldn't this be in_info?
 			bool	GetObj(const string& path, XObj8 *& obj, int variant = 0);
 			bool	GetObjRelative(const string& obj_path, const string& parent_path, XObj8 *& obj);
 #if AIRPORT_ROUTING

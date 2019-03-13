@@ -137,6 +137,7 @@ struct Point2 {
 	double	y_;
 };
 
+<<<<<<< HEAD
 //MSVC 2017 - Error	C2888	'std::less<cgd::Point2>' : symbol cannot be defined within namespace 'std'	CompGeomDefs2.h	143	
 /**
 namespace std
@@ -153,6 +154,8 @@ template <> struct less<Point2>
 };
 }
 **/
+=======
+>>>>>>> 2e3f9acf26660b666d10d882f9f271b3895f2a13
 
 /****************************************************************************************************
  * Vector2
@@ -786,15 +789,15 @@ inline void	Segment2::move_by_vector(const Vector2& v)
 inline bool Segment2::could_intersect(const Segment2& rhs) const
 {
 	// This is basically a bounding-box quick check for segment-intersection.
-	register double	xmin1 = (p1.x_ < p2.x_) ? p1.x_ : p2.x_;
-	register double	xmax1 = (p1.x_ > p2.x_) ? p1.x_ : p2.x_;
-	register double	ymin1 = (p1.y_ < p2.y_) ? p1.y_ : p2.y_;
-	register double	ymax1 = (p1.y_ > p2.y_) ? p1.y_ : p2.y_;
+	double	xmin1 = (p1.x_ < p2.x_) ? p1.x_ : p2.x_;
+	double	xmax1 = (p1.x_ > p2.x_) ? p1.x_ : p2.x_;
+	double	ymin1 = (p1.y_ < p2.y_) ? p1.y_ : p2.y_;
+	double	ymax1 = (p1.y_ > p2.y_) ? p1.y_ : p2.y_;
 
-	register double	xmin2 = (rhs.p1.x_ < rhs.p2.x_) ? rhs.p1.x_ : rhs.p2.x_;
-	register double	xmax2 = (rhs.p1.x_ > rhs.p2.x_) ? rhs.p1.x_ : rhs.p2.x_;
-	register double	ymin2 = (rhs.p1.y_ < rhs.p2.y_) ? rhs.p1.y_ : rhs.p2.y_;
-	register double	ymax2 = (rhs.p1.y_ > rhs.p2.y_) ? rhs.p1.y_ : rhs.p2.y_;
+	double	xmin2 = (rhs.p1.x_ < rhs.p2.x_) ? rhs.p1.x_ : rhs.p2.x_;
+	double	xmax2 = (rhs.p1.x_ > rhs.p2.x_) ? rhs.p1.x_ : rhs.p2.x_;
+	double	ymin2 = (rhs.p1.y_ < rhs.p2.y_) ? rhs.p1.y_ : rhs.p2.y_;
+	double	ymax2 = (rhs.p1.y_ > rhs.p2.y_) ? rhs.p1.y_ : rhs.p2.y_;
 
 	return (xmax1 >= xmin2 &&
 			xmax2 >= xmin1 &&

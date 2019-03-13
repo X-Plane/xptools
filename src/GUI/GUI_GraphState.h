@@ -49,5 +49,12 @@ public:
 
 };
 
+#if DEV
+	void GraphState_GL_ERR(int err);
+	#define	CHECK_GL_ERR		GraphState_GL_ERR(glGetError());
+#else
+	#define	CHECK_GL_ERR	
+#endif
+
 
 #endif

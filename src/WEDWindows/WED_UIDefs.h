@@ -36,7 +36,7 @@ enum {
 	FILE_DIALOG_PROPERTY_TABLE
 };
 
-#define	BEZ_MIN_SEGS		3
+#define	BEZ_MIN_SEGS		4
 #define BEZ_MAX_SEGS		100
 #define	BEZ_PIX_PER_SEG		10
 

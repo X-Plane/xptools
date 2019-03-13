@@ -21,57 +21,36 @@
  *
  */
 
-#ifndef WED_PACKAGE_H
-#define WED_PACKAGE_H
+#ifndef WED_NavaidLayer_H
+#define WED_NavaidLayer_H
 
-#include "GUI_Broadcaster.h"
-#include "GUI_Listener.h"
+#include "WED_MapLayer.h"
+#include "CompGeomDefs2.h"
 
-class	WED_Document;
-
-enum {
-
-	status_None,
-	status_XES,
-	status_DSF,
-	status_Stale,
-	status_UpToDate
-
+struct navaid_t {
+	int		type;
+	Point2 	lonlat;
+	float	heading;
+	string	name;
+	string	icao;
+	int     freq;     // ATC tower freq for airports, in kHz
+	string	rwy;      // Or some other informative text
+	vector<Point2> shape;
 };
 
-
-class	WED_Package : public GUI_Broadcaster, public GUI_Listener{
+class WED_NavaidLayer : public WED_MapLayer {
 public:
 
-	WED_Package(const char * inPath, bool inCreate);
-	~WED_Package();
+						 WED_NavaidLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver);
+	virtual				~WED_NavaidLayer();
 
-	int				GetTileStatus(int lon, int lat);
-	WED_Document *	GetTileDocument(int lon, int lat);
-
-	WED_Document *	OpenTile(int lon, int lat);
-	WED_Document *	NewTile(int lon, int lat);
-
-	void			Rescan(void);
-
-	virtual	void	ReceiveMessage(
-							GUI_Broadcaster *		inSrc,
-							int						inMsg,
-							int						inParam);
-
-			bool	TryClose(void);
-	static	bool	TryCloseAll(void);
+	virtual	void		DrawVisualization		(bool inCurrent, GUI_GraphState * g);
+	virtual	void		GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks);
 
 private:
 
-
-				 WED_Package(const WED_Package&);
-	WED_Package& operator=  (const WED_Package&);
-
-	string			mPackageBase;
-	int				mStatus[360*180];
-	WED_Document *	mTiles[360*180];
-
+	void				LoadNavaids();
+	vector<navaid_t>	mNavaids;
 };
 
-#endif
+#endif /* WED_NavaidLayer_H */
