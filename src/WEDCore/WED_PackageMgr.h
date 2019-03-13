@@ -59,7 +59,7 @@ public:
 	void		RenameCustomPackage(int n, const string& new_name);
 	int			CreateNewCustomPackage(void);
 	
-	void		Rescan(void);
+	void		Rescan(bool alwaysBroadcast = false);
 
 	string		ComputePath(const string& package, const string& rel_file) const;
 	string		ReducePath(const string& package, const string& full_file) const;
