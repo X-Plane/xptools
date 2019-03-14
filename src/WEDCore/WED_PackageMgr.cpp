@@ -291,10 +291,6 @@ void		WED_PackageMgr::Rescan(bool alwaysBroadcast)
 {
 
 	bool pkg_list_changed = alwaysBroadcast;
-//	custom_packages.clear();
-	global_packages.clear();
-	default_packages.clear();
-	
 	system_exists=false;
 	if (MF_GetFileType(system_path.c_str(),mf_CheckType) == mf_Directory)
 	{
@@ -358,22 +354,31 @@ void		WED_PackageMgr::Rescan(bool alwaysBroadcast)
 			}
 			else
 				pkg_list_changed = true;
+
+			if(!pkg_list_changed) custom_packages.swap(old_cust_packages);
 		}
 
-		string glb_dir = system_path + DIR_STR GLOBAL_PACKAGE_PATH;
-		if (MF_GetFileType(glb_dir.c_str(),mf_CheckType) == mf_Directory)
+		if(pkg_list_changed)
 		{
-			system_exists=true;
-			MF_IterateDirectory(glb_dir.c_str(), AccumAnyDir, &global_packages);
-			sort(global_packages.begin(),global_packages.end(),SortPackageList);
-		}
+			string glb_dir = system_path + DIR_STR GLOBAL_PACKAGE_PATH;
+			global_packages.clear();
+			if (MF_GetFileType(glb_dir.c_str(),mf_CheckType) == mf_Directory)
+			{
+				system_exists=true;
+				MF_IterateDirectory(glb_dir.c_str(), AccumAnyDir, &global_packages);
+				sort(global_packages.begin(),global_packages.end(),SortPackageList);
+			}
 
-		string def_dir = system_path + DIR_STR DEFAULT_PACKAGE_PATH;
-		if (MF_GetFileType(def_dir.c_str(),mf_CheckType) == mf_Directory)
-		{
-			system_exists=true;
-			MF_IterateDirectory(def_dir.c_str(), AccumAnyDir, &default_packages);
-			sort(default_packages.begin(),default_packages.end(),SortPackageList);
+			string def_dir = system_path + DIR_STR DEFAULT_PACKAGE_PATH;
+			default_packages.clear();
+			if (MF_GetFileType(def_dir.c_str(),mf_CheckType) == mf_Directory)
+			{
+				system_exists=true;
+				MF_IterateDirectory(def_dir.c_str(), AccumAnyDir, &default_packages);
+				sort(default_packages.begin(),default_packages.end(),SortPackageList);
+			}
+
+			BroadcastMessage(msg_SystemFolderChanged,0);
 		}
 	}
 
@@ -390,12 +395,6 @@ void		WED_PackageMgr::Rescan(bool alwaysBroadcast)
 			sscanf(logfile_contents.c_str()+v_pos+8,"%15s",v);
 			XPversion = v;
 		}
-	}
-
-	if(pkg_list_changed)
-	{
-		printf("SystemFolderChanged\n");
-		BroadcastMessage(msg_SystemFolderChanged,0);
 	}
 }
 

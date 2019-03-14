@@ -13,7 +13,7 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 2.0.0 r2 3/13/19
+WED 2.0.0 r2 4/13/19
 	Bug Fixes:
 	- WED-1117: Color first segment of facades always white
 	- WED-1151: Make cursor in gateway submission forms always visible
@@ -21,6 +21,7 @@ WED 2.0.0 r2 3/13/19
 	- fix gaps between textures when importing rotated Orthophotos
 	- WED-1153: Fix import of facades with split bezier nodes and wall style selection
 	- WED-1155: Fix repeated EXPORT_BACKUPS shown as variants in PreviewPane
+	- remove libraries with only EXPORT_BACKUP items from library filter list
 
 WED 2.0.0 b2 2/5/19
 	Features:

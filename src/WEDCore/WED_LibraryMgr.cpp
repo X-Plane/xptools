@@ -592,7 +592,7 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 #endif
 	else return;
 
-	if (package >= 0 && status >= status_Public) gPackageMgr->AddPublicItems(package);
+	if (package >= 0 && status >= status_Public && !is_backup) gPackageMgr->AddPublicItems(package);
 
 	string p(path);
 	while(!p.empty())
