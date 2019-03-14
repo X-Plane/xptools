@@ -25,6 +25,7 @@
 #include "DEMIO.h"
 #include "FileUtils.h"
 #include "TexUtils.h"
+#include "Interpolation.h"
 
 #define KPIXELS 2     // maximum texture size per side in kibi-pixels before splitting up orthos at import into smaller chunks
 
@@ -160,10 +161,9 @@ void	WED_MakeOrthos(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 						int kpix_x = ceil(org_x / 1024.0);  // rounded up result
 						int kpix_y = ceil(org_y / 1024.0);
 
-						Bbox2 bounds; rng0->GetBounds(gis_Geo, bounds);
-
-						double dlon_1k = bounds.xspan()/kpix_x;
-						double dlat_1k = bounds.yspan()/kpix_y;
+						Point2 corner[4];
+						for(int i = 0; i < 4; ++i)
+							dynamic_cast<WED_TextureBezierNode *>(rng0->GetNthPoint(i))->GetLocation(gis_Geo,corner[i]);
 
 						int x0 = 0, x1 = largest_pow2(kpix_x, KPIXELS);
 						while(x0 < kpix_x)
@@ -171,29 +171,43 @@ void	WED_MakeOrthos(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 							int y0 = 0, y1 = largest_pow2(kpix_y, KPIXELS);
 							while(y0 < kpix_y)
 							{
-								Bbox2 b;
 								WED_Ring * rng = dynamic_cast<WED_Ring *>(rng0->Clone());
-
-								b.p1 = bounds.p1 + Vector2(dlon_1k*x0, dlat_1k*y0 );
-								b.p2 = bounds.p1 + Vector2(dlon_1k*x1, dlat_1k*y1 );
-#if 0
-								rng->Rescale(gis_Geo,bounds,b);     // "projection aware" rescale is hurting here - creating longitude mismatches
-								                                    //  for rows of the image not at the same lattitude. 
-								                                    // I.e. we dont want the boxes to have constant physical width,
-								                                    // but constant geographical longitudes when moving the in N-S direction
-#else
-								for(int i = 0; i < 4; ++i)          // so we're rolling a projection un-aware version of WED_GISPoint::Rescale()
-								{
-									Point2 p;
-									dynamic_cast<WED_TextureBezierNode *>(rng0->GetNthPoint(i))->GetLocation(gis_Geo,p);
-									p.x_ = bounds.rescale_to_x(b,p.x_);
-									p.y_ = bounds.rescale_to_y(b,p.y_);
-									dynamic_cast<WED_TextureBezierNode *>(rng->GetNthPoint(i))->SetLocation(gis_Geo,p);
-								}
-#endif
+								
+								Bbox2 b;
 								b.p1 = Point2(((double) x0)/kpix_x, ((double) y0)/kpix_y );
 								b.p2 = Point2(((double) x1)/kpix_x, ((double) y1)/kpix_y );
+								
 								rng->Rescale(gis_UV, Bbox2(0,0,1,1), b);
+								
+								Point2 p;
+								// lower left
+								dynamic_cast<WED_TextureBezierNode *>(rng0->GetNthPoint(0))->GetLocation(gis_Geo,p);
+								p.x_ = BilinearInterpolate2d( corner[3].x(), corner[2].x(), corner[0].x(), corner[1].x(),
+												b.p1.x(), 1.0-b.p1.y());
+								p.y_ = BilinearInterpolate2d( corner[3].y(), corner[2].y(), corner[0].y(), corner[1].y(),
+												b.p1.x(), 1.0-b.p1.y());
+								dynamic_cast<WED_TextureBezierNode *>(rng->GetNthPoint(0))->SetLocation(gis_Geo,p);
+								// lower right
+								dynamic_cast<WED_TextureBezierNode *>(rng0->GetNthPoint(1))->GetLocation(gis_Geo,p);
+								p.x_ = BilinearInterpolate2d( corner[3].x(), corner[2].x(), corner[0].x(), corner[1].x(),
+												b.p2.x(), 1.0-b.p1.y());
+								p.y_ = BilinearInterpolate2d( corner[3].y(), corner[2].y(), corner[0].y(), corner[1].y(),
+												b.p2.x(), 1.0-b.p1.y());
+								dynamic_cast<WED_TextureBezierNode *>(rng->GetNthPoint(1))->SetLocation(gis_Geo,p);
+								// upper right
+								dynamic_cast<WED_TextureBezierNode *>(rng0->GetNthPoint(2))->GetLocation(gis_Geo,p);
+								p.x_ = BilinearInterpolate2d( corner[3].x(), corner[2].x(), corner[0].x(), corner[1].x(),
+												b.p2.x(), 1.0-b.p2.y());
+								p.y_ = BilinearInterpolate2d( corner[3].y(), corner[2].y(), corner[0].y(), corner[1].y(),
+												b.p2.x(), 1.0-b.p2.y());
+								dynamic_cast<WED_TextureBezierNode *>(rng->GetNthPoint(2))->SetLocation(gis_Geo,p);
+								// upper left
+								dynamic_cast<WED_TextureBezierNode *>(rng0->GetNthPoint(3))->GetLocation(gis_Geo,p);
+								p.x_ = BilinearInterpolate2d( corner[3].x(), corner[2].x(), corner[0].x(), corner[1].x(),
+												b.p1.x(), 1.0-b.p2.y());
+								p.y_ = BilinearInterpolate2d( corner[3].y(), corner[2].y(), corner[0].y(), corner[1].y(),
+												b.p1.x(), 1.0-b.p2.y());
+								dynamic_cast<WED_TextureBezierNode *>(rng->GetNthPoint(3))->SetLocation(gis_Geo,p);
 
 								WED_DrapedOrthophoto * dpol = WED_DrapedOrthophoto::CreateTyped(arch);
 								rng->SetParent(dpol,0);
