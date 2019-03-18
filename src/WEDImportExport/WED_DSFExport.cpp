@@ -59,7 +59,7 @@
 #include "STLUtils.h"
 #include "WED_RoadEdge.h"
 
-#if 1 // DEV
+#if DEV
 #include "PerfUtils.h"
 #endif
 
@@ -2081,7 +2081,7 @@ static int DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& 
 
 int DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, set<WED_Thing *>& problem_children)
 {
-#if 1 // DEV
+#if DEV
 	StElapsedTime	etime("Export time");
 #endif
 	g_dropped_pts = false;
