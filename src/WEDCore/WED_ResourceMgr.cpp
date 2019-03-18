@@ -473,7 +473,7 @@ void WED_ResourceMgr::WritePol(const string& abspath, const pol_info_t& out_info
 //	if(has_decal)
 //		fprintf(fi,"DECAL_LIB lib/g10/decals/grass_and_stony_dirt_1.dcl");
 	fclose(fi);
-	gPackageMgr->Rescan();
+	gPackageMgr->Rescan(true);  // a full rescan of LibraryMgr can take a LOT of time on large systems. Find a way to only add/update this one polygon.
 }
 
 

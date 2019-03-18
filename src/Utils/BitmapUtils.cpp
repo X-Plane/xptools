@@ -31,7 +31,6 @@
 #include "Interpolation.h"
 
 #include <squish.h>
-
 #include <pthread.h>
 
 #if IBM
