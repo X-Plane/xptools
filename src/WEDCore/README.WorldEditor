@@ -16,6 +16,7 @@ CHANGE HISTORY
 WED 2.0.0 r3 ?/??/19
 	Bug Fixes:
 	- WED-1164: Fix duplication of ATC hotzone validation errors
+	- WED 1160: Exempt Niue from validation against ICAO codes in Airport names
 
 WED 2.0.0 r2 3/14/19
 	Bug Fixes:
