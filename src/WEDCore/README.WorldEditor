@@ -13,7 +13,11 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 2.0.0 r2 4/13/19
+WED 2.0.0 r3 ?/??/19
+	Bug Fixes:
+	- WED-1164: Fix duplication of ATC hotzone validation errors
+
+WED 2.0.0 r2 3/14/19
 	Bug Fixes:
 	- WED-1117: Color first segment of facades always white
 	- WED-1151: Make cursor in gateway submission forms always visible

@@ -851,80 +851,53 @@ static bool DoHotZoneChecks( const RunwayInfo& runway_info,
 							 WED_Airport* apt)
 {
 	int original_num_errors = msgs.size();
-	TaxiRouteNodeVec_t all_nodes;
-	for (int i = 0; i < all_taxiroutes.size(); ++i)
-	{
-		copy(all_taxiroutes[i].nodes.begin(), all_taxiroutes[i].nodes.end(), back_inserter(all_nodes));
-	}
-	
-	//runway side 0 is the lower side, 1 is the higher side
 	for (int runway_side = 0; runway_side < 2; ++runway_side)
 	{
-		//For every node in the airport,
-		//- get its associated taxiroutes,
-		//- see if they intersect with our box
-		//- and if so, test if they are properly marked
-		for(TaxiRouteNodeVec_t::iterator node_itr = all_nodes.begin();
-			node_itr != all_nodes.end();
-			++node_itr)
+		int runway_number = runway_info.runway_numbers[runway_side];
+	
+		for (int make_arrival = 0; make_arrival < 2; make_arrival++)
 		{
-			TaxiRouteInfoVec_t taxiroutes = GetTaxiRoutesFromViewers(*node_itr);
-			for(TaxiRouteInfoVec_t::iterator taxiroute_itr = taxiroutes.begin(); taxiroute_itr != taxiroutes.end(); ++taxiroute_itr)
+			//Make the hitbox baed on the runway and which side (low/high) you're currently on and if you need to be making arrival or departure
+			Polygon2 hit_box = MakeHotZoneHitBox(runway_info, runway_number, (bool)make_arrival);
+			
+			if(hit_box.empty()) continue;
+				
+			for(auto taxiroute_itr : all_taxiroutes)
 			{
-				//only maakr THE 	departures boxes
-				for (int make_arrival = 0; make_arrival < 2; make_arrival++)
+				//Run two tests, intersection with the side, and if that fails, point inside the polygon
+				if(hit_box.intersects(taxiroute_itr.taxiroute_segment_geo) ||
+						hit_box.inside(taxiroute_itr.taxiroute_segment_geo.p1) || hit_box.inside(taxiroute_itr.taxiroute_segment_geo.p2) )
 				{
-					int runway_number = runway_info.runway_numbers[runway_side];
-
-					//Make the hitbox baed on the runway and which side (low/high) you're currently on and if you need to be making arrival or departure
-					Polygon2 hit_box = MakeHotZoneHitBox(runway_info, runway_number, (bool)make_arrival);
-					if(hit_box.empty() == true)
+					if(runway_info.IsHotForArrival(runway_number) == true && static_cast<bool>(make_arrival) == true)
 					{
-						continue;
-					}
-
-					//Run two tests, intersection with the side, and if that fails, point inside the polygon
-					bool did_hit = hit_box.intersects((*taxiroute_itr).taxiroute_segment_geo);
-					if(did_hit == false)
-					{
-						Point2 p;
-						(*node_itr)->GetLocation(gis_Geo,p);
-						did_hit = hit_box.inside(p);
-					}
-
-					if(did_hit)
-					{
-						if(runway_info.IsHotForArrival(runway_number) == true && static_cast<bool>(make_arrival) == true)
-						{
-                            bool hitbox_error = FindIfMarked(runway_number, *taxiroute_itr, (*taxiroute_itr).hot_arrivals, "arrivals", msgs, apt);
+								 bool hitbox_error = FindIfMarked(runway_number, taxiroute_itr, taxiroute_itr.hot_arrivals, "arrivals", msgs, apt);
 #if DEBUG_VIS_LINES
 #if DEBUG_VIS_LINES < 2
-                            if (hitbox_error)
+								 if (hitbox_error)
 #endif
-                            {
-                                debug_mesh_segment(hit_box.side(0), DBG_LIN_COLOR); //left side
-                                debug_mesh_segment(hit_box.side(1), DBG_LIN_COLOR); //top side
-                                debug_mesh_segment(hit_box.side(2), DBG_LIN_COLOR); //right side
-                                debug_mesh_segment(hit_box.side(3), DBG_LIN_COLOR); //bottom side
-                            }
+								 {
+									  debug_mesh_segment(hit_box.side(0), DBG_LIN_COLOR); //left side
+									  debug_mesh_segment(hit_box.side(1), DBG_LIN_COLOR); //top side
+									  debug_mesh_segment(hit_box.side(2), DBG_LIN_COLOR); //right side
+									  debug_mesh_segment(hit_box.side(3), DBG_LIN_COLOR); //bottom side
+								 }
 #endif
-						}
+					}
 
-						if(runway_info.IsHotForDeparture(runway_number) == true && static_cast<bool>(make_arrival) == false)
-						{
-							bool hitbox_error = FindIfMarked(runway_number, *taxiroute_itr, (*taxiroute_itr).hot_departures, "departures", msgs, apt);
+					if(runway_info.IsHotForDeparture(runway_number) == true && static_cast<bool>(make_arrival) == false)
+					{
+						bool hitbox_error = FindIfMarked(runway_number, taxiroute_itr, taxiroute_itr.hot_departures, "departures", msgs, apt);
 #if DEBUG_VIS_LINES
 #if DEBUG_VIS_LINES < 2
-                            if (hitbox_error)
+								 if (hitbox_error)
 #endif
-                            {
-                                debug_mesh_segment(hit_box.side(0), DBG_LIN_COLOR); //left side
-                                debug_mesh_segment(hit_box.side(1), DBG_LIN_COLOR); //top side
-                                debug_mesh_segment(hit_box.side(2), DBG_LIN_COLOR); //right side
-                                debug_mesh_segment(hit_box.side(3), DBG_LIN_COLOR); //bottom side
-                            }
+								 {
+									  debug_mesh_segment(hit_box.side(0), DBG_LIN_COLOR); //left side
+									  debug_mesh_segment(hit_box.side(1), DBG_LIN_COLOR); //top side
+									  debug_mesh_segment(hit_box.side(2), DBG_LIN_COLOR); //right side
+									  debug_mesh_segment(hit_box.side(3), DBG_LIN_COLOR); //bottom side
+								 }
 #endif
-						}
 					}
 				}
 			}
