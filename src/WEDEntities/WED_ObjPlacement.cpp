@@ -70,6 +70,36 @@ void		WED_ObjPlacement::SetResource(const string& r)
 	visibleWithinDeg = -1.0; // force re-evaluation when object is changed
 }
 
+void		WED_ObjPlacement::SetHeading(double h)
+{
+	WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetArchive()->GetResolver());
+	if(rmgr)
+	{
+		XObj8 * o;
+//			int n = GetNumVariants(resource.value);   // no need to cycle through these - only the first variant is used for preview
+		if(rmgr->GetObj(resource.value,o))
+			if(o->fixed_heading >= 0.0)
+				h = o->fixed_heading;
+	}
+	WED_GISPoint_Heading::SetHeading(h);
+}
+
+void	WED_ObjPlacement::Rotate(GISLayer_t l,const Point2& center, double angle)
+{
+	WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetArchive()->GetResolver());
+	if(rmgr)
+	{
+		XObj8 * o;
+		if(rmgr->GetObj(resource.value,o))
+			if(o->fixed_heading >= 0.0)
+			{
+				WED_GISPoint::Rotate(l,center,angle);
+				return;
+			}
+	}
+	WED_GISPoint_Heading::Rotate(l,center,angle);
+}
+
 double 	WED_ObjPlacement::GetVisibleDeg(void) const
 {
 	return visibleWithinDeg; // one note - 
@@ -85,36 +115,32 @@ bool		WED_ObjPlacement::Cull(const Bbox2& b) const
 	{
 		float * f = (float *) &visibleWithinDeg;          // tricking the compiler, breaking all rules. But Cull() must be const ...
 		*f = GLOBAL_WED_ART_ASSET_FUDGE_FACTOR;           // the old, brain-dead visibility rule of thumb
-		IResolver * res = GetArchive()->GetResolver();
-		if(res)
+		WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetArchive()->GetResolver());
+		if(rmgr)
 		{
-			WED_ResourceMgr * rmgr = WED_GetResourceMgr(res);
-			if(rmgr)
-			{
-				XObj8 * o;
-				agp_t agp;
-				Point2	my_loc;
-				GetLocation(gis_Geo,my_loc);
-				double mtr_to_lon = MTR_TO_DEG_LAT / cos(my_loc.y() * DEG_TO_RAD);
+			XObj8 * o;
+			agp_t agp;
+			Point2	my_loc;
+			GetLocation(gis_Geo,my_loc);
+			double mtr_to_lon = MTR_TO_DEG_LAT / cos(my_loc.y() * DEG_TO_RAD);
 
-	//			int n = GetNumVariants(resource.value);   // no need to cycle through these - only the first variant is used for preview
-				if(rmgr->GetObj(resource.value,o))
+//			int n = GetNumVariants(resource.value);   // no need to cycle through these - only the first variant is used for preview
+			if(rmgr->GetObj(resource.value,o))
+			{
+				*f = pythag(o->xyz_max[0] - o->xyz_min[0], o->xyz_max[2] - o->xyz_min[2]) * mtr_to_lon;
+			}
+			else if(rmgr->GetAGP(resource.value,agp))
+			{
+				double min_xy[2] = { 0, 0 };
+				double max_xy[2] = { 0, 0 };
+				for(int n = 0; n < agp.tile.size(); n += 4)
 				{
-					*f = pythag(o->xyz_max[0] - o->xyz_min[0], o->xyz_max[2] - o->xyz_min[2]) * mtr_to_lon;
+					min_xy[0] = min(min_xy[0],agp.tile[n]);
+					max_xy[0] = max(max_xy[0],agp.tile[n]);
+					min_xy[1] = min(min_xy[1],agp.tile[n+1]);
+					max_xy[1] = max(max_xy[1],agp.tile[n+1]);
 				}
-				else if(rmgr->GetAGP(resource.value,agp))
-				{
-					double min_xy[2] = { 0, 0 };
-					double max_xy[2] = { 0, 0 };
-					for(int n = 0; n < agp.tile.size(); n += 4)
-					{
-						min_xy[0] = min(min_xy[0],agp.tile[n]);
-						max_xy[0] = max(max_xy[0],agp.tile[n]);
-						min_xy[1] = min(min_xy[1],agp.tile[n+1]);
-						max_xy[1] = max(max_xy[1],agp.tile[n+1]);
-					}
-					*f = pythag(max_xy[0] - min_xy[0],	max_xy[1] - min_xy[1]) * mtr_to_lon;
-				}
+				*f = pythag(max_xy[0] - min_xy[0],	max_xy[1] - min_xy[1]) * mtr_to_lon;
 			}
 		}
 	}
