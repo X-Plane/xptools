@@ -209,17 +209,18 @@ char *	GetMultiFilePathFromUser(
 	}
 }
 
-
 void	DoUserAlert(const char * inMsg)
 {
-	MessageBoxW(NULL, convert_str_to_utf16(inMsg).c_str(), L"Alert", MB_OK | MB_ICONWARNING);
+	HWND thisWin = GetForegroundWindow();
+	MessageBoxW(thisWin, convert_str_to_utf16(inMsg).c_str(), L"Alert", MB_OK | MB_ICONWARNING | MB_TOPMOST |MB_TASKMODAL);
 }
 
 int		ConfirmMessage(const char * inMsg, const char * proceedBtn, const char * cancelBtn)
 {
 	bool no_or_cancel = string(cancelBtn).find("Cancel") == string::npos;
 
-	int result = MessageBoxW( NULL,				// No Parent HWND
+	HWND thisWin = GetForegroundWindow();
+	int result = MessageBoxW(thisWin,
 						convert_str_to_utf16(inMsg).c_str(),
 						L"WED",
 						MB_TASKMODAL |          // works most of the time even with no HWND
