@@ -354,16 +354,17 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 						
 						// always fit into vertical size of window
 						float dt = (b[3]-b[1]) / mZoom;
-						float ds = dt * (lin.proj_s / lin.proj_t);
-						
-						float x1 = (dx - ds) /2;
-						float x2 = (dx + ds) /2;
-						float y1 = (dy - dt) /2;
-						float y2 = (dy + dt) /2;
 						
 						glBegin(GL_QUADS);
 						for (int n=0; n<lin.s1.size(); ++n)
 						{	
+							float ds = dt * (lin.scale_s * (lin.s2[n]-lin.s1[n]) / lin.scale_t);
+							
+							float x1 = (dx - ds) /2;
+							float x2 = (dx + ds) /2;
+							float y1 = (dy - dt) /2;
+							float y2 = (dy + dt) /2;
+							
 							glTexCoord2f(lin.s1[n], 0); glVertex2f(x1,y1);
 							glTexCoord2f(lin.s1[n], 1); glVertex2f(x1,y2);
 							glTexCoord2f(lin.s2[n],1); glVertex2f(x2,y2);
@@ -377,6 +378,13 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 		case res_Forest:
 			if(!mResMgr->GetFor(mRes,o))
 				break;
+		case res_String:
+			if(!o)
+			{
+				str_info_t str;
+				if(mResMgr->GetStr(mRes,str))
+					o = str.previews[0];             // do the cheap thing: show only the first object. Could show a whole line ...
+			}
 #if 1 
 		// facade preview, not yet ready for primetime
 		case res_Facade:
@@ -548,11 +556,12 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 			case res_Line:
 				if (lin.s1.size() && lin.s2.size())
 				{ 
-					sprintf(buf2,"w=%.0f%s",lin.proj_s * (gIsFeet ? 100.0/2.54 : 100.0), gIsFeet ? "in" : "cm" );
+					sprintf(buf2,"w~%.0f%s",lin.eff_width * (gIsFeet ? 100.0/2.54 : 100.0), gIsFeet ? "in" : "cm" );
 				}
 				break;
 			case res_Object:
 			case res_Forest:
+			case res_String:
 				if (o)
 				{
 					int n = sprintf(buf2,"max h=%.1f%s", o->xyz_max[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");

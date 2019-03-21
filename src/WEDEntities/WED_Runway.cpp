@@ -86,6 +86,16 @@ bool	WED_Runway::Cull(const Bbox2& b) const
 	if(GetCornersShoulders(c))	
 	for(n=0;n<8;++n)
 		me+=c[n];
+	if(appl1.value || appl2.value)
+	{
+		Point2 p1, p2;
+		GetSource()->GetLocation(gis_Geo,p1);
+		GetTarget()->GetLocation(gis_Geo,p2);
+		Vector2 dir(p1, p2);
+		double rwy_len = LonLatDistMeters(p1, p2);
+		if(appl1.value) me += p1 - dir / rwy_len * 735;  // covers 2400' ALSF
+		if(appl2.value) me += p2 + dir / rwy_len * 735;
+	}
 	return b.overlap(me);	
 }
 
@@ -507,6 +517,7 @@ void  WED_Runway::PropEditCallback(int before)
 	
 	if (before)
 	{
+		StateChanged(wed_Change_Properties);
 		old_enum = GetRunwayEnumsTwoway();
 		old_enum_1wy = GetRunwayEnumsOneway();
 		apt = WED_GetParentAirport(this);
@@ -520,8 +531,8 @@ void  WED_Runway::PropEditCallback(int before)
 		
 		if (new_enum == atc_rwy_None)
 		{
-			int	res = ConfirmMessage("New Runway Name is illegal, Smart Runway Rename can not be applied.", 
-						"Proceed with new name", "Keep old name");
+			int	res = ConfirmMessage("New runway name is illegal, Smart Runway Rename can not be applied. Really use new name ?", 
+						"Yes, use new name", "Keep old name");
 			if(res == 0)
 				SetName(string(ENUM_Desc(old_enum)));
 			return;

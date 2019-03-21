@@ -25,7 +25,6 @@
 #include "NetHelpers.h"
 #include "MapTopology.h"
 #include "XESConstants.h"
-#include "GISTool_Globals.h"
 #include "DEMDefs.h"
 #include "DEMAlgs.h"
 #include "GISUtils.h"
@@ -36,6 +35,7 @@
 #include "CompGeomUtils.h"
 #if OPENGL_MAP && DEV
 	#include "RF_Selection.h"
+	#include "GISTool_Globals.h"
 #endif
 
 #define	MIN_DIST_FOR_TYPE 0.005
@@ -861,7 +861,7 @@ void check_junction_highways(Pmwx::Vertex_handle v, set<Pmwx::Vertex_handle>& ch
 	}
 }
 
-void repair_network(Pmwx& io_map)
+void repair_network(Pmwx& io_map, bool verbose)
 {
 	// First: we get little bits of goo laying around.  We're going to strip out any tiny antenna sticking
 	// in from a main road (e.g. degree > 2, TINY length) outright - in Munich we find these as parts of
@@ -983,7 +983,7 @@ void repair_network(Pmwx& io_map)
 		}
 	}
 	
-	if(gVerbose)
+	if(verbose)
 		printf("Removed %d tiny antenna roads, %d disconnected roads.\n",
 			kill_short, kill_discon);
 	

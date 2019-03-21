@@ -19,33 +19,18 @@
     <Filter Include="GUI">
       <UniqueIdentifier>{2ab68e50-8738-4e16-b99e-f33e3c3cbd88}</UniqueIdentifier>
     </Filter>
-    <Filter Include="DSF">
-      <UniqueIdentifier>{bcea2d0f-2107-4b47-84da-c5773c6336e0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="DSF\tri_stripper_101">
-      <UniqueIdentifier>{0044ce38-d522-4821-b46d-f411929c90f5}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\Obj\ObjConvert.cpp">
-      <Filter>Obj</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Obj\ObjDraw.cpp">
       <Filter>Obj</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Obj\ObjPointPool.cpp">
       <Filter>Obj</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Obj\XObjBuilder.cpp">
-      <Filter>Obj</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Obj\XObjDefs.cpp">
       <Filter>Obj</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Obj\XObjReadWrite.cpp">
-      <Filter>Obj</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Obj\XObjWriteEmbedded.cpp">
       <Filter>Obj</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\XPTools\ViewObj.cpp">
@@ -114,17 +99,11 @@
     <ClCompile Include="..\..\src\GUI\GUI_Unicode.cpp">
       <Filter>GUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\DSF\tri_stripper_101\tri_stripper.cpp">
-      <Filter>DSF\tri_stripper_101</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\UI\XGUIApp.cpp">
       <Filter>UI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\Obj\ObjConvert.h">
-      <Filter>Obj</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\Obj\ObjDraw.h">
       <Filter>Obj</Filter>
     </ClInclude>
@@ -134,16 +113,10 @@
     <ClInclude Include="..\..\src\Obj\XDefs.h">
       <Filter>Obj</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Obj\XObjBuilder.h">
-      <Filter>Obj</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\Obj\XObjDefs.h">
       <Filter>Obj</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Obj\XObjReadWrite.h">
-      <Filter>Obj</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Obj\XObjWriteEmbedded.h">
       <Filter>Obj</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\ObjEdit\OE_Zoomer3d.h">
@@ -202,21 +175,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\GUI\GUI_Unicode.h">
       <Filter>GUI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\DSF\tri_stripper_101\cache_simulator.h">
-      <Filter>DSF\tri_stripper_101</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\DSF\tri_stripper_101\graph_array.h">
-      <Filter>DSF\tri_stripper_101</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\DSF\tri_stripper_101\heap_array.h">
-      <Filter>DSF\tri_stripper_101</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\DSF\tri_stripper_101\stdafx.h">
-      <Filter>DSF\tri_stripper_101</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\DSF\tri_stripper_101\tri_stripper.h">
-      <Filter>DSF\tri_stripper_101</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\UI\XGUIApp.h">
       <Filter>UI</Filter>

@@ -105,6 +105,31 @@ void		WED_FacadeNode::GetNthPropertyDictItem(int n, int e, string& item) const
 	WED_Thing::GetNthPropertyDictItem(n,e,item);			
 }
 
+void		WED_FacadeNode::PropEditCallback(int before)
+{
+	static int old_wall_type;
+
+	if (before)
+	{
+		old_wall_type = wall_type.value;
+	}
+	else
+	{
+		if (wall_type.value != old_wall_type)
+		{
+			WED_Thing * parent = this->GetParent();
+			if (!parent)
+				return;
+			WED_FacadePlacement * fac = dynamic_cast<WED_FacadePlacement *>(parent->GetParent());
+			if (!fac)
+				return;
+			fac->SetCustomWalls(true);
+		}
+	}
+
+	WED_GISPoint_Bezier::PropEditCallback(before);
+}
+
 #endif
 
 int		WED_FacadeNode::GetWallType(void) const

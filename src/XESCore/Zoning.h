@@ -27,6 +27,7 @@
 #include "AptDefs.h"
 #include "MapDefs.h"
 #include "ProgressUtils.h"
+#include "XESConstants.h"
 
 struct	DEMGeo;
 
@@ -238,7 +239,7 @@ extern EdgeRuleTable			gEdgeRules;
 extern FillRuleTable			gFillRules;
 extern PointRuleTable			gPointRules;
 
-void	LoadZoningRules(void);
+void	LoadZoningRules(rf_region inRegion);
 
 
 /*

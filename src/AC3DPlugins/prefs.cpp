@@ -25,7 +25,7 @@
 #include <string.h>
 #include <ac_plugin.h>
 
-//extern "C" void ui_update_linked_var(char * addr);
+extern "C" void ui_update_linked_var(char * addr);
 
 #define DEFINE_PREF_STRING(n,d)	\
 	PrefSpec *	spec_##n;	\

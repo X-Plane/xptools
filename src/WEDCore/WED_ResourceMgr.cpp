@@ -26,6 +26,7 @@
 #include "WED_Messages.h"
 #include "WED_LibraryMgr.h"
 #include "WED_Globals.h"
+#include "WED_Version.h"
 
 #include "MemFileUtils.h"
 #include "XObjReadWrite.h"
@@ -39,15 +40,14 @@ static void process_texture_path(const string& path_of_obj, string& path_of_tex)
 {
 	string parent;
 
-	parent = FILE_get_dir_name(path_of_obj.c_str()) + FILE_get_dir_name(path_of_tex.c_str()) 
-			+ FILE_get_file_name_wo_extensions(path_of_tex.c_str());
-	
-	                                       path_of_tex = parent + ".dds";
-	if(!FILE_exists(path_of_tex.c_str()))  path_of_tex = parent + ".DDS";
-	if(!FILE_exists(path_of_tex.c_str()))  path_of_tex = parent + ".png";
-	if(!FILE_exists(path_of_tex.c_str()))  path_of_tex = parent + ".PNG";
-	if(!FILE_exists(path_of_tex.c_str()))  path_of_tex = parent + ".bmp";
-	if(!FILE_exists(path_of_tex.c_str()))  path_of_tex = parent + ".BMP";
+	parent = FILE_get_dir_name(path_of_obj) + FILE_get_dir_name(path_of_tex)
+					+ FILE_get_file_name_wo_extensions(path_of_tex);
+
+	path_of_tex = parent + ".dds";          // no need to also check for .DDS, filename case desense will take care of it
+	if(FILE_exists(path_of_tex.c_str()))  return;
+	path_of_tex = parent + ".png";
+	if(FILE_exists(path_of_tex.c_str()))  return;
+	path_of_tex = parent + ".bmp";
 }
 
 WED_ResourceMgr::WED_ResourceMgr(WED_LibraryMgr * in_library) : mLibrary(in_library)
@@ -70,12 +70,16 @@ void	WED_ResourceMgr::Purge(void)
 		for(vector<fac_info_t>::iterator j = i->second.begin(); j != i->second.end(); ++j)
 			for(vector<XObj8 *>::iterator k = j->previews.begin(); k != j->previews.end(); ++k)
 				delete *k;
-		
+	for(map<string, str_info_t>::iterator i = mStr.begin(); i != mStr.end(); ++i)
+		for(vector<XObj8 *>::iterator j = i->second.previews.begin(); j != i->second.previews.end(); ++j)
+			delete *j;
+						
 	mPol.clear();
 	mLin.clear();
 	mObj.clear();
 	mFor.clear();
 	mFac.clear();
+	mStr.clear();
 }
 
 int		WED_ResourceMgr::GetNumVariants(const string& path)
@@ -112,9 +116,13 @@ bool	WED_ResourceMgr::GetObjRelative(const string& obj_path, const string& paren
 		}
 	}
 
-	process_texture_path(p,obj->texture);
+	if (obj->texture.length() > 0) 	process_texture_path(p,obj->texture);
 	if (obj->texture_draped.length() > 0)
+	{
 		process_texture_path(p,obj->texture_draped);
+		if(obj->texture.length() == 0)
+			obj->texture = obj->texture_draped;
+	}
 	else
 		obj->texture_draped = obj->texture;
 
@@ -155,9 +163,13 @@ bool	WED_ResourceMgr::GetObj(const string& path, XObj8 *& obj, int variant)
 				return false;
 			}
 		}
-		process_texture_path(p,obj->texture);
+		if (obj->texture.length() > 0) 	process_texture_path(p,obj->texture);
 		if (obj->texture_draped.length() > 0)
+		{
 			process_texture_path(p,obj->texture_draped);
+			if(obj->texture.length() == 0)
+				obj->texture = obj->texture_draped;
+		}
 		else
 			obj->texture_draped = obj->texture;
 
@@ -189,12 +201,15 @@ bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t& out_info)
 	}
 
 	out_info.base_tex.clear();
-	out_info.proj_s=100;
-	out_info.proj_t=100;
+	out_info.scale_s=100;
+	out_info.scale_t=100;
 	float tex_width = 1024;
 	out_info.s1.clear();
 	out_info.sm.clear();
 	out_info.s2.clear();
+	out_info.rgb[0] = 0.75;   // taxi line yellow
+	out_info.rgb[1] = 0.6;
+	out_info.rgb[2] = 0.15;
 
 	string p = mLibrary->GetResourcePath(path);
 	MFMemFile * lin = MemFile_Open(p.c_str());
@@ -219,12 +234,18 @@ bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t& out_info)
 		}
 		else if (MFS_string_match(&s,"SCALE", false))
 		{
-			out_info.proj_s = MFS_double(&s);
-			out_info.proj_t = MFS_double(&s);
+			out_info.scale_s = MFS_double(&s);
+			out_info.scale_t = MFS_double(&s);
 		}
 		else if (MFS_string_match(&s,"TEX_WIDTH", false))
 		{
 			tex_width = MFS_double(&s);
+		}
+		else if (MFS_string_match(&s,"PREVIEW_RGB", false))
+		{
+			out_info.rgb[0] = MFS_double(&s);
+			out_info.rgb[1] = MFS_double(&s);
+			out_info.rgb[2] = MFS_double(&s);
 		}
 		else if (MFS_string_match(&s,"S_OFFSET", false))
 		{
@@ -245,14 +266,109 @@ bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t& out_info)
 	
 	if (out_info.s1.size() < 1) 
 		return false;
-	
-	out_info.proj_s = out_info.proj_s * (out_info.s2[0]-out_info.s1[0]);
+
+	out_info.eff_width = out_info.scale_s * ( out_info.s2[0] - out_info.s1[0] - 4 / tex_width ); // assume 2 transparent pixels on each side
 
 	process_texture_path(p,out_info.base_tex);
 	mLin[path] = out_info;
 	
 	return true;
 }
+
+#if IBM
+#define DIR_CHAR '\\'
+#define DIR_STR "\\"
+#else
+#define DIR_CHAR '/'
+#define DIR_STR "/"
+#endif
+
+static void clean_rpath(string& s)
+{
+	for(string::size_type p = 0; p < s.size(); ++p)
+		if(s[p] == '\\' || s[p] == ':' || s[p] == '/')
+			s[p] = DIR_CHAR;
+}
+
+bool	WED_ResourceMgr::GetStr(const string& path, str_info_t& out_info)
+{
+	map<string,str_info_t>::iterator i = mStr.find(path);
+	if(i != mStr.end())
+	{
+		out_info = i->second;
+		return true;
+	}
+
+	out_info.offset = 0.0;
+	out_info.rotation = 0.0;
+	out_info.previews.clear();
+
+	string p = mLibrary->GetResourcePath(path);
+	MFMemFile * str = MemFile_Open(p.c_str());
+	if(!str) return false;
+
+	MFScanner	s;
+	MFS_init(&s, str);
+
+	int versions[] = { 850, 0 };
+
+	if(!MFS_xplane_header(&s,versions,"OBJECT_STRING",NULL))
+	{
+		MemFile_Close(str);
+		return false;
+	}
+
+	while(!MFS_done(&s))
+	{
+		if (MFS_string_match(&s,"OFFSET", false))
+		{
+			out_info.offset = MFS_double(&s);
+		}
+		else if (MFS_string_match(&s,"OBJECT", false))
+		{
+			out_info.rotation = MFS_double(&s);
+			int ignore = MFS_double(&s);
+			string obj_res;
+			MFS_string(&s,&obj_res);
+			
+			clean_rpath(obj_res);
+			obj_res= FILE_get_dir_name(p) + obj_res;
+			FILE_case_correct( (char *) obj_res.c_str()); 
+
+			XObj8 * obj = new XObj8;
+			if(!XObj8Read(obj_res.c_str(),*obj))
+			{
+				XObj obj7;
+				if(XObjRead(obj_res.c_str(),obj7))
+				{
+					Obj7ToObj8(obj7,*obj);
+				}
+				else
+				{
+					delete obj;
+					obj = NULL;
+					return false;
+				}
+			}
+			if (obj->texture.length() > 0) 	process_texture_path(p,obj->texture);
+			if (obj->texture_draped.length() > 0)
+			{
+				process_texture_path(p,obj->texture_draped);
+				if(obj->texture.length() == 0)
+					obj->texture = obj->texture_draped;
+			}
+			else
+				obj->texture_draped = obj->texture;
+
+			out_info.previews.push_back(obj);
+		}
+		MFS_string_eol(&s,NULL);
+	}
+	MemFile_Close(str);
+	mStr[path] = out_info;
+	return true;
+}
+
 
 bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t& out_info)
 {
@@ -341,34 +457,23 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t& out_info)
 	return true;
 }
 
-void WED_ResourceMgr::MakePol(const string& path, const pol_info_t& out_info)
+void WED_ResourceMgr::WritePol(const string& abspath, const pol_info_t& out_info)
 {
-	map<string,pol_info_t>::iterator i = mPol.find(path);
-	if(i != mPol.end())
-	{
-		return;
-	}
-
-	string p = mLibrary->CreateLocalResourcePath(path);
-	//Makes sure that the file will end in .pol
-	int pp = p.find_last_of(".");
-	p = p.substr(0,pp+1) + "pol";
-	
-	FILE * fi = fopen(p.c_str(), "w");
+	FILE * fi = fopen(abspath.c_str(), "w");
 	if(!fi)	return;
 	fprintf(fi,"A\n850\nDRAPED_POLYGON\n\n");
-	
+	fprintf(fi,"# Created by WED " WED_VERSION_STRING "\n");
 	fprintf(fi,out_info.wrap ? "TEXTURE %s\n" : "TEXTURE_NOWRAP %s\n", out_info.base_tex.c_str());
-	fprintf(fi,"SCALE %lf %lf\n",out_info.proj_s,out_info.proj_t);
-		/*float		latitude;
-	float		longitude;
-	double		height_Meters;
-	int			ddsHeight_Pxls;*/
-	fprintf(fi,"LOAD_CENTER %lf %lf %f %d", out_info.latitude, out_info.longitude,out_info.height_Meters,out_info.ddsHeight_Pxls);
+	fprintf(fi,"SCALE %.1lf %.1lf\n",out_info.proj_s,out_info.proj_t);
+	fprintf(fi,"LOAD_CENTER %lf %lf %.1f %d", out_info.latitude, out_info.longitude,out_info.height_Meters,out_info.ddsHeight_Pxls);
 	if(out_info.kill_alpha)
 		fprintf(fi,"NO_ALPHA\n");
-	fclose(fi);	
-	gPackageMgr->Rescan();
+	if(!out_info.group.empty())
+		fprintf(fi,"LAYER_GROUP %s %d\n",out_info.group.c_str(), out_info.group_offset);
+//	if(has_decal)
+//		fprintf(fi,"DECAL_LIB lib/g10/decals/grass_and_stony_dirt_1.dcl");
+	fclose(fi);
+	gPackageMgr->Rescan(true);  // a full rescan of LibraryMgr can take a LOT of time on large systems. Find a way to only add/update this one polygon.
 }
 
 

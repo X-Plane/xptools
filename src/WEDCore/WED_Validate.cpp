@@ -45,7 +45,6 @@
 #include "WED_RampPosition.h"
 #include "WED_Taxiway.h"
 #include "WED_TaxiRoute.h"
-#include "WED_TaxiRouteNode.h"
 #include "WED_TruckDestination.h"
 #include "WED_TruckParkingLocation.h"
 #include "WED_ATCFlow.h"
@@ -54,8 +53,6 @@
 #include "WED_ATCWindRule.h"
 #include "WED_ATCTimeRule.h"
 #include "WED_GISPoint.h"
-#include "WED_TextureNode.h"
-#include "WED_TextureBezierNode.h"
 
 #include "WED_GISUtils.h"
 #include "WED_ToolUtils.h"
@@ -86,12 +83,16 @@
 #include "WED_FileCache.h"
 #include "WED_Url.h"
 #include "GUI_Resources.h"
+#include "XESConstants.h"
 
 #include <iomanip>
-#include <istream>
 
-#define MAX_LON_SPAN_GATEWAY 0.2
-#define MAX_LAT_SPAN_GATEWAY 0.2
+// maximum airport size allowed for gateway, only warned about for custom scenery
+// 7 nm = 13 km = 42500 feet
+#define MAX_SPAN_GATEWAY_NM 7
+
+// ATC flow tailwind components and wind rule coverage tested up to this windspeed
+#define ATC_FLOW_MAX_WIND 35
 
 // Checks for zero length sides - can be turned off for grandfathered airports.
 #define CHECK_ZERO_LENGTH 1
@@ -117,114 +118,30 @@ static int strlen_utf8(const string& str)
     return q;
 }
 
-// This table is used to find the matching opposite direction for a given runway
-// to detect head-on collisions.
-
-static const int k_rwy_enums[73][2] = {
-	{	atc_1,		atc_19		},
-	{	atc_1L,		atc_19R		},
-	{	atc_1C,		atc_19C		},
-	{	atc_1R,		atc_19L		},
-
-	{	atc_2,		atc_20		},
-	{	atc_2L,		atc_20R		},
-	{	atc_2C,		atc_20C		},
-	{	atc_2R,		atc_20L		},
-
-	{	atc_3,		atc_21		},
-	{	atc_3L,		atc_21R		},
-	{	atc_3C,		atc_21C		},
-	{	atc_3R,		atc_21L		},
-
-	{	atc_4,		atc_22		},
-	{	atc_4L,		atc_22R		},
-	{	atc_4C,		atc_22C		},
-	{	atc_4R,		atc_22L		},
-
-	{	atc_5,		atc_23		},
-	{	atc_5L,		atc_23R		},
-	{	atc_5C,		atc_23C		},
-	{	atc_5R,		atc_23L		},
-
-	{	atc_6,		atc_24		},
-	{	atc_6L,		atc_24R		},
-	{	atc_6C,		atc_24C		},
-	{	atc_6R,		atc_24L		},
-
-	{	atc_7,		atc_25		},
-	{	atc_7L,		atc_25R		},
-	{	atc_7C,		atc_25C		},
-	{	atc_7R,		atc_25L		},
-
-	{	atc_8,		atc_26		},
-	{	atc_8L,		atc_26R		},
-	{	atc_8C,		atc_26C		},
-	{	atc_8R,		atc_26L		},
-
-	{	atc_9,		atc_27		},
-	{	atc_9L,		atc_27R		},
-	{	atc_9C,		atc_27C		},
-	{	atc_9R,		atc_27L		},
-
-	{	atc_10,		atc_28		},
-	{	atc_10L,		atc_28R		},
-	{	atc_10C,		atc_28C		},
-	{	atc_10R,		atc_28L		},
-
-	{	atc_11,		atc_29		},
-	{	atc_11L,		atc_29R		},
-	{	atc_11C,		atc_29C		},
-	{	atc_11R,		atc_29L		},
-
-	{	atc_12,		atc_30		},
-	{	atc_12L,		atc_30R		},
-	{	atc_12C,		atc_30C		},
-	{	atc_12R,		atc_30L		},
-
-	{	atc_13,		atc_31		},
-	{	atc_13L,		atc_31R		},
-	{	atc_13C,		atc_31C		},
-	{	atc_13R,		atc_31L		},
-
-	{	atc_14,		atc_32		},
-	{	atc_14L,		atc_32R		},
-	{	atc_14C,		atc_32C		},
-	{	atc_14R,		atc_32L		},
-
-	{	atc_15,		atc_33		},
-	{	atc_15L,		atc_33R		},
-	{	atc_15C,		atc_33C		},
-	{	atc_15R,		atc_33L		},
-
-	{	atc_16,		atc_34		},
-	{	atc_16L,		atc_34R		},
-	{	atc_16C,		atc_34C		},
-	{	atc_16R,		atc_34L		},
-
-	{	atc_17,		atc_35		},
-	{	atc_17L,		atc_35R		},
-	{	atc_17C,		atc_35C		},
-	{	atc_17R,		atc_35L		},
-
-	{	atc_18,		atc_36		},
-	{	atc_18L,		atc_36R		},
-	{	atc_18C,		atc_36C		},
-	{	atc_18R,		atc_36L		},
-
-	{ 0, 0 },
-};
-
 static int get_opposite_rwy(int rwy_enum)
 {
 	DebugAssert(rwy_enum != atc_Runway_None);
-	int p = 0;
-	while(k_rwy_enums[p][0])
+
+	int r = ENUM_Export(rwy_enum);
+	int o = atc_19 - atc_1;
+
+	if(rwy_enum >= atc_1 && rwy_enum < atc_19)
 	{
-		if(rwy_enum == k_rwy_enums[p][0])
-			return k_rwy_enums[p][1];
-		if(rwy_enum == k_rwy_enums[p][1])
-			return k_rwy_enums[p][0];
-		++p;
+		if((r % 10) == 1)
+			return rwy_enum + o + 2;
+		else if((r % 10) == 3)
+			return rwy_enum + o - 2;
+		else
+			return rwy_enum + o;
+	}
+	else if(rwy_enum >= atc_19 && rwy_enum <= atc_36W)
+	{
+		if((r % 10) == 1)
+			return rwy_enum - o + 2;
+		else if((r % 10) == 3)
+			return rwy_enum - o - 2;
+		else
+			return rwy_enum - o;
 	}
 	DebugAssert(!"Bad enum");
 	return atc_Runway_None;
@@ -243,10 +160,10 @@ static bool cmp_frequency_type(WED_ATCFrequency* freq1, WED_ATCFrequency* freq2)
 
 static string format_freq(int f)
 {
-	int mhz = f / 100;
-	int khz10 = f % 100;
+	int mhz = f / 1000;
+	int khz = f % 1000;
 	stringstream ss;
-	ss << mhz << "." << std::setw(2) << std::setfill('0') << khz10;
+	ss << mhz << "." << std::setw(3) << std::setfill('0') << khz;
 	return ss.str();
 }
 
@@ -322,11 +239,15 @@ static bool IsThingResource(WED_Thing * who)
 	return GetThingResource(who,r);
 }
 
-static bool is_of_type_ground_vehicles(WED_Thing* route)
+bool isGroundRoute(WED_Thing* taxi_route)
 {
-	return static_cast<WED_TaxiRoute*>(route)->AllowTrucks();
+	WED_TaxiRoute* ground_rt = static_cast<WED_TaxiRoute*>(taxi_route);
+	if (ground_rt)
+	{
+		if (ground_rt->AllowTrucks())	return true;
+	}
+	return false;
 }
-
 
 // This template buidls an error list for a subset of objects that have the same name - one validation error is generated
 // for each set of same-named objects.
@@ -389,11 +310,11 @@ static void ValidateOnePointSequence(WED_Thing* who, validation_error_vector& ms
 	     parent->GetClass() == WED_FacadePlacement::sClass ))
 	{
 		bool is_area = true;
-		
+
 		WED_FacadePlacement * fac = dynamic_cast<WED_FacadePlacement *>(parent);
 		if (fac && fac->GetTopoMode() == WED_FacadePlacement::topo_Chain )
 			is_area = false;
-		     
+
 		if(is_area && nn < 3)
 		{
 			string msg = "Polygon feature '" + string(parent->HumanReadableType()) + "' needs at least three points.";
@@ -405,8 +326,66 @@ static void ValidateOnePointSequence(WED_Thing* who, validation_error_vector& ms
 		parent = who;   // non-area linear features do not have a meaningfull parent
 		return;         // don't check anything else like lines/strings/etc. Comment this out to enable checks.
 	}
-#if CHECK_ZERO_LENGTH
+
 	vector<WED_Thing*> problem_children;
+
+	if ((parent) && parent->GetClass() == WED_DrapedOrthophoto::sClass)
+    {
+        // Find UV coordinate combinations that are out of range know to cause OGL tesselator crashes, i.e. can not be exported to DSF
+        problem_children.clear();
+       	for(int n = 0; n < nn; ++n)
+        {
+            Point2 p;
+            IGISPoint * ptr = ps->GetNthPoint(n);
+            ptr->GetLocation(gis_UV,p);
+
+			if(p.x() < -65535.0 || p.x() > 65535.0 ||
+				p.y() < -65535.0 || p.y() > 65535.0)
+            {
+                // add first node of each zero length segment to list
+                problem_children.push_back(dynamic_cast<WED_Thing *>(ps->GetNthPoint(n)));
+            }
+        }
+
+        if (problem_children.size() > 0)
+        {
+            string msg = string(parent->HumanReadableType()) + string(" has nodes with UV coordinates out of bounds.");
+            msgs.push_back(validation_error_t(msg, err_orthophoto_bad_uv_map, problem_children, apt));
+        }
+
+        // Find UV coordinates that a nearly or truely co-located. During tessalation - any two modes in the polygon may end up
+        // as vertices in the same triangle. SO we dont
+        problem_children.clear();
+       	for(int n = 0; n < nn; ++n)
+        {
+            Point2 p1;
+            IGISPoint * ptr = ps->GetNthPoint(n);
+            ptr->GetLocation(gis_UV,p1);
+
+            for(int m = n+1; m < nn; ++m)
+            {
+                Point2 p2;
+                ptr = ps->GetNthPoint(m);
+                ptr->GetLocation(gis_UV,p2);
+
+                if(p1.squared_distance(p2) < 1E-10)   // that is less than 1/25 of a pixel even on a 4k texture
+                {
+                    // add first node of each zero length segment to list
+                    problem_children.push_back(dynamic_cast<WED_Thing *>(ps->GetNthPoint(n)));
+                }
+            }
+
+        }
+        if (problem_children.size() > 0)
+        {
+            string msg = string(parent->HumanReadableType()) + string(" has nodes with UV coordinates too close together.");
+            msgs.push_back(validation_error_t(msg, err_orthophoto_bad_uv_map, problem_children, apt));
+        }
+
+    }
+
+#if CHECK_ZERO_LENGTH
+    problem_children.clear();
 	nn = ps->GetNumSides();
 	for(int n = 0; n < nn; ++n)
 	{
@@ -460,7 +439,7 @@ static void ValidateOneFacadePlacement(WED_Thing* who, validation_error_vector& 
 		wet_xplane_900 rules
 		  - Custom facade wall choices are only in X-Plane 10 and newer
 		  - Curved facades are only supported in X-Plane 10 and newer
-		Other rules
+		Other rulesOnly real application that get
 		  - Facades may not have holes in them
 	 */
 
@@ -509,7 +488,7 @@ static void ValidateOnePolygon(WED_GISPolygon* who, validation_error_vector& msg
 
 	if((who->GetGISClass() == gis_Polygon && who->GetClass() != WED_OverlayImage::sClass ) ||	// exempt RefImages, since WEDbing places them with CW nodes
 	   (who->GetClass() == WED_AirportBoundary::sClass))										// ALWAYS validate airport boundary like a polygon - it's really a collection of sequences, but self intersection is NOT allowed.
-    {        
+    {
 		for(int child = 0; child < who->CountChildren(); ++child)
 		{
 			IGISPointSequence * ips = SAFE_CAST(IGISPointSequence,who->GetNthChild(child));
@@ -523,19 +502,19 @@ static void ValidateOnePolygon(WED_GISPolygon* who, validation_error_vector& msg
 					for(int n = 0; n < n_pts; ++n)
 					{
 						IGISPoint * igp = ips->GetNthPoint(n);
-						if (igp) 
+						if (igp)
 						{
 							Point2 p;
 							igp->GetLocation(gis_Geo, p);
 //							if (!(p == seq.back()))  // skip over zero length segemnts, as they cause
 								seq.push_back(p);    // false positives in the clockwise wound test. And taxiways are allowed to have ZLSegments !!
-						} 
+						}
 					}
 					if ( (child == 0) != is_ccw_polygon_pt(seq.begin(), seq.end())) // Holes need to be CW, Outer rings CCW
 					{
 						string nam; who->GetName(nam);
 						string msg = string(child ? "Hole in " : "") + who->HumanReadableType() + " '" + nam + "' is wound " +
-											(child ? "counter" : "r") + "clock wise. Reverse selected component to fix this.";
+											(child ? "counter" : "") + "clock wise. Reverse selected component to fix this.";
 						msgs.push_back(validation_error_t(msg, 	err_gis_poly_wound_clockwise, who->GetNthChild(child), apt));
 					}
 				}
@@ -547,7 +526,7 @@ static void ValidateOnePolygon(WED_GISPolygon* who, validation_error_vector& msg
 					{
 						Bezier2 b1;
 						bool isb1 = ips->GetSide(gis_Geo, i, b1);
-						
+
 						if (isb1 && b1.self_intersect(10))
 							AddNodesOfSegment(ips,i,nodes_next2crossings);
 
@@ -570,7 +549,7 @@ static void ValidateOnePolygon(WED_GISPolygon* who, validation_error_vector& msg
 									b1.p2 != b2.p2 &&      // linear segment intersect check returns a false positive
 									b1.p1 != b2.p2 &&      // (unlike the bezier intersect test)
 									b1.p2 != b2.p1)
-								{		
+								{
 									Point2 x;
 									if (b1.as_segment().intersect(b2.as_segment(), x))
 									{
@@ -716,8 +695,6 @@ static void ValidateAirportFrequencies(WED_Airport* who, validation_error_vector
 		for(vector<WED_ATCFrequency*>::iterator freq = itr->begin(); freq != itr->end(); ++freq)
 		{
 			(*freq)->Export(freq_info);
-			int mhz = freq_info.freq / 100;
-			int last_digit = freq_info.freq % 10;
 			string freq_str = format_freq(freq_info.freq);
 
 			all_freqs[freq_info.freq].push_back(*freq);
@@ -730,32 +707,47 @@ static void ValidateAirportFrequencies(WED_Airport* who, validation_error_vector
 			else if(is_xplane_atc_related)
 				has_atc.push_back(*freq);
 
-			if(mhz < 0 || mhz > 1000)
+			if(freq_info.freq <= 136 || freq_info.freq >= 1000000)
 			{
-				msgs.push_back(validation_error_t(string("Frequency ") + freq_str + " not between 0 and 1000 Mhz.", err_freq_not_between_0_and_1000_mhz, *freq,who));
+				msgs.push_back(validation_error_t(string("Frequency ") + freq_str + " not between 136 kHz and 1000 MHz.", err_freq_not_between_0_and_1000_mhz, *freq,who));
 				continue;
 			}
 
-			bool in_civilian_band = mhz >= 118 && mhz <= 136;
-
-			//We only care about Delivery, Ground, and Tower frequencies
-			if(is_xplane_atc_related)
+			if(freq_info.freq < 118000 || freq_info.freq >= 137000)
 			{
-				if(in_civilian_band == false)
+				found_one_oob = true;
+			}
+			else
+			{
+				if (freq_info.freq > 121475 && freq_info.freq < 121525)
+						msgs.push_back(validation_error_t(string("The ATC frequency ") + freq_str + " is within the guardband of the emergency frequency.",
+								err_atc_freq_must_be_on_25khz_spacing,	*freq, who));
+
+				int mod25 = freq_info.freq % 25;
+				bool is_25k_raster	= mod25 == 0;
+				bool is_833k_chan = mod25 == 5 || mod25 == 10 || mod25 == 15;
+
+				if(!is_833k_chan && !is_25k_raster)
 				{
-					found_one_oob = true;
+					msgs.push_back(validation_error_t(string("The ATC frequency ") + freq_str + " is not a valid 8.33kHz channel number.",
+						err_atc_freq_must_be_on_8p33khz_spacing, *freq, who));
+				}
+				else if(!is_25k_raster && gExportTarget < wet_xplane_1130)
+				{
+					msgs.push_back(validation_error_t(string("The ATC frequency ") + freq_str + " is not a multiple of 25kHz as required prior to X-plane 11.30.",
+						err_atc_freq_must_be_on_25khz_spacing,	*freq, who));
 				}
 				else
 				{
-					if(last_digit == 0 || last_digit == 2 || last_digit == 5 || last_digit == 7)
-					{
+					if(is_xplane_atc_related)
 						found_one_valid = true;
-					}
-					else
+
+					Bbox2 bounds;
+					who->GetBounds(gis_Geo, bounds);
+					if(!is_25k_raster && (bounds.ymin() < 34.0 || bounds.xmin() < -11.0 || bounds.xmax() > 35.0) )     // rougly the outline of europe
 					{
-						msgs.push_back(validation_error_t(string("The ATC frequency ") + freq_str + " is illegal. (Clearance Delivery, Ground, and Tower frequencies in the civilian band must be on 25 khz spacing.)",
-							err_freq_del_grnd_twr_in_civilian_band_must_be_on_25khz_spacing,
-							*freq, who));
+						msgs.push_back(validation_error_t(string("ATC frequency ") + freq_str + " on 8.33kHz raster is used outside of Europe.",
+							warn_atc_freq_on_8p33khz_spacing,	*freq, who));
 					}
 				}
 			}
@@ -764,8 +756,8 @@ static void ValidateAirportFrequencies(WED_Airport* who, validation_error_vector
 		if(found_one_valid == false && is_xplane_atc_related)
 		{
 			stringstream ss;
-			ss  << "Could not find at least one valid ATC Frequency for group " << ENUM_Desc(ENUM_Import(ATCFrequency, freq_info.atc_type)) << ". "
-			    << "Ensure all frequencies in this group end in 0, 2, 5, or 7.";
+			ss  << "Could not find at least one VHF band ATC Frequency for group " << ENUM_Desc(ENUM_Import(ATCFrequency, freq_info.atc_type)) << ". "
+			    << "VHF band is 118 - 137 MHz and frequency raster 25/8.33kHz depending on targeted X-plane version.";
 			msgs.push_back(validation_error_t(ss.str(), err_freq_could_not_find_at_least_one_valid_freq_for_group, *itr, who));
 		}
 	}
@@ -803,7 +795,7 @@ static void ValidateAirportFrequencies(WED_Airport* who, validation_error_vector
 
 }
 
-static void ValidateOneATCRunwayUse(WED_ATCRunwayUse* use, validation_error_vector& msgs, WED_Airport * apt)
+static void ValidateOneATCRunwayUse(WED_ATCRunwayUse* use, validation_error_vector& msgs, WED_Airport * apt, const vector<int> dep_freqs)
 {
 	AptRunwayRule_t urule;
 	use->Export(urule);
@@ -811,6 +803,14 @@ static void ValidateOneATCRunwayUse(WED_ATCRunwayUse* use, validation_error_vect
 		msgs.push_back(validation_error_t("ATC runway use must support at least one operation type.", err_rwy_use_must_have_at_least_one_op,  use, apt));
 	else if(urule.equipment == 0)
 		msgs.push_back(validation_error_t("ATC runway use must support at least one equipment type.", err_rwy_use_must_have_at_least_one_equip, use, apt));
+
+	AptInfo_t ainfo;
+	apt->Export(ainfo);
+    if(gExportTarget == wet_gateway && ainfo.has_atc_twr)
+	if(find(dep_freqs.begin(), dep_freqs.end(), urule.dep_freq) == dep_freqs.end())
+	{
+		msgs.push_back(validation_error_t("ATC runway use departure frequency is not matching any ATC departure frequency defined at this airport.", err_rwy_use_no_matching_dept_freq, use, apt));
+	}
 }
 
 static void TJunctionTest(vector<WED_TaxiRoute*> all_taxiroutes, validation_error_vector& msgs, WED_Airport * apt)
@@ -834,66 +834,53 @@ static void TJunctionTest(vector<WED_TaxiRoute*> all_taxiroutes, validation_erro
 
 	for (vector<WED_TaxiRoute*>::iterator edge_a_itr = all_taxiroutes.begin(); edge_a_itr != all_taxiroutes.end(); ++edge_a_itr)
 	{
+		// most of this data isn't needed. At most the location of the two ends is needed - as a segment
+		// TaxiRouteInfo edge_a(*edge_a_itr,translator);
+		Bezier2 b;
+		(*edge_a_itr)->GetSide(gis_Geo, 0, b);
+		Segment2 edge_a( translator.Forward(b.p1) , translator.Forward(b.p2) );
+		
 		for (vector<WED_TaxiRoute*>::iterator edge_b_itr = all_taxiroutes.begin(); edge_b_itr != all_taxiroutes.end(); ++edge_b_itr)
 		{
-			//Skip over the same ones
-			if (edge_a_itr == edge_b_itr)
-			{
-				continue;
-			}
+			// Don't test an edge against itself
+			if (edge_a_itr == edge_b_itr)	continue;
 
-			TaxiRouteInfo edge_a(*edge_a_itr,translator);
-			TaxiRouteInfo edge_b(*edge_b_itr,translator);
- 
-			//tmp doesn't matter to us
+			// most of this data isn't needed. At most the location of the two ends is needed - as a segment
+			// TaxiRouteInfo edge_b(*edge_b_itr,translator);
+			
+			(*edge_b_itr)->GetSide(gis_Geo, 0, b);
+			Segment2 edge_b( translator.Forward(b.p1) , translator.Forward(b.p2) );
+
+			// Skip crossing edges
+			// Note - its validated elsewhere - why duplicate this effort ???
 			Point2 tmp;
-			if (edge_a.taxiroute_segment_m.intersect(edge_b.taxiroute_segment_m,tmp) == true)
-			{
-				//An intersection is different from a T junction
-				continue;
-			}
+			if (edge_a.intersect(edge_b,tmp)) continue;
 
-			bool found_duplicate = false;
-			for (int i = 0; i < 2 && found_duplicate == false; i++)
-			{
-				for (int j = 0; j < 2 && found_duplicate == false; j++)
-				{
-					if (edge_a.nodes_m[i] == edge_b.nodes_m[j])
-					{
-						//This is a duplicate of the doubled up vertex test
-						found_duplicate = true;
-					}
-				}
-			}
-
-			if (found_duplicate == true)
-			{
-				//Try another one
-				continue;
-			}
+			// Skip if the edges are joint at at least one end
+			// Note - its validated elsewhere - why dyplicate this effort ???
+			if (edge_a.p1 == edge_b.p1 || edge_a.p1 == edge_b.p2 ||
+				 edge_a.p2 == edge_b.p1 || edge_a.p2 == edge_b.p2 ) continue;
 
 			const double TJUNCTION_THRESHOLD = 1.00;
 			for (int i = 0; i < 2; i++)
 			{
-				set<WED_Thing*> node_viewers;
-				edge_b.nodes[i]->GetAllViewers(node_viewers);
+				// its also worth changing this to Bezier2.is_near() to prepare for future curved edges
+				double dist_b_node_to_a_edge = i ? edge_a.squared_distance(edge_b.p2) : edge_a.squared_distance(edge_b.p1);
 
-				int valence = node_viewers.size();
-				if (valence == 1)
+				if (dist_b_node_to_a_edge < TJUNCTION_THRESHOLD * TJUNCTION_THRESHOLD)
 				{
-					double dist_b_node_to_a_edge = sqrt(edge_a.taxiroute_segment_m.squared_distance(edge_b.nodes_m[i]));
+					set<WED_Thing*> node_viewers;
+					(*edge_b_itr)->GetNthSource(i)->GetAllViewers(node_viewers);
 
-					if (dist_b_node_to_a_edge < TJUNCTION_THRESHOLD)
-					{
+					int valence = node_viewers.size();
+					if (valence == 1)
+					{	
 						vector<WED_Thing*> problem_children;
 						problem_children.push_back(*edge_a_itr);
+						problem_children.push_back((*edge_b_itr)->GetNthSource(i));
+						string name; (*edge_a_itr)->GetName(name);
 
-						string problem_node_name;
-
-						problem_children.push_back((edge_b.nodes[i]));
-						edge_b.nodes[i]->GetName(problem_node_name);
-
-						msgs.push_back(validation_error_t("Taxi route " + edge_a.taxiroute_name + " is not joined to a destination route.", err_taxi_route_not_joined_to_dest_route, problem_children, apt));
+						msgs.push_back(validation_error_t("Taxi route " + name + " is not joined to a destination route.", err_taxi_route_not_joined_to_dest_route, problem_children, apt));
 					}
 				}
 			}
@@ -901,10 +888,13 @@ static void TJunctionTest(vector<WED_TaxiRoute*> all_taxiroutes, validation_erro
 	}
 }
 
-static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs, set<int>& legal_rwy_oneway, WED_Airport * apt)
+typedef vector<int> surfWindVec_t;  // the maximum amount of wind from any given direction that should be tested for
+
+static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs, set<int>& legal_rwy_oneway, WED_Airport * apt, const vector<int>& dep_freqs, surfWindVec_t& sWindsCov)
 {
-	// Check ATC Flow visibility > 0, ceiling > 0, ICAO code is set, at least one arrival and one departure runway and 
-	// is not using any runway in opposing directions simultaneously fro either arr or dep
+	// Check ATC Flow visibility > 0, ceiling > 0, ICAO code is set, at least one arrival and one departure runway and
+	// is not using any runway in opposing directions simultaneously for either arr or dep
+	// warn if tailwind component is large, i.e. user mixed up wind direction vs landing directions
 
 	string name;
 	flow->GetName(name);
@@ -918,88 +908,156 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 	if(name.empty())
 		msgs.push_back(validation_error_t("An ATC Flow has a blank name. You must name every flow.", err_flow_blank_name, flow, apt));
 
-	vector<WED_ATCWindRule*>	wind;
+	vector<WED_ATCWindRule*>	windR;
 	vector<WED_ATCTimeRule*>	timeR;
-	vector<WED_ATCRunwayUse*>	ruse;
+	vector<WED_ATCRunwayUse*>	useR;
 
-	CollectRecursive(flow, back_inserter(wind),  IgnoreVisiblity, TakeAlways, WED_ATCWindRule::sClass);
+	CollectRecursive(flow, back_inserter(windR),  IgnoreVisiblity, TakeAlways, WED_ATCWindRule::sClass);
 	CollectRecursive(flow, back_inserter(timeR), IgnoreVisiblity, TakeAlways, WED_ATCTimeRule::sClass);
-	CollectRecursive(flow, back_inserter(ruse),  IgnoreVisiblity, TakeAlways, WED_ATCRunwayUse::sClass);
+	CollectRecursive(flow, back_inserter(useR),  IgnoreVisiblity, TakeAlways, WED_ATCRunwayUse::sClass);
 
 	if(legal_rwy_oneway.count(flow->GetPatternRunway()) == 0)
 		msgs.push_back(validation_error_t(string("The pattern runway ") + string(ENUM_Desc(flow->GetPatternRunway())) + " is illegal for the ATC flow '" + name + "' because it is not a runway at this airport.", err_flow_pattern_runway_not_in_airport, flow, apt));
 
 	// Check ATC Wind rules having directions within 0 ..360 deg, speed from 1..99 knots.  Otherweise XP 10.51 will give an error.
 	
-	for(vector<WED_ATCWindRule*>::iterator w = wind.begin(); w != wind.end(); ++w)
+	surfWindVec_t sWindThisFlow(360, 0);
+	bool flowCanBeReached = false;
+
+	for(auto wrule : windR)
 	{
-		WED_ATCWindRule * wrule = *w;
-		AptWindRule_t exp;
-		wrule->Export(exp);
-		if(exp.icao.empty())
-			msgs.push_back(validation_error_t(string("ATC wind rule '") + name + "' has a blank ICAO code for its METAR source.", err_atc_rule_wind_blank_ICAO_for_METAR, wrule, apt));
+		AptWindRule_t windData;
+		wrule->Export(windData);
+		if(windData.icao.empty())
+			msgs.push_back(validation_error_t("ATC wind rule has a blank ICAO code for its METAR source.", err_atc_rule_wind_blank_ICAO_for_METAR, wrule, apt));
 
-		if((exp.dir_lo_degs_mag < 0) || (exp.dir_lo_degs_mag > 359) || (exp.dir_hi_degs_mag < 0) || (exp.dir_hi_degs_mag > 360) // 360 is ok with XP10.51, but as a 'from' direction its poor style.
-							|| (exp.dir_lo_degs_mag == exp.dir_hi_degs_mag))
-			msgs.push_back(validation_error_t(string("ATC wind rule '") + name + "' has invalid from and/or to directions.", err_atc_rule_wind_invalid_directions, wrule, apt));
+		if((windData.dir_lo_degs_mag < 0) || (windData.dir_lo_degs_mag > 359) || (windData.dir_hi_degs_mag < 0) || (windData.dir_hi_degs_mag > 360) // 360 is ok with XP10.51, but as a 'from' direction its poor style.
+							|| (windData.dir_lo_degs_mag == windData.dir_hi_degs_mag))
+			msgs.push_back(validation_error_t("ATC wind rule has invalid from and/or to directions.", err_atc_rule_wind_invalid_directions, wrule, apt));
 
-		if((exp.max_speed_knots < 1) || (exp.max_speed_knots >999))
-			msgs.push_back(validation_error_t(string("ATC wind rule '") + name + "' has maximum wind speed outside 1..999 knots range.", err_atc_rule_wind_invalid_speed, wrule, apt));
+		if((windData.max_speed_knots < 1) || (windData.max_speed_knots >999))
+			msgs.push_back(validation_error_t("ATC wind rule has maximum wind speed outside 1..999 knots range.", err_atc_rule_wind_invalid_speed, wrule, apt));
+			
+		int minWindFixed = intlim(windData.dir_lo_degs_mag,0,359);
+		int maxWindFixed = intlim(windData.dir_hi_degs_mag,0,359);
+		int thisFlowSpdFixed = intlim(windData.max_speed_knots,1,ATC_FLOW_MAX_WIND);
+		
+		// get all winds that the rules allow for this flow and and are still "available, i.e. not handled by prior flows already
+		if (minWindFixed < maxWindFixed)
+		{
+			for(int i = minWindFixed; i <= maxWindFixed; i++)
+				if(thisFlowSpdFixed > sWindsCov[i])
+				{
+					flowCanBeReached = true;
+					sWindThisFlow[i] = max(sWindThisFlow[i],thisFlowSpdFixed);
+				}
+		}
+		else
+		{
+			for(int i = minWindFixed; i < 360; i++)
+				if(thisFlowSpdFixed > sWindsCov[i])
+				{
+					flowCanBeReached = true;
+					sWindThisFlow[i] = max(sWindThisFlow[i],thisFlowSpdFixed);
+				}
+			for(int i = 0; i <= maxWindFixed; i++)
+				if(thisFlowSpdFixed > sWindsCov[i])
+				{
+					flowCanBeReached = true;
+					sWindThisFlow[i] = max(sWindThisFlow[i],thisFlowSpdFixed);
+				}
+		}
 	}
-	
+	if(windR.empty())
+		for(int i = 0; i < 360; ++i)
+			if(ATC_FLOW_MAX_WIND > sWindsCov[i])
+			{
+				flowCanBeReached = true;
+				sWindThisFlow[i] = ATC_FLOW_MAX_WIND;
+			}
+
+	if (!flowCanBeReached)
+		msgs.push_back(validation_error_t(string("ATC Flow '") + name + "' can never be reached. All winds up to " + to_string(ATC_FLOW_MAX_WIND) + 
+		       " kts are covered by flows listed ahead of it. This is not taking time restrictions into account", warn_atc_flow_never_reached, flow, apt));
+
 	// Check ATC Time rules having times being within 00:00 .. 24:00 hrs, 0..59 minutes and start != end time. Otherweise XP will give an error.
-	
-	for(vector<WED_ATCTimeRule*>::iterator w = timeR.begin(); w != timeR.end(); ++w)
+	bool isActive24_7 = true;
+	for(auto trule : timeR)
 	{
-		WED_ATCTimeRule * trule = *w;
-		AptTimeRule_t exp;
-		trule->Export(exp);
-		if((exp.start_zulu < 0) || (exp.start_zulu > 2359) || (exp.end_zulu < 0) || (exp.end_zulu > 2400)     // yes, 24:00z is OK with XP 10.51
-							|| (exp.start_zulu == exp.end_zulu) || (exp.start_zulu % 100 > 59) || (exp.end_zulu % 100 > 59))
-			msgs.push_back(validation_error_t(string("ATC time rule '") + name + "' has invalid start and/or stop time.", err_atc_rule_time_invalid_times, trule, apt));
+		AptTimeRule_t timeData;
+		trule->Export(timeData);
+		if((timeData.start_zulu < 0) || (timeData.start_zulu > 2359) || (timeData.end_zulu < 0) || (timeData.end_zulu > 2400)     // yes, 24:00z is OK with XP 10.51
+							|| (timeData.start_zulu == timeData.end_zulu) || (timeData.start_zulu % 100 > 59) || (timeData.end_zulu % 100 > 59))
+			msgs.push_back(validation_error_t("ATC time rule has invalid start and/or stop time.", err_atc_rule_time_invalid_times, trule, apt));
+			
+		if(timeData.start_zulu > 0 || timeData.end_zulu < 2359)
+			isActive24_7 = false;
+
+		int wrapped_end_zulu = timeData.start_zulu < timeData.end_zulu ? timeData.end_zulu : timeData.end_zulu + 2400;
+		if(wrapped_end_zulu - timeData.start_zulu < 100)
+			msgs.push_back(validation_error_t("ATC time rule specifies implausible short duration.", warn_atc_flow_short_time, trule, apt));
 	}
+	
+	if(isActive24_7 && exp.visibility_sm < 0.1 && exp.ceiling_ft == 0)    // only consider winds covered from now on if its a no vis/time condition flow. May cause a few false tailwind warnings 
+		for(int i = 0; i < 360; ++i)                                       // in complex multi-time or ceiling flows settings when ALL prior flows have time rules that together cover 24hrs.
+			sWindsCov[i] = max(sWindThisFlow[i], sWindsCov[i]);             // Such is bad style - one shold rather have one flow with a time rule followed by a time-unlimited flow.
 
 	#if !GATEWAY_IMPORT_FEATURES
 
 	map<int,vector<WED_ATCRunwayUse*> >		arrival_rwys;
 	map<int,vector<WED_ATCRunwayUse*> >		departure_rwys;
 
-	for(vector<WED_ATCRunwayUse*>::iterator r = ruse.begin(); r != ruse.end(); ++r)
+	for(auto u : useR)
 	{
-		WED_ATCRunwayUse * use = *r;
-		ValidateOneATCRunwayUse(use,msgs,apt);
-		int rwy = use->GetRunway();
+		ValidateOneATCRunwayUse(u,msgs,apt,dep_freqs);
+		int rwy = u->GetRunway();
 		if(rwy == atc_Runway_None)
 		{
-			msgs.push_back(validation_error_t("Runway use has no runway selected.", err_rwy_use_no_runway_selected, use, apt));
+			msgs.push_back(validation_error_t("Runway use has no runway selected.", err_rwy_use_no_runway_selected, u, apt));
 		}
 		else
 		{
-			if(use->HasArrivals())
+			if(u->HasArrivals())
 			{
 				if(arrival_rwys.count(get_opposite_rwy(rwy)))
 				{
 					msgs.push_back(validation_error_t("Airport flow has opposite direction arrivals.", err_flow_has_opposite_arrivals, arrival_rwys[get_opposite_rwy(rwy)], apt));
-					msgs.back().bad_objects.push_back(use);
+					msgs.back().bad_objects.push_back(u);
 				}
-				arrival_rwys[rwy].push_back(use);
+				arrival_rwys[rwy].push_back(u);
 			}
-			if(use->HasDepartures())
+			if(u->HasDepartures())
 			{
 				if(departure_rwys.count(get_opposite_rwy(rwy)))
 				{
 					msgs.push_back(validation_error_t("Airport flow has opposite direction departures.", err_flow_has_opposite_departures, departure_rwys[get_opposite_rwy(rwy)], apt));
-					msgs.back().bad_objects.push_back(use);
+					msgs.back().bad_objects.push_back(u);
 				}
-				departure_rwys[rwy].push_back(use);
+				departure_rwys[rwy].push_back(u);
+			}
+
+			double maxTailwind(0);
+			int thisUseHdgMag = ((rwy - atc_1 + 1)/(atc_2 - atc_1) + 1) * 10;
+			for(int i = 0; i < 360; i++)
+			{
+				double relTailWindAngle = i-thisUseHdgMag;
+				maxTailwind	= max(maxTailwind, -sWindThisFlow[i] * cos(relTailWindAngle * DEG_TO_RAD));
+			}
+			// if this is a propper "catch all" last flow, it should have no wind rules at all defined, so maxTailwind is still zero here.
+			if(maxTailwind > (u->HasArrivals() ? 10.0 : 15.0))   // allow a bit more tailwind for departure only runways, helps noise abatement one-way flows
+			{
+					string txt("Wind Rules in flow '");
+					txt += name + "' allow Runway " + ENUM_Desc(rwy);
+					txt += " to be used with up to " + to_string(intround(maxTailwind)) + " kts tailwind component @ " + to_string(ATC_FLOW_MAX_WIND) + " kts winds";
+					msgs.push_back(validation_error_t(txt, warn_atc_flow_excessive_tailwind, u, apt));
 			}
 		}
 	}
 	#endif
-	
+
 	if (arrival_rwys.empty() || departure_rwys.empty())
 		msgs.push_back(validation_error_t("Airport flow must specify at least one active arrival and one departure runway", err_flow_no_arr_or_no_dep_runway, flow, apt));
-	
+
 }
 
 static void ValidateATC(WED_Airport* apt, validation_error_vector& msgs, set<int>& legal_rwy_oneway, set<int>& legal_rwy_twoway)
@@ -1024,11 +1082,54 @@ static void ValidateATC(WED_Airport* apt, validation_error_vector& msgs, set<int
 		return;
 	}
 
+	vector<WED_ATCFrequency*> ATC_freqs;
+	CollectRecursive(apt, back_inserter<vector<WED_ATCFrequency*> >(ATC_freqs), IgnoreVisiblity, TakeAlways);
+
+	vector<int> departure_freqs;
+	for(vector<WED_ATCFrequency*>::iterator d = ATC_freqs.begin(); d != ATC_freqs.end(); ++d)
+	{
+		AptATCFreq_t freq_info;
+		(*d)->Export(freq_info);
+		if(ENUM_Import(ATCFrequency, freq_info.atc_type) == atc_Departure)
+		{
+			departure_freqs.push_back(freq_info.freq);
+		}
+	}
+	surfWindVec_t covSurfWinds(360, 0);                  // winds up to this level have been covered by ATC flows
+
 	for(vector<WED_ATCFlow *>::iterator f = flows.begin(); f != flows.end(); ++f)
 	{
-		ValidateOneATCFlow(*f, msgs, legal_rwy_oneway, apt);
+		ValidateOneATCFlow(*f, msgs, legal_rwy_oneway, apt, departure_freqs, covSurfWinds);
 	}
+	
+	int uncovSpd = ATC_FLOW_MAX_WIND;
+	if(!flows.empty())
+		for(int i = 0; i < 360; i++)
+			uncovSpd = min(uncovSpd, covSurfWinds[i]);
+	
+	if(uncovSpd < ATC_FLOW_MAX_WIND)
+	{
+		int i=0;
+		while(i<360)
+		{
+			int uncovHdgMin = -1, uncovHdgMax = -1;
 
+			while (i<360 && covSurfWinds[i] != 	uncovSpd) i++;
+			uncovHdgMin = i;
+			while (i<360 && covSurfWinds[i] == 	uncovSpd) i++;
+			uncovHdgMax = i-1;
+			while (i<360 && covSurfWinds[i] != 	uncovSpd) i++;
+			
+			if(uncovHdgMax < 360)
+			{
+				string txt("The ATC flows do not cover winds from ");
+				txt += to_string(uncovHdgMin) + " to " + to_string(uncovHdgMax) + " above " + to_string(uncovSpd) + " kts.";
+				txt += " Remove all time, wind, visibility rules from last flow to make it a 'catch all' flow";
+				msgs.push_back(validation_error_t(txt , warn_atc_flow_insufficient_coverage, flows.back(), apt));
+			}
+		}
+	}
+	
 	for(vector<WED_TaxiRoute *>::iterator t = taxi_routes.begin(); t != taxi_routes.end(); ++t)
 	{
 		WED_TaxiRoute * taxi = *t;
@@ -1063,7 +1164,6 @@ static void ValidateATC(WED_Airport* apt, validation_error_vector& msgs, set<int
 #endif
 		}
 	}
-
 	TJunctionTest(taxi_routes, msgs, apt);
 }
 
@@ -1072,7 +1172,7 @@ static void ValidateATC(WED_Airport* apt, validation_error_vector& msgs, set<int
 //------------------------------------------------------------------------------------------------------------------------------------
 #pragma mark -
 
-static void ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vector& msgs, WED_Airport * apt)
+static void ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vector& msgs, WED_Airport * apt, const vector<WED_Runway *>& runways)
 {
 	AptGate_t	g;
 	ramp->Export(g);
@@ -1094,6 +1194,43 @@ static void ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vec
 				msgs.push_back(validation_error_t("Ramp operation types and airlines are only allowed at real ramp types, e.g. gates and tie-downs, not misc and hangars.", err_ramp_op_type_and_airlines_only_allowed_at_gates_and_tie_downs, ramp,apt));
 			}
 		}
+
+		if((g.type == atc_ramp_gate || g.type == atc_ramp_tie_down) && (apt->GetAirportType() == type_Airport))
+        {
+            double req_rwy_len = 0.0;
+            double req_rwy_wid = 0.0;
+            bool   unpaved_OK = false;
+
+            switch(g.width)
+            {
+                case  atc_width_F:
+                case  atc_width_E:
+                    req_rwy_len = 6000.0; req_rwy_wid = 100.0; break;
+                case  atc_width_D:
+                case  atc_width_C:
+                    req_rwy_len = 3000.0; req_rwy_wid =  70.0; break;
+                default:
+                    unpaved_OK = true;
+            }
+            req_rwy_len *= FT_TO_MTR;
+            req_rwy_wid *= FT_TO_MTR;
+
+            vector<WED_Runway *>::const_iterator r(runways.begin());
+            while(r != runways.end())
+            {
+                WED_GISLine_Width * lw = dynamic_cast<WED_GISLine_Width *>(*r);
+
+                if(((*r)->GetSurface() <= surf_Concrete || (*r)->GetSurface() == surf_Trans || unpaved_OK) && lw->GetLength() >= req_rwy_len && lw->GetWidth() >= req_rwy_wid)
+                        break;
+                ++r;
+            }
+
+            if(r == runways.end())
+            {
+                msgs.push_back(validation_error_t("Ramp size is implausibly large given largest available runway at this airport.", warn_ramp_start_size_implausible, ramp, apt));
+            }
+        }
+
 
 		string airlines_str = WED_RampPosition::CorrectAirlinesString(g.airlines);
 		string orig_airlines_str = ramp->GetAirlines();
@@ -1137,7 +1274,7 @@ static void ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vec
 						}
 						else
 						{
-							msgs.push_back(validation_error_t(string("Ramp start airlines string '") + orig_airlines_str + "' contains non-lowercase letters.", err_ramp_airlines_contains_non_lowercase_letters, ramp, apt));
+							msgs.push_back(validation_error_t(string("Ramp start airlines string '") + orig_airlines_str + "' may contains only lowercase ASCII letters.", err_ramp_airlines_contains_non_lowercase_letters, ramp, apt));
 							break;
 						}
 					}
@@ -1202,7 +1339,7 @@ static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& 
 		int suffix = n1[n1.length()-1];
 		if (suffix < '0' || suffix > '9')
 		{
-			if (suffix == 'L' || suffix == 'R' || suffix == 'C' || suffix == 'S') suf1 = suffix;
+			if (suffix == 'L' || suffix == 'R' || suffix == 'C' || suffix == 'S' || suffix == 'T' || suffix == 'W') suf1 = suffix;
 			else msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' has an illegal suffix for the low-end runway.", err_rwy_name_low_illegal_suffix, who,apt));
 			n1.erase(n1.length()-1);
 		}
@@ -1232,7 +1369,7 @@ static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& 
 			int suffix = n2[n2.length()-1];
 			if (suffix < '0' || suffix > '9')
 			{
-				if (suffix == 'L' || suffix == 'R' || suffix == 'C' || suffix == 'S') suf2 = suffix;
+				if (suffix == 'L' || suffix == 'R' || suffix == 'C' || suffix == 'S' || suffix == 'T' || suffix == 'W' ) suf2 = suffix;
 				else msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' has an illegal suffix for the high-end runway.", err_rwy_name_high_illegal_suffix, who,apt));
 				n2.erase(n2.length()-1);
 			}
@@ -1261,7 +1398,9 @@ static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& 
 		if ((suf1 == 'L' && suf2 != 'R') ||
 			(suf1 == 'R' && suf2 != 'L') ||
 			(suf1 == 'C' && suf2 != 'C') ||
-			(suf1 == 'S' && suf2 != 'S'))
+			(suf1 == 'S' && suf2 != 'S') ||
+			(suf1 == 'T' && suf2 != 'T') ||
+			(suf1 == 'W' && suf2 != 'W'))
 			msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' has mismatched suffixes.", err_rwy_name_suffixes_match, who,apt));
 	}
 	else if((suf1 == 0) != (suf2 == 0))
@@ -1287,9 +1426,9 @@ static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& 
 		WED_Runway * rwy = dynamic_cast<WED_Runway *>(who);
 		if (rwy)
 		{
-			if(rwy->GetSurface() == surf_Water && gExportTarget == wet_gateway)
+			if((rwy->GetSurface() == surf_Trans || rwy->GetSurface() == surf_Water) && gExportTarget == wet_gateway)
 			{
-				msgs.push_back(validation_error_t("Water is not a valid surface type for runways.", err_rwy_surface_water_not_valid, who,apt));
+				msgs.push_back(validation_error_t("Water or transparent are no valid surface types for runways.", err_rwy_surface_water_not_valid, who,apt));
 			}
 
 			if (rwy->GetDisp1() + rwy->GetDisp2() > rwy->GetLength()) msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' has overlapping displaced thresholds.", err_rwy_overlapping_displaced_thresholds, who,apt));
@@ -1321,7 +1460,7 @@ static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& 
 				double heading_delta = fabs(dobwrap(approx_heading - heading, -180.0, 180.0));
 				if(heading_delta > 135.0)
 					msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' needs to be reversed to match its name.", err_rwy_must_be_reversed_to_match_name, who,apt));
-				else if(heading_delta > 45.0)
+				else if(heading_delta > ( name[name.length()-1] == 'T' ? 6.0 : 45.0))         // true north runways are'nt allowed to deviate for magnetic deviation
 					msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' is misaligned with its runway name.", err_rwy_misaligned_with_name, who,apt));
 			#endif
 		}
@@ -1483,7 +1622,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 		if (city.empty() == false)
 		{
 			string error_content;
-			
+
 			//This is included because of VTCN being located in Nan, Thailand. strtod turns this into IEEE NaN.
 			//Yes, thats a real name, and its probably filled with people named Mr. Null and Ms. Error and their son Bobby Tables
 			if (!(city == "Nan" &&  who->GetMetaDataValue(wed_AddMetaDataCountry) == "Thailand"))
@@ -1525,86 +1664,50 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 		all_keys.push_back(country);
 	}
 
-	int lat_lon_problems = 0;
-	bool valid_lat = false;
-	if(who->ContainsMetaDataKey(wed_AddMetaDataDatumLat))
+	bool lat_lon_problems = false;
+	if(who->ContainsMetaDataKey(wed_AddMetaDataDatumLat) || who->ContainsMetaDataKey(wed_AddMetaDataDatumLon))
 	{
-		string datum_lat        = who->GetMetaDataValue(wed_AddMetaDataDatumLat);
-		if(datum_lat.empty() == false)
-		{
-			string error_content;
-			if(is_a_number(datum_lat) == true)
-			{
-				double latitude;
+		string datum_lat = who->ContainsMetaDataKey(wed_AddMetaDataDatumLat) ? who->GetMetaDataValue(wed_AddMetaDataDatumLat) : "";
+		string datum_lon = who->ContainsMetaDataKey(wed_AddMetaDataDatumLon) ? who->GetMetaDataValue(wed_AddMetaDataDatumLon) : "";
 
-				istringstream iss(datum_lat);
-				iss >> latitude;
-				if(latitude < -90.00 || latitude > 90.00)
+		if(datum_lat.size() || datum_lon.size())
+		{
+			lat_lon_problems = true;
+			if(!is_a_number(datum_lat))
+			{
+				add_formated_metadata_error(error_template, wed_AddMetaDataDatumLat, "Not a number", who, msgs, apt);
+			}
+			if(!is_a_number(datum_lon))
+			{
+				add_formated_metadata_error(error_template, wed_AddMetaDataDatumLon, "Not a number", who, msgs, apt);
+			}
+			if(is_a_number(datum_lon) && is_a_number(datum_lat))
+			{
+				Bbox2 apt_bounds;
+				apt->GetBounds(gis_Geo, apt_bounds);
+				apt_bounds.expand(1.0/60.0 / cos(apt_bounds.centroid().y() * DEG_TO_RAD), 1.0/60.0);
+				
+				Point2 apt_datum(stod(datum_lon), stod(datum_lat));
+
+				if(apt_bounds.contains(apt_datum))
 				{
-					error_content = "Datum latitude is out of range";
-					valid_lat = false;
+					lat_lon_problems = false;
+				}
+				else
+				{
+					if(apt_datum.x() < apt_bounds.xmin() || apt_datum.x() > apt_bounds.xmax())
+						add_formated_metadata_error(error_template, wed_AddMetaDataDatumLon,
+						"Coordinate not within 1 nm of the airport.", who, msgs, apt);
+					if(apt_datum.y() < apt_bounds.ymin() || apt_datum.y() > apt_bounds.ymax())
+						add_formated_metadata_error(error_template, wed_AddMetaDataDatumLat,
+						"Coordinate not within 1 nm of the airport.", who, msgs, apt);
 				}
 			}
-			else
-			{
-				error_content = "Datum latitude must be a number";
-				valid_lat = false;
-			}
-
-			if(error_content.empty() == false)
-			{
-				++lat_lon_problems;
-				add_formated_metadata_error(error_template, wed_AddMetaDataDatumLat, error_content, who, msgs, apt);
-			}
-			else
-			{
-				valid_lat = true;
-			}
 		}
-		all_keys.push_back(datum_lat);
 	}
-
-	bool valid_lon = false;
-	if(who->ContainsMetaDataKey(wed_AddMetaDataDatumLon))
+	if(lat_lon_problems)
 	{
-		string datum_lon        = who->GetMetaDataValue(wed_AddMetaDataDatumLon);
-		if(datum_lon.empty() == false)
-		{
-			string error_content;
-			if(is_a_number(datum_lon) == true)
-			{
-				double longitude;
-
-				istringstream iss(datum_lon);
-				iss >> longitude;
-				if(longitude < -180.00 || longitude > 180.00)
-				{
-					error_content = "Datum longitude is out of range";
-					valid_lon = false;
-				}
-			}
-			else
-			{
-				error_content = "Datum longitude must be a number";
-				valid_lon = false;
-			}
-
-			if(error_content.empty() == false)
-			{
-				++lat_lon_problems;
-				add_formated_metadata_error(error_template, wed_AddMetaDataDatumLon, error_content, who, msgs, apt);
-			}
-			else
-			{
-				valid_lon = true;
-			}
-		}
-		all_keys.push_back(datum_lon);
-	}
-
-	if(lat_lon_problems > 0 && (valid_lat == false || valid_lon == false))
-	{
-		msgs.push_back(validation_error_t(string("Metadata datum latitude and longitude must both be valid and come in a pair"), err_airport_metadata_invalid, who, apt)); 
+		msgs.push_back(validation_error_t(string("Metadata 'Datum latitude / longitude' must both be valid and come in a pair"), err_airport_metadata_invalid, who, apt));
 	}
 
 	if(who->ContainsMetaDataKey(wed_AddMetaDataFAA))
@@ -1644,7 +1747,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 	}
 
 	//Local Code (feature request)
-	
+
 	if(who->ContainsMetaDataKey(wed_AddMetaDataLocal))
 	{
 		string code        = who->GetMetaDataValue(wed_AddMetaDataLocal);
@@ -1670,7 +1773,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 		}
 		all_keys.push_back(code);
 	}
-	
+
 	if(who->ContainsMetaDataKey(wed_AddMetaDataFAA) && who->ContainsMetaDataKey(wed_AddMetaDataLocal))
 	{
 		string codeFAA    = who->GetMetaDataValue(wed_AddMetaDataFAA);
@@ -1763,7 +1866,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 		if (is_a_number(transition_alt) == true)
 		{
 			double altitiude = 0.0;
-			
+
 			istringstream iss(transition_alt);
 			iss >> altitiude;
 
@@ -1871,53 +1974,19 @@ static void ValidateOneTruckDestination(WED_TruckDestination* destination,valida
 	}
 }
 
-bool is_ground_route(WED_Thing* taxi_route)
-{
-	WED_TaxiRoute* ground_rt = dynamic_cast<WED_TaxiRoute*>(taxi_route);
-	if (ground_rt != NULL)
-	{
-		if (ground_rt->AllowTrucks())
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
 static void ValidateOneTruckParking(WED_TruckParkingLocation* truck_parking,validation_error_vector& msgs, WED_Airport* apt)
 {
 	string name;
 	truck_parking->GetName(name);
 	int num_cars = truck_parking->GetNumberOfCars();
 
-	if (num_cars < 0)
-	{
-		stringstream ss;
-		ss  << "Truck parking location "
-			<< name
-			<< " cannot have negative car count of "
-			<< num_cars;
-		msgs.push_back(validation_error_t(ss.str(), err_truck_parking_cannot_have_negative_car_count, truck_parking, apt));
-	}
-
 	int MAX_CARS = 10;
-	if (truck_parking->GetNumberOfCars() > MAX_CARS)
-	{
-		stringstream ss;
-		ss  << "Truck parking location "
-			<< name
-			<< " has more than  "
-			<< MAX_CARS
-			<< " baggage cars";
-		msgs.push_back(validation_error_t(ss.str(), err_truck_parking_car_count_exceeds_max, truck_parking, apt));
-	}
 
-	vector<WED_TaxiRoute*> truck_routes;
-	CollectRecursive(apt, back_inserter(truck_routes), EntityNotHidden, is_ground_route, WED_TaxiRoute::sClass);
-	
-	if (truck_routes.empty() == true)
+	if (num_cars < 0 || num_cars > MAX_CARS)
 	{
-		msgs.push_back(validation_error_t("Truck parking location '" + name + "' is invalid. Its airport does not contain any taxi routes for ground trucks", err_truck_parking_no_ground_taxi_routes, truck_parking, apt));
+		string ss("Truck parking location ") ;
+		ss += name +" must have a car count between 0 and " + to_string(MAX_CARS);
+		msgs.push_back(validation_error_t(ss, err_truck_parking_car_count, truck_parking, apt));
 	}
 }
 //------------------------------------------------------------------------------------------------------------------------------------
@@ -1950,31 +2019,37 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	string name, icao;
 	apt->GetName(name);
 	apt->GetICAO(icao);
+	validate_error_t err_type;
 
 	if(name.empty())
 		msgs.push_back(validation_error_t("Airport has no name.", err_airport_name, apt,apt));
-	else 
+	else
 	{
+	    if(gExportTarget == wet_gateway)
+            err_type = err_airport_name;
+        else
+            err_type = warn_airport_name_style;
+
 		if(strlen_utf8(name) > 30)
-			msgs.push_back(validation_error_t("Airport name is longer than 30 characters.", err_airport_name, apt,apt));
-			
-		if(name[0] == ' ' || name[name.length()-1] == ' ')
-			msgs.push_back(validation_error_t("Airport name includes leading or trailing spaces.", err_airport_name, apt,apt));
-		
+			msgs.push_back(validation_error_t("Airport name is longer than 30 characters.", err_type, apt,apt));
+
+		if(isspace(name[0]) || isspace(name[name.length()-1]))
+			msgs.push_back(validation_error_t("Airport name includes leading or trailing spaces.", err_type, apt,apt));
+
 		int lcase = count_if(name.begin(), name.end(), ::islower);
 		int ucase = count_if(name.begin(), name.end(), ::isupper);
 		if (ucase > 2 && lcase == 0)
 			msgs.push_back(validation_error_t("Airport name is all upper case.", warn_airport_name_style, apt,apt));
-		
+
 		string name_lcase(name), icao_lcase(icao);
 		::transform(name_lcase.begin(), name_lcase.end(), name_lcase.begin(), ::tolower);  // waiting for C++11 ...
 		::transform(icao_lcase.begin(), icao_lcase.end(), icao_lcase.begin(), ::tolower);  // waiting for C++11 ...
 
 		if (contains_word(name_lcase,"airport"))
 			msgs.push_back(validation_error_t("The airport name should not include the word 'Airport'.", warn_airport_name_style, apt,apt));
-		if (contains_word(name_lcase,"international") || contains_word(name_lcase,"int")|| contains_word(name_lcase,"regional") || contains_word(name_lcase,"rgnl") 
+		if (contains_word(name_lcase,"international") || contains_word(name_lcase,"int")|| contains_word(name_lcase,"regional")
 			|| contains_word(name_lcase,"municipal"))
-			msgs.push_back(validation_error_t("The airport name should use the akronyms 'Intl', 'Regl' and 'Muni' instead of full words.", warn_airport_name_style, apt,apt));
+			msgs.push_back(validation_error_t("The airport name should use the abbreviations 'Intl', 'Rgnl' and 'Muni' instead of full words.", warn_airport_name_style, apt,apt));
 		if (contains_word(name_lcase, icao_lcase.c_str()))
 			msgs.push_back(validation_error_t("The airport name should not include the ICAO code. Use the common name only.", warn_airport_name_style, apt,apt));
 
@@ -2034,17 +2109,32 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	WED_GetAllRunwaysOneway(apt,legal_rwy_oneway);
 	WED_GetAllRunwaysTwoway(apt,legal_rwy_twoway);
 
-	if(runways.empty() && helipads.empty() && sealanes.empty())
-		msgs.push_back(validation_error_t(string("The airport '") + name + "' contains no runways, sea lanes, or helipads.", err_airport_no_rwys_sealanes_or_helipads, apt,apt));
-	
+   err_type = gExportTarget == wet_gateway ? err_airport_no_rwys_sealanes_or_helipads : warn_airport_no_rwys_sealanes_or_helipads;
+	switch(apt->GetAirportType())
+	{
+		case type_Airport:
+			if(runways.empty())
+				msgs.push_back(validation_error_t("The airport contains no runways.", err_type, apt,apt));
+			break;
+		case type_Heliport:
+			if(helipads.empty())
+				msgs.push_back(validation_error_t("The heliport contains no helipads.", err_type, apt,apt));
+			break;
+		case type_Seaport:
+			if(sealanes.empty())
+				msgs.push_back(validation_error_t("The seaport contains no sea lanes.", err_type, apt,apt));
+			break;
+		default:
+			Assert("Unknown Airport Type");
+	}
+
 	#if !GATEWAY_IMPORT_FEATURES
-	WED_DoATCRunwayChecks(*apt, msgs);
+	WED_DoATCRunwayChecks(*apt, msgs, res_mgr);
 	#endif
 
 	ValidateATC(apt, msgs, legal_rwy_oneway, legal_rwy_twoway);
 
 	ValidateAirportFrequencies(apt,msgs);
-
 
 	for(vector<WED_AirportSign *>::iterator s = signs.begin(); s != signs.end(); ++s)
 	{
@@ -2078,7 +2168,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 
 	for(vector<WED_RampPosition *>::iterator r = ramps.begin(); r != ramps.end(); ++r)
 	{
-		ValidateOneRampPosition(*r,msgs,apt);
+		ValidateOneRampPosition(*r,msgs,apt, runways);
 	}
 
 	if(gExportTarget >= wet_xplane_1050)
@@ -2086,26 +2176,31 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		ValidateAirportMetadata(apt,msgs,apt);
 	}
 
-	if(gExportTarget == wet_gateway)
+	err_type = gExportTarget == wet_gateway ? err_airport_impossible_size : warn_airport_impossible_size;
 	{
 		Bbox2 bounds;
 		apt->GetBounds(gis_Geo, bounds);
-		if(bounds.xspan() > MAX_LON_SPAN_GATEWAY ||
-				bounds.yspan() > MAX_LAT_SPAN_GATEWAY)
+		int lg_apt_mult = ( icao == "KEDW" ? 3.0 : 1.0);  // because this one has the runways on all surrounding salt flats included
+		if(bounds.xspan() > lg_apt_mult * MAX_SPAN_GATEWAY_NM / 60.0 / cos(bounds.centroid().y() * DEG_TO_RAD) ||     // correction for higher lattitudes
+				bounds.yspan() > lg_apt_mult* MAX_SPAN_GATEWAY_NM / 60.0)
 		{
-			msgs.push_back(validation_error_t("This airport is impossibly large. Perhaps a part of the airport has been accidentally moved far away or is not correctly placed in the hierarchy?", err_airport_impossible_size, apt,apt));
+			msgs.push_back(validation_error_t("This airport is impossibly large. Perhaps a part of the airport has been accidentally moved far away or is not correctly placed in the hierarchy?", err_type, apt,apt));
 		}
-		
-		// require any land airport (i.e. at least one runway) to have an airport boundary defined
-		if(!runways.empty() && boundaries.empty())
-			msgs.push_back(validation_error_t("This airport contains runway(s) but no airport boundary.", 	err_airport_no_boundary, apt,apt));
-		
-		vector<WED_Taxiway *>	GT_routes;
-		CollectRecursive(apt, back_inserter(GT_routes), ThingNotHidden, is_of_type_ground_vehicles, WED_TaxiRoute::sClass);
+	}
+	vector<WED_TaxiRoute *>	GT_routes;
+	CollectRecursive(apt, back_inserter(GT_routes), ThingNotHidden, isGroundRoute, WED_TaxiRoute::sClass);
+
+	if (truck_parking_locs.size() && GT_routes.empty())
+		msgs.push_back(validation_error_t("Truck parking locations require at least one taxi route for ground trucks", err_truck_parking_no_ground_taxi_routes, truck_parking_locs.front(), apt));
+	
+	if(gExportTarget == wet_gateway)
+	{
 		if(GT_routes.size() && truck_parking_locs.empty())
 			msgs.push_back(validation_error_t("Ground routes are defined, but no service vehicle starts. This disables all ground traffic, including auto generated pushback vehicles.", warn_truckroutes_but_no_starts, apt,apt));
-			
-			
+		
+		if(!runways.empty() && boundaries.empty())
+            msgs.push_back(validation_error_t("This airport contains runway(s) but no airport boundary.", 	err_airport_no_boundary, apt,apt));
+
 #if !GATEWAY_IMPORT_FEATURES
 		vector<WED_AirportBoundary *>	boundaries;
 		CollectRecursive(apt, back_inserter(boundaries), WED_AirportBoundary::sClass);
@@ -2122,7 +2217,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		{
 			string res;
 			pol_info_t pol;
-			
+
 			(*o)->GetResource(res);
 			res_mgr->GetPol(res,pol);
 
@@ -2134,7 +2229,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 //				printf("kosher ortho, has %d subtex\n", pol.mSubBoxes.size());
 		}
 		if(!orthos_illegal.empty())
-			msgs.push_back(validation_error_t("Only Orthophotos with automatic subtexture selection can be exported to the Gateway. Please hide or remove selected Orthophotos.", 
+			msgs.push_back(validation_error_t("Only Orthophotos with automatic subtexture selection can be exported to the Gateway. Please hide or remove selected Orthophotos.",
 						err_gateway_orthophoto_cannot_be_exported, orthos_illegal, apt));
 
 		vector<WED_Thing *>	res_users;
@@ -2157,9 +2252,14 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 			}
 		}
 
+		// verify existence of required runways
 		map<int,Point3> CIFP_rwys;
 		set<int> rwys_missing;
-		
+		if(apt->ContainsMetaDataKey(wed_AddMetaDataICAO))
+		{
+			string icao_meta = apt->GetMetaDataValue(wed_AddMetaDataICAO);
+			if(!icao_meta.empty()) icao = icao_meta;
+		}
 		if (mf)
 		{
 			MFScanner	s;
@@ -2175,7 +2275,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 					double lat = MFS_double(&s);
 					double lon = MFS_double(&s);
 					double disp= MFS_double(&s);
-					
+
 					int rwy_enum=ENUM_LookupDesc(ATCRunwayOneway,rnam.c_str());
 					if (rwy_enum != atc_rwy_None)
 					{
@@ -2186,7 +2286,6 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 				MFS_string_eol(&s,NULL);
 			}
 		}
-		// verify existence of required runways
 		for(set<int>::iterator i = legal_rwy_oneway.begin(); i != legal_rwy_oneway.end(); ++i)
 		{
 			rwys_missing.erase(*i);    // remove those runways that can be found in the scenery for this airport
@@ -2196,14 +2295,14 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 			stringstream ss;
 			ss  << "Could not find runway(s) ";
 			for(set<int>::iterator i = rwys_missing.begin(); i != rwys_missing.end(); ++i)
-				ss << ENUM_Desc(*i) << " ";
+				if(*i > 1) ss << ENUM_Desc(*i) << " ";
 			ss << "required by CIFP data at airport " << icao << ". ";
 			msgs.push_back(validation_error_t(ss.str(), err_airport_no_runway_matching_cifp, apt, apt));
 		}
 		// verify location accuracy of runways with CIFP data
 		for(vector<WED_Runway *>::iterator r = runways.begin(); r != runways.end(); ++r)
 		{
-			int r_enum[2]; 
+			int r_enum[2];
 			pair<int,int> p = (*r)->GetRunwayEnumsOneway();
 			r_enum[0] = p.first; r_enum[1] = p.second;
 
@@ -2212,7 +2311,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 			(*r)->GetTarget()->GetLocation(gis_Geo, r_loc[1]);
 
 			float CIFP_LOCATION_ERROR = 10.0;
-			
+
 			if((*r)->GetSurface() != surf_Asphalt && (*r)->GetSurface() != surf_Concrete)   // for unpaved runways ...
 			{
 				float r_wid = (*r)->GetWidth() / 2.0;
@@ -2226,7 +2325,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 				{
 					Point2 rwy_cifp(Point2(r_cifp->second.x, r_cifp->second.y));
 					float rwy_err = LonLatDistMeters(r_loc[i], rwy_cifp);
-		
+
 					Point2 thr_cifp(rwy_cifp);
 					if (r_cifp->second.z > 0.0)
 					{
@@ -2296,45 +2395,16 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 #endif
 					}
 				}
-			}	
-		}
-	}
-	else  // target is NOT the gateway
-	{
-		vector<WED_TextureNode *>			tex_nodes;
-		vector<WED_TextureBezierNode *>	tex_nodes_curved;
-		CollectRecursive(apt, back_inserter(tex_nodes),WED_TextureNode::sClass);
-		CollectRecursive(apt, back_inserter(tex_nodes_curved),WED_TextureBezierNode::sClass);
-		for(vector<WED_TextureNode *>::iterator t = tex_nodes.begin(); t != tex_nodes.end(); ++t)
-		{
-			Point2 p;
-			(*t)->GetLocation(gis_UV, p);
-			if(p.x() < -65536.0 || p.x() > 65536.0 ||
-				p.y() < -65536.0 || p.y() > 65536.0)
-			{
-					msgs.push_back(validation_error_t(string("The UV map point is out of bounds."),
-					err_orthophoto_bad_uv_map, *t, apt));
-			}
-		}
-		
-		for(vector<WED_TextureBezierNode *>::iterator t = tex_nodes_curved.begin(); t != tex_nodes_curved.end(); ++t)
-		{
-			Point2 p;
-			(*t)->GetLocation(gis_UV, p);
-			if(p.x() < -65536.0 || p.x() > 65536.0 ||
-				p.y() < -65536.0 || p.y() > 65536.0)
-			{
-					msgs.push_back(validation_error_t(string("The UV map point is out of bounds."),
-					err_orthophoto_bad_uv_map, *t, apt));
 			}
 		}
 	}
+
 	ValidatePointSequencesRecursive(apt, msgs,apt);
 	ValidateDSFRecursive(apt, lib_mgr, msgs, apt);
 }
 
 
-bool	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * wrl)
+validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * wrl, bool skipErrorDialog)
 {
 #if DEBUG_VIS_LINES
 	//Clear the previously drawn lines before every validation
@@ -2360,15 +2430,15 @@ bool	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * wr
 	{
 		WED_file_cache_request  mCacheRequest;
 		string cert;
-		
+
 		if(!GUI_GetTempResourcePath("gateway.crt", cert))
 			DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
-			
+
 		mCacheRequest.in_cert = cert;
 		mCacheRequest.in_domain = cache_domain_metadata_csv;    // cache expiration time = 1 day
 		mCacheRequest.in_folder_prefix = "scenery_packs";
 		mCacheRequest.in_url = WED_URL_CIFP_RUNWAYS;
-		
+
 		WED_file_cache_response res = WED_file_cache_request_file(mCacheRequest);
 
 	/* ToDo: get a better way to do automatic retryies for cache updates.
@@ -2389,7 +2459,7 @@ bool	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * wr
 				res = WED_file_cache_request_file(mCacheRequest);
 			}
 		}
-		
+
 		if(res.out_status != cache_status_available)
 		{
 			stringstream ss;
@@ -2414,7 +2484,7 @@ bool	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * wr
 	// or null for 'free' stuff.
 	ValidatePointSequencesRecursive(wrl, msgs,dynamic_cast<WED_Airport *>(wrl));
 	ValidateDSFRecursive(wrl, lib_mgr, msgs, dynamic_cast<WED_Airport *>(wrl));
-	
+
 	string logfile(gPackageMgr->ComputePath(lib_mgr->GetLocalPackage(), "validation_report.txt"));
 	FILE * fi = fopen(logfile.c_str(), "w");
 
@@ -2439,7 +2509,7 @@ bool	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * wr
 
 	if(!msgs.empty())
 	{
-		new WED_ValidateDialog(resolver, pane, msgs);
+		if(!skipErrorDialog) new WED_ValidateDialog(resolver, pane, msgs);
 
 /*		ISelection * sel = WED_GetSelect(resolver);
 		wrl->StartOperation("Select Invalid");
@@ -2455,9 +2525,10 @@ bool	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * wr
 			DoUserAlert((string("No errors exist, but there is at least one warning:\n\n") + msgs.front().msg
 			                     + "\n\nFor a full list of messages see\n" + logfile).c_str());
 */
+		if(first_error == msgs.end())
+			return validation_warnings_only;
+		else
+			return validation_errors;
 	}
-	if(first_error != msgs.end())
-		return GATEWAY_IMPORT_FEATURES;
-	else
-		return msgs.empty() || GATEWAY_IMPORT_FEATURES;
+	else return validation_clean;
 }

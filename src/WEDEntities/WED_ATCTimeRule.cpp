@@ -56,7 +56,9 @@ void		WED_ATCTimeRule::Export(		 AptTimeRule_t& info) const
 
 void		WED_ATCTimeRule::PropEditCallback(int before)
 {
-	if (!before)   
+	if (before)
+		StateChanged(wed_Change_Properties);
+	else
 	{
 		char buf[20];
 		snprintf(buf,20,"Time %04d-%04dz",start_time_zulu.value,end_time_zulu.value);

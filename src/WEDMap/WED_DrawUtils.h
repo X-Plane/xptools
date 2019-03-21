@@ -61,13 +61,14 @@ inline void glShapeOffset2v(GLenum mode,  const Point2 * pts, int n, double offs
 }
 
 
-void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count, const set<int>& attrs, WED_Color c);
+void DrawLineAttrs(const Point2 * pts, int cnt, const set<int>& attrs);
 int BezierPtsCount(const Bezier2& b, WED_MapZoomerNew * z);
 
 // A note on UV mapping: we encode a point sequence for UV mapping as a pair of points, the vertex coord followed by the UV coords.
 // So it's an interleaved array.  This is what PointSequenceToVector returns too.
 void glPolygon2(const Point2 * pts, bool has_uv, const int * contours, int n);
-void PointSequenceToVector(IGISPointSequence * ps, WED_MapZoomerNew * z, vector<Point2>& pts, bool get_uv, vector<int>& contours, int is_hole);
+void PointSequenceToVector(IGISPointSequence * ps, WED_MapZoomerNew * z, vector<Point2>& pts, bool get_uv, vector<int>& contours,
+	int is_hole, bool dupFirst = false);  // dupFirst == duplicate first/last node even on closed rings. Not desired to build polygons, but desired to draw lines
 void SideToPoints(IGISPointSequence * ps, int n, WED_MapZoomerNew * z,  vector<Point2>& out_pts);
 
 

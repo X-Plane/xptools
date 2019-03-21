@@ -87,22 +87,8 @@ void	WED_ToolInfoAdapter::GetCellContent(
 		case prop_Double:
 			the_content.content_type = gui_Cell_Double;
 			the_content.double_val = val.double_val;
-			if(inf.round_down)
-			{
-				double int_part = floor(val.double_val);
-				double fract_part = val.double_val - int_part;
-				fract_part *= powf(10,inf.decimals);
-				fract_part = floor(fract_part);
-				int int_size = inf.digits - inf.decimals - 1;
-				int dec_size = inf.decimals;
-				sprintf(fmt,"%% %dd.%%0%dd",int_size,dec_size);
-				sprintf(buf,fmt,(int) int_part, (int) fract_part);
-			}
-			else
-			{
-				sprintf(fmt,"%%%d.%dlf",inf.digits, inf.decimals);
-				sprintf(buf,fmt,val.double_val);
-			}
+			sprintf(fmt,"%%%d.%dlf",inf.digits, inf.decimals);
+			sprintf(buf,fmt,val.double_val);
 			the_content.text_val = buf;
 			break;
 		case prop_String:	the_content.content_type = gui_Cell_EditText;		the_content.text_val = val.string_val;		break;
@@ -125,12 +111,15 @@ void	WED_ToolInfoAdapter::GetCellContent(
 				if (iter!=val.set_val.begin()) the_content.text_val += ",";
 				string label;
 				mTool->GetNthPropertyDictItem(cell_x / 2,*iter,label);
-				if(0)	// do not do this for now - looks ugly in the tool info adapter
 				if (ENUM_Domain(*iter) == LinearFeature)
 				{
+//xxx					the_content.content_type = gui_Cell_LineEnumSet;
+					
+#if 0				// do not do this for now - looks ugly in the tool info adapter
 					label = ENUM_Name(*iter);
 					label += ".png";
 					the_content.string_is_resource = 1;
+#endif
 				}
 				the_content.text_val += label;
 			}

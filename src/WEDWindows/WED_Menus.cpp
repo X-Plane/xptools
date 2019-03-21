@@ -80,6 +80,7 @@ static const GUI_MenuItem_t kExportTargetMenu[] = {
 {	"X-Plane 10.21",		0,		0,								0,	wed_Export1021,		},
 {	"X-Plane 10.50",		0,		0,								0,	wed_Export1050,		},
 {	"X-Plane 11.00",		0,		0,								0,	wed_Export1100,		},
+{	"X-Plane 11.30",		0,		0,								0,	wed_Export1130,		},
 {	"Airport Scenery Gateway",0,	0,								0,	wed_ExportGateway	},
 {	NULL,					0,		0,								0,	0					}
 };
@@ -89,17 +90,18 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	"&Undo",				'Z',	gui_ControlFlag,				0,	gui_Undo		},
 {	"&Redo",				'Z',	gui_ControlFlag+gui_ShiftFlag,	0,	gui_Redo		},
 {	"-",					0,  	0,								0,	0				},
-{	"Cu&t",					'X',	gui_ControlFlag,				0,	gui_Cut			},
-{	"&Copy",				'C',	gui_ControlFlag,				0,	gui_Copy		},
-{	"&Paste",				'V',	gui_ControlFlag,				0,	gui_Paste		},
+{	"Cu&t text",			'X',	gui_ControlFlag,				0,	gui_Cut			},
+{	"&Copy  text",			'C',	gui_ControlFlag,				0,	gui_Copy		},
+{	"&Paste text",			'V',	gui_ControlFlag,				0,	gui_Paste		},
 {	"Cl&ear",				0,		0,								0,	gui_Clear		},	// we could use GUI_KEY_DELETE but having del as cmd key screws up text fields.
-{	"&Duplicate",			'D',	gui_ControlFlag+gui_ShiftFlag,	0,	gui_Duplicate	},
+{	"&Duplicate",			0,	    0,                          	0,	0           	},
 {	"-",					0,  	0,								0,	0				},
 {	"&Group",				'G',	gui_ControlFlag,				0,	wed_Group		},
 {	"U&ngroup",				'G'	,	gui_ControlFlag+gui_ShiftFlag,	0,	wed_Ungroup		},
 {	"-",					0,  	0,								0,	0				},
 {	"Spl&it",				'E',	gui_ControlFlag,				0,	wed_Split		},
 {	"A&lign",				'L',	gui_ControlFlag,				0,	wed_Align		},
+{	"Match Bezier Handles",	'B',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_MatchBezierHandles },
 {	"&Orthogonalize",		'Q',	gui_ControlFlag,				0,	wed_Orthogonalize },
 {	"Make Regular Poly",	'Q',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_RegularPoly },
 #if AIRPORT_ROUTING
@@ -108,6 +110,7 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	"Rever&se",				'R',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_Reverse		},
 {	"Rotate",				'R',	gui_ControlFlag,				0,	wed_Rotate		},
 {	"Cr&op Unselected",		0,		0,								0,	wed_Crop		},
+{	"Con&vert To",			0,		0,								0,	0				},
 //{	"Make Draped Pol&ygons",0,		0,								0,	wed_Overlay		},
 #if AIRPORT_ROUTING
 //{	"Make Routing",			0,		0,								0,	wed_MakeRouting },
@@ -120,6 +123,20 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	"Explode Special Agps",   0,    0,                              0,  wed_BreakApartSpecialAgps  },
 {	"Replace Vehicle Objects", 0,	0,								0,  wed_ReplaceVehicleObj	},
 {	NULL,					0,		0,								0,	0				},
+};
+
+static const GUI_MenuItem_t kDuplicateMenu[] = {
+{	"&Duplicate in place",		'D',gui_ControlFlag+gui_ShiftFlag,0,gui_Duplicate	    },
+{	"Copy into current airport",0,	0,							0,	wed_CopyToAirport   },
+{	NULL,						0,	0,							0,	0					}
+};
+
+static const GUI_MenuItem_t kConvertToMenu[] = {
+{	"Draped &Polygon",			0,	0,							0,	wed_ConvertToPolygon	},
+{	"&Taxiway",					0,	0,							0,	wed_ConvertToTaxiway	},
+{	"&Airport Line Marking",	0,	0,							0,	wed_ConvertToTaxiline	},
+{	"&Line",					0,	0,							0,	wed_ConvertToLine		},
+{	NULL,						0,	0,							0,	0						}
 };
 
 static const GUI_MenuItem_t kViewMenu[] = {
@@ -136,8 +153,9 @@ static const GUI_MenuItem_t kViewMenu[] = {
 {	"&Object Density",			0,	0,										0,	0					},
 {	"-",						0,	0,										0,	0					},
 {	"&Pick Overlay Image...",	0,	0,										0,	wed_PickOverlay		},
-//{	"Toggle &Overlay Image",	0,	0,										0,	wed_ToggleOverlay	},
 {	"Toggle &World Map",		0,	0,										0,	wed_ToggleWorldMap	},
+{	"Toggle &Navaids",			0,	0,										0,	wed_ToggleNavaidMap	},
+{	"S&lippy Map",				0,	0,										0,	0                   },
 {	"To&ggle Preview",			0,	0,										0,	wed_TogglePreview	},
 #if WANT_TERRASEVER
 {	"Toggle &Terraserver",		0,	0,										0,	wed_ToggleTerraserver },
@@ -149,6 +167,15 @@ static const GUI_MenuItem_t kViewMenu[] = {
 {	"&Restore Frames",			0,	0,										0,	wed_RestorePanes	},
 {	NULL,						0,	0,										0,	0					},
 };
+
+static const GUI_MenuItem_t kSlippyMapMenu[] = {
+{	"&None",					0,	0,							0,	wed_SlippyMapNone	},
+{	"&OpenStreetMap",			0,	0,							0,	wed_SlippyMapOSM	},
+{	"&ESRI Imagery",			0,	0,							0,	wed_SlippyMapESRI	},
+{	"&Custom",					0,	0,							0,	wed_SlippyMapCustom	},
+{	NULL,						0,	0,							0,	0					}
+};
+
 
 static const GUI_MenuItem_t kPavementMenu[] = {
 {	"&None",					0,	0,							0,	wed_Pavement0		},
@@ -219,6 +246,8 @@ static const GUI_MenuItem_t kHelpMenu[] = {
 {	"&WED User's Guide",			0,	0,										0,	wed_HelpManual },
 {	"-",							0,	0,										0,	0				},
 {	"&X-Plane Scenery Homepage",	0,	0,										0,	wed_HelpScenery },
+{	"&OpenStreetMap Bug Fixing",	0,	0,										0,	wed_OSMFixTheMap },
+{	"&Esri Imagery Permitted Uses",	0,	0,										0,	wed_ESRIUses },
 #if IBM || LIN
 {	"-",							0,		0,									0,	0				},
 {	"&About WED",					0,		0,									0,	gui_About		},
@@ -267,21 +296,34 @@ void WED_MakeMenus(GUI_Application * inApp)
 	GUI_Menu edit_menu = inApp->CreateMenu(
 		"&Edit", kEditMenu, inApp->GetMenuBar(), 0);
 
+	GUI_Menu duplicate_menu = inApp->CreateMenu(
+		"Duplicate", kDuplicateMenu, edit_menu, 7);
+
+	GUI_Menu convert_to_menu = inApp->CreateMenu(
+#if AIRPORT_ROUTING
+		"Con&vert To", kConvertToMenu, edit_menu, 21);
+#else
+		"Con&vert To", kConvertToMenu, edit_menu, 20);
+#endif
+
 	GUI_Menu  view_menu = inApp->CreateMenu(
 		"&View", kViewMenu, inApp->GetMenuBar(), 0);
-	
+
 	GUI_Menu	pave_menu = inApp->CreateMenu(
 		"Pavement T&ransparency",	kPavementMenu, view_menu, 6);
-		
+
 	GUI_Menu	objd_menu = inApp->CreateMenu(
 		"&Object Density", kObjDensityMenu, view_menu, 7);
+
+	GUI_Menu	slippy_menu = inApp->CreateMenu(
+		"S&lippy Map",	kSlippyMapMenu, view_menu, 12);
 
 	GUI_Menu  sel_menu = inApp->CreateMenu(
 		"&Select", kSelectMenu, inApp->GetMenuBar(), 0);
 
 	GUI_Menu	airport_menu = inApp->CreateMenu(
 		"&Airport", kAirportMenu, inApp->GetMenuBar(), 0);
-	
+
 	for (KeyEnum key_enum = wed_AddMetaDataBegin + 1; key_enum < wed_AddMetaDataEnd; ++key_enum)
 	{
 		int index = key_enum - wed_AddMetaDataBegin - 1;

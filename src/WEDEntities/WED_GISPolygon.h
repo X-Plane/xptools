@@ -62,15 +62,16 @@ public:
 	virtual			int						GetNumHoles (void ) const;
 	virtual			IGISPointSequence *		GetNthHole  (int n)	const;
 
-	virtual			void					DeleteHole  (int n)					;
-	virtual			void					AddHole		(IGISPointSequence * r) ;
-	virtual			void					Reverse(GISLayer_t l);
-	virtual			void					Shuffle(GISLayer_t l);
+	virtual			void	DeleteHole  (int n)					;
+	virtual			void	AddHole		(IGISPointSequence * r) ;
+	virtual			void	Reverse(GISLayer_t l);
+	virtual			void	Shuffle(GISLayer_t l);
 
 	// IGISComposite
 	virtual	int				GetNumEntities(void ) const;
 	virtual	IGISEntity *	GetNthEntity  (int n) const;
-
+	
+						bool	Overlaps(GISLayer_t l, const Polygon2& inPolyNoHoles) const;        // a regular polygon, NOT having any holes. E.g. runway outlines
 protected:
 
 	// interior filled?  Normal answer is true!  But if false, we act like a container of rings, not a polygon.

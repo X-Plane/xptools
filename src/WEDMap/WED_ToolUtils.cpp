@@ -60,6 +60,8 @@
 #include "WED_ATCWindRule.h"
 #include "WED_TaxiRoute.h"
 #include "WED_TaxiRouteNode.h"
+#include "WED_TruckDestination.h"
+#include "WED_TruckParkingLocation.h"
 #include "WED_RoadNode.h"
 #include "WED_LibraryMgr.h"
 
@@ -125,6 +127,29 @@ WED_Thing *	WED_FindParent(ISelection * isel, WED_Thing * require_this, WED_Thin
 		return require_this;
 
 	return common_parent;
+}
+
+
+bool	WED_ComesBeforeInHierarchy(WED_Thing * a, WED_Thing * b)
+{
+	list<WED_Thing *> a_lin, b_lin;
+	GetLineage(a,a_lin);
+	GetLineage(b,b_lin);
+
+	list<WED_Thing *>::iterator a_it = a_lin.begin(), b_it = b_lin.begin();
+	while (a_it != a_lin.end() && b_it != b_lin.end() && *a_it == *b_it)
+	{
+		++a_it;
+		++b_it;
+	}
+
+	if (a_it == a_lin.end() || b_it == b_lin.end())
+	{
+		DebugAssert(false);
+		return false;
+	}
+
+	return (*a_it)->GetMyPosition() < (*b_it)->GetMyPosition();
 }
 
 
@@ -387,6 +412,9 @@ const char *	WED_GetParentForClass(const char * in_class)
 
 	if(strcmp(in_class,WED_TaxiRoute::sClass)==0)			return WED_Airport::sClass;
 	if(strcmp(in_class,WED_TaxiRouteNode::sClass)==0)		return WED_Airport::sClass;
+
+	if(strcmp(in_class,WED_TruckDestination::sClass)==0)	return WED_Airport::sClass;
+	if(strcmp(in_class,WED_TruckParkingLocation::sClass)==0)return WED_Airport::sClass;
 
 #endif
 	return NULL;

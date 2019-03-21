@@ -68,6 +68,8 @@ int		CreateNewBitmap(long inWidth, long inHeight, short inChannels, struct Image
 
 /* Given a file path and an uninitialized imageInfo structure, this routine fills
  * in the imageInfo structure by loading the bitmap. */
+ 
+ // should really be called "CreateBitmapFromBMP"
 int		CreateBitmapFromFile(const char * inFilePath, struct ImageInfo * outImageInfo);
 
 /* Yada yada yada, libPNG.  Gamma is the gamma color curve we want our pixels in.  Since gamma is recorded on the png file
@@ -93,14 +95,6 @@ int		CreateBitmapFromJPEGData(void * inBytes, int inLength, struct ImageInfo * o
 int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInfo);
 
 #endif
-
-#if USE_GEOJPEG2K
-//Creates a bit map from a GeoJPEG2K, requires GeoJASPER
-//-1 means bad jas_init(), -2 means bad format ID, -3 means bad image. 0 means good, relates to #channels
-int CreateBitmapFromJP2K(const char * inFilePath, struct ImageInfo * outImageInfo);
-
-#endif
-
 
 
 /* Given an imageInfo structure, this routine writes it to disk as a .bmp file.
@@ -133,6 +127,8 @@ int GetSupportedType(const char * path);
 
 //Attempts to make a supported image type using GetSupportedType and the various CreateBitmapFromX utils
 //Error codes are passed back up and returned by the method
+
+// should really be called "CreateBitmapFromFileAccordingToSuffix"
 int MakeSupportedType(const char * path, ImageInfo * inImage);
 
 /* Given a bitmap, this routine fills the whole bitmap in with a gray level of c, where

@@ -24,14 +24,18 @@
 #include "WED_MapLayer.h"
 #include "MathUtils.h"
 #include "GUI_Resources.h"
-#include "WED_UIMeasurements.h"
 #include "IGIS.h"
+#include "WED_Entity.h"
+
+#include "WED_Airport.h"
+#include "WED_Group.h"
 #include "WED_Entity.h"
 
 #include "WED_MapZoomerNew.h"
 
 WED_MapLayer::WED_MapLayer(GUI_Pane * h, WED_MapZoomerNew * z, IResolver * i) :
 	mZoomer(z), mResolver(i), mHost(h), mHideFilter(NULL), mLockFilter(NULL)
+
 {
 	int dims[2];
 
@@ -41,10 +45,17 @@ WED_MapLayer::WED_MapLayer(GUI_Pane * h, WED_MapZoomerNew * z, IResolver * i) :
 	GUI_GetImageResourceSize("map_towerview.png",dims);
 	mFurnitureRadius = 0.5 * (double)(intmin2(dims[0],dims[1]));
 
-	mAirportFactor = WED_UIMeasurement("airport_icon_scale");
-	mFurnitureFactor = WED_UIMeasurement("furniture_icon_scale");
-
-	mAirportTransWidth = WED_UIMeasurement("airport_trans_width");
+	// This is the scale of the icons for airports themselves.  It is a multiplier.
+	// When this is "1" one pixel of the airport icon = one meter on the map.
+	mAirportFactor = 20.0;
+	
+	// This is the scale of the icons for all of the parts of an airport - VASI lights,
+	// signs, windsocks, parking spots.  It is a multiplier.
+	// When this is "1" one pixel of the airport icon = one meter on the map.
+	mFurnitureFactor = 2.0;  
+	
+	// This is the width at which we transition from full airports to icons
+	mAirportTransWidth = 20.0;
 	mVisible = true;
 }
 
@@ -88,51 +99,29 @@ void		WED_MapLayer::ToggleVisible(void)
 	GetHost()->Refresh();
 }
 
-void		WED_MapLayer::SetFilter(const vector<const char *> * hide_filter_ptr, const vector<const char *> * lock_filter_ptr)
+void		WED_MapLayer::SetFilter(const MapFilter_t * hide_filter_ptr, const MapFilter_t * lock_filter_ptr)
 {
 	mHideFilter = hide_filter_ptr;
 	mLockFilter = lock_filter_ptr;
 }
 
-static bool matches_filter(WED_Thing * thing ,const  vector<const char *> * filter )
+static bool matches_filter(WED_Thing * thing ,const  MapFilter_t * filter )
 {
-	for(vector<const char *>::const_iterator filterit = filter->begin(); filterit != filter->end(); ++filterit)
+	if(thing == NULL) return false;
+	for(MapFilter_t::const_iterator filterit = filter->begin(); filterit != filter->end(); ++filterit)
 	{
-		const char * p = *filterit;
-		int slash_count = 0;
-		while (*p != 0 )
-		{
-			if (*p == '/') ++slash_count;
-			++p;
-		}
-
-		string type = thing->GetClass();
+		bool match = true;
 		WED_Thing * parent = thing;
-		for (unsigned int i = 0 ; i < slash_count; ++i)
+		for(auto &i: filterit->e)
 		{
+			const char * type = parent->GetClass();
+			if( type == WED_Airport::sClass ) type = WED_Group::sClass;
+			if (!(type == i)) { match = false; break; }
 			parent = parent->GetParent();
-			if(parent == NULL)
-			{
-				return false;
-			}
-			else
-			{
-				type += '/';
-				string parent_type = parent->GetClass();
-				//Handles nesting for CSS selection type filters
-				if( parent_type == "WED_Airport"  || parent_type == "WED_Group" )
-				{
-					parent_type = "WED_GISComposite";
-				}
-				type += parent_type;
-			}
+			if (parent == NULL) { match = false; break; }
 		}
-
-		if(type.length() == strlen(*filterit))
-			if(type == *filterit)
-				return true;
+		if (match) return true;
 	}
-
 	return false;
 }
 

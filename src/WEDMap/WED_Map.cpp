@@ -29,6 +29,7 @@
 #include "WED_Globals.h"
 #include "WED_Airport.h"
 #include "GUI_GraphState.h"
+#include "WED_Colors.h"
 #include "GUI_Fonts.h"
 #include "XESConstants.h"
 #include "IGIS.h"
@@ -83,7 +84,7 @@ void		WED_Map::AddLayer(WED_MapLayer * layer)
 	mLayers.push_back(layer);
 }
 
-void		WED_Map::SetFilter(const string& filterName, const vector<const char *>& hide_filter, const vector<const char *>& lock_filter)
+void		WED_Map::SetFilter(const string& filterName, const MapFilter_t& hide_filter, const MapFilter_t& lock_filter)
 {
 	mFilterName = filterName;
 	mHideFilter = hide_filter;
@@ -117,7 +118,7 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	GetMapVisibleBounds(bounds.p1.x_,bounds.p1.y_,bounds.p2.x_,bounds.p2.y_);
 	ISelection * sel = GetSel();
 	IGISEntity * base = GetGISBase();
-
+	
 	vector<WED_MapLayer *>::iterator l;
 	for (l = mLayers.begin(); l != mLayers.end(); ++l)
 	if((*l)->IsVisible())
@@ -144,7 +145,6 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	int x, y;
 	GetMouseLocNow(&x,&y);
 
-
 	if (mIsDownExtraCount)
 	{
 		state->SetState(0,0,0,1,1,0,0);
@@ -157,8 +157,10 @@ void		WED_Map::Draw(GUI_GraphState * state)
 
 	int b[4];
 	GetBounds(b);
-	float white[4] = { 1.0, 1.0, 1.0, 1.0 };
-	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[3] - 15, mTool ? mTool->GetToolName() : "");
+	
+	float * white = WED_Color_RGBA(wed_pure_white);
+	float textH = GUI_GetLineHeight(font_UI_Basic);
+	GUI_FontDraw(state, font_UI_Basic, white, b[0] + 5, b[3] - textH, mTool ? mTool->GetToolName() : "");
 
 	{
 		WED_Airport * apt = WED_GetCurrentAirport(mResolver);
@@ -170,15 +172,15 @@ void		WED_Map::Draw(GUI_GraphState * state)
 			apt->GetICAO(icao);
 			n = an + string("(") + icao + string(")");
 		}
-		GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[3] - 45, n.c_str());
+		GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[3] - 3.0*textH, n.c_str());
 	}
 	
 	if(!mFilterName.empty())
-		GUI_FontDraw(state, font_UI_Basic, white, b[0]+5, b[3] - 30, mFilterName.c_str());
+		GUI_FontDraw(state, font_UI_Basic, white, b[0]+5, b[3] - 2.0*textH, mFilterName.c_str());
 
 	const char * status = mTool ? mTool->GetStatusText() : NULL;
 	if (status)
-	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 49, status);
+	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 3.0*textH, status);
 
 	char mouse_loc[350];
 	char * p = mouse_loc;
@@ -242,24 +244,41 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	if (has_d)				p += sprintf(p," %.1lf %s",dist * (gIsFeet ? MTR_TO_FT : 1.0), gIsFeet? "feet" : "meters");
 	if (has_h)				p += sprintf(p," heading: %.1lf", head);
 
-	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 25, mouse_loc);
-
+	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + textH + 5, mouse_loc);
+	
 	p = mouse_loc;
+	
+#if SHOW_FPS
+	#ifndef GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX
+	#define GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX 0x9049
+	#endif
+	#ifndef TEXTURE_FREE_MEMORY_ATI
+	#define TEXTURE_FREE_MEMORY_ATI 0x87FC
+	#endif
+	static GLint vram_info[4] = { 0,0,0,0 };
 
-	#if SHOW_FPS
 	static clock_t  last_time = 0;
 	static float	fps = 0.0f;
 	static int		cycle = 0;
-		   ++cycle;
-		   if (cycle > 20)
-		   {
-				clock_t now = clock();
-				fps = (20.0 * CLOCKS_PER_SEC) / ((float) (now - last_time));
-				last_time = now;
-				cycle = 0;
-		   }
-		   p += sprintf(p, "%7.1f FPS ", fps);
-	#endif
+	++cycle;
+	if (cycle > 20)
+	{
+#if APL
+		// not sure there is something like this
+#else
+		// get available high speed = VRAM for textures
+		glGetIntegerv(GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, vram_info);
+		glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, vram_info);
+		glGetError();
+#endif
+		clock_t now = clock();
+		fps = (20.0 * CLOCKS_PER_SEC) / ((float) (now - last_time));
+		last_time = now;
+		cycle = 0;
+	}
+	p += sprintf(p, "%6d MB %6.1f FPS ", vram_info[0]/1024, fps);
+
+#endif
 
 	// print map scale as number
 	// p += sprintf(p, "%7.3lf %s/pixel", (gIsFeet ? MTR_TO_FT : 1.0) / cur->mZoomer->GetPPM(), gIsFeet? "feet" : "meters");
@@ -269,7 +288,8 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	
 	float scale = MIN_BAR_LEN * (gIsFeet ? MTR_TO_FT : 1.0) / cur->mZoomer->GetPPM();
 	int bar_len;
-
+	int bar_Yoff = textH * 0.75;
+	
 	if      (scale < 1.0)   bar_len = 1;
 	else if (scale < 3.0)   bar_len = 3;
 	else if (scale < 10.0)  bar_len = 10;
@@ -281,13 +301,13 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	state->SetState(0,0,0,1,1,0,0);
 	glColor4fv(white);
 	glBegin(GL_LINES);
-	glVertex2i(b[0]+ 50 + SHOW_FPS*80, b[1] + 15);
-	glVertex2i(b[0]+ 50 + SHOW_FPS*80 + (int)(MIN_BAR_LEN * bar_len / scale), b[1] + 15);
-	glVertex2i(b[0]+ 50 + SHOW_FPS*80 + (int)(MIN_BAR_LEN * bar_len / scale), b[1] + 14);
-	glVertex2i(b[0]+ 50 + SHOW_FPS*80, b[1] + 14);
+	glVertex2i(b[0]+ 50 + SHOW_FPS*140, b[1] + bar_Yoff + 1);
+	glVertex2i(b[0]+ 50 + SHOW_FPS*140 + (int)(MIN_BAR_LEN * bar_len / scale), b[1] + bar_Yoff + 1);
+	glVertex2i(b[0]+ 50 + SHOW_FPS*140 + (int)(MIN_BAR_LEN * bar_len / scale), b[1] + bar_Yoff);
+	glVertex2i(b[0]+ 50 + SHOW_FPS*140, b[1] + bar_Yoff);
 	glEnd();
 	
-    GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 10, mouse_loc);
+    GUI_FontDraw(state, font_UI_Basic, white, b[0] + 5, b[1] + 5, mouse_loc);
 	#if SHOW_FPS
         Refresh();
 	#endif
@@ -306,12 +326,12 @@ void		WED_Map::DrawVisFor(WED_MapLayer * layer, int current, const Bbox2& bounds
 	{
 		Bbox2	on_screen;
 		what->GetBounds(gis_Geo, on_screen);
-		on_screen.expand(GLOBAL_WED_ART_ASSET_FUDGE_FACTOR);
+//		on_screen.expand(GLOBAL_WED_ART_ASSET_FUDGE_FACTOR);
 		Point2 p1 = this->LLToPixel(on_screen.p1);
 		Point2 p2 = this->LLToPixel(on_screen.p2);
 		Vector2 span(p1,p2);
-		if(max(span.dx, span.dy) > TOO_SMALL_TO_GO_IN || (p1 == p2) || depth == 0)		// Why p1 == p2?  If the composite contains ONLY ONE POINT it is zero-size.  We'd LOD out.  But if it contains one thing
-		{																				// then we might as well ALWAYS draw it - it's relatively cheap!
+		if(max(span.dx, span.dy) > TOO_SMALL_TO_GO_IN || (p1 == p2) || depth == 0)		// Why p1 == p2?  If the composite contains ONLY ONE POINT it is zero-size.  We'd LOD out.  But if
+		{																				// it contains one thing then we might as well ALWAYS draw it - it's relatively cheap!
 			int t = c->GetNumEntities();												// Depth == 0 means we draw ALL top level objects -- good for airports.
 			for (int n = t-1; n >= 0; --n)
 				DrawVisFor(layer, current, bounds, c->GetNthEntity(n), g, sel, depth+1);
@@ -331,7 +351,7 @@ void		WED_Map::DrawStrFor(WED_MapLayer * layer, int current, const Bbox2& bounds
 	{
 		Bbox2	on_screen;
 		what->GetBounds(gis_Geo, on_screen);
-		on_screen.expand(GLOBAL_WED_ART_ASSET_FUDGE_FACTOR);
+//		on_screen.expand(GLOBAL_WED_ART_ASSET_FUDGE_FACTOR);
 		
 		Point2 p1 = this->LLToPixel(on_screen.p1);
 		Point2 p2 = this->LLToPixel(on_screen.p2);

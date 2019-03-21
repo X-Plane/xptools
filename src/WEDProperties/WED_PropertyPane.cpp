@@ -22,12 +22,11 @@
  */
 
 #include "WED_PropertyPane.h"
-#include "WED_UIMeasurements.h"
 #include "WED_Colors.h"
 #include "GUI_Resources.h"
 #include "GUI_Messages.h"
-
-#include "WED_HierarchyFilterBar.h"
+#include "GUI_FilterBar.h"
+#include "GUI_Fonts.h"
 
 WED_PropertyPane::WED_PropertyPane(
 						GUI_Commander *			inCommander,
@@ -38,8 +37,8 @@ WED_PropertyPane::WED_PropertyPane(
 						int						pane_style,
 						const char **			filter) :
 	GUI_Commander(inCommander),
-	mTextTable(this,WED_UIMeasurement("table_indent_width"),0),
-	mPropertyTable(resolver, col_names, def_col_widths,
+	mTextTable(this,12,0),
+	mPropertyTable(this, resolver, col_names, def_col_widths,
 			pane_style == propPane_Selection || pane_style == propPane_FilteredVertical,
 			pane_style == propPane_Selection,
 			pane_style == propPane_Selection,
@@ -84,7 +83,7 @@ WED_PropertyPane::WED_PropertyPane(
 
 	if (pane_style == propPane_Hierarchy)
 	{
-		mFilter = new WED_HierarchyFilterBar(this);
+		mFilter = new GUI_FilterBar(this, GUI_FILTER_FIELD_CHANGED, 0, "Search:", "", false);
 		mFilter->Show();
 		mFilter->SetParent(this);
 		mFilter->AddListener(this);
@@ -103,8 +102,6 @@ WED_PropertyPane::WED_PropertyPane(
 				WED_Color_RGBA(wed_Header_Text));
 
 		mHeader = new GUI_Header(pane_style==propPane_Hierarchy);
-
-		bounds[1] = 0;
 		bounds[3] = GUI_GetImageResourceHeight("header.png") / 2;
 		mHeader->SetBounds(bounds);
 		mHeader->SetGeometry(&mPropertyTable);
@@ -126,8 +123,7 @@ WED_PropertyPane::WED_PropertyPane(
 				WED_Color_RGBA(wed_Header_Text));
 
 		mSide = new GUI_Side;
-		bounds[0] = 0;
-		bounds[2] = 120;                              // first column can be narrow, as full content can be seen by clicking on it
+		bounds[2] = GUI_MeasureRange(font_UI_Basic,"Left Hand Driving", "Left Hand Driving"+strlen("Left Hand Driving"))+6;  // first column can be narrow, as full content can be seen by clicking on it
 		mSide->SetBounds(bounds);
 		mSide->SetGeometry(&mPropertyTable);
 		mSide->SetSide(&mTextTableSide);

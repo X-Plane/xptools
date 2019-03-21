@@ -146,3 +146,36 @@ void	WED_AirportChain::Export(		 AptMarking_t& x) const
 {
 	GetName(x.name);
 }
+
+void 	WED_AirportChain::GetResource(string& r) const
+{
+	r.clear();                    // return a string ONLY if lines and light are set uniformly throughout all nodes
+
+	PropertyVal_t line;
+	lines.GetProperty(line);
+	PropertyVal_t light;
+	lights.GetProperty(light);
+
+//	string n; this->GetName(n);
+//	printf("%s: lin=%d lgt=%d\n",n.c_str(), line.set_val.size(), light.set_val.size());
+
+	if(line.set_val.size() == 1)
+	{
+		const char * c = ENUM_Desc(*line.set_val.begin());
+		if(c) r += c;
+	}
+	else if (line.set_val.size() > 1)
+		return;
+
+	if(light.set_val.size() == 1)
+	{
+		const char * c = ENUM_Desc(*light.set_val.begin());
+		if(c)
+		{
+			if(!r.empty()) r +=  "$^";
+			r += c;
+		}
+	}
+	else
+		return;
+}

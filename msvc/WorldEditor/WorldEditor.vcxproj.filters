@@ -73,6 +73,9 @@
     <Filter Include="WEDFileCache">
       <UniqueIdentifier>{402bfda5-9fe6-4337-960e-11e7be115962}</UniqueIdentifier>
     </Filter>
+    <Filter Include="WEDResources\icons">
+      <UniqueIdentifier>{da9ae7de-498c-4715-984a-0fdb557b8cc4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\WEDCore\WED_Application.cpp">
@@ -459,12 +462,6 @@
     <ClCompile Include="..\..\src\WEDWindows\WED_PackageListAdapter.cpp">
       <Filter>WEDWindows</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\WEDWindows\WED_PackageStatusPane.cpp">
-      <Filter>WEDWindows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\WEDWindows\WED_PackageWindow.cpp">
-      <Filter>WEDWindows</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\WEDWindows\WED_StartWindow.cpp">
       <Filter>WEDWindows</Filter>
     </ClCompile>
@@ -594,19 +591,10 @@
     <ClCompile Include="..\..\src\Obj\XObjReadWrite.cpp">
       <Filter>Obj</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Obj\XObjWriteEmbedded.cpp">
-      <Filter>Obj</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Obj\ObjConvert.cpp">
-      <Filter>Obj</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Obj\ObjDraw.cpp">
       <Filter>Obj</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Obj\ObjPointPool.cpp">
-      <Filter>Obj</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Obj\XObjBuilder.cpp">
       <Filter>Obj</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Network\PCSBSocket.win.cpp">
@@ -643,9 +631,6 @@
       <Filter>DSF</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\WEDCore\WED_GISUtils.cpp">
-      <Filter>WEDCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\WEDCore\WED_Package.cpp">
       <Filter>WEDCore</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Utils\GISUtils.cpp">
@@ -774,9 +759,6 @@
     <ClCompile Include="..\..\src\WEDEntities\WED_TruckParkingLocation.cpp">
       <Filter>WEDEntities</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\WEDWindows\WED_HierarchyFilterBar.cpp">
-      <Filter>WEDWindows</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\WEDEntities\WED_TruckDestination.cpp">
       <Filter>WEDEntities</Filter>
     </ClCompile>
@@ -795,6 +777,16 @@
     <ClCompile Include="..\..\src\WEDCore\WED_ValidateList.cpp">
       <Filter>WEDCore</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\WEDWindows\WED_Line_Selector.cpp">
+      <Filter>WEDWindows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\WEDMap\WED_NavaidLayer.cpp">
+      <Filter>WEDMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\WEDMap\WED_SlippyMap.cpp">
+      <Filter>WEDMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Obj\ObjConvert.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\WEDCore\WED_Application.h">
@@ -840,9 +832,6 @@
       <Filter>WEDCore</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDCore\WED_Orthophoto.h">
-      <Filter>WEDCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\WEDCore\WED_Package.h">
       <Filter>WEDCore</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDCore\WED_PackageMgr.h">
@@ -1202,12 +1191,6 @@
     <ClInclude Include="..\..\src\WEDWindows\WED_PackageListAdapter.h">
       <Filter>WEDWindows</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\WEDWindows\WED_PackageStatusPane.h">
-      <Filter>WEDWindows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\WEDWindows\WED_PackageWindow.h">
-      <Filter>WEDWindows</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\WEDWindows\WED_StartWindow.h">
       <Filter>WEDWindows</Filter>
     </ClInclude>
@@ -1358,9 +1341,6 @@
     <ClInclude Include="..\..\src\DSFTools\DSFToolsPrefix.h">
       <Filter>DSFTools</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Obj\ObjConvert.h">
-      <Filter>Obj</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\Obj\ObjDraw.h">
       <Filter>Obj</Filter>
     </ClInclude>
@@ -1370,16 +1350,10 @@
     <ClInclude Include="..\..\src\Obj\XDefs.h">
       <Filter>Obj</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Obj\XObjBuilder.h">
-      <Filter>Obj</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\Obj\XObjDefs.h">
       <Filter>Obj</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Obj\XObjReadWrite.h">
-      <Filter>Obj</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Obj\XObjWriteEmbedded.h">
       <Filter>Obj</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Network\HTTPClient.h">
@@ -1559,9 +1533,6 @@
     <ClInclude Include="..\..\src\WEDEntities\WED_TruckParkingLocation.h">
       <Filter>WEDEntities</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\WEDWindows\WED_HierarchyFilterBar.h">
-      <Filter>WEDWindows</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\WEDEntities\WED_TruckDestination.h">
       <Filter>WEDEntities</Filter>
     </ClInclude>
@@ -1580,11 +1551,16 @@
     <ClInclude Include="..\..\src\WEDCore\WED_ValidateList.h">
       <Filter>WEDCore</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="..\..\src\WEDResources\ui_measurements.txt">
-      <Filter>WEDResources</Filter>
-    </Text>
+    <ClInclude Include="..\..\src\WEDWindows\WED_Line_Selector.h">
+      <Filter>WEDWindows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDMap\WED_NavaidLayer.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDMap\WED_SlippyMap.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Obj\ObjConvert.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\src\WEDResources\about.png">
@@ -1690,6 +1666,63 @@
     </None>
     <None Include="..\..\src\WEDResources\worldmap.jpg">
       <Filter>WEDResources</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\map_airport.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\map_beacon.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\map_helipad.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\map_heliport.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\map_light.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\map_missing_obj.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\map_rampstart.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\map_seaport.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\map_servicedest.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\map_taxisign.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\map_towerview.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\map_tree.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\map_windsock.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\nav_gs.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\nav_mark.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\nav_ndb.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\nav_vor.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\navmap_airport.png">
+      <Filter>WEDResources\icons</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\icons\navmap_seaport.png">
+      <Filter>WEDResources\icons</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

@@ -330,3 +330,56 @@ IGISEntity *	WED_GISPolygon::GetNthEntity  (int n) const
 {
 	return dynamic_cast<IGISEntity *>(GetNthChild(n));
 }
+
+// this code all skips bezier segment expansion. Assuming that overlaps created by sur curved segment will be small and
+// false positives rare - as things near to runway perimeter are most likely all straight non-bezier segments
+
+// there needs to be a parameter to add (moderate resolution) bezier expansion before this can be used reliably for
+// detection of e.g. runway distance signs falling onto taxiways etc.
+
+bool WED_GISPolygon::Overlaps(GISLayer_t l, const Polygon2& inPolyNoHoles) const
+{
+	bool overlap = false;
+	IGISPointSequence * ps = GetOuterRing();
+	int numsides = ps->GetNumSides();
+	Polygon2 pol;
+	for( int i = 0 ; i < numsides ; ++i )
+	{
+		Bezier2 b;
+		ps->GetSide(l,i,b);
+		if(inPolyNoHoles.inside(b.p1) || inPolyNoHoles.intersects(b.as_segment()))
+		{
+			overlap = true; 
+			break;
+		}
+		pol.push_back(b.p1);
+	}
+	if(!overlap)
+	{                    // check for being completely enclosed by polygon
+		for(auto pt : inPolyNoHoles)
+			if(pol.inside(pt)) { overlap = true; break; }
+		// now check if completely inside a hole- that would be no overlap
+		int numHoles = GetNumHoles();
+		if(overlap && numHoles)
+		{
+			for(int h = 0; h < numHoles; h++)
+			{
+				ps = GetNthHole(h);
+				bool isInsideHole = true;
+				numsides = ps->GetNumSides();
+				for( int i = 0 ; i < numsides ; ++i )
+				{
+					Bezier2 b;
+					ps->GetSide(l,i,b);
+					if(inPolyNoHoles.inside(b.p1) || inPolyNoHoles.intersects(b.as_segment()))
+					{
+						isInsideHole = false; 
+						break;
+					}
+				}
+				if(isInsideHole) { overlap = false; break; }
+			}
+		}
+	}
+	return overlap;
+}

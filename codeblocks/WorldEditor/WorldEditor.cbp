@@ -14,16 +14,17 @@
 				<Option object_output="./" />
 				<Option type="1" />
 				<Option compiler="gcc" />
+				<Option use_console_runner="0" />
 				<Compiler>
 					<Add option="-g" />
 				</Compiler>
 				<MakeCommands>
-					<Build command="conf=release_opt $make CXX=g++-4.8 CC=gcc-4.8 LD=g++-4.8 -j4 WED" />
-					<CompileFile command="conf=release_opt $make CXX=g++-4.8 CC=gcc-4.8 $file" />
+					<Build command="conf=release_opt $make -j4 WED" />
+					<CompileFile command="conf=release_opt $make $file" />
 					<Clean command="$make clean" />
 					<DistClean command="$make -f $makefile distclean$target" />
 					<AskRebuildNeeded command="conf=release_opt $make -q WED" />
-					<SilentBuild command="conf=release_opt $make CXX=g++-4.8 CC=gcc-4.8 LD=g++-4.8 -j4 WED &gt; $(CMD_NULL)" />
+					<SilentBuild command="conf=release_opt $make -j4 WED &gt; $(CMD_NULL)" />
 				</MakeCommands>
 			</Target>
 			<Target title="Debug">
@@ -186,11 +187,21 @@
 		<Unit filename="../../src/Interfaces/IResolver.h" />
 		<Unit filename="../../src/Interfaces/ISelection.h" />
 		<Unit filename="../../src/Interfaces/ITexMgr.h" />
+		<Unit filename="../../src/Network/PCSBSocket.h" />
+		<Unit filename="../../src/Network/PCSBSocket.lin.cpp" />
+		<Unit filename="../../src/Network/PCSBSocket.win.cpp" />
+		<Unit filename="../../src/Network/PCSBSocketUDP.h" />
+		<Unit filename="../../src/Network/PCSBSocketUDP.lin.cpp" />
+		<Unit filename="../../src/Network/PCSBSocketUDP.win.cpp" />
 		<Unit filename="../../src/Network/b64.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="../../src/Network/curl_http.cpp" />
+		<Unit filename="../../src/Network/curl_http.h" />
 		<Unit filename="../../src/OGLE/ogle.cpp" />
 		<Unit filename="../../src/OGLE/ogle.h" />
+		<Unit filename="../../src/Obj/ObjConvert.cpp" />
+		<Unit filename="../../src/Obj/ObjConvert.h" />
 		<Unit filename="../../src/Obj/ObjDraw.cpp" />
 		<Unit filename="../../src/Obj/ObjDraw.h" />
 		<Unit filename="../../src/Obj/ObjPointPool.cpp" />
@@ -202,22 +213,15 @@
 		<Unit filename="../../src/Obj/XObjReadWrite.h" />
 		<Unit filename="../../src/UI/XWin.h" />
 		<Unit filename="../../src/UI/XWin.lin.cpp" />
-		<Unit filename="../../src/UI/XWin.mac.mm" />
-		<Unit filename="../../src/UI/XWin.win.cpp" />
 		<Unit filename="../../src/UI/XWinGL.h" />
 		<Unit filename="../../src/UI/XWinGL.lin.cpp" />
-		<Unit filename="../../src/UI/XWinGL.mac.mm" />
-		<Unit filename="../../src/UI/XWinGL.win.cpp" />
 		<Unit filename="../../src/Utils/AssertUtils.cpp" />
 		<Unit filename="../../src/Utils/AssertUtils.h" />
-		<Unit filename="../../src/Utils/BWImage.cpp" />
-		<Unit filename="../../src/Utils/BWImage.h" />
 		<Unit filename="../../src/Utils/BitmapUtils.cpp" />
 		<Unit filename="../../src/Utils/BitmapUtils.h" />
 		<Unit filename="../../src/Utils/CSVParser.cpp" />
 		<Unit filename="../../src/Utils/CSVParser.h" />
 		<Unit filename="../../src/Utils/CompGeomDefs2.h" />
-		<Unit filename="../../src/Utils/CompGeomDefs3.h" />
 		<Unit filename="../../src/Utils/CompGeomUtils.cpp" />
 		<Unit filename="../../src/Utils/CompGeomUtils.h" />
 		<Unit filename="../../src/Utils/EndianUtils.c">
@@ -236,11 +240,8 @@
 		<Unit filename="../../src/Utils/MemUtils.h" />
 		<Unit filename="../../src/Utils/ObjUtils.cpp" />
 		<Unit filename="../../src/Utils/ObjUtils.h" />
-		<Unit filename="../../src/Utils/PerfUtils.h" />
 		<Unit filename="../../src/Utils/PlatformUtils.h" />
 		<Unit filename="../../src/Utils/PlatformUtils.lin.cpp" />
-		<Unit filename="../../src/Utils/PolyRasterUtils.cpp" />
-		<Unit filename="../../src/Utils/PolyRasterUtils.h" />
 		<Unit filename="../../src/Utils/STLUtils.cpp" />
 		<Unit filename="../../src/Utils/STLUtils.h" />
 		<Unit filename="../../src/Utils/TexUtils.cpp" />
@@ -292,8 +293,6 @@
 		<Unit filename="../../src/WEDCore/WED_Messages.h" />
 		<Unit filename="../../src/WEDCore/WED_Orthophoto.cpp" />
 		<Unit filename="../../src/WEDCore/WED_Orthophoto.h" />
-		<Unit filename="../../src/WEDCore/WED_Package.cpp" />
-		<Unit filename="../../src/WEDCore/WED_Package.h" />
 		<Unit filename="../../src/WEDCore/WED_PackageMgr.cpp" />
 		<Unit filename="../../src/WEDCore/WED_PackageMgr.h" />
 		<Unit filename="../../src/WEDCore/WED_Persistent.cpp" />
@@ -520,16 +519,18 @@
 		<Unit filename="../../src/WEDMap/WED_MapZoomerNew.h" />
 		<Unit filename="../../src/WEDMap/WED_MarqueeTool.cpp" />
 		<Unit filename="../../src/WEDMap/WED_MarqueeTool.h" />
+		<Unit filename="../../src/WEDMap/WED_NavaidLayer.cpp" />
+		<Unit filename="../../src/WEDMap/WED_NavaidLayer.h" />
 		<Unit filename="../../src/WEDMap/WED_PreviewLayer.cpp" />
 		<Unit filename="../../src/WEDMap/WED_PreviewLayer.h" />
+		<Unit filename="../../src/WEDMap/WED_SlippyMap.cpp" />
+		<Unit filename="../../src/WEDMap/WED_SlippyMap.h" />
 		<Unit filename="../../src/WEDMap/WED_StructureLayer.cpp" />
 		<Unit filename="../../src/WEDMap/WED_StructureLayer.h" />
 		<Unit filename="../../src/WEDMap/WED_ToolInfoAdapter.cpp" />
 		<Unit filename="../../src/WEDMap/WED_ToolInfoAdapter.h" />
 		<Unit filename="../../src/WEDMap/WED_ToolUtils.cpp" />
 		<Unit filename="../../src/WEDMap/WED_ToolUtils.h" />
-		<Unit filename="../../src/WEDMap/WED_UIMeasurements.cpp" />
-		<Unit filename="../../src/WEDMap/WED_UIMeasurements.h" />
 		<Unit filename="../../src/WEDMap/WED_VertexTool.cpp" />
 		<Unit filename="../../src/WEDMap/WED_VertexTool.h" />
 		<Unit filename="../../src/WEDMap/WED_WorldMapLayer.cpp" />
@@ -541,15 +542,74 @@
 		<Unit filename="../../src/WEDProperties/WED_PropertyTable.cpp" />
 		<Unit filename="../../src/WEDProperties/WED_PropertyTable.h" />
 		<Unit filename="../../src/WEDResources/about.png" />
-		<Unit filename="../../src/WEDResources/check_buttons.png" />
 		<Unit filename="../../src/WEDResources/checkbutton.png" />
 		<Unit filename="../../src/WEDResources/colors.png" />
+		<Unit filename="../../src/WEDResources/icons/map_airport.png" />
+		<Unit filename="../../src/WEDResources/icons/map_beacon.png" />
+		<Unit filename="../../src/WEDResources/icons/map_helipad.png" />
+		<Unit filename="../../src/WEDResources/icons/map_heliport.png" />
+		<Unit filename="../../src/WEDResources/icons/map_light.png" />
+		<Unit filename="../../src/WEDResources/icons/map_missing_obj.png" />
+		<Unit filename="../../src/WEDResources/icons/map_rampstart.png" />
+		<Unit filename="../../src/WEDResources/icons/map_seaport.png" />
+		<Unit filename="../../src/WEDResources/icons/map_servicedest.png" />
+		<Unit filename="../../src/WEDResources/icons/map_taxisign.png" />
+		<Unit filename="../../src/WEDResources/icons/map_towerview.png" />
+		<Unit filename="../../src/WEDResources/icons/map_tree.png" />
+		<Unit filename="../../src/WEDResources/icons/map_windsock.png" />
+		<Unit filename="../../src/WEDResources/icons/nav_gs.png" />
+		<Unit filename="../../src/WEDResources/icons/nav_mark.png" />
+		<Unit filename="../../src/WEDResources/icons/nav_ndb.png" />
+		<Unit filename="../../src/WEDResources/icons/nav_vor.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_BBrokenRed.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_BBrokenYellow.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_BDoubleSolidYellow.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_BILSCriticalCenter.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_BILSCriticalCenterW.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_BILSHold.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_BOtherHold.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_BRunwayHold.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_BSolidBlue.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_BSolidGreen.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_BSolidOrange.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_BSolidRed.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_BSolidYellow.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_BSolidYellowW.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_BWideBrokenDouble.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_BWideBrokenSingle.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_BoundaryEdge.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_BrokenRed.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_BrokenWhite.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_BrokenYellow.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_Chequered.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_DoubleSolidYellow.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_HoldLights.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_HoldLightsPulse.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_HoldShortCenter.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_ILSCriticalCenter.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_ILSCriticalCenterW.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_ILSHold.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_OtherHold.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_RunwayHold.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_SolidBlue.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_SolidGreen.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_SolidOrange.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_SolidRed.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_SolidWhite.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_SolidYellow.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_SolidYellowW.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_TaxiCenter.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_TaxiEdge.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_Unknown.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_WideBrokenDouble.png" />
+		<Unit filename="../../src/WEDResources/line_types/line_WideBrokenSingle.png" />
 		<Unit filename="../../src/WEDResources/map_tools.png" />
 		<Unit filename="../../src/WEDResources/map_tools2_blank.png" />
 		<Unit filename="../../src/WEDResources/map_tools_blank.png" />
 		<Unit filename="../../src/WEDResources/push_buttons.png" />
 		<Unit filename="../../src/WEDResources/pushbutton.png" />
 		<Unit filename="../../src/WEDResources/radiobutton.png" />
+		<Unit filename="../../src/WEDResources/reset_options.png" />
 		<Unit filename="../../src/WEDResources/scroll_btn_h.png" />
 		<Unit filename="../../src/WEDResources/scroll_btn_v.png" />
 		<Unit filename="../../src/WEDResources/scrollbar_corner.png" />
@@ -574,8 +634,6 @@
 		<Unit filename="../../src/WEDResources/taxi_sign.png" />
 		<Unit filename="../../src/WEDResources/tce_tools.png" />
 		<Unit filename="../../src/WEDResources/tce_tools_blank.png" />
-		<Unit filename="../../src/WEDResources/ui_measurements.txt" />
-		<Unit filename="../../src/WEDResources/worldmap.jpg" />
 		<Unit filename="../../src/WEDTCE/WED_TCE.cpp" />
 		<Unit filename="../../src/WEDTCE/WED_TCE.h" />
 		<Unit filename="../../src/WEDTCE/WED_TCELayer.cpp" />
@@ -596,18 +654,14 @@
 		<Unit filename="../../src/WEDWindows/WED_DocumentWindow.h" />
 		<Unit filename="../../src/WEDWindows/WED_GroupCommands.cpp" />
 		<Unit filename="../../src/WEDWindows/WED_GroupCommands.h" />
-		<Unit filename="../../src/WEDWindows/WED_HierarchyFilterBar.cpp" />
-		<Unit filename="../../src/WEDWindows/WED_HierarchyFilterBar.h" />
 		<Unit filename="../../src/WEDWindows/WED_LibraryFilterBar.cpp" />
 		<Unit filename="../../src/WEDWindows/WED_LibraryFilterBar.h" />
+		<Unit filename="../../src/WEDWindows/WED_Line_Selector.cpp" />
+		<Unit filename="../../src/WEDWindows/WED_Line_Selector.h" />
 		<Unit filename="../../src/WEDWindows/WED_Menus.cpp" />
 		<Unit filename="../../src/WEDWindows/WED_Menus.h" />
 		<Unit filename="../../src/WEDWindows/WED_PackageListAdapter.cpp" />
 		<Unit filename="../../src/WEDWindows/WED_PackageListAdapter.h" />
-		<Unit filename="../../src/WEDWindows/WED_PackageStatusPane.cpp" />
-		<Unit filename="../../src/WEDWindows/WED_PackageStatusPane.h" />
-		<Unit filename="../../src/WEDWindows/WED_PackageWindow.cpp" />
-		<Unit filename="../../src/WEDWindows/WED_PackageWindow.h" />
 		<Unit filename="../../src/WEDWindows/WED_Sign_Editor.cpp" />
 		<Unit filename="../../src/WEDWindows/WED_Sign_Editor.h" />
 		<Unit filename="../../src/WEDWindows/WED_StartWindow.cpp" />
@@ -616,6 +670,7 @@
 		<Unit filename="../../src/XESCore/AptDefs.h" />
 		<Unit filename="../../src/XESCore/AptIO.cpp" />
 		<Unit filename="../../src/XESCore/AptIO.h" />
+		<Unit filename="../../src/XESCore/XESConstants.h" />
 		<Extensions>
 			<code_completion />
 			<envvars set="default" />

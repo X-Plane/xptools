@@ -99,11 +99,16 @@ void			WED_GISPoint::Rescale			(GISLayer_t l,const Bbox2& old_bounds, const Bbox
 {
 	if (old_bounds != new_bounds)
 	{
-		Point2 p;
+		Point2	p;
 		GetLocation(l,p);
-		p.x_ = old_bounds.rescale_to_x(new_bounds,p.x_);
+		p.x_ = old_bounds.rescale_to_x_projected(new_bounds,p.x_);
 		p.y_ = old_bounds.rescale_to_y(new_bounds,p.y_);
+
+		// Todo: Why is box 0,0 to 1,1 when dragging the airport symbol at far out zoom scales ? Its screwing our projection up. Need real coordinates
+
 		SetLocation(l,p);
+//		CacheInval(cache_Spatial);
+//		CacheBuild(cache_Spatial);
 	}
 }
 
@@ -122,7 +127,7 @@ void	WED_GISPoint::GetLocation(GISLayer_t l,     Point2& p) const
 	//
 	// So - commenting out for now.  If the caching system goes hinky on us...perhaps that will
 	// show why this was necessary?
-	
+
 
 	if(l == gis_Geo)
 	{
@@ -175,11 +180,11 @@ void			WED_GISPoint::Rotate			(GISLayer_t l, const Point2& ctr, double a)
 void		WED_GISPoint::PropEditCallback(int before)
 {
 	WED_Entity::PropEditCallback(before);
-	
+
 	if(!before)
 	{
 		CacheInval(cache_Spatial);
 		CacheBuild(cache_Spatial);
 	}
-	
+
 }

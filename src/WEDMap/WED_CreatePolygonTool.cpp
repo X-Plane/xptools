@@ -84,17 +84,19 @@ WED_CreatePolygonTool::WED_CreatePolygonTool(
 		mHeading(tool     == create_Taxi   || tool == create_Polygon ? 
 		                                      this : NULL,PROP_Name("Heading",  XML_Name("","")),0,5,2),
 		mMarkings(tool    <= create_Hole    ? this : NULL,PROP_Name(".Markings",XML_Name("","")), LinearFeature, 0),
-		mMarkingsLines(tool <= create_Hole  ? this : NULL,PROP_Name("Markings", XML_Name("","")), ".Markings",line_SolidYellow,line_BWideBrokenDouble, 1),
-		mMarkingsLights(tool <= create_Hole ? this : NULL,PROP_Name("Lights",   XML_Name("","")), ".Markings",line_TaxiCenter,line_BoundaryEdge, 1),
+		mMarkingsLines(tool <= create_Hole  ? this : NULL,PROP_Name("Markings", XML_Name("","")), ".Markings",   1,  99, 1),
+		mMarkingsLights(tool <= create_Hole ? this : NULL,PROP_Name("Lights",   XML_Name("","")), ".Markings", 101, 199, 1),
 
 		mResource(tool >  create_Hole    ? this : NULL,PROP_Name("Resource", XML_Name("","")), ""),
 		mHeight(tool   == create_Facade  ? this : NULL,PROP_Name("Height",   XML_Name("","")), 10.0, 4, 2),
 		mDensity(tool  == create_Forest  ? this : NULL,PROP_Name("Density",  XML_Name("","")), 1.0, 3, 2),
 		mSpacing(tool  == create_String  ? this : NULL,PROP_Name("Spacing",  XML_Name("","")), 5.0, 3, 1),
 		
-		mUVMap(tool == create_Polygon    ? this : NULL,PROP_Name("Use Texture Map - Orthophoto", XML_Name("","")), 0)
+		mUVMap(tool == create_Polygon    ? this : NULL,PROP_Name("Use Texture Map - Orthophoto", XML_Name("","")), 0),
+		mPickWalls(tool == create_Facade ? this : NULL,PROP_Name("Pick Walls", XML_Name("","")), 0)
 {
 	mPavement.value = surf_Concrete;
+	mPickWalls.value = true;
 }
 
 WED_CreatePolygonTool::~WED_CreatePolygonTool()
@@ -225,6 +227,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 			sel->Select(fac);
 			fac->SetResource(mResource.value);
 			fac->SetHeight(mHeight.value);
+			fac->SetCustomWalls(mPickWalls.value);
 		}
 		break;
 	case create_Forest:

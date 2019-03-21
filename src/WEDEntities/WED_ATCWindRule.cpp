@@ -66,7 +66,9 @@ void		WED_ATCWindRule::SetICAO(const string &t)
 
 void		WED_ATCWindRule::PropEditCallback(int before)
 {
-	if (!before)   
+	if (before)
+		StateChanged(wed_Change_Properties);
+	else
 	{
 		char buf[20];
 		snprintf(buf,20,"Wind %.0lf@%d-%d",speed_knots.value,heading_lo.value,heading_hi.value);

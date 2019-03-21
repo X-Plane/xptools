@@ -119,7 +119,7 @@ void		WED_PropertyHelper::StartElement(
 		for(n = 0; n < mItems.size(); ++n)
 		if(mItems[n]->WantsAttribute(name,k,v))
 			break;
-	}		
+	}
 }
 
 void		WED_PropertyHelper::EndElement(void)
@@ -286,7 +286,6 @@ void		WED_PropDoubleText::GetPropertyInfo(PropertyInfo_t& info)
 	info.prop_name = mTitle;
 	info.digits = mDigits;
 	info.decimals = mDecimals;
-	info.round_down = false;
 	info.synthetic = 0;
 	info.units = mUnit;
 }
@@ -349,35 +348,68 @@ bool		WED_PropDoubleText::WantsAttribute(const char * ele, const char * att_name
 	return false;
 }
 
-void		WED_PropFrequencyText::GetPropertyInfo(PropertyInfo_t& info)
+void		WED_PropFrequencyText::SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent)
 {
-	WED_PropDoubleText::GetPropertyInfo(info);
-	info.round_down = true;
+	DebugAssert(val.prop_kind == prop_Double);
+	if (value !=  val.double_val)
+	{
+		parent->PropEditCallback(1);
+		AssignFrom1Khz(1000.0 * val.double_val);
+		parent->PropEditCallback(0);
+	}
 }
 
-int		WED_PropFrequencyText::GetAs10Khz(void) const
+int		WED_PropFrequencyText::GetAs1Khz(void) const
 {
-	// This is kind of a fuck-fest and some explanation is needed.  Unfortunately ATC frequencies are stored in decimal mhz
-	// in WED's internal data model, so 123.125 might be 123.124999999999, and there might be other similar rounding crap.
-	// We want to TRUNCATE the 1's digit of the khz frequency, e.g.
-	// XP treats 123.125 and 123.12.  
-	
-	int freq_khz = round(this->value * 1000.0);
-	return freq_khz / 10;	// Intentional floor - 123.125 -> 12312.
+	// Unfortunately ATC frequencies are stored in decimal Mhz in WED's internal data model,
+	// so 123.125 might be 123.124999999999, and there might be other similar rounding crap.
+	// Plus there is that 8.33kHz logic with most but not all 5kHz raster numbers allowed
+
+	return round(this->value * 1000.0);
 }
 
-void	WED_PropFrequencyText::AssignFrom10Khz(int freq_10khz)
+void	WED_PropFrequencyText::AssignFrom1Khz(int freq_1khz)
 {
-	double mhz = (double) freq_10khz / 100.0;
+	if (freq_1khz >= 118000 && freq_1khz < 137000)
+	{
+		// round to 5kHz
+		freq_1khz = 5 * ((freq_1khz + 2) / 5);
+
+		int last_two_dig = freq_1khz % 100;
+		if(last_two_dig == 20 || last_two_dig == 70)
+			freq_1khz += 5;
+
+		if(freq_1khz % 25 == 0)
+			strncpy(mUnit,"(25k)",6);
+		else
+			strncpy(mUnit,"(8.3k)",6);
+	}
+	else
+	{
+		strncpy(mUnit,"MHz",6);
+	}
+
+	double mhz = (double) freq_1khz / 1000.0;
 	*this = mhz;
 }
 
-void		WED_PropFrequencyText::ToXML(WED_XMLElement * parent)
+bool		WED_PropFrequencyText::WantsAttribute(const char * ele, const char * att_name, const char * att_value)
 {
 	const char *p = mTitle+strlen(mTitle)+1;
-	WED_XMLElement * xml = parent->add_or_find_sub_element(p);
+	if(strcasecmp(p,ele)==0)
 	p += strlen(p)+1;
-	xml->add_attr_double(p,value,mDecimals+1);
+	if(strcasecmp(p,att_name)==0)
+	{
+		value = atof(att_value);
+		if (value >=118.0 && value < 137.0)
+        {
+       		int last_two_dig = (int) (value * 1000.0) % 100;
+            if(last_two_dig == 20 || last_two_dig == 70)
+                value += 0.005;
+        }
+		return true;
+	}
+	return false;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -561,11 +593,11 @@ void		WED_PropIntEnum::GetPropertyInfo(PropertyInfo_t& info)
 }
 
 void		WED_PropIntEnum::GetPropertyDict(PropertyDict_t& dict)
-{	
+{
 	map<int, string>		dm;
-	
+
 	DOMAIN_Members(domain,dm);
-	
+
 	for(map<int, string>::iterator i = dm.begin(); i != dm.end(); ++i)
 	dict.insert(PropertyDict_t::value_type(i->first, make_pair(i->second,true)));
 }
@@ -639,9 +671,9 @@ void		WED_PropIntEnumSet::GetPropertyInfo(PropertyInfo_t& info)
 void		WED_PropIntEnumSet::GetPropertyDict(PropertyDict_t& dict)
 {
 	map<int, string>		dm;
-	
+
 	DOMAIN_Members(domain,dm);
-	
+
 	for(map<int, string>::iterator i = dm.begin(); i != dm.end(); ++i)
 	dict.insert(PropertyDict_t::value_type(i->first, make_pair(i->second,true)));
 }
@@ -715,7 +747,7 @@ bool		WED_PropIntEnumSet::WantsElement(WED_XMLReader * reader, const char * name
 	if(strcasecmp(name,p)==0)
 	{
 		reader->PushHandler(this);
-		value.clear();	
+		value.clear();
 		return true;
 	}
 	return false;
@@ -732,8 +764,8 @@ void		WED_PropIntEnumSet::StartElement(
 	{
 		const XML_Char * v = get_att("value", atts);
 		if(!v) reader->FailWithError("no value");
-		else 
-		{ 
+		else
+		{
 			int i = ENUM_LookupDesc(domain,v);
 			// If asked to add enum of unknown name to set, just ignore it silently.
 			// If we were to add "-1" to the set instead, the set would become un-modifyable and 'save file' would bomb.
@@ -760,9 +792,9 @@ void		WED_PropIntEnumBitfield::GetPropertyInfo(PropertyInfo_t& info)
 void		WED_PropIntEnumBitfield::GetPropertyDict(PropertyDict_t& dict)
 {
 	map<int, string>		dm;
-	
+
 	DOMAIN_Members(domain,dm);
-	
+
 	for(map<int, string>::iterator i = dm.begin(); i != dm.end(); ++i)
 	dict.insert(PropertyDict_t::value_type(i->first, make_pair(i->second,true)));
 }
@@ -831,7 +863,7 @@ bool		WED_PropIntEnumBitfield::WantsAttribute(const char * ele, const char * att
 	if(strcasecmp(p,att_name)==0)
 	{
 		int bf = atoi(att_value);
-		ENUM_ImportSet(domain, bf, value);		
+		ENUM_ImportSet(domain, bf, value);
 		return true;
 	}
 	return false;
@@ -961,7 +993,10 @@ void		WED_PropIntEnumSetUnion::GetProperty(PropertyVal_t& val) const
 			if (idx != -1)
 			{
 				inf->GetNthProperty(idx, local);
-				copy(local.set_val.begin(), local.set_val.end(), set_inserter(val.set_val));
+				if(local.set_val.size())
+					copy(local.set_val.begin(), local.set_val.end(), set_inserter(val.set_val));
+				else
+					val.set_val.insert(0);
 			}
 		}
 	}
@@ -1023,4 +1058,59 @@ void		WED_PropIntEnumSetUnion::ToXML(WED_XMLElement * parent)
 bool		WED_PropIntEnumSetUnion::WantsAttribute(const char * ele, const char * att_name, const char * att_value)
 {
 	return false;
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+void		WED_PropIntEnumSetFilterVal::GetPropertyDict(PropertyDict_t& dict)
+{
+	int me = mParent->FindProperty(host);
+	PropertyDict_t	d;
+	mParent->GetNthPropertyDict(me,d);
+
+	for (PropertyDict_t::iterator i = d.begin(); i != d.end(); ++i)
+	{
+//		if (i->first >= minv && i->first <= maxv)
+		int v = ENUM_Export(i->first);
+		if (v >= minv && v <= maxv)
+			dict.insert(PropertyDict_t::value_type(i->first,i->second));
+	}
+}
+
+void		WED_PropIntEnumSetFilterVal::GetProperty(PropertyVal_t& val) const
+{
+	int me = mParent->FindProperty(host);
+	PropertyVal_t	local;
+	mParent->GetNthProperty(me,local);
+	val = local;
+	val.set_val.clear();
+	for(set<int>::iterator i = local.set_val.begin(); i != local.set_val.end(); ++i)
+	{
+		int n = ENUM_Export(*i);
+		if (n >= minv && n <= maxv)
+			val.set_val.insert(*i);
+	}
+
+}
+
+void		WED_PropIntEnumSetFilterVal::SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent)
+{
+	int me = mParent->FindProperty(host);
+	PropertyVal_t	clone(val), old;
+	clone.set_val.clear();
+	set<int>::const_iterator i;
+	mParent->GetNthProperty(me, old);
+	for(i=old.set_val.begin();i!=old.set_val.end();++i)
+	{
+		int n = ENUM_Export(*i);
+		if(n < minv || n > maxv)
+			clone.set_val.insert(*i);
+	}
+	for(i=val.set_val.begin();i!=val.set_val.end();++i)
+	{
+		int n = ENUM_Export(*i);
+		if(n >= minv && n <= maxv)
+			clone.set_val.insert(*i);
+	}
+	mParent->SetNthProperty(me,clone);
 }

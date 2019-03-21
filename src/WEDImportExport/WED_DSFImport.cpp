@@ -722,12 +722,28 @@ public:
 		if(me->want_bezier)
 		{
 			vector<BezierPoint2>	pc, uc;
-
 //			debug_it(me->pts);
 //			debug_it(me->uvs);
 			
 			BezierPointSeqFromTriple(me->pts.begin(),me->pts.end(), back_inserter(pc));
 			me->pts.swap(pc);
+
+			if(me->want_wall)
+			{
+				vector<int> wc;
+				auto w = me->walls.begin();
+				for(auto p : me->pts)
+				{
+					wc.push_back(*w++);
+					if(p.is_split())
+					{
+						w++;
+						if(p.has_lo() && p.has_hi()) w++;
+					}
+				}
+				me->walls.swap(wc);
+			}
+
 			if(me->want_uv)
 			{
 				BezierPointSeqFromTriple(me->uvs.begin(),me->uvs.end(), back_inserter(uc));

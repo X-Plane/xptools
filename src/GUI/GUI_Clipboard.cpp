@@ -26,7 +26,8 @@
 #if APL
 	#include "ObjCUtils.h"
 #elif IBM
-#include <Windows.h>
+	#include <Windows.h>
+	#include "GUI_Unicode.h"
 #endif
 #if LIN
 #include <QtGui/QApplication>
@@ -77,7 +78,7 @@ void GUI_InitClipboard(void)
 	#if APL
 		sCITs.push_back(get_pasteboard_text_type());
 	#elif IBM
-		sCITs.push_back(CF_TEXT);
+		sCITs.push_back(CF_UNICODETEXT);
 	#else
 		#warning implement clipboard init() for linux
 	#endif
@@ -298,11 +299,11 @@ bool			GUI_GetTextFromClipboard(string& outText)
 	#if APL
 		outText = string(buf.begin(),buf.begin()+sz);
 	#elif IBM
-		outText = string(buf.begin(),buf.begin()+sz-1);
+		const UTF16 * p = (const UTF16 *) &buf[0];
+		string_utf16 str16(p,p+sz/2-1);
+		outText = convert_utf16_to_str(str16);
 	#endif
-
 #else
-
     //TODO:  basic text clipboard implementation for now
      QClipboard* cb = QApplication::clipboard();
      outText = string(cb->text().toUtf8());
@@ -314,12 +315,15 @@ bool			GUI_SetTextToClipboard(const string& inText)
 {
     #if !LIN
 	GUI_ClipType text = GUI_GetTextClipType();
+	const void * ptr;
 	#if APL
+		ptr = inText.c_str();
 		int sz = inText.size();
 	#elif IBM
-		int sz = inText.size()+1;
+		string_utf16 str16 = convert_str_to_utf16(inText);
+		ptr = (const void *) &str16[0];
+		int sz = 2*(inText.size()+1);
 	#endif
-	const void * ptr = inText.c_str();
 	return GUI_Clipboard_SetData(1, &text, &sz, &ptr);
 	#else
     //TODO:  basic text clipboard implementation for now

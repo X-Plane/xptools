@@ -29,6 +29,7 @@
 #include "WED_MapZoomerNew.h"
 #include "GUI_Listener.h"
 #include <stdint.h>
+#include "WED_MapLayer.h"
 
 class	WED_MapLayer;
 class	WED_MapToolNew;
@@ -45,7 +46,7 @@ public:
 			void		SetTool(WED_MapToolNew * tool);
 			void		AddLayer(WED_MapLayer * layer);
 	
-			void		SetFilter(const string& name, const vector<const char *>& hide_filter, const vector<const char *>& lock_filter);
+			void		SetFilter(const string& name, const MapFilter_t& hide_filter, const MapFilter_t& lock_filter);
 
 	virtual void		SetBounds(int x1, int y1, int x2, int y2);
 	virtual void		SetBounds(int inBounds[4]);
@@ -78,9 +79,9 @@ private:
 	WED_MapToolNew *				mTool;
 	IResolver *						mResolver;
 
-	vector<const char *>					mHideFilter;
-	vector<const char *>					mLockFilter;
-	string									mFilterName;
+	MapFilter_t						mHideFilter;
+	MapFilter_t						mLockFilter;
+	string							mFilterName;
 
 	WED_MapLayer *	mClickLayer;
 	int				mX;

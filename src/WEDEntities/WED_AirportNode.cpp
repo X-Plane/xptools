@@ -29,14 +29,35 @@ TRIVIAL_COPY(WED_AirportNode, WED_GISPoint_Bezier)
 
 WED_AirportNode::WED_AirportNode(WED_Archive * a, int i) : WED_GISPoint_Bezier(a,i),
 	attrs (this,PROP_Name(".Attributes",      XML_Name("markings","marking")),LinearFeature, 0),
-	lines (this,PROP_Name("Line Attributes",  XML_Name("","")),".Attributes",line_SolidYellow,line_BWideBrokenDouble, 1),
-	lights(this,PROP_Name("Light Attributes", XML_Name("","")),".Attributes",line_TaxiCenter,line_BoundaryEdge, 1)
+	lines (this,PROP_Name("Line Attributes",  XML_Name("","")),".Attributes",   1,  99, 1),
+	lights(this,PROP_Name("Light Attributes", XML_Name("","")),".Attributes", 101, 199, 1)
 {
 }
 
 WED_AirportNode::~WED_AirportNode()
 {
 }
+
+void 	WED_AirportNode::GetResource(string& r) const
+{
+	r.clear();
+	
+	PropertyVal_t line;
+	lines.GetProperty(line);
+	PropertyVal_t light;
+	lights.GetProperty(light);
+	
+	if(line.set_val.size() == 1)
+		r += ENUM_Desc(*line.set_val.begin());
+	
+	if(light.set_val.size() == 1)
+	{
+		if(!r.empty()) r +=  "$^"; 
+		r += ENUM_Desc(*light.set_val.begin());
+	}
+}
+
+
 
 void	WED_AirportNode::SetAttributes(const set<int>& in_attrs)
 {
@@ -47,4 +68,3 @@ void		WED_AirportNode::GetAttributes(set<int>& out_attrs) const
 {
 	out_attrs = attrs.value;
 }
-

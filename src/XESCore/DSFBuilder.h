@@ -45,6 +45,7 @@ void	BuildDSF(
 			CDT&			inHiresMesh,
 //			CDT&			inLowresMesh,
 			Pmwx&			inVectorMap,
+			rf_region		inRegion,
 			ProgressFunc	inProgress);
 
 #endif /* DSFBUILDER_H */

@@ -457,6 +457,7 @@ void  WED_TaxiRoute::PropEditCallback(int before)
 
 	if (before)
 	{
+		StateChanged(wed_Change_Properties);
 		old_rwy_tag = runway.value;
 	}
 	else if(old_rwy_tag != runway.value)
