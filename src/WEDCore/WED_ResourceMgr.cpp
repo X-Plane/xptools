@@ -395,13 +395,11 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& o, int variant)
 		return true;
 	}
 
-	int n_variants = mLibrary->GetNumVariants(path);
+	int max_variants = mLibrary->GetNumVariants(path);
 //printf("NEW FAC p=%s, v=%d\n",path.c_str(),n_variants);
 
-	for(int variant = 0; variant < n_variants; ++variant)
+	for(variant = 0; variant < max_variants; ++variant)
 	{
-printf("Fac read start v=%d r=%d\n",variant,o.has_roof);
-
 		string p = mLibrary->GetResourcePath(path, variant);
 
 		MFMemFile * fac = MemFile_Open(p.c_str());
@@ -418,20 +416,21 @@ printf("Fac read start v=%d r=%d\n",variant,o.has_roof);
 		}
 		else
 			o.is_new = (v == 1000);
-
-		o.walls.clear();
+			
+		o.lods.push_back(FacadeLOD_t());
+		o.lods.back().tex_correct_slope = 0;
+		o.lods.back().has_roof = false;
+		
 		o.doubled = false;
 			
 		o.min_floors = 1;
 		o.max_floors = 9999;
 		o.previews.clear();
 		
-		o.has_roof = 0;
 		o.tex_correct_slope = 0;
 
 		xflt scale_s = 1.0f, scale_t = 1.0f;
 
-		o.is_ring = true;
 		bool roof_section = false;
 //		bool no_roof_mesh = false;
 //		bool not_nearest_lod = false;
@@ -450,15 +449,15 @@ printf("Fac read start v=%d r=%d\n",variant,o.has_roof);
 //			}
 			else if (MFS_string_match(&s,"SHADER_ROOF", false))
 			{
-				roof_section = true;
+				o.lods.back().has_roof = true;
 			}
 			else if (MFS_string_match(&s,"SHADER_WALL", false))
 			{
-				roof_section = false;
+				o.lods.back().has_roof = false;
 			}
 			else if (MFS_string_match(&s,"TEXTURE", false))
 			{
-				if (roof_section)
+				if (o.lods.back().has_roof)
 					MFS_string(&s,&o.roof_tex);
 				else
 					MFS_string(&s,&o.wall_tex);
@@ -504,19 +503,18 @@ printf("Fac read start v=%d r=%d\n",variant,o.has_roof);
 			}
 			else if (MFS_string_match(&s,"ROOF_SLOPE", false))
 			{
-				roof_section = true;
 				o.walls.back().roof_slope = MFS_double(&s);
 				
 				if(o.walls.back().roof_slope >= 90.0 || 
 					o.walls.back().roof_slope <= -90.0)
 				{
-					o.tex_correct_slope = true;
+					o.lods.back().tex_correct_slope = true;
 				}
 				string buf;	MFS_string(&s,&buf);
 				
 				if(buf == "SLANT")
 				{
-					o.tex_correct_slope = true;
+					o.lods.back().tex_correct_slope = true;
 				}
 			}
 			else if (MFS_string_match(&s,"BOTTOM",false))
@@ -544,21 +542,21 @@ printf("Fac read start v=%d r=%d\n",variant,o.has_roof);
 			{
 				float f1 = MFS_double(&s) * scale_s;
 				float f2 = MFS_double(&s) * scale_s;
-				o.walls.back().t_floors.push_back(pair<float, float>(f1,f2));
+				o.walls.back().s_panels.push_back(pair<float, float>(f1,f2));
 				++o.walls.back().left; 
 			} 
 			else if (MFS_string_match(&s,"CENTER",false))
 			{
 				float f1 = MFS_double(&s) * scale_s;
 				float f2 = MFS_double(&s) * scale_s;
-				o.walls.back().t_floors.push_back(pair<float, float>(f1,f2));
+				o.walls.back().s_panels.push_back(pair<float, float>(f1,f2));
 				++o.walls.back().center; 
 			} 
 			else if (MFS_string_match(&s,"RIGHT",false))
 			{
 				float f1 = MFS_double(&s) * scale_s;
 				float f2 = MFS_double(&s) * scale_s;
-				o.walls.back().t_floors.push_back(pair<float, float>(f1,f2));
+				o.walls.back().s_panels.push_back(pair<float, float>(f1,f2));
 				++o.walls.back().right; 
 			} 
 			else if (MFS_string_match(&s,"ROOF", false))
@@ -591,7 +589,6 @@ printf("Fac read start v=%d r=%d\n",variant,o.has_roof);
 				o.roof_ab[1] = -rsy * t_rat;
 				o.roof_ab[2] = o.roof_ab[0] + rsx;
 				o.roof_ab[3] = o.roof_ab[1] + rsy;
-//				o.has_roof = true;
 			}
 			else if (MFS_string_match(&s,"BASEMENT_DEPTH", false))
 			{
@@ -631,7 +628,8 @@ printf("Fac read start v=%d r=%d\n",variant,o.has_roof);
 
 		process_texture_path(p,o.wall_tex);
 		process_texture_path(p,o.roof_tex);
-		WED_MakeFacadePreview(o);
+		
+		WED_MakeFacadePreview(o, 10, 20);
 
 		mFac[path].push_back(o);
 	}

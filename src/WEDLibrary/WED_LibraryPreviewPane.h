@@ -54,6 +54,9 @@ private:
 		int					mX, mY;
 		float				mPsi,mThe;
 		float				mPsiOrig,mTheOrig;
+		float				mHgt,mWid;
+		float				mHgtOrig,mWidOrig;
+
 		float				mZoom;
 		WED_ResourceMgr *	mResMgr;
 		ITexMgr *			mTexMgr;

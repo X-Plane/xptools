@@ -80,19 +80,10 @@ struct	fac_info_t : public FacadeLOD_t  {
 	bool		is_ring; 	  // can be drawn as open polygon
 	
 	// V1 only
-//	vector<FacadeLOD_t>		lods;  WED does not recognize anytghing by the LOD that starts at 0
-	bool					tex_correct_slope;
-	vector<FacadeWall_t>	walls;
-	vector<double>			roof_s;
-	vector<double>			roof_t;
-	xflt					roof_st[4];
-	xflt					roof_ab[4];
-	bool					has_roof;
+	vector<FacadeLOD_t>		lods;  // WED does not recognize anything but the LOD that starts at 0
 
 	xint					roof_surface;
 	xint					wall_surface;
-//	bool					has_roof;
-//	bool					is_closed;
 	bool					doubled;
 	int						min_floors;	// new in 10.20 - for floor count determination, this clamps the floor range.
 	int						max_floors;	
@@ -111,8 +102,8 @@ struct	fac_info_t : public FacadeLOD_t  {
 	vector<string>	w_nam;        // wall names, for property window etc
 	vector<string>	w_use;        // purpose of wall, for display in preview window
 
-	vector<XObj8 *> previews;
-	
+	vector<XObj8 *> previews;    // thats going away. We'd rather extrude a facade from a poolygon definition
+
 };
 
 struct	lin_info_t {

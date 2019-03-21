@@ -265,6 +265,6 @@ struct	FacadeLOD_t {
 
 /**********************/
 
-bool WED_MakeFacadePreview(const fac_info_t& o);
+bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width);   // return if object was made
 
 #endif

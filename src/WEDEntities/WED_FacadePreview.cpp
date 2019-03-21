@@ -25,6 +25,7 @@
 #include "ObjConvert.h"
 #include "CompGeomDefs2.h"
 #include "MathUtils.h"
+#include "XESConstants.h"
 
 #include "WED_ResourceMgr.h"
 #include "WED_FacadePreview.h"
@@ -73,101 +74,129 @@ FacadeWall_t::FacadeWall_t() :
 	basement(0.0)	
 {}
 
-bool WED_MakeFacadePreview(const fac_info_t& info)
+bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width)
 {
-
-	// sanitize list of walls
-#if 1
-	if (!info.is_new) 
-	{  // type 1 stuff
-
-		return true;
-	}
-	else
-	{  //type 2 stuff
-		return true;
-	}
-#else
-	// populate all wall sections, if .fac does not set them excplicitly
-	if (walls.empty())
-		return true;
-	
-	int want_floors = 1;      // # floors in the way the Obj8 is constructed. Not the floors of the building/facade represents.
-	if (has_middles) 
-		want_floors = 2;
-	else
-	{
-		info.min_floors = -1.0;
-		info.max_floors =  (walls[0].vert[2]-walls[0].vert[0]) * info.scale_y;
-	}
+	printf("New preview for h/w %.1lf %.1lf\n", fac_height, fac_width);
+	// sanitize wall choices ?
+	if (info.walls.empty())	return false;
 	
 	// fills a XObj8-structure for library preview
 	if (!info.is_new)         // can't handle type 2 facades, yet
 	{
-		XObj8 *obj = new XObj8;
-	//	obj->indices.clear();
-		
+//		for(auto p : info.previews)
+//			delete(p);
+		XObj8 *obj;
+		if (info.previews.size())
+		{
+			obj = info.previews[0];
+			obj->indices.clear();
+			obj->geo_tri.clear(8);
+			obj->lods.clear();
+		}
+		else
+			obj = new XObj8;
+			
 		XObjCmd8 cmd;
 		
-		obj->texture = wall_tex;
+		obj->texture = info.wall_tex;
 
-		int quads;          // total number of quads for each floor
+		int quads = 0;    // total number of quads for each floor
 		
-		float pt[8];
-		pt[3] = 0.0;    	// normal vector is a don't care, so have it point straight up
-		pt[4] = 1.0;
-		pt[5] = 0.0;
+		float pt[8] = { 0.0 }; // 0,1,2 = x,z,y   3,4,5 = normals  6,7 = s,t
+		pt[4] = 1.0;    	// normal vector is a don't care, so have it point straight up
+		
+		int num_walls = info.is_ring ? 4 : 3;
+		
+		for (int w = 0; w < num_walls; ++w)
+			{	
+				Vector2 dir(-cos(w*90.0*DEG_TO_RAD),sin(w*90.0*DEG_TO_RAD));
+				
+				const FacadeWall_t * thisWall = &info.walls[intmin2(info.walls.size()-1,w)];
+				
+				float lPan_totW = 0.0;
+				int lPanEnd = -1;
+				do
+				{
+					lPanEnd++;
+					lPan_totW += (thisWall->s_panels[lPanEnd].second - thisWall->s_panels[lPanEnd].first) * thisWall->x_scale;
+					if (lPan_totW > fac_width / 2.0) break;
+				}
+				while(lPanEnd < thisWall->left + thisWall->center -1);
 
-		pt[1] = 0.0;        // initial height coordinate - todo: basements
-		for (int level=0; level<want_floors; ++level)
-		{
-			quads=0;
-			for (int fl = 0; fl < 2; ++fl)
-			{
-				pt[0] = 0.0;        // left front corner
-				pt[2] = 0.0;
+				float rPan_totW = 0.0;
+				int rPanStart = thisWall->s_panels.size();
+				do
+				{
+					rPanStart--;
+					rPan_totW += (thisWall->s_panels[rPanStart].second - thisWall->s_panels[rPanStart].first) * thisWall->x_scale;
+					if (rPan_totW > fac_width - lPan_totW) break;
+				}
+				while(rPanStart > thisWall->left);
 
-				if (fl) pt[1] += (walls[0].vert[level+2]-walls[0].vert[level])*info.scale_y;   // height of each floor
+				float cPan_totW = (thisWall->s_panels[thisWall->left + thisWall->center -1].second - thisWall->s_panels[thisWall->left].first) * thisWall->x_scale;
 
-				for (int i=0; i<2; ++i)
-					for (int j=0; j<2; ++j)
-					{	
-						if (!info.ring && i && j) break;      // open facades (fences etc) drawn with 3 sides only
-						
-						// wall selection. We want to show off as many different walls as practical
-						int w = 2*i+j;
-						if (w >= walls.size()) w = 0;   // show default wall if we run out of varieties
-						
-						pt[7] = walls[w].vert[2*fl+level];
-						
-						float len_left = want_len - (walls[w].hori[2]-walls[w].hori[0] + walls[w].hori[3]-walls[w].hori[1]) * info.scale_x;
-						float exact = 2.0 + len_left / ((walls[w].hori[2]-walls[w].hori[1]) * info.scale_x);
-						int sects = ceil(exact);
 
+												
+				float total_hgt = (thisWall->t_floors.back().second - thisWall->t_floors.front().first) * thisWall->y_scale;
+				int bLevEnd = thisWall->bottom + thisWall->middle -1;
+				int tLevStart = thisWall->top;
+				
 // printf("want %5.1f left %5.1f sects %d left %5.1f\n",want_len, len_left, sects, exact-sects);
-						
-						for (int k=0; k<sects; k++)
-						{
-							float s1 = walls[w].hori[min(k,1)];
-							float s2 = walls[w].hori[2+(k==sects-1)];
-							float dx = (s2-s1)*info.scale_x;
-							
-							// "VT "
-							pt[6] = s1;
-							obj->geo_tri.append(pt);
-							pt[2-2*j] += (1-2*i) * dx * (1.0-(k==sects-2)*(sects-exact));
-							pt[6] = s2 - (s2-s1)*(k==sects-2)*(sects-exact);
-							obj->geo_tri.append(pt);
-							if (fl) quads++;
-						}
-					}
+
+/*  Point locations 1 - 2
+						  |   |
+						  0 - 3    */
+				{
+					pt[6] = thisWall->s_panels[0].first; pt[7] = thisWall->t_floors[0].first;
+					obj->geo_tri.append(pt);
+					pt[1] += total_hgt;
+					pt[7] = thisWall->t_floors[bLevEnd].second;
+					obj->geo_tri.append(pt);
+					pt[0] += dir.x() * lPan_totW; pt[2] += dir.y() * lPan_totW;
+					pt[6] = thisWall->s_panels[lPanEnd].second;
+					obj->geo_tri.append(pt);
+					pt[1] -= total_hgt;
+					pt[7] = thisWall->t_floors[0].first;
+					obj->geo_tri.append(pt);
+					quads++;
+				}
+				if(fac_width - lPan_totW - rPan_totW > cPan_totW)
+				{
+					pt[6] = thisWall->s_panels[rPanStart].first;
+					obj->geo_tri.append(pt);
+					pt[1] += total_hgt;
+					pt[7] = thisWall->t_floors[bLevEnd].second;
+					obj->geo_tri.append(pt);
+					pt[0] += dir.x() * cPan_totW; pt[2] += dir.y() * cPan_totW;
+					pt[6] = thisWall->s_panels[lPanEnd].second;
+					obj->geo_tri.append(pt);
+					pt[1] -= total_hgt;
+					pt[7] = thisWall->t_floors[0].first;
+					obj->geo_tri.append(pt);
+					quads++;
+				}
+				//if(fac_width > lPan_totW + rPan_totW)
+				{
+					pt[6] = thisWall->s_panels[rPanStart].first; pt[7] = thisWall->t_floors[0].first;
+					obj->geo_tri.append(pt);
+					pt[1] += total_hgt;
+					pt[7] = thisWall->t_floors[bLevEnd].second;
+					obj->geo_tri.append(pt);
+					pt[0] += dir.x() * rPan_totW; pt[2] += dir.y() * rPan_totW;
+					pt[6] = thisWall->s_panels.back().second;
+					obj->geo_tri.append(pt);
+					pt[1] -= total_hgt;
+					pt[7] = thisWall->t_floors[0].first;
+					obj->geo_tri.append(pt);
+					quads++;
+				}
+				
 			}
-			int seq[6] = {0, 1, 2*quads, 1, 2*quads+1, 2*quads};
-			for (int i = 0; i < 6*quads; ++i)
-				obj->indices.push_back(2*(i/6)+seq[i%6]);
 			
-		}
-		
+		int seq[6] = {0, 1, 2, 0, 2, 3};
+		for (int i = 0; i < 6*quads; ++i)
+			obj->indices.push_back(4*(i/6)+seq[i%6]);
+	
 		obj->geo_tri.get_minmax(obj->xyz_min,obj->xyz_max);
 	
 		obj->lods.push_back(XObjLOD8());
@@ -184,10 +213,11 @@ bool WED_MakeFacadePreview(const fac_info_t& info)
 
 		info.previews.push_back(obj);
 		
+#if 0
 		if (info.has_roof)
 		{ 
 			XObj8 *r_obj = new XObj8;
-			r_obj->texture = roof_tex;
+			r_obj->texture = info.roof_tex;
 			
 			quads=1;
 			pt[1] = obj->xyz_max[1]; // height
@@ -226,8 +256,8 @@ bool WED_MakeFacadePreview(const fac_info_t& info)
 			info.previews.push_back(r_obj);
 		}
 		return true;
+#endif
 	}
 	else
 		return false; // todo: deal with type 2 facades here
-#endif
 }

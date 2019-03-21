@@ -54,7 +54,8 @@ enum {
 };
 
 
-WED_LibraryPreviewPane::WED_LibraryPreviewPane(WED_ResourceMgr * res_mgr, ITexMgr * tex_mgr) : mResMgr(res_mgr), mTexMgr(tex_mgr),mZoom(1.0),mPsi(10.0f),mThe(10.0f)
+WED_LibraryPreviewPane::WED_LibraryPreviewPane(WED_ResourceMgr * res_mgr, ITexMgr * tex_mgr) : mResMgr(res_mgr), mTexMgr(tex_mgr),mZoom(1.0),
+                               mPsi(10.0f),mThe(10.0f), mHgt(10.0f), mWid(20.0f)
 {
 		int k_reg[4] = { 0, 0, 1, 3 };
 		int k_hil[4] = { 0, 1, 1, 3 };
@@ -102,6 +103,12 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 		}
 		else
 			mNextButton->Hide();
+		mHgt = 10.0;
+		mWid = 20.0;
+		
+		fac_info_t fac;
+		mResMgr->GetFac(mRes, fac, mVariant);
+		WED_MakeFacadePreview(fac, mHgt, mWid);
 	}
 	else
 	{
@@ -158,6 +165,8 @@ int	WED_LibraryPreviewPane::MouseDown(int x, int y, int button)
 	mY = y;
 	mPsiOrig=mPsi;
 	mTheOrig=mThe;
+	mHgtOrig=mHgt;
+	mWidOrig=mWid;
 	
 	int b[4]; GetBounds(b);
 	
@@ -223,11 +232,33 @@ void	WED_LibraryPreviewPane::MouseDrag(int x, int y, int button)
 {
 	float dx = x - mX;
 	float dy = y - mY;
-	mPsi = mPsiOrig + dx * 0.5;
-	mThe = mTheOrig - dy * 0.5;
 	
-	mThe = fltlim(mThe,-89,89);             // prevent some vertical ovjects fading completely out of view
-	mPsi = fltwrap(mPsi,-180-45,180-45);    // adjusted for proper annotations in WED_LibraryPreviewPane::Draw
+	if(mType == res_Facade && button == 1)
+	{
+		float oldHgt = mHgt;
+		mHgt = mHgtOrig + dy * 0.25;
+		mHgt = fltlim(mHgt,0,99);
+		
+		float oldWid = mWid;
+		mWid = mWidOrig + dx * 0.25;
+		mWid = fltlim(mWid,1,99);
+
+//printf("Drag %.1lf %.1lf\n", dx, dy);
+//		if ( fabs(oldHgt-mHgt) >= 1.0 || fabs(oldWid-mWid) >= 1.0)
+		{
+			fac_info_t fac;
+			mResMgr->GetFac(mRes, fac, mVariant);
+			WED_MakeFacadePreview(fac, mHgt, mWid);
+		}
+	}
+	else
+	{
+		mPsi = mPsiOrig + dx * 0.5;
+		mThe = mTheOrig - dy * 0.5;
+		
+		mThe = fltlim(mThe,-89,89);             // prevent some vertical objects fading completely out of view
+		mPsi = fltwrap(mPsi,-180-45,180-45);    // adjusted for proper annotations in WED_LibraryPreviewPane::Draw
+	}
 	Refresh();
 }
 
@@ -491,7 +522,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				{
 					int side = (135-mPsi)/90.0;
 					if (side >= fac.w_nam.size()) side=0;
-					sprintf(buf1,"Facing Wall \'%s\' intended for %s", fac.w_nam[side].c_str(), fac.w_use[side].c_str());
+					sprintf(buf1,"Facing Wall \'%s\' intended for %s h/w=%.1lf/%.1lf", fac.w_nam[side].c_str(), fac.w_use[side].c_str(), mHgt, mWid);
 					
 					int n_wall = fac.walls.size();
 					int j = sprintf(buf2,"Type %d, %d wall%s ", fac.is_new ? 2 : 1, n_wall, n_wall > 1 ? "s" : "");
