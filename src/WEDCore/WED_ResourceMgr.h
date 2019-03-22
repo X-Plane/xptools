@@ -69,24 +69,25 @@ struct	pol_info_t {
 	Bbox2		mUVBox;              // set by PreviewPanel from selected subTexture
 };
 
-struct fac_info_t;
 #include "WED_FacadePreview.h"
 
-struct	fac_info_t : public FacadeLOD_t  {
-	
-	bool		is_new;       // set if version 1000, aka type 2
+struct fac_info_t : public FacadeLOD_t {
+
+	fac_info_t() { is_new = false ; is_ring = true; doubled = false;  min_floors = 1; max_floors  = 999; }
+
+	bool			is_new;       // set if version 1000, aka type 2
 	string		wall_tex;
 	string		roof_tex;
-	bool		is_ring; 	  // can be drawn as open polygon
+	bool			is_ring; 	  // can be drawn as open polygon
 	
 	// V1 only
-	vector<FacadeLOD_t>		lods;  // WED does not recognize anything but the LOD that starts at 0
+	// vector<FacadeLOD_t>		lods;  // WED does not recognize anything but the LOD that starts at 0
 
 	xint					roof_surface;
 	xint					wall_surface;
 	bool					doubled;
-	int						min_floors;	// new in 10.20 - for floor count determination, this clamps the floor range.
-	int						max_floors;	
+	int					min_floors;	// new in 10.20 - for floor count determination, this clamps the floor range.
+	int					max_floors;	
 	
 	// V2 only
 	list<REN_facade_floor_t>floors;
@@ -103,7 +104,6 @@ struct	fac_info_t : public FacadeLOD_t  {
 	vector<string>	w_use;        // purpose of wall, for display in preview window
 
 	vector<XObj8 *> previews;    // thats going away. We'd rather extrude a facade from a poolygon definition
-
 };
 
 struct	lin_info_t {

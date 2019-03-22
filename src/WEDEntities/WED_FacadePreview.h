@@ -40,6 +40,7 @@ typedef unsigned char 	xbyt;
 #define xtrue			true
 #define xfals			false
 
+/*
 struct asset_freq {
 	xint lo;  xint hi; 
 	asset_freq( xint in_lo,  xint in_hi) : lo(in_lo), hi(in_hi) { } 
@@ -49,6 +50,10 @@ struct asset_range {
 	xint lo;  xint hi; 
 	asset_range( xint in_lo,  xint in_hi) : lo(in_lo), hi(in_hi) { } 
 }; 
+*/
+
+typedef string asset_range;
+typedef float  asset_freq;
 
 #if APL
 #include <OpenGL/glu.h>
@@ -228,20 +233,27 @@ struct	FacadeWall_t : public REN_facade_wall_filters_t {
 // If we have a scraper idx > 0 (e.g. floors > 256) then floors is the floors of the BIG 
 // building in steps up from min AGL.
 struct REN_facade_tower_t {
+
+	REN_facade_tower_t() 
+	{
+		for(int i = 0; i < 3; ++i)
+			base_xzr[i] = towr_xzr[i] = 0.0;
+	}
+	
 	asset_range			base_obj;			// OBJ to be used
 	asset_range			towr_obj;			// tower object - can be empty range if base-only scraper -- it happens!
-	asset_range			towr2_obj;			// OBJ to be used - can be empty if no secondary scraper!
-	xflt				base_xyzr[4];		// offset - tower2 is this much higher in ref point!
-	xflt				towr_xyzr[4];		// offset - tower2 is this much higher in ref point!
-	xflt				towr2_xyzr[4];		// offset - tower2 is this much higher in ref point!
-	asset_freq			base_frq;
-	asset_freq			towr_frq;
-	asset_freq			towr2_frq;
-	vector<xflt>		pins;
+//	asset_range			towr2_obj;			// OBJ to be used - can be empty if no secondary scraper!
+	xflt				base_xzr[3];
+	xflt				towr_xzr[3];
+//	xflt				towr2_xyzr[4];			// offset - tower2 is this much higher in ref point!
+//	asset_freq			base_frq;
+//	asset_freq			towr_frq;
+//	asset_freq			towr2_frq;
+//	vector<xflt>		pins;
 };
 
 struct REN_facade_scraper_t {
-	vector<obj_ref>				assets;
+//	vector<obj_ref>				assets;
 	vector<REN_facade_tower_t>	choices;
 	xflt						min_agl;			// range of AGL where this scraper rule applies
 	xflt						max_agl;
@@ -264,6 +276,7 @@ struct	FacadeLOD_t {
 
 
 /**********************/
+struct fac_info_t;
 
 bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width);   // return if object was made
 

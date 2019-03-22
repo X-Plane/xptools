@@ -83,6 +83,10 @@ void		WED_LibraryPreviewPane::ReceiveMessage(GUI_Broadcaster * inSrc, intptr_t i
 		
 		char s[16]; sprintf(s,"%d/%d",mVariant+1,mNumVariants);
 		mNextButton->SetDescriptor(s);
+		
+		fac_info_t fac;
+		mResMgr->GetFac(mRes, fac, mVariant);
+		WED_MakeFacadePreview(fac, mHgt, mWid);
 	}
 }
 
@@ -236,11 +240,11 @@ void	WED_LibraryPreviewPane::MouseDrag(int x, int y, int button)
 	if(mType == res_Facade && button == 1)
 	{
 		float oldHgt = mHgt;
-		mHgt = mHgtOrig + dy * 0.25;
-		mHgt = fltlim(mHgt,0,99);
+		mHgt = mHgtOrig + (fabs(dy) < 50.0 ? dy * 0.1 : sign(dy)*(abs(dy)-45.0)) * 0.5;
+		mHgt = fltlim(mHgt,0,250);
 		
 		float oldWid = mWid;
-		mWid = mWidOrig + dx * 0.25;
+		mWid = mWidOrig + dx * 0.1;
 		mWid = fltlim(mWid,1,99);
 
 //printf("Drag %.1lf %.1lf\n", dx, dy);
@@ -390,7 +394,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 		case res_Facade:
 			if(!o)
 			{
-				if (mResMgr->GetFac(mRes,fac,mVariant))
+				if (mResMgr->GetFac(mRes, fac, mVariant))
 				{
 					if (fac.previews.size()) o = fac.previews[0];
 					o_vec = fac.previews;
@@ -410,7 +414,10 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 									o->xyz_max[1]-o->xyz_min[1],
 									o->xyz_max[2]-o->xyz_min[2]);
 				float approx_radius = real_radius * mZoom;
-
+				double xyz_off[3] = { -(o->xyz_max[0]+o->xyz_min[0])*0.5f,
+				                      -(o->xyz_max[1]+o->xyz_min[1])*0.5f,
+				                      -(o->xyz_max[2]+o->xyz_min[2])*0.5f };
+				                      
 				glPushAttrib(GL_VIEWPORT_BIT);
 				glViewport(b[0],b[1],b[2]-b[0],b[3]-b[1]);
 				glMatrixMode(GL_PROJECTION);
@@ -424,22 +431,58 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				glRotatef(mPsi,0,1,0);
 				g->EnableDepth(true,true);
 				glClear(GL_DEPTH_BUFFER_BIT);
-
+				
 				if (o_vec.size() < 1) o_vec.push_back(o);
 //				for (vector<XObj8 *>::iterator i = o_vec.begin(); i != o_vec.end(); ++i)
 					draw_obj_at_xyz(mTexMgr, o_vec[0],
-						-(o->xyz_max[0]+o->xyz_min[0])*0.5f,
-						-(o->xyz_max[1]+o->xyz_min[1])*0.5f,
-						-(o->xyz_max[2]+o->xyz_min[2])*0.5f,
+						xyz_off[0], xyz_off[1], xyz_off[2],
 						0, g);
 						
 				if(o_vec.size() > 1)
 					draw_obj_at_xyz(mTexMgr, o_vec[1],
-						-(o->xyz_max[0]+o->xyz_min[0])*0.5f,
-						-(o->xyz_max[1]+o->xyz_min[1])*0.5f,
-						-(o->xyz_max[2]+o->xyz_min[2])*0.5f,
+						xyz_off[0], xyz_off[1], xyz_off[2],
 						0, g);
-
+						
+				if(mType == res_Facade && !fac.scrapers.empty())
+				for(auto f : fac.scrapers)
+				{
+					if(fltrange(mHgt,f.min_agl,f.max_agl))
+					{
+						int floors = (mHgt - f.min_agl) / f.step_agl;
+						double hgt = floors * f.step_agl;
+						string scp_base(f.choices[0].base_obj);
+						if(!scp_base.empty())
+						{
+							XObj8 * oo;
+							if(mResMgr->GetObjRelative(scp_base, mRes, oo))
+							{
+								// facade is aligned so midpoint of first wall is origin
+								draw_obj_at_xyz(mTexMgr, oo,
+									xyz_off[0] + f.choices[0].base_xzr[0],
+									xyz_off[1] + hgt,
+									xyz_off[2] + f.choices[0].base_xzr[1],
+									f.choices[0].base_xzr[2], g);
+							} 
+						}
+						string scp_twr(f.choices[0].towr_obj);
+						if(!scp_twr.empty())
+						{
+	 printf("Doing scraper %s, hgt=%.1f\n",scp_twr.c_str(), hgt);
+							XObj8 * oo;
+							if(mResMgr->GetObjRelative(scp_twr, mRes, oo))
+							{
+	 printf("Got oo\n");
+								// facade is aligned so midpoint of first wall is origin
+								draw_obj_at_xyz(mTexMgr, oo,
+									xyz_off[0] + f.choices[0].towr_xzr[0],
+									xyz_off[1] + hgt,
+									xyz_off[2] + f.choices[0].towr_xzr[1],
+									f.choices[0].towr_xzr[2], g);
+							} 
+						}
+						break;
+					}
+				}
 					
 				glMatrixMode(GL_PROJECTION);
 				glPopMatrix();
@@ -530,13 +573,13 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				{
 					int side = (135-mPsi)/90.0;
 					if (side >= fac.w_nam.size()) side=0;
-					sprintf(buf1,"Facing Wall \'%s\' intended for %s h/w=%.1lf/%.1lf", fac.w_nam[side].c_str(), fac.w_use[side].c_str(), mHgt, mWid);
+					sprintf(buf1,"Showing Wall \'%s\' intended for %s @ w=%.1lf%c", fac.w_nam[side].c_str(), fac.w_use[side].c_str(), mWid / (gIsFeet ? 0.3048 : 1), gIsFeet ? '\'' : 'm');
 					
 					int n_wall = fac.walls.size();
-					int j = sprintf(buf2,"Type %d, %d wall%s ", fac.is_new ? 2 : 1, n_wall, n_wall > 1 ? "s" : "");
+					int j = sprintf(buf2,"Type %d with %d wall%s%s, @ h=%.1lf", fac.is_new ? 2 : 1, n_wall, n_wall > 1 ? "s" : "",fac.scrapers.empty() ? "" : "+scraper" ,mHgt);
 
 					if (fac.min_floors < 0) 
-						sprintf(buf2+j,", h=%d %c only", fac.max_floors / (gIsFeet ? 0.3048 : 1), gIsFeet ? '\'' : 'm');
+						sprintf(buf2+j,", h=%d only", fac.max_floors);
 					else
 						sprintf(buf2+j,", h=%d to %d", fac.min_floors, fac.max_floors);
 				}

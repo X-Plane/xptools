@@ -489,27 +489,31 @@ void	WED_ResourceMgr::ReceiveMessage(
 	}
 }
 
-bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& o, int variant)
+#define FAIL(s) { printf("%s: %s\n",path.c_str(),s); return false; }
+
+bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& outFac, int variant)
 {
 	map<string,vector<fac_info_t> >::iterator i = mFac.find(path);
 	if(i != mFac.end())
 	{
 //printf("OLD FAC p=%s, v=%d, nv=%d\n",path.c_str(),variant, (int) i->second.size());
 		DebugAssert(variant < i->second.size());
-		o = i->second[variant];
+		outFac = i->second[variant];
 		return true;
 	}
 
 	int max_variants = mLibrary->GetNumVariants(path);
-//printf("NEW FAC p=%s, v=%d\n",path.c_str(),n_variants);
+//printf("NEW FAC p=%s, max_v=%d\n",path.c_str(),max_variants);
 
 	for(variant = 0; variant < max_variants; ++variant)
 	{
 		string p = mLibrary->GetResourcePath(path, variant);
 
 		MFMemFile * fac = MemFile_Open(p.c_str());
-		if(!fac) return false;
-
+		if(!fac) continue;
+		
+		fac_info_t o;
+		
 		MFScanner	s;
 		MFS_init(&s, fac);
 
@@ -522,77 +526,62 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& o, int variant)
 		else
 			o.is_new = (v == 1000);
 			
-		o.lods.push_back(FacadeLOD_t());
-		o.lods.back().tex_correct_slope = 0;
-		o.lods.back().has_roof = false;
-		
-		o.doubled = false;
-			
-		o.min_floors = 1;
-		o.max_floors = 9999;
-		o.previews.clear();
-		
-		o.tex_correct_slope = 0;
-
 		xflt scale_s = 1.0f, scale_t = 1.0f;
-
 		bool roof_section = false;
-//		bool no_roof_mesh = false;
-//		bool not_nearest_lod = false;
+		bool not_nearest_lod = false;
 
 		while(!MFS_done(&s))
 			{
 			if (MFS_string_match(&s,"LOD", false))
 			{
-				float near = MFS_double(&s);
-//				if (near > 0.1) not_nearest_lod = true;   // skip all info on the far out LOD's
+				double near = MFS_double(&s);
+				not_nearest_lod = (near > 0.1);   // skip all info on the far out LOD's
 			}
-//			else if(not_nearest_lod)
-//			{	
-//				MFS_string_eol(&s,NULL);
-//				continue;	
-//			}
-			else if (MFS_string_match(&s,"SHADER_ROOF", false))
-			{
-				o.lods.back().has_roof = true;
+			else if(not_nearest_lod)
+			{	
+				MFS_string_eol(&s,NULL);
+				continue;	
 			}
-			else if (MFS_string_match(&s,"SHADER_WALL", false))
+			else if (MFS_string_match(&s,"SHADER_ROOF", true))
 			{
-				o.lods.back().has_roof = false;
+				roof_section = true;
+				o.has_roof = true;
+			}
+			else if (MFS_string_match(&s,"SHADER_WALL", true))
+			{
+				roof_section = false;
 			}
 			else if (MFS_string_match(&s,"TEXTURE", false))
 			{
-				if (o.lods.back().has_roof)
-					MFS_string(&s,&o.roof_tex);
+				string tex;
+				MFS_string(&s,&tex);
+				clean_rpath(tex);
+
+				if (roof_section)
+					o.roof_tex = tex;
 				else
-					MFS_string(&s,&o.wall_tex);
+					o.wall_tex = tex;
 			}
 			else if (MFS_string_match(&s,"WALL",false))
 			{
 				roof_section = false;
+				
 				o.walls.push_back(FacadeWall_t());
 				o.walls.back().filters.push_back(REN_facade_wall_filter_t());
 				o.walls.back().filters.back().min_width = MFS_double(&s);
 				o.walls.back().filters.back().max_width = MFS_double(&s);
 				o.walls.back().filters.back().min_heading = MFS_double(&s);
 				o.walls.back().filters.back().max_heading = MFS_double(&s);
-				o.walls.back().roof_slope = 0.0;
-				o.walls.back().left = 0;
-				o.walls.back().center = 0;
-				o.walls.back().right = 0;
-				o.walls.back().bottom = 0;
-				o.walls.back().middle = 0;
-				o.walls.back().top = 0;
 
 				string buf;	MFS_string(&s,&buf);
-				char c[100];
+				char c[64];
 				if (buf.empty())                 // make sure all wall types have some readable name
 				{   
-					sprintf(c, "#%ld",o.walls.size());
+					snprintf(c, 64, "#%ld",o.walls.size());
 				}
 				o.w_nam.push_back(buf);
 
-				sprintf(c, "w=%.0f%c to %.0f%c",
+				snprintf(c, 64, "w=%.0f%c to %.0f%c",
 				o.walls.back().filters.back().min_width / (gIsFeet ? 0.3048 : 1.0 ), gIsFeet ? '\'' : 'm', 
 				o.walls.back().filters.back().max_width / (gIsFeet ? 0.3048 : 1.0 ), gIsFeet ? '\'' : 'm') ;
 				buf = c;
@@ -613,13 +602,13 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& o, int variant)
 				if(o.walls.back().roof_slope >= 90.0 || 
 					o.walls.back().roof_slope <= -90.0)
 				{
-					o.lods.back().tex_correct_slope = true;
+					o.tex_correct_slope = true;
 				}
 				string buf;	MFS_string(&s,&buf);
 				
 				if(buf == "SLANT")
 				{
-					o.lods.back().tex_correct_slope = true;
+					o.tex_correct_slope = true;
 				}
 			}
 			else if (MFS_string_match(&s,"BOTTOM",false))
@@ -694,6 +683,7 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& o, int variant)
 				o.roof_ab[1] = -rsy * t_rat;
 				o.roof_ab[2] = o.roof_ab[0] + rsx;
 				o.roof_ab[3] = o.roof_ab[1] + rsy;
+				o.has_roof = true;
 			}
 			else if (MFS_string_match(&s,"BASEMENT_DEPTH", false))
 			{
@@ -713,7 +703,71 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& o, int variant)
 				scr.floors = MFS_double(&s);
 				o.scrapers.push_back(scr);
 			}
-//X a number of more sxcraper commands omitted here
+			else if (MFS_string_match(&s,"FACADE_SCRAPER_MODEL",false))
+			{
+				REN_facade_tower_t choice;
+				if(o.scrapers.empty())
+					FAIL("Cannot have FACADE_SCRAPER_MODEL without FACADE_SCRAPER.")
+				string file;
+				MFS_string(&s,&file);
+				clean_rpath(file);
+//				choice.base_obj = load_model_set(lon, lat, file, path, o.scrapers.back().assets,this);
+				choice.base_obj = file;
+				if (choice.base_obj.empty())
+					FAIL("Could not load base OBJ for FACADE_SCRAPER_MODEL")
+				MFS_string(&s,&file);
+				if(file != "-")
+				{
+					clean_rpath(file);
+					choice.towr_obj = file;
+					if (choice.towr_obj.empty())
+						FAIL("Could not load tower OBJ for FACADE_SCRAPER_MODEL")
+				}
+				/* skip scanning the pins for now
+				while(m.TXT_has_word())
+					choice.pins.push_back(m.TXT_flt_scan());
+				if(choice.pins.size() % 1)
+				{
+					FAIL("Odd numberof pins")
+				}	*/
+				o.scrapers.back().choices.push_back(choice);
+			}
+			else if (MFS_string_match(&s,"FACADE_SCRAPER_MODEL_OFFSET",false))
+			{
+				if(o.scrapers.empty())
+					FAIL("Cannot have FACADE_SCRAPER_MODEL_OFFSET without FACADE_SCRAPER.")
+				REN_facade_tower_t choice;
+				string file;
+				choice.base_xzr[0] = MFS_double(&s);
+				choice.base_xzr[1] = MFS_double(&s);
+				choice.base_xzr[2] = MFS_double(&s);
+				MFS_string(&s,&file);
+				clean_rpath(file);
+				MFS_int(&s); MFS_int(&s);  // skip showlevel restrictions
+				choice.base_obj = file;
+				if (choice.base_obj.empty())
+					FAIL("Could not load base OBJ for FACADE_SCRAPER_MODEL")
+
+				choice.towr_xzr[0] = MFS_double(&s);
+				choice.towr_xzr[1] = MFS_double(&s);
+				choice.towr_xzr[2] = MFS_double(&s);
+				MFS_string(&s,&file);
+				MFS_int(&s); MFS_int(&s);  // skip showlevel restrictions
+				if(file != "-")
+				{
+					clean_rpath(file);
+					choice.towr_obj = file;
+				}
+					
+/*				while(m.TXT_has_word())
+					choice.pins.push_back(m.TXT_flt_scan());
+				if(choice.pins.size() % 1)
+				{
+					FAIL("Odd numberof pins")
+				} */
+				o.scrapers.back().choices.push_back(choice);
+			}
+// scraper pad command is not implemented
 			else if (MFS_string_match(&s,"FLOORS_MIN", false))
 			{
 				o.min_floors = MFS_double(&s);
@@ -728,19 +782,17 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& o, int variant)
 			}
 			MFS_string_eol(&s,NULL);
 		}
-			
 		MemFile_Close(fac);
 
 		process_texture_path(p,o.wall_tex);
 		process_texture_path(p,o.roof_tex);
-		
 		WED_MakeFacadePreview(o, 10, 20);
 
 		mFac[path].push_back(o);
 	}
+	outFac = mFac[path].front();
 	
-printf("Fac done start v=%d r=%d\n",variant,o.has_roof);
-	o = mFac[path].front();
+//printf("Fac '%s' done v=%d roof=%d\n",path.c_str(),variant,outFac.has_roof);
 
 	return true;
 }
