@@ -100,12 +100,12 @@ bool		WED_ObjPlacement::Cull(const Bbox2& b) const
 	//			int n = GetNumVariants(resource.value);   // no need to cycle through these - only the first variant is used for preview
 				if(rmgr->GetObj(resource.value,o))
 				{
-					*f = pythag(o->xyz_max[0] - o->xyz_min[0], o->xyz_max[2] - o->xyz_min[2]) * mtr_to_lon;
+					*f =  pythag(max(fabs(o->xyz_max[0]), fabs(o->xyz_min[0])),max(fabs(o->xyz_max[2]), fabs(o->xyz_min[2]))) * 1.2 * mtr_to_lon;
 				}
 				else if(rmgr->GetAGP(resource.value,agp))
 				{
-					double min_xy[2] = { 0, 0 };
-					double max_xy[2] = { 0, 0 };
+					double min_xy[2] = {  999,  999 };
+					double max_xy[2] = { -999, -999 };
 					for(int n = 0; n < agp.tile.size(); n += 4)
 					{
 						min_xy[0] = min(min_xy[0],agp.tile[n]);
@@ -113,7 +113,26 @@ bool		WED_ObjPlacement::Cull(const Bbox2& b) const
 						min_xy[1] = min(min_xy[1],agp.tile[n+1]);
 						max_xy[1] = max(max_xy[1],agp.tile[n+1]);
 					}
-					*f = pythag(max_xy[0] - min_xy[0],	max_xy[1] - min_xy[1]) * mtr_to_lon;
+					// we simplyfy a bit here, as we dont want to loop though where in the tile a given object is placed and how its rotated
+               // so we guesstimate the objet is placed near the center of all tiles, but could be rotated any way.
+               // Catches objects much larger than the tile, e.g. the long_row hangars in the airport library
+					double cent_x = (min_xy[0] + max_xy[0]) * 0.5;
+					double cent_y = (min_xy[1] + max_xy[1]) * 0.5;
+
+					for(auto obj : agp.objs)
+					{
+						XObj8 * agp_o;
+						if (rmgr->GetObjRelative(obj.name, resource.value, agp_o))
+						{
+							double obj_rad = pythag(max(fabs(agp_o->xyz_max[0]),fabs(agp_o->xyz_min[0])), max(fabs(agp_o->xyz_max[2]), fabs(agp_o->xyz_min[2])));
+
+							min_xy[0] = min(cent_x - obj_rad, min_xy[0]);
+							max_xy[0] = max(cent_x + obj_rad, max_xy[0]);
+							min_xy[1] = min(cent_y - obj_rad, min_xy[1]);
+							max_xy[1] = max(cent_y + obj_rad, max_xy[1]);
+						}
+					}
+					*f =  pythag(max(fabs(max_xy[0]), fabs(min_xy[0])),max(fabs(max_xy[1]), fabs(min_xy[1]))) * 1.2 * mtr_to_lon;
 				}
 			}
 		}
@@ -133,7 +152,7 @@ bool		WED_ObjPlacement::Cull(const Bbox2& b) const
 	Point2	my_loc;
 	GetLocation(gis_Geo,my_loc);
 
-	Bbox2	my_bounds(my_loc - Vector2(visibleWithinDeg,visibleWithinDeg), 
+	Bbox2	my_bounds(my_loc - Vector2(visibleWithinDeg,visibleWithinDeg),
 					  my_loc + Vector2(visibleWithinDeg,visibleWithinDeg));
 
 	return b.overlap(my_bounds);
