@@ -22,6 +22,7 @@ COPYING					GUI_RES		COPYING
 colors.png				GUI_RES		colors.png
 map_tools.png			GUI_RES		map_tools.png
 taxi_sign.png			GUI_RES		taxi_sign.png
+tce_tools.png			GUI_RES		tce_tools.png
 
 /* Start window */
 startup_bar.png			GUI_RES		startup_bar.png
