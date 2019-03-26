@@ -73,7 +73,7 @@ struct	pol_info_t {
 
 struct fac_info_t : public FacadeLOD_t {
 
-	fac_info_t() { is_new = false ; is_ring = true; doubled = false;  min_floors = 1; max_floors  = 999; }
+	fac_info_t() { is_new = false ; is_ring = true; doubled = false;  min_floors = 0; max_floors  = 999; has_roof = false; }
 
 	bool			is_new;       // set if version 1000, aka type 2
 	string		wall_tex;

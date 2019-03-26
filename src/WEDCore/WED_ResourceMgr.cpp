@@ -578,6 +578,7 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& outFac, int variant
 				if (buf.empty())                 // make sure all wall types have some readable name
 				{   
 					snprintf(c, 64, "#%ld",o.walls.size());
+					buf = c;
 				}
 				o.w_nam.push_back(buf);
 

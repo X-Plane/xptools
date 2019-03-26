@@ -90,6 +90,13 @@ static float vec3f_dot(float * a, float * b)
 	return res;
 }
 
+static bool InsetPolygon(const Polygon3& inPolygon, double * insets, double x, bool is_ring, const Vector3& inUp, Polygon3& outPolygon)
+{
+	outPolygon = inPolygon;
+	return true;
+}
+
+
 typedef void (*RenderQuadFunc) (float *, float *, XObj8 *);
 
 static	float	BuildOnePanel(      // return width of this section
@@ -524,274 +531,6 @@ static void StoreQuad(float * coords, float * texes, XObj8 * obj)
 			obj->indices.push_back(first_index+seq[i]);
 }
 
-#if 0
-static void	BuildFacadeObjLOD(
-					const fac_info_t&	inObj,
-					const Polygon3& 	inPolygon,
-					const float			xz_centroid[2],
-					const int *			inChoices,         //pick walls -> must always be given (wall types)
-					int					inFloors,
-					const Vector3&		inUp,
-					xint				roof_surf,
-					xint				wall_surf,
-					bool				want_walls,
-					bool				want_roof,
-				   RenderQuadFunc inFunc,
-					XObj8 *			obj)
-{
-	const int L = 0;
-	vector<double>	lengths;				// Lengths of sides in meters
-	vector<double>	insets;					// Inset distance for roof
-	vector<int>		facade_types;			// Assignment of each facade for the polygon
-	vector<int>		num_panels;				// For each facade, how many panels do we need?
-//	float			roof_st[MAX_FACADE_PTS * 2];// STs for the roof
-	Polygon3		inset;					// The actual squished polygon
-	bool			has_roof = false;		// Do we need to do an inset calc for the roof?
-	int				n;
-
-//	printf("Trace wall choice for facade %s\n", inObj.debug_rpath());
-
-	for (n = 0; n < inPolygon.size(); ++n)
-	{
-		lengths.push_back(sqrt(inPolygon.side(n).squared_length()));
-		if(inChoices)
-		{
-			facade_types.push_back(inChoices[n] % inObj.lods[L].walls.size());
-		}
-		else
-			AssertPrintf("No wall types choosen !\n");
-/*		{
-			Segment3 side0 = inPolygon.side(0);
-			xflt h0 = atan2(side0.p2.x - side0.p1.x, side0.p1.z - side0.p2.z) * RAD_TO_DEG;
-			Segment3 siden = inPolygon.side(n);
-			xflt h1 = atan2(siden.p2.x - siden.p1.x, siden.p1.z - siden.p2.z) * RAD_TO_DEG;
-			
-			xflt h_diff = fltwrap(h1-h0,0,360);
-		
-			vector<FacadeWall_t>::const_iterator best = pick_best_wall(inObj.lods[L].walls.begin(),inObj.lods[L].walls.end(), lengths.back(),h_diff,REN_xyz_seed(inPolygon[n].x,inPolygon[n].y,inPolygon[n].z));
-			if(best == inObj.lods[L].walls.end())
-				facade_types.push_back(0);
-			else
-				facade_types.push_back(distance(inObj.lods[L].walls.begin(), best));
-		}*/
-	}
-	
-	double	roof = 0.0;		
-	
-	if (!inObj.lods[L].walls.empty())
-	{	
-		for (n = 0; n < inPolygon.size(); ++n)
-		{
-			num_panels.push_back(PanelsForLength(inObj.lods[L].walls[facade_types[n]], lengths[n]));
-			//printf(" actual: %d\n", num_panels.back());
-		}	
-
-		if (inFloors > 0)
-		for (n = 0; n < inPolygon.size(); ++n)
-		if (inObj.lods[L].walls[facade_types[n]].roof_slope != 0.0) {
-			has_roof = true; break;
-		}
-	}
-	
-	if (has_roof)
-	{
-		for (n = 0; n < inPolygon.size(); ++n)
-		{
-			const FacadeWall_t& me = inObj.lods[L].walls[facade_types[n]];
-			insets.push_back(
-				// Sin of roof slope insets, so we can outset with -90
-			inObj.lods[L].tex_correct_slope ? 
-				sin(me.roof_slope * DEG_TO_RAD) * ((me.t_floors.back().second - me.t_floors.back().first) * me.y_scale)
-			:
-				tan(me.roof_slope * DEG_TO_RAD) * ((me.t_floors.back().second - me.t_floors.back().first) * me.y_scale));			
-		}
-		if(!InsetPolygon(inPolygon, &*insets.begin(), 1.0, inObj.is_ring, inUp, inset))
-			inset = inPolygon;
-	} else
-		inset = inPolygon;
-	
-	if(want_walls)
-	{
-		if (!inObj.lods[L].walls.empty())
-		{
-			for (n = 0; n < inPolygon.size() - (inObj.is_ring ? 0 : 1); ++n)
-			{
-				//printf("Fac %s, wall %d ", inObj.debug_rpath(), facade_types[n]);			
-				roof = BuildOneFacade(inObj.lods[L].walls[facade_types[n]], inPolygon.side(n), inset.side(n), inFloors, num_panels[n], inUp, has_roof, 
-						inObj.wall_shader.two_sided, inObj.doubled, inObj.lods[L].tex_correct_slope, inFunc, obj);
-			}
-		}
-	}
-	else if(want_roof)
-		roof = REN_height_for_facade(inObj, inFloors);
-			
-	if (inObj.is_ring && inObj.lods[L].has_roof && want_roof)
-	{
-		if(!inObj.lods[L].roof_s.empty() && inset.size() < 5)
-		{		
-			// Legacy: per-vertex mapping for tris and quads.
-			polygon_extruder ex(inFunc, NULL, NULL, false, inObj.lods[L].lod_near, inObj.lods[L].lod_far, L == 0 ? roof_surf : surf_none, false);			
-			ex.begin_contour();
-			ex.reserve(inPolygon.size());
-			
-			// Reverse the reverse.  The facade is CCW, the extruder wants CCW.  But the ROOF is CW because we 
-			// flipped it to make direct geo.  So...flip it back.
-			for (n = 0; n < inset.size(); ++n)
-			{
-				Point3 rp = inset[n] + (inUp * roof);
-			
-				xflt p[8] = {
-					rp.x,rp.y,rp.z,
-					0,
-					1,
-					0,
-					inObj.lods[L].roof_s[n % inObj.lods[L].roof_s.size()],
-					inObj.lods[L].roof_t[n % inObj.lods[L].roof_t.size()]
-				};	
-				ex.vertex(p);
-			}
-			
-			ex.end_contour();
-		}
-		else if(!inObj.lods[L].roof_s.empty())
-		{		
-			// This is the v8 per-vertex UV mapping, applied to an n-gon via min/max fitting.
-			polygon_extruder ex(inFunc, NULL, NULL, false, inObj.lods[L].lod_near, inObj.lods[L].lod_far, L == 0 ? roof_surf : surf_none, false);			
-			ex.begin_contour();
-			ex.reserve(inPolygon.size());
-			
-			Point3 p_min = inset[0] + (inUp * roof);
-			Point3 p_max(p_min);
-			for(n = 1; n < inset.size(); ++n)
-			{
-				Point3 p = inset[n] + (inUp * roof);
-				p_min.x = dobmin2(p_min.x,p.x);
-				p_min.z = dobmin2(p_min.z,p.z);
-				p_max.x = dobmax2(p_max.x,p.x);
-				p_max.z = dobmax2(p_max.z,p.z);
-			}
-			
-			// Reverse the reverse.  The facade is CCW, the extruder wants CCW.  But the ROOF is CW because we 
-			// flipped it to make direct geo.  So...flip it back.
-			for (n = 0; n < inset.size(); ++n)
-			{
-				Point3 rp = inset[n] + (inUp * roof);
-			
-				xflt p[8] = {
-					rp.x,rp.y,rp.z,
-					0,
-					1,
-					0,
-					interp(p_min.x,inObj.lods[L].roof_s[0],p_max.x,inObj.lods[L].roof_s[2 % inObj.lods[L].roof_s.size()],rp.x),
-					interp(p_min.z,inObj.lods[L].roof_t[0],p_max.z,inObj.lods[L].roof_t[2 % inObj.lods[L].roof_t.size()],rp.z)
-				};	
-				ex.vertex(p);
-			}
-			
-			ex.end_contour();
-		}
-		else
-		{
-			// This is the new case - Alex's 3-part UV map.
-			xflt vec_a[3] = { inPolygon[1].x - inPolygon[0].x,
-							  inPolygon[1].z - inPolygon[0].z };
-			xflt vec_b[3];
-
-			vec2f_normalize(vec_a);
-			vec_a[1] = -vec_a[1];
-			vec2f_ccw(vec_b, vec_a);
-			vec_a[1] = -vec_a[1];
-			vec_b[1] = -vec_b[1];
-			
-			vec_a[2] = -vec2f_dot(vec_a,xz_centroid);
-			vec_b[2] = -vec2f_dot(vec_b,xz_centroid);
-			
-			const FacadeLOD_t& LOD(inObj.lods[L]);			
-			xflt a_min, a_max, b_min, b_max;
-			a_min = a_max = vec_a[0] * inPolygon[0].x + vec_a[1] * inPolygon[0].z + vec_a[2];
-			b_min = b_max = vec_b[0] * inPolygon[0].x + vec_b[1] * inPolygon[0].z + vec_b[2];
-			
-			// This effectively finds the bounds of the polygon in facade-aligned meter space.
-			for(n = 1; n < inPolygon.size(); ++n)
-			{
-				xflt pa = vec_a[0] * inPolygon[n].x + vec_a[1] * inPolygon[n].z + vec_a[2];
-				xflt pb = vec_b[0] * inPolygon[n].x + vec_b[1] * inPolygon[n].z + vec_b[2];
-				//printf("%d: %f, %f\n", n, pa,pb);
-				a_min=fltmin2(a_min,pa);
-				a_max=fltmax2(a_max,pa);
-				b_min=fltmin2(b_min,pb);
-				b_max=fltmax2(b_max,pb);				
-			}
-			
-			xflt ab_use[4] = { a_min, b_min, a_max, b_max };
-			
-			// First: conform the aspect ratio of the UV map so that we don't get distorted.
-			// We make our narrow dim bigger.
-			
-			if(ab_use[2] != ab_use[0])	// safety check for degenerate single-point facade.
-			if(ab_use[3] != ab_use[1])	// f--- if I know why they would happen but let's not NaN out.
-			{
-			
-				xflt ab_ideal = (LOD.roof_ab[2] - LOD.roof_ab[0]) / (LOD.roof_ab[3] - LOD.roof_ab[1]);
-				xflt ab_now = (ab_use[2] - ab_use[0]) / (ab_use[3] - ab_use[1]);
-				if(ab_ideal > ab_now)
-				{
-					// We were wide but now we are deep.  Get wider.
-					expand_pair(ab_use[0],ab_use[2], ab_ideal/ab_now);
-				}
-				else if (ab_ideal < ab_now)
-				{
-					// We were deep but now are wide.  Get deeper.
-					expand_pair(ab_use[1],ab_use[3], ab_now / ab_ideal);
-				}
-			}
-
-			// Next: if we are too small (tiny buliding) scale up.
-			if((ab_use[2] - ab_use[0]) < (LOD.roof_ab[2] - LOD.roof_ab[0]))
-			if(ab_use[2] != ab_use[0])	// safety check for degenerate single-point facade.
-			if(ab_use[3] != ab_use[1])	// f--- if I know why they would happen but let's not NaN out.
-			{
-				xflt scale = (LOD.roof_ab[2] - LOD.roof_ab[0]) / (ab_use[2] - ab_use[0]);
-				expand_pair(ab_use[0],ab_use[2], scale);
-				expand_pair(ab_use[1],ab_use[3], scale);
-			}
-
-			dev_assert(a_min >= ab_use[0]);
-			dev_assert(b_min >= ab_use[1]);
-			dev_assert(a_max <= ab_use[2]);
-			dev_assert(b_max <= ab_use[3]);			
-
-			//printf("Bounds are: %f,%f,%f,%f\n", a_min,b_min,a_max,b_max);
-			polygon_extruder ex(inFunc, NULL, NULL, false, inObj.lods[L].lod_near, inObj.lods[L].lod_far, L == 0 ? roof_surf : surf_none, false);
-			
-			ex.begin_contour();
-
-			ex.reserve(inPolygon.size());
-			
-			//printf("Min/max: %f,%f use: %f,%f orig:%f,%f\n", b_min,b_max,ab_use[1],ab_use[3],inObj.lods[L].roof_ab[1],inObj.lods[L].roof_ab[3]);
-			
-			for (n = 0; n < inset.size(); ++n)
-			{
-				Point3 rp = inset[n] + (inUp * roof);
-			
-				xflt p[8] = {
-					rp.x,rp.y,rp.z,
-					0,
-					1,
-					0,
-					interp(ab_use[0],LOD.roof_st[0],ab_use[2],LOD.roof_st[2],rp.x * vec_a[0] + rp.z * vec_a[1] + vec_a[2]),
-					interp(ab_use[1],LOD.roof_st[1],ab_use[3],LOD.roof_st[3],rp.x * vec_b[0] + rp.z * vec_b[1] + vec_b[2]) };
-	
-				//printf("final %d: %f,%f\n", n,rp.x * vec_a[0] + rp.z * vec_a[1] + vec_a[2],rp.x * vec_b[0] + rp.z * vec_b[1] + vec_b[2]);
-
-				ex.vertex(p);
-			}
-			ex.end_contour();
-		}
-	}
-}
-#endif
-
 bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width)
 {
 	// sanitize wall choices ?
@@ -818,9 +557,21 @@ bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width
 		}	
 		obj->texture = info.wall_tex;
 		int num_walls = info.is_ring ? 4 : 3;
-#if 1
+
+		double insets[4];
+		for (int n = 0; n < 4; ++n)
+		{
+			int w_type = intmin2(info.walls.size()-1,n);
+			const FacadeWall_t& me = info.walls[w_type];
+			insets[n] = info.tex_correct_slope ?
+				sin(me.roof_slope * DEG_TO_RAD) * ((me.t_floors.back().second - me.t_floors.back().first) * me.y_scale) :
+				tan(me.roof_slope * DEG_TO_RAD) * ((me.t_floors.back().second - me.t_floors.back().first) * me.y_scale) ;
+		}
+
 		Vector3 inUp(0,1,0);
 		Segment3 inBase(Point3(-fac_width/2.0,0,0),Point3(fac_width/2.0,0,0));
+		vector<Point3> roof_pts;
+		
 		for (int w = 0; w < num_walls; ++w)
 		{
 			int w_type = intmin2(info.walls.size()-1,w);
@@ -829,24 +580,19 @@ bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width
 			Vector2 dir(-cos(w*90.0*DEG_TO_RAD),sin(w*90.0*DEG_TO_RAD));
 			inBase.p1 = inBase.p2; inBase.p2 += Vector3(dir.x()*fac_width,0,fac_width*dir.y());
 			
+			Segment3 inRoof(inBase);
+			Vector3 inset_dir(dir.perpendicular_cw().x(), 0, dir.perpendicular_cw().y());
+			
+			inRoof.p1 += inset_dir * insets[w] + Vector3(dir.x(),0,dir.y()) * insets[w==0 ? 3: w-1];
+			inRoof.p2 += inset_dir * insets[w] - Vector3(dir.x(),0,dir.y()) * insets[w==3 ? 0: w+1];
+			roof_pts.push_back(inRoof.p1);
+			
 			int fac_panels = PanelsForLength(*fac, fac_width);
 			int two_sided_roof = 0;
 			
-			BuildOneFacade(*fac, inBase, inBase, fac_height, fac_panels, inUp, 
+			roof_pts.back().y = BuildOneFacade(*fac, inBase, inRoof, fac_height, fac_panels, inUp, 
 						info.has_roof, two_sided_roof, info.doubled, info.tex_correct_slope, StoreQuad, obj);
 		}
-#else
-		vector<Segement3> polygon;
-		
-		// Setup polygon
-		for (int w = 0; w < num_walls; ++w)
-		{
-			int w_type = intmin2(info.walls.size()-1,w);
-			// add segmnent
-			// add wall choice
-		}
-		BuildFacadeObjLOD( polygon );
-#endif
 		obj->geo_tri.get_minmax(obj->xyz_min,obj->xyz_max);
 	
 		obj->lods.push_back(XObjLOD8());
@@ -890,9 +636,15 @@ bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width
 			{
 				int x = n == 0 || n == 3;
 				int z = n < 2;
-				pts[3*n  ] = x ? obj->xyz_max[0] : obj->xyz_min[0];
-				pts[3*n+1] = obj->xyz_max[1];
-				pts[3*n+2] = z ? obj->xyz_max[2] : obj->xyz_min[2];
+				int prev_n = n==0 ? 3 : n-1;
+				int next_n = n==3 ? 0 : n+1;
+				
+//				pts[3*n  ] = x ? obj->xyz_max[0] : obj->xyz_min[0];
+//				pts[3*n+1] = obj->xyz_max[1];
+//				pts[3*n+2] = z ? obj->xyz_max[2] : obj->xyz_min[2];
+				pts[3*n  ] = roof_pts[3-n].x;
+				pts[3*n+1] = roof_pts[3-n].y;
+				pts[3*n+2] = roof_pts[3-n].z;
 				
 				tex[2*n  ] = x;  // info.roof_uv[2*i];
 				tex[2*n+1] = z;  // info.roof_uv[1+2*j];
