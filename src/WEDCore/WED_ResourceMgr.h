@@ -71,7 +71,7 @@ struct	pol_info_t {
 
 #include "WED_FacadePreview.h"
 
-struct fac_info_t : public FacadeLOD_t {
+struct fac_info_t : public FacadeLOD_t, public REN_facade_floor_t {
 
 	fac_info_t() { is_new = false ; is_ring = true; doubled = false;  min_floors = 0; max_floors  = 999; has_roof = false; }
 
@@ -90,9 +90,8 @@ struct fac_info_t : public FacadeLOD_t {
 	int					max_floors;	
 	
 	// V2 only
-	list<REN_facade_floor_t>floors;
-	vector<asset_range>		objs;
-	vector<obj_ref>			assets;
+//	list<REN_facade_floor_t>floors;
+	vector<string>		objs;			// names of type 2 objects
 	xflt					roof_scale_s;
 	xflt					roof_scale_t;
 	

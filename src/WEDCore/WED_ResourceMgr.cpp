@@ -529,6 +529,7 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& outFac, int variant
 		xflt scale_s = 1.0f, scale_t = 1.0f;
 		bool roof_section = false;
 		bool not_nearest_lod = false;
+		REN_facade_template_t * tpl = NULL;
 
 		while(!MFS_done(&s))
 			{
@@ -561,139 +562,6 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& outFac, int variant
 					o.roof_tex = tex;
 				else
 					o.wall_tex = tex;
-			}
-			else if (MFS_string_match(&s,"WALL",false))
-			{
-				roof_section = false;
-				
-				o.walls.push_back(FacadeWall_t());
-				o.walls.back().filters.push_back(REN_facade_wall_filter_t());
-				o.walls.back().filters.back().min_width = MFS_double(&s);
-				o.walls.back().filters.back().max_width = MFS_double(&s);
-				o.walls.back().filters.back().min_heading = MFS_double(&s);
-				o.walls.back().filters.back().max_heading = MFS_double(&s);
-
-				string buf;	MFS_string(&s,&buf);
-				char c[64];
-				if (buf.empty())                 // make sure all wall types have some readable name
-				{   
-					snprintf(c, 64, "#%ld",o.walls.size());
-					buf = c;
-				}
-				o.w_nam.push_back(buf);
-
-				snprintf(c, 64, "w=%.0f%c to %.0f%c",
-				o.walls.back().filters.back().min_width / (gIsFeet ? 0.3048 : 1.0 ), gIsFeet ? '\'' : 'm', 
-				o.walls.back().filters.back().max_width / (gIsFeet ? 0.3048 : 1.0 ), gIsFeet ? '\'' : 'm') ;
-				buf = c;
-				o.w_use.push_back(buf);
-			} 
-			else if (MFS_string_match(&s,"SCALE", false))
-			{
-				o.walls.back().x_scale = MFS_double(&s);
-				o.walls.back().y_scale = MFS_double(&s);
-				
-				if(o.walls.back().x_scale < 0.01 || o.walls.back().y_scale < 0.01)
-					printf("facade has a scale less than 1 cm per texture. This is probably a bad facade.\n");
-			}
-			else if (MFS_string_match(&s,"ROOF_SLOPE", false))
-			{
-				o.walls.back().roof_slope = MFS_double(&s);
-				
-				if(o.walls.back().roof_slope >= 90.0 || 
-					o.walls.back().roof_slope <= -90.0)
-				{
-					o.tex_correct_slope = true;
-				}
-				string buf;	MFS_string(&s,&buf);
-				
-				if(buf == "SLANT")
-				{
-					o.tex_correct_slope = true;
-				}
-			}
-			else if (MFS_string_match(&s,"BOTTOM",false))
-			{
-				float f1 = MFS_double(&s) * scale_t;
-				float f2 = MFS_double(&s) * scale_t;
-				o.walls.back().t_floors.push_back(pair<float, float>(f1,f2));
-				++o.walls.back().bottom; 
-			} 
-			else if (MFS_string_match(&s,"MIDDLE",false))
-			{
-				float f1 = MFS_double(&s) * scale_t;
-				float f2 = MFS_double(&s) * scale_t;
-				o.walls.back().t_floors.push_back(pair<float, float>(f1,f2));
-				++o.walls.back().middle; 
-			} 
-			else if (MFS_string_match(&s,"TOP",false))
-			{
-				float f1 = MFS_double(&s) * scale_t;
-				float f2 = MFS_double(&s) * scale_t;
-				o.walls.back().t_floors.push_back(pair<float, float>(f1,f2));
-				++o.walls.back().top; 
-			} 
-			else if (MFS_string_match(&s,"LEFT",false))
-			{
-				float f1 = MFS_double(&s) * scale_s;
-				float f2 = MFS_double(&s) * scale_s;
-				o.walls.back().s_panels.push_back(pair<float, float>(f1,f2));
-				++o.walls.back().left; 
-			} 
-			else if (MFS_string_match(&s,"CENTER",false))
-			{
-				float f1 = MFS_double(&s) * scale_s;
-				float f2 = MFS_double(&s) * scale_s;
-				o.walls.back().s_panels.push_back(pair<float, float>(f1,f2));
-				++o.walls.back().center; 
-			} 
-			else if (MFS_string_match(&s,"RIGHT",false))
-			{
-				float f1 = MFS_double(&s) * scale_s;
-				float f2 = MFS_double(&s) * scale_s;
-				o.walls.back().s_panels.push_back(pair<float, float>(f1,f2));
-				++o.walls.back().right; 
-			} 
-			else if (MFS_string_match(&s,"ROOF", false))
-			{
-				o.roof_s.push_back(MFS_double(&s) * scale_s);
-				o.roof_t.push_back(MFS_double(&s) * scale_t);
-				o.has_roof = true;
-			}
-			else if (MFS_string_match(&s,"RING", false))
-			{
-				o.is_ring = MFS_int(&s) > 0;
-			}
-			else if (MFS_string_match(&s,"DOUBLED", false))
-			{
-				o.doubled = MFS_int(&s) > 0;
-			}
-			else if (MFS_string_match(&s,"ROOF_SCALE", false))
-			{
-				o.roof_st[0] = MFS_double(&s) * scale_s;
-				o.roof_st[1] = MFS_double(&s) * scale_t;
-				xflt s_ctr = MFS_double(&s) * scale_s;
-				xflt t_ctr = MFS_double(&s) * scale_t;
-				o.roof_st[2] = MFS_double(&s) * scale_s;
-				o.roof_st[3] = MFS_double(&s) * scale_t;
-				xflt rsx = MFS_double(&s);
-				xflt rsy = MFS_double(&s);
-				xflt s_rat = (s_ctr - o.roof_st[0]) / (o.roof_st[2] - o.roof_st[0]);
-				xflt t_rat = (t_ctr - o.roof_st[1]) / (o.roof_st[3] - o.roof_st[1]);
-				o.roof_ab[0] = -rsx * s_rat;
-				o.roof_ab[1] = -rsy * t_rat;
-				o.roof_ab[2] = o.roof_ab[0] + rsx;
-				o.roof_ab[3] = o.roof_ab[1] + rsy;
-				o.has_roof = true;
-			}
-			else if (MFS_string_match(&s,"BASEMENT_DEPTH", false))
-			{
-				o.walls.back().basement = MFS_double(&s) * scale_t;
-			}
-			else if (MFS_string_match(&s,"TEX_SIZE",false))
-			{
-				scale_s = MFS_double(&s); if(scale_s) scale_s = 1.0f / scale_s;
-				scale_t = MFS_double(&s); if(scale_t) scale_t = 1.0f / scale_t;
 			}
 			else if (MFS_string_match(&s,"FACADE_SCRAPER",false))
 			{
@@ -777,13 +645,255 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& outFac, int variant
 			{
 				o.max_floors = MFS_double(&s);
 			}
-			else if (MFS_string_match(&s,"NO_ROOF_MESH", false))
+			else if (MFS_string_match(&s,"WALL",false))
 			{
-				o.has_roof = false;
+				roof_section = false;
+					
+				o.walls.push_back(FacadeWall_t());
+				o.walls.back().filters.push_back(REN_facade_wall_filter_t());
+				o.walls.back().filters.back().min_width = MFS_double(&s);
+				o.walls.back().filters.back().max_width = MFS_double(&s);
+				o.walls.back().filters.back().min_heading = MFS_double(&s);
+				o.walls.back().filters.back().max_heading = MFS_double(&s);
+
+				string buf;	MFS_string(&s,&buf);
+				char c[64];
+				if (buf.empty())                 // make sure all wall types have some readable name
+				{   
+					snprintf(c, 64, "#%ld",o.walls.size());
+					buf = c;
+				}
+				o.w_nam.push_back(buf);
+
+				snprintf(c, 64, "w=%.0f%c to %.0f%c",
+				o.walls.back().filters.back().min_width / (gIsFeet ? 0.3048 : 1.0 ), gIsFeet ? '\'' : 'm', 
+				o.walls.back().filters.back().max_width / (gIsFeet ? 0.3048 : 1.0 ), gIsFeet ? '\'' : 'm') ;
+				buf = c;
+				o.w_use.push_back(buf);
+			} 
+			else if(!o.is_new)  // type 1 facades
+			{
+				if (MFS_string_match(&s,"SCALE", false))
+				{
+					o.walls.back().x_scale = MFS_double(&s);
+					o.walls.back().y_scale = MFS_double(&s);
+					
+					if(o.walls.back().x_scale < 0.01 || o.walls.back().y_scale < 0.01)
+						printf("facade has a scale less than 1 cm per texture. This is probably a bad facade.\n");
+				}
+				else if (MFS_string_match(&s,"ROOF_SLOPE", false))
+				{
+					o.walls.back().roof_slope = MFS_double(&s);
+					
+					if(o.walls.back().roof_slope >= 90.0 || 
+						o.walls.back().roof_slope <= -90.0)
+					{
+						o.tex_correct_slope = true;
+					}
+					string buf;	MFS_string(&s,&buf);
+					
+					if(buf == "SLANT")
+					{
+						o.tex_correct_slope = true;
+					}
+				}
+				else if (MFS_string_match(&s,"BOTTOM",false))
+				{
+					float f1 = MFS_double(&s) * scale_t;
+					float f2 = MFS_double(&s) * scale_t;
+					o.walls.back().t_floors.push_back(pair<float, float>(f1,f2));
+					++o.walls.back().bottom; 
+				} 
+				else if (MFS_string_match(&s,"MIDDLE",false))
+				{
+					float f1 = MFS_double(&s) * scale_t;
+					float f2 = MFS_double(&s) * scale_t;
+					o.walls.back().t_floors.push_back(pair<float, float>(f1,f2));
+					++o.walls.back().middle; 
+				} 
+				else if (MFS_string_match(&s,"TOP",false))
+				{
+					float f1 = MFS_double(&s) * scale_t;
+					float f2 = MFS_double(&s) * scale_t;
+					o.walls.back().t_floors.push_back(pair<float, float>(f1,f2));
+					++o.walls.back().top; 
+				} 
+				else if (MFS_string_match(&s,"LEFT",false))
+				{
+					float f1 = MFS_double(&s) * scale_s;
+					float f2 = MFS_double(&s) * scale_s;
+					o.walls.back().s_panels.push_back(pair<float, float>(f1,f2));
+					++o.walls.back().left; 
+				} 
+				else if (MFS_string_match(&s,"CENTER",false))
+				{
+					float f1 = MFS_double(&s) * scale_s;
+					float f2 = MFS_double(&s) * scale_s;
+					o.walls.back().s_panels.push_back(pair<float, float>(f1,f2));
+					++o.walls.back().center; 
+				} 
+				else if (MFS_string_match(&s,"RIGHT",false))
+				{
+					float f1 = MFS_double(&s) * scale_s;
+					float f2 = MFS_double(&s) * scale_s;
+					o.walls.back().s_panels.push_back(pair<float, float>(f1,f2));
+					++o.walls.back().right; 
+				} 
+				else if (MFS_string_match(&s,"ROOF", false))
+				{
+					o.roof_s.push_back(MFS_double(&s) * scale_s);
+					o.roof_t.push_back(MFS_double(&s) * scale_t);
+					o.has_roof = true;
+				}
+				else if (MFS_string_match(&s,"RING", false))
+				{
+					o.is_ring = MFS_int(&s) > 0;
+				}
+				else if (MFS_string_match(&s,"DOUBLED", false))
+				{
+					o.doubled = MFS_int(&s) > 0;
+				}
+				else if (MFS_string_match(&s,"ROOF_SCALE", false))
+				{
+					o.roof_st[0] = MFS_double(&s) * scale_s;
+					o.roof_st[1] = MFS_double(&s) * scale_t;
+					xflt s_ctr = MFS_double(&s) * scale_s;
+					xflt t_ctr = MFS_double(&s) * scale_t;
+					o.roof_st[2] = MFS_double(&s) * scale_s;
+					o.roof_st[3] = MFS_double(&s) * scale_t;
+					xflt rsx = MFS_double(&s);
+					xflt rsy = MFS_double(&s);
+					xflt s_rat = (s_ctr - o.roof_st[0]) / (o.roof_st[2] - o.roof_st[0]);
+					xflt t_rat = (t_ctr - o.roof_st[1]) / (o.roof_st[3] - o.roof_st[1]);
+					o.roof_ab[0] = -rsx * s_rat;
+					o.roof_ab[1] = -rsy * t_rat;
+					o.roof_ab[2] = o.roof_ab[0] + rsx;
+					o.roof_ab[3] = o.roof_ab[1] + rsy;
+					o.has_roof = true;
+				}
+				else if (MFS_string_match(&s,"BASEMENT_DEPTH", false))
+				{
+					o.walls.back().basement = MFS_double(&s) * scale_t;
+				}
+				else if (MFS_string_match(&s,"TEX_SIZE",false))
+				{
+					scale_s = MFS_double(&s); if(scale_s) scale_s = 1.0f / scale_s;
+					scale_t = MFS_double(&s); if(scale_t) scale_t = 1.0f / scale_t;
+				}
+			}
+			else  // type 2 facades
+			{
+				if(MFS_string_match(&s,"OBJ", false))
+				{
+					string file;
+					MFS_string(&s,&file);
+					clean_rpath(file);
+					o.objs.push_back(file);
+				}
+				else if(MFS_string_match(&s,"FLOOR", false))
+				{
+//					o.floors.push_back(REN_facade_floor_t());
+//					o.floors.back().roof_surface = 0;
+//					MFS_string(&s,&o.floors.back().name);
+				}
+				else if(MFS_string_match(&s,"SEGMENT", false))
+				{
+					o.templates.push_back(REN_facade_template_t());
+//					o.floors.back().templates.back().divisions = 1;
+					tpl = &o.templates.back();
+				}
+				else if(MFS_string_match(&s,"SEGMENT_CURVED", false))
+				{
+					o.templates_curved.push_back(REN_facade_template_t());
+//					o.floors.back().templates_curved.back().divisions = 1;
+					tpl = &o.templates_curved.back();
+				}
+				else if(MFS_string_match(&s,"MESH", false))
+				{
+					tpl->meshes.push_back(REN_facade_template_t::mesh());
+					MFS_double(&s);
+					MFS_double(&s);
+					MFS_double(&s);
+					int num_vert = MFS_double(&s);
+					int num_idx = MFS_double(&s);
+					tpl->meshes.back().xyz_uv.reserve(5*num_vert);
+					tpl->meshes.back().idx.reserve(num_vert);
+				}
+				else if(MFS_string_match(&s,"VERTEX", false))
+				{
+					xflt vert[5];
+					vert[0] = MFS_double(&s);
+					vert[1] = MFS_double(&s);
+					vert[2] = MFS_double(&s);
+					MFS_double(&s);
+					MFS_double(&s);
+					MFS_double(&s);
+					vert[3] = MFS_double(&s);
+					vert[4] = MFS_double(&s);
+					for(int i = 0; i<5; i++)
+						tpl->meshes.back().xyz_uv.push_back(vert[i]);
+				}
+				else if(MFS_string_match(&s,"IDX", false))
+				{
+					while(MFS_has_word(&s))
+						tpl->meshes.back().idx.push_back(MFS_int(&s));
+				}
+				else if(MFS_string_match(&s,"ATTACH_DRAPED", false) || MFS_string_match(&s,"ATTACH_GRADED", false))
+				{
+					tpl->objs.push_back(REN_facade_template_t::obj());
+					tpl->objs.back().idx =MFS_int(&s);
+					tpl->objs.back().xyzr[0] =MFS_double(&s);
+					tpl->objs.back().xyzr[1] =MFS_double(&s);
+					tpl->objs.back().xyzr[2] =MFS_double(&s);
+					tpl->objs.back().xyzr[3] =MFS_double(&s);
+				}
+				else if(MFS_string_match(&s,"SPELLING", false))
+				{
+					o.walls.back().spellings.push_back(UTL_spelling_t());
+					while(MFS_has_word(&s))
+						o.walls.back().spellings.back().indices.push_back(MFS_int(&s));
+				}
 			}
 			MFS_string_eol(&s,NULL);
 		}
 		MemFile_Close(fac);
+		
+		if(o.is_new)
+			for(auto& w : o.walls)
+			{
+				for(auto& t : o.templates)
+				{
+					xflt xyz_min[3] = {  9.9e9,  9.9e9,  9.9e9 };
+					xflt xyz_max[3] = { -9.9e9, -9.9e9, -9.9e9 };
+
+					for(auto m : t.meshes)
+						for(int i = 0; i < m.xyz_uv.size(); i +=5 )
+						{
+							xflt * p = &m.xyz_uv[i];
+							xyz_min[0] = min(xyz_min[0], p[0]);
+							xyz_max[0] = max(xyz_max[0], p[0]);
+							xyz_min[1] = min(xyz_min[1], p[1]);
+							xyz_max[1] = max(xyz_max[1], p[1]);
+							xyz_min[2] = min(xyz_min[2], p[2]);
+							xyz_max[2] = max(xyz_max[2], p[2]);
+						}
+					t.bounds[0] = 1.0f;//xyz_max[0];// - xyz_min[0];
+					t.bounds[1] = xyz_max[1];// - xyz_min[1];
+					t.bounds[2] = xyz_max[2] - xyz_min[2];
+				}
+			
+				for(auto& s : w.spellings)
+				{
+					s.total = 0.0f;
+					for(vector<xbyt>::iterator b = s.indices.begin(); b != s.indices.end(); ++b)
+					{
+						dev_assert(intrange(*b,0,o.templates.size()-1));
+						s.total += o.templates[*b].bounds[2];
+						s.widths.push_back(o.templates[*b].bounds[2]);
+					}
+				}
+				sort(w.spellings.begin(), w.spellings.end());
+		}
 
 		process_texture_path(p,o.wall_tex);
 		process_texture_path(p,o.roof_tex);

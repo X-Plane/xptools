@@ -31,6 +31,57 @@
 #include "WED_ResourceMgr.h"
 #include "WED_FacadePreview.h"
 
+static bool closer_to(double x, double a, double b)
+{
+	return abs(x-a) < abs(x-b);
+}
+
+static int int_seedrand(int low, int high, int seed)
+{
+	return (low+high)/2;
+}
+
+void	UTL_pick_spelling(
+						const vector<UTL_spelling_t>& 	spellings,
+						xflt							len,
+						UTL_spelling_t&					out_choice,
+						xint							seed)
+{
+	dev_assert(!spellings.empty());
+
+	while(1)
+	{
+		if(out_choice.total + spellings.back().total < len)
+		{
+			xint low_choice = intlim(spellings.size() / 4, 0, spellings.size()-1);
+			xint high_choice = intlim(spellings.size() * 3 / 4, 0, spellings.size()-1);
+			out_choice += spellings[int_seedrand(low_choice,high_choice,seed++)];
+		}
+		else
+		{
+			xint best = -1;
+			for(xint n = spellings.size() - 1; n >= 0; --n)
+			if(closer_to(out_choice.total,out_choice.total + spellings[n].total, len))
+			if(best == -1 || closer_to(out_choice.total + spellings[best].total,out_choice.total + spellings[n].total, len))
+			{
+				best = n;
+				if((out_choice.total + spellings[n].total) < len)
+					break;
+			}
+			if(best == -1)
+				break;
+			out_choice += spellings[best];
+			break;
+		}
+	}
+	
+	if(out_choice.empty())
+		out_choice = spellings[0];	
+
+	dev_assert(out_choice.widths.size() == out_choice.indices.size());
+		
+}
+
 //void print_wall(const REN_facade_wall_t& w)
 //{
 //	printf("%f %f %f %f\n", w.min_width,w.max_width, w.min_heading,w.max_heading);
@@ -406,10 +457,6 @@ static double	BuildOneFacade(                    // that is one wall for one seg
 	return total_floor_height * fac.y_scale;
 }
 
-static bool closer_to(double x, double a, double b)
-{
-	return abs(x-a) < abs(x-b);
-}
 
 static int PanelsForLength(const FacadeWall_t& wall, double len)
 {
@@ -536,28 +583,28 @@ bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width
 	// sanitize wall choices ?
 	if (info.walls.empty())	return false;
 	
-	if (!info.is_new)         // can't handle type 2 facades, yet
-	{
 //		for(auto p : info.previews) delete(p);
-		XObj8 *obj;
-		XObjCmd8 cmd;
-		
-		if (info.previews.size())   // will only replace the first preview object - although there could be more
-		{
-			obj = info.previews[0];
-			obj->indices.clear();
-			obj->geo_tri.clear(8);
-			obj->lods.clear();
-			printf("Update preview for h/w %.1lf %.1lf\n", fac_height, fac_width);
-		}
-		else
-		{
-			printf("New preview for h/w %.1lf %.1lf\n", fac_height, fac_width);
-			obj = new XObj8;
-		}	
-		obj->texture = info.wall_tex;
-		int num_walls = info.is_ring ? 4 : 3;
+	XObj8 *obj;
+	XObjCmd8 cmd;
+	
+	if (info.previews.size())   // will only replace the first preview object - although there could be more
+	{
+		obj = info.previews[0];
+		obj->indices.clear();
+		obj->geo_tri.clear(8);
+		obj->lods.clear();
+		printf("Update preview for h/w %.1lf %.1lf\n", fac_height, fac_width);
+	}
+	else
+	{
+		printf("New preview for h/w %.1lf %.1lf\n", fac_height, fac_width);
+		obj = new XObj8;
+	}	
+	obj->texture = info.wall_tex;
+	int num_walls = info.is_ring ? 4 : 3;
 
+	if(!info.is_new)
+	{
 		double insets[4];
 		for (int n = 0; n < 4; ++n)
 		{
@@ -593,23 +640,64 @@ bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width
 			roof_pts.back().y = BuildOneFacade(*fac, inBase, inRoof, fac_height, fac_panels, inUp, 
 						info.has_roof, two_sided_roof, info.doubled, info.tex_correct_slope, StoreQuad, obj);
 		}
-		obj->geo_tri.get_minmax(obj->xyz_min,obj->xyz_max);
-	
-		obj->lods.push_back(XObjLOD8());
-		obj->lods.back().lod_near = 0;
-		obj->lods.back().lod_far  = 1000;
-
-		//cmd.cmd = attr_NoCull;
-		//obj->lods.back().cmds.push_back(cmd);
+	}
+	else
+	{
+		Point2 corner(-fac_width/2.0,0.0);
 		
-		cmd.cmd = obj8_Tris;
-		cmd.idx_offset = 0;
-		cmd.idx_count  = obj->indices.size();
-		obj->lods.back().cmds.push_back(cmd);
+		for (int w = 0; w < num_walls; ++w)
+		{
+			int w_type = intmin2(info.walls.size()-1,w);
+			const FacadeWall_t * fac = &info.walls[w_type];
+			
+			Vector2 dir(-cos(w*90.0*DEG_TO_RAD),sin(w*90.0*DEG_TO_RAD));
+			Vector2 dir_z(dir.perpendicular_cw());
+	
+			UTL_spelling_t our_choice;
+			UTL_pick_spelling(fac->spellings, fac_width, our_choice, 0);
+			
+			printf("%.1lf, %.1lf : ",fac_width, our_choice.total);
+			for(auto i : our_choice.indices)
+				printf(" %d ", i);
+			printf("\n ",our_choice.total);
+			
+			
+			for(int i = 0; i < our_choice.indices.size(); i++)
+			{
+				const REN_facade_template_t& t = info.templates[our_choice.indices[i]];
+				int first_idx = obj->geo_tri.count();
+				
+				for(int v = 0; v < t.meshes[0].xyz_uv.size(); v +=5 )
+				{
+					Point2 xy = corner + dir_z * t.meshes[0].xyz_uv[v] + dir * t.meshes[0].xyz_uv[v+2];
+					float pt[8] = { xy.x(), t.meshes[0].xyz_uv[v+1], xy.y(), 0,1,0, t.meshes[0].xyz_uv[v+3], t.meshes[0].xyz_uv[v+4] };
+					obj->geo_tri.append(pt);
+				}
+				for(auto v : t.meshes[0].idx)	
+					obj->indices.push_back(first_idx + v);
+				corner += dir*t.bounds[2];
+			}
+		}
+	}
+	
+	obj->geo_tri.get_minmax(obj->xyz_min,obj->xyz_max);
 
-		if (info.previews.empty())
-			info.previews.push_back(obj);
-#if 1
+	obj->lods.push_back(XObjLOD8());
+	obj->lods.back().lod_near = 0;
+	obj->lods.back().lod_far  = 1000;
+
+	cmd.cmd = attr_NoCull;
+	obj->lods.back().cmds.push_back(cmd);
+	
+	cmd.cmd = obj8_Tris;
+	cmd.idx_offset = 0;
+	cmd.idx_count  = obj->indices.size();
+	obj->lods.back().cmds.push_back(cmd);
+
+	if (info.previews.empty())
+		info.previews.push_back(obj);
+		
+#if 0
 		if (info.has_roof)
 		{
 			XObj8 * r_obj;
@@ -669,7 +757,5 @@ bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width
 				info.previews.push_back(r_obj);
 		}
 #endif
-	}
-	else
-		return false; // todo: deal with type 2 facades here
+	return true;
 }

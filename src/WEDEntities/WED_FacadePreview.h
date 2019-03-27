@@ -105,73 +105,33 @@ struct REN_facade_wall_filters_t {
 	bool	is_ok(xflt len, xflt rel_hdg) const;
 };
 	
+struct REN_facade_mesh_t {
+		vector<xflt> 	xyz_uv;      // 5 floats per vertex, skipping normals
+		vector<xint>	idx;
+};
+	
 struct REN_facade_template_t {
 
 	struct obj {
 		xint		idx;
-		xint		graded;
+//		xint		graded;
 		xflt		xyzr[4];
-		asset_freq	freq;		
+//		asset_freq	freq;		
 	};
-	
-	vector<obj>				objs;
-	vector<vector<xflt> >	meshes;		// Each mesh within this template.
-	vector<pair<xint,xflt> >lods;		// For each mesh, first is group ID, second is far LOD for additive LOD
+	struct mesh {
+		vector<xflt> 	xyz_uv;      // 5 floats per vertex, skipping normals
+		vector<xint>	idx;
+	};
+
+	vector<obj>			objs;
+	vector<mesh>		meshes;		// Each mesh within this template.
 	xflt					bounds[3];
-	xint					divisions;
+//	xint					divisions;
 //	bool				stretch_base;
 //	bool				stretch_over;
 //	bool				clip_tex_base;
 //	bool				clip_tex_over;
 
-//	void load_from_obj(const string& in_path);
-
-#if xxx
-	void read_inline(xmap_class& m);
-
-	void add_attached_obj(xint idx, xint graded, xflt x, xflt y, xflt z, xflt psi, xint show_lo, xint show_hi);
-
-	void extrude_to_volume_linear(
-					REN_extrude_patch *			extruder,
-					REN_extrude_object *		extruder2,
-					xint						checker,
-					xint						group_id,
-					
-					xint						num_frames,		// must be at least 2
-					xflt						frames[],		// 12 floats per frame: XYZ for: bottom line, bottom outside, top outside, top line
-					
-					xflt						p1[3],			// Bezier defines "Z" axis derivative for normal
-					xflt						c1[3],			// Pass NULL for both ctl points for linear normal vectors.
-					xflt						c2[3],
-					xflt						p2[3],			
-					
-					xflt						up[3],
-					const vector<asset_range>&	objects,
-					const vector<obj_ref>&		assets) const;	// "Up" vector for normals.  Length = real height of extrusion.
-
-	// Build an extrusion volume of 2 frames for a linear segment.
-	void make_extrude_vol_linear(
-							xflt p1[3],
-							xflt p2[3],
-							xflt up[3],
-							xflt tan1,
-							xflt tan2,
-							vector<xflt>& out_frames) const;
-
-	// Build an extrusion volume of "splits" frames for a bezier curve.	
-	void make_extrude_vol_bezier(
-							xflt p1[3],
-							xflt c1[3],
-							xflt c2[3],
-							xflt p2[3],
-							xflt up[3],
-							xflt tan1,
-							xflt tan2,
-							xint splits,
-							xflt r1,
-							xflt r2,
-							vector<xflt>& out_frames) const;
-#endif
 };
 
 
@@ -197,7 +157,8 @@ struct REN_facade_floor_t {
 	vector<REN_facade_template_t>	templates_curved;
 	vector<xint>					groups;		// sorted list of group IDs used by ANY piece of ANY wall.  Used to plan iteration around the floor multiple times.
 	xint							roof_surface;
-	vector<REN_facade_wall_t>		walls;
+	vector<UTL_spelling_t>			spellings;
+//	vector<REN_facade_wall_t>		walls;
 	vector<REN_facade_roof_t>		roofs;
 	inline xflt						max_roof_height(void) const { return roofs.empty() ? 0.0 : roofs.back().roof_height; }
 };
@@ -226,6 +187,8 @@ struct	FacadeWall_t : public REN_facade_wall_filters_t {
 	int								bottom;
 	int								middle;
 	int								top;
+	
+	vector<UTL_spelling_t>		spellings;
 };	
 
 // Facade scraper - defines how to combine an OBJ + facade into a two-part sky-scraper.
