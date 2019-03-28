@@ -580,8 +580,6 @@ static void StoreQuad(float * coords, float * texes, XObj8 * obj)
 
 bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width)
 {
-	// sanitize wall choices ?
-	if (info.walls.empty())	return false;
 	
 //		for(auto p : info.previews) delete(p);
 	XObj8 *obj;
@@ -602,9 +600,12 @@ bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width
 	}	
 	obj->texture = info.wall_tex;
 	int num_walls = info.is_ring ? 4 : 3;
+	vector<Point3> roof_pts;
+	const REN_facade_floor_t * bestFloor;
 
 	if(!info.is_new)
 	{
+		if (info.walls.empty())	return false;
 		double insets[4];
 		for (int n = 0; n < 4; ++n)
 		{
@@ -617,7 +618,6 @@ bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width
 
 		Vector3 inUp(0,1,0);
 		Segment3 inBase(Point3(-fac_width/2.0,0,0),Point3(fac_width/2.0,0,0));
-		vector<Point3> roof_pts;
 		
 		for (int w = 0; w < num_walls; ++w)
 		{
@@ -643,39 +643,55 @@ bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width
 	}
 	else
 	{
+		if (info.floors.empty() || info.floors.front().walls.empty()) return false;
 		Point2 corner(-fac_width/2.0,0.0);
+		
+		bestFloor = fac_height < 10.0 ? &info.floors.front() : &info.floors.back();
+		for(auto& f : info.floors)
+		{
+//			printf("f_roof_hgt %.1lf \n", f.max_roof_height());
+			if(f.max_roof_height() < fac_height)
+			{
+//				printf("Taken !\n");
+				bestFloor = &f;
+			}
+		}
 		
 		for (int w = 0; w < num_walls; ++w)
 		{
-			int w_type = intmin2(info.walls.size()-1,w);
-			const FacadeWall_t * fac = &info.walls[w_type];
+			int w_type = intmin2(bestFloor->walls.size()-1,w);
+			const REN_facade_wall_t * bestWall = &bestFloor->walls[w_type];
+			
+			roof_pts.push_back(Point3(corner.x(), bestFloor->max_roof_height(), corner.y()));
 			
 			Vector2 dir(-cos(w*90.0*DEG_TO_RAD),sin(w*90.0*DEG_TO_RAD));
 			Vector2 dir_z(dir.perpendicular_cw());
 	
 			UTL_spelling_t our_choice;
-			UTL_pick_spelling(fac->spellings, fac_width, our_choice, 0);
-			
-			printf("%.1lf, %.1lf : ",fac_width, our_choice.total);
-			for(auto i : our_choice.indices)
-				printf(" %d ", i);
-			printf("\n ",our_choice.total);
-			
-			
+			UTL_pick_spelling(bestWall->spellings, fac_width, our_choice, 0);
+			double scale_x = fac_width / our_choice.total;
+
+//			printf("%.1lf, %.1lf : ",fac_width, our_choice.total);
+//			for(auto i : our_choice.indices)
+//				printf(" %d ", i);
+//			printf("\n ",our_choice.total);
+
 			for(int i = 0; i < our_choice.indices.size(); i++)
 			{
-				const REN_facade_template_t& t = info.templates[our_choice.indices[i]];
-				int first_idx = obj->geo_tri.count();
-				
-				for(int v = 0; v < t.meshes[0].xyz_uv.size(); v +=5 )
+				const REN_facade_template_t& t = info.floors.front().templates[our_choice.indices[i]];
+				for(auto m : t.meshes) // all meshes == maximum LOD detail
 				{
-					Point2 xy = corner + dir_z * t.meshes[0].xyz_uv[v] + dir * t.meshes[0].xyz_uv[v+2];
-					float pt[8] = { xy.x(), t.meshes[0].xyz_uv[v+1], xy.y(), 0,1,0, t.meshes[0].xyz_uv[v+3], t.meshes[0].xyz_uv[v+4] };
-					obj->geo_tri.append(pt);
+					int first_idx = obj->geo_tri.count();
+					for(int v = 0; v < m.xyz_uv.size(); v +=5 )
+					{
+						Point2 xy = corner - dir_z * m.xyz_uv[v] - dir * scale_x * m.xyz_uv[v+2];
+						float pt[8] = { xy.x(), m.xyz_uv[v+1], xy.y(), 0,1,0, m.xyz_uv[v+3], m.xyz_uv[v+4] };
+						obj->geo_tri.append(pt);
+					}
+					for(auto v : m.idx)	
+						obj->indices.push_back(first_idx + v);
 				}
-				for(auto v : t.meshes[0].idx)	
-					obj->indices.push_back(first_idx + v);
-				corner += dir*t.bounds[2];
+				corner += dir * scale_x * t.bounds[2];
 			}
 		}
 	}
@@ -697,65 +713,74 @@ bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width
 	if (info.previews.empty())
 		info.previews.push_back(obj);
 		
-#if 0
-		if (info.has_roof)
+#if 1
+	if (info.has_roof)
+	{
+	
+	printf("drawing roof\n");
+		XObj8 * r_obj;
+		if (info.previews.size() > 1)
 		{
-			XObj8 * r_obj;
-			if (info.previews.size() > 1)
-			{
-				r_obj = info.previews[1];
-				r_obj->indices.clear();
-				r_obj->geo_tri.clear(8);
-				r_obj->lods.clear();
-			}
-			else
-				r_obj = new XObj8;
-				
-			r_obj->texture = info.roof_tex;
+			r_obj = info.previews[1];
+			r_obj->indices.clear();
+			r_obj->geo_tri.clear(8);
+			r_obj->lods.clear();
+		}
+		else
+			r_obj = new XObj8;
 			
-			float pts[12];
-			float tex[8];
-			
-			/* 1 - 0
-			   |   |
-			   2 - 3 */
-			
+		r_obj->texture = info.roof_tex;
+		
+		float pts[12];
+		float tex[8];
+		
+		int xtra_roofs = 0;
+		if (info.is_new && bestFloor->roofs.size() > 1) xtra_roofs = bestFloor->roofs.size() - 1;
+		
+		do
+		{
 			for (int n = 0; n < 4; ++n)
 			{
 				int x = n == 0 || n == 3;
 				int z = n < 2;
-				int prev_n = n==0 ? 3 : n-1;
-				int next_n = n==3 ? 0 : n+1;
 				
-//				pts[3*n  ] = x ? obj->xyz_max[0] : obj->xyz_min[0];
-//				pts[3*n+1] = obj->xyz_max[1];
-//				pts[3*n+2] = z ? obj->xyz_max[2] : obj->xyz_min[2];
-				pts[3*n  ] = roof_pts[3-n].x;
-				pts[3*n+1] = roof_pts[3-n].y;
-				pts[3*n+2] = roof_pts[3-n].z;
+				pts[3*n  ] = roof_pts[3-n].x;     // 1 - 0
+				pts[3*n+1] = roof_pts[3-n].y;     // |   |
+				pts[3*n+2] = roof_pts[3-n].z;     // 2 - 3
 				
 				tex[2*n  ] = x;  // info.roof_uv[2*i];
 				tex[2*n+1] = z;  // info.roof_uv[1+2*j];
 			}
 			StoreQuad(pts, tex, r_obj);
-				
-			r_obj->geo_tri.get_minmax(r_obj->xyz_min,r_obj->xyz_max);
 			
-			r_obj->lods.push_back(XObjLOD8());
-			r_obj->lods.back().lod_near = 0;
-			r_obj->lods.back().lod_far  = 1000;
+			xtra_roofs--;
+			if(xtra_roofs >= 0)
+			{
+				printf("drawing xtra_roof @ %.1lf\n",bestFloor->roofs[xtra_roofs].roof_height);
 
-			//cmd.cmd = attr_NoCull;
-			//r_obj->lods.back().cmds.push_back(cmd);
-
-			cmd.cmd = obj8_Tris;
-			cmd.idx_offset = 0;
-			cmd.idx_count  = r_obj->indices.size();
-			r_obj->lods.back().cmds.push_back(cmd);
-
-			if (info.previews.size() < 2)
-				info.previews.push_back(r_obj);
+				for(int n = 0; n < 4; ++n)
+					roof_pts[n].y = bestFloor->roofs[xtra_roofs].roof_height;
+			}
 		}
+		while (xtra_roofs >=0);
+			
+		r_obj->geo_tri.get_minmax(r_obj->xyz_min,r_obj->xyz_max);
+		
+		r_obj->lods.push_back(XObjLOD8());
+		r_obj->lods.back().lod_near = 0;
+		r_obj->lods.back().lod_far  = 1000;
+
+		cmd.cmd = attr_NoCull;
+		r_obj->lods.back().cmds.push_back(cmd);
+
+		cmd.cmd = obj8_Tris;
+		cmd.idx_offset = 0;
+		cmd.idx_count  = r_obj->indices.size();
+		r_obj->lods.back().cmds.push_back(cmd);
+
+		if (info.previews.size() < 2)
+			info.previews.push_back(r_obj);
+	}
 #endif
 	return true;
 }

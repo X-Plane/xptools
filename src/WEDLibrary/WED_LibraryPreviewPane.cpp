@@ -244,8 +244,9 @@ void	WED_LibraryPreviewPane::MouseDrag(int x, int y, int button)
 		mHgt = fltlim(mHgt,0,250);
 		
 		float oldWid = mWid;
-		mWid = mWidOrig + dx * 0.1;
-		mWid = fltlim(mWid,1,99);
+		mWid = mWidOrig + (fabs(dx) < 50.0 ? dx * 0.1 : sign(dx)*(abs(dx)-45.0)) * 0.5;
+//		mWid = mWidOrig + dx * 0.1;
+		mWid = fltlim(mWid,1,150);
 
 //printf("Drag %.1lf %.1lf\n", dx, dy);
 //		if ( fabs(oldHgt-mHgt) >= 1.0 || fabs(oldWid-mWid) >= 1.0)
@@ -569,13 +570,13 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 		switch(mType)
 		{
 			case res_Facade:
-				if (fac.previews.size() && fac.walls.size())
+				if (fac.previews.size() && fac.w_nam.size())
 				{
 					int side = (135-mPsi)/90.0;
 					if (side >= fac.w_nam.size()) side=0;
 					sprintf(buf1,"Showing Wall \'%s\' intended for %s @ w=%.1lf%c", fac.w_nam[side].c_str(), fac.w_use[side].c_str(), mWid / (gIsFeet ? 0.3048 : 1), gIsFeet ? '\'' : 'm');
 					
-					int n_wall = fac.walls.size();
+					int n_wall = fac.w_nam.size();
 					int j = sprintf(buf2,"Type %d with %d wall%s%s, @ h=%.1lf", fac.is_new ? 2 : 1, n_wall, n_wall > 1 ? "s" : "",fac.scrapers.empty() ? "" : "+scraper" ,mHgt);
 
 					if (fac.min_floors < 0) 

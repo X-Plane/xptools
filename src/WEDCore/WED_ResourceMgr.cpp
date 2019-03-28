@@ -529,6 +529,7 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& outFac, int variant
 		xflt scale_s = 1.0f, scale_t = 1.0f;
 		bool roof_section = false;
 		bool not_nearest_lod = false;
+		
 		REN_facade_template_t * tpl = NULL;
 
 		while(!MFS_done(&s))
@@ -637,40 +638,46 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& outFac, int variant
 				o.scrapers.back().choices.push_back(choice);
 			}
 // scraper pad command is not implemented
-			else if (MFS_string_match(&s,"FLOORS_MIN", false))
-			{
-				o.min_floors = MFS_double(&s);
-			}
-			else if (MFS_string_match(&s,"FLOORS_MAX", false))
-			{
-				o.max_floors = MFS_double(&s);
-			}
 			else if (MFS_string_match(&s,"WALL",false))
 			{
 				roof_section = false;
-					
-				o.walls.push_back(FacadeWall_t());
-				o.walls.back().filters.push_back(REN_facade_wall_filter_t());
-				o.walls.back().filters.back().min_width = MFS_double(&s);
-				o.walls.back().filters.back().max_width = MFS_double(&s);
-				o.walls.back().filters.back().min_heading = MFS_double(&s);
-				o.walls.back().filters.back().max_heading = MFS_double(&s);
 
-				string buf;	MFS_string(&s,&buf);
-				char c[64];
-				if (buf.empty())                 // make sure all wall types have some readable name
-				{   
-					snprintf(c, 64, "#%ld",o.walls.size());
-					buf = c;
+//printf("Adding wall\n");
+				
+				double min_width = MFS_double(&s);
+				double max_width = MFS_double(&s);
+
+				if(!o.is_new)
+				{
+					o.walls.push_back(FacadeWall_t());
+					o.w_nam.push_back(string("#") + to_string(o.walls.size()));
 				}
-				o.w_nam.push_back(buf);
+				else
+				{
+					o.floors.back().walls.push_back(REN_facade_wall_t());
+					o.floors.back().walls.back().filters.push_back(REN_facade_wall_filter_t());
+					o.floors.back().walls.back().filters.back().min_width = min_width;
+					o.floors.back().walls.back().filters.back().max_width = max_width;
+					o.floors.back().walls.back().filters.back().min_heading = MFS_double(&s);
+					o.floors.back().walls.back().filters.back().max_heading = MFS_double(&s);
+					if(o.floors.size() == 1)
+					{
+						string buf;	MFS_string(&s,&buf);
+						if(!buf.empty()) 
+							o.w_nam.push_back(buf);
+						else
+							o.w_nam.push_back(string("#") + to_string(o.floors.back().walls.size()));
+					}
+				}
 
-				snprintf(c, 64, "w=%.0f%c to %.0f%c",
-				o.walls.back().filters.back().min_width / (gIsFeet ? 0.3048 : 1.0 ), gIsFeet ? '\'' : 'm', 
-				o.walls.back().filters.back().max_width / (gIsFeet ? 0.3048 : 1.0 ), gIsFeet ? '\'' : 'm') ;
-				buf = c;
-				o.w_use.push_back(buf);
+				char c[64];
+				snprintf(c, 64, "w=%.0f to %.0f%c", min_width / (gIsFeet ? 0.3048 : 1.0 ), max_width / (gIsFeet ? 0.3048 : 1.0 ), gIsFeet ? '\'' : 'm') ;
+				o.w_use.push_back(c);
 			} 
+			else if (MFS_string_match(&s,"RING", false))
+			{
+				o.is_ring = MFS_int(&s) > 0;
+			}
 			else if(!o.is_new)  // type 1 facades
 			{
 				if (MFS_string_match(&s,"SCALE", false))
@@ -745,10 +752,6 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& outFac, int variant
 					o.roof_t.push_back(MFS_double(&s) * scale_t);
 					o.has_roof = true;
 				}
-				else if (MFS_string_match(&s,"RING", false))
-				{
-					o.is_ring = MFS_int(&s) > 0;
-				}
 				else if (MFS_string_match(&s,"DOUBLED", false))
 				{
 					o.doubled = MFS_int(&s) > 0;
@@ -780,6 +783,14 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& outFac, int variant
 					scale_s = MFS_double(&s); if(scale_s) scale_s = 1.0f / scale_s;
 					scale_t = MFS_double(&s); if(scale_t) scale_t = 1.0f / scale_t;
 				}
+				else if (MFS_string_match(&s,"FLOORS_MIN", false))
+				{
+					o.min_floors = MFS_double(&s);
+				}
+				else if (MFS_string_match(&s,"FLOORS_MAX", false))
+				{
+					o.max_floors = MFS_double(&s);
+				}
 			}
 			else  // type 2 facades
 			{
@@ -792,23 +803,27 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& outFac, int variant
 				}
 				else if(MFS_string_match(&s,"FLOOR", false))
 				{
-//					o.floors.push_back(REN_facade_floor_t());
-//					o.floors.back().roof_surface = 0;
-//					MFS_string(&s,&o.floors.back().name);
+					o.floors.push_back(REN_facade_floor_t());
+					o.floors.back().roof_surface = 0;
+					MFS_string(&s,&o.floors.back().name);
+					
+//printf("Adding floor %s\n",o.floors.back().name.c_str());
+
 				}
 				else if(MFS_string_match(&s,"SEGMENT", false))
 				{
-					o.templates.push_back(REN_facade_template_t());
-//					o.floors.back().templates.back().divisions = 1;
-					tpl = &o.templates.back();
+					o.floors.back().templates.push_back(REN_facade_template_t());
+					tpl = &o.floors.back().templates.back();
+
+//printf("Adding template\n");
 				}
 				else if(MFS_string_match(&s,"SEGMENT_CURVED", false))
 				{
-					o.templates_curved.push_back(REN_facade_template_t());
-//					o.floors.back().templates_curved.back().divisions = 1;
-					tpl = &o.templates_curved.back();
+//					o.floors.back().templates_curved.push_back(REN_facade_template_t());
+//					tpl = &o.floors.back().templates_curved.back();
+					tpl = NULL;
 				}
-				else if(MFS_string_match(&s,"MESH", false))
+				else if(tpl && MFS_string_match(&s,"MESH", false))
 				{
 					tpl->meshes.push_back(REN_facade_template_t::mesh());
 					MFS_double(&s);
@@ -819,7 +834,7 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& outFac, int variant
 					tpl->meshes.back().xyz_uv.reserve(5*num_vert);
 					tpl->meshes.back().idx.reserve(num_vert);
 				}
-				else if(MFS_string_match(&s,"VERTEX", false))
+				else if(tpl && MFS_string_match(&s,"VERTEX", false))
 				{
 					xflt vert[5];
 					vert[0] = MFS_double(&s);
@@ -833,12 +848,12 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& outFac, int variant
 					for(int i = 0; i<5; i++)
 						tpl->meshes.back().xyz_uv.push_back(vert[i]);
 				}
-				else if(MFS_string_match(&s,"IDX", false))
+				else if(tpl && MFS_string_match(&s,"IDX", false))
 				{
 					while(MFS_has_word(&s))
 						tpl->meshes.back().idx.push_back(MFS_int(&s));
 				}
-				else if(MFS_string_match(&s,"ATTACH_DRAPED", false) || MFS_string_match(&s,"ATTACH_GRADED", false))
+				else if(tpl && (MFS_string_match(&s,"ATTACH_DRAPED", false) || MFS_string_match(&s,"ATTACH_GRADED", false)))
 				{
 					tpl->objs.push_back(REN_facade_template_t::obj());
 					tpl->objs.back().idx =MFS_int(&s);
@@ -849,19 +864,27 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& outFac, int variant
 				}
 				else if(MFS_string_match(&s,"SPELLING", false))
 				{
-					o.walls.back().spellings.push_back(UTL_spelling_t());
+					o.floors.back().walls.back().spellings.push_back(UTL_spelling_t());
 					while(MFS_has_word(&s))
-						o.walls.back().spellings.back().indices.push_back(MFS_int(&s));
+						o.floors.back().walls.back().spellings.back().indices.push_back(MFS_int(&s));
+				}
+				else if(MFS_string_match(&s,"ROOF_HEIGHT", false))
+				{
+					while(MFS_has_word(&s))
+						o.floors.back().roofs.push_back(REN_facade_roof_t(MFS_double(&s)));
 				}
 			}
 			MFS_string_eol(&s,NULL);
 		}
 		MemFile_Close(fac);
 		
+//printf("f=%ld, t=%ld w=%ld\n",o.floors.size(), o.floors.back().templates.size(),	o.floors.back().walls.size());
+		
 		if(o.is_new)
-			for(auto& w : o.walls)
+		{
+			for(auto& f : o.floors)
 			{
-				for(auto& t : o.templates)
+				for(auto& t : f.templates)
 				{
 					xflt xyz_min[3] = {  9.9e9,  9.9e9,  9.9e9 };
 					xflt xyz_max[3] = { -9.9e9, -9.9e9, -9.9e9 };
@@ -881,20 +904,31 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& outFac, int variant
 					t.bounds[1] = xyz_max[1];// - xyz_min[1];
 					t.bounds[2] = xyz_max[2] - xyz_min[2];
 				}
-			
-				for(auto& s : w.spellings)
-				{
-					s.total = 0.0f;
-					for(vector<xbyt>::iterator b = s.indices.begin(); b != s.indices.end(); ++b)
-					{
-						dev_assert(intrange(*b,0,o.templates.size()-1));
-						s.total += o.templates[*b].bounds[2];
-						s.widths.push_back(o.templates[*b].bounds[2]);
-					}
-				}
-				sort(w.spellings.begin(), w.spellings.end());
-		}
 
+//				int xw = 0;				
+				for(auto& w : f.walls)
+				{
+//					int xs =0;
+					for(auto& s : w.spellings)
+					{
+						s.total = 0.0f;
+						for(auto b : s.indices)
+						{
+							dev_assert(intrange(b,0,f.templates.size()-1));
+							s.total += f.templates[b].bounds[2];
+							s.widths.push_back(f.templates[b].bounds[2]);
+//		printf("w %d s %d = %.1lf i %d = %.1lf\n",xw,xs,s.total,b,s.widths.back());
+						}
+//		printf("w %d s %d =  %ld, %ld\n",xw,xs,s.indices.size(),s.widths.size());
+//						xs++;
+						
+					}
+					sort(w.spellings.begin(), w.spellings.end());
+//					xw++;
+				}
+				if(f.roofs.size()) o.has_roof = true;
+			}
+		}
 		process_texture_path(p,o.wall_tex);
 		process_texture_path(p,o.roof_tex);
 		WED_MakeFacadePreview(o, 10, 20);

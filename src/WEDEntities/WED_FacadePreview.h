@@ -101,17 +101,10 @@ struct REN_facade_wall_filter_t {
 
 struct REN_facade_wall_filters_t {
 	vector<REN_facade_wall_filter_t>	filters;
-	
 	bool	is_ok(xflt len, xflt rel_hdg) const;
 };
 	
-struct REN_facade_mesh_t {
-		vector<xflt> 	xyz_uv;      // 5 floats per vertex, skipping normals
-		vector<xint>	idx;
-};
-	
 struct REN_facade_template_t {
-
 	struct obj {
 		xint		idx;
 //		xint		graded;
@@ -126,12 +119,6 @@ struct REN_facade_template_t {
 	vector<obj>			objs;
 	vector<mesh>		meshes;		// Each mesh within this template.
 	xflt					bounds[3];
-//	xint					divisions;
-//	bool				stretch_base;
-//	bool				stretch_over;
-//	bool				clip_tex_base;
-//	bool				clip_tex_over;
-
 };
 
 
@@ -152,13 +139,12 @@ struct REN_facade_roof_t {
 };	
 
 struct REN_facade_floor_t {
-	string							name;
+	string							name;          // not really usedfor anything
 	vector<REN_facade_template_t>	templates;
-	vector<REN_facade_template_t>	templates_curved;
-	vector<xint>					groups;		// sorted list of group IDs used by ANY piece of ANY wall.  Used to plan iteration around the floor multiple times.
+//	vector<REN_facade_template_t>	templates_curved;
+//	vector<xint>					groups;		// sorted list of group IDs used by ANY piece of ANY wall.  Used to plan iteration around the floor multiple times.
 	xint							roof_surface;
-	vector<UTL_spelling_t>			spellings;
-//	vector<REN_facade_wall_t>		walls;
+	vector<REN_facade_wall_t>		walls;
 	vector<REN_facade_roof_t>		roofs;
 	inline xflt						max_roof_height(void) const { return roofs.empty() ? 0.0 : roofs.back().roof_height; }
 };
@@ -167,28 +153,23 @@ struct REN_facade_floor_t {
  * OLD SCHOOL V1 FACADE PIECES
  ****************************************************************************************************/
 
-
-struct	FacadeWall_t : public REN_facade_wall_filters_t {
+struct	FacadeWall_t { // : public REN_facade_wall_filters_t {
 
 	FacadeWall_t();
 
 	double			x_scale;	// From tex to meters
 	double			y_scale;
-	float			basement;	// basement height in t-ratio pixels
+	float				basement;	// basement height in t-ratio pixels
 	double			roof_slope;	// 0 = none, 1 = 45 degree ratio
 	
-	// S&T coordinates for each panel and floor
 	vector<pair<float, float> >		s_panels;
 	int								left;
 	int								center;
 	int								right;
-	
 	vector<pair<float, float> >		t_floors;
 	int								bottom;
 	int								middle;
 	int								top;
-	
-	vector<UTL_spelling_t>		spellings;
 };	
 
 // Facade scraper - defines how to combine an OBJ + facade into a two-part sky-scraper.
@@ -227,8 +208,6 @@ struct REN_facade_scraper_t {
 struct	FacadeLOD_t {
 
 	bool					tex_correct_slope;
-//	float					lod_near;
-//	float					lod_far;
 	vector<FacadeWall_t>	walls;
 	vector<double>			roof_s;
 	vector<double>			roof_t;
@@ -236,7 +215,6 @@ struct	FacadeLOD_t {
 	xflt					roof_ab[4];
 	bool					has_roof;
 };
-
 
 /**********************/
 struct fac_info_t;

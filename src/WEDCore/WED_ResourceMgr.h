@@ -71,7 +71,7 @@ struct	pol_info_t {
 
 #include "WED_FacadePreview.h"
 
-struct fac_info_t : public FacadeLOD_t, public REN_facade_floor_t {
+struct fac_info_t : public FacadeLOD_t {
 
 	fac_info_t() { is_new = false ; is_ring = true; doubled = false;  min_floors = 0; max_floors  = 999; has_roof = false; }
 
@@ -80,29 +80,29 @@ struct fac_info_t : public FacadeLOD_t, public REN_facade_floor_t {
 	string		roof_tex;
 	bool			is_ring; 	  // can be drawn as open polygon
 	
+	// Facade Scrapers
+	vector<REN_facade_scraper_t>	scrapers;
+	
 	// V1 only
 	// vector<FacadeLOD_t>		lods;  // WED does not recognize anything but the LOD that starts at 0
-
 	xint					roof_surface;
 	xint					wall_surface;
 	bool					doubled;
 	int					min_floors;	// new in 10.20 - for floor count determination, this clamps the floor range.
-	int					max_floors;	
-	
-	// V2 only
-//	list<REN_facade_floor_t>floors;
-	vector<string>		objs;			// names of type 2 objects
+	int					max_floors;
 	xflt					roof_scale_s;
 	xflt					roof_scale_t;
 	
-	// Facade Scrapers
-	vector<REN_facade_scraper_t>	scrapers;
+	// V2 only
+	list<REN_facade_floor_t>floors;
+	
+	vector<string>		objs;			// names of type 2 objects
+	
 	
 	// WED only
 	vector<string>	w_nam;        // wall names, for property window etc
-	vector<string>	w_use;        // purpose of wall, for display in preview window
-
-	vector<XObj8 *> previews;    // thats going away. We'd rather extrude a facade from a poolygon definition
+	vector<string>	w_use;        // purpose of wall, for display in preview window, only
+	vector<XObj8 *> previews;
 };
 
 struct	lin_info_t {
