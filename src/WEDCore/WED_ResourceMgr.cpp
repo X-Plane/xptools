@@ -764,11 +764,11 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& outFac, int variant
 					o.roof_st[3] = MFS_double(&s) * scale_t;
 					xflt rsx = MFS_double(&s);
 					xflt rsy = MFS_double(&s);
-					xflt s_rat = (s_ctr - o.roof_st[0]) / (o.roof_st[2] - o.roof_st[0]);
+					xflt s_rat = (s_ctr - o.roof_st[0]) / (o.roof_st[2] - o.roof_st[0]);  // fraction of tex below/left center point
 					xflt t_rat = (t_ctr - o.roof_st[1]) / (o.roof_st[3] - o.roof_st[1]);
-					o.roof_ab[0] = -rsx * s_rat;
+					o.roof_ab[0] = -rsx * s_rat;          // number of meters that are below/left of center point, always negative
 					o.roof_ab[1] = -rsy * t_rat;
-					o.roof_ab[2] = o.roof_ab[0] + rsx;
+					o.roof_ab[2] = o.roof_ab[0] + rsx;    // number of meters that are above/right of center point
 					o.roof_ab[3] = o.roof_ab[1] + rsy;
 					o.has_roof = true;
 				}
@@ -865,6 +865,12 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& outFac, int variant
 				{
 					while(MFS_has_word(&s))
 						o.floors.back().roofs.push_back(REN_facade_roof_t(MFS_double(&s)));
+				}
+				else if(MFS_string_match(&s,"ROOF_SCALE", false))
+				{
+					o.roof_scale_s = MFS_double(&s);
+					o.roof_scale_t = MFS_double(&s);
+					if (o.roof_scale_t == 0.0) o.roof_scale_t = o.roof_scale_s;
 				}
 			}
 			MFS_string_eol(&s,NULL);

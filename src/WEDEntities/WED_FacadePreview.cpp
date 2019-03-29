@@ -736,6 +736,39 @@ bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width
 		int xtra_roofs = 0;
 		if (info.is_new && bestFloor->roofs.size() > 1) xtra_roofs = bestFloor->roofs.size() - 1;
 		
+		float s_roof[2] = { 0.0, 1.0 };
+		float t_roof[2] = { 0.0, 1.0 };
+		
+		if(!info.is_new)
+		{
+			if(info.roof_s.size() == 4)
+			{
+				s_roof[0] = info.roof_s[0];
+				t_roof[0] = info.roof_t[0];
+				s_roof[1] = info.roof_s[2];
+				t_roof[1] = info.roof_t[2];
+			}
+			else
+			{
+				s_roof[0] = info.roof_st[0];
+				t_roof[0] = info.roof_st[1];
+				s_roof[1] = info.roof_st[0] + (info.roof_st[2] - info.roof_st[0]) * min(1.0,fac_width / (info.roof_ab[2] - info.roof_ab[0]));
+				t_roof[1] = info.roof_st[1] + (info.roof_st[3] - info.roof_st[1]) * min(1.0,fac_width / (info.roof_ab[2] - info.roof_ab[0]));
+				
+printf("Roof_ab[0] %.1lf Roof_ab[2] %.1lf meters\n",info.roof_ab[0],info.roof_ab[2]);
+printf("Roof_st[0] %.3lf Roof_st2[2] %.3lf\n",info.roof_st[0],info.roof_st[2]);
+printf("s_roof[0] %.3lf s_roof[1] %.3lf\n",s_roof[0],s_roof[1]);
+
+			}
+		}
+		else
+		{
+			s_roof[1] = fac_width / info.roof_scale_s;
+			t_roof[1] = fac_width / info.roof_scale_t;
+printf("roof_scale_s %.1lf roof_scale_t %.1lf meters\n",info.roof_scale_s,info.roof_scale_t);
+printf("s_roof[0] %.3lf s_roof[1] %.3lf\n",s_roof[0],s_roof[1]);
+		}
+		
 		do
 		{
 			for (int n = 0; n < 4; ++n)
@@ -747,8 +780,8 @@ bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width
 				pts[3*n+1] = roof_pts[3-n].y;     // |   |
 				pts[3*n+2] = roof_pts[3-n].z;     // 2 - 3
 				
-				tex[2*n  ] = x;  // info.roof_uv[2*i];
-				tex[2*n+1] = z;  // info.roof_uv[1+2*j];
+				tex[2*n  ] = s_roof[x];
+				tex[2*n+1] = t_roof[z];
 			}
 			StoreQuad(pts, tex, r_obj);
 			
