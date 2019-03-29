@@ -26,34 +26,15 @@
 
 /******** from REN_facade.h *******/
 
-// get the basic facade_info_t and some typedefs etc
-
 #include <list>
 
 struct  XObj8;
-typedef XObj8* obj_ref;
-
-
 typedef int xint;
 typedef float xflt;
 typedef unsigned char 	xbyt;
 #define xtrue			true
 #define xfals			false
-
-/*
-struct asset_freq {
-	xint lo;  xint hi; 
-	asset_freq( xint in_lo,  xint in_hi) : lo(in_lo), hi(in_hi) { } 
-}; 
-
-struct asset_range {
-	xint lo;  xint hi; 
-	asset_range( xint in_lo,  xint in_hi) : lo(in_lo), hi(in_hi) { } 
-}; 
-*/
-
 typedef string asset_range;
-typedef float  asset_freq;
 
 #if APL
 #include <OpenGL/glu.h>
@@ -132,7 +113,7 @@ struct REN_facade_roof_t {
 	struct robj {
 		xflt		str[3];
 		xint		obj;
-		asset_freq	freq;
+//		asset_freq	freq;
 	};
 	vector<robj>			roof_objs;
 	REN_facade_roof_t(xflt h=0.0) : roof_height(h), two_sided(xfals) { }
@@ -159,8 +140,8 @@ struct	FacadeWall_t { // : public REN_facade_wall_filters_t {
 
 	double			x_scale;	// From tex to meters
 	double			y_scale;
-	float				basement;	// basement height in t-ratio pixels
-	double			roof_slope;	// 0 = none, 1 = 45 degree ratio
+	float				basement;
+	double			roof_slope;
 	
 	vector<pair<float, float> >		s_panels;
 	int								left;
@@ -219,6 +200,6 @@ struct	FacadeLOD_t {
 /**********************/
 struct fac_info_t;
 
-bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width);   // return if object was made
+bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width, int startWall = 0);   // return if object was made
 
 #endif

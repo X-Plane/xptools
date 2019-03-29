@@ -578,7 +578,7 @@ static void StoreQuad(float * coords, float * texes, XObj8 * obj)
 			obj->indices.push_back(first_index+seq[i]);
 }
 
-bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width)
+bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width, int startWall)
 {
 	
 //		for(auto p : info.previews) delete(p);
@@ -602,6 +602,9 @@ bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width
 	int num_walls = info.is_ring ? 4 : 3;
 	vector<Point3> roof_pts;
 	const REN_facade_floor_t * bestFloor;
+	
+	Vector2 dir(0,1);
+	Point2 corner(0,0);
 
 	if(!info.is_new)
 	{
@@ -609,7 +612,7 @@ bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width
 		double insets[4];
 		for (int n = 0; n < 4; ++n)
 		{
-			int w_type = intmin2(info.walls.size()-1,n);
+			int w_type = intmin2(info.walls.size()-1,n+startWall);
 			const FacadeWall_t& me = info.walls[w_type];
 			insets[n] = info.tex_correct_slope ?
 				sin(me.roof_slope * DEG_TO_RAD) * ((me.t_floors.back().second - me.t_floors.back().first) * me.y_scale) :
@@ -617,14 +620,13 @@ bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width
 		}
 
 		Vector3 inUp(0,1,0);
-		Segment3 inBase(Point3(-fac_width/2.0,0,0),Point3(fac_width/2.0,0,0));
+		Segment3 inBase(Point3(corner.x(),0, corner.y()),Point3());
 		
 		for (int w = 0; w < num_walls; ++w)
 		{
-			int w_type = intmin2(info.walls.size()-1,w);
+			int w_type = intmin2(info.walls.size()-1,w+startWall);
 			const FacadeWall_t * fac = &info.walls[w_type];
 			
-			Vector2 dir(-cos(w*90.0*DEG_TO_RAD),sin(w*90.0*DEG_TO_RAD));
 			inBase.p1 = inBase.p2; inBase.p2 += Vector3(dir.x()*fac_width,0,fac_width*dir.y());
 			
 			Segment3 inRoof(inBase);
@@ -639,36 +641,31 @@ bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width
 			
 			roof_pts.back().y = BuildOneFacade(*fac, inBase, inRoof, fac_height, fac_panels, inUp, 
 						info.has_roof, two_sided_roof, info.doubled, info.tex_correct_slope, StoreQuad, obj);
+			dir = dir.perpendicular_cw();
 		}
 	}
 	else
 	{
 		if (info.floors.empty() || info.floors.front().walls.empty()) return false;
-		Point2 corner(-fac_width/2.0,0.0);
 		
-		bestFloor = fac_height < 10.0 ? &info.floors.front() : &info.floors.back();
+		bestFloor = &info.floors.back();
 		for(auto& f : info.floors)
-		{
-//			printf("f_roof_hgt %.1lf \n", f.max_roof_height());
 			if(f.max_roof_height() < fac_height)
 			{
-//				printf("Taken !\n");
 				bestFloor = &f;
+				break;
 			}
-		}
-		
+				
 		for (int w = 0; w < num_walls; ++w)
 		{
-			int w_type = intmin2(bestFloor->walls.size()-1,w);
+			int w_type = intmin2(bestFloor->walls.size()-1,w+startWall);
 			const REN_facade_wall_t * bestWall = &bestFloor->walls[w_type];
 			
-			roof_pts.push_back(Point3(corner.x(), bestFloor->max_roof_height(), corner.y()));
-			
-			Vector2 dir(-cos(w*90.0*DEG_TO_RAD),sin(w*90.0*DEG_TO_RAD));
 			Vector2 dir_z(dir.perpendicular_cw());
 	
 			UTL_spelling_t our_choice;
 			UTL_pick_spelling(bestWall->spellings, fac_width, our_choice, 0);
+			
 			double scale_x = fac_width / our_choice.total;
 
 //			printf("%.1lf, %.1lf : ",fac_width, our_choice.total);
@@ -678,7 +675,7 @@ bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width
 
 			for(int i = 0; i < our_choice.indices.size(); i++)
 			{
-				const REN_facade_template_t& t = info.floors.front().templates[our_choice.indices[i]];
+				const REN_facade_template_t& t = bestFloor->templates[our_choice.indices[i]];
 				for(auto m : t.meshes) // all meshes == maximum LOD detail
 				{
 					int first_idx = obj->geo_tri.count();
@@ -693,6 +690,8 @@ bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width
 				}
 				corner += dir * scale_x * t.bounds[2];
 			}
+			roof_pts.push_back(Point3(corner.x(), bestFloor->max_roof_height(), corner.y()));
+			dir = dir.perpendicular_cw();
 		}
 	}
 	

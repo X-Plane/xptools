@@ -261,8 +261,8 @@ void	WED_LibraryPreviewPane::MouseDrag(int x, int y, int button)
 		mPsi = mPsiOrig + dx * 0.5;
 		mThe = mTheOrig - dy * 0.5;
 		
-		mThe = fltlim(mThe,-89,89);             // prevent some vertical objects fading completely out of view
-		mPsi = fltwrap(mPsi,-180-45,180-45);    // adjusted for proper annotations in WED_LibraryPreviewPane::Draw
+		mThe = fltlim(mThe,-80,80);                 // prevent some vertical objects fading completely out of view
+		mPsi = fltwrap(mPsi,-720-180-45,180-45);    // adjusted for propper annotations and showing 12 walls with 4-sided buildings in WED_LibraryPreviewPane::Draw
 	}
 	Refresh();
 }
@@ -572,11 +572,12 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 			case res_Facade:
 				if (fac.previews.size() && fac.w_nam.size())
 				{
-					int side = (135-mPsi)/90.0;
-					if (side >= fac.w_nam.size()) side=0;
-					sprintf(buf1,"Showing Wall \'%s\' intended for %s @ w=%.1lf%c", fac.w_nam[side].c_str(), fac.w_use[side].c_str(), mWid / (gIsFeet ? 0.3048 : 1), gIsFeet ? '\'' : 'm');
-					
+					int side = (135.0-mPsi)/90.0;
+					int raw_side = side;
 					int n_wall = fac.w_nam.size();
+					side = max(0,min(n_wall-1,side));
+					sprintf(buf1,"Wall %d \'%s\' intended for %s @ w=%.1lf%c", raw_side, fac.w_nam[side].c_str(), fac.w_use[side].c_str(), mWid / (gIsFeet ? 0.3048 : 1), gIsFeet ? '\'' : 'm');
+					
 					int j = sprintf(buf2,"Type %d with %d wall%s%s, @ h=%.1lf", fac.is_new ? 2 : 1, n_wall, n_wall > 1 ? "s" : "",fac.scrapers.empty() ? "" : "+scraper" ,mHgt);
 
 					if (fac.min_floors < 0) 

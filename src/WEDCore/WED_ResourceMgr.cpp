@@ -642,8 +642,6 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& outFac, int variant
 			{
 				roof_section = false;
 
-//printf("Adding wall\n");
-				
 				double min_width = MFS_double(&s);
 				double max_width = MFS_double(&s);
 
@@ -806,16 +804,11 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& outFac, int variant
 					o.floors.push_back(REN_facade_floor_t());
 					o.floors.back().roof_surface = 0;
 					MFS_string(&s,&o.floors.back().name);
-					
-//printf("Adding floor %s\n",o.floors.back().name.c_str());
-
 				}
 				else if(MFS_string_match(&s,"SEGMENT", false))
 				{
 					o.floors.back().templates.push_back(REN_facade_template_t());
 					tpl = &o.floors.back().templates.back();
-
-//printf("Adding template\n");
 				}
 				else if(MFS_string_match(&s,"SEGMENT_CURVED", false))
 				{
