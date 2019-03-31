@@ -489,6 +489,23 @@ void	WED_ResourceMgr::ReceiveMessage(
 	}
 }
 
+fac_info_t * WED_ResourceMgr::GetFac(const string& path, int variant)
+{
+	map<string,vector<fac_info_t> >::iterator i = mFac.find(path);
+	if(i != mFac.end())
+	{
+		DebugAssert(variant < i->second.size());
+		return &i->second[variant];
+	}
+	fac_info_t dummyFac;
+	if(GetFac(path, dummyFac, variant))
+	{
+		i = mFac.find(path);
+		return &i->second[variant];
+	}
+	return nullptr;
+}
+
 #define FAIL(s) { printf("%s: %s\n",path.c_str(),s); return false; }
 
 bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& outFac, int variant)
@@ -628,7 +645,6 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& outFac, int variant
 					clean_rpath(file);
 					choice.towr_obj = file;
 				}
-					
 /*				while(m.TXT_has_word())
 					choice.pins.push_back(m.TXT_flt_scan());
 				if(choice.pins.size() % 1)
@@ -667,7 +683,6 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& outFac, int variant
 							o.w_nam.push_back(string("#") + to_string(o.floors.back().walls.size()));
 					}
 				}
-
 				char c[64];
 				snprintf(c, 64, "w=%.0f to %.0f%c", min_width / (gIsFeet ? 0.3048 : 1.0 ), max_width / (gIsFeet ? 0.3048 : 1.0 ), gIsFeet ? '\'' : 'm') ;
 				o.w_use.push_back(c);
@@ -925,12 +940,22 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& outFac, int variant
 					sort(w.spellings.begin(), w.spellings.end());
 //					xw++;
 				}
-				if(f.roofs.size()) o.has_roof = true;
+				if(f.roofs.size()) 
+				{
+					o.has_roof = true;
+					if(o.h_range.empty()) 
+						o.h_range = string("h=") + to_string((int) ceil(f.roofs.back().roof_height));
+					else
+						o.h_range += string(", ") + to_string((int) ceil(f.roofs.back().roof_height));
+				}
 			}
 		}
+		else
+			o.h_range = string("h=") + to_string(o.min_floors) + " to " + to_string(o.max_floors);
+			
 		process_texture_path(p,o.wall_tex);
 		process_texture_path(p,o.roof_tex);
-		WED_MakeFacadePreview(o, 10, 20);
+//		WED_MakeFacadePreview(o, 10, 20);
 
 		mFac[path].push_back(o);
 	}

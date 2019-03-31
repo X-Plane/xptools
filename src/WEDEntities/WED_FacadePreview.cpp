@@ -248,7 +248,7 @@ static	float	BuildOnePanel(      // return width of this section
 		DrawQuad(coords, texes, obj);
 	}
 	
-	return fac.s_panels[right -1].second - fac.s_panels[left    ].first;
+	return fac.s_panels[right -1].second - fac.s_panels[left].first;
 }
 
 
@@ -578,101 +578,86 @@ static void StoreQuad(float * coords, float * texes, XObj8 * obj)
 			obj->indices.push_back(first_index+seq[i]);
 }
 
-bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width, int startWall)
+bool WED_MakeFacadePreview(fac_info_t& info, int fac_height, const Polygon2& footprint, const vector<int>& choices)
 {
-	
-//		for(auto p : info.previews) delete(p);
 	XObj8 *obj;
-	XObjCmd8 cmd;
-	
 	if (info.previews.size())   // will only replace the first preview object - although there could be more
 	{
 		obj = info.previews[0];
 		obj->indices.clear();
 		obj->geo_tri.clear(8);
 		obj->lods.clear();
-		printf("Update preview for h/w %.1lf %.1lf\n", fac_height, fac_width);
 	}
 	else
-	{
-		printf("New preview for h/w %.1lf %.1lf\n", fac_height, fac_width);
 		obj = new XObj8;
-	}	
+		
 	obj->texture = info.wall_tex;
-	int num_walls = info.is_ring ? 4 : 3;
-	vector<Point3> roof_pts;
 	const REN_facade_floor_t * bestFloor;
+	vector<Point2> roof_pts;
+	double roof_height;
 	
-	Vector2 dir(0,1);
-	Point2 corner(0,0);
-
 	if(!info.is_new)
 	{
 		if (info.walls.empty())	return false;
-		double insets[4];
-		for (int n = 0; n < 4; ++n)
+		double insets[footprint.size()];
+		for (int n = 0; n < footprint.size(); ++n)
 		{
-			int w_type = intmin2(info.walls.size()-1,n+startWall);
-			const FacadeWall_t& me = info.walls[w_type];
+			const FacadeWall_t& me = info.walls[intmin2(info.walls.size()-1,choices[n])];
 			insets[n] = info.tex_correct_slope ?
 				sin(me.roof_slope * DEG_TO_RAD) * ((me.t_floors.back().second - me.t_floors.back().first) * me.y_scale) :
 				tan(me.roof_slope * DEG_TO_RAD) * ((me.t_floors.back().second - me.t_floors.back().first) * me.y_scale) ;
 		}
-
-		Vector3 inUp(0,1,0);
-		Segment3 inBase(Point3(corner.x(),0, corner.y()),Point3());
-		
-		for (int w = 0; w < num_walls; ++w)
+		for (int w = 0; w < (info.is_ring ? footprint.size() : footprint.size()-1); ++w)
 		{
-			int w_type = intmin2(info.walls.size()-1,w+startWall);
-			const FacadeWall_t * fac = &info.walls[w_type];
+			const FacadeWall_t * me = &info.walls[intmin2(info.walls.size()-1,choices[w])];
 			
-			inBase.p1 = inBase.p2; inBase.p2 += Vector3(dir.x()*fac_width,0,fac_width*dir.y());
+			Segment2 inBase(footprint.side(w));
+			Vector2 seg_dir(inBase.p1, inBase.p2);
+			double seg_length = sqrt(seg_dir.squared_length());
+			seg_dir.normalize();
+
+			Segment2 inRoof(inBase);
+			inRoof += seg_dir.perpendicular_cw() * insets[w];
+			inRoof.p1 += seg_dir * insets[w==0 ? footprint.size()-1: w-1];  // only valid if walls are at right angles
+			inRoof.p2 -= seg_dir * insets[w==footprint.size()-1 ? 0: w+1];
 			
-			Segment3 inRoof(inBase);
-			Vector3 inset_dir(dir.perpendicular_cw().x(), 0, dir.perpendicular_cw().y());
-			
-			inRoof.p1 += inset_dir * insets[w] + Vector3(dir.x(),0,dir.y()) * insets[w==0 ? 3: w-1];
-			inRoof.p2 += inset_dir * insets[w] - Vector3(dir.x(),0,dir.y()) * insets[w==3 ? 0: w+1];
+			int wall_panels = PanelsForLength(*me, seg_length);
 			roof_pts.push_back(inRoof.p1);
-			
-			int fac_panels = PanelsForLength(*fac, fac_width);
-			int two_sided_roof = 0;
-			
-			roof_pts.back().y = BuildOneFacade(*fac, inBase, inRoof, fac_height, fac_panels, inUp, 
-						info.has_roof, two_sided_roof, info.doubled, info.tex_correct_slope, StoreQuad, obj);
-			dir = dir.perpendicular_cw();
+
+			Segment3 inBase3(Point3(inBase.p1.x(),0,inBase.p1.y()),Point3(inBase.p2.x(),0,inBase.p2.y()));
+			Segment3 inRoof3(Point3(inRoof.p1.x(),0,inRoof.p1.y()),Point3(inRoof.p2.x(),0,inRoof.p2.y()));
+
+			roof_height = BuildOneFacade(*me, inBase3, inRoof3, fac_height, wall_panels, Vector3(0,1,0),
+						info.has_roof, 0, info.doubled, info.tex_correct_slope, StoreQuad, obj);
 		}
 	}
 	else
 	{
 		if (info.floors.empty() || info.floors.front().walls.empty()) return false;
-		
 		bestFloor = &info.floors.back();
 		for(auto& f : info.floors)
 			if(f.max_roof_height() < fac_height)
 			{
 				bestFloor = &f;
+				roof_height = f.max_roof_height();
 				break;
 			}
-				
-		for (int w = 0; w < num_walls; ++w)
+		for (int w = 0; w < (info.is_ring ? footprint.size() : footprint.size()-1); ++w)
 		{
-			int w_type = intmin2(bestFloor->walls.size()-1,w+startWall);
-			const REN_facade_wall_t * bestWall = &bestFloor->walls[w_type];
+			Segment2 inBase(footprint.side(w));
+			Vector2 seg_dir(inBase.p1, inBase.p2);
+			double seg_length = sqrt(seg_dir.squared_length());
+			seg_dir.normalize();
+			Vector2 dir_z(seg_dir.perpendicular_cw());
 			
-			Vector2 dir_z(dir.perpendicular_cw());
-	
+			const REN_facade_wall_t * bestWall = &bestFloor->walls[intmin2(bestFloor->walls.size()-1, choices[w])];
 			UTL_spelling_t our_choice;
-			UTL_pick_spelling(bestWall->spellings, fac_width, our_choice, 0);
+			UTL_pick_spelling(bestWall->spellings, seg_length, our_choice, 0);
+			seg_dir *= seg_length / our_choice.total;
 			
-			double scale_x = fac_width / our_choice.total;
-
-//			printf("%.1lf, %.1lf : ",fac_width, our_choice.total);
-//			for(auto i : our_choice.indices)
-//				printf(" %d ", i);
-//			printf("\n ",our_choice.total);
-
+			Point2 thisPt = footprint[w];
+			roof_pts.push_back(thisPt);
+			
 			for(int i = 0; i < our_choice.indices.size(); i++)
 			{
 				const REN_facade_template_t& t = bestFloor->templates[our_choice.indices[i]];
@@ -681,29 +666,33 @@ bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width
 					int first_idx = obj->geo_tri.count();
 					for(int v = 0; v < m.xyz_uv.size(); v +=5 )
 					{
-						Point2 xy = corner - dir_z * m.xyz_uv[v] - dir * scale_x * m.xyz_uv[v+2];
+						Point2 xy = thisPt - dir_z * m.xyz_uv[v] - seg_dir * m.xyz_uv[v+2];
 						float pt[8] = { xy.x(), m.xyz_uv[v+1], xy.y(), 0,1,0, m.xyz_uv[v+3], m.xyz_uv[v+4] };
 						obj->geo_tri.append(pt);
 					}
 					for(auto v : m.idx)	
 						obj->indices.push_back(first_idx + v);
 				}
-				corner += dir * scale_x * t.bounds[2];
+				thisPt += seg_dir * t.bounds[2];
 			}
-			roof_pts.push_back(Point3(corner.x(), bestFloor->max_roof_height(), corner.y()));
-			dir = dir.perpendicular_cw();
 		}
 	}
 	
 	obj->geo_tri.get_minmax(obj->xyz_min,obj->xyz_max);
-
+	if (obj->xyz_max[0]-obj->xyz_min[0] < 40.0)
+	{  
+		double dx = (obj->xyz_max[0]-obj->xyz_min[0]) *0.5;
+		obj->xyz_min[0] = -20+dx; obj->xyz_max[0] = 20+dx;
+		obj->xyz_min[2] = -20;    obj->xyz_max[2] = 20; 
+	}
+	                               
 	obj->lods.push_back(XObjLOD8());
 	obj->lods.back().lod_near = 0;
 	obj->lods.back().lod_far  = 1000;
 
-	cmd.cmd = attr_NoCull;
-	obj->lods.back().cmds.push_back(cmd);
-	
+	XObjCmd8 cmd;
+//	cmd.cmd = attr_NoCull;
+//	obj->lods.back().cmds.push_back(cmd);
 	cmd.cmd = obj8_Tris;
 	cmd.idx_offset = 0;
 	cmd.idx_count  = obj->indices.size();
@@ -715,9 +704,9 @@ bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width
 #if 1
 	if (info.has_roof)
 	{
-	
-	printf("drawing roof\n");
 		XObj8 * r_obj;
+		double fac_width = sqrt(Vector2(roof_pts[0], roof_pts[1]).squared_length());
+		
 		if (info.previews.size() > 1)
 		{
 			r_obj = info.previews[1];
@@ -730,12 +719,6 @@ bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width
 			
 		r_obj->texture = info.roof_tex;
 		
-		float pts[12];
-		float tex[8];
-		
-		int xtra_roofs = 0;
-		if (info.is_new && bestFloor->roofs.size() > 1) xtra_roofs = bestFloor->roofs.size() - 1;
-		
 		float s_roof[2] = { 0.0, 1.0 };
 		float t_roof[2] = { 0.0, 1.0 };
 		
@@ -743,10 +726,8 @@ bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width
 		{
 			if(info.roof_s.size() == 4)
 			{
-				s_roof[0] = info.roof_s[0];
-				t_roof[0] = info.roof_t[0];
-				s_roof[1] = info.roof_s[2];
-				t_roof[1] = info.roof_t[2];
+				s_roof[0] = info.roof_s[0];	t_roof[0] = info.roof_t[0];
+				s_roof[1] = info.roof_s[2];	t_roof[1] = info.roof_t[2];
 			}
 			else
 			{
@@ -755,30 +736,34 @@ bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width
 				s_roof[1] = info.roof_st[0] + (info.roof_st[2] - info.roof_st[0]) * min(1.0,fac_width / (info.roof_ab[2] - info.roof_ab[0]));
 				t_roof[1] = info.roof_st[1] + (info.roof_st[3] - info.roof_st[1]) * min(1.0,fac_width / (info.roof_ab[2] - info.roof_ab[0]));
 				
-printf("Roof_ab[0] %.1lf Roof_ab[2] %.1lf meters\n",info.roof_ab[0],info.roof_ab[2]);
-printf("Roof_st[0] %.3lf Roof_st2[2] %.3lf\n",info.roof_st[0],info.roof_st[2]);
-printf("s_roof[0] %.3lf s_roof[1] %.3lf\n",s_roof[0],s_roof[1]);
-
+//printf("Roof_ab[0] %.1lf Roof_ab[2] %.1lf meters\n",info.roof_ab[0],info.roof_ab[2]);
+//printf("Roof_st[0] %.3lf Roof_st2[2] %.3lf\n",info.roof_st[0],info.roof_st[2]);
+//printf("s_roof[0] %.3lf s_roof[1] %.3lf\n",s_roof[0],s_roof[1]);
 			}
 		}
 		else
 		{
 			s_roof[1] = fac_width / info.roof_scale_s;
 			t_roof[1] = fac_width / info.roof_scale_t;
-printf("roof_scale_s %.1lf roof_scale_t %.1lf meters\n",info.roof_scale_s,info.roof_scale_t);
-printf("s_roof[0] %.3lf s_roof[1] %.3lf\n",s_roof[0],s_roof[1]);
+//printf("roof_scale_s %.1lf roof_scale_t %.1lf meters\n",info.roof_scale_s,info.roof_scale_t);
+//printf("s_roof[0] %.3lf s_roof[1] %.3lf\n",s_roof[0],s_roof[1]);
 		}
+		
+		int xtra_roofs = 0;
+		if (info.is_new && bestFloor->roofs.size() > 1) xtra_roofs = bestFloor->roofs.size() - 1;
 		
 		do
 		{
-			for (int n = 0; n < 4; ++n)
+			float pts[12];
+			float tex[8];
+			for (int n = 0; n < roof_pts.size(); ++n)
 			{
 				int x = n == 0 || n == 3;
 				int z = n < 2;
 				
-				pts[3*n  ] = roof_pts[3-n].x;     // 1 - 0
-				pts[3*n+1] = roof_pts[3-n].y;     // |   |
-				pts[3*n+2] = roof_pts[3-n].z;     // 2 - 3
+				pts[3*n  ] = roof_pts[3-n].x();     // 1 - 0
+				pts[3*n+1] = roof_height;           // |   |
+				pts[3*n+2] = roof_pts[3-n].y();     // 2 - 3
 				
 				tex[2*n  ] = s_roof[x];
 				tex[2*n+1] = t_roof[z];
@@ -787,12 +772,7 @@ printf("s_roof[0] %.3lf s_roof[1] %.3lf\n",s_roof[0],s_roof[1]);
 			
 			xtra_roofs--;
 			if(xtra_roofs >= 0)
-			{
-				printf("drawing xtra_roof @ %.1lf\n",bestFloor->roofs[xtra_roofs].roof_height);
-
-				for(int n = 0; n < 4; ++n)
-					roof_pts[n].y = bestFloor->roofs[xtra_roofs].roof_height;
-			}
+				roof_height = bestFloor->roofs[xtra_roofs].roof_height;
 		}
 		while (xtra_roofs >=0);
 			
@@ -804,7 +784,6 @@ printf("s_roof[0] %.3lf s_roof[1] %.3lf\n",s_roof[0],s_roof[1]);
 
 		cmd.cmd = attr_NoCull;
 		r_obj->lods.back().cmds.push_back(cmd);
-
 		cmd.cmd = obj8_Tris;
 		cmd.idx_offset = 0;
 		cmd.idx_count  = r_obj->indices.size();

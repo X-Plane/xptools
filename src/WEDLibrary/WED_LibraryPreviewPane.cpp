@@ -53,6 +53,30 @@ enum {
 	next_variant = GUI_APP_MESSAGES
 };
 
+void WED_LibraryPreviewPane::UpdateFacadePreview(void)
+{
+	Polygon2 footprint;
+	vector<int> choices;
+	fac_info_t * fac = mResMgr->GetFac(mRes, mVariant);
+	Vector2 dir(0,mWid);
+	Point2 corner(0,-mWid*0.5);
+	int num_walls = fac->is_ring ? 4 : 3;
+	
+	int total_walls = fac->w_nam.size();
+	int frontside = intlim((135.0-mPsi)/90.0, 0, total_walls-1);
+	
+	int next_turn = frontside > 3;
+	
+	for (int n = 0; n < 4; ++n)
+	{
+		choices.push_back(n + 4 * next_turn);
+		footprint.push_back(corner);
+		corner += dir;
+		dir = dir.perpendicular_cw();
+	}
+	WED_MakeFacadePreview(*fac, mHgt, footprint, choices);
+}
+
 
 WED_LibraryPreviewPane::WED_LibraryPreviewPane(WED_ResourceMgr * res_mgr, ITexMgr * tex_mgr) : mResMgr(res_mgr), mTexMgr(tex_mgr),mZoom(1.0),
                                mPsi(10.0f),mThe(10.0f), mHgt(10.0f), mWid(20.0f)
@@ -84,9 +108,8 @@ void		WED_LibraryPreviewPane::ReceiveMessage(GUI_Broadcaster * inSrc, intptr_t i
 		char s[16]; sprintf(s,"%d/%d",mVariant+1,mNumVariants);
 		mNextButton->SetDescriptor(s);
 		
-		fac_info_t fac;
-		mResMgr->GetFac(mRes, fac, mVariant);
-		WED_MakeFacadePreview(fac, mHgt, mWid);
+		if(mType == res_Facade)
+			UpdateFacadePreview();
 	}
 }
 
@@ -109,10 +132,8 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 			mNextButton->Hide();
 		mHgt = 10.0;
 		mWid = 20.0;
-		
-		fac_info_t fac;
-		mResMgr->GetFac(mRes, fac, mVariant);
-		WED_MakeFacadePreview(fac, mHgt, mWid);
+		if(mType == res_Facade)
+			UpdateFacadePreview();
 	}
 	else
 	{
@@ -249,12 +270,7 @@ void	WED_LibraryPreviewPane::MouseDrag(int x, int y, int button)
 		mWid = fltlim(mWid,1,150);
 
 //printf("Drag %.1lf %.1lf\n", dx, dy);
-//		if ( fabs(oldHgt-mHgt) >= 1.0 || fabs(oldWid-mWid) >= 1.0)
-		{
-			fac_info_t fac;
-			mResMgr->GetFac(mRes, fac, mVariant);
-			WED_MakeFacadePreview(fac, mHgt, mWid);
-		}
+		UpdateFacadePreview();
 	}
 	else
 	{
@@ -263,6 +279,9 @@ void	WED_LibraryPreviewPane::MouseDrag(int x, int y, int button)
 		
 		mThe = fltlim(mThe,-80,80);                 // prevent some vertical objects fading completely out of view
 		mPsi = fltwrap(mPsi,-720-180-45,180-45);    // adjusted for propper annotations and showing 12 walls with 4-sided buildings in WED_LibraryPreviewPane::Draw
+		
+		if( ((mPsi < -180) != (mPsiOrig < -180)) && mType == res_Facade)
+			UpdateFacadePreview();
 	}
 	Refresh();
 }
@@ -462,23 +481,23 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 									xyz_off[0] + f.choices[0].base_xzr[0],
 									xyz_off[1] + hgt,
 									xyz_off[2] + f.choices[0].base_xzr[1],
-									f.choices[0].base_xzr[2], g);
+									f.choices[0].base_xzr[2]-90, g);
 							} 
 						}
 						string scp_twr(f.choices[0].towr_obj);
 						if(!scp_twr.empty())
 						{
-	 printf("Doing scraper %s, hgt=%.1f\n",scp_twr.c_str(), hgt);
+//	 printf("Doing scraper %s, hgt=%.1f\n",scp_twr.c_str(), hgt);
 							XObj8 * oo;
 							if(mResMgr->GetObjRelative(scp_twr, mRes, oo))
 							{
-	 printf("Got oo\n");
+//	 printf("Got oo\n");
 								// facade is aligned so midpoint of first wall is origin
 								draw_obj_at_xyz(mTexMgr, oo,
 									xyz_off[0] + f.choices[0].towr_xzr[0],
 									xyz_off[1] + hgt,
 									xyz_off[2] + f.choices[0].towr_xzr[1],
-									f.choices[0].towr_xzr[2], g);
+									f.choices[0].towr_xzr[2]-90, g);
 							} 
 						}
 						break;
@@ -576,17 +595,13 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 					int raw_side = side;
 					int n_wall = fac.w_nam.size();
 					side = max(0,min(n_wall-1,side));
-					sprintf(buf1,"Wall %d \'%s\' intended for %s @ w=%.1lf%c", raw_side, fac.w_nam[side].c_str(), fac.w_use[side].c_str(), mWid / (gIsFeet ? 0.3048 : 1), gIsFeet ? '\'' : 'm');
-					
-					int j = sprintf(buf2,"Type %d with %d wall%s%s, @ h=%.1lf", fac.is_new ? 2 : 1, n_wall, n_wall > 1 ? "s" : "",fac.scrapers.empty() ? "" : "+scraper" ,mHgt);
-
-					if (fac.min_floors < 0) 
-						sprintf(buf2+j,", h=%d only", fac.max_floors);
-					else
-						sprintf(buf2+j,", h=%d to %d", fac.min_floors, fac.max_floors);
+					snprintf(buf1,100,"Wall %d \'%s\' intended for %s @ w=%.1lf%c", raw_side, fac.w_nam[side].c_str(), fac.w_use[side].c_str(), 
+						mWid / (gIsFeet ? 0.3048 : 1), gIsFeet ? '\'' : 'm');
+					snprintf(buf2,100,"Type %d with %d wall%s%s, %s, @ h=%.1lf", fac.is_new ? 2 : 1, n_wall, n_wall > 1 ? "s" : "", 
+						fac.scrapers.empty() ? "" : "+scraper" ,fac.h_range.c_str(), mHgt);
 				}
 				else
-					sprintf(buf2,"No preview for this facde type available, yet");
+					sprintf(buf2,"No preview for this facade available");
 				break;
 			case res_Polygon:
 				if (pol.hasDecal)

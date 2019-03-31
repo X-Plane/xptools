@@ -73,7 +73,7 @@ struct	pol_info_t {
 
 struct fac_info_t : public FacadeLOD_t {
 
-	fac_info_t() { is_new = false ; is_ring = true; doubled = false;  min_floors = 0; max_floors  = 999; has_roof = false; }
+	fac_info_t() { is_new = false ; is_ring = true; doubled = false;  min_floors = 1; max_floors  = 999; has_roof = false; }
 
 	bool			is_new;       // set if version 1000, aka type 2
 	string		wall_tex;
@@ -101,7 +101,8 @@ struct fac_info_t : public FacadeLOD_t {
 	
 	// WED only
 	vector<string>	w_nam;        // wall names, for property window etc
-	vector<string>	w_use;        // purpose of wall, for display in preview window, only
+	vector<string>	w_use;        // official width range supported by this wall
+	string         h_range;      // official heights (or height range) of the facade
 	vector<XObj8 *> previews;
 };
 
@@ -149,6 +150,7 @@ public:
 			void	Purge(void);
 
 			bool	GetFac(const string& path, fac_info_t& out_info, int variant =0);
+	fac_info_t * GetFac(const string& path, int variant =0);
 			bool	GetPol(const string& path, pol_info_t& out_info);
 			bool 	SetPolUV(const string& path, Bbox2 box);
 			bool	GetLin(const string& path, lin_info_t& out_info);

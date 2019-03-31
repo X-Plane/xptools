@@ -200,6 +200,8 @@ struct	FacadeLOD_t {
 /**********************/
 struct fac_info_t;
 
-bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width, int startWall = 0);   // return if object was made
+//bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width, int startWall = 0);   // return if object was made
+bool WED_MakeFacadePreview(fac_info_t& info, int fac_height, const Polygon2& footprint, const vector<int>& choices);
+
 
 #endif
