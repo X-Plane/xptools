@@ -53,33 +53,8 @@ enum {
 	next_variant = GUI_APP_MESSAGES
 };
 
-void WED_LibraryPreviewPane::UpdateFacadePreview(void)
-{
-	Polygon2 footprint;
-	vector<int> choices;
-	fac_info_t * fac = mResMgr->GetFac(mRes, mVariant);
-	Vector2 dir(0,mWid);
-	Point2 corner(0,-mWid*0.5);
-	int num_walls = fac->is_ring ? 4 : 3;
-	
-	int total_walls = fac->w_nam.size();
-	int frontside = intlim((135.0-mPsi)/90.0, 0, total_walls-1);
-	
-	int next_turn = frontside > 3;
-	
-	for (int n = 0; n < 4; ++n)
-	{
-		choices.push_back(n + 4 * next_turn);
-		footprint.push_back(corner);
-		corner += dir;
-		dir = dir.perpendicular_cw();
-	}
-	WED_MakeFacadePreview(*fac, mHgt, footprint, choices);
-}
-
-
 WED_LibraryPreviewPane::WED_LibraryPreviewPane(WED_ResourceMgr * res_mgr, ITexMgr * tex_mgr) : mResMgr(res_mgr), mTexMgr(tex_mgr),mZoom(1.0),
-                               mPsi(10.0f),mThe(10.0f), mHgt(10.0f), mWid(20.0f)
+                               mPsi(10.0f),mThe(10.0f), mHgt(10), mWid(20.0f), mWalls(4)
 {
 		int k_reg[4] = { 0, 0, 1, 3 };
 		int k_hil[4] = { 0, 1, 1, 3 };
@@ -107,9 +82,6 @@ void		WED_LibraryPreviewPane::ReceiveMessage(GUI_Broadcaster * inSrc, intptr_t i
 		
 		char s[16]; sprintf(s,"%d/%d",mVariant+1,mNumVariants);
 		mNextButton->SetDescriptor(s);
-		
-		if(mType == res_Facade)
-			UpdateFacadePreview();
 	}
 }
 
@@ -130,10 +102,15 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 		}
 		else
 			mNextButton->Hide();
-		mHgt = 10.0;
-		mWid = 20.0;
-		if(mType == res_Facade)
-			UpdateFacadePreview();
+	
+		if(res_type == res_Facade)
+		{
+			fac_info_t fac;
+			mResMgr->GetFac(mRes,fac);
+			mWalls = intlim(fac.wallName.size(),4,12);
+			mHgt = fac.is_new ? 10 : fac.min_floors;
+			mWid = 20.0;
+		}	
 	}
 	else
 	{
@@ -260,28 +237,24 @@ void	WED_LibraryPreviewPane::MouseDrag(int x, int y, int button)
 	
 	if(mType == res_Facade && button == 1)
 	{
-		float oldHgt = mHgt;
-		mHgt = mHgtOrig + (fabs(dy) < 50.0 ? dy * 0.1 : sign(dy)*(abs(dy)-45.0)) * 0.5;
-		mHgt = fltlim(mHgt,0,250);
+		int oldHgt = mHgt;
+		mHgt = mHgtOrig + (fabs(dy) < 100.0 ? dy * 0.1 : sign(dy)*(fabs(dy)-80) * 0.5);
+		mHgt = intlim(mHgt,0,250);
 		
 		float oldWid = mWid;
-		mWid = mWidOrig + (fabs(dx) < 50.0 ? dx * 0.1 : sign(dx)*(abs(dx)-45.0)) * 0.5;
-//		mWid = mWidOrig + dx * 0.1;
+		mWid = mWidOrig + (fabs(dx) < 100.0 ? dx * 0.2 : sign(dx)*(fabs(dx)-60.0) * 0.5);
 		mWid = fltlim(mWid,1,150);
-
-//printf("Drag %.1lf %.1lf\n", dx, dy);
-		UpdateFacadePreview();
 	}
 	else
 	{
 		mPsi = mPsiOrig + dx * 0.5;
 		mThe = mTheOrig - dy * 0.5;
 		
-		mThe = fltlim(mThe,-80,80);                 // prevent some vertical objects fading completely out of view
-		mPsi = fltwrap(mPsi,-720-180-45,180-45);    // adjusted for propper annotations and showing 12 walls with 4-sided buildings in WED_LibraryPreviewPane::Draw
-		
-		if( ((mPsi < -180) != (mPsiOrig < -180)) && mType == res_Facade)
-			UpdateFacadePreview();
+		mThe = fltlim(mThe,-85,85);                 // prevent some vertical objects fading completely out of view
+		if (mType == res_Facade)
+			mPsi = fltwrap(mPsi, 180-90*mWalls-45,180-45);  // adjusted for propper annotations and showing mmore than 4 walls
+		else
+			mPsi = fltwrap(mPsi,-180,180);
 	}
 	Refresh();
 }
@@ -399,6 +372,136 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				}
 			}
 			break;
+		case res_Facade:
+			if (mResMgr->GetFac(mRes, fac, mVariant))
+			{
+				float sx = ((dx > dy) ? (dx / dy) : 1.0)/2;
+				float sy = ((dx > dy) ? 1.0 : (dy / dx))/2;
+
+				double real_radius = fltmax2(40.0,pythag(1.4*mWid,mHgt));
+				double approx_radius = real_radius * mZoom;
+
+				Polygon2 footprint;
+				vector<int> choices;
+				fac_info_t * fac = mResMgr->GetFac(mRes, mVariant);
+				Vector2 dir(0,mWid);
+				Point2 corner(0,-mWid*0.5);
+				int num_walls = fac->is_ring ? 4 : 3;
+
+				int front_side = (180-mPsi)/90;
+				
+				for (int n = 0; n < 4; ++n)
+					{
+						choices.push_back(intlim(n,0,fac->wallName.size()-1));
+						footprint.push_back(corner);
+						corner += dir;
+						dir = dir.perpendicular_cw();
+					}
+
+				front_side = intlim(front_side-1,0,fac->wallName.size()-1);
+				int front_idx = front_side % 4;
+					
+//printf("Front = %d\n",front_side);
+//printf("Reassign c[%d]=%d\n",(front_idx-1+4) % 4, intlim(front_side-1,0,fac->w_nam.size()-1));
+				choices[(front_idx-1+4) % 4] = intlim(front_side-1,0,fac->wallName.size()-1);
+
+//printf("Reassign c[%d]=%d\n",front_idx, front_side);
+				choices[front_idx] = front_side;
+
+//printf("Reassign c[%d]=%d\n",(front_idx+1) % 4, intlim(front_side+1,0,fac->w_nam.size()-1));
+				choices[(front_idx+1) % 4] = intlim(front_side+1,0,fac->wallName.size()-1);
+				
+//printf("Reassign c[%d]=%d\n\n",(front_idx+2) % 4, intlim(front_side+2,0,fac->w_nam.size()-1));
+				choices[(front_idx+2) % 4] = intlim(front_side+2,0,fac->wallName.size()-1);
+
+				g->EnableAlpha(true, true);
+	
+				glPushAttrib(GL_VIEWPORT_BIT);
+				glViewport(b[0],b[1],b[2]-b[0],b[3]-b[1]);
+				glMatrixMode(GL_PROJECTION);
+				glPushMatrix();
+				glLoadIdentity();
+				glOrtho(sx * -approx_radius,sx * approx_radius,sy * -approx_radius,sy * approx_radius, -real_radius, real_radius);
+				//glFrustum(sx * -approx_radius,sx * approx_radius,sy * -approx_radius,sy * approx_radius, -5.0*approx_radius,5.0*approx_radius); // near and far must be positive => shift whole view back
+				glMatrixMode(GL_MODELVIEW);
+				glPushMatrix();
+				glLoadIdentity();			
+				glRotatef(mThe,1,0,0);
+				glRotatef(mPsi,0,1,0);
+				
+				glTranslatef(-mWid*0.5,0.0,0.0);
+				
+				g->EnableDepth(true,true);
+				glClear(GL_DEPTH_BUFFER_BIT);
+				glEnable(GL_CULL_FACE);
+				
+				draw_facade(mTexMgr, *fac, footprint, choices, mHgt, g);
+				
+				// draw "ground" plane
+				g->SetTexUnits(0);
+				if(mRes.find("piers") != mRes.npos)
+					glColor4f(0.0, 0.2, 0.4, 0.7);
+				else
+					glColor4f(0.7, 0.7, 0.7, 0.8);
+				glDisable(GL_CULL_FACE);
+				glBegin(GL_POLYGON);
+				for (auto f : footprint)
+					glVertex3f(f.x() + 2.0 * (f.x() > 0.0 ? mWid : -mWid), -0.01, 
+								  f.y() + 2.0 * (f.y() > 0.0 ? mWid : -mWid) );
+				glEnd();
+				
+				for(auto l : fac->obj_locs)
+				{
+					XObj8 * oo;
+					if(mResMgr->GetObjRelative(fac->objs[l.idx].c_str(), mRes, oo))
+					{
+						// facade is aligned so midpoint of first wall is origin
+						draw_obj_at_xyz(mTexMgr, oo,
+							l.xyzr[0], l.xyzr[1], l.xyzr[2],
+							l.xyzr[3], g);
+					} 
+				}
+				
+				for(auto f : fac->scrapers)
+				{
+					if(fltrange(mHgt,f.min_agl,f.max_agl))
+					{
+						int floors = (mHgt - f.min_agl) / f.step_agl;
+						double hgt = floors * f.step_agl;
+						string scp_base(f.choices[0].base_obj);
+						if(!scp_base.empty())
+						{
+							XObj8 * oo;
+							if(mResMgr->GetObjRelative(scp_base, mRes, oo))
+							{
+								// facade is aligned so midpoint of first wall is origin
+								draw_obj_at_xyz(mTexMgr, oo,
+									f.choices[0].base_xzr[0], hgt, f.choices[0].base_xzr[1],
+									f.choices[0].base_xzr[2]-90, g);
+							} 
+						}
+						string scp_twr(f.choices[0].towr_obj);
+						if(!scp_twr.empty())
+						{
+							XObj8 * oo;
+							if(mResMgr->GetObjRelative(scp_twr, mRes, oo))
+							{
+								draw_obj_at_xyz(mTexMgr, oo,
+									f.choices[0].towr_xzr[0], hgt, f.choices[0].towr_xzr[1],
+									f.choices[0].towr_xzr[2]-90, g);
+							} 
+						}
+						break;
+					}
+				}
+
+				glMatrixMode(GL_PROJECTION);
+				glPopMatrix();
+				glMatrixMode(GL_MODELVIEW);
+				glPopMatrix();
+				glPopAttrib();
+			}
+			break;
 		case res_Forest:
 			if(!mResMgr->GetFor(mRes,o))
 				break;
@@ -409,20 +512,6 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				if(mResMgr->GetStr(mRes,str))
 					o = str.previews[0];             // do the cheap thing: show only the first object. Could show a whole line ...
 			}
-#if 1 
-		// facade preview, not yet ready for primetime
-		case res_Facade:
-			if(!o)
-			{
-				if (mResMgr->GetFac(mRes, fac, mVariant))
-				{
-					if (fac.previews.size()) o = fac.previews[0];
-					o_vec = fac.previews;
-				}
-				else
-					break;
-			}
-#endif
 		case res_Object:
 			float sx = ((dx > dy) ? (dx / dy) : 1.0)/2;
 			float sy = ((dx > dy) ? 1.0 : (dy / dx))/2;
@@ -462,48 +551,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 					draw_obj_at_xyz(mTexMgr, o_vec[1],
 						xyz_off[0], xyz_off[1], xyz_off[2],
 						0, g);
-						
-				if(mType == res_Facade && !fac.scrapers.empty())
-				for(auto f : fac.scrapers)
-				{
-					if(fltrange(mHgt,f.min_agl,f.max_agl))
-					{
-						int floors = (mHgt - f.min_agl) / f.step_agl;
-						double hgt = floors * f.step_agl;
-						string scp_base(f.choices[0].base_obj);
-						if(!scp_base.empty())
-						{
-							XObj8 * oo;
-							if(mResMgr->GetObjRelative(scp_base, mRes, oo))
-							{
-								// facade is aligned so midpoint of first wall is origin
-								draw_obj_at_xyz(mTexMgr, oo,
-									xyz_off[0] + f.choices[0].base_xzr[0],
-									xyz_off[1] + hgt,
-									xyz_off[2] + f.choices[0].base_xzr[1],
-									f.choices[0].base_xzr[2]-90, g);
-							} 
-						}
-						string scp_twr(f.choices[0].towr_obj);
-						if(!scp_twr.empty())
-						{
-//	 printf("Doing scraper %s, hgt=%.1f\n",scp_twr.c_str(), hgt);
-							XObj8 * oo;
-							if(mResMgr->GetObjRelative(scp_twr, mRes, oo))
-							{
-//	 printf("Got oo\n");
-								// facade is aligned so midpoint of first wall is origin
-								draw_obj_at_xyz(mTexMgr, oo,
-									xyz_off[0] + f.choices[0].towr_xzr[0],
-									xyz_off[1] + hgt,
-									xyz_off[2] + f.choices[0].towr_xzr[1],
-									f.choices[0].towr_xzr[2]-90, g);
-							} 
-						}
-						break;
-					}
-				}
-					
+
 				glMatrixMode(GL_PROJECTION);
 				glPopMatrix();
 				glMatrixMode(GL_MODELVIEW);
@@ -585,19 +633,19 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 		}
 		
 		// plot some additional information about the previewed object
-		char buf1[100] = "", buf2[100] = "";
+		char buf1[120] = "", buf2[120] = "";
 		switch(mType)
 		{
 			case res_Facade:
-				if (fac.previews.size() && fac.w_nam.size())
+				if (fac.wallName.size())
 				{
 					int side = (135.0-mPsi)/90.0;
 					int raw_side = side;
-					int n_wall = fac.w_nam.size();
+					int n_wall = fac.wallName.size();
 					side = max(0,min(n_wall-1,side));
-					snprintf(buf1,100,"Wall %d \'%s\' intended for %s @ w=%.1lf%c", raw_side, fac.w_nam[side].c_str(), fac.w_use[side].c_str(), 
+					snprintf(buf1,120,"Wall %d \'%s\' intended for %s @ w=%.1lf%c", raw_side, fac.wallName[side].c_str(), fac.wallUse[side].c_str(), 
 						mWid / (gIsFeet ? 0.3048 : 1), gIsFeet ? '\'' : 'm');
-					snprintf(buf2,100,"Type %d with %d wall%s%s, %s, @ h=%.1lf", fac.is_new ? 2 : 1, n_wall, n_wall > 1 ? "s" : "", 
+					snprintf(buf2,120,"Type %d with %d wall%s%s, %s, @ h=%d", fac.is_new ? 2 : 1, n_wall, n_wall > 1 ? "s" : "", 
 						fac.scrapers.empty() ? "" : "+scraper" ,fac.h_range.c_str(), mHgt);
 				}
 				else

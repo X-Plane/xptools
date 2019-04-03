@@ -97,13 +97,16 @@ struct fac_info_t : public FacadeLOD_t {
 	list<REN_facade_floor_t>floors;
 	
 	vector<string>		objs;			// names of type 2 objects
-	
-	
 	// WED only
-	vector<string>	w_nam;        // wall names, for property window etc
-	vector<string>	w_use;        // official width range supported by this wall
-	string         h_range;      // official heights (or height range) of the facade
-	vector<XObj8 *> previews;
+	struct obj {
+		int 	idx;                 // index to type 2 objects
+		xflt	xyzr[4];
+	};
+	vector<obj>		obj_locs;		// filled out by draw_facade(), so the attached objects can be drawn afterwards
+	
+	vector<string>	wallName;      // wall names, for property window etc
+	vector<string>	wallUse;       // official width range supported by this wall
+	string         h_range;       // official heights (or height range) of the facade
 };
 
 struct	lin_info_t {

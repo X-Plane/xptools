@@ -31,7 +31,7 @@ DEFINE_PERSISTENT(WED_FacadePlacement)
 TRIVIAL_COPY(WED_FacadePlacement,WED_GISPolygon)
 
 WED_FacadePlacement::WED_FacadePlacement(WED_Archive * a, int i) : WED_GISPolygon(a,i),
-	height    (this,PROP_Name("Height",    XML_Name("facade_placement","height")),10.0,3,1),
+	height    (this,PROP_Name("Height",    XML_Name("facade_placement","height")),10,3),
 #if AIRPORT_ROUTING
 	pick_walls(this,PROP_Name("Pick Walls",XML_Name("facade_placement","pick_walls")),0),
 #endif	
@@ -105,25 +105,6 @@ WED_FacadePlacement::TopoMode		WED_FacadePlacement::GetTopoMode(void) const
 	}
 	return topo_Area;
 }
-
-//void		WED_FacadePlacement::GetWallChoices(vector<int>& out_walls)
-//{
-//	out_walls.clear();
-//	if (pick_walls.value)
-//	{
-//		for(int h = -1; h < GetNumHoles(); ++h)
-//		{
-//			IGISPointSequence * s = (h == -1) ? GetOuterRing() : GetNthHole(h);
-//			for(int n = 0; n < s->GetNumSides(); ++n)
-//			{
-//				IGISPoint * p = s->GetNthPoint(n);
-//				WED_FacadeNode * n = dynamic_cast<WED_FacadeNode *>(p);
-//				if(n)
-//					out_walls.push_back(n->GetWallType());
-//			}
-//		}
-//	}
-//}
 
 #if AIRPORT_ROUTING
 bool		WED_FacadePlacement::HasLayer		(GISLayer_t layer							  ) const

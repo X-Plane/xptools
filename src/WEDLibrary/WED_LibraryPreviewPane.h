@@ -56,8 +56,9 @@ private:
 		int				mX, mY;
 		float				mPsi,mThe;
 		float				mPsiOrig,mTheOrig;
-		float				mHgt,mWid;
-		float				mHgtOrig,mWidOrig;
+		int				mHgt,mHgtOrig;
+		int				mWalls;          // maximum number of walls for Facade preview
+		float				mWid,mWidOrig;
 
 		float				mZoom;
 		WED_ResourceMgr *	mResMgr;

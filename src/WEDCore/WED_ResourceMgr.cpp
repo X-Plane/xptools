@@ -66,10 +66,6 @@ void	WED_ResourceMgr::Purge(void)
 			delete *j;
 	for(map<string, XObj8 *>::iterator i = mFor.begin(); i != mFor.end(); ++i)
 		delete i->second;
-	for(map<string, vector<fac_info_t> >::iterator i = mFac.begin(); i != mFac.end(); ++i)
-		for(vector<fac_info_t>::iterator j = i->second.begin(); j != i->second.end(); ++j)
-			for(vector<XObj8 *>::iterator k = j->previews.begin(); k != j->previews.end(); ++k)
-				delete *k;
 	for(map<string, str_info_t>::iterator i = mStr.begin(); i != mStr.end(); ++i)
 		for(vector<XObj8 *>::iterator j = i->second.previews.begin(); j != i->second.previews.end(); ++j)
 			delete *j;
@@ -338,17 +334,8 @@ bool	WED_ResourceMgr::GetStr(const string& path, str_info_t& out_info)
 			XObj8 * obj = new XObj8;
 			if(!XObj8Read(obj_res.c_str(),*obj))
 			{
-				XObj obj7;
-				if(XObjRead(obj_res.c_str(),obj7))
-				{
-					Obj7ToObj8(obj7,*obj);
-				}
-				else
-				{
-					delete obj;
-					obj = NULL;
-					return false;
-				}
+				delete obj;
+				return false;
 			}
 			if (obj->texture.length() > 0) 	process_texture_path(p,obj->texture);
 			if (obj->texture_draped.length() > 0)
@@ -534,7 +521,7 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& outFac, int variant
 		MFScanner	s;
 		MFS_init(&s, fac);
 
-		int v,versions[] = { 800,1000, 0 };
+		int v,versions[] = { 800,900,1000, 0 };
 		if ((v = MFS_xplane_header(&s,versions,"FACADE",NULL)) == 0)
 		{
 			MemFile_Close(fac);
@@ -592,7 +579,7 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& outFac, int variant
 			}
 			else if (MFS_string_match(&s,"FACADE_SCRAPER_MODEL",false))
 			{
-				REN_facade_tower_t choice;
+				REN_facade_scraper_t::tower_t choice;
 				if(o.scrapers.empty())
 					FAIL("Cannot have FACADE_SCRAPER_MODEL without FACADE_SCRAPER.")
 				string file;
@@ -623,7 +610,7 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& outFac, int variant
 			{
 				if(o.scrapers.empty())
 					FAIL("Cannot have FACADE_SCRAPER_MODEL_OFFSET without FACADE_SCRAPER.")
-				REN_facade_tower_t choice;
+				REN_facade_scraper_t::tower_t choice;
 				string file;
 				choice.base_xzr[0] = MFS_double(&s);
 				choice.base_xzr[1] = MFS_double(&s);
@@ -664,7 +651,7 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& outFac, int variant
 				if(!o.is_new)
 				{
 					o.walls.push_back(FacadeWall_t());
-					o.w_nam.push_back(string("#") + to_string(o.walls.size()));
+					o.wallName.push_back(string("#") + to_string(o.walls.size()));
 				}
 				else
 				{
@@ -678,14 +665,14 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& outFac, int variant
 					{
 						string buf;	MFS_string(&s,&buf);
 						if(!buf.empty()) 
-							o.w_nam.push_back(buf);
+							o.wallName.push_back(buf);
 						else
-							o.w_nam.push_back(string("#") + to_string(o.floors.back().walls.size()));
+							o.wallName.push_back(string("#") + to_string(o.floors.back().walls.size()));
 					}
 				}
 				char c[64];
 				snprintf(c, 64, "w=%.0f to %.0f%c", min_width / (gIsFeet ? 0.3048 : 1.0 ), max_width / (gIsFeet ? 0.3048 : 1.0 ), gIsFeet ? '\'' : 'm') ;
-				o.w_use.push_back(c);
+				o.wallUse.push_back(c);
 			} 
 			else if (MFS_string_match(&s,"RING", false))
 			{
@@ -839,22 +826,20 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& outFac, int variant
 					MFS_double(&s);
 					int num_vert = MFS_double(&s);
 					int num_idx = MFS_double(&s);
-					tpl->meshes.back().xyz_uv.reserve(5*num_vert);
-					tpl->meshes.back().idx.reserve(num_vert);
+					tpl->meshes.back().xyz.reserve(3*num_vert);
+					tpl->meshes.back().uv.reserve(2*num_vert);
+					tpl->meshes.back().idx.reserve(num_idx);
 				}
 				else if(tpl && MFS_string_match(&s,"VERTEX", false))
 				{
-					xflt vert[5];
-					vert[0] = MFS_double(&s);
-					vert[1] = MFS_double(&s);
-					vert[2] = MFS_double(&s);
+					tpl->meshes.back().xyz.push_back(MFS_double(&s));
+					tpl->meshes.back().xyz.push_back(MFS_double(&s));
+					tpl->meshes.back().xyz.push_back(MFS_double(&s));
 					MFS_double(&s);
 					MFS_double(&s);
 					MFS_double(&s);
-					vert[3] = MFS_double(&s);
-					vert[4] = MFS_double(&s);
-					for(int i = 0; i<5; i++)
-						tpl->meshes.back().xyz_uv.push_back(vert[i]);
+					tpl->meshes.back().uv.push_back(MFS_double(&s));
+					tpl->meshes.back().uv.push_back(MFS_double(&s));
 				}
 				else if(tpl && MFS_string_match(&s,"IDX", false))
 				{
@@ -904,9 +889,9 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& outFac, int variant
 					xflt xyz_max[3] = { -9.9e9, -9.9e9, -9.9e9 };
 
 					for(auto m : t.meshes)
-						for(int i = 0; i < m.xyz_uv.size(); i +=5 )
+						for(int i = 0; i < m.xyz.size(); i +=3 )
 						{
-							xflt * p = &m.xyz_uv[i];
+							xflt * p = &m.xyz[i];
 							xyz_min[0] = min(xyz_min[0], p[0]);
 							xyz_max[0] = max(xyz_max[0], p[0]);
 							xyz_min[1] = min(xyz_min[1], p[1]);
@@ -919,10 +904,8 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& outFac, int variant
 					t.bounds[2] = xyz_max[2] - xyz_min[2];
 				}
 
-//				int xw = 0;				
 				for(auto& w : f.walls)
 				{
-//					int xs =0;
 					for(auto& s : w.spellings)
 					{
 						s.total = 0.0f;
@@ -931,14 +914,10 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& outFac, int variant
 							dev_assert(intrange(b,0,f.templates.size()-1));
 							s.total += f.templates[b].bounds[2];
 							s.widths.push_back(f.templates[b].bounds[2]);
-//		printf("w %d s %d = %.1lf i %d = %.1lf\n",xw,xs,s.total,b,s.widths.back());
 						}
-//		printf("w %d s %d =  %ld, %ld\n",xw,xs,s.indices.size(),s.widths.size());
-//						xs++;
 						
 					}
 					sort(w.spellings.begin(), w.spellings.end());
-//					xw++;
 				}
 				if(f.roofs.size()) 
 				{
@@ -955,13 +934,10 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& outFac, int variant
 			
 		process_texture_path(p,o.wall_tex);
 		process_texture_path(p,o.roof_tex);
-//		WED_MakeFacadePreview(o, 10, 20);
 
 		mFac[path].push_back(o);
 	}
 	outFac = mFac[path].front();
-	
-//printf("Fac '%s' done v=%d roof=%d\n",path.c_str(),variant,outFac.has_roof);
 
 	return true;
 }

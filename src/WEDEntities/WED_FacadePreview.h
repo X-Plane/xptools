@@ -53,6 +53,9 @@ typedef int OGL_std_shader;
 //#include "../../../facades/REN_extrude_utils.h"
 #include "../../../facades/UTL_tile.h"
 
+class ITexMgr;
+class GUI_GraphState;
+
 /****************************************************************************************************
  * NEW V2 FACADE GUNK
  ****************************************************************************************************/
@@ -88,12 +91,12 @@ struct REN_facade_wall_filters_t {
 struct REN_facade_template_t {
 	struct obj {
 		xint		idx;
-//		xint		graded;
 		xflt		xyzr[4];
 //		asset_freq	freq;		
 	};
 	struct mesh {
-		vector<xflt> 	xyz_uv;      // 5 floats per vertex, skipping normals
+		vector<xflt> 	xyz;
+		vector<xflt> 	uv;      // 5 floats per vertex, skipping normals
 		vector<xint>	idx;
 	};
 
@@ -157,29 +160,24 @@ struct	FacadeWall_t { // : public REN_facade_wall_filters_t {
 // Note: we will encode scraper floors as (1+scraper IDX) * 256 + facade floors
 // If we have a scraper idx > 0 (e.g. floors > 256) then floors is the floors of the BIG 
 // building in steps up from min AGL.
-struct REN_facade_tower_t {
-
-	REN_facade_tower_t() 
-	{
-		for(int i = 0; i < 3; ++i)
-			base_xzr[i] = towr_xzr[i] = 0.0;
-	}
-	
-	asset_range			base_obj;			// OBJ to be used
-	asset_range			towr_obj;			// tower object - can be empty range if base-only scraper -- it happens!
-//	asset_range			towr2_obj;			// OBJ to be used - can be empty if no secondary scraper!
-	xflt				base_xzr[3];
-	xflt				towr_xzr[3];
-//	xflt				towr2_xyzr[4];			// offset - tower2 is this much higher in ref point!
-//	asset_freq			base_frq;
-//	asset_freq			towr_frq;
-//	asset_freq			towr2_frq;
-//	vector<xflt>		pins;
-};
 
 struct REN_facade_scraper_t {
+
+struct tower_t 
+	{
+		tower_t() 
+		{
+			for(int i = 0; i < 3; ++i)
+				base_xzr[i] = towr_xzr[i] = 0.0;
+		}
+		string			base_obj;			// OBJ to be used
+		string			towr_obj;			// tower object - can be empty range if base-only scraper -- it happens!
+		xflt				base_xzr[3];
+		xflt				towr_xzr[3];
+	};
+
 //	vector<obj_ref>				assets;
-	vector<REN_facade_tower_t>	choices;
+	vector<tower_t>		choices;
 	xflt						min_agl;			// range of AGL where this scraper rule applies
 	xflt						max_agl;
 	xflt						step_agl;			// Step from min AGL up for height
@@ -200,8 +198,6 @@ struct	FacadeLOD_t {
 /**********************/
 struct fac_info_t;
 
-//bool WED_MakeFacadePreview(fac_info_t& info, double fac_height, double fac_width, int startWall = 0);   // return if object was made
-bool WED_MakeFacadePreview(fac_info_t& info, int fac_height, const Polygon2& footprint, const vector<int>& choices);
-
+void draw_facade(ITexMgr * tman, fac_info_t& info, const Polygon2& footprint, const vector<int>& choices, double fac_height, GUI_GraphState * g);
 
 #endif

@@ -28,6 +28,10 @@
 #include "XESConstants.h"
 #include "MathUtils.h"
 
+#include "ITexMgr.h"
+#include "TexUtils.h"
+#include "GUI_GraphState.h"
+
 #include "WED_ResourceMgr.h"
 #include "WED_FacadePreview.h"
 
@@ -139,12 +143,6 @@ static float vec3f_dot(float * a, float * b)
 	for(int i = 0; i<3; ++i)
 		res += a[i] * b[i];
 	return res;
-}
-
-static bool InsetPolygon(const Polygon3& inPolygon, double * insets, double x, bool is_ring, const Vector3& inUp, Polygon3& outPolygon)
-{
-	outPolygon = inPolygon;
-	return true;
 }
 
 
@@ -560,45 +558,27 @@ static int PanelsForLength(const FacadeWall_t& wall, double len)
 	return count;
 }
 
-static void StoreQuad(float * coords, float * texes, XObj8 * obj)
+static void DrawQuad(float * coords, float * texes, XObj8 * obj)
 {
-	float pt[8] = { 0.0 }; // 0,1,2 = x,z,y   3,4,5 = normals  6,7 = s,t
-	pt[4] = 1.0;    	// normal vector is a don't care, so have it point straight up
-	
-	int first_index = obj->geo_tri.count();
-
-	for (int i = 0; i <4; ++i)
+	for (int i = 0; i < 4; ++i)
 	{
-		pt[0] = coords[3*i]; 	pt[1] = coords[3*i+1];	pt[2] = coords[3*i+2];
-		pt[6] = texes[2*i]; 	pt[7] = texes[2*i+1];
-		obj->geo_tri.append(pt);
+		glTexCoord2fv(&texes[2*i]); glVertex3fv(&coords[3*i]);
 	}
-	int seq[6] = {0, 1, 2, 0, 2, 3};
-	for (int i = 0; i < 6; ++i)
-			obj->indices.push_back(first_index+seq[i]);
 }
 
-bool WED_MakeFacadePreview(fac_info_t& info, int fac_height, const Polygon2& footprint, const vector<int>& choices)
+void draw_facade(ITexMgr * tman, fac_info_t& info, const Polygon2& footprint, const vector<int>& choices, double fac_height, GUI_GraphState * g)
 {
-	XObj8 *obj;
-	if (info.previews.size())   // will only replace the first preview object - although there could be more
-	{
-		obj = info.previews[0];
-		obj->indices.clear();
-		obj->geo_tri.clear(8);
-		obj->lods.clear();
-	}
-	else
-		obj = new XObj8;
-		
-	obj->texture = info.wall_tex;
+	TexRef	tRef = tman->LookupTexture(info.wall_tex.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);			
+	g->SetTexUnits(1);
+	g->BindTex(tRef  ? tman->GetTexID(tRef) : 0, 0);
+	
 	const REN_facade_floor_t * bestFloor;
 	vector<Point2> roof_pts;
 	double roof_height;
-	
+
 	if(!info.is_new)
 	{
-		if (info.walls.empty())	return false;
+		if (info.walls.empty())	return;
 		double insets[footprint.size()];
 		for (int n = 0; n < footprint.size(); ++n)
 		{
@@ -607,6 +587,7 @@ bool WED_MakeFacadePreview(fac_info_t& info, int fac_height, const Polygon2& foo
 				sin(me.roof_slope * DEG_TO_RAD) * ((me.t_floors.back().second - me.t_floors.back().first) * me.y_scale) :
 				tan(me.roof_slope * DEG_TO_RAD) * ((me.t_floors.back().second - me.t_floors.back().first) * me.y_scale) ;
 		}
+		glBegin(GL_QUADS);
 		for (int w = 0; w < (info.is_ring ? footprint.size() : footprint.size()-1); ++w)
 		{
 			const FacadeWall_t * me = &info.walls[intmin2(info.walls.size()-1,choices[w])];
@@ -628,20 +609,21 @@ bool WED_MakeFacadePreview(fac_info_t& info, int fac_height, const Polygon2& foo
 			Segment3 inRoof3(Point3(inRoof.p1.x(),0,inRoof.p1.y()),Point3(inRoof.p2.x(),0,inRoof.p2.y()));
 
 			roof_height = BuildOneFacade(*me, inBase3, inRoof3, fac_height, wall_panels, Vector3(0,1,0),
-						info.has_roof, 0, info.doubled, info.tex_correct_slope, StoreQuad, obj);
+						info.has_roof, 0, info.doubled, info.tex_correct_slope, DrawQuad, NULL);
 		}
+		glEnd();
 	}
 	else
 	{
-		if (info.floors.empty() || info.floors.front().walls.empty()) return false;
-		bestFloor = &info.floors.back();
+		if (info.floors.empty() || info.floors.front().walls.empty()) return;
+		bestFloor = &info.floors.front();
 		for(auto& f : info.floors)
 			if(f.max_roof_height() < fac_height)
-			{
 				bestFloor = &f;
-				roof_height = f.max_roof_height();
-				break;
-			}
+		roof_height = bestFloor->max_roof_height();
+		info.obj_locs.clear();
+		
+		glBegin(GL_TRIANGLES);
 		for (int w = 0; w < (info.is_ring ? footprint.size() : footprint.size()-1); ++w)
 		{
 			Segment2 inBase(footprint.side(w));
@@ -658,66 +640,58 @@ bool WED_MakeFacadePreview(fac_info_t& info, int fac_height, const Polygon2& foo
 			Point2 thisPt = footprint[w];
 			roof_pts.push_back(thisPt);
 			
+	//		glPushMatrix();
+	//		glTranslatef(thisPt.x(),0,thisPt.y());
+	//		glRotate(,0,1,0);
+	//		glScalef(1,1,seg_length / our_choice.total);
+
 			for(int i = 0; i < our_choice.indices.size(); i++)
 			{
+	
 				const REN_facade_template_t& t = bestFloor->templates[our_choice.indices[i]];
 				for(auto m : t.meshes) // all meshes == maximum LOD detail
 				{
-					int first_idx = obj->geo_tri.count();
-					for(int v = 0; v < m.xyz_uv.size(); v +=5 )
+/*					glVertexPointer(3, GL_FLOAT, 0, m.xyz.data());
+					glTexCoordPointer(2, GL_FLOAT, 0, m.uv.data());
+					
+					glEnableClientState(GL_VERTEX_ARRAY);
+					glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+					glDisableClientState(GL_COLOR_ARRAY);
+					glDisableClientState(GL_NORMAL_ARRAY);
+
+					glDrawElements(GL_TRIANGLES, m.idx.size(), GL_UNSIGNED_INT, m.idx.data());		*/
+					
+					for(auto ind : m.idx)
 					{
-						Point2 xy = thisPt - dir_z * m.xyz_uv[v] - seg_dir * m.xyz_uv[v+2];
-						float pt[8] = { xy.x(), m.xyz_uv[v+1], xy.y(), 0,1,0, m.xyz_uv[v+3], m.xyz_uv[v+4] };
-						obj->geo_tri.append(pt);
+						Point2 xy = thisPt - dir_z * m.xyz[3*ind] - seg_dir * m.xyz[3*ind+2];
+						glTexCoord2fv(&m.uv[2*ind]); glVertex3f(xy.x(), m.xyz[3*ind+1], xy.y());
 					}
-					for(auto v : m.idx)	
-						obj->indices.push_back(first_idx + v);
+				}
+				for(auto o: t.objs)
+				{
+					fac_info_t::obj obj_ref;
+					obj_ref.idx = o.idx;
+					Point2 xy = thisPt - dir_z * o.xyzr[0] - seg_dir * o.xyzr[2];
+
+					obj_ref.xyzr[0] = xy.x();
+					obj_ref.xyzr[1] = o.xyzr[1];
+					obj_ref.xyzr[2] = xy.y();
+					obj_ref.xyzr[3] = o.xyzr[3] + atan2(dir_z.y(), dir_z.x()) * RAD_TO_DEG;
+					info.obj_locs.push_back(obj_ref);
 				}
 				thisPt += seg_dir * t.bounds[2];
 			}
+	//		glPopMatrix();
 		}
+		glEnd();
 	}
 	
-	obj->geo_tri.get_minmax(obj->xyz_min,obj->xyz_max);
-	if (obj->xyz_max[0]-obj->xyz_min[0] < 40.0)
-	{  
-		double dx = (obj->xyz_max[0]-obj->xyz_min[0]) *0.5;
-		obj->xyz_min[0] = -20+dx; obj->xyz_max[0] = 20+dx;
-		obj->xyz_min[2] = -20;    obj->xyz_max[2] = 20; 
-	}
-	                               
-	obj->lods.push_back(XObjLOD8());
-	obj->lods.back().lod_near = 0;
-	obj->lods.back().lod_far  = 1000;
-
-	XObjCmd8 cmd;
-//	cmd.cmd = attr_NoCull;
-//	obj->lods.back().cmds.push_back(cmd);
-	cmd.cmd = obj8_Tris;
-	cmd.idx_offset = 0;
-	cmd.idx_count  = obj->indices.size();
-	obj->lods.back().cmds.push_back(cmd);
-
-	if (info.previews.empty())
-		info.previews.push_back(obj);
-		
-#if 1
 	if (info.has_roof)
 	{
-		XObj8 * r_obj;
 		double fac_width = sqrt(Vector2(roof_pts[0], roof_pts[1]).squared_length());
 		
-		if (info.previews.size() > 1)
-		{
-			r_obj = info.previews[1];
-			r_obj->indices.clear();
-			r_obj->geo_tri.clear(8);
-			r_obj->lods.clear();
-		}
-		else
-			r_obj = new XObj8;
-			
-		r_obj->texture = info.roof_tex;
+		tRef = tman->LookupTexture(info.roof_tex.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);
+		g->BindTex(tRef  ? tman->GetTexID(tRef) : 0, 0);
 		
 		float s_roof[2] = { 0.0, 1.0 };
 		float t_roof[2] = { 0.0, 1.0 };
@@ -735,23 +709,18 @@ bool WED_MakeFacadePreview(fac_info_t& info, int fac_height, const Polygon2& foo
 				t_roof[0] = info.roof_st[1];
 				s_roof[1] = info.roof_st[0] + (info.roof_st[2] - info.roof_st[0]) * min(1.0,fac_width / (info.roof_ab[2] - info.roof_ab[0]));
 				t_roof[1] = info.roof_st[1] + (info.roof_st[3] - info.roof_st[1]) * min(1.0,fac_width / (info.roof_ab[2] - info.roof_ab[0]));
-				
-//printf("Roof_ab[0] %.1lf Roof_ab[2] %.1lf meters\n",info.roof_ab[0],info.roof_ab[2]);
-//printf("Roof_st[0] %.3lf Roof_st2[2] %.3lf\n",info.roof_st[0],info.roof_st[2]);
-//printf("s_roof[0] %.3lf s_roof[1] %.3lf\n",s_roof[0],s_roof[1]);
 			}
 		}
 		else
 		{
 			s_roof[1] = fac_width / info.roof_scale_s;
 			t_roof[1] = fac_width / info.roof_scale_t;
-//printf("roof_scale_s %.1lf roof_scale_t %.1lf meters\n",info.roof_scale_s,info.roof_scale_t);
-//printf("s_roof[0] %.3lf s_roof[1] %.3lf\n",s_roof[0],s_roof[1]);
 		}
 		
 		int xtra_roofs = 0;
 		if (info.is_new && bestFloor->roofs.size() > 1) xtra_roofs = bestFloor->roofs.size() - 1;
 		
+		glBegin(GL_QUADS);
 		do
 		{
 			float pts[12];
@@ -768,30 +737,14 @@ bool WED_MakeFacadePreview(fac_info_t& info, int fac_height, const Polygon2& foo
 				tex[2*n  ] = s_roof[x];
 				tex[2*n+1] = t_roof[z];
 			}
-			StoreQuad(pts, tex, r_obj);
+			DrawQuad(pts, tex, NULL);
 			
 			xtra_roofs--;
 			if(xtra_roofs >= 0)
 				roof_height = bestFloor->roofs[xtra_roofs].roof_height;
 		}
 		while (xtra_roofs >=0);
-			
-		r_obj->geo_tri.get_minmax(r_obj->xyz_min,r_obj->xyz_max);
-		
-		r_obj->lods.push_back(XObjLOD8());
-		r_obj->lods.back().lod_near = 0;
-		r_obj->lods.back().lod_far  = 1000;
-
-		cmd.cmd = attr_NoCull;
-		r_obj->lods.back().cmds.push_back(cmd);
-		cmd.cmd = obj8_Tris;
-		cmd.idx_offset = 0;
-		cmd.idx_count  = r_obj->indices.size();
-		r_obj->lods.back().cmds.push_back(cmd);
-
-		if (info.previews.size() < 2)
-			info.previews.push_back(r_obj);
+		glEnd();
 	}
-#endif
-	return true;
 }
+
