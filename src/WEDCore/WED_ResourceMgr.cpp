@@ -930,8 +930,12 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& outFac, int variant
 			}
 		}
 		else
-			o.h_range = string("h=") + to_string(o.min_floors) + " to " + to_string(o.max_floors);
-			
+		{
+			if(o.walls.back().middle)
+				o.h_range = string("h=") + to_string(o.min_floors) + " to " + to_string(o.max_floors);
+			else
+				o.h_range = "h=fixed/any";
+		}
 		process_texture_path(p,o.wall_tex);
 		process_texture_path(p,o.roof_tex);
 

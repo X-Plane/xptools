@@ -54,7 +54,7 @@ enum {
 };
 
 WED_LibraryPreviewPane::WED_LibraryPreviewPane(WED_ResourceMgr * res_mgr, ITexMgr * tex_mgr) : mResMgr(res_mgr), mTexMgr(tex_mgr),mZoom(1.0),
-                               mPsi(10.0f),mThe(10.0f), mHgt(10), mWid(20.0f), mWalls(4)
+                               mPsi(10.0f),mThe(10.0f), mHgt(5), mWid(20.0f), mWalls(4)
 {
 		int k_reg[4] = { 0, 0, 1, 3 };
 		int k_hil[4] = { 0, 1, 1, 3 };
@@ -107,9 +107,11 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 		{
 			fac_info_t fac;
 			mResMgr->GetFac(mRes,fac);
-			mWalls = intlim(fac.wallName.size(),4,12);
-			mHgt = fac.is_new ? 10 : fac.min_floors;
-			mWid = 20.0;
+			//mWalls = 4 * ( (intlim(fac.wallName.size(),4,16)+3) / 4);
+			mWalls = intlim(fac.wallName.size(),4,16);
+			if(!fac.is_new) mHgt = intlim(mHgt,fac.min_floors,fac.max_floors);
+//			mHgt = fac.is_new ? 10 : fac.min_floors;
+//			mWid = 20.0;
 		}	
 	}
 	else
@@ -181,7 +183,6 @@ int	WED_LibraryPreviewPane::MouseDown(int x, int y, int button)
 		float ds = prev_space / mZoom * mDs;
 		float dt = prev_space / mZoom * mDt;
 
-
 		float x1 = 0.5 *(b[2] + b[0] - ds);         // texture left bottom corner
 		float y1 = 0.5* (b[3] + b[1] - dt);
 
@@ -240,7 +241,7 @@ void	WED_LibraryPreviewPane::MouseDrag(int x, int y, int button)
 		int oldHgt = mHgt;
 		mHgt = mHgtOrig + (fabs(dy) < 100.0 ? dy * 0.1 : sign(dy)*(fabs(dy)-80) * 0.5);
 		mHgt = intlim(mHgt,0,250);
-		
+
 		float oldWid = mWid;
 		mWid = mWidOrig + (fabs(dx) < 100.0 ? dx * 0.2 : sign(dx)*(fabs(dx)-60.0) * 0.5);
 		mWid = fltlim(mWid,1,150);
@@ -252,7 +253,7 @@ void	WED_LibraryPreviewPane::MouseDrag(int x, int y, int button)
 		
 		mThe = fltlim(mThe,-85,85);                 // prevent some vertical objects fading completely out of view
 		if (mType == res_Facade)
-			mPsi = fltwrap(mPsi, 180-90*mWalls-45,180-45);  // adjusted for propper annotations and showing mmore than 4 walls
+			mPsi = fltwrap(mPsi, 0, 90*mWalls);      // adjusted for propper annotations and showing mmore than 4 walls
 		else
 			mPsi = fltwrap(mPsi,-180,180);
 	}
@@ -378,42 +379,31 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				float sx = ((dx > dy) ? (dx / dy) : 1.0)/2;
 				float sy = ((dx > dy) ? 1.0 : (dy / dx))/2;
 
-				double real_radius = fltmax2(40.0,pythag(1.4*mWid,mHgt));
-				double approx_radius = real_radius * mZoom;
+				double real_radius = fltmax3(40.0, 1.4 * mWid, fac.is_new ? mHgt : 6.0 * mHgt);        // todo: better, actual height dependent heuristics
+				double approx_radius = real_radius * mZoom * (1.1 - max(20.0, real_radius)/500.0);
 
 				Polygon2 footprint;
 				vector<int> choices;
 				fac_info_t * fac = mResMgr->GetFac(mRes, mVariant);
-				Vector2 dir(0,mWid);
-				Point2 corner(0,-mWid*0.5);
-				int num_walls = fac->is_ring ? 4 : 3;
+				Vector2 dir(mWid,0);
+				Point2 corner(0,+mWid*0.5);
 
-				int front_side = (180-mPsi)/90;
-				
-				for (int n = 0; n < 4; ++n)
-					{
-						choices.push_back(intlim(n,0,fac->wallName.size()-1));
-						footprint.push_back(corner);
-						corner += dir;
-						dir = dir.perpendicular_cw();
-					}
-
-				front_side = intlim(front_side-1,0,fac->wallName.size()-1);
-				int front_idx = front_side % 4;
+				int front_side = intround(mPsi/90) % mWalls;
 					
-//printf("Front = %d\n",front_side);
-//printf("Reassign c[%d]=%d\n",(front_idx-1+4) % 4, intlim(front_side-1,0,fac->w_nam.size()-1));
-				choices[(front_idx-1+4) % 4] = intlim(front_side-1,0,fac->wallName.size()-1);
-
-//printf("Reassign c[%d]=%d\n",front_idx, front_side);
-				choices[front_idx] = front_side;
-
-//printf("Reassign c[%d]=%d\n",(front_idx+1) % 4, intlim(front_side+1,0,fac->w_nam.size()-1));
-				choices[(front_idx+1) % 4] = intlim(front_side+1,0,fac->wallName.size()-1);
-				
-//printf("Reassign c[%d]=%d\n\n",(front_idx+2) % 4, intlim(front_side+2,0,fac->w_nam.size()-1));
-				choices[(front_idx+2) % 4] = intlim(front_side+2,0,fac->wallName.size()-1);
-
+				for (int n = 0; n < 4; ++n)
+				{
+					float thisWall_hdg              = fltwrap(mPsi + n*90,-180,180);
+					int 	thisWall_idx_rel_to_front = -intround(thisWall_hdg/90);
+					int   thisWall_idx = (front_side + thisWall_idx_rel_to_front + mWalls) % mWalls;
+					if (thisWall_idx < 0 || thisWall_idx >= fac->wallName.size())
+						thisWall_idx = 0;
+					choices.push_back(thisWall_idx);
+					footprint.push_back(corner);
+					corner += dir;
+					dir = dir.perpendicular_cw();
+//printf("[%d] %.0lfd r %d a %d ", n, thisWall_hdg, thisWall_idx_rel_to_front, thisWall_idx);
+				}
+//printf("\n");
 				g->EnableAlpha(true, true);
 	
 				glPushAttrib(GL_VIEWPORT_BIT);
@@ -429,7 +419,10 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				glRotatef(mThe,1,0,0);
 				glRotatef(mPsi,0,1,0);
 				
-				glTranslatef(-mWid*0.5,0.0,0.0);
+				if(mRes.find("piers") != mRes.npos)
+					glTranslatef(-mWid*0.5,0.0,0.0);
+				else
+					glTranslatef(-mWid*0.5, -max(5.0, fac->is_new ? 0.4 * mHgt : 1.8 * mHgt), 0.0);        // todo: better, actual height dependent heuristics
 				
 				g->EnableDepth(true,true);
 				glClear(GL_DEPTH_BUFFER_BIT);
@@ -440,9 +433,9 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				// draw "ground" plane
 				g->SetTexUnits(0);
 				if(mRes.find("piers") != mRes.npos)
-					glColor4f(0.0, 0.2, 0.4, 0.7);
+					glColor4f(0.0, 0.2, 0.4, 0.7);   // darkish blue water
 				else
-					glColor4f(0.7, 0.7, 0.7, 0.8);
+					glColor4f(0.2, 0.4, 0.2, 0.8);   // green lawn, almost opaque
 				glDisable(GL_CULL_FACE);
 				glBegin(GL_POLYGON);
 				for (auto f : footprint)
@@ -474,7 +467,6 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 							XObj8 * oo;
 							if(mResMgr->GetObjRelative(scp_base, mRes, oo))
 							{
-								// facade is aligned so midpoint of first wall is origin
 								draw_obj_at_xyz(mTexMgr, oo,
 									f.choices[0].base_xzr[0], hgt, f.choices[0].base_xzr[1],
 									f.choices[0].base_xzr[2]-90, g);
@@ -639,11 +631,12 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 			case res_Facade:
 				if (fac.wallName.size())
 				{
-					int side = (135.0-mPsi)/90.0;
-					int raw_side = side;
 					int n_wall = fac.wallName.size();
-					side = max(0,min(n_wall-1,side));
-					snprintf(buf1,120,"Wall %d \'%s\' intended for %s @ w=%.1lf%c", raw_side, fac.wallName[side].c_str(), fac.wallUse[side].c_str(), 
+					int raw_side = intround(mPsi/90) % mWalls;
+					int front_side = raw_side;
+					if(front_side < 0 || front_side >= n_wall) front_side = 0;
+					
+					snprintf(buf1,120,"Wall %d \'%s\' intended for %s @ w=%.1lf%c", raw_side, fac.wallName[front_side].c_str(), fac.wallUse[front_side].c_str(), 
 						mWid / (gIsFeet ? 0.3048 : 1), gIsFeet ? '\'' : 'm');
 					snprintf(buf2,120,"Type %d with %d wall%s%s, %s, @ h=%d", fac.is_new ? 2 : 1, n_wall, n_wall > 1 ? "s" : "", 
 						fac.scrapers.empty() ? "" : "+scraper" ,fac.h_range.c_str(), mHgt);

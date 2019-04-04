@@ -579,6 +579,7 @@ void draw_facade(ITexMgr * tman, fac_info_t& info, const Polygon2& footprint, co
 	if(!info.is_new)
 	{
 		if (info.walls.empty())	return;
+		fac_height=intlim(fac_height,info.min_floors,info.max_floors);
 		double insets[footprint.size()];
 		for (int n = 0; n < footprint.size(); ++n)
 		{
@@ -676,7 +677,7 @@ void draw_facade(ITexMgr * tman, fac_info_t& info, const Polygon2& footprint, co
 					obj_ref.xyzr[0] = xy.x();
 					obj_ref.xyzr[1] = o.xyzr[1];
 					obj_ref.xyzr[2] = xy.y();
-					obj_ref.xyzr[3] = o.xyzr[3] + atan2(dir_z.y(), dir_z.x()) * RAD_TO_DEG;
+					obj_ref.xyzr[3] = o.xyzr[3] + atan2(dir_z.y(), dir_z.x()) * RAD_TO_DEG - 180.0;
 					info.obj_locs.push_back(obj_ref);
 				}
 				thisPt += seg_dir * t.bounds[2];
