@@ -105,12 +105,12 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 	
 		if(res_type == res_Facade)
 		{
-			fac_info_t fac;
+			fac_info_t * fac;
 			mResMgr->GetFac(mRes,fac);
-			//mWalls = 4 * ( (intlim(fac.wallName.size(),4,16)+3) / 4);
-			mWalls = intlim(fac.wallName.size(),4,16);
-			if(!fac.is_new) mHgt = intlim(mHgt,fac.min_floors,fac.max_floors);
-//			mHgt = fac.is_new ? 10 : fac.min_floors;
+			//mWalls = 4 * ( (intlim(fac->wallName.size(),4,16)+3) / 4);
+			mWalls = intlim(fac->wallName.size(),4,16);
+			if(!fac->is_new) mHgt = intlim(mHgt,fac->min_floors,fac->max_floors);
+//			mHgt = fac->is_new ? 10 : fac->min_floors;
 //			mWid = 20.0;
 		}	
 	}
@@ -268,7 +268,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 {
 	int b[4]; GetBounds(b);
 
-	XObj8 * o = NULL;
+	XObj8 * o = nullptr;
 	vector<XObj8 *> o_vec;
 	
 	float dx = b[2] - b[0];
@@ -279,7 +279,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 	#endif
 	pol_info_t pol;
 	lin_info_t lin;
-	fac_info_t fac;
+	fac_info_t * fac = nullptr;
 
 	if(!mRes.empty())
 	{	switch(mType) {
@@ -379,18 +379,20 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				float sx = ((dx > dy) ? (dx / dy) : 1.0)/2;
 				float sy = ((dx > dy) ? 1.0 : (dy / dx))/2;
 
-				double real_radius = fltmax3(40.0, 1.4 * mWid, fac.is_new ? mHgt : 6.0 * mHgt);        // todo: better, actual height dependent heuristics
+				double real_radius = fltmax3(40.0, 1.4 * mWid, fac->is_new ? mHgt : 6.0 * mHgt);        // todo: better, actual height dependent heuristics
 				double approx_radius = real_radius * mZoom * (1.1 - max(20.0, real_radius)/500.0);
 
 				Polygon2 footprint;
 				vector<int> choices;
-				fac_info_t * fac = mResMgr->GetFac(mRes, mVariant);
+//				fac_info_t * fac = mResMgr->GetFac(mRes, mVariant);
 				Vector2 dir(mWid,0);
 				Point2 corner(0,+mWid*0.5);
 
 				int front_side = intround(mPsi/90) % mWalls;
 					
-				for (int n = 0; n < 4; ++n)
+				int n_max = 4;
+				if(!fac->is_ring && fac->wallName.size() >= 4) n_max=5;
+				for (int n = 0; n < n_max; ++n)
 				{
 					float thisWall_hdg              = fltwrap(mPsi + n*90,-180,180);
 					int 	thisWall_idx_rel_to_front = -intround(thisWall_hdg/90);
@@ -399,7 +401,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 						thisWall_idx = 0;
 					choices.push_back(thisWall_idx);
 					footprint.push_back(corner);
-					corner += dir;
+					corner += n<3 ? dir : dir *0.8;  // open type facade need last point duplicated, even if drawn as closed loop
 					dir = dir.perpendicular_cw();
 //printf("[%d] %.0lfd r %d a %d ", n, thisWall_hdg, thisWall_idx_rel_to_front, thisWall_idx);
 				}
@@ -450,8 +452,8 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 					{
 						// facade is aligned so midpoint of first wall is origin
 						draw_obj_at_xyz(mTexMgr, oo,
-							l.xyzr[0], l.xyzr[1], l.xyzr[2],
-							l.xyzr[3], g);
+							l.x, l.y, l.z,
+							l.r, g);
 					} 
 				}
 				
@@ -553,8 +555,8 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 			#if AIRPORT_ROUTING
 			else if (mResMgr->GetAGP(mRes,agp))
 			{
-				double min_xy[2] = { 0, 0 };
-				double max_xy[2] = { 0, 0 };
+				float min_xy[2] = { 0, 0 };
+				float max_xy[2] = { 0, 0 };
 				for(int n = 0; n < agp.tile.size(); n += 4)
 				{
 					min_xy[0] = min(min_xy[0],agp.tile[n]);
@@ -629,17 +631,17 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 		switch(mType)
 		{
 			case res_Facade:
-				if (fac.wallName.size())
+				if (fac->wallName.size())
 				{
-					int n_wall = fac.wallName.size();
+					int n_wall = fac->wallName.size();
 					int raw_side = intround(mPsi/90) % mWalls;
 					int front_side = raw_side;
 					if(front_side < 0 || front_side >= n_wall) front_side = 0;
 					
-					snprintf(buf1,120,"Wall %d \'%s\' intended for %s @ w=%.1lf%c", raw_side, fac.wallName[front_side].c_str(), fac.wallUse[front_side].c_str(), 
+					snprintf(buf1,120,"Wall %d \'%s\' intended for %s @ w=%.1lf%c", raw_side, fac->wallName[front_side].c_str(), fac->wallUse[front_side].c_str(), 
 						mWid / (gIsFeet ? 0.3048 : 1), gIsFeet ? '\'' : 'm');
-					snprintf(buf2,120,"Type %d with %d wall%s%s, %s, @ h=%d", fac.is_new ? 2 : 1, n_wall, n_wall > 1 ? "s" : "", 
-						fac.scrapers.empty() ? "" : "+scraper" ,fac.h_range.c_str(), mHgt);
+					snprintf(buf2,120,"Type %d with %d wall%s%s, %s, @ h=%d", fac->is_new ? 2 : 1, n_wall, n_wall > 1 ? "s" : "", 
+						fac->scrapers.empty() ? "" : "+scraper" ,fac->h_range.c_str(), mHgt);
 				}
 				else
 					sprintf(buf2,"No preview for this facade available");

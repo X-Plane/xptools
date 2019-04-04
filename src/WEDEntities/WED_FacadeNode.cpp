@@ -53,7 +53,7 @@ void	WED_FacadeNode::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 		WED_Thing * parent, * grand_parent;
 		WED_FacadePlacement * fac;
 		string		res;
-		fac_info_t	info;
+		fac_info_t * info;
 		if((parent = this->GetParent()) != NULL)
 		if((grand_parent = parent->GetParent()) != NULL)
 		if((fac = dynamic_cast<WED_FacadePlacement *>(grand_parent)) != NULL)
@@ -62,11 +62,11 @@ void	WED_FacadeNode::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 		{
 			fac->GetResource(res);
 			if (mgr->GetFac(res,info))
-			if(!info.wallName.empty())
+			if(!info->wallName.empty())
 			{
 				dict.clear();
-				for (int n = 0; n < info.wallName.size(); ++n)
-					dict[n + facade_Wall0] = make_pair(info.wallName[n],true);
+				for (int n = 0; n < info->wallName.size(); ++n)
+					dict[n + facade_Wall0] = make_pair(info->wallName[n],true);
 				return;
 			}
 		}
@@ -85,7 +85,7 @@ void		WED_FacadeNode::GetNthPropertyDictItem(int n, int e, string& item) const
 		WED_Thing * parent, * grand_parent;
 		WED_FacadePlacement * fac;
 		string		res;
-		fac_info_t	info;
+		fac_info_t * info;
 		if((parent = this->GetParent()) != NULL)
 		if((grand_parent = parent->GetParent()) != NULL)
 		if((fac = dynamic_cast<WED_FacadePlacement *>(grand_parent)) != NULL)
@@ -94,9 +94,9 @@ void		WED_FacadeNode::GetNthPropertyDictItem(int n, int e, string& item) const
 		{
 			fac->GetResource(res);
 			if (mgr->GetFac(res,info))
-			if(info.wallName.size() > idx)
+			if(info->wallName.size() > idx)
 			{
-				item = info.wallName[idx];
+				item = info->wallName[idx];
 				return;
 			}
 		}

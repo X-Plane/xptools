@@ -1870,7 +1870,7 @@ static int	DSF_ExportTileRecursive(
 						/*SCALE*/ (float) LonLatDistMeters(b.p1,Point2(b.p2.x(), b.p1.y())), (float) LonLatDistMeters(b.p1,Point2(b.p1.x(), b.p2.y())),  // althought its irrelevant here
 						false, false, 
 						/*LAYER_GROUP*/ "", 0,
-						/*LOAD_CENTER*/ (float) center.y(), (float) center.x(), LonLatDistMeters(b.p1,b.p2), intmax2(DDSInfo.height,DDSInfo.width) };
+						/*LOAD_CENTER*/ (float) center.y(), (float) center.x(), (float) LonLatDistMeters(b.p1,b.p2), intmax2(DDSInfo.height,DDSInfo.width) };
 					rmgr->WritePol(absPathPOL, out_info);
 					DestroyBitmap(&DDSInfo);
 				}

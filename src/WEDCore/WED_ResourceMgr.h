@@ -49,6 +49,7 @@
 #include "IBase.h"
 #include "XObjDefs.h"
 #include "CompGeomDefs2.h"
+#include <list>
 
 class	WED_LibraryMgr;
 
@@ -63,7 +64,7 @@ struct	pol_info_t {
 	int			group_offset;
 	float		latitude;
 	float		longitude;
-	double		height_Meters;
+	float		height_Meters;
 	int			ddsHeight_Pxls;
 	vector <Bbox2>	mSubBoxes;       // for subTexture selection in PreviewPanel
 	Bbox2		mUVBox;              // set by PreviewPanel from selected subTexture
@@ -71,36 +72,32 @@ struct	pol_info_t {
 
 #include "WED_FacadePreview.h"
 
-struct fac_info_t : public FacadeLOD_t {
+struct fac_info_t : public REN_FacadeLOD_t {
 
-	fac_info_t() { is_new = false ; is_ring = true; doubled = false;  min_floors = 1; max_floors  = 999; has_roof = false; }
+	fac_info_t() { is_new = false ; is_ring = true; doubled = two_sided = false;  min_floors = 1; max_floors  = 999; has_roof = false; }
 
 	bool			is_new;       // set if version 1000, aka type 2
 	string		wall_tex;
 	string		roof_tex;
 	bool			is_ring; 	  // can be drawn as open polygon
+	bool			two_sided;
 	
 	// Facade Scrapers
 	vector<REN_facade_scraper_t>	scrapers;
 	
 	// V1 only
 	// vector<FacadeLOD_t>		lods;  // WED does not recognize anything but the LOD that starts at 0
-	xint					roof_surface;
-	xint					wall_surface;
-	bool					doubled;
-	int					min_floors;	// new in 10.20 - for floor count determination, this clamps the floor range.
-	int					max_floors;
-	xflt					roof_scale_s;
-	xflt					roof_scale_t;
 	
 	// V2 only
-	list<REN_facade_floor_t>floors;
+	list<REN_facade_floor_t>	floors;
+	float					roof_scale_s;
+	float					roof_scale_t;
 	
 	vector<string>		objs;			// names of type 2 objects
 	// WED only
 	struct obj {
 		int 	idx;                 // index to type 2 objects
-		xflt	xyzr[4];
+		float	x,y,z,r;
 	};
 	vector<obj>		obj_locs;		// filled out by draw_facade(), so the attached objects can be drawn afterwards
 	
@@ -131,14 +128,14 @@ struct	road_info_t {
 #if AIRPORT_ROUTING
 struct agp_t {
 	struct obj {
-		double  x,y,r;			// annotation position
+		float		x,y,r;			// annotation position
 		int		show_lo,show_hi;
 		string	name;
 	};
 	string			base_tex;
 	string			mesh_tex;
 	int				hide_tiles;
-	vector<double>	tile;	// the base tile in x,y,s,t quads.
+	vector<float>	tile;	// the base tile in x,y,s,t quads.
 	vector<obj>		objs;
 };
 #endif
@@ -152,8 +149,8 @@ public:
 
 			void	Purge(void);
 
-			bool	GetFac(const string& path, fac_info_t& out_info, int variant =0);
-	fac_info_t * GetFac(const string& path, int variant =0);
+			bool	GetFac(const string& path, fac_info_t*& out_info, int variant =0);
+//	fac_info_t * GetFac(const string& path, int variant =0);
 			bool	GetPol(const string& path, pol_info_t& out_info);
 			bool 	SetPolUV(const string& path, Bbox2 box);
 			bool	GetLin(const string& path, lin_info_t& out_info);
@@ -178,7 +175,7 @@ public:
 
 private:
 	
-	map<string,vector<fac_info_t> > mFac;
+	map<string,vector<fac_info_t *> > mFac;
 	map<string,pol_info_t>		mPol;
 	map<string,lin_info_t>		mLin;
 	map<string,str_info_t>		mStr;
@@ -186,10 +183,10 @@ private:
 	map<string,vector<XObj8 *> > mObj;
 
 #if AIRPORT_ROUTING	
-	map<string,agp_t>			mAGP;
+	map<string,agp_t>				mAGP;
 	map<string,road_info_t>		mRoad;
 #endif	
-	WED_LibraryMgr *			mLibrary;
+	WED_LibraryMgr *				mLibrary;
 };	
 
 #endif /* WED_ResourceMgr_H */

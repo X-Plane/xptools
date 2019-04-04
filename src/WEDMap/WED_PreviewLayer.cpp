@@ -1085,7 +1085,7 @@ bool cull_obj(WED_MapZoomerNew * zoomer, XObj8 * obj, const Point2& ll, double h
 #if AIRPORT_ROUTING
 bool cull_agp(WED_MapZoomerNew * zoomer, agp_t * agp, const Point2& ll, double heading)
 {
-	double x_min, x_max, z_min, z_max;
+	float x_min, x_max, z_min, z_max;
 	x_min = x_max = agp->tile[0];
 	z_min = z_max = agp->tile[1];
 	for(int n = 4; n < agp->tile.size(); n += 4)

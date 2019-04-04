@@ -26,15 +26,12 @@
 
 /******** from REN_facade.h *******/
 
-#include <list>
-
 struct  XObj8;
 typedef int xint;
 typedef float xflt;
 typedef unsigned char 	xbyt;
 #define xtrue			true
 #define xfals			false
-typedef string asset_range;
 
 #if APL
 #include <OpenGL/glu.h>
@@ -42,15 +39,9 @@ typedef string asset_range;
 #include <GL/glu.h>
 #endif
 
-#define OGL_CALL
-
 #define dev_assert(x) DebugAssert(x)
 #include "AssertUtils.h"
 
-typedef int OGL_std_shader;
-
-//#include "../../../facades/REN_extrude_defs.h"
-//#include "../../../facades/REN_extrude_utils.h"
 #include "../../../facades/UTL_tile.h"
 
 class ITexMgr;
@@ -180,19 +171,23 @@ struct tower_t
 	vector<tower_t>		choices;
 	xflt						min_agl;			// range of AGL where this scraper rule applies
 	xflt						max_agl;
-	xflt						step_agl;			// Step from min AGL up for height
-	xint						floors;				// number of floors to use for facade base
+	xflt						step_agl;		// Step from min AGL up for height
+	xint						floors;			// number of floors to use for facade base
 };
 
-struct	FacadeLOD_t {
+struct	REN_FacadeLOD_t {
 
 	bool					tex_correct_slope;
 	vector<FacadeWall_t>	walls;
 	vector<double>			roof_s;
 	vector<double>			roof_t;
-	xflt					roof_st[4];
-	xflt					roof_ab[4];
+	float					roof_st[4];
+	float					roof_ab[4];
 	bool					has_roof;
+	bool					doubled;
+	int					min_floors;	      // new in 10.20 - for floor count determination, this clamps the floor range.
+	int					max_floors;
+
 };
 
 /**********************/

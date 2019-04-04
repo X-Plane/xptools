@@ -408,11 +408,11 @@ void		WED_CreatePolygonTool::SetResource(const string& r)
 	// Preset polygon / orthophoto flag when selecting resource. Still allows user overriding it in vertex tool.
 	WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetResolver());
 	pol_info_t pol_i;
-	fac_info_t fac_i;
+	fac_info_t * fac_i;
 	if(rmgr->GetPol(mResource.value, pol_i))
 		mUVMap.value = !pol_i.wrap;
 	else if(rmgr->GetFac(mResource.value, fac_i))
-		mMinPts = !fac_i.is_ring && !fac_i.has_roof ? 2 : 3;                        // allow placement of some 2-node facades
+		mMinPts = !fac_i->is_ring && !fac_i->has_roof ? 2 : 3;                        // allow placement of some 2-node facades
 }
 
 void	WED_CreatePolygonTool::GetNthPropertyDict(int n, PropertyDict_t& dict) const

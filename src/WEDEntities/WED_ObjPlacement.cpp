@@ -104,8 +104,8 @@ bool		WED_ObjPlacement::Cull(const Bbox2& b) const
 				}
 				else if(rmgr->GetAGP(resource.value,agp))
 				{
-					double min_xy[2] = { 0, 0 };
-					double max_xy[2] = { 0, 0 };
+					float min_xy[2] = { 0, 0 };
+					float max_xy[2] = { 0, 0 };
 					for(int n = 0; n < agp.tile.size(); n += 4)
 					{
 						min_xy[0] = min(min_xy[0],agp.tile[n]);

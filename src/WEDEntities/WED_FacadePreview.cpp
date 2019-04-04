@@ -146,7 +146,7 @@ static float vec3f_dot(float * a, float * b)
 }
 
 
-typedef void (*RenderQuadFunc) (float *, float *, XObj8 *);
+typedef void (*RenderQuadFunc) (float *, float *);
 
 static	float	BuildOnePanel(      // return width of this section
 						const FacadeWall_t& fac,
@@ -164,8 +164,7 @@ static	float	BuildOnePanel(      // return width of this section
 						bool				use_roof,
 						RenderQuadFunc DrawQuad,   // redenering function to draw the quad from coordinate lists
 						xint				two_sided,
-						xint				doubled,
-						XObj8 *			obj)
+						xint				doubled)
 {
 	float			coords[12];
 	float			texes[8];
@@ -229,7 +228,7 @@ static	float	BuildOnePanel(      // return width of this section
 		texes[6] = interp(u_min,fac.s_panels[left    ].first,u_max,fac.s_panels[right -1].second,u[3]);
 			
 	}
-	DrawQuad(coords, texes, obj);
+	DrawQuad(coords, texes);
 	if(doubled)
 	{
 		swap(coords[0],coords[9 ]);
@@ -243,7 +242,7 @@ static	float	BuildOnePanel(      // return width of this section
 		swap(texes[1],texes[7]);
 		swap(texes[2],texes[4]);
 		swap(texes[3],texes[5]);
-		DrawQuad(coords, texes, obj);
+		DrawQuad(coords, texes);
 	}
 	
 	return fac.s_panels[right -1].second - fac.s_panels[left].first;
@@ -261,8 +260,7 @@ static double	BuildOneFacade(                    // that is one wall for one seg
 						xint			two_sided,
 						xint			doubled,
 						bool			tex_correct_slope,
-					   RenderQuadFunc inFunc,
-  						XObj8 *			obj)
+					   RenderQuadFunc inFunc)
 {
 	if (inFloors == 0.0) return 0.0;
 	
@@ -371,7 +369,7 @@ static double	BuildOneFacade(                    // that is one wall for one seg
 	{
 		if (left_c)
 			rat_len += BuildOnePanel(fac, inBase, inRoof, inUp, 0, 0, left_c, bottom_c, 
-							0.0, act_floor_t[0], act_panel_s[left_c], act_floor_t[bottom_c], false, inFunc, two_sided, doubled, obj);
+							0.0, act_floor_t[0], act_panel_s[left_c], act_floor_t[bottom_c], false, inFunc, two_sided, doubled);
 		for (i = 0; i < center_r; ++i)
 		{
 			l = i * fac.center;
@@ -379,11 +377,11 @@ static double	BuildOneFacade(                    // that is one wall for one seg
 			if (r > center_c) r = center_c;
 			h_count = r - l;
 			rat_len += BuildOnePanel(fac, inBase, inRoof, inUp, fac.left, 0, fac.left+h_count, bottom_c, 
-							act_panel_s[left_c + l], act_floor_t[0], act_panel_s[left_c + r], act_floor_t[bottom_c], false, inFunc, two_sided, doubled, obj);
+							act_panel_s[left_c + l], act_floor_t[0], act_panel_s[left_c + r], act_floor_t[bottom_c], false, inFunc, two_sided, doubled);
 		}
 		if (right_c)
 			rat_len += BuildOnePanel(fac, inBase, inRoof, inUp, fac.s_panels.size() - right_c, 0, fac.s_panels.size(), bottom_c,
-							act_panel_s[left_c + center_c], act_floor_t[0], act_panel_s[left_c + center_c + right_c], act_floor_t[bottom_c], false, inFunc, two_sided, doubled, obj);
+							act_panel_s[left_c + center_c], act_floor_t[0], act_panel_s[left_c + center_c + right_c], act_floor_t[bottom_c], false, inFunc, two_sided, doubled);
 	}
 
 //	xflt metric_len = fac.x_scale * rat_len;
@@ -400,7 +398,7 @@ static double	BuildOneFacade(                    // that is one wall for one seg
 		
 		if (left_c)
 			BuildOnePanel(fac, inBase, inRoof, inUp, 0, fac.bottom, left_c, fac.bottom + v_count, 
-							0.0, act_floor_t[bottom_c + b], act_panel_s[left_c], act_floor_t[bottom_c + t], false, inFunc, two_sided, doubled, obj);
+							0.0, act_floor_t[bottom_c + b], act_panel_s[left_c], act_floor_t[bottom_c + t], false, inFunc, two_sided, doubled);
 		for (i = 0; i < center_r; ++i)
 		{
 			l = i * fac.center;
@@ -408,18 +406,18 @@ static double	BuildOneFacade(                    // that is one wall for one seg
 			if (r > center_c) r = center_c;
 			h_count = r - l;
 			BuildOnePanel(fac, inBase, inRoof, inUp, fac.left, fac.bottom, fac.left+h_count, fac.bottom + v_count, 
-							act_panel_s[left_c + l], act_floor_t[bottom_c + b], act_panel_s[left_c + r], act_floor_t[bottom_c + t], false, inFunc, two_sided, doubled, obj);
+							act_panel_s[left_c + l], act_floor_t[bottom_c + b], act_panel_s[left_c + r], act_floor_t[bottom_c + t], false, inFunc, two_sided, doubled);
 		}
 		if (right_c)
 			BuildOnePanel(fac, inBase, inRoof, inUp, fac.s_panels.size() - right_c, fac.bottom, fac.s_panels.size(), fac.bottom + v_count,
-							act_panel_s[left_c + center_c], act_floor_t[bottom_c + b], act_panel_s[left_c + center_c + right_c], act_floor_t[bottom_c + t], false, inFunc, two_sided, doubled, obj);
+							act_panel_s[left_c + center_c], act_floor_t[bottom_c + b], act_panel_s[left_c + center_c + right_c], act_floor_t[bottom_c + t], false, inFunc, two_sided, doubled);
 	}
 	
 	if (top_c)
 	{
 		if (left_c)
 			BuildOnePanel(fac, inBase, inRoof, inUp, 0, fac.t_floors.size() - top_c - ang_c, left_c, fac.t_floors.size() - ang_c, 
-							0.0, act_floor_t[bottom_c + middle_c], act_panel_s[left_c], act_floor_t[bottom_c + middle_c + top_c], false, inFunc, two_sided, doubled, obj);
+							0.0, act_floor_t[bottom_c + middle_c], act_panel_s[left_c], act_floor_t[bottom_c + middle_c + top_c], false, inFunc, two_sided, doubled);
 		for (i = 0; i < center_r; ++i)
 		{
 			l = i * fac.center;
@@ -427,18 +425,18 @@ static double	BuildOneFacade(                    // that is one wall for one seg
 			if (r > center_c) r = center_c;
 			h_count = r - l;
 			BuildOnePanel(fac, inBase, inRoof, inUp, fac.left, fac.t_floors.size() - top_c - ang_c, fac.left+h_count, fac.t_floors.size() - ang_c, 
-							act_panel_s[left_c + l], act_floor_t[bottom_c + middle_c], act_panel_s[left_c + r], act_floor_t[bottom_c + middle_c + top_c], false, inFunc, two_sided, doubled, obj);
+							act_panel_s[left_c + l], act_floor_t[bottom_c + middle_c], act_panel_s[left_c + r], act_floor_t[bottom_c + middle_c + top_c], false, inFunc, two_sided, doubled);
 		}
 		if (right_c)
 			BuildOnePanel(fac, inBase, inRoof, inUp, fac.s_panels.size() - right_c, fac.t_floors.size() - top_c - ang_c, fac.s_panels.size(), fac.t_floors.size() - ang_c,
-							act_panel_s[left_c + center_c], act_floor_t[bottom_c + middle_c], act_panel_s[left_c + center_c + right_c], act_floor_t[bottom_c + middle_c + top_c], false, inFunc, two_sided, doubled, obj);
+							act_panel_s[left_c + center_c], act_floor_t[bottom_c + middle_c], act_panel_s[left_c + center_c + right_c], act_floor_t[bottom_c + middle_c + top_c], false, inFunc, two_sided, doubled);
 	}
 	
 	if (ang_c)
 	{
 		if (left_c)
 			BuildOnePanel(fac, inBase, inRoof, inUp, 0, fac.t_floors.size() - ang_c, left_c, fac.t_floors.size(), 
-							0.0, act_floor_t[bottom_c + middle_c + top_c], act_panel_s[left_c], act_floor_t[bottom_c + middle_c + top_c + ang_c], true, inFunc, two_sided, doubled, obj);
+							0.0, act_floor_t[bottom_c + middle_c + top_c], act_panel_s[left_c], act_floor_t[bottom_c + middle_c + top_c + ang_c], true, inFunc, two_sided, doubled);
 		for (i = 0; i < center_r; ++i)
 		{
 			l = i * fac.center;
@@ -446,11 +444,11 @@ static double	BuildOneFacade(                    // that is one wall for one seg
 			if (r > center_c) r = center_c;
 			h_count = r - l;
 			BuildOnePanel(fac, inBase, inRoof, inUp, fac.left, fac.t_floors.size() - ang_c, fac.left+h_count, fac.t_floors.size(), 
-							act_panel_s[left_c + l], act_floor_t[bottom_c + middle_c + top_c], act_panel_s[left_c + r], act_floor_t[bottom_c + middle_c + top_c + ang_c], true, inFunc, two_sided, doubled, obj);
+							act_panel_s[left_c + l], act_floor_t[bottom_c + middle_c + top_c], act_panel_s[left_c + r], act_floor_t[bottom_c + middle_c + top_c + ang_c], true, inFunc, two_sided, doubled);
 		}
 		if (right_c)
 			BuildOnePanel(fac, inBase, inRoof, inUp, fac.s_panels.size() - right_c, fac.t_floors.size() - ang_c, fac.s_panels.size(), fac.t_floors.size(),
-							act_panel_s[left_c + center_c], act_floor_t[bottom_c + middle_c + top_c], act_panel_s[left_c + center_c + right_c], act_floor_t[bottom_c + middle_c + top_c + ang_c], true, inFunc, two_sided, doubled, obj);
+							act_panel_s[left_c + center_c], act_floor_t[bottom_c + middle_c + top_c], act_panel_s[left_c + center_c + right_c], act_floor_t[bottom_c + middle_c + top_c + ang_c], true, inFunc, two_sided, doubled);
 	}
 	return total_floor_height * fac.y_scale;
 }
@@ -558,7 +556,7 @@ static int PanelsForLength(const FacadeWall_t& wall, double len)
 	return count;
 }
 
-static void DrawQuad(float * coords, float * texes, XObj8 * obj)
+static void DrawQuad(float * coords, float * texes)
 {
 	for (int i = 0; i < 4; ++i)
 	{
@@ -575,6 +573,13 @@ void draw_facade(ITexMgr * tman, fac_info_t& info, const Polygon2& footprint, co
 	const REN_facade_floor_t * bestFloor;
 	vector<Point2> roof_pts;
 	double roof_height;
+	
+	if(info.two_sided)
+		glDisable(GL_CULL_FACE);
+	else
+		glEnable(GL_CULL_FACE);
+		
+	int n_wall = info.is_ring ? footprint.size() : footprint.size()-1;
 
 	if(!info.is_new)
 	{
@@ -589,7 +594,7 @@ void draw_facade(ITexMgr * tman, fac_info_t& info, const Polygon2& footprint, co
 				tan(me.roof_slope * DEG_TO_RAD) * ((me.t_floors.back().second - me.t_floors.back().first) * me.y_scale) ;
 		}
 		glBegin(GL_QUADS);
-		for (int w = 0; w < (info.is_ring ? footprint.size() : footprint.size()-1); ++w)
+		for (int w = 0; w < n_wall; ++w)
 		{
 			const FacadeWall_t * me = &info.walls[intmin2(info.walls.size()-1,choices[w])];
 			
@@ -610,7 +615,7 @@ void draw_facade(ITexMgr * tman, fac_info_t& info, const Polygon2& footprint, co
 			Segment3 inRoof3(Point3(inRoof.p1.x(),0,inRoof.p1.y()),Point3(inRoof.p2.x(),0,inRoof.p2.y()));
 
 			roof_height = BuildOneFacade(*me, inBase3, inRoof3, fac_height, wall_panels, Vector3(0,1,0),
-						info.has_roof, 0, info.doubled, info.tex_correct_slope, DrawQuad, NULL);
+						info.has_roof, info.two_sided, info.doubled, info.tex_correct_slope, DrawQuad);
 		}
 		glEnd();
 	}
@@ -625,7 +630,7 @@ void draw_facade(ITexMgr * tman, fac_info_t& info, const Polygon2& footprint, co
 		info.obj_locs.clear();
 		
 		glBegin(GL_TRIANGLES);
-		for (int w = 0; w < (info.is_ring ? footprint.size() : footprint.size()-1); ++w)
+		for (int w = 0; w < n_wall; ++w)
 		{
 			Segment2 inBase(footprint.side(w));
 			Vector2 seg_dir(inBase.p1, inBase.p2);
@@ -674,10 +679,10 @@ void draw_facade(ITexMgr * tman, fac_info_t& info, const Polygon2& footprint, co
 					obj_ref.idx = o.idx;
 					Point2 xy = thisPt - dir_z * o.xyzr[0] - seg_dir * o.xyzr[2];
 
-					obj_ref.xyzr[0] = xy.x();
-					obj_ref.xyzr[1] = o.xyzr[1];
-					obj_ref.xyzr[2] = xy.y();
-					obj_ref.xyzr[3] = o.xyzr[3] + atan2(dir_z.y(), dir_z.x()) * RAD_TO_DEG - 180.0;
+					obj_ref.x = xy.x();
+					obj_ref.y = o.xyzr[1];
+					obj_ref.z = xy.y();
+					obj_ref.r = o.xyzr[3] + atan2(dir_z.y(), dir_z.x()) * RAD_TO_DEG - 180.0;
 					info.obj_locs.push_back(obj_ref);
 				}
 				thisPt += seg_dir * t.bounds[2];
@@ -738,7 +743,7 @@ void draw_facade(ITexMgr * tman, fac_info_t& info, const Polygon2& footprint, co
 				tex[2*n  ] = s_roof[x];
 				tex[2*n+1] = t_roof[z];
 			}
-			DrawQuad(pts, tex, NULL);
+			DrawQuad(pts, tex);
 			
 			xtra_roofs--;
 			if(xtra_roofs >= 0)

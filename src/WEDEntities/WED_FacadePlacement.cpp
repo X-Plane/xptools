@@ -83,19 +83,19 @@ WED_FacadePlacement::TopoMode		WED_FacadePlacement::GetTopoMode(void) const
 		WED_ResourceMgr* rr = WED_GetResourceMgr(r);
 		if(rr)
 		{
-			fac_info_t f;
+			fac_info_t * f;
 			if(rr->GetFac(resource.value,f))
 			{
-				if(f.is_ring) 
+				if(f->is_ring) 
 				{
-					if(f.has_roof)
+					if(f->has_roof)
 						return topo_Area;   // ring and roof
 					else
 						return topo_Ring;   // ring only: no roof
 				}
 				else
 				{
-					if(f.has_roof)
+					if(f->has_roof)
 						return topo_Area;       // roof only: no ring. It's bad authoring, XP 11.10 will close if for you ...
 					else
 						return topo_Chain;      // no ring, no roof
