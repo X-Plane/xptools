@@ -34,6 +34,7 @@
 
 #include "WED_ResourceMgr.h"
 #include "WED_FacadePreview.h"
+#include "WED_PreviewLayer.h"
 
 static bool closer_to(double x, double a, double b)
 {
@@ -564,7 +565,7 @@ static void DrawQuad(float * coords, float * texes)
 	}
 }
 
-void draw_facade(ITexMgr * tman, fac_info_t& info, const Polygon2& footprint, const vector<int>& choices, double fac_height, GUI_GraphState * g)
+void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, fac_info_t& info, const Polygon2& footprint, const vector<int>& choices, double fac_height, GUI_GraphState * g)
 {
 	TexRef	tRef = tman->LookupTexture(info.wall_tex.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);			
 	g->SetTexUnits(1);
@@ -736,9 +737,9 @@ void draw_facade(ITexMgr * tman, fac_info_t& info, const Polygon2& footprint, co
 				int x = n == 0 || n == 3;
 				int z = n < 2;
 				
-				pts[3*n  ] = roof_pts[3-n].x();     // 1 - 0
-				pts[3*n+1] = roof_height;           // |   |
-				pts[3*n+2] = roof_pts[3-n].y();     // 2 - 3
+				pts[3*n  ] = roof_pts[3-n].x();
+				pts[3*n+1] = roof_height;
+				pts[3*n+2] = roof_pts[3-n].y();
 				
 				tex[2*n  ] = s_roof[x];
 				tex[2*n+1] = t_roof[z];
@@ -751,6 +752,50 @@ void draw_facade(ITexMgr * tman, fac_info_t& info, const Polygon2& footprint, co
 		}
 		while (xtra_roofs >=0);
 		glEnd();
+	}
+
+	for(auto l : info.obj_locs)
+	{
+		XObj8 * oo;
+		if(rman->GetObjRelative(info.objs[l.idx].c_str(), vpath, oo))
+		{
+			// facade is aligned so midpoint of first wall is origin
+			draw_obj_at_xyz(tman, oo,
+				l.x, l.y, l.z,
+				l.r, g);
+		} 
+	}
+	
+	for(auto f : info.scrapers)
+	{
+		if(fltrange(fac_height,f.min_agl,f.max_agl))
+		{
+			int floors = (fac_height - f.min_agl) / f.step_agl;
+			double hgt = floors * f.step_agl;
+			string scp_base(f.choices[0].base_obj);
+			if(!scp_base.empty())
+			{
+				XObj8 * oo;
+				if(rman->GetObjRelative(scp_base, vpath, oo))
+				{
+					draw_obj_at_xyz(tman, oo,
+						f.choices[0].base_xzr[0], hgt, f.choices[0].base_xzr[1],
+						f.choices[0].base_xzr[2]-90, g);
+				} 
+			}
+			string scp_twr(f.choices[0].towr_obj);
+			if(!scp_twr.empty())
+			{
+				XObj8 * oo;
+				if(rman->GetObjRelative(scp_twr, vpath, oo))
+				{
+					draw_obj_at_xyz(tman, oo,
+						f.choices[0].towr_xzr[0], hgt, f.choices[0].towr_xzr[1],
+						f.choices[0].towr_xzr[2]-90, g);
+				} 
+			}
+			break;
+		}
 	}
 }
 

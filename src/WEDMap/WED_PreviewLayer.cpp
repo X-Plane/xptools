@@ -908,20 +908,86 @@ struct	preview_airportlights : WED_PreviewItem {
 
 
 struct	preview_facade : public preview_polygon {
-	WED_FacadePlacement * fac;	
-	preview_facade(WED_FacadePlacement * f, int l) : preview_polygon(f,l,false), fac(f) { }
+	WED_FacadePlacement * fac;
+	IResolver * resolver;
+	preview_facade(WED_FacadePlacement * f, int l, IResolver * r) : preview_polygon(f,l,false), fac(f), resolver(r) { }
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
 	{
 		g->SetState(false,0,false,true,true,false,false);       // grey fill. Do actual texture instead ??
 		glColor4f(0.7,0.7,0.7,0.75);
 		int t = fac->GetTopoMode();
-		if(t == WED_FacadePlacement::topo_Area)
-			preview_polygon::draw_it(zoomer,g,mPavementAlpha);
+//		if(t == WED_FacadePlacement::topo_Area)
+//			preview_polygon::draw_it(zoomer,g,mPavementAlpha);
 
 		const float colors[18] = {  1, 0, 0,	1, 1, 0,
 									0, 1, 0,	0, 1, 1,
 									0, 0, 1,	1, 0, 1,};
 		IGISPointSequence * ps = fac->GetOuterRing();
+		
+		if(fac->HasCustomWalls())
+		{
+			ITexMgr * tman = WED_GetTexMgr(resolver);
+			Polygon2 pts;
+			vector<int> choices;
+			
+			int n = ps->GetNumSides();
+			pts.reserve(n);
+			choices.reserve(n);
+			
+			Point2 ref_pt;
+			ps->GetNthPoint(0)->GetLocation(gis_Geo, ref_pt);
+			
+			for(int i = 0; i < n; ++i)
+			{
+				Bezier2		b;
+				ps->GetSide(gis_Geo,i,b);
+				
+				Vector2 v(VectorLLToMeters(ref_pt, Vector2(ref_pt,b.p1)));
+				// The facade preview code uses -Z / north facing coordinates, same a the OBJ8's. 
+				// So we invert the y coordinates here, which will in 3D space be the Z coordinates.
+				
+				pts.push_back(Point2(v.dx, -v.dy));
+				
+				if(i == n-1 && !ps->IsClosed())
+				{
+					// we count on LTO to optimize this seriously, to remove all those redundant cos(ref_pt.y) calculations.
+					v = VectorLLToMeters(ref_pt, Vector2(ref_pt,b.p2));
+					pts.push_back(Point2(v.dx, -v.dy));
+				}
+				
+				ps->GetSide(gis_Param,i,b);
+				choices.push_back(b.p1.x());
+				
+				if(i == n-1 && !ps->IsClosed())
+					choices.push_back(0);
+			}
+			
+			string vpath;
+			fac->GetResource(vpath);
+			fac_info_t * info;
+			WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
+			
+			glColor4f(1,1,1,1);
+			
+			glMatrixMode(GL_MODELVIEW);
+			glPushMatrix();
+			Point2 l = zoomer->LLToPixel(ref_pt);
+			glTranslatef(l.x(),l.y(),0.0);
+			float ppm = zoomer->GetPPM();
+			glScalef(ppm,ppm,0.001);
+			glRotatef(90, 1,0,0);
+
+			g->EnableDepth(true,true);
+			glClear(GL_DEPTH_BUFFER_BIT);
+			
+			if(rmgr->GetFac(vpath, info))
+				draw_facade(tman, rmgr, vpath, *info, pts, choices, fac->GetHeight(), g);
+				
+			g->EnableDepth(false,false);
+			glPopMatrix();
+		}
+
+		
 		if(t == WED_FacadePlacement::topo_Chain)
 		{
 			Point2 p;
@@ -1400,7 +1466,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	{
 		WED_FacadePlacement * fac = SAFE_CAST(WED_FacadePlacement, entity);
 		if(fac && fac->GetShowLevel() <= mObjDensity)
-			mPreviewItems.push_back(new preview_facade(fac,group_Objects));
+			mPreviewItems.push_back(new preview_facade(fac,group_Objects, GetResolver()));
 	}
 	else if (sub_class == WED_ForestPlacement::sClass)
 	{

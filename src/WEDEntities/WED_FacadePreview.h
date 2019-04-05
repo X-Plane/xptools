@@ -27,6 +27,8 @@
 /******** from REN_facade.h *******/
 
 struct  XObj8;
+struct fac_info_t;
+
 typedef int xint;
 typedef float xflt;
 typedef unsigned char 	xbyt;
@@ -45,6 +47,7 @@ typedef unsigned char 	xbyt;
 #include "../../../facades/UTL_tile.h"
 
 class ITexMgr;
+class WED_ResourceMgr;
 class GUI_GraphState;
 
 /****************************************************************************************************
@@ -191,8 +194,7 @@ struct	REN_FacadeLOD_t {
 };
 
 /**********************/
-struct fac_info_t;
 
-void draw_facade(ITexMgr * tman, fac_info_t& info, const Polygon2& footprint, const vector<int>& choices, double fac_height, GUI_GraphState * g);
+void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, fac_info_t& info, const Polygon2& footprint, const vector<int>& choices, double fac_height, GUI_GraphState * g);
 
 #endif

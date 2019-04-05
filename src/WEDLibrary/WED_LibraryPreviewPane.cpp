@@ -430,8 +430,6 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				glClear(GL_DEPTH_BUFFER_BIT);
 				glEnable(GL_CULL_FACE);
 				
-				draw_facade(mTexMgr, *fac, footprint, choices, mHgt, g);
-				
 				// draw "ground" plane
 				g->SetTexUnits(0);
 				if(mRes.find("piers") != mRes.npos)
@@ -444,51 +442,10 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 					glVertex3f(f.x() + 2.0 * (f.x() > 0.0 ? mWid : -mWid), -0.01, 
 								  f.y() + 2.0 * (f.y() > 0.0 ? mWid : -mWid) );
 				glEnd();
-				
-				for(auto l : fac->obj_locs)
-				{
-					XObj8 * oo;
-					if(mResMgr->GetObjRelative(fac->objs[l.idx].c_str(), mRes, oo))
-					{
-						// facade is aligned so midpoint of first wall is origin
-						draw_obj_at_xyz(mTexMgr, oo,
-							l.x, l.y, l.z,
-							l.r, g);
-					} 
-				}
-				
-				for(auto f : fac->scrapers)
-				{
-					if(fltrange(mHgt,f.min_agl,f.max_agl))
-					{
-						int floors = (mHgt - f.min_agl) / f.step_agl;
-						double hgt = floors * f.step_agl;
-						string scp_base(f.choices[0].base_obj);
-						if(!scp_base.empty())
-						{
-							XObj8 * oo;
-							if(mResMgr->GetObjRelative(scp_base, mRes, oo))
-							{
-								draw_obj_at_xyz(mTexMgr, oo,
-									f.choices[0].base_xzr[0], hgt, f.choices[0].base_xzr[1],
-									f.choices[0].base_xzr[2]-90, g);
-							} 
-						}
-						string scp_twr(f.choices[0].towr_obj);
-						if(!scp_twr.empty())
-						{
-							XObj8 * oo;
-							if(mResMgr->GetObjRelative(scp_twr, mRes, oo))
-							{
-								draw_obj_at_xyz(mTexMgr, oo,
-									f.choices[0].towr_xzr[0], hgt, f.choices[0].towr_xzr[1],
-									f.choices[0].towr_xzr[2]-90, g);
-							} 
-						}
-						break;
-					}
-				}
+				glColor4f(1,1,1,1);
 
+				draw_facade(mTexMgr, mResMgr, mRes, *fac, footprint, choices, mHgt, g);
+				
 				glMatrixMode(GL_PROJECTION);
 				glPopMatrix();
 				glMatrixMode(GL_MODELVIEW);
