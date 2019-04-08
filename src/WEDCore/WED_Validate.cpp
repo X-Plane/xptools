@@ -2216,17 +2216,17 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		for(vector<WED_DrapedOrthophoto *>::iterator o = orthos.begin(); o != orthos.end(); ++o)
 		{
 			string res;
-			pol_info_t pol;
+			const pol_info_t * pol;
 
 			(*o)->GetResource(res);
 			res_mgr->GetPol(res,pol);
 
-			if (!pol.mSubBoxes.size())
+			if (!pol->mSubBoxes.size())
 			{
 				orthos_illegal.push_back(*o);
 			}
 //			else
-//				printf("kosher ortho, has %d subtex\n", pol.mSubBoxes.size());
+//				printf("kosher ortho, has %d subtex\n", pol->mSubBoxes.size());
 		}
 		if(!orthos_illegal.empty())
 			msgs.push_back(validation_error_t("Only Orthophotos with automatic subtexture selection can be exported to the Gateway. Please hide or remove selected Orthophotos.",

@@ -83,7 +83,7 @@ WED_FacadePlacement::TopoMode		WED_FacadePlacement::GetTopoMode(void) const
 		WED_ResourceMgr* rr = WED_GetResourceMgr(r);
 		if(rr)
 		{
-			fac_info_t * f;
+			const fac_info_t * f;
 			if(rr->GetFac(resource.value,f))
 			{
 				if(f->is_ring) 

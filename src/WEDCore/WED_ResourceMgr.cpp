@@ -62,14 +62,11 @@ WED_ResourceMgr::~WED_ResourceMgr()
 
 void	WED_ResourceMgr::Purge(void)
 {
-	for(map<string, vector<XObj8 *> >::iterator i = mObj.begin(); i != mObj.end(); ++i)
-		for(vector<XObj8 *>::iterator j = i->second.begin(); j != i->second.end(); ++j)
+	for(map<string, vector<const XObj8 *> >::iterator i = mObj.begin(); i != mObj.end(); ++i)
+		for(vector<const XObj8 *>::iterator j = i->second.begin(); j != i->second.end(); ++j)
 			delete *j;
-	for(map<string, XObj8 *>::iterator i = mFor.begin(); i != mFor.end(); ++i)
+	for(map<string, const XObj8 *>::iterator i = mFor.begin(); i != mFor.end(); ++i)
 		delete i->second;
-	for(map<string, str_info_t>::iterator i = mStr.begin(); i != mStr.end(); ++i)
-		for(vector<XObj8 *>::iterator j = i->second.previews.begin(); j != i->second.previews.end(); ++j)
-			delete *j;
 						
 	mPol.clear();
 	mLin.clear();
@@ -84,53 +81,78 @@ int		WED_ResourceMgr::GetNumVariants(const string& path)
 	return mLibrary->GetNumVariants(path);
 }
 
-
-bool	WED_ResourceMgr::GetObjRelative(const string& obj_path, const string& parent_path, XObj8 *& obj)
+XObj8 * WED_ResourceMgr::LoadObj(const string& abspath)
 {
+
+printf("LoadObj '%s' - ",abspath.c_str());
+
+	XObj8 * new_obj = new XObj8;
+	if(!XObj8Read(abspath.c_str(),*new_obj))
+	{
+		XObj obj7;
+		if(XObjRead(abspath.c_str(),obj7))
+		{
+			Obj7ToObj8(obj7,*new_obj);
+		}
+		else
+		{
+			delete new_obj;
+printf("NULL\n"); fflush(stdout);
+		
+			return nullptr;
+		}
+	}
+
+	if (new_obj->texture.length() > 0) 	process_texture_path(abspath, new_obj->texture);
+	if (new_obj->texture_draped.length() > 0)
+	{
+		process_texture_path(abspath, new_obj->texture_draped);
+		if(new_obj->texture.length() == 0)
+			new_obj->texture = new_obj->texture_draped;
+	}
+	else
+		new_obj->texture_draped = new_obj->texture;
+
+printf("GOT it !\n"); fflush(stdout);
+	return new_obj;
+}
+
+bool	WED_ResourceMgr::GetObjRelative(const string& obj_path, const string& parent_path, XObj8 const *& obj)
+{
+
+printf("GetObjRel '%s', '%s'\n", obj_path.c_str(), parent_path.c_str());
+
 	if(GetObj(obj_path,obj))
+	{
+printf("GetObjRel GotObj via obj_path '%s'\n", obj_path.c_str());
 		return true;
+	}
 	string lib_key = parent_path + string("\n") + obj_path;
 	if(GetObj(lib_key,obj))
+	{
+printf("GetObjRel GotObj via lib_key '%s'\n", lib_key.c_str());
 		return true;
+}
 	string full_parent = mLibrary->GetResourcePath(parent_path);
 	string::size_type s = full_parent.find_last_of("\\/:");
 	if(s == full_parent.npos) full_parent.clear(); else full_parent.erase(s+1);
 	string p = full_parent + obj_path;
 
-	obj = new XObj8;
-	if(!XObj8Read(p.c_str(),*obj))
-	{
-		XObj obj7;
-		if(XObjRead(p.c_str(),obj7))
-		{
-			Obj7ToObj8(obj7,*obj);
-		}
-		else
-		{
-			delete obj;
-			obj = NULL;
-			return false;
-		}
-	}
-
-	if (obj->texture.length() > 0) 	process_texture_path(p,obj->texture);
-	if (obj->texture_draped.length() > 0)
-	{
-		process_texture_path(p,obj->texture_draped);
-		if(obj->texture.length() == 0)
-			obj->texture = obj->texture_draped;
-	}
-	else
-		obj->texture_draped = obj->texture;
-
-	mObj[lib_key].push_back(obj);
+printf("GetObjRel trying via parentpath '%s'\n", p.c_str());
 	
+	XObj8 * new_obj = LoadObj(p);
+	
+	if(!new_obj) return false;
+
+	mObj[lib_key].push_back(new_obj);
+	obj = new_obj;
 	return true;
 }
 
-bool	WED_ResourceMgr::GetObj(const string& path, XObj8 *& obj, int variant)
+bool	WED_ResourceMgr::GetObj(const string& path, XObj8 const *& obj, int variant)
 {
-	map<string,vector<XObj8 *> >::iterator i = mObj.find(path);
+//printf("GetObj %s' V=%d\n", path.c_str(), variant);
+	map<string,vector<const XObj8 *> >::iterator i = mObj.find(path);
 
 	if(i != mObj.end())
 	{
@@ -138,41 +160,28 @@ bool	WED_ResourceMgr::GetObj(const string& path, XObj8 *& obj, int variant)
 		obj = i->second[variant];
 		return true;
 	}
-		
+
 	int n_variants = mLibrary->GetNumVariants(path);
+	
+printf("GetObj trying to load '%s' V=%d/%d\n", path.c_str(), variant, n_variants);
+
 	for (int v = 0; v < n_variants; ++v)
 	{
 		string p = mLibrary->GetResourcePath(path,v);
 //	if (!p.size()) p = mLibrary->CreateLocalResourcePath(path);
 	
-		obj = new XObj8;
-		if(!XObj8Read(p.c_str(),*obj))
+		XObj8 * new_obj = LoadObj(p);
+		if(new_obj)
 		{
-			XObj obj7;
-			if(XObjRead(p.c_str(),obj7))
-			{
-				Obj7ToObj8(obj7,*obj);
-			}
-			else
-			{
-				delete obj;
-				obj = NULL;
-				return false;
-			}
-		}
-		if (obj->texture.length() > 0) 	process_texture_path(p,obj->texture);
-		if (obj->texture_draped.length() > 0)
-		{
-			process_texture_path(p,obj->texture_draped);
-			if(obj->texture.length() == 0)
-				obj->texture = obj->texture_draped;
+			mObj[path].push_back(new_obj);
+			obj = new_obj;
 		}
 		else
-			obj->texture_draped = obj->texture;
-
-		mObj[path].push_back(obj);
+		{
+			obj = nullptr;
+			return false;
+		}
 	}
-
 	return true;
 }
 
@@ -188,25 +197,27 @@ bool 	WED_ResourceMgr::SetPolUV(const string& path, Bbox2 box)
 		return false;
 }
 
-bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t& out_info)
+bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t const *& info)
 {
 	map<string,lin_info_t>::iterator i = mLin.find(path);
 	if(i != mLin.end())
 	{
-		out_info = i->second;
+		info = &i->second;
 		return true;
 	}
+	
+	lin_info_t * out_info = new lin_info_t;
 
-	out_info.base_tex.clear();
-	out_info.scale_s=100;
-	out_info.scale_t=100;
+	out_info->base_tex.clear();
+	out_info->scale_s=100;
+	out_info->scale_t=100;
 	float tex_width = 1024;
-	out_info.s1.clear();
-	out_info.sm.clear();
-	out_info.s2.clear();
-	out_info.rgb[0] = 0.75;   // taxi line yellow
-	out_info.rgb[1] = 0.6;
-	out_info.rgb[2] = 0.15;
+	out_info->s1.clear();
+	out_info->sm.clear();
+	out_info->s2.clear();
+	out_info->rgb[0] = 0.75;   // taxi line yellow
+	out_info->rgb[1] = 0.6;
+	out_info->rgb[2] = 0.15;
 
 	string p = mLibrary->GetResourcePath(path);
 	MFMemFile * lin = MemFile_Open(p.c_str());
@@ -227,12 +238,12 @@ bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t& out_info)
 	{
 		if (MFS_string_match(&s,"TEXTURE", false))
 		{
-			MFS_string(&s,&out_info.base_tex);
+			MFS_string(&s,&out_info->base_tex);
 		}
 		else if (MFS_string_match(&s,"SCALE", false))
 		{
-			out_info.scale_s = MFS_double(&s);
-			out_info.scale_t = MFS_double(&s);
+			out_info->scale_s = MFS_double(&s);
+			out_info->scale_t = MFS_double(&s);
 		}
 		else if (MFS_string_match(&s,"TEX_WIDTH", false))
 		{
@@ -240,9 +251,9 @@ bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t& out_info)
 		}
 		else if (MFS_string_match(&s,"PREVIEW_RGB", false))
 		{
-			out_info.rgb[0] = MFS_double(&s);
-			out_info.rgb[1] = MFS_double(&s);
-			out_info.rgb[2] = MFS_double(&s);
+			out_info->rgb[0] = MFS_double(&s);
+			out_info->rgb[1] = MFS_double(&s);
+			out_info->rgb[2] = MFS_double(&s);
 		}
 		else if (MFS_string_match(&s,"S_OFFSET", false))
 		{
@@ -252,22 +263,23 @@ bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t& out_info)
 			float s2 = MFS_double(&s);
 			if (s2 > s1 && s2 > sm)
 			{
-				out_info.s1.push_back(s1/tex_width);
-				out_info.sm.push_back(sm/tex_width);
-				out_info.s2.push_back(s2/tex_width);
+				out_info->s1.push_back(s1/tex_width);
+				out_info->sm.push_back(sm/tex_width);
+				out_info->s2.push_back(s2/tex_width);
 			}
 		}
 		MFS_string_eol(&s,NULL);
 	}
 	MemFile_Close(lin);
 	
-	if (out_info.s1.size() < 1) 
+	if (out_info->s1.size() < 1) 
 		return false;
 
-	out_info.eff_width = out_info.scale_s * ( out_info.s2[0] - out_info.s1[0] - 4 / tex_width ); // assume 2 transparent pixels on each side
+	out_info->eff_width = out_info->scale_s * ( out_info->s2[0] - out_info->s1[0] - 4 / tex_width ); // assume 2 transparent pixels on each side
 
-	process_texture_path(p,out_info.base_tex);
-	mLin[path] = out_info;
+	process_texture_path(p,out_info->base_tex);
+	mLin[path] = *out_info;
+	info = out_info;
 	
 	return true;
 }
@@ -287,18 +299,18 @@ static void clean_rpath(string& s)
 			s[p] = DIR_CHAR;
 }
 
-bool	WED_ResourceMgr::GetStr(const string& path, str_info_t& out_info)
+bool	WED_ResourceMgr::GetStr(const string& path, str_info_t const *& info)
 {
 	map<string,str_info_t>::iterator i = mStr.find(path);
 	if(i != mStr.end())
 	{
-		out_info = i->second;
+		info = &i->second;
 		return true;
 	}
+	str_info_t * out_info = new str_info_t;
 
-	out_info.offset = 0.0;
-	out_info.rotation = 0.0;
-	out_info.previews.clear();
+	out_info->offset = 0.0;
+	out_info->rotation = 0.0;
 
 	string p = mLibrary->GetResourcePath(path);
 	MFMemFile * str = MemFile_Open(p.c_str());
@@ -319,90 +331,77 @@ bool	WED_ResourceMgr::GetStr(const string& path, str_info_t& out_info)
 	{
 		if (MFS_string_match(&s,"OFFSET", false))
 		{
-			out_info.offset = MFS_double(&s);
+			out_info->offset = MFS_double(&s);
 		}
 		else if (MFS_string_match(&s,"OBJECT", false))
 		{
-			out_info.rotation = MFS_double(&s);
+			out_info->rotation = MFS_double(&s);    // we dont randomize the headings, but if a rotation is specified, we obey that
 			int ignore = MFS_double(&s);
 			string obj_res;
 			MFS_string(&s,&obj_res);
-			
+printf("str res path '%s'\n",obj_res.c_str());
 			clean_rpath(obj_res);
-			obj_res= FILE_get_dir_name(p) + obj_res;
-			FILE_case_correct( (char *) obj_res.c_str()); 
-
-			XObj8 * obj = new XObj8;
-			if(!XObj8Read(obj_res.c_str(),*obj))
-			{
-				delete obj;
-				return false;
-			}
-			if (obj->texture.length() > 0) 	process_texture_path(p,obj->texture);
-			if (obj->texture_draped.length() > 0)
-			{
-				process_texture_path(p,obj->texture_draped);
-				if(obj->texture.length() == 0)
-					obj->texture = obj->texture_draped;
-			}
-			else
-				obj->texture_draped = obj->texture;
-
-			out_info.previews.push_back(obj);
+//			obj_res = FILE_get_dir_name(p) + obj_res;
+//			FILE_case_correct( (char *) obj_res.c_str());
+//printf("str case corr '%s'\n",obj_res.c_str());
+			out_info->objs.push_back(obj_res);
 		}
 		MFS_string_eol(&s,NULL);
 	}
 	MemFile_Close(str);
-	mStr[path] = out_info;
+	mStr[path] = *out_info;
+	info = out_info;
 	return true;
 }
 
 
-bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t& out_info)
+bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t const*& info)
 {
 	map<string,pol_info_t>::iterator i = mPol.find(path);
 	if(i != mPol.end())
 	{
-		out_info = i->second;
+		info = &i->second;
 		return true;
 	}
 	
-	out_info.mSubBoxes.clear();
-	out_info.mUVBox = Bbox2();
+	pol_info_t * pol = new pol_info_t;
+	
+	pol->mSubBoxes.clear();
+	pol->mUVBox = Bbox2();
 
 	string p = mLibrary->GetResourcePath(path);
-	MFMemFile * pol = MemFile_Open(p.c_str());
-	if(!pol) return false;
+	MFMemFile * file = MemFile_Open(p.c_str());
+	if(!file) return false;
 
 	MFScanner	s;
-	MFS_init(&s, pol);
+	MFS_init(&s, file);
 
 	int versions[] = { 850, 0 };
 
 	if(!MFS_xplane_header(&s,versions,"DRAPED_POLYGON",NULL))
 	{
-		MemFile_Close(pol);
+		MemFile_Close(file);
 		return false;
 	}
 
-	out_info.base_tex.clear();
-	out_info.hasDecal=false;
-	out_info.proj_s=1000;
-	out_info.proj_t=1000;
-	out_info.kill_alpha=false;
-	out_info.wrap=false;
+	pol->base_tex.clear();
+	pol->hasDecal=false;
+	pol->proj_s=1000;
+	pol->proj_t=1000;
+	pol->kill_alpha=false;
+	pol->wrap=false;
 
 	while(!MFS_done(&s))
 	{
 		if (MFS_string_match(&s,"TEXTURE", false))
 		{
-			MFS_string(&s,&out_info.base_tex);
-			out_info.wrap=true;
+			MFS_string(&s,&pol->base_tex);
+			pol->wrap=true;
 		}
 		else if (MFS_string_match(&s,"SCALE", false))
 		{
-			out_info.proj_s = MFS_double(&s);
-			out_info.proj_t = MFS_double(&s);
+			pol->proj_s = MFS_double(&s);
+			pol->proj_t = MFS_double(&s);
 		}
 		else if (MFS_string_match(&s,"#subtex", false)) 
 		{
@@ -413,34 +412,35 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t& out_info)
 			if (s2 > s1 && t2 > t1)
 			{
 //		printf("read subtex\n");
-				out_info.mSubBoxes.push_back(Bbox2(s1,t1,s2,t2));
+				pol->mSubBoxes.push_back(Bbox2(s1,t1,s2,t2));
 			}
 		}
 		else if (MFS_string_match(&s,"TEXTURE_NOWRAP", false))
 		{
-			MFS_string(&s,&out_info.base_tex);
-			out_info.wrap=false;
+			MFS_string(&s,&pol->base_tex);
+			pol->wrap=false;
 		}
 		else if (MFS_string_match(&s,"DECAL_LIB", true))
 		{
-			out_info.hasDecal=true;
+			pol->hasDecal=true;
 		}
 		else if (MFS_string_match(&s,"NO_ALPHA", true))
 		{
-			out_info.kill_alpha=true;
+			pol->kill_alpha=true;
 		}
 		else if (MFS_string_match(&s,"LAYER_GROUP",false))
 		{
-			MFS_string(&s,&out_info.group);
-			out_info.group_offset = MFS_int(&s);
+			MFS_string(&s,&pol->group);
+			pol->group_offset = MFS_int(&s);
 		}
 
 		MFS_string_eol(&s,NULL);
 	}
-	MemFile_Close(pol);
+	MemFile_Close(file);
 
-	process_texture_path(p,out_info.base_tex);
-	mPol[path] = out_info;
+	process_texture_path(p,pol->base_tex);
+	mPol[path] = *pol;
+	info = pol;
 	
 	return true;
 }
@@ -479,14 +479,14 @@ void	WED_ResourceMgr::ReceiveMessage(
 
 #define FAIL(s) { printf("%s: %s\n",path.c_str(),s); return false; }
 
-bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t *& fac, int variant)
+bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t const *& info, int variant)
 {
 	map<string,vector<fac_info_t *> >::iterator i = mFac.find(path);
 	if(i != mFac.end())
 	{
 //printf("OLD FAC p=%s, v=%d, nv=%d\n",path.c_str(),variant, (int) i->second.size());
 		DebugAssert(variant < i->second.size());
-		fac = i->second[variant];
+		info = i->second[variant];
 		return true;
 	}
 
@@ -500,7 +500,7 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t *& fac, int variant)
 		MFMemFile * file = MemFile_Open(p.c_str());
 		if(!file) continue;
 		
-		fac = new fac_info_t;
+		fac_info_t * fac = new fac_info_t;
 		
 		MFScanner	s;
 		MFS_init(&s, file);
@@ -947,7 +947,7 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t *& fac, int variant)
 
 		mFac[path].push_back(fac);
 	}
-	fac = mFac[path].front();
+	info = mFac[path].front();
 
 	return true;
 }
@@ -974,9 +974,9 @@ struct tree_t {
 	int q;				// number of quads the tree is constructed of
 };
 
-bool	WED_ResourceMgr::GetFor(const string& path,  XObj8 *& obj)
+bool	WED_ResourceMgr::GetFor(const string& path, XObj8 const *& obj)
 {
-	map<string,XObj8 *>::iterator i = mFor.find(path);
+	map<string,const XObj8 *>::iterator i = mFor.find(path);
 	if(i != mFor.end())
 	{
 		obj = i->second;
@@ -1094,11 +1094,11 @@ bool	WED_ResourceMgr::GetFor(const string& path,  XObj8 *& obj)
 #endif		
 	
 	// fills a XObj8-structure for library preview
-	obj = new XObj8;
+	XObj8 * new_obj = new XObj8;
 	XObjCmd8 cmd;
 
-	obj->texture = tex;
-	process_texture_path(p, obj->texture);
+	new_obj->texture = tex;
+	process_texture_path(p, new_obj->texture);
 	
 	int quads=0;
 
@@ -1130,48 +1130,49 @@ bool	WED_ResourceMgr::GetFor(const string& path,  XObj8 *& obj)
 			pt[6] = tree[i].s/scale_x;
 			pt[7] = tree[i].t/scale_y;
 
-			obj->geo_tri.append(pt);
+			new_obj->geo_tri.append(pt);
 			pt[0] = t_x + x*(1.0-tree[i].o/tree[i].w);
 			pt[2] = t_y + z*(1.0-tree[i].o/tree[i].w);
 			pt[6] = (tree[i].s+tree[i].w)/scale_x;
-			obj->geo_tri.append(pt);
+			new_obj->geo_tri.append(pt);
 			pt[1] = t_h;
 			pt[7] = (tree[i].t+tree[i].y)/scale_y;
-			obj->geo_tri.append(pt);
+			new_obj->geo_tri.append(pt);
 			pt[0] = t_x - x*(tree[i].o/tree[i].w);
 			pt[2] = t_y - z*(tree[i].o/tree[i].w);
 			pt[6] = tree[i].s/scale_x;
-			obj->geo_tri.append(pt);
+			new_obj->geo_tri.append(pt);
 		}
 	}
 	// set dimension
-	obj->geo_tri.get_minmax(obj->xyz_min,obj->xyz_max);
+	new_obj->geo_tri.get_minmax(new_obj->xyz_min,new_obj->xyz_max);
 
 	// "IDX "
 	int seq[6] = {0,1,2,0,2,3};
 	for (int i = 0; i < 6*quads; ++i)
-		obj->indices.push_back(4*(i/6)+seq[i%6]);
+		new_obj->indices.push_back(4*(i/6)+seq[i%6]);
 
 	// "ATTR_LOD"
-	obj->lods.push_back(XObjLOD8());
-	obj->lods.back().lod_near = 0;
-	obj->lods.back().lod_far  = 1000;
+	new_obj->lods.push_back(XObjLOD8());
+	new_obj->lods.back().lod_near = 0;
+	new_obj->lods.back().lod_far  = 1000;
 
 	// "ATTR_no_cull"
 	cmd.cmd = attr_NoCull;
-	obj->lods.back().cmds.push_back(cmd);
+	new_obj->lods.back().cmds.push_back(cmd);
 
 	// "TRIS ";
 	cmd.cmd = obj8_Tris;
 	cmd.idx_offset = 0;
 	cmd.idx_count  = 6*quads;
-	obj->lods.back().cmds.push_back(cmd);
+	new_obj->lods.back().cmds.push_back(cmd);
 
-	mFor[path] = obj;
+	mFor[path] = new_obj;
     // only problem is that the texture path contain spaces -> obj reader can not read that
     // but still valuable for checking the values/structure
 //    XObj8Write(mLibrary->CreateLocalResourcePath("forest_preview.obj").c_str(), *obj);
 
+	obj = new_obj;
 	return true;
 }
 

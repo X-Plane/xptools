@@ -34,7 +34,6 @@
 
 #include "WED_ResourceMgr.h"
 #include "WED_FacadePreview.h"
-#include "WED_PreviewLayer.h"
 
 static bool closer_to(double x, double a, double b)
 {
@@ -565,15 +564,23 @@ static void DrawQuad(float * coords, float * texes)
 	}
 }
 
-void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, fac_info_t& info, const Polygon2& footprint, const vector<int>& choices, double fac_height, GUI_GraphState * g)
+#include "WED_PreviewLayer.h"
+
+struct obj {
+	int 	idx;                 // index to type 2 objects
+	float	x,y,z,r;
+};
+
+void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, const fac_info_t& info, const Polygon2& footprint, const vector<int>& choices, double fac_height, GUI_GraphState * g)
 {
 	TexRef	tRef = tman->LookupTexture(info.wall_tex.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);			
 	g->SetTexUnits(1);
 	g->BindTex(tRef  ? tman->GetTexID(tRef) : 0, 0);
 	
 	const REN_facade_floor_t * bestFloor;
-	vector<Point2> roof_pts;
-	double roof_height;
+	vector<Point2>   roof_pts;
+	double           roof_height;
+	vector<obj>      obj_locs;
 	
 	if(info.two_sided)
 		glDisable(GL_CULL_FACE);
@@ -628,7 +635,6 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, fa
 			if(f.max_roof_height() < fac_height)
 				bestFloor = &f;
 		roof_height = bestFloor->max_roof_height();
-		info.obj_locs.clear();
 		
 		glBegin(GL_TRIANGLES);
 		for (int w = 0; w < n_wall; ++w)
@@ -676,7 +682,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, fa
 				}
 				for(auto o: t.objs)
 				{
-					fac_info_t::obj obj_ref;
+					struct obj obj_ref;
 					obj_ref.idx = o.idx;
 					Point2 xy = thisPt - dir_z * o.xyzr[0] - seg_dir * o.xyzr[2];
 
@@ -684,7 +690,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, fa
 					obj_ref.y = o.xyzr[1];
 					obj_ref.z = xy.y();
 					obj_ref.r = o.xyzr[3] + atan2(dir_z.y(), dir_z.x()) * RAD_TO_DEG - 180.0;
-					info.obj_locs.push_back(obj_ref);
+					obj_locs.push_back(obj_ref);
 				}
 				thisPt += seg_dir * t.bounds[2];
 			}
@@ -754,9 +760,9 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, fa
 		glEnd();
 	}
 
-	for(auto l : info.obj_locs)
+	for(auto l : obj_locs)
 	{
-		XObj8 * oo;
+		const XObj8 * oo;
 		if(rman->GetObjRelative(info.objs[l.idx].c_str(), vpath, oo))
 		{
 			// facade is aligned so midpoint of first wall is origin
@@ -775,7 +781,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, fa
 			string scp_base(f.choices[0].base_obj);
 			if(!scp_base.empty())
 			{
-				XObj8 * oo;
+				const XObj8 * oo;
 				if(rman->GetObjRelative(scp_base, vpath, oo))
 				{
 					draw_obj_at_xyz(tman, oo,
@@ -786,7 +792,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, fa
 			string scp_twr(f.choices[0].towr_obj);
 			if(!scp_twr.empty())
 			{
-				XObj8 * oo;
+				const XObj8 * oo;
 				if(rman->GetObjRelative(scp_twr, vpath, oo))
 				{
 					draw_obj_at_xyz(tman, oo,

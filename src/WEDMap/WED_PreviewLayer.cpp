@@ -145,7 +145,7 @@ static bool setup_taxi_texture(int surface_code, double heading, const Point2& c
 	}
 }
 
-static bool setup_pol_texture(ITexMgr * tman, pol_info_t& pol, double heading, bool no_proj, const Point2& centroid, GUI_GraphState * g,
+static bool setup_pol_texture(ITexMgr * tman, const pol_info_t& pol, double heading, bool no_proj, const Point2& centroid, GUI_GraphState * g,
 							WED_MapZoomerNew * z, float alpha, bool isAbsPath = true)
 {
 	TexRef	ref = tman->LookupTexture(pol.base_tex.c_str(),true, pol.wrap ? (tex_Compress_Ok|tex_Wrap|tex_Always_Pad) : tex_Compress_Ok|tex_Always_Pad);
@@ -246,7 +246,7 @@ void Obj_SetNoDraped(void * ref)
 
 static ObjDrawFuncs10_t kFuncs  = { Obj_SetupPoly, Obj_SetupLine, Obj_SetupLight, Obj_SetupMovie, Obj_SetupPanel, Obj_TexCoord, Obj_TexCoordPointer, Obj_GetAnimParam, Obj_SetDraped, Obj_SetNoDraped };
 
-void draw_obj_at_ll(ITexMgr * tman, XObj8 * o, const Point2& loc, float r, GUI_GraphState * g, WED_MapZoomerNew * zoomer)
+void draw_obj_at_ll(ITexMgr * tman, const XObj8 * o, const Point2& loc, float r, GUI_GraphState * g, WED_MapZoomerNew * zoomer)
 {
 	TexRef	ref = tman->LookupTexture(o->texture.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);			
 	TexRef	ref2 = o->texture_draped.empty() ? ref : tman->LookupTexture(o->texture_draped.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);
@@ -273,7 +273,7 @@ void draw_obj_at_ll(ITexMgr * tman, XObj8 * o, const Point2& loc, float r, GUI_G
 	glPopMatrix();
 }
 
-void draw_obj_at_xyz(ITexMgr * tman, XObj8 * o, double x, double y, double z, float r, GUI_GraphState * g)
+void draw_obj_at_xyz(ITexMgr * tman, const XObj8 * o, double x, double y, double z, float r, GUI_GraphState * g)
 {
 	TexRef	ref = tman->LookupTexture(o->texture.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);			
 	TexRef	ref2 = o->texture_draped.empty() ? ref : tman->LookupTexture(o->texture_draped.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);
@@ -286,15 +286,13 @@ void draw_obj_at_xyz(ITexMgr * tman, XObj8 * o, double x, double y, double z, fl
 
 	glTranslatef(x,y,z);
 	glRotatef(r, 0, -1, 0);
-	g->EnableDepth(true,true);
+//	g->EnableDepth(true,true);
 	//glClear(GL_DEPTH_BUFFER_BIT);
 	Obj_DrawStruct ds = { g, id1, id2 };
 	ObjDraw8(*o, 0, &kFuncs, &ds); 
-	g->EnableDepth(false,false);
+//	g->EnableDepth(false,false);
 	glPopMatrix();
 }
-
-
 
 // Given a group name and an offset, this comes up with the total layer number...
 
@@ -605,12 +603,12 @@ struct	preview_line : WED_PreviewItem {
 	{
 		WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 		string vpath;
-		lin_info_t linfo;
+		const lin_info_t * linfo;
 		lin->GetResource(vpath);
 		if (!rmgr->GetLin(vpath,linfo)) return;
 
 		ITexMgr *	tman = WED_GetTexMgr(resolver);
-		TexRef tref = tman->LookupTexture(linfo.base_tex.c_str(),true,tex_Compress_Ok);
+		TexRef tref = tman->LookupTexture(linfo->base_tex.c_str(),true,tex_Compress_Ok);
 		int tex_id = 0;
 		if(tref) tex_id = tman->GetTexID(tref);
 
@@ -624,7 +622,7 @@ struct	preview_line : WED_PreviewItem {
 
 		IGISPointSequence * ps = SAFE_CAST(IGISPointSequence,lin);
 		if(ps)
-			if(linfo.eff_width * zoomer->GetPPM() < MIN_PIXELS_PREVIEW || !tex_id)             // cutoff size for real preview
+			if(linfo->eff_width * zoomer->GetPPM() < MIN_PIXELS_PREVIEW || !tex_id)             // cutoff size for real preview
 			{
 				g->SetState(false,0,false,false,false,false,false);
 				
@@ -636,9 +634,9 @@ struct	preview_line : WED_PreviewItem {
 					thing = dynamic_cast<WED_Entity *>(thing->GetParent());
 				}
 				if (locked)
-					glColor3fv(linfo.rgb);
+					glColor3fv(linfo->rgb);
 				else                           // do some color correction to account for the green vs grey line
-					glColor3f(min(1.0,linfo.rgb[0]+0.2),max(0.0,linfo.rgb[1]-0.0),min(1.0,linfo.rgb[2]+0.2));
+					glColor3f(min(1.0,linfo->rgb[0]+0.2),max(0.0,linfo->rgb[1]-0.0),min(1.0,linfo->rgb[2]+0.2));
 					
 				for(int i = 0; i < lin->GetNumSides(); ++i)
 				{
@@ -652,19 +650,20 @@ struct	preview_line : WED_PreviewItem {
 			else
 			{
 				glFrontFace(GL_CCW);
-				for (int l = 0; l < linfo.s1.size(); ++l)
+				for (int l = 0; l < linfo->s1.size(); ++l)
 				{
 					vector<Point2>	pts;
 					vector<int> cont;
 					PointSequenceToVector(ps,zoomer,pts,false,cont,0,true);
-					draw_line_preview(pts, linfo, l, zoomer->GetPPM());
+					draw_line_preview(pts, *linfo, l, zoomer->GetPPM());
 				}
 				glFrontFace(GL_CW);
 			}
 	}
 };
 
-static void draw_string_preview(const vector<Point2>& pts, double& d0, double ds, const str_info_t& sinfo, WED_MapZoomerNew * zoomer, GUI_GraphState * g, ITexMgr * tman)
+static void draw_string_preview(const vector<Point2>& pts, double& d0, double ds, const str_info_t& sinfo, WED_MapZoomerNew * zoomer, 
+	GUI_GraphState * g, ITexMgr * tman, const XObj8 * obj)
 {
 	for (int j = 0; j < pts.size()-1; ++j)
 	{
@@ -696,7 +695,7 @@ static void draw_string_preview(const vector<Point2>& pts, double& d0, double ds
 			
 			while(obj_this_seg >= 0)
 			{
-				draw_obj_at_ll(tman, sinfo.previews[0], zoomer->PixelToLL(cur_pos+off), hdg, g, zoomer);
+				draw_obj_at_ll(tman, obj, zoomer->PixelToLL(cur_pos+off), hdg, g, zoomer);
 				cur_pos += dir * (ds / len_m);
 				obj_this_seg--;
 			}
@@ -713,32 +712,36 @@ struct	preview_string : WED_PreviewItem {
 	{
 		WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 		string vpath;
-		str_info_t sinfo;
+		const str_info_t * sinfo;
 		str->GetResource(vpath);
 		if (!rmgr->GetStr(vpath,sinfo)) return;
 
 		IGISPointSequence * ps = SAFE_CAST(IGISPointSequence,str);
-		if(ps && sinfo.previews[0])
+		if(ps && sinfo->objs.size())
 		{
-			float real_radius=pythag(
-					sinfo.previews[0]->xyz_max[0]- sinfo.previews[0]->xyz_min[0],
-					sinfo.previews[0]->xyz_max[2]- sinfo.previews[0]->xyz_min[2]);
-
-			if(real_radius * zoomer->GetPPM() > MIN_PIXELS_PREVIEW)             // cutoff size for real preview
+			const XObj8 * o;
+			if(rmgr->GetObjRelative(sinfo->objs.front(),vpath,o))
 			{
-				ITexMgr * tman = WED_GetTexMgr(resolver);
-				g->SetState(false,1,false,false,true,false,false);
-				glColor3f(1,1,1);
-	
-				double ds = str->GetSpacing();
-				double d0 = 0.0;
-				
-				for(int i = 0; i < ps->GetNumSides(); ++i)
+				float real_radius=pythag(
+						o->xyz_max[0]- o->xyz_min[0],
+						o->xyz_max[2]- o->xyz_min[2]);
+
+				if(real_radius * zoomer->GetPPM() > MIN_PIXELS_PREVIEW)             // cutoff size for real preview
 				{
-					vector<Point2>	pts;
-					SideToPoints(ps,i,zoomer, pts);
+					ITexMgr * tman = WED_GetTexMgr(resolver);
+					g->SetState(false,1,false,false,true,false,false);
+					glColor3f(1,1,1);
+		
+					double ds = str->GetSpacing();
+					double d0 = 0.0;
 					
-					draw_string_preview(pts, d0, ds, sinfo, zoomer, g, tman);
+					for(int i = 0; i < ps->GetNumSides(); ++i)
+					{
+						vector<Point2>	pts;
+						SideToPoints(ps,i,zoomer, pts);
+						
+						draw_string_preview(pts, d0, ds, *sinfo, zoomer, g, tman, o);
+					}
 				}
 			}
 		}
@@ -776,7 +779,7 @@ struct	preview_airportlines : WED_PreviewItem {
 				}
 			}
 			string vpath;
-			lin_info_t linfo;
+			const lin_info_t * linfo;
 			int tex_id = 0;
 			WED_ResourceMgr * rmgr = WED_GetResourceMgr(res);
 			ITexMgr         * tman = WED_GetTexMgr(res);
@@ -785,7 +788,7 @@ struct	preview_airportlines : WED_PreviewItem {
 			if (lmgr->GetLineVpath(t, vpath))
 				if (rmgr->GetLin(vpath, linfo))
 				{
-					TexRef tref = tman->LookupTexture(linfo.base_tex.c_str(),true,tex_Compress_Ok);
+					TexRef tref = tman->LookupTexture(linfo->base_tex.c_str(),true,tex_Compress_Ok);
 					if(tref) tex_id = tman->GetTexID(tref);
 				}
 			
@@ -821,9 +824,9 @@ struct	preview_airportlines : WED_PreviewItem {
 					}
 				}
 
-				for (int l = 0; l < linfo.s1.size(); ++l)
+				for (int l = 0; l < linfo->s1.size(); ++l)
 				{
-					draw_line_preview(pts, linfo, l, zoomer->GetPPM());
+					draw_line_preview(pts, *linfo, l, zoomer->GetPPM());
 				}
 			}
 			else
@@ -863,7 +866,7 @@ struct	preview_airportlights : WED_PreviewItem {
 				}
 			}
 			string vpath;
-			str_info_t sinfo;
+			const str_info_t * sinfo;
 			int tex_id = 0;
 			if (t && lmgr->GetLineVpath(t, vpath) && rmgr->GetStr(vpath, sinfo))
 			{
@@ -898,7 +901,9 @@ struct	preview_airportlights : WED_PreviewItem {
 						if (tn != t) { ++i; break; }           // stop, as next segment will need different line type;
 					}
 				}
-				draw_string_preview(pts, d0, ds, sinfo, zoomer, g, tman);
+				const XObj8 * obj;
+				if(rmgr->GetObjRelative(sinfo->objs.front(), vpath, obj))
+					draw_string_preview(pts, d0, ds, *sinfo, zoomer, g, tman, obj);
 			}
 			else
 				++i; // in case we can't get the attributes, skip to next node. If we dont, we'll loop indefinitely;
@@ -964,7 +969,7 @@ struct	preview_facade : public preview_polygon {
 			
 			string vpath;
 			fac->GetResource(vpath);
-			fac_info_t * info;
+			const fac_info_t * info;
 			WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 			
 			glColor4f(1,1,1,1);
@@ -1040,7 +1045,7 @@ struct	preview_pol : public preview_polygon {
 		WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 		ITexMgr *	tman = WED_GetTexMgr(resolver);
 		string vpath;
-		pol_info_t	pol_info;
+		const pol_info_t * pol_info;
 	
 		pol->GetResource(vpath);
 		if(rmgr->GetPol(vpath,pol_info))
@@ -1048,7 +1053,7 @@ struct	preview_pol : public preview_polygon {
 			Point2 pt0;
 			pol->GetOuterRing()->GetNthPoint(0)->GetLocation(gis_Geo, pt0);
 			pt0 = zoomer->LLToPixel(pt0);
-			setup_pol_texture(tman, pol_info, pol->GetHeading(), false, pt0, g, zoomer, mPavementAlpha);
+			setup_pol_texture(tman, *pol_info, pol->GetHeading(), false, pt0, g, zoomer, mPavementAlpha);
 			preview_polygon::draw_it(zoomer, g, mPavementAlpha);
 			kill_transform();
 		}	
@@ -1083,10 +1088,10 @@ struct	preview_ortho : public preview_polygon {
 		else
 		{
 			string vpath;
-			pol_info_t	pol_info;
+			const pol_info_t * pol_info;
 			orth->GetResource(vpath);
 			if(!rmgr->GetPol(vpath,pol_info)) return;
-			setup_pol_texture(tman, pol_info, 0.0, true, Point2(), g, zoomer, mPavementAlpha);
+			setup_pol_texture(tman, *pol_info, 0.0, true, Point2(), g, zoomer, mPavementAlpha);
 		}
 		preview_polygon::draw_it(zoomer,g,mPavementAlpha);
 		kill_transform();
@@ -1139,7 +1144,7 @@ static bool cull_tile(WED_MapZoomerNew * zoomer, double x1, double z1, double x2
 		z_min > bounds_pix[3];
 }
 
-bool cull_obj(WED_MapZoomerNew * zoomer, XObj8 * obj, const Point2& ll, double heading)
+bool cull_obj(WED_MapZoomerNew * zoomer, const XObj8 * obj, const Point2& ll, double heading)
 {
 	return cull_tile(
 		zoomer,
@@ -1184,7 +1189,7 @@ struct	preview_object : public WED_PreviewItem {
 		string vpath;
 
 		obj->GetResource(vpath);
-		XObj8 * o;
+		const XObj8 * o;
 		#if AIRPORT_ROUTING
 		agp_t agp;
 		#endif
@@ -1236,7 +1241,7 @@ struct	preview_object : public WED_PreviewItem {
 				}	
 				for(vector<agp_t::obj>::iterator o = agp.objs.begin(); o != agp.objs.end(); ++o)
 				{
-					XObj8 * oo;
+					const XObj8 * oo;
 					if((o->show_lo+o->show_hi)/2 <= preview_level)
 					if(rmgr->GetObjRelative(o->name,vpath,oo))
 					{
@@ -1291,7 +1296,7 @@ struct	preview_truck : public WED_PreviewItem {
 		case atc_ServiceTruck_Pushback:				vpath1 = "lib/airport/vehicles/pushback/tug.obj";				break;
 		}
 
-		XObj8 * o1 = NULL, * o2 = NULL;
+		const XObj8 * o1 = NULL, * o2 = NULL;
 		#if AIRPORT_ROUTING
 		agp_t agp;
 		#endif
@@ -1436,13 +1441,13 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		if(pol)	
 		{
 			string vpath;
-			pol_info_t	pol_info;
+			const pol_info_t * pol_info;
 			int lg = group_TaxiwaysBegin;
 			WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetResolver());
 			
 			pol->GetResource(vpath);
-			if(!vpath.empty() && rmgr->GetPol(vpath,pol_info) && !pol_info.group.empty())
-				lg = layer_group_for_string(pol_info.group.c_str(),pol_info.group_offset, lg);
+			if(!vpath.empty() && rmgr->GetPol(vpath,pol_info) && !pol_info->group.empty())
+				lg = layer_group_for_string(pol_info->group.c_str(),pol_info->group_offset, lg);
 			mPreviewItems.push_back(new preview_pol(pol,lg, GetResolver()));
 		}
 	}
@@ -1452,13 +1457,13 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		if (orth)
 		{
 			string vpath;
-			pol_info_t	pol_info;
+			const pol_info_t * pol_info;
 			int lg = group_TaxiwaysBegin;
 			WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetResolver());
 
 			orth->GetResource(vpath);
-			if(!vpath.empty() && rmgr->GetPol(vpath,pol_info) && !pol_info.group.empty())
-				lg = layer_group_for_string(pol_info.group.c_str(),pol_info.group_offset, lg);
+			if(!vpath.empty() && rmgr->GetPol(vpath,pol_info) && !pol_info->group.empty())
+				lg = layer_group_for_string(pol_info->group.c_str(),pol_info->group_offset, lg);
 			mPreviewItems.push_back(new preview_ortho(orth,lg, GetResolver()));
 		}
 	}	

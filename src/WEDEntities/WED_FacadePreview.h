@@ -44,7 +44,43 @@ typedef unsigned char 	xbyt;
 #define dev_assert(x) DebugAssert(x)
 #include "AssertUtils.h"
 
-#include "../../../facades/UTL_tile.h"
+//#include "../../../facades/UTL_tile.h"
+
+/****************************************************************************************************************
+ * SPELLING
+ ****************************************************************************************************************/
+
+// Given a bunch of tiles (up to 255), each of a different width...a spelling is a set of tile indices.  This lets
+// us rearrange art assets.  Our spelling structure has:
+// 1. A vector of tile indices.
+// 2. A vector of the width of the pick for each tile. (if indices[a] == indices[b] then widths[a] == widths[b])
+// 3. a total for the entire spelling, which is the sum of all elements in widths
+// The += operator concatenates in a spelling and updates widths.
+ 
+struct UTL_spelling_t {
+	vector<xbyt>					indices;
+	vector<xflt>					widths ;
+	xflt							total  ;
+	UTL_spelling_t() { total = 0.0f; }
+	
+	void clear() { indices.clear(); widths.clear(); total = 0.0f; }
+	bool empty() const { return indices.empty(); }
+	bool operator<(const UTL_spelling_t& rhs) const { 
+		dev_assert(indices.size() == widths.size());
+		dev_assert(rhs.indices.size() == rhs.widths.size());
+		return total < rhs.total; 
+	}
+	
+	UTL_spelling_t& operator+=(const UTL_spelling_t& rhs) {
+		dev_assert(indices.size() == widths.size());
+		dev_assert(rhs.indices.size() == rhs.widths.size());
+		indices.insert(indices.end(),rhs.indices.begin(),rhs.indices.end());
+		widths.insert(widths.end(),rhs.widths.begin(),rhs.widths.end());
+		dev_assert(indices.size() == widths.size());
+		total += rhs.total;
+		return *this;
+	}
+};
 
 class ITexMgr;
 class WED_ResourceMgr;
@@ -195,6 +231,6 @@ struct	REN_FacadeLOD_t {
 
 /**********************/
 
-void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, fac_info_t& info, const Polygon2& footprint, const vector<int>& choices, double fac_height, GUI_GraphState * g);
+void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, const fac_info_t& info, const Polygon2& footprint, const vector<int>& choices, double fac_height, GUI_GraphState * g);
 
 #endif

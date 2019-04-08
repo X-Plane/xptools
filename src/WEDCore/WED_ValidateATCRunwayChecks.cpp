@@ -1015,12 +1015,12 @@ static void	AnyPolgonsOnRunway( const RunwayInfo& runway_info,	 const vector<WED
 		if(pp->Cull(runway_bounds))
 		{
 			string vpath;
-			pol_info_t	pol_info;
+			const pol_info_t * pol_info;
 			
 			int lg = group_TaxiwaysBegin;
 			pp->GetResource(vpath);
-			if(!vpath.empty() && rmgr->GetPol(vpath,pol_info) && !pol_info.group.empty())
-				lg = layer_group_for_string(pol_info.group.c_str(),pol_info.group_offset, lg);
+			if(!vpath.empty() && rmgr->GetPol(vpath,pol_info) && !pol_info->group.empty())
+				lg = layer_group_for_string(pol_info->group.c_str(),pol_info->group_offset, lg);
 				
 			if(lg <= group_RunwaysEnd ) break;  // don't worry about polygons drawn underneath the runway
 			

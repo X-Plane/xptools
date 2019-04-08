@@ -105,7 +105,7 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 	
 		if(res_type == res_Facade)
 		{
-			fac_info_t * fac;
+			const fac_info_t * fac;
 			mResMgr->GetFac(mRes,fac);
 			//mWalls = 4 * ( (intlim(fac->wallName.size(),4,16)+3) / 4);
 			mWalls = intlim(fac->wallName.size(),4,16);
@@ -124,14 +124,14 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 	{
 		int tex_x, tex_y;
 		float tex_aspect;
-		pol_info_t pol;
+		const pol_info_t * pol;
 
 		mResMgr->GetPol(mRes,pol);
-		TexRef	tref = mTexMgr->LookupTexture(pol.base_tex.c_str(),true, pol.wrap ? (tex_Compress_Ok|tex_Wrap) : tex_Compress_Ok);
+		TexRef	tref = mTexMgr->LookupTexture(pol->base_tex.c_str(),true, pol->wrap ? (tex_Compress_Ok|tex_Wrap) : tex_Compress_Ok);
 		if (tref)
 		{
 			mTexMgr->GetTexInfo(tref,&tex_x,&tex_y,NULL, NULL, NULL, NULL);
-			tex_aspect = float(pol.proj_s * tex_x) / float(pol.proj_t * tex_y);
+			tex_aspect = float(pol->proj_s * tex_x) / float(pol->proj_t * tex_y);
 		}
 		else
 			tex_aspect = 1.0;
@@ -176,7 +176,7 @@ int	WED_LibraryPreviewPane::MouseDown(int x, int y, int button)
 	
     if (mType == res_Polygon)
     {
-		pol_info_t pol;
+		const pol_info_t * pol;
 		mResMgr->GetPol(mRes,pol);
 		
 		float prev_space = min(b[2]-b[0],b[3]-b[1]);
@@ -188,44 +188,43 @@ int	WED_LibraryPreviewPane::MouseDown(int x, int y, int button)
 
 		Point2 st = Point2((x-x1)/ds, (y-y1)/dt);   // texture coodinates where we clicked at
 
-		if (pol.mSubBoxes.size())
+		if (pol->mSubBoxes.size())
 		{
 			// go through list of subtexture boxes and find if we clicked inside one
 			static int lastBox = -1;                // the box we clicked on the last time. Helps to cycle trough overlapping boxes
 			int        firstBox = 999;              // the first box that fits this click location
 			int n;
-			for (n=0; n < pol.mSubBoxes.size(); ++n)
+			for (n=0; n < pol->mSubBoxes.size(); ++n)
 			{
-				if (pol.mSubBoxes[n].contains(st))
+				if (pol->mSubBoxes[n].contains(st))
 				{
 					if (n < firstBox) firstBox = n; // memorize the first of all boxes that fits the click
 					if (n > lastBox)                // is it a new-to-us box ?
 					{
-						pol.mUVBox=pol.mSubBoxes[n];
+						mResMgr->SetPolUV(mRes,pol->mSubBoxes[n]);
 						lastBox=n;
 						break;
 					}
 				}
 			}
 
-			if (n >= pol.mSubBoxes.size())         // apparently there is no new-to-us box here
+			if (n >= pol->mSubBoxes.size())         // apparently there is no new-to-us box here
 			{
 				if (firstBox < 999)
 				{
-					pol.mUVBox=pol.mSubBoxes[firstBox];    // so we go with the first best box we found
+					mResMgr->SetPolUV(mRes,pol->mSubBoxes[firstBox]);    // so we go with the first best box we found
 					lastBox=firstBox;
 				}
 				else
 				{
-					pol.mUVBox = Bbox2(0,0,1,1);   // there is no box where we clicked -> select whole texture
+					mResMgr->SetPolUV(mRes,Bbox2(0,0,1,1));   // there is no box where we clicked -> select whole texture
 					lastBox = -1;
 				}
 			}
 		}
 		else
-			pol.mUVBox = Bbox2();                 // there are no subboxes defined at all
+			mResMgr->SetPolUV(mRes,Bbox2());                 // there are no subboxes defined at all
 		
-		mResMgr->SetPolUV(mRes,pol.mUVBox);
 		Refresh();
 	}
 	return 1;
@@ -268,8 +267,8 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 {
 	int b[4]; GetBounds(b);
 
-	XObj8 * o = nullptr;
-	vector<XObj8 *> o_vec;
+	const XObj8 * o = nullptr;
+	vector<const XObj8 *> o_vec;
 	
 	float dx = b[2] - b[0];
 	float dy = b[3] - b[1];
@@ -277,23 +276,23 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 	#if AIRPORT_ROUTING
 	agp_t agp;
 	#endif
-	pol_info_t pol;
-	lin_info_t lin;
-	fac_info_t * fac = nullptr;
+	const pol_info_t * pol;
+	const lin_info_t * lin;
+	const fac_info_t * fac;
 
 	if(!mRes.empty())
 	{	switch(mType) {
 		case res_Polygon:
 			if(mResMgr->GetPol(mRes,pol))
 			{
-				TexRef	tref = mTexMgr->LookupTexture(pol.base_tex.c_str(),true, pol.wrap ? (tex_Compress_Ok|tex_Wrap) : tex_Compress_Ok);
+				TexRef	tref = mTexMgr->LookupTexture(pol->base_tex.c_str(),true, pol->wrap ? (tex_Compress_Ok|tex_Wrap) : tex_Compress_Ok);
 				if(tref != NULL)
 				{
 					int tex_id = mTexMgr->GetTexID(tref);
 
 					if (tex_id != 0)
 					{
-						g->SetState(false,1,false,!pol.kill_alpha,!pol.kill_alpha,false,false);
+						g->SetState(false,1,false,!pol->kill_alpha,!pol->kill_alpha,false,false);
 						g->BindTex(tex_id,0);
 						
 						float prev_space = min(b[2]-b[0],b[3]-b[1]);
@@ -306,7 +305,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 						float y2 = (dy + dt) /2;
 						
 						glBegin(GL_QUADS);
-						if(pol.wrap)
+						if(pol->wrap)
 						{
 							glTexCoord2f(extrap(x1,0,x2,1,b[0]),	extrap(y1,0,y2,1,b[1]));			glVertex2f(b[0],b[1]);
 							glTexCoord2f(extrap(x1,0,x2,1,b[0]),	extrap(y1,0,y2,1,b[3]));			glVertex2f(b[0],b[3]);
@@ -322,15 +321,15 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 						}
 						glEnd();
 						
-						if (!pol.mUVBox.is_null())                   // draw a box around the selected texture area
+						if (!pol->mUVBox.is_null())                   // draw a box around the selected texture area
 						{
 							g->Reset();
 							glColor4fv(WED_Color_RGBA(wed_StructureSelected));
 							glBegin(GL_LINE_LOOP);
-							glVertex2f(x1 + ds * pol.mUVBox.p1.x(), y1 + dt * pol.mUVBox.p1.y());
-							glVertex2f(x1 + ds * pol.mUVBox.p2.x(), y1 + dt * pol.mUVBox.p1.y());
-							glVertex2f(x1 + ds * pol.mUVBox.p2.x(), y1 + dt * pol.mUVBox.p2.y());
-							glVertex2f(x1 + ds * pol.mUVBox.p1.x(), y1 + dt * pol.mUVBox.p2.y());
+							glVertex2f(x1 + ds * pol->mUVBox.p1.x(), y1 + dt * pol->mUVBox.p1.y());
+							glVertex2f(x1 + ds * pol->mUVBox.p2.x(), y1 + dt * pol->mUVBox.p1.y());
+							glVertex2f(x1 + ds * pol->mUVBox.p2.x(), y1 + dt * pol->mUVBox.p2.y());
+							glVertex2f(x1 + ds * pol->mUVBox.p1.x(), y1 + dt * pol->mUVBox.p2.y());
 							glEnd();
 						}
 					}	
@@ -340,7 +339,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 		case res_Line:
 			if(mResMgr->GetLin(mRes,lin))
 			{
-				TexRef	tref = mTexMgr->LookupTexture(lin.base_tex.c_str(),true, tex_Compress_Ok);
+				TexRef	tref = mTexMgr->LookupTexture(lin->base_tex.c_str(),true, tex_Compress_Ok);
 				if(tref != NULL)
 				{
 					int tex_id = mTexMgr->GetTexID(tref);
@@ -354,19 +353,19 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 						float dt = (b[3]-b[1]) / mZoom;
 						
 						glBegin(GL_QUADS);
-						for (int n=0; n<lin.s1.size(); ++n)
+						for (int n=0; n<lin->s1.size(); ++n)
 						{	
-							float ds = dt * (lin.scale_s * (lin.s2[n]-lin.s1[n]) / lin.scale_t);
+							float ds = dt * (lin->scale_s * (lin->s2[n]-lin->s1[n]) / lin->scale_t);
 							
 							float x1 = (dx - ds) /2;
 							float x2 = (dx + ds) /2;
 							float y1 = (dy - dt) /2;
 							float y2 = (dy + dt) /2;
 							
-							glTexCoord2f(lin.s1[n], 0); glVertex2f(x1,y1);
-							glTexCoord2f(lin.s1[n], 1); glVertex2f(x1,y2);
-							glTexCoord2f(lin.s2[n],1); glVertex2f(x2,y2);
-							glTexCoord2f(lin.s2[n],0); glVertex2f(x2,y1);
+							glTexCoord2f(lin->s1[n], 0); glVertex2f(x1,y1);
+							glTexCoord2f(lin->s1[n], 1); glVertex2f(x1,y2);
+							glTexCoord2f(lin->s2[n],1); glVertex2f(x2,y2);
+							glTexCoord2f(lin->s2[n],0); glVertex2f(x2,y1);
 						}
 						glEnd();
 					}	
@@ -427,8 +426,11 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 					glTranslatef(-mWid*0.5, -max(5.0, fac->is_new ? 0.4 * mHgt : 1.8 * mHgt), 0.0);        // todo: better, actual height dependent heuristics
 				
 				g->EnableDepth(true,true);
+				g->EnableAlpha(true,true);
 				glClear(GL_DEPTH_BUFFER_BIT);
 				glEnable(GL_CULL_FACE);
+				
+				draw_facade(mTexMgr, mResMgr, mRes, *fac, footprint, choices, mHgt, g);
 				
 				// draw "ground" plane
 				g->SetTexUnits(0);
@@ -444,7 +446,6 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				glEnd();
 				glColor4f(1,1,1,1);
 
-				draw_facade(mTexMgr, mResMgr, mRes, *fac, footprint, choices, mHgt, g);
 				
 				glMatrixMode(GL_PROJECTION);
 				glPopMatrix();
@@ -459,9 +460,10 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 		case res_String:
 			if(!o)
 			{
-				str_info_t str;
+				const str_info_t * str;
 				if(mResMgr->GetStr(mRes,str))
-					o = str.previews[0];             // do the cheap thing: show only the first object. Could show a whole line ...
+					if(str->objs.size())
+						mResMgr->GetObjRelative(str->objs.front(), mRes, o);    // do the cheap thing: show only the first object. Could show a whole line ...
 			}
 		case res_Object:
 			float sx = ((dx > dy) ? (dx / dy) : 1.0)/2;
@@ -566,7 +568,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 					}	
 					for(vector<agp_t::obj>::iterator o = agp.objs.begin(); o != agp.objs.end(); ++o)
 					{
-						XObj8 * oo;
+						const XObj8 * oo;
 						if(mResMgr->GetObjRelative(o->name,mRes,oo))
 						{
 							draw_obj_at_xyz(mTexMgr, oo, o->x,0,-o->y,o->r, g);			
@@ -604,19 +606,19 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 					sprintf(buf2,"No preview for this facade available");
 				break;
 			case res_Polygon:
-				if (pol.hasDecal)
+				if (pol->hasDecal)
 				{
 					sprintf(buf1,"Has decal (not shown)");
 				}
-				if (pol.mSubBoxes.size())
+				if (pol->mSubBoxes.size())
 				{
 					sprintf(buf2,"Select desired part of texture by clicking on it");
 				}
 				break;
 			case res_Line:
-				if (lin.s1.size() && lin.s2.size())
+				if (lin->s1.size() && lin->s2.size())
 				{ 
-					sprintf(buf2,"w~%.0f%s",lin.eff_width * (gIsFeet ? 100.0/2.54 : 100.0), gIsFeet ? "in" : "cm" );
+					sprintf(buf2,"w~%.0f%s",lin->eff_width * (gIsFeet ? 100.0/2.54 : 100.0), gIsFeet ? "in" : "cm" );
 				}
 				break;
 			case res_Object:

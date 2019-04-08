@@ -91,7 +91,7 @@ bool		WED_ObjPlacement::Cull(const Bbox2& b) const
 			WED_ResourceMgr * rmgr = WED_GetResourceMgr(res);
 			if(rmgr)
 			{
-				XObj8 * o;
+				const XObj8 * o;
 				agp_t agp;
 				Point2	my_loc;
 				GetLocation(gis_Geo,my_loc);
