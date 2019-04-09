@@ -12,22 +12,22 @@
 #define DEBUG_VIS_LINES 1
 #endif
 
-#include "WED_EnumSystem.h"
 #include "WED_Validate.h"
 #include "WED_ValidateATCRunwayChecks.h"
-
-#include "WED_HierarchyUtils.h"
+#include "WED_EnumSystem.h"
 
 #include "WED_Airport.h"
 #include "WED_ATCFlow.h"
 #include "WED_ATCRunwayUse.h"
+#include "WED_PolygonPlacement.h"
 #include "WED_Runway.h"
 #include "WED_TaxiRoute.h"
-#include "WED_TaxiRouteNode.h"
 
-#include "CompGeomDefs2.h"
+#include "WED_ResourceMgr.h"
+#include "WED_HierarchyUtils.h"
 #include "CompGeomUtils.h"
 #include "GISUtils.h"
+#include "WED_PreviewLayer.h"
 
 static CoordTranslator2 translator;
 
@@ -851,80 +851,53 @@ static bool DoHotZoneChecks( const RunwayInfo& runway_info,
 							 WED_Airport* apt)
 {
 	int original_num_errors = msgs.size();
-	TaxiRouteNodeVec_t all_nodes;
-	for (int i = 0; i < all_taxiroutes.size(); ++i)
-	{
-		copy(all_taxiroutes[i].nodes.begin(), all_taxiroutes[i].nodes.end(), back_inserter(all_nodes));
-	}
-	
-	//runway side 0 is the lower side, 1 is the higher side
 	for (int runway_side = 0; runway_side < 2; ++runway_side)
 	{
-		//For every node in the airport,
-		//- get its associated taxiroutes,
-		//- see if they intersect with our box
-		//- and if so, test if they are properly marked
-		for(TaxiRouteNodeVec_t::iterator node_itr = all_nodes.begin();
-			node_itr != all_nodes.end();
-			++node_itr)
+		int runway_number = runway_info.runway_numbers[runway_side];
+	
+		for (int make_arrival = 0; make_arrival < 2; make_arrival++)
 		{
-			TaxiRouteInfoVec_t taxiroutes = GetTaxiRoutesFromViewers(*node_itr);
-			for(TaxiRouteInfoVec_t::iterator taxiroute_itr = taxiroutes.begin(); taxiroute_itr != taxiroutes.end(); ++taxiroute_itr)
+			//Make the hitbox baed on the runway and which side (low/high) you're currently on and if you need to be making arrival or departure
+			Polygon2 hit_box = MakeHotZoneHitBox(runway_info, runway_number, (bool)make_arrival);
+			
+			if(hit_box.empty()) continue;
+				
+			for(auto taxiroute_itr : all_taxiroutes)
 			{
-				//only maakr THE 	departures boxes
-				for (int make_arrival = 0; make_arrival < 2; make_arrival++)
+				//Run two tests, intersection with the side, and if that fails, point inside the polygon
+				if(hit_box.intersects(taxiroute_itr.taxiroute_segment_geo) ||
+						hit_box.inside(taxiroute_itr.taxiroute_segment_geo.p1) || hit_box.inside(taxiroute_itr.taxiroute_segment_geo.p2) )
 				{
-					int runway_number = runway_info.runway_numbers[runway_side];
-
-					//Make the hitbox baed on the runway and which side (low/high) you're currently on and if you need to be making arrival or departure
-					Polygon2 hit_box = MakeHotZoneHitBox(runway_info, runway_number, (bool)make_arrival);
-					if(hit_box.empty() == true)
+					if(runway_info.IsHotForArrival(runway_number) == true && static_cast<bool>(make_arrival) == true)
 					{
-						continue;
-					}
-
-					//Run two tests, intersection with the side, and if that fails, point inside the polygon
-					bool did_hit = hit_box.intersects((*taxiroute_itr).taxiroute_segment_geo);
-					if(did_hit == false)
-					{
-						Point2 p;
-						(*node_itr)->GetLocation(gis_Geo,p);
-						did_hit = hit_box.inside(p);
-					}
-
-					if(did_hit)
-					{
-						if(runway_info.IsHotForArrival(runway_number) == true && static_cast<bool>(make_arrival) == true)
-						{
-                            bool hitbox_error = FindIfMarked(runway_number, *taxiroute_itr, (*taxiroute_itr).hot_arrivals, "arrivals", msgs, apt);
+								 bool hitbox_error = FindIfMarked(runway_number, taxiroute_itr, taxiroute_itr.hot_arrivals, "arrivals", msgs, apt);
 #if DEBUG_VIS_LINES
 #if DEBUG_VIS_LINES < 2
-                            if (hitbox_error)
+								 if (hitbox_error)
 #endif
-                            {
-                                debug_mesh_segment(hit_box.side(0), DBG_LIN_COLOR); //left side
-                                debug_mesh_segment(hit_box.side(1), DBG_LIN_COLOR); //top side
-                                debug_mesh_segment(hit_box.side(2), DBG_LIN_COLOR); //right side
-                                debug_mesh_segment(hit_box.side(3), DBG_LIN_COLOR); //bottom side
-                            }
+								 {
+									  debug_mesh_segment(hit_box.side(0), DBG_LIN_COLOR); //left side
+									  debug_mesh_segment(hit_box.side(1), DBG_LIN_COLOR); //top side
+									  debug_mesh_segment(hit_box.side(2), DBG_LIN_COLOR); //right side
+									  debug_mesh_segment(hit_box.side(3), DBG_LIN_COLOR); //bottom side
+								 }
 #endif
-						}
+					}
 
-						if(runway_info.IsHotForDeparture(runway_number) == true && static_cast<bool>(make_arrival) == false)
-						{
-							bool hitbox_error = FindIfMarked(runway_number, *taxiroute_itr, (*taxiroute_itr).hot_departures, "departures", msgs, apt);
+					if(runway_info.IsHotForDeparture(runway_number) == true && static_cast<bool>(make_arrival) == false)
+					{
+						bool hitbox_error = FindIfMarked(runway_number, taxiroute_itr, taxiroute_itr.hot_departures, "departures", msgs, apt);
 #if DEBUG_VIS_LINES
 #if DEBUG_VIS_LINES < 2
-                            if (hitbox_error)
+								 if (hitbox_error)
 #endif
-                            {
-                                debug_mesh_segment(hit_box.side(0), DBG_LIN_COLOR); //left side
-                                debug_mesh_segment(hit_box.side(1), DBG_LIN_COLOR); //top side
-                                debug_mesh_segment(hit_box.side(2), DBG_LIN_COLOR); //right side
-                                debug_mesh_segment(hit_box.side(3), DBG_LIN_COLOR); //bottom side
-                            }
+								 {
+									  debug_mesh_segment(hit_box.side(0), DBG_LIN_COLOR); //left side
+									  debug_mesh_segment(hit_box.side(1), DBG_LIN_COLOR); //top side
+									  debug_mesh_segment(hit_box.side(2), DBG_LIN_COLOR); //right side
+									  debug_mesh_segment(hit_box.side(3), DBG_LIN_COLOR); //bottom side
+								 }
 #endif
-						}
 					}
 				}
 			}
@@ -932,7 +905,6 @@ static bool DoHotZoneChecks( const RunwayInfo& runway_info,
 	}
 	return msgs.size() - original_num_errors == 0 ? true : false;
 }
-
 
 // flag all ground traffic routes that cross a runways hitbox
 
@@ -994,6 +966,50 @@ static void AnyTruckRouteNearRunway( const RunwayInfo& runway_info,
 }
 
 
+static void	AnyPolgonsOnRunway( const RunwayInfo& runway_info,	 const vector<WED_PolygonPlacement *>& all_polygons,
+							 validation_error_vector& msgs, WED_Airport* apt, WED_ResourceMgr * rmgr)
+{
+
+	Polygon2 runway_hit_box(runway_info.corners_geo);
+
+	Vector2 side_ext = runway_info.width_vec_1m * -1.0;  // Allow any polygon to overlap runway by 1m on all sides
+	Vector2 len_ext  = runway_info.dir_vec_1m   * -1.0;
+
+	runway_hit_box[0] -= len_ext + side_ext;
+	runway_hit_box[1] += len_ext - side_ext;
+	runway_hit_box[2] += len_ext + side_ext;
+	runway_hit_box[3] -= len_ext - side_ext;
+
+	Bbox2	runway_bounds;
+	runway_info.runway_ptr->GetBounds(gis_Geo,runway_bounds);
+	
+	for(auto pp : all_polygons)
+	{
+		if(pp->Cull(runway_bounds))
+		{
+			string vpath;
+			pol_info_t	pol_info;
+			
+			int lg = group_TaxiwaysBegin;
+			pp->GetResource(vpath);
+			if(!vpath.empty() && rmgr->GetPol(vpath,pol_info) && !pol_info.group.empty())
+				lg = layer_group_for_string(pol_info.group.c_str(),pol_info.group_offset, lg);
+				
+			if(lg <= group_RunwaysEnd ) break;  // don't worry about polygons drawn underneath the runway
+			
+			bool isOnRunway = pp->Overlaps(gis_Geo, runway_hit_box);
+
+			if (isOnRunway)
+			{
+				string msg ;
+				pp->GetName(msg);
+				msg = "The gateway discourages user created runway markings. DrapedPolygon '" + msg + "' intersects with runway " + runway_info.runway_name;
+				msgs.push_back(validation_error_t(msg, warn_atcrwy_marking, pp, apt));
+			}
+		}
+	}
+}
+
 static bool is_ground_traffic_route(WED_Thing * r)
 {
 	return static_cast<WED_TaxiRoute*>(r)->AllowTrucks();
@@ -1005,7 +1021,8 @@ static bool is_aircraft_taxi_route(WED_Thing * r)
 }
 
 //-----------------------------------------------------------------------------
-void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs)
+
+void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs, WED_ResourceMgr * res_mgr)
 {
 	Bbox2 box;
 	apt.GetBounds(gis_Geo, box);
@@ -1034,7 +1051,7 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs)
 			int original_num_errors = msgs.size();
 			TaxiRouteInfoVec_t matching_taxiroutes = FilterMatchingRunways(*runway_info_itr, all_taxiroutes);
 
-			if (matching_taxiroutes.empty() == false)
+			if (!matching_taxiroutes.empty())
 			{
 				if (AllTaxiRouteNodesInRunway(*runway_info_itr, matching_taxiroutes, msgs, &apt))
 				{
@@ -1071,24 +1088,27 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs)
 	TaxiRouteVec_t all_truckroutes_plain;
 	CollectRecursive(&apt,back_inserter<TaxiRouteVec_t>(all_truckroutes_plain), ThingNotHidden, is_ground_traffic_route, WED_TaxiRoute::sClass);
 	
-	if(!all_truckroutes_plain.empty())
+	vector<WED_PolygonPlacement *> all_polys;
+	if(gExportTarget == wet_gateway)
+		CollectRecursive(&apt,back_inserter(all_polys), WED_PolygonPlacement::sClass);
+	
+	if(!all_truckroutes_plain.empty() || !all_polys.empty())
 	{
 //      So we validate even harsher: _all_ runways, even the inactive ones ...
 		RunwayVec_t all_runways;
 		CollectRecursive(&apt,back_inserter<RunwayVec_t>(all_runways),WED_Runway::sClass);
 		RunwayInfoVec_t runway_info_vec;
-		for(RunwayVec_t::const_iterator itr = all_runways.begin(); itr != all_runways.end(); ++itr)
-			runway_info_vec.push_back(RunwayInfo(*itr,translator));
+		for(auto itr : all_runways)
+			runway_info_vec.push_back(RunwayInfo(itr,translator));
 
 		TaxiRouteInfoVec_t all_truckroutes;
-		for(TaxiRouteVec_t::const_iterator itr = all_truckroutes_plain.begin(); itr != all_truckroutes_plain.end(); ++itr)
-			all_truckroutes.push_back(TaxiRouteInfo(*itr,translator));
-	
-		for(RunwayInfoVec_t::iterator runway_info_itr = runway_info_vec.begin();
-			runway_info_itr != runway_info_vec.end();
-			++runway_info_itr)
+		for(auto itr : all_truckroutes_plain)
+			all_truckroutes.push_back(TaxiRouteInfo(itr,translator));
+			
+		for(auto runway_info_itr : runway_info_vec)
 		{
-			AnyTruckRouteNearRunway(*runway_info_itr, all_truckroutes, msgs, &apt);
+			AnyTruckRouteNearRunway(runway_info_itr, all_truckroutes, msgs, &apt);
+			AnyPolgonsOnRunway(runway_info_itr, all_polys, msgs, &apt, res_mgr);
 		}
 	}
 	

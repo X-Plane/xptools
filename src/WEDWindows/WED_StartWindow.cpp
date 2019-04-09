@@ -42,24 +42,10 @@
 #include "WED_DocumentWindow.h"
 #include "WED_Version.h"
 
-static int *	SizeOfPng(const char * png)
-{
-	static int bounds[4];
-	bounds[0] = 0; bounds[1] = 0;
-	GUI_GetImageResourceSize(png, bounds+2);
-	return bounds;
-}
-
-const char * LastPart(const char * s)
-{
-	const char * ret = s;
-	while (*s)
-	{
-		if (*s==':'||*s=='/'||*s=='\\') ret=s;
-		++s;
-	}
-	return ret;
-}
+#define MARGIN_BELOW_BUTTONS 5
+#define MARGIN_ABOVE_BUTTONS 5
+#define MARGIN_AT_TOP  35
+#define MARGIN_SIDES 5
 
 struct open_doc_t {
 	WED_Document *			d;
@@ -69,7 +55,7 @@ struct open_doc_t {
 
 static vector<open_doc_t>	sDocs;
 
-static int kDefaultBounds[4] = { 50, 50, 850, 650 };
+static int kDefaultBounds[4] = { 0, 0, 700, 500 };
 
 WED_StartWindow::WED_StartWindow(GUI_Commander * cmder) : GUI_Window("WED", xwin_style_centered|xwin_style_resizable, kDefaultBounds, cmder)
 {
@@ -105,13 +91,12 @@ WED_StartWindow::WED_StartWindow(GUI_Commander * cmder) : GUI_Window("WED", xwin
 	mChange->AddRadioFriend(mOpen);
 	mChange->AddRadioFriend(mNew);
 
-
-	mNew->SetBounds(p2 - btn_width - btn_width1, 10,
-					p2 - btn_width + btn_width2, 10 + btn_height);
-	mOpen->SetBounds(p2 - btn_width1, 10,
-					 p2 + btn_width2, 10 + btn_height);
-	mChange->SetBounds(p2 + btn_width- btn_width1, 10,
-					p2 + btn_width + btn_width2, 10 + btn_height);
+	mNew->SetBounds(p2 - btn_width - btn_width1, MARGIN_BELOW_BUTTONS,
+					p2 - btn_width + btn_width2, MARGIN_BELOW_BUTTONS + btn_height);
+	mOpen->SetBounds(p2 - btn_width1, MARGIN_BELOW_BUTTONS,
+					 p2 + btn_width2, MARGIN_BELOW_BUTTONS + btn_height);
+	mChange->SetBounds(p2 + btn_width- btn_width1, MARGIN_BELOW_BUTTONS,
+					p2 + btn_width + btn_width2, MARGIN_BELOW_BUTTONS + btn_height);
 	mNew->SetParent(this);
 	mOpen->SetParent(this);
 	mChange->SetParent(this);
@@ -126,7 +111,8 @@ WED_StartWindow::WED_StartWindow(GUI_Commander * cmder) : GUI_Window("WED", xwin
 
 	mScroller = new GUI_ScrollerPane(false, true);
 	mScroller->SetParent(this);
-	mScroller->SetBounds(10, 20 + btn_height + 10, kDefaultBounds[2] - kDefaultBounds[0] - 10, kDefaultBounds[3] - kDefaultBounds[1] - 30);
+	mScroller->SetBounds(MARGIN_SIDES, btn_height + MARGIN_BELOW_BUTTONS + MARGIN_ABOVE_BUTTONS, 
+								kDefaultBounds[2] - kDefaultBounds[0] - MARGIN_SIDES, kDefaultBounds[3] - kDefaultBounds[1] - MARGIN_AT_TOP);
 	mScroller->SetSticky(1,1,1,1);
 
 	mTable = new GUI_Table(1);		// 1=  fill right
@@ -204,68 +190,50 @@ void	WED_StartWindow::Draw(GUI_GraphState * state)
 	mNew->GetBounds(child);
 	child[0] = me[0];
 	child[2] = me[2];
-
-	glColor3f(1,1,1);
+	float f = GUI_GetLineHeight(font_UI_Basic);
+	float * color = WED_Color_RGBA(wed_pure_white);
+	glColor4fv(color);
 
 	int kTileAll[4] = { 0, 0, 1, 1 };
-
 	GUI_DrawStretched(state,"gradient.png", me, kTileAll);
-
+	
 	if (!mScroller->IsVisible())
 	{
 		GUI_DrawCentered(state,"startup_bkgnd.png", me, 0, 1, kTileAll, NULL, NULL);
 
-		float f = GUI_GetLineHeight(font_UI_Basic);
-		float color[4] = { 1.0, 1.0, 1.0, 0.7 };
-
 		const char * main_text[] = {
 			"WorldEditor " WED_VERSION_STRING_SHORT,
-			"©Copyright 2007-2018, Laminar Research.",
-			"",
-			"This software is available under an open license.",
-			"Visit http://developer.x-plane.com/code/ for more info.",
+			"© Copyright 2007-2019, Laminar Research.",
 			0
-			
 		};
 		
 		int n = 0;
 		while(main_text[n])
 		{
-			GUI_FontDraw(state, font_UI_Basic, color, me[0] * 0.5 + me[2] * 0.5, me[3] - 30 - f * n, main_text[n]);
+			GUI_FontDraw(state, font_UI_Basic, color, me[0] * 0.55 + me[2] * 0.45, me[3] - 100 - f * n, main_text[n]);
 			++n;
 		}
-
 	}
 
+	string m(mCaption);
 	if (mCaption.empty())
 	{
 		GUI_DrawStretched(state, "startup_bar.png", child, kTileAll);
-	}
-
-	{
-		float color[4] = { 1.0, 1.0, 1.0, 1.0 };
-
-		float f = GUI_GetLineHeight(font_UI_Basic);
-
-		string m(mCaption);
-		if (m.empty())
+		
+		if (mScroller->IsVisible()) 
 		{
-			if (mScroller->IsVisible()) {
-				gPackageMgr->GetXPlaneFolder(m);
-				m = string("Scenery packages in: ") + m;
-				m += "  ( X-Plane version " + string(gPackageMgr->GetXPversion()) + " )";
-				child[1] = me[3] - 15;
-				child[3] = me[3] - 15;
-			} else {
-				m = "Please Pick Your X-System Folder";
-				int ch = (child[3]-child[1]);
-				child[1] += ch;
-				child[3] += ch;
-			}
+			gPackageMgr->GetXPlaneFolder(m);
+			m = string("Scenery packages in: ") + m;
+			m += "  ( X-Plane version " + string(gPackageMgr->GetXPversion()) + " )";
+			child[3] = me[3] - MARGIN_AT_TOP + (MARGIN_AT_TOP-f) * 0.5 + 3 ;
+		} 
+		else 
+		{
+			m = "Please Pick Your X-System Folder";
+			child[3] += f;
 		}
-		GUI_FontDrawScaled(state, font_UI_Basic, color, child[0], (child[1]+child[3]-f)*0.5f, child[2], (child[1]+child[3]+f)*0.5f, &*m.begin(), &*m.end(), align_Center);
-
 	}
+	GUI_FontDraw(state, font_UI_Basic, color, (me[0]+me[2])*0.5f, child[3], m.c_str(), align_Center);
 }
 
 bool	WED_StartWindow::Closed(void)

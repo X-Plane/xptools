@@ -146,7 +146,6 @@ int		GetFilePathFromUser(
 	return 0;
 }
 
-
 char *	GetMultiFilePathFromUser(
 					const char * 		inPrompt,
 					const char *		inAction,
@@ -158,15 +157,16 @@ char *	GetMultiFilePathFromUser(
 
 	ofn.lStructSize = sizeof(ofn);
 	ofn.lpstrFilter = L"All Files\000*.*\000";
-	ofn.nFilterIndex = 1;	// Start with .acf files
+	ofn.nFilterIndex = 1;
 	ofn.lpstrFile = buf;
 	buf[0] = 0;		// No initialization for open.
 	ofn.nMaxFile = 1024 * 1024;		// Guess string length?
 	ofn.lpstrFileTitle = NULL;	// Don't want file name w/out path
 	ofn.lpstrTitle = convert_str_to_utf16(inPrompt).c_str();
-	ofn.Flags =  OFN_ALLOWMULTISELECT | OFN_EXPLORER;
-
+	ofn.Flags =  OFN_ALLOWMULTISELECT | OFN_EXPLORER | OFN_FILEMUSTEXIST;
+	
 	result = GetOpenFileNameW(&ofn);
+
 	if(result)
 	{
 		vector<string>	files;
@@ -209,26 +209,26 @@ char *	GetMultiFilePathFromUser(
 	}
 }
 
-
-
-
 void	DoUserAlert(const char * inMsg)
 {
-	MessageBoxW(NULL, convert_str_to_utf16(inMsg).c_str(), L"Alert", MB_OK + MB_ICONWARNING);
+	HWND thisWin = GetForegroundWindow();
+	MessageBoxW(thisWin, convert_str_to_utf16(inMsg).c_str(), L"Alert", MB_OK | MB_ICONWARNING | MB_TOPMOST |MB_TASKMODAL);
 }
 
 int		ConfirmMessage(const char * inMsg, const char * proceedBtn, const char * cancelBtn)
 {
-	int result = MessageBoxW(
-						NULL,				// No Parent HWND
-						convert_str_to_utf16(inMsg).c_str(),
-						L"X-Plane 10",	// Dialog caption
-//						MB_OKCANCEL +
-						MB_YESNO +
-//						MB_ICONWARNING +
-						MB_USERICON +
-						MB_DEFBUTTON1);
+	bool no_or_cancel = string(cancelBtn).find("Cancel") == string::npos;
 
+	HWND thisWin = GetForegroundWindow();
+	int result = MessageBoxW(thisWin,
+						convert_str_to_utf16(inMsg).c_str(),
+						L"WED",
+						MB_TASKMODAL |          // works most of the time even with no HWND
+						MB_TOPMOST |            // we really need to prevent this popup to go behind another WED window
+						(no_or_cancel ? MB_YESNO : MB_OKCANCEL) |
+//						MB_YESNO |
+						MB_ICONQUESTION |
+						MB_DEFBUTTON1);
 	return (result == IDOK || result == IDYES) ? 1 : 0;
 }
 

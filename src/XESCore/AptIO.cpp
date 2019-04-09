@@ -46,19 +46,19 @@ void	GenerateOGL(AptInfo_t * a);
 #endif
 
 #define NUM_RAMP_TYPES 4
-const char * ramp_type_strings[] = { "misc", "gate", "tie_down","hangar", 0 };
+const char * ramp_type_strings[] = { "misc", "gate", "tie_down","hangar", NULL };
 
 #define NUM_RAMP_OP_TYPES 6
 //The human readable types that will get saved 
-const char * ramp_operation_type_strings[] = { "none", "general_aviation", "airline", "cargo", "military", 0 };
+const char * ramp_operation_type_strings[] = { "none", "general_aviation", "airline", "cargo", "military", NULL };
 
-const char * pattern_strings[] = { "left", "right", 0 };
-const char * equip_strings[] = { "heavy", "jets", "turboprops", "props", "helos", "fighters", 0 };
-const char * equip_strings_gate[] = { "heavy", "jets", "turboprops", "props", "helos", "fighters","all","A","B","C","D","E","F", 0 };
-const char * op_strings[] = { "arrivals", "departures", 0 };
+const char * pattern_strings[] = { "left", "right", NULL };
+const char * equip_strings[] = { "heavy", "jets", "turboprops", "props", "helos", "fighters", NULL };
+const char * equip_strings_gate[] = { "heavy", "jets", "turboprops", "props", "helos", "fighters","all","A","B","C","D","E","F", NULL };
+const char * op_strings[] = { "arrivals", "departures", NULL };
 // TODO:
 // find a way to not have to keep this string in the same sequence with service enums defined in AptDefs.h and WED_Enums.h
-const char * truck_type_strings[] = { "baggage_loader", "baggage_train", "crew_car", "crew_ferrari", "crew_limo", "fuel_jets", "fuel_liners", "fuel_props", "food", "gpu", "pushback", 0 }; 
+const char * truck_type_strings[] = { "baggage_loader", "baggage_train", "crew_car", "crew_ferrari", "crew_limo", "fuel_jets", "fuel_liners", "fuel_props", "food", "gpu", "pushback", NULL };
 
 // LLLHHH
 void divide_heading(int * lo, int * hi)
@@ -263,9 +263,9 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 	if (ok.empty())
 	{
 		if (TextScanner_FormatScan(s, "i", &vers) != 1) ok = "Invalid version";
-		if (vers != 703 && vers != 715 && vers != 810 && vers != 850 && vers != 1000 && vers != 1050 && vers != 1100)
+		if (vers != 703 && vers != 715 && vers != 810 && vers != 850 && vers != 1000 && vers != 1050 && vers != 1100 && vers != 1130)
 		{
-		  if (vers > 1100)
+		  if (vers > 1130)
 			ok = "Format is newer than supported by this version of WED";
 		  else
 			ok = "Illegal version";
@@ -706,7 +706,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 						{
 							//If we've loop through the whole array of ramp_ai_opperation_types
 							//we have a problem
-							if(ramp_operation_type_strings[i] == '\0')
+							if(ramp_operation_type_strings[i] == NULL)
 							{
 								ok = string("Error: ") + ramp_op_type_human_string + "is not a real Ramp Operation Type";
 								break;
@@ -820,34 +820,32 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 			}
 			break;
 		case apt_flow_rwy_rule:
+		case apt_flow_rwy_rule1k:
 			if(vers < ATC_VERS) ok = "Error: no ATC data in older apt.dat files.";
 			else if (outApts.empty()) ok = "Error: runway use outside an airport.";
 			else if (outApts.back().flows.empty()) ok = "Error: runway use outside a flow.";
 			else {
 				outApts.back().flows.back().runway_rules.push_back(AptRunwayRule_t());
+				AptRunwayRule_t * this_rule = &outApts.back().flows.back().runway_rules.back();
 				string op, equip;
+				
 				if(TextScanner_FormatScan(s,"iTiTTiiT|", &rec_code,
-					&outApts.back().flows.back().runway_rules.back().runway,
-					&outApts.back().flows.back().runway_rules.back().dep_freq,
+					&this_rule->runway,
+					&this_rule->dep_freq,
 					&op,
 					&equip,
-					&outApts.back().flows.back().runway_rules.back().dep_heading_lo,
-					&outApts.back().flows.back().runway_rules.back().ini_heading_lo,
-					&outApts.back().flows.back().runway_rules.back().name) < 7) ok = "Error: incorrect runway use rule.";
+					&this_rule->dep_heading_lo,	&this_rule->ini_heading_lo,
+					&this_rule->name) < 7) ok = "Error: incorrect runway use rule.";
 				else
 				{
-					outApts.back().flows.back().runway_rules.back().operations = scan_bitfields(op.c_str(),op_strings, atc_op_all);
-					outApts.back().flows.back().runway_rules.back().equipment = scan_bitfields(equip.c_str(), equip_strings, atc_traffic_all);
-					divide_heading(
-										&outApts.back().flows.back().runway_rules.back().dep_heading_lo,
-										&outApts.back().flows.back().runway_rules.back().dep_heading_hi);
-					divide_heading(
-										&outApts.back().flows.back().runway_rules.back().ini_heading_lo,
-										&outApts.back().flows.back().runway_rules.back().ini_heading_hi);
+					this_rule->operations = scan_bitfields(op.c_str(),op_strings, atc_op_all);
+					this_rule->equipment = scan_bitfields(equip.c_str(), equip_strings, atc_traffic_all);
+					divide_heading(	&this_rule->dep_heading_lo,	&this_rule->dep_heading_hi);
+					divide_heading(	&this_rule->ini_heading_lo,	&this_rule->ini_heading_hi);
+					if(rec_code == apt_flow_rwy_rule) this_rule->dep_freq *= 10;
 				}
 			}
 			break;
-
 
 		case apt_taxi_header:
 			if(vers < ATC_VERS) ok = "Error: no ATC data in older apt.dat files.";
@@ -989,7 +987,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				}
 
 				const char** str = truck_type_strings;
-				while(*str != '\0')
+				while(*str != NULL)
 				{
 					if (strcmp(truck_type_str.c_str(),*str)==0)
 					{
@@ -997,7 +995,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 						break;
 					}
 					++str;
-					if (*str == '\0')
+					if (*str == NULL)
 					{
 						ok = ("Error: Truck type " + truck_type_str + " is not supported.");
 					}
@@ -1035,7 +1033,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				for (vector<string>::iterator itr = tokenized.begin(); itr != tokenized.end(); ++itr)
 				{
 					const char** str = truck_type_strings;
-					while (*str != '\0')
+					while (*str != NULL)
 					{
 						if (strcmp(itr->c_str(), *str) == 0)
 						{
@@ -1043,7 +1041,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 							break;
 						}
 						++str;
-						if (*str == '\0')
+						if (*str == NULL)
 						{
 							ok = ("Error: Truck type " + *itr + " is not supported.");
 						}
@@ -1057,14 +1055,21 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 			forceDone = true;
 			break;
 		default:
-			if (rec_code >= apt_freq_awos && rec_code <= apt_freq_dep)
+			if ((rec_code >= apt_freq_awos && rec_code <= apt_freq_dep) ||
+				(rec_code >= apt_freq_awos_1k && rec_code <= apt_freq_dep_1k))
 			{
 				outApts.back().atc.push_back(AptATCFreq_t());
 				if (TextScanner_FormatScan(s, "iiT|",
 					&outApts.back().atc.back().atc_type,
 					&outApts.back().atc.back().freq,
 					&outApts.back().atc.back().name) < 2)	// ATC name can be blank in v9...sketchy but apparently true.
-				ok = "Illegal ATC frequency";
+				{
+					ok = "Illegal ATC frequency";
+				}
+				if (rec_code <= apt_freq_dep)
+				{
+					outApts.back().atc.back().freq *= 10;
+				}
 			} else
 				ok = "Illegal unknown record";
 			break;
@@ -1137,6 +1142,11 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 
 bool	WriteAptFile(const char * inFileName, const AptVector& inApts, int version)
 {
+	if (inApts.empty())
+	{
+		remove(inFileName);
+		return true;
+	}
 	FILE * fi = fopen(inFileName, "wb");
 	if (fi == NULL) return false;
 	bool ok = WriteAptFileOpen(fi, inApts, version);
@@ -1152,7 +1162,7 @@ bool	WriteAptFileOpen(FILE * fi, const AptVector& inApts, int version)
 
 bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void * fi, const AptVector& inApts, int version)
 {
-	DebugAssert(version == 850 || version == 1000 || version == 1050 || version == 1100);
+	DebugAssert(version == 850 || version == 1000 || version == 1050 || version == 1100 || version == 1130);
 	fprintf(fi, "%c" CRLF, APL ? 'A' : 'I');
 	fprintf(fi, "%d Generated by WorldEditor %s" CRLF, version, WED_VERSION_STRING);
 
@@ -1326,8 +1336,11 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 
 		for (AptATCFreqVector::const_iterator atc = apt->atc.begin(); atc != apt->atc.end(); ++atc)
 		{
-			fprintf(fi, "%2d %d %s" CRLF, atc->atc_type,
-					atc->freq, atc->name.c_str());
+			if(version < 1130)
+				fprintf(fi, "%2d %5d %s" CRLF, atc->atc_type, atc->freq / 10, atc->name.c_str());
+			else
+				fprintf(fi, "%2d %6d %s" CRLF, atc->atc_type + (apt_freq_awos_1k-apt_freq_awos), atc->freq, atc->name.c_str());
+			
 		}
 
 		if(has_atc)
@@ -1355,7 +1368,10 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 
 				for(AptRunwayRuleVector::const_iterator	rule = flow->runway_rules.begin(); rule != flow->runway_rules.end(); ++rule)
 				{
-					fprintf(fi,"%2d %s %6d ",apt_flow_rwy_rule, rule->runway.c_str(), rule->dep_freq);
+					if(version < 1130)
+						fprintf(fi,"%2d %s %5d ",apt_flow_rwy_rule, rule->runway.c_str(), rule->dep_freq / 10);
+					else
+						fprintf(fi,"%2d %s %6d ",apt_flow_rwy_rule1k, rule->runway.c_str(), rule->dep_freq);
 					print_bitfields(fprintf,fi,rule->operations, op_strings);
 					fprintf(fi," ");
 					print_bitfields(fprintf,fi,rule->equipment, equip_strings);

@@ -136,8 +136,8 @@ int CACHE_CacheObject::cool_down_seconds_left(const CACHE_domain_policy& policy)
 	default: AssertPrintf("%d is an unknown CACHE_error", m_last_error_type);
 	}
 #if DEV
-	std::cout << "Time since last is_cooling_down: " << time_delta << endl;
-	std::cout << "cool_down_seconds_left: " << seconds_left << endl;
+	//std::cout << "Time since last is_cooling_down: " << time_delta << endl;
+	//std::cout << "cool_down_seconds_left: " << seconds_left << endl;
 #endif
 	return seconds_left;
 }

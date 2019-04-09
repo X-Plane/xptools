@@ -278,23 +278,89 @@ INT_PROP(anim_keyframe_count,anim_keyframe_count)
 INT_PROP(anim_keyframe_root,anim_keyframe_root)
 INT_PROP(anim_type,anim_type)
 
-INT_PROP(manip_type,manip_type)
 FLT_PROP(manip_dx,manip_dx)
 FLT_PROP(manip_dy,manip_dy)
 FLT_PROP(manip_dz,manip_dz)
+FLT_PROP(manip_centroid_x,manip_centroid_x)
+FLT_PROP(manip_centroid_y,manip_centroid_y)
+FLT_PROP(manip_centroid_z,manip_centroid_z)
 FLT_PROP(manip_v1_min,manip_v1_min)
 FLT_PROP(manip_v1_max,manip_v1_max)
 FLT_PROP(manip_v2_min,manip_v2_min)
 FLT_PROP(manip_v2_max,manip_v2_max)
+FLT_PROP(manip_angle_min,manip_angle_min)
+FLT_PROP(manip_angle_max,manip_angle_max)
+FLT_PROP(manip_lift,manip_lift)
 STR_PROP(manip_dref1,manip_dref1)
 STR_PROP(manip_dref2,manip_dref2)
 STR_PROP(manip_tooltip,manip_tooltip)
 STR_PROP(manip_cursor,manip_cursor)
 FLT_PROP(manip_wheel,manip_wheel)
+INT_PROP(manip_detent_count,manip_detent_count)
 
 
 INT_PROP(has_panel_regions,has_panel_regions)
 INT_PROP(num_panel_regions,num_panel_regions)
+
+STR_PROP(magnet_type,magnet_type)
+
+
+void		OBJ_set_manip_nth_detent_lo(ACObject * obj, int n, float v)
+{
+	char tag[25];
+	sprintf(tag,"detentlo%d", n);
+	OBJ_set_property_flt(obj, tag, v);
+}
+
+void		OBJ_set_manip_nth_detent_hi(ACObject * obj, int n, float v)
+{
+	char tag[25];
+	sprintf(tag,"detenthi%d", n);
+	OBJ_set_property_flt(obj, tag, v);
+}
+
+void		OBJ_set_manip_nth_detent_hgt(ACObject * obj, int n, float v)
+{
+	char tag[25];
+	sprintf(tag,"detenthgt%d", n);
+	OBJ_set_property_flt(obj, tag, v);
+}
+
+void	OBJ_set_manip_type(ACObject * obj, int t)
+{
+	if(t == manip_rotate || t == manip_axis_detent)
+	{
+		if(OBJ_get_manip_detent_count(obj) < 1)
+			OBJ_set_manip_detent_count(obj, 1);
+	}
+	OBJ_set_property_int(obj,"manip_type",t);
+}
+
+int OBJ_get_manip_type(ACObject * obj)
+{
+	return OBJ_get_property_int(obj,"manip_type");
+}
+
+float		OBJ_get_manip_nth_detent_lo(ACObject * obj, int n)
+{
+	char tag[25];
+	sprintf(tag,"detentlo%d", n);
+	return OBJ_get_property_flt(obj, tag);
+}
+
+float		OBJ_get_manip_nth_detent_hi(ACObject * obj, int n)
+{
+	char tag[25];
+	sprintf(tag,"detenthi%d", n);
+	return OBJ_get_property_flt(obj, tag);
+}
+
+float		OBJ_get_manip_nth_detent_hgt(ACObject * obj, int n)
+{
+	char tag[25];
+	sprintf(tag,"detenthgt%d", n);
+	return OBJ_get_property_flt(obj, tag);
+}
 
 void		OBJ_set_anim_nth_value(ACObject * obj, int n, float v)
 {
@@ -354,24 +420,24 @@ float		OBJ_get_anim_nth_angle(ACObject * obj, int n)
 int			OBJ_get_panel_left(ACObject * obj, int r)
 {
 	char tag[25];
-	sprintf(tag,"left0",r);
+	sprintf(tag,"left%d",r);
 	return OBJ_get_property_int(obj,tag);
 }
 int			OBJ_get_panel_bottom(ACObject * obj, int r)
 {
 	char tag[25];
-	sprintf(tag,"bottom0",r);
+	sprintf(tag,"bottom%d",r);
 	return OBJ_get_property_int(obj,tag);
 }
 int			OBJ_get_panel_right(ACObject * obj, int r)
 {
 	char tag[25];
-	sprintf(tag,"right0",r);
+	sprintf(tag,"right%d",r);
 	return OBJ_get_property_int(obj,tag);
 }
 int			OBJ_get_panel_top(ACObject * obj, int r)
 {
 	char tag[25];
-	sprintf(tag,"top0",r);
+	sprintf(tag,"top%d",r);
 	return OBJ_get_property_int(obj,tag);
 }

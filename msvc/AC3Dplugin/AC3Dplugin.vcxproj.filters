@@ -171,4 +171,8 @@
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\src\AC3DPlugins\XPlaneSupport.tcl" />
+    <None Include="..\..\src\AC3DPlugins\README" />
+  </ItemGroup>
 </Project>

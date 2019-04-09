@@ -60,10 +60,21 @@ AC3D_PLUGIN_FUNC char *AC3DPluginAbout();
 
 AC3D_PLUGIN_FUNC int AC3DPluginInit(AC3DPluginInitData *d)
 {
+	
+	double ver = ac_get_version_number();
+	double rev = ac_get_version_revision(); 
+
+	if ( ver < 8.0 ) 
+		{
+		printf("XPlane plugin requires AC3D 8\n");
+		return(0);
+		}
+
+
 	const char * emsg = TCL_init_stubs();
 	if(emsg)
 	{
-		message_dialog((char*)"X-Plane export plugin cannot load: %s", emsg);
+		message_dialog((char*)"X-Plane plugin cannot load: %s", emsg);
 		return -1;
 	}
 	prefs_init();
@@ -139,7 +150,7 @@ AC3D_PLUGIN_FUNC int AC3DPluginExit()
 AC3D_PLUGIN_FUNC char *AC3DPluginAbout()
 {
 	static char ver[1024] = {};
-	sprintf(ver, "OBJ8 Import/Export Plugin %s - by Ben Supnik",
+	sprintf(ver, "XPlane OBJ8 Import/Export Plugin %s - by Ben Supnik",
 	product_version(AC3DPLUGIN_VER, AC3DPLUGIN_EXTRAVER));
 	return ver;
 }

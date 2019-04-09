@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 47;
+	objectVersion = 48;
 	objects = {
 
 /* Begin PBXAggregateTarget section */
@@ -30,6 +30,7 @@
 			buildPhases = (
 			);
 			dependencies = (
+				D68801C321F7784E00A66577 /* PBXTargetDependency */,
 				D60734350D197A2700E08F61 /* PBXTargetDependency */,
 				D6C68DED0BEFB3BE00C9F880 /* PBXTargetDependency */,
 				D6C68DE90BEFB3BE00C9F880 /* PBXTargetDependency */,
@@ -39,7 +40,6 @@
 				D6CB54840CEC9DCB000E4393 /* PBXTargetDependency */,
 				D6C68DE10BEFB3BE00C9F880 /* PBXTargetDependency */,
 				D6C68DDF0BEFB3BE00C9F880 /* PBXTargetDependency */,
-				D6A2674F0F992EF800E1E754 /* PBXTargetDependency */,
 			);
 			name = "Build All";
 			productName = "Build All";
@@ -47,6 +47,12 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		02198CB4219F6929008FDB0C /* WED_NavaidLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02198CAE219F68B8008FDB0C /* WED_NavaidLayer.cpp */; };
+		02198CB5219F6946008FDB0C /* WED_SlippyMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02198CB0219F68B8008FDB0C /* WED_SlippyMap.cpp */; };
+		02198CBE21A275EA008FDB0C /* nav_gs.png in Resources */ = {isa = PBXBuildFile; fileRef = 02198CB621A2759E008FDB0C /* nav_gs.png */; };
+		02198CBF21A275F0008FDB0C /* nav_mark.png in Resources */ = {isa = PBXBuildFile; fileRef = 02198CB721A2759F008FDB0C /* nav_mark.png */; };
+		02198CC021A275F7008FDB0C /* nav_ndb.png in Resources */ = {isa = PBXBuildFile; fileRef = 02198CB821A2759F008FDB0C /* nav_ndb.png */; };
+		02198CC121A275FC008FDB0C /* nav_vor.png in Resources */ = {isa = PBXBuildFile; fileRef = 02198CB921A2759F008FDB0C /* nav_vor.png */; };
 		0224ED2A20048CA0004729CD /* WED_ValidateList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0224ED2720048B7F004729CD /* WED_ValidateList.cpp */; };
 		0236B9732034264A0046900C /* check_buttons.png in Resources */ = {isa = PBXBuildFile; fileRef = 0236B971203425CE0046900C /* check_buttons.png */; };
 		0269A8551FF5F8F00085A37C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
@@ -70,6 +76,8 @@
 		02B03C4120C72126000F81F0 /* line_TaxiCenterUni.png in Resources */ = {isa = PBXBuildFile; fileRef = 02B03C2120C720C7000F81F0 /* line_TaxiCenterUni.png */; };
 		02B03C4220C7212B000F81F0 /* line_Unknown.png in Resources */ = {isa = PBXBuildFile; fileRef = 02B03C2220C720C7000F81F0 /* line_Unknown.png */; };
 		02B03C4320C72130000F81F0 /* line_BBrokenRed.png in Resources */ = {isa = PBXBuildFile; fileRef = 02B03C1120C720A1000F81F0 /* line_BBrokenRed.png */; };
+		02BFA21321C1B5970090D527 /* navmap_seaport.png in Resources */ = {isa = PBXBuildFile; fileRef = 02BFA21021C1B58D0090D527 /* navmap_seaport.png */; };
+		02BFA21421C1B59C0090D527 /* navmap_airport.png in Resources */ = {isa = PBXBuildFile; fileRef = 02BFA20F21C1B58D0090D527 /* navmap_airport.png */; };
 		02F4A70C204E6F4700E241B3 /* worldmap.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 02F4A70A204E6F1700E241B3 /* worldmap.jpg */; };
 		2F1515C61D0BA700002224B1 /* WED_MetaDataKeys.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F1515C41D0BA700002224B1 /* WED_MetaDataKeys.cpp */; };
 		2F8378A01D070F000033848D /* CACHE_DomainPolicy.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F83789E1D070F000033848D /* CACHE_DomainPolicy.cpp */; };
@@ -87,8 +95,6 @@
 		D604AEB71C0E7D7B006DC1F0 /* GLDebugMacros.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D604AEB31C0E7D7B006DC1F0 /* GLDebugMacros.cpp */; };
 		D604AEB91C0EAEF1006DC1F0 /* WEDMainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = D604AEB81C0EAEF1006DC1F0 /* WEDMainMenu.xib */; };
 		D604AEBE1C0F4827006DC1F0 /* RFMainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = D604AEBB1C0F4821006DC1F0 /* RFMainMenu.xib */; };
-		D606164F0C14BE46007BA5C9 /* ui_measurements.txt in Resources */ = {isa = PBXBuildFile; fileRef = D606164E0C14BE46007BA5C9 /* ui_measurements.txt */; };
-		D606168E0C14BF83007BA5C9 /* WED_UIMeasurements.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D606162A0C14BAC0007BA5C9 /* WED_UIMeasurements.cpp */; };
 		D60617F00C14D18C007BA5C9 /* disclose.png in Resources */ = {isa = PBXBuildFile; fileRef = D60617EE0C14D18C007BA5C9 /* disclose.png */; };
 		D60617F10C14D18C007BA5C9 /* gradient.png in Resources */ = {isa = PBXBuildFile; fileRef = D60617EF0C14D18C007BA5C9 /* gradient.png */; };
 		D6061A1C0C150845007BA5C9 /* header.png in Resources */ = {isa = PBXBuildFile; fileRef = D6061A1B0C150844007BA5C9 /* header.png */; };
@@ -162,7 +168,6 @@
 		D6080505154659A7001BE1A9 /* push_buttons.png in Resources */ = {isa = PBXBuildFile; fileRef = D6080504154659A7001BE1A9 /* push_buttons.png */; };
 		D60808821546E5F6001BE1A9 /* WED_LibraryPreviewPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60808811546E5F6001BE1A9 /* WED_LibraryPreviewPane.cpp */; };
 		D60826581C3622AC001CC3CF /* WED_Sign_Editor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60826561C3622AC001CC3CF /* WED_Sign_Editor.cpp */; };
-		D608C9841E01B8F8002E68F9 /* WED_HierarchyFilterBar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D608C9801E01B8F8002E68F9 /* WED_HierarchyFilterBar.cpp */; };
 		D608C9851E01B8F8002E68F9 /* WED_LibraryFilterBar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D608C9821E01B8F8002E68F9 /* WED_LibraryFilterBar.cpp */; };
 		D608C9881E01B906002E68F9 /* GUI_FilterBar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D608C9861E01B906002E68F9 /* GUI_FilterBar.cpp */; };
 		D608C98A1E01BC09002E68F9 /* map_servicedest.png in Resources */ = {isa = PBXBuildFile; fileRef = D608C9891E01BC09002E68F9 /* map_servicedest.png */; };
@@ -226,7 +231,6 @@
 		D6151EC20FB478FB008A355F /* RF_Progress.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956F010F82E96900F6718E /* RF_Progress.cpp */; };
 		D6151ECD0FB47A1E008A355F /* RF_FileCommands.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956EE80F82E96900F6718E /* RF_FileCommands.cpp */; };
 		D6151ED80FB47A4D008A355F /* sans.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D6C390010FA0D93400EFA56C /* sans.ttf */; };
-		D6183B961D766C7400E606E9 /* handle_arrowhead_lg.png in Resources */ = {isa = PBXBuildFile; fileRef = D6183B951D766C7400E606E9 /* handle_arrowhead_lg.png */; };
 		D6183B991D7CA28200E606E9 /* WED_TruckParkingLocation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6183B971D7CA28200E606E9 /* WED_TruckParkingLocation.cpp */; };
 		D6183B9C1D7CAD8900E606E9 /* WED_TruckDestination.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6183B9B1D7CAD8900E606E9 /* WED_TruckDestination.cpp */; };
 		D61C275E0B615CD60092E098 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
@@ -356,6 +360,8 @@
 		D63F725D117FB60900AB7C1F /* BlockAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63F725B117FB60900AB7C1F /* BlockAlgs.cpp */; };
 		D63F72751180917800AB7C1F /* BlockFill.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63F72741180917800AB7C1F /* BlockFill.cpp */; };
 		D63F72761180917800AB7C1F /* BlockFill.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63F72741180917800AB7C1F /* BlockFill.cpp */; };
+		D645FD191FA7996000A82CFF /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */; };
+		D645FD1A1FA7997100A82CFF /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7450B6CF765008E3AEC /* zip.c */; };
 		D64A08AA127AFDC1000D58A7 /* NetAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64A08A9127AFDC1000D58A7 /* NetAlgs.cpp */; };
 		D64A08AB127AFDC1000D58A7 /* NetAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64A08A9127AFDC1000D58A7 /* NetAlgs.cpp */; };
 		D64A08AC127AFDC1000D58A7 /* NetAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64A08A9127AFDC1000D58A7 /* NetAlgs.cpp */; };
@@ -806,9 +812,6 @@
 		D6ED36FE0B67964D00D5484E /* WED_Errors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37C50AB22C85003949C5 /* WED_Errors.cpp */; };
 		D6ED37020B67964D00D5484E /* WED_MapPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37E30AB22C85003949C5 /* WED_MapPane.cpp */; };
 		D6ED37030B67964D00D5484E /* WED_Menus.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37ED0AB22C85003949C5 /* WED_Menus.cpp */; };
-		D6ED37050B67964D00D5484E /* WED_Package.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37CC0AB22C85003949C5 /* WED_Package.cpp */; };
-		D6ED37060B67964D00D5484E /* WED_PackageStatusPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37EF0AB22C85003949C5 /* WED_PackageStatusPane.cpp */; };
-		D6ED37070B67964D00D5484E /* WED_PackageWindow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37F10AB22C85003949C5 /* WED_PackageWindow.cpp */; };
 		D6ED37080B67964D00D5484E /* ObjConvert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E10AB22C84003949C5 /* ObjConvert.cpp */; };
 		D6ED37090B67964D00D5484E /* ObjPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E50AB22C84003949C5 /* ObjPointPool.cpp */; };
 		D6ED370A0B67964D00D5484E /* XObjDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36EE0AB22C84003949C5 /* XObjDefs.cpp */; };
@@ -929,7 +932,7 @@
 			remoteGlobalIDString = D6C579BC0C7E3C7B00FCB4C1;
 			remoteInfo = DDSTool;
 		};
-		D6A2674E0F992EF800E1E754 /* PBXContainerItemProxy */ = {
+		D68801C221F7784E00A66577 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
 			proxyType = 1;
@@ -1005,7 +1008,7 @@
 		D6A2672F0F992DDE00E1E754 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
-			dstPath = /Applications/ac3dmac/plugins/;
+			dstPath = /Applications/ac3dmac/AC3D.app/plugins;
 			dstSubfolderSpec = 0;
 			files = (
 				D6A267060F992A9700E1E754 /* XPlaneSupport.tcl in CopyFiles */,
@@ -1016,6 +1019,14 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		02198CAE219F68B8008FDB0C /* WED_NavaidLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_NavaidLayer.cpp; sourceTree = "<group>"; };
+		02198CAF219F68B8008FDB0C /* WED_NavaidLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_NavaidLayer.h; sourceTree = "<group>"; };
+		02198CB0219F68B8008FDB0C /* WED_SlippyMap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_SlippyMap.cpp; sourceTree = "<group>"; };
+		02198CB1219F68B8008FDB0C /* WED_SlippyMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_SlippyMap.h; sourceTree = "<group>"; };
+		02198CB621A2759E008FDB0C /* nav_gs.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = nav_gs.png; sourceTree = "<group>"; };
+		02198CB721A2759F008FDB0C /* nav_mark.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = nav_mark.png; sourceTree = "<group>"; };
+		02198CB821A2759F008FDB0C /* nav_ndb.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = nav_ndb.png; sourceTree = "<group>"; };
+		02198CB921A2759F008FDB0C /* nav_vor.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = nav_vor.png; sourceTree = "<group>"; };
 		0224ED2720048B7F004729CD /* WED_ValidateList.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ValidateList.cpp; sourceTree = "<group>"; };
 		0224ED2820048B7F004729CD /* WED_ValidateList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ValidateList.h; sourceTree = "<group>"; };
 		0236B971203425CE0046900C /* check_buttons.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = check_buttons.png; sourceTree = "<group>"; };
@@ -1039,6 +1050,8 @@
 		02B03C2020C720C7000F81F0 /* line_SolidYellowW.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = line_SolidYellowW.png; sourceTree = "<group>"; };
 		02B03C2120C720C7000F81F0 /* line_TaxiCenterUni.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = line_TaxiCenterUni.png; sourceTree = "<group>"; };
 		02B03C2220C720C7000F81F0 /* line_Unknown.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = line_Unknown.png; sourceTree = "<group>"; };
+		02BFA20F21C1B58D0090D527 /* navmap_airport.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = navmap_airport.png; sourceTree = "<group>"; };
+		02BFA21021C1B58D0090D527 /* navmap_seaport.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = navmap_seaport.png; sourceTree = "<group>"; };
 		02F4A70A204E6F1700E241B3 /* worldmap.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = worldmap.jpg; sourceTree = "<group>"; };
 		20286C33FDCF999611CA2CEA /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
 		2F1515C41D0BA700002224B1 /* WED_MetaDataKeys.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_MetaDataKeys.cpp; sourceTree = "<group>"; };
@@ -1058,9 +1071,6 @@
 		D604AEB41C0E7D7B006DC1F0 /* GLDebugMacros.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLDebugMacros.h; sourceTree = "<group>"; };
 		D604AEB81C0EAEF1006DC1F0 /* WEDMainMenu.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = WEDMainMenu.xib; sourceTree = "<group>"; };
 		D604AEBB1C0F4821006DC1F0 /* RFMainMenu.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = RFMainMenu.xib; sourceTree = "<group>"; };
-		D60616290C14BAC0007BA5C9 /* WED_UIMeasurements.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_UIMeasurements.h; sourceTree = "<group>"; };
-		D606162A0C14BAC0007BA5C9 /* WED_UIMeasurements.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_UIMeasurements.cpp; sourceTree = "<group>"; };
-		D606164E0C14BE46007BA5C9 /* ui_measurements.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ui_measurements.txt; sourceTree = "<group>"; };
 		D60617EE0C14D18C007BA5C9 /* disclose.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = disclose.png; sourceTree = "<group>"; };
 		D60617EF0C14D18C007BA5C9 /* gradient.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = gradient.png; sourceTree = "<group>"; };
 		D6061A1B0C150844007BA5C9 /* header.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = header.png; sourceTree = "<group>"; };
@@ -1092,8 +1102,6 @@
 		D60808811546E5F6001BE1A9 /* WED_LibraryPreviewPane.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_LibraryPreviewPane.cpp; sourceTree = "<group>"; };
 		D60826561C3622AC001CC3CF /* WED_Sign_Editor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Sign_Editor.cpp; sourceTree = "<group>"; };
 		D60826571C3622AC001CC3CF /* WED_Sign_Editor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Sign_Editor.h; sourceTree = "<group>"; };
-		D608C9801E01B8F8002E68F9 /* WED_HierarchyFilterBar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_HierarchyFilterBar.cpp; sourceTree = "<group>"; };
-		D608C9811E01B8F8002E68F9 /* WED_HierarchyFilterBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_HierarchyFilterBar.h; sourceTree = "<group>"; };
 		D608C9821E01B8F8002E68F9 /* WED_LibraryFilterBar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_LibraryFilterBar.cpp; sourceTree = "<group>"; };
 		D608C9831E01B8F8002E68F9 /* WED_LibraryFilterBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_LibraryFilterBar.h; sourceTree = "<group>"; };
 		D608C9861E01B906002E68F9 /* GUI_FilterBar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_FilterBar.cpp; sourceTree = "<group>"; };
@@ -1125,13 +1133,19 @@
 		D60C07E00C2328B700783179 /* WED_FastBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_FastBuffer.h; sourceTree = "<group>"; };
 		D60C07E10C2328B700783179 /* WED_FastBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_FastBuffer.cpp; sourceTree = "<group>"; };
 		D6110F981C32136000A37784 /* WED_Sign_Parser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Sign_Parser.h; sourceTree = "<group>"; };
+		D612485321E5AA5D00FA030C /* WED_ATCWindRule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ATCWindRule.h; sourceTree = "<group>"; };
+		D612485421E5AA5D00FA030C /* WED_ATCTimeRule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ATCTimeRule.h; sourceTree = "<group>"; };
+		D612485521E5AA5D00FA030C /* WED_FacadePreview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_FacadePreview.h; sourceTree = "<group>"; };
+		D612485621E5B2C300FA030C /* CGALDefs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGALDefs.h; sourceTree = "<group>"; };
+		D612485721E5B35300FA030C /* RTree2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RTree2.h; sourceTree = "<group>"; };
+		D612485821E5B39300FA030C /* UTL_interval.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UTL_interval.h; sourceTree = "<group>"; };
+		D612485921E5B41A00FA030C /* Hydro2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Hydro2.h; sourceTree = "<group>"; };
 		D6139E1E0BD5793500D50803 /* WED_StructureLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_StructureLayer.h; sourceTree = "<group>"; };
 		D6139E1F0BD5793500D50803 /* WED_StructureLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_StructureLayer.cpp; sourceTree = "<group>"; };
 		D613A2DE0BD64C1800D50803 /* WED_TerraserverLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_TerraserverLayer.h; sourceTree = "<group>"; };
 		D613A2DF0BD64C1800D50803 /* WED_TerraserverLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TerraserverLayer.cpp; sourceTree = "<group>"; };
 		D6151DC30FB46008008A355F /* RF_Application.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RF_Application.h; sourceTree = "<group>"; };
 		D6151DC40FB46008008A355F /* RF_Application.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RF_Application.cpp; sourceTree = "<group>"; };
-		D6183B951D766C7400E606E9 /* handle_arrowhead_lg.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = handle_arrowhead_lg.png; sourceTree = "<group>"; };
 		D6183B971D7CA28200E606E9 /* WED_TruckParkingLocation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TruckParkingLocation.cpp; sourceTree = "<group>"; };
 		D6183B981D7CA28200E606E9 /* WED_TruckParkingLocation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_TruckParkingLocation.h; sourceTree = "<group>"; };
 		D6183B9A1D7CAD8900E606E9 /* WED_TruckDestination.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_TruckDestination.h; sourceTree = "<group>"; };
@@ -1795,18 +1809,12 @@
 		D6BC37C50AB22C85003949C5 /* WED_Errors.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Errors.cpp; sourceTree = "<group>"; };
 		D6BC37C60AB22C85003949C5 /* WED_Errors.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_Errors.h; sourceTree = "<group>"; };
 		D6BC37C90AB22C85003949C5 /* WED_Messages.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_Messages.h; sourceTree = "<group>"; };
-		D6BC37CC0AB22C85003949C5 /* WED_Package.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Package.cpp; sourceTree = "<group>"; };
-		D6BC37CD0AB22C85003949C5 /* WED_Package.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_Package.h; sourceTree = "<group>"; };
 		D6BC37E30AB22C85003949C5 /* WED_MapPane.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_MapPane.cpp; sourceTree = "<group>"; };
 		D6BC37E40AB22C85003949C5 /* WED_MapPane.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_MapPane.h; sourceTree = "<group>"; };
 		D6BC37E90AB22C85003949C5 /* WED_DocumentWindow.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_DocumentWindow.cpp; sourceTree = "<group>"; };
 		D6BC37EA0AB22C85003949C5 /* WED_DocumentWindow.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_DocumentWindow.h; sourceTree = "<group>"; };
 		D6BC37ED0AB22C85003949C5 /* WED_Menus.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Menus.cpp; sourceTree = "<group>"; };
 		D6BC37EE0AB22C85003949C5 /* WED_Menus.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_Menus.h; sourceTree = "<group>"; };
-		D6BC37EF0AB22C85003949C5 /* WED_PackageStatusPane.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_PackageStatusPane.cpp; sourceTree = "<group>"; };
-		D6BC37F00AB22C85003949C5 /* WED_PackageStatusPane.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_PackageStatusPane.h; sourceTree = "<group>"; };
-		D6BC37F10AB22C85003949C5 /* WED_PackageWindow.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_PackageWindow.cpp; sourceTree = "<group>"; };
-		D6BC37F20AB22C85003949C5 /* WED_PackageWindow.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_PackageWindow.h; sourceTree = "<group>"; };
 		D6BC37F30AB22C85003949C5 /* WED_UIDefs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_UIDefs.h; sourceTree = "<group>"; };
 		D6BC38300AB22C85003949C5 /* Airports.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = Airports.cpp; sourceTree = "<group>"; };
 		D6BC38310AB22C85003949C5 /* Airports.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = Airports.h; sourceTree = "<group>"; };
@@ -2301,6 +2309,8 @@
 		D60BFC3C0C03619A00AD5EB7 /* icons */ = {
 			isa = PBXGroup;
 			children = (
+				02BFA20F21C1B58D0090D527 /* navmap_airport.png */,
+				02BFA21021C1B58D0090D527 /* navmap_seaport.png */,
 				D608C9891E01BC09002E68F9 /* map_servicedest.png */,
 				D6FE7C80173EC49C007721F2 /* map_tree.png */,
 				D63D8E6013F32E5500E353E8 /* map_missing_obj.png */,
@@ -2314,6 +2324,10 @@
 				D60BFC450C03619A00AD5EB7 /* map_taxisign.png */,
 				D60BFC460C03619A00AD5EB7 /* map_towerview.png */,
 				D60BFC470C03619A00AD5EB7 /* map_windsock.png */,
+				02198CB621A2759E008FDB0C /* nav_gs.png */,
+				02198CB721A2759F008FDB0C /* nav_mark.png */,
+				02198CB821A2759F008FDB0C /* nav_ndb.png */,
+				02198CB921A2759F008FDB0C /* nav_vor.png */,
 			);
 			path = icons;
 			sourceTree = "<group>";
@@ -2321,7 +2335,6 @@
 		D60BFCD40C03664F00AD5EB7 /* handles */ = {
 			isa = PBXGroup;
 			children = (
-				D6183B951D766C7400E606E9 /* handle_arrowhead_lg.png */,
 				D6DB376F0C452B0400DE04F0 /* handle_rotatehead.png */,
 				D60BFCD50C03664F00AD5EB7 /* handle_arrowhead.png */,
 				D60BFCD60C03664F00AD5EB7 /* handle_closeloop.png */,
@@ -2904,6 +2917,8 @@
 		D6BC376A0AB22C85003949C5 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				D612485821E5B39300FA030C /* UTL_interval.h */,
+				D612485721E5B35300FA030C /* RTree2.h */,
 				D6F3F0891D072BE800188B28 /* CSVParser.cpp */,
 				D6F3F08A1D072BE800188B28 /* CSVParser.h */,
 				D62FD75B110E14E900C5D48E /* QuiltUtils.cpp */,
@@ -3014,70 +3029,68 @@
 		D6BC37BB0AB22C85003949C5 /* WEDCore */ = {
 			isa = PBXGroup;
 			children = (
-				0224ED2720048B7F004729CD /* WED_ValidateList.cpp */,
-				0224ED2820048B7F004729CD /* WED_ValidateList.h */,
-				D60628DE1EA110D90007CC13 /* WED_HierarchyUtils.cpp */,
-				D60628DF1EA110D90007CC13 /* WED_HierarchyUtils.h */,
-				D652F3E21D5B5A46008566F8 /* WED_ValidateATCRunwayChecks.cpp */,
-				D652F3E31D5B5A46008566F8 /* WED_ValidateATCRunwayChecks.h */,
-				D6110F981C32136000A37784 /* WED_Sign_Parser.h */,
-				D6F72EAF18A1489700DB1193 /* WED_Sign_Parser.cpp */,
-				D6956ED00F82E91100F6718E /* WED_Assert.cpp */,
-				D6956ED10F82E91100F6718E /* WED_Assert.h */,
-				D6956ED20F82E91100F6718E /* WED_Globals.cpp */,
-				D6956ED30F82E91100F6718E /* WED_Globals.h */,
-				D6AC14E70F127AFE0006E096 /* WED_ResourceMgr.cpp */,
-				D6AC14E80F127AFE0006E096 /* WED_ResourceMgr.h */,
-				D6E023E80C39841200BD789F /* WED_PackageMgr.cpp */,
-				D6E023E90C39841200BD789F /* WED_PackageMgr.h */,
+				D6DA657F1ACC593D007B6A75 /* README.WorldEditor */,
+				D6BC37BD0AB22C85003949C5 /* WED_Application.cpp */,
+				D6BC37BE0AB22C85003949C5 /* WED_Application.h */,
+				D6ED39B10B67D08F00D5484E /* WED_AppMain.cpp */,
 				D6ED40370B6AD47300D5484E /* WED_Archive.cpp */,
 				D6ED40380B6AD47300D5484E /* WED_Archive.h */,
+				D6956ED00F82E91100F6718E /* WED_Assert.cpp */,
+				D6956ED10F82E91100F6718E /* WED_Assert.h */,
 				D6ED40390B6AD47300D5484E /* WED_Buffer.cpp */,
 				D6ED403A0B6AD47300D5484E /* WED_Buffer.h */,
+				D691EE74170A1DAD00AD6E4C /* WED_Clipping.cpp */,
+				D691EE73170A1DAD00AD6E4C /* WED_Clipping.h */,
+				D6BC37C30AB22C85003949C5 /* WED_Document.cpp */,
+				D6BC37C40AB22C85003949C5 /* WED_Document.h */,
+				D6A17E240BA59EF900BBCD0C /* WED_Enums.h */,
+				D6A17E190BA5994900BBCD0C /* WED_EnumSystem.cpp */,
+				D6A17E180BA5994900BBCD0C /* WED_EnumSystem.h */,
+				D6BC37C50AB22C85003949C5 /* WED_Errors.cpp */,
+				D6BC37C60AB22C85003949C5 /* WED_Errors.h */,
+				D60C07E10C2328B700783179 /* WED_FastBuffer.cpp */,
+				D60C07E00C2328B700783179 /* WED_FastBuffer.h */,
+				D680AA1D0FCD85B400712B5B /* WED_GISUtils.cpp */,
+				D680AA1C0FCD85B400712B5B /* WED_GISUtils.h */,
+				D6956ED20F82E91100F6718E /* WED_Globals.cpp */,
+				D6956ED30F82E91100F6718E /* WED_Globals.h */,
+				D60628DE1EA110D90007CC13 /* WED_HierarchyUtils.cpp */,
+				D60628DF1EA110D90007CC13 /* WED_HierarchyUtils.h */,
+				D6226F240E4C6A48005BD1D7 /* WED_LibraryMgr.cpp */,
+				D6226F230E4C6A48005BD1D7 /* WED_LibraryMgr.h */,
+				D6BC37C90AB22C85003949C5 /* WED_Messages.h */,
+				D60B0ECC0FCC886A001E8DD3 /* WED_Orthophoto.cpp */,
+				D60B0ECB0FCC886A001E8DD3 /* WED_Orthophoto.h */,
+				D6E023E80C39841200BD789F /* WED_PackageMgr.cpp */,
+				D6E023E90C39841200BD789F /* WED_PackageMgr.h */,
 				D6ED403B0B6AD47300D5484E /* WED_Persistent.cpp */,
 				D6ED403C0B6AD47300D5484E /* WED_Persistent.h */,
+				D6FF28610B6E4A3600960D5E /* WED_PropertyHelper.cpp */,
+				D6FF28600B6E4A3600960D5E /* WED_PropertyHelper.h */,
+				D6AC14E70F127AFE0006E096 /* WED_ResourceMgr.cpp */,
+				D6AC14E80F127AFE0006E096 /* WED_ResourceMgr.h */,
+				D653D6851054371B00A502FF /* WED_Routing.cpp */,
+				D653D6841054371B00A502FF /* WED_Routing.h */,
+				D6F72EAF18A1489700DB1193 /* WED_Sign_Parser.cpp */,
+				D6110F981C32136000A37784 /* WED_Sign_Parser.h */,
+				D6536E9B0C3D7F3100005385 /* WED_TexMgr.cpp */,
+				D6536E9A0C3D7F3100005385 /* WED_TexMgr.h */,
 				D6ED403D0B6AD47300D5484E /* WED_UndoLayer.cpp */,
 				D6ED403E0B6AD47300D5484E /* WED_UndoLayer.h */,
 				D6ED403F0B6AD47300D5484E /* WED_UndoMgr.cpp */,
 				D6ED40400B6AD47300D5484E /* WED_UndoMgr.h */,
-				D6ED39B10B67D08F00D5484E /* WED_AppMain.cpp */,
-				D6BC37BD0AB22C85003949C5 /* WED_Application.cpp */,
-				D6BC37BE0AB22C85003949C5 /* WED_Application.h */,
-				D6BC37C30AB22C85003949C5 /* WED_Document.cpp */,
-				D6BC37C40AB22C85003949C5 /* WED_Document.h */,
-				D6BC37C50AB22C85003949C5 /* WED_Errors.cpp */,
-				D6BC37C60AB22C85003949C5 /* WED_Errors.h */,
-				D6BC37C90AB22C85003949C5 /* WED_Messages.h */,
-				D6BC37CC0AB22C85003949C5 /* WED_Package.cpp */,
-				D6BC37CD0AB22C85003949C5 /* WED_Package.h */,
-				D6FF28600B6E4A3600960D5E /* WED_PropertyHelper.h */,
-				D6FF28610B6E4A3600960D5E /* WED_PropertyHelper.cpp */,
-				D6A17E180BA5994900BBCD0C /* WED_EnumSystem.h */,
-				D6A17E190BA5994900BBCD0C /* WED_EnumSystem.cpp */,
-				D6A17E240BA59EF900BBCD0C /* WED_Enums.h */,
-				D60C07E00C2328B700783179 /* WED_FastBuffer.h */,
-				D60C07E10C2328B700783179 /* WED_FastBuffer.cpp */,
-				D6C37B880C2796850023B35C /* WED_Version.h */,
-				D6536E9A0C3D7F3100005385 /* WED_TexMgr.h */,
-				D6536E9B0C3D7F3100005385 /* WED_TexMgr.cpp */,
-				D6226F230E4C6A48005BD1D7 /* WED_LibraryMgr.h */,
-				D6226F240E4C6A48005BD1D7 /* WED_LibraryMgr.cpp */,
-				D60B0ECB0FCC886A001E8DD3 /* WED_Orthophoto.h */,
-				D60B0ECC0FCC886A001E8DD3 /* WED_Orthophoto.cpp */,
-				D680AA1C0FCD85B400712B5B /* WED_GISUtils.h */,
-				D680AA1D0FCD85B400712B5B /* WED_GISUtils.cpp */,
-				D653D6841054371B00A502FF /* WED_Routing.h */,
-				D653D6851054371B00A502FF /* WED_Routing.cpp */,
-				D63CC9F513E85B8B00468132 /* WED_XMLWriter.h */,
-				D63CC9F613E85B8B00468132 /* WED_XMLWriter.cpp */,
-				D6282EFB13EC782B00FD236C /* WED_XMLReader.h */,
-				D6282EFC13EC782B00FD236C /* WED_XMLReader.cpp */,
-				D691EDF71709F4DC00AD6E4C /* WED_Validate.h */,
-				D691EDF81709F4DC00AD6E4C /* WED_Validate.cpp */,
-				D691EE73170A1DAD00AD6E4C /* WED_Clipping.h */,
-				D691EE74170A1DAD00AD6E4C /* WED_Clipping.cpp */,
 				D6B80CD019A24B220005C1FF /* WED_Url.h */,
-				D6DA657F1ACC593D007B6A75 /* README.WorldEditor */,
+				D691EDF81709F4DC00AD6E4C /* WED_Validate.cpp */,
+				D691EDF71709F4DC00AD6E4C /* WED_Validate.h */,
+				D652F3E21D5B5A46008566F8 /* WED_ValidateATCRunwayChecks.cpp */,
+				D652F3E31D5B5A46008566F8 /* WED_ValidateATCRunwayChecks.h */,
+				0224ED2720048B7F004729CD /* WED_ValidateList.cpp */,
+				0224ED2820048B7F004729CD /* WED_ValidateList.h */,
+				D6C37B880C2796850023B35C /* WED_Version.h */,
+				D6282EFC13EC782B00FD236C /* WED_XMLReader.cpp */,
+				D6282EFB13EC782B00FD236C /* WED_XMLReader.h */,
+				D63CC9F613E85B8B00468132 /* WED_XMLWriter.cpp */,
+				D63CC9F513E85B8B00468132 /* WED_XMLWriter.h */,
 			);
 			path = WEDCore;
 			sourceTree = "<group>";
@@ -3085,6 +3098,10 @@
 		D6BC37E10AB22C85003949C5 /* WEDMap */ = {
 			isa = PBXGroup;
 			children = (
+				02198CAE219F68B8008FDB0C /* WED_NavaidLayer.cpp */,
+				02198CAF219F68B8008FDB0C /* WED_NavaidLayer.h */,
+				02198CB0219F68B8008FDB0C /* WED_SlippyMap.cpp */,
+				02198CB1219F68B8008FDB0C /* WED_SlippyMap.h */,
 				D6BC37E30AB22C85003949C5 /* WED_MapPane.cpp */,
 				D6BC37E40AB22C85003949C5 /* WED_MapPane.h */,
 				D62FC9990BCEF3D600ED6CF8 /* WED_Map.cpp */,
@@ -3125,8 +3142,6 @@
 				D6E067760BDE91990070E31C /* WED_ToolInfoAdapter.cpp */,
 				D607AEFF0C03BEC300992876 /* WED_Colors.h */,
 				D607AF000C03BEC300992876 /* WED_Colors.cpp */,
-				D60616290C14BAC0007BA5C9 /* WED_UIMeasurements.h */,
-				D606162A0C14BAC0007BA5C9 /* WED_UIMeasurements.cpp */,
 				D6F25F900C185F8000C26DC4 /* WED_WorldMapLayer.h */,
 				D6F25F910C185F8000C26DC4 /* WED_WorldMapLayer.cpp */,
 				D6AC14D50F1279EB0006E096 /* WED_PreviewLayer.h */,
@@ -3146,8 +3161,6 @@
 			children = (
 				02B03C0D20C71DE5000F81F0 /* WED_Line_Selector.cpp */,
 				02B03C0E20C71DE5000F81F0 /* WED_Line_Selector.h */,
-				D608C9801E01B8F8002E68F9 /* WED_HierarchyFilterBar.cpp */,
-				D608C9811E01B8F8002E68F9 /* WED_HierarchyFilterBar.h */,
 				D608C9821E01B8F8002E68F9 /* WED_LibraryFilterBar.cpp */,
 				D608C9831E01B8F8002E68F9 /* WED_LibraryFilterBar.h */,
 				D6E023EC0C39842700BD789F /* WED_PackageListAdapter.cpp */,
@@ -3156,10 +3169,6 @@
 				D6BC37EA0AB22C85003949C5 /* WED_DocumentWindow.h */,
 				D6BC37ED0AB22C85003949C5 /* WED_Menus.cpp */,
 				D6BC37EE0AB22C85003949C5 /* WED_Menus.h */,
-				D6BC37EF0AB22C85003949C5 /* WED_PackageStatusPane.cpp */,
-				D6BC37F00AB22C85003949C5 /* WED_PackageStatusPane.h */,
-				D6BC37F10AB22C85003949C5 /* WED_PackageWindow.cpp */,
-				D6BC37F20AB22C85003949C5 /* WED_PackageWindow.h */,
 				D6BC37F30AB22C85003949C5 /* WED_UIDefs.h */,
 				D6C690360BF0B91100C9F880 /* WED_GroupCommands.h */,
 				D6C690370BF0B91100C9F880 /* WED_GroupCommands.cpp */,
@@ -3176,6 +3185,8 @@
 		D6BC382D0AB22C85003949C5 /* XESCore */ = {
 			isa = PBXGroup;
 			children = (
+				D612485921E5B41A00FA030C /* Hydro2.h */,
+				D612485621E5B2C300FA030C /* CGALDefs.h */,
 				D6BC020B146CC17800A941C6 /* Hydro2.cpp */,
 				D6D408271406C6A20061EBF9 /* BezierApprox.cpp */,
 				D6D408281406C6A20061EBF9 /* BezierApprox.h */,
@@ -3484,7 +3495,6 @@
 				D6E064810BDD32010070E31C /* map_tools.png */,
 				D6A1860D0BA9A59C00BBCD0C /* tabs.png */,
 				D607B6320C09FE5F00992876 /* WED_Info.plist */,
-				D606164E0C14BE46007BA5C9 /* ui_measurements.txt */,
 				D604AEB81C0EAEF1006DC1F0 /* WEDMainMenu.xib */,
 				02F4A70A204E6F1700E241B3 /* worldmap.jpg */,
 			);
@@ -3505,6 +3515,9 @@
 		D6ED413C0B6ADE0100D5484E /* WEDEntities */ = {
 			isa = PBXGroup;
 			children = (
+				D612485421E5AA5D00FA030C /* WED_ATCTimeRule.h */,
+				D612485321E5AA5D00FA030C /* WED_ATCWindRule.h */,
+				D612485521E5AA5D00FA030C /* WED_FacadePreview.h */,
 				D6AF0A511F44E7B400CC7328 /* WED_FacadePreview.cpp */,
 				D6240D6B1476EAAE00A28A6F /* WED_ATCTimeRule.cpp */,
 				D6240D6C1476EAAE00A28A6F /* WED_ATCWindRule.cpp */,
@@ -3852,8 +3865,8 @@
 					};
 				};
 			};
-			buildConfigurationList = C0E91AC908A95435008D54AB /* Build configuration list for PBXProject "SceneryTools_xcode6" */;
-			compatibilityVersion = "Xcode 6.3";
+			buildConfigurationList = C0E91AC908A95435008D54AB /* Build configuration list for PBXProject "SceneryTools" */;
+			compatibilityVersion = "Xcode 8.0";
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
@@ -3940,7 +3953,6 @@
 				D607AC8B0C0385AA00992876 /* scrollbar_h.png in Resources */,
 				D607AC8C0C0385AA00992876 /* scrollbar_v.png in Resources */,
 				D607ADC50C039A5800992876 /* splitter_h.png in Resources */,
-				D6183B961D766C7400E606E9 /* handle_arrowhead_lg.png in Resources */,
 				02B03C4020C72122000F81F0 /* line_SolidYellowW.png in Resources */,
 				D607ADC60C039A5800992876 /* splitter_v.png in Resources */,
 				02B03C3620C720E8000F81F0 /* line_BSolidGreen.png in Resources */,
@@ -3954,15 +3966,16 @@
 				D6B69CE81C582B6A005C78C5 /* ClassD.png in Resources */,
 				02B03C3520C720E2000F81F0 /* line_BSolidBlue.png in Resources */,
 				D6B69CE61C582B6A005C78C5 /* ClassB.png in Resources */,
+				02198CBE21A275EA008FDB0C /* nav_gs.png in Resources */,
 				02B03C3420C720DE000F81F0 /* line_BrokenRed.png in Resources */,
 				D682DE5D0C10985100BBE1A0 /* startup_bar.png in Resources */,
 				D682DE5E0C10985100BBE1A0 /* startup_bkgnd.png in Resources */,
+				02BFA21321C1B5970090D527 /* navmap_seaport.png in Resources */,
 				D682DE5F0C10985100BBE1A0 /* startup_btns.png in Resources */,
 				02B03C3C20C72110000F81F0 /* line_SolidBlue.png in Resources */,
 				D682E1060C10E23C00BBE1A0 /* scrollbar_corner.png in Resources */,
 				0236B9732034264A0046900C /* check_buttons.png in Resources */,
 				02B03C3820C720F3000F81F0 /* line_BSolidRed.png in Resources */,
-				D606164F0C14BE46007BA5C9 /* ui_measurements.txt in Resources */,
 				02B03C3720C720EE000F81F0 /* line_BSolidOrange.png in Resources */,
 				D60617F00C14D18C007BA5C9 /* disclose.png in Resources */,
 				D60617F10C14D18C007BA5C9 /* gradient.png in Resources */,
@@ -3980,10 +3993,12 @@
 				D6D0F77F1CB336AA0051AABC /* delete.png in Resources */,
 				D67B214B0C5536A300A21ABC /* grass.png in Resources */,
 				D67B214C0C5536A300A21ABC /* gravel.png in Resources */,
+				02BFA21421C1B59C0090D527 /* navmap_airport.png in Resources */,
 				D67B214D0C5536A300A21ABC /* lake.png in Resources */,
 				02F4A70C204E6F4700E241B3 /* worldmap.jpg in Resources */,
 				D67B214E0C5536A300A21ABC /* snow.png in Resources */,
 				D67B21680C553A3A00A21ABC /* water.png in Resources */,
+				02198CC121A275FC008FDB0C /* nav_vor.png in Resources */,
 				D67B29F60C5661A100A21ABC /* line_BBrokenYellow.png in Resources */,
 				D67B29F70C5661A100A21ABC /* line_BDoubleSolidYellow.png in Resources */,
 				D67B29F80C5661A100A21ABC /* line_BILSCriticalCenter.png in Resources */,
@@ -4001,6 +4016,7 @@
 				D67B2A010C5661A100A21ABC /* line_BWideBrokenSingle.png in Resources */,
 				D67B2A020C5661A100A21ABC /* line_Chequered.png in Resources */,
 				D67B2A030C5661A100A21ABC /* line_DoubleSolidYellow.png in Resources */,
+				02198CBF21A275F0008FDB0C /* nav_mark.png in Resources */,
 				D67B2A040C5661A100A21ABC /* line_HoldLights.png in Resources */,
 				D604AEB91C0EAEF1006DC1F0 /* WEDMainMenu.xib in Resources */,
 				D67B2A050C5661A100A21ABC /* line_HoldLightsPulse.png in Resources */,
@@ -4015,6 +4031,7 @@
 				D67B2A0D0C5661A100A21ABC /* line_TaxiCenter.png in Resources */,
 				D67B2A0E0C5661A100A21ABC /* line_TaxiEdge.png in Resources */,
 				D67B2A0F0C5661A100A21ABC /* line_WideBrokenDouble.png in Resources */,
+				02198CC021A275F7008FDB0C /* nav_ndb.png in Resources */,
 				D67B2A100C5661A100A21ABC /* line_WideBrokenSingle.png in Resources */,
 				D6C390020FA0D93400EFA56C /* sans.ttf in Resources */,
 				D6E30557105F8EE7009E6E7F /* tce_tools.png in Resources */,
@@ -4493,6 +4510,7 @@
 				D6A266AA0F99274300E1E754 /* obj_panel.cpp in Sources */,
 				D6A266AC0F99274300E1E754 /* obj_radius.cpp in Sources */,
 				D6A266AE0F99274300E1E754 /* obj_tools.cpp in Sources */,
+				D645FD1A1FA7997100A82CFF /* zip.c in Sources */,
 				D6A266B00F99274300E1E754 /* obj_update.cpp in Sources */,
 				D6A266B20F99274300E1E754 /* prefs.cpp in Sources */,
 				D6A266B40F99274300E1E754 /* tcl_utils.cpp in Sources */,
@@ -4501,6 +4519,7 @@
 				D6A266BC0F99274300E1E754 /* xp_plugin.cpp in Sources */,
 				D6A266E60F99296100E1E754 /* ObjConvert.cpp in Sources */,
 				D6A266E80F99296400E1E754 /* ObjPointPool.cpp in Sources */,
+				D645FD191FA7996000A82CFF /* FileUtils.cpp in Sources */,
 				D6A266EA0F99296900E1E754 /* XObjBuilder.cpp in Sources */,
 				D6A266EC0F99296B00E1E754 /* XObjDefs.cpp in Sources */,
 				D6A266EE0F99296D00E1E754 /* XObjReadWrite.cpp in Sources */,
@@ -4553,6 +4572,7 @@
 				D6ED36AA0B67964D00D5484E /* DSFLibWrite.cpp in Sources */,
 				D6ED36AB0B67964D00D5484E /* DSFPointPool.cpp in Sources */,
 				D6ED36AC0B67964D00D5484E /* GUI_Commander.cpp in Sources */,
+				02198CB4219F6929008FDB0C /* WED_NavaidLayer.cpp in Sources */,
 				D6ED36AD0B67964D00D5484E /* GUI_Control.cpp in Sources */,
 				D6ED36AE0B67964D00D5484E /* GUI_Fonts.cpp in Sources */,
 				D604AEB21C0E3662006DC1F0 /* ObjCUtils.mm in Sources */,
@@ -4579,9 +4599,7 @@
 				D6ED36FE0B67964D00D5484E /* WED_Errors.cpp in Sources */,
 				D6ED37020B67964D00D5484E /* WED_MapPane.cpp in Sources */,
 				D6ED37030B67964D00D5484E /* WED_Menus.cpp in Sources */,
-				D6ED37050B67964D00D5484E /* WED_Package.cpp in Sources */,
-				D6ED37060B67964D00D5484E /* WED_PackageStatusPane.cpp in Sources */,
-				D6ED37070B67964D00D5484E /* WED_PackageWindow.cpp in Sources */,
+				02198CB5219F6946008FDB0C /* WED_SlippyMap.cpp in Sources */,
 				D6ED37080B67964D00D5484E /* ObjConvert.cpp in Sources */,
 				D6ED37090B67964D00D5484E /* ObjPointPool.cpp in Sources */,
 				D6ED370A0B67964D00D5484E /* XObjDefs.cpp in Sources */,
@@ -4663,7 +4681,6 @@
 				D62FCEE20BD51B2900ED6CF8 /* WED_RampPosition.cpp in Sources */,
 				D62FCEEC0BD51BBE00ED6CF8 /* WED_LightFixture.cpp in Sources */,
 				D62FCEFE0BD51D9200ED6CF8 /* WED_Helipad.cpp in Sources */,
-				D608C9841E01B8F8002E68F9 /* WED_HierarchyFilterBar.cpp in Sources */,
 				D62FCF310BD535AA00ED6CF8 /* WED_Runway.cpp in Sources */,
 				D62FCF6B0BD539EE00ED6CF8 /* WED_Sealane.cpp in Sources */,
 				D62FCF8D0BD53C7F00ED6CF8 /* WED_Airport.cpp in Sources */,
@@ -4687,7 +4704,6 @@
 				D60B10220C075B3700AD5EB7 /* WED_AptIE.cpp in Sources */,
 				D607B65B0C0A3FF300992876 /* WED_AboutBox.cpp in Sources */,
 				D682DDEE0C10939C00BBE1A0 /* WED_StartWindow.cpp in Sources */,
-				D606168E0C14BF83007BA5C9 /* WED_UIMeasurements.cpp in Sources */,
 				D6F25F920C185F8000C26DC4 /* WED_WorldMapLayer.cpp in Sources */,
 				D6F262F00C18904E00C26DC4 /* WED_ATCFrequency.cpp in Sources */,
 				D60C07E20C2328B700783179 /* WED_FastBuffer.cpp in Sources */,
@@ -4826,10 +4842,10 @@
 			target = D6C579BC0C7E3C7B00FCB4C1 /* DDSTool */;
 			targetProxy = D66FD8790C933D39004AD565 /* PBXContainerItemProxy */;
 		};
-		D6A2674F0F992EF800E1E754 /* PBXTargetDependency */ = {
+		D68801C321F7784E00A66577 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = D6A2665D0F99266D00E1E754 /* ac3d */;
-			targetProxy = D6A2674E0F992EF800E1E754 /* PBXContainerItemProxy */;
+			targetProxy = D68801C221F7784E00A66577 /* PBXContainerItemProxy */;
 		};
 		D6C68DDC0BEFB3A400C9F880 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -4883,12 +4899,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				INFOPLIST_FILE = src/XPTools/ObjView.plist;
 				OTHER_LDFLAGS = (
-					libs/local/lib/libjpeg.a,
 					libs/local/lib/libpng.a,
-					libs/local/lib/libtiff.a,
 					libs/local/lib/libsquish.a,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.laminar_research.ObjView;
@@ -4899,12 +4912,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				INFOPLIST_FILE = src/XPTools/ObjView.plist;
 				OTHER_LDFLAGS = (
-					libs/local/lib/libjpeg.a,
 					libs/local/lib/libpng.a,
-					libs/local/lib/libtiff.a,
 					libs/local/lib/libsquish.a,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.laminar_research.ObjView;
@@ -4914,12 +4924,15 @@
 		C0E91ACA08A95435008D54AB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "c++98";
-				CLANG_CXX_LIBRARY = "libstdc++";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "compiler-default";
 				CLANG_WARN_ASSIGN_ENUM = YES;
+				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = "compiler-default";
+				GCC_FAST_MATH = YES;
 				GCC_INPUT_FILETYPE = automatic;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -4934,19 +4947,14 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				HEADER_SEARCH_PATHS = (
 					libs/local/include,
-					libs/local/include/freetype2,
-					"/usr/include/c++/4.2.1",
-					/usr/local/include,
 					"$(inherited)",
-					SDK/nedmalloc,
-					src/lib_json/include,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					libs/local/lib,
 					"$(inherited)",
 				);
 				LLVM_LTO = NO;
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = macosx;
@@ -4962,11 +4970,14 @@
 		C0E91ACB08A95435008D54AB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "c++98";
-				CLANG_CXX_LIBRARY = "libstdc++";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "compiler-default";
 				CLANG_WARN_ASSIGN_ENUM = YES;
+				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				GCC_C_LANGUAGE_STANDARD = "compiler-default";
+				GCC_FAST_MATH = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_INPUT_FILETYPE = automatic;
 				GCC_OPTIMIZATION_LEVEL = fast;
@@ -4985,19 +4996,14 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				HEADER_SEARCH_PATHS = (
 					libs/local/include,
-					libs/local/include/freetype2,
-					"/usr/include/c++/4.2.1",
-					/usr/local/include,
 					"$(inherited)",
-					SDK/nedmalloc,
-					src/lib_json/include,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					libs/local/lib,
 					"$(inherited)",
 				);
 				LLVM_LTO = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = macosx;
 				WARNING_CFLAGS = (
@@ -5016,7 +5022,6 @@
 					"$(inherited)",
 					"USE_TIF=1",
 				);
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libboost_system.a,
 					libs/local/lib/libboost_thread.a,
@@ -5030,7 +5035,6 @@
 					libs/local/lib/libCGAL.a,
 					libs/local/lib/libshp.a,
 					libs/local/lib/libsquish.a,
-					libs/local/lib/libjasper.a,
 				);
 			};
 			name = Debug;
@@ -5042,7 +5046,6 @@
 					"$(inherited)",
 					"USE_TIF=1",
 				);
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libboost_system.a,
 					libs/local/lib/libboost_thread.a,
@@ -5056,7 +5059,6 @@
 					libs/local/lib/libCGAL.a,
 					libs/local/lib/libshp.a,
 					libs/local/lib/libsquish.a,
-					libs/local/lib/libjasper.a,
 				);
 			};
 			name = DebugOpt;
@@ -5068,7 +5070,6 @@
 					"$(inherited)",
 					"USE_TIF=1",
 				);
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libboost_system.a,
 					libs/local/lib/libboost_thread.a,
@@ -5082,7 +5083,6 @@
 					libs/local/lib/libCGAL.a,
 					libs/local/lib/libshp.a,
 					libs/local/lib/libsquish.a,
-					libs/local/lib/libjasper.a,
 				);
 			};
 			name = Release;
@@ -5090,11 +5090,14 @@
 		D60E98EE0EDDDEEA0096DE0E /* Phone */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "c++98";
-				CLANG_CXX_LIBRARY = "libstdc++";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "compiler-default";
 				CLANG_WARN_ASSIGN_ENUM = YES;
+				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				GCC_C_LANGUAGE_STANDARD = "compiler-default";
+				GCC_FAST_MATH = YES;
 				GCC_INPUT_FILETYPE = automatic;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -5110,19 +5113,14 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				HEADER_SEARCH_PATHS = (
 					libs/local/include,
-					libs/local/include/freetype2,
-					"/usr/include/c++/4.2.1",
-					/usr/local/include,
 					"$(inherited)",
-					SDK/nedmalloc,
-					src/lib_json/include,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					libs/local/lib,
 					"$(inherited)",
 				);
 				LLVM_LTO = NO;
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = macosx;
 				WARNING_CFLAGS = (
@@ -5138,12 +5136,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				INFOPLIST_FILE = src/XPTools/ObjView.plist;
 				OTHER_LDFLAGS = (
-					libs/local/lib/libjpeg.a,
 					libs/local/lib/libpng.a,
-					libs/local/lib/libtiff.a,
 					libs/local/lib/libsquish.a,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.laminar_research.ObjView;
@@ -5161,7 +5156,12 @@
 					"$(inherited)",
 					"WANT_NED_MALLOC=1",
 				);
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				HEADER_SEARCH_PATHS = (
+					libs/local/include,
+					libs/local/include/freetype2,
+					src/lib_json/include,
+					"$(inherited)",
+				);
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
@@ -5186,7 +5186,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				INFOPLIST_FILE = src/XPTools/XGrinder.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.laminar_research.XGrinder;
 			};
@@ -5205,15 +5204,12 @@
 					"$(inherited)",
 					"NO_CGAL=1",
 				);
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				HEADER_SEARCH_PATHS = (
 					libs/local/include,
 					libs/local/include/freetype2,
-					"/usr/include/c++/4.2.1",
-					/usr/local/include,
+					src/lib_json/include,
 					"$(inherited)",
 					SDK/nedmalloc,
-					src/lib_json/include,
 				);
 				INFOPLIST_FILE = Src/WEDResources/WED_Info.plist;
 				INFOPLIST_PREFIX_HEADER = src/WEDCore/WED_Version.h;
@@ -5249,7 +5245,6 @@
 					"WANT_NED_MALLOC=1",
 					"$(inherited)",
 				);
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
@@ -5266,7 +5261,6 @@
 					libs/local/lib/libCGAL_Core.a,
 					libs/local/lib/libshp.a,
 					libs/local/lib/libsquish.a,
-					libs/local/lib/libjasper.a,
 				);
 			};
 			name = Phone;
@@ -5274,7 +5268,6 @@
 		D60E98F60EDDDEEA0096DE0E /* Phone */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					libs/local/lib/lib3ds.a,
@@ -5286,13 +5279,9 @@
 		D60E98F70EDDDEEA0096DE0E /* Phone */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				OTHER_LDFLAGS = (
-					libs/local/lib/libpng.a,
 					libs/local/lib/libsquish.a,
-					libs/local/lib/libjasper.a,
-					libs/local/lib/libtiff.a,
-					libs/local/lib/libjpeg.a,
+					libs/local/lib/libpng.a,
 				);
 			};
 			name = Phone;
@@ -5304,7 +5293,6 @@
 					"$(inherited)",
 					"USE_TIF=1",
 				);
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libboost_system.a,
 					libs/local/lib/libboost_thread.a,
@@ -5318,7 +5306,6 @@
 					libs/local/lib/libCGAL.a,
 					libs/local/lib/libshp.a,
 					libs/local/lib/libsquish.a,
-					libs/local/lib/libjasper.a,
 				);
 			};
 			name = Phone;
@@ -5382,7 +5369,12 @@
 					"$(inherited)",
 					"WANT_NED_MALLOC=1",
 				);
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				HEADER_SEARCH_PATHS = (
+					libs/local/include,
+					libs/local/include/freetype2,
+					src/lib_json/include,
+					"$(inherited)",
+				);
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
@@ -5414,7 +5406,12 @@
 					"$(inherited)",
 					"WANT_NED_MALLOC=1",
 				);
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				HEADER_SEARCH_PATHS = (
+					libs/local/include,
+					libs/local/include/freetype2,
+					src/lib_json/include,
+					"$(inherited)",
+				);
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
@@ -5443,7 +5440,6 @@
 					"WANT_NED_MALLOC=1",
 					"$(inherited)",
 				);
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
@@ -5460,7 +5456,6 @@
 					libs/local/lib/libCGAL_Core.a,
 					libs/local/lib/libshp.a,
 					libs/local/lib/libsquish.a,
-					libs/local/lib/libjasper.a,
 				);
 			};
 			name = Debug;
@@ -5473,7 +5468,6 @@
 					"WANT_NED_MALLOC=1",
 					"$(inherited)",
 				);
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
@@ -5490,7 +5484,6 @@
 					libs/local/lib/libCGAL_Core.a,
 					libs/local/lib/libshp.a,
 					libs/local/lib/libsquish.a,
-					libs/local/lib/libjasper.a,
 				);
 			};
 			name = Release;
@@ -5499,7 +5492,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				INFOPLIST_FILE = src/XPTools/XGrinder.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.laminar_research.XGrinder;
 			};
@@ -5509,7 +5501,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				INFOPLIST_FILE = src/XPTools/XGrinder.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.laminar_research.XGrinder;
 			};
@@ -5530,7 +5521,6 @@
 		D67EF9870B6135F400D9190C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					libs/local/lib/lib3ds.a,
@@ -5542,7 +5532,6 @@
 		D67EF9880B6135F400D9190C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					libs/local/lib/lib3ds.a,
@@ -5556,24 +5545,21 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				BUNDLE_LOADER = /Applications/ac3dmac/ac3d.app/Contents/MacOS/ac3d;
+				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				DYLIB_COMPATIBILITY_VERSION = "";
 				DYLIB_CURRENT_VERSION = "";
 				EXECUTABLE_EXTENSION = p;
 				EXECUTABLE_PREFIX = "";
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				HEADER_SEARCH_PATHS = (
 					SDK/ac3d,
-					"$(inherited)",
+					SDK/mac_i386/include,
 				);
 				MACH_O_TYPE = mh_bundle;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libsquish.a,
-					libs/local/lib/libz.a,
 					libs/local/lib/libpng.a,
-					libs/local/lib/libjasper.a,
-					libs/local/lib/libjpeg.a,
-					"$(inherited)",
+					libs/local/lib/libz.a,
 				);
 				PRODUCT_NAME = XPlaneSupportMac;
 			};
@@ -5584,6 +5570,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				BUNDLE_LOADER = /Applications/ac3dmac/ac3d.app/Contents/MacOS/ac3d;
+				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				DYLIB_COMPATIBILITY_VERSION = "";
 				DYLIB_CURRENT_VERSION = "";
@@ -5594,19 +5581,15 @@
 					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
 				);
 				FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/../../System/Library/Frameworks\"";
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				HEADER_SEARCH_PATHS = (
 					SDK/ac3d,
-					"$(inherited)",
+					SDK/mac_i386/include,
 				);
 				MACH_O_TYPE = mh_bundle;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libsquish.a,
-					libs/local/lib/libz.a,
 					libs/local/lib/libpng.a,
-					libs/local/lib/libjasper.a,
-					libs/local/lib/libjpeg.a,
-					"$(inherited)",
+					libs/local/lib/libz.a,
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = XPlaneSupportMac;
@@ -5618,6 +5601,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				BUNDLE_LOADER = /Applications/ac3dmac/ac3d.app/Contents/MacOS/ac3d;
+				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				DYLIB_COMPATIBILITY_VERSION = "";
 				DYLIB_CURRENT_VERSION = "";
@@ -5628,19 +5612,15 @@
 					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
 				);
 				FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/../../System/Library/Frameworks\"";
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				HEADER_SEARCH_PATHS = (
 					SDK/ac3d,
-					"$(inherited)",
+					SDK/mac_i386/include,
 				);
 				MACH_O_TYPE = mh_bundle;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libsquish.a,
-					libs/local/lib/libz.a,
 					libs/local/lib/libpng.a,
-					libs/local/lib/libjasper.a,
-					libs/local/lib/libjpeg.a,
-					"$(inherited)",
+					libs/local/lib/libz.a,
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = XPlaneSupportMac;
@@ -5652,25 +5632,22 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				BUNDLE_LOADER = /Applications/ac3dmac/ac3d.app/Contents/MacOS/ac3d;
+				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				DYLIB_COMPATIBILITY_VERSION = "";
 				DYLIB_CURRENT_VERSION = "";
 				EXECUTABLE_EXTENSION = p;
 				EXECUTABLE_PREFIX = "";
 				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				HEADER_SEARCH_PATHS = (
 					SDK/ac3d,
-					"$(inherited)",
+					SDK/mac_i386/include,
 				);
 				MACH_O_TYPE = mh_bundle;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libsquish.a,
-					libs/local/lib/libz.a,
 					libs/local/lib/libpng.a,
-					libs/local/lib/libjasper.a,
-					libs/local/lib/libjpeg.a,
-					"$(inherited)",
+					libs/local/lib/libz.a,
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = XPlaneSupportMac;
@@ -5680,13 +5657,9 @@
 		D6C579D40C7E3C7B00FCB4C1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				OTHER_LDFLAGS = (
-					libs/local/lib/libpng.a,
 					libs/local/lib/libsquish.a,
-					libs/local/lib/libjasper.a,
-					libs/local/lib/libtiff.a,
-					libs/local/lib/libjpeg.a,
+					libs/local/lib/libpng.a,
 				);
 			};
 			name = Debug;
@@ -5694,13 +5667,9 @@
 		D6C579D50C7E3C7B00FCB4C1 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				OTHER_LDFLAGS = (
-					libs/local/lib/libpng.a,
 					libs/local/lib/libsquish.a,
-					libs/local/lib/libjasper.a,
-					libs/local/lib/libtiff.a,
-					libs/local/lib/libjpeg.a,
+					libs/local/lib/libpng.a,
 				);
 			};
 			name = Release;
@@ -5743,15 +5712,12 @@
 					"$(inherited)",
 					"NO_CGAL=1",
 				);
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				HEADER_SEARCH_PATHS = (
 					libs/local/include,
 					libs/local/include/freetype2,
-					"/usr/include/c++/4.2.1",
-					/usr/local/include,
+					src/lib_json/include,
 					"$(inherited)",
 					SDK/nedmalloc,
-					src/lib_json/include,
 				);
 				INFOPLIST_FILE = src/WEDResources/WED_Info.plist;
 				INFOPLIST_PREFIX_HEADER = src/WEDCore/WED_Version.h;
@@ -5786,15 +5752,12 @@
 					"$(inherited)",
 					"NO_CGAL=1",
 				);
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				HEADER_SEARCH_PATHS = (
 					libs/local/include,
 					libs/local/include/freetype2,
-					"/usr/include/c++/4.2.1",
-					/usr/local/include,
+					src/lib_json/include,
 					"$(inherited)",
 					SDK/nedmalloc,
-					src/lib_json/include,
 				);
 				INFOPLIST_FILE = Src/WEDResources/WED_Info.plist;
 				INFOPLIST_PREFIX_HEADER = src/WEDCore/WED_Version.h;
@@ -5820,12 +5783,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				INFOPLIST_FILE = src/XPTools/ObjView.plist;
 				OTHER_LDFLAGS = (
-					libs/local/lib/libjpeg.a,
 					libs/local/lib/libpng.a,
-					libs/local/lib/libtiff.a,
 					libs/local/lib/libsquish.a,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.laminar_research.ObjView;
@@ -5843,7 +5803,12 @@
 					"$(inherited)",
 					"WANT_NED_MALLOC=1",
 				);
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				HEADER_SEARCH_PATHS = (
+					libs/local/include,
+					libs/local/include/freetype2,
+					src/lib_json/include,
+					"$(inherited)",
+				);
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
@@ -5873,13 +5838,9 @@
 		D6F01D740CDABA8D00A3F1B0 /* DebugOpt */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				OTHER_LDFLAGS = (
-					libs/local/lib/libpng.a,
 					libs/local/lib/libsquish.a,
-					libs/local/lib/libjasper.a,
-					libs/local/lib/libtiff.a,
-					libs/local/lib/libjpeg.a,
+					libs/local/lib/libpng.a,
 				);
 			};
 			name = DebugOpt;
@@ -5887,7 +5848,6 @@
 		D6F01D750CDABA8D00A3F1B0 /* DebugOpt */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					libs/local/lib/lib3ds.a,
@@ -5900,7 +5860,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				INFOPLIST_FILE = src/XPTools/XGrinder.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.laminar_research.XGrinder;
 			};
@@ -5919,15 +5878,12 @@
 					"$(inherited)",
 					"NO_CGAL=1",
 				);
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				HEADER_SEARCH_PATHS = (
 					libs/local/include,
 					libs/local/include/freetype2,
-					"/usr/include/c++/4.2.1",
-					/usr/local/include,
+					src/lib_json/include,
 					"$(inherited)",
 					SDK/nedmalloc,
-					src/lib_json/include,
 				);
 				INFOPLIST_FILE = Src/WEDResources/WED_Info.plist;
 				INFOPLIST_PREFIX_HEADER = src/WEDCore/WED_Version.h;
@@ -5957,7 +5913,6 @@
 					"WANT_NED_MALLOC=1",
 					"$(inherited)",
 				);
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
@@ -5974,7 +5929,6 @@
 					libs/local/lib/libCGAL_Core.a,
 					libs/local/lib/libshp.a,
 					libs/local/lib/libsquish.a,
-					libs/local/lib/libjasper.a,
 				);
 			};
 			name = DebugOpt;
@@ -6006,12 +5960,15 @@
 		D6F01D7B0CDABA8D00A3F1B0 /* DebugOpt */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "c++98";
-				CLANG_CXX_LIBRARY = "libstdc++";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "compiler-default";
 				CLANG_WARN_ASSIGN_ENUM = YES;
+				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = "compiler-default";
+				GCC_FAST_MATH = YES;
 				GCC_INPUT_FILETYPE = automatic;
 				GCC_OPTIMIZATION_LEVEL = 1;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -6026,19 +5983,14 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				HEADER_SEARCH_PATHS = (
 					libs/local/include,
-					libs/local/include/freetype2,
-					"/usr/include/c++/4.2.1",
-					/usr/local/include,
 					"$(inherited)",
-					SDK/nedmalloc,
-					src/lib_json/include,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					libs/local/lib,
 					"$(inherited)",
 				);
 				LLVM_LTO = NO;
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = macosx;
@@ -6065,7 +6017,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C0E91AC908A95435008D54AB /* Build configuration list for PBXProject "SceneryTools_xcode6" */ = {
+		C0E91AC908A95435008D54AB /* Build configuration list for PBXProject "SceneryTools" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C0E91ACA08A95435008D54AB /* Debug */,

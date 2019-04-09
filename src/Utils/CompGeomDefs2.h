@@ -137,19 +137,6 @@ struct Point2 {
 	double	y_;
 };
 
-namespace std
-{
-template <> struct less<Point2>
-{
-	bool operator()(const Point2 & lhs, const Point2 & rhs) const
-	{
-		if (lhs.x() != rhs.x())
-			return lhs.x() < rhs.x();
-		else
-			return lhs.y() < rhs.y();
-	}
-};
-}
 
 /****************************************************************************************************
  * Vector2
@@ -783,15 +770,15 @@ inline void	Segment2::move_by_vector(const Vector2& v)
 inline bool Segment2::could_intersect(const Segment2& rhs) const
 {
 	// This is basically a bounding-box quick check for segment-intersection.
-	register double	xmin1 = (p1.x_ < p2.x_) ? p1.x_ : p2.x_;
-	register double	xmax1 = (p1.x_ > p2.x_) ? p1.x_ : p2.x_;
-	register double	ymin1 = (p1.y_ < p2.y_) ? p1.y_ : p2.y_;
-	register double	ymax1 = (p1.y_ > p2.y_) ? p1.y_ : p2.y_;
+	double	xmin1 = (p1.x_ < p2.x_) ? p1.x_ : p2.x_;
+	double	xmax1 = (p1.x_ > p2.x_) ? p1.x_ : p2.x_;
+	double	ymin1 = (p1.y_ < p2.y_) ? p1.y_ : p2.y_;
+	double	ymax1 = (p1.y_ > p2.y_) ? p1.y_ : p2.y_;
 
-	register double	xmin2 = (rhs.p1.x_ < rhs.p2.x_) ? rhs.p1.x_ : rhs.p2.x_;
-	register double	xmax2 = (rhs.p1.x_ > rhs.p2.x_) ? rhs.p1.x_ : rhs.p2.x_;
-	register double	ymin2 = (rhs.p1.y_ < rhs.p2.y_) ? rhs.p1.y_ : rhs.p2.y_;
-	register double	ymax2 = (rhs.p1.y_ > rhs.p2.y_) ? rhs.p1.y_ : rhs.p2.y_;
+	double	xmin2 = (rhs.p1.x_ < rhs.p2.x_) ? rhs.p1.x_ : rhs.p2.x_;
+	double	xmax2 = (rhs.p1.x_ > rhs.p2.x_) ? rhs.p1.x_ : rhs.p2.x_;
+	double	ymin2 = (rhs.p1.y_ < rhs.p2.y_) ? rhs.p1.y_ : rhs.p2.y_;
+	double	ymax2 = (rhs.p1.y_ > rhs.p2.y_) ? rhs.p1.y_ : rhs.p2.y_;
 
 	return (xmax1 >= xmin2 &&
 			xmax2 >= xmin1 &&

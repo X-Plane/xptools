@@ -72,6 +72,7 @@ enum WED_Color {
 	wed_ILSzone,
 	wed_ILSzone_Selected,
 
+	wed_pure_white,            // like runway markings/thresholds etc
 
 	wed_Last
 };

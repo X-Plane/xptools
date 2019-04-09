@@ -84,15 +84,15 @@ GUI_FormWindow::GUI_FormWindow(
 	GUI_Button * aux_btn = new GUI_Button("push_buttons.png",btn_Push,k_reg, k_hil,k_reg,k_hil);
 	mAux = aux_btn;
 	//Looks good as long as nobody resizes the window
-	aux_btn->SetBounds(205,5,305, GUI_GetImageResourceHeight("push_buttons.png") / 3);
+	aux_btn->SetBounds(5,5,125, GUI_GetImageResourceHeight("push_buttons.png") / 2);
 	aux_btn->Show();
-	aux_btn->SetSticky(1,1,0,0);
+	aux_btn->SetSticky(0.5,1,0.5,0);
 	aux_btn->SetDescriptor("Learn More");
 	aux_btn->SetMsg(gui_form_aux,0);
 
 	GUI_Button * okay_btn = new GUI_Button("push_buttons.png",btn_Push,k_reg, k_hil,k_reg,k_hil);
 	mOK = okay_btn;
-	okay_btn->SetBounds(105,5,205,GUI_GetImageResourceHeight("push_buttons.png") / 3);
+	okay_btn->SetBounds(20,5,125,GUI_GetImageResourceHeight("push_buttons.png") / 2);
 	okay_btn->Show();
 	okay_btn->SetSticky(0,1,1,0);
 	okay_btn->SetDescriptor("OK");
@@ -100,7 +100,7 @@ GUI_FormWindow::GUI_FormWindow(
 	mReturnSubmit = true;
 
 	GUI_Button * cncl_btn = new GUI_Button("push_buttons.png",btn_Push,k_reg, k_hil,k_reg,k_hil);
-	cncl_btn->SetBounds(5,5,105,GUI_GetImageResourceHeight("push_buttons.png") / 3);
+	cncl_btn->SetBounds(5,5,110,GUI_GetImageResourceHeight("push_buttons.png") / 2);
 	cncl_btn->Show();
 	cncl_btn->SetSticky(1,1,0,0);
 	cncl_btn->SetDescriptor("Cancel");
@@ -108,7 +108,7 @@ GUI_FormWindow::GUI_FormWindow(
 	mCancel = cncl_btn;
 	
 	GUI_Pane * holder = new GUI_Pane;
-	holder->SetBounds(0,0,210,GUI_GetImageResourceHeight("push_buttons.png") / 3 + 10);
+	holder->SetBounds(0,0,130,GUI_GetImageResourceHeight("push_buttons.png") / 2 + 10);
 	
 	aux_btn->SetParent(holder);
 	aux_btn->AddListener(this);
@@ -236,11 +236,12 @@ void		GUI_FormWindow::AddField(
 	text->SetID(id);
 	label->SetDescriptor(label_text);
 	text->SetDescriptor(default_text);
+	text->SetMargins(3,0,3,1);
 
 	int wbounds[4];
 	this->GUI_Pane::GetBounds(wbounds);
 	
-	int split = (wbounds[0] + wbounds[2]) / 5;
+	int split = (wbounds[0] + wbounds[2]) / 4;
 	
 	int fh = (ft == ft_multi_line || ft == ft_big) ? 100 : 20;
 	
@@ -262,19 +263,11 @@ void		GUI_FormWindow::AddField(
 	text->SetVKAllowed(GUI_VK_ESCAPE, false);
 	text->SetVKAllowed(GUI_VK_ENTER, false);
 	
-	float	cell_h = 20;
 	float	line_h = GUI_GetLineHeight(font_UI_Basic);
-	int		descent = GUI_GetLineDescent(font_UI_Basic);
-	float	cell2line = (cell_h - line_h + descent) * 0.5f;
+	float	cell_h = line_h + 4.0f;
+	float descent = GUI_GetLineDescent(font_UI_Basic);
+	float	cell2line = (cell_h - line_h ) * 0.5f + descent;
 
-	float pad_bottom = cell2line - descent;
-	float pad_top = cell_h - line_h - pad_bottom;
-
-	text->SetMargins(3,pad_bottom,3,pad_top);
-
-
-	
-	
 	mInsertY -= (10+fh);
 	
 	label->SetColors(WED_Color_RGBA(wed_Table_Text));

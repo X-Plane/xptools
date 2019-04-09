@@ -34,9 +34,11 @@
 #include "GUI_Resources.h"
 #include "AssertUtils.h"
 #include "WED_Sign_Editor.h"
-#include "WED_Line_Selector.h"
 
+#if WED
 #define USE_LINE_SELECTOR_POPUP 1
+#include "WED_Line_Selector.h"
+#endif
 
 #define RESIZE_MARGIN 4
 
@@ -66,6 +68,12 @@ private:
 	intptr_t		mMsg;
 };
 
+static float cell2line(int cell_h, int font)
+{
+	float	line_h = GUI_GetLineHeight(font);
+	float descent = GUI_GetLineDescent(font);
+	return (cell_h - line_h ) * 0.5f + descent;
+}
 
 //--------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -76,8 +84,6 @@ GUI_TextTable::GUI_TextTable(GUI_Commander * parent, int indent, int live_edit) 
 	mClickCellY(-1),
 	mParent(NULL),
 	mTextField(NULL),
-//	mSignField(NULL),
-//	mLineField(NULL),
 	mCatcher(NULL),
 	mEditor(NULL),
 	mSelStartX(-1),
@@ -326,11 +332,6 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		cell_bounds[0] += mDiscloseIndent;
 	}
 	
-	float	cell_h = cell_bounds[3] - cell_bounds[1];
-	float	line_h = GUI_GetLineHeight(mFont);
-	int		descent = GUI_GetLineDescent(mFont);
-	float	cell2line = (cell_h - line_h + descent) * 0.5f;
-
 	if (!HasEdit() || mClickCellX != cell_x || mClickCellY != cell_y)
 	{
 		int trunc_width = cell_bounds[2] - cell_bounds[0] - (CELL_MARGIN*2);
@@ -369,9 +370,9 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 			if(c.content_type == gui_Cell_TaxiText)
 			{
 				RenderSign(inState, 
-							cell_bounds[0]+CELL_MARGIN, (float) cell_bounds[1] + cell2line,
+							cell_bounds[0]+CELL_MARGIN, (float) cell_bounds[1] + cell2line(cell_bounds[3] - cell_bounds[1], mFont),
 							c.text_val.c_str(),
-							0.5f, mFont,
+							0.4*GUI_GetLineHeight(mFont)/12.0, mFont,
 							(c.is_selected||cell_type) ? mColorTextSelect : mColorText);
 			}
 			else
@@ -381,7 +382,7 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 				//Draws normal text
 				GUI_FontDraw(inState, mFont,
 					(c.is_selected||cell_type) ? mColorTextSelect : mColorText,
-					cell_bounds[0]+CELL_MARGIN, (float) cell_bounds[1] + cell2line, c.text_val.c_str());
+					cell_bounds[0]+CELL_MARGIN, (float) cell_bounds[1] + cell2line(cell_bounds[3] - cell_bounds[1], mFont), c.text_val.c_str());
 			}
 		}
 	}
@@ -1149,6 +1150,7 @@ void		GUI_TextTable::CreateEdit(int cell_bounds[4], const vector<GUI_MenuItem_t>
 			{
 				mEditor = new WED_Sign_Editor(this);
 			}
+#if USE_LINE_SELECTOR_POPUP
 			else
 			{
 				if (dict == NULL) return;
@@ -1156,6 +1158,7 @@ void		GUI_TextTable::CreateEdit(int cell_bounds[4], const vector<GUI_MenuItem_t>
 				mLineField->SetChoices(dict);
 				mEditor = mLineField;
 			}
+#endif
 			mEditor->SetParent(mCatcher);
 			mCatcher->SetParent(parent);
 			mCatcher->SetBounds(pb);
@@ -1206,7 +1209,7 @@ void		GUI_TextTable::CreateEdit(int cell_bounds[4], const vector<GUI_MenuItem_t>
 			mEditor->TakeFocus();
 		}
 	}
-	else
+	if(!mEditor)
 	{
 		if (!mTextField)
 		{
@@ -1227,21 +1230,13 @@ void		GUI_TextTable::CreateEdit(int cell_bounds[4], const vector<GUI_MenuItem_t>
 			}
 		}
 
-		float	cell_h = cell_bounds[3] - cell_bounds[1];
-		float	line_h = GUI_GetLineHeight(mFont);
-		int		descent = GUI_GetLineDescent(mFont);
-		float	cell2line = (cell_h - line_h + descent) * 0.5f;
-
-		float pad_bottom = cell2line - descent;
-		float pad_top = cell_h - line_h - pad_bottom;
-
+		float pad_bottom = cell2line(cell_bounds[3] - cell_bounds[1],mFont);
+		float pad_top = pad_bottom - GUI_GetLineDescent(mFont);
 		mTextField->SetMargins(CELL_MARGIN,pad_bottom,CELL_MARGIN,pad_top);
-
 
 		cell_bounds[0] += mEditInfo.indent_level * mCellIndent;
 		mTextField->SetBounds(cell_bounds);
 		mTextField->SetWidth(max(cell_bounds[2] - cell_bounds[0],2048));
-	//	mTextField->SetWidth(1000);
 		mTextField->Show();
 		mTextField->TakeFocus();
 
@@ -1559,17 +1554,14 @@ void		GUI_TextTableHeader::HeadDraw	 (int cell_bounds[4], int cell_x, GUI_GraphS
 	{
 		glColor3f(1,1,1);
 		int tile[4] = { 0, c.is_selected, 1, 2 };
-		GUI_DrawHorizontalStretch(inState, mImage.c_str(), cell_bounds, tile);
+		GUI_DrawStretched(inState, mImage.c_str(), cell_bounds, tile);
 	}
 
 	if (!mContent) return;
 
-	int line_h = (cell_bounds[1] + cell_bounds[3]) / 2 - GUI_GetLineAscent(font_UI_Basic) / 2;
-
-
 	int trunc_width = cell_bounds[2] - cell_bounds[0] - (CELL_MARGIN*2);
 	GUI_TruncateText(c.title, font_UI_Basic, trunc_width);
-	GUI_FontDraw(inState, font_UI_Basic, mColorText, cell_bounds[0]+CELL_MARGIN, line_h, c.title.c_str());
+	GUI_FontDraw(inState, font_UI_Basic, mColorText, cell_bounds[0]+CELL_MARGIN, cell2line(cell_bounds[1] + cell_bounds[3], font_UI_Basic), c.title.c_str());
 }
 
 int			GUI_TextTableHeader::HeadMouseDown(int cell_bounds[4], int cell_x, int mouse_x, int mouse_y, int button, GUI_KeyFlags flags, int& want_lock)
@@ -1713,17 +1705,16 @@ void		GUI_TextTableSide::SideDraw	 (int cell_bounds[4], int cell_y, GUI_GraphSta
 	{
 		glColor3f(1,1,1);
 		int tile[4] = { 0, 0, 1, 1 };
-		GUI_DrawHorizontalStretch(inState, mImage.c_str(), cell_bounds, tile);
+		GUI_DrawStretched(inState, mImage.c_str(), cell_bounds, tile);
 	}
 
 	if (!mContent) return;
 	GUI_HeaderContent	c;
 	mContent->GetHeaderContent(cell_y,c);
 
-	int line_h = (cell_bounds[1] + cell_bounds[3]) / 2 - GUI_GetLineAscent(font_UI_Basic) / 2;
 	int trunc_width = cell_bounds[2] - cell_bounds[0] - (CELL_MARGIN*2);
 	GUI_TruncateText(c.title, font_UI_Basic, trunc_width);
-	GUI_FontDraw(inState, font_UI_Basic, mColorText, cell_bounds[0]+CELL_MARGIN, line_h, c.title.c_str());
+	GUI_FontDraw(inState, font_UI_Basic, mColorText, cell_bounds[0]+CELL_MARGIN, cell2line(cell_bounds[1] + cell_bounds[3], font_UI_Basic), c.title.c_str());
 }
 
 int			GUI_TextTableSide::SideMouseDown(int cell_bounds[4], int cell_y, int mouse_x, int mouse_y, int button, GUI_KeyFlags flags, int& want_lock)

@@ -36,8 +36,11 @@
 #include <math.h>
 #include <ac_plugin.h>
 #include <set>
+#include <vector>
+#include <algorithm> // AC added for Linux
 
 using std::set;
+using std::vector;
 /***************************************************************************************************
  * TOOL COMMANDS
  ***************************************************************************************************/
@@ -292,7 +295,7 @@ void do_named_group(char * str)
 	object_set_name(new_obj, str);
 
 	if (!objs.empty())
-	for (int n = objs.size()-1; n >= 0 ; --n)
+	for (int n = (int)objs.size()-1; n >= 0 ; --n)
 		object_reparent(objs[n], new_obj);
 
 	object_add_child(*parents.begin(), new_obj);
@@ -417,6 +420,17 @@ void do_bulk_export(void)
 	myfree(fn);
 }
 
+
+void collect_objects_with_texture(ACObject *ob, int t, vector<ACObject *> &v)
+{
+	if ( (ac_object_has_texture(ob)) && (ac_object_get_texture_index(ob) ) )
+		v.push_back(ob);
+
+    for (List * p = ac_object_get_childrenlist(ob); p != NULL; p = p->next)
+        collect_objects_with_texture((ACObject *)p->data, t, v);
+}
+
+
 void do_tex_export(void)
 {
 	set<int> texes;
@@ -435,13 +449,23 @@ void do_tex_export(void)
 
 	for (set<int>::iterator i = texes.begin(); i != texes.end(); ++i)
 	{
-		string tname = texture_id_to_name(*i);
+		int textureid = *i;
+//		vector<ACObject *> obs;
+
+//		collect_objects_with_texture(ac_get_world(), textureid, obs);
+
+		string tname = texture_id_to_name(textureid);
+
+//		if (obs.size() > 1)
+//			printf("WARNING: there is more than one object with the same texture (%s). Suggest using Object->Merge.  Only the first object with texture will be output\n", tname.c_str() );
+
 		string::size_type p = tname.find_last_of("/\\");
 
 		strcpy(path, fn);
 		strcat(path, "/");
 		strcat(path, tname.c_str() + p + 1);
 		strcpy(path+strlen(path)-3,"obj");
+		// object_top_ancestor(*obs.begin)
 		do_obj8_save_ex(path, ac_get_world(), 1, *i, i == texes.begin());
 	}
 }

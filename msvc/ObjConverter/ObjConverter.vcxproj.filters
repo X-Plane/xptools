@@ -24,9 +24,6 @@
     <ClCompile Include="..\..\src\Obj\ObjConvert.cpp">
       <Filter>Obj</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Obj\ObjDraw.cpp">
-      <Filter>Obj</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Obj\ObjPointPool.cpp">
       <Filter>Obj</Filter>
     </ClCompile>
@@ -45,46 +42,13 @@
     <ClCompile Include="..\..\src\Utils\AssertUtils.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Utils\BitmapUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Utils\CompGeomUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Utils\EndianUtils.c">
-      <Filter>Utils</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Utils\FileUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Utils\GISUtils.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Utils\MatrixUtils.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Utils\md5.c">
-      <Filter>Utils</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Utils\MemFileUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Utils\PlatformUtils.win.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Utils\TexUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Utils\unzip.c">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Utils\XChunkyFileUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Utils\XUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Utils\zip.c">
       <Filter>Utils</Filter>
     </ClCompile>
   </ItemGroup>
@@ -96,9 +60,6 @@
       <Filter>XPTools</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Obj\ObjConvert.h">
-      <Filter>Obj</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Obj\ObjDraw.h">
       <Filter>Obj</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Obj\ObjPointPool.h">
@@ -122,40 +83,13 @@
     <ClInclude Include="..\..\src\Utils\AssertUtils.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Utils\CompGeomUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Utils\EndianUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\Utils\FileUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Utils\GISUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Utils\md5.h">
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Utils\MemFileUtils.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Utils\PlatformUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Utils\TexUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Utils\unzip.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Utils\XChunkyFileUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Utils\XUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Utils\zip.h">
+    <ClInclude Include="..\..\src\Utils\MatrixUtils.h">
       <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>

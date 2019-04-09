@@ -23,6 +23,8 @@
 #ifndef XESINIT_H
 #define XESINIT_H
 
+#include "XESConstants.h"
+
 // NOTE: The purpose of this translation unit is to keep init code out of
 // other parts of the app...init code has a way of sucking in a ton of dependencies.
 // But init APIs don't change much.  So this is really just a hack to try to
@@ -32,6 +34,6 @@
 // the use of a SEPARATE forest file...everything else is reverse-compatible.
 // So: allow no-init forests for mesh tool so mesh tool can continue to run on
 // v9 config files.  That way meshtool can make v9 compatible scenery!
-void	XESInit(bool want_forests);	
+void	XESInit(rf_region inRegion, bool want_forests);
 
 #endif

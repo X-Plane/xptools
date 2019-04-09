@@ -23,11 +23,11 @@
 
 #include "GUI_SimpleTableGeometry.h"
 #include "GUI_Messages.h"
-#include <algorithm>
+#include "GUI_Fonts.h"
 
 GUI_SimpleTableGeometry::GUI_SimpleTableGeometry(
 			int		num_cols,
-			int *	default_col_widths,
+	const	int *	default_col_widths,
 			int		row_height)
 {
 	mRowHeight = row_height;
@@ -69,17 +69,17 @@ int			GUI_SimpleTableGeometry::GetCellWidth(int n)
 
 int			GUI_SimpleTableGeometry::GetCellBottom(int n)
 {
-	return n * mRowHeight;
+	return n * GUI_SimpleTableGeometry::GetCellHeight(n);
 }
 
 int			GUI_SimpleTableGeometry::GetCellTop	 (int n)
 {
-	return (n+1)*mRowHeight;
+	return (n+1) * GUI_SimpleTableGeometry::GetCellHeight(n);
 }
 
 int			GUI_SimpleTableGeometry::GetCellHeight(int n)
 {
-	return mRowHeight;
+	return mRowHeight ? mRowHeight : GUI_GetLineHeight(font_UI_Basic) + 4.0f;  // allow for 2 pix margin, top+bottom
 }
 
 int			GUI_SimpleTableGeometry::ColForX(int n)
@@ -95,7 +95,7 @@ int			GUI_SimpleTableGeometry::ColForX(int n)
 int			GUI_SimpleTableGeometry::RowForY(int n)
 {
 	if(n < 0) return -1; //Fixes being able to click an imaginary last cell and select the real last cell
-	return n / mRowHeight;
+	return n / GUI_SimpleTableGeometry::GetCellHeight(n);
 }
 
 bool		GUI_SimpleTableGeometry::CanSetCellWidth (void) const { return true; }

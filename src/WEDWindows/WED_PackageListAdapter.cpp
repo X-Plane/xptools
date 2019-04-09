@@ -27,10 +27,9 @@
 #include "GUI_Messages.h"
 #include "WED_Menus.h"
 
-#define HACK_WIDTH 10
-#define HACK_HEIGHT 20
+static int kDefCols[] = {85, 115, 300 };
 
-WED_PackageListAdapter::WED_PackageListAdapter(GUI_Commander * cmd_target) : mSel(-1), mCmdTarget(cmd_target)
+WED_PackageListAdapter::WED_PackageListAdapter(GUI_Commander * cmd_target) :  GUI_SimpleTableGeometry(3, kDefCols), mSel(-1), mCmdTarget(cmd_target)
 
 {
 	gPackageMgr->AddListener(this);
@@ -47,17 +46,38 @@ void	WED_PackageListAdapter::GetCellContent(
 			GUI_CellContent&			the_content)
 {
 	the_content.content_type = gui_Cell_EditText;
+	the_content.text_val = "";
 	the_content.can_disclose = 0;
 	the_content.string_is_resource = 0;
-	the_content.can_select = 1;
 	the_content.can_drag = 0;
 	the_content.is_disclosed = 0;
 	the_content.is_selected = cell_y==mSel;
 	the_content.indent_level = 0;
-
-	gPackageMgr->GetNthCustomPackageName(gPackageMgr->CountCustomPackages() - cell_y - 1, the_content.text_val);
+	the_content.can_select = 1;
+	the_content.can_edit = 0;
 	the_content.can_delete=false;
-	the_content.can_edit = mLock.count(the_content.text_val)==0;
+
+	int n_pkg = gPackageMgr->CountCustomPackages() - cell_y - 1;
+	switch(cell_x)
+	{
+		case 0:
+			if(gPackageMgr->IsDisabled(n_pkg))	the_content.text_val = "Disabled";
+			break;
+		case 1:
+			if(gPackageMgr->HasXML(n_pkg) || gPackageMgr->HasAPT(n_pkg))
+			{
+			  if(gPackageMgr->HasXML(n_pkg))
+					the_content.text_val = "WED Airport";
+				else
+					the_content.text_val = "Airport";
+			}
+			else if(gPackageMgr->HasLibrary(n_pkg))
+				the_content.text_val = "Library";
+			break;
+		default:
+			gPackageMgr->GetNthPackageName(n_pkg, the_content.text_val);
+			the_content.can_edit = mLock.count(the_content.text_val)==0;
+	}
 }
 
 void	WED_PackageListAdapter::GetEnumDictionary(
@@ -239,71 +259,12 @@ GUI_DragOperation		WED_PackageListAdapter::DoDropBetweenRows(
 
 int			WED_PackageListAdapter::GetColCount(void)
 {
-	return 1;
+	return 3;
 }
 
 int			WED_PackageListAdapter::GetRowCount(void)
 {
 	return 	gPackageMgr->CountCustomPackages();
-}
-
-int			WED_PackageListAdapter::GetCellLeft (int n)
-{
-	return n * HACK_WIDTH;
-}
-
-int			WED_PackageListAdapter::GetCellRight(int n)
-{
-	return n * HACK_WIDTH + HACK_WIDTH;
-}
-
-int			WED_PackageListAdapter::GetCellWidth(int n)
-{
-	return HACK_WIDTH;
-}
-
-int			WED_PackageListAdapter::GetCellBottom(int n)
-{
-	return n * HACK_HEIGHT;
-}
-
-int			WED_PackageListAdapter::GetCellTop	 (int n)
-{
-	return n * HACK_HEIGHT + HACK_HEIGHT;
-}
-
-int			WED_PackageListAdapter::GetCellHeight(int n)
-{
-	return HACK_HEIGHT;
-}
-
-int			WED_PackageListAdapter::ColForX(int n)
-{
-	return 0;
-}
-
-int			WED_PackageListAdapter::RowForY(int n)
-{
-	if(n < 0) return -1; //Fixes being able to click an imaginary last cell and select the real last cell
-	return n / HACK_HEIGHT;
-}
-
-bool		WED_PackageListAdapter::CanSetCellWidth (void) const
-{
-	return false;
-}
-
-bool		WED_PackageListAdapter::CanSetCellHeight(void) const
-{
-	return false;
-}
-
-void		WED_PackageListAdapter::SetCellWidth (int n, int w)
-{
-}
-
-void		WED_PackageListAdapter::SetCellHeight(int n, int h)
-{
 }
 
 
@@ -323,7 +284,7 @@ bool	WED_PackageListAdapter::HasSelection(void)
 
 int	WED_PackageListAdapter::GetSelection(string * package)
 {
-	if (package) gPackageMgr->GetNthCustomPackageName(gPackageMgr->CountCustomPackages() - 1 - mSel, *package);
+	if (package) gPackageMgr->GetNthPackageName(gPackageMgr->CountCustomPackages() - 1 - mSel, *package);
 	return gPackageMgr->CountCustomPackages() - 1 - mSel;
 }
 

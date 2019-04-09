@@ -53,8 +53,6 @@ private:
 	GUI_Header *			mHeader;
 
 	GUI_TextTable			mTextTable;
-	GUI_TextTableHeader		mTextTableHeader;
-
 
 	WED_LibraryFilterBar *			mFilter;
 	WED_LibraryListAdapter	mLibraryList;

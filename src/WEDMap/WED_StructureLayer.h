@@ -22,8 +22,8 @@ public:
 
 private:
 
-	bool							mRealLines;
-	bool							mVertices;
+	bool				mRealLines;
+	bool				mVertices;
 
 	vector<int>			mAirportIconsX;
 	vector<int>			mAirportIconsY;

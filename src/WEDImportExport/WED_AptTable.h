@@ -39,9 +39,10 @@ public:
 	// Note: you must call set-filter once after the dust settles to get the 
 	// table synced!
 					 WED_AptTable(
-						const AptVector *			apts);
+						const AptVector * apts,
+						const char * hdr3 = nullptr,   // if set, displays first metadata pair as columns 3+4
+						const char * hdr4 = nullptr);
 	virtual			~WED_AptTable();
-	
 	
 	// Call this to push a new filter string.
 			void	SetFilter(
@@ -55,9 +56,6 @@ public:
 			void	GetSelection(
 						set<int>&					out_selection);
 	
-	
-	
-	
 	// GUI_TextTableHeaderProvider
 	virtual	void	GetHeaderContent(
 						int							cell_x,
@@ -65,7 +63,6 @@ public:
 	virtual	void	SelectHeaderCell(
 						int							cell_x);
 						
-
 	// GUI_TextTableProvider
 	virtual void	GetCellContent(
 						int							cell_x,
@@ -180,7 +177,9 @@ private:
 	int					mSortColumn;
 	int					mInvertSort;
 	string				mFilter;
-		
+	int					mColumns;
+	string 				mHeaderTitle3;
+	string 				mHeaderTitle4;
 };
 	
 #endif
