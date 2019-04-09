@@ -170,16 +170,18 @@ private:
 
 			XObj8 * LoadObj(const string& abspath);
 	
-	map<string,vector<fac_info_t *> > mFac;
-	map<string,pol_info_t>		mPol;
-	map<string,lin_info_t>		mLin;
-	map<string,str_info_t>		mStr;
-	map<string,const XObj8 *>	mFor;
-	map<string,vector<const XObj8 *> > mObj;
+	unordered_map<string,vector<fac_info_t *> > mFac;
+	unordered_map<string,pol_info_t>		mPol;
+	unordered_map<string,lin_info_t>		mLin;
+	unordered_map<string,str_info_t>		mStr;
+	unordered_map<string,const XObj8 *>	mFor;
+	unordered_map<string,vector<const XObj8 *> > mObj;
 
 #if AIRPORT_ROUTING	
-	map<string,agp_t>				mAGP;
-	map<string,road_info_t>		mRoad;
+	unordered_map<string,agp_t>				mAGP;
+#endif	
+#if ROAD_EDITING
+	unordered_map<string,road_info_t>		mRoad;
 #endif	
 	WED_LibraryMgr *				mLibrary;
 };	

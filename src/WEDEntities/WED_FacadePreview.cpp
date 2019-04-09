@@ -734,6 +734,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 		if (info.is_new && bestFloor->roofs.size() > 1) xtra_roofs = bestFloor->roofs.size() - 1;
 		
 		glBegin(GL_QUADS);
+		if(roof_pts.size() == 4)   // need2draw propper polygon
 		do
 		{
 			float pts[12];

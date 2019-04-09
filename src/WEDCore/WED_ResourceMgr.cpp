@@ -37,6 +37,34 @@
 #include "CompGeomDefs2.h"
 #include "MathUtils.h"
 
+/* Resouce Manager Theory of operation:
+	It provides access to all properties/details of any art asset referenced in WED.	Normally these art assets are 
+	identified by a virtual path (vpath). This is how all non-local assets are indexed in the RegMgr's databases.
+   As the library manager also know about all art assets local to a scenery - these can also be referenced by
+   the vpath - althought this is rather a real path, relative to the scenery directory here.
+   
+   Additionally - some art assets like .agp, .fac and .str can also reference other .obj assets in their definitions.
+   These can be either vpaths or real path's relative to the art assets location. These are loadable by the 
+   GetObjRelative, only. It takes the art asset name of the referencing asset plus the resouce same of the 
+   objects referenced. Then it uses the LibraryMgr to see if that object matches any existing vpath. If not, 
+   it attempts to load the object by calculating the absolute path and load it under that name.
+   
+   This causes currenly two issues:
+   
+   E.g. some agp references a resource via a relative path (e.g. ../objects/xxx.obj) is stored in duplicate in WED.
+   As the ResMgr would not knwo there is also one or more vpath's referencing the same objects. It causes some 
+   duplication, but no further ill effects. It could be avoided by translating such relative paths at art asset read-in time,
+   using the libMgr to identify any relative path that is pointing to the same absolute path as any existing vapth and
+   then replace the relative path by the vpath.
+   
+   E.g. some agp references a resource as above, but that relative path is identical to an existing local art asset.
+   E.g. objects/xxx.obj. As the LibMgr also recognizes this as as valid vpath - it will resolve it to the local object, 
+   rather than return "not found" and let it fall back to a path relative to the .agp's location.
+   
+   A possible fix for this is to reverse the search order for such item, i.e. first see if the object specified can be 
+   found at a path relative to the referencing art assets location. If not - ask the lib Mgr to resolve a path for it.
+*/
+
 static void process_texture_path(const string& path_of_obj, string& path_of_tex)
 {
 	string parent;
@@ -62,11 +90,11 @@ WED_ResourceMgr::~WED_ResourceMgr()
 
 void	WED_ResourceMgr::Purge(void)
 {
-	for(map<string, vector<const XObj8 *> >::iterator i = mObj.begin(); i != mObj.end(); ++i)
-		for(vector<const XObj8 *>::iterator j = i->second.begin(); j != i->second.end(); ++j)
-			delete *j;
-	for(map<string, const XObj8 *>::iterator i = mFor.begin(); i != mFor.end(); ++i)
-		delete i->second;
+	for(auto i : mObj)
+		for(auto j : i.second)
+			delete j;
+	for(auto i : mFor)
+		delete i.second;
 						
 	mPol.clear();
 	mLin.clear();
@@ -84,7 +112,7 @@ int		WED_ResourceMgr::GetNumVariants(const string& path)
 XObj8 * WED_ResourceMgr::LoadObj(const string& abspath)
 {
 
-printf("LoadObj '%s' - ",abspath.c_str());
+//printf("LoadObj '%s' - ",abspath.c_str());
 
 	XObj8 * new_obj = new XObj8;
 	if(!XObj8Read(abspath.c_str(),*new_obj))
@@ -97,7 +125,7 @@ printf("LoadObj '%s' - ",abspath.c_str());
 		else
 		{
 			delete new_obj;
-printf("NULL\n"); fflush(stdout);
+//printf("NULL\n"); fflush(stdout);
 		
 			return nullptr;
 		}
@@ -113,73 +141,80 @@ printf("NULL\n"); fflush(stdout);
 	else
 		new_obj->texture_draped = new_obj->texture;
 
-printf("GOT it !\n"); fflush(stdout);
+//printf("GOT it !\n"); fflush(stdout);
 	return new_obj;
 }
 
 bool	WED_ResourceMgr::GetObjRelative(const string& obj_path, const string& parent_path, XObj8 const *& obj)
 {
-
-printf("GetObjRel '%s', '%s'\n", obj_path.c_str(), parent_path.c_str());
-
-	if(GetObj(obj_path,obj))
+/* This is ised to resolve objects referenced inside other non-obj assets like .agp, .fac or .str
+   These can be either vpaths or paths relative to the art assets location.
+   If it a vpath - its got to be know to th library manager.
+*/
+	//printf("GetObjRel '%s', '%s'\n", obj_path.c_str(), parent_path.c_str());
+	if(mLibrary->GetResourcePath(obj_path).size())
 	{
-printf("GetObjRel GotObj via obj_path '%s'\n", obj_path.c_str());
+		if(GetObj(obj_path,obj))
+		{
+			//printf("GetObjRel GotObj via vpath '%s'\n", obj_path.c_str());
+			return true;
+		}
+	}
+	/* Try if its a valid relative path */
+	string apath = FILE_get_dir_name(mLibrary->GetResourcePath(parent_path)) + obj_path;
+	auto i = mObj.find(apath);
+	if(i != mObj.end())
+	{
+		obj = i->second.front();
 		return true;
 	}
-	string lib_key = parent_path + string("\n") + obj_path;
-	if(GetObj(lib_key,obj))
-	{
-printf("GetObjRel GotObj via lib_key '%s'\n", lib_key.c_str());
-		return true;
-}
-	string full_parent = mLibrary->GetResourcePath(parent_path);
-	string::size_type s = full_parent.find_last_of("\\/:");
-	if(s == full_parent.npos) full_parent.clear(); else full_parent.erase(s+1);
-	string p = full_parent + obj_path;
 
-printf("GetObjRel trying via parentpath '%s'\n", p.c_str());
-	
-	XObj8 * new_obj = LoadObj(p);
-	
+//printf("GetObjRel trying via abspath '%s'\n", apath.c_str());
+	XObj8 * new_obj = LoadObj(apath);
 	if(!new_obj) return false;
 
-	mObj[lib_key].push_back(new_obj);
+	mObj[apath].push_back(new_obj);  // store the thing under its absolute path name
 	obj = new_obj;
 	return true;
 }
 
-bool	WED_ResourceMgr::GetObj(const string& path, XObj8 const *& obj, int variant)
+bool	WED_ResourceMgr::GetObj(const string& vpath, XObj8 const *& obj, int variant)
 {
-//printf("GetObj %s' V=%d\n", path.c_str(), variant);
-	map<string,vector<const XObj8 *> >::iterator i = mObj.find(path);
+	if(vpath[vpath.size()-3] != 'o') return false;   // save time by not trying to load .agp's
 
+//printf("GetObj %s' V=%d\n", path.c_str(), variant);
+	auto i = mObj.find(vpath);
+	int first_needed = 0;
 	if(i != mObj.end())
 	{
-		DebugAssert(variant < i->second.size());
-		obj = i->second[variant];
-		return true;
-	}
-
-	int n_variants = mLibrary->GetNumVariants(path);
-	
-printf("GetObj trying to load '%s' V=%d/%d\n", path.c_str(), variant, n_variants);
-
-	for (int v = 0; v < n_variants; ++v)
-	{
-		string p = mLibrary->GetResourcePath(path,v);
-//	if (!p.size()) p = mLibrary->CreateLocalResourcePath(path);
-	
-		XObj8 * new_obj = LoadObj(p);
-		if(new_obj)
+		if(variant < i->second.size())
 		{
-			mObj[path].push_back(new_obj);
-			obj = new_obj;
+			obj = i->second[variant];
+			return true;
 		}
 		else
+			first_needed = i->second.size();
+	}
+
+	DebugAssert(variant < mLibrary->GetNumVariants(vpath));
+	
+//printf("GetObj trying to load '%s' V=%d/%d\n", path.c_str(), variant, n_variants);
+	for (int v = first_needed; v <= variant; ++v)  // load only the variants we need but don't have yet
+	{
+		string p = mLibrary->GetResourcePath(vpath,v);
+//	if (!p.size()) p = mLibrary->CreateLocalResourcePath(path);
 		{
-			obj = nullptr;
-			return false;
+			XObj8 * new_obj = LoadObj(p);
+			if(new_obj)
+			{
+				mObj[vpath].push_back(new_obj);
+				obj = new_obj;
+			}
+			else
+			{
+	//			obj = nullptr;
+				return false;
+			}
 		}
 	}
 	return true;
@@ -187,7 +222,7 @@ printf("GetObj trying to load '%s' V=%d/%d\n", path.c_str(), variant, n_variants
 
 bool 	WED_ResourceMgr::SetPolUV(const string& path, Bbox2 box)
 {
-	map<string,pol_info_t>::iterator i = mPol.find(path);
+	auto i = mPol.find(path);
 	if(i != mPol.end())
 	{
 		i->second.mUVBox = box;
@@ -199,7 +234,7 @@ bool 	WED_ResourceMgr::SetPolUV(const string& path, Bbox2 box)
 
 bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t const *& info)
 {
-	map<string,lin_info_t>::iterator i = mLin.find(path);
+	auto i = mLin.find(path);
 	if(i != mLin.end())
 	{
 		info = &i->second;
@@ -301,7 +336,7 @@ static void clean_rpath(string& s)
 
 bool	WED_ResourceMgr::GetStr(const string& path, str_info_t const *& info)
 {
-	map<string,str_info_t>::iterator i = mStr.find(path);
+	auto i = mStr.find(path);
 	if(i != mStr.end())
 	{
 		info = &i->second;
@@ -357,7 +392,7 @@ printf("str res path '%s'\n",obj_res.c_str());
 
 bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t const*& info)
 {
-	map<string,pol_info_t>::iterator i = mPol.find(path);
+	auto i = mPol.find(path);
 	if(i != mPol.end())
 	{
 		info = &i->second;
@@ -477,25 +512,28 @@ void	WED_ResourceMgr::ReceiveMessage(
 	}
 }
 
-#define FAIL(s) { printf("%s: %s\n",path.c_str(),s); return false; }
+#define FAIL(s) { printf("%s: %s\n",vpath.c_str(),s); return false; }
 
-bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t const *& info, int variant)
+bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int variant)
 {
-	map<string,vector<fac_info_t *> >::iterator i = mFac.find(path);
+	auto i = mFac.find(vpath);
+	int first_needed = 0;
 	if(i != mFac.end())
 	{
-//printf("OLD FAC p=%s, v=%d, nv=%d\n",path.c_str(),variant, (int) i->second.size());
-		DebugAssert(variant < i->second.size());
-		info = i->second[variant];
-		return true;
+		if(variant < i->second.size())
+		{
+			info = i->second[variant];
+			return true;
+		}
+		else
+			first_needed = i->second.size();
 	}
+	
+	DebugAssert(variant < mLibrary->GetNumVariants(vpath));
 
-	int max_variants = mLibrary->GetNumVariants(path);
-//printf("NEW FAC p=%s, max_v=%d\n",path.c_str(),max_variants);
-
-	for(variant = 0; variant < max_variants; ++variant)
+	for(int v = first_needed; v <=  variant; ++v)
 	{
-		string p = mLibrary->GetResourcePath(path, variant);
+		string p = mLibrary->GetResourcePath(vpath, v);
 
 		MFMemFile * file = MemFile_Open(p.c_str());
 		if(!file) continue;
@@ -505,14 +543,14 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t const *& info, int v
 		MFScanner	s;
 		MFS_init(&s, file);
 
-		int v,versions[] = { 800,900,1000, 0 };
-		if ((v = MFS_xplane_header(&s,versions,"FACADE",NULL)) == 0)
+		int vers, versions[] = { 800,900,1000, 0 };
+		if((vers = MFS_xplane_header(&s,versions,"FACADE",NULL)) == 0)
 		{
 			MemFile_Close(file);
 			return false;
 		}
 		else
-			fac->is_new = (v == 1000);
+			fac->is_new = (vers == 1000);
 			
 		xflt scale_s = 1.0f, scale_t = 1.0f;
 		bool roof_section = false;
@@ -945,10 +983,9 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t const *& info, int v
 		process_texture_path(p,fac->wall_tex);
 		process_texture_path(p,fac->roof_tex);
 
-		mFac[path].push_back(fac);
+		mFac[vpath].push_back(fac);
+		info = fac;
 	}
-	info = mFac[path].front();
-
 	return true;
 }
 
@@ -976,7 +1013,7 @@ struct tree_t {
 
 bool	WED_ResourceMgr::GetFor(const string& path, XObj8 const *& obj)
 {
-	map<string,const XObj8 *>::iterator i = mFor.find(path);
+	auto i = mFor.find(path);
 	if(i != mFor.end())
 	{
 		obj = i->second;
@@ -1179,7 +1216,7 @@ bool	WED_ResourceMgr::GetFor(const string& path, XObj8 const *& obj)
 #if AIRPORT_ROUTING
 bool	WED_ResourceMgr::GetAGP(const string& path, agp_t& out_info)
 {
-	map<string,agp_t>::iterator i = mAGP.find(path);
+	auto i = mAGP.find(path);
 	if(i != mAGP.end())
 	{
 		out_info = i->second;
@@ -1344,9 +1381,10 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t& out_info)
 	return true;
 }
 
+#if ROAD_EDITING
 bool	WED_ResourceMgr::GetRoad(const string& path, road_info_t& out_info)
 {
-	map<string,road_info_t>::iterator i = mRoad.find(path);
+	auto i = mRoad.find(path);
 	if(i != mRoad.end())
 	{
 		out_info = i->second;
@@ -1389,5 +1427,6 @@ bool	WED_ResourceMgr::GetRoad(const string& path, road_info_t& out_info)
 	mRoad[path] = out_info;
 	return true;
 }
+#endif	
 	
 #endif
