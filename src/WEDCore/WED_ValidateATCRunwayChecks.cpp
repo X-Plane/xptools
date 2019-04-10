@@ -864,9 +864,10 @@ static bool DoHotZoneChecks( const RunwayInfo& runway_info,
 				
 			for(auto taxiroute_itr : all_taxiroutes)
 			{
+				if(!taxiroute_itr.taxiroute_ptr->AllowAircraft()) continue;
+
 				//Run two tests, intersection with the side, and if that fails, point inside the polygon
-				if(hit_box.intersects(taxiroute_itr.taxiroute_segment_geo) ||
-						hit_box.inside(taxiroute_itr.taxiroute_segment_geo.p1) || hit_box.inside(taxiroute_itr.taxiroute_segment_geo.p2) )
+				if(hit_box.intersects(taxiroute_itr.taxiroute_segment_geo) || hit_box.inside(taxiroute_itr.taxiroute_segment_geo.p1))
 				{
 					if(runway_info.IsHotForArrival(runway_number) == true && static_cast<bool>(make_arrival) == true)
 					{
@@ -917,9 +918,9 @@ static void AnyTruckRouteNearRunway( const RunwayInfo& runway_info,
 
 	Polygon2 runway_hit_box(runway_info.corners_geo);
 	
-	Vector2 side_ext = runway_info.width_vec_1m * 10.0;  // Require 10m side clearance
+	Vector2 side_ext = runway_info.width_vec_1m * 15.0;  // Require 10m side clearance - some 15m to the *cenerline* of that road
 	Vector2 len_ext  = runway_info.dir_vec_1m   * 30.0;  // required distance of ground traffic routes from runway ends in meters
-
+	if(runway_info.runway_ptr->GetLength() > 1500.0 ) len_ext *= 2.0; // Require more off-end clearance for full-size runways
 	runway_hit_box[0] -= len_ext + side_ext;
 	runway_hit_box[1] += len_ext - side_ext;
 	runway_hit_box[2] += len_ext + side_ext;
@@ -927,9 +928,10 @@ static void AnyTruckRouteNearRunway( const RunwayInfo& runway_info,
 	
 	for(TaxiRouteInfoVec_t::const_iterator route_itr = all_taxiroutes.begin(); route_itr != all_taxiroutes.end(); ++route_itr)
 	{
+		if(!route_itr->taxiroute_ptr->AllowTrucks()) continue;
+
 		if (runway_hit_box.intersects(route_itr->taxiroute_segment_geo) == true)
 		{
-			
 			string msg = "Truck Route " + route_itr->taxiroute_name + " intersects with runway " + runway_info.runway_name;
 			msgs.push_back(validation_error_t(msg, err_atcrwy_truck_route_too_close_to_runway, route_itr->taxiroute_ptr, apt));
 		}
