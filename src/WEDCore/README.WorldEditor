@@ -13,6 +13,10 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 2.0.0r4 4/07/19
+	Bug Fixes:
+	- WED-1178: Fix XP1130 format apt.dat importing ATC frequencies always as "tower"
+
 WED 2.0.0r3 3/25/19
 	Bug Fixes:
 	- WED-1164: Fix duplication of ATC hotzone validation errors
