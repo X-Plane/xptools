@@ -130,7 +130,6 @@ FacadeWall_t::FacadeWall_t() :
 	basement(0.0)
 {}
 
-
 static void vec3f_diff(float * r, float * a, float * b)
 {
 	for(int i = 0; i<3; ++i)
@@ -143,6 +142,26 @@ static float vec3f_dot(float * a, float * b)
 	for(int i = 0; i<3; ++i)
 		res += a[i] * b[i];
 	return res;
+}
+
+static void expand_pair(xflt& v1, xflt& v2, xflt s)
+{
+	dev_assert(!isinf(s));
+	dev_assert(!isnan(s));
+	dev_assert(v1 < v2);
+	dev_assert(s >= 1.0);
+	if(v1 <= 0.0 && v2 >= 0.0)
+	{
+		v1 *= s;
+		v2 *= s;
+	}
+	else
+	{
+		xflt d = (v2-v1) * (s-1.0) * 0.5;
+		v1 -= d;
+		v2 += d;
+	}
+	dev_assert(v1 < v2);
 }
 
 
@@ -571,16 +590,52 @@ struct obj {
 	float	x,y,z,r;
 };
 
-void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, const fac_info_t& info, const Polygon2& footprint, const vector<int>& choices, double fac_height, GUI_GraphState * g)
+
+void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, const fac_info_t& info, const Polygon2& footprint, const vector<int>& choices, double floors, GUI_GraphState * g)
 {
+
+	for(auto f : info.scrapers)
+	{
+		if(fltrange(floors,f.min_agl,f.max_agl))
+		{
+			int floors = (floors - f.min_agl) / f.step_agl;
+			double hgt = floors * f.step_agl;
+			string scp_base(f.choices[0].base_obj);
+			if(!scp_base.empty())
+			{
+				const XObj8 * oo;
+				if(rman->GetObjRelative(scp_base, vpath, oo))
+				{
+					draw_obj_at_xyz(tman, oo,
+						f.choices[0].base_xzr[0], hgt, f.choices[0].base_xzr[1],
+						f.choices[0].base_xzr[2]-90, g);
+				} 
+			}
+			string scp_twr(f.choices[0].towr_obj);
+			if(!scp_twr.empty())
+			{
+				const XObj8 * oo;
+				if(rman->GetObjRelative(scp_twr, vpath, oo))
+				{
+					draw_obj_at_xyz(tman, oo,
+						f.choices[0].towr_xzr[0], hgt, f.choices[0].towr_xzr[1],
+						f.choices[0].towr_xzr[2]-90, g);
+				} 
+			}
+			break;
+		}
+	}
+
 	TexRef	tRef = tman->LookupTexture(info.wall_tex.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);			
 	g->SetTexUnits(1);
 	g->BindTex(tRef  ? tman->GetTexID(tRef) : 0, 0);
 	
 	const REN_facade_floor_t * bestFloor;
-	vector<Point2>   roof_pts;
-	double           roof_height;
-	vector<obj>      obj_locs;
+	vector<obj>		obj_locs;
+	
+	Polygon2			roof_pts;
+	double			roof_height;
+	Bbox2				roof_extent;
 	
 	if(info.two_sided)
 		glDisable(GL_CULL_FACE);
@@ -589,55 +644,78 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 		
 	int n_wall = info.is_ring ? footprint.size() : footprint.size()-1;
 
-	if(!info.is_new)
+	if(!info.is_new)  // type1 facades
 	{
-		if (info.walls.empty())	return;
-		fac_height=intlim(fac_height,info.min_floors,info.max_floors);
+		if(info.walls.empty())	return;
+		floors=intlim(floors,info.min_floors,info.max_floors);
 		double insets[footprint.size()];
-		for (int n = 0; n < footprint.size(); ++n)
+		bool has_insets = false;
+		
+		for(int n = 0; n < footprint.size(); ++n)
 		{
 			const FacadeWall_t& me = info.walls[intmin2(info.walls.size()-1,choices[n])];
+			if(fabs(me.roof_slope) > 1.0)
+				has_insets=true;
 			insets[n] = info.tex_correct_slope ?
 				sin(me.roof_slope * DEG_TO_RAD) * ((me.t_floors.back().second - me.t_floors.back().first) * me.y_scale) :
 				tan(me.roof_slope * DEG_TO_RAD) * ((me.t_floors.back().second - me.t_floors.back().first) * me.y_scale) ;
 		}
+		
+		if(info.has_roof && has_insets) // inset roof
+		{
+			Segment2 prevSeg(footprint.side(n_wall-1));
+			Vector2 prevDir(prevSeg.p1, prevSeg.p2);
+			prevDir.normalize();
+			prevDir = prevDir.perpendicular_cw();
+			prevSeg += prevDir * insets[n_wall-1];
+			
+			Point2 pt;
+			for (int w = 0; w < n_wall; ++w)
+			{
+				Segment2 thisSeg(footprint.side(w));
+				Vector2 thisDir(thisSeg.p1, thisSeg.p2);
+				thisDir.normalize();
+				thisDir = thisDir.perpendicular_cw();
+				thisSeg += thisDir * insets[w];
+				prevSeg.intersect(thisSeg, pt);
+				roof_pts.push_back(pt);
+				roof_extent += pt;
+				prevSeg = thisSeg;
+			}
+		}
+		else
+			roof_pts = footprint;
+		
 		glBegin(GL_QUADS);
-		for (int w = 0; w < n_wall; ++w)
+		for(int w = 0; w < n_wall; ++w)
 		{
 			const FacadeWall_t * me = &info.walls[intmin2(info.walls.size()-1,choices[w])];
 			
 			Segment2 inBase(footprint.side(w));
-			Vector2 seg_dir(inBase.p1, inBase.p2);
-			double seg_length = sqrt(seg_dir.squared_length());
-			seg_dir.normalize();
-
-			Segment2 inRoof(inBase);
-			inRoof += seg_dir.perpendicular_cw() * insets[w];
-			inRoof.p1 += seg_dir * insets[w==0 ? footprint.size()-1: w-1];  // only valid if walls are at right angles
-			inRoof.p2 -= seg_dir * insets[w==footprint.size()-1 ? 0: w+1];
+			double seg_length = sqrt(inBase.squared_length());
+			Segment2 inRoof(roof_pts.side(w));
 			
 			int wall_panels = PanelsForLength(*me, seg_length);
-			roof_pts.push_back(inRoof.p1);
 
-			Segment3 inBase3(Point3(inBase.p1.x(),0,inBase.p1.y()),Point3(inBase.p2.x(),0,inBase.p2.y()));
-			Segment3 inRoof3(Point3(inRoof.p1.x(),0,inRoof.p1.y()),Point3(inRoof.p2.x(),0,inRoof.p2.y()));
-
-			roof_height = BuildOneFacade(*me, inBase3, inRoof3, fac_height, wall_panels, Vector3(0,1,0),
+			Segment3 inBase3(Point3(inBase.p1.x(),0,inBase.p1.y()), Point3(inBase.p2.x(),0,inBase.p2.y()));
+			Segment3 inRoof3(Point3(inRoof.p1.x(),0,inRoof.p1.y()), Point3(inRoof.p2.x(),0,inRoof.p2.y()));
+			
+			roof_height = BuildOneFacade(*me, inBase3, inRoof3, floors, wall_panels, Vector3(0,1,0),
 						info.has_roof, info.two_sided, info.doubled, info.tex_correct_slope, DrawQuad);
 		}
 		glEnd();
 	}
-	else
+	else // type 2 facades
 	{
-		if (info.floors.empty() || info.floors.front().walls.empty()) return;
+		if(info.floors.empty() || info.floors.front().walls.empty()) return;
 		bestFloor = &info.floors.front();
 		for(auto& f : info.floors)
-			if(f.max_roof_height() < fac_height)
+			if(f.max_roof_height() < floors)
 				bestFloor = &f;
 		roof_height = bestFloor->max_roof_height();
 		
 		glBegin(GL_TRIANGLES);
-		for (int w = 0; w < n_wall; ++w)
+		for(int w = 0; w < n_wall; ++w)
 		{
 			Segment2 inBase(footprint.side(w));
 			Vector2 seg_dir(inBase.p1, inBase.p2);
@@ -652,16 +730,17 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 			
 			Point2 thisPt = footprint[w];
 			roof_pts.push_back(thisPt);
-			
+			roof_extent += thisPt;
+
 	//		glPushMatrix();
 	//		glTranslatef(thisPt.x(),0,thisPt.y());
 	//		glRotate(,0,1,0);
 	//		glScalef(1,1,seg_length / our_choice.total);
 
-			for(int i = 0; i < our_choice.indices.size(); i++)
+			for(auto ch : our_choice.indices)
 			{
-	
-				const REN_facade_template_t& t = bestFloor->templates[our_choice.indices[i]];
+				const REN_facade_template_t& t = bestFloor->templates[ch];
+				
 				for(auto m : t.meshes) // all meshes == maximum LOD detail
 				{
 /*					glVertexPointer(3, GL_FLOAT, 0, m.xyz.data());
@@ -699,66 +778,129 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 		glEnd();
 	}
 	
-	if (info.has_roof)
+if (info.is_ring && info.has_roof) // && want_roof
 	{
-		double fac_width = sqrt(Vector2(roof_pts[0], roof_pts[1]).squared_length());
-		
 		tRef = tman->LookupTexture(info.roof_tex.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);
 		g->BindTex(tRef  ? tman->GetTexID(tRef) : 0, 0);
+		glCullFace(GL_FRONT);
 		
-		float s_roof[2] = { 0.0, 1.0 };
-		float t_roof[2] = { 0.0, 1.0 };
-		
-		if(!info.is_new)
+#if 0		
+		// facdes are drawn cw, glPolygon needs it ccw to not create artefacts, so lets reverse it
+		for(int n = 0; n < roof_pts.size() / 2; n++)
 		{
-			if(info.roof_s.size() == 4)
+			Point2 tmp;
+			tmp = roof_pts[n];
+			roof_pts[n] = roof_pts[roof_pts.size() - 1 - n];
+			roof_pts[roof_pts.size() - 1 - n] = tmp;
+		}
+#endif
+		if(!info.roof_s.empty() && roof_pts.size() < 5)
+		{
+			glBegin(GL_POLYGON);
+			for (int n = 0; n < roof_pts.size(); ++n)
 			{
-				s_roof[0] = info.roof_s[0];	t_roof[0] = info.roof_t[0];
-				s_roof[1] = info.roof_s[2];	t_roof[1] = info.roof_t[2];
+				glTexCoord2f(info.roof_s[n % info.roof_s.size()],
+								 info.roof_t[n % info.roof_t.size()]);
+				glVertex3f(roof_pts[n].x(), roof_height, roof_pts[n].y());
 			}
-			else
+			glEnd();
+		}
+		else if(!info.roof_s.empty())
+		{
+			glBegin(GL_POLYGON);
+			for (int n = 0; n < roof_pts.size(); ++n)
 			{
-				s_roof[0] = info.roof_st[0];
-				t_roof[0] = info.roof_st[1];
-				s_roof[1] = info.roof_st[0] + (info.roof_st[2] - info.roof_st[0]) * min(1.0,fac_width / (info.roof_ab[2] - info.roof_ab[0]));
-				t_roof[1] = info.roof_st[1] + (info.roof_st[3] - info.roof_st[1]) * min(1.0,fac_width / (info.roof_ab[2] - info.roof_ab[0]));
+				glTexCoord2f(interp(roof_extent.xmin(), info.roof_s[0], roof_extent.xmax(), info.roof_s[2 % info.roof_s.size()], roof_pts[n].x()),
+								 interp(roof_extent.ymin(), info.roof_t[0], roof_extent.ymax(), info.roof_t[2 % info.roof_t.size()], roof_pts[n].y()));
+				glVertex3f(roof_pts[n].x(), roof_height, roof_pts[n].y());
 			}
+			glEnd();
 		}
 		else
 		{
-			s_roof[1] = fac_width / info.roof_scale_s;
-			t_roof[1] = fac_width / info.roof_scale_t;
-		}
-		
-		int xtra_roofs = 0;
-		if (info.is_new && bestFloor->roofs.size() > 1) xtra_roofs = bestFloor->roofs.size() - 1;
-		
-		glBegin(GL_QUADS);
-		if(roof_pts.size() == 4)   // need2draw propper polygon
-		do
-		{
-			float pts[12];
-			float tex[8];
-			for (int n = 0; n < roof_pts.size(); ++n)
-			{
-				int x = n == 0 || n == 3;
-				int z = n < 2;
-				
-				pts[3*n  ] = roof_pts[3-n].x();
-				pts[3*n+1] = roof_height;
-				pts[3*n+2] = roof_pts[3-n].y();
-				
-				tex[2*n  ] = s_roof[x];
-				tex[2*n+1] = t_roof[z];
-			}
-			DrawQuad(pts, tex);
+			// establish directions in facade-aligned meter space
+			Vector2 dirVec(footprint[0], footprint[1]);
+			dirVec.normalize();
+			Vector2 perpVec(dirVec.perpendicular_cw());
 			
-			xtra_roofs--;
-			if(xtra_roofs >= 0)
-				roof_height = bestFloor->roofs[xtra_roofs].roof_height;
+			Vector2 xz_centroid(footprint.side(0).midpoint());
+			double dirDot = -dirVec.dot(xz_centroid);
+			double perpDot = -perpVec.dot(xz_centroid);
+			
+			if(!info.is_new)  // type 1 facades, new UV mapping algo for Alex
+			{
+				// This effectively finds the bounds of the polygon in facade-aligned meter space.
+				Bbox2 ab;
+				for(auto fp : footprint)
+				{
+					ab += Point2(dirVec.dot(Vector2(fp)) + dirDot,
+									 dirVec.dot(Vector2(fp)) + perpDot);
+				}
+			
+				xflt ab_use[4] = { ab.xmin(), ab.ymin(), ab.xmax(), ab.ymax() };
+
+				if(!ab.is_empty())		// safety check for degenerate single-point facade.
+				{
+					xflt ab_ideal = (info.roof_ab[2] - info.roof_ab[0]) / (info.roof_ab[3] - info.roof_ab[1]);
+					xflt ab_now = (ab_use[2] - ab_use[0]) / (ab_use[3] - ab_use[1]);
+					if(ab_ideal > ab_now)
+					{
+						// We were wide but now we are deep.  Get wider.
+						expand_pair(ab_use[0],ab_use[2], ab_ideal / ab_now);
+					}
+					else if (ab_ideal < ab_now)
+					{
+						// We were deep but now are wide.  Get deeper.
+						expand_pair(ab_use[1],ab_use[3], ab_now / ab_ideal);
+					}
+				}
+				
+				if((ab_use[2] - ab_use[0]) < (info.roof_ab[2] - info.roof_ab[0]))
+				if(ab_use[2] != ab_use[0])	// safety check for degenerate single-point facade.
+				if(ab_use[3] != ab_use[1])	// f--- if I know why they would happen but let's not NaN out.
+				{
+					xflt scale = (info.roof_ab[2] - info.roof_ab[0]) / (ab_use[2] - ab_use[0]);
+					expand_pair(ab_use[0],ab_use[2], scale);
+					expand_pair(ab_use[1],ab_use[3], scale);
+				}
+				
+				dev_assert(ab.xmin() >= ab_use[0]);  // ab coordinates to actually use are larger than bounding box
+				dev_assert(ab.ymin() >= ab_use[1]);
+				dev_assert(ab.xmax() <= ab_use[2]);
+				dev_assert(ab.ymax() <= ab_use[3]);	
+			
+				glBegin(GL_POLYGON);                        // todo: Deal with concave polygons, i.e. tesselate or stencil buffer trick
+				for (int n = 0; n < roof_pts.size(); ++n)
+				{
+					glTexCoord2f(interp(ab_use[0], info.roof_st[0], ab_use[2], info.roof_st[2], dirVec.dot(Vector2(roof_pts[n])) + dirDot),
+									 interp(ab_use[1], info.roof_st[1], ab_use[3], info.roof_st[3], perpVec.dot(Vector2(roof_pts[n])) + perpDot));
+					glVertex3f(roof_pts[n].x(), roof_height, roof_pts[n].y());
+				}
+				glEnd();
+			}
+			else   // type 2 facades
+			{
+				int xtra_roofs = 0;
+				if (info.is_new && bestFloor->roofs.size() > 1) xtra_roofs = bestFloor->roofs.size() - 1;
+				do
+				{
+					glBegin(GL_POLYGON);                        // todo: Deal with concave polygons, i.e. tesselate or stencil buffer trick
+					for (int n = 0; n < roof_pts.size(); ++n)
+					{
+						glTexCoord2f( (dirVec.dot(Vector2(roof_pts[n])) + dirDot) / info.roof_scale_s ,
+										  (perpVec.dot(Vector2(roof_pts[n])) + perpDot) / info.roof_scale_t );
+						glVertex3f(roof_pts[n].x(), roof_height, roof_pts[n].y());
+					}
+					glEnd();
+					
+					xtra_roofs--;
+					if(xtra_roofs >= 0)
+						roof_height = bestFloor->roofs[xtra_roofs].roof_height;
+				}
+				while (xtra_roofs >=0);
+			}
 		}
-		while (xtra_roofs >=0);
-		glEnd();
+		glCullFace(GL_BACK);
 	}
 
 	for(auto l : obj_locs)
@@ -773,36 +915,5 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 		} 
 	}
 	
-	for(auto f : info.scrapers)
-	{
-		if(fltrange(fac_height,f.min_agl,f.max_agl))
-		{
-			int floors = (fac_height - f.min_agl) / f.step_agl;
-			double hgt = floors * f.step_agl;
-			string scp_base(f.choices[0].base_obj);
-			if(!scp_base.empty())
-			{
-				const XObj8 * oo;
-				if(rman->GetObjRelative(scp_base, vpath, oo))
-				{
-					draw_obj_at_xyz(tman, oo,
-						f.choices[0].base_xzr[0], hgt, f.choices[0].base_xzr[1],
-						f.choices[0].base_xzr[2]-90, g);
-				} 
-			}
-			string scp_twr(f.choices[0].towr_obj);
-			if(!scp_twr.empty())
-			{
-				const XObj8 * oo;
-				if(rman->GetObjRelative(scp_twr, vpath, oo))
-				{
-					draw_obj_at_xyz(tman, oo,
-						f.choices[0].towr_xzr[0], hgt, f.choices[0].towr_xzr[1],
-						f.choices[0].towr_xzr[2]-90, g);
-				} 
-			}
-			break;
-		}
-	}
 }
 

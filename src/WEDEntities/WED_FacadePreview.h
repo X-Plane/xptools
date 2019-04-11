@@ -43,8 +43,7 @@ typedef unsigned char 	xbyt;
 
 #define dev_assert(x) DebugAssert(x)
 #include "AssertUtils.h"
-
-//#include "../../../facades/UTL_tile.h"
+#include "MathUtils.h"
 
 /****************************************************************************************************************
  * SPELLING
@@ -230,6 +229,11 @@ struct	REN_FacadeLOD_t {
 };
 
 /**********************/
+
+inline xint encode_scraper(xint idx, xint floors) { return (idx+1) * 65536 + intlim(floors,0,65535); }
+inline bool has_scraper(xint floors) { return floors > 65535; }
+inline xint scraper_idx(xint floors) { return (floors / 65536) - 1; }
+inline xint scraper_floors(xint floors) { return floors % 65536; }
 
 void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, const fac_info_t& info, const Polygon2& footprint, const vector<int>& choices, double fac_height, GUI_GraphState * g);
 

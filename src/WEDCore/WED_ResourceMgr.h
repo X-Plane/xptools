@@ -90,12 +90,11 @@ struct fac_info_t : public REN_FacadeLOD_t {
 	
 	// V2 only
 	list<REN_facade_floor_t>	floors;
+	vector<string>		objs;			// names of type 2 objects
 	float					roof_scale_s;
 	float					roof_scale_t;
 	
-	vector<string>		objs;			// names of type 2 objects
 	// WED only
-	
 	vector<string>	wallName;      // wall names, for property window etc
 	vector<string>	wallUse;       // official width range supported by this wall
 	string         h_range;       // official heights (or height range) of the facade
