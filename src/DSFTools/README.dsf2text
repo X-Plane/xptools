@@ -7,32 +7,32 @@ Version History
 	 1/12/05 - Alpha 3		Fixed crash bug!
 	 1/23/05 - Alpha 4		Added pipe support.
 	12/19/05 - 1.0.1		Fixed support for global DSFs. (Change to polygon 
-							command to support arbitrary coord depth)
-							Allowed spaces in DEF filenames.
-							Mach-O native Mac Grinder
+						command to support arbitrary coord depth)
+						Allowed spaces in DEF filenames.
+						Mach-O native Mac Grinder
 	 1/05/06 - 1.1			Added ENV->Overlay Conversion
-							Fixed crashes and hung files on Windows
-							Fixed return codes for command-line tool
-							Changed output for clean piping
+						Fixed crashes and hung files on Windows
+						Fixed return codes for command-line tool
+						Changed output for clean piping
 	 7/24/06 - 1.1.1		Fixed support for bezier polygon parsing
 	 2/13/07 - 1.2			Support for bezier curves with ST coordinates.
-	 						Command line options can take one or two dashes.
-	 						Tool can show version.
-	 						Total capacity for polygons increased a lot.
-     3/11/08 - 1.3			Support for XGrinder automation.
+	 					Command line options can take one or two dashes.
+	 					Tool can show version.
+	 					Total capacity for polygons increased a lot.
+     	 3/11/08 - 1.3			Support for XGrinder automation.
 	 1/25/08 - 1.4			Elevation in the DSF is scaled to improve precision vertically.
-							Raw triangles will be optimized into strips - simply dump
-							an arbitrary number of raw triangles - DSF2Text will form strips
-							and break up groups of tris that are too numerous.
-							Vector roads are not reversed as part of optimization - this helps traffic flow.
-							DSF2Text will recognize the ST coordinates for draped polygons.
-							Precision increased to 9 digits.
-	2/18/12 - 2.0			Support for raster data for X-Plane 10
-	3/30/15 - 2.0.1			Added error message that the file might be 7-zipped.
-							Fixed decode of MSL-base objects.
-	(Not yet released)
-							ENV support removed
-
+						Raw triangles will be optimized into strips - simply dump
+						an arbitrary number of raw triangles - DSF2Text will form strips
+						and break up groups of tris that are too numerous.
+						Vector roads are not reversed as part of optimization - this helps traffic flow.
+						DSF2Text will recognize the ST coordinates for draped polygons.
+						Precision increased to 9 digits.
+	 2/18/12 - 2.0			Support for raster data for X-Plane 10
+	 3/30/15 - 2.0.1			Added error message that the file might be 7-zipped.
+						Fixed decode of MSL-base objects.
+	 3/19/19 - 2.1.0b1		ENV support removed
+						Fixes handling of 7-plane vertices.
+						64 bit binaries on all platforms.
 
 -------------------------------------------------------------------------------
 OVERVIEW

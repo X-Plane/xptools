@@ -5,16 +5,16 @@
 #include <string.h>
 #include <stdint.h>
 
-#define XPT_PACKAGE_VER		"15-3"
+#define XPT_PACKAGE_VER		"19-3"
 
-#define DDSTOOL_VER		10300
-#define DDSTOOL_EXTRAVER	"-r1"
+#define DDSTOOL_VER		10400
+#define DDSTOOL_EXTRAVER	"-b1"
 
 #define DSFTOOL_VER		20100
-#define DSFTOOL_EXTRAVER	"-r1"
+#define DSFTOOL_EXTRAVER	"-b1"
 
-#define OBJCONVERT_VER		30000
-#define OBJCONVERT_EXTRAVER	"-r1"
+#define OBJCONVERT_VER		30100
+#define OBJCONVERT_EXTRAVER	"-b1"
 
 #define MESHTOOL_VER		30000
 #define MESHTOOL_EXTRAVER	"-b1"
