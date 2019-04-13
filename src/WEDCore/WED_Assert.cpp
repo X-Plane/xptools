@@ -23,10 +23,11 @@
  */
 
 #include "WED_Assert.h"
+#include "WED_Version.h"
 #include "AssertUtils.h"
 #include "PlatformUtils.h"
 
-static char gAssertBuf[65536];
+static char gAssertBuf[1000];
 
 static const char * trim_file(const char * p)
 {
@@ -48,7 +49,7 @@ void WED_AssertHandler_f(const char * condition, const char * file, int line)
 	fprintf(efile ? efile : stderr, "ASSERTION FAILED: %s (%s:%d.)\n", condition, trim_file(file), line);
 	if (efile) fclose(efile);
 
-	sprintf(gAssertBuf, "WorldEditor has hit an error due to a bug.  Please report the following to Ben:\n"
+	snprintf(gAssertBuf, 1000, "WorldEditor " WED_VERSION_STRING " has hit an error due to a bug. Please report on gatewaybugs.x-plane.com:\n"
 						"%s (%s:%d.)\n", condition, trim_file(file), line);
 
 	DoUserAlert(gAssertBuf);
