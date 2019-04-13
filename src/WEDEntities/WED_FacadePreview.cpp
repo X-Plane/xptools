@@ -661,7 +661,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 				tan(me.roof_slope * DEG_TO_RAD) * ((me.t_floors.back().second - me.t_floors.back().first) * me.y_scale) ;
 		}
 		
-		if(info.has_roof && has_insets) // inset roof
+		if(has_insets)
 		{
 			Segment2 prevSeg(footprint.side(n_wall-1));
 			Vector2 prevDir(prevSeg.p1, prevSeg.p2);
@@ -670,7 +670,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 			prevSeg += prevDir * insets[n_wall-1];
 			
 			Point2 pt;
-			for (int w = 0; w < n_wall; ++w)
+			for (int w = 0; w < footprint.size(); ++w)
 			{
 				Segment2 thisSeg(footprint.side(w));
 				Vector2 thisDir(thisSeg.p1, thisSeg.p2);
@@ -731,19 +731,21 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 			Point2 thisPt = footprint[w];
 			roof_pts.push_back(thisPt);
 			roof_extent += thisPt;
-
-	//		glPushMatrix();
-	//		glTranslatef(thisPt.x(),0,thisPt.y());
-	//		glRotate(,0,1,0);
-	//		glScalef(1,1,seg_length / our_choice.total);
-
+#if 0
+			glPushMatrix();
+			glTranslatef(thisPt.x(),0,thisPt.y());
+			float ang = RAD_TO_DEG * atan2(dir_z.dy, dir_z.dx);
+			glRotatef(ang ,0,1,0);
+			glScalef(1,1,seg_length / our_choice.total);
+#endif
 			for(auto ch : our_choice.indices)
 			{
 				const REN_facade_template_t& t = bestFloor->templates[ch];
 				
 				for(auto m : t.meshes) // all meshes == maximum LOD detail
 				{
-/*					glVertexPointer(3, GL_FLOAT, 0, m.xyz.data());
+#if 0
+					glVertexPointer(3, GL_FLOAT, 0, m.xyz.data());
 					glTexCoordPointer(2, GL_FLOAT, 0, m.uv.data());
 					
 					glEnableClientState(GL_VERTEX_ARRAY);
@@ -751,13 +753,14 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 					glDisableClientState(GL_COLOR_ARRAY);
 					glDisableClientState(GL_NORMAL_ARRAY);
 
-					glDrawElements(GL_TRIANGLES, m.idx.size(), GL_UNSIGNED_INT, m.idx.data());		*/
-					
+					glDrawElements(GL_TRIANGLES, m.idx.size(), GL_UNSIGNED_INT, m.idx.data());
+#else					
 					for(auto ind : m.idx)
 					{
 						Point2 xy = thisPt - dir_z * m.xyz[3*ind] - seg_dir * m.xyz[3*ind+2];
 						glTexCoord2fv(&m.uv[2*ind]); glVertex3f(xy.x(), m.xyz[3*ind+1], xy.y());
 					}
+#endif
 				}
 				for(auto o: t.objs)
 				{
@@ -773,12 +776,14 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 				}
 				thisPt += seg_dir * t.bounds[2];
 			}
-	//		glPopMatrix();
+//			glPopMatrix();
 		}
+		if(info.has_roof && !info.is_ring)
+			roof_pts.push_back(footprint.back());    // we didn't process the last wall - but still need a complete roof. E.g. Fenced Parking Facades.
 		glEnd();
 	}
-	
-if (info.is_ring && info.has_roof) // && want_roof
+
+if (info.has_roof) // && want_roof
 	{
 		tRef = tman->LookupTexture(info.roof_tex.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);
 		g->BindTex(tRef  ? tman->GetTexID(tRef) : 0, 0);
@@ -796,6 +801,7 @@ if (info.is_ring && info.has_roof) // && want_roof
 #endif
 		if(!info.roof_s.empty() && roof_pts.size() < 5)
 		{
+
 			glBegin(GL_POLYGON);
 			for (int n = 0; n < roof_pts.size(); ++n)
 			{
@@ -864,11 +870,19 @@ if (info.is_ring && info.has_roof) // && want_roof
 					expand_pair(ab_use[1],ab_use[3], scale);
 				}
 				
-				dev_assert(ab.xmin() >= ab_use[0]);  // ab coordinates to actually use are larger than bounding box
-				dev_assert(ab.ymin() >= ab_use[1]);
-				dev_assert(ab.xmax() <= ab_use[2]);
-				dev_assert(ab.ymax() <= ab_use[3]);	
-			
+				xflt x = ab.xmin();               // this is bizarre: the DevAssert macro itself creates a segmentation violation ...
+				dev_assert(x >= ab_use[0]);
+//				dev_assert(ab.xmin() >= ab_use[0]);  // ab coordinates to actually use are larger than bounding box
+				x = ab.ymin();
+				dev_assert(x >= ab_use[1]);
+//				dev_assert(ab.ymin() >= ab_use[1]);
+				x = ab.xmax();
+				dev_assert(x <= ab_use[2]);
+//				dev_assert(ab.xmax() <= ab_use[2]);
+				x = ab.ymax();	
+				dev_assert(x <= ab_use[3]);	
+//				dev_assert(ab.ymax() <= ab_use[3]);	
+				
 				glBegin(GL_POLYGON);                        // todo: Deal with concave polygons, i.e. tesselate or stencil buffer trick
 				for (int n = 0; n < roof_pts.size(); ++n)
 				{

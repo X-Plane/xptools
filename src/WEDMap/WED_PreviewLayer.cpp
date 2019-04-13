@@ -966,14 +966,13 @@ struct	preview_facade : public preview_polygon {
 				if(i == n-1 && !ps->IsClosed())
 					choices.push_back(0);
 			}
-			
+
 			string vpath;
 			fac->GetResource(vpath);
 			const fac_info_t * info;
 			WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 			
 			glColor4f(1,1,1,1);
-			
 			glMatrixMode(GL_MODELVIEW);
 			glPushMatrix();
 			Point2 l = zoomer->LLToPixel(ref_pt);

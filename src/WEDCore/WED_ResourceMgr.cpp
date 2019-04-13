@@ -555,7 +555,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 		xflt scale_s = 1.0f, scale_t = 1.0f;
 		bool roof_section = false;
 		bool not_nearest_lod = false;
-		
+		bool noroofmesh = false;
 		REN_facade_template_t * tpl = NULL;
 
 		while(!MFS_done(&s))
@@ -573,7 +573,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 			else if (MFS_string_match(&s,"SHADER_ROOF", true))
 			{
 				roof_section = true;
-				fac->has_roof = true;
+//				fac->has_roof = true;
 			}
 			else if (MFS_string_match(&s,"SHADER_WALL", true))
 			{
@@ -607,7 +607,6 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 				string file;
 				MFS_string(&s,&file);
 				clean_rpath(file);
-//				choice.base_obj = load_model_set(lon, lat, file, path, fac->scrapers.back().assets,this);
 				choice.base_obj = file;
 				if (choice.base_obj.empty())
 					FAIL("Could not load base OBJ for FACADE_SCRAPER_MODEL")
@@ -892,12 +891,18 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 				{
 					while(MFS_has_word(&s))
 						fac->floors.back().roofs.push_back(REN_facade_roof_t(MFS_double(&s)));
+					fac->has_roof = true;
 				}
 				else if(MFS_string_match(&s,"ROOF_SCALE", false))
 				{
 					fac->roof_scale_s = MFS_double(&s);
 					fac->roof_scale_t = MFS_double(&s);
 					if (fac->roof_scale_t == 0.0) fac->roof_scale_t = fac->roof_scale_s;
+					fac->has_roof = true;
+				}
+				else if(MFS_string_match(&s,"NOROOFMESH", false))
+				{
+					noroofmesh = true;
 				}
 #if 0
 				else if(tpl && MFS_string_match(&s,"ROOF_OBJ", false))
@@ -922,6 +927,8 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 		MemFile_Close(file);
 		
 //printf("f=%ld, t=%ld w=%ld\n",fac->floors.size(), fac->floors.back().templates.size(),	fac->floors.back().walls.size());
+
+		if(noroofmesh) fac->has_roof = false;
 		
 		if(fac->is_new)
 		{
@@ -965,7 +972,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 				}
 				if(f.roofs.size()) 
 				{
-					fac->has_roof = true;
+//					fac->has_roof = true;
 					if(fac->h_range.empty()) 
 						fac->h_range = string("h=") + to_string((int) ceil(f.roofs.back().roof_height));
 					else
