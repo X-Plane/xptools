@@ -744,15 +744,14 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 		for(int w = 0; w < n_wall; ++w)
 		{
 			Segment2 inBase(footprint.side(w));
-			Vector2 seg_dir(inBase.p1, inBase.p2);
-			double seg_length = sqrt(seg_dir.squared_length());
-			seg_dir.normalize();
-			Vector2 dir_z(seg_dir.perpendicular_cw());
+			Vector2 segDir(inBase.p1, inBase.p2);
+			double seg_length = segDir.normalize();
+			Vector2 perpDir(segDir.perpendicular_cw());
 			
 			const REN_facade_wall_t * bestWall = &bestFloor->walls[intmin2(bestFloor->walls.size()-1, choices[w])];
 			UTL_spelling_t our_choice;
 			UTL_pick_spelling(bestWall->spellings, seg_length, our_choice, 0);
-			seg_dir *= seg_length / our_choice.total;
+			seg_length /= our_choice.total;
 			
 			Point2 thisPt = footprint[w];
 			roof_pts.push_back(thisPt);
@@ -760,7 +759,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 #if 0
 			glPushMatrix();
 			glTranslatef(thisPt.x(),0,thisPt.y());
-			float ang = RAD_TO_DEG * atan2(dir_z.dy, dir_z.dx);
+			float ang = RAD_TO_DEG * atan2(perpDir.dy, perpDir.dx);
 			glRotatef(ang ,0,1,0);
 			glScalef(1,1,seg_length / our_choice.total);
 #endif
@@ -768,6 +767,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 			for(auto ch : our_choice.indices)
 			{
 				const REN_facade_template_t& t = bestFloor->templates[ch];
+				double segMult = seg_length * t.bounds[2];
 				
 				for(auto m : t.meshes) // all meshes == maximum LOD detail
 				{
@@ -784,30 +784,37 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 #else					
 					for(auto ind : m.idx)
 					{
-						Point2 xy = thisPt - dir_z * m.xyz[3*ind] - seg_dir * m.xyz[3*ind+2] * t.bounds[2];
-#if 1
+
+						Point2 xy = thisPt - perpDir * m.xyz[3*ind] - segDir * m.xyz[3*ind+2] * segMult;
 						if(first == 1)
 						{
 							int prevIdx = w ? w-1 : n_wall;
 							Vector2 prevDir(footprint[prevIdx],footprint[w]);
 							prevDir.normalize();
-							prevDir = prevDir.perpendicular_cw();
-							prevDir = seg_dir.projection(prevDir);
+							Vector2 tangentDir = prevDir + segDir;
+							tangentDir.normalize();
+							Vector2 miterDir = tangentDir.perpendicular_ccw();
+							Vector2 miter = miterDir / miterDir.dot(perpDir);
 							
-							xy = thisPt - (dir_z + prevDir * (m.xyz[3*ind+2]+1)) * m.xyz[3*ind] - seg_dir * m.xyz[3*ind+2] * t.bounds[2];
+							Vector2 corrDir = perpDir - miter;
+							xy += corrDir * (m.xyz[3*ind+2]+1) * m.xyz[3*ind];
 						}
-						else if(first == our_choice.indices.size())
+						
+						if(first == our_choice.indices.size())
 						{
 							int end_idx = w < n_wall-1 ? w+1 : 0;
 							int nextIdx = end_idx < n_wall-1 ? end_idx+1 : 0;
 							Vector2 nextDir(footprint[end_idx],footprint[nextIdx]);
 							nextDir.normalize();
-							nextDir = nextDir.perpendicular_ccw();
-							nextDir = seg_dir.projection(nextDir);
+							Vector2 tangentDir = nextDir + segDir;
+							tangentDir.normalize();
+							Vector2 miterDir = tangentDir.perpendicular_ccw();
+							Vector2 miter = miterDir / miterDir.dot(perpDir);
 							
-							xy = thisPt - (dir_z + nextDir * (m.xyz[3*ind+2]+0)) * m.xyz[3*ind] - seg_dir * m.xyz[3*ind+2] * t.bounds[2];
+							Vector2 corrDir = perpDir - miter;
+							xy -=  corrDir * (m.xyz[3*ind+2]+0) * m.xyz[3*ind];
 						}
-#endif						
+						
 						glTexCoord2fv(&m.uv[2*ind]); glVertex3f(xy.x(), m.xyz[3*ind+1], xy.y());
 					}
 #endif
@@ -817,15 +824,15 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 				{
 					struct obj obj_ref;
 					obj_ref.idx = o.idx;
-					Point2 xy = thisPt - dir_z * o.xyzr[0] - seg_dir * o.xyzr[2];
+					Point2 xy = thisPt - perpDir * o.xyzr[0] - segDir * o.xyzr[2];
 
 					obj_ref.x = xy.x();
 					obj_ref.y = o.xyzr[1];
 					obj_ref.z = xy.y();
-					obj_ref.r = o.xyzr[3] + atan2(dir_z.y(), dir_z.x()) * RAD_TO_DEG - 180.0;
+					obj_ref.r = o.xyzr[3] + atan2(perpDir.y(), perpDir.x()) * RAD_TO_DEG - 180.0;
 					obj_locs.push_back(obj_ref);
 				}
-				thisPt += seg_dir * t.bounds[2];
+				thisPt += segDir * segMult;
 			}
 //			glPopMatrix();
 		}
