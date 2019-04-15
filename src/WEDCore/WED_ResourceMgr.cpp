@@ -943,9 +943,9 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 						for(int i = 0; i < m.xyz.size(); i +=3 )
 						{
 							xflt * p = &m.xyz[i];
-							xyz_min[0] = min(xyz_min[0], p[0]);
-							xyz_max[0] = max(xyz_max[0], p[0]);
-							xyz_min[1] = min(xyz_min[1], p[1]);
+//							xyz_min[0] = min(xyz_min[0], p[0]);
+//							xyz_max[0] = max(xyz_max[0], p[0]);
+//							xyz_min[1] = min(xyz_min[1], p[1]);
 							xyz_max[1] = max(xyz_max[1], p[1]);
 							xyz_min[2] = min(xyz_min[2], p[2]);
 							xyz_max[2] = max(xyz_max[2], p[2]);
@@ -953,8 +953,13 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 					t.bounds[0] = 1.0f;//xyz_max[0];// - xyz_min[0];
 					t.bounds[1] = xyz_max[1];// - xyz_min[1];
 					t.bounds[2] = xyz_max[2] - xyz_min[2];
-				}
 
+					// normalize z-direction coordinates
+					for(auto& m : t.meshes)
+						for(int i = 0; i < m.xyz.size(); i +=3 )
+							m.xyz[i+2] = interp(xyz_min[2], 0.0, xyz_max[2], 1.0, m.xyz[i+2])-1;
+				}
+				
 				for(auto& w : f.walls)
 				{
 					for(auto& s : w.spellings)

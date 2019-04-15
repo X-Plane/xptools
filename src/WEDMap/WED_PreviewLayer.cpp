@@ -259,7 +259,7 @@ void draw_obj_at_ll(ITexMgr * tman, const XObj8 * o, const Point2& loc, float r,
 	Point2 l = zoomer->LLToPixel(loc);
 	glTranslatef(l.x(),l.y(),0.0);
 	float ppm = zoomer->GetPPM();
-	glScalef(ppm,ppm,0.001);
+	glScalef(ppm,ppm,ppm);
 	glRotatef(90, 1,0,0);
 	glRotatef(r, 0, -1, 0);
 //	GLfloat mv[16], pv[16];
@@ -978,7 +978,7 @@ struct	preview_facade : public preview_polygon {
 			Point2 l = zoomer->LLToPixel(ref_pt);
 			glTranslatef(l.x(),l.y(),0.0);
 			float ppm = zoomer->GetPPM();
-			glScalef(ppm,ppm,0.001);
+			glScalef(ppm,ppm,ppm);
 			glRotatef(90, 1,0,0);
 
 			g->EnableDepth(true,true);

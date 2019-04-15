@@ -164,6 +164,32 @@ static void expand_pair(xflt& v1, xflt& v2, xflt s)
 	dev_assert(v1 < v2);
 }
 
+#if !IBM
+#define CALLBACK
+#endif
+
+static void CALLBACK TessVertex(const Point2 * p, double * h){ glTexCoord2f((p+1)->x(), (p+1)->y()); glVertex3f(p->x(), *h, p->y());	}
+
+void glPolygon2h(const Point2 * pts, double height, int n)
+{
+	GLUtesselator * tess = gluNewTess();
+	gluTessCallback(tess, GLU_TESS_BEGIN,	(void (CALLBACK *)(void))glBegin);
+	gluTessCallback(tess, GLU_TESS_END,		(void (CALLBACK *)(void))glEnd);
+	gluTessCallback(tess, GLU_TESS_VERTEX_DATA,	(void (CALLBACK *)(void))TessVertex);
+
+	gluTessBeginPolygon(tess,(void *) &height);
+	gluTessBeginContour(tess);
+	while(n--)
+	{
+		double	xyz[3] = { pts->x_, height, pts->y_ };
+		gluTessVertex(tess, xyz, (void*) pts);
+		pts += 2;
+	}
+	gluTessEndContour(tess);
+	gluTessEndPolygon(tess);
+	gluDeleteTess(tess);
+}
+
 
 typedef void (*RenderQuadFunc) (float *, float *);
 
@@ -738,6 +764,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 			glRotatef(ang ,0,1,0);
 			glScalef(1,1,seg_length / our_choice.total);
 #endif
+			int first = 1;
 			for(auto ch : our_choice.indices)
 			{
 				const REN_facade_template_t& t = bestFloor->templates[ch];
@@ -757,11 +784,35 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 #else					
 					for(auto ind : m.idx)
 					{
-						Point2 xy = thisPt - dir_z * m.xyz[3*ind] - seg_dir * m.xyz[3*ind+2];
+						Point2 xy = thisPt - dir_z * m.xyz[3*ind] - seg_dir * m.xyz[3*ind+2] * t.bounds[2];
+#if 1
+						if(first == 1)
+						{
+							int prevIdx = w ? w-1 : n_wall;
+							Vector2 prevDir(footprint[prevIdx],footprint[w]);
+							prevDir.normalize();
+							prevDir = prevDir.perpendicular_cw();
+							prevDir = seg_dir.projection(prevDir);
+							
+							xy = thisPt - (dir_z + prevDir * (m.xyz[3*ind+2]+1)) * m.xyz[3*ind] - seg_dir * m.xyz[3*ind+2] * t.bounds[2];
+						}
+						else if(first == our_choice.indices.size())
+						{
+							int end_idx = w < n_wall-1 ? w+1 : 0;
+							int nextIdx = end_idx < n_wall-1 ? end_idx+1 : 0;
+							Vector2 nextDir(footprint[end_idx],footprint[nextIdx]);
+							nextDir.normalize();
+							nextDir = nextDir.perpendicular_ccw();
+							nextDir = seg_dir.projection(nextDir);
+							
+							xy = thisPt - (dir_z + nextDir * (m.xyz[3*ind+2]+0)) * m.xyz[3*ind] - seg_dir * m.xyz[3*ind+2] * t.bounds[2];
+						}
+#endif						
 						glTexCoord2fv(&m.uv[2*ind]); glVertex3f(xy.x(), m.xyz[3*ind+1], xy.y());
 					}
 #endif
 				}
+				first++;
 				for(auto o: t.objs)
 				{
 					struct obj obj_ref;
@@ -786,19 +837,11 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 if (info.has_roof) // && want_roof
 	{
 		tRef = tman->LookupTexture(info.roof_tex.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);
-		g->BindTex(tRef  ? tman->GetTexID(tRef) : 0, 0);
-		glCullFace(GL_FRONT);
-		
-#if 0		
-		// facdes are drawn cw, glPolygon needs it ccw to not create artefacts, so lets reverse it
-		for(int n = 0; n < roof_pts.size() / 2; n++)
-		{
-			Point2 tmp;
-			tmp = roof_pts[n];
-			roof_pts[n] = roof_pts[roof_pts.size() - 1 - n];
-			roof_pts[roof_pts.size() - 1 - n] = tmp;
-		}
-#endif
+		g->BindTex(tRef ? tman->GetTexID(tRef) : 0, 0);
+
+		// all facdes are drawn cw (!)
+		glCullFace(GL_FRONT); 
+
 		if(!info.roof_s.empty() && roof_pts.size() < 5)
 		{
 
@@ -882,15 +925,15 @@ if (info.has_roof) // && want_roof
 				x = ab.ymax();	
 				dev_assert(x <= ab_use[3]);	
 //				dev_assert(ab.ymax() <= ab_use[3]);	
-				
-				glBegin(GL_POLYGON);                        // todo: Deal with concave polygons, i.e. tesselate or stencil buffer trick
-				for (int n = 0; n < roof_pts.size(); ++n)
+
+				vector<Point2> new_pts; new_pts.reserve(roof_pts.size()*2);
+				for(auto p : roof_pts)
 				{
-					glTexCoord2f(interp(ab_use[0], info.roof_st[0], ab_use[2], info.roof_st[2], dirVec.dot(Vector2(roof_pts[n])) + dirDot),
-									 interp(ab_use[1], info.roof_st[1], ab_use[3], info.roof_st[3], perpVec.dot(Vector2(roof_pts[n])) + perpDot));
-					glVertex3f(roof_pts[n].x(), roof_height, roof_pts[n].y());
+					new_pts.push_back(p);
+					new_pts.push_back(Point2(interp(ab_use[0], info.roof_st[0], ab_use[2], info.roof_st[2], dirVec.dot(Vector2(p))  + dirDot ),
+					                         interp(ab_use[1], info.roof_st[1], ab_use[3], info.roof_st[3], perpVec.dot(Vector2(p)) + perpDot)));
 				}
-				glEnd();
+				glPolygon2h(new_pts.data(), roof_height, roof_pts.size());
 			}
 			else   // type 2 facades
 			{
@@ -898,14 +941,14 @@ if (info.has_roof) // && want_roof
 				if (info.is_new && bestFloor->roofs.size() > 1) xtra_roofs = bestFloor->roofs.size() - 1;
 				do
 				{
-					glBegin(GL_POLYGON);                        // todo: Deal with concave polygons, i.e. tesselate or stencil buffer trick
-					for (int n = 0; n < roof_pts.size(); ++n)
+					vector<Point2> new_pts; new_pts.reserve(roof_pts.size()*2);
+					for(auto p: roof_pts)
 					{
-						glTexCoord2f( (dirVec.dot(Vector2(roof_pts[n])) + dirDot) / info.roof_scale_s ,
-										  (perpVec.dot(Vector2(roof_pts[n])) + perpDot) / info.roof_scale_t );
-						glVertex3f(roof_pts[n].x(), roof_height, roof_pts[n].y());
+						new_pts.push_back(p);
+						new_pts.push_back(Point2( (dirVec.dot(Vector2(p))   + dirDot)  / info.roof_scale_s,
+						                           (perpVec.dot(Vector2(p)) + perpDot) / info.roof_scale_t));
 					}
-					glEnd();
+					glPolygon2h(new_pts.data(), roof_height, roof_pts.size());
 					
 					xtra_roofs--;
 					if(xtra_roofs >= 0)
