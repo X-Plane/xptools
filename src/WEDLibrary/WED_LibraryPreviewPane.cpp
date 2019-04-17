@@ -268,7 +268,6 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 	int b[4]; GetBounds(b);
 
 	const XObj8 * o = nullptr;
-	vector<const XObj8 *> o_vec;
 	
 	float dx = b[2] - b[0];
 	float dy = b[3] - b[1];
@@ -383,7 +382,6 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 
 				Polygon2 footprint;
 				vector<int> choices;
-//				fac_info_t * fac = mResMgr->GetFac(mRes, mVariant);
 				Vector2 dir(mWid,0);
 				Point2 corner(0,+mWid*0.5);
 
@@ -413,7 +411,6 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				glPushMatrix();
 				glLoadIdentity();
 				glOrtho(sx * -approx_radius,sx * approx_radius,sy * -approx_radius,sy * approx_radius, -real_radius, real_radius);
-				//glFrustum(sx * -approx_radius,sx * approx_radius,sy * -approx_radius,sy * approx_radius, -5.0*approx_radius,5.0*approx_radius); // near and far must be positive => shift whole view back
 				glMatrixMode(GL_MODELVIEW);
 				glPushMatrix();
 				glLoadIdentity();			
@@ -430,7 +427,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				glClear(GL_DEPTH_BUFFER_BIT);
 				glEnable(GL_CULL_FACE);
 				
-				draw_facade(mTexMgr, mResMgr, mRes, *fac, footprint, choices, mHgt, g);
+				draw_facade(mTexMgr, mResMgr, mRes, *fac, footprint, choices, mHgt, g, true);
 				
 				// draw "ground" plane
 				g->SetTexUnits(0);
@@ -446,7 +443,6 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				glEnd();
 				glColor4f(1,1,1,1);
 
-				
 				glMatrixMode(GL_PROJECTION);
 				glPopMatrix();
 				glMatrixMode(GL_MODELVIEW);
@@ -494,17 +490,9 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				g->EnableDepth(true,true);
 				glClear(GL_DEPTH_BUFFER_BIT);
 				
-				if (o_vec.size() < 1) o_vec.push_back(o);
-//				for (vector<XObj8 *>::iterator i = o_vec.begin(); i != o_vec.end(); ++i)
-					draw_obj_at_xyz(mTexMgr, o_vec[0],
-						xyz_off[0], xyz_off[1], xyz_off[2],
-						0, g);
+				draw_obj_at_xyz(mTexMgr, o,
+					xyz_off[0], xyz_off[1], xyz_off[2],	0, g);
 						
-				if(o_vec.size() > 1)
-					draw_obj_at_xyz(mTexMgr, o_vec[1],
-						xyz_off[0], xyz_off[1], xyz_off[2],
-						0, g);
-
 				glMatrixMode(GL_PROJECTION);
 				glPopMatrix();
 				glMatrixMode(GL_MODELVIEW);
@@ -599,7 +587,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 					
 					snprintf(buf1,120,"Wall %d \'%s\' intended for %s @ w=%.1lf%c", raw_side, fac->wallName[front_side].c_str(), fac->wallUse[front_side].c_str(), 
 						mWid / (gIsFeet ? 0.3048 : 1), gIsFeet ? '\'' : 'm');
-					snprintf(buf2,120,"Type %d with %d wall%s%s, %s, @ h=%d", fac->is_new ? 2 : 1, n_wall, n_wall > 1 ? "s" : "", 
+					snprintf(buf2,120,"Type %d with %d wall%s%s %s @ h=%d", fac->is_new ? 2 : 1, n_wall, n_wall > 1 ? "s" : "", 
 						fac->scrapers.empty() ? "" : "+scraper" ,fac->h_range.c_str(), mHgt);
 				}
 				else

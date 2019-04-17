@@ -34,10 +34,11 @@
 
 #include "WED_ResourceMgr.h"
 #include "WED_FacadePreview.h"
+#include "WED_PreviewLayer.h"
 
-static bool closer_to(double x, double a, double b)
+static bool closer_to(double a, double b, double x)
 {
-	return abs(x-a) < abs(x-b);
+	return abs(x-a) > abs(x-b);
 }
 
 static int int_seedrand(int low, int high, int seed)
@@ -609,17 +610,15 @@ static void DrawQuad(float * coords, float * texes)
 	}
 }
 
-#include "WED_PreviewLayer.h"
-
 struct obj {
 	int 	idx;                 // index to type 2 objects
 	float	x,y,z,r;
 };
 
 
-void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, const fac_info_t& info, const Polygon2& footprint, const vector<int>& choices, double floors, GUI_GraphState * g)
+void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, const fac_info_t& info, const Polygon2& footprint, const vector<int>& choices,
+	double floors, GUI_GraphState * g, bool want_thinWalls)
 {
-
 	for(auto f : info.scrapers)
 	{
 		if(fltrange(floors,f.min_agl,f.max_agl))
@@ -656,7 +655,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 	g->SetTexUnits(1);
 	g->BindTex(tRef  ? tman->GetTexID(tRef) : 0, 0);
 	
-	const REN_facade_floor_t * bestFloor;
+	const REN_facade_floor_t * bestFloor = nullptr;
 	vector<obj>		obj_locs;
 	
 	Polygon2			roof_pts;
@@ -677,6 +676,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 		double insets[footprint.size()];
 		bool has_insets = false;
 		
+		if(want_thinWalls)                            // Todo: Still render sloped roof segments
 		for(int n = 0; n < footprint.size(); ++n)
 		{
 			const FacadeWall_t& me = info.walls[intmin2(info.walls.size()-1,choices[n])];
@@ -712,34 +712,49 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 		else
 			roof_pts = footprint;
 		
-		glBegin(GL_QUADS);
-		for(int w = 0; w < n_wall; ++w)
+		if(want_thinWalls)
 		{
-			const FacadeWall_t * me = &info.walls[intmin2(info.walls.size()-1,choices[w])];
-			
-			Segment2 inBase(footprint.side(w));
-			double seg_length = sqrt(inBase.squared_length());
-			Segment2 inRoof(roof_pts.side(w));
-			
-			int wall_panels = PanelsForLength(*me, seg_length);
+			glBegin(GL_QUADS);
+			for(int w = 0; w < n_wall; ++w)
+			{
+				const FacadeWall_t * me = &info.walls[intmin2(info.walls.size()-1,choices[w])];
 
-			Segment3 inBase3(Point3(inBase.p1.x(),0,inBase.p1.y()), Point3(inBase.p2.x(),0,inBase.p2.y()));
-			Segment3 inRoof3(Point3(inRoof.p1.x(),0,inRoof.p1.y()), Point3(inRoof.p2.x(),0,inRoof.p2.y()));
-			
-			roof_height = BuildOneFacade(*me, inBase3, inRoof3, floors, wall_panels, Vector3(0,1,0),
-						info.has_roof, info.two_sided, info.doubled, info.tex_correct_slope, DrawQuad);
+				Segment2 inBase(footprint.side(w));
+				double seg_length = sqrt(inBase.squared_length());
+				Segment2 inRoof(roof_pts.side(w));
+
+				int wall_panels = PanelsForLength(*me, seg_length);
+				Segment3 inBase3(Point3(inBase.p1.x(),0,inBase.p1.y()), Point3(inBase.p2.x(),0,inBase.p2.y()));
+				Segment3 inRoof3(Point3(inRoof.p1.x(),0,inRoof.p1.y()), Point3(inRoof.p2.x(),0,inRoof.p2.y()));
+
+				roof_height = BuildOneFacade(*me, inBase3, inRoof3, floors, wall_panels, Vector3(0,1,0),
+							info.has_roof, info.two_sided, info.doubled, info.tex_correct_slope, DrawQuad);
+			}
+			glEnd();
 		}
-		glEnd();
+		else
+		{
+			Segment3 dummy_seg;
+			roof_height = BuildOneFacade(info.walls[0], dummy_seg, dummy_seg, floors, 1, Vector3(0,1,0), 
+							true, xfals, xfals, info.tex_correct_slope, NULL);
+		}
 	}
 	else // type 2 facades
 	{
-		if(info.floors.empty() || info.floors.front().walls.empty()) return;
-		bestFloor = &info.floors.front();
+		Vector2 miter;
+		roof_height =  -9.9e9;
+
 		for(auto& f : info.floors)
-			if(f.max_roof_height() < floors)
+		{
+			double h = f.max_roof_height();
+			if(closer_to(roof_height, h, floors))
+			{
+				roof_height = h;
 				bestFloor = &f;
-		roof_height = bestFloor->max_roof_height();
-		
+			}
+		}
+		if(!bestFloor || bestFloor->walls.empty()) return;
+
 		glBegin(GL_TRIANGLES);
 		for(int w = 0; w < n_wall; ++w)
 		{
@@ -747,77 +762,59 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 			Vector2 segDir(inBase.p1, inBase.p2);
 			double seg_length = segDir.normalize();
 			Vector2 perpDir(segDir.perpendicular_cw());
-			
+
 			const REN_facade_wall_t * bestWall = &bestFloor->walls[intmin2(bestFloor->walls.size()-1, choices[w])];
 			UTL_spelling_t our_choice;
 			UTL_pick_spelling(bestWall->spellings, seg_length, our_choice, 0);
 			seg_length /= our_choice.total;
-			
+
 			Point2 thisPt = footprint[w];
 			roof_pts.push_back(thisPt);
 			roof_extent += thisPt;
-#if 0
-			glPushMatrix();
-			glTranslatef(thisPt.x(),0,thisPt.y());
-			float ang = RAD_TO_DEG * atan2(perpDir.dy, perpDir.dx);
-			glRotatef(ang ,0,1,0);
-			glScalef(1,1,seg_length / our_choice.total);
-#endif
+
+			Vector2 corrDir_first,corrDir_last;
+			{
+				Vector2 tangentDir;
+				if(w == 0)
+				{
+					inBase = footprint.side(n_wall-1);
+					tangentDir = Vector2(inBase.p1, inBase.p2);
+					tangentDir.normalize();
+					tangentDir += segDir;
+					tangentDir.normalize();
+					miter = tangentDir.perpendicular_ccw();
+					miter /= miter.dot(perpDir);
+				}
+				corrDir_first = perpDir - miter;
+				
+				inBase = footprint.side(w < n_wall-1 ? w+1 : 0);
+				tangentDir = Vector2(inBase.p1, inBase.p2);
+				tangentDir.normalize();
+				tangentDir += segDir;
+				tangentDir.normalize();
+				miter = tangentDir.perpendicular_ccw();
+				miter /= miter.dot(perpDir);
+				corrDir_last = perpDir - miter;
+			}
+
 			int first = 1;
 			for(auto ch : our_choice.indices)
 			{
 				const REN_facade_template_t& t = bestFloor->templates[ch];
 				double segMult = seg_length * t.bounds[2];
-				
+
+				if(!info.nowallmesh && (t.bounds[0] > 1.0 || want_thinWalls))
 				for(auto m : t.meshes) // all meshes == maximum LOD detail
 				{
-#if 0
-					glVertexPointer(3, GL_FLOAT, 0, m.xyz.data());
-					glTexCoordPointer(2, GL_FLOAT, 0, m.uv.data());
-					
-					glEnableClientState(GL_VERTEX_ARRAY);
-					glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-					glDisableClientState(GL_COLOR_ARRAY);
-					glDisableClientState(GL_NORMAL_ARRAY);
-
-					glDrawElements(GL_TRIANGLES, m.idx.size(), GL_UNSIGNED_INT, m.idx.data());
-#else					
 					for(auto ind : m.idx)
 					{
-
 						Point2 xy = thisPt - perpDir * m.xyz[3*ind] - segDir * m.xyz[3*ind+2] * segMult;
 						if(first == 1)
-						{
-							int prevIdx = w ? w-1 : n_wall;
-							Vector2 prevDir(footprint[prevIdx],footprint[w]);
-							prevDir.normalize();
-							Vector2 tangentDir = prevDir + segDir;
-							tangentDir.normalize();
-							Vector2 miterDir = tangentDir.perpendicular_ccw();
-							Vector2 miter = miterDir / miterDir.dot(perpDir);
-							
-							Vector2 corrDir = perpDir - miter;
-							xy += corrDir * (m.xyz[3*ind+2]+1) * m.xyz[3*ind];
-						}
-						
+							xy += corrDir_first * (m.xyz[3*ind+2]+1) * m.xyz[3*ind];
 						if(first == our_choice.indices.size())
-						{
-							int end_idx = w < n_wall-1 ? w+1 : 0;
-							int nextIdx = end_idx < n_wall-1 ? end_idx+1 : 0;
-							Vector2 nextDir(footprint[end_idx],footprint[nextIdx]);
-							nextDir.normalize();
-							Vector2 tangentDir = nextDir + segDir;
-							tangentDir.normalize();
-							Vector2 miterDir = tangentDir.perpendicular_ccw();
-							Vector2 miter = miterDir / miterDir.dot(perpDir);
-							
-							Vector2 corrDir = perpDir - miter;
-							xy -=  corrDir * (m.xyz[3*ind+2]+0) * m.xyz[3*ind];
-						}
-						
+							xy -=  corrDir_last * (m.xyz[3*ind+2]+0) * m.xyz[3*ind];
 						glTexCoord2fv(&m.uv[2*ind]); glVertex3f(xy.x(), m.xyz[3*ind+1], xy.y());
 					}
-#endif
 				}
 				first++;
 				for(auto o: t.objs)
@@ -834,11 +831,11 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 				}
 				thisPt += segDir * segMult;
 			}
-//			glPopMatrix();
+			corrDir_first = corrDir_last;
 		}
+		glEnd();
 		if(info.has_roof && !info.is_ring)
 			roof_pts.push_back(footprint.back());    // we didn't process the last wall - but still need a complete roof. E.g. Fenced Parking Facades.
-		glEnd();
 	}
 
 if (info.has_roof) // && want_roof
@@ -851,7 +848,6 @@ if (info.has_roof) // && want_roof
 
 		if(!info.roof_s.empty() && roof_pts.size() < 5)
 		{
-
 			glBegin(GL_POLYGON);
 			for (int n = 0; n < roof_pts.size(); ++n)
 			{
@@ -892,7 +888,7 @@ if (info.has_roof) // && want_roof
 					ab += Point2(dirVec.dot(Vector2(fp)) + dirDot,
 									 dirVec.dot(Vector2(fp)) + perpDot);
 				}
-			
+
 				xflt ab_use[4] = { ab.xmin(), ab.ymin(), ab.xmax(), ab.ymax() };
 
 				if(!ab.is_empty())		// safety check for degenerate single-point facade.
@@ -910,7 +906,7 @@ if (info.has_roof) // && want_roof
 						expand_pair(ab_use[1],ab_use[3], ab_now / ab_ideal);
 					}
 				}
-				
+
 				if((ab_use[2] - ab_use[0]) < (info.roof_ab[2] - info.roof_ab[0]))
 				if(ab_use[2] != ab_use[0])	// safety check for degenerate single-point facade.
 				if(ab_use[3] != ab_use[1])	// f--- if I know why they would happen but let's not NaN out.
@@ -919,7 +915,7 @@ if (info.has_roof) // && want_roof
 					expand_pair(ab_use[0],ab_use[2], scale);
 					expand_pair(ab_use[1],ab_use[3], scale);
 				}
-				
+
 				xflt x = ab.xmin();               // this is bizarre: the DevAssert macro itself creates a segmentation violation ...
 				dev_assert(x >= ab_use[0]);
 //				dev_assert(ab.xmin() >= ab_use[0]);  // ab coordinates to actually use are larger than bounding box
@@ -942,10 +938,10 @@ if (info.has_roof) // && want_roof
 				}
 				glPolygon2h(new_pts.data(), roof_height, roof_pts.size());
 			}
-			else   // type 2 facades
+			else if(!info.noroofmesh)  // type 2 facades
 			{
 				int xtra_roofs = 0;
-				if (info.is_new && bestFloor->roofs.size() > 1) xtra_roofs = bestFloor->roofs.size() - 1;
+				if (want_thinWalls && bestFloor->roofs.size() > 1) xtra_roofs = bestFloor->roofs.size() - 1;
 				do
 				{
 					vector<Point2> new_pts; new_pts.reserve(roof_pts.size()*2);

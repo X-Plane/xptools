@@ -543,7 +543,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 		MFScanner	s;
 		MFS_init(&s, file);
 
-		int vers, versions[] = { 800,900,1000, 0 };
+		int vers, versions[] = { 800, 1000, 0 };
 		if((vers = MFS_xplane_header(&s,versions,"FACADE",NULL)) == 0)
 		{
 			MemFile_Close(file);
@@ -555,7 +555,6 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 		xflt scale_s = 1.0f, scale_t = 1.0f;
 		bool roof_section = false;
 		bool not_nearest_lod = false;
-		bool noroofmesh = false;
 		REN_facade_template_t * tpl = NULL;
 
 		while(!MFS_done(&s))
@@ -902,7 +901,11 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 				}
 				else if(MFS_string_match(&s,"NOROOFMESH", false))
 				{
-					noroofmesh = true;
+					fac->noroofmesh = true;
+				}
+				else if(MFS_string_match(&s,"NOWALLMESH", false))
+				{
+					fac->nowallmesh = true;
 				}
 #if 0
 				else if(tpl && MFS_string_match(&s,"ROOF_OBJ", false))
@@ -928,10 +931,9 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 		
 //printf("f=%ld, t=%ld w=%ld\n",fac->floors.size(), fac->floors.back().templates.size(),	fac->floors.back().walls.size());
 
-		if(noroofmesh) fac->has_roof = false;
-		
 		if(fac->is_new)
 		{
+			vector<int> heights;
 			for(auto& f : fac->floors)
 			{
 				for(auto& t : f.templates)
@@ -944,14 +946,14 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 						{
 							xflt * p = &m.xyz[i];
 //							xyz_min[0] = min(xyz_min[0], p[0]);
-//							xyz_max[0] = max(xyz_max[0], p[0]);
+							xyz_max[0] = max(xyz_max[0], p[0]);
 //							xyz_min[1] = min(xyz_min[1], p[1]);
 							xyz_max[1] = max(xyz_max[1], p[1]);
 							xyz_min[2] = min(xyz_min[2], p[2]);
 							xyz_max[2] = max(xyz_max[2], p[2]);
 						}
-					t.bounds[0] = 1.0f;//xyz_max[0];// - xyz_min[0];
-					t.bounds[1] = xyz_max[1];// - xyz_min[1];
+					t.bounds[0] = xyz_max[0];
+					t.bounds[1] = xyz_max[1];
 					t.bounds[2] = xyz_max[2] - xyz_min[2];
 
 					// normalize z-direction coordinates
@@ -959,7 +961,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 						for(int i = 0; i < m.xyz.size(); i +=3 )
 							m.xyz[i+2] = interp(xyz_min[2], 0.0, xyz_max[2], 1.0, m.xyz[i+2])-1;
 				}
-				
+
 				for(auto& w : f.walls)
 				{
 					for(auto& s : w.spellings)
@@ -971,18 +973,55 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 							s.total += f.templates[b].bounds[2];
 							s.widths.push_back(f.templates[b].bounds[2]);
 						}
-						
 					}
 					sort(w.spellings.begin(), w.spellings.end());
 				}
+
 				if(f.roofs.size()) 
 				{
 //					fac->has_roof = true;
-					if(fac->h_range.empty()) 
-						fac->h_range = string("h=") + to_string((int) ceil(f.roofs.back().roof_height));
-					else
-						fac->h_range += string(", ") + to_string((int) ceil(f.roofs.back().roof_height));
+					heights.push_back(f.roofs.back().roof_height);
 				}
+			}
+
+			if(heights.size()  > 1)
+			{
+				sort(heights.begin(), heights.end());
+
+				int last_height = -99;
+				bool is_range = false;
+
+				fac->h_range = "h=";
+				for(auto h : heights)
+				{
+					int this_height = h;
+					{
+						if(this_height == last_height + 1)
+						{
+							if(!is_range)
+							{
+								fac->h_range += "-";
+								is_range = true;
+							}
+						}
+						else
+						{
+							if(is_range) fac->h_range += to_string(last_height);
+							if(last_height >= 0)	fac->h_range += ", ";
+							fac->h_range += to_string(this_height);
+							is_range = false;
+						}
+					}
+					last_height = this_height;
+				}
+				if(is_range) fac->h_range += to_string(last_height);
+				 fac->h_range += "m";
+			}
+			else if(fac->floors.size() && fac->floors.front().templates.size())
+			{
+				char c[32];
+				snprintf(c,30,"h=%.1fm (fixed)",fac->floors.back().templates.front().bounds[1]);
+				fac->h_range = c;
 			}
 		}
 		else
@@ -990,7 +1029,11 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 			if(fac->walls.back().middle)
 				fac->h_range = string("h=") + to_string(fac->min_floors) + " to " + to_string(fac->max_floors);
 			else
-				fac->h_range = "h=fixed/any";
+			{
+				char c[32];
+				snprintf(c,30,"h=%.1fm (fixed)",(fac->walls[0].t_floors.back().second -fac->walls[0].t_floors.front().first) * fac->walls[0].y_scale);
+				fac->h_range = c;
+			}
 		}
 		process_texture_path(p,fac->wall_tex);
 		process_texture_path(p,fac->roof_tex);

@@ -74,7 +74,8 @@ struct	pol_info_t {
 
 struct fac_info_t : public REN_FacadeLOD_t {
 
-	fac_info_t() { is_new = false ; is_ring = true; doubled = two_sided = false;  min_floors = 1; max_floors  = 999; has_roof = false; }
+	fac_info_t() { is_new = false ; is_ring = true; doubled = two_sided = false;  min_floors = 1; max_floors  = 999; has_roof = false; 
+						noroofmesh = nowallmesh = false; }
 
 	bool			is_new;       // set if version 1000, aka type 2
 	string		wall_tex;
@@ -89,6 +90,8 @@ struct fac_info_t : public REN_FacadeLOD_t {
 	// vector<FacadeLOD_t>		lods;  // WED does not recognize anything but the LOD that starts at 0
 	
 	// V2 only
+	bool					noroofmesh;
+	bool					nowallmesh;
 	list<REN_facade_floor_t>	floors;
 	vector<string>		objs;			// names of type 2 objects
 	float					roof_scale_s;

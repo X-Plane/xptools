@@ -235,6 +235,7 @@ inline bool has_scraper(xint floors) { return floors > 65535; }
 inline xint scraper_idx(xint floors) { return (floors / 65536) - 1; }
 inline xint scraper_floors(xint floors) { return floors % 65536; }
 
-void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, const fac_info_t& info, const Polygon2& footprint, const vector<int>& choices, double fac_height, GUI_GraphState * g);
+void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, const fac_info_t& info, const Polygon2& footprint, const vector<int>& choices, 
+	double fac_height, GUI_GraphState * g, bool want_thinWalls);
 
 #endif
