@@ -976,67 +976,12 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 					}
 					sort(w.spellings.begin(), w.spellings.end());
 				}
-
-				if(f.roofs.size()) 
-				{
-//					fac->has_roof = true;
-					heights.push_back(f.roofs.back().roof_height);
-				}
-			}
-
-			if(heights.size()  > 1)
-			{
-				sort(heights.begin(), heights.end());
-
-				int last_height = -99;
-				bool is_range = false;
-
-				fac->h_range = "h=";
-				for(auto h : heights)
-				{
-					int this_height = h;
-					{
-						if(this_height == last_height + 1)
-						{
-							if(!is_range)
-							{
-								fac->h_range += "-";
-								is_range = true;
-							}
-						}
-						else
-						{
-							if(is_range) fac->h_range += to_string(last_height);
-							if(last_height >= 0)	fac->h_range += ", ";
-							fac->h_range += to_string(this_height);
-							is_range = false;
-						}
-					}
-					last_height = this_height;
-				}
-				if(is_range) fac->h_range += to_string(last_height);
-				 fac->h_range += "m";
-			}
-			else if(fac->floors.size() && fac->floors.front().templates.size())
-			{
-				char c[32];
-				snprintf(c,30,"h=%.1fm (fixed)",fac->floors.back().templates.front().bounds[1]);
-				fac->h_range = c;
-			}
-		}
-		else
-		{
-			if(fac->walls.back().middle)
-				fac->h_range = string("h=") + to_string(fac->min_floors) + " to " + to_string(fac->max_floors);
-			else
-			{
-				char c[32];
-				snprintf(c,30,"h=%.1fm (fixed)",(fac->walls[0].t_floors.back().second -fac->walls[0].t_floors.front().first) * fac->walls[0].y_scale);
-				fac->h_range = c;
 			}
 		}
 		process_texture_path(p,fac->wall_tex);
 		process_texture_path(p,fac->roof_tex);
+		
+		height_desc_for_facade(*fac, fac->h_range);
 
 		mFac[vpath].push_back(fac);
 		info = fac;

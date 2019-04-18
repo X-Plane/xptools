@@ -377,7 +377,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				float sx = ((dx > dy) ? (dx / dy) : 1.0)/2;
 				float sy = ((dx > dy) ? 1.0 : (dy / dx))/2;
 
-				double real_radius = fltmax3(40.0, 1.4 * mWid, fac->is_new ? mHgt : 6.0 * mHgt);        // todo: better, actual height dependent heuristics
+				double real_radius = fltmax3(30.0, 1.4 * mWid, 1.2 * mHgt);
 				double approx_radius = real_radius * mZoom * (1.1 - max(20.0, real_radius)/500.0);
 
 				Polygon2 footprint;
@@ -410,17 +410,14 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				glMatrixMode(GL_PROJECTION);
 				glPushMatrix();
 				glLoadIdentity();
-				glOrtho(sx * -approx_radius,sx * approx_radius,sy * -approx_radius,sy * approx_radius, -real_radius, real_radius);
+				glOrtho(sx * -approx_radius,sx * approx_radius, 0.7 * sy * -approx_radius, 1.3 * sy * approx_radius, -real_radius, real_radius);
 				glMatrixMode(GL_MODELVIEW);
 				glPushMatrix();
 				glLoadIdentity();			
 				glRotatef(mThe,1,0,0);
 				glRotatef(mPsi,0,1,0);
 				
-				if(mRes.find("piers") != mRes.npos)
-					glTranslatef(-mWid*0.5,0.0,0.0);
-				else
-					glTranslatef(-mWid*0.5, -max(5.0, fac->is_new ? 0.4 * mHgt : 1.8 * mHgt), 0.0);        // todo: better, actual height dependent heuristics
+				glTranslatef(-mWid*0.5,-max(0.0, (mHgt-20.0)*0.35), 0.0);
 				
 				g->EnableDepth(true,true);
 				g->EnableAlpha(true,true);
@@ -585,10 +582,9 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 					int front_side = raw_side;
 					if(front_side < 0 || front_side >= n_wall) front_side = 0;
 					
-					snprintf(buf1,120,"Wall %d \'%s\' intended for %s @ w=%.1lf%c", raw_side, fac->wallName[front_side].c_str(), fac->wallUse[front_side].c_str(), 
+					snprintf(buf1,120,"Wall \'%s\' intended for %s @ w=%.1lf%c", fac->wallName[front_side].c_str(), fac->wallUse[front_side].c_str(), 
 						mWid / (gIsFeet ? 0.3048 : 1), gIsFeet ? '\'' : 'm');
-					snprintf(buf2,120,"Type %d with %d wall%s%s %s @ h=%d", fac->is_new ? 2 : 1, n_wall, n_wall > 1 ? "s" : "", 
-						fac->scrapers.empty() ? "" : "+scraper" ,fac->h_range.c_str(), mHgt);
+					snprintf(buf2,120,"Type %d, %d wall%s for %s @ h=%dm", fac->is_new ? 2 : 1, n_wall, n_wall > 1 ? "s" : "", fac->h_range.c_str(), mHgt);
 				}
 				else
 					sprintf(buf2,"No preview for this facade available");

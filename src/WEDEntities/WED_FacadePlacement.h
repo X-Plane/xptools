@@ -69,7 +69,7 @@ protected:
 
 private:
 
-	WED_PropIntText				height;
+	WED_PropDoubleText				height;
 	WED_PropStringText			resource;
 #if AIRPORT_ROUTING	
 	WED_PropBoolText				pick_walls;

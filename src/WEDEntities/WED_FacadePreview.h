@@ -230,12 +230,10 @@ struct	REN_FacadeLOD_t {
 
 /**********************/
 
-inline xint encode_scraper(xint idx, xint floors) { return (idx+1) * 65536 + intlim(floors,0,65535); }
-inline bool has_scraper(xint floors) { return floors > 65535; }
-inline xint scraper_idx(xint floors) { return (floors / 65536) - 1; }
-inline xint scraper_floors(xint floors) { return floors % 65536; }
 
 void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, const fac_info_t& info, const Polygon2& footprint, const vector<int>& choices, 
 	double fac_height, GUI_GraphState * g, bool want_thinWalls);
+	
+void height_desc_for_facade(const fac_info_t& info, string& h_decription);
 
 #endif

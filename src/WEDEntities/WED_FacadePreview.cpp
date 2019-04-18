@@ -295,7 +295,7 @@ static	float	BuildOnePanel(      // return width of this section
 }
 
 
-static double	BuildOneFacade(                    // that is one wall for one segment
+static double BuildOneFacade(                    // that is one wall for one segment
 						const FacadeWall_t& fac,
 						const Segment3& inBase,
 						const Segment3& inRoof,
@@ -610,6 +610,199 @@ static void DrawQuad(float * coords, float * texes)
 	}
 }
 
+void height_desc_for_facade(const fac_info_t& info, string& h_decription)
+{
+	char c[64];
+	if(info.is_new)
+	{
+		vector<int> heights;
+		for(auto& f : info.floors)
+			if(f.roofs.size())
+			{
+				heights.push_back(f.roofs.back().roof_height);
+			}
+
+		if(heights.size()  > 1)
+		{
+			sort(heights.begin(), heights.end());
+
+			int last_height = -99;
+			bool is_range = false;
+
+			h_decription = "h=";
+			for(auto h : heights)
+			{
+				int this_height = h;
+				{
+					if(this_height == last_height + 1)
+					{
+						if(!is_range)
+						{
+							h_decription += "-";
+							is_range = true;
+						}
+					}
+					else
+					{
+						if(is_range) h_decription += to_string(last_height);
+						if(last_height >= 0)	h_decription += ", ";
+						h_decription += to_string(this_height);
+						is_range = false;
+					}
+				}
+				last_height = this_height;
+			}
+			if(is_range) h_decription += to_string(last_height);
+			 h_decription += "m";
+		}
+		else if(info.floors.size() && info.floors.front().templates.size())
+		{
+			snprintf(c,63,"h=%.1fm (fixed)", info.floors.back().templates.front().bounds[1]);
+			h_decription = c;
+		}
+	}
+	else
+	{
+		Segment3 dummy_seg;
+		double h_min, h_max;
+		
+		h_min = BuildOneFacade(info.walls[0], dummy_seg, dummy_seg, info.min_floors, 1, Vector3(0,1,0),
+							true, xfals, xfals, info.tex_correct_slope, NULL);
+		h_max = BuildOneFacade(info.walls[0], dummy_seg, dummy_seg, info.max_floors, 1, Vector3(0,1,0),
+							true, xfals, xfals, info.tex_correct_slope, NULL);
+
+		if (info.walls.back().middle && info.min_floors != info.max_floors)
+		{
+			if(info.max_floors >=999)
+				snprintf(c,63,"h=%.0f-∞m", h_min);
+			else
+				snprintf(c,63,"h=%.0f-%.0fm", h_min, h_max);
+		}
+		else
+			snprintf(c,63,"h=%.1fm (fixed)",(info.walls[0].t_floors.back().second - info.walls[0].t_floors.front().first) * info.walls[0].y_scale);
+		h_decription = c;
+	}
+	
+	if(info.scrapers.size())
+	{
+		snprintf(c,63," +scraper%s %.0f-%.0fm", info.scrapers.size() ? "s" : "", info.scrapers.back().min_agl, info.scrapers.front().max_agl);
+		h_decription += c;
+	}
+
+}
+
+
+static int get_floors_for_height(const fac_info_t& fac, double height)
+{
+	if(fac.min_floors == fac.max_floors) return fac.min_floors;
+	
+	const FacadeWall_t& wall(fac.walls.front());
+
+	// e.g. if scale is 100 then whole tex is 100 meters tall.
+	// So if we need 100 meters we need "1" ST coords worth of stuff.
+	float needed_pixels = (height) / wall.y_scale;
+
+	int count = 0;
+	float dist = -wall.basement;
+	//printf("%s: want %f meters (%f pixels), start at %f\n", fac.debug_rpath(), height, needed_pixels, dist);
+	int bot = 0;
+	int top = 0;
+	int bot_max = wall.bottom + wall.middle;
+	int top_max = wall.top + wall.middle;
+	
+	int i_bot = 0;
+	int i_top = wall.t_floors.size() - 1;
+
+	float last_dist = dist;	
+	while(bot < bot_max || top < top_max)
+	{
+		last_dist = dist;
+		//printf(" Loop iteration, so far %f, want %f, bot=%d,top=%d\n", last_dist, needed_pixels, bot, top);
+		if((bot < bot_max && bot < top) ||
+			top == top_max)
+		{
+			// insert a bottom panel
+			dist += (wall.t_floors[i_bot].second - wall.t_floors[i_bot].first);
+			//printf(" try bottom panel %d, takes us to %f\n", i_bot, dist);
+			if(!closer_to(last_dist,dist,needed_pixels) && count > 0)
+			{
+				//printf("  we were better at %f, bail with %d\n", last_dist, count);
+				return intlim(count,fac.min_floors,fac.max_floors);
+			}
+			++i_bot;
+			++bot;
+			++count;
+		}
+		else
+		{
+			// insert a top panel
+			float scale_factor = 1.0f;
+			if(i_top == wall.t_floors.size() - 1)
+				scale_factor = cosf(wall.roof_slope * DEG_TO_RAD);
+			float panel_height = wall.t_floors[i_top].second - wall.t_floors[i_top].first;
+			panel_height *= scale_factor;
+			
+			if(wall.roof_slope != 0.0f && (i_top == wall.t_floors.size() - 1))
+			{
+				//printf(" try top panel %d, it is folded over, takes us to %f/%d\n", i_top, dist + panel_height, count+1);
+				++count;
+				--top_max;
+				--i_top;
+				dist += panel_height;
+			}
+			else
+			{
+				dist += panel_height;
+				//printf(" try top panel %d, takes us to %f\n", i_top, dist);
+				if(!closer_to(last_dist,dist,needed_pixels) && count > 0)
+				{
+					//printf("  we were better at %f, bail with %d\n", last_dist, count);
+					return intlim(count,fac.min_floors,fac.max_floors);
+				}
+				--i_top;
+				++top;
+				++count;
+			}
+		}
+	}
+	
+	//printf(" So far we have %d, using all bottom and top, at %f, want %f\n", count, dist, needed_pixels);
+	float mid_t_total = 0.0;
+	int mid_t_count = 0;
+	int end_mid = wall.t_floors.size() - wall.top;
+	for(xint i = wall.bottom; i < end_mid; ++i)
+	{
+		mid_t_total += (wall.t_floors[i].second - wall.t_floors[i].first);
+		++mid_t_count;
+	}
+		
+	if(mid_t_total == 0.0f)
+	{
+		//printf("  No midel panels at all, bail with %d\n",count);
+		return intlim(count,fac.min_floors,fac.max_floors);
+	}
+	float total_mid_reps = floor((needed_pixels - dist) / mid_t_total);	
+	count += total_mid_reps * mid_t_count;
+	dist += (total_mid_reps * mid_t_total);
+	//printf(" Add in %f reps of ALL middle for %f.\n", total_mid_reps, dist);
+	last_dist = dist;
+	for(xint i = wall.bottom; i < end_mid; ++i)
+	{
+		last_dist = dist;
+		dist += (wall.t_floors[i].second - wall.t_floors[i].first);
+		//printf(" Add in middle panel %d for %f\n", i, dist);
+		if(!closer_to(last_dist,dist,needed_pixels) && count > 0)
+		{
+			//printf("  we were better at %f, bail with %d\n", last_dist, count);
+			return intlim(count,fac.min_floors,fac.max_floors);
+		}
+		++count;		
+	}
+	//printf(" Ran out of middle tiles, end with %d\n", count);
+	return count;
+		
+}
+
 struct obj {
 	int 	idx;                 // index to type 2 objects
 	float	x,y,z,r;
@@ -617,14 +810,14 @@ struct obj {
 
 
 void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, const fac_info_t& info, const Polygon2& footprint, const vector<int>& choices,
-	double floors, GUI_GraphState * g, bool want_thinWalls)
+	double fac_height, GUI_GraphState * g, bool want_thinWalls)
 {
 	for(auto f : info.scrapers)
 	{
-		if(fltrange(floors,f.min_agl,f.max_agl))
+		if(fltrange(fac_height,f.min_agl,f.max_agl))
 		{
-			int floors = (floors - f.min_agl) / f.step_agl;
-			double hgt = floors * f.step_agl;
+			int fac_height = (fac_height - f.min_agl) / f.step_agl;
+			double hgt = fac_height * f.step_agl;
 			string scp_base(f.choices[0].base_obj);
 			if(!scp_base.empty())
 			{
@@ -672,7 +865,8 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 	if(!info.is_new)  // type1 facades
 	{
 		if(info.walls.empty())	return;
-		floors=intlim(floors,info.min_floors,info.max_floors);
+		
+		int floors = get_floors_for_height(info, fac_height);
 		double insets[footprint.size()];
 		bool has_insets = false;
 		
@@ -747,7 +941,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 		for(auto& f : info.floors)
 		{
 			double h = f.max_roof_height();
-			if(closer_to(roof_height, h, floors))
+			if(closer_to(roof_height, h, fac_height))
 			{
 				roof_height = h;
 				bestFloor = &f;
@@ -889,7 +1083,7 @@ if (info.has_roof) // && want_roof
 									 dirVec.dot(Vector2(fp)) + perpDot);
 				}
 
-				xflt ab_use[4] = { ab.xmin(), ab.ymin(), ab.xmax(), ab.ymax() };
+				xflt ab_use[4] = { (xflt) ab.xmin(), (xflt) ab.ymin(), (xflt) ab.xmax(), (xflt) ab.ymax() };
 
 				if(!ab.is_empty())		// safety check for degenerate single-point facade.
 				{
