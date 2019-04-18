@@ -275,9 +275,9 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 	#if AIRPORT_ROUTING
 	agp_t agp;
 	#endif
-	const pol_info_t * pol;
-	const lin_info_t * lin;
-	const fac_info_t * fac;
+	const pol_info_t * pol = nullptr;
+	const lin_info_t * lin = nullptr;
+	const fac_info_t * fac = nullptr;
 
 	if(!mRes.empty())
 	{	switch(mType) {
@@ -575,7 +575,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 		switch(mType)
 		{
 			case res_Facade:
-				if (fac->wallName.size())
+				if(fac && fac->wallName.size())
 				{
 					int n_wall = fac->wallName.size();
 					int raw_side = intround(mPsi/90) % mWalls;
@@ -590,7 +590,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 					sprintf(buf2,"No preview for this facade available");
 				break;
 			case res_Polygon:
-				if (pol->hasDecal)
+				if(pol && pol->hasDecal)
 				{
 					sprintf(buf1,"Has decal (not shown)");
 				}
@@ -600,7 +600,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				}
 				break;
 			case res_Line:
-				if (lin->s1.size() && lin->s2.size())
+				if (lin && lin->s1.size() && lin->s2.size())
 				{ 
 					sprintf(buf2,"w~%.0f%s",lin->eff_width * (gIsFeet ? 100.0/2.54 : 100.0), gIsFeet ? "in" : "cm" );
 				}

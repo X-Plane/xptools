@@ -779,7 +779,7 @@ struct	preview_airportlines : WED_PreviewItem {
 				}
 			}
 			string vpath;
-			const lin_info_t * linfo;
+			const lin_info_t * linfo = nullptr;
 			int tex_id = 0;
 			WED_ResourceMgr * rmgr = WED_GetResourceMgr(res);
 			ITexMgr         * tman = WED_GetTexMgr(res);

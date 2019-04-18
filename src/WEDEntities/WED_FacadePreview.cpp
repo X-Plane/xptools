@@ -816,7 +816,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 	{
 		if(fltrange(fac_height,f.min_agl,f.max_agl))
 		{
-			int fac_height = (fac_height - f.min_agl) / f.step_agl;
+			fac_height = (fac_height - f.min_agl) / f.step_agl;
 			double hgt = fac_height * f.step_agl;
 			string scp_base(f.choices[0].base_obj);
 			if(!scp_base.empty())
@@ -867,21 +867,20 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 		if(info.walls.empty())	return;
 		
 		int floors = get_floors_for_height(info, fac_height);
-		double insets[footprint.size()];
-		bool has_insets = false;
+		vector<float> insets;
+		insets.reserve(footprint.size());
 		
 		if(want_thinWalls)                            // Todo: Still render sloped roof segments
 		for(int n = 0; n < footprint.size(); ++n)
 		{
 			const FacadeWall_t& me = info.walls[intmin2(info.walls.size()-1,choices[n])];
 			if(fabs(me.roof_slope) > 1.0)
-				has_insets=true;
-			insets[n] = info.tex_correct_slope ?
+				insets.push_back(info.tex_correct_slope ?
 				sin(me.roof_slope * DEG_TO_RAD) * ((me.t_floors.back().second - me.t_floors.back().first) * me.y_scale) :
-				tan(me.roof_slope * DEG_TO_RAD) * ((me.t_floors.back().second - me.t_floors.back().first) * me.y_scale) ;
+				tan(me.roof_slope * DEG_TO_RAD) * ((me.t_floors.back().second - me.t_floors.back().first) * me.y_scale));
 		}
 		
-		if(has_insets)
+		if(insets.size())
 		{
 			Segment2 prevSeg(footprint.side(n_wall-1));
 			Vector2 prevDir(prevSeg.p1, prevSeg.p2);

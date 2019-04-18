@@ -561,8 +561,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 			{
 			if (MFS_string_match(&s,"LOD", false))
 			{
-				double near = MFS_double(&s);
-				not_nearest_lod = (near > 0.1);   // skip all info on the far out LOD's
+				not_nearest_lod = (MFS_double(&s) > 0.1);   // skip all info on the far out LOD's
 			}
 			else if(not_nearest_lod)
 			{	
