@@ -94,12 +94,7 @@ WED_FacadePlacement::TopoMode		WED_FacadePlacement::GetTopoMode(void) const
 						return topo_Ring;   // ring only: no roof
 				}
 				else
-				{
-					if(f->has_roof)
-						return topo_Area;       // roof only: no ring. It's bad authoring, XP 11.10 will close if for you ...
-					else
-						return topo_Chain;      // no ring, no roof
-				}
+					return topo_Chain;      // no ring, no roof
 			}
 		}
 	}

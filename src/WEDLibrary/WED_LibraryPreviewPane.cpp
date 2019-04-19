@@ -414,10 +414,10 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				glMatrixMode(GL_MODELVIEW);
 				glPushMatrix();
 				glLoadIdentity();			
+				glTranslatef(0.0,-max(0.0, (mHgt-20.0)*0.35), 0.0);
 				glRotatef(mThe,1,0,0);
 				glRotatef(mPsi,0,1,0);
-				
-				glTranslatef(-mWid*0.5,-max(0.0, (mHgt-20.0)*0.35), 0.0);
+				glTranslatef(-mWid*0.5,0.0, 0.0);
 				
 				g->EnableDepth(true,true);
 				g->EnableAlpha(true,true);

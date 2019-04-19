@@ -969,34 +969,43 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 			{
 				Vector2 tangentDir;
 				if(w == 0)
+					if(info.is_ring)
+					{
+						inBase = footprint.side(n_wall-1);
+						tangentDir = Vector2(inBase.p1, inBase.p2);
+						tangentDir.normalize();
+						tangentDir += segDir;
+						tangentDir.normalize();
+						miter = tangentDir.perpendicular_ccw();
+						miter /= miter.dot(perpDir);
+					}
+					else
+						miter =perpDir;
+				corrDir_first = perpDir - miter;
+				if (info.is_ring || w < n_wall -1) 
 				{
-					inBase = footprint.side(n_wall-1);
+					inBase = footprint.side(w < n_wall-1 ? w+1 : 0);
 					tangentDir = Vector2(inBase.p1, inBase.p2);
 					tangentDir.normalize();
 					tangentDir += segDir;
 					tangentDir.normalize();
 					miter = tangentDir.perpendicular_ccw();
 					miter /= miter.dot(perpDir);
+					corrDir_last = perpDir - miter;
 				}
-				corrDir_first = perpDir - miter;
-				
-				inBase = footprint.side(w < n_wall-1 ? w+1 : 0);
-				tangentDir = Vector2(inBase.p1, inBase.p2);
-				tangentDir.normalize();
-				tangentDir += segDir;
-				tangentDir.normalize();
-				miter = tangentDir.perpendicular_ccw();
-				miter /= miter.dot(perpDir);
-				corrDir_last = perpDir - miter;
+				else
+					corrDir_last = Vector2();
 			}
 
 			int first = 1;
+	printf("start\n");
 			for(auto ch : our_choice.indices)
 			{
 				const REN_facade_template_t& t = bestFloor->templates[ch];
 				double segMult = seg_length * t.bounds[2];
 
-				if(!info.nowallmesh && (t.bounds[0] > 1.0 || want_thinWalls))
+	printf("%.1f %.1f %.1f\n",t.bounds[0], t.bounds[1], t.bounds[2]);
+				if(!info.nowallmesh && (want_thinWalls || (info.has_roof && t.bounds[1] > 0.5) || (!info.is_ring && t.bounds[0] > 0.5)))
 				for(auto m : t.meshes) // all meshes == maximum LOD detail
 				{
 					for(auto ind : m.idx)
@@ -1014,7 +1023,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 				{
 					struct obj obj_ref;
 					obj_ref.idx = o.idx;
-					Point2 xy = thisPt - perpDir * o.xyzr[0] - segDir * o.xyzr[2];
+					Point2 xy = thisPt - perpDir * o.xyzr[0] - segDir * o.xyzr[2]  * seg_length;
 
 					obj_ref.x = xy.x();
 					obj_ref.y = o.xyzr[1];
