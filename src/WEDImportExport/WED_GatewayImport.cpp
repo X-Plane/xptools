@@ -459,7 +459,12 @@ void WED_GatewayImportDialog::Next()
 		mICAO_AptProvider.GetSelection(apts);
 		if(apts.size() > 1)
 		{
-				if (ConfirmMessage("Multiple Airports are selected. Import recommended version for each ?","Yes", "Cancel"))
+				string msg("Multiple Airports are selected. Import ");
+				if(gModeratorMode)
+					msg += "accepted version for each ?";
+				else
+					msg += "recommended version for each ?";
+				if (ConfirmMessage(msg.c_str(),"Yes", "Cancel"))
 				{
 					int max_imports = 50;                  // some artifical limit from keeping the gateway being loaded by robots
 					mVersions_VersionsSelected.clear();

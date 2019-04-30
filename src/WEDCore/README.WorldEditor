@@ -13,6 +13,12 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 2.1.0git
+	Features:
+	- WED-339: Add fullyt scalable and on-map facade previews
+   Bug Fixes:
+   - WED-1186: Make message box text in moderator mode more specific
+
 WED 2.0.0r4 4/07/19
 	Bug Fixes:
 	- WED-1178: Fix XP1130 format apt.dat importing ATC frequencies always as "tower"
