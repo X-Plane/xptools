@@ -175,11 +175,13 @@ void DrawLineAttrs(const Point2 * pts, int cnt, const set<int>& attrs)
 			if(b > line_BoundaryEdge)
 			{
 				int e = ENUM_Export(*a);
-					 if(e == 12) b = line_RunwayHold;
+					  if(e == 11) b = line_ILSCriticalCenter;
+				else if(e == 12) b = line_RunwayHold;
 				else if(e == 13) b = line_OtherHold;
 				else if(e == 14) b = line_ILSHold;
 				else if(e == 19) b = line_TaxiWayHatch;
 				else if(e <= 20) b = line_SolidYellow;
+				else if(e == 61) b = line_BILSCriticalCenter;
 				else if(e == 62) b = line_BRunwayHold;
 				else if(e == 63) b = line_BOtherHold;
 				else if(e == 64) b = line_BILSHold;

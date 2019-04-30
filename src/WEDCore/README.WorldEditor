@@ -16,6 +16,7 @@ CHANGE HISTORY
 WED 2.1.0git
 	Features:
 	- WED-339: Add fullyt scalable and on-map facade previews
+	- WED-1187: Make wide ILS critical centerline symbolic preview more specific
    Bug Fixes:
    - WED-1186: Make message box text in moderator mode more specific
 
