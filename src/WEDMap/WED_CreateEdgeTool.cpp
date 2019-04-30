@@ -239,14 +239,17 @@ void		WED_CreateEdgeTool::AcceptPath(
 		switch(mType) {
 		case create_TaxiRoute:
 			new_edge = tr = WED_TaxiRoute::CreateTyped(GetArchive());
-			tr->SetOneway(mOneway.value);			
-			tr->SetRunway(mRunway.value);
-			tr->SetVehicleClass(mVehicleClass.value);
-			tr->SetHotDepart(mHotDepart.value);
-			tr->SetHotArrive(mHotArrive.value);
-			tr->SetHotILS(mHotILS.value);
 			tr->SetName(mName);
 			tr->SetWidth(mWidth.value);
+			tr->SetOneway(mOneway.value);
+			tr->SetVehicleClass(mVehicleClass.value);
+			if(mVehicleClass.value == atc_Vehicle_Aircraft)
+			{
+				tr->SetRunway(mRunway.value);
+				tr->SetHotDepart(mHotDepart.value);
+				tr->SetHotArrive(mHotArrive.value);
+				tr->SetHotILS(mHotILS.value);
+			}
 			break;
 #if ROAD_EDITING
 		case create_Road:
