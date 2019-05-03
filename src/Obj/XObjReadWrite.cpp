@@ -540,7 +540,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 	outObj.lods.clear();
 	outObj.use_metalness = 0;
 	outObj.glass_blending = 0;
-
+	outObj.fixed_heading = -1.0;
 
 	/*********************************************************************
 	 * READ FILE INTO MEM
@@ -1459,6 +1459,10 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 			cmd.params[5] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 
 			outObj.lods.back().cmds.push_back(cmd);
+		}
+		else if(TXT_MAP_str_match_space(cur_ptr, end_ptr, "#fixed_heading", xfals))
+		{
+			outObj.fixed_heading = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 		}
 /******************************************************************************************************************************/
 		// DEFAULT
