@@ -1833,11 +1833,11 @@ static int	DSF_ExportTileRecursive(
 					if(UVMwidth == DDSwidth && UVMheight == DDSheight)
 					{
 						CopyBitmapSectionDirect(imgInfo,DDSInfo, UVMleft, UVMbottom, 0, 0, DDSwidth, DDSheight);
-						printf("fastpath\n");
+//						printf("fastpath\n");
 					}
 					else
 					{
-						printf("scale %dx%d -> %dx%d\n",UVMright-UVMleft, UVMtop-UVMbottom,DDSwidth,DDSheight);
+//						printf("scale %dx%d -> %dx%d\n",UVMright-UVMleft, UVMtop-UVMbottom,DDSwidth,DDSheight);
 						CopyBitmapSection(&imgInfo,&DDSInfo, UVMleft, UVMbottom, UVMright, UVMtop,
                                                          0,       0,    DDSwidth, DDSheight);
 					}

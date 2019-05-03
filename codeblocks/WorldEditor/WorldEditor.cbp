@@ -78,13 +78,6 @@
 			<Add option="-DUSE_JPEG=1" />
 			<Add option="-DUSE_TIF=1" />
 		</Compiler>
-		<Unit filename="../../../facades/REN_extrude_defs.h" />
-		<Unit filename="../../../facades/REN_extrude_utils.h" />
-		<Unit filename="../../../facades/REN_facade.cpp" />
-		<Unit filename="../../../facades/REN_facade.h" />
-		<Unit filename="../../../facades/UTL_art_asset.h" />
-		<Unit filename="../../../facades/UTL_tile.cpp" />
-		<Unit filename="../../../facades/UTL_tile.h" />
 		<Unit filename="../../src/DSF/DSFDefs.h" />
 		<Unit filename="../../src/DSF/DSFLib.cpp" />
 		<Unit filename="../../src/DSF/DSFLib.h" />
