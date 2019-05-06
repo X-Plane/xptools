@@ -60,6 +60,7 @@
 #include "WED_StringPlacement.h"
 #include "WED_Taxiway.h"
 #include "WED_TruckParkingLocation.h"
+#include "WED_LightFixture.h"
 
 #if APL
 #include <OpenGL/gl.h>
@@ -1263,6 +1264,73 @@ struct	preview_truck : public WED_PreviewItem {
 };
 
 
+struct	preview_light : public WED_PreviewItem {
+	WED_LightFixture * lgt;
+	IResolver * resolver;
+	preview_light(WED_LightFixture * o, int l, IResolver * r) : WED_PreviewItem(l), lgt(o), resolver(r) { }
+	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
+	{
+		WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
+		ITexMgr *	tman = WED_GetTexMgr(resolver);
+		ILibrarian * lmgr = WED_GetLibrarian(resolver);
+		string vpath;
+		AptLight_t light;
+		lgt->Export(light);
+		
+		switch(light.light_code) 
+		{
+			case apt_gls_vasi:          vpath = "lib/airport/lights/slow/VASI.obj";break;
+			case apt_gls_vasi_tricolor: vpath = "lib/airport/lights/slow/VASI3.obj";break;
+			case apt_gls_papi_left:
+			case apt_gls_papi_right:
+			case apt_gls_papi_20:  vpath = "lib/airport/lights/slow/PAPI.obj";	break;
+			case apt_gls_wigwag:   vpath = "lib/airport/lights/slow/rway_guard.obj"; break;
+		}
+
+		const XObj8 * o = NULL;
+		if(!vpath.empty() && rmgr->GetObj(vpath,o))
+		{
+			g->SetState(false,1,false,false,true,false,false);
+			glColor3f(1,1,1);
+			
+			switch(light.light_code) 
+			{
+				case apt_gls_vasi:
+				{
+					Vector2 dirv(0,75);
+					dirv.rotate_by_degrees(-light.heading);
+					dirv = VectorMetersToLL(light.location,dirv);
+					
+					light.location -= dirv;
+					draw_obj_at_ll(tman, o, light.location, light.heading, g, zoomer);
+					light.location += dirv * 2.0;
+					draw_obj_at_ll(tman, o, light.location, light.heading, g, zoomer);
+					break;
+				}
+				case apt_gls_papi_left:
+				case apt_gls_papi_right:
+				case apt_gls_papi_20:
+				{
+					Vector2 dirv(8,0);
+					dirv.rotate_by_degrees(-light.heading);
+					dirv = VectorMetersToLL(light.location,dirv);
+					
+					light.location -= dirv * 1.5;
+					for(int n = 0; n < 4; n++)
+					{
+						draw_obj_at_ll(tman, o, light.location, light.heading, g, zoomer);
+						light.location += dirv;
+					}
+					break;
+				}
+				default:
+					draw_obj_at_ll(tman, o, light.location, light.heading, g, zoomer);
+			}
+
+		}
+	}
+};
+
 
 /***************************************************************************************************************************************************
  * DRAWING OBJECT
@@ -1435,6 +1503,14 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		{
 			WED_TruckParkingLocation * trk = SAFE_CAST(WED_TruckParkingLocation, entity);
 			if (trk)	mPreviewItems.push_back(new preview_truck(trk, group_Objects, GetResolver()));
+		}
+	}
+	else if (sub_class == WED_LightFixture::sClass)
+	{
+		if(GetZoomer()->GetPPM() * 1.0 > MIN_PIXELS_PREVIEW)
+		{
+			WED_LightFixture * lgt = SAFE_CAST(WED_LightFixture, entity);
+			if (lgt)	mPreviewItems.push_back(new preview_light(lgt, group_Objects, GetResolver()));
 		}
 	}
 	return true;

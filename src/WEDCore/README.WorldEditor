@@ -15,9 +15,10 @@ CHANGE HISTORY
 
 WED 2.1.0git
 	Features:
-	- WED-339: Add fullyt scalable and on-map facade previews
+	- WED-339: Add fully scalable and on-map facade previews
 	- WED-1187: Make wide ILS critical centerline symbolic preview more specific
 	- WED-887: Recognize keyword in .obj that lock the objects orientation
+	- depict PAPI / VASI / WIGWAG's in on-map preview layer
    Bug Fixes:
    - WED-1186: Make message box text in moderator mode more specific
    - WED-1162: Create new ground truck routes w/no aircaft (hotzone) attributes set
