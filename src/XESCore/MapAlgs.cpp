@@ -502,6 +502,22 @@ void verify_map_bounds()
 	DebugAssert(MapIsWithinBounds(gMap, gDem[dem_Elevation].mWest, gDem[dem_Elevation].mSouth, gDem[dem_Elevation].mEast, gDem[dem_Elevation].mNorth));
 }
 
+int count_tiny_faces(Pmwx &map, const DEMGeo & containing_dem)
+{
+	int tiny_faces = 0;
+	for(const auto &f : map.face_handles())
+	if(!f->is_unbounded() && cgal2ben(f, containing_dem.mWest, containing_dem.mSouth).area() <= one_square_meter_in_degrees)
+	{
+		++tiny_faces;
+	}
+	return tiny_faces;
+}
+
+int count_tiny_faces(Pmwx &map)
+{
+	return count_tiny_faces(map, gDem[dem_Elevation]);
+}
+
 #if 0
 // This notifier and accompanying struct accumlates all halfedges that are inserted or found
 // doing an insert-with intersections as well as all target points in order.

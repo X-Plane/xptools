@@ -558,22 +558,6 @@ static inline int MAJORITY_RULES(vector<int> values)
 	return MAJORITY_RULES(values[0], values[1], values[2], values[3]);
 }
 
-inline Polygon2 cgal_face_to_ben(const Pmwx::Face_const_handle &f, double dsf_min_lon, double dsf_min_lat)
-{
-	DebugAssert(CGAL::is_valid(f));
-	Polygon2 out;
-	Pmwx::Ccb_halfedge_const_circulator edge = f->outer_ccb();
-	Point2 source_ben = cgal2ben(edge->source()->point());
-	do {
-		out.push_back(Point2(doblim(source_ben.x(), dsf_min_lon, dsf_min_lon + 1),
-							 doblim(source_ben.y(), dsf_min_lat, dsf_min_lat + 1)));
-		++edge;
-		source_ben = cgal2ben(edge->source()->point());
-	} while(edge != f->outer_ccb());
-	DebugAssert(out.is_ccw());
-	return out;
-}
-
 template<typename HalfEdge>
 double halfedge_length(const HalfEdge &he)
 {
@@ -760,7 +744,7 @@ static ag_terrain_dsf_description initialize_autogen_pmwx()
 	{
 		if(!f->is_unbounded())
 		{
-			const Polygon2 ben_face = cgal_face_to_ben(f, lon_min, lat_min);
+			const Polygon2 ben_face = cgal2ben(f, lon_min, lat_min);
 			if(ben_face.area() <  0) { cout << "Negative area: " << ben_face.wolfram_alpha() << "\n"; }
 			if(ben_face.area() == 0) { cout << "Zero area: "     << ben_face.wolfram_alpha() << "\n";
 				cout << "GetMapFaceAreaMeters(f): " << GetMapFaceAreaMeters(f) << "\n"; }
@@ -1127,7 +1111,7 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 		if(!f->is_unbounded())
 		{
 			const GIS_face_data &fd = f->data();
-			Polygon2 ben_poly = cgal_face_to_ben(f, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat);
+			Polygon2 ben_poly = cgal2ben(f, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat);
 			if(ben_poly.area() > 0) // <= 0 is possible when the face extends beyond the DSF boundary, or when its points are "real" close together
 			{
 				const Point2 centroid = ben_poly.centroid();
@@ -1313,7 +1297,7 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 				memset(fd.mGLColor, sizeof(fd.mGLColor), 0);
 			#endif
 
-			Polygon2 ben_face = cgal_face_to_ben(f, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat); // not *that* Ben face! https://secure.gravatar.com/ben2212171
+			Polygon2 ben_face = cgal2ben(f, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat); // not *that* Ben face! https://secure.gravatar.com/ben2212171
 			if(!ben_face.is_ccw())
 			{
 				sort(ben_face.begin(), ben_face.end());
@@ -1391,17 +1375,6 @@ static Point2 obj_rel_placement_to_lat_lon(const agp_t::obj & obj, const agp_t &
 	return out;
 }
 
-int count_tiny_faces(Pmwx &map)
-{
-	int tiny_faces = 0;
-	for(const auto &f : gMap.face_handles())
-	if(!f->is_unbounded() && cgal_face_to_ben(f, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat).area() <= one_square_meter_in_degrees)
-	{
-		++tiny_faces;
-	}
-	return tiny_faces;
-}
-
 int ag_terrain_type(const GIS_face_data & face_data) // we can stick the AG terrain type in one of two places... this pulls it out, if applicable
 {
 	return face_data.mOverlayType == NO_VALUE ? face_data.mTerrainType : face_data.mOverlayType;
@@ -1434,7 +1407,7 @@ static int simplify_tiny_faces_into_their_neighbors(Pmwx &map)
 	for(const auto &f : map.face_handles())
 	if(!f->is_unbounded())
 	{
-		const Polygon2 ben_face = cgal_face_to_ben(f, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat);
+		const Polygon2 ben_face = cgal2ben(f, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat);
 		if(ben_face.area() <= one_square_meter_in_degrees)
 		{
 			++tiny_faces;
@@ -1503,7 +1476,7 @@ static int MergeTylersAg(const vector<const char *>& args)
 
 	for(Pmwx::Face_handle f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
 	{
-		DebugAssert(f->is_unbounded() || cgal_face_to_ben(f, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat).area() > one_square_meter_in_degrees);
+		DebugAssert(f->is_unbounded() || cgal2ben(f, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat).area() > one_square_meter_in_degrees);
 		GIS_face_data &fd = f->data();
 		if(!f->is_unbounded() && contains(s_terrain_types_to_not_touch, fd.mTerrainType))
 		{
@@ -1587,7 +1560,7 @@ static int MergeTylersAg(const vector<const char *>& args)
 		DebugAssert(ter_enum == NO_VALUE || !f->is_unbounded());
 		if(ter_enum != NO_VALUE)
 		{
-			const Polygon2 ben_face = cgal_face_to_ben(f, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat); // not *that* Ben face! https://secure.gravatar.com/ben2212171
+			const Polygon2 ben_face = cgal2ben(f, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat); // not *that* Ben face! https://secure.gravatar.com/ben2212171
 			DebugAssert(ben_face.area() > one_square_meter_in_degrees);
 
 			// Place the associated OBJs based on this tile's AGP spec

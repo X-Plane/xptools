@@ -54,6 +54,7 @@
 */
 
 #include "CGALDefs.h"
+#include "MathUtils.h" // for doblim()
 
 #include <CGAL/Arr_segment_traits_2.h>
 #include <CGAL/General_polygon_set_2.h>
@@ -682,5 +683,20 @@ static void	InsetPolygon_2(
 	}
 }
 
+inline Polygon2 cgal2ben(const Pmwx::Face_const_handle &f, double dsf_min_lon, double dsf_min_lat)
+{
+	DebugAssert(CGAL::is_valid(f));
+	Polygon2 out;
+	Pmwx::Ccb_halfedge_const_circulator edge = f->outer_ccb();
+	Point2 source_ben = cgal2ben(edge->source()->point());
+	do {
+		out.push_back(Point2(doblim(source_ben.x(), dsf_min_lon, dsf_min_lon + 1),
+							 doblim(source_ben.y(), dsf_min_lat, dsf_min_lat + 1)));
+		++edge;
+		source_ben = cgal2ben(edge->source()->point());
+	} while(edge != f->outer_ccb());
+	DebugAssert(out.is_ccw());
+	return out;
+}
 
 #endif

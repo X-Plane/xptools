@@ -165,6 +165,9 @@ bool	MapIsWithinBounds(
 			const Point_2 &	inNorthEast);
 void	verify_map_bounds(); // equivalent to DebugAsserting the global map is within the global DEM bounds
 
+int		count_tiny_faces(Pmwx & map, const DEMGeo & containing_dem);
+int		count_tiny_faces(Pmwx & map); // wrapper for the above, called with the global elevation DEM
+
 //void	SwapFace(
 //			Pmwx&			inMaster,
 //			Pmwx&			inSlave,
