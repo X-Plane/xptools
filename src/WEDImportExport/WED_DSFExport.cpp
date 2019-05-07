@@ -1098,13 +1098,11 @@ static int	DSF_HeightRangeRecursive(WED_Thing * what, double& out_msl_min, doubl
 
 	if((obj = dynamic_cast<WED_ObjPlacement *>(what)) != NULL)
 	{
-#if AIRPORT_ROUTING
 		if(obj->HasCustomMSL())
 		{
 			out_msl_min = out_msl_max = obj->GetCustomMSL();
 			return 1;
 		}
-#endif
 	}
 
 	int found = 0;		// true if we found at least 1 min/max
@@ -1264,14 +1262,12 @@ static int	DSF_ExportTileRecursive(
 			while(heading >= 360.0) heading -= 360.0;
 			++real_thingies;
 			xyrz[2] = heading;
-			#if AIRPORT_ROUTING
 			if(obj->HasCustomMSL())
 			{
 				xyrz[3] = obj->GetCustomMSL();
 				cbs->AddObject_f(idx, xyrz, 4, writer);
 			}
 			else
-			#endif
 				cbs->AddObject_f(idx, xyrz, 3, writer);
 		}
 	}

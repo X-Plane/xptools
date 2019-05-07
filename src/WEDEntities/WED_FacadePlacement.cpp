@@ -32,9 +32,7 @@ TRIVIAL_COPY(WED_FacadePlacement,WED_GISPolygon)
 
 WED_FacadePlacement::WED_FacadePlacement(WED_Archive * a, int i) : WED_GISPolygon(a,i),
 	height    (this,PROP_Name("Height",    XML_Name("facade_placement","height")),10,3,0,"m"),
-#if AIRPORT_ROUTING
 	pick_walls(this,PROP_Name("Pick Walls",XML_Name("facade_placement","pick_walls")),0),
-#endif	
 	resource  (this,PROP_Name("Resource",  XML_Name("facade_placement","resource")),""),
 	show_level(this,PROP_Name("Show with", XML_Name("facade_placement","show_level")),ShowLevel, show_Level1)
 {
@@ -101,7 +99,6 @@ WED_FacadePlacement::TopoMode		WED_FacadePlacement::GetTopoMode(void) const
 	return topo_Area;
 }
 
-#if AIRPORT_ROUTING
 bool		WED_FacadePlacement::HasLayer		(GISLayer_t layer							  ) const
 {
 	if(layer == gis_Param)	return pick_walls.value;
@@ -113,13 +110,7 @@ void		WED_FacadePlacement::SetCustomWalls(bool has)
 	pick_walls = (has ? 1 : 0);
 }
 
-#endif
-
 bool		WED_FacadePlacement::HasCustomWalls(void) const 
 {
-	#if AIRPORT_ROUTING
 		return pick_walls.value; 
-	#else
-		return false;
-	#endif
 }

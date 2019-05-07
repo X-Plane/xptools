@@ -330,7 +330,6 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 			IGISPointSequence *				ps;
 			if ((ps = SAFE_CAST(IGISPointSequence,entity)) != NULL)
 			{
-				#if AIRPORT_ROUTING
 				if (kind == gis_Edge)
 				{
 					WED_TaxiRoute * tr = SAFE_CAST(WED_TaxiRoute, entity);
@@ -347,7 +346,6 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 						glColor4fv(WED_Color_RGBA(struct_color));
 					}
 				}
-				#endif
 				int i, n = ps->GetNumSides();
 				WED_MapZoomerNew * z = GetZoomer();
 

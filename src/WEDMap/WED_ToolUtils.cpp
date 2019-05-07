@@ -359,9 +359,7 @@ bool WED_IsFolder(WED_Thing * what)
 	if(dynamic_cast<IGISPolygon*>(what))					return false;
 	if(dynamic_cast<IGISPointSequence*>(what))				return false;
 	if(dynamic_cast<IGISComposite*>(what))					return true;
-#if AIRPORT_ROUTING
 	if(strcmp(what->GetClass(), WED_ATCFlow::sClass)==0)	return true;
-#endif
 	return false;
 }
 
@@ -404,7 +402,6 @@ const char *	WED_GetParentForClass(const char * in_class)
 	if(strcmp(in_class,WED_Windsock::sClass)==0)			return WED_Airport::sClass;
 
 	if(strcmp(in_class,WED_ATCFrequency::sClass)==0)		return WED_Airport::sClass;
-#if AIRPORT_ROUTING
 	if(strcmp(in_class,WED_ATCFlow::sClass)==0)				return WED_Airport::sClass;
 	if(strcmp(in_class,WED_ATCRunwayUse::sClass)==0)		return WED_ATCFlow::sClass;
 	if(strcmp(in_class,WED_ATCTimeRule::sClass)==0)			return WED_ATCFlow::sClass;
@@ -416,7 +413,6 @@ const char *	WED_GetParentForClass(const char * in_class)
 	if(strcmp(in_class,WED_TruckDestination::sClass)==0)	return WED_Airport::sClass;
 	if(strcmp(in_class,WED_TruckParkingLocation::sClass)==0)return WED_Airport::sClass;
 
-#endif
 	return NULL;
 }
 

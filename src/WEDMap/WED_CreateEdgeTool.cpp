@@ -37,7 +37,6 @@
 #include <sstream>
 
 #include "WED_GroupCommands.h"
-#if AIRPORT_ROUTING
 
 static const char * kCreateCmds[] = { "Taxiway Route Line", "Road" };
 static const int kIsAirport[] = { 1, 0 };
@@ -678,6 +677,4 @@ bool		WED_CreateEdgeTool::get_valid_road_info(road_info_t * optional_info) const
 	}
 	return false;
 }
-#endif
-
 #endif

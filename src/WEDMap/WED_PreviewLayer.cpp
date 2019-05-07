@@ -1112,9 +1112,7 @@ struct	preview_object : public WED_PreviewItem {
 
 		obj->GetResource(vpath);
 		const XObj8 * o;
-		#if AIRPORT_ROUTING
 		agp_t agp;
-		#endif
 		if(rmgr->GetObj(vpath,o))
 		{
 			g->SetState(false,1,false,false,true,false,false);
@@ -1123,7 +1121,6 @@ struct	preview_object : public WED_PreviewItem {
 			obj->GetLocation(gis_Geo,loc);
 			draw_obj_at_ll(tman, o, loc, obj->GetHeading(), g, zoomer);
 		}
-		#if AIRPORT_ROUTING
 		else if (rmgr->GetAGP(vpath,agp))
 		{
 			Point2 loc;
@@ -1167,7 +1164,6 @@ struct	preview_object : public WED_PreviewItem {
 			}
 			glPopMatrix();
 		}
-		#endif
 		else
 		{
 			Point2 l;
@@ -1207,9 +1203,7 @@ struct	preview_truck : public WED_PreviewItem {
 		}
 
 		const XObj8 * o1 = NULL, * o2 = NULL;
-		#if AIRPORT_ROUTING
 		agp_t agp;
-		#endif
 		if(!vpath1.empty() && rmgr->GetObj(vpath1,o1))
 		{
 			g->SetState(false,1,false,false,true,false,false);

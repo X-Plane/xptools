@@ -272,9 +272,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 	float dx = b[2] - b[0];
 	float dy = b[3] - b[1];
 
-	#if AIRPORT_ROUTING
 	agp_t agp;
-	#endif
 	const pol_info_t * pol = nullptr;
 	const lin_info_t * lin = nullptr;
 	const fac_info_t * fac = nullptr;
@@ -496,7 +494,6 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				glPopMatrix();
 				glPopAttrib();
 			}
-			#if AIRPORT_ROUTING
 			else if (mResMgr->GetAGP(mRes,agp))
 			{
 				float min_xy[2] = { 0, 0 };
@@ -566,7 +563,6 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				glPopMatrix();
 				glPopAttrib();			
 			}
-			#endif
 			break;
 		}
 		

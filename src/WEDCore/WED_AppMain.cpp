@@ -101,9 +101,7 @@
 
 #define _R(x)	extern void x##_Register();
 REGISTER_LIST
-#if AIRPORT_ROUTING
 REGISTER_LIST_ATC
-#endif
 #undef _R
 
 #include "WED_EnumSystem.h"
@@ -187,9 +185,7 @@ int main(int argc, char * argv[])
 	start->ShowMessage("Registering classes...");
 	#define _R(x)	x##_Register();
 	REGISTER_LIST
-	#if AIRPORT_ROUTING
 	REGISTER_LIST_ATC
-	#endif
 	#undef _R
 
 	app.SetAbout(about);

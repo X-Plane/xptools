@@ -1212,7 +1212,6 @@ bool	WED_ResourceMgr::GetFor(const string& path, XObj8 const *& obj)
 	return true;
 }
 
-#if AIRPORT_ROUTING
 bool	WED_ResourceMgr::GetAGP(const string& path, agp_t& out_info)
 {
 	auto i = mAGP.find(path);
@@ -1427,5 +1426,3 @@ bool	WED_ResourceMgr::GetRoad(const string& path, road_info_t& out_info)
 	return true;
 }
 #endif	
-	
-#endif

@@ -35,10 +35,8 @@ TRIVIAL_COPY(WED_ObjPlacement,WED_GISPoint_Heading)
 
 WED_ObjPlacement::WED_ObjPlacement(WED_Archive * a, int i) : 
 	WED_GISPoint_Heading(a,i),
-#if AIRPORT_ROUTING
 	has_msl(this,PROP_Name("Set MSL", XML_Name("obj_placement","custom_msl")),0),
 	msl    (this,PROP_Name("MSL",     XML_Name("obj_placement","msl")), 0, 5,3),
-#endif
 	resource  (this,PROP_Name("Resource",  XML_Name("obj_placement","resource")),""),
 	show_level(this,PROP_Name("Show with", XML_Name("obj_placement","show_level")),ShowLevel, show_Level1),
 	visibleWithinDeg(-1.0)
@@ -194,7 +192,6 @@ bool		WED_ObjPlacement::Cull(const Bbox2& b) const
 	return b.overlap(my_bounds);
 }
 
-#if AIRPORT_ROUTING
 bool		WED_ObjPlacement::HasCustomMSL(void) const
 {
 	return has_msl.value;
@@ -215,5 +212,3 @@ void		WED_ObjPlacement::SetDefaultMSL(void)
 {
 	has_msl = 0;
 }
-
-#endif

@@ -31,17 +31,13 @@ DEFINE_PERSISTENT(WED_FacadeNode)
 TRIVIAL_COPY(WED_FacadeNode,WED_GISPoint_Bezier)
 
 WED_FacadeNode::WED_FacadeNode(WED_Archive * a, int i) : WED_GISPoint_Bezier(a,i)
-#if AIRPORT_ROUTING
 	,wall_type(this,PROP_Name("Wall", XML_Name("facade_node","wall_type")),FacadeWall, facade_Wall0)
-#endif	
 {
 }
 
 WED_FacadeNode::~WED_FacadeNode()
 {
 }
-
-#if AIRPORT_ROUTING
 
 void	WED_FacadeNode::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 {
@@ -130,18 +126,10 @@ void		WED_FacadeNode::PropEditCallback(int before)
 	WED_GISPoint_Bezier::PropEditCallback(before);
 }
 
-#endif
-
 int		WED_FacadeNode::GetWallType(void) const
 {
-#if AIRPORT_ROUTING
 	return ENUM_Export(wall_type.value);
-#else
-	return 0;
-#endif
 }
-
-#if AIRPORT_ROUTING
 
 void	WED_FacadeNode::SetWallType(int wt)
 {
@@ -175,5 +163,3 @@ bool	WED_FacadeNode::GetControlHandleHi (GISLayer_t l,       Point2& p) const
 	if (l == gis_Param) p = Point2(ENUM_Export(wall_type.value),0.0);
 	return true;
 }
-
-#endif

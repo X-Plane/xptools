@@ -335,12 +335,10 @@ public:
 		WED_ObjPlacement * obj = WED_ObjPlacement::CreateTyped(me->archive);
 		obj->SetResource(me->obj_table[inObjectType]);
 		obj->SetLocation(gis_Geo,Point2(inCoordinates[0],inCoordinates[1]));
-		#if AIRPORT_ROUTING
 		if(inCoordDepth == 4)
 			obj->SetCustomMSL(inCoordinates[3]);
 		else
 			obj->SetDefaultMSL();
-		#endif
 		obj->SetHeading(inCoordinates[2]);
 		obj->SetName(me->obj_table[inObjectType]);
 		obj->SetParent(me->get_cat_parent(dsf_cat_objects),me->get_cat_parent(dsf_cat_objects)->CountChildren());
@@ -517,9 +515,7 @@ public:
 			me->want_bezier=(inCoordDepth >= 4);
 			me->want_wall = (inCoordDepth == 3 || inCoordDepth == 5);
 			WED_FacadePlacement * fac = WED_FacadePlacement::CreateTyped(me->archive);
-			#if AIRPORT_ROUTING
 			fac->SetCustomWalls(me->want_wall);
-			#endif
 			me->poly = fac;
 			me->ring = NULL;
 			fac->SetHeight(inParam);
@@ -539,9 +535,7 @@ public:
 			me->poly = forst;
 			me->ring = NULL;
 			forst->SetDensity((inParam % 256) / 255.0);
-			#if AIRPORT_ROUTING
 			forst->SetFillMode(inParam / 256);
-			#endif
 			forst->SetResource(r);
 			cat = dsf_cat_forests;
 		}
@@ -792,10 +786,8 @@ public:
 				WED_FacadeNode * b = WED_FacadeNode::CreateTyped(me->archive);
 				node=b;
 				b->SetBezierLocation(gis_Geo,me->pts[n]);
-				#if AIRPORT_ROUTING
 				if(me->want_wall)
 					b->SetWallType(me->walls[n]);
-				#endif	
 			}
 			else if (me->want_bezier)
 			{

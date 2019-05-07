@@ -24,8 +24,6 @@
 #ifndef WED_ATCTimeRule_H
 #define WED_ATCTimeRule_H
 
-#if AIRPORT_ROUTING
-
 #include "WED_Thing.h"
 
 struct	AptTimeRule_t;
@@ -48,7 +46,5 @@ private:
 	WED_PropIntText		end_time_zulu;
 
 };
-
-#endif
 
 #endif /* WED_ATCTimeRule_H */
