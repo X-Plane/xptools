@@ -661,7 +661,7 @@ void height_desc_for_facade(const fac_info_t& info, string& h_decription)
 			h_decription = c;
 		}
 	}
-	else
+	else if(!info.walls.empty())
 	{
 		Segment3 dummy_seg;
 		double h_min, h_max;
@@ -998,13 +998,13 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 			}
 
 			int first = 1;
-	printf("start\n");
+//	printf("start\n");
 			for(auto ch : our_choice.indices)
 			{
 				const REN_facade_template_t& t = bestFloor->templates[ch];
 				double segMult = seg_length * t.bounds[2];
 
-	printf("%.1f %.1f %.1f\n",t.bounds[0], t.bounds[1], t.bounds[2]);
+//	printf("%.1f %.1f %.1f\n",t.bounds[0], t.bounds[1], t.bounds[2]);
 				if(!info.nowallmesh && (want_thinWalls || (info.has_roof && t.bounds[1] > 0.5) || (!info.is_ring && t.bounds[0] > 0.5)))
 				for(auto m : t.meshes) // all meshes == maximum LOD detail
 				{
