@@ -31,6 +31,7 @@
 #include "DEMTables.h"
 #include "BitmapUtils.h"
 #include "MathUtils.h"
+#include "CompGeomDefs3.h"
 
 #if IBM
 #define AVOID_WIN32_FILEIO
@@ -1723,4 +1724,101 @@ bool	WriteNormalWithHeight(const string& out_file, const DEMGeo& elev, const DEM
 	DestroyBitmap(&image);
 
 	return true;	
+}
+
+
+const unsigned int k_height_table[] = {
+0,		207,	222,	174,
+1000,	223,	231,	196,
+2000,	207,	222,	174,
+3000,	255,	244,	219,
+5000,	247,	232,	184,
+7000,	242,	213,	139,
+9000,	228,	191,	155,
+12000,	238,	180,	127,
+99999,	180,	142,	63 };
+
+const unsigned int k_height_table_size = sizeof(k_height_table) / sizeof(k_height_table[1]);
+
+
+void get_rgb_for_height(float height_mtrs, unsigned char * rgb, double shading)
+{
+	for(int n = 0; n < k_height_table_size; n += 4)
+	{
+		float alt = k_height_table[n];
+		alt *= FT_TO_MTR;
+		if(height_mtrs < alt)
+		{
+			rgb[0] = k_height_table[n+3] * shading;
+			rgb[1] = k_height_table[n+2] * shading;
+			rgb[2] = k_height_table[n+1] * shading;
+			return;
+		}
+	}
+	rgb[0] = 255;
+	rgb[1] = 0;
+	rgb[2] = 255;
+}
+
+
+bool	WriteSectionalWithDEM(const string& out_file, const DEMGeo& in_elev)
+{
+	
+	int west = floor(in_elev.mWest);
+	int south = floor(in_elev.mSouth);
+	
+	char fold_name[64], file_name[64];
+	sprintf(fold_name,"%+03d%+04d",latlon_bucket(south),latlon_bucket(west));
+	sprintf(file_name,"%+03d%+04d",south,west);
+
+	string elev_name(out_file);
+
+	ImageInfo elev = { 0 };
+	
+	if(CreateNewBitmap(1024,1024,3,&elev))
+		return false;
+
+//	float y_mtr = DEG_TO_MTR_LAT / ((float) elev.mHeight-1.0f);
+//	double lat_avg = (elev.mSouth + elev.mNorth) * 0.5;
+//	float x_mtr = DEG_TO_MTR_LAT * cosf(lat_avg * DEG_TO_RAD) / ((float) elev.mWidth-1.0f);
+
+	Vector3	lighting(
+				-0.94 * 0.707106781186548,
+				 0.34 * 0.707106781186548,
+						0.707106781186548);
+
+	for(int y = 0; y < elev.height; ++y)
+	for(int x = 0; x < elev.width; ++x)
+	{
+		// This is the sampling equation for are pixels.
+//			double lon = double_interp(0,dem_data->west, elev.width, dem_data->east, ((double) x) + 0.5);
+//			double lat = double_interp(0,dem_data->south, elev.height, dem_data->north, ((double) y) + 0.5);
+
+		// This is the sampling equation for point pixels.
+		double lon = double_interp(0,in_elev.mWest, elev.width-1, in_elev.mEast, x);
+		double lat = double_interp(0,in_elev.mSouth, elev.height-1, in_elev.mNorth, y);
+		
+		float e = in_elev.value_linear(lon, lat);
+		
+		float dx = in_elev.lon_to_x(lon);
+		float dy = in_elev.lat_to_y(lat);
+		
+		float 	grad_x = in_elev.gradient_x_bilinear(dx, dy);
+		float	grad_y = in_elev.gradient_y_bilinear(dx, dy);
+
+		Vector3 vec_up(0, 1.0, grad_y);
+		Vector3 vec_rt(1.0, 0, grad_x);
+		Vector3	n(vec_rt.cross(vec_up));
+		n.normalize();
+
+		double shad = doblim(0.5 + 0.5 * n.dot(lighting),0.0,1.0);
+
+		get_rgb_for_height(e, elev.data + elev.width * y * 3 + x * 3, shad);
+	}
+	
+	if(WriteBitmapToPNG(&elev, elev_name.c_str(), NULL, 0, 2.2f))
+		printf("WARNING: png write of %s failed.\n", elev_name.c_str());
+	
+	DestroyBitmap(&elev);
+	return true;
 }

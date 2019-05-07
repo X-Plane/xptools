@@ -976,6 +976,19 @@ static int DoSaveNormals(const vector<const char *>& args)
 	return 0;
 }
 
+static int DoSaveSectional(const vector<const char *>& args)
+{
+	if(!WriteSectionalWithDEM(args[0],
+		gDem[dem_Elevation]))
+		{
+			fprintf(stderr, "Save Sectional to %s failed.\n", args[0]);
+			return 1;
+		}
+	return 0;
+}
+
+
+
 static	GISTool_RegCmd_t		sDemCmds[] = {
 { "-hgt", 			1, 1, DoHGTImport, 			"Import 16-bit BE raw HGT DEM.", "" },
 { "-hgtzip", 		1, 1, DoHGTExport, 			"Export 16-bit BE raw HGT DEM.", "" },
@@ -999,6 +1012,7 @@ static	GISTool_RegCmd_t		sDemCmds[] = {
 { "-raster_merge", 4, 4, DoRasterMerge,			"Merge two raster layers.", DoRasterMerge_HELP },
 { "-raster_watershed", 3, 3, DoRasterWatershed,	"Calculate watersheds from one layer, dump in another", DoRasterWatershed_HELP },
 { "-save_normals", 1, 1, DoSaveNormals, "", "" },
+{ "-save_sectional", 1,1, DoSaveSectional, "" , "" },
 { "-applyoverlay",	0, 0, DoApply	,			"Use overlay.", "" },
 { 0, 0, 0, 0, 0, 0 }
 };
