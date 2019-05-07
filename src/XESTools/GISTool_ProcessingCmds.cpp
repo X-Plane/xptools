@@ -293,11 +293,13 @@ static int DoCalcMesh(const vector<const char *>& args)
 static int DoBurnAirports(const vector<const char *>& args)
 {
 	verify_map_bounds();
+	if(barf_on_tiny_map_faces()) DebugAssertWithExplanation(!count_tiny_faces(gMap), "There were one or more tiny faces in your input data");
 	
 	if (gVerbose)	printf("Burning airports into vector map...\n");
 	ProcessAirports(gApts, gMap, gDem[dem_Elevation], gDem[dem_UrbanTransport], true, true, true, gProgress);
 	
 	verify_map_bounds();
+	if(barf_on_tiny_map_faces()) DebugAssertWithExplanation(!count_tiny_faces(gMap), "There were one or more tiny faces in your input data");
 	return 0;
 }
 
@@ -1451,7 +1453,10 @@ static int simplify_tiny_faces_into_their_neighbors(Pmwx &map)
 	if(tiny_faces)
 	{
 		SimplifyMap(map, false, nullptr);
-		DebugAssert(count_tiny_faces(map) < tiny_faces);
+		if(barf_on_tiny_map_faces())
+		{
+			DebugAssert(count_tiny_faces(map) < tiny_faces);
+		}
 	}
 	return tiny_faces;
 }
@@ -1459,8 +1464,11 @@ static int simplify_tiny_faces_into_their_neighbors(Pmwx &map)
 static int MergeTylersAg(const vector<const char *>& args)
 {
 #if DEV
-	DebugAssertWithExplanation(!count_tiny_faces(gMap), "There were one or more tiny faces in your input data");
-	DebugAssertWithExplanation(!count_tiny_faces(s_autogen_grid), "There were one or more tiny faces in your autogen grid data");
+	if(barf_on_tiny_map_faces())
+	{
+		DebugAssertWithExplanation(!count_tiny_faces(gMap), "There were one or more tiny faces in your input data");
+		DebugAssertWithExplanation(!count_tiny_faces(s_autogen_grid), "There were one or more tiny faces in your autogen grid data");
+	}
 #endif
 
 
@@ -1476,7 +1484,7 @@ static int MergeTylersAg(const vector<const char *>& args)
 
 	for(Pmwx::Face_handle f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
 	{
-		DebugAssert(f->is_unbounded() || cgal2ben(f, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat).area() > one_square_meter_in_degrees);
+		//DebugAssert(f->is_unbounded() || cgal2ben(f, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat).area() > one_square_meter_in_degrees);
 		GIS_face_data &fd = f->data();
 		if(!f->is_unbounded() && contains(s_terrain_types_to_not_touch, fd.mTerrainType))
 		{
@@ -1540,7 +1548,7 @@ static int MergeTylersAg(const vector<const char *>& args)
 
 #if DEV
 	const int remaining_tiny_faces = count_tiny_faces(gMap);
-	if(remaining_tiny_faces)
+	if(remaining_tiny_faces && barf_on_tiny_map_faces())
 	{
 		fprintf(stderr, "Tiny faces: %d (had %d before our simplification attempt)\n", remaining_tiny_faces, initial_tiny_faces);
 		DebugAssertWithExplanation(remaining_tiny_faces == 0, "It appears Tyler screwed up the simplification step for tiny faces (above)");

@@ -67,8 +67,8 @@ static void check_map_sanity()
 			Pmwx::Ccb_halfedge_circulator circ, stop;
 			circ = stop = *h;
 			
-			cerr << "Circ " << circ->source()->point() << "," << circ->target()->point() << "\n";
-			cerr << "stop " << stop->source()->point() << "," << stop->target()->point() << "\n";
+			//cerr << "Circ " << circ->source()->point() << "," << circ->target()->point() << "\n";
+			//cerr << "stop " << stop->source()->point() << "," << stop->target()->point() << "\n";
 
 			do {
 				Point_2 p = circ->target()->point();
