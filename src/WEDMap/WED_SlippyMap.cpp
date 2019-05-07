@@ -164,7 +164,7 @@ void	WED_SlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 
 	double ppm = zoomer->GetPPM();
 	int z_max = get_zl_for_map(ppm, map_bounds[1]);
-	int min_zoom = abs(map_bounds[1]) > 60.0 ? MIN_ZOOM-1 : MIN_ZOOM; // get those ant/artic designers a bit more visibility
+	int min_zoom = flt_abs(map_bounds[1]) > 60.0 ? MIN_ZOOM-1 : MIN_ZOOM; // get those ant/artic designers a bit more visibility
 	if(z_max < min_zoom) return;
 
 	int want = 0, got = 0, bad = 0;

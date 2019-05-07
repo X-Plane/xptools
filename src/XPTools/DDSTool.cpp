@@ -477,7 +477,7 @@ int main(int argc, char * argv[])
 
 	if (argc < 4) {
 		printf("Usage: %s <convert mode> <options> <input_file> <output_file>|-\n",argv[0]);
-		printf("Usage: %s --quilt <input_file> <width> <height> <patch size> <overlap> <trials> <output_files>n",argv[0]);
+		printf("Usage: %s --quilt <input_file> <width> <height> <patch size> <overlap> <trials> <output_files>\n",argv[0]);
 		printf("       %s --version\n",argv[0]);
 		exit(1);
 	}
