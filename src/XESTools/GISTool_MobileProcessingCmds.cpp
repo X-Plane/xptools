@@ -1087,7 +1087,7 @@ static int MergeTylersAg(const vector<const char *>& args)
 	return 0;
 }
 
-static GISTool_RegCmd_t s_mobile_cmds[] = {
+static constexpr GISTool_RegCmd_t s_mobile_cmds[] = {
 	{ "-autogenterrain",	0, 0, DoMobileAutogenTerrain,	"Mobile 'orthophoto'-based autogen.",	"" },
 	{ "-merge_ag_terrain",	0, 0, MergeTylersAg,			"Merge AG terrain into the map.",		"" },
 	{ 0, 0, 0, 0, 0, 0 }

@@ -64,7 +64,7 @@ void	GISTool_RegisterCommand(
 }
 
 void	GISTool_RegisterCommands(
-				GISTool_RegCmd_t			cmds[])
+				const GISTool_RegCmd_t			cmds[])
 {
 	int n = 0;
 	while (cmds[n].cmdname)

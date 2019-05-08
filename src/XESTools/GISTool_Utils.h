@@ -51,7 +51,7 @@ void	GISTool_RegisterCommand(
 						const char *		inHelpLong);
 
 void	GISTool_RegisterCommands(
-				GISTool_RegCmd_t			cmds[]);
+				const GISTool_RegCmd_t			cmds[]);
 
 bool	GISTool_FindCommand(
 						const char *		inName,
