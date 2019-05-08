@@ -751,7 +751,7 @@ static ag_terrain_dsf_description initialize_autogen_pmwx()
 			if(ben_face.area() == 0) { cout << "Zero area: "     << ben_face.wolfram_alpha() << "\n";
 				cout << "GetMapFaceAreaMeters(f): " << GetMapFaceAreaMeters(f) << "\n"; }
 			DebugAssert(ben_face.is_ccw());
-			DebugAssert(ben_face.area() > one_square_meter_in_degrees);
+			DebugAssert(ben_face.area() > one_square_meter_in_degrees || !barf_on_tiny_map_faces());
 		}
 	}
 #endif
@@ -1580,7 +1580,7 @@ static int MergeTylersAg(const vector<const char *>& args)
 		if(ter_enum != NO_VALUE)
 		{
 			const Polygon2 ben_face = cgal2ben(f, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat); // not *that* Ben face! https://secure.gravatar.com/ben2212171
-			DebugAssert(ben_face.area() > one_square_meter_in_degrees);
+			DebugAssert(ben_face.area() > one_square_meter_in_degrees || !barf_on_tiny_map_faces());
 
 			// Place the associated OBJs based on this tile's AGP spec
 			map<int, agp_t>::const_iterator agp = agps.find(ter_enum);
