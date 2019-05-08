@@ -74,13 +74,10 @@ static void check_map_sanity()
 				Point_2 p = circ->target()->point();
 				bool bad_x = p.x() != gMapWest && p.x() != gMapEast;
 				bool bad_y = p.y() != gMapSouth && p.y() != gMapNorth;
-				cerr << p;
-				cerr.flush();
 
 				if(bad_x && bad_y)
 				{
-					cerr << p << "\n";
-					cerr.flush();
+					cerr << "Bad point " << p << std::endl;
 					Assert(!"BAD XY");
 				}
 				
