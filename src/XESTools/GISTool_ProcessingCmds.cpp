@@ -902,6 +902,47 @@ string ter_lib_path_to_agp_disk_path(string lib_path)
 	return "Global Scenery/Mobile_Autogen_Lib/" + lib_path;
 }
 
+map<int, agp_t> read_mobile_agps()
+{
+	map<int, agp_t> agps; // maps terrain enum to the AGP describing its building placements
+	for(int ter = terrain_PseudoOrthophoto; ter < terrain_PseudoOrthophotoEnd; ++ter)
+	{
+		const int rule_name = find_terrain_rule_name(ter);
+		NaturalTerrainInfoMap::const_iterator ter_info = gNaturalTerrainInfo.find(rule_name);
+		if(ter_info != gNaturalTerrainInfo.end())
+		{
+			const string &ter_lib_path = ter_info->second.base_tex;
+			const string agp_disk_path = ter_lib_path_to_agp_disk_path(ter_lib_path);
+			agp_t agp;
+			const bool loaded = load_agp(agp_disk_path, agp);
+			if(loaded)
+			{
+				agps.insert(make_pair(ter, agp));
+			}
+			else
+			{
+				fprintf(stderr, "Couldn't find AGP %s", agp_disk_path.c_str());
+			}
+			DebugAssert(loaded);
+		}
+	}
+	return agps;
+}
+
+map<string, int> register_obj_tokens_for_agps(const map<int, agp_t> & agps)
+{
+	map<string, int> obj_tokens; // maps agp_t::obj::name values to the global enums we register for them
+	for(const auto & terrain_enum_and_agp : agps)
+	for(const agp_t::obj & obj : terrain_enum_and_agp.second.objs)
+	{
+		const string no_ext = FILE_get_file_name_wo_extensions(obj.name);
+		const int token = NewToken(no_ext.c_str());
+		DebugAssert(token > NUMBER_OF_DEFAULT_TOKENS);
+		obj_tokens.insert(make_pair(obj.name, token));
+	}
+	return obj_tokens;
+}
+
 ortho_urbanization conform_terrain_to_expectations(const ortho_urbanization &non_matching_tile)
 {
 	vector<int> out = non_matching_tile.to_vector();
@@ -1496,42 +1537,6 @@ static int MergeTylersAg(const vector<const char *>& args)
 	MapOverlay(intermediate_autogen_on_top, gMap, final);
 	gMap = final;
 
-	//--------------------------------------------------------------------------------------------------------
-	// Prep the AGPs we will read OBJ point positions from.
-	// Mobile doesn't support AGPs directly, so instead we treat the AGPs as a *spec* from which we
-	// read the relative locations of a bunch of OBJs; those OBJs then get baked directly into the DSF.
-	//--------------------------------------------------------------------------------------------------------
-	map<int, agp_t> agps; // maps terrain enum to the AGP describing its building placements
-	map<string, int> obj_tokens; // maps agp_t::obj::name values to the global enums we register for them
-	for(int ter = terrain_PseudoOrthophoto; ter < terrain_PseudoOrthophotoEnd; ++ter)
-	{
-		const int rule_name = find_terrain_rule_name(ter);
-		NaturalTerrainInfoMap::const_iterator ter_info = gNaturalTerrainInfo.find(rule_name);
-		if(ter_info != gNaturalTerrainInfo.end())
-		{
-			const string &ter_lib_path = ter_info->second.base_tex;
-			const string agp_disk_path = ter_lib_path_to_agp_disk_path(ter_lib_path);
-			agp_t agp;
-			const bool loaded = load_agp(agp_disk_path, agp);
-			if(loaded)
-			{
-				agps.insert(make_pair(ter, agp));
-				for(vector<agp_t::obj>::const_iterator obj = agp.objs.begin(); obj != agp.objs.end(); ++obj)
-				{
-					const string no_ext = FILE_get_file_name_wo_extensions(obj->name);
-					const int token = NewToken(no_ext.c_str());
-					DebugAssert(token > NUMBER_OF_DEFAULT_TOKENS);
-					obj_tokens.insert(make_pair(obj->name, token));
-				}
-			}
-			else
-			{
-				fprintf(stderr, "Couldn't find AGP %s", agp_disk_path.c_str());
-			}
-			DebugAssert(loaded);
-		}
-	}
-
 	SimplifyMap(gMap, false, nullptr);
 	// Now go through the map and clean up any teeny tiny faces that we've inadvertently induced.
 	// We potentially repeat this a few times, since the first merge may end up just joining two
@@ -1556,11 +1561,17 @@ static int MergeTylersAg(const vector<const char *>& args)
 #endif
 
 	//--------------------------------------------------------------------------------------------------------
+	// Prep the AGPs we will read OBJ point positions from.
+	// Mobile doesn't support AGPs directly, so instead we treat the AGPs as a *spec* from which we
+	// read the relative locations of a bunch of OBJs; those OBJs then get baked directly into the DSF.
+	//--------------------------------------------------------------------------------------------------------
+	const map<int, agp_t> agps = read_mobile_agps(); // maps terrain enum to the AGP describing its building placements
+	const map<string, int> obj_tokens = register_obj_tokens_for_agps(agps); // maps agp_t::obj::name values to the global enums we register for them
+
+	//--------------------------------------------------------------------------------------------------------
 	// Place OBJs
 	// This must come *after* the map merge to ensure we don't stick buildings in the water!
 	//--------------------------------------------------------------------------------------------------------
-	const int lon_min = gDem[dem_ClimStyle].mWest;
-	const int lat_min = gDem[dem_ClimStyle].mSouth;
 	for(Pmwx::Face_handle f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
 	{
 		GIS_face_data &fd = f->data();
