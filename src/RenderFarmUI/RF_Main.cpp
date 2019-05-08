@@ -67,6 +67,7 @@
 #include "AptElev.h"
 #include "RF_Globals.h"
 #include "ParamDefs.h"
+#include "GISTool_MobileProcessingCmds.h"
 
 
 // This is stuff only needed to hack around with TIGER files.
@@ -550,6 +551,7 @@ void	XGrindInit(void)
 		RegisterDumpCmds();
 		RegisterVectorCmds();
 		RegisterProcessingCmds();
+		RegisterMobileProcessingCmds();
 		RegisterObsCmds();
 		RegisterMiscCmds();
 

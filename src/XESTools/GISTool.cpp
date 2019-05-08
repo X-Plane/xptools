@@ -36,6 +36,8 @@
 #include "GISTool_ImageCmds.h"
 #include "GISTool_ProcessingCmds.h"
 #include "GISTool_VectorCmds.h"
+#include "GISTool_MobileProcessingCmds.h"
+
 #if USE_CHUD
 #include <CHUD/CHUD.h>
 #endif
@@ -121,6 +123,7 @@ int	main(int argc, char * argv[])
 		RegisterDumpCmds();
 		RegisterVectorCmds();
 		RegisterProcessingCmds();
+		RegisterMobileProcessingCmds();
 		RegisterObsCmds();
 		RegisterMiscCmds();
 		RegisterImageCmds();
