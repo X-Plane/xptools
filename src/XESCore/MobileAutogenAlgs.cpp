@@ -149,7 +149,7 @@ Bbox2 get_ortho_grid_square_bounds(const CDT::Face_handle &tri, const Bbox2 &con
 	DebugAssert(out.xmin() < out.xmax());
 	DebugAssert(out.ymin() < out.ymax());
 	DebugAssert(containing_dsf.contains(out));
-	DebugAssert(out.contains(centroid));
+	DebugAssert(!barf_on_tiny_map_faces() || out.contains(centroid));
 	DebugAssert(out.area() > 0);
 
 	// Tyler says: We can't actually guarantee the bounds on the point due to both double precision limits.
