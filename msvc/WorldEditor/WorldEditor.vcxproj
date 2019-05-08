@@ -57,11 +57,8 @@
     <ClCompile Include="..\..\src\lib_json\src\lib_json\json_writer.cpp" />
     <ClCompile Include="..\..\src\Network\b64.c" />
     <ClCompile Include="..\..\src\Network\curl_http.cpp" />
-    <ClCompile Include="..\..\src\Network\HTTPClient.cpp" />
     <ClCompile Include="..\..\src\Network\PCSBSocket.win.cpp" />
     <ClCompile Include="..\..\src\Network\PCSBSocketUDP.win.cpp" />
-    <ClCompile Include="..\..\src\Network\Terraserver.cpp" />
-    <ClCompile Include="..\..\src\Network\XMLObject.cpp" />
     <ClCompile Include="..\..\src\Obj\ObjConvert.cpp" />
     <ClCompile Include="..\..\src\Obj\ObjDraw.cpp" />
     <ClCompile Include="..\..\src\Obj\ObjPointPool.cpp" />
@@ -225,10 +222,6 @@
     <ClCompile Include="..\..\src\WEDMap\WED_VertexTool.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_WorldMapLayer.cpp" />
     <ClCompile Include="..\..\src\WEDNetwork\RAII_Classes.cpp" />
-    <ClCompile Include="..\..\src\WEDNetwork\WED_Connection.cpp" />
-    <ClCompile Include="..\..\src\WEDNetwork\WED_NWInfoLayer.cpp" />
-    <ClCompile Include="..\..\src\WEDNetwork\WED_NWLinkAdapter.cpp" />
-    <ClCompile Include="..\..\src\WEDNetwork\WED_Server.cpp" />
     <ClCompile Include="..\..\src\WEDProperties\WED_PropertyPane.cpp" />
     <ClCompile Include="..\..\src\WEDProperties\WED_PropertyTable.cpp" />
     <ClCompile Include="..\..\src\WEDTCE\WED_TCE.cpp" />
@@ -313,11 +306,8 @@
     <ClInclude Include="..\..\src\Interfaces\ISelection.h" />
     <ClInclude Include="..\..\src\Interfaces\ITexMgr.h" />
     <ClInclude Include="..\..\src\Network\curl_http.h" />
-    <ClInclude Include="..\..\src\Network\HTTPClient.h" />
     <ClInclude Include="..\..\src\Network\PCSBSocket.h" />
     <ClInclude Include="..\..\src\Network\PCSBSocketUDP.h" />
-    <ClInclude Include="..\..\src\Network\TerraServer.h" />
-    <ClInclude Include="..\..\src\Network\XMLObject.h" />
     <ClInclude Include="..\..\src\Obj\ObjConvert.h" />
     <ClInclude Include="..\..\src\Obj\ObjDraw.h" />
     <ClInclude Include="..\..\src\Obj\ObjPointPool.h" />
@@ -482,11 +472,6 @@
     <ClInclude Include="..\..\src\WEDMap\WED_VertexTool.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_WorldMapLayer.h" />
     <ClInclude Include="..\..\src\WEDNetwork\RAII_Classes.h" />
-    <ClInclude Include="..\..\src\WEDNetwork\WED_Connection.h" />
-    <ClInclude Include="..\..\src\WEDNetwork\WED_NWDefs.h" />
-    <ClInclude Include="..\..\src\WEDNetwork\WED_NWInfoLayer.h" />
-    <ClInclude Include="..\..\src\WEDNetwork\WED_NWLinkAdapter.h" />
-    <ClInclude Include="..\..\src\WEDNetwork\WED_Server.h" />
     <ClInclude Include="..\..\src\WEDProperties\WED_PropertyPane.h" />
     <ClInclude Include="..\..\src\WEDProperties\WED_PropertyTable.h" />
     <ClInclude Include="..\..\src\WEDTCE\WED_TCE.h" />

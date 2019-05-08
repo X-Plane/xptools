@@ -34,6 +34,7 @@
 
 #if IBM
 #include "GUI_Unicode.h"
+#define aligned_alloc(s,p) _aligned_malloc(s,p)
 #endif
 
 /*

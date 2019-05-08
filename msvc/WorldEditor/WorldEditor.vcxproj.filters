@@ -411,18 +411,6 @@
     <ClCompile Include="..\..\src\WEDMap\WED_VertexTool.cpp">
       <Filter>WEDMap</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\WEDNetwork\WED_Connection.cpp">
-      <Filter>WEDNetwork</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\WEDNetwork\WED_NWInfoLayer.cpp">
-      <Filter>WEDNetwork</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\WEDNetwork\WED_NWLinkAdapter.cpp">
-      <Filter>WEDNetwork</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\WEDNetwork\WED_Server.cpp">
-      <Filter>WEDNetwork</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\WEDProperties\WED_PropertyPane.cpp">
       <Filter>WEDProperties</Filter>
     </ClCompile>
@@ -603,16 +591,7 @@
     <ClCompile Include="..\..\src\Network\PCSBSocketUDP.win.cpp">
       <Filter>Network</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Network\Terraserver.cpp">
-      <Filter>Network</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Network\XMLObject.cpp">
-      <Filter>Network</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Network\b64.c">
-      <Filter>Network</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Network\HTTPClient.cpp">
       <Filter>Network</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\UI\XWin.win.cpp">
@@ -786,7 +765,9 @@
     <ClCompile Include="..\..\src\WEDMap\WED_SlippyMap.cpp">
       <Filter>WEDMap</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Obj\ObjConvert.cpp" />
+    <ClCompile Include="..\..\src\Obj\ObjConvert.cpp">
+      <Filter>Obj</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\WEDCore\WED_Application.h">
@@ -1134,21 +1115,6 @@
     <ClInclude Include="..\..\src\WEDMap\WED_WorldMapLayer.h">
       <Filter>WEDMap</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\WEDNetwork\WED_Connection.h">
-      <Filter>WEDNetwork</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\WEDNetwork\WED_NWDefs.h">
-      <Filter>WEDNetwork</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\WEDNetwork\WED_NWInfoLayer.h">
-      <Filter>WEDNetwork</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\WEDNetwork\WED_NWLinkAdapter.h">
-      <Filter>WEDNetwork</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\WEDNetwork\WED_Server.h">
-      <Filter>WEDNetwork</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\WEDProperties\WED_PropertyPane.h">
       <Filter>WEDProperties</Filter>
     </ClInclude>
@@ -1356,19 +1322,10 @@
     <ClInclude Include="..\..\src\Obj\XObjReadWrite.h">
       <Filter>Obj</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Network\HTTPClient.h">
-      <Filter>Network</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\Network\PCSBSocket.h">
       <Filter>Network</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Network\PCSBSocketUDP.h">
-      <Filter>Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Network\TerraServer.h">
-      <Filter>Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Network\XMLObject.h">
       <Filter>Network</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\UI\XWin.h">
@@ -1560,7 +1517,9 @@
     <ClInclude Include="..\..\src\WEDMap\WED_SlippyMap.h">
       <Filter>WEDMap</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Obj\ObjConvert.h" />
+    <ClInclude Include="..\..\src\Obj\ObjConvert.h">
+      <Filter>Obj</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\src\WEDResources\about.png">
