@@ -1570,9 +1570,9 @@ static int MergeTylersAg(const vector<const char *>& args)
 
 	//--------------------------------------------------------------------------------------------------------
 	// Place OBJs
-	// This must come *after* the map merge to ensure we don't stick buildings in the water!
+	// This must come *after* the map merge to ensure we don't stick buildings in the water or in airport boundaries
 	//--------------------------------------------------------------------------------------------------------
-	for(Pmwx::Face_handle f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
+	for(auto & f : gMap.face_handles())
 	{
 		GIS_face_data &fd = f->data();
 		const int ter_enum = ag_terrain_type(fd);
@@ -1586,21 +1586,21 @@ static int MergeTylersAg(const vector<const char *>& args)
 			map<int, agp_t>::const_iterator agp = agps.find(ter_enum);
 			if(agp != agps.end())
 			{
-				for(vector<agp_t::obj>::const_iterator obj = agp->second.objs.begin(); obj != agp->second.objs.end(); ++obj)
+				for(const agp_t::obj & obj : agp->second.objs)
 				{
 					// Is this OBJ within this face's bounds?
 					// Note that mTemp1 and mTemp2 were previously set to the containing grid point's x & y
-					const Point2 loc = obj_rel_placement_to_lat_lon(*obj, agp->second, s_dsf_desc, fd.mTemp1, fd.mTemp2, fd.mRotationDeg);
+					const Point2 loc = obj_rel_placement_to_lat_lon(obj, agp->second, s_dsf_desc, fd.mTemp1, fd.mTemp2, fd.mRotationDeg);
 					const bool face_contains_obj = ben_face.inside(loc);
 					if(face_contains_obj)
 					{
 						GISObjPlacement_t placement;
-						map<string, int>::const_iterator it = obj_tokens.find(obj->name);
+						map<string, int>::const_iterator it = obj_tokens.find(obj.name);
 						DebugAssert(it != obj_tokens.end());
 						placement.mRepType = it->second;
 						DebugAssert(intrange(placement.mRepType, NUMBER_OF_DEFAULT_TOKENS + 1, gTokens.size() - 1));
 						placement.mLocation = loc;
-						placement.mHeading = dobwrap(obj->r + fd.mRotationDeg, 0, 360);
+						placement.mHeading = dobwrap(obj.r + fd.mRotationDeg, 0, 360);
 						placement.mDerived = true;
 						fd.mObjs.push_back(placement);
 					}
