@@ -26,12 +26,11 @@
 #include "FileUtils.h"
 #include "AssertUtils.h"
 #include "MathUtils.h"
-#include <errno.h>
-#include <string.h>
 #include "Interpolation.h"
+#include "squish.h"
 
-#include <squish.h>
-#include <pthread.h>
+#include <errno.h>
+#include <thread>
 
 #if IBM
 #include "GUI_Unicode.h"
@@ -1758,9 +1757,8 @@ struct CompressImageData
 	int flags;
 };
 
-static void * CompressImageWorker(void * args)
+static void CompressImageWorker(CompressImageData * info)
 {
-	CompressImageData * info = (CompressImageData *)  args;
 	squish::CompressImage(info->img.data, info->img.width, info->img.height, info->dst_mem, info->flags);
 }
 
@@ -1846,12 +1844,12 @@ int	WriteBitmapToDDS_MT(struct ImageInfo& ioImage, int dxt, const char * file_na
 	itself takes time, 3 threads for the main texture is not mesureably faster unless using SSE optimized mipmap scaling */
 
 	#define MAX_WORKER_THREADS 2
-	pthread_t threads[MAX_WORKER_THREADS];
+	thread threads[MAX_WORKER_THREADS];
 	CompressImageData args[MAX_WORKER_THREADS];
 
 	/* don't waste time parallelizing so much for small textures, libsquish runs at 2+ Mpixels / sec */
 	int num_threads = (ioImage.height * ioImage.width >= 1024 * 1024) ? MAX_WORKER_THREADS : 1;
-	
+
 	int flags = (dxt == 1 ? squish::kDxt1 : (dxt == 3 ? squish::kDxt3 : squish::kDxt5)) | squish::kColourIterativeClusterFit;
 
 	for (int i = 0; i < num_threads; i++)
@@ -1864,8 +1862,8 @@ int	WriteBitmapToDDS_MT(struct ImageInfo& ioImage, int dxt, const char * file_na
 		args[i].img.data += start_line * ioImage.width * ioImage.channels;
 		args[i].dst_size = squish::GetStorageRequirements(args[i].img.width, args[i].img.height, args[i].flags);
 		args[i].dst_mem = aligned_alloc(64, args[i].dst_size);     // not strictly required, but when multi-threading - nice to know no chance of cache trashing here
-		int result_code = pthread_create(&threads[i], NULL, CompressImageWorker, &args[i]);
-		Assert(!result_code);
+
+		threads[i] = thread(CompressImageWorker, &args[i]);
 //		CompressImageWorker(&args[i]);
 	}
 	
@@ -1925,7 +1923,7 @@ int	WriteBitmapToDDS_MT(struct ImageInfo& ioImage, int dxt, const char * file_na
 	
 	for (int i = 0; i < num_threads; i++)
 	{
-		pthread_join(threads[i], NULL);
+		threads[i].join();
 		fwrite(args[i].dst_mem, args[i].dst_size, 1, fi);
 		free(args[i].dst_mem);
 	}
