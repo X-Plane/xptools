@@ -1,5 +1,6 @@
 #include "MobileAutogenAlgs.h"
 #include "MathUtils.h"
+#include "GISTool_Globals.h" // for barf_on_tiny_map_faces()
 
 ag_terrain_style choose_style(int dsf_lon_west, int dsf_lat_south)
 {
@@ -125,7 +126,7 @@ Bbox2 get_ortho_grid_square_bounds(const CDT::Face_handle &tri, const Bbox2 &con
 	// Only case when the centroid might not be inside the tri: if the tri is a sliver, and our floating point math blows up
 	#if DEV
 	static size_t s_slivers = 0;
-	if(tri_is_sliver(ben_tri))
+	if(barf_on_tiny_map_faces() && tri_is_sliver(ben_tri))
 	{
 		printf("Warning: found sliver #%ld\n", s_slivers++);
 		printf("Bounds:\n");
@@ -133,10 +134,10 @@ Bbox2 get_ortho_grid_square_bounds(const CDT::Face_handle &tri, const Bbox2 &con
 		{
 			printf("- (%0.18f, %0.18f)\n", ben_tri[v].x(), ben_tri[v].y());
 		}
+		DebugAssert(!tri_is_sliver(ben_tri));
 	}
+	DebugAssert(!barf_on_tiny_map_faces() || ben_tri.inside(centroid));
 	#endif
-	DebugAssert(!tri_is_sliver(ben_tri));
-	DebugAssert(ben_tri.inside(centroid));
 
 	const grid_coord_desc grid_pt = get_ortho_grid_xy(ben_tri.inside(centroid) ? centroid : ben_tri.front(), style);
 
