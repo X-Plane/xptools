@@ -69,6 +69,7 @@
 #define NO_NET !ROAD_EDITING
 #define NO_EXC 0
 
+
 static void debug_it(const vector<BezierPoint2>& pts)
 {
 	for(int n = 0; n < pts.size(); ++n)
@@ -134,7 +135,9 @@ public:
 	int					req_level_fac[7];
 
 	vector<string>		obj_table;
+	vector<string>		obj_table_names;  // basename of items only
 	vector<string>		pol_table;
+	vector<string>		pol_table_names;  // basename of items only
 	vector<string>		net_table;
 
 	WED_Thing *			master_parent;
@@ -250,6 +253,12 @@ public:
 	{
 		DSF_Importer * me = (DSF_Importer *) inRef;
 		me->obj_table.push_back(inPartialPath);
+		size_t pos = me->obj_table.back().find_last_of('/');
+		if(pos == string::npos)
+			pos = 0;
+		else
+			pos += 1;
+		me->obj_table_names.push_back(inPartialPath+pos);
 		return 1;
 	}
 
@@ -257,6 +266,13 @@ public:
 	{
 		DSF_Importer * me = (DSF_Importer *) inRef;
 		me->pol_table.push_back(inPartialPath);
+		size_t pos = me->pol_table.back().find_last_of('/');
+		if(pos == string::npos)
+			pos = 0;
+		else
+			pos += 1;
+		me->pol_table_names.push_back(inPartialPath+pos);
+
 		return 1;
 	}
 
@@ -342,7 +358,7 @@ public:
 			obj->SetDefaultMSL();
 		#endif
 		obj->SetHeading(inCoordinates[2]);
-		obj->SetName(me->obj_table[inObjectType]);
+		obj->SetName(me->obj_table_names[inObjectType]);
 		obj->SetParent(me->get_cat_parent(dsf_cat_objects),me->get_cat_parent(dsf_cat_objects)->CountChildren());
 		obj->SetShowLevel(me->GetShowForObjID(inObjectType));
 #endif
@@ -605,12 +621,12 @@ public:
 		if(me->poly)
 		{
 			me->poly->SetParent(me->get_cat_parent(cat),me->get_cat_parent(cat)->CountChildren());
-			me->poly->SetName(r);
+			me->poly->SetName(me->pol_table_names[inPolygonType]);
 		}
 		if(me->ring)
 		{
 			me->ring->SetParent(me->get_cat_parent(cat),me->get_cat_parent(cat)->CountChildren());
-			me->ring->SetName(r);
+			me->ring->SetName(me->pol_table_names[inPolygonType]);
 		}
 	}
 

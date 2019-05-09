@@ -1118,6 +1118,7 @@ static int	DSF_HeightRangeRecursive(WED_Thing * what, double& out_msl_min, doubl
 	int found = 0;		// true if we found at least 1 min/max
 	int any_inside = 0;	// true if we found ANYTHING inside at all?
 	int nn = what->CountChildren();
+
 	for(int n = 0; n < nn; ++n)
 	{
 		double msl_min, msl_max;
@@ -1450,6 +1451,7 @@ static int	DSF_ExportTileRecursive(
 		}
 		return real_thingies;
 	}
+	
 	if(show_level == 6)
 	{	
 		//------------------------------------------------------------------------------------------------------------
@@ -1697,7 +1699,6 @@ static int	DSF_ExportTileRecursive(
 			}
 			return real_thingies;
 		}
-
 		//------------------------------------------------------------------------------------------------------------
 		// DRAPED POLYGON
 		//------------------------------------------------------------------------------------------------------------
@@ -1763,7 +1764,7 @@ static int	DSF_ExportTileRecursive(
 			orth->GetResource(r);
 
 			if(orth->IsNew())
-			  {
+			{
 				string msg;
 				what->GetName(msg);
 
@@ -1957,19 +1958,23 @@ static int	DSF_ExportTileRecursive(
 	#endif // ROAD_EDITING
 	}
 
-	if((apt = dynamic_cast<WED_Airport*>(what)) != NULL)
-	{
-		apt->GetICAO(r);
-		idx = io_table.accum_filter(r.c_str());
-		cbs->SetFilter_f(idx,writer);
-		io_table.set_filter(idx);
+	if(io_table.cur_filter >= 0) // Nested airports aren't allowed, so avoid another lengthy dynamic_cast<> that is actually *very* rare to come out positive
+	{	
+		if((apt = dynamic_cast<WED_Airport*>(what)) != NULL)
+		{
+			apt->GetICAO(r);
+			idx = io_table.accum_filter(r.c_str());
+			cbs->SetFilter_f(idx,writer);
+			io_table.set_filter(idx);
+		}
 	}
+	else apt = NULL;	
 	
 	//------------------------------------------------------------------------------------------------------------
-	// RECURSION - only for things that can possibly contain more DSF content
+	// RECURSION 
 	//------------------------------------------------------------------------------------------------------------
 	
-	if(apt || dynamic_cast<WED_Group *>(what) != NULL)
+	if(apt || dynamic_cast<WED_Group *>(what) != NULL) // only recurse if there is actually a possibility of more DSF content in there
 	{
 		int cc = what->CountChildren();
 		for (int c = 0; c < cc; ++c)

@@ -1002,7 +1002,7 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 		for(int i = 0; i < 360; ++i)                                       // in complex multi-time or ceiling flows settings when ALL prior flows have time rules that together cover 24hrs.
 			sWindsCov[i] = max(sWindThisFlow[i], sWindsCov[i]);             // Such is bad style - one shold rather have one flow with a time rule followed by a time-unlimited flow.
 
-	#if !GATEWAY_IMPORT_FEATURES
+#if !GATEWAY_IMPORT_FEATURES
 
 	map<int,vector<WED_ATCRunwayUse*> >		arrival_rwys;
 	map<int,vector<WED_ATCRunwayUse*> >		departure_rwys;
@@ -1053,11 +1053,9 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 			}
 		}
 	}
-	#endif
-
 	if (arrival_rwys.empty() || departure_rwys.empty())
 		msgs.push_back(validation_error_t("Airport flow must specify at least one active arrival and one departure runway", err_flow_no_arr_or_no_dep_runway, flow, apt));
-
+#endif
 }
 
 static void ValidateATC(WED_Airport* apt, validation_error_vector& msgs, set<int>& legal_rwy_oneway, set<int>& legal_rwy_twoway)
