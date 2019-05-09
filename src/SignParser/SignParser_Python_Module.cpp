@@ -2,39 +2,31 @@
 #include <string>
 #include "SignParser_Canonicalize.h"
 
+static constexpr const char * s_module_name = "xplane_taxi_sign";
+static PyObject * py_canonicalize_sign(PyObject * self, PyObject * args);
+
 extern "C" {
-	PyMODINIT_FUNC inittaxi_signs(void);
-	static PyObject * py_canonicalize_sign(PyObject * self, PyObject * args);
+	static PyMethodDef taxi_sign_methods[] = {
+		{"canonicalize", py_canonicalize_sign, METH_VARARGS, "Canonicalize a taxi sign."},
+		{NULL, NULL, 0, NULL}        /* Sentinel */
+	};
+
+	static struct PyModuleDef taxi_sign_module = {
+		PyModuleDef_HEAD_INIT,
+		s_module_name,
+		NULL, /* module documentation, may be NULL */
+		-1,   /* size of per-interpreter state of the module,
+				 or -1 if the module keeps state in global variables. */
+		taxi_sign_methods
+	};
 }
 
 static PyObject * SignError;
-static PyMethodDef TaxiSignMethods[] = {
-		{"canonicalize", py_canonicalize_sign, METH_VARARGS, "Canonicalize a taxi sign."},
-		{NULL, NULL, 0, NULL}        /* Sentinel */
-};
 
-PyMODINIT_FUNC inittaxi_signs(void)
+PyMODINIT_FUNC PyInit_xplane_taxi_sign(void)
 {
-	PyObject * m = Py_InitModule("taxi_signs", TaxiSignMethods);
-	if(m != NULL)
-	{
-		SignError = PyErr_NewException("taxi_signs.error", NULL, NULL);
-		Py_INCREF(SignError);
-		PyModule_AddObject(m, "error", SignError);
-	}
+	return PyModule_Create(&taxi_sign_module);
 }
-
-//int main(int argc, char *argv[])
-//{
-//	/* Pass argv[0] to the Python interpreter */
-//	Py_SetProgramName(argv[0]);
-//
-//	/* Initialize the Python interpreter.  Required. */
-//	Py_Initialize();
-//
-//	/* Add a static module */
-//	inittaxi_signs();
-//}
 
 static PyObject * py_canonicalize_sign(PyObject * self, PyObject * args)
 {
@@ -56,5 +48,32 @@ static PyObject * py_canonicalize_sign(PyObject * self, PyObject * args)
 	{
 		Py_RETURN_NONE;
 	}
+}
+
+int main(int argc, char *argv[])
+{
+	wchar_t * program = Py_DecodeLocale(argv[0], NULL);
+	if(!program)
+	{
+		fprintf(stderr, "Fatal error: cannot decode argv[0]\n");
+		exit(1);
+	}
+	
+	/* Add a built-in module, before Py_Initialize */
+	PyImport_AppendInittab(s_module_name, PyInit_xplane_taxi_sign);
+
+	/* Pass argv[0] to the Python interpreter */
+	Py_SetProgramName(program);
+	
+	/* Initialize the Python interpreter.  Required. */
+	Py_Initialize();
+	
+	/* Optionally import the module; alternatively,
+	 import can be deferred until the embedded script
+	 imports it. */
+	PyImport_ImportModule(s_module_name);
+	
+	PyMem_RawFree(program);
+	return 0;
 }
 
