@@ -88,7 +88,7 @@ struct tile_assignment
 	bool operator<(const tile_assignment &other) const { return hash() < other.hash(); }
 
 	int ter_enum;
-	int rotation_deg;
+	int rotation_deg; // clockwise
 };
 
 // Returns a ter enum plus a rotation in degrees for a tile that is interchangable with the one you passed in.

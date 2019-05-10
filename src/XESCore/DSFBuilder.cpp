@@ -931,7 +931,7 @@ static int IsAliased(int lu)
 	return 0;
 }
 
-tex_proj_info project_ortho(const CDT::Face_handle &face, const DEMGeo &dsf_bounds, int rotation_deg)
+tex_proj_info project_ortho(const CDT::Face_handle &face, const DEMGeo &dsf_bounds, int rotation_deg /* clockwise */)
 {
 	const Bbox2 ortho_grid_square = get_ortho_grid_square_bounds(face, Bbox2(dsf_bounds.mWest, dsf_bounds.mSouth, dsf_bounds.mEast, dsf_bounds.mNorth));
 
@@ -1351,13 +1351,13 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 		{
 			vector<CDT::Face_handle> &hiResTris = sHiResTris[cur_id];
 			int prev_ter_enum = -1;
-			int prev_ter_rotation = 0;
+			int prev_ter_rotation = 0; // clockwise
 			const int prev_patch_tris = tris_this_patch;
 			for(tri = 0; tri < hiResTris.size(); ++tri)
 			{
 				CDT::Face_handle f = hiResTris[tri];
 				const int ter_enum = f->info().terrain;
-				const int rotation = f->info().orig_face.ptr() ? f->info().orig_face->data().mRotationDeg : 0;
+				const int rotation = f->info().orig_face.ptr() ? f->info().orig_face->data().mRotationDeg : 0; // clockwise
 				if (ter_enum == lu_ranked->first ||
 					(IsCustomOverWaterHard(ter_enum) && lu_ranked->first == terrain_VisualWater) ||		// Take hard cus tris when doing vis water
 					(IsCustomOverWaterSoft(ter_enum) && lu_ranked->first == terrain_Water))				// Take soft cus tris when doing real water

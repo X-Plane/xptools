@@ -44,7 +44,7 @@ void	GetObjDimensions(const XObj& inObj,
 						float	maxCoords[3]);
 
 void	GetObjDimensions8(const XObj8& inObj,
-						float	minCoords[3],
+						float	minCoords[3], // dimensions in meters
 						float	maxCoords[3]);
 
 // Given two points that will be the minimum and max X
