@@ -274,8 +274,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 				}
 				else // if(!selected)         	// selection layer will draw a big cross with handles over it, anyways. Does not save anything measureable.
 				{
-					Vector2		dir(0.0,3.0);
-					dir.rotate_by_degrees(-pth->GetHeading());
+					const Vector2 dir = Vector2(0.0, 3.0).rotated_by_degrees_cw(pth->GetHeading());
 					Vector2 r(dir.perpendicular_cw());
 					glBegin(GL_LINES);
 					glVertex2(l - dir);			glVertex2(l + dir * 2.0);

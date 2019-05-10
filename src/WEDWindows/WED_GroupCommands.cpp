@@ -4037,13 +4037,10 @@ void	WED_DoBreakApartSpecialAgps(IResolver* resolver)
 
 					for (vector<agp_t::obj>::iterator agp_obj = agp_data.objs.begin(); agp_obj != agp_data.objs.end(); ++agp_obj)
 					{
-						Vector2 torotate(agp_origin_m, Point2(agp_origin_m.x() + agp_obj->x, agp_origin_m.y() + agp_obj->y));
+						const Vector2 rotated = Vector2(agp_origin_m, Point2(agp_origin_m.x() + agp_obj->x, agp_origin_m.y() + agp_obj->y))
+								.rotated_by_degrees_cw((*agp)->GetHeading());
 
-						//Note!! WED has clockwise heading, C's cos and sin functions are ccw in radians. We reverse directions and negate again
-						torotate.rotate_by_degrees((*agp)->GetHeading()*-1);
-						torotate *= -1;
-
-						Point2 new_point_m = Point2(agp_origin_m.x() - torotate.x(), agp_origin_m.y() - torotate.y());
+						Point2 new_point_m = Point2(agp_origin_m.x() - rotated.x(), agp_origin_m.y() - rotated.y());
 						Point2 new_point_geo = translator.Reverse(new_point_m);
 
 						WED_ObjPlacement* new_obj = WED_ObjPlacement::CreateTyped(root->GetArchive());

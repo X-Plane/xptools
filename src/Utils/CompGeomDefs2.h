@@ -42,6 +42,7 @@ using std::max;
 
 struct	Point2;
 struct	Vector2;
+struct	Polygon2;
 struct	Bbox2;
 struct  Line2;
 struct Bezier2;
@@ -125,6 +126,7 @@ struct Point2 {
 	Point2() : x_(0.0), y_(0.0) { }
 	Point2(double ix, double iy) : x_(ix), y_(iy) { }
 	Point2(const Point2& rhs) : x_(rhs.x_), y_(rhs.y_) { }
+	Point2(const Vector2 & rhs);
 
 	Point2& operator=(const Point2& rhs) { x_ = rhs.x_; y_ = rhs.y_; return *this; }
 	bool operator==(const Point2& rhs) const { return x_ == rhs.x_ && y_ == rhs.y_; }
@@ -216,7 +218,9 @@ struct	Vector2 {
 	bool	no_turn(const Vector2& v) const { return (-dy * v.dx + dx * v.dy) == 0.0; }
 	int		turn_direction(const Vector2& v) const { double d = -dy * v.dx + dx * v.dy; if (d > 0.0) return LEFT_TURN; if (d < 0.0) return RIGHT_TURN; return COLLINEAR; }
 
-	void	rotate_by_degrees(const double& degrees);
+	// Clockwise rotations
+	void	rotate_by_degrees_ccw(double counterclockwise_degrees);
+	Vector2	rotated_by_degrees_cw(double clockwise_degrees, const Point2 & around_pt={0, 0});
 
 	// Signed area = the area of the triangle formed by placing V at our origin.
 	// If they form a counter-clockwise triangle (that is, rotate us ccw to get to V) then
@@ -420,6 +424,10 @@ struct	Bbox2 {
 
 	void		expand(double v) { p1.x_ -= v; p1.y_ -= v; p2.x_ += v; p2.y_ += v; }
 	void		expand(double vx, double vy) { p1.x_ -= vx; p1.y_ -= vy; p2.x_ += vx; p2.y_ += vy; }
+
+	Bbox2		translate(const Vector2 & v) const { return Bbox2(p1 + v, p2 + v); }
+	Polygon2	rotated_by_degrees_cw(double clockwise_degrees, const Point2 & around_pt={0, 0}) const;
+
 	Point2		centroid(void) const { return Point2((p1.x_ + p2.x_) * 0.5,(p1.y_+p2.y_) * 0.5); }
 
 	Point2		clamp(const Point2& p) const { return Point2(
@@ -450,6 +458,7 @@ struct	Polygon2 : public vector<Point2> {
 				Polygon2() 						: vector<Point2>() 		{ }
 				Polygon2(const Polygon2& rhs)   : vector<Point2>(rhs) 	{ }
 				Polygon2(int x) 				: vector<Point2>(x) 	{ }
+				Polygon2(initializer_list<Point2> il): vector<Point2>(il){ }
 	template <typename __Iterator>
 				Polygon2(__Iterator s, __Iterator e) : vector<Point2>(s,e) { }
 
@@ -490,6 +499,8 @@ struct	Polygon2 : public vector<Point2> {
 
 	// Returns true if the point is inside the polygon.  Works on any polygon.
 	bool		inside(const Point2& inPoint) const;
+	bool		contains(const Point2 & point) const { return inside(point); } // dumb syntactic sugar because the naming of "inside" is backward, but inside() is used everywhere
+	bool		contains(const Polygon2 & points) const;
 
 	// Returns true if the segment intersects any part of the polygon, very simple and not optimized
 	bool		intersects(const Segment2& inSegment) const;
@@ -710,6 +721,7 @@ inline string make_wolfram_alpha_polygon(const vector<Point2> * points)
 }
 
 // These must be defined below because Point2 is declared before Vector2.
+inline Point2::Point2(const Vector2 & rhs) : x_(rhs.dx), y_(rhs.dy) { }
 inline Point2& Point2::operator += (const Vector2& v) { x_ += v.dx; y_ += v.dy; return *this; }
 inline Point2& Point2::operator -= (const Vector2& v) { x_ -= v.dx; y_ -= v.dy; return *this; }
 inline Point2 Point2::operator+(const Vector2& v) const { return Point2(x_ + v.dx, y_ + v.dy); }
@@ -720,16 +732,24 @@ inline string Point2::wolfram_alpha() const
 	return stl_printf("point (%0.18f, %0.18f)", x_, y_);
 }
 
-inline void	Vector2::rotate_by_degrees(const double& degrees)
+inline void	Vector2::rotate_by_degrees_ccw(const double counterclockwise_degrees)
 {
-	double cs = cos(0.0174532925199432958 * degrees);
-	double sn = sin(0.0174532925199432958 * degrees);
+	*this = rotated_by_degrees_cw(-counterclockwise_degrees);
+}
 
-	double rx = dx * cs - dy * sn;
-	double ry = dx * sn + dy * cs;
+inline Vector2 Vector2::rotated_by_degrees_cw(const double clockwise_degrees, const Point2 & pt_of_rotation)
+{
+	// https://en.wikipedia.org/wiki/Rotation_of_axes
+	const double radians = 0.0174532925199432958 * clockwise_degrees;
+	const double cs = cos(radians);
+	const double sn = sin(radians);
 
-	dx = rx;
-	dy = ry;
+	const double translated_x = dx - pt_of_rotation.x(); // translate *to* the point of rotation
+	const double translated_y = dy - pt_of_rotation.y();
+	const double rx =  translated_x * cs + translated_y * sn;
+	const double ry = -translated_x * sn + translated_y * cs;
+
+	return Vector2(rx + pt_of_rotation.x(), ry + pt_of_rotation.y()); // translate *back* from the point of rotation
 }
 
 inline Vector2	Vector2::projection(const Vector2& rhs) const
@@ -1057,6 +1077,16 @@ inline	bool		Bbox2::contains(const Segment2& s) const
 	return contains(s.p1) && contains(s.p2);
 }
 
+inline Polygon2 Bbox2::rotated_by_degrees_cw(double clockwise_degrees, const Point2 & around_pt) const
+{
+	return {
+			Vector2(xmin(), ymin()).rotated_by_degrees_cw(clockwise_degrees, around_pt),
+			Vector2(xmin(), ymax()).rotated_by_degrees_cw(clockwise_degrees, around_pt),
+			Vector2(xmax(), ymax()).rotated_by_degrees_cw(clockwise_degrees, around_pt),
+			Vector2(xmax(), ymin()).rotated_by_degrees_cw(clockwise_degrees, around_pt)
+	};
+}
+
 inline double		Bbox2::rescale_to_x(const Bbox2& new_box, double x) const
 {
 	if (p2.x_ == p1.x_) return (new_box.p1.x_ + new_box.p2.x_) * 0.5;
@@ -1207,6 +1237,11 @@ inline bool		Polygon2::inside_convex(const Point2& inPoint) const
 inline bool		Polygon2::inside(const Point2& inPoint) const
 {
 	return inside_polygon_pt(begin(),end(),inPoint);
+}
+
+inline bool		Polygon2::contains(const Polygon2 & points) const
+{
+	return all_of(points.begin(), points.end(), [this](const Point2 & pt) { return inside(pt); });
 }
 
 inline bool		Polygon2::intersects(const Segment2& inSegment) const
