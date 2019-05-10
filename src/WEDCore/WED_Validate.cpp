@@ -61,6 +61,7 @@
 #include "WED_Group.h"
 #include "WED_EnumSystem.h"
 #include "WED_Menus.h"
+#include "WED_GatewayExport.h"
 #include "WED_GroupCommands.h"
 #include "WED_MetaDataKeys.h"
 
@@ -1894,6 +1895,22 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 		{
 			msgs.push_back(validation_error_t("Metadata value " + *itr + " contains 'http', is likely a URL", err_airport_metadata_invalid, who, apt));
 		}
+	}
+
+	if(gExportTarget >= wet_xplane_1130 && gExportTarget != wet_gateway)   // For the gateway target - the gui_label tags are forced prior to export, anyways.
+	{                                                                      // So don't bother the user with this detail or force him to set it 'right'
+		string txt = "Metadata key '" + META_KeyDisplayText(wed_AddMetaDataLGuiLabel) + "'";
+		if(who->ContainsMetaDataKey(wed_AddMetaDataLGuiLabel))
+		{
+			const char * has3D = GatewayExport_has_3d(who) ? "3D" : "2D";
+			string metaValue = who->GetMetaDataValue(wed_AddMetaDataLGuiLabel);
+			if(metaValue != has3D)
+				msgs.push_back(validation_error_t(txt + " does not match current (" + has3D + ") scenery content", warn_airport_metadata_invalid, who, apt));
+			if(metaValue != "2D" && metaValue != "3D")
+				msgs.push_back(validation_error_t(txt + " must be either '2D' or '3D'", err_airport_metadata_invalid, who, apt));
+		}
+		else
+			msgs.push_back(validation_error_t(txt + " does not exist, but is needed by the XP 11.35+ GUI", warn_airport_metadata_invalid, who, apt));
 	}
 }
 

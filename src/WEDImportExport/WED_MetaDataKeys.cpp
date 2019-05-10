@@ -14,6 +14,7 @@ const MetaDataKey known_keys[] = {
 {	"Datum Latitude",  "datum_lat"   },         // wed_AddMetaDataDatumLat
 {	"Datum Longitude", "datum_lon"   },         // wed_AddMetaDataDatumLon
 {	"FAA Code",        "faa_code"    },         // wed_AddMetaDataFAA
+{	"GUI Label",       "gui_label"   },         // wed_AddMetaDataGuiLabel
 {	"IATA Code",       "iata_code"   },         // wed_AddMetaDataIATA
 {	"ICAO Code",       "icao_code"   },         // wed_AddMetaDataICAO
 {	"Local Code",      "local_code"  },         // wed_AddMetaDataLocal

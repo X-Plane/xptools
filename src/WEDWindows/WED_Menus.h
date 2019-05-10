@@ -167,6 +167,7 @@ enum {
 	wed_AddMetaDataDatumLat,
 	wed_AddMetaDataDatumLon,
 	wed_AddMetaDataFAA,
+	wed_AddMetaDataLGuiLabel,
 	wed_AddMetaDataIATA,
 	wed_AddMetaDataICAO,
 	wed_AddMetaDataLocal,
