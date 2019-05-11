@@ -94,4 +94,9 @@ struct tile_assignment
 // Returns a ter enum plus a rotation in degrees for a tile that is interchangable with the one you passed in.
 tile_assignment get_analogous_ortho_terrain(int ter_enum, int tiling_seed_1, int tiling_seed_2, const map<int, ortho_urbanization> &terrain_desc_by_enum);
 
+
+// Maps library paths to objects' bounding boxes in meters
+map<string, Bbox2> read_mobile_obj_ground_bounds();
+
+
 #endif // defined(MOBILEAUTOGENALGS_H)

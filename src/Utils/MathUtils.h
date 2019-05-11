@@ -276,4 +276,9 @@ inline double degree_longitude_to_m(double degrees_latitude)
 	return cos((long double)degrees_latitude * degrees_to_radians) * degree_longitude_to_m_at_equator;
 }
 
+inline double m_to_degrees_longitude(double at_degrees_latitude)
+{
+	return 1.0 / degree_longitude_to_m(at_degrees_latitude);
+}
+
 #endif
