@@ -1069,7 +1069,7 @@ static int MergeTylersAg(const vector<const char *>& args)
 	// Place OBJs
 	// This must come *after* the map merge to ensure we don't stick buildings in the water or in airport boundaries
 	//--------------------------------------------------------------------------------------------------------
-	int skipped_objs = 0;
+	int considered_objs = 0;
 	int placed = 0;
 	for(auto & f : gMap.face_handles())
 	{
@@ -1088,37 +1088,45 @@ static int MergeTylersAg(const vector<const char *>& args)
 				const vector<Polygon2> holes = get_holes(f);
 				for(const agp_t::obj & obj : agp->second.objs)
 				{
+
+					auto should_place_obj = [&](const Polygon2 & face, const vector<Polygon2> & holes, const agp_t::obj & obj, const Point2 & center, const double obj_rotation) {
+						if(face.size() == 4 && holes.size() == 0 && // the OBJs *deliberately* leak out of the face bounds in Euro terrain... that's okay as long as there's no funny business going on with this tile
+								flt_abs(face.area() - face.bounds().area()) < 10 * one_square_meter_in_degrees)
+						{
+							return true;
+						}
+						else if(face.contains(center)) // ensure the OBJ is completely within the bounds, and doesn't intersect any holes
+						{
+							const Polygon2 obj_loc = obj_placement(obj, obj_rotation, center);
+							return face.contains(obj_loc) &&
+									none_of(holes.begin(), holes.end(), [&](const Polygon2 & hole) { return hole.bounds().overlap(obj_loc.bounds()); });
+						}
+						return false;
+					};
+
 					// Is this OBJ within this face's bounds?
 					// Note that mTemp1 and mTemp2 were previously set to the containing grid point's x & y
 					const Point2 center_lon_lat = obj_placement_center_lon_lat(obj, agp->second, s_dsf_desc, fd.mTemp1, fd.mTemp2, fd.mRotationDeg);
-					if(ben_face.inside(center_lon_lat))
+					const double final_rotation_deg = dobwrap(obj.r + fd.mRotationDeg, 0, 360);
+					if(should_place_obj(ben_face, holes, obj, center_lon_lat, final_rotation_deg))
 					{
-						const double final_rotation_deg = dobwrap(obj.r + fd.mRotationDeg, 0, 360);
-						const Polygon2 obj_loc = obj_placement(obj, final_rotation_deg, center_lon_lat);
-						const bool overlaps_holes = any_of(holes.begin(), holes.end(), [&](const Polygon2 & hole) { return hole.bounds().overlap(obj_loc.bounds()); });
-						if(ben_face.contains(obj_loc) && !overlaps_holes)
-						{
-							GISObjPlacement_t placement;
-							map<string, int>::const_iterator it = obj_tokens.find(obj.name);
-							DebugAssert(it != obj_tokens.end());
-							placement.mRepType = it->second;
-							DebugAssert(intrange(placement.mRepType, NUMBER_OF_DEFAULT_TOKENS + 1, gTokens.size() - 1));
-							placement.mLocation = center_lon_lat;
-							placement.mHeading = final_rotation_deg;
-							placement.mDerived = true;
-							fd.mObjs.push_back(placement);
-							++placed;
-						}
-						else
-						{
-							++skipped_objs;
-						}
+						GISObjPlacement_t placement;
+						map<string, int>::const_iterator it = obj_tokens.find(obj.name);
+						DebugAssert(it != obj_tokens.end());
+						placement.mRepType = it->second;
+						DebugAssert(intrange(placement.mRepType, NUMBER_OF_DEFAULT_TOKENS + 1, gTokens.size() - 1));
+						placement.mLocation = center_lon_lat;
+						placement.mHeading = final_rotation_deg;
+						placement.mDerived = true;
+						fd.mObjs.push_back(placement);
+						++placed;
 					}
+					++considered_objs;
 				}
 			}
 		}
 	}
-	printf("Placed only %d of %d OBJs due to conflicts\n", placed, placed + skipped_objs);
+	printf("Placed %d objs out of %d total considered\n", placed, considered_objs);
 	return 0;
 }
 
