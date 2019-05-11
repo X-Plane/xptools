@@ -143,6 +143,7 @@ static bool one_winding(const vector<Bezier2>& v)
 // than this.
 //#define MAX_OUTSIDE 0.00001
 
+
 static void gentle_crop(Point2& p, const Bbox2& bounds, bool& hard_crop)
 {
 	Point2 op(p);
@@ -592,19 +593,6 @@ struct	DSF_ResourceTable {
 
 	}
 };
-
-static void swap_suffix(string& f, const char * new_suffix)
-{
-	string::size_type p = f.find_last_of(".");
-	if (p != f.npos) f.erase(p);
-	f += new_suffix;
-}
-
-static void strip_path(string& f)
-{
-	string::size_type p = f.find_last_of(":\\/");
-	if (p != f.npos) f.erase(0,p+1);
-}
 
 // stacking is lon, lat, control_lon, control_lat
 void assemble_dsf_pt(double c[4], const Point2& pt, const Point2 * bez, const Bbox2& bounds)
@@ -1104,6 +1092,9 @@ static int	DSF_HeightRangeRecursive(WED_Thing * what, double& out_msl_min, doubl
 			return -1;
 	}
 
+	sClass_t c = what->GetClass();
+	
+	if(c == WED_ObjPlacement::sClass)
 	if((obj = dynamic_cast<WED_ObjPlacement *>(what)) != NULL)
 	{
 #if AIRPORT_ROUTING
@@ -1117,31 +1108,34 @@ static int	DSF_HeightRangeRecursive(WED_Thing * what, double& out_msl_min, doubl
 
 	int found = 0;		// true if we found at least 1 min/max
 	int any_inside = 0;	// true if we found ANYTHING inside at all?
-	int nn = what->CountChildren();
 
-	for(int n = 0; n < nn; ++n)
+	if(c == WED_Airport::sClass || c == WED_Group::sClass)
 	{
-		double msl_min, msl_max;
-		int child_cull = DSF_HeightRangeRecursive(what->GetNthChild(n),msl_min,msl_max, bounds);
-		if (child_cull == 1)
+		int nn = what->CountChildren();
+		for(int n = 0; n < nn; ++n)
 		{
-			any_inside = 1;
-			if(found)
+			double msl_min, msl_max;
+			int child_cull = DSF_HeightRangeRecursive(what->GetNthChild(n),msl_min,msl_max, bounds);
+			if (child_cull == 1)
 			{
-				out_msl_min=min(out_msl_min,msl_min);
-				out_msl_max=max(out_msl_max,msl_max);
+				any_inside = 1;
+				if(found)
+				{
+					out_msl_min=min(out_msl_min,msl_min);
+					out_msl_max=max(out_msl_max,msl_max);
+				}
+				else
+				{
+					out_msl_min=msl_min;
+					out_msl_max=msl_max;
+					found=1;
+				}
 			}
-			else
-			{
-				out_msl_min=msl_min;
-				out_msl_max=msl_max;
-				found=1;
-			}
+			else if(child_cull == 0)
+				any_inside = 1;
 		}
-		else if(child_cull == 0)
-			any_inside = 1;
 	}
-
+	
 	if(!any_inside && ent && ent->GetGISClass() != gis_Composite)
 		return 0;
 
@@ -1201,10 +1195,13 @@ static int	DSF_ExportTileRecursive(
 		centroid_ob = true;
 	}
 
+	sClass_t c = what->GetClass();
+
 	//------------------------------------------------------------------------------------------------------------
 	// OBJECT EXPORTER
 	//------------------------------------------------------------------------------------------------------------
 
+	if(c == 	WED_ObjPlacement::sClass)
 	if((obj = dynamic_cast<WED_ObjPlacement *>(what)) != NULL)
 	{
 		if(show_level == obj->GetShowLevel())
@@ -1239,6 +1236,7 @@ static int	DSF_ExportTileRecursive(
 	// FACADE EXPORTER
 	//------------------------------------------------------------------------------------------------------------
 
+	if(c == 	WED_FacadePlacement::sClass)
 	if((fac = dynamic_cast<WED_FacadePlacement *>(what)) != NULL)
 	{
 		if(show_level == fac->GetShowLevel())
@@ -1458,6 +1456,7 @@ static int	DSF_ExportTileRecursive(
 		// EXCLUSION EXPORTER
 		//------------------------------------------------------------------------------------------------------------
 
+		if(c == 	WED_ExclusionZone::sClass)
 		if((xcl = dynamic_cast<WED_ExclusionZone *>(what)) != NULL)
 		{
 			set<int> xtypes;
@@ -1498,6 +1497,7 @@ static int	DSF_ExportTileRecursive(
 		// FOREST EXPORTER
 		//------------------------------------------------------------------------------------------------------------
 
+		if(c == 	WED_ForestPlacement::sClass)
 		if((fst = dynamic_cast<WED_ForestPlacement *>(what)) != NULL)
 		{
 			fst->GetResource(r);
@@ -1581,6 +1581,7 @@ static int	DSF_ExportTileRecursive(
 		// OBJ STRING EXPORTER
 		//------------------------------------------------------------------------------------------------------------
 
+		if(c == 	WED_StringPlacement::sClass)
 		if((str = dynamic_cast<WED_StringPlacement *>(what)) != NULL)
 		{
 			str->GetResource(r);
@@ -1620,6 +1621,7 @@ static int	DSF_ExportTileRecursive(
 		// OBJ LINE EXPORTER
 		//------------------------------------------------------------------------------------------------------------
 
+		if(c == 	WED_LinePlacement::sClass)
 		if((lin = dynamic_cast<WED_LinePlacement *>(what)) != NULL)
 		{
 			lin->GetResource(r);
@@ -1703,6 +1705,7 @@ static int	DSF_ExportTileRecursive(
 		// DRAPED POLYGON
 		//------------------------------------------------------------------------------------------------------------
 
+		if(c == 	WED_PolygonPlacement::sClass)
 		if((pol = dynamic_cast<WED_PolygonPlacement *>(what)) != NULL)
 		{
 			pol->GetResource(r);
@@ -1758,6 +1761,7 @@ static int	DSF_ExportTileRecursive(
 		// UV-MAPPED DRAPED POLYGON
 		//------------------------------------------------------------------------------------------------------------
 
+		if(c == 	WED_DrapedOrthophoto::sClass)
 		if((orth = dynamic_cast<WED_DrapedOrthophoto *>(what)) != NULL)
 		{
 			//Get the relative path
@@ -1958,8 +1962,8 @@ static int	DSF_ExportTileRecursive(
 	#endif // ROAD_EDITING
 	}
 
-	if(io_table.cur_filter >= 0) // Nested airports aren't allowed, so avoid another lengthy dynamic_cast<> that is actually *very* rare to come out positive
-	{	
+	if(c == 	WED_Airport::sClass)
+	{
 		if((apt = dynamic_cast<WED_Airport*>(what)) != NULL)
 		{
 			apt->GetICAO(r);
@@ -1968,13 +1972,13 @@ static int	DSF_ExportTileRecursive(
 			io_table.set_filter(idx);
 		}
 	}
-	else apt = NULL;	
+	else apt = NULL;
 	
 	//------------------------------------------------------------------------------------------------------------
 	// RECURSION 
 	//------------------------------------------------------------------------------------------------------------
 	
-	if(apt || dynamic_cast<WED_Group *>(what) != NULL) // only recurse if there is actually a possibility of more DSF content in there
+	if(apt || c == WED_Group::sClass)  // only recurse if there is actually a possibility of more DSF content in there
 	{
 		int cc = what->CountChildren();
 		for (int c = 0; c < cc; ++c)
