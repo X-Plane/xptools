@@ -34,7 +34,6 @@
 
 #if IBM
 #include "GUI_Unicode.h"
-#define aligned_alloc(s,p) _aligned_malloc(s,p)
 #endif
 
 /*
@@ -392,7 +391,7 @@ int		CreateNewBitmap(long inWidth, long inHeight, short inChannels, struct Image
 	outImageInfo->channels = inChannels;
 	// why 64 byte alignmen here ? Its the cach line size for most contemporary processors. If multi-threading, this pre-empts
 	// the chance of cache thrashing (multiple threads writing to the same cache line, causing LOTS of inter-core cache synchronization traffic
-	outImageInfo->data = (unsigned char *) aligned_alloc(64, inHeight * ((inWidth * inChannels) + outImageInfo->pad));
+	outImageInfo->data = (unsigned char *) malloc(inHeight * ((inWidth * inChannels) + outImageInfo->pad));
 	if (outImageInfo->data == NULL)
 		return ENOMEM;
 	return 0;
@@ -1507,20 +1506,20 @@ static void	in_place_scaleY(int x, int y, unsigned char * src, unsigned char * d
 
 // this section here is to document what optimizations make sense - and what gets you diminishing returns
 
-#if 1 // serial floating point math
-	#if 0 // exact gamma:   1.2 seconds !! to calculate all mimmaps for a 2x2k texture
+#if 1 // use regular C code versions
+	#if 0 // exact gamma:  1200 msec
 		inline int to_srgb(float p)
 		{
 			if(p <= 0.0031308f)	return 255.0f * 12.92f * p;
-			else return 255.0f * 1.055f * powf(p,1.0/2.4) - 0.055f;
+			else return 255.0f * 1.055f * powf(p,1.0f/2.4f) - 0.055f;
 		}
 		inline float from_srgb(int p)
 		{
 			p /= 255.0f;
 			if(p <= 0.04045f)	return p / 12.92f;
-			else              return powf(p * (1.0f/1.055f) + (0.055f/1.055f),2.4);
+			else              return powf(p * (1.0f/1.055f) + (0.055f/1.055f),2.4f);
 		}
-	#elif 0 // fast pow() aproximation: 0.25 sec
+	#elif 0 // fast pow() aproximation: 250 msec
 		// http://www.machinedlearnings.com/2011/06/fast-approximate-logarithm-exponential.html
 		// pow() relative accuracy 1.6e-4
 		inline float fastlog2(float x)
@@ -1555,7 +1554,7 @@ static void	in_place_scaleY(int x, int y, unsigned char * src, unsigned char * d
 			if(p <= 0.04045f)	return p / 12.92f;
 			else              return fastpow(p * (1.0f/1.055f) + (0.055f/1.055f),2.4);
 		} 
-	#elif 1 // gamma=2.4 aproximation, no scaling: 50 msec
+	#elif 1 // gamma=2.4 aproximation, no scaling: 5msec
 	   // WC relative gamma error 9% and maintains to_srgb(from_srgb(x)) == x  for all x
 	   // aproximation is to use (x-5)^2 and x^0.5+5 for x^2.4, x^(1/2.4) as a pretty close fit for x > 30/255,
 	   // and adjust the slope & intercept for the linear part of the curve as well
@@ -1570,39 +1569,39 @@ static void	in_place_scaleY(int x, int y, unsigned char * src, unsigned char * d
 			p -= 5;
 			return p * p;
 		}
-	#else // gamma=2.0, no scaling:  45 msec
+	#else // gamma=2.0, no scaling: 25 msec
 		inline int to_srgb(float p) { return sqrtf(p); }
 		inline float from_srgb(int p) { return p * p; }
 	#endif
 	
-	unsigned char average_with_gamma(unsigned char * src, int cnt, int chan, int level)
+	unsigned char average_with_gamma(unsigned char src[], int cnt, int chan, int level)
 	{
 		if(chan < 3)
 		{
 			float tmp;
 			switch(cnt)
 			{
-				case 1: tmp = from_srgb(*src); break;
-				case 2: tmp = (from_srgb(*src++) + from_srgb(*src)) * 0.5; break;
-				case 4: tmp = (from_srgb(*src++) + from_srgb(*src++) + from_srgb(*src++) + from_srgb(*src)) * 0.25;
+				case 2: tmp = (from_srgb(src[0]) + from_srgb(src[1])) * 0.5f; break;
+				case 4: tmp = (from_srgb(src[0]) + from_srgb(src[1]) + from_srgb(src[2]) + from_srgb(src[3])) * 0.25f; break;
+				default: return src[0];
 			}
 			return intlim(to_srgb(tmp), 0, 255);
 		}
-		else
+		else // alpha channel isn't gamma corrected
 		{
 			switch(cnt)
 			{
-				case 1: return *src; break;
-				case 2: return ((int) *src++ + (int) *src) >> 1; break;
-				case 4: return ((int) *src++ +( int) *src++ + (int) *src++ + (int) *src) >> 2;
+				case 2: return ((int) src[0] + (int) src[1]) >> 1;
+				case 4: return ((int) src[0] + (int) src[1] + (int) src[2] + (int) src[3]) >> 2;
+				default:	return src[0];
 			}
 		}
 	}
-#else  // SSE gamma=2.0, alpha channel is also gamma corrected to save any separate treatment:  15 msec
-	#include <emmintrin.h>
+#else  // SSE gamma = 2.0 verion: 8 msec !!!
+	#include <smmintrin.h>
 	#define SCALE_SSE 1
 
-static void	copy_scale_SSE(int x, int y, unsigned char * __restrict src, unsigned char * __restrict dst)
+static void	copy_mip_SSE(int x, int y, unsigned char * __restrict src, unsigned char * __restrict dst)
 {
 	int 					rb = x * 4;
 	unsigned char *	s1 = src;
@@ -1618,30 +1617,35 @@ static void	copy_scale_SSE(int x, int y, unsigned char * __restrict src, unsigne
 		{
 			__m64  u1 = _m_from_int(*(int*)s1);
 			__m128 f1 = _mm_cvtpu8_ps(u1);
-					 f1 = _mm_mul_ps(f1,f1);
+			__m128 f2 = _mm_mul_ps(f1,f1);             // square pixel 1
+					 f2 = _mm_blend_ps(f2,f1,8);         // pass through alpha value without squaring (SSE 4.1, only available on Penryn, 45nm Core2 & up or any AMD FX- & up)
 					 s1 += 4;
 					 u1 = _m_from_int(*(int*)s1);
-			__m128 f2 = _mm_cvtpu8_ps(u1);
-					 f2 = _mm_mul_ps(f2,f2);
+					 f1 = _mm_cvtpu8_ps(u1);
+			__m128 f3 = _mm_mul_ps(f1,f1);             // pixel 2
+					 f3 = _mm_blend_ps(f3,f1,8);
 					 s1 += 4;
-					 f1 = _mm_add_ps(f1,f2);
+			__m128 f4 = _mm_add_ps(f2,f3);			 	 // add them
 
 					 u1 = _m_from_int(*(int*)s2);
-					 f2 = _mm_cvtpu8_ps(u1);
-					 f2 = _mm_mul_ps(f2,f2);
+					 f1 = _mm_cvtpu8_ps(u1);
+					 f2 = _mm_mul_ps(f1,f1);              // pixel 3
+					 f2 = _mm_blend_ps(f2,f1,8);
 					 s2 += 4;
  					 u1 = _m_from_int(*(int*)s2);
-			__m128 f3 = _mm_cvtpu8_ps(u1);
-					 f3 = _mm_mul_ps(f3,f3);
+					 f1 = _mm_cvtpu8_ps(u1);
+					 f3 = _mm_mul_ps(f1,f1);              // pixel 4
+					 f3 = _mm_blend_ps(f3,f1,8);
 					 s2 += 4;
-					 f2 = _mm_add_ps(f2,f3);
+					 f3 = _mm_add_ps(f2,f3);              // add them
 
-					 f1 = _mm_add_ps(f1,f2);
-					 f3 = _mm_set_ps1(0.25);
-					 f1 = _mm_mul_ps(f1,f3);
-					 f2 = _mm_sqrt_ps(f1);
+					 f2 = _mm_add_ps(f3,f4);              // add both rows
+					 f1 = _mm_set_ps1(0.25);
+					 f2 = _mm_mul_ps(f2,f1);
+					 f3 = _mm_sqrt_ps(f2);                // square root
+					 f3 = _mm_blend_ps(f3,f2,8);          // pass through alpha value
 
-					 u1 = _mm_cvtps_pi16(f2);
+					 u1 = _mm_cvtps_pi16(f3);
 					 u1 = _mm_packs_pu16(u1,u1);
 			*(int *) dst = _m_to_int(u1);
 					 dst += 4;
@@ -1653,7 +1657,7 @@ static void	copy_scale_SSE(int x, int y, unsigned char * __restrict src, unsigne
 
 static void copy_mip_with_filter(const ImageInfo& src, ImageInfo& dst,int level, unsigned char (* filter)(unsigned char src[], int count, int channel, int level))
 {
-	unsigned char temp_buf[4];	// Enough storage for RGBA 2x2
+	unsigned char temp_buf[4];	        // Enough storage for RGBA 2x2
 	int xr = src.width == dst.width ? 1 : 2;
 	int yr = src.height == dst.height ? 1 : 2;
 
@@ -1750,19 +1754,6 @@ int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name,
 }
 
 
-struct CompressImageData
-{
-	ImageInfo img;
-	void * dst_mem;
-	int dst_size;
-	int flags;
-};
-
-static void CompressImageWorker(CompressImageData * info)
-{
-	squish::CompressImage(info->img.data, info->img.width, info->img.height, info->dst_mem, info->flags);
-}
-
 #define SHP1   -1
 #define SHP2    0
 #define AMOUNT 16            // photoshop equiv. shapening amount = 4*(SHP1+SHP2) / AMOUNT
@@ -1832,6 +1823,13 @@ static void in_place_sharpen(int x, int y, const unsigned char * b4sharp, unsign
 	*((int *) sharp) =  *((int *) b4sharp);       // bottom right corner - just copy
 }
 
+struct CompressImageData
+{
+	ImageInfo img;
+	void * dst_mem;
+	int dst_size;
+};
+
 int	WriteBitmapToDDS_MT(struct ImageInfo& ioImage, int dxt, const char * file_name)
 {
 	Assert(ioImage.channels == 4);    // this only accepts BGRA bitmaps
@@ -1840,38 +1838,36 @@ int	WriteBitmapToDDS_MT(struct ImageInfo& ioImage, int dxt, const char * file_na
 	FILE * fi = fopen(file_name,"wb");
 	if (fi == NULL) return -1;
 
-/* The very simply parallel processing of the full resolution texture only is beneficial up to 3 threads, as the
-   remaining  mipmap levels all together use ~1/3 as many pixels as the full resolution texture. But the mipmap creation
-	itself takes time, 3 threads for the main texture is not mesureably faster unless using SSE optimized mipmap scaling */
+/* The very simply parallel processing of the full resolution texture scales to ~(3+1) threads, only. As the
+   remaining mipmap levels all together use ~1/3 as many pixels as the full resolution texture. Otherwise the
+   full texture gets done haead of the mipmaps == no faster overall. */
 
-	#define MAX_WORKER_THREADS 2
+	#define MAX_WORKER_THREADS 3
 	thread threads[MAX_WORKER_THREADS];
 	CompressImageData args[MAX_WORKER_THREADS];
 
-	/* don't waste time parallelizing so much for small textures, libsquish runs at 2+ Mpixels / sec */
-	int num_threads = (ioImage.height * ioImage.width >= 1024 * 1024) ? MAX_WORKER_THREADS : 1;
+	/* don't waste thread startup time parallelizing so much for small textures, libsquish runs at 1+ Mpixels/sec */
+	int num_threads = (ioImage.height * ioImage.width >= 256 * 256) ? MAX_WORKER_THREADS : 1;
 
 	int flags = (dxt == 1 ? squish::kDxt1 : (dxt == 3 ? squish::kDxt3 : squish::kDxt5)) | squish::kColourIterativeClusterFit;
-
+	int start_line = 0;
 	for (int i = 0; i < num_threads; i++)
 	{
 		args[i].img = ioImage;
-		args[i].flags = flags;
-		int start_line = (((i) * ioImage.height << 2) / num_threads ) >> 2;
-		int end_line = (((i+1) * ioImage.height << 2) / num_threads ) >> 2;
-		args[i].img.height = end_line - start_line;
+		args[i].img.height =  i < num_threads-1 ? ((ioImage.height / num_threads) >> 2) << 2 : ioImage.height - start_line;
 		args[i].img.data += start_line * ioImage.width * ioImage.channels;
-		args[i].dst_size = squish::GetStorageRequirements(args[i].img.width, args[i].img.height, args[i].flags);
-		args[i].dst_mem = aligned_alloc(64, args[i].dst_size);     // not strictly required, but when multi-threading - nice to know no chance of cache trashing here
-
-		threads[i] = thread(CompressImageWorker, &args[i]);
-//		CompressImageWorker(&args[i]);
+		args[i].dst_size = squish::GetStorageRequirements(args[i].img.width, args[i].img.height, flags);
+		args[i].dst_mem = malloc(args[i].dst_size);
+		
+		threads[i] = thread(squish::CompressImage, args[i].img.data, args[i].img.width, args[i].img.height, args[i].dst_mem, flags);
+//		squish::CompressImage(args[i].img.data, args[i].img.width, args[i].img.height, args[i].dst_mem, flags);
+		start_line += args[i].img.height;
 	}
 	
-	// scale down the mipmaps using sRGB gamma (aproximation) and sharpen the result a bit. Create the next map starting from the sharpened map.
+	// scale down the mipmaps using sRGB gamma and sharpen the result a bit. Create the next map starting from the sharpened map.
 	
 	ImageInfo ioMips(ioImage);
-	ioMips.data = (unsigned char *) aligned_alloc(64, ioImage.width * ioImage.height  * 2);
+	ioMips.data = (unsigned char *) malloc(ioImage.width * ioImage.height  * 2);
 	ioMips.width /= 2;
 	ioMips.height /= 2;
 
@@ -1882,19 +1878,19 @@ int	WriteBitmapToDDS_MT(struct ImageInfo& ioImage, int dxt, const char * file_na
 	while(src.width > 1 || src.height > 1)
 	{
 		ImageInfo dst(src); 
-		dst.data = mip_ptr + src.width * src.height;          // we create the reduced size image out-of-place, putting it into-place during the sharpening
+		dst.data = mip_ptr + src.width * src.height;  // create the reduced size image out-of-place, put it back into-place during the sharpening
 		dst.pad = 0;
 		if(dst.width > 1) dst.width >>= 1;
 		if(dst.height > 1) dst.height >>= 1;
 		
 #if SCALE_SSE
-		copy_scale_SSE(src.width, src.height ,src.data, dst.data);
+		copy_mip_SSE(src.width, src.height ,src.data, dst.data);
 #else
 		copy_mip_with_filter(src, dst, mips, average_with_gamma);
 #endif
 		src = dst;
 
-#if 1  // sharpen
+#if SHARPEN_MIPS
 		if(src.width > 4 && src.height > 4)                             // don't sharpen the last few mipmaps, as its mostly border pixels that won't sharpen that well
 			in_place_sharpen(src.width, src.height, src.data, mip_ptr);
 		else
@@ -1906,7 +1902,7 @@ int	WriteBitmapToDDS_MT(struct ImageInfo& ioImage, int dxt, const char * file_na
 		++mips;
 	}
 	
-	void * dst_mem = aligned_alloc(64, 2 * squish::GetStorageRequirements(ioMips.width,ioMips.height,flags)); // its a bit more than needed ...
+	void * dst_mem = malloc(2 * squish::GetStorageRequirements(ioMips.width,ioMips.height,flags)); // its a bit more than needed ...
 	mip_ptr = (unsigned char *) dst_mem;
 	unsigned char * src_ptr = ioMips.data;
 
