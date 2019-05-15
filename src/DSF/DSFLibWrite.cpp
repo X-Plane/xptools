@@ -43,7 +43,7 @@
 #define ALLOW_SHARED_ROADS 0
 
 // Define this to 1 to see statistics about the encoded DSF file.
-#define ENCODING_STATS 1
+#define ENCODING_STATS 0
 
 #if BIG
 	#if APL
@@ -750,6 +750,7 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 	ObjectSpecVector::iterator			objSpec;
 	ChainSpecIndex::iterator			csIndex;
 
+#if ENCODING_STATS
 	// Start by outputing some stats on our primitives - useful to test how the optimizer is doing!
 	int num_prim = 0;
 	int num_strip = 0;
@@ -770,6 +771,7 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 	}
 	printf("Vertices: total = %d, strip = %d, fan = %d.\n",num_v,num_strip_v, num_fan_v);
 	printf("Primitives: total = %d, strip = %d, fan = %d.\n", num_prim, num_strip, num_fan);
+#endif
 
 	// Build up a list of all primitives, sorted by depth
 	TPVM	all_primitives;
@@ -1170,12 +1172,14 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 		vectorPoolCurved.WriteScaleAtoms(fi, def_PointScale32Atom);
 	}
 
+#if ENCODING_STATS
 	printf("3-d Objs pool starts at: %d\n", offset_to_3d_objs);
 	for (TPDOM::iterator i = offset_to_terrain_pool_of_depth.begin(); i != offset_to_terrain_pool_of_depth.end(); ++i)
 		printf("Terrain pool depth %d starts at %d\n", i->first, i->second);
 	for (TPDOM::iterator i = offset_to_poly_pool_of_depth.begin(); i != offset_to_poly_pool_of_depth.end(); ++i)
 		printf("Poly pool depth %d starts at %d\n", i->first, i->second);
 	printf("next pool would be at %d\n", last_pool_offset);
+#endif
 
 
 	/************************************************************************************************************/

@@ -103,7 +103,7 @@ pair<int,int>	WED_Runway::GetRunwayEnumsOneway() const
 {
 	string name;
 	GetName(name);
-	
+
 	vector<string> parts;
 	tokenize_string(name.begin(),name.end(),back_inserter(parts), '/');
 	
@@ -513,22 +513,26 @@ void  WED_Runway::PropEditCallback(int before)
 	static int    old_enum;            // we want to catch changes of the name property, only
 	static pair<int,int> old_enum_1wy;
 	static set<int> old_all_rwys;
-	static WED_Airport * apt ;
+	static WED_Airport * apt;
 	
 	if (before)
 	{
 		StateChanged(wed_Change_Properties);
-		old_enum = GetRunwayEnumsTwoway();
-		old_enum_1wy = GetRunwayEnumsOneway();
-		apt = WED_GetParentAirport(this);
-		if (apt) WED_GetAllRunwaysTwoway(apt, old_all_rwys);
+		string(name); GetName(name);
+		if(name[0] == 'u')
+			old_enum = atc_rwy_None;
+		else
+		{
+			old_enum = GetRunwayEnumsTwoway();
+			old_enum_1wy = GetRunwayEnumsOneway();
+			apt = WED_GetParentAirport(this);
+			if (apt) WED_GetAllRunwaysTwoway(apt, old_all_rwys);
+		}
 	}
 	else
 	{
-		int new_enum = GetRunwayEnumsTwoway();
-		
 		if (old_enum == atc_rwy_None) return;
-		
+		int new_enum = GetRunwayEnumsTwoway();
 		if (new_enum == atc_rwy_None)
 		{
 			int	res = ConfirmMessage("New runway name is illegal, Smart Runway Rename can not be applied. Really use new name ?", 
