@@ -697,6 +697,17 @@ inline float SAFE_MAX(float a, float b, float c)
 	return max(a, max(b, c));
 }
 
+static inline bool is_custom_ortho_feature(int original_terrain)
+{
+	return original_terrain >= terrain_PseudoOrthophoto && original_terrain < terrain_PseudoOrthophotoEnd;
+}
+static inline bool is_airport_over_custom_ortho(int layer_1_feature, int layer_2_original_terrain)
+{
+	const bool layer1_is_apt = (layer_1_feature == terrain_Airport || layer_1_feature == terrain_AirportOuter);
+	return layer1_is_apt && is_custom_ortho_feature(layer_2_original_terrain);
+}
+
+
 inline double GetXonDist(int layer1, int layer2, double y_normal)
 {
 	NaturalTerrainInfo_t& rec1(gNaturalTerrainInfo[layer1]);
@@ -2427,7 +2438,11 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				double	dist1 = DistPtToTri(v1, tri);
 				double	dist2 = DistPtToTri(v2, tri);
 				double	dist3 = DistPtToTri(v3, tri);
-				double	dist_max = GetXonDist(layer, border->info().terrain, border->info().normal[2]);
+				const MeshFaceInfo & bi = border->info();
+				const int original_terrain = bi.orig_face == Face_handle() ? 0 :
+						bi.orig_face->data().mOverlayType == NO_VALUE ? bi.orig_face->data().mTerrainType : bi.orig_face->data().mOverlayType;
+				const bool is_apt_over_ortho = is_airport_over_custom_ortho(tri->info().feature, original_terrain);
+				double dist_max = is_apt_over_ortho ? 100 : GetXonDist(layer, bi.terrain, border->info().normal[2]);
 
 				if (dist_max > 0.0)
 				{
@@ -2470,7 +2485,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 
 						// HACK - does always extending the borders fix a bug?
 						DebugAssert(layer != -1);
-						DebugAssert(!IsCustom(border->info().terrain));
+						DebugAssert(!IsCustom(border->info().terrain) || is_custom_ortho_feature(original_terrain));
 						border->info().terrain_border.insert(layer);
 						spread = true;
 					}
