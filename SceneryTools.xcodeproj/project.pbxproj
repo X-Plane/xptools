@@ -5262,7 +5262,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_OPTIMIZATION_PROFILE_FILE = "$(SRCROOT)/OptimizationProfiles/RenderFarm-Debug-+33-120.profdata";
-				CLANG_USE_OPTIMIZATION_PROFILE = YES;
+				CLANG_USE_OPTIMIZATION_PROFILE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"WANT_NED_MALLOC=1",
@@ -5461,7 +5461,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_OPTIMIZATION_PROFILE_FILE = "$(SRCROOT)/OptimizationProfiles/RenderFarm-Debug-+33-120.profdata";
-				CLANG_USE_OPTIMIZATION_PROFILE = YES;
+				CLANG_USE_OPTIMIZATION_PROFILE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"WANT_NED_MALLOC=1",
@@ -5492,7 +5492,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_OPTIMIZATION_PROFILE_FILE = "$(SRCROOT)/OptimizationProfiles/RenderFarm-Release-+33-120.profdata";
-				CLANG_USE_OPTIMIZATION_PROFILE = YES;
+				CLANG_USE_OPTIMIZATION_PROFILE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"WANT_NED_MALLOC=1",
@@ -5940,7 +5940,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_OPTIMIZATION_PROFILE_FILE = "$(SRCROOT)/OptimizationProfiles/RenderFarm-Debug-+33-120.profdata";
-				CLANG_USE_OPTIMIZATION_PROFILE = YES;
+				CLANG_USE_OPTIMIZATION_PROFILE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"WANT_NED_MALLOC=1",
