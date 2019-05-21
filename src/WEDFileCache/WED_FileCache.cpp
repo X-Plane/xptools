@@ -102,11 +102,11 @@ void WED_FileCache::init(void)
 	vector<string> files;
 	vector<string> dirs;
 #if KEEP_EXPIRED_CACHE_FILES
-		vector<int> files_to_delete;
+	vector<int> files_to_delete;
+	int dirs_to_delete = 0;
 #endif
-	FILE_get_directory_recursive(CACHE_folder, files, dirs);
 
-	if(files.size())
+	if(FILE_get_directory_recursive(CACHE_folder, files, dirs) > 0)
 	{
 		sort(files.begin(), files.end(), less<string>());
 		vector<pair<int,int> > paired_files;  // Where pair is <file,file.cache_object_info>
@@ -202,29 +202,29 @@ void WED_FileCache::init(void)
 		
 		// now find empty directories and delete those, too
 		
-/*		for(auto d : dirs)
+		for(auto d : dirs)
 		{
-		
-		printf("%s\n",d.c_str());
 			vector<string> files_dummy, dirs_dummy;
-			int num_files = FILE_get_directory_recursive(d,files_dummy, dirs_dummy);
+			int num_files = FILE_get_directory_recursive(d, files_dummy, dirs_dummy);
 			
-//			printf("Recursive num_files %d files %ld dirs %ld\n",num_files, files_dummy.size(), dirs_dummy.size());
-			
-//			if (num_files == 1)
-			
-//				FILE_delete_dir_recursive(d.c_str());
-		}
-		*/
+			if (num_files >= 0 && files_dummy.size() == 0)
+			{
 #if KEEP_EXPIRED_CACHE_FILES
-		for(auto f : files )
-			printf("Files %s\n",f.c_str());
-		for(auto f : dirs )
-			printf("Dirs %s\n",f.c_str());
-		for(auto f : files_to_delete )
-			printf("Cache cleanup would delete %s\n",files[f].c_str());
+				printf("Empty directory trees %s num_files %d files %ld dirs %ld\n",d.c_str(), num_files, files_dummy.size(), dirs_dummy.size());
+				dirs_to_delete++;
+#else
+				FILE_delete_dir_recursive(d.c_str());
+#endif
+			}
+		}
+
+#if KEEP_EXPIRED_CACHE_FILES
+//		for(auto f : files )		printf("Files %s\n",f.c_str());
+//		for(auto f : dirs )		printf("Dirs %s\n",f.c_str());
+//		for(auto f : files_to_delete ) printf("Cache cleanup would delete %s\n",files[f].c_str());
 			
-		printf("Cached files %ld dirs %ld to be deleted %ld\n",files.size(), dirs.size(), files_to_delete.size());
+		printf("Cached files %ld, to be deleted %ld\n",files.size(), files_to_delete.size());
+		printf("Cached dirs %ld, empty & to be deleted %d\n",dirs.size(), dirs_to_delete);
 #endif
 	}
 }

@@ -438,30 +438,25 @@ int FILE_get_directory_recursive(const string& path, vector<string>& out_files, 
 	
 	//Gets this level of the directory's information
 	int num_files = FILE_get_directory(path, &out_files, &out_dirs);
-	
-	//If we have accumulated new files, prepend the path onto them
-	if (out_files.size() > files_start_index)
-	{
-		for (int i = files_start_index; i < out_files.size(); i++)
-		{
-			out_files.at(i) = path + DIR_STR + out_files.at(i);
-		}
-	}
 
-	int new_dirs = out_dirs.size();
-	
-	//For all the directories on this level, recurse into them
-	for (int i = start_index; i < out_dirs.size(); ++i)
+	for(int i = files_start_index; i < out_files.size(); i++)
 	{
-		num_files += FILE_get_directory_recursive(path + DIR_STR + out_dirs.at(i), out_files, out_dirs);
+		out_files.at(i) = path + DIR_STR + out_files.at(i);
 	}
 	
-	//For all the directories on this level prepend the path onto them
-	for (int i = out_dirs.size() - 1; i >= new_dirs ; i--)
+	for(int i = start_index; i < out_dirs.size(); i++)
 	{
 		out_dirs.at(i) = path + DIR_STR + out_dirs.at(i);
 	}
 	
+	//For all the directories added at this level, recurse into them
+	int end_index = out_dirs.size();
+	for (int i = start_index; i < end_index; ++i)
+	{
+		string path_copy(out_dirs[i]);  // Don't pass the _same_ vector TWICE by reference. If it grows, its data array may get re-allocated and 
+		                                // location. The called function assumes no such interaction between two unrelated parameters ...
+		num_files += FILE_get_directory_recursive(path_copy, out_files, out_dirs);
+	}
 	return num_files;
 }
 
