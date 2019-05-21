@@ -5,7 +5,7 @@
 #include <iostream>
 #include "PerfUtils.h"
 #define SAVE_TO_DISK 1
-#define KEEP_EXPIRED_CACHE_FILES 1
+#define KEEP_EXPIRED_CACHE_FILES 0
 #else
 #define SAVE_TO_DISK 1
 #endif
