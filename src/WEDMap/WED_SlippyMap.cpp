@@ -227,7 +227,7 @@ void	WED_SlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 			string folder_prefix(dir); folder_prefix.erase(folder_prefix.find_last_of(DIR_STR));
 
 			//The potential place the tile could appear on disk, were it to be downloaded or have been downloaded
-			string potential_path = WED_file_cache_url_to_cache_path(WED_file_cache_request("", cache_domain_osm_tile, folder_prefix , url));
+			string potential_path = gFileCache.url_to_cache_path(WED_file_cache_request("", cache_domain_osm_tile, folder_prefix , url));
 
 			if (m_cache.count(potential_path))
 			{
@@ -315,7 +315,7 @@ void	WED_SlippyMap::finish_loading_tile()
 {
 	if (m_cache_request != NULL)
 	{
-		WED_file_cache_response res = WED_file_cache_request_file(*m_cache_request);
+		WED_file_cache_response res = gFileCache.request_file(*m_cache_request);
 		if (res.out_status == cache_status_available)
 		{
 			struct ImageInfo info;

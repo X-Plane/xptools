@@ -760,7 +760,7 @@ void WED_GatewayExportDialog::TimerFired()
 
 	if(mPhase == expt_dialog_download_airport_metadata)
 	{
-		WED_file_cache_response res = WED_file_cache_request_file(mCacheRequest);
+		WED_file_cache_response res = gFileCache.request_file(mCacheRequest);
 		if(res.out_status != cache_status_downloading)
 		{
 			Stop();

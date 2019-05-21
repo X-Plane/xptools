@@ -2437,7 +2437,7 @@ validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane,
 		mCacheRequest.in_folder_prefix = "scenery_packs";
 		mCacheRequest.in_url = WED_URL_CIFP_RUNWAYS;
 
-		WED_file_cache_response res = WED_file_cache_request_file(mCacheRequest);
+		WED_file_cache_response res = gFileCache.request_file(mCacheRequest);
 
 	/* ToDo: get a better way to do automatic retryies for cache updates.
 		Ultimately, during the actual gateway submission we MUST wait and get full verification
@@ -2454,7 +2454,7 @@ validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane,
 	#else
 				sleep(1);
 	#endif
-				res = WED_file_cache_request_file(mCacheRequest);
+				res = gFileCache.request_file(mCacheRequest);
 			}
 		}
 

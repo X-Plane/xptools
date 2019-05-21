@@ -26,13 +26,7 @@
 
 #include <sstream>
 
-string itoa_cpp98(int i) // C++98 doesn't have itoa(), so we have to do this... :(
-{
-	stringstream out;
-	out << i;
-	return out.str();
-}
-
+WED_FileCache gFileCache;
 
 //--WED_file_cache_request---------------------------------------------------
 WED_file_cache_request::WED_file_cache_request()
@@ -49,7 +43,6 @@ WED_file_cache_request::WED_file_cache_request(const string & cert, CACHE_domain
 	  in_folder_prefix(folder_prefix),
 	  in_url(url)
 {
-
 }
 
 ostream & operator<<(ostream & os, const WED_file_cache_request & rhs)
@@ -87,57 +80,29 @@ bool WED_file_cache_response::operator!=(const WED_file_cache_response& rhs) con
 }
 //---------------------------------------------------------------------------//
 
-//--WED_FileCache------------------------------------------------------------
-
-static const string CACHE_INFO_FILE_EXT = ".cache_object_info";
-
-//The fully qualified path to the file cache folder
-static string CACHE_folder;
-
-//Our vector of CacheObjects
-static vector<CACHE_CacheObject* > CACHE_file_cache;
-
-//This tiny wrapper class lets CACHE_CacheObject engage in friendship with this.
-//That way when we add another field to save in the .cache_object_info file,
-//we don't need to update CACHE_CacheObject's constructor everywhere
-class CACHE_FileCacheInitializer
-{
-public:
-	void init();
-};
-
-void CACHE_FileCacheInitializer::init()
+void WED_FileCache::init(void)
 {
 	//Get the cache folder path
 	{
-		string cache_folder = GetCacheFolder();
-		if(cache_folder.empty() == true)
-		{
+		CACHE_folder = GetCacheFolder();
+		if(CACHE_folder.empty())
 			AssertPrintf("Could not get OS cache folder");
-		}
 
-		CACHE_folder = cache_folder + (DIR_STR "wed_file_cache");
+		CACHE_folder += DIR_STR "wed_file_cache";
 	}
+
+	if(FILE_make_dir_exist(CACHE_folder.c_str()))
+		AssertPrintf("Could not find or make the file cache, please check if you have sufficient rights to use the folder %s", CACHE_folder.c_str());
 
 	vector<string> files;
 	vector<string> dirs;
-	//Attempt to get the folder, if non-existant make it
-	int num_files = FILE_get_directory_recursive(CACHE_folder, files, dirs);
 
-	sort(files.begin(), files.end(), less<string>());
+	if(FILE_get_directory_recursive(CACHE_folder, files, dirs) > 0)
+	{
+		sort(files.begin(), files.end(), less<string>());
 
-	if(num_files == -1)
-	{
-		int res = FILE_make_dir_exist(CACHE_folder.c_str());
-		if(res != 0)
-		{
-			AssertPrintf("Could not find or make the file cache, please check if you have sufficient rights to use the folder %s", CACHE_folder.c_str());
-		}
-	}
-	else
-	{
-		//Where pair is <file,file.cache_object_info>
-		vector<pair<string, string> > paired_files;
+		vector<pair<int,int> > paired_files;  // Where pair is <file,file.cache_object_info>
+		vector<int> files_to_delete;
 
 		int i = 0;
 		while(i < files.size())
@@ -166,28 +131,25 @@ void CACHE_FileCacheInitializer::init()
 			{
 				FILE_delete_file(files[i].c_str(), false);
 				i += 1;
-				continue;
 			}
 			else
 			{
-//				paired_files.push_back(make_pair<string,string>(files[i], files[i+1]));  // msvc 2017 will not take this
-				pair<string,string> fp;
-				fp.first=files[i]; fp.second=files[i+1];
+				pair<int,int> fp(i, i+1);
 				paired_files.push_back(fp);
 				i += 2;
 			}
 		}
 
-		//Add each file in the folder to the cache
+		time_t now = time(NULL);
+
 		for (int i = 0; i < paired_files.size(); ++i)
 		{
-			//We always delete during shut WED_file_cache_shutdown()
 			CACHE_file_cache.push_back(new CACHE_CacheObject());
 
 			bool info_read_success = false;
 
 			string content;
-			int file_content_read = FILE_read_file_to_string(paired_files[i].second, content);
+			int file_content_read = FILE_read_file_to_string(files[paired_files[i].second], content);
 
 			if(file_content_read == 0)
 			{
@@ -200,37 +162,24 @@ void CACHE_FileCacheInitializer::init()
 				{
 					CACHE_file_cache.back()->m_last_time_modified = root["last_time_modified"].asInt();
 					CACHE_file_cache.back()->m_domain = static_cast<CACHE_domain>(root["domain"].asInt());
-					CACHE_file_cache.back()->set_disk_location(paired_files[i].first);
-					info_read_success = true;
+					CACHE_file_cache.back()->set_disk_location(files[paired_files[i].first]);
+
+					time_t age = difftime(now,CACHE_file_cache.back()->m_last_time_modified);
+
+					if(age < (GetDomainPolicy(CACHE_file_cache.back()->m_domain)).cache_domain_pol_max_seconds_on_disk /* + margin ? */)
+						info_read_success = true;
 				}
 			}
 
 			if(info_read_success == false)
 			{
 				delete CACHE_file_cache.back();
+				CACHE_file_cache.pop_back();
 
-				FILE_delete_file(paired_files[i].first.c_str(), false);
-				FILE_delete_file(paired_files[i+1].second.c_str(), false);
-				continue;
+				FILE_delete_file(files[paired_files[i].first].c_str(), false);
+				FILE_delete_file(files[paired_files[i+1].second].c_str(), false);
 			}
 		}
-	}
-	return;
-}
-
-//Fills the file_cache with initial physical files and defaults
-void WED_file_cache_init()
-{
-	static bool cache_initialized = false;
-	if(cache_initialized == true)
-	{
-		return;
-	}
-	else
-	{
-		CACHE_FileCacheInitializer initializer;
-		initializer.init();
-		cache_initialized = true;
 	}
 }
 
@@ -299,7 +248,7 @@ static void interpret_error(curl_http_get_file& mCurl, string& out_error_human, 
 	out_error_human = ss.str();
 }
 
-static WED_file_cache_response start_new_cache_object(WED_file_cache_request req)
+WED_file_cache_response WED_FileCache::start_new_cache_object(WED_file_cache_request req)
 {
 	CACHE_file_cache.push_back(new CACHE_CacheObject());
 	CACHE_CacheObject& co = *CACHE_file_cache.back();
@@ -313,13 +262,13 @@ static WED_file_cache_response start_new_cache_object(WED_file_cache_request req
 								   cache_status_downloading);
 }
 
-static void remove_cache_object(vector<CACHE_CacheObject* >::iterator itr)
+void WED_FileCache::remove_cache_object(vector<CACHE_CacheObject* >::iterator itr)
 {
 	delete *itr;
 	CACHE_file_cache.erase(itr);
 }
 
-WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request& req)
+WED_file_cache_response WED_FileCache::request_file(const WED_file_cache_request& req)
 {
 	//The cache must be initialized!
 	DebugAssert(CACHE_folder != "");
@@ -353,7 +302,7 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 	vector<CACHE_CacheObject* >::iterator itr = CACHE_file_cache.begin();
 	for ( ; itr != CACHE_file_cache.end(); ++itr)
 	{
-		if((**itr).get_disk_location() == WED_file_cache_url_to_cache_path(req))
+		if((**itr).get_disk_location() == url_to_cache_path(req))
 		{
 			break;
 		}
@@ -396,7 +345,7 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 				Either it all is saved perfectly or we delete it all and report an error. This is an all or nothing situation.
 				*/
 
-				res.out_path = WED_file_cache_url_to_cache_path(req);
+				res.out_path = url_to_cache_path(req);
 				FILE_make_dir_exist(string(CACHE_folder + DIR_STR + req.in_folder_prefix).c_str());
 
 				//We test if file and cache_file_info file save PERFECECTLY, with NO issues
@@ -485,7 +434,7 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 		int seconds_left = co.cool_down_seconds_left(pol);
 		if(seconds_left > 0)
 		{
-			return WED_file_cache_response(-1, "Cache cooling after failed network attempt, please wait: " + itoa_cpp98(seconds_left) + " seconds...", cache_error_type_none, "", cache_status_cooling);
+			return WED_file_cache_response(-1, "Cache cooling after failed network attempt, please wait: " + to_string(seconds_left) + " seconds...", cache_error_type_none, "", cache_status_cooling);
 		}
 		else if(FILE_exists((*itr)->get_disk_location().c_str()) == true) //Check if file was deleted between requests
 		{
@@ -508,23 +457,23 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 	}
 }
 
-string WED_file_cache_file_in_cache(const WED_file_cache_request & req)
+string WED_FileCache::file_in_cache(const WED_file_cache_request & req)
 {
-	return WED_file_cache_request_file(req).out_path;
+	return request_file(req).out_path;
 }
 
-string WED_file_cache_url_to_cache_path(const WED_file_cache_request & req)
+string WED_FileCache::url_to_cache_path(const WED_file_cache_request & req)
 {
 	return CACHE_folder + DIR_STR + req.in_folder_prefix + DIR_STR + FILE_get_file_name(req.in_url);
 }
 
-vector<string> WED_file_cache_get_files_available(CACHE_domain domain, string folder_prefix)
+vector<string> WED_FileCache::get_files_available(CACHE_domain domain, string folder_prefix)
 {
 	//vector<CACHE_CacheObject*> available_objs = CACHE_file_cache.a
 	return vector<string>();
 }
 
-void WED_file_cache_shutdown()
+WED_FileCache::~WED_FileCache()
 {
 	for(vector<CACHE_CacheObject* >::iterator co = CACHE_file_cache.begin();
 		co != CACHE_file_cache.end();

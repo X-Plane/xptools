@@ -26,6 +26,8 @@
 
 #include "CACHE_DomainPolicy.h"
 
+class CACHE_CacheObject;
+
 /*
 	WED_FileCache - THEORY OF OPERATION
 
@@ -60,21 +62,12 @@ enum CACHE_error_type
 struct WED_file_cache_request
 {
 	WED_file_cache_request();
-
 	WED_file_cache_request(const string& cert, CACHE_domain domain, const string& folder_prefix, const string& url);
 
-	//Our security certification
-	string in_cert;
-	
-	//Domain policy for the file, stores information on how files should be downloaded and kept
-	CACHE_domain in_domain;
-
-	//A folder prefix to place this cached file in, no leading or trailing slash
-	string in_folder_prefix;
-
-	//The URL to request from, cached inside CACHE_CacheObject
-	string in_url;
-
+	string in_cert;           // Our security certification
+	CACHE_domain in_domain;   // Domain policy for the file, stores information on how files should be downloaded and kept
+	string in_folder_prefix;  // A folder prefix to place this cached file in, no leading or trailing slash
+	string in_url;            // The URL to request from, cached inside CACHE_CacheObject
 };
 
 ostream& operator << (ostream& os, const WED_file_cache_request& rhs);
@@ -83,44 +76,39 @@ struct WED_file_cache_response
 {
 	WED_file_cache_response(float download_progress, string error_human, CACHE_error_type error_type, string path, CACHE_status status);
 	
-	//From a range from -1.0 (download not started), to 100.0
-	float out_download_progress;
-
-	//Human readable error string
-	string out_error_human;
-
-	//The type of error we just occured (who is to blame.) cached inside CACHE_CacheObject
-	CACHE_error_type out_error_type;
-
-	//Path to load downloaded file from, cached inside CACHE_CacheObject and file existing on disk
-	string out_path;
-
-	//Status of the cache
-	CACHE_status out_status;
+	float out_download_progress;	// From a range from -1.0 (download not started), to 100.0
+	string out_error_human;	      // Human readable error string
+	CACHE_error_type out_error_type;// The type of error we just occured (who is to blame.) cached inside CACHE_CacheObject
+	string out_path;	            // Path to load downloaded file from, cached inside CACHE_CacheObject and file existing on disk
+	CACHE_status out_status;      // Status of the cache
 
 	bool operator==(const WED_file_cache_response& rhs) const;
 	bool operator!=(const WED_file_cache_response& rhs) const;
 };
 
-class CACHE_FileCacheInitializer;
+class WED_FileCache
+{
+	public:
+							WED_FileCache(void) {};
+							~WED_FileCache(void); // WED_file_cache_shutdown()
+		void				init(void);           // WED_file_cache_init()
 
-//Initialize the file cache, called once at the start of the program
-void WED_file_cache_init();
+		WED_file_cache_response	request_file(const WED_file_cache_request& req);
+		string			file_in_cache(const WED_file_cache_request& req);
+		string			url_to_cache_path(const WED_file_cache_request& req);
 
-//Attempts give client a file path for file, downloading said file if need be. Feedback on progress and ability is given in the form status, error codes, and status updates.
-//This is intended to be called a timer until a client gets their file or sufficient indication they should stop trying.
-WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request& req);
+	private:
 
-//Checks if the file is in cache without starting any downloads. in_cert member of WED_file_cache_request is ignored
-//returns the file path if it exists on disk, "" if not
-string WED_file_cache_file_in_cache(const WED_file_cache_request& req);
+		vector<string>	get_files_available(CACHE_domain domain, string folder_prefix);
+		WED_file_cache_response Request_file(const WED_file_cache_request& req);
+		WED_file_cache_response start_new_cache_object(WED_file_cache_request req);
+		void 				remove_cache_object(vector<CACHE_CacheObject* >::iterator itr);
 
-string WED_file_cache_url_to_cache_path(const WED_file_cache_request& req);
+		const string 	CACHE_INFO_FILE_EXT = ".cache_object_info";
+		string 			CACHE_folder;	                  // The fully qualified path to the file cache folder
+		vector<CACHE_CacheObject* > CACHE_file_cache;   // Our vector of CacheObjects
+};
 
-//Gets the files currently on disk without starting downloads
-vector<string> WED_file_cache_get_files_available(CACHE_domain domain, string folder_prefix);
-
-//Blocks until all previous cURL handles are finished or are forcibly stopped. Called once at the end of the program.
-void WED_file_cache_shutdown();
+extern WED_FileCache gFileCache;
 
 #endif

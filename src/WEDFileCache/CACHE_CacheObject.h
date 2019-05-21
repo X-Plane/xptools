@@ -74,6 +74,8 @@ public:
 	bool needs_refresh(const CACHE_domain_policy& policy) const;
 
 private:
+	friend class WED_FileCache;
+
 	//When the cool down was triggered. Reset when object is destroyed and recreated.
 	time_t m_cool_down_timestamp;
 
