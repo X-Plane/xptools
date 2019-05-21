@@ -448,6 +448,8 @@ int FILE_get_directory_recursive(const string& path, vector<string>& out_files, 
 		}
 	}
 
+	int new_dirs = out_dirs.size();
+	
 	//For all the directories on this level, recurse into them
 	for (int i = start_index; i < out_dirs.size(); ++i)
 	{
@@ -455,7 +457,7 @@ int FILE_get_directory_recursive(const string& path, vector<string>& out_files, 
 	}
 	
 	//For all the directories on this level prepend the path onto them
-	for (int i = out_dirs.size() - 1; i >= start_index ; i--)
+	for (int i = out_dirs.size() - 1; i >= new_dirs ; i--)
 	{
 		out_dirs.at(i) = path + DIR_STR + out_dirs.at(i);
 	}
