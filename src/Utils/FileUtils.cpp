@@ -333,9 +333,9 @@ int FILE_read_file_to_string(const string& path, string& content)
 	if(file != NULL)
 	{
 		res = FILE_read_file_to_string(file, content);
+		fclose(file);
 	}
 
-	fclose(file);
 	return res;
 }
 
