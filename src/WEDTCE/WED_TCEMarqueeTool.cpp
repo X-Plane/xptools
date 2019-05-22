@@ -374,17 +374,10 @@ void	WED_TCEMarqueeTool::ControlsHandlesBy(intptr_t id, int c, const Vector2& de
 	switch(mEditMode) {
 	case tmm_Rotate:
 		{
-			Point2 new_p;
-
-			new_p = io_pt + d;
-
-			double a1 = VectorDegs2NorthHeading(mRotateCtr, mRotateCtr, Vector2(mRotateCtr, io_pt));
-			double b1 = VectorDegs2NorthHeading(mRotateCtr, mRotateCtr, Vector2(mRotateCtr, new_p));
 			ApplyRotate(mRotateCtr,WED_CalcDragAngle(mRotateCtr, io_pt, d));
 
-			io_pt = new_p;
+			io_pt += d;
 			mRotatePt = io_pt;
-
 		}
 		break;
 	case tmm_Center:
@@ -475,7 +468,6 @@ bool	WED_TCEMarqueeTool::GetTotalBounds(void) const
 	mCacheIconic = false;
 
 	vector<ISelectable *>	iu;
-	int ret = false;
 
 	sel->GetSelectionVector(iu);
 	if (iu.empty()) return false;

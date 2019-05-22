@@ -153,7 +153,6 @@ void	WED_SlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 	finish_loading_tile();
 
 	double map_bounds[4];
-	double	s, n, e, w;
 
 	WED_MapZoomerNew * zoomer = GetZoomer();
 	zoomer->GetMapVisibleBounds(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3]);
@@ -213,8 +212,8 @@ void	WED_SlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 			int yTransformed;
 			switch(y_coordinate_math)
 			{
-				case yYahoo: yTransformed = (1 << (z-1)) - 1 - y;
-				case yOSGeo: yTransformed = (1 << z) - 1 - y;
+				case yYahoo: yTransformed = (1 << (z-1)) - 1 - y; break;
+				case yOSGeo: yTransformed = (1 << z) - 1 - y; break;
 				default: yTransformed = y;
 			}
 #if IBM

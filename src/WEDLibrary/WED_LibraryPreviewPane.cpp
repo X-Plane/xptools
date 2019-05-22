@@ -237,11 +237,9 @@ void	WED_LibraryPreviewPane::MouseDrag(int x, int y, int button)
 	
 	if(mType == res_Facade && button == 1)
 	{
-		int oldHgt = mHgt;
 		mHgt = mHgtOrig + (fabs(dy) < 100.0 ? dy * 0.1 : sign(dy)*(fabs(dy)-80) * 0.5);
 		mHgt = intlim(mHgt,0,250);
 
-		float oldWid = mWid;
 		mWid = mWidOrig + (fabs(dx) < 100.0 ? dx * 0.2 : sign(dx)*(fabs(dx)-60.0) * 0.5);
 		mWid = fltlim(mWid,1,150);
 	}

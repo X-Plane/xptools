@@ -352,17 +352,10 @@ void	WED_MarqueeTool::ControlsHandlesBy(intptr_t id, int c, const Vector2& delta
 	switch(mEditMode) {
 	case mm_Rotate:
 		{
-			Point2 new_p;
-
-			new_p = io_pt + d;
-
-			double a1 = VectorDegs2NorthHeading(mRotateCtr, mRotateCtr, Vector2(mRotateCtr, io_pt));
-			double b1 = VectorDegs2NorthHeading(mRotateCtr, mRotateCtr, Vector2(mRotateCtr, new_p));
 			ApplyRotate(mRotateCtr,WED_CalcDragAngle(mRotateCtr, io_pt, d));
 
-			io_pt = new_p;
+			io_pt += d;
 			mRotatePt = io_pt;
-
 		}
 		break;
 	case mm_Center:
