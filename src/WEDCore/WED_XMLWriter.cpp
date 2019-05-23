@@ -45,10 +45,10 @@
 
 inline void fi_indent(int n, FILE * fi) { while(n--) fputc(' ', fi); }
 
-inline void fi_escape(const char * str, FILE * fi)
+inline void fi_escape(const string& str, FILE * fi)
 {
-	UTF8 * b = (UTF8 *) str;
-	UTF8 * e = b + strlen(str);
+	UTF8 * b = (UTF8 *) str.c_str();
+	UTF8 * e = b + str.length();
 	
 	// This fixes a problem, but not the way I intended, and may be worth some examination.
 	// WED uses UTF8.  Period.  That is all it has ever displayed sanely, and it should be the only thing
@@ -122,28 +122,28 @@ WED_XMLElement::~WED_XMLElement()
 	if(!flushed)
 	{
 		fi_indent(indent, file);
-		fprintf(file,"<%s",name.c_str());
+		fputc('<',file); fputs(name.c_str(),file);
 
 		for(map<string,string>::iterator a = attrs.begin(); a != attrs.end(); ++a)
 		{
-			fprintf(file," %s=\"", a->first.c_str());
-			fi_escape(a->second.c_str(), file);
+			fputc(' ',file); fputs(a->first.c_str(),file); fputs("=\"",file);
+			fi_escape(a->second, file);
 			fputc('"',file);
 		}
-		
+
 		if(children.empty())
-			fprintf(file,"/>\n");
+			fputs("/>\n",file);
 		else
-			fprintf(file,">\n");
+			fputs(">\n",file);
 	}
-	
+
 	for(vector<WED_XMLElement *>::iterator c = children.begin(); c != children.end(); ++c)
 		delete *c;
-	
+
 	if(!children.empty() || flushed)
 	{
 		fi_indent(indent,file);
-		fprintf(file,"</%s>\n",name.c_str());
+		fputs("</",file); fputs(name.c_str(),file); fputs(">\n",file);
 	}
 }
 
@@ -155,28 +155,27 @@ void WED_XMLElement::flush()
 void WED_XMLElement::flush_from(WED_XMLElement * who)
 {
 	if(who == NULL && children.empty())	return;
-	
-	if(parent) 
+
+	if(parent)
 		parent->flush_from(this);
 	parent = NULL;
-	
+
 	if(!flushed)
 	{
 		fi_indent(indent, file);
-		fprintf(file,"<%s",name.c_str());
+		fputc('<',file); fputs(name.c_str(),file);
 
 		for(map<string,string>::iterator a = attrs.begin(); a != attrs.end(); ++a)
 		{
-			fprintf(file," %s=\"", a->first.c_str());
-			fi_escape(a->second.c_str(), file);
+			fputc(' ',file); fputs(a->first.c_str(),file); fputs("=\"",file);
+			fi_escape(a->second, file);
 			fputc('"',file);
 		}
-		
-		fprintf(file,">\n");
+		fputs(">\n",file);
 	}
-	
+
 	DebugAssert(who == children.back() || who == NULL);
-	
+
 	for(vector<WED_XMLElement *>::iterator c = children.begin(); c != children.end(); ++c)
 	if(*c != who)
 		delete *c;
@@ -187,7 +186,28 @@ void WED_XMLElement::flush_from(WED_XMLElement * who)
 	flushed = true;
 }
 
-	
+static char * to_chars(char * str, int len, int num)
+{
+        char *p = str+len-1;
+        *p = 0;
+        if(num == 0) { --p; *p = '0'; return p; }
+
+        int negative = num  < 0;
+        if(negative) num = -num;
+
+        while (num != 0)
+        {
+                --p;
+                int remainder = num / 10;
+                int this_digit = num - 10 * remainder;
+                *p = '0' + this_digit;
+                num = remainder;
+                if (p == str) return p;
+        }
+        if(negative) { --p; *p = '-'; }
+        return p;
+}
+
 void					WED_XMLElement::add_attr_int(const char * name, int value)
 {
 #if FIX_EMPTY
@@ -196,7 +216,9 @@ void					WED_XMLElement::add_attr_int(const char * name, int value)
 	DebugAssert(name && *name);	
 #endif
 	DebugAssert(!flushed);
-	attrs[name] = to_string(value);
+//	attrs[name] = to_string(value); // its friggin slow - wanna spend 8% of the _whole_ time to save in his _one_ line ???
+	char c[16];
+	attrs[name] = to_chars(c, sizeof(c), value);
 }
 
 void					WED_XMLElement::add_attr_double(const char * name, double value, int dec)
