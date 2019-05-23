@@ -1070,6 +1070,10 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				{
 					outApts.back().atc.back().freq *= 10;
 				}
+				else
+				{
+					outApts.back().atc.back().atc_type -= apt_freq_awos_1k-apt_freq_awos;    // adjust new style codes to internally use "old" types - to match the enum definitions
+				}
 			} else
 				ok = "Illegal unknown record";
 			break;

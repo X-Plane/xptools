@@ -144,6 +144,7 @@ enum validate_error_t
 	err_truck_parking_no_ground_taxi_routes,
 	warnings_start_here,
 	warn_airport_impossible_size,
+	warn_airport_metadata_invalid,
 	warn_airport_name_style,
 	warn_airport_no_rwys_sealanes_or_helipads,
 	warn_atc_freq_on_8p33khz_spacing,

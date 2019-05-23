@@ -981,6 +981,63 @@ ACObject *	do_obj8_load(char *filename)
 					object_set_name(light, (char*) cmd->name.c_str());
 					object_add_child(anim_obj.empty() ? lod_obj : anim_obj.back(), light);
 					OBJ_set_light_named(light, cmd->name.c_str());
+
+					// AC - the other (9) params after the x,y,z are optional. 
+					// See if there are any other floats to be loaded and if so, put them into the AC3D object data.
+					// possible problem with this is that: 
+					//   someone may edit the light data so it outputs "1.0 2.0 3.0 none 5.0" - which will be saved and loaded as 1.0 2.0 3.0 5.0 
+					// i.e. missing the blank/undefined 4th extra parameter
+
+					char s[255];
+					if (cmd->idx_count > 0)
+						{
+						sprintf(s, "%f", cmd->params[3] );
+						OBJ_set_light_p1(light, s);
+						}
+					if (cmd->idx_count > 1)
+						{
+						sprintf(s, "%f", cmd->params[4] );
+						OBJ_set_light_p2(light, s);
+						}
+					if (cmd->idx_count > 2)
+						{
+						sprintf(s, "%f", cmd->params[5] );
+						OBJ_set_light_p3(light, s);
+						}
+					if (cmd->idx_count > 3)
+						{
+						sprintf(s, "%f", cmd->params[6] );
+						OBJ_set_light_p4(light, s);
+						}
+					if (cmd->idx_count > 4)
+						{
+						sprintf(s, "%f", cmd->params[7] );
+						OBJ_set_light_p5(light, s);
+						}
+					if (cmd->idx_count > 5)
+						{
+						sprintf(s, "%f", cmd->params[8] );
+						OBJ_set_light_p6(light, s);
+						}
+					if (cmd->idx_count > 6)
+						{
+						sprintf(s, "%f", cmd->params[9] );
+						OBJ_set_light_p7(light, s);
+						}
+					if (cmd->idx_count > 7)
+						{
+						sprintf(s, "%f", cmd->params[10] );
+						OBJ_set_light_p8(light, s);
+						}
+					if (cmd->idx_count > 8)
+						{
+						sprintf(s, "%f", cmd->params[11] );
+						OBJ_set_light_p9(light, s);
+						}
+
+
+
+
 				}
 				break;
 			case obj8_LightCustom:

@@ -13,6 +13,9 @@ KNOWN BUGS:
 	- OBJ7 import/export does not handle panel tex quads or hard quads.
 	- Ac3d texture repeat/offset cannot be used with panel textures for exporting.
 
+
+Version 3.4b4
+	- fixed - additional float params after light x,y,z are now loaded
 Version 3.4b3
 	- Tcl/TK (UI) removed Tcl variable trace (caused infinite update loop)
 Version 3.4b2
