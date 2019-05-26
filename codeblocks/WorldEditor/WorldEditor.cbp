@@ -234,6 +234,7 @@
 		<Unit filename="../../src/Utils/MemUtils.h" />
 		<Unit filename="../../src/Utils/ObjUtils.cpp" />
 		<Unit filename="../../src/Utils/ObjUtils.h" />
+		<Unit filename="../../src/Utils/PerfUtils.h" />
 		<Unit filename="../../src/Utils/PlatformUtils.h" />
 		<Unit filename="../../src/Utils/PlatformUtils.lin.cpp" />
 		<Unit filename="../../src/Utils/STLUtils.cpp" />

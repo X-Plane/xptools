@@ -625,12 +625,12 @@ void  WED_Runway::PropEditCallback(int before)
 			{
 				bool renamed = false;
 				int r = (*f)->GetPatternRunway();
-				if(r = old_enum_1wy.first)
+				if(r == old_enum_1wy.first)
 				{
 					renamed=true;
 					(*f)->SetPatternRunway(new_enum_1wy.first);
 				}
-				else if(r = old_enum_1wy.second)
+				else if(r == old_enum_1wy.second)
 				{
 					renamed=true;
 					(*f)->SetPatternRunway(new_enum_1wy.second);
@@ -640,9 +640,9 @@ void  WED_Runway::PropEditCallback(int before)
 			for(vector<WED_ATCRunwayUse *>::iterator u = uses.begin(); u != uses.end(); ++u)
 			{
 				int r = (*u)->GetRunway();
-				if(r = old_enum_1wy.first)
+				if(r == old_enum_1wy.first)
 					(*u)->SetRunway(new_enum_1wy.first);
-				else if(r = old_enum_1wy.second)
+				else if(r == old_enum_1wy.second)
 					(*u)->SetRunway(new_enum_1wy.second);
 			}
 			// create list of strings to replace

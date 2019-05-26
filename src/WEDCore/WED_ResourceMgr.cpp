@@ -241,19 +241,6 @@ bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t const *& info)
 		return true;
 	}
 	
-	lin_info_t * out_info = new lin_info_t;
-
-	out_info->base_tex.clear();
-	out_info->scale_s=100;
-	out_info->scale_t=100;
-	float tex_width = 1024;
-	out_info->s1.clear();
-	out_info->sm.clear();
-	out_info->s2.clear();
-	out_info->rgb[0] = 0.75;   // taxi line yellow
-	out_info->rgb[1] = 0.6;
-	out_info->rgb[2] = 0.15;
-
 	string p = mLibrary->GetResourcePath(path);
 	MFMemFile * lin = MemFile_Open(p.c_str());
 	if(!lin) return false;
@@ -268,6 +255,19 @@ bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t const *& info)
 		MemFile_Close(lin);
 		return false;
 	}
+	
+	lin_info_t * out_info = new lin_info_t;
+
+	out_info->base_tex.clear();
+	out_info->scale_s=100;
+	out_info->scale_t=100;
+	float tex_width = 1024;
+	out_info->s1.clear();
+	out_info->sm.clear();
+	out_info->s2.clear();
+	out_info->rgb[0] = 0.75;   // taxi line yellow
+	out_info->rgb[1] = 0.6;
+	out_info->rgb[2] = 0.15;
 
 	while(!MFS_done(&s))
 	{
@@ -342,10 +342,6 @@ bool	WED_ResourceMgr::GetStr(const string& path, str_info_t const *& info)
 		info = &i->second;
 		return true;
 	}
-	str_info_t * out_info = new str_info_t;
-
-	out_info->offset = 0.0;
-	out_info->rotation = 0.0;
 
 	string p = mLibrary->GetResourcePath(path);
 	MFMemFile * str = MemFile_Open(p.c_str());
@@ -361,6 +357,11 @@ bool	WED_ResourceMgr::GetStr(const string& path, str_info_t const *& info)
 		MemFile_Close(str);
 		return false;
 	}
+	
+	str_info_t * out_info = new str_info_t;
+
+	out_info->offset = 0.0;
+	out_info->rotation = 0.0;
 
 	while(!MFS_done(&s))
 	{
@@ -399,11 +400,6 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t const*& info)
 		return true;
 	}
 	
-	pol_info_t * pol = new pol_info_t;
-	
-	pol->mSubBoxes.clear();
-	pol->mUVBox = Bbox2();
-
 	string p = mLibrary->GetResourcePath(path);
 	MFMemFile * file = MemFile_Open(p.c_str());
 	if(!file) return false;
@@ -418,6 +414,11 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t const*& info)
 		MemFile_Close(file);
 		return false;
 	}
+
+	pol_info_t * pol = new pol_info_t;
+	
+	pol->mSubBoxes.clear();
+	pol->mUVBox = Bbox2();
 
 	pol->base_tex.clear();
 	pol->hasDecal=false;

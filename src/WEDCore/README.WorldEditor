@@ -21,9 +21,13 @@ WED 2.1.0git
 	- depict PAPI / VASI / WIGWAG's objects in preview layer
 	- export to DSF for large projects 2.5x faster
 	- multi-threaded DDS texture compression for large Orthophotos, 3.5x faster
+	- WED-1149: Improve download cache size management, reduces WED startup time
+	
    Bug Fixes:
-   - WED-1186: Make message box text in moderator mode more specific
-   - WED-1162: Create new ground truck routes w/no aircaft (hotzone) attributes set
+	- WED-1186: Make message box text in moderator mode more specific
+	- WED-1162: Create new ground truck routes w/no aircaft (hotzone) attributes set
+	- WED-1199: fix potential segfault when reading files
+	- WED-1198: fix approach light depiction to start at threshold of runway
 
 WED 2.0.0r4 4/07/19
 	Bug Fixes:

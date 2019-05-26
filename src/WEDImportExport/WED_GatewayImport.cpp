@@ -543,7 +543,7 @@ void WED_GatewayImportDialog::Back()
 extern "C" void decode( const char * startP, const char * endP, char * destP, char ** out);
 void WED_GatewayImportDialog::TimerFired()
 {
-	WED_file_cache_response res = WED_file_cache_request_file(mCacheRequest);
+	WED_file_cache_response res = gFileCache.request_file(mCacheRequest);
 
 	if(mPhase == imp_dialog_download_airport_metadata ||
 	   mPhase == imp_dialog_download_ICAO ||
@@ -723,7 +723,7 @@ void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
 
 					mRequestCount = 0;
 
-					WED_file_cache_response res = WED_file_cache_request_file(mCacheRequest);
+					WED_file_cache_response res = gFileCache.request_file(mCacheRequest);
 
 					for (int i = 0; i < 10; ++i) // try downloading version info for 3sec. Should normally be enough.
 					{
@@ -735,7 +735,7 @@ void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
 							#else
 							usleep(300000);     // really dumb, as it makes the program unresponsible during this download.
 							#endif
-							res = WED_file_cache_request_file(mCacheRequest);
+							res = gFileCache.request_file(mCacheRequest);
 						}
 					}
 

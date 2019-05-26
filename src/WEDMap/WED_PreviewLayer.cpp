@@ -367,7 +367,7 @@ struct	preview_runway : public WED_PreviewItem {
 			g->SetState(false,0,false, true,true, false,false);
 		}
 		double z = zoomer->GetPPM();
-//		if (0 z > 0.3)                     // draw some well know sign and light positions
+		if (z > 0.2)                     // draw some well know sign and light positions
 		{
 			AptRunway_t info;
 			rwy->Export(info);
@@ -409,32 +409,33 @@ struct	preview_runway : public WED_PreviewItem {
 						if(info.app_light_code[dir] == apt_app_ALSFI || info.app_light_code[dir] == apt_app_ALSFII)
 							spacing = 100*FT_TO_MTR;
 					}
-					Point2 lpos = Segment2(corners[3-2*dir],corners[2*dir]).midpoint(0.5);
-					Vector2 direction(corners[1+2*dir], corners[2*dir]);
-					direction.normalize();
-					Vector2 offset = direction.perpendicular_ccw() * z * 8.0;
-					direction *= z * spacing;
+					Point2 rwy_end = Segment2(corners[3-2*dir],corners[2*dir]).midpoint(0.5);  // runway end position
+					Vector2 rwy_dir(corners[1+2*dir], corners[2*dir]);
+					rwy_dir.normalize();
+					Point2 lpos = rwy_end - rwy_dir * z * info.disp_mtr[dir];           // appr lights start position is at threshold
+					Vector2 rbar_dir = rwy_dir.perpendicular_ccw();
+					rbar_dir *= z * 8.0;   						                             // 8.0m spacing of roll bar lights
+					Vector2 vec_lgts = rwy_dir * z * spacing;
 					int num_lgts = length / spacing;
-					double sign_hdg = RAD_TO_DEG * atan2(direction.x(),direction.y());
+					double sign_hdg = RAD_TO_DEG * atan2(rwy_dir.x(),rwy_dir.y());
 
 					if(info.app_light_code[dir] <= apt_app_MALS)    // 1000' roll bar
 					{
-						Vector2 dir2(direction);
-						dir2.normalize();
+						Vector2 dir2(rwy_dir);
 						dir2 *= z * 1000*FT_TO_MTR;
 						Point2 rollbar = lpos + dir2;
 
-						rollbar -= offset * 2;
+						rollbar -= rbar_dir * 2;
 						for(int n = 0; n < 5; n++)
 						{
 							if(n != 2)
 								GUI_PlotIcon(g,"map_light.png",rollbar.x(),rollbar.y(),sign_hdg, max(0.3, z * 0.05));
-							rollbar += offset;
+							rollbar += rbar_dir;
 						}
 					}
 					for(int n = 0; n < num_lgts; n++)
 					{
-						lpos += direction;
+						lpos += vec_lgts;
 						GUI_PlotIcon(g,"map_light.png",lpos.x(),lpos.y(),sign_hdg, max(0.3, z * 0.05));
 					}
 				}
