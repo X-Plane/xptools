@@ -38,6 +38,16 @@
 	
 	The result: as we run through the files and purge out the <object> blocks, 
 	filled blocks will be retired for re-use.  We save a million tiny alloc/deallocs for STL strings.	
+	
+	2019 update: 
+	
+	The XML writer code is now propagating const char * rather than strings wherever possible, 
+	so most of those strings are gone.
+	The overhead of formatted printing ( fprintf() vs fputs() ) was removed and only string values are
+	subjected to XML escape sequences conversion ( numbers will NEVER have non-ASCII content ), reducing
+	XML write time for large files by 35%.
+	
+	Benchmarked throughtput is 75 sec for 14 million items (global airports) to create a 5.5GB xml file.
 
 */
 
@@ -45,8 +55,10 @@
 
 inline void fi_indent(int n, FILE * fi) { while(n--) fputc(' ', fi); }
 
-inline void fi_escape(const string& str, FILE * fi)
+inline string str_escape(const string& str)
 {
+	string result;
+
 	UTF8 * b = (UTF8 *) str.c_str();
 	UTF8 * e = b + str.length();
 	
@@ -77,23 +89,23 @@ inline void fi_escape(const string& str, FILE * fi)
 		{	
 			switch(*b) {
 			case '<':
-				fprintf(fi,"&lt;");
+				result += "&lt;";
 				break;			
 			case '>':
-				fprintf(fi,"&gt;");
+				result += "&gt;";
 				break;
 			case '"':
-				fprintf(fi,"&quot;");
+				result += "&quot;";
 				break;
 			case '&':
-				fprintf(fi,"&amp;");
+				result += "&amp;";
 				break;
 			default:
 				// This is STILL not ideal - XML disallows anything above #x10FFFF or the surrogate blocks, but 
 				// for now just notice that control chars are bogus.  Drop control chars, there's just no way to
 				// encode them, and frankly they are silly.
 				if(*b >= ' ' || *b == '\t' || *b == '\r' || *b == '\n')
-					fputc(*b,fi);
+					result += *b;
 				break;
 			}
 			++b;
@@ -103,11 +115,17 @@ inline void fi_escape(const string& str, FILE * fi)
 		{
 			// No low-number chars - that blows up the reader.
 			if(*b >= ' ' || *b == '\t' || *b == '\r' || *b == '\n')
-				fprintf(fi,"&#x%02X;",(int) *b);
+			{
+				char c[8];
+				snprintf(c,7,"&#x%02X;",(int) *b);
+				result += c;
+			}
 			++b;
 		}
-	}	
+	}
+	return result;
 }
+
 
 WED_XMLElement::WED_XMLElement(
 									const char *		n,
@@ -122,12 +140,12 @@ WED_XMLElement::~WED_XMLElement()
 	if(!flushed)
 	{
 		fi_indent(indent, file);
-		fputc('<',file); fputs(name.c_str(),file);
+		fputc('<',file); fputs(name,file);
 
-		for(map<string,string>::iterator a = attrs.begin(); a != attrs.end(); ++a)
+		for(auto a : attrs)
 		{
-			fputc(' ',file); fputs(a->first.c_str(),file); fputs("=\"",file);
-			fi_escape(a->second, file);
+			fputc(' ',file); fputs(a.first,file); fputs("=\"",file);
+			fputs(a.second.c_str(), file);
 			fputc('"',file);
 		}
 
@@ -143,7 +161,7 @@ WED_XMLElement::~WED_XMLElement()
 	if(!children.empty() || flushed)
 	{
 		fi_indent(indent,file);
-		fputs("</",file); fputs(name.c_str(),file); fputs(">\n",file);
+		fputs("</",file); fputs(name,file); fputs(">\n",file);
 	}
 }
 
@@ -163,12 +181,12 @@ void WED_XMLElement::flush_from(WED_XMLElement * who)
 	if(!flushed)
 	{
 		fi_indent(indent, file);
-		fputc('<',file); fputs(name.c_str(),file);
+		fputc('<',file); fputs(name,file);
 
-		for(map<string,string>::iterator a = attrs.begin(); a != attrs.end(); ++a)
+		for(auto a : attrs)
 		{
-			fputc(' ',file); fputs(a->first.c_str(),file); fputs("=\"",file);
-			fi_escape(a->second, file);
+			fputc(' ',file); fputs(a.first,file); fputs("=\"",file);
+			fputs(a.second.c_str(), file);
 			fputc('"',file);
 		}
 		fputs(">\n",file);
@@ -186,7 +204,7 @@ void WED_XMLElement::flush_from(WED_XMLElement * who)
 	flushed = true;
 }
 
-static char * to_chars(char * str, int len, int num)
+inline char * to_chars(char * str, int len, int num)
 {
         char *p = str+len-1;
         *p = 0;
@@ -216,9 +234,9 @@ void					WED_XMLElement::add_attr_int(const char * name, int value)
 	DebugAssert(name && *name);	
 #endif
 	DebugAssert(!flushed);
-//	attrs[name] = to_string(value); // its friggin slow - wanna spend 8% of the _whole_ time to save in his _one_ line ???
+//	attrs[name] = to_string(value); // its friggin slow - wanna spend 10% of the _whole_ time to save in his _one_ line ???
 	char c[16];
-	attrs[name] = to_chars(c, sizeof(c), value);
+	attrs.push_back(make_pair(name, string(to_chars(c, sizeof(c), value))));
 }
 
 void					WED_XMLElement::add_attr_double(const char * name, double value, int dec)
@@ -230,12 +248,12 @@ void					WED_XMLElement::add_attr_double(const char * name, double value, int de
 #endif
 	DebugAssert(!flushed);
 	if(value == 0.0)
-		attrs[name] = "0.0";
+		attrs.push_back(make_pair(name, string("0.0")));
 	else
 	{
 		char buf[32];
 		snprintf(buf,32,"%.*lf",dec,value);
-		attrs[name] = buf;
+		attrs.push_back(make_pair(name, string(buf)));
 	}
 }
 
@@ -248,7 +266,7 @@ void					WED_XMLElement::add_attr_c_str(const char * name, const char * str)
 	DebugAssert(name && *name && str && *str);
 #endif
 	DebugAssert(!flushed);
-	attrs[name] = str;
+	attrs.push_back(make_pair(name, str_escape(str)));
 }
 
 void					WED_XMLElement::add_attr_stl_str(const char * name, const string& str)
@@ -259,7 +277,7 @@ void					WED_XMLElement::add_attr_stl_str(const char * name, const string& str)
 	DebugAssert(name && *name);	
 #endif
 	DebugAssert(!flushed);
-	attrs[name] = str;
+	attrs.push_back(make_pair(name, str_escape(str)));
 }
 
 WED_XMLElement *		WED_XMLElement::add_sub_element(const char * name)
