@@ -183,21 +183,21 @@ void		WED_Thing::StartElement(
 								const XML_Char *	name,
 								const XML_Char **	atts)
 {
-	if(strcasecmp(name,"viewer")==0)
+	if(strcmp(name,"viewer")==0)
 	{
 		const char * id = get_att("id",atts);
 		if(!id)
 			reader->FailWithError("no id");
 		viewer_id.insert(atoi(id));
 	} 
-	else if(strcasecmp(name,"source")==0)
+	else if(strcmp(name,"source")==0)
 	{
 		const char * id = get_att("id",atts);
 		if(!id)
 			reader->FailWithError("no id");
 		source_id.push_back(atoi(id));
 	} 
-	else if(strcasecmp(name,"child") == 0)
+	else if(strcmp(name,"child") == 0)
 	{
 		const char * id = get_att("id",atts);
 		if(!id)
@@ -473,7 +473,7 @@ void	WED_Thing::Validate(void)
 
 #pragma mark -
 
-WED_TypeField::WED_TypeField(WED_Thing * t) : WED_PropertyItem(t, "Class")
+WED_TypeField::WED_TypeField(WED_Thing * t) : WED_PropertyItem(t, "Class", 0)
 {
 }
 
@@ -498,7 +498,7 @@ void		WED_TypeField::GetPropertyDictItem(int e, string& item)
 void		WED_TypeField::GetProperty(PropertyVal_t& v) const
 {
 	v.prop_kind = prop_String;
-	v.string_val = dynamic_cast<WED_Thing*>(mParent)->HumanReadableType();
+	v.string_val = dynamic_cast<WED_Thing*>(GetParent())->HumanReadableType();
 }
 
 void		WED_TypeField::SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent)

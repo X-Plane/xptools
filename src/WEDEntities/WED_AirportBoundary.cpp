@@ -28,8 +28,8 @@ DEFINE_PERSISTENT(WED_AirportBoundary)
 TRIVIAL_COPY(WED_AirportBoundary, WED_GISPolygon)
 
 WED_AirportBoundary::WED_AirportBoundary(WED_Archive * a, int i) : WED_GISPolygon(a,i),
-	lines(this,"Line Attributes",		"Line Attributes", 1),
-	lights(this,"Light Attributes",		"Light Attributes", 1)
+	lines(this,PROP_Name("Line Attributes",XML_Name("","")),	"Line Attributes", 1),
+	lights(this,PROP_Name("Light Attributes",XML_Name("","")),	"Light Attributes", 1)
 {
 }
 

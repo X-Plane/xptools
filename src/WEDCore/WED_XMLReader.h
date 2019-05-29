@@ -34,7 +34,7 @@ inline const XML_Char * get_att(const char * name, const XML_Char ** atts)
 	const XML_Char ** a = atts;
 	while(*a)
 	{
-		if(strcasecmp(*a,name)==0)
+		if(strcmp(*a,name)==0)
 		{
 			++a;
 			return *a;
