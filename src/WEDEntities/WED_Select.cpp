@@ -84,7 +84,7 @@ void		WED_Select::StartElement(
 								const XML_Char *	name,
 								const XML_Char **	atts)
 {
-	if(strcasecmp(name,"sel")==0)
+	if(strcmp(name,"sel")==0)
 	{
 		const XML_Char * id = get_att("id",atts);
 		if(!id)
@@ -92,7 +92,7 @@ void		WED_Select::StartElement(
 		else
 			mSelected.insert(atoi(id));
 	}
-	else if(strcasecmp(name,"selection")==0)
+	else if(strcmp(name,"selection")==0)
 	{
 		mSelected.clear();
 	}

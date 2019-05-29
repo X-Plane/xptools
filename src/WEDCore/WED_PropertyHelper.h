@@ -44,39 +44,33 @@ class	IOWriter;
 class	IOReader;
 class	WED_XMLElement;
 
-/* These macros to create a *single* string containing a properties WED name and XML names
-   this saves another 2 pointers in each property item, after the sqlite removal already removed 2 pointers.
+/* These macros create a *single* string containing a properties WED name and XML names,
+   saving 2 pointers in each property item, after the sqlite removal already removed 2 pointers.
    This reduces the WED memory size with large sceneries (like importing the global apt.dat) by 30%
 */
 
 #define XML_Name(x,y) x "\0" y
-#define PROP_Name(wed_name,xml_name) wed_name "\0" xml_name, sizeof(wed_name)
+#define PROP_Name(wed_name, xml_name) wed_name "\0" xml_name, sizeof(wed_name) + 256 * (strlen(xml_name)+1+sizeof(wed_name))
 
-/* Memory size and access time optimization for LARGE datasets, like the Global Airports
+/* more memory size and access time optimization for LARGE datasets, like the Global Airports:
 
-   Every WED_Thing has a number of WED_Properties, on average ~12. And a vector of pointers to each.
-   The Global Airports have as of mid 2019 ~9 million WED_Things in them, occupying ~14 GB of RAM.
+   Every WED_Thing has on average 10 WED_Properties and a pair of pointers to/from each property.
+   The Global Airports have as of mid 2019 ~14 million WED_Things, so this adds up to over 2GB.
    
-   And the STL container vector<WED_PropertyItem *> is responsible for a good chunk of all that pain.
-   As the pointer array is on the heap - a few kilobytes, at time much more from every WED_thing's 
-   data structures. And the heap space is also quite notable - as its just over 8 bytes * 10-20 
-   propertis for most WED_Things, the vector<> allocator will grab 256 byte chunks for most.
+   And the STL container vector<WED_PropertyItem *> is responsible for a good chunk of all that pain,
+   as the pointer array is on the heap, requireing a second memory access to resolve. With large
+   data structures, pretty much every memory access is a cache miss.
    
-   Which, granted, can be improved on by issueing a suitable mItems.reserve() to size them just 
-   big enough. But why all that in the first place ?All WED_Properties are part of the same Class 
-   WED_Thing, so in memory they are all under 1.5kB away and its even a fixed relative distance 
-   for every entity - class structures don't change dynamically, at all.
+   Since the WED_PropertyItems are part of the same class - they are all within 2kB in memory from
+   the WED__PropertyHelper class. Due to alignof(class) == 8 that relative distance can be encoded 
+   with just 1 byte. The Vector<void *> is reduces to a memory-local char[] - saving overall 
+   another 24% Memory and 5% CPU time on load, save and export.
    
-   Memory alignment is after all 8-bytes or larger- so that relative distance can be encoded
-   with just 8 bits. A truely compact virtual table ! Similarly compress the two pointers that go 
-   the other way - mParent and mTitle. Overall saving when im/exporting the Global Airports is
-   5-7% CPU time each, 24% in RAM uage.
-   
-   The maximum number of properties for any WEDEntity is 22 right now (Runways). If the Asserts() 
-   blow in the future - increase below. Set it to 0 to disable all the trickery.
+   The maximum number of properties for any WEDEntity is 22 right now (Runways).
+   Set below to 0 to disable most of the trickery.
 */   
 
-#define PROP_PTR_OPT  24
+#define PROP_PTR_OPT 23
 
 class	WED_PropertyItem {
 public:
@@ -95,27 +89,40 @@ public:
 	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value)=0;
 
 #if PROP_PTR_OPT
-	WED_PropertyHelper *	GetParent(void) const  { return reinterpret_cast<WED_PropertyHelper *>((char *) this + mParentOffs); }
-	const char	*			GetTitle(void) const   { ptrdiff_t p = mTitle; return (const char *) p; }
-	const char	*			GetXmlName(void) const   { ptrdiff_t p = mTitle; return ((const char *) p) + mXmlOffs; }
+#define PTR_FIX(x)  x & ((1L << 45) - 1)
+	WED_PropertyHelper *	GetParent(void)      const { return reinterpret_cast<WED_PropertyHelper *>((char *) this - (mTitle >> 45-3 & 0xFF << 3)); }
+	const char *			GetWedName(void)     const { return reinterpret_cast<const char *>(PTR_FIX(mTitle)); }
+	const char *			GetXmlName(void)     const { return reinterpret_cast<const char *>(PTR_FIX(mTitle)) + (mTitle >> 53 & 0x1F); }
+	const char *			GetXmlAttrName(void) const { return reinterpret_cast<const char *>(PTR_FIX(mTitle)) + (mTitle >> 58 & 0x3F); }
 private:
-	unsigned					mTitle;     // pointer to const data segment - that has to be in the lower 2GB per x86-84 ABI
-#pragma pack (push)
-#pragma pack (1)
-	short						mXmlOffs;
-	short			 			mParentOffs;
-#pragma pack (pop)
+	uintptr_t				mTitle;     // this now holds THREE tightly packed offsets in its 18 MSBits to save even more RAM usage
 #else
+#define PTR_FIX(x) x & ((1L << 47) - 1)
 	WED_PropertyHelper *	GetParent(void) const { return mParent; }
-	const char	*			GetTitle(void) const { return mTitle; }
-	const char	*			GetXmlName(void) const { return mTitle + strlen(mTitle) +1; }
+	const char *			GetWedName(void)     const { return reinterpret_cast<const char *>(PTR_FIX(mTitle)); }
+	const char *			GetXmlName(void)     const { return reinterpret_cast<const char *>(PTR_FIX(mTitle)) + ((mTitle >> 48) & 0xFF); }
+	const char *			GetXmlAttrName(void) const { return reinterpret_cast<const char *>(PTR_FIX(mTitle)) + ((mTitle >> 56) & 0xFF); }
 private:
-	const char *			mTitle;
+	uintptr_t				mTitle;      // the two MSBytes hold the offset to be added to get the const char * to the 2nd and 3rd word in the string
 	WED_PropertyHelper *	mParent;
 #endif
 };
 
-//#define mParent() reinterpret_cast<WED_PropertyHelper*>((char *) this + mParentOffs)
+#if PROP_PTR_OPT
+class relPtr {
+public:
+							relPtr() : mItemsCount(0) {};
+	WED_PropertyItem * operator [] (int n) const;
+	int					size(void) const { return mItemsCount; }
+	void 					push_back(WED_PropertyItem * ptr);
+private:
+#pragma pack (push)
+#pragma pack (1)
+	unsigned char 		mItemsCount;
+	unsigned char 		mItemsOffs[PROP_PTR_OPT];
+#pragma pack (pop)
+};
+#endif
 
 class WED_PropertyHelper : public WED_XMLHandler, public IPropertyObject {
 public:
@@ -149,20 +156,12 @@ public:
 	virtual	int		PropertyItemNumber(const WED_PropertyItem * item) const;
 	
 #if PROP_PTR_OPT
-							WED_PropertyHelper() { for(int i = 0; i < PROP_PTR_OPT; i++) mItemsOffs[i] = 0; }
-	WED_PropertyItem * Item(int n) const { return reinterpret_cast<WED_PropertyItem *>((char *) this + (mItemsOffs[n] << 3)); }
-#else
-	WED_PropertyItem * Item(int n) const { return mItems[n]; };
-#endif
-private:
-
-	friend class		WED_PropertyItem;
-#if PROP_PTR_OPT
-	unsigned char 		mItemsOffs[PROP_PTR_OPT];
+	relPtr				mItems;
 #else
 	vector<WED_PropertyItem *>		mItems;
 #endif
 
+	friend class		WED_PropertyItem;
 };
 
 // ------------------------------ A LIBRARY OF HANDY MEMBER VARIABLES ------------------------------------

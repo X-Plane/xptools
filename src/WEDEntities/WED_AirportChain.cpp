@@ -121,7 +121,7 @@ void		WED_AirportChain::StartElement(
 								const XML_Char *	name,
 								const XML_Char **	atts)
 {
-	if(strcasecmp(name,"airport_chain")==0)
+	if(strcmp(name,"airport_chain")==0)
 	{
 		const XML_Char * c = get_att("closed",atts);
 		if(c)
