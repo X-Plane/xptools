@@ -1256,7 +1256,7 @@ static void ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vec
 			{
 				if(airlines_str[i - 3] != ' ')
 				{
-					msgs.push_back(validation_error_t(string("Ramp start airlines string '") + orig_airlines_str + "' must have a space bewteen every three letter airline code.", err_ramp_airlines_is_not_spaced_correctly, ramp, apt));
+					msgs.push_back(validation_error_t(string("Ramp start airlines string '") + orig_airlines_str + "' must have a space between every three letter airline code.", err_ramp_airlines_is_not_spaced_correctly, ramp, apt));
 					break;
 				}
 
