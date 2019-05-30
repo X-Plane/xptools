@@ -63,11 +63,13 @@ class	WED_XMLElement;
    
    Since the WED_PropertyItems are part of the same class - they are all within 2kB in memory from
    the WED__PropertyHelper class. Due to alignof(class) == 8 that relative distance can be encoded 
-   with just 1 byte. The Vector<void *> is reduces to a memory-local char[] - saving overall 
-   another 24% Memory and 5% CPU time on load, save and export.
+   with just 1 byte. The vector<class *> is reduces to a memory-local char[] - saving overall 
+   another 24% of total memory and 5% CPU time on load, save and export.
    
-   The maximum number of properties for any WEDEntity is 22 right now (Runways).
-   Set below to 0 to disable most of the trickery.
+   The maximum number of properties for any WEDEntity is 22 right now (Runways), so we define the
+   byte array to have 23 entries (plus one byte for the array size parameter).
+
+   Set below to 0 to disable this 2nd level of trickery.
 */   
 
 #define PROP_PTR_OPT 23
@@ -88,22 +90,37 @@ public:
 	virtual	bool		WantsElement(WED_XMLReader * reader, const char * name) { return false; }
 	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value)=0;
 
+	WED_PropertyHelper * GetParent(void) const;
+	const char *		GetWedName(void) const;
+	const char *		GetXmlName(void) const;
+	const char *		GetXmlAttrName(void) const;
+
+private:
 #if PROP_PTR_OPT
-#define PTR_FIX(x)  x & ((1L << 45) - 1)
-	WED_PropertyHelper *	GetParent(void)      const { return reinterpret_cast<WED_PropertyHelper *>((char *) this - (mTitle >> 45-3 & 0xFF << 3)); }
-	const char *			GetWedName(void)     const { return reinterpret_cast<const char *>(PTR_FIX(mTitle)); }
-	const char *			GetXmlName(void)     const { return reinterpret_cast<const char *>(PTR_FIX(mTitle)) + (mTitle >> 53 & 0x1F); }
-	const char *			GetXmlAttrName(void) const { return reinterpret_cast<const char *>(PTR_FIX(mTitle)) + (mTitle >> 58 & 0x3F); }
-private:
-	uintptr_t				mTitle;     // this now holds THREE tightly packed offsets in its 18 MSBits to save even more RAM usage
+	#define PTR_CLR(x)  (x & (1ULL << 45) - 1ULL)
+	/*
+	Unfortunately we need 2 more bits as we have 'unused' bits in the 47 bit pointers. So we clear two more bits, but need 
+	to put them back later to restore the exact pointer.
+	Under Linux and OSX - that's easy: All constants are at the bottom of the 47bit virtual address space - so UNLESS the
+	pointer is refering to the heap - those other more significant bits are all zero.
+	But under windows - the constants are mapped at the very top, i.e. right below 0x7FFFFFFFFFFF. So we look at the 
+	45th bit - the highest one we didn't clobber and copy that to the 46 and 47th bits. This restores the exact pointer
+	if pointimng to either in the top 32TB OR bottom 32TB of the 128TB / 47 bit virtual address space.
+	*/
+	#define PTR_FIX(x)  (PTR_CLR(x) | (x & (1ULL << 44)) << 1 | (x & (1ULL << 44)) << 2)
+	uintptr_t				mTitle;      // this now holds THREE tightly packed offsets in its 19 MSBits to save even more memory
+	WED_PropertyHelper *	mParent;
 #else
-#define PTR_FIX(x) x & ((1L << 47) - 1)
-	WED_PropertyHelper *	GetParent(void) const { return mParent; }
-	const char *			GetWedName(void)     const { return reinterpret_cast<const char *>(PTR_FIX(mTitle)); }
-	const char *			GetXmlName(void)     const { return reinterpret_cast<const char *>(PTR_FIX(mTitle)) + ((mTitle >> 48) & 0xFF); }
-	const char *			GetXmlAttrName(void) const { return reinterpret_cast<const char *>(PTR_FIX(mTitle)) + ((mTitle >> 56) & 0xFF); }
-private:
-	uintptr_t				mTitle;      // the two MSBytes hold the offset to be added to get the const char * to the 2nd and 3rd word in the string
+	/* 
+	So called "64bit" processors actually only have 48bit virtual address space - a concession to the structures and speed of the 
+	virtual memory mapping hardware. So for the next decade or so, the top 17 bits of all pointers to anywhere in the userspace of
+	any x86-64 application are zero. 17 bits ? Yep - all existing OS use the MSB to distinguish between kernel and user address 
+	space - so no legal pointer can ever have the MSB be 1. And due to the way the 47 bits are required to be sign-extended, the 
+	effective user space goes from 0x0000 0000 0000 0000 to 0x0000 7FFF FFFF FFFF. So that is why we can safely abuse the top
+	17bit to store other information, as long as we zero those bits out before the pointer is actually used.
+	*/
+	#define PTR_CLR(x) (x & ((1ULL << 47) - 1ULL))
+	uintptr_t				mTitle;      // the two MSBytes hold offsets to make the const char * point to the 2nd and 3rd word in the string
 	WED_PropertyHelper *	mParent;
 #endif
 };
@@ -111,10 +128,10 @@ private:
 #if PROP_PTR_OPT
 class relPtr {
 public:
-							relPtr() : mItemsCount(0) {};
-	WED_PropertyItem * operator [] (int n) const;
+						relPtr() : mItemsCount(0) {};
+	WED_PropertyItem *	operator [] (int n) const;
 	int					size(void) const { return mItemsCount; }
-	void 					push_back(WED_PropertyItem * ptr);
+	void 				push_back(WED_PropertyItem * ptr);
 private:
 #pragma pack (push)
 #pragma pack (1)
