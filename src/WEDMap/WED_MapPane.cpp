@@ -34,9 +34,7 @@
 #include "WED_ToolUtils.h"
 #include "WED_MarqueeTool.h"
 #include "WED_CreateBoxTool.h"
-#if AIRPORT_ROUTING
 #include "WED_CreateEdgeTool.h"
-#endif
 #include "WED_CreatePolygonTool.h"
 #include "WED_CreatePointTool.h"
 #include "WED_CreateLineTool.h"
@@ -189,11 +187,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 
 
 	mTools.push_back(					new WED_CreatePolygonTool("Boundary",mMap, mMap, resolver, archive, create_Boundary));
-#if AIRPORT_ROUTING
 	mTools.push_back(					new WED_CreateEdgeTool("Taxi Routes",mMap, mMap, resolver, archive, create_TaxiRoute));
-#else
-	mTools.push_back(					NULL);
-#endif
 
 	mTools.push_back(					new WED_CreatePointTool("Tower Viewpoint", mMap, mMap, resolver, archive, create_TowerViewpoint));
 	mTools.push_back(					new WED_CreatePointTool("Ramp Start", mMap, mMap, resolver, archive, create_RampStart));

@@ -24,9 +24,7 @@
 #ifndef WED_PROPERTYHELPER_H
 #define WED_PROPERTYHELPER_H
 
-/*
-
-	WED_PropertyHelper - THEORY OF OPERATION
+/*	WED_PropertyHelper - THEORY OF OPERATION
 
 	IPropertyObject provides an interface for a class to describe and I/O it's own data.  But...implementing that a hundred times over
 	for each object would grow old fast.
@@ -35,30 +33,50 @@
 
 	As a side note besides providing prop interfaces, it provides a way to stream properties to IODef reader/writers.  This is used to
 	save undo work in WED_thing.
-
 */
 
-#include <vector>
 #include "IPropertyObject.h"
 #include "WED_XMLReader.h"
 #include "WED_Globals.h"
-using std::vector;
 
 class	WED_PropertyHelper;
 class	IOWriter;
 class	IOReader;
 class	WED_XMLElement;
 
-// macros to create a *single* string containing a properties WED name and XML names
-// this saves another 2 pointers in each property item, after the sqlite removal already removed 2 pointers.
-// Overall, this reduces the WED memory size with large sceneries (like importing the global apt.dat)
+/* These macros create a *single* string containing a properties WED name and XML names,
+   saving 2 pointers in each property item, after the sqlite removal already removed 2 pointers.
+   This reduces the WED memory size with large sceneries (like importing the global apt.dat) by 30%
+*/
 
 #define XML_Name(x,y) x "\0" y
-#define PROP_Name(wed_name,xml_name) (wed_name "\0" xml_name)
+#define PROP_Name(wed_name, xml_name) wed_name "\0" xml_name, sizeof(wed_name) + 256 * (strlen(xml_name)+1+sizeof(wed_name))
+
+/* more memory size and access time optimization for LARGE datasets, like the Global Airports:
+
+   Every WED_Thing has on average 10 WED_Properties and a pair of pointers to/from each property.
+   The Global Airports have as of mid 2019 ~14 million WED_Things, so this adds up to over 2GB.
+   
+   And the STL container vector<WED_PropertyItem *> is responsible for a good chunk of all that pain,
+   as the pointer array is on the heap, requireing a second memory access to resolve. With large
+   data structures, pretty much every memory access is a cache miss.
+   
+   Since the WED_PropertyItems are part of the same class - they are all within 2kB in memory from
+   the WED__PropertyHelper class. Due to alignof(class) == 8 that relative distance can be encoded 
+   with just 1 byte. The vector<class *> is reduces to a memory-local char[] - saving overall 
+   another 24% of total memory and 5% CPU time on load, save and export.
+   
+   The maximum number of properties for any WEDEntity is 22 right now (Runways), so we define the
+   byte array to have 23 entries (plus one byte for the array size parameter).
+
+   Set below to 0 to disable this 2nd level of trickery.
+*/   
+
+#define PROP_PTR_OPT 23
 
 class	WED_PropertyItem {
 public:
-	WED_PropertyItem(WED_PropertyHelper * parent, const char * title);
+	WED_PropertyItem(WED_PropertyHelper * parent, const char * title, int offset);
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info)=0;
 	virtual	void		GetPropertyDict(PropertyDict_t& dict)=0;
@@ -72,36 +90,79 @@ public:
 	virtual	bool		WantsElement(WED_XMLReader * reader, const char * name) { return false; }
 	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value)=0;
 
-	const char *			mTitle;
-	WED_PropertyHelper *	mParent;
+	WED_PropertyHelper * GetParent(void) const;
+	const char *		GetWedName(void) const;
+	const char *		GetXmlName(void) const;
+	const char *		GetXmlAttrName(void) const;
+
 private:
-	WED_PropertyItem();
+#if PROP_PTR_OPT
+	#define PTR_CLR(x)  (x & (1ULL << 45) - 1ULL)
+	/*
+	Unfortunately we need 2 more bits as we have 'unused' bits in the 47 bit pointers. So we clear two more bits, but need 
+	to put them back later to restore the exact pointer.
+	Under Linux and OSX - that's easy: All constants are at the bottom of the 47bit virtual address space - so UNLESS the
+	pointer is refering to the heap - those other more significant bits are all zero.
+	But under windows - the constants are mapped at the very top, i.e. right below 0x7FFFFFFFFFFF. So we look at the 
+	45th bit - the highest one we didn't clobber and copy that to the 46 and 47th bits. This restores the exact pointer
+	if pointimng to either in the top 32TB OR bottom 32TB of the 128TB / 47 bit virtual address space.
+	*/
+	#define PTR_FIX(x)  (PTR_CLR(x) | (x & (1ULL << 44)) << 1 | (x & (1ULL << 44)) << 2)
+	uintptr_t				mTitle;      // this now holds THREE tightly packed offsets in its 19 MSBits to save even more memory
+	WED_PropertyHelper *	mParent;
+#else
+	/* 
+	So called "64bit" processors actually only have 48bit virtual address space - a concession to the structures and speed of the 
+	virtual memory mapping hardware. So for the next decade or so, the top 17 bits of all pointers to anywhere in the userspace of
+	any x86-64 application are zero. 17 bits ? Yep - all existing OS use the MSB to distinguish between kernel and user address 
+	space - so no legal pointer can ever have the MSB be 1. And due to the way the 47 bits are required to be sign-extended, the 
+	effective user space goes from 0x0000 0000 0000 0000 to 0x0000 7FFF FFFF FFFF. So that is why we can safely abuse the top
+	17bit to store other information, as long as we zero those bits out before the pointer is actually used.
+	*/
+	#define PTR_CLR(x) (x & ((1ULL << 47) - 1ULL))
+	uintptr_t				mTitle;      // the two MSBytes hold offsets to make the const char * point to the 2nd and 3rd word in the string
+	WED_PropertyHelper *	mParent;
+#endif
 };
 
+#if PROP_PTR_OPT
+class relPtr {
+public:
+						relPtr() : mItemsCount(0) {};
+	WED_PropertyItem *	operator [] (int n) const;
+	int					size(void) const { return mItemsCount; }
+	void 				push_back(WED_PropertyItem * ptr);
+private:
+#pragma pack (push)
+#pragma pack (1)
+	unsigned char 		mItemsCount;
+	unsigned char 		mItemsOffs[PROP_PTR_OPT];
+#pragma pack (pop)
+};
+#endif
 
 class WED_PropertyHelper : public WED_XMLHandler, public IPropertyObject {
 public:
 
-	virtual	int			FindProperty(const char * in_prop) const;
-	virtual int			CountProperties(void) const;
-	virtual void		GetNthPropertyInfo(int n, PropertyInfo_t& info) const;
+	virtual	int		FindProperty(const char * in_prop) const;
+	virtual	int		CountProperties(void) const;
+	virtual	void		GetNthPropertyInfo(int n, PropertyInfo_t& info) const;
 	virtual	void		GetNthPropertyDict(int n, PropertyDict_t& dict) const;
 	virtual	void		GetNthPropertyDictItem(int n, int e, string& item) const;
-	virtual void		GetNthProperty(int n, PropertyVal_t& val) const;
-	virtual void		SetNthProperty(int n, const PropertyVal_t& val);
-	virtual void		DeleteNthProperty(int n) { };
+	virtual	void		GetNthProperty(int n, PropertyVal_t& val) const;
+	virtual	void		SetNthProperty(int n, const PropertyVal_t& val);
+	virtual	void		DeleteNthProperty(int n) { };
 
-	virtual	void				PropEditCallback(int before)=0;
+	virtual	void		PropEditCallback(int before)=0;
 	virtual	int					CountSubs(void)=0;
 	virtual	IPropertyObject *	GetNthSub(int n)=0;
 
-
 	// Utility to help manage streaming
-			void 		ReadPropsFrom(IOReader * reader);
-			void 		WritePropsTo(IOWriter * writer);
-			void		PropsToXML(WED_XMLElement * parent);
+				void 		ReadPropsFrom(IOReader * reader);
+				void 		WritePropsTo(IOWriter * writer);
+				void		PropsToXML(WED_XMLElement * parent);
 
-	virtual void		StartElement(
+	virtual	void		StartElement(
 								WED_XMLReader * reader,
 								const XML_Char *	name,
 								const XML_Char **	atts);
@@ -109,12 +170,15 @@ public:
 	virtual	void		PopHandler(void);
 
 	// This is virtual so remappers like WED_Runway can "fix" the results
-	virtual	int			PropertyItemNumber(const WED_PropertyItem * item) const;
-private:
-
-	friend class	WED_PropertyItem;
+	virtual	int		PropertyItemNumber(const WED_PropertyItem * item) const;
+	
+#if PROP_PTR_OPT
+	relPtr				mItems;
+#else
 	vector<WED_PropertyItem *>		mItems;
+#endif
 
+	friend class		WED_PropertyItem;
 };
 
 // ------------------------------ A LIBRARY OF HANDY MEMBER VARIABLES ------------------------------------
@@ -126,11 +190,12 @@ public:
 	int				value;
 	int				mDigits;
 
-	operator int&() { return value; }
-	operator int() const { return value; }
-	WED_PropIntText& operator=(int v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
+							operator int&() { return value; }
+							operator int() const { return value; }
+	WED_PropIntText& operator=(int v);
 
-	WED_PropIntText(WED_PropertyHelper * parent, const char * title, int initial, int digits)  : WED_PropertyItem(parent, title), value(initial), mDigits(digits) { }
+	WED_PropIntText(WED_PropertyHelper * parent, const char * title, int offset, int initial, int digits) :
+		WED_PropertyItem(parent, title, offset), value(initial), mDigits(digits) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -150,11 +215,12 @@ public:
 
 	int				value;
 
-	operator int&() { return value; }
-	operator int() const { return value; }
-	WED_PropBoolText& operator=(int v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
+							operator int&() { return value; }
+							operator int() const { return value; }
+	WED_PropBoolText& operator=(int v);
 
-	WED_PropBoolText(WED_PropertyHelper * parent, const char * title, int initial)  : WED_PropertyItem(parent, title), value(initial) { }
+	WED_PropBoolText(WED_PropertyHelper * parent, const char * title, int offset, int initial) :
+		WED_PropertyItem(parent, title, offset), value(initial) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -180,12 +246,12 @@ public:
 	char 			mUnit[6];  // this can be non-zero terminated if desired unit text is 6 chars (or longer, but its truncated then)
 #pragma pack (pop)
 
-						operator double&() { return value; }
-						operator double() const { return value; }
-	WED_PropDoubleText& operator=(double v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
+							operator double&() { return value; }
+							operator double() const { return value; }
+	WED_PropDoubleText&	operator=(double v);
 
-	WED_PropDoubleText(WED_PropertyHelper * parent, const char * title, double initial, int digits, int decimals, const char * unit = "")
-		: WED_PropertyItem(parent, title), mDigits(digits), mDecimals(decimals), value(initial) { strncpy(mUnit,unit,6); }
+	WED_PropDoubleText(WED_PropertyHelper * parent, const char * title, int offset, double initial, int digits, int decimals, const char * unit = "") :
+		WED_PropertyItem(parent, title, offset), mDigits(digits), mDecimals(decimals), value(initial) { strncpy(mUnit,unit,6); }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -200,9 +266,8 @@ public:
 
 class	WED_PropFrequencyText : public WED_PropDoubleText {
 public:
-	WED_PropFrequencyText(WED_PropertyHelper * parent, const char * title, double initial, int digits, int decimals)
-		: WED_PropDoubleText(parent, title, initial, digits, decimals) { AssignFrom1Khz(GetAs1Khz()); }
-
+	WED_PropFrequencyText(WED_PropertyHelper * parent, const char * title, int offset, double initial, int digits, int decimals)
+		: WED_PropDoubleText(parent, title, offset, initial, digits, decimals) { AssignFrom1Khz(GetAs1Khz()); }
 
 	WED_PropFrequencyText& operator=(double v) { WED_PropDoubleText::operator=(v); return *this; }
 
@@ -217,7 +282,8 @@ public:
 // A double value edited as text.  Stored in meters, but displayed in feet or meters, depending on UI settings.
 class	WED_PropDoubleTextMeters : public WED_PropDoubleText {
 public:
-	WED_PropDoubleTextMeters(WED_PropertyHelper * parent, const char * title, double initial, int digits, int decimals)  : WED_PropDoubleText(parent, title, initial, digits, decimals) { }
+	WED_PropDoubleTextMeters(WED_PropertyHelper * parent, const char * title, int offset, double initial, int digits, int decimals) :
+		WED_PropDoubleText(parent, title, offset, initial, digits, decimals) { }
 
 	WED_PropDoubleTextMeters& operator=(double v) { WED_PropDoubleText::operator=(v); return *this; }
 
@@ -232,11 +298,12 @@ public:
 
 	string			value;
 
-						operator string&() { return value; }
-						operator string() const { return value; }
-	WED_PropStringText& operator=(const string& v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
+							operator string&() { return value; }
+							operator string() const { return value; }
+	WED_PropStringText&	operator=(const string& v);
 
-	WED_PropStringText(WED_PropertyHelper * parent, const char * title, const string& initial)  : WED_PropertyItem(parent, title), value(initial) { }
+	WED_PropStringText(WED_PropertyHelper * parent, const char * title, int offset, const string& initial) :
+		WED_PropertyItem(parent, title, offset), value(initial) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -257,9 +324,10 @@ public:
 
 						operator string&() { return value; }
 						operator string() const { return value; }
-	WED_PropFileText& operator=(const string& v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
+	WED_PropFileText& operator=(const string& v);
 
-	WED_PropFileText(WED_PropertyHelper * parent, const char * title, const string& initial)  : WED_PropertyItem(parent, title), value(initial) { }
+	WED_PropFileText(WED_PropertyHelper * parent, const char * title, int offset, const string& initial) :
+		WED_PropertyItem(parent, title, offset), value(initial) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -281,9 +349,10 @@ public:
 
 						operator int&() { return value; }
 						operator int() const { return value; }
-	WED_PropIntEnum& operator=(int v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
+	WED_PropIntEnum& operator=(int v);
 
-	WED_PropIntEnum(WED_PropertyHelper * parent, const char * title, int idomain, int initial)  : WED_PropertyItem(parent, title), value(initial), domain(idomain) { }
+	WED_PropIntEnum(WED_PropertyHelper * parent, const char * title, int offset, int idomain, int initial) :
+		WED_PropertyItem(parent, title, offset), value(initial), domain(idomain) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -308,9 +377,18 @@ public:
 
 						operator set<int>&() { return value; }
 						operator set<int>() const { return value; }
-	WED_PropIntEnumSet& operator=(const set<int>& v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
-	WED_PropIntEnumSet& operator+=(const int v) { if(value.count(v) == 0) { if (mParent) mParent->PropEditCallback(1); value.insert(v); if (mParent) mParent->PropEditCallback(0); } return *this; }
-	WED_PropIntEnumSet(WED_PropertyHelper * parent, const char * title, int idomain, int iexclusive)  : WED_PropertyItem(parent, title), domain(idomain), exclusive(iexclusive) { }
+	WED_PropIntEnumSet& operator=(const set<int>& v);
+	
+	WED_PropIntEnumSet& operator+=(const int v) 
+	{ if(value.count(v) == 0) 
+		{ if (GetParent()) GetParent()->PropEditCallback(1); 
+			value.insert(v); 
+			if (GetParent()) GetParent()->PropEditCallback(0);
+		} 
+		return *this; 
+	}
+	WED_PropIntEnumSet(WED_PropertyHelper * parent, const char * title, int offset, int idomain, int iexclusive) :
+		WED_PropertyItem(parent, title, offset), domain(idomain), exclusive(iexclusive) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -340,15 +418,16 @@ public:
 class	WED_PropIntEnumBitfield : public WED_PropertyItem {
 public:
 
-	set<int>	value;
+	set<int>		value;
 	int			domain;
 	int			can_be_none;
 
 						operator set<int>&() { return value; }
 						operator set<int>() const { return value; }
-	WED_PropIntEnumBitfield& operator=(const set<int>& v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
+	WED_PropIntEnumBitfield& operator=(const set<int>& v);
 
-	WED_PropIntEnumBitfield(WED_PropertyHelper * parent, const char * title, int idomain, int be_none)  : WED_PropertyItem(parent, title), domain(idomain), can_be_none(be_none) { }
+	WED_PropIntEnumBitfield(WED_PropertyHelper * parent, const char * title, int offset, int idomain, int be_none) :
+		WED_PropertyItem(parent, title, offset), domain(idomain), can_be_none(be_none) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -369,15 +448,14 @@ public:
 class	WED_PropIntEnumSetFilter : public WED_PropertyItem {
 public:
 
-	const char *			host;
-#pragma pack (push)
-#pragma pack (1)
-	short int				minv;
-	short int				maxv;
-	bool					exclusive;
-#pragma pack (pop)
+	const char *		host;
 
-	WED_PropIntEnumSetFilter(WED_PropertyHelper * parent, const char * title, const char * ihost, int iminv, int imaxv, int iexclusive)  : WED_PropertyItem(parent, title), host(ihost), minv(iminv), maxv(imaxv), exclusive(iexclusive) { }
+	short					minv;
+	short					maxv;
+	bool					exclusive;
+
+	WED_PropIntEnumSetFilter(WED_PropertyHelper * parent, const char * title, int offset, const char * ihost, int iminv, int imaxv, int iexclusive) :
+		WED_PropertyItem(parent, title, offset), host(ihost), minv(iminv), maxv(imaxv), exclusive(iexclusive) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -397,11 +475,11 @@ public:
 class	WED_PropIntEnumSetUnion : public WED_PropertyItem {
 public:
 
-	const char *			host;
-	int						exclusive;
+	const char *		host;
+	int					exclusive;
 
-	WED_PropIntEnumSetUnion(WED_PropertyHelper * parent, const char * title, const char * ihost, int iexclusive)  : WED_PropertyItem(parent, title), host(ihost), exclusive(iexclusive) { }
-
+	WED_PropIntEnumSetUnion(WED_PropertyHelper * parent, const char * title, int offset, const char * ihost, int iexclusive) :
+		WED_PropertyItem(parent, title, offset), host(ihost), exclusive(iexclusive) { }
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
 	virtual	void		GetPropertyDictItem(int e, string& item);
@@ -420,13 +498,12 @@ public:
 class	WED_PropIntEnumSetFilterVal : public WED_PropIntEnumSetFilter {
 public:
 
-	WED_PropIntEnumSetFilterVal(WED_PropertyHelper * parent, const char * title, const char * ihost, int iminv, int imaxv, int iexclusive)  :
-		WED_PropIntEnumSetFilter(parent, title, ihost, iminv, imaxv, iexclusive) { }
+	WED_PropIntEnumSetFilterVal(WED_PropertyHelper * parent, const char * title, int offset, const char * ihost, int iminv, int imaxv, int iexclusive) :
+		WED_PropIntEnumSetFilter(parent, title, offset, ihost, iminv, imaxv, iexclusive) { }
 
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
 	virtual void		GetProperty(PropertyVal_t& val) const;
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 };
-
 
 #endif

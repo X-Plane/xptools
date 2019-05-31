@@ -59,7 +59,7 @@
 #include "STLUtils.h"
 #include "WED_RoadEdge.h"
 
-#if DEV
+#if 1 // DEV
 #include "PerfUtils.h"
 #endif
 
@@ -70,6 +70,17 @@
 // If we lose a bit or 2 in the DSF encoder, we won't have written
 // something on the ragged edge.
 #define DSF_EXTRA_1021 0.25
+
+// various pieces of information about the currently running export
+
+struct DSF_export_info_t
+{
+	ImageInfo	orthoImg;      // in case an orthoimage is to be converted/exported, store its info, so it does not need to be loaded it repeatedly
+	string		orthoFile;     // path to last orthoImage - so we know if there is a 2nd one to deal with - in which case we drop the first
+
+	DSF_export_info_t() { orthoImg.data = NULL; }
+};
+
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 
@@ -131,6 +142,7 @@ static bool one_winding(const vector<Bezier2>& v)
 // So: apply clamping, but flag when we are off by more than 1 meter.  (CGAL is significantly better
 // than this.
 //#define MAX_OUTSIDE 0.00001
+
 
 static void gentle_crop(Point2& p, const Bbox2& bounds, bool& hard_crop)
 {
@@ -445,8 +457,6 @@ void dsf_road_grid_helper::export_to_dsf(
 #endif
 
 
-
-
 /************************************************************************************************************************************************
  * DSF EXPORT UTILS
  ************************************************************************************************************************************************/
@@ -583,19 +593,6 @@ struct	DSF_ResourceTable {
 
 	}
 };
-
-static void swap_suffix(string& f, const char * new_suffix)
-{
-	string::size_type p = f.find_last_of(".");
-	if (p != f.npos) f.erase(p);
-	f += new_suffix;
-}
-
-static void strip_path(string& f)
-{
-	string::size_type p = f.find_last_of(":\\/");
-	if (p != f.npos) f.erase(0,p+1);
-}
 
 // stacking is lon, lat, control_lon, control_lat
 void assemble_dsf_pt(double c[4], const Point2& pt, const Point2 * bez, const Bbox2& bounds)
@@ -1095,44 +1092,48 @@ static int	DSF_HeightRangeRecursive(WED_Thing * what, double& out_msl_min, doubl
 			return -1;
 	}
 
-
+	sClass_t c = what->GetClass();
+	
+	if(c == WED_ObjPlacement::sClass)
 	if((obj = dynamic_cast<WED_ObjPlacement *>(what)) != NULL)
 	{
-#if AIRPORT_ROUTING
 		if(obj->HasCustomMSL())
 		{
 			out_msl_min = out_msl_max = obj->GetCustomMSL();
 			return 1;
 		}
-#endif
 	}
 
 	int found = 0;		// true if we found at least 1 min/max
 	int any_inside = 0;	// true if we found ANYTHING inside at all?
-	int nn = what->CountChildren();
-	for(int n = 0; n < nn; ++n)
-	{
-		double msl_min, msl_max;
-		int child_cull = DSF_HeightRangeRecursive(what->GetNthChild(n),msl_min,msl_max, bounds);
-		if (child_cull == 1)
-		{
-			any_inside = 1;
-			if(found)
-			{
-				out_msl_min=min(out_msl_min,msl_min);
-				out_msl_max=max(out_msl_max,msl_max);
-			}
-			else
-			{
-				out_msl_min=msl_min;
-				out_msl_max=msl_max;
-				found=1;
-			}
-		}
-		else if(child_cull == 0)
-			any_inside = 1;
-	}
 
+	if(c == WED_Airport::sClass || c == WED_Group::sClass)
+	{
+		int nn = what->CountChildren();
+		for(int n = 0; n < nn; ++n)
+		{
+			double msl_min, msl_max;
+			int child_cull = DSF_HeightRangeRecursive(what->GetNthChild(n),msl_min,msl_max, bounds);
+			if (child_cull == 1)
+			{
+				any_inside = 1;
+				if(found)
+				{
+					out_msl_min=min(out_msl_min,msl_min);
+					out_msl_max=max(out_msl_max,msl_max);
+				}
+				else
+				{
+					out_msl_min=msl_min;
+					out_msl_max=msl_max;
+					found=1;
+				}
+			}
+			else if(child_cull == 0)
+				any_inside = 1;
+		}
+	}
+	
 	if(!any_inside && ent && ent->GetGISClass() != gis_Composite)
 		return 0;
 
@@ -1150,7 +1151,8 @@ static int	DSF_ExportTileRecursive(
 						const DSFCallbacks_t *		cbs,
 						void *						writer,
 						set<WED_Thing *>&			problem_children,
-						int							show_level)
+						int							show_level,
+						DSF_export_info_t&		export_info )
 {
 	int real_thingies = 0;
 
@@ -1169,20 +1171,12 @@ static int	DSF_ExportTileRecursive(
 
 	int idx;
 	string r;
-	Point2	p;
+	
 	WED_Entity * ent = dynamic_cast<WED_Entity *>(what);
-	if (!ent)
-	{
+	if (!ent || ent->GetHidden())
 		return 0;
-	}
-
-	if (ent->GetHidden())
-	{
-		return 0;
-	}
 
 	IGISEntity * e = dynamic_cast<IGISEntity *>(what);
-
 	Bbox2	ent_box;
 	e->GetBounds(gis_Geo,ent_box);
 
@@ -1199,770 +1193,807 @@ static int	DSF_ExportTileRecursive(
 		centroid_ob = true;
 	}
 
-	if((apt = dynamic_cast<WED_Airport*>(what)) != NULL)
-	{
-		string id;
-		apt->GetICAO(id);
-
-		int filter_idx = io_table.accum_filter(id.c_str());
-
-		cbs->SetFilter_f(filter_idx,writer);
-		io_table.set_filter(filter_idx);
-	}
-
-	if((xcl = dynamic_cast<WED_ExclusionZone *>(what)) != NULL)
-	if(show_level == 6)
-	{
-		set<int> xtypes;
-		xcl->GetExclusions(xtypes);
-		Point2 minp, maxp;
-		xcl->GetMin()->GetLocation(gis_Geo,minp);
-		xcl->GetMax()->GetLocation(gis_Geo,maxp);
-
-		if(minp.x_ > maxp.x_)	swap(minp.x_, maxp.x_);
-		if(minp.y_ > maxp.y_)	swap(minp.y_, maxp.y_);
-
-		for(set<int>::iterator xt = xtypes.begin(); xt != xtypes.end(); ++xt)
-		{
-			const char * pname = NULL;
-			switch(*xt) {
-			case exclude_Obj:	pname = "sim/exclude_obj";	break;
-			case exclude_Fac:	pname = "sim/exclude_fac";	break;
-			case exclude_For:	pname = "sim/exclude_for";	break;
-			case exclude_Bch:	pname = "sim/exclude_bch";	break;
-			case exclude_Net:	pname = "sim/exclude_net";	break;
-
-			case exclude_Lin:	pname = "sim/exclude_lin";	break;
-			case exclude_Pol:	pname = "sim/exclude_pol";	break;
-			case exclude_Str:	pname = "sim/exclude_str";	break;
-			}
-			if(pname)
-			{
-				char valbuf[512];
-				sprintf(valbuf,"%.6lf/%.6lf/%.6lf/%.6lf",minp.x(),minp.y(),maxp.x(),maxp.y());
-				++real_thingies;
-				io_table.accum_exclusion(pname, valbuf);
-			}
-		}
-	}
+	sClass_t c = what->GetClass();
 
 	//------------------------------------------------------------------------------------------------------------
 	// OBJECT EXPORTER
 	//------------------------------------------------------------------------------------------------------------
 
+	if(c == 	WED_ObjPlacement::sClass)
 	if((obj = dynamic_cast<WED_ObjPlacement *>(what)) != NULL)
-	if(show_level == obj->GetShowLevel())
 	{
-		obj->GetResource(r);
-		idx = io_table.accum_obj(r,show_level);
-		obj->GetLocation(gis_Geo,p);
-		if(cull_bounds.contains(p))
+		if(show_level == obj->GetShowLevel())
 		{
-			double xyrz[4] = { p.x(), p.y(), 0.0 };
-			float heading = obj->GetHeading();
-			while(heading < 0) heading += 360.0;
-			while(heading >= 360.0) heading -= 360.0;
-			++real_thingies;
-			xyrz[2] = heading;
-			#if AIRPORT_ROUTING
-			if(obj->HasCustomMSL())
+			obj->GetResource(r);
+			idx = io_table.accum_obj(r,show_level);
+			Point2 p;
+			obj->GetLocation(gis_Geo,p);
+			if(cull_bounds.contains(p))
 			{
-				xyrz[3] = obj->GetCustomMSL();
-				cbs->AddObject_f(idx, xyrz, 4, writer);
+				double xyrz[4] = { p.x(), p.y(), 0.0 };
+				float heading = obj->GetHeading();
+				while(heading < 0) heading += 360.0;
+				while(heading >= 360.0) heading -= 360.0;
+				++real_thingies;
+				xyrz[2] = heading;
+				#if AIRPORT_ROUTING
+				if(obj->HasCustomMSL())
+				{
+					xyrz[3] = obj->GetCustomMSL();
+					cbs->AddObject_f(idx, xyrz, 4, writer);
+				}
+				else
+				#endif
+					cbs->AddObject_f(idx, xyrz, 3, writer);
 			}
-			else
-			#endif
-				cbs->AddObject_f(idx, xyrz, 3, writer);
 		}
+		return real_thingies;
 	}
 
 	//------------------------------------------------------------------------------------------------------------
 	// FACADE EXPORTER
 	//------------------------------------------------------------------------------------------------------------
 
+	if(c == 	WED_FacadePlacement::sClass)
 	if((fac = dynamic_cast<WED_FacadePlacement *>(what)) != NULL)
-	if(show_level == fac->GetShowLevel())
 	{
-		fac->GetResource(r);
-		idx = io_table.accum_pol(r,show_level);
-		bool bez = WED_HasBezierPol(fac);
-		bool fac_is_auto_closed = fac->GetTopoMode() != WED_FacadePlacement::topo_Chain;
-
-		if(fac->GetTopoMode() == WED_FacadePlacement::topo_Area && fac->HasCustomWalls())
+		if(show_level == fac->GetShowLevel())
 		{
-			if(bez)
+			fac->GetResource(r);
+			idx = io_table.accum_pol(r,show_level);
+			bool bez = WED_HasBezierPol(fac);
+			bool fac_is_auto_closed = fac->GetTopoMode() != WED_FacadePlacement::topo_Chain;
+
+			if(fac->GetTopoMode() == WED_FacadePlacement::topo_Area && fac->HasCustomWalls())
 			{
-				vector<BezierPolygon2p>				fac_area;
-				vector<vector<BezierPolygon2p> >	fac_cut;
-				WED_BezierPolygonWithHolesForPolygon(fac, fac_area);
-
-				if(gExportTarget < wet_xplane_1021)
-				{
-					if(!clip_polygon(fac_area,fac_cut,cull_bounds))
-					{
-						problem_children.insert(what);
-						fac_cut.clear();
-					}
-				}
-				else if(!centroid_ob)
-					fac_cut.push_back(fac_area);
-
-				for(vector<vector<BezierPolygon2p> >::iterator i = fac_cut.begin(); i != fac_cut.end(); ++i)
-				{
-					++real_thingies;
-					cbs->BeginPolygon_f(idx,fac->GetHeight(),5,writer);
-					DSF_AccumPolygonWithHolesBezier(*i, safe_bounds, cbs, writer);
-					cbs->EndPolygon_f(writer);
-				}
-			}
-			else
-			{
-				vector<Polygon2p>			fac_area;
-				vector<vector<Polygon2p> >	fac_cut;
-				Assert(WED_PolygonWithHolesForPolygon(fac,fac_area));
-
-				if(gExportTarget < wet_xplane_1021)
-				{
-					if (!clip_polygon(fac_area,fac_cut,cull_bounds))
-					{
-						fac_cut.clear();
-						problem_children.insert(what);
-					}
-				} else if(!centroid_ob)
-					fac_cut.push_back(fac_area);
-
-				for(vector<vector<Polygon2p> >::iterator i = fac_cut.begin(); i != fac_cut.end(); ++i)
-				{
-					++real_thingies;
-					cbs->BeginPolygon_f(idx,fac->GetHeight(),3,writer);
-					DSF_AccumPolygonWithHoles(*i, safe_bounds, cbs, writer);
-					cbs->EndPolygon_f(writer);
-				}
-			}
-		}
-		else if(fac->GetTopoMode() == WED_FacadePlacement::topo_Area)
-		{
-			if(bez)
-			{
-				vector<BezierPolygon2> fac_area;
-				vector<vector<BezierPolygon2> > fac_cut;
-				WED_BezierPolygonWithHolesForPolygon(fac, fac_area);
-
-				if(gExportTarget < wet_xplane_1021)
-				{
-					if(!clip_polygon(fac_area,fac_cut,cull_bounds))
-					{
-						problem_children.insert(what);
-						fac_cut.clear();
-					}
-				}
-				else if(!centroid_ob)
-					fac_cut.push_back(fac_area);
-
-				for(vector<vector<BezierPolygon2> >::iterator i = fac_cut.begin(); i != fac_cut.end(); ++i)
-				{
-					++real_thingies;
-					cbs->BeginPolygon_f(idx,fac->GetHeight(),4,writer);
-					DSF_AccumPolygonWithHolesBezier(*i, safe_bounds, cbs, writer);
-					cbs->EndPolygon_f(writer);
-				}
-			}
-			else
-			{
-				vector<Polygon2>			fac_area;
-				vector<vector<Polygon2> >	fac_cut;
-				Assert(WED_PolygonWithHolesForPolygon(fac,fac_area));
-
-				if(gExportTarget < wet_xplane_1021)
-				{
-					if (!clip_polygon(fac_area,fac_cut,cull_bounds))
-					{
-						fac_cut.clear();
-						problem_children.insert(what);
-					}
-				} else if(!centroid_ob)
-					fac_cut.push_back(fac_area);
-
-				for(vector<vector<Polygon2> >::iterator i = fac_cut.begin(); i != fac_cut.end(); ++i)
-				{
-					++real_thingies;
-					cbs->BeginPolygon_f(idx,fac->GetHeight(),2,writer);
-					DSF_AccumPolygonWithHoles(*i, safe_bounds, cbs, writer);
-					cbs->EndPolygon_f(writer);
-				}
-
-			}
-		}
-		else if (fac->HasCustomWalls())
-		{
-			for(int h = -1; h < fac->GetNumHoles(); ++h)
-			{
-				IGISPointSequence * seq = (h == -1) ? fac->GetOuterRing() : fac->GetNthHole(h);
-
 				if(bez)
 				{
-					vector<Bezier2p>	chain;
+					vector<BezierPolygon2p>				fac_area;
+					vector<vector<BezierPolygon2p> >	fac_cut;
+					WED_BezierPolygonWithHolesForPolygon(fac, fac_area);
 
-					WED_BezierVectorForPointSequence(seq,chain);
 					if(gExportTarget < wet_xplane_1021)
-						clip_segments(chain,cull_bounds);
-					else if(centroid_ob)
-						chain.clear();
+					{
+						if(!clip_polygon(fac_area,fac_cut,cull_bounds))
+						{
+							problem_children.insert(what);
+							fac_cut.clear();
+						}
+					}
+					else if(!centroid_ob)
+						fac_cut.push_back(fac_area);
 
-					if(!chain.empty())
+					for(vector<vector<BezierPolygon2p> >::iterator i = fac_cut.begin(); i != fac_cut.end(); ++i)
 					{
 						++real_thingies;
-						if(fac_is_auto_closed && bad_match(chain.front(),chain.back()))
-							problem_children.insert(what);
-						else
-							DSF_AccumChainBezier(chain.cbegin(),chain.cend(), safe_bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
+						cbs->BeginPolygon_f(idx,fac->GetHeight(),5,writer);
+						DSF_AccumPolygonWithHolesBezier(*i, safe_bounds, cbs, writer);
+						cbs->EndPolygon_f(writer);
 					}
 				}
 				else
 				{
-					vector<Segment2p>	chain;
+					vector<Polygon2p>			fac_area;
+					vector<vector<Polygon2p> >	fac_cut;
+					Assert(WED_PolygonWithHolesForPolygon(fac,fac_area));
 
-					WED_VectorForPointSequence(seq,chain);
-					// We normally reject zero length segments, but for grandfathered global airports, we'll try to clean this.
-					remove_all_zero_length_segments(chain);
 					if(gExportTarget < wet_xplane_1021)
-						clip_segments(chain,cull_bounds);
-					else if(centroid_ob)
-						chain.clear();
+					{
+						if (!clip_polygon(fac_area,fac_cut,cull_bounds))
+						{
+							fac_cut.clear();
+							problem_children.insert(what);
+						}
+					} else if(!centroid_ob)
+						fac_cut.push_back(fac_area);
 
-					if(!chain.empty())
+					for(vector<vector<Polygon2p> >::iterator i = fac_cut.begin(); i != fac_cut.end(); ++i)
 					{
 						++real_thingies;
-						if(fac_is_auto_closed && bad_match(chain.front(),chain.back()))
-							problem_children.insert(what);
-						else
-							DSF_AccumChain(chain.cbegin(),chain.cend(), safe_bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
+						cbs->BeginPolygon_f(idx,fac->GetHeight(),3,writer);
+						DSF_AccumPolygonWithHoles(*i, safe_bounds, cbs, writer);
+						cbs->EndPolygon_f(writer);
 					}
 				}
 			}
-		}
-		else
-		{
-			for(int h = -1; h < fac->GetNumHoles(); ++h)
+			else if(fac->GetTopoMode() == WED_FacadePlacement::topo_Area)
 			{
-				IGISPointSequence * seq = (h == -1) ? fac->GetOuterRing() : fac->GetNthHole(h);
-
 				if(bez)
 				{
-					vector<Bezier2>	chain;
+					vector<BezierPolygon2> fac_area;
+					vector<vector<BezierPolygon2> > fac_cut;
+					WED_BezierPolygonWithHolesForPolygon(fac, fac_area);
 
-					WED_BezierVectorForPointSequence(seq,chain);
 					if(gExportTarget < wet_xplane_1021)
-						clip_segments(chain,cull_bounds);
-					else if(centroid_ob)
-						chain.clear();
+					{
+						if(!clip_polygon(fac_area,fac_cut,cull_bounds))
+						{
+							problem_children.insert(what);
+							fac_cut.clear();
+						}
+					}
+					else if(!centroid_ob)
+						fac_cut.push_back(fac_area);
 
-					if(!chain.empty())
+					for(vector<vector<BezierPolygon2> >::iterator i = fac_cut.begin(); i != fac_cut.end(); ++i)
 					{
 						++real_thingies;
-						if(fac_is_auto_closed && bad_match(chain.front(),chain.back()))
-							problem_children.insert(what);
-						else
-							DSF_AccumChainBezier(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
+						cbs->BeginPolygon_f(idx,fac->GetHeight(),4,writer);
+						DSF_AccumPolygonWithHolesBezier(*i, safe_bounds, cbs, writer);
+						cbs->EndPolygon_f(writer);
 					}
 				}
 				else
 				{
-					vector<Segment2>	chain;
+					vector<Polygon2>			fac_area;
+					vector<vector<Polygon2> >	fac_cut;
+					Assert(WED_PolygonWithHolesForPolygon(fac,fac_area));
 
-					WED_VectorForPointSequence(seq,chain);
-					// We normally reject zero length segments, but for grandfathered global airports, we'll try to clean this.
-					remove_all_zero_length_segments(chain);
 					if(gExportTarget < wet_xplane_1021)
-						clip_segments(chain,cull_bounds);
-					else if(centroid_ob)
-						chain.clear();
-					if(!chain.empty())
 					{
-						++real_thingies;
-						if(fac_is_auto_closed && bad_match(chain.front(),chain.back()))
+						if (!clip_polygon(fac_area,fac_cut,cull_bounds))
+						{
+							fac_cut.clear();
 							problem_children.insert(what);
-						else
-							DSF_AccumChain(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
-					}
-				}
-			}
-		}
-	}
+						}
+					} else if(!centroid_ob)
+						fac_cut.push_back(fac_area);
 
-	//------------------------------------------------------------------------------------------------------------
-	// FOREST EXPORTER
-	//------------------------------------------------------------------------------------------------------------
-
-	if((fst = dynamic_cast<WED_ForestPlacement *>(what)) != NULL)
-	if(show_level == 6)
-	{
-		fst->GetResource(r);
-		idx = io_table.accum_pol(r,show_level);
-
-		DebugAssert(!WED_HasBezierPol(fst));
-		int param = intlim(fst->GetDensity() * 255.0,0,255) + fst->GetFillMode() * 256;
-		switch(fst->GetFillMode()) {
-		case dsf_fill_area:
-			{
-				vector<Polygon2>	fst_area;
-				Assert(WED_PolygonWithHolesForPolygon(fst,fst_area));
-
-				// We normally reject zero length segments, but for grandfathered global airports, we'll try to clean this.
-				for(vector<Polygon2>::iterator f = fst_area.begin(); f != fst_area.end(); ++f)
-					f->erase(unique(f->begin(),f->end()),f->end());
-
-				vector<vector<Polygon2> >	fst_clipped;
-				if (!clip_polygon(fst_area, fst_clipped,cull_bounds))
-				{
-					fst_clipped.clear();
-					problem_children.insert(what);
-				}
-
-				for(vector<vector<Polygon2> >::iterator i = fst_clipped.begin(); i != fst_clipped.end(); ++i)
-				{
-					++real_thingies;
-					cbs->BeginPolygon_f(idx,param,2,writer);
-					DSF_AccumPolygonWithHoles(*i, safe_bounds, cbs, writer);
-					cbs->EndPolygon_f(writer);
-				}
-			}
-			break;
-		case dsf_fill_line:
-			{
-				for(int h = -1; h < fst->GetNumHoles(); ++h)
-				{
-					IGISPointSequence * seq = (h == -1) ? fst->GetOuterRing() : fst->GetNthHole(h);
-					vector<Segment2>	chain;
-
-					WED_VectorForPointSequence(seq,chain);
-					// We normally reject zero length segments, but for grandfathered global airports, we'll try to clean this.
-					remove_all_zero_length_segments(chain);
-
-					clip_segments(chain, cull_bounds);
-					if(!chain.empty())
+					for(vector<vector<Polygon2> >::iterator i = fac_cut.begin(); i != fac_cut.end(); ++i)
 					{
 						++real_thingies;
-						DSF_AccumChain(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, param, 0);
+						cbs->BeginPolygon_f(idx,fac->GetHeight(),2,writer);
+						DSF_AccumPolygonWithHoles(*i, safe_bounds, cbs, writer);
+						cbs->EndPolygon_f(writer);
 					}
+
 				}
 			}
-			break;
-		case dsf_fill_points:
-			for(int h = -1; h < fst->GetNumHoles(); ++h)
+			else if (fac->HasCustomWalls())
 			{
-				IGISPointSequence * seq = (h == -1) ? fst->GetOuterRing() : fst->GetNthHole(h);
-				vector<Point2>	pts;
-
-				for(int p = 0; p < seq->GetNumPoints(); ++p)
+				for(int h = -1; h < fac->GetNumHoles(); ++h)
 				{
-					Point2 x;
-					seq->GetNthPoint(p)->GetLocation(gis_Geo,x);
-					if(safe_bounds.contains(x))
+					IGISPointSequence * seq = (h == -1) ? fac->GetOuterRing() : fac->GetNthHole(h);
+
+					if(bez)
 					{
-						pts.push_back(x);
-					}
-				}
-				if(!pts.empty())
-				{
-					++real_thingies;
-					DSF_AccumPts(pts.begin(),pts.end(), safe_bounds, cbs,writer, idx, param);
-				}
-			}
-			break;
-		}
-	}
+						vector<Bezier2p>	chain;
 
-	//------------------------------------------------------------------------------------------------------------
-	// OBJ STRING EXPORTER
-	//------------------------------------------------------------------------------------------------------------
+						WED_BezierVectorForPointSequence(seq,chain);
+						if(gExportTarget < wet_xplane_1021)
+							clip_segments(chain,cull_bounds);
+						else if(centroid_ob)
+							chain.clear();
 
-
-	if((str = dynamic_cast<WED_StringPlacement *>(what)) != NULL)
-	if(show_level == 6)
-	{
-		str->GetResource(r);
-		idx = io_table.accum_pol(r,show_level);
-		bool bez = WED_HasBezierSeq(str);
-
-		if(bez)
-		{
-			vector<Bezier2>	chain;
-
-			WED_BezierVectorForPointSequence(str,chain);
-			clip_segments(chain, cull_bounds);
-			if(!chain.empty())
-			{
-				++real_thingies;
-				DSF_AccumChainBezier(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, str->GetSpacing(), 0);
-			}
-		}
-		else
-		{
-			vector<Segment2>	chain;
-
-			WED_VectorForPointSequence(str,chain);
-			// We normally reject zero length segments, but for grandfathered global airports, we'll try to clean this.
-			remove_all_zero_length_segments(chain);
-			clip_segments(chain, cull_bounds);
-			if(!chain.empty())
-			{
-				++real_thingies;
-				DSF_AccumChain(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, str->GetSpacing(), 0);
-			}
-		}
-	}
-
-	//------------------------------------------------------------------------------------------------------------
-	// OBJ LINE EXPORTER
-	//------------------------------------------------------------------------------------------------------------
-
-	if((lin = dynamic_cast<WED_LinePlacement *>(what)) != NULL)
-	if(show_level == 6)
-	{
-		lin->GetResource(r);
-		idx = io_table.accum_pol(r,show_level);
-		bool bez = WED_HasBezierSeq(lin);
-
-		if(bez)
-		{
-			vector<Bezier2>	chain;
-
-			WED_BezierVectorForPointSequence(lin,chain);
-
-			clip_segments(chain, cull_bounds);
-			if(!chain.empty())
-			{
-				int closed = 0;
-				if(one_winding(chain))
-				{
-					if(chain.front().p1 == chain.back().p2 && chain.size() > 1)
-					{
-						closed = 1;
-					}
-				}
-				else
-				{
-					while(chain.front().p1 == chain.back().p2)
-					{
-						chain.insert(chain.begin(),chain.back());
-						chain.pop_back();
-					}
-				}
-				++real_thingies;
-				if(closed && bad_match(chain.front(),chain.back()))
-				{
-					DebugAssert(!"We should not get here - it's a logic error, not a precision error!");
-					problem_children.insert(what);
-				}
-				else
-					DSF_AccumChainBezier(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, closed, closed);
-			}
-		}
-		else
-		{
-			vector<Segment2>	chain;
-
-			WED_VectorForPointSequence(lin,chain);
-			// We normally reject zero length segments, but for grandfathered global airports, we'll try to clean this.
-			remove_all_zero_length_segments(chain);
-			clip_segments(chain, cull_bounds);
-			if(!chain.empty())
-			{
-				int closed = 0;
-				if(one_winding(chain))
-				{
-					if(chain.front().p1 == chain.back().p2 && chain.size() > 1)
-					{
-						closed = 1;
-					}
-				}
-				else
-				{
-					while(chain.front().p1 == chain.back().p2)
-					{
-						chain.insert(chain.begin(),chain.back());
-						chain.pop_back();
-					}
-				}
-				++real_thingies;
-				if(closed && bad_match(chain.front(),chain.back()))
-				{
-					DebugAssert(!"We should not get here - it's a logic error, not a precision error!");
-					problem_children.insert(what);
-				}
-				else
-					DSF_AccumChain(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, closed, closed);
-			}
-		}
-	}
-
-	//------------------------------------------------------------------------------------------------------------
-	// DRAPED POLYGON
-	//------------------------------------------------------------------------------------------------------------
-
-	if((pol = dynamic_cast<WED_PolygonPlacement *>(what)) != NULL)
-	if(show_level == 6)
-	{
-		pol->GetResource(r);
-		idx = io_table.accum_pol(r,show_level);
-		bool bez = WED_HasBezierPol(pol);
-
-		if(bez)
-		{
-			vector<BezierPolygon2>			pol_area;
-			vector<vector<BezierPolygon2> >	pol_cuts;
-
-			WED_BezierPolygonWithHolesForPolygon(pol, pol_area);
-
-			if(!clip_polygon(pol_area,pol_cuts,cull_bounds))
-			{
-				problem_children.insert(what);
-				pol_cuts.clear();
-			}
-
-			for(vector<vector<BezierPolygon2> >::iterator i = pol_cuts.begin(); i != pol_cuts.end(); ++i)
-			{
-				++real_thingies;
-				cbs->BeginPolygon_f(idx,pol->GetHeading(),bez ? 4 : 2,writer);
-				DSF_AccumPolygonWithHolesBezier(*i, safe_bounds, cbs, writer);
-				cbs->EndPolygon_f(writer);
-			}
-		}
-		else
-		{
-			vector<Polygon2> 	pol_area;
-			vector<vector<Polygon2> >	pol_cuts;
-
-			Assert(WED_PolygonWithHolesForPolygon(pol,pol_area));
-
-			if(!clip_polygon(pol_area,pol_cuts,cull_bounds))
-			{
-				problem_children.insert(what);
-				pol_cuts.clear();
-
-			}
-			for(vector<vector<Polygon2> >::iterator i = pol_cuts.begin(); i != pol_cuts.end(); ++i)
-			{
-				++real_thingies;
-				cbs->BeginPolygon_f(idx,pol->GetHeading(),bez ? 4 : 2,writer);
-				DSF_AccumPolygonWithHoles(*i, safe_bounds, cbs, writer);
-				cbs->EndPolygon_f(writer);
-			}
-		}
-	}
-
-	//------------------------------------------------------------------------------------------------------------
-	// UV-MAPPED DRAPED POLYGON
-	//------------------------------------------------------------------------------------------------------------
-
-	if((orth = dynamic_cast<WED_DrapedOrthophoto *>(what)) != NULL)
-	if(show_level == 6)
-	{
-		//Get the relative path
-		orth->GetResource(r);
-
-		if(orth->IsNew())
-        {
-			string msg;
-			what->GetName(msg);
-
-			// can't use the image name any more to determine the .pol/.dds names, as the same image could be used for multiple Orthos.
-			// So we assume the 'Name" contains the image name plus some suffix to make it unique
-			
-			string relativePath(FILE_get_dir_name(r) + FILE_get_file_name_wo_extensions(msg));
-			
-			string relativePathDDS = relativePath + ".dds";
-			string relativePathPOL = relativePath + ".pol";
-			
-			msg = string("The polygon '") + msg + "' cannot be converted to an orthophoto: ";
-
-			if(is_backout_path(relativePath) || is_dir_sep(relativePath[0]) || relativePath[1] == ':')
-			{
-				DoUserAlert((msg + "The image resource must be a relative path to a location within the scenery directory, aborting DSF Export.").c_str());
-				return -1;
-			}
-
-			string absPathIMG = pkg + r;
-			string absPathDDS = pkg + relativePathDDS;
-			string absPathPOL = pkg + relativePathPOL;
-
-			r = relativePathPOL;		// Resource name comes from the pol no matter what we compress to disk.
-			
-			Bbox2 UVbounds; orth->GetBounds(gis_UV, UVbounds);
-			WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
-			
-			date_cmpr_result_t date_cmpr_res = FILE_date_cmpr(absPathIMG.c_str(),absPathDDS.c_str());
-			//-----------------
-			/* How to export a orthophoto
-			* If it is a orthophoto and the image is newer than the DDS (avoid unnecissary DDS creation),
-			* Create a Bitmap from whatever file format is being used.
-			* Use the number of channels to decide the compression level
-			* Create a DDS from that file format
-			* Create the .pol with the file format in mind
-			* Enjoy your new orthophoto
-			*/
-			
-			if(date_cmpr_res == dcr_firstIsNew || date_cmpr_res == dcr_same)
-			{
-				ImageInfo imgInfo;
-				ImageInfo DDSInfo;
-
-				int res = MakeSupportedType(absPathIMG.c_str(),&imgInfo);
-				if(res != 0)
-				{
-					DoUserAlert((msg + "Unable to convert the image file '" + absPathIMG + "'to a DDS file, aborting DSF Export.").c_str());
-					return -1;
-				}
-
-				int UVMleft   = intround(imgInfo.width * UVbounds.xmin());
-				int UVMright  = intround(imgInfo.width * UVbounds.xmax());
-				int UVMtop    = intround(imgInfo.height * UVbounds.ymax());
-				int UVMbottom = intround(imgInfo.height * UVbounds.ymin());
-				int UVMwidth  = UVMright - UVMleft;
-				int UVMheight = UVMtop - UVMbottom;
-				
-				int DDSwidth = 1;
-				int DDSheight = 1;
-
-				while(DDSwidth < UVMwidth && DDSwidth < 2048) DDSwidth <<= 1;      // round up dimensions under 2k to a power of 2 AND limit to 2k
-				while(DDSheight < UVMheight && DDSheight < 2048) DDSheight <<= 1;
-
-				if (CreateNewBitmap(DDSwidth, DDSheight, imgInfo.channels, &DDSInfo) == 0)       // create array to hold upsized image
-				{
-					if(UVMwidth == DDSwidth && UVMheight == DDSheight)
-					{
-						CopyBitmapSectionDirect(imgInfo,DDSInfo, UVMleft, UVMbottom, 0, 0, DDSwidth, DDSheight);
-						printf("fastpath\n");
+						if(!chain.empty())
+						{
+							++real_thingies;
+							if(fac_is_auto_closed && bad_match(chain.front(),chain.back()))
+								problem_children.insert(what);
+							else
+								DSF_AccumChainBezier(chain.cbegin(),chain.cend(), safe_bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
+						}
 					}
 					else
 					{
-						printf("scale %dx%d -> %dx%d\n",UVMright-UVMleft, UVMtop-UVMbottom,DDSwidth,DDSheight);
-						CopyBitmapSection(&imgInfo,&DDSInfo, UVMleft, UVMbottom, UVMright, UVMtop,
-                                                         0,       0,    DDSwidth, DDSheight);
+						vector<Segment2p>	chain;
+
+						WED_VectorForPointSequence(seq,chain);
+						// We normally reject zero length segments, but for grandfathered global airports, we'll try to clean this.
+						remove_all_zero_length_segments(chain);
+						if(gExportTarget < wet_xplane_1021)
+							clip_segments(chain,cull_bounds);
+						else if(centroid_ob)
+							chain.clear();
+
+						if(!chain.empty())
+						{
+							++real_thingies;
+							if(fac_is_auto_closed && bad_match(chain.front(),chain.back()))
+								problem_children.insert(what);
+							else
+								DSF_AccumChain(chain.cbegin(),chain.cend(), safe_bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
+						}
 					}
-					if(DDSInfo.channels == 3)
-						ConvertBitmapToAlpha(&DDSInfo,false);
-					int DXTMethod = usesAlpha(&DDSInfo) ? 5 : 1;
-					MakeMipmapStack(&DDSInfo);
-					WriteBitmapToDDS(DDSInfo, DXTMethod, absPathDDS.c_str(), 1);
-					DestroyBitmap(&DDSInfo);
 				}
-				DestroyBitmap(&imgInfo);
 			}
-			else if(date_cmpr_res == dcr_error)
+			else
 			{
-				string msg = string("The file '") + absPathIMG + string("' is missing, aborting DSF Export.");
-				DoUserAlert(msg.c_str());
-				return -1;
-			}
-			
-			if(!FILE_exists(absPathPOL.c_str()))
-			{
-				ImageInfo DDSInfo;
-				if(CreateBitmapFromDDS(absPathDDS.c_str(), &DDSInfo) == 0)
+				for(int h = -1; h < fac->GetNumHoles(); ++h)
 				{
-					Bbox2 b;
-					orth->GetBounds(gis_Geo, b);
-					Point2 center = b.centroid();
-					//-------------------------------------------
-					pol_info_t out_info = { FILE_get_file_name(relativePathDDS), false,
-						/*SCALE*/ (float) LonLatDistMeters(b.p1,Point2(b.p2.x(), b.p1.y())), (float) LonLatDistMeters(b.p1,Point2(b.p1.x(), b.p2.y())),  // althought its irrelevant here
-						false, false, 
-						/*LAYER_GROUP*/ "", 0,
-						/*LOAD_CENTER*/ (float) center.y(), (float) center.x(), LonLatDistMeters(b.p1,b.p2), intmax2(DDSInfo.height,DDSInfo.width) };
-					rmgr->WritePol(absPathPOL, out_info);
-					DestroyBitmap(&DDSInfo);
+					IGISPointSequence * seq = (h == -1) ? fac->GetOuterRing() : fac->GetNthHole(h);
+
+					if(bez)
+					{
+						vector<Bezier2>	chain;
+
+						WED_BezierVectorForPointSequence(seq,chain);
+						if(gExportTarget < wet_xplane_1021)
+							clip_segments(chain,cull_bounds);
+						else if(centroid_ob)
+							chain.clear();
+
+						if(!chain.empty())
+						{
+							++real_thingies;
+							if(fac_is_auto_closed && bad_match(chain.front(),chain.back()))
+								problem_children.insert(what);
+							else
+								DSF_AccumChainBezier(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
+						}
+					}
+					else
+					{
+						vector<Segment2>	chain;
+
+						WED_VectorForPointSequence(seq,chain);
+						// We normally reject zero length segments, but for grandfathered global airports, we'll try to clean this.
+						remove_all_zero_length_segments(chain);
+						if(gExportTarget < wet_xplane_1021)
+							clip_segments(chain,cull_bounds);
+						else if(centroid_ob)
+							chain.clear();
+						if(!chain.empty())
+						{
+							++real_thingies;
+							if(fac_is_auto_closed && bad_match(chain.front(),chain.back()))
+								problem_children.insert(what);
+							else
+								DSF_AccumChain(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
+						}
+					}
 				}
 			}
-
-			what->StartOperation("Norm Ortho");
-			orth->Rescale(gis_UV, UVbounds, Bbox2(0,0,1,1));
 		}
-
-		idx = io_table.accum_pol(r,show_level);
-		bool bez = WED_HasBezierPol(orth);
-		
-		if(bez)
-		{
-			vector<BezierPolygon2uv>			orth_area;
-			vector<vector<BezierPolygon2uv> >	orth_cuts;
-			
-			WED_BezierPolygonWithHolesForPolygon(orth, orth_area);
-			
-			if(!clip_polygon(orth_area,orth_cuts,cull_bounds))
-			{
-				problem_children.insert(what);
-				orth_cuts.clear();
-			}
-			
-			for(vector<vector<BezierPolygon2uv> >::iterator i = orth_cuts.begin(); i != orth_cuts.end(); ++i)
-			{
-				++real_thingies;
-				cbs->BeginPolygon_f(idx,65535,8,writer);
-				DSF_AccumPolygonWithHolesBezier(*i, safe_bounds, cbs, writer);
-				cbs->EndPolygon_f(writer);
-			}
-		}
-		else
-		{
-			vector<Polygon2uv>			orth_area;
-			vector<vector<Polygon2uv> >	orth_cuts;
-			Assert(WED_PolygonWithHolesForPolygon(orth,orth_area));
-
-			if(!clip_polygon(orth_area,orth_cuts,cull_bounds))
-			{
-				problem_children.insert(what);
-				orth_cuts.clear();
-			}
-
-			for(vector<vector<Polygon2uv> >::iterator i = orth_cuts.begin(); i != orth_cuts.end(); ++i)
-			{
-				++real_thingies;
-				cbs->BeginPolygon_f(idx,65535,4,writer);
-				DSF_AccumPolygonWithHoles(*i, safe_bounds, cbs, writer);
-				cbs->EndPolygon_f(writer);
-			}
-		}
-		
-		if(orth->IsNew())
-			what->AbortOperation(); // this will nicely undo the UV mapping rescaling we did :)
-
+		return real_thingies;
 	}
-#if ROAD_EDITING
-	if ((roa = dynamic_cast<WED_RoadEdge*>(what)) != NULL)
-		if (show_level == 6)
+	
+	if(show_level == 6)
+	{	
+		//------------------------------------------------------------------------------------------------------------
+		// EXCLUSION EXPORTER
+		//------------------------------------------------------------------------------------------------------------
+
+		if(c == 	WED_ExclusionZone::sClass)
+		if((xcl = dynamic_cast<WED_ExclusionZone *>(what)) != NULL)
+		{
+			set<int> xtypes;
+			xcl->GetExclusions(xtypes);
+			Point2 minp, maxp;
+			xcl->GetMin()->GetLocation(gis_Geo,minp);
+			xcl->GetMax()->GetLocation(gis_Geo,maxp);
+
+			if(minp.x_ > maxp.x_)	swap(minp.x_, maxp.x_);
+			if(minp.y_ > maxp.y_)	swap(minp.y_, maxp.y_);
+
+			for(set<int>::iterator xt = xtypes.begin(); xt != xtypes.end(); ++xt)
+			{
+				const char * pname = NULL;
+				switch(*xt) {
+				case exclude_Obj:	pname = "sim/exclude_obj";	break;
+				case exclude_Fac:	pname = "sim/exclude_fac";	break;
+				case exclude_For:	pname = "sim/exclude_for";	break;
+				case exclude_Bch:	pname = "sim/exclude_bch";	break;
+				case exclude_Net:	pname = "sim/exclude_net";	break;
+
+				case exclude_Lin:	pname = "sim/exclude_lin";	break;
+				case exclude_Pol:	pname = "sim/exclude_pol";	break;
+				case exclude_Str:	pname = "sim/exclude_str";	break;
+				}
+				if(pname)
+				{
+					char valbuf[512];
+					sprintf(valbuf,"%.6lf/%.6lf/%.6lf/%.6lf",minp.x(),minp.y(),maxp.x(),maxp.y());
+					++real_thingies;
+					io_table.accum_exclusion(pname, valbuf);
+				}
+			}
+			return real_thingies;
+		}
+
+		//------------------------------------------------------------------------------------------------------------
+		// FOREST EXPORTER
+		//------------------------------------------------------------------------------------------------------------
+
+		if(c == 	WED_ForestPlacement::sClass)
+		if((fst = dynamic_cast<WED_ForestPlacement *>(what)) != NULL)
+		{
+			fst->GetResource(r);
+			idx = io_table.accum_pol(r,show_level);
+
+			DebugAssert(!WED_HasBezierPol(fst));
+			int param = intlim(fst->GetDensity() * 255.0,0,255) + fst->GetFillMode() * 256;
+			switch(fst->GetFillMode()) {
+			case dsf_fill_area:
+				{
+					vector<Polygon2>	fst_area;
+					Assert(WED_PolygonWithHolesForPolygon(fst,fst_area));
+
+					// We normally reject zero length segments, but for grandfathered global airports, we'll try to clean this.
+					for(vector<Polygon2>::iterator f = fst_area.begin(); f != fst_area.end(); ++f)
+						f->erase(unique(f->begin(),f->end()),f->end());
+
+					vector<vector<Polygon2> >	fst_clipped;
+					if (!clip_polygon(fst_area, fst_clipped,cull_bounds))
+					{
+						fst_clipped.clear();
+						problem_children.insert(what);
+					}
+
+					for(vector<vector<Polygon2> >::iterator i = fst_clipped.begin(); i != fst_clipped.end(); ++i)
+					{
+						++real_thingies;
+						cbs->BeginPolygon_f(idx,param,2,writer);
+						DSF_AccumPolygonWithHoles(*i, safe_bounds, cbs, writer);
+						cbs->EndPolygon_f(writer);
+					}
+				}
+				break;
+			case dsf_fill_line:
+				{
+					for(int h = -1; h < fst->GetNumHoles(); ++h)
+					{
+						IGISPointSequence * seq = (h == -1) ? fst->GetOuterRing() : fst->GetNthHole(h);
+						vector<Segment2>	chain;
+
+						WED_VectorForPointSequence(seq,chain);
+						// We normally reject zero length segments, but for grandfathered global airports, we'll try to clean this.
+						remove_all_zero_length_segments(chain);
+
+						clip_segments(chain, cull_bounds);
+						if(!chain.empty())
+						{
+							++real_thingies;
+							DSF_AccumChain(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, param, 0);
+						}
+					}
+				}
+				break;
+			case dsf_fill_points:
+				for(int h = -1; h < fst->GetNumHoles(); ++h)
+				{
+					IGISPointSequence * seq = (h == -1) ? fst->GetOuterRing() : fst->GetNthHole(h);
+					vector<Point2>	pts;
+
+					for(int p = 0; p < seq->GetNumPoints(); ++p)
+					{
+						Point2 x;
+						seq->GetNthPoint(p)->GetLocation(gis_Geo,x);
+						if(safe_bounds.contains(x))
+						{
+							pts.push_back(x);
+						}
+					}
+					if(!pts.empty())
+					{
+						++real_thingies;
+						DSF_AccumPts(pts.begin(),pts.end(), safe_bounds, cbs,writer, idx, param);
+					}
+				}
+				break;
+			}
+			return real_thingies;
+		}
+
+		//------------------------------------------------------------------------------------------------------------
+		// OBJ STRING EXPORTER
+		//------------------------------------------------------------------------------------------------------------
+
+		if(c == 	WED_StringPlacement::sClass)
+		if((str = dynamic_cast<WED_StringPlacement *>(what)) != NULL)
+		{
+			str->GetResource(r);
+			idx = io_table.accum_pol(r,show_level);
+			bool bez = WED_HasBezierSeq(str);
+
+			if(bez)
+			{
+				vector<Bezier2>	chain;
+
+				WED_BezierVectorForPointSequence(str,chain);
+				clip_segments(chain, cull_bounds);
+				if(!chain.empty())
+				{
+					++real_thingies;
+					DSF_AccumChainBezier(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, str->GetSpacing(), 0);
+				}
+			}
+			else
+			{
+				vector<Segment2>	chain;
+
+				WED_VectorForPointSequence(str,chain);
+				// We normally reject zero length segments, but for grandfathered global airports, we'll try to clean this.
+				remove_all_zero_length_segments(chain);
+				clip_segments(chain, cull_bounds);
+				if(!chain.empty())
+				{
+					++real_thingies;
+					DSF_AccumChain(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, str->GetSpacing(), 0);
+				}
+			}
+			return real_thingies;
+		}
+
+		//------------------------------------------------------------------------------------------------------------
+		// OBJ LINE EXPORTER
+		//------------------------------------------------------------------------------------------------------------
+
+		if(c == 	WED_LinePlacement::sClass)
+		if((lin = dynamic_cast<WED_LinePlacement *>(what)) != NULL)
+		{
+			lin->GetResource(r);
+			idx = io_table.accum_pol(r,show_level);
+			bool bez = WED_HasBezierSeq(lin);
+
+			if(bez)
+			{
+				vector<Bezier2>	chain;
+
+				WED_BezierVectorForPointSequence(lin,chain);
+
+				clip_segments(chain, cull_bounds);
+				if(!chain.empty())
+				{
+					int closed = 0;
+					if(one_winding(chain))
+					{
+						if(chain.front().p1 == chain.back().p2 && chain.size() > 1)
+						{
+							closed = 1;
+						}
+					}
+					else
+					{
+						while(chain.front().p1 == chain.back().p2)
+						{
+							chain.insert(chain.begin(),chain.back());
+							chain.pop_back();
+						}
+					}
+					++real_thingies;
+					if(closed && bad_match(chain.front(),chain.back()))
+					{
+						DebugAssert(!"We should not get here - it's a logic error, not a precision error!");
+						problem_children.insert(what);
+					}
+					else
+						DSF_AccumChainBezier(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, closed, closed);
+				}
+			}
+			else
+			{
+				vector<Segment2>	chain;
+
+				WED_VectorForPointSequence(lin,chain);
+				// We normally reject zero length segments, but for grandfathered global airports, we'll try to clean this.
+				remove_all_zero_length_segments(chain);
+				clip_segments(chain, cull_bounds);
+				if(!chain.empty())
+				{
+					int closed = 0;
+					if(one_winding(chain))
+					{
+						if(chain.front().p1 == chain.back().p2 && chain.size() > 1)
+						{
+							closed = 1;
+						}
+					}
+					else
+					{
+						while(chain.front().p1 == chain.back().p2)
+						{
+							chain.insert(chain.begin(),chain.back());
+							chain.pop_back();
+						}
+					}
+					++real_thingies;
+					if(closed && bad_match(chain.front(),chain.back()))
+					{
+						DebugAssert(!"We should not get here - it's a logic error, not a precision error!");
+						problem_children.insert(what);
+					}
+					else
+						DSF_AccumChain(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, closed, closed);
+				}
+			}
+			return real_thingies;
+		}
+		//------------------------------------------------------------------------------------------------------------
+		// DRAPED POLYGON
+		//------------------------------------------------------------------------------------------------------------
+
+		if(c == 	WED_PolygonPlacement::sClass)
+		if((pol = dynamic_cast<WED_PolygonPlacement *>(what)) != NULL)
+		{
+			pol->GetResource(r);
+			idx = io_table.accum_pol(r,show_level);
+			bool bez = WED_HasBezierPol(pol);
+
+			if(bez)
+			{
+				vector<BezierPolygon2>			pol_area;
+				vector<vector<BezierPolygon2> >	pol_cuts;
+
+				WED_BezierPolygonWithHolesForPolygon(pol, pol_area);
+
+				if(!clip_polygon(pol_area,pol_cuts,cull_bounds))
+				{
+					problem_children.insert(what);
+					pol_cuts.clear();
+				}
+
+				for(vector<vector<BezierPolygon2> >::iterator i = pol_cuts.begin(); i != pol_cuts.end(); ++i)
+				{
+					++real_thingies;
+					cbs->BeginPolygon_f(idx,pol->GetHeading(),bez ? 4 : 2,writer);
+					DSF_AccumPolygonWithHolesBezier(*i, safe_bounds, cbs, writer);
+					cbs->EndPolygon_f(writer);
+				}
+			}
+			else
+			{
+				vector<Polygon2> 	pol_area;
+				vector<vector<Polygon2> >	pol_cuts;
+
+				Assert(WED_PolygonWithHolesForPolygon(pol,pol_area));
+
+				if(!clip_polygon(pol_area,pol_cuts,cull_bounds))
+				{
+					problem_children.insert(what);
+					pol_cuts.clear();
+
+				}
+				for(vector<vector<Polygon2> >::iterator i = pol_cuts.begin(); i != pol_cuts.end(); ++i)
+				{
+					++real_thingies;
+					cbs->BeginPolygon_f(idx,pol->GetHeading(),bez ? 4 : 2,writer);
+					DSF_AccumPolygonWithHoles(*i, safe_bounds, cbs, writer);
+					cbs->EndPolygon_f(writer);
+				}
+			}
+			return real_thingies;
+		}
+
+		//------------------------------------------------------------------------------------------------------------
+		// UV-MAPPED DRAPED POLYGON
+		//------------------------------------------------------------------------------------------------------------
+
+		if(c == 	WED_DrapedOrthophoto::sClass)
+		if((orth = dynamic_cast<WED_DrapedOrthophoto *>(what)) != NULL)
+		{
+			//Get the relative path
+			orth->GetResource(r);
+
+			if(orth->IsNew())
+			{
+				string msg;
+				what->GetName(msg);
+
+				// can't use the image name any more to determine the .pol/.dds names, as the same image could be used for multiple Orthos.
+				// So we assume the 'Name" contains the image name plus some suffix to make it unique
+				
+				string relativePath(FILE_get_dir_name(r) + FILE_get_file_name_wo_extensions(msg));
+				
+				string relativePathDDS = relativePath + ".dds";
+				string relativePathPOL = relativePath + ".pol";
+				
+				msg = string("The polygon '") + msg + "' cannot be converted to an orthophoto: ";
+
+				if(is_backout_path(relativePath) || is_dir_sep(relativePath[0]) || relativePath[1] == ':')
+				{
+					DoUserAlert((msg + "The image resource must be a relative path to a location within the scenery directory, aborting DSF Export.").c_str());
+					return -1;
+				}
+
+				string absPathIMG = pkg + r;
+				string absPathDDS = pkg + relativePathDDS;
+				string absPathPOL = pkg + relativePathPOL;
+
+				r = relativePathPOL;		// Resource name comes from the pol no matter what we compress to disk.
+				
+				Bbox2 UVbounds; orth->GetBounds(gis_UV, UVbounds);
+				WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
+				
+				date_cmpr_result_t date_cmpr_res = FILE_date_cmpr(absPathIMG.c_str(),absPathDDS.c_str());
+				//-----------------
+				/* How to export a orthophoto
+				* If it is a orthophoto and the image is newer than the DDS (avoid unnecissary DDS creation),
+				* Create a Bitmap from whatever file format is being used.
+				* Use the number of channels to decide the compression level
+				* Create a DDS from that file format
+				* Create the .pol with the file format in mind
+				* Enjoy your new orthophoto
+				*/
+				
+				if(date_cmpr_res == dcr_firstIsNew || date_cmpr_res == dcr_same)
+				{
+	#if DEV
+					StElapsedTime	etime("DDS export time");
+	#endif
+					if(export_info.orthoFile != absPathIMG)
+					{
+						if(!export_info.orthoFile.empty())
+						{
+							Assert(export_info.orthoImg.data);
+							free(export_info.orthoImg.data);
+							export_info.orthoImg.data = NULL;
+							export_info.orthoFile = "";
+						}
+						if(MakeSupportedType(absPathIMG.c_str(),&export_info.orthoImg))
+						{
+							DoUserAlert((msg + "Unable to convert the image file '" + absPathIMG + "'to a DDS file, aborting DSF Export.").c_str());
+							return -1;
+						}
+						else
+						{
+							export_info.orthoFile = absPathIMG;
+						}
+					}
+					ImageInfo imgInfo(export_info.orthoImg);
+					ImageInfo DDSInfo;
+
+					int UVMleft   = intround(imgInfo.width * UVbounds.xmin());
+					int UVMright  = intround(imgInfo.width * UVbounds.xmax());
+					int UVMtop    = intround(imgInfo.height * UVbounds.ymax());
+					int UVMbottom = intround(imgInfo.height * UVbounds.ymin());
+					int UVMwidth  = UVMright - UVMleft;
+					int UVMheight = UVMtop - UVMbottom;
+					
+					int DDSwidth = 1;
+					int DDSheight = 1;
+
+					while(DDSwidth < UVMwidth && DDSwidth < 2048) DDSwidth <<= 1;      // round up dimensions under 2k to a power of 2 AND limit to 2k
+					while(DDSheight < UVMheight && DDSheight < 2048) DDSheight <<= 1;
+
+					if (CreateNewBitmap(DDSwidth, DDSheight, imgInfo.channels, &DDSInfo) == 0)       // create array to hold upsized image
+					{
+						if(UVMwidth == DDSwidth && UVMheight == DDSheight)
+							CopyBitmapSectionDirect(imgInfo,DDSInfo, UVMleft, UVMbottom, 0, 0, DDSwidth, DDSheight);
+						else
+						{
+							CopyBitmapSection(&imgInfo,&DDSInfo, UVMleft, UVMbottom, UVMright, UVMtop,
+																				0,       0,    DDSwidth, DDSheight);
+						}
+						if(DDSInfo.channels == 3)
+							ConvertBitmapToAlpha(&DDSInfo,false);
+						int DXTMethod = usesAlpha(&DDSInfo) ? 5 : 1;
+						WriteBitmapToDDS_MT(DDSInfo, DXTMethod, absPathDDS.c_str());
+					}
+				}
+				else if(date_cmpr_res == dcr_error)
+				{
+					string msg = string("The file '") + absPathIMG + string("' is missing, aborting DSF Export.");
+					DoUserAlert(msg.c_str());
+					return -1;
+				}
+				
+				if(!FILE_exists(absPathPOL.c_str()))
+				{
+					ImageInfo DDSInfo;
+					if(CreateBitmapFromDDS(absPathDDS.c_str(), &DDSInfo) == 0)
+					{
+						Bbox2 b;
+						orth->GetBounds(gis_Geo, b);
+						Point2 center = b.centroid();
+						//-------------------------------------------
+						pol_info_t out_info = { FILE_get_file_name(relativePathDDS), false,
+							/*SCALE*/ (float) LonLatDistMeters(b.p1,Point2(b.p2.x(), b.p1.y())), (float) LonLatDistMeters(b.p1,Point2(b.p1.x(), b.p2.y())),  // althought its irrelevant here
+							false, false, 
+							/*LAYER_GROUP*/ "", 0,
+							/*LOAD_CENTER*/ (float) center.y(), (float) center.x(), LonLatDistMeters(b.p1,b.p2), intmax2(DDSInfo.height,DDSInfo.width) };
+						rmgr->WritePol(absPathPOL, out_info);
+						DestroyBitmap(&DDSInfo);
+					}
+				}
+
+				what->StartOperation("Norm Ortho");
+				orth->Rescale(gis_UV, UVbounds, Bbox2(0,0,1,1));
+			}
+
+			idx = io_table.accum_pol(r,show_level);
+			bool bez = WED_HasBezierPol(orth);
+			
+			if(bez)
+			{
+				vector<BezierPolygon2uv>			orth_area;
+				vector<vector<BezierPolygon2uv> >	orth_cuts;
+				
+				WED_BezierPolygonWithHolesForPolygon(orth, orth_area);
+				
+				if(!clip_polygon(orth_area,orth_cuts,cull_bounds))
+				{
+					problem_children.insert(what);
+					orth_cuts.clear();
+				}
+				
+				for(vector<vector<BezierPolygon2uv> >::iterator i = orth_cuts.begin(); i != orth_cuts.end(); ++i)
+				{
+					++real_thingies;
+					cbs->BeginPolygon_f(idx,65535,8,writer);
+					DSF_AccumPolygonWithHolesBezier(*i, safe_bounds, cbs, writer);
+					cbs->EndPolygon_f(writer);
+				}
+			}
+			else
+			{
+				vector<Polygon2uv>			orth_area;
+				vector<vector<Polygon2uv> >	orth_cuts;
+				Assert(WED_PolygonWithHolesForPolygon(orth,orth_area));
+
+				if(!clip_polygon(orth_area,orth_cuts,cull_bounds))
+				{
+					problem_children.insert(what);
+					orth_cuts.clear();
+				}
+
+				for(vector<vector<Polygon2uv> >::iterator i = orth_cuts.begin(); i != orth_cuts.end(); ++i)
+				{
+					++real_thingies;
+					cbs->BeginPolygon_f(idx,65535,4,writer);
+					DSF_AccumPolygonWithHoles(*i, safe_bounds, cbs, writer);
+					cbs->EndPolygon_f(writer);
+				}
+			}
+			
+			if(orth->IsNew())
+				what->AbortOperation(); // this will nicely undo the UV mapping rescaling we did :)
+
+			return real_thingies;
+		}
+		
+	#if ROAD_EDITING
+		//------------------------------------------------------------------------------------------------------------
+		// ROAD EXPORTER
+		//------------------------------------------------------------------------------------------------------------
+		
+		if ((roa = dynamic_cast<WED_RoadEdge*>(what)) != NULL)
 		{
 			string asset;
 			roa->GetResource(asset);
 			dsf_road_grid_helper * grid = io_table.accum_net(asset);
 			grid->add_segment(roa);
 			++real_thingies;
+			
+			return real_thingies;
 		}
-
-#endif // ROAD_EDITING
-
-
-	//------------------------------------------------------------------------------------------------------------
-	// RECURSION
-	//------------------------------------------------------------------------------------------------------------
-
-
-	int cc = what->CountChildren();
-	for (int c = 0; c < cc; ++c)
-	{
-		int result = DSF_ExportTileRecursive(what->GetNthChild(c), resolver, pkg, cull_bounds, safe_bounds, io_table, cbs, writer, problem_children, show_level);
-		if (result == -1)
-		{
-			real_thingies = -1; //Abort!
-			break;
-		}
-		else
-		{
-			real_thingies += result;
-		}
+	#endif // ROAD_EDITING
 	}
 
+	if(c == 	WED_Airport::sClass)
+	{
+		if((apt = dynamic_cast<WED_Airport*>(what)) != NULL)
+		{
+			apt->GetICAO(r);
+			idx = io_table.accum_filter(r.c_str());
+			cbs->SetFilter_f(idx,writer);
+			io_table.set_filter(idx);
+		}
+	}
+	else apt = NULL;
+	
+	//------------------------------------------------------------------------------------------------------------
+	// RECURSION 
+	//------------------------------------------------------------------------------------------------------------
+	
+	if(apt || c == WED_Group::sClass)  // only recurse if there is actually a possibility of more DSF content in there
+	{
+		int cc = what->CountChildren();
+		for (int c = 0; c < cc; ++c)
+		{
+			int result = DSF_ExportTileRecursive(what->GetNthChild(c), resolver, pkg, cull_bounds, safe_bounds, io_table, cbs, writer, problem_children, show_level, export_info);
+			if (result == -1)
+			{
+				real_thingies = -1; //Abort!
+				break;
+			}
+			else
+			{
+				real_thingies += result;
+			}
+		}
+	}
+	
 	if(apt)
 	{
 		cbs->SetFilter_f(-1,writer);
@@ -1972,39 +2003,36 @@ static int	DSF_ExportTileRecursive(
 	return real_thingies;
 }
 
-static int DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& pkg, int x, int y, set <WED_Thing *>& problem_children)
+static int DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& pkg, int x, int y, set <WED_Thing *>& problem_children, DSF_export_info_t& export_info)
 {
 	void *			writer;
 	DSFCallbacks_t	cbs;
-	char	prop_buf[256];
+	char	buffer[256];
 
 	double msl_min, msl_max;
-
 	Bbox2	cull(x,y,x+1,y+1);
 
-	int cull_code = DSF_HeightRangeRecursive(base,msl_min,msl_max, cull);
-
-	if(cull_code < 0)
+	int cull_code = DSF_HeightRangeRecursive(base,msl_min,msl_max, cull);    // also finds if tile has anything goint into it
+	
+	if(cull_code < 0) 
 		return 0;
-
-	if(cull_code > 0)
+	else if(cull_code > 0)
 	{
 		msl_min = floor(msl_min);
 		msl_max = ceil(msl_max);
 		if(msl_min == msl_max)
 			msl_max = msl_min + 1.0;
 	}
-	else
+	else // cull_code == 0
 		msl_min = -32768.0, msl_max = 32767.0;
-
 
 	writer = DSFCreateWriter(x,y,x+1,y+1, msl_min,msl_max,DSF_DIVISIONS);
 	DSFGetWriterCallbacks(&cbs);
 
-	sprintf(prop_buf, "%d", (int) x  );		cbs.AcceptProperty_f("sim/west", prop_buf, writer);
-	sprintf(prop_buf, "%d", (int) x+1);		cbs.AcceptProperty_f("sim/east", prop_buf, writer);
-	sprintf(prop_buf, "%d", (int) y+1);		cbs.AcceptProperty_f("sim/north", prop_buf, writer);
-	sprintf(prop_buf, "%d", (int) y  );		cbs.AcceptProperty_f("sim/south", prop_buf, writer);
+	sprintf(buffer, "%d", (int) x  );		cbs.AcceptProperty_f("sim/west", buffer, writer);
+	sprintf(buffer, "%d", (int) x+1);		cbs.AcceptProperty_f("sim/east", buffer, writer);
+	sprintf(buffer, "%d", (int) y+1);		cbs.AcceptProperty_f("sim/north", buffer, writer);
+	sprintf(buffer, "%d", (int) y  );		cbs.AcceptProperty_f("sim/south", buffer, writer);
 	cbs.AcceptProperty_f("sim/planet", "earth", writer);
 	cbs.AcceptProperty_f("sim/creation_agent", "WorldEditor" WED_VERSION_STRING, writer);
 	cbs.AcceptProperty_f("laminar/internal_revision", "0", writer);
@@ -2017,11 +2045,10 @@ static int DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& 
 	if(gExportTarget >= wet_xplane_1021)
 		safe_bounds.expand(DSF_EXTRA_1021);
 
-
 	int entities = 0;
 	for (int show_level = 6; show_level >= 1; --show_level)
 	{
-		int result = DSF_ExportTileRecursive(base, resolver, pkg, cull_bounds, safe_bounds, rsrc, &cbs, writer, problem_children, show_level);
+		int result = DSF_ExportTileRecursive(base, resolver, pkg, cull_bounds, safe_bounds, rsrc, &cbs, writer, problem_children, show_level, export_info);
 		if (result == -1)
 		{
 			DSFDestroyWriter(writer);
@@ -2032,17 +2059,13 @@ static int DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& 
 
 	rsrc.write_tables(cbs,writer);
 
-	char	rel_dir [512];
-	char	rel_path[512];
-	string full_dir, full_path;
-	sprintf(rel_dir ,"Earth nav data" DIR_STR "%+03d%+04d",							  latlon_bucket(y), latlon_bucket(x)	  );
-	sprintf(rel_path,"Earth nav data" DIR_STR "%+03d%+04d" DIR_STR "%+03d%+04d.dsf",  latlon_bucket(y), latlon_bucket(x), y, x);
-	full_path = pkg + rel_path;
-	full_dir  = pkg + rel_dir ;
 	if(entities)	// empty DSF?  Don't write a empty file, makes a mess!
 	{
-		FILE_make_dir_exist(full_dir.c_str());
-		DSFWriteToFile(full_path.c_str(), writer);
+		snprintf(buffer, 255, "%sEarth nav data" DIR_STR "%+03d%+04d",	pkg.c_str(), latlon_bucket(y), latlon_bucket(x)	);
+		FILE_make_dir_exist(buffer);
+		
+		snprintf(buffer, 255, "%sEarth nav data" DIR_STR "%+03d%+04d" DIR_STR "%+03d%+04d.dsf", pkg.c_str(), latlon_bucket(y), latlon_bucket(x), y, x);
+		DSFWriteToFile(buffer, writer);
 	}
 
 	/*
@@ -2063,7 +2086,7 @@ static int DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& 
 
 int DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, set<WED_Thing *>& problem_children)
 {
-#if DEV
+#if 1 // DEV
 	StElapsedTime	etime("Export time");
 #endif
 	g_dropped_pts = false;
@@ -2081,23 +2104,22 @@ int DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, se
 	int tile_north = ceil (wrl_bounds.p2.y());
 
 	int DSF_export_tile_res = 0;
+
+	DSF_export_info_t DSF_export_info;   // We kept the last loaded orthoimage open, so it does not have to be loaded repeatedly. This gates parallel DSF exports.
+
 	for (int y = tile_south; y < tile_north; ++y)
 	{
 		for (int x = tile_west; x < tile_east; ++x)
 		{
-			DSF_export_tile_res = DSF_ExportTile(base, resolver, package, x, y, problem_children);
-			if (DSF_export_tile_res == -1)
-			{
-				break;
-			}
+			DSF_export_tile_res = DSF_ExportTile(base, resolver, package, x, y, problem_children, DSF_export_info);
+			if (DSF_export_tile_res == -1) break;
 		}
-
-		if (DSF_export_tile_res == -1)
-		{
-			break;
-		}
+		if (DSF_export_tile_res == -1) break;
 	}
-
+	if (DSF_export_info.orthoImg.data)
+	{
+		free(DSF_export_info.orthoImg.data);
+	}
 	if (g_dropped_pts)
 	{
 		DoUserAlert("Warning: you have bezier curves that cross a DSF tile boundary.  X-Plane 9 cannot handle this case.  To fix this, only use non-curved polygons to cross a tile boundary.");
@@ -2143,10 +2165,13 @@ int DSF_ExportAirportOverlay(IResolver * resolver, WED_Airport  * apt, const str
 		cbs.AcceptProperty_f("sim/overlay", "1", writer);
 
 		DSF_ResourceTable	rsrc;
+		DSF_export_info_t DSF_export_info;
 
 		int entities = 0;
 		for(int show_level = 6; show_level >= 1; --show_level)
-			entities += DSF_ExportTileRecursive(apt, resolver, package, cull_bounds, safe_bounds, rsrc, &cbs, writer,problem_children,show_level);
+			entities += DSF_ExportTileRecursive(apt, resolver, package, cull_bounds, safe_bounds, rsrc, &cbs, writer, problem_children, show_level, DSF_export_info);
+			
+		Assert(DSF_export_info.orthoImg.data == NULL); //  In this type of export - orthoimages are not allowed. So this should never happen.
 
 		rsrc.write_tables(cbs,writer);
 
@@ -2156,5 +2181,3 @@ int DSF_ExportAirportOverlay(IResolver * resolver, WED_Airport  * apt, const str
 	else
 		return 0;
 }
-
-

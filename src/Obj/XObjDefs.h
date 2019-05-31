@@ -318,6 +318,7 @@ struct	XObj8 {
 
 	float					xyz_min[3];
 	float					xyz_max[3];
+	float					fixed_heading;
 };
 
 #endif

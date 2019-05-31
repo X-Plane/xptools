@@ -31,10 +31,8 @@ DEFINE_PERSISTENT(WED_FacadePlacement)
 TRIVIAL_COPY(WED_FacadePlacement,WED_GISPolygon)
 
 WED_FacadePlacement::WED_FacadePlacement(WED_Archive * a, int i) : WED_GISPolygon(a,i),
-	height    (this,PROP_Name("Height",    XML_Name("facade_placement","height")),10.0,3,1),
-#if AIRPORT_ROUTING
+	height    (this,PROP_Name("Height",    XML_Name("facade_placement","height")),10,3,0,"m"),
 	pick_walls(this,PROP_Name("Pick Walls",XML_Name("facade_placement","pick_walls")),0),
-#endif	
 	resource  (this,PROP_Name("Resource",  XML_Name("facade_placement","resource")),""),
 	show_level(this,PROP_Name("Show with", XML_Name("facade_placement","show_level")),ShowLevel, show_Level1)
 {
@@ -83,49 +81,24 @@ WED_FacadePlacement::TopoMode		WED_FacadePlacement::GetTopoMode(void) const
 		WED_ResourceMgr* rr = WED_GetResourceMgr(r);
 		if(rr)
 		{
-			fac_info_t f;
+			const fac_info_t * f;
 			if(rr->GetFac(resource.value,f))
 			{
-				if(f.ring) 
+				if(f->is_ring) 
 				{
-					if(f.roof)
+					if(f->has_roof)
 						return topo_Area;   // ring and roof
 					else
 						return topo_Ring;   // ring only: no roof
 				}
 				else
-				{
-					if(f.roof)
-						return topo_Area;       // roof only: no ring. It's bad authoring, XP 11.10 will close if for you ...
-					else
-						return topo_Chain;      // no ring, no roof
-				}
+					return topo_Chain;      // no ring, no roof
 			}
 		}
 	}
 	return topo_Area;
 }
 
-//void		WED_FacadePlacement::GetWallChoices(vector<int>& out_walls)
-//{
-//	out_walls.clear();
-//	if (pick_walls.value)
-//	{
-//		for(int h = -1; h < GetNumHoles(); ++h)
-//		{
-//			IGISPointSequence * s = (h == -1) ? GetOuterRing() : GetNthHole(h);
-//			for(int n = 0; n < s->GetNumSides(); ++n)
-//			{
-//				IGISPoint * p = s->GetNthPoint(n);
-//				WED_FacadeNode * n = dynamic_cast<WED_FacadeNode *>(p);
-//				if(n)
-//					out_walls.push_back(n->GetWallType());
-//			}
-//		}
-//	}
-//}
-
-#if AIRPORT_ROUTING
 bool		WED_FacadePlacement::HasLayer		(GISLayer_t layer							  ) const
 {
 	if(layer == gis_Param)	return pick_walls.value;
@@ -137,13 +110,7 @@ void		WED_FacadePlacement::SetCustomWalls(bool has)
 	pick_walls = (has ? 1 : 0);
 }
 
-#endif
-
 bool		WED_FacadePlacement::HasCustomWalls(void) const 
 {
-	#if AIRPORT_ROUTING
 		return pick_walls.value; 
-	#else
-		return false;
-	#endif
 }

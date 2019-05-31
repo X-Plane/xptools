@@ -27,8 +27,6 @@
 #include "WED_ToolUtils.h"
 #include "XESConstants.h"
 
-#if AIRPORT_ROUTING
-
 DEFINE_PERSISTENT(WED_ATCFlow)
 TRIVIAL_COPY(WED_ATCFlow, WED_Thing)
 
@@ -112,5 +110,3 @@ void	WED_ATCFlow::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 	else
 		WED_Thing::GetNthPropertyDict(n,dict);			
 }
-
-#endif

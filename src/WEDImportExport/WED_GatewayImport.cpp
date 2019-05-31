@@ -459,7 +459,12 @@ void WED_GatewayImportDialog::Next()
 		mICAO_AptProvider.GetSelection(apts);
 		if(apts.size() > 1)
 		{
-				if (ConfirmMessage("Multiple Airports are selected. Import recommended version for each ?","Yes", "Cancel"))
+				string msg("Multiple Airports are selected. Import ");
+				if(gModeratorMode)
+					msg += "accepted version for each ?";
+				else
+					msg += "recommended version for each ?";
+				if (ConfirmMessage(msg.c_str(),"Yes", "Cancel"))
 				{
 					int max_imports = 50;                  // some artifical limit from keeping the gateway being loaded by robots
 					mVersions_VersionsSelected.clear();
@@ -538,7 +543,7 @@ void WED_GatewayImportDialog::Back()
 extern "C" void decode( const char * startP, const char * endP, char * destP, char ** out);
 void WED_GatewayImportDialog::TimerFired()
 {
-	WED_file_cache_response res = WED_file_cache_request_file(mCacheRequest);
+	WED_file_cache_response res = gFileCache.request_file(mCacheRequest);
 
 	if(mPhase == imp_dialog_download_airport_metadata ||
 	   mPhase == imp_dialog_download_ICAO ||
@@ -718,7 +723,7 @@ void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
 
 					mRequestCount = 0;
 
-					WED_file_cache_response res = WED_file_cache_request_file(mCacheRequest);
+					WED_file_cache_response res = gFileCache.request_file(mCacheRequest);
 
 					for (int i = 0; i < 10; ++i) // try downloading version info for 3sec. Should normally be enough.
 					{
@@ -730,7 +735,7 @@ void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
 							#else
 							usleep(300000);     // really dumb, as it makes the program unresponsible during this download.
 							#endif
-							res = WED_file_cache_request_file(mCacheRequest);
+							res = gFileCache.request_file(mCacheRequest);
 						}
 					}
 

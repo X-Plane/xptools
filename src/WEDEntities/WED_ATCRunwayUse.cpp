@@ -26,9 +26,6 @@
 #include "AptDefs.h"
 #include "WED_ToolUtils.h"
 
-#if AIRPORT_ROUTING
-
-
 DEFINE_PERSISTENT(WED_ATCRunwayUse)
 TRIVIAL_COPY(WED_ATCRunwayUse,WED_Thing)
 
@@ -139,7 +136,3 @@ void		WED_ATCRunwayUse::PropEditCallback(int before)
 		SetName(buf);
 	}
 }
-
-
-#endif
-

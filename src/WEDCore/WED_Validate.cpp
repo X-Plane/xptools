@@ -61,6 +61,7 @@
 #include "WED_Group.h"
 #include "WED_EnumSystem.h"
 #include "WED_Menus.h"
+#include "WED_GatewayExport.h"
 #include "WED_GroupCommands.h"
 #include "WED_MetaDataKeys.h"
 
@@ -1002,7 +1003,7 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 		for(int i = 0; i < 360; ++i)                                       // in complex multi-time or ceiling flows settings when ALL prior flows have time rules that together cover 24hrs.
 			sWindsCov[i] = max(sWindThisFlow[i], sWindsCov[i]);             // Such is bad style - one shold rather have one flow with a time rule followed by a time-unlimited flow.
 
-	#if !GATEWAY_IMPORT_FEATURES
+#if !GATEWAY_IMPORT_FEATURES
 
 	map<int,vector<WED_ATCRunwayUse*> >		arrival_rwys;
 	map<int,vector<WED_ATCRunwayUse*> >		departure_rwys;
@@ -1053,11 +1054,9 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 			}
 		}
 	}
-	#endif
-
 	if (arrival_rwys.empty() || departure_rwys.empty())
 		msgs.push_back(validation_error_t("Airport flow must specify at least one active arrival and one departure runway", err_flow_no_arr_or_no_dep_runway, flow, apt));
-
+#endif
 }
 
 static void ValidateATC(WED_Airport* apt, validation_error_vector& msgs, set<int>& legal_rwy_oneway, set<int>& legal_rwy_twoway)
@@ -1257,7 +1256,7 @@ static void ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vec
 			{
 				if(airlines_str[i - 3] != ' ')
 				{
-					msgs.push_back(validation_error_t(string("Ramp start airlines string '") + orig_airlines_str + "' must have a space bewteen every three letter airline code.", err_ramp_airlines_is_not_spaced_correctly, ramp, apt));
+					msgs.push_back(validation_error_t(string("Ramp start airlines string '") + orig_airlines_str + "' must have a space between every three letter airline code.", err_ramp_airlines_is_not_spaced_correctly, ramp, apt));
 					break;
 				}
 
@@ -1895,6 +1894,28 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 			msgs.push_back(validation_error_t("Metadata value " + *itr + " contains 'http', is likely a URL", err_airport_metadata_invalid, who, apt));
 		}
 	}
+
+	string txt = "Metadata key '" + META_KeyDisplayText(wed_AddMetaDataLGuiLabel) + "'";
+
+	if(who->ContainsMetaDataKey(wed_AddMetaDataLGuiLabel))
+	{
+		string metaValue = who->GetMetaDataValue(wed_AddMetaDataLGuiLabel);
+		if(metaValue != "2D" && metaValue != "3D")
+				msgs.push_back(validation_error_t(txt + " must be either '2D' or '3D'", err_airport_metadata_invalid, who, apt));
+	}
+	
+	if(gExportTarget >= wet_xplane_1130 && gExportTarget != wet_gateway)   // For the gateway target - the gui_label tags are forced prior to export, anyways.
+	{                                                                      // So don't bother the user with this detail or force him to set it 'right'
+		if(who->ContainsMetaDataKey(wed_AddMetaDataLGuiLabel))
+		{
+			const char * has3D = GatewayExport_has_3d(who) ? "3D" : "2D";
+			string metaValue = who->GetMetaDataValue(wed_AddMetaDataLGuiLabel);
+			if(metaValue != has3D)
+				msgs.push_back(validation_error_t(txt + " does not match current (" + has3D + ") scenery content", warn_airport_metadata_invalid, who, apt));
+		}
+		else
+			msgs.push_back(validation_error_t(txt + " does not exist, but is needed by the XP 11.35+ GUI", warn_airport_metadata_invalid, who, apt));
+	}
 }
 
 static void ValidateOneTaxiSign(WED_AirportSign* airSign, validation_error_vector& msgs, WED_Airport * apt)
@@ -2050,7 +2071,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		if (contains_word(name_lcase,"international") || contains_word(name_lcase,"int")|| contains_word(name_lcase,"regional")
 			|| contains_word(name_lcase,"municipal"))
 			msgs.push_back(validation_error_t("The airport name should use the abbreviations 'Intl', 'Rgnl' and 'Muni' instead of full words.", warn_airport_name_style, apt,apt));
-		if (contains_word(name_lcase, icao_lcase.c_str()))
+		if (icao_lcase != "niue" && contains_word(name_lcase, icao_lcase.c_str()))
 			msgs.push_back(validation_error_t("The airport name should not include the ICAO code. Use the common name only.", warn_airport_name_style, apt,apt));
 
 	}
@@ -2216,17 +2237,17 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		for(vector<WED_DrapedOrthophoto *>::iterator o = orthos.begin(); o != orthos.end(); ++o)
 		{
 			string res;
-			pol_info_t pol;
+			const pol_info_t * pol;
 
 			(*o)->GetResource(res);
 			res_mgr->GetPol(res,pol);
 
-			if (!pol.mSubBoxes.size())
+			if (!pol->mSubBoxes.size())
 			{
 				orthos_illegal.push_back(*o);
 			}
 //			else
-//				printf("kosher ortho, has %d subtex\n", pol.mSubBoxes.size());
+//				printf("kosher ortho, has %d subtex\n", pol->mSubBoxes.size());
 		}
 		if(!orthos_illegal.empty())
 			msgs.push_back(validation_error_t("Only Orthophotos with automatic subtexture selection can be exported to the Gateway. Please hide or remove selected Orthophotos.",
@@ -2439,7 +2460,7 @@ validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane,
 		mCacheRequest.in_folder_prefix = "scenery_packs";
 		mCacheRequest.in_url = WED_URL_CIFP_RUNWAYS;
 
-		WED_file_cache_response res = WED_file_cache_request_file(mCacheRequest);
+		WED_file_cache_response res = gFileCache.request_file(mCacheRequest);
 
 	/* ToDo: get a better way to do automatic retryies for cache updates.
 		Ultimately, during the actual gateway submission we MUST wait and get full verification
@@ -2456,7 +2477,7 @@ validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane,
 	#else
 				sleep(1);
 	#endif
-				res = WED_file_cache_request_file(mCacheRequest);
+				res = gFileCache.request_file(mCacheRequest);
 			}
 		}
 

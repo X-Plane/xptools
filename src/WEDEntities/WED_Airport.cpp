@@ -520,7 +520,7 @@ void			WED_Airport::StartElement(
 								const XML_Char *	name,
 								const XML_Char **	atts)
 {
-	if(strcasecmp(name,"meta_data_entry") == 0)
+	if(strcmp(name,"meta_data_entry") == 0)
 	{
 		const XML_Char * entry_value = get_att("pair",atts);
 		if(entry_value != NULL)

@@ -24,8 +24,6 @@
 #ifndef WED_ATCRunwayUse_H
 #define WED_ATCRunwayUse_H
 
-#if AIRPORT_ROUTING
-
 #include "WED_Thing.h"
 
 struct AptRunwayRule_t;
@@ -60,7 +58,5 @@ private:
 	WED_PropIntText			vec_heading_max;
 
 };
-
-#endif
 
 #endif /* WED_ATCRunwayUse_H */

@@ -64,9 +64,9 @@ private:
 		bool									flushed;
 		FILE *									file;
 		int										indent;
-		string									name;
-		map<string,string>						attrs;
-		vector<WED_XMLElement *>				children;
+		const char *							name;
+		vector<pair<const char *,string> >	attrs;
+		vector<WED_XMLElement *>			children;
 		WED_XMLElement *						parent;
 };	
 	

@@ -33,17 +33,30 @@
 #include "XESConstants.h"
 #include <algorithm>
 
-inline int remap(const map<int,int>& m, int v)
-{
-	map<int,int>::const_iterator i = m.find(v);
-	if (i == m.end()) return -1;
-	return i->second;
+template<typename T>
+inline void CallEditCallback(WED_PropertyHelper* P, T& value, const T& v) 
+{ if (value != v) 
+	{ if (P) P->PropEditCallback(1);
+		value = v;
+		if (P) P->PropEditCallback(0);
+	}
 }
+
+WED_PropIntText&       WED_PropIntText::operator=(int v)    { CallEditCallback<int>(GetParent(), value, v); return *this; }
+WED_PropBoolText&     WED_PropBoolText::operator=(int v)    { CallEditCallback<int>(GetParent(), value, v); return *this; }
+WED_PropDoubleText& WED_PropDoubleText::operator=(double v) { CallEditCallback<double>(GetParent(), value, v); return *this; }
+WED_PropStringText& WED_PropStringText::operator=(const string& v)  { CallEditCallback<string>(GetParent(), value, v); return *this; }
+WED_PropFileText&     WED_PropFileText::operator=(const string& v)  { CallEditCallback<string>(GetParent(), value, v); return *this; }
+
+WED_PropIntEnum&                 WED_PropIntEnum::operator=(int v)             { CallEditCallback<int>(GetParent(), value, v); return *this; }
+WED_PropIntEnumSet&           WED_PropIntEnumSet::operator=(const set<int>& v) { CallEditCallback<set<int> >(GetParent(), value, v); return *this; }
+WED_PropIntEnumBitfield& WED_PropIntEnumBitfield::operator=(const set<int>& v) { CallEditCallback<set<int> >(GetParent(), value, v); return *this; }
+
 
 int		WED_PropertyHelper::FindProperty(const char * in_prop) const
 {
 	for (int n = 0; n < mItems.size(); ++n)
-		if (strcmp(mItems[n]->mTitle, in_prop)==0) return n;
+		if (strcmp(mItems[n]->GetWedName(), in_prop)==0) return n;
 	return -1;
 }
 
@@ -77,10 +90,64 @@ void		WED_PropertyHelper::SetNthProperty(int n, const PropertyVal_t& val)
 	mItems[n]->SetProperty(val,this);
 }
 
-WED_PropertyItem::WED_PropertyItem(WED_PropertyHelper * pops, const char * title) : mTitle(title), mParent(pops)
+#if PROP_PTR_OPT
+WED_PropertyItem * relPtr::operator [] (int n) const
+{
+	DebugAssert(n < mItemsCount);
+	DebugAssert(n >= 0);
+	return reinterpret_cast<WED_PropertyItem *>((char *) this + (((uintptr_t) mItemsOffs[n]) << 3));
+}
+
+void relPtr::push_back(WED_PropertyItem * ptr)
+{
+	ptrdiff_t offs = reinterpret_cast<char *>(ptr) - reinterpret_cast<char *>(this);
+	DebugAssert( offs > 0 );
+	DebugAssert( offs < 8*256 );
+	DebugAssert( offs % 8 == 0 );
+	offs >>= 3;
+
+	DebugAssert(mItemsCount < PROP_PTR_OPT);
+
+	mItemsOffs[mItemsCount] = (unsigned char) offs;
+	++mItemsCount;
+}
+
+WED_PropertyHelper * WED_PropertyItem::GetParent(void) const { 
+	printf("%p %p\n", reinterpret_cast<WED_PropertyHelper *>((char *)this - (mTitle >> 45 - 3 & 0xFF << 3)), mParent);
+	DebugAssert(reinterpret_cast<WED_PropertyHelper *>((char *)this - (mTitle >> 45 - 3 & 0xFF << 3)) == mParent);
+	     return reinterpret_cast<WED_PropertyHelper *>((char *)this - (mTitle >> 45 - 3 & 0xFF << 3)); }
+const char *	WED_PropertyItem::GetWedName(void)     const { return reinterpret_cast<const char *>(PTR_FIX(mTitle)); }
+const char *	WED_PropertyItem::GetXmlName(void)     const { return reinterpret_cast<const char *>(PTR_FIX(mTitle)) + (mTitle >> 53 & 0x1F); }
+const char *	WED_PropertyItem::GetXmlAttrName(void) const { return reinterpret_cast<const char *>(PTR_FIX(mTitle)) + (mTitle >> 58 & 0x3F); }
+
+#else
+
+WED_PropertyHelper * WED_PropertyItem::GetParent(void) const { return mParent; }
+const char *	WED_PropertyItem::GetWedName(void)     const { return reinterpret_cast<const char *>(PTR_CLR(mTitle)); }
+const char *	WED_PropertyItem::GetXmlName(void)     const { return reinterpret_cast<const char *>(PTR_CLR(mTitle)) + ((mTitle >> 48) & 0xFF); }
+const char *	WED_PropertyItem::GetXmlAttrName(void) const { return reinterpret_cast<const char *>(PTR_CLR(mTitle)) + ((mTitle >> 56) & 0xFF); }
+
+#endif
+
+WED_PropertyItem::WED_PropertyItem(WED_PropertyHelper * pops, const char * title, int offset)
 {
 	if (pops)
+	{
+#if PROP_PTR_OPT
+		ptrdiff_t offs = reinterpret_cast<char *>(this) - reinterpret_cast<char *>(pops);
+		DebugAssert( (offset & 0xFF) < 32 );
+		DebugAssert( ((offset >> 8) & 0xFF) < 64 );
+		DebugAssert(offs < 8*256);
+		DebugAssert(offs > 0);
+		DebugAssert(offs %8 == 0);
+		mTitle = ((offset >> 8) & 0x3FULL) << 58 | (offset & 0x1FULL) << 53 | offs << 45-3 | PTR_CLR(reinterpret_cast<uintptr_t>(title));
+		mParent = pops;
+#else
+		mParent = pops;
+		mTitle = reinterpret_cast<uintptr_t>(title) | ((uintptr_t) offset) << 48;
+#endif
 		pops->mItems.push_back(this);
+	}
 }
 
 void 		WED_PropertyHelper::ReadPropsFrom(IOReader * reader)
@@ -144,7 +211,7 @@ void		WED_PropIntText::GetPropertyInfo(PropertyInfo_t& info)
 	info.can_delete = false;
 	info.can_edit = 1;
 	info.prop_kind = prop_Int;
-	info.prop_name = mTitle;
+	info.prop_name = GetWedName();
 	info.digits = mDigits;
 	info.synthetic = 0;
 }
@@ -188,7 +255,7 @@ void 		WED_PropIntText::WriteTo(IOWriter * writer)
 
 void		WED_PropIntText::ToXML(WED_XMLElement * parent)
 {
-	const char *p = mTitle+strlen(mTitle)+1;
+	const char *p = GetXmlName();
 	WED_XMLElement * xml = parent->add_or_find_sub_element(p);
 	p += strlen(p)+1;
 	xml->add_attr_int(p,value);
@@ -196,10 +263,8 @@ void		WED_PropIntText::ToXML(WED_XMLElement * parent)
 
 bool		WED_PropIntText::WantsAttribute(const char * ele, const char * att_name, const char * att_value)
 {
-	const char *p = mTitle+strlen(mTitle)+1;
-	if(strcasecmp(p,ele)==0)
-	p += strlen(p)+1;
-	if(strcasecmp(p,att_name)==0)
+	if(strcmp(GetXmlName(),ele)==0)
+	if(strcmp(GetXmlAttrName(),att_name)==0)
 	{
 		value = atoi(att_value);
 		return true;
@@ -214,7 +279,7 @@ void		WED_PropBoolText::GetPropertyInfo(PropertyInfo_t& info)
 	info.can_delete = false;
 	info.can_edit = 1;
 	info.prop_kind = prop_Bool;
-	info.prop_name = mTitle;
+	info.prop_name = GetWedName();
 	info.synthetic = 0;
 }
 
@@ -257,18 +322,15 @@ void 		WED_PropBoolText::WriteTo(IOWriter * writer)
 
 void		WED_PropBoolText::ToXML(WED_XMLElement * parent)
 {
-	const char *p = mTitle+strlen(mTitle)+1;
-	WED_XMLElement * xml = parent->add_or_find_sub_element(p);
-	p += strlen(p)+1;
-	xml->add_attr_int(p,value);
+	const char *p = GetXmlName();
+	WED_XMLElement * xml = parent->add_or_find_sub_element(GetXmlName());
+	xml->add_attr_int(GetXmlAttrName(),value);
 }
 
 bool		WED_PropBoolText::WantsAttribute(const char * ele, const char * att_name, const char * att_value)
 {
-	const char *p = mTitle+strlen(mTitle)+1;
-	if(strcasecmp(p,ele)==0)
-	p += strlen(p)+1;
-	if(strcasecmp(p,att_name)==0)
+	if(strcmp(GetXmlName(),ele)==0)
+	if(strcmp(GetXmlAttrName(),att_name)==0)
 	{
 		value = atoi(att_value);
 		return true;
@@ -283,7 +345,7 @@ void		WED_PropDoubleText::GetPropertyInfo(PropertyInfo_t& info)
 	info.can_delete = false;
 	info.can_edit = 1;
 	info.prop_kind = prop_Double;
-	info.prop_name = mTitle;
+	info.prop_name = GetWedName();
 	info.digits = mDigits;
 	info.decimals = mDecimals;
 	info.synthetic = 0;
@@ -329,18 +391,14 @@ void 		WED_PropDoubleText::WriteTo(IOWriter * writer)
 
 void		WED_PropDoubleText::ToXML(WED_XMLElement * parent)
 {
-	const char *p = mTitle+strlen(mTitle)+1;
-	WED_XMLElement * xml = parent->add_or_find_sub_element(p);
-	p += strlen(p)+1;
-	xml->add_attr_double(p,value,mDecimals);
+	WED_XMLElement * xml = parent->add_or_find_sub_element(GetXmlName());
+	xml->add_attr_double(GetXmlAttrName(),value,mDecimals);
 }
 
 bool		WED_PropDoubleText::WantsAttribute(const char * ele, const char * att_name, const char * att_value)
 {
-	const char *p = mTitle+strlen(mTitle)+1;
-	if(strcasecmp(p,ele)==0)
-	p += strlen(p)+1;
-	if(strcasecmp(p,att_name)==0)
+	if(strcmp(GetXmlName(),ele)==0)
+	if(strcmp(GetXmlAttrName(),att_name)==0)
 	{
 		value = atof(att_value);
 		return true;
@@ -395,10 +453,8 @@ void	WED_PropFrequencyText::AssignFrom1Khz(int freq_1khz)
 
 bool		WED_PropFrequencyText::WantsAttribute(const char * ele, const char * att_name, const char * att_value)
 {
-	const char *p = mTitle+strlen(mTitle)+1;
-	if(strcasecmp(p,ele)==0)
-	p += strlen(p)+1;
-	if(strcasecmp(p,att_name)==0)
+	if(strcmp(GetXmlName(),ele)==0)
+	if(strcmp(GetXmlAttrName(),att_name)==0)
 	{
 		value = atof(att_value);
 		if (value >=118.0 && value < 137.0)
@@ -440,7 +496,7 @@ void		WED_PropStringText::GetPropertyInfo(PropertyInfo_t& info)
 	info.can_delete = false;
 	info.can_edit = 1;
 	info.prop_kind = prop_String;
-	info.prop_name = mTitle;
+	info.prop_name = GetWedName();
 	info.synthetic = 0;
 }
 
@@ -488,18 +544,14 @@ void 		WED_PropStringText::WriteTo(IOWriter * writer)
 
 void		WED_PropStringText::ToXML(WED_XMLElement * parent)
 {
-	const char *p = mTitle+strlen(mTitle)+1;
-	WED_XMLElement * xml = parent->add_or_find_sub_element(p);
-	p += strlen(p)+1;
-	xml->add_attr_stl_str(p,value);
+	WED_XMLElement * xml = parent->add_or_find_sub_element(GetXmlName());
+	xml->add_attr_stl_str(GetXmlAttrName(),value);
 }
 
 bool		WED_PropStringText::WantsAttribute(const char * ele, const char * att_name, const char * att_value)
 {
-	const char *p = mTitle+strlen(mTitle)+1;
-	if(strcasecmp(p,ele)==0)
-	p += strlen(p)+1;
-	if(strcasecmp(p,att_name)==0)
+	if(strcmp(GetXmlName(),ele)==0)
+	if(strcmp(GetXmlAttrName(),att_name)==0)
 	{
 		value = att_value;
 		return true;
@@ -514,7 +566,7 @@ void		WED_PropFileText::GetPropertyInfo(PropertyInfo_t& info)
 	info.can_delete = false;
 	info.can_edit = 1;
 	info.prop_kind = prop_FilePath;
-	info.prop_name = mTitle;
+	info.prop_name = GetWedName();
 	info.synthetic = 0;
 }
 
@@ -562,18 +614,14 @@ void 		WED_PropFileText::WriteTo(IOWriter * writer)
 
 void		WED_PropFileText::ToXML(WED_XMLElement * parent)
 {
-	const char *p = mTitle+strlen(mTitle)+1;
-	WED_XMLElement * xml = parent->add_or_find_sub_element(p);
-	p += strlen(p)+1;
-	xml->add_attr_stl_str(p,value);
+	WED_XMLElement * xml = parent->add_or_find_sub_element(GetXmlName());
+	xml->add_attr_stl_str(GetXmlAttrName(),value);
 }
 
 bool		WED_PropFileText::WantsAttribute(const char * ele, const char * att_name, const char * att_value)
 {
-	const char *p = mTitle+strlen(mTitle)+1;
-	if(strcasecmp(p,ele)==0)
-	p += strlen(p)+1;
-	if(strcasecmp(p,att_name)==0)
+	if(strcmp(GetXmlName(),ele)==0)
+	if(strcmp(GetXmlAttrName(),att_name)==0)
 	{
 		value = att_value;
 		return true;
@@ -588,7 +636,7 @@ void		WED_PropIntEnum::GetPropertyInfo(PropertyInfo_t& info)
 	info.can_delete = false;
 	info.can_edit = 1;
 	info.prop_kind = prop_Enum;
-	info.prop_name = mTitle;
+	info.prop_name = GetWedName();
 	info.synthetic = 0;
 }
 
@@ -637,7 +685,7 @@ void 		WED_PropIntEnum::WriteTo(IOWriter * writer)
 
 void		WED_PropIntEnum::ToXML(WED_XMLElement * parent)
 {
-	const char *p = mTitle+strlen(mTitle)+1;
+	const char *p = GetXmlName();
 	WED_XMLElement * xml = parent->add_or_find_sub_element(p);
 	p += strlen(p)+1;
 	xml->add_attr_c_str(p,ENUM_Desc(value));
@@ -645,10 +693,8 @@ void		WED_PropIntEnum::ToXML(WED_XMLElement * parent)
 
 bool		WED_PropIntEnum::WantsAttribute(const char * ele, const char * att_name, const char * att_value)
 {
-	const char *p = mTitle+strlen(mTitle)+1;
-	if(strcasecmp(p,ele)==0)
-	p += strlen(p)+1;
-	if(strcasecmp(p,att_name)==0)
+	if(strcmp(GetXmlName(),ele)==0)
+	if(strcmp(GetXmlAttrName(),att_name)==0)
 	{
 		value = ENUM_LookupDesc(domain,att_value);
 		return true;
@@ -663,7 +709,7 @@ void		WED_PropIntEnumSet::GetPropertyInfo(PropertyInfo_t& info)
 	info.can_delete = false;
 	info.can_edit = 1;
 	info.prop_kind = prop_EnumSet;
-	info.prop_name = mTitle;
+	info.prop_name = GetWedName();
 	info.exclusive = this->exclusive;
 	info.synthetic = 0;
 }
@@ -726,7 +772,7 @@ void 		WED_PropIntEnumSet::WriteTo(IOWriter * writer)
 
 void		WED_PropIntEnumSet::ToXML(WED_XMLElement * parent)
 {
-	const char *p = mTitle+strlen(mTitle)+1;
+	const char *p = GetXmlName();
 	WED_XMLElement * xml = parent->add_or_find_sub_element(p);
 	p += strlen(p)+1;
 	for(set<int>::iterator i = value.begin(); i != value.end(); ++i)
@@ -743,8 +789,8 @@ bool		WED_PropIntEnumSet::WantsAttribute(const char * ele, const char * att_name
 
 bool		WED_PropIntEnumSet::WantsElement(WED_XMLReader * reader, const char * name)
 {
-	const char *p = mTitle+strlen(mTitle)+1;
-	if(strcasecmp(name,p)==0)
+	const char *p = GetXmlName();
+	if(strcmp(p,name)==0)
 	{
 		reader->PushHandler(this);
 		value.clear();
@@ -758,9 +804,7 @@ void		WED_PropIntEnumSet::StartElement(
 								const XML_Char *	name,
 								const XML_Char **	atts)
 {
-	const char *p = mTitle+strlen(mTitle)+1;
-	p += strlen(p)+1;
-	if(strcasecmp(name,p) == 0)
+	if(strcmp(name,GetXmlAttrName()) == 0)
 	{
 		const XML_Char * v = get_att("value", atts);
 		if(!v) reader->FailWithError("no value");
@@ -784,7 +828,7 @@ void		WED_PropIntEnumBitfield::GetPropertyInfo(PropertyInfo_t& info)
 	info.can_delete = false;
 	info.can_edit = 1;
 	info.prop_kind = prop_EnumSet;
-	info.prop_name = mTitle;
+	info.prop_name = GetWedName();
 	info.exclusive = false;
 	info.synthetic = 0;
 }
@@ -849,18 +893,14 @@ void 		WED_PropIntEnumBitfield::WriteTo(IOWriter * writer)
 
 void		WED_PropIntEnumBitfield::ToXML(WED_XMLElement * parent)
 {
-	const char *p = mTitle+strlen(mTitle)+1;
-	WED_XMLElement * xml = parent->add_or_find_sub_element(p);
-	p += strlen(p)+1;
-	xml->add_attr_int(p,ENUM_ExportSet(value));
+	WED_XMLElement * xml = parent->add_or_find_sub_element(GetXmlName());
+	xml->add_attr_int(GetXmlAttrName(),ENUM_ExportSet(value));
 }
 
 bool		WED_PropIntEnumBitfield::WantsAttribute(const char * ele, const char * att_name, const char * att_value)
 {
-	const char *p = mTitle+strlen(mTitle)+1;
-	if(strcasecmp(p,ele)==0)
-	p += strlen(p)+1;
-	if(strcasecmp(p,att_name)==0)
+	if(strcmp(GetXmlName(),ele)==0)
+	if(strcmp(GetXmlAttrName(),att_name)==0)
 	{
 		int bf = atoi(att_value);
 		ENUM_ImportSet(domain, bf, value);
@@ -869,13 +909,15 @@ bool		WED_PropIntEnumBitfield::WantsAttribute(const char * ele, const char * att
 	return false;
 }
 
+#define mParent GetParent()
+
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void		WED_PropIntEnumSetFilter::GetPropertyInfo(PropertyInfo_t& info)
 {
 	int me = mParent->FindProperty(host);
 	mParent->GetNthPropertyInfo(me, info);
-	info.prop_name = mTitle;
+	info.prop_name = GetWedName();
 	info.exclusive = exclusive;
 	info.synthetic = 1;
 }

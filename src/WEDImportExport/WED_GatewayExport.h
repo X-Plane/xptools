@@ -27,9 +27,15 @@
 #if HAS_GATEWAY
 class	IResolver;
 class	WED_Document;
+class WED_Thing;
+class WED_Airport;
 
 int		WED_CanExportToGateway(IResolver * resolver);
 void	WED_DoExportToGateway(WED_Document * resolver);
+
+bool GatewayExport_has_3d(WED_Airport * who);
+void Enforce_MetaDataGuiLabel(WED_Airport * apt);
+void EnforceRecursive_MetaDataGuiLabel(WED_Thing * thing);
 
 #endif
 

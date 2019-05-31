@@ -48,9 +48,9 @@
 
 #include "WED_UIDefs.h"
 #include "WED_Validate.h"
-#include "WED_Thing.h"
 #include "WED_ToolUtils.h"
 #include "WED_Airport.h"
+#include "WED_Group.h"
 #include "ILibrarian.h"
 #include "WED_PackageMgr.h"
 #include "WED_SceneryPackExport.h"
@@ -130,7 +130,7 @@ static bool is_of_class(WED_Thing * who, const char ** classes)
 {
 	while (*classes)
 	{
-		if (strcmp(who->GetClass(), *classes) == 0)
+		if (who->GetClass() == *classes)
 			return true;
 		++classes;
 	}
@@ -150,11 +150,11 @@ static bool has_any_of_class(WED_Thing * who, const char ** classes)
 
 static void count_all_of_classes_recursive(const WED_Thing * who, hash_map<const char*, vector<const WED_Thing*> >& classes, int& total)
 {
-	for (hash_map<const char*, vector<const WED_Thing*> >::iterator itr = classes.begin(); itr != classes.end(); ++itr)
+	for (auto& c : classes)
 	{
-		if (strcmp(who->GetClass(), itr->first) == 0)
+		if (who->GetClass() == c.first)
 		{
-			itr->second.push_back(who);
+			c.second.push_back(who);
 			++total;
 		}
 	}
@@ -166,7 +166,7 @@ static void count_all_of_classes_recursive(const WED_Thing * who, hash_map<const
 	}
 }
 
-static int count_all_of_classes(const WED_Thing * who, hash_map<const char*, vector<const WED_Thing*> >& classes)
+static int count_all_of_classes(const WED_Thing * who, hash_map<const char *, vector<const WED_Thing*> >& classes)
 {
 	int total = 0;
 	count_all_of_classes_recursive(who, classes, total);
@@ -226,6 +226,7 @@ const char * k_3d_classes[] = {
 	WED_ObjPlacement::sClass,
 	WED_FacadePlacement::sClass,
 	WED_ForestPlacement::sClass,
+	WED_StringPlacement::sClass,
 	0
 };
 
@@ -241,7 +242,7 @@ const char * k_dsf_classes[] = {
 	0
 };
 
-static bool has_3d(WED_Airport * who) { return has_any_of_class(who, k_3d_classes); }
+bool GatewayExport_has_3d(WED_Airport * who) { return has_any_of_class(who, k_3d_classes); }
 
 static bool has_dsf(WED_Airport * who) { return has_any_of_class(who, k_dsf_classes); }
 
@@ -588,6 +589,7 @@ void WED_GatewayExportDialog::Submit()
 			FILE_delete_file(targ_folder_zip.c_str(), false);
 		}
 
+		Enforce_MetaDataGuiLabel(apt);
 		if(has_dsf(apt))
 		if(DSF_ExportAirportOverlay(mResolver, apt, targ_folder, mProblemChildren))
 		{
@@ -700,7 +702,7 @@ void WED_GatewayExportDialog::Submit()
 		}
 
 		scenery["password"] = pwd;
-		scenery["type"] = has_3d(apt) ? "3D" : "2D";
+		scenery["type"] = GatewayExport_has_3d(apt) ? "3D" : "2D";
 		scenery["userId"] = uname;
 
 		Json::Value req;
@@ -760,7 +762,7 @@ void WED_GatewayExportDialog::TimerFired()
 
 	if(mPhase == expt_dialog_download_airport_metadata)
 	{
-		WED_file_cache_response res = WED_file_cache_request_file(mCacheRequest);
+		WED_file_cache_response res = gFileCache.request_file(mCacheRequest);
 		if(res.out_status != cache_status_downloading)
 		{
 			Stop();
@@ -866,5 +868,42 @@ void WED_GatewayExportDialog::TimerFired()
 		}
 	}
 }
-//---------------------------------------------------------------------------//
+
+void Enforce_MetaDataGuiLabel(WED_Airport * apt)
+{
+	string has3D(GatewayExport_has_3d(apt) ? "3D" : "2D");
+
+	if(!apt->ContainsMetaDataKey(wed_AddMetaDataLGuiLabel) || apt->GetMetaDataValue(wed_AddMetaDataLGuiLabel) != has3D)
+	{
+		apt->StartOperation("Force Meta Tag 'GUI Label'");
+		apt->AddMetaDataKey(META_KeyName(wed_AddMetaDataLGuiLabel), has3D);
+		apt->CommitOperation();
+	}
+}
+
+void EnforceRecursive_MetaDataGuiLabel(WED_Thing * thing)
+{
+	WED_Entity * ent = dynamic_cast<WED_Entity *>(thing);
+	if (!ent || ent->GetHidden())
+		return;
+
+	WED_Airport * apt = dynamic_cast<WED_Airport *>(thing);
+	if (apt)
+	{
+		Enforce_MetaDataGuiLabel(apt);
+		return;
+	}
+
+	if (thing->GetClass() == WED_Group::sClass)
+	{
+		int cc = thing->CountChildren();
+		for (int c = 0; c < cc; ++c)
+		{
+			WED_Thing * child = thing->GetNthChild(c);
+			EnforceRecursive_MetaDataGuiLabel(child);
+		}
+	}
+	return;
+}
+
 #endif /* HAS_GATEWAY */

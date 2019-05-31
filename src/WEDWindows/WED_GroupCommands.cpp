@@ -4301,7 +4301,7 @@ static void collect_ramps_recursive(WED_Thing * who, vector<WED_RampPosition *>&
 		obj_conflict_info r;
 		string vpath;
 		obj->GetResource(vpath);
-		XObj8 * obj8;
+		const XObj8 * obj8;
 
 		if(strstr(vpath.c_str(), "lib/airport/aircraft/") != NULL)
 		if(rmgr->GetObj(vpath, obj8))
@@ -4326,8 +4326,6 @@ static void collect_ramps_recursive(WED_Thing * who, vector<WED_RampPosition *>&
 			obj->GetLocation(gis_Geo, r.loc_ll);
 			Vector2 arm_ll = VectorMetersToLL(r.loc_ll, arm_wrl);
 			r.loc_ll += arm_ll;
-
-
 
 			out_conflicting_objs.push_back(r);
 		}

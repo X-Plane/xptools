@@ -38,6 +38,16 @@
 	
 	The result: as we run through the files and purge out the <object> blocks, 
 	filled blocks will be retired for re-use.  We save a million tiny alloc/deallocs for STL strings.	
+	
+	2019 update: 
+	
+	The XML writer code is now propagating const char * rather than strings wherever possible, 
+	so most of those strings are gone.
+	The overhead of formatted printing ( fprintf() vs fputs() ) was removed and only string values are
+	subjected to XML escape sequences conversion ( numbers will NEVER have non-ASCII content ), reducing
+	XML write time for large files by 35%.
+	
+	Benchmarked throughtput is 75 sec for 14 million items (global airports) to create a 5.5GB xml file.
 
 */
 
@@ -45,10 +55,12 @@
 
 inline void fi_indent(int n, FILE * fi) { while(n--) fputc(' ', fi); }
 
-inline void fi_escape(const char * str, FILE * fi)
+inline string str_escape(const string& str)
 {
-	UTF8 * b = (UTF8 *) str;
-	UTF8 * e = b + strlen(str);
+	string result;
+
+	UTF8 * b = (UTF8 *) str.c_str();
+	UTF8 * e = b + str.length();
 	
 	// This fixes a problem, but not the way I intended, and may be worth some examination.
 	// WED uses UTF8.  Period.  That is all it has ever displayed sanely, and it should be the only thing
@@ -77,23 +89,23 @@ inline void fi_escape(const char * str, FILE * fi)
 		{	
 			switch(*b) {
 			case '<':
-				fprintf(fi,"&lt;");
+				result += "&lt;";
 				break;			
 			case '>':
-				fprintf(fi,"&gt;");
+				result += "&gt;";
 				break;
 			case '"':
-				fprintf(fi,"&quot;");
+				result += "&quot;";
 				break;
 			case '&':
-				fprintf(fi,"&amp;");
+				result += "&amp;";
 				break;
 			default:
 				// This is STILL not ideal - XML disallows anything above #x10FFFF or the surrogate blocks, but 
 				// for now just notice that control chars are bogus.  Drop control chars, there's just no way to
 				// encode them, and frankly they are silly.
 				if(*b >= ' ' || *b == '\t' || *b == '\r' || *b == '\n')
-					fputc(*b,fi);
+					result += *b;
 				break;
 			}
 			++b;
@@ -103,11 +115,17 @@ inline void fi_escape(const char * str, FILE * fi)
 		{
 			// No low-number chars - that blows up the reader.
 			if(*b >= ' ' || *b == '\t' || *b == '\r' || *b == '\n')
-				fprintf(fi,"&#x%02X;",(int) *b);
+			{
+				char c[8];
+				snprintf(c,7,"&#x%02X;",(int) *b);
+				result += c;
+			}
 			++b;
 		}
-	}	
+	}
+	return result;
 }
+
 
 WED_XMLElement::WED_XMLElement(
 									const char *		n,
@@ -122,28 +140,28 @@ WED_XMLElement::~WED_XMLElement()
 	if(!flushed)
 	{
 		fi_indent(indent, file);
-		fprintf(file,"<%s",name.c_str());
+		fputc('<',file); fputs(name,file);
 
-		for(map<string,string>::iterator a = attrs.begin(); a != attrs.end(); ++a)
+		for(auto a : attrs)
 		{
-			fprintf(file," %s=\"", a->first.c_str());
-			fi_escape(a->second.c_str(), file);
+			fputc(' ',file); fputs(a.first,file); fputs("=\"",file);
+			fputs(a.second.c_str(), file);
 			fputc('"',file);
 		}
-		
+
 		if(children.empty())
-			fprintf(file,"/>\n");
+			fputs("/>\n",file);
 		else
-			fprintf(file,">\n");
+			fputs(">\n",file);
 	}
-	
+
 	for(vector<WED_XMLElement *>::iterator c = children.begin(); c != children.end(); ++c)
 		delete *c;
-	
+
 	if(!children.empty() || flushed)
 	{
 		fi_indent(indent,file);
-		fprintf(file,"</%s>\n",name.c_str());
+		fputs("</",file); fputs(name,file); fputs(">\n",file);
 	}
 }
 
@@ -155,28 +173,27 @@ void WED_XMLElement::flush()
 void WED_XMLElement::flush_from(WED_XMLElement * who)
 {
 	if(who == NULL && children.empty())	return;
-	
-	if(parent) 
+
+	if(parent)
 		parent->flush_from(this);
 	parent = NULL;
-	
+
 	if(!flushed)
 	{
 		fi_indent(indent, file);
-		fprintf(file,"<%s",name.c_str());
+		fputc('<',file); fputs(name,file);
 
-		for(map<string,string>::iterator a = attrs.begin(); a != attrs.end(); ++a)
+		for(auto a : attrs)
 		{
-			fprintf(file," %s=\"", a->first.c_str());
-			fi_escape(a->second.c_str(), file);
+			fputc(' ',file); fputs(a.first,file); fputs("=\"",file);
+			fputs(a.second.c_str(), file);
 			fputc('"',file);
 		}
-		
-		fprintf(file,">\n");
+		fputs(">\n",file);
 	}
-	
+
 	DebugAssert(who == children.back() || who == NULL);
-	
+
 	for(vector<WED_XMLElement *>::iterator c = children.begin(); c != children.end(); ++c)
 	if(*c != who)
 		delete *c;
@@ -187,7 +204,28 @@ void WED_XMLElement::flush_from(WED_XMLElement * who)
 	flushed = true;
 }
 
-	
+inline char * to_chars(char * str, int len, int num)
+{
+        char *p = str+len-1;
+        *p = 0;
+        if(num == 0) { --p; *p = '0'; return p; }
+
+        int negative = num  < 0;
+        if(negative) num = -num;
+
+        while (num != 0)
+        {
+                --p;
+                int remainder = num / 10;
+                int this_digit = num - 10 * remainder;
+                *p = '0' + this_digit;
+                num = remainder;
+                if (p == str) return p;
+        }
+        if(negative) { --p; *p = '-'; }
+        return p;
+}
+
 void					WED_XMLElement::add_attr_int(const char * name, int value)
 {
 #if FIX_EMPTY
@@ -196,7 +234,9 @@ void					WED_XMLElement::add_attr_int(const char * name, int value)
 	DebugAssert(name && *name);	
 #endif
 	DebugAssert(!flushed);
-	attrs[name] = to_string(value);
+//	attrs[name] = to_string(value); // its friggin slow - wanna spend 10% of the _whole_ time to save in his _one_ line ???
+	char c[16];
+	attrs.push_back(make_pair(name, string(to_chars(c, sizeof(c), value))));
 }
 
 void					WED_XMLElement::add_attr_double(const char * name, double value, int dec)
@@ -208,12 +248,12 @@ void					WED_XMLElement::add_attr_double(const char * name, double value, int de
 #endif
 	DebugAssert(!flushed);
 	if(value == 0.0)
-		attrs[name] = "0.0";
+		attrs.push_back(make_pair(name, string("0.0")));
 	else
 	{
 		char buf[32];
 		snprintf(buf,32,"%.*lf",dec,value);
-		attrs[name] = buf;
+		attrs.push_back(make_pair(name, string(buf)));
 	}
 }
 
@@ -226,7 +266,7 @@ void					WED_XMLElement::add_attr_c_str(const char * name, const char * str)
 	DebugAssert(name && *name && str && *str);
 #endif
 	DebugAssert(!flushed);
-	attrs[name] = str;
+	attrs.push_back(make_pair(name, str_escape(str)));
 }
 
 void					WED_XMLElement::add_attr_stl_str(const char * name, const string& str)
@@ -237,7 +277,7 @@ void					WED_XMLElement::add_attr_stl_str(const char * name, const string& str)
 	DebugAssert(name && *name);	
 #endif
 	DebugAssert(!flushed);
-	attrs[name] = str;
+	attrs.push_back(make_pair(name, str_escape(str)));
 }
 
 WED_XMLElement *		WED_XMLElement::add_sub_element(const char * name)

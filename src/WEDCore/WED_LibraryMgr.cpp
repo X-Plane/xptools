@@ -592,7 +592,7 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 #endif
 	else return;
 
-	if (package >= 0 && status >= status_Public) gPackageMgr->AddPublicItems(package);
+	if (package >= 0 && status >= status_Public && !is_backup) gPackageMgr->AddPublicItems(package);
 
 	string p(path);
 	while(!p.empty())
@@ -604,7 +604,8 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 			new_info.status = status;
 			new_info.res_type = rt;
 			new_info.packages.insert(package);
-			new_info.real_paths.push_back(rpath);
+			if(rt > res_Directory)                      // speedup/memory saver: no need to store this for directories
+				new_info.real_paths.push_back(rpath);
 			new_info.is_backup = is_backup;
 			new_info.is_default = is_default;
 			res_table.insert(res_map_t::value_type(p,new_info));
@@ -612,6 +613,15 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 		else
 		{
 			DebugAssert(i->second.res_type == rt);
+			if(i->second.is_backup && !is_backup)
+			{
+				i->second.is_backup = false;
+				i->second.real_paths.clear();
+				i->second.packages.clear();
+			}
+			else if(is_backup)
+				break;                                   // avoid adding backups as variants
+
 			i->second.packages.insert(package);
 			if(is_default && !i->second.is_default)
 			{
@@ -620,12 +630,8 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 			}
 			else
 				i->second.status = max(i->second.status, status);	// upgrade status if we just found a public version!
-			if(i->second.is_backup && !is_backup)
-			{
-				i->second.is_backup = false;
-				i->second.real_paths.clear();
-			}
 			// add only unique paths, but need to preserve first path added as first element, so deliberately not using a set<string> !
+			if(rt > res_Directory)                      // speedup/memory saver: no need to store this for directories
 			if(std::find(i->second.real_paths.begin(), i->second.real_paths.end(), rpath) == i->second.real_paths.end())
 				i->second.real_paths.push_back(rpath);
 		}

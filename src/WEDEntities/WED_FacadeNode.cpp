@@ -31,17 +31,13 @@ DEFINE_PERSISTENT(WED_FacadeNode)
 TRIVIAL_COPY(WED_FacadeNode,WED_GISPoint_Bezier)
 
 WED_FacadeNode::WED_FacadeNode(WED_Archive * a, int i) : WED_GISPoint_Bezier(a,i)
-#if AIRPORT_ROUTING
 	,wall_type(this,PROP_Name("Wall", XML_Name("facade_node","wall_type")),FacadeWall, facade_Wall0)
-#endif	
 {
 }
 
 WED_FacadeNode::~WED_FacadeNode()
 {
 }
-
-#if AIRPORT_ROUTING
 
 void	WED_FacadeNode::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 {
@@ -53,7 +49,7 @@ void	WED_FacadeNode::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 		WED_Thing * parent, * grand_parent;
 		WED_FacadePlacement * fac;
 		string		res;
-		fac_info_t	info;
+		const fac_info_t * info;
 		if((parent = this->GetParent()) != NULL)
 		if((grand_parent = parent->GetParent()) != NULL)
 		if((fac = dynamic_cast<WED_FacadePlacement *>(grand_parent)) != NULL)
@@ -62,11 +58,11 @@ void	WED_FacadeNode::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 		{
 			fac->GetResource(res);
 			if (mgr->GetFac(res,info))
-			if(!info.walls.empty())
+			if(!info->wallName.empty())
 			{
 				dict.clear();
-				for (int n = 0; n < info.walls.size(); ++n)
-					dict[n + facade_Wall0] = make_pair(info.walls[n],true);
+				for (int n = 0; n < info->wallName.size(); ++n)
+					dict[n + facade_Wall0] = make_pair(info->wallName[n],true);
 				return;
 			}
 		}
@@ -85,7 +81,7 @@ void		WED_FacadeNode::GetNthPropertyDictItem(int n, int e, string& item) const
 		WED_Thing * parent, * grand_parent;
 		WED_FacadePlacement * fac;
 		string		res;
-		fac_info_t	info;
+		const fac_info_t * info;
 		if((parent = this->GetParent()) != NULL)
 		if((grand_parent = parent->GetParent()) != NULL)
 		if((fac = dynamic_cast<WED_FacadePlacement *>(grand_parent)) != NULL)
@@ -94,9 +90,9 @@ void		WED_FacadeNode::GetNthPropertyDictItem(int n, int e, string& item) const
 		{
 			fac->GetResource(res);
 			if (mgr->GetFac(res,info))
-			if(info.walls.size() > idx)
+			if(info->wallName.size() > idx)
 			{
-				item = info.walls[idx];
+				item = info->wallName[idx];
 				return;
 			}
 		}
@@ -130,18 +126,10 @@ void		WED_FacadeNode::PropEditCallback(int before)
 	WED_GISPoint_Bezier::PropEditCallback(before);
 }
 
-#endif
-
 int		WED_FacadeNode::GetWallType(void) const
 {
-#if AIRPORT_ROUTING
 	return ENUM_Export(wall_type.value);
-#else
-	return 0;
-#endif
 }
-
-#if AIRPORT_ROUTING
 
 void	WED_FacadeNode::SetWallType(int wt)
 {
@@ -175,5 +163,3 @@ bool	WED_FacadeNode::GetControlHandleHi (GISLayer_t l,       Point2& p) const
 	if (l == gis_Param) p = Point2(ENUM_Export(wall_type.value),0.0);
 	return true;
 }
-
-#endif

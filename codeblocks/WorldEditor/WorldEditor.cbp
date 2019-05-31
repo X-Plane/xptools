@@ -215,6 +215,7 @@
 		<Unit filename="../../src/Utils/CSVParser.cpp" />
 		<Unit filename="../../src/Utils/CSVParser.h" />
 		<Unit filename="../../src/Utils/CompGeomDefs2.h" />
+		<Unit filename="../../src/Utils/CompGeomDefs3.h" />
 		<Unit filename="../../src/Utils/CompGeomUtils.cpp" />
 		<Unit filename="../../src/Utils/CompGeomUtils.h" />
 		<Unit filename="../../src/Utils/EndianUtils.c">
@@ -233,6 +234,7 @@
 		<Unit filename="../../src/Utils/MemUtils.h" />
 		<Unit filename="../../src/Utils/ObjUtils.cpp" />
 		<Unit filename="../../src/Utils/ObjUtils.h" />
+		<Unit filename="../../src/Utils/PerfUtils.h" />
 		<Unit filename="../../src/Utils/PlatformUtils.h" />
 		<Unit filename="../../src/Utils/PlatformUtils.lin.cpp" />
 		<Unit filename="../../src/Utils/STLUtils.cpp" />
@@ -348,6 +350,8 @@
 		<Unit filename="../../src/WEDEntities/WED_FacadeNode.h" />
 		<Unit filename="../../src/WEDEntities/WED_FacadePlacement.cpp" />
 		<Unit filename="../../src/WEDEntities/WED_FacadePlacement.h" />
+		<Unit filename="../../src/WEDEntities/WED_FacadePreview.cpp" />
+		<Unit filename="../../src/WEDEntities/WED_FacadePreview.h" />
 		<Unit filename="../../src/WEDEntities/WED_FacadeRing.cpp" />
 		<Unit filename="../../src/WEDEntities/WED_FacadeRing.h" />
 		<Unit filename="../../src/WEDEntities/WED_ForestPlacement.cpp" />

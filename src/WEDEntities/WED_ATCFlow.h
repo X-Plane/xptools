@@ -24,8 +24,6 @@
 #ifndef WED_ATCFlow_H
 #define WED_ATCFlow_H
 
-#if AIRPORT_ROUTING
-
 #include "WED_Thing.h"
 struct AptFlow_t;
 
@@ -55,7 +53,5 @@ private:
 	WED_PropIntEnum		traffic_dir;
 
 };
-
-#endif
 
 #endif /* WED_ATCFlow_H */

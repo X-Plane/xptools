@@ -50,7 +50,7 @@
  
 */
 
-#if AIRPORT_ROUTING && ROAD_EDITING
+#if ROAD_EDITING
 
 DEFINE_PERSISTENT(WED_RoadEdge)
 TRIVIAL_COPY(WED_RoadEdge, WED_GISEdge)
@@ -181,6 +181,5 @@ bool		WED_RoadEdge::get_valid_road_info(road_info_t * optional_info) const
 	}
 	return false;
 }
-
 
 #endif

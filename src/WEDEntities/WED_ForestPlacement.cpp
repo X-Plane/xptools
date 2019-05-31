@@ -29,9 +29,7 @@ TRIVIAL_COPY(WED_ForestPlacement,WED_GISPolygon)
 
 WED_ForestPlacement::WED_ForestPlacement(WED_Archive * a, int i) : WED_GISPolygon(a,i),
 	density(this,PROP_Name("Density",     XML_Name("forest_placement","density")),10.0,3,1),
-#if AIRPORT_ROUTING
 	fill_mode(this,PROP_Name("Fill Mode", XML_Name("forest_placement","closed")),ForestFill, forest_Fill),
-#endif	
 	resource(this,PROP_Name("Resource",   XML_Name("forest_placement","resource")), "")
 {
 }
@@ -62,16 +60,10 @@ void		WED_ForestPlacement::SetResource(const string& r)
 
 int			WED_ForestPlacement::GetFillMode(void) const
 {
-#if AIRPORT_ROUTING
 	return ENUM_Export(fill_mode.value);
-#else
-	return 0;
-#endif
 }
 
-#if AIRPORT_ROUTING
 void		WED_ForestPlacement::SetFillMode(int mode)
 {
 	fill_mode = ENUM_Import(ForestFill, mode);
 }
-#endif

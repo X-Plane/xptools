@@ -33,8 +33,8 @@ DEFINE_PERSISTENT(WED_AirportChain)
 
 WED_AirportChain::WED_AirportChain(WED_Archive * a, int i) : WED_GISChain(a,i),
 	closed(0),
-	lines(this,"Line Attributes", 	"Line Attributes", 1),
-	lights(this,"Light Attributes", "Light Attributes", 1)
+	lines(this,PROP_Name("Line Attributes",XML_Name("","")), "Line Attributes", 1),
+	lights(this,PROP_Name("Light Attributes",XML_Name("","")), "Light Attributes", 1)
 {
 }
 
@@ -121,7 +121,7 @@ void		WED_AirportChain::StartElement(
 								const XML_Char *	name,
 								const XML_Char **	atts)
 {
-	if(strcasecmp(name,"airport_chain")==0)
+	if(strcmp(name,"airport_chain")==0)
 	{
 		const XML_Char * c = get_att("closed",atts);
 		if(c)

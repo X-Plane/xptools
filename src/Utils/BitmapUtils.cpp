@@ -24,17 +24,13 @@
 #include "BitmapUtils.h"
 #include "EndianUtils.h"
 #include "FileUtils.h"
-#include <stdio.h>
-#include <errno.h>
-#include <math.h>
-#include <string.h>
-#include <stdlib.h>
-#include "Interpolation.h"
-#include <squish.h>
-#include <zlib.h>
-
 #include "AssertUtils.h"
-#include <stdint.h>
+#include "MathUtils.h"
+#include "Interpolation.h"
+#include "squish.h"
+
+#include <errno.h>
+#include <thread>
 
 #if IBM
 #include "GUI_Unicode.h"
@@ -87,7 +83,6 @@ struct	BMPImageDesc {
 #endif
 
 
-
 // DD surface flags
 #define DDSD_CAPS               0x00000001l     // default
 #define DDSD_HEIGHT             0x00000002l
@@ -111,6 +106,20 @@ struct	BMPImageDesc {
 	#define DWORD unsigned int
 #endif
 
+#if BIG
+	#if APL
+		#include <libkern/OSByteOrder.h>
+		#define SWAP32(x) (OSSwapConstInt32(x))
+	#else
+		#error we do not have big endian support on non-Mac platforms
+	#endif
+#elif LIL
+	#define SWAP32(x) (x)
+#else
+	#error BIG or LIL are not defined - what endian are we?
+#endif
+
+
 struct TEX_dds_caps2 {
     DWORD       dwCaps;         // capabilities of surface wanted
     DWORD       dwCaps2;
@@ -130,25 +139,49 @@ struct TEX_dds_pixelformat {
 };
 
 struct TEX_dds_desc {
-	char				dwMagic[4];				// D D S <space> sequential string in memory.  This is not REALLY in the struct, but good enough for me.
+	char			dwMagic[4];				// D D S <space> sequential string in memory.  This is not REALLY in the struct, but good enough for me.
 
-    DWORD               dwSize;                 // size of the DDSURFACEDESC structure		(Must be 124)
-    DWORD               dwFlags;                // determines what fields are valid			(DDSD_CAPS, DDSD_PIXELFORMAT, DDSD_WIDTH, DDSD_HEIGHT.)
-    DWORD               dwHeight;               // height of surface to be created
-    DWORD               dwWidth;                // width of input surface
-	DWORD				dwLinearSize;           // Formless late-allocated optimized surface size
-    DWORD               dwDepth;				// Vol texes-depth.
-	DWORD				dwMipMapCount;          // number of mip-map levels requestde
-	DWORD               dwReserved1[11];        //
-	TEX_dds_pixelformat	ddpfPixelFormat;        // pixel format description of the surface
-    TEX_dds_caps2       ddsCaps;                // direct draw surface capabilities			DDSCAPS_TEXTURE, DDSCAPS_MIPMAP, DDSCAPS_COMPLEX		TEXTURE, LINEARSIZE, COMPLEX, MIPMAP, FOURCC)
-    DWORD               dwReserved2;			//
+   DWORD			dwSize;              // size of the DDSURFACEDESC structure		(Must be 124)
+   DWORD			dwFlags;             // determines what fields are valid			(DDSD_CAPS, DDSD_PIXELFORMAT, DDSD_WIDTH, DDSD_HEIGHT.)
+   DWORD			dwHeight;            // height of surface to be created
+   DWORD			dwWidth;             // width of input surface
+	DWORD			dwLinearSize;        // Formless late-allocated optimized surface size
+   DWORD			dwDepth;				   // Vol texes-depth.
+	DWORD			dwMipMapCount;       // number of mip-map levels requestde
+	DWORD			dwReserved1[11];
+	TEX_dds_pixelformat	ddpfPixelFormat;  // pixel format description of the surface
+   TEX_dds_caps2       ddsCaps;           // direct draw surface capabilities			DDSCAPS_TEXTURE, DDSCAPS_MIPMAP, DDSCAPS_COMPLEX		TEXTURE, LINEARSIZE, COMPLEX, MIPMAP, FOURCC)
+   DWORD               dwReserved2;
+    
+   TEX_dds_desc(int width, int height, int mips, int dxt) 
+   {
+		dwMagic[0] = 'D';
+		dwMagic[1] = 'D';
+		dwMagic[2] = 'S';
+		dwMagic[3] = ' ';
+		dwSize = SWAP32(sizeof(TEX_dds_desc)-sizeof(dwMagic));
+		dwFlags = SWAP32(DDSD_CAPS|DDSD_HEIGHT|DDSD_WIDTH|DDSD_PIXELFORMAT|DDSD_MIPMAPCOUNT|DDSD_LINEARSIZE);
+		dwHeight = SWAP32(height);
+		dwWidth = SWAP32(width);
+		dwLinearSize=SWAP32(squish::GetStorageRequirements(width, height, dxt == 1 ? squish::kDxt1 : squish::kDxt3));
+		dwDepth = 0;
+		dwMipMapCount=SWAP32(mips);
+		for(int i = 0; i < 11; dwReserved1[i++] = 0);
+		ddpfPixelFormat = { 0 };
+		ddpfPixelFormat.dwSize=SWAP32(sizeof(ddpfPixelFormat));
+		if(dxt > 0)
+		{
+			ddpfPixelFormat.dwFlags=SWAP32(DDPF_FOURCC);
+			ddpfPixelFormat.dwFourCC[0]='D';
+			ddpfPixelFormat.dwFourCC[1]='X';
+			ddpfPixelFormat.dwFourCC[2]='T';
+			ddpfPixelFormat.dwFourCC[3]='0' + dxt;
+		}
+		ddsCaps = { 0 };
+		ddsCaps.dwCaps=SWAP32(DDSCAPS_TEXTURE|DDSCAPS_MIPMAP);
+		dwReserved2 = 0;
+   }
 };
-
-
-
-
-
 
 
 /*
@@ -356,6 +389,8 @@ int		CreateNewBitmap(long inWidth, long inHeight, short inChannels, struct Image
 	/* This nasty voodoo calculates the padding necessary to make each scanline a multiple of four bytes. */
 	outImageInfo->pad = ((inWidth * inChannels + 3) & ~3) - (inWidth * inChannels);
 	outImageInfo->channels = inChannels;
+	// why 64 byte alignmen here ? Its the cach line size for most contemporary processors. If multi-threading, this pre-empts
+	// the chance of cache thrashing (multiple threads writing to the same cache line, causing LOTS of inter-core cache synchronization traffic
 	outImageInfo->data = (unsigned char *) malloc(inHeight * ((inWidth * inChannels) + outImageInfo->pad));
 	if (outImageInfo->data == NULL)
 		return ENOMEM;
@@ -1469,9 +1504,160 @@ static void	in_place_scaleY(int x, int y, unsigned char * src, unsigned char * d
 	}
 }
 
+// this section here is to document what optimizations make sense - and what gets you diminishing returns
+
+#if 1 // use regular C code versions
+	#if 0 // exact gamma:  1200 msec
+		inline int to_srgb(float p)
+		{
+			if(p <= 0.0031308f)	return 255.0f * 12.92f * p;
+			else return 255.0f * 1.055f * powf(p,1.0f/2.4f) - 0.055f;
+		}
+		inline float from_srgb(int p)
+		{
+			p /= 255.0f;
+			if(p <= 0.04045f)	return p / 12.92f;
+			else              return powf(p * (1.0f/1.055f) + (0.055f/1.055f),2.4f);
+		}
+	#elif 0 // fast pow() aproximation: 250 msec
+		// http://www.machinedlearnings.com/2011/06/fast-approximate-logarithm-exponential.html
+		// pow() relative accuracy 1.6e-4
+		inline float fastlog2(float x)
+		{
+		  union { float f; uint32_t i; } vx = { x };
+		  union { uint32_t i; float f; } mx = { (vx.i & 0x007FFFFF) | (0x7e << 23) };
+		  float y = vx.i;
+		  y *= 1.0 / (1 << 23);
+		  return y - 124.22551499f - 1.498030302f * mx.f - 1.72587999f / (0.3520887068f + mx.f);
+		}
+		static inline float fastpow2 (float p)
+		{
+		  float offset = (p < 0) ? 1.0f : 0.0f;
+		  float clipp = (p < -126) ? -126.0f : p;
+		  int w = clipp;
+		  float z = clipp - w + offset;
+		  union { uint32_t i; float f; } v = { (uint32_t) ( (1 << 23) * (clipp + 121.2740575f + 27.7280233f / (4.84252568f - z) - 1.49012907f * z) ) };
+		  return v.f;
+		}
+		inline float fastpow(float x, float p)
+		{
+			return fastpow2(p * fastlog2(x));
+		}
+		inline int to_srgb(float p)
+		{
+			if(p <= 0.0031308f)	return 255.0f * 12.92f * p;
+			else                 return 255.0f * 1.055f * fastpow(p,1.0/2.4) - 0.055f;
+		}
+		inline float from_srgb(int p)
+		{
+			p /= 255.0f;
+			if(p <= 0.04045f)	return p / 12.92f;
+			else              return fastpow(p * (1.0f/1.055f) + (0.055f/1.055f),2.4);
+		} 
+	#elif 1 // gamma=2.4 aproximation, no scaling: 5msec
+	   // WC relative gamma error 9% and maintains to_srgb(from_srgb(x)) == x  for all x
+	   // aproximation is to use (x-5)^2 and x^0.5+5 for x^2.4, x^(1/2.4) as a pretty close fit for x > 30/255,
+	   // and adjust the slope & intercept for the linear part of the curve as well
+		inline int to_srgb(float p)
+		{
+			 if (p < (31-5)*(31-5)) return p * 11.8/255.0 + 0.5;
+			return sqrtf(p) + 5 + 0.5;
+		}
+		inline float from_srgb(int p)
+		{
+			if (p < 31) return p * 255.0/11.8;
+			p -= 5;
+			return p * p;
+		}
+	#else // gamma=2.0, no scaling: 25 msec
+		inline int to_srgb(float p) { return sqrtf(p); }
+		inline float from_srgb(int p) { return p * p; }
+	#endif
+	
+	unsigned char average_with_gamma(unsigned char src[], int cnt, int chan, int level)
+	{
+		if(chan < 3)
+		{
+			float tmp;
+			switch(cnt)
+			{
+				case 2: tmp = (from_srgb(src[0]) + from_srgb(src[1])) * 0.5f; break;
+				case 4: tmp = (from_srgb(src[0]) + from_srgb(src[1]) + from_srgb(src[2]) + from_srgb(src[3])) * 0.25f; break;
+				default: return src[0];
+			}
+			return intlim(to_srgb(tmp), 0, 255);
+		}
+		else // alpha channel isn't gamma corrected
+		{
+			switch(cnt)
+			{
+				case 2: return ((int) src[0] + (int) src[1]) >> 1;
+				case 4: return ((int) src[0] + (int) src[1] + (int) src[2] + (int) src[3]) >> 2;
+				default:	return src[0];
+			}
+		}
+	}
+#else  // SSE gamma = 2.0 verion: 8 msec !!!
+	#include <smmintrin.h>
+	#define SCALE_SSE 1
+
+static void	copy_mip_SSE(int x, int y, unsigned char * __restrict src, unsigned char * __restrict dst)
+{
+	int 					rb = x * 4;
+	unsigned char *	s1 = src;
+	unsigned char *	s2 = src + ((y > 1) ? rb : 0);
+
+	if(x > 1) x >>= 1;
+	if(y > 1) y >>= 1;
+	
+	while(y--)
+	{
+		int ctr = x;
+		while(ctr--)
+		{
+			__m64  u1 = _m_from_int(*(int*)s1);
+			__m128 f1 = _mm_cvtpu8_ps(u1);
+			__m128 f2 = _mm_mul_ps(f1,f1);             // square pixel 1
+					 f2 = _mm_blend_ps(f2,f1,8);         // pass through alpha value without squaring (SSE 4.1, only available on Penryn, 45nm Core2 & up or any AMD FX- & up)
+					 s1 += 4;
+					 u1 = _m_from_int(*(int*)s1);
+					 f1 = _mm_cvtpu8_ps(u1);
+			__m128 f3 = _mm_mul_ps(f1,f1);             // pixel 2
+					 f3 = _mm_blend_ps(f3,f1,8);
+					 s1 += 4;
+			__m128 f4 = _mm_add_ps(f2,f3);			 	 // add them
+
+					 u1 = _m_from_int(*(int*)s2);
+					 f1 = _mm_cvtpu8_ps(u1);
+					 f2 = _mm_mul_ps(f1,f1);              // pixel 3
+					 f2 = _mm_blend_ps(f2,f1,8);
+					 s2 += 4;
+ 					 u1 = _m_from_int(*(int*)s2);
+					 f1 = _mm_cvtpu8_ps(u1);
+					 f3 = _mm_mul_ps(f1,f1);              // pixel 4
+					 f3 = _mm_blend_ps(f3,f1,8);
+					 s2 += 4;
+					 f3 = _mm_add_ps(f2,f3);              // add them
+
+					 f2 = _mm_add_ps(f3,f4);              // add both rows
+					 f1 = _mm_set_ps1(0.25);
+					 f2 = _mm_mul_ps(f2,f1);
+					 f3 = _mm_sqrt_ps(f2);                // square root
+					 f3 = _mm_blend_ps(f3,f2,8);          // pass through alpha value
+
+					 u1 = _mm_cvtps_pi16(f3);
+					 u1 = _mm_packs_pu16(u1,u1);
+			*(int *) dst = _m_to_int(u1);
+					 dst += 4;
+		}
+		s1 += rb; s2 += rb;
+	}
+}
+#endif
+
 static void copy_mip_with_filter(const ImageInfo& src, ImageInfo& dst,int level, unsigned char (* filter)(unsigned char src[], int count, int channel, int level))
 {
-	unsigned char temp_buf[4];	// Enough storage for RGBA 2x2
+	unsigned char temp_buf[4];	        // Enough storage for RGBA 2x2
 	int xr = src.width == dst.width ? 1 : 2;
 	int yr = src.height == dst.height ? 1 : 2;
 
@@ -1495,18 +1681,6 @@ static void copy_mip_with_filter(const ImageInfo& src, ImageInfo& dst,int level,
 	}
 }
 
-#if BIG
-	#if APL
-		#include <libkern/OSByteOrder.h>
-		#define SWAP32(x) (OSSwapConstInt32(x))
-	#else
-		#error we do not have big endian support on non-Mac platforms
-	#endif
-#elif LIL
-	#define SWAP32(x) (x)
-#else
-	#error BIG or LIL are not defined - what endian are we?
-#endif
 
 // This routine swaps Y and BGRA on desktop, but only BGRA on phone.
 static void swap_bgra_y(struct ImageInfo& i)
@@ -1531,7 +1705,6 @@ static void swap_bgra_y(struct ImageInfo& i)
 #endif
 		}
 	}
-
 }
 
 // Compressed DDS.
@@ -1557,32 +1730,8 @@ int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name,
 
 	struct ImageInfo img(ioImage);
 
-	int len = squish::GetStorageRequirements(img.width,img.height,flags);
-
-
-	TEX_dds_desc header = { 0 };
-	header.dwMagic[0] = 'D';
-	header.dwMagic[1] = 'D';
-	header.dwMagic[2] = 'S';
-	header.dwMagic[3] = ' ';
-	header.dwSize = SWAP32(sizeof(header)-sizeof(header.dwMagic));
-	header.dwFlags = SWAP32(DDSD_CAPS|DDSD_HEIGHT|DDSD_WIDTH|DDSD_PIXELFORMAT|DDSD_MIPMAPCOUNT|DDSD_LINEARSIZE);
-	header.dwHeight = SWAP32(ioImage.height);
-	header.dwWidth = SWAP32(ioImage.width);
-	header.dwLinearSize=SWAP32(len);
-	header.dwDepth=0;
-	header.dwMipMapCount=SWAP32(mips);
-	header.ddpfPixelFormat.dwSize=SWAP32(sizeof(header.ddpfPixelFormat));
-	header.ddpfPixelFormat.dwFlags=SWAP32(DDPF_FOURCC);
-	header.ddpfPixelFormat.dwFourCC[0]='D';
-	header.ddpfPixelFormat.dwFourCC[1]='X';
-	header.ddpfPixelFormat.dwFourCC[2]='T';
-	header.ddpfPixelFormat.dwFourCC[3]='0' + dxt;
-	if(use_win_gamma)
-		header.ddsCaps.dwCaps=SWAP32(DDSCAPS_TEXTURE|DDSCAPS_MIPMAP				   );
-	else
-		header.ddsCaps.dwCaps=SWAP32(DDSCAPS_TEXTURE|DDSCAPS_MIPMAP|DDSCAPS_COMPLEX);
-
+	TEX_dds_desc header(ioImage.width, ioImage.height, mips, dxt);
+	if(!use_win_gamma) header.ddsCaps.dwCaps=SWAP32(DDSCAPS_TEXTURE|DDSCAPS_MIPMAP|DDSCAPS_COMPLEX);
 	fwrite(&header,sizeof(header),1,fi);
 
 	do {
@@ -1591,20 +1740,195 @@ int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name,
 		swap_bgra_y(img);
 
 		squish::CompressImage(img.data, img.width, img.height, dst_mem, flags|squish::kColourIterativeClusterFit);
-		len = squish::GetStorageRequirements(img.width,img.height,flags);
+		int len = squish::GetStorageRequirements(img.width,img.height,flags);
 		fwrite(dst_mem,len,1,fi);
 #if !WED
 		// Put it back before we advance...really necessary??!
 		swap_bgra_y(img);
 #endif
-		if(!AdvanceMipmapStack(&img))
-			break;
 
-	} while (1);
+	} while (AdvanceMipmapStack(&img));
 
 	fclose(fi);
 	return 0;
-	// close file
+}
+
+
+#define SHP1   -1
+#define SHP2    0
+#define AMOUNT 16            // photoshop equiv. shapening amount = 4*(SHP1+SHP2) / AMOUNT
+
+inline void unsharpPixel(unsigned char * sharp, const unsigned char * orig, int stride)
+{
+	*sharp = intlim((((short) *orig * (AMOUNT - 4*SHP1 - 4*SHP2))
+					 + SHP1 * ((short) *(orig+4)        + (short) *(orig-4)        + (short) *(orig+stride)   + (short) *(orig-stride))
+//					 + SHP2 * ((short) *(orig+stride-4])+ (short) *(orig+stride+4) + (short) *(orig-stride-4) + (short) *(orig-stride+4))
+					) / AMOUNT,0,255);
+}
+
+inline void unsharpPixelV(unsigned char * sharp, const unsigned char * orig, int stride)
+{
+	for(int i = 0; i < 3; i++)
+		sharp[i] = intlim(((((short) orig[i]) * (AMOUNT - 2*SHP1))
+					  + SHP1 * ((short) orig[stride]   + (short) orig[-stride])
+					) / AMOUNT,0,255);
+	sharp[3] = orig[3];
+}
+
+inline void unsharpPixelH(unsigned char * sharp, const unsigned char * orig)
+{
+	for(int i = 0; i < 3; i++)
+		sharp[i] = intlim(((((short) orig[i]) * (AMOUNT - 2*SHP1))
+					  + SHP1 * ((short) orig[4]   + (short) orig[-4])
+					) / AMOUNT,0,255);
+	sharp[3] = orig[3];
+}
+
+static void in_place_sharpen(int x, int y, const unsigned char * b4sharp, unsigned char * sharp)
+{
+	int rb = x * 4;
+	// top row
+	*((int *) sharp) = *((int *) b4sharp);       // top left corner - just copy
+	sharp += 4; b4sharp += 4;
+	for(int xx = 1; xx < x-1; xx++)
+	{
+		unsharpPixelH(sharp, b4sharp);
+		sharp += 4; b4sharp += 4;
+	}
+	*((int *) sharp) =  *((int *) b4sharp);       // top right corner - just copy
+	sharp += 4; b4sharp += 4;
+	// middle rows
+	for(int yy = 1; yy < y-1; yy++)
+	{
+		unsharpPixelV(sharp, b4sharp, rb);
+		sharp += 4; b4sharp += 4;
+		for(int xx = 1; xx < x-1; xx++)
+		{
+			unsharpPixel(sharp++, b4sharp++, rb);
+			unsharpPixel(sharp++, b4sharp++, rb);
+			unsharpPixel(sharp++, b4sharp++, rb);
+			*sharp++ = *b4sharp++;
+		}
+		unsharpPixelV(sharp, b4sharp, rb);
+		sharp += 4; b4sharp += 4;
+	}
+	// bottom row
+	*((int *) sharp) =  *((int *) b4sharp);       // bottom left corner - just copy
+	sharp += 4; b4sharp += 4;
+	for(int xx = 1; xx < x-1; xx++)
+	{
+		unsharpPixelH(sharp, b4sharp);
+		sharp += 4; b4sharp += 4;
+	}
+	*((int *) sharp) =  *((int *) b4sharp);       // bottom right corner - just copy
+}
+
+struct CompressImageData
+{
+	ImageInfo img;
+	void * dst_mem;
+	int dst_size;
+};
+
+int	WriteBitmapToDDS_MT(struct ImageInfo& ioImage, int dxt, const char * file_name)
+{
+	Assert(ioImage.channels == 4);    // this only accepts BGRA bitmaps
+	swap_bgra_y(ioImage);             // do this early - so we won't have to do it for all the mipmaps again
+	
+	FILE * fi = fopen(file_name,"wb");
+	if (fi == NULL) return -1;
+
+/* The very simply parallel processing of the full resolution texture scales to ~(3+1) threads, only. As the
+   remaining mipmap levels all together use ~1/3 as many pixels as the full resolution texture. Otherwise the
+   full texture gets done haead of the mipmaps == no faster overall. */
+
+	#define MAX_WORKER_THREADS 3
+	thread threads[MAX_WORKER_THREADS];
+	CompressImageData args[MAX_WORKER_THREADS];
+
+	/* don't waste thread startup time parallelizing so much for small textures, libsquish runs at 1+ Mpixels/sec */
+	int num_threads = (ioImage.height * ioImage.width >= 256 * 256) ? MAX_WORKER_THREADS : 1;
+
+	int flags = (dxt == 1 ? squish::kDxt1 : (dxt == 3 ? squish::kDxt3 : squish::kDxt5)) | squish::kColourIterativeClusterFit;
+	int start_line = 0;
+	for (int i = 0; i < num_threads; i++)
+	{
+		args[i].img = ioImage;
+		args[i].img.height =  i < num_threads-1 ? ((ioImage.height / num_threads) >> 2) << 2 : ioImage.height - start_line;
+		args[i].img.data += start_line * ioImage.width * ioImage.channels;
+		args[i].dst_size = squish::GetStorageRequirements(args[i].img.width, args[i].img.height, flags);
+		args[i].dst_mem = malloc(args[i].dst_size);
+		
+		threads[i] = thread(squish::CompressImage, args[i].img.data, args[i].img.width, args[i].img.height, args[i].dst_mem, flags);
+//		squish::CompressImage(args[i].img.data, args[i].img.width, args[i].img.height, args[i].dst_mem, flags);
+		start_line += args[i].img.height;
+	}
+	
+	// scale down the mipmaps using sRGB gamma and sharpen the result a bit. Create the next map starting from the sharpened map.
+	
+	ImageInfo ioMips(ioImage);
+	ioMips.data = (unsigned char *) malloc(ioImage.width * ioImage.height  * 2);
+	ioMips.width /= 2;
+	ioMips.height /= 2;
+
+	ImageInfo src(ioImage);
+	unsigned char * mip_ptr = ioMips.data;
+	int mips = 1;
+	
+	while(src.width > 1 || src.height > 1)
+	{
+		ImageInfo dst(src); 
+		dst.data = mip_ptr + src.width * src.height;  // create the reduced size image out-of-place, put it back into-place during the sharpening
+		dst.pad = 0;
+		if(dst.width > 1) dst.width >>= 1;
+		if(dst.height > 1) dst.height >>= 1;
+		
+#if SCALE_SSE
+		copy_mip_SSE(src.width, src.height ,src.data, dst.data);
+#else
+		copy_mip_with_filter(src, dst, mips, average_with_gamma);
+#endif
+		src = dst;
+
+#if SHARPEN_MIPS
+		if(src.width > 4 && src.height > 4)                             // don't sharpen the last few mipmaps, as its mostly border pixels that won't sharpen that well
+			in_place_sharpen(src.width, src.height, src.data, mip_ptr);
+		else
+#endif
+			memcpy(mip_ptr, src.data, src.width * src.height * 4);        // nothing gets sharpened, still need to move the data to the location its expected to be
+				
+		src.data = mip_ptr;
+		mip_ptr += src.width * src.height * 4;
+		++mips;
+	}
+	
+	void * dst_mem = malloc(2 * squish::GetStorageRequirements(ioMips.width,ioMips.height,flags)); // its a bit more than needed ...
+	mip_ptr = (unsigned char *) dst_mem;
+	unsigned char * src_ptr = ioMips.data;
+
+	do
+	{
+		squish::CompressImage(ioMips.data, ioMips.width, ioMips.height, mip_ptr, flags);
+		mip_ptr += squish::GetStorageRequirements(ioMips.width, ioMips.height, flags);
+	} 
+	while (AdvanceMipmapStack(&ioMips));
+	
+	free(src_ptr);
+
+	TEX_dds_desc header(ioImage.width, ioImage.height, mips, dxt);
+	fwrite(&header,sizeof(header), 1, fi);
+	
+	for (int i = 0; i < num_threads; i++)
+	{
+		threads[i].join();
+		fwrite(args[i].dst_mem, args[i].dst_size, 1, fi);
+		free(args[i].dst_mem);
+	}
+	fwrite(dst_mem, mip_ptr - (unsigned char *) dst_mem, 1, fi);
+	free(dst_mem);
+
+	fclose(fi);
+	return 0;
 }
 
 // Uncomp: write BGR or BGRA, origin depends on phone or desktop - see below.
@@ -1623,20 +1947,10 @@ int	WriteUncompressedToDDS(struct ImageInfo& ioImage, const char * file_name, in
 		++mips;
 	}
 
-	TEX_dds_desc header = { 0 };
-	header.dwMagic[0] = 'D';
-	header.dwMagic[1] = 'D';
-	header.dwMagic[2] = 'S';
-	header.dwMagic[3] = ' ';
-	header.dwSize = SWAP32(sizeof(header)-sizeof(header.dwMagic));
+	TEX_dds_desc header(ioImage.width, ioImage.height, mips, 0);
 	header.dwFlags = SWAP32(DDSD_CAPS|DDSD_HEIGHT|DDSD_WIDTH|DDSD_PIXELFORMAT|DDSD_MIPMAPCOUNT|DDSD_PITCH);
-	header.dwHeight = SWAP32(ioImage.height);
-	header.dwWidth = SWAP32(ioImage.width);
 	header.dwLinearSize = SWAP32(ioImage.width * ioImage.channels);
-	header.dwDepth=0;
-	header.dwMipMapCount=SWAP32(mips);
-	header.ddpfPixelFormat.dwSize=SWAP32(sizeof(header.ddpfPixelFormat));
-
+	
 	if(ioImage.channels == 1)
 	{
 		header.ddpfPixelFormat.dwFlags=SWAP32(DDPF_ALPHAPIXELS);
@@ -1655,11 +1969,7 @@ int	WriteUncompressedToDDS(struct ImageInfo& ioImage, const char * file_name, in
 		header.ddpfPixelFormat.dwBBitMask=SWAP32(0x000000FF);		// Little endian: B is first, FF is first byte.
 		header.ddpfPixelFormat.dwRGBAlphaBitMask=SWAP32(0xFF000000);
 	}
-
-	if(use_win_gamma)
-		header.ddsCaps.dwCaps=SWAP32(DDSCAPS_TEXTURE|DDSCAPS_MIPMAP				   );
-	else
-		header.ddsCaps.dwCaps=SWAP32(DDSCAPS_TEXTURE|DDSCAPS_MIPMAP|DDSCAPS_COMPLEX);
+	if(!use_win_gamma) header.ddsCaps.dwCaps=SWAP32(DDSCAPS_TEXTURE|DDSCAPS_MIPMAP|DDSCAPS_COMPLEX);
 
 	fwrite(&header,sizeof(header),1,fi);
 
@@ -1674,11 +1984,8 @@ int	WriteUncompressedToDDS(struct ImageInfo& ioImage, const char * file_name, in
 	#if !PHONE
 		FlipImageY(im);
 	#endif
-		if (!AdvanceMipmapStack(&im))
-			break;
 
-
-	} while (1);
+	} while (AdvanceMipmapStack(&im));
 	fclose(fi);
 	return 0;
 	// close file
@@ -1691,7 +1998,7 @@ int		CreateBitmapFromDDS(const char * inFilePath, struct ImageInfo * outImageInf
 	outImageInfo->data = NULL;
 
 	if(fi==NULL) return -1;
-	TEX_dds_desc header = { 0 };
+	TEX_dds_desc header(0,0,0,0);
 	if (fread(&header, 1, sizeof(header), fi) != sizeof(header)) goto bail;
 
 	header.dwSize = SWAP32(header.dwSize);
@@ -1798,7 +2105,6 @@ void	FlipImageY(struct ImageInfo&	io_image)
 		swap_mem(io_image.data + y1 * row_len,io_image.data + y2 * row_len, row_len);
 	}
 }
-
 
 int MakeMipmapStack(struct ImageInfo * ioImage)
 {

@@ -104,17 +104,13 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	"Match Bezier Handles",	'B',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_MatchBezierHandles },
 {	"&Orthogonalize",		'Q',	gui_ControlFlag,				0,	wed_Orthogonalize },
 {	"Make Regular Poly",	'Q',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_RegularPoly },
-#if AIRPORT_ROUTING
 {	"Merge",				'M',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_Merge		},
-#endif
 {	"Rever&se",				'R',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_Reverse		},
 {	"Rotate",				'R',	gui_ControlFlag,				0,	wed_Rotate		},
 {	"Cr&op Unselected",		0,		0,								0,	wed_Crop		},
 {	"Con&vert To",			0,		0,								0,	0				},
 //{	"Make Draped Pol&ygons",0,		0,								0,	wed_Overlay		},
-#if AIRPORT_ROUTING
 //{	"Make Routing",			0,		0,								0,	wed_MakeRouting },
-#endif
 {	"-",					0,  	0,								0,	0				},
 {	"Move &First",			'[',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_MoveFirst	},
 {	"&Move Up",				'[',	gui_ControlFlag,				0,	wed_MovePrev	},
@@ -205,12 +201,10 @@ static const GUI_MenuItem_t kSelectMenu[] = {
 {	"Select P&olygon",	GUI_KEY_UP,		gui_ControlFlag+gui_ShiftFlag,	0,	wed_SelectPoly		},
 {	"Select &Vertices",	GUI_KEY_DOWN,	gui_ControlFlag+gui_ShiftFlag,	0,	wed_SelectVertex	},
 {	"Select Conn&ected",			0,			0,							0,	wed_SelectConnected },
-#if AIRPORT_ROUTING
 {	"-",						0,			0,							0,	0					},
 {	"Select &Degenerate Edges",	0,			0,							0,	wed_SelectZeroLength },
 {	"Select Do&uble Nodes",		0,			0,							0,	wed_SelectDoubles	},
 {	"Select Crossing Ed&ges",	0,			0,							0,	wed_SelectCrossing	},
-#endif
 {	"-",						0,			0,							0,	0					},
 {	"Select Local Items",		0,			0,							0,	wed_SelectLocalObjects },
 {	"Select Library Items",		0,			0,							0,	wed_SelectLibraryObjects },
@@ -223,12 +217,10 @@ static const GUI_MenuItem_t kSelectMenu[] = {
 static const GUI_MenuItem_t kAirportMenu[] = {
 {	"&Create Airport",			'A',	gui_ControlFlag+gui_ShiftFlag,			0, wed_CreateApt },
 {	"Create ATC &Frequency",	'F',	gui_ControlFlag,						0, wed_AddATCFreq },
-#if AIRPORT_ROUTING
 {	"Create Airport Flow",		0,		0,										0, wed_AddATCFlow },
 {	"Create Runway Use",		0,		0,										0, wed_AddATCRunwayUse },
 {	"Create Runway Time Rule",	0,		0,										0, wed_AddATCTimeRule },
 {	"Create Runway Wind rule",	0,		0,										0, wed_AddATCWindRule },
-#endif
 {	"Add &Metadata",			0,		0,										0, 0 },
 {	"Update Metadata",			0,		0,										0, wed_UpdateMetadata},
 {	"No Airport Selected",		'E',	gui_ControlFlag+gui_ShiftFlag,			0, wed_EditApt	},
@@ -300,11 +292,7 @@ void WED_MakeMenus(GUI_Application * inApp)
 		"Duplicate", kDuplicateMenu, edit_menu, 7);
 
 	GUI_Menu convert_to_menu = inApp->CreateMenu(
-#if AIRPORT_ROUTING
 		"Con&vert To", kConvertToMenu, edit_menu, 21);
-#else
-		"Con&vert To", kConvertToMenu, edit_menu, 20);
-#endif
 
 	GUI_Menu  view_menu = inApp->CreateMenu(
 		"&View", kViewMenu, inApp->GetMenuBar(), 0);

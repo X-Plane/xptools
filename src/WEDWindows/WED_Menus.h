@@ -65,17 +65,13 @@ enum {
 	wed_Crop,
 	wed_Overlay,
 	wed_CopyToAirport,
-#if AIRPORT_ROUTING
 //	wed_MakeRouting,
-#endif
 	wed_Split,
 	wed_Align,
 	wed_MatchBezierHandles,
 	wed_Orthogonalize,
 	wed_RegularPoly,
-#if AIRPORT_ROUTING
 	wed_Merge,
-#endif
 	wed_Reverse,
 	wed_Rotate,
 	wed_MoveFirst,
@@ -137,11 +133,9 @@ enum {
 	wed_SelectVertex,
 	wed_SelectPoly,
 	wed_SelectConnected,
-#if AIRPORT_ROUTING
 	wed_SelectZeroLength,
 	wed_SelectDoubles,
 	wed_SelectCrossing,
-#endif
 	wed_SelectLocalObjects,
 	wed_SelectLibraryObjects,
 	wed_SelectDefaultObjects,
@@ -151,12 +145,10 @@ enum {
 	wed_CreateApt,
 	wed_EditApt,
 	wed_AddATCFreq,
-#if AIRPORT_ROUTING
 	wed_AddATCFlow,
 	wed_AddATCRunwayUse,
 	wed_AddATCTimeRule,
 	wed_AddATCWindRule,
-#endif
 	wed_UpgradeRamps,
 	wed_AlignApt,
 	//-- Add Metadata Keys Menu--
@@ -167,6 +159,7 @@ enum {
 	wed_AddMetaDataDatumLat,
 	wed_AddMetaDataDatumLon,
 	wed_AddMetaDataFAA,
+	wed_AddMetaDataLGuiLabel,
 	wed_AddMetaDataIATA,
 	wed_AddMetaDataICAO,
 	wed_AddMetaDataLocal,

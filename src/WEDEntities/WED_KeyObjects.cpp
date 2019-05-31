@@ -117,11 +117,11 @@ void		WED_KeyObjects::StartElement(
 								const XML_Char *	name,
 								const XML_Char **	atts)
 {
-	if(strcasecmp(name,"keys")==0)
+	if(strcmp(name,"keys")==0)
 	{
 		choices.clear();
 	}
-	else if(strcasecmp(name,"key")==0)
+	else if(strcmp(name,"key")==0)
 	{
 		const XML_Char * k = get_att("name",atts);
 		const XML_Char * v = get_att("id",atts);

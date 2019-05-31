@@ -93,7 +93,7 @@ private:
 
 };
 
-void draw_obj_at_xyz(ITexMgr * tman, XObj8 * o, double x, double y, double z, float r, GUI_GraphState * g);
+void draw_obj_at_xyz(ITexMgr * tman, const XObj8 * o, double x, double y, double z, float r, GUI_GraphState * g);
 int layer_group_for_string(const char * s, int o, int def);
 
 #endif /* WED_PreviewLayer_H */

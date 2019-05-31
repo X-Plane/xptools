@@ -24,6 +24,7 @@
 #include "WED_SceneryPackExport.h"
 #include "WED_AptIE.h"
 #include "WED_DSFExport.h"
+#include "WED_GatewayExport.h"
 #include "IResolver.h"
 #include "WED_ToolUtils.h"
 #include "ILibrarian.h"
@@ -69,6 +70,9 @@ void	WED_DoExportPack(WED_Document * resolver, WED_MapPane * pane)
 
 	string pack_base;
 	l->LookupPath(pack_base);
+
+	if(gExportTarget == wet_gateway)
+		EnforceRecursive_MetaDataGuiLabel(w);
 
 	WED_ExportPackToPath(g, resolver, pack_base, problem_children);
 

@@ -40,9 +40,7 @@ public:
 	};
 
 
-#if AIRPORT_ROUTING
 	virtual	bool			HasLayer		(GISLayer_t layer							  ) const;
-#endif			
 
 			double		GetHeight(void) const;
 			void		SetHeight(double h);
@@ -54,9 +52,7 @@ public:
 
 //			void		GetWallChoices(vector<int>& out_walls);
 			bool		HasCustomWalls(void) const;
-#if AIRPORT_ROUTING
 			void		SetCustomWalls(bool has);
-#endif			
 
 			void		SetShowLevel(int show_level);
 			int			GetShowLevel(void) const;
@@ -69,11 +65,9 @@ protected:
 
 private:
 
-	WED_PropDoubleText			height;
+	WED_PropDoubleText				height;
 	WED_PropStringText			resource;
-#if AIRPORT_ROUTING	
-	WED_PropBoolText			pick_walls;
-#endif	
+	WED_PropBoolText				pick_walls;
 	WED_PropIntEnum				show_level;
 
 };

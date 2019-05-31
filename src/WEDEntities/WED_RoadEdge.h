@@ -24,7 +24,7 @@
 #ifndef WED_RoadEdge_H
 #define WED_RoadEdge_H
 
-#if AIRPORT_ROUTING && ROAD_EDITING
+#if ROAD_EDITING
 
 #include "WED_GISEdge.h"
 
