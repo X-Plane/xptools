@@ -253,6 +253,14 @@ void			XWin::GetWindowLoc(int * outX, int * outY)
 	}
 }
 
+void XWin::GetDesktop(int bounds[4])
+{
+	bounds[0] = GetSystemMetrics(SM_XVIRTUALSCREEN);
+	bounds[1] = GetSystemMetrics(SM_YVIRTUALSCREEN);
+	bounds[2] = bounds[0] + GetSystemMetrics(SM_CXVIRTUALSCREEN);
+	bounds[3] = bounds[1] + GetSystemMetrics(SM_CYVIRTUALSCREEN);
+}
+
 void			XWin::GetMouseLoc(int * outX, int * outY)
 {
 	if (outX) *outX = mMouse.x;

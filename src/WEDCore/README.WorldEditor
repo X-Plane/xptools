@@ -31,6 +31,7 @@ WED 2.1.0git
 	- WED-1199: fix potential segfault when reading files
 	- WED-1198: fix approach light depiction to start at threshold of runway
 	- WED-1201: Fix typo in airline code validation error message
+	- WED-432: Fix WED window positioning when using multiple monitors under linux
 	
 WED 2.0.0r4 4/07/19
 	Bug Fixes:
