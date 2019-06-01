@@ -111,6 +111,22 @@ void relPtr::push_back(WED_PropertyItem * ptr)
 	mItemsOffs[mItemsCount] = (unsigned char) offs;
 	++mItemsCount;
 }
+
+WED_PropertyHelper * WED_PropertyItem::GetParent(void) const { 
+	printf("%p %p\n", reinterpret_cast<WED_PropertyHelper *>((char *)this - (mTitle >> 45 - 3 & 0xFF << 3)), mParent);
+	DebugAssert(reinterpret_cast<WED_PropertyHelper *>((char *)this - (mTitle >> 45 - 3 & 0xFF << 3)) == mParent);
+	     return reinterpret_cast<WED_PropertyHelper *>((char *)this - (mTitle >> 45 - 3 & 0xFF << 3)); }
+const char *	WED_PropertyItem::GetWedName(void)     const { return reinterpret_cast<const char *>(PTR_FIX(mTitle)); }
+const char *	WED_PropertyItem::GetXmlName(void)     const { return reinterpret_cast<const char *>(PTR_FIX(mTitle)) + (mTitle >> 53 & 0x1F); }
+const char *	WED_PropertyItem::GetXmlAttrName(void) const { return reinterpret_cast<const char *>(PTR_FIX(mTitle)) + (mTitle >> 58 & 0x3F); }
+
+#else
+
+WED_PropertyHelper * WED_PropertyItem::GetParent(void) const { return mParent; }
+const char *	WED_PropertyItem::GetWedName(void)     const { return reinterpret_cast<const char *>(PTR_CLR(mTitle)); }
+const char *	WED_PropertyItem::GetXmlName(void)     const { return reinterpret_cast<const char *>(PTR_CLR(mTitle)) + ((mTitle >> 48) & 0xFF); }
+const char *	WED_PropertyItem::GetXmlAttrName(void) const { return reinterpret_cast<const char *>(PTR_CLR(mTitle)) + ((mTitle >> 56) & 0xFF); }
+
 #endif
 
 WED_PropertyItem::WED_PropertyItem(WED_PropertyHelper * pops, const char * title, int offset)
@@ -121,7 +137,11 @@ WED_PropertyItem::WED_PropertyItem(WED_PropertyHelper * pops, const char * title
 		ptrdiff_t offs = reinterpret_cast<char *>(this) - reinterpret_cast<char *>(pops);
 		DebugAssert( (offset & 0xFF) < 32 );
 		DebugAssert( ((offset >> 8) & 0xFF) < 64 );
-		mTitle = ((offset >> 8) & 0x3FL) << 58 | (offset & 0x1FL) << 53 | offs << 45-3 | PTR_FIX(reinterpret_cast<uintptr_t>(title));
+		DebugAssert(offs < 8*256);
+		DebugAssert(offs > 0);
+		DebugAssert(offs %8 == 0);
+		mTitle = ((offset >> 8) & 0x3FULL) << 58 | (offset & 0x1FULL) << 53 | offs << 45-3 | PTR_CLR(reinterpret_cast<uintptr_t>(title));
+		mParent = pops;
 #else
 		mParent = pops;
 		mTitle = reinterpret_cast<uintptr_t>(title) | ((uintptr_t) offset) << 48;
@@ -769,7 +789,8 @@ bool		WED_PropIntEnumSet::WantsAttribute(const char * ele, const char * att_name
 
 bool		WED_PropIntEnumSet::WantsElement(WED_XMLReader * reader, const char * name)
 {
-	if(strcmp(GetXmlName(),name)==0)
+	const char *p = GetXmlName();
+	if(strcmp(p,name)==0)
 	{
 		reader->PushHandler(this);
 		value.clear();
