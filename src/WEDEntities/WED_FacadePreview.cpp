@@ -38,7 +38,7 @@
 
 static bool closer_to(double a, double b, double x)
 {
-	return abs(x-a) > abs(x-b);
+	return fabs(x-a) > fabs(x-b);
 }
 
 static int int_seedrand(int low, int high, int seed)
