@@ -482,8 +482,9 @@ void			WED_MapPane::FromPrefs(IDocPrefs * prefs)
 #if WANT_TERRASEVER
 	if ((mTerraserver->IsVisible () ? 1 : 0) != prefs->ReadIntPref("map/terraserver_vis",mTerraserver->IsVisible()  ? 1 : 0))		mTerraserver->ToggleVisible();
 #endif
-	if ((mSlippyMap->IsVisible() ? 1 : 0) != prefs->ReadIntPref("map/slippy_vis"   ,mSlippyMap->IsVisible() ? 1 : 0)) mSlippyMap->ToggleVisible();
-	if ((mNavaidMap->IsVisible() ? 1 : 0) != prefs->ReadIntPref("map/navaid_map_vis",  mNavaidMap->IsVisible()  ? 1 : 0))	mNavaidMap->ToggleVisible();
+	int SlippyPrefs = prefs->ReadIntPref("map/slippy_vis", mSlippyMap->GetMode());
+	mSlippyMap->SetMode(SlippyPrefs);
+	if ((mNavaidMap->IsVisible() ? 1 : 0) != prefs->ReadIntPref("map/navaid_map_vis",  mNavaidMap->IsVisible()  ?  : 0))	mNavaidMap->ToggleVisible();
 	if ((mPreview->IsVisible ()  ? 1 : 0) != prefs->ReadIntPref("map/preview_vis"  ,mPreview->IsVisible()   ? 1 : 0)) mPreview->ToggleVisible();
 
 	mPreview->SetPavementTransparency(prefs->ReadIntPref("map/pavement_alpha",mPreview->GetPavementTransparency()*4) * 0.25f);
@@ -558,7 +559,7 @@ void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
 #if WANT_TERRASEVER
 	prefs->WriteIntPref("map/terraserver_vis",mTerraserver->IsVisible() ? 1 : 0);
 #endif
-	prefs->WriteIntPref("map/slippy_vis",mSlippyMap->IsVisible() ? 1 : 0);
+	prefs->WriteIntPref("map/slippy_vis",mSlippyMap->IsVisible() ? mSlippyMap->GetMode() : 0);
 	prefs->WriteIntPref("map/preview_vis",mPreview->IsVisible() ? 1 : 0);
 	prefs->WriteIntPref("map/pavement_alpha",mPreview->GetPavementTransparency()*4);
 	prefs->WriteIntPref("map/obj_density",mPreview->GetObjDensity());

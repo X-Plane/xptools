@@ -26,11 +26,13 @@ WED 2.1.0git
 	- XPD-10080: Add meta tag to classify airport as 2D or 3D
 	
    Bug Fixes:
-	- WED-1186: Make message box text in moderator mode more specific
-	- WED-1162: Create new ground truck routes w/no aircaft (hotzone) attributes set
+	- WED-1201: Fix typo in airline code validation error message
 	- WED-1199: fix potential segfault when reading files
 	- WED-1198: fix approach light depiction to start at threshold of runway
-	- WED-1201: Fix typo in airline code validation error message
+	- WED-1186: Make message box text in moderator mode more specific
+	- WED-1165: Fix Slippy Maps not restroring mode from scenery files
+	- WED-1162: Create new ground truck routes w/no aircaft (hotzone) attributes set
+	- WED-524: Can't recover window if pack was saved on a larger screen
 	- WED-432: Fix WED window positioning when using multiple monitors under linux
 	
 WED 2.0.0r4 4/07/19
