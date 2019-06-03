@@ -31,6 +31,7 @@ WED 2.1.0b1 6/3/19
 	- WED-1198: fix approach light depiction to start at threshold of runway
 	- WED-1186: Make message box text in moderator mode more specific
 	- WED-1165: Fix Slippy Maps not restroring mode from scenery files
+	- WED-1163: Fix Error 66 when pressing "Enter" on new packages
 	- WED-1162: Create new ground truck routes w/no aircaft (hotzone) attributes set
 	- WED-524: Can't recover window if pack was saved on a larger screen
 	- WED-432: Fix WED window positioning when using multiple monitors under linux

@@ -123,7 +123,7 @@ int		WED_PackageListAdapter::SelectGetExtent(
 			int&						high_x,
 			int&						high_y)
 {
-	low_x = high_x = 0;
+	low_x = high_x = 2;
 	low_y = high_y = mSel;
 	return mSel != -1;
 }
