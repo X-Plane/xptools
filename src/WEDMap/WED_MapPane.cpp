@@ -484,7 +484,7 @@ void			WED_MapPane::FromPrefs(IDocPrefs * prefs)
 #endif
 	int SlippyPrefs = prefs->ReadIntPref("map/slippy_vis", mSlippyMap->GetMode());
 	mSlippyMap->SetMode(SlippyPrefs);
-	if ((mNavaidMap->IsVisible() ? 1 : 0) != prefs->ReadIntPref("map/navaid_map_vis",  mNavaidMap->IsVisible()  ?  : 0))	mNavaidMap->ToggleVisible();
+	if ((mNavaidMap->IsVisible() ? 1 : 0) != prefs->ReadIntPref("map/navaid_map_vis",  mNavaidMap->IsVisible()  ? 1 : 0))	mNavaidMap->ToggleVisible();
 	if ((mPreview->IsVisible ()  ? 1 : 0) != prefs->ReadIntPref("map/preview_vis"  ,mPreview->IsVisible()   ? 1 : 0)) mPreview->ToggleVisible();
 
 	mPreview->SetPavementTransparency(prefs->ReadIntPref("map/pavement_alpha",mPreview->GetPavementTransparency()*4) * 0.25f);
