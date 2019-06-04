@@ -21,7 +21,7 @@
  *
  */
 #include <QtCore/QtCore>
-#include <QtGui/QtGui>
+#include <QtWidgets/QtWidgets>
 #include "PlatformUtils.h"
 #include <stdio.h>
 #include <sys/stat.h>
@@ -177,7 +177,7 @@ char *	GetMultiFilePathFromUser(
 
 void	DoUserAlert(const char * inMsg)
 {
-	QMessageBox::warning(0, "", QString::fromUtf8(inMsg));
+	QMessageBox::warning(0, "", QString::fromUtf8(inMsg),"");
 }
 
 void	ShowProgressMessage(const char * inMsg, float * inProgress)

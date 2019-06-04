@@ -19,9 +19,9 @@ XWin::XWin(
 
 printf("New WinGeo %d %d\n",inX, inY);
 
-	if(inAttributes & xwin_style_centered)
-		this->setGeometry(QStyle::alignedRect(Qt::LeftToRight,Qt::AlignCenter, this->size(), qApp->desktop()->availableGeometry()));
-	else
+//	if(inAttributes & xwin_style_centered)
+//		this->setGeometry(QStyle::alignedRect(Qt::LeftToRight,Qt::AlignCenter, this->size(), qApp->desktop()->availableGeometry()));
+//	else
 		MoveTo(inX, inY);
 	
 	Resize(inWidth, inHeight);
@@ -260,33 +260,35 @@ void XWin::SetFilePath(const char * inPath,bool modified)
 
 void XWin::MoveTo(int inX, int inY)
 {
-	QPoint myPos(inX, inY);
-	
-	QDesktopWidget * dt = QApplication::desktop();
-	QRect myScreen = dt->availableGeometry(dt->screenNumber(this));
-	//printf("MoveTo %d %d. Im on screen %d which is at %d %d\n",inX, inY, dt->screenNumber(this), myScreen.left(), myScreen.top());
-
-// About the WindowManager vs QT idiocracy under X11
-// Upon initial placement, the WM hasn't decided yet on which screen to place the new widget.
-// So if you move the winow in Qt to some coordinate, that is meant as a coordinate relative to the *default* screen.
-// But is that coordinate is *outside* the area of the default screen, the WM will notice that and move the window 
-// automatically to the screen where the (relative) coordinates point to. Qt then reads back the coordinates after
-// placement to stay in sync with what the WM did. But stupid Qt4 mis-understand those coordinates as still relative to 
-// the default screen - which isn't true. So we counteract this here. In QT5 this should not be neccesary any more.
-
-	if(myScreen.contains(inX,inY))
-	{
-		//printf("Its is within myScreen - substract my screen offset\n");
-		myPos -= myScreen.topLeft();                       // account for actual monitor we're on
-		setGeometry(myPos.x(), myPos.y() - GetMenuBarHeight(), width(), height());
-	}
-	else
-	{
-		myScreen = dt->availableGeometry(-1);
-		//printf("Its outside myScreen - rather substract default screen offset %d %d\n", myScreen.left(), myScreen.top());
-		myPos -= myScreen.topLeft();                       // account for actual monitor we're on
-		setGeometry(myPos.x(), myPos.y() - GetMenuBarHeight(), width(), height());
-	}
+	setGeometry(inX, inY - GetMenuBarHeight(), width(), height());
+//
+//	QPoint myPos(inX, inY);
+//	
+//	QDesktopWidget * dt = QApplication::desktop();
+//	QRect myScreen = dt->availableGeometry(dt->screenNumber(this));
+//	//printf("MoveTo %d %d. Im on screen %d which is at %d %d\n",inX, inY, dt->screenNumber(this), myScreen.left(), myScreen.top());
+//
+//// About the WindowManager vs QT idiocracy under X11
+//// Upon initial placement, the WM hasn't decided yet on which screen to place the new widget.
+//// So if you move the winow in Qt to some coordinate, that is meant as a coordinate relative to the *default* screen.
+//// But is that coordinate is *outside* the area of the default screen, the WM will notice that and move the window 
+//// automatically to the screen where the (relative) coordinates point to. Qt then reads back the coordinates after
+//// placement to stay in sync with what the WM did. But stupid Qt4 mis-understand those coordinates as still relative to 
+//// the default screen - which isn't true. So we counteract this here. In QT5 this should not be neccesary any more.
+//
+//	if(myScreen.contains(inX,inY))
+//	{
+//		//printf("Its is within myScreen - substract my screen offset\n");
+//		myPos -= myScreen.topLeft();                       // account for actual monitor we're on
+//		setGeometry(myPos.x(), myPos.y() - GetMenuBarHeight(), width(), height());
+//	}
+//	else
+//	{
+//		myScreen = dt->availableGeometry(-1);
+//		//printf("Its outside myScreen - rather substract default screen offset %d %d\n", myScreen.left(), myScreen.top());
+//		myPos -= myScreen.topLeft();                       // account for actual monitor we're on
+//		setGeometry(myPos.x(), myPos.y() - GetMenuBarHeight(), width(), height());
+//	}
 }
 
 void XWin::Resize(int inWidth, int inHeight)

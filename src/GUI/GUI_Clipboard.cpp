@@ -29,8 +29,9 @@
 	#include <Windows.h>
 	#include "GUI_Unicode.h"
 #endif
+
 #if LIN
-#include <QtGui/QApplication>
+#include <QtGui/QGuiApplication>
 #include <QtGui/QClipboard>
 #include <QtCore/QString>
 #endif
@@ -305,7 +306,7 @@ bool			GUI_GetTextFromClipboard(string& outText)
 	#endif
 #else
     //TODO:  basic text clipboard implementation for now
-     QClipboard* cb = QApplication::clipboard();
+     QClipboard* cb = QGuiApplication::clipboard();
      outText = string(cb->text().toUtf8());
 #endif
 	return true;
@@ -327,7 +328,7 @@ bool			GUI_SetTextToClipboard(const string& inText)
 	return GUI_Clipboard_SetData(1, &text, &sz, &ptr);
 	#else
     //TODO:  basic text clipboard implementation for now
-     QClipboard* cb = QApplication::clipboard();
+     QClipboard* cb = QGuiApplication::clipboard();
      QString tex = QString::fromUtf8(inText.c_str());
       cb->setText(tex);
 	#endif

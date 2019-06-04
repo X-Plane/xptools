@@ -41,9 +41,8 @@
 using std::find;
 
 #if LIN
-#include <QtGui/QApplication>
+#include <QtWidgets/QtWidgets>
 #endif
-
 
 
 GUI_KeyFlags GUI_Pane::GetModifiersNow(void)

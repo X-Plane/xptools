@@ -3,8 +3,8 @@
 #######################
 
 TYPE			:= EXECUTABLE
-CFLAGS			+= -include ./src/Obj/XDefs.h
-CXXFLAGS		+= -include ./src/Obj/XDefs.h
+CFLAGS			+= -include ./src/Obj/XDefs.h -fPIC
+CXXFLAGS		+= -include ./src/Obj/XDefs.h -fPIC
 DEFINES			+= -DUSE_JPEG=1 -DUSE_TIF=1 -DWED=1 -DNO_CGAL=1
 FORCEREBUILD_SUFFIX	:= _wed
 
@@ -17,9 +17,10 @@ endif
 
 LDFLAGS		+= -rdynamic
 LDFLAGS		+= -Wl,--exclude-libs,ALL
-LIBS		+= -lQtCore
-LIBS		+= -lQtGui
-LIBS		+= -lQtOpenGL
+LIBS		+= -lQt5Core
+LIBS		+= -lQt5Gui
+LIBS		+= -lQt5OpenGL
+LIBS		+= -lQt5Widgets
 LIBS		+= -lGL
 LIBS		+= -lGLU
 LIBS		+= -ldl

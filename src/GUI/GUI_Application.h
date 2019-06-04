@@ -26,7 +26,8 @@
 
 #if LIN
 #include <QtCore/QtCore>
-#include <QtGui/QtGui>
+#include <QtWidgets/QtWidgets>
+
 #endif
 
 #include "GUI_Commander.h"

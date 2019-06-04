@@ -3,15 +3,15 @@
 #######################
 
 TYPE		:= EXECUTABLE
-CFLAGS		+= -include ./src/Obj/XDefs.h
-CXXFLAGS	+= -include ./src/Obj/XDefs.h
+CFLAGS		+= -include ./src/Obj/XDefs.h -fPIC
+CXXFLAGS	+= -include ./src/Obj/XDefs.h -fPIC
 DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
 #FORCEREBUILD_SUFFIX := _ov
 
 ifdef PLAT_LINUX
 LDFLAGS		+= -rdynamic
 LDFLAGS		+= -Wl,--exclude-libs,ALL
-LIBS		+= -lQtCore -lQtGui -lQtOpenGL -lGL -lGLU -ldl -lpthread
+LIBS		+= -lQt5Core -lQt5Gui -lQt5OpenGL -lQt5Widgets -lGL -lGLU -ldl -lpthread
 LIBS		+= -Wl,-Bdynamic
 endif #PLAT_LINUX
 
