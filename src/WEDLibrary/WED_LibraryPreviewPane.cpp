@@ -510,17 +510,25 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 									
 				float approx_radius = real_radius * mZoom;
 
+				g->SetState(false,1,false,true,true,false,false);
+				TexRef	ref = mTexMgr->LookupTexture(agp.base_tex.c_str() ,true, tex_Linear|tex_Mipmap|tex_Compress_Ok);
+				int id1 = ref  ? mTexMgr->GetTexID(ref ) : 0;
+				if(id1)g->BindTex(id1,0);
+				
 				glPushAttrib(GL_VIEWPORT_BIT);
 				glViewport(b[0],b[1],b[2]-b[0],b[3]-b[1]);
 				glMatrixMode(GL_PROJECTION);
 				glPushMatrix();
 				glLoadIdentity();
 				glOrtho(sx * -approx_radius,sx * approx_radius,sy * -approx_radius,sy * approx_radius,-real_radius,real_radius);
+				
 				glMatrixMode(GL_MODELVIEW);
 				glPushMatrix();
-				glLoadIdentity();			
+				
+				glLoadIdentity();
 				glRotatef(mThe,1,0,0);
 				glRotatef(mPsi,0,1,0);
+				glColor3f(1,1,1);
 				g->EnableDepth(true,true);
 				glClear(GL_DEPTH_BUFFER_BIT);
 				
@@ -528,36 +536,28 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 							  0.0,
 							(max_xy[1]+min_xy[1]) * 0.5);
 
-					g->SetState(false,1,false,true,true,false,false);
-					TexRef	ref = mTexMgr->LookupTexture(agp.base_tex.c_str() ,true, tex_Linear|tex_Mipmap|tex_Compress_Ok);			
-					int id1 = ref  ? mTexMgr->GetTexID(ref ) : 0;
-					if(id1)g->BindTex(id1,0);
-
-					glColor3f(1,1,1);
-					if(!agp.tile.empty() && !agp.hide_tiles)
+				if(!agp.tile.empty() && !agp.hide_tiles)
+				{
+					glDisable(GL_CULL_FACE);
+					glBegin(GL_TRIANGLE_FAN);
+					for(int n = 0; n < agp.tile.size(); n += 4)
 					{
-						glDisable(GL_CULL_FACE);
-						glBegin(GL_TRIANGLE_FAN);
-						for(int n = 0; n < agp.tile.size(); n += 4)
-						{
-							glTexCoord2f(agp.tile[n+2],agp.tile[n+3]);
-							glVertex3f(agp.tile[n],0,-agp.tile[n+1]);
-						}
-						glEnd();
-						glEnable(GL_CULL_FACE);
-					}	
-					for(vector<agp_t::obj>::iterator o = agp.objs.begin(); o != agp.objs.end(); ++o)
-					{
-						const XObj8 * oo;
-						if(mResMgr->GetObjRelative(o->name,mRes,oo))
-						{
-							draw_obj_at_xyz(mTexMgr, oo, o->x,0,-o->y,o->r, g);			
-						} 
+						glTexCoord2f(agp.tile[n+2],agp.tile[n+3]);
+						glVertex3f(agp.tile[n],0,-agp.tile[n+1]);
 					}
-
-				glMatrixMode(GL_PROJECTION);
+					glEnd();
+					glEnable(GL_CULL_FACE);
+				}	
+				for(vector<agp_t::obj>::iterator o = agp.objs.begin(); o != agp.objs.end(); ++o)
+				{
+					const XObj8 * oo;
+					if(mResMgr->GetObjRelative(o->name,mRes,oo))
+					{
+						draw_obj_at_xyz(mTexMgr, oo, o->x,0,-o->y,o->r, g);			
+					} 
+				}
 				glPopMatrix();
-				glMatrixMode(GL_MODELVIEW);
+				glMatrixMode(GL_PROJECTION);
 				glPopMatrix();
 				glPopAttrib();			
 			}
