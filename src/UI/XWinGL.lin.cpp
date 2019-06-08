@@ -41,11 +41,15 @@ void glWidget::initializeGL(void)
 XWinGL::XWinGL(int default_dnd, XWinGL* inShare, QWidget* parent) : XWin(default_dnd, parent), mInited(false)
 {
 	mGlWidget = new glWidget(this, this, inShare?inShare->mGlWidget:0);
+
 	mGlWidget->setMouseTracking(true);
 	//mGlWidget->setFocusPolicy(Qt::StrongFocus);
 	setCentralWidget(mGlWidget);
 	layout()->update();
 	layout()->activate();
+	//mroe: in QT5 updateGL() the widgets rendering context will not become the current as it should
+	//so we do it 
+	mGlWidget->makeCurrent();
 	mGlWidget->updateGL();
 	XWin::SetVisible(true);
 	XWinGL::mInited = true;
@@ -64,6 +68,7 @@ XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX,
 	setCentralWidget(mGlWidget);
 	layout()->update();
 	layout()->activate();
+	mGlWidget->makeCurrent();
 	mGlWidget->updateGL();
 	if (inAttributes & xwin_style_visible) {
 		XWin::SetVisible(true);
