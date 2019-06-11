@@ -28,8 +28,8 @@
 // so you can't go using const int and other fancy-pants C++ stuff!
 
 // These versions are used in about boxes, resources, info boxes, etc.
-#define	WED_VERSION				2.1.0b2
-#define	WED_VERSION_STRING		"2.1.0b2"
+#define	WED_VERSION				2.1.0git_roads
+#define	WED_VERSION_STRING		"2.1.0git_roads"
 #define	WED_VERSION_STRING_SHORT	"2.1.0"			// omit beta  number
 #define	WED_VERSION_RES			WED_VERSION_STRING
 #define	WED_VERSION_BIN			2,1,0,0
