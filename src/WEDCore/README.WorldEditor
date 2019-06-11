@@ -16,6 +16,7 @@ CHANGE HISTORY
 WED 2.1.0b2 ??/??/19
    Bug Fixes:
    - fix broken z-ordering for .agp previews in the Libary Preview Pane
+   - fix crashes if facade file can not be found or is no valid facade.
 
 WED 2.1.0b1 6/3/19
 	Features:

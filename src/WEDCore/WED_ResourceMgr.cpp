@@ -537,7 +537,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 		string p = mLibrary->GetResourcePath(vpath, v);
 
 		MFMemFile * file = MemFile_Open(p.c_str());
-		if(!file) continue;
+		if(!file) return false;
 		
 		fac_info_t * fac = new fac_info_t;
 		
@@ -559,7 +559,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 		REN_facade_template_t * tpl = NULL;
 
 		while(!MFS_done(&s))
-			{
+		{
 			if (MFS_string_match(&s,"LOD", false))
 			{
 				not_nearest_lod = (MFS_double(&s) > 0.1);   // skip all info on the far out LOD's
