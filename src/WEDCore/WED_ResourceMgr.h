@@ -119,7 +119,19 @@ struct	str_info_t {
 };
 
 struct	road_info_t {
-	map<int, string>	vroad_types;
+	struct vroad_t {
+		string 	description;      // text to display in menu's
+		int		rd_type;				// index into road_types
+	};
+	struct road_t {
+		int		tex_idx;				// index into textures[]
+		float		width, length;    // texture scaling
+		float 	s_left, s_right;	// st coordinates on texture (t is always 0 to 1)
+	};
+	
+	map<int, vroad_t>	vroad_types;
+	map<int, road_t>	road_types;
+	vector<string>		textures;
 };
 
 struct agp_t {

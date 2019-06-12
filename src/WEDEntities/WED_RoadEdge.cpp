@@ -73,6 +73,22 @@ bool			WED_RoadEdge::IsOneway(void) const
 	return true;
 }
 
+double 		WED_RoadEdge::GetWidth(void) const
+{
+	road_info_t r;
+	if(get_valid_road_info(&r))
+	{
+		auto vr = r.vroad_types.find(subtype.value);
+		if (vr != r.vroad_types.end())
+		{
+			auto rd = r.road_types.find(vr->second.rd_type);
+			if ( rd != r.road_types.end())
+				return rd->second.width;
+		}
+		return 0.0;
+	}
+}
+
 void		WED_RoadEdge::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 {
 	WED_GISEdge::GetNthPropertyInfo(n, info);
@@ -122,9 +138,9 @@ void		WED_RoadEdge::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 		road_info_t r;
 		if(get_valid_road_info(&r))
 		{
-			for(map<int,string>::iterator i = r.vroad_types.begin(); i != r.vroad_types.end(); ++i)
+			for(auto i : r.vroad_types)
 			{
-				dict[i->first] = make_pair(i->second, true);
+				dict[i.first] = make_pair(i.second.description, true);
 			}
 			return;
 		}
@@ -139,10 +155,10 @@ void		WED_RoadEdge::GetNthPropertyDictItem(int n, int e, string& item) const
 		road_info_t r;
 		if(get_valid_road_info(&r))
 		{
-			map<int,string>::iterator i = r.vroad_types.find(subtype.value);
+			auto i = r.vroad_types.find(subtype.value);
 			if (i != r.vroad_types.end())
 			{
-				item = i->second;
+				item = i->second.description;
 				return;
 			}
 			else

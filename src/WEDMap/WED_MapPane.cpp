@@ -663,6 +663,8 @@ void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
 #include "WED_FacadeNode.h"
 #include "WED_TaxiRoute.h"
 #include "WED_TaxiRouteNode.h"
+#include "WED_RoadEdge.h"
+#include "WED_RoadNode.h"
 #include "WED_ATCFlow.h"
 #include "WED_ATCTimeRule.h"
 #include "WED_ATCWindRule.h"
@@ -816,6 +818,10 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 		unhide_persistent(hide_list, WED_RampPosition::sClass);
 		unhide_persistent(hide_list, WED_TaxiRoute::sClass);
 		unhide_persistent(hide_list, WED_TaxiRouteNode::sClass);
+#if ROAD_EDITING
+		unhide_persistent(hide_list, WED_RoadEdge::sClass);
+		unhide_persistent(hide_list, WED_RoadNode::sClass);
+#endif		
 		unhide_persistent(hide_list, WED_TruckDestination::sClass);
 		unhide_persistent(hide_list, WED_TruckParkingLocation::sClass);
 	}

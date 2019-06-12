@@ -507,9 +507,9 @@ void	WED_CreateEdgeTool::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 		road_info_t r;
 		if(get_valid_road_info(&r))
 		{
-			for(map<int,string>::iterator i = r.vroad_types.begin(); i != r.vroad_types.end(); ++i)
+			for(auto i : r.vroad_types)
 			{
-				dict[i->first] = make_pair(i->second, true);
+				dict[i.first] = make_pair(i.second.description, true);
 			}
 			return;
 		}
@@ -633,10 +633,10 @@ void		WED_CreateEdgeTool::GetNthPropertyDictItem(int n, int e, string& item) con
 		road_info_t r;
 		if(get_valid_road_info(&r))
 		{
-			map<int,string>::iterator i = r.vroad_types.find(mSubtype.value);
+			auto i = r.vroad_types.find(mSubtype.value);
 			if (i != r.vroad_types.end())
 			{
-				item = i->second;
+				item = i->second.description;
 				return;
 			}
 			else

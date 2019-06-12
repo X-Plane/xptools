@@ -1391,38 +1391,122 @@ bool	WED_ResourceMgr::GetRoad(const string& path, road_info_t& out_info)
 	}
 	
 	string p = mLibrary->GetResourcePath(path);
-	MFMemFile * road = MemFile_Open(p.c_str());
-	if(!road) return false;
+	MFMemFile * mf = MemFile_Open(p.c_str());
+	if(!mf) return false;
 
 	MFScanner	s;
-	MFS_init(&s, road);
+	MFS_init(&s, mf);
 
 	int versions[] = { 800, 0 };
 	int v;
 	if((v=MFS_xplane_header(&s,versions,"ROADS",NULL)) == 0)
 	{
-		MemFile_Close(road);
+		MemFile_Close(mf);
 		return false;
 	}
 	
-	string last_name;
+	road_info_t::vroad_t vroad;
+	int last_vroad = 0;
+	
+	road_info_t::road_t road;
+	int last_road = 0;
+	
+	double max_lod = 0.0;
+	double last_scale = 0.0;
 	
 	while(!MFS_done(&s))
 	{
-		if(MFS_string_match(&s,"#VROAD",false))
+		if(MFS_string_match(&s,"#VROAD", false))
 		{
-			MFS_string(&s,&last_name);
+//			if (last_vroad)
+//				printf("vroad %d %s referencing road %d %s\n", last_vroad, vroad.description.c_str(), vroad.rd_type, out_info.road_types.count(last_vroad) ? "(ok)" : "(unk)");
+
+			MFS_string(&s,&vroad.description); // vroad type display name
 		}
-		if(MFS_string_match(&s, "ROAD_DRAPED", 0))
+		else if(MFS_string_match(&s, "ROAD_DRAPED", false))
 		{
-			MFS_int(&s);		// draping mode
-			int id = MFS_int(&s);
-			out_info.vroad_types[id] = last_name;
+			MFS_int(&s);
+			last_vroad = MFS_int(&s);		// vroad type number
+			MFS_double(&s);
+			MFS_double(&s);
+
+			out_info.vroad_types[last_vroad] = vroad;
+		}
+		else if(MFS_string_match(&s, "ROAD_DRAPE_CHOICE", false))
+		{
+			MFS_double(&s);
+			vroad.rd_type = MFS_int(&s);
+
+			if (last_vroad)
+				out_info.vroad_types[last_vroad] = vroad;  // we assume the last one is what we want for the preview
+		}
+		else if(MFS_string_match(&s, "TEXTURE", false))
+		{
+			MFS_int(&s);       	 	     // z-index, we dont care
+			string tex_name;
+			MFS_string(&s,&tex_name);    // texture name
+			out_info.textures.push_back(tex_name);
+		}
+		else if(MFS_string_match(&s, "ROAD_TYPE", false))
+		{
+			last_road    = MFS_int(&s);  	// road type number
+			road.width   = MFS_double(&s);			// width in mtr
+			road.length  = MFS_double(&s);			// length for repeating texture in mtr
+			road.tex_idx = MFS_int(&s);       	 	// texture index
+			// ignore the rgb definitions for map display colors, for now
+			out_info.road_types[last_road] = road;
+			max_lod = 0.0;
+			
+//			printf("road %d w=%.1f\n",last_road, road.width);
+		}
+		else if(MFS_string_match(&s, "SCALE", false))
+		{
+			last_scale = MFS_double(&s);
+		}
+		else if(MFS_string_match(&s, "SEGMENT_DRAPED", false))
+		{
+			road.tex_idx = MFS_int(&s);  	 	// texture index
+			MFS_double(&s);						// min lod
+			double lod = MFS_double(&s);		// max lod
+			if (max_lod < lod)
+			{
+				max_lod = lod;
+				MFS_double(&s);
+				
+				MFS_double(&s);  
+				road.s_left = MFS_double(&s) / last_scale;
+				MFS_double(&s);
+				road.s_right = MFS_double(&s) / last_scale;
+				
+				out_info.road_types[last_road] = road;
+			}
+//			printf("road %d w=%.1f\n",last_road, road.width);
+		}
+		else if(MFS_string_match(&s, "SEGMENT_GRADED", false))
+		{
+			road.tex_idx = MFS_int(&s);  	 	// texture index
+			MFS_double(&s);						// min lod
+			double lod = MFS_double(&s);		// max lod
+			if (max_lod < lod)
+			{
+				max_lod = lod;
+				MFS_double(&s);
+				
+				MFS_double(&s);  // ignore height for now
+				MFS_double(&s);
+				road.s_left = MFS_double(&s) / last_scale;
+				MFS_double(&s);  // ignore height for now
+				MFS_double(&s);
+				road.s_right = MFS_double(&s) / last_scale;
+				
+				out_info.road_types[last_road] = road;
+			}
+//			printf("road %d w=%.1f\n",last_road, road.width);
 		}
 		MFS_string_eol(&s, NULL);
 	}
-	
-	MemFile_Close(road);
+
+	MemFile_Close(mf);
 	mRoad[path] = out_info;
 	return true;
 }

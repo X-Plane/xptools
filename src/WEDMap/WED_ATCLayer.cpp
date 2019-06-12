@@ -6,19 +6,23 @@
 //
 //
 
-#include "WED_ATCLayer.h"
-#include "WED_TaxiRoute.h"
 #include "AssertUtils.h"
-#include "WED_EnumSystem.h"
 #include "GISUtils.h"
+#include "MathUtils.h"
+#include "TexUtils.h"
+
+#include "WED_ATCLayer.h"
+#include "WED_DrawUtils.h"
+#include "WED_EnumSystem.h"
+#include "WED_MapZoomerNew.h"
+
+#include "WED_RampPosition.h"
+#include "WED_RoadEdge.h"
+#include "WED_TaxiRoute.h"
+
 #include "GUI_GraphState.h"
 #include "GUI_Fonts.h"
-#include "MathUtils.h"
-#include "WED_MapZoomerNew.h"
-#include "WED_DrawUtils.h"
-#include "WED_RampPosition.h"
 #include "GUI_Resources.h"
-#include "TexUtils.h"
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -65,7 +69,9 @@ static void make_arrow_line(Point2 p[5])
 
 bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected)
 {
-	if(entity->GetGISSubtype() == WED_RampPosition::sClass)
+	const char * type = entity->GetGISSubtype();
+	
+	if(type == WED_RampPosition::sClass)
 	{
 		WED_RampPosition * pos = dynamic_cast<WED_RampPosition *>(entity);
 		DebugAssert(pos);
@@ -116,7 +122,7 @@ bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, G
 		glEnd();
 			
 	}
-	if(entity->GetGISSubtype() == WED_TaxiRoute::sClass)
+	else if(type == WED_TaxiRoute::sClass)
 	{
 		WED_TaxiRoute * seg = dynamic_cast<WED_TaxiRoute *>(entity);
 		DebugAssert(seg);
@@ -206,9 +212,34 @@ bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, G
 				}
 			}
 		}
-		
 	}
-
+#if ROAD_EDITING
+	else if(type == WED_RoadEdge::sClass)
+	{
+		WED_RoadEdge * seg = dynamic_cast<WED_RoadEdge *>(entity);
+		DebugAssert(seg);
+		
+		Point2 ends[2];
+		seg->GetNthPoint(0)->GetLocation(gis_Geo, ends[0]);
+		seg->GetNthPoint(1)->GetLocation(gis_Geo, ends[1]);
+		
+		double mtr = seg->GetWidth();
+		
+		if(mtr > 0.0)
+		{
+			Point2	c[5];
+			Quad_2to4(ends, mtr, c);
+			
+			g->SetState(0, 0, 0, 0, 1, 0, 0);
+			glColor4f(0.4, 1, 1, 0.4);         // desaturated cyan
+			
+			GetZoomer()->LLToPixelv(c,c,4);
+			glBegin(GL_TRIANGLE_FAN);
+			glVertex2v(c,4);
+			glEnd();
+		}
+	}
+#endif
 	return true;
 }
 

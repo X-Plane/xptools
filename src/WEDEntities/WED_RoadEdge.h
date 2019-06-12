@@ -42,6 +42,8 @@ public:
 			void			SetEndLayer(int l) { end_layer = l; }
 			int				GetSubtype(void) const { return subtype.value; }
 			void			SetSubtype(int s) { subtype = s; }
+			double 		GetWidth(void) const;
+
 			void			GetResource(string& r) const { r = resource.value; }
 			void			SetResource(const string& r) { resource = r; }
 
