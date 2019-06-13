@@ -477,7 +477,7 @@ void WED_NavaidLayer::LoadNavaids()
 			else
 				printf("  matched %7s ll=%8.3lf %7.3lf d=%5.0lf km Wow ! apt.dat ll=%8.3lf %7.3lf\n", a.first.c_str(), a.second.lonlat.x(), a.second.lonlat.y(), dist/1000.0, b->second.lonlat.x(), b->second.lonlat.y());
 			if(dist > 1000.0)
-				printf("UPDATE airports SET Latitude=%.3lf, Longitude=%.3lf WHERE AirportCode=\"%s\";\n", b->second.lonlat.x(), b->second.lonlat.y(), a.first.c_str());
+				printf("UPDATE airports SET Latitude=%.3lf, Longitude=%.3lf WHERE AirportCode=\"%s\";\n", b->second.lonlat.y(), b->second.lonlat.x(), a.first.c_str());
 		}
 		else
 			printf("unmatched %7s ll=%8.3lf %7.3lf\n", a.first.c_str(), a.second.lonlat.x(), a.second.lonlat.y());
