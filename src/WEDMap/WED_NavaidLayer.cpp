@@ -58,8 +58,97 @@ printf("1 to 2 time: %lf\n", elapsed.count());
 
 #define SHOW_TOWERS 0
 #define SHOW_APTS_FROM_APTDAT 1
+#define COMPARE_GW_TO_APTDAT 0
 
 #define NAVAID_EXTRA_RANGE  GLOBAL_WED_ART_ASSET_FUDGE_FACTOR  // degree's lon/lat, allows ILS beams to show even if the ILS is outside of the map window
+
+#if COMPARE_GW_TO_APTDAT
+
+#include <json/json.h>
+#include "RAII_Classes.h"
+#include "WED_FileCache.h"
+#include "WED_Url.h"
+#include "FileUtils.h"
+#include "GUI_Resources.h"
+
+static void get_airports(map<string, navaid_t>& tAirports)
+{
+/*
+	WED_file_cache_request	mCacheRequest;
+	
+	string cert;
+	if(!GUI_GetTempResourcePath("gateway.crt", cert))
+	{
+		DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
+	}
+	mCacheRequest.in_cert = cert;
+
+	mCacheRequest.in_domain = cache_domain_airports_json;
+	mCacheRequest.in_folder_prefix = "scenery_packs" DIR_STR "GatewayImport";
+	
+	string url = WED_URL_GATEWAY_API;
+	url += "airports";
+	mCacheRequest.in_url = url;
+	
+
+	WED_file_cache_response res = gFileCache.request_file(mCacheRequest);
+
+	sleep(3);
+*/
+	string json_string;
+	
+//	if(res.out_status == cache_status_available)
+	{
+		//Attempt to open the file we just downloaded
+//		RAII_FileHandle file(res.out_path.c_str(),"r");
+		RAII_FileHandle file("/home/xplane/.cache/wed_file_cache/scenery_packs/GatewayImport/airports","r");
+
+
+		if(FILE_read_file_to_string(file(), json_string) == 0)
+		{
+			file.close();
+		}
+		else
+		  printf("cant read\n");
+	}
+	
+	Json::Value root;
+	Json::Reader reader;
+	bool success = reader.parse(json_string, root);
+
+	//Check for errors
+	if(success == false)
+	{
+		printf("no airports\n");
+		return;
+	}
+
+	Json::Value mAirportsGET = Json::Value(Json::arrayValue);
+	mAirportsGET.swap(root["airports"]);
+
+	for (int i = 0; i < mAirportsGET.size(); i++)
+	{
+		//Get the current scenery object
+		Json::Value tmp(Json::objectValue);
+		tmp = mAirportsGET.operator[](i);       //Yes, you need the verbose operator[] form. Yes it's dumb
+
+		navaid_t n;
+		
+		n.icao =	tmp["AirportCode"].asString();
+		n.name =	tmp["AirportName"].asString();
+		n.heading = tmp["ApprovedSceneryCount"].asInt() > 0 ?  1 : 0;  // 3D or just 2D
+		n.type = 10000 + 1; // + tmp["AirportClass"].asInt();    // rowcode 17= seaport, 1=airport, 16=heliport
+		n.lonlat = Point2(tmp["Longitude"].asDouble(), tmp["Latitude"].asDouble());
+		
+		if(tmp["ApprovedSceneryCount"].asInt() > 0)
+			n.rwy = "(GW)";
+		else
+			n.rwy = "(WEDbot)";
+			
+		tAirports[n.icao]= n;
+	}
+}
+#endif
 
 static void parse_apt_dat(MFMemFile * str, map<string, navaid_t>& tAirports, const string& source)
 {
@@ -100,6 +189,42 @@ static void parse_apt_dat(MFMemFile * str, map<string, navaid_t>& tAirports, con
 					rowcode == 1201 || rowcode == 1300  ||
 					(rowcode >=   18 && rowcode <=   21))
 				{
+					double lat = MFS_double(&s);
+					double lon = MFS_double(&s);
+					apt_bounds += Point2(lon,lat);
+				}
+				else if (rowcode == 100) // runways
+				{
+					MFS_double(&s);  // width
+					MFS_double(&s); MFS_double(&s); MFS_double(&s);
+					MFS_double(&s); MFS_double(&s); MFS_double(&s);
+					MFS_string(&s, NULL);
+					double lat = MFS_double(&s);
+					double lon = MFS_double(&s);
+					MFS_double(&s); MFS_double(&s); MFS_double(&s);
+					MFS_double(&s); MFS_double(&s); MFS_double(&s);
+					apt_bounds += Point2(lon,lat);
+					MFS_string(&s, NULL);
+					lat = MFS_double(&s);
+					lon = MFS_double(&s);
+					apt_bounds += Point2(lon,lat);
+				}
+				else if (rowcode == 101) // sealanes
+				{
+					MFS_double(&s);
+					MFS_double(&s);
+					MFS_string(&s, NULL);
+					double lat = MFS_double(&s);
+					double lon = MFS_double(&s);
+					apt_bounds += Point2(lon,lat);
+					MFS_string(&s, NULL);
+					lat = MFS_double(&s);
+					lon = MFS_double(&s);
+					apt_bounds += Point2(lon,lat);
+				}
+				else if (rowcode == 102) // helipads
+				{
+					MFS_string(&s, NULL);
 					double lat = MFS_double(&s);
 					double lon = MFS_double(&s);
 					apt_bounds += Point2(lon,lat);
@@ -158,9 +283,7 @@ static void parse_nav_dat(MFMemFile * str, vector<navaid_t>& mNavaids, bool merg
 							float d = LonLatDistMeters(n.lonlat, i->lonlat);
 							if (n.name == i->name)
 							{
-#if DEV
-								printf("Replacing exact type %d, icao %s & name %s match. d=%5.1lfm\n", n.type, n.icao.c_str(), n.name.c_str(), d);
-#endif
+//								printf("Replacing exact type %d, icao %s & name %s match. d=%5.1lfm\n", n.type, n.icao.c_str(), n.name.c_str(), d);
 								*i = n;
 								break;
 							}
@@ -168,9 +291,7 @@ static void parse_nav_dat(MFMemFile * str, vector<navaid_t>& mNavaids, bool merg
 							{
 								closest_d = d;
 								closest_i = i;
-#if DEV
-								printf("Name mismatch, keeping type %d, icao %s at d=%5.1lfm in mind, name=%s,%s\n", n.type, n.icao.c_str(), d, i->name.c_str(), n.name.c_str());
-#endif
+//								printf("Name mismatch, keeping type %d, icao %s at d=%5.1lfm in mind, name=%s,%s\n", n.type, n.icao.c_str(), d, i->name.c_str(), n.name.c_str());
 							}
 						}
 						++i;
@@ -179,18 +300,14 @@ static void parse_nav_dat(MFMemFile * str, vector<navaid_t>& mNavaids, bool merg
 					{
 						if (closest_d < 20.0)
 						{
-#if DEV
-							printf("Replacing despite name %s,%s", closest_i->name.c_str(), n.name.c_str());
-							if (closest_i->freq != n.freq) printf(" and frequency %d,%d", closest_i->freq, n.freq );
-							printf(" mismatch, type %d, icao %s d=%5.1lfm\n", n.type, n.icao.c_str(), closest_d);
-#endif
+//							printf("Replacing despite name %s,%s", closest_i->name.c_str(), n.name.c_str());
+//							if (closest_i->freq != n.freq) printf(" and frequency %d,%d", closest_i->freq, n.freq );
+//							printf(" mismatch, type %d, icao %s d=%5.1lfm\n", n.type, n.icao.c_str(), closest_d);
 							*closest_i = n;
 						}
 						else
 						{
-#if DEV
-							printf("Adding new %d %s %s\n", n.type, n.name.c_str(), n.icao.c_str());
-#endif
+//							printf("Adding new %d %s %s\n", n.type, n.name.c_str(), n.icao.c_str());
 							mNavaids.push_back(n);
 						}
 					}
@@ -271,9 +388,7 @@ static void parse_atc_dat(MFMemFile * str, vector<navaid_t>& mNavaids)
 				}
 				else if(MFS_string_match(&s, "AIRSPACE_POLYGON_END", 1))
 				{
-#if DEV
-					printf("Adding new %d %s %s %d\n", n.type, n.name.c_str(), n.icao.c_str(), (int) n.shape.size());
-#endif
+//					printf("Adding new %d %s %s %d\n", n.type, n.name.c_str(), n.icao.c_str(), (int) n.shape.size());
 					if (num_rings == 1)
 					{
 #if SHOW_TOWERS
@@ -338,14 +453,36 @@ void WED_NavaidLayer::LoadNavaids()
 	if(str)	parse_atc_dat(str, mNavaids);
 	
 #if SHOW_APTS_FROM_APTDAT
+	map<string,navaid_t> tAirports;
 	string defaultApts = resourcePath + DIR_STR "Resources" DIR_STR "default scenery" DIR_STR "default apt dat" DIR_STR "Earth nav data" DIR_STR "apt.dat";
 	string globalApts  = resourcePath + DIR_STR "Custom Scenery" DIR_STR "Global Airports" DIR_STR "Earth nav data" DIR_STR "apt.dat";
 
-	map<string,navaid_t> tAirports;
 	str = MemFile_Open(defaultApts.c_str());
 	if(str) parse_apt_dat(str, tAirports, "");
 	str = MemFile_Open(globalApts.c_str());
 	if(str) parse_apt_dat(str, tAirports, " (GW)");
+
+#if COMPARE_GW_TO_APTDAT
+	map<string,navaid_t> tAirp;
+	get_airports(tAirp);
+	
+	for(auto a : tAirp)
+	{
+		auto b = tAirports.find(a.first);
+		if (b != tAirports.end())
+		{
+			double dist = LonLatDistMeters(a.second.lonlat, b->second.lonlat);
+			if (dist < 150000)
+				printf("  matched %7s ll=%8.3lf %7.3lf d=%5.1lf km %s\n", a.first.c_str(), a.second.lonlat.x(), a.second.lonlat.y(), dist/1000.0, dist < 1000.0 ? "Good !" : "");
+			else
+				printf("  matched %7s ll=%8.3lf %7.3lf d=%5.0lf km Wow ! apt.dat ll=%8.3lf %7.3lf\n", a.first.c_str(), a.second.lonlat.x(), a.second.lonlat.y(), dist/1000.0, b->second.lonlat.x(), b->second.lonlat.y());
+			if(dist > 1000.0)
+				printf("UPDATE airports SET Latitude=%.3lf, Longitude=%.3lf WHERE AirportCode=\"%s\";\n", b->second.lonlat.x(), b->second.lonlat.y(), a.first.c_str());
+		}
+		else
+			printf("unmatched %7s ll=%8.3lf %7.3lf\n", a.first.c_str(), a.second.lonlat.x(), a.second.lonlat.y());
+	}
+#endif
 
 	for(map<string, navaid_t>::iterator i = tAirports.begin(); i != tAirports.end(); ++i)
 		mNavaids.push_back(i->second);
@@ -383,7 +520,7 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 	glLineStipple(1, 0xF0F0);
 	glDisable(GL_LINE_STIPPLE);
 	
-	if (PPM > 0.001)          // stop displaying navaids when zoomed out - gets too crowded
+	if (PPM > 0.0005)          // stop displaying navaids when zoomed out - gets too crowded
 		for(vector<navaid_t>::iterator i = mNavaids.begin(); i != mNavaids.end(); ++i)  // this is brain dead - use list sorted by longitude
 		{
 			if(i->lonlat.x() > vl && i->lonlat.x() < vr &&
@@ -446,12 +583,12 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 				}
 				else
 				{
-					if(PPM > 0.005)
+					if(PPM > 0.002)
 					{
 						glColor4fv(i->heading ? vfr_blue : vfr_purple);
 						if (i->type == 10017)
 						{
-							if(PPM > 0.03) GUI_PlotIcon(g,"map_helipad.png", pt.x(), pt.y(), 0.0, scale);
+							if(PPM > 0.02) GUI_PlotIcon(g,"map_helipad.png", pt.x(), pt.y(), 0.0, scale);
 						}
 						else if (i->type == 10016)
 							GUI_PlotIcon(g,"navmap_seaport.png", pt.x(), pt.y(), 0.0, scale);
