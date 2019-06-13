@@ -180,7 +180,7 @@ bool	WED_ResourceMgr::GetObjRelative(const string& obj_path, const string& paren
 
 bool	WED_ResourceMgr::GetObj(const string& vpath, XObj8 const *& obj, int variant)
 {
-	if(vpath[vpath.size()-3] != 'o') return false;   // save time by not trying to load .agp's
+	if(toupper(vpath[vpath.size()-3]) != 'O') return false;   // save time by not trying to load .agp's
 
 //printf("GetObj %s' V=%d\n", path.c_str(), variant);
 	auto i = mObj.find(vpath);
