@@ -906,23 +906,33 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 				{
 					fac->nowallmesh = true;
 				}
-#if 0
-				else if(tpl && MFS_string_match(&s,"ROOF_OBJ", false))
+				else if(MFS_string_match(&s,"ROOF_OBJ", false))
 				{
-				xint idx = m.TXT_int_scan();
-				xflt s = m.TXT_flt_scan() / roof_scale_s;
-				xflt t = m.TXT_flt_scan() / roof_scale_t;
-				xflt r = m.TXT_flt_scan();
-				xint show_lo = m.TXT_int_scan();
-				xint show_hi = m.TXT_int_scan();				
-				REN_facade_roof_t::robj o = { s, t, r, idx };
-				o.freq = asset_freq(show_lo, show_hi);
-				if(floors.empty() || floors.back().roofs.empty())
-					DSF_NonFatalError(m,"This facade uses a roof object that is not inside a roof.  Please fix this!");
-				else
-					floors.back().roofs.back().roof_objs.push_back(o);
+					xint idx = MFS_int(&s);
+					xflt s_coord = MFS_double(&s) / fac->roof_scale_s;
+					xflt t_coord = MFS_double(&s) / fac->roof_scale_t;
+					// xint show_lo = MFS_int(&s);
+					// xint show_hi = MFS_int(&s);
+					REN_facade_roof_t::robj o = { s_coord, t_coord, 0.0, idx };
+					if(fac->floors.empty() || fac->floors.back().roofs.empty())
+						FAIL("This facade uses a roof object that is not inside a roof.")
+					else
+						fac->floors.back().roofs.back().roof_objs.push_back(o);
 				}
-#endif
+				else if(MFS_string_match(&s,"ROOF_OBJ_HEADING", false))
+				{
+					xint idx = MFS_int(&s);
+					xflt s_coord = MFS_double(&s) / fac->roof_scale_s;
+					xflt t_coord = MFS_double(&s) / fac->roof_scale_t;
+					xflt r = MFS_double(&s);
+					// xint show_lo = MFS_int(&s);
+					// xint show_hi = MFS_int(&s);
+					REN_facade_roof_t::robj o = { s_coord, t_coord, r, idx };
+					if(fac->floors.empty() || fac->floors.back().roofs.empty())
+						FAIL("This facade uses a roof object that is not inside a roof.")
+					else
+						fac->floors.back().roofs.back().roof_objs.push_back(o);
+				}
 			}
 			MFS_string_eol(&s,NULL);
 		}
