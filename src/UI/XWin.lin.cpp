@@ -269,24 +269,15 @@ void XWin::MoveTo(int inX, int inY)
 // About the WindowManager vs QT idiocracy under X11
 // Upon initial placement, the WM hasn't decided yet on which screen to place the new widget.
 // So if you move the winow in Qt to some coordinate, that is meant as a coordinate relative to the *default* screen.
-// But is that coordinate is *outside* the area of the default screen, the WM will notice that and move the window 
-// automatically to the screen where the (relative) coordinates point to. Qt then reads back the coordinates after
-// placement to stay in sync with what the WM did. But stupid Qt4 mis-understand those coordinates as still relative to 
-// the default screen - which isn't true. So we counteract this here. In QT5 this should not be neccesary any more.
+// But is that coordinate is *outside* the area of the default screen, Qt5 automatically takes that as coordinates referring to the
+// virtual desktop and places the window at these absoluite coordinates, i.e Qt4 and Qt5 behavior is very different.
 
 	if(myScreen.contains(inX,inY))
 	{
-		//printf("Its is within myScreen - substract my screen offset\n");
+		// printf("Its is within myScreen - substract my screen offset\n");
 		myPos -= myScreen.topLeft();                       // account for actual monitor we're on
-		setGeometry(myPos.x(), myPos.y() - GetMenuBarHeight(), width(), height());
 	}
-	else
-	{
-		myScreen = dt->availableGeometry(-1);
-		//printf("Its outside myScreen - rather substract default screen offset %d %d\n", myScreen.left(), myScreen.top());
-		myPos -= myScreen.topLeft();                       // account for actual monitor we're on
-		setGeometry(myPos.x(), myPos.y() - GetMenuBarHeight(), width(), height());
-	}
+	setGeometry(myPos.x(), myPos.y() - GetMenuBarHeight(), width(), height());
 }
 
 void XWin::Resize(int inWidth, int inHeight)
@@ -362,7 +353,7 @@ void XWin::GetWindowLoc(int * outX, int * outY)
 
 	QPoint absPos = geometry().topLeft() + QPoint(0,GetMenuBarHeight()) + myScreen.topLeft(); // does not include window decorations - deliberately !
 		
-	// printf("GetLoc rel pos is x=%d y=%d, myScreen is %d, absolute pos %d %d\n", geometry().x(), geometry().y()+GetMenuBarHeight(), dt->screenNumber(this), absPos.x(), absPos.y());
+	//printf("GetLoc rel pos is x=%d y=%d, myScreen is %d, absolute pos %d %d\n", geometry().x(), geometry().y()+GetMenuBarHeight(), dt->screenNumber(this), absPos.x(), absPos.y());
 		
 	if (outX) *outX = absPos.x();
 	if (outY) *outY = absPos.y();
@@ -378,7 +369,7 @@ void XWin::GetDesktop(int bounds[4])
 	for (int s = 0; s < num_screens; ++s)
 	{
 		QRect screen = dt->availableGeometry(s);
-		printf("Screen %d: l=%d t=%d w=%d h=%d\n", s, screen.left(), screen.top(), screen.width(), screen.height());
+		//printf("Screen %d: l=%d t=%d w=%d h=%d\n", s, screen.left(), screen.top(), screen.width(), screen.height());
 		bounds[0] = min(bounds[0], screen.left());
 		bounds[1] = min(bounds[1], screen.top());
 		bounds[2] = max(bounds[2], screen.right());
@@ -386,7 +377,7 @@ void XWin::GetDesktop(int bounds[4])
 	}
 	//printf("Primary screen is %d, I'm on screen %d\n", dt->primaryScreen(), dt->screenNumber(this));
 	//printf("Desktop l=%d t=%d r=%d b=%d\n", bounds[0], bounds[1], bounds[2], bounds[3]);
-	//printf("Desktop union size w=%d h=%d\n", dt-> dt->width(), dt->height());
+	//printf("Desktop union size w=%d h=%d\n", dt->width(), dt->height());
 }
 
 
