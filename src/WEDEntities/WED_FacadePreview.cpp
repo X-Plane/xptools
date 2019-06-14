@@ -1142,6 +1142,27 @@ if (info.has_roof) // && want_roof
 			}
 			else if(!info.noroofmesh)  // type 2 facades
 			{
+				if(want_thinWalls && roof_pts.size() <= 5) // add roof objects, but only for preview pane. Its slow when taking the exact shape of the roof into account.
+				{
+					for(auto ro : bestFloor->roofs.back().roof_objs)
+					{
+						Point2 loc0 = footprint.side(0).midpoint();
+						Point2 loc_uv = loc0 + dirVec * ro.str[0] * info.roof_scale_s + perpVec * ro.str[1] * info.roof_scale_t;
+
+						for(int s = (footprint[0].x() - loc0.x()) / info.roof_scale_s; s < ((footprint[1].x() - loc0.x()) / info.roof_scale_s) - 1; ++s)
+							for(int t = ((-footprint[0].y() - loc0.y()) / info.roof_scale_t) + 1; t < ((-footprint[2].y() - loc0.y()) / info.roof_scale_t) + 1; ++t)
+							{
+								struct obj obj_ref;
+								Point2 xy = loc_uv + dirVec * s * info.roof_scale_s - perpVec * t * info.roof_scale_t;
+								obj_ref.x = xy.x();
+								obj_ref.y = roof_height;
+								obj_ref.z = xy.y();
+								obj_ref.r = ro.str[2] + atan2(perpVec.y(), perpVec.x()) * RAD_TO_DEG + 90.0;
+								obj_ref.idx = ro.obj;
+								obj_locs.push_back(obj_ref);
+							}
+					}
+				}
 				int xtra_roofs = 0;
 				if (want_thinWalls && bestFloor->roofs.size() > 1) xtra_roofs = bestFloor->roofs.size() - 1;
 				do
