@@ -84,15 +84,15 @@ WED_FacadePlacement::TopoMode		WED_FacadePlacement::GetTopoMode(void) const
 			const fac_info_t * f;
 			if(rr->GetFac(resource.value,f))
 			{
-				if(f->is_ring) 
-				{
-					if(f->has_roof)
-						return topo_Area;   // ring and roof
-					else
-						return topo_Ring;   // ring only: no roof
-				}
+				if(f->has_roof)
+					return topo_Area;   // ring and roof
 				else
-					return topo_Chain;      // no ring, no roof
+				{
+					if(f->is_ring)
+						return topo_Ring;   // ring only: no roof
+					else
+						return topo_Chain;  // no ring, no roof
+				}
 			}
 		}
 	}

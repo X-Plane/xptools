@@ -897,13 +897,12 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 					fac->roof_scale_s = MFS_double(&s);
 					fac->roof_scale_t = MFS_double(&s);
 					if (fac->roof_scale_t == 0.0) fac->roof_scale_t = fac->roof_scale_s;
-					fac->has_roof = true;
 				}
-				else if(MFS_string_match(&s,"NOROOFMESH", false))
+				else if(MFS_string_match(&s,"NO_ROOF_MESH", true))
 				{
 					fac->noroofmesh = true;
 				}
-				else if(MFS_string_match(&s,"NOWALLMESH", false))
+				else if(MFS_string_match(&s,"NO_WALL_MESH", true))
 				{
 					fac->nowallmesh = true;
 				}
@@ -987,6 +986,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 					sort(w.spellings.begin(), w.spellings.end());
 				}
 			}
+			if(fac->noroofmesh) fac->has_roof = false;
 		}
 		process_texture_path(p,fac->wall_tex);
 		process_texture_path(p,fac->roof_tex);
