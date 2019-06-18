@@ -390,7 +390,7 @@ struct mobile_ag_library_item {
 	const char * lib_path;
 	const char * disk_path;
 };
-static constexpr mobile_ag_library_item s_mobile_ag_library[] = {
+static constexpr array<mobile_ag_library_item, 375> s_mobile_ag_library = {{
 		{"lib/mobile/autogen/Europe/Euro_Bottomi.obj", "Global Scenery/Mobile_Autogen_Lib/Europe/objects/Euro_Bottomi.obj"},
 		{"lib/mobile/autogen/Europe/Euro_Bottomg.obj", "Global Scenery/Mobile_Autogen_Lib/Europe/objects/Euro_Bottomh.obj"},
 		{"lib/mobile/autogen/Europe/Euro_Bottomf.obj", "Global Scenery/Mobile_Autogen_Lib/Europe/objects/Euro_Bottomf.obj"},
@@ -766,23 +766,24 @@ static constexpr mobile_ag_library_item s_mobile_ag_library[] = {
 		{"lib/mobile/autogen/US/CitySqIn_UR_Halfg.obj", "Global Scenery/Mobile_Autogen_Lib/US/objects/CitySqIn_UR_Halfg.obj"},
 		{"lib/mobile/autogen/US/CitySqIn_UR_Halfd.obj", "Global Scenery/Mobile_Autogen_Lib/US/objects/CitySqIn_UR_Halfd.obj"},
 		{"lib/mobile/autogen/US/CitySqIn_UR_Halfe.obj", "Global Scenery/Mobile_Autogen_Lib/US/objects/CitySqIn_UR_Halfe.obj"},
-};
+}};
 
 map<string, Bbox2> read_mobile_obj_ground_bounds()
 {
 	map<string, Bbox2> out;
-	for(int i = 0; i < sizeof(s_mobile_ag_library) / sizeof(s_mobile_ag_library[0]); ++i)
+    for(const mobile_ag_library_item & ag_item : s_mobile_ag_library)
 	{
 		XObj8 obj;
-		if(!XObj8Read(s_mobile_ag_library[i].disk_path, obj))
+		if(!XObj8Read(ag_item.disk_path, obj))
 		{
 			XObj obj7;
-			if(XObjRead(s_mobile_ag_library[i].disk_path, obj7))
+			if(XObjRead(ag_item.disk_path, obj7))
 			{
 				Obj7ToObj8(obj7, obj);
 			}
 			else
 			{
+                fprintf(stderr, "Failed to find required Mobile object %s\n", ag_item.disk_path);
 				throw "Failed to read required Mobile object";
 			}
 		}
@@ -790,7 +791,7 @@ map<string, Bbox2> read_mobile_obj_ground_bounds()
 		array<float, 3> min_coords;
 		array<float, 3> max_coords;
 		GetObjDimensions8(obj, min_coords.data(), max_coords.data());
-		out.emplace(string(s_mobile_ag_library[i].lib_path), Bbox2(min_coords[0], min_coords[2], max_coords[0], max_coords[2]));
+		out.emplace(string(ag_item.lib_path), Bbox2(min_coords[0], min_coords[2], max_coords[0], max_coords[2]));
 	}
 	return out;
 }
