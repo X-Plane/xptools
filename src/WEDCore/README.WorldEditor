@@ -20,6 +20,7 @@ WED 2.1.0b2 ??/??/19
    - fix navaid layer locations of seaport and runway-only WEDbot airports
    - fix previews for .OBJ with upper case suffix filenames missing in beta1
    - fix facades with NO_WALL_MESH commands not treated as line-type facades
+   - fix string preview not starting at right offset
 
 WED 2.1.0b1 6/3/19
 	Features:
