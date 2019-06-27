@@ -458,6 +458,24 @@ static void ValidateOneFacadePlacement(WED_Thing* who, validation_error_vector& 
 
 	if(gExportTarget == wet_xplane_900 && WED_HasBezierPol(fac))
 		msgs.push_back(validation_error_t("Curved facades are only supported in X-Plane 10 and newer.", err_gis_poly_facades_curved_only_for_gte_xp10, who,apt));
+		
+	if(fac->HasLayer(gis_Param))
+	{
+		int maxWalls = fac->GetNumWallChoices();
+		IGISPointSequence * ips = fac->GetOuterRing();
+		int nn = ips->GetNumPoints();
+		for(int i = 0; i < nn; ++i)
+		{
+			Point2 pt;
+			IGISPoint * igp = ips->GetNthPoint(i);
+			igp->GetLocation(gis_Param, pt);
+						
+			if(pt.x() >= maxWalls)
+			{
+				msgs.push_back(validation_error_t("Facade node specifies wall not defined in facade resource.", err_facade_illegal_wall, dynamic_cast<WED_Thing *>(igp), apt));
+			}
+		}
+	}
 }
 
 static void ValidateOneForestPlacement(WED_Thing* who, validation_error_vector& msgs, WED_Airport * apt)

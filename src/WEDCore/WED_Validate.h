@@ -69,6 +69,7 @@ enum validate_error_t
 	err_flow_visibility_negative,
 	err_freq_airport_has_gnd_or_del_but_no_tower,
 	err_freq_could_not_find_at_least_one_valid_freq_for_group,
+	err_facade_illegal_wall,
 	err_atc_freq_must_be_on_25khz_spacing,
 	err_atc_freq_must_be_on_8p33khz_spacing,
 	err_freq_duplicate_freq,
