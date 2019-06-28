@@ -1944,22 +1944,28 @@ static void ValidateOneTaxiSign(WED_AirportSign* airSign, validation_error_vecto
 
 	string signName;
 	airSign->GetName(signName);
-
-	//Create the necessary parts for a parsing operation
-	parser_in_info in(signName);
-	parser_out_info out;
-
-	ParserTaxiSign(in,out);
-	if(out.errors.size() > 0)
+	if(signName.empty())
 	{
-		int MAX_ERRORS = 12;//TODO - Is this good?
-		string m;
-		for (int i = 0; i < MAX_ERRORS && i < out.errors.size(); i++)
+		msgs.push_back(validation_error_t("Taxi Sign is blank.", err_sign_error, airSign, apt));
+	}
+	else
+	{
+		//Create the necessary parts for a parsing operation
+		parser_in_info in(signName);
+		parser_out_info out;
+
+		ParserTaxiSign(in,out);
+		if(out.errors.size() > 0)
 		{
-			m += out.errors[i].msg;
-			m += '\n';
+			int MAX_ERRORS = 12;//TODO - Is this good?
+			string m;
+			for (int i = 0; i < MAX_ERRORS && i < out.errors.size(); i++)
+			{
+				m += out.errors[i].msg;
+				m += '\n';
+			}
+			msgs.push_back(validation_error_t(m, err_sign_error, airSign,apt));
 		}
-		msgs.push_back(validation_error_t(m, err_sign_error, airSign,apt));
 	}
 }
 

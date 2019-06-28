@@ -21,6 +21,7 @@ WED 2.1.0b2 ??/??/19
    - fix previews for .OBJ with upper case suffix filenames missing in beta1
    - fix facades with NO_WALL_MESH commands not treated as line-type facades
    - WED-1202: fix string preview not starting at right offset
+   - fix apt.dat reading taxi signs with blank name, validate to be not blank
 	Features:
 	- WED-1209: validate facades only choose walls that exist in facade resource
 
