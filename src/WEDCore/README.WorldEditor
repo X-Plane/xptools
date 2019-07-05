@@ -24,6 +24,7 @@ WED 2.1.0b2 ??/??/19
    - fix apt.dat reading taxi signs with blank name, validate to be not blank
 	Features:
 	- WED-1209: validate facades only choose walls that exist in facade resource
+	- increase number of facade walls supported to 40
 
 WED 2.1.0b1 6/3/19
 	Features:
