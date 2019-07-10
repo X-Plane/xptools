@@ -22,6 +22,7 @@ WED 2.1.0b2 ??/??/19
    - fix facades with NO_WALL_MESH commands not treated as line-type facades
    - WED-1202: fix string preview not starting at right offset
    - fix apt.dat reading taxi signs with blank name, validate to be not blank
+	- WED-1205: allow sealanes with or w/o W suffix to match sealanes in CIFP data
 	Features:
 	- WED-1209: validate facades only choose walls that exist in facade resource
 	- increase number of facade walls supported to 40

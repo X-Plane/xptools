@@ -78,6 +78,7 @@
 #include "FileUtils.h"
 #include "MemFileUtils.h"
 #include "PlatformUtils.h"
+#include "STLUtils.h"
 #include "MathUtils.h"
 
 #include "WED_Document.h"
@@ -2334,6 +2335,21 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		for(set<int>::iterator i = legal_rwy_oneway.begin(); i != legal_rwy_oneway.end(); ++i)
 		{
 			rwys_missing.erase(*i);    // remove those runways that can be found in the scenery for this airport
+		}
+		for(auto i : sealanes)
+		{
+			string name;	i->GetName(name);
+			vector<string> parts;  tokenize_string(name.begin(),name.end(),back_inserter(parts), '/');
+	
+			for(auto p : parts)
+			{
+				if(p.back() == 'W')	p.pop_back();                       // We want to allow sealanes with or without W suffix to satisfy CIFP validation
+				int e = ENUM_LookupDesc(ATCRunwayOneway,p.c_str());
+				if(legal_rwy_oneway.find(e) == legal_rwy_oneway.end())   // but only if that name does not collide with a paved runway at the same airport
+				{
+					rwys_missing.erase(e);
+				}
+			}
 		}
 		if (!rwys_missing.empty())
 		{
