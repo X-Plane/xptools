@@ -26,6 +26,7 @@ WED 2.1.0b2 ??/??/19
 	Features:
 	- WED-1209: validate facades only choose walls that exist in facade resource
 	- increase number of facade walls supported to 40
+	- warn if curved segments used in type1 facades
 
 WED 2.1.0b1 6/3/19
 	Features:

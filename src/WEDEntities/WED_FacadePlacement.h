@@ -52,6 +52,7 @@ public:
 			TopoMode	GetTopoMode(void) const;
 
 			int		GetNumWallChoices(void) const;
+			int		GetType(void) const;
 			bool		HasCustomWalls(void) const;
 			void		SetCustomWalls(bool has);
 

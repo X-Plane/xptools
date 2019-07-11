@@ -115,6 +115,17 @@ int		WED_FacadePlacement::GetNumWallChoices(void) const
 	return 0;
 }
 
+int		WED_FacadePlacement::GetType(void) const
+{
+	const fac_info_t * f = GetFacInfo();
+	if(f)
+	{
+		if(f->is_new) return 2;
+		else         return 1;
+	}
+	return 0;
+}
+
 
 bool		WED_FacadePlacement::HasLayer		(GISLayer_t layer							  ) const
 {
