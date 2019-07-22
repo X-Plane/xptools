@@ -13,7 +13,11 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 2.1.0b2 ??/??/19
+WED 2.1.0rc1 7/22/19
+   Bug Fixes:
+   - fix rotation lock acting on unrestricted/normals obj's
+
+WED 2.1.0b2 7/11/19
    Bug Fixes:
    - fix broken z-ordering for .agp previews in the Libary Preview Pane
    - fix crashes if facade file can not be found or is no valid facade
