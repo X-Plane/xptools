@@ -332,14 +332,20 @@ bool DSF2Text(char ** inDSF, int n, const char * inFileName)
 	while(n--)
 	{
 		fprintf(fi,"# file: %s\n\n",*inDSF);
-		int result = DSFReadFile(*inDSF, malloc, free, &cbs, NULL, &pf);
+		dsf_error result = DSFReadFile(*inDSF, malloc, free, &cbs, NULL, &pf);
 
 		fprintf(fi, "# Result code: %d\n", result);
 		if(result == dsf_ErrNoAtoms || result == dsf_ErrBadCookie || result == dsf_ErrBadVersion)
-			fprintf(stderr,"The DFS was not readable.  Perhaps you need to unzip it with 7-zip?\n");
-
-		printf("File %s had %d ter, %d obj, %d pol, %d net.\n", *inDSF,
-			count_ter, count_obj,count_pol,count_net);
+			fprintf(stderr,"ERROR: The DFS was not readable.  Perhaps you need to unzip it with 7-zip?\n");
+		else if(result == dsf_ErrCouldNotOpenFile)
+		{
+			fprintf(stderr,"ERROR: Could not open file: %s\n", *inDSF);
+		}
+		else
+		{
+			printf("File %s had %d ter, %d obj, %d pol, %d net.\n", *inDSF,
+				count_ter, count_obj,count_pol,count_net);
+		}
 
 		++inDSF;
 		

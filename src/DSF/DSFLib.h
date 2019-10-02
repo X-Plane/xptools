@@ -32,7 +32,7 @@
  *
  */
 
-enum {
+enum dsf_error : int {
 	dsf_ErrOK = 0,						/* Success																					*/
 	dsf_ErrCouldNotOpenFile,			/* The requested file could not be opened.													*/
 	dsf_ErrOutOfMemory,					/* There was not enough memory to read the file.											*/
@@ -212,9 +212,9 @@ struct	DSFCallbacks_t {
  */
 
 /* Returns true if successful, false if not. */
-int		DSFReadFile(const char * inPath, void * (* malloc_func)(size_t s), void (* free_func)(void * ptr), DSFCallbacks_t * inCallbacks, const int * inPasses, void * inRef);
-int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCallbacks, const int * inPasses, void * inRef);
-int		DSFCheckSignature(const char * inPath);
+dsf_error DSFReadFile(const char * inPath, void * (* malloc_func)(size_t s), void (* free_func)(void * ptr), DSFCallbacks_t * inCallbacks, const int * inPasses, void * inRef);
+dsf_error DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCallbacks, const int * inPasses, void * inRef);
+dsf_error DSFCheckSignature(const char * inPath);
 /************************************************************
  * DFS WRITING UTILS
  ************************************************************

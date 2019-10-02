@@ -111,7 +111,7 @@ double	R_DECODE_SCALED32(
 #define	DECODE_SCALED32_CURRENT(__index)					 			(currentPoolPtr32 +__index * currentDepth32)
 
 
-int		DSFReadFile(
+dsf_error DSFReadFile(
 			const char *		inPath,  
 			void * (*			malloc_func)(size_t s), 
 			void (*				free_func)(void * ptr), 
@@ -122,7 +122,7 @@ int		DSFReadFile(
 	FILE *			fi = NULL;
 	char *			mem = NULL;
 	unsigned int	file_size = 0;
-	bool			result = dsf_ErrOK;
+	dsf_error result = dsf_ErrOK;
 
 	fi = fopen(inPath, "rb");
 	if (!fi) { result = dsf_ErrCouldNotOpenFile; goto bail; }
@@ -145,13 +145,13 @@ bail:
 	return result;
 }
 
-int		DSFCheckSignature(const char * inPath)
+dsf_error DSFCheckSignature(const char * inPath)
 {
 	FILE *			fi = NULL;
 	char *			mem = NULL;
 	char * d, * s; 
 	unsigned int	file_size = 0;
-	int				result = dsf_ErrOK;
+	dsf_error result = dsf_ErrOK;
 
 	fi = fopen(inPath, "rb");
 	if (!fi) { result = dsf_ErrCouldNotOpenFile; goto bail; }
@@ -189,7 +189,7 @@ bail:
 	return result;
 }
 
-int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCallbacks, const int * inPasses, void * ref)
+dsf_error DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCallbacks, const int * inPasses, void * ref)
 {
 	/* MD5 checksum...*/
 	if(inPasses && (inPasses[0] & dsf_CmdSign))
