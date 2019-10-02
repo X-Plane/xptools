@@ -13,6 +13,10 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 2.x.x
+   Bug Fixes:
+   - WED-1225: Show apts with only declined submissions in gateway import dialog
+
 WED 2.1.0r1 7/22/19
    Bug Fixes:
    - fix rotation lock acting on unrestricted/normals obj's
