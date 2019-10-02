@@ -726,19 +726,24 @@ static void ValidateAirportFrequencies(WED_Airport* who, validation_error_vector
 
 			const int freq_type = ENUM_Import(ATCFrequency, freq_info.atc_type);
 			is_xplane_atc_related = freq_type == atc_Delivery || freq_type == atc_Ground || freq_type == atc_Tower;
-
+			
+			int ATC_min_frequency = 118000;   // start of VHF air band
+			if(freq_type == atc_AWOS)
+				ATC_min_frequency = 108000;       // AWOS can be broadcasted as part of VOR's
+				
 			if(freq_type == atc_Tower)
 				has_tower = true;
 			else if(is_xplane_atc_related)
 				has_atc.push_back(*freq);
 
-			if(freq_info.freq <= 136 || freq_info.freq >= 1000000)
+			if(freq_info.freq < ATC_min_frequency || freq_info.freq >= 1000000 || (freq_info.freq >= 137000 && freq_info.freq < 200000) )
 			{
-				msgs.push_back(validation_error_t(string("Frequency ") + freq_str + " not between 136 kHz and 1000 MHz.", err_freq_not_between_0_and_1000_mhz, *freq,who));
+				msgs.push_back(validation_error_t(string("Frequency ") + freq_str + " not in the range of " + to_string(ATC_min_frequency/1000) + 
+				                                         " .. 137 or 200 .. 1000 MHz.", err_freq_not_between_0_and_1000_mhz, *freq,who));
 				continue;
 			}
 
-			if(freq_info.freq < 118000 || freq_info.freq >= 137000)
+			if(freq_info.freq < ATC_min_frequency || freq_info.freq >= 137000)
 			{
 				found_one_oob = true;
 			}
