@@ -34,7 +34,9 @@
 // The first op UNDONE is redo.front()
 
 #define WARN_IF_LESS_LEVEL	10
-#define MAX_UNDO_LEVELS 20
+#define MAX_UNDO_LEVELS 200   // now that WED is 64 bits - there is a LOT of virtual memory to keep this stuff around ...
+                              // tested a large scenery (900 apts on US east coast, 1.2 Million items, 1 GB memory usage) and moved 
+										// the whole thing 10x - that is barely 200MB of undo buffer. No need to keep track of its size for now.
 
 WED_UndoMgr::WED_UndoMgr(WED_Archive * inArchive, WED_UndoFatalErrorHandler * panic_handler) : mCommand(NULL), mArchive(inArchive), mPanicHandler(panic_handler)
 {
