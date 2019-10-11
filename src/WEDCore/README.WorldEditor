@@ -13,12 +13,13 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 2.x.x
+WED 2.2.x
    Bug Fixes:
    - WED-1225: Show apts with only declined submissions in gateway import dialog
 	Features:
 	- tighten ATC freq. validation to VHF airband & 200+ MHz, allow AWOS on VOR's
 	- increase undo buffer from 20 to 200 operations
+	- WED-1232: Support OBJ_DELTA in .agp previews
 
 WED 2.1.0r1 7/22/19
    Bug Fixes:

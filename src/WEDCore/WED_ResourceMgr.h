@@ -124,7 +124,7 @@ struct	road_info_t {
 
 struct agp_t {
 	struct obj {
-		float		x,y,r;			// annotation position
+		float		x,y,z,r;			// annotation position
 		int		show_lo,show_hi;
 		string	name;
 	};

@@ -553,7 +553,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 					const XObj8 * oo;
 					if(mResMgr->GetObjRelative(o->name,mRes,oo))
 					{
-						draw_obj_at_xyz(mTexMgr, oo, o->x,0,-o->y,o->r, g);			
+						draw_obj_at_xyz(mTexMgr, oo, o->x, o->z, -o->y, o->r, g);
 					} 
 				}
 				glPopMatrix();

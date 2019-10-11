@@ -1350,6 +1350,18 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t& out_info)
 			out_info.objs.back().x = MFS_double(&s) * tex_s * tex_x;
 			out_info.objs.back().y = MFS_double(&s) * tex_t * tex_y;
 			out_info.objs.back().r = MFS_double(&s);
+			out_info.objs.back().z = 0.0;
+			out_info.objs.back().name = obj_paths[MFS_int(&s)];
+			out_info.objs.back().show_lo = MFS_int(&s);
+			out_info.objs.back().show_hi = MFS_int(&s);
+		}
+		else if(MFS_string_match(&s,"OBJ_DELTA",false))
+		{
+			out_info.objs.push_back(agp_t::obj());
+			out_info.objs.back().x = MFS_double(&s) * tex_s * tex_x;
+			out_info.objs.back().y = MFS_double(&s) * tex_t * tex_y;
+			out_info.objs.back().r = MFS_double(&s);
+			out_info.objs.back().z = MFS_double(&s);
 			out_info.objs.back().name = obj_paths[MFS_int(&s)];
 			out_info.objs.back().show_lo = MFS_int(&s);
 			out_info.objs.back().show_hi = MFS_int(&s);
