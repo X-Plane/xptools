@@ -1130,9 +1130,68 @@ static int MergeTylersAg(const vector<const char *>& args)
 	return 0;
 }
 
+static int MakeMinAltFiles(const vector<const char *>& args)
+{
+	DebugAssert(args.size() == 1);
+	const string parent_output_dir = args[0];
+	DebugAssert(parent_output_dir.back() == '/');
+
+	const DEMGeo & elevation_dem(gDem[dem_Elevation]);
+
+	const string out_file_path = stl_printf("%sEarth nav data/%+03d%+04d/%+03.0f%+04.0f.alt",
+											args[0],
+											latlon_bucket(elevation_dem.mSouth), latlon_bucket(elevation_dem.mWest),
+											elevation_dem.mSouth, elevation_dem.mWest);
+
+	constexpr const int ALT_POSTS = 2;
+	std::array<std::array<float, ALT_POSTS>, ALT_POSTS> alts;
+	for(int y = 0; y < ALT_POSTS; ++y)
+	for(int x = 0; x < ALT_POSTS; ++x)
+	{
+		alts[x][y] = -9.9e9f;
+	}
+
+	for(int y = 0; y < elevation_dem.mHeight; ++y)
+	for(int x = 0; x < elevation_dem.mWidth; ++x)
+	{
+		const int x_bucket = intround(interp(0, 0, elevation_dem.mWidth  - 1, ALT_POSTS - 1, x));
+		const int y_bucket = intround(interp(0, 0, elevation_dem.mHeight - 1, ALT_POSTS - 1, y));
+		const float p = elevation_dem.mData[x + y * elevation_dem.mHeight];
+		alts[x_bucket][y_bucket] = fltmax2(alts[x_bucket][y_bucket], p);
+	}
+
+	/*
+	for(int y = ALT_POSTS - 1; y >= 0; --y)
+	{
+		for(int x = 0; x < ALT_POSTS; ++x)
+		{
+			printf("% 10.0f ", alts[x][y]);
+		}
+		printf("\n");
+	}
+	*/
+
+	FILE * alt = fopen(out_file_path.c_str(), "wb");
+	DebugAssertWithExplanation(alt, "Failed to open file for writing");
+	if(!alt)
+		return 1;
+
+	fprintf(alt, "A\n1000\nALT\n\n");
+	for(int y = 0; y < ALT_POSTS; ++y)
+	for(int x = 0; x < ALT_POSTS; ++x)
+	{
+		double lon = interp(0, elevation_dem.mWest,  ALT_POSTS, elevation_dem.mEast,  (float)x + 0.5f);
+		double lat = interp(0, elevation_dem.mSouth, ALT_POSTS, elevation_dem.mNorth, (float)y + 0.5f);
+		fprintf(alt, "MAX_ALT %.8lf %.8lf %.0f\n", lon, lat, alts[x][y]);
+	}
+	fclose(alt);
+	return 0;
+}
+
 static constexpr GISTool_RegCmd_t s_mobile_cmds[] = {
 	{ "-autogenterrain",	0, 0, DoMobileAutogenTerrain,	"Mobile 'orthophoto'-based autogen.",	"" },
 	{ "-merge_ag_terrain",	0, 0, MergeTylersAg,			"Merge AG terrain into the map.",		"" },
+	{ "-export_alt_file",	1, 1, MakeMinAltFiles,			"Process DEMs into Mobile's minimum altitude (.alt) files.",		"" },
 	{ 0, 0, 0, 0, 0, 0 }
 };
 
