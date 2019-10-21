@@ -25,6 +25,7 @@
 #define ASSERTUTILS_H
 
 #if __clang__
+	#define INTENTIONAL_FALLTHROUGH [[clang::fallthrough]];
 	#define ATTR_DISABLE_UB_SAN __attribute__((no_sanitize("undefined")))
 #else
 	#define ATTR_DISABLE_UB_SAN

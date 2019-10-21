@@ -103,8 +103,8 @@ static double halfedge_length(const HalfEdge &he)
 
 static int choose_ortho_terrain_us(int land_use, double mean_urbanization)
 {
-	static const double min_urbanization_for_any_ortho = 0.001;
-	static const double min_urbanization_for_ortho_on_non_matching_land_use = 0.1;
+	constexpr double min_urbanization_for_any_ortho = 0.001;
+	constexpr double min_urbanization_for_ortho_on_non_matching_land_use = 0.1;
 	if(land_use != lu_globcover_WATER &&
 			mean_urbanization > min_urbanization_for_any_ortho)
 	{
@@ -119,37 +119,32 @@ static int choose_ortho_terrain_us(int land_use, double mean_urbanization)
 			case lu_globcover_URBAN_MEDIUM:
 			case lu_globcover_URBAN_SQUARE_LOW:
 			case lu_globcover_URBAN_SQUARE_MEDIUM:
+				return mean_urbanization < 2 ? terrain_PseudoOrthoTown : terrain_PseudoOrthoOuter;
 			case lu_globcover_URBAN_HIGH:
 			case lu_globcover_URBAN_SQUARE_HIGH:
-				if(mean_urbanization <= 0.35)
-				{
-					return terrain_PseudoOrthoOuter;
-				}
-				else if(mean_urbanization >= 0.55)
-				{
-					return terrain_PseudoOrthoInner;
-				}
-				else if(land_use == lu_globcover_URBAN_HIGH || land_use == lu_globcover_URBAN_SQUARE_HIGH)
-				{
-					return terrain_PseudoOrthoInner;
-				}
-				else
-				{
-					return terrain_PseudoOrthoOuter;
-				}
+				return mean_urbanization <= 0.35 ? terrain_PseudoOrthoOuter : terrain_PseudoOrthoInner;
 			case lu_globcover_INDUSTRY:
 			case lu_globcover_INDUSTRY_SQUARE:
 				return terrain_PseudoOrthoIndustrial;
+			// Tyler says: this would be kind of nice, but our tiling algorithm doesn't support the specific "park" sub-type of inner city
+			/*
+			case lu_globcover_WETLAND_BROADLEAVED_OPEN:
+			case lu_globcover_WETLAND_GRASSLAND:
+			case lu_globcover_WETLAND_SHRUB_CLOSED:
+				if(mean_urbanization > 0.55)
+					return terrain_PseudoOrthoInnerPark;
+				INTENTIONAL_FALLTHROUGH;
+			*/
 			default:
 				if(mean_urbanization < min_urbanization_for_ortho_on_non_matching_land_use)
 				{
 					return NO_VALUE;
 				}
-				else if(mean_urbanization <= 0.15)
+				else if(mean_urbanization <= 0.25)
 				{
 					return terrain_PseudoOrthoTown;
 				}
-				else if(mean_urbanization <= 0.4)
+				else if(mean_urbanization <= 0.65)
 				{
 					return terrain_PseudoOrthoOuter;
 				}
@@ -652,7 +647,7 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 								attempt_assign_special_ter_enum(terrain_PseudoOrthoOuterBuilding, special_ter_repeat_rules, grid_pt, ortho_terrain_assignments);
 								attempt_assign_special_ter_enum(terrain_PseudoOrthoTownLgBuilding, special_ter_repeat_rules, grid_pt, ortho_terrain_assignments);
 							}
-							else if(i->mFeatType == feat_GolfCourse)
+							else if(i->mFeatType == feat_GolfCourse || i->mFeatType == feat_Campground || i->mFeatType == feat_Cemetary)
 							{
 								attempt_assign_special_ter_enum(terrain_PseudoOrthoInnerPark, special_ter_repeat_rules, grid_pt, ortho_terrain_assignments);
 							}
@@ -1069,6 +1064,7 @@ static int MergeTylersAg(const vector<const char *>& args)
 	// Place OBJs
 	// This must come *after* the map merge to ensure we don't stick buildings in the water or in airport boundaries
 	//--------------------------------------------------------------------------------------------------------
+	// TODO: Extend out airport bounds 
 	int considered_objs = 0;
 	int placed = 0;
 	for(auto & f : gMap.face_handles())
