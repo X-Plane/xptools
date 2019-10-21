@@ -183,7 +183,8 @@ bool ortho_urbanization::operator!=(const ortho_urbanization &other) const
 	return !(*this == other);
 }
 
-#define AssertLegalOrtho(member) DebugAssert(member == NO_VALUE || member == terrain_PseudoOrthoInner || member == terrain_PseudoOrthoTown || member == terrain_PseudoOrthoOuter || member == terrain_PseudoOrthoIndustrial || member == terrain_PseudoOrthoEuro || member == terrain_PseudoOrthoEuroSortaIndustrial);
+static constexpr const array<int, 7> s_supported_ortho_assignments{{ NO_VALUE, terrain_PseudoOrthoInner, terrain_PseudoOrthoTown, terrain_PseudoOrthoOuter, terrain_PseudoOrthoIndustrial, terrain_PseudoOrthoEuro, terrain_PseudoOrthoEuroSortaIndustrial }};
+void AssertLegalOrtho(int ortho_enum) { DebugAssert(contains(s_supported_ortho_assignments, ortho_enum)); }
 
 ortho_urbanization::ortho_urbanization(int bl, int br, int tr, int tl) :
 		bottom_left(bl),
