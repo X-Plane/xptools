@@ -9,6 +9,8 @@
 #include "CompGeomDefs2.h"
 #include "MeshDefs.h"
 
+extern string g_autogen_lib_path; // Path to the user's Mobile_Autogen_Lib directory
+
 enum ag_terrain_style {
 	style_us,
 	style_europe,
@@ -96,7 +98,7 @@ tile_assignment get_analogous_ortho_terrain(int ter_enum, int tiling_seed_1, int
 
 
 // Maps library paths to objects' bounding boxes in meters
-map<string, Bbox2> read_mobile_obj_ground_bounds();
+unordered_map<string, pair<Bbox2, float>> read_mobile_obj_ground_bounds_and_heights();
 
 
 #endif // defined(MOBILEAUTOGENALGS_H)

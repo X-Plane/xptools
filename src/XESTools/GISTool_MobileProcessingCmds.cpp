@@ -47,7 +47,6 @@ using dsf_assignment = vector<vector<tile_assignment>>;
 static Pmwx s_autogen_grid;
 static constexpr int s_pseudorand[] = {918,422,359,512,181,657,814,87,418,288,944,295,56,755,709,56,211,394,408,936,959,752,143,866,664,511,434,562,81,899,22,758,803,145,578,648,874,841,60,738,275,507,899,941,263,156,346,722,889,124,988,458,318,447,189,532,557,209,98,946,909,629,375,246,812,563,489,744,890,334,95,808,249,967,608,803,428,258,962,747,864,875,645,58,518,124,794,868,125,896,203,501,801,557,353,65,646,759,347,413,50,608,442,289,183,34,104,196,458,430,375,992,308,515,120,203,888,626,652,411,495,64,960,991,588,398,815,107,813,948,410,186,444,748,724,195,373,165,474,989,934,580,221,953,542,338,990,819,754,454,360,308,888,634,326,30,599,399,970,3,405,415,712,40,204,779,554,379,145,318,229,540,633,945,215,161,351,457,32,304,210,874,664,0,302,24,492,818,605,760,574,490,282,761,360,992,120,802,449,312,130,573,599,696,12,946,785,82,129,471,438,924,879,224,122,97,420,260,497,581,360,589,7,390,547,985,359,604,408,802,847,388,653,466,148,708,160,924,655,274,508,595,469,964,73,580,490,533,700,0,17,473,842,383,709,735,728,713,931,57,5,555,484,226,216,787,66,753,880,211,434,262,855,389,60,26,889,257,903,65,514,825,868,376,191,617,396,331,681,545,771,469,154,566,36,674,84,771,890,487,15,259,709,103,861,309,359,172,778,336,373,532,365,996,40,28,242,539,854,67,415,178,525,767,243,360,73,175,231,989,26,48,88,41,58,979,496,524,827,889,310,58,629,441,813,606,618,344,537,485,108,885,412,472,572,452,832,829,748,147,798,174,756,293,466,890,170,158,196,107,702,976,451,868,213,429,316,672,808,826,421,444,681,868,525,848,217,261,753,836,589,703,927,523,806,284,518,266,370,168,233,718,985,775,326,484,376,507,76,41,678,233,427,927,505,176,601,259,613,386,784,768,271,902,651,474,265,733,80,286,820,32,715,234,237,653,381,288,922,515,195,329,234,602,725,851,174,117,873,112,650,856,411,883,8,869,490,559,222,513,802,930,884,75,707,513,982,471,764,487,638,805,605,447,765,464,371,143,279,643,764,475,240,767,36,823,763,507,713,739,571,891,355,275,741,689,705,403,688,797,438,181,567,593,98,258,723,288,31,291,585,27,169,753,536,290,284,731,331,463,437,725,530,369,401,485,445,748,449,379,693,104,208,1000,899,900,888,964,4,791,278,791,265,23,507,178,812,356,713,738,950,299,218,84,84,981,444,119,991,464,488,545,853,967,72,917,868,286,11,511,533,386,833,805,214,35,228,289,294,831,469,400,520,549,419,2,747,777,492,919,672,448,404,627,540,773,952,143,83,735,598,54,190,502,559,651,712,380,576,804,401,105,435,298,992,366,222,582,911,888,672,179,755,860,521,948,821,391,237,952,210,694,558,346,240,5,864,846,201,285,609,293,536,157,514,340,694,427,504,669,154,115,623,869,983,910,205,200,651,952,21,249,957,959,31,405,401,392,751,740,437,386,122,542,506,459,400,952,113,202,184,297,994,567,976,628,1,739,636,791,966,717,420,252,184,384,656,457,606,991,830,704,790,689,105,41,964,399,858,129,606,356,334,19,400,708,736,496,756,429,163,596,133,442,845,682,350,551,37,73,319,782,696,85,477,16,889,586,798,720,441,835,212,862,864,595,185,960,744,935,267,870,94,368,281,110,647,622,599,992,286,420,10,632,612,945,742,977,313,415,273,503,768,86,685,314,406,784,767,572,954,241,649,120,930,258,801,154,531,909,986,576,855,435,452,553,145,366,512,847,183,255,40,99,164,92,882,230,643,499,782,393,830,653,868,196,741,88,714,88,13,352,600,602,398,276,417,564,382,907,323,698,919,795,859,775,369,635,434,502,87,197,941,785,599,624,226,464,847,541,707,798,780,517,668,348,132,268,408,624,550,938,650,141,537,697,445,729,66,961,67,887,864,943,233,644,558,113,557,33,883,103,169,865,325,541,204,534,135,896,123,650,983,849,890,114,501,513,163,741,29,793,693,954,19,706,203,194,7,946,284,981,474,13,351,195,982,741,64,877,420,936,964,67,810,64,95,30,240,519,388,908,603,690,511,284,564,818,346,505,7,49,616,213,720,822,244,854,432,400,95,985,741,469,981,854,768,521,440,723,63,333,833,919,27,374,406,504,920,692,871,353,110,121,150,776,188,325,263,73,704,150,291,165,858,225,5,793,471,184,235,481,777,888,173,941,142,600,311,747};
 static const array<int, 3> s_terrain_types_to_not_touch = {terrain_Water, terrain_VisualWater, terrain_Airport};
-static const map<string, Bbox2> s_obj_bounds_mtrs = read_mobile_obj_ground_bounds();
 
 struct ag_terrain_dsf_description {
 	int dsf_lon; // the min longitude in the DSF
@@ -358,13 +357,13 @@ static string ter_lib_path_to_png_path(string lib_path)
 		DebugAssertWithExplanation(lib_path.find("temp_") == 0, "Failed to match prefix");
 
 		str_replace_all(lib_path, ".ter", ".png");
-		return "Global Scenery/Mobile_Autogen_Lib/US/Textures/orthogonal_land_textures/" + lib_path;
+		return g_autogen_lib_path + "US/Textures/orthogonal_land_textures/" + lib_path;
 	}
 	else if(lib_path.find("../autogen/Europe/") == 0)
 	{
 		str_replace_all(lib_path, "../autogen/Europe/", "");
 		str_replace_all(lib_path, ".ter", ".png");
-		return "Global Scenery/Mobile_Autogen_Lib/Europe/Textures/orthogonal_land_textures/" + lib_path;
+		return g_autogen_lib_path + "Europe/Textures/orthogonal_land_textures/" + lib_path;
 	}
 	else
 	{
@@ -373,52 +372,15 @@ static string ter_lib_path_to_png_path(string lib_path)
 	}
 }
 
-constexpr const char * mobile_ag_lib_path = "Global Scenery/Mobile_Autogen_Lib/";
 static string ter_lib_path_to_agp_disk_path(string lib_path)
 {
-	// HAAAAACK: Tyler has stuck a symlink in his rendering_code directory called "Global Scenery", wherein lies his Mobile_Autogen_Lib SVN checkout.
-	//           You'll need to do this as well.
 	str_replace_all(lib_path, "../autogen", "");
 	str_replace_all(lib_path, ".ter", ".agp");
-	return string(mobile_ag_lib_path) + lib_path;
+	return g_autogen_lib_path + lib_path;
 }
 
-// Scans both actual library.txt files and Mobile's AGPs for EXPORT lines
-// Turns exports in Mobile_Autogen_Lib into actual
-static void worlds_worst_library_export_scanner(const string & library_like_txt_path, unordered_map<string, string> & add_to_library)
+static unordered_map<int, agp_t> read_mobile_agps()
 {
-	// HAAAAACK: Tyler has stuck a symlink in his rendering_code directory called "Global Scenery", wherein lies his Mobile_Autogen_Lib SVN checkout.
-	//           You'll need to do this as well.
-	DebugAssert(library_like_txt_path.find(mobile_ag_lib_path) == 0); // This function is a horrifying hack that is only intended to work in Tyler's specific setup
-	const string parent_dir = FILE_get_dir_name(library_like_txt_path);
-
-	MFMemFile * lib = MemFile_Open(library_like_txt_path.c_str());
-	DebugAssert(lib);
-	MFScanner s;
-	MFS_init(&s, lib);
-
-	while(!MFS_done(&s))
-	{
-		if(MFS_string_match(&s,"EXPORT",false))
-		{
-			string lib_path;
-			string rel_path;
-			MFS_string(&s, &lib_path);
-			MFS_string_eol(&s, &rel_path);
-			add_to_library.insert(make_pair(lib_path, parent_dir + rel_path));
-		}
-		else
-		{
-			MFS_string_eol(&s,NULL);
-		}
-	}
-}
-
-static pair<unordered_map<int, agp_t>, unordered_map<string, string>> read_mobile_agps()
-{
-	unordered_map<string, string> library;
-	worlds_worst_library_export_scanner(string(mobile_ag_lib_path) + "library.txt", library);
-
 	unordered_map<int, agp_t> agps; // maps terrain enum to the AGP describing its building placements
 	for(int ter = terrain_PseudoOrthophoto; ter < terrain_PseudoOrthophotoEnd; ++ter)
 	{
@@ -433,7 +395,6 @@ static pair<unordered_map<int, agp_t>, unordered_map<string, string>> read_mobil
 			if(loaded)
 			{
 				agps.insert(make_pair(ter, agp));
-				worlds_worst_library_export_scanner(agp_disk_path, library);
 			}
 			else
 			{
@@ -442,7 +403,7 @@ static pair<unordered_map<int, agp_t>, unordered_map<string, string>> read_mobil
 			DebugAssert(loaded);
 		}
 	}
-	return make_pair(agps, library);
+	return agps;
 }
 
 static unordered_map<string, int> register_obj_tokens_for_agps(const unordered_map<int, agp_t> & agps)
@@ -457,28 +418,6 @@ static unordered_map<string, int> register_obj_tokens_for_agps(const unordered_m
 		obj_tokens.insert(make_pair(obj.name, token));
 	}
 	return obj_tokens;
-}
-
-static unordered_map<string, float> read_obj_heights_m(const unordered_map<int, agp_t> & agps, const unordered_map<string, string> & library)
-{
-	unordered_map<string, float> obj_heights; // maps agp_t::obj::name values to their height in meters
-	for(const auto & terrain_enum_and_agp : agps)
-	{
-		for(const agp_t::obj & obj : terrain_enum_and_agp.second.objs)
-		{
-			// TODO: Only read if this object matches our global US/Europe settings
-			const string & path_on_disk = library.at(obj.name);
-			XObj8 object;
-			const bool succeeded = XObj8Read(path_on_disk.c_str(), object);
-			DebugAssertWithExplanation(succeeded, path_on_disk.c_str());
-
-			float min_coords[3];
-			float max_coords[3];
-			GetObjDimensions8(object, min_coords, max_coords);
-			obj_heights.insert(make_pair(obj.name, max_coords[1] - min_coords[1]));
-		}
-	}
-	return obj_heights;
 }
 
 static vector<Polygon2> make_protected_runway_approach_paths()
@@ -991,20 +930,14 @@ static Point2 obj_placement_center_lon_lat(const agp_t::obj & obj, const agp_t &
 	return center;
 }
 
-static Polygon2 obj_placement(const agp_t::obj & obj, double obj_rotation_deg, const Point2 & placement_center_lon_lat)
+static Polygon2 obj_placement(const agp_t::obj & obj, double obj_rotation_deg, const Point2 & placement_center_lon_lat, const unordered_map<string, pair<Bbox2, float>> & obj_ground_bounds_and_heights_mtrs)
 {
-	auto obj_bounds = s_obj_bounds_mtrs.find(obj.name);
-	DebugAssert(obj_bounds != s_obj_bounds_mtrs.end());
-	if(obj_bounds != s_obj_bounds_mtrs.end())
-	{
-		const Bbox2 & obj_bounds_mtrs = obj_bounds->second;
-		const double lon_deg_per_mtr = m_to_degrees_longitude(placement_center_lon_lat.y());
-		const Bbox2 obj_bounds_lon_lat(placement_center_lon_lat.x() + latitude_degrees_per_meter * obj_bounds_mtrs.xmin(), placement_center_lon_lat.y() + lon_deg_per_mtr * obj_bounds_mtrs.ymin(),
-									   placement_center_lon_lat.x() + latitude_degrees_per_meter * obj_bounds_mtrs.xmax(), placement_center_lon_lat.y() + lon_deg_per_mtr * obj_bounds_mtrs.ymax());
-		const Polygon2 out = obj_bounds_lon_lat.rotated_by_degrees_cw(obj_rotation_deg, placement_center_lon_lat);
-		return out;
-	}
-	return {};
+	const Bbox2 & obj_bounds_mtrs = obj_ground_bounds_and_heights_mtrs.at(obj.name).first;
+	const double lon_deg_per_mtr = m_to_degrees_longitude(placement_center_lon_lat.y());
+	const Bbox2 obj_bounds_lon_lat(placement_center_lon_lat.x() + latitude_degrees_per_meter * obj_bounds_mtrs.xmin(), placement_center_lon_lat.y() + lon_deg_per_mtr * obj_bounds_mtrs.ymin(),
+								   placement_center_lon_lat.x() + latitude_degrees_per_meter * obj_bounds_mtrs.xmax(), placement_center_lon_lat.y() + lon_deg_per_mtr * obj_bounds_mtrs.ymax());
+	const Polygon2 out = obj_bounds_lon_lat.rotated_by_degrees_cw(obj_rotation_deg, placement_center_lon_lat);
+	return out;
 }
 
 static vector<Polygon2> get_holes(Pmwx::Face_handle &f)
@@ -1169,11 +1102,9 @@ static int MergeTylersAg(const vector<const char *>& args)
 	// Mobile doesn't support AGPs directly, so instead we treat the AGPs as a *spec* from which we
 	// read the relative locations of a bunch of OBJs; those OBJs then get baked directly into the DSF.
 	//--------------------------------------------------------------------------------------------------------
-	const pair<unordered_map<int, agp_t>, unordered_map<string, string>> agps_and_library_mappings = read_mobile_agps();
-	const unordered_map<int, agp_t> & agps = agps_and_library_mappings.first; // maps terrain enum to the AGP describing its building placements
-	const unordered_map<string, string> & library = agps_and_library_mappings.second; // maps terrain enum to the AGP describing its building placements
+	const unordered_map<int, agp_t> agps = read_mobile_agps();
 	const unordered_map<string, int> obj_tokens = register_obj_tokens_for_agps(agps); // maps agp_t::obj::name values to the global enums we register for them
-	const unordered_map<string, float> obj_heights_m = read_obj_heights_m(agps, library);
+	const unordered_map<string, pair<Bbox2, float>> obj_bounds_and_heights_mtrs = read_mobile_obj_ground_bounds_and_heights();
 	const vector<Polygon2> runway_approach_paths = make_protected_runway_approach_paths(); // the lat/lon bounds we should consider "protected" from tall buildings due to runway flight paths
 
 	//--------------------------------------------------------------------------------------------------------
@@ -1201,7 +1132,7 @@ static int MergeTylersAg(const vector<const char *>& args)
 				for(const agp_t::obj & obj : agp->second.objs)
 				{
 					auto is_too_tall_for_approach = [&](const agp_t::obj & obj) {
-						return obj_heights_m.at(obj.name) > 50; // TODO: We could be smarter about this by paying attention to the distance from the runway (e.g., with a 3 degree glideslope, the farther out you are, the taller the building could be)
+						return obj_bounds_and_heights_mtrs.at(obj.name).second > 50; // TODO: We could be smarter about this by paying attention to the distance from the runway (e.g., with a 3 degree glideslope, the farther out you are, the taller the building could be)
 					};
 
 					auto should_place_obj = [&](const Polygon2 & face, const vector<Polygon2> & holes, const agp_t::obj & obj, const Point2 & center, const double obj_rotation) {
@@ -1218,7 +1149,7 @@ static int MergeTylersAg(const vector<const char *>& args)
 						}
 						else if(face.contains(center)) // ensure the OBJ is completely within the bounds, and doesn't intersect any holes
 						{
-							const Polygon2 obj_loc = obj_placement(obj, obj_rotation, center);
+							const Polygon2 obj_loc = obj_placement(obj, obj_rotation, center, obj_bounds_and_heights_mtrs);
 							return face.contains(obj_loc) &&
 									none_of(holes.begin(), holes.end(), [&](const Polygon2 & hole) { return hole.bounds().overlap(obj_loc.bounds()); });
 						}
@@ -1309,7 +1240,18 @@ static int MakeMinAltFiles(const vector<const char *>& args)
 	return 0;
 }
 
+static int set_autogen_lib_dir(const vector<const char *>& args)
+{
+	g_autogen_lib_path = args[0];
+	if(g_autogen_lib_path.back() != '/')
+	{
+		g_autogen_lib_path += '/';
+	}
+	return 0;
+}
+
 static constexpr GISTool_RegCmd_t s_mobile_cmds[] = {
+	{ "-set_ag_lib",		1, 1, set_autogen_lib_dir,		"Point the autogen terrain generator to your Mobile_Autogen_Lib checkout.",	"" },
 	{ "-autogenterrain",	0, 0, DoMobileAutogenTerrain,	"Mobile 'orthophoto'-based autogen.",	"" },
 	{ "-merge_ag_terrain",	0, 0, MergeTylersAg,			"Merge AG terrain into the map.",		"" },
 	{ "-export_alt_file",	1, 1, MakeMinAltFiles,			"Process DEMs into Mobile's minimum altitude (.alt) files.",		"" },
