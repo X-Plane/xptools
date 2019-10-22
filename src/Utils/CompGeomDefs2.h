@@ -268,9 +268,10 @@ struct	Segment2 {
 	Point2	projection(const Point2& pt) const;
 	double	squared_distance_supporting_line(const Point2& p) const;		// Squared distance to our supporting line.
 	double	squared_distance(const Point2& p) const;
+	Vector2	unit_vector() const; // a.k.a. direction vector; a vector of length 1 in the direction of our line
 	
-	//Moves this segment by some vector to a new location, keeping the segments orientation
-	void	move_by_vector(const Vector2& v);
+	Segment2	translated_by(const Vector2 & v) const; // Moves this segment by some vector to a new location, keeping the segments orientation
+	Segment2	bidirectionally_expanded_by(double distance) const; // Extend the segment on both sides by the given distance
 
 	bool	collinear_has_on(const Point2& p) const;
 	bool	on_left_side(const Point2& p) const { return Vector2(p1, p2).left_turn(Vector2(p1, p)); }
@@ -811,10 +812,23 @@ inline double Segment2::squared_distance(const Point2& p) const
 	else					return min(p1.squared_distance(p), p2.squared_distance(p));
 }
 
-inline void	Segment2::move_by_vector(const Vector2& v)
+inline Vector2 Segment2::unit_vector() const
 {
-	this->p1 += v;
-	this->p2 += v;
+	const double length = sqrt(squared_length());
+	return {(p2.x() - p1.x()) / length,
+			(p2.y() - p1.y()) / length};
+}
+
+inline Segment2	Segment2::translated_by(const Vector2& v) const
+{
+	return {p1 + v, p2 + v};
+}
+
+inline Segment2 Segment2::bidirectionally_expanded_by(double distance) const
+{
+	const Vector2 translation_vec = unit_vector() * distance;
+	return {p1 - translation_vec,
+			p2 + translation_vec};
 }
 
 inline bool Segment2::could_intersect(const Segment2& rhs) const

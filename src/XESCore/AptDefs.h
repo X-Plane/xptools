@@ -551,7 +551,7 @@ struct AptTruckDestination_t {
 typedef vector<AptTruckDestination_t> AptTruckDestinationVector;
 
 struct AptInfo_t {
-	int					kind_code;				// Enum
+	int					kind_code;				// One of apt_airport, apt_seaport, or apt_heliport
 	string				icao;
 	string				name;
 	int					elevation_ft;

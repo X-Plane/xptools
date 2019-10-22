@@ -38,6 +38,9 @@
 #include "ObjTables.h"
 #include "MapTopology.h"
 #include "MobileAutogenAlgs.h"
+#include "XObjReadWrite.h"
+#include "ObjUtils.h"
+#include "MemFileUtils.h"
 
 using dsf_assignment = vector<vector<tile_assignment>>;
 
@@ -370,16 +373,53 @@ static string ter_lib_path_to_png_path(string lib_path)
 	}
 }
 
+constexpr const char * mobile_ag_lib_path = "Global Scenery/Mobile_Autogen_Lib/";
 static string ter_lib_path_to_agp_disk_path(string lib_path)
 {
+	// HAAAAACK: Tyler has stuck a symlink in his rendering_code directory called "Global Scenery", wherein lies his Mobile_Autogen_Lib SVN checkout.
+	//           You'll need to do this as well.
 	str_replace_all(lib_path, "../autogen", "");
 	str_replace_all(lib_path, ".ter", ".agp");
-	return "Global Scenery/Mobile_Autogen_Lib/" + lib_path;
+	return string(mobile_ag_lib_path) + lib_path;
 }
 
-static map<int, agp_t> read_mobile_agps()
+// Scans both actual library.txt files and Mobile's AGPs for EXPORT lines
+// Turns exports in Mobile_Autogen_Lib into actual
+static void worlds_worst_library_export_scanner(const string & library_like_txt_path, unordered_map<string, string> & add_to_library)
 {
-	map<int, agp_t> agps; // maps terrain enum to the AGP describing its building placements
+	// HAAAAACK: Tyler has stuck a symlink in his rendering_code directory called "Global Scenery", wherein lies his Mobile_Autogen_Lib SVN checkout.
+	//           You'll need to do this as well.
+	DebugAssert(library_like_txt_path.find(mobile_ag_lib_path) == 0); // This function is a horrifying hack that is only intended to work in Tyler's specific setup
+	const string parent_dir = FILE_get_dir_name(library_like_txt_path);
+
+	MFMemFile * lib = MemFile_Open(library_like_txt_path.c_str());
+	DebugAssert(lib);
+	MFScanner s;
+	MFS_init(&s, lib);
+
+	while(!MFS_done(&s))
+	{
+		if(MFS_string_match(&s,"EXPORT",false))
+		{
+			string lib_path;
+			string rel_path;
+			MFS_string(&s, &lib_path);
+			MFS_string_eol(&s, &rel_path);
+			add_to_library.insert(make_pair(lib_path, parent_dir + rel_path));
+		}
+		else
+		{
+			MFS_string_eol(&s,NULL);
+		}
+	}
+}
+
+static pair<unordered_map<int, agp_t>, unordered_map<string, string>> read_mobile_agps()
+{
+	unordered_map<string, string> library;
+	worlds_worst_library_export_scanner(string(mobile_ag_lib_path) + "library.txt", library);
+
+	unordered_map<int, agp_t> agps; // maps terrain enum to the AGP describing its building placements
 	for(int ter = terrain_PseudoOrthophoto; ter < terrain_PseudoOrthophotoEnd; ++ter)
 	{
 		const int rule_name = find_terrain_rule_name(ter);
@@ -393,6 +433,7 @@ static map<int, agp_t> read_mobile_agps()
 			if(loaded)
 			{
 				agps.insert(make_pair(ter, agp));
+				worlds_worst_library_export_scanner(agp_disk_path, library);
 			}
 			else
 			{
@@ -401,12 +442,12 @@ static map<int, agp_t> read_mobile_agps()
 			DebugAssert(loaded);
 		}
 	}
-	return agps;
+	return make_pair(agps, library);
 }
 
-static map<string, int> register_obj_tokens_for_agps(const map<int, agp_t> & agps)
+static unordered_map<string, int> register_obj_tokens_for_agps(const unordered_map<int, agp_t> & agps)
 {
-	map<string, int> obj_tokens; // maps agp_t::obj::name values to the global enums we register for them
+	unordered_map<string, int> obj_tokens; // maps agp_t::obj::name values to the global enums we register for them
 	for(const auto & terrain_enum_and_agp : agps)
 	for(const agp_t::obj & obj : terrain_enum_and_agp.second.objs)
 	{
@@ -416,6 +457,54 @@ static map<string, int> register_obj_tokens_for_agps(const map<int, agp_t> & agp
 		obj_tokens.insert(make_pair(obj.name, token));
 	}
 	return obj_tokens;
+}
+
+static unordered_map<string, float> read_obj_heights_m(const unordered_map<int, agp_t> & agps, const unordered_map<string, string> & library)
+{
+	unordered_map<string, float> obj_heights; // maps agp_t::obj::name values to their height in meters
+	for(const auto & terrain_enum_and_agp : agps)
+	{
+		for(const agp_t::obj & obj : terrain_enum_and_agp.second.objs)
+		{
+			// TODO: Only read if this object matches our global US/Europe settings
+			const string & path_on_disk = library.at(obj.name);
+			XObj8 object;
+			const bool succeeded = XObj8Read(path_on_disk.c_str(), object);
+			DebugAssertWithExplanation(succeeded, path_on_disk.c_str());
+
+			float min_coords[3];
+			float max_coords[3];
+			GetObjDimensions8(object, min_coords, max_coords);
+			obj_heights.insert(make_pair(obj.name, max_coords[1] - min_coords[1]));
+		}
+	}
+	return obj_heights;
+}
+
+static vector<Polygon2> make_protected_runway_approach_paths()
+{
+	vector<Polygon2> out_rwy_approach_paths;
+	for(const AptInfo_t & apt : gApts)
+	{
+		if(apt.kind_code == apt_airport || apt.kind_code == apt_seaport)
+		{
+			for(const AptRunway_t & rwy : apt.runways)
+			{
+				constexpr double distance_to_protect_nm = 3; // how far out from either end of the runway we will remove tall buildings
+				constexpr double runway_width_to_protect_nm = 0.2; // how far left/right of the runway centerline (extended out some number of miles) we'll protect
+
+				const Segment2 expanded = rwy.ends.bidirectionally_expanded_by(distance_to_protect_nm * NM_TO_DEG_LAT);
+				const Vector2 orthogonal_vec = rwy.ends.unit_vector().perpendicular_ccw();
+				const Vector2 translation_vec = orthogonal_vec * (runway_width_to_protect_nm * NM_TO_DEG_LAT);
+				const Segment2 side_1 = expanded.translated_by(translation_vec);
+				const Segment2 side_2 = expanded.translated_by(-translation_vec);
+				out_rwy_approach_paths.emplace_back(Polygon2{side_1.p2, side_1.p1, side_2.p1, side_2.p2});
+				DebugAssert(out_rwy_approach_paths.back().is_ccw());
+				DebugAssert(out_rwy_approach_paths.back().area() > 0);
+			}
+		}
+	}
+	return out_rwy_approach_paths;
 }
 
 static ortho_urbanization conform_terrain_to_expectations(const ortho_urbanization &non_matching_tile)
@@ -1057,8 +1146,12 @@ static int MergeTylersAg(const vector<const char *>& args)
 	// Mobile doesn't support AGPs directly, so instead we treat the AGPs as a *spec* from which we
 	// read the relative locations of a bunch of OBJs; those OBJs then get baked directly into the DSF.
 	//--------------------------------------------------------------------------------------------------------
-	const map<int, agp_t> agps = read_mobile_agps(); // maps terrain enum to the AGP describing its building placements
-	const map<string, int> obj_tokens = register_obj_tokens_for_agps(agps); // maps agp_t::obj::name values to the global enums we register for them
+	const pair<unordered_map<int, agp_t>, unordered_map<string, string>> agps_and_library_mappings = read_mobile_agps();
+	const unordered_map<int, agp_t> & agps = agps_and_library_mappings.first; // maps terrain enum to the AGP describing its building placements
+	const unordered_map<string, string> & library = agps_and_library_mappings.second; // maps terrain enum to the AGP describing its building placements
+	const unordered_map<string, int> obj_tokens = register_obj_tokens_for_agps(agps); // maps agp_t::obj::name values to the global enums we register for them
+	const unordered_map<string, float> obj_heights_m = read_obj_heights_m(agps, library);
+	const vector<Polygon2> runway_approach_paths = make_protected_runway_approach_paths(); // the lat/lon bounds we should consider "protected" from tall buildings due to runway flight paths
 
 	//--------------------------------------------------------------------------------------------------------
 	// Place OBJs
@@ -1078,15 +1171,24 @@ static int MergeTylersAg(const vector<const char *>& args)
 			DebugAssert(ben_face.area() > one_square_meter_in_degrees || !barf_on_tiny_map_faces());
 
 			// Place the associated OBJs based on this tile's AGP spec
-			map<int, agp_t>::const_iterator agp = agps.find(ter_enum);
+			auto agp = agps.find(ter_enum);
 			if(agp != agps.end())
 			{
 				const vector<Polygon2> holes = get_holes(f);
 				for(const agp_t::obj & obj : agp->second.objs)
 				{
+					auto is_too_tall_for_approach = [&](const agp_t::obj & obj) {
+						return obj_heights_m.at(obj.name) > 50; // TODO: We could be smarter about this by paying attention to the distance from the runway (e.g., with a 3 degree glideslope, the farther out you are, the taller the building could be)
+					};
 
 					auto should_place_obj = [&](const Polygon2 & face, const vector<Polygon2> & holes, const agp_t::obj & obj, const Point2 & center, const double obj_rotation) {
-						if(face.size() == 4 && holes.size() == 0 && // the OBJs *deliberately* leak out of the face bounds in Euro terrain... that's okay as long as there's no funny business going on with this tile
+						const bool building_is_on_approach_path = std::any_of(runway_approach_paths.begin(), runway_approach_paths.end(),
+																			  [&](const Polygon2 & protected_area) { return protected_area.contains(center); });
+						if(is_too_tall_for_approach(obj) && building_is_on_approach_path)
+						{
+							return false;
+						}
+						else if(face.size() == 4 && holes.size() == 0 && // the OBJs *deliberately* leak out of the face bounds in Euro terrain... that's okay as long as there's no funny business going on with this tile
 								flt_abs(face.area() - face.bounds().area()) < 10 * one_square_meter_in_degrees)
 						{
 							return true;
@@ -1107,9 +1209,9 @@ static int MergeTylersAg(const vector<const char *>& args)
 					if(should_place_obj(ben_face, holes, obj, center_lon_lat, final_rotation_deg))
 					{
 						GISObjPlacement_t placement;
-						map<string, int>::const_iterator it = obj_tokens.find(obj.name);
-						DebugAssert(it != obj_tokens.end());
-						placement.mRepType = it->second;
+						auto token_it = obj_tokens.find(obj.name);
+						DebugAssert(token_it != obj_tokens.end());
+						placement.mRepType = token_it->second;
 						DebugAssert(intrange(placement.mRepType, NUMBER_OF_DEFAULT_TOKENS + 1, gTokens.size() - 1));
 						placement.mLocation = center_lon_lat;
 						placement.mHeading = final_rotation_deg;
