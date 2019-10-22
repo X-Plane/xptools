@@ -705,6 +705,9 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 	//--------------------------------------------------------------------------------------------------------
 	// PASS 2
 	// Go through the existing map looking for point features which would correspond to our "special" orthophotos.
+	// Here we also
+	//   a) upgrade to inner city any tiles that have very tall buildings, and
+	//   b) downgrade *out* of inner city any tiles that do *not* have very tall buildings.
 	//--------------------------------------------------------------------------------------------------------
 	const map<int, special_ter_repeat_rule> special_ter_repeat_rules = get_special_ter_repeat_rules(s_dsf_desc.style); // Tyler says: for reasons unclear to me, we get UB deep within std::map::end() if this isn't const
 
@@ -729,16 +732,36 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 					if(s_dsf_desc.style == style_us && // Europe doesn't have the special types we assign below
 							assignment.ter_enum != NO_VALUE)
 					{
+						const auto tall_buildings = std::count_if(fd.mPointFeatures.begin(), fd.mPointFeatures.end(), [](const GISPointFeature_t & feat) {
+							const auto height = feat.mParams.find(pf_Height);
+							return height != feat.mParams.end() && height->second > 40; // meters
+						});
+
+						if(tall_buildings > 3) // consider this inner city
+						{
+							if(assignment.ter_enum != terrain_PseudoOrthoInner)
+							{
+								printf("Upgrading %s to inner city based on %lu tall buildings\n", FetchTokenString(assignment.ter_enum), tall_buildings);
+							}
+							const bool has_green_feature = std::any_of(fd.mPointFeatures.begin(), fd.mPointFeatures.end(), [](const GISPointFeature_t & feat) {
+								return feat.mFeatType == feat_GolfCourse || feat.mFeatType == feat_Campground || feat.mFeatType == feat_Cemetary;
+							});
+							assignment.ter_enum = has_green_feature ? terrain_PseudoOrthoInnerPark : terrain_PseudoOrthoInner1;
+						}
+						else if(intrange(assignment.ter_enum, terrain_PseudoOrthoInner, terrain_PseudoOrthoInnerStadium))
+						{
+							// This should actually *NOT* qualify as inner city... downgrade it to outer
+							assignment.ter_enum = terrain_PseudoOrthoOuter1;
+						}
+
+						// Now try to place special tiles
 						for(GISPointFeatureVector::const_iterator i = fd.mPointFeatures.begin(); i != fd.mPointFeatures.end(); ++i)
 						{
 							if(contains(large_building_features, i->mFeatType))
 							{
 								attempt_assign_special_ter_enum(terrain_PseudoOrthoOuterBuilding, special_ter_repeat_rules, grid_pt, ortho_terrain_assignments);
 								attempt_assign_special_ter_enum(terrain_PseudoOrthoTownLgBuilding, special_ter_repeat_rules, grid_pt, ortho_terrain_assignments);
-							}
-							else if(i->mFeatType == feat_GolfCourse || i->mFeatType == feat_Campground || i->mFeatType == feat_Cemetary)
-							{
-								attempt_assign_special_ter_enum(terrain_PseudoOrthoInnerPark, special_ter_repeat_rules, grid_pt, ortho_terrain_assignments);
+								break;
 							}
 						}
 					}
