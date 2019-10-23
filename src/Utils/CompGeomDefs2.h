@@ -29,6 +29,7 @@
 
 #include <float.h>
 #include <math.h>
+#include <array>
 #include <vector>
 #include <algorithm>
 
@@ -510,6 +511,8 @@ struct	Polygon2 : public vector<Point2> {
 	int			next(int index) const { return (index + 1) % size(); }
 
 	bool		is_ccw(void) const;
+
+	bool		is_square_within_tolerance(double squared_side_length_tolerance=1e-10) const; // you want *some* amount of tolerance here, since with double precision, the side lengths will almost certainly not be strictly equal
 
 	string		wolfram_alpha() const ATTR_USED;		// Representation of this polygon you can pass to WolframAlpha to print it
 };
@@ -1290,6 +1293,25 @@ inline bool Polygon2::is_ccw(void) const
 	if(at(p).y() == at(b).y())	return false;				// prev is same height? - top is flat, we are CW
 	
 	return Vector2(at(p),at(b)).left_turn(Vector2(at(b),at(n)));	// we are truly highest.  Check for left-turn.
+}
+
+struct equal_within_tolerance {
+	equal_within_tolerance(double tolerance) : m_tolerance(tolerance) { }
+	bool operator()(double a, double b) const { return abs(a - b) < m_tolerance; }
+
+private:
+	double m_tolerance;
+};
+
+inline bool Polygon2::is_square_within_tolerance(double squared_side_length_tolerance) const
+{
+	return this->size() == 4 &&
+		   std::adjacent_find(
+				   sides_begin(), sides_end(),
+				   [=](const Segment2 & side0,const Segment2 & side1) -> bool {
+						return abs(side0.squared_length() - side1.squared_length()) > squared_side_length_tolerance;
+					}
+			) == sides_end();
 }
 
 inline string Polygon2::wolfram_alpha() const

@@ -1128,21 +1128,21 @@ static int MergeTylersAg(const vector<const char *>& args)
 			if(agp != agps.end())
 			{
 				const vector<Polygon2> holes = get_holes(f);
+				const bool face_is_square_euro = s_dsf_desc.style == style_europe &&
+												 ben_face.is_square_within_tolerance(one_square_meter_in_degrees) &&
+												 holes.size() == 0;
 				for(const agp_t::obj & obj : agp->second.objs)
 				{
-					auto is_too_tall_for_approach = [&](const agp_t::obj & obj) {
-						return obj_bounds_and_heights_mtrs.at(obj.name).second > 50; // TODO: We could be smarter about this by paying attention to the distance from the runway (e.g., with a 3 degree glideslope, the farther out you are, the taller the building could be)
-					};
-
+					const bool is_too_tall_for_approach = obj_bounds_and_heights_mtrs.at(obj.name).second > 50; // TODO: We could be smarter about this by paying attention to the distance from the runway (e.g., with a 3 degree glideslope, the farther out you are, the taller the building could be)
 					auto should_place_obj = [&](const Polygon2 & face, const vector<Polygon2> & holes, const agp_t::obj & obj, const Point2 & center, const double obj_rotation) {
 						const bool building_is_on_approach_path = std::any_of(runway_approach_paths.begin(), runway_approach_paths.end(),
 																			  [&](const Polygon2 & protected_area) { return protected_area.contains(center); });
-						if(is_too_tall_for_approach(obj) && building_is_on_approach_path)
+						if(is_too_tall_for_approach && building_is_on_approach_path)
 						{
 							return false;
 						}
-						else if(face.size() == 4 && holes.size() == 0 && // the OBJs *deliberately* leak out of the face bounds in Euro terrain... that's okay as long as there's no funny business going on with this tile
-								flt_abs(face.area() - face.bounds().area()) < 10 * one_square_meter_in_degrees)
+						// The OBJs *deliberately* leak out of the face bounds in Euro terrain... that's okay as long as there's no funny business going on with this tile
+						else if(face_is_square_euro)
 						{
 							return true;
 						}
