@@ -1247,7 +1247,13 @@ static int set_autogen_lib_dir(const vector<const char *>& args)
 	{
 		g_autogen_lib_path += '/';
 	}
-	return 0;
+	
+	const bool exists = FILE_exists(g_autogen_lib_path.c_str());
+	if(!exists)
+	{
+		fprintf(stderr, "ERROR: Mobile_Autogen_Lib directory \"%s\" does not exist\n", g_autogen_lib_path.c_str());
+	}
+	return !exists;
 }
 
 static constexpr GISTool_RegCmd_t s_mobile_cmds[] = {

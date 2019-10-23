@@ -620,7 +620,7 @@ static	GISTool_RegCmd_t		sProcessCmds[] = {
 void rf_assert_handler(const char * condition, const char * file, int line)
 {
 	const DEMGeo & climate_style(gDem[dem_ClimStyle]);
-	fprintf(stderr, "ERROR: Assertion failed for DSF %+02.0f%+03.0f: %s (%s:%d)\n", climate_style.mSouth, climate_style.mWest, condition, file, line);
+	fprintf(stderr, "ERROR: Assertion failed for DSF %+03.0f%+04.0f: %s (%s:%d)\n", climate_style.mSouth, climate_style.mWest, condition, file, line);
 	throw std::exception();
 }
 
