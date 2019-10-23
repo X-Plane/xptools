@@ -1104,14 +1104,13 @@ static int MergeTylersAg(const vector<const char *>& args)
 	//--------------------------------------------------------------------------------------------------------
 	const unordered_map<int, agp_t> agps = read_mobile_agps();
 	const unordered_map<string, int> obj_tokens = register_obj_tokens_for_agps(agps); // maps agp_t::obj::name values to the global enums we register for them
-	const unordered_map<string, pair<Bbox2, float>> obj_bounds_and_heights_mtrs = read_mobile_obj_ground_bounds_and_heights();
+	const unordered_map<string, pair<Bbox2, float>> obj_bounds_and_heights_mtrs = read_mobile_obj_ground_bounds_and_heights(s_dsf_desc.style);
 	const vector<Polygon2> runway_approach_paths = make_protected_runway_approach_paths(); // the lat/lon bounds we should consider "protected" from tall buildings due to runway flight paths
 
 	//--------------------------------------------------------------------------------------------------------
 	// Place OBJs
 	// This must come *after* the map merge to ensure we don't stick buildings in the water or in airport boundaries
 	//--------------------------------------------------------------------------------------------------------
-	// TODO: Extend out airport bounds 
 	int considered_objs = 0;
 	int placed = 0;
 	for(auto & f : gMap.face_handles())

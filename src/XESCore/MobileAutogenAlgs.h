@@ -98,7 +98,7 @@ tile_assignment get_analogous_ortho_terrain(int ter_enum, int tiling_seed_1, int
 
 
 // Maps library paths to objects' bounding boxes in meters
-unordered_map<string, pair<Bbox2, float>> read_mobile_obj_ground_bounds_and_heights();
+unordered_map<string, pair<Bbox2, float>> read_mobile_obj_ground_bounds_and_heights(ag_terrain_style regional_variant);
 
 
 #endif // defined(MOBILEAUTOGENALGS_H)

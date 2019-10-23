@@ -772,35 +772,38 @@ static constexpr array<mobile_ag_library_item, 375> s_mobile_ag_library = {{
 		{"lib/mobile/autogen/US/CitySqIn_UR_Halfe.obj", "US/objects/CitySqIn_UR_Halfe.obj"},
 }};
 
-// TODO: Make this only read the regional variation we're using for this DSF (euro or US)
-unordered_map<string, pair<Bbox2, float>> read_mobile_obj_ground_bounds_and_heights()
+unordered_map<string, pair<Bbox2, float>> read_mobile_obj_ground_bounds_and_heights(ag_terrain_style regional_variant)
 {
 	unordered_map<string, pair<Bbox2, float>> out;
     for(const mobile_ag_library_item & ag_item : s_mobile_ag_library)
 	{
-		XObj8 obj;
-		const string disk_path = g_autogen_lib_path + ag_item.disk_path;
-		if(!XObj8Read(disk_path.c_str(), obj))
+    	const ag_terrain_style ag_item_style = !strcmp(ag_item.disk_path, "US/") ? style_us : style_europe;
+    	if(regional_variant == ag_item_style)
 		{
-			XObj obj7;
-			if(XObjRead(disk_path.c_str(), obj7))
+			XObj8 obj;
+			const string disk_path = g_autogen_lib_path + ag_item.disk_path;
+			if(!XObj8Read(disk_path.c_str(), obj))
 			{
-				Obj7ToObj8(obj7, obj);
+				XObj obj7;
+				if(XObjRead(disk_path.c_str(), obj7))
+				{
+					Obj7ToObj8(obj7, obj);
+				}
+				else
+				{
+					fprintf(stderr, "Failed to find required Mobile object %s\n", ag_item.disk_path);
+					throw "Failed to read required Mobile object";
+				}
 			}
-			else
-			{
-                fprintf(stderr, "Failed to find required Mobile object %s\n", ag_item.disk_path);
-				throw "Failed to read required Mobile object";
-			}
-		}
 
-		array<float, 3> min_coords;
-		array<float, 3> max_coords;
-		GetObjDimensions8(obj, min_coords.data(), max_coords.data());
-		const Bbox2 ground_bounds = Bbox2(min_coords[0], min_coords[2], max_coords[0], max_coords[2]);
-		const float height = max_coords[1] - min_coords[1];
-		out.emplace(string(ag_item.lib_path),
-					make_pair(ground_bounds, height));
+			array<float, 3> min_coords;
+			array<float, 3> max_coords;
+			GetObjDimensions8(obj, min_coords.data(), max_coords.data());
+			const Bbox2 ground_bounds = Bbox2(min_coords[0], min_coords[2], max_coords[0], max_coords[2]);
+			const float height = max_coords[1] - min_coords[1];
+			out.emplace(string(ag_item.lib_path),
+						make_pair(ground_bounds, height));
+		}
 	}
 	return out;
 }
