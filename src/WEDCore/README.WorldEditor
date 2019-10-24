@@ -16,6 +16,7 @@ CHANGE HISTORY
 WED 2.2.x
    Bug Fixes:
    - WED-1225: Show apts with only declined submissions in gateway import dialog
+	- WED-1235: Ignore instances with OOB indices in .agp definitions
 	Features:
 	- tighten ATC freq. validation to VHF airband & 200+ MHz, allow AWOS on VOR's
 	- increase undo buffer from 20 to 200 operations
