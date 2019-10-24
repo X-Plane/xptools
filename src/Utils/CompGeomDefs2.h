@@ -1258,7 +1258,8 @@ inline bool		Polygon2::inside(const Point2& inPoint) const
 
 inline bool		Polygon2::contains(const Polygon2 & points) const
 {
-	return all_of(points.begin(), points.end(), [this](const Point2 & pt) { return inside(pt); });
+	return all_of(points.begin(), points.end(), [this](const Point2 & pt) {return inside(pt);}) &&
+		   none_of(points.sides_begin(), points.sides_end(), [this](const Segment2 & side) {return intersects(side);});
 }
 
 inline bool		Polygon2::intersects(const Segment2& inSegment) const
