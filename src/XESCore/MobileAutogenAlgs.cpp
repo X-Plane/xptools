@@ -4,6 +4,7 @@
 #include "XObjReadWrite.h"
 #include "ObjConvert.h"
 #include "ObjUtils.h"
+#include "STLUtils.h"
 
 string g_autogen_lib_path = "<Mobile_Autogen_Lib path is not set!>";
 
@@ -350,6 +351,8 @@ tile_assignment get_analogous_ortho_terrain(int ter_enum, int x, int y, const ma
 	if(ter_enum == NO_VALUE)
 		return tile_assignment(ter_enum, 0);
 
+	constexpr array<int, 4> unrotatable{{terrain_PseudoOrthoIndustrial1, terrain_PseudoOrthoEuroSortaIndustrial, terrain_PseudoOrthoEuroSemiInd, terrain_PseudoOrthoEuroIndustrial}};
+	const bool is_rotatable = !contains(unrotatable, ter_enum);
 	const bool needs_tiling =
 			ter_enum == terrain_PseudoOrthoInner1 || ter_enum == terrain_PseudoOrthoTown1 ||
 			ter_enum == terrain_PseudoOrthoOuter1 || ter_enum == terrain_PseudoOrthoIndustrial1 ||
@@ -359,10 +362,10 @@ tile_assignment get_analogous_ortho_terrain(int ter_enum, int x, int y, const ma
 		// The variant gives us the perfect checkerboard tiling of the two "normal" variants of each ortho
 		const int new_ter = ter_enum + (x + y) % 2;
 		// Industrial has big shadows... don't rotate it or we make it look even worse!
-		const int rot = ter_enum == terrain_PseudoOrthoIndustrial1 || ter_enum == terrain_PseudoOrthoEuroSemiInd ? 0 : 90 * ((x + x * y) % 4);
+		const int rot = is_rotatable ? 90 * ((x + x * y) % 4) : 0;
 		return tile_assignment(new_ter, rot);
 	}
-	else
+	else if(is_rotatable)
 	{
 		map<int, ortho_urbanization>::const_iterator to_be_matched = terrain_desc_by_enum.find(ter_enum);
 		if(to_be_matched != terrain_desc_by_enum.end())
