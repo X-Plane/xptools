@@ -1150,6 +1150,7 @@ static int MergeTylersAg(const vector<const char *>& args)
 				const bool face_is_square_euro = s_dsf_desc.style == style_europe &&
 												 ben_face.is_square_within_tolerance(one_square_meter_in_degrees) &&
 												 holes.size() == 0;
+				const float max_elevation_delta_meters_to_consider_flatish = s_dsf_desc.style == style_europe ? 4 : 10; // TODO: Once we get European OBJs broken up from blocks into individual buildings, we can give them 10 m deltas too
 				for(const agp_t::obj & obj : agp->second.objs)
 				{
 					DebugAssert(obj_bounds_and_heights_mtrs.count(obj.name));
@@ -1158,7 +1159,6 @@ static int MergeTylersAg(const vector<const char *>& args)
 						const Polygon2 obj_loc = obj_placement(obj, obj_rotation, center, obj_bounds_and_heights_mtrs);
 						const bool building_is_on_approach_path = std::any_of(runway_approach_paths.begin(), runway_approach_paths.end(),
 																			  [&](const Polygon2 & protected_area) { return protected_area.contains(center); });
-						constexpr float max_elevation_delta_meters_to_consider_flatish = 4;
 						if(is_too_tall_for_approach && building_is_on_approach_path)
 						{
 							return false;
