@@ -780,7 +780,7 @@ unordered_map<string, pair<Bbox2, float>> read_mobile_obj_ground_bounds_and_heig
 	unordered_map<string, pair<Bbox2, float>> out;
     for(const mobile_ag_library_item & ag_item : s_mobile_ag_library)
 	{
-    	const ag_terrain_style ag_item_style = !strcmp(ag_item.disk_path, "US/") ? style_us : style_europe;
+    	const ag_terrain_style ag_item_style = !strncmp(ag_item.disk_path, "US/", 3) ? style_us : style_europe;
     	if(regional_variant == ag_item_style)
 		{
 			XObj8 obj;
