@@ -1039,6 +1039,25 @@ static int simplify_tiny_faces_into_their_neighbors(Pmwx &map)
 	return tiny_faces;
 }
 
+static float compute_ground_slope_mtrs(const Polygon2 & building_footprint, const DEMGeo & elevation_dem)
+{
+	const auto elevation_at_point = [&](const Point2 & p) {
+		return elevation_dem.value_linear(p.x(), p.y());
+	};
+
+	vector<float> elevations;
+	elevations.reserve(building_footprint.size() + 6); // +4 for bounding box corners, +1 more for bounding box center, +1 for building centroid
+	std::transform(building_footprint.begin(), building_footprint.end(), std::back_inserter(elevations), elevation_at_point);
+	const Bbox2 bounding_box = building_footprint.bounds();
+	for(const Point2 & p : {building_footprint.centroid(), bounding_box.centroid(), bounding_box.bottom_left(), bounding_box.bottom_right(), bounding_box.top_left(), bounding_box.top_right()})
+	{
+		elevations.emplace_back(elevation_at_point(p));
+	}
+
+	const auto min_and_max_el = minmax_element(elevations.begin(), elevations.end());
+	return *min_and_max_el.second - *min_and_max_el.first;
+}
+
 static int MergeTylersAg(const vector<const char *>& args)
 {
 #if DEV
@@ -1133,11 +1152,18 @@ static int MergeTylersAg(const vector<const char *>& args)
 												 holes.size() == 0;
 				for(const agp_t::obj & obj : agp->second.objs)
 				{
+					DebugAssert(obj_bounds_and_heights_mtrs.count(obj.name));
 					const bool is_too_tall_for_approach = obj_bounds_and_heights_mtrs.at(obj.name).second > 50; // TODO: We could be smarter about this by paying attention to the distance from the runway (e.g., with a 3 degree glideslope, the farther out you are, the taller the building could be)
 					auto should_place_obj = [&](const Polygon2 & face, const vector<Polygon2> & holes, const agp_t::obj & obj, const Point2 & center, const double obj_rotation) {
+						const Polygon2 obj_loc = obj_placement(obj, obj_rotation, center, obj_bounds_and_heights_mtrs);
 						const bool building_is_on_approach_path = std::any_of(runway_approach_paths.begin(), runway_approach_paths.end(),
 																			  [&](const Polygon2 & protected_area) { return protected_area.contains(center); });
+						constexpr float max_elevation_delta_meters_to_consider_flatish = 4;
 						if(is_too_tall_for_approach && building_is_on_approach_path)
+						{
+							return false;
+						}
+						else if(compute_ground_slope_mtrs(obj_loc, gDem[dem_Elevation]) > max_elevation_delta_meters_to_consider_flatish)
 						{
 							return false;
 						}
@@ -1148,7 +1174,6 @@ static int MergeTylersAg(const vector<const char *>& args)
 						}
 						else if(face.contains(center)) // ensure the OBJ is completely within the bounds, and doesn't intersect any holes
 						{
-							const Polygon2 obj_loc = obj_placement(obj, obj_rotation, center, obj_bounds_and_heights_mtrs);
 							return face.contains(obj_loc) &&
 									none_of(holes.begin(), holes.end(), [&](const Polygon2 & hole) { return hole.bounds().overlap(obj_loc.bounds()); });
 						}

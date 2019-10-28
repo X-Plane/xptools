@@ -426,6 +426,8 @@ struct	Bbox2 {
 
 	void		expand(double v) { p1.x_ -= v; p1.y_ -= v; p2.x_ += v; p2.y_ += v; }
 	void		expand(double vx, double vy) { p1.x_ -= vx; p1.y_ -= vy; p2.x_ += vx; p2.y_ += vy; }
+	Bbox2		expanded(double v) const { return Bbox2(p1 - Vector2(v, v), p1 + Vector2(v, v)); }
+	Bbox2		expanded(double vx, double vy) const { return Bbox2(p1 - Vector2(vx, vy), p1 + Vector2(vx, vy)); }
 
 	Bbox2		translate(const Vector2 & v) const { return Bbox2(p1 + v, p2 + v); }
 	Polygon2	rotated_by_degrees_cw(double clockwise_degrees, const Point2 & around_pt={0, 0}) const;
