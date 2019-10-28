@@ -430,7 +430,7 @@ static vector<Polygon2> make_protected_runway_approach_paths()
 			for(const AptRunway_t & rwy : apt.runways)
 			{
 				constexpr double distance_to_protect_nm = 3; // how far out from either end of the runway we will remove tall buildings
-				constexpr double runway_width_to_protect_nm = 0.2; // how far left/right of the runway centerline (extended out some number of miles) we'll protect
+				constexpr double runway_width_to_protect_nm = 0.25; // how far left/right of the runway centerline (extended out some number of miles) we'll protect
 
 				const Segment2 expanded = rwy.ends.bidirectionally_expanded_by(distance_to_protect_nm * NM_TO_DEG_LAT);
 				const Vector2 orthogonal_vec = rwy.ends.unit_vector().perpendicular_ccw();
