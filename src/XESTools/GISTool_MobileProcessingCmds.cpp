@@ -116,12 +116,12 @@ static int choose_ortho_terrain_us(int land_use, double mean_urbanization)
 			case lu_globcover_URBAN_SQUARE_CROP_TOWN:
 			case lu_globcover_URBAN_SQUARE_TOWN:
 			case lu_globcover_URBAN_TOWN:
-				return terrain_PseudoOrthoTown;
+				return mean_urbanization < 0.5 ? terrain_PseudoOrthoTown : terrain_PseudoOrthoOuter;
 			case lu_globcover_URBAN_LOW:
 			case lu_globcover_URBAN_MEDIUM:
 			case lu_globcover_URBAN_SQUARE_LOW:
 			case lu_globcover_URBAN_SQUARE_MEDIUM:
-				return mean_urbanization < 2 ? terrain_PseudoOrthoTown : terrain_PseudoOrthoOuter;
+				return mean_urbanization < 0.2 ? terrain_PseudoOrthoTown : terrain_PseudoOrthoOuter;
 			case lu_globcover_URBAN_HIGH:
 			case lu_globcover_URBAN_SQUARE_HIGH:
 				return mean_urbanization <= 0.35 ? terrain_PseudoOrthoOuter : terrain_PseudoOrthoInner;
