@@ -609,7 +609,7 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 		const Polygon2 corners_ccw_from_lower_left{ bounds.bottom_left(), bounds.top_left(), bounds.top_right(), bounds.bottom_right() };
 
 		array<int, 4> corners;
-		std::transform(corners_ccw_from_lower_left.begin(), corners_ccw_from_lower_left.end(), corners.begin(), [](const Point2 & pt) {
+		std::transform(corners_ccw_from_lower_left.begin(), corners_ccw_from_lower_left.end(), corners.begin(), [&](const Point2 & pt) {
 			const int land_use = intround(land_use_dem.xy_nearest_raw(pt.x(), pt.y()));
 			const float urbanization = urbanization_dem.value_linear(pt.x(), pt.y());
 			return choose_ortho_terrain(land_use, urbanization, s_dsf_desc.style);
