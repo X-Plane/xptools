@@ -3063,7 +3063,7 @@ static int DoInitWithRegion(const vector<const char *>& args)
 	else
 		gRegion = rf_usa;
 	
-	XESInit(gRegion, gMobile);
+	XESInit(gRegion, !gMobile);
 	SetMeshMode(gMobile ? mesh_mobile : mesh_desktop);
 	return 0;
 }
