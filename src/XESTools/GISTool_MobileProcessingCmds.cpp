@@ -650,61 +650,65 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 	//--------------------------------------------------------------------------------------------------------
 	const map<int, special_ter_repeat_rule> special_ter_repeat_rules = get_special_ter_repeat_rules(s_dsf_desc.style); // Tyler says: for reasons unclear to me, we get UB deep within std::map::end() if this isn't const
 
-	vector<int> large_building_features;
-	large_building_features.push_back(feat_CommercialOffice);
-	large_building_features.push_back(feat_CommercialShoppingPlaza);
-	large_building_features.push_back(feat_Government);
-	for(Pmwx::Face_handle f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
+	if(s_dsf_desc.style == style_us) // Europe doesn't have the special types we assign below
+	for(int x = 0; x < s_dsf_desc.divisions_lon; ++x)
+	for(int y = 0; y < s_dsf_desc.divisions_lat; ++y)
 	{
-		if(!f->is_unbounded())
+		const grid_coord_desc grid_pt = {x, y, dx, dy, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat};
+		const Bbox2 grid_square_bounds = grid_pt.bounds();
+
+		vector<GISPointFeature_t> point_features_in_grid_square;
+		for(Pmwx::Face_const_iterator f : gMap.face_handles())
 		{
-			const GIS_face_data &fd = f->data();
-			Polygon2 ben_poly = cgal2ben(f, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat);
-			if(ben_poly.area() > 0) // <= 0 is possible when the face extends beyond the DSF boundary, or when its points are "real" close together
+			if(!f->is_unbounded())
 			{
-				const Point2 centroid = ben_poly.centroid();
-				DebugAssert(s_dsf_desc.dsf_lon == floor(centroid.x()) || centroid.x() == s_dsf_desc.dsf_lon + 1);
-				DebugAssert(s_dsf_desc.dsf_lat == floor(centroid.y()) || centroid.y() == s_dsf_desc.dsf_lat + 1);
+				const Polygon2 ben_poly = cgal2ben(f, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat);
+				if(ben_poly.area() > 0 && // <= 0 is possible when the face extends beyond the DSF boundary, or when its points are "real" close together
+					   grid_square_bounds.overlap(ben_poly.bounds()))
 				{
-					const grid_coord_desc grid_pt = get_ortho_grid_xy(centroid, s_dsf_desc.style);
-					tile_assignment &assignment = ortho_terrain_assignments[grid_pt.x][grid_pt.y];
-					if(s_dsf_desc.style == style_us && // Europe doesn't have the special types we assign below
-							assignment.ter_enum != NO_VALUE)
-					{
-						const auto tall_buildings = std::count_if(fd.mPointFeatures.begin(), fd.mPointFeatures.end(), [](const GISPointFeature_t & feat) {
-							const auto height = feat.mParams.find(pf_Height);
-							return height != feat.mParams.end() && height->second > 40; // meters
-						});
-
-						if(tall_buildings > 3) // consider this inner city
-						{
-							if(assignment.ter_enum != terrain_PseudoOrthoInner)
-							{
-								printf("Upgrading %s to inner city based on %lu tall buildings\n", FetchTokenString(assignment.ter_enum), tall_buildings);
-							}
-							const bool has_green_feature = std::any_of(fd.mPointFeatures.begin(), fd.mPointFeatures.end(), [](const GISPointFeature_t & feat) {
-								return feat.mFeatType == feat_GolfCourse || feat.mFeatType == feat_Campground || feat.mFeatType == feat_Cemetary;
-							});
-							assignment.ter_enum = has_green_feature ? terrain_PseudoOrthoInnerPark : terrain_PseudoOrthoInner1;
-						}
-						else if(intrange(assignment.ter_enum, terrain_PseudoOrthoInner, terrain_PseudoOrthoInnerStadium))
-						{
-							// This should actually *NOT* qualify as inner city... downgrade it to outer
-							assignment.ter_enum = terrain_PseudoOrthoOuter1;
-						}
-
-						// Now try to place special tiles
-						for(GISPointFeatureVector::const_iterator i = fd.mPointFeatures.begin(); i != fd.mPointFeatures.end(); ++i)
-						{
-							if(contains(large_building_features, i->mFeatType))
-							{
-								attempt_assign_special_ter_enum(terrain_PseudoOrthoOuterBuilding, special_ter_repeat_rules, grid_pt, ortho_terrain_assignments);
-								attempt_assign_special_ter_enum(terrain_PseudoOrthoTownLgBuilding, special_ter_repeat_rules, grid_pt, ortho_terrain_assignments);
-								break;
-							}
-						}
-					}
+					const GIS_face_data & fd = f->data();
+					std::copy_if(fd.mPointFeatures.begin(), fd.mPointFeatures.end(), std::back_inserter(point_features_in_grid_square),
+								 [&](const GISPointFeature_t & pt_feat) {
+									 return grid_square_bounds.contains(cgal2ben(pt_feat.mLocation));
+								 });
 				}
+			}
+		}
+
+		const long buildings_over_40m_in_grid_square = std::count_if(point_features_in_grid_square.begin(), point_features_in_grid_square.end(), [](const GISPointFeature_t & feat) {
+			const auto height = feat.mParams.find(pf_Height);
+			return height != feat.mParams.end() && height->second > 40; // meters
+		});
+
+		set<int> feature_types;
+		std::transform(point_features_in_grid_square.begin(), point_features_in_grid_square.end(), std::inserter(feature_types, feature_types.begin()),
+					   [&](const GISPointFeature_t & pt_feat) { return pt_feat.mFeatType; });
+
+		tile_assignment & assignment = ortho_terrain_assignments[grid_pt.x][grid_pt.y];
+		DebugAssert(s_dsf_desc.style == style_us);
+		if(assignment.ter_enum != NO_VALUE)
+		{
+			if(buildings_over_40m_in_grid_square > 5) // consider this inner city
+			{
+				const bool has_green_feature = std::any_of(feature_types.begin(), feature_types.end(), [](int f) {
+					return contains({feat_GolfCourse, feat_Campground, feat_Cemetary}, f);
+				});
+				assignment.ter_enum = has_green_feature ? terrain_PseudoOrthoInnerPark : terrain_PseudoOrthoInner1;
+			}
+			else if(intrange(assignment.ter_enum, terrain_PseudoOrthoInner, terrain_PseudoOrthoInnerStadium))
+			{
+				// This should actually *NOT* qualify as inner city... downgrade it to outer
+				assignment.ter_enum = terrain_PseudoOrthoOuter1;
+			}
+
+			// Now try to place special tiles
+			const bool has_large_building_feature = std::any_of(feature_types.begin(), feature_types.end(), [](int f) {
+				return contains({feat_CommercialOffice, feat_CommercialShoppingPlaza, feat_Government}, f);
+			});
+			if(has_large_building_feature)
+			{
+				attempt_assign_special_ter_enum(terrain_PseudoOrthoOuterBuilding,  special_ter_repeat_rules, grid_pt, ortho_terrain_assignments);
+				attempt_assign_special_ter_enum(terrain_PseudoOrthoTownLgBuilding, special_ter_repeat_rules, grid_pt, ortho_terrain_assignments);
 			}
 		}
 	}

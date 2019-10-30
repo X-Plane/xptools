@@ -46,6 +46,8 @@ struct grid_coord_desc {
 	int dy; // the number of rows (y dimension)
 	int dsf_lon;
 	int dsf_lat;
+
+	Bbox2 bounds() const;
 };
 grid_coord_desc get_ortho_grid_xy(const Point2 &point, ag_terrain_style style);
 

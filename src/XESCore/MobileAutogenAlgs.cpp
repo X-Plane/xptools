@@ -48,6 +48,14 @@ int divisions_longitude_per_degree(double desired_division_width_m, double latit
 	return int_abs(snap_division(degree_longitude_to_m(latitude_degrees), desired_division_width_m, exact_division_width_m));
 }
 
+Bbox2 grid_coord_desc::bounds() const
+{
+	return {dsf_lon + ((float)x / dx),
+			dsf_lat + ((float)y / dy),
+			dsf_lon + ((float)(x + 1) / dx),
+			dsf_lat + ((float)(y + 1) / dy)};
+}
+
 Polygon2 cgal_tri_to_ben(const CDT::Face_handle &tri, const Bbox2 &containing_dsf)
 {
 	// Ensure none of the points are colocated
