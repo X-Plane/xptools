@@ -63,6 +63,7 @@ struct ortho_urbanization
 {
 	ortho_urbanization(int bl, int br, int tr, int tl);
 	ortho_urbanization(const vector<int> &from_ccw_vector); // ccw from lower left
+	ortho_urbanization(const array<int, 4> & from_ccw_array); // ccw from lower left
 
 	int bottom_left; // the "base" ter enum for the bottom left; one of terrain_PseudoOrthoEuro, terrain_PseudoOrthoEuroSortaIndustrial, terrain_PseudoOrthoInner, terrain_PseudoOrthoTown, terrain_PseudoOrthoOuter, or terrain_PseudoOrthoIndustrial
 	int bottom_right;

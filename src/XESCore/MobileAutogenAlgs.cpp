@@ -210,16 +210,14 @@ ortho_urbanization::ortho_urbanization(int bl, int br, int tr, int tl) :
 }
 
 ortho_urbanization::ortho_urbanization(const vector<int> &ccw_vector) :
-		bottom_left(ccw_vector[0]),
-		bottom_right(ccw_vector[1]),
-		top_right(ccw_vector[2]),
-		top_left(ccw_vector[3])
+		ortho_urbanization(ccw_vector[0], ccw_vector[1], ccw_vector[2], ccw_vector[3])
 {
 	DebugAssert(ccw_vector.size() == 4);
-	AssertLegalOrtho(bottom_left);
-	AssertLegalOrtho(bottom_right);
-	AssertLegalOrtho(top_right);
-	AssertLegalOrtho(top_left);
+}
+
+ortho_urbanization::ortho_urbanization(const array<int, 4> & ccw_array) :
+		ortho_urbanization(ccw_array[0], ccw_array[1], ccw_array[2], ccw_array[3])
+{
 }
 
 bool ortho_urbanization::is_uniform() const

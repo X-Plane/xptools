@@ -599,41 +599,27 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 	//   b) we would never have used the "special" tiles of each type (e.g., sports stadiums)
 	//   c) we wouldn't have done anything about standalone tiles, which just look awkward
 	//--------------------------------------------------------------------------------------------------------
-	map<ortho_urbanization, int> missing_transitions_count;
+	const DEMGeo & land_use_dem = gDem[dem_LandUse];
+	const DEMGeo & urbanization_dem = gDem[dem_UrbanDensity];
 	for(int x = 0; x < dx; ++x)
 	for(int y = 0; y < dy; ++y)
 	{
-		vector<int> land_uses(4, DEM_NO_DATA); // counterclockwise from lower left
-		vector<float> urbanization(4, DEM_NO_DATA);
-		bool has_some_urbanization_data = false;
-		for(int corner_x = 0; corner_x < 2; ++corner_x)
-		for(int corner_y = 0; corner_y < 2; ++corner_y)
+		const grid_coord_desc grid_square{ x, y, dx, dy, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat };
+		const Bbox2 bounds = grid_square.bounds();
+		const Polygon2 corners_ccw_from_lower_left{ bounds.bottom_left(), bounds.top_left(), bounds.top_right(), bounds.bottom_right() };
+
+		array<int, 4> corners;
+		std::transform(corners_ccw_from_lower_left.begin(), corners_ccw_from_lower_left.end(), corners.begin(), [](const Point2 & pt) {
+			const int land_use = intround(land_use_dem.xy_nearest_raw(pt.x(), pt.y()));
+			const float urbanization = urbanization_dem.value_linear(pt.x(), pt.y());
+			return choose_ortho_terrain(land_use, urbanization, s_dsf_desc.style);
+		});
+
+		const ortho_urbanization desired_urb_pattern(corners);
+		if(!desired_urb_pattern.is_uniform() || desired_urb_pattern.bottom_left != NO_VALUE)
 		{
-			const int corner_idx = corner_y == 0 ? corner_x : 3 - corner_x;
-			const double lon = s_dsf_desc.dsf_lon + (double)(x + corner_x) / dx;
-			const double lat = s_dsf_desc.dsf_lat + (double)(y + corner_y) / dy;
-			const float urb = gDem[dem_UrbanDensity].value_linear(lon, lat);
-			urbanization[corner_idx] = urb;
-			has_some_urbanization_data |= urb != DEM_NO_DATA;
-
-			const int land_use = intround(gDem[dem_LandUse].xy_nearest_raw(lon, lat));
-			land_uses[corner_idx] = land_use;
-		}
-
-		if(has_some_urbanization_data)
-		{
-			vector<int> corners(4, NO_VALUE);
-			for(int i = 0; i < 4; ++i)
-			{
-				corners[i] = choose_ortho_terrain(land_uses[i], urbanization[i], s_dsf_desc.style);
-			}
-
-			ortho_urbanization desired_urb_pattern(corners);
-			if(!desired_urb_pattern.is_uniform() || desired_urb_pattern.bottom_left != NO_VALUE)
-			{
-				int ter_enum = choose_nearest_terrain(desired_urb_pattern, ter_with_transitions);
-				ortho_terrain_assignments[x][y] = ter_enum;
-			}
+			int ter_enum = choose_nearest_terrain(desired_urb_pattern, ter_with_transitions);
+			ortho_terrain_assignments[x][y] = ter_enum;
 		}
 	}
 
