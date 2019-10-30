@@ -1048,6 +1048,24 @@ static float compute_ground_slope_mtrs(const Polygon2 & building_footprint, cons
 	return *min_and_max_el.second - *min_and_max_el.first;
 }
 
+template<class FwdIt, class ToValue>
+static auto max_value(FwdIt begin, FwdIt end, ToValue evaluation_fn, decltype(evaluation_fn(*begin)) lowest_possible_value) -> decltype(evaluation_fn(*begin))
+{
+	auto max_so_far = lowest_possible_value;
+	for(; begin != end; ++begin)
+	{
+		max_so_far = max(max_so_far, evaluation_fn(*begin));
+	}
+	return max_so_far;
+}
+
+template<class FwdIt, class ToValue>
+static auto max_numeric_value(FwdIt begin, FwdIt end, ToValue evaluation_fn, decltype(evaluation_fn(*begin)) lowest_possible_value=std::numeric_limits<decltype(evaluation_fn(*begin))>::lowest()) -> decltype(evaluation_fn(*begin))
+{
+	return max_value(begin, end, evaluation_fn, lowest_possible_value);
+}
+
+
 static int MergeTylersAg(const vector<const char *>& args)
 {
 #if DEV
@@ -1141,15 +1159,23 @@ static int MergeTylersAg(const vector<const char *>& args)
 												 ben_face.is_square_within_tolerance(one_square_meter_in_degrees) &&
 												 holes.size() == 0;
 				const float max_elevation_delta_meters_to_consider_flatish = s_dsf_desc.style == style_europe ? 4 : 10; // TODO: Once we get European OBJs broken up from blocks into individual buildings, we can give them 10 m deltas too
+				const float tallest_obstacle_in_face_mtrs = max_numeric_value(fd.mPointFeatures.begin(), fd.mPointFeatures.end(),
+																			  [&](const GISPointFeature_t & feat) {
+																				  const auto height = feat.mParams.find(pf_Height);
+																				  return height == feat.mParams.end() ? 0 : height->second;
+																			  });
 				for(const agp_t::obj & obj : agp->second.objs)
 				{
 					DebugAssert(obj_bounds_and_heights_mtrs.count(obj.name));
-					const bool is_too_tall_for_approach = obj_bounds_and_heights_mtrs.at(obj.name).second > 50; // TODO: We could be smarter about this by paying attention to the distance from the runway (e.g., with a 3 degree glideslope, the farther out you are, the taller the building could be)
+					const float obj_height = obj_bounds_and_heights_mtrs.at(obj.name).second;
+					const bool is_too_tall_for_approach = obj_height > 50; // TODO: We could be smarter about this by paying attention to the distance from the runway (e.g., with a 3 degree glideslope, the farther out you are, the taller the building could be)
+					const bool is_way_taller_than_real_obstacles = obj_height > tallest_obstacle_in_face_mtrs + 50;
 					auto should_place_obj = [&](const Polygon2 & face, const vector<Polygon2> & holes, const agp_t::obj & obj, const Point2 & center, const double obj_rotation) {
 						const Polygon2 obj_loc = obj_placement(obj, obj_rotation, center, obj_bounds_and_heights_mtrs);
 						const bool building_is_on_approach_path = std::any_of(runway_approach_paths.begin(), runway_approach_paths.end(),
 																			  [&](const Polygon2 & protected_area) { return protected_area.contains(center); });
-						if(is_too_tall_for_approach && building_is_on_approach_path)
+						if(is_way_taller_than_real_obstacles ||
+						   (is_too_tall_for_approach && building_is_on_approach_path))
 						{
 							return false;
 						}
