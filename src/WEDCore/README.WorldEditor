@@ -21,6 +21,7 @@ WED 2.2.x
 	- tighten ATC freq. validation to VHF airband & 200+ MHz, allow AWOS on VOR's
 	- increase undo buffer from 20 to 200 operations
 	- WED-1232: Support OBJ_DELTA in .agp previews
+	- iimprove marking of facade 1st segment and ground reference point
 
 WED 2.1.0r1 7/22/19
    Bug Fixes:

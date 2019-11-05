@@ -920,16 +920,10 @@ struct	preview_facade : public preview_polygon {
 	preview_facade(WED_FacadePlacement * f, int l, IResolver * r) : preview_polygon(f,l,false), fac(f), resolver(r) { }
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
 	{
-		g->SetState(false,0,false,true,true,false,false);       // grey fill. Do actual texture instead ??
-		glColor4f(0.7,0.7,0.7,0.75);
-		int t = fac->GetTopoMode();
-//		if(t == WED_FacadePlacement::topo_Area)
-//			preview_polygon::draw_it(zoomer,g,mPavementAlpha);
-
-		const float colors[18] = {  1, 0, 0,	1, 1, 0,
-									0, 1, 0,	0, 1, 1,
-									0, 0, 1,	1, 0, 1,};
+		const float colors[18] = { 1, 0, 0,	 1, 1, 0,  0, 1, 0,    // red, yellow, green
+		                           0, 1, 1,  0, 0, 1,  1, 0, 1,};  // aqua, blue, cyan
 		IGISPointSequence * ps = fac->GetOuterRing();
+		glColor4f(1,1,1,1);
 		
 		if(fac->HasCustomWalls())
 		{
@@ -974,7 +968,6 @@ struct	preview_facade : public preview_polygon {
 			const fac_info_t * info;
 			WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 			
-			glColor4f(1,1,1,1);
 			glMatrixMode(GL_MODELVIEW);
 			glPushMatrix();
 			Point2 l = zoomer->LLToPixel(ref_pt);
@@ -992,31 +985,19 @@ struct	preview_facade : public preview_polygon {
 			g->EnableDepth(false,false);
 			glPopMatrix();
 		}
-
 		
-		if(t == WED_FacadePlacement::topo_Chain)
+		// facade ground contact / 1st segment marker
 		{
 			Point2 p;
-			ps->GetNthPoint(0)->GetLocation(gis_Geo,p);
+			Bezier2 b;
+			ps->GetSide(gis_Geo,0,b);
+			p = b.midpoint(0.5);
 			p=zoomer->LLToPixel(p);
-			glColor4f(1,1,1,1);
 			GUI_PlotIcon(g,"handle_closeloop.png", p.x(), p.y(),0.0,1.0);
 		}
-		else
-		{
-			vector<Point2>	pts;
-			SideToPoints(fac->GetOuterRing(), 0, zoomer, pts);
-			glColor3f(1,1,1);
-			glLineWidth(3);
-			glBegin(GL_LINES);
-			for(vector<Point2>::iterator p = pts.begin(); p != pts.end(); ++p)
-				glVertex2(*p);
-			glEnd();
-			glLineWidth(1);
-		}
-
-		glLineWidth(2);
+		
 		g->SetState(false,0,false,true,true,false,false);
+		glLineWidth(2);
 		int n = ps->GetNumSides();
 		for(int i = 0; i < n; ++i)
 		{
