@@ -262,13 +262,17 @@ bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t const *& info)
 	out_info->scale_s=100;
 	out_info->scale_t=100;
 	float tex_width = 1024;
+	float tex_height = 1024;
 	out_info->s1.clear();
 	out_info->sm.clear();
 	out_info->s2.clear();
 	out_info->rgb[0] = 0.75;   // taxi line yellow
 	out_info->rgb[1] = 0.6;
 	out_info->rgb[2] = 0.15;
-
+	out_info->start_caps.clear();
+	out_info->end_caps.clear();
+	out_info->align = 0;
+	
 	while(!MFS_done(&s))
 	{
 		if (MFS_string_match(&s,"TEXTURE", false))
@@ -283,6 +287,10 @@ bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t const *& info)
 		else if (MFS_string_match(&s,"TEX_WIDTH", false))
 		{
 			tex_width = MFS_double(&s);
+		}
+		else if (MFS_string_match(&s,"TEX_HEIGHT", false))
+		{
+			tex_height = MFS_double(&s);
 		}
 		else if (MFS_string_match(&s,"PREVIEW_RGB", false))
 		{
@@ -302,6 +310,30 @@ bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t const *& info)
 				out_info->sm.push_back(sm/tex_width);
 				out_info->s2.push_back(s2/tex_width);
 			}
+		}
+		else if (MFS_string_match(&s,"START_CAP", false))
+		{
+			out_info->start_caps.push_back(lin_info_t::caps());
+			MFS_double(&s);
+			out_info->start_caps.back().s1 = MFS_double(&s)/tex_width;
+			out_info->start_caps.back().sm = MFS_double(&s)/tex_width;
+			out_info->start_caps.back().s2 = MFS_double(&s)/tex_width;
+			out_info->start_caps.back().t1 = MFS_double(&s)/tex_height;
+			out_info->start_caps.back().t2 = MFS_double(&s)/tex_height;
+		}
+		else if (MFS_string_match(&s,"END_CAP", false))
+		{
+			out_info->end_caps.push_back(lin_info_t::caps());
+			MFS_double(&s);
+			out_info->end_caps.back().s1 = MFS_double(&s)/tex_width;
+			out_info->end_caps.back().sm = MFS_double(&s)/tex_width;
+			out_info->end_caps.back().s2 = MFS_double(&s)/tex_width;
+			out_info->end_caps.back().t1 = MFS_double(&s)/tex_height;
+			out_info->end_caps.back().t2 = MFS_double(&s)/tex_height;
+		}
+		else if (MFS_string_match(&s,"ALIGN", false))
+		{
+			out_info->align = MFS_double(&s);
 		}
 		MFS_string_eol(&s,NULL);
 	}

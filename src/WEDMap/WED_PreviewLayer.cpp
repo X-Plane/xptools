@@ -564,19 +564,27 @@ static void draw_line_preview(const vector<Point2>& pts, const lin_info_t& linfo
 	double offset     = ((linfo.s2[l]+linfo.s1[l]) / 2.0 - linfo.sm[l]) * linfo.scale_s * PPM;
 	double uv_dt      =  (linfo.s2[l]-linfo.s1[l]) / 2.0 * linfo.scale_s / linfo.scale_t; // correction factor for 'slanted' texture ends
 	double uv_t2      = 0.0;                                                              // accumulator for texture t, so each starts where the previous ended
+	bool is_ring = pts.front() == pts.back();
 
 	Vector2	dir2(pts[1],pts[0]);
 	dir2.normalize();
-	dir2 = dir2.perpendicular_ccw();
+	if(is_ring)
+	{
+		Vector2 dir_last(pts[0],pts[pts.size()-2]);
+		dir_last.normalize();
+		dir2 = (dir2 + dir_last) / (1.0 + dir_last.dot(dir2));
+	}
+	dir2 = dir2.perpendicular_ccw();   // direction perpendicular to previous segment
 
 	for (int j = 0; j < pts.size()-1; ++j)
 	{
 		Vector2	dir1(dir2);
 		Vector2 dir = Vector2(pts[j+1],pts[j]);
-		dir.normalize();
-		if(j < pts.size()-2)
+		dir.normalize();                    // direction of this segment
+		if(j < pts.size()-2+is_ring)
 		{
-			Vector2 dir3(pts[j+2],pts[j+1]);
+			int n = j < pts.size()-2 ? j+2 : 1;
+			Vector2 dir3(pts[n],pts[j+1]);
 			dir3.normalize();
 			dir2 = (dir + dir3) / (1.0 + dir.dot(dir3));
 		}
@@ -587,12 +595,49 @@ static void draw_line_preview(const vector<Point2>& pts, const lin_info_t& linfo
 		uv_t2 += sqrt(Vector2(pts[j+1], pts[j]).squared_length()) / PPM / linfo.scale_t;
 		double d1 = uv_dt * dir.dot(dir1);
 		double d2 = uv_dt * dir.dot(dir2);
-
+		
+		Point2 start_left (pts[j]   + dir1 * (offset - half_width));
+		Point2 start_right(pts[j]   + dir1 * (offset + half_width));
+		Point2 end_left   (pts[j+1] + dir2 * (offset - half_width));
+		Point2 end_right  (pts[j+1] + dir2 * (offset + half_width));
+		
+		if(!is_ring)
+		{
+			if(j == 0 && linfo.start_caps.size() > l)
+			{
+				double len = (linfo.start_caps[l].t2 - linfo.start_caps[l].t1) * linfo.scale_t;
+				glBegin(GL_QUADS);
+					glTexCoord2f(linfo.start_caps[l].s1,linfo.start_caps[l].t1); glVertex2(start_left);
+					glTexCoord2f(linfo.start_caps[l].s2,linfo.start_caps[l].t1); glVertex2(start_right);
+					start_left  -= dir * len * PPM;
+					start_right -= dir * len * PPM;
+					uv_t2 -= (linfo.start_caps[l].t2 - linfo.start_caps[l].t1);
+					glTexCoord2f(linfo.start_caps[l].s2,linfo.start_caps[l].t2); glVertex2(start_right);
+					glTexCoord2f(linfo.start_caps[l].s1,linfo.start_caps[l].t2); glVertex2(start_left);
+				glEnd();
+			}
+			if(j == pts.size()-2 && linfo.end_caps.size() > l)
+			{
+				double len = (linfo.end_caps[l].t2 - linfo.end_caps[l].t1) * linfo.scale_t;
+				glBegin(GL_QUADS);
+					glTexCoord2f(linfo.end_caps[l].s2,linfo.end_caps[l].t2); glVertex2(end_right);
+					glTexCoord2f(linfo.end_caps[l].s1,linfo.end_caps[l].t2); glVertex2(end_left);
+					end_left  += dir * len * PPM;
+					end_right += dir * len * PPM;
+					uv_t2 -= (linfo.end_caps[l].t2 - linfo.end_caps[l].t1);
+					glTexCoord2f(linfo.end_caps[l].s1,linfo.end_caps[l].t1); glVertex2(end_left);
+					glTexCoord2f(linfo.end_caps[l].s2,linfo.end_caps[l].t1); glVertex2(end_right);
+				glEnd();
+			}
+		}
+		
+		if(j == pts.size()-2 && linfo.align > 0) uv_t2 = round_by_parts(uv_t2, linfo.align);
+		
 		glBegin(GL_QUADS);
-			glTexCoord2f(linfo.s1[l],uv_t2 + d2); glVertex2(pts[j+1] + dir2 * (offset - half_width));
-			glTexCoord2f(linfo.s1[l],uv_t1 + d1); glVertex2(pts[j]   + dir1 * (offset - half_width));
-			glTexCoord2f(linfo.s2[l],uv_t1 - d1); glVertex2(pts[j]   + dir1 * (offset + half_width));
-			glTexCoord2f(linfo.s2[l],uv_t2 - d2); glVertex2(pts[j+1] + dir2 * (offset + half_width));
+			glTexCoord2f(linfo.s1[l],uv_t1 + d1); glVertex2(start_left);
+			glTexCoord2f(linfo.s2[l],uv_t1 - d1); glVertex2(start_right);
+			glTexCoord2f(linfo.s2[l],uv_t2 - d2); glVertex2(end_right);
+			glTexCoord2f(linfo.s1[l],uv_t2 + d2); glVertex2(end_left);
 		glEnd();
 	}
 }
