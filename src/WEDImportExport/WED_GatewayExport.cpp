@@ -517,6 +517,19 @@ void WED_GatewayExportDialog::AuxiliaryAction()
 	GUI_LaunchURL(WED_URL_UPLOAD_OK);
 }
 
+static pair<string, string> gateway_api_url_and_cert() // your court to ensure the cert is actually on disk
+{
+	const string override_url = gApplication->args.get_value("--gateway_put_scenery_url");
+	if(override_url.empty())
+	{
+		return make_pair(WED_URL_GATEWAY_API "scenery", "gateway.crt");
+	}
+	else
+	{
+		return make_pair(override_url, "");
+	}
+}
+
 void WED_GatewayExportDialog::Submit()
 {
 	if(mPhase == expt_dialog_upload_to_gateway)
@@ -735,30 +748,25 @@ void WED_GatewayExportDialog::Submit()
 			return;
 		#endif
 
-		string cert;
-
-		if(!GUI_GetTempResourcePath("gateway.crt", cert))
+		const pair<string, string> url_and_cert = gateway_api_url_and_cert();
+		string cert_on_disk;
+		const bool cert_broken = !url_and_cert.second.empty() && !GUI_GetTempResourcePath(url_and_cert.second.c_str(), cert_on_disk);
+		if(cert_broken)
 		{
 			DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
 			this->AsyncDestroy();
-			return;
 		}
-		string url = WED_URL_GATEWAY_API "scenery";
-
-		mCurl = new curl_http_get_file(url.c_str(),NULL,&reqstr,&mResponse,cert);
-
-		mPhase = expt_dialog_upload_to_gateway;
-
-		this->Reset("", "", "", false);
-		this->AddLabel("Uploading airport to Gateway.");
-		this->AddLabel("This could take up to one minute.");
-
-		gExportTarget = old_target;
-
-		Start(1.0);
+		else
+		{
+			mCurl = new curl_http_get_file(url_and_cert.first, nullptr, &reqstr, &mResponse, cert_on_disk);
+			this->Reset("", "", "", false);
+			this->AddLabel("Uploading airport to Gateway.");
+			this->AddLabel("This could take up to one minute.");
+			gExportTarget = old_target;
+			Start(1.0);
+		}
 	}
-
-	if(mPhase == expt_dialog_done)
+	else if(mPhase == expt_dialog_done)
 	{
 		this->AsyncDestroy();
 	}
