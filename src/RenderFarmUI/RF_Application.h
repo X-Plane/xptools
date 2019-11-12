@@ -30,9 +30,11 @@
 class	RF_Application : public GUI_Application {
 public:
 #if LIN
-	RF_Application(int& argc, char* argv[]);
+	RF_Application(int & argc, char * argv[]);
+#elif APL
+	RF_Application(int argc, char * const argv[]);
 #else
-					 RF_Application();
+	RF_Application(const char * arg);
 #endif
 	virtual			~RF_Application();
 

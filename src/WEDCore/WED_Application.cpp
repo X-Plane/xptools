@@ -214,9 +214,9 @@ WED_Settings::WED_Settings(GUI_Commander * cmdr) : GUI_Window("WED Preferences",
 #if LIN
 WED_Application::WED_Application(int& argc, char* argv[]) : GUI_Application(argc, argv),
 #elif APL
-WED_Application::WED_Application() : GUI_Application("WEDMainMenu"),
-#else
-	WED_Application::WED_Application() :
+WED_Application::WED_Application(int argc, char const * const * argv) : GUI_Application(argc, argv, "WEDMainMenu"),
+#else // Windows
+WED_Application::WED_Application(const char * args) : GUI_Application(args),
 #endif
 		mAboutBox(NULL),
 		mSettingsWin(NULL)
