@@ -69,6 +69,7 @@
     <ClCompile Include="..\..\src\UI\XWin32DND.cpp" />
     <ClCompile Include="..\..\src\UI\XWinGL.win.cpp" />
     <ClCompile Include="..\..\src\Utils\AssertUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\CmdLine.cpp" />
     <ClCompile Include="..\..\src\Utils\BitmapUtils.cpp" />
     <ClCompile Include="..\..\src\Utils\CompGeomUtils.cpp" />
     <ClCompile Include="..\..\src\Utils\CSVParser.cpp" />
@@ -319,6 +320,7 @@
     <ClInclude Include="..\..\src\UI\XWin32DND.h" />
     <ClInclude Include="..\..\src\UI\XWinGL.h" />
     <ClInclude Include="..\..\src\Utils\AssertUtils.h" />
+    <ClInclude Include="..\..\src\Utils\CmdLine.h" />
     <ClInclude Include="..\..\src\Utils\CompGeomUtils.h" />
     <ClInclude Include="..\..\src\Utils\CSVParser.h" />
     <ClInclude Include="..\..\src\Utils\EndianUtils.h" />

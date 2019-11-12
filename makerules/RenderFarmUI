@@ -179,6 +179,7 @@ SOURCES += ./src/Network/Terraserver.cpp
 SOURCES += ./src/Network/HTTPClient.cpp
 SOURCES += ./src/Network/XMLObject.cpp
 SOURCES += ./src/Utils/AssertUtils.cpp
+SOURCES += ./src/Utils/CmdLine.cpp
 SOURCES += ./src/Utils/MemFileUtils.cpp
 SOURCES += ./src/Utils/FileUtils.cpp
 SOURCES += ./src/Utils/GISUtils.cpp
