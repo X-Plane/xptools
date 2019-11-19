@@ -462,7 +462,7 @@ static void ValidateOneFacadePlacement(WED_Thing* who, validation_error_vector& 
 		if(gExportTarget == wet_xplane_900)
 			msgs.push_back(validation_error_t("Curved facades are only supported in X-Plane 10 and newer.", err_gis_poly_facades_curved_only_for_gte_xp10, who,apt));
 		else if(fac->GetType() < 2)
-			msgs.push_back(validation_error_t("Only Type2 facades support curved segements.", warn_facades_curved_only_type2, who,apt));
+			msgs.push_back(validation_error_t("Only Type2 facades support curved segments.", warn_facades_curved_only_type2, who,apt));
 	}
 
 	if(fac->HasLayer(gis_Param))

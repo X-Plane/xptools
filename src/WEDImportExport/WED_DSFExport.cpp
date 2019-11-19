@@ -81,6 +81,7 @@ struct DSF_export_info_t
 	DSF_export_info_t() { orthoImg.data = NULL; }
 };
 
+extern int gOrthoExport;
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 
@@ -1775,7 +1776,7 @@ static int	DSF_ExportTileRecursive(
 				
 				string relativePath(FILE_get_dir_name(r) + FILE_get_file_name_wo_extensions(msg));
 				
-				string relativePathDDS = relativePath + ".dds";
+				string relativePathDDS = relativePath + ( gOrthoExport ? ".dds" : ".png");
 				string relativePathPOL = relativePath + ".pol";
 				
 				msg = string("The polygon '") + msg + "' cannot be converted to an orthophoto: ";
@@ -1792,7 +1793,14 @@ static int	DSF_ExportTileRecursive(
 
 				r = relativePathPOL;		// Resource name comes from the pol no matter what we compress to disk.
 				
+				if(absPathDDS == absPathIMG)
+				{
+					DoUserAlert((msg + "Output file would overwrite source file, aborting DSF Export. Change polygon name.").c_str());
+					return -1;
+				}
+				
 				Bbox2 UVbounds; orth->GetBounds(gis_UV, UVbounds);
+				Bbox2 UVbounds_used(0,0,1,1);                            // we may end up not using all of the texture
 				WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 				
 				date_cmpr_result_t date_cmpr_res = FILE_date_cmpr(absPathIMG.c_str(),absPathDDS.c_str());
@@ -1832,11 +1840,25 @@ static int	DSF_ExportTileRecursive(
 					}
 					ImageInfo imgInfo(export_info.orthoImg);
 					ImageInfo DDSInfo;
-
+					
 					int UVMleft   = intround(imgInfo.width * UVbounds.xmin());
 					int UVMright  = intround(imgInfo.width * UVbounds.xmax());
 					int UVMtop    = intround(imgInfo.height * UVbounds.ymax());
 					int UVMbottom = intround(imgInfo.height * UVbounds.ymin());
+					
+					/* If the source image is a multiple of 1k pix/side - we want to avoid scaling the subtextures as much as possible.
+					   So in case the UV coords are a tiny bit off - rather round towards a size that allows keeping 1:1 pixel ratio.
+					*/
+					bool is1Ksource = imgInfo.width % 1024 == 0 && imgInfo.height % 1024 == 0;
+					
+					if(is1Ksource)
+					{
+						if(UVMleft   % 512 == 1) UVMleft -= 1;   else if(UVMleft   % 512 == 511) UVMleft += 1;
+						if(UVMright  % 512 == 1) UVMright -= 1;  else if(UVMright  % 512 == 511) UVMright += 1;
+						if(UVMtop    % 512 == 1) UVMtop -= 1;    else if(UVMtop    % 512 == 511) UVMtop += 1;
+						if(UVMbottom % 512 == 1) UVMbottom -= 1; else if(UVMbottom % 512 == 511) UVMbottom += 1;
+					}
+					
 					int UVMwidth  = UVMright - UVMleft;
 					int UVMheight = UVMtop - UVMbottom;
 					
@@ -1846,19 +1868,87 @@ static int	DSF_ExportTileRecursive(
 					while(DDSwidth < UVMwidth && DDSwidth < 2048) DDSwidth <<= 1;      // round up dimensions under 2k to a power of 2 AND limit to 2k
 					while(DDSheight < UVMheight && DDSheight < 2048) DDSheight <<= 1;
 
+					/* we may end up with a 'partial' tile - i.e. the polygon was reshaped and now the UVbounds don't cover a full tile
+					    any more. Normally - we would upscale the exact part of the source image needed to make it a power of 2.
+					    But - we may not have to: *if* the source image is large enough - we just grab a 1:1 copy of the next larger pow2 size
+					    and the only use a part of it.
+					*/
+					if(is1Ksource)
+					{
+						if(DDSwidth != UVMwidth)
+						{
+							if(UVbounds.ymin() > 0.0 && UVMright % 512 == 0)
+							{
+								double desired_left = UVMright - DDSwidth;
+								if(desired_left >= 0)
+								{
+									UVMleft = desired_left;
+									UVbounds_used.p1.x_ = 1.0 - ((double) UVMwidth) / DDSwidth;
+//						printf("save a scale: use w= %d of %d w/unused left\n", UVMwidth, DDSwidth);
+									UVMwidth = DDSwidth;
+								}
+							}
+							else
+							{
+								double desired_right = UVMleft + DDSwidth;
+								if(desired_right <= imgInfo.width)
+								{
+									UVMright = desired_right;
+									UVbounds_used.p2.x_ = ((double) UVMwidth) / DDSwidth;
+///						printf("save a scale: use w= %d of %d w/unused right\n", UVMwidth, DDSwidth);
+									UVMwidth = DDSwidth;
+								}
+							}
+						}
+						if(DDSheight != UVMheight)
+						{
+							if(UVbounds.xmin() > 0.0 && UVMtop % 512 == 0)
+							{
+								double desired_bottom = UVMtop - DDSheight;
+								if(desired_bottom >= 0)
+								{
+									UVMbottom = desired_bottom;
+									UVbounds_used.p1.y_ = 1.0 - ((double) UVMheight) / DDSheight;
+//						printf("save a scale: use h= %d of %d w/unused bottom\n", UVMheight, DDSheight);
+									UVMheight = DDSheight;
+								}
+							}
+							else
+							{
+								double desired_top = UVMbottom + DDSheight;
+								if(desired_top <= imgInfo.height)
+								{
+									UVMtop = desired_top;
+									UVbounds_used.p2.y_ = ((double) UVMheight) / DDSheight;
+//						printf("save a scale: use h= %d of %d w/unused top\n", UVMheight, DDSheight);
+									UVMheight = DDSheight;
+								}
+							}
+						}
+					}
+
 					if (CreateNewBitmap(DDSwidth, DDSheight, imgInfo.channels, &DDSInfo) == 0)       // create array to hold upsized image
 					{
 						if(UVMwidth == DDSwidth && UVMheight == DDSheight)
+						{
+//					printf("1:1 copy\n");
 							CopyBitmapSectionDirect(imgInfo,DDSInfo, UVMleft, UVMbottom, 0, 0, DDSwidth, DDSheight);
+						}
 						else
 						{
+//					printf("scaled copy\n");
 							CopyBitmapSection(&imgInfo,&DDSInfo, UVMleft, UVMbottom, UVMright, UVMtop,
 																				0,       0,    DDSwidth, DDSheight);
 						}
-						if(DDSInfo.channels == 3)
-							ConvertBitmapToAlpha(&DDSInfo,false);
-						int DXTMethod = usesAlpha(&DDSInfo) ? 5 : 1;
-						WriteBitmapToDDS_MT(DDSInfo, DXTMethod, absPathDDS.c_str());
+						if(gOrthoExport)
+						{
+							if(DDSInfo.channels == 3)
+								ConvertBitmapToAlpha(&DDSInfo,false);
+							int DXTMethod = usesAlpha(&DDSInfo) ? 5 : 1;
+							WriteBitmapToDDS_MT(DDSInfo, DXTMethod, absPathDDS.c_str());
+						}
+						else
+							WriteBitmapToPNG(&DDSInfo, absPathDDS.c_str(), NULL, 0, 2.2);
 					}
 				}
 				else if(date_cmpr_res == dcr_error)
@@ -1880,7 +1970,7 @@ static int	DSF_ExportTileRecursive(
 						pol_info_t out_info = { FILE_get_file_name(relativePathDDS), false,
 							/*SCALE*/ (float) LonLatDistMeters(b.p1,Point2(b.p2.x(), b.p1.y())), (float) LonLatDistMeters(b.p1,Point2(b.p1.x(), b.p2.y())),  // althought its irrelevant here
 							false, false, 
-							/*LAYER_GROUP*/ "", 0,
+							/*LAYER_GROUP*/ "TERRAIN", +1,
 							/*LOAD_CENTER*/ (float) center.y(), (float) center.x(), (float) LonLatDistMeters(b.p1,b.p2), intmax2(DDSInfo.height,DDSInfo.width) };
 						rmgr->WritePol(absPathPOL, out_info);
 						DestroyBitmap(&DDSInfo);
@@ -1888,7 +1978,7 @@ static int	DSF_ExportTileRecursive(
 				}
 
 				what->StartOperation("Norm Ortho");
-				orth->Rescale(gis_UV, UVbounds, Bbox2(0,0,1,1));
+				orth->Rescale(gis_UV, UVbounds, UVbounds_used);
 			}
 
 			idx = io_table.accum_pol(r,show_level);

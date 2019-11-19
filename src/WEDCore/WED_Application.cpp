@@ -132,6 +132,10 @@ void WED_Settings::ReceiveMessage(
 			gFontSize = max(10,min(18,atoi(new_val.c_str())));
 			GUI_SetFontSizes(gFontSize);
 	}
+	else if(inMsg == (intptr_t) &gOrthoExport)
+	{
+			gOrthoExport = ((GUI_Button *) inParam)->GetValue();
+	}
 /*	else if (inMsg == kMsg_Close)
 	{
 		Hide();
@@ -158,13 +162,22 @@ WED_Settings::WED_Settings(GUI_Commander * cmdr) : GUI_Window("WED Preferences",
 	float * white = WED_Color_RGBA(wed_Table_Text);
 
 	GUI_Button * moderator_btn = new GUI_Button("check_buttons.png",btn_Check,k_no, k_no, k_yes, k_yes);
-	moderator_btn->SetBounds(340,250,510,250+GUI_GetImageResourceHeight("check_buttons.png")/3);
+	moderator_btn->SetBounds(340,255,510,255+GUI_GetImageResourceHeight("check_buttons.png")/3);
 	moderator_btn->Show();
 	moderator_btn->SetDescriptor("Moderator Mode");
 	moderator_btn->SetParent(this);
 	moderator_btn->AddListener(this);
 	moderator_btn->SetMsg((intptr_t) &gModeratorMode, (intptr_t) moderator_btn);
 	
+	GUI_Button * png_btn = new GUI_Button("check_buttons.png",btn_Check,k_no, k_no, k_yes, k_yes);
+	png_btn->SetBounds(340,230,510,230+GUI_GetImageResourceHeight("check_buttons.png")/3);
+	png_btn->Show();
+	png_btn->SetDescriptor("Ortho's to .dds");
+	png_btn->SetParent(this);
+	png_btn->AddListener(this);
+	png_btn->SetValue(gOrthoExport);
+	png_btn->SetMsg((intptr_t) &gOrthoExport, (intptr_t) png_btn);
+
 	GUI_TextField * custom_box = new GUI_TextField(true, this);
 	GUI_Label * label = new GUI_Label();
 	custom_box->SetBounds(20,140,490,160);
@@ -185,8 +198,8 @@ WED_Settings::WED_Settings(GUI_Commander * cmdr) : GUI_Window("WED Preferences",
 
 	GUI_TextField * font_box = new GUI_TextField(false, this);
 	GUI_Label * label2 = new GUI_Label();
-	font_box->SetBounds(340,210,400,230);
-	label2->SetBounds  (220,210,350,230);
+	font_box->SetBounds(340,200,400,220);
+	label2->SetBounds  (220,200,350,220);
 	font_box->SetParent(this);
 	font_box->AddListener(this);
 	font_box->SetKeyMsg((intptr_t) &gFontSize, (intptr_t) font_box);
@@ -199,7 +212,7 @@ WED_Settings::WED_Settings(GUI_Commander * cmdr) : GUI_Window("WED Preferences",
 	label2->SetParent(this);
 	label2->SetDescriptor("Font Size");
 	label2->Show();
-
+	
 	
 /*	GUI_Button * close_btn = new GUI_Button("push_buttons.png",btn_Push,k_no, k_yes, k_no, k_yes);
 	close_btn->SetBounds(220,5,290,5+GUI_GetImageResourceHeight("push_buttons.png")/3);
