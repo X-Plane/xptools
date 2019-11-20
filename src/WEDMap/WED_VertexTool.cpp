@@ -396,29 +396,29 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 			Bezier2	b;
 			if(con_type) *con_type = handle_None;
 			if(active) *active = 0;
-			
+
 			if(e->GetSide(gis_Geo, 0, b))
 			{
 				switch(n) {
 				case 0:
 					*p = b.p1;
-					if(con_type) *con_type = handle_Vertex;
+					if(con_type) *con_type = b.p1 == b.c1 ?  handle_VertexSharp : handle_Vertex;
 					break;
 				case 1:
 					*p = b.c1;
 					if(con_type) *con_type = handle_Bezier;
-					if(active) *active = 1;
+					if(active) *active = b.c1 != b.p1;
 					if(dir) *dir = Vector2(b.c1,b.p1);
 					break;
 				case 2:
 					*p = b.c2;
 					if(con_type) *con_type = handle_Bezier;
-					if(active) *active = 1;
+					if(active) *active = b.c2 != b.p2 ;
 					if(dir) *dir = Vector2(b.c2,b.p2);
 					break;
 				case 3:
 					*p = b.p2;
-					if(con_type) *con_type = handle_Vertex;
+					if(con_type) *con_type = b.p2 == b.c2 ?  handle_VertexSharp : handle_Vertex;
 					break;
 				}
 			}
@@ -443,6 +443,14 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 					break;
 				}
 			}
+
+			if(active)
+			{
+				GUI_KeyFlags mods = GetHost()->GetModifiersNow();
+				if((mods & gui_OptionAltFlag) && (n==1)) { *active = 1; }
+				if((mods & gui_OptionAltFlag) && (n==2)) { *active = 1; }
+			}
+
 			return;
 		}
 		break;
@@ -849,14 +857,40 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 	case gis_Edge:
 		if((e = SAFE_CAST(IGISEdge,en)) != NULL)
 		{
+			GUI_KeyFlags mods = GetHost()->GetModifiersNow();
+
 			Bezier2 b;
 			if(e->GetSide(gis_Geo, 0, b))
 			{
-				if(n == 1)
-					b.c1 += delta;
-				if(n == 2)
-					b.c2 += delta;
+				if (!mInEdit)
+				{
+					mInEdit = 1;
+					if (mods & gui_ShiftFlag)
+					{
+						if (n == 1) {b.c1 = b.p1; }
+						if (n == 2) {b.c2 = b.p2; }
+					}
+				}
+				else
+				{
+					if(n == 1)	b.c1 += delta;
+					if(n == 2)  b.c2 += delta;
+				}
 				e->SetSideBezier(gis_Geo, b);
+			}
+			else
+			{
+				if (!mInEdit)
+				{
+					mInEdit = 1;
+
+					if (mods & gui_OptionAltFlag)
+					{
+						if (n == 1) {b.c1 = b.p1+delta;}
+						if (n == 2) {b.c2 = b.p2+delta;}
+						e->SetSideBezier(gis_Geo, b);
+					}
+				}
 			}
 			return;
 		}
