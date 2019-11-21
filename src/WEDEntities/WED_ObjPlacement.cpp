@@ -29,6 +29,7 @@
 #include "MathUtils.h"
 #include "CompGeomDefs2.h"
 #include "XESConstants.h"
+#include "Agp.h"
 
 DEFINE_PERSISTENT(WED_ObjPlacement)
 TRIVIAL_COPY(WED_ObjPlacement,WED_GISPoint_Heading)

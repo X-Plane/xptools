@@ -401,7 +401,7 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 				}
 				else if(i->type <= 5)
 				{
-					const Vector2 beam_dir = Vector2(0.0, beam_len).rotated_by_degrees_cw(i->heading + 180));
+					const Vector2 beam_dir = Vector2(0.0, beam_len).rotated_by_degrees_cw(i->heading + 180);
 					Vector2 beam_perp(beam_dir.perpendicular_cw()*0.1);
 
 					g->SetState(0, 0, 0, 0, 1, 0, 0);

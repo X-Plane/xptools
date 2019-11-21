@@ -32,6 +32,7 @@
 #include "ObjDraw.h"
 #include "XObjDefs.h"
 #include "XESConstants.h"
+#include "Agp.h"
 
 #include "GUI_Resources.h"
 #include "GUI_GraphState.h"
