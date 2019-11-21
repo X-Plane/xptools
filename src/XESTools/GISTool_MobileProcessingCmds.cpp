@@ -1065,6 +1065,12 @@ static auto max_numeric_value(FwdIt begin, FwdIt end, ToValue evaluation_fn, dec
 	return max_value(begin, end, evaluation_fn, lowest_possible_value);
 }
 
+template<class FwdIt, class ToValue>
+static auto max_non_negative_value(FwdIt begin, FwdIt end, ToValue evaluation_fn) -> decltype(evaluation_fn(*begin))
+{
+	return max_value(begin, end, evaluation_fn, 0);
+}
+
 
 static int MergeTylersAg(const vector<const char *>& args)
 {
@@ -1158,12 +1164,12 @@ static int MergeTylersAg(const vector<const char *>& args)
 				const bool face_is_square_euro = s_dsf_desc.style == style_europe &&
 												 ben_face.is_square_within_tolerance(one_square_meter_in_degrees) &&
 												 holes.size() == 0;
-				const float max_elevation_delta_meters_to_consider_flatish = s_dsf_desc.style == style_europe ? 4 : 10; // TODO: Once we get European OBJs broken up from blocks into individual buildings, we can give them 10 m deltas too
-				const float tallest_obstacle_in_face_mtrs = max_numeric_value(fd.mPointFeatures.begin(), fd.mPointFeatures.end(),
-																			  [&](const GISPointFeature_t & feat) {
-																				  const auto height = feat.mParams.find(pf_Height);
-																				  return height == feat.mParams.end() ? 0 : height->second;
-																			  });
+				const float max_elevation_delta_meters_to_consider_flatish = 10;
+				const float tallest_obstacle_in_face_mtrs = max_non_negative_value(fd.mPointFeatures.begin(), fd.mPointFeatures.end(),
+																				   [&](const GISPointFeature_t & feat) {
+																					   const auto height = feat.mParams.find(pf_Height);
+																					   return height == feat.mParams.end() ? 0 : height->second;
+																				   });
 				for(const agp_t::obj & obj : agp->second.objs)
 				{
 					DebugAssert(obj_bounds_and_heights_mtrs.count(obj.name));
