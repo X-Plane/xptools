@@ -606,7 +606,7 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 	{
 		const grid_coord_desc grid_square{ x, y, dx, dy, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat };
 		const Bbox2 bounds = grid_square.bounds();
-		const Polygon2 corners_ccw_from_lower_left{ bounds.bottom_left(), bounds.top_left(), bounds.top_right(), bounds.bottom_right() };
+		const Polygon2 corners_ccw_from_lower_left{ bounds.bottom_left(), bounds.bottom_right(), bounds.top_right(), bounds.top_left() };
 
 		array<int, 4> corners;
 		std::transform(corners_ccw_from_lower_left.begin(), corners_ccw_from_lower_left.end(), corners.begin(), [&](const Point2 & pt) {
