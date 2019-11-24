@@ -26,6 +26,7 @@ WED 2.2.x
    - WED-1217: show new 11.35 endcaps for lines in on-map previews
    - XSG-8722: report airport location to gateway server upon submission
    - option to create .png (rather than .dds) during orthophoto export
+   - WED-1244: Combine exclusion zones upon import
 
 WED 2.1.0r1 7/22/19
    Bug Fixes:
