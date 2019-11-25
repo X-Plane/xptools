@@ -287,6 +287,7 @@ static int DoLoad(const vector<const char *>& args)
 
 	} else {
 		fprintf(stderr,"Could not load XES file %s\n", args[0]);
+		fprintf(stderr,"%s %s\n", args[0], FILE_exists(args[0]) ? "does exist" : "does not exist");
 		return 1;
 	}
 	if (gVerbose)
