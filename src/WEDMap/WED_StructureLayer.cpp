@@ -58,6 +58,7 @@
 #include "WED_TaxiRoute.h"
 #include "WED_RoadNode.h"
 #include "WED_AirportBoundary.h"
+#include "WED_ATCLayer.h"
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -266,9 +267,13 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 			{
 				Point2		l;
 				pth->GetLocation(gis_Geo,l);
-				l = GetZoomer()->LLToPixel(l);
+				WED_MapZoomerNew * z = GetZoomer();
+				l = z->LLToPixel(l);
 				if (icon)
 				{
+					if(sub_class == WED_RampPosition::sClass && z->GetPPM() > 10)
+						WED_ATCLayer_DrawAircraft(ramp, g, z);
+
 					GUI_PlotIcon(g,icon, l.x(),l.y(),pth->GetHeading(),GetFurnitureIconScale());
 					g->SetState(false,0,false,   false,true,false,false);
 				}

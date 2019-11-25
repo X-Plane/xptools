@@ -219,26 +219,22 @@ WED_DocumentWindow::WED_DocumentWindow(
 	// --------------- ATC Taxi + Flow ---------------
 
 	WED_PropertyPane * prop_pane3 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sel_t, sel_w,inDocument->GetArchive(), propPane_Selection, 0);
-//	prop_tabs->AddPane(prop_pane3, "Taxi+Flow");
-	prop_tabs->AddPane(prop_pane3, "Flow");
+	prop_tabs->AddPane(prop_pane3, "Taxi+Routes");
 
 	// --------------- Lights and Markings ---------------
 
 	WED_PropertyPane * prop_pane4 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sel_t, sel_w,inDocument->GetArchive(), propPane_Selection, 0);
-//	prop_tabs->AddPane(prop_pane4, "Light+Marking");
-	prop_tabs->AddPane(prop_pane4, "Marking");
+	prop_tabs->AddPane(prop_pane4, "Lights+Marking");
 
 	// ---------------- 3D Mode ---------------------
 
 	WED_PropertyPane * prop_pane5 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sel_t, sel_w,inDocument->GetArchive(), propPane_Selection, 0);
-//	prop_tabs->AddPane(prop_pane5, "3D Objects");
-	prop_tabs->AddPane(prop_pane5, "Objects");
+	prop_tabs->AddPane(prop_pane5, "3D+Objects");
 
 	// ---------------- Exclusions ------------------
 
 	WED_PropertyPane * prop_pane6 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sel_t, sel_w,inDocument->GetArchive(), propPane_Selection, 0);
-//	prop_tabs->AddPane(prop_pane6, "Exclude+Boundary");
-	prop_tabs->AddPane(prop_pane6, "Boundary");
+	prop_tabs->AddPane(prop_pane6, "Exclusion+Boundary");
 
 	// ---------------- TCE -------------
 	mTCEPane = new WED_TCEPane(this, inDocument,inDocument->GetArchive());
@@ -315,7 +311,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	int wedTHISversion[4] = { WED_VERSION_BIN };
 	if(wedTHISversion[0] * 100 + wedTHISversion[1] < wedXMLversion)
 	{
-		string msg("Warning: This earth.wed.xml was written by a newer version of WED, some content may get corrupted or may make this version crash.\nUse WED ");
+		string msg("Warning: This earth.wed.xml was written by a WED version newer than this, some content may get corrupted or may make this version crash.\nUse WED ");
 		msg += to_string(wedXMLversion / 100) + "." + to_string(wedXMLversion % 100) + " or newer to read or edit this file.";
 		DoUserAlert(msg.c_str());
 	}
