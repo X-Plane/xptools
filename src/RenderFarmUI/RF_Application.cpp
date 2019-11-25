@@ -59,7 +59,7 @@ void	RF_Application::OpenFiles(const vector<string>& inFiles)
 			MemFile_Close(load);
 
 		} else {
-			fprintf(stderr,"Could not load file %s.\n", inFiles[n].c_str());
+			fprintf(stderr,"Could not load XES file %s.\n", inFiles[n].c_str());
 		}
 		if (gVerbose)
 				printf("Map contains: %llu faces, %llu half edges, %llu vertices.\n",

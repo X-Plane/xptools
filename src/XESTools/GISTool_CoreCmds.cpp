@@ -286,7 +286,7 @@ static int DoLoad(const vector<const char *>& args)
 		MemFile_Close(load);
 
 	} else {
-		fprintf(stderr,"Could not load file %s.\n", args[0]);
+		fprintf(stderr,"Could not load XES file %s\n", args[0]);
 		return 1;
 	}
 	if (gVerbose)
@@ -312,7 +312,7 @@ static int DoOverlay(const vector<const char *>& args)
 		MemFile_Close(load);
 
 	} else {
-		fprintf(stderr,"Could not load file.\n");
+		fprintf(stderr,"Could not load XES file for overlaying: %s\n", args[0]);
 		return 1;
 	}
 	if (gVerbose)
@@ -348,7 +348,7 @@ static int DoMerge(const vector<const char *>& args)
 		MemFile_Close(load);
 
 	} else {
-		fprintf(stderr,"Could not load file.\n");
+		fprintf(stderr,"Could not load XES file for merging: %s\n", args[0]);
 		return 1;
 	}
 	if (gVerbose)
