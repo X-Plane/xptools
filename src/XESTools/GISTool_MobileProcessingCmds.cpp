@@ -21,6 +21,7 @@
  *
  */
 
+#include <unordered_set>
 #include "GISTool_MobileProcessingCmds.h"
 #include "GISTool_Globals.h"
 #include "GISTool_Utils.h"
@@ -43,10 +44,23 @@
 #include "MemFileUtils.h"
 
 using dsf_assignment = vector<vector<tile_assignment>>;
+using xy_pair = pair<int, int>;
+
+// Support unordered_map with pair<int, int> keys
+struct xy_pair_hash {
+public:
+	// World's stupidest hash selected because for x and y in the range [0, 360], it produces no collisions
+	// You can confirm by the world's stupidest Python: >>> assert 360 * 360 == len(set([x + (3 + y)*(419+y) for x in range(360) for y in range(360)]))
+	size_t operator()(const xy_pair & x) const {
+		return x.first + (1 + x.second) * (419 + x.second);
+	}
+};
+
 
 static Pmwx s_autogen_grid;
 static constexpr int s_pseudorand[] = {918,422,359,512,181,657,814,87,418,288,944,295,56,755,709,56,211,394,408,936,959,752,143,866,664,511,434,562,81,899,22,758,803,145,578,648,874,841,60,738,275,507,899,941,263,156,346,722,889,124,988,458,318,447,189,532,557,209,98,946,909,629,375,246,812,563,489,744,890,334,95,808,249,967,608,803,428,258,962,747,864,875,645,58,518,124,794,868,125,896,203,501,801,557,353,65,646,759,347,413,50,608,442,289,183,34,104,196,458,430,375,992,308,515,120,203,888,626,652,411,495,64,960,991,588,398,815,107,813,948,410,186,444,748,724,195,373,165,474,989,934,580,221,953,542,338,990,819,754,454,360,308,888,634,326,30,599,399,970,3,405,415,712,40,204,779,554,379,145,318,229,540,633,945,215,161,351,457,32,304,210,874,664,0,302,24,492,818,605,760,574,490,282,761,360,992,120,802,449,312,130,573,599,696,12,946,785,82,129,471,438,924,879,224,122,97,420,260,497,581,360,589,7,390,547,985,359,604,408,802,847,388,653,466,148,708,160,924,655,274,508,595,469,964,73,580,490,533,700,0,17,473,842,383,709,735,728,713,931,57,5,555,484,226,216,787,66,753,880,211,434,262,855,389,60,26,889,257,903,65,514,825,868,376,191,617,396,331,681,545,771,469,154,566,36,674,84,771,890,487,15,259,709,103,861,309,359,172,778,336,373,532,365,996,40,28,242,539,854,67,415,178,525,767,243,360,73,175,231,989,26,48,88,41,58,979,496,524,827,889,310,58,629,441,813,606,618,344,537,485,108,885,412,472,572,452,832,829,748,147,798,174,756,293,466,890,170,158,196,107,702,976,451,868,213,429,316,672,808,826,421,444,681,868,525,848,217,261,753,836,589,703,927,523,806,284,518,266,370,168,233,718,985,775,326,484,376,507,76,41,678,233,427,927,505,176,601,259,613,386,784,768,271,902,651,474,265,733,80,286,820,32,715,234,237,653,381,288,922,515,195,329,234,602,725,851,174,117,873,112,650,856,411,883,8,869,490,559,222,513,802,930,884,75,707,513,982,471,764,487,638,805,605,447,765,464,371,143,279,643,764,475,240,767,36,823,763,507,713,739,571,891,355,275,741,689,705,403,688,797,438,181,567,593,98,258,723,288,31,291,585,27,169,753,536,290,284,731,331,463,437,725,530,369,401,485,445,748,449,379,693,104,208,1000,899,900,888,964,4,791,278,791,265,23,507,178,812,356,713,738,950,299,218,84,84,981,444,119,991,464,488,545,853,967,72,917,868,286,11,511,533,386,833,805,214,35,228,289,294,831,469,400,520,549,419,2,747,777,492,919,672,448,404,627,540,773,952,143,83,735,598,54,190,502,559,651,712,380,576,804,401,105,435,298,992,366,222,582,911,888,672,179,755,860,521,948,821,391,237,952,210,694,558,346,240,5,864,846,201,285,609,293,536,157,514,340,694,427,504,669,154,115,623,869,983,910,205,200,651,952,21,249,957,959,31,405,401,392,751,740,437,386,122,542,506,459,400,952,113,202,184,297,994,567,976,628,1,739,636,791,966,717,420,252,184,384,656,457,606,991,830,704,790,689,105,41,964,399,858,129,606,356,334,19,400,708,736,496,756,429,163,596,133,442,845,682,350,551,37,73,319,782,696,85,477,16,889,586,798,720,441,835,212,862,864,595,185,960,744,935,267,870,94,368,281,110,647,622,599,992,286,420,10,632,612,945,742,977,313,415,273,503,768,86,685,314,406,784,767,572,954,241,649,120,930,258,801,154,531,909,986,576,855,435,452,553,145,366,512,847,183,255,40,99,164,92,882,230,643,499,782,393,830,653,868,196,741,88,714,88,13,352,600,602,398,276,417,564,382,907,323,698,919,795,859,775,369,635,434,502,87,197,941,785,599,624,226,464,847,541,707,798,780,517,668,348,132,268,408,624,550,938,650,141,537,697,445,729,66,961,67,887,864,943,233,644,558,113,557,33,883,103,169,865,325,541,204,534,135,896,123,650,983,849,890,114,501,513,163,741,29,793,693,954,19,706,203,194,7,946,284,981,474,13,351,195,982,741,64,877,420,936,964,67,810,64,95,30,240,519,388,908,603,690,511,284,564,818,346,505,7,49,616,213,720,822,244,854,432,400,95,985,741,469,981,854,768,521,440,723,63,333,833,919,27,374,406,504,920,692,871,353,110,121,150,776,188,325,263,73,704,150,291,165,858,225,5,793,471,184,235,481,777,888,173,941,142,600,311,747};
 static const array<int, 3> s_terrain_types_to_not_touch = {terrain_Water, terrain_VisualWater, terrain_Airport};
+static unordered_map<xy_pair, vector<GISPointFeature_t>, xy_pair_hash> s_point_features; // arranged by grid square (x, y)
 
 struct ag_terrain_dsf_description {
 	int dsf_lon; // the min longitude in the DSF
@@ -321,7 +335,7 @@ static void attempt_assign_special_ter_enum(int ter_enum, const map<int, special
 /**
  * A repeatable method for scattering tile placements in apparently random places.
  */
-static int pseudorandom_in_range(const special_ter_repeat_rule &rule, const pair<int, int> &dsf, int dim, int dsf_delta_dim)
+static int pseudorandom_in_range(const special_ter_repeat_rule &rule, const xy_pair &dsf, int dim, int dsf_delta_dim)
 {
 	DebugAssert(rule.min_radius < rule.target_max_radius);
 	const int offset = int_abs(dim + dsf.first * dsf.second * dsf_delta_dim * rule.min_radius * rule.target_max_radius);
@@ -569,6 +583,33 @@ static inline bool operator< (const Point2 & lhs, const Point2 & rhs)
 	return std::tie(lhs.x_, lhs.y_) < std::tie(rhs.x_, rhs.y_);
 }
 
+static unordered_map<xy_pair, vector<GISPointFeature_t>, xy_pair_hash> point_features_by_grid_coord(const ag_terrain_dsf_description &dsf_desc)
+{
+	unordered_map<xy_pair, vector<GISPointFeature_t>, xy_pair_hash> out;
+	for(int x = 0; x < s_dsf_desc.divisions_lon; ++x)
+	for(int y = 0; y < s_dsf_desc.divisions_lat; ++y)
+	{
+		const grid_coord_desc grid_pt{x, y, dsf_desc.divisions_lon, dsf_desc.divisions_lat, dsf_desc.dsf_lon, dsf_desc.dsf_lat};
+		const Bbox2 grid_square_bounds = grid_pt.bounds();
+		const xy_pair xy(x, y);
+		for(Pmwx::Face_const_iterator f : gMap.face_handles())
+		if(!f->is_unbounded())
+		{
+			const Polygon2 ben_poly = cgal2ben(f, dsf_desc.dsf_lon, dsf_desc.dsf_lat);
+			if(ben_poly.area() > 0 && // <= 0 is possible when the face extends beyond the DSF boundary, or when its points are "real" close together
+					grid_square_bounds.overlap(ben_poly.bounds()))
+			{
+				const GIS_face_data & fd = f->data();
+				std::copy_if(fd.mPointFeatures.begin(), fd.mPointFeatures.end(), std::back_inserter(out[xy]),
+							 [&](const GISPointFeature_t & pt_feat) {
+								 return grid_square_bounds.contains(cgal2ben(pt_feat.mLocation));
+							 });
+			}
+		}
+	}
+	return out;
+}
+
 static int DoMobileAutogenTerrain(const vector<const char *> &args)
 {
 	verify_map_bounds();
@@ -635,38 +676,20 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 	//   b) downgrade *out* of inner city any tiles that do *not* have very tall buildings.
 	//--------------------------------------------------------------------------------------------------------
 	const map<int, special_ter_repeat_rule> special_ter_repeat_rules = get_special_ter_repeat_rules(s_dsf_desc.style); // Tyler says: for reasons unclear to me, we get UB deep within std::map::end() if this isn't const
+	s_point_features = point_features_by_grid_coord(s_dsf_desc);
 
 	if(s_dsf_desc.style == style_us) // Europe doesn't have the special types we assign below
 	for(int x = 0; x < s_dsf_desc.divisions_lon; ++x)
 	for(int y = 0; y < s_dsf_desc.divisions_lat; ++y)
 	{
 		const grid_coord_desc grid_pt = {x, y, dx, dy, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat};
-		const Bbox2 grid_square_bounds = grid_pt.bounds();
-
-		vector<GISPointFeature_t> point_features_in_grid_square;
-		for(Pmwx::Face_const_iterator f : gMap.face_handles())
-		{
-			if(!f->is_unbounded())
-			{
-				const Polygon2 ben_poly = cgal2ben(f, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat);
-				if(ben_poly.area() > 0 && // <= 0 is possible when the face extends beyond the DSF boundary, or when its points are "real" close together
-					   grid_square_bounds.overlap(ben_poly.bounds()))
-				{
-					const GIS_face_data & fd = f->data();
-					std::copy_if(fd.mPointFeatures.begin(), fd.mPointFeatures.end(), std::back_inserter(point_features_in_grid_square),
-								 [&](const GISPointFeature_t & pt_feat) {
-									 return grid_square_bounds.contains(cgal2ben(pt_feat.mLocation));
-								 });
-				}
-			}
-		}
-
+		const vector<GISPointFeature_t> & point_features_in_grid_square = s_point_features.at(grid_pt.xy());
 		const long buildings_over_40m_in_grid_square = std::count_if(point_features_in_grid_square.begin(), point_features_in_grid_square.end(), [](const GISPointFeature_t & feat) {
 			const auto height = feat.mParams.find(pf_Height);
 			return height != feat.mParams.end() && height->second > 40; // meters
 		});
 
-		set<int> feature_types;
+		unordered_set<int> feature_types;
 		std::transform(point_features_in_grid_square.begin(), point_features_in_grid_square.end(), std::inserter(feature_types, feature_types.begin()),
 					   [&](const GISPointFeature_t & pt_feat) { return pt_feat.mFeatType; });
 
@@ -725,7 +748,8 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 	for(int x = 0; x < dx; ++x)
 	for(int y = 0; y < dy; ++y)
 	{
-		ortho_terrain_assignments[x][y] = get_analogous_ortho_terrain(ortho_terrain_assignments[x][y].ter_enum, x, y, terrain_desc_by_enum);
+		tile_assignment & assignment = ortho_terrain_assignments[x][y];
+		assignment = get_analogous_ortho_terrain(assignment.ter_enum, x, y, terrain_desc_by_enum);
 	}
 
 	//--------------------------------------------------------------------------------------------------------
@@ -1139,6 +1163,7 @@ static int MergeTylersAg(const vector<const char *>& args)
 	const unordered_map<string, int> obj_tokens = register_obj_tokens_for_agps(agps); // maps agp_t::obj::name values to the global enums we register for them
 	const unordered_map<string, pair<Bbox2, float>> obj_bounds_and_heights_mtrs = read_mobile_obj_ground_bounds_and_heights(s_dsf_desc.style);
 	const vector<Polygon2> runway_approach_paths = make_protected_runway_approach_paths(); // the lat/lon bounds we should consider "protected" from tall buildings due to runway flight paths
+	const DEMGeo & elevation_dem(gDem[dem_Elevation]);
 
 	//--------------------------------------------------------------------------------------------------------
 	// Place OBJs
@@ -1155,6 +1180,8 @@ static int MergeTylersAg(const vector<const char *>& args)
 		{
 			const Polygon2 ben_face = cgal2ben(f, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat); // not *that* Ben face! https://secure.gravatar.com/ben2212171
 			DebugAssert(ben_face.area() > one_square_meter_in_degrees || !barf_on_tiny_map_faces());
+			const pair<int, int> xy = get_ortho_grid_xy(ben_face.front(), s_dsf_desc.style).xy();
+			const vector<GISPointFeature_t> & point_features_in_grid_square = s_point_features.at(xy);
 
 			// Place the associated OBJs based on this tile's AGP spec
 			auto agp = agps.find(ter_enum);
@@ -1165,7 +1192,7 @@ static int MergeTylersAg(const vector<const char *>& args)
 												 ben_face.is_square_within_tolerance(one_square_meter_in_degrees) &&
 												 holes.size() == 0;
 				const float max_elevation_delta_meters_to_consider_flatish = 10;
-				const float tallest_obstacle_in_face_mtrs = max_non_negative_value(fd.mPointFeatures.begin(), fd.mPointFeatures.end(),
+				const float tallest_obstacle_in_face_mtrs = max_non_negative_value(point_features_in_grid_square.begin(), point_features_in_grid_square.end(),
 																				   [&](const GISPointFeature_t & feat) {
 																					   const auto height = feat.mParams.find(pf_Height);
 																					   return height == feat.mParams.end() ? 0 : height->second;
@@ -1175,7 +1202,7 @@ static int MergeTylersAg(const vector<const char *>& args)
 					DebugAssert(obj_bounds_and_heights_mtrs.count(obj.name));
 					const float obj_height = obj_bounds_and_heights_mtrs.at(obj.name).second;
 					const bool is_too_tall_for_approach = obj_height > 50; // TODO: We could be smarter about this by paying attention to the distance from the runway (e.g., with a 3 degree glideslope, the farther out you are, the taller the building could be)
-					const bool is_way_taller_than_real_obstacles = obj_height > tallest_obstacle_in_face_mtrs + 50;
+					const bool is_way_taller_than_real_obstacles = obj_height > fltmax2(tallest_obstacle_in_face_mtrs, 75) + 50;
 					auto should_place_obj = [&](const Polygon2 & face, const vector<Polygon2> & holes, const agp_t::obj & obj, const Point2 & center, const double obj_rotation) {
 						const Polygon2 obj_loc = obj_placement(obj, obj_rotation, center, obj_bounds_and_heights_mtrs);
 						const bool building_is_on_approach_path = std::any_of(runway_approach_paths.begin(), runway_approach_paths.end(),
@@ -1185,7 +1212,7 @@ static int MergeTylersAg(const vector<const char *>& args)
 						{
 							return false;
 						}
-						else if(compute_ground_slope_mtrs(obj_loc, gDem[dem_Elevation]) > max_elevation_delta_meters_to_consider_flatish)
+						else if(compute_ground_slope_mtrs(obj_loc, elevation_dem) > max_elevation_delta_meters_to_consider_flatish)
 						{
 							return false;
 						}

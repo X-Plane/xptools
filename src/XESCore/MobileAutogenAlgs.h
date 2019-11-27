@@ -48,6 +48,7 @@ struct grid_coord_desc {
 	int dsf_lat;
 
 	Bbox2 bounds() const;
+	inline pair<int, int> xy() const { return pair<int, int>(x, y); }
 };
 grid_coord_desc get_ortho_grid_xy(const Point2 &point, ag_terrain_style style);
 
