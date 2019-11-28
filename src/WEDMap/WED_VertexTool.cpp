@@ -36,6 +36,7 @@
 #include "WED_Taxiway.h"
 #include "WED_PolygonPlacement.h"
 #include "WED_DrapedOrthophoto.h"
+#include "WED_RoadEdge.h"
 #include "WED_Runway.h"
 #include "WED_MapZoomerNew.h"
 #include "GISUtils.h"
@@ -393,11 +394,12 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 		DebugAssert(e);
 		if(e)
 		{
+			bool canBeCurved = (en->GetGISSubtype() == WED_RoadEdge::sClass);
 			Bezier2	b;
 			if(con_type) *con_type = handle_None;
 			if(active) *active = 0;
 
-			if(e->GetSide(gis_Geo, 0, b))
+			if(e->GetSide(gis_Geo, 0, b) && canBeCurved )
 			{
 				switch(n) {
 				case 0:
@@ -444,7 +446,7 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 				}
 			}
 
-			if(active)
+			if(canBeCurved && active)
 			{
 				GUI_KeyFlags mods = GetHost()->GetModifiersNow();
 				if((mods & gui_OptionAltFlag) && (n==1)) { *active = 1; }
@@ -858,6 +860,7 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 		if((e = SAFE_CAST(IGISEdge,en)) != NULL)
 		{
 			GUI_KeyFlags mods = GetHost()->GetModifiersNow();
+			bool canBeCurved = (en->GetGISSubtype() == WED_RoadEdge::sClass);
 
 			Bezier2 b;
 			if(e->GetSide(gis_Geo, 0, b))
@@ -865,7 +868,7 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 				if (!mInEdit)
 				{
 					mInEdit = 1;
-					if (mods & gui_ShiftFlag)
+					if (canBeCurved && (mods & gui_ShiftFlag))
 					{
 						if (n == 1) {b.c1 = b.p1; }
 						if (n == 2) {b.c2 = b.p2; }
@@ -884,7 +887,7 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 				{
 					mInEdit = 1;
 
-					if (mods & gui_OptionAltFlag)
+					if (canBeCurved && (mods & gui_OptionAltFlag))
 					{
 						if (n == 1) {b.c1 = b.p1+delta;}
 						if (n == 2) {b.c2 = b.p2+delta;}
