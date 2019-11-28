@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2009, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -50,7 +50,7 @@ static bool is_edge_curved(CreateEdge_t tool_type)
 	#if HAS_CURVED_ATC_ROUTE
 		return true;
 	#endif
-	
+
 	return false;
 }
 
@@ -110,7 +110,7 @@ struct compare_second {
 static void SortSplits(const Segment2& s, vector<Point2>& splits)
 {
 	sort(splits.begin(), splits.end(), sort_by_seg_rat(s.p1));
-	
+
 	// Nuke dupe pts.  A hack?  NO!  Intentional.  When we GIS-iterate through our hierarchy
 	// we pick up all our graph end pts many times - once as nodes, and once as the points making
 	// up the pt sequences that is the edges.
@@ -144,11 +144,11 @@ void		WED_CreateEdgeTool::AcceptPath(
 	vector<Point2>	dirs_hi(in_dirs_hi);
 	vector<int>		has_dirs(in_has_dirs);
 	vector<int>		has_split(in_has_split);
-	
+
 	int idx;
 	WED_Thing * host_for_parent = GetHost(idx);
 	if (host_for_parent == NULL) return;
-	
+
 	WED_Thing * host_for_merging = WED_GetContainerForHost(GetResolver(), host_for_parent, kIsAirport[mType], idx);
 
 	string cname = string("Create ") + kCreateCmds[mType];
@@ -167,7 +167,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 	/************************************************************************************************
 	 * FIRST SNAPPING PASS - NODE TO NODE
 	 ************************************************************************************************/
-	
+
 	// For each node we want to add, we are going to find a nearby existing node - and if we find one, we
 	// lock our location to theirs.  This "direct hit" will get consoldiated during create.  (By moving our
 	// path first, we don't get false intersections when the user meant to hit end to end.)
@@ -181,9 +181,9 @@ void		WED_CreateEdgeTool::AcceptPath(
 			IGISPoint * pp = dynamic_cast<IGISPoint *>(who);
 			if(pp)
 				pp->GetLocation(gis_Geo,pts[p]);
-		}	
+		}
 	}
-	
+
 	/************************************************************************************************
 	 * SECOND SNAPPING PASS - LOCK NEW PTS TO EXISTING EDGES
 	 ************************************************************************************************/
@@ -195,13 +195,13 @@ void		WED_CreateEdgeTool::AcceptPath(
 		IGISPointSequence * seq = NULL;
 		FindNearP2S(host_for_merging, NULL, edge_class,pts[p], seq, dist);
 		if(seq)
-			seq->SplitSide(pts[p], 0.001);		
+			seq->SplitSide(pts[p], 0.001);
 	}
-	
+
 	/************************************************************************************************
 	 *
 	 ************************************************************************************************/
-	
+
 	vector<WED_GISEdge*> tool_created_edges;
 	WED_GISEdge *	new_edge = NULL;
 	WED_TaxiRoute *	tr = NULL;
@@ -215,7 +215,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 	WED_GISPoint * c = NULL;
 	WED_Thing * src = NULL, * dst = NULL;
 	double	dist=frame_dist*frame_dist;
-	if(src == NULL)	
+	if(src == NULL)
 		FindNear(host_for_merging, NULL, edge_class,pts[start % pts.size()],src,dist);
 	if(src == NULL)
 	{
@@ -261,10 +261,10 @@ void		WED_CreateEdgeTool::AcceptPath(
 			break;
 #endif
 		}
-	
+
 		new_edge->AddSource(src,0);
 		dst = NULL;
-		
+
 		dist=frame_dist*frame_dist;
 		FindNear(host_for_merging, NULL, edge_class,pts[dp],dst,dist);
 		if(dst == NULL)
@@ -282,9 +282,9 @@ void		WED_CreateEdgeTool::AcceptPath(
 			dst->SetParent(host_for_parent,idx);
 			dst->SetName(mName.value+"_stop");
 			c->SetLocation(gis_Geo,pts[dp]);
-		}		
+		}
 		new_edge->AddSource(dst,1);
-		
+
 		if(has_dirs[sp])
 		{
 			if(has_dirs[dp])
@@ -314,19 +314,18 @@ void		WED_CreateEdgeTool::AcceptPath(
 
 	//Collect edges in the current airport
 	vector<WED_GISEdge*> all_edges;
-	CollectRecursive(host_for_parent, back_inserter(all_edges));
-
+	CollectRecursive(host_for_parent, back_inserter(all_edges),edge_class);
 	//filter them for just the crossing ones
 	set<WED_GISEdge*> crossing_edges = WED_do_select_crossing(all_edges);
 
 	//convert, and run split!
 	vector<split_edge_info_t> edges_to_split;
-	
+
 	for(set<WED_GISEdge*>::iterator e = crossing_edges.begin(); e != crossing_edges.end(); ++e)
 		edges_to_split.push_back(cast_WED_GISEdge_to_split_edge_info_t(*e, find(tool_created_edges.begin(), tool_created_edges.end(), *e) != tool_created_edges.end()));
-	
+
 	edge_to_child_edges_map_t new_pieces = run_split_on_edges(edges_to_split);
-	
+
 	//For all the tool_created_edges that were split
 	for(vector<WED_GISEdge*>::iterator itr = tool_created_edges.begin();
 		itr != tool_created_edges.end() && new_pieces.size() > 0;
@@ -379,23 +378,8 @@ void WED_CreateEdgeTool::FindNear(WED_Thing * host, IGISEntity * ent, const char
 		IGISPoint * p;
 		IGISPointSequence * ps;
 		IGISComposite * c;
-	
+
 		switch(e->GetGISClass()) {
-		case gis_Point:
-		case gis_Point_Bezier:
-		case gis_Point_Heading:
-		case gis_Point_HeadingWidthLength:			
-			if((p = dynamic_cast<IGISPoint *>(e)) != NULL)
-			{
-				p->GetLocation(gis_Geo,l);
-				double my_dist = Segment2(loc,l).squared_length();
-				if(my_dist < out_dsq)
-				{
-					out_thing = t;
-					out_dsq = my_dist;
-				}
-			}
-			break;
 		case gis_PointSequence:
 		case gis_Line:
 		case gis_Line_Width:
@@ -406,14 +390,32 @@ void WED_CreateEdgeTool::FindNear(WED_Thing * host, IGISEntity * ent, const char
 			if((ps = dynamic_cast<IGISPointSequence*>(e)) != NULL)
 			{
 				for(int n = 0; n < ps->GetNumPoints(); ++n)
-					FindNear(NULL,ps->GetNthPoint(n), filter, loc, out_thing, out_dsq);
+				{
+					p = ps->GetNthPoint(n);
+					if(p)
+					{
+						p->GetLocation(gis_Geo,l);
+						double my_dist = Segment2(loc,l).squared_length();
+						if(my_dist < out_dsq)
+						{
+							t = dynamic_cast<WED_Thing *>(p);
+							if(t)
+							{
+								out_thing = t;
+								out_dsq = my_dist;
+							}
+						}
+					}
+				}
 			}
 			break;
 		case gis_Composite:
 			if((c = dynamic_cast<IGISComposite *>(e)) != NULL)
 			{
 				for(int n = 0; n < c->GetNumEntities(); ++n)
+				{
 					FindNear(NULL,c->GetNthEntity(n), filter, loc, out_thing, out_dsq);
+				}
 			}
 		}
 	}
@@ -437,7 +439,7 @@ void WED_CreateEdgeTool::FindNearP2S(WED_Thing * host, IGISEntity * ent, const c
 		IGISPoint * p;
 		IGISPointSequence * ps;
 		IGISComposite * c;
-	
+
 		switch(e->GetGISClass()) {
 		case gis_PointSequence:
 		case gis_Line:
@@ -455,7 +457,7 @@ void WED_CreateEdgeTool::FindNearP2S(WED_Thing * host, IGISEntity * ent, const c
 					if(ps->GetSide(gis_Geo,n,b))
 					{
 						if(loc != b.p1 && loc != b.p2)
-						{								
+						{
 //							double d = b.squared_distance(loc);
 //							if(d < out_dsq)
 //							{
@@ -463,9 +465,9 @@ void WED_CreateEdgeTool::FindNearP2S(WED_Thing * host, IGISEntity * ent, const c
 //								out_thing = ps;
 //							}
 						}
-					
+
 					}
-					else					
+					else
 					{
 						if(loc != b.p1 && loc != b.p2)
 						{
@@ -523,7 +525,7 @@ void	WED_CreateEdgeTool::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 		if(airport)
 		{
 			PropertyDict_t full;
-			WED_CreateToolBase::GetNthPropertyDict(n,full);			
+			WED_CreateToolBase::GetNthPropertyDict(n,full);
 			set<int> legal;
 			WED_GetAllRunwaysTwoway(airport, legal);
 			legal.insert(mRunway.value);
@@ -542,7 +544,7 @@ void	WED_CreateEdgeTool::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 		if(airport)
 		{
 			PropertyDict_t full;
-			WED_CreateToolBase::GetNthPropertyDict(n,full);			
+			WED_CreateToolBase::GetNthPropertyDict(n,full);
 			set<int> legal;
 			WED_GetAllRunwaysOneway(airport, legal);
 			PropertyVal_t val;
@@ -556,7 +558,7 @@ void	WED_CreateEdgeTool::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 		}
 	}
 	else
-		WED_CreateToolBase::GetNthPropertyDict(n,dict);			
+		WED_CreateToolBase::GetNthPropertyDict(n,dict);
 }
 
 void		WED_CreateEdgeTool::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
@@ -665,7 +667,7 @@ bool		WED_CreateEdgeTool::get_valid_road_info(road_info_t * optional_info) const
 {
 	road_info_t temp;
 	road_info_t * i = optional_info ? optional_info : &temp;
-	
+
 	IResolver * resolver;
 	WED_ResourceMgr * mgr;
 	if((mgr = WED_GetResourceMgr(GetResolver())) != NULL)

@@ -1119,6 +1119,9 @@ set<WED_Thing *> WED_select_doubles(WED_Thing * t)
 			DebugAssert(ii != jj);
 			DebugAssert(ii);
 			DebugAssert(jj);
+
+			if(!(ii->GetGISSubtype() == jj->GetGISSubtype())) continue;
+
 			Point2 p1, p2;
 			ii->GetLocation(gis_Geo, p1);
 			jj->GetLocation(gis_Geo, p2);
@@ -1178,6 +1181,9 @@ set<WED_GISEdge *> WED_do_select_crossing(const vector<WED_GISEdge *> edges)
 			DebugAssert(ii != jj);
 			DebugAssert(ii);
 			DebugAssert(jj);
+
+			if(!(ii->GetGISSubtype() == jj->GetGISSubtype())) continue;
+
 			Bezier2 b1, b2;
 			bool isb1, isb2;
 
