@@ -108,7 +108,7 @@ enum dsf_import_category {
 	dsf_cat_DIM
 };
 
-static const char * k_dsf_cat_names[dsf_cat_DIM] = { 
+static const char * k_dsf_cat_names[dsf_cat_DIM] = {
 	"Exclusion Zones",
 	"Objects",
 	"Facades",
@@ -120,14 +120,19 @@ static const char * k_dsf_cat_names[dsf_cat_DIM] = {
 	"Roads"
 };
 
+//ToDo:mroe: partial DSF import implemented . By bound and category , checking the bounds for roadnets only yet
 class	DSF_Importer {
 public:
 
-	DSF_Importer() { 
-		for(int n = 0; n < 7; ++n) 
-			req_level_obj[n] = req_level_agp[n] = req_level_fac[n] = -1; 
+	DSF_Importer() {
+		for(int n = 0; n < 7; ++n)
+			req_level_obj[n] = req_level_agp[n] = req_level_fac[n] = -1;
 		for(int n = 0; n < dsf_cat_DIM; ++n)
+		{
 			bucket_parents[n] = NULL;
+			dsf_cat_filter[n] = 1;
+		}
+		cull_bound = Bbox2(-180,-90,180,90);
 	}
 
 	int					req_level_obj[7];
@@ -151,7 +156,10 @@ public:
 	bool				want_uv;
 	bool				want_bezier;
 	bool				want_wall;
-	
+
+	int                 dsf_cat_filter[dsf_cat_DIM];
+	Bbox2 				cull_bound;
+
 	WED_Thing * get_cat_parent(dsf_import_category cat)
 	{
 		if(bucket_parents[cat] == NULL)
@@ -170,7 +178,7 @@ public:
 #if !NO_NET
 	typedef map<pair<int, int>, WED_RoadNode *> road_node_map_t;
 	road_node_map_t road_nodes;
-	WED_RoadNode *		road_start;
+	unsigned int        road_start_ID;
 #endif
 
 	int GetShowForFacID(int id)
@@ -193,7 +201,7 @@ public:
 
 	void handle_req_obj(const char * str)
 	{
-		int level, id;		
+		int level, id;
 		if(sscanf(str,"%d/%d",&level,&id) == 2)
 		for(int l = level; l <= 6; ++l)
 		if(req_level_obj[l] == -1 || req_level_obj[l] > id)
@@ -202,7 +210,7 @@ public:
 
 	void handle_req_agp(const char * str)
 	{
-		int level, id;		
+		int level, id;
 		if(sscanf(str,"%d/%d",&level,&id) == 2)
 		for(int l = level; l <= 6; ++l)
 		if(req_level_agp[l] == -1 || req_level_agp[l] > id)
@@ -211,7 +219,7 @@ public:
 
 	void handle_req_fac(const char * str)
 	{
-		int level, id;		
+		int level, id;
 		if(sscanf(str,"%d/%d",&level,&id) == 2)
 		for(int l = level; l <= 6; ++l)
 		if(req_level_fac[l] == -1 || req_level_fac[l] > id)
@@ -287,6 +295,7 @@ public:
 	{
 		DSF_Importer * me = (DSF_Importer *) inRef;
 		me->pol_table.push_back(inPartialPath);
+
 		size_t pos = me->pol_table.back().find_last_of('/');
 		if(pos == string::npos)
 			pos = 0;
@@ -303,7 +312,7 @@ public:
 		me->net_table.push_back(inPartialPath);
 		return 1;
 	}
-	
+
 	static int AcceptRasterDef(const char * inPartalPath, void * inRef)
 	{
 		return 1;
@@ -312,6 +321,10 @@ public:
 	static void	AcceptProperty(const char * inProp, const char * inValue, void * inRef)
 	{
 		DSF_Importer * me = (DSF_Importer *) inRef;
+
+		if(strcmp(inProp, "sim/require_object") == 0)	me->handle_req_obj(inValue);
+		if(strcmp(inProp, "sim/require_agpoint") == 0)	me->handle_req_agp(inValue);
+		if(strcmp(inProp, "sim/require_facade") == 0)	me->handle_req_fac(inValue);
 
 #if !NO_EXC
 		if(strcmp(inProp, "sim/exclude_obj") == 0)	me->make_exclusion(inValue, exclude_Obj);
@@ -323,10 +336,7 @@ public:
 		if(strcmp(inProp, "sim/exclude_pol") == 0)	me->make_exclusion(inValue, exclude_Pol);
 		if(strcmp(inProp, "sim/exclude_str") == 0)	me->make_exclusion(inValue, exclude_Str);
 #endif
-		
-		if(strcmp(inProp, "sim/require_object") == 0)	me->handle_req_obj(inValue);
-		if(strcmp(inProp, "sim/require_agpoint") == 0)	me->handle_req_agp(inValue);
-		if(strcmp(inProp, "sim/require_facade") == 0)	me->handle_req_fac(inValue);
+
 	}
 
 	static void	BeginPatch(
@@ -369,6 +379,8 @@ public:
 	{
 #if !NO_OBJ
 		DSF_Importer * me = (DSF_Importer *) inRef;
+		if(!me->dsf_cat_filter[dsf_cat_objects]) return;
+
 		WED_ObjPlacement * obj = WED_ObjPlacement::CreateTyped(me->archive);
 		obj->SetResource(me->obj_table[inObjectType]);
 		obj->SetLocation(gis_Geo,Point2(inCoordinates[0],inCoordinates[1]));
@@ -391,24 +403,11 @@ public:
 	{
 #if !NO_NET
 		DSF_Importer * me = (DSF_Importer *) inRef;
+		if(!me->dsf_cat_filter[dsf_cat_roads]) return;
+
 		DebugAssert(me->accum_road.empty());
-		unsigned int inStartNodeID = (unsigned int) inCoordinates[3];
-		
-		road_node_map_t::iterator rn = me->road_nodes.find(make_pair(inNetworkType, inStartNodeID));
-		if(rn == me->road_nodes.end())
-		{
-			WED_RoadNode * start_node = WED_RoadNode::CreateTyped(me->archive);
-			start_node->SetParent(me->get_cat_parent(dsf_cat_roads),me->get_cat_parent(dsf_cat_roads)->CountChildren());
-			stringstream ss;
-			ss << inStartNodeID;
-			start_node->SetLocation(gis_Geo, Point2(inCoordinates[0], inCoordinates[1]));
-			start_node->SetName(ss.str());
-			me->road_nodes[make_pair(inNetworkType, inStartNodeID)] = start_node;
-			me->road_start = start_node;
-		}
-		else
-			me->road_start = rn->second;
-		
+
+		me->road_start_ID = (unsigned int) inCoordinates[3];
 		me->accum_road_type = make_pair(inNetworkType, inNetworkSubtype);
 		me->accum_road.push_back(make_pair(Point2(inCoordinates[0], inCoordinates[1]), int(inCoordinates[2])));
 #endif
@@ -421,6 +420,7 @@ public:
 	{
 #if !NO_NET
 		DSF_Importer * me = (DSF_Importer *) inRef;
+		if(!me->dsf_cat_filter[dsf_cat_roads]) return;
 		me->accum_road.push_back(make_pair(Point2(inCoordinates[0], inCoordinates[1]), int(inCoordinates[2])));
 #endif
 	}
@@ -432,12 +432,38 @@ public:
 	{
 #if !NO_NET
 		DSF_Importer * me = (DSF_Importer *) inRef;
-		
+		if(!me->dsf_cat_filter[dsf_cat_roads]) return;
+		if ( !me->cull_bound.contains(me->accum_road[0].first) && !me->cull_bound.contains(Point2(inCoordinates[0], inCoordinates[1])))
+		{
+			me->accum_road.clear();
+			return;
+		}
+
+		DebugAssert(me->accum_road.size() > 0);
+
+		unsigned int inNetworkType = me->accum_road_type.first;
+		unsigned int inStartNodeID = me->road_start_ID;
+
+		road_node_map_t::iterator sn = me->road_nodes.find(make_pair(inNetworkType, inStartNodeID));
+		WED_RoadNode * road_start;
+		if(sn == me->road_nodes.end())
+		{
+			WED_RoadNode * start_node = WED_RoadNode::CreateTyped(me->archive);
+			start_node->SetParent(me->get_cat_parent(dsf_cat_roads),me->get_cat_parent(dsf_cat_roads)->CountChildren());
+			stringstream ss;
+			ss << inStartNodeID;
+			start_node->SetLocation(gis_Geo, Point2(me->accum_road[0].first));
+			start_node->SetName(ss.str());
+			me->road_nodes[make_pair(inNetworkType, inStartNodeID)] = start_node;
+			road_start = start_node;
+		}
+		else
+			road_start = sn->second;
+
 		unsigned int inEndNodeID = inCoordinates[3];
-		
-		road_node_map_t::iterator rn = me->road_nodes.find(make_pair(me->accum_road_type.first, inEndNodeID));
+		road_node_map_t::iterator en = me->road_nodes.find(make_pair(me->accum_road_type.first, inEndNodeID));
 		WED_RoadNode * road_end;
-		if(rn == me->road_nodes.end())
+		if(en == me->road_nodes.end())
 		{
 			WED_RoadNode * end_node = WED_RoadNode::CreateTyped(me->archive);
 			end_node->SetParent(me->get_cat_parent(dsf_cat_roads),me->get_cat_parent(dsf_cat_roads)->CountChildren());
@@ -449,20 +475,20 @@ public:
 			road_end = end_node;
 		}
 		else
-			road_end = rn->second;
+			road_end = en->second;
 
 		me->accum_road.push_back(make_pair(Point2(inCoordinates[0], inCoordinates[1]), int(inCoordinates[2])));
 
 		DebugAssert(me->accum_road.size() > 1);
-		
+
 		int start_level = me->accum_road[0].second;
 		int end_level = inCoordinates[2];
 		me->accum_road.front().second = 0;
 		me->accum_road.back().second = 0;
-		
+
 		int last = me->accum_road.size()-1;
 		int s = 0;
-		WED_RoadNode * last_node = me->road_start;
+		WED_RoadNode * last_node = road_start;
 		while(s < last)
 		{
 			int n = s+1;
@@ -492,7 +518,7 @@ public:
 				edge->AddSource(shape, 1);
 				last_node = shape;
 			}
-			
+
 			if(span == 1)
 			{
 				Segment2 path(me->accum_road[s].first, me->accum_road[n].first);
@@ -503,14 +529,14 @@ public:
 				Point2 p1 = me->accum_road[s].first;
 				Point2 p2 = me->accum_road[s+2].first;
 				Point2	c = me->accum_road[s+1].first;
-				
+
 				Point2 c1 = Point2(
 								p1.x() + (c.x() - p1.x()) * 2.0 / 3.0,
 								p1.y() + (c.y() - p1.y()) * 2.0 / 3.0);
 				Point2 c2 = Point2(
 								p2.x() + (c.x() - p2.x()) * 2.0 / 3.0,
 								p2.y() + (c.y() - p2.y()) * 2.0 / 3.0);
-				
+
 				Bezier2 path(p1,c1,c2,p2);
 				edge->SetSideBezier(gis_Geo, path);
 			}
@@ -524,7 +550,7 @@ public:
 			}
 			s = n;
 		}
-		
+
 		me->accum_road.clear();
 #endif
 	}
@@ -537,15 +563,15 @@ public:
 	{
 		DSF_Importer * me = (DSF_Importer *) inRef;
 		string r  = me->pol_table[inPolygonType];
-		
+
 		me->poly = NULL;
 		me->ring = NULL;
 
 		dsf_import_category cat = dsf_cat_objects;
-		
+
 #if !NO_FAC
-		
-		if(end_match(r.c_str(),".fac"))
+
+		if( me->dsf_cat_filter[dsf_cat_facades] && end_match(r.c_str(),".fac" ))
 		{
 			// Ben says: .fac must be 2-coord for v9.  But...maybe for v10 we allow curved facades?
 			me->want_uv=false;
@@ -563,7 +589,7 @@ public:
 #endif
 
 #if !NO_FOR
-		if(end_match(r.c_str(),".for"))
+		if(me->dsf_cat_filter[dsf_cat_forests] && end_match(r.c_str(),".for"))
 		{
 			me->want_uv=false;
 			me->want_bezier=false;
@@ -579,7 +605,7 @@ public:
 #endif
 
 #if !NO_LIN
-		if(end_match(r.c_str(),".lin"))
+		if( me->dsf_cat_filter[dsf_cat_lines] && end_match(r.c_str(),".lin"))
 		{
 			me->want_uv=false;
 			me->want_bezier=inCoordDepth == 4;
@@ -594,7 +620,7 @@ public:
 #endif
 
 #if !NO_STR
-		if(end_match(r.c_str(),".str") || end_match(r.c_str(),".ags"))
+		if( me->dsf_cat_filter[dsf_cat_strings] && (end_match(r.c_str(),".str") || end_match(r.c_str(),".ags")) )
 		{
 			me->want_uv=false;
 			me->want_bezier=inCoordDepth == 4;
@@ -609,7 +635,7 @@ public:
 #endif
 
 #if !NO_POL
-		if(end_match(r.c_str(),".pol") || end_match(r.c_str(),".agb"))
+		if(me->dsf_cat_filter[dsf_cat_draped_poly] && (end_match(r.c_str(),".pol") || end_match(r.c_str(),".agb")))
 		{
 			me->want_uv=inParam == 65535;
 			me->want_bezier=me->want_uv ? (inCoordDepth == 8) : (inCoordDepth == 4);
@@ -679,7 +705,7 @@ public:
 			p.hi.x_ = inCoordinates[3];
 			p.hi.y_ = inCoordinates[4];
 			p.lo = p.pt + Vector2(p.hi, p.pt);
-			me->pts.push_back(p);		
+			me->pts.push_back(p);
 			me->walls.push_back(inCoordinates[2]);
 		}
 		else if(me->want_wall)
@@ -688,7 +714,7 @@ public:
 			p.pt.x_ = inCoordinates[0];
 			p.pt.y_ = inCoordinates[1];
 			p.lo = p.hi = p.pt;
-			me->pts.push_back(p);		
+			me->pts.push_back(p);
 			me->walls.push_back(inCoordinates[2]);
 		}
 		else if(me->want_uv && me->want_bezier)
@@ -705,7 +731,7 @@ public:
 			u.hi.x_ = inCoordinates[6];
 			u.hi.y_ = inCoordinates[7];
 			u.lo = u.pt + Vector2(u.hi, u.pt);
-			
+
 			me->pts.push_back(p);
 			me->uvs.push_back(u);
 		}
@@ -720,7 +746,7 @@ public:
 			u.pt.y_ = inCoordinates[3];
 			u.lo = u.hi = u.pt;
 			me->pts.push_back(p);
-			me->uvs.push_back(u);	
+			me->uvs.push_back(u);
 		}
 		else if (me->want_bezier)
 		{
@@ -746,16 +772,16 @@ public:
 					void *			inRef)
 	{
 		DSF_Importer * me = (DSF_Importer *) inRef;
-		
+
 		if(me->ring == NULL)
 			return;
-		
+
 		if(me->want_bezier)
 		{
 			vector<BezierPoint2>	pc, uc;
 //			debug_it(me->pts);
 //			debug_it(me->uvs);
-			
+
 			BezierPointSeqFromTriple(me->pts.begin(),me->pts.end(), back_inserter(pc));
 			me->pts.swap(pc);
 
@@ -790,19 +816,19 @@ public:
 					me->uvs.front().lo = me->uvs.back().lo;
 					me->uvs.pop_back();
 				}
-				
+
 				WED_StringPlacement * str = dynamic_cast<WED_StringPlacement*>(me->ring);
 				if(str)
 					str->SetClosed(1);
 			}
-			
+
 //			debug_it(me->pts);
 //			debug_it(me->uvs);
-			
+
 		}
-		
+
 		for(int n = 0; n < me->pts.size(); ++n)
-		{		
+		{
 			WED_Thing * node;
 			if(me->want_uv && me->want_bezier)
 			{
@@ -842,7 +868,7 @@ public:
 			node->SetName("Point");
 		}
 
-		
+
 		if (me->poly != NULL)
 			me->ring = NULL;
 	}
@@ -853,14 +879,14 @@ public:
 		DSF_Importer * me = (DSF_Importer *) inRef;
 		me->poly = NULL;
 	}
-	
+
 	static void AddRasterData(
 					DSFRasterHeader_t *	header,
 					void *				data,
 					void *				inRef)
 	{
 	}
-	
+
 	static void SetFilter(int filterId, void * inRef)
 	{
 	}
@@ -877,11 +903,11 @@ public:
 								BeginPolygon, BeginPolygonWinding, AddPolygonPoint,EndPolygonWinding, EndPolygon, AddRasterData, SetFilter };
 
 		int res = DSFReadFile(file_name, malloc, free, &cb, NULL, this);
-		
+
 		for(int i = 0; i < dsf_cat_DIM; ++i)
 		if(bucket_parents[i])
 			bucket_parents[i]->SetParent(master_parent, master_parent->CountChildren());
-		
+
 		return res;
 	}
 
@@ -897,11 +923,11 @@ public:
 								BeginPolygon, BeginPolygonWinding, AddPolygonPoint,EndPolygonWinding, EndPolygon, AddRasterData, SetFilter };
 
 		int ok = Text2DSFWithWriter(file_name, &cb, this);
-		
+
 		for(int i = 0; i < dsf_cat_DIM; ++i)
 		if(bucket_parents[i])
 			bucket_parents[i]->SetParent(master_parent, master_parent->CountChildren());
-		
+
 
 //		int res = DSFReadFile(file_name, &cb, NULL, this);
 //		if(res != 0)
@@ -911,15 +937,84 @@ public:
 
 };
 
-
-int DSF_Import(const char * path, WED_Group * base)
+int DSF_Import(const char * path, WED_Group * base )
 {
 	DSF_Importer importer;
 	return importer.do_import_dsf(path, base);
 }
 
+int DSF_Import_Partial(const char * path, WED_Group * base , const Bbox2& cull_bound, const int inCat)
+{
+	DSF_Importer importer;
+	importer.cull_bound = cull_bound;
+	for( int i = 0 ; i < dsf_cat_DIM ; ++i)
+		importer.dsf_cat_filter[i] = 0;
+	importer.dsf_cat_filter[inCat] = 1;
+
+	return importer.do_import_dsf(path, base );
+}
+
+int		WED_CanImportRoads(IResolver * resolver)
+{
+	WED_Thing * t = WED_HasSingleSelectionOfType(resolver, WED_ExclusionZone::sClass);
+	if(t == NULL ) return 0;
+	WED_ExclusionZone * excl = dynamic_cast<WED_ExclusionZone *>(t);
+	if(excl == NULL) return 0;
+	set<int> excl_types;
+	excl->GetExclusions(excl_types);
+	if(excl_types.find(exclude_Net) != excl_types.end()) return 1;
+
+	return 0;
+}
+
+void	WED_DoImportRoads(IResolver * resolver)
+{
+	WED_Thing * wrl = WED_GetWorld(resolver);
+	WED_Thing * t = WED_HasSingleSelectionOfType(resolver, WED_ExclusionZone::sClass);
+	if(t == NULL) return ;
+	WED_ExclusionZone * excl = dynamic_cast<WED_ExclusionZone *>(t);
+	if(excl == NULL) return ;
+	set<int> excl_types;
+	excl->GetExclusions(excl_types);
+	if(excl_types.find(exclude_Net) == excl_types.end()) return;
+
+	Bbox2 bounds;
+	excl->GetBounds(gis_Geo,bounds);
+
+	char * path = GetMultiFilePathFromUser("Import Roads from DSF file...", "Import", FILE_DIALOG_IMPORT_DSF);
+	if(path)
+	{
+		char * free_me = path;
+
+		wrl->StartOperation("Import Roads");
+
+		while(*path)
+		{
+			WED_Group * g = WED_Group::CreateTyped(wrl->GetArchive());
+			g->SetName(path);
+			g->SetParent(wrl,wrl->CountChildren());
+			int result = DSF_Import_Partial(path,g,bounds,dsf_cat_roads);
+			if(result != dsf_ErrOK)
+			{
+				string msg = string("The file '") + path + string("' could not be imported as a DSF:\n")
+							+ dsfErrorMessages[result];
+				DoUserAlert(msg.c_str());
+				wrl->AbortOperation();
+				free(free_me);
+				return;
+			}
+
+			path = path + strlen(path) + 1;
+		}
+		wrl->CommitOperation();
+		free(free_me);
+	}
+}
+
 int		WED_CanImportDSF(IResolver * resolver)
 {
+	ISelection * sel = WED_GetSelect(resolver);
+	WED_Thing * wrl = WED_GetWorld(resolver);
 	return 1;
 }
 
@@ -931,9 +1026,9 @@ void	WED_DoImportDSF(IResolver * resolver)
 	if(path)
 	{
 		char * free_me = path;
-		
+
 		wrl->StartOperation("Import DSF");
-		
+
 		while(*path)
 		{
 			WED_Group * g = WED_Group::CreateTyped(wrl->GetArchive());
@@ -949,13 +1044,14 @@ void	WED_DoImportDSF(IResolver * resolver)
 				free(free_me);
 				return;
 			}
-			
+
 			path = path + strlen(path) + 1;
 		}
 		wrl->CommitOperation();
 		free(free_me);
 	}
 }
+
 
 static WED_Thing * find_airport_by_icao_recursive(const string& icao, WED_Thing * who)
 {
@@ -965,7 +1061,7 @@ static WED_Thing * find_airport_by_icao_recursive(const string& icao, WED_Thing 
 		DebugAssert(apt);
 		string aicao;
 		apt->GetICAO(aicao);
-		
+
 		if(aicao == icao)
 			return apt;
 		else
@@ -1017,19 +1113,19 @@ void	WED_DoImportDSFText(IResolver * resolver)
 	if(paths)
 	{
 		char * free_me = paths;
-		
+
 		wrl->StartOperation("Import DSF");
-		
+
 		while(*paths)
 		{
 			if(strstr(paths,".dat"))
-			{			
+			{
 				WED_ImportOneAptFile(paths,wrl,NULL);
 				WED_DoInvisibleUpdateMetadata(SAFE_CAST(WED_Airport, get_airport_from_gateway_file_path(paths, wrl)));
 			}
 			paths = paths + strlen(paths) + 1;
 		}
-		
+
 		paths = free_me;
 
 		while(*paths)
@@ -1046,10 +1142,10 @@ void	WED_DoImportDSFText(IResolver * resolver)
 		//		DSF_Import(path,g);
 				DSF_Importer importer;
 				importer.do_import_txt(paths, g);
-			}	
+			}
 			paths = paths + strlen(paths) + 1;
 		}
-		
+
 		wrl->CommitOperation();
 		free(free_me);
 	}

@@ -430,6 +430,9 @@ int	WED_DocumentWindow::HandleCommand(int command)
 #endif
 	case wed_ImportApt:		WED_DoImportApt(mDocument,mDocument->GetArchive(), mMapPane); return 1;
 	case wed_ImportDSF:		WED_DoImportDSF(mDocument); return 1;
+#if ROAD_EDITING
+	case wed_ImportRoads:	WED_DoImportRoads(mDocument); return 1;
+#endif
 	case wed_ImportOrtho:
 		mMapPane->Map_HandleCommand(command);
 		return 1;
@@ -547,7 +550,10 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_ExportToGateway:	return WED_CanExportToGateway(mDocument);
 #endif
 	case wed_ImportApt:		return WED_CanImportApt(mDocument);
-	case wed_ImportDSF:		return WED_CanImportApt(mDocument);
+	case wed_ImportDSF:		return WED_CanImportDSF(mDocument);
+#if ROAD_EDITING
+	case wed_ImportRoads:	return WED_CanImportRoads(mDocument);
+#endif
 	case wed_ImportOrtho:	return 1;
 #if HAS_GATEWAY
 	case wed_ImportGateway:	return WED_CanImportFromGateway(mDocument);

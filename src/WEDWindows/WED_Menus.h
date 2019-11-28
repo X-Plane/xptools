@@ -44,6 +44,9 @@ enum {
 	wed_ExportToGateway,
 #endif
 	wed_ImportDSF,
+#if ROAD_EDITING
+	wed_ImportRoads,
+#endif
 	wed_ImportOrtho,
 #if HAS_GATEWAY
 	wed_ImportGateway,
