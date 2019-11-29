@@ -19,6 +19,19 @@ ag_terrain_style choose_style(int dsf_lon_west, int dsf_lat_south)
 	return style_us;
 }
 
+ag_terrain_dsf_description ag_terrain_dsf_description::from_dsf_bbox(const Bbox2 & bounds)
+{
+	const int lon_min = intround(bounds.xmin());
+	const int lat_min = intround(bounds.ymin());
+	const ag_terrain_style style = choose_style(lon_min, lat_min);
+	return {
+			lon_min, lat_min,
+			divisions_longitude_per_degree(g_desired_ortho_dim_m[style], lat_min + 0.5),
+			divisions_latitude_per_degree(g_desired_ortho_dim_m[style]),
+			style
+	};
+}
+
 /**
  * Suppose to you have some available area, and you want to divide it into sections of a certain size.
  * You want to know both:
@@ -48,12 +61,12 @@ int divisions_longitude_per_degree(double desired_division_width_m, double latit
 	return int_abs(snap_division(degree_longitude_to_m(latitude_degrees), desired_division_width_m, exact_division_width_m));
 }
 
-Bbox2 grid_coord_desc::bounds() const
+Bbox2 grid_square_bounds(const xy_pair & lon_lat, const ag_terrain_dsf_description & containing_dsf)
 {
-	return {dsf_lon + ((float)x / dx),
-			dsf_lat + ((float)y / dy),
-			dsf_lon + ((float)(x + 1) / dx),
-			dsf_lat + ((float)(y + 1) / dy)};
+	return {containing_dsf.dsf_lon + ((float)lon_lat.first        / containing_dsf.divisions_lon),
+			containing_dsf.dsf_lat + ((float)lon_lat.second       / containing_dsf.divisions_lat),
+			containing_dsf.dsf_lon + ((float)(lon_lat.first  + 1) / containing_dsf.divisions_lon),
+			containing_dsf.dsf_lat + ((float)(lon_lat.second + 1) / containing_dsf.divisions_lat)};
 }
 
 Polygon2 cgal_tri_to_ben(const CDT::Face_handle &tri, const Bbox2 &containing_dsf)
@@ -84,28 +97,18 @@ Polygon2 cgal_tri_to_ben(const CDT::Face_handle &tri, const Bbox2 &containing_ds
 	return out;
 }
 
-grid_coord_desc get_ortho_grid_xy(const Point2 &point, ag_terrain_style style)
+xy_pair get_ortho_grid_xy(const Point2 &point, const ag_terrain_dsf_description & dsf)
 {
-	const double dsf_min_lon = floor(point.x());
-	const double dsf_min_lat = floor(point.y());
-	const double dsf_center_lat = dsf_min_lat + 0.5;
-
-	const int divisions_lon = divisions_longitude_per_degree(g_desired_ortho_dim_m[style], dsf_center_lat);
-	const int divisions_lat = divisions_latitude_per_degree(g_desired_ortho_dim_m[style]);
-
 	// Note: we use the *tri*'s centroid to decide the grid coords, because any *vertex* might be shared
 	//       between multiple tris in *different* grid squares.
 	//       (There's gonna be one tri with a vertex is at (1, 1) in UV, and another sharing the same vertex,
 	//        but needing UV coords of (0,0).)
-	const double delta_lon = dob_abs(dsf_min_lon - point.x());
-	const double delta_lat = dob_abs(dsf_min_lat - point.y());
-	const int x_grid_coord = delta_lon * divisions_lon;
-	const int y_grid_coord = delta_lat * divisions_lat;
-
-	grid_coord_desc out = { x_grid_coord, y_grid_coord, divisions_lon, divisions_lat, intround(dsf_min_lon), intround(dsf_min_lat) };
-	DebugAssert(out.x < out.dx);
-	DebugAssert(out.y < out.dy);
-	return out;
+	const double delta_lon = dob_abs(dsf.dsf_lon - point.x());
+	const double delta_lat = dob_abs(dsf.dsf_lat - point.y());
+	// Protect against the case where dlon or dlat are 1 (because this point is on the far edge of the dsf)
+	const int x_grid_coord = intlim(delta_lon * dsf.divisions_lon, 0, dsf.divisions_lon - 1);
+	const int y_grid_coord = intlim(delta_lat * dsf.divisions_lat, 0, dsf.divisions_lat - 1);
+	return {x_grid_coord, y_grid_coord};
 }
 
 #define REALLY_REALLY_CLOSE 0.00000001
@@ -153,13 +156,13 @@ Bbox2 get_ortho_grid_square_bounds(const CDT::Face_handle &tri, const Bbox2 &con
 	DebugAssert(!barf_on_tiny_map_faces() || ben_tri.inside(centroid));
 	#endif
 
-	const grid_coord_desc grid_pt = get_ortho_grid_xy(ben_tri.inside(centroid) ? centroid : ben_tri.front(), style);
+	const ag_terrain_dsf_description dsf_meta = ag_terrain_dsf_description::from_dsf_bbox(containing_dsf);
+	const xy_pair grid_pt = get_ortho_grid_xy(ben_tri.inside(centroid) ? centroid : ben_tri.front(), dsf_meta);
 
-	Bbox2 out(
-			containing_dsf.xmin() + ((double)grid_pt.x / grid_pt.dx),
-			containing_dsf.ymin() + ((double)grid_pt.y / grid_pt.dy),
-			containing_dsf.xmin() + ((double)(grid_pt.x + 1) / grid_pt.dx),
-			containing_dsf.ymin() + ((double)(grid_pt.y + 1) / grid_pt.dy));
+	Bbox2 out(containing_dsf.xmin() + ((double)grid_pt.first        / dsf_meta.divisions_lon),
+			  containing_dsf.ymin() + ((double)grid_pt.second       / dsf_meta.divisions_lat),
+			  containing_dsf.xmin() + ((double)(grid_pt.first  + 1) / dsf_meta.divisions_lon),
+			  containing_dsf.ymin() + ((double)(grid_pt.second + 1) / dsf_meta.divisions_lat));
 	DebugAssert(out.xmin() < out.xmax());
 	DebugAssert(out.ymin() < out.ymax());
 	DebugAssert(containing_dsf.contains(out));

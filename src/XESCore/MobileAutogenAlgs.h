@@ -18,11 +18,21 @@ enum ag_terrain_style {
 };
 ag_terrain_style choose_style(int dsf_lon_west, int dsf_lat_south);
 
+struct ag_terrain_dsf_description {
+	int dsf_lon; // the min longitude in the DSF
+	int dsf_lat; // the min latitude  in the DSF
+	int divisions_lon;
+	int divisions_lat;
+	ag_terrain_style style;
+
+	static ag_terrain_dsf_description from_dsf_bbox(const Bbox2 & bounds);
+};
+
 // The "stated" width and height of our square pseudo-orthophotos.
 // This size will *not* tile perfectly onto your DSF; you'll have to use the exact dimensions
 // output by divisions_xxx_per_degree() for that.
-const int g_desired_ortho_dim_m[ag_terrain_style_DIM] = {1000, 2000};
-const int g_ortho_width_px[ag_terrain_style_DIM] = {256, 512};
+constexpr int g_desired_ortho_dim_m[ag_terrain_style_DIM] = {1000, 2000};
+constexpr int g_ortho_width_px[ag_terrain_style_DIM] = {256, 512};
 
 /**
  * Suppose to you have some available area, measured in degrees of latitude or longitude,
@@ -39,18 +49,9 @@ const int g_ortho_width_px[ag_terrain_style_DIM] = {256, 512};
 int divisions_latitude_per_degree( double desired_division_width_m,								double * exact_division_width_m=NULL);
 int divisions_longitude_per_degree(double desired_division_width_m, double latitude_degrees,	double * exact_division_width_m=NULL);
 
-struct grid_coord_desc {
-	int x;
-	int y;
-	int dx; // the number of columns (x dimension)
-	int dy; // the number of rows (y dimension)
-	int dsf_lon;
-	int dsf_lat;
-
-	Bbox2 bounds() const;
-	inline pair<int, int> xy() const { return pair<int, int>(x, y); }
-};
-grid_coord_desc get_ortho_grid_xy(const Point2 &point, ag_terrain_style style);
+using xy_pair = pair<int, int>;
+Bbox2 grid_square_bounds(const xy_pair & lon_lat, const ag_terrain_dsf_description & containing_dsf);
+xy_pair get_ortho_grid_xy(const Point2 &point, const ag_terrain_dsf_description & dsf);
 
 /**
  * @return The bounds, in terms of latitude and longitude, for the grid square of width g_ortho_width_m
