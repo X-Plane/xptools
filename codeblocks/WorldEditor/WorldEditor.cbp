@@ -629,6 +629,7 @@
 		<Unit filename="../../src/WEDResources/taxi_sign.png" />
 		<Unit filename="../../src/WEDResources/tce_tools.png" />
 		<Unit filename="../../src/WEDResources/tce_tools_blank.png" />
+		<Unit filename="../../src/WEDResources/tilt_tool.png" />
 		<Unit filename="../../src/WEDTCE/WED_TCE.cpp" />
 		<Unit filename="../../src/WEDTCE/WED_TCE.h" />
 		<Unit filename="../../src/WEDTCE/WED_TCELayer.cpp" />

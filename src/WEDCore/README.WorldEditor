@@ -18,7 +18,9 @@ WED 2.2.x
    - WED-1225: show apts with only declined submissions in gateway import dialog
    - WED-1235: fix crash when processing OOB indices in bad .agp definitions
    - try harder to keep 1:1 pixel mapping when splitting orthophoto's into tiles
+   - allow more error for T suffix runways in name vs. heading validation
    Features:
+   - add 'birds eye views' for map window
    - tighten ATC freq. validation to VHF airband & 200+ MHz, allow AWOS on VOR's
    - increase undo buffer from 20 to 100 operations
    - WED-1232: Support OBJ_DELTA in .agp previews

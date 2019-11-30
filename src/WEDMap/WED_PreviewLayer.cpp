@@ -1025,7 +1025,7 @@ struct	preview_facade : public preview_polygon {
 			glClear(GL_DEPTH_BUFFER_BIT);
 			
 			if(rmgr->GetFac(vpath, info))
-				draw_facade(tman, rmgr, vpath, *info, pts, choices, fac->GetHeight(), g, false);
+				draw_facade(tman, rmgr, vpath, *info, pts, choices, fac->GetHeight(), g, true);
 				
 			g->EnableDepth(false,false);
 			glPopMatrix();

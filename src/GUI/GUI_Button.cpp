@@ -135,6 +135,10 @@ void		GUI_Button::MouseUp  (int x, int y, int button)
 			for (int n = 0; n < mRadios.size(); ++n)
 				mRadios[n]->SetValue(0);
 			break;
+		case btn_RadioChk:
+			SetValue(1.0 - GetValue());
+			for (int n = 0; n < mRadios.size(); ++n)
+				mRadios[n]->SetValue(0);
 		}
 	}
 
@@ -173,6 +177,7 @@ void		GUI_Button::Draw(GUI_GraphState * state)
 		break;
 	case btn_Check:
 	case btn_Radio:
+	case btn_RadioChk:
 		{
 			GUI_DrawCentered(state, mResource.c_str(), bounds, -1, 0, tile_p, &w, &h);
 
