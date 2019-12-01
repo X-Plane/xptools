@@ -205,7 +205,7 @@ static bool usesAlpha(ImageInfo * info)
 {
 	if(info->channels < 4) return false;
 	int usesAlpha = 0;
-	
+
 	unsigned char * src = info->data + 3;
 	for(int y = info->height; y > 0; y--)
 	{
@@ -253,7 +253,7 @@ public:
 	vector<node>			m_nodes;
 	vector<edge>			m_edges;
 
-	void add_segment(WED_RoadEdge * e);
+	void add_segment(WED_RoadEdge * e,const Bbox2& cull_bounds);
 
 	void remove_dupes();
 	void assign_ids();
@@ -264,44 +264,12 @@ public:
 
 };
 
-void dsf_road_grid_helper::add_segment(WED_RoadEdge * e)
+void dsf_road_grid_helper::add_segment(WED_RoadEdge * e, const Bbox2& cull_bounds)
 {
-	IGISPoint * start = e->GetNthPoint(0);
-	IGISPoint * end = e->GetNthPoint(1);
+	IGISPoint * gp_start = e->GetNthPoint(0);
+	IGISPoint * gp_end = e->GetNthPoint(1);
 
-	node_index::iterator si = m_node_index.find(start);
-	node_index::iterator ei = m_node_index.find(end);
-
-	edge new_edge;
-	new_edge.start_level = e->GetStartLayer();
-	new_edge.end_level = e->GetEndLayer();
-	new_edge.subtype = e->GetSubtype();
-	if(si == m_node_index.end())
-	{
-		new_edge.start_node = m_nodes.size();
-		si = m_node_index.insert(make_pair(start, m_nodes.size())).first;
-		m_nodes.push_back(node());
-	}
-	else
-	{
-		new_edge.start_node = si->second;
-	}
-
-	if(ei == m_node_index.end())
-	{
-		new_edge.end_node = m_nodes.size();
-		ei = m_node_index.insert(make_pair(end, m_nodes.size())).first;
-		m_nodes.push_back(node());
-	}
-	else
-	{
-		new_edge.end_node = ei->second;
-	}
-
-	m_nodes[si->second].edges.push_back(m_edges.size());
-	m_nodes[ei->second].edges.push_back(m_edges.size());
-
-	Bezier2 b;
+	Bezier2 b ;
 	if(e->GetSide(gis_Geo, 0, b)) // We are a real bezier:
 	{
 		if(b.p1 == b.c1)
@@ -313,7 +281,64 @@ void dsf_road_grid_helper::add_segment(WED_RoadEdge * e)
 			b.c2 = b.p2 - b.derivative(0.99);
 		}
 	}
-	new_edge.path.push_back(b);
+
+	vector<Bezier2> segm;
+	segm.push_back(b);
+	clip_segments(segm,cull_bounds);
+	if(segm.size() != 1) return;					//the whole segment is out of the bounds or something else is wrong
+
+	edge new_edge;
+	new_edge.path.push_back(segm[0]);
+
+	new_edge.subtype = e->GetSubtype();
+
+	if(b.p1 == segm[0].p1)							//start point is unchanged ? no cull
+	{
+		new_edge.start_level = e->GetStartLayer();
+		node_index::iterator si = m_node_index.find(gp_start);
+		if(si == m_node_index.end())
+		{
+			new_edge.start_node = m_nodes.size();
+			si = m_node_index.insert(make_pair(gp_start, m_nodes.size())).first;
+			m_nodes.push_back(node());
+		}
+		else
+		{
+			new_edge.start_node = si->second;
+		}
+		m_nodes[si->second].edges.push_back(m_edges.size());
+	}
+	else											//start point is new after culling , creating new own node
+	{
+		new_edge.start_level = e->GetEndLayer();    // ToDo: revisit , using original endlayer for every newly split node
+		new_edge.start_node = m_nodes.size();
+		m_nodes.push_back(node());
+		m_nodes[m_nodes.size()-1].edges.push_back(m_edges.size());
+	}
+
+	if(b.p2 == segm[0].p2)							//end point is unchanged ?  no cull
+	{
+		new_edge.end_level = e->GetEndLayer();
+		node_index::iterator ei = m_node_index.find(gp_end);
+		if(ei == m_node_index.end())
+		{
+			new_edge.end_node = m_nodes.size();
+			ei = m_node_index.insert(make_pair(gp_end, m_nodes.size())).first;
+			m_nodes.push_back(node());
+		}
+		else
+		{
+			new_edge.end_node = ei->second;
+		}
+		m_nodes[ei->second].edges.push_back(m_edges.size());
+	}
+	else											//end point is new after culling , creating new own node
+	{
+		new_edge.end_level = e->GetEndLayer();
+		new_edge.end_node = m_nodes.size();
+		m_nodes.push_back(node());
+		m_nodes[m_nodes.size()-1].edges.push_back(m_edges.size());
+	}
 
 	m_edges.push_back(new_edge);
 }
@@ -1093,7 +1118,7 @@ static int	DSF_HeightRangeRecursive(WED_Thing * what, double& out_msl_min, doubl
 	}
 
 	sClass_t c = what->GetClass();
-	
+
 	if(c == WED_ObjPlacement::sClass)
 	if((obj = dynamic_cast<WED_ObjPlacement *>(what)) != NULL)
 	{
@@ -1133,7 +1158,7 @@ static int	DSF_HeightRangeRecursive(WED_Thing * what, double& out_msl_min, doubl
 				any_inside = 1;
 		}
 	}
-	
+
 	if(!any_inside && ent && ent->GetGISClass() != gis_Composite)
 		return 0;
 
@@ -1171,7 +1196,7 @@ static int	DSF_ExportTileRecursive(
 
 	int idx;
 	string r;
-	
+
 	WED_Entity * ent = dynamic_cast<WED_Entity *>(what);
 	if (!ent || ent->GetHidden())
 		return 0;
@@ -1447,9 +1472,9 @@ static int	DSF_ExportTileRecursive(
 		}
 		return real_thingies;
 	}
-	
+
 	if(show_level == 6)
-	{	
+	{
 		//------------------------------------------------------------------------------------------------------------
 		// EXCLUSION EXPORTER
 		//------------------------------------------------------------------------------------------------------------
@@ -1772,12 +1797,12 @@ static int	DSF_ExportTileRecursive(
 
 				// can't use the image name any more to determine the .pol/.dds names, as the same image could be used for multiple Orthos.
 				// So we assume the 'Name" contains the image name plus some suffix to make it unique
-				
+
 				string relativePath(FILE_get_dir_name(r) + FILE_get_file_name_wo_extensions(msg));
-				
+
 				string relativePathDDS = relativePath + ".dds";
 				string relativePathPOL = relativePath + ".pol";
-				
+
 				msg = string("The polygon '") + msg + "' cannot be converted to an orthophoto: ";
 
 				if(is_backout_path(relativePath) || is_dir_sep(relativePath[0]) || relativePath[1] == ':')
@@ -1791,10 +1816,10 @@ static int	DSF_ExportTileRecursive(
 				string absPathPOL = pkg + relativePathPOL;
 
 				r = relativePathPOL;		// Resource name comes from the pol no matter what we compress to disk.
-				
+
 				Bbox2 UVbounds; orth->GetBounds(gis_UV, UVbounds);
 				WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
-				
+
 				date_cmpr_result_t date_cmpr_res = FILE_date_cmpr(absPathIMG.c_str(),absPathDDS.c_str());
 				//-----------------
 				/* How to export a orthophoto
@@ -1805,7 +1830,7 @@ static int	DSF_ExportTileRecursive(
 				* Create the .pol with the file format in mind
 				* Enjoy your new orthophoto
 				*/
-				
+
 				if(date_cmpr_res == dcr_firstIsNew || date_cmpr_res == dcr_same)
 				{
 	#if DEV
@@ -1839,7 +1864,7 @@ static int	DSF_ExportTileRecursive(
 					int UVMbottom = intround(imgInfo.height * UVbounds.ymin());
 					int UVMwidth  = UVMright - UVMleft;
 					int UVMheight = UVMtop - UVMbottom;
-					
+
 					int DDSwidth = 1;
 					int DDSheight = 1;
 
@@ -1867,7 +1892,7 @@ static int	DSF_ExportTileRecursive(
 					DoUserAlert(msg.c_str());
 					return -1;
 				}
-				
+
 				if(!FILE_exists(absPathPOL.c_str()))
 				{
 					ImageInfo DDSInfo;
@@ -1879,7 +1904,7 @@ static int	DSF_ExportTileRecursive(
 						//-------------------------------------------
 						pol_info_t out_info = { FILE_get_file_name(relativePathDDS), false,
 							/*SCALE*/ (float) LonLatDistMeters(b.p1,Point2(b.p2.x(), b.p1.y())), (float) LonLatDistMeters(b.p1,Point2(b.p1.x(), b.p2.y())),  // althought its irrelevant here
-							false, false, 
+							false, false,
 							/*LAYER_GROUP*/ "", 0,
 							/*LOAD_CENTER*/ (float) center.y(), (float) center.x(), (float) LonLatDistMeters(b.p1,b.p2), intmax2(DDSInfo.height,DDSInfo.width) };
 						rmgr->WritePol(absPathPOL, out_info);
@@ -1893,20 +1918,20 @@ static int	DSF_ExportTileRecursive(
 
 			idx = io_table.accum_pol(r,show_level);
 			bool bez = WED_HasBezierPol(orth);
-			
+
 			if(bez)
 			{
 				vector<BezierPolygon2uv>			orth_area;
 				vector<vector<BezierPolygon2uv> >	orth_cuts;
-				
+
 				WED_BezierPolygonWithHolesForPolygon(orth, orth_area);
-				
+
 				if(!clip_polygon(orth_area,orth_cuts,cull_bounds))
 				{
 					problem_children.insert(what);
 					orth_cuts.clear();
 				}
-				
+
 				for(vector<vector<BezierPolygon2uv> >::iterator i = orth_cuts.begin(); i != orth_cuts.end(); ++i)
 				{
 					++real_thingies;
@@ -1935,26 +1960,27 @@ static int	DSF_ExportTileRecursive(
 					cbs->EndPolygon_f(writer);
 				}
 			}
-			
+
 			if(orth->IsNew())
 				what->AbortOperation(); // this will nicely undo the UV mapping rescaling we did :)
 
 			return real_thingies;
 		}
-		
+
 	#if ROAD_EDITING
 		//------------------------------------------------------------------------------------------------------------
 		// ROAD EXPORTER
 		//------------------------------------------------------------------------------------------------------------
-		
+
 		if ((roa = dynamic_cast<WED_RoadEdge*>(what)) != NULL)
 		{
 			string asset;
 			roa->GetResource(asset);
 			dsf_road_grid_helper * grid = io_table.accum_net(asset);
-			grid->add_segment(roa);
+
+			grid->add_segment(roa,cull_bounds);
 			++real_thingies;
-			
+
 			return real_thingies;
 		}
 	#endif // ROAD_EDITING
@@ -1971,11 +1997,11 @@ static int	DSF_ExportTileRecursive(
 		}
 	}
 	else apt = NULL;
-	
+
 	//------------------------------------------------------------------------------------------------------------
-	// RECURSION 
+	// RECURSION
 	//------------------------------------------------------------------------------------------------------------
-	
+
 	if(apt || c == WED_Group::sClass)  // only recurse if there is actually a possibility of more DSF content in there
 	{
 		int cc = what->CountChildren();
@@ -1993,7 +2019,7 @@ static int	DSF_ExportTileRecursive(
 			}
 		}
 	}
-	
+
 	if(apt)
 	{
 		cbs->SetFilter_f(-1,writer);
@@ -2013,8 +2039,8 @@ static int DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& 
 	Bbox2	cull(x,y,x+1,y+1);
 
 	int cull_code = DSF_HeightRangeRecursive(base,msl_min,msl_max, cull);    // also finds if tile has anything goint into it
-	
-	if(cull_code < 0) 
+
+	if(cull_code < 0)
 		return 0;
 	else if(cull_code > 0)
 	{
@@ -2063,7 +2089,7 @@ static int DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& 
 	{
 		snprintf(buffer, 255, "%sEarth nav data" DIR_STR "%+03d%+04d",	pkg.c_str(), latlon_bucket(y), latlon_bucket(x)	);
 		FILE_make_dir_exist(buffer);
-		
+
 		snprintf(buffer, 255, "%sEarth nav data" DIR_STR "%+03d%+04d" DIR_STR "%+03d%+04d.dsf", pkg.c_str(), latlon_bucket(y), latlon_bucket(x), y, x);
 		DSFWriteToFile(buffer, writer);
 	}
@@ -2170,7 +2196,7 @@ int DSF_ExportAirportOverlay(IResolver * resolver, WED_Airport  * apt, const str
 		int entities = 0;
 		for(int show_level = 6; show_level >= 1; --show_level)
 			entities += DSF_ExportTileRecursive(apt, resolver, package, cull_bounds, safe_bounds, rsrc, &cbs, writer, problem_children, show_level, DSF_export_info);
-			
+
 		Assert(DSF_export_info.orthoImg.data == NULL); //  In this type of export - orthoimages are not allowed. So this should never happen.
 
 		rsrc.write_tables(cbs,writer);

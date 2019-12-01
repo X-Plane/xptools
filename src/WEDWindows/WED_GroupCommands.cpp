@@ -3170,6 +3170,7 @@ static bool is_node_merge(IResolver * resolver)
 
 	//Find the bounds for the current airport
 	WED_Airport* apt = WED_GetCurrentAirport(resolver);
+	DebugAssert(apt != NULL);
 	Bbox2 bb;
 	CoordTranslator2 translator;
 	apt->GetBounds(gis_Geo, bb);
@@ -3446,6 +3447,7 @@ static void do_node_merge(IResolver * resolver)
 	sort(sinkmap.begin(), sinkmap.end(), lesser_y_then_x_merge_class_map);
 
 	WED_Airport* apt = WED_GetCurrentAirport(resolver);
+	DebugAssert(apt != NULL);
 	Bbox2 bb;
 	CoordTranslator2 translator;
 	apt->GetBounds(gis_Geo, bb);
