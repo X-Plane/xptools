@@ -231,21 +231,19 @@ void	WED_ObjPlacement::GetNthPropertyDictItem(int n, int e, string& item) const
 {
 	if(n == PropertyItemNumber(&has_msl) && e <= obj_setMSL)
 	{
-		item = e == obj_setMSL ? "set_MSL" : "on Ground";
-		return;
+		item = (e == obj_setToGround ? "on Ground" : "set_MSL");
 	}
-	WED_Thing::GetNthPropertyDictItem(n,e,item);
+	else
+		WED_Thing::GetNthPropertyDictItem(n,e,item);
 }
 
 void	WED_ObjPlacement::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 {
-	if (n == PropertyItemNumber(&msl) && has_msl.value == 0)
+	if (has_msl.value == obj_setToGround && n == PropertyItemNumber(&msl))
 	{
 		info.prop_name = "."; // Do not show elevation property if its not relevant
 	}
 	else
-	{
 		WED_Thing::GetNthPropertyInfo(n, info);
-	}
 }
 
