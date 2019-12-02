@@ -263,7 +263,8 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	}
 	mToolbar->SetToolTips(tips);
 
-	GUI_ScrollerPane * map_scroller = new GUI_ScrollerPane(1,1);
+//	GUI_ScrollerPane * map_scroller = new GUI_ScrollerPane(1,1);
+	GUI_ScrollerPane * map_scroller = new GUI_ScrollerPane(0,0);
 	map_scroller->SetParent(this);
 	map_scroller->Show();
 	map_scroller->SetSticky(1,1,1,1);
@@ -275,7 +276,6 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	map_scroller->PositionInContentArea(mMap);
 	map_scroller->SetContent(mMap);
 
-//	mMap->SetMapVisibleBounds(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3]);
 	mMap->SetMapLogicalBounds(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3]);
 
 	mMap->ZoomShowAll();

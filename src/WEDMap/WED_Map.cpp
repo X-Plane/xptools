@@ -68,9 +68,9 @@ WED_Map::WED_Map(IResolver * in_resolver) :	mResolver(in_resolver), mTool(NULL),
 		
 		int b[4]; GetBounds(b);  // No good, bounds not established at this point
 
-#define TB_X b[2]-90
-#define TB_Y b[3]-90
-#define TB_SIZE 28
+#define TB_X b[2]-77
+#define TB_Y b[3]-75
+#define TB_SIZE 24
 		for(int x = 0; x < 2; x++)
 			for(int y = 0; y < 2; y++)
 			{
