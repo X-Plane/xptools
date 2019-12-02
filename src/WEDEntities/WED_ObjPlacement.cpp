@@ -35,7 +35,7 @@ TRIVIAL_COPY(WED_ObjPlacement,WED_GISPoint_Heading)
 
 WED_ObjPlacement::WED_ObjPlacement(WED_Archive * a, int i) : 
 	WED_GISPoint_Heading(a,i),
-	has_msl(this,PROP_Name("Elevation Mode", XML_Name("obj_placement","custom_msl")), ObjElevationType, 0),
+	has_msl(this,PROP_Name("Elevation Mode", XML_Name("obj_placement","custom_msl")), ObjElevationType, obj_setToGround),
 	msl    (this,PROP_Name("Elevation",     XML_Name("obj_placement","msl")), 0, 5, 3),
 	resource  (this,PROP_Name("Resource",  XML_Name("obj_placement","resource")),""),
 	show_level(this,PROP_Name("Show with", XML_Name("obj_placement","show_level")), ShowLevel, show_Level1),
@@ -204,13 +204,13 @@ double		WED_ObjPlacement::GetCustomMSL(void) const
 
 void		WED_ObjPlacement::SetCustomMSL(double in_msl)
 {
-	has_msl = 1;
+	has_msl = obj_setMSL;
 	msl = in_msl;
 }
 
 void		WED_ObjPlacement::SetDefaultMSL(void)
 {
-	has_msl = 0;
+	has_msl = obj_setToGround;
 }
 
 
