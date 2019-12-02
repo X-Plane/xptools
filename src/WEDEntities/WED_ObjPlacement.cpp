@@ -35,10 +35,10 @@ TRIVIAL_COPY(WED_ObjPlacement,WED_GISPoint_Heading)
 
 WED_ObjPlacement::WED_ObjPlacement(WED_Archive * a, int i) : 
 	WED_GISPoint_Heading(a,i),
-	has_msl(this,PROP_Name("Set MSL", XML_Name("obj_placement","custom_msl")),0),
-	msl    (this,PROP_Name("MSL",     XML_Name("obj_placement","msl")), 0, 5,3),
+	has_msl(this,PROP_Name("Elevation Mode", XML_Name("obj_placement","custom_msl")), ObjElevationType, 0),
+	msl    (this,PROP_Name("Elevation",     XML_Name("obj_placement","msl")), 0, 5, 3),
 	resource  (this,PROP_Name("Resource",  XML_Name("obj_placement","resource")),""),
-	show_level(this,PROP_Name("Show with", XML_Name("obj_placement","show_level")),ShowLevel, show_Level1),
+	show_level(this,PROP_Name("Show with", XML_Name("obj_placement","show_level")), ShowLevel, show_Level1),
 	visibleWithinDeg(-1.0)
 {
 }
@@ -212,3 +212,40 @@ void		WED_ObjPlacement::SetDefaultMSL(void)
 {
 	has_msl = 0;
 }
+
+
+// the enum names for "Ground Level" and "set_MSL" are kept as "0" and "1" for xml backward compatibility.
+// Translate those names here to keep this from confusing users
+
+void	WED_ObjPlacement::GetNthPropertyDict(int n, PropertyDict_t& dict) const
+{
+	WED_Thing::GetNthPropertyDict(n,dict);
+	if(n == PropertyItemNumber(&has_msl))
+	{
+		dict[obj_setToGround] = make_pair("on Ground",true);
+		dict[obj_setMSL] = make_pair("set_MSL",true);
+	}
+}
+
+void	WED_ObjPlacement::GetNthPropertyDictItem(int n, int e, string& item) const
+{
+	if(n == PropertyItemNumber(&has_msl) && e <= obj_setMSL)
+	{
+		item = e == obj_setMSL ? "set_MSL" : "on Ground";
+		return;
+	}
+	WED_Thing::GetNthPropertyDictItem(n,e,item);
+}
+
+void	WED_ObjPlacement::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
+{
+	if (n == PropertyItemNumber(&msl) && has_msl.value == 0)
+	{
+		info.prop_name = "."; // Do not show elevation property if its not relevant
+	}
+	else
+	{
+		WED_Thing::GetNthPropertyInfo(n, info);
+	}
+}
+

@@ -46,6 +46,10 @@ public:
 			
 			void		SetCustomMSL(double msl);
 			void		SetDefaultMSL(void);
+	virtual void		GetNthPropertyDict(int n, PropertyDict_t& dict) const;
+	virtual	void		GetNthPropertyDictItem(int n, int e, string& item) const;
+	virtual void		GetNthPropertyInfo(int n, PropertyInfo_t& info) const;
+
 			void		SetShowLevel(int show_level);
 			int			GetShowLevel(void) const;
 			double 	GetVisibleDeg(void) const;
@@ -54,7 +58,7 @@ public:
 
 private:
 
-	WED_PropBoolText			has_msl;
+	WED_PropIntEnum				has_msl;
 	WED_PropDoubleTextMeters	msl;	
 	WED_PropStringText			resource;
 	WED_PropIntEnum				show_level;
