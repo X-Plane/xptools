@@ -1221,11 +1221,11 @@ static int	DSF_ExportTileRecursive(
 				if(obj->HasCustomMSL())
 				{
 					xyrz[3] = obj->GetCustomMSL();
-					cbs->AddObject_f(idx, xyrz, 4, writer);
+					cbs->AddObjectWithMode_f(idx, xyrz, obj_ModeMSL, writer);
 				}
 				else
 				#endif
-					cbs->AddObject_f(idx, xyrz, 3, writer);
+					cbs->AddObjectWithMode_f(idx, xyrz, obj_ModeDraped, writer);
 			}
 		}
 		return real_thingies;

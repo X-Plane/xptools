@@ -137,19 +137,26 @@ void DSF2Text_EndPatch(
 	p->print_func(p->ref, "END_PATCH\n");
 }
 
-void DSF2Text_AddObject(
+void DSF2Text_AddObjectWithMode(
 	unsigned int	inObjectType,
 	double			inCoordinates[],
-	int				inCoordinateDepth,
+	int				inMode,
 	void *			inRef)
 {
 	if(inObjectType >= count_obj)
 		printf("WARNING: out of bounds obj.\n");
 	print_funcs_s * p = (print_funcs_s *) inRef;
-	if(inCoordinateDepth == 4)
-	p->print_func(p->ref, "OBJECT_MSL %d %.9lf %.9lf %.9lf %lf\n", inObjectType + offset_obj, inCoordinates[0], inCoordinates[1], inCoordinates[3], inCoordinates[2]);
-	else
-	p->print_func(p->ref, "OBJECT %d %.9lf %.9lf %lf\n", inObjectType + offset_obj, inCoordinates[0], inCoordinates[1], inCoordinates[2]);
+	switch(inMode) {
+	case obj_ModeAGL:
+		p->print_func(p->ref, "OBJECT_AGL %d %.9lf %.9lf %.9lf %lf\n", inObjectType + offset_obj, inCoordinates[0], inCoordinates[1], inCoordinates[3], inCoordinates[2]);
+		break;
+	case obj_ModeMSL:
+		p->print_func(p->ref, "OBJECT_MSL %d %.9lf %.9lf %.9lf %lf\n", inObjectType + offset_obj, inCoordinates[0], inCoordinates[1], inCoordinates[3], inCoordinates[2]);
+		break;
+	case obj_ModeDraped:
+		p->print_func(p->ref, "OBJECT %d %.9lf %.9lf %lf\n", inObjectType + offset_obj, inCoordinates[0], inCoordinates[1], inCoordinates[2]);
+		break;
+	}
 }
 
 void DSF2Text_BeginSegment(
@@ -291,7 +298,7 @@ void DSF2Text_CreateWriterCallbacks(DSFCallbacks_t * cbs)
 	cbs->AddPatchVertex_f			=DSF2Text_AddPatchVertex			;
 	cbs->EndPrimitive_f				=DSF2Text_EndPrimitive				;
 	cbs->EndPatch_f					=DSF2Text_EndPatch					;
-	cbs->AddObject_f				=DSF2Text_AddObject					;
+	cbs->AddObjectWithMode_f		=DSF2Text_AddObjectWithMode			;
 	cbs->BeginSegment_f				=DSF2Text_BeginSegment				;
 	cbs->AddSegmentShapePoint_f		=DSF2Text_AddSegmentShapePoint		;
 	cbs->EndSegment_f				=DSF2Text_EndSegment				;
@@ -480,8 +487,9 @@ static bool Text2DSFWithWriterAny(const char * inFileName, const char * inDSF, D
 	{
 		char * ptr = strip_and_clean(buf);
 			 if (sscanf(ptr, "PATCH_VERTEX %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &coords[0], &coords[1], &coords[2], &coords[3], &coords[4], &coords[5], &coords[6], &coords[7], &coords[8], &coords[9]) == depth)		cbs.AddPatchVertex_f(coords, writer);
-		else if (sscanf(ptr, "OBJECT %d %lf %lf %lf", &ptype, &coords[0],&coords[1],&coords[2]) == 4)		cbs.AddObject_f(ptype, coords, 3, writer);
-		else if (sscanf(ptr, "OBJECT_MSL %d %lf %lf %lf %lf", &ptype, &coords[0],&coords[1],&coords[3],&coords[2]) == 5)		cbs.AddObject_f(ptype, coords, 4, writer);
+		else if (sscanf(ptr, "OBJECT %d %lf %lf %lf", &ptype, &coords[0],&coords[1],&coords[2]) == 4)		cbs.AddObjectWithMode_f(ptype, coords, obj_ModeDraped, writer);
+		else if (sscanf(ptr, "OBJECT_MSL %d %lf %lf %lf %lf", &ptype, &coords[0],&coords[1],&coords[3],&coords[2]) == 5)		cbs.AddObjectWithMode_f(ptype, coords, obj_ModeMSL, writer);
+		else if (sscanf(ptr, "OBJECT_AGL %d %lf %lf %lf %lf", &ptype, &coords[0],&coords[1],&coords[3],&coords[2]) == 5)		cbs.AddObjectWithMode_f(ptype, coords, obj_ModeAGL, writer);
 
 		else if (sscanf(ptr,"BEGIN_SEGMENT %d %d %lf %lf %lf %lf", &ptype, &subtype, &coords[3], &coords[0],&coords[1],&coords[2]) == 6)							cbs.BeginSegment_f(ptype, subtype, coords, false, writer);
 		else if (sscanf(ptr,"SHAPE_POINT %lf %lf %lf", &coords[0], &coords[1], &coords[2])== 3) 			cbs.AddSegmentShapePoint_f(coords, false, writer);
