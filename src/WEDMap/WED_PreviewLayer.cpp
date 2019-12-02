@@ -263,9 +263,6 @@ void draw_obj_at_ll(ITexMgr * tman, const XObj8 * o, const Point2& loc, float r,
 	glScalef(ppm,ppm,ppm);
 	glRotatef(90, 1,0,0);
 	glRotatef(r, 0, -1, 0);
-//	GLfloat mv[16], pv[16];
-//	glGetFloatv(GL_MODELVIEW_MATRIX,mv);
-//	glGetFloatv(GL_PROJECTION_MATRIX,pv);
 	g->EnableDepth(true,true);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	Obj_DrawStruct ds = { g, id1, id2 };
@@ -1160,12 +1157,12 @@ struct	preview_object : public WED_PreviewItem {
 			glPushMatrix();
 			loc = zoomer->LLToPixel(loc);
 			float r = obj->GetHeading();
-			glTranslatef(loc.x(),loc.y(),0.0);
+			glTranslatef(loc.x(), loc.y(), 0);
 			float ppm = zoomer->GetPPM();
-			glScalef(ppm,ppm,0.001);
-			glRotatef(90, 1,0,0);
+			glScalef(ppm, ppm, ppm);
+			glRotatef(90, 1, 0 ,0);
 			glRotatef(r, 0, -1, 0);
-			glColor3f(1,1,1);
+			glColor3f(1, 1, 1);
 			g->EnableDepth(true,true);
 			glClear(GL_DEPTH_BUFFER_BIT);
 			if(!agp.tile.empty() && !agp.hide_tiles)
