@@ -41,7 +41,7 @@ public:
 	virtual void		SetHeading(double h);
 	virtual	void		Rotate(GISLayer_t l,const Point2& center, double angle);
 
-			bool		HasCustomMSL(void) const;
+			int			HasCustomMSL(void) const;
 			double		GetCustomMSL(void) const;
 			
 			void		SetCustomMSL(double msl);

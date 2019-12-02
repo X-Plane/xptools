@@ -25,6 +25,8 @@
 #include "AssertUtils.h"
 #include "AptDefs.h"
 #include "WED_Errors.h"
+#include "DSFLib.h"
+
 #include <string>
 using std::string;
 

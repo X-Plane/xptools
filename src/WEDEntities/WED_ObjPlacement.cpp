@@ -192,9 +192,9 @@ bool		WED_ObjPlacement::Cull(const Bbox2& b) const
 	return b.overlap(my_bounds);
 }
 
-bool		WED_ObjPlacement::HasCustomMSL(void) const
+int		WED_ObjPlacement::HasCustomMSL(void) const
 {
-	return has_msl.value;
+	return has_msl.value - obj_setToGround;
 }
 
 double		WED_ObjPlacement::GetCustomMSL(void) const
