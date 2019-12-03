@@ -235,7 +235,7 @@ bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, G
 				vector<Point2> pts;
 				vector<Point2> strip;
 
-				double offs = 0.5 * mtr * z->GetPPM();
+				double offs_pix = 0.5 * mtr * z->GetPPM();
 
 				b.p1 = z->LLToPixel(b.p1);
 				b.p2 = z->LLToPixel(b.p2);
@@ -258,13 +258,29 @@ bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, G
 					Vector2	dir = dir1+dir2;
 					dir = dir.perpendicular_ccw();
 					dir.normalize();
-					dir *= offs;
+					dir *= offs_pix;
 					strip.push_back(pts[i] - dir);
 					strip.push_back(pts[i] + dir);
 				}
 				glBegin(GL_TRIANGLE_STRIP);
 				glVertex2v(strip.data(), strip.size());
 				glEnd();
+				
+				int layers = min(max(seg->GetStartLayer(), seg->GetEndLayer()), 3);
+				if(layers)
+				{
+					glColor4f(0.4, 1, 1, 1.0);         // bright cyan
+					glLineWidth(2);
+					for(int l = 1; l <= layers; l++)
+					{
+						int skip_pts = seg->GetStartLayer() >= l ? 0 :  pts.size()/4;
+						Point2 * first = pts.data() + skip_pts;
+						int num_pts = pts.size() - skip_pts - (seg->GetEndLayer() >= l ? 0 : pts.size()/4);
+						
+						glShapeOffset2v(GL_LINE_STRIP, first, num_pts,  offs_pix + 3 * (l-1));
+						glShapeOffset2v(GL_LINE_STRIP, first, num_pts, -offs_pix - 3 * (l-1));
+					}
+				}
 			}
 			else
 			{
@@ -276,6 +292,32 @@ bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, G
 				glBegin(GL_TRIANGLE_FAN);
 				glVertex2v(c,4);
 				glEnd();
+				
+				int layers = min(max(seg->GetStartLayer(), seg->GetEndLayer()), 3);
+				if(layers)
+				{
+					glColor4f(0.4, 1, 1, 1.0);         // bright cyan
+					glLineWidth(2);
+					for(int l = 1; l <= layers; l++)
+					{
+						Point2 sides[4](c);
+						Vector2 dir(c[0], c[1]);
+						if(seg->GetStartLayer() < l) { sides[0] += dir * 0.25; sides[3] += dir * 0.25; }
+						if(seg->GetEndLayer() < l)   { sides[1] -= dir * 0.25; sides[2] -= dir * 0.25; }
+						
+						if(l > 1)
+						{
+							Vector2 perp(c[1],c[2]);
+							perp.normalize();
+							perp *= 3 * (l - 1);
+							sides[0] -= perp; sides[1] -= perp; sides[2] += perp; sides[3] += perp;
+						}
+							
+						glBegin(GL_LINES);
+						glVertex2v(sides,4);
+						glEnd();
+					}
+				}
 			}
 		}
 	}
