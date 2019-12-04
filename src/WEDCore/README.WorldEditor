@@ -29,6 +29,7 @@ WED 2.2.x
    - WED-1244: Combine exclusion zones upon import
    - WED-1240: Better visibility for UI mode tabs, ATC route segments
    - visualize ramp start sizes in all modes when zoomed in sufficiently
+   - "Convert To" for lines now translates styles to resource paths and vice versa
 
 WED 2.1.0r1 7/22/19
    Bug Fixes:

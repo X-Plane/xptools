@@ -4923,11 +4923,38 @@ static int get_surface(WED_Thing * t)
 		polygon->GetResource(resource);
 		if (resource.find("concrete") != string::npos)
 			return surf_Concrete;
+		else
+			return surf_Asphalt;
+	}
+	WED_LinePlacement * line = dynamic_cast<WED_LinePlacement*>(t);
+	if (line)
+	{
+		string resource;
+		line->GetResource(resource);
+		if(resource.substr(0,strlen("lib/airport/lines/")) == "lib/airport/lines/")
+		{
+			resource.erase(0,strlen("lib/airport/lines/"));
+			int linetype;
+			if(sscanf(resource.c_str(),"%d",&linetype) == 1)
+			{
+				int enu = ENUM_Import(LinearFeature,linetype);
+				return enu;
+			}
+		}
+	}
+	WED_AirportChain * chain = dynamic_cast<WED_AirportChain*>(t);
+	if(chain)
+	{
+		// return value only if whl chain same style ... need to break up multi-linestyle chains beforehand
+		string resource;
+		chain->GetResource(resource);
+		int enu = ENUM_LookupDesc(LinearFeature, resource.c_str());
+		return enu;
 	}
 	return surf_Asphalt;
 }
 
-static void set_surface(WED_Thing * t, int surface)
+static void set_surface(WED_Thing * t, int surface, WED_LibraryMgr * lmgr)
 {
 	WED_Taxiway * taxiway = dynamic_cast<WED_Taxiway*>(t);
 	if (taxiway)
@@ -4942,6 +4969,30 @@ static void set_surface(WED_Thing * t, int surface)
 			polygon->SetResource("lib/airport/pavement/asphalt_1D.pol");
 		else
 			polygon->SetResource("lib/airport/pavement/concrete_1D.pol");
+		return;
+	}
+	WED_LinePlacement * line = dynamic_cast<WED_LinePlacement*>(t);
+	if (line)
+	{
+		string(vpath);
+		if (lmgr->GetLineVpath(ENUM_Export(surface), vpath))
+		{
+			line->SetResource(vpath);
+		}
+	}
+	WED_AirportChain * chain = dynamic_cast<WED_AirportChain*>(t);
+	if(chain)
+	{
+		set<int> attr;
+		attr.insert(surface);
+		
+		int num_ent = chain->GetNumEntities();
+		for(int i = 0; i < num_ent; i++)
+		{
+			WED_AirportNode * node = dynamic_cast<WED_AirportNode*>(chain->GetNthEntity(i));
+			if(node)
+				node->SetAttributes(attr);
+		}
 	}
 }
 
@@ -5019,7 +5070,7 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 
 			copy_heading(src, dst);
 
-			set_surface(dst, get_surface(src));
+			set_surface(dst, get_surface(src), WED_GetLibraryMgr(resolver));
 
 			sel->Insert(dst);
 			dst->SetParent(src->GetParent(), src->GetMyPosition() + 1);
@@ -5037,6 +5088,8 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 				set_closed(dst, chains[i]->IsClosed());
 
 				move_points(chains[i], dst);
+				
+				set_surface(dst, get_surface(src),WED_GetLibraryMgr(resolver));
 
 				sel->Insert(dst);
 				dst->SetParent(src->GetParent(), src->GetMyPosition() + 1 + i);
