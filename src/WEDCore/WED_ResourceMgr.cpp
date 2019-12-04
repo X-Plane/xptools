@@ -180,7 +180,7 @@ bool	WED_ResourceMgr::GetObjRelative(const string& obj_path, const string& paren
 
 bool	WED_ResourceMgr::GetObj(const string& vpath, XObj8 const *& obj, int variant)
 {
-	if(vpath[vpath.size()-3] != 'o') return false;   // save time by not trying to load .agp's
+	if(toupper(vpath[vpath.size()-3]) != 'O') return false;   // save time by not trying to load .agp's
 
 //printf("GetObj %s' V=%d\n", path.c_str(), variant);
 	auto i = mObj.find(vpath);
@@ -537,7 +537,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 		string p = mLibrary->GetResourcePath(vpath, v);
 
 		MFMemFile * file = MemFile_Open(p.c_str());
-		if(!file) continue;
+		if(!file) return false;
 		
 		fac_info_t * fac = new fac_info_t;
 		
@@ -559,7 +559,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 		REN_facade_template_t * tpl = NULL;
 
 		while(!MFS_done(&s))
-			{
+		{
 			if (MFS_string_match(&s,"LOD", false))
 			{
 				not_nearest_lod = (MFS_double(&s) > 0.1);   // skip all info on the far out LOD's
@@ -897,33 +897,42 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 					fac->roof_scale_s = MFS_double(&s);
 					fac->roof_scale_t = MFS_double(&s);
 					if (fac->roof_scale_t == 0.0) fac->roof_scale_t = fac->roof_scale_s;
-					fac->has_roof = true;
 				}
-				else if(MFS_string_match(&s,"NOROOFMESH", false))
+				else if(MFS_string_match(&s,"NO_ROOF_MESH", true))
 				{
 					fac->noroofmesh = true;
 				}
-				else if(MFS_string_match(&s,"NOWALLMESH", false))
+				else if(MFS_string_match(&s,"NO_WALL_MESH", true))
 				{
 					fac->nowallmesh = true;
 				}
-#if 0
-				else if(tpl && MFS_string_match(&s,"ROOF_OBJ", false))
+				else if(MFS_string_match(&s,"ROOF_OBJ", false))
 				{
-				xint idx = m.TXT_int_scan();
-				xflt s = m.TXT_flt_scan() / roof_scale_s;
-				xflt t = m.TXT_flt_scan() / roof_scale_t;
-				xflt r = m.TXT_flt_scan();
-				xint show_lo = m.TXT_int_scan();
-				xint show_hi = m.TXT_int_scan();				
-				REN_facade_roof_t::robj o = { s, t, r, idx };
-				o.freq = asset_freq(show_lo, show_hi);
-				if(floors.empty() || floors.back().roofs.empty())
-					DSF_NonFatalError(m,"This facade uses a roof object that is not inside a roof.  Please fix this!");
-				else
-					floors.back().roofs.back().roof_objs.push_back(o);
+					xint idx = MFS_int(&s);
+					xflt s_coord = MFS_double(&s) / fac->roof_scale_s;
+					xflt t_coord = MFS_double(&s) / fac->roof_scale_t;
+					// xint show_lo = MFS_int(&s);
+					// xint show_hi = MFS_int(&s);
+					REN_facade_roof_t::robj o = { s_coord, t_coord, 0.0, idx };
+					if(fac->floors.empty() || fac->floors.back().roofs.empty())
+						FAIL("This facade uses a roof object that is not inside a roof.")
+					else
+						fac->floors.back().roofs.back().roof_objs.push_back(o);
 				}
-#endif
+				else if(MFS_string_match(&s,"ROOF_OBJ_HEADING", false))
+				{
+					xint idx = MFS_int(&s);
+					xflt s_coord = MFS_double(&s) / fac->roof_scale_s;
+					xflt t_coord = MFS_double(&s) / fac->roof_scale_t;
+					xflt r = MFS_double(&s);
+					// xint show_lo = MFS_int(&s);
+					// xint show_hi = MFS_int(&s);
+					REN_facade_roof_t::robj o = { s_coord, t_coord, r, idx };
+					if(fac->floors.empty() || fac->floors.back().roofs.empty())
+						FAIL("This facade uses a roof object that is not inside a roof.")
+					else
+						fac->floors.back().roofs.back().roof_objs.push_back(o);
+				}
 			}
 			MFS_string_eol(&s,NULL);
 		}
@@ -977,6 +986,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 					sort(w.spellings.begin(), w.spellings.end());
 				}
 			}
+			if(fac->noroofmesh) fac->has_roof = false;
 		}
 		process_texture_path(p,fac->wall_tex);
 		process_texture_path(p,fac->roof_tex);

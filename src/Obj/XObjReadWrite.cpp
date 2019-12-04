@@ -129,31 +129,7 @@ inline xflt TXT_MAP_flt_scan(xbyt*& c,const xbyt* c_max, bool go_next_line)
 		TXT_MAP_space(c) ||
 		(go_next_line && TXT_MAP_eoln(c))))	++c;
 
-	xflt ret_val = 0.0f;
-#if 1                     // speed optimization - does not use pow() function - MUCH faster
-	xflt decimals = 0.0f;
-	xflt negative = 1.0f;
-
-	if(*c == '-')      { negative = -1.0f; ++c; }
-	else if(*c == '+') { ++c; }
-
-//	while(c<c_max && !TXT_MAP_space(c) && !TXT_MAP_eoln(c))
-	while(c<c_max && *c >= '.' && *c <= '9')      // abort on encountering *anything* unexpected
-	{
-		if(decimals != 0.0f)
-		{
-			ret_val += (*c - '0') * decimals;
-			decimals *= 0.1f;
-		}
-		else if(*c == '.')
-			decimals = 0.1f;
-		else
-			ret_val = (10.0f * ret_val) + *c - '0';
-
-		++c;
-	}
-	return negative * ret_val;
-#else
+	xflt ret_val	=0;
 	xint decimals	=0;
 	xint negative	=xfals;
 	xint has_decimal=xfals;
@@ -171,7 +147,6 @@ inline xflt TXT_MAP_flt_scan(xbyt*& c,const xbyt* c_max, bool go_next_line)
 		++c;
 	}
 	return ret_val/pow((xflt)10,(xflt)decimals)*((negative)?-1.0:1.0);
-#endif
 }
 
 inline xint TXT_MAP_int_scan(xbyt*& c,const xbyt* c_max, bool go_next_line)
@@ -186,8 +161,7 @@ inline xint TXT_MAP_int_scan(xbyt*& c,const xbyt* c_max, bool go_next_line)
 	if(c<c_max && *c=='-'){sign_mult=-1;	++c;}
 	if(c<c_max && *c=='+'){sign_mult= 1;	++c;}
 
-//	while(c<c_max && !TXT_MAP_space(c) && !TXT_MAP_eoln(c))
-	while(c<c_max && *c >= '0' && *c <= '9')      // abort on encountering *anything* unexpected
+	while(c<c_max && !TXT_MAP_space(c) && !TXT_MAP_eoln(c))
 	{
 		retval=(10*retval)+*c-'0';
 		++c;
@@ -630,35 +604,8 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 	while (!stop && TXT_MAP_continue(cur_ptr, end_ptr))
 	{
 		bool ate_eoln = false;
-		// VT <x> <y> <z> <nx> <ny> <nz> <s> <t>                           // most frequent commands first for speed !
-		if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "VT", xfals))
-		{
-			if (tricount >= trimax) break;
-			stdat[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
-			stdat[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
-			stdat[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
-			stdat[3] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
-			stdat[4] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
-			stdat[5] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
-			stdat[6] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
-			stdat[7] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
-			outObj.geo_tri.set(tricount++, stdat);
-		}
-		// IDX <n>
-		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "IDX", xfals))
-		{
-			if (idxcount >= idxmax) break;
-			outObj.indices[idxcount++] = TXT_MAP_int_scan(cur_ptr, end_ptr, xfals);    // indices can't be floats !
-		}
-		// IDX10 <n> x 10
-		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "IDX10", xfals))
-		{
-			if (idxcount >= idxmax) break;
-			for (n = 0; n < 10; ++n)
-				outObj.indices[idxcount++] = TXT_MAP_int_scan(cur_ptr, end_ptr, xfals);  // indices can't be floats !
-		}
 		// TEXTURE <tex>
-		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "TEXTURE", xfals))
+		if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "TEXTURE", xfals))
 		{
 			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &outObj.texture);
 		}
@@ -692,6 +639,20 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 			outObj.geo_lights.clear(6);
 			outObj.geo_lights.resize(lightmax);
 		}
+		// VT <x> <y> <z> <nx> <ny> <nz> <s> <t>
+		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "VT", xfals))
+		{
+			if (tricount >= trimax) break;
+			stdat[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			stdat[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			stdat[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			stdat[3] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			stdat[4] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			stdat[5] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			stdat[6] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			stdat[7] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			outObj.geo_tri.set(tricount++, stdat);
+		}
 		// VLINE <x> <y> <z> <r> <g> <b>
 		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "VLINE", xfals))
 		{
@@ -715,6 +676,19 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 			stdat[4] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			stdat[5] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			outObj.geo_lights.set(lightcount++, stdat);
+		}
+		// IDX <n>
+		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "IDX", xfals))
+		{
+			if (idxcount >= idxmax) break;
+			outObj.indices[idxcount++] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+		}
+		// IDX10 <n> x 10
+		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "IDX10", xfals))
+		{
+			if (idxcount >= idxmax) break;
+			for (n = 0; n < 10; ++n)
+				outObj.indices[idxcount++] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 		}
 		// TRIS offset count
 		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "TRIS", xfals))
@@ -1319,7 +1293,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 			cmd.cmd = attr_Emitter;
 			cmd.idx_offset = outObj.emitters.size();
 			outObj.lods.back().cmds.push_back(cmd);
-
+		
 			XObjEmitter8	em;
 			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &em.name);
 
@@ -1363,14 +1337,14 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		else if(TXT_MAP_str_match_space(cur_ptr, end_ptr, "ATTR_axis_detented", false))
 		{
 			XObjManip8& manip(outObj.manips.back());
-
+			
 			manip.centroid[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);	// centroid gets orthgonal lift axis
 			manip.centroid[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			manip.centroid[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
-
+		
 			manip.v2_min = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			manip.v2_max = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
-
+			
 			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.dataref2);
 		}
 		// ATTR_manip_drag_rotate <cursor> <x> <y> <z> <dx> <dy> <dz> <ange1> <angle2> <lift> <v1min> <v1max> <v2min> <v2max> <dataref1> <dataref2> <tooltip>
@@ -1383,7 +1357,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 			manip.mouse_wheel_delta = 0.0f;
 
 			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.cursor);
-
+			
 			manip.centroid[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			manip.centroid[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			manip.centroid[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
@@ -1395,12 +1369,12 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 			manip.angle_min = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			manip.angle_max = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			manip.lift		= TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
-
+			
 			manip.v1_min = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			manip.v1_max = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			manip.v2_min = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			manip.v2_max = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
-
+			
 			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.dataref1);
 			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.dataref2);
 			TXT_MAP_str_scan_eoln(cur_ptr,end_ptr,&manip.tooltip);
@@ -1476,7 +1450,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &cmd.name);
 			// Scan a second time to pick up type, e.g. ipad
 			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &cmd.name);
-
+			
 			cmd.params[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			cmd.params[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			cmd.params[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
@@ -1518,7 +1492,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 	free(mem_buf);
 
 	outObj.geo_tri.get_minmax(outObj.xyz_min,outObj.xyz_max);
-
+	
 	return true;
 }
 
@@ -1772,7 +1746,7 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 				{
 					fprintf(fi,"ATTR_axis_detent_range %f %f %f" CRLF, di->lo, di->hi, di->height);
 				}
-
+					
 				if(outObj.manips[cmd->idx_offset].mouse_wheel_delta != 0)
 					fprintf(fi,"ATTR_manip_wheel %f" CRLF, outObj.manips[cmd->idx_offset].mouse_wheel_delta);
 				break;
@@ -1800,7 +1774,7 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 			case attr_Light_Level:
 				fprintf(fi,"ATTR_light_level %f %f %s" CRLF, cmd->params[0], cmd->params[1],cmd->name.c_str());
 				break;
-
+				
 			case attr_Manip_Push:
 					fprintf(fi,"ATTR_manip_push %s %f %f %s %s" CRLF,
 						outObj.manips[cmd->idx_offset].cursor.c_str(),
@@ -1830,7 +1804,7 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 					if(outObj.manips[cmd->idx_offset].mouse_wheel_delta != 0)
 						fprintf(fi,"ATTR_manip_wheel %f" CRLF, outObj.manips[cmd->idx_offset].mouse_wheel_delta);
 					break;
-
+					
 			case attr_Manip_Delta:
 					fprintf(fi,"ATTR_manip_delta %s %f %f %f %f %s %s" CRLF,
 						outObj.manips[cmd->idx_offset].cursor.c_str(),
@@ -1868,7 +1842,7 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 						outObj.manips[cmd->idx_offset].tooltip.c_str());
 					if(outObj.manips[cmd->idx_offset].mouse_wheel_delta != 0)
 						fprintf(fi,"ATTR_manip_wheel %f" CRLF, outObj.manips[cmd->idx_offset].mouse_wheel_delta);
-					break;
+					break;		
 			case attr_Manip_Command_Knob:
 					fprintf(fi,"ATTR_manip_command_knob %s %s %s %s" CRLF,
 						outObj.manips[cmd->idx_offset].cursor.c_str(),
@@ -1959,7 +1933,7 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 						dataref_or_none(outObj.manips[cmd->idx_offset].dataref1.c_str()),
 						dataref_or_none(outObj.manips[cmd->idx_offset].dataref2.c_str()),
 						outObj.manips[cmd->idx_offset].tooltip.c_str());
-
+					
 					for(vector<XObjKey>::const_iterator ki = outObj.manips[cmd->idx_offset].rotation_key_frames.begin();
 						ki != outObj.manips[cmd->idx_offset].rotation_key_frames.end(); ++ki)
 					{
@@ -1972,7 +1946,7 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 					}
 					if(outObj.manips[cmd->idx_offset].mouse_wheel_delta != 0)
 						fprintf(fi,"ATTR_manip_wheel %f" CRLF, outObj.manips[cmd->idx_offset].mouse_wheel_delta);
-
+					
 					break;
 			case attr_Manip_Command_Switch_Left_Right2:
 				fprintf(fi,"ATTR_manip_command_switch_left_right2 %s %s %s" CRLF,

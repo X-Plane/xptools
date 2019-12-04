@@ -238,7 +238,7 @@ int DoSaveDiscardDialog(const char * inMessage1, const char * inMessage2)
 			NULL,
 			convert_str_to_utf16(inMessage2).c_str(),
 			convert_str_to_utf16(inMessage1).c_str(),
-			MB_YESNOCANCEL +
+			MB_YESNOCANCEL | MB_TOPMOST | MB_TASKMODAL |
 			MB_ICONEXCLAMATION);
 	switch(result) {
 	case IDCANCEL:	return close_Cancel;

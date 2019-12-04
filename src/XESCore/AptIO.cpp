@@ -445,7 +445,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 					&outApts.back().signs.back().heading,
 					&outApts.back().signs.back().style_code,
 					&outApts.back().signs.back().size_code,
-					&outApts.back().signs.back().text) != 7)
+					&outApts.back().signs.back().text) < 6)
 			ok = "Illegal apt sign";
 				outApts.back().signs.back().location = POINT2(p1x, p1y);
 			break;

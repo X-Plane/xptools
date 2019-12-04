@@ -27,6 +27,8 @@
 #include "WED_GISPolygon.h"
 #include "IHasResource.h"
 
+struct fac_info_t;
+
 class	WED_FacadePlacement : public WED_GISPolygon, public IHasResource {
 
 DECLARE_PERSISTENT(WED_FacadePlacement)
@@ -39,7 +41,6 @@ public:
 		topo_Chain = 2
 	};
 
-
 	virtual	bool			HasLayer		(GISLayer_t layer							  ) const;
 
 			double		GetHeight(void) const;
@@ -50,7 +51,8 @@ public:
 
 			TopoMode	GetTopoMode(void) const;
 
-//			void		GetWallChoices(vector<int>& out_walls);
+			int		GetNumWallChoices(void) const;
+			int		GetType(void) const;
 			bool		HasCustomWalls(void) const;
 			void		SetCustomWalls(bool has);
 
@@ -65,10 +67,12 @@ protected:
 
 private:
 
-	WED_PropDoubleText				height;
-	WED_PropStringText			resource;
-	WED_PropBoolText				pick_walls;
-	WED_PropIntEnum				show_level;
+	const fac_info_t * 		GetFacInfo(void) const;
+
+	WED_PropDoubleText		height;
+	WED_PropStringText		resource;
+	WED_PropBoolText			pick_walls;
+	WED_PropIntEnum			show_level;
 
 };
 

@@ -78,6 +78,7 @@
 #include "FileUtils.h"
 #include "MemFileUtils.h"
 #include "PlatformUtils.h"
+#include "STLUtils.h"
 #include "MathUtils.h"
 
 #include "WED_Document.h"
@@ -456,8 +457,31 @@ static void ValidateOneFacadePlacement(WED_Thing* who, validation_error_vector& 
 		msgs.push_back(validation_error_t("Facades may not have holes in them.", err_gis_poly_facades_may_not_have_holes, who,apt));
 	}
 
-	if(gExportTarget == wet_xplane_900 && WED_HasBezierPol(fac))
-		msgs.push_back(validation_error_t("Curved facades are only supported in X-Plane 10 and newer.", err_gis_poly_facades_curved_only_for_gte_xp10, who,apt));
+	if(WED_HasBezierPol(fac))
+	{
+		if(gExportTarget == wet_xplane_900)
+			msgs.push_back(validation_error_t("Curved facades are only supported in X-Plane 10 and newer.", err_gis_poly_facades_curved_only_for_gte_xp10, who,apt));
+		else if(fac->GetType() < 2)
+			msgs.push_back(validation_error_t("Only Type2 facades support curved segements.", warn_facades_curved_only_type2, who,apt));
+	}
+
+	if(fac->HasLayer(gis_Param))
+	{
+		int maxWalls = fac->GetNumWallChoices();
+		IGISPointSequence * ips = fac->GetOuterRing();
+		int nn = ips->GetNumPoints();
+		for(int i = 0; i < nn; ++i)
+		{
+			Point2 pt;
+			IGISPoint * igp = ips->GetNthPoint(i);
+			igp->GetLocation(gis_Param, pt);
+						
+			if(pt.x() >= maxWalls)
+			{
+				msgs.push_back(validation_error_t("Facade node specifies wall not defined in facade resource.", err_facade_illegal_wall, dynamic_cast<WED_Thing *>(igp), apt));
+			}
+		}
+	}
 }
 
 static void ValidateOneForestPlacement(WED_Thing* who, validation_error_vector& msgs, WED_Airport * apt)
@@ -1926,22 +1950,28 @@ static void ValidateOneTaxiSign(WED_AirportSign* airSign, validation_error_vecto
 
 	string signName;
 	airSign->GetName(signName);
-
-	//Create the necessary parts for a parsing operation
-	parser_in_info in(signName);
-	parser_out_info out;
-
-	ParserTaxiSign(in,out);
-	if(out.errors.size() > 0)
+	if(signName.empty())
 	{
-		int MAX_ERRORS = 12;//TODO - Is this good?
-		string m;
-		for (int i = 0; i < MAX_ERRORS && i < out.errors.size(); i++)
+		msgs.push_back(validation_error_t("Taxi Sign is blank.", err_sign_error, airSign, apt));
+	}
+	else
+	{
+		//Create the necessary parts for a parsing operation
+		parser_in_info in(signName);
+		parser_out_info out;
+
+		ParserTaxiSign(in,out);
+		if(out.errors.size() > 0)
 		{
-			m += out.errors[i].msg;
-			m += '\n';
+			int MAX_ERRORS = 12;//TODO - Is this good?
+			string m;
+			for (int i = 0; i < MAX_ERRORS && i < out.errors.size(); i++)
+			{
+				m += out.errors[i].msg;
+				m += '\n';
+			}
+			msgs.push_back(validation_error_t(m, err_sign_error, airSign,apt));
 		}
-		msgs.push_back(validation_error_t(m, err_sign_error, airSign,apt));
 	}
 }
 
@@ -2310,6 +2340,21 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		for(set<int>::iterator i = legal_rwy_oneway.begin(); i != legal_rwy_oneway.end(); ++i)
 		{
 			rwys_missing.erase(*i);    // remove those runways that can be found in the scenery for this airport
+		}
+		for(auto i : sealanes)
+		{
+			string name;	i->GetName(name);
+			vector<string> parts;  tokenize_string(name.begin(),name.end(),back_inserter(parts), '/');
+	
+			for(auto p : parts)
+			{
+				if(p.back() == 'W')	p.pop_back();                       // We want to allow sealanes with or without W suffix to satisfy CIFP validation
+				int e = ENUM_LookupDesc(ATCRunwayOneway,p.c_str());
+				if(legal_rwy_oneway.find(e) == legal_rwy_oneway.end())   // but only if that name does not collide with a paved runway at the same airport
+				{
+					rwys_missing.erase(e);
+				}
+			}
 		}
 		if (!rwys_missing.empty())
 		{
