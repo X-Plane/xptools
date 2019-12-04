@@ -2720,17 +2720,14 @@ static bool lesser_y_then_x_merge_class_map(const pair<Point2, pair<const char *
 	return (lhs.first.y() == rhs.first.y()) ? (lhs.first.x() < rhs.first.x()) : (lhs.first.y() < rhs.first.y());
 }
 
-static bool is_within_snapping_distance(const merge_class_map::iterator& first_thing, const merge_class_map::iterator& second_thing, const CoordTranslator2& translator)
+static bool is_within_snapping_distance(const merge_class_map::iterator& first_thing, const merge_class_map::iterator& second_thing)
 {
-	const int MAX_DIST_M_SQ = 1;
+	// since we're not using the coordTranslator any more, we have no way to cache the cos(lattitude) to calculate distances quick.
+	// so we shortcut the more complex calculation by testing for lattitude first
+	
+	if (fabs(first_thing->first.y() - second_thing->first.y()) > MTR_TO_DEG_LAT) return 0;
 
-	Point2 first_pos_m       = translator.Forward(first_thing->first);
-	Point2 second_thing_pos_m = translator.Forward(second_thing->first);
-	double a_sqr = pow((second_thing_pos_m.x() - first_pos_m.x()), 2);
-	double b_sqr = pow (second_thing_pos_m.y() - first_pos_m.y(), 2);
-	double sum_a_b = a_sqr + b_sqr;
-	bool is_snappable =  sum_a_b < MAX_DIST_M_SQ;
-	return is_snappable;
+	return LonLatDistMeters(first_thing->first, second_thing->first) < 1.0;
 }
 
 static const char * get_merge_tag_for_thing(IGISPoint * ething)
@@ -3168,14 +3165,6 @@ static bool is_node_merge(IResolver * resolver)
 	//2. Sort by location, a small optimization
 	sort(sinkmap.begin(), sinkmap.end(), lesser_y_then_x_merge_class_map);
 
-	//Find the bounds for the current airport
-	WED_Airport* apt = WED_GetCurrentAirport(resolver);
-	DebugAssert(apt != NULL);
-	Bbox2 bb;
-	CoordTranslator2 translator;
-	apt->GetBounds(gis_Geo, bb);
-	CreateTranslatorForBounds(bb, translator);
-
 	//Keeps track of which objects we've discovered we can snap (hopefully all)
 	set<merge_class_map::iterator> can_snap_objects;
 
@@ -3186,7 +3175,7 @@ static bool is_node_merge(IResolver * resolver)
 		for (merge_class_map::iterator merge_pair_itr = thing_1_itr + 1; merge_pair_itr != sinkmap.end(); ++merge_pair_itr)
 		{
 			//If the two things are within snapping distance of each other, record so
-			if (is_within_snapping_distance(thing_1_itr, merge_pair_itr, translator))
+			if (is_within_snapping_distance(thing_1_itr, merge_pair_itr))
 			{
 				can_snap_objects.insert(thing_1_itr);
 				can_snap_objects.insert(merge_pair_itr);
@@ -3446,13 +3435,6 @@ static void do_node_merge(IResolver * resolver)
 	//2. Sort by location, a small optimization
 	sort(sinkmap.begin(), sinkmap.end(), lesser_y_then_x_merge_class_map);
 
-	WED_Airport* apt = WED_GetCurrentAirport(resolver);
-	DebugAssert(apt != NULL);
-	Bbox2 bb;
-	CoordTranslator2 translator;
-	apt->GetBounds(gis_Geo, bb);
-	CreateTranslatorForBounds(bb, translator);
-
 	//All the nodes that will end up snapped
 	set<WED_Thing*> snapped_nodes;
 	merge_class_map::iterator start_thing = sinkmap.begin();
@@ -3467,7 +3449,7 @@ static void do_node_merge(IResolver * resolver)
 				const char * tag_1 = start_thing->second.first;
 				const char * tag_2 = merge_pair->second.first;
 
-				if (is_within_snapping_distance(start_thing, merge_pair, translator) && tag_1 == tag_2)
+				if (is_within_snapping_distance(start_thing, merge_pair) && tag_1 == tag_2)
 				{
 					vector<WED_Thing*> sub_list = vector<WED_Thing*>();
 					sub_list.push_back(start_thing->second.second);
