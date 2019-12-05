@@ -18,6 +18,7 @@ WED 2.2.x
    - WED-1225: show apts with only declined submissions in gateway import dialog
    - WED-1235: fix crash when processing OOB indices in bad .agp definitions
    - try harder to keep 1:1 pixel mapping when splitting orthophoto's into tiles
+   - fix LineSelector GUI not popping up when style 'None' is selected
    Features:
    - tighten ATC freq. validation to VHF airband & 200+ MHz, allow AWOS on VOR's
    - increase undo buffer from 20 to 100 operations
@@ -30,6 +31,7 @@ WED 2.2.x
    - WED-1240: Better visibility for UI mode tabs, ATC route segments
    - visualize ramp start sizes in all modes when zoomed in sufficiently
    - "Convert To" for lines now translates styles to resource paths and vice versa
+   - allow GUI based resource selection for "Lines", same as for "Airport Line Markings"
 
 WED 2.1.0r1 7/22/19
    Bug Fixes:
