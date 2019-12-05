@@ -245,7 +245,7 @@ void	WED_PropertyTable::GetCellContent(
 		the_content.int_val = val.int_val;
 		break;
 	case prop_EnumSet:
-		the_content.content_type = gui_Cell_EnumSet;
+		the_content.content_type = (inf.domain == LinearFeature ? gui_Cell_LineEnumSet : gui_Cell_EnumSet);
 		the_content.int_set_val = val.set_val;
 		the_content.text_val.clear();
 		for(set<int>::iterator iter=val.set_val.begin();iter != val.set_val.end(); ++iter)
@@ -256,7 +256,6 @@ void	WED_PropertyTable::GetCellContent(
 			t->GetNthPropertyDictItem(idx,*iter,label);
 			if (ENUM_Domain(*iter) == LinearFeature)
 			{
-				the_content.content_type = gui_Cell_LineEnumSet;
 				label = ENUM_Name(*iter);
 				label += ".png";
 				the_content.string_is_resource = 1;

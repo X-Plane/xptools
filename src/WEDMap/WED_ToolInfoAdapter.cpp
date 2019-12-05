@@ -28,8 +28,6 @@
 #include "WED_EnumSystem.h"
 #include "IPropertyObject.h"
 
-const int COL_WIDTH = 100;
-
 #define OUR_FONT font_UI_Small
 
 WED_ToolInfoAdapter::WED_ToolInfoAdapter(int height) : mTool(NULL), mRowHeight(height)
@@ -105,22 +103,21 @@ void	WED_ToolInfoAdapter::GetCellContent(
 
 		if (inf.prop_kind == prop_EnumSet)
 		{
+			the_content.content_type = (inf.domain == LinearFeature ? gui_Cell_LineEnumSet : gui_Cell_EnumSet);
 			the_content.text_val.clear();
 			for(set<int>::iterator iter=val.set_val.begin();iter != val.set_val.end(); ++iter)
 			{
 				if (iter!=val.set_val.begin()) the_content.text_val += ",";
 				string label;
 				mTool->GetNthPropertyDictItem(cell_x / 2,*iter,label);
+#if 0			// for now print the full style name, not the icon - as the icons don't allow to distinguish some wide lines from regular ones
 				if (ENUM_Domain(*iter) == LinearFeature)
 				{
-//xxx					the_content.content_type = gui_Cell_LineEnumSet;
-					
-#if 0				// do not do this for now - looks ugly in the tool info adapter
 					label = ENUM_Name(*iter);
 					label += ".png";
 					the_content.string_is_resource = 1;
-#endif
 				}
+#endif
 				the_content.text_val += label;
 			}
 			if (the_content.text_val.empty())	the_content.text_val="None";
@@ -320,7 +317,7 @@ int			WED_ToolInfoAdapter::GetCellWidth(int n)
 
 	mTool->GetNthPropertyInfo(n / 2, inf);
 
-	PropertyDict_t	dict;
+//	PropertyDict_t	dict;
 
 	if (!inf.prop_name.empty() && inf.prop_name[0] == '.') return 1;
 
@@ -329,11 +326,27 @@ int			WED_ToolInfoAdapter::GetCellWidth(int n)
 	// Check runway-creation tool if you retune these...it is the most space constrained up top!
 	case prop_Int:
 	case prop_Double:		return inf.digits * GUI_MeasureRange(OUR_FONT, zero,zero+1) + 10;
-	case prop_String:		return 100;
-	case prop_FilePath:		return 150;
-	case prop_Bool:			return 30;
+	case prop_String:		return 200;
+	case prop_FilePath:		return 200;
+	case prop_Bool:			return 25;
 	case prop_Enum:
-	case prop_EnumSet:		return 75;
+	case prop_EnumSet:		
+							switch (inf.domain)
+							{
+								case ATCVehicleClass:
+								case RampOperationType:
+								case ATCTrafficType: return 100;
+								case ShowLevel:
+								case ExclusionTypes:
+								case ATCServiceTruckType:
+								case Light_Fixt:
+								case Sign_Size:
+								case LinearFeature: return 150;
+								case ATCIcaoWidth:
+								case Edge_Lights:   return 50;
+								
+								default:            return 75;
+							}
 	case prop_TaxiSign:		return 150;
 //		mTool->GetNthPropertyDict(n / 2, dict);
 //		for(PropertyDict_t::iterator d = dict.begin(); d != dict.end(); ++d)
