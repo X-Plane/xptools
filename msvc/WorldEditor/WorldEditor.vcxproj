@@ -515,6 +515,7 @@
     <Image Include="..\..\src\WEDResources\tabs.png" />
     <Image Include="..\..\src\WEDResources\tce_tools.png" />
     <Image Include="..\..\src\WEDResources\tce_tools_blank.png" />
+    <Image Include="..\..\src\WEDResources\exclaim.png" />
     <Image Include="..\..\src\WEDResources\WED.ico" />
   </ItemGroup>
   <ItemGroup>

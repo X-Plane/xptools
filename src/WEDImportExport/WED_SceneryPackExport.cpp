@@ -59,7 +59,7 @@ int		WED_CanExportPack(IResolver * resolver)
 void	WED_DoExportPack(WED_Document * resolver, WED_MapPane * pane)
 {
 	// Just don't ever export if we are invalid.  Avoid the case where we write junk to a file!
-	if(!WED_ValidateApt(resolver, pane))
+	if(!WED_ValidateApt(resolver, pane, NULL, false, "Cancel Export"))
 		return;
 
 	ILibrarian * l = WED_GetLibrarian(resolver);
@@ -79,7 +79,7 @@ void	WED_DoExportPack(WED_Document * resolver, WED_MapPane * pane)
 
 	if(!problem_children.empty())
 	{
-		DoUserAlert("One or more objects could not exported - check for self intersecting polygons and closed-ring facades crossing DFS boundaries.");
+		DoUserAlert("One or more objects could not be exported - check for self intersecting polygons and closed-ring facades crossing DFS boundaries.");
 		ISelection * sel = WED_GetSelect(resolver);
 		(*problem_children.begin())->StartOperation("Select broken items.");
 		sel->Clear();

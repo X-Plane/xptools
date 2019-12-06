@@ -2486,7 +2486,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 }
 
 
-validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * wrl, bool skipErrorDialog)
+validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * wrl, bool skipErrorDialog, const char * abortMsg)
 {
 #if DEBUG_VIS_LINES
 	//Clear the previously drawn lines before every validation
@@ -2591,7 +2591,7 @@ validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane,
 
 	if(!msgs.empty())
 	{
-		if(!skipErrorDialog) new WED_ValidateDialog(resolver, pane, msgs);
+		if(!skipErrorDialog) new WED_ValidateDialog(resolver, pane, msgs, abortMsg);
 
 /*		ISelection * sel = WED_GetSelect(resolver);
 		wrl->StartOperation("Select Invalid");

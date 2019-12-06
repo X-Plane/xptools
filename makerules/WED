@@ -379,6 +379,7 @@ RESOURCES += ./src/WEDResources/taxi_sign.png
 RESOURCES += ./src/WEDResources/ui_measurements.txt
 RESOURCES += ./src/WEDResources/map_tools.png
 RESOURCES += ./src/WEDResources/tce_tools.png
+RESOURCES += ./src/WEDResources/exclaim.png
 RESOURCES += ./src/WEDResources/startup_bar.png
 RESOURCES += ./src/WEDResources/startup_btns.png
 RESOURCES += ./src/WEDResources/startup_bkgnd.png
