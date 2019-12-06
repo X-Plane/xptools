@@ -57,6 +57,7 @@
 		0236B9732034264A0046900C /* check_buttons.png in Resources */ = {isa = PBXBuildFile; fileRef = 0236B971203425CE0046900C /* check_buttons.png */; };
 		0269A8551FF5F8F00085A37C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
 		0269A8561FF5F8F10085A37C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
+		029EC5B9239B095300A7C5E1 /* exclaim.png in Resources */ = {isa = PBXBuildFile; fileRef = 029EC5B7239B094B00A7C5E1 /* exclaim.png */; };
 		02A30B7E20F7A80B008CC1CB /* line_BSolidWhite.png in Resources */ = {isa = PBXBuildFile; fileRef = 025E09DF20D2F11200DD8856 /* line_BSolidWhite.png */; };
 		02B03C1020C72068000F81F0 /* WED_Line_Selector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02B03C0D20C71DE5000F81F0 /* WED_Line_Selector.cpp */; };
 		02B03C3320C720D3000F81F0 /* line_BILSCriticalCenterW.png in Resources */ = {isa = PBXBuildFile; fileRef = 02B03C1320C720C7000F81F0 /* line_BILSCriticalCenterW.png */; };
@@ -1031,6 +1032,7 @@
 		0224ED2820048B7F004729CD /* WED_ValidateList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ValidateList.h; sourceTree = "<group>"; };
 		0236B971203425CE0046900C /* check_buttons.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = check_buttons.png; sourceTree = "<group>"; };
 		025E09DF20D2F11200DD8856 /* line_BSolidWhite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = line_BSolidWhite.png; sourceTree = "<group>"; };
+		029EC5B7239B094B00A7C5E1 /* exclaim.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = exclaim.png; sourceTree = "<group>"; };
 		02B03C0D20C71DE5000F81F0 /* WED_Line_Selector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Line_Selector.cpp; sourceTree = "<group>"; };
 		02B03C0E20C71DE5000F81F0 /* WED_Line_Selector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Line_Selector.h; sourceTree = "<group>"; };
 		02B03C1120C720A1000F81F0 /* line_BBrokenRed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = line_BBrokenRed.png; sourceTree = "<group>"; };
@@ -3466,6 +3468,7 @@
 		D6ED3E1E0B6A636C00D5484E /* WEDResources */ = {
 			isa = PBXGroup;
 			children = (
+				029EC5B7239B094B00A7C5E1 /* exclaim.png */,
 				D6B69CDE1C582B6A005C78C5 /* parking_spots */,
 				D6C21A3B1C41A5DB00EE5FB3 /* taxi_sign.png */,
 				D63A801F1A997EB5008D218D /* COPYING */,
@@ -3950,6 +3953,7 @@
 				D607AC890C0385AA00992876 /* scroll_btn_h.png in Resources */,
 				D607AC8A0C0385AA00992876 /* scroll_btn_v.png in Resources */,
 				02B03C3D20C72114000F81F0 /* line_SolidGreen.png in Resources */,
+				029EC5B9239B095300A7C5E1 /* exclaim.png in Resources */,
 				D607AC8B0C0385AA00992876 /* scrollbar_h.png in Resources */,
 				D607AC8C0C0385AA00992876 /* scrollbar_v.png in Resources */,
 				D607ADC50C039A5800992876 /* splitter_h.png in Resources */,

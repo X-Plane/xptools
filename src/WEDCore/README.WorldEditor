@@ -33,6 +33,7 @@ WED 2.2.x
    - visualize ramp start sizes in all modes when zoomed in sufficiently
    - "Convert To" for lines now translates styles to resource paths and vice versa
    - allow GUI based resource selection for "Lines", same as for "Airport Line Markings"
+   - WED-1219: Make it more obvious to user when export was aborted due to errors
 
 WED 2.1.0r1 7/22/19
    Bug Fixes:
