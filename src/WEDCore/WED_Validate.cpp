@@ -1481,15 +1481,26 @@ static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& 
 		else
 		{
 			#if !GATEWAY_IMPORT_FEATURES
-				double heading, len;
+				double true_heading, len;
 				Point2 ctr;
-				Quad_2to1(ends, ctr, heading, len);
-				double approx_heading = num1 * 10.0;
-				double heading_delta = fabs(dobwrap(approx_heading - heading, -180.0, 180.0));
-				if(heading_delta > 135.0)
-					msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' needs to be reversed to match its name.", err_rwy_must_be_reversed_to_match_name, who,apt));
-				else if(heading_delta > ( name[name.length()-1] == 'T' ? 6.0 : 45.0))         // true north runways are'nt allowed to deviate for magnetic deviation
-					msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' is misaligned with its runway name.", err_rwy_misaligned_with_name, who,apt));
+				Quad_2to1(ends, ctr, true_heading, len);
+				double name_heading = num1 * 10.0;
+				double heading_delta = fabs(dobwrap(name_heading - true_heading, -180.0, 180.0));
+				if (name.back() == 'T')
+				{
+					// T suffix runways can be named either true north or 'GRID north'. Test if it matches either definition before squawking
+					double grid_heading = ctr.y() > 0.0 ? true_heading - ctr.x() : true_heading + ctr.x();
+					double grid_delta = fabs(dobwrap(name_heading - grid_heading, -180.0, 180.0));
+					if(grid_delta > 10.0 && heading_delta > 10.0)
+						msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' name is matching neither true nor grid north heading.", err_rwy_misaligned_with_name, who,apt));
+				}
+				else
+				{
+					if(heading_delta > 135.0)
+						msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' needs to be reversed to match its name.", err_rwy_must_be_reversed_to_match_name, who,apt));
+					else if(heading_delta > 45.0)
+						msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' is misaligned with its runway name.", err_rwy_misaligned_with_name, who,apt));
+				}
 			#endif
 		}
 	}
