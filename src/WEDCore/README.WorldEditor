@@ -20,6 +20,7 @@ WED 2.2.x
    - try harder to keep 1:1 pixel mapping when splitting orthophoto's into tiles
    - fix LineSelector GUI not popping up when style 'None' is selected
    - allow runways with T suffix naming to match either true or grid north heading
+   - WED-1248: fix crash when libray.txt rpath includes trailing non-ASCII characters
    Features:
    - tighten ATC freq. validation to VHF airband & 200+ MHz, allow AWOS on VOR's
    - increase undo buffer from 20 to 100 operations

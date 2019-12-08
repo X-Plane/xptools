@@ -43,6 +43,9 @@ static void clean_rpath(string& s)
 	for(string::size_type p = 0; p < s.size(); ++p)
 		if(s[p] == '\\' || s[p] == ':' || s[p] == '/')
 			s[p] = DIR_CHAR;
+
+	while (s.size() && (s.back() < '!' || s.back() > 'z')) // will also truncate strings ending in UTF-8 characters. But all legal art assets end in 3-ASCII letter suffixes !
+		s.pop_back();                                      // trailing spaces or CTRL characters cause chaos in the ResourceMgr when assembling relative paths
 }
 
 // checks if path includes enough '..' to possibly not be a true subdirectory of the current directory
