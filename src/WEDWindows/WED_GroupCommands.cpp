@@ -1848,29 +1848,43 @@ map<WED_Thing*,vector<WED_Thing*> > run_split_on_edges(vector<split_edge_info_t>
 	// data sets big enough to need it.
 	for (int i = 0; i < edges.size(); ++i)
 	{
-		Segment2 is;
+		Bezier2 ib;
+		bool ibIsBez = edges[i].edge->GetSide(gis_Geo,0,ib);
 
-		edges[i].edge->GetNthPoint(0)->GetLocation(gis_Geo, is.p1);
-		edges[i].edge->GetNthPoint(1)->GetLocation(gis_Geo, is.p2);
 		for (int j = 0; j < i; ++j)
 		if(edges[i].active || edges[j].active)								// At least one edge MUST be active or we do not split.
 		{
-			Segment2 js;
-			edges[j].edge->GetNthPoint(0)->GetLocation(gis_Geo, js.p1);
-			edges[j].edge->GetNthPoint(1)->GetLocation(gis_Geo, js.p2);
+			Bezier2 jb;
+			bool jbIsBez = edges[j].edge->GetSide(gis_Geo,0, jb);
 
-			if (is.p1 != is.p2 &&
-				js.p1 != js.p2 &&
-				is.p1 != js.p1 &&
-				is.p2 != js.p2 &&
-				is.p1 != js.p2 &&
-				is.p2 != js.p1)
+			if (ib.p1 != ib.p2 &&
+				jb.p1 != jb.p2 &&
+				ib.p1 != jb.p1 &&
+				ib.p2 != jb.p2 &&
+				ib.p1 != jb.p2 &&
+				ib.p2 != jb.p1)
 			{
 				Point2 x;
-				if (is.intersect(js, x))
+				if( ibIsBez || jbIsBez )
 				{
-					edges[i].splits.push_back(x);
-					edges[j].splits.push_back(x);
+					//if (ib.intersect(jb,10))
+					//ToDo: intersection point of bezier edges
+					// x= ?? No idea how to get the crossingpoint efficiently
+					// one solution could be to entirely skip splitting this edges
+					// we must have an spliting point here to not screw up everything existing
+					if (ib.as_segment().intersect(jb.as_segment(), x))
+					{
+						edges[i].splits.push_back(x);
+						edges[j].splits.push_back(x);
+					}
+				}
+				else
+				{
+					if (ib.as_segment().intersect(jb.as_segment(), x))
+					{
+						edges[i].splits.push_back(x);
+						edges[j].splits.push_back(x);
+					}
 				}
 			}
 		}
@@ -1890,10 +1904,16 @@ map<WED_Thing*,vector<WED_Thing*> > run_split_on_edges(vector<split_edge_info_t>
 		// If the edge is uncrossed the user is just subdividing it - split it at the midpoint.
 		if (edges[i].splits.empty())
 		{
-			Segment2 s;
-			edges[i].edge->GetNthPoint(0)->GetLocation(gis_Geo, s.p1);
-			edges[i].edge->GetNthPoint(1)->GetLocation(gis_Geo, s.p2);
-			edges[i].splits.push_back(s.midpoint());
+			Bezier2 b;
+			if(edges[i].edge->GetSide(gis_Geo,0,b))
+			{
+				edges[i].splits.push_back(b.midpoint(0.5));
+			}
+			else
+			{
+				edges[i].splits.push_back(b.as_segment().midpoint());
+			}
+
 		}
 
 		// Now we go BACKWARD from high to low - we do this because the GIS Edge's split makes the clone
@@ -2724,7 +2744,7 @@ static bool is_within_snapping_distance(const merge_class_map::iterator& first_t
 {
 	// since we're not using the coordTranslator any more, we have no way to cache the cos(lattitude) to calculate distances quick.
 	// so we shortcut the more complex calculation by testing for lattitude first
-	
+
 	if (fabs(first_thing->first.y() - second_thing->first.y()) > MTR_TO_DEG_LAT) return 0;
 
 	return LonLatDistMeters(first_thing->first, second_thing->first) < 1.0;
