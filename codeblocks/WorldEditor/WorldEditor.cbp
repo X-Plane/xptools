@@ -78,6 +78,9 @@
 			<Add option="-DUSE_JPEG=1" />
 			<Add option="-DUSE_TIF=1" />
 		</Compiler>
+		<Unit filename="../../libs/lzma-19.00/C/7zVersion.rc" />
+		<Unit filename="../../libs/lzma-19.00/C/Util/LzmaLib/resource.rc" />
+		<Unit filename="../../libs/lzma-19.00/C/Util/SfxSetup/resource.rc" />
 		<Unit filename="../../src/DSF/DSFDefs.h" />
 		<Unit filename="../../src/DSF/DSFLib.cpp" />
 		<Unit filename="../../src/DSF/DSFLib.h" />
@@ -666,6 +669,183 @@
 		<Unit filename="../../src/XESCore/AptIO.cpp" />
 		<Unit filename="../../src/XESCore/AptIO.h" />
 		<Unit filename="../../src/XESCore/XESConstants.h" />
+		<Unit filename="../../src/lzma19/Asm/x86/7zAsm.asm" />
+		<Unit filename="../../src/lzma19/Asm/x86/7zCrcOpt.asm" />
+		<Unit filename="../../src/lzma19/Asm/x86/AesOpt.asm" />
+		<Unit filename="../../src/lzma19/Asm/x86/LzmaDecOpt.asm" />
+		<Unit filename="../../src/lzma19/Asm/x86/XzCrc64Opt.asm" />
+		<Unit filename="../../src/lzma19/C/7z.h" />
+		<Unit filename="../../src/lzma19/C/7zAlloc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/7zAlloc.h" />
+		<Unit filename="../../src/lzma19/C/7zArcIn.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/7zBuf.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/7zBuf.h" />
+		<Unit filename="../../src/lzma19/C/7zBuf2.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/7zCrc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/7zCrc.h" />
+		<Unit filename="../../src/lzma19/C/7zCrcOpt.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/7zDec.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/7zFile.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/7zFile.h" />
+		<Unit filename="../../src/lzma19/C/7zStream.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/7zTypes.h" />
+		<Unit filename="../../src/lzma19/C/7zVersion.h" />
+		<Unit filename="../../src/lzma19/C/Aes.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/Aes.h" />
+		<Unit filename="../../src/lzma19/C/AesOpt.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/Alloc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/Alloc.h" />
+		<Unit filename="../../src/lzma19/C/Bcj2.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/Bcj2.h" />
+		<Unit filename="../../src/lzma19/C/Bcj2Enc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/Bra.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/Bra.h" />
+		<Unit filename="../../src/lzma19/C/Bra86.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/BraIA64.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/Compiler.h" />
+		<Unit filename="../../src/lzma19/C/CpuArch.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/CpuArch.h" />
+		<Unit filename="../../src/lzma19/C/Delta.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/Delta.h" />
+		<Unit filename="../../src/lzma19/C/DllSecur.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/DllSecur.h" />
+		<Unit filename="../../src/lzma19/C/LzFind.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/LzFind.h" />
+		<Unit filename="../../src/lzma19/C/LzFindMt.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/LzFindMt.h" />
+		<Unit filename="../../src/lzma19/C/LzHash.h" />
+		<Unit filename="../../src/lzma19/C/Lzma2Dec.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/Lzma2Dec.h" />
+		<Unit filename="../../src/lzma19/C/Lzma2DecMt.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/Lzma2DecMt.h" />
+		<Unit filename="../../src/lzma19/C/Lzma2Enc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/Lzma2Enc.h" />
+		<Unit filename="../../src/lzma19/C/Lzma86.h" />
+		<Unit filename="../../src/lzma19/C/Lzma86Dec.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/Lzma86Enc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/LzmaDec.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/LzmaDec.h" />
+		<Unit filename="../../src/lzma19/C/LzmaEnc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/LzmaEnc.h" />
+		<Unit filename="../../src/lzma19/C/LzmaLib.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/LzmaLib.h" />
+		<Unit filename="../../src/lzma19/C/MtCoder.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/MtCoder.h" />
+		<Unit filename="../../src/lzma19/C/MtDec.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/MtDec.h" />
+		<Unit filename="../../src/lzma19/C/Ppmd.h" />
+		<Unit filename="../../src/lzma19/C/Ppmd7.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/Ppmd7.h" />
+		<Unit filename="../../src/lzma19/C/Ppmd7Dec.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/Ppmd7Enc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/Precomp.h" />
+		<Unit filename="../../src/lzma19/C/RotateDefs.h" />
+		<Unit filename="../../src/lzma19/C/Sha256.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/Sha256.h" />
+		<Unit filename="../../src/lzma19/C/Sort.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/Sort.h" />
+		<Unit filename="../../src/lzma19/C/Threads.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/Threads.h" />
+		<Unit filename="../../src/lzma19/C/Xz.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/Xz.h" />
+		<Unit filename="../../src/lzma19/C/XzCrc64.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/XzCrc64.h" />
+		<Unit filename="../../src/lzma19/C/XzCrc64Opt.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/XzDec.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/XzEnc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzma19/C/XzEnc.h" />
+		<Unit filename="../../src/lzma19/C/XzIn.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/lzmaSDK/C/7zVersion.rc" />
+		<Unit filename="../../src/lzmaSDK/C/Util/LzmaLib/resource.rc" />
+		<Unit filename="../../src/lzmaSDK/C/Util/SfxSetup/resource.rc" />
 		<Extensions>
 			<code_completion />
 			<envvars set="default" />

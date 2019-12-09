@@ -7,7 +7,7 @@ LIBPATHS += -L./libs/local$(MULTI_SUFFIX)/lib
 INCLUDEPATHS += -I./libs/local$(MULTI_SUFFIX)/include
 INCLUDEPATHS += -I./libs/local$(MULTI_SUFFIX)/include/freetype2
 INCLUDEPATHS += -I./src/lib_json/include
-INCLUDEPATHS += -I./src/linuxinit
+INCLUDEPATHS += -I./src/lzma19/C
 INCLUDEPATHS += -I./src/WEDTCE
 INCLUDEPATHS += -I./src/DSF
 INCLUDEPATHS += -I./src/DSFTools
@@ -40,6 +40,7 @@ INCLUDEPATHS += -I./src/SDTS
 INCLUDEPATHS += -I./SDK/ac3d
 
 ifdef PLAT_LINUX
+INCLUDEPATHS += -I./src/linuxinit
 INCLUDEPATHS += -I./libs/local$(MULTI_SUFFIX)/include/mesa
 INCLUDEPATHS += -I/usr/include/qt4
 endif #PLAT_LINUX
