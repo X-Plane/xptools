@@ -351,8 +351,6 @@ int		WED_CanMakeNewATCFreq(IResolver * inResolver)
 	return WED_HasSingleSelectionOfType(inResolver, WED_Airport::sClass) != NULL;
 }
 
-#if AIRPORT_ROUTING
-
 int		WED_CanMakeNewATCFlow(IResolver * inResolver)
 {
 	return WED_HasSingleSelectionOfType(inResolver, WED_Airport::sClass) != NULL;
@@ -373,8 +371,6 @@ int		WED_CanMakeNewATCWindRule(IResolver * inResolver)
 	return WED_HasSingleSelectionOfType(inResolver, WED_ATCFlow::sClass) != NULL;
 }
 
-#endif
-
 void	WED_DoMakeNewATCFreq(IResolver * inResolver)
 {
 	WED_Thing * now_sel = WED_HasSingleSelectionOfType(inResolver, WED_Airport::sClass);
@@ -383,8 +379,6 @@ void	WED_DoMakeNewATCFreq(IResolver * inResolver)
 	f->SetParent(now_sel,now_sel->CountChildren());
 	now_sel->CommitOperation();
 }
-
-#if AIRPORT_ROUTING
 
 void	WED_DoMakeNewATCFlow(IResolver * inResolver)
 {
@@ -446,8 +440,6 @@ void	WED_DoMakeNewATCTimeRule(IResolver * inResolver)
 	f->SetParent(now_sel,now_sel->CountChildren());
 	now_sel->CommitOperation();
 }
-
-#endif
 
 void	WED_DoSetCurrentAirport(IResolver * inResolver)
 {
@@ -802,13 +794,11 @@ int		WED_CanMoveSelectionTo(IResolver * resolver, WED_Thing * dest, int dest_slo
 		if (sel->IterateSelectionOr(Iterate_IsOrChildClass, (void *) WED_Airport::sClass)) return 0;
 	}
 
-	#if AIRPORT_ROUTING
 	// No nested flows either...
 	if (Iterate_IsOrParentClass(dest, (void*) WED_ATCFlow::sClass))
 	{
 		if (sel->IterateSelectionOr(Iterate_IsOrChildClass, (void *) WED_ATCFlow::sClass)) return 0;
 	}
-	#endif
 
 	// If the parent of any selection isn't a folder, don't allow the re-org.
 	if(sel->IterateSelectionOr(Iterate_IsPartOfStructuredObject, NULL)) return 0;
