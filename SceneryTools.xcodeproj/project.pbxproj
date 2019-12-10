@@ -78,6 +78,44 @@
 		02B03C4320C72130000F81F0 /* line_BBrokenRed.png in Resources */ = {isa = PBXBuildFile; fileRef = 02B03C1120C720A1000F81F0 /* line_BBrokenRed.png */; };
 		02BFA21321C1B5970090D527 /* navmap_seaport.png in Resources */ = {isa = PBXBuildFile; fileRef = 02BFA21021C1B58D0090D527 /* navmap_seaport.png */; };
 		02BFA21421C1B59C0090D527 /* navmap_airport.png in Resources */ = {isa = PBXBuildFile; fileRef = 02BFA20F21C1B58D0090D527 /* navmap_airport.png */; };
+		02D8240A239EF2410008DBF2 /* 7zAlloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823D4239EF2310008DBF2 /* 7zAlloc.c */; };
+		02D8240B239EF2460008DBF2 /* 7zArcIn.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823D6239EF2310008DBF2 /* 7zArcIn.c */; };
+		02D8240C239EF2470008DBF2 /* 7zArcIn.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823D6239EF2310008DBF2 /* 7zArcIn.c */; };
+		02D8240D239EF24D0008DBF2 /* 7zAlloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823D4239EF2310008DBF2 /* 7zAlloc.c */; };
+		02D8240E239EF2560008DBF2 /* 7zBuf.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823D7239EF2310008DBF2 /* 7zBuf.c */; };
+		02D8240F239EF2570008DBF2 /* 7zBuf.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823D7239EF2310008DBF2 /* 7zBuf.c */; };
+		02D82410239EF25D0008DBF2 /* 7zBuf2.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823D9239EF2310008DBF2 /* 7zBuf2.c */; };
+		02D82411239EF25D0008DBF2 /* 7zBuf2.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823D9239EF2310008DBF2 /* 7zBuf2.c */; };
+		02D82412239EF2610008DBF2 /* 7zCrc.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823DA239EF2310008DBF2 /* 7zCrc.c */; };
+		02D82413239EF2620008DBF2 /* 7zCrc.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823DA239EF2310008DBF2 /* 7zCrc.c */; };
+		02D82414239EF2680008DBF2 /* 7zCrcOpt.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823DC239EF2310008DBF2 /* 7zCrcOpt.c */; };
+		02D82415239EF2680008DBF2 /* 7zCrcOpt.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823DC239EF2310008DBF2 /* 7zCrcOpt.c */; };
+		02D82416239EF26E0008DBF2 /* 7zDec.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823DD239EF2310008DBF2 /* 7zDec.c */; };
+		02D82417239EF26F0008DBF2 /* 7zDec.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823DD239EF2310008DBF2 /* 7zDec.c */; };
+		02D82418239EF2790008DBF2 /* 7zFile.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823DE239EF2310008DBF2 /* 7zFile.c */; };
+		02D82419239EF27A0008DBF2 /* 7zFile.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823DE239EF2310008DBF2 /* 7zFile.c */; };
+		02D8241A239EF2810008DBF2 /* Bcj2.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823E3239EF2310008DBF2 /* Bcj2.c */; };
+		02D8241B239EF2810008DBF2 /* Bcj2.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823E3239EF2310008DBF2 /* Bcj2.c */; };
+		02D8241C239EF28C0008DBF2 /* Bra.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823E6239EF2310008DBF2 /* Bra.c */; };
+		02D8241D239EF28C0008DBF2 /* Bra.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823E6239EF2310008DBF2 /* Bra.c */; };
+		02D8241E239EF2930008DBF2 /* Bra86.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823E8239EF2310008DBF2 /* Bra86.c */; };
+		02D8241F239EF2930008DBF2 /* Bra86.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823E8239EF2310008DBF2 /* Bra86.c */; };
+		02D82420239EF2990008DBF2 /* BraIA64.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823E9239EF2310008DBF2 /* BraIA64.c */; };
+		02D82421239EF29A0008DBF2 /* BraIA64.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823E9239EF2310008DBF2 /* BraIA64.c */; };
+		02D82422239EF2A90008DBF2 /* CpuArch.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823EB239EF2310008DBF2 /* CpuArch.c */; };
+		02D82423239EF2AA0008DBF2 /* CpuArch.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823EB239EF2310008DBF2 /* CpuArch.c */; };
+		02D82424239EF2AE0008DBF2 /* Delta.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823ED239EF2310008DBF2 /* Delta.c */; };
+		02D82425239EF2AE0008DBF2 /* Delta.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823ED239EF2310008DBF2 /* Delta.c */; };
+		02D82426239EF2B20008DBF2 /* Lzma2Dec.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823EF239EF2310008DBF2 /* Lzma2Dec.c */; };
+		02D82427239EF2B30008DBF2 /* Lzma2Dec.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823EF239EF2310008DBF2 /* Lzma2Dec.c */; };
+		02D82428239EF2B90008DBF2 /* Lzma86Dec.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823F2239EF2310008DBF2 /* Lzma86Dec.c */; };
+		02D82429239EF2BA0008DBF2 /* Lzma86Dec.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823F2239EF2310008DBF2 /* Lzma86Dec.c */; };
+		02D8242A239EF2C20008DBF2 /* LzmaDec.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823F4239EF2310008DBF2 /* LzmaDec.c */; };
+		02D8242B239EF2C30008DBF2 /* LzmaDec.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823F4239EF2310008DBF2 /* LzmaDec.c */; };
+		02D8242C239EF3BF0008DBF2 /* Alloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823E1239EF2310008DBF2 /* Alloc.c */; };
+		02D8242D239EF3BF0008DBF2 /* Alloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823E1239EF2310008DBF2 /* Alloc.c */; };
+		02D82430239EF47F0008DBF2 /* 7zStream.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D8242E239EF47A0008DBF2 /* 7zStream.c */; };
+		02D82431239EF4800008DBF2 /* 7zStream.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D8242E239EF47A0008DBF2 /* 7zStream.c */; };
 		02F4A70C204E6F4700E241B3 /* worldmap.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 02F4A70A204E6F1700E241B3 /* worldmap.jpg */; };
 		2F1515C61D0BA700002224B1 /* WED_MetaDataKeys.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F1515C41D0BA700002224B1 /* WED_MetaDataKeys.cpp */; };
 		2F8378A01D070F000033848D /* CACHE_DomainPolicy.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F83789E1D070F000033848D /* CACHE_DomainPolicy.cpp */; };
@@ -1052,6 +1090,42 @@
 		02B03C2220C720C7000F81F0 /* line_Unknown.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = line_Unknown.png; sourceTree = "<group>"; };
 		02BFA20F21C1B58D0090D527 /* navmap_airport.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = navmap_airport.png; sourceTree = "<group>"; };
 		02BFA21021C1B58D0090D527 /* navmap_seaport.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = navmap_seaport.png; sourceTree = "<group>"; };
+		02D823D3239EF2310008DBF2 /* 7z.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = 7z.h; path = lzma19/C/7z.h; sourceTree = "<group>"; };
+		02D823D4239EF2310008DBF2 /* 7zAlloc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = 7zAlloc.c; path = lzma19/C/7zAlloc.c; sourceTree = "<group>"; };
+		02D823D5239EF2310008DBF2 /* 7zAlloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = 7zAlloc.h; path = lzma19/C/7zAlloc.h; sourceTree = "<group>"; };
+		02D823D6239EF2310008DBF2 /* 7zArcIn.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = 7zArcIn.c; path = lzma19/C/7zArcIn.c; sourceTree = "<group>"; };
+		02D823D7239EF2310008DBF2 /* 7zBuf.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = 7zBuf.c; path = lzma19/C/7zBuf.c; sourceTree = "<group>"; };
+		02D823D8239EF2310008DBF2 /* 7zBuf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = 7zBuf.h; path = lzma19/C/7zBuf.h; sourceTree = "<group>"; };
+		02D823D9239EF2310008DBF2 /* 7zBuf2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = 7zBuf2.c; path = lzma19/C/7zBuf2.c; sourceTree = "<group>"; };
+		02D823DA239EF2310008DBF2 /* 7zCrc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = 7zCrc.c; path = lzma19/C/7zCrc.c; sourceTree = "<group>"; };
+		02D823DB239EF2310008DBF2 /* 7zCrc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = 7zCrc.h; path = lzma19/C/7zCrc.h; sourceTree = "<group>"; };
+		02D823DC239EF2310008DBF2 /* 7zCrcOpt.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = 7zCrcOpt.c; path = lzma19/C/7zCrcOpt.c; sourceTree = "<group>"; };
+		02D823DD239EF2310008DBF2 /* 7zDec.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = 7zDec.c; path = lzma19/C/7zDec.c; sourceTree = "<group>"; };
+		02D823DE239EF2310008DBF2 /* 7zFile.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = 7zFile.c; path = lzma19/C/7zFile.c; sourceTree = "<group>"; };
+		02D823DF239EF2310008DBF2 /* 7zFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = 7zFile.h; path = lzma19/C/7zFile.h; sourceTree = "<group>"; };
+		02D823E0239EF2310008DBF2 /* 7zTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = 7zTypes.h; path = lzma19/C/7zTypes.h; sourceTree = "<group>"; };
+		02D823E1239EF2310008DBF2 /* Alloc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = Alloc.c; path = lzma19/C/Alloc.c; sourceTree = "<group>"; };
+		02D823E2239EF2310008DBF2 /* Alloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Alloc.h; path = lzma19/C/Alloc.h; sourceTree = "<group>"; };
+		02D823E3239EF2310008DBF2 /* Bcj2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = Bcj2.c; path = lzma19/C/Bcj2.c; sourceTree = "<group>"; };
+		02D823E4239EF2310008DBF2 /* Bcj2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Bcj2.h; path = lzma19/C/Bcj2.h; sourceTree = "<group>"; };
+		02D823E5239EF2310008DBF2 /* Bcj2Enc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = Bcj2Enc.c; path = lzma19/C/Bcj2Enc.c; sourceTree = "<group>"; };
+		02D823E6239EF2310008DBF2 /* Bra.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = Bra.c; path = lzma19/C/Bra.c; sourceTree = "<group>"; };
+		02D823E7239EF2310008DBF2 /* Bra.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Bra.h; path = lzma19/C/Bra.h; sourceTree = "<group>"; };
+		02D823E8239EF2310008DBF2 /* Bra86.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = Bra86.c; path = lzma19/C/Bra86.c; sourceTree = "<group>"; };
+		02D823E9239EF2310008DBF2 /* BraIA64.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = BraIA64.c; path = lzma19/C/BraIA64.c; sourceTree = "<group>"; };
+		02D823EA239EF2310008DBF2 /* Compiler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Compiler.h; path = lzma19/C/Compiler.h; sourceTree = "<group>"; };
+		02D823EB239EF2310008DBF2 /* CpuArch.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = CpuArch.c; path = lzma19/C/CpuArch.c; sourceTree = "<group>"; };
+		02D823EC239EF2310008DBF2 /* CpuArch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CpuArch.h; path = lzma19/C/CpuArch.h; sourceTree = "<group>"; };
+		02D823ED239EF2310008DBF2 /* Delta.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = Delta.c; path = lzma19/C/Delta.c; sourceTree = "<group>"; };
+		02D823EE239EF2310008DBF2 /* Delta.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Delta.h; path = lzma19/C/Delta.h; sourceTree = "<group>"; };
+		02D823EF239EF2310008DBF2 /* Lzma2Dec.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = Lzma2Dec.c; path = lzma19/C/Lzma2Dec.c; sourceTree = "<group>"; };
+		02D823F0239EF2310008DBF2 /* Lzma2Dec.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Lzma2Dec.h; path = lzma19/C/Lzma2Dec.h; sourceTree = "<group>"; };
+		02D823F1239EF2310008DBF2 /* Lzma86.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Lzma86.h; path = lzma19/C/Lzma86.h; sourceTree = "<group>"; };
+		02D823F2239EF2310008DBF2 /* Lzma86Dec.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = Lzma86Dec.c; path = lzma19/C/Lzma86Dec.c; sourceTree = "<group>"; };
+		02D823F3239EF2310008DBF2 /* Lzma86Enc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = Lzma86Enc.c; path = lzma19/C/Lzma86Enc.c; sourceTree = "<group>"; };
+		02D823F4239EF2310008DBF2 /* LzmaDec.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = LzmaDec.c; path = lzma19/C/LzmaDec.c; sourceTree = "<group>"; };
+		02D823F5239EF2310008DBF2 /* LzmaDec.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LzmaDec.h; path = lzma19/C/LzmaDec.h; sourceTree = "<group>"; };
+		02D8242E239EF47A0008DBF2 /* 7zStream.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = 7zStream.c; path = lzma19/C/7zStream.c; sourceTree = "<group>"; };
 		02F4A70A204E6F1700E241B3 /* worldmap.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = worldmap.jpg; sourceTree = "<group>"; };
 		20286C33FDCF999611CA2CEA /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
 		2F1515C41D0BA700002224B1 /* WED_MetaDataKeys.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_MetaDataKeys.cpp; sourceTree = "<group>"; };
@@ -2198,6 +2272,49 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		02D823D2239EF1B50008DBF2 /* lzma19 */ = {
+			isa = PBXGroup;
+			children = (
+				02D8242E239EF47A0008DBF2 /* 7zStream.c */,
+				02D823D3239EF2310008DBF2 /* 7z.h */,
+				02D823D4239EF2310008DBF2 /* 7zAlloc.c */,
+				02D823D5239EF2310008DBF2 /* 7zAlloc.h */,
+				02D823D6239EF2310008DBF2 /* 7zArcIn.c */,
+				02D823D7239EF2310008DBF2 /* 7zBuf.c */,
+				02D823D8239EF2310008DBF2 /* 7zBuf.h */,
+				02D823D9239EF2310008DBF2 /* 7zBuf2.c */,
+				02D823DA239EF2310008DBF2 /* 7zCrc.c */,
+				02D823DB239EF2310008DBF2 /* 7zCrc.h */,
+				02D823DC239EF2310008DBF2 /* 7zCrcOpt.c */,
+				02D823DD239EF2310008DBF2 /* 7zDec.c */,
+				02D823DE239EF2310008DBF2 /* 7zFile.c */,
+				02D823DF239EF2310008DBF2 /* 7zFile.h */,
+				02D823E0239EF2310008DBF2 /* 7zTypes.h */,
+				02D823E1239EF2310008DBF2 /* Alloc.c */,
+				02D823E2239EF2310008DBF2 /* Alloc.h */,
+				02D823E3239EF2310008DBF2 /* Bcj2.c */,
+				02D823E4239EF2310008DBF2 /* Bcj2.h */,
+				02D823E5239EF2310008DBF2 /* Bcj2Enc.c */,
+				02D823E6239EF2310008DBF2 /* Bra.c */,
+				02D823E7239EF2310008DBF2 /* Bra.h */,
+				02D823E8239EF2310008DBF2 /* Bra86.c */,
+				02D823E9239EF2310008DBF2 /* BraIA64.c */,
+				02D823EA239EF2310008DBF2 /* Compiler.h */,
+				02D823EB239EF2310008DBF2 /* CpuArch.c */,
+				02D823EC239EF2310008DBF2 /* CpuArch.h */,
+				02D823ED239EF2310008DBF2 /* Delta.c */,
+				02D823EE239EF2310008DBF2 /* Delta.h */,
+				02D823EF239EF2310008DBF2 /* Lzma2Dec.c */,
+				02D823F0239EF2310008DBF2 /* Lzma2Dec.h */,
+				02D823F1239EF2310008DBF2 /* Lzma86.h */,
+				02D823F2239EF2310008DBF2 /* Lzma86Dec.c */,
+				02D823F3239EF2310008DBF2 /* Lzma86Enc.c */,
+				02D823F4239EF2310008DBF2 /* LzmaDec.c */,
+				02D823F5239EF2310008DBF2 /* LzmaDec.h */,
+			);
+			name = lzma19;
+			sourceTree = "<group>";
+		};
 		195DF8CFFE9D517E11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -2607,6 +2724,7 @@
 		D6BC361B0AB22C84003949C5 /* src */ = {
 			isa = PBXGroup;
 			children = (
+				02D823D2239EF1B50008DBF2 /* lzma19 */,
 				D66569BA1CE261FC00662E5C /* WEDFileCache */,
 				D6E4C9CC18ECA0FD000D98B8 /* Network */,
 				D6E4C92718EC9181000D98B8 /* lib_json */,
@@ -4453,21 +4571,40 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				02D82423239EF2AA0008DBF2 /* CpuArch.c in Sources */,
+				02D82426239EF2B20008DBF2 /* Lzma2Dec.c in Sources */,
+				02D82421239EF29A0008DBF2 /* BraIA64.c in Sources */,
+				02D8241B239EF2810008DBF2 /* Bcj2.c in Sources */,
 				D67EF8520B5E5D9F00D9190C /* DSF2Text.cpp in Sources */,
 				D67EF8530B5E5DA200D9190C /* DSFToolCmdLine.cpp in Sources */,
+				02D82429239EF2BA0008DBF2 /* Lzma86Dec.c in Sources */,
+				02D82410239EF25D0008DBF2 /* 7zBuf2.c in Sources */,
 				D67EF8620B5E5E7100D9190C /* DSFLib.cpp in Sources */,
+				02D8242D239EF3BF0008DBF2 /* Alloc.c in Sources */,
 				D67EF8630B5E5E7300D9190C /* DSFLib_Print.cpp in Sources */,
+				02D82413239EF2620008DBF2 /* 7zCrc.c in Sources */,
 				D67EF8640B5E5E7500D9190C /* DSFPointPool.cpp in Sources */,
+				02D82419239EF27A0008DBF2 /* 7zFile.c in Sources */,
 				D67EF8650B5E5E7500D9190C /* DSFLibWrite.cpp in Sources */,
 				D67EF86A0B5E5E8C00D9190C /* XChunkyFileUtils.cpp in Sources */,
+				02D8241D239EF28C0008DBF2 /* Bra.c in Sources */,
 				D67EF86B0B5E5E9100D9190C /* AssertUtils.cpp in Sources */,
+				02D8240B239EF2460008DBF2 /* 7zArcIn.c in Sources */,
 				D67EF86D0B5E5E9A00D9190C /* MemFileUtils.cpp in Sources */,
+				02D8241F239EF2930008DBF2 /* Bra86.c in Sources */,
 				D67EF86E0B5E5E9D00D9190C /* md5.c in Sources */,
+				02D82417239EF26F0008DBF2 /* 7zDec.c in Sources */,
 				D67EF8770B5E5ED600D9190C /* EndianUtils.c in Sources */,
+				02D8240E239EF2560008DBF2 /* 7zBuf.c in Sources */,
 				D69FD74B0B6CF765008E3AEC /* unzip.c in Sources */,
 				D69FD74C0B6CF765008E3AEC /* zip.c in Sources */,
+				02D8242B239EF2C30008DBF2 /* LzmaDec.c in Sources */,
+				02D82425239EF2AE0008DBF2 /* Delta.c in Sources */,
 				D6CB545F0CEC9CAF000E4393 /* FileUtils.cpp in Sources */,
+				02D82431239EF4800008DBF2 /* 7zStream.c in Sources */,
 				D678ADF30F7952B700F72139 /* tri_stripper.cpp in Sources */,
+				02D8240D239EF24D0008DBF2 /* 7zAlloc.c in Sources */,
+				02D82415239EF2680008DBF2 /* 7zCrcOpt.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4561,10 +4698,12 @@
 				D6ED36A00B67964D00D5484E /* BitmapUtils.cpp in Sources */,
 				D6ED36A10B67964D00D5484E /* EndianUtils.c in Sources */,
 				D6ED36A20B67964D00D5484E /* MatrixUtils.cpp in Sources */,
+				02D82418239EF2790008DBF2 /* 7zFile.c in Sources */,
 				D6ED36A30B67964D00D5484E /* PlatformUtils.mac.mm in Sources */,
 				D6ED36A40B67964D00D5484E /* TexUtils.cpp in Sources */,
 				D6ED36A50B67964D00D5484E /* ObjUtils.cpp in Sources */,
 				D604AEB71C0E7D7B006DC1F0 /* GLDebugMacros.cpp in Sources */,
+				02D8241C239EF28C0008DBF2 /* Bra.c in Sources */,
 				D6ED36A60B67964D00D5484E /* XUtils.cpp in Sources */,
 				D6ED36A70B67964D00D5484E /* trackball.c in Sources */,
 				D6ED36A80B67964D00D5484E /* GeoUtils.cpp in Sources */,
@@ -4579,6 +4718,7 @@
 				D6ED36AF0B67964D00D5484E /* GUI_GraphState.cpp in Sources */,
 				D6ED36B00B67964D00D5484E /* GUI_Listener.cpp in Sources */,
 				D6ED36B10B67964D00D5484E /* GUI_Pane.cpp in Sources */,
+				02D82416239EF26E0008DBF2 /* 7zDec.c in Sources */,
 				D6ED36B20B67964D00D5484E /* GUI_ScrollBar.cpp in Sources */,
 				D6ED36B30B67964D00D5484E /* GUI_ScrollerPane.cpp in Sources */,
 				D6ED36B40B67964D00D5484E /* GUI_SimpleScroller.cpp in Sources */,
@@ -4605,11 +4745,13 @@
 				D6ED370A0B67964D00D5484E /* XObjDefs.cpp in Sources */,
 				D6ED370B0B67964D00D5484E /* XChunkyFileUtils.cpp in Sources */,
 				D6ED370C0B67964D00D5484E /* md5.c in Sources */,
+				02D82430239EF47F0008DBF2 /* 7zStream.c in Sources */,
 				D6183B991D7CA28200E606E9 /* WED_TruckParkingLocation.cpp in Sources */,
 				D6ED370D0B67964D00D5484E /* ogle.cpp in Sources */,
 				D6ED37100B67964D00D5484E /* MemFileUtils.cpp in Sources */,
 				D6ED37110B67964D00D5484E /* PolyRasterUtils.cpp in Sources */,
 				D6ED371F0B67964D00D5484E /* b64.c in Sources */,
+				02D82412239EF2610008DBF2 /* 7zCrc.c in Sources */,
 				D6ED37220B67964D00D5484E /* BWImage.cpp in Sources */,
 				D6F3F08B1D072BE800188B28 /* CSVParser.cpp in Sources */,
 				D6F621651DF7297900B4091F /* GUI_TextTable.cpp in Sources */,
@@ -4625,6 +4767,8 @@
 				D6ED37380B67964D00D5484E /* WED_MapZoomerNew.cpp in Sources */,
 				D6ED39B20B67D08F00D5484E /* WED_AppMain.cpp in Sources */,
 				D6ED3AFD0B67F0B000D5484E /* FileUtils.cpp in Sources */,
+				02D8242A239EF2C20008DBF2 /* LzmaDec.c in Sources */,
+				02D8242C239EF3BF0008DBF2 /* Alloc.c in Sources */,
 				D6ED3E050B6A61A700D5484E /* GUI_Resources.cpp in Sources */,
 				D6ED3ECA0B6A753300D5484E /* WED_PropertyTable.cpp in Sources */,
 				D6ED40410B6AD47300D5484E /* WED_Archive.cpp in Sources */,
@@ -4637,6 +4781,7 @@
 				D69FD7480B6CF765008E3AEC /* zip.c in Sources */,
 				D6FF274E0B6E38D100960D5E /* WED_ObjPlacement.cpp in Sources */,
 				D6FF28620B6E4A3600960D5E /* WED_PropertyHelper.cpp in Sources */,
+				02D82414239EF2680008DBF2 /* 7zCrcOpt.c in Sources */,
 				D6FF2AFA0B6E908600960D5E /* WED_Thing.cpp in Sources */,
 				D6FF2B8A0B6E985200960D5E /* WED_Group.cpp in Sources */,
 				D6FF2CAC0B6F7D6B00960D5E /* GUI_SimpleTableGeometry.cpp in Sources */,
@@ -4663,11 +4808,13 @@
 				D6A17E1A0BA5994900BBCD0C /* WED_EnumSystem.cpp in Sources */,
 				D6A17F9C0BA5E2A200BBCD0C /* WED_AirportBeacon.cpp in Sources */,
 				D6A180200BA5F73700BBCD0C /* WED_ToolUtils.cpp in Sources */,
+				02D8240F239EF2570008DBF2 /* 7zBuf.c in Sources */,
 				D6A1807B0BA6017D00BBCD0C /* WED_KeyObjects.cpp in Sources */,
 				D6A182030BA6196B00BBCD0C /* WED_Root.cpp in Sources */,
 				D6A184B30BA8311000BBCD0C /* GUI_Button.cpp in Sources */,
 				D6A184FD0BA833E700BBCD0C /* GUI_DrawUtils.cpp in Sources */,
 				D6AF0A521F44E7B400CC7328 /* WED_FacadePreview.cpp in Sources */,
+				02D82422239EF2A90008DBF2 /* CpuArch.c in Sources */,
 				D6A185B60BA99DAA00BBCD0C /* GUI_PopupButton.cpp in Sources */,
 				D6A186380BA9B28900BBCD0C /* GUI_TabControl.cpp in Sources */,
 				D62FC99B0BCEF3D600ED6CF8 /* WED_Map.cpp in Sources */,
@@ -4675,12 +4822,15 @@
 				D62FC99E0BCEF3E400ED6CF8 /* WED_PropertyPane.cpp in Sources */,
 				D62FCC960BD3C6C600ED6CF8 /* WED_CreateToolBase.cpp in Sources */,
 				D62FCDAB0BD40E5400ED6CF8 /* WED_CreatePolygonTool.cpp in Sources */,
+				02D8240C239EF2470008DBF2 /* 7zArcIn.c in Sources */,
 				D62FCE640BD513C600ED6CF8 /* WED_Windsock.cpp in Sources */,
 				D62FCE900BD5177D00ED6CF8 /* WED_TowerViewpoint.cpp in Sources */,
+				02D82420239EF2990008DBF2 /* BraIA64.c in Sources */,
 				D62FCEB60BD5191F00ED6CF8 /* WED_AirportSign.cpp in Sources */,
 				D62FCEE20BD51B2900ED6CF8 /* WED_RampPosition.cpp in Sources */,
 				D62FCEEC0BD51BBE00ED6CF8 /* WED_LightFixture.cpp in Sources */,
 				D62FCEFE0BD51D9200ED6CF8 /* WED_Helipad.cpp in Sources */,
+				02D8240A239EF2410008DBF2 /* 7zAlloc.c in Sources */,
 				D62FCF310BD535AA00ED6CF8 /* WED_Runway.cpp in Sources */,
 				D62FCF6B0BD539EE00ED6CF8 /* WED_Sealane.cpp in Sources */,
 				D62FCF8D0BD53C7F00ED6CF8 /* WED_Airport.cpp in Sources */,
@@ -4725,10 +4875,13 @@
 				D633FA8B0E12E02000A3913F /* PCSBSocketUDP.lin.cpp in Sources */,
 				D633FA8F0E12E02F00A3913F /* PCSBSocket.lin.cpp in Sources */,
 				D6226E3A0E4B7F32005BD1D7 /* WED_FacadePlacement.cpp in Sources */,
+				02D8241E239EF2930008DBF2 /* Bra86.c in Sources */,
 				D6226E520E4B80CF005BD1D7 /* WED_ForestPlacement.cpp in Sources */,
 				D6226E560E4B8185005BD1D7 /* WED_PolygonPlacement.cpp in Sources */,
 				D6226E590E4B81C2005BD1D7 /* WED_LinePlacement.cpp in Sources */,
+				02D8241A239EF2810008DBF2 /* Bcj2.c in Sources */,
 				D6226E5E0E4B826F005BD1D7 /* WED_StringPlacement.cpp in Sources */,
+				02D82424239EF2AE0008DBF2 /* Delta.c in Sources */,
 				D6226E700E4B8C44005BD1D7 /* WED_DrapedOrthophoto.cpp in Sources */,
 				D6226E890E4B8F6C005BD1D7 /* WED_SimpleBoundaryNode.cpp in Sources */,
 				D6226EC20E4B981E005BD1D7 /* WED_SimpleBezierBoundaryNode.cpp in Sources */,
@@ -4741,6 +4894,7 @@
 				D695CDA10EE089E5009C5F2E /* WED_CreateBoxTool.cpp in Sources */,
 				D695CE010EE09F19009C5F2E /* WED_TextureBezierNode.cpp in Sources */,
 				D6AC143E0F126C930006E096 /* WED_TCE.cpp in Sources */,
+				02D82427239EF2B30008DBF2 /* Lzma2Dec.c in Sources */,
 				D6AC143F0F126C930006E096 /* WED_TCEPane.cpp in Sources */,
 				D6AC14510F126EC10006E096 /* WED_TCELayer.cpp in Sources */,
 				D6AC147B0F1271640006E096 /* WED_TCEToolNew.cpp in Sources */,
@@ -4755,6 +4909,7 @@
 				D6956ED40F82E91100F6718E /* WED_Assert.cpp in Sources */,
 				D6956ED50F82E91100F6718E /* WED_Globals.cpp in Sources */,
 				D6C38FDD0FA0D6E500EFA56C /* GUI_Unicode.cpp in Sources */,
+				02D82411239EF25D0008DBF2 /* 7zBuf2.c in Sources */,
 				D6F88E0E1C20A6BD00057F4D /* WED_RoadNode.cpp in Sources */,
 				D60B0ECD0FCC886A001E8DD3 /* WED_Orthophoto.cpp in Sources */,
 				D680AA1E0FCD85B400712B5B /* WED_GISUtils.cpp in Sources */,
@@ -4774,6 +4929,7 @@
 				D6282EFD13EC782B00FD236C /* WED_XMLReader.cpp in Sources */,
 				D6240D6D1476EAAE00A28A6F /* WED_ATCTimeRule.cpp in Sources */,
 				D6240D6E1476EAAE00A28A6F /* WED_ATCWindRule.cpp in Sources */,
+				02D82428239EF2B90008DBF2 /* Lzma86Dec.c in Sources */,
 				D6FDBB4F15112F4D009DB5EF /* WED_Connection.cpp in Sources */,
 				D6FDBB5015112F4D009DB5EF /* WED_NWInfoLayer.cpp in Sources */,
 				D6FDBB5115112F4D009DB5EF /* WED_NWLinkAdapter.cpp in Sources */,
