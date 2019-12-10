@@ -78,6 +78,44 @@
 		02B03C4320C72130000F81F0 /* line_BBrokenRed.png in Resources */ = {isa = PBXBuildFile; fileRef = 02B03C1120C720A1000F81F0 /* line_BBrokenRed.png */; };
 		02BFA21321C1B5970090D527 /* navmap_seaport.png in Resources */ = {isa = PBXBuildFile; fileRef = 02BFA21021C1B58D0090D527 /* navmap_seaport.png */; };
 		02BFA21421C1B59C0090D527 /* navmap_airport.png in Resources */ = {isa = PBXBuildFile; fileRef = 02BFA20F21C1B58D0090D527 /* navmap_airport.png */; };
+		02C7505423A05399008475A1 /* 7zStream.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D8242E239EF47A0008DBF2 /* 7zStream.c */; };
+		02C7505523A0539A008475A1 /* 7zStream.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D8242E239EF47A0008DBF2 /* 7zStream.c */; };
+		02C7505623A0539F008475A1 /* 7zAlloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823D4239EF2310008DBF2 /* 7zAlloc.c */; };
+		02C7505723A053A0008475A1 /* 7zAlloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823D4239EF2310008DBF2 /* 7zAlloc.c */; };
+		02C7505823A053A5008475A1 /* 7zArcIn.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823D6239EF2310008DBF2 /* 7zArcIn.c */; };
+		02C7505923A053A6008475A1 /* 7zArcIn.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823D6239EF2310008DBF2 /* 7zArcIn.c */; };
+		02C7505A23A053AA008475A1 /* 7zBuf.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823D7239EF2310008DBF2 /* 7zBuf.c */; };
+		02C7505B23A053AC008475A1 /* 7zBuf.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823D7239EF2310008DBF2 /* 7zBuf.c */; };
+		02C7505C23A053B0008475A1 /* 7zBuf2.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823D9239EF2310008DBF2 /* 7zBuf2.c */; };
+		02C7505D23A053B1008475A1 /* 7zBuf2.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823D9239EF2310008DBF2 /* 7zBuf2.c */; };
+		02C7505E23A053B5008475A1 /* 7zCrc.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823DA239EF2310008DBF2 /* 7zCrc.c */; };
+		02C7505F23A053B6008475A1 /* 7zCrc.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823DA239EF2310008DBF2 /* 7zCrc.c */; };
+		02C7506023A053BA008475A1 /* 7zCrcOpt.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823DC239EF2310008DBF2 /* 7zCrcOpt.c */; };
+		02C7506123A053BC008475A1 /* 7zCrcOpt.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823DC239EF2310008DBF2 /* 7zCrcOpt.c */; };
+		02C7506223A053C0008475A1 /* 7zDec.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823DD239EF2310008DBF2 /* 7zDec.c */; };
+		02C7506323A053C2008475A1 /* 7zDec.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823DD239EF2310008DBF2 /* 7zDec.c */; };
+		02C7506423A053C6008475A1 /* 7zFile.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823DE239EF2310008DBF2 /* 7zFile.c */; };
+		02C7506523A053C7008475A1 /* 7zFile.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823DE239EF2310008DBF2 /* 7zFile.c */; };
+		02C7506623A053CC008475A1 /* Alloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823E1239EF2310008DBF2 /* Alloc.c */; };
+		02C7506723A053CD008475A1 /* Alloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823E1239EF2310008DBF2 /* Alloc.c */; };
+		02C7506823A053D4008475A1 /* Bcj2.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823E3239EF2310008DBF2 /* Bcj2.c */; };
+		02C7506923A053D5008475A1 /* Bcj2.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823E3239EF2310008DBF2 /* Bcj2.c */; };
+		02C7506B23A053E4008475A1 /* Bra.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823E6239EF2310008DBF2 /* Bra.c */; };
+		02C7506C23A053E5008475A1 /* Bra.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823E6239EF2310008DBF2 /* Bra.c */; };
+		02C7506D23A053E9008475A1 /* Bra86.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823E8239EF2310008DBF2 /* Bra86.c */; };
+		02C7506E23A053EB008475A1 /* Bra86.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823E8239EF2310008DBF2 /* Bra86.c */; };
+		02C7506F23A053EE008475A1 /* BraIA64.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823E9239EF2310008DBF2 /* BraIA64.c */; };
+		02C7507023A053F0008475A1 /* BraIA64.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823E9239EF2310008DBF2 /* BraIA64.c */; };
+		02C7507123A053F4008475A1 /* CpuArch.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823EB239EF2310008DBF2 /* CpuArch.c */; };
+		02C7507223A053F6008475A1 /* CpuArch.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823EB239EF2310008DBF2 /* CpuArch.c */; };
+		02C7507323A053F9008475A1 /* Delta.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823ED239EF2310008DBF2 /* Delta.c */; };
+		02C7507423A053FA008475A1 /* Delta.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823ED239EF2310008DBF2 /* Delta.c */; };
+		02C7507523A05400008475A1 /* Lzma2Dec.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823EF239EF2310008DBF2 /* Lzma2Dec.c */; };
+		02C7507623A05401008475A1 /* Lzma2Dec.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823EF239EF2310008DBF2 /* Lzma2Dec.c */; };
+		02C7507723A05406008475A1 /* Lzma86Dec.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823F2239EF2310008DBF2 /* Lzma86Dec.c */; };
+		02C7507823A05407008475A1 /* Lzma86Dec.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823F2239EF2310008DBF2 /* Lzma86Dec.c */; };
+		02C7507A23A05411008475A1 /* LzmaDec.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823F4239EF2310008DBF2 /* LzmaDec.c */; };
+		02C7507B23A05412008475A1 /* LzmaDec.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823F4239EF2310008DBF2 /* LzmaDec.c */; };
 		02D8240A239EF2410008DBF2 /* 7zAlloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823D4239EF2310008DBF2 /* 7zAlloc.c */; };
 		02D8240B239EF2460008DBF2 /* 7zArcIn.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823D6239EF2310008DBF2 /* 7zArcIn.c */; };
 		02D8240C239EF2470008DBF2 /* 7zArcIn.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823D6239EF2310008DBF2 /* 7zArcIn.c */; };
@@ -4299,6 +4337,7 @@
 				D624353A0AE401EF004F00E3 /* GeoUtils.cpp in Sources */,
 				D62435460AE40216004F00E3 /* DSFLib.cpp in Sources */,
 				D62435470AE40219004F00E3 /* DSFLibWrite.cpp in Sources */,
+				02C7507123A053F4008475A1 /* CpuArch.c in Sources */,
 				D62435480AE40219004F00E3 /* DSFPointPool.cpp in Sources */,
 				D62435C80AE40392004F00E3 /* HTTPClient.cpp in Sources */,
 				D670D3121DD7D92000827DEA /* GISTool_ImageCmds.cpp in Sources */,
@@ -4306,6 +4345,7 @@
 				D62435CE0AE40392004F00E3 /* XMLObject.cpp in Sources */,
 				D62435D50AE403A4004F00E3 /* AptElev.cpp in Sources */,
 				D62435EC0AE403F4004F00E3 /* Airports.cpp in Sources */,
+				02C7506623A053CC008475A1 /* Alloc.c in Sources */,
 				D62435ED0AE403F4004F00E3 /* AptIO.cpp in Sources */,
 				D62435EE0AE403F4004F00E3 /* Beaches.cpp in Sources */,
 				D62435F00AE403F4004F00E3 /* ConfigSystem.cpp in Sources */,
@@ -4335,19 +4375,25 @@
 				D656B0DA0B51754E003FF84F /* ObjPointPool.cpp in Sources */,
 				D656B0DB0B517552003FF84F /* XObjDefs.cpp in Sources */,
 				D656B0DD0B517570003FF84F /* XChunkyFileUtils.cpp in Sources */,
+				02C7506823A053D4008475A1 /* Bcj2.c in Sources */,
 				D656B0DF0B517582003FF84F /* md5.c in Sources */,
 				D656B0E00B517587003FF84F /* ogle.cpp in Sources */,
 				D656B0EC0B5175EA003FF84F /* MemFileUtils.cpp in Sources */,
 				D656B0ED0B5175FC003FF84F /* PolyRasterUtils.cpp in Sources */,
 				D656B1A20B517E87003FF84F /* b64.c in Sources */,
+				02C7506423A053C6008475A1 /* 7zFile.c in Sources */,
 				D656B1C40B517EC6003FF84F /* MapAlgs.cpp in Sources */,
 				D656B1E00B517FB0003FF84F /* BWImage.cpp in Sources */,
+				02C7505E23A053B5008475A1 /* 7zCrc.c in Sources */,
 				D656B1E60B517FB8003FF84F /* GISUtils.cpp in Sources */,
 				D656B1E80B517FC8003FF84F /* ProgressUtils.cpp in Sources */,
+				02C7506F23A053EE008475A1 /* BraIA64.c in Sources */,
 				D656B1EE0B517FCF003FF84F /* UIUtils.cpp in Sources */,
 				D656B21D0B518111003FF84F /* Skeleton.cpp in Sources */,
 				D656B2220B518132003FF84F /* XObjReadWrite.cpp in Sources */,
+				02C7505B23A053AC008475A1 /* 7zBuf.c in Sources */,
 				D656B2320B5181C8003FF84F /* perlin.cpp in Sources */,
+				02C7505523A0539A008475A1 /* 7zStream.c in Sources */,
 				D69FD7490B6CF765008E3AEC /* unzip.c in Sources */,
 				D69FD74A0B6CF765008E3AEC /* zip.c in Sources */,
 				D67682B70CC669830032B90C /* TensorUtils.cpp in Sources */,
@@ -4358,6 +4404,7 @@
 				D67683640CC67B900032B90C /* GISTool_MiscCmds.cpp in Sources */,
 				D67683650CC67B910032B90C /* GISTool_ObsCmds.cpp in Sources */,
 				D67683660CC67B920032B90C /* GISTool_ProcessingCmds.cpp in Sources */,
+				02C7506B23A053E4008475A1 /* Bra.c in Sources */,
 				D67683670CC67B940032B90C /* GISTool_Utils.cpp in Sources */,
 				D67683680CC67B9B0032B90C /* MiscFuncs.cpp in Sources */,
 				D67683700CC67BB40032B90C /* FAA_Obs.cpp in Sources */,
@@ -4365,6 +4412,7 @@
 				D67683740CC67BCC0032B90C /* GISTool_VectorCmds.cpp in Sources */,
 				D67683750CC67BD20032B90C /* DSFLib_Print.cpp in Sources */,
 				D67685270CC6A0690032B90C /* TensorRoads.cpp in Sources */,
+				02C7507A23A05411008475A1 /* LzmaDec.c in Sources */,
 				D6CB54730CEC9DAC000E4393 /* FileUtils.cpp in Sources */,
 				D633FA6D0E12DF7400A3913F /* PCSBSocket.lin.cpp in Sources */,
 				D633FA6E0E12DF7400A3913F /* PCSBSocketUDP.lin.cpp in Sources */,
@@ -4374,12 +4422,15 @@
 				D6734D210EAE30AF0002C4C1 /* MapPolygon.cpp in Sources */,
 				D68E28830EBF5D3A0015648F /* ShapeIO.cpp in Sources */,
 				D6BB22900EC13287006499D7 /* MapTopology.cpp in Sources */,
+				02C7507323A053F9008475A1 /* Delta.c in Sources */,
+				02C7505723A053A0008475A1 /* 7zAlloc.c in Sources */,
 				D6BB23AE0EC1EBE0006499D7 /* CompGeomUtils.cpp in Sources */,
 				D678ADF20F7952B700F72139 /* tri_stripper.cpp in Sources */,
 				D6956ECA0F82DBF800F6718E /* MapHelpers.cpp in Sources */,
 				D6956F150F82E96900F6718E /* RF_Assert.cpp in Sources */,
 				D6956F180F82E96900F6718E /* RF_DEMGraphics.cpp in Sources */,
 				D6956F190F82E96900F6718E /* RF_DrawMap.cpp in Sources */,
+				02C7507523A05400008475A1 /* Lzma2Dec.c in Sources */,
 				D6956F1D0F82E96900F6718E /* RF_Globals.cpp in Sources */,
 				D6956F1E0F82E96900F6718E /* RF_ImageTool.cpp in Sources */,
 				D6956F200F82E96900F6718E /* RF_Main.cpp in Sources */,
@@ -4398,7 +4449,9 @@
 				D6151E8F0FB46BA6008A355F /* GUI_Button.cpp in Sources */,
 				D6151E900FB46BA7008A355F /* GUI_ChangeView.cpp in Sources */,
 				D6151E910FB46BA7008A355F /* GUI_Clipboard.cpp in Sources */,
+				02C7505923A053A6008475A1 /* 7zArcIn.c in Sources */,
 				D6151E920FB46BA8008A355F /* GUI_Commander.cpp in Sources */,
+				02C7505C23A053B0008475A1 /* 7zBuf2.c in Sources */,
 				D6151E930FB46BA9008A355F /* GUI_Control.cpp in Sources */,
 				D6151E940FB46BA9008A355F /* GUI_Destroyable.cpp in Sources */,
 				D6151E950FB46BAA008A355F /* GUI_Fonts.cpp in Sources */,
@@ -4420,8 +4473,10 @@
 				D604AEAF1C0E2F8E006DC1F0 /* ObjCUtils.mm in Sources */,
 				D6151EA50FB46BB6008A355F /* GUI_TabControl.cpp in Sources */,
 				D6151EA60FB46BB8008A355F /* GUI_Table.cpp in Sources */,
+				02C7506223A053C0008475A1 /* 7zDec.c in Sources */,
 				D6151EA70FB46BB8008A355F /* GUI_TabPane.cpp in Sources */,
 				D6151EA80FB46BB9008A355F /* GUI_TextField.cpp in Sources */,
+				02C7507723A05406008475A1 /* Lzma86Dec.c in Sources */,
 				D6151EAA0FB46BBB008A355F /* GUI_Timer.cpp in Sources */,
 				D6151EAB0FB46BBB008A355F /* GUI_ToolBar.cpp in Sources */,
 				D6151EAC0FB46BBC008A355F /* GUI_Unicode.cpp in Sources */,
@@ -4440,7 +4495,9 @@
 				D63390B21358D71300C524FD /* DEMGrid.cpp in Sources */,
 				D62F3A56138D4E8900F2C120 /* MeshSimplify.cpp in Sources */,
 				D6D4082A1406C6A20061EBF9 /* BezierApprox.cpp in Sources */,
+				02C7506D23A053E9008475A1 /* Bra86.c in Sources */,
 				D6BC020C146CC17800A941C6 /* Hydro2.cpp in Sources */,
+				02C7506023A053BA008475A1 /* 7zCrcOpt.c in Sources */,
 				D6E4C95D18EC91FF000D98B8 /* json_writer.cpp in Sources */,
 				D6E4C95E18EC9200000D98B8 /* json_value.cpp in Sources */,
 				D6E4C95F18EC9201000D98B8 /* json_reader.cpp in Sources */,
@@ -4452,11 +4509,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				02C7506923A053D5008475A1 /* Bcj2.c in Sources */,
 				D65E4B250B65427C004D7887 /* DSFLib.cpp in Sources */,
 				D65E4B260B65427C004D7887 /* DSFLib_Print.cpp in Sources */,
+				02C7507023A053F0008475A1 /* BraIA64.c in Sources */,
 				D65E4B270B65427C004D7887 /* DSFPointPool.cpp in Sources */,
 				D65E4B280B65427C004D7887 /* DSFLibWrite.cpp in Sources */,
 				D65E4B2C0B65427C004D7887 /* XChunkyFileUtils.cpp in Sources */,
+				02C7506723A053CD008475A1 /* Alloc.c in Sources */,
 				D65E4B2D0B65427C004D7887 /* AssertUtils.cpp in Sources */,
 				D65E4B2E0B65427C004D7887 /* MemFileUtils.cpp in Sources */,
 				D65E4B2F0B65427C004D7887 /* md5.c in Sources */,
@@ -4464,6 +4524,8 @@
 				D65E4B460B65430B004D7887 /* GISTool.cpp in Sources */,
 				D65E4B470B65430C004D7887 /* GISTool_CoreCmds.cpp in Sources */,
 				D65E4B480B65430D004D7887 /* GISTool_DumpCmds.cpp in Sources */,
+				02C7505623A0539F008475A1 /* 7zAlloc.c in Sources */,
+				02C7507223A053F6008475A1 /* CpuArch.c in Sources */,
 				D65E4B490B65430E004D7887 /* GISTool_DemCmds.cpp in Sources */,
 				D65E4B4A0B65430F004D7887 /* GISTool_Globals.cpp in Sources */,
 				D65E4B4B0B654311004D7887 /* GISTool_MiscCmds.cpp in Sources */,
@@ -4475,8 +4537,10 @@
 				D65E4B940B654529004D7887 /* XESInit.cpp in Sources */,
 				D65E4B990B65453A004D7887 /* ParamDefs.cpp in Sources */,
 				D65E4B9A0B65453B004D7887 /* SceneryPackages.cpp in Sources */,
+				02C7505823A053A5008475A1 /* 7zArcIn.c in Sources */,
 				D65E4B9B0B65453D004D7887 /* SimpleIO.cpp in Sources */,
 				D65E4B9C0B65453E004D7887 /* TriFan.cpp in Sources */,
+				02C7507623A05401008475A1 /* Lzma2Dec.c in Sources */,
 				D65E4B9D0B654542004D7887 /* Zoning.cpp in Sources */,
 				D65E4B9E0B654543004D7887 /* XESIO.cpp in Sources */,
 				D65E4B9F0B654545004D7887 /* ObjTables.cpp in Sources */,
@@ -4484,17 +4548,23 @@
 				D65E4BA20B654549004D7887 /* NetPlacement.cpp in Sources */,
 				D65E4BA30B65454A004D7887 /* MeshIO.cpp in Sources */,
 				D65E4BA40B65454C004D7887 /* MeshDefs.cpp in Sources */,
+				02C7505423A05399008475A1 /* 7zStream.c in Sources */,
 				D65E4BA50B65454E004D7887 /* MeshAlgs.cpp in Sources */,
 				D65E4BA60B65454F004D7887 /* MapIO.cpp in Sources */,
 				D65E4BAA0B654556004D7887 /* GreedyMesh.cpp in Sources */,
 				D65E4BAD0B65455B004D7887 /* EnumSystem.cpp in Sources */,
+				02C7506123A053BC008475A1 /* 7zCrcOpt.c in Sources */,
+				02C7506523A053C7008475A1 /* 7zFile.c in Sources */,
+				02C7507423A053FA008475A1 /* Delta.c in Sources */,
 				D65E4BAE0B65455C004D7887 /* DSFBuilder.cpp in Sources */,
 				D65E4BAF0B65455E004D7887 /* DEMToVector.cpp in Sources */,
 				D65E4BB00B654560004D7887 /* DEMTables.cpp in Sources */,
+				02C7506323A053C2008475A1 /* 7zDec.c in Sources */,
 				D65E4BB10B654562004D7887 /* DEMIO.cpp in Sources */,
 				D65E4BB20B654563004D7887 /* DEMDefs.cpp in Sources */,
 				D65E4BB30B654565004D7887 /* DEMAlgs.cpp in Sources */,
 				D65E4BB40B654567004D7887 /* ConfigSystem.cpp in Sources */,
+				02C7506C23A053E5008475A1 /* Bra.c in Sources */,
 				D65E4BB60B654570004D7887 /* Beaches.cpp in Sources */,
 				D65E4BB70B654572004D7887 /* AptIO.cpp in Sources */,
 				D65E4BB80B654574004D7887 /* Airports.cpp in Sources */,
@@ -4508,9 +4578,12 @@
 				D65E4BE90B654745004D7887 /* ObjConvert.cpp in Sources */,
 				D65E4BEB0B654747004D7887 /* ObjPointPool.cpp in Sources */,
 				D65E4BEC0B65474B004D7887 /* XObjBuilder.cpp in Sources */,
+				02C7507823A05407008475A1 /* Lzma86Dec.c in Sources */,
+				02C7505D23A053B1008475A1 /* 7zBuf2.c in Sources */,
 				D65E4BED0B65474C004D7887 /* XObjDefs.cpp in Sources */,
 				D65E4BEE0B65474E004D7887 /* XObjReadWrite.cpp in Sources */,
 				D65E4BFB0B654774004D7887 /* ProgressUtils.cpp in Sources */,
+				02C7507B23A05412008475A1 /* LzmaDec.c in Sources */,
 				D65E4C160B65487B004D7887 /* GISUtils.cpp in Sources */,
 				D65E4C180B654888004D7887 /* Skeleton.cpp in Sources */,
 				D65E4C2C0B6548D6004D7887 /* BitmapUtils.cpp in Sources */,
@@ -4526,6 +4599,7 @@
 				D6734BA50EACFCEE0002C4C1 /* MapOverlay.cpp in Sources */,
 				D6734D1B0EAE30A00002C4C1 /* MapBuffer.cpp in Sources */,
 				D6734D200EAE30AF0002C4C1 /* MapPolygon.cpp in Sources */,
+				02C7505F23A053B6008475A1 /* 7zCrc.c in Sources */,
 				D68E28840EBF5D3A0015648F /* ShapeIO.cpp in Sources */,
 				D6BB22910EC13287006499D7 /* MapTopology.cpp in Sources */,
 				D6BB23AF0EC1EBE1006499D7 /* CompGeomUtils.cpp in Sources */,
@@ -4536,9 +4610,11 @@
 				D6E941DE10DC717300192A02 /* ForestTables.cpp in Sources */,
 				D6E941DF10DC717300192A02 /* MapRaster.cpp in Sources */,
 				D63F725D117FB60900AB7C1F /* BlockAlgs.cpp in Sources */,
+				02C7506E23A053EB008475A1 /* Bra86.c in Sources */,
 				D63F72761180917800AB7C1F /* BlockFill.cpp in Sources */,
 				D6A88BE611820B05000EBFBF /* MemUtils.cpp in Sources */,
 				D64A08AB127AFDC1000D58A7 /* NetAlgs.cpp in Sources */,
+				02C7505A23A053AA008475A1 /* 7zBuf.c in Sources */,
 				D64A08AF127AFDEA000D58A7 /* NetHelpers.cpp in Sources */,
 				D63390B31358D71300C524FD /* DEMGrid.cpp in Sources */,
 				D62F3A57138D4E8900F2C120 /* MeshSimplify.cpp in Sources */,
