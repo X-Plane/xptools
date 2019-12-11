@@ -399,7 +399,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 //printf("[%d] %.0lfd r %d a %d ", n, thisWall_hdg, thisWall_idx_rel_to_front, thisWall_idx);
 				}
 //printf("\n");
-				g->EnableAlpha(true, true);
+//				g->EnableAlpha(true, true);
 	
 				glPushAttrib(GL_VIEWPORT_BIT);
 				glViewport(b[0],b[1],b[2]-b[0],b[3]-b[1]);
@@ -416,7 +416,6 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				glTranslatef(-mWid*0.5,0.0, 0.0);
 				
 				g->EnableDepth(true,true);
-				g->EnableAlpha(true,true);
 				glClear(GL_DEPTH_BUFFER_BIT);
 				glEnable(GL_CULL_FACE);
 				
@@ -457,6 +456,8 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 		case res_Object:
 			float sx = ((dx > dy) ? (dx / dy) : 1.0)/2;
 			float sy = ((dx > dy) ? 1.0 : (dy / dx))/2;
+				g->SetState(false,1,false,true,true,true,true);
+				glClear(GL_DEPTH_BUFFER_BIT);
 
 			if (o || mResMgr->GetObj(mRes,o,mVariant))
 			{
@@ -480,8 +481,6 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				glLoadIdentity();			
 				glRotatef(mThe,1,0,0);
 				glRotatef(mPsi,0,1,0);
-				g->EnableDepth(true,true);
-				glClear(GL_DEPTH_BUFFER_BIT);
 				
 				draw_obj_at_xyz(mTexMgr, o,
 					xyz_off[0], xyz_off[1], xyz_off[2],	0, g);
@@ -510,7 +509,6 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 									
 				float approx_radius = real_radius * mZoom;
 
-				g->SetState(false,1,false,true,true,false,false);
 				TexRef	ref = mTexMgr->LookupTexture(agp.base_tex.c_str() ,true, tex_Linear|tex_Mipmap|tex_Compress_Ok);
 				int id1 = ref  ? mTexMgr->GetTexID(ref ) : 0;
 				if(id1)g->BindTex(id1,0);
@@ -529,8 +527,6 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				glRotatef(mThe,1,0,0);
 				glRotatef(mPsi,0,1,0);
 				glColor3f(1,1,1);
-				g->EnableDepth(true,true);
-				glClear(GL_DEPTH_BUFFER_BIT);
 				
 				glTranslatef((max_xy[0]+min_xy[0]) * -0.5,
 							  0.0,
