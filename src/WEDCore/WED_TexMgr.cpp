@@ -20,9 +20,13 @@
  * THE SOFTWARE.
  *
  */
+ 
+#define NEW_LOAD 1
 
 #include "WED_TexMgr.h"
-#include "BitmapUtils.h"
+#if !NEW_LOAD
+	#include "BitmapUtils.h"
+#endif
 #include "MemFileUtils.h"
 #include "TexUtils.h"
 #include "WED_PackageMgr.h"
@@ -82,61 +86,78 @@ void		WED_TexMgr::GetTexInfo(
 
 WED_TexMgr::TexInfo *	WED_TexMgr::LoadTexture(const char * path, bool is_absolute, int flags)
 {
-	string fpath;
-
-	fpath = is_absolute ? path : gPackageMgr->ComputePath(mPackage, path);
-	TexInfo * inf = new TexInfo;
+	string fpath(is_absolute ? path : gPackageMgr->ComputePath(mPackage, path));
+	TexInfo * inf = NULL;
 
 	GLuint tn;
 	glGenTextures(1,&tn);
-#if 1
-	MFMemFile * dds_file;
-	dds_file = MemFile_Open(fpath.c_str());
-	if(dds_file)
+#if LOAD_DDS_DIRECT
+	FILE * file = fopen(fpath.c_str(), "rb");
+	if (file)
 	{
-//printf("Trying DDS %s",fpath.c_str());
-		if (LoadTextureFromDDS((unsigned const char *) MemFile_GetBegin(dds_file),(unsigned const char *) MemFile_GetEnd(dds_file),tn,0,&inf->act_x, &inf->act_y))
+		fseek(file, 0, SEEK_END);
+		int fileLength = ftell(file);
+		fseek(file, 0, SEEK_SET);
+		char * buffer = new char[fileLength];
+		if (buffer)
 		{
-//printf(" OK !\n");
-			inf->tex_id = tn;
-			inf->org_x = inf->vis_x = inf->act_x;
-			inf->org_y = inf->vis_y = inf->act_y;
-			MemFile_Close(dds_file);
-			
-			mTexes[path] = inf;
-			return inf;
+			if (fread(buffer, 1, fileLength, file) == fileLength)
+			{
+				int siz_x, siz_y;
+				if (LoadTextureFromDDS(buffer, buffer + fileLength, tn, 0, &siz_x, &siz_y))
+				{
+					printf("Direct loading DDS %s\n", fpath.c_str());
+					inf = new TexInfo;
+					inf->tex_id = tn;
+					inf->org_x = inf->vis_x = inf->act_x = siz_x;
+					inf->org_y = inf->vis_y = inf->act_y = siz_y;
+					mTexes[path] = inf;
+				}
+			}
+			delete [] buffer;
 		}
-//		printf("Nope !\n");
-		MemFile_Close(dds_file);
+		fclose(file);
 	}
-//printf("Trying normal load\n%s\n%s\n", path, fpath.c_str());
+	if(inf) return inf;
+
+	printf("Normal load %s\n%s\n", path, fpath.c_str());
 #endif
+
+
+#if NEW_LOAD
+	// loading based on file content only.
+	{
+		int siz_x, siz_y;
+		float s,t;
+		if (LoadTextureFromFile(fpath.c_str(), tn, flags, &siz_x, &siz_y, &s,&t))
+#else
+	// loading based on file name suffix. Aware of image being rescaled.
 	ImageInfo	im;
-	int res = MakeSupportedType(fpath.c_str(),&im);
-	if(res != 0)
+	if(MakeSupportedType(fpath.c_str(), &im) == 0)
 	{
-		delete inf;
-		return NULL;
+		int siz_x, siz_y;
+		float s,t;
+		if (LoadTextureFromImage(im, tn, flags, &siz_x, &siz_y, &s,&t))
+#endif
+		{
+			inf = new TexInfo;
+			inf->tex_id = tn;
+#if NEW_LOAD
+			inf->org_x = siz_x;
+			inf->org_y = siz_y;
+#else
+			inf->org_x = im.width;
+			inf->org_y = im.height;
+#endif
+			inf->act_x = siz_x;
+			inf->act_y = siz_y;
+			inf->vis_x = (float) siz_x * s;
+			inf->vis_y = (float) siz_y * t;
+			mTexes[path] = inf;
+		}
+#if !NEW_LOAD
+//		if (im.data) free(im.data);
+#endif
 	}
-
-	inf->tex_id = tn;
-	inf->org_x = im.width;
-	inf->org_y = im.height;
-
-	float s,t;
-	if (!LoadTextureFromImage(im, tn, flags, &inf->act_x, &inf->act_y, &s,&t))
-	{
-		delete inf;
-		if (im.data) free(im.data);
-		return NULL;
-	}
-
-	inf->vis_x = (float) inf->act_x * s;
-	inf->vis_y = (float) inf->act_y * t;
-
-	mTexes[path] = inf;
-	// janos says: im.data caused a _big_ memory leak :-)
-	if (im.data) free(im.data);
 	return inf;
 }
-

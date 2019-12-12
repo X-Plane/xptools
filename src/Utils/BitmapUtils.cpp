@@ -332,7 +332,7 @@ int GetSupportedType(const char * path)
 
 	if(extension == "bmp") return WED_BMP;
 	if(extension == "dds") return WED_DDS;
-	if(extension == "jp2") return WED_JP2K;
+//	if(extension == "jp2") return WED_JP2K;
 	if((extension == "jpeg")||(extension == "jpg")) return WED_JPEG;
 	if(extension == "png") return WED_PNG;
 	if(extension == "tif" || extension == "tiff") return WED_TIF;
@@ -342,6 +342,7 @@ int GetSupportedType(const char * path)
 }
 
 // should really be called "CreateBitmapFromFileAccordingToSuffix"
+// ********** DEPRECATED in favor of LoadBitmapFromAnyFile() ************
 int MakeSupportedType(const char * path, ImageInfo * inImage)
 {
 	int error = -1;//Guilty until proven innocent
@@ -356,21 +357,38 @@ int MakeSupportedType(const char * path, ImageInfo * inImage)
 		break;
 	#if USE_JPEG
 	case WED_JPEG:
-		error = CreateBitmapFromJPEG(path,inImage);
+		error = CreateBitmapFromJPEG(path,inImage, false);
 		break;
 	#endif	
 	case WED_PNG:
-		error = CreateBitmapFromPNG(path,inImage,false, GAMMA_SRGB);
+		error = CreateBitmapFromPNG(path,inImage,false, GAMMA_SRGB,false);
 		break;
 	#if USE_TIF	
 	case WED_TIF:
-		error = CreateBitmapFromTIF(path,inImage);
+		error = CreateBitmapFromTIF(path,inImage, false);
 		break;
 	#endif
 	default:
 		return error;//No good images or a broken file path
 	}
 	return error;
+}
+
+int LoadBitmapFromAnyFile(const char * inFilePath, ImageInfo * outImage, bool flipY)
+{
+	int result = CreateBitmapFromPNG(inFilePath, outImage, false, GAMMA_SRGB, flipY);
+	#if USE_TIF
+	if (result) result = CreateBitmapFromTIF(inFilePath, outImage);
+	#endif
+	#if USE_JPEG
+	if (result) result = CreateBitmapFromJPEG(inFilePath, outImage, flipY);
+	#endif
+	if (result) result = CreateBitmapFromFile(inFilePath, outImage);  // reads BMP files only
+	if (result) result = CreateBitmapFromDDS(inFilePath, outImage);
+	
+	if (result) DestroyBitmap(outImage);  // clean up in case of no sucess.
+
+	return result;  // return zero upon success
 }
 
 void	FillBitmap(const struct ImageInfo * inImageInfo, char c)
@@ -914,9 +932,7 @@ jpeg_throw_error (setjmp_err_mgr * err)
 }
 
 
-
-
-// JPEG is 0,0 = upper left and lib gives us RGB.  So we need to red-blue swap and (optionally) vertically flip.
+// JPEG is 0,0 = upper left and lib gives us RGB.  So we need to red-blue swap and vertically flip to get DIB BOTTOM_LEFT origins.
 int		CreateBitmapFromJPEG(const char * inFilePath, struct ImageInfo * outImageInfo, bool flipY)
 {
 	// We bail immediately if the file is no good.  This prevents us from
@@ -977,8 +993,7 @@ int		CreateBitmapFromJPEG(const char * inFilePath, struct ImageInfo * outImageIn
 			unsigned char * p[2] = { outImageInfo->data, outImageInfo->data + linesize };
 			while (linecount > 1)
 			{
-				if (jpeg_read_scanlines (&cinfo, p, 2) == 0)    // much faster for he ubiquitous 
-				4:2:2 sampled jpegs
+				if (jpeg_read_scanlines (&cinfo, p, 2) == 0)    // much faster for he ubiquitous 4:2:2 sampled jpegs
 					break;
 					
 				if (cinfo.output_components == 1)
@@ -1327,7 +1342,7 @@ static	void	IgnoreTiffWarnings(const char *, const char*, va_list)
 // TIFF is 0,0 = lower left.  But the byte order is ENDIAN dependent.
 // BIG ENDIAN: we get ABGR
 // LIL ENDIAN: we get RGBA
-int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInfo)
+int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInfo, bool flipY)
 {
 	int result = -1;
 	TIFFErrorHandler	errH = TIFFSetWarningHandler(IgnoreTiffWarnings);
@@ -1353,7 +1368,12 @@ int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInf
 	npixels = w * h;
 	raster = (uint32*) _TIFFmalloc(npixels * sizeof (uint32));
 	if (raster != NULL) {
-	    if (TIFFReadRGBAImage(tif, w, h, raster, 0)) {
+		int res;
+		if (flipY)
+			res = TIFFReadRGBAImage(tif, w, h, raster, 0);
+		else
+			res = TIFFReadRGBAImageOriented(tif, w, h, raster, ORIENTATION_TOPLEFT, 0);
+	    if (res) {
 
 			outImageInfo->data = (unsigned char *) malloc(npixels * 4);
 			outImageInfo->width = w;

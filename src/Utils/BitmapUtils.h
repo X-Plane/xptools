@@ -46,7 +46,7 @@
 enum SupportedTypes{
 	WED_BMP,			//NewBitmap,FromFile            X			
 	WED_DDS,			//X								X				X
-	WED_JP2K,			//X												X
+//	WED_JP2K,			//X												X
 	WED_JPEG,			//FromJPEG,FromJPEGData
 	WED_PNG,			//X								X				X
 	WED_TIF				//X												X
@@ -164,10 +164,12 @@ int		CreateBitmapFromJPEGData(void * inBytes, int inLength, struct ImageInfo * o
 #if USE_TIF
 
 /* Create an image from a TIF file  requires libTIFF. */
-int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInfo);
+int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInfo, bool flipY = true);
 
 #endif
 
+// load any supported filetype, repardless of file suffix. Return zero upon success
+int LoadBitmapFromAnyFile(const char * inFilePath, ImageInfo * outImage, bool flipY = true);
 
 /* Given an imageInfo structure, this routine writes it to disk as a .bmp file.
  * Note that only 3-channel bitmaps may be written as .bmp files!! 
@@ -204,6 +206,7 @@ int GetSupportedType(const char * path);
 //Error codes are passed back up and returned by the method
 
 // should really be called "CreateBitmapFromFileAccordingToSuffix"
+// ********** DEPRECATED in favor of LoadBitmapFromAnyFile() ************
 int MakeSupportedType(const char * path, ImageInfo * inImage);
 
 /* Given a bitmap, this routine fills the whole bitmap in with a gray level of c, where

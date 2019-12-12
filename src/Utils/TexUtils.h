@@ -57,11 +57,11 @@ bool LoadTextureFromImage(
 				float *			outT);
 
 bool	LoadTextureFromDDS(
-				const unsigned char *	mem_start,
-				const unsigned char *	mem_end,
-				int						in_tex_num,
-				int						inFlags,
-				int *					outWidth,
-				int *					outHeight);
+				const char *	mem_start,
+				const char *	mem_end,
+				int				in_tex_num,
+				int				inFlags,
+				int *			outWidth,
+				int *			outHeight);
 
 #endif

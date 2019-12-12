@@ -23,7 +23,6 @@
 #include "TexUtils.h"
 #include "AssertUtils.h"
 #include "BitmapUtils.h"
-#include "MemFileUtils.h"
 #if APL
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glu.h>
@@ -31,7 +30,9 @@
 	#include <GL/gl.h>
 	#include <GL/glu.h>
 #endif
-#include "squish.h"
+#if LOAD_DDS_DIRECT
+	#include "squish.h"
+#endif
 
 #if IBM
 // Ben says - this sucks!
@@ -64,7 +65,7 @@ static void init_gl_info(gl_info_t * i)
 	i->has_bgra = strstr(ext_str,"GL_EXT_bgra") != NULL;
 	
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE,&i->max_tex_size);
-	if(i->max_tex_size > 8192)	i->max_tex_size = 8192;
+	// if(i->max_tex_size > 8192)	i->max_tex_size = 8192;
 	if(i->has_tex_compression)	glHint(GL_TEXTURE_COMPRESSION_HINT,GL_NICEST);
 }
 
@@ -108,39 +109,14 @@ bool LoadTextureFromFile(
 						float * 		outT)
 {
 	struct ImageInfo	im = { 0 };
-
-	MFMemFile * mf = MemFile_Open(inFileName);
-	if(mf)
+	if (LoadBitmapFromAnyFile(inFileName, &im, false) == 0)
 	{
-		if(LoadTextureFromDDS((const unsigned char *) MemFile_GetBegin(mf),(const unsigned char *) MemFile_GetEnd(mf),inTexNum,flags,outWidth,outHeight))
-		{
-			if(outS) *outS = 1.0;
-			if(outT) *outT = 1.0;
-			MemFile_Close(mf);
-			return true;
-		}
-		MemFile_Close(mf);
-	}
-	else
-	{
-		int result =  CreateBitmapFromPNG(inFileName, &im, false, GAMMA_SRGB);
-		if (result) result = CreateBitmapFromDDS(inFileName, &im);
-		if (result) result = CreateBitmapFromFile(inFileName, &im);
-		#if USE_TIF
-		if (result) result = CreateBitmapFromTIF(inFileName, &im);
-		#endif
-		#if USE_JPEG
-		if (result) result = CreateBitmapFromJPEG(inFileName, &im);
-		#endif
-		if (result == 0)
-		{
-			if (im.pad != 0)
-				UnpadImage(&im);
+		if (im.pad != 0)
+			UnpadImage(&im);
 
-			int res = LoadTextureFromImage(im, inTexNum, flags, outWidth, outHeight, outS, outT);
-			DestroyBitmap(&im);
-			return res;
-		}
+		int res = LoadTextureFromImage(im, inTexNum, flags, outWidth, outHeight, outS, outT);
+		DestroyBitmap(&im);
+		return res;
 	}
 	return false;
 }
@@ -275,17 +251,15 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 	return true;
 }
 
-#if 1
-
-#define SWAP32(x) (x)
+#if LOAD_DDS_DIRECT
 
 bool	LoadTextureFromDDS(
-				const unsigned char *	mem_start,
-				const unsigned char *	mem_end,
-				int						in_tex_num,
-				int						inFlags,
-				int *					outWidth,
-				int *					outHeight)
+				const char *	mem_start,
+				const char *	mem_end,
+				int				in_tex_num,
+				int				inFlags,
+				int *			outWidth,
+				int *			outHeight)
 {
 	INIT_GL_INFO
 	
@@ -315,14 +289,10 @@ bool	LoadTextureFromDDS(
 	if (outWidth) *outWidth = x;
 	if (outHeight) *outHeight = y;
 
-	const unsigned char * data = mem_start + sizeof(TEX_dds_desc);
-#if 0
-	GLuint renderedTexture;
-	glGenTextures(1, &renderedTexture);
-	glBindTexture(GL_TEXTURE_2D, renderedTexture);
-#else
+	const char * data = mem_start + sizeof(TEX_dds_desc);
+
 	glBindTexture(GL_TEXTURE_2D, in_tex_num);
-#endif
+
 	for (int level = 0; level <= mips; ++level) 
 	{
 		int data_len = squish::GetStorageRequirements(x,y,flags);
@@ -336,45 +306,7 @@ bool	LoadTextureFromDDS(
 		y >>= 1;
 		data += data_len;
 	}
-#if 0
-	// here is the mess: DXT images are upside down, as XP/WED had choosen the origin of textures to the left top, while
-	// OpenGl has them in the right bottom. So its either flipping all UV coorcinates all thoughout WED and all tools that
-	// that also use TexUtils (ObjView, RenderFarmUI) or flip the texture on the GPU before use. Which means uncompress
-	// and recompress, but now on the GPU rather than with lib_squish.
 	
-	x = SWAP32(desc->dwWidth);
-	y = SWAP32(desc->dwHeight);
-	
-	GLuint FramebufferName = 0;
-	glGenFramebuffers(1, &FramebufferName);
-	glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
-	
-	glBindTexture(GL_TEXTURE_2D, in_tex_num);
-	glTexImage2D(GL_TEXTURE_2D, 0,GL_RGB, x, y, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
-	
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, in_tex_num), 0);
-	GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
-	glDrawBuffers(1, DrawBuffers);
-	glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
-	glViewport(0,0,x, y); 
-
-	glBindTexture(GL_TEXTURE_2D, renderedTexture);
-	glBegin(GL_QUADS);
-		glTexCoord2f(0, 0); glVertex2i(0, 0);
-		glTexCoord2f(0, 1); glVertex2i(0, y);
-		glTexCoord2f(1, 1); glVertex2i(x, y);
-		glTexCoord2f(1, 0); glVertex2i(x, 0);
-	glEnd();
-
-//	glDeleteFramebuffers(GL_FRAMEBUFFER, FramebufferName);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	glBindTexture(GL_TEXTURE_2D, in_tex_num);
-#endif
-
 	if (inFlags & tex_Linear)
 	{
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

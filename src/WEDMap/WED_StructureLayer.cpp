@@ -571,6 +571,10 @@ bool		WED_StructureLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity *
 						st2.x_ *= sx; st2.y_ *= sy;
 						st3.x_ *= sx; st3.y_ *= sy;
 						st4.x_ *= sx; st4.y_ *= sy;
+						st1.y_ = 1.0 - st1.y_;
+						st2.y_ = 1.0 - st2.y_;
+						st3.y_ = 1.0 - st3.y_;
+						st4.y_ = 1.0 - st4.y_;
 					}
 					glDisable(GL_CULL_FACE);
 					glColor4f(1,1,1,overlay->GetAlpha());

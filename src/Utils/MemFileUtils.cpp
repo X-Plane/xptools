@@ -453,6 +453,7 @@ MFMemFile * 	MemFile_Open(const char * inPath)
 		}
 		unzClose(unz);
 	}
+
 #if APL	|| LIN
 	{
 	struct stat	ss;			// Put this here to avoid crossing
