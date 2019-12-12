@@ -318,7 +318,7 @@ bool	LoadTextureFromDDS(
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (inFlags & tex_Mipmap) ? GL_NEAREST_MIPMAP_NEAREST : GL_LINEAR);
 	}
 
-	if(1) // inFlags & tex_Wrap)          // why is that needed ???
+	if (inFlags & tex_Wrap)
 	{
 		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT );
 		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT );

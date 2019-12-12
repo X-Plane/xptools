@@ -142,7 +142,7 @@ int		CreateNewBitmap(long inWidth, long inHeight, short inChannels, struct Image
  * in the imageInfo structure by loading the bitmap. */
  
  // should really be called "CreateBitmapFromBMP"
-int		CreateBitmapFromFile(const char * inFilePath, struct ImageInfo * outImageInfo);
+int		CreateBitmapFromFile(const char * inFilePath, struct ImageInfo * outImageInfo, bool flipY = true);
 
 /* Yada yada yada, libPNG.  Gamma is the gamma color curve we want our pixels in.  Since gamma is recorded on the png file
  * we have to tell libpng to convert it.  Use 0.0 for no conversion, just the raw 8-bit values.  */
@@ -153,22 +153,18 @@ int		CreateBitmapFromPNGData(const void * inBytes, int inLength, struct ImageInf
 int		CreateBitmapFromDDS(const char * inFilePath, struct ImageInfo * outImageInfo);
 
 #if USE_JPEG
-
 /* Create a JPEG image from either a file on disk or a chunk of memory.  This requires the IJG reference
  * JPEG code. */
 int		CreateBitmapFromJPEG(const char * inFilePath, struct ImageInfo * outImageInfo, bool flipY = true); // image flip is costly wrt execution time. Avoid.
 int		CreateBitmapFromJPEGData(void * inBytes, int inLength, struct ImageInfo * outImageInfo);
-
 #endif
 
 #if USE_TIF
-
 /* Create an image from a TIF file  requires libTIFF. */
 int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInfo, bool flipY = true);
-
 #endif
 
-// load any supported filetype, repardless of file suffix. Return zero upon success
+// load any supported filetype, regardless of file suffix. Return zero upon success
 int LoadBitmapFromAnyFile(const char * inFilePath, ImageInfo * outImage, bool flipY = true);
 
 /* Given an imageInfo structure, this routine writes it to disk as a .bmp file.

@@ -164,7 +164,7 @@ extern "C" {
 
 // BMP is always BGR, and alwys lower-left origin.  Since this is what we want in memory
 // (E.g. DIB conventions) we can just load.
-int		CreateBitmapFromFile(const char * inFilePath, struct ImageInfo * outImageInfo)
+int		CreateBitmapFromFile(const char * inFilePath, struct ImageInfo * outImageInfo, bool flipY)
 {
 		struct	BMPHeader		header;
 		struct	BMPImageDesc	imageDesc;
@@ -342,7 +342,8 @@ int GetSupportedType(const char * path)
 }
 
 // should really be called "CreateBitmapFromFileAccordingToSuffix"
-// ********** DEPRECATED in favor of LoadBitmapFromAnyFile() ************
+// ********** DEPRECATED in favor of LoadBitmapFromAnyFile() *********
+#if 0
 int MakeSupportedType(const char * path, ImageInfo * inImage)
 {
 	int error = -1;//Guilty until proven innocent
@@ -373,18 +374,18 @@ int MakeSupportedType(const char * path, ImageInfo * inImage)
 	}
 	return error;
 }
-
+#endif
 int LoadBitmapFromAnyFile(const char * inFilePath, ImageInfo * outImage, bool flipY)
 {
 	int result = CreateBitmapFromPNG(inFilePath, outImage, false, GAMMA_SRGB, flipY);
 	#if USE_TIF
-	if (result) result = CreateBitmapFromTIF(inFilePath, outImage);
+	if (result) result = CreateBitmapFromTIF(inFilePath, outImage);   // totally dumbfounds Michael: Why don't we have to flip those, too w/new DDS code ??
 	#endif
 	#if USE_JPEG
 	if (result) result = CreateBitmapFromJPEG(inFilePath, outImage, flipY);
 	#endif
 	if (result) result = CreateBitmapFromFile(inFilePath, outImage);  // reads BMP files only
-	if (result) result = CreateBitmapFromDDS(inFilePath, outImage);
+	if (result) result = CreateBitmapFromDDS(inFilePath, outImage);   // should never be used - as DDS is loaded directly already
 	
 	if (result) DestroyBitmap(outImage);  // clean up in case of no sucess.
 
