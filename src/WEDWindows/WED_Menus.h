@@ -40,40 +40,38 @@ enum {
 	wed_ImportApt,
 	wed_ExportApt,
 	wed_ExportPack,
-#if HAS_GATEWAY	
+#if HAS_GATEWAY
 	wed_ExportToGateway,
-#endif	
+#endif
 	wed_ImportDSF,
 	wed_ImportOrtho,
-#if HAS_GATEWAY	
+#if HAS_GATEWAY
 	wed_ImportGateway,
-#endif	
+#endif
 #if GATEWAY_IMPORT_FEATURES
 	wed_ImportGatewayExtract,
-#endif	
+#endif
 	// Export Target Submenu
 	wed_Export900,
 	wed_Export1000,
 	wed_Export1021,
 	wed_Export1050,
 	wed_Export1100,
+	wed_Export1130,
 	wed_ExportGateway,
 	// Edit Menu,
 	wed_Group,
 	wed_Ungroup,
 	wed_Crop,
 	wed_Overlay,
-#if AIRPORT_ROUTING
+	wed_CopyToAirport,
 //	wed_MakeRouting,
-#endif
 	wed_Split,
 	wed_Align,
 	wed_MatchBezierHandles,
 	wed_Orthogonalize,
 	wed_RegularPoly,
-#if AIRPORT_ROUTING
 	wed_Merge,
-#endif
 	wed_Reverse,
 	wed_Rotate,
 	wed_MoveFirst,
@@ -104,6 +102,11 @@ enum {
 	wed_ZoomWorld,
 	wed_ZoomAll,
 	wed_ZoomSelection,
+
+	wed_Map3D,
+	wed_MapATC,
+	wed_MapPavement,
+	wed_MapSelection,
 //	wed_UnitFeet,
 //	wed_UnitMeters,
 	wed_ToggleLines,
@@ -111,9 +114,14 @@ enum {
 	wed_PickOverlay,
 //	wed_ToggleOverlay,
 	wed_ToggleWorldMap,
-#if WANT_TERRASEVER	
+	wed_ToggleNavaidMap,
+#if WANT_TERRASEVER
 	wed_ToggleTerraserver,
-#endif	
+#endif
+	wed_SlippyMapNone,
+	wed_SlippyMapOSM,
+	wed_SlippyMapESRI,
+	wed_SlippyMapCustom,
 #if WITHNWLINK
 	wed_ToggleLiveView,
 #endif
@@ -125,11 +133,9 @@ enum {
 	wed_SelectVertex,
 	wed_SelectPoly,
 	wed_SelectConnected,
-#if AIRPORT_ROUTING
 	wed_SelectZeroLength,
 	wed_SelectDoubles,
 	wed_SelectCrossing,
-#endif
 	wed_SelectLocalObjects,
 	wed_SelectLibraryObjects,
 	wed_SelectDefaultObjects,
@@ -139,12 +145,10 @@ enum {
 	wed_CreateApt,
 	wed_EditApt,
 	wed_AddATCFreq,
-#if AIRPORT_ROUTING
 	wed_AddATCFlow,
 	wed_AddATCRunwayUse,
 	wed_AddATCTimeRule,
 	wed_AddATCWindRule,
-#endif
 	wed_UpgradeRamps,
 	wed_AlignApt,
 	//-- Add Metadata Keys Menu--
@@ -155,6 +159,7 @@ enum {
 	wed_AddMetaDataDatumLat,
 	wed_AddMetaDataDatumLon,
 	wed_AddMetaDataFAA,
+	wed_AddMetaDataLGuiLabel,
 	wed_AddMetaDataIATA,
 	wed_AddMetaDataICAO,
 	wed_AddMetaDataLocal,
@@ -168,7 +173,9 @@ enum {
 	wed_UpdateMetadata, //Open up dialogbox
 	// Help Menu
 	wed_HelpManual,
-	wed_HelpScenery
+	wed_HelpScenery,
+	wed_OSMFixTheMap,
+	wed_ESRIUses
 };
 
 class	GUI_Application;

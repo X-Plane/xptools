@@ -33,8 +33,8 @@ DEFINE_PERSISTENT(WED_AirportChain)
 
 WED_AirportChain::WED_AirportChain(WED_Archive * a, int i) : WED_GISChain(a,i),
 	closed(0),
-	lines(this,"Line Attributes", 	"Line Attributes", 1),
-	lights(this,"Light Attributes", "Light Attributes", 1)
+	lines(this,PROP_Name("Line Attributes",XML_Name("","")), "Line Attributes", 1),
+	lights(this,PROP_Name("Light Attributes",XML_Name("","")), "Light Attributes", 1)
 {
 }
 
@@ -121,7 +121,7 @@ void		WED_AirportChain::StartElement(
 								const XML_Char *	name,
 								const XML_Char **	atts)
 {
-	if(strcasecmp(name,"airport_chain")==0)
+	if(strcmp(name,"airport_chain")==0)
 	{
 		const XML_Char * c = get_att("closed",atts);
 		if(c)
@@ -145,4 +145,37 @@ void	WED_AirportChain::Import(const AptMarking_t& x, void (* print_func)(void *,
 void	WED_AirportChain::Export(		 AptMarking_t& x) const
 {
 	GetName(x.name);
+}
+
+void 	WED_AirportChain::GetResource(string& r) const
+{
+	r.clear();                    // return a string ONLY if lines and light are set uniformly throughout all nodes
+
+	PropertyVal_t line;
+	lines.GetProperty(line);
+	PropertyVal_t light;
+	lights.GetProperty(light);
+
+//	string n; this->GetName(n);
+//	printf("%s: lin=%d lgt=%d\n",n.c_str(), line.set_val.size(), light.set_val.size());
+
+	if(line.set_val.size() == 1)
+	{
+		const char * c = ENUM_Desc(*line.set_val.begin());
+		if(c) r += c;
+	}
+	else if (line.set_val.size() > 1)
+		return;
+
+	if(light.set_val.size() == 1)
+	{
+		const char * c = ENUM_Desc(*light.set_val.begin());
+		if(c)
+		{
+			if(!r.empty()) r +=  "$^";
+			r += c;
+		}
+	}
+	else
+		return;
 }

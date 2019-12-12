@@ -82,6 +82,19 @@ struct	ImageInfo {
 	#define DWORD unsigned int
 #endif
 
+#if BIG
+	#if APL
+		#include <libkern/OSByteOrder.h>
+		#define SWAP32(x) (OSSwapConstInt32(x))
+	#else
+		#error we do not have big endian support on non-Mac platforms
+	#endif
+#elif LIL
+	#define SWAP32(x) (x)
+#else
+	#error BIG or LIL are not defined - what endian are we?
+#endif
+
 struct TEX_dds_caps2 {
     DWORD       dwCaps;         // capabilities of surface wanted
     DWORD       dwCaps2;
@@ -103,17 +116,19 @@ struct TEX_dds_pixelformat {
 struct TEX_dds_desc {
 	char				dwMagic[4];				// D D S <space> sequential string in memory.  This is not REALLY in the struct, but good enough for me.
 
-    DWORD               dwSize;                 // size of the DDSURFACEDESC structure		(Must be 124)
-    DWORD               dwFlags;                // determines what fields are valid			(DDSD_CAPS, DDSD_PIXELFORMAT, DDSD_WIDTH, DDSD_HEIGHT.)
-    DWORD               dwHeight;               // height of surface to be created
-    DWORD               dwWidth;                // width of input surface
+	DWORD               dwSize;                 // size of the DDSURFACEDESC structure		(Must be 124)
+	DWORD               dwFlags;                // determines what fields are valid			(DDSD_CAPS, DDSD_PIXELFORMAT, DDSD_WIDTH, DDSD_HEIGHT.)
+	DWORD               dwHeight;               // height of surface to be created
+	DWORD               dwWidth;                // width of input surface
 	DWORD				dwLinearSize;           // Formless late-allocated optimized surface size
-    DWORD               dwDepth;				// Vol texes-depth.
+	DWORD               dwDepth;				// Vol texes-depth.
 	DWORD				dwMipMapCount;          // number of mip-map levels requestde
 	DWORD               dwReserved1[11];        //
 	TEX_dds_pixelformat	ddpfPixelFormat;        // pixel format description of the surface
-    TEX_dds_caps2       ddsCaps;                // direct draw surface capabilities			DDSCAPS_TEXTURE, DDSCAPS_MIPMAP, DDSCAPS_COMPLEX		TEXTURE, LINEARSIZE, COMPLEX, MIPMAP, FOURCC)
-    DWORD               dwReserved2;			//
+	TEX_dds_caps2       ddsCaps;                // direct draw surface capabilities			DDSCAPS_TEXTURE, DDSCAPS_MIPMAP, DDSCAPS_COMPLEX		TEXTURE, LINEARSIZE, COMPLEX, MIPMAP, FOURCC)
+	DWORD               dwReserved2;			//
+
+	TEX_dds_desc(int width, int height, int mips, int dxt);
 };
 
 /* STANDARDS FOR CreateNewBitmapFromX: Returns 0 for all good, else each has its
@@ -125,11 +140,13 @@ int		CreateNewBitmap(long inWidth, long inHeight, short inChannels, struct Image
 
 /* Given a file path and an uninitialized imageInfo structure, this routine fills
  * in the imageInfo structure by loading the bitmap. */
+ 
+ // should really be called "CreateBitmapFromBMP"
 int		CreateBitmapFromFile(const char * inFilePath, struct ImageInfo * outImageInfo);
 
 /* Yada yada yada, libPNG.  Gamma is the gamma color curve we want our pixels in.  Since gamma is recorded on the png file
  * we have to tell libpng to convert it.  Use 0.0 for no conversion, just the raw 8-bit values.  */
-int		CreateBitmapFromPNG(const char * inFilePath, struct ImageInfo * outImageInfo, bool leaveIndexed, float target_gamma);
+int		CreateBitmapFromPNG(const char * inFilePath, struct ImageInfo * outImageInfo, bool leaveIndexed, float target_gamma, bool flipY = true);
 int		CreateBitmapFromPNGData(const void * inBytes, int inLength, struct ImageInfo * outImageInfo, bool leaveIndexed, float target_gamma, bool flipY = true);
 
 /* Create a 4-channel image from a DDS file. */
@@ -139,7 +156,7 @@ int		CreateBitmapFromDDS(const char * inFilePath, struct ImageInfo * outImageInf
 
 /* Create a JPEG image from either a file on disk or a chunk of memory.  This requires the IJG reference
  * JPEG code. */
-int		CreateBitmapFromJPEG(const char * inFilePath, struct ImageInfo * outImageInfo);
+int		CreateBitmapFromJPEG(const char * inFilePath, struct ImageInfo * outImageInfo, bool flipY = true); // image flip is costly wrt execution time. Avoid.
 int		CreateBitmapFromJPEGData(void * inBytes, int inLength, struct ImageInfo * outImageInfo);
 
 #endif
@@ -150,14 +167,6 @@ int		CreateBitmapFromJPEGData(void * inBytes, int inLength, struct ImageInfo * o
 int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInfo);
 
 #endif
-
-#if USE_GEOJPEG2K
-//Creates a bit map from a GeoJPEG2K, requires GeoJASPER
-//-1 means bad jas_init(), -2 means bad format ID, -3 means bad image. 0 means good, relates to #channels
-int CreateBitmapFromJP2K(const char * inFilePath, struct ImageInfo * outImageInfo);
-
-#endif
-
 
 
 /* Given an imageInfo structure, this routine writes it to disk as a .bmp file.
@@ -170,11 +179,14 @@ int		WriteBitmapToFile(const struct ImageInfo * inImage, const char * inFilePath
 /* Given an imageInfo structure, this routine writes it to disk as a .png file.  Image is tagged with gamma, or 0.0f to leave untagged. */
 int		WriteBitmapToPNG(const struct ImageInfo * inImage, const char * inFilePath, char * inPalette, int inPaletteLen, float gamma);
 
-/* This routine writes a 3 or 4 channel bitmap as a mip-mapped DXT1 or DXT3 image.
+/* This routine writes a 4 channel bitmap as a mip-mapped DXT1, DXT3 or DXT5 image.
  * NOTE: if you compile with PHONE then DDS are written upside down (lower left origin
  * instead of upper-left).  This is an optimization for the iphone, which can then
  * pass the data DIRECTLY to OpenGL. */
 int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name, int use_win_gamma);
+
+// same, but multi-threaded compression and gamma corrected mipmap generation is done within
+int	WriteBitmapToDDS_MT(struct ImageInfo& ioImage, int dxt, const char * file_name);
 
 /* This routine writes a 3 or 4 channel bitmap as a mip-mapped DXT1 or DXT3 image. */
 int	WriteUncompressedToDDS(struct ImageInfo& ioImage, const char * file_name, int use_win_gamma);
@@ -190,6 +202,8 @@ int GetSupportedType(const char * path);
 
 //Attempts to make a supported image type using GetSupportedType and the various CreateBitmapFromX utils
 //Error codes are passed back up and returned by the method
+
+// should really be called "CreateBitmapFromFileAccordingToSuffix"
 int MakeSupportedType(const char * path, ImageInfo * inImage);
 
 /* Given a bitmap, this routine fills the whole bitmap in with a gray level of c, where

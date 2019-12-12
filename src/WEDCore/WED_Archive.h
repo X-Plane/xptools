@@ -46,8 +46,6 @@
 
 #include "WED_XMLReader.h"
 
-struct sqlite3;
-
 class	WED_Persistent;
 class	WED_UndoLayer;
 class	WED_UndoMgr;
@@ -78,8 +76,6 @@ public:
 	void			SetUndo(WED_UndoLayer * inUndo);
 
 	void			ClearAll(void);
-	void			LoadFromDB(sqlite3 * db, const map<int,int>& mapping);
-	void			SaveToDB(sqlite3 * db);
 	void			SaveToXML(WED_XMLElement * parent);
 #if WITHNWLINK
 	void			SetNWLinkAdapter(WED_NWLinkAdapter * inAdapter);

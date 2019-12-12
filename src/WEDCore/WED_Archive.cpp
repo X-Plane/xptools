@@ -205,13 +205,13 @@ void		WED_Archive::StartElement(
 	const char * id_str = NULL;
 	while(*a)
 	{
-		if(strcasecmp(*a,"class")==0)
+		if(strcmp(*a,"class")==0)
 		{
 			++a;
 			class_name = *a;
 			++a;
 		}
-		if(strcasecmp(*a,"id")==0)
+		if(strcmp(*a,"id")==0)
 		{
 			++a;
 			id_str = *a;

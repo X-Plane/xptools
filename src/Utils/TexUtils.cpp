@@ -42,7 +42,7 @@ struct  gl_info_t {
 	int		gl_major_version;
 	bool	has_tex_compression;
 	bool	has_non_pots;
-	bool 	has_bgra;
+	bool	has_bgra;
 	int		max_tex_size;
 };
 
@@ -65,7 +65,7 @@ static void init_gl_info(gl_info_t * i)
 	
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE,&i->max_tex_size);
 	if(i->max_tex_size > 8192)	i->max_tex_size = 8192;
-	if(i->has_tex_compression)	glHint(GL_TEXTURE_COMPRESSION_HINT,GL_NICEST);	
+	if(i->has_tex_compression)	glHint(GL_TEXTURE_COMPRESSION_HINT,GL_NICEST);
 }
 
 /*****************************************************************************************
@@ -161,11 +161,11 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 
 	int non_pots = ((inFlags & tex_Always_Pad) == 0) && gl_info.has_non_pots;
 
-	int		res_x = non_pots ? im.width : NextPowerOf2(im.width);
-	int		res_y = non_pots ? im.height : NextPowerOf2(im.height);
+	int		res_x = non_pots ? min((int) im.width, gl_info.max_tex_size) : NextPowerOf2(im.width);
+	int		res_y = non_pots ? min((int) im.height,gl_info.max_tex_size) : NextPowerOf2(im.height);
 	bool	resize = (res_x != im.width || res_y != im.height);
 	bool	rescale = resize && (inFlags & tex_Rescale);
-	if (resize && (im.width > res_x || im.height > res_y))	// Always rescale if the image is too big for the max tex!!
+	if (im.width > res_x || im.height > res_y)	// Always rescale if the image is too big for the max tex!!
 		rescale = true;
 
 	ImageInfo *	useIt = &im;
@@ -221,16 +221,23 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 		unsigned char * p = useIt->data;
 		while (cnt--)
 		{
-			swap(p[0], p[2]);
-			p += useIt->channels;
-		}
+			swap(p[0], p[2]);						// Ben says: since we get BGR or BGRA, swap red and blue channesl to make RGB or RGBA.  Some day we could
+			p += useIt->channels;					// use our brains and use GL_BGR_EXT and GL_BGRA_EXT; literally all GL cards from Radeon/GeForce on support this.
+			}
+													// Michael says: that day was the last day of 2018. Eight years, 4 months and EXA bytes swapped by CPUs later.
+													// But, its just a drop into the ocean: ALL images except BMP are channel order swapped when loading in BitmapUtils,
+													// the real architectural misfortune was choosing the ImageInfo data format to be BGR rather than RGB.
+													
 								  iformat = glformat = GL_RGB;
 		if (useIt->channels == 4) iformat = glformat = GL_RGBA;
 	}
 
 	if(gl_info.has_tex_compression && (inFlags & tex_Compress_Ok))
 	{
-		iformat = iformat == GL_RGBA ? GL_COMPRESSED_RGBA : GL_COMPRESSED_RGB;
+		switch (iformat) {
+		case GL_RGB:	iformat = GL_COMPRESSED_RGB;	break;
+		case GL_RGBA:	iformat = GL_COMPRESSED_RGBA;	break;
+		}
 	}
 
 	if (inFlags & tex_Mipmap)

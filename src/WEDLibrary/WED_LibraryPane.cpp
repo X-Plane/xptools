@@ -23,7 +23,6 @@
 
 #include "WED_LibraryPane.h"
 #include "GUI_ScrollerPane.h"
-#include "WED_UIMeasurements.h"
 #include "WED_Colors.h"
 #include "WED_LibraryFilterBar.h"
 #include "GUI_Resources.h"
@@ -31,7 +30,7 @@
 
 WED_LibraryPane::WED_LibraryPane(GUI_Commander * commander, WED_LibraryMgr * mgr) :
 	GUI_Commander(commander),
-	mTextTable(this,WED_UIMeasurement("table_indent_width"),0),
+	mTextTable(this,15,0),
 	mLibraryList(mgr)
 {
 	int bounds[4] = { 0, 0, 100, 100 };
@@ -69,31 +68,8 @@ WED_LibraryPane::WED_LibraryPane(GUI_Commander * commander, WED_LibraryMgr * mgr
 	mScroller->SetContent(mTable);
 	mTextTable.SetParentTable(mTable);
 
-	mTextTableHeader.SetProvider(&mLibraryList);
-	mTextTableHeader.SetGeometry(&mLibraryList);
-
-	mTextTableHeader.SetImage("header.png");
-	mTextTableHeader.SetColors(
-			WED_Color_RGBA(wed_Table_Gridlines),
-				WED_Color_RGBA(wed_Header_Text));
-
-	mHeader = new GUI_Header(true);
-
-	bounds[1] = 0;
-	bounds[3] = GUI_GetImageResourceHeight("header.png") / 2;
-	mHeader->SetBounds(bounds);
-	mHeader->SetGeometry(&mLibraryList);
-	mHeader->SetHeader(&mTextTableHeader);
-	mHeader->SetParent(this);
-	mHeader->Show();
-	mHeader->SetSticky(1,0,1,1);
-	mHeader->SetTable(mTable);
-
-
-					mTextTableHeader.AddListener(mHeader);		// Header listens to text table to know when to refresh on col resize
-					mTextTableHeader.AddListener(mTable);		// Table listense to text table header to announce scroll changes (and refresh) on col resize
-					mTextTable.AddListener(mTable);				// Table listens to text table to know when content changes in a resizing way
-					mLibraryList.AddListener(mTable);			// Table listens to actual property content to know when data itself changes
+	mTextTable.AddListener(mTable);				// Table listens to text table to know when content changes in a resizing way
+	mLibraryList.AddListener(mTable);			// Table listens to actual property content to know when data itself changes
 
 	mFilter = new WED_LibraryFilterBar(this, mgr);
 	mFilter->Show();
@@ -101,12 +77,8 @@ WED_LibraryPane::WED_LibraryPane(GUI_Commander * commander, WED_LibraryMgr * mgr
 	mFilter->AddListener(this);
 	mFilter->SetSticky(1,0,1,1);
 	this->PackPane(mFilter,gui_Pack_Top);
+	this->PackPane(mScroller, gui_Pack_Center);
 
-					this->PackPane(mHeader, gui_Pack_Top);
-					this->PackPane(mScroller, gui_Pack_Center);
-
-					mScroller->PositionHeaderPane(mHeader);
-					
 					#if DEV
 					//PrintDebugInfo();
 					#endif

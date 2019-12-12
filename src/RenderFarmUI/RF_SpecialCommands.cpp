@@ -398,7 +398,7 @@ void	HandleSpecialCommand(int cmd)
 			RF_ProgressFunc(0, 1, "Reloading config files...", 0.0);
 			LoadDEMTables();
 			LoadObjTables();
-			LoadNetFeatureTables();
+			LoadNetFeatureTables(gRegion);
 			RF_ProgressFunc(0, 1, "Reloading config files...", 1.0);
 			CheckObjTable();
 			break;

@@ -95,6 +95,9 @@ static int get_apt_export_version()
 	case wet_xplane_1100:
 		version = 1100;
 		break;
+	case wet_xplane_1130:
+		version = 1130;
+		break;
 	default:
 		DebugAssert(!"You forgot to add a case!");
 		break;
@@ -171,7 +174,6 @@ static void ExportLinearPath(WED_AirportChain * chain, AptPolygon_t& poly)
 	}
 }
 
-#if AIRPORT_ROUTING
 /**
  * Recursively walks the root tree to collect all elements of the specified type.
  * 
@@ -271,7 +273,6 @@ static void MakeEdgeRouting(vector<WED_TaxiRoute *>& edges, AptNetwork_t& net, v
 			net.edges.push_back(ne);
 	}
 }
-#endif
 
 void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 {
@@ -289,15 +290,13 @@ void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 	WED_Taxiway *			tax;
 	WED_TowerViewpoint *	twr;
 	WED_Windsock *			win;
-	
-#if AIRPORT_ROUTING
 	WED_ATCFlow *			flw;
 	WED_ATCRunwayUse *		use;
 	WED_ATCTimeRule *		tim;
 	WED_ATCWindRule *		wnd;
 	WED_TruckDestination *	dst;
 	WED_TruckParkingLocation*trk;
-#endif
+
 	int holes, h;
 	
 	WED_Entity * ent = dynamic_cast<WED_Entity *>(what);
@@ -314,7 +313,6 @@ void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 		apts.push_back(AptInfo_t());
 		apt->Export(apts.back());
 		
-#if AIRPORT_ROUTING
 		vector<WED_TaxiRoute *> edges;			// These are in
 		vector<IGISPoint *>		nodes;			// hierarchy order for stability!
 		set<IGISPoint *>		wanted_nodes;
@@ -335,8 +333,6 @@ void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 
 		MakeNodeRouting(nodes, apts.back().taxi_route);
 		MakeEdgeRouting(edges, apts.back().taxi_route, &nodes);
-		
-#endif
 	}
 	else if (bcn = dynamic_cast<WED_AirportBeacon *>(what))
 	{
@@ -423,7 +419,6 @@ void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 		apts.back().atc.push_back(AptATCFreq_t());
 		atc->Export(apts.back().atc.back());
 	}
-#if AIRPORT_ROUTING	
 	else if(flw = dynamic_cast<WED_ATCFlow *>(what))
 	{
 		apts.back().flows.push_back(AptFlow_t());
@@ -454,9 +449,6 @@ void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 		apts.back().truck_destinations.push_back(AptTruckDestination_t());
 		dst->Export(apts.back().truck_destinations.back());
 	}
-	
-	
-#endif	
 
 	int cc = what->CountChildren();
 	for (int i = 0; i < cc; ++i)
@@ -873,8 +865,6 @@ void	WED_AptImport(
 			new_atc->Import(*atc, LazyPrintf, &log);
 		}
 		
-#if AIRPORT_ROUTING
-
 		for(AptTruckParkingVector::iterator trk = apt->truck_parking.begin(); trk != apt->truck_parking.end(); ++trk)
 		{
 			WED_TruckParkingLocation * new_trk = WED_TruckParkingLocation::CreateTyped(archive);
@@ -1099,7 +1089,6 @@ void	WED_AptImport(
 				}
 			}
 		}
-#endif		
 
 		if (log.fi)
 		{
@@ -1146,10 +1135,10 @@ void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane
 		string parent_dir = FILE_get_dir_name(*f);
 		parent_dir = parent_dir + ".." + DIR_STR;
 		
-		if( FILE_exists((parent_dir + "COPYING").c_str()) && 
-				(FILE_exists((parent_dir + "README.txt").c_str()) || FILE_exists((parent_dir + "README").c_str())) )
-			if(!ConfirmMessage("Warning !\nIt is not recommended to import the apt.dat for scenery gateway airports.\n"
-			                   "Use File->Import the from scenery gateway instead.", "Proceed import of apt.dat", "Cancel"))
+		if( parent_dir.find("default apt dat") != string::npos || (FILE_exists((parent_dir + "COPYING").c_str()) && 
+				(FILE_exists((parent_dir + "README.txt").c_str()) || FILE_exists((parent_dir + "README").c_str()))) )
+			if(!ConfirmMessage("Warning !\nIt is strongly discouraged to import the apt.dat for scenery gateway airports. Numerous problems can be caused by this.\n\n"
+			                   "Use File->Import from Scenery Gateway whenever possible.", "Proceed import of apt.dat", "Cancel"))
 				return;
 		
 		string result = ReadAptFile(f->c_str(), one_apt);

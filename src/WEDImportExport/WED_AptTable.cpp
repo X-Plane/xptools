@@ -25,15 +25,19 @@
 #include "GUI_Messages.h"
 #include "STLUtils.h"
 
-static int kDefCols[] = { 100, 100 };
+static int kDefCols[] = { 95, 400, 130, 100 };
 
 WED_AptTable::WED_AptTable(
-						const AptVector *			apts) :
-	GUI_SimpleTableGeometry(2,kDefCols,20),	
-	mApts(apts),
-	mSortColumn(1),
+						const AptVector * apts,
+						const char * hdr3, 
+						const char * hdr4) : GUI_SimpleTableGeometry(2+ (hdr3 != nullptr) + (hdr4 != nullptr), kDefCols),
+	mApts(apts), 
+	mSortColumn(1), 
 	mInvertSort(1)
 {
+	mColumns = 2;
+	if(hdr3) { mColumns++; mHeaderTitle3 = hdr3; }
+	if(hdr4) { mColumns++; mHeaderTitle4 = hdr4; }
 }	
 
 
@@ -85,14 +89,20 @@ void	WED_AptTable::GetHeaderContent(
 		the_content.title = "Airport ID";
 		break;
 	case 1:
-		the_content.title = "Name";
+		the_content.title = "Airport Name";
+		break;
+	case 2:
+		the_content.title = mHeaderTitle3;
+		break;
+	case 3:
+		the_content.title = mHeaderTitle4;
 		break;
 	}		
 }
 
 int		WED_AptTable::GetColCount(void)
 {
-	return 2;
+	return mColumns;
 }
 
 int		WED_AptTable::GetRowCount(void)
@@ -119,14 +129,14 @@ void	WED_AptTable::GetCellContent(
 	the_content.is_selected = mSelected.count(apt_id);
 	the_content.indent_level = 0;
 
-
-	switch(cell_x) {
-	case 0:		
-		the_content.text_val = mApts->at(apt_id).icao;
-		break;
-	case 1:		
-		the_content.text_val = mApts->at(apt_id).name;
-		break;
+	switch(cell_x)
+	{
+		case 0:	the_content.text_val = mApts->at(apt_id).icao; break;
+		case 1: the_content.text_val = mApts->at(apt_id).name; break;
+		case 2: if(mApts->at(apt_id).meta_data.size())
+					the_content.text_val = mApts->at(apt_id).meta_data.front().first; break;
+		case 3: if(mApts->at(apt_id).meta_data.size())
+					the_content.text_val = mApts->at(apt_id).meta_data.front().second; break;
 	}
 	the_content.string_is_resource = 0;
 }
@@ -232,12 +242,26 @@ struct sort_by_apt {
 	sort_by_apt(const AptVector * apts, int sort_column, int invert_sort) : apts_(apts), sort_column_(sort_column), invert_sort_(invert_sort) { }
 
 	bool operator()(int x, int y) const {
-		string xs(sort_column_ ? apts_->at(x).name : apts_->at(x).icao);
-		string ys(sort_column_ ? apts_->at(y).name : apts_->at(y).icao);
+		string xs;
+		string ys;
+		switch (sort_column_)
+		{ 
+			case 0: xs = apts_->at(x).icao;  ys = apts_->at(y).icao; break;
+			case 1: xs = apts_->at(x).name;  ys = apts_->at(y).name; break;
+			case 2: if (apts_->at(x).meta_data.size()) xs = apts_->at(x).meta_data.front().first;  
+					if (apts_->at(y).meta_data.size()) ys = apts_->at(y).meta_data.front().first; break;
+			case 3: if (apts_->at(x).meta_data.size()) xs = apts_->at(x).meta_data.front().second;  
+					if (apts_->at(y).meta_data.size()) ys = apts_->at(y).meta_data.front().second; break;
+		}
 		toupper(xs);
 		toupper(ys);
+		
 		if(invert_sort_)
+		{
+			if(xs.empty()) xs = "\xFF";
+			if(ys.empty()) ys = "\xFF";
 			return ys < xs;
+		}
 		else
 			return xs < ys;
 	}

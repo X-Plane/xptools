@@ -86,6 +86,16 @@ bool	WED_Runway::Cull(const Bbox2& b) const
 	if(GetCornersShoulders(c))	
 	for(n=0;n<8;++n)
 		me+=c[n];
+	if(appl1.value || appl2.value)
+	{
+		Point2 p1, p2;
+		GetSource()->GetLocation(gis_Geo,p1);
+		GetTarget()->GetLocation(gis_Geo,p2);
+		Vector2 dir(p1, p2);
+		double rwy_len = LonLatDistMeters(p1, p2);
+		if(appl1.value) me += p1 - dir / rwy_len * 735;  // covers 2400' ALSF
+		if(appl2.value) me += p2 + dir / rwy_len * 735;
+	}
 	return b.overlap(me);	
 }
 
@@ -93,7 +103,7 @@ pair<int,int>	WED_Runway::GetRunwayEnumsOneway() const
 {
 	string name;
 	GetName(name);
-	
+
 	vector<string> parts;
 	tokenize_string(name.begin(),name.end(),back_inserter(parts), '/');
 	
@@ -503,26 +513,30 @@ void  WED_Runway::PropEditCallback(int before)
 	static int    old_enum;            // we want to catch changes of the name property, only
 	static pair<int,int> old_enum_1wy;
 	static set<int> old_all_rwys;
-	static WED_Airport * apt ;
+	static WED_Airport * apt;
 	
 	if (before)
 	{
 		StateChanged(wed_Change_Properties);
-		old_enum = GetRunwayEnumsTwoway();
-		old_enum_1wy = GetRunwayEnumsOneway();
-		apt = WED_GetParentAirport(this);
-		if (apt) WED_GetAllRunwaysTwoway(apt, old_all_rwys);
+		string(name); GetName(name);
+		if(name[0] == 'u')
+			old_enum = atc_rwy_None;
+		else
+		{
+			old_enum = GetRunwayEnumsTwoway();
+			old_enum_1wy = GetRunwayEnumsOneway();
+			apt = WED_GetParentAirport(this);
+			if (apt) WED_GetAllRunwaysTwoway(apt, old_all_rwys);
+		}
 	}
 	else
 	{
-		int new_enum = GetRunwayEnumsTwoway();
-		
 		if (old_enum == atc_rwy_None) return;
-		
+		int new_enum = GetRunwayEnumsTwoway();
 		if (new_enum == atc_rwy_None)
 		{
-			int	res = ConfirmMessage("New Runway Name is illegal, Smart Runway Rename can not be applied.", 
-						"Proceed with new name", "Keep old name");
+			int	res = ConfirmMessage("New runway name is illegal, Smart Runway Rename can not be applied. Really use new name ?", 
+						"Yes, use new name", "Keep old name");
 			if(res == 0)
 				SetName(string(ENUM_Desc(old_enum)));
 			return;
@@ -611,12 +625,12 @@ void  WED_Runway::PropEditCallback(int before)
 			{
 				bool renamed = false;
 				int r = (*f)->GetPatternRunway();
-				if(r = old_enum_1wy.first)
+				if(r == old_enum_1wy.first)
 				{
 					renamed=true;
 					(*f)->SetPatternRunway(new_enum_1wy.first);
 				}
-				else if(r = old_enum_1wy.second)
+				else if(r == old_enum_1wy.second)
 				{
 					renamed=true;
 					(*f)->SetPatternRunway(new_enum_1wy.second);
@@ -626,9 +640,9 @@ void  WED_Runway::PropEditCallback(int before)
 			for(vector<WED_ATCRunwayUse *>::iterator u = uses.begin(); u != uses.end(); ++u)
 			{
 				int r = (*u)->GetRunway();
-				if(r = old_enum_1wy.first)
+				if(r == old_enum_1wy.first)
 					(*u)->SetRunway(new_enum_1wy.first);
-				else if(r = old_enum_1wy.second)
+				else if(r == old_enum_1wy.second)
 					(*u)->SetRunway(new_enum_1wy.second);
 			}
 			// create list of strings to replace

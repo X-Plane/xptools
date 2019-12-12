@@ -274,37 +274,37 @@ void	WED_TCEMarqueeTool::ControlsMoveBy(intptr_t id, const Vector2& delta, Point
 		WED_ResourceMgr * mResMgr = WED_GetResourceMgr(GetResolver());
 		string mRes; ortho->GetResource(mRes);
 
-		pol_info_t pol;
+		const pol_info_t * pol;
 		mResMgr->GetPol(mRes,pol);
 		
 		io_pt +=delta;
 		
 		// find where we clicked
-		if (pol.mSubBoxes.size())
+		if (pol->mSubBoxes.size())
 		{
 			// go through list of subtexture boxes and find if we clicked inside one
 			static int lastBox = -1;                // the box we clicked on the last time. Helps to cycle trough overlapping boxes
 			int        firstBox = 999;              // the first box that fits this click location
 			int n;
-			for (n=0; n < pol.mSubBoxes.size(); ++n)
+			for (n=0; n < pol->mSubBoxes.size(); ++n)
 			{
-				if (pol.mSubBoxes[n].contains(io_pt))
+				if (pol->mSubBoxes[n].contains(io_pt))
 				{
 					if (n < firstBox) firstBox = n; // memorize the first of all boxes that fits the click
 					if (n > lastBox)                // is it a new-to-us box ?
 					{
-						new_b = pol.mSubBoxes[n];
+						new_b = pol->mSubBoxes[n];
 						lastBox = n;
 						break;
 					}
 				}
 			}
 
-			if (n >= pol.mSubBoxes.size())         // apparently there is no new-to-us box here
+			if (n >= pol->mSubBoxes.size())         // apparently there is no new-to-us box here
 			{
 				if (firstBox < 999)
 				{
-					new_b = pol.mSubBoxes[firstBox];    // so we go with the first best box we found
+					new_b = pol->mSubBoxes[firstBox];    // so we go with the first best box we found
 					lastBox = firstBox;
 				}
 				else
@@ -374,17 +374,10 @@ void	WED_TCEMarqueeTool::ControlsHandlesBy(intptr_t id, int c, const Vector2& de
 	switch(mEditMode) {
 	case tmm_Rotate:
 		{
-			Point2 new_p;
-
-			new_p = io_pt + d;
-
-			double a1 = VectorDegs2NorthHeading(mRotateCtr, mRotateCtr, Vector2(mRotateCtr, io_pt));
-			double b1 = VectorDegs2NorthHeading(mRotateCtr, mRotateCtr, Vector2(mRotateCtr, new_p));
 			ApplyRotate(mRotateCtr,WED_CalcDragAngle(mRotateCtr, io_pt, d));
 
-			io_pt = new_p;
+			io_pt += d;
 			mRotatePt = io_pt;
-
 		}
 		break;
 	case tmm_Center:
@@ -475,7 +468,6 @@ bool	WED_TCEMarqueeTool::GetTotalBounds(void) const
 	mCacheIconic = false;
 
 	vector<ISelectable *>	iu;
-	int ret = false;
 
 	sel->GetSelectionVector(iu);
 	if (iu.empty()) return false;

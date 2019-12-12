@@ -27,6 +27,8 @@
 #include "WED_GISPolygon.h"
 #include "IHasResource.h"
 
+struct fac_info_t;
+
 class	WED_FacadePlacement : public WED_GISPolygon, public IHasResource {
 
 DECLARE_PERSISTENT(WED_FacadePlacement)
@@ -39,10 +41,7 @@ public:
 		topo_Chain = 2
 	};
 
-
-#if AIRPORT_ROUTING
 	virtual	bool			HasLayer		(GISLayer_t layer							  ) const;
-#endif			
 
 			double		GetHeight(void) const;
 			void		SetHeight(double h);
@@ -52,11 +51,10 @@ public:
 
 			TopoMode	GetTopoMode(void) const;
 
-//			void		GetWallChoices(vector<int>& out_walls);
+			int		GetNumWallChoices(void) const;
+			int		GetType(void) const;
 			bool		HasCustomWalls(void) const;
-#if AIRPORT_ROUTING
 			void		SetCustomWalls(bool has);
-#endif			
 
 			void		SetShowLevel(int show_level);
 			int			GetShowLevel(void) const;
@@ -69,12 +67,12 @@ protected:
 
 private:
 
-	WED_PropDoubleText			height;
-	WED_PropStringText			resource;
-#if AIRPORT_ROUTING	
+	const fac_info_t * 		GetFacInfo(void) const;
+
+	WED_PropDoubleText		height;
+	WED_PropStringText		resource;
 	WED_PropBoolText			pick_walls;
-#endif	
-	WED_PropIntEnum				show_level;
+	WED_PropIntEnum			show_level;
 
 };
 

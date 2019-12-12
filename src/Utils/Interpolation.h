@@ -25,27 +25,27 @@
 
 /* Interpolation Utilities.  These are defined inline in the hope of speed. */
 
-double	clamp(double v, double min, double max);
+static double	clamp(double v, double min, double max);
 
-double	BilinearInterpolate1d(
+static double	BilinearInterpolate1d(
 					double		v0,
 					double		v1,
 					double		position);
 
-double	BilinearInterpolate2d(
+static double	BilinearInterpolate2d(
 					double		v0,	double	v1,
 					double		v2, double	v3,
 					double		hPosition,
 					double		vPosition);
 
-double	BicubicInterpolate1d(
+static double	BicubicInterpolate1d(
 					double		v0,
 					double		v1,
 					double		v2,
 					double		v3,
 					double		position);
 
-double	BicubicInterpolate2d(
+static double	BicubicInterpolate2d(
 					double		v0,		double	v1,		double	v2,		double	v3,
 					double		v4,		double	v5,		double	v6,		double	v7,
 					double		v8,		double	v9,		double	v10,	double	v11,

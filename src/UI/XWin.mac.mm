@@ -487,7 +487,7 @@
 	{
 		if(!mOwner->KeyPressed(uni_code, msg, param1, param2))
 		{
-			NSPoint event_location = [[self window] convertScreenToBase:[NSEvent mouseLocation]];
+			NSPoint event_location = [theEvent locationInWindow];
 		
 			int x = event_location.x;
 			int y = [self frame].size.height - event_location.y;
@@ -840,12 +840,13 @@ void			XWin::GetWindowLoc(int * outX, int * outY)
 void		XWin::GetMouseLoc(int * outX, int * outY)
 {
 	NSPoint mouseLoc = [NSEvent mouseLocation];
+	NSRect rectS = NSMakeRect(mouseLoc.x, mouseLoc.y, 1, 1);
+	NSRect rectW = [mWindow convertRectFromScreen:rectS];
+	mouseLoc = rectW.origin;
 	
 	NSRect me_now = [mWindow frame];
 	me_now = [mWindow contentRectForFrameRect:me_now];
-	
-	mouseLoc = [mWindow convertScreenToBase:mouseLoc];
-	
+
 	if (outX) *outX = *outX = mouseLoc.x;
 	if (outY) *outY = *outY = me_now.size.height - mouseLoc.y;
 }

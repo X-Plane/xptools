@@ -29,7 +29,7 @@ static int kDefCols[] = { 100, 100 };
 
 WED_ICAOTable::WED_ICAOTable(
 						const AptVector *			apts) :
-	GUI_SimpleTableGeometry(2,kDefCols,20),	
+	GUI_SimpleTableGeometry(2,kDefCols),	
 	mApts(apts),
 	mSortColumn(1),
 	mInvertSort(1)
@@ -218,11 +218,6 @@ int		WED_ICAOTable::DoubleClickCell(
 	return 0;
 }
 	
-inline void toupper(string& io_string)
-{
-	for(int i = 0; i < io_string.size(); ++i)
-		io_string[i] = toupper(io_string[i]);
-}
 
 struct sort_by_apt {
 	sort_by_apt(const AptVector * apts, int sort_column, int invert_sort) : apts_(apts), sort_column_(sort_column), invert_sort_(invert_sort) { }
@@ -230,8 +225,10 @@ struct sort_by_apt {
 	bool operator()(int x, int y) const {
 		string xs(sort_column_ ? apts_->at(x).name : apts_->at(x).icao);
 		string ys(sort_column_ ? apts_->at(y).name : apts_->at(y).icao);
-		toupper(xs);
-		toupper(ys);
+		
+		for(auto &c : xs) c = toupper(c);
+		for(auto &c : ys) c = toupper(c);
+		
 		if(invert_sort_)
 			return ys < xs;
 		else

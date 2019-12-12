@@ -24,8 +24,6 @@
 #ifndef WED_TaxiRoute_H
 #define WED_TaxiRoute_H
 
-#if AIRPORT_ROUTING
-
 #include "WED_GISEdge.h"
 
 struct AptRouteEdge_t;
@@ -97,5 +95,3 @@ private:
 };
 
 #endif /* WED_TaxiRoute_H */
-
-#endif /* AIRPORT_ROUTING*/

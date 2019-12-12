@@ -26,12 +26,30 @@
 
 #include "GUI_Defs.h"
 
+#define MIN_PIXELS_PREVIEW 5.0   // cutt off preview if object is (roughly) smaller than this many pixels.
+											// For airport lines/light, show structural preview if they are smaller than this instead
+
 class	WED_MapZoomerNew;
 class	GUI_GraphState;
 class	IGISEntity;
 class	WED_Thing;
 class	IResolver;
 class	GUI_Pane;
+
+
+struct FilterSpec 
+{
+	FilterSpec(const char * p) { e.push_back(p); }
+	FilterSpec(const char * p, const char * p2) { e.push_back(p); e.push_back(p2); }
+	FilterSpec(const char * p, const char * p2, const char * p3) { e.push_back(p); e.push_back(p2); e.push_back(p3); }
+	
+	bool operator==(const char * rhs) const { return e.size() == 1 && rhs == e.front(); }
+    bool operator==(const FilterSpec& rhs) const { return rhs.e.size() == e.size() && rhs.e == e; }
+        
+	vector<const char *> e;
+};
+
+typedef vector<FilterSpec> MapFilter_t;
 
 class	WED_MapLayer {
 public:
@@ -56,7 +74,7 @@ public:
 			bool		IsVisible(void) const;
 			void		SetVisible(bool visibility);
 	virtual	void		ToggleVisible(void);
-			void		SetFilter(const vector<const char *> * hide_filter_ptr, const vector<const char *> * lock_filter_ptr); // client MUST retain storage!!!
+			void		SetFilter(const MapFilter_t * hide_filter_ptr, const MapFilter_t * lock_filter_ptr); // client MUST retain storage!!!
 
 	// Extra iterations over the entity hiearchy get very expensive.  This routine returns whether a layer wants
 	// per-entity drawing passes for either structure or visualization.  We can also say whether we need "seleted" to be
@@ -108,8 +126,9 @@ private:
 
 	int						mAirportTransWidth;
 	
-	const vector<const char *> *	mHideFilter;
-	const vector<const char *> *	mLockFilter;
+	const MapFilter_t *		mHideFilter;
+	const MapFilter_t *		mLockFilter;
+
 };
 
 

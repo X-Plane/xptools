@@ -24,8 +24,6 @@
 #ifndef WED_ATCWindRule_H
 #define WED_ATCWindRule_H
 
-#if AIRPORT_ROUTING
-
 #include "WED_Thing.h"
 
 struct	AptWindRule_t;
@@ -51,7 +49,5 @@ private:
 	WED_PropDoubleText			speed_knots;
 
 };
-
-#endif
 
 #endif /* WED_ATCTimeRule_H */

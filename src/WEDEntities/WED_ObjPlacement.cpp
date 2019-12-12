@@ -23,19 +23,23 @@
 
 #include "WED_ObjPlacement.h"
 #include "WED_EnumSystem.h"
+#include "WED_ResourceMgr.h"
+#include "WED_ToolUtils.h"
+#include "XObjDefs.h"
+#include "MathUtils.h"
+#include "CompGeomDefs2.h"
+#include "XESConstants.h"
 
 DEFINE_PERSISTENT(WED_ObjPlacement)
 TRIVIAL_COPY(WED_ObjPlacement,WED_GISPoint_Heading)
 
 WED_ObjPlacement::WED_ObjPlacement(WED_Archive * a, int i) : 
 	WED_GISPoint_Heading(a,i),
-#if AIRPORT_ROUTING
 	has_msl(this,PROP_Name("Set MSL", XML_Name("obj_placement","custom_msl")),0),
 	msl    (this,PROP_Name("MSL",     XML_Name("obj_placement","msl")), 0, 5,3),
-#endif
 	resource  (this,PROP_Name("Resource",  XML_Name("obj_placement","resource")),""),
-	show_level(this,PROP_Name("Show with", XML_Name("obj_placement","show_level")),ShowLevel, show_Level1)
-
+	show_level(this,PROP_Name("Show with", XML_Name("obj_placement","show_level")),ShowLevel, show_Level1),
+	visibleWithinDeg(-1.0)
 {
 }
 
@@ -61,21 +65,133 @@ void		WED_ObjPlacement::GetResource(	  string& r) const
 void		WED_ObjPlacement::SetResource(const string& r)
 {
 	resource = r;
+	visibleWithinDeg = -1.0; // force re-evaluation when object is changed
+}
+
+void		WED_ObjPlacement::SetHeading(double h)
+{
+	WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetArchive()->GetResolver());
+	if(rmgr)
+	{
+		const XObj8 * o;
+//			int n = GetNumVariants(resource.value);   // no need to cycle through these - only the first variant is used for preview
+		if(rmgr->GetObj(resource.value,o))
+			if(o->fixed_heading >= 0.0)
+				h = o->fixed_heading;
+	}
+	WED_GISPoint_Heading::SetHeading(h);
+}
+
+void	WED_ObjPlacement::Rotate(GISLayer_t l,const Point2& center, double angle)
+{
+	WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetArchive()->GetResolver());
+	if(rmgr)
+	{
+		const XObj8 * o;
+		if(rmgr->GetObj(resource.value,o))
+			if(o->fixed_heading >= 0.0)
+			{
+				WED_GISPoint::Rotate(l,center,angle);
+				return;
+			}
+	}
+	WED_GISPoint_Heading::Rotate(l,center,angle);
+}
+
+double 	WED_ObjPlacement::GetVisibleDeg(void) const
+{
+	return visibleWithinDeg; // one note - 
 }
 
 bool		WED_ObjPlacement::Cull(const Bbox2& b) const
 {
+
+	// caching the objects dimension here for off-display culling in the map view. Its disregarding object rotation
+	// and any lattitude dependency in the conversion, so the value will be choosen sufficiently pessimistic.
+
+	if(visibleWithinDeg < 0.0)                            // so we only do this once for each object, ever
+	{
+		float * f = (float *) &visibleWithinDeg;          // tricking the compiler, breaking all rules. But Cull() must be const ...
+		*f = GLOBAL_WED_ART_ASSET_FUDGE_FACTOR;           // the old, brain-dead visibility rule of thumb
+		WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetArchive()->GetResolver());
+		if(rmgr)
+		{
+			const XObj8 * o;
+			agp_t agp;
+			Point2	my_loc;
+			GetLocation(gis_Geo,my_loc);
+			double mtr_to_lon = MTR_TO_DEG_LAT / cos(my_loc.y() * DEG_TO_RAD);
+
+//			int n = GetNumVariants(resource.value);   // no need to cycle through these - only the first variant is used for preview
+			if(rmgr->GetObj(resource.value,o))
+			{
+				const XObj8 * o;
+				agp_t agp;
+				Point2	my_loc;
+				GetLocation(gis_Geo,my_loc);
+				double mtr_to_lon = MTR_TO_DEG_LAT / cos(my_loc.y() * DEG_TO_RAD);
+
+	//			int n = GetNumVariants(resource.value);   // no need to cycle through these - only the first variant is used for preview
+				if(rmgr->GetObj(resource.value,o))
+				{
+					*f =  pythag(max(fabs(o->xyz_max[0]), fabs(o->xyz_min[0])),max(fabs(o->xyz_max[2]), fabs(o->xyz_min[2]))) * 1.2 * mtr_to_lon;
+				}
+				else if(rmgr->GetAGP(resource.value,agp))
+				{
+					float min_xy[2] = {  999,  999 };
+					float max_xy[2] = { -999, -999 };
+					for(int n = 0; n < agp.tile.size(); n += 4)
+					{
+						min_xy[0] = min(min_xy[0], agp.tile[n]);
+						max_xy[0] = max(max_xy[0], agp.tile[n]);
+						min_xy[1] = min(min_xy[1], agp.tile[n+1]);
+						max_xy[1] = max(max_xy[1], agp.tile[n+1]);
+					}
+					// we simplyfy a bit here, as we dont want to loop though where in the tile a given object is placed and how its rotated
+               // so we guesstimate the objet is placed near the center of all tiles, but could be rotated any way.
+               // Catches objects much larger than the tile, e.g. the long_row hangars in the airport library
+					float cent_x = (min_xy[0] + max_xy[0]) * 0.5;
+					float cent_y = (min_xy[1] + max_xy[1]) * 0.5;
+
+					for(auto obj : agp.objs)
+					{
+						const XObj8 * agp_o;
+						if (rmgr->GetObjRelative(obj.name, resource.value, agp_o))
+						{
+							float obj_rad = pythag(max(fabs(agp_o->xyz_max[0]),fabs(agp_o->xyz_min[0])), max(fabs(agp_o->xyz_max[2]), fabs(agp_o->xyz_min[2])));
+
+							min_xy[0] = min(cent_x - obj_rad, min_xy[0]);
+							max_xy[0] = max(cent_x + obj_rad, max_xy[0]);
+							min_xy[1] = min(cent_y - obj_rad, min_xy[1]);
+							max_xy[1] = max(cent_y + obj_rad, max_xy[1]);
+						}
+					}
+					*f =  pythag(max(fabs(max_xy[0]), fabs(min_xy[0])),max(fabs(max_xy[1]), fabs(min_xy[1]))) * 1.2 * mtr_to_lon;
+				}
+			}
+		}
+	}
+
+// This woould be a radical approach to culling - drop ALL visible items, like preview/structure/handles/highlight if its too small.
+// Thois will make items completely invisible, but keeps thm selectable. Very similar as the "too small to go in" apprach where whole
+// groups or airport drop out of view.
+// Results in only a verw cases in users surprises - as large group of isolated items (like forests drawn as individual tree objects).
+// This practive of drawing trees comoes a popular "bad paractive" for gateway airports now - which result in sceneries that do not scale 
+// very well with rendering settings.
+// This concept could be enhances by passing an additional parameter into the Cull() function to allow items to cull themselves differently
+// based on structure/preview or even tool views.
+//
+//	if(visibleWithinDeg < b.yspan() * 0.002) return false;      // cull objects by size as well. Makes structure/preview and handles all disappear
+
 	Point2	my_loc;
 	GetLocation(gis_Geo,my_loc);
 
-	// 20 km - if your OBJ is bigger than that, you are REALLY doing it wrong.
-	// In fact, if your OBJ is bigger than 5 km you're doing it wrong.
-	Bbox2	my_bounds(my_loc - Vector2(GLOBAL_WED_ART_ASSET_FUDGE_FACTOR,GLOBAL_WED_ART_ASSET_FUDGE_FACTOR), 
-					  my_loc + Vector2(GLOBAL_WED_ART_ASSET_FUDGE_FACTOR, GLOBAL_WED_ART_ASSET_FUDGE_FACTOR));	
+	Bbox2	my_bounds(my_loc - Vector2(visibleWithinDeg,visibleWithinDeg),
+					  my_loc + Vector2(visibleWithinDeg,visibleWithinDeg));
+
 	return b.overlap(my_bounds);
 }
 
-#if AIRPORT_ROUTING
 bool		WED_ObjPlacement::HasCustomMSL(void) const
 {
 	return has_msl.value;
@@ -96,5 +212,3 @@ void		WED_ObjPlacement::SetDefaultMSL(void)
 {
 	has_msl = 0;
 }
-
-#endif

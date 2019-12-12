@@ -24,8 +24,6 @@
 #include "WED_ATCWindRule.h"
 #include "AptDefs.h"
 
-#if AIRPORT_ROUTING
-
 DEFINE_PERSISTENT(WED_ATCWindRule)
 TRIVIAL_COPY(WED_ATCWindRule, WED_Thing)
 
@@ -78,4 +76,3 @@ void		WED_ATCWindRule::PropEditCallback(int before)
 			SetName(buf);
 	}
 }
-#endif

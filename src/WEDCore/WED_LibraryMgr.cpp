@@ -63,7 +63,7 @@ static bool is_no_true_subdir_path(string& s)
 				else if (s[p-2] != '\\' && s[p-2] != ':' && s[p-2] != '/')
 					subdir_levels++;
 			}
-			
+
 			if (subdir_levels < 0)
 				return true;
 		}
@@ -189,7 +189,7 @@ bool	WED_LibraryMgr::IsResourceDefault(const string& r)
 	clean_vpath(fixed);
 	res_map_t::const_iterator me = res_table.find(fixed);
 	if (me==res_table.end()) return false;
-	return me->second.is_default;	
+	return me->second.is_default;
 }
 
 bool	WED_LibraryMgr::IsResourceLocal(const string& r)
@@ -231,7 +231,7 @@ bool	WED_LibraryMgr::DoesPackHaveLibraryItems(int package)
 
 // if  (i->second.status > status_Public)
 //			printf("Pack %d '%s' status = %d\n",package,i->second.real_path.c_str(),i->second.status);
-//			if ( i->second.status >= status_Public)	
+//			if ( i->second.status >= status_Public)
 
 			return true;
 		}
@@ -278,11 +278,12 @@ void		WED_LibraryMgr::Rescan()
 
 	for(int p = 0; p < np; ++p)
 	{
+		if(gPackageMgr->IsDisabled(p)) continue;
 		//the physical directory of the scenery pack
 		string pack_base;
 		//Get the pack's physical location
 		gPackageMgr->GetNthPackagePath(p,pack_base);
-		
+
 		pack_base += DIR_STR "library.txt";
 
 		bool is_default_pack = gPackageMgr->IsPackageDefault(p);
@@ -298,31 +299,29 @@ void		WED_LibraryMgr::Rescan()
 
 			int cur_status = status_Public;
 			int lib_version[] = { 800, 0 };
-			
+
 			if(MFS_xplane_header(&s,lib_version,"LIBRARY",NULL))
 			while(!MFS_done(&s))
 			{
 				string vpath, rpath;
-
-				bool is_export_export  = MFS_string_match(&s,"EXPORT",false);
-				bool is_export_extend  = MFS_string_match(&s,"EXPORT_EXTEND",false);
-				bool is_export_exclude = MFS_string_match(&s,"EXPORT_EXCLUDE",false);
-				bool is_export_backup  = MFS_string_match(&s,"EXPORT_BACKUP",false);
-
-				if(is_export_export || is_export_extend ||
-				   is_export_exclude || is_export_backup )
+				bool is_export_backup = false;
+				
+				if( MFS_string_match(&s,"EXPORT",false) ||
+				    MFS_string_match(&s,"EXPORT_EXTEND",false) ||
+				    MFS_string_match(&s,"EXPORT_EXCLUDE",false) ||
+					(is_export_backup  = MFS_string_match(&s,"EXPORT_BACKUP",false)))
 				{
 					MFS_string(&s,&vpath);
 					MFS_string_eol(&s,&rpath);
 					clean_vpath(vpath);
 					clean_rpath(rpath);
-					
+
 					if (is_no_true_subdir_path(rpath)) break; // ignore paths that lead outside current scenery directory
 					rpath=pack_base+DIR_STR+rpath;
 					FILE_case_correct( (char *) rpath.c_str());  /* yeah - I know I'm overriding the 'const' protection of the c_str() here.
 					   But I know this operation is never going to change the strings length, so thats OK to do.
 					   And I have to case-correct the path right here, as this path later is not only used by the case insensitive MF_open()
-					   but also to derive the paths to the textures referenced in those assets. And those textures are loaded with case-sensitive fopen.	
+					   but also to derive the paths to the textures referenced in those assets. And those textures are loaded with case-sensitive fopen.
 					   */
 					AccumResource(vpath, p, rpath, is_export_backup, is_default_pack, cur_status);
 				}
@@ -341,9 +340,9 @@ void		WED_LibraryMgr::Rescan()
 				else
 				{
 					if(MFS_string_match(&s,"PUBLIC",true))
-					{	
+					{
 						cur_status = status_Public;
-						
+
 						int new_until = 0;
 						new_until = MFS_int(&s);
 						if (new_until > 20170101)
@@ -351,7 +350,7 @@ void		WED_LibraryMgr::Rescan()
 							time_t rawtime;
 							struct tm * timeinfo;
 							time (&rawtime);
-							timeinfo = localtime (&rawtime);							
+							timeinfo = localtime (&rawtime);
 							int now = 10000 * (timeinfo->tm_year+1900) +100*timeinfo->tm_mon + timeinfo->tm_mday;
 							if (new_until >= now)
 							{
@@ -359,13 +358,13 @@ void		WED_LibraryMgr::Rescan()
 							}
 						}
 					}
-					else if(MFS_string_match(&s,"PRIVATE",true))    
+					else if(MFS_string_match(&s,"PRIVATE",true))
 						cur_status = status_Private;
-					else if(MFS_string_match(&s,"DEPRECATED",true)) 
+					else if(MFS_string_match(&s,"DEPRECATED",true))
 						cur_status = status_Deprecated;
-					else if(MFS_string_match(&s,"SEMI_DEPRECATED",true)) 
+					else if(MFS_string_match(&s,"SEMI_DEPRECATED",true))
 						cur_status = status_Yellow;
-						
+
 					MFS_string_eol(&s,NULL);
 				}
 			}
@@ -394,14 +393,14 @@ void WED_LibraryMgr::RescanLines()
 {
 	vector<int> existing_line_enums;
 	DOMAIN_Members(LinearFeature, existing_line_enums);
-	
+
 	set<int> existing_line_types;
 	for(vector<int>::iterator e = existing_line_enums.begin(); e != existing_line_enums.end(); ++e)
 	{
 		existing_line_types.insert(ENUM_Export(*e));
 	}
 	default_lines.clear();
-	
+
 	res_map_t::iterator m = res_table.begin();
 	while(m != res_table.end() && m->first.find("lib/airport/lines/",0) == string::npos )
 		++m;
@@ -439,7 +438,7 @@ void WED_LibraryMgr::RescanLines()
 					}
 				}
 			}
-			
+
 			if(linetype > 0 && linetype < 100)
 			{
 				default_lines[linetype] = m->first;
@@ -465,7 +464,7 @@ void WED_LibraryMgr::RescanLines()
 							else if(G == M) H = (B-R) / C + 2.0;
 							else if(B == M) H = (R-G) / C + 4.0;
 							H = fltwrap(H * 60.0, 0.0, 360.0);
-							
+
 							if     (H > 330.0 ||
 									H < 20.0)  icon = linetype < 50 ? "line_SolidRed"   : "line_BSolidRed";
 							else if(H < 45.0)  icon = linetype < 50 ? "line_SolidOrange": "line_BSolidOrange";
@@ -475,23 +474,33 @@ void WED_LibraryMgr::RescanLines()
 						}
 					}
 #else
+					for(int i = 0; i < resnam.length(); ++i) resnam[i] = tolower(resnam[i]); // C11 would make this so much easier ...
+
 					if(resnam.find("_red") != string::npos)
 					{
 					    if(resnam.find("_dash") != string::npos)    icon = linetype < 50 ? "line_BrokenRed" : "line_BBrokenRed";
-					    else                                        icon = linetype < 50 ? "line_SolidRed"   : "line_BSolidRed";  
+					    else                                        icon = linetype < 50 ? "line_SolidRed"   : "line_BSolidRed";
 					}
 					else if(resnam.find("_orange") != string::npos) icon = linetype < 50 ? "line_SolidOrange": "line_BSolidOrange";
 					else if(resnam.find("_green") != string::npos)  icon = linetype < 50 ? "line_SolidGreen" : "line_BSolidGreen";
 					else if(resnam.find("_blue") != string::npos)   icon = linetype < 50 ? "line_SolidBlue"  : "line_BSolidBlue";
-					else if(resnam.find("_yellow") != string::npos || resnam.find("_taxi") != string::npos)
+					else if(resnam.find("_yellow") != string::npos || resnam.find("_taxi") != string::npos || resnam.find("_hold") != string::npos)
 					{
-					    if(resnam.find("_wide") != string::npos)    icon = linetype < 50 ? "line_SolidYellowW" : "line_BSolidYellowW";
-					    else                                        icon = linetype < 50 ? "line_SolidYellow"  : "line_BSolidYellow";
+						if(resnam.find("_hold") != string::npos)
+						{
+							if(resnam.find("_ils") != string::npos)         icon = linetype < 50 ? "line_ILSHold"   : "line_BILSHold";
+							else if(resnam.find("_double") != string::npos ||
+							        resnam.find("_runway") != string::npos) icon = linetype < 50 ? "line_RunwayHold": "line_BRunwayHold";
+							else if(resnam.find("_taxi") != string::npos)   icon = linetype < 50 ? "line_ILSCriticalCenter" : "line_BILSCriticalCenter";
+                            else                                            icon = linetype < 50 ? "line_OtherHold" : "line_BOtherHold";
+						}
+						else if(resnam.find("_wide") != string::npos) icon = linetype < 50 ? "line_SolidYellowW" : "line_BSolidYellowW";
+						else                                          icon = linetype < 50 ? "line_SolidYellow"  : "line_BSolidYellow";
 					}
 					else if(resnam.find("_white") != string::npos || resnam.find("_road") != string::npos)
 					{
 					    if(resnam.find("_dash") != string::npos)    icon = "line_BrokenWhite";
-					    else                                        icon = "line_SolidWhite";  
+					    else                                        icon = linetype < 50 ? "line_SolidWhite" : "line_BSolidWhite";
 					}
 #endif
 					ENUM_Create(LinearFeature, icon, nice_name, linetype);
@@ -501,7 +510,7 @@ void WED_LibraryMgr::RescanLines()
 		}
 		m++;
 	}
-	
+
 	m=res_table.begin();
 	while(m != res_table.end() && m->first.find("lib/airport/lights/slow/",0) == string::npos )
 		++m;
@@ -536,7 +545,7 @@ void WED_LibraryMgr::RescanLines()
 					}
 				}
 			}
-			
+
 			if(lighttype > 100 && lighttype < 200)
 			{
 				default_lines[lighttype] = m->first;
@@ -546,7 +555,7 @@ void WED_LibraryMgr::RescanLines()
 					// try to find the right icon, in case the particular number wasn't yet added to the ENUMS.h
 					if(resnam.find("_G_uni") != string::npos)       icon = "line_TaxiCenterUni";
 					else if(resnam.find("_YG_uni") != string::npos) icon = "line_HoldShortCenterUni";
-					
+
 					ENUM_Create(LinearFeature, icon, nice_name, lighttype);
 					existing_line_types.insert(lighttype);                      // keep track in case of erroneously supplied duplicate vpath's
 				}
@@ -561,12 +570,12 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 
     // surprise: This function is called 60,300 time upon loading any scenery. Yep, XP11 has that many items in the libraries.
     // Resultingly the full path was converted to lower case 0.6 million times => 24 million calls to tolower() ... time to optimize
-    
+
 	string suffix;
 	suffix = FILE_get_file_extension(path);
-	
+
 	int	rt;
-	
+
 	if     (suffix == "obj") rt = res_Object;
 	else if(suffix == "agp") rt = res_Object;
 	else if(suffix == "fac") rt = res_Facade;
@@ -583,7 +592,7 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 #endif
 	else return;
 
-	if (package >= 0 && status >= status_Public) gPackageMgr->HasPublicItems(package);
+	if (package >= 0 && status >= status_Public && !is_backup) gPackageMgr->AddPublicItems(package);
 
 	string p(path);
 	while(!p.empty())
@@ -595,7 +604,8 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 			new_info.status = status;
 			new_info.res_type = rt;
 			new_info.packages.insert(package);
-			new_info.real_paths.push_back(rpath);
+			if(rt > res_Directory)                      // speedup/memory saver: no need to store this for directories
+				new_info.real_paths.push_back(rpath);
 			new_info.is_backup = is_backup;
 			new_info.is_default = is_default;
 			res_table.insert(res_map_t::value_type(p,new_info));
@@ -603,19 +613,27 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 		else
 		{
 			DebugAssert(i->second.res_type == rt);
-			i->second.packages.insert(package);
-			i->second.status = max(i->second.status, status);	// upgrade status if we just found a public version!
 			if(i->second.is_backup && !is_backup)
 			{
 				i->second.is_backup = false;
 				i->second.real_paths.clear();
+				i->second.packages.clear();
 			}
+			else if(is_backup)
+				break;                                   // avoid adding backups as variants
+
+			i->second.packages.insert(package);
+			if(is_default && !i->second.is_default)
+			{
+				i->second.status = status;               // LR libs will always override/downgrade Custom Libs visibility
+				i->second.is_default = true;             // But they can still elevate any prior LR lib's visiblity, as some do
+			}
+			else
+				i->second.status = max(i->second.status, status);	// upgrade status if we just found a public version!
 			// add only unique paths, but need to preserve first path added as first element, so deliberately not using a set<string> !
+			if(rt > res_Directory)                      // speedup/memory saver: no need to store this for directories
 			if(std::find(i->second.real_paths.begin(), i->second.real_paths.end(), rpath) == i->second.real_paths.end())
 				i->second.real_paths.push_back(rpath);
-				
-			if(is_default && !i->second.is_default)
-				i->second.is_default = true;
 		}
 
 		string par, f;

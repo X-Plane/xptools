@@ -41,4 +41,10 @@ const float 	kStdLapseRate = -2.0 / 304.8;
 #define DEG_TO_MTR_LAT		111120.0
 #define MTR_TO_DEG_LAT		0.000008999280057595392
 
+enum rf_region {
+	rf_usa = 0,
+	rf_eu = 1
+};
+
+
 #endif

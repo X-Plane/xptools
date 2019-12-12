@@ -346,11 +346,11 @@ void	WED_CreatePolygonTool::AcceptPath(
 	if (mType == create_Polygon && is_texed) 	// orthophoto's need the UV map set up
 	{
 		WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetResolver());
-		pol_info_t info;
+		const pol_info_t * info;
 
 		if(rmgr->GetPol(mResource.value, info))
-			if (!info.mUVBox.is_null())
-				dpol->SetSubTexture(info.mUVBox);
+			if (!info->mUVBox.is_null())
+				dpol->SetSubTexture(info->mUVBox);
 			else
 				dpol->SetSubTexture(Bbox2(0,0,1,1));
 
@@ -407,12 +407,12 @@ void		WED_CreatePolygonTool::SetResource(const string& r)
 
 	// Preset polygon / orthophoto flag when selecting resource. Still allows user overriding it in vertex tool.
 	WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetResolver());
-	pol_info_t pol_i;
-	fac_info_t fac_i;
+	const pol_info_t * pol_i;
+	const fac_info_t * fac_i;
 	if(rmgr->GetPol(mResource.value, pol_i))
-		mUVMap.value = !pol_i.wrap;
+		mUVMap.value = !pol_i->wrap;
 	else if(rmgr->GetFac(mResource.value, fac_i))
-		mMinPts = !fac_i.ring && !fac_i.roof ? 2 : 3;                        // allow placement of some 2-node facades
+		mMinPts = !fac_i->is_ring && !fac_i->has_roof ? 2 : 3;                        // allow placement of some 2-node facades
 }
 
 void	WED_CreatePolygonTool::GetNthPropertyDict(int n, PropertyDict_t& dict) const

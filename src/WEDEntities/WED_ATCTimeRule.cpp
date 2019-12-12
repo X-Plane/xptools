@@ -24,9 +24,6 @@
 #include "WED_ATCTimeRule.h"
 #include "AptDefs.h"
 
-#if AIRPORT_ROUTING
-
-
 DEFINE_PERSISTENT(WED_ATCTimeRule)
 TRIVIAL_COPY(WED_ATCTimeRule,WED_Thing)
 
@@ -68,6 +65,3 @@ void		WED_ATCTimeRule::PropEditCallback(int before)
 			SetName(buf);
 	}
 }
-
-
-#endif

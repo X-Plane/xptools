@@ -54,6 +54,8 @@ public:
 	virtual	void		HandleClickUp			(int inX, int inY, int inButton, GUI_KeyFlags modifiers);
 	virtual	int			HandleToolKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags);
 	virtual	void		KillOperation(bool mouse_is_down);
+	virtual bool 		WantSticky() { return true; }             // requireing drag-Move to exceed a few pixelsbefore commencing
+
 
 	// GUI_Commander_Notifiable
 	virtual	void		PreCommandNotification(GUI_Commander * focus_target, int command);
@@ -97,6 +99,8 @@ private:
 								double				icon_dist_h,
 								double				icon_dist_v,
 								set<IGISEntity *>&	result);
+
+			void				GetSelTotalBounds(Bbox2 &bounds);
 
 	enum	DragType_t {
 		drag_None,			// We are not dragging anything

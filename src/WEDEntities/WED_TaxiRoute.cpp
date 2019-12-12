@@ -28,8 +28,6 @@
 #include "STLUtils.h"
 #include "WED_TaxiRouteNode.h"
 
-#if AIRPORT_ROUTING
-
 static void get_runway_parts(int rwy, set<int>& rwy_parts)
 {
 	if(rwy == atc_rwy_None)
@@ -49,8 +47,6 @@ static void get_runway_parts(int rwy, set<int>& rwy_parts)
 	if(rwy_lane_recip) rwy_lane_recip = 4 - rwy_lane_recip;
 	rwy_parts.insert(ENUM_Import(ATCRunwayOneway,rwy_dir*10+rwy_lane));
 	rwy_parts.insert(ENUM_Import(ATCRunwayOneway,rwy_dir*10+180+rwy_lane_recip));
-	
-
 }
 
 DEFINE_PERSISTENT(WED_TaxiRoute)
@@ -465,5 +461,3 @@ void  WED_TaxiRoute::PropEditCallback(int before)
 		SetName(string(ENUM_Desc(runway.value)));
 	}
 }
-#endif
-

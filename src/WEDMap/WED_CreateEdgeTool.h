@@ -29,8 +29,6 @@
 // kill the whole tool.  We can't make the tool sanely if there are ZERO real
 // entity types it can make.
 
-#if AIRPORT_ROUTING
-
 #include "WED_CreateToolBase.h"
 
 enum CreateEdge_t {
@@ -106,7 +104,5 @@ private:
 		CreateEdge_t	mType;
 
 };
-
-#endif
 
 #endif /* WED_CreateEdgeTool_H */

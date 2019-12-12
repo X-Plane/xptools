@@ -519,6 +519,10 @@ bool	sides_can_merge(Pmwx::Halfedge_handle e1, Pmwx::Halfedge_handle e2)
 
 bool	within_err_metric(const Point_2& p1, const Point_2& p2, const Point_2& p3, const CoordTranslator2& trans, double max_err_sq)
 {
+	// If this happens, (1) we have an antenna...
+	if(p1 == p3)
+		return false;
+	
 	Segment2	s(
 		trans.Forward(cgal2ben(p1)),
 		trans.Forward(cgal2ben(p3)));
@@ -576,7 +580,7 @@ bool	build_convex_polygon(
 
 	circ = start;
 	//int ne = count_circulator(start);
-	//printf("Poly has %d sides.\n", ne);
+//	printf("Poly has %d sides.\n", ne);
 	do {
 	 
 		Pmwx::Ccb_halfedge_circulator stop(circ);
@@ -585,7 +589,7 @@ bool	build_convex_polygon(
 		} while(sides_can_merge(circ,stop) && within_err_metric(circ,stop,trans,e_sq) && stop != start);
 	
 		--stop;
-		//printf("Pushing side of %d, %d\n", circulator_distance_to(start, circ),circulator_distance_to(start,stop));
+//		printf("Pushing side of %d, %d\n", circulator_distance_to(start, circ),circulator_distance_to(start,stop));
 		sides.push_back(pair<Pmwx::Halfedge_handle,Pmwx::Halfedge_handle>(circ, stop));
 		++stop;
 		circ = stop;

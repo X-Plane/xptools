@@ -21,6 +21,10 @@
  *
  */
 
+
+#include <stdio.h>
+#include <string.h>
+
 #include "obj_update.h"
 #include "TclStubs.h"
 #include <ac_plugin.h>

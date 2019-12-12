@@ -112,10 +112,10 @@ void		WED_TCE::Draw(GUI_GraphState * state)
 			glBegin(GL_QUADS);
 			float minv = mWrap ? -32 :  0;
 			float maxv = mWrap ?  32 :  1;
-			glTexCoord2f(minv,minv); glVertex2f(z->LonToXPixel(minv),z->LatToYPixel(minv));
-			glTexCoord2f(minv,maxv); glVertex2f(z->LonToXPixel(minv),z->LatToYPixel(maxv));
-			glTexCoord2f(maxv,maxv); glVertex2f(z->LonToXPixel(maxv),z->LatToYPixel(maxv));
-			glTexCoord2f(maxv,minv); glVertex2f(z->LonToXPixel(maxv),z->LatToYPixel(minv));
+			glTexCoord2f(minv,maxv); glVertex2f(z->LonToXPixel(minv),z->LatToYPixel(minv));
+			glTexCoord2f(minv,minv); glVertex2f(z->LonToXPixel(minv),z->LatToYPixel(maxv));
+			glTexCoord2f(maxv,minv); glVertex2f(z->LonToXPixel(maxv),z->LatToYPixel(maxv));
+			glTexCoord2f(maxv,maxv); glVertex2f(z->LonToXPixel(maxv),z->LatToYPixel(minv));
 			glEnd();
 			state->SetState(false,0,false,true,true,false,false);
 			glColor4f(1,1,1,0.5);
@@ -300,15 +300,15 @@ void WED_TCE::CalcBgknd(void)
 		if ((ortho = dynamic_cast<WED_DrapedOrthophoto*>(*e)) != NULL)
 		{
 			string vpath;
-			pol_info_t pol_info;
+			const pol_info_t * pol_info;
 			ortho->GetResource(vpath);
 			if(rmgr->GetPol(vpath,pol_info))
 			{
-				mTex = tman->LookupTexture(pol_info.base_tex.c_str(),true, pol_info.wrap ? (tex_Wrap|tex_Compress_Ok) : tex_Compress_Ok);
+				mTex = tman->LookupTexture(pol_info->base_tex.c_str(),true, pol_info->wrap ? (tex_Wrap|tex_Compress_Ok) : tex_Compress_Ok);
 				if(mTex)
 				{
-					mKillAlpha=pol_info.kill_alpha;
-					mWrap=pol_info.wrap;
+					mKillAlpha=pol_info->kill_alpha;
+					mWrap=pol_info->wrap;
 				}
 			}
 			Bbox2	this_ortho;

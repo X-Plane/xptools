@@ -32,8 +32,6 @@ DECLARE_PERSISTENT(WED_FacadeNode)
 
 public: 
 
-#if AIRPORT_ROUTING
-
 	virtual	bool	HasLayer		(GISLayer_t layer							  ) const;
 
 	virtual	void	GetLocation		   (GISLayer_t l,      Point2& p) const;
@@ -43,17 +41,14 @@ public:
 	virtual void	GetNthPropertyDict(int n, PropertyDict_t& dict) const;
 	virtual	void	GetNthPropertyDictItem(int n, int e, string& item) const;
 	virtual	void	PropEditCallback(int before);
-#endif
 			int		GetWallType(void) const;
-#if AIRPORT_ROUTING
-			void	SetWallType(int wt);
+			void		SetWallType(int wt);
 
 	virtual const char *	HumanReadableType(void) const { return "Facade Node"; }
 
 private:
 	
 	WED_PropIntEnum		wall_type;
-#endif
 
 };
 

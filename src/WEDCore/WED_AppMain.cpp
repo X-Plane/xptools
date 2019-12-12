@@ -28,15 +28,10 @@
 #endif
 
 #include "WED_AboutBox.h"
-// Stuff we need to init
-//#include "XESInit.h"
 #include "WED_Document.h"
 #include "WED_Assert.h"
-//#include "DEMTables.h"
 #include "WED_StartWindow.h"
-//#include "ObjTables.h"
 #include "GUI_Clipboard.h"
-#include "WED_Package.h"
 #include "GUI_Resources.h"
 #include "WED_Application.h"
 #include "WED_PackageMgr.h"
@@ -106,9 +101,7 @@
 
 #define _R(x)	extern void x##_Register();
 REGISTER_LIST
-#if AIRPORT_ROUTING
 REGISTER_LIST_ATC
-#endif
 #undef _R
 
 #include "WED_EnumSystem.h"
@@ -179,8 +172,8 @@ int main(int argc, char * argv[])
 	pMgr.SetXPlaneFolder(GUI_GetPrefString("packages","xsystem",""));
 
 	start->ShowMessage("Initializing WED File Cache");
-	WED_file_cache_init();
-//	start->ShowMessage("Loading DEM tables...");
+	gFileCache.init();
+  //	start->ShowMessage("Loading DEM tables...");
 //	LoadDEMTables();
 //	start->ShowMessage("Loading OBJ tables...");
 //	LoadObjTables();
@@ -192,9 +185,7 @@ int main(int argc, char * argv[])
 	start->ShowMessage("Registering classes...");
 	#define _R(x)	x##_Register();
 	REGISTER_LIST
-	#if AIRPORT_ROUTING
 	REGISTER_LIST_ATC
-	#endif
 	#undef _R
 
 	app.SetAbout(about);

@@ -49,6 +49,14 @@ attributes.
 
 */
 
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <list>
+#include <set>
+#include <math.h>
+
+
 #include "TclStubs.h"
 #include "ac_plugin.h"
 #include "Undoable.h"
@@ -69,10 +77,7 @@ attributes.
 #include "ObjConvert.h"
 #include "XObjBuilder.h"
 #include "prefs.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <list>
-#include <set>
+
 using std::list;
 using std::set;
 
@@ -101,6 +106,9 @@ static bool		gErrBadCockpit;
 static bool		gErrBadHard;
 static List *	gBadSurfaces;
 
+static ACObject *	gRotateForAutoManip = NULL;
+static ACObject *	gOuterTransForAutoManip = NULL;
+static ACObject *	gInnerTransForAutoManip = NULL;
 
 /* OBJ8 import and export */
 static void obj8_output_triangle(XObjBuilder * builder, Surface *s, bool is_smooth);
@@ -186,8 +194,8 @@ void obj8_output_polygon(XObjBuilder * builder, Surface *s)
 	if (!gHasTexNow && !builder->IsCockpit() && builder->IsVisible())
 		++gErrMissingTex;
 
-	bool	is_two_sided = surface_get_twosided(s);
-	bool	is_smooth = surface_get_shading(s);
+	bool	is_two_sided = surface_get_twosided(s) == 1;
+	bool	is_smooth = surface_get_shading(s) == 1;
 
 	if (OBJ_get_use_materials(object_of_surface(s)))
 	{
@@ -298,6 +306,10 @@ static void obj8_output_light(XObjBuilder * builder, ACObject *obj)
 	{
 		builder->AccumSmoke(obj_Smoke_Black, pos, OBJ_get_light_smoke_size(obj));
 	}
+	else if(strcmp(lname,"magnet")==0)
+	{
+		builder->AccumMagnet(pos, OBJ_get_magnet_type(obj, lref));
+	}
 	else
 	{
 		string p[9];
@@ -333,7 +345,7 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 		List 	*vertices, *surfaces, *kids;
 		List 	*p;
 
-//    printf("outputing %s\n", ac_object_get_name(obj));
+    printf("outputing %s tex_id %d\n", ac_object_get_name(obj), tex_id);
 
     ac_object_get_contents(obj, &numvert, &numsurf, &numkids,
         &vertices, &surfaces, &kids);
@@ -364,6 +376,11 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 
 	switch(OBJ_get_anim_type(obj)) {
 	case anim_rotate:
+	
+		gRotateForAutoManip = obj;
+		gInnerTransForAutoManip = NULL;
+		gOuterTransForAutoManip = NULL;
+	
 		builder->AccumTranslate(
 			center_for_rotation(obj, xyz2),
 			center_for_rotation(obj, xyz2),
@@ -381,6 +398,9 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 		break;
 	case anim_trans:
 		{
+			gOuterTransForAutoManip = gInnerTransForAutoManip;
+			gInnerTransForAutoManip = obj;
+		
 			builder->AccumTranslateBegin(OBJ_get_anim_dataref(obj, dref),OBJ_get_anim_loop(obj));
 			for(k = 0; k < OBJ_get_anim_keyframe_count(obj); ++k)
 				builder->AccumTranslateKey(OBJ_get_anim_nth_value(obj,k),
@@ -511,7 +531,26 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 			m.axis[0] = OBJ_get_manip_dx(obj);
 			m.axis[1] = OBJ_get_manip_dy(obj);
 			m.axis[2] = OBJ_get_manip_dz(obj);
+
+			m.centroid[0] = OBJ_get_manip_centroid_x(obj);
+			m.centroid[1] = OBJ_get_manip_centroid_y(obj);
+			m.centroid[2] = OBJ_get_manip_centroid_z(obj);
+			
+			m.lift = OBJ_get_manip_lift(obj);
+			m.angle_min = OBJ_get_manip_angle_min(obj);
+			m.angle_max = OBJ_get_manip_angle_max(obj);
+			
 			m.mouse_wheel_delta = OBJ_get_manip_wheel(obj);
+			
+			m.detents.clear();
+			for(int i = 0; i < OBJ_get_manip_detent_count(obj); ++i)
+			{
+				XObjDetentRange dt;
+				dt.lo = OBJ_get_manip_nth_detent_lo(obj, i);
+				dt.hi = OBJ_get_manip_nth_detent_hi(obj, i);
+				dt.height = OBJ_get_manip_nth_detent_hgt(obj, i);
+				m.detents.push_back(dt);
+			}
 
 			switch(OBJ_get_manip_type(obj)) {
 			case manip_panel:
@@ -530,6 +569,38 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 				builder->AccumManip(attr_Manip_None,m);
 				break;
 			case manip_axis:
+				builder->AccumManip(attr_Manip_Drag_Axis,m);
+				break;
+			case manip_axis_detent:
+				if(gOuterTransForAutoManip && gInnerTransForAutoManip)
+				{
+					if(m.dataref1.empty())
+						m.dataref1 = OBJ_get_anim_dataref(gOuterTransForAutoManip, buf);
+
+					int kfd = OBJ_get_anim_keyframe_count(gInnerTransForAutoManip);
+					m.v2_min = OBJ_get_anim_nth_value(gInnerTransForAutoManip, 0);
+					m.v2_max = OBJ_get_anim_nth_value(gInnerTransForAutoManip, kfd-1);
+					if(m.dataref2.empty())
+						m.dataref2 = OBJ_get_anim_dataref(gInnerTransForAutoManip, buf);
+					
+					float t0[3], t1[3];
+					anim_trans_nth(gInnerTransForAutoManip, 0	 , t0);
+					anim_trans_nth(gInnerTransForAutoManip, kfd-1, t1);
+					m.centroid[0] = t1[0] - t0[0];
+					m.centroid[1] = t1[1] - t0[1];
+					m.centroid[2] = t1[2] - t0[2];
+					
+					int kfc = OBJ_get_anim_keyframe_count(gOuterTransForAutoManip);
+					m.v1_min = OBJ_get_anim_nth_value(gOuterTransForAutoManip, 0);
+					m.v1_max = OBJ_get_anim_nth_value(gOuterTransForAutoManip, kfc-1);
+
+					anim_trans_nth(gOuterTransForAutoManip, 0	 , t0);
+					anim_trans_nth(gOuterTransForAutoManip, kfc-1, t1);
+					m.axis[0] = t1[0] - t0[0];
+					m.axis[1] = t1[1] - t0[1];
+					m.axis[2] = t1[2] - t0[2];
+				}
+	
 				builder->AccumManip(attr_Manip_Drag_Axis,m);
 				break;
 			case manip_axis_2d:
@@ -580,6 +651,62 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 			case manip_dref_switch_lr:
 				builder->AccumManip(attr_Manip_Axis_Switch_Left_Right,m);
 				break;
+				
+			case manip_rotate:
+
+				if(gRotateForAutoManip)
+				{
+					axis_for_rotation(gRotateForAutoManip,m.axis);
+					center_for_rotation(gRotateForAutoManip,m.centroid);
+
+					if(m.dataref1.empty())
+						m.dataref1 = OBJ_get_anim_dataref(gRotateForAutoManip, buf);
+					m.rotation_key_frames.clear();
+					
+					int kfc = OBJ_get_anim_keyframe_count(gRotateForAutoManip);
+					m.v1_min = OBJ_get_anim_nth_value(gRotateForAutoManip, 0);
+					m.v1_max = OBJ_get_anim_nth_value(gRotateForAutoManip, kfc-1);
+					m.angle_min = OBJ_get_anim_nth_angle(gRotateForAutoManip, 0);
+					m.angle_max = OBJ_get_anim_nth_angle(gRotateForAutoManip, kfc-1);
+					for(int k = 1; k < (kfc-1); ++k)
+					{
+						XObjKey kf;
+						kf.key = OBJ_get_anim_nth_value(gRotateForAutoManip, k);
+						kf.v[0] = OBJ_get_anim_nth_angle(gRotateForAutoManip, k);
+						m.rotation_key_frames.push_back(kf);
+					}
+					
+					if(gInnerTransForAutoManip)
+					{
+						int kfd = OBJ_get_anim_keyframe_count(gInnerTransForAutoManip);
+						m.v2_min = OBJ_get_anim_nth_value(gInnerTransForAutoManip, 0);
+						m.v2_max = OBJ_get_anim_nth_value(gInnerTransForAutoManip, kfd-1);
+						if(m.dataref2.empty())
+							m.dataref2 = OBJ_get_anim_dataref(gInnerTransForAutoManip, buf);
+						
+						float t0[3], t1[3];
+						anim_trans_nth(gInnerTransForAutoManip, 0	 , t0);
+						anim_trans_nth(gInnerTransForAutoManip, kfd-1, t1);
+						float x = t1[0] - t0[0];
+						float y = t1[1] - t0[1];
+						float z = t1[2] - t0[2];
+						m.lift = sqrtf(x*x+y*y+z*z);
+					}
+				}
+
+				builder->AccumManip(attr_Manip_Drag_Rotate,m);
+				break;
+
+			case manip_command_knob2:
+				builder->AccumManip(attr_Manip_Command_Knob2,m);
+				break;
+			case manip_command_switch_ud2:
+				builder->AccumManip(attr_Manip_Command_Switch_Up_Down2,m);
+				break;
+			case manip_command_switch_lr2:
+				builder->AccumManip(attr_Manip_Command_Switch_Left_Right2,m);
+				break;
+				
 			}
 
 			int do_surf = has_real_tex ? (tex_id == -1 || tex_id == ac_object_get_texture_index(obj)) : do_misc;
@@ -632,6 +759,8 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 	if (OBJ_get_animation_group(obj))
 	{
 		builder->AccumAnimEnd();
+		gOuterTransForAutoManip = gInnerTransForAutoManip = gRotateForAutoManip = NULL;
+		
 	}
 }
 
@@ -639,6 +768,8 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 
 int do_obj8_save_common(char * fname, ACObject * obj, convert_choice convert, int do_prefix, int tex_id, int do_misc)
 {
+//printf("do_obj8_save_common object %s  tex_id %d\n", ac_object_get_name(obj), tex_id);
+
 	printf("Saving file: %s.  We have %d panel regions enabled.\n",fname,get_sub_panel_count());
 	XObj8	obj8;
 
@@ -650,6 +781,7 @@ int do_obj8_save_common(char * fname, ACObject * obj, convert_choice convert, in
 	obj8.geo_lines.clear(6);
 	obj8.geo_lights.clear(6);
 	obj8.texture_lit.clear();
+	obj8.texture_normal_map.clear();
 
 	gTexName.clear();
 	gErrMissingTex = 0;
@@ -661,8 +793,12 @@ int do_obj8_save_common(char * fname, ACObject * obj, convert_choice convert, in
 	gBadSurfaces = NULL;
 	gErrBadCockpit = false;
 	gErrBadHard = false;
+	gRotateForAutoManip = NULL;
+	gOuterTransForAutoManip = NULL;
+	gInnerTransForAutoManip = NULL;
 
 	XObjBuilder		builder(&obj8);
+//printf("do_obj8_save_common builder %p\n", &builder);
 
 	if (get_default_layer_group() && get_default_layer_group()[0] && strcmp(get_default_layer_group(),"none"))
 		builder.SetAttribute1Named(attr_Layer_Group, get_default_layer_offset(), get_default_layer_group());
@@ -698,12 +834,25 @@ int do_obj8_save_common(char * fname, ACObject * obj, convert_choice convert, in
 			obj8.texture_lit = tex_lit;
 		}
 	}
+
 	if (tex_dir_idx != gTexName.npos)
-	gTexName.erase(0,tex_dir_idx+1);
+		gTexName.erase(0,tex_dir_idx+1);
+
     obj8.texture = gTexName;
+
+	// if an option is set to export a TEXTURE_NORMAL line, take the texture name and use it for the normal map name
+	if (get_export_texture_normal_map())
+		{
+		string tex_nm(gTexName);
+		if (tex_nm.size() > 4)
+			tex_nm.insert(tex_nm.length()-4,"_normal");
+		obj8.texture_normal_map = tex_nm;
+		}
+
 
 	if (!obj8.texture.empty())		obj8.texture.insert(0,get_texture_prefix());
 	if (!obj8.texture_lit.empty())	obj8.texture_lit.insert(0,get_texture_prefix());
+	if (!obj8.texture_normal_map.empty())	obj8.texture_normal_map.insert(0,get_texture_prefix());
 
 	if (do_prefix)
 		export_path.insert(export_filename_idx+1,string(get_export_prefix()));

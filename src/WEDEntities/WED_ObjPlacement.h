@@ -38,28 +38,28 @@ public:
 	virtual	bool		Cull(const Bbox2& b) const;
 	virtual void		GetResource(	  string& r) const;
 	virtual void		SetResource(const string& r);
+	virtual void		SetHeading(double h);
+	virtual	void		Rotate(GISLayer_t l,const Point2& center, double angle);
 
-#if AIRPORT_ROUTING
 			bool		HasCustomMSL(void) const;
 			double		GetCustomMSL(void) const;
 			
 			void		SetCustomMSL(double msl);
 			void		SetDefaultMSL(void);
-#endif			
 			void		SetShowLevel(int show_level);
 			int			GetShowLevel(void) const;
+			double 	GetVisibleDeg(void) const;
 
 	virtual const char *	HumanReadableType(void) const { return "Object"; }
 
 private:
 
-#if AIRPORT_ROUTING
 	WED_PropBoolText			has_msl;
 	WED_PropDoubleTextMeters	msl;	
-#endif
 	WED_PropStringText			resource;
 	WED_PropIntEnum				show_level;
 
+	float						visibleWithinDeg;     // for culling in the map_view
 };
 
 

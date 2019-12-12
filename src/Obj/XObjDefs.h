@@ -151,8 +151,19 @@ enum {
 	attr_Manip_Axis_Switch_Up_Down,
 	attr_Manip_Axis_Switch_Left_Right,
 	
+	// 1100 commands
+	attr_Cockpit_Device,
+	attr_Cockpit_Lit_Only,
+	attr_Manip_Drag_Rotate,
+	attr_Manip_Command_Knob2,
+	attr_Manip_Command_Switch_Up_Down2,
+	attr_Manip_Command_Switch_Left_Right2,
+	
 	// Future particle system...
 	attr_Emitter,
+
+	// v11
+	attr_Magnet,
 	
 	attr_Max
 };
@@ -211,11 +222,22 @@ int	FindIndexForCmd(int inCmd);
  */
 
 struct XObjKey {
+	XObjKey() { key = 0.0f; v[0] = v[1] = v[2] = 0.0f; }
 	float					key;
 	float					v[3];		// angle for rotation, XYZ for translation
+	
+	bool eq_key(const XObjKey& rhs) const { return key == rhs.key;											 }
+	bool eq_val(const XObjKey& rhs) const { return v[0] == rhs.v[0] && v[1] == rhs.v[1] && v[2] == rhs.v[2]; }
+	bool eq	   (const XObjKey& rhs) const { return eq_key(rhs) && eq_val(rhs);								 }
+};
+
+struct XObjDetentRange {
+	float					lo, hi;
+	float					height;
 };
 
 struct	XObjAnim8 {
+	int						cmd;
 	string					dataref;
 	float					axis[3];	// Used for rotations
 	float					loop;		// If not 0, modulo factor
@@ -223,14 +245,26 @@ struct	XObjAnim8 {
 };
 
 struct XObjManip8 {
+	XObjManip8() : v1_min(0.0f),v1_max(0.0f),v2_min(0.0f),v2_max(0.0f),mouse_wheel_delta(0.0f)
+	{
+		axis[0] = axis[1] = axis[2] = 0.0f;
+	}
 	string					dataref1;				// Commands for, cmd manips!
 	string					dataref2;
+	float					centroid[3];
 	float					axis[3];
+	float					angle_min;
+	float					angle_max;
+	float					lift;
 	float					v1_min, v1_max;
 	float					v2_min, v2_max;
 	string					cursor;
 	string					tooltip;
 	float					mouse_wheel_delta;
+	
+	vector<XObjKey>			rotation_key_frames;
+	vector<XObjDetentRange>	detents;
+	
 };
 
 struct XObjEmitter8 {
@@ -264,8 +298,13 @@ struct XObjPanelRegion8 {
 
 struct	XObj8 {
 	string 					texture;
+	string 					texture_normal_map;
 	string 					texture_lit;
+// AC unused	string					texture_nrm;
 	string 					texture_draped;
+	int						use_metalness;
+	int						glass_blending;
+	
 	string					particle_system;
 	vector<XObjPanelRegion8>regions;
 	vector<int>				indices;
@@ -279,6 +318,7 @@ struct	XObj8 {
 
 	float					xyz_min[3];
 	float					xyz_max[3];
+	float					fixed_heading;
 };
 
 #endif

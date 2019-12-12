@@ -37,7 +37,6 @@
 #include <sstream>
 
 #include "WED_GroupCommands.h"
-#if AIRPORT_ROUTING
 
 static const char * kCreateCmds[] = { "Taxiway Route Line", "Road" };
 static const int kIsAirport[] = { 1, 0 };
@@ -239,14 +238,17 @@ void		WED_CreateEdgeTool::AcceptPath(
 		switch(mType) {
 		case create_TaxiRoute:
 			new_edge = tr = WED_TaxiRoute::CreateTyped(GetArchive());
-			tr->SetOneway(mOneway.value);			
-			tr->SetRunway(mRunway.value);
-			tr->SetVehicleClass(mVehicleClass.value);
-			tr->SetHotDepart(mHotDepart.value);
-			tr->SetHotArrive(mHotArrive.value);
-			tr->SetHotILS(mHotILS.value);
 			tr->SetName(mName);
 			tr->SetWidth(mWidth.value);
+			tr->SetOneway(mOneway.value);
+			tr->SetVehicleClass(mVehicleClass.value);
+			if(mVehicleClass.value == atc_Vehicle_Aircraft)
+			{
+				tr->SetRunway(mRunway.value);
+				tr->SetHotDepart(mHotDepart.value);
+				tr->SetHotArrive(mHotArrive.value);
+				tr->SetHotILS(mHotILS.value);
+			}
 			break;
 #if ROAD_EDITING
 		case create_Road:
@@ -675,6 +677,4 @@ bool		WED_CreateEdgeTool::get_valid_road_info(road_info_t * optional_info) const
 	}
 	return false;
 }
-#endif
-
 #endif

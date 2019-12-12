@@ -49,10 +49,9 @@
 #include "IBase.h"
 #include "XObjDefs.h"
 #include "CompGeomDefs2.h"
+#include <list>
 
 class	WED_LibraryMgr;
-
-struct	XObj8;
 
 struct	pol_info_t {
 	string		base_tex; //Relative path
@@ -65,27 +64,43 @@ struct	pol_info_t {
 	int			group_offset;
 	float		latitude;
 	float		longitude;
-	double		height_Meters;
+	float		height_Meters;
 	int			ddsHeight_Pxls;
 	vector <Bbox2>	mSubBoxes;       // for subTexture selection in PreviewPanel
 	Bbox2		mUVBox;              // set by PreviewPanel from selected subTexture
 };
 
-struct	fac_info_t {
-	bool		ring;               // can be drawn as open polygon
-	bool		roof;               // shown with solid fill in map window
-	int			version;
-	float		floors_min;         // min accepted floors or -1 if facade is fixed height only
-	float		floors_max;         // max accepted floors or aproximate height in meter if single height only
-	float		basem;
+#include "WED_FacadePreview.h"
+
+struct fac_info_t : public REN_FacadeLOD_t {
+
+	fac_info_t() { is_new = false ; is_ring = true; doubled = two_sided = false;  min_floors = 1; max_floors  = 999; has_roof = false; 
+						noroofmesh = nowallmesh = false; }
+
+	bool			is_new;       // set if version 1000, aka type 2
+	string		wall_tex;
+	string		roof_tex;
+	bool			is_ring; 	  // can be drawn as open polygon
+	bool			two_sided;
 	
-	float		roof_height, roof_slope;
-	float		scale_x, scale_y;
-
-	vector<string>	walls;
-	vector<string>	w_use;
-
-	vector<XObj8 *> previews;
+	// Facade Scrapers
+	vector<REN_facade_scraper_t>	scrapers;
+	
+	// V1 only
+	// vector<FacadeLOD_t>		lods;  // WED does not recognize anything but the LOD that starts at 0
+	
+	// V2 only
+	bool					noroofmesh;
+	bool					nowallmesh;
+	list<REN_facade_floor_t>	floors;
+	vector<string>		objs;			// names of type 2 objects
+	float					roof_scale_s;
+	float					roof_scale_t;
+	
+	// WED only
+	vector<string>	wallName;      // wall names, for property window etc
+	vector<string>	wallUse;       // official width range supported by this wall
+	string         h_range;       // official heights (or height range) of the facade
 };
 
 struct	lin_info_t {
@@ -100,27 +115,25 @@ struct	lin_info_t {
 struct	str_info_t {
 	float		offset;
 	float		rotation;
-	vector<XObj8 *> previews;
+	vector<string> objs;
 };
 
 struct	road_info_t {
 	map<int, string>	vroad_types;
 };
 
-#if AIRPORT_ROUTING
 struct agp_t {
 	struct obj {
-		double  x,y,r;			// annotation position
+		float		x,y,r;			// annotation position
 		int		show_lo,show_hi;
 		string	name;
 	};
 	string			base_tex;
 	string			mesh_tex;
 	int				hide_tiles;
-	vector<double>	tile;	// the base tile in x,y,s,t quads.
+	vector<float>	tile;	// the base tile in x,y,s,t quads.
 	vector<obj>		objs;
 };
-#endif
 
 
 class WED_ResourceMgr : public GUI_Broadcaster, public GUI_Listener, public virtual IBase {
@@ -131,23 +144,20 @@ public:
 
 			void	Purge(void);
 
-			bool	GetFac(const string& path, fac_info_t& out_info, int variant =0);
-			bool	GetPol(const string& path, pol_info_t& out_info);
+			bool	GetFac(const string& path, fac_info_t const *& info, int variant =0);
+			bool	GetPol(const string& path, pol_info_t const *& info);
 			bool 	SetPolUV(const string& path, Bbox2 box);
-			bool	GetLin(const string& path, lin_info_t& out_info);
-			bool	GetStr(const string& path, str_info_t& out_info);
-			bool	GetFor(const string& path, XObj8 *& obj);
+			bool	GetLin(const string& path, lin_info_t const *& info);
+			bool	GetStr(const string& path, str_info_t const *& info);
+			bool	GetFor(const string& path, XObj8 const *& obj);
 			int		GetNumVariants(const string& path);
 
 			//path is a RELATIVE PATH
-			void	MakePol(const string& path, const pol_info_t& out_info); // side note: shouldn't this be in_info?
-			bool	GetObj(const string& path, XObj8 *& obj, int variant = 0);
-			bool	GetObjRelative(const string& obj_path, const string& parent_path, XObj8 *& obj);
-#if AIRPORT_ROUTING
+			void	WritePol(const string& abspath, const pol_info_t& out_info); // side note: shouldn't this be in_info?
+			bool	GetObj(const string& path, XObj8 const *& obj, int variant = 0);
+			bool	GetObjRelative(const string& obj_path, const string& parent_path, XObj8 const *& obj);
 			bool	GetAGP(const string& path, agp_t& out_info);
 			bool	GetRoad(const string& path, road_info_t& out_info);
-#endif			
-
 
 	virtual	void	ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
@@ -155,19 +165,20 @@ public:
 							intptr_t				inParam);
 
 private:
-	
-	map<string,vector<fac_info_t> > mFac;
-	map<string,pol_info_t>		mPol;
-	map<string,lin_info_t>		mLin;
-	map<string,str_info_t>		mStr;
-	map<string,XObj8 *>			mFor;
-	map<string,vector<XObj8 *> > mObj;
 
-#if AIRPORT_ROUTING	
-	map<string,agp_t>			mAGP;
-	map<string,road_info_t>		mRoad;
+			XObj8 * LoadObj(const string& abspath);
+	
+	unordered_map<string,vector<fac_info_t *> > mFac;
+	unordered_map<string,pol_info_t>		mPol;
+	unordered_map<string,lin_info_t>		mLin;
+	unordered_map<string,str_info_t>		mStr;
+	unordered_map<string,const XObj8 *>	mFor;
+	unordered_map<string,vector<const XObj8 *> > mObj;
+	unordered_map<string,agp_t>				mAGP;
+#if ROAD_EDITING
+	unordered_map<string,road_info_t>		mRoad;
 #endif	
-	WED_LibraryMgr *			mLibrary;
+	WED_LibraryMgr *				mLibrary;
 };	
 
 #endif /* WED_ResourceMgr_H */

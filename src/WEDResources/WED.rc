@@ -20,9 +20,9 @@ about.png				GUI_RES		about.png
 gateway.crt				GUI_RES		gateway.crt
 COPYING					GUI_RES		COPYING
 colors.png				GUI_RES		colors.png
-ui_measurements.txt		GUI_RES		ui_measurements.txt
 map_tools.png			GUI_RES		map_tools.png
 taxi_sign.png			GUI_RES		taxi_sign.png
+tce_tools.png			GUI_RES		tce_tools.png
 
 /* Start window */
 startup_bar.png			GUI_RES		startup_bar.png
@@ -35,7 +35,7 @@ handle_cross.png		GUI_RES		handles\handle_cross.png
 handle_square.png		GUI_RES		handles\handle_square.png
 handle_vertexround.png	GUI_RES		handles\handle_vertexround.png
 handle_arrowhead.png	GUI_RES		handles\handle_arrowhead.png
-handle_arrowhead_lg.png	GUI_RES		handles\handle_arrowhead_lg.png
+/* handle_arrowhead_lg.png	GUI_RES		handles\handle_arrowhead_lg.png */
 handle_rotatehead.png	GUI_RES		handles\handle_rotatehead.png
 handle_closeloop.png	GUI_RES		handles\handle_closeloop.png
 handle_control.png		GUI_RES		handles\handle_control.png
@@ -54,6 +54,12 @@ map_towerview.png		GUI_RES		icons\map_towerview.png
 map_servicedest.png		GUI_RES		icons\map_servicedest.png
 map_missing_obj.png		GUI_RES		icons\map_missing_obj.png
 map_tree.png			GUI_RES		icons\map_tree.png
+nav_ndb.png				GUI_RES		icons\nav_ndb.png
+nav_vor.png				GUI_RES		icons\nav_vor.png
+nav_mark.png			GUI_RES		icons\nav_mark.png
+nav_gs.png				GUI_RES		icons\nav_gs.png
+navmap_airport.png		GUI_RES		icons\navmap_airport.png
+navmap_seaport.png		GUI_RES		icons\navmap_seaport.png
 
 /* table artwork */
 eye.png					GUI_RES		tables\eye.png
@@ -125,6 +131,7 @@ line_ILSCriticalCenterW.png		GUI_RES		line_types/line_ILSCriticalCenterW.png
 line_BILSCriticalCenterW.png		GUI_RES		line_types/line_BILSCriticalCenterW.png
 line_TaxiCenterUni.png			GUI_RES		line_types/line_TaxiCenterUni.png
 line_HoldShortCenterUni.png		GUI_RES		line_types/line_HoldShortCenterUni.png
+line_BSolidWhite.png			GUI_RES		line_types/line_BSolidWhite.png
 
 /* parking spots*/
 ClassA.png						GUI_RES		parking_spots/ClassA.png
@@ -133,8 +140,6 @@ ClassC.png						GUI_RES		parking_spots/ClassC.png
 ClassD.png						GUI_RES		parking_spots/ClassD.png
 ClassE.png						GUI_RES		parking_spots/ClassE.png
 ClassF.png						GUI_RES		parking_spots/ClassF.png
-
-/*WEDManual.pdf					GUI_RES	WEDManual.pdf */
 
 /* Versioning info */
 #include "..\WEDCore\WED_Version.h"

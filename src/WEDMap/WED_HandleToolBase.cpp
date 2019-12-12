@@ -178,10 +178,6 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 	Point2	click_pt(inX, inY);	//GetZoomer()->XPixelToLon(inX),GetZoomer()->YPixelToLat(inY));
 
 	int ei_count = mHandles ? mHandles->CountEntities() : 0;
-	int  c_count;
-	int  l_count;
-	intptr_t eid;
-	int ei, n;
 
 	DebugAssert(mDragType == drag_None);
 	mDragType = drag_None;
@@ -191,46 +187,48 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 	mHandleEntity = -1;
 	mHandleIndex = -1;
 	double best_dist = 9.9e9;
-	double this_dist;
 
-	for (ei = 0; ei < ei_count; ++ei)
+	GUI_KeyFlags mods = GetHost()->GetModifiersNow();
+
+	for (int ei = 0; ei < ei_count; ++ei)
 	{
-		eid = mHandles->GetNthEntityID(ei);
-		c_count = mHandles->CountControlHandles(eid);
-		for (n = 0; n < c_count; ++n)
-		{
-			bool active;
-			Point2	cloc;
-			Point2	cloc_pixels;
-			HandleType_t ht;
-			float radius = HANDLE_RAD;
-			mHandles->GetNthControlHandle(eid, n, &active, &ht, &cloc, NULL, &radius);
-			if (!active) continue;
-
-			radius *= radius;
-			cloc_pixels = GetZoomer()->LLToPixel(cloc);
-			if ((this_dist=click_pt.squared_distance(cloc_pixels)) < best_dist)
-			if (this_dist < radius)
+		intptr_t eid = mHandles->GetNthEntityID(ei);
+		int c_count = mHandles->CountControlHandles(eid);
+		if(c_count > 1 || !(mods & gui_ControlFlag))     // ignore ctrl_click's on point-type items, to use those as toggle clicks later
+			for (int n = 0; n < c_count; ++n)
 			{
-				mHandleEntity = eid;
-				mHandleIndex = n;
-				best_dist = this_dist;
-				if (mDragType == drag_None)
-					mHandles->BeginEdit();
-				mDragType = drag_Handles;
-				mTrackPoint = cloc;
+				bool active;
+				Point2	cloc;
+				Point2	cloc_pixels;
+				HandleType_t ht;
+				float radius = HANDLE_RAD;
+				mHandles->GetNthControlHandle(eid, n, &active, &ht, &cloc, NULL, &radius);
+				if (!active) continue;
+
+				radius *= radius;
+				cloc_pixels = GetZoomer()->LLToPixel(cloc);
+				double this_dist = click_pt.squared_distance(cloc_pixels);
+				if (this_dist < best_dist && this_dist < radius)
+				{
+					mHandleEntity = eid;
+					mHandleIndex = n;
+					best_dist = this_dist;
+					if (mDragType == drag_None)
+						mHandles->BeginEdit();
+					mDragType = drag_Handles;
+					mTrackPoint = cloc;
+				}
 			}
-		}
 	}
 
 	//-------------------------------- CONTROL LINK TAG-UP -------------------------------------------------------
 
 	if (mDragType == drag_None && ei_count > 0)
-		for (ei = 0; ei < ei_count && mDragType == drag_None; ++ei)
+		for (int ei = 0; ei < ei_count && mDragType == drag_None; ++ei)
 		{
-			eid = mHandles->GetNthEntityID(ei);
-			l_count = mHandles->GetLinks(eid);
-			for (n = 0; n < l_count; ++n)
+			intptr_t eid = mHandles->GetNthEntityID(ei);
+			int l_count = mHandles->GetLinks(eid);
+			for (int n = 0; n < l_count; ++n)
 			{
 				bool active;
 				mHandles->GetNthLinkInfo(eid,n,&active, NULL);
@@ -268,9 +266,9 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 
 	click_pt = GetZoomer()->PixelToLL(click_pt);
 	if (mDragType == drag_None && ei_count > 0)
-		for (ei = 0; ei < ei_count; ++ei)
+		for (int ei = 0; ei < ei_count; ++ei)
 		{
-			eid = mHandles->GetNthEntityID(ei);
+			intptr_t eid = mHandles->GetNthEntityID(ei);
 			if (mHandles->PointOnStructure(eid, click_pt))
 			{
 				mDragType = drag_PreEnt;
@@ -339,7 +337,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 				}
 			}
 		}
-		if (has_click)
+		if (has_click && !(mods & gui_ControlFlag))      // ignore ctrl_click's so the selection isn't reset and a single item can be toggle clicked later
 		{
 			mDragType = drag_PreMove;
 			mTrackPoint = click_pt;
@@ -404,7 +402,6 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 			ProcessSelection(ent_base, bounds, sel_set);
 			if(op) op->StartOperation("Change Selection");
 
-			GUI_KeyFlags mods = GetHost()->GetModifiersNow();
 			if ((mods & (gui_ShiftFlag + gui_ControlFlag)) == 0)
 				sel->Clear();
 			mSelToggle = (mods & gui_ControlFlag) != 0;
@@ -551,6 +548,7 @@ void WED_HandleToolBase::ProcessSelection(
 
 		//	gis_PointSequence,  gis_Composite - not expected to ever come up.
 		
+#undef printf
 #if DEBUG_PRINTF_N_LINES
 		for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)
 			printf("Total selected GISClass #%d Subtype %s\n", (*i)->GetGISClass()-gis_Point, (*i)->GetGISSubtype());
@@ -563,11 +561,15 @@ void WED_HandleToolBase::ProcessSelection(
 				printf("FYI, nothing to select here.\n");
 			else
 			{	
-				printf("duh - this should not happen. Multiple items are selected,\nbut none of them are in the priority list for object selection:\n");
+				printf("duh - this should only happen if a mLockedItems list is active. Multiple items are selected,\nbut none of them are in the priority list for object selection:\n");
 				for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)
 					printf("Selected are GISClass #%d Subtype %s\n", (*i)->GetGISClass()-gis_Point, (*i)->GetGISSubtype());
+				result.clear();
 			}
 		}
+#else
+		else
+			result.clear();
 #endif		
 //	result.insert(result_old.begin(), result_old.end());   // merge back in what we took out initially
 	}
@@ -679,6 +681,7 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 
 	switch(mDragType) {
 	case drag_PreEnt:
+		if(WantSticky())
 		{
 			Point2 mSel(mSelX, mSelY);
 			double drag_dist = mSel.squared_distance(Point2(inX,inY));
@@ -687,8 +690,8 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 			{
 				break;
 			}
-			mDragType = drag_Ent;
 		}
+		mDragType = drag_Ent;
 	case drag_Handles:
 	case drag_Links:
 	case drag_Ent:
@@ -715,12 +718,13 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 			Point2	np(GetZoomer()->XPixelToLon(   inX),GetZoomer()->YPixelToLat(   inY));
 			Vector2 delta(op,np);
 			mDragX = inX; mDragY = inY;
+			Bbox2 old_b;
+			GetSelTotalBounds(old_b);
+			Bbox2 new_b(old_b);
+			new_b += delta;
+
 			for (vector<IGISEntity *>::iterator e =	mSelManip.begin(); e != mSelManip.end(); ++e)
 			{
-				Bbox2	old_b;
-				(*e)->GetBounds(gis_Geo,old_b);
-				Bbox2	new_b(old_b);
-				new_b+=delta;
 				(*e)->Rescale(gis_Geo,old_b, new_b);
 			}
 		}
@@ -858,6 +862,16 @@ void		WED_HandleToolBase::KillOperation(bool mouse_is_down)
 	mDragType = drag_None;
 }
 
+void		WED_HandleToolBase::GetSelTotalBounds(Bbox2 &bounds)
+{
+	for(vector<IGISEntity *>::iterator ei = mSelManip.begin(); ei != mSelManip.end(); ++ei)
+	{
+		Bbox2 local;
+		(*ei)->GetBounds(gis_Geo,local);
+		bounds += local;
+	}
+}
+
 void		WED_HandleToolBase::GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks)
 {
 	draw_ent_v = draw_ent_s = cares_about_sel = wants_clicks = 0;
@@ -890,18 +904,17 @@ void		WED_HandleToolBase::DrawStructure			(bool inCurrent, GUI_GraphState * g)
 				{
 					switch(lt) {
 					case link_Solid:		glColor4fv(WED_Color_RGBA(wed_Link));			break;
-					case link_Ghost:		glColor4fv(WED_Color_RGBA(wed_GhostLink));		break;
 					case link_BezierCtrl:	glColor4fv(WED_Color_RGBA(wed_ControlLink));	break;
+					case link_Ghost:		glColor4fv(WED_Color_RGBA(wed_GhostLink));		break;
 					case link_Marquee:		glColor4fv(WED_Color_RGBA(wed_Marquee));		break;
 					}
 					if (ControlLinkToCurve(mHandles,eid,l,b,s,GetZoomer()))
 					{
 						int point_count = BezierPtsCount(b,GetZoomer());
-
 						for (int n = 0; n < point_count; ++n)
 						{
-							float t1 = (float) n / (float) point_count;
-							float t2 = (float) (n+1) / (float) point_count;
+							double t1 = (double) n / (double) point_count;
+							double t2 = (double) (n+1) / (double) point_count;
 							Point2	p1 = b.midpoint(t1);
 							Point2	p2 = b.midpoint(t2);
 							glVertex2d(p1.x(),p1.y());
@@ -916,27 +929,26 @@ void		WED_HandleToolBase::DrawStructure			(bool inCurrent, GUI_GraphState * g)
 				}
 			}
 			glEnd();
+			
+			if(inCurrent) glColor4fv(WED_Color_RGBA(wed_ControlHandle));
 
 			if(inCurrent)
-			for (int cp = 0; cp < ch_count; ++cp)
-			{
+			for (int cp = 0; cp < ch_count; ++cp)   // this loop is causing a lot of state switching for icon and line plotting. 
+			{										// Cuts draw speed in half when selecting with VertexTool all of KSEA
 				Vector2		dir;
 				Point2	cpt, scrpt;
 				HandleType_t	ht;
-				mHandles->GetNthControlHandle(eid,cp,NULL, &ht, &cpt, &dir, NULL);
+				bool			isActive;
+				mHandles->GetNthControlHandle(eid,cp, &isActive, &ht, &cpt, &dir, NULL);
+				if(ht == handle_None || ht == handle_Icon || (ht == handle_Bezier && !isActive)) continue;
+
 				scrpt = GetZoomer()->LLToPixel(cpt);
-
 				Vector2	orient;
-
-				if (ht == handle_None || ht == handle_Icon) continue;
-
-				glColor4fv(WED_Color_RGBA(wed_ControlHandle));
-
-
 				if (ht == handle_ArrowHead || ht == handle_Arrow || ht == handle_Bezier || ht == handle_RotateHead || ht == handle_Rotate)
 				{
 					Point2 bscrp = GetZoomer()->LLToPixel(cpt - dir);
-					if (ht == handle_Arrow || ht == handle_Rotate)
+					orient = Vector2(bscrp,scrpt);
+					if (ht == handle_Rotate && orient.squared_length() >260.0)  // skip drawing the full cross unless handles are dragged out a bit
 					{
 						g->SetState(0,0,0,   0, 0, 0, 0);
 						glBegin(GL_LINES);
@@ -944,7 +956,6 @@ void		WED_HandleToolBase::DrawStructure			(bool inCurrent, GUI_GraphState * g)
 						glVertex2d(scrpt.x(), scrpt.y());
 						glEnd();
 					}
-					orient = Vector2(bscrp,scrpt);
 				}
 
 				switch(ht) {

@@ -25,12 +25,22 @@
 #define GUI_TEXTTABLE_H
 
 #include "GUI_Commander.h"
+#include "GUI_Table.h"
+#include "GUI_Listener.h"
+#include "GUI_Broadcaster.h"
 
-class	GUI_Pane;
 class	GUI_TextField;
 class	GUI_MouseCatcher;
-class	WED_Sign_Editor;
-class	WED_Line_Selector;
+struct	GUI_CellContent;
+
+class GUI_EditorInsert : public GUI_Pane, public GUI_Commander {
+public:
+	GUI_EditorInsert(GUI_Commander * parent) : GUI_Commander(parent) {}
+
+	virtual void GetSizeHint(int * w, int * h)=0;        // returns window's desired size
+	virtual bool SetData(const GUI_CellContent& c)=0;
+	virtual void GetData(GUI_CellContent& c)=0;
+};
 
 /*
 
@@ -42,10 +52,6 @@ class	WED_Line_Selector;
 
 */
 
-#include "GUI_Listener.h"
-#include "GUI_Broadcaster.h"
-
-#include "GUI_Table.h"
 
 // Cell content as known by a text table - we have a few different kinds of cell
 // displays...see comments for which fields they use.
@@ -363,7 +369,8 @@ private:
 			void			CreateEdit(int cell_bounds[4], const vector<GUI_MenuItem_t> * dict = NULL);
 			int				TerminateEdit(bool inSave, bool inAll, bool inDone);
 			GUI_DragPart	GetCellDragPart(int cell_bounds[4], int x, int y, int vertical);
-			bool			HasEdit() { return mSignField != NULL || mTextField != NULL || mLineField != NULL; }
+//			bool			HasEdit() { return mSignField != NULL || mTextField != NULL || mLineField != NULL; }
+			bool			HasEdit() { return mTextField != NULL || mEditor != NULL; }
 			int 			CreateMenuFromDict(vector<GUI_MenuItem_t>& items, vector<int>& enum_vals, GUI_EnumDictionary& dict);
 
 	GUI_TextTableProvider * mContent;
@@ -374,10 +381,11 @@ private:
 	int						mTrackLeft;
 	int						mTrackRight;
 	GUI_Table *				mParent;
-	WED_Sign_Editor *		mSignField;   // handles gui_Cell_TaxiText     editing
-	WED_Line_Selector *		mLineField;	  // handles gui_Cell_LinesEnumSet editing
-	GUI_TextField *			mTextField;   // handles every thing else
+	
 	GUI_MouseCatcher *		mCatcher;
+	
+	GUI_EditorInsert * 		mEditor;      // TaxiSigns, Lines, Light have a special edit method
+	GUI_TextField *			mTextField;   // handles every thing else
 	GUI_TableGeometry *		mGeometry;
 
 	int						mCellResize;

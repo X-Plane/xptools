@@ -7,7 +7,8 @@
 -------------------------------------------------------------------------------
 CHANGE HISTORY:
 -------------------------------------------------------------------------------
-
+Version 3.2b1 3/22/19
+	- 64bit binaries on all platforms
 Version 3.1 4/24/09
 	- Command-line arguments open files.
 Version 3.0b1 3/11/08
@@ -23,18 +24,12 @@ Version 2.0b1 9/20/05
 	- Preview Lighting
 	- Preview Animation
 
-ObjView is a 3-d viewer for X-Plane object files (version 2, 7 and 8). ÊX-Plane
+ObjView is a 3-d viewer for X-Plane object files (7 and 8). ÊX-Plane
 has four major revisions of the ".obj" format, none of which are related to 
 other public .obj formats (Alias Wavefront Objects):
 
- o 	Obj format 1 files were supported in X-Plane 5.0 and early versions of 
-    X-Plane 6.0. ÊObj format 1 files use multiple bitmap files, with bitmaps 
-    applied entirely to each primitive.  These objects are not supported by
-    ObjView and are now very rare.
-    
- o 	Obj format 2 files are supported in X-Plane version 6.0 and newer. ÊObj 
-    format 2 files use one bitmap file, with parts of the bitmap applied to
-    each  primitive.
+ o 	Obj format 1 and 2 files are only supported by X-plane version 7.0
+    and older. These are no more supported by ObjViewer version 3.2 and newer.
     
  o	Obj format 7 files are supported in X-Plane version 7.0 and newer ÊObj 
     format 7 files are extensible, use one bitmap file per object, and contain 

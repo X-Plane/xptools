@@ -698,7 +698,7 @@ void			GUI_Window::GLDraw(void)
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, w, 0, h, -1.0, 1.0);
+	glOrtho(0, w, 0, h, -1000.0, 0.01); // cut off things below ground level
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
