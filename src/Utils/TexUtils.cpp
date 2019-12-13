@@ -21,8 +21,8 @@
  *
  */
 #include "TexUtils.h"
+#include "AssertUtils.h"
 #include "BitmapUtils.h"
-#include "MemFileUtils.h"
 #if APL
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glu.h>
@@ -30,7 +30,9 @@
 	#include <GL/gl.h>
 	#include <GL/glu.h>
 #endif
-#include "squish.h"
+#if LOAD_DDS_DIRECT
+	#include "squish.h"
+#endif
 
 #if IBM
 // Ben says - this sucks!
@@ -39,9 +41,7 @@
 
 struct  gl_info_t {
 	int		gl_major_version;
-	int		gl_minor_version;
 	bool	has_tex_compression;
-	bool	has_edge_clamp;
 	bool	has_non_pots;
 	bool	has_bgra;
 	int		max_tex_size;
@@ -56,20 +56,16 @@ static void init_gl_info(gl_info_t * i)
 	const char * ver_str = (const char *) glGetString(GL_VERSION);
 	const char * ext_str = (const char *) glGetString(GL_EXTENSIONS);
 	
-	if(sscanf(ver_str,"%d.%d", &i->gl_major_version, &i->gl_minor_version) != 2)
-	{
-		i->gl_major_version = 1;
-		i->gl_minor_version = 2;
-	}
+	sscanf(ver_str,"%d", &i->gl_major_version);
+	if(i->gl_major_version < 3)                                                        // Need the framebuffer object for the DDS loader, flipping the image
+		AssertPrintf("OpenGL 3.0 or higher required. GL_VERSION = '%s'\n", ver_str);
 	
-	int glv = i->gl_major_version * 100 + i->gl_minor_version * 10;
-	
-	i->has_edge_clamp = true;		// If a user runs WED on a machine with less than GL 1.2, I will find that user and punch him directly in the throat.
-	i->has_tex_compression = (glv >= 130) || strstr(ext_str,"GL_ARB_texture_compression") != NULL;
-	i->has_non_pots = (glv >= 200) || strstr(ext_str,"GL_ARB_texture_non_power_of_two") != NULL;
+	i->has_tex_compression = strstr(ext_str,"GL_ARB_texture_compression") != NULL;
+	i->has_non_pots = strstr(ext_str,"GL_ARB_texture_non_power_of_two") != NULL;
 	i->has_bgra = strstr(ext_str,"GL_EXT_bgra") != NULL;
 
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE,&i->max_tex_size);
+	// if(i->max_tex_size > 8192)	i->max_tex_size = 8192;
 	if(i->has_tex_compression)	glHint(GL_TEXTURE_COMPRESSION_HINT,GL_NICEST);
 }
 
@@ -113,31 +109,7 @@ bool LoadTextureFromFile(
 						float * 		outT)
 {
 	struct ImageInfo	im = { 0 };
-
-/*	MFMemFile * mf = MemFile_Open(inFileName);
-	if(mf)
-	{
-		if(LoadTextureFromDDS((const unsigned char *) MemFile_GetBegin(mf),(const unsigned char *) MemFile_GetEnd(mf),inTexNum,flags,outWidth,outHeight))
-		{
-			if(outS) *outS = 1.0;
-			if(outT) *outT = 1.0;
-			MemFile_Close(mf);
-			return true;
-		}
-		MemFile_Close(mf);
-	}
-*/
-
-	int result =  CreateBitmapFromPNG(inFileName, &im, false, GAMMA_SRGB);
-	if (result) result = CreateBitmapFromDDS(inFileName, &im);
-	if (result) result = CreateBitmapFromFile(inFileName, &im);
-	#if USE_TIF
-	if (result) result = CreateBitmapFromTIF(inFileName, &im);
-	#endif
-	#if USE_JPEG
-	if (result) result = CreateBitmapFromJPEG(inFileName, &im);
-	#endif
-	if (result == 0)
+	if (LoadBitmapFromAnyFile(inFileName, &im) == 0)
 	{
 		if (im.pad != 0)
 			UnpadImage(&im);
@@ -155,10 +127,6 @@ bool LoadTextureFromFile(
 bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWidth, int * outHeight, float * outS, float * outT)
 {
 	INIT_GL_INFO
-	
-	bool				ok = false;
-
-	/* PREP */
 
 	// Process alpha.  Then remove padding.  Finally, figure out the next biggest power of 2.  If we aren't
 	// a power of 2, we need to resize.  That will be done with rescaling if the user wants.  Also if the bitmap
@@ -213,15 +181,16 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 
 	glBindTexture(GL_TEXTURE_2D, inTexNum);
 
+	
 	int	iformat, glformat;
 	if (useIt->channels == 1)
 	{
-		iformat = glformat = GL_ALPHA; 
+		iformat = glformat = GL_ALPHA;
 	}
 	else if(gl_info.has_bgra)
-	{	
-									iformat = GL_RGB;  glformat = GL_BGR_EXT;
-		if (useIt->channels == 4) { iformat = GL_RGBA; glformat = GL_BGRA_EXT; }
+	{
+		                            iformat = GL_RGB;  glformat = GL_BGR;
+		if (useIt->channels == 4) { iformat = GL_RGBA; glformat = GL_BGRA; }
 	}
 	else
 	{
@@ -251,170 +220,210 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 	if (inFlags & tex_Mipmap)
 		gluBuild2DMipmaps(GL_TEXTURE_2D, iformat, useIt->width, useIt->height, glformat, GL_UNSIGNED_BYTE, useIt->data);
 	else
-		glTexImage2D(GL_TEXTURE_2D, 0, iformat,
-			useIt->width ,useIt->height, 0,
-			glformat,
-			GL_UNSIGNED_BYTE,
-			useIt->data);
-
-	ok = true;
+		glTexImage2D(GL_TEXTURE_2D, 0, iformat, useIt->width ,useIt->height, 0,	glformat, GL_UNSIGNED_BYTE, useIt->data);
 
 	if (resize)
 		DestroyBitmap(&rescaleBits);
 
-	if (ok)
-	{
-		// BAS note: for some reason on my WinXP system with GF-FX, if
-		// I do not set these explicitly to linear, I get no drawing at all.
-		// Who knows what default state the card is in. :-(
-//		if(inFlags & tex_Nearest)
-//		{
-//			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-//			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-//		} else 
-		if (inFlags & tex_Linear) {
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (inFlags & tex_Mipmap) ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR);
-		} else {
-			// If we have nearest-neighboring and we are down-sampling WITHOUT a mip-map we STILL use linear in an attempt to keep this thing from looking TOTALY blitzed, I guess?
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (inFlags & tex_Mipmap) ? GL_NEAREST_MIPMAP_NEAREST : GL_LINEAR);
-		}
-
-			 if(inFlags & tex_Wrap){glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT		 );
-								    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT		 );}
-// Janos says: why not on windows? without it the terraserver overlay looks ...well, not clamped :-)
-//#if !IBM
-		else if(gl_info.has_edge_clamp){glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
-								    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);}
-//#endif
-		else					   {glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP		 );
-								    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP		 );}
-
+	// BAS note: for some reason on my WinXP system with GF-FX, if
+	// I do not set these explicitly to linear, I get no drawing at all.
+	// Who knows what default state the card is in. :-(
+//	if(inFlags & tex_Nearest)
+//	{
+//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+//	} else 
+	if (inFlags & tex_Linear) {
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (inFlags & tex_Mipmap) ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR);
+	} else {
+		// If we have nearest-neighboring and we are down-sampling WITHOUT a mip-map we STILL use linear in an attempt to keep this thing from looking TOTALY blitzed, I guess?
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (inFlags & tex_Mipmap) ? GL_NEAREST_MIPMAP_NEAREST : GL_LINEAR);
 	}
-	return ok;
+	if(inFlags & tex_Wrap) {
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT );
+	    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT );
+	}
+	else {
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
+	}
+	return true;
 }
 
-#if BIG
-	#if APL
-		#include <libkern/OSByteOrder.h>
-		#define SWAP32(x) (OSSwapConstInt32(x))
-	#else
-		#error we do not have big endian support on non-Mac platforms
-	#endif
-#elif LIL
-	#define SWAP32(x) (x)
-#else
-	#error BIG or LIL are not defined - what endian are we?
-#endif
+#if LOAD_DDS_DIRECT
 
+#pragma 
 
-#if 0
-bool	LoadTextureFromDDS(
-				const unsigned char *	mem_start,
-				const unsigned char *	mem_end,
-				int						in_tex_num,
-				int					in_flags,
-				int *					outWidth,
-				int *					outHeight)
+struct DXT1Block {
+    uint16_t colors[2];
+    uint8_t  rows[4];
+};
+
+struct DXT3Block {
+    DXT1Block	alphas;
+    DXT1Block 	colors;
+};
+
+struct DXT5AlphaBlock {
+    uint8_t 		alpha[2];
+    uint8_t			idx[6];
+};
+
+struct DXT5Block {
+    DXT5AlphaBlock	alphas;
+    DXT1Block		colors;
+};
+
+static void swap_12bit_idx(uint8_t * a)
 {
+	uint64_t src = *(uint64_t *) a;
+	uint64_t dst = src & 0xFFFF000000000000ull;
+
+	dst |= ((src & 0xFFFull) << 36) | ((src & 0xFFF000ull) << 12) | ((src & 0xFFF000000ull)) >> 12 | ((src & 0xFFF000000000ull) >>36);
+
+	*(uint64_t *) a = dst;
+}
+
+static void swap_blocks(char *a, char *b, int type)
+{
+	if (type == squish::kDxt5)
+	{
+		DXT5Block * x = (DXT5Block *) a;
+		DXT5Block * y = (DXT5Block *) b;
+		swap(*x,*y);
+		swap_12bit_idx(x->alphas.idx);
+		swap_12bit_idx(y->alphas.idx);
+		swap(x->colors.rows[0], x->colors.rows[3]);
+		swap(x->colors.rows[1], x->colors.rows[2]);
+		swap(y->colors.rows[0], y->colors.rows[3]);
+		swap(y->colors.rows[1], y->colors.rows[2]);
+	}
+	else if (type == squish::kDxt3)
+	{
+		DXT3Block * x = (DXT3Block *) a;
+		DXT3Block * y = (DXT3Block *) b;
+		swap(*x,*y);
+		swap(x->alphas.rows[0], x->alphas.rows[3]);
+		swap(x->alphas.rows[1], x->alphas.rows[2]);
+		swap(y->alphas.rows[0], y->alphas.rows[3]);
+		swap(y->alphas.rows[1], y->alphas.rows[2]);
+		
+		swap(x->colors.rows[0], x->colors.rows[3]);
+		swap(x->colors.rows[1], x->colors.rows[2]);
+		swap(y->colors.rows[0], y->colors.rows[3]);
+		swap(y->colors.rows[1], y->colors.rows[2]);
+	}
+	else
+	{
+		DXT1Block * x = (DXT1Block *) a;
+		DXT1Block * y = (DXT1Block *) b;
+		swap(*x,*y);
+		swap(x->rows[0], x->rows[3]);
+		swap(x->rows[1], x->rows[2]);
+		swap(y->rows[0], y->rows[3]);
+		swap(y->rows[1], y->rows[2]);
+	}
+}
+
+bool	LoadTextureFromDDS(
+				char *			mem_start,
+				char *			mem_end,
+				int				in_tex_num,
+				int				inFlags,
+				int *			outWidth,
+				int *			outHeight)
+{
+	INIT_GL_INFO
+
 	if((mem_end - mem_start) < sizeof(TEX_dds_desc)) return false;
 
 	const TEX_dds_desc * desc = (const TEX_dds_desc *) mem_start;
 
-	if (desc->dwMagic[0] != 'D' ||
-		desc->dwMagic[1] != 'D' ||
-		desc->dwMagic[2] != 'S' ||
-		desc->dwMagic[3] != ' ') return false;
-
+	if (strncmp(desc->dwMagic, "DDS ", 4) != 0) return false;
 	if((SWAP32(desc->dwSize)) != (sizeof(*desc) - sizeof(desc->dwMagic))) return false;
+	if(strncmp(desc->ddpfPixelFormat.dwFourCC, "DXT",3) != 0 ) return false;
 
-	if(desc->ddpfPixelFormat.dwFourCC[0] != 'D' ||
-	   desc->ddpfPixelFormat.dwFourCC[1] != 'X' ||
-	   desc->ddpfPixelFormat.dwFourCC[2] != 'T') return false;
-
-	GLenum format = 0;
+	GLenum glformat = 0;
 	int	flags = 0;
-	switch(desc->ddpfPixelFormat.dwFourCC[3]) {
-	case '1':		flags = squish::kDxt1;			format = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;	break;
-	case '3':		flags = squish::kDxt3;			format = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;	break;
-	case '5':		flags = squish::kDxt5;			format = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;	break;
-	default: return false;
+	switch(desc->ddpfPixelFormat.dwFourCC[3]) 
+	{
+		case '1':	flags = squish::kDxt1; glformat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;	break;
+		case '3':	flags = squish::kDxt3; glformat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;	break;
+		case '5':	flags = squish::kDxt5; glformat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;	break;
+		default: return false;
 	}
-
 	int mips = 0;
 	if((SWAP32(desc->dwFlags)) & DDSD_MIPMAPCOUNT)
 		mips = SWAP32(desc->dwMipMapCount);
-	int has_mips = (mips > 1);
 	int x = SWAP32(desc->dwWidth);
 	int y = SWAP32(desc->dwHeight);
 
 	if (outWidth) *outWidth = x;
 	if (outHeight) *outHeight = y;
 
-	const unsigned char * data = mem_start + sizeof(TEX_dds_desc);
+	char * data = mem_start + sizeof(TEX_dds_desc);
 
 	glBindTexture(GL_TEXTURE_2D, in_tex_num);
 
-	int level = 0;
-	do {
+	for (int level = 0; level <= mips; ++level)
+	{
 		int data_len = squish::GetStorageRequirements(x,y,flags);
-		if((data + data_len) > mem_end) return false;
+		if((data + data_len) > mem_end) return false;        // not enough data for mipmaps = broken dds !
 
-		glCompressedTexImage2DARB(
-			GL_TEXTURE_2D,
-			level,
-			format,
-			x,
-			y,
-			0,
-			data_len,
-			data);
+		// lossless flip image in Y-direction to match orientation of all other textures in XPtools/X-plane
+		// - which use the old MSFT DIB convention (0,0) == left bottom. But DXT is starting at the top.
+		{
+			int dds_blocksize = data_len * 16 / x / y;     // every dds block represents 4x4 pixels
+			if (data_len < dds_blocksize) break;
+			int line_len = data_len / (y / 4);
+			int blocks_per_line = line_len / dds_blocksize;
+			if (y < 8) break;
+			int swap_count = y / 4 / 2;
+			char * dds_line1 = data;
+			char * dds_line2 = data + data_len - line_len;
 
-		if (x==1 && y == 1)	break;
-		++level;
-		if (x > 1) x >>= 1;
-		if (y > 1) y >>= 1;
-		--mips;
-		if(mips<=0) break;
+			while (swap_count--)
+			{
+				for (int i = 0; i < blocks_per_line; i++)
+				{
+					swap_blocks(dds_line1+i*dds_blocksize, dds_line2+i*dds_blocksize, flags);
+				}
+				dds_line1 += line_len;
+				dds_line2 -= line_len;
+			}
+		}
+
+		glCompressedTexImage2D( GL_TEXTURE_2D, level, glformat, x, y, 0, data_len, data);
+
+		x >>= 1;
+		y >>= 1;
+		if (x < 8 || y < 8) break;  // don't bother loading really small mipmaps, the swap algorithm can't flip less than 4 blocks either
 		data += data_len;
-	} while (1);
-
-	if(inFlags & tex_Nearest)
+	}
+	
+	if (inFlags & tex_Linear)
+	{
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (inFlags & tex_Mipmap) ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR);
+	}
+	else
 	{
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	} else if (inFlags & tex_Linear) {
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (in_flags & tex_Mipmap) ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR);
-	} else {
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (in_flags & tex_Mipmap) ? GL_NEAREST_MIPMAP_NEAREST : GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (inFlags & tex_Mipmap) ? GL_NEAREST_MIPMAP_NEAREST : GL_LINEAR);
 	}
 
-	static const char * ver_str = (const char *) glGetString(GL_VERSION);
-	static const char * ext_str = (const char *) glGetString(GL_EXTENSIONS);
-
-	static bool tex_clamp_avail =
-		strstr(ext_str,"GL_SGI_texture_edge_clamp"		) ||
-		strstr(ext_str,"GL_SGIS_texture_edge_clamp"		) ||
-		strstr(ext_str,"GL_ARB_texture_edge_clamp"		) ||
-		strstr(ext_str,"GL_EXT_texture_edge_clamp"		) ||
-		strncmp(ver_str,"1.2", 3) ||
-		strncmp(ver_str,"1.3", 3) ||
-		strncmp(ver_str,"1.4", 3) ||
-		strncmp(ver_str,"1.5", 3);
-
-
-		 if(in_flags & tex_Wrap){glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT		 );
-								glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT		 );}
-#if !IBM
-	else if(tex_clamp_avail)   {glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
-								glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);}
-#endif
-	else					   {glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP		 );
-								glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP		 );}
-
+	if (inFlags & tex_Wrap)
+	{
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT );
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT );
+	}
+	else
+	{
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
+	}
 	return true;
 }
 #endif
