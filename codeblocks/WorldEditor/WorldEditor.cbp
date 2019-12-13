@@ -667,7 +667,9 @@
 		<Unit filename="../../src/XESCore/AptIO.h" />
 		<Unit filename="../../src/XESCore/XESConstants.h" />
 		<Extensions>
-			<code_completion />
+			<code_completion>
+				<search_path add="../../libs/local/include" />
+			</code_completion>
 			<envvars set="default" />
 			<debugger />
 			<lib_finder disable_auto="1" />
