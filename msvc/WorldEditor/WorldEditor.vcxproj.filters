@@ -768,6 +768,9 @@
     <ClCompile Include="..\..\src\Obj\ObjConvert.cpp">
       <Filter>Obj</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Utils\glew.c">
+      <Filter>Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\WEDCore\WED_Application.h">
@@ -1519,6 +1522,12 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Obj\ObjConvert.h">
       <Filter>Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\glew.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\wglew.h">
+      <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

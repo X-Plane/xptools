@@ -107,9 +107,9 @@ WED_TexMgr::TexInfo *	WED_TexMgr::LoadTexture(const char * path, bool is_absolut
 				if (fread(buffer, 1, fileLength, file) == fileLength)
 				{
 					int siz_x, siz_y;
-					if (LoadTextureFromDDS(buffer, buffer + fileLength, tn, 0, &siz_x, &siz_y))
+					if (LoadTextureFromDDS(buffer, buffer + fileLength, tn, flags, &siz_x, &siz_y))
 					{
-//						printf("Direct loading DDS %s\n", fpath.c_str());
+						printf("Direct loading DDS %s\n", fpath.c_str());
 						inf = new TexInfo;
 						inf->tex_id = tn;
 						inf->org_x = inf->vis_x = inf->act_x = siz_x;
@@ -124,7 +124,7 @@ WED_TexMgr::TexInfo *	WED_TexMgr::LoadTexture(const char * path, bool is_absolut
 	}
 	if(inf) return inf;
 
-//	printf("Normal load %s\n%s\n", path, fpath.c_str());
+	printf("Normal load %s\n", fpath.c_str());
 #endif
 
 #if NEW_TEX_LOAD_STRATEGY

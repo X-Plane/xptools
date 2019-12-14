@@ -23,20 +23,16 @@
 #include "TexUtils.h"
 #include "AssertUtils.h"
 #include "BitmapUtils.h"
-#if APL
+
+#if IBM
+	// gotta do this cuz MSFT hasn't updated their openGL headers in 23 years ... its STILL OGL 1.1 from 1996 !!
+	#include "glew.h"
+#elif APL
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glu.h>
 #else
 	#include <GL/gl.h>
 	#include <GL/glu.h>
-#endif
-#if LOAD_DDS_DIRECT
-	#include "squish.h"
-#endif
-
-#if IBM
-// Ben says - this sucks!
-#include "XWinGL.h"
 #endif
 
 struct  gl_info_t {
@@ -53,12 +49,12 @@ static gl_info_t gl_info = { 0 };
 
 static void init_gl_info(gl_info_t * i)
 {
-	const char * ver_str = (const char *) glGetString(GL_VERSION);
-	const char * ext_str = (const char *) glGetString(GL_EXTENSIONS);
-	
+	const char * ver_str = (const char *)glGetString(GL_VERSION);
+	const char * ext_str = (const char *)glGetString(GL_EXTENSIONS);
+
 	sscanf(ver_str,"%d", &i->gl_major_version);
-	if(i->gl_major_version < 3)                                                        // Need the framebuffer object for the DDS loader, flipping the image
-		AssertPrintf("OpenGL 3.0 or higher required. GL_VERSION = '%s'\n", ver_str);
+	if(i->gl_major_version < 2)
+		AssertPrintf("OpenGL 2.0 or higher required. Found version '%s'\n", ver_str);
 	
 	i->has_tex_compression = strstr(ext_str,"GL_ARB_texture_compression") != NULL;
 	i->has_non_pots = strstr(ext_str,"GL_ARB_texture_non_power_of_two") != NULL;
@@ -129,7 +125,7 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 	INIT_GL_INFO
 
 	// Process alpha.  Then remove padding.  Finally, figure out the next biggest power of 2.  If we aren't
-	// a power of 2, we need to resize.  That will be done with rescaling if the user wants.  Also if the bitmap
+	// a power of 2, we may need to resize.  That will be done with rescaling if the user wants.  Also if the bitmap
 	// is bigger than the max power of 2 supported by the HW, force rescaling.
 	if (inFlags & tex_MagentaAlpha)	ConvertBitmapToAlpha(&im, true);
 	if (im.pad != 0)
@@ -246,8 +242,8 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 	    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT );
 	}
 	else {
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	}
 	return true;
 }
@@ -286,9 +282,9 @@ static void swap_12bit_idx(uint8_t * a)
 	*(uint64_t *) a = dst;
 }
 
-static void swap_blocks(char *a, char *b, int type)
+static void swap_blocks(char *a, char *b, GLint type)
 {
-	if (type == squish::kDxt5)
+	if (type = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT)
 	{
 		DXT5Block * x = (DXT5Block *) a;
 		DXT5Block * y = (DXT5Block *) b;
@@ -300,7 +296,7 @@ static void swap_blocks(char *a, char *b, int type)
 		swap(y->colors.rows[0], y->colors.rows[3]);
 		swap(y->colors.rows[1], y->colors.rows[2]);
 	}
-	else if (type == squish::kDxt3)
+	else if (GL_COMPRESSED_RGBA_S3TC_DXT3_EXT)
 	{
 		DXT3Block * x = (DXT3Block *) a;
 		DXT3Block * y = (DXT3Block *) b;
@@ -346,19 +342,22 @@ bool	LoadTextureFromDDS(
 	if(strncmp(desc->ddpfPixelFormat.dwFourCC, "DXT",3) != 0 ) return false;
 
 	GLenum glformat = 0;
-	int	flags = 0;
-	switch(desc->ddpfPixelFormat.dwFourCC[3]) 
+	int	dds_blocksize;
+	switch(desc->ddpfPixelFormat.dwFourCC[3])
 	{
-		case '1':	flags = squish::kDxt1; glformat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;	break;
-		case '3':	flags = squish::kDxt3; glformat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;	break;
-		case '5':	flags = squish::kDxt5; glformat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;	break;
+		case '1':	dds_blocksize = 8;  glformat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;	break;
+		case '3':	dds_blocksize = 16; glformat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;	break;
+		case '5':	dds_blocksize = 16; glformat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;	break;
 		default: return false;
 	}
 	int mips = 0;
-	if((SWAP32(desc->dwFlags)) & DDSD_MIPMAPCOUNT)
+	if(inFlags & tex_Mipmap && (SWAP32(desc->dwFlags)) & DDSD_MIPMAPCOUNT)
 		mips = SWAP32(desc->dwMipMapCount);
 	int x = SWAP32(desc->dwWidth);
 	int y = SWAP32(desc->dwHeight);
+
+	printf("dxt %c,m=%d ", desc->ddpfPixelFormat.dwFourCC[3],mips);
+	if (y != NextPowerOf2(y) || y < 8) return false;  // flipping code can only handle certain heights
 
 	if (outWidth) *outWidth = x;
 	if (outHeight) *outHeight = y;
@@ -367,19 +366,18 @@ bool	LoadTextureFromDDS(
 
 	glBindTexture(GL_TEXTURE_2D, in_tex_num);
 
+	int mips_sent = 0;
 	for (int level = 0; level <= mips; ++level)
 	{
-		int data_len = squish::GetStorageRequirements(x,y,flags);
+		int data_len = x * y / 16 * dds_blocksize;
 		if((data + data_len) > mem_end) return false;        // not enough data for mipmaps = broken dds !
 
 		// lossless flip image in Y-direction to match orientation of all other textures in XPtools/X-plane
 		// - which use the old MSFT DIB convention (0,0) == left bottom. But DXT is starting at the top.
 		{
-			int dds_blocksize = data_len * 16 / x / y;     // every dds block represents 4x4 pixels
-			if (data_len < dds_blocksize) break;
+			if (x < 4 || y < 8) break;      // swap algorithm can't deal with such small mipmaps. Nor do we really need them. 
 			int line_len = data_len / (y / 4);
 			int blocks_per_line = line_len / dds_blocksize;
-			if (y < 8) break;
 			int swap_count = y / 4 / 2;
 			char * dds_line1 = data;
 			char * dds_line2 = data + data_len - line_len;
@@ -388,42 +386,50 @@ bool	LoadTextureFromDDS(
 			{
 				for (int i = 0; i < blocks_per_line; i++)
 				{
-					swap_blocks(dds_line1+i*dds_blocksize, dds_line2+i*dds_blocksize, flags);
+					swap_blocks(dds_line1, dds_line2, glformat);
+					dds_line1 += dds_blocksize;
+					dds_line2 += dds_blocksize;
 				}
-				dds_line1 += line_len;
-				dds_line2 -= line_len;
+				dds_line2 -= 2 * line_len;
 			}
 		}
 
 		glCompressedTexImage2D( GL_TEXTURE_2D, level, glformat, x, y, 0, data_len, data);
+		mips_sent++;
 
 		x >>= 1;
 		y >>= 1;
-		if (x < 8 || y < 8) break;  // don't bother loading really small mipmaps, the swap algorithm can't flip less than 4 blocks either
 		data += data_len;
 	}
-	
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mips_sent - 1);
+
 	if (inFlags & tex_Linear)
 	{
+		printf("linear, ");
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (inFlags & tex_Mipmap) ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR);
 	}
 	else
 	{
+		printf("nearest, ");
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (inFlags & tex_Mipmap) ? GL_NEAREST_MIPMAP_NEAREST : GL_LINEAR);
 	}
 
 	if (inFlags & tex_Wrap)
 	{
+		printf("repeat, ");
 		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT );
 		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT );
 	}
 	else
 	{
+		printf("clamp, ");
 		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
 	}
+	printf("\n");
 	return true;
 }
 #endif
