@@ -356,7 +356,6 @@ bool	LoadTextureFromDDS(
 	int x = SWAP32(desc->dwWidth);
 	int y = SWAP32(desc->dwHeight);
 
-	printf("dxt %c,m=%d ", desc->ddpfPixelFormat.dwFourCC[3],mips);
 	if (y != NextPowerOf2(y) || y < 8) return false;  // flipping code can only handle certain heights
 
 	if (outWidth) *outWidth = x;
@@ -406,30 +405,25 @@ bool	LoadTextureFromDDS(
 
 	if (inFlags & tex_Linear)
 	{
-		printf("linear, ");
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (inFlags & tex_Mipmap) ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR);
 	}
 	else
 	{
-		printf("nearest, ");
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (inFlags & tex_Mipmap) ? GL_NEAREST_MIPMAP_NEAREST : GL_LINEAR);
 	}
 
 	if (inFlags & tex_Wrap)
 	{
-		printf("repeat, ");
 		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT );
 		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT );
 	}
 	else
 	{
-		printf("clamp, ");
 		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
 	}
-	printf("\n");
 	return true;
 }
 #endif
