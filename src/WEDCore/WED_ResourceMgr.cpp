@@ -37,6 +37,14 @@
 #include "CompGeomDefs2.h"
 #include "MathUtils.h"
 
+#if IBM
+#define DIR_CHAR '\\'
+#define DIR_STR "\\"
+#else
+#define DIR_CHAR '/'
+#define DIR_STR "/"
+#endif
+
 /* Resouce Manager Theory of operation:
 	It provides access to all properties/details of any art asset referenced in WED.	Normally these art assets are 
 	identified by a virtual path (vpath). This is how all non-local assets are indexed in the RegMgr's databases.
@@ -65,12 +73,26 @@
    found at a path relative to the referencing art assets location. If not - ask the lib Mgr to resolve a path for it.
 */
 
+
+static void clean_rpath(string& s)
+{
+	for(string::size_type p = 0; p < s.size(); ++p)
+		if(s[p] == '\\' || s[p] == ':' || s[p] == '/')
+			s[p] = DIR_CHAR;
+}
+
 static void process_texture_path(const string& path_of_obj, string& path_of_tex)
 {
-	string parent;
-
-	parent = FILE_get_dir_name(path_of_obj) + FILE_get_dir_name(path_of_tex)
-					+ FILE_get_file_name_wo_extensions(path_of_tex);
+	string parent(FILE_get_dir_name(path_of_obj));
+	path_of_tex = FILE_get_file_name_wo_extensions(path_of_tex);
+	clean_rpath(path_of_tex);
+	
+	while (path_of_tex.length() > 2 && path_of_tex[0] == '.' && path_of_tex[1] == '.')
+	{
+		path_of_tex.erase(0,2);
+		parent.erase(parent.find_last_of(DIR_CHAR,parent.length()-2));
+	}
+	parent += path_of_tex;
 
 	path_of_tex = parent + ".dds";          // no need to also check for .DDS, filename case desense will take care of it
 	if(FILE_exists(path_of_tex.c_str()))  return;
@@ -319,21 +341,6 @@ bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t const *& info)
 	return true;
 }
 
-#if IBM
-#define DIR_CHAR '\\'
-#define DIR_STR "\\"
-#else
-#define DIR_CHAR '/'
-#define DIR_STR "/"
-#endif
-
-static void clean_rpath(string& s)
-{
-	for(string::size_type p = 0; p < s.size(); ++p)
-		if(s[p] == '\\' || s[p] == ':' || s[p] == '/')
-			s[p] = DIR_CHAR;
-}
-
 bool	WED_ResourceMgr::GetStr(const string& path, str_info_t const *& info)
 {
 	auto i = mStr.find(path);
@@ -375,7 +382,6 @@ bool	WED_ResourceMgr::GetStr(const string& path, str_info_t const *& info)
 			int ignore = MFS_double(&s);
 			string obj_res;
 			MFS_string(&s,&obj_res);
-printf("str res path '%s'\n",obj_res.c_str());
 			clean_rpath(obj_res);
 //			obj_res = FILE_get_dir_name(p) + obj_res;
 //			FILE_case_correct( (char *) obj_res.c_str());
@@ -582,7 +588,6 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 			{
 				string tex;
 				MFS_string(&s,&tex);
-				clean_rpath(tex);
 
 				if (roof_section)
 					fac->roof_tex = tex;
@@ -1288,6 +1293,7 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t& out_info)
 		{
 			string p;
 			MFS_string(&s,&p);
+			clean_rpath(p);
 			obj_paths.push_back(p);
 		}
 		else if(MFS_string_match(&s,"TILE",false))

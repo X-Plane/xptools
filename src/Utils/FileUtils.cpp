@@ -269,13 +269,11 @@ string FILE_get_dir_name(const string& path)
 
 string FILE_get_file_name_wo_extensions(const string& path)
 {
-	string name = FILE_get_file_name(path);
-	
-	size_t dot_pos = name.find_last_of('.');
+	size_t dot_pos = path.find_last_of('.');
 	if(dot_pos == path.npos || dot_pos == 0)
-		return name;
+		return path;
 	else
-		return name.substr(0, dot_pos);
+		return path.substr(0, dot_pos);
 }
 
 int FILE_delete_file(const char * nuke_path, bool is_dir)
