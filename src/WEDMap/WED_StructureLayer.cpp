@@ -255,7 +255,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 			IGISPoint_Heading *		pth;
 			WED_LightFixture *		lfix;
 			WED_AirportSign *		sign;
-			WED_RampPosition *		ramp;
+			WED_RampPosition *		ramp = NULL;
 			const char *			icon = NULL;
 
 				 if (sub_class == WED_LightFixture::sClass && (lfix = SAFE_CAST(WED_LightFixture,entity)) != NULL) pth = lfix, icon = "map_light.png"	;
@@ -354,7 +354,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 				int i, n = ps->GetNumSides();
 				WED_MapZoomerNew * z = GetZoomer();
 
-				bool showRealLines = mRealLines > 0 && z->GetPPM() * 0.3 <= MIN_PIXELS_PREVIEW;
+				bool showRealLines = mRealLines && z->GetPPM() * 0.3 <= MIN_PIXELS_PREVIEW;
 
 				for (i = 0; i < n; ++i)
 				{
