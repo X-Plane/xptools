@@ -250,8 +250,6 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 
 #if LOAD_DDS_DIRECT
 
-#pragma 
-
 struct DXT1Block {
     uint16_t colors[2];
     uint8_t  rows[4];
@@ -272,7 +270,7 @@ struct DXT5Block {
     DXT1Block		colors;
 };
 
-static void swap_12bit_idx(uint8_t * a)
+inline void swap_12bit_idx(uint8_t * a)
 {
 	uint64_t src = *(uint64_t *) a;
 	uint64_t dst = src & 0xFFFF000000000000ull;
@@ -284,7 +282,7 @@ static void swap_12bit_idx(uint8_t * a)
 
 static void swap_blocks(char *a, char *b, GLint type)
 {
-	if (type = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT)
+	if (type == GL_COMPRESSED_RGBA_S3TC_DXT5_EXT)
 	{
 		DXT5Block * x = (DXT5Block *) a;
 		DXT5Block * y = (DXT5Block *) b;
@@ -296,7 +294,7 @@ static void swap_blocks(char *a, char *b, GLint type)
 		swap(y->colors.rows[0], y->colors.rows[3]);
 		swap(y->colors.rows[1], y->colors.rows[2]);
 	}
-	else if (GL_COMPRESSED_RGBA_S3TC_DXT3_EXT)
+	else if (type == GL_COMPRESSED_RGBA_S3TC_DXT3_EXT)
 	{
 		DXT3Block * x = (DXT3Block *) a;
 		DXT3Block * y = (DXT3Block *) b;
