@@ -1867,12 +1867,8 @@ map<WED_Thing*,vector<WED_Thing*> > run_split_on_edges(vector<split_edge_info_t>
 				Point2 x;
 				if( ibIsBez || jbIsBez )
 				{
-					//if (ib.intersect(jb,10))
-					//ToDo: intersection point of bezier edges
-					// x= ?? No idea how to get the crossingpoint efficiently
-					// one solution could be to entirely skip splitting this edges
-					// we must have an spliting point here to not screw up everything existing
-					if (ib.as_segment().intersect(jb.as_segment(), x))
+					//ToDo:mroe check precision and calculation time
+					if (ib.intersect(jb,10,x))
 					{
 						edges[i].splits.push_back(x);
 						edges[j].splits.push_back(x);
@@ -1913,7 +1909,6 @@ map<WED_Thing*,vector<WED_Thing*> > run_split_on_edges(vector<split_edge_info_t>
 			{
 				edges[i].splits.push_back(b.as_segment().midpoint());
 			}
-
 		}
 
 		// Now we go BACKWARD from high to low - we do this because the GIS Edge's split makes the clone

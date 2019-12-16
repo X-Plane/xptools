@@ -551,6 +551,7 @@ struct	Bezier2 {
 
 	bool	self_intersect(int depth) const;										// True if curve intersects itself except at end-points
 	bool	intersect(const Bezier2& rhs, int depth) const;							// True if curves intersect except at end-points
+	bool	intersect(const Bezier2& rhs, int d, Point2& p) const;					// True if curves intersect except at end-points , provides crossing point
 	bool	is_near(const Point2& p, double distance) const;
 	
 	bool		is_segment(void) const { return p1 == c1 && p2 == c2; }
@@ -1416,6 +1417,46 @@ inline bool	Bezier2::intersect(const Bezier2& rhs, int d) const
 		l1.intersect(r2,d-1) ||
 		l2.intersect(r1,d-1) ||
 		l2.intersect(r2,d-1);
+}
+
+inline bool	Bezier2::intersect(const Bezier2& rhs,int d,Point2& x) const
+{
+	Bbox2	lhs_bbox, rhs_bbox;
+
+	this->bounds(lhs_bbox);
+	rhs.bounds(rhs_bbox);
+
+	if (d < 0)
+	{
+
+		Segment2 lhs_seg, rhs_seg;
+		lhs_seg.p1 = this->p1;
+		lhs_seg.p2 = this->p2;
+		rhs_seg.p1 = rhs.p1;
+		rhs_seg.p2 = rhs.p2;
+
+		if (lhs_seg.p1 != rhs_seg.p1 &&      // check if segments are adjacent, i.e. share a node,
+		    lhs_seg.p1 != rhs_seg.p2 &&      // as linear segment cross check returns a false positive here
+		    lhs_seg.p2 != rhs_seg.p1 &&      // (unlike the bezier intersect test)
+		    lhs_seg.p2 != rhs_seg.p2)
+		{
+			return lhs_seg.intersect(rhs_seg,x);
+		}
+		else
+			return false;                     // we assume the sub-segments connecting to a common node never intersect.
+	}
+	if (!lhs_bbox.interior_overlap(rhs_bbox))	return false;
+
+	Bezier2	l1,l2,r1,r2;
+
+	this->partition(l1,l2);
+	rhs.partition(r1,r2);
+
+	return
+		l1.intersect(r1,d-1,x) ||
+		l1.intersect(r2,d-1,x) ||
+		l2.intersect(r1,d-1,x) ||
+		l2.intersect(r2,d-1,x);
 }
 
 inline bool	Bezier2::is_near(const Point2& p, double d) const
