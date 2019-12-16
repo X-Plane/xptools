@@ -1828,7 +1828,8 @@ static int	DSF_ExportTileRecursive(
 							export_info.orthoImg.data = NULL;
 							export_info.orthoFile = "";
 						}
-						if(MakeSupportedType(absPathIMG.c_str(),&export_info.orthoImg))
+						if(LoadBitmapFromAnyFile(absPathIMG.c_str(),&export_info.orthoImg)) // to cut into pieces, only. Make sure its not forcibly rescaled
+//						if(MakeSupportedType(absPathIMG.c_str(),&export_info.orthoImg))
 						{
 							DoUserAlert((msg + "Unable to convert the image file '" + absPathIMG + "'to a DDS file, aborting DSF Export.").c_str());
 							return -1;

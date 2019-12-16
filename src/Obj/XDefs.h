@@ -90,6 +90,9 @@
 // This enablse curved ATC taxiways - feature is NOT done yet or offical so, like, don't use it.
 #define HAS_CURVED_ATC_ROUTE 0
 
+// Load DDS textures directly into GPU w/o de- & re-compressing
+#define LOAD_DDS_DIRECT 1
+
 // This is a big hack.  WED objects have culling "built-in" based on a bounding rect - it's part of the IGIS interface.
 // But this is kind of a design flaw; the actual culling depends on the -visualization-, which is applied via a map layer.
 // Only the map visualization knows how big things are.
