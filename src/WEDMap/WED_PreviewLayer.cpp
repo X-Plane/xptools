@@ -263,14 +263,8 @@ void draw_obj_at_ll(ITexMgr * tman, const XObj8 * o, const Point2& loc, float r,
 	glScalef(ppm,ppm,ppm);
 	glRotatef(90, 1,0,0);
 	glRotatef(r, 0, -1, 0);
-//	GLfloat mv[16], pv[16];
-//	glGetFloatv(GL_MODELVIEW_MATRIX,mv);
-//	glGetFloatv(GL_PROJECTION_MATRIX,pv);
-	g->EnableDepth(true,true);
-	glClear(GL_DEPTH_BUFFER_BIT);
 	Obj_DrawStruct ds = { g, id1, id2 };
 	ObjDraw8(*o, 0, &kFuncs, &ds); 
-	g->EnableDepth(false,false);
 	glPopMatrix();
 }
 
@@ -287,11 +281,8 @@ void draw_obj_at_xyz(ITexMgr * tman, const XObj8 * o, double x, double y, double
 
 	glTranslatef(x,y,z);
 	glRotatef(r, 0, -1, 0);
-//	g->EnableDepth(true,true);
-	//glClear(GL_DEPTH_BUFFER_BIT);
 	Obj_DrawStruct ds = { g, id1, id2 };
 	ObjDraw8(*o, 0, &kFuncs, &ds); 
-//	g->EnableDepth(false,false);
 	glPopMatrix();
 }
 
@@ -1013,6 +1004,7 @@ struct	preview_facade : public preview_polygon {
 			const fac_info_t * info;
 			WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 			
+			g->SetState(false,0,false,true,true,true,true);
 			glMatrixMode(GL_MODELVIEW);
 			glPushMatrix();
 			Point2 l = zoomer->LLToPixel(ref_pt);
@@ -1020,14 +1012,8 @@ struct	preview_facade : public preview_polygon {
 			float ppm = zoomer->GetPPM();
 			glScalef(ppm,ppm,ppm);
 			glRotatef(90, 1,0,0);
-
-			g->EnableDepth(true,true);
-			glClear(GL_DEPTH_BUFFER_BIT);
-			
 			if(rmgr->GetFac(vpath, info))
-				draw_facade(tman, rmgr, vpath, *info, pts, choices, fac->GetHeight(), g, false);
-				
-			g->EnableDepth(false,false);
+				draw_facade(tman, rmgr, vpath, *info, pts, choices, fac->GetHeight(), g, true);
 			glPopMatrix();
 		}
 		
@@ -1142,7 +1128,7 @@ struct	preview_object : public WED_PreviewItem {
 		agp_t agp;
 		if(rmgr->GetObj(vpath,o))
 		{
-			g->SetState(false,1,false,false,true,false,false);
+			g->SetState(false,1,false,false,true,true,true);
 			glColor3f(1,1,1);
 			Point2 loc;
 			obj->GetLocation(gis_Geo,loc);
@@ -1152,7 +1138,7 @@ struct	preview_object : public WED_PreviewItem {
 		{
 			Point2 loc;
 			obj->GetLocation(gis_Geo,loc);
-			g->SetState(false,1,false,true,true,false,false);
+			g->SetState(false,1,false,true,true,true,true);
 			TexRef	ref = tman->LookupTexture(agp.base_tex.c_str() ,true, tex_Linear|tex_Mipmap|tex_Compress_Ok|tex_Always_Pad);
 			int id1 = ref  ? tman->GetTexID(ref ) : 0;
 			if(id1)g->BindTex(id1,0);
@@ -1160,14 +1146,12 @@ struct	preview_object : public WED_PreviewItem {
 			glPushMatrix();
 			loc = zoomer->LLToPixel(loc);
 			float r = obj->GetHeading();
-			glTranslatef(loc.x(),loc.y(),0.0);
+			glTranslatef(loc.x(), loc.y(), 0);
 			float ppm = zoomer->GetPPM();
-			glScalef(ppm,ppm,0.001);
-			glRotatef(90, 1,0,0);
+			glScalef(ppm, ppm, ppm);
+			glRotatef(90, 1, 0 ,0);
 			glRotatef(r, 0, -1, 0);
-			glColor3f(1,1,1);
-			g->EnableDepth(true,true);
-			glClear(GL_DEPTH_BUFFER_BIT);
+			glColor3f(1, 1, 1);
 			if(!agp.tile.empty() && !agp.hide_tiles)
 			{
 				glDisable(GL_CULL_FACE);
@@ -1233,7 +1217,7 @@ struct	preview_truck : public WED_PreviewItem {
 		agp_t agp;
 		if(!vpath1.empty() && rmgr->GetObj(vpath1,o1))
 		{
-			g->SetState(false,1,false,false,true,false,false);
+			g->SetState(false,1,false,false,true,true,true);
 			glColor3f(1,1,1);
 			Point2 loc;
 			trk->GetLocation(gis_Geo,loc);
@@ -1311,7 +1295,7 @@ struct	preview_light : public WED_PreviewItem {
 		const XObj8 * o = NULL;
 		if(!vpath.empty() && rmgr->GetObj(vpath,o))
 		{
-			g->SetState(false,1,false,false,true,false,false);
+			g->SetState(false,1,false,false,true,true,true);
 			glColor3f(1,1,1);
 			
 			switch(light.light_code) 
@@ -1541,6 +1525,9 @@ void		WED_PreviewLayer::DrawVisualization			(bool inCurent, GUI_GraphState * g)
 {
 	// This is called after per-entity visualization; we have one preview item for everything we need.
 	// sort, draw, nuke 'em.
+	
+	g->EnableDepth(true,true);         // turn on z-buffering - otherwise we can't clear the z-buffer
+	glClear(GL_DEPTH_BUFFER_BIT);
 
 	sort(mPreviewItems.begin(),mPreviewItems.end(),sort_item_by_layer());
 	for(vector<WED_PreviewItem *>::iterator i = mPreviewItems.begin(); i != mPreviewItems.end(); ++i)

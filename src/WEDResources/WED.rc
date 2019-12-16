@@ -24,6 +24,7 @@ map_tools.png			GUI_RES		map_tools.png
 taxi_sign.png			GUI_RES		taxi_sign.png
 tce_tools.png			GUI_RES		tce_tools.png
 exclaim.png			GUI_RES		exclaim.png
+tilt_tool.png			GUI_RES		tilt_tool.png
 
 /* Start window */
 startup_bar.png			GUI_RES		startup_bar.png

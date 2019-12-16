@@ -22,6 +22,7 @@ WED 2.2.x
    - allow runways with T suffix naming to match either true or grid north heading
    - WED-1248: fix crash when libray.txt rpath includes trailing non-ASCII characters
    Features:
+   - add 'birds eye views' for map window
    - tighten ATC freq. validation to VHF airband & 200+ MHz, allow AWOS on VOR's
    - increase undo buffer from 20 to 100 operations
    - WED-1232: Support OBJ_DELTA in .agp previews
