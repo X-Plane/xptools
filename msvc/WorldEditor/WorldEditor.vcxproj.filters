@@ -76,6 +76,9 @@
     <Filter Include="WEDResources\icons">
       <UniqueIdentifier>{da9ae7de-498c-4715-984a-0fdb557b8cc4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="lzma19">
+      <UniqueIdentifier>{ddd8e1b9-0a14-45bd-82c9-e8fb4e55c4e8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\WEDCore\WED_Application.cpp">
@@ -770,6 +773,65 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Utils\glew.c">
       <Filter>Utils</Filter>
+    <ClCompile Include="..\..\src\lzma19\C\7zAlloc.c">
+      <Filter>lzma19</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\lzma19\C\7zArcIn.c">
+      <Filter>lzma19</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\lzma19\C\7zBuf.c">
+      <Filter>lzma19</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\lzma19\C\7zBuf2.c">
+      <Filter>lzma19</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\lzma19\C\7zCrc.c">
+      <Filter>lzma19</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\lzma19\C\7zCrcOpt.c">
+      <Filter>lzma19</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\lzma19\C\7zDec.c">
+      <Filter>lzma19</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\lzma19\C\7zFile.c">
+      <Filter>lzma19</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\lzma19\C\7zStream.c">
+      <Filter>lzma19</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\lzma19\C\Alloc.c">
+      <Filter>lzma19</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\lzma19\C\Bcj2.c">
+      <Filter>lzma19</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\lzma19\C\Bcj2Enc.c">
+      <Filter>lzma19</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\lzma19\C\Bra.c">
+      <Filter>lzma19</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\lzma19\C\Bra86.c">
+      <Filter>lzma19</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\lzma19\C\BraIA64.c">
+      <Filter>lzma19</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\lzma19\C\CpuArch.c">
+      <Filter>lzma19</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\lzma19\C\Delta.c">
+      <Filter>lzma19</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\lzma19\C\Lzma2Dec.c">
+      <Filter>lzma19</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\lzma19\C\Lzma86Dec.c">
+      <Filter>lzma19</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\lzma19\C\LzmaDec.c">
+      <Filter>lzma19</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1528,6 +1590,50 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Utils\wglew.h">
       <Filter>Utils</Filter>
+    <ClInclude Include="..\..\src\lzma19\C\7z.h">
+      <Filter>lzma19</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lzma19\C\7zAlloc.h">
+      <Filter>lzma19</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lzma19\C\7zBuf.h">
+      <Filter>lzma19</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lzma19\C\7zCrc.h">
+      <Filter>lzma19</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lzma19\C\7zFile.h">
+      <Filter>lzma19</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lzma19\C\7zTypes.h">
+      <Filter>lzma19</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lzma19\C\Alloc.h">
+      <Filter>lzma19</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lzma19\C\Bcj2.h">
+      <Filter>lzma19</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lzma19\C\Bra.h">
+      <Filter>lzma19</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lzma19\C\Compiler.h">
+      <Filter>lzma19</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lzma19\C\CpuArch.h">
+      <Filter>lzma19</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lzma19\C\Delta.h">
+      <Filter>lzma19</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lzma19\C\Lzma2Dec.h">
+      <Filter>lzma19</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lzma19\C\Lzma86.h">
+      <Filter>lzma19</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lzma19\C\LzmaDec.h">
+      <Filter>lzma19</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1217,14 +1217,13 @@ static int	DSF_ExportTileRecursive(
 				while(heading >= 360.0) heading -= 360.0;
 				++real_thingies;
 				xyrz[2] = heading;
-				#if AIRPORT_ROUTING
+
 				if(obj->HasCustomMSL())
 				{
 					xyrz[3] = obj->GetCustomMSL();
 					cbs->AddObject_f(idx, xyrz, 4, writer);
 				}
 				else
-				#endif
 					cbs->AddObject_f(idx, xyrz, 3, writer);
 			}
 		}
