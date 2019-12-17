@@ -161,8 +161,8 @@ void		WED_Map::Draw(GUI_GraphState * state)
 			//glLoadIdentity();
 			//glOrtho(0,b[1],0,b[3], -1000, 1000);
 			GLfloat m[16] = {
-				1,     0,     abs(xTilt), 0,
-				0,     1,     abs(yTilt), 0,
+				1,     0,     fabs(xTilt), 0,
+				0,     1,     fabs(yTilt), 0,
 				xTilt, yTilt, 1,     0,
 				0,     0,     0,     1
 				};
