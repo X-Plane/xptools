@@ -13,7 +13,7 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 2.2.x
+WED 2.2.0b1 17/12/19
    Bug Fixes:
    - WED-1225: show apts with only declined submissions in gateway import dialog
    - WED-1235: fix crash when processing OOB indices in bad .agp definitions
