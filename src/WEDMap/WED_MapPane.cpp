@@ -260,7 +260,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	}
 	mToolbar->SetToolTips(tips);
 	//	GUI_ScrollerPane * map_scroller = new GUI_ScrollerPane(1,1);    // both Scrollbars on
-#if IBM
+#if IBM || APL
 	GUI_ScrollerPane * map_scroller = new GUI_ScrollerPane(1,0);
 #else
 	GUI_ScrollerPane * map_scroller = new GUI_ScrollerPane(0,0);    // won't work under windows, fine is OSX/Lin, though
