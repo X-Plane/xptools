@@ -773,6 +773,7 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Utils\glew.c">
       <Filter>Utils</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\lzma19\C\7zAlloc.c">
       <Filter>lzma19</Filter>
     </ClCompile>
@@ -1590,6 +1591,7 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Utils\wglew.h">
       <Filter>Utils</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\lzma19\C\7z.h">
       <Filter>lzma19</Filter>
     </ClInclude>
