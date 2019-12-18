@@ -346,13 +346,13 @@ void	WED_SlippyMap::finish_loading_tile()
 					printf("Failed texture load from image.\n");
 					m_cache[res.out_path] = 0;
 				}
-				DestroyBitmap(info);
 			}
 			else
 			{
 				printf("Can not read image tile - bad PNG or JPG data.\n");
 				m_cache[res.out_path] = 0;
 			}
+			DestroyBitmap(&info);
 			delete m_cache_request;
 			m_cache_request = NULL;
 		}
