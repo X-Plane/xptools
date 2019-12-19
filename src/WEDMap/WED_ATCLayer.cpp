@@ -87,7 +87,6 @@ void WED_ATCLayer_DrawAircraft(WED_RampPosition * pos, GUI_GraphState * g, WED_M
 		
 		g->SetState(0, id ? 1 : 0, 0, 0, 1, 0, 0);
 		
-		glColor4f(1,1,0,0.5);
 		if(id)
 			g->BindTex(id, 0);
 		
@@ -117,8 +116,12 @@ bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, G
 	{
 		WED_RampPosition * pos = dynamic_cast<WED_RampPosition *>(entity);
 		DebugAssert(pos);
-
-		WED_ATCLayer_DrawAircraft(pos, g, GetZoomer());
+		WED_MapZoomerNew * z = GetZoomer();
+		if(z->GetPPM() > 5)
+			glColor4f(0, 1, 0, 0.25); // avoid getting more opaque when StructureLayer preview kicks in as well
+		else
+			glColor4f(0, 1, 0, 0.4);
+		WED_ATCLayer_DrawAircraft(pos, g, z);
 	}
 	if(entity->GetGISSubtype() == WED_TaxiRoute::sClass)
 	{

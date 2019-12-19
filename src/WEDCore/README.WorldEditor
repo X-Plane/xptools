@@ -1,4 +1,4 @@
--------------------------------------------------------------------------------
+﻿-------------------------------------------------------------------------------
                          WorldEditor Release Notes
 -------------------------------------------------------------------------------
 
@@ -12,6 +12,10 @@ WorldEditor's user's manual is online; pick "WED User's Guide" from the help
 menu to view it online.
 
 CHANGE HISTORY
+
+WED 2.2.0b2 t.b.d/20
+   Features:
+   - start showing aircraft footprints at lower map scale, add lines to ATC mode
 
 WED 2.2.0b1 17/12/19
    Features:

@@ -798,6 +798,7 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 		lock_list.push_back(WED_Runway::sClass);
 		lock_list.push_back(WED_Taxiway::sClass);
 		lock_list.push_back(k_show_taxiline_chain);
+		lock_list.push_back(WED_LinePlacement::sClass);
 
 		mATCLayer->SetVisible(true);
 		unhide_persistent(hide_list, lock_list);

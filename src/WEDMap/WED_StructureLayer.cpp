@@ -267,12 +267,15 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 			{
 				Point2		l;
 				pth->GetLocation(gis_Geo,l);
-				WED_MapZoomerNew * z = GetZoomer();
-				l = z->LLToPixel(l);
+				l = GetZoomer()->LLToPixel(l);
 				if (icon)
 				{
-					if(sub_class == WED_RampPosition::sClass && z->GetPPM() > 10)
-						WED_ATCLayer_DrawAircraft(ramp, g, z);
+					if (sub_class == WED_RampPosition::sClass && GetZoomer()->GetPPM() > 5)
+					{
+						glColor4f(0, 1, 0, 0.15);
+						WED_ATCLayer_DrawAircraft(ramp, g, GetZoomer());
+						glColor4fv(WED_Color_RGBA(struct_color));
+					}
 
 					GUI_PlotIcon(g,icon, l.x(),l.y(),pth->GetHeading(),GetFurnitureIconScale());
 					g->SetState(false,0,false,   false,true,false,false);
