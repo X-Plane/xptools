@@ -152,6 +152,22 @@ XObj8 * WED_ResourceMgr::LoadObj(const string& abspath)
 			return nullptr;
 		}
 	}
+	for (auto& l : new_obj->lods)
+	{
+		int num_anims = 0;
+		for (auto c : l.cmds)
+		{
+			if (c.cmd == anim_Begin) num_anims++;
+			else if (c.cmd == anim_End) num_anims--;
+
+		}
+		while (num_anims > 0)
+		{
+			l.cmds.push_back(XObjCmd8());
+			l.cmds.back().cmd = anim_End;
+			num_anims--;
+		}
+	}
 
 	if (new_obj->texture.length() > 0) 	process_texture_path(abspath, new_obj->texture);
 	if (new_obj->texture_draped.length() > 0)

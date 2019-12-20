@@ -435,9 +435,8 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				glEnd();
 				glColor4f(1,1,1,1);
 
-				glMatrixMode(GL_PROJECTION);
 				glPopMatrix();
-				glMatrixMode(GL_MODELVIEW);
+				glMatrixMode(GL_PROJECTION);
 				glPopMatrix();
 				glPopAttrib();
 			}
@@ -485,9 +484,8 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				draw_obj_at_xyz(mTexMgr, o,
 					xyz_off[0], xyz_off[1], xyz_off[2],	0, g);
 						
-				glMatrixMode(GL_PROJECTION);
 				glPopMatrix();
-				glMatrixMode(GL_MODELVIEW);
+				glMatrixMode(GL_PROJECTION);
 				glPopMatrix();
 				glPopAttrib();
 			}
@@ -509,10 +507,6 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 									
 				float approx_radius = real_radius * mZoom;
 
-				TexRef	ref = mTexMgr->LookupTexture(agp.base_tex.c_str() ,true, tex_Linear|tex_Mipmap|tex_Compress_Ok);
-				int id1 = ref  ? mTexMgr->GetTexID(ref ) : 0;
-				if(id1)g->BindTex(id1,0);
-				
 				glPushAttrib(GL_VIEWPORT_BIT);
 				glViewport(b[0],b[1],b[2]-b[0],b[3]-b[1]);
 				glMatrixMode(GL_PROJECTION);
@@ -534,6 +528,10 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 
 				if(!agp.tile.empty() && !agp.hide_tiles)
 				{
+					TexRef	ref = mTexMgr->LookupTexture(agp.base_tex.c_str(), true, tex_Linear | tex_Mipmap | tex_Compress_Ok);
+					int id1 = ref ? mTexMgr->GetTexID(ref) : 0;
+					if (id1)g->BindTex(id1, 0);
+
 					glDisable(GL_CULL_FACE);
 					glBegin(GL_TRIANGLE_FAN);
 					for(int n = 0; n < agp.tile.size(); n += 4)
@@ -544,12 +542,12 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 					glEnd();
 					glEnable(GL_CULL_FACE);
 				}	
-				for(vector<agp_t::obj>::iterator o = agp.objs.begin(); o != agp.objs.end(); ++o)
+				for(auto o : agp.objs)
 				{
 					const XObj8 * oo;
-					if(mResMgr->GetObjRelative(o->name,mRes,oo))
+					if(mResMgr->GetObjRelative(o.name,mRes,oo))
 					{
-						draw_obj_at_xyz(mTexMgr, oo, o->x, o->z, -o->y, o->r, g);
+						draw_obj_at_xyz(mTexMgr, oo, o.x, o.z, -o.y, o.r, g);
 					} 
 				}
 				glPopMatrix();
