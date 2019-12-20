@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2009, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -154,7 +154,7 @@ void			WED_GISEdge::Rescale			(GISLayer_t l,const Bbox2& old_bounds,const Bbox2&
 		mScH.value = old_bounds.rescale_to_xv(new_bounds,mScH.value);
 		mTcH.value = old_bounds.rescale_to_yv(new_bounds,mTcH.value );
 	}*/
-	
+
 }
 
 void			WED_GISEdge::Rotate			(GISLayer_t l,const Point2& ctr, double a)
@@ -167,7 +167,7 @@ void			WED_GISEdge::Rotate			(GISLayer_t l,const Point2& ctr, double a)
 		GetNthPoint(0)->GetLocation(l,p1);
 		GetNthPoint(1)->GetLocation(l,p2);
 		StateChanged();
-		
+
 		Point2	pt_old_lo(p1.x() + ctrl_lon_lo.value, p1.y() + ctrl_lat_lo.value);
 		Point2	pt_old_hi(p2.x() + ctrl_lon_hi.value, p2.y() + ctrl_lat_hi.value);
 		Vector2	v_old_lo = VectorLLToMeters(ctr, Vector2(ctr,pt_old_lo));
@@ -225,7 +225,7 @@ bool				WED_GISEdge::GetSide  (GISLayer_t l,int n, Bezier2& b) const
 
 	b.c1 = b.p1 + Vector2(ctrl_lon_lo.value,ctrl_lat_lo.value);
 	b.c2 = b.p2 + Vector2(ctrl_lon_hi.value,ctrl_lat_hi.value);
-	
+
 	return (b.p1 != b.c1 || b.p2 != b.c2);
 }
 
@@ -270,22 +270,22 @@ IGISPoint *	WED_GISEdge::SplitSide   (const Point2& p, double dist)
 
 	WED_Thing * np = CreateSplitNode();
 	np->SetParent(p1->GetParent(), p1->GetMyPosition()+1);
-	
+
 	string name;
 	p1->GetName(name);
 //	name += "(split)";
 	np->SetName(name);
-	
+
 	WED_GISEdge * me2 = dynamic_cast<WED_GISEdge*>(this->Clone());
-	
+
 	me2->SetParent(this->GetParent(),this->GetMyPosition()+1);
-	
+
 	this->AddSource(np,1);
 	this->RemoveSource(p2);
-	
+
 	me2->AddSource(np,0);
 	me2->RemoveSource(p1);
-	
+
 	if(is_b)
 	{
 		double t = b.approx_t_for_xy(p.x(), p.y());
@@ -297,17 +297,18 @@ IGISPoint *	WED_GISEdge::SplitSide   (const Point2& p, double dist)
 	else
 	{
 		Segment2 s1, s2;
-		
+		Point2 pp = b.as_segment().projection(p);
+
 		s1.p1 = b.p1;
-		s1.p2 = p;
-		s2.p1 = p;
+		s1.p2 = pp;
+		s2.p1 = pp;
 		s2.p2 = b.p2;
-		
+
 		this->SetSide(gis_Geo, s1);
 		me2->SetSide(gis_Geo, s2);
 	}
 
-	return dynamic_cast<IGISPoint *>(np);	
+	return dynamic_cast<IGISPoint *>(np);
 }
 
 void		WED_GISEdge::SetSide(GISLayer_t layer, const Segment2& s)
@@ -336,11 +337,11 @@ void		WED_GISEdge::SetSideBezier(GISLayer_t layer, const Bezier2& b)
 void		WED_GISEdge::Validate(void)
 {
 	WED_Entity::Validate();
-	
+
 	DebugAssert(CountSources() == 2);
 	DebugAssert(CountViewers() == 0);
 	DebugAssert(CountChildren() == 0);
-	
+
 	IGISPoint * p = SAFE_CAST(IGISPoint, GetNthSource(0));
 	DebugAssert(p);
 				p = SAFE_CAST(IGISPoint, GetNthSource(1));

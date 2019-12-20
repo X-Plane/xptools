@@ -191,11 +191,15 @@ void		WED_CreateEdgeTool::AcceptPath(
 	// split the edges and snap us over.
 	for (int p = 0; p < pts.size(); ++p)
 	{
-		double dist=frame_dist*frame_dist;
+		double sqdist=frame_dist*frame_dist;
 		IGISPointSequence * seq = NULL;
-		FindNearP2S(host_for_merging, NULL, edge_class,pts[p], seq, dist);
+		FindNearP2S(host_for_merging, NULL, edge_class,pts[p], seq, sqdist ,frame_dist);
 		if(seq)
-			seq->SplitSide(pts[p], 0.001);
+		{
+			IGISPoint * pp = seq->SplitSide(pts[p], 0.001);
+			if(pp)
+				pp->GetLocation(gis_Geo,pts[p]);
+		}
 	}
 
 	/************************************************************************************************
@@ -203,6 +207,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 	 ************************************************************************************************/
 
 	vector<WED_GISEdge*> tool_created_edges;
+	Bbox2 tool_created_bounds;
 	WED_GISEdge *	new_edge = NULL;
 	WED_TaxiRoute *	tr = NULL;
 #if ROAD_EDITING
@@ -306,6 +311,9 @@ void		WED_CreateEdgeTool::AcceptPath(
 		// Do this last - half-built edge inserted the world destabilizes accessors.
 		new_edge->SetParent(host_for_parent,idx);
 		tool_created_edges.push_back(new_edge);
+		Bbox2 new_edge_bounds;
+		new_edge->GetBounds(gis_Geo,new_edge_bounds);
+		tool_created_bounds += new_edge_bounds;
 		sel->Insert(new_edge);
 //		printf("Added edge %d  from 0x%08x to 0x%08x\n", p, src, dst);
 		src = dst;
@@ -426,7 +434,7 @@ void WED_CreateEdgeTool::FindNear(WED_Thing * host, IGISEntity * ent, const char
 	}
 }
 
-void WED_CreateEdgeTool::FindNearP2S(WED_Thing * host, IGISEntity * ent, const char * filter, const Point2& loc, IGISPointSequence *& out_thing, double& out_dsq)
+void WED_CreateEdgeTool::FindNearP2S(WED_Thing * host, IGISEntity * ent, const char * filter, const Point2& loc, IGISPointSequence *& out_thing, double& out_dsq ,const double dst)
 {
 	IGISEntity * e = ent ? ent : dynamic_cast<IGISEntity*>(host);
 	WED_Thing * t = host ? host : dynamic_cast<WED_Thing *>(ent);
@@ -458,14 +466,11 @@ void WED_CreateEdgeTool::FindNearP2S(WED_Thing * host, IGISEntity * ent, const c
 					{
 						if(loc != b.p1 && loc != b.p2)
 						{
-//							double d = b.squared_distance(loc);
-//							if(d < out_dsq)
-//							{
-//								out_dsq = d;
-//								out_thing = ps;
-//							}
+							if(b.is_near(loc,dst))
+							{
+								out_thing = ps;
+							}
 						}
-
 					}
 					else
 					{
@@ -486,14 +491,14 @@ void WED_CreateEdgeTool::FindNearP2S(WED_Thing * host, IGISEntity * ent, const c
 			if((c = dynamic_cast<IGISComposite *>(e)) != NULL)
 			{
 				for(int n = 0; n < c->GetNumEntities(); ++n)
-					FindNearP2S(NULL,c->GetNthEntity(n), filter, loc, out_thing, out_dsq);
+					FindNearP2S(NULL,c->GetNthEntity(n), filter, loc, out_thing, out_dsq, dst);
 			}
 		}
 	}
 	else
 	{
 		for(int n = 0; n < host->CountChildren(); ++n)
-			FindNearP2S(host->GetNthChild(n), NULL, filter, loc, out_thing, out_dsq);
+			FindNearP2S(host->GetNthChild(n), NULL, filter, loc, out_thing, out_dsq, dst);
 	}
 }
 

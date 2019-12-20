@@ -96,7 +96,7 @@ private:
 			// FILTERING: we don't actually want our network-creation tools to pick up just ANY part of the airport.  Filter field (if not null) is the 
 			// name of the classes that we 'intersect' with.  It should be the edge class name.
 			void		FindNear(   WED_Thing * host, IGISEntity * ent, const char * filter, const Point2& loc, WED_Thing *& out_thing,         double& out_dsq);
-			void		FindNearP2S(WED_Thing * host, IGISEntity * ent, const char * filter, const Point2& loc, IGISPointSequence *& out_thing, double& out_dsq);
+			void		FindNearP2S(WED_Thing * host, IGISEntity * ent, const char * filter, const Point2& loc, IGISPointSequence *& out_thing, double& out_dsg ,const double dst);
 			WED_Thing *	GetHost(int& idx);
 
 	bool		get_valid_road_info(road_info_t * optional_info) const;
