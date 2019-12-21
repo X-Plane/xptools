@@ -1165,22 +1165,29 @@ set<WED_GISEdge *> WED_do_select_crossing(WED_Thing * t)
 	vector<WED_GISEdge *> edges;
 	CollectRecursive(t, back_inserter(edges), ThingNotHidden, IsGraphEdge);
 
-	return WED_do_select_crossing(edges);
+	return WED_do_select_crossing(edges,Bbox2(0,0,0,0));
 }
 
-set<WED_GISEdge *> WED_do_select_crossing(const vector<WED_GISEdge *> edges)
+set<WED_GISEdge *> WED_do_select_crossing(const vector<WED_GISEdge *> edges ,const Bbox2& cull_bounds)
 {
 	set<WED_GISEdge*> crossed_edges;
+	Bbox2 edge_bounds;
 	// Ben says: yes this totally sucks - replace it someday?
 	for (int i = 0; i < edges.size(); ++i)
 	{
+		IGISEdge * ii = edges[i];
+		DebugAssert(ii);
+		ii->GetBounds(gis_Geo,edge_bounds);
+		if(!cull_bounds.is_empty() && !cull_bounds.overlap(edge_bounds)) continue;
+
 		for (int j = i + 1; j < edges.size(); ++j)
 		{
-			IGISEdge * ii = edges[i];
 			IGISEdge * jj = edges[j];
-			DebugAssert(ii != jj);
-			DebugAssert(ii);
 			DebugAssert(jj);
+			DebugAssert(ii != jj);
+
+			jj->GetBounds(gis_Geo,edge_bounds);
+			if(!cull_bounds.is_empty() && !cull_bounds.overlap(edge_bounds)) continue;
 
 			if(!(ii->GetGISSubtype() == jj->GetGISSubtype())) continue;
 
