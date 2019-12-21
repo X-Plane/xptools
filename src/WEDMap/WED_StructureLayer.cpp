@@ -50,6 +50,7 @@
 #include "WED_TruckDestination.h"
 #include "WED_Airport.h"
 #include "WED_RampPosition.h"
+#include "WED_FacadeRing.h"
 #include "WED_Windsock.h"
 #include "WED_AirportBeacon.h"
 #include "WED_SimpleBoundaryNode.h"
@@ -209,7 +210,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 					GUI_FontDraw(g, font_UI_Basic, white, 0, 10, ENUM_Desc(e.second), align_Center);
 					glPopMatrix();
 				}
-				g->SetState(false,0,false,false,true,false,false);
+				g->SetTexUnits(0);
 			}
 		}
 	}
@@ -242,7 +243,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 					pt->GetLocation(gis_Geo,l);
 					l = GetZoomer()->LLToPixel(l);
 					GUI_PlotIcon(g,icon, l.x(),l.y(),0,GetFurnitureIconScale());
-					g->SetState(false,0,false,   false,true,false,false);
+					g->SetTexUnits(0);
 				}
 			}
 		}
@@ -278,7 +279,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 					}
 
 					GUI_PlotIcon(g,icon, l.x(),l.y(),pth->GetHeading(),GetFurnitureIconScale());
-					g->SetState(false,0,false,   false,true,false,false);
+					g->SetTexUnits(0);
 				}
 				else // if(!selected)         	// selection layer will draw a big cross with handles over it, anyways. Does not save anything measureable.
 				{
@@ -324,7 +325,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 					helipad->GetLocation(gis_Geo,p);
 					p = GetZoomer()->LLToPixel(p);
 					GUI_PlotIcon(g, "map_helipad.png", p.x(), p.y(), ptwl->GetHeading(),GetFurnitureIconScale());
-					g->SetState(false,0,false,   false,true,false,false);
+					g->SetTexUnits(0);
 				}
 			}
 		}
@@ -346,14 +347,15 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 						bool hot = tr->HasHotDepart() || tr->HasHotArrival();
 						bool rwy = tr->IsRunway();
 						bool ils = tr->HasHotILS();
-						
-						if(hot)                 struct_color = selected ? wed_Hotzone_Selected : wed_Hotzone;
-						else if(ils)            struct_color = selected ? wed_ILSzone_Selected : wed_ILSzone;
+
+						if (hot)                struct_color = selected ? wed_Hotzone_Selected : wed_Hotzone;
+						else if (ils)           struct_color = selected ? wed_ILSzone_Selected : wed_ILSzone;
 						else if (rwy)           struct_color = selected ? wed_Runway_Selected : wed_Runway;
 
 						glColor4fv(WED_Color_RGBA(struct_color));
 					}
 				}
+
 				int i, n = ps->GetNumSides();
 				WED_MapZoomerNew * z = GetZoomer();
 
@@ -378,17 +380,34 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 						b.c2 = z->LLToPixel(b.c2);
 
 						int point_count = BezierPtsCount(b, z);
-						
+
 						pts.reserve(point_count+1);
 						for (int n = 0; n <= point_count; ++n)
 							pts.push_back(b.midpoint((float) n / (float) point_count));
 
+						if(i == 0 && sub_class == WED_FacadeRing::sClass)	// facade ground contact / 1st segment marker
+						{
+							glColor4f(1, 1, 1, 1);
+							Point2 p = b.midpoint(0.5);
+							GUI_PlotIcon(g, "handle_closeloop.png", p.x(), p.y(), 0.0, GetFurnitureIconScale());
+							g->SetTexUnits(0);
+							glColor4fv(WED_Color_RGBA(struct_color));
+						}
 					}
 					else
 					{
 						pts.push_back(z->LLToPixel(b.p1));
 						pts.push_back(z->LLToPixel(b.p2));
+						if (i == 0 && sub_class == WED_FacadeRing::sClass)	// facade ground contact / 1st segment marker
+						{
+							glColor4f(1, 1, 1, 1);
+							Point2 p = z->LLToPixel(b.midpoint(0.5));
+							GUI_PlotIcon(g, "handle_closeloop.png", p.x(), p.y(), 0.0, GetFurnitureIconScale());
+							g->SetTexUnits(0);
+							glColor4fv(WED_Color_RGBA(struct_color));
+						}
 					}
+
 					DrawLineAttrs(&*pts.begin(), pts.size(), attrs);
 					if(!attrs.empty()) glColor4fv(WED_Color_RGBA(struct_color));
 					
@@ -399,7 +418,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 						{
 							Vector2 orient(pts[pts.size()-2],pts[pts.size()-1]);
 							GUI_PlotIcon(g,"handle_arrowhead.png", pts.back().x(), pts.back().y(),atan2(orient.dx,orient.dy) * RAD_TO_DEG, 1.0);
-							g->SetState(false,0,false,   false,true,false,false);
+							g->SetTexUnits(0);
 						}
 					}
 				}

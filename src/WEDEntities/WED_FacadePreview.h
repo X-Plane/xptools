@@ -232,7 +232,7 @@ struct	REN_FacadeLOD_t {
 
 
 void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, const fac_info_t& info, const Polygon2& footprint, const vector<int>& choices, 
-	double fac_height, GUI_GraphState * g, bool want_thinWalls);
+	double fac_height, GUI_GraphState * g, bool want_thinWalls, double ppm_for_culling = 100);
 	
 void height_desc_for_facade(const fac_info_t& info, string& h_decription);
 

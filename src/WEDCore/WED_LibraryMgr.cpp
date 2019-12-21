@@ -31,14 +31,14 @@
 #include "MemFileUtils.h"
 #include <time.h>
 
-static void clean_vpath(string& s)
+void WED_clean_vpath(string& s)
 {
 	for(string::size_type p = 0; p < s.size(); ++p)
 		if(s[p] == '\\' || s[p] == ':')
 			s[p] = '/';
 }
 
-static void clean_rpath(string& s)
+void WED_clean_rpath(string& s)
 {
 	for(string::size_type p = 0; p < s.size(); ++p)
 		if(s[p] == '\\' || s[p] == ':' || s[p] == '/')
@@ -178,9 +178,7 @@ int			WED_LibraryMgr::GetResourceType(const string& r)
 
 string		WED_LibraryMgr::GetResourcePath(const string& r, int variant)
 {
-	string fixed(r);
-	clean_vpath(fixed);
-	res_map_t::iterator me = res_table.find(fixed);
+	res_map_t::iterator me = res_table.find(r);
 	if (me==res_table.end()) return string();
 	DebugAssert(variant < me->second.real_paths.size());
 	return me->second.real_paths[variant];
@@ -188,36 +186,28 @@ string		WED_LibraryMgr::GetResourcePath(const string& r, int variant)
 
 bool	WED_LibraryMgr::IsResourceDefault(const string& r)
 {
-	string fixed(r);
-	clean_vpath(fixed);
-	res_map_t::const_iterator me = res_table.find(fixed);
+	res_map_t::const_iterator me = res_table.find(r);
 	if (me==res_table.end()) return false;
 	return me->second.is_default;
 }
 
 bool	WED_LibraryMgr::IsResourceLocal(const string& r)
 {
-	string fixed(r);
-	clean_vpath(fixed);
-	res_map_t::const_iterator me = res_table.find(fixed);
+	res_map_t::const_iterator me = res_table.find(r);
 	if (me==res_table.end()) return false;
 	return me->second.packages.count(pack_Local) && me->second.packages.size() == 1;
 }
 
 bool	WED_LibraryMgr::IsResourceLibrary(const string& r)
 {
-	string fixed(r);
-	clean_vpath(fixed);
-	res_map_t::const_iterator me = res_table.find(fixed);
+	res_map_t::const_iterator me = res_table.find(r);
 	if (me==res_table.end()) return false;
 	return !me->second.packages.count(pack_Local) || me->second.packages.size() > 1;
 }
 
 bool	WED_LibraryMgr::IsResourceDeprecatedOrPrivate(const string& r)
 {
-	string fixed(r);
-	clean_vpath(fixed);
-	res_map_t::const_iterator me = res_table.find(fixed);
+	res_map_t::const_iterator me = res_table.find(r);
 	if (me==res_table.end()) return false;
 	return me->second.status < status_Yellow;                  // status "Yellow' is still deemed public wrt validation, i.e. allowed on the gateway
 }
@@ -243,9 +233,7 @@ bool	WED_LibraryMgr::DoesPackHaveLibraryItems(int package)
 
 int		WED_LibraryMgr::GetNumVariants(const string& r)
 {
-	string fixed(r);
-	clean_vpath(fixed);
-	res_map_t::const_iterator me = res_table.find(fixed);
+	res_map_t::const_iterator me = res_table.find(r);
 	if (me==res_table.end()) return 1;
 	return me->second.real_paths.size();
 }
@@ -316,8 +304,8 @@ void		WED_LibraryMgr::Rescan()
 				{
 					MFS_string(&s,&vpath);
 					MFS_string_eol(&s,&rpath);
-					clean_vpath(vpath);
-					clean_rpath(rpath);
+					WED_clean_vpath(vpath);
+					WED_clean_rpath(rpath);
 
 					if (is_no_true_subdir_path(rpath)) break; // ignore paths that lead outside current scenery directory
 					rpath=pack_base+DIR_STR+rpath;
@@ -333,8 +321,8 @@ void		WED_LibraryMgr::Rescan()
 				    double x = MFS_double(&s);
 					MFS_string(&s,&vpath);
 					MFS_string_eol(&s,&rpath);
-					clean_vpath(vpath);
-					clean_rpath(rpath);
+					WED_clean_vpath(vpath);
+					WED_clean_rpath(rpath);
 					if (is_no_true_subdir_path(rpath)) break; // ignore paths that lead outside current scenery directory
 					rpath=pack_base+DIR_STR+rpath;
 					FILE_case_correct( (char *) rpath.c_str());  // yeah - I know I'm overriding the 'const' protection of the c_str() here.

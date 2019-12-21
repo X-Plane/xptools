@@ -703,11 +703,23 @@ struct	preview_line : WED_PreviewItem {
 static void draw_string_preview(const vector<Point2>& pts, double& d0, double ds, const str_info_t& sinfo, WED_MapZoomerNew * zoomer, 
 	GUI_GraphState * g, ITexMgr * tman, const XObj8 * obj)
 {
+	double ppm = zoomer->GetPPM();
+
+	// strings, like taxiway perimeter lights - can be very big - and lights only get visible when zoomed in very close and are still small.
+	// So it almost certain - the vast majority will be _far_ off screen. So lets not care about their size in screenspace , offset etc 
+	// just cull the ones *very* far off screen.
+
+	double E, W, N, S;
+	zoomer->GetPixelBounds(W, S, E, N);
+	double tmp = E - W;
+	E += tmp; W -= tmp;
+	tmp = N - S;
+	N += tmp; S -= tmp;
+
 	for (int j = 0; j < pts.size()-1; ++j)
 	{
-		double PPM = zoomer->GetPPM();
 		Vector2 dir = Vector2(pts[j],pts[j+1]);
-		double len_m = sqrt(dir.squared_length()) / PPM;
+		double len_m = sqrt(dir.squared_length()) / ppm;
 		
 		if (ds-d0 > len_m) 
 		{
@@ -718,7 +730,7 @@ static void draw_string_preview(const vector<Point2>& pts, double& d0, double ds
 			double hdg = VectorMeters2NorthHeading(pts[j], pts[j], dir) + sinfo.rotation;
 			Vector2 off = dir.perpendicular_cw();
 			off.normalize();
-			off *= sinfo.offset * PPM;
+			off *= sinfo.offset * ppm;
 			
 			double d1 = ds - d0;
 			double x;
@@ -733,7 +745,8 @@ static void draw_string_preview(const vector<Point2>& pts, double& d0, double ds
 			
 			while(obj_this_seg >= 0)
 			{
-				draw_obj_at_ll(tman, obj, zoomer->PixelToLL(cur_pos+off), hdg, g, zoomer);
+				if (cur_pos.x() < E && cur_pos.x() > W && cur_pos.y() > S && cur_pos.y() < N)
+					draw_obj_at_ll(tman, obj, zoomer->PixelToLL(cur_pos+off), hdg, g, zoomer);
 				cur_pos += dir * (ds / len_m);
 				obj_this_seg--;
 			}
@@ -772,12 +785,11 @@ struct	preview_string : WED_PreviewItem {
 		
 					double ds = str->GetSpacing();
 					double d0 = ds * 0.5;
-					
+
 					for(int i = 0; i < ps->GetNumSides(); ++i)
 					{
 						vector<Point2>	pts;
-						SideToPoints(ps,i,zoomer, pts);
-						
+						SideToPoints(ps, i, zoomer, pts);
 						draw_string_preview(pts, d0, ds, *sinfo, zoomer, g, tman, o);
 					}
 				}
@@ -1005,6 +1017,11 @@ struct	preview_facade : public preview_polygon {
 			WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 			
 			g->SetState(false,0,false,true,true,true,true);
+
+			float mat[16];
+			glGetFloatv(GL_PROJECTION_MATRIX, mat);
+			bool isTilted = (mat[2] != 0.0 || mat[6] != 0.0);
+
 			glMatrixMode(GL_MODELVIEW);
 			glPushMatrix();
 			Point2 l = zoomer->LLToPixel(ref_pt);
@@ -1013,18 +1030,8 @@ struct	preview_facade : public preview_polygon {
 			glScalef(ppm,ppm,ppm);
 			glRotatef(90, 1,0,0);
 			if(rmgr->GetFac(vpath, info))
-				draw_facade(tman, rmgr, vpath, *info, pts, choices, fac->GetHeight(), g, true);
+				draw_facade(tman, rmgr, vpath, *info, pts, choices, fac->GetHeight(), g, isTilted, 0.7*ppm);
 			glPopMatrix();
-		}
-		
-		// facade ground contact / 1st segment marker
-		{
-			Point2 p;
-			Bezier2 b;
-			ps->GetSide(gis_Geo,0,b);
-			p = b.midpoint(0.5);
-			p=zoomer->LLToPixel(p);
-			GUI_PlotIcon(g,"handle_closeloop.png", p.x(), p.y(),0.0,1.0);
 		}
 		
 		g->SetState(false,0,false,true,true,false,false);
@@ -1168,7 +1175,7 @@ struct	preview_object : public WED_PreviewItem {
 			{
 				const XObj8 * oo;
 				if((o->show_lo+o->show_hi)/2 <= preview_level)
-				if(rmgr->GetObjRelative(o->name,vpath,oo))
+				if(rmgr->GetObjRelative(o->name,vpath,oo) && (ppm * max(oo->xyz_max[0] - oo->xyz_min[0], oo->xyz_max[2] - oo->xyz_min[2]) > MIN_PIXELS_PREVIEW))
 				{
 					draw_obj_at_xyz(tman, oo, o->x,0,-o->y,o->r, g);
 				}

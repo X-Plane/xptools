@@ -73,19 +73,11 @@
    found at a path relative to the referencing art assets location. If not - ask the lib Mgr to resolve a path for it.
 */
 
-
-static void clean_rpath(string& s)
-{
-	for(string::size_type p = 0; p < s.size(); ++p)
-		if(s[p] == '\\' || s[p] == ':' || s[p] == '/')
-			s[p] = DIR_CHAR;
-}
-
 static void process_texture_path(const string& path_of_obj, string& path_of_tex)
 {
 	string parent(FILE_get_dir_name(path_of_obj));
 	path_of_tex = FILE_get_file_name_wo_extensions(path_of_tex);
-	clean_rpath(path_of_tex);
+	WED_clean_rpath(path_of_tex);
 	
 	while (path_of_tex.length() > 2 && path_of_tex[0] == '.' && path_of_tex[1] == '.')
 	{
@@ -98,7 +90,7 @@ static void process_texture_path(const string& path_of_obj, string& path_of_tex)
 	if(FILE_exists(path_of_tex.c_str()))  return;
 	path_of_tex = parent + ".png";
 	if(FILE_exists(path_of_tex.c_str()))  return;
-	path_of_tex = parent + ".bmp";
+	path_of_tex = pare nt + ".bmp";
 }
 
 WED_ResourceMgr::WED_ResourceMgr(WED_LibraryMgr * in_library) : mLibrary(in_library)
@@ -187,19 +179,27 @@ bool	WED_ResourceMgr::GetObjRelative(const string& obj_path, const string& paren
 {
 /* This is ised to resolve objects referenced inside other non-obj assets like .agp, .fac or .str
    These can be either vpaths or paths relative to the art assets location.
-   If it a vpath - its got to be know to th library manager.
+   If it a vpath - its got to be known to the library manager.
 */
 	//printf("GetObjRel '%s', '%s'\n", obj_path.c_str(), parent_path.c_str());
 	if(mLibrary->GetResourcePath(obj_path).size())
 	{
 		if(GetObj(obj_path,obj))
 		{
-			//printf("GetObjRel GotObj via vpath '%s'\n", obj_path.c_str());
 			return true;
 		}
 	}
 	/* Try if its a valid relative path */
 	string apath = FILE_get_dir_name(mLibrary->GetResourcePath(parent_path)) + obj_path;
+
+	for (auto& a : apath)
+#if IBM
+		if (a == '/')
+#else
+		if (a == '\\')
+#endif
+			a = DIR_CHAR;
+
 	auto i = mObj.find(apath);
 	if(i != mObj.end())
 	{
@@ -430,10 +430,7 @@ bool	WED_ResourceMgr::GetStr(const string& path, str_info_t const *& info)
 			int ignore = MFS_double(&s);
 			string obj_res;
 			MFS_string(&s,&obj_res);
-			clean_rpath(obj_res);
-//			obj_res = FILE_get_dir_name(p) + obj_res;
-//			FILE_case_correct( (char *) obj_res.c_str());
-//printf("str case corr '%s'\n",obj_res.c_str());
+			WED_clean_vpath(obj_res);
 			out_info->objs.push_back(obj_res);
 		}
 		MFS_string_eol(&s,NULL);
@@ -658,14 +655,14 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 					FAIL("Cannot have FACADE_SCRAPER_MODEL without FACADE_SCRAPER.")
 				string file;
 				MFS_string(&s,&file);
-				clean_rpath(file);
+				WED_clean_vpath(file);
 				choice.base_obj = file;
 				if (choice.base_obj.empty())
 					FAIL("Could not load base OBJ for FACADE_SCRAPER_MODEL")
 				MFS_string(&s,&file);
 				if(file != "-")
 				{
-					clean_rpath(file);
+					WED_clean_vpath(file);
 					choice.towr_obj = file;
 					if (choice.towr_obj.empty())
 						FAIL("Could not load tower OBJ for FACADE_SCRAPER_MODEL")
@@ -689,7 +686,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 				choice.base_xzr[1] = MFS_double(&s);
 				choice.base_xzr[2] = MFS_double(&s);
 				MFS_string(&s,&file);
-				clean_rpath(file);
+				WED_clean_vpath(file);
 				MFS_int(&s); MFS_int(&s);  // skip showlevel restrictions
 				choice.base_obj = file;
 				if (choice.base_obj.empty())
@@ -702,7 +699,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 				MFS_int(&s); MFS_int(&s);  // skip showlevel restrictions
 				if(file != "-")
 				{
-					clean_rpath(file);
+					WED_clean_vpath(file);
 					choice.towr_obj = file;
 				}
 /*				while(m.TXT_has_word())
@@ -876,7 +873,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 				{
 					string file;
 					MFS_string(&s,&file);
-					clean_rpath(file);
+					WED_clean_vpath(file);
 					fac->objs.push_back(file);
 				}
 				else if(MFS_string_match(&s,"FLOOR", false))
@@ -1341,7 +1338,7 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t& out_info)
 		{
 			string p;
 			MFS_string(&s,&p);
-			clean_rpath(p);
+			WED_clean_vpath(p);          // cant say here yet if its a relative rpath or a vpath.
 			obj_paths.push_back(p);
 		}
 		else if(MFS_string_match(&s,"TILE",false))
