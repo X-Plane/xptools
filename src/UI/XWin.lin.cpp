@@ -17,7 +17,7 @@ XWin::XWin(
 	mMouse.y     = 0;
 	SetTitle(inTitle);
 
-printf("New WinGeo %d %d\n",inX, inY);
+//	printf("New WinGeo %d %d\n",inX, inY);
 
 	if(inAttributes & xwin_style_centered)
 		this->setGeometry(QStyle::alignedRect(Qt::LeftToRight,Qt::AlignCenter, this->size(), qApp->desktop()->availableGeometry()));
@@ -378,7 +378,7 @@ void XWin::GetDesktop(int bounds[4])
 	for (int s = 0; s < num_screens; ++s)
 	{
 		QRect screen = dt->availableGeometry(s);
-		printf("Screen %d: l=%d t=%d w=%d h=%d\n", s, screen.left(), screen.top(), screen.width(), screen.height());
+//		printf("Screen %d: l=%d t=%d w=%d h=%d\n", s, screen.left(), screen.top(), screen.width(), screen.height());
 		bounds[0] = min(bounds[0], screen.left());
 		bounds[1] = min(bounds[1], screen.top());
 		bounds[2] = max(bounds[2], screen.right());
