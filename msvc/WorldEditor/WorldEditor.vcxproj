@@ -55,6 +55,26 @@
     <ClCompile Include="..\..\src\lib_json\src\lib_json\json_reader.cpp" />
     <ClCompile Include="..\..\src\lib_json\src\lib_json\json_value.cpp" />
     <ClCompile Include="..\..\src\lib_json\src\lib_json\json_writer.cpp" />
+    <ClCompile Include="..\..\src\lzma19\C\7zAlloc.c" />
+    <ClCompile Include="..\..\src\lzma19\C\7zArcIn.c" />
+    <ClCompile Include="..\..\src\lzma19\C\7zBuf.c" />
+    <ClCompile Include="..\..\src\lzma19\C\7zBuf2.c" />
+    <ClCompile Include="..\..\src\lzma19\C\7zCrc.c" />
+    <ClCompile Include="..\..\src\lzma19\C\7zCrcOpt.c" />
+    <ClCompile Include="..\..\src\lzma19\C\7zDec.c" />
+    <ClCompile Include="..\..\src\lzma19\C\7zFile.c" />
+    <ClCompile Include="..\..\src\lzma19\C\7zStream.c" />
+    <ClCompile Include="..\..\src\lzma19\C\Alloc.c" />
+    <ClCompile Include="..\..\src\lzma19\C\Bcj2.c" />
+    <ClCompile Include="..\..\src\lzma19\C\Bcj2Enc.c" />
+    <ClCompile Include="..\..\src\lzma19\C\Bra.c" />
+    <ClCompile Include="..\..\src\lzma19\C\Bra86.c" />
+    <ClCompile Include="..\..\src\lzma19\C\BraIA64.c" />
+    <ClCompile Include="..\..\src\lzma19\C\CpuArch.c" />
+    <ClCompile Include="..\..\src\lzma19\C\Delta.c" />
+    <ClCompile Include="..\..\src\lzma19\C\Lzma2Dec.c" />
+    <ClCompile Include="..\..\src\lzma19\C\Lzma86Dec.c" />
+    <ClCompile Include="..\..\src\lzma19\C\LzmaDec.c" />
     <ClCompile Include="..\..\src\Network\b64.c" />
     <ClCompile Include="..\..\src\Network\curl_http.cpp" />
     <ClCompile Include="..\..\src\Network\PCSBSocket.win.cpp" />
@@ -75,6 +95,7 @@
     <ClCompile Include="..\..\src\Utils\EndianUtils.c" />
     <ClCompile Include="..\..\src\Utils\FileUtils.cpp" />
     <ClCompile Include="..\..\src\Utils\GISUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\glew.c" />
     <ClCompile Include="..\..\src\Utils\MatrixUtils.cpp" />
     <ClCompile Include="..\..\src\Utils\md5.c" />
     <ClCompile Include="..\..\src\Utils\MemFileUtils.cpp" />
@@ -305,6 +326,21 @@
     <ClInclude Include="..\..\src\Interfaces\IResolver.h" />
     <ClInclude Include="..\..\src\Interfaces\ISelection.h" />
     <ClInclude Include="..\..\src\Interfaces\ITexMgr.h" />
+    <ClInclude Include="..\..\src\lzma19\C\7z.h" />
+    <ClInclude Include="..\..\src\lzma19\C\7zAlloc.h" />
+    <ClInclude Include="..\..\src\lzma19\C\7zBuf.h" />
+    <ClInclude Include="..\..\src\lzma19\C\7zCrc.h" />
+    <ClInclude Include="..\..\src\lzma19\C\7zFile.h" />
+    <ClInclude Include="..\..\src\lzma19\C\7zTypes.h" />
+    <ClInclude Include="..\..\src\lzma19\C\Alloc.h" />
+    <ClInclude Include="..\..\src\lzma19\C\Bcj2.h" />
+    <ClInclude Include="..\..\src\lzma19\C\Bra.h" />
+    <ClInclude Include="..\..\src\lzma19\C\Compiler.h" />
+    <ClInclude Include="..\..\src\lzma19\C\CpuArch.h" />
+    <ClInclude Include="..\..\src\lzma19\C\Delta.h" />
+    <ClInclude Include="..\..\src\lzma19\C\Lzma2Dec.h" />
+    <ClInclude Include="..\..\src\lzma19\C\Lzma86.h" />
+    <ClInclude Include="..\..\src\lzma19\C\LzmaDec.h" />
     <ClInclude Include="..\..\src\Network\curl_http.h" />
     <ClInclude Include="..\..\src\Network\PCSBSocket.h" />
     <ClInclude Include="..\..\src\Network\PCSBSocketUDP.h" />
@@ -324,12 +360,14 @@
     <ClInclude Include="..\..\src\Utils\EndianUtils.h" />
     <ClInclude Include="..\..\src\Utils\FileUtils.h" />
     <ClInclude Include="..\..\src\Utils\GISUtils.h" />
+    <ClInclude Include="..\..\src\Utils\glew.h" />
     <ClInclude Include="..\..\src\Utils\md5.h" />
     <ClInclude Include="..\..\src\Utils\MemFileUtils.h" />
     <ClInclude Include="..\..\src\Utils\PlatformUtils.h" />
     <ClInclude Include="..\..\src\Utils\STLUtils.h" />
     <ClInclude Include="..\..\src\Utils\TexUtils.h" />
     <ClInclude Include="..\..\src\Utils\unzip.h" />
+    <ClInclude Include="..\..\src\Utils\wglew.h" />
     <ClInclude Include="..\..\src\Utils\XChunkyFileUtils.h" />
     <ClInclude Include="..\..\src\Utils\XUtils.h" />
     <ClInclude Include="..\..\src\Utils\zip.h" />
@@ -515,6 +553,8 @@
     <Image Include="..\..\src\WEDResources\tabs.png" />
     <Image Include="..\..\src\WEDResources\tce_tools.png" />
     <Image Include="..\..\src\WEDResources\tce_tools_blank.png" />
+    <Image Include="..\..\src\WEDResources\exclaim.png" />
+    <Image Include="..\..\src\WEDResources\tilt_tool.png" />
     <Image Include="..\..\src\WEDResources\WED.ico" />
   </ItemGroup>
   <ItemGroup>
@@ -597,7 +637,7 @@
       <DisableSpecificWarnings>4018;4244;4068;4800;4305;4355;4200;4250;4482;</DisableSpecificWarnings>
       <MinimalRebuild>false</MinimalRebuild>
       <PreprocessorDefinitions>WED=1;_LIB;NO_CGAL=1;CURL_STATICLIB;USE_JPEG=1;USE_TIF=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\src\WEDCore;..\..\src\WEDEntities;..\..\src\WEDFileCache;..\..\src\WEDImportExport;..\..\src\WEDLibrary;..\..\src\WEDMap;..\..\src\WEDNetwork;..\..\src\WEDProperties;..\..\src\WEDTCE;..\..\src\WEDWindows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src\WEDCore;..\..\src\WEDEntities;..\..\src\WEDFileCache;..\..\src\WEDImportExport;..\..\src\WEDLibrary;..\..\src\WEDMap;..\..\src\WEDNetwork;..\..\src\WEDProperties;..\..\src\WEDTCE;..\..\src\WEDWindows;..\..\src\lzma19\C;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -615,7 +655,7 @@
       </SDLCheck>
       <DisableSpecificWarnings>4018;4244;4068;4800;4305;4355;4200;4250;</DisableSpecificWarnings>
       <PreprocessorDefinitions>WED=1;_LIB;NO_CGAL=1;CURL_STATICLIB;USE_JPEG=1;USE_TIF=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\src\WEDCore;..\..\src\WEDEntities;..\..\src\WEDFileCache;..\..\src\WEDImportExport;..\..\src\WEDLibrary;..\..\src\WEDMap;..\..\src\WEDNetwork;..\..\src\WEDProperties;..\..\src\WEDTCE;..\..\src\WEDWindows;%(AdditionalIncludeDirectories);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src\WEDCore;..\..\src\WEDEntities;..\..\src\WEDFileCache;..\..\src\WEDImportExport;..\..\src\WEDLibrary;..\..\src\WEDMap;..\..\src\WEDNetwork;..\..\src\WEDProperties;..\..\src\WEDTCE;..\..\src\WEDWindows;..\..\src\lzma19\C;..\..\src\lzma19\C;%(AdditionalIncludeDirectories);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>

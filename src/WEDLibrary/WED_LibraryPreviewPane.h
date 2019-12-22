@@ -38,37 +38,39 @@ public:
 	WED_LibraryPreviewPane(WED_ResourceMgr * res_mgr, ITexMgr * tex_mgr);
 
 	virtual	void		Draw(GUI_GraphState * state);
-	void					SetResource(const string& r, int res_type);
-	void					ClearResource(void);
+	void				SetResource(const string& r, int res_type);
+	void				ClearResource(void);
 	
 	virtual void		ReceiveMessage(GUI_Broadcaster * inSrc, intptr_t inMsg, intptr_t inParam);
 
 	int					ScrollWheel(int x, int y, int dist, int axis);
-	virtual	int		MouseDown(int x, int y, int button);
+	virtual	int			MouseDown(int x, int y, int button);
 	virtual	void		MouseDrag(int x, int y, int button);
 	virtual	void		MouseUp  (int x, int y, int button);
 
 
 private:
 	
-		void 				UpdateFacadePreview(void);
+	void 				UpdateFacadePreview(void);
+	void 				begin3d(int *b, double radius_m);
+	void				end3d();
 
-		int				mX, mY;
-		float				mPsi,mThe;
-		float				mPsiOrig,mTheOrig;
-		int				mHgt,mHgtOrig;
-		int				mWalls;          // maximum number of walls for Facade preview
-		float				mWid,mWidOrig;
+	int					mX, mY;
+	float				mPsi,mThe;
+	float				mPsiOrig,mTheOrig;
+	int					mHgt,mHgtOrig;
+	int					mWalls;          // maximum number of walls for Facade preview
+	float				mWid,mWidOrig;
 
-		float				mZoom;
-		WED_ResourceMgr *	mResMgr;
-		ITexMgr *			mTexMgr;
-		string				mRes;
-		int					mType;
-		int					mNumVariants;  // number of variants provided by object
-		int					mVariant;      // variant we want to show
-		GUI_Button *		mNextButton;   // Button to advance to next Variant
-		float				mDs, mDt;
+	float				mZoom;
+	WED_ResourceMgr *	mResMgr;
+	ITexMgr *			mTexMgr;
+	string				mRes;
+	int					mType;
+	int					mNumVariants;  // number of variants provided by object
+	int					mVariant;      // variant we want to show
+	GUI_Button *		mNextButton;   // Button to advance to next Variant
+	float				mDs, mDt;
 };
 
 #endif

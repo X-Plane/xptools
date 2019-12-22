@@ -62,6 +62,9 @@ enum {
 	status_New			= 4
 };
 
+void WED_clean_vpath(string& s);      // always uses "/"
+void WED_clean_rpath(string& s);      // uses OS specific DIR_CHAR
+
 class WED_LibraryMgr : public GUI_Broadcaster, public GUI_Listener, public virtual IBase {
 public:
 

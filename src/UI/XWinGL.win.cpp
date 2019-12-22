@@ -21,13 +21,6 @@
  *
  */
 #include "XWinGL.h"
-#include <gl/gl.h>
-
-PFNGLMULTITEXCOORD2FARBPROC  		glMultiTexCoord2fARB	;
-PFNGLMULTITEXCOORD2FVARBPROC 		glMultiTexCoord2fvARB;
-PFNGLACTIVETEXTUREARBPROC    		glActiveTextureARB	;
-PFNGLCLIENTACTIVETEXTUREARBPROC    	glClientActiveTextureARB	;
-PFNGLCOMPRESSEDTEXIMAGE2DARBPROC	glCompressedTexImage2DARB	;
 
 XWinGL::XWinGL(int default_dnd, XWinGL * inShare) :
 	XWin(default_dnd)
@@ -62,12 +55,6 @@ XWinGL::XWinGL(int default_dnd, XWinGL * inShare) :
 
 	if (!wglMakeCurrent(mDC, mContext))
 		throw "can't set context";
-
-	glMultiTexCoord2fARB    =(PFNGLMULTITEXCOORD2FARBPROC    )wglGetProcAddress("glMultiTexCoord2fARB"    );
-	glMultiTexCoord2fvARB   =(PFNGLMULTITEXCOORD2FVARBPROC   )wglGetProcAddress("glMultiTexCoord2fvARB"   );
-	glActiveTextureARB      =(PFNGLACTIVETEXTUREARBPROC      )wglGetProcAddress("glActiveTextureARB"      );
-	glClientActiveTextureARB=(PFNGLCLIENTACTIVETEXTUREARBPROC)wglGetProcAddress("glClientActiveTextureARB");
-	glCompressedTexImage2DARB=(PFNGLCOMPRESSEDTEXIMAGE2DARBPROC)wglGetProcAddress("glCompressedTexImage2DARB");
 
    glPixelStorei	(GL_UNPACK_ALIGNMENT,1				);
    glPixelStorei	(GL_PACK_ALIGNMENT  ,1				);
@@ -107,11 +94,6 @@ XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX,
 
 	if (!wglMakeCurrent(mDC, mContext))
 		throw "can't set context";
-
-	glMultiTexCoord2fARB =(PFNGLMULTITEXCOORD2FARBPROC )wglGetProcAddress("glMultiTexCoord2fARB" );
-	glMultiTexCoord2fvARB=(PFNGLMULTITEXCOORD2FVARBPROC)wglGetProcAddress("glMultiTexCoord2fvARB");
-	glActiveTextureARB   =(PFNGLACTIVETEXTUREARBPROC   )wglGetProcAddress("glActiveTextureARB"   );
-	glClientActiveTextureARB=(PFNGLCLIENTACTIVETEXTUREARBPROC)wglGetProcAddress("glClientActiveTextureARB");
 
    glPixelStorei	(GL_UNPACK_ALIGNMENT,1				);
    glPixelStorei	(GL_PACK_ALIGNMENT  ,1				);

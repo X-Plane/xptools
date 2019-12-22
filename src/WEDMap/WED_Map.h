@@ -26,6 +26,7 @@
 
 #include "CompGeomDefs2.h"
 #include "GUI_Pane.h"
+#include "GUI_Button.h"
 #include "WED_MapZoomerNew.h"
 #include "GUI_Listener.h"
 #include <stdint.h>
@@ -91,7 +92,8 @@ private:
 	int				mY_Orig;
 	int				mIsDownCount;
 	int				mIsDownExtraCount;
-
+	
+	GUI_Button *	mTiltButton[4];
 };
 
 

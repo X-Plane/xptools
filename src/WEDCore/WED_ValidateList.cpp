@@ -51,7 +51,7 @@ enum {
 
 static int import_bounds_default[4] = { 0, 0, 800, 300 };
 
-WED_ValidateDialog::WED_ValidateDialog(WED_Document * resolver, WED_MapPane * pane, const validation_error_vector& msgs) :
+WED_ValidateDialog::WED_ValidateDialog(WED_Document * resolver, WED_MapPane * pane, const validation_error_vector& msgs, const char * abortText) :
 	GUI_Window("Validation Result List",xwin_style_visible|xwin_style_centered|xwin_style_resizable|xwin_style_modal,import_bounds_default,gApplication),
 	mResolver(resolver),
 	mMapPane(pane),
@@ -177,7 +177,19 @@ WED_ValidateDialog::WED_ValidateDialog(WED_Document * resolver, WED_MapPane * pa
 	if(warnings_only)
 		cncl_btn->SetDescriptor("Waive warnings & proceed");
 	else
-		cncl_btn->SetDescriptor("Dismiss & edit scenery");
+	{
+		cncl_btn->SetDescriptor(abortText);
+		if(string(abortText).find("ancel") != string::npos)
+		{
+			int k_all[4] = {0,0,1,1};
+			GUI_Button * ex_sig = new GUI_Button("exclaim.png", btn_Push, k_all, k_all, k_all, k_all);
+			cncl_btn->SetBounds(3+GUI_GetImageResourceWidth("exclaim.png"),5,180,GUI_GetImageResourceHeight("push_buttons.png") / 3);
+			ex_sig->SetBounds(3,1,GUI_GetImageResourceWidth("exclaim.png"), GUI_GetImageResourceHeight("exclaim.png"));
+			ex_sig->SetSticky(1,1,0,0);
+			ex_sig->SetParent(holder);
+			ex_sig->Show();
+		}
+	}
 	cncl_btn->Show();
 
 	mZoomBtn = new GUI_Button("push_buttons.png",btn_Push,k_reg, k_hil,k_reg,k_hil);

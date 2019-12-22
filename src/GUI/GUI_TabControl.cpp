@@ -29,7 +29,6 @@
 #include "GUI_Resources.h"
 
 #define		TAB_PADDING	5
-#define		TAB_BASELINE 10
 #if APL
 	#include <OpenGL/gl.h>
 #else
@@ -56,7 +55,7 @@ void		GUI_TabControl::SetTextColor(float color[4])
 
 int		GUI_TabControl::GetNaturalHeight(void)
 {
-	return GUI_GetImageResourceHeight("tabs.png") / 3;
+	return 2 * GUI_GetLineHeight(font_UI_Basic) + 2 * TAB_PADDING;
 }
 
 void		GUI_TabControl::SetDescriptor(const string& inDesc)
@@ -79,7 +78,16 @@ void		GUI_TabControl::SetDescriptor(const string& inDesc)
 	mWidths.resize(mItems.size());
 	for (int n = 0; n < mItems.size(); ++n)
 	{
-		mWidths[n] = GUI_MeasureRange(font_UI_Basic, &*mItems[n].begin(), &*mItems[n].end()) + TAB_PADDING * 2;
+		// create 2-line header if there is a '+' in it
+		auto pos = mItems[n].find('+');
+		if(pos > 0 && pos < mItems[n].length())
+		{
+			int w1 = GUI_MeasureRange(font_UI_Basic, mItems[n].c_str(), mItems[n].c_str() + pos);
+			int w2 = GUI_MeasureRange(font_UI_Basic, mItems[n].c_str() + pos + 1,&* mItems[n].end() );
+			mWidths[n] = max(w1, w2)  + TAB_PADDING * 2;
+		}
+		else
+			mWidths[n] = GUI_MeasureRange(font_UI_Basic, &*mItems[n].begin(), &*mItems[n].end()) + TAB_PADDING * 2;
 	}
 
 	SetMax(mItems.size());
@@ -93,7 +101,7 @@ void		GUI_TabControl::Draw(GUI_GraphState * state)
 	GetBounds(bounds);
 	int tile_line[4] = { 0, 0, 1, 3 };
 	glColor3f(1,1,1);
-	GUI_DrawHorizontalStretch(state,"tabs.png",bounds,tile_line);
+	GUI_DrawStretched(state,"tabs.png",bounds,tile_line);
 
 	int rs = bounds[2];
 
@@ -102,7 +110,7 @@ void		GUI_TabControl::Draw(GUI_GraphState * state)
 	{
 		int tile_tab[4] = { 0, (n == GetValue()) ? 2 : 1, 1, 3 };
 		bounds[2] = bounds[0] + mWidths[n];
-		GUI_DrawHorizontalStretch(state,"tabs.png",bounds,tile_tab);
+		GUI_DrawStretched(state,"tabs.png",bounds,tile_tab);
 		bounds[0] = bounds[2];
 	}
 
@@ -110,14 +118,29 @@ void		GUI_TabControl::Draw(GUI_GraphState * state)
 	{
 		bounds[2] = max(rs,bounds[0]+40);
 		int tile_tab[4] = { 0, 1, 1, 3 };
-		GUI_DrawHorizontalStretch(state,"tabs.png",bounds,tile_tab);
+		GUI_DrawStretched(state,"tabs.png",bounds,tile_tab);
 	}
 
 	GetBounds(bounds);
 	for (n = 0; n < mItems.size(); ++n)
 	{
 //		GUI_FontDraw(state, font_UI_Basic, (n == mTrackBtn && mHilite) ? ch : c, (bounds[0] + TAB_PADDING), bounds[1] + TAB_BASELINE, mItems[n].c_str());
-		GUI_FontDraw(state, font_UI_Basic, mTextColor, (bounds[0] + TAB_PADDING), bounds[1] + TAB_BASELINE, mItems[n].c_str());
+
+		float x = bounds[0] + TAB_PADDING;
+		float h = GUI_GetLineHeight(font_UI_Basic);
+		float y = (bounds[1] + bounds[3]) * 0.5 - h * 0.4;
+		
+		auto pos = mItems[n].find('+');
+		if(pos > 0 && pos < mItems[n].length())
+		{
+			
+			y += 0.5 * h;
+			GUI_FontDrawScaled(state, font_UI_Basic, mTextColor, x, y, 0, y+h, mItems[n].c_str(), mItems[n].c_str() + pos, align_Left);
+			y -= h;
+			GUI_FontDrawScaled(state, font_UI_Basic, mTextColor, x, y, 0, y+h, mItems[n].c_str() + pos + 1, &*mItems[n].end(), align_Left);
+		}
+		else
+			GUI_FontDraw(state, font_UI_Basic, mTextColor, x, y, mItems[n].c_str());
 
 		bounds[0] += mWidths[n];
 	}

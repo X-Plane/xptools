@@ -462,7 +462,7 @@ static void ValidateOneFacadePlacement(WED_Thing* who, validation_error_vector& 
 		if(gExportTarget == wet_xplane_900)
 			msgs.push_back(validation_error_t("Curved facades are only supported in X-Plane 10 and newer.", err_gis_poly_facades_curved_only_for_gte_xp10, who,apt));
 		else if(fac->GetType() < 2)
-			msgs.push_back(validation_error_t("Only Type2 facades support curved segements.", warn_facades_curved_only_type2, who,apt));
+			msgs.push_back(validation_error_t("Only Type2 facades support curved segments.", warn_facades_curved_only_type2, who,apt));
 	}
 
 	if(fac->HasLayer(gis_Param))
@@ -726,19 +726,24 @@ static void ValidateAirportFrequencies(WED_Airport* who, validation_error_vector
 
 			const int freq_type = ENUM_Import(ATCFrequency, freq_info.atc_type);
 			is_xplane_atc_related = freq_type == atc_Delivery || freq_type == atc_Ground || freq_type == atc_Tower;
-
+			
+			int ATC_min_frequency = 118000;   // start of VHF air band
+			if(freq_type == atc_AWOS)
+				ATC_min_frequency = 108000;       // AWOS can be broadcasted as part of VOR's
+				
 			if(freq_type == atc_Tower)
 				has_tower = true;
 			else if(is_xplane_atc_related)
 				has_atc.push_back(*freq);
 
-			if(freq_info.freq <= 136 || freq_info.freq >= 1000000)
+			if(freq_info.freq < ATC_min_frequency || freq_info.freq >= 1000000 || (freq_info.freq >= 137000 && freq_info.freq < 200000) )
 			{
-				msgs.push_back(validation_error_t(string("Frequency ") + freq_str + " not between 136 kHz and 1000 MHz.", err_freq_not_between_0_and_1000_mhz, *freq,who));
+				msgs.push_back(validation_error_t(string("Frequency ") + freq_str + " not in the range of " + to_string(ATC_min_frequency/1000) + 
+				                                         " .. 137 or 200 .. 1000 MHz.", err_freq_not_between_0_and_1000_mhz, *freq,who));
 				continue;
 			}
 
-			if(freq_info.freq < 118000 || freq_info.freq >= 137000)
+			if(freq_info.freq < ATC_min_frequency || freq_info.freq >= 137000)
 			{
 				found_one_oob = true;
 			}
@@ -1476,15 +1481,26 @@ static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& 
 		else
 		{
 			#if !GATEWAY_IMPORT_FEATURES
-				double heading, len;
+				double true_heading, len;
 				Point2 ctr;
-				Quad_2to1(ends, ctr, heading, len);
-				double approx_heading = num1 * 10.0;
-				double heading_delta = fabs(dobwrap(approx_heading - heading, -180.0, 180.0));
-				if(heading_delta > 135.0)
-					msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' needs to be reversed to match its name.", err_rwy_must_be_reversed_to_match_name, who,apt));
-				else if(heading_delta > ( name[name.length()-1] == 'T' ? 6.0 : 45.0))         // true north runways are'nt allowed to deviate for magnetic deviation
-					msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' is misaligned with its runway name.", err_rwy_misaligned_with_name, who,apt));
+				Quad_2to1(ends, ctr, true_heading, len);
+				double name_heading = num1 * 10.0;
+				double heading_delta = fabs(dobwrap(name_heading - true_heading, -180.0, 180.0));
+				if (name.back() == 'T')
+				{
+					// T suffix runways can be named either true north or 'GRID north'. Test if it matches either definition before squawking
+					double grid_heading = ctr.y() > 0.0 ? true_heading - ctr.x() : true_heading + ctr.x();
+					double grid_delta = fabs(dobwrap(name_heading - grid_heading, -180.0, 180.0));
+					if(grid_delta > 10.0 && heading_delta > 10.0)
+						msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' name is matching neither true nor grid north heading.", err_rwy_misaligned_with_name, who,apt));
+				}
+				else
+				{
+					if(heading_delta > 135.0)
+						msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' needs to be reversed to match its name.", err_rwy_must_be_reversed_to_match_name, who,apt));
+					else if(heading_delta > 45.0)
+						msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' is misaligned with its runway name.", err_rwy_misaligned_with_name, who,apt));
+				}
 			#endif
 		}
 	}
@@ -2470,7 +2486,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 }
 
 
-validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * wrl, bool skipErrorDialog)
+validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * wrl, bool skipErrorDialog, const char * abortMsg)
 {
 #if DEBUG_VIS_LINES
 	//Clear the previously drawn lines before every validation
@@ -2575,7 +2591,7 @@ validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane,
 
 	if(!msgs.empty())
 	{
-		if(!skipErrorDialog) new WED_ValidateDialog(resolver, pane, msgs);
+		if(!skipErrorDialog) new WED_ValidateDialog(resolver, pane, msgs, abortMsg);
 
 /*		ISelection * sel = WED_GetSelect(resolver);
 		wrl->StartOperation("Select Invalid");

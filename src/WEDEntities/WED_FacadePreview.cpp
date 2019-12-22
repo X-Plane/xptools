@@ -36,6 +36,13 @@
 #include "WED_FacadePreview.h"
 #include "WED_PreviewLayer.h"
 
+static bool cull_obj(const XObj8 * o, double ppm)                   // cut off if laterally smaller than 5 pixels
+{
+	double pix = ppm * max(o->xyz_max[0] - o->xyz_min[0], o->xyz_max[2] - o->xyz_min[2]);
+//	printf("pix %.1lf\n", sqrt(pix));
+	return pix < MIN_PIXELS_PREVIEW;
+}
+
 static bool closer_to(double a, double b, double x)
 {
 	return fabs(x-a) > fabs(x-b);
@@ -810,7 +817,7 @@ struct obj {
 
 
 void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, const fac_info_t& info, const Polygon2& footprint, const vector<int>& choices,
-	double fac_height, GUI_GraphState * g, bool want_thinWalls)
+	double fac_height, GUI_GraphState * g, bool want_thinWalls, double ppm_for_culling)
 {
 	for(auto f : info.scrapers)
 	{
@@ -844,7 +851,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 		}
 	}
 
-	TexRef	tRef = tman->LookupTexture(info.wall_tex.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);			
+	TexRef	tRef = tman->LookupTexture(info.wall_tex.c_str() ,true, tex_Compress_Ok);
 	g->SetTexUnits(1);
 	g->BindTex(tRef  ? tman->GetTexID(tRef) : 0, 0);
 	
@@ -1040,9 +1047,9 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 			roof_pts.push_back(footprint.back());    // we didn't process the last wall - but still need a complete roof. E.g. Fenced Parking Facades.
 	}
 
-if (info.has_roof) // && want_roof
+	if (info.has_roof) // && want_roof
 	{
-		tRef = tman->LookupTexture(info.roof_tex.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);
+		tRef = tman->LookupTexture(info.roof_tex.c_str() ,true, tex_Wrap|tex_Compress_Ok);
 		g->BindTex(tRef ? tman->GetTexID(tRef) : 0, 0);
 
 		// all facdes are drawn cw (!)
@@ -1189,7 +1196,7 @@ if (info.has_roof) // && want_roof
 	for(auto l : obj_locs)
 	{
 		const XObj8 * oo;
-		if(rman->GetObjRelative(info.objs[l.idx].c_str(), vpath, oo))
+		if(rman->GetObjRelative(info.objs[l.idx].c_str(), vpath, oo) && !cull_obj(oo, ppm_for_culling))
 		{
 			// facade is aligned so midpoint of first wall is origin
 			draw_obj_at_xyz(tman, oo,

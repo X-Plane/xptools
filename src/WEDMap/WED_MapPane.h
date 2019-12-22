@@ -38,9 +38,6 @@ class GUI_Table;
 class GUI_TextTable;
 class WED_ToolInfoAdapter;
 
-#if WANT_TERRASEVER
-class	WED_TerraserverLayer;
-#endif
 class	WED_StructureLayer;
 class	WED_ATCLayer;
 class	WED_PreviewLayer;
@@ -103,11 +100,7 @@ private:
 	vector<WED_MapLayer *>	mLayers;
 	vector<WED_MapToolNew *>mTools;
 
-#if WANT_TERRASEVER
-	WED_TerraserverLayer *	mTerraserver;
-#endif	
 	WED_SlippyMap *			mSlippyMap;
-//	WED_TileServerLayer *	mTileserver;
 	WED_StructureLayer *	mStructureLayer;
 	WED_ATCLayer *			mATCLayer;
 	WED_PreviewLayer *		mPreview;

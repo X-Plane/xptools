@@ -21,8 +21,12 @@
  *
  */
 
+#define NEW_TEX_LOAD_STRATEGY 1
+
 #include "WED_TexMgr.h"
-#include "BitmapUtils.h"
+#if !NEW_TEX_LOAD_STRATEGY
+	#include "BitmapUtils.h"
+#endif
 #include "MemFileUtils.h"
 #include "TexUtils.h"
 #include "WED_PackageMgr.h"
@@ -82,58 +86,83 @@ void		WED_TexMgr::GetTexInfo(
 
 WED_TexMgr::TexInfo *	WED_TexMgr::LoadTexture(const char * path, bool is_absolute, int flags)
 {
-	string fpath;
-
-	fpath = is_absolute ? path : gPackageMgr->ComputePath(mPackage, path);
-
-	TexInfo * inf = new TexInfo;
-
-	ImageInfo	im;
-
-/*
-	MFMemFile * dds_file;
-	dds_file = MemFile_Open(path);
-	if(dds_file)
-	{
-		if (LoadTextureFromDDS((unsigned const char *) MemFile_GetBegin(dds_file),(unsigned const char *) MemFile_GetEnd(dds_file),tn,0,&inf->act_x, &inf->act_y))
-		{
-			inf->tex_id = tn;
-			inf->org_x = inf->vis_x = inf->act_x;
-			inf->org_y = inf->vis_y = inf->act_y;
-			MemFile_Close(dds_file);
-			return inf;
-		}
-		MemFile_Close(dds_file);
-	}
-*/
-	int res = MakeSupportedType(fpath.c_str(),&im);
-	if(res != 0)
-	{
-		delete inf;
-		return NULL;
-	}
+	string fpath(is_absolute ? path : gPackageMgr->ComputePath(mPackage, path));
+	TexInfo * inf = NULL;
 
 	GLuint tn;
 	glGenTextures(1,&tn);
-
-	inf->tex_id = tn;
-	inf->org_x = im.width;
-	inf->org_y = im.height;
-
-	float s,t;
-	if (!LoadTextureFromImage(im, tn, flags, &inf->act_x, &inf->act_y, &s,&t))
+#if LOAD_DDS_DIRECT
+	FILE * file = fopen(fpath.c_str(), "rb");
+	if (file)
 	{
-		delete inf;
-		if (im.data) free(im.data);
-		return NULL;
+		char c[4];
+		if (fread(c, 1, 4, file) == 4 && strncmp(c, "DDS ",4) == 0) // cut it short, if no joy
+		{
+			fseek(file, 0, SEEK_END);
+			int fileLength = ftell(file);
+			fseek(file, 0, SEEK_SET);
+			char * buffer = new char[fileLength];
+			if (buffer)
+			{
+				if (fread(buffer, 1, fileLength, file) == fileLength)
+				{
+					int siz_x, siz_y;
+					if (LoadTextureFromDDS(buffer, buffer + fileLength, tn, flags, &siz_x, &siz_y))
+					{
+//						printf("Direct loading DDS %s\n", fpath.c_str());
+						inf = new TexInfo;
+						inf->tex_id = tn;
+						inf->org_x = inf->vis_x = inf->act_x = siz_x;
+						inf->org_y = inf->vis_y = inf->act_y = siz_y;
+						mTexes[path] = inf;
+					}
+				}
+				delete [] buffer;
+			}
+			fclose(file);
+		}
 	}
+	if(inf) return inf;
 
-	inf->vis_x = (float) inf->act_x * s;
-	inf->vis_y = (float) inf->act_y * t;
+//	printf("Normal load %s\n", fpath.c_str());
+#endif
 
-	mTexes[path] = inf;
-	// janos says: im.data caused a _big_ memory leak :-)
-	if (im.data) free(im.data);
+#if NEW_TEX_LOAD_STRATEGY
+	// auto-detection of file type, basic on file content, only
+	{
+		int siz_x, siz_y;
+		float s,t;
+		if (LoadTextureFromFile(fpath.c_str(), tn, flags, &siz_x, &siz_y, &s,&t))
+#else
+	// loading based on file name suffix. With this method we preserve awareness of original image size.
+	// But with openGL 3.0 as new minimum requirement - all GPU's have to support non-power-2 textures,
+	// and only Orthophoto export would be affected. So thats unlikely to be a loss, ever.
+	ImageInfo	im;
+	if(MakeSupportedType(fpath.c_str(), &im) == 0)
+	{
+		int siz_x, siz_y;
+		float s,t;
+		if (LoadTextureFromImage(im, tn, flags, &siz_x, &siz_y, &s,&t))
+#endif
+		{
+			inf = new TexInfo;
+			inf->tex_id = tn;
+#if NEW_TEX_LOAD_STRATEGY
+			inf->org_x = siz_x;
+			inf->org_y = siz_y;
+#else
+			inf->org_x = im.width;
+			inf->org_y = im.height;
+#endif
+			inf->act_x = siz_x;
+			inf->act_y = siz_y;
+			inf->vis_x = (float) siz_x * s;
+			inf->vis_y = (float) siz_y * t;
+			mTexes[path] = inf;
+		}
+#if !NEW_TEX_LOAD_STRATEGY
+		DestroyBitmap(&im);
+#endif
+	}
 	return inf;
 }
-

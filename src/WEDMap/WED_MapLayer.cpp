@@ -127,32 +127,26 @@ static bool matches_filter(WED_Thing * thing ,const  MapFilter_t * filter )
 
 bool	WED_MapLayer::IsVisibleNow(IGISEntity * ent) const
 {
+	WED_Entity * e = dynamic_cast<WED_Entity *>(ent);
+	if (!e)
+		return false;
 	if(mHideFilter)
 	{
-		if( matches_filter(dynamic_cast<WED_Thing *>(ent), mHideFilter ))
+		if( matches_filter(e, mHideFilter ))
 			return false;
-	}
-
-	WED_Entity * e = dynamic_cast<WED_Entity *>(ent);
-	if(!e)
-	{
-		return false;
 	}
 	return !e->GetHidden();
 }
 
 bool	WED_MapLayer::IsLockedNow(IGISEntity * ent) const
 {
+	WED_Entity * e = dynamic_cast<WED_Entity *>(ent);
+	if (!e)
+		return false;
 	if(mLockFilter)
 	{
-		if( matches_filter(dynamic_cast<WED_Thing *>(ent), mLockFilter ))
+		if( matches_filter(e, mLockFilter ))
 			return true;
-	}
-
-	WED_Entity * e = dynamic_cast<WED_Entity *>(ent);
-	if(!e)
-	{
-		return false;
 	}
 	return e->GetLocked();
 }

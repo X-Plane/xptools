@@ -147,9 +147,6 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	mLayers.push_back(					new WED_MapBkgnd(mMap, mMap, resolver));
 	mLayers.push_back(mWorldMap =		new WED_WorldMapLayer(mMap, mMap, resolver));
 	mLayers.push_back(mSlippyMap =		new WED_SlippyMap(mMap, mMap, resolver));
-#if WANT_TERRASEVER
-	mLayers.push_back(mTerraserver = 	new WED_TerraserverLayer(mMap, mMap, resolver));
-#endif
 	mLayers.push_back(mStructureLayer = new WED_StructureLayer(mMap, mMap, resolver));
 	mLayers.push_back(mATCLayer =		new WED_ATCLayer(mMap, mMap, resolver));
 	mLayers.push_back(mPreview =		new WED_PreviewLayer(mMap, mMap, resolver));
@@ -262,8 +259,8 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 			mToolbar->DisableTool(n);
 	}
 	mToolbar->SetToolTips(tips);
-
-	GUI_ScrollerPane * map_scroller = new GUI_ScrollerPane(1,1);
+	//	GUI_ScrollerPane * map_scroller = new GUI_ScrollerPane(1,1);    // both Scrollbars on
+	GUI_ScrollerPane * map_scroller = new GUI_ScrollerPane(1,0);        // no scroll bar will not work under any OS
 	map_scroller->SetParent(this);
 	map_scroller->Show();
 	map_scroller->SetSticky(1,1,1,1);
@@ -275,7 +272,6 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	map_scroller->PositionInContentArea(mMap);
 	map_scroller->SetContent(mMap);
 
-//	mMap->SetMapVisibleBounds(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3]);
 	mMap->SetMapLogicalBounds(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3]);
 
 	mMap->ZoomShowAll();
@@ -378,9 +374,6 @@ int		WED_MapPane::Map_HandleCommand(int command)
 	case wed_PickOverlay:	WED_DoMakeNewOverlay(mResolver, mMap); return 1;
 	case wed_ToggleWorldMap:mWorldMap->ToggleVisible(); return 1;
 	case wed_ToggleNavaidMap:mNavaidMap->ToggleVisible(); return 1;
-#if WANT_TERRASEVER
-	case wed_ToggleTerraserver:	mTerraserver->ToggleVisible(); return 1;
-#endif
 	case wed_TogglePreview:	mPreview->ToggleVisible(); 			return 1;
 	case wed_SlippyMapNone:	mSlippyMap->SetMode(0);	 		return 1;
 	case wed_SlippyMapOSM:	mSlippyMap->SetMode(1);	 		return 1;
@@ -423,9 +416,6 @@ int		WED_MapPane::Map_CanHandleCommand(int command, string& ioName, int& ioCheck
 	case wed_PickOverlay:															return 1;
 	case wed_ToggleWorldMap:ioCheck = mWorldMap->IsVisible();								return 1;
 	case wed_ToggleNavaidMap:ioCheck = mNavaidMap->IsVisible();								return 1;
-#if WANT_TERRASEVER
-	case wed_ToggleTerraserver: ioCheck = mTerraserver->IsVisible();				return 1;
-#endif
 	case wed_SlippyMapNone: ioCheck = mSlippyMap->GetMode() == 0;				return 1;
 	case wed_SlippyMapOSM:  ioCheck = mSlippyMap->GetMode() == 1;				return 1;
 	case wed_SlippyMapESRI: ioCheck = mSlippyMap->GetMode() == 2;				return 1;
@@ -479,9 +469,6 @@ void	WED_MapPane::ReceiveMessage(
 void			WED_MapPane::FromPrefs(IDocPrefs * prefs)
 {
 	if ((mWorldMap->IsVisible()  ? 1 : 0) != prefs->ReadIntPref("map/world_map_vis",mWorldMap->IsVisible()  ? 1 : 0)) mWorldMap->ToggleVisible();
-#if WANT_TERRASEVER
-	if ((mTerraserver->IsVisible () ? 1 : 0) != prefs->ReadIntPref("map/terraserver_vis",mTerraserver->IsVisible()  ? 1 : 0))		mTerraserver->ToggleVisible();
-#endif
 	int SlippyPrefs = prefs->ReadIntPref("map/slippy_vis", mSlippyMap->GetMode());
 	mSlippyMap->SetMode(SlippyPrefs);
 	if ((mNavaidMap->IsVisible() ? 1 : 0) != prefs->ReadIntPref("map/navaid_map_vis",  mNavaidMap->IsVisible()  ? 1 : 0))	mNavaidMap->ToggleVisible();
@@ -556,9 +543,6 @@ void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
 {
 	prefs->WriteIntPref("map/world_map_vis",mWorldMap->IsVisible() ? 1 : 0);
 	prefs->WriteIntPref("map/navaid_map_vis",mNavaidMap->IsVisible() ? 1 : 0);
-#if WANT_TERRASEVER
-	prefs->WriteIntPref("map/terraserver_vis",mTerraserver->IsVisible() ? 1 : 0);
-#endif
 	prefs->WriteIntPref("map/slippy_vis",mSlippyMap->IsVisible() ? mSlippyMap->GetMode() : 0);
 	prefs->WriteIntPref("map/preview_vis",mPreview->IsVisible() ? 1 : 0);
 	prefs->WriteIntPref("map/pavement_alpha",mPreview->GetPavementTransparency()*4);
@@ -812,6 +796,7 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 		lock_list.push_back(WED_Runway::sClass);
 		lock_list.push_back(WED_Taxiway::sClass);
 		lock_list.push_back(k_show_taxiline_chain);
+		lock_list.push_back(WED_LinePlacement::sClass);
 
 		mATCLayer->SetVisible(true);
 		unhide_persistent(hide_list, lock_list);

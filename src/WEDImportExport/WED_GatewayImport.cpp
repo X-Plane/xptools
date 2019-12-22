@@ -688,7 +688,7 @@ void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
 		Json::Value tmp(Json::objectValue);
 		tmp = mAirportsGET.operator[](i);//Yes, you need the verbose operator[] form. Yes it's dumb
 
-		if(tmp["AcceptedSceneryCount"].asInt() > 0)
+		if(tmp["AcceptedSceneryCount"].asInt() >= 0)
 		{
 			AptInfo_t cur_airport;
 			cur_airport.icao = tmp["AirportCode"].asString();

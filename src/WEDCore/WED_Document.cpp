@@ -68,6 +68,7 @@ int gInfoDMS;
 int gModeratorMode;
 int gFontSize;
 string gCustomSlippyMap;
+int gOrthoExport;
 
 static set<WED_Document *> sDocuments;
 static map<string,string>	sGlobalPrefs;
@@ -579,6 +580,7 @@ void	WED_Document::ReadGlobalPrefs(void)
 	int FontSize = atoi(GUI_GetPrefString("preferences","FontSize","12"));
 	gFontSize = intlim(FontSize, 10, 18);
 	GUI_SetFontSizes(gFontSize);
+	gOrthoExport = atoi(GUI_GetPrefString("preferences","OrthoExport","1"));
 }
 
 void	WED_Document::WriteGlobalPrefs(void)
@@ -588,6 +590,7 @@ void	WED_Document::WriteGlobalPrefs(void)
 	GUI_SetPrefString("preferences","CustomSlippyMap",gCustomSlippyMap.c_str());
 	string FontSize(to_string(gFontSize));
 	GUI_SetPrefString("preferences","FontSize",FontSize.c_str());
+	GUI_SetPrefString("preferences","OrthoExport",gOrthoExport ? "1" : "0");
 	
 	for (map<string,string>::iterator i = sGlobalPrefs.begin(); i != sGlobalPrefs.end(); ++i)
 		GUI_SetPrefString("doc_prefs", i->first.c_str(), i->second.c_str());

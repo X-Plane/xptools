@@ -27,6 +27,7 @@
     <ClCompile Include="..\..\src\Utils\EndianUtils.c" />
     <ClCompile Include="..\..\src\Utils\FileUtils.cpp" />
     <ClCompile Include="..\..\src\Utils\GeoUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\glew.c" />
     <ClCompile Include="..\..\src\Utils\MatrixUtils.cpp" />
     <ClCompile Include="..\..\src\Utils\md5.c" />
     <ClCompile Include="..\..\src\Utils\MemFileUtils.cpp" />
@@ -56,6 +57,7 @@
     <ClInclude Include="..\..\src\Utils\EndianUtils.h" />
     <ClInclude Include="..\..\src\Utils\FileUtils.h" />
     <ClInclude Include="..\..\src\Utils\GeoUtils.h" />
+    <ClInclude Include="..\..\src\Utils\glew.h" />
     <ClInclude Include="..\..\src\Utils\md5.h" />
     <ClInclude Include="..\..\src\Utils\MemFileUtils.h" />
     <ClInclude Include="..\..\src\Utils\ObjUtils.h" />
@@ -63,6 +65,7 @@
     <ClInclude Include="..\..\src\Utils\TexUtils.h" />
     <ClInclude Include="..\..\src\Utils\trackball.h" />
     <ClInclude Include="..\..\src\Utils\unzip.h" />
+    <ClInclude Include="..\..\src\Utils\wglew.h" />
     <ClInclude Include="..\..\src\Utils\XUtils.h" />
     <ClInclude Include="..\..\src\Utils\zip.h" />
   </ItemGroup>

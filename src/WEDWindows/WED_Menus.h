@@ -118,9 +118,6 @@ enum {
 //	wed_ToggleOverlay,
 	wed_ToggleWorldMap,
 	wed_ToggleNavaidMap,
-#if WANT_TERRASEVER
-	wed_ToggleTerraserver,
-#endif
 	wed_SlippyMapNone,
 	wed_SlippyMapOSM,
 	wed_SlippyMapESRI,

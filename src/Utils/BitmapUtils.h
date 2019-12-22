@@ -46,7 +46,7 @@
 enum SupportedTypes{
 	WED_BMP,			//NewBitmap,FromFile            X			
 	WED_DDS,			//X								X				X
-	WED_JP2K,			//X												X
+//	WED_JP2K,			//X												X
 	WED_JPEG,			//FromJPEG,FromJPEGData
 	WED_PNG,			//X								X				X
 	WED_TIF				//X												X
@@ -57,6 +57,78 @@ struct	ImageInfo {
 	long			height;
 	long			pad;
 	short			channels;
+};
+
+// DD surface flags
+#define DDSD_CAPS               0x00000001l     // default
+#define DDSD_HEIGHT             0x00000002l
+#define DDSD_WIDTH              0x00000004l
+#define DDSD_PITCH              0x00000008l		// rowbytes to mac nerds
+#define DDSD_PIXELFORMAT        0x00001000l
+#define DDSD_MIPMAPCOUNT        0x00020000l
+#define DDSD_LINEARSIZE         0x00080000l
+
+// DD Pixel format flags
+#define DDPF_ALPHAPIXELS        0x00000001l		// has alpha in addition to RGB
+#define DDPF_FOURCC             0x00000004l		// Is 4cc compressed
+#define DDPF_RGB				0x00000040l		// Is RGB (may have alpha)
+
+// DD surface caps
+#define DDSCAPS_TEXTURE			0x00001000l
+#define DDSCAPS_MIPMAP          0x00400000l
+#define DDSCAPS_COMPLEX         0x00000008l
+
+#if APL || LIN
+	#define DWORD unsigned int
+#endif
+
+#if BIG
+	#if APL
+		#include <libkern/OSByteOrder.h>
+		#define SWAP32(x) (OSSwapConstInt32(x))
+	#else
+		#error we do not have big endian support on non-Mac platforms
+	#endif
+#elif LIL
+	#define SWAP32(x) (x)
+#else
+	#error BIG or LIL are not defined - what endian are we?
+#endif
+
+struct TEX_dds_caps2 {
+    uint32_t    dwCaps;         // capabilities of surface wanted
+    uint32_t    dwCaps2;
+    uint32_t    dwCaps3;
+    uint32_t    dwCaps4;
+};
+
+struct TEX_dds_pixelformat {
+    uint32_t    dwSize;                 // size of structure (must be 32)
+    uint32_t    dwFlags;                // pixel format flags
+    char        dwFourCC[4];               // (FOURCC code)		D X T 3 in memory string.
+	uint32_t	dwRGBBitCount;          // how many bits per pixel
+	uint32_t	dwRBitMask;             // mask for red bit
+	uint32_t	dwGBitMask;             // mask for green bits
+	uint32_t	dwBBitMask;             // mask for blue bits
+	uint32_t	dwRGBAlphaBitMask;      // mask for alpha channel
+};
+
+struct TEX_dds_desc {
+	char				dwMagic[4];				// D D S <space> sequential string in memory.  This is not REALLY in the struct, but good enough for me.
+
+	uint32_t            dwSize;                 // size of the DDSURFACEDESC structure		(Must be 124)
+	uint32_t            dwFlags;                // determines what fields are valid			(DDSD_CAPS, DDSD_PIXELFORMAT, DDSD_WIDTH, DDSD_HEIGHT.)
+	uint32_t            dwHeight;               // height of surface to be created
+	uint32_t            dwWidth;                // width of input surface
+	uint32_t			dwLinearSize;           // Formless late-allocated optimized surface size
+	uint32_t            dwDepth;				// Vol texes-depth.
+	uint32_t			dwMipMapCount;          // number of mip-map levels requestde
+	uint32_t            dwReserved1[11];        //
+	TEX_dds_pixelformat	ddpfPixelFormat;        // pixel format description of the surface
+	TEX_dds_caps2       ddsCaps;                // direct draw surface capabilities			DDSCAPS_TEXTURE, DDSCAPS_MIPMAP, DDSCAPS_COMPLEX		TEXTURE, LINEARSIZE, COMPLEX, MIPMAP, FOURCC)
+	uint32_t            dwReserved2;			//
+
+	TEX_dds_desc(int width, int height, int mips, int dxt);
 };
 
 /* STANDARDS FOR CreateNewBitmapFromX: Returns 0 for all good, else each has its
@@ -81,21 +153,19 @@ int		CreateBitmapFromPNGData(const void * inBytes, int inLength, struct ImageInf
 int		CreateBitmapFromDDS(const char * inFilePath, struct ImageInfo * outImageInfo);
 
 #if USE_JPEG
-
 /* Create a JPEG image from either a file on disk or a chunk of memory.  This requires the IJG reference
  * JPEG code. */
 int		CreateBitmapFromJPEG(const char * inFilePath, struct ImageInfo * outImageInfo);
 int		CreateBitmapFromJPEGData(void * inBytes, int inLength, struct ImageInfo * outImageInfo);
-
 #endif
 
 #if USE_TIF
-
 /* Create an image from a TIF file  requires libTIFF. */
 int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInfo);
-
 #endif
 
+// load any supported filetype, regardless of file suffix. Return zero upon success
+int LoadBitmapFromAnyFile(const char * inFilePath, ImageInfo * outImage);
 
 /* Given an imageInfo structure, this routine writes it to disk as a .bmp file.
  * Note that only 3-channel bitmaps may be written as .bmp files!! 
@@ -132,6 +202,7 @@ int GetSupportedType(const char * path);
 //Error codes are passed back up and returned by the method
 
 // should really be called "CreateBitmapFromFileAccordingToSuffix"
+// ********** DEPRECATED in favor of LoadBitmapFromAnyFile() ************
 int MakeSupportedType(const char * path, ImageInfo * inImage);
 
 /* Given a bitmap, this routine fills the whole bitmap in with a gray level of c, where

@@ -49,6 +49,8 @@ extern int gInfoDMS;
 extern int gModeratorMode;
 /* Changes the listing in the gateway Import for GW moderation purposes */
 extern int gFontSize;
+/* Switch format for orthophoto tiles export */
+extern int gOrthoExport;
 
 enum WED_Export_Target {
 		wet_xplane_900,		// X-Plane 9-compatible DSFs.
