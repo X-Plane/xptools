@@ -1273,12 +1273,12 @@ bool	WED_ResourceMgr::GetFor(const string& path, XObj8 const *& obj)
 	return true;
 }
 
-bool	WED_ResourceMgr::GetAGP(const string& path, agp_t& out_info)
+bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 {
 	auto i = mAGP.find(path);
 	if(i != mAGP.end())
 	{
-		out_info = i->second;
+		info = &i->second;
 		return true;
 	}
 	
@@ -1298,11 +1298,13 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t& out_info)
 		return false;
 	}
 	
+	agp_t * out_info = new agp_t;
+	
 	double tex_s = 1.0, tex_t = 1.0;		// these scale from pixels to UV coords
 	double tex_x = 1.0, tex_y = 1.0;		// meters for tex, x & y
 	int	 rotation = 0;
 	double anchor_x = 0.0, anchor_y = 0.0;
-	out_info.hide_tiles = 0;
+	out_info->hide_tiles = 0;
 	vector<string>	obj_paths;
 
 	bool is_mesh_shader = false;
@@ -1315,13 +1317,13 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t& out_info)
 			MFS_string(&s,&tex);
 			if(is_mesh_shader)
 			{
-				out_info.mesh_tex = tex;
-				process_texture_path(p,out_info.mesh_tex);
+				out_info->mesh_tex = tex;
+				process_texture_path(p,out_info->mesh_tex);
 			}
 			else
 			{
-				out_info.base_tex = tex;
-				process_texture_path(p,out_info.base_tex);
+				out_info->base_tex = tex;
+				process_texture_path(p,out_info->base_tex);
 			}
 		}
 		else if(MFS_string_match(&s,"TEXTURE_SCALE",false))
@@ -1343,7 +1345,7 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t& out_info)
 		}
 		else if(MFS_string_match(&s,"TILE",false))
 		{
-			out_info.tile.resize(16);
+			out_info->tile.resize(16);
 			double s1 = MFS_double(&s);
 			double t1 = MFS_double(&s);
 			double s2 = MFS_double(&s);
@@ -1360,22 +1362,22 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t& out_info)
 			
 			anchor_x = (x1 + x2) * 0.5;
 			anchor_y = (y1 + y2) * 0.5;
-			out_info.tile[ 0] = x1;
-			out_info.tile[ 1] = y1;
-			out_info.tile[ 2] = s1;
-			out_info.tile[ 3] = t1;
-			out_info.tile[ 4] = x2;
-			out_info.tile[ 5] = y1;
-			out_info.tile[ 6] = s2;
-			out_info.tile[ 7] = t1;
-			out_info.tile[ 8] = x2;
-			out_info.tile[ 9] = y2;
-			out_info.tile[10] = s2;
-			out_info.tile[11] = t2;
-			out_info.tile[12] = x1;
-			out_info.tile[13] = y2;
-			out_info.tile[14] = s1;
-			out_info.tile[15] = t2;
+			out_info->tile[ 0] = x1;
+			out_info->tile[ 1] = y1;
+			out_info->tile[ 2] = s1;
+			out_info->tile[ 3] = t1;
+			out_info->tile[ 4] = x2;
+			out_info->tile[ 5] = y1;
+			out_info->tile[ 6] = s2;
+			out_info->tile[ 7] = t1;
+			out_info->tile[ 8] = x2;
+			out_info->tile[ 9] = y2;
+			out_info->tile[10] = s2;
+			out_info->tile[11] = t2;
+			out_info->tile[12] = x1;
+			out_info->tile[13] = y2;
+			out_info->tile[14] = s1;
+			out_info->tile[15] = t2;
 		}
 		else if(MFS_string_match(&s,"ROTATION",false))
 		{
@@ -1383,51 +1385,51 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t& out_info)
 		}
 		else if(MFS_string_match(&s,"CROP_POLY",false))
 		{
-			out_info.tile.clear();
+			out_info->tile.clear();
 			while(MFS_has_word(&s))
 			{
 				double ps = MFS_double(&s);
 				double pt = MFS_double(&s);
-				out_info.tile.push_back(ps * tex_s * tex_x);
-				out_info.tile.push_back(pt * tex_t * tex_y);
-				out_info.tile.push_back(ps * tex_s);
-				out_info.tile.push_back(pt * tex_t);
+				out_info->tile.push_back(ps * tex_s * tex_x);
+				out_info->tile.push_back(pt * tex_t * tex_y);
+				out_info->tile.push_back(ps * tex_s);
+				out_info->tile.push_back(pt * tex_t);
 			}
 		}
 		else if(MFS_string_match(&s,"OBJ_DRAPED",false) ||
 				MFS_string_match(&s,"OBJ_GRADED",false))
 		{
-			out_info.objs.push_back(agp_t::obj());
-			out_info.objs.back().x = MFS_double(&s) * tex_s * tex_x;
-			out_info.objs.back().y = MFS_double(&s) * tex_t * tex_y;
-			out_info.objs.back().r = MFS_double(&s);
-			out_info.objs.back().z = 0.0;
+			out_info->objs.push_back(agp_t::obj());
+			out_info->objs.back().x = MFS_double(&s) * tex_s * tex_x;
+			out_info->objs.back().y = MFS_double(&s) * tex_t * tex_y;
+			out_info->objs.back().r = MFS_double(&s);
+			out_info->objs.back().z = 0.0;
 			int obj_idx = MFS_int(&s);
 			if(obj_idx >= 0 && obj_idx < obj_paths.size())
 			{
-				out_info.objs.back().name = obj_paths[obj_idx];
-				out_info.objs.back().show_lo = MFS_int(&s);
-				out_info.objs.back().show_hi = MFS_int(&s);
+				out_info->objs.back().name = obj_paths[obj_idx];
+				out_info->objs.back().show_lo = MFS_int(&s);
+				out_info->objs.back().show_hi = MFS_int(&s);
 			}
 			else
-				out_info.objs.pop_back(); // ignore instances with OOB index
+				out_info->objs.pop_back(); // ignore instances with OOB index
 		}
 		else if(MFS_string_match(&s,"OBJ_DELTA",false))
 		{
-			out_info.objs.push_back(agp_t::obj());
-			out_info.objs.back().x = MFS_double(&s) * tex_s * tex_x;
-			out_info.objs.back().y = MFS_double(&s) * tex_t * tex_y;
-			out_info.objs.back().r = MFS_double(&s);
-			out_info.objs.back().z = MFS_double(&s);
+			out_info->objs.push_back(agp_t::obj());
+			out_info->objs.back().x = MFS_double(&s) * tex_s * tex_x;
+			out_info->objs.back().y = MFS_double(&s) * tex_t * tex_y;
+			out_info->objs.back().r = MFS_double(&s);
+			out_info->objs.back().z = MFS_double(&s);
 			int obj_idx = MFS_int(&s);
 			if(obj_idx >= 0 && obj_idx < obj_paths.size())
 			{
-				out_info.objs.back().name = obj_paths[obj_idx];
-				out_info.objs.back().show_lo = MFS_int(&s);
-				out_info.objs.back().show_hi = MFS_int(&s);
+				out_info->objs.back().name = obj_paths[obj_idx];
+				out_info->objs.back().show_lo = MFS_int(&s);
+				out_info->objs.back().show_hi = MFS_int(&s);
 			}
 			else
-				out_info.objs.pop_back(); // ignore instances with OOB index
+				out_info->objs.pop_back(); // ignore instances with OOB index
 		}
 		else if(MFS_string_match(&s,"ANCHOR_PT",false))
 		{
@@ -1436,7 +1438,7 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t& out_info)
 		}
 		else if (MFS_string_match(&s,"HIDE_TILES",true))
 		{
-			out_info.hide_tiles = 1;
+			out_info->hide_tiles = 1;
 		}
 		else if (MFS_string_match(&s,"MESH_SHADER",true))
 		{
@@ -1445,23 +1447,75 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t& out_info)
 		MFS_string_eol(&s,NULL);
 	}
 	
-	for(int n = 0; n < out_info.tile.size(); n += 4)
+	for(int n = 0; n < out_info->tile.size(); n += 4)
 	{
-		out_info.tile[n  ] -= anchor_x;
-		out_info.tile[n+1] -= anchor_y;
-		do_rotate(rotation,out_info.tile[n  ],out_info.tile[n+1]);
+		out_info->tile[n  ] -= anchor_x;
+		out_info->tile[n+1] -= anchor_y;
+		do_rotate(rotation,out_info->tile[n  ],out_info->tile[n+1]);
 	}
-	for(vector<agp_t::obj>::iterator o = out_info.objs.begin(); o != out_info.objs.end(); ++o)
+	for(auto& o : out_info->objs)
 	{
-		o->x -= anchor_x;
-		o->y -= anchor_y;
-		do_rotate(rotation,o->x,o->y);
-		o->r += 90.0 * rotation;
+		o.x -= anchor_x;
+		o.y -= anchor_y;
+		do_rotate(rotation, o.x, o.y);
+		o.r += 90.0 * rotation;
 	}
-	
 	MemFile_Close(agp);
 
-	mAGP[path] = out_info;
+	out_info->xyz_min[0] = out_info->xyz_min[1] = out_info->xyz_min[2] =  999.0;
+	out_info->xyz_max[0] = out_info->xyz_max[1] = out_info->xyz_max[2] = -999.0;
+	
+	for(int n = 0; n < out_info->tile.size(); n += 4)
+	{
+		out_info->xyz_min[0] = min(out_info->xyz_min[0], out_info->tile[n]);
+		out_info->xyz_max[0] = max(out_info->xyz_max[0], out_info->tile[n]);
+		out_info->xyz_min[2] = min(out_info->xyz_min[2], out_info->tile[n+1]);
+		out_info->xyz_max[2] = max(out_info->xyz_max[2], out_info->tile[n+1]);
+	}
+
+	for(auto& o : out_info->objs)
+	{
+		const XObj8 * oo;
+		if(GetObjRelative(o.name, path, oo))
+		{
+			o.obj = oo;
+			if (fabs(o.r-180.0) < 45.0)  // account for rotation, very roughly only
+			{
+					out_info->xyz_min[0] = min(out_info->xyz_min[0], oo->xyz_min[0] + o.x);
+					out_info->xyz_max[0] = max(out_info->xyz_max[0], oo->xyz_max[0] + o.x);
+					out_info->xyz_min[2] = min(out_info->xyz_min[2], oo->xyz_min[2] + o.y);
+					out_info->xyz_max[2] = max(out_info->xyz_max[2], oo->xyz_max[2] + o.y);
+			}
+			else if (fabs(o.r-90.0) < 45.0)
+			{
+					out_info->xyz_min[0] = min(out_info->xyz_min[0],-oo->xyz_min[2] + o.x);
+					out_info->xyz_max[0] = max(out_info->xyz_max[0],-oo->xyz_max[2] + o.x);
+					out_info->xyz_min[2] = min(out_info->xyz_min[2], oo->xyz_min[0] + o.y);
+					out_info->xyz_max[2] = max(out_info->xyz_max[2], oo->xyz_max[0] + o.y);
+			}
+			else if (fabs(o.r+90.0) < 45.0)
+			{
+					out_info->xyz_min[0] = min(out_info->xyz_min[0], oo->xyz_min[2] + o.x);
+					out_info->xyz_max[0] = max(out_info->xyz_max[0], oo->xyz_max[2] + o.x);
+					out_info->xyz_min[2] = min(out_info->xyz_min[2],-oo->xyz_min[0] + o.y);
+					out_info->xyz_max[2] = max(out_info->xyz_max[2],-oo->xyz_max[0] + o.y);
+			}
+			else
+			{
+					out_info->xyz_min[0] = min(out_info->xyz_min[0],-oo->xyz_min[0] + o.x);
+					out_info->xyz_max[0] = max(out_info->xyz_max[0],-oo->xyz_max[0] + o.x);
+					out_info->xyz_min[2] = min(out_info->xyz_min[2],-oo->xyz_min[2] + o.y);
+					out_info->xyz_max[2] = max(out_info->xyz_max[2],-oo->xyz_max[2] + o.y);
+			}
+			out_info->xyz_min[1] = min(out_info->xyz_min[1], oo->xyz_min[1] + o.z);
+			out_info->xyz_max[1] = max(out_info->xyz_max[1], oo->xyz_max[1] + o.z);
+		}
+		else
+			o.obj = nullptr;
+	}
+	
+	mAGP[path] = *out_info;
+	info = out_info;
 	return true;
 }
 

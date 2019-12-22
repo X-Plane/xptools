@@ -4017,16 +4017,16 @@ void	WED_DoBreakApartSpecialAgps(IResolver* resolver)
 			if(agp_list.find(agp_resource) != agp_list.end())
 			{
 				//Break it all up here
-				agp_t agp_data;
+				const agp_t * agp_data;
 				if(rmgr->GetAGP(agp_resource, agp_data))
 				{
 					Point2 agp_origin_geo;
 					(*agp)->GetLocation(gis_Geo,agp_origin_geo);
 					Point2 agp_origin_m = translator.Forward(agp_origin_geo);
 
-					for (vector<agp_t::obj>::iterator agp_obj = agp_data.objs.begin(); agp_obj != agp_data.objs.end(); ++agp_obj)
+					for (auto agp_obj : agp_data->objs)
 					{
-						Vector2 torotate(agp_origin_m, Point2(agp_origin_m.x() + agp_obj->x, agp_origin_m.y() + agp_obj->y));
+						Vector2 torotate(agp_origin_m, Point2(agp_origin_m.x() + agp_obj.x, agp_origin_m.y() + agp_obj.y));
 
 						//Note!! WED has clockwise heading, C's cos and sin functions are ccw in radians. We reverse directions and negate again
 						torotate.rotate_by_degrees((*agp)->GetHeading()*-1);
@@ -4040,10 +4040,10 @@ void	WED_DoBreakApartSpecialAgps(IResolver* resolver)
 
 						//Other data that is important to resetting up the object
 						new_obj->SetDefaultMSL();
-						new_obj->SetHeading(agp_obj->r + (*agp)->GetHeading());
-						new_obj->SetName(agp_obj->name);
+						new_obj->SetHeading(agp_obj.r + (*agp)->GetHeading());
+						new_obj->SetName(agp_obj.name);
 						new_obj->SetParent((*agp)->GetParent(), (*agp)->GetMyPosition());
-						new_obj->SetResource(agp_obj->name);
+						new_obj->SetResource(agp_obj.name);
 						new_obj->SetShowLevel((*agp)->GetShowLevel());
 
 						added_objs.insert(new_obj);

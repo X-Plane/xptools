@@ -16,7 +16,9 @@ CHANGE HISTORY
 WED 2.2.0b2 t.b.d/20
    Features:
    - start showing aircraft footprints at lower map scale, add lines to ATC mode
+   - map drawing w/large amounts of .agp (e.g. KATL parking lots - 13k cars !!) 5x faster
    Bug Fixes:
+   - fix tall objects, e.g. towers, not centered in library preview window
    - WED-1252: fix severe distortions in all windows when previewing certain .agp
    - fix WED not respecting 2nd of two directly successive SCENERY_PACKS_DISABLED
 

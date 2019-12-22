@@ -249,6 +249,7 @@ static ObjDrawFuncs10_t kFuncs  = { Obj_SetupPoly, Obj_SetupLine, Obj_SetupLight
 
 void draw_obj_at_ll(ITexMgr * tman, const XObj8 * o, const Point2& loc, float r, GUI_GraphState * g, WED_MapZoomerNew * zoomer)
 {
+	if (!o) return;
 	TexRef	ref = tman->LookupTexture(o->texture.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);			
 	TexRef	ref2 = o->texture_draped.empty() ? ref : tman->LookupTexture(o->texture_draped.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);
 	int id1 = ref  ? tman->GetTexID(ref ) : 0;
@@ -270,6 +271,7 @@ void draw_obj_at_ll(ITexMgr * tman, const XObj8 * o, const Point2& loc, float r,
 
 void draw_obj_at_xyz(ITexMgr * tman, const XObj8 * o, double x, double y, double z, float r, GUI_GraphState * g)
 {
+	if (!o) return;
 	TexRef	ref = tman->LookupTexture(o->texture.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);			
 	TexRef	ref2 = o->texture_draped.empty() ? ref : tman->LookupTexture(o->texture_draped.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);
 	int id1 = ref  ? tman->GetTexID(ref ) : 0;
@@ -1132,7 +1134,7 @@ struct	preview_object : public WED_PreviewItem {
 
 		obj->GetResource(vpath);
 		const XObj8 * o;
-		agp_t agp;
+		const agp_t * agp;
 		if(rmgr->GetObj(vpath,o))
 		{
 			g->SetState(false,1,false,false,true,true,true);
@@ -1146,7 +1148,7 @@ struct	preview_object : public WED_PreviewItem {
 			Point2 loc;
 			obj->GetLocation(gis_Geo,loc);
 			g->SetState(false,1,false,true,true,true,true);
-			TexRef	ref = tman->LookupTexture(agp.base_tex.c_str() ,true, tex_Linear|tex_Mipmap|tex_Compress_Ok|tex_Always_Pad);
+			TexRef	ref = tman->LookupTexture(agp->base_tex.c_str() ,true, tex_Linear|tex_Mipmap|tex_Compress_Ok|tex_Always_Pad);
 			int id1 = ref  ? tman->GetTexID(ref ) : 0;
 			if(id1)g->BindTex(id1,0);
 			glMatrixMode(GL_MODELVIEW);
@@ -1159,26 +1161,25 @@ struct	preview_object : public WED_PreviewItem {
 			glRotatef(90, 1, 0 ,0);
 			glRotatef(r, 0, -1, 0);
 			glColor3f(1, 1, 1);
-			if(!agp.tile.empty() && !agp.hide_tiles)
+			if(!agp->tile.empty() && !agp->hide_tiles)
 			{
 				glDisable(GL_CULL_FACE);
 				glBegin(GL_TRIANGLE_FAN);
-				for(int n = 0; n < agp.tile.size(); n += 4)
+				for(int n = 0; n < agp->tile.size(); n += 4)
 				{
-					glTexCoord2f(agp.tile[n+2],agp.tile[n+3]);
-					glVertex3f(agp.tile[n],0,-agp.tile[n+1]);
+					glTexCoord2f(agp->tile[n+2],agp->tile[n+3]);
+					glVertex3f(agp->tile[n],0,-agp->tile[n+1]);
 				}
 				glEnd();
 				glEnable(GL_CULL_FACE);
 			}
-			for(vector<agp_t::obj>::iterator o = agp.objs.begin(); o != agp.objs.end(); ++o)
+			for(auto o : agp->objs)
 			{
-				const XObj8 * oo;
-				if((o->show_lo+o->show_hi)/2 <= preview_level)
-				if(rmgr->GetObjRelative(o->name,vpath,oo) && (ppm * max(oo->xyz_max[0] - oo->xyz_min[0], oo->xyz_max[2] - oo->xyz_min[2]) > MIN_PIXELS_PREVIEW))
-				{
-					draw_obj_at_xyz(tman, oo, o->x,0,-o->y,o->r, g);
-				}
+				if((o.show_lo + o.show_hi)/2 <= preview_level)
+					if(ppm * max(o.obj->xyz_max[0] - o.obj->xyz_min[0], o.obj->xyz_max[2] - o.obj->xyz_min[2]) > MIN_PIXELS_PREVIEW)
+					{
+						draw_obj_at_xyz(tman, o.obj, o.x,0,-o.y,o.r, g);
+					}
 			}
 			glPopMatrix();
 		}
