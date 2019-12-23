@@ -23,6 +23,7 @@ WED 2.2.0b2 t.b.d/20
    - WED-1252: fix severe distortions in all windows when previewing certain .agp
    - fix WED not respecting 2nd of two directly successive SCENERY_PACKS_DISABLED
    - WED-1253: subdue facade structural lines - let tilted previews do the talking
+   - WED-1254: fix runways of zero length not caught by runway minimum size validation
 
 WED 2.2.0b1 17/12/19
    Features:
