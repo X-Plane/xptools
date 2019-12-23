@@ -524,7 +524,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 					glEnd();
 					glEnable(GL_CULL_FACE);
 				}	
-				for(auto o : agp->objs)
+				for(auto& o : agp->objs)
 				{
 					draw_obj_at_xyz(mTexMgr, o.obj, o.x, o.z, -o.y, o.r, g);
 				}

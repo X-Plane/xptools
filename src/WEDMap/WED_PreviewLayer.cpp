@@ -1173,7 +1173,7 @@ struct	preview_object : public WED_PreviewItem {
 				glEnd();
 				glEnable(GL_CULL_FACE);
 			}
-			for(auto o : agp->objs)
+			for(auto& o : agp->objs)
 			{
 				if((o.show_lo + o.show_hi)/2 <= preview_level)
 					if(ppm * max(o.obj->xyz_max[0] - o.obj->xyz_min[0], o.obj->xyz_max[2] - o.obj->xyz_min[2]) > MIN_PIXELS_PREVIEW)
