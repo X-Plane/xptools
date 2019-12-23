@@ -41,6 +41,7 @@ public:
 
 	WED_LibraryListAdapter *	GetAdapter(void) { return &mLibraryList; }
 
+	virtual int		MouseMove(int x, int y);
 	virtual	void	ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
 							intptr_t    			inMsg,

@@ -33,6 +33,7 @@
 #include "GUI_Fonts.h"
 #include "GUI_Messages.h"
 #include "GUI_Resources.h"
+#include "WED_Menus.h"
 
 #include "WED_Colors.h"
 #include "WED_LibraryMgr.h"
@@ -53,7 +54,7 @@ enum {
 	next_variant = GUI_APP_MESSAGES
 };
 
-WED_LibraryPreviewPane::WED_LibraryPreviewPane(WED_ResourceMgr * res_mgr, ITexMgr * tex_mgr) : mResMgr(res_mgr), mTexMgr(tex_mgr),mZoom(1.0),
+WED_LibraryPreviewPane::WED_LibraryPreviewPane(GUI_Commander * cmdr, WED_ResourceMgr * res_mgr, ITexMgr * tex_mgr) : GUI_Commander(cmdr), mResMgr(res_mgr), mTexMgr(tex_mgr),mZoom(1.0),
                                mPsi(10.0f),mThe(10.0f), mHgt(5), mWid(20.0f), mWalls(4)
 {
 		int k_reg[4] = { 0, 0, 1, 3 };
@@ -258,9 +259,18 @@ void	WED_LibraryPreviewPane::MouseDrag(int x, int y, int button)
 	Refresh();
 }
 
-void	WED_LibraryPreviewPane::MouseUp  (int x, int y, int button)
+int		WED_LibraryPreviewPane::MouseMove  (int x, int y)
 {
+	int b[4];
+	GetBounds(b);
+	if(b[2] - b[0] > 0 && b[2] - b[0] < 100)
+	{
+		DispatchHandleCommand(wed_autoOpenLibPane);
+	}
+	return 1;
 }
+
+
 
 #define VIEW_DISTANCE 2.5
 

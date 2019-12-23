@@ -78,9 +78,6 @@
 			<Add option="-DUSE_JPEG=1" />
 			<Add option="-DUSE_TIF=1" />
 		</Compiler>
-		<Unit filename="../../libs/lzma-19.00/C/7zVersion.rc" />
-		<Unit filename="../../libs/lzma-19.00/C/Util/LzmaLib/resource.rc" />
-		<Unit filename="../../libs/lzma-19.00/C/Util/SfxSetup/resource.rc" />
 		<Unit filename="../../src/DSF/DSFDefs.h" />
 		<Unit filename="../../src/DSF/DSFLib.cpp" />
 		<Unit filename="../../src/DSF/DSFLib.h" />
@@ -844,9 +841,6 @@
 		<Unit filename="../../src/lzma19/C/XzIn.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../../src/lzmaSDK/C/7zVersion.rc" />
-		<Unit filename="../../src/lzmaSDK/C/Util/LzmaLib/resource.rc" />
-		<Unit filename="../../src/lzmaSDK/C/Util/SfxSetup/resource.rc" />
 		<Extensions>
 			<code_completion>
 				<search_path add="../../libs/local/include" />

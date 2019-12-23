@@ -30,12 +30,12 @@ class	ITexMgr;
 #include "GUI_Pane.h"
 #include "GUI_Button.h"
 #include "GUI_Listener.h"
+#include "GUI_Commander.h"
 
-
-class WED_LibraryPreviewPane : public GUI_Pane, public GUI_Listener {
+class WED_LibraryPreviewPane : public GUI_Pane, public GUI_Listener, public GUI_Commander {
 public:
 
-	WED_LibraryPreviewPane(WED_ResourceMgr * res_mgr, ITexMgr * tex_mgr);
+	WED_LibraryPreviewPane(GUI_Commander *cmdr, WED_ResourceMgr * res_mgr, ITexMgr * tex_mgr);
 
 	virtual	void		Draw(GUI_GraphState * state);
 	void				SetResource(const string& r, int res_type);
@@ -46,8 +46,7 @@ public:
 	int					ScrollWheel(int x, int y, int dist, int axis);
 	virtual	int			MouseDown(int x, int y, int button);
 	virtual	void		MouseDrag(int x, int y, int button);
-	virtual	void		MouseUp  (int x, int y, int button);
-
+	virtual	int			MouseMove(int x, int y);
 
 private:
 	

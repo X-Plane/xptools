@@ -168,6 +168,9 @@ enum {
 	wed_AddMetaDataEnd,//WARNING: DO NOT USE!
 	//---------------------------//
 	wed_UpdateMetadata, //Open up dialogbox
+	wed_autoOpenLibPane,
+	wed_autoOpenPropPane,
+	wed_autoClosePane,
 	// Help Menu
 	wed_HelpManual,
 	wed_HelpScenery,
