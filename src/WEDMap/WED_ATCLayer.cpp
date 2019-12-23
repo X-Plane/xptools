@@ -118,7 +118,7 @@ bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, G
 		DebugAssert(pos);
 		WED_MapZoomerNew * z = GetZoomer();
 		if(z->GetPPM() > 5)
-			glColor4f(0, 1, 0, 0.25); // avoid getting more opaque when StructureLayer preview kicks in as well
+			glColor4f(0, 1, 0, 0.2); // avoid getting more opaque when StructureLayer preview kicks in as well
 		else
 			glColor4f(0, 1, 0, 0.4);
 		WED_ATCLayer_DrawAircraft(pos, g, z);

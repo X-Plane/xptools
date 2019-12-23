@@ -52,7 +52,7 @@ WED_MapLayer::WED_MapLayer(GUI_Pane * h, WED_MapZoomerNew * z, IResolver * i) :
 	// This is the scale of the icons for all of the parts of an airport - VASI lights,
 	// signs, windsocks, parking spots.  It is a multiplier.
 	// When this is "1" one pixel of the airport icon = one meter on the map.
-	mFurnitureFactor = 2.0;  
+	mFurnitureFactor = 1.0;
 	
 	// This is the width at which we transition from full airports to icons
 	mAirportTransWidth = 20.0;
