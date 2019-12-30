@@ -871,6 +871,13 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 					WED_clean_vpath(file);
 					fac->objs.push_back(file);
 				}
+				else if(MFS_string_match(&s,"#obj_wed",false))
+				{
+					string file;
+					MFS_string(&s,&file);
+					WED_clean_vpath(file);
+					fac->objs.back() = file;      // use this one instead of the OBJ X-plane would use.
+				}
 				else if(MFS_string_match(&s,"FLOOR", false))
 				{
 					fac->floors.push_back(REN_facade_floor_t());
@@ -1328,6 +1335,13 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 			MFS_string(&s,&p);
 			WED_clean_vpath(p);          // cant say here yet if its a relative rpath or a vpath.
 			obj_paths.push_back(p);
+		}
+		else if(MFS_string_match(&s,"#object_wed",false))
+		{
+			string p;
+			MFS_string(&s,&p);
+			WED_clean_vpath(p);
+			obj_paths.back() = p;      // use this one instead of the OBJECT X-plane would use.
 		}
 		else if(MFS_string_match(&s,"TILE",false))
 		{
