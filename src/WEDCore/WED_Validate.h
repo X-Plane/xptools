@@ -69,6 +69,7 @@ enum validate_error_t
 	err_flow_visibility_negative,
 	err_freq_airport_has_gnd_or_del_but_no_tower,
 	err_freq_could_not_find_at_least_one_valid_freq_for_group,
+	err_facade_illegal_wall,
 	err_atc_freq_must_be_on_25khz_spacing,
 	err_atc_freq_must_be_on_8p33khz_spacing,
 	err_freq_duplicate_freq,
@@ -151,6 +152,7 @@ enum validate_error_t
 	warn_atc_flow_insufficient_coverage,
 	warn_atc_flow_short_time,
 	warn_atcrwy_marking,
+	warn_facades_curved_only_type2,
 	warn_truckroutes_but_no_starts,
 	warn_ramp_start_size_implausible,
 	warn_runway_matching_cifp_mislocated
@@ -194,7 +196,7 @@ enum validation_result_t {
 };
 
 // Collection primitives - these recursively walk the composition and pull out all entities of a given type.
-validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * root = NULL, bool skipErrorDialog = false);	// if root not null, only do this sub-tree
-
+validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * root = NULL, 
+	bool skipErrorDialog = false, const char * abortMsg = "Dismiss");	// if root not null, only do this sub-tree
 
 #endif

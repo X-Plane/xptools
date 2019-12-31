@@ -82,107 +82,34 @@ struct	BMPImageDesc {
 #pragma pack(pop)
 #endif
 
-
-// DD surface flags
-#define DDSD_CAPS               0x00000001l     // default
-#define DDSD_HEIGHT             0x00000002l
-#define DDSD_WIDTH              0x00000004l
-#define DDSD_PITCH              0x00000008l		// rowbytes to mac nerds
-#define DDSD_PIXELFORMAT        0x00001000l
-#define DDSD_MIPMAPCOUNT        0x00020000l
-#define DDSD_LINEARSIZE         0x00080000l
-
-// DD Pixel format flags
-#define DDPF_ALPHAPIXELS        0x00000001l		// has alpha in addition to RGB
-#define DDPF_FOURCC             0x00000004l		// Is 4cc compressed
-#define DDPF_RGB				0x00000040l		// Is RGB (may have alpha)
-
-// DD surface caps
-#define DDSCAPS_TEXTURE			0x00001000l
-#define DDSCAPS_MIPMAP          0x00400000l
-#define DDSCAPS_COMPLEX         0x00000008l
-
-#if APL || LIN
-	#define DWORD unsigned int
-#endif
-
-#if BIG
-	#if APL
-		#include <libkern/OSByteOrder.h>
-		#define SWAP32(x) (OSSwapConstInt32(x))
-	#else
-		#error we do not have big endian support on non-Mac platforms
-	#endif
-#elif LIL
-	#define SWAP32(x) (x)
-#else
-	#error BIG or LIL are not defined - what endian are we?
-#endif
-
-
-struct TEX_dds_caps2 {
-    DWORD       dwCaps;         // capabilities of surface wanted
-    DWORD       dwCaps2;
-    DWORD       dwCaps3;
-    DWORD       dwCaps4;
-};
-
-struct TEX_dds_pixelformat {
-    DWORD       dwSize;                 // size of structure (must be 32)
-    DWORD       dwFlags;                // pixel format flags
-    char        dwFourCC[4];               // (FOURCC code)		D X T 3 in memory string.
-	DWORD		dwRGBBitCount;          // how many bits per pixel
-	DWORD		dwRBitMask;             // mask for red bit
-	DWORD		dwGBitMask;             // mask for green bits
-	DWORD		dwBBitMask;             // mask for blue bits
-	DWORD		dwRGBAlphaBitMask;      // mask for alpha channel
-};
-
-struct TEX_dds_desc {
-	char			dwMagic[4];				// D D S <space> sequential string in memory.  This is not REALLY in the struct, but good enough for me.
-
-   DWORD			dwSize;              // size of the DDSURFACEDESC structure		(Must be 124)
-   DWORD			dwFlags;             // determines what fields are valid			(DDSD_CAPS, DDSD_PIXELFORMAT, DDSD_WIDTH, DDSD_HEIGHT.)
-   DWORD			dwHeight;            // height of surface to be created
-   DWORD			dwWidth;             // width of input surface
-	DWORD			dwLinearSize;        // Formless late-allocated optimized surface size
-   DWORD			dwDepth;				   // Vol texes-depth.
-	DWORD			dwMipMapCount;       // number of mip-map levels requestde
-	DWORD			dwReserved1[11];
-	TEX_dds_pixelformat	ddpfPixelFormat;  // pixel format description of the surface
-   TEX_dds_caps2       ddsCaps;           // direct draw surface capabilities			DDSCAPS_TEXTURE, DDSCAPS_MIPMAP, DDSCAPS_COMPLEX		TEXTURE, LINEARSIZE, COMPLEX, MIPMAP, FOURCC)
-   DWORD               dwReserved2;
-    
-   TEX_dds_desc(int width, int height, int mips, int dxt) 
-   {
-		dwMagic[0] = 'D';
-		dwMagic[1] = 'D';
-		dwMagic[2] = 'S';
-		dwMagic[3] = ' ';
-		dwSize = SWAP32(sizeof(TEX_dds_desc)-sizeof(dwMagic));
-		dwFlags = SWAP32(DDSD_CAPS|DDSD_HEIGHT|DDSD_WIDTH|DDSD_PIXELFORMAT|DDSD_MIPMAPCOUNT|DDSD_LINEARSIZE);
-		dwHeight = SWAP32(height);
-		dwWidth = SWAP32(width);
-		dwLinearSize=SWAP32(squish::GetStorageRequirements(width, height, dxt == 1 ? squish::kDxt1 : squish::kDxt3));
-		dwDepth = 0;
-		dwMipMapCount=SWAP32(mips);
-		for(int i = 0; i < 11; dwReserved1[i++] = 0);
-		ddpfPixelFormat = { 0 };
-		ddpfPixelFormat.dwSize=SWAP32(sizeof(ddpfPixelFormat));
-		if(dxt > 0)
-		{
-			ddpfPixelFormat.dwFlags=SWAP32(DDPF_FOURCC);
-			ddpfPixelFormat.dwFourCC[0]='D';
-			ddpfPixelFormat.dwFourCC[1]='X';
-			ddpfPixelFormat.dwFourCC[2]='T';
-			ddpfPixelFormat.dwFourCC[3]='0' + dxt;
-		}
-		ddsCaps = { 0 };
-		ddsCaps.dwCaps=SWAP32(DDSCAPS_TEXTURE|DDSCAPS_MIPMAP);
-		dwReserved2 = 0;
-   }
-};
-
+TEX_dds_desc::TEX_dds_desc(int width, int height, int mips, int dxt)
+{
+	dwMagic[0] = 'D';
+	dwMagic[1] = 'D';
+	dwMagic[2] = 'S';
+	dwMagic[3] = ' ';
+	dwSize = SWAP32(sizeof(TEX_dds_desc)-sizeof(dwMagic));
+	dwFlags = SWAP32(DDSD_CAPS|DDSD_HEIGHT|DDSD_WIDTH|DDSD_PIXELFORMAT|DDSD_MIPMAPCOUNT|DDSD_LINEARSIZE);
+	dwHeight = SWAP32(height);
+	dwWidth = SWAP32(width);
+	dwLinearSize=SWAP32(squish::GetStorageRequirements(width, height, dxt == 1 ? squish::kDxt1 : squish::kDxt3));
+	dwDepth = 0;
+	dwMipMapCount=SWAP32(mips);
+	for(int i = 0; i < 11; dwReserved1[i++] = 0);
+	ddpfPixelFormat = { 0 };
+	ddpfPixelFormat.dwSize=SWAP32(sizeof(ddpfPixelFormat));
+	if(dxt > 0)
+	{
+		ddpfPixelFormat.dwFlags=SWAP32(DDPF_FOURCC);
+		ddpfPixelFormat.dwFourCC[0]='D';
+		ddpfPixelFormat.dwFourCC[1]='X';
+		ddpfPixelFormat.dwFourCC[2]='T';
+		ddpfPixelFormat.dwFourCC[3]='0' + dxt;
+	}
+	ddsCaps = { 0 };
+	ddsCaps.dwCaps=SWAP32(DDSCAPS_TEXTURE|DDSCAPS_MIPMAP);
+	dwReserved2 = 0;
+}
 
 /*
 	NOTES ON ENDIAN CHAOS!!!!!!!!!!!!!!!!!!!
@@ -405,7 +332,7 @@ int GetSupportedType(const char * path)
 
 	if(extension == "bmp") return WED_BMP;
 	if(extension == "dds") return WED_DDS;
-	if(extension == "jp2") return WED_JP2K;
+//	if(extension == "jp2") return WED_JP2K;
 	if((extension == "jpeg")||(extension == "jpg")) return WED_JPEG;
 	if(extension == "png") return WED_PNG;
 	if(extension == "tif" || extension == "tiff") return WED_TIF;
@@ -415,6 +342,8 @@ int GetSupportedType(const char * path)
 }
 
 // should really be called "CreateBitmapFromFileAccordingToSuffix"
+// ********** DEPRECATED in favor of LoadBitmapFromAnyFile() *********
+#if 0
 int MakeSupportedType(const char * path, ImageInfo * inImage)
 {
 	int error = -1;//Guilty until proven innocent
@@ -444,6 +373,23 @@ int MakeSupportedType(const char * path, ImageInfo * inImage)
 		return error;//No good images or a broken file path
 	}
 	return error;
+}
+#endif
+int LoadBitmapFromAnyFile(const char * inFilePath, ImageInfo * outImage)
+{
+	int result = CreateBitmapFromPNG(inFilePath, outImage, false, GAMMA_SRGB);
+	#if USE_TIF
+	if (result) result = CreateBitmapFromTIF(inFilePath, outImage);   // totally dumbfounds Michael: Why don't we have to flip those, too w/new DDS code ??
+	#endif
+	#if USE_JPEG
+	if (result) result = CreateBitmapFromJPEG(inFilePath, outImage);
+	#endif
+	if (result) result = CreateBitmapFromFile(inFilePath, outImage);  // reads BMP files only
+	if (result) result = CreateBitmapFromDDS(inFilePath, outImage);   // should never be used - as DDS is loaded directly already
+
+	if (result) DestroyBitmap(outImage);  // clean up in case of no sucess.
+
+	return result;  // return zero upon success
 }
 
 void	FillBitmap(const struct ImageInfo * inImageInfo, char c)
@@ -987,9 +933,7 @@ jpeg_throw_error (setjmp_err_mgr * err)
 }
 
 
-
-
-// JPEG is 0,0 = upper left and lib gives us RGB.  So we need to red-blue swap and vertically flip.
+// JPEG is 0,0 = upper left and lib gives us RGB.  So we need to red-blue swap and vertically flip to get DIB BOTTOM_LEFT origins.
 int		CreateBitmapFromJPEG(const char * inFilePath, struct ImageInfo * outImageInfo)
 {
 	// We bail immediately if the file is no good.  This prevents us from
@@ -1000,7 +944,6 @@ int		CreateBitmapFromJPEG(const char * inFilePath, struct ImageInfo * outImageIn
 	if (!fi) return errno;
 
 	try {
-
 			struct jpeg_decompress_struct cinfo;
 			setjmp_err_mgr		  jerr;
 
@@ -1027,11 +970,12 @@ int		CreateBitmapFromJPEG(const char * inFilePath, struct ImageInfo * outImageIn
 
 		int linesize = outImageInfo->width * outImageInfo->channels;
 		int linecount = outImageInfo->height;
+
 		unsigned char * p = outImageInfo->data + (linecount - 1) * linesize;
 		while (linecount--)
 		{
-			if (jpeg_read_scanlines (&cinfo, &p, 1) == 0)
-				break;
+			if (jpeg_read_scanlines (&cinfo, &p, 1) == 0)     // painfully slow with 4:2:2 subsampled or progressive scanned jpeg's
+				break;                                        // as every line is calculated several times, see jpeglib header
 
 			for (int n = cinfo.output_width - 1; n >= 0; --n)
 			{
@@ -1056,8 +1000,6 @@ int		CreateBitmapFromJPEG(const char * inFilePath, struct ImageInfo * outImageIn
 		return 1;
 	}
 }
-
-
 
 int		CreateBitmapFromJPEGData(void * inBytes, int inLength, struct ImageInfo * outImageInfo)
 {
@@ -1119,7 +1061,7 @@ int		CreateBitmapFromJPEGData(void * inBytes, int inLength, struct ImageInfo * o
 		jpeg_destroy_decompress(&cinfo);
 		return 0;
 	} catch (...) {
-		// If we get an exceptoin, cinfo is already cleaned up; just bail.
+		// If we get an exception, cinfo is already cleaned up; just bail.
 		return 1;
 	}
 }
@@ -1145,28 +1087,28 @@ void png_buffered_read_func(png_structp png_ptr, png_bytep data, png_size_t leng
 // PNG is 0,0 = upper left so we vertically flip.  Lib gives us image in any component order we want.
 int		CreateBitmapFromPNG(const char * fname, struct ImageInfo * outImageInfo, bool leaveIndexed, float target_gamma)
 {
+	int result = -1;
 	FILE * file = fopen(fname, "rb");
-	if (!file)
-		return -1;
-
-	fseek(file, 0, SEEK_END);
-	int fileLength = ftell(file);
-	fseek(file, 0, SEEK_SET);
-	char * buffer = new char[fileLength];
-	if (!buffer)
+	if (file)
 	{
+		char c[4];
+		if (fread(c, 1, 4, file) == 4 && strncmp(c, "\x89PNG",4) == 0) // cut it short, if no joy
+		{
+			fseek(file, 0, SEEK_END);
+			int fileLength = ftell(file);
+			fseek(file, 0, SEEK_SET);
+			char * buffer = new char[fileLength];
+			if (buffer)
+			{
+				if (fread(buffer, 1, fileLength, file) == fileLength)
+				{
+					result = CreateBitmapFromPNGData(buffer, fileLength, outImageInfo, leaveIndexed, target_gamma);
+				}
+			}
+			delete [] buffer;
+		}
 		fclose(file);
-		return -1;
 	}
-	if (fread(buffer, 1, fileLength, file) != fileLength)
-	{
-		fclose(file);
-		delete [] buffer;
-		return -1;
-	}
-	fclose(file);
-	int result = CreateBitmapFromPNGData(buffer, fileLength, outImageInfo, leaveIndexed, target_gamma);
-	delete [] buffer;
 	return result;
 }
 
@@ -2249,5 +2191,4 @@ int AdvanceMipmapStack(struct ImageInfo * ioImage)
 	if(ioImage->height > 1) ioImage->height >>= 1;
 	return 1;
 }
-
 

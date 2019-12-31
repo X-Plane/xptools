@@ -36,6 +36,13 @@
 #include "WED_FacadePreview.h"
 #include "WED_PreviewLayer.h"
 
+static bool cull_obj(const XObj8 * o, double ppm)                   // cut off if laterally smaller than 5 pixels
+{
+	double pix = ppm * max(o->xyz_max[0] - o->xyz_min[0], o->xyz_max[2] - o->xyz_min[2]);
+//	printf("pix %.1lf\n", sqrt(pix));
+	return pix < MIN_PIXELS_PREVIEW;
+}
+
 static bool closer_to(double a, double b, double x)
 {
 	return fabs(x-a) > fabs(x-b);
@@ -810,7 +817,7 @@ struct obj {
 
 
 void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, const fac_info_t& info, const Polygon2& footprint, const vector<int>& choices,
-	double fac_height, GUI_GraphState * g, bool want_thinWalls)
+	double fac_height, GUI_GraphState * g, bool want_thinWalls, double ppm_for_culling)
 {
 	for(auto f : info.scrapers)
 	{
@@ -844,7 +851,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 		}
 	}
 
-	TexRef	tRef = tman->LookupTexture(info.wall_tex.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);			
+	TexRef	tRef = tman->LookupTexture(info.wall_tex.c_str() ,true, tex_Compress_Ok);
 	g->SetTexUnits(1);
 	g->BindTex(tRef  ? tman->GetTexID(tRef) : 0, 0);
 	
@@ -1040,9 +1047,9 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 			roof_pts.push_back(footprint.back());    // we didn't process the last wall - but still need a complete roof. E.g. Fenced Parking Facades.
 	}
 
-if (info.has_roof) // && want_roof
+	if (info.has_roof) // && want_roof
 	{
-		tRef = tman->LookupTexture(info.roof_tex.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);
+		tRef = tman->LookupTexture(info.roof_tex.c_str() ,true, tex_Wrap|tex_Compress_Ok);
 		g->BindTex(tRef ? tman->GetTexID(tRef) : 0, 0);
 
 		// all facdes are drawn cw (!)
@@ -1142,6 +1149,27 @@ if (info.has_roof) // && want_roof
 			}
 			else if(!info.noroofmesh)  // type 2 facades
 			{
+				if(want_thinWalls && roof_pts.size() <= 5) // add roof objects, but only for preview pane. Its slow when taking the exact shape of the roof into account.
+				{
+					for(auto ro : bestFloor->roofs.back().roof_objs)
+					{
+						Point2 loc0 = footprint.side(0).midpoint();
+						Point2 loc_uv = loc0 + dirVec * ro.str[0] * info.roof_scale_s + perpVec * ro.str[1] * info.roof_scale_t;
+
+						for(int s = (footprint[0].x() - loc0.x()) / info.roof_scale_s; s < ((footprint[1].x() - loc0.x()) / info.roof_scale_s) - 1; ++s)
+							for(int t = ((-footprint[0].y() - loc0.y()) / info.roof_scale_t) + 1; t < ((-footprint[2].y() - loc0.y()) / info.roof_scale_t) + 1; ++t)
+							{
+								struct obj obj_ref;
+								Point2 xy = loc_uv + dirVec * s * info.roof_scale_s - perpVec * t * info.roof_scale_t;
+								obj_ref.x = xy.x();
+								obj_ref.y = roof_height;
+								obj_ref.z = xy.y();
+								obj_ref.r = ro.str[2] + atan2(perpVec.y(), perpVec.x()) * RAD_TO_DEG + 90.0;
+								obj_ref.idx = ro.obj;
+								obj_locs.push_back(obj_ref);
+							}
+					}
+				}
 				int xtra_roofs = 0;
 				if (want_thinWalls && bestFloor->roofs.size() > 1) xtra_roofs = bestFloor->roofs.size() - 1;
 				do
@@ -1168,7 +1196,7 @@ if (info.has_roof) // && want_roof
 	for(auto l : obj_locs)
 	{
 		const XObj8 * oo;
-		if(rman->GetObjRelative(info.objs[l.idx].c_str(), vpath, oo))
+		if(rman->GetObjRelative(info.objs[l.idx].c_str(), vpath, oo) && !cull_obj(oo, ppm_for_culling))
 		{
 			// facade is aligned so midpoint of first wall is origin
 			draw_obj_at_xyz(tman, oo,

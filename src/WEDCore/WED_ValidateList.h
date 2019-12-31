@@ -43,7 +43,7 @@ class	GUI_Button;
 class WED_ValidateDialog : public GUI_Window, public GUI_Listener, public GUI_Destroyable {
 
 public:
-	WED_ValidateDialog(WED_Document * resolver, WED_MapPane * pane, const validation_error_vector& msg);
+	WED_ValidateDialog(WED_Document * resolver, WED_MapPane * pane, const validation_error_vector& msg, const char * abortText);
 	~WED_ValidateDialog();
 
 	virtual void ReceiveMessage(

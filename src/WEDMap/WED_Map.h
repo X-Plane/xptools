@@ -26,8 +26,10 @@
 
 #include "CompGeomDefs2.h"
 #include "GUI_Pane.h"
+#include "GUI_Button.h"
 #include "WED_MapZoomerNew.h"
 #include "GUI_Listener.h"
+#include "GUI_Commander.h"
 #include <stdint.h>
 #include "WED_MapLayer.h"
 
@@ -37,10 +39,10 @@ class	IResolver;
 class	IGISEntity;
 class	ISelection;
 
-class	WED_Map : public GUI_Pane, public WED_MapZoomerNew, public GUI_Listener {
+class	WED_Map : public GUI_Pane, public WED_MapZoomerNew, public GUI_Listener, public GUI_Commander {
 public:
 
-						 WED_Map(IResolver * in_resolver);
+						 WED_Map(IResolver * in_resolver, GUI_Commander * cmdr);
 	virtual				~WED_Map();
 
 			void		SetTool(WED_MapToolNew * tool);
@@ -91,7 +93,8 @@ private:
 	int				mY_Orig;
 	int				mIsDownCount;
 	int				mIsDownExtraCount;
-
+	
+	GUI_Button *	mTiltButton[4];
 };
 
 

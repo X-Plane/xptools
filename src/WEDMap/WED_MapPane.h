@@ -26,6 +26,7 @@
 
 #include "GUI_Pane.h"
 #include "GUI_Listener.h"
+#include "GUI_Commander.h"
 #include "GUI_Packer.h"
 
 #include <stdint.h>
@@ -38,9 +39,6 @@ class GUI_Table;
 class GUI_TextTable;
 class WED_ToolInfoAdapter;
 
-#if WANT_TERRASEVER
-class	WED_TerraserverLayer;
-#endif
 class	WED_StructureLayer;
 class	WED_ATCLayer;
 class	WED_PreviewLayer;
@@ -53,7 +51,6 @@ class	WED_CreatePolygonTool;
 class	IResolver;
 class	IDocPrefs;
 class	WED_Archive;
-class	GUI_Commander;
 class	WED_LibraryListAdapter;
 class	WED_SlippyMap;
 #if WITHNWLINK
@@ -68,7 +65,7 @@ class	WED_NWInfoLayer;
 
 */
 
-class	WED_MapPane : public GUI_Packer, public GUI_Listener {
+class	WED_MapPane : public GUI_Packer, public GUI_Listener, public GUI_Commander {
 public:
 
 						 WED_MapPane(GUI_Commander * cmdr, double log_bounds[4], IResolver * resolver, WED_Archive * archive, WED_LibraryListAdapter * library);
@@ -84,6 +81,7 @@ public:
 			int				Map_KeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)	 	;
 			int				Map_HandleCommand(int command) 									;
 			int				Map_CanHandleCommand(int command, string& ioName, int& ioCheck) ;
+	virtual	int				MouseMove(int x, int y);
 
 			void			FromPrefs(IDocPrefs * prefs);
 			void			ToPrefs(IDocPrefs * prefs);
@@ -103,11 +101,7 @@ private:
 	vector<WED_MapLayer *>	mLayers;
 	vector<WED_MapToolNew *>mTools;
 
-#if WANT_TERRASEVER
-	WED_TerraserverLayer *	mTerraserver;
-#endif	
 	WED_SlippyMap *			mSlippyMap;
-//	WED_TileServerLayer *	mTileserver;
 	WED_StructureLayer *	mStructureLayer;
 	WED_ATCLayer *			mATCLayer;
 	WED_PreviewLayer *		mPreview;

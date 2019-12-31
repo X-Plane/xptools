@@ -27,7 +27,8 @@
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glext.h>
 #elif IBM
-	#include <GL/gl.h>
+	#include "glew.h"
+	#include "AssertUtils.h"
 #else
 	#include <GL/gl.h>
 	#include <GL/glext.h>
@@ -59,6 +60,11 @@ void		GUI_GraphState::Init(void)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
+#if IBM
+	GLenum err = glewInit();
+	if (err != GLEW_OK)
+		AssertPrintf("Can not init GLEW: '%s'\n", glewGetErrorString(err));
+#endif
 	Reset();
 }
 

@@ -22,5 +22,7 @@ public:
 
 };
 
+class WED_RampPosition;
+void WED_ATCLayer_DrawAircraft(WED_RampPosition * pos, GUI_GraphState * g, WED_MapZoomerNew * z);
 
 #endif /* WED_ATCLayer_h */

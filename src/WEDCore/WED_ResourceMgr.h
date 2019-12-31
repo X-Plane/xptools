@@ -109,7 +109,12 @@ struct	lin_info_t {
 	float		scale_t;
 	float		eff_width;
 	float		rgb[3];
+	struct	caps {
+		float s1,sm,s2,t1,t2;
+	};
 	vector<float>	s1,sm,s2;
+	vector<caps>	start_caps, end_caps;
+	int			align;
 };
 
 struct	str_info_t {
@@ -123,16 +128,19 @@ struct	road_info_t {
 };
 
 struct agp_t {
-	struct obj {
-		float		x,y,r;			// annotation position
-		int		show_lo,show_hi;
-		string	name;
+	struct obj_t {
+		float		x,y,z,r;			// annotation position
+		int			show_lo,show_hi;
+		string		name;
+		const XObj8 * obj;              // resolving name is slow - so keep the obj around
 	};
 	string			base_tex;
 	string			mesh_tex;
 	int				hide_tiles;
 	vector<float>	tile;	// the base tile in x,y,s,t quads.
-	vector<obj>		objs;
+	vector<obj_t>	objs;
+	float			xyz_min[3];
+	float			xyz_max[3];
 };
 
 
@@ -152,11 +160,10 @@ public:
 			bool	GetFor(const string& path, XObj8 const *& obj);
 			int		GetNumVariants(const string& path);
 
-			//path is a RELATIVE PATH
 			void	WritePol(const string& abspath, const pol_info_t& out_info); // side note: shouldn't this be in_info?
 			bool	GetObj(const string& path, XObj8 const *& obj, int variant = 0);
 			bool	GetObjRelative(const string& obj_path, const string& parent_path, XObj8 const *& obj);
-			bool	GetAGP(const string& path, agp_t& out_info);
+			bool	GetAGP(const string& path, agp_t const *& info);
 			bool	GetRoad(const string& path, road_info_t& out_info);
 
 	virtual	void	ReceiveMessage(
@@ -168,11 +175,11 @@ private:
 
 			XObj8 * LoadObj(const string& abspath);
 	
-	unordered_map<string,vector<fac_info_t *> > mFac;
+	unordered_map<string,vector<fac_info_t> > mFac;
 	unordered_map<string,pol_info_t>		mPol;
 	unordered_map<string,lin_info_t>		mLin;
 	unordered_map<string,str_info_t>		mStr;
-	unordered_map<string,const XObj8 *>	mFor;
+	unordered_map<string,XObj8>				mFor;
 	unordered_map<string,vector<const XObj8 *> > mObj;
 	unordered_map<string,agp_t>				mAGP;
 #if ROAD_EDITING

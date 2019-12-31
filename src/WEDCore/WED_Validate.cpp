@@ -78,6 +78,7 @@
 #include "FileUtils.h"
 #include "MemFileUtils.h"
 #include "PlatformUtils.h"
+#include "STLUtils.h"
 #include "MathUtils.h"
 
 #include "WED_Document.h"
@@ -456,8 +457,31 @@ static void ValidateOneFacadePlacement(WED_Thing* who, validation_error_vector& 
 		msgs.push_back(validation_error_t("Facades may not have holes in them.", err_gis_poly_facades_may_not_have_holes, who,apt));
 	}
 
-	if(gExportTarget == wet_xplane_900 && WED_HasBezierPol(fac))
-		msgs.push_back(validation_error_t("Curved facades are only supported in X-Plane 10 and newer.", err_gis_poly_facades_curved_only_for_gte_xp10, who,apt));
+	if(WED_HasBezierPol(fac))
+	{
+		if(gExportTarget == wet_xplane_900)
+			msgs.push_back(validation_error_t("Curved facades are only supported in X-Plane 10 and newer.", err_gis_poly_facades_curved_only_for_gte_xp10, who,apt));
+		else if(fac->GetType() < 2)
+			msgs.push_back(validation_error_t("Only Type2 facades support curved segments.", warn_facades_curved_only_type2, who,apt));
+	}
+
+	if(fac->HasLayer(gis_Param))
+	{
+		int maxWalls = fac->GetNumWallChoices();
+		IGISPointSequence * ips = fac->GetOuterRing();
+		int nn = ips->GetNumPoints();
+		for(int i = 0; i < nn; ++i)
+		{
+			Point2 pt;
+			IGISPoint * igp = ips->GetNthPoint(i);
+			igp->GetLocation(gis_Param, pt);
+						
+			if(pt.x() >= maxWalls)
+			{
+				msgs.push_back(validation_error_t("Facade node specifies wall not defined in facade resource.", err_facade_illegal_wall, dynamic_cast<WED_Thing *>(igp), apt));
+			}
+		}
+	}
 }
 
 static void ValidateOneForestPlacement(WED_Thing* who, validation_error_vector& msgs, WED_Airport * apt)
@@ -702,19 +726,24 @@ static void ValidateAirportFrequencies(WED_Airport* who, validation_error_vector
 
 			const int freq_type = ENUM_Import(ATCFrequency, freq_info.atc_type);
 			is_xplane_atc_related = freq_type == atc_Delivery || freq_type == atc_Ground || freq_type == atc_Tower;
-
+			
+			int ATC_min_frequency = 118000;   // start of VHF air band
+			if(freq_type == atc_AWOS)
+				ATC_min_frequency = 108000;       // AWOS can be broadcasted as part of VOR's
+				
 			if(freq_type == atc_Tower)
 				has_tower = true;
 			else if(is_xplane_atc_related)
 				has_atc.push_back(*freq);
 
-			if(freq_info.freq <= 136 || freq_info.freq >= 1000000)
+			if(freq_info.freq < ATC_min_frequency || freq_info.freq >= 1000000 || (freq_info.freq >= 137000 && freq_info.freq < 200000) )
 			{
-				msgs.push_back(validation_error_t(string("Frequency ") + freq_str + " not between 136 kHz and 1000 MHz.", err_freq_not_between_0_and_1000_mhz, *freq,who));
+				msgs.push_back(validation_error_t(string("Frequency ") + freq_str + " not in the range of " + to_string(ATC_min_frequency/1000) + 
+				                                         " .. 137 or 200 .. 1000 MHz.", err_freq_not_between_0_and_1000_mhz, *freq,who));
 				continue;
 			}
 
-			if(freq_info.freq < 118000 || freq_info.freq >= 137000)
+			if(freq_info.freq < ATC_min_frequency || freq_info.freq >= 137000)
 			{
 				found_one_oob = true;
 			}
@@ -1417,7 +1446,7 @@ static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& 
 	{
 		WED_GISLine_Width * lw = dynamic_cast<WED_GISLine_Width *>(who);
 		Assert(lw);
-		if (lw->GetWidth() < 5 && lw->GetLength() < 100)
+		if (lw->GetWidth() < 5 || lw->GetLength() < 100)
 		{
 			msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' must be at least 5 meters wide by 100 meters long.", err_rwy_unrealistically_small, who, apt));
 		}
@@ -1452,15 +1481,26 @@ static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& 
 		else
 		{
 			#if !GATEWAY_IMPORT_FEATURES
-				double heading, len;
+				double true_heading, len;
 				Point2 ctr;
-				Quad_2to1(ends, ctr, heading, len);
-				double approx_heading = num1 * 10.0;
-				double heading_delta = fabs(dobwrap(approx_heading - heading, -180.0, 180.0));
-				if(heading_delta > 135.0)
-					msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' needs to be reversed to match its name.", err_rwy_must_be_reversed_to_match_name, who,apt));
-				else if(heading_delta > ( name[name.length()-1] == 'T' ? 6.0 : 45.0))         // true north runways are'nt allowed to deviate for magnetic deviation
-					msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' is misaligned with its runway name.", err_rwy_misaligned_with_name, who,apt));
+				Quad_2to1(ends, ctr, true_heading, len);
+				double name_heading = num1 * 10.0;
+				double heading_delta = fabs(dobwrap(name_heading - true_heading, -180.0, 180.0));
+				if (name.back() == 'T')
+				{
+					// T suffix runways can be named either true north or 'GRID north'. Test if it matches either definition before squawking
+					double grid_heading = ctr.y() > 0.0 ? true_heading - ctr.x() : true_heading + ctr.x();
+					double grid_delta = fabs(dobwrap(name_heading - grid_heading, -180.0, 180.0));
+					if(grid_delta > 10.0 && heading_delta > 10.0)
+						msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' name is matching neither true nor grid north heading.", err_rwy_misaligned_with_name, who,apt));
+				}
+				else
+				{
+					if(heading_delta > 135.0)
+						msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' needs to be reversed to match its name.", err_rwy_must_be_reversed_to_match_name, who,apt));
+					else if(heading_delta > 45.0)
+						msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' is misaligned with its runway name.", err_rwy_misaligned_with_name, who,apt));
+				}
 			#endif
 		}
 	}
@@ -1926,22 +1966,28 @@ static void ValidateOneTaxiSign(WED_AirportSign* airSign, validation_error_vecto
 
 	string signName;
 	airSign->GetName(signName);
-
-	//Create the necessary parts for a parsing operation
-	parser_in_info in(signName);
-	parser_out_info out;
-
-	ParserTaxiSign(in,out);
-	if(out.errors.size() > 0)
+	if(signName.empty())
 	{
-		int MAX_ERRORS = 12;//TODO - Is this good?
-		string m;
-		for (int i = 0; i < MAX_ERRORS && i < out.errors.size(); i++)
+		msgs.push_back(validation_error_t("Taxi Sign is blank.", err_sign_error, airSign, apt));
+	}
+	else
+	{
+		//Create the necessary parts for a parsing operation
+		parser_in_info in(signName);
+		parser_out_info out;
+
+		ParserTaxiSign(in,out);
+		if(out.errors.size() > 0)
 		{
-			m += out.errors[i].msg;
-			m += '\n';
+			int MAX_ERRORS = 12;//TODO - Is this good?
+			string m;
+			for (int i = 0; i < MAX_ERRORS && i < out.errors.size(); i++)
+			{
+				m += out.errors[i].msg;
+				m += '\n';
+			}
+			msgs.push_back(validation_error_t(m, err_sign_error, airSign,apt));
 		}
-		msgs.push_back(validation_error_t(m, err_sign_error, airSign,apt));
 	}
 }
 
@@ -2311,6 +2357,21 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		{
 			rwys_missing.erase(*i);    // remove those runways that can be found in the scenery for this airport
 		}
+		for(auto i : sealanes)
+		{
+			string name;	i->GetName(name);
+			vector<string> parts;  tokenize_string(name.begin(),name.end(),back_inserter(parts), '/');
+	
+			for(auto p : parts)
+			{
+				if(p.back() == 'W')	p.pop_back();                       // We want to allow sealanes with or without W suffix to satisfy CIFP validation
+				int e = ENUM_LookupDesc(ATCRunwayOneway,p.c_str());
+				if(legal_rwy_oneway.find(e) == legal_rwy_oneway.end())   // but only if that name does not collide with a paved runway at the same airport
+				{
+					rwys_missing.erase(e);
+				}
+			}
+		}
 		if (!rwys_missing.empty())
 		{
 			stringstream ss;
@@ -2425,7 +2486,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 }
 
 
-validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * wrl, bool skipErrorDialog)
+validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * wrl, bool skipErrorDialog, const char * abortMsg)
 {
 #if DEBUG_VIS_LINES
 	//Clear the previously drawn lines before every validation
@@ -2530,7 +2591,7 @@ validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane,
 
 	if(!msgs.empty())
 	{
-		if(!skipErrorDialog) new WED_ValidateDialog(resolver, pane, msgs);
+		if(!skipErrorDialog) new WED_ValidateDialog(resolver, pane, msgs, abortMsg);
 
 /*		ISelection * sel = WED_GetSelect(resolver);
 		wrl->StartOperation("Select Invalid");

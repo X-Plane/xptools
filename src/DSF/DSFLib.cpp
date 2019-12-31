@@ -34,6 +34,14 @@
 #include "DSFDefs.h"
 #include "DSFPointPool.h"
 
+#if USE_7Z
+	#include "7z.h"
+	#include "7zAlloc.h"
+	#include "7zCrc.h"
+	#include "7zFile.h"
+	#define kInputBufSize ((size_t)1 << 18)   // 256kB read buffer
+#endif
+
 const char *	dsfErrorMessages[] = {
 	"dsf_ErrOK",
 	"dsf_ErrCouldNotOpenFile",
@@ -119,27 +127,70 @@ int		DSFReadFile(
 			const int *			inPasses, 
 			void *				inRef)
 {
-	FILE *			fi = NULL;
-	char *			mem = NULL;
-	unsigned int	file_size = 0;
-	bool			result = dsf_ErrOK;
+	char *		mem = nullptr;
+	size_t 		mem_offset = 0;
+	size_t		uncomp_size = 0;
+	int			result = dsf_ErrOK;
+	FILE * 		fi = nullptr;
+		
+#if USE_7Z
+	size_t		mem_size = 0;
+	UInt32		blockIndex = 0;
+		
+	CrcGenerateTable();
 
+	CSzArEx 	db;
+	SzArEx_Init(&db);
+
+	ISzAlloc allocImp = { SzAlloc, SzFree };           // this is not useing malloc_func and free_func ...
+	ISzAlloc allocTempImp = { SzAllocTemp, SzFreeTemp };
+
+	CFileInStream archiveStream;
+	CLookToRead2 lookStream;
+	
+	if (InFile_Open(&archiveStream.file, inPath))
+	{ result = dsf_ErrCouldNotOpenFile; goto bail; }
+	
+	FileInStream_CreateVTable(&archiveStream);
+	LookToRead2_CreateVTable(&lookStream, False);
+	lookStream.buf = (Byte *)ISzAlloc_Alloc(&allocImp, kInputBufSize);
+	lookStream.bufSize = kInputBufSize;
+	lookStream.realStream = &archiveStream.vt;
+	LookToRead2_Init(&lookStream);
+
+	if (SzArEx_Open(&db, &lookStream.vt, &allocImp, &allocTempImp))
+		goto try_uncompresssed;
+	
+	// no need to skip over directory-only entries. New api keeps directories vs files separate. So fileIndex = 0 is always the first real file
+	if (SzArEx_Extract(&db, &lookStream.vt, 0 , &blockIndex, (Byte **) &mem, &mem_size, &mem_offset, &uncomp_size, &allocImp, &allocTempImp) != 0)
+	{ result = dsf_ErrCouldNotReadFile; goto bail; }
+
+	goto decode_dsf;
+
+try_uncompresssed:
+#endif
 	fi = fopen(inPath, "rb");
 	if (!fi) { result = dsf_ErrCouldNotOpenFile; goto bail; }
 
 	fseek(fi, 0L, SEEK_END);
-	file_size = ftell(fi);
+	uncomp_size = ftell(fi);
 	fseek(fi, 0L, SEEK_SET);
 
-	mem = (char *) malloc_func(file_size);
+	mem = (char *) malloc_func(uncomp_size);
 	if (!mem) { result = dsf_ErrOutOfMemory; goto bail; }
 
-	if (fread(mem, 1, file_size, fi) != file_size)
+	if (fread(mem, 1, uncomp_size, fi) != uncomp_size)
 		{ result = dsf_ErrCouldNotReadFile; goto bail; }
 
-	result = DSFReadMem(mem, mem + file_size, inCallbacks, inPasses, inRef);
+decode_dsf:
+	result = DSFReadMem(mem + mem_offset, mem + mem_offset + uncomp_size, inCallbacks, inPasses, inRef);
 
 bail:
+#if USE_7Z
+	SzArEx_Free(&db, &allocImp);
+	File_Close(&archiveStream.file);
+	ISzAlloc_Free(&allocImp, lookStream.buf);
+#endif
 	if (fi) fclose(fi);
 	if (mem) free_func(mem);	
 	return result;

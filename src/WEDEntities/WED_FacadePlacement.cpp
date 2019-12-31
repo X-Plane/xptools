@@ -72,8 +72,7 @@ int			WED_FacadePlacement::GetShowLevel(void) const
 	return ENUM_Export(show_level.value);
 }
 
-
-WED_FacadePlacement::TopoMode		WED_FacadePlacement::GetTopoMode(void) const 
+const fac_info_t * WED_FacadePlacement::GetFacInfo(void) const
 {
 	IResolver * r = GetArchive()->GetResolver();
 	if(r)
@@ -83,21 +82,50 @@ WED_FacadePlacement::TopoMode		WED_FacadePlacement::GetTopoMode(void) const
 		{
 			const fac_info_t * f;
 			if(rr->GetFac(resource.value,f))
-			{
-				if(f->is_ring) 
-				{
-					if(f->has_roof)
-						return topo_Area;   // ring and roof
-					else
-						return topo_Ring;   // ring only: no roof
-				}
-				else
-					return topo_Chain;      // no ring, no roof
-			}
+				return f;
+		}
+	}
+	return nullptr;
+}
+
+WED_FacadePlacement::TopoMode		WED_FacadePlacement::GetTopoMode(void) const 
+{
+	const fac_info_t * f = GetFacInfo();
+	if(f)
+	{
+		if(f->has_roof)
+			return topo_Area;   // ring and roof
+		else
+		{
+			if(f->is_ring)
+				return topo_Ring;   // ring only: no roof
+			else
+				return topo_Chain;  // no ring, no roof
 		}
 	}
 	return topo_Area;
 }
+
+int		WED_FacadePlacement::GetNumWallChoices(void) const
+{
+	const fac_info_t * f = GetFacInfo();
+	if(f)
+		return  f->wallName.size();
+
+	return 0;
+}
+
+int		WED_FacadePlacement::GetType(void) const
+{
+	const fac_info_t * f = GetFacInfo();
+	if(f)
+	{
+		if(f->is_new) return 2;
+		else         return 1;
+	}
+	return 0;
+}
+
 
 bool		WED_FacadePlacement::HasLayer		(GISLayer_t layer							  ) const
 {

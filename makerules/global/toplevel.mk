@@ -33,19 +33,15 @@ endif
 
 ifdef PLAT_LINUX
 
-
-MOCQT5EXISTS	:= $(shell moc-qt5 -E /dev/null > /dev/null 2>&1; echo $$?)
-
-
-ifneq ($(MOCQT5EXISTS), 0)
-$(error no 'moc-qt5' found, install qt5-dev)
-endif
-
-
-ifeq ($(MOCQT5EXISTS), 0)
+ifneq (, $(shell which moc-qt5))
 MOC	:= moc-qt5
+else ifneq (, $(shell which qtchooser))
+MOC	:= qtchooser -run-tool=moc -qt5
+else ifneq (, $(shell which moc))
+MOC	:= moc
+else
+$(error can't find any of 'moc-qt5', 'qtchooser' or 'moc'. Install qt5-dev)
 endif
-
 
 ifeq ($(ARCHITECTURE), x86_64)
 ifeq ($(cross), m32)

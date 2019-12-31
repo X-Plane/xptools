@@ -351,8 +351,6 @@ int		WED_CanMakeNewATCFreq(IResolver * inResolver)
 	return WED_HasSingleSelectionOfType(inResolver, WED_Airport::sClass) != NULL;
 }
 
-#if AIRPORT_ROUTING
-
 int		WED_CanMakeNewATCFlow(IResolver * inResolver)
 {
 	return WED_HasSingleSelectionOfType(inResolver, WED_Airport::sClass) != NULL;
@@ -373,8 +371,6 @@ int		WED_CanMakeNewATCWindRule(IResolver * inResolver)
 	return WED_HasSingleSelectionOfType(inResolver, WED_ATCFlow::sClass) != NULL;
 }
 
-#endif
-
 void	WED_DoMakeNewATCFreq(IResolver * inResolver)
 {
 	WED_Thing * now_sel = WED_HasSingleSelectionOfType(inResolver, WED_Airport::sClass);
@@ -383,8 +379,6 @@ void	WED_DoMakeNewATCFreq(IResolver * inResolver)
 	f->SetParent(now_sel,now_sel->CountChildren());
 	now_sel->CommitOperation();
 }
-
-#if AIRPORT_ROUTING
 
 void	WED_DoMakeNewATCFlow(IResolver * inResolver)
 {
@@ -446,8 +440,6 @@ void	WED_DoMakeNewATCTimeRule(IResolver * inResolver)
 	f->SetParent(now_sel,now_sel->CountChildren());
 	now_sel->CommitOperation();
 }
-
-#endif
 
 void	WED_DoSetCurrentAirport(IResolver * inResolver)
 {
@@ -802,13 +794,11 @@ int		WED_CanMoveSelectionTo(IResolver * resolver, WED_Thing * dest, int dest_slo
 		if (sel->IterateSelectionOr(Iterate_IsOrChildClass, (void *) WED_Airport::sClass)) return 0;
 	}
 
-	#if AIRPORT_ROUTING
 	// No nested flows either...
 	if (Iterate_IsOrParentClass(dest, (void*) WED_ATCFlow::sClass))
 	{
 		if (sel->IterateSelectionOr(Iterate_IsOrChildClass, (void *) WED_ATCFlow::sClass)) return 0;
 	}
-	#endif
 
 	// If the parent of any selection isn't a folder, don't allow the re-org.
 	if(sel->IterateSelectionOr(Iterate_IsPartOfStructuredObject, NULL)) return 0;
@@ -4027,16 +4017,16 @@ void	WED_DoBreakApartSpecialAgps(IResolver* resolver)
 			if(agp_list.find(agp_resource) != agp_list.end())
 			{
 				//Break it all up here
-				agp_t agp_data;
+				const agp_t * agp_data;
 				if(rmgr->GetAGP(agp_resource, agp_data))
 				{
 					Point2 agp_origin_geo;
 					(*agp)->GetLocation(gis_Geo,agp_origin_geo);
 					Point2 agp_origin_m = translator.Forward(agp_origin_geo);
 
-					for (vector<agp_t::obj>::iterator agp_obj = agp_data.objs.begin(); agp_obj != agp_data.objs.end(); ++agp_obj)
+					for (auto& agp_obj : agp_data->objs)
 					{
-						Vector2 torotate(agp_origin_m, Point2(agp_origin_m.x() + agp_obj->x, agp_origin_m.y() + agp_obj->y));
+						Vector2 torotate(agp_origin_m, Point2(agp_origin_m.x() + agp_obj.x, agp_origin_m.y() + agp_obj.y));
 
 						//Note!! WED has clockwise heading, C's cos and sin functions are ccw in radians. We reverse directions and negate again
 						torotate.rotate_by_degrees((*agp)->GetHeading()*-1);
@@ -4050,10 +4040,10 @@ void	WED_DoBreakApartSpecialAgps(IResolver* resolver)
 
 						//Other data that is important to resetting up the object
 						new_obj->SetDefaultMSL();
-						new_obj->SetHeading(agp_obj->r + (*agp)->GetHeading());
-						new_obj->SetName(agp_obj->name);
+						new_obj->SetHeading(agp_obj.r + (*agp)->GetHeading());
+						new_obj->SetName(agp_obj.name);
 						new_obj->SetParent((*agp)->GetParent(), (*agp)->GetMyPosition());
-						new_obj->SetResource(agp_obj->name);
+						new_obj->SetResource(agp_obj.name);
 						new_obj->SetShowLevel((*agp)->GetShowLevel());
 
 						added_objs.insert(new_obj);
@@ -4923,11 +4913,38 @@ static int get_surface(WED_Thing * t)
 		polygon->GetResource(resource);
 		if (resource.find("concrete") != string::npos)
 			return surf_Concrete;
+		else
+			return surf_Asphalt;
+	}
+	WED_LinePlacement * line = dynamic_cast<WED_LinePlacement*>(t);
+	if (line)
+	{
+		string resource;
+		line->GetResource(resource);
+		if(resource.substr(0,strlen("lib/airport/lines/")) == "lib/airport/lines/")
+		{
+			resource.erase(0,strlen("lib/airport/lines/"));
+			int linetype;
+			if(sscanf(resource.c_str(),"%d",&linetype) == 1)
+			{
+				int enu = ENUM_Import(LinearFeature,linetype);
+				return enu;
+			}
+		}
+	}
+	WED_AirportChain * chain = dynamic_cast<WED_AirportChain*>(t);
+	if(chain)
+	{
+		// return value only if whl chain same style ... need to break up multi-linestyle chains beforehand
+		string resource;
+		chain->GetResource(resource);
+		int enu = ENUM_LookupDesc(LinearFeature, resource.c_str());
+		return enu;
 	}
 	return surf_Asphalt;
 }
 
-static void set_surface(WED_Thing * t, int surface)
+static void set_surface(WED_Thing * t, int surface, WED_LibraryMgr * lmgr)
 {
 	WED_Taxiway * taxiway = dynamic_cast<WED_Taxiway*>(t);
 	if (taxiway)
@@ -4942,6 +4959,30 @@ static void set_surface(WED_Thing * t, int surface)
 			polygon->SetResource("lib/airport/pavement/asphalt_1D.pol");
 		else
 			polygon->SetResource("lib/airport/pavement/concrete_1D.pol");
+		return;
+	}
+	WED_LinePlacement * line = dynamic_cast<WED_LinePlacement*>(t);
+	if (line)
+	{
+		string(vpath);
+		if (lmgr->GetLineVpath(ENUM_Export(surface), vpath))
+		{
+			line->SetResource(vpath);
+		}
+	}
+	WED_AirportChain * chain = dynamic_cast<WED_AirportChain*>(t);
+	if(chain)
+	{
+		set<int> attr;
+		attr.insert(surface);
+		
+		int num_ent = chain->GetNumEntities();
+		for(int i = 0; i < num_ent; i++)
+		{
+			WED_AirportNode * node = dynamic_cast<WED_AirportNode*>(chain->GetNthEntity(i));
+			if(node)
+				node->SetAttributes(attr);
+		}
 	}
 }
 
@@ -5019,7 +5060,7 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 
 			copy_heading(src, dst);
 
-			set_surface(dst, get_surface(src));
+			set_surface(dst, get_surface(src), WED_GetLibraryMgr(resolver));
 
 			sel->Insert(dst);
 			dst->SetParent(src->GetParent(), src->GetMyPosition() + 1);
@@ -5037,6 +5078,8 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 				set_closed(dst, chains[i]->IsClosed());
 
 				move_points(chains[i], dst);
+				
+				set_surface(dst, get_surface(src),WED_GetLibraryMgr(resolver));
 
 				sel->Insert(dst);
 				dst->SetParent(src->GetParent(), src->GetMyPosition() + 1 + i);

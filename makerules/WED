@@ -348,6 +348,23 @@ SOURCES += ./src/lib_json/src/lib_json/json_writer.cpp
 SOURCES += ./src/lib_json/src/lib_json/json_reader.cpp
 SOURCES += ./src/lib_json/src/lib_json/json_value.cpp
 
+SOURCES += ./src/lzma19/C/7zArcIn.c
+SOURCES += ./src/lzma19/C/7zAlloc.c
+SOURCES += ./src/lzma19/C/7zBuf.c
+SOURCES += ./src/lzma19/C/7zCrc.c
+SOURCES += ./src/lzma19/C/7zCrcOpt.c
+SOURCES += ./src/lzma19/C/7zDec.c
+SOURCES += ./src/lzma19/C/7zFile.c
+SOURCES += ./src/lzma19/C/7zStream.c
+SOURCES += ./src/lzma19/C/Bcj2.c
+SOURCES += ./src/lzma19/C/Bra.c
+SOURCES += ./src/lzma19/C/Bra86.c
+SOURCES += ./src/lzma19/C/BraIA64.c
+SOURCES += ./src/lzma19/C/CpuArch.c
+SOURCES += ./src/lzma19/C/Delta.c
+SOURCES += ./src/lzma19/C/LzmaDec.c
+SOURCES += ./src/lzma19/C/Lzma2Dec.c
+
 ##
 # resources
 ###########
@@ -379,7 +396,9 @@ RESOURCES += ./src/WEDResources/colors.png
 RESOURCES += ./src/WEDResources/taxi_sign.png
 RESOURCES += ./src/WEDResources/ui_measurements.txt
 RESOURCES += ./src/WEDResources/map_tools.png
+RESOURCES += ./src/WEDResources/tilt_tool.png
 RESOURCES += ./src/WEDResources/tce_tools.png
+RESOURCES += ./src/WEDResources/exclaim.png
 RESOURCES += ./src/WEDResources/startup_bar.png
 RESOURCES += ./src/WEDResources/startup_btns.png
 RESOURCES += ./src/WEDResources/startup_bkgnd.png

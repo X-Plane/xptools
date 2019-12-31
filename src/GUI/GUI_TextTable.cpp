@@ -717,8 +717,6 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 			if (!dict.empty())
 			{
 				vector<GUI_MenuItem_t>	items(dict.size()+1);
-				vector<int>				enum_vals(dict.size());
-				int cur = CreateMenuFromDict(items, enum_vals, dict);
 #if USE_LINE_SELECTOR_POPUP
 				if(mEditInfo.content_type == gui_Cell_LineEnumSet)
 				{
@@ -731,6 +729,8 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 				else
 #endif
 				{
+					vector<int>	enum_vals(dict.size());
+					int cur = CreateMenuFromDict(items, enum_vals, dict);
 					int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0],cell_bounds[3],button, cur);
 					if (choice >= 0 && choice < enum_vals.size())
 					{

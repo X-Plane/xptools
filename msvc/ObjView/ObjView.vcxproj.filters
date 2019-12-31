@@ -102,6 +102,9 @@
     <ClCompile Include="..\..\src\UI\XGUIApp.cpp">
       <Filter>UI</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Utils\glew.c">
+      <Filter>Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\Obj\ObjDraw.h">
@@ -178,6 +181,12 @@
     </ClInclude>
     <ClInclude Include="..\..\src\UI\XGUIApp.h">
       <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\glew.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\wglew.h">
+      <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

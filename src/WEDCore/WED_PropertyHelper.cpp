@@ -113,7 +113,6 @@ void relPtr::push_back(WED_PropertyItem * ptr)
 }
 
 WED_PropertyHelper * WED_PropertyItem::GetParent(void) const { 
-//	printf("%p %p\n", reinterpret_cast<WED_PropertyHelper *>((char *)this - (mTitle >> 45 - 3 & 0xFF << 3)), mParent);
 	DebugAssert(reinterpret_cast<WED_PropertyHelper *>((char *)this - (mTitle >> 45 - 3 & 0xFF << 3)) == mParent);
 	     return reinterpret_cast<WED_PropertyHelper *>((char *)this - (mTitle >> 45 - 3 & 0xFF << 3)); }
 const char *	WED_PropertyItem::GetWedName(void)     const { return reinterpret_cast<const char *>(PTR_FIX(mTitle)); }
@@ -638,6 +637,7 @@ void		WED_PropIntEnum::GetPropertyInfo(PropertyInfo_t& info)
 	info.prop_kind = prop_Enum;
 	info.prop_name = GetWedName();
 	info.synthetic = 0;
+	info.domain    = domain;
 }
 
 void		WED_PropIntEnum::GetPropertyDict(PropertyDict_t& dict)
@@ -712,6 +712,7 @@ void		WED_PropIntEnumSet::GetPropertyInfo(PropertyInfo_t& info)
 	info.prop_name = GetWedName();
 	info.exclusive = this->exclusive;
 	info.synthetic = 0;
+	info.domain    = domain;
 }
 
 void		WED_PropIntEnumSet::GetPropertyDict(PropertyDict_t& dict)
@@ -831,6 +832,7 @@ void		WED_PropIntEnumBitfield::GetPropertyInfo(PropertyInfo_t& info)
 	info.prop_name = GetWedName();
 	info.exclusive = false;
 	info.synthetic = 0;
+	info.domain    = domain;
 }
 
 void		WED_PropIntEnumBitfield::GetPropertyDict(PropertyDict_t& dict)
@@ -989,10 +991,17 @@ bool		WED_PropIntEnumSetFilter::WantsAttribute(const char * ele, const char * at
 
 void		WED_PropIntEnumSetUnion::GetPropertyInfo(PropertyInfo_t& info)
 {
+	IPropertyObject * inf = mParent->GetNthSub(0);
+	if(inf)
+	{
+		int idx = inf->FindProperty(host);
+		if (idx != -1)
+			inf->GetNthPropertyInfo(idx,info);
+	}
 	info.prop_name = host;
 	info.prop_kind = prop_EnumSet;
 	info.can_delete = false;
-	info.can_edit = 1;
+	info.can_edit  = 1;
 	info.exclusive = this->exclusive;
 	info.synthetic = 1;
 }

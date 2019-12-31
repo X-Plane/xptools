@@ -27,6 +27,7 @@
 #include "GUI_Messages.h"
 #include "GUI_FilterBar.h"
 #include "GUI_Fonts.h"
+#include "WED_Menus.h"
 
 WED_PropertyPane::WED_PropertyPane(
 						GUI_Commander *			inCommander,
@@ -158,6 +159,17 @@ WED_PropertyPane::WED_PropertyPane(
 
 WED_PropertyPane::~WED_PropertyPane()
 {
+}
+
+int		WED_PropertyPane::MouseMove(int x, int y)
+{
+	int b[4];
+	GetBounds(b);
+	if(b[2] - b[0] > 0 && b[2] - b[0] < 100)
+	{
+		DispatchHandleCommand(wed_autoOpenPropPane);
+	}
+	return 1;
 }
 
 void	WED_PropertyPane::FromPrefs(IDocPrefs * prefs,int id)

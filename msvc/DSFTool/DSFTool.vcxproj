@@ -56,6 +56,7 @@
       </PrecompiledHeader>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
+      <AdditionalIncludeDirectories>..\..\src\lzma19\C;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -71,6 +72,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <StringPooling>true</StringPooling>
+      <AdditionalIncludeDirectories>..\..\src\lzma19\C;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -88,6 +90,26 @@
     <ClCompile Include="..\..\src\DSF\DSFPointPool.cpp" />
     <ClCompile Include="..\..\src\DSF\tri_stripper_101\tri_stripper.cpp" />
     <ClCompile Include="..\..\src\GUI\GUI_Unicode.cpp" />
+    <ClCompile Include="..\..\src\lzma19\C\7zAlloc.c" />
+    <ClCompile Include="..\..\src\lzma19\C\7zArcIn.c" />
+    <ClCompile Include="..\..\src\lzma19\C\7zBuf.c" />
+    <ClCompile Include="..\..\src\lzma19\C\7zBuf2.c" />
+    <ClCompile Include="..\..\src\lzma19\C\7zCrc.c" />
+    <ClCompile Include="..\..\src\lzma19\C\7zCrcOpt.c" />
+    <ClCompile Include="..\..\src\lzma19\C\7zDec.c" />
+    <ClCompile Include="..\..\src\lzma19\C\7zFile.c" />
+    <ClCompile Include="..\..\src\lzma19\C\7zStream.c" />
+    <ClCompile Include="..\..\src\lzma19\C\Alloc.c" />
+    <ClCompile Include="..\..\src\lzma19\C\Bcj2.c" />
+    <ClCompile Include="..\..\src\lzma19\C\Bcj2Enc.c" />
+    <ClCompile Include="..\..\src\lzma19\C\Bra.c" />
+    <ClCompile Include="..\..\src\lzma19\C\Bra86.c" />
+    <ClCompile Include="..\..\src\lzma19\C\BraIA64.c" />
+    <ClCompile Include="..\..\src\lzma19\C\CpuArch.c" />
+    <ClCompile Include="..\..\src\lzma19\C\Delta.c" />
+    <ClCompile Include="..\..\src\lzma19\C\Lzma2Dec.c" />
+    <ClCompile Include="..\..\src\lzma19\C\Lzma86Dec.c" />
+    <ClCompile Include="..\..\src\lzma19\C\LzmaDec.c" />
     <ClCompile Include="..\..\src\Utils\AssertUtils.cpp" />
     <ClCompile Include="..\..\src\Utils\EndianUtils.c" />
     <ClCompile Include="..\..\src\Utils\FileUtils.cpp" />
@@ -102,6 +124,21 @@
     <ClInclude Include="..\..\src\DSF\DSFPointPool.h" />
     <ClInclude Include="..\..\src\DSF\tri_stripper_101\tri_stripper.h" />
     <ClInclude Include="..\..\src\GUI\GUI_Unicode.h" />
+    <ClInclude Include="..\..\src\lzma19\C\7z.h" />
+    <ClInclude Include="..\..\src\lzma19\C\7zAlloc.h" />
+    <ClInclude Include="..\..\src\lzma19\C\7zBuf.h" />
+    <ClInclude Include="..\..\src\lzma19\C\7zCrc.h" />
+    <ClInclude Include="..\..\src\lzma19\C\7zFile.h" />
+    <ClInclude Include="..\..\src\lzma19\C\7zTypes.h" />
+    <ClInclude Include="..\..\src\lzma19\C\Alloc.h" />
+    <ClInclude Include="..\..\src\lzma19\C\Bcj2.h" />
+    <ClInclude Include="..\..\src\lzma19\C\Bra.h" />
+    <ClInclude Include="..\..\src\lzma19\C\Compiler.h" />
+    <ClInclude Include="..\..\src\lzma19\C\CpuArch.h" />
+    <ClInclude Include="..\..\src\lzma19\C\Delta.h" />
+    <ClInclude Include="..\..\src\lzma19\C\Lzma2Dec.h" />
+    <ClInclude Include="..\..\src\lzma19\C\Lzma86.h" />
+    <ClInclude Include="..\..\src\lzma19\C\LzmaDec.h" />
     <ClInclude Include="..\..\src\Utils\AssertUtils.h" />
     <ClInclude Include="..\..\src\Utils\EndianUtils.h" />
     <ClInclude Include="..\..\src\Utils\FileUtils.h" />

@@ -675,6 +675,13 @@ void WED_GatewayExportDialog::Submit()
 		scenery["aptName"] = apt_name;
 		scenery["artistComments"] = comment;
 		scenery["clientVersion"] = WED_VERSION_NUMERIC;
+        
+        Bbox2 apt_bounds;
+        apt->GetBounds(gis_Geo, apt_bounds);
+        const Point2 apt_centroid = apt_bounds.centroid();
+        // See XSG-8722 for one Gateway feature that needs this on a per-scenery pack basis
+        scenery["latitude"] = apt_centroid.y();
+        scenery["longitude"] = apt_centroid.x();
 
 		string features;
 		if(has_atc_flow(apt))

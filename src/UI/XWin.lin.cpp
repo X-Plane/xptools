@@ -17,7 +17,7 @@ XWin::XWin(
 	mMouse.y     = 0;
 	SetTitle(inTitle);
 
-printf("New WinGeo %d %d\n",inX, inY);
+//	printf("New WinGeo %d %d\n",inX, inY);
 
 	if(inAttributes & xwin_style_centered)
 		this->setGeometry(QStyle::alignedRect(Qt::LeftToRight,Qt::AlignCenter, this->size(), qApp->desktop()->availableGeometry()));

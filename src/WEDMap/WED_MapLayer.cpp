@@ -52,7 +52,7 @@ WED_MapLayer::WED_MapLayer(GUI_Pane * h, WED_MapZoomerNew * z, IResolver * i) :
 	// This is the scale of the icons for all of the parts of an airport - VASI lights,
 	// signs, windsocks, parking spots.  It is a multiplier.
 	// When this is "1" one pixel of the airport icon = one meter on the map.
-	mFurnitureFactor = 2.0;  
+	mFurnitureFactor = 1.0;
 	
 	// This is the width at which we transition from full airports to icons
 	mAirportTransWidth = 20.0;
@@ -127,32 +127,26 @@ static bool matches_filter(WED_Thing * thing ,const  MapFilter_t * filter )
 
 bool	WED_MapLayer::IsVisibleNow(IGISEntity * ent) const
 {
+	WED_Entity * e = dynamic_cast<WED_Entity *>(ent);
+	if (!e)
+		return false;
 	if(mHideFilter)
 	{
-		if( matches_filter(dynamic_cast<WED_Thing *>(ent), mHideFilter ))
+		if( matches_filter(e, mHideFilter ))
 			return false;
-	}
-
-	WED_Entity * e = dynamic_cast<WED_Entity *>(ent);
-	if(!e)
-	{
-		return false;
 	}
 	return !e->GetHidden();
 }
 
 bool	WED_MapLayer::IsLockedNow(IGISEntity * ent) const
 {
+	WED_Entity * e = dynamic_cast<WED_Entity *>(ent);
+	if (!e)
+		return false;
 	if(mLockFilter)
 	{
-		if( matches_filter(dynamic_cast<WED_Thing *>(ent), mLockFilter ))
+		if( matches_filter(e, mLockFilter ))
 			return true;
-	}
-
-	WED_Entity * e = dynamic_cast<WED_Entity *>(ent);
-	if(!e)
-	{
-		return false;
 	}
 	return e->GetLocked();
 }

@@ -249,6 +249,7 @@ static ObjDrawFuncs10_t kFuncs  = { Obj_SetupPoly, Obj_SetupLine, Obj_SetupLight
 
 void draw_obj_at_ll(ITexMgr * tman, const XObj8 * o, const Point2& loc, float r, GUI_GraphState * g, WED_MapZoomerNew * zoomer)
 {
+	if (!o) return;
 	TexRef	ref = tman->LookupTexture(o->texture.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);			
 	TexRef	ref2 = o->texture_draped.empty() ? ref : tman->LookupTexture(o->texture_draped.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);
 	int id1 = ref  ? tman->GetTexID(ref ) : 0;
@@ -263,19 +264,14 @@ void draw_obj_at_ll(ITexMgr * tman, const XObj8 * o, const Point2& loc, float r,
 	glScalef(ppm,ppm,ppm);
 	glRotatef(90, 1,0,0);
 	glRotatef(r, 0, -1, 0);
-//	GLfloat mv[16], pv[16];
-//	glGetFloatv(GL_MODELVIEW_MATRIX,mv);
-//	glGetFloatv(GL_PROJECTION_MATRIX,pv);
-	g->EnableDepth(true,true);
-	glClear(GL_DEPTH_BUFFER_BIT);
 	Obj_DrawStruct ds = { g, id1, id2 };
 	ObjDraw8(*o, 0, &kFuncs, &ds); 
-	g->EnableDepth(false,false);
 	glPopMatrix();
 }
 
 void draw_obj_at_xyz(ITexMgr * tman, const XObj8 * o, double x, double y, double z, float r, GUI_GraphState * g)
 {
+	if (!o) return;
 	TexRef	ref = tman->LookupTexture(o->texture.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);			
 	TexRef	ref2 = o->texture_draped.empty() ? ref : tman->LookupTexture(o->texture_draped.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);
 	int id1 = ref  ? tman->GetTexID(ref ) : 0;
@@ -287,11 +283,8 @@ void draw_obj_at_xyz(ITexMgr * tman, const XObj8 * o, double x, double y, double
 
 	glTranslatef(x,y,z);
 	glRotatef(r, 0, -1, 0);
-//	g->EnableDepth(true,true);
-	//glClear(GL_DEPTH_BUFFER_BIT);
 	Obj_DrawStruct ds = { g, id1, id2 };
 	ObjDraw8(*o, 0, &kFuncs, &ds); 
-//	g->EnableDepth(false,false);
 	glPopMatrix();
 }
 
@@ -564,19 +557,27 @@ static void draw_line_preview(const vector<Point2>& pts, const lin_info_t& linfo
 	double offset     = ((linfo.s2[l]+linfo.s1[l]) / 2.0 - linfo.sm[l]) * linfo.scale_s * PPM;
 	double uv_dt      =  (linfo.s2[l]-linfo.s1[l]) / 2.0 * linfo.scale_s / linfo.scale_t; // correction factor for 'slanted' texture ends
 	double uv_t2      = 0.0;                                                              // accumulator for texture t, so each starts where the previous ended
+	bool is_ring = pts.front() == pts.back();
 
 	Vector2	dir2(pts[1],pts[0]);
 	dir2.normalize();
-	dir2 = dir2.perpendicular_ccw();
+	if(is_ring)
+	{
+		Vector2 dir_last(pts[0],pts[pts.size()-2]);
+		dir_last.normalize();
+		dir2 = (dir2 + dir_last) / (1.0 + dir_last.dot(dir2));
+	}
+	dir2 = dir2.perpendicular_ccw();   // direction perpendicular to previous segment
 
 	for (int j = 0; j < pts.size()-1; ++j)
 	{
 		Vector2	dir1(dir2);
 		Vector2 dir = Vector2(pts[j+1],pts[j]);
-		dir.normalize();
-		if(j < pts.size()-2)
+		dir.normalize();                    // direction of this segment
+		if(j < pts.size()-2+is_ring)
 		{
-			Vector2 dir3(pts[j+2],pts[j+1]);
+			int n = j < pts.size()-2 ? j+2 : 1;
+			Vector2 dir3(pts[n],pts[j+1]);
 			dir3.normalize();
 			dir2 = (dir + dir3) / (1.0 + dir.dot(dir3));
 		}
@@ -587,12 +588,49 @@ static void draw_line_preview(const vector<Point2>& pts, const lin_info_t& linfo
 		uv_t2 += sqrt(Vector2(pts[j+1], pts[j]).squared_length()) / PPM / linfo.scale_t;
 		double d1 = uv_dt * dir.dot(dir1);
 		double d2 = uv_dt * dir.dot(dir2);
-
+		
+		Point2 start_left (pts[j]   + dir1 * (offset - half_width));
+		Point2 start_right(pts[j]   + dir1 * (offset + half_width));
+		Point2 end_left   (pts[j+1] + dir2 * (offset - half_width));
+		Point2 end_right  (pts[j+1] + dir2 * (offset + half_width));
+		
+		if(!is_ring)
+		{
+			if(j == 0 && linfo.start_caps.size() > l)
+			{
+				double len = (linfo.start_caps[l].t2 - linfo.start_caps[l].t1) * linfo.scale_t;
+				glBegin(GL_QUADS);
+					glTexCoord2f(linfo.start_caps[l].s1,linfo.start_caps[l].t1); glVertex2(start_left);
+					glTexCoord2f(linfo.start_caps[l].s2,linfo.start_caps[l].t1); glVertex2(start_right);
+					start_left  -= dir * len * PPM;
+					start_right -= dir * len * PPM;
+					uv_t2 -= (linfo.start_caps[l].t2 - linfo.start_caps[l].t1);
+					glTexCoord2f(linfo.start_caps[l].s2,linfo.start_caps[l].t2); glVertex2(start_right);
+					glTexCoord2f(linfo.start_caps[l].s1,linfo.start_caps[l].t2); glVertex2(start_left);
+				glEnd();
+			}
+			if(j == pts.size()-2 && linfo.end_caps.size() > l)
+			{
+				double len = (linfo.end_caps[l].t2 - linfo.end_caps[l].t1) * linfo.scale_t;
+				glBegin(GL_QUADS);
+					glTexCoord2f(linfo.end_caps[l].s2,linfo.end_caps[l].t2); glVertex2(end_right);
+					glTexCoord2f(linfo.end_caps[l].s1,linfo.end_caps[l].t2); glVertex2(end_left);
+					end_left  += dir * len * PPM;
+					end_right += dir * len * PPM;
+					uv_t2 -= (linfo.end_caps[l].t2 - linfo.end_caps[l].t1);
+					glTexCoord2f(linfo.end_caps[l].s1,linfo.end_caps[l].t1); glVertex2(end_left);
+					glTexCoord2f(linfo.end_caps[l].s2,linfo.end_caps[l].t1); glVertex2(end_right);
+				glEnd();
+			}
+		}
+		
+		if(j == pts.size()-2 && linfo.align > 0) uv_t2 = round_by_parts(uv_t2, linfo.align);
+		
 		glBegin(GL_QUADS);
-			glTexCoord2f(linfo.s1[l],uv_t2 + d2); glVertex2(pts[j+1] + dir2 * (offset - half_width));
-			glTexCoord2f(linfo.s1[l],uv_t1 + d1); glVertex2(pts[j]   + dir1 * (offset - half_width));
-			glTexCoord2f(linfo.s2[l],uv_t1 - d1); glVertex2(pts[j]   + dir1 * (offset + half_width));
-			glTexCoord2f(linfo.s2[l],uv_t2 - d2); glVertex2(pts[j+1] + dir2 * (offset + half_width));
+			glTexCoord2f(linfo.s1[l],uv_t1 + d1); glVertex2(start_left);
+			glTexCoord2f(linfo.s2[l],uv_t1 - d1); glVertex2(start_right);
+			glTexCoord2f(linfo.s2[l],uv_t2 - d2); glVertex2(end_right);
+			glTexCoord2f(linfo.s1[l],uv_t2 + d2); glVertex2(end_left);
 		glEnd();
 	}
 }
@@ -667,11 +705,23 @@ struct	preview_line : WED_PreviewItem {
 static void draw_string_preview(const vector<Point2>& pts, double& d0, double ds, const str_info_t& sinfo, WED_MapZoomerNew * zoomer, 
 	GUI_GraphState * g, ITexMgr * tman, const XObj8 * obj)
 {
+	double ppm = zoomer->GetPPM();
+
+	// strings, like taxiway perimeter lights - can be very big - and lights only get visible when zoomed in very close and are still small.
+	// So it almost certain - the vast majority will be _far_ off screen. So lets not care about their size in screenspace , offset etc 
+	// just cull the ones *very* far off screen.
+
+	double E, W, N, S;
+	zoomer->GetPixelBounds(W, S, E, N);
+	double tmp = E - W;
+	E += tmp; W -= tmp;
+	tmp = N - S;
+	N += tmp; S -= tmp;
+
 	for (int j = 0; j < pts.size()-1; ++j)
 	{
-		double PPM = zoomer->GetPPM();
 		Vector2 dir = Vector2(pts[j],pts[j+1]);
-		double len_m = sqrt(dir.squared_length()) / PPM;
+		double len_m = sqrt(dir.squared_length()) / ppm;
 		
 		if (ds-d0 > len_m) 
 		{
@@ -682,7 +732,7 @@ static void draw_string_preview(const vector<Point2>& pts, double& d0, double ds
 			double hdg = VectorMeters2NorthHeading(pts[j], pts[j], dir) + sinfo.rotation;
 			Vector2 off = dir.perpendicular_cw();
 			off.normalize();
-			off *= sinfo.offset * PPM;
+			off *= sinfo.offset * ppm;
 			
 			double d1 = ds - d0;
 			double x;
@@ -697,7 +747,8 @@ static void draw_string_preview(const vector<Point2>& pts, double& d0, double ds
 			
 			while(obj_this_seg >= 0)
 			{
-				draw_obj_at_ll(tman, obj, zoomer->PixelToLL(cur_pos+off), hdg, g, zoomer);
+				if (cur_pos.x() < E && cur_pos.x() > W && cur_pos.y() > S && cur_pos.y() < N)
+					draw_obj_at_ll(tman, obj, zoomer->PixelToLL(cur_pos+off), hdg, g, zoomer);
 				cur_pos += dir * (ds / len_m);
 				obj_this_seg--;
 			}
@@ -735,13 +786,12 @@ struct	preview_string : WED_PreviewItem {
 					glColor3f(1,1,1);
 		
 					double ds = str->GetSpacing();
-					double d0 = 0.0;
-					
+					double d0 = ds * 0.5;
+
 					for(int i = 0; i < ps->GetNumSides(); ++i)
 					{
 						vector<Point2>	pts;
-						SideToPoints(ps,i,zoomer, pts);
-						
+						SideToPoints(ps, i, zoomer, pts);
 						draw_string_preview(pts, d0, ds, *sinfo, zoomer, g, tman, o);
 					}
 				}
@@ -876,7 +926,7 @@ struct	preview_airportlights : WED_PreviewItem {
 				double ds = 8.0;                     // default spacing, e.g. taxiline center lights
 				if(t == apt_light_taxi_edge || t == apt_light_bounary) ds = 20.0;          // twy edge lights
 				if(t == apt_light_hold_short || t == apt_light_hold_short_flash) ds = 2.0;  // hold lights
-				double d0 = ds/2.0;
+				double d0 = ds * 0.5;
 				
 				g->SetState(false,1,false,true,true,false,false);
 				glColor3f(1,1,1);
@@ -920,16 +970,10 @@ struct	preview_facade : public preview_polygon {
 	preview_facade(WED_FacadePlacement * f, int l, IResolver * r) : preview_polygon(f,l,false), fac(f), resolver(r) { }
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
 	{
-		g->SetState(false,0,false,true,true,false,false);       // grey fill. Do actual texture instead ??
-		glColor4f(0.7,0.7,0.7,0.75);
-		int t = fac->GetTopoMode();
-//		if(t == WED_FacadePlacement::topo_Area)
-//			preview_polygon::draw_it(zoomer,g,mPavementAlpha);
-
-		const float colors[18] = {  1, 0, 0,	1, 1, 0,
-									0, 1, 0,	0, 1, 1,
-									0, 0, 1,	1, 0, 1,};
+		const float colors[18] = { 1, 0, 0,	 1, 1, 0,  0, 1, 0,    // red, yellow, green
+		                           0, 1, 1,  0, 0, 1,  1, 0, 1,};  // aqua, blue, cyan
 		IGISPointSequence * ps = fac->GetOuterRing();
+		glColor4f(1,1,1,1);
 		
 		if(fac->HasCustomWalls())
 		{
@@ -974,7 +1018,12 @@ struct	preview_facade : public preview_polygon {
 			const fac_info_t * info;
 			WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 			
-			glColor4f(1,1,1,1);
+			g->SetState(false,0,false,true,true,true,true);
+
+			float mat[16];
+			glGetFloatv(GL_PROJECTION_MATRIX, mat);
+			bool isTilted = (mat[2] != 0.0 || mat[6] != 0.0);
+
 			glMatrixMode(GL_MODELVIEW);
 			glPushMatrix();
 			Point2 l = zoomer->LLToPixel(ref_pt);
@@ -982,41 +1031,13 @@ struct	preview_facade : public preview_polygon {
 			float ppm = zoomer->GetPPM();
 			glScalef(ppm,ppm,ppm);
 			glRotatef(90, 1,0,0);
-
-			g->EnableDepth(true,true);
-			glClear(GL_DEPTH_BUFFER_BIT);
-			
 			if(rmgr->GetFac(vpath, info))
-				draw_facade(tman, rmgr, vpath, *info, pts, choices, fac->GetHeight(), g, false);
-				
-			g->EnableDepth(false,false);
+				draw_facade(tman, rmgr, vpath, *info, pts, choices, fac->GetHeight(), g, isTilted, 0.7*ppm);
 			glPopMatrix();
 		}
-
 		
-		if(t == WED_FacadePlacement::topo_Chain)
-		{
-			Point2 p;
-			ps->GetNthPoint(0)->GetLocation(gis_Geo,p);
-			p=zoomer->LLToPixel(p);
-			glColor4f(1,1,1,1);
-			GUI_PlotIcon(g,"handle_closeloop.png", p.x(), p.y(),0.0,1.0);
-		}
-		else
-		{
-			vector<Point2>	pts;
-			SideToPoints(fac->GetOuterRing(), 0, zoomer, pts);
-			glColor3f(1,1,1);
-			glLineWidth(3);
-			glBegin(GL_LINES);
-			for(vector<Point2>::iterator p = pts.begin(); p != pts.end(); ++p)
-				glVertex2(*p);
-			glEnd();
-			glLineWidth(1);
-		}
-
-		glLineWidth(2);
 		g->SetState(false,0,false,true,true,false,false);
+//		glLineWidth(2);
 		int n = ps->GetNumSides();
 		for(int i = 0; i < n; ++i)
 		{
@@ -1031,9 +1052,9 @@ struct	preview_facade : public preview_polygon {
 				param = bp.p1.x();
 			}
 			glColor3fv(colors + (param % 6) * 3);
-			glShapeOffset2v(GL_LINES/*GL_LINE_STRIP*/, &*pts.begin(), pts.size(), -3);
+			glShapeOffset2v(GL_LINES/*GL_LINE_STRIP*/, &*pts.begin(), pts.size(), -2);
 		}			
-		glLineWidth(1);
+//		glLineWidth(1);
 	}
 };
 
@@ -1113,10 +1134,10 @@ struct	preview_object : public WED_PreviewItem {
 
 		obj->GetResource(vpath);
 		const XObj8 * o;
-		agp_t agp;
+		const agp_t * agp;
 		if(rmgr->GetObj(vpath,o))
 		{
-			g->SetState(false,1,false,false,true,false,false);
+			g->SetState(false,1,false,false,true,true,true);
 			glColor3f(1,1,1);
 			Point2 loc;
 			obj->GetLocation(gis_Geo,loc);
@@ -1126,42 +1147,39 @@ struct	preview_object : public WED_PreviewItem {
 		{
 			Point2 loc;
 			obj->GetLocation(gis_Geo,loc);
-			g->SetState(false,1,false,true,true,false,false);
-			TexRef	ref = tman->LookupTexture(agp.base_tex.c_str() ,true, tex_Linear|tex_Mipmap|tex_Compress_Ok|tex_Always_Pad);
+			g->SetState(false,1,false,true,true,true,true);
+			TexRef	ref = tman->LookupTexture(agp->base_tex.c_str() ,true, tex_Linear|tex_Mipmap|tex_Compress_Ok|tex_Always_Pad);
 			int id1 = ref  ? tman->GetTexID(ref ) : 0;
 			if(id1)g->BindTex(id1,0);
 			glMatrixMode(GL_MODELVIEW);
 			glPushMatrix();
 			loc = zoomer->LLToPixel(loc);
 			float r = obj->GetHeading();
-			glTranslatef(loc.x(),loc.y(),0.0);
+			glTranslatef(loc.x(), loc.y(), 0);
 			float ppm = zoomer->GetPPM();
-			glScalef(ppm,ppm,0.001);
-			glRotatef(90, 1,0,0);
+			glScalef(ppm, ppm, ppm);
+			glRotatef(90, 1, 0 ,0);
 			glRotatef(r, 0, -1, 0);
-			glColor3f(1,1,1);
-			g->EnableDepth(true,true);
-			glClear(GL_DEPTH_BUFFER_BIT);
-			if(!agp.tile.empty() && !agp.hide_tiles)
+			glColor3f(1, 1, 1);
+			if(!agp->tile.empty() && !agp->hide_tiles)
 			{
 				glDisable(GL_CULL_FACE);
 				glBegin(GL_TRIANGLE_FAN);
-				for(int n = 0; n < agp.tile.size(); n += 4)
+				for(int n = 0; n < agp->tile.size(); n += 4)
 				{
-					glTexCoord2f(agp.tile[n+2],agp.tile[n+3]);
-					glVertex3f(agp.tile[n],0,-agp.tile[n+1]);
+					glTexCoord2f(agp->tile[n+2],agp->tile[n+3]);
+					glVertex3f(agp->tile[n],0,-agp->tile[n+1]);
 				}
 				glEnd();
 				glEnable(GL_CULL_FACE);
 			}
-			for(vector<agp_t::obj>::iterator o = agp.objs.begin(); o != agp.objs.end(); ++o)
+			for(auto& o : agp->objs)
 			{
-				const XObj8 * oo;
-				if((o->show_lo+o->show_hi)/2 <= preview_level)
-				if(rmgr->GetObjRelative(o->name,vpath,oo))
-				{
-					draw_obj_at_xyz(tman, oo, o->x,0,-o->y,o->r, g);
-				}
+				if((o.show_lo + o.show_hi)/2 <= preview_level)
+					if(ppm * max(o.obj->xyz_max[0] - o.obj->xyz_min[0], o.obj->xyz_max[2] - o.obj->xyz_min[2]) > MIN_PIXELS_PREVIEW)
+					{
+						draw_obj_at_xyz(tman, o.obj, o.x,0,-o.y,o.r, g);
+					}
 			}
 			glPopMatrix();
 		}
@@ -1207,7 +1225,7 @@ struct	preview_truck : public WED_PreviewItem {
 		agp_t agp;
 		if(!vpath1.empty() && rmgr->GetObj(vpath1,o1))
 		{
-			g->SetState(false,1,false,false,true,false,false);
+			g->SetState(false,1,false,false,true,true,true);
 			glColor3f(1,1,1);
 			Point2 loc;
 			trk->GetLocation(gis_Geo,loc);
@@ -1285,7 +1303,7 @@ struct	preview_light : public WED_PreviewItem {
 		const XObj8 * o = NULL;
 		if(!vpath.empty() && rmgr->GetObj(vpath,o))
 		{
-			g->SetState(false,1,false,false,true,false,false);
+			g->SetState(false,1,false,false,true,true,true);
 			glColor3f(1,1,1);
 			
 			switch(light.light_code) 
@@ -1387,7 +1405,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		if(taxi)	
 		{
 			mPreviewItems.push_back(new preview_taxiway(taxi,mTaxiLayer++));
-			if(GetZoomer()->GetPPM() * 0.3 > MIN_PIXELS_PREVIEW)        // there can be so many, make visibility decision here already for performance
+			if(GetZoomer()->GetPPM() * 0.4 > MIN_PIXELS_PREVIEW)        // there can be so many, make visibility decision here already for performance
 			{
 				IGISPointSequence * ps = taxi->GetOuterRing();
 				mPreviewItems.push_back(new preview_airportlines(ps, group_Markings, GetResolver()));
@@ -1462,7 +1480,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		if(chn)
 		{
 			double ppm = GetZoomer()->GetPPM();       // there can be so many, make visibility decision here already for performance
-			if(ppm * 0.3 > MIN_PIXELS_PREVIEW)	      // criteria matches where mRealLines disappear in StructureLayer
+			if(ppm * 0.4 > MIN_PIXELS_PREVIEW)	      // criteria matches where mRealLines disappear in StructureLayer
 			{
 				mPreviewItems.push_back(new preview_airportlines(chn, group_Markings, GetResolver()));
 				mPreviewItems.push_back(new preview_airportlights(chn, group_Objects, GetResolver()));
@@ -1515,6 +1533,9 @@ void		WED_PreviewLayer::DrawVisualization			(bool inCurent, GUI_GraphState * g)
 {
 	// This is called after per-entity visualization; we have one preview item for everything we need.
 	// sort, draw, nuke 'em.
+	
+	g->EnableDepth(true,true);         // turn on z-buffering - otherwise we can't clear the z-buffer
+	glClear(GL_DEPTH_BUFFER_BIT);
 
 	sort(mPreviewItems.begin(),mPreviewItems.end(),sort_item_by_layer());
 	for(vector<WED_PreviewItem *>::iterator i = mPreviewItems.begin(); i != mPreviewItems.end(); ++i)

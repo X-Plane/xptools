@@ -32,23 +32,13 @@
 WED_Ring * WED_RingfromImage(char * path, WED_Archive * arch, WED_MapZoomerNew * zoomer, bool use_bezier)
 {
 	Point2	coords[4];
-	double c[8];
-
-	ImageInfo	inf;
 	int has_geo = 0;
-	int align = dem_want_Area;
 
-	int res = MakeSupportedType(path, &inf);
-	if(res != 0)
+	if(GetSupportedType(path) == WED_TIF)  // suffix based decision
 	{
-		DoUserAlert("Unable to open image file.");
-		return NULL;
-	}
-
-	switch(GetSupportedType(path))
-	{
-	case WED_TIF:
-		if (FetchTIFFCorners(path, c, align))
+		double c[8];
+		int pos =  dem_want_Area;
+		if (FetchTIFFCorners(path, c, pos))
 		{
 			if (c[1] < c[5])
 			{
@@ -69,7 +59,13 @@ WED_Ring * WED_RingfromImage(char * path, WED_Archive * arch, WED_MapZoomerNew *
 			}
 			has_geo = 1;
 		}
-		break;
+	}
+	
+	ImageInfo	inf;
+	if(LoadBitmapFromAnyFile(path, &inf))  // just to get width + height ...
+	{
+		DoUserAlert("Unable to open image file.");
+		return NULL;
 	}
 
 	if (!has_geo)
