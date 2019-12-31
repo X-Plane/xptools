@@ -42,6 +42,6 @@ INCLUDEPATHS += -I./SDK/ac3d
 ifdef PLAT_LINUX
 INCLUDEPATHS += -I./src/linuxinit
 INCLUDEPATHS += -I./libs/local$(MULTI_SUFFIX)/include/mesa
-#INCLUDEPATHS += -I/usr/include/qt5
+INCLUDEPATHS += -I/usr/include/qt5
 INCLUDEPATHS += -I/usr/include/x86_64-linux-gnu/qt5
 endif #PLAT_LINUX
