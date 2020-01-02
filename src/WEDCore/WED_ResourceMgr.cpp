@@ -874,7 +874,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 				else if(MFS_string_match(&s,"#obj_wed",false))
 				{
 					string file;
-					MFS_string(&s,&file);
+					MFS_string_eol(&s,&file); s.cur -= 3;
 					WED_clean_vpath(file);
 					fac->objs.back() = file;      // use this one instead of the OBJ X-plane would use.
 				}
@@ -1339,7 +1339,7 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 		else if(MFS_string_match(&s,"#object_wed",false))
 		{
 			string p;
-			MFS_string(&s,&p);
+			MFS_string_eol(&s,&p); s.cur -= 3;
 			WED_clean_vpath(p);
 			obj_paths.back() = p;      // use this one instead of the OBJECT X-plane would use.
 		}
