@@ -716,7 +716,13 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 				if(!fac->is_new)
 				{
 					fac->walls.push_back(FacadeWall_t());
-					fac->wallName.push_back(string("#") + to_string(fac->walls.size()));
+					MFS_double(&s);
+					MFS_double(&s);
+					string buf;	MFS_string(&s,&buf);
+					if(!buf.empty())
+						fac->wallName.push_back(buf);
+					else
+						fac->wallName.push_back(string("#") + to_string(fac->walls.size()));
 				}
 				else
 				{
@@ -736,7 +742,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 					}
 				}
 				char c[64];
-				snprintf(c, 64, "w=%.0f to %.0f%c", min_width / (gIsFeet ? 0.3048 : 1.0 ), max_width / (gIsFeet ? 0.3048 : 1.0 ), gIsFeet ? '\'' : 'm') ;
+				snprintf(c, 64, "w=%.3g to %.3g%c", min_width / (gIsFeet ? 0.3048 : 1.0 ), max_width / (gIsFeet ? 0.3048 : 1.0 ), gIsFeet ? '\'' : 'm') ;
 				fac->wallUse.push_back(c);
 			} 
 			else if (MFS_string_match(&s,"RING", false))
