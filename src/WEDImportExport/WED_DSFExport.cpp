@@ -22,7 +22,6 @@
  */
 
 #include "WED_DSFExport.h"
-#include "WED_UIDefs.h"
 #include "DSFLib.h"
 #include "FileUtils.h"
 #include "WED_Entity.h"
@@ -1764,7 +1763,7 @@ static int	DSF_ExportTileRecursive(
 		{
 			//Get the relative path
 			orth->GetResource(r);
-
+#if WED
 			if(orth->IsNew())
 			{
 				string msg;
@@ -1980,7 +1979,7 @@ static int	DSF_ExportTileRecursive(
 				what->StartOperation("Norm Ortho");
 				orth->Rescale(gis_UV, UVbounds, UVbounds_used);
 			}
-
+#endif
 			idx = io_table.accum_pol(r,show_level);
 			bool bez = WED_HasBezierPol(orth);
 			
@@ -2212,7 +2211,13 @@ int DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, se
 	}
 	if (g_dropped_pts)
 	{
-		DoUserAlert("Warning: you have bezier curves that cross a DSF tile boundary.  X-Plane 9 cannot handle this case.  To fix this, only use non-curved polygons to cross a tile boundary.");
+#if WED
+		DoUserAlert(
+#else
+		fprintf(stderr, "%s\n",
+#endif
+				"Warning: you have bezier curves that cross a DSF tile boundary. X-Plane 9 cannot handle this case. "
+				"To fix this, only use non-curved polygons to cross a tile boundary.");
 		return -1;
 	}
 	return 0;

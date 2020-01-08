@@ -150,7 +150,7 @@ void		WED_LinePlacement::SetNthProperty(int n, const PropertyVal_t& val)
 		int linetype = ENUM_Export(*(val.set_val.cbegin()));
 
 //		printf("SET int_val %d set_val.begin %d (%ld) linetype %d\n",val.int_val, *(val.set_val.cbegin()), val.set_val.size(), linetype);
-
+#if WED
 		IResolver * resolver = GetArchive()->GetResolver();
 		if (resolver)
 		{
@@ -158,6 +158,7 @@ void		WED_LinePlacement::SetNthProperty(int n, const PropertyVal_t& val)
 			if(WED_GetLibraryMgr(resolver)->GetLineVpath(linetype, vpath))
 				resource = vpath;
 		}
+#endif
 	}
 	else
 		WED_GISChain::SetNthProperty(n, val);

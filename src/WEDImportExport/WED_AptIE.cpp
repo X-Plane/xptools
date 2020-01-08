@@ -483,8 +483,9 @@ int		WED_CanExportApt(IResolver * resolver)
 
 void	WED_DoExportApt(WED_Document * resolver, WED_MapPane * pane)
 {
+#if !TYLER_MODE
 	if (!WED_ValidateApt(resolver, pane, NULL, false, "Cancel export")) return;
-
+#endif
 	WED_Thing * wrl = WED_GetWorld(resolver);
 	char path[1024];
 	strcpy(path,"apt.dat");

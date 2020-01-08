@@ -70,6 +70,7 @@ void		WED_ObjPlacement::SetResource(const string& r)
 
 void		WED_ObjPlacement::SetHeading(double h)
 {
+#if WED
 	WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetArchive()->GetResolver());
 	if(rmgr)
 	{
@@ -79,11 +80,13 @@ void		WED_ObjPlacement::SetHeading(double h)
 			if(o->fixed_heading >= 0.0)
 				h = o->fixed_heading;
 	}
+#endif
 	WED_GISPoint_Heading::SetHeading(h);
 }
 
 void	WED_ObjPlacement::Rotate(GISLayer_t l,const Point2& center, double angle)
 {
+#if WED
 	WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetArchive()->GetResolver());
 	if(rmgr)
 	{
@@ -95,6 +98,7 @@ void	WED_ObjPlacement::Rotate(GISLayer_t l,const Point2& center, double angle)
 				return;
 			}
 	}
+#endif
 	WED_GISPoint_Heading::Rotate(l,center,angle);
 }
 
@@ -108,7 +112,7 @@ bool		WED_ObjPlacement::Cull(const Bbox2& b) const
 
 	// caching the objects dimension here for off-display culling in the map view. Its disregarding object rotation
 	// and any lattitude dependency in the conversion, so the value will be choosen sufficiently pessimistic.
-
+#if WED
 	if(visibleWithinDeg < 0.0)                            // so we only do this once for each object, ever
 	{
 		float * f = (float *) &visibleWithinDeg;          // tricking the compiler, breaking all rules. But Cull() must be const ...
@@ -133,7 +137,7 @@ bool		WED_ObjPlacement::Cull(const Bbox2& b) const
 			}
 		}
 	}
-
+#endif
 // This woould be a radical approach to culling - drop ALL visible items, like preview/structure/handles/highlight if its too small.
 // Thois will make items completely invisible, but keeps thm selectable. Very similar as the "too small to go in" apprach where whole
 // groups or airport drop out of view.
