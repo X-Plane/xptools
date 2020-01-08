@@ -2500,12 +2500,7 @@ validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane,
 	if(gExportTarget == wet_gateway)
 	{
 		WED_file_cache_request  mCacheRequest;
-		string cert;
-
-		if(!GUI_GetTempResourcePath("gateway.crt", cert))
-			DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
-
-		mCacheRequest.in_cert = cert;
+		mCacheRequest.in_cert = WED_get_GW_cert();
 		mCacheRequest.in_domain = cache_domain_metadata_csv;    // cache expiration time = 1 day
 		mCacheRequest.in_folder_prefix = "scenery_packs";
 		mCacheRequest.in_url = WED_URL_CIFP_RUNWAYS;
