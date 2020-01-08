@@ -13,11 +13,11 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 2.2.0b2 t.b.d/20
+WED 2.2.0b2 1/03/20
    Features:
-   - support #object_wed/#obj_wed commands in .agp/.fac definitions
+   - for library designers - support #object_wed/#obj_wed commands in .agp/.fac definitions
    - fine tune map detail - show aircraft footprints at lower map scale, add lines to ATC mode
-   - add ability for Library/Property panes to auto open/close, when set narrow
+   - add ability for Library/Property panes to auto open/close, when set narrow enough
    - map drawing w/large amounts of .agp (e.g. KATL parking lots - 13k cars !!) 5x faster
    Bug Fixes:
    - fix wall for type 1 facades not displayed using specific names, if available
