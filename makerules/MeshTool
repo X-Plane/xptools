@@ -21,7 +21,6 @@ LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
-#LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjasper.a
 LIBS		+= -lpthread -lrt
 endif #PLAT_LINUX
 
@@ -38,7 +37,6 @@ LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
-#LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjasper.a
 endif #PLAT_MINGW
 
 ifdef PLAT_DARWIN
@@ -54,7 +52,6 @@ LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
-#LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjasper.a
 endif #PLAT_DARWIN
 
 
@@ -136,3 +133,20 @@ SOURCES += ./src/Utils/MatrixUtils.cpp
 SOURCES += ./src/Utils/ProgressUtils.cpp
 SOURCES += ./src/RawImport/ShapeIO.cpp
 SOURCES += ./src/DSF/tri_stripper_101/tri_stripper.cpp
+
+SOURCES += ./src/lzma19/C/7zArcIn.c
+SOURCES += ./src/lzma19/C/7zAlloc.c
+SOURCES += ./src/lzma19/C/7zBuf.c
+SOURCES += ./src/lzma19/C/7zCrc.c
+SOURCES += ./src/lzma19/C/7zCrcOpt.c
+SOURCES += ./src/lzma19/C/7zDec.c
+SOURCES += ./src/lzma19/C/7zFile.c
+SOURCES += ./src/lzma19/C/7zStream.c
+SOURCES += ./src/lzma19/C/Bcj2.c
+SOURCES += ./src/lzma19/C/Bra.c
+SOURCES += ./src/lzma19/C/Bra86.c
+SOURCES += ./src/lzma19/C/BraIA64.c
+SOURCES += ./src/lzma19/C/CpuArch.c
+SOURCES += ./src/lzma19/C/Delta.c
+SOURCES += ./src/lzma19/C/LzmaDec.c
+SOURCES += ./src/lzma19/C/Lzma2Dec.c
