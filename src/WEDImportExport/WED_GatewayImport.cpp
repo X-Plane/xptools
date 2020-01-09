@@ -702,6 +702,7 @@ void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
 			if (meta.size())
 			{
 				code = meta["icao_code"].asString();
+
 				string code2 = meta["faa_code"].asString();
 				if(code.size() && code2.size())
 				{
@@ -710,8 +711,17 @@ void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
 				}
 				else
 					code += code2;
+
+				code2 = meta["local_code"].asString();
+				if(code.size() && code2.size())
+				{
+					if(code.find(code2) == string::npos)
+						code += "," + code2;
+				}
+				else
+					code += code2;
 			}
-			cur_airport.meta_data.push_back(make_pair("IcaoFaaLocal", code));
+			cur_airport.meta_data.push_back(make_pair("IcaoFaaLocal", code));   // its not really used at all, for now
 			
 			if(gModeratorMode)
 			{
