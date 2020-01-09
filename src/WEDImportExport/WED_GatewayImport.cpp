@@ -23,6 +23,7 @@
 
 
 #include "WED_GatewayImport.h"
+#include "WED_GatewayExport.h"
 
 #if HAS_GATEWAY
 #include "MemFileUtils.h"
@@ -319,7 +320,8 @@ private:
 
 
 
-int WED_GatewayImportDialog::import_bounds_default[4] = { 0, 0, 750, 500 };
+int WED_GatewayImportDialog::import_bounds_default[4] = { 0, 0, 800, 500 };
+
 
 //--Implemation of WED_GateWayImportDialog class-------------------------------
 WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_MapPane * pane, GUI_Commander * cmdr) :
@@ -425,11 +427,11 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_Ma
 		DecorateGUIWindow();
 
 	//Get Certification
-	string cert;
-	if(!GUI_GetTempResourcePath("gateway.crt", cert))
+	string cert(WED_get_GW_cert());
+	if(cert.empty())
 	{
 		mPhase = imp_dialog_error;
-		DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
+		DecorateGUIWindow("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
 	}
 	mCacheRequest.in_cert = cert;
 
@@ -695,6 +697,33 @@ void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
 			AptInfo_t cur_airport;
 			cur_airport.icao = tmp["AirportCode"].asString();
 			cur_airport.name = tmp["AirportName"].asString();
+
+			string code;
+			Json::Value meta(Json::objectValue);
+			meta.swap(tmp["metadata"]);
+			if (meta.size())
+			{
+				code = meta["icao_code"].asString();
+
+				string code2 = meta["faa_code"].asString();
+				if(code.size() && code2.size())
+				{
+					if(code != code2)
+						code += "," + code2;
+				}
+				else
+					code += code2;
+
+				code2 = meta["local_code"].asString();
+				if(code.size() && code2.size())
+				{
+					if(code.find(code2) == string::npos)
+						code += "," + code2;
+				}
+				else
+					code += code2;
+			}
+			cur_airport.meta_data.push_back(make_pair("IcaoFaaLocal", code));   // its not really used at all, for now
 			
 			if(gModeratorMode)
 			{
@@ -702,20 +731,17 @@ void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
 
 				if (tmp["AcceptedSceneryCount"].asInt() > tmp["ApprovedSceneryCount"].asInt())
 				{
-					string cert;
-					if(!GUI_GetTempResourcePath("gateway.crt", cert))
+					string cert(WED_get_GW_cert());
+					if(cert.empty())
 					{
 						mPhase = imp_dialog_error;
 						DecorateGUIWindow("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
 						return;
 					}
 
-					string url = WED_URL_GATEWAY_API;
 					//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airport/ICAO"
-					url += "airport/" + cur_airport.icao;
-					mCacheRequest.in_url = url;
+					mCacheRequest.in_url = WED_get_GW_api_url() + "airport/" + cur_airport.icao;
 
-					//Get it from the server
 					mCacheRequest.in_cert = cert;
 					mCacheRequest.in_domain = cache_domain_airport_versions_json;
 
@@ -885,10 +911,7 @@ void WED_GatewayImportDialog::StartCSVDownload()
 {
 	mCacheRequest.in_domain = cache_domain_metadata_csv;
 
-	stringstream ss;
-	ss << "scenery_packs";
-	mCacheRequest.in_folder_prefix = ss.str();
-
+	mCacheRequest.in_folder_prefix = "scenery_packs";
 	mCacheRequest.in_url = WED_URL_AIRPORT_METADATA_CSV;
 	mRequestCount = 0;
 
@@ -898,16 +921,12 @@ void WED_GatewayImportDialog::StartCSVDownload()
 
 void WED_GatewayImportDialog::StartICAODownload()
 {
-	//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airports"
-	string url = WED_URL_GATEWAY_API;
-	url += "airports";
 
 	mCacheRequest.in_domain = cache_domain_airports_json;
-	stringstream ss;
-	ss << "scenery_packs" << DIR_STR << "GatewayImport";
-	mCacheRequest.in_folder_prefix = ss.str();
+	mCacheRequest.in_folder_prefix = "scenery_packs" DIR_STR "GatewayImport";
 
-	mCacheRequest.in_url = url;
+	//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airports"
+	mCacheRequest.in_url = WED_get_GW_api_url() + "airports";
 	mRequestCount = 0;
 
 	Start(0.1);
@@ -929,10 +948,8 @@ bool WED_GatewayImportDialog::StartVersionsDownload()
 	//Current airport selected
 	AptInfo_t current_apt = mICAO_Apts.at(*out_selection.begin());
 
-	string url = WED_URL_GATEWAY_API;
 	//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airport/ICAO"
-	url += "airport/" + current_apt.icao;
-	mCacheRequest.in_url = url;
+	mCacheRequest.in_url = WED_get_GW_api_url() + "airport/" + current_apt.icao;
 
 	mCacheRequest.in_domain = cache_domain_airport_versions_json;
 
@@ -949,10 +966,7 @@ bool WED_GatewayImportDialog::StartVersionsDownload()
 
 void WED_GatewayImportDialog::StartSpecificVersionDownload(int id, const string& icao)
 {
-	stringstream url;
-	url << WED_URL_GATEWAY_API << "scenery/" << id;
-	mCacheRequest.in_url = url.str();
-
+	mCacheRequest.in_url = WED_get_GW_api_url() + "scenery/" + to_string(id);
 	mCacheRequest.in_domain = cache_domain_scenery_pack;
 
 	stringstream ss;

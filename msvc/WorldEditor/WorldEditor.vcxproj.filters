@@ -636,6 +636,9 @@
     <ClCompile Include="..\..\src\Utils\AssertUtils.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Utils\CmdLine.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\Utils\FileUtils.cpp">
       <Filter>Utils</Filter>
     </ClCompile>

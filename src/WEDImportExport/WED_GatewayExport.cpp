@@ -492,12 +492,9 @@ WED_GatewayExportDialog::WED_GatewayExportDialog(WED_Airport * apt, WED_Document
 void WED_GatewayExportDialog::StartCSVDownload()
 {
 	//Get Certification
-	string cert;
-	if(!GUI_GetTempResourcePath("gateway.crt", cert))
-	{
-		DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
+	const string cert(WED_get_GW_cert());
+	if(cert.empty())
 		this->AsyncDestroy();
-	}
 
 	mCacheRequest.in_cert = cert;
 	mCacheRequest.in_domain = cache_domain_metadata_csv;
@@ -516,6 +513,7 @@ void WED_GatewayExportDialog::AuxiliaryAction()
 {
 	GUI_LaunchURL(WED_URL_UPLOAD_OK);
 }
+
 
 void WED_GatewayExportDialog::Submit()
 {
@@ -735,30 +733,22 @@ void WED_GatewayExportDialog::Submit()
 			return;
 		#endif
 
-		string cert;
-
-		if(!GUI_GetTempResourcePath("gateway.crt", cert))
+		const string cert(WED_get_GW_cert());
+		if(cert.empty())
 		{
-			DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
 			this->AsyncDestroy();
-			return;
 		}
-		string url = WED_URL_GATEWAY_API "scenery";
-
-		mCurl = new curl_http_get_file(url.c_str(),NULL,&reqstr,&mResponse,cert);
-
-		mPhase = expt_dialog_upload_to_gateway;
-
-		this->Reset("", "", "", false);
-		this->AddLabel("Uploading airport to Gateway.");
-		this->AddLabel("This could take up to one minute.");
-
-		gExportTarget = old_target;
-
-		Start(1.0);
+		else
+		{
+			mCurl = new curl_http_get_file(cert, nullptr, &reqstr, &mResponse, WED_get_GW_api_url() + "scenery");
+			this->Reset("", "", "", false);
+			this->AddLabel("Uploading airport to Gateway.");
+			this->AddLabel("This could take up to one minute.");
+			gExportTarget = old_target;
+			Start(1.0);
+		}
 	}
-
-	if(mPhase == expt_dialog_done)
+	else if(mPhase == expt_dialog_done)
 	{
 		this->AsyncDestroy();
 	}
@@ -913,4 +903,19 @@ void EnforceRecursive_MetaDataGuiLabel(WED_Thing * thing)
 	return;
 }
 
+const string WED_get_GW_api_url()
+{
+	string url(gApplication->args.get_value("--gateway_api_url"));
+	if(url.empty())	
+		url = WED_URL_GATEWAY "apiv1/";
+	return url;
+}
+
+const string WED_get_GW_cert()
+{
+	string s(gApplication->args.get_value("--gateway_crt"));
+	if (s.empty())
+		GUI_GetTempResourcePath("gateway.crt", s);
+	return s;
+}
 #endif /* HAS_GATEWAY */

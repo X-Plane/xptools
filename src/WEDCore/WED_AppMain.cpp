@@ -128,9 +128,12 @@ int main(int argc, char * argv[])
 	GUI_InitClipboard();
 #if LIN
 	Initializer linit(&argc, &argv, false);
+#endif // LIN
+	
+#if LIN || APL
 	WED_Application	app(argc, argv);
-#else
-	WED_Application	app;
+#else // Windows
+	WED_Application	app(lpCmdLine);
 #endif
 	WED_PackageMgr	pMgr(NULL);
 

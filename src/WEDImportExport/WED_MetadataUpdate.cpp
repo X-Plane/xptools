@@ -47,12 +47,9 @@
  */
 static bool fill_cache_request_for_metadata_csv(WED_file_cache_request * out_cache_req)
 {
-	string cert;
-	if(!GUI_GetTempResourcePath("gateway.crt", cert))
-	{
-		DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
+	string cert(WED_get_GW_cert());
+	if(cert.empty())
 		return false;
-	}
 
 	out_cache_req->in_cert = cert;
 	out_cache_req->in_domain = cache_domain_metadata_csv;

@@ -19,6 +19,7 @@ WED 2.2.0b2 1/03/20
    - fine tune map detail - show aircraft footprints at lower map scale, add lines to ATC mode
    - add ability for Library/Property panes to auto open/close, when set narrow enough
    - map drawing w/large amounts of .agp (e.g. KATL parking lots - 13k cars !!) 5x faster
+   - add searchable column for ICAO/FAA/Local codes in gateway import dialog
    Bug Fixes:
    - fix wall for type 1 facades not displayed using specific names, if available
    - fix tall objects, e.g. towers, not centered in library preview window

@@ -300,6 +300,7 @@ SOURCES += ./src/GUI/GUI_Clipboard.cpp
 SOURCES += ./src/GUI/GUI_Unicode.cpp
 SOURCES += ./src/GUI/GUI_Application.cpp
 SOURCES += ./src/Utils/AssertUtils.cpp
+SOURCES += ./src/Utils/CmdLine.cpp
 SOURCES += ./src/Utils/MemFileUtils.cpp
 SOURCES += ./src/Utils/FileUtils.cpp
 SOURCES += ./src/Utils/GISUtils.cpp

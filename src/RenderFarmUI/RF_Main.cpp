@@ -590,10 +590,10 @@ int main(int argc, char * argv[])
 #endif
 	GUI_MemoryHog::InstallNewHandler();
 	GUI_InitClipboard();
-#if LIN
+#if LIN || APL
 	RF_Application	app(argc, argv);
 #else
-	RF_Application	app;
+	RF_Application	app(lpCmdLine);
 #endif
 	setlocale(LC_ALL,"en_US.UTF-8");
 
