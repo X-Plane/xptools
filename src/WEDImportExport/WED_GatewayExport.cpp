@@ -915,8 +915,7 @@ const string WED_get_GW_cert()
 {
 	string s(gApplication->args.get_value("--gateway_crt"));
 	if (s.empty())
-		if(!GUI_GetTempResourcePath("gateway.crt", s));
-			s.clear();
+		GUI_GetTempResourcePath("gateway.crt", s);
 	return s;
 }
 #endif /* HAS_GATEWAY */

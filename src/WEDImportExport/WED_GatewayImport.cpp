@@ -318,7 +318,8 @@ private:
 
 
 
-int WED_GatewayImportDialog::import_bounds_default[4] = { 0, 0, 750, 500 };
+int WED_GatewayImportDialog::import_bounds_default[4] = { 0, 0, 800, 500 };
+
 
 //--Implemation of WED_GateWayImportDialog class-------------------------------
 WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_MapPane * pane, GUI_Commander * cmdr) :
@@ -694,6 +695,23 @@ void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
 			AptInfo_t cur_airport;
 			cur_airport.icao = tmp["AirportCode"].asString();
 			cur_airport.name = tmp["AirportName"].asString();
+
+			string code;
+			Json::Value meta(Json::objectValue);
+			meta.swap(tmp["metadata"]);
+			if (meta.size())
+			{
+				code = meta["icao_code"].asString();
+				string code2 = meta["faa_code"].asString();
+				if(code.size() && code2.size())
+				{
+					if(code != code2)
+						code += "," + code2;
+				}
+				else
+					code += code2;
+			}
+			cur_airport.meta_data.push_back(make_pair("IcaoFaaLocal", code));
 			
 			if(gModeratorMode)
 			{
