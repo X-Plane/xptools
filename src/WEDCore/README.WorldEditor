@@ -13,6 +13,13 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 2.2.0r1
+   Features:
+   - add searchable column for ICAO/FAA/Local codes in gateway import dialog
+   - add cmdline debugging option for gateway testing
+   Bug Fixes:
+   - fix (Windows only) scenery window changing size when dragged, can't be resized via frame
+
 WED 2.2.0b2 1/03/20
    Features:
    - for library designers - support #object_wed/#obj_wed commands in .agp/.fac definitions
