@@ -740,7 +740,7 @@ void WED_GatewayExportDialog::Submit()
 		}
 		else
 		{
-			mCurl = new curl_http_get_file(cert, nullptr, &reqstr, &mResponse, WED_get_GW_api_url() + "scenery");
+			mCurl = new curl_http_get_file(WED_get_GW_api_url() + "scenery", nullptr, &reqstr, &mResponse, cert);
 			this->Reset("", "", "", false);
 			this->AddLabel("Uploading airport to Gateway.");
 			this->AddLabel("This could take up to one minute.");
