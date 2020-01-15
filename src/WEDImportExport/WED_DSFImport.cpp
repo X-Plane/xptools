@@ -27,9 +27,7 @@
 #include "WED_ExclusionZone.h"
 #include "WED_EnumSystem.h"
 #include "WED_ObjPlacement.h"
-#include "WED_ToolUtils.h"
 #include "PlatformUtils.h"
-#include "WED_UIDefs.h"
 #include "WED_SimpleBoundaryNode.h"
 
 #include "WED_FacadePlacement.h"
@@ -56,7 +54,6 @@
 #include "WED_RoadNode.h"
 #include "WED_RoadEdge.h"
 #endif
-#include "WED_MetadataUpdate.h"
 
 #include <sstream>
 
@@ -931,11 +928,9 @@ public:
 //		if(res != 0)
 //			printf("DSF Error: %d\n", res);
 	}
-
-
 };
 
-int DSF_Import(const char * path, WED_Group * base )
+int DSF_Import(const char * path, WED_Thing * base)
 {
 	DSF_Importer importer;
 	return importer.do_import_dsf(path, base);
@@ -951,6 +946,17 @@ int DSF_Import_Partial(const char * path, WED_Group * base , const Bbox2& cull_b
 
 	return importer.do_import_dsf(path, base );
 }
+
+void WED_ImportText(const char * path, WED_Thing * base)
+{
+	DSF_Importer importer;
+	importer.do_import_txt(path, base);
+}
+
+#if WED
+
+#include "WED_ToolUtils.h"
+#include "WED_UIDefs.h"
 
 int		WED_CanImportRoads(IResolver * resolver)
 {
@@ -1077,75 +1083,4 @@ static WED_Thing * find_airport_by_icao_recursive(const string& icao, WED_Thing 
 	return NULL;
 }
 
-void WED_DoImportText(const char * path, WED_Thing * base)
-{
-	DSF_Importer importer;
-	importer.do_import_txt(path, base);
-}
-
-
-#if GATEWAY_IMPORT_FEATURES
-const string get_airport_id_from_gateway_file_path(const char * file_path)
-{
-	string tname(file_path);
-	string::size_type p = tname.find_last_of("\\/");
-	if(p != tname.npos)
-		tname = tname.substr(p+1);
-	p = tname.find_last_of(".");
-	if(p != tname.npos)
-		tname = tname.substr(0,p);
-	return tname;
-}
-WED_Thing * get_airport_from_gateway_file_path(const char * file_path, WED_Thing * wrl)
-{
-	return find_airport_by_icao_recursive(get_airport_id_from_gateway_file_path(file_path), wrl);
-}
-
-
-//This is from an older method of importing things which involved manually getting the files from the hard drive
-void	WED_DoImportDSFText(IResolver * resolver)
-{
-	WED_Thing * wrl = WED_GetWorld(resolver);
-
-	char * paths = GetMultiFilePathFromUser("Import DSF file...", "Import", FILE_DIALOG_IMPORT_DSF);
-	if(paths)
-	{
-		char * free_me = paths;
-
-		wrl->StartOperation("Import DSF");
-
-		while(*paths)
-		{
-			if(strstr(paths,".dat"))
-			{
-				WED_ImportOneAptFile(paths,wrl,NULL);
-				WED_DoInvisibleUpdateMetadata(SAFE_CAST(WED_Airport, get_airport_from_gateway_file_path(paths, wrl)));
-			}
-			paths = paths + strlen(paths) + 1;
-		}
-
-		paths = free_me;
-
-		while(*paths)
-		{
-			if(!strstr(paths,".dat"))
-			{
-				WED_Thing * g = get_airport_from_gateway_file_path(paths, wrl);
-				if(g == NULL)
-				{
-					g = WED_Group::CreateTyped(wrl->GetArchive());
-					g->SetName(paths);
-					g->SetParent(wrl,wrl->CountChildren());
-				}
-		//		DSF_Import(path,g);
-				DSF_Importer importer;
-				importer.do_import_txt(paths, g);
-			}
-			paths = paths + strlen(paths) + 1;
-		}
-
-		wrl->CommitOperation();
-		free(free_me);
-	}
-}
-#endif
+#endif // #if WED

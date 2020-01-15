@@ -37,6 +37,9 @@ bool GatewayExport_has_3d(WED_Airport * who);
 void Enforce_MetaDataGuiLabel(WED_Airport * apt);
 void EnforceRecursive_MetaDataGuiLabel(WED_Thing * thing);
 
+const string WED_get_GW_api_url();
+const string WED_get_GW_cert();
+
 #endif
 
 #endif

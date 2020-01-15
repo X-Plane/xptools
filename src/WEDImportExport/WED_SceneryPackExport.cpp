@@ -24,12 +24,16 @@
 #include "WED_SceneryPackExport.h"
 #include "WED_AptIE.h"
 #include "WED_DSFExport.h"
+#include "WED_DSFImport.h"
+#include "DSFLib.h"
 #include "WED_GatewayExport.h"
 #include "IResolver.h"
-#include "WED_ToolUtils.h"
 #include "ILibrarian.h"
 #include "FileUtils.h"
 #include "PlatformUtils.h"
+
+#include "WED_UIDefs.h"
+#include "WED_ToolUtils.h"
 #include "WED_Group.h"
 #include "WED_Validate.h"
 #include "WED_Document.h"
@@ -58,10 +62,13 @@ int		WED_CanExportPack(IResolver * resolver)
 
 void	WED_DoExportPack(WED_Document * resolver, WED_MapPane * pane)
 {
+#if TYLER_MODE
+    // do you heuristics stuff here.
+#else
 	// Just don't ever export if we are invalid.  Avoid the case where we write junk to a file!
 	if(!WED_ValidateApt(resolver, pane, NULL, false, "Cancel Export"))
 		return;
-
+#endif
 	ILibrarian * l = WED_GetLibrarian(resolver);
 	WED_Thing * w = WED_GetWorld(resolver);
 	WED_Group * g = dynamic_cast<WED_Group*>(w);
@@ -88,4 +95,3 @@ void	WED_DoExportPack(WED_Document * resolver, WED_MapPane * pane)
 		(*problem_children.begin())->CommitOperation();		
 	}
 }
-

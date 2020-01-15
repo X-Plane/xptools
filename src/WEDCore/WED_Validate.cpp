@@ -1032,8 +1032,6 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 		for(int i = 0; i < 360; ++i)                                       // in complex multi-time or ceiling flows settings when ALL prior flows have time rules that together cover 24hrs.
 			sWindsCov[i] = max(sWindThisFlow[i], sWindsCov[i]);             // Such is bad style - one shold rather have one flow with a time rule followed by a time-unlimited flow.
 
-#if !GATEWAY_IMPORT_FEATURES
-
 	map<int,vector<WED_ATCRunwayUse*> >		arrival_rwys;
 	map<int,vector<WED_ATCRunwayUse*> >		departure_rwys;
 
@@ -1085,7 +1083,6 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 	}
 	if (arrival_rwys.empty() || departure_rwys.empty())
 		msgs.push_back(validation_error_t("Airport flow must specify at least one active arrival and one departure runway", err_flow_no_arr_or_no_dep_runway, flow, apt));
-#endif
 }
 
 static void ValidateATC(WED_Airport* apt, validation_error_vector& msgs, set<int>& legal_rwy_oneway, set<int>& legal_rwy_twoway)
@@ -1446,7 +1443,7 @@ static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& 
 	{
 		WED_GISLine_Width * lw = dynamic_cast<WED_GISLine_Width *>(who);
 		Assert(lw);
-		if (lw->GetWidth() < 5 && lw->GetLength() < 100)
+		if (lw->GetWidth() < 5 || lw->GetLength() < 100)
 		{
 			msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' must be at least 5 meters wide by 100 meters long.", err_rwy_unrealistically_small, who, apt));
 		}
@@ -1461,10 +1458,7 @@ static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& 
 
 			if (rwy->GetDisp1() + rwy->GetDisp2() > rwy->GetLength()) msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' has overlapping displaced thresholds.", err_rwy_overlapping_displaced_thresholds, who,apt));
 
-			#if !GATEWAY_IMPORT_FEATURES
 			if(rwy->GetRoughness() < 0.0 || rwy->GetRoughness() > 1.0) msgs.push_back(validation_error_t(string("The runway '") + name + "' has an illegal surface roughness. It should be in the range 0 to 1.", err_rwy_surface_illegal_roughness, who,apt));
-			#endif
-
 		}
 
 		Point2 ends[2];
@@ -1480,7 +1474,6 @@ static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& 
 		}
 		else
 		{
-			#if !GATEWAY_IMPORT_FEATURES
 				double true_heading, len;
 				Point2 ctr;
 				Quad_2to1(ends, ctr, true_heading, len);
@@ -1501,7 +1494,6 @@ static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& 
 					else if(heading_delta > 45.0)
 						msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' is misaligned with its runway name.", err_rwy_misaligned_with_name, who,apt));
 				}
-			#endif
 		}
 	}
 }
@@ -2126,7 +2118,6 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	else if(!is_all_alnum(icao))
 		msgs.push_back(validation_error_t(string("The Airport ID for airport '") + name + "' must contain ASCII alpha-numeric characters only.", err_airport_icao, apt,apt));
 
-#if !GATEWAY_IMPORT_FEATURES
 	set<WED_GISEdge*> edges;
 	WED_select_zero_recursive(apt, &edges);
 	if(edges.size())
@@ -2145,7 +2136,6 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	{
 		msgs.push_back(validation_error_t("Airport contains crossing ATC routing lines with no node at the crossing point.  Split the lines and join the nodes.", err_airport_ATC_network, edges, apt));
 	}
-#endif
 
 	set<int>		legal_rwy_oneway;
 	set<int>		legal_rwy_twoway;
@@ -2195,12 +2185,8 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 			Assert("Unknown Airport Type");
 	}
 
-	#if !GATEWAY_IMPORT_FEATURES
 	WED_DoATCRunwayChecks(*apt, msgs, res_mgr);
-	#endif
-
 	ValidateATC(apt, msgs, legal_rwy_oneway, legal_rwy_twoway);
-
 	ValidateAirportFrequencies(apt,msgs);
 
 	for(vector<WED_AirportSign *>::iterator s = signs.begin(); s != signs.end(); ++s)
@@ -2268,7 +2254,6 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		if(!runways.empty() && boundaries.empty())
             msgs.push_back(validation_error_t("This airport contains runway(s) but no airport boundary.", 	err_airport_no_boundary, apt,apt));
 
-#if !GATEWAY_IMPORT_FEATURES
 		vector<WED_AirportBoundary *>	boundaries;
 		CollectRecursive(apt, back_inserter(boundaries), WED_AirportBoundary::sClass);
 		for(vector<WED_AirportBoundary *>::iterator b = boundaries.begin(); b != boundaries.end(); ++b)
@@ -2276,7 +2261,6 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 			if(WED_HasBezierPol(*b))
 				msgs.push_back(validation_error_t("Do not use bezier curves in airport boundaries.", err_apt_boundary_bez_curve_used, *b, apt));
 		}
-#endif
 		// allow some draped orthophotos (like grund painted signs)
 		vector<WED_DrapedOrthophoto *> orthos, orthos_illegal;
 		CollectRecursive(apt, back_inserter(orthos), WED_DrapedOrthophoto::sClass);
@@ -2310,12 +2294,10 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 					msgs.push_back(validation_error_t(string("The library path '") + res + "' is not part of X-Plane's default installation and cannot be submitted to the global airport database.",
 					err_gateway_resource_not_in_default_library,
 						*ru, apt));
-				#if !GATEWAY_IMPORT_FEATURES
 				if(lib_mgr->IsResourceDeprecatedOrPrivate(res))
 					msgs.push_back(validation_error_t(string("The library path '") + res + "' is a deprecated or private X-Plane resource and cannot be used in global airports.",
 					err_gateway_resource_private_or_depricated,
 						*ru, apt));
-				#endif
 			}
 		}
 
@@ -2511,12 +2493,7 @@ validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane,
 	if(gExportTarget == wet_gateway)
 	{
 		WED_file_cache_request  mCacheRequest;
-		string cert;
-
-		if(!GUI_GetTempResourcePath("gateway.crt", cert))
-			DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
-
-		mCacheRequest.in_cert = cert;
+		mCacheRequest.in_cert = WED_get_GW_cert();
 		mCacheRequest.in_domain = cache_domain_metadata_csv;    // cache expiration time = 1 day
 		mCacheRequest.in_folder_prefix = "scenery_packs";
 		mCacheRequest.in_url = WED_URL_CIFP_RUNWAYS;

@@ -193,8 +193,13 @@ void			XWin::Resize(int inWidth, int inHeight)
 	{
 		inWidth += (info.rcWindow.right - info.rcWindow.left) - (info.rcClient.right - info.rcClient.left);
 		inHeight+= (info.rcWindow.bottom - info.rcWindow.top) - (info.rcClient.bottom - info.rcClient.top);
+		if (info.dwStyle & WS_MAXIMIZE)
+		{
+			mSizeMin.x = 0;                  // stop WED from sending out size hints (do they EVER make sense ?)
+			mSizeMin.y = 0;
+			ShowWindow(mWindow, SW_RESTORE); // windows bug to not restore resizing via frame-dragging unless WS_MAXIMIZE is explicily cancelled
+		}
 	}
-
 	SetWindowPos(mWindow, NULL, 0, 0, inWidth, inHeight, SWP_NOOWNERZORDER | SWP_NOMOVE);
 }
 

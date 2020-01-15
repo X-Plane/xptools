@@ -31,6 +31,7 @@
 #include "GUI_GraphState.h"
 #include "WED_Colors.h"
 #include "GUI_Fonts.h"
+#include "WED_Menus.h"
 #include "XESConstants.h"
 #include "IGIS.h"
 #include "ISelection.h"
@@ -60,7 +61,7 @@
 #define SHOW_FPS 0
 
 
-WED_Map::WED_Map(IResolver * in_resolver) :	mResolver(in_resolver), mTool(NULL), mClickLayer(NULL),
+WED_Map::WED_Map(IResolver * in_resolver, GUI_Commander * cmdr) : GUI_Commander(cmdr), mResolver(in_resolver), mTool(NULL), mClickLayer(NULL),
 					mIsDownCount(0), mIsDownExtraCount(0)
 {
 		int k_reg[4] = { 0, 0, 4, 2 };
@@ -476,7 +477,11 @@ void		WED_Map::MouseUp  (int x, int y, int button)
 
 int	WED_Map::MouseMove(int x, int y)
 {
-	Refresh();
+	DispatchHandleCommand(wed_autoClosePane); // This displatch in WED_Foumentwindow is fast in discarding the zillions of
+	           // reduandent command we reate here. If it becomes a problem, have DocumentWindow turn this here explicitly on/off.
+
+	Refresh(); // if we had a propper dedicated status bar for the location position text - we wouldn't have to redraw *everything*
+	           // its quite often also causing duplicate redraws - as all functions that change anything Refresh() already.
 	return 1;
 }
 

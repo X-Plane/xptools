@@ -4036,7 +4036,7 @@ void	WED_DoBreakApartSpecialAgps(IResolver* resolver)
 					(*agp)->GetLocation(gis_Geo,agp_origin_geo);
 					Point2 agp_origin_m = translator.Forward(agp_origin_geo);
 
-					for (auto agp_obj : agp_data->objs)
+					for (auto& agp_obj : agp_data->objs)
 					{
 						Vector2 torotate(agp_origin_m, Point2(agp_origin_m.x() + agp_obj.x, agp_origin_m.y() + agp_obj.y));
 

@@ -86,6 +86,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	 		GUI_Commander * inCommander,
 	 		WED_Document *	inDocument) :
 	GUI_Window(inTitle, xwin_style_resizable|xwin_style_visible|xwin_style_fullscreen, kDefaultDocSize, inCommander),
+	mAutoOpen(0),
 	mDocument(inDocument)
 {
 	#if LIN
@@ -144,7 +145,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	mLibSplitter->SetBounds(splitter_b);
 	mLibSplitter->SetSticky(1,1,0,1);
 
-	WED_LibraryPreviewPane * libprev = new WED_LibraryPreviewPane(mDocument->GetResourceMgr(), WED_GetTexMgr(mDocument));
+	WED_LibraryPreviewPane * libprev = new WED_LibraryPreviewPane(this, mDocument->GetResourceMgr(), WED_GetTexMgr(mDocument));
 	libprev->SetParent(mLibSplitter);
 	libprev->Show();
 	libprev->SetSticky(1,1,1,0);
@@ -359,7 +360,38 @@ int	WED_DocumentWindow::HandleCommand(int command)
 			mMainSplitter2->AlignContentsAt(main_split2);
 			mPropSplitter->AlignContentsAt(prop_split);
 			mLibSplitter->AlignContentsAt(prev_split);
-
+		}
+		return 1;
+	case wed_autoOpenLibPane:
+		if (mAutoOpen == 0)
+		{
+			mAutoOpen = mMainSplitter->GetSplitPoint();
+			int aproxTabsWidth = 100 + gFontSize * 15;
+			mMainSplitter->AlignContentsAt(aproxTabsWidth);
+		}
+		return 1;
+	case wed_autoOpenPropPane:
+		if (mAutoOpen == 0)
+		{
+			int w,h;
+			XWin::GetBounds(&w, &h);
+			mAutoOpen = mMainSplitter2->GetSplitPoint() - w;
+			int aproxTabsWidth = 100 + gFontSize * 28;
+			mMainSplitter2->AlignContentsAt(w - aproxTabsWidth);
+		}
+		return 1;
+	case wed_autoClosePane:
+		if (mAutoOpen > 0)
+		{
+			mMainSplitter->AlignContentsAt(mAutoOpen);
+			mAutoOpen = 0;
+		}
+		else if (mAutoOpen < 0)
+		{
+			int w,h;
+			XWin::GetBounds(&w, &h);
+			mMainSplitter2->AlignContentsAt(w + mAutoOpen);
+			mAutoOpen = 0;
 		}
 		return 1;
 	case gui_Undo:	if (um->HasUndo()) { um->Undo(); return 1; }	break;
@@ -481,6 +513,9 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	//------------------------------------------//
 
 	switch(command) {
+	case wed_autoOpenLibPane:
+	case wed_autoOpenPropPane:
+	case wed_autoClosePane:
 	case wed_RestorePanes:	return 1;
 	case gui_Undo:		if (um->HasUndo())	{ ioName = um->GetUndoName();	return 1; }
 						else				{								return 0; }
@@ -592,7 +627,7 @@ void	WED_DocumentWindow::ReceiveMessage(
 {
 	if(inMsg == msg_DocumentDestroyed)
 		delete this;
-	if (inMsg == msg_DocWillSave)
+	else if(inMsg == msg_DocWillSave)
 	{
 		IDocPrefs * prefs = reinterpret_cast<IDocPrefs *>(inParam);
 		mMapPane->ToPrefs(prefs);
@@ -618,7 +653,7 @@ void	WED_DocumentWindow::ReceiveMessage(
 		prefs->WriteIntPref("window/height",zw[1]);
 		XWin::SetFilePath(NULL,false);
 	}
-	if (inMsg == msg_DocLoaded)
+	else if(inMsg == msg_DocLoaded)
 	{
 		IDocPrefs * prefs = reinterpret_cast<IDocPrefs *>(inParam);
 		mMapPane->FromPrefs(prefs);
@@ -628,9 +663,8 @@ void	WED_DocumentWindow::ReceiveMessage(
 		gExportTarget = (WED_Export_Target) mDocument->ReadIntPref("doc/export_target",gExportTarget);
 		XWin::SetFilePath(NULL,mDocument->IsDirty());
 	}
-	if(inMsg == msg_ArchiveChanged)
+	else if(inMsg == msg_ArchiveChanged)
 		XWin::SetFilePath(NULL,mDocument->IsDirty());
-
 }
 
 bool	WED_DocumentWindow::Closed(void)

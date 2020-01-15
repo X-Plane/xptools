@@ -273,7 +273,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 				{
 					if (sub_class == WED_RampPosition::sClass && GetZoomer()->GetPPM() > 5)
 					{
-						glColor4f(0, 1, 0, 0.15);
+						glColor4f(0, 1, 0, 0.2);
 						WED_ATCLayer_DrawAircraft(ramp, g, GetZoomer());
 						glColor4fv(WED_Color_RGBA(struct_color));
 					}
@@ -359,7 +359,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 				int i, n = ps->GetNumSides();
 				WED_MapZoomerNew * z = GetZoomer();
 
-				bool showRealLines = mRealLines && z->GetPPM() * 0.3 <= MIN_PIXELS_PREVIEW;
+				bool showRealLines = mRealLines && z->GetPPM() * 0.4 <= MIN_PIXELS_PREVIEW;
 
 				for (i = 0; i < n; ++i)
 				{
@@ -372,6 +372,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 					vector<Point2> pts;
 
 					Bezier2		b;
+					Point2 		mp(0,0);
 					if (ps->GetSide(gis_Geo,i,b))
 					{
 						b.p1 = z->LLToPixel(b.p1);
@@ -385,29 +386,30 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 						for (int n = 0; n <= point_count; ++n)
 							pts.push_back(b.midpoint((float) n / (float) point_count));
 
-						if(i == 0 && sub_class == WED_FacadeRing::sClass)	// facade ground contact / 1st segment marker
+						if(i == 0 && sub_class == WED_FacadeRing::sClass)
 						{
-							glColor4f(1, 1, 1, 1);
-							Point2 p = b.midpoint(0.5);
-							GUI_PlotIcon(g, "handle_closeloop.png", p.x(), p.y(), 0.0, GetFurnitureIconScale());
-							g->SetTexUnits(0);
-							glColor4fv(WED_Color_RGBA(struct_color));
+							mp = b.midpoint(0.5);     // facade ground contact / 1st segment marker
 						}
 					}
 					else
 					{
-						pts.push_back(z->LLToPixel(b.p1));
-						pts.push_back(z->LLToPixel(b.p2));
-						if (i == 0 && sub_class == WED_FacadeRing::sClass)	// facade ground contact / 1st segment marker
-						{
-							glColor4f(1, 1, 1, 1);
-							Point2 p = z->LLToPixel(b.midpoint(0.5));
-							GUI_PlotIcon(g, "handle_closeloop.png", p.x(), p.y(), 0.0, GetFurnitureIconScale());
-							g->SetTexUnits(0);
-							glColor4fv(WED_Color_RGBA(struct_color));
+						b.p1 = z->LLToPixel(b.p1);
+						b.p2 = z->LLToPixel(b.p2);
+						pts.push_back(b.p1);
+						pts.push_back(b.p2);
+						if (i == 0 && sub_class == WED_FacadeRing::sClass)
+						{    
+							mp = b.p1 + Vector2(b.p1, b.p2) * 0.5;  // facade ground contact / 1st segment marker
 						}
 					}
-
+					if (i == 0 && sub_class == WED_FacadeRing::sClass && Vector2(b.p1,b.p2).squared_length() > 20 * 20)
+					{                                     	// facade ground contact / 1st segment marker
+						glColor4fv(WED_Color_RGBA(wed_pure_white));
+						GUI_PlotIcon(g, "handle_closeloop.png", mp.x(), mp.y(), 0.0, 0.7);
+						g->SetTexUnits(0);
+						glColor4fv(WED_Color_RGBA(struct_color));
+					}
+					
 					DrawLineAttrs(&*pts.begin(), pts.size(), attrs);
 					if(!attrs.empty()) glColor4fv(WED_Color_RGBA(struct_color));
 					

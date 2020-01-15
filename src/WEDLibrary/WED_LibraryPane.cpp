@@ -27,6 +27,7 @@
 #include "WED_LibraryFilterBar.h"
 #include "GUI_Resources.h"
 #include "GUI_Messages.h"
+#include "WED_Menus.h"
 
 WED_LibraryPane::WED_LibraryPane(GUI_Commander * commander, WED_LibraryMgr * mgr) :
 	GUI_Commander(commander),
@@ -86,6 +87,17 @@ WED_LibraryPane::WED_LibraryPane(GUI_Commander * commander, WED_LibraryMgr * mgr
 
 WED_LibraryPane::~WED_LibraryPane()
 {
+}
+
+int		WED_LibraryPane::MouseMove(int x, int y)
+{
+	int b[4];
+	GetBounds(b);
+	if(b[2] - b[0] > 0 && b[2] - b[0] < 100)
+	{
+		DispatchHandleCommand(wed_autoOpenLibPane);
+	}
+	return 1;
 }
 
 void	WED_LibraryPane::ReceiveMessage(

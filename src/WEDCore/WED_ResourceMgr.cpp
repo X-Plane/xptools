@@ -104,11 +104,9 @@ WED_ResourceMgr::~WED_ResourceMgr()
 
 void	WED_ResourceMgr::Purge(void)
 {
-	for(auto i : mObj)
+	for(auto& i : mObj)
 		for(auto j : i.second)
 			delete j;
-	for(auto i : mFor)
-		delete i.second;
 						
 	mPol.clear();
 	mLin.clear();
@@ -116,6 +114,7 @@ void	WED_ResourceMgr::Purge(void)
 	mFor.clear();
 	mFac.clear();
 	mStr.clear();
+	mAGP.clear();
 }
 
 int		WED_ResourceMgr::GetNumVariants(const string& path)
@@ -294,7 +293,8 @@ bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t const *& info)
 		return false;
 	}
 	
-	lin_info_t * out_info = new lin_info_t;
+	lin_info_t * out_info = &mLin[path];
+	info = out_info;
 
 	out_info->base_tex.clear();
 	out_info->scale_s=100;
@@ -383,9 +383,6 @@ bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t const *& info)
 	out_info->eff_width = out_info->scale_s * ( out_info->s2[0] - out_info->s1[0] - 4 / tex_width ); // assume 2 transparent pixels on each side
 
 	process_texture_path(p,out_info->base_tex);
-	mLin[path] = *out_info;
-	info = out_info;
-	
 	return true;
 }
 
@@ -413,7 +410,8 @@ bool	WED_ResourceMgr::GetStr(const string& path, str_info_t const *& info)
 		return false;
 	}
 	
-	str_info_t * out_info = new str_info_t;
+	str_info_t * out_info = &mStr[path];
+	info = out_info;
 
 	out_info->offset = 0.0;
 	out_info->rotation = 0.0;
@@ -436,8 +434,6 @@ bool	WED_ResourceMgr::GetStr(const string& path, str_info_t const *& info)
 		MFS_string_eol(&s,NULL);
 	}
 	MemFile_Close(str);
-	mStr[path] = *out_info;
-	info = out_info;
 	return true;
 }
 
@@ -466,8 +462,9 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t const*& info)
 		return false;
 	}
 
-	pol_info_t * pol = new pol_info_t;
-	
+	pol_info_t * pol = &mPol[path];
+	info = pol;
+
 	pol->mSubBoxes.clear();
 	pol->mUVBox = Bbox2();
 
@@ -524,11 +521,7 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t const*& info)
 		MFS_string_eol(&s,NULL);
 	}
 	MemFile_Close(file);
-
 	process_texture_path(p,pol->base_tex);
-	mPol[path] = *pol;
-	info = pol;
-	
 	return true;
 }
 
@@ -574,7 +567,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 	{
 		if(variant < i->second.size())
 		{
-			info = i->second[variant];
+			info = &i->second[variant];
 			return true;
 		}
 		else
@@ -590,8 +583,6 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 		MFMemFile * file = MemFile_Open(p.c_str());
 		if(!file) return false;
 		
-		fac_info_t * fac = new fac_info_t;
-		
 		MFScanner	s;
 		MFS_init(&s, file);
 
@@ -601,9 +592,13 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 			MemFile_Close(file);
 			return false;
 		}
-		else
-			fac->is_new = (vers == 1000);
-			
+
+		mFac[vpath].push_back(fac_info_t());
+		fac_info_t * fac = &mFac[vpath].back();
+		info = fac;
+
+		fac->is_new = (vers == 1000);
+
 		xflt scale_s = 1.0f, scale_t = 1.0f;
 		bool roof_section = false;
 		bool not_nearest_lod = false;
@@ -721,7 +716,13 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 				if(!fac->is_new)
 				{
 					fac->walls.push_back(FacadeWall_t());
-					fac->wallName.push_back(string("#") + to_string(fac->walls.size()));
+					MFS_double(&s);
+					MFS_double(&s);
+					string buf;	MFS_string(&s,&buf);
+					if(!buf.empty())
+						fac->wallName.push_back(buf);
+					else
+						fac->wallName.push_back(string("#") + to_string(fac->walls.size()));
 				}
 				else
 				{
@@ -741,7 +742,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 					}
 				}
 				char c[64];
-				snprintf(c, 64, "w=%.0f to %.0f%c", min_width / (gIsFeet ? 0.3048 : 1.0 ), max_width / (gIsFeet ? 0.3048 : 1.0 ), gIsFeet ? '\'' : 'm') ;
+				snprintf(c, 64, "w=%.3g to %.3g%c", min_width / (gIsFeet ? 0.3048 : 1.0 ), max_width / (gIsFeet ? 0.3048 : 1.0 ), gIsFeet ? '\'' : 'm') ;
 				fac->wallUse.push_back(c);
 			} 
 			else if (MFS_string_match(&s,"RING", false))
@@ -875,6 +876,13 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 					MFS_string(&s,&file);
 					WED_clean_vpath(file);
 					fac->objs.push_back(file);
+				}
+				else if(MFS_string_match(&s,"#obj_wed",false))
+				{
+					string file;
+					MFS_string_eol(&s,&file); s.cur -= 3;
+					WED_clean_vpath(file);
+					fac->objs.back() = file;      // use this one instead of the OBJ X-plane would use.
 				}
 				else if(MFS_string_match(&s,"FLOOR", false))
 				{
@@ -1042,9 +1050,6 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 		process_texture_path(p,fac->roof_tex);
 		
 		height_desc_for_facade(*fac, fac->h_range);
-
-		mFac[vpath].push_back(fac);
-		info = fac;
 	}
 	return true;
 }
@@ -1076,7 +1081,7 @@ bool	WED_ResourceMgr::GetFor(const string& path, XObj8 const *& obj)
 	auto i = mFor.find(path);
 	if(i != mFor.end())
 	{
-		obj = i->second;
+		obj = &i->second;
 		return true;
 	}
 	
@@ -1191,7 +1196,7 @@ bool	WED_ResourceMgr::GetFor(const string& path, XObj8 const *& obj)
 #endif		
 	
 	// fills a XObj8-structure for library preview
-	XObj8 * new_obj = new XObj8;
+	XObj8 * new_obj = &mFor[path];
 	XObjCmd8 cmd;
 
 	new_obj->texture = tex;
@@ -1264,12 +1269,6 @@ bool	WED_ResourceMgr::GetFor(const string& path, XObj8 const *& obj)
 	cmd.idx_count  = 6*quads;
 	new_obj->lods.back().cmds.push_back(cmd);
 
-	mFor[path] = new_obj;
-    // only problem is that the texture path contain spaces -> obj reader can not read that
-    // but still valuable for checking the values/structure
-//    XObj8Write(mLibrary->CreateLocalResourcePath("forest_preview.obj").c_str(), *obj);
-
-	obj = new_obj;
 	return true;
 }
 
@@ -1283,28 +1282,28 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 	}
 	
 	string p = mLibrary->GetResourcePath(path);
-	MFMemFile * agp = MemFile_Open(p.c_str());
-	if(!agp) return false;
-
+	MFMemFile * file = MemFile_Open(p.c_str());
+	if(!file) return false;
 
 	MFScanner	s;
-	MFS_init(&s, agp);
+	MFS_init(&s, file);
 
 	int versions[] = { 1000, 0 };
 	int v;
 	if((v=MFS_xplane_header(&s,versions,"AG_POINT",NULL)) == 0)
 	{
-		MemFile_Close(agp);
+		MemFile_Close(file);
 		return false;
 	}
 	
-	agp_t * out_info = new agp_t;
-	
+	agp_t * agp = &mAGP[path];
+	info = agp;
+
 	double tex_s = 1.0, tex_t = 1.0;		// these scale from pixels to UV coords
 	double tex_x = 1.0, tex_y = 1.0;		// meters for tex, x & y
 	int	 rotation = 0;
 	double anchor_x = 0.0, anchor_y = 0.0;
-	out_info->hide_tiles = 0;
+	agp->hide_tiles = 0;
 	vector<string>	obj_paths;
 
 	bool is_mesh_shader = false;
@@ -1317,13 +1316,13 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 			MFS_string(&s,&tex);
 			if(is_mesh_shader)
 			{
-				out_info->mesh_tex = tex;
-				process_texture_path(p,out_info->mesh_tex);
+				agp->mesh_tex = tex;
+				process_texture_path(p,agp->mesh_tex);
 			}
 			else
 			{
-				out_info->base_tex = tex;
-				process_texture_path(p,out_info->base_tex);
+				agp->base_tex = tex;
+				process_texture_path(p,agp->base_tex);
 			}
 		}
 		else if(MFS_string_match(&s,"TEXTURE_SCALE",false))
@@ -1343,9 +1342,16 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 			WED_clean_vpath(p);          // cant say here yet if its a relative rpath or a vpath.
 			obj_paths.push_back(p);
 		}
+		else if(MFS_string_match(&s,"#object_wed",false))
+		{
+			string p;
+			MFS_string_eol(&s,&p); s.cur -= 3;
+			WED_clean_vpath(p);
+			obj_paths.back() = p;      // use this one instead of the OBJECT X-plane would use.
+		}
 		else if(MFS_string_match(&s,"TILE",false))
 		{
-			out_info->tile.resize(16);
+			agp->tile.resize(16);
 			double s1 = MFS_double(&s);
 			double t1 = MFS_double(&s);
 			double s2 = MFS_double(&s);
@@ -1362,22 +1368,22 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 			
 			anchor_x = (x1 + x2) * 0.5;
 			anchor_y = (y1 + y2) * 0.5;
-			out_info->tile[ 0] = x1;
-			out_info->tile[ 1] = y1;
-			out_info->tile[ 2] = s1;
-			out_info->tile[ 3] = t1;
-			out_info->tile[ 4] = x2;
-			out_info->tile[ 5] = y1;
-			out_info->tile[ 6] = s2;
-			out_info->tile[ 7] = t1;
-			out_info->tile[ 8] = x2;
-			out_info->tile[ 9] = y2;
-			out_info->tile[10] = s2;
-			out_info->tile[11] = t2;
-			out_info->tile[12] = x1;
-			out_info->tile[13] = y2;
-			out_info->tile[14] = s1;
-			out_info->tile[15] = t2;
+			agp->tile[ 0] = x1;
+			agp->tile[ 1] = y1;
+			agp->tile[ 2] = s1;
+			agp->tile[ 3] = t1;
+			agp->tile[ 4] = x2;
+			agp->tile[ 5] = y1;
+			agp->tile[ 6] = s2;
+			agp->tile[ 7] = t1;
+			agp->tile[ 8] = x2;
+			agp->tile[ 9] = y2;
+			agp->tile[10] = s2;
+			agp->tile[11] = t2;
+			agp->tile[12] = x1;
+			agp->tile[13] = y2;
+			agp->tile[14] = s1;
+			agp->tile[15] = t2;
 		}
 		else if(MFS_string_match(&s,"ROTATION",false))
 		{
@@ -1385,51 +1391,51 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 		}
 		else if(MFS_string_match(&s,"CROP_POLY",false))
 		{
-			out_info->tile.clear();
+			agp->tile.clear();
 			while(MFS_has_word(&s))
 			{
 				double ps = MFS_double(&s);
 				double pt = MFS_double(&s);
-				out_info->tile.push_back(ps * tex_s * tex_x);
-				out_info->tile.push_back(pt * tex_t * tex_y);
-				out_info->tile.push_back(ps * tex_s);
-				out_info->tile.push_back(pt * tex_t);
+				agp->tile.push_back(ps * tex_s * tex_x);
+				agp->tile.push_back(pt * tex_t * tex_y);
+				agp->tile.push_back(ps * tex_s);
+				agp->tile.push_back(pt * tex_t);
 			}
 		}
 		else if(MFS_string_match(&s,"OBJ_DRAPED",false) ||
 				MFS_string_match(&s,"OBJ_GRADED",false))
 		{
-			out_info->objs.push_back(agp_t::obj());
-			out_info->objs.back().x = MFS_double(&s) * tex_s * tex_x;
-			out_info->objs.back().y = MFS_double(&s) * tex_t * tex_y;
-			out_info->objs.back().r = MFS_double(&s);
-			out_info->objs.back().z = 0.0;
+			agp->objs.push_back(agp_t::obj_t());
+			agp->objs.back().x = MFS_double(&s) * tex_s * tex_x;
+			agp->objs.back().y = MFS_double(&s) * tex_t * tex_y;
+			agp->objs.back().r = MFS_double(&s);
+			agp->objs.back().z = 0.0;
 			int obj_idx = MFS_int(&s);
 			if(obj_idx >= 0 && obj_idx < obj_paths.size())
 			{
-				out_info->objs.back().name = obj_paths[obj_idx];
-				out_info->objs.back().show_lo = MFS_int(&s);
-				out_info->objs.back().show_hi = MFS_int(&s);
+				agp->objs.back().name = obj_paths[obj_idx];
+				agp->objs.back().show_lo = MFS_int(&s);
+				agp->objs.back().show_hi = MFS_int(&s);
 			}
 			else
-				out_info->objs.pop_back(); // ignore instances with OOB index
+				agp->objs.pop_back(); // ignore instances with OOB index
 		}
 		else if(MFS_string_match(&s,"OBJ_DELTA",false))
 		{
-			out_info->objs.push_back(agp_t::obj());
-			out_info->objs.back().x = MFS_double(&s) * tex_s * tex_x;
-			out_info->objs.back().y = MFS_double(&s) * tex_t * tex_y;
-			out_info->objs.back().r = MFS_double(&s);
-			out_info->objs.back().z = MFS_double(&s);
+			agp->objs.push_back(agp_t::obj_t());
+			agp->objs.back().x = MFS_double(&s) * tex_s * tex_x;
+			agp->objs.back().y = MFS_double(&s) * tex_t * tex_y;
+			agp->objs.back().r = MFS_double(&s);
+			agp->objs.back().z = MFS_double(&s);
 			int obj_idx = MFS_int(&s);
 			if(obj_idx >= 0 && obj_idx < obj_paths.size())
 			{
-				out_info->objs.back().name = obj_paths[obj_idx];
-				out_info->objs.back().show_lo = MFS_int(&s);
-				out_info->objs.back().show_hi = MFS_int(&s);
+				agp->objs.back().name = obj_paths[obj_idx];
+				agp->objs.back().show_lo = MFS_int(&s);
+				agp->objs.back().show_hi = MFS_int(&s);
 			}
 			else
-				out_info->objs.pop_back(); // ignore instances with OOB index
+				agp->objs.pop_back(); // ignore instances with OOB index
 		}
 		else if(MFS_string_match(&s,"ANCHOR_PT",false))
 		{
@@ -1438,7 +1444,7 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 		}
 		else if (MFS_string_match(&s,"HIDE_TILES",true))
 		{
-			out_info->hide_tiles = 1;
+			agp->hide_tiles = 1;
 		}
 		else if (MFS_string_match(&s,"MESH_SHADER",true))
 		{
@@ -1446,34 +1452,34 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 		}
 		MFS_string_eol(&s,NULL);
 	}
-	
-	for(int n = 0; n < out_info->tile.size(); n += 4)
+	MemFile_Close(file);
+
+	for(int n = 0; n < agp->tile.size(); n += 4)
 	{
-		out_info->tile[n  ] -= anchor_x;
-		out_info->tile[n+1] -= anchor_y;
-		do_rotate(rotation,out_info->tile[n  ],out_info->tile[n+1]);
+		agp->tile[n  ] -= anchor_x;
+		agp->tile[n+1] -= anchor_y;
+		do_rotate(rotation,agp->tile[n  ],agp->tile[n+1]);
 	}
-	for(auto& o : out_info->objs)
+	for(auto& o : agp->objs)
 	{
 		o.x -= anchor_x;
 		o.y -= anchor_y;
 		do_rotate(rotation, o.x, o.y);
 		o.r += 90.0 * rotation;
 	}
-	MemFile_Close(agp);
 
-	out_info->xyz_min[0] = out_info->xyz_min[1] = out_info->xyz_min[2] =  999.0;
-	out_info->xyz_max[0] = out_info->xyz_max[1] = out_info->xyz_max[2] = -999.0;
+	agp->xyz_min[0] = agp->xyz_min[1] = agp->xyz_min[2] =  999.0;
+	agp->xyz_max[0] = agp->xyz_max[1] = agp->xyz_max[2] = -999.0;
 	
-	for(int n = 0; n < out_info->tile.size(); n += 4)
+	for(int n = 0; n < agp->tile.size(); n += 4)
 	{
-		out_info->xyz_min[0] = min(out_info->xyz_min[0], out_info->tile[n]);
-		out_info->xyz_max[0] = max(out_info->xyz_max[0], out_info->tile[n]);
-		out_info->xyz_min[2] = min(out_info->xyz_min[2], out_info->tile[n+1]);
-		out_info->xyz_max[2] = max(out_info->xyz_max[2], out_info->tile[n+1]);
+		agp->xyz_min[0] = min(agp->xyz_min[0], agp->tile[n]);
+		agp->xyz_max[0] = max(agp->xyz_max[0], agp->tile[n]);
+		agp->xyz_min[2] = min(agp->xyz_min[2], agp->tile[n+1]);
+		agp->xyz_max[2] = max(agp->xyz_max[2], agp->tile[n+1]);
 	}
 
-	for(auto& o : out_info->objs)
+	for(auto& o : agp->objs)
 	{
 		const XObj8 * oo;
 		if(GetObjRelative(o.name, path, oo))
@@ -1481,41 +1487,38 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 			o.obj = oo;
 			if (fabs(o.r-180.0) < 45.0)  // account for rotation, very roughly only
 			{
-					out_info->xyz_min[0] = min(out_info->xyz_min[0], oo->xyz_min[0] + o.x);
-					out_info->xyz_max[0] = max(out_info->xyz_max[0], oo->xyz_max[0] + o.x);
-					out_info->xyz_min[2] = min(out_info->xyz_min[2], oo->xyz_min[2] + o.y);
-					out_info->xyz_max[2] = max(out_info->xyz_max[2], oo->xyz_max[2] + o.y);
+					agp->xyz_min[0] = min(agp->xyz_min[0], oo->xyz_min[0] + o.x);
+					agp->xyz_max[0] = max(agp->xyz_max[0], oo->xyz_max[0] + o.x);
+					agp->xyz_min[2] = min(agp->xyz_min[2], oo->xyz_min[2] + o.y);
+					agp->xyz_max[2] = max(agp->xyz_max[2], oo->xyz_max[2] + o.y);
 			}
 			else if (fabs(o.r-90.0) < 45.0)
 			{
-					out_info->xyz_min[0] = min(out_info->xyz_min[0],-oo->xyz_min[2] + o.x);
-					out_info->xyz_max[0] = max(out_info->xyz_max[0],-oo->xyz_max[2] + o.x);
-					out_info->xyz_min[2] = min(out_info->xyz_min[2], oo->xyz_min[0] + o.y);
-					out_info->xyz_max[2] = max(out_info->xyz_max[2], oo->xyz_max[0] + o.y);
+					agp->xyz_min[0] = min(agp->xyz_min[0],-oo->xyz_min[2] + o.x);
+					agp->xyz_max[0] = max(agp->xyz_max[0],-oo->xyz_max[2] + o.x);
+					agp->xyz_min[2] = min(agp->xyz_min[2], oo->xyz_min[0] + o.y);
+					agp->xyz_max[2] = max(agp->xyz_max[2], oo->xyz_max[0] + o.y);
 			}
 			else if (fabs(o.r+90.0) < 45.0)
 			{
-					out_info->xyz_min[0] = min(out_info->xyz_min[0], oo->xyz_min[2] + o.x);
-					out_info->xyz_max[0] = max(out_info->xyz_max[0], oo->xyz_max[2] + o.x);
-					out_info->xyz_min[2] = min(out_info->xyz_min[2],-oo->xyz_min[0] + o.y);
-					out_info->xyz_max[2] = max(out_info->xyz_max[2],-oo->xyz_max[0] + o.y);
+					agp->xyz_min[0] = min(agp->xyz_min[0], oo->xyz_min[2] + o.x);
+					agp->xyz_max[0] = max(agp->xyz_max[0], oo->xyz_max[2] + o.x);
+					agp->xyz_min[2] = min(agp->xyz_min[2],-oo->xyz_min[0] + o.y);
+					agp->xyz_max[2] = max(agp->xyz_max[2],-oo->xyz_max[0] + o.y);
 			}
 			else
 			{
-					out_info->xyz_min[0] = min(out_info->xyz_min[0],-oo->xyz_min[0] + o.x);
-					out_info->xyz_max[0] = max(out_info->xyz_max[0],-oo->xyz_max[0] + o.x);
-					out_info->xyz_min[2] = min(out_info->xyz_min[2],-oo->xyz_min[2] + o.y);
-					out_info->xyz_max[2] = max(out_info->xyz_max[2],-oo->xyz_max[2] + o.y);
+					agp->xyz_min[0] = min(agp->xyz_min[0],-oo->xyz_min[0] + o.x);
+					agp->xyz_max[0] = max(agp->xyz_max[0],-oo->xyz_max[0] + o.x);
+					agp->xyz_min[2] = min(agp->xyz_min[2],-oo->xyz_min[2] + o.y);
+					agp->xyz_max[2] = max(agp->xyz_max[2],-oo->xyz_max[2] + o.y);
 			}
-			out_info->xyz_min[1] = min(out_info->xyz_min[1], oo->xyz_min[1] + o.z);
-			out_info->xyz_max[1] = max(out_info->xyz_max[1], oo->xyz_max[1] + o.z);
+			agp->xyz_min[1] = min(agp->xyz_min[1], oo->xyz_min[1] + o.z);
+			agp->xyz_max[1] = max(agp->xyz_max[1], oo->xyz_max[1] + o.z);
 		}
 		else
 			o.obj = nullptr;
 	}
-	
-	mAGP[path] = *out_info;
-	info = out_info;
 	return true;
 }
 
@@ -1649,4 +1652,4 @@ bool	WED_ResourceMgr::GetRoad(const string& path, road_info_t& out_info)
 	mRoad[path] = out_info;
 	return true;
 }
-#endif	
+#endif

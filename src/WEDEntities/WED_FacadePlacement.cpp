@@ -74,6 +74,7 @@ int			WED_FacadePlacement::GetShowLevel(void) const
 
 const fac_info_t * WED_FacadePlacement::GetFacInfo(void) const
 {
+#if WED
 	IResolver * r = GetArchive()->GetResolver();
 	if(r)
 	{
@@ -85,6 +86,7 @@ const fac_info_t * WED_FacadePlacement::GetFacInfo(void) const
 				return f;
 		}
 	}
+#endif
 	return nullptr;
 }
 

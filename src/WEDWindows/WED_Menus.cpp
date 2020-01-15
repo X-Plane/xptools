@@ -28,8 +28,6 @@
 #include "ObjCUtils.h"
 #endif
 
-GUI_Menu	test1 = 0;
-GUI_Menu	sub1 = 0;
 
 static const GUI_MenuItem_t	kAppMenu[] = {
 { "About WED...",		0,	0,	0,	0 },

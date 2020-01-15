@@ -137,11 +137,12 @@ static void GetExtentSel(Bbox2& box, IResolver * resolver)
 }
 
 
-WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver * resolver, WED_Archive * archive, WED_LibraryListAdapter * library) : mResolver(resolver)
+WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver * resolver, WED_Archive * archive, WED_LibraryListAdapter * library)
+	: GUI_Commander(cmdr), mResolver(resolver)
 {
 	this->SetBkgkndImage("gradient.png");
 
-	mMap = new WED_Map(resolver);
+	mMap = new WED_Map(resolver, cmdr);
 
 	// Visualization layers
 	mLayers.push_back(					new WED_MapBkgnd(mMap, mMap, resolver));
@@ -316,6 +317,12 @@ WED_MapPane::~WED_MapPane()
 	delete mTextTable;
 	delete mInfoAdapter;
 
+}
+
+int		WED_MapPane::MouseMove(int x, int y)
+{
+	DispatchHandleCommand(wed_autoClosePane);
+	return 1;
 }
 
 void WED_MapPane::SetResource(const string& r, int res_type)

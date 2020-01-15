@@ -731,8 +731,8 @@ void GUI_Window::Hide(void)
 
 void	GUI_Window::SetBounds(int inBounds[4])
 {
-	XWinGL::MoveTo(inBounds[0], inBounds[1]);
 	XWinGL::Resize(inBounds[2]-inBounds[0], inBounds[3]-inBounds[1]);
+	XWinGL::MoveTo(inBounds[0], inBounds[1]);
 }
 
 void		GUI_Window::SetBounds(int x1, int y1, int x2, int y2)

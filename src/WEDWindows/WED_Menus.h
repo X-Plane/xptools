@@ -24,11 +24,7 @@
 #ifndef WED_MENUS_H
 #define WED_MENUS_H
 
-#include "GUI_Application.h"
 #include "GUI_Menus.h"
-
-extern	GUI_Menu	test1;
-extern	GUI_Menu	sub1;
 
 enum {
 
@@ -171,6 +167,9 @@ enum {
 	wed_AddMetaDataEnd,//WARNING: DO NOT USE!
 	//---------------------------//
 	wed_UpdateMetadata, //Open up dialogbox
+	wed_autoOpenLibPane,
+	wed_autoOpenPropPane,
+	wed_autoClosePane,
 	// Help Menu
 	wed_HelpManual,
 	wed_HelpScenery,
