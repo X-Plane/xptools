@@ -182,6 +182,7 @@ void		WED_RoadEdge::GetNthPropertyDictItem(int n, int e, string& item) const
 
 bool		WED_RoadEdge::get_valid_road_info(road_info_t * optional_info) const
 {
+#if WED
 	road_info_t temp;
 	road_info_t * i = optional_info ? optional_info : &temp;
 	
@@ -196,6 +197,7 @@ bool		WED_RoadEdge::get_valid_road_info(road_info_t * optional_info) const
 			return true;
 	}
 	return false;
+#endif
 }
 
 #endif

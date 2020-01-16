@@ -24,14 +24,14 @@
 #ifndef WED_DSFExport_H
 #define WED_DSFExport_H
 
-#include "zip.h"
-
 class	IResolver;
 class	WED_Thing;
 class	WED_Airport;
+struct	DSF_export_info_t;
 
-// You will need the IResolver in case you're handling a Torthophoto
+// You will need the IResolver in case you're handling a orthophoto
 int DSF_Export(WED_Thing * base, IResolver * resolver, const string& in_package, set<WED_Thing *>& problem_items);
+int DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& pkg, int x, int y, set <WED_Thing *>& problem_children, DSF_export_info_t * export_info = nullptr);
 
 // 
 int DSF_ExportAirportOverlay(IResolver * resolver, WED_Airport  * who, const string& package, set<WED_Thing *>& problem_children);

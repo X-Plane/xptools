@@ -92,19 +92,6 @@ inline bool end_match(const char * str, const char * suf)
 	return false;
 }
 
-enum dsf_import_category {
-	dsf_cat_exclusion = 0,
-	dsf_cat_objects,
-	dsf_cat_facades,
-	dsf_cat_forests,
-	dsf_cat_lines,
-	dsf_cat_strings,
-	dsf_cat_orthophoto,
-	dsf_cat_draped_poly,
-	dsf_cat_roads,
-	dsf_cat_DIM
-};
-
 static const char * k_dsf_cat_names[dsf_cat_DIM] = {
 	"Exclusion Zones",
 	"Objects",
@@ -124,6 +111,7 @@ public:
 	DSF_Importer() {
 		for(int n = 0; n < 7; ++n)
 			req_level_obj[n] = req_level_agp[n] = req_level_fac[n] = -1;
+			
 		for(int n = 0; n < dsf_cat_DIM; ++n)
 		{
 			bucket_parents[n] = NULL;
@@ -936,11 +924,12 @@ int DSF_Import(const char * path, WED_Thing * base)
 	return importer.do_import_dsf(path, base);
 }
 
-int DSF_Import_Partial(const char * path, WED_Group * base , const Bbox2& cull_bound, const int inCat)
+int DSF_Import_Partial(const char * path, WED_Thing * base, const dsf_import_category inCat, const Bbox2& cull_bound)
 {
 	DSF_Importer importer;
+	
 	importer.cull_bound = cull_bound;
-	for( int i = 0 ; i < dsf_cat_DIM ; ++i)
+	for(int i = 0 ; i < dsf_cat_DIM ; ++i)
 		importer.dsf_cat_filter[i] = 0;
 	importer.dsf_cat_filter[inCat] = 1;
 
@@ -954,6 +943,8 @@ void WED_ImportText(const char * path, WED_Thing * base)
 }
 
 #if WED
+// code that uses GUI or Res/Lib/PkgMgr fuctions 
+// i.e. stuff that isn't desireable in command-line applications re-using WED code
 
 #include "WED_ToolUtils.h"
 #include "WED_UIDefs.h"
@@ -997,7 +988,7 @@ void	WED_DoImportRoads(IResolver * resolver)
 			WED_Group * g = WED_Group::CreateTyped(wrl->GetArchive());
 			g->SetName(path);
 			g->SetParent(wrl,wrl->CountChildren());
-			int result = DSF_Import_Partial(path,g,bounds,dsf_cat_roads);
+			int result = DSF_Import_Partial(path, g, dsf_cat_roads, bounds);
 			if(result != dsf_ErrOK)
 			{
 				string msg = string("The file '") + path + string("' could not be imported as a DSF:\n")

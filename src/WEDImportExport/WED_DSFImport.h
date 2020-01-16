@@ -24,6 +24,8 @@
 #ifndef WED_DSFImport_H
 #define WED_DSFImport_H
 
+#include "CompGeomDefs2.h"
+
 class	WED_Thing;
 class	IResolver;
 
@@ -39,5 +41,20 @@ void	WED_DoImportRoads(IResolver * resolver);
 
 int 	DSF_Import(const char * file, WED_Thing * base);
 void	WED_ImportText(const char * path, WED_Thing * base);
+
+enum dsf_import_category {
+	dsf_cat_exclusion = 0,
+	dsf_cat_objects,
+	dsf_cat_facades,
+	dsf_cat_forests,
+	dsf_cat_lines,
+	dsf_cat_strings,
+	dsf_cat_orthophoto,
+	dsf_cat_draped_poly,
+	dsf_cat_roads,
+	dsf_cat_DIM
+};
+
+int		DSF_Import_Partial(const char * path, WED_Thing * base, const dsf_import_category inCat, const Bbox2&  cull_bound = Bbox2(-180,-90,180,90));
 
 #endif /* WED_DSFImport_H */
