@@ -13,7 +13,7 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 2.2.0r1
+WED 2.2.0r1 1/16/20
    Features:
    - add searchable column for ICAO/FAA/Local codes in gateway import dialog
    - add cmdline debugging option for gateway testing
