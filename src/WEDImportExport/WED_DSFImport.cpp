@@ -92,6 +92,20 @@ inline bool end_match(const char * str, const char * suf)
 	return false;
 }
 
+enum dsf_import_category {
+	dsf_cat_exclusion = 0,
+	dsf_cat_objects,
+	dsf_cat_facades,
+	dsf_cat_forests,
+	dsf_cat_lines,
+	dsf_cat_strings,
+	dsf_cat_orthophoto,
+	dsf_cat_draped_poly,
+	dsf_cat_roads,
+	dsf_cat_terrain,
+	dsf_cat_DIM
+};
+
 static const char * k_dsf_cat_names[dsf_cat_DIM] = {
 	"Exclusion Zones",
 	"Objects",
@@ -101,23 +115,20 @@ static const char * k_dsf_cat_names[dsf_cat_DIM] = {
 	"Strings",
 	"Orthophotos",
 	"Draped Polygons",
-	"Roads"
+	"Roads",
+	"Terrain"
 };
 
 //ToDo:mroe: partial DSF import implemented . By bound and category , checking the bounds for roadnets only yet
 class	DSF_Importer {
 public:
 
-	DSF_Importer() {
+	DSF_Importer() : dsf_filter(dsf_filter_all), cull_bound(Bbox2(-180,-90,180,90))
+	{
 		for(int n = 0; n < 7; ++n)
 			req_level_obj[n] = req_level_agp[n] = req_level_fac[n] = -1;
-			
 		for(int n = 0; n < dsf_cat_DIM; ++n)
-		{
 			bucket_parents[n] = NULL;
-			dsf_cat_filter[n] = 1;
-		}
-		cull_bound = Bbox2(-180,-90,180,90);
 	}
 
 	int					req_level_obj[7];
@@ -142,7 +153,7 @@ public:
 	bool				want_bezier;
 	bool				want_wall;
 
-	int                 dsf_cat_filter[dsf_cat_DIM];
+	int 				dsf_filter;
 	Bbox2 				cull_bound;
 
 	WED_Thing * get_cat_parent(dsf_import_category cat)
@@ -362,21 +373,23 @@ public:
 	{
 #if !NO_OBJ
 		DSF_Importer * me = (DSF_Importer *) inRef;
-		if(!me->dsf_cat_filter[dsf_cat_objects]) return;
-
-		WED_ObjPlacement * obj = WED_ObjPlacement::CreateTyped(me->archive);
-		obj->SetResource(me->obj_table[inObjectType]);
-		obj->SetLocation(gis_Geo,Point2(inCoordinates[0],inCoordinates[1]));
-		if(inCoordDepth == 4)
-			obj->SetCustomMSL(inCoordinates[3]);
-		else
-			obj->SetDefaultMSL();
-		obj->SetHeading(inCoordinates[2]);
-		obj->SetName(me->obj_table_names[inObjectType]);
-		obj->SetParent(me->get_cat_parent(dsf_cat_objects),me->get_cat_parent(dsf_cat_objects)->CountChildren());
-		obj->SetShowLevel(me->GetShowForObjID(inObjectType));
+		if(me->dsf_filter & dsf_filter_objects)
+		{
+			WED_ObjPlacement * obj = WED_ObjPlacement::CreateTyped(me->archive);
+			obj->SetResource(me->obj_table[inObjectType]);
+			obj->SetLocation(gis_Geo,Point2(inCoordinates[0],inCoordinates[1]));
+			if(inCoordDepth == 4)
+				obj->SetCustomMSL(inCoordinates[3]);
+			else
+				obj->SetDefaultMSL();
+			obj->SetHeading(inCoordinates[2]);
+			obj->SetName(me->obj_table_names[inObjectType]);
+			obj->SetParent(me->get_cat_parent(dsf_cat_objects),me->get_cat_parent(dsf_cat_objects)->CountChildren());
+			obj->SetShowLevel(me->GetShowForObjID(inObjectType));
+		}
 #endif
 	}
+	
 	static void	BeginSegment(
 					unsigned int	inNetworkType,
 					unsigned int	inNetworkSubtype,
@@ -386,13 +399,14 @@ public:
 	{
 #if !NO_NET
 		DSF_Importer * me = (DSF_Importer *) inRef;
-		if(!me->dsf_cat_filter[dsf_cat_roads]) return;
+		if(me->dsf_filter & dsf_filter_roads)
+		{
+			DebugAssert(me->accum_road.empty());
 
-		DebugAssert(me->accum_road.empty());
-
-		me->road_start_ID = (unsigned int) inCoordinates[3];
-		me->accum_road_type = make_pair(inNetworkType, inNetworkSubtype);
-		me->accum_road.push_back(make_pair(Point2(inCoordinates[0], inCoordinates[1]), int(inCoordinates[2])));
+			me->road_start_ID = (unsigned int) inCoordinates[3];
+			me->accum_road_type = make_pair(inNetworkType, inNetworkSubtype);
+			me->accum_road.push_back(make_pair(Point2(inCoordinates[0], inCoordinates[1]), int(inCoordinates[2])));
+		}
 #endif
 	}
 
@@ -403,8 +417,8 @@ public:
 	{
 #if !NO_NET
 		DSF_Importer * me = (DSF_Importer *) inRef;
-		if(!me->dsf_cat_filter[dsf_cat_roads]) return;
-		me->accum_road.push_back(make_pair(Point2(inCoordinates[0], inCoordinates[1]), int(inCoordinates[2])));
+		if(me->dsf_filter & dsf_filter_roads)
+			me->accum_road.push_back(make_pair(Point2(inCoordinates[0], inCoordinates[1]), int(inCoordinates[2])));
 #endif
 	}
 
@@ -415,8 +429,8 @@ public:
 	{
 #if !NO_NET
 		DSF_Importer * me = (DSF_Importer *) inRef;
-		if(!me->dsf_cat_filter[dsf_cat_roads]) return;
-		if ( !me->cull_bound.contains(me->accum_road[0].first) && !me->cull_bound.contains(Point2(inCoordinates[0], inCoordinates[1])))
+		if(!(me->dsf_filter & dsf_filter_roads)) return;
+		if(!me->cull_bound.contains(me->accum_road[0].first) && !me->cull_bound.contains(Point2(inCoordinates[0], inCoordinates[1])))
 		{
 			me->accum_road.clear();
 			return;
@@ -554,7 +568,7 @@ public:
 
 #if !NO_FAC
 
-		if( me->dsf_cat_filter[dsf_cat_facades] && end_match(r.c_str(),".fac" ))
+		if( me->dsf_filter & dsf_filter_facades && end_match(r.c_str(),".fac" ))
 		{
 			// Ben says: .fac must be 2-coord for v9.  But...maybe for v10 we allow curved facades?
 			me->want_uv=false;
@@ -572,7 +586,7 @@ public:
 #endif
 
 #if !NO_FOR
-		if(me->dsf_cat_filter[dsf_cat_forests] && end_match(r.c_str(),".for"))
+		if(me->dsf_filter & dsf_filter_forests && end_match(r.c_str(),".for"))
 		{
 			me->want_uv=false;
 			me->want_bezier=false;
@@ -588,7 +602,7 @@ public:
 #endif
 
 #if !NO_LIN
-		if( me->dsf_cat_filter[dsf_cat_lines] && end_match(r.c_str(),".lin"))
+		if( me->dsf_filter & dsf_filter_lines && end_match(r.c_str(),".lin"))
 		{
 			me->want_uv=false;
 			me->want_bezier=inCoordDepth == 4;
@@ -603,7 +617,7 @@ public:
 #endif
 
 #if !NO_STR
-		if( me->dsf_cat_filter[dsf_cat_strings] && (end_match(r.c_str(),".str") || end_match(r.c_str(),".ags")) )
+		if( me->dsf_filter & dsf_filter_strings && (end_match(r.c_str(),".str") || end_match(r.c_str(),".ags")) )
 		{
 			me->want_uv=false;
 			me->want_bezier=inCoordDepth == 4;
@@ -618,7 +632,7 @@ public:
 #endif
 
 #if !NO_POL
-		if(me->dsf_cat_filter[dsf_cat_draped_poly] && (end_match(r.c_str(),".pol") || end_match(r.c_str(),".agb")))
+		if(me->dsf_filter & dsf_filter_draped_poly && (end_match(r.c_str(),".pol") || end_match(r.c_str(),".agb")))
 		{
 			me->want_uv=inParam == 65535;
 			me->want_bezier=me->want_uv ? (inCoordDepth == 8) : (inCoordDepth == 4);
@@ -924,16 +938,14 @@ int DSF_Import(const char * path, WED_Thing * base)
 	return importer.do_import_dsf(path, base);
 }
 
-int DSF_Import_Partial(const char * path, WED_Thing * base, const dsf_import_category inCat, const Bbox2& cull_bound)
+int DSF_Import_Partial(const char * path, WED_Thing * base, int inFilter, const Bbox2& cull_bound)
 {
 	DSF_Importer importer;
 	
 	importer.cull_bound = cull_bound;
-	for(int i = 0 ; i < dsf_cat_DIM ; ++i)
-		importer.dsf_cat_filter[i] = 0;
-	importer.dsf_cat_filter[inCat] = 1;
+	importer.dsf_filter = inFilter;
 
-	return importer.do_import_dsf(path, base );
+	return importer.do_import_dsf(path, base);
 }
 
 void WED_ImportText(const char * path, WED_Thing * base)
@@ -988,7 +1000,7 @@ void	WED_DoImportRoads(IResolver * resolver)
 			WED_Group * g = WED_Group::CreateTyped(wrl->GetArchive());
 			g->SetName(path);
 			g->SetParent(wrl,wrl->CountChildren());
-			int result = DSF_Import_Partial(path, g, dsf_cat_roads, bounds);
+			int result = DSF_Import_Partial(path, g, dsf_filter_roads, bounds);
 			if(result != dsf_ErrOK)
 			{
 				string msg = string("The file '") + path + string("' could not be imported as a DSF:\n")

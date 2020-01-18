@@ -42,19 +42,21 @@ void	WED_DoImportRoads(IResolver * resolver);
 int 	DSF_Import(const char * file, WED_Thing * base);
 void	WED_ImportText(const char * path, WED_Thing * base);
 
-enum dsf_import_category {
-	dsf_cat_exclusion = 0,
-	dsf_cat_objects,
-	dsf_cat_facades,
-	dsf_cat_forests,
-	dsf_cat_lines,
-	dsf_cat_strings,
-	dsf_cat_orthophoto,
-	dsf_cat_draped_poly,
-	dsf_cat_roads,
-	dsf_cat_DIM
+
+enum dsf_filter_category {
+	dsf_filter_exclusion = 1,
+	dsf_filter_objects = 2,
+	dsf_filter_facades = 4,
+	dsf_filter_forests = 8,
+	dsf_filter_lines = 16,
+	dsf_filter_strings = 32,
+	dsf_filter_orthophoto = 64,
+	dsf_filter_draped_poly = 128,
+	dsf_filter_roads = 256,
+	dsf_filter_terrain = 512,
+	dsf_filter_all = 1023
 };
 
-int		DSF_Import_Partial(const char * path, WED_Thing * base, const dsf_import_category inCat, const Bbox2&  cull_bound = Bbox2(-180,-90,180,90));
+int		DSF_Import_Partial(const char * path, WED_Thing * base, int inFilter, const Bbox2&  cull_bound = Bbox2(-180,-90,180,90));
 
 #endif /* WED_DSFImport_H */
