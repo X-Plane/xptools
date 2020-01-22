@@ -53,13 +53,6 @@ L   - NS_AIRPORT
 #define NUM_REAL (WED_GISComposite::CountProperties())
 #define NUM_FAKE (meta_data_vec_map.size())
 
-//NS_AREA where it starts on the number line
-#define NS_ALL 0
-
-//Just WED_Airport and its GISComposite Inherited Values
-//No "Name, Class, Locked, Hidden"
-#define NS_AIRPORT 4 
-
 #define NS_META_DATA (NUM_REAL)
 
 WED_Airport::WED_Airport(WED_Archive * a, int i) : WED_GISComposite(a,i),
@@ -335,10 +328,6 @@ int			WED_Airport::FindProperty(const char * in_prop) const
 
 int			WED_Airport::CountProperties(void) const
 {
-#if DEV && 0
-	std::cout << "Number of properties: " << NS_ALL << endl;
-#endif
-
 	return NUM_REAL + NUM_FAKE;
 }
 

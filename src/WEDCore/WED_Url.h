@@ -32,10 +32,9 @@
 #define WED_URL_UPLOAD_OK "http://lookup.x-plane.com/_lookup_10_/wed_14_upload_ok.html"
 
 // This is the canonical service base URL for the gateway.
-#define WED_URL_GATEWAY_API "https://gatewayapi.x-plane.com:3001/apiv1/"
-#define WED_URL_AIRPORT_METADATA_CSV "https://gatewayapi.x-plane.com:3001/airport_metadata.csv"
-
-#define WED_URL_CIFP_RUNWAYS   "https://gatewayapi.x-plane.com:3001/runway_coordinates.txt"
+#define WED_URL_GATEWAY "https://gatewayapi.x-plane.com:3001/"
+#define WED_URL_AIRPORT_METADATA_CSV   WED_URL_GATEWAY "airport_metadata.csv"
+#define WED_URL_CIFP_RUNWAYS           WED_URL_GATEWAY "runway_coordinates.txt"
 
 #define WED_URL_OSM_FIXTHEMAP  "http://www.openstreetmap.org/fixthemap"
 #define WED_URL_OSM_TILES      "http://tile.openstreetmap.org/"

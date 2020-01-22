@@ -37,9 +37,11 @@ class GUI_Packer;
 class	WED_Application : public GUI_Application {
 public:
 #if LIN
-	WED_Application(int& argc, char* argv[]);
-#else
-					 WED_Application();
+	WED_Application(int & argc, char* argv[]);
+#elif APL
+	WED_Application(int argc, char const * const * argv);
+#else // Windows groups all of its cmdline args into a single string
+	WED_Application(const char * arg);
 #endif
 	virtual			~WED_Application();
 

@@ -73,36 +73,24 @@ printf("1 to 2 time: %lf\n", elapsed.count());
 
 static void get_airports(map<string, navaid_t>& tAirports)
 {
-/*
 	WED_file_cache_request	mCacheRequest;
 	
-	string cert;
-	if(!GUI_GetTempResourcePath("gateway.crt", cert))
-	{
-		DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
-	}
-	mCacheRequest.in_cert = cert;
-
+	mCacheRequest.in_cert = WED_get_GW_url();
 	mCacheRequest.in_domain = cache_domain_airports_json;
 	mCacheRequest.in_folder_prefix = "scenery_packs" DIR_STR "GatewayImport";
-	
-	string url = WED_URL_GATEWAY_API;
-	url += "airports";
-	mCacheRequest.in_url = url;
-	
+	mCacheRequest.in_url = WED_get_GW_url() + "airports";
 
 	WED_file_cache_response res = gFileCache.request_file(mCacheRequest);
 
 	sleep(3);
-*/
+
 	string json_string;
 	
-//	if(res.out_status == cache_status_available)
+	if(res.out_status == cache_status_available)
 	{
 		//Attempt to open the file we just downloaded
-//		RAII_FileHandle file(res.out_path.c_str(),"r");
-		RAII_FileHandle file("/home/xplane/.cache/wed_file_cache/scenery_packs/GatewayImport/airports","r");
-
+		RAII_FileHandle file(res.out_path.c_str(),"r");
+//		RAII_FileHandle file("/home/xplane/.cache/wed_file_cache/scenery_packs/GatewayImport/airports","r");
 
 		if(FILE_read_file_to_string(file(), json_string) == 0)
 		{

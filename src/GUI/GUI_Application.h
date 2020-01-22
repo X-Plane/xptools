@@ -32,6 +32,7 @@
 
 #include "GUI_Commander.h"
 #include "GUI_Timer.h"
+#include "CmdLine.h"
 
 class GUI_QtMenu;
 class GUI_Window;
@@ -53,9 +54,9 @@ public:
 #if LIN
 	GUI_Application(int& argc, char* argv[]);
 #elif APL
-					 GUI_Application(const char * menu_nib);	// A NIB with an app and Windows menu is passed in.
+	GUI_Application(int argc, char const * const * argv, const char * menu_nib);	// A NIB with an app and Windows menu is passed in.
 #else
-					 GUI_Application();
+	GUI_Application(const char * arg);
 #endif
 	virtual			~GUI_Application();
 
@@ -90,6 +91,9 @@ public:
     QMenuBar* getqmenu();
     void      setCutnPasteShortcuts(GUI_Window * parent);
 #endif
+	
+	const CmdLine args;
+	
 private:
 
 	bool                mDone;

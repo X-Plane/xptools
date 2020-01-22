@@ -22,7 +22,6 @@
  */
 
 #include "WED_DSFExport.h"
-#include "WED_UIDefs.h"
 #include "DSFLib.h"
 #include "FileUtils.h"
 #include "WED_Entity.h"
@@ -202,22 +201,22 @@ void remove_all_zero_length_segments(vector<Segment> &in_out_chain)
 	in_out_chain.erase(remove_if(in_out_chain.begin(), in_out_chain.end(), kill_zero_length_segment()), in_out_chain.end());
 }
 
-static bool usesAlpha(ImageInfo * info)
+static bool hasPartialTransparency(ImageInfo * info)
 {
 	if(info->channels < 4) return false;
-	int usesAlpha = 0;
+	int semiTransPixels = 0;
 	
 	unsigned char * src = info->data + 3;
 	for(int y = info->height; y > 0; y--)
 	{
 		for(int x = info->width; x > 0; x--)
 		{
-			if(*src < 250) usesAlpha++; // deliberately ignore almost opaque pixels. Some tools create such
+			if(*src < 250 && *src > 0) semiTransPixels++; // deliberately ignore almost opaque pixels. Some tools create such
 			src += 4;
 		}
 		src += 4 * info->pad;
 	}
-	return usesAlpha;
+	return semiTransPixels > 10; // even ignore if there are just a very few stray semi-transparent pixels
 }
 
 /************************************************************************************************************************************************
@@ -1764,7 +1763,7 @@ static int	DSF_ExportTileRecursive(
 		{
 			//Get the relative path
 			orth->GetResource(r);
-
+#if WED
 			if(orth->IsNew())
 			{
 				string msg;
@@ -1944,7 +1943,7 @@ static int	DSF_ExportTileRecursive(
 						{
 							if(DDSInfo.channels == 3)
 								ConvertBitmapToAlpha(&DDSInfo,false);
-							int DXTMethod = usesAlpha(&DDSInfo) ? 5 : 1;
+							int DXTMethod = hasPartialTransparency(&DDSInfo) ? 5 : 1;
 							WriteBitmapToDDS_MT(DDSInfo, DXTMethod, absPathDDS.c_str());
 						}
 						else
@@ -1980,7 +1979,7 @@ static int	DSF_ExportTileRecursive(
 				what->StartOperation("Norm Ortho");
 				orth->Rescale(gis_UV, UVbounds, UVbounds_used);
 			}
-
+#endif
 			idx = io_table.accum_pol(r,show_level);
 			bool bez = WED_HasBezierPol(orth);
 			
@@ -2212,7 +2211,13 @@ int DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, se
 	}
 	if (g_dropped_pts)
 	{
-		DoUserAlert("Warning: you have bezier curves that cross a DSF tile boundary.  X-Plane 9 cannot handle this case.  To fix this, only use non-curved polygons to cross a tile boundary.");
+#if WED
+		DoUserAlert(
+#else
+		fprintf(stderr, "%s\n",
+#endif
+				"Warning: you have bezier curves that cross a DSF tile boundary. X-Plane 9 cannot handle this case. "
+				"To fix this, only use non-curved polygons to cross a tile boundary.");
 		return -1;
 	}
 	return 0;

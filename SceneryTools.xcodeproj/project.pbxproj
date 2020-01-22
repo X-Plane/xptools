@@ -160,6 +160,8 @@
 		02F4A70C204E6F4700E241B3 /* worldmap.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 02F4A70A204E6F1700E241B3 /* worldmap.jpg */; };
 		2F1515C61D0BA700002224B1 /* WED_MetaDataKeys.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F1515C41D0BA700002224B1 /* WED_MetaDataKeys.cpp */; };
 		2F8378A01D070F000033848D /* CACHE_DomainPolicy.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F83789E1D070F000033848D /* CACHE_DomainPolicy.cpp */; };
+		2FD1A6C7237A0D7400B4F651 /* CmdLine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2FD1A6C5237A0D7400B4F651 /* CmdLine.cpp */; };
+		2FD1A6C8237A0D7400B4F651 /* CmdLine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2FD1A6C5237A0D7400B4F651 /* CmdLine.cpp */; };
 		D60075381C56A30E0096D4D9 /* WED_ATCLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60075361C56A30E0096D4D9 /* WED_ATCLayer.cpp */; };
 		D604AE9E1C0D5D8F006DC1F0 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D604AE9C1C0D5D58006DC1F0 /* AppKit.framework */; };
 		D604AEA31C0DF420006DC1F0 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D604AE9C1C0D5D58006DC1F0 /* AppKit.framework */; };
@@ -1176,6 +1178,8 @@
 		2F1515C51D0BA700002224B1 /* WED_MetaDataKeys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_MetaDataKeys.h; sourceTree = "<group>"; };
 		2F83789E1D070F000033848D /* CACHE_DomainPolicy.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CACHE_DomainPolicy.cpp; sourceTree = "<group>"; };
 		2F83789F1D070F000033848D /* CACHE_DomainPolicy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CACHE_DomainPolicy.h; sourceTree = "<group>"; };
+		2FD1A6C5237A0D7400B4F651 /* CmdLine.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CmdLine.cpp; sourceTree = "<group>"; };
+		2FD1A6C6237A0D7400B4F651 /* CmdLine.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CmdLine.h; sourceTree = "<group>"; };
 		508344B209E5C41E0093A071 /* ObjView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObjView.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D60075361C56A30E0096D4D9 /* WED_ATCLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ATCLayer.cpp; sourceTree = "<group>"; };
 		D60075371C56A30E0096D4D9 /* WED_ATCLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ATCLayer.h; sourceTree = "<group>"; };
@@ -3173,6 +3177,8 @@
 				D62F3DBF1390110500F2C120 /* douglas_peuker.h */,
 				D604AEB31C0E7D7B006DC1F0 /* GLDebugMacros.cpp */,
 				D604AEB41C0E7D7B006DC1F0 /* GLDebugMacros.h */,
+				2FD1A6C5237A0D7400B4F651 /* CmdLine.cpp */,
+				2FD1A6C6237A0D7400B4F651 /* CmdLine.h */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -4423,6 +4429,7 @@
 				D67683710CC67BB40032B90C /* gshhs.cpp in Sources */,
 				D67683740CC67BCC0032B90C /* GISTool_VectorCmds.cpp in Sources */,
 				D67683750CC67BD20032B90C /* DSFLib_Print.cpp in Sources */,
+				2FD1A6C7237A0D7400B4F651 /* CmdLine.cpp in Sources */,
 				D67685270CC6A0690032B90C /* TensorRoads.cpp in Sources */,
 				02C7507A23A05411008475A1 /* LzmaDec.c in Sources */,
 				D6CB54730CEC9DAC000E4393 /* FileUtils.cpp in Sources */,
@@ -4804,6 +4811,7 @@
 				D6ED36AE0B67964D00D5484E /* GUI_Fonts.cpp in Sources */,
 				D604AEB21C0E3662006DC1F0 /* ObjCUtils.mm in Sources */,
 				D6ED36AF0B67964D00D5484E /* GUI_GraphState.cpp in Sources */,
+				2FD1A6C8237A0D7400B4F651 /* CmdLine.cpp in Sources */,
 				D6ED36B00B67964D00D5484E /* GUI_Listener.cpp in Sources */,
 				D6ED36B10B67964D00D5484E /* GUI_Pane.cpp in Sources */,
 				02D82416239EF26E0008DBF2 /* 7zDec.c in Sources */,
