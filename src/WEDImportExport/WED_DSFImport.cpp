@@ -948,11 +948,11 @@ printf("Filter %s\n", me->filter_on ? "ON" : "OFF");
 	}
 };
 
-int DSF_Import(const string& path, WED_Thing * base, int inCatFilter, const Bbox2& cull_bound, const vector<string>& inAptFilter)
+int DSF_Import(const string& path, WED_Thing * base, int inCatFilter, const Bbox2& cullBounds, const vector<string>& inAptFilter)
 {
 	DSF_Importer importer;
 	
-	importer.cull_bound = cull_bound;
+	importer.cull_bound = cullBounds;
 	importer.dsf_cat_filter = inCatFilter;
 	importer.dsf_AptID_filter = inAptFilter;
 
@@ -1015,7 +1015,7 @@ void	WED_DoImportRoads(IResolver * resolver)
 			WED_Group * g = WED_Group::CreateTyped(wrl->GetArchive());
 			g->SetName(path);
 			g->SetParent(wrl,wrl->CountChildren());
-			int result = DSF_Import(path, g, dsf_filter_roads, vector<string>(), bounds);
+			int result = DSF_Import(path, g, dsf_filter_roads, bounds);
 			if(result != dsf_ErrOK)
 			{
 				string msg = string("The file '") + path + string("' could not be imported as a DSF:\n")
