@@ -572,7 +572,7 @@ void WED_GatewayExportDialog::Submit()
 
 		Enforce_MetaDataGuiLabel(apt);
 		if(has_dsf(apt))
-		if(DSF_ExportAirportOverlay(mResolver, apt, targ_folder, mProblemChildren))
+		if(DSF_ExportText(mResolver, apt, targ_folder, mProblemChildren))
 		{
 			// success.
 		}

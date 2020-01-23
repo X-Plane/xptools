@@ -2209,7 +2209,7 @@ int DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& pkg, in
 
 int DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, set<WED_Thing *>& problem_children)
 {
-#if 1 // DEV
+#if DEV
 	StElapsedTime	etime("Export time");
 #endif
 	g_dropped_pts = false;
@@ -2226,7 +2226,7 @@ int DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, se
 	int tile_south = floor(wrl_bounds.p1.y());
 	int tile_north = ceil (wrl_bounds.p2.y());
 
-	int DSF_export_tile_res = 0;
+	int res = 0;
 
 	DSF_export_info_t DSF_export_info;   // Keeping the last loaded orthoimage open, so it does not have to be loaded repeatedly.
 	                                     // This gates parallel DSF exports, though.
@@ -2234,10 +2234,10 @@ int DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, se
 	{
 		for (int x = tile_west; x < tile_east; ++x)
 		{
-			DSF_export_tile_res = DSF_ExportTile(base, resolver, package, x, y, problem_children, &DSF_export_info);
-			if (DSF_export_tile_res == -1) break;
+			res = DSF_ExportTile(base, resolver, package, x, y, problem_children, &DSF_export_info);
+			if (res == -1) break;
 		}
-		if (DSF_export_tile_res == -1) break;
+		if (res == -1) break;
 	}
 	if (DSF_export_info.orthoImg.data)
 	{
@@ -2257,56 +2257,87 @@ int DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, se
 	return 0;
 }
 
-int DSF_ExportAirportOverlay(IResolver * resolver, WED_Airport  * apt, const string& package, set<WED_Thing *>& problem_children)
+int DSF_ExportText(IResolver * resolver, WED_Thing * base, const string& package, set<WED_Thing *>& problem_children)
 {
-	if(apt->GetHidden())
-		return 1;
-
-	//----------------------------------------------------------------------------------------------------
-
-	string icao;
-	apt->GetICAO(icao);
-
-	string dsf_path = package + icao + ".txt";
-
-	FILE * dsf = fopen(dsf_path.c_str(),"w");
-	if(dsf)
+	Bbox2	cull_bounds(-180,-90,180,90);
+	Bbox2	wrl_bounds;
+	string	dsf_path;
+	
+	IGISEntity * ent = dynamic_cast<IGISEntity *>(base);
+	DebugAssert(ent);
+	if(!ent) return 0;
+	
+	ent->GetBounds(gis_Geo, wrl_bounds);
+	int tile_west  = floor(wrl_bounds.p1.x());
+	int tile_east  = ceil (wrl_bounds.p2.x());
+	int tile_south = floor(wrl_bounds.p1.y());
+	int tile_north = ceil (wrl_bounds.p2.y());
+	
+	if(gExportTarget == wet_gateway)
 	{
-
-		DSFCallbacks_t	cbs;
-		DSF2Text_CreateWriterCallbacks(&cbs);
-		print_funcs_s pf;
-		pf.print_func = (int (*)(void *, const char *, ...)) fprintf;
-		pf.ref = dsf;
-
-		void * writer = &pf;
-
-		Bbox2	cull_bounds(-180,-90,180,90);
-		Bbox2	safe_bounds(-180,-90,180,90);
-
-		cbs.AcceptProperty_f("sim/west", "-180", writer);
-		cbs.AcceptProperty_f("sim/east", "180", writer);
-		cbs.AcceptProperty_f("sim/north", "90", writer);
-		cbs.AcceptProperty_f("sim/south", "-90", writer);
-		cbs.AcceptProperty_f("sim/planet", "earth", writer);
-		cbs.AcceptProperty_f("sim/creation_agent", "WorldEditor" WED_VERSION_STRING, writer);
-		cbs.AcceptProperty_f("laminar/internal_revision", "0", writer);
-		cbs.AcceptProperty_f("sim/overlay", "1", writer);
-
-		DSF_ResourceTable	rsrc;
-		DSF_export_info_t DSF_export_info;
-
-		int entities = 0;
-		for(int show_level = 6; show_level >= 1; --show_level)
-			entities += DSF_ExportTileRecursive(apt, resolver, package, cull_bounds, safe_bounds, rsrc, &cbs, writer, problem_children, show_level, &DSF_export_info);
-
-		Assert(DSF_export_info.orthoImg.data == NULL); //  In this type of export - orthoimages are not allowed. So this should never happen.
-
-		rsrc.write_tables(cbs,writer);
-
-		fclose(dsf);
-		return 1;
+		string icao;
+		WED_Airport * apt = dynamic_cast<WED_Airport *>(base);
+		if(!apt) return 0;
+		if(apt->GetHidden()) return 1;
+		apt->GetName(icao);
+		dsf_path  = package + icao + ".txt";
+		tile_west = tile_south = 0;
+		tile_east = tile_north = 1;
 	}
-	else
-		return 0;
+	
+	for (int y = tile_south; y < tile_north; ++y)
+	{
+		for (int x = tile_west; x < tile_east; ++x)
+		{
+			char c[32];
+			
+			if(gExportTarget != wet_gateway)
+			{
+				snprintf(c, 31, "%+03d%+04d", latlon_bucket(y), latlon_bucket(x));
+				dsf_path = package + "Earth nav data" DIR_STR + c;
+				FILE_make_dir_exist(dsf_path.c_str());
+				snprintf(c, 31, DIR_STR "%+03d%+04d.msf", y, x);
+				dsf_path +=  c;
+
+				cull_bounds = Bbox2(x, y, x+1, y+1);
+			}
+
+			FILE * dsf = fopen(dsf_path.c_str(),"w");
+			if(dsf)
+			{
+				DSFCallbacks_t	cbs;
+				DSF2Text_CreateWriterCallbacks(&cbs);
+				print_funcs_s pf;
+				pf.print_func = (int (*)(void *, const char *, ...)) fprintf;
+				pf.ref = dsf;
+
+				void * writer = &pf;
+
+				snprintf(c, 10, "%.0lf", cull_bounds.xmin()); cbs.AcceptProperty_f("sim/west",  c, writer);
+				snprintf(c, 10, "%.0lf", cull_bounds.xmax()); cbs.AcceptProperty_f("sim/east",  c, writer);
+				snprintf(c, 10, "%.0lf", cull_bounds.ymax()); cbs.AcceptProperty_f("sim/north", c, writer);
+				snprintf(c, 10, "%.0lf", cull_bounds.ymin()); cbs.AcceptProperty_f("sim/south", c, writer);
+				cbs.AcceptProperty_f("sim/planet", "earth", writer);
+				cbs.AcceptProperty_f("sim/creation_agent", "WorldEditor" WED_VERSION_STRING, writer);
+				cbs.AcceptProperty_f("laminar/internal_revision", "0", writer);
+				cbs.AcceptProperty_f("sim/overlay", "1", writer);
+
+				DSF_ResourceTable	rsrc;
+				DSF_export_info_t DSF_export_info;
+
+				for(int show_level = 6; show_level >= 1; --show_level)
+					ent += DSF_ExportTileRecursive(base, resolver, package, cull_bounds, cull_bounds, rsrc, &cbs, writer, problem_children, show_level, &DSF_export_info);
+				
+				Assert(DSF_export_info.orthoImg.data == NULL); //  In this type of export - orthoimages are not allowed. So this should never happen.
+
+				rsrc.write_tables(cbs,writer);
+				
+				fclose(dsf);
+			}
+			else
+				return 0;
+		}
+	}
+
+	return 1;
 }

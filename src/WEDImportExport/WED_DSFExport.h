@@ -26,7 +26,6 @@
 
 class	IResolver;
 class	WED_Thing;
-class	WED_Airport;
 struct	DSF_export_info_t;
 
 // You will need the IResolver in case you're handling a orthophoto
@@ -34,7 +33,7 @@ int DSF_Export(WED_Thing * base, IResolver * resolver, const string& in_package,
 int DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& pkg, int x, int y, set <WED_Thing *>& problem_children, DSF_export_info_t * export_info = nullptr);
 
 // 
-int DSF_ExportAirportOverlay(IResolver * resolver, WED_Airport  * who, const string& package, set<WED_Thing *>& problem_children);
+int DSF_ExportText(IResolver * resolver, WED_Thing * who, const string& package, set<WED_Thing *>& problem_children);
 
 
 #endif /* WED_DSFExport_H */

@@ -41,11 +41,12 @@
 
 void	WED_ExportPackToPath(WED_Thing * root, IResolver * resolver, const string& in_path, set<WED_Thing *>& problem_children)
 {
-	int result = DSF_Export(root, resolver, in_path,problem_children);
-	if (result == -1)
+	if(gExportTarget == wet_xplane_1130a)
 	{
-		return;
+		if(DSF_ExportText(resolver, root, in_path, problem_children) == -1) return;
 	}
+
+	if(DSF_Export(root, resolver, in_path, problem_children) == -1) return;
 
 	string	apt = in_path + "Earth nav data" DIR_STR "apt.dat";
 	string	apt_dir = in_path + "Earth nav data";

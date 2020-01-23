@@ -948,13 +948,7 @@ printf("Filter %s\n", me->filter_on ? "ON" : "OFF");
 	}
 };
 
-int DSF_Import(const char * path, WED_Thing * base)
-{
-	DSF_Importer importer;
-	return importer.do_import_dsf(path, base);
-}
-
-int DSF_Import_Partial(const char * path, WED_Thing * base, int inCatFilter, const Bbox2& cull_bound, const vector<string>& inAptFilter)
+int DSF_Import(const string& path, WED_Thing * base, int inCatFilter, const Bbox2& cull_bound, const vector<string>& inAptFilter)
 {
 	DSF_Importer importer;
 	
@@ -962,14 +956,18 @@ int DSF_Import_Partial(const char * path, WED_Thing * base, int inCatFilter, con
 	importer.dsf_cat_filter = inCatFilter;
 	importer.dsf_AptID_filter = inAptFilter;
 
-	return importer.do_import_dsf(path, base);
+	return importer.do_import_dsf(path.c_str(), base);
 }
 
-void WED_ImportText(const char * path, WED_Thing * base)
+void DSF_ImportText(const string& path, WED_Thing * base, int inCatFilter, const vector<string>& inAptFilter)
 {
 	DSF_Importer importer;
-	importer.do_import_txt(path, base);
+	importer.dsf_cat_filter = inCatFilter;
+	importer.dsf_AptID_filter = inAptFilter;
+
+	importer.do_import_txt(path.c_str(), base);
 }
+
 
 #if WED
 // code that uses GUI or Res/Lib/PkgMgr fuctions 
@@ -1017,7 +1015,7 @@ void	WED_DoImportRoads(IResolver * resolver)
 			WED_Group * g = WED_Group::CreateTyped(wrl->GetArchive());
 			g->SetName(path);
 			g->SetParent(wrl,wrl->CountChildren());
-			int result = DSF_Import_Partial(path, g, dsf_filter_roads, bounds);
+			int result = DSF_Import(path, g, dsf_filter_roads, vector<string>(), bounds);
 			if(result != dsf_ErrOK)
 			{
 				string msg = string("The file '") + path + string("' could not be imported as a DSF:\n")

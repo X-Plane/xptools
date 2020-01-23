@@ -1112,7 +1112,7 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(const string& json_
 	string dsfTextPath = filePath + mICAOid + ".txt";
 	if(has_dsf && g)
 	{
-		WED_ImportText(dsfTextPath.c_str(), (WED_Thing *) g);
+		DSF_ImportText(dsfTextPath.c_str(), (WED_Thing *) g);
 	}
 
 #if !SAVE_ON_HDD && !GATEWAY_IMPORT_FEATURES

@@ -476,13 +476,14 @@ int	WED_DocumentWindow::HandleCommand(int command)
 #endif
 	case wed_Validate:		if (WED_ValidateApt(mDocument, mMapPane) == validation_clean) DoUserAlert("Your layout is valid - no problems were found."); return 1;
 
-	case wed_Export900:	gExportTarget = wet_xplane_900;	Refresh(); return 1;
-	case wed_Export1000:gExportTarget = wet_xplane_1000;	Refresh(); return 1;
-	case wed_Export1021:gExportTarget = wet_xplane_1021;	Refresh(); return 1;
-	case wed_Export1050:gExportTarget = wet_xplane_1050;	Refresh(); return 1;
-	case wed_Export1100:gExportTarget = wet_xplane_1100;	Refresh(); return 1;
-	case wed_Export1130:gExportTarget = wet_xplane_1130;	Refresh(); return 1;
-	case wed_ExportGateway:gExportTarget = wet_gateway;	Refresh(); return 1;
+	case wed_Export900:	   gExportTarget = wet_xplane_900;   Refresh(); return 1;
+	case wed_Export1000:   gExportTarget = wet_xplane_1000;  Refresh(); return 1;
+	case wed_Export1021:   gExportTarget = wet_xplane_1021;  Refresh(); return 1;
+	case wed_Export1050:   gExportTarget = wet_xplane_1050;  Refresh(); return 1;
+	case wed_Export1100:   gExportTarget = wet_xplane_1100;	 Refresh(); return 1;
+	case wed_Export1130:   gExportTarget = wet_xplane_1130;	 Refresh(); return 1;
+	case wed_Export1130a:  gExportTarget = wet_xplane_1130a; Refresh(); return 1;
+	case wed_ExportGateway:gExportTarget = wet_gateway;	     Refresh(); return 1;
 
 #if WITHNWLINK
 	case wed_ToggleLiveView :
@@ -598,14 +599,14 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 #endif
 	case wed_Validate:		return 1;
 
-	case wed_Export900:	ioCheck = gExportTarget == wet_xplane_900;	return 1;
-	case wed_Export1000:ioCheck = gExportTarget == wet_xplane_1000;	return 1;
-	case wed_Export1021:ioCheck = gExportTarget == wet_xplane_1021;	return 1;
-	case wed_Export1050:ioCheck = gExportTarget == wet_xplane_1050;	return 1;
-	case wed_Export1100:ioCheck = gExportTarget == wet_xplane_1100;	return 1;
-	case wed_Export1130:ioCheck = gExportTarget == wet_xplane_1130;	return 1;
-
-	case wed_ExportGateway:ioCheck = gExportTarget == wet_gateway;	return 1;
+	case wed_Export900:	    ioCheck = gExportTarget == wet_xplane_900;	return 1;
+	case wed_Export1000:    ioCheck = gExportTarget == wet_xplane_1000;	return 1;
+	case wed_Export1021:    ioCheck = gExportTarget == wet_xplane_1021;	return 1;
+	case wed_Export1050:    ioCheck = gExportTarget == wet_xplane_1050;	return 1;
+	case wed_Export1100:    ioCheck = gExportTarget == wet_xplane_1100;	return 1;
+	case wed_Export1130:    ioCheck = gExportTarget == wet_xplane_1130;	return 1;
+	case wed_Export1130a:   ioCheck = gExportTarget == wet_xplane_1130a;return 1;
+	case wed_ExportGateway: ioCheck = gExportTarget == wet_gateway;		return 1;
 
 #if WITHNWLINK
 	case wed_ToggleLiveView :
