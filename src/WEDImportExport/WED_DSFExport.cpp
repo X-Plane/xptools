@@ -561,20 +561,13 @@ struct	DSF_ResourceTable {
 			{
 				net_defs_idx[make_pair(f, idx)] = make_pair(net_defs.size(), dsf_road_grid_helper());
 				net_defs.push_back(f);
-printf("Adding new network %s %d\n", f.c_str(), idx);
 			}
 			else
 			{
 				net_defs_idx[make_pair(f, idx)] = make_pair(i->second.first, dsf_road_grid_helper());
-printf("Adding new idx only %d\n", idx);
 			}
 			return &net_defs_idx[make_pair(f, idx)].second;
-//			net_grids.push_back(dsf_road_grid_helper());
 		}
-
-//		list<dsf_road_grid_helper>::iterator it = net_grids.begin();
-//		advance(it, ret);
-//		return &*net_defs_idx[make_pair(f, idx)].second.second;
 	}
 #endif
 	int accum_filter(const string& icao_filter)
@@ -597,9 +590,9 @@ printf("Adding new idx only %d\n", idx);
 		for(vector<pair<string,string> >::iterator e = exclusions[-1].begin(); e != exclusions[-1].end(); ++e)
 			cbs.AcceptProperty_f(e->first.c_str(), e->second.c_str(), writer);
 #if ROAD_EDITING
-		int road_node = 1;
 		for(auto s : net_defs)
 		{
+			int road_node = 1;                            // number networks per network definition
 			cbs.AcceptNetworkDef_f(s.c_str(), writer);
 			for(auto m : net_defs_idx)
 				if(m.first.first == s)
