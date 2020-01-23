@@ -57,6 +57,7 @@ enum dsf_filter_category {
 	dsf_filter_all = 1023
 };
 
-int		DSF_Import_Partial(const char * path, WED_Thing * base, int inFilter, const Bbox2&  cull_bound = Bbox2(-180,-90,180,90));
+int		DSF_Import_Partial(const char * path, WED_Thing * base, int inCatFilter, 
+							const Bbox2&  cull_bound = Bbox2(-180,-90,180,90),  const vector<string>& inAptFilter = vector<string>());
 
 #endif /* WED_DSFImport_H */

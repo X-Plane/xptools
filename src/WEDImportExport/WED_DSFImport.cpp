@@ -123,7 +123,7 @@ static const char * k_dsf_cat_names[dsf_cat_DIM] = {
 class	DSF_Importer {
 public:
 
-	DSF_Importer() : dsf_filter(dsf_filter_all), cull_bound(Bbox2(-180,-90,180,90))
+	DSF_Importer() : dsf_cat_filter(dsf_filter_all), cull_bound(Bbox2(-180,-90,180,90)), filter_on(false)
 	{
 		for(int n = 0; n < 7; ++n)
 			req_level_obj[n] = req_level_agp[n] = req_level_fac[n] = -1;
@@ -153,7 +153,10 @@ public:
 	bool				want_bezier;
 	bool				want_wall;
 
-	int 				dsf_filter;
+	int 				dsf_cat_filter;       // categories, e.g. .for, .obj
+	vector<string>		dsf_AptID_filter;     // Airport ID's
+	vector<bool>		filter_table;     	  // Airport ID IDX
+	bool				filter_on;            // global switch to filter out stuff
 	Bbox2 				cull_bound;
 
 	WED_Thing * get_cat_parent(dsf_import_category cat)
@@ -319,6 +322,12 @@ public:
 		if(strcmp(inProp, "sim/require_object") == 0)	me->handle_req_obj(inValue);
 		if(strcmp(inProp, "sim/require_agpoint") == 0)	me->handle_req_agp(inValue);
 		if(strcmp(inProp, "sim/require_facade") == 0)	me->handle_req_fac(inValue);
+		if(strcmp(inProp, "sim/filter/aptid") == 0)
+		{
+			me->filter_table.push_back(false);
+			if(find(me->dsf_AptID_filter.begin(), me->dsf_AptID_filter.end(), inValue) !=  me->dsf_AptID_filter.end())
+				me->filter_table.back() = true;
+		}
 
 #if !NO_EXC
 		if(strcmp(inProp, "sim/exclude_obj") == 0)	me->make_exclusion(inValue, exclude_Obj);
@@ -373,7 +382,7 @@ public:
 	{
 #if !NO_OBJ
 		DSF_Importer * me = (DSF_Importer *) inRef;
-		if(me->dsf_filter & dsf_filter_objects)
+		if(me->dsf_cat_filter & dsf_filter_objects)
 		{
 			WED_ObjPlacement * obj = WED_ObjPlacement::CreateTyped(me->archive);
 			obj->SetResource(me->obj_table[inObjectType]);
@@ -399,7 +408,7 @@ public:
 	{
 #if !NO_NET
 		DSF_Importer * me = (DSF_Importer *) inRef;
-		if(me->dsf_filter & dsf_filter_roads)
+		if(me->dsf_cat_filter & dsf_filter_roads && !me->filter_on)
 		{
 			DebugAssert(me->accum_road.empty());
 
@@ -417,7 +426,7 @@ public:
 	{
 #if !NO_NET
 		DSF_Importer * me = (DSF_Importer *) inRef;
-		if(me->dsf_filter & dsf_filter_roads)
+		if(me->dsf_cat_filter & dsf_filter_roads && !me->filter_on)
 			me->accum_road.push_back(make_pair(Point2(inCoordinates[0], inCoordinates[1]), int(inCoordinates[2])));
 #endif
 	}
@@ -429,7 +438,7 @@ public:
 	{
 #if !NO_NET
 		DSF_Importer * me = (DSF_Importer *) inRef;
-		if(!(me->dsf_filter & dsf_filter_roads)) return;
+		if(!(me->dsf_cat_filter & dsf_filter_roads) || me->filter_on) return;
 		if(!me->cull_bound.contains(me->accum_road[0].first) && !me->cull_bound.contains(Point2(inCoordinates[0], inCoordinates[1])))
 		{
 			me->accum_road.clear();
@@ -568,7 +577,7 @@ public:
 
 #if !NO_FAC
 
-		if( me->dsf_filter & dsf_filter_facades && end_match(r.c_str(),".fac" ))
+		if( me->dsf_cat_filter & dsf_filter_facades && end_match(r.c_str(),".fac" ))
 		{
 			// Ben says: .fac must be 2-coord for v9.  But...maybe for v10 we allow curved facades?
 			me->want_uv=false;
@@ -586,7 +595,7 @@ public:
 #endif
 
 #if !NO_FOR
-		if(me->dsf_filter & dsf_filter_forests && end_match(r.c_str(),".for"))
+		if(me->dsf_cat_filter & dsf_filter_forests && end_match(r.c_str(),".for"))
 		{
 			me->want_uv=false;
 			me->want_bezier=false;
@@ -602,7 +611,7 @@ public:
 #endif
 
 #if !NO_LIN
-		if( me->dsf_filter & dsf_filter_lines && end_match(r.c_str(),".lin"))
+		if( me->dsf_cat_filter & dsf_filter_lines && end_match(r.c_str(),".lin"))
 		{
 			me->want_uv=false;
 			me->want_bezier=inCoordDepth == 4;
@@ -617,7 +626,7 @@ public:
 #endif
 
 #if !NO_STR
-		if( me->dsf_filter & dsf_filter_strings && (end_match(r.c_str(),".str") || end_match(r.c_str(),".ags")) )
+		if( me->dsf_cat_filter & dsf_filter_strings && (end_match(r.c_str(),".str") || end_match(r.c_str(),".ags")) )
 		{
 			me->want_uv=false;
 			me->want_bezier=inCoordDepth == 4;
@@ -632,7 +641,7 @@ public:
 #endif
 
 #if !NO_POL
-		if(me->dsf_filter & dsf_filter_draped_poly && (end_match(r.c_str(),".pol") || end_match(r.c_str(),".agb")))
+		if(me->dsf_cat_filter & dsf_filter_draped_poly && (end_match(r.c_str(),".pol") || end_match(r.c_str(),".agb")))
 		{
 			me->want_uv=inParam == 65535;
 			me->want_bezier=me->want_uv ? (inCoordDepth == 8) : (inCoordDepth == 4);
@@ -886,6 +895,13 @@ public:
 
 	static void SetFilter(int filterId, void * inRef)
 	{
+		DSF_Importer * me = (DSF_Importer *) inRef;
+		if(filterId >= 0 && filterId < me->filter_table.size())
+			me->filter_on = me->filter_table[filterId];
+		else
+			me->filter_on = false;
+			
+printf("Filter %s\n", me->filter_on ? "ON" : "OFF");
 	}
 
 	int do_import_dsf(const char * file_name, WED_Thing * base)
@@ -938,12 +954,13 @@ int DSF_Import(const char * path, WED_Thing * base)
 	return importer.do_import_dsf(path, base);
 }
 
-int DSF_Import_Partial(const char * path, WED_Thing * base, int inFilter, const Bbox2& cull_bound)
+int DSF_Import_Partial(const char * path, WED_Thing * base, int inCatFilter, const Bbox2& cull_bound, const vector<string>& inAptFilter)
 {
 	DSF_Importer importer;
 	
 	importer.cull_bound = cull_bound;
-	importer.dsf_filter = inFilter;
+	importer.dsf_cat_filter = inCatFilter;
+	importer.dsf_AptID_filter = inAptFilter;
 
 	return importer.do_import_dsf(path, base);
 }

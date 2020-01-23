@@ -253,15 +253,14 @@ public:
 	vector<node>			m_nodes;
 	vector<edge>			m_edges;
 
-	void add_segment(WED_RoadEdge * e,const Bbox2& cull_bounds);
+	void add_segment(WED_RoadEdge * e, const Bbox2& cull_bounds);
 
 	void remove_dupes();
-	void assign_ids();
-	void export_to_dsf(	int						net_type,
+	void assign_ids(int& idx);
+	void export_to_dsf(	int&					node_offset,
+						int						net_type,
 						const DSFCallbacks_t *	cbs,
 						void *					writer);
-
-
 };
 
 void dsf_road_grid_helper::add_segment(WED_RoadEdge * e, const Bbox2& cull_bounds)
@@ -413,9 +412,8 @@ void dsf_road_grid_helper::remove_dupes()
 }
 
 
-void dsf_road_grid_helper::assign_ids()
+void dsf_road_grid_helper::assign_ids(int& idx)
 {
-	int idx = 1;
 	for(vector<node>::iterator n = m_nodes.begin(); n != m_nodes.end(); ++n)
 	{
 		if(n->edges.empty())
@@ -426,14 +424,15 @@ void dsf_road_grid_helper::assign_ids()
 }
 
 void dsf_road_grid_helper::export_to_dsf(
+	int&					node_offs,
 	int						net_type,
 	const DSFCallbacks_t *	cbs,
 	void *					writer)
 {
 	remove_dupes();
-	assign_ids();
+	assign_ids(node_offs);
 
-				double coords[4];
+	double coords[4];
 
 	for(vector<edge>::iterator e = m_edges.begin(); e != m_edges.end(); ++e)
 	if(!e->path.empty())
@@ -502,10 +501,9 @@ struct	DSF_ResourceTable {
 
 #if ROAD_EDITING
 	vector<string>				net_defs;
-	map<string, int>			net_defs_idx;
-
-	list<dsf_road_grid_helper>	net_grids;		// list to avoid massive realloc thrash on second grid?
+	map<pair<string, int>, pair<int, dsf_road_grid_helper> > net_defs_idx;
 #endif
+
 	vector<string>				filters;
 	map<string, int>			filter_idx;
 
@@ -545,23 +543,38 @@ struct	DSF_ResourceTable {
 		return				  pol_defs.size()-1;
 	}
 #if ROAD_EDITING
-	dsf_road_grid_helper * accum_net(const string& f)
+	dsf_road_grid_helper * accum_net(const string& f, int idx)
 	{
 		int ret = 0;
-		map<string,int>::iterator i = net_defs_idx.find(f);
+		auto i = net_defs_idx.find(make_pair(f, idx));
 		if(i != net_defs_idx.end())
-			ret = i->second;
+			return &i->second.second;
 		else
 		{
-			net_defs_idx[f] = net_defs.size();
-			net_defs.push_back(f);
-			net_grids.push_back(dsf_road_grid_helper());
-			ret = net_defs.size()-1;
+			i = net_defs_idx.begin();
+			while(i != net_defs_idx.end())
+			{
+				if(i->first.first == f) break;
+				i++;
+			}
+			if(i == net_defs_idx.end())
+			{
+				net_defs_idx[make_pair(f, idx)] = make_pair(net_defs.size(), dsf_road_grid_helper());
+				net_defs.push_back(f);
+printf("Adding new network %s %d\n", f.c_str(), idx);
+			}
+			else
+			{
+				net_defs_idx[make_pair(f, idx)] = make_pair(i->second.first, dsf_road_grid_helper());
+printf("Adding new idx only %d\n", idx);
+			}
+			return &net_defs_idx[make_pair(f, idx)].second;
+//			net_grids.push_back(dsf_road_grid_helper());
 		}
 
-		list<dsf_road_grid_helper>::iterator it = net_grids.begin();
-		advance(it, ret);
-		return &*it;
+//		list<dsf_road_grid_helper>::iterator it = net_grids.begin();
+//		advance(it, ret);
+//		return &*net_defs_idx[make_pair(f, idx)].second.second;
 	}
 #endif
 	int accum_filter(const string& icao_filter)
@@ -584,12 +597,16 @@ struct	DSF_ResourceTable {
 		for(vector<pair<string,string> >::iterator e = exclusions[-1].begin(); e != exclusions[-1].end(); ++e)
 			cbs.AcceptProperty_f(e->first.c_str(), e->second.c_str(), writer);
 #if ROAD_EDITING
-		list<dsf_road_grid_helper>::iterator grid = net_grids.begin();
-		int road_idx = 0;
-		for(vector<string>::iterator s = net_defs.begin(); s != net_defs.end(); ++s, ++grid, ++road_idx)
+		int road_node = 1;
+		for(auto s : net_defs)
 		{
-			cbs.AcceptNetworkDef_f(s->c_str(), writer);
-			grid->export_to_dsf(road_idx, &cbs, writer);
+			cbs.AcceptNetworkDef_f(s.c_str(), writer);
+			for(auto m : net_defs_idx)
+				if(m.first.first == s)
+				{
+					cbs.SetFilter_f(m.first.second, writer);
+					m.second.second.export_to_dsf(road_node, m.second.first, &cbs, writer);
+				}
 		}
 #endif
 		int idx = 0;
@@ -2064,8 +2081,7 @@ static int	DSF_ExportTileRecursive(
 		{
 			string asset;
 			roa->GetResource(asset);
-			dsf_road_grid_helper * grid = io_table.accum_net(asset);
-
+			dsf_road_grid_helper * grid = io_table.accum_net(asset, io_table.cur_filter);
 			grid->add_segment(roa,cull_bounds);
 			++real_thingies;
 

@@ -98,23 +98,6 @@
 #define ATC_TAXI_ROUTE_TAG 2
 #define ATC_GROUND_ROUTES_TAG 8
 
-/*
-
-		progress bar
-		multi-line text?
-
-
-
-	todo:	field types for password, no edit, multi-line comments
-			make the form nicer
-			error checking on upload
-			progress and cancel on upload
-
-			download from gateway?
- */
-
-static int gateway_bounds_default[4] = { 0, 0, 500, 500 };
-
 static string saved_uname;
 static string saved_passwd;
 static string saved_comment;
