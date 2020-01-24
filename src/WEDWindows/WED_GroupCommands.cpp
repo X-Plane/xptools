@@ -1158,7 +1158,7 @@ set<WED_GISEdge *> WED_do_select_crossing(WED_Thing * t)
 	return WED_do_select_crossing(edges,Bbox2(0,0,0,0));
 }
 
-set<WED_GISEdge *> WED_do_select_crossing(const vector<WED_GISEdge *> edges ,const Bbox2& cull_bounds)
+set<WED_GISEdge *> WED_do_select_crossing(const vector<WED_GISEdge *>& edges , Bbox2& cull_bounds)
 {
 	set<WED_GISEdge*> crossed_edges;
 	Bbox2 edge_bounds;

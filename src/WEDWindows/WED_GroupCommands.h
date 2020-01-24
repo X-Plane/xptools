@@ -131,7 +131,7 @@ set<WED_Thing*> WED_select_doubles(WED_Thing * t);
 bool	WED_DoSelectDoubles(IResolver * resolver, WED_Thing * sub_tree=NULL);				// They do not show any UI but they do select the failures.
 
 set<WED_GISEdge*> WED_do_select_crossing(WED_Thing * t);
-set<WED_GISEdge*> WED_do_select_crossing(const vector<WED_GISEdge*> edges,const Bbox2&);
+set<WED_GISEdge*> WED_do_select_crossing(const vector<WED_GISEdge*>& edges, Bbox2& cull_bounds);
 bool	WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree=NULL);
 
 void	WED_DoSelectMissingObjects(IResolver * resolver);
