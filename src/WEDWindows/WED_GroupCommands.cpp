@@ -1154,8 +1154,8 @@ set<WED_GISEdge *> WED_do_select_crossing(WED_Thing * t)
 {
 	vector<WED_GISEdge *> edges;
 	CollectRecursive(t, back_inserter(edges), ThingNotHidden, IsGraphEdge);
-
-	return WED_do_select_crossing(edges,Bbox2(0,0,0,0));
+	Bbox2 emptybox(0,0,0,0);
+	return WED_do_select_crossing(edges,emptybox);
 }
 
 set<WED_GISEdge *> WED_do_select_crossing(const vector<WED_GISEdge *>& edges , Bbox2& cull_bounds)
@@ -4987,7 +4987,7 @@ static void set_surface(WED_Thing * t, int surface, WED_LibraryMgr * lmgr)
 	{
 		set<int> attr;
 		attr.insert(surface);
-		
+
 		int num_ent = chain->GetNumEntities();
 		for(int i = 0; i < num_ent; i++)
 		{
@@ -5090,7 +5090,7 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 				set_closed(dst, chains[i]->IsClosed());
 
 				move_points(chains[i], dst);
-				
+
 				set_surface(dst, get_surface(src),WED_GetLibraryMgr(resolver));
 
 				sel->Insert(dst);
