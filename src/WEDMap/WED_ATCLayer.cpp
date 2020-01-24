@@ -316,7 +316,7 @@ bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, G
 					glLineWidth(2);
 					for(int l = 1; l <= layers; l++)
 					{
-						Point2 sides[4](c);
+						Point2 sides[4] = { c[0], c[1], c[2], c[3] };
 						Vector2 dir(c[0], c[1]);
 						if(seg->GetStartLayer() < l) { sides[0] += dir * 0.25; sides[3] += dir * 0.25; }
 						if(seg->GetEndLayer() < l)   { sides[1] -= dir * 0.25; sides[2] -= dir * 0.25; }
