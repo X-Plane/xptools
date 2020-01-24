@@ -85,8 +85,8 @@ double 		WED_RoadEdge::GetWidth(void) const
 			if ( rd != r.road_types.end())
 				return rd->second.width;
 		}
-		return 0.0;
 	}
+	return 0.0;
 }
 
 void		WED_RoadEdge::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
@@ -196,8 +196,8 @@ bool		WED_RoadEdge::get_valid_road_info(road_info_t * optional_info) const
 		if(i->vroad_types.size() > 0)
 			return true;
 	}
-	return false;
 #endif
+	return false;
 }
 
 #endif

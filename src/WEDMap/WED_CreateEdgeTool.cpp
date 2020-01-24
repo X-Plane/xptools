@@ -324,7 +324,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 	vector<WED_GISEdge*> all_edges;
 	CollectRecursive(host_for_parent, back_inserter(all_edges),edge_class);
 	//filter them for just the crossing ones
-	set<WED_GISEdge*> crossing_edges = WED_do_select_crossing(all_edges,tool_created_bounds);
+	set<WED_GISEdge*> crossing_edges = WED_do_select_crossing(all_edges, tool_created_bounds);
 
 	//convert, and run split!
 	vector<split_edge_info_t> edges_to_split;
