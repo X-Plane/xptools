@@ -180,7 +180,6 @@
 #define SUPPORT_STL
 
 #if IBM // OS specific file handling hacks
-	#define WINDOWS_LEAN_AND_MEAN
 	#include <winsock2.h>
 	#include <windows.h>
 

@@ -1640,6 +1640,7 @@
     <ClInclude Include="..\..\src\lzma19\C\LzmaDec.h">
       <Filter>lzma19</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\Utils\CmdLine.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\src\WEDResources\about.png">
