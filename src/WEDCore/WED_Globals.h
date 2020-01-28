@@ -59,7 +59,8 @@ enum WED_Export_Target {
 		wet_xplane_1050,	// Adds next-gen apt.dat stuff
 		wet_xplane_1100,	// Adds ground vehicles stuff
 		wet_xplane_1130,	// Adds 8.33kHz raster frequencies
-		wet_xplane_1130a,	// With WED-A style road export to separate msf files
+		wet_xplane_1130a,	// With WED-A style road export - skips roads at dsf export
+		wet_xplane_1130msf,	// complements 1130a - exports roads only
 		wet_gateway = 99,	// Latest format but with strict checking for gateway.
 		wet_latest_xplane = wet_xplane_1130,	// meta-token for whatever the very newest x-plane export is
 };

@@ -43,7 +43,9 @@ void	WED_ExportPackToPath(WED_Thing * root, IResolver * resolver, const string& 
 {
 	if(gExportTarget == wet_xplane_1130a)
 	{
+		gExportTarget = wet_xplane_1130msf;
 		if(DSF_ExportText(resolver, root, in_path, problem_children) == -1) return;
+	    gExportTarget = wet_xplane_1130a;
 	}
 
 	if(DSF_Export(root, resolver, in_path, problem_children) == -1) return;

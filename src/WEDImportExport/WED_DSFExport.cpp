@@ -610,22 +610,22 @@ struct	DSF_ResourceTable {
 			for(vector<pair<string,string> >::iterator e = exclusions[idx].begin(); e != exclusions[idx].end(); ++e)
 				cbs.AcceptProperty_f(e->first.c_str(), e->second.c_str(), writer);
 		}
-		for(int i = 1; i <= 6; ++i)
-		{
-			char buf[20];
-			if(show_level_obj[i] != -1)
+		if (gExportTarget != wet_xplane_1130msf)
+			for(int i = 1; i <= 6; ++i)
 			{
-				sprintf(buf,"%d/%d",i,show_level_obj[i]);
-				cbs.AcceptProperty_f("sim/require_agpoint", buf, writer);
-				cbs.AcceptProperty_f("sim/require_object", buf, writer);
+				char buf[20];
+				if(show_level_obj[i] != -1)
+				{
+					sprintf(buf,"%d/%d",i,show_level_obj[i]);
+					cbs.AcceptProperty_f("sim/require_agpoint", buf, writer);
+					cbs.AcceptProperty_f("sim/require_object", buf, writer);
+				}
+				if(show_level_pol[i] != -1)
+				{
+					sprintf(buf,"%d/%d",i,show_level_pol[i]);
+					cbs.AcceptProperty_f("sim/require_facade", buf, writer);
+				}
 			}
-			if(show_level_pol[i] != -1)
-			{
-				sprintf(buf,"%d/%d",i,show_level_pol[i]);
-				cbs.AcceptProperty_f("sim/require_facade", buf, writer);
-			}
-		}
-
 	}
 };
 
@@ -1233,10 +1233,10 @@ static int	DSF_ExportTileRecursive(
 	//------------------------------------------------------------------------------------------------------------
 	// OBJECT EXPORTER
 	//------------------------------------------------------------------------------------------------------------
-
 	if(c == 	WED_ObjPlacement::sClass)
 	if((obj = dynamic_cast<WED_ObjPlacement *>(what)) != NULL)
 	{
+		if (gExportTarget != wet_xplane_1130msf)
 		if(show_level == obj->GetShowLevel())
 		{
 			obj->GetResource(r);
@@ -1271,6 +1271,7 @@ static int	DSF_ExportTileRecursive(
 	if(c == 	WED_FacadePlacement::sClass)
 	if((fac = dynamic_cast<WED_FacadePlacement *>(what)) != NULL)
 	{
+		if (gExportTarget != wet_xplane_1130msf)
 		if(show_level == fac->GetShowLevel())
 		{
 			fac->GetResource(r);
@@ -1503,17 +1504,19 @@ static int	DSF_ExportTileRecursive(
 			for(set<int>::iterator xt = xtypes.begin(); xt != xtypes.end(); ++xt)
 			{
 				const char * pname = NULL;
+				if (gExportTarget != wet_xplane_1130msf)
 				switch(*xt) {
 				case exclude_Obj:	pname = "sim/exclude_obj";	break;
 				case exclude_Fac:	pname = "sim/exclude_fac";	break;
 				case exclude_For:	pname = "sim/exclude_for";	break;
 				case exclude_Bch:	pname = "sim/exclude_bch";	break;
-				case exclude_Net:	pname = "sim/exclude_net";	break;
-
+//				case exclude_Net:	pname = "sim/exclude_net";	break;
 				case exclude_Lin:	pname = "sim/exclude_lin";	break;
 				case exclude_Pol:	pname = "sim/exclude_pol";	break;
 				case exclude_Str:	pname = "sim/exclude_str";	break;
 				}
+				if (gExportTarget != wet_xplane_1130a && *xt == exclude_Net) 
+					pname = "sim/exclude_net";
 				if(pname)
 				{
 					char valbuf[512];
@@ -1528,10 +1531,11 @@ static int	DSF_ExportTileRecursive(
 		//------------------------------------------------------------------------------------------------------------
 		// FOREST EXPORTER
 		//------------------------------------------------------------------------------------------------------------
-
 		if(c == 	WED_ForestPlacement::sClass)
 		if((fst = dynamic_cast<WED_ForestPlacement *>(what)) != NULL)
 		{
+			if (gExportTarget != wet_xplane_1130msf)
+			{
 			fst->GetResource(r);
 			idx = io_table.accum_pol(r,show_level);
 
@@ -1606,6 +1610,7 @@ static int	DSF_ExportTileRecursive(
 				}
 				break;
 			}
+			}
 			return real_thingies;
 		}
 
@@ -1616,6 +1621,8 @@ static int	DSF_ExportTileRecursive(
 		if(c == 	WED_StringPlacement::sClass)
 		if((str = dynamic_cast<WED_StringPlacement *>(what)) != NULL)
 		{
+			if (gExportTarget != wet_xplane_1130msf)
+			{
 			str->GetResource(r);
 			idx = io_table.accum_pol(r,show_level);
 			bool bez = WED_HasBezierSeq(str);
@@ -1646,6 +1653,7 @@ static int	DSF_ExportTileRecursive(
 					DSF_AccumChain(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, str->GetSpacing(), 0);
 				}
 			}
+			}
 			return real_thingies;
 		}
 
@@ -1656,6 +1664,8 @@ static int	DSF_ExportTileRecursive(
 		if(c == 	WED_LinePlacement::sClass)
 		if((lin = dynamic_cast<WED_LinePlacement *>(what)) != NULL)
 		{
+			if (gExportTarget != wet_xplane_1130msf)
+			{
 			lin->GetResource(r);
 			idx = io_table.accum_pol(r,show_level);
 			bool bez = WED_HasBezierSeq(lin);
@@ -1731,6 +1741,7 @@ static int	DSF_ExportTileRecursive(
 						DSF_AccumChain(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, closed, closed);
 				}
 			}
+			}
 			return real_thingies;
 		}
 		//------------------------------------------------------------------------------------------------------------
@@ -1740,6 +1751,8 @@ static int	DSF_ExportTileRecursive(
 		if(c == 	WED_PolygonPlacement::sClass)
 		if((pol = dynamic_cast<WED_PolygonPlacement *>(what)) != NULL)
 		{
+			if (gExportTarget != wet_xplane_1130msf)
+			{
 			pol->GetResource(r);
 			idx = io_table.accum_pol(r,show_level);
 			bool bez = WED_HasBezierPol(pol);
@@ -1786,6 +1799,7 @@ static int	DSF_ExportTileRecursive(
 					cbs->EndPolygon_f(writer);
 				}
 			}
+			}
 			return real_thingies;
 		}
 
@@ -1796,6 +1810,8 @@ static int	DSF_ExportTileRecursive(
 		if(c == 	WED_DrapedOrthophoto::sClass)
 		if((orth = dynamic_cast<WED_DrapedOrthophoto *>(what)) != NULL)
 		{
+			if (gExportTarget != wet_xplane_1130msf)
+			{
 			//Get the relative path
 			orth->GetResource(r);
 #if WED
@@ -2061,7 +2077,7 @@ static int	DSF_ExportTileRecursive(
 
 			if(orth->IsNew())
 				what->AbortOperation(); // this will nicely undo the UV mapping rescaling we did :)
-
+			}
 			return real_thingies;
 		}
 
@@ -2069,15 +2085,18 @@ static int	DSF_ExportTileRecursive(
 		//------------------------------------------------------------------------------------------------------------
 		// ROAD EXPORTER
 		//------------------------------------------------------------------------------------------------------------
-
+		
+		if(c == 	WED_RoadEdge::sClass)
 		if ((roa = dynamic_cast<WED_RoadEdge*>(what)) != NULL)
 		{
+			if (gExportTarget != wet_xplane_1130a)
+			{
 			string asset;
 			roa->GetResource(asset);
 			dsf_road_grid_helper * grid = io_table.accum_net(asset, io_table.cur_filter);
 			grid->add_segment(roa,cull_bounds);
 			++real_thingies;
-
+			}
 			return real_thingies;
 		}
 	#endif // ROAD_EDITING
@@ -2325,14 +2344,18 @@ int DSF_ExportText(IResolver * resolver, WED_Thing * base, const string& package
 				DSF_ResourceTable	rsrc;
 				DSF_export_info_t DSF_export_info;
 
+				int items_exported(0);
 				for(int show_level = 6; show_level >= 1; --show_level)
-					ent += DSF_ExportTileRecursive(base, resolver, package, cull_bounds, cull_bounds, rsrc, &cbs, writer, problem_children, show_level, &DSF_export_info);
+					items_exported += DSF_ExportTileRecursive(base, resolver, package, cull_bounds, cull_bounds, 
+											rsrc, &cbs, writer, problem_children, show_level, &DSF_export_info);
 				
 				Assert(DSF_export_info.orthoImg.data == NULL); //  In this type of export - orthoimages are not allowed. So this should never happen.
 
 				rsrc.write_tables(cbs,writer);
 				
 				fclose(dsf);
+				if (gExportTarget == wet_xplane_1130msf && items_exported == 0)
+					unlink(dsf_path.c_str());
 			}
 			else
 				return 0;

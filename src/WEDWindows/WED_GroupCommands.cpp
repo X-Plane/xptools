@@ -1155,7 +1155,8 @@ set<WED_GISEdge *> WED_do_select_crossing(WED_Thing * t)
 	vector<WED_GISEdge *> edges;
 	CollectRecursive(t, back_inserter(edges), ThingNotHidden, IsGraphEdge);
 
-	return WED_do_select_crossing(edges,Bbox2(0,0,0,0));
+	Bbox2 everything(0,0,0,0);
+	return WED_do_select_crossing(edges,everything);
 }
 
 set<WED_GISEdge *> WED_do_select_crossing(const vector<WED_GISEdge *>& edges , Bbox2& cull_bounds)
