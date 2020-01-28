@@ -50,7 +50,8 @@ enum dsf_filter_category {
 	dsf_filter_draped_poly = 128,
 	dsf_filter_roads = 256,
 	dsf_filter_terrain = 512,
-	dsf_filter_all = 1023
+	dsf_filter_beaches = 1024,
+	dsf_filter_all = 2047
 };
 
 void	DSF_ImportText(const string& path, WED_Thing * base, int inCatFilter = dsf_filter_all, 

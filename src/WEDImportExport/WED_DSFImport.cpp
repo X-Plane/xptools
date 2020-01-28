@@ -330,14 +330,17 @@ public:
 		}
 
 #if !NO_EXC
-		if(strcmp(inProp, "sim/exclude_obj") == 0)	me->make_exclusion(inValue, exclude_Obj);
-		if(strcmp(inProp, "sim/exclude_fac") == 0)	me->make_exclusion(inValue, exclude_Fac);
-		if(strcmp(inProp, "sim/exclude_for") == 0)	me->make_exclusion(inValue, exclude_For);
-		if(strcmp(inProp, "sim/exclude_bch") == 0)	me->make_exclusion(inValue, exclude_Bch);
-		if(strcmp(inProp, "sim/exclude_net") == 0)	me->make_exclusion(inValue, exclude_Net);
-		if(strcmp(inProp, "sim/exclude_lin") == 0)	me->make_exclusion(inValue, exclude_Lin);
-		if(strcmp(inProp, "sim/exclude_pol") == 0)	me->make_exclusion(inValue, exclude_Pol);
-		if(strcmp(inProp, "sim/exclude_str") == 0)	me->make_exclusion(inValue, exclude_Str);
+		if (me->dsf_cat_filter & dsf_filter_exclusion)
+		{
+			if (me->dsf_cat_filter & dsf_filter_objects && strcmp(inProp, "sim/exclude_obj") == 0)	me->make_exclusion(inValue, exclude_Obj);
+			if (me->dsf_cat_filter & dsf_filter_facades && strcmp(inProp, "sim/exclude_fac") == 0)	me->make_exclusion(inValue, exclude_Fac);
+			if (me->dsf_cat_filter & dsf_filter_forests && strcmp(inProp, "sim/exclude_for") == 0)	me->make_exclusion(inValue, exclude_For);
+			if (me->dsf_cat_filter & dsf_filter_beaches && strcmp(inProp, "sim/exclude_bch") == 0)	me->make_exclusion(inValue, exclude_Bch);
+			if (me->dsf_cat_filter & dsf_filter_roads   && strcmp(inProp, "sim/exclude_net") == 0)	me->make_exclusion(inValue, exclude_Net);
+			if (me->dsf_cat_filter & dsf_filter_lines   && strcmp(inProp, "sim/exclude_lin") == 0)	me->make_exclusion(inValue, exclude_Lin);
+			if (me->dsf_cat_filter & dsf_filter_draped_poly && strcmp(inProp, "sim/exclude_pol") == 0)	me->make_exclusion(inValue, exclude_Pol);
+			if (me->dsf_cat_filter & dsf_filter_strings && strcmp(inProp, "sim/exclude_str") == 0)	me->make_exclusion(inValue, exclude_Str);
+		}
 #endif
 
 	}
@@ -576,7 +579,6 @@ public:
 		dsf_import_category cat = dsf_cat_objects;
 
 #if !NO_FAC
-
 		if( me->dsf_cat_filter & dsf_filter_facades && end_match(r.c_str(),".fac" ))
 		{
 			// Ben says: .fac must be 2-coord for v9.  But...maybe for v10 we allow curved facades?
