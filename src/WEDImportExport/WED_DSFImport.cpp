@@ -903,7 +903,7 @@ public:
 		else
 			me->filter_on = false;
 			
-printf("Filter %s\n", me->filter_on ? "ON" : "OFF");
+// printf("Filter %s\n", me->filter_on ? "ON" : "OFF");
 	}
 
 	int do_import_dsf(const char * file_name, WED_Thing * base)
