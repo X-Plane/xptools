@@ -128,14 +128,15 @@ int		DSFReadFile(
 			void *				inRef)
 {
 	char *		mem = nullptr;
-	size_t 		mem_offset = 0;
 	size_t		uncomp_size = 0;
 	int			result = dsf_ErrOK;
 	FILE * 		fi = nullptr;
 		
 #if USE_7Z
+	size_t 		mem_offset = 0;
 	size_t		mem_size = 0;
 	UInt32		blockIndex = 0;
+	bool 		dsf_compressed = true;
 		
 	CrcGenerateTable();
 
@@ -149,25 +150,31 @@ int		DSFReadFile(
 	CLookToRead2 lookStream;
 	
 	if (InFile_Open(&archiveStream.file, inPath))
-	{ result = dsf_ErrCouldNotOpenFile; goto bail; }
-	
-	FileInStream_CreateVTable(&archiveStream);
-	LookToRead2_CreateVTable(&lookStream, False);
-	lookStream.buf = (Byte *)ISzAlloc_Alloc(&allocImp, kInputBufSize);
-	lookStream.bufSize = kInputBufSize;
-	lookStream.realStream = &archiveStream.vt;
-	LookToRead2_Init(&lookStream);
+		result = dsf_ErrCouldNotOpenFile;
+	else
+	{
+		FileInStream_CreateVTable(&archiveStream);
+		LookToRead2_CreateVTable(&lookStream, False);
+		lookStream.buf = (Byte *)ISzAlloc_Alloc(&allocImp, kInputBufSize);
+		lookStream.bufSize = kInputBufSize;
+		lookStream.realStream = &archiveStream.vt;
+		LookToRead2_Init(&lookStream);
 
-	if (SzArEx_Open(&db, &lookStream.vt, &allocImp, &allocTempImp))
-		goto try_uncompresssed;
-	
-	// no need to skip over directory-only entries. New api keeps directories vs files separate. So fileIndex = 0 is always the first real file
-	if (SzArEx_Extract(&db, &lookStream.vt, 0 , &blockIndex, (Byte **) &mem, &mem_size, &mem_offset, &uncomp_size, &allocImp, &allocTempImp) != 0)
-	{ result = dsf_ErrCouldNotReadFile; goto bail; }
-
-	goto decode_dsf;
-
-try_uncompresssed:
+		if (SzArEx_Open(&db, &lookStream.vt, &allocImp, &allocTempImp))
+			dsf_compressed = false;
+		else
+		{
+			// no need to skip over directory-only entries. New api keeps directories vs files separate. So fileIndex = 0 is always the first real file
+			if (SzArEx_Extract(&db, &lookStream.vt, 0 , &blockIndex, (Byte **) &mem, &mem_size, &mem_offset, &uncomp_size, &allocImp, &allocTempImp) == 0)
+			{
+				result = DSFReadMem(mem + mem_offset, mem + mem_offset + uncomp_size, inCallbacks, inPasses, inRef);
+			}
+			SzArEx_Free(&db, &allocImp);
+		}
+		ISzAlloc_Free(&allocImp, lookStream.buf);
+		File_Close(&archiveStream.file);
+	}
+	if(dsf_compressed) return result;
 #endif
 	fi = fopen(inPath, "rb");
 	if (!fi) { result = dsf_ErrCouldNotOpenFile; goto bail; }
@@ -182,15 +189,9 @@ try_uncompresssed:
 	if (fread(mem, 1, uncomp_size, fi) != uncomp_size)
 		{ result = dsf_ErrCouldNotReadFile; goto bail; }
 
-decode_dsf:
-	result = DSFReadMem(mem + mem_offset, mem + mem_offset + uncomp_size, inCallbacks, inPasses, inRef);
+	result = DSFReadMem(mem + mem_offset, mem + uncomp_size, inCallbacks, inPasses, inRef);
 
 bail:
-#if USE_7Z
-	SzArEx_Free(&db, &allocImp);
-	File_Close(&archiveStream.file);
-	ISzAlloc_Free(&allocImp, lookStream.buf);
-#endif
 	if (fi) fclose(fi);
 	if (mem) free_func(mem);	
 	return result;
