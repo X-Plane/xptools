@@ -4988,7 +4988,7 @@ static void set_surface(WED_Thing * t, int surface, WED_LibraryMgr * lmgr)
 	{
 		set<int> attr;
 		attr.insert(surface);
-		
+
 		int num_ent = chain->GetNumEntities();
 		for(int i = 0; i < num_ent; i++)
 		{
@@ -5091,7 +5091,7 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 				set_closed(dst, chains[i]->IsClosed());
 
 				move_points(chains[i], dst);
-				
+
 				set_surface(dst, get_surface(src),WED_GetLibraryMgr(resolver));
 
 				sel->Insert(dst);

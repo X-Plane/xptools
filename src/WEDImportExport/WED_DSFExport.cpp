@@ -205,7 +205,7 @@ static bool hasPartialTransparency(ImageInfo * info)
 {
 	if(info->channels < 4) return false;
 	int semiTransPixels = 0;
-	
+
 	unsigned char * src = info->data + 3;
 	for(int y = info->height; y > 0; y--)
 	{
@@ -357,7 +357,8 @@ void dsf_road_grid_helper::remove_dupes()
 				edge * ee1 = &m_edges[e1];
 				edge * ee2 = &m_edges[e2];
 
-				if(ee1->level_is_uniform() && ee2->level_is_uniform())
+				//TODO: mroe revisit ; rubberband fix , nodes with level -999 marked to merge as shape point
+				if((ee1->level_is_uniform() && ee2->level_is_uniform()) || ((ee1->level_for_node(n) == -999) && (ee2->level_for_node(n) == -999)))
 				if(ee1->level_for_node(n) == ee2->level_for_node(n) && ee1->subtype == ee2->subtype)	// Only merge if level and subtype matches
 				{
 					DebugAssert(ee1->start_node == n || ee1->end_node == n);

@@ -401,7 +401,7 @@ public:
 		}
 #endif
 	}
-	
+
 	static void	BeginSegment(
 					unsigned int	inNetworkType,
 					unsigned int	inNetworkSubtype,
@@ -492,6 +492,7 @@ public:
 
 		int start_level = me->accum_road[0].second;
 		int end_level = inCoordinates[2];
+		int curr_level = start_level;
 		me->accum_road.front().second = 0;
 		me->accum_road.back().second = 0;
 
@@ -511,12 +512,12 @@ public:
 			edge->SetParent(me->get_cat_parent(dsf_cat_roads), me->get_cat_parent(dsf_cat_roads)->CountChildren());
 			edge->SetResource(me->net_table[me->accum_road_type.first]);
 			edge->SetSubtype(me->accum_road_type.second);
-			edge->SetStartLayer(start_level);
-			edge->SetEndLayer(end_level);
+			edge->SetStartLayer(curr_level);
 			edge->AddSource(last_node, 0);
 			if(n == last)
 			{
 				edge->AddSource(road_end, 1);
+				edge->SetEndLayer(end_level);
 			}
 			else
 			{
@@ -525,6 +526,8 @@ public:
 				shape->SetLocation(gis_Geo, me->accum_road[n].first);
 				shape->SetParent(me->get_cat_parent(dsf_cat_roads), me->get_cat_parent(dsf_cat_roads)->CountChildren());
 				edge->AddSource(shape, 1);
+				curr_level=-999;
+				edge->SetEndLayer(curr_level);
 				last_node = shape;
 			}
 
@@ -902,7 +905,6 @@ public:
 			me->filter_on = me->filter_table[filterId];
 		else
 			me->filter_on = false;
-			
 // printf("Filter %s\n", me->filter_on ? "ON" : "OFF");
 	}
 
@@ -953,7 +955,7 @@ public:
 int DSF_Import(const string& path, WED_Thing * base, int inCatFilter, const Bbox2& cullBounds, const vector<string>& inAptFilter)
 {
 	DSF_Importer importer;
-	
+
 	importer.cull_bound = cullBounds;
 	importer.dsf_cat_filter = inCatFilter;
 	importer.dsf_AptID_filter = inAptFilter;
@@ -972,7 +974,7 @@ void DSF_ImportText(const string& path, WED_Thing * base, int inCatFilter, const
 
 
 #if WED
-// code that uses GUI or Res/Lib/PkgMgr fuctions 
+// code that uses GUI or Res/Lib/PkgMgr fuctions
 // i.e. stuff that isn't desireable in command-line applications re-using WED code
 
 #include "WED_ToolUtils.h"
