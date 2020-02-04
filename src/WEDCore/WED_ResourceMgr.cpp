@@ -1479,45 +1479,47 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 		agp->xyz_max[2] = max(agp->xyz_max[2], agp->tile[n+1]);
 	}
 
-	for(auto& o : agp->objs)
+	auto o = agp->objs.begin();
+	while(o != agp->objs.end())
 	{
 		const XObj8 * oo;
-		if(GetObjRelative(o.name, path, oo))
+		if(GetObjRelative(o->name, path, oo))
 		{
-			o.obj = oo;
-			if (fabs(o.r-180.0) < 45.0)  // account for rotation, very roughly only
+			o->obj = oo;
+			if (fabs(o->r-180.0) < 45.0)  // account for rotation, very roughly only
 			{
-					agp->xyz_min[0] = min(agp->xyz_min[0], oo->xyz_min[0] + o.x);
-					agp->xyz_max[0] = max(agp->xyz_max[0], oo->xyz_max[0] + o.x);
-					agp->xyz_min[2] = min(agp->xyz_min[2], oo->xyz_min[2] + o.y);
-					agp->xyz_max[2] = max(agp->xyz_max[2], oo->xyz_max[2] + o.y);
+					agp->xyz_min[0] = min(agp->xyz_min[0], oo->xyz_min[0] + o->x);
+					agp->xyz_max[0] = max(agp->xyz_max[0], oo->xyz_max[0] + o->x);
+					agp->xyz_min[2] = min(agp->xyz_min[2], oo->xyz_min[2] + o->y);
+					agp->xyz_max[2] = max(agp->xyz_max[2], oo->xyz_max[2] + o->y);
 			}
-			else if (fabs(o.r-90.0) < 45.0)
+			else if (fabs(o->r-90.0) < 45.0)
 			{
-					agp->xyz_min[0] = min(agp->xyz_min[0],-oo->xyz_min[2] + o.x);
-					agp->xyz_max[0] = max(agp->xyz_max[0],-oo->xyz_max[2] + o.x);
-					agp->xyz_min[2] = min(agp->xyz_min[2], oo->xyz_min[0] + o.y);
-					agp->xyz_max[2] = max(agp->xyz_max[2], oo->xyz_max[0] + o.y);
+					agp->xyz_min[0] = min(agp->xyz_min[0],-oo->xyz_min[2] + o->x);
+					agp->xyz_max[0] = max(agp->xyz_max[0],-oo->xyz_max[2] + o->x);
+					agp->xyz_min[2] = min(agp->xyz_min[2], oo->xyz_min[0] + o->y);
+					agp->xyz_max[2] = max(agp->xyz_max[2], oo->xyz_max[0] + o->y);
 			}
-			else if (fabs(o.r+90.0) < 45.0)
+			else if (fabs(o->r+90.0) < 45.0)
 			{
-					agp->xyz_min[0] = min(agp->xyz_min[0], oo->xyz_min[2] + o.x);
-					agp->xyz_max[0] = max(agp->xyz_max[0], oo->xyz_max[2] + o.x);
-					agp->xyz_min[2] = min(agp->xyz_min[2],-oo->xyz_min[0] + o.y);
-					agp->xyz_max[2] = max(agp->xyz_max[2],-oo->xyz_max[0] + o.y);
+					agp->xyz_min[0] = min(agp->xyz_min[0], oo->xyz_min[2] + o->x);
+					agp->xyz_max[0] = max(agp->xyz_max[0], oo->xyz_max[2] + o->x);
+					agp->xyz_min[2] = min(agp->xyz_min[2],-oo->xyz_min[0] + o->y);
+					agp->xyz_max[2] = max(agp->xyz_max[2],-oo->xyz_max[0] + o->y);
 			}
 			else
 			{
-					agp->xyz_min[0] = min(agp->xyz_min[0],-oo->xyz_min[0] + o.x);
-					agp->xyz_max[0] = max(agp->xyz_max[0],-oo->xyz_max[0] + o.x);
-					agp->xyz_min[2] = min(agp->xyz_min[2],-oo->xyz_min[2] + o.y);
-					agp->xyz_max[2] = max(agp->xyz_max[2],-oo->xyz_max[2] + o.y);
+					agp->xyz_min[0] = min(agp->xyz_min[0],-oo->xyz_min[0] + o->x);
+					agp->xyz_max[0] = max(agp->xyz_max[0],-oo->xyz_max[0] + o->x);
+					agp->xyz_min[2] = min(agp->xyz_min[2],-oo->xyz_min[2] + o->y);
+					agp->xyz_max[2] = max(agp->xyz_max[2],-oo->xyz_max[2] + o->y);
 			}
-			agp->xyz_min[1] = min(agp->xyz_min[1], oo->xyz_min[1] + o.z);
-			agp->xyz_max[1] = max(agp->xyz_max[1], oo->xyz_max[1] + o.z);
+			agp->xyz_min[1] = min(agp->xyz_min[1], oo->xyz_min[1] + o->z);
+			agp->xyz_max[1] = max(agp->xyz_max[1], oo->xyz_max[1] + o->z);
+			o++;
 		}
 		else
-			o.obj = nullptr;
+			o = agp->objs.erase(o);
 	}
 	return true;
 }
