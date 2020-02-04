@@ -16,6 +16,7 @@ CHANGE HISTORY
 WED 2.2.0r2 2/3/20
    Bug Fix:
    - fix crash when .agp specifying non-existent annotations are visible in the map
+   - fix some underground scenery parts becoming visible when map is tilted
 
 WED 2.2.0r1 1/16/20
    Features:
