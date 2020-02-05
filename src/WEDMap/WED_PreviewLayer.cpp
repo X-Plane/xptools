@@ -1178,7 +1178,7 @@ struct	preview_object : public WED_PreviewItem {
 				if((o.show_lo + o.show_hi)/2 <= preview_level)
 					if(ppm * max(o.obj->xyz_max[0] - o.obj->xyz_min[0], o.obj->xyz_max[2] - o.obj->xyz_min[2]) > MIN_PIXELS_PREVIEW)
 					{
-						draw_obj_at_xyz(tman, o.obj, o.x,0,-o.y,o.r, g);
+						draw_obj_at_xyz(tman, o.obj, o.x, o.z, -o.y, o.r, g);
 					}
 			}
 			glPopMatrix();

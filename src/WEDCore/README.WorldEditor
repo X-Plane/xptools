@@ -13,7 +13,12 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 2.2.0r1
+WED 2.2.0r2 2/3/20
+   Bug Fix:
+   - fix crash when .agp specifying non-existent annotations are visible in the map
+   - fix some underground scenery parts becoming visible when map is tilted
+
+WED 2.2.0r1 1/16/20
    Features:
    - for library developers - support #object_wed/#obj_wed in .agp/.fac definitions
    - adjust details shown in map: show aircraft footprints earlier, show Lines in ATC mode
