@@ -68,6 +68,7 @@ struct	pol_info_t {
 	int			ddsHeight_Pxls;
 	vector <Bbox2>	mSubBoxes;       // for subTexture selection in PreviewPanel
 	Bbox2		mUVBox;              // set by PreviewPanel from selected subTexture
+	string		description;
 };
 
 #include "WED_FacadePreview.h"
@@ -115,12 +116,15 @@ struct	lin_info_t {
 	vector<float>	s1,sm,s2;
 	vector<caps>	start_caps, end_caps;
 	int			align;
+	bool		hasDecal;
+	string		description;
 };
 
 struct	str_info_t {
 	float		offset;
 	float		rotation;
 	vector<string> objs;
+	string		description;
 };
 
 struct	road_info_t {
@@ -141,6 +145,7 @@ struct agp_t {
 	vector<obj_t>	objs;
 	float			xyz_min[3];
 	float			xyz_max[3];
+	string			description;
 };
 
 

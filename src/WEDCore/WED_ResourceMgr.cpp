@@ -310,6 +310,7 @@ bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t const *& info)
 	out_info->start_caps.clear();
 	out_info->end_caps.clear();
 	out_info->align = 0;
+	out_info->hasDecal = false;
 	
 	while(!MFS_done(&s))
 	{
@@ -373,7 +374,15 @@ bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t const *& info)
 		{
 			out_info->align = MFS_double(&s);
 		}
-		MFS_string_eol(&s,NULL);
+		else if (MFS_string_match(&s,"DECAL_LIB", true))
+		{
+			out_info->hasDecal=true;
+		}
+		
+		if (MFS_string_match(&s,"#wed_text", false)) 
+			MFS_string_eol(&s,&out_info->description);
+		else 
+			MFS_string_eol(&s,NULL);
 	}
 	MemFile_Close(lin);
 	
@@ -431,7 +440,11 @@ bool	WED_ResourceMgr::GetStr(const string& path, str_info_t const *& info)
 			WED_clean_vpath(obj_res);
 			out_info->objs.push_back(obj_res);
 		}
-		MFS_string_eol(&s,NULL);
+		
+		if (MFS_string_match(&s,"#wed_text", false)) 
+			MFS_string_eol(&s,&out_info->description);
+		else
+			MFS_string_eol(&s,NULL);
 	}
 	MemFile_Close(str);
 	return true;
@@ -517,8 +530,11 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t const*& info)
 			MFS_string(&s,&pol->group);
 			pol->group_offset = MFS_int(&s);
 		}
-
-		MFS_string_eol(&s,NULL);
+		
+		if (MFS_string_match(&s,"#wed_text", false)) 
+			MFS_string_eol(&s,&pol->description);
+		else
+			MFS_string_eol(&s,NULL);
 	}
 	MemFile_Close(file);
 	process_texture_path(p,pol->base_tex);
@@ -1450,7 +1466,11 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 		{
 			is_mesh_shader = true;
 		}
-		MFS_string_eol(&s,NULL);
+		
+		if (MFS_string_match(&s,"#wed_text", false)) 
+			MFS_string_eol(&s,&agp->description);
+		else
+			MFS_string_eol(&s,NULL);
 	}
 	MemFile_Close(file);
 

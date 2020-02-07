@@ -324,6 +324,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 	const pol_info_t * pol = nullptr;
 	const lin_info_t * lin = nullptr;
 	const fac_info_t * fac = nullptr;
+	const str_info_t * str = nullptr;
 
 	if(!mRes.empty())
 	{	switch(mType) {
@@ -479,7 +480,6 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 		case res_String:
 			if(!o)
 			{
-				const str_info_t * str;
 				if(mResMgr->GetStr(mRes,str))
 					if(str->objs.size())
 						mResMgr->GetObjRelative(str->objs.front(), mRes, o);    // do the cheap thing: show only the first object. Could show a whole line ...
@@ -555,34 +555,35 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 					int front_side = raw_side;
 					if(front_side < 0 || front_side >= n_wall) front_side = 0;
 					
-					snprintf(buf1,120,"Wall \'%s\' intended for %s @ w=%.1lf%c", fac->wallName[front_side].c_str(), fac->wallUse[front_side].c_str(), 
+					snprintf(buf1, sizeof(buf1), "Wall \'%s\' intended for %s @ w=%.1lf%c", fac->wallName[front_side].c_str(), fac->wallUse[front_side].c_str(), 
 						mWid / (gIsFeet ? 0.3048 : 1), gIsFeet ? '\'' : 'm');
-					snprintf(buf2,120,"Type %d, %d wall%s for %s @ h=%dm", fac->is_new ? 2 : 1, n_wall, n_wall > 1 ? "s" : "", fac->h_range.c_str(), mHgt);
+					snprintf(buf2, sizeof(buf2), "Type %d, %d wall%s for %s @ h=%dm", fac->is_new ? 2 : 1, n_wall, n_wall > 1 ? "s" : "", fac->h_range.c_str(), mHgt);
 				}
 				else
-					sprintf(buf2,"No preview for this facade available");
+					sprintf(buf2, "No preview for this facade available");
 				break;
 			case res_Polygon:
-				if(pol && pol->hasDecal)
-				{
-					sprintf(buf1,"Has decal (not shown)");
-				}
+				if(pol)
+					snprintf(buf1, sizeof(buf1), "%s %s", pol->description.c_str(), pol->hasDecal ? "(decal not shown)" : "");
 				if (pol->mSubBoxes.size())
-				{
-					sprintf(buf2,"Select desired part of texture by clicking on it");
-				}
+					sprintf(buf2, "Select desired part of texture by clicking on it");
 				break;
 			case res_Line:
+				if(lin)
+					snprintf(buf1, sizeof(buf1), "%s %s", lin->description.c_str(), lin->hasDecal ? "(decal not shown)" : "");
 				if (lin && lin->s1.size() && lin->s2.size())
-				{ 
-					sprintf(buf2,"w~%.0f%s",lin->eff_width * (gIsFeet ? 100.0/2.54 : 100.0), gIsFeet ? "in" : "cm" );
-				}
+					snprintf(buf2, sizeof(buf2), "w~%.0f%s",lin->eff_width * (gIsFeet ? 100.0/2.54 : 100.0), gIsFeet ? "in" : "cm" );
 				break;
 			case res_Object:
 			case res_Forest:
 			case res_String:
 				if (o)
 				{
+					if(agp)
+						snprintf(buf1, sizeof(buf1), "%s", agp->description.c_str());
+					else if(str)
+						snprintf(buf1, sizeof(buf1), "%s", str->description.c_str());
+					
 					int n = sprintf(buf2,"max h=%.1f%s", o->xyz_max[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");
 					if (o->xyz_min[1] < -0.07)
 						sprintf(buf2+n,", below ground to %.1f%s", o->xyz_min[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");
