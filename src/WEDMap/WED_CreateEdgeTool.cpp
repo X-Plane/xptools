@@ -27,7 +27,7 @@
 #include "WED_RoadNode.h"
 #include "WED_TaxiRoute.h"
 #include "WED_RoadEdge.h"
-#include "WED_SimpleBoundaryNode.h"
+#include "WED_SimpleBezierBoundaryNode.h"
 #include "WED_MapZoomerNew.h"
 #include "WED_ResourceMgr.h"
 #include "WED_GISUtils.h"
@@ -304,8 +304,13 @@ void		WED_CreateEdgeTool::AcceptPath(
 			new_edge->SetName(mName);
 			new_edge->SetResource(mResource.value);
 			new_edge->AddSource(src,0);
-			dst = NULL;
 
+			dst = WED_SimpleBezierBoundaryNode::CreateTyped(GetArchive());
+			dst->SetParent(new_edge,idx);
+			dst->SetName("Shape Point");
+			static_cast<WED_GISPoint *>(dst)->SetLocation(gis_Geo,Midpoint2(pts[sp], pts[dp]));
+			
+			dst = NULL;
 			dist=frame_dist*frame_dist;
 			FindNear(host_for_merging, NULL, edge_class,pts[dp],dst,dist);
 			if(dst == NULL)
