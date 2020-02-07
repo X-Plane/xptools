@@ -125,19 +125,18 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 	if (res_type == res_Polygon)
 	{
 		int tex_x, tex_y;
-		float tex_aspect;
+		float tex_aspect = 1.0;
 		const pol_info_t * pol;
 
-		mResMgr->GetPol(mRes,pol);
-		TexRef	tref = mTexMgr->LookupTexture(pol->base_tex.c_str(),true, pol->wrap ? (tex_Compress_Ok|tex_Wrap) : tex_Compress_Ok);
-		if (tref)
+		if(mResMgr->GetPol(mRes,pol))
 		{
-			mTexMgr->GetTexInfo(tref,&tex_x,&tex_y,NULL, NULL, NULL, NULL);
-			tex_aspect = float(pol->proj_s * tex_x) / float(pol->proj_t * tex_y);
+			TexRef	tref = mTexMgr->LookupTexture(pol->base_tex.c_str(), true, pol->wrap ? (tex_Compress_Ok | tex_Wrap) : tex_Compress_Ok);
+			if (tref)
+			{
+				mTexMgr->GetTexInfo(tref, &tex_x, &tex_y, NULL, NULL, NULL, NULL);
+				tex_aspect = float(pol->proj_s * tex_x) / float(pol->proj_t * tex_y);
+			}
 		}
-		else
-			tex_aspect = 1.0;
-			
 		mDs = tex_aspect > 1.0 ? 1.0 : tex_aspect;
 		mDt = tex_aspect > 1.0 ? 1.0/tex_aspect : 1.0;
 	}
@@ -565,7 +564,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 			case res_Polygon:
 				if(pol)
 					snprintf(buf1, sizeof(buf1), "%s %s", pol->description.c_str(), pol->hasDecal ? "(decal not shown)" : "");
-				if (pol->mSubBoxes.size())
+				if (pol && pol->mSubBoxes.size())
 					sprintf(buf2, "Select desired part of texture by clicking on it");
 				break;
 			case res_Line:

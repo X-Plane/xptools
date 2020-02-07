@@ -277,7 +277,8 @@ bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t const *& info)
 		info = &i->second;
 		return true;
 	}
-	
+
+	info = nullptr;
 	string p = mLibrary->GetResourcePath(path);
 	MFMemFile * lin = MemFile_Open(p.c_str());
 	if(!lin) return false;
@@ -404,6 +405,7 @@ bool	WED_ResourceMgr::GetStr(const string& path, str_info_t const *& info)
 		return true;
 	}
 
+	info = nullptr;
 	string p = mLibrary->GetResourcePath(path);
 	MFMemFile * str = MemFile_Open(p.c_str());
 	if(!str) return false;
@@ -460,6 +462,7 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t const*& info)
 		return true;
 	}
 	
+	info = nullptr;
 	string p = mLibrary->GetResourcePath(path);
 	MFMemFile * file = MemFile_Open(p.c_str());
 	if(!file) return false;
