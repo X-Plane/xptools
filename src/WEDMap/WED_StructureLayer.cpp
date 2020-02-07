@@ -409,7 +409,17 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 						g->SetTexUnits(0);
 						glColor4fv(WED_Color_RGBA(struct_color));
 					}
-					
+					if(i == 0 && kind == gis_Edge)
+					{
+						GUI_PlotIcon(g, "handle_closeloop.png", b.p1.x(), b.p1.y(), 0.0, 1.1);
+						g->SetTexUnits(0);
+					}
+					if(i == n-1 && kind == gis_Edge)
+					{
+						GUI_PlotIcon(g, "handle_closeloop.png", b.p2.x(), b.p2.y(), 0.0, 1.1);
+						g->SetTexUnits(0);
+					}
+										
 					DrawLineAttrs(&*pts.begin(), pts.size(), attrs);
 					if(!attrs.empty()) glColor4fv(WED_Color_RGBA(struct_color));
 					

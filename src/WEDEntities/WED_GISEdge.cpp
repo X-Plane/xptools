@@ -205,27 +205,43 @@ void			WED_GISEdge::Rotate			(GISLayer_t l,const Point2& ctr, double a)
 
 int					WED_GISEdge::GetNumPoints(void ) const
 {
-	return 2;
+	return 2 + CountChildren();
 }
 
 IGISPoint *	WED_GISEdge::GetNthPoint (int n) const
 {
-	return dynamic_cast<IGISPoint *>(GetNthSource(n));
+	if(n == 0)
+		return dynamic_cast<IGISPoint *>(GetNthSource(0));
+	else if(n > this->CountChildren())
+		return dynamic_cast<IGISPoint *>(GetNthSource(1));
+	else
+		return dynamic_cast<IGISPoint *>(GetNthChild(n-1));
+	
 }
 
 int					WED_GISEdge::GetNumSides(void) const
 {
-	return 1;
+	return 1 + CountChildren();
 }
 
 bool				WED_GISEdge::GetSide  (GISLayer_t l,int n, Bezier2& b) const
 {
-	GetNthPoint(0)->GetLocation(l,b.p1);
-	GetNthPoint(1)->GetLocation(l,b.p2);
 
-	b.c1 = b.p1 + Vector2(ctrl_lon_lo.value,ctrl_lat_lo.value);
-	b.c2 = b.p2 + Vector2(ctrl_lon_hi.value,ctrl_lat_hi.value);
-
+	IGISPoint * igp1 = GetNthPoint(n);
+	IGISPoint * igp2 = GetNthPoint(n+1);
+	
+	igp1->GetLocation(l,b.p1);
+	if(n == 0)
+		b.c1 = b.p1 + Vector2(ctrl_lon_lo.value,ctrl_lat_lo.value);
+	else
+		dynamic_cast<IGISPoint_Bezier *>(igp1)->GetControlHandleHi(l, b.c1);
+		
+	igp2->GetLocation(l,b.p2);
+	if(n >= CountChildren())
+		b.c2 = b.p2 + Vector2(ctrl_lon_hi.value,ctrl_lat_hi.value);
+	else
+		dynamic_cast<IGISPoint_Bezier *>(igp2)->GetControlHandleLo(l, b.c2);
+	
 	return (b.p1 != b.c1 || b.p2 != b.c2);
 }
 
@@ -337,10 +353,11 @@ void		WED_GISEdge::SetSideBezier(GISLayer_t layer, const Bezier2& b)
 void		WED_GISEdge::Validate(void)
 {
 	WED_Entity::Validate();
-
-	DebugAssert(CountSources() == 2);
+	
+//	DebugAssert(CountSources() == 2);
 	DebugAssert(CountViewers() == 0);
-	DebugAssert(CountChildren() == 0);
+	
+	// DebugAssert(CountChildren() == 0);   ok for roads only, though
 
 	IGISPoint * p = SAFE_CAST(IGISPoint, GetNthSource(0));
 	DebugAssert(p);

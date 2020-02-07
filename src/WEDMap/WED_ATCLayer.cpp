@@ -237,101 +237,113 @@ bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, G
 
 		WED_MapZoomerNew * z = GetZoomer();
 		double mtr = seg->GetWidth();
+		
+		int num_sides = seg->GetNumSides();
+		int layers = min(max(seg->GetStartLayer(), seg->GetEndLayer()), 3);
 
-		Bezier2 b;
-		bool isBez = seg->GetSide(gis_Geo, 0, b);
-
-		if(mtr > 0.0)
+		for(int ns = 0 ; ns < num_sides; ns++)
 		{
-			g->SetState(0, 0, 0, 0, 1, 0, 0);
-			glColor4f(0.4, 1, 1, 0.4);         // desaturated cyan
+			Bezier2 b;
+			bool isBez = seg->GetSide(gis_Geo, ns, b);
 
-			if(isBez)
+			if(mtr > 0.0)
 			{
-				vector<Point2> pts;
-				vector<Point2> strip;
+				g->SetState(0, 0, 0, 0, 1, 0, 0);
+				glColor4f(0.4, 1, 1, 0.4);         // desaturated cyan
 
-				double offs_pix = 0.5 * mtr * z->GetPPM();
-
-				b.p1 = z->LLToPixel(b.p1);
-				b.p2 = z->LLToPixel(b.p2);
-				b.c1 = z->LLToPixel(b.c1);
-				b.c2 = z->LLToPixel(b.c2);
-
-				int point_count = BezierPtsCount(b,z);
-				pts.reserve(point_count+1);
-
-				for (int n = 0; n <= point_count; ++n)
-					pts.push_back(b.midpoint((float) n / (float) point_count));
-
-				strip.reserve(2*pts.size());
-
-				for (int i = 0; i <= point_count; ++i)
+				if(isBez)
 				{
-					Vector2	dir1,dir2;
-					if (i > 0  )           dir1 = Vector2(pts[i-1],pts[i  ]);
-					if (i < point_count-1) dir2 = Vector2(pts[i  ],pts[i+1]);
-					Vector2	dir = dir1+dir2;
-					dir = dir.perpendicular_ccw();
-					dir.normalize();
-					dir *= offs_pix;
-					strip.push_back(pts[i] - dir);
-					strip.push_back(pts[i] + dir);
-				}
-				glBegin(GL_TRIANGLE_STRIP);
-				glVertex2v(strip.data(), strip.size());
-				glEnd();
+					vector<Point2> pts;
+					vector<Point2> strip;
 
-				int layers = min(max(seg->GetStartLayer(), seg->GetEndLayer()), 3);
-				if(layers)
-				{
-					glColor4f(0.4, 1, 1, 1.0);         // bright cyan
-					glLineWidth(2);
-					for(int l = 1; l <= layers; l++)
+					double offs_pix = 0.5 * mtr * z->GetPPM();
+
+					b.p1 = z->LLToPixel(b.p1);
+					b.p2 = z->LLToPixel(b.p2);
+					b.c1 = z->LLToPixel(b.c1);
+					b.c2 = z->LLToPixel(b.c2);
+
+					int point_count = BezierPtsCount(b,z);
+					pts.reserve(point_count+1);
+
+					for (int n = 0; n <= point_count; ++n)
+						pts.push_back(b.midpoint((float) n / (float) point_count));
+
+					strip.reserve(2*pts.size());
+
+					for (int i = 0; i <= point_count; ++i)
 					{
-						int skip_pts = seg->GetStartLayer() >= l ? 0 :  pts.size()/4;
-						Point2 * first = pts.data() + skip_pts;
-						int num_pts = pts.size() - skip_pts - (seg->GetEndLayer() >= l ? 0 : pts.size()/4);
+						Vector2	dir1,dir2;
+						if (i > 0  )           dir1 = Vector2(pts[i-1],pts[i  ]);
+						if (i < point_count-1) dir2 = Vector2(pts[i  ],pts[i+1]);
+						Vector2	dir = dir1+dir2;
+						dir = dir.perpendicular_ccw();
+						dir.normalize();
+						dir *= offs_pix;
+						strip.push_back(pts[i] - dir);
+						strip.push_back(pts[i] + dir);
+					}
+					glBegin(GL_TRIANGLE_STRIP);
+					glVertex2v(strip.data(), strip.size());
+					glEnd();
 
-						glShapeOffset2v(GL_LINE_STRIP, first, num_pts,  offs_pix + 3 * (l-1));
-						glShapeOffset2v(GL_LINE_STRIP, first, num_pts, -offs_pix - 3 * (l-1));
+					if(layers)
+					{
+						glColor4f(0.4, 1, 1, 1.0);         // bright cyan
+						glLineWidth(2);
+						for(int l = 1; l <= layers; l++)
+						{
+							int skip_pts = seg->GetStartLayer() >= l ? 0 :  pts.size()/4;
+							Point2 * first = pts.data() + skip_pts;
+							int num_pts = pts.size() - skip_pts - (seg->GetEndLayer() >= l ? 0 : pts.size()/4);
+
+							glShapeOffset2v(GL_LINE_STRIP, first, num_pts,  offs_pix + 3 * (l-1));
+							glShapeOffset2v(GL_LINE_STRIP, first, num_pts, -offs_pix - 3 * (l-1));
+						}
 					}
 				}
-			}
-			else
-			{
-				Point2 ends[2]; ends[0] = b.p1; ends[1] = b.p2;
-				Point2 c[4];
-				Quad_2to4(ends, mtr, c);
-				z->LLToPixelv(c,c,4);
-
-				glBegin(GL_TRIANGLE_FAN);
-				glVertex2v(c,4);
-				glEnd();
-
-				int layers = min(max(seg->GetStartLayer(), seg->GetEndLayer()), 3);
-				if(layers)
+				else
 				{
-					glColor4f(0.4, 1, 1, 1.0);         // bright cyan
-					glLineWidth(2);
-					for(int l = 1; l <= layers; l++)
+					Point2 ends[2]; ends[0] = b.p1; ends[1] = b.p2;
+					Point2 c[4];
+					Quad_2to4(ends, mtr, c);
+					z->LLToPixelv(c,c,4);
+
+					glBegin(GL_TRIANGLE_FAN);
+					glVertex2v(c,4);
+					glEnd();
+
+					if(layers)
 					{
-						Point2 sides[4] = { c[0], c[1], c[2], c[3] };
-						Vector2 dir(c[0], c[1]);
-						if(seg->GetStartLayer() < l) { sides[0] += dir * 0.25; sides[3] += dir * 0.25; }
-						if(seg->GetEndLayer() < l)   { sides[1] -= dir * 0.25; sides[2] -= dir * 0.25; }
-
-						if(l > 1)
+						glColor4f(0.4, 1, 1, 1.0);         // bright cyan
+						glLineWidth(2);
+						for(int l = 1; l <= layers; l++)
 						{
-							Vector2 perp(c[1],c[2]);
-							perp.normalize();
-							perp *= 3 * (l - 1);
-							sides[0] -= perp; sides[1] -= perp; sides[2] += perp; sides[3] += perp;
-						}
+							Point2 sides[4] = { c[0], c[1], c[2], c[3] };
+							Vector2 dir(c[0], c[1]);
+							if(seg->GetStartLayer() < l)
+							{
+								if(ns < num_sides - 1) continue;
+								sides[0] += dir * 0.25; sides[3] += dir * 0.25;
+							}
+							if(seg->GetEndLayer() < l)
+							{
+								if(ns > 0) continue;
+								sides[1] -= dir * 0.25; sides[2] -= dir * 0.25;
+							}
 
-						glBegin(GL_LINES);
-						glVertex2v(sides,4);
-						glEnd();
+							if(l > 1)
+							{
+								Vector2 perp(c[1],c[2]);
+								perp.normalize();
+								perp *= 3 * (l - 1);
+								sides[0] -= perp; sides[1] -= perp; sides[2] += perp; sides[3] += perp;
+							}
+
+							glBegin(GL_LINES);
+							glVertex2v(sides,4);
+							glEnd();
+						}
 					}
 				}
 			}
