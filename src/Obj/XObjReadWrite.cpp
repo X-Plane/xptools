@@ -1464,6 +1464,13 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		{
 			outObj.fixed_heading = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 		}
+		else if(TXT_MAP_str_match_space(cur_ptr, end_ptr, "#wed_text", xfals))
+		{
+			TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, &outObj.description);
+			ate_eoln=true;
+		}
+		
+
 /******************************************************************************************************************************/
 		// DEFAULT
 /******************************************************************************************************************************/

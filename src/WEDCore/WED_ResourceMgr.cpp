@@ -1104,6 +1104,7 @@ bool	WED_ResourceMgr::GetFor(const string& path, XObj8 const *& obj)
 		return true;
 	}
 	
+	obj = nullptr;
 	string p = mLibrary->GetResourcePath(path);
 	
 	MFMemFile * fi = MemFile_Open(p.c_str());
@@ -1122,6 +1123,7 @@ bool	WED_ResourceMgr::GetFor(const string& path, XObj8 const *& obj)
 	vector <tree_t> tree;
 	float scale_x=256, scale_y=256, space_x=30, space_y=30, rand_x=0, rand_y=0;
 	string tex;
+	string desc;
 
 	while(!MFS_done(&s))
 	{
@@ -1162,8 +1164,12 @@ bool	WED_ResourceMgr::GetFor(const string& path, XObj8 const *& obj)
 
 			if (fabs(t.w) > 0.001 && t.y > 0.001 )   // there are some .for with zero size tree's in XP10 and OpensceneryX uses negative widths ...
 				tree.push_back(t);
-		}	
-		MFS_string_eol(&s,NULL);
+		}
+		
+		if (MFS_string_match(&s,"#wed_text", false))
+			MFS_string_eol(&s, &desc);
+		else
+			MFS_string_eol(&s, NULL);
 	}
 	MemFile_Close(fi);
 
@@ -1287,7 +1293,7 @@ bool	WED_ResourceMgr::GetFor(const string& path, XObj8 const *& obj)
 	cmd.idx_offset = 0;
 	cmd.idx_count  = 6*quads;
 	new_obj->lods.back().cmds.push_back(cmd);
-
+	new_obj->description = desc;
 	return true;
 }
 

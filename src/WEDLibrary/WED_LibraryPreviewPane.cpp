@@ -582,6 +582,8 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 						snprintf(buf1, sizeof(buf1), "%s", agp->description.c_str());
 					else if(str)
 						snprintf(buf1, sizeof(buf1), "%s", str->description.c_str());
+					else
+						snprintf(buf1, sizeof(buf1), "%s", o->description.c_str());
 					
 					int n = sprintf(buf2,"max h=%.1f%s", o->xyz_max[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");
 					if (o->xyz_min[1] < -0.07)
