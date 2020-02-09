@@ -94,7 +94,9 @@ struct fac_info_t : public REN_FacadeLOD_t {
 	bool					noroofmesh;
 	bool					nowallmesh;
 	list<REN_facade_floor_t>	floors;
-	vector<string>		objs;			// names of type 2 objects
+	vector<string>			objs;				// names of type 2 objects
+	vector<const XObj8 *>	xobjs;				// names of type 2 objects
+
 	float					roof_scale_s;
 	float					roof_scale_t;
 	

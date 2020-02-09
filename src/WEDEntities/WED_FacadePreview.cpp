@@ -1195,8 +1195,8 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 
 	for(auto l : obj_locs)
 	{
-		const XObj8 * oo;
-		if(rman->GetObjRelative(info.objs[l.idx].c_str(), vpath, oo) && !cull_obj(oo, ppm_for_culling))
+		const XObj8 * oo(info.xobjs[l.idx]);
+		if(oo && !cull_obj(oo, ppm_for_culling))
 		{
 			// facade is aligned so midpoint of first wall is origin
 			draw_obj_at_xyz(tman, oo,

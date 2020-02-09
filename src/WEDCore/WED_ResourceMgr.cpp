@@ -1064,6 +1064,14 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 				}
 			}
 			if(fac->noroofmesh) fac->has_roof = false;
+
+			for(auto& obj_nam : fac->objs)
+			{
+				const XObj8 * o;
+				fac->xobjs.push_back(nullptr);
+				if(GetObjRelative(obj_nam.c_str(), p, o))
+					fac->xobjs.back() = o;
+			}
 		}
 		process_texture_path(p,fac->wall_tex);
 		process_texture_path(p,fac->roof_tex);
