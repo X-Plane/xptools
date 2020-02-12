@@ -72,8 +72,8 @@ public:
 	virtual	void				Shuffle(GISLayer_t l);
 	virtual	IGISPoint *			SplitSide   (const Point2& p, double dist);
 
-	virtual	void				SetSide(GISLayer_t layer, const Segment2& b);
-	virtual	void				SetSideBezier(GISLayer_t layer, const Bezier2& b);
+	virtual	void				SetSide(GISLayer_t layer, const Segment2& b, int n = 0);
+	virtual	void				SetSideBezier(GISLayer_t layer, const Bezier2& b, int n =0);
 
 	virtual	void				Validate(void);
 

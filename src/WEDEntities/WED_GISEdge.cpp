@@ -23,6 +23,7 @@
 
 #include "WED_GISEdge.h"
 #include "GISUtils.h"
+#include "WED_GroupCommands.h"
 
 TRIVIAL_COPY(WED_GISEdge, WED_Entity)
 
@@ -59,9 +60,15 @@ void			WED_GISEdge::GetBounds		(GISLayer_t l, Bbox2&  bounds) const
 {
 	CacheBuild(cache_Spatial);
 
-	Bezier2		b;
-	GetSide(l,0,b);
-	b.bounds(bounds);
+	bounds = Bbox2();
+	for(int i = 0; i < GetNumSides(); i++)
+	{
+		Bezier2		bez;
+		GetSide(l,i,bez);
+		Bbox2 bds;
+		bez.bounds(bds);
+		bounds += bds;
+	}
 }
 
 bool			WED_GISEdge::IntersectsBox	(GISLayer_t l,const Bbox2&  bounds) const
@@ -275,24 +282,45 @@ WED_Thing *		WED_GISEdge::CreateSplitNode()
 
 
 
-IGISPoint *	WED_GISEdge::SplitSide   (const Point2& p, double dist)
+IGISPoint *	WED_GISEdge::SplitSide   (const Point2& p, double dist)  // MM: add argument what segment to split
 {
-	Bezier2		b;
-	bool is_b = GetSide(gis_Geo,0,b);
-	if (b.p1 == p || b.p2 == p) return NULL;
+	Bezier2		nearest_side_b;
+	
+	int nearest_side = -1;
+	bool nearest_is_b = false;
+	double nearest_dist = 999.0; // dist * dist;
 
-	WED_Thing * p1 = GetNthSource(0);
-	WED_Thing * p2 = GetNthSource(1);
+	int ns = this->GetNumSides();
+	for(int i = 0; i < ns; i++)
+	{
+		Bezier2		b;
+		bool is_b = this->GetSide(gis_Geo,i,b);
+		if (b.p1 == p || b.p2 == p) return NULL;
+		double d = b.as_segment().squared_distance(p);          // MM: thats in degrees, i.e. not exactly a circle. 
+		                                                        // And it does not take beziers into account, either.
+//printf("testing side #%d dist %lf\n",i, sqrt(d*1e5));
+		if(d < nearest_dist)
+		{
+			nearest_dist = d;
+			nearest_side = i;
+			nearest_is_b = is_b;
+			nearest_side_b = b;
+		}
+	}
+	
+	if(nearest_side < 0) return NULL;       // nothing is close enough
 
 	WED_Thing * np = CreateSplitNode();
+	
+	WED_Thing * p1 = GetNthSource(0);
+	WED_Thing * p2 = GetNthSource(1);
 	np->SetParent(p1->GetParent(), p1->GetMyPosition()+1);
 
 	string name;
 	p1->GetName(name);
-//	name += "(split)";
 	np->SetName(name);
 
-	WED_GISEdge * me2 = dynamic_cast<WED_GISEdge*>(this->Clone());
+	WED_GISEdge * me2 = dynamic_cast<WED_GISEdge*>(this->Clone()); // this also clones all children it may have
 
 	me2->SetParent(this->GetParent(),this->GetMyPosition()+1);
 
@@ -301,52 +329,92 @@ IGISPoint *	WED_GISEdge::SplitSide   (const Point2& p, double dist)
 
 	me2->AddSource(np,0);
 	me2->RemoveSource(p1);
-
-	if(is_b)
+	
+//printf("WED_SplitEdge this, me2 children %d %d, side #%d \n", this->CountChildren(), me2->CountChildren(), nearest_side);
+	
+	if(ns > 1)              // delete existing ShapePoints that are on the abandoned side of the intersection
 	{
-		double t = b.approx_t_for_xy(p.x(), p.y());
+		set<WED_Thing *> obsolete_nodes;
+		for(int i = 0; i < ns-1; i++)
+		{
+			if(i < nearest_side)
+				obsolete_nodes.insert(me2->GetNthChild(i));
+			else
+				obsolete_nodes.insert(this->GetNthChild(i));
+		}
+		WED_RecursiveDelete(obsolete_nodes);
+	}
+
+	if(nearest_is_b)
+	{
+		double t = nearest_side_b.approx_t_for_xy(p.x(), p.y());
 		Bezier2 b1, b2;
-		b.partition(b1, b2, t);
-		this->SetSideBezier(gis_Geo, b1);
-		me2->SetSideBezier(gis_Geo,b2);
+		nearest_side_b.partition(b1, b2, t);
+		this->SetSideBezier(gis_Geo, b1, nearest_side);
+		me2->SetSideBezier(gis_Geo, b2, 0);
 	}
 	else
 	{
 		Segment2 s1, s2;
-		Point2 pp = b.as_segment().projection(p);
+		Point2 pp = nearest_side_b.as_segment().projection(p);
 
-		s1.p1 = b.p1;
+		s1.p1 = nearest_side_b.p1;
 		s1.p2 = pp;
 		s2.p1 = pp;
-		s2.p2 = b.p2;
+		s2.p2 = nearest_side_b.p2;
 
-		this->SetSide(gis_Geo, s1);
-		me2->SetSide(gis_Geo, s2);
+		this->SetSide(gis_Geo, s1, nearest_side);
+		me2->SetSide(gis_Geo, s2, 0);
 	}
-
+	
 	return dynamic_cast<IGISPoint *>(np);
 }
 
-void		WED_GISEdge::SetSide(GISLayer_t layer, const Segment2& s)
+void		WED_GISEdge::SetSide(GISLayer_t layer, const Segment2& s, int n)
 {
 	StateChanged();
-	GetNthPoint(0)->SetLocation(gis_Geo,s.p1);
-	GetNthPoint(1)->SetLocation(gis_Geo,s.p2);
-	ctrl_lat_lo = 0.0;
-	ctrl_lon_lo = 0.0;
-	ctrl_lat_hi = 0.0;
-	ctrl_lon_hi = 0.0;
+	GetNthPoint(n)->SetLocation(gis_Geo,s.p1);
+	GetNthPoint(n+1)->SetLocation(gis_Geo,s.p2);
+	if(n == 0)
+	{
+		ctrl_lat_lo = 0.0;
+		ctrl_lon_lo = 0.0;
+	}
+	if( n > CountChildren() + 1)
+	{
+		ctrl_lat_hi = 0.0;
+		ctrl_lon_hi = 0.0;
+	}
 }
 
-void		WED_GISEdge::SetSideBezier(GISLayer_t layer, const Bezier2& b)
+void		WED_GISEdge::SetSideBezier(GISLayer_t layer, const Bezier2& b, int n)
 {
 	StateChanged();
-	GetNthPoint(0)->SetLocation(gis_Geo,b.p1);
-	GetNthPoint(1)->SetLocation(gis_Geo,b.p2);
-	ctrl_lat_lo = b.c1.y() - b.p1.y();
-	ctrl_lon_lo = b.c1.x() - b.p1.x();
-	ctrl_lat_hi = b.c2.y() - b.p2.y();
-	ctrl_lon_hi = b.c2.x() - b.p2.x();
+	GetNthPoint(n)->SetLocation(gis_Geo,b.p1);
+	GetNthPoint(n+1)->SetLocation(gis_Geo,b.p2);
+	if(n == 0)
+	{
+		ctrl_lat_lo = b.c1.y() - b.p1.y();
+		ctrl_lon_lo = b.c1.x() - b.p1.x();
+	}
+	else
+	{
+		auto bp = dynamic_cast<IGISPoint_Bezier *>(GetNthPoint(n));
+		DebugAssert(bp != nullptr);
+		if(bp) bp->SetControlHandleLo(gis_Geo, Point2(b.c1.x()-b.p1.x(),b.c1.y()-b.p1.y()));
+	}
+	
+	if( n == CountChildren() + 1)
+	{
+		ctrl_lat_hi = b.c2.y() - b.p2.y();
+		ctrl_lon_hi = b.c2.x() - b.p2.x();
+	}
+	else
+	{
+		auto bp = dynamic_cast<IGISPoint_Bezier *>(GetNthPoint(n+1));
+		DebugAssert(bp != nullptr);
+		if(bp) bp->SetControlHandleLo(gis_Geo, Point2(b.c2.x()-b.p2.x(),b.c2.y()-b.p2.y()));
+	}
 }
 
 
@@ -355,6 +423,11 @@ void		WED_GISEdge::Validate(void)
 	WED_Entity::Validate();
 	
 //	DebugAssert(CountSources() == 2);
+	if(CountSources() < 2)             // MM: if the node at the very end of the edge is deleted - we need to find out
+	{                                  // which the one source we still have actually represents.
+									   // Note to self: Make that vector in WED_Thing instead a fixed array[2] - so we don't have to guess.
+		printf("Only one source left !!");
+	}
 	DebugAssert(CountViewers() == 0);
 	
 	// DebugAssert(CountChildren() == 0);   ok for roads only, though

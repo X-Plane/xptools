@@ -169,4 +169,6 @@ typedef WED_Thing * (*CreateThingFunc)(WED_Archive * parent);
 // Converts the selected objects to the type produced by 'create'.
 void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create);
 
+void WED_RecursiveDelete(set<WED_Thing *>& who);
+
 #endif /* WED_GroupCommands_H */

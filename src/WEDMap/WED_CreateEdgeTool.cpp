@@ -159,7 +159,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 	sel->Clear();
 	double frame_dist = fabs(GetZoomer()->YPixelToLat(mSlop.value)-GetZoomer()->YPixelToLat(0));
 
-	const char * edge_class = WED_TaxiRoute::sClass;
+	sClass_t edge_class = WED_TaxiRoute::sClass;
 #if ROAD_EDITING
 	if(mType == create_Road)
 		edge_class = WED_RoadEdge::sClass;
@@ -171,6 +171,9 @@ void		WED_CreateEdgeTool::AcceptPath(
 	// For each node we want to add, we are going to find a nearby existing node - and if we find one, we
 	// lock our location to theirs.  This "direct hit" will get consoldiated during create.  (By moving our
 	// path first, we don't get false intersections when the user meant to hit end to end.)
+	
+	// limited to things inside the same group !!!
+	
 	for(int p = 0; p < pts.size(); ++p)
 	{
 		double	dist=frame_dist*frame_dist;
@@ -187,18 +190,25 @@ void		WED_CreateEdgeTool::AcceptPath(
 	/************************************************************************************************
 	 * SECOND SNAPPING PASS - LOCK NEW PTS TO EXISTING EDGES
 	 ************************************************************************************************/
-	// Next: we need to see if our ndoes go near existing by existing edges...in that case,
+	// Next: we need to see if our nodes go near existing by existing edges...in that case,
 	// split the edges and snap us over.
+
+	// limited to things inside the same group !!!
+
 	for (int p = 0; p < pts.size(); ++p)
 	{
 		double sqdist=frame_dist*frame_dist;
 		IGISPointSequence * seq = NULL;
-		FindNearP2S(host_for_merging, NULL, edge_class,pts[p], seq, sqdist ,frame_dist);
+		FindNearP2S(host_for_merging, NULL, edge_class, pts[p], seq, sqdist ,frame_dist);
 		if(seq)
 		{
+		printf("FindNrP2S\n");
 			IGISPoint * pp = seq->SplitSide(pts[p], 0.001);
 			if(pp)
+			{
+		printf("SplitSide result is point\n");
 				pp->GetLocation(gis_Geo,pts[p]);
+			}
 		}
 	}
 
@@ -282,80 +292,102 @@ void		WED_CreateEdgeTool::AcceptPath(
 	{
 		WED_RoadEdge * new_edge = NULL;
 		
-		FindNear(host_for_merging, NULL, edge_class, pts[0], src, dist);
-		if(src == NULL)
+		bool start_edge = true;
+		bool start_edge_next = false;
+
+		int sp = 0;
+		int stop = pts.size(); // closed ? pts.size() : pts.size()-1;
+		
+	printf("pts.size=%d\n",stop);
+		for(int p = 0; p < stop; p++)
 		{
-			src = WED_RoadNode::CreateTyped(GetArchive());
-			src->SetParent(host_for_parent,idx);
-			src->SetName(mName.value + "_start");
-			static_cast<WED_GISPoint *>(src)->SetLocation(gis_Geo,pts[0]);
-		}
-
-		int stop = closed ? pts.size() : pts.size()-1;
-		for(int p = 1; p <= stop; p++)
-		{
-			int sp = p - 1;
-			int dp = p % pts.size();
-
-			new_edge = WED_RoadEdge::CreateTyped(GetArchive());
-			new_edge->SetSubtype(mSubtype.value);
-			new_edge->SetStartLayer(mLayer.value);
-			new_edge->SetEndLayer(mLayer.value);
-			new_edge->SetName(mName);
-			new_edge->SetResource(mResource.value);
-			new_edge->AddSource(src,0);
-
-			dst = WED_SimpleBezierBoundaryNode::CreateTyped(GetArchive());
-			dst->SetParent(new_edge,idx);
-			dst->SetName("Shape Point");
-			static_cast<WED_GISPoint *>(dst)->SetLocation(gis_Geo,Midpoint2(pts[sp], pts[dp]));
-			
-			dst = NULL;
-			dist=frame_dist*frame_dist;
-			FindNear(host_for_merging, NULL, edge_class,pts[dp],dst,dist);
-			if(dst == NULL)
+			dst = nullptr;
+			dist = frame_dist*frame_dist;
+			FindNear(host_for_merging, NULL, edge_class, pts[p], dst, dist);
+			if(!dst)
 			{
-				dst = WED_RoadNode::CreateTyped(GetArchive());
-				dst->SetParent(host_for_parent,idx);
-				dst->SetName(mName.value+"_stop");
-				static_cast<WED_GISPoint *>(dst)->SetLocation(gis_Geo,pts[dp]);
-			}
-			new_edge->AddSource(dst,1);
-
-			if(has_dirs[sp])
-			{
-				if(has_dirs[dp])
-					new_edge->SetSideBezier(gis_Geo,Bezier2(in_pts[sp],dirs_hi[sp],dirs_lo[dp],in_pts[dp]));
+				if(start_edge || p == stop-1)
+				{
+		printf("CreateRoadNode\n");
+					dst = WED_RoadNode::CreateTyped(GetArchive());
+					dst->SetName(mName.value + "_start");
+				}
 				else
-					new_edge->SetSideBezier(gis_Geo,Bezier2(in_pts[sp],dirs_hi[sp],in_pts[dp],in_pts[dp]));
+				{
+		printf("CreateBezierNode\n");
+					dst = WED_SimpleBezierBoundaryNode::CreateTyped(GetArchive());
+					dst->SetName("Shape Point");
+				}
+				static_cast<WED_GISPoint *>(dst)->SetLocation(gis_Geo,pts[p]);
+				start_edge_next = false;
 			}
 			else
+				start_edge_next = p != 0;
+			
+			if((start_edge && p > 0) || p == stop-1)
 			{
-				if(has_dirs[dp])
-					new_edge->SetSideBezier(gis_Geo,Bezier2(in_pts[sp],in_pts[sp],dirs_lo[dp],in_pts[dp]));
+	printf("Finish Edge\n");
+				new_edge->AddSource(dst,1);
+/*				if(has_dirs[sp])
+				{
+					if(has_dirs[p])
+						new_edge->SetSideBezier(gis_Geo,Bezier2(in_pts[sp],dirs_hi[sp],dirs_lo[p],in_pts[p]));
+					else
+						new_edge->SetSideBezier(gis_Geo,Bezier2(in_pts[sp],dirs_hi[sp],in_pts[p],in_pts[p]));
+				}
+				else if(has_dirs[p])
+						new_edge->SetSideBezier(gis_Geo,Bezier2(in_pts[sp],in_pts[sp],dirs_lo[p],in_pts[p]));
+*/						
+				// Do this last - half-built edge inserted the world destabilizes accessors.
+				new_edge->SetParent(host_for_parent,idx);
+				tool_created_edges.push_back(new_edge);
+				Bbox2 new_edge_bounds;
+				new_edge->GetBounds(gis_Geo,new_edge_bounds);
+				tool_created_bounds += new_edge_bounds;
+				sel->Insert(new_edge);
 			}
-			// Do this last - half-built edge inserted the world destabilizes accessors.
-			new_edge->SetParent(host_for_parent,idx);
-			tool_created_edges.push_back(new_edge);
-			Bbox2 new_edge_bounds;
-			new_edge->GetBounds(gis_Geo,new_edge_bounds);
-			tool_created_bounds += new_edge_bounds;
-			sel->Insert(new_edge);
-			src = dst;
+				
+			if(start_edge)
+			{
+	printf("Start Edge\n");
+				new_edge = WED_RoadEdge::CreateTyped(GetArchive());
+				new_edge->SetSubtype(mSubtype.value);
+				new_edge->SetStartLayer(mLayer.value);
+				new_edge->SetEndLayer(mLayer.value);
+				new_edge->SetName(mName);
+				new_edge->SetResource(mResource.value);
+				new_edge->AddSource(dst,0);
+				if(start_edge) sp = p;
+			}
+			
+			if(start_edge || p == stop-1)
+				dst->SetParent(host_for_parent,idx);
+			else
+				dst->SetParent(new_edge,new_edge->CountChildren());
+
+			start_edge = start_edge_next;
+	printf("next interation with start = %d\n",start_edge);
 		}
 	}
 	
 	//Collect edges in the current airport
 	vector<WED_GISEdge*> all_edges;
-	CollectRecursive(host_for_parent, back_inserter(all_edges),edge_class);
+	CollectRecursive(host_for_parent, back_inserter(all_edges), edge_class);
+	
+printf("all_edges %ld\n", all_edges.size());
+
 	//filter them for just the crossing ones
 	set<WED_GISEdge*> crossing_edges = WED_do_select_crossing(all_edges, tool_created_bounds);
+
+printf("crossing_edges %ld\n", crossing_edges.size());
 
 	//convert, and run split!
 	vector<split_edge_info_t> edges_to_split;
 
 	for(set<WED_GISEdge*>::iterator e = crossing_edges.begin(); e != crossing_edges.end(); ++e)
 		edges_to_split.push_back(cast_WED_GISEdge_to_split_edge_info_t(*e, find(tool_created_edges.begin(), tool_created_edges.end(), *e) != tool_created_edges.end()));
+
+printf("to_split_edges %ld\n", edges_to_split.size());
 
 	edge_to_child_edges_map_t new_pieces = run_split_on_edges(edges_to_split);
 
@@ -422,6 +454,7 @@ void WED_CreateEdgeTool::FindNear(WED_Thing * host, IGISEntity * ent, const char
 			if(filter == NULL || filter == t->GetClass())
 			if((ps = dynamic_cast<IGISPointSequence*>(e)) != NULL)
 			{
+	printf("FindNear NumPts = %d\n", ps->GetNumPoints());
 				for(int n = 0; n < ps->GetNumPoints(); ++n)
 				{
 					p = ps->GetNthPoint(n);
