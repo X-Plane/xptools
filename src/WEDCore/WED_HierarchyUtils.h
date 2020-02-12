@@ -68,50 +68,29 @@ void CollectRecursiveNoNesting(WED_Thing * thing, OutputIterator oi, sClass_t sC
 	CollectRecursive(thing, oi, ThingNotHidden, TakeAlways, sClass, 1);
 }
 
-//Preforms a depth first traversal of the WED Hierarchy, first checking if its the right type, then its visibility, then other Takeion critera
-//A maximum level of tree levels can be set
+//Preforms a depth first traversal of the WED Hierarchy, checking if it visible, the right type AND THEN other Take critera
+//A maximum level of tree levels to recurse into can be set
+
 template<typename OutputIterator, typename VisibilityPred, typename TakePred>
 void CollectRecursive(WED_Thing * thing, OutputIterator oi, VisibilityPred visibility_pred, TakePred take_pred, sClass_t sClass ="", int max_tree_levels = INT_MAX)
 {
-	//Quick sClass Test
 	typedef typename OutputIterator::container_type::value_type VT;
-
-	//Test type (by sClass then by dynamic cast), if its visible enough, and if it should be selected
-	VT ct = NULL;
-	if (sClass == thing->GetClass())
-	{
-		ct = static_cast<VT>(thing);
-	}
-	//Test two, by dynamic_cast
-	else 
-	{
-		ct = dynamic_cast<VT>(thing);
-	}
-
-	bool took_thing = true;
 
 	if (visibility_pred(thing))
 	{
-		if (ct != NULL)
+		if (sClass == "" || sClass == thing->GetClass())
 		{
-			//ct is of type, is visible enough : collect, if it passes take_pred
-			if (take_pred(thing) == true)
+			if (take_pred(thing) == true )
 			{
-				//Push back the matching WED_Thing*
-				oi = ct;
-				took_thing = true;
+				VT ct = dynamic_cast<VT>(thing); // granted, if oi is of suitable type to just static_cast<>, we miss an opportunity for speedup
+				if (ct) 
+				{
+					oi = ct;
+					return; // stop going further down, i.e. assume this is never used to collect things that can be nested, like WED_Group's
+				}
 			}
 		}
-		//else ct is not of type, visible enough: continue
-	}
-	else
-	{
-		//ct is not of type, not visible enough or ct is of type, not visible enough
-		return;
-	}
-
-	if (!took_thing || max_tree_levels > 0)
-	{
+		// thing is not of type, can't be taken or casted to the OutputIterator, but visible enough: keep iterating through hierachy
 		if (max_tree_levels > 0)
 		{
 			--max_tree_levels;
@@ -122,6 +101,8 @@ void CollectRecursive(WED_Thing * thing, OutputIterator oi, VisibilityPred visib
 			}
 		}
 	}
+	// thing is not visible enough
+	return;
 }
 #endif
 
