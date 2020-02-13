@@ -398,7 +398,7 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 			if(con_type) *con_type = handle_None;
 			if(active) *active = 0;
 
-			if(e->GetSide(gis_Geo, 0, b) && e->CanBeCurved())
+			if(e->GetSide(gis_Geo, -1, b) && e->CanBeCurved())
 			{
 				switch(n) {
 				case 0:
@@ -860,7 +860,7 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 		{
 			GUI_KeyFlags mods = GetHost()->GetModifiersNow();
 			Bezier2 b;
-			if(e->GetSide(gis_Geo, 0, b))
+			if(e->GetSide(gis_Geo, -1, b))
 			{
 				if (!mInEdit)
 				{
@@ -876,7 +876,7 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 					if(n == 1)	b.c1 += delta;
 					if(n == 2)  b.c2 += delta;
 				}
-				e->SetSideBezier(gis_Geo, b);
+				e->SetSideBezier(gis_Geo, b, -1);
 			}
 			else
 			{
@@ -888,7 +888,7 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 					{
 						if (n == 1) {b.c1 = b.p1+delta;}
 						if (n == 2) {b.c2 = b.p2+delta;}
-						e->SetSideBezier(gis_Geo, b);
+						e->SetSideBezier(gis_Geo, b, -1);
 					}
 				}
 			}

@@ -1435,12 +1435,10 @@ static int	unsplittable(ISelectable * base, void * ref)
 	WED_Thing * t = dynamic_cast<WED_Thing *>(base);
 	if (!t) return 1;
 
-	// Network edges are always splittable
-	if(dynamic_cast<IGISEdge *>(base))
-		return 0;
+	if(dynamic_cast<IGISEdge *>(base)) return t->CountChildren() != 0;
 
-	IGISPoint * p = dynamic_cast<IGISPoint *>(base);
-	if (!p) return 1;
+//	if(dynamic_cast<IGISPoint *>(base)) return 1;
+	
 //	WED_AirportNode * a = dynamic_cast<WED_AirportNode *>(base);
 //	if (!a) return 1;
 
@@ -1449,6 +1447,8 @@ static int	unsplittable(ISelectable * base, void * ref)
 
 	IGISPointSequence * s = dynamic_cast<IGISPointSequence*>(parent);
 	if (!s) return 1;
+	
+	if(s->GetGISClass() == gis_Edge) return 0;
 
 	if (s->GetGISClass() != gis_Ring && s->GetGISClass() != gis_Chain) return 1;
 
@@ -1545,6 +1545,7 @@ namespace
 {
 struct chain_split_info_t {
 	WED_GISChain * c;
+	WED_GISEdge *  e;
 	WED_GISPoint * p;
 };
 
@@ -1563,14 +1564,14 @@ static bool is_chain_split(ISelection * sel, chain_split_info_t * info)
 	if(sel->GetSelectionCount() != 1)
 		return false;
 	WED_GISPoint * p = dynamic_cast<WED_GISPoint*>(sel->GetNthSelection(0));
-	if(!p)
-		return false;
+	if(!p) return false;
 
 	// The point must have a WED_GISChain parent
-	WED_GISChain * c = dynamic_cast<WED_GISChain*>(p->GetParent());
-	if(!c)
-		return false;
+	WED_GISChain * c = dynamic_cast<WED_GISChain *>(p->GetParent());
+	WED_GISEdge * e = dynamic_cast<WED_GISEdge *>(p->GetParent());
+	if(!c && !e) return false;
 
+	if(c)
 	if(c->IsClosed())
 	{
 		// If the chain is closed, it must be a WED_AirportChain, and its parent must not be a WED_GISPolygon.
@@ -1584,10 +1585,18 @@ static bool is_chain_split(ISelection * sel, chain_split_info_t * info)
 		if (pos == 0 || pos == c->CountChildren()-1)
 			return false;
 	}
-
+	
+	if(e)
+	{
+			// If its an edge, the point must not be one of the sources
+			WED_Thing * t = p;
+			if(e->GetNthSource(0) == t || e->GetNthSource(1) ==  t)
+				return false;
+	}
 	if(info)
 	{
 		info->c = c;
+		info->e = e;
 		info->p = p;
 	}
 
@@ -1662,8 +1671,14 @@ static void do_chain_split(ISelection * sel, const chain_split_info_t & info)
 	op->StartOperation("Split chain");
 
 	int pos = info.p->GetMyPosition();
-
-	if (info.c->IsClosed())
+	
+	if(info.e)
+	{
+		Point2 pt;
+		info.p->GetLocation(gis_Geo, pt);
+		info.e->SplitEdge(pt, 0.0);
+	}
+	else if (info.c->IsClosed())
 	{
 		WED_AirportChain * ac = dynamic_cast<WED_AirportChain *>(info.c);
 		if (!ac)
@@ -1941,7 +1956,7 @@ map<WED_Thing*,vector<WED_Thing*> > run_split_on_edges(vector<split_edge_info_t>
 		if (edges[i].splits.empty())
 		{
 			Bezier2 b;
-			if(edges[i].edge->GetSide(gis_Geo,0,b))
+			if(edges[i].edge->GetSide(gis_Geo,-1,b))
 			{
 				edges[i].splits.push_back(b.midpoint(0.5));
 			}
@@ -1957,7 +1972,7 @@ map<WED_Thing*,vector<WED_Thing*> > run_split_on_edges(vector<split_edge_info_t>
 		for (vector<Point2>::reverse_iterator r = edges[i].splits.rbegin(); r != edges[i].splits.rend(); ++r)
 		{
 			// If we had a 'T' then in theory SplitSide could return NULL?
-			IGISPoint * split = edges[i].edge->SplitSide(*r, 0.0);
+			IGISPoint * split = edges[i].edge->SplitEdge(*r, 0.0);
 			if (split)
 			{
 				// Bucket our new node for merging later
@@ -2007,6 +2022,8 @@ void do_edge_split(ISelection * sel)
 	sel->IterateSelectionOr(collect_edges, &edges);
 
 	if (who.empty() && edges.empty()) return;
+	
+printf("do_edge_split who's %ld, edges %ld\n",who.size(), edges.size());
 
 	op->StartOperation("Split Segments.");
 

@@ -187,7 +187,8 @@ public:
 	virtual		  IGISPoint *	GetNthPoint (int n)	const=0;
 
 	virtual	int					GetNumSides(void) const=0;
-	virtual	bool				GetSide  (GISLayer_t layer, int n, Bezier2& b) const=0;	// true for bezier
+	virtual	bool				GetSide  (GISLayer_t layer, int n, Bezier2& b) const=0;	// return true for bezier
+								                    // for GISEdges, n = -1 gets the edge from source-to-source as ONE side
 
 	virtual	bool				IsClosed(void) const=0;
 
@@ -208,6 +209,9 @@ public:
 	virtual	bool				CanBeCurved(void) const=0;
 	virtual	void				SetSide(GISLayer_t layer, const Segment2& s, int n = 0)=0;
 	virtual	void				SetSideBezier(GISLayer_t layer, const Bezier2& b, int n = 0)=0;
+								                    // for GISEdges, n = -1 gets the edge from source-to-source as ONE side
+
+	virtual		  IGISPoint *	SplitEdge(const Point2& where, double dist)=0;
 };
 
 class IGISLine : public virtual IGISPointSequence {

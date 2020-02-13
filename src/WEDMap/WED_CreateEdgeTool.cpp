@@ -202,11 +202,13 @@ void		WED_CreateEdgeTool::AcceptPath(
 		FindNearP2S(host_for_merging, NULL, edge_class, pts[p], seq, sqdist ,frame_dist);
 		if(seq)
 		{
-		printf("FindNrP2S\n");
-			IGISPoint * pp = seq->SplitSide(pts[p], 0.001);
+			IGISPoint * pp;
+			if(auto e = dynamic_cast<IGISEdge *>(seq))  // should always be the case, as we're only finding edges
+				pp = e->SplitEdge(pts[p], 0.001);
+			else
+				pp = seq->SplitSide(pts[p], 0.001);
 			if(pp)
 			{
-		printf("SplitSide result is point\n");
 				pp->GetLocation(gis_Geo,pts[p]);
 			}
 		}
@@ -298,7 +300,6 @@ void		WED_CreateEdgeTool::AcceptPath(
 		int sp = 0;
 		int stop = pts.size(); // closed ? pts.size() : pts.size()-1;
 		
-	printf("pts.size=%d\n",stop);
 		for(int p = 0; p < stop; p++)
 		{
 			dst = nullptr;
@@ -328,7 +329,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 			{
 	printf("Finish Edge\n");
 				new_edge->AddSource(dst,1);
-/*				if(has_dirs[sp])
+				if(has_dirs[sp])
 				{
 					if(has_dirs[p])
 						new_edge->SetSideBezier(gis_Geo,Bezier2(in_pts[sp],dirs_hi[sp],dirs_lo[p],in_pts[p]));
@@ -337,7 +338,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 				}
 				else if(has_dirs[p])
 						new_edge->SetSideBezier(gis_Geo,Bezier2(in_pts[sp],in_pts[sp],dirs_lo[p],in_pts[p]));
-*/						
+						
 				// Do this last - half-built edge inserted the world destabilizes accessors.
 				new_edge->SetParent(host_for_parent,idx);
 				tool_created_edges.push_back(new_edge);
@@ -374,20 +375,14 @@ void		WED_CreateEdgeTool::AcceptPath(
 	vector<WED_GISEdge*> all_edges;
 	CollectRecursive(host_for_parent, back_inserter(all_edges), edge_class);
 	
-printf("all_edges %ld\n", all_edges.size());
-
 	//filter them for just the crossing ones
 	set<WED_GISEdge*> crossing_edges = WED_do_select_crossing(all_edges, tool_created_bounds);
-
-printf("crossing_edges %ld\n", crossing_edges.size());
 
 	//convert, and run split!
 	vector<split_edge_info_t> edges_to_split;
 
 	for(set<WED_GISEdge*>::iterator e = crossing_edges.begin(); e != crossing_edges.end(); ++e)
 		edges_to_split.push_back(cast_WED_GISEdge_to_split_edge_info_t(*e, find(tool_created_edges.begin(), tool_created_edges.end(), *e) != tool_created_edges.end()));
-
-printf("to_split_edges %ld\n", edges_to_split.size());
 
 	edge_to_child_edges_map_t new_pieces = run_split_on_edges(edges_to_split);
 

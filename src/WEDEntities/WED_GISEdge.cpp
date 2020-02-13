@@ -24,6 +24,7 @@
 #include "WED_GISEdge.h"
 #include "GISUtils.h"
 #include "WED_GroupCommands.h"
+#include "WED_SimpleBezierBoundaryNode.h"
 
 TRIVIAL_COPY(WED_GISEdge, WED_Entity)
 
@@ -60,8 +61,9 @@ void			WED_GISEdge::GetBounds		(GISLayer_t l, Bbox2&  bounds) const
 {
 	CacheBuild(cache_Spatial);
 
-	bounds = Bbox2();
-	for(int i = 0; i < GetNumSides(); i++)
+	bounds = Bbox2();                         // todo: cache this
+	int n = GetNumSides();
+	for(int i = 0; i < n; ++i)
 	{
 		Bezier2		bez;
 		GetSide(l,i,bez);
@@ -217,6 +219,7 @@ int					WED_GISEdge::GetNumPoints(void ) const
 
 IGISPoint *	WED_GISEdge::GetNthPoint (int n) const
 {
+	// todo: cache this ?
 	if(n == 0)
 		return dynamic_cast<IGISPoint *>(GetNthSource(0));
 	else if(n > this->CountChildren())
@@ -233,18 +236,19 @@ int					WED_GISEdge::GetNumSides(void) const
 
 bool				WED_GISEdge::GetSide  (GISLayer_t l,int n, Bezier2& b) const
 {
-
-	IGISPoint * igp1 = GetNthPoint(n);
-	IGISPoint * igp2 = GetNthPoint(n+1);
+	// n=-1 is a pseudo-side - it treats the whole edge as a single side
+	
+	IGISPoint * igp1 = GetNthPoint(max(0,n));
+	IGISPoint * igp2 = GetNthPoint(n == -1 ? CountChildren() + 1 : n + 1);
 	
 	igp1->GetLocation(l,b.p1);
-	if(n == 0)
+	if(n <= 0)
 		b.c1 = b.p1 + Vector2(ctrl_lon_lo.value,ctrl_lat_lo.value);
 	else
 		dynamic_cast<IGISPoint_Bezier *>(igp1)->GetControlHandleHi(l, b.c1);
 		
 	igp2->GetLocation(l,b.p2);
-	if(n >= CountChildren())
+	if(n < 0 || n >= CountChildren())
 		b.c2 = b.p2 + Vector2(ctrl_lon_hi.value,ctrl_lat_hi.value);
 	else
 		dynamic_cast<IGISPoint_Bezier *>(igp2)->GetControlHandleLo(l, b.c2);
@@ -280,9 +284,7 @@ WED_Thing *		WED_GISEdge::CreateSplitNode()
 	return np;
 }
 
-
-
-IGISPoint *	WED_GISEdge::SplitSide   (const Point2& p, double dist)  // MM: add argument what segment to split
+IGISPoint *	WED_GISEdge::SplitSide(const Point2& p, double dist)  // MM: add argument what segment to split ?
 {
 	Bezier2		nearest_side_b;
 	
@@ -310,6 +312,62 @@ IGISPoint *	WED_GISEdge::SplitSide   (const Point2& p, double dist)  // MM: add 
 	
 	if(nearest_side < 0) return NULL;       // nothing is close enough
 
+	auto np = WED_SimpleBezierBoundaryNode::CreateTyped(GetArchive());
+	
+	np->SetParent(this, nearest_side);
+	np->SetName("Shape Point");
+
+	if(nearest_is_b)
+	{
+		double t = nearest_side_b.approx_t_for_xy(p.x(), p.y());
+		Bezier2 b1, b2;
+		nearest_side_b.partition(b1, b2, t);
+		BezierPoint2 b;
+		b.pt = b2.p1;
+		b.hi = b2.c1;
+		b.lo = b1.c2;
+		np->SetBezierLocation(gis_Geo, b);
+	}
+	else
+	{
+		Point2 pp = nearest_side_b.as_segment().projection(p);
+		np->SetLocation(gis_Geo, pp);
+	}
+	
+	return dynamic_cast<IGISPoint *>(np);
+}
+
+
+IGISPoint *	WED_GISEdge::SplitEdge   (const Point2& p, double dist)  // MM: add argument what segment to split ?
+{
+	int			hit_point = -1;
+	int			nearest_side = -1;
+	bool		nearest_is_b = false;
+	Bezier2		nearest_side_b;
+	double		nearest_dist = 999.0; // dist * dist;
+
+	int			ns = this->GetNumSides();
+	for(int i = 0; i < ns; i++)
+	{
+		Bezier2		b;
+		bool is_b = this->GetSide(gis_Geo,i,b);
+		if(b.p1 == p) hit_point = i;
+		if(i == ns-1 && b.p2 == p) hit_point = ns;
+		double d = b.as_segment().squared_distance(p);          // MM: thats in degrees, i.e. not exactly a circle.
+		                                                        // And it does not take beziers into account, either.
+		if(d < nearest_dist)
+		{
+			nearest_dist = d;
+			nearest_side = i;
+			nearest_is_b = is_b;
+			nearest_side_b = b;
+		}
+	}
+	
+	if(nearest_side < 0) return nullptr;       // nothing is close enough
+	if(hit_point == 0 || hit_point == ns)
+		return nullptr;                        // don't split the sources
+
 	WED_Thing * np = CreateSplitNode();
 	
 	WED_Thing * p1 = GetNthSource(0);
@@ -319,9 +377,8 @@ IGISPoint *	WED_GISEdge::SplitSide   (const Point2& p, double dist)  // MM: add 
 	string name;
 	p1->GetName(name);
 	np->SetName(name);
-
+	
 	WED_GISEdge * me2 = dynamic_cast<WED_GISEdge*>(this->Clone()); // this also clones all children it may have
-
 	me2->SetParent(this->GetParent(),this->GetMyPosition()+1);
 
 	this->AddSource(np,1);
@@ -330,16 +387,16 @@ IGISPoint *	WED_GISEdge::SplitSide   (const Point2& p, double dist)  // MM: add 
 	me2->AddSource(np,0);
 	me2->RemoveSource(p1);
 	
-//printf("WED_SplitEdge this, me2 children %d %d, side #%d \n", this->CountChildren(), me2->CountChildren(), nearest_side);
+printf("WED_SplitEdge this, me2 children %d %d, side %d, hit %d\n", this->CountChildren(), me2->CountChildren(), nearest_side, hit_point);
 	
 	if(ns > 1)              // delete existing ShapePoints that are on the abandoned side of the intersection
 	{
 		set<WED_Thing *> obsolete_nodes;
 		for(int i = 0; i < ns-1; i++)
 		{
-			if(i < nearest_side)
+			if(i < nearest_side || i == (hit_point - 1))
 				obsolete_nodes.insert(me2->GetNthChild(i));
-			else
+			if(i >= nearest_side)
 				obsolete_nodes.insert(this->GetNthChild(i));
 		}
 		WED_RecursiveDelete(obsolete_nodes);
@@ -351,7 +408,7 @@ IGISPoint *	WED_GISEdge::SplitSide   (const Point2& p, double dist)  // MM: add 
 		Bezier2 b1, b2;
 		nearest_side_b.partition(b1, b2, t);
 		this->SetSideBezier(gis_Geo, b1, nearest_side);
-		me2->SetSideBezier(gis_Geo, b2, 0);
+		if(hit_point < 0) me2->SetSideBezier(gis_Geo, b2, 0);
 	}
 	else
 	{
@@ -364,7 +421,7 @@ IGISPoint *	WED_GISEdge::SplitSide   (const Point2& p, double dist)  // MM: add 
 		s2.p2 = nearest_side_b.p2;
 
 		this->SetSide(gis_Geo, s1, nearest_side);
-		me2->SetSide(gis_Geo, s2, 0);
+		if(hit_point < 0) me2->SetSide(gis_Geo, s2, 0);
 	}
 	
 	return dynamic_cast<IGISPoint *>(np);
@@ -372,15 +429,17 @@ IGISPoint *	WED_GISEdge::SplitSide   (const Point2& p, double dist)  // MM: add 
 
 void		WED_GISEdge::SetSide(GISLayer_t layer, const Segment2& s, int n)
 {
+	DebugAssert(n < GetNumSides());
+	
 	StateChanged();
-	GetNthPoint(n)->SetLocation(gis_Geo,s.p1);
-	GetNthPoint(n+1)->SetLocation(gis_Geo,s.p2);
-	if(n == 0)
+	GetNthPoint(max(0,n))->SetLocation(gis_Geo,s.p1);
+	GetNthPoint(n == -1 ? CountChildren() + 1 : n + 1)->SetLocation(gis_Geo,s.p2);
+	if(n <= 0)
 	{
 		ctrl_lat_lo = 0.0;
 		ctrl_lon_lo = 0.0;
 	}
-	if( n > CountChildren() + 1)
+	if( n < 0 || n >= CountChildren())
 	{
 		ctrl_lat_hi = 0.0;
 		ctrl_lon_hi = 0.0;
@@ -389,10 +448,12 @@ void		WED_GISEdge::SetSide(GISLayer_t layer, const Segment2& s, int n)
 
 void		WED_GISEdge::SetSideBezier(GISLayer_t layer, const Bezier2& b, int n)
 {
+	DebugAssert(n < GetNumSides());
+	
 	StateChanged();
-	GetNthPoint(n)->SetLocation(gis_Geo,b.p1);
-	GetNthPoint(n+1)->SetLocation(gis_Geo,b.p2);
-	if(n == 0)
+	GetNthPoint(max(0,n))->SetLocation(gis_Geo,b.p1);
+	GetNthPoint(n == -1 ? CountChildren() + 1 : n + 1)->SetLocation(gis_Geo,b.p2);
+	if(n <= 0)
 	{
 		ctrl_lat_lo = b.c1.y() - b.p1.y();
 		ctrl_lon_lo = b.c1.x() - b.p1.x();
@@ -404,7 +465,7 @@ void		WED_GISEdge::SetSideBezier(GISLayer_t layer, const Bezier2& b, int n)
 		if(bp) bp->SetControlHandleLo(gis_Geo, Point2(b.c1.x()-b.p1.x(),b.c1.y()-b.p1.y()));
 	}
 	
-	if( n == CountChildren() + 1)
+	if(n < 0 || n >= CountChildren())
 	{
 		ctrl_lat_hi = b.c2.y() - b.p2.y();
 		ctrl_lon_hi = b.c2.x() - b.p2.x();
