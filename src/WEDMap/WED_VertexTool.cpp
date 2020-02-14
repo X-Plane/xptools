@@ -400,55 +400,48 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 		DebugAssert(e);
 		if(e)
 		{
-			Bezier2	b;
 			if(con_type) *con_type = handle_None;
 			if(active) *active = 0;
 
-			e->GetSide(gis_Geo, n/4, b);
-			if(p)
-			{
-				switch(n % 4)
-				{
-					case 0: *p = b.p1;	break;
-					case 1: *p = b.c1;	break;
-					case 2: *p = b.p2;	break;
-					case 3: *p = b.c2;	break;
-				}
-			}
-
 			if (n <= 1 || n >= e->GetNumSides() * 4 - 2)
 			{
+				Bezier2	b;
+				e->GetSide(gis_Geo, n/4, b);
+				GUI_KeyFlags mods = GetHost()->GetModifiersNow();
+				
 				switch(n % 4) {
 				case 0:
+					if(p) *p = b.p1;
 					if(con_type) *con_type = b.p1 == b.c1 ? handle_VertexSharp : handle_Vertex;
-//					if(active) *active = b.p1 == b.c1 && e->CanBeCurved();
 					break;
 				case 1:
+					if(p) *p = b.c1;
 					if(con_type) *con_type = handle_Bezier;
-//					if(active) *active = b.p1 != b.c1 && e->CanBeCurved();
-					if(dir) *dir = Vector2(b.c1,b.p1);
+					if(active && e->CanBeCurved() && ((mods & gui_OptionAltFlag) || b.p1 != b.c1)) *active = 1;
+					if(dir) *dir = Vector2(b.c1, b.p1);
 					break;
 				case 2:
+					if(p) *p = b.p2;
 					if(con_type) *con_type = b.p2 == b.c2 ? handle_VertexSharp : handle_Vertex;
-//					if(active) *active = b.p2 == b.c2 && e->CanBeCurved();
 					break;
 				case 3:
+					if(p) *p = b.c2;
 					if(con_type) *con_type = handle_Bezier;
-//					if(active) *active = b.p2 != b.c2 && e->CanBeCurved();
-					if(dir) *dir = Vector2(b.c2,b.p2);
+					if(active && e->CanBeCurved() && ((mods & gui_OptionAltFlag) || b.p2 != b.c2)) *active = 1;
+					if(dir) *dir = Vector2(b.c2, b.p2);
 					break;
 				}
-				if (active && e->CanBeCurved())
-				{
-			printf("checking active %d ", n);
-					GUI_KeyFlags mods = GetHost()->GetModifiersNow();
-					if (n   == 1 && ((mods & gui_OptionAltFlag) || b.p1 != b.c1)) { *active = 1; printf("y"); }
-					if (n%4 == 3 && ((mods & gui_OptionAltFlag) || b.p2 != b.c2)) { *active = 1; printf("y"); }
-			printf("\n");
-				}
-
 			}
-			
+			else if(p)
+			{
+				switch(n % 4) // avoid GetSide() for speed - no need to get all 4 bezier data points if we only need one
+				{
+					case 0: e->GetNthPoint(n/4)->GetLocation(gis_Geo, *p); break;
+					case 1: dynamic_cast<IGISPoint_Bezier *>(e->GetNthPoint(n/4))->GetControlHandleHi(gis_Geo, *p); break;
+					case 2: e->GetNthPoint(n/4+1)->GetLocation(gis_Geo, *p); break;
+					case 3: dynamic_cast<IGISPoint_Bezier *>(e->GetNthPoint(n/4+1))->GetControlHandleLo(gis_Geo, *p); break;
+				}
+			}
 			return;
 		}
 		break;

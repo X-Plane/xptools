@@ -238,20 +238,20 @@ bool				WED_GISEdge::GetSide  (GISLayer_t l,int n, Bezier2& b) const
 {
 	// n=-1 is a pseudo-side - it treats the whole edge as a single side
 	
-	IGISPoint * igp1 = GetNthPoint(max(0,n));
-	IGISPoint * igp2 = GetNthPoint(n == -1 ? CountChildren() + 1 : n + 1);
+	int n1 = max(0,n);
+	int n2 = n == -1 ? CountChildren() + 1 : n + 1;
 	
-	igp1->GetLocation(l,b.p1);
+	GetNthPoint(n1)->GetLocation(l,b.p1);
 	if(n <= 0)
 		b.c1 = b.p1 + Vector2(ctrl_lon_lo.value,ctrl_lat_lo.value);
 	else
-		dynamic_cast<IGISPoint_Bezier *>(igp1)->GetControlHandleHi(l, b.c1);
+		dynamic_cast<IGISPoint_Bezier *>(GetNthChild(n1-1))->GetControlHandleHi(l, b.c1);
 		
-	igp2->GetLocation(l,b.p2);
+	GetNthPoint(n2)->GetLocation(l,b.p2);
 	if(n < 0 || n >= CountChildren())
 		b.c2 = b.p2 + Vector2(ctrl_lon_hi.value,ctrl_lat_hi.value);
 	else
-		dynamic_cast<IGISPoint_Bezier *>(igp2)->GetControlHandleLo(l, b.c2);
+		dynamic_cast<IGISPoint_Bezier *>(GetNthChild(n2-1))->GetControlHandleLo(l, b.c2);
 	
 	return (b.p1 != b.c1 || b.p2 != b.c2);
 }
@@ -300,7 +300,6 @@ IGISPoint *	WED_GISEdge::SplitSide(const Point2& p, double dist)  // MM: add arg
 		if (b.p1 == p || b.p2 == p) return NULL;
 		double d = b.as_segment().squared_distance(p);          // MM: thats in degrees, i.e. not exactly a circle. 
 		                                                        // And it does not take beziers into account, either.
-//printf("testing side #%d dist %lf\n",i, sqrt(d*1e5));
 		if(d < nearest_dist)
 		{
 			nearest_dist = d;
@@ -326,7 +325,9 @@ IGISPoint *	WED_GISEdge::SplitSide(const Point2& p, double dist)  // MM: add arg
 		b.pt = b2.p1;
 		b.hi = b2.c1;
 		b.lo = b1.c2;
-		np->SetBezierLocation(gis_Geo, b);
+		//np->SetBezierLocation(gis_Geo, b);
+		SetSideBezier(gis_Geo, b1, nearest_side);
+		SetSideBezier(gis_Geo, b2, nearest_side+1);
 	}
 	else
 	{
@@ -462,7 +463,11 @@ void		WED_GISEdge::SetSideBezier(GISLayer_t layer, const Bezier2& b, int n)
 	{
 		auto bp = dynamic_cast<IGISPoint_Bezier *>(GetNthPoint(n));
 		DebugAssert(bp != nullptr);
-		if(bp) bp->SetControlHandleHi(gis_Geo, b.c1);
+		if(bp) 
+		{
+			bp->SetSplit(true);
+			bp->SetControlHandleHi(gis_Geo, b.c1);
+		}
 	}
 	
 	if(n < 0 || n >= CountChildren())
@@ -474,7 +479,11 @@ void		WED_GISEdge::SetSideBezier(GISLayer_t layer, const Bezier2& b, int n)
 	{
 		auto bp = dynamic_cast<IGISPoint_Bezier *>(GetNthPoint(n+1));
 		DebugAssert(bp != nullptr);
-		if(bp) bp->SetControlHandleHi(gis_Geo, b.c2);
+		if(bp)
+		{
+			bp->SetSplit(true);
+			bp->SetControlHandleLo(gis_Geo, b.c2);
+		}
 	}
 }
 

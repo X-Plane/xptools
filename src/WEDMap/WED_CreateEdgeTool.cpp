@@ -311,13 +311,17 @@ void		WED_CreateEdgeTool::AcceptPath(
 				{
 					dst = WED_RoadNode::CreateTyped(GetArchive());
 					dst->SetName(mName.value + "_start");
+					static_cast<WED_GISPoint *>(dst)->SetLocation(gis_Geo,pts[p]);
 				}
 				else
 				{
 					dst = WED_SimpleBezierBoundaryNode::CreateTyped(GetArchive());
 					dst->SetName("Shape Point");
+					auto wbp = static_cast<WED_GISPoint_Bezier *>(dst);
+					wbp->SetLocation(gis_Geo,pts[p]);
+					wbp->SetControlHandleLo(gis_Geo, has_dirs[p] ? dirs_lo[p] : pts[p]);
+					wbp->SetControlHandleHi(gis_Geo, has_dirs[p] ? dirs_hi[p] : pts[p]);
 				}
-				static_cast<WED_GISPoint *>(dst)->SetLocation(gis_Geo,pts[p]);
 				start_edge_next = false;
 			}
 			else
@@ -326,14 +330,10 @@ void		WED_CreateEdgeTool::AcceptPath(
 			if((start_edge && p > 0) || p == stop-1)
 			{
 				new_edge->AddSource(dst,1);
-				for(int i = sp; i < p; i++)
-				{
-					new_edge->SetSideBezier(gis_Geo,Bezier2(in_pts[i], 
-															has_dirs[i]   ? dirs_hi[i]   : in_pts[i],
-															has_dirs[i+1] ? dirs_lo[i+1] : in_pts[i+1],
-															in_pts[i+1]),
-															i);
-				}		
+				new_edge->SetSideBezier(gis_Geo,Bezier2(in_pts[sp], 
+														has_dirs[sp]   ? dirs_hi[sp]   : in_pts[sp],
+														has_dirs[p] ? dirs_lo[p] : in_pts[p],
+														in_pts[p]),  -1);
 				// Do this last - half-built edge inserted the world destabilizes accessors.
 				new_edge->SetParent(host_for_parent,idx);
 				tool_created_edges.push_back(new_edge);
