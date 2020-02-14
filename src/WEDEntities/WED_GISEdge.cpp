@@ -462,7 +462,7 @@ void		WED_GISEdge::SetSideBezier(GISLayer_t layer, const Bezier2& b, int n)
 	{
 		auto bp = dynamic_cast<IGISPoint_Bezier *>(GetNthPoint(n));
 		DebugAssert(bp != nullptr);
-		if(bp) bp->SetControlHandleLo(gis_Geo, Point2(b.c1.x()-b.p1.x(),b.c1.y()-b.p1.y()));
+		if(bp) bp->SetControlHandleHi(gis_Geo, b.c1);
 	}
 	
 	if(n < 0 || n >= CountChildren())
@@ -474,7 +474,7 @@ void		WED_GISEdge::SetSideBezier(GISLayer_t layer, const Bezier2& b, int n)
 	{
 		auto bp = dynamic_cast<IGISPoint_Bezier *>(GetNthPoint(n+1));
 		DebugAssert(bp != nullptr);
-		if(bp) bp->SetControlHandleLo(gis_Geo, Point2(b.c2.x()-b.p2.x(),b.c2.y()-b.p2.y()));
+		if(bp) bp->SetControlHandleHi(gis_Geo, b.c2);
 	}
 }
 

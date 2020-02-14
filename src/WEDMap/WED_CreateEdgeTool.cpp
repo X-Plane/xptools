@@ -309,13 +309,11 @@ void		WED_CreateEdgeTool::AcceptPath(
 			{
 				if(start_edge || p == stop-1)
 				{
-		printf("CreateRoadNode\n");
 					dst = WED_RoadNode::CreateTyped(GetArchive());
 					dst->SetName(mName.value + "_start");
 				}
 				else
 				{
-		printf("CreateBezierNode\n");
 					dst = WED_SimpleBezierBoundaryNode::CreateTyped(GetArchive());
 					dst->SetName("Shape Point");
 				}
@@ -327,18 +325,15 @@ void		WED_CreateEdgeTool::AcceptPath(
 			
 			if((start_edge && p > 0) || p == stop-1)
 			{
-	printf("Finish Edge\n");
 				new_edge->AddSource(dst,1);
-				if(has_dirs[sp])
+				for(int i = sp; i < p; i++)
 				{
-					if(has_dirs[p])
-						new_edge->SetSideBezier(gis_Geo,Bezier2(in_pts[sp],dirs_hi[sp],dirs_lo[p],in_pts[p]));
-					else
-						new_edge->SetSideBezier(gis_Geo,Bezier2(in_pts[sp],dirs_hi[sp],in_pts[p],in_pts[p]));
-				}
-				else if(has_dirs[p])
-						new_edge->SetSideBezier(gis_Geo,Bezier2(in_pts[sp],in_pts[sp],dirs_lo[p],in_pts[p]));
-						
+					new_edge->SetSideBezier(gis_Geo,Bezier2(in_pts[i], 
+															has_dirs[i]   ? dirs_hi[i]   : in_pts[i],
+															has_dirs[i+1] ? dirs_lo[i+1] : in_pts[i+1],
+															in_pts[i+1]),
+															i);
+				}		
 				// Do this last - half-built edge inserted the world destabilizes accessors.
 				new_edge->SetParent(host_for_parent,idx);
 				tool_created_edges.push_back(new_edge);
