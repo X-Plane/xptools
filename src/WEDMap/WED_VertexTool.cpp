@@ -619,16 +619,19 @@ bool	WED_VertexTool::PointOnStructure(intptr_t id, const Point2& p) const
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	WED_Taxiway * taxi = (en->GetGISSubtype() == WED_Taxiway::sClass) ? SAFE_CAST(WED_Taxiway, en) : NULL;
 	WED_PolygonPlacement * poly = (en->GetGISSubtype() == WED_PolygonPlacement::sClass) ? SAFE_CAST(WED_PolygonPlacement, en) : NULL;
-	if (taxi || poly)
+	WED_RoadEdge * edge = (en->GetGISSubtype() == WED_RoadEdge::sClass) ? SAFE_CAST(WED_RoadEdge, en) : NULL;
+	if (taxi || poly || edge)
 	{
 		if (GetHost()->GetModifiersNow() & gui_ShiftFlag)
 		if (en->PtWithin(gis_Geo,p))
 		{
 			mRotateCtr = p;
 			mTaxiDest = p;
+		printf("POS yes t%d p%d\n", taxi !=  NULL, poly != NULL);
 			return true;
 		}
 	}
+printf("POS no\n");
 	return false;
 }
 
@@ -656,7 +659,8 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
-	IGISQuad * quad = (en->GetGISSubtype() == WED_ExclusionZone::sClass || en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
+	IGISQuad * quad = (en->GetGISSubtype() == WED_ExclusionZone::sClass || en->GetGISSubtype() == WED_OverlayImage::sClass ||
+	                   en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
 
 	IGISPoint * pt;
 	IGISPoint_Bezier * pt_b;
@@ -785,7 +789,7 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 				}
 			}
 			switch(n) {
-			case 0:	pt_b->GetLocation(gis_Geo,p);						break;
+			case 0:	pt_b->GetLocation(gis_Geo,p);					break;
 			case 1:	if (!pt_b->GetControlHandleLo(gis_Geo,p)) n=3;	break;
 			case 2: if (!pt_b->GetControlHandleHi(gis_Geo,p)) n=3;	break;
 			}
@@ -797,7 +801,7 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 				SnapMovePoint(io_pt,p, en);
 
 			switch(n) {
-			case 0:	pt_b->SetLocation(gis_Geo,p);	break;
+			case 0:	pt_b->SetLocation(gis_Geo,p);			break;
 			case 1:	pt_b->SetControlHandleLo(gis_Geo,p);	break;
 			case 2: pt_b->SetControlHandleHi(gis_Geo,p);	break;
 			}
@@ -860,38 +864,22 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 		{
 			GUI_KeyFlags mods = GetHost()->GetModifiersNow();
 			Bezier2 b;
-			if(e->GetSide(gis_Geo, -1, b))
+			e->GetSide(gis_Geo, -1, b);
+			if (!mInEdit)
 			{
-				if (!mInEdit)
+				mInEdit = 1;
+				if (e->CanBeCurved() && (mods & gui_ShiftFlag))
 				{
-					mInEdit = 1;
-					if (e->CanBeCurved() && (mods & gui_ShiftFlag))
-					{
-						if (n == 1) {b.c1 = b.p1; }
-						if (n == 2) {b.c2 = b.p2; }
-					}
+					if (n == 1) { b.c1 = b.p1; }
+					if (n == 2) { b.c2 = b.p2; }
 				}
-				else
-				{
-					if(n == 1)	b.c1 += delta;
-					if(n == 2)  b.c2 += delta;
-				}
-				e->SetSideBezier(gis_Geo, b, -1);
 			}
 			else
 			{
-				if (!mInEdit)
-				{
-					mInEdit = 1;
-
-					if (e->CanBeCurved() && (mods & gui_OptionAltFlag))
-					{
-						if (n == 1) {b.c1 = b.p1+delta;}
-						if (n == 2) {b.c2 = b.p2+delta;}
-						e->SetSideBezier(gis_Geo, b, -1);
-					}
-				}
+				if(n == 1 && (e->CanBeCurved() && !(mods & gui_ShiftFlag)))	b.c1 += delta;
+				if(n == 2 && (e->CanBeCurved() && !(mods & gui_ShiftFlag))) b.c2 += delta;
 			}
+			e->SetSideBezier(gis_Geo, b, -1);
 			return;
 		}
 	}
@@ -1070,6 +1058,7 @@ void	WED_VertexTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta,
 
 		if (mods & gui_OptionAltFlag)
 		{
+		printf("SplitSide\n");
 			mNewSplitPoint = seq->SplitSide(io_pt, GetZoomer()->GetClickRadius(4));
 		}
 		else
