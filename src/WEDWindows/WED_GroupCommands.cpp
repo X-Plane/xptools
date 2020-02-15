@@ -585,6 +585,7 @@ void	WED_DoClear(IResolver * resolver)
 	sel->Clear();
 
 	set<WED_AirportNode *>	common_nodes;
+	set<WED_Thing *>	shape_points;
 	
 	for (auto i : who)
 	{
@@ -605,22 +606,29 @@ void	WED_DoClear(IResolver * resolver)
 					DebugAssert(e->GetNthSource(0) == i || e->GetNthSource(1) == i);
 					
 					WED_RoadNode * rn = dynamic_cast<WED_RoadNode *>(r->Clone());
-					Point2 p;
-					// MM Copy bezier handles too
+					rn->SetParent(e->GetParent(),e->GetMyPosition()+1);
+
+					Bezier2 b;
 					if(e->GetNthSource(0) == i)
 					{
-						e->GetNthPoint(1)->GetLocation(gis_Geo, p);
+						e->GetSide(gis_Geo, 1, b);
+						e->ReplaceSource(r,rn);
+						e->SetSideBezier(gis_Geo, b, 0);
+						shape_points.insert(e->GetNthChild(0));
 					}
 					else
 					{
-						e->GetNthPoint(e->GetNumPoints()-2)->GetLocation(gis_Geo, p);
+						e->GetSide(gis_Geo, e->GetNumSides()-2, b);
+						e->ReplaceSource(r,rn);
+						e->SetSideBezier(gis_Geo, b, e->GetNumSides()-1);
+						shape_points.insert(e->GetNthChild(e->CountChildren()-1));
 					}
-					rn->SetLocation(gis_Geo, p);
-					e->ReplaceSource(r,rn);
 				}
 			}
 		}
 	}
+	for(auto s : shape_points)
+		who.insert(s);
 	
 	for(set<WED_AirportNode *>::iterator n = common_nodes.begin(); n != common_nodes.end(); ++n)
 	{
@@ -1435,16 +1443,14 @@ static int	unsplittable(ISelectable * base, void * ref)
 	WED_Thing * t = dynamic_cast<WED_Thing *>(base);
 	if (!t) return 1;
 
-	if(dynamic_cast<IGISEdge *>(base)) return t->CountChildren() != 0;
+	if(dynamic_cast<IGISEdge *>(base)) return t->CountChildren() != 0; // multi-segmented edges can't be split from the menu - down-click on a segment instead
 
-//	if(dynamic_cast<IGISPoint *>(base)) return 1;
-	
 //	WED_AirportNode * a = dynamic_cast<WED_AirportNode *>(base);
 //	if (!a) return 1;
 
 	WED_Thing * parent = t->GetParent();
 	if (!parent) return 1;
-
+	
 	IGISPointSequence * s = dynamic_cast<IGISPointSequence*>(parent);
 	if (!s) return 1;
 	
