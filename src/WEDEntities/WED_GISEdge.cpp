@@ -270,6 +270,36 @@ void WED_GISEdge::Reverse(GISLayer_t l)
 	WED_Thing * p2 = GetNthSource(1);
 	RemoveSource(p2);
 	AddSource(p2, 0);
+	
+	const int n = CountChildren();
+	for(int i = 0; i < n/2; i++)
+	{
+		auto p1 = dynamic_cast<WED_GISPoint_Bezier *>(GetNthChild(i));
+		auto p2 = dynamic_cast<WED_GISPoint_Bezier *>(GetNthChild(n-1-i));
+		Point2 pt1, pt2, c11, c12, c21, c22;
+		bool b1s, b2s;
+		
+		p1->GetLocation(gis_Geo, pt1);
+		p2->GetLocation(gis_Geo, pt2);
+		
+		p1->GetControlHandleLo(gis_Geo, c11);
+		b1s = p1->IsSplit();
+		if(b1s) p1->GetControlHandleHi(gis_Geo, c12);
+		
+		p2->GetControlHandleLo(gis_Geo, c21);
+		b2s = p2->IsSplit();
+		if(b2s) p2->GetControlHandleHi(gis_Geo, c22);
+		
+		p2->SetLocation(gis_Geo, pt1);
+		p1->SetLocation(gis_Geo, pt2);
+		
+		p2->SetSplit(b1s);
+		p2->SetControlHandleHi(gis_Geo, c11);
+		if(b1s) p2->SetControlHandleLo(gis_Geo, c12);
+		p1->SetSplit(b2s);
+		p1->SetControlHandleHi(gis_Geo, c21);
+		if(b2s) p1->SetControlHandleLo(gis_Geo, c22);
+	}
 }
 
 void WED_GISEdge::Shuffle(GISLayer_t l)
@@ -297,9 +327,8 @@ IGISPoint *	WED_GISEdge::SplitSide(const Point2& p, double dist)  // MM: add arg
 	{
 		Bezier2		b;
 		bool is_b = this->GetSide(gis_Geo,i,b);
-		if (b.p1 == p || b.p2 == p) return NULL;
-		double d = b.as_segment().squared_distance(p);          // MM: thats in degrees, i.e. not exactly a circle. 
-		                                                        // And it does not take beziers into account, either.
+		if (b.p1 == p || b.p2 == p) return nullptr;
+		double d = Segment2(p, b.midpoint(b.approx_t_for_xy(p.x(), p.y()))).squared_length();
 		if(d < nearest_dist)
 		{
 			nearest_dist = d;
@@ -309,7 +338,7 @@ IGISPoint *	WED_GISEdge::SplitSide(const Point2& p, double dist)  // MM: add arg
 		}
 	}
 	
-	if(nearest_side < 0) return NULL;       // nothing is close enough
+	if(nearest_side < 0) return nullptr;       // nothing is close enough
 
 	auto np = WED_SimpleBezierBoundaryNode::CreateTyped(GetArchive());
 	
@@ -321,11 +350,6 @@ IGISPoint *	WED_GISEdge::SplitSide(const Point2& p, double dist)  // MM: add arg
 		double t = nearest_side_b.approx_t_for_xy(p.x(), p.y());
 		Bezier2 b1, b2;
 		nearest_side_b.partition(b1, b2, t);
-		BezierPoint2 b;
-		b.pt = b2.p1;
-		b.hi = b2.c1;
-		b.lo = b1.c2;
-		//np->SetBezierLocation(gis_Geo, b);
 		SetSideBezier(gis_Geo, b1, nearest_side);
 		SetSideBezier(gis_Geo, b2, nearest_side+1);
 	}
@@ -339,23 +363,22 @@ IGISPoint *	WED_GISEdge::SplitSide(const Point2& p, double dist)  // MM: add arg
 }
 
 
-IGISPoint *	WED_GISEdge::SplitEdge   (const Point2& p, double dist)  // MM: add argument what segment to split ?
+IGISPoint *	WED_GISEdge::SplitEdge(const Point2& p, double dist)  // MM: add argument what segment to split ?
 {
 	int			hit_point = -1;
 	int			nearest_side = -1;
 	bool		nearest_is_b = false;
 	Bezier2		nearest_side_b;
-	double		nearest_dist = 999.0; // dist * dist;
-
 	int			ns = this->GetNumSides();
+	
+	double 		nearest_dist = 999.0;
 	for(int i = 0; i < ns; i++)
 	{
 		Bezier2		b;
 		bool is_b = this->GetSide(gis_Geo,i,b);
 		if(b.p1 == p) hit_point = i;
 		if(i == ns-1 && b.p2 == p) hit_point = ns;
-		double d = b.as_segment().squared_distance(p);          // MM: thats in degrees, i.e. not exactly a circle.
-		                                                        // And it does not take beziers into account, either.
+		double d = Segment2(p, b.midpoint(b.approx_t_for_xy(p.x(), p.y()))).squared_length();
 		if(d < nearest_dist)
 		{
 			nearest_dist = d;
@@ -368,6 +391,10 @@ IGISPoint *	WED_GISEdge::SplitEdge   (const Point2& p, double dist)  // MM: add 
 	if(nearest_side < 0) return nullptr;       // nothing is close enough
 	if(hit_point == 0 || hit_point == ns)
 		return nullptr;                        // don't split the sources
+	
+	Bezier2 next_side_b;
+	if(hit_point >= 0 && hit_point < ns)
+		GetSide(gis_Geo, hit_point, next_side_b);
 
 	WED_Thing * np = CreateSplitNode();
 	
@@ -382,14 +409,13 @@ IGISPoint *	WED_GISEdge::SplitEdge   (const Point2& p, double dist)  // MM: add 
 	WED_GISEdge * me2 = dynamic_cast<WED_GISEdge*>(this->Clone()); // this also clones all children it may have
 	me2->SetParent(this->GetParent(),this->GetMyPosition()+1);
 
-	this->AddSource(np,1);
+	this->AddSource(np, 1);
 	this->RemoveSource(p2);
 
-	me2->AddSource(np,0);
+	me2->AddSource(np, 0);
 	me2->RemoveSource(p1);
 	
-printf("WED_SplitEdge this, me2 children %d %d, side %d, hit %d\n", this->CountChildren(), me2->CountChildren(), nearest_side, hit_point);
-	
+	//printf("WED_SplitEdge this, me2 children %d %d, side %d, hit %d\n", this->CountChildren(), me2->CountChildren(), nearest_side, hit_point);
 	if(ns > 1)              // delete existing ShapePoints that are on the abandoned side of the intersection
 	{
 		set<WED_Thing *> obsolete_nodes;
@@ -405,11 +431,16 @@ printf("WED_SplitEdge this, me2 children %d %d, side %d, hit %d\n", this->CountC
 
 	if(nearest_is_b)
 	{
-		double t = nearest_side_b.approx_t_for_xy(p.x(), p.y());
 		Bezier2 b1, b2;
-		nearest_side_b.partition(b1, b2, t);
+		if(hit_point > 0)
+		{
+			b1 = nearest_side_b;
+			b2 = next_side_b;
+		}
+		else
+			nearest_side_b.partition(b1, b2, nearest_side_b.approx_t_for_xy(p.x(), p.y()));
 		this->SetSideBezier(gis_Geo, b1, nearest_side);
-		if(hit_point < 0) me2->SetSideBezier(gis_Geo, b2, 0);
+		me2->SetSideBezier(gis_Geo, b2, 0);
 	}
 	else
 	{

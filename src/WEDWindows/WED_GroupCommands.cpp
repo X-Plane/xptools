@@ -2014,17 +2014,11 @@ void do_edge_split(ISelection * sel)
 	hack_t	info;
 	info.first = sel;
 	info.second = &who;
-
 	sel->IterateSelectionOr(collect_splits, &info);
 
 	vector<split_edge_info_t> edges;
-
 	sel->IterateSelectionOr(collect_edges, &edges);
-
 	if (who.empty() && edges.empty()) return;
-	
-printf("do_edge_split who's %ld, edges %ld\n",who.size(), edges.size());
-
 	op->StartOperation("Split Segments.");
 
 	//
