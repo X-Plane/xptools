@@ -265,33 +265,47 @@ public:
 
 void dsf_road_grid_helper::add_segment(WED_RoadEdge * e, const Bbox2& cull_bounds)
 {
+	int n = e->GetNumSides();
+
 	IGISPoint * gp_start = e->GetNthPoint(0);
-	IGISPoint * gp_end = e->GetNthPoint(1);
+	IGISPoint * gp_end = e->GetNthPoint(n);
+
+	Point2 sp,ep;
+	gp_start->GetLocation(gis_Geo,sp);
+	gp_end->GetLocation(gis_Geo,ep);
 
 	Bezier2 b ;
-	if(e->GetSide(gis_Geo, 0, b)) // We are a real bezier:
+	vector<Bezier2> segm;
+	for(int s = 0; s < n ;++s)
 	{
-		if(b.p1 == b.c1)
+		if(e->GetSide(gis_Geo, s , b)) // We are a real bezier:  make always qubic
 		{
-			b.c1 = b.p1 + b.derivative(0.01);
+			if(b.p1 == b.c1)
+			{
+				b.c1 = b.p1 + b.derivative(0.01);
+			}
+			else if(b.p2 == b.c2)
+			{
+				b.c2 = b.p2 - b.derivative(0.99);
+			}
 		}
-		else if(b.p2 == b.c2)
-		{
-			b.c2 = b.p2 - b.derivative(0.99);
-		}
+		segm.push_back(b);
 	}
 
-	vector<Bezier2> segm;
-	segm.push_back(b);
 	clip_segments(segm,cull_bounds);
-	if(segm.size() != 1) return;					//the whole segment is out of the bounds or something else is wrong
+	#if DEV
+	printf("export roads: segment size %d \n",segm.size());
+	#endif
+	if(segm.empty()) return;					//the whole segment is out of the bounds or something else is wrong
 
 	edge new_edge;
-	new_edge.path.push_back(segm[0]);
-
 	new_edge.subtype = e->GetSubtype();
 
-	if(b.p1 == segm[0].p1)							//start point is unchanged ? no cull
+	for(auto s : segm)
+		new_edge.path.push_back(s);
+
+
+	if(segm.begin()->p1  == sp)							//start point is unchanged ? no cull
 	{
 		new_edge.start_level = e->GetStartLayer();
 		node_index::iterator si = m_node_index.find(gp_start);
@@ -309,13 +323,13 @@ void dsf_road_grid_helper::add_segment(WED_RoadEdge * e, const Bbox2& cull_bound
 	}
 	else											//start point is new after culling , creating new own node
 	{
-		new_edge.start_level = e->GetEndLayer();    // ToDo: revisit , using original endlayer for every newly split node
+		new_edge.start_level = e->GetEndLayer();    // ToDo: mroe: revisit , using original endlayer for every newly split node
 		new_edge.start_node = m_nodes.size();
 		m_nodes.push_back(node());
 		m_nodes[m_nodes.size()-1].edges.push_back(m_edges.size());
 	}
 
-	if(b.p2 == segm[0].p2)							//end point is unchanged ?  no cull
+	if(segm.end()->p2 == ep)							//end point is unchanged ?  no cull
 	{
 		new_edge.end_level = e->GetEndLayer();
 		node_index::iterator ei = m_node_index.find(gp_end);
