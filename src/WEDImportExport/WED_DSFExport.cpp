@@ -305,7 +305,7 @@ void dsf_road_grid_helper::add_segment(WED_RoadEdge * e, const Bbox2& cull_bound
 		new_edge.path.push_back(s);
 
 
-	if(segm.begin()->p1  == sp)							//start point is unchanged ? no cull
+	if(segm.front().p1 == sp)							//start point is unchanged ? no cull
 	{
 		new_edge.start_level = e->GetStartLayer();
 		node_index::iterator si = m_node_index.find(gp_start);
@@ -329,7 +329,7 @@ void dsf_road_grid_helper::add_segment(WED_RoadEdge * e, const Bbox2& cull_bound
 		m_nodes[m_nodes.size()-1].edges.push_back(m_edges.size());
 	}
 
-	if(segm.end()->p2 == ep)							//end point is unchanged ?  no cull
+	if(segm.back().p2 == ep)							//end point is unchanged ?  no cull
 	{
 		new_edge.end_level = e->GetEndLayer();
 		node_index::iterator ei = m_node_index.find(gp_end);
