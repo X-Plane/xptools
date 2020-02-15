@@ -494,7 +494,16 @@ public:
 
 		int last = me->accum_road.size()-1;
 		int s = 0;
-		WED_RoadNode * last_node = road_start;
+		int side = 0;
+
+		WED_RoadEdge * edge = WED_RoadEdge::CreateTyped(me->archive);
+		edge->SetParent(me->get_cat_parent(dsf_cat_roads), me->get_cat_parent(dsf_cat_roads)->CountChildren());
+		edge->SetResource(me->net_table[me->accum_road_type.first]);
+		edge->SetSubtype(me->accum_road_type.second);
+		edge->SetStartLayer(start_level);
+		edge->SetEndLayer(end_level);
+		edge->AddSource(road_start, 0);
+
 		while(s < last)
 		{
 			int n = s+1;
@@ -504,31 +513,21 @@ public:
 			int span = n - s;
 			DebugAssert(span > 0);
 			DebugAssert(span < 4);
-			WED_RoadEdge * edge = WED_RoadEdge::CreateTyped(me->archive);
-			edge->SetParent(me->get_cat_parent(dsf_cat_roads), me->get_cat_parent(dsf_cat_roads)->CountChildren());
-			edge->SetResource(me->net_table[me->accum_road_type.first]);
-			edge->SetSubtype(me->accum_road_type.second);
-			edge->SetStartLayer(start_level);
-			edge->SetEndLayer(end_level);
-			edge->AddSource(last_node, 0);
 			if(n == last)
 			{
 				edge->AddSource(road_end, 1);
 			}
 			else
 			{
-				WED_RoadNode * shape = WED_RoadNode::CreateTyped(me->archive);
-				shape->SetName("shape point");
-				shape->SetLocation(gis_Geo, me->accum_road[n].first);
-				shape->SetParent(me->get_cat_parent(dsf_cat_roads), me->get_cat_parent(dsf_cat_roads)->CountChildren());
-				edge->AddSource(shape, 1);
-				last_node = shape;
+				WED_SimpleBezierBoundaryNode * shape_node = WED_SimpleBezierBoundaryNode::CreateTyped(me->archive);
+				shape_node->SetName("shape point");
+				shape_node->SetParent(edge,edge->CountChildren());
 			}
 
 			if(span == 1)
 			{
 				Segment2 path(me->accum_road[s].first, me->accum_road[n].first);
-				edge->SetSide(gis_Geo, path);
+				edge->SetSide(gis_Geo, path, side);
 			}
 			else if(span == 2)
 			{
@@ -544,7 +543,7 @@ public:
 								p2.y() + (c.y() - p2.y()) * 2.0 / 3.0);
 
 				Bezier2 path(p1,c1,c2,p2);
-				edge->SetSideBezier(gis_Geo, path);
+				edge->SetSideBezier(gis_Geo, path, side);
 			}
 			else if(span == 3)
 			{
@@ -552,8 +551,10 @@ public:
 							me->accum_road[s+1].first,
 							me->accum_road[s+2].first,
 							me->accum_road[s+3].first);
-				edge->SetSideBezier(gis_Geo, path);
+				edge->SetSideBezier(gis_Geo, path, side);
 			}
+
+			++side;
 			s = n;
 		}
 
