@@ -293,9 +293,6 @@ void dsf_road_grid_helper::add_segment(WED_RoadEdge * e, const Bbox2& cull_bound
 	}
 
 	clip_segments(segm,cull_bounds);
-	#if DEV
-	printf("export roads: segment size %d \n",segm.size());
-	#endif
 	if(segm.empty()) return;					//the whole segment is out of the bounds or something else is wrong
 
 	edge new_edge;
@@ -303,7 +300,6 @@ void dsf_road_grid_helper::add_segment(WED_RoadEdge * e, const Bbox2& cull_bound
 
 	for(auto s : segm)
 		new_edge.path.push_back(s);
-
 
 	if(segm.front().p1 == sp)							//start point is unchanged ? no cull
 	{
