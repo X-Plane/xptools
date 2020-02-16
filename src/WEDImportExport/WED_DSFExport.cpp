@@ -306,8 +306,7 @@ void dsf_road_grid_helper::add_segment(WED_RoadEdge * e, const Bbox2& cull_bound
 			edge new_edge;
 			new_edge.subtype = e->GetSubtype();
 
-            vector<Bezier2> partsegm(part_st,part_en);
-		    new_edge.path = partsegm;
+		    new_edge.path.assign(part_st,part_en);
 
 			if(new_edge.path.front().p1 == sp)							//start point is unchanged , not cutted
 			{
