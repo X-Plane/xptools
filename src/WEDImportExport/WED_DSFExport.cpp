@@ -294,62 +294,74 @@ void dsf_road_grid_helper::add_segment(WED_RoadEdge * e, const Bbox2& cull_bound
 
 	clip_segments(segm,cull_bounds);
 	if(segm.empty()) return;					//the whole segment is out of the bounds or something else is wrong
+   
+	auto part_st  = segm.begin(); 
+	auto segm_end = segm.end();
 
-	edge new_edge;
-	new_edge.subtype = e->GetSubtype();
-
-	for(auto s : segm)
-		new_edge.path.push_back(s);
-
-	if(segm.front().p1 == sp)							//start point is unchanged ? no cull
+	while(part_st != segm_end)
 	{
-		new_edge.start_level = e->GetStartLayer();
-		node_index::iterator si = m_node_index.find(gp_start);
-		if(si == m_node_index.end())
-		{
-			new_edge.start_node = m_nodes.size();
-			si = m_node_index.insert(make_pair(gp_start, m_nodes.size())).first;
-			m_nodes.push_back(node());
-		}
-		else
-		{
-			new_edge.start_node = si->second;
-		}
-		m_nodes[si->second].edges.push_back(m_edges.size());
-	}
-	else											//start point is new after culling , creating new own node
-	{
-		new_edge.start_level = e->GetEndLayer();    // ToDo: mroe: revisit , using original endlayer for every newly split node
-		new_edge.start_node = m_nodes.size();
-		m_nodes.push_back(node());
-		m_nodes[m_nodes.size()-1].edges.push_back(m_edges.size());
-	}
+		auto part_en = find_contiguous_beziers(part_st,segm_end);
+		if(part_st != part_en)
+		{	
+			edge new_edge;
+			new_edge.subtype = e->GetSubtype();
 
-	if(segm.back().p2 == ep)							//end point is unchanged ?  no cull
-	{
-		new_edge.end_level = e->GetEndLayer();
-		node_index::iterator ei = m_node_index.find(gp_end);
-		if(ei == m_node_index.end())
-		{
-			new_edge.end_node = m_nodes.size();
-			ei = m_node_index.insert(make_pair(gp_end, m_nodes.size())).first;
-			m_nodes.push_back(node());
-		}
-		else
-		{
-			new_edge.end_node = ei->second;
-		}
-		m_nodes[ei->second].edges.push_back(m_edges.size());
-	}
-	else											//end point is new after culling , creating new own node
-	{
-		new_edge.end_level = e->GetEndLayer();
-		new_edge.end_node = m_nodes.size();
-		m_nodes.push_back(node());
-		m_nodes[m_nodes.size()-1].edges.push_back(m_edges.size());
-	}
+            vector<Bezier2> partsegm(part_st,part_en);
+		    new_edge.path = partsegm;
 
-	m_edges.push_back(new_edge);
+			if(new_edge.path.front().p1 == sp)							//start point is unchanged , not cutted
+			{
+				new_edge.start_level = e->GetStartLayer();
+				node_index::iterator si = m_node_index.find(gp_start);
+				if(si == m_node_index.end())
+				{
+					new_edge.start_node = m_nodes.size();
+					si = m_node_index.insert(make_pair(gp_start, m_nodes.size())).first;
+					m_nodes.push_back(node());
+				}
+				else
+				{
+					new_edge.start_node = si->second;
+				}
+				m_nodes[si->second].edges.push_back(m_edges.size());
+			}
+			else											//start point is new after culling , creating new own node
+			{
+				new_edge.start_level = e->GetEndLayer();    // ToDo: mroe: revisit , using original endlayer for every newly split node
+				new_edge.start_node = m_nodes.size();
+				m_nodes.push_back(node());
+				m_nodes[m_nodes.size()-1].edges.push_back(m_edges.size());
+			}
+
+			if( new_edge.path.back().p2 == ep)							//end point is unchanged , not cutted
+			{
+				new_edge.end_level = e->GetEndLayer();
+				node_index::iterator ei = m_node_index.find(gp_end);
+				if(ei == m_node_index.end())
+				{
+					new_edge.end_node = m_nodes.size();
+					ei = m_node_index.insert(make_pair(gp_end, m_nodes.size())).first;
+					m_nodes.push_back(node());
+				}
+				else
+				{
+					new_edge.end_node = ei->second;
+				}
+				m_nodes[ei->second].edges.push_back(m_edges.size());
+			}
+			else											//end point is new after culling , creating new own node
+			{
+				new_edge.end_level = e->GetEndLayer();
+				new_edge.end_node = m_nodes.size();
+				m_nodes.push_back(node());
+				m_nodes[m_nodes.size()-1].edges.push_back(m_edges.size());
+			}
+
+			m_edges.push_back(new_edge);
+		}
+
+		part_st = part_en;
+	}
 }
 
 void dsf_road_grid_helper::remove_dupes()
