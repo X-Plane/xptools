@@ -267,17 +267,19 @@ void WED_GISEdge::Reverse(GISLayer_t l)
 	swap(ctrl_lat_lo.value, ctrl_lat_hi.value);
 	swap(ctrl_lon_lo.value, ctrl_lon_hi.value);
 
-	WED_Thing * p2 = GetNthSource(1);
-	RemoveSource(p2);
-	AddSource(p2, 0);
+	WED_Thing * p0 = GetNthSource(1);
+	RemoveSource(p0);
+	AddSource(p0, 0);
+	
+	Point2 pt1, pt2, c11, c12, c21, c22;
+	bool b1s, b2s;
+	WED_GISPoint_Bezier *p1, *p2;
 	
 	const int n = CountChildren();
 	for(int i = 0; i < n/2; i++)
 	{
-		auto p1 = dynamic_cast<WED_GISPoint_Bezier *>(GetNthChild(i));
-		auto p2 = dynamic_cast<WED_GISPoint_Bezier *>(GetNthChild(n-1-i));
-		Point2 pt1, pt2, c11, c12, c21, c22;
-		bool b1s, b2s;
+		p1 = dynamic_cast<WED_GISPoint_Bezier *>(GetNthChild(i));
+		p2 = dynamic_cast<WED_GISPoint_Bezier *>(GetNthChild(n-1-i));
 		
 		p1->GetLocation(gis_Geo, pt1);
 		p2->GetLocation(gis_Geo, pt2);
@@ -299,6 +301,17 @@ void WED_GISEdge::Reverse(GISLayer_t l)
 		p1->SetSplit(b2s);
 		p1->SetControlHandleHi(gis_Geo, c21);
 		if(b2s) p1->SetControlHandleLo(gis_Geo, c22);
+	}
+	
+	if(n & 1)
+	{
+		p1 = dynamic_cast<WED_GISPoint_Bezier *>(GetNthChild(n/2));
+		
+		p1->GetControlHandleLo(gis_Geo, c11);
+		b1s = p1->IsSplit();
+		if(b1s) p1->GetControlHandleHi(gis_Geo, c12);
+		p1->SetControlHandleHi(gis_Geo, c11);
+		if(b1s) p1->SetControlHandleLo(gis_Geo, c12);
 	}
 }
 

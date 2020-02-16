@@ -293,9 +293,17 @@ bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, G
 						glLineWidth(2);
 						for(int l = 1; l <= layers; l++)
 						{
-							int skip_pts = seg->GetStartLayer() >= l ? 0 :  pts.size()/4;
+							int skip_pts = 0;
+							if(seg->GetStartLayer() < l)
+								if(ns == num_sides/2-1)	skip_pts = pts.size()/2;
+								else if(ns < num_sides/2-1) continue;
+//							if(ns < num_sides/2 && seg->GetStartLayer() < l) skip_pts = pts.size()/2;
 							Point2 * first = pts.data() + skip_pts;
-							int num_pts = pts.size() - skip_pts - (seg->GetEndLayer() >= l ? 0 : pts.size()/4);
+							int num_pts = pts.size() - skip_pts;
+							if(seg->GetEndLayer() < l)
+								if(ns == num_sides/2) num_pts -= pts.size()/2;
+								else if(ns > num_sides/2)  continue;
+//							if(ns < num_sides/2 && seg->GetEndLayer() < l) num_pts -= pts.size()/2;
 
 							glShapeOffset2v(GL_LINE_STRIP, first, num_pts,  offs_pix + 3 * (l-1));
 							glShapeOffset2v(GL_LINE_STRIP, first, num_pts, -offs_pix - 3 * (l-1));
