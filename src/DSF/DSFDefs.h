@@ -166,7 +166,8 @@ enum {
 };
 
 enum {
-	dsf_Comment_Filter					= 1
+	dsf_Comment_Filter					= 1,
+	dsf_Comment_AGL						= 2
 };
 
 #endif

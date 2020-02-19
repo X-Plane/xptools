@@ -74,6 +74,14 @@ enum {
 	dsf_CmdAll	   = 0xFF	/* Return everything at once.					*/
 };
 
+enum {
+
+	obj_ModeDraped = 0,	// 3 coords, lon/lat/rotation
+	obj_ModeMSL = 1,	// 4 coords, lon/lat/rotation/MSL ele
+	obj_ModeAGL = 2		// 4 coords, lon/lat/rotation/AGL ele
+
+};
+
 
 /*
  * Error message strings
@@ -130,10 +138,10 @@ struct	DSFCallbacks_t {
 
 	/* This function adds an object.  All objects take
 	 * two coordinates. */
-	void (*	AddObject_f)(
+	void (*	AddObjectWithMode_f)(
 					unsigned int	inObjectType,
 					double			inCoordinates[4],	// Lon Lat Rot [MSL]
-					int				inCoordCount,		// So we can tell if we, like, HAVE MSL.
+					int				inMode,				// Draped/AGL/MSL enum
 					void *			inRef);
 
 	/* This function adds a complete chain.  All chains

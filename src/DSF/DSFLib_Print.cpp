@@ -263,10 +263,10 @@ void DSFPrint_EndPatch(
 #endif
 }
 
-void DSFPrint_AddObject(
+void DSFPrint_AddObjectWithMode(
 				unsigned int	inObjectType,
 				double			inCoordinates[],
-				int				inCoordinateDepth,
+				int				inMode,
 				void *			inRef)
 {
 #if OBJ_HISTO
@@ -433,7 +433,7 @@ obj_total = 0;
 	callbacks.AddPatchVertex_f = DSFPrint_AddPatchVertex;
 	callbacks.EndPrimitive_f = DSFPrint_EndPrimitive;
 	callbacks.EndPatch_f = DSFPrint_EndPatch;
-	callbacks.AddObject_f = DSFPrint_AddObject;
+	callbacks.AddObjectWithMode_f = DSFPrint_AddObjectWithMode;
 	callbacks.BeginSegment_f = DSFPrint_BeginSegment;
 	callbacks.AddSegmentShapePoint_f = DSFPrint_AddSegmentShapePoint;
 	callbacks.EndSegment_f = DSFPrint_EndSegment;

@@ -964,9 +964,9 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 
 		int		cur_id = 0, tri, tris_this_patch;
+		double	coords2[2];
 		double	coords3[3];
 		double	coords4[4];
-		double	coords2[2];
 		//double	coords6[6];
 		double	coords8[8];
 		double							x, y, v;
@@ -1696,12 +1696,13 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	{
 		for (pointObj = pf->data().mObjs.begin(); pointObj != pf->data().mObjs.end(); ++pointObj)
 		{
-			coords2[0] = CGAL::to_double(pointObj->mLocation.x());
-			coords2[1] = CGAL::to_double(pointObj->mLocation.y());
-			cbs.AddObject_f(
+			coords3[0] = CGAL::to_double(pointObj->mLocation.x());
+			coords3[1] = CGAL::to_double(pointObj->mLocation.y());
+			coords3[2] = (pointObj->mHeading < 0.0) ? (pointObj->mHeading + 360.0) : pointObj->mHeading;
+			cbs.AddObjectWithMode_f(
 				objects[pointObj->mRepType],
-				coords2,
-				(pointObj->mHeading < 0.0) ? (pointObj->mHeading + 360.0) : pointObj->mHeading,
+				coords3,
+				obj_ModeDraped,
 				writer2);
 			++total_objs;
 		}

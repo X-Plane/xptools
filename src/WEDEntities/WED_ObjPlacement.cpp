@@ -35,10 +35,10 @@ TRIVIAL_COPY(WED_ObjPlacement,WED_GISPoint_Heading)
 
 WED_ObjPlacement::WED_ObjPlacement(WED_Archive * a, int i) : 
 	WED_GISPoint_Heading(a,i),
-	has_msl(this,PROP_Name("Set MSL", XML_Name("obj_placement","custom_msl")),0),
-	msl    (this,PROP_Name("MSL",     XML_Name("obj_placement","msl")), 0, 5,3),
+	has_msl(this,PROP_Name("Elevation Mode", XML_Name("obj_placement","custom_msl")), ObjElevationType, obj_setToGround),
+	msl    (this,PROP_Name("Elevation",     XML_Name("obj_placement","msl")), 0, 5, 3),
 	resource  (this,PROP_Name("Resource",  XML_Name("obj_placement","resource")),""),
-	show_level(this,PROP_Name("Show with", XML_Name("obj_placement","show_level")),ShowLevel, show_Level1),
+	show_level(this,PROP_Name("Show with", XML_Name("obj_placement","show_level")), ShowLevel, show_Level1),
 	visibleWithinDeg(-1.0)
 {
 }
@@ -138,13 +138,13 @@ bool		WED_ObjPlacement::Cull(const Bbox2& b) const
 		}
 	}
 #endif
-// This woould be a radical approach to culling - drop ALL visible items, like preview/structure/handles/highlight if its too small.
+// This adds a radical approach to culling - drop ALL visible part, like preview/structure/handles/highlight if its too small.
 // Thois will make items completely invisible, but keeps thm selectable. Very similar as the "too small to go in" apprach where whole
 // groups or airport drop out of view.
 // Results in only a verw cases in users surprises - as large group of isolated items (like forests drawn as individual tree objects).
 // This practive of drawing trees comoes a popular "bad paractive" for gateway airports now - which result in sceneries that do not scale 
 // very well with rendering settings.
-// This concept could be enhances by passing an additional parameter into the Cull() function to allow items to cull themselves differently
+// This concept could be enhanced by passing an additional parameter into the Cull() function to allow items to cull themselves differently
 // based on structure/preview or even tool views.
 //
 //	if(visibleWithinDeg < b.yspan() * 0.002) return false;      // cull objects by size as well. Makes structure/preview and handles all disappear
@@ -158,9 +158,9 @@ bool		WED_ObjPlacement::Cull(const Bbox2& b) const
 	return b.overlap(my_bounds);
 }
 
-bool		WED_ObjPlacement::HasCustomMSL(void) const
+int		WED_ObjPlacement::HasCustomMSL(void) const
 {
-	return has_msl.value;
+	return has_msl.value - obj_setToGround;
 }
 
 double		WED_ObjPlacement::GetCustomMSL(void) const
@@ -170,11 +170,46 @@ double		WED_ObjPlacement::GetCustomMSL(void) const
 
 void		WED_ObjPlacement::SetCustomMSL(double in_msl)
 {
-	has_msl = 1;
+	has_msl = obj_setMSL;
 	msl = in_msl;
 }
 
 void		WED_ObjPlacement::SetDefaultMSL(void)
 {
-	has_msl = 0;
+	has_msl = obj_setToGround;
 }
+
+
+// the enum names for "Ground Level" and "set_MSL" are kept as "0" and "1" for xml backward compatibility.
+// Translate those names here to keep this from confusing users
+
+void	WED_ObjPlacement::GetNthPropertyDict(int n, PropertyDict_t& dict) const
+{
+	WED_Thing::GetNthPropertyDict(n,dict);
+	if(n == PropertyItemNumber(&has_msl))
+	{
+		dict[obj_setToGround] = make_pair("on Ground",true);
+		dict[obj_setMSL] = make_pair("set_MSL",true);
+	}
+}
+
+void	WED_ObjPlacement::GetNthPropertyDictItem(int n, int e, string& item) const
+{
+	if(n == PropertyItemNumber(&has_msl) && e <= obj_setMSL)
+	{
+		item = (e == obj_setToGround ? "on Ground" : "set_MSL");
+	}
+	else
+		WED_Thing::GetNthPropertyDictItem(n,e,item);
+}
+
+void	WED_ObjPlacement::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
+{
+	if (has_msl.value == obj_setToGround && n == PropertyItemNumber(&msl))
+	{
+		info.prop_name = "."; // Do not show elevation property if its not relevant
+	}
+	else
+		WED_Thing::GetNthPropertyInfo(n, info);
+}
+

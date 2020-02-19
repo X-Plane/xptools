@@ -629,8 +629,15 @@ void	WED_DocumentWindow::ReceiveMessage(
 
 		// not writing doc/use_feet any more. Its a global preference now.
 		prefs->WriteIntPref("doc/export_target",gExportTarget);
-		prefs->WriteIntPref("doc/xml_compatibility",107);     // minimum WED version expected to read this .xml correctly - 1.7 added new airport line marking styles
-		                                                      // 8.33k freqs added in 2.0 are fine back to at least 1.5, saved with 3 decimal places ever since
+		// minimum WED version expected to read this .xml correctly 
+		// endcding: 100x WED major version + 1 x middle version number
+		//  8.33k freqs added in 2.0 are fine back to at least 1.5, saved with 3 decimal places ever since
+		//  WED 1.7 added new airport line marking styles
+		//  WED 2.3 added set_AGL commands
+//		if(docHas_SetAGL())
+			prefs->WriteIntPref("doc/xml_compatibility",203);
+//		else
+//			prefs->WriteIntPref("doc/xml_compatibility",107);
 		prefs->WriteIntPref("window/main_split",mMainSplitter->GetSplitPoint());
 		prefs->WriteIntPref("window/main_split2",mMainSplitter2->GetSplitPoint());
 		prefs->WriteIntPref("window/prop_split",mPropSplitter->GetSplitPoint());

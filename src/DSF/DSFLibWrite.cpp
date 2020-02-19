@@ -201,7 +201,7 @@ public:
 	};
 	typedef vector<ObjectSpec>	ObjectSpecVector;
 	ObjectSpecVector			objects;
-	ObjectSpecVector			objects3d;
+	ObjectSpecVector			objects3d[2];	// MSL, AGL
 
 	/********** POLYGON STORAGE **********/
 	typedef map<int, DSFContiguousPointPool>	DSFContiguousPointPoolMap;
@@ -334,10 +334,10 @@ public:
 	static void EndPatch(
 					void *			inRef);
 
-	static void	AddObject(
+	static void	AddObjectWithMode(
 					unsigned int	inObjectType,
 					double			inCoordinates[4],
-					int				inCoordinateDepth,
+					int				inMode,
 					void *			inRef);
 	static void BeginSegment(
 					unsigned int	inNetworkType,
@@ -408,7 +408,7 @@ void	DSFGetWriterCallbacks(DSFCallbacks_t * ioCallbacks)
 	ioCallbacks->AddPatchVertex_f = DSFFileWriterImp::AddPatchVertex;
 	ioCallbacks->EndPrimitive_f = DSFFileWriterImp::EndPrimitive;
 	ioCallbacks->EndPatch_f = DSFFileWriterImp::EndPatch;
-	ioCallbacks->AddObject_f = DSFFileWriterImp::AddObject;
+	ioCallbacks->AddObjectWithMode_f = DSFFileWriterImp::AddObjectWithMode;
 	ioCallbacks->BeginSegment_f = DSFFileWriterImp::BeginSegment;
 	ioCallbacks->AddSegmentShapePoint_f = DSFFileWriterImp::AddSegmentShapePoint;
 	ioCallbacks->EndSegment_f = DSFFileWriterImp::EndSegment;
@@ -867,10 +867,12 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 	for (objSpec = objects.begin(); objSpec != objects.end(); ++objSpec)
 		objSpec->pool = objectPool.MapPoolNumber(objSpec->pool);
 
-	sort(objects3d.begin(),	objects3d.end());
+	sort(objects3d[0].begin(),	objects3d[0].end());
+	sort(objects3d[1].begin(),	objects3d[1].end());
 
 	objectPool3d.ProcessPoints();
-	for (objSpec = objects3d.begin(); objSpec != objects3d.end(); ++objSpec)
+	for(int i = 0; i < 2; ++i)
+	for (objSpec = objects3d[i].begin(); objSpec != objects3d[i].end(); ++objSpec)
 		objSpec->pool = objectPool3d.MapPoolNumber(objSpec->pool);
 
 	/************************************************************************************************************/
@@ -1227,28 +1229,38 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 			}
 		}
 
-		for (objSpec = objects3d.begin(); objSpec != objects3d.end(); ++objSpec)
+		for(int i = 0; i < 2; ++i)
 		{
-			int first_loc = objSpec->location, last_loc = objSpec->location;
-			ObjectSpecVector::iterator objSpecNext = objSpec;
-			while (objSpecNext != objects3d.end() && objSpec->pool == objSpecNext->pool && objSpec->type == objSpecNext->type)
-				last_loc = objSpecNext->location, ++objSpecNext;
-
-			UpdatePoolState(fi, objSpec->type, objSpec->pool + offset_to_3d_objs, objSpec->filter, curDef, curPool, curFilter);
-			if (first_loc != last_loc)
+			for (objSpec = objects3d[i].begin(); objSpec != objects3d[i].end(); ++objSpec)
 			{
-				WriteUInt8(fi, dsf_Cmd_Object);
-				if (first_loc > 65535) 	Assert(!"Overflow writing objects (indexed object).\n");
-				WriteUInt16(fi, first_loc);
-			} else {
-				WriteUInt8(fi, dsf_Cmd_ObjectRange);
-				if (first_loc > 65535) 	Assert(!"Overflow writing objects (first loc of range).\n");
-				if (last_loc > 65534) 	Assert(!"Overflow writing objects (last loc of range).\n");
-				WriteUInt16(fi, first_loc);
-				WriteUInt16(fi, last_loc+1);
+				int first_loc = objSpec->location, last_loc = objSpec->location;
+				ObjectSpecVector::iterator objSpecNext = objSpec;
+				while (objSpecNext != objects3d[i].end() && objSpec->pool == objSpecNext->pool && objSpec->type == objSpecNext->type)
+					last_loc = objSpecNext->location, ++objSpecNext;
+
+				UpdatePoolState(fi, objSpec->type, objSpec->pool + offset_to_3d_objs, objSpec->filter, curDef, curPool, curFilter);
+				if (first_loc != last_loc)
+				{
+					WriteUInt8(fi, dsf_Cmd_Object);
+					if (first_loc > 65535) 	Assert(!"Overflow writing objects (indexed object).\n");
+					WriteUInt16(fi, first_loc);
+				} else {
+					WriteUInt8(fi, dsf_Cmd_ObjectRange);
+					if (first_loc > 65535) 	Assert(!"Overflow writing objects (first loc of range).\n");
+					if (last_loc > 65534) 	Assert(!"Overflow writing objects (last loc of range).\n");
+					WriteUInt16(fi, first_loc);
+					WriteUInt16(fi, last_loc+1);
+				}
+			}
+			
+			if(i == 0 && !objects3d[1].empty())
+			{
+				WriteUInt8(fi, dsf_Cmd_Comment8);
+				WriteUInt8(fi, 6);							// Filter comment: 2-byte comment type, 4-byte filter ID
+				WriteUInt16(fi, dsf_Comment_AGL);
+				WriteSInt32(fi, 1);
 			}
 		}
-
 	/************************************************************************************************************/
 	/******************** WRITE POLYGONS **************************/
 	/************************************************************************************************************/
@@ -1700,16 +1712,17 @@ void	DSFFileWriterImp::EndPatch(
 	}
 }
 
-void	DSFFileWriterImp::AddObject(
+void	DSFFileWriterImp::AddObjectWithMode(
 				unsigned int	inObjectType,
 				double			inCoordinates[4],
-				int				inCoordDepth,
+				int				inMode,
 				void *			inRef)
 {
-	DSFTuple	p(inCoordinates,inCoordDepth);
-	Assert(inCoordDepth == 3 || inCoordDepth == 4);
+	Assert(inMode == obj_ModeDraped || inMode == obj_ModeMSL || inMode == obj_ModeAGL);
+	int depth = (inMode == obj_ModeDraped) ? 3 : 4;
+	DSFTuple	p(inCoordinates,depth);
 	
-	DSFPointPoolLoc loc = inCoordDepth == 4 ?
+	DSFPointPoolLoc loc = depth == 4 ?
 		REF(inRef)->objectPool3d.AccumulatePoint(p) :
 		REF(inRef)->objectPool.AccumulatePoint(p);
 	if (loc.first == -1 || loc.second == -1) {
@@ -1721,10 +1734,17 @@ void	DSFFileWriterImp::AddObject(
 		o.type = inObjectType;
 		o.pool = loc.first;
 		o.location = loc.second;
-		if(inCoordDepth == 4)
-			REF(inRef)->objects3d.push_back(o);
-		else
+		switch(inMode) {
+		case obj_ModeAGL:
+			REF(inRef)->objects3d[1].push_back(o);
+			break;
+		case obj_ModeMSL:
+			REF(inRef)->objects3d[0].push_back(o);
+			break;
+		case obj_ModeDraped:
 			REF(inRef)->objects.push_back(o);
+			break;
+		}
 	}
 }
 
