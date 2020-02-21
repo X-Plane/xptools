@@ -143,11 +143,13 @@ void	WED_MakeOrthos(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 				
 			if (base_tex.find(" ") == base_tex.npos && img_path[0] != '.' && img_path[0] != DIR_CHAR && img_path[1] != ':')
 			{
+				std::replace(img_path.begin(), img_path.end(), '\\', '/');
 				WED_Ring * rng0 = WED_RingfromImage(path, arch, zoomer, true);
 				if (rng0)
 				{
 					ITexMgr *	tman = WED_GetTexMgr(inResolver);
-					TexRef tref = tman->LookupTexture(img_path.c_str(), false, tex_Compress_Ok|tex_Linear);
+					TexRef tref = tman->LookupTexture(img_path.c_str()
+						, false, tex_Compress_Ok|tex_Linear);
 
 					if(tref != NULL)
 					{

@@ -553,6 +553,8 @@ bool		WED_PropStringText::WantsAttribute(const char * ele, const char * att_name
 	if(strcmp(GetXmlAttrName(),att_name)==0)
 	{
 		value = att_value;
+		if(strcmp(att_name, "resource") == 0)
+			std::replace(value.begin(), value.end(), '\\', '/');    // grandfather in 'old' xml files where the windows-style backslash was still valid to use
 		return true;
 	}
 	return false;

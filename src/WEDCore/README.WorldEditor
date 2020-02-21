@@ -13,6 +13,10 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 2.2.0r3 2/19/20
+   Bug Fix:
+   - fix resource names on windows for local objects and orthophotos after import from DSF
+
 WED 2.2.0r2 2/3/20
    Bug Fix:
    - fix crash when .agp specifying non-existent annotations are visible in the map

@@ -269,6 +269,8 @@ public:
 	{
 		DSF_Importer * me = (DSF_Importer *) inRef;
 		me->obj_table.push_back(inPartialPath);
+		for(auto& c : me->obj_table.back())
+			if(c == '\\') c = '/';
 		size_t pos = me->obj_table.back().find_last_of('/');
 		if(pos == string::npos)
 			pos = 0;
@@ -282,6 +284,8 @@ public:
 	{
 		DSF_Importer * me = (DSF_Importer *) inRef;
 		me->pol_table.push_back(inPartialPath);
+		for (auto& c : me->pol_table.back())
+			if (c == '\\') c = '/';
 		size_t pos = me->pol_table.back().find_last_of('/');
 		if(pos == string::npos)
 			pos = 0;
@@ -296,6 +300,8 @@ public:
 	{
 		DSF_Importer * me = (DSF_Importer *) inRef;
 		me->net_table.push_back(inPartialPath);
+		for (auto& c : me->net_table.back())
+			if (c == '\\') c = '/';
 		return 1;
 	}
 	
