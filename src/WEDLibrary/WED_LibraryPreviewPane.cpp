@@ -23,6 +23,13 @@
 
 #include "WED_LibraryPreviewPane.h"
 
+#if APL
+	#include <OpenGL/gl.h>
+#else
+	#include "glew.h"
+//	#include <GL/gl.h>
+#endif
+
 #include "ITexMgr.h"
 #include "TexUtils.h"
 #include "MathUtils.h"
@@ -44,12 +51,6 @@
 #include "XObjDefs.h"
 #include "ObjDraw.h"
 
-#if APL
-	#include <OpenGL/gl.h>
-#else
-	#include <GL/gl.h>
-#endif
-
 enum { 
 	next_variant = GUI_APP_MESSAGES
 };
@@ -70,6 +71,7 @@ WED_LibraryPreviewPane::WED_LibraryPreviewPane(GUI_Commander * cmdr, WED_Resourc
 		mNextButton->SetMsg(next_variant,0);
 		mNextButton->AddListener(this);
 		mNextButton->Hide();
+		
 }
 
 void		WED_LibraryPreviewPane::ReceiveMessage(GUI_Broadcaster * inSrc, intptr_t inMsg, intptr_t inParam)
@@ -269,8 +271,6 @@ int		WED_LibraryPreviewPane::MouseMove  (int x, int y)
 	return 1;
 }
 
-
-
 #define VIEW_DISTANCE 2.5
 
 void	WED_LibraryPreviewPane::begin3d(int *b, double radius_m)
@@ -285,6 +285,34 @@ void	WED_LibraryPreviewPane::begin3d(int *b, double radius_m)
 
 	glPushAttrib(GL_VIEWPORT_BIT);
 	glViewport(b[0],b[1],b[2]-b[0],b[3]-b[1]);
+	
+	GLfloat light_pos[4] = { -1, 1, 1, 0};          // x right, y up, z front
+	glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
+	glEnable(GL_LIGHT0);
+	
+	GLfloat ambient_color[4] = { 2, 2, 2, 1 };
+	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient_color);
+	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, true);
+	glEnable(GL_LIGHTING);
+	
+	glGenFramebuffers(1, &mFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
+	
+	glGenRenderbuffers(1, &mColBuf);
+	glBindRenderbuffer(GL_RENDERBUFFER, mColBuf);
+	glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_RGB, dx, dy);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, mColBuf);
+
+	glGenRenderbuffers(1, &mDepthBuf);
+	glBindRenderbuffer(GL_RENDERBUFFER, mDepthBuf);
+	glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH_COMPONENT, dx, dy);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, mDepthBuf);
+	
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mFBO); // copy the background - can't spec any blend mode when Bliting buffer back at the end
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+	glBlitFramebuffer(b[0], b[1], dx, dy, 0, 0, dx, dy, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
+
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
@@ -302,14 +330,26 @@ void	WED_LibraryPreviewPane::begin3d(int *b, double radius_m)
 #endif
 	glRotatef(mThe,1,0,0);
 	glRotatef(mPsi,0,1,0);
+	
 }
 
-void	WED_LibraryPreviewPane::end3d()
+void	WED_LibraryPreviewPane::end3d(int *b)
 {
+	glDisable(GL_LIGHTING);
 	glPopMatrix();
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 	glPopAttrib();
+	
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, mFBO);
+	glDrawBuffer(GL_BACK);
+	int dx = b[2] - b[0];
+	int dy = b[3] - b[1];
+	glBlitFramebuffer(0, 0, dx, dy, b[0], b[1], dx, dy, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	glDeleteFramebuffers(1, &mFBO);
+	glDeleteRenderbuffers(1, &mColBuf);
+	glDeleteRenderbuffers(1, &mDepthBuf);
 }
 
 
@@ -470,7 +510,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				glEnd();
 				glColor4f(1,1,1,1);
 
-				end3d();
+				end3d(b);
 			}
 			break;
 		case res_Forest:
@@ -502,7 +542,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				draw_obj_at_xyz(mTexMgr, o,
 					xyz_off[0], xyz_off[1], xyz_off[2],	0, g);
 						
-				end3d();
+				end3d(b);
 			}
 			else if (mResMgr->GetAGP(mRes,agp))
 			{
@@ -537,7 +577,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				{
 					draw_obj_at_xyz(mTexMgr, o.obj, o.x, o.z, -o.y, o.r, g);
 				}
-				end3d();
+				end3d(b);
 			}
 			break;
 		}

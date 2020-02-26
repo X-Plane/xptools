@@ -52,7 +52,7 @@ private:
 	
 	void 				UpdateFacadePreview(void);
 	void 				begin3d(int *b, double radius_m);
-	void				end3d();
+	void				end3d(int *b);
 
 	int					mX, mY;
 	float				mPsi,mThe;
@@ -70,6 +70,9 @@ private:
 	int					mVariant;      // variant we want to show
 	GUI_Button *		mNextButton;   // Button to advance to next Variant
 	float				mDs, mDt;
+	
+	unsigned int		mFBO;			// for MSAA in preview window
+	unsigned int		mColBuf, mDepthBuf;
 };
 
 #endif
