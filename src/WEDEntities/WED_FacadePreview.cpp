@@ -176,7 +176,11 @@ static void expand_pair(xflt& v1, xflt& v2, xflt s)
 #define CALLBACK
 #endif
 
-static void CALLBACK TessVertex(const Point2 * p, double * h){ glTexCoord2f((p+1)->x(), (p+1)->y()); glVertex3f(p->x(), *h, p->y());	}
+static void CALLBACK TessVertex(const Point2 * p, double * h)
+{ 
+	glTexCoord2f((p+1)->x(), (p+1)->y()); 
+	glVertex3f(p->x(), *h, p->y()); 
+}
 
 void glPolygon2h(const Point2 * pts, double height, int n)
 {
@@ -230,7 +234,11 @@ static	float	BuildOnePanel(      // return width of this section
 	coords[ 9] = p.x;
 	coords[10] = p.y;
 	coords[11] = p.z;
-	
+
+	Vector3 nml = Vector3(inBase.p1, inBase.p2).cross(inUp);
+	nml.normalize();
+	glNormal3f(nml.dx, nml.dy, nml.dz); 
+
 	if (use_roof) {
 		p = inRoof.midpoint(h_start) + inUp * (v_end * fac.y_scale);
 		coords[3] = p.x;
@@ -295,6 +303,8 @@ static	float	BuildOnePanel(      // return width of this section
 		swap(texes[1],texes[7]);
 		swap(texes[2],texes[4]);
 		swap(texes[3],texes[5]);
+		
+		glNormal3f(-nml.dx, -nml.dy, -nml.dz); 
 		DrawQuad(coords, texes);
 	}
 	
@@ -856,11 +866,10 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 	g->BindTex(tRef  ? tman->GetTexID(tRef) : 0, 0);
 	
 	const REN_facade_floor_t * bestFloor = nullptr;
-	vector<obj>		obj_locs;
 	
-	Polygon2			roof_pts;
+	Polygon2		roof_pts;
 	double			roof_height;
-	Bbox2				roof_extent;
+	Bbox2			roof_extent;
 	
 	if(info.two_sided)
 		glDisable(GL_CULL_FACE);
@@ -954,8 +963,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 			}
 		}
 		if(!bestFloor || bestFloor->walls.empty()) return;
-
-		glBegin(GL_TRIANGLES);
+		
 		for(int w = 0; w < n_wall; ++w)
 		{
 			Segment2 inBase(footprint.side(w));
@@ -972,7 +980,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 			roof_pts.push_back(thisPt);
 			roof_extent += thisPt;
 
-			Vector2 corrDir_first,corrDir_last;
+			double mi_first, mi_last;
 			{
 				Vector2 tangentDir;
 				if(w == 0)
@@ -987,8 +995,9 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 						miter /= miter.dot(perpDir);
 					}
 					else
-						miter =perpDir;
-				corrDir_first = perpDir - miter;
+						miter = perpDir;
+
+				mi_first = miter.dot(segDir);
 				if (info.is_ring || w < n_wall -1) 
 				{
 					inBase = footprint.side(w < n_wall-1 ? w+1 : 0);
@@ -998,51 +1007,78 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 					tangentDir.normalize();
 					miter = tangentDir.perpendicular_ccw();
 					miter /= miter.dot(perpDir);
-					corrDir_last = perpDir - miter;
+					mi_last = -miter.dot(segDir);
 				}
 				else
-					corrDir_last = Vector2();
+					mi_last = 0.0;
 			}
 
 			int first = 1;
-//	printf("start\n");
 			for(auto ch : our_choice.indices)
 			{
 				const REN_facade_template_t& t = bestFloor->templates[ch];
 				double segMult = seg_length * t.bounds[2];
-
-//	printf("%.1f %.1f %.1f\n",t.bounds[0], t.bounds[1], t.bounds[2]);
-				if(!info.nowallmesh && (want_thinWalls || (info.has_roof && t.bounds[1] > 0.5) || (!info.is_ring && t.bounds[0] > 0.5)))
-				for(auto m : t.meshes) // all meshes == maximum LOD detail
-				{
-					for(auto ind : m.idx)
-					{
-						Point2 xy = thisPt - perpDir * m.xyz[3*ind] - segDir * m.xyz[3*ind+2] * segMult;
-						if(first == 1)
-							xy += corrDir_first * (m.xyz[3*ind+2]+1) * m.xyz[3*ind];
-						if(first == our_choice.indices.size())
-							xy -=  corrDir_last * (m.xyz[3*ind+2]+0) * m.xyz[3*ind];
-						glTexCoord2fv(&m.uv[2*ind]); glVertex3f(xy.x(), m.xyz[3*ind+1], xy.y());
-					}
-				}
-				first++;
+				
+				glPushMatrix();
+				glTranslatef(thisPt.x(), 0, thisPt.y());
+				float angle = atan2(perpDir.y(), -perpDir.x()) * RAD_TO_DEG;
+				glRotatef(angle, 0, 1, 0);
+				
 				for(auto o: t.objs)
 				{
-					struct obj obj_ref;
-					obj_ref.idx = o.idx;
-					Point2 xy = thisPt - perpDir * o.xyzr[0] - segDir * o.xyzr[2]  * seg_length;
-
-					obj_ref.x = xy.x();
-					obj_ref.y = o.xyzr[1];
-					obj_ref.z = xy.y();
-					obj_ref.r = o.xyzr[3] + atan2(perpDir.y(), perpDir.x()) * RAD_TO_DEG - 180.0;
-					obj_locs.push_back(obj_ref);
+					const XObj8 * oo(info.xobjs[o.idx]);
+					if(oo && !cull_obj(oo, ppm_for_culling))
+					{
+						draw_obj_at_xyz(tman, oo, o.xyzr[0], o.xyzr[1], o.xyzr[2] * seg_length, o.xyzr[3], g);
+					} 
 				}
+				g->BindTex(tRef  ? tman->GetTexID(tRef) : 0, 0);
+				
+				glScalef(1.0, 1.0, segMult);
+#if 0
+				if(first == 1 || first == our_choice.indices.size())
+				{
+					GLfloat x = first == 1 ? -0.05 : 0;
+					GLfloat y = 0; // first == our_choice.indices.size() ? 0.07 : 0;
+					GLfloat mat[16] = { 1,   0,   -x,   x,
+										0,   1,    0,   0,
+										0,   0,    1,   0,
+										0,   0,    0,   1 };
+					glMultMatrixf(mat);
+				}
+#endif
+				glBegin(GL_TRIANGLES);
+
+				if(!info.nowallmesh && (want_thinWalls || (info.has_roof && t.bounds[1] > 0.5) || (!info.is_ring && t.bounds[0] > 0.5)))
+				
+				for(auto& m : t.meshes) // all meshes == maximum LOD detail
+				{
+				int maxIdx = 0;
+					for(auto ind : m.idx)
+					{
+						maxIdx = max(maxIdx , ind);
+						glTexCoord2fv(&m.uv[2*ind]);
+						glNormal3fv(&m.nml[3*ind]);
+#if 0
+						glVertex3fv(&m.xyz[3*ind]);
+#else
+						float y = m.xyz[3*ind+2];
+						float x = m.xyz[3*ind];
+						if(first == 1)
+							y +=  mi_first/segMult * x * (1.0+y);
+						if(first == our_choice.indices.size())
+							y +=  mi_last/segMult * x * m.xyz[3*ind+2];
+						glVertex3f(m.xyz[3*ind], m.xyz[3*ind+1], y);
+#endif						
+					}
+				}
+				glEnd();
+				glPopMatrix();
+				first++;
 				thisPt += segDir * segMult;
 			}
-			corrDir_first = corrDir_last;
+			mi_first = mi_last;
 		}
-		glEnd();
 		if(info.has_roof && !info.is_ring)
 			roof_pts.push_back(footprint.back());    // we didn't process the last wall - but still need a complete roof. E.g. Fenced Parking Facades.
 	}
@@ -1054,6 +1090,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 
 		// all facdes are drawn cw (!)
 		glCullFace(GL_FRONT); 
+		glNormal3f(0,1,0);
 
 		if(!info.roof_s.empty() && roof_pts.size() < 5)
 		{
@@ -1156,18 +1193,21 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 						Point2 loc0 = footprint.side(0).midpoint();
 						Point2 loc_uv = loc0 + dirVec * ro.str[0] * info.roof_scale_s + perpVec * ro.str[1] * info.roof_scale_t;
 
-						for(int s = (footprint[0].x() - loc0.x()) / info.roof_scale_s; s < ((footprint[1].x() - loc0.x()) / info.roof_scale_s) - 1; ++s)
-							for(int t = ((-footprint[0].y() - loc0.y()) / info.roof_scale_t) + 1; t < ((-footprint[2].y() - loc0.y()) / info.roof_scale_t) + 1; ++t)
-							{
-								struct obj obj_ref;
-								Point2 xy = loc_uv + dirVec * s * info.roof_scale_s - perpVec * t * info.roof_scale_t;
-								obj_ref.x = xy.x();
-								obj_ref.y = roof_height;
-								obj_ref.z = xy.y();
-								obj_ref.r = ro.str[2] + atan2(perpVec.y(), perpVec.x()) * RAD_TO_DEG + 90.0;
-								obj_ref.idx = ro.obj;
-								obj_locs.push_back(obj_ref);
-							}
+						const XObj8 * oo(info.xobjs[ro.obj]);
+						float ro_r = ro.str[2] + atan2(perpVec.y(), perpVec.x()) * RAD_TO_DEG + 90.0;
+						
+						if(oo && !cull_obj(oo, ppm_for_culling))
+						{
+							for(int s = (footprint[0].x() - loc0.x()) / info.roof_scale_s; s < ((footprint[1].x() - loc0.x()) / info.roof_scale_s) - 1; ++s)
+								for(int t = ((-footprint[0].y() - loc0.y()) / info.roof_scale_t) + 1; t < ((-footprint[2].y() - loc0.y()) / info.roof_scale_t) + 1; ++t)
+								{
+									Point2 xy = loc_uv + dirVec * s * info.roof_scale_s - perpVec * t * info.roof_scale_t;
+									{
+										draw_obj_at_xyz(tman, oo, xy.x(), roof_height, xy.y(), ro_r, g);
+									} 
+								}
+							g->BindTex(tRef ? tman->GetTexID(tRef) : 0, 0);
+						}
 					}
 				}
 				int xtra_roofs = 0;
@@ -1192,18 +1232,5 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 		}
 		glCullFace(GL_BACK);
 	}
-
-	for(auto l : obj_locs)
-	{
-		const XObj8 * oo(info.xobjs[l.idx]);
-		if(oo && !cull_obj(oo, ppm_for_culling))
-		{
-			// facade is aligned so midpoint of first wall is origin
-			draw_obj_at_xyz(tman, oo,
-				l.x, l.y, l.z,
-				l.r, g);
-		} 
-	}
-	
 }
 

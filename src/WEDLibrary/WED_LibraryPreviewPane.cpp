@@ -56,7 +56,7 @@ enum {
 };
 
 WED_LibraryPreviewPane::WED_LibraryPreviewPane(GUI_Commander * cmdr, WED_ResourceMgr * res_mgr, ITexMgr * tex_mgr) : GUI_Commander(cmdr), mResMgr(res_mgr), mTexMgr(tex_mgr),mZoom(1.0),
-                               mPsi(10.0f),mThe(10.0f), mHgt(5), mWid(20.0f), mWalls(4)
+                               mPsi(10),mThe(10), mHgt(10), mWid(20), mWalls(4)
 {
 		int k_reg[4] = { 0, 0, 1, 3 };
 		int k_hil[4] = { 0, 1, 1, 3 };
@@ -93,7 +93,7 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 	mRes = r;
 	mType = res_type;
 	mVariant = 0;
-	mHgt = 0.0;
+//	mHgt = 0.0;
 	
 	if(res_type == res_Object || res_type == res_Facade) 
 	{	
@@ -271,7 +271,8 @@ int		WED_LibraryPreviewPane::MouseMove  (int x, int y)
 	return 1;
 }
 
-#define VIEW_DISTANCE 2.5
+#define VIEW_DISTANCE 2.5   // set to 0 for isometric, non-perspective view used before WED 2.1
+#define USE_2X2MSAA 1
 
 void	WED_LibraryPreviewPane::begin3d(int *b, double radius_m)
 {
@@ -290,11 +291,11 @@ void	WED_LibraryPreviewPane::begin3d(int *b, double radius_m)
 	glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
 	glEnable(GL_LIGHT0);
 	
-	GLfloat ambient_color[4] = { 2, 2, 2, 1 };
+	GLfloat ambient_color[4] = { 2, 2, 2, 2 };
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient_color);
-	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, true);
+	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, false);
 	glEnable(GL_LIGHTING);
-	
+#if USE_2X2MSAA
 	glGenFramebuffers(1, &mFBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
 	
@@ -310,9 +311,9 @@ void	WED_LibraryPreviewPane::begin3d(int *b, double radius_m)
 	
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mFBO); // copy the background - can't spec any blend mode when Bliting buffer back at the end
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-	glBlitFramebuffer(b[0], b[1], dx, dy, 0, 0, dx, dy, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	glBlitFramebuffer(b[0], b[1], dx, dy, 0, 0, dx, dy, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 	glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
-
+#endif
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
@@ -341,6 +342,7 @@ void	WED_LibraryPreviewPane::end3d(int *b)
 	glPopMatrix();
 	glPopAttrib();
 	
+#if USE_2X2MSAA
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, mFBO);
 	glDrawBuffer(GL_BACK);
@@ -350,6 +352,7 @@ void	WED_LibraryPreviewPane::end3d(int *b)
 	glDeleteFramebuffers(1, &mFBO);
 	glDeleteRenderbuffers(1, &mColBuf);
 	glDeleteRenderbuffers(1, &mDepthBuf);
+#endif
 }
 
 
@@ -482,15 +485,13 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 					footprint.push_back(corner);
 					corner += n<3 ? dir : dir *0.8;  // open type facade need last point duplicated, even if drawn as closed loop
 					dir = dir.perpendicular_cw();
-//printf("[%d] %.0lfd r %d a %d ", n, thisWall_hdg, thisWall_idx_rel_to_front, thisWall_idx);
 				}
-//printf("\n");
 				double real_radius = fltmax3(30.0, mWid, 1.2*mHgt);
 				begin3d(b, real_radius);
 				
 				glTranslatef(0.0, -mHgt*0.4, 0.0);
-				
-				g->SetState(false,1,false,true,true,true,true);
+				g->EnableAlpha(true, true);
+				g->EnableDepth(true, true);
 				glClear(GL_DEPTH_BUFFER_BIT);
 				
 				draw_facade(mTexMgr, mResMgr, mRes, *fac, footprint, choices, mHgt, g, true);
@@ -502,6 +503,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				else
 					glColor4f(0.2, 0.4, 0.2, 0.8);   // green lawn, almost opaque
 
+				g->EnableLighting(false);
 				glDisable(GL_CULL_FACE);
 				glBegin(GL_POLYGON);
 				for (auto f : footprint)

@@ -20,7 +20,7 @@ WED 2.3
    - XPD-9302,9240,9243 support "set_AGL" for objects available with XP11.50b1+
    - recognize keyword '#wed_text' to display text in preview window
    - speedup facade object drawing, same way as done for .agp
-   - add lighting and anti-aliasing for preview window
+   - use lighting and anti-aliasing in preview window
 
 WED 2.2.0r2 2/3/20
    Bug Fix:

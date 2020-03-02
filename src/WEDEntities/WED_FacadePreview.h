@@ -125,6 +125,7 @@ struct REN_facade_template_t {
 	};
 	struct mesh {
 		vector<xflt> 	xyz;
+		vector<xflt>	nml;
 		vector<xflt> 	uv;      // 5 floats per vertex, skipping normals
 		vector<xint>	idx;
 	};
