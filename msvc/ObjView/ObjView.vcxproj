@@ -27,7 +27,6 @@
     <ClCompile Include="..\..\src\Utils\EndianUtils.c" />
     <ClCompile Include="..\..\src\Utils\FileUtils.cpp" />
     <ClCompile Include="..\..\src\Utils\GeoUtils.cpp" />
-    <ClCompile Include="..\..\src\Utils\glew.c" />
     <ClCompile Include="..\..\src\Utils\MatrixUtils.cpp" />
     <ClCompile Include="..\..\src\Utils\md5.c" />
     <ClCompile Include="..\..\src\Utils\MemFileUtils.cpp" />
@@ -57,7 +56,6 @@
     <ClInclude Include="..\..\src\Utils\EndianUtils.h" />
     <ClInclude Include="..\..\src\Utils\FileUtils.h" />
     <ClInclude Include="..\..\src\Utils\GeoUtils.h" />
-    <ClInclude Include="..\..\src\Utils\glew.h" />
     <ClInclude Include="..\..\src\Utils\md5.h" />
     <ClInclude Include="..\..\src\Utils\MemFileUtils.h" />
     <ClInclude Include="..\..\src\Utils\ObjUtils.h" />
@@ -65,7 +63,6 @@
     <ClInclude Include="..\..\src\Utils\TexUtils.h" />
     <ClInclude Include="..\..\src\Utils\trackball.h" />
     <ClInclude Include="..\..\src\Utils\unzip.h" />
-    <ClInclude Include="..\..\src\Utils\wglew.h" />
     <ClInclude Include="..\..\src\Utils\XUtils.h" />
     <ClInclude Include="..\..\src\Utils\zip.h" />
   </ItemGroup>
@@ -79,21 +76,21 @@
     <ProjectGuid>{899D8E57-07F9-4656-A5DD-3F6A1718CD54}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>ObjView</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>false</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
