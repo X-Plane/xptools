@@ -498,6 +498,7 @@ void			XObjWin::MouseWheel(int inX, int inY, int inDelta, int inAxis)
 void			XObjWin::ReceiveFiles(const vector<string>& files, int, int)
 {
 	SetGLContext();
+	bool bNeedRefresh = false;
 
 	for (vector<string>::const_iterator i = files.begin(); i != files.end(); ++i)
 	{
@@ -512,7 +513,7 @@ void			XObjWin::ReceiveFiles(const vector<string>& files, int, int)
 				StripPath(foo);
 				ScaleToObj();
 				SetTitle(foo.c_str());
-				ForceRefresh();
+				bNeedRefresh = true;
 
 				if (mMeasureOnOpen)
 					KeyPressed('m', 0,0,0);
@@ -527,7 +528,7 @@ void			XObjWin::ReceiveFiles(const vector<string>& files, int, int)
 				StripPath(foo);
 				ScaleToObj();
 				SetTitle(foo.c_str());
-				ForceRefresh();
+				bNeedRefresh = true;
 
 				if (mMeasureOnOpen)
 					KeyPressed('m', 0,0,0);
@@ -536,6 +537,7 @@ void			XObjWin::ReceiveFiles(const vector<string>& files, int, int)
 		{
 			SetGLContext();
 			AccumTexture(*i);
+			bNeedRefresh = true;
 		}
 #if FACADES
 		else if (HasExtNoCase(*i, ".fac"))
@@ -569,6 +571,11 @@ void			XObjWin::ReceiveFiles(const vector<string>& files, int, int)
 			}
 		}
 #endif
+	}
+
+	if (bNeedRefresh)
+	{
+		ForceRefresh();
 	}
 }
 
