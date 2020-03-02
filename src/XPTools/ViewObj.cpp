@@ -826,13 +826,12 @@ void		AccumTexture(const string& inFileName)
 
 	StringToUpper(shortName);
 
-	for (map<string, pair<string, GLenum> >::iterator i = texDB.begin(); i != texDB.end(); ++i)
+	// Textures are found by key - i.e. the shortName here - in FindTextures so replace based on the same rules.
+	map<string, pair<string, GLenum> >::iterator i = texDB.find(shortName);
+	if (i != texDB.end())
 	{
-		if (i->second.first == inFileName)
-		{
-			LoadTextureFromFile(inFileName.c_str(), i->second.second, tex_Wrap + (lit ? 0 : tex_MagentaAlpha), NULL, NULL, NULL, NULL);
-			return;
-		}
+		LoadTextureFromFile(inFileName.c_str(), i->second.second, tex_Wrap + (lit ? 0 : tex_MagentaAlpha), NULL, NULL, NULL, NULL);
+		return;
 	}
 
 	GLenum	texID = gCounter++;
