@@ -312,6 +312,68 @@ return (DROPEFFECT_NONE == *pdwEffect) ? FALSE : TRUE;
 
 **************************************************************************/
 
+bool RecursiveAddFiles(const WCHAR *sourcePath, vector<string> &outputList)
+{
+    const size_t maxListEntries = 50;
+    bool bContinue = true;
+
+    DWORD fileAttribs = ::GetFileAttributesW(sourcePath);
+    if (fileAttribs & FILE_ATTRIBUTE_DIRECTORY)
+    {
+        size_t reqLen = wcslen(sourcePath) + 3;
+        WCHAR *wildcard = (WCHAR *)malloc(sizeof(wchar_t) * reqLen);
+        if (wildcard != nullptr)
+        {
+            wcscpy_s(wildcard, reqLen, sourcePath); wildcard[reqLen - 1] = 0;
+            wcscat_s(wildcard, reqLen, L"\\*"); wildcard[reqLen - 1] = 0;
+
+            WIN32_FIND_DATAW findData = { 0 };
+            HANDLE allFiles = ::FindFirstFileW(wildcard, &findData);
+            if (allFiles != INVALID_HANDLE_VALUE)
+            {
+                do
+                {
+                    // Build the full path without using any additional Windows libraries
+                    size_t reqSubLen = wcslen(sourcePath) + wcslen(findData.cFileName) + 2;
+
+                    WCHAR *nextPath = (WCHAR *)malloc(sizeof(wchar_t) * reqSubLen);
+                    if (nextPath != nullptr)
+                    {
+                        wcscpy_s(nextPath, reqSubLen, sourcePath);
+                        wcscat_s(nextPath, reqSubLen, L"\\");
+                        wcscat_s(nextPath, reqSubLen, findData.cFileName);
+
+                        if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+                        {
+                            // Ignore '.' and '..'
+                            if (findData.cFileName[0] != '.')
+                            {
+                                RecursiveAddFiles(nextPath, outputList);
+                            }
+                        }
+                        else
+                        {
+                            outputList.push_back(convert_utf16_to_str(nextPath));
+                        }
+
+                        free(nextPath);
+                    }
+                } while (FindNextFileW(allFiles, &findData) != 0 && outputList.size() <= maxListEntries);
+
+                FindClose(allFiles);
+            }
+
+            free(wildcard);
+        }
+    }
+    else
+    {
+        outputList.push_back(convert_utf16_to_str(sourcePath));
+    }
+
+    return outputList.size() < maxListEntries;
+}
+
 void CDropTarget::DisplayFileNames(HWND hwndOwner, HGLOBAL hgFiles)
 {
 	UINT	i, nFiles;
@@ -321,11 +383,14 @@ void CDropTarget::DisplayFileNames(HWND hwndOwner, HGLOBAL hgFiles)
 	WCHAR	path[MAX_PATH+1];
 
 	vector<string>	fileList;
-
 	for(i = 0; i < nFiles; i++)
 	{
-		DragQueryFileW((HDROP)hgFiles, i, path, MAX_PATH);
-		fileList.push_back(convert_utf16_to_str(path));
+        DragQueryFileW((HDROP)hgFiles, i, path, MAX_PATH);
+
+        if (!RecursiveAddFiles(path, fileList))
+        {
+            break;
+        }
 	}
 
 	if(m_ReceiverObj)
