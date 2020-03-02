@@ -33,6 +33,7 @@
 #include "GUI_Fonts.h"
 #include "GUI_Messages.h"
 #include "GUI_Resources.h"
+#include "WED_Menus.h"
 
 #include "WED_Colors.h"
 #include "WED_LibraryMgr.h"
@@ -53,7 +54,7 @@ enum {
 	next_variant = GUI_APP_MESSAGES
 };
 
-WED_LibraryPreviewPane::WED_LibraryPreviewPane(WED_ResourceMgr * res_mgr, ITexMgr * tex_mgr) : mResMgr(res_mgr), mTexMgr(tex_mgr),mZoom(1.0),
+WED_LibraryPreviewPane::WED_LibraryPreviewPane(GUI_Commander * cmdr, WED_ResourceMgr * res_mgr, ITexMgr * tex_mgr) : GUI_Commander(cmdr), mResMgr(res_mgr), mTexMgr(tex_mgr),mZoom(1.0),
                                mPsi(10.0f),mThe(10.0f), mHgt(5), mWid(20.0f), mWalls(4)
 {
 		int k_reg[4] = { 0, 0, 1, 3 };
@@ -90,6 +91,7 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 	mRes = r;
 	mType = res_type;
 	mVariant = 0;
+	mHgt = 0.0;
 	
 	if(res_type == res_Object || res_type == res_Facade) 
 	{	
@@ -257,9 +259,60 @@ void	WED_LibraryPreviewPane::MouseDrag(int x, int y, int button)
 	Refresh();
 }
 
-void	WED_LibraryPreviewPane::MouseUp  (int x, int y, int button)
+int		WED_LibraryPreviewPane::MouseMove  (int x, int y)
 {
+	int b[4];
+	GetBounds(b);
+	if(b[2] - b[0] > 0 && b[2] - b[0] < 100)
+	{
+		DispatchHandleCommand(wed_autoOpenLibPane);
+	}
+	return 1;
 }
+
+
+
+#define VIEW_DISTANCE 2.5
+
+void	WED_LibraryPreviewPane::begin3d(int *b, double radius_m)
+{
+	double dx = b[2] - b[0];
+	double dy = b[3] - b[1];
+
+	double sx = ((dx > dy) ? (dx / dy) : 1.0)/2;
+	double sy = ((dx > dy) ? 1.0 : (dy / dx))/2;
+
+	double act_radius = radius_m * mZoom;
+
+	glPushAttrib(GL_VIEWPORT_BIT);
+	glViewport(b[0],b[1],b[2]-b[0],b[3]-b[1]);
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+#ifdef VIEW_DISTANCE
+	glFrustum(sx * -act_radius, sx * act_radius, sy * -act_radius, sy * act_radius, 
+					(VIEW_DISTANCE - 1.0) * radius_m, (VIEW_DISTANCE + 1.0) * radius_m);
+#else
+	glOrtho(sx * -act_radius, sx * act_radius, sy * -act_radius, sy * act_radius, -radius_m, radius_m);
+#endif
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+#ifdef VIEW_DISTANCE
+	glTranslatef(0,0.0, -VIEW_DISTANCE * radius_m);
+#endif
+	glRotatef(mThe,1,0,0);
+	glRotatef(mPsi,0,1,0);
+}
+
+void	WED_LibraryPreviewPane::end3d()
+{
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glPopAttrib();
+}
+
 
 void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 {
@@ -267,10 +320,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 
 	const XObj8 * o = nullptr;
 	
-	float dx = b[2] - b[0];
-	float dy = b[3] - b[1];
-
-	agp_t agp;
+	const agp_t * agp = nullptr;
 	const pol_info_t * pol = nullptr;
 	const lin_info_t * lin = nullptr;
 	const fac_info_t * fac = nullptr;
@@ -293,7 +343,8 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 						float prev_space = min(b[2]-b[0],b[3]-b[1]);
 						float ds = prev_space / mZoom * mDs;
 						float dt = prev_space / mZoom * mDt;
-						
+						float dx = b[2] - b[0];
+						float dy = b[3] - b[1];
 						float x1 = (dx - ds) /2;
 						float x2 = (dx + ds) /2;
 						float y1 = (dy - dt) /2;
@@ -351,7 +402,8 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 						for (int n=0; n<lin->s1.size(); ++n)
 						{	
 							float ds = dt * (lin->scale_s * (lin->s2[n]-lin->s1[n]) / lin->scale_t);
-							
+							float dx = b[2] - b[0];
+							float dy = b[3] - b[1];
 							float x1 = (dx - ds) /2;
 							float x2 = (dx + ds) /2;
 							float y1 = (dy - dt) /2;
@@ -370,16 +422,10 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 		case res_Facade:
 			if (mResMgr->GetFac(mRes, fac, mVariant))
 			{
-				float sx = ((dx > dy) ? (dx / dy) : 1.0)/2;
-				float sy = ((dx > dy) ? 1.0 : (dy / dx))/2;
-
-				double real_radius = fltmax3(30.0, 1.4 * mWid, 1.2 * mHgt);
-				double approx_radius = real_radius * mZoom * (1.1 - max(20.0, real_radius)/500.0);
-
 				Polygon2 footprint;
 				vector<int> choices;
 				Vector2 dir(mWid,0);
-				Point2 corner(0,+mWid*0.5);
+				Point2 corner(-mWid*0.5, mWid*0.5);
 
 				int front_side = intround(mPsi/90) % mWalls;
 					
@@ -399,26 +445,13 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 //printf("[%d] %.0lfd r %d a %d ", n, thisWall_hdg, thisWall_idx_rel_to_front, thisWall_idx);
 				}
 //printf("\n");
-				g->EnableAlpha(true, true);
-	
-				glPushAttrib(GL_VIEWPORT_BIT);
-				glViewport(b[0],b[1],b[2]-b[0],b[3]-b[1]);
-				glMatrixMode(GL_PROJECTION);
-				glPushMatrix();
-				glLoadIdentity();
-				glOrtho(sx * -approx_radius,sx * approx_radius, 0.7 * sy * -approx_radius, 1.3 * sy * approx_radius, -real_radius, real_radius);
-				glMatrixMode(GL_MODELVIEW);
-				glPushMatrix();
-				glLoadIdentity();			
-				glTranslatef(0.0,-max(0.0, (mHgt-20.0)*0.35), 0.0);
-				glRotatef(mThe,1,0,0);
-				glRotatef(mPsi,0,1,0);
-				glTranslatef(-mWid*0.5,0.0, 0.0);
+				double real_radius = fltmax3(30.0, mWid, 1.2*mHgt);
+				begin3d(b, real_radius);
 				
-				g->EnableDepth(true,true);
-				g->EnableAlpha(true,true);
+				glTranslatef(0.0, -mHgt*0.4, 0.0);
+				
+				g->SetState(false,1,false,true,true,true,true);
 				glClear(GL_DEPTH_BUFFER_BIT);
-				glEnable(GL_CULL_FACE);
 				
 				draw_facade(mTexMgr, mResMgr, mRes, *fac, footprint, choices, mHgt, g, true);
 				
@@ -428,19 +461,16 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 					glColor4f(0.0, 0.2, 0.4, 0.7);   // darkish blue water
 				else
 					glColor4f(0.2, 0.4, 0.2, 0.8);   // green lawn, almost opaque
+
 				glDisable(GL_CULL_FACE);
 				glBegin(GL_POLYGON);
 				for (auto f : footprint)
-					glVertex3f(f.x() + 2.0 * (f.x() > 0.0 ? mWid : -mWid), -0.01, 
+					glVertex3f(f.x() + 2.0 * (f.x() > 0.0 ? mWid : -mWid), -0.01,
 								  f.y() + 2.0 * (f.y() > 0.0 ? mWid : -mWid) );
 				glEnd();
 				glColor4f(1,1,1,1);
 
-				glMatrixMode(GL_PROJECTION);
-				glPopMatrix();
-				glMatrixMode(GL_MODELVIEW);
-				glPopMatrix();
-				glPopAttrib();
+				end3d();
 			}
 			break;
 		case res_Forest:
@@ -455,111 +485,60 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 						mResMgr->GetObjRelative(str->objs.front(), mRes, o);    // do the cheap thing: show only the first object. Could show a whole line ...
 			}
 		case res_Object:
-			float sx = ((dx > dy) ? (dx / dy) : 1.0)/2;
-			float sy = ((dx > dy) ? 1.0 : (dy / dx))/2;
+			g->SetState(false,1,false,true,true,true,true);
+			glClear(GL_DEPTH_BUFFER_BIT);
 
 			if (o || mResMgr->GetObj(mRes,o,mVariant))
 			{
-				float real_radius=pythag(
+				double real_radius=pythag(
 									o->xyz_max[0]-o->xyz_min[0],
 									o->xyz_max[1]-o->xyz_min[1],
 									o->xyz_max[2]-o->xyz_min[2]);
-				float approx_radius = real_radius * mZoom;
 				double xyz_off[3] = { -(o->xyz_max[0]+o->xyz_min[0])*0.5f,
 				                      -(o->xyz_max[1]+o->xyz_min[1])*0.5f,
 				                      -(o->xyz_max[2]+o->xyz_min[2])*0.5f };
-				                      
-				glPushAttrib(GL_VIEWPORT_BIT);
-				glViewport(b[0],b[1],b[2]-b[0],b[3]-b[1]);
-				glMatrixMode(GL_PROJECTION);
-				glPushMatrix();
-				glLoadIdentity();
-				glOrtho(sx * -approx_radius,sx * approx_radius,sy * -approx_radius,sy * approx_radius,-real_radius,real_radius);
-				glMatrixMode(GL_MODELVIEW);
-				glPushMatrix();
-				glLoadIdentity();			
-				glRotatef(mThe,1,0,0);
-				glRotatef(mPsi,0,1,0);
-				g->EnableDepth(true,true);
-				glClear(GL_DEPTH_BUFFER_BIT);
+
+				begin3d(b, real_radius);
 				
 				draw_obj_at_xyz(mTexMgr, o,
 					xyz_off[0], xyz_off[1], xyz_off[2],	0, g);
 						
-				glMatrixMode(GL_PROJECTION);
-				glPopMatrix();
-				glMatrixMode(GL_MODELVIEW);
-				glPopMatrix();
-				glPopAttrib();
+				end3d();
 			}
 			else if (mResMgr->GetAGP(mRes,agp))
 			{
-				float min_xy[2] = { 0, 0 };
-				float max_xy[2] = { 0, 0 };
-				for(int n = 0; n < agp.tile.size(); n += 4)
+				double real_radius=pythag(
+									agp->xyz_max[0] - agp->xyz_min[0],
+									agp->xyz_max[1] - agp->xyz_min[1],
+									agp->xyz_max[2] - agp->xyz_min[2]);
+
+				begin3d(b, real_radius);
+				
+				glTranslatef((agp->xyz_max[0] + agp->xyz_min[0]) * -0.5,
+							 (agp->xyz_max[1] + agp->xyz_min[1]) * -0.5,
+							 (agp->xyz_max[2] + agp->xyz_min[2]) * 0.5);
+
+				if(!agp->tile.empty() && !agp->hide_tiles)
 				{
-					min_xy[0] = min(min_xy[0],agp.tile[n]);
-					max_xy[0] = max(max_xy[0],agp.tile[n]);
-					min_xy[1] = min(min_xy[1],agp.tile[n+1]);
-					max_xy[1] = max(max_xy[1],agp.tile[n+1]);
-				}
+					TexRef	ref = mTexMgr->LookupTexture(agp->base_tex.c_str(), true, tex_Linear | tex_Mipmap | tex_Compress_Ok);
+					int id1 = ref ? mTexMgr->GetTexID(ref) : 0;
+					if (id1)g->BindTex(id1, 0);
 
-				float real_radius=pythag(
-									max_xy[0] - min_xy[0],
-									max_xy[1] - min_xy[1]);
-									
-				float approx_radius = real_radius * mZoom;
-
-				g->SetState(false,1,false,true,true,false,false);
-				TexRef	ref = mTexMgr->LookupTexture(agp.base_tex.c_str() ,true, tex_Linear|tex_Mipmap|tex_Compress_Ok);
-				int id1 = ref  ? mTexMgr->GetTexID(ref ) : 0;
-				if(id1)g->BindTex(id1,0);
-				
-				glPushAttrib(GL_VIEWPORT_BIT);
-				glViewport(b[0],b[1],b[2]-b[0],b[3]-b[1]);
-				glMatrixMode(GL_PROJECTION);
-				glPushMatrix();
-				glLoadIdentity();
-				glOrtho(sx * -approx_radius,sx * approx_radius,sy * -approx_radius,sy * approx_radius,-real_radius,real_radius);
-				
-				glMatrixMode(GL_MODELVIEW);
-				glPushMatrix();
-				
-				glLoadIdentity();
-				glRotatef(mThe,1,0,0);
-				glRotatef(mPsi,0,1,0);
-				glColor3f(1,1,1);
-				g->EnableDepth(true,true);
-				glClear(GL_DEPTH_BUFFER_BIT);
-				
-				glTranslatef((max_xy[0]+min_xy[0]) * -0.5,
-							  0.0,
-							(max_xy[1]+min_xy[1]) * 0.5);
-
-				if(!agp.tile.empty() && !agp.hide_tiles)
-				{
 					glDisable(GL_CULL_FACE);
 					glBegin(GL_TRIANGLE_FAN);
-					for(int n = 0; n < agp.tile.size(); n += 4)
+					for(int n = 0; n < agp->tile.size(); n += 4)
 					{
-						glTexCoord2f(agp.tile[n+2],agp.tile[n+3]);
-						glVertex3f(agp.tile[n],0,-agp.tile[n+1]);
+						glTexCoord2f(agp->tile[n+2],agp->tile[n+3]);
+						glVertex3f(agp->tile[n],0,-agp->tile[n+1]);
 					}
 					glEnd();
 					glEnable(GL_CULL_FACE);
 				}	
-				for(vector<agp_t::obj>::iterator o = agp.objs.begin(); o != agp.objs.end(); ++o)
+				for(auto& o : agp->objs)
 				{
-					const XObj8 * oo;
-					if(mResMgr->GetObjRelative(o->name,mRes,oo))
-					{
-						draw_obj_at_xyz(mTexMgr, oo, o->x,0,-o->y,o->r, g);			
-					} 
+					draw_obj_at_xyz(mTexMgr, o.obj, o.x, o.z, -o.y, o.r, g);
 				}
-				glPopMatrix();
-				glMatrixMode(GL_PROJECTION);
-				glPopMatrix();
-				glPopAttrib();			
+				end3d();
 			}
 			break;
 		}

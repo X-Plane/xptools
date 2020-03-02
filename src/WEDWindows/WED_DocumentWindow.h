@@ -73,14 +73,7 @@ private:
 	GUI_Splitter *				mMainSplitter2;
 	GUI_Splitter *				mPropSplitter;
 	GUI_Splitter *				mLibSplitter;
-	GUI_Splitter *				mFiltSplitter;
-//	WED_PropertyTable *			mTestTable;
-//	WED_PropertyTableHeader *	mTestTableHeader;
-
-//	WED_ObjectLayers *		mObjects;
-//	WED_LayerGroup *		mObjectGroup;
-//	WED_LayerTable *		mLayerTable;
-//	WED_LayerTableGeometry*	mLayerTableGeometry;
+	int							mAutoOpen;
 };
 
 #endif

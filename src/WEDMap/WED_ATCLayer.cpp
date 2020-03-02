@@ -63,13 +63,8 @@ static void make_arrow_line(Point2 p[5])
 	p[3] += v1to3;
 }
 
-bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected)
+void WED_ATCLayer_DrawAircraft(WED_RampPosition * pos, GUI_GraphState * g, WED_MapZoomerNew * z)
 {
-	if(entity->GetGISSubtype() == WED_RampPosition::sClass)
-	{
-		WED_RampPosition * pos = dynamic_cast<WED_RampPosition *>(entity);
-		DebugAssert(pos);
-		
 		Point2 nose_wheel;
 		int icao_width = pos->GetWidth();
 		float mtr = 5;
@@ -92,11 +87,10 @@ bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, G
 		
 		g->SetState(0, id ? 1 : 0, 0, 0, 1, 0, 0);
 		
-		glColor4f(1,1,0,0.5);
 		if(id)
 			g->BindTex(id, 0);
 		
-		GetZoomer()->LLToPixelv(c,c,4);
+		z->LLToPixelv(c,c,4);
 		
 		Vector2	v_left (c[1],c[0]);
 		Vector2 v_right(c[2],c[3]);
@@ -114,13 +108,26 @@ bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, G
 		glTexCoord2f(1,1);	glVertex2(c[2]);
 		glTexCoord2f(1,0);	glVertex2(c[3]);
 		glEnd();
-			
+}
+
+bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected)
+{
+	if(entity->GetGISSubtype() == WED_RampPosition::sClass)
+	{
+		WED_RampPosition * pos = dynamic_cast<WED_RampPosition *>(entity);
+		DebugAssert(pos);
+		WED_MapZoomerNew * z = GetZoomer();
+		if(z->GetPPM() > 5)
+			glColor4f(0, 1, 0, 0.2); // avoid getting more opaque when StructureLayer preview kicks in as well
+		else
+			glColor4f(0, 1, 0, 0.4);
+		WED_ATCLayer_DrawAircraft(pos, g, z);
 	}
 	if(entity->GetGISSubtype() == WED_TaxiRoute::sClass)
 	{
 		WED_TaxiRoute * seg = dynamic_cast<WED_TaxiRoute *>(entity);
 		DebugAssert(seg);
-		
+
 		Point2 ends[2];
 		seg->GetNthPoint(0)->GetLocation(gis_Geo, ends[0]);
 		seg->GetNthPoint(1)->GetLocation(gis_Geo, ends[1]);
@@ -132,17 +139,20 @@ bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, G
 		bool road = seg->AllowTrucks() && !seg->AllowAircraft();
 		bool one_way = seg->IsOneway();
 		
-		int mtr1 = 5, mtr2 = 10;
-		switch(icao_width) {
-		case width_A:	mtr1 = 4.5;		mtr2 = 15.0;	break;
-		case width_B:	mtr1 = 6.0;		mtr2 = 24.0;	break;
-		case width_C:	mtr1 = 9.0;		mtr2 = 36.0;	break;
-		case width_D:	mtr1 = 14.0;	mtr2 = 52.0;	break;
-		case width_E:	mtr1 = 14.0;	mtr2 = 65.0;	break;
-		case width_F:	mtr1 = 16.0;	mtr2 = 80.0;	break;
-		}
-		
-		if(road) { mtr1 = one_way ? 4.0 : 8.0; mtr2 = 0.0; }
+		int mtr1,mtr2;
+		if(road)
+			mtr1 = mtr2 = one_way ? 4.0 : 8.0;
+		else
+			switch(icao_width)
+			{
+			default:
+			case width_A:	mtr1 = 4.5;		mtr2 = 15.0;	break;
+			case width_B:	mtr1 = 6.0;		mtr2 = 24.0;	break;
+			case width_C:	mtr1 = 9.0;		mtr2 = 36.0;	break;
+			case width_D:	mtr1 = 14.0;	mtr2 = 52.0;	break;
+			case width_E:	mtr1 = 14.0;	mtr2 = 65.0;	break;
+			case width_F:	mtr1 = 16.0;	mtr2 = 80.0;	break;
+			}
 		
 		Point2	c[5], d[5];
 		Quad_2to4(ends, mtr1, c);
@@ -156,14 +166,13 @@ bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, G
 		else if(ils)
 			glColor4f(0.8,0.5,0,0.4);
 		else if(road) //Warning! Because a ground route can also have IsRunway() == true, this check must come first
-			glColor4f(1, 1, 1, 0.4);
+			glColor4f(1, 1, 1, 0.2);
 		else if(rwy)
 			glColor4f(0.0,0.2,0.6,0.4);
 		else
 			glColor4f(1,1,0,0.4);
 		
 		GetZoomer()->LLToPixelv(c,c,4);
-
 		GetZoomer()->LLToPixelv(d,d,4);
 		
 		int np = 4;
@@ -173,7 +182,16 @@ bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, G
 			make_arrow_line(d);
 			np = 5;
 		}
-		
+		else
+		{   // help visibility of vertices by creating little gaps in most opaque part of routeS
+			Vector2 dir(c[0],c[1]);
+			dir.normalize();
+			dir *= 2.0;
+			c[0] += dir;
+			c[1] -= dir;
+			c[2] -= dir;
+			c[3] += dir;
+		}
 		glBegin(GL_TRIANGLE_FAN);
 		glVertex2v(c,np);
 		glEnd();

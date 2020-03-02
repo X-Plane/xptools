@@ -30,17 +30,11 @@
 	#else
 		typedef void NSOpenGLView;
 	#endif
-#endif
-#include "XWin.h"
+#elif IBM
+	#include "glew.h"
+#else  // LIN
+	#include <QtOpenGL/QGLWidget>
 
-#if IBM
-#include <gl/gl.h>
-#endif
-
-#if LIN
-extern "C" __attribute__ ((weak)) int glXSwapIntervalSGI(int);
-
-#include <QtOpenGL/QGLWidget>
 class	XWinGL;
 
 class glWidget : public QGLWidget
@@ -61,8 +55,11 @@ private:
 
 #endif
 
-#if IBM
+#include "XWin.h"
+
+#if 0 // IBM
 	// Ben says: glext.h doesn't come with stock MSVC.  Here we include the few extensions we gotta have by hand.  Maybe someday we'll use GLEW.
+    // Michaels answer: #define someday Decemer 13 2019
 
    typedef void (APIENTRY * PFNGLMULTITEXCOORD2FARBPROC    )(GLenum,GLfloat,GLfloat);
    typedef void (APIENTRY * PFNGLMULTITEXCOORD2FVARBPROC   )(GLenum,const GLfloat *);

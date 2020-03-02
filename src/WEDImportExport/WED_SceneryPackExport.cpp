@@ -24,12 +24,16 @@
 #include "WED_SceneryPackExport.h"
 #include "WED_AptIE.h"
 #include "WED_DSFExport.h"
+#include "WED_DSFImport.h"
+#include "DSFLib.h"
 #include "WED_GatewayExport.h"
 #include "IResolver.h"
-#include "WED_ToolUtils.h"
 #include "ILibrarian.h"
 #include "FileUtils.h"
 #include "PlatformUtils.h"
+
+#include "WED_UIDefs.h"
+#include "WED_ToolUtils.h"
 #include "WED_Group.h"
 #include "WED_Validate.h"
 #include "WED_Document.h"
@@ -58,10 +62,13 @@ int		WED_CanExportPack(IResolver * resolver)
 
 void	WED_DoExportPack(WED_Document * resolver, WED_MapPane * pane)
 {
+#if TYLER_MODE
+    // do you heuristics stuff here.
+#else
 	// Just don't ever export if we are invalid.  Avoid the case where we write junk to a file!
-	if(!WED_ValidateApt(resolver, pane))
+	if(!WED_ValidateApt(resolver, pane, NULL, false, "Cancel Export"))
 		return;
-
+#endif
 	ILibrarian * l = WED_GetLibrarian(resolver);
 	WED_Thing * w = WED_GetWorld(resolver);
 	WED_Group * g = dynamic_cast<WED_Group*>(w);
@@ -79,13 +86,52 @@ void	WED_DoExportPack(WED_Document * resolver, WED_MapPane * pane)
 
 	if(!problem_children.empty())
 	{
-		DoUserAlert("One or more objects could not exported - check for self intersecting polygons and closed-ring facades crossing DFS boundaries.");
+		DoUserAlert("One or more objects could not be exported - check for self intersecting polygons and closed-ring facades crossing DFS boundaries.");
 		ISelection * sel = WED_GetSelect(resolver);
 		(*problem_children.begin())->StartOperation("Select broken items.");
 		sel->Clear();
 		for(set<WED_Thing*>::iterator p = problem_children.begin(); p != problem_children.end(); ++p)
 			sel->Insert(*p);
 		(*problem_children.begin())->CommitOperation();		
+	}
+}
+
+int		WED_CanImportDSF(IResolver * resolver)
+{
+	return 1;
+}
+
+void	WED_DoImportDSF(IResolver * resolver)
+{
+	WED_Thing * wrl = WED_GetWorld(resolver);
+
+	char * path = GetMultiFilePathFromUser("Import DSF file...", "Import", FILE_DIALOG_IMPORT_DSF);
+	if(path)
+	{
+		char * free_me = path;
+
+		wrl->StartOperation("Import DSF");
+
+		while(*path)
+		{
+			WED_Group * g = WED_Group::CreateTyped(wrl->GetArchive());
+			g->SetName(path);
+			g->SetParent(wrl,wrl->CountChildren());
+			int result = DSF_Import(path,g);
+			if(result != dsf_ErrOK)
+			{
+				string msg = string("The file '") + path + string("' could not be imported as a DSF:\n")
+							+ dsfErrorMessages[result];
+				DoUserAlert(msg.c_str());
+				wrl->AbortOperation();
+				free(free_me);
+				return;
+			}
+
+			path = path + strlen(path) + 1;
+		}
+		wrl->CommitOperation();
+		free(free_me);
 	}
 }
 

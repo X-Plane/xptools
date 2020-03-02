@@ -48,9 +48,9 @@ public:
 
 			void		ZoomShowAll(void);
 
-			int			TCE_KeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)	 	;
-			int			TCE_HandleCommand(int command) 									;
-			int			TCE_CanHandleCommand(int command, string& ioName, int& ioCheck) ;
+			int			TCE_KeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags);
+			int			TCE_HandleCommand(int command);
+			int			TCE_CanHandleCommand(int command, string& ioName, int& ioCheck);
 
 			void		FromPrefs(IDocPrefs * prefs);
 			void		ToPrefs(IDocPrefs * prefs);

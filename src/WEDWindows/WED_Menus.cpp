@@ -28,8 +28,6 @@
 #include "ObjCUtils.h"
 #endif
 
-GUI_Menu	test1 = 0;
-GUI_Menu	sub1 = 0;
 
 static const GUI_MenuItem_t	kAppMenu[] = {
 { "About WED...",		0,	0,	0,	0 },
@@ -153,9 +151,6 @@ static const GUI_MenuItem_t kViewMenu[] = {
 {	"Toggle &Navaids",			0,	0,										0,	wed_ToggleNavaidMap	},
 {	"S&lippy Map",				0,	0,										0,	0                   },
 {	"To&ggle Preview",			0,	0,										0,	wed_TogglePreview	},
-#if WANT_TERRASEVER
-{	"Toggle &Terraserver",		0,	0,										0,	wed_ToggleTerraserver },
-#endif
 #if WITHNWLINK
 {	"Toggle LiveMode",		    0,	0,										0,	wed_ToggleLiveView },
 #endif

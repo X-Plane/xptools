@@ -62,6 +62,7 @@ struct PropertyInfo_t {
 	int				synthetic;			// A synthetic property is one built from other properties or other derived data.  It is not necessary
 										// to copy it to clone the object.  Examples: length of a runwy (specified by end points), airport node line markings
 										// (a sub-filter of all attributes) and taxiway lines (the union of all child line markings).
+	int				domain;				// used only for prop_kind = prop_Enum and prop_EnumSet
 };
 
 struct	PropertyVal_t {

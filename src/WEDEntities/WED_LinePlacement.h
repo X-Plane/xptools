@@ -41,14 +41,25 @@ public:
 
 	virtual const char *	HumanReadableType(void) const { return "Line"; }
 
+	// IPropertyObject
+	int			FindProperty(const char * in_prop) const;
+	int			CountProperties(void) const;
+	void		GetNthPropertyInfo(int n, PropertyInfo_t& info) const;
+
+	void		GetNthPropertyDict(int n, PropertyDict_t& dict) const;
+	void		GetNthPropertyDictItem(int n, int e, string& item) const;
+
+	void		GetNthProperty(int n, PropertyVal_t& val) const;
+	void		SetNthProperty(int n, const PropertyVal_t& val);
+
 protected:
 
 	virtual	bool			IsJustPoints(void) const { return false; }
 
 private:
 
-	WED_PropStringText		resource;
 	WED_PropBoolText		closed;
+	WED_PropStringText		resource;
 
 };
 

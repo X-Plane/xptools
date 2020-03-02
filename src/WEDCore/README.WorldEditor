@@ -13,31 +13,84 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 2.2.0r2 2/3/20
+   Bug Fix:
+   - fix crash when .agp specifying non-existent annotations are visible in the map
+   - fix some underground scenery parts becoming visible when map is tilted
+
+WED 2.2.0r1 1/16/20
+   Features:
+   - add searchable column for ICAO/FAA/Local codes in gateway import dialog
+   - add cmdline debugging option for gateway testing
+   Bug Fixes:
+   - fix (Windows only) scenery window changing size when dragged, can't be resized via frame
+
+WED 2.2.0b2 1/03/20
+   Features:
+   - for library designers - support #object_wed/#obj_wed commands in .agp/.fac definitions
+   - fine tune map detail - show aircraft footprints at lower map scale, add lines to ATC mode
+   - add ability for Library/Property panes to auto open/close, when set narrow enough
+   - map drawing w/large amounts of .agp (e.g. KATL parking lots - 13k cars !!) 5x faster
+   - add searchable column for ICAO/FAA/Local codes in gateway import dialog
+   Bug Fixes:
+   - fix wall for type 1 facades not displayed using specific names, if available
+   - fix tall objects, e.g. towers, not centered in library preview window
+   - WED-1252: fix severe distortions in all windows when previewing certain .agp
+   - fix WED not respecting 2nd of two directly successive SCENERY_PACKS_DISABLED
+   - WED-1253: subdue facade structural lines - let tilted previews do the talking
+   - WED-1254: fix runways of zero length not caught by runway minimum size validation
+
+WED 2.2.0b1 17/12/19
+   Features:
+   - startup time and zoom-in delays with more complex airports reduced by 2.5x
+   - add 'birds eye views' for map window
+   - tighten ATC freq. validation to VHF airband & 200+ MHz, allow AWOS on VORs
+   - increase undo buffer from 20 to 100 operations
+   - WED-1232: Support OBJ_DELTA in .agp previews
+   - improve marking of facade 1st segment and ground reference point
+   - WED-1217: show new 11.35 endcaps for lines in on-map previews
+   - XSG-8722: report airport location to Gateway server upon submission
+   - option to create .png (rather than .dds) during orthophoto export
+   - WED-1244: Combine exclusion zones upon import
+   - WED-1240: Better visibility for UI mode tabs, ATC route segments
+   - visualize ramp start sizes in all modes when zoomed in sufficiently
+   - "Convert To" for lines now translates styles to resource paths and vice versa
+   - allow GUI-based resource selection for "Lines", same as for "Airport Line Markings"
+   - WED-1219: Make it more obvious to user when export was aborted due to errors
+   - Translate new X-Plane 11.26+ lines into "traditional" equivalents for targets < X-Plane 11.30
+   Bug Fixes:
+   - WED-1225: show apts with only declined submissions in Gateway import dialog
+   - WED-1235: fix crash when processing OOB indices in bad .agp definitions
+   - try harder to keep 1:1 pixel mapping when splitting orthophotos into tiles
+   - fix LineSelector GUI not popping up when style 'None' is selected
+   - allow runways with T suffix naming to match either true or grid north heading
+   - WED-1248: fix crash when libray.txt path includes trailing non-ASCII characters
+
 WED 2.1.0r1 7/22/19
    Bug Fixes:
-   - fix rotation lock acting on unrestricted/normals obj's
+   - fix rotation lock acting on unrestricted/normal obj's
 
 WED 2.1.0b2 7/11/19
+	Features:
+	- WED-1209: validate facades only chooses walls that exist in facade resource
+	- increase number of facade walls supported to 40
+	- warn if curved segments used in type 1 facades
    Bug Fixes:
-   - fix broken z-ordering for .agp previews in the Libary Preview Pane
-   - fix crashes if facade file can not be found or is no valid facade
+   - fix broken z-ordering for .agp previews in the Library Preview Pane
+   - fix crashes if facade file can not be found or is not valid
    - fix navaid layer locations of seaport and runway-only WEDbot airports
-   - fix previews for .OBJ with upper case suffix filenames missing in beta1
+   - fix previews for .OBJ with upper case suffix filenames missing in beta 1
    - fix facades with NO_WALL_MESH commands not treated as line-type facades
    - WED-1202: fix string preview not starting at right offset
    - fix apt.dat reading taxi signs with blank name, validate to be not blank
-	- WED-1205: allow sealanes with or w/o W suffix to match sealanes in CIFP data
-	Features:
-	- WED-1209: validate facades only choose walls that exist in facade resource
-	- increase number of facade walls supported to 40
-	- warn if curved segments used in type1 facades
+   - WED-1205: allow sealanes with or w/o W suffix to match sealanes in CIFP data
 
 WED 2.1.0b1 6/3/19
 	Features:
 	- WED-339: Add fully scalable and on-map facade previews
 	- WED-1187: Make wide ILS critical centerline symbolic preview more specific
 	- WED-887: Recognize keyword in .obj that lock the objects orientation
-	- depict PAPI / VASI / WIGWAG's objects in preview layer
+	- depict PAPI / VASI / WIGWAG objects in preview layer
 	- export to DSF for large projects 2.5x faster
 	- memory size, import/load/save for large projects 35% smaller/faster
 	- multi-threaded DDS texture compression for large Orthophotos, 3.5x faster
@@ -49,22 +102,22 @@ WED 2.1.0b1 6/3/19
 	- WED-1199: fix potential segfault when reading files
 	- WED-1198: fix approach light depiction to start at threshold of runway
 	- WED-1186: Make message box text in moderator mode more specific
-	- WED-1165: Fix Slippy Maps not restroring mode from scenery files
+	- WED-1165: Fix Slippy Maps not restoring mode from scenery files
 	- WED-1163: Fix Error 66 when pressing "Enter" on new packages
-	- WED-1162: Create new ground truck routes w/no aircaft (hotzone) attributes set
+	- WED-1162: Create new ground truck routes w/ no aircaft (hotzone) attributes set
 	- WED-524: Can't recover window if pack was saved on a larger screen
-	- WED-432: Fix WED window positioning when using multiple monitors under linux
+	- WED-432: Fix WED window positioning when using multiple monitors under Linux
 	
 WED 2.0.0r4 4/07/19
 	Bug Fixes:
-	- WED-1178: Fix XP1130 format apt.dat importing ATC frequencies always as "tower"
+	- WED-1178: Fix X-Plane 11.30 format apt.dat importing ATC frequencies always as "tower"
 	- WED-1172: Distinguish GT routes vs Aircraft routes in ATC runway validations
 
 WED 2.0.0r3 3/25/19
 	Bug Fixes:
 	- WED-1164: Fix duplication of ATC hotzone validation errors
 	- WED 1160: Exempt Niue from validation against ICAO codes in Airport names
-	- Fix some .agp objects disappearing from map when partially off screen.
+	- Fix some .agp objects disappearing from map when partially off screen
 	- add missing TCE editor vertex/marquee tool icons under Windows
 
 WED 2.0.0r2 4/13/19
@@ -81,9 +134,9 @@ WED 2.0.0b2 2/5/19
 	Features:
 	- Add warning when opening xml files created with future/incompatible WED versions
 	Bug Fixes:
-	- WED-1131: fix illegal taxi signs not edit/deleteable with bare text editor
+	- WED-1131: fix illegal taxi signs not editable/deleteable with bare text editor
 	- Fix listing of non-TaxiRouteNodes connected to TaxiRoutes in HierachyPane
-	- Make slippy map zoom range scale better with lattitude
+	- Make slippy map zoom range scale better with latitude
 
 WED 2.0.0b1 1/24/19
 	Features:
@@ -172,14 +225,14 @@ WED 1.7.0b1 2/26/18
 	- Primitive, incomplete type 1 facade preview
 	- Validation errors and warnings come up in a browser window to access full list of messages
 	- WED-973: change single-click selection to go by type-based priority rather than design hierarchy
-	- show green shadow around flinear fill mode forests, aka Facade wall selection
+	- show green shadow around linear fill mode forests, aka Facade wall selection
 	- WED-912: Warn about airports currently not accepting submissions at Gateway im/export
 	- WED-929: Print names of ATC Taxiroutes in ATC+Taxi view
 	- Auto Align Airport function can be used to mass-move airports to bring runways into CIFP compliance
 	- Windows and Linux menu bars removed from modal windows - so appearance is more "native"
-	- WED-988: Add validation warnings if no truckroutes but not vehicle parking position available
+	- WED-988: Add validation warnings if no truck routes but not vehicle parking position available
 	- WED-917: Move meter/feet settings a new "Preferences" Menu, add D.M.S choices for info bar
-	- Julians moderator mode can now be selected in the preferences, which affects
+	- Julian's moderator mode can now be selected in the preferences, which affects
         GW import listing and hierachy list selection
 	- OSM SlippyMap Display
 	- WED-78: Increase resolution of World Map background display
@@ -188,7 +241,7 @@ WED 1.7.0b1 2/26/18
 	- WED-913: Allow 2-node polygons for "chain" type facades (no roof and no ring)
 	- WED-919: Fix undesired bezier handle properties shown for ATC Taxi edges
 	- XPD-8307: Fix textures w/upper case suffixes not showing
-	- WED-957: Fix art assets with case-mismatched paths in library.txt not found on linux
+	- WED-957: Fix art assets with case-mismatched paths in library.txt not found on Linux
 	- Upon splitting a taxi edge, name new node after existing node rather than "unnamed entity(split)"
 	- WED-956: Fix validation not catching all ATC network nodes when networks partially hidden
 	- WED-972: Fix co-located nodes not allowing bezier conversion with vertex snapping on

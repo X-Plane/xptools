@@ -31,6 +31,7 @@
 #include "GUI_GraphState.h"
 #include "WED_Colors.h"
 #include "GUI_Fonts.h"
+#include "WED_Menus.h"
 #include "XESConstants.h"
 #include "IGIS.h"
 #include "ISelection.h"
@@ -59,13 +60,37 @@
 // display Frames Per Second. Will peg CPU/GPU load at 100%, only useable for diaganostic purposes.
 #define SHOW_FPS 0
 
-WED_Map::WED_Map(IResolver * in_resolver) :
-	mResolver(in_resolver)
+
+WED_Map::WED_Map(IResolver * in_resolver, GUI_Commander * cmdr) : GUI_Commander(cmdr), mResolver(in_resolver), mTool(NULL), mClickLayer(NULL),
+					mIsDownCount(0), mIsDownExtraCount(0)
 {
-	mTool = NULL;
-	mClickLayer = NULL;
-	mIsDownCount = 0;
-	mIsDownExtraCount = 0;
+		int k_reg[4] = { 0, 0, 4, 2 };
+		int k_act[4] = { 0, 0, 4, 2 };
+		
+		int b[4]; GetBounds(b);  // No good, bounds not established at this point
+
+#define TB_X b[2]-77
+#define TB_Y b[3]-75
+#define TB_SIZE 24
+		for(int x = 0; x < 2; x++)
+			for(int y = 0; y < 2; y++)
+			{
+				k_reg[0] = x;
+				k_reg[1] = y;
+				k_act[0] = k_reg[0] + 2;
+				k_act[1] = k_reg[1];
+				
+				mTiltButton[x+2*y] = new GUI_Button("tilt_tool.png", btn_RadioChk, k_reg, k_reg, k_act, k_act);
+				mTiltButton[x+2*y]->SetBounds(TB_X + TB_SIZE * (y+x),   TB_Y + TB_SIZE * (x==y ? 1 : 2*y  ),
+				                              TB_X + TB_SIZE * (y+x+1), TB_Y + TB_SIZE * (x==y ? 2 : 2*y+1) );
+				mTiltButton[x+2*y]->SetSticky(0,0,1,1); // follow top right corner
+				mTiltButton[x+2*y]->SetParent(this);
+				mTiltButton[x+2*y]->AddListener(this);
+				mTiltButton[x+2*y]->Show();
+			}
+		for(int n = 0; n < 4; n++)
+			for(int m = 0; m < 4; m++)
+				if( m != n) mTiltButton[m]->AddRadioFriend(mTiltButton[n]);
 }
 
 WED_Map::~WED_Map()
@@ -110,32 +135,60 @@ void		WED_Map::SetBounds(int inBounds[4])
 void		WED_Map::Draw(GUI_GraphState * state)
 {
 	WED_MapLayer * cur = mTool;
-
-	Bbox2 bounds;
-
 	bool draw_ent_v, draw_ent_s, wants_sel, wants_clicks;
 
-	GetMapVisibleBounds(bounds.p1.x_,bounds.p1.y_,bounds.p2.x_,bounds.p2.y_);
+	Bbox2 b_geo;
+	int b[4];
+	GetBounds(b);
+	GetMapVisibleBounds(b_geo.p1.x_,b_geo.p1.y_,b_geo.p2.x_,b_geo.p2.y_);
+	
 	ISelection * sel = GetSel();
 	IGISEntity * base = GetGISBase();
 	
+	float xTilt = 0.6 * (mTiltButton[3]->GetValue() - mTiltButton[0]->GetValue());
+	float yTilt = 0.6 * (mTiltButton[2]->GetValue() - mTiltButton[1]->GetValue());
+
 	vector<WED_MapLayer *>::iterator l;
 	for (l = mLayers.begin(); l != mLayers.end(); ++l)
 	if((*l)->IsVisible())
 	{
 		(*l)->GetCaps(draw_ent_v, draw_ent_s, wants_sel, wants_clicks);
-		if (base && draw_ent_v) DrawVisFor(*l, cur == *l, bounds, base, state, wants_sel ? sel : NULL, 0);
+		if (base && draw_ent_v) DrawVisFor(*l, cur == *l, b_geo, base, state, wants_sel ? sel : NULL, 0);
+		
+		if(draw_ent_v && (xTilt != 0.0 || yTilt != 0.0))
+		{
+			glMatrixMode(GL_PROJECTION);
+			glPushMatrix();
+			//glLoadIdentity();
+			//glOrtho(0,b[1],0,b[3], -1000, 1000);
+			GLfloat m[16] = {
+				1,     0,     1e-4,  0,
+				0,     1,     1e-4,  0,
+				xTilt, yTilt, 1,     0,
+				0,     0,     0,     1
+				};
+			glMultMatrixf(m);
+			glMatrixMode(GL_MODELVIEW);
+		}
+		
 		(*l)->DrawVisualization(cur == *l, state);
+		
+		if(draw_ent_v && (xTilt != 0.0 || yTilt != 0.0))
+		{
+			glMatrixMode(GL_PROJECTION);
+			glPopMatrix();
+			glMatrixMode(GL_MODELVIEW);
+		}
 	}
-
+	
 	for (l = mLayers.begin(); l != mLayers.end(); ++l)
 	if((*l)->IsVisible())
 	{
 		(*l)->GetCaps(draw_ent_v, draw_ent_s, wants_sel, wants_clicks);
-		if (base && draw_ent_s) DrawStrFor(*l, cur == *l, bounds, base, state, wants_sel ? sel : NULL, 0);
+		if (base && draw_ent_s) DrawStrFor(*l, cur == *l, b_geo, base, state, wants_sel ? sel : NULL, 0);
 		(*l)->DrawStructure(cur == *l, state);
 	}
-
+	
 	for (l = mLayers.begin(); l != mLayers.end(); ++l)
 	if((*l)->IsVisible())
 	{
@@ -155,9 +208,6 @@ void		WED_Map::Draw(GUI_GraphState * state)
 		glEnd();
 	}
 
-	int b[4];
-	GetBounds(b);
-	
 	float * white = WED_Color_RGBA(wed_pure_white);
 	float textH = GUI_GetLineHeight(font_UI_Basic);
 	GUI_FontDraw(state, font_UI_Basic, white, b[0] + 5, b[3] - textH, mTool ? mTool->GetToolName() : "");
@@ -427,7 +477,11 @@ void		WED_Map::MouseUp  (int x, int y, int button)
 
 int	WED_Map::MouseMove(int x, int y)
 {
-	Refresh();
+	DispatchHandleCommand(wed_autoClosePane); // This displatch in WED_Foumentwindow is fast in discarding the zillions of
+	           // reduandent command we reate here. If it becomes a problem, have DocumentWindow turn this here explicitly on/off.
+
+	Refresh(); // if we had a propper dedicated status bar for the location position text - we wouldn't have to redraw *everything*
+	           // its quite often also causing duplicate redraws - as all functions that change anything Refresh() already.
 	return 1;
 }
 

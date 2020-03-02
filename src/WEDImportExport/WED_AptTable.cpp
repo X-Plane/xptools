@@ -25,7 +25,7 @@
 #include "GUI_Messages.h"
 #include "STLUtils.h"
 
-static int kDefCols[] = { 95, 400, 130, 100 };
+static int kDefCols[] = { 90, 330, 120, 130, 100 };
 
 WED_AptTable::WED_AptTable(
 						const AptVector * apts,
@@ -35,7 +35,7 @@ WED_AptTable::WED_AptTable(
 	mSortColumn(1), 
 	mInvertSort(1)
 {
-	mColumns = 2;
+	mColumns = 2 + (hdr3 != nullptr);
 	if(hdr3) { mColumns++; mHeaderTitle3 = hdr3; }
 	if(hdr4) { mColumns++; mHeaderTitle4 = hdr4; }
 }	
@@ -92,9 +92,12 @@ void	WED_AptTable::GetHeaderContent(
 		the_content.title = "Airport Name";
 		break;
 	case 2:
-		the_content.title = mHeaderTitle3;
+		the_content.title = "ICAO/Local"; 
 		break;
 	case 3:
+		the_content.title = mHeaderTitle3;
+		break;
+	case 4:
 		the_content.title = mHeaderTitle4;
 		break;
 	}		
@@ -133,10 +136,11 @@ void	WED_AptTable::GetCellContent(
 	{
 		case 0:	the_content.text_val = mApts->at(apt_id).icao; break;
 		case 1: the_content.text_val = mApts->at(apt_id).name; break;
-		case 2: if(mApts->at(apt_id).meta_data.size())
-					the_content.text_val = mApts->at(apt_id).meta_data.front().first; break;
-		case 3: if(mApts->at(apt_id).meta_data.size())
-					the_content.text_val = mApts->at(apt_id).meta_data.front().second; break;
+		case 2: the_content.text_val = mApts->at(apt_id).meta_data.front().second; break;
+		case 3: if(mApts->at(apt_id).meta_data.size() > 1)
+					the_content.text_val = mApts->at(apt_id).meta_data.back().first; break;
+		case 4: if(mApts->at(apt_id).meta_data.size() > 1)
+					the_content.text_val = mApts->at(apt_id).meta_data.back().second; break;
 	}
 	the_content.string_is_resource = 0;
 }
@@ -248,10 +252,12 @@ struct sort_by_apt {
 		{ 
 			case 0: xs = apts_->at(x).icao;  ys = apts_->at(y).icao; break;
 			case 1: xs = apts_->at(x).name;  ys = apts_->at(y).name; break;
-			case 2: if (apts_->at(x).meta_data.size()) xs = apts_->at(x).meta_data.front().first;  
-					if (apts_->at(y).meta_data.size()) ys = apts_->at(y).meta_data.front().first; break;
-			case 3: if (apts_->at(x).meta_data.size()) xs = apts_->at(x).meta_data.front().second;  
-					if (apts_->at(y).meta_data.size()) ys = apts_->at(y).meta_data.front().second; break;
+			case 2: xs = apts_->at(x).meta_data.front().second;  
+					ys = apts_->at(y).meta_data.front().second; break;
+			case 3: if (apts_->at(x).meta_data.size() > 1) xs = apts_->at(x).meta_data.back().first;  
+					if (apts_->at(y).meta_data.size() > 1) ys = apts_->at(y).meta_data.back().first; break;
+			case 4: if (apts_->at(x).meta_data.size() > 1) xs = apts_->at(x).meta_data.back().second;  
+					if (apts_->at(y).meta_data.size() > 1) ys = apts_->at(y).meta_data.back().second; break;
 		}
 		toupper(xs);
 		toupper(ys);
@@ -282,7 +288,8 @@ void		WED_AptTable::resort(void)
 	{
 		if (filters.empty() ||
 			filter_match(mApts->at(i).icao, filters.begin(),filters.end()) ||
-			filter_match(mApts->at(i).name, filters.begin(),filters.end()))
+			filter_match(mApts->at(i).name, filters.begin(),filters.end()) ||
+			(mColumns <= 2 ? 0 : filter_match(mApts->at(i).meta_data.front().second, filters.begin(),filters.end())))
 		{
 			mSorted.push_back(i);
 		}

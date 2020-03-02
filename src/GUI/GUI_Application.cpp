@@ -202,13 +202,13 @@ static	void		BuildAccels(void)
 #endif
 
 #if LIN
-GUI_Application::GUI_Application(int& argc, char* argv[])
+GUI_Application::GUI_Application(int& argc, char* argv[]) : args(argc, argv),
 #elif APL
-GUI_Application::GUI_Application(const char * menu_nib)
+GUI_Application::GUI_Application(int argc, char const * const * argv, const char * menu_nib) : args(argc, argv),
 #else
-GUI_Application::GUI_Application()
+GUI_Application::GUI_Application(const char * arg) : args(arg),
 #endif
- : GUI_Commander(NULL)
+		GUI_Commander(NULL)
 {
 	DebugAssert(gApplication == NULL);
 	gApplication = this;

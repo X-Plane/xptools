@@ -142,7 +142,7 @@ static void	parse_linear_codes(const string& codes, set<int> * attributes)
 		attributes->insert(code);
 }
 
-static void	print_apt_poly(int (*fprintf)(void * fi, const char * fmt, ...), void * fi, const AptPolygon_t& poly)
+static void	print_apt_poly(int (*fprintf)(void * fi, const char * fmt, ...), void * fi, const AptPolygon_t& poly, int version)
 {
 	for (AptPolygon_t::const_iterator s = poly.begin(); s != poly.end(); ++s)
 	{
@@ -150,8 +150,26 @@ static void	print_apt_poly(int (*fprintf)(void * fi, const char * fmt, ...), voi
 		if (s->code == apt_lin_crv || s->code == apt_rng_crv || s-> code == apt_end_crv)
 		fprintf(fi," % 012.8lf % 013.8lf", CGAL2DOUBLE(s->ctrl.y()),CGAL2DOUBLE(s->ctrl.x()));
 		if (s->code != apt_end_seg && s->code != apt_end_crv)
-		for (set<int>::const_iterator a = s->attributes.begin(); a != s->attributes.end(); ++a)
-			fprintf(fi," %d",*a);
+			for (set<int>::const_iterator a = s->attributes.begin(); a != s->attributes.end(); ++a)
+			{
+				if (version < 1130)
+				{   // translate some of the new linestyles added with XP11.26 to the closest equivalent "classic" style available before that
+					int b = *a;
+					if      (b == 10 || b == 60)            b -= 9;  // wider versions of solid yellow
+					else if (b == 11 || b == 61)            b -= 4;  // enhanced ILS centerline
+					else if ((b >= 12 && b < 15) ||
+						     (b >= 62 && b < 65))           b -= 8;  // various hold lines
+					else if (b == 24 || b == 70 || b == 74) b = 20;  // single solid white line
+					else if (b == 25 || b == 72 || b == 75) b = 22;  // dashed white line
+					else if (           b == 71           ) b = 21;  // white zipper
+					else if (b == 107)  b = 101;                     // unidirectional green centerline lights
+					else if (b == 108)  b = 105;                     // unidirectional yellow/green lights
+
+					fprintf(fi, " %d", b);
+				}
+				else
+					fprintf(fi, " %d", *a);
+			}
 		fprintf(fi,CRLF);
 	}
 }
@@ -1249,19 +1267,19 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 		for (AptTaxiwayVector::const_iterator taxi = apt->taxiways.begin(); taxi != apt->taxiways.end(); ++taxi)
 		{
 			fprintf(fi, "%d %d %.2f %6.4f %s" CRLF, apt_taxi_new, taxi->surface_code, taxi->roughness_ratio, taxi->heading, taxi->name.c_str());
-			print_apt_poly(fprintf,fi,taxi->area);
+			print_apt_poly(fprintf,fi,taxi->area, version);
 		}
 
 		for (AptBoundaryVector::const_iterator bound = apt->boundaries.begin(); bound != apt->boundaries.end(); ++bound)
 		{
 			fprintf(fi, "%d %s" CRLF, apt_boundary, bound->name.c_str());
-			print_apt_poly(fprintf,fi,bound->area);
+			print_apt_poly(fprintf,fi,bound->area, version);
 		}
 
 		for (AptMarkingVector::const_iterator lin = apt->lines.begin(); lin != apt->lines.end(); ++lin)
 		{
 			fprintf(fi, "%d %s" CRLF, apt_free_chain, lin->name.c_str());
-			print_apt_poly(fprintf,fi,lin->area);
+			print_apt_poly(fprintf,fi,lin->area, version);
 		}
 
 		for (AptLightVector::const_iterator light = apt->lights.begin(); light != apt->lights.end(); ++light)

@@ -24,6 +24,7 @@
 #define FACADES 0
 
 #include "XObjDefs.h"
+#include "XWinGL.h"
 #include "ObjDraw.h"
 #include "ObjUtils.h"
 #include "XUtils.h"
@@ -32,17 +33,12 @@
 #include "MatrixUtils.h"
 #include "trackball.h"
 #include "XObjReadWrite.h"
-#include "XWinGL.h"
 #include "XGUIApp.h"
 #include <set>
 #include "PlatformUtils.h"
 #include "OE_Zoomer3d.h"
 #include <time.h>
 #include "PerfUtils.h"
-
-#if FACADES
-	#include "FacadeObj.h"
-#endif
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -161,18 +157,11 @@ private:
 	XObj			mObj;
 	XObj8			mObj8;
 //	Prototype_t		mPrototype;
-#if FACADES
-	FacadeObj_t		mFacade;
-#endif
 	Polygon2 		mPts;
 //	Sphere3			mBounds;
 
 //	bool	mIsPrototype;
-#if FACADES
-	bool	mIsFacade;
-#endif
 	bool	mIsObj8;
-	int		mFloors;
 
 //	float	mScale;
 //	float	mSpin[4];
@@ -219,7 +208,7 @@ void	MyObjReceiver(double x, double y, double z, double r, const char * obj, voi
 XObjWin::XObjWin(const char * inFileName) : XWinGL(1, inFileName ? inFileName : "Drag Obj Here",
 	xwin_style_resizable | xwin_style_visible | xwin_style_centered,
 	50, 50, 600, 600, sWindows.empty() ? NULL : *sWindows.begin()),
-	/*(mScale(1.0),*/ mSolid(true), mShowCulled(false), /*mShowBounds(false), */mLit(false), mAnimate(false), mLighting(true), mMeasureOnOpen(false), /*mXTrans(0), mYTrans(0), */mFloors(1), mIsObj8(false),mLOD(1)
+	/*(mScale(1.0),*/ mSolid(true), mShowCulled(false), /*mShowBounds(false), */mLit(false), mAnimate(false), mLighting(true), mMeasureOnOpen(false), /*mXTrans(0), mYTrans(0), */ mIsObj8(false),mLOD(1)
 {
 	#if SOTHIS_TEST
 	// testpopup.register_target(_mDisplay, mWindow);
@@ -343,23 +332,6 @@ void			XObjWin::GLDraw(void)
 	}
 */
 
-#if FACADES
-	if (mIsFacade)
-	{
-		glDisable(GL_TEXTURE_2D);
-		glDisable(GL_ALPHA_TEST);
-		glDisable(GL_DEPTH_TEST);
-		glPointSize(5.0);
-		glColor3f(0.0, 1.0, 1.0);
-		glBegin(GL_POINTS);
-		for (int n = 0; n < mPts.size(); ++n)
-		{
-			glVertex3f(mPts[n].x, 0.0, mPts[n].y);
-		}
-		glEnd();
-		glPointSize(1.0);
-	}
-#endif
 	mZoomer.ResetMatrices();
 
 }
@@ -385,22 +357,6 @@ void			XObjWin::ClickDown(int inX, int inY, int inButton)
 	mZoomer.SetupMatrices(i);
 
 	mEditNum = -1;
-#if FACADES
-	if (mIsFacade)
-	{
-		for (int n = 0; n < mPts.size(); ++n)
-		{
-			double	mpt[3] = { mPts[n].x, 0.0, mPts[n].y };
-			double	spt[2];
-			ModelToScreenPt(mpt, spt);
-
-			double	xdif = abs(spt[0] - inX);
-			double	ydif = abs(spt[1] - inY);
-			if (xdif < 4 && ydif < 4)
-				mEditNum = n;
-		}
-	}
-#endif
 	if (mEditNum == -1)
 	{
 		if (inButton == 0)
@@ -454,21 +410,6 @@ void			XObjWin::ClickDrag(int inX, int inY, int inButton)
 		{
 			mPts[mEditNum].x_ = clickPt[0];
 			mPts[mEditNum].y_ = clickPt[2];
-#if FACADES
-			if (mIsFacade)
-			{
-				Polygon3	pts;
-				for (vector<Point2>::iterator p = mPts.begin(); p != mPts.end(); ++p)
-				{
-					pts.push_back(Point3(p->x, 0.0, p->y));
-				}
-
-				mObj.cmds.clear();
-				mObj.texture = mFacade.texture;
-				if (mObj.texture.size() > 4) mObj.texture.erase(mObj.texture.size()-4);
-				BuildFacadeObj(mFacade, pts, mFloors, Vector3(0.0, 1.0, 0.0), ExtrudeFuncToObj, &mObj);
-			}
-#endif
 //			xflt	s[4];
 //			GetObjBoundingSphere(mObj, s);
 //			mBounds.c = Point3(s[0], s[1], s[2]);
@@ -506,9 +447,6 @@ void			XObjWin::ReceiveFiles(const vector<string>& files, int, int)
 			if (XObj8Read(i->c_str(), mObj8))
 			{
 				mIsObj8 = true;
-#if FACADES
-				mIsFacade = false;
-#endif
 				string foo(*i);
 				StripPath(foo);
 				ScaleToObj();
@@ -520,9 +458,6 @@ void			XObjWin::ReceiveFiles(const vector<string>& files, int, int)
 			}
 			else if (XObjRead(i->c_str(), mObj))
 			{
-#if FACADES
-				mIsFacade = false;
-#endif
 				mIsObj8 = false;
 				string foo(*i);
 				StripPath(foo);
@@ -539,38 +474,6 @@ void			XObjWin::ReceiveFiles(const vector<string>& files, int, int)
 			AccumTexture(*i);
 			bNeedRefresh = true;
 		}
-#if FACADES
-		else if (HasExtNoCase(*i, ".fac"))
-		{
-			if (ReadFacadeObjFile(i->c_str(), mFacade))
-			{
-				mIsFacade = true;
-				mIsObj8 = false;
-				mFloors = mFacade.lods[0].walls[0].bottom + mFacade.lods[0].walls[0].middle + mFacade.lods[0].walls[0].top;
-
-				Polygon3	pts;
-				for (vector<Point2>::iterator p = mPts.begin(); p != mPts.end(); ++p)
-				{
-					pts.push_back(Point3(p->x, 0.0, p->y));
-				}
-
-				mObj.cmds.clear();
-				mObj.texture = mFacade.texture;
-				if (mObj.texture.size() > 4) mObj.texture.erase(mObj.texture.size()-4);
-				BuildFacadeObj(mFacade, pts, mFloors, Vector3(0.0, 1.0, 0.0), ExtrudeFuncToObj, &mObj);
-				xflt	s[4];
-				GetObjBoundingSphere(mObj, s);
-				mBounds.c = Point3(s[0], s[1], s[2]);
-				mBounds.radius_squared = s[3];
-				string foo(*i);
-				StripPath(foo);
-				ScaleToObj();
-				SetTitle(foo.c_str());
-				ForceRefresh();
-
-			}
-		}
-#endif
 	}
 
 	if (bNeedRefresh)
@@ -656,58 +559,11 @@ int			XObjWin::KeyPressed(unsigned int inKey, long, long, long)
 //	case 'B':
 //		mShowBounds = 1 - mShowBounds;
 //		break;
-	case 'U':
-	case 'u':
-		mFloors++;
-#if FACADES
-		if (mIsFacade)
-		{
-			Polygon3	pts;
-			for (vector<Point2>::iterator p = mPts.begin(); p != mPts.end(); ++p)
-			{
-				pts.push_back(Point3(p->x, 0.0, p->y));
-			}
-
-			mObj.cmds.clear();
-			mObj.texture = mFacade.texture;
-			if (mObj.texture.size() > 4) mObj.texture.erase(mObj.texture.size()-4);
-			BuildFacadeObj(mFacade, pts, mFloors, Vector3(0.0, 1.0, 0.0), ExtrudeFuncToObj, &mObj);
-			xflt	s[4];
-			GetObjBoundingSphere(mObj, s);
-			mBounds.c = Point3(s[0], s[1], s[2]);
-			mBounds.radius_squared = s[3];
-		}
-#endif
-		break;
 	case '1':mLOD=1;break;
 	case '2':mLOD=2;break;
 	case '3':mLOD=3;break;
 	case '4':mLOD=4;break;
 	case '5':mLOD=5;break;
-	case 'D':
-	case 'd':
-		mFloors--;
-		if (mFloors < 0) mFloors = 0;
-#if FACADES
-		if (mIsFacade)
-		{
-			Polygon3	pts;
-			for (vector<Point2>::iterator p = mPts.begin(); p != mPts.end(); ++p)
-			{
-				pts.push_back(Point3(p->x, 0.0, p->y));
-			}
-
-			mObj.cmds.clear();
-			mObj.texture = mFacade.texture;
-			if (mObj.texture.size() > 4) mObj.texture.erase(mObj.texture.size()-4);
-			BuildFacadeObj(mFacade, pts, mFloors, Vector3(0.0, 1.0, 0.0), ExtrudeFuncToObj, &mObj);
-			xflt	s[4];
-			GetObjBoundingSphere(mObj, s);
-			mBounds.c = Point3(s[0], s[1], s[2]);
-			mBounds.radius_squared = s[3];
-		}
-#endif
-		break;
 	}
 	if (gCamDist < 0) gCamDist = 0;
 	ForceRefresh();
@@ -1150,4 +1006,3 @@ void	PlotOneObj8(const XObj8& inObj, int inShowCulled, bool inLit, bool inLighti
 	glPointSize(1);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
-

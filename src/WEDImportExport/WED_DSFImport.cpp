@@ -27,9 +27,7 @@
 #include "WED_ExclusionZone.h"
 #include "WED_EnumSystem.h"
 #include "WED_ObjPlacement.h"
-#include "WED_ToolUtils.h"
 #include "PlatformUtils.h"
-#include "WED_UIDefs.h"
 #include "WED_SimpleBoundaryNode.h"
 
 #include "WED_FacadePlacement.h"
@@ -56,7 +54,6 @@
 #include "WED_RoadNode.h"
 #include "WED_RoadEdge.h"
 #endif
-#include "WED_MetadataUpdate.h"
 
 #include <sstream>
 
@@ -162,6 +159,8 @@ public:
 		return bucket_parents[cat];
 	}
 
+	vector<WED_ExclusionZone *> accum_exclusions;
+
 	vector<pair<Point2, int> >	accum_road;
 	pair<int, int>		accum_road_type;
 
@@ -218,9 +217,24 @@ public:
 
 	void make_exclusion(const char * ex, int k)
 	{
-		float b[4];
-		if(sscanf(ex,"%f/%f/%f/%f",b,b+1,b+2,b+3)==4)
+		Bbox2 b;
+		if(sscanf(ex,"%lf/%lf/%lf/%lf",&b.p1.x_, &b.p1.y_, &b.p2.x_, &b.p2.y_) == 4)
 		{
+			for(auto z : accum_exclusions)
+			{
+				Bbox2 b_new;
+				z->GetMin()->GetLocation(gis_Geo, b_new.p1);
+				z->GetMax()->GetLocation(gis_Geo, b_new.p2);
+				if(b_new == b)
+				{
+					set<int> s;
+					z->GetExclusions(s);
+					s.insert(k);
+					z->SetExclusions(s);
+					return;
+				}
+			}
+
 			WED_ExclusionZone * z = WED_ExclusionZone::CreateTyped(archive);
 			z->SetName("Exclusion Zone");
 			z->SetParent(get_cat_parent(dsf_cat_exclusion),get_cat_parent(dsf_cat_exclusion)->CountChildren());
@@ -228,14 +242,16 @@ public:
 			s.insert(k);
 			z->SetExclusions(s);
 
-			WED_SimpleBoundaryNode * p1 =WED_SimpleBoundaryNode::CreateTyped(archive);
-			WED_SimpleBoundaryNode * p2 =WED_SimpleBoundaryNode::CreateTyped(archive);
+			WED_SimpleBoundaryNode * p1 = WED_SimpleBoundaryNode::CreateTyped(archive);
+			WED_SimpleBoundaryNode * p2 = WED_SimpleBoundaryNode::CreateTyped(archive);
 			p1->SetParent(z,0);
 			p2->SetParent(z,1);
 			p1->SetName("e1");
 			p2->SetName("e2");
-			p1->SetLocation(gis_Geo,Point2(b[0],b[1]));
-			p2->SetLocation(gis_Geo,Point2(b[2],b[3]));
+			p1->SetLocation(gis_Geo,b.p1);
+			p2->SetLocation(gis_Geo,b.p2);
+
+			accum_exclusions.push_back(z);
 		}
 	}
 
@@ -886,151 +902,18 @@ public:
 //		if(res != 0)
 //			printf("DSF Error: %d\n", res);
 	}
-
-
 };
 
 
-int DSF_Import(const char * path, WED_Group * base)
+int DSF_Import(const char * path, WED_Thing * base)
 {
 	DSF_Importer importer;
 	return importer.do_import_dsf(path, base);
 }
 
-int		WED_CanImportDSF(IResolver * resolver)
-{
-	return 1;
-}
 
-void	WED_DoImportDSF(IResolver * resolver)
-{
-	WED_Thing * wrl = WED_GetWorld(resolver);
-
-	char * path = GetMultiFilePathFromUser("Import DSF file...", "Import", FILE_DIALOG_IMPORT_DSF);
-	if(path)
-	{
-		char * free_me = path;
-		
-		wrl->StartOperation("Import DSF");
-		
-		while(*path)
-		{
-			WED_Group * g = WED_Group::CreateTyped(wrl->GetArchive());
-			g->SetName(path);
-			g->SetParent(wrl,wrl->CountChildren());
-			int result = DSF_Import(path,g);
-			if(result != dsf_ErrOK)
-			{
-				string msg = string("The file '") + path + string("' could not be imported as a DSF:\n")
-							+ dsfErrorMessages[result];
-				DoUserAlert(msg.c_str());
-				wrl->AbortOperation();
-				free(free_me);
-				return;
-			}
-			
-			path = path + strlen(path) + 1;
-		}
-		wrl->CommitOperation();
-		free(free_me);
-	}
-}
-
-static WED_Thing * find_airport_by_icao_recursive(const string& icao, WED_Thing * who)
-{
-	if(WED_Airport::sClass == who->GetClass())
-	{
-		WED_Airport * apt = dynamic_cast<WED_Airport *>(who);
-		DebugAssert(apt);
-		string aicao;
-		apt->GetICAO(aicao);
-		
-		if(aicao == icao)
-			return apt;
-		else
-			return NULL;
-	}
-	else
-	{
-		int n, nn = who->CountChildren();
-		for(n = 0; n < nn; ++n)
-		{
-			WED_Thing * found_it = find_airport_by_icao_recursive(icao, who->GetNthChild(n));
-			if(found_it) return found_it;
-		}
-	}
-	return NULL;
-}
-
-void WED_DoImportText(const char * path, WED_Thing * base)
+void WED_ImportText(const char * path, WED_Thing * base)
 {
 	DSF_Importer importer;
 	importer.do_import_txt(path, base);
 }
-
-
-#if GATEWAY_IMPORT_FEATURES
-const string get_airport_id_from_gateway_file_path(const char * file_path)
-{
-	string tname(file_path);
-	string::size_type p = tname.find_last_of("\\/");
-	if(p != tname.npos)
-		tname = tname.substr(p+1);
-	p = tname.find_last_of(".");
-	if(p != tname.npos)
-		tname = tname.substr(0,p);
-	return tname;
-}
-WED_Thing * get_airport_from_gateway_file_path(const char * file_path, WED_Thing * wrl)
-{
-	return find_airport_by_icao_recursive(get_airport_id_from_gateway_file_path(file_path), wrl);
-}
-
-
-//This is from an older method of importing things which involved manually getting the files from the hard drive
-void	WED_DoImportDSFText(IResolver * resolver)
-{
-	WED_Thing * wrl = WED_GetWorld(resolver);
-
-	char * paths = GetMultiFilePathFromUser("Import DSF file...", "Import", FILE_DIALOG_IMPORT_DSF);
-	if(paths)
-	{
-		char * free_me = paths;
-		
-		wrl->StartOperation("Import DSF");
-		
-		while(*paths)
-		{
-			if(strstr(paths,".dat"))
-			{			
-				WED_ImportOneAptFile(paths,wrl,NULL);
-				WED_DoInvisibleUpdateMetadata(SAFE_CAST(WED_Airport, get_airport_from_gateway_file_path(paths, wrl)));
-			}
-			paths = paths + strlen(paths) + 1;
-		}
-		
-		paths = free_me;
-
-		while(*paths)
-		{
-			if(!strstr(paths,".dat"))
-			{
-				WED_Thing * g = get_airport_from_gateway_file_path(paths, wrl);
-				if(g == NULL)
-				{
-					g = WED_Group::CreateTyped(wrl->GetArchive());
-					g->SetName(paths);
-					g->SetParent(wrl,wrl->CountChildren());
-				}
-		//		DSF_Import(path,g);
-				DSF_Importer importer;
-				importer.do_import_txt(paths, g);
-			}	
-			paths = paths + strlen(paths) + 1;
-		}
-		
-		wrl->CommitOperation();
-		free(free_me);
-	}
-}
-#endif

@@ -326,7 +326,8 @@ void		WED_PackageMgr::Rescan(bool alwaysBroadcast)
 							size_t  p_beg = dis.find_last_of("\\/",p_end-1);
 							disabledSceneries.push_back(dis.substr(p_beg+1,p_end-p_beg-1));
 						}
-						MFS_string_eol(&s,NULL);
+						else
+							MFS_string_eol(&s,NULL);
 					}
 				}
 				MemFile_Close(ini);

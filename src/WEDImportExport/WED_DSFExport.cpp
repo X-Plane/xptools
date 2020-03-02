@@ -22,7 +22,6 @@
  */
 
 #include "WED_DSFExport.h"
-#include "WED_UIDefs.h"
 #include "DSFLib.h"
 #include "FileUtils.h"
 #include "WED_Entity.h"
@@ -81,6 +80,7 @@ struct DSF_export_info_t
 	DSF_export_info_t() { orthoImg.data = NULL; }
 };
 
+extern int gOrthoExport;
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 
@@ -201,22 +201,22 @@ void remove_all_zero_length_segments(vector<Segment> &in_out_chain)
 	in_out_chain.erase(remove_if(in_out_chain.begin(), in_out_chain.end(), kill_zero_length_segment()), in_out_chain.end());
 }
 
-static bool usesAlpha(ImageInfo * info)
+static bool hasPartialTransparency(ImageInfo * info)
 {
 	if(info->channels < 4) return false;
-	int usesAlpha = 0;
+	int semiTransPixels = 0;
 	
 	unsigned char * src = info->data + 3;
 	for(int y = info->height; y > 0; y--)
 	{
 		for(int x = info->width; x > 0; x--)
 		{
-			if(*src < 250) usesAlpha++; // deliberately ignore almost opaque pixels. Some tools create such
+			if(*src < 250 && *src > 0) semiTransPixels++; // deliberately ignore almost opaque pixels. Some tools create such
 			src += 4;
 		}
 		src += 4 * info->pad;
 	}
-	return usesAlpha;
+	return semiTransPixels > 10; // even ignore if there are just a very few stray semi-transparent pixels
 }
 
 /************************************************************************************************************************************************
@@ -1216,14 +1216,13 @@ static int	DSF_ExportTileRecursive(
 				while(heading >= 360.0) heading -= 360.0;
 				++real_thingies;
 				xyrz[2] = heading;
-				#if AIRPORT_ROUTING
+
 				if(obj->HasCustomMSL())
 				{
 					xyrz[3] = obj->GetCustomMSL();
 					cbs->AddObject_f(idx, xyrz, 4, writer);
 				}
 				else
-				#endif
 					cbs->AddObject_f(idx, xyrz, 3, writer);
 			}
 		}
@@ -1764,7 +1763,7 @@ static int	DSF_ExportTileRecursive(
 		{
 			//Get the relative path
 			orth->GetResource(r);
-
+#if WED
 			if(orth->IsNew())
 			{
 				string msg;
@@ -1775,7 +1774,7 @@ static int	DSF_ExportTileRecursive(
 				
 				string relativePath(FILE_get_dir_name(r) + FILE_get_file_name_wo_extensions(msg));
 				
-				string relativePathDDS = relativePath + ".dds";
+				string relativePathDDS = relativePath + ( gOrthoExport ? ".dds" : ".png");
 				string relativePathPOL = relativePath + ".pol";
 				
 				msg = string("The polygon '") + msg + "' cannot be converted to an orthophoto: ";
@@ -1792,7 +1791,14 @@ static int	DSF_ExportTileRecursive(
 
 				r = relativePathPOL;		// Resource name comes from the pol no matter what we compress to disk.
 				
+				if(absPathDDS == absPathIMG)
+				{
+					DoUserAlert((msg + "Output file would overwrite source file, aborting DSF Export. Change polygon name.").c_str());
+					return -1;
+				}
+				
 				Bbox2 UVbounds; orth->GetBounds(gis_UV, UVbounds);
+				Bbox2 UVbounds_used(0,0,1,1);                            // we may end up not using all of the texture
 				WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 				
 				date_cmpr_result_t date_cmpr_res = FILE_date_cmpr(absPathIMG.c_str(),absPathDDS.c_str());
@@ -1820,7 +1826,8 @@ static int	DSF_ExportTileRecursive(
 							export_info.orthoImg.data = NULL;
 							export_info.orthoFile = "";
 						}
-						if(MakeSupportedType(absPathIMG.c_str(),&export_info.orthoImg))
+						if(LoadBitmapFromAnyFile(absPathIMG.c_str(),&export_info.orthoImg)) // to cut into pieces, only. Make sure its not forcibly rescaled
+//						if(MakeSupportedType(absPathIMG.c_str(),&export_info.orthoImg))
 						{
 							DoUserAlert((msg + "Unable to convert the image file '" + absPathIMG + "'to a DDS file, aborting DSF Export.").c_str());
 							return -1;
@@ -1832,11 +1839,25 @@ static int	DSF_ExportTileRecursive(
 					}
 					ImageInfo imgInfo(export_info.orthoImg);
 					ImageInfo DDSInfo;
-
+					
 					int UVMleft   = intround(imgInfo.width * UVbounds.xmin());
 					int UVMright  = intround(imgInfo.width * UVbounds.xmax());
 					int UVMtop    = intround(imgInfo.height * UVbounds.ymax());
 					int UVMbottom = intround(imgInfo.height * UVbounds.ymin());
+					
+					/* If the source image is a multiple of 1k pix/side - we want to avoid scaling the subtextures as much as possible.
+					   So in case the UV coords are a tiny bit off - rather round towards a size that allows keeping 1:1 pixel ratio.
+					*/
+					bool is1Ksource = imgInfo.width % 1024 == 0 && imgInfo.height % 1024 == 0;
+					
+					if(is1Ksource)
+					{
+						if(UVMleft   % 512 == 1) UVMleft -= 1;   else if(UVMleft   % 512 == 511) UVMleft += 1;
+						if(UVMright  % 512 == 1) UVMright -= 1;  else if(UVMright  % 512 == 511) UVMright += 1;
+						if(UVMtop    % 512 == 1) UVMtop -= 1;    else if(UVMtop    % 512 == 511) UVMtop += 1;
+						if(UVMbottom % 512 == 1) UVMbottom -= 1; else if(UVMbottom % 512 == 511) UVMbottom += 1;
+					}
+					
 					int UVMwidth  = UVMright - UVMleft;
 					int UVMheight = UVMtop - UVMbottom;
 					
@@ -1846,19 +1867,87 @@ static int	DSF_ExportTileRecursive(
 					while(DDSwidth < UVMwidth && DDSwidth < 2048) DDSwidth <<= 1;      // round up dimensions under 2k to a power of 2 AND limit to 2k
 					while(DDSheight < UVMheight && DDSheight < 2048) DDSheight <<= 1;
 
+					/* we may end up with a 'partial' tile - i.e. the polygon was reshaped and now the UVbounds don't cover a full tile
+					    any more. Normally - we would upscale the exact part of the source image needed to make it a power of 2.
+					    But - we may not have to: *if* the source image is large enough - we just grab a 1:1 copy of the next larger pow2 size
+					    and the only use a part of it.
+					*/
+					if(is1Ksource)
+					{
+						if(DDSwidth != UVMwidth)
+						{
+							if(UVbounds.ymin() > 0.0 && UVMright % 512 == 0)
+							{
+								double desired_left = UVMright - DDSwidth;
+								if(desired_left >= 0)
+								{
+									UVMleft = desired_left;
+									UVbounds_used.p1.x_ = 1.0 - ((double) UVMwidth) / DDSwidth;
+//						printf("save a scale: use w= %d of %d w/unused left\n", UVMwidth, DDSwidth);
+									UVMwidth = DDSwidth;
+								}
+							}
+							else
+							{
+								double desired_right = UVMleft + DDSwidth;
+								if(desired_right <= imgInfo.width)
+								{
+									UVMright = desired_right;
+									UVbounds_used.p2.x_ = ((double) UVMwidth) / DDSwidth;
+///						printf("save a scale: use w= %d of %d w/unused right\n", UVMwidth, DDSwidth);
+									UVMwidth = DDSwidth;
+								}
+							}
+						}
+						if(DDSheight != UVMheight)
+						{
+							if(UVbounds.xmin() > 0.0 && UVMtop % 512 == 0)
+							{
+								double desired_bottom = UVMtop - DDSheight;
+								if(desired_bottom >= 0)
+								{
+									UVMbottom = desired_bottom;
+									UVbounds_used.p1.y_ = 1.0 - ((double) UVMheight) / DDSheight;
+//						printf("save a scale: use h= %d of %d w/unused bottom\n", UVMheight, DDSheight);
+									UVMheight = DDSheight;
+								}
+							}
+							else
+							{
+								double desired_top = UVMbottom + DDSheight;
+								if(desired_top <= imgInfo.height)
+								{
+									UVMtop = desired_top;
+									UVbounds_used.p2.y_ = ((double) UVMheight) / DDSheight;
+//						printf("save a scale: use h= %d of %d w/unused top\n", UVMheight, DDSheight);
+									UVMheight = DDSheight;
+								}
+							}
+						}
+					}
+
 					if (CreateNewBitmap(DDSwidth, DDSheight, imgInfo.channels, &DDSInfo) == 0)       // create array to hold upsized image
 					{
 						if(UVMwidth == DDSwidth && UVMheight == DDSheight)
+						{
+//					printf("1:1 copy\n");
 							CopyBitmapSectionDirect(imgInfo,DDSInfo, UVMleft, UVMbottom, 0, 0, DDSwidth, DDSheight);
+						}
 						else
 						{
+//					printf("scaled copy\n");
 							CopyBitmapSection(&imgInfo,&DDSInfo, UVMleft, UVMbottom, UVMright, UVMtop,
 																				0,       0,    DDSwidth, DDSheight);
 						}
-						if(DDSInfo.channels == 3)
-							ConvertBitmapToAlpha(&DDSInfo,false);
-						int DXTMethod = usesAlpha(&DDSInfo) ? 5 : 1;
-						WriteBitmapToDDS_MT(DDSInfo, DXTMethod, absPathDDS.c_str());
+						if(gOrthoExport)
+						{
+							if(DDSInfo.channels == 3)
+								ConvertBitmapToAlpha(&DDSInfo,false);
+							int DXTMethod = hasPartialTransparency(&DDSInfo) ? 5 : 1;
+							WriteBitmapToDDS_MT(DDSInfo, DXTMethod, absPathDDS.c_str());
+						}
+						else
+							WriteBitmapToPNG(&DDSInfo, absPathDDS.c_str(), NULL, 0, 2.2);
 					}
 				}
 				else if(date_cmpr_res == dcr_error)
@@ -1880,7 +1969,7 @@ static int	DSF_ExportTileRecursive(
 						pol_info_t out_info = { FILE_get_file_name(relativePathDDS), false,
 							/*SCALE*/ (float) LonLatDistMeters(b.p1,Point2(b.p2.x(), b.p1.y())), (float) LonLatDistMeters(b.p1,Point2(b.p1.x(), b.p2.y())),  // althought its irrelevant here
 							false, false, 
-							/*LAYER_GROUP*/ "", 0,
+							/*LAYER_GROUP*/ "TERRAIN", +1,
 							/*LOAD_CENTER*/ (float) center.y(), (float) center.x(), (float) LonLatDistMeters(b.p1,b.p2), intmax2(DDSInfo.height,DDSInfo.width) };
 						rmgr->WritePol(absPathPOL, out_info);
 						DestroyBitmap(&DDSInfo);
@@ -1888,9 +1977,9 @@ static int	DSF_ExportTileRecursive(
 				}
 
 				what->StartOperation("Norm Ortho");
-				orth->Rescale(gis_UV, UVbounds, Bbox2(0,0,1,1));
+				orth->Rescale(gis_UV, UVbounds, UVbounds_used);
 			}
-
+#endif
 			idx = io_table.accum_pol(r,show_level);
 			bool bez = WED_HasBezierPol(orth);
 			
@@ -2122,7 +2211,13 @@ int DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, se
 	}
 	if (g_dropped_pts)
 	{
-		DoUserAlert("Warning: you have bezier curves that cross a DSF tile boundary.  X-Plane 9 cannot handle this case.  To fix this, only use non-curved polygons to cross a tile boundary.");
+#if WED
+		DoUserAlert(
+#else
+		fprintf(stderr, "%s\n",
+#endif
+				"Warning: you have bezier curves that cross a DSF tile boundary. X-Plane 9 cannot handle this case. "
+				"To fix this, only use non-curved polygons to cross a tile boundary.");
 		return -1;
 	}
 	return 0;

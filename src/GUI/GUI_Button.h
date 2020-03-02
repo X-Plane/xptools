@@ -31,8 +31,8 @@ enum GUI_ButtonType {
 	btn_Web,		// Hilites when mouse-over...you need to dehilite when in the parent window -- radio-friends dehilite each other.  On click, resets val to 0
 	btn_Push,		// Push: hilites while mouse down and in, resets val to 0 on a click.
 	btn_Check,		// Toggles itself on a click between 0 and 1.
-	btn_Radio		// Sets itself to 1, sets radio friends to 0.
-
+	btn_Radio,		// Sets itself to 1, sets radio friends to 0.
+	btn_RadioChk	// Like radio, but clicking a highlighted button resets it- allowing to have none of all the radio-friends activated
 };
 
 class	GUI_Button : public GUI_Control {

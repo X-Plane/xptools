@@ -23,6 +23,7 @@
 
 
 #include "WED_GatewayImport.h"
+#include "WED_GatewayExport.h"
 
 #if HAS_GATEWAY
 #include "MemFileUtils.h"
@@ -59,6 +60,8 @@
 #include "WED_Airport.h"
 #include "WED_DSFImport.h"
 #include "WED_Group.h"
+#include "WED_MetadataUpdate.h"
+#include "WED_UIDefs.h"
 //---------------
 
 //--Table Code------------
@@ -317,7 +320,8 @@ private:
 
 
 
-int WED_GatewayImportDialog::import_bounds_default[4] = { 0, 0, 750, 500 };
+int WED_GatewayImportDialog::import_bounds_default[4] = { 0, 0, 800, 500 };
+
 
 //--Implemation of WED_GateWayImportDialog class-------------------------------
 WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_MapPane * pane, GUI_Commander * cmdr) :
@@ -423,11 +427,11 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_Ma
 		DecorateGUIWindow();
 
 	//Get Certification
-	string cert;
-	if(!GUI_GetTempResourcePath("gateway.crt", cert))
+	string cert(WED_get_GW_cert());
+	if(cert.empty())
 	{
 		mPhase = imp_dialog_error;
-		DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
+		DecorateGUIWindow("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
 	}
 	mCacheRequest.in_cert = cert;
 
@@ -688,11 +692,38 @@ void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
 		Json::Value tmp(Json::objectValue);
 		tmp = mAirportsGET.operator[](i);//Yes, you need the verbose operator[] form. Yes it's dumb
 
-		if(tmp["AcceptedSceneryCount"].asInt() > 0)
+		if(tmp["AcceptedSceneryCount"].asInt() >= 0)
 		{
 			AptInfo_t cur_airport;
 			cur_airport.icao = tmp["AirportCode"].asString();
 			cur_airport.name = tmp["AirportName"].asString();
+
+			string code;
+			Json::Value meta(Json::objectValue);
+			meta.swap(tmp["metadata"]);
+			if (meta.size())
+			{
+				code = meta["icao_code"].asString();
+
+				string code2 = meta["faa_code"].asString();
+				if(code.size() && code2.size())
+				{
+					if(code != code2)
+						code += "," + code2;
+				}
+				else
+					code += code2;
+
+				code2 = meta["local_code"].asString();
+				if(code.size() && code2.size())
+				{
+					if(code.find(code2) == string::npos)
+						code += "," + code2;
+				}
+				else
+					code += code2;
+			}
+			cur_airport.meta_data.push_back(make_pair("IcaoFaaLocal", code));   // its not really used at all, for now
 			
 			if(gModeratorMode)
 			{
@@ -700,20 +731,17 @@ void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
 
 				if (tmp["AcceptedSceneryCount"].asInt() > tmp["ApprovedSceneryCount"].asInt())
 				{
-					string cert;
-					if(!GUI_GetTempResourcePath("gateway.crt", cert))
+					string cert(WED_get_GW_cert());
+					if(cert.empty())
 					{
 						mPhase = imp_dialog_error;
 						DecorateGUIWindow("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
 						return;
 					}
 
-					string url = WED_URL_GATEWAY_API;
 					//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airport/ICAO"
-					url += "airport/" + cur_airport.icao;
-					mCacheRequest.in_url = url;
+					mCacheRequest.in_url = WED_get_GW_api_url() + "airport/" + cur_airport.icao;
 
-					//Get it from the server
 					mCacheRequest.in_cert = cert;
 					mCacheRequest.in_domain = cache_domain_airport_versions_json;
 
@@ -883,10 +911,7 @@ void WED_GatewayImportDialog::StartCSVDownload()
 {
 	mCacheRequest.in_domain = cache_domain_metadata_csv;
 
-	stringstream ss;
-	ss << "scenery_packs";
-	mCacheRequest.in_folder_prefix = ss.str();
-
+	mCacheRequest.in_folder_prefix = "scenery_packs";
 	mCacheRequest.in_url = WED_URL_AIRPORT_METADATA_CSV;
 	mRequestCount = 0;
 
@@ -896,16 +921,12 @@ void WED_GatewayImportDialog::StartCSVDownload()
 
 void WED_GatewayImportDialog::StartICAODownload()
 {
-	//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airports"
-	string url = WED_URL_GATEWAY_API;
-	url += "airports";
 
 	mCacheRequest.in_domain = cache_domain_airports_json;
-	stringstream ss;
-	ss << "scenery_packs" << DIR_STR << "GatewayImport";
-	mCacheRequest.in_folder_prefix = ss.str();
+	mCacheRequest.in_folder_prefix = "scenery_packs" DIR_STR "GatewayImport";
 
-	mCacheRequest.in_url = url;
+	//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airports"
+	mCacheRequest.in_url = WED_get_GW_api_url() + "airports";
 	mRequestCount = 0;
 
 	Start(0.1);
@@ -927,10 +948,8 @@ bool WED_GatewayImportDialog::StartVersionsDownload()
 	//Current airport selected
 	AptInfo_t current_apt = mICAO_Apts.at(*out_selection.begin());
 
-	string url = WED_URL_GATEWAY_API;
 	//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airport/ICAO"
-	url += "airport/" + current_apt.icao;
-	mCacheRequest.in_url = url;
+	mCacheRequest.in_url = WED_get_GW_api_url() + "airport/" + current_apt.icao;
 
 	mCacheRequest.in_domain = cache_domain_airport_versions_json;
 
@@ -947,10 +966,7 @@ bool WED_GatewayImportDialog::StartVersionsDownload()
 
 void WED_GatewayImportDialog::StartSpecificVersionDownload(int id, const string& icao)
 {
-	stringstream url;
-	url << WED_URL_GATEWAY_API << "scenery/" << id;
-	mCacheRequest.in_url = url.str();
-
+	mCacheRequest.in_url = WED_get_GW_api_url() + "scenery/" + to_string(id);
 	mCacheRequest.in_domain = cache_domain_scenery_pack;
 
 	stringstream ss;
@@ -1096,7 +1112,7 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(const string& json_
 	string dsfTextPath = filePath + mICAOid + ".txt";
 	if(has_dsf && g)
 	{
-		WED_DoImportText(dsfTextPath.c_str(), (WED_Thing *) g);
+		WED_ImportText(dsfTextPath.c_str(), (WED_Thing *) g);
 	}
 
 #if !SAVE_ON_HDD && !GATEWAY_IMPORT_FEATURES
@@ -1372,6 +1388,96 @@ void WED_DoImportFromGateway(WED_Document * resolver, WED_MapPane * pane)
 {
 	new WED_GatewayImportDialog(resolver, pane,gApplication);
 	return;
+}
+
+static WED_Thing * find_airport_by_icao_recursive(const string& icao, WED_Thing * who)
+{
+	if(WED_Airport::sClass == who->GetClass())
+	{
+		WED_Airport * apt = dynamic_cast<WED_Airport *>(who);
+		DebugAssert(apt);
+		string aicao;
+		apt->GetICAO(aicao);
+		
+		if(aicao == icao)
+			return apt;
+		else
+			return NULL;
+	}
+	else
+	{
+		int n, nn = who->CountChildren();
+		for(n = 0; n < nn; ++n)
+		{
+			WED_Thing * found_it = find_airport_by_icao_recursive(icao, who->GetNthChild(n));
+			if(found_it) return found_it;
+		}
+	}
+	return NULL;
+}
+
+static const string get_airport_id_from_gateway_file_path(const char * file_path)
+{
+	string tname(file_path);
+	string::size_type p = tname.find_last_of("\\/");
+	if(p != tname.npos)
+		tname = tname.substr(p+1);
+	p = tname.find_last_of(".");
+	if(p != tname.npos)
+		tname = tname.substr(0,p);
+	return tname;
+}
+WED_Thing * get_airport_from_gateway_file_path(const char * file_path, WED_Thing * wrl)
+{
+	return find_airport_by_icao_recursive(get_airport_id_from_gateway_file_path(file_path), wrl);
+}
+
+
+//This is from an older method of importing things which involved manually getting the files from the hard drive
+void	WED_DoImportDSFText(IResolver * resolver)
+{
+	WED_Thing * wrl = WED_GetWorld(resolver);
+
+	char * paths = GetMultiFilePathFromUser("Import DSF file...", "Import", FILE_DIALOG_IMPORT_DSF);
+	if(paths)
+	{
+		char * free_me = paths;
+		
+		wrl->StartOperation("Import DSF");
+		
+		while(*paths)
+		{
+			if(strstr(paths,".dat"))
+			{			
+				WED_ImportOneAptFile(paths,wrl,NULL);
+				WED_DoInvisibleUpdateMetadata(SAFE_CAST(WED_Airport, get_airport_from_gateway_file_path(paths, wrl)));
+			}
+			paths = paths + strlen(paths) + 1;
+		}
+		
+		paths = free_me;
+
+		while(*paths)
+		{
+			if(!strstr(paths,".dat"))
+			{
+				WED_Thing * g = get_airport_from_gateway_file_path(paths, wrl);
+				if(g == NULL)
+				{
+					g = WED_Group::CreateTyped(wrl->GetArchive());
+					g->SetName(paths);
+					g->SetParent(wrl,wrl->CountChildren());
+				}
+				DSF_Import(paths, g);
+		//		DSF_Importer importer;
+		//		importer.do_import_txt(paths, g);
+			}	
+			paths = paths + strlen(paths) + 1;
+		}
+		
+		wrl->CommitOperation();
+		free(free_me);
+	}
 }
 
 #endif /* HAS_GATEWAY */

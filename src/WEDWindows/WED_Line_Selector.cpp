@@ -21,7 +21,7 @@
 #endif
 
 
-WED_Line_Selector::WED_Line_Selector(GUI_Commander * parent) : mChoice(0), mR(0), mC(0), GUI_EditorInsert(parent)
+WED_Line_Selector::WED_Line_Selector(GUI_Commander * parent) : mChoice(-1), mR(0), mC(0), GUI_EditorInsert(parent)
 {
 }
 
@@ -126,44 +126,50 @@ int		WED_Line_Selector::MouseDown(int x, int y, int button)
 
 int		WED_Line_Selector::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)
 {
-/*	if(inFlags & gui_DownFlag)
+	if(inFlags & gui_DownFlag)
 		switch(inKey) 
 		{
 			case GUI_KEY_LEFT:
 				if (mC > 0) mC--;
+				Refresh();
 				return 1;
 			case GUI_KEY_RIGHT:
 				if (mC < mCols-1) mC++;
+				Refresh();
 				return 1;
 			case GUI_KEY_UP:
 				if (mR > 0) mR--;
+				Refresh();
 				return 1;
 			case GUI_KEY_DOWN:
 				if (mR < mRows-1) mR++;
+				Refresh();
 				return 1;
+			case GUI_KEY_RETURN:
+				mChoice = mDict[mR][mC].enu;
+				return 0;
 		}
-*/		
 	return 0;
 }
 
 bool WED_Line_Selector::SetData(const GUI_CellContent& c)
 {
-	for(set<int>::iterator s = c.int_set_val.begin(); s != c.int_set_val.end(); ++s)
+	bool found(false);
+	for(auto s : c.int_set_val)
 	{
 		for(int i = 0; i < mRows; ++i)
 			for(int j = 0; j < mCols; ++j)
 			{
-				if(mDict[i][j].enu == (*s))
+				if(mDict[i][j].enu == s)
 				{
 					mDict[i][j].checked = true;
-					mChoice = *s;
 					mR = i; mC = j;
-					Refresh();
-					return true;
+					found = true;
 				}
 			}
 	}	
-	return false;        // could not find selection in available choices
+	Refresh();
+	return found;        // could not find selection in available choices
 }
 
 void WED_Line_Selector::SetChoices(const vector<GUI_MenuItem_t> * dict)

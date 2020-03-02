@@ -70,6 +70,7 @@ void		WED_ObjPlacement::SetResource(const string& r)
 
 void		WED_ObjPlacement::SetHeading(double h)
 {
+#if WED
 	WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetArchive()->GetResolver());
 	if(rmgr)
 	{
@@ -79,11 +80,13 @@ void		WED_ObjPlacement::SetHeading(double h)
 			if(o->fixed_heading >= 0.0)
 				h = o->fixed_heading;
 	}
+#endif
 	WED_GISPoint_Heading::SetHeading(h);
 }
 
 void	WED_ObjPlacement::Rotate(GISLayer_t l,const Point2& center, double angle)
 {
+#if WED
 	WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetArchive()->GetResolver());
 	if(rmgr)
 	{
@@ -95,6 +98,7 @@ void	WED_ObjPlacement::Rotate(GISLayer_t l,const Point2& center, double angle)
 				return;
 			}
 	}
+#endif
 	WED_GISPoint_Heading::Rotate(l,center,angle);
 }
 
@@ -108,7 +112,7 @@ bool		WED_ObjPlacement::Cull(const Bbox2& b) const
 
 	// caching the objects dimension here for off-display culling in the map view. Its disregarding object rotation
 	// and any lattitude dependency in the conversion, so the value will be choosen sufficiently pessimistic.
-
+#if WED
 	if(visibleWithinDeg < 0.0)                            // so we only do this once for each object, ever
 	{
 		float * f = (float *) &visibleWithinDeg;          // tricking the compiler, breaking all rules. But Cull() must be const ...
@@ -117,61 +121,23 @@ bool		WED_ObjPlacement::Cull(const Bbox2& b) const
 		if(rmgr)
 		{
 			const XObj8 * o;
-			agp_t agp;
+			const agp_t * agp;
 			Point2	my_loc;
 			GetLocation(gis_Geo,my_loc);
 			double mtr_to_lon = MTR_TO_DEG_LAT / cos(my_loc.y() * DEG_TO_RAD);
 
 //			int n = GetNumVariants(resource.value);   // no need to cycle through these - only the first variant is used for preview
-			if(rmgr->GetObj(resource.value,o))
+			if (rmgr->GetObj(resource.value, o))
 			{
-				const XObj8 * o;
-				agp_t agp;
-				Point2	my_loc;
-				GetLocation(gis_Geo,my_loc);
-				double mtr_to_lon = MTR_TO_DEG_LAT / cos(my_loc.y() * DEG_TO_RAD);
-
-	//			int n = GetNumVariants(resource.value);   // no need to cycle through these - only the first variant is used for preview
-				if(rmgr->GetObj(resource.value,o))
-				{
-					*f =  pythag(max(fabs(o->xyz_max[0]), fabs(o->xyz_min[0])),max(fabs(o->xyz_max[2]), fabs(o->xyz_min[2]))) * 1.2 * mtr_to_lon;
-				}
-				else if(rmgr->GetAGP(resource.value,agp))
-				{
-					float min_xy[2] = {  999,  999 };
-					float max_xy[2] = { -999, -999 };
-					for(int n = 0; n < agp.tile.size(); n += 4)
-					{
-						min_xy[0] = min(min_xy[0], agp.tile[n]);
-						max_xy[0] = max(max_xy[0], agp.tile[n]);
-						min_xy[1] = min(min_xy[1], agp.tile[n+1]);
-						max_xy[1] = max(max_xy[1], agp.tile[n+1]);
-					}
-					// we simplyfy a bit here, as we dont want to loop though where in the tile a given object is placed and how its rotated
-               // so we guesstimate the objet is placed near the center of all tiles, but could be rotated any way.
-               // Catches objects much larger than the tile, e.g. the long_row hangars in the airport library
-					float cent_x = (min_xy[0] + max_xy[0]) * 0.5;
-					float cent_y = (min_xy[1] + max_xy[1]) * 0.5;
-
-					for(auto obj : agp.objs)
-					{
-						const XObj8 * agp_o;
-						if (rmgr->GetObjRelative(obj.name, resource.value, agp_o))
-						{
-							float obj_rad = pythag(max(fabs(agp_o->xyz_max[0]),fabs(agp_o->xyz_min[0])), max(fabs(agp_o->xyz_max[2]), fabs(agp_o->xyz_min[2])));
-
-							min_xy[0] = min(cent_x - obj_rad, min_xy[0]);
-							max_xy[0] = max(cent_x + obj_rad, max_xy[0]);
-							min_xy[1] = min(cent_y - obj_rad, min_xy[1]);
-							max_xy[1] = max(cent_y + obj_rad, max_xy[1]);
-						}
-					}
-					*f =  pythag(max(fabs(max_xy[0]), fabs(min_xy[0])),max(fabs(max_xy[1]), fabs(min_xy[1]))) * 1.2 * mtr_to_lon;
-				}
+				*f = pythag(max(fabs(o->xyz_max[0]), fabs(o->xyz_min[0])), max(fabs(o->xyz_max[2]), fabs(o->xyz_min[2]))) * 1.2 * mtr_to_lon;
+			}
+			else if(rmgr->GetAGP(resource.value,agp))
+			{
+				*f = pythag(max(fabs(agp->xyz_max[0]), fabs(agp->xyz_min[0])), max(fabs(agp->xyz_max[2]), fabs(agp->xyz_min[2]))) * 1.2 * mtr_to_lon;
 			}
 		}
 	}
-
+#endif
 // This woould be a radical approach to culling - drop ALL visible items, like preview/structure/handles/highlight if its too small.
 // Thois will make items completely invisible, but keeps thm selectable. Very similar as the "too small to go in" apprach where whole
 // groups or airport drop out of view.

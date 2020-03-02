@@ -41,3 +41,21 @@ SOURCES += ./src/Utils/zip.c
 SOURCES += ./src/Utils/unzip.c
 SOURCES += ./src/Utils/XChunkyFileUtils.cpp
 SOURCES += ./src/DSF/tri_stripper_101/tri_stripper.cpp
+
+SOURCES += ./src/lzma19/C/7zArcIn.c
+SOURCES += ./src/lzma19/C/7zAlloc.c
+SOURCES += ./src/lzma19/C/7zBuf.c
+SOURCES += ./src/lzma19/C/7zCrc.c
+SOURCES += ./src/lzma19/C/7zCrcOpt.c
+SOURCES += ./src/lzma19/C/7zDec.c
+SOURCES += ./src/lzma19/C/7zFile.c
+SOURCES += ./src/lzma19/C/7zStream.c
+SOURCES += ./src/lzma19/C/Bcj2.c
+SOURCES += ./src/lzma19/C/Bra.c
+SOURCES += ./src/lzma19/C/Bra86.c
+SOURCES += ./src/lzma19/C/BraIA64.c
+SOURCES += ./src/lzma19/C/CpuArch.c
+SOURCES += ./src/lzma19/C/Delta.c
+SOURCES += ./src/lzma19/C/LzmaDec.c
+SOURCES += ./src/lzma19/C/Lzma2Dec.c
+
