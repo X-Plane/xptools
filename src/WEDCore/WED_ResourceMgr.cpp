@@ -929,6 +929,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 					int num_vert = MFS_double(&s);
 					int num_idx = MFS_double(&s);
 					tpl->meshes.back().xyz.reserve(3*num_vert);
+					tpl->meshes.back().nml.reserve(3*num_vert);
 					tpl->meshes.back().uv.reserve(2*num_vert);
 					tpl->meshes.back().idx.reserve(num_idx);
 				}
@@ -937,9 +938,14 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 					tpl->meshes.back().xyz.push_back(MFS_double(&s));
 					tpl->meshes.back().xyz.push_back(MFS_double(&s));
 					tpl->meshes.back().xyz.push_back(MFS_double(&s));
-					MFS_double(&s);
-					MFS_double(&s);
-					MFS_double(&s);
+					Vector3 v;
+					v.dx = MFS_double(&s);
+					v.dy = MFS_double(&s);
+					v.dz = MFS_double(&s);
+//					v.normalize();                      // some facades are off by 1e6 - picky OGL shaders don't like that
+					tpl->meshes.back().nml.push_back(v.dx);
+					tpl->meshes.back().nml.push_back(v.dy);
+					tpl->meshes.back().nml.push_back(v.dz);
 					tpl->meshes.back().uv.push_back(MFS_double(&s));
 					tpl->meshes.back().uv.push_back(MFS_double(&s));
 				}
