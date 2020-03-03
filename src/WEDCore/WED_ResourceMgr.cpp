@@ -1075,7 +1075,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 			{
 				const XObj8 * o;
 				fac->xobjs.push_back(nullptr);
-				if(GetObjRelative(obj_nam.c_str(), p, o))
+				if(GetObjRelative(obj_nam.c_str(), vpath, o))
 					fac->xobjs.back() = o;
 			}
 		}
