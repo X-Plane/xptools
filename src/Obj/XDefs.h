@@ -89,6 +89,9 @@
 // This enables direct import of 7z compressed dsf's.
 #define USE_7Z 1
 
+// Store XObj8 data in VBO on GPU
+#define XOBJ8_USE_VBO 1
+
 // This is a big hack that is no more used much ... 
 // WED entities are culled based on a bounding rect - and objects now know their worst case bounding box, based on their visualization, too.
 // Just in case this boundary determination fails - this is the size in dergree's thats is used as their bounding box.

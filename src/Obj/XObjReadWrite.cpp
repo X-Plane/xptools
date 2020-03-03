@@ -600,7 +600,9 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 
 	outObj.lods.push_back(XObjLOD8());
 	outObj.lods.back().lod_near = outObj.lods.back().lod_far = 0;
-
+#if XOBJ8_USE_VBO
+	outObj.geo_VBO = 0;
+#endif
 	while (!stop && TXT_MAP_continue(cur_ptr, end_ptr))
 	{
 		bool ate_eoln = false;
@@ -630,7 +632,6 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 			linemax = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			lightmax = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			idxmax = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
-
 			outObj.indices.resize(idxmax);
 			outObj.geo_tri.clear(8);
 			outObj.geo_tri.resize(trimax);

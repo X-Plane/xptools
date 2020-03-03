@@ -25,7 +25,7 @@
 #if APL
 	#include <OpenGL/gl.h>
 #else
-	#include <GL/gl.h>
+	#include "glew.h"
 #endif
 #include <math.h>
 #include <stdio.h>
@@ -285,16 +285,50 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 				if (arrayMode_Tri != arrayMode)
 				{
 					arrayMode = arrayMode_Tri;
-					glVertexPointer			(3, GL_FLOAT, 32, 				  obj.geo_tri.get(0)		  );	CHECK_GL_ERR
-					glNormalPointer			(	GL_FLOAT, 32, ((const char *) obj.geo_tri.get(0)) + 12	  );	CHECK_GL_ERR
-					funcs->TexCoordPointer_f(2, GL_FLOAT, 32, ((const char *) obj.geo_tri.get(0)) + 24,ref);	CHECK_GL_ERR
+					const float * offset = obj.geo_tri.get(0);
+#if XOBJ8_USE_VBO
+					if(obj.geo_VBO)
+					{
+						glBindBuffer(GL_ARRAY_BUFFER, obj.geo_VBO);				CHECK_GL_ERR
+						glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, obj.idx_VBO);		CHECK_GL_ERR
+					}
+					else
+					{
+						GLuint x[2];
+						glGenBuffers(2, x);									CHECK_GL_ERR
+						const_cast<unsigned int&>(obj.geo_VBO) = x[0];
+						const_cast<unsigned int&>(obj.idx_VBO) = x[1];
+
+						glBindBuffer(GL_ARRAY_BUFFER, obj.geo_VBO);			CHECK_GL_ERR
+						glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, obj.idx_VBO);	CHECK_GL_ERR
+
+						// todo: reduce VBO size by storing normals as GL_INT_2_10_10_10_REV, uv's as GL_UNSIGNED_SHORT
+						// or go all out and normalize vertices to GL_SHORT, then glScale/glRotate based on xyz_min[]/max[] data
+						glBufferData(GL_ARRAY_BUFFER, obj.geo_tri.count()*sizeof(GLfloat)*8, obj.geo_tri.get(0), GL_STATIC_DRAW);	CHECK_GL_ERR
+						// todo: use GL_UNSIGNED_SHORT indices for objects under 64k indices (as most ? frequently used objects are small)
+						glBufferData(GL_ELEMENT_ARRAY_BUFFER, obj.indices.size()*sizeof(GLuint), &obj.indices[0], GL_STATIC_DRAW);	CHECK_GL_ERR
+
+						// obj.geo_tri.delete();       // todo: free that now unused memory
+					}
+					offset = nullptr;
+#endif
+					glVertexPointer			(3, GL_FLOAT, 8*sizeof(GLfloat), offset	     );	CHECK_GL_ERR
+					glNormalPointer			(	GL_FLOAT, 8*sizeof(GLfloat), offset + 3	 );	CHECK_GL_ERR
+					funcs->TexCoordPointer_f(2, GL_FLOAT, 8*sizeof(GLfloat), offset + 6, ref);	CHECK_GL_ERR
 				}
 				glEnableClientState(GL_VERTEX_ARRAY);				CHECK_GL_ERR
 				glEnableClientState(GL_NORMAL_ARRAY);				CHECK_GL_ERR
 				glEnableClientState(GL_TEXTURE_COORD_ARRAY);		CHECK_GL_ERR
 				glDisableClientState(GL_COLOR_ARRAY);				CHECK_GL_ERR
 				glColor3fv(mat_col);								CHECK_GL_ERR
-				glDrawElements(GL_TRIANGLES, cmd->idx_count, GL_UNSIGNED_INT, &obj.indices[cmd->idx_offset]);		CHECK_GL_ERR
+
+#if XOBJ8_USE_VBO
+				if(obj.geo_VBO)
+					glDrawElements(GL_TRIANGLES, cmd->idx_count, GL_UNSIGNED_INT, (void *) (cmd->idx_offset * sizeof(GLuint)));
+				else
+#endif
+					glDrawElements(GL_TRIANGLES, cmd->idx_count, GL_UNSIGNED_INT, &obj.indices[cmd->idx_offset]);
+				CHECK_GL_ERR
 				break;
 			case obj8_Lines:
 				if (drawMode_Lin != drawMode) {

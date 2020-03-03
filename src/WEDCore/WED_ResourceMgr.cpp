@@ -124,9 +124,6 @@ int		WED_ResourceMgr::GetNumVariants(const string& path)
 
 XObj8 * WED_ResourceMgr::LoadObj(const string& abspath)
 {
-
-//printf("LoadObj '%s' - ",abspath.c_str());
-
 	XObj8 * new_obj = new XObj8;
 	if(!XObj8Read(abspath.c_str(),*new_obj))
 	{
@@ -138,8 +135,6 @@ XObj8 * WED_ResourceMgr::LoadObj(const string& abspath)
 		else
 		{
 			delete new_obj;
-//printf("NULL\n"); fflush(stdout);
-		
 			return nullptr;
 		}
 	}
@@ -170,7 +165,6 @@ XObj8 * WED_ResourceMgr::LoadObj(const string& abspath)
 	else
 		new_obj->texture_draped = new_obj->texture;
 
-//printf("GOT it !\n"); fflush(stdout);
 	return new_obj;
 }
 
@@ -511,7 +505,6 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t const*& info)
 			float t2 = MFS_double(&s);
 			if (s2 > s1 && t2 > t1)
 			{
-//		printf("read subtex\n");
 				pol->mSubBoxes.push_back(Bbox2(s1,t1,s2,t2));
 			}
 		}
@@ -1075,7 +1068,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 			{
 				const XObj8 * o;
 				fac->xobjs.push_back(nullptr);
-				if(GetObjRelative(obj_nam.c_str(), vpath, o))
+				if(GetObjRelative(obj_nam, vpath, o))
 					fac->xobjs.back() = o;
 			}
 		}
