@@ -816,7 +816,7 @@ void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
 		}
 	}
 	mICAO_AptProvider.AptVectorChanged();
-	if(gModeratorMode) mICAO_AptProvider.SelectHeaderCell(2);
+	if(gModeratorMode) mICAO_AptProvider.SelectHeaderCell(3);
 }
 
 void WED_GatewayImportDialog::FillVersionsFromJSON(const string& json_string)
