@@ -101,8 +101,6 @@ inline double round_by_parts_guess(double c, int parts)
 		return round_by_parts(c, parts  );	
 }
 
-
-
 void NorthHeading2VectorMeters(const Point2& ref, const Point2& p, double heading, Vector2& dir);
 double VectorMeters2NorthHeading(const Point2& ref, const Point2& p, const Vector2& dir);
 void NorthHeading2VectorDegs(const Point2& ref, const Point2& p, double heading, Vector2& dir);
@@ -114,15 +112,25 @@ void MetersToLLE(const Point2& ref, int count, Point2 * pts);
 Vector2 VectorLLToMeters(const Point2& ref, const Vector2& v);
 Vector2 VectorMetersToLL(const Point2& ref, const Vector2& v);
 
-
-
+// extend line have a a width 
 void	Quad_2to4(const Point2 ends[2], double width_mtr, Point2 corners[4]);
+
+// get centerline from wide line
 void	Quad_4to2(const Point2 corners[4], Point2 ends[2], double& width_mtr);
+
+// get box around center point
 void	Quad_1to4(const Point2& ctr, double heading, double len_mtr, double width_mtr, Point2 corners[4]);
+
+// get center from box, 0-1 is a side, 1-2 goes across the 'head'
 void	Quad_4to1(const Point2 corners[4], Point2& ctr, double& heading, double& len_mtr, double& width_mtr);
 
+// get center from segment
 void	Quad_2to1(const Point2 ends[2], Point2& ctr, double& heading, double& len_mtr);
+
+// get line from center point
 void	Quad_1to2(const Point2& ctr, double heading, double len_mtr, Point2 ends[2]);
+
+// get center from the diagonal of a width_mtr wide box
 void	Quad_diagto1(const Point2 ends[2], double width_mtr, Point2& ctr, double& heading, double& len_mtr, int swapped);
 
 void	Quad_MoveSide2(Point2 ends[2], double& width_mtr, int side, const Vector2& delta);
