@@ -80,8 +80,11 @@ XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX,
 
 XWinGL::~XWinGL()
 {
-	mGlWidget->makeCurrent();
-	delete mGlWidget;
+	//mroe: in QT5 MainWidget wants to destroy all his children himself , we get a crash with AsyncDestroy 
+	//      if the child does not exist because we have deleteted it before.
+	
+	//mGlWidget->makeCurrent();
+	//delete mGlWidget;
 }
 
 void                    XWinGL::Resized(int w, int h)
