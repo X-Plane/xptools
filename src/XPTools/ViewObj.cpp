@@ -24,7 +24,6 @@
 #define FACADES 0
 
 #if IBM
-#define GLEW_STATIC
 #include "glew.h"
 #endif
 

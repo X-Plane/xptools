@@ -26,7 +26,6 @@
 
 #if IBM
 	// gotta do this cuz MSFT hasn't updated their openGL headers in 23 years ... its STILL OGL 1.1 from 1996 !!
-	#define GLEW_STATIC
 	#include "glew.h"
 #elif APL
 	#include <OpenGL/gl.h>
