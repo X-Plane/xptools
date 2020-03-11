@@ -324,7 +324,11 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 
 #if XOBJ8_USE_VBO
 				if(obj.geo_VBO)
+				{
 					glDrawElements(GL_TRIANGLES, cmd->idx_count, GL_UNSIGNED_INT, (void *) (cmd->idx_offset * sizeof(GLuint)));
+//					glBindBuffer(GL_ARRAY_BUFFER, 0);
+//					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+				}
 				else
 #endif
 					glDrawElements(GL_TRIANGLES, cmd->idx_count, GL_UNSIGNED_INT, &obj.indices[cmd->idx_offset]);

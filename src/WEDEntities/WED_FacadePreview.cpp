@@ -31,10 +31,12 @@
 #include "ITexMgr.h"
 #include "TexUtils.h"
 #include "GUI_GraphState.h"
+#include "WED_DrawUtils.h"
 
 #include "WED_ResourceMgr.h"
 #include "WED_FacadePreview.h"
 #include "WED_PreviewLayer.h"
+
 
 static bool cull_obj(const XObj8 * o, double ppm)                   // cut off if laterally smaller than 5 pixels
 {
@@ -171,37 +173,6 @@ static void expand_pair(xflt& v1, xflt& v2, xflt s)
 	}
 	dev_assert(v1 < v2);
 }
-
-#if !IBM
-#define CALLBACK
-#endif
-
-static void CALLBACK TessVertex(const Point2 * p, double * h)
-{ 
-	glTexCoord2f((p+1)->x(), (p+1)->y()); 
-	glVertex3f(p->x(), *h, p->y()); 
-}
-
-void glPolygon2h(const Point2 * pts, double height, int n)
-{
-	GLUtesselator * tess = gluNewTess();
-	gluTessCallback(tess, GLU_TESS_BEGIN,	(void (CALLBACK *)(void))glBegin);
-	gluTessCallback(tess, GLU_TESS_END,		(void (CALLBACK *)(void))glEnd);
-	gluTessCallback(tess, GLU_TESS_VERTEX_DATA,	(void (CALLBACK *)(void))TessVertex);
-
-	gluTessBeginPolygon(tess,(void *) &height);
-	gluTessBeginContour(tess);
-	while(n--)
-	{
-		double	xyz[3] = { pts->x_, height, pts->y_ };
-		gluTessVertex(tess, xyz, (void*) pts);
-		pts += 2;
-	}
-	gluTessEndContour(tess);
-	gluTessEndPolygon(tess);
-	gluDeleteTess(tess);
-}
-
 
 typedef void (*RenderQuadFunc) (float *, float *);
 
@@ -1036,10 +1007,12 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 				
 				glScalef(1.0, 1.0, segMult);
 #if 0
+				// There's gotta be some way to abuse some perspective transform to do the chamfering at the ends of a wall.
+				// If so, indexed drawing could be used again, vertex+attribute data drawn from a VBO - bingo !
 				if(first == 1 || first == our_choice.indices.size())
 				{
-					GLfloat x = first == 1 ? -0.05 : 0;
-					GLfloat y = 0; // first == our_choice.indices.size() ? 0.07 : 0;
+					GLfloat x = first == 1 ? -mi_first : 0;
+					GLfloat y = 0; // first == our_choice.indices.size() ? -mi_last : 0;
 					GLfloat mat[16] = { 1,   0,   -x,   x,
 										0,   1,    0,   0,
 										0,   0,    1,   0,
@@ -1051,12 +1024,10 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 
 				if(!info.nowallmesh && (want_thinWalls || (info.has_roof && t.bounds[1] > 0.5) || (!info.is_ring && t.bounds[0] > 0.5)))
 				
-				for(auto& m : t.meshes) // all meshes == maximum LOD detail
+				for(auto& m : t.meshes) // all meshes == maximum LOD detail, all the time. 
 				{
-				int maxIdx = 0;
 					for(auto ind : m.idx)
 					{
-						maxIdx = max(maxIdx , ind);
 						glTexCoord2fv(&m.uv[2*ind]);
 						glNormal3fv(&m.nml[3*ind]);
 #if 0
@@ -1089,7 +1060,9 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 		g->BindTex(tRef ? tman->GetTexID(tRef) : 0, 0);
 
 		// all facdes are drawn cw (!)
-		glCullFace(GL_FRONT); 
+#if !LIBTESS
+		glCullFace(GL_FRONT);
+#endif
 		glNormal3f(0,1,0);
 
 		if(!info.roof_s.empty() && roof_pts.size() < 5)
@@ -1182,7 +1155,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 					new_pts.push_back(Point2(interp(ab_use[0], info.roof_st[0], ab_use[2], info.roof_st[2], dirVec.dot(Vector2(p))  + dirDot ),
 					                         interp(ab_use[1], info.roof_st[1], ab_use[3], info.roof_st[3], perpVec.dot(Vector2(p)) + perpDot)));
 				}
-				glPolygon2h(new_pts.data(), roof_height, roof_pts.size());
+				glPolygon2(new_pts.data(), true, nullptr, roof_pts.size(), roof_height);
 			}
 			else if(!info.noroofmesh)  // type 2 facades
 			{
@@ -1221,7 +1194,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 						new_pts.push_back(Point2( (dirVec.dot(Vector2(p))   + dirDot)  / info.roof_scale_s,
 						                           (perpVec.dot(Vector2(p)) + perpDot) / info.roof_scale_t));
 					}
-					glPolygon2h(new_pts.data(), roof_height, roof_pts.size());
+					glPolygon2(new_pts.data(), true, nullptr, roof_pts.size(), roof_height);
 					
 					xtra_roofs--;
 					if(xtra_roofs >= 0)

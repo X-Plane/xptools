@@ -49,6 +49,7 @@ ifdef PLAT_LINUX
 SOURCES += ./src/Utils/PlatformUtils.lin.cpp
 SOURCES += ./src/UI/XWin.lin.cpp
 SOURCES += ./src/UI/XWinGL.lin.cpp
+SOURCES += ./src/Utils/glew.c
 MOCSRC += ./src/UI/XWin.h
 MOCSRC += ./src/UI/XWinGL.h
 endif #PLAT_LINUX

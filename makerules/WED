@@ -366,6 +366,14 @@ SOURCES += ./src/lzma19/C/Delta.c
 SOURCES += ./src/lzma19/C/LzmaDec.c
 SOURCES += ./src/lzma19/C/Lzma2Dec.c
 
+SOURCES += ./src/libtess2/Source/tess.c
+SOURCES += ./src/libtess2/Source/bucketalloc.c
+SOURCES += ./src/libtess2/Source/dict.c
+SOURCES += ./src/libtess2/Source/mesh.c
+SOURCES += ./src/libtess2/Source/priorityq.c
+SOURCES += ./src/libtess2/Source/sweep.c
+SOURCES += ./src/libtess2/Source/geom.c
+
 ##
 # resources
 ###########

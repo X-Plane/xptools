@@ -667,6 +667,34 @@
 		<Unit filename="../../src/XESCore/AptIO.cpp" />
 		<Unit filename="../../src/XESCore/AptIO.h" />
 		<Unit filename="../../src/XESCore/XESConstants.h" />
+		<Unit filename="../../src/libtess2/Source/bucketalloc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/libtess2/Source/bucketalloc.h" />
+		<Unit filename="../../src/libtess2/Source/dict.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/libtess2/Source/dict.h" />
+		<Unit filename="../../src/libtess2/Source/geom.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/libtess2/Source/geom.h" />
+		<Unit filename="../../src/libtess2/Source/mesh.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/libtess2/Source/mesh.h" />
+		<Unit filename="../../src/libtess2/Source/priorityq.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/libtess2/Source/priorityq.h" />
+		<Unit filename="../../src/libtess2/Source/sweep.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/libtess2/Source/sweep.h" />
+		<Unit filename="../../src/libtess2/Source/tess.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/libtess2/Source/tess.h" />
 		<Unit filename="../../src/lzma19/Asm/x86/7zAsm.asm" />
 		<Unit filename="../../src/lzma19/Asm/x86/7zCrcOpt.asm" />
 		<Unit filename="../../src/lzma19/Asm/x86/AesOpt.asm" />

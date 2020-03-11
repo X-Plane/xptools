@@ -48,6 +48,7 @@ SOURCES += ./src/Network/PCSBSocket.lin.cpp
 SOURCES += ./src/Network/PCSBSocketUDP.lin.cpp
 SOURCES += ./src/UI/XWin.lin.cpp
 SOURCES += ./src/UI/XWinGL.lin.cpp
+SOURCES += ./src/Utils/glew.c
 MOCSRC += ./src/UI/XWin.h
 MOCSRC += ./src/UI/XWinGL.h
 MOCSRC += ./src/GUI/GUI_Timer.h

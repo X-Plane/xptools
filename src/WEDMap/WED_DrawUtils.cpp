@@ -27,10 +27,15 @@
 #include "WED_UIDefs.h"
 #include "MathUtils.h"
 #include "WED_EnumSystem.h"
-#if APL
-#include <OpenGL/glu.h>
+
+#if LIBTESS
+	#include "tesselator.h"
 #else
-#include <GL/glu.h>
+	#if APL
+		#include <OpenGL/glu.h>
+	#else
+		#include <GL/glu.h>
+	#endif
 #endif
 
 int BezierPtsCount(const Bezier2& b, WED_MapZoomerNew * z)
@@ -114,40 +119,144 @@ void PointSequenceToVector(
 	}
 }
 
-#if !IBM
-#define CALLBACK
+#if !LIBTESS
+  #if !IBM
+	#define CALLBACK
+  #endif
+static void CALLBACK TessBegin(GLenum mode)		{ glBegin(mode);}
+static void CALLBACK TessEnd(void)				{ glEnd();		}
+static void CALLBACK TessVertex(const Point2 * p)
+{
+	glVertex2d(p->x(),p->y());
+}
+static void CALLBACK TessVertexUV(const Point2 * p)
+{
+	const Point2 * uv = p; ++uv; 
+	glTexCoord2f(uv->x(), uv->y());
+	glVertex2d(p->x(),p->y());
+}
+static void CALLBACK TessVertexUVh(const Point2 * p, float * h)
+{
+	const Point2 * uv = p; ++uv; 
+	glTexCoord2f(uv->x(), uv->y());
+	glVertex3d(p->x(), *h, p->y());
+}
 #endif
 
-static void CALLBACK TessBegin(GLenum mode)		{ glBegin(mode);				}
-static void CALLBACK TessEnd(void)				{ glEnd();						}
-static void CALLBACK TessVertex(const Point2 * p){																  glVertex2d(p->x(),p->y());	}
-static void CALLBACK TessVertexUV(const Point2 * p){ const Point2 * uv = p; ++uv; glTexCoord2f(uv->x(), uv->y()); glVertex2d(p->x(),p->y());	}
-
-void glPolygon2(const Point2 * pts, bool has_uv, const int * contours, int n)
+void glPolygon2(const Point2 * pts, bool has_uv, const int * contours, int n, float height)
 {
+#if LIBTESS
+	TESStesselator * tess = tessNewTess(NULL);
+	const Point2 * pts_p(pts);
+	vector<GLfloat>	raw_pts;
+	raw_pts.reserve(n * 2);
+
+	for(int i = 0; i < n; ++i)
+	{
+		if(contours && contours[i])
+		{
+			if(!raw_pts.empty())
+			{
+				tessAddContour(tess, 2, &raw_pts[0], 2 * sizeof(GLfloat), raw_pts.size() / 2);
+				raw_pts.clear();
+			}
+		}
+		raw_pts.push_back(pts_p->x());
+		raw_pts.push_back(pts_p->y());
+		pts_p++;
+		if(has_uv)	pts_p++;
+	}
+	if(!raw_pts.empty())
+		tessAddContour(tess, 2, &raw_pts[0], 2 * sizeof(GLfloat), raw_pts.size() / 2);
+
+	const TESSreal nrm[3] = { 0, 0, 1 };
+	int ok = tessTesselate(tess, TESS_WINDING_NONZERO, TESS_POLYGONS, 3, 2, nrm);
+
+	if(ok)
+//	if( tessGetVertexCount(tess) != n) // don't be better than XP or gluTess and show textureing with self-intersecting contours
+//		printf("vertex in %d out %d\n", tessGetVertexCount(tess), n);
+//	else
+	{
+		const TESSindex* vert_idx = tessGetElements(tess);
+		int tri_count = tessGetElementCount(tess);
+		const TESSreal * verts = tessGetVertices(tess);
+
+		if(has_uv)
+		{
+			const TESSindex * vidx = tessGetVertexIndices(tess);
+			glBegin(GL_TRIANGLES);
+			if (height == 0.0)
+				while(tri_count--)
+					for (int i = 0 ; i < 3; i++)
+					{
+						if(*vert_idx == TESS_UNDEF) break;
+						glTexCoord2(pts[1 + 2 * vidx[*vert_idx]]); glVertex2fv(&verts[2 * (*vert_idx)]);
+						vert_idx++;
+					}
+			else
+				while(tri_count--)
+					for (int i = 0 ; i < 3; i++)
+					{
+						if(*vert_idx == TESS_UNDEF) break;
+						glTexCoord2(pts[1 + 2 * vidx[*vert_idx]]); glVertex3f(verts[2 * (*vert_idx)], height, verts[2 * (*vert_idx) + 1]);
+						vert_idx++;
+					}
+			glEnd();
+		}
+		else
+		{
+	#if 1
+			glBegin(GL_TRIANGLES);
+			if (height == 0.0)
+				while(tri_count--)
+					for (int i = 0 ; i < 3; i++)
+						glVertex2fv(&verts[2 * (*vert_idx++)]);
+			else
+				while(tri_count--)
+					for (int i = 0 ; i < 3; i++)
+					{
+						glVertex3f(verts[2 * (*vert_idx)], height, verts[2 * (*vert_idx) + 1]);
+						vert_idx++;
+					}
+			glEnd();
+	#else  // not any faster, cuz of too many state changes -> cache those ?
+			glVertexPointer(2, GL_FLOAT, 2 * sizeof(TESSreal), verts);
+			glEnableClientState(GL_VERTEX_ARRAY);
+			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+			glDisableClientState(GL_NORMAL_ARRAY);
+			glDrawElements(GL_TRIANGLES, 3 * tri_count, GL_INT, vert_idx);
+			glDisableClientState(GL_VERTEX_ARRAY);
+	#endif
+		}
+	}
+	tessDeleteTess(tess);
+#else // not LIBTESS
 	GLUtesselator * tess = gluNewTess();
 
 	gluTessCallback(tess, GLU_TESS_BEGIN,	(void (CALLBACK *)(void))TessBegin);
 	gluTessCallback(tess, GLU_TESS_END,		(void (CALLBACK *)(void))TessEnd);
 	if(has_uv)
-	gluTessCallback(tess, GLU_TESS_VERTEX,	(void (CALLBACK *)(void))TessVertexUV);
+	{
+		if(height == 0)
+			gluTessCallback(tess, GLU_TESS_VERTEX,	(void (CALLBACK *)(void))TessVertexUV);
+		else
+			gluTessCallback(tess, GLU_TESS_VERTEX_DATA,	(void (CALLBACK *)(void))TessVertexUVh);
+	}
 	else
-	gluTessCallback(tess, GLU_TESS_VERTEX,	(void (CALLBACK *)(void))TessVertex);
-
-	gluBeginPolygon(tess);
-
+		gluTessCallback(tess, GLU_TESS_VERTEX,	(void (CALLBACK *)(void))TessVertex);
+		
+	gluTessBeginPolygon(tess,(void *) &height);
 	while(n--)
 	{
 		if (contours && *contours++)	gluNextContour(tess, GLU_INTERIOR);
 
 		double	xyz[3] = { pts->x(), pts->y(), 0 };
 		gluTessVertex(tess, xyz, (void*) pts++);
-		if(has_uv)
-			++pts;
+		if(has_uv) pts++;
 	}
-
 	gluEndPolygon (tess);
 	gluDeleteTess(tess);
+#endif
 }
 
 #define 	line_TaxiWayHatch  line_BoundaryEdge+1

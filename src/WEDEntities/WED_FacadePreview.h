@@ -35,11 +35,7 @@ typedef unsigned char 	xbyt;
 #define xtrue			true
 #define xfals			false
 
-#if APL
-#include <OpenGL/glu.h>
-#else
-#include <GL/glu.h>
-#endif
+
 
 #define dev_assert(x) DebugAssert(x)
 #include "AssertUtils.h"
