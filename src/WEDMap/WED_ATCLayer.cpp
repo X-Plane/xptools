@@ -247,6 +247,24 @@ static bool is_aircraft_taxi_route(WED_Thing * r)
 	return static_cast<WED_TaxiRoute*>(r)->AllowAircraft();
 }
 
+static void	Quad_2to4pix(const Point2 ends[2], double width_pix, Point2 corners[4])
+{
+	Vector2 perp(Vector2(ends[0], ends[1]).perpendicular_cw());
+	perp.normalize();
+	perp *= width_pix * 0.5;
+
+	// corners:
+	// 0------------1
+	// S            D
+	// 3------------2
+
+	corners[0] = ends[0] - perp;
+	corners[3] = ends[0] + perp;
+	corners[1] = ends[1] - perp;
+	corners[2] = ends[1] + perp;
+}
+
+
 bool	WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected)
 {
 	if(entity->GetGISSubtype() == WED_RampPosition::sClass)
@@ -258,31 +276,7 @@ bool	WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GU
 		else
 			glColor4f(0, 1, 0, 0.4);
 		WED_ATCLayer_DrawAircraft(pos, g, GetZoomer());
-#if 0
-		if (mStarts.empty())
-		{
-			WED_Thing * apt = pos->GetParent();
-			while (apt && apt->GetClass() != WED_Airport::sClass)
-				apt = apt->GetParent();
-			if (apt)
-			{
-				vector<WED_TaxiRoute *> all_tr;
-				CollectRecursive(apt, back_inserter(all_tr), WED_TaxiRoute::sClass);
-				for (auto t : all_tr)
-				{
-					Bezier2 b;
-					t->GetSide(gis_Geo, 0, b);
-					Segment2 s(GetZoomer()->LLToPixel(b.p1), GetZoomer()->LLToPixel(b.p2));
 
-					if (t->AllowAircraft())
-						mATCEdges.push_back(s);
-					if (t->AllowTrucks())
-						mGTEdges.push_back(s);
-				}
-			}
-		}
-#endif
-		// todo: verify all *.p1 aiming_point locations against typ docking loction, additional offsets against AI from Austin/Chris
 		Point2 nose_wheel;
 		pos->GetLocation(gis_Geo, nose_wheel);
 		Vector2 dirToTail_m;
@@ -368,25 +362,17 @@ bool	WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GU
 			}
 		
 		Point2	c[5], d[5];
-		Quad_2to4(ends, mtr1, c);
-		Quad_2to4(ends, mtr2, d);
-		
-		g->SetState(0, 0, 0, 0, 1, 0, 0);
-		if(rwy && hot)
-			glColor4f(0.9,0.1,0.7,0.4);
-		else if(hot)
-			glColor4f(1,0,0,0.4);
-		else if(ils)
-			glColor4f(0.8,0.5,0,0.4);
-		else if(road) //Warning! Because a ground route can also have IsRunway() == true, this check must come first
-			glColor4f(1, 1, 1, 0.2);
-		else if(rwy)
-			glColor4f(0.0,0.2,0.6,0.4);
-		else
-			glColor4f(1,1,0,0.4);
-		
-		GetZoomer()->LLToPixelv(c,c,4);
-		GetZoomer()->LLToPixelv(d,d,4);
+
+		GetZoomer()->LLToPixelv(ends, ends, 2);
+		mtr1 *= GetZoomer()->GetPPM();
+		mtr2 *= GetZoomer()->GetPPM();
+		Quad_2to4pix(ends, mtr1, c);
+		Quad_2to4pix(ends, mtr2, d);
+
+//		Quad_2to4(ends, mtr1, c);
+//		Quad_2to4(ends, mtr2, d);
+//		GetZoomer()->LLToPixelv(c, c, 4);
+//		GetZoomer()->LLToPixelv(d, d, 4);
 		
 		int np = 4;
 		if(one_way)
@@ -405,13 +391,32 @@ bool	WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GU
 			c[2] -= dir;
 			c[3] += dir;
 		}
+		if (rwy && hot)
+			glColor4f(0.9, 0.1, 0.7, 0.5);  // purple
+		else if (hot)
+			glColor4f(1, 0, 0, 0.5);        // red
+		else if (ils)
+			glColor4f(0.8, 0.5, 0, 0.5);    // orange
+		else if (road) //Warning! Because a ground route can also have IsRunway() == true, this check must come first
+			glColor4f(1, 1, 1, 0.4);        // white
+		else if (rwy)
+			glColor4f(0.0, 0.2, 0.6, 0.4);  // blue
+		else
+			glColor4f(1, 1, 0, 0.6);        // yellow
 		glBegin(GL_TRIANGLE_FAN);
 		glVertex2v(c,np);
 		glEnd();
-		glBegin(GL_TRIANGLE_FAN);
-		glVertex2v(d,np);
-		glEnd();
-		
+
+		if (!road)
+		{
+			GLfloat currentColor[4];
+			glGetFloatv(GL_CURRENT_COLOR, currentColor);
+			currentColor[3] = 0.25;
+			glColor4fv(currentColor);
+			glBegin(GL_TRIANGLE_FAN);
+			glVertex2v(d, np);
+			glEnd();
+		}
 		if (seg->AllowAircraft())              // display name of taxi route
 		{
 			string nam; 	
@@ -434,6 +439,7 @@ bool	WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GU
 					float white[4] = { 1.0, 1.0, 1.0, 1.0 };
 					GUI_FontDraw(g, font_UI_Basic, white,  0, -4, nam.c_str(), align_Center);
 					glPopMatrix();
+					g->SetTexUnits(0);
 				}
 			}
 			GetZoomer()->LLToPixelv(ends, ends, 2);
