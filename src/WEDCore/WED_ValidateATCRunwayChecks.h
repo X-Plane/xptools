@@ -43,7 +43,7 @@ struct RunwayInfo
 {
 	RunwayInfo(WED_Runway * runway, CoordTranslator2 translator) : runway_ptr(runway)
 	{
-		runway->GetName(runway_name);
+		runway->GetName(name);
 
 		AptRunway_t apt_runway;
 		runway_ptr->Export(apt_runway);
@@ -75,7 +75,7 @@ struct RunwayInfo
 	}
 
 	WED_Runway* runway_ptr;  // Pointer to the underlying runway class
-	string runway_name;      // Name of this runway
+	string name;      // Name of this runway
 
 	// [0] is north end, [1] south end information
 	int runway_numbers[2];          // enum from ATCRunwayOneway
@@ -115,17 +115,17 @@ struct TaxiRouteInfo
 		AptRouteEdge_t apt_route;
 		AptServiceRoadEdge_t dummy;
 		taxiroute->Export(apt_route, dummy);
-		bool is_aircraft_route = taxiroute->AllowAircraft();
+		is_aircraft_route = taxiroute->AllowAircraft();
 
-		if (is_aircraft_route == false)
+		if (is_aircraft_route)
 		{
-			taxiroute_name = dummy.name;
+			name = apt_route.name;
+			hot_arrivals   = set<string>(apt_route.hot_arrive);
+			hot_departures = set<string>(apt_route.hot_depart);
 		}
 		else
 		{
-			taxiroute_name = apt_route.name;
-			hot_arrivals   = set<string>(apt_route.hot_arrive);
-			hot_departures = set<string>(apt_route.hot_depart);
+			name = dummy.name;
 		}
 		for (int i = 0; i < taxiroute_ptr->CountSources(); i++)
 		{
@@ -141,14 +141,15 @@ struct TaxiRouteInfo
 		DebugAssert(nodes.size() >= 2);
 		Bezier2 b;
 		taxiroute->GetSide(gis_Geo, 0, b);
-		taxiroute_segment_geo=b.as_segment(); 
-		taxiroute_segment_m = Segment2(translator.Forward(taxiroute_segment_geo.p1),translator.Forward(taxiroute_segment_geo.p2));
+		segment_geo=b.as_segment(); 
+		segment_m = Segment2(translator.Forward(segment_geo.p1),translator.Forward(segment_geo.p2));
 	}
 
 	WED_TaxiRoute* taxiroute_ptr;    // Pointer to the original WED_TaxiRoute in WED's data model
-	string taxiroute_name;
-	Segment2 taxiroute_segment_geo;  // location is lat/lon
-	Segment2 taxiroute_segment_m;    // location is meters
+	bool is_aircraft_route;
+	string name;
+	Segment2 segment_geo; 			 // location is lat/lon
+	Segment2 segment_m;  			 // location is meters
 
 	set<string> hot_arrivals;
 	set<string> hot_departures;

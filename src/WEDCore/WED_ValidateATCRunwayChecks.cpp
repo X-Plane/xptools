@@ -46,25 +46,22 @@ typedef vector<TaxiRouteInfo>      TaxiRouteInfoVec_t;
 // - if no flows are defined, all runways are considered active
 // - if no taxiway vector is passed, being mentioned in a flow is sufficient to consider it active
 static RunwayInfoVec_t CollectPotentiallyActiveRunways( const TaxiRouteInfoVec_t& all_taxiroutes,
+														const RunwayInfoVec_t& all_runways_info,
 														validation_error_vector& msgs,
 														WED_Airport* apt)
 {
 	FlowVec_t flows;
 	CollectRecursive(apt,back_inserter<FlowVec_t>(flows),WED_ATCFlow::sClass);
 
-	RunwayVec_t all_runways;
-	CollectRecursive(apt,back_inserter<RunwayVec_t>(all_runways),WED_Runway::sClass);
-
 	//Find all potentially active runways:
 	//0 flows means treat all runways as potentially active
 	//>1 means find all runways mentioned, ignoring duplicates
 	RunwayVec_t potentially_active_runways;
 	RunwayInfoVec_t runway_info_vec;
+	
 	if(flows.size() == 0)
 	{
-		for(RunwayVec_t::const_iterator runway_itr = all_runways.begin(); runway_itr != all_runways.end(); ++runway_itr)
-			runway_info_vec.push_back(RunwayInfo(*runway_itr,translator));
-		return runway_info_vec;
+		runway_info_vec = all_runways_info;
 	}
 	else
 	{
@@ -72,7 +69,7 @@ static RunwayInfoVec_t CollectPotentiallyActiveRunways( const TaxiRouteInfoVec_t
 		CollectRecursive(apt,back_inserter<ATCRunwayUseVec_t>(use_rules),WED_ATCRunwayUse::sClass);
 
 		//For all runways in the airport
-		for(RunwayVec_t::const_iterator runway_itr = all_runways.begin(); runway_itr != all_runways.end(); ++runway_itr)
+		for(auto runway_itr : all_runways_info)
 		{
 			//Search through all runway uses, testing if the runway has a match AND at least one taxiroutes associated with it
 			for(ATCRunwayUseVec_t::const_iterator use_itr = use_rules.begin(); use_itr != use_rules.end(); ++use_itr)
@@ -81,10 +78,8 @@ static RunwayInfoVec_t CollectPotentiallyActiveRunways( const TaxiRouteInfoVec_t
 				(*use_itr)->Export(runway_rule);
 
 				//Compare the name of the runway mentioned by the taxiway to the runway
-				string runway_name;
-				(*runway_itr)->GetName(runway_name);
-				string runway_name_p1 = runway_name.substr(0,runway_name.find_first_of('/'));
-				string runway_name_p2 = runway_name.substr(runway_name.find_first_of('/')+1);
+				string runway_name_p1 = runway_itr.name.substr(0,runway_itr.name.find_first_of('/'));
+				string runway_name_p2 = runway_itr.name.substr(runway_itr.name.find_first_of('/')+1);
 
 				if( runway_rule.runway == runway_name_p1 ||
 					runway_rule.runway == runway_name_p2)
@@ -92,7 +87,7 @@ static RunwayInfoVec_t CollectPotentiallyActiveRunways( const TaxiRouteInfoVec_t
 					if (all_taxiroutes.empty())
 					{
 						// if no taxiroutes specified, being mentioned in a flow is sufficient to be considered active
-						runway_info_vec.push_back(RunwayInfo(*runway_itr,translator));
+						runway_info_vec.push_back(runway_itr);
 					}
 					else
 					{
@@ -100,13 +95,10 @@ static RunwayInfoVec_t CollectPotentiallyActiveRunways( const TaxiRouteInfoVec_t
 						for(vector<TaxiRouteInfo>::const_iterator taxiroute_itr = all_taxiroutes.begin(); taxiroute_itr != all_taxiroutes.end(); ++taxiroute_itr)
 						{
 							string taxiroute_name = ENUM_Desc((taxiroute_itr)->taxiroute_ptr->GetRunway());
-				
-							string runway_name;
-							(*runway_itr)->GetName(runway_name);
-							
-							if(runway_name == taxiroute_name || ( taxiroute_name[0] = '0' && runway_name == taxiroute_name.substr(1) ))
+
+							if(runway_itr.name == taxiroute_name || ( taxiroute_name[0] = '0' && runway_itr.name == taxiroute_name.substr(1) ))
 							{
-								runway_info_vec.push_back(RunwayInfo(*runway_itr,translator));
+								runway_info_vec.push_back(runway_itr);
 								break; //exit all_taxiroutes loop
 							}
 						}
@@ -124,14 +116,14 @@ static TaxiRouteInfoVec_t FilterMatchingRunways( const RunwayInfo& runway_info,
 												 const TaxiRouteInfoVec_t& all_taxiroutes)
 {
 	TaxiRouteInfoVec_t matching_taxiroutes;
-	for(TaxiRouteInfoVec_t::const_iterator taxiroute_itr = all_taxiroutes.begin(); taxiroute_itr != all_taxiroutes.end(); ++taxiroute_itr)
+	for(auto taxiroute_itr : all_taxiroutes)
 	{
-		if((taxiroute_itr)->taxiroute_ptr->IsRunway())
+		if(taxiroute_itr.taxiroute_ptr->IsRunway())
 		{
-			string taxiroute_name = ENUM_Desc((taxiroute_itr)->taxiroute_ptr->GetRunway());
-			if(runway_info.runway_name == taxiroute_name)
+			string taxiroute_name = ENUM_Desc(taxiroute_itr.taxiroute_ptr->GetRunway());
+			if(runway_info.name == taxiroute_name)
 			{
-				matching_taxiroutes.push_back(TaxiRouteInfo(*taxiroute_itr));
+				matching_taxiroutes.push_back(taxiroute_itr);
 			}
 		}
 	}
@@ -139,7 +131,7 @@ static TaxiRouteInfoVec_t FilterMatchingRunways( const RunwayInfo& runway_info,
 	return matching_taxiroutes;
 }
 
-static void AssaignRunwayUse( RunwayInfo& runway_info,
+static void AssignRunwayUse( RunwayInfo& runway_info,
 							  const ATCRunwayUseVec_t& all_use_rules)
 {
 	if(all_use_rules.empty() == true)
@@ -178,10 +170,10 @@ static bool AllTaxiRouteNodesInRunway( const RunwayInfo& runway_info,
 	int original_num_errors = msgs.size();
 	
 	TaxiRouteNodeVec_t matching_taxiroute_nodes;
-	for(TaxiRouteInfoVec_t::const_iterator taxiroute_itr = matching_taxiroutes.begin(); taxiroute_itr != matching_taxiroutes.end(); ++taxiroute_itr)
+	for(auto itr : matching_taxiroutes)
 	{
-		matching_taxiroute_nodes.push_back(dynamic_cast<WED_GISPoint*>(taxiroute_itr->taxiroute_ptr->GetNthSource(0)));
-		matching_taxiroute_nodes.push_back(dynamic_cast<WED_GISPoint*>(taxiroute_itr->taxiroute_ptr->GetNthSource(1)));
+		matching_taxiroute_nodes.push_back(dynamic_cast<WED_GISPoint*>(itr.taxiroute_ptr->GetNthSource(0)));
+		matching_taxiroute_nodes.push_back(dynamic_cast<WED_GISPoint*>(itr.taxiroute_ptr->GetNthSource(1)));
 	}
 
 	Polygon2 runway_hit_box(runway_info.corners_geo);
@@ -193,16 +185,16 @@ static bool AllTaxiRouteNodesInRunway( const RunwayInfo& runway_info,
 	runway_hit_box[2] += dir_ext;
 	runway_hit_box[3] -= dir_ext;
 
-	for(TaxiRouteNodeVec_t::const_iterator node_itr = matching_taxiroute_nodes.begin(); node_itr != matching_taxiroute_nodes.end(); ++node_itr)
+	for(auto node_itr : matching_taxiroute_nodes)
 	{
 		Point2 node_location;
-		(*node_itr)->GetLocation(gis_Geo,node_location);
+		node_itr->GetLocation(gis_Geo,node_location);
 		if(runway_hit_box.inside(node_location) == false)
 		{
 			string node_name;
-			(*node_itr)->GetName(node_name);
-			string msg = "Taxiroute node " + node_name + " is out of runway " + runway_info.runway_name + "'s bounds";
-			msgs.push_back(validation_error_t(msg, err_atcrwy_taxi_route_node_out_of_bounds, *node_itr,apt));
+			node_itr->GetName(node_name);
+			string msg = "Taxiroute node " + node_name + " is out of runway " + runway_info.name + "'s bounds";
+			msgs.push_back(validation_error_t(msg, err_atcrwy_taxi_route_node_out_of_bounds, node_itr,apt));
 		}
 	}
 
@@ -254,8 +246,8 @@ static bool TaxiRouteCenterlineCheck( const RunwayInfo& runway_info,
 	for(TaxiRouteInfoVec_t::const_iterator taxiroute_itr = matching_taxiroutes.begin(); taxiroute_itr != matching_taxiroutes.end(); ++taxiroute_itr)
 	{
 		double METERS_TO_CENTER_THRESHOLD = 5.0;
-		double p1_to_center_dist = sqrt(runway_info.centerline_m.squared_distance_supporting_line(taxiroute_itr->taxiroute_segment_m.p1));
-		double p2_to_center_dist = sqrt(runway_info.centerline_m.squared_distance_supporting_line(taxiroute_itr->taxiroute_segment_m.p2));
+		double p1_to_center_dist = sqrt(runway_info.centerline_m.squared_distance_supporting_line(taxiroute_itr->segment_m.p1));
+		double p2_to_center_dist = sqrt(runway_info.centerline_m.squared_distance_supporting_line(taxiroute_itr->segment_m.p2));
 
 		if( p1_to_center_dist > METERS_TO_CENTER_THRESHOLD ||
 			p2_to_center_dist > METERS_TO_CENTER_THRESHOLD)
@@ -275,19 +267,18 @@ static vector<TaxiRouteInfo> filter_viewers_by_is_runway(const WED_GISPoint* nod
 
 	set<WED_Thing*> node_viewers = get_all_visible_viewers(node);
 
-	for(set<WED_Thing*>::iterator itr = node_viewers.begin(); itr != node_viewers.end(); ++itr)
+	for(auto itr : node_viewers)
 	{
-		WED_TaxiRoute* test_route = dynamic_cast<WED_TaxiRoute*>(*itr);
+		WED_TaxiRoute * test_route = dynamic_cast<WED_TaxiRoute*>(itr);
 		if(test_route != NULL)
 		{
 			TaxiRouteInfo taxiroute_info(test_route,translator);
-			if(taxiroute_info.taxiroute_ptr->IsRunway() && taxiroute_info.taxiroute_name == runway_name)
+			if(taxiroute_info.taxiroute_ptr->IsRunway() && taxiroute_info.name == runway_name)
 			{
 				matching_routes.push_back(taxiroute_info);
 			}
 		}
 	}
-
 	return matching_routes;
 }
 
@@ -313,31 +304,28 @@ static bool RunwaysTaxiRouteValencesCheck (const RunwayInfo& runway_info,
 			{
 				if(out_start_taxiroute == NULL)
 				{
-					TaxiRouteInfoVec_t viewers = filter_viewers_by_is_runway(*node_itr,runway_info.runway_name);
+					TaxiRouteInfoVec_t viewers = filter_viewers_by_is_runway(*node_itr,runway_info.name);
 					out_start_taxiroute = viewers.front().taxiroute_ptr;
 				}
 				++num_valence_of_1;
 			}
 			else
 			{
-				msgs.push_back(validation_error_t("Runway " + runway_info.runway_name + "'s taxi route is not continuous", err_atcrwy_connectivity_not_continous, *node_itr,apt));
+				msgs.push_back(validation_error_t("Runway " + runway_info.name + "'s taxi route is not continuous", err_atcrwy_connectivity_not_continous, *node_itr,apt));
 			}
 		}
 		else if(node_valence >= 3)
 		{
-			ostringstream oss;
-			oss << node_valence;
-
 			string node_name;
 			(*node_itr)->GetName(node_name);
 
-			msgs.push_back(validation_error_t("Runway " + runway_info.runway_name + "'s taxi route is split " + oss.str() + " ways at taxi route node " + node_name, err_atcrwy_connectivity_n_split, *node_itr,apt));
+			msgs.push_back(validation_error_t("Runway " + runway_info.name + "'s taxi route is split " + to_string(node_valence)+ " ways at taxi route node " + node_name, err_atcrwy_connectivity_n_split, *node_itr,apt));
 		}
 	}
 
 	if(num_valence_of_1 == 0 && all_matching_nodes.size() > 0)
 	{
-		msgs.push_back(validation_error_t("Runway " + runway_info.runway_name + "'s taxi route forms a loop", err_atcrwy_connectivity_forms_loop, runway_info.runway_ptr,apt));
+		msgs.push_back(validation_error_t("Runway " + runway_info.name + "'s taxi route forms a loop", err_atcrwy_connectivity_forms_loop, runway_info.runway_ptr,apt));
 	}
 	return msgs.size() - original_num_errors == 0 ? true : false;
 }
@@ -369,7 +357,7 @@ static WED_GISPoint* get_next_node(const WED_GISPoint* current_node,
 		return NULL; //We don't want to travel there next, its time to end
 	}
 	//Will we have somewhere to go next?
-	else if(filter_viewers_by_is_runway(next, next_taxiroute.taxiroute_name).size() == 0)
+	else if(filter_viewers_by_is_runway(next, next_taxiroute.name).size() == 0)
 	{
 		return NULL;
 	}
@@ -382,7 +370,7 @@ static WED_GISPoint* get_next_node(const WED_GISPoint* current_node,
 static WED_TaxiRoute* get_next_taxiroute(const WED_GISPoint* current_node,
 										 const TaxiRouteInfo& current_taxiroute)
 {
-	TaxiRouteInfoVec_t viewers = filter_viewers_by_is_runway(current_node, current_taxiroute.taxiroute_name);//The taxiroute name should equal to the runway name
+	TaxiRouteInfoVec_t viewers = filter_viewers_by_is_runway(current_node, current_taxiroute.name);//The taxiroute name should equal to the runway name
 	DebugAssert(viewers.size() == 1 || viewers.size() == 2);
 	
 	if(viewers.size() == 2)
@@ -431,11 +419,25 @@ static bool TaxiRouteSquishedZCheck( const RunwayInfo& runway_info,
 									 WED_Airport* apt)
 {
 	//We know all the nodes are within threshold of the center and within bounds, the segments are parallel enough,
-	//the route is a complete chain with no 3+-way splits. Now: do any of the segments make a complete 180 unexpectedly?
+	//the route is a complete chain with no 3+-way splits. Now: do any of the segments make TWO complete 180 unexpectedly?
 	WED_GISPoint* current_node = NULL;
 	TaxiRouteInfo current_taxiroute(start_taxiroute.taxiroute_ptr,translator);
 
-	if(get_node_valence(start_taxiroute.nodes[0]) == 2)
+	{
+//	if(get_node_valence(start_taxiroute.nodes[0]) == 2) // that is no good criteria at all: many, if not most, runways have exactly one
+                                                        // taxiroute connected to their ends. So we may start out in the wrong direction ...
+                                                        // leaving that runway route unchecked.
+	set<WED_Thing *> viewers;
+	start_taxiroute.nodes[0]->GetAllViewers(viewers);
+	int runway_tags(0);
+	
+	for(auto v : viewers)
+	{
+		auto e = dynamic_cast<WED_TaxiRoute*>(v);
+		if(e && e->IsRunway()) runway_tags++;
+	}
+	
+	if(runway_tags > 1)
 	{
 		current_node = start_taxiroute.nodes[0]; //We'll be moving backwards through the route, <----0--------1-->
 	}
@@ -443,10 +445,13 @@ static bool TaxiRouteSquishedZCheck( const RunwayInfo& runway_info,
 	{
 		current_node = start_taxiroute.nodes[1];//0---->1---->
 	}
+	
+	}
 
 	//while we have not run out of nodes to traverse
 	while(current_node != NULL)
 	{
+//printf("squishedZ iter\n");
 		WED_TaxiRoute* next_route = get_next_taxiroute(current_node,current_taxiroute);
 		if(next_route == NULL)
 		{
@@ -458,29 +463,11 @@ static bool TaxiRouteSquishedZCheck( const RunwayInfo& runway_info,
 		pair<bool,bool> relationship = get_taxiroute_relationship(current_node,current_taxiroute,next_taxiroute);
 		WED_GISPoint* next_node = get_next_node(current_node,next_taxiroute);
 
-		Point2 current_p1;
-		Point2 current_p2;
-
-		current_taxiroute.nodes[0]->GetLocation(gis_Geo, current_p1);
-		current_p1 = translator.Forward(current_p1);
-		
-		current_taxiroute.nodes[1]->GetLocation(gis_Geo, current_p2);
-		current_p2 = translator.Forward(current_p2);
-
-		Vector2 taxiroute_vec_1 = Vector2(current_p1, current_p2);
+		Vector2 taxiroute_vec_1 = Vector2(current_taxiroute.segment_m.p1, current_taxiroute.segment_m.p2);
 		taxiroute_vec_1.normalize();
 		double dot_runway_route_1 = runway_info.dir_1m.dot(taxiroute_vec_1);
 
-		Point2 next_p1;
-		Point2 next_p2;
-
-		next_taxiroute.nodes[0]->GetLocation(gis_Geo, next_p1);
-		next_p1 = translator.Forward(next_p1);
-
-		next_taxiroute.nodes[1]->GetLocation(gis_Geo, next_p2);
-		next_p2 = translator.Forward(next_p2);
-
-		Vector2 taxiroute_vec_2 = Vector2(next_p1, next_p2);
+		Vector2 taxiroute_vec_2 = Vector2(next_taxiroute.segment_m.p1, next_taxiroute.segment_m.p2);
 		taxiroute_vec_2.normalize();
 		double dot_runway_route_2 = runway_info.dir_1m.dot(taxiroute_vec_2);
 
@@ -519,16 +506,12 @@ static bool TaxiRouteSquishedZCheck( const RunwayInfo& runway_info,
 			problem_children.push_back(current_taxiroute.taxiroute_ptr);
 			problem_children.push_back(next_taxiroute.taxiroute_ptr);
 
-			string name1, name2;
-			problem_children[0]->GetName(name1);
-			problem_children[1]->GetName(name2);
-			
-			msgs.push_back(validation_error_t( "Taxi routes " + name1 + " and " + name2 + " are making a turn that is too tight for aircraft to follow.",
+			msgs.push_back(validation_error_t( "Taxi routes " + current_taxiroute.name + " and " + next_taxiroute.name + " are making a turn that is too tight for aircraft to follow.",
 											   err_atcrwy_centerline_too_sharp_turn,
 											   problem_children,
 											   apt));
 
-			return false; //The next test will just be redundent so we'll end here
+			return false; //The next test will just be redundant so we'll end here
 		}
 
 		current_taxiroute = next_taxiroute;
@@ -538,20 +521,87 @@ static bool TaxiRouteSquishedZCheck( const RunwayInfo& runway_info,
 	return true;
 }
 
+static bool FullyConnectedNetworkCheck( const TaxiRouteVec_t& all_taxiroutes,      // All the taxiroutes in the airport, for EnsureRunwayTaxirouteValences
+										validation_error_vector& msgs,
+										WED_Airport * apt)
+{
+	int original_num_errors = msgs.size();
+
+	set<WED_Thing *> to_visit, all_routes;
+	vector<set<WED_Thing *> > networks;
+	
+	for(auto tr : all_taxiroutes)
+		all_routes.insert(tr);
+		
+	while(!all_routes.empty())
+	{	
+		to_visit.clear();
+		networks.push_back(to_visit);
+		to_visit.insert(*all_routes.begin());
+
+		while(!to_visit.empty())
+		{
+			WED_Thing * i = *to_visit.begin();
+			to_visit.erase(to_visit.begin());
+			networks.back().insert(i);
+			all_routes.erase(i);
+
+			int ns = i->CountSources();
+			for(int s = 0; s < ns; ++s)
+			{
+				WED_Thing * src = i->GetNthSource(s);
+				set<WED_Thing *>	viewers;
+				src->GetAllViewers(viewers);
+				for(auto v : viewers)
+					if(all_routes.count(v))	to_visit.insert(v);
+			}
+		}
+	}
+	
+	int largest_nw(0);
+	set<WED_Thing *> * largest_nw_set;
+	
+	for(auto& nw : networks)
+	{
+		if(nw.size() > largest_nw)
+		{
+			largest_nw_set = &nw;
+			largest_nw = nw.size();
+		}
+	}
+	
+	for(auto& nw : networks)
+	{
+		if(&nw != largest_nw_set)
+		{
+			string msg;
+			(*nw.begin())->GetName(msg);
+			if(nw.size() == 1)
+				msg = "Taxi Edge " + msg;
+			else
+				msg = "A set of " + to_string(nw.size()) + " Taxi Edges";
+			msg += " is not connected to the remainder of the taxi network.";
+			msgs.push_back(validation_error_t(msg, err_atc_taxi_routes_not_connected, nw ,apt));
+		}
+	}
+	return msgs.size() - original_num_errors == 0 ? true : false;
+}
+
+
 //All checks that require knowledge of taxiroute connectivity checks
 static bool DoTaxiRouteConnectivityChecks( const RunwayInfo& runway_info,
-										   const TaxiRouteInfoVec_t& all_taxiroutes, //All the taxiroutes in the airport, for EnsureRunwayTaxirouteValences
-										   const TaxiRouteInfoVec_t& matching_taxiroutes, //Only the taxiroutes which match the runway in runway_info
+										   const TaxiRouteInfoVec_t& all_taxiroutes,      // All the taxiroutes in the airport, for EnsureRunwayTaxirouteValences
+										   const TaxiRouteInfoVec_t& matching_taxiroutes, // Only the taxiroutes which match the runway in runway_info
 										   validation_error_vector& msgs,
-										   WED_Airport* apt)
+										   WED_Airport * apt)
 {
 	int original_num_errors = msgs.size();
 	
 	TaxiRouteNodeVec_t matching_nodes;
-	for (int i = 0; i < matching_taxiroutes.size(); ++i)
+	for (auto itr : matching_taxiroutes)
 	{
-		matching_nodes.push_back(matching_taxiroutes[i].nodes[0]);
-		matching_nodes.push_back(matching_taxiroutes[i].nodes[1]);
+		matching_nodes.push_back(itr.nodes[0]);
+		matching_nodes.push_back(itr.nodes[1]);
 	}
 
 	sort(matching_nodes.begin(),matching_nodes.end());
@@ -559,8 +609,6 @@ static bool DoTaxiRouteConnectivityChecks( const RunwayInfo& runway_info,
 	WED_TaxiRoute* out_start_taxiroute = NULL;
 	if(RunwaysTaxiRouteValencesCheck(runway_info, matching_nodes, out_start_taxiroute, msgs, apt))
 	{
-		bool has_squished_z = false;
-
 		//The algorithm requires there to be atleast 2 taxiroutes
 		if(all_taxiroutes.size() >= 2 && out_start_taxiroute != NULL)
 		{
@@ -583,14 +631,14 @@ static bool TaxiRouteParallelCheck( const RunwayInfo& runway_info,
 		taxiroute_itr != matching_routes.end();
 		++taxiroute_itr)
 	{
-		Vector2 taxiroute_vec = Vector2(taxiroute_itr->taxiroute_segment_m.p1,taxiroute_itr->taxiroute_segment_m.p2);
+		Vector2 taxiroute_vec = Vector2(taxiroute_itr->segment_m.p1,taxiroute_itr->segment_m.p2);
 		taxiroute_vec.normalize();
 
 		double dot_product = fabs(runway_info.dir_1m.dot(taxiroute_vec));
 		double ANGLE_THRESHOLD = 0.995;
 		if(dot_product < ANGLE_THRESHOLD)
 		{
-			string msg = "Taxi route segment " + taxiroute_itr->taxiroute_name + " is not parallel to the runway's " + runway_info.runway_name + "'s center line.";
+			string msg = "Taxi route segment " + taxiroute_itr->name + " is not parallel to the runway's " + runway_info.name + "'s center line.";
 			msgs.push_back(validation_error_t(msg, err_atcrwy_centerline_not_parallel_centerline, taxiroute_itr->taxiroute_ptr,apt));
 		}
 	}
@@ -664,7 +712,7 @@ static bool RunwayHasCorrectCoverage( const RunwayInfo& runway_info,
 	
 	for (TaxiRouteInfoVec_t::const_iterator taxiroute_itr = runway_routes_info_vec.begin(); taxiroute_itr != runway_routes_info_vec.end(); ++taxiroute_itr)
 	{
-		length_accumulator += sqrt(taxiroute_itr->taxiroute_segment_m.squared_length());
+		length_accumulator += sqrt(taxiroute_itr->segment_m.squared_length());
 	}
 
 	//How much gap on a side there could be
@@ -686,7 +734,7 @@ static bool RunwayHasCorrectCoverage( const RunwayInfo& runway_info,
 		oss.precision(2);
 		oss << std::fixed << COVERAGE_THRESHOLD - length_accumulator;
 #endif
-		string msg = "Taxi route for runway " + runway_info.runway_name + " does not span enough runway";
+		string msg = "Taxi route for runway " + runway_info.name + " does not span enough runway";
 		msgs.push_back(validation_error_t(msg, err_atcrwy_taxi_route_does_not_span_enough_rwy,  runway_info.runway_ptr,apt));
 		return false;
 	}
@@ -720,7 +768,7 @@ static bool FindIfMarked( const int runway_number,        //enum from ATCRunwayO
 	{
 		stringstream ss;
 		ss  << "Taxi route " 
-			<< taxiroute.taxiroute_name 
+			<< taxiroute.name 
 			<< " is too close to runway " 
 			<< ENUM_Desc(runway_number)
 			<< " and now must be marked active for runway "
@@ -867,21 +915,21 @@ static bool DoHotZoneChecks( const RunwayInfo& runway_info,
 				if(!taxiroute_itr.taxiroute_ptr->AllowAircraft()) continue;
 
 				//Run two tests, intersection with the side, and if that fails, point inside the polygon
-				if(hit_box.intersects(taxiroute_itr.taxiroute_segment_geo) || hit_box.inside(taxiroute_itr.taxiroute_segment_geo.p1))
+				if(hit_box.intersects(taxiroute_itr.segment_geo) || hit_box.inside(taxiroute_itr.segment_geo.p1))
 				{
 					if(runway_info.IsHotForArrival(runway_number) == true && static_cast<bool>(make_arrival) == true)
 					{
-								 bool hitbox_error = FindIfMarked(runway_number, taxiroute_itr, taxiroute_itr.hot_arrivals, "arrivals", msgs, apt);
+						bool hitbox_error = FindIfMarked(runway_number, taxiroute_itr, taxiroute_itr.hot_arrivals, "arrivals", msgs, apt);
 #if DEBUG_VIS_LINES
 #if DEBUG_VIS_LINES < 2
-								 if (hitbox_error)
+						if (hitbox_error)
 #endif
-								 {
-									  debug_mesh_segment(hit_box.side(0), DBG_LIN_COLOR); //left side
-									  debug_mesh_segment(hit_box.side(1), DBG_LIN_COLOR); //top side
-									  debug_mesh_segment(hit_box.side(2), DBG_LIN_COLOR); //right side
-									  debug_mesh_segment(hit_box.side(3), DBG_LIN_COLOR); //bottom side
-								 }
+						{
+							debug_mesh_segment(hit_box.side(0), DBG_LIN_COLOR); //left side
+							debug_mesh_segment(hit_box.side(1), DBG_LIN_COLOR); //top side
+							debug_mesh_segment(hit_box.side(2), DBG_LIN_COLOR); //right side
+							debug_mesh_segment(hit_box.side(3), DBG_LIN_COLOR); //bottom side
+						}
 #endif
 					}
 
@@ -890,14 +938,14 @@ static bool DoHotZoneChecks( const RunwayInfo& runway_info,
 						bool hitbox_error = FindIfMarked(runway_number, taxiroute_itr, taxiroute_itr.hot_departures, "departures", msgs, apt);
 #if DEBUG_VIS_LINES
 #if DEBUG_VIS_LINES < 2
-								 if (hitbox_error)
+						if (hitbox_error)
 #endif
-								 {
-									  debug_mesh_segment(hit_box.side(0), DBG_LIN_COLOR); //left side
-									  debug_mesh_segment(hit_box.side(1), DBG_LIN_COLOR); //top side
-									  debug_mesh_segment(hit_box.side(2), DBG_LIN_COLOR); //right side
-									  debug_mesh_segment(hit_box.side(3), DBG_LIN_COLOR); //bottom side
-								 }
+						{
+							debug_mesh_segment(hit_box.side(0), DBG_LIN_COLOR); //left side
+							debug_mesh_segment(hit_box.side(1), DBG_LIN_COLOR); //top side
+							debug_mesh_segment(hit_box.side(2), DBG_LIN_COLOR); //right side
+							debug_mesh_segment(hit_box.side(3), DBG_LIN_COLOR); //bottom side
+						}
 #endif
 					}
 				}
@@ -930,9 +978,9 @@ static void AnyTruckRouteNearRunway( const RunwayInfo& runway_info,
 	{
 		if(!route_itr->taxiroute_ptr->AllowTrucks()) continue;
 
-		if (runway_hit_box.intersects(route_itr->taxiroute_segment_geo) == true)
+		if (runway_hit_box.intersects(route_itr->segment_geo) == true)
 		{
-			string msg = "Truck Route " + route_itr->taxiroute_name + " intersects with runway " + runway_info.runway_name;
+			string msg = "Truck Route " + route_itr->name + " intersects with runway " + runway_info.name;
 			msgs.push_back(validation_error_t(msg, err_atcrwy_truck_route_too_close_to_runway, route_itr->taxiroute_ptr, apt));
 		}
 		else
@@ -947,7 +995,7 @@ static void AnyTruckRouteNearRunway( const RunwayInfo& runway_info,
 				{
 					string node_name;
 					node->GetName(node_name);
-					string msg = "Truck Route node " + node_name + " is too close to runway " + runway_info.runway_name;
+					string msg = "Truck Route node " + node_name + " is too close to runway " + runway_info.name;
 					msgs.push_back(validation_error_t(msg, err_atcrwy_truck_route_too_close_to_runway, node, apt));
 				}
 			}
@@ -1005,7 +1053,7 @@ static void	AnyPolgonsOnRunway( const RunwayInfo& runway_info,	 const vector<WED
 			{
 				string msg ;
 				pp->GetName(msg);
-				msg = "The gateway discourages user created runway markings. DrapedPolygon '" + msg + "' intersects with runway " + runway_info.runway_name;
+				msg = "The gateway discourages user created runway markings. DrapedPolygon '" + msg + "' intersects with runway " + runway_info.name;
 				msgs.push_back(validation_error_t(msg, warn_atcrwy_marking, pp, apt));
 			}
 		}
@@ -1028,42 +1076,62 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs, WED_
 {
 	Bbox2 box;
 	apt.GetBounds(gis_Geo, box);
-	CreateTranslatorForBounds(box,translator);
+	CreateTranslatorForBounds(box,translator); // equivalent to MapZoomerNew: Pre-calculates cos(lat) to covert LL->Meter with linear algebra, only
 	
 	TaxiRouteVec_t all_taxiroutes_plain;
-	CollectRecursive(&apt,back_inserter<TaxiRouteVec_t>(all_taxiroutes_plain));
-
-	if(!all_taxiroutes_plain.empty())
+	CollectRecursive(&apt,back_inserter<TaxiRouteVec_t>(all_taxiroutes_plain)); // that includes GT routes
+	
+	TaxiRouteInfoVec_t	all_taxiroutes_info;
+	TaxiRouteVec_t 		all_aircraftroutes_plain;
+	TaxiRouteInfoVec_t	all_aircraftroutes;
+	TaxiRouteInfoVec_t	all_truckroutes;
+	
+	all_taxiroutes_info.reserve(all_taxiroutes_plain.size());
+	
+	for(auto itr : all_taxiroutes_plain)
 	{
-		TaxiRouteInfoVec_t all_taxiroutes;
-		for(TaxiRouteVec_t::const_iterator itr = all_taxiroutes_plain.begin(); itr != all_taxiroutes_plain.end(); ++itr)
-			all_taxiroutes.push_back(TaxiRouteInfo(*itr,translator));
-		
-		RunwayInfoVec_t potentially_active_runways = CollectPotentiallyActiveRunways(all_taxiroutes, msgs, &apt);
-		
+		TaxiRouteInfo tr_info(itr,translator);
+		all_taxiroutes_info.push_back(tr_info);
+		if(tr_info.is_aircraft_route)
+		{
+			all_aircraftroutes.push_back(tr_info);
+			all_aircraftroutes_plain.push_back(itr);
+		}
+		else
+			all_truckroutes.push_back(tr_info);
+	}
+			
+	RunwayVec_t all_runways;
+	CollectRecursive(&apt,back_inserter<RunwayVec_t>(all_runways),WED_Runway::sClass);
+	
+	RunwayInfoVec_t all_runways_info;
+	for(auto itr : all_runways)
+		all_runways_info.push_back(RunwayInfo(itr,translator));
+
+	if(!all_taxiroutes_info.empty())
+	{
+		RunwayInfoVec_t potentially_active_runways = CollectPotentiallyActiveRunways(all_aircraftroutes, all_runways_info, msgs, &apt);
 		ATCRunwayUseVec_t all_use_rules;
 		CollectRecursive(&apt,back_inserter<ATCRunwayUseVec_t>(all_use_rules), WED_ATCRunwayUse::sClass);
 		
-		//Pre-check
-		//- Does this active runway even have any taxi routes associated with it?
-		for(RunwayInfoVec_t::iterator runway_info_itr = potentially_active_runways.begin();
-			runway_info_itr != potentially_active_runways.end();
-			++runway_info_itr)
+		FullyConnectedNetworkCheck(all_aircraftroutes_plain, msgs, &apt);
+		
+		for(auto runway_info_itr : potentially_active_runways)
 		{
 			int original_num_errors = msgs.size();
-			TaxiRouteInfoVec_t matching_taxiroutes = FilterMatchingRunways(*runway_info_itr, all_taxiroutes);
+			TaxiRouteInfoVec_t matching_taxiroutes = FilterMatchingRunways(runway_info_itr, all_aircraftroutes);
 
 			if (!matching_taxiroutes.empty())
 			{
-				if (AllTaxiRouteNodesInRunway(*runway_info_itr, matching_taxiroutes, msgs, &apt))
+				if (AllTaxiRouteNodesInRunway(runway_info_itr, matching_taxiroutes, msgs, &apt))
 				{
-					if (TaxiRouteParallelCheck(*runway_info_itr, matching_taxiroutes, msgs, &apt))
+					if (TaxiRouteParallelCheck(runway_info_itr, matching_taxiroutes, msgs, &apt))
 					{
-						if (TaxiRouteCenterlineCheck(*runway_info_itr, matching_taxiroutes, msgs, &apt))
+						if (TaxiRouteCenterlineCheck(runway_info_itr, matching_taxiroutes, msgs, &apt))
 						{
-							if (DoTaxiRouteConnectivityChecks(*runway_info_itr, all_taxiroutes, matching_taxiroutes, msgs, &apt))
+							if (DoTaxiRouteConnectivityChecks(runway_info_itr, all_aircraftroutes, matching_taxiroutes, msgs, &apt))
 							{
-								if (RunwayHasCorrectCoverage(*runway_info_itr, all_taxiroutes, msgs, &apt))
+								if (RunwayHasCorrectCoverage(runway_info_itr, matching_taxiroutes, msgs, &apt))
 								{
 									//Add additional checks as needed here
 								}
@@ -1077,41 +1145,30 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs, WED_
 			if (msgs.size() - original_num_errors != 0)
 	#endif
 			{
-			debug_mesh_polygon((*runway_info_itr).corners_geo,1,0,1);
-			debug_mesh_segment((*runway_info_itr).centerline_geo,DBG_LIN_COLOR);
+				debug_mesh_polygon((runway_info_itr).corners_geo,1,0,1);
+				debug_mesh_segment((runway_info_itr).centerline_geo,DBG_LIN_COLOR);
 			}
 	#endif
-			AssaignRunwayUse(*runway_info_itr, all_use_rules);
-			bool passes_hotzone_checks = DoHotZoneChecks(*runway_info_itr, all_taxiroutes, msgs, &apt);
+			AssignRunwayUse(runway_info_itr, all_use_rules);
+			bool passes_hotzone_checks = DoHotZoneChecks(runway_info_itr, all_taxiroutes_info, msgs, &apt);
 			//Nothing to do here yet until we have more checks after this
 		}
 	}
 
-	TaxiRouteVec_t all_truckroutes_plain;
-	CollectRecursive(&apt,back_inserter<TaxiRouteVec_t>(all_truckroutes_plain), ThingNotHidden, is_ground_traffic_route, WED_TaxiRoute::sClass);
-	
 	vector<WED_PolygonPlacement *> all_polys;
 	if(gExportTarget == wet_gateway)
 		CollectRecursive(&apt,back_inserter(all_polys), WED_PolygonPlacement::sClass);
-	
-	if(!all_truckroutes_plain.empty() || !all_polys.empty())
+		
+	if(!all_polys.empty())
 	{
-//      So we validate even harsher: _all_ runways, even the inactive ones ...
-		RunwayVec_t all_runways;
-		CollectRecursive(&apt,back_inserter<RunwayVec_t>(all_runways),WED_Runway::sClass);
-		RunwayInfoVec_t runway_info_vec;
-		for(auto itr : all_runways)
-			runway_info_vec.push_back(RunwayInfo(itr,translator));
-
-		TaxiRouteInfoVec_t all_truckroutes;
-		for(auto itr : all_truckroutes_plain)
-			all_truckroutes.push_back(TaxiRouteInfo(itr,translator));
-			
-		for(auto runway_info_itr : runway_info_vec)
-		{
-			AnyTruckRouteNearRunway(runway_info_itr, all_truckroutes, msgs, &apt);
+		for(auto runway_info_itr : all_runways_info)
 			AnyPolgonsOnRunway(runway_info_itr, all_polys, msgs, &apt, res_mgr);
-		}
+	}
+
+	if(!all_truckroutes.empty())
+	{
+		for(auto runway_info_itr : all_runways_info)
+			AnyTruckRouteNearRunway(runway_info_itr, all_truckroutes, msgs, &apt);
 	}
 	
 }
