@@ -88,6 +88,7 @@
 #include "XESConstants.h"
 
 #include <iomanip>
+#include <thread>
 
 // maximum airport size allowed for gateway, only warned about for custom scenery
 // 7 nm = 13 km = 42500 feet
@@ -843,81 +844,6 @@ static void ValidateOneATCRunwayUse(WED_ATCRunwayUse* use, validation_error_vect
 	}
 }
 
-static void TJunctionTest(vector<WED_TaxiRoute*> all_taxiroutes, validation_error_vector& msgs, WED_Airport * apt)
-{
-	static CoordTranslator2 translator;
-	Bbox2 box;
-	apt->GetBounds(gis_Geo, box);
-	CreateTranslatorForBounds(box,translator);
-
-	/*For each edge A
-		for each OTHER edge B
-
-		If A and B intersect, do not mark them as a T - the intersection test will pick this up and we don't want to have double errors on a single user problem.
-		else If A and B share a common vertex, do not mark them as a T junction - this is legal. (Do this by comparing the Point2, not the IGISPoint *.If A and B have separate exactly on top of each other nodes, the duplicate nodes check will find this, and again we don't want to squawk twice on one user error.
-
-			for each end B(B src and B dst)
-				if end has a valence of 1
-					if the distance between A and the end node you are testing is < M meters
-						validation failure - that node is too close to a taxiway route but isn't joined.
-	*/
-
-	for (vector<WED_TaxiRoute*>::iterator edge_a_itr = all_taxiroutes.begin(); edge_a_itr != all_taxiroutes.end(); ++edge_a_itr)
-	{
-		// most of this data isn't needed. At most the location of the two ends is needed - as a segment
-		// TaxiRouteInfo edge_a(*edge_a_itr,translator);
-		Bezier2 b;
-		(*edge_a_itr)->GetSide(gis_Geo, 0, b);
-		Segment2 edge_a( translator.Forward(b.p1) , translator.Forward(b.p2) );
-		
-		for (vector<WED_TaxiRoute*>::iterator edge_b_itr = all_taxiroutes.begin(); edge_b_itr != all_taxiroutes.end(); ++edge_b_itr)
-		{
-			// Don't test an edge against itself
-			if (edge_a_itr == edge_b_itr)	continue;
-
-			// most of this data isn't needed. At most the location of the two ends is needed - as a segment
-			// TaxiRouteInfo edge_b(*edge_b_itr,translator);
-			
-			(*edge_b_itr)->GetSide(gis_Geo, 0, b);
-			Segment2 edge_b( translator.Forward(b.p1) , translator.Forward(b.p2) );
-
-			// Skip crossing edges
-			// Note - its validated elsewhere - why duplicate this effort ???
-			Point2 tmp;
-			if (edge_a.intersect(edge_b,tmp)) continue;
-
-			// Skip if the edges are joint at at least one end
-			// Note - its validated elsewhere - why dyplicate this effort ???
-			if (edge_a.p1 == edge_b.p1 || edge_a.p1 == edge_b.p2 ||
-				 edge_a.p2 == edge_b.p1 || edge_a.p2 == edge_b.p2 ) continue;
-
-			const double TJUNCTION_THRESHOLD = 1.00;
-			for (int i = 0; i < 2; i++)
-			{
-				// its also worth changing this to Bezier2.is_near() to prepare for future curved edges
-				double dist_b_node_to_a_edge = i ? edge_a.squared_distance(edge_b.p2) : edge_a.squared_distance(edge_b.p1);
-
-				if (dist_b_node_to_a_edge < TJUNCTION_THRESHOLD * TJUNCTION_THRESHOLD)
-				{
-					set<WED_Thing*> node_viewers;
-					(*edge_b_itr)->GetNthSource(i)->GetAllViewers(node_viewers);
-
-					int valence = node_viewers.size();
-					if (valence == 1)
-					{	
-						vector<WED_Thing*> problem_children;
-						problem_children.push_back(*edge_a_itr);
-						problem_children.push_back((*edge_b_itr)->GetNthSource(i));
-						string name; (*edge_a_itr)->GetName(name);
-
-						msgs.push_back(validation_error_t("Taxi route " + name + " is not joined to a destination route.", err_taxi_route_not_joined_to_dest_route, problem_children, apt));
-					}
-				}
-			}
-		}
-	}
-}
-
 typedef vector<int> surfWindVec_t;  // the maximum amount of wind from any given direction that should be tested for
 
 static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs, set<int>& legal_rwy_oneway, WED_Airport * apt, const vector<int>& dep_freqs, surfWindVec_t& sWindsCov)
@@ -1085,27 +1011,16 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 		msgs.push_back(validation_error_t("Airport flow must specify at least one active arrival and one departure runway", err_flow_no_arr_or_no_dep_runway, flow, apt));
 }
 
-static void ValidateATC(WED_Airport* apt, validation_error_vector& msgs, set<int>& legal_rwy_oneway, set<int>& legal_rwy_twoway)
+static void ValidateATCFlows(WED_Airport* apt, validation_error_vector& msgs, set<int>& legal_rwy_oneway)
 {
 	vector<WED_ATCFlow *>		flows;
-	vector<WED_TaxiRoute *>	taxi_routes;
-
 	CollectRecursive(apt,back_inserter(flows),       IgnoreVisiblity, TakeAlways, WED_ATCFlow::sClass);
-	CollectRecursive(apt,back_inserter(taxi_routes), WED_TaxiRoute::sClass);
 
-	if(gExportTarget == wet_xplane_900)
-	{
-		if(!flows.empty())
-			msgs.push_back(validation_error_t("ATC flows are only supported in X-Plane 10 and newer.", err_flow_flows_only_for_gte_xp10, flows, apt));
-		if(!taxi_routes.empty())
-			msgs.push_back(validation_error_t("ATC Taxi Routes are only supported in X-Plane 10 and newer.", err_atc_taxi_routes_only_for_gte_xp10, flows, apt));
-		return;
-	}
+	if(!flows.empty() && gExportTarget == wet_xplane_900)
+		msgs.push_back(validation_error_t("ATC flows are only supported in X-Plane 10 and newer.", err_flow_flows_only_for_gte_xp10, flows, apt));
 
 	if(CheckDuplicateNames(flows, msgs, apt, "Two or more airport flows have the same name."))
-	{
 		return;
-	}
 
 	vector<WED_ATCFrequency*> ATC_freqs;
 	CollectRecursive(apt, back_inserter<vector<WED_ATCFrequency*> >(ATC_freqs), IgnoreVisiblity, TakeAlways);
@@ -1154,7 +1069,7 @@ static void ValidateATC(WED_Airport* apt, validation_error_vector& msgs, set<int
 			}
 		}
 	}
-	
+#if 0
 	for(vector<WED_TaxiRoute *>::iterator t = taxi_routes.begin(); t != taxi_routes.end(); ++t)
 	{
 		WED_TaxiRoute * taxi = *t;
@@ -1190,6 +1105,7 @@ static void ValidateATC(WED_Airport* apt, validation_error_vector& msgs, set<int
 		}
 	}
 	TJunctionTest(taxi_routes, msgs, apt);
+#endif
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------
@@ -2118,28 +2034,15 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	else if(!is_all_alnum(icao))
 		msgs.push_back(validation_error_t(string("The Airport ID for airport '") + name + "' must contain ASCII alpha-numeric characters only.", err_airport_icao, apt,apt));
 
-	set<WED_GISEdge*> edges;
-	WED_select_zero_recursive(apt, &edges);
-	if(edges.size())
-	{
-		msgs.push_back(validation_error_t("Airport contains zero-length ATC routing lines. These should be deleted.", err_airport_ATC_network, edges, apt));
-	}
-
 	set<WED_Thing*> points = WED_select_doubles(apt);
 	if(points.size())
-	{
 		msgs.push_back(validation_error_t("Airport contains doubled ATC routing nodes. These should be merged.", err_airport_ATC_network, points, apt));
-	}
-
-	edges = WED_do_select_crossing(apt);
-	if(edges.size())
-	{
-		msgs.push_back(validation_error_t("Airport contains crossing ATC routing lines with no node at the crossing point.  Split the lines and join the nodes.", err_airport_ATC_network, edges, apt));
-	}
 
 	set<int>		legal_rwy_oneway;
 	set<int>		legal_rwy_twoway;
 
+	// todo: replace this by ONE recursion over everything and sortings things as needed
+	// cuz - those Thing <-> Entity dynamic_cast's take forever. 50% of CPU time in validation is for casting.
 	CollectRecursive(apt, back_inserter(runways),  WED_Runway::sClass);
 	CollectRecursive(apt, back_inserter(helipads), WED_Helipad::sClass);
 	CollectRecursive(apt, back_inserter(sealanes), WED_Sealane::sClass);
@@ -2154,17 +2057,13 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	copy(sealanes.begin(), sealanes.end(), back_inserter(runway_or_sealane));
 
 	if(CheckDuplicateNames(helipads,msgs,apt,"A helipad name is used more than once."))
-	{
 		return;
-	}
 
 	if(CheckDuplicateNames(runway_or_sealane,msgs,apt,"A runway or sealane name is used more than once."))
-	{
 		return;
-	}
 
-	WED_GetAllRunwaysOneway(apt,legal_rwy_oneway);
-	WED_GetAllRunwaysTwoway(apt,legal_rwy_twoway);
+	WED_GetAllRunwaysOneway(apt, legal_rwy_oneway);
+	WED_GetAllRunwaysTwoway(apt, legal_rwy_twoway);
 
    err_type = gExportTarget == wet_gateway ? err_airport_no_rwys_sealanes_or_helipads : warn_airport_no_rwys_sealanes_or_helipads;
 	switch(apt->GetAirportType())
@@ -2185,49 +2084,33 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 			Assert("Unknown Airport Type");
 	}
 
-	WED_DoATCRunwayChecks(*apt, msgs, res_mgr);
-	ValidateATC(apt, msgs, legal_rwy_oneway, legal_rwy_twoway);
-	ValidateAirportFrequencies(apt,msgs);
+	WED_DoATCRunwayChecks(*apt, msgs, legal_rwy_oneway, legal_rwy_twoway, res_mgr);
+	ValidateATCFlows(apt, msgs, legal_rwy_oneway);
+	ValidateAirportFrequencies(apt, msgs);
 
-	for(vector<WED_AirportSign *>::iterator s = signs.begin(); s != signs.end(); ++s)
-	{
-		ValidateOneTaxiSign(*s, msgs,apt);
-	}
+	for(auto s : signs)
+		ValidateOneTaxiSign(s, msgs, apt);
 
-	for(vector<WED_Taxiway *>::iterator t = taxiways.begin(); t != taxiways.end(); ++t)
-	{
-		ValidateOneTaxiway(*t,msgs,apt);
-	}
+	for(auto t : taxiways)
+		ValidateOneTaxiway(t, msgs, apt);
 
-	for (vector<WED_TruckDestination*>::iterator t_dest = truck_destinations.begin(); t_dest != truck_destinations.end(); ++t_dest)
-	{
-		ValidateOneTruckDestination(*t_dest, msgs, apt);
-	}
+	for(auto t_dest : truck_destinations)
+		ValidateOneTruckDestination(t_dest, msgs, apt);
 
-	for(vector<WED_TruckParkingLocation*>::iterator t_park = truck_parking_locs.begin(); t_park != truck_parking_locs.end(); ++t_park)
-	{
-		ValidateOneTruckParking(*t_park,msgs,apt);
-	}
+	for(auto t_park : truck_parking_locs)
+		ValidateOneTruckParking(t_park, msgs ,apt);
 
-	for(vector<WED_Thing *>::iterator r = runway_or_sealane.begin(); r != runway_or_sealane.end(); ++r)
-	{
-		ValidateOneRunwayOrSealane(*r, msgs,apt);
-	}
+	for(auto r : runway_or_sealane)
+		ValidateOneRunwayOrSealane(r, msgs, apt);
 
-	for(vector<WED_Helipad *>::iterator h = helipads.begin(); h != helipads.end(); ++h)
-	{
-		ValidateOneHelipad(*h, msgs,apt);
-	}
+	for(auto h : helipads)
+		ValidateOneHelipad(h, msgs,apt);
 
-	for(vector<WED_RampPosition *>::iterator r = ramps.begin(); r != ramps.end(); ++r)
-	{
-		ValidateOneRampPosition(*r,msgs,apt, runways);
-	}
+	for(auto r : ramps)
+		ValidateOneRampPosition(r, msgs, apt, runways);
 
 	if(gExportTarget >= wet_xplane_1050)
-	{
 		ValidateAirportMetadata(apt,msgs,apt);
-	}
 
 	err_type = gExportTarget == wet_gateway ? err_airport_impossible_size : warn_airport_impossible_size;
 	{
@@ -2246,20 +2129,18 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	if (truck_parking_locs.size() && GT_routes.empty())
 		msgs.push_back(validation_error_t("Truck parking locations require at least one taxi route for ground trucks", err_truck_parking_no_ground_taxi_routes, truck_parking_locs.front(), apt));
 	
+	if(GT_routes.size() && truck_parking_locs.empty())
+		msgs.push_back(validation_error_t("Ground routes are defined, but no service vehicle starts. This disables all ground traffic, including auto generated pushback vehicles.", warn_truckroutes_but_no_starts, apt,apt));
+		
 	if(gExportTarget == wet_gateway)
 	{
-		if(GT_routes.size() && truck_parking_locs.empty())
-			msgs.push_back(validation_error_t("Ground routes are defined, but no service vehicle starts. This disables all ground traffic, including auto generated pushback vehicles.", warn_truckroutes_but_no_starts, apt,apt));
-		
 		if(!runways.empty() && boundaries.empty())
             msgs.push_back(validation_error_t("This airport contains runway(s) but no airport boundary.", 	err_airport_no_boundary, apt,apt));
 
-		vector<WED_AirportBoundary *>	boundaries;
-		CollectRecursive(apt, back_inserter(boundaries), WED_AirportBoundary::sClass);
-		for(vector<WED_AirportBoundary *>::iterator b = boundaries.begin(); b != boundaries.end(); ++b)
+		for(auto b : boundaries)
 		{
-			if(WED_HasBezierPol(*b))
-				msgs.push_back(validation_error_t("Do not use bezier curves in airport boundaries.", err_apt_boundary_bez_curve_used, *b, apt));
+			if(WED_HasBezierPol(b))
+				msgs.push_back(validation_error_t("Do not use bezier curves in airport boundaries.", err_apt_boundary_bez_curve_used, b, apt));
 		}
 		// allow some draped orthophotos (like grund painted signs)
 		vector<WED_DrapedOrthophoto *> orthos, orthos_illegal;
@@ -2467,7 +2348,6 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	ValidateDSFRecursive(apt, lib_mgr, msgs, apt);
 }
 
-
 validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * wrl, bool skipErrorDialog, const char * abortMsg)
 {
 #if DEBUG_VIS_LINES
@@ -2502,19 +2382,13 @@ validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane,
 
 	/* ToDo: get a better way to do automatic retryies for cache updates.
 		Ultimately, during the actual gateway submission we MUST wait and get full verification
-		at all times.
-		C++11 sleep_for(1000) is a good candidate.
-	*/
-		for (int i = 0; i < 3; ++i)
+		at all times. */
+		for (int i = 0; i < 5; ++i)
 		{
 			if(res.out_status == cache_status_downloading)
 			{
 				printf("Download of Runway Data in progress, trying again in 1 sec\n");
-	#if IBM
-				Sleep(1000);
-	#else
-				sleep(1);
-	#endif
+				this_thread::sleep_for(chrono::seconds(1));
 				res = gFileCache.request_file(mCacheRequest);
 			}
 		}
@@ -2529,6 +2403,8 @@ validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane,
 		else
 			mf = MemFile_Open(res.out_path.c_str());
 	}
+{
+auto t0 = std::chrono::high_resolution_clock::now();
 
 	for(vector<WED_Airport *>::iterator a = apts.begin(); a != apts.end(); ++a)
 	{
@@ -2536,14 +2412,18 @@ validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane,
 	}
 	if (mf) MemFile_Close(mf);
 
-
 	// These are programmed to NOT iterate up INTO airports.  But you can START them at an airport.
 	// So...IF wrl (which MIGHT be the world or MIGHt be a selection or might be an airport) turns out to
 	// be an airport, we hvae to tell it "this is our credited airport."  Dynamic cast gives us the airport
 	// or null for 'free' stuff.
 	ValidatePointSequencesRecursive(wrl, msgs,dynamic_cast<WED_Airport *>(wrl));
 	ValidateDSFRecursive(wrl, lib_mgr, msgs, dynamic_cast<WED_Airport *>(wrl));
+	
+auto t1 = std::chrono::high_resolution_clock::now();
+chrono::duration<double> elapsed = t1-t0;
+printf("0 to 1 time: %lf\n", elapsed.count());
 
+}
 	string logfile(gPackageMgr->ComputePath(lib_mgr->GetLocalPackage(), "validation_report.txt"));
 	FILE * fi = fopen(logfile.c_str(), "w");
 

@@ -1161,17 +1161,18 @@ set<WED_GISEdge *> WED_do_select_crossing(const vector<WED_GISEdge *> edges)
 	// Ben says: yes this totally sucks - replace it someday?
 	for (int i = 0; i < edges.size(); ++i)
 	{
+		IGISEdge * ii = edges[i];
+		Bezier2 b1, b2;
+		bool isb1, isb2;
+		isb1 = ii->GetSide(gis_Geo, 0, b1);
+
 		for (int j = i + 1; j < edges.size(); ++j)
 		{
-			IGISEdge * ii = edges[i];
 			IGISEdge * jj = edges[j];
 			DebugAssert(ii != jj);
 			DebugAssert(ii);
 			DebugAssert(jj);
-			Bezier2 b1, b2;
-			bool isb1, isb2;
 
-			isb1 = ii->GetSide(gis_Geo, 0, b1);
 			isb2 = jj->GetSide(gis_Geo, 0, b2);
 
 			if (isb1 || isb2)

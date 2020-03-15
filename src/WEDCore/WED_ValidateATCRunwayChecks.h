@@ -110,7 +110,7 @@ struct RunwayInfo
 
 struct TaxiRouteInfo
 {
-	TaxiRouteInfo(WED_TaxiRoute* taxiroute, CoordTranslator2 translator) : taxiroute_ptr(taxiroute)
+	TaxiRouteInfo(WED_TaxiRoute* taxiroute, CoordTranslator2 translator) : ptr(taxiroute)
 	{
 		AptRouteEdge_t apt_route;
 		AptServiceRoadEdge_t dummy;
@@ -127,16 +127,11 @@ struct TaxiRouteInfo
 		{
 			name = dummy.name;
 		}
-		for (int i = 0; i < taxiroute_ptr->CountSources(); i++)
+		for (int i = 0; i < taxiroute->CountSources(); i++)
 		{
-			WED_GISPoint* point = dynamic_cast<WED_GISPoint*>(taxiroute_ptr->GetNthSource(i));
+			WED_GISPoint* point = dynamic_cast<WED_GISPoint*>(taxiroute->GetNthSource(i));
 			if (point != NULL)
-			{
-				Point2 pt;
 				nodes.push_back(point);
-				point->GetLocation(gis_Geo, pt);
-				nodes_m.push_back(Point2(translator.Forward(pt)));
-			}
 		}
 		DebugAssert(nodes.size() >= 2);
 		Bezier2 b;
@@ -145,7 +140,7 @@ struct TaxiRouteInfo
 		segment_m = Segment2(translator.Forward(segment_geo.p1),translator.Forward(segment_geo.p2));
 	}
 
-	WED_TaxiRoute* taxiroute_ptr;    // Pointer to the original WED_TaxiRoute in WED's data model
+	WED_TaxiRoute* ptr;    // Pointer to the original WED_TaxiRoute in WED's data model
 	bool is_aircraft_route;
 	string name;
 	Segment2 segment_geo; 			 // location is lat/lon
@@ -155,11 +150,10 @@ struct TaxiRouteInfo
 	set<string> hot_departures;
 
 	//Source nodes of the taxiroute. Usually TaxiRouteNodes but sometimes something else
-	vector<WED_GISPoint*> nodes;     // location is lat/lon
-	vector<Point2> nodes_m;          // location is meters
-	
+	vector<WED_GISPoint*> nodes;
 };
 
-void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs, WED_ResourceMgr * res_mgr);
-
+void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs, 
+								const set<int>& legal_rwy_oneway, const set<int>& legal_rwy_twoway,
+								WED_ResourceMgr * res_mgr);
 #endif
