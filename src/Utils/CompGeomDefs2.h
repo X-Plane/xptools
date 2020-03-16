@@ -248,7 +248,8 @@ struct	Segment2 {
 	Segment2& operator+=(const Vector2& rhs) { p1 += rhs; p2 += rhs; return *this; }
 
 	double	squared_length(void) const { return (p2.x_ - p1.x_) * (p2.x_ - p1.x_) + (p2.y_ - p1.y_) * (p2.y_ - p1.y_); }
-	Point2	midpoint(double s=0.5) const { if (s==0.0) return p1; if (s==1.0) return p2; double ms = 1.0 - s; return Point2(
+	Point2	midpoint(void) const { return Point2( (p1.x_ + p2.x_) * 0.5, (p1.y_ + p2.y_) * 0.5); }
+	Point2	midpoint(double s) const { if (s==0.0) return p1; if (s==1.0) return p2; double ms = 1.0 - s; return Point2(
 													p1.x_ == p2.x_ ? p1.x_ : p1.x_ * ms + p2.x_ * s,
 													p1.y_ == p2.y_ ? p1.y_ : p1.y_ * ms + p2.y_ * s); }
 	Point2	projection(const Point2& pt) const;
@@ -539,7 +540,8 @@ struct	Bezier2 {
 
 	Point2	midpoint(double t=0.5) const;											// Returns a point on curve at time T
 	Vector2 derivative(double t) const;												// Gives derivative vector at time T.  Length may be zero!
-	void	partition(Bezier2& lhs, Bezier2& rhs, double t=0.5) const;				// Splits curve at time T
+	void	partition(Bezier2& lhs, Bezier2& rhs) const;							// Splits curve at time 0.5
+	void	partition(Bezier2& lhs, Bezier2& rhs, double t) const;					// Splits curve at time T
 	void	subcurve(Bezier2& sub, double t1, double t2) const;						// Sub-curve from T1 to T2.
 	void	bounds_fast(Bbox2& bounds) const;										// Returns reasonable bounding box
 	int		x_monotone(void) const;
@@ -1277,6 +1279,21 @@ inline void	Bezier2::partition(Bezier2& lhs, Bezier2& rhs, double t) const
 	lhs.p2 = rhs.p1 = Segment2(lhs.c2,rhs.c1).midpoint(t);
 }
 
+inline void	Bezier2::partition(Bezier2& lhs, Bezier2& rhs) const
+{
+	// specialization for t=0.5 - uses faster midpoint() implementation
+	lhs.p1 = p1;
+	rhs.p2 = p2;
+
+	Point2 m = Segment2(c1,c2).midpoint();
+
+	lhs.c1 = Segment2(p1,c1).midpoint();
+	rhs.c2 = Segment2(c2,p2).midpoint();
+	lhs.c2 = Segment2(lhs.c1,m).midpoint();
+	rhs.c1 = Segment2(m,rhs.c2).midpoint();
+	lhs.p2 = rhs.p1 = Segment2(lhs.c2,rhs.c1).midpoint();
+}
+
 inline void Bezier2::bounds_fast(Bbox2& bounds) const
 {
 	// If a curve is monotone, it doesn't exceed the span of its end-points in
@@ -1349,11 +1366,6 @@ inline int		Bezier2::y_monotone(void) const
 
 inline bool	Bezier2::intersect(const Bezier2& rhs, int d) const
 {
-	Bbox2	lhs_bbox, rhs_bbox;
-
-	this->bounds(lhs_bbox);
-	rhs.bounds(rhs_bbox);
-
 	if (d < 0)
 	{
 		//	return true;    //  In case of the current checked dub-segments connecting to a common node, any curves that connect there under 
@@ -1377,6 +1389,11 @@ inline bool	Bezier2::intersect(const Bezier2& rhs, int d) const
 		else
 			return false;                     // we assume the sub-segments connecting to a common node never intersect.
 	}
+	
+	Bbox2	lhs_bbox, rhs_bbox;
+	this->bounds(lhs_bbox);
+	rhs.bounds(rhs_bbox);
+
 	if (!lhs_bbox.interior_overlap(rhs_bbox))	return false;
 
 	// Ben says: it is NOT good enough to say that if the underlying segments cross, the curves cross EVEN if they're monotone.  Why?
@@ -1435,7 +1452,7 @@ inline bool	Bezier2::is_near(const Point2& p, double d) const
 
 inline bool Bezier2::self_intersect_recursive(const Bezier2& rhs, int d) const
 {
-	if (d < 1) return this->intersect(rhs,d);
+	if (d < 1) return this->intersect(rhs,d-1);
 
 	Bezier2 l1,l2,r1,r2;
 	this->partition(l1,l2);
@@ -1448,10 +1465,9 @@ inline bool Bezier2::self_intersect_recursive(const Bezier2& rhs, int d) const
 
 inline bool	Bezier2::self_intersect(int d) const
 {
-	Bbox2 d1,d2;
 	Bezier2	b1, b2;
-	this->partition(b1,b2,0.5f);
-	return b1.self_intersect_recursive(b2,d);
+	this->partition(b1,b2);
+	return b1.self_intersect_recursive(b2,d-1);
 }
 
 inline int		Bezier2::monotone_regions(double times[4]) const
@@ -1459,12 +1475,9 @@ inline int		Bezier2::monotone_regions(double times[4]) const
 	// Basic idea: we do two derivatives - one of the X cubic and one of the Y.
 	// These are quadratic and have up to 2 roots each.  This gives us any
 	// point the curve changes directions.
-	int ret = 0;
-
 	double Ax =       -p1.x_ + 3.0 * c1.x_ - 3.0 * c2.x_ + p2.x_;
 	double Bx =  3.0 * p1.x_ - 6.0 * c1.x_ + 3.0 * c2.x_;
 	double Cx = -3.0 * p1.x_ + 3.0 * c1.x_;
-	double Dx =		   p1.x_;
 	double ax = 3.0 * Ax;
 	double bx = 2.0 * Bx;
 	double cx =		  Cx;
@@ -1472,7 +1485,6 @@ inline int		Bezier2::monotone_regions(double times[4]) const
 	double Ay =       -p1.y_ + 3.0 * c1.y_ - 3.0 * c2.y_ + p2.y_;
 	double By =  3.0 * p1.y_ - 6.0 * c1.y_ + 3.0 * c2.y_;
 	double Cy = -3.0 * p1.y_ + 3.0 * c1.y_;
-	double Dy =		   p1.y_;
 	double ay = 3.0 * Ay;
 	double by = 2.0 * By;
 	double cy =		  Cy;
@@ -1493,12 +1505,9 @@ inline int		Bezier2::monotone_regions(double times[4]) const
 
 inline int		Bezier2::x_monotone_regions(double times[2]) const
 {
-	int ret = 0;
-
 	double Ax =       -p1.x_ + 3.0 * c1.x_ - 3.0 * c2.x_ + p2.x_;
 	double Bx =  3.0 * p1.x_ - 6.0 * c1.x_ + 3.0 * c2.x_;
 	double Cx = -3.0 * p1.x_ + 3.0 * c1.x_;
-	double Dx =		   p1.x_;
 	double ax = 3.0 * Ax;
 	double bx = 2.0 * Bx;
 	double cx =		  Cx;
@@ -1513,12 +1522,9 @@ inline int		Bezier2::x_monotone_regions(double times[2]) const
 
 inline int Bezier2::y_monotone_regions(double times[2]) const
 {
-	int ret = 0;
-
 	double Ay =       -p1.y_ + 3.0 * c1.y_ - 3.0 * c2.y_ + p2.y_;
 	double By =  3.0 * p1.y_ - 6.0 * c1.y_ + 3.0 * c2.y_;
 	double Cy = -3.0 * p1.y_ + 3.0 * c1.y_;
-	double Dy =		   p1.y_;
 	double ay = 3.0 * Ay;
 	double by = 2.0 * By;
 	double cy =		  Cy;
@@ -1728,16 +1734,6 @@ inline double	Bezier2::approx_t_for_xy(double x, double y) const
 }
 
 
-
-
-
-
-
-
-
-
-void	TEST_CompGeomDefs2(void);
-
 inline int linear_formula(double a, double b, double roots[1])
 {
 	if (a == 0.0) return (b == 0.0 ? -1 : 0);
@@ -1750,7 +1746,7 @@ inline int quadratic_formula(double a, double b, double c, double roots[2])
 	if (a == 0.0) return linear_formula(b,c, roots);
 
 	double radical = b * b - 4.0 * a * c;
-	if (radical < 0) return 0;
+	if (radical < 0.0) return 0.0;
 
 	if (radical == 0.0)
 	{
@@ -1759,8 +1755,11 @@ inline int quadratic_formula(double a, double b, double c, double roots[2])
 	}
 
 	double srad = sqrt(radical);
-	roots[0] = (-b - srad) / (2.0 * a);
-	roots[1] = (-b + srad) / (2.0 * a);
+//	roots[0] = (-b - srad) / (2.0 * a);
+//	roots[1] = (-b + srad) / (2.0 * a);		// its amazing what compilers can NOT optimize
+	double div = 0.5 / a;
+	roots[0] = (-b - srad) * div;
+	roots[1] = (-b + srad) * div;
 	if (a < 0.0) swap(roots[0],roots[1]);
 	return 2;
 }

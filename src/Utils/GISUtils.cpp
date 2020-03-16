@@ -431,11 +431,11 @@ void	Quad_2to4(const Point2 ends[2], double width_mtr, Point2 corners[4])
 
 void	Quad_4to2(const Point2 corners[4], Point2 ends[2], double& width_mtr)
 {
-	ends[0] = Segment2(corners[0],corners[3]).midpoint(0.5);
-	ends[1] = Segment2(corners[1],corners[2]).midpoint(0.5);
+	ends[0] = Segment2(corners[0],corners[3]).midpoint();
+	ends[1] = Segment2(corners[1],corners[2]).midpoint();
 
-	Point2 side1 = Segment2(corners[0],corners[1]).midpoint(0.5);
-	Point2 side2 = Segment2(corners[2],corners[3]).midpoint(0.5);
+	Point2 side1 = Segment2(corners[0],corners[1]).midpoint();
+	Point2 side2 = Segment2(corners[2],corners[3]).midpoint();
 
 	width_mtr = sqrt(VectorLLToMeters(Segment2(side1,side2).midpoint(),Vector2(side1,side2)).squared_length());
 }
@@ -459,11 +459,11 @@ void	Quad_1to4(const Point2& ctr, double heading, double len_mtr, double width_m
 
 void	Quad_4to1(const Point2 corners[4], Point2& ctr, double& heading, double& len_mtr, double& width_mtr)
 {
-	Point2 ends1 = Segment2(corners[0],corners[3]).midpoint(0.5);
-	Point2 ends2 = Segment2(corners[1],corners[2]).midpoint(0.5);
+	Point2 ends1 = Segment2(corners[0],corners[3]).midpoint();
+	Point2 ends2 = Segment2(corners[1],corners[2]).midpoint();
 
-	Point2 side1 = Segment2(corners[0],corners[1]).midpoint(0.5);
-	Point2 side2 = Segment2(corners[2],corners[3]).midpoint(0.5);
+	Point2 side1 = Segment2(corners[0],corners[1]).midpoint();
+	Point2 side2 = Segment2(corners[2],corners[3]).midpoint();
 
 	ctr.x_ = (corners[0].x()  + corners[1].x()  + corners[2].x() + corners[3].x()) * 0.25;
 	ctr.y_ = (corners[0].y()  + corners[1].y()  + corners[2].y() + corners[3].y()) * 0.25;
@@ -545,11 +545,11 @@ void	Quad_MoveSide2(Point2 ends[2], double& width_mtr, int side, const Vector2& 
 
 void Quad_ResizeSide4(Point2 corners[4], int side, const Vector2& move, bool symetric)
 {
-	Point2 ends1 = Segment2(corners[0],corners[3]).midpoint(0.5);
-	Point2 ends2 = Segment2(corners[1],corners[2]).midpoint(0.5);
+	Point2 ends1 = Segment2(corners[0],corners[3]).midpoint();
+	Point2 ends2 = Segment2(corners[1],corners[2]).midpoint();
 
-	Point2 side1 = Segment2(corners[0],corners[1]).midpoint(0.5);
-	Point2 side2 = Segment2(corners[2],corners[3]).midpoint(0.5);
+	Point2 side1 = Segment2(corners[0],corners[1]).midpoint();
+	Point2 side2 = Segment2(corners[2],corners[3]).midpoint();
 
 	Vector2	dir;
 	switch(side) {
