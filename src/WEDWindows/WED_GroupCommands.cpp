@@ -1102,16 +1102,17 @@ set<WED_Thing *> WED_select_doubles(WED_Thing * t)
 	// Ben says: yes this totally sucks - replace it someday?
 	for(int i = 0; i < pts.size(); ++i)
 	{
+		Point2 p1, p2;
+		IGISPoint * ii = dynamic_cast<IGISPoint *>(pts[i]);
+		ii->GetLocation(gis_Geo, p1);
+
 		for(int j = i + 1; j < pts.size(); ++j)
 		{
-			IGISPoint * ii = dynamic_cast<IGISPoint *>(pts[i]);
 			IGISPoint * jj = dynamic_cast<IGISPoint *>(pts[j]);
+			jj->GetLocation(gis_Geo, p2);
 			DebugAssert(ii != jj);
 			DebugAssert(ii);
 			DebugAssert(jj);
-			Point2 p1, p2;
-			ii->GetLocation(gis_Geo, p1);
-			jj->GetLocation(gis_Geo, p2);
 
 			if(p1.squared_distance(p2) < (DOUBLE_PT_DIST*DOUBLE_PT_DIST))
 			{

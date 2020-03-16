@@ -2084,7 +2084,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 			Assert("Unknown Airport Type");
 	}
 
-	WED_DoATCRunwayChecks(*apt, msgs, legal_rwy_oneway, legal_rwy_twoway, res_mgr);
+	WED_DoATCRunwayChecks(*apt, msgs, runways, legal_rwy_oneway, legal_rwy_twoway, res_mgr);
 	ValidateATCFlows(apt, msgs, legal_rwy_oneway);
 	ValidateAirportFrequencies(apt, msgs);
 
