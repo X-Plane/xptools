@@ -77,7 +77,6 @@
 		02B03C4120C72126000F81F0 /* line_TaxiCenterUni.png in Resources */ = {isa = PBXBuildFile; fileRef = 02B03C2120C720C7000F81F0 /* line_TaxiCenterUni.png */; };
 		02B03C4220C7212B000F81F0 /* line_Unknown.png in Resources */ = {isa = PBXBuildFile; fileRef = 02B03C2220C720C7000F81F0 /* line_Unknown.png */; };
 		02B03C4320C72130000F81F0 /* line_BBrokenRed.png in Resources */ = {isa = PBXBuildFile; fileRef = 02B03C1120C720A1000F81F0 /* line_BBrokenRed.png */; };
-		02BDCCFC23A97DCF00208CD2 /* src in Resources */ = {isa = PBXBuildFile; fileRef = 02BDCCFB23A97DCF00208CD2 /* src */; };
 		02BDCCFF23A97E2700208CD2 /* tilt_tool.png in Resources */ = {isa = PBXBuildFile; fileRef = 02BDCCFD23A97E0400208CD2 /* tilt_tool.png */; };
 		02BFA21321C1B5970090D527 /* navmap_seaport.png in Resources */ = {isa = PBXBuildFile; fileRef = 02BFA21021C1B58D0090D527 /* navmap_seaport.png */; };
 		02BFA21421C1B59C0090D527 /* navmap_airport.png in Resources */ = {isa = PBXBuildFile; fileRef = 02BFA20F21C1B58D0090D527 /* navmap_airport.png */; };
@@ -155,8 +154,15 @@
 		02D8242B239EF2C30008DBF2 /* LzmaDec.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823F4239EF2310008DBF2 /* LzmaDec.c */; };
 		02D8242C239EF3BF0008DBF2 /* Alloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823E1239EF2310008DBF2 /* Alloc.c */; };
 		02D8242D239EF3BF0008DBF2 /* Alloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823E1239EF2310008DBF2 /* Alloc.c */; };
-		02D82430239EF47F0008DBF2 /* 7zStream.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D8242E239EF47A0008DBF2 /* 7zStream.c */; };
 		02D82431239EF4800008DBF2 /* 7zStream.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D8242E239EF47A0008DBF2 /* 7zStream.c */; };
+		02DE8EE8241FC37E003E72C5 /* 7zStream.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D8242E239EF47A0008DBF2 /* 7zStream.c */; };
+		02DE8EFF241FC456003E72C5 /* tess.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EF6241FC439003E72C5 /* tess.c */; };
+		02DE8F00241FC45F003E72C5 /* sweep.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EF4241FC439003E72C5 /* sweep.c */; };
+		02DE8F01241FC464003E72C5 /* priorityq.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EF2241FC439003E72C5 /* priorityq.c */; };
+		02DE8F02241FC46A003E72C5 /* mesh.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EF0241FC439003E72C5 /* mesh.c */; };
+		02DE8F03241FC471003E72C5 /* geom.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EEE241FC439003E72C5 /* geom.c */; };
+		02DE8F04241FC475003E72C5 /* dict.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EEC241FC439003E72C5 /* dict.c */; };
+		02DE8F05241FC479003E72C5 /* bucketalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EEA241FC439003E72C5 /* bucketalloc.c */; };
 		02F4A70C204E6F4700E241B3 /* worldmap.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 02F4A70A204E6F1700E241B3 /* worldmap.jpg */; };
 		2F1515C61D0BA700002224B1 /* WED_MetaDataKeys.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F1515C41D0BA700002224B1 /* WED_MetaDataKeys.cpp */; };
 		2F8378A01D070F000033848D /* CACHE_DomainPolicy.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F83789E1D070F000033848D /* CACHE_DomainPolicy.cpp */; };
@@ -1132,7 +1138,6 @@
 		02B03C2020C720C7000F81F0 /* line_SolidYellowW.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = line_SolidYellowW.png; sourceTree = "<group>"; };
 		02B03C2120C720C7000F81F0 /* line_TaxiCenterUni.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = line_TaxiCenterUni.png; sourceTree = "<group>"; };
 		02B03C2220C720C7000F81F0 /* line_Unknown.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = line_Unknown.png; sourceTree = "<group>"; };
-		02BDCCFB23A97DCF00208CD2 /* src */ = {isa = PBXFileReference; lastKnownFileType = folder; path = src; sourceTree = "<group>"; };
 		02BDCCFD23A97E0400208CD2 /* tilt_tool.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tilt_tool.png; sourceTree = "<group>"; };
 		02BFA20F21C1B58D0090D527 /* navmap_airport.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = navmap_airport.png; sourceTree = "<group>"; };
 		02BFA21021C1B58D0090D527 /* navmap_seaport.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = navmap_seaport.png; sourceTree = "<group>"; };
@@ -1172,6 +1177,21 @@
 		02D823F4239EF2310008DBF2 /* LzmaDec.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = LzmaDec.c; path = lzma19/C/LzmaDec.c; sourceTree = "<group>"; };
 		02D823F5239EF2310008DBF2 /* LzmaDec.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LzmaDec.h; path = lzma19/C/LzmaDec.h; sourceTree = "<group>"; };
 		02D8242E239EF47A0008DBF2 /* 7zStream.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = 7zStream.c; path = lzma19/C/7zStream.c; sourceTree = "<group>"; };
+		02DE8EE9241FC3AC003E72C5 /* tesselator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = tesselator.h; path = libtess2/Include/tesselator.h; sourceTree = "<group>"; };
+		02DE8EEA241FC439003E72C5 /* bucketalloc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = bucketalloc.c; path = libtess2/Source/bucketalloc.c; sourceTree = "<group>"; };
+		02DE8EEB241FC439003E72C5 /* bucketalloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bucketalloc.h; path = libtess2/Source/bucketalloc.h; sourceTree = "<group>"; };
+		02DE8EEC241FC439003E72C5 /* dict.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = dict.c; path = libtess2/Source/dict.c; sourceTree = "<group>"; };
+		02DE8EED241FC439003E72C5 /* dict.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = dict.h; path = libtess2/Source/dict.h; sourceTree = "<group>"; };
+		02DE8EEE241FC439003E72C5 /* geom.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = geom.c; path = libtess2/Source/geom.c; sourceTree = "<group>"; };
+		02DE8EEF241FC439003E72C5 /* geom.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = geom.h; path = libtess2/Source/geom.h; sourceTree = "<group>"; };
+		02DE8EF0241FC439003E72C5 /* mesh.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mesh.c; path = libtess2/Source/mesh.c; sourceTree = "<group>"; };
+		02DE8EF1241FC439003E72C5 /* mesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mesh.h; path = libtess2/Source/mesh.h; sourceTree = "<group>"; };
+		02DE8EF2241FC439003E72C5 /* priorityq.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = priorityq.c; path = libtess2/Source/priorityq.c; sourceTree = "<group>"; };
+		02DE8EF3241FC439003E72C5 /* priorityq.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = priorityq.h; path = libtess2/Source/priorityq.h; sourceTree = "<group>"; };
+		02DE8EF4241FC439003E72C5 /* sweep.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sweep.c; path = libtess2/Source/sweep.c; sourceTree = "<group>"; };
+		02DE8EF5241FC439003E72C5 /* sweep.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sweep.h; path = libtess2/Source/sweep.h; sourceTree = "<group>"; };
+		02DE8EF6241FC439003E72C5 /* tess.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = tess.c; path = libtess2/Source/tess.c; sourceTree = "<group>"; };
+		02DE8EF7241FC439003E72C5 /* tess.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = tess.h; path = libtess2/Source/tess.h; sourceTree = "<group>"; };
 		02F4A70A204E6F1700E241B3 /* worldmap.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = worldmap.jpg; sourceTree = "<group>"; };
 		20286C33FDCF999611CA2CEA /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
 		2F1515C41D0BA700002224B1 /* WED_MetaDataKeys.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_MetaDataKeys.cpp; sourceTree = "<group>"; };
@@ -2363,6 +2383,28 @@
 			name = lzma19;
 			sourceTree = "<group>";
 		};
+		02DE8EE6241FC17C003E72C5 /* libtess2 */ = {
+			isa = PBXGroup;
+			children = (
+				02DE8EEA241FC439003E72C5 /* bucketalloc.c */,
+				02DE8EEB241FC439003E72C5 /* bucketalloc.h */,
+				02DE8EEC241FC439003E72C5 /* dict.c */,
+				02DE8EED241FC439003E72C5 /* dict.h */,
+				02DE8EEE241FC439003E72C5 /* geom.c */,
+				02DE8EEF241FC439003E72C5 /* geom.h */,
+				02DE8EF0241FC439003E72C5 /* mesh.c */,
+				02DE8EF1241FC439003E72C5 /* mesh.h */,
+				02DE8EF2241FC439003E72C5 /* priorityq.c */,
+				02DE8EF3241FC439003E72C5 /* priorityq.h */,
+				02DE8EF4241FC439003E72C5 /* sweep.c */,
+				02DE8EF5241FC439003E72C5 /* sweep.h */,
+				02DE8EF6241FC439003E72C5 /* tess.c */,
+				02DE8EF7241FC439003E72C5 /* tess.h */,
+				02DE8EE9241FC3AC003E72C5 /* tesselator.h */,
+			);
+			name = libtess2;
+			sourceTree = "<group>";
+		};
 		195DF8CFFE9D517E11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -2383,22 +2425,13 @@
 		20286C29FDCF999611CA2CEA /* SceneryTools */ = {
 			isa = PBXGroup;
 			children = (
-				02BDCCFB23A97DCF00208CD2 /* src */,
-				20286C2AFDCF999611CA2CEA /* Source */,
+				D6EAD1900E6DBA8900FC011A /* SDK */,
+				D6BC361B0AB22C84003949C5 /* src */,
 				20286C32FDCF999611CA2CEA /* External Frameworks and Libraries */,
 				195DF8CFFE9D517E11CA2CBB /* Products */,
 			);
 			name = SceneryTools;
 			sourceTree = "<group>";
-		};
-		20286C2AFDCF999611CA2CEA /* Source */ = {
-			isa = PBXGroup;
-			children = (
-				D6EAD1900E6DBA8900FC011A /* SDK */,
-				D6BC361B0AB22C84003949C5 /* src */,
-			);
-			name = Source;
-			sourceTree = SOURCE_ROOT;
 		};
 		20286C32FDCF999611CA2CEA /* External Frameworks and Libraries */ = {
 			isa = PBXGroup;
@@ -2773,6 +2806,7 @@
 		D6BC361B0AB22C84003949C5 /* src */ = {
 			isa = PBXGroup;
 			children = (
+				02DE8EE6241FC17C003E72C5 /* libtess2 */,
 				02D823D2239EF1B50008DBF2 /* lzma19 */,
 				D66569BA1CE261FC00662E5C /* WEDFileCache */,
 				D6E4C9CC18ECA0FD000D98B8 /* Network */,
@@ -4072,7 +4106,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				D61ECAE40C96DF1600159B39 /* ObjView_icons.icns in Resources */,
-				02BDCCFC23A97DCF00208CD2 /* src in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4841,9 +4874,9 @@
 				D6ED370A0B67964D00D5484E /* XObjDefs.cpp in Sources */,
 				D6ED370B0B67964D00D5484E /* XChunkyFileUtils.cpp in Sources */,
 				D6ED370C0B67964D00D5484E /* md5.c in Sources */,
-				02D82430239EF47F0008DBF2 /* 7zStream.c in Sources */,
 				D6183B991D7CA28200E606E9 /* WED_TruckParkingLocation.cpp in Sources */,
 				D6ED370D0B67964D00D5484E /* ogle.cpp in Sources */,
+				02DE8EE8241FC37E003E72C5 /* 7zStream.c in Sources */,
 				D6ED37100B67964D00D5484E /* MemFileUtils.cpp in Sources */,
 				D6ED37110B67964D00D5484E /* PolyRasterUtils.cpp in Sources */,
 				D6ED371F0B67964D00D5484E /* b64.c in Sources */,
@@ -4947,6 +4980,7 @@
 				D659758F0BEA6F2A001FC7C3 /* GUI_TabPane.cpp in Sources */,
 				D6C690380BF0B91100C9F880 /* WED_GroupCommands.cpp in Sources */,
 				D607AF010C03BEC300992876 /* WED_Colors.cpp in Sources */,
+				02DE8F01241FC464003E72C5 /* priorityq.c in Sources */,
 				D60B10220C075B3700AD5EB7 /* WED_AptIE.cpp in Sources */,
 				D607B65B0C0A3FF300992876 /* WED_AboutBox.cpp in Sources */,
 				D682DDEE0C10939C00BBE1A0 /* WED_StartWindow.cpp in Sources */,
@@ -4979,13 +5013,17 @@
 				D6226E5E0E4B826F005BD1D7 /* WED_StringPlacement.cpp in Sources */,
 				02D82424239EF2AE0008DBF2 /* Delta.c in Sources */,
 				D6226E700E4B8C44005BD1D7 /* WED_DrapedOrthophoto.cpp in Sources */,
+				02DE8F00241FC45F003E72C5 /* sweep.c in Sources */,
 				D6226E890E4B8F6C005BD1D7 /* WED_SimpleBoundaryNode.cpp in Sources */,
+				02DE8EFF241FC456003E72C5 /* tess.c in Sources */,
 				D6226EC20E4B981E005BD1D7 /* WED_SimpleBezierBoundaryNode.cpp in Sources */,
 				D6226F250E4C6A48005BD1D7 /* WED_LibraryMgr.cpp in Sources */,
+				02DE8F03241FC471003E72C5 /* geom.c in Sources */,
 				D6226FB30E4C8884005BD1D7 /* WED_LibraryListAdapter.cpp in Sources */,
 				D6226FB90E4C889F005BD1D7 /* WED_LibraryPane.cpp in Sources */,
 				D6F3F0871D07294E00188B28 /* WED_MetaDataDefaults.cpp in Sources */,
 				D695CD6F0EE0862E009C5F2E /* WED_GISBoundingBox.cpp in Sources */,
+				02DE8F04241FC475003E72C5 /* dict.c in Sources */,
 				D695CD7F0EE08808009C5F2E /* WED_ExclusionZone.cpp in Sources */,
 				D695CDA10EE089E5009C5F2E /* WED_CreateBoxTool.cpp in Sources */,
 				D695CE010EE09F19009C5F2E /* WED_TextureBezierNode.cpp in Sources */,
@@ -5014,6 +5052,7 @@
 				D6DEB67B1056FF0300C378BE /* WED_TaxiRoute.cpp in Sources */,
 				D6E528831057041400D0D162 /* WED_CreateEdgeTool.cpp in Sources */,
 				D6E304B3105F7779009E6E7F /* WED_TCEMarqueeTool.cpp in Sources */,
+				02DE8F02241FC46A003E72C5 /* mesh.c in Sources */,
 				D6DF67C2107E8A060004F643 /* WED_ATCFlow.cpp in Sources */,
 				D6DF67C3107E8A060004F643 /* WED_ATCRunwayUse.cpp in Sources */,
 				D660F8E5116FADA6005B8E14 /* WED_TCEDebugLayer.cpp in Sources */,
@@ -5022,6 +5061,7 @@
 				D63A13B3132ABBC400D36061 /* WED_FacadeRing.cpp in Sources */,
 				D63A13B4132ABBC400D36061 /* WED_ForestRing.cpp in Sources */,
 				D63CC9F713E85B8B00468132 /* WED_XMLWriter.cpp in Sources */,
+				02DE8F05241FC479003E72C5 /* bucketalloc.c in Sources */,
 				D6282EFD13EC782B00FD236C /* WED_XMLReader.cpp in Sources */,
 				D6240D6D1476EAAE00A28A6F /* WED_ATCTimeRule.cpp in Sources */,
 				D6240D6E1476EAAE00A28A6F /* WED_ATCWindRule.cpp in Sources */,
