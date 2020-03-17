@@ -18,11 +18,13 @@ WED 2.3
    - fix endcaps for bezier curved lines not following curve in map
    - fix validation not checking GT routes intersecting runways win some airports
    Features:
-   - add validation for ATC networks being fully connected and reachable
+   - new validation for ATC networks being fully connected and reachable
+   - new validation for Hot-Zone tagged taxi routes not connected to other routes
    - show aproximate ground truck + AI A/C routes near ramp starts in ATC layer
    - XPD-9302,9240,9243 support "set_AGL" for objects available with XP11.50b1+
    - recognize keyword '#wed_text' to display text in preview window
    - speedup facade object drawing, same way as done for .agp
+   - speedup validation for gateway use
    - use lighting and anti-aliasing in preview window
 
 WED 2.2.0r2 2/3/20

@@ -133,6 +133,7 @@ enum validate_error_t
 	err_rwy_use_no_runway_selected,
 	err_sign_error,
 	err_taxi_route_has_hot_zones_not_present,
+	err_taxi_route_has_hot_zones_but_not_connected,
 	err_taxi_route_not_joined_to_dest_route,
 	err_taxi_route_set_to_runway_not_present,
 	err_taxi_route_zero_length,

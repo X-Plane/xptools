@@ -222,15 +222,19 @@ static bool is_hidden(const WED_Thing* node)
 	return true;
 }
 
-static set<WED_Thing*> get_all_visible_viewers(const WED_GISPoint* node)
+static vector<WED_TaxiRoute *> get_all_visible_viewers(const WED_GISPoint* node)
 {
-	set<WED_Thing*> node_viewers;
-	node->GetAllViewers(node_viewers);
+	set<WED_Thing *> viewers;
+	node->GetAllViewers(viewers);
 
-	vector<WED_Thing*> node_viewers_vec(node_viewers.begin(), node_viewers.end());
-	node_viewers_vec.erase(remove_if(node_viewers_vec.begin(), node_viewers_vec.end(), is_hidden),node_viewers_vec.end());
-
-	return set<WED_Thing*>(node_viewers_vec.begin(),node_viewers_vec.end());
+	vector<WED_TaxiRoute *> taxi_routes;
+	for (auto it : viewers)
+	{
+		auto tr = dynamic_cast<WED_TaxiRoute *>(it);
+		if (tr && !tr->GetHidden())
+			taxi_routes.push_back(tr);
+	}
+	return taxi_routes;
 }
 
 static bool TaxiRouteCenterlineCheck( const RunwayInfo& runway_info,
@@ -260,7 +264,7 @@ static vector<TaxiRouteInfo> filter_viewers_by_is_runway(const WED_GISPoint* nod
 {
 	vector<TaxiRouteInfo> matching_routes;
 
-	set<WED_Thing*> node_viewers = get_all_visible_viewers(node);
+	vector<WED_TaxiRoute *> node_viewers = get_all_visible_viewers(node);
 
 	for(auto itr : node_viewers)
 	{
@@ -539,7 +543,7 @@ static bool FullyConnectedNetworkCheck( const TaxiRouteVec_t& all_taxiroutes,   
 	}
 	
 	int largest_nw(0);
-	set<WED_Thing *> * largest_nw_set;
+	set<WED_Thing *> * largest_nw_set(nullptr);
 	
 	for(auto& nw : networks)
 	{
@@ -651,14 +655,12 @@ static bool RunwayHasCorrectCoverage( const RunwayInfo& runway_info,
 		int number_of_connected_routes = 0;
 
 		//Filter by visible viewers that are of WED_TaxiRoute* type and whose runway is the same as the runway we're testing
-		set<WED_Thing*> thing_viewers = get_all_visible_viewers(*itr);
-		for (set<WED_Thing*>::iterator thing_itr = thing_viewers.begin(); thing_itr != thing_viewers.end(); ++thing_itr)
+		vector<WED_TaxiRoute *> thing_viewers = get_all_visible_viewers(*itr);
+		for (auto tr : thing_viewers)
 		{
-			WED_TaxiRoute* taxiroute = dynamic_cast<WED_TaxiRoute*>(*thing_itr);
-
-			if (taxiroute != NULL && taxiroute->GetRunway() == runway_info.runway_ptr->GetRunwayEnumsTwoway())
+			if (tr->GetRunway() == runway_info.runway_ptr->GetRunwayEnumsTwoway())
 			{
-				runway_routes.insert(taxiroute);
+				runway_routes.insert(tr);
 				++number_of_connected_routes;
 			}
 		}
@@ -758,19 +760,14 @@ static bool FindIfMarked( const int runway_number,        //enum from ATCRunwayO
 
 static TaxiRouteInfoVec_t GetTaxiRoutesFromViewers(const WED_GISPoint* node)
 {
-	set<WED_Thing*> node_viewers = get_all_visible_viewers(node);
-
+	vector<WED_TaxiRoute *> node_viewers = get_all_visible_viewers(node);
 	TaxiRouteInfoVec_t matching_taxiroutes;
-	for(set<WED_Thing*>::iterator node_viewer_itr = node_viewers.begin(); node_viewer_itr != node_viewers.end(); ++node_viewer_itr)
-	{
-		WED_TaxiRoute* taxiroute = dynamic_cast<WED_TaxiRoute*>(*node_viewer_itr);
-		if(taxiroute != NULL)
-		if(taxiroute->AllowAircraft())
-		{
-			matching_taxiroutes.push_back(TaxiRouteInfo(taxiroute,translator));
-		}
-	}
 
+	for(auto tr : node_viewers)
+	{
+		if(tr->AllowAircraft())
+			matching_taxiroutes.push_back(TaxiRouteInfo(tr, translator));
+	}
 	return matching_taxiroutes;
 }
 
@@ -1075,32 +1072,40 @@ static void TJunctionCrossingTest(const TaxiRouteInfoVec_t& all_taxiroutes, vali
 										   err_taxi_route_zero_length, short_edges, apt));
 }
 
-static void TestInvalidHotZOneTags(const vector<WED_TaxiRoute*>& taxi_routes, const set<int>& legal_rwy_oneway, const set<int>& legal_rwy_twoway,
+static void TestInvalidHotZOneTags(const TaxiRouteInfoVec_t& taxi_routes, const set<int>& legal_rwy_oneway, const set<int>& legal_rwy_twoway,
 										validation_error_vector& msgs, WED_Airport * apt)
 {
-	for(auto tr : taxi_routes)
+	for(auto& tr : taxi_routes)
 	{
-		string name;
-		tr->GetName(name);
 		// See bug http://dev.x-plane.com/bugbase/view.php?id=602 - blank names are okay!
 		//			if (name.empty() && !taxi->IsRunway())
 		//			{
 		//				msg = "This taxi route has no name.  All taxi routes must have a name so that ATC can give taxi instructions.";
 		//			}
 
-		if(tr->HasInvalidHotZones(legal_rwy_oneway))
+		if(tr.ptr->HasInvalidHotZones(legal_rwy_oneway))
 		{
-			msgs.push_back(validation_error_t(  string("The taxi route '") + name + "' has hot zones for runways not present at its airport.",
-												err_taxi_route_has_hot_zones_not_present,
-												tr, apt));
+			msgs.push_back(validation_error_t(string("The taxi route '") + tr.name + "' has hot zones for runways not present at its airport.",
+									err_taxi_route_has_hot_zones_not_present, tr.ptr, apt));
 		}
 
-		if(tr->IsRunway())
-			if(legal_rwy_twoway.count(tr->GetRunway()) == 0)
+		if(tr.ptr->IsRunway())
+		{
+			if (legal_rwy_twoway.count(tr.ptr->GetRunway()) == 0)
 			{
-				msgs.push_back(validation_error_t(string("The taxi route '") + name + "' is set to a runway not present at the airport.", 
-									err_taxi_route_set_to_runway_not_present, tr, apt));
+				msgs.push_back(validation_error_t(string("The taxi route '") + tr.name + "' is set to a runway not present at the airport.",
+					err_taxi_route_set_to_runway_not_present, tr.ptr, apt));
 			}
+		}
+		else if(tr.hot_arrivals.size() || tr.hot_arrivals.size())
+		{
+			for(int i = 0; i < 2; i++)
+				if(get_node_valence(tr.nodes[i]) < 2)
+				{
+					msgs.push_back(validation_error_t("Taxi routes with HotZone tags most be connected on both ends to other taxi routes.",
+						err_taxi_route_has_hot_zones_but_not_connected, tr.nodes[i], apt));
+				}
+		}
 	}
 }
 
@@ -1157,7 +1162,7 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs, /*co
 		
 		FullyConnectedNetworkCheck(all_aircraftroutes_plain, msgs, &apt);
 		
-		TestInvalidHotZOneTags(all_aircraftroutes_plain, legal_rwy_oneway, legal_rwy_twoway, msgs, &apt);
+		TestInvalidHotZOneTags(all_aircraftroutes, legal_rwy_oneway, legal_rwy_twoway, msgs, &apt);
 
 		for(auto runway_info_itr : potentially_active_runways)
 		{

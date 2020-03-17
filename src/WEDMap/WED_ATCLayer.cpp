@@ -58,7 +58,7 @@ static double box_edge_distance(Point2 p, const Bbox2 b)   // returns positive i
 
 static void lines_to_nearest(const vector<Segment2>& starts, const vector<Segment2>& edges, const Bbox2& screen_bounds, double err_2nd, GUI_GraphState * g)
 {
-	if (starts.size() * edges.size() > 10000) return;        // skip drawing too complex scenarios - takes too long
+//	if (starts.size() * edges.size() > 10000) return;        // skip drawing too complex scenarios - takes too long
 
 	for (auto pix : starts)
 	{
@@ -120,7 +120,7 @@ static void lines_to_nearest(const vector<Segment2>& starts, const vector<Segmen
 		// the alternative would be to always test against ALL edges at that airport - which takes a lot of time at large apts
 		// e.g. KATL with ~900 taxi and truck edges and 120 starts
 
-		if (nearest_dist < edge_dist * edge_dist)  
+		if (nearest_dist < edge_dist * edge_dist)
 		{
 			glLineStipple(2, 0x24FF);
 			glBegin(GL_LINE_STRIP);
@@ -155,10 +155,10 @@ void		WED_ATCLayer::DrawSelected(bool inCurrent, GUI_GraphState * g)
 	glEnable(GL_LINE_STIPPLE);
 	glLineWidth(2.0);
 
-	glColor3f(1, 1, 1); // white for roads
+	glColor4f(1, 1, 1, 1); // white for roads
 	lines_to_nearest(mServices, mGTEdges, bnds, GetZoomer()->GetPPM() * 6.0, g);
 
-	glColor3f(1, 1, 0); // yellow for ATC routes
+	glColor4f(1, 1, 0, 1); // yellow for ATC routes
 	lines_to_nearest(mStarts, mATCEdges, bnds, GetZoomer()->GetPPM() * 3.0, g);
 
 	glDisable(GL_LINE_STIPPLE);
@@ -197,44 +197,47 @@ void WED_ATCLayer_DrawAircraft(WED_RampPosition * pos, GUI_GraphState * g, WED_M
 		pos->GetLocation(gis_Geo, nose_wheel);
 		int icao_width = pos->GetWidth();
 
-		float mtr = 5;
-		float offset = 0;
+		double mtr = 5;
+		double offset = 0;
 		int id = 0;
 		
 		switch(icao_width) {
-		case width_A:	mtr = 15.0;	offset = 1.85f;	id = GUI_GetTextureResource("ClassA.png",tex_Linear|tex_Mipmap,NULL);	break;
-		case width_B:	mtr = 27.0;	offset = 2.75f; id = GUI_GetTextureResource("ClassB.png",tex_Linear|tex_Mipmap,NULL);	break;
-		case width_C:	mtr = 41.0;	offset = 4.70f; id = GUI_GetTextureResource("ClassC.png",tex_Linear|tex_Mipmap,NULL);	break;
-		case width_D:	mtr = 56.0;	offset = 9.50f; id = GUI_GetTextureResource("ClassD.png",tex_Linear|tex_Mipmap,NULL);	break;
-		case width_E:	mtr = 72.0;	offset = 8.20f; id = GUI_GetTextureResource("ClassE.png",tex_Linear|tex_Mipmap,NULL);	break;
-		case width_F:	mtr = 80.0;	offset = 8.80f; id = GUI_GetTextureResource("ClassF.png",tex_Linear|tex_Mipmap,NULL);	break;
+		case width_A:	mtr = 15.0;	offset = 1.85;	id = GUI_GetTextureResource("ClassA.png",tex_Linear|tex_Mipmap,NULL);	break;
+		case width_B:	mtr = 27.0;	offset = 2.75; id = GUI_GetTextureResource("ClassB.png",tex_Linear|tex_Mipmap,NULL);	break;
+		case width_C:	mtr = 41.0;	offset = 4.70; id = GUI_GetTextureResource("ClassC.png",tex_Linear|tex_Mipmap,NULL);	break;
+		case width_D:	mtr = 56.0;	offset = 9.50; id = GUI_GetTextureResource("ClassD.png",tex_Linear|tex_Mipmap,NULL);	break;
+		case width_E:	mtr = 72.0;	offset = 8.20; id = GUI_GetTextureResource("ClassE.png",tex_Linear|tex_Mipmap,NULL);	break;
+		case width_F:	mtr = 80.0;	offset = 8.80; id = GUI_GetTextureResource("ClassF.png",tex_Linear|tex_Mipmap,NULL);	break;
 		}
 		
 		Point2	c[4];
 		Quad_1to4(nose_wheel, pos->GetHeading(), mtr, mtr, c);
 		
-		g->SetState(0, id ? 1 : 0, 0, 0, 1, 0, 0);
+		if (id)
+		{
+			g->BindTex(id, 0);
+			g->SetTexUnits(1);
+
+			z->LLToPixelv(c,c,4);
 		
-		if(id) g->BindTex(id, 0);
+			Vector2	v_left (c[1],c[0]);
+			Vector2 v_right(c[2],c[3]);
 		
-		z->LLToPixelv(c,c,4);
+			double relative_slip = (mtr * 0.5 - offset) / mtr;
 		
-		Vector2	v_left (c[1],c[0]);
-		Vector2 v_right(c[2],c[3]);
+			c[0] += v_left * relative_slip;
+			c[1] += v_left * relative_slip;
+			c[2] += v_right* relative_slip;
+			c[3] += v_right* relative_slip;
 		
-		float relative_slip = (mtr * 0.5f - offset) / mtr;
-		
-		c[0] += v_left * relative_slip;
-		c[1] += v_left * relative_slip;
-		c[2] += v_right* relative_slip;
-		c[3] += v_right* relative_slip;
-		
-		glBegin(GL_QUADS);
-		glTexCoord2f(0,0);	glVertex2(c[0]);
-		glTexCoord2f(0,1);	glVertex2(c[1]);
-		glTexCoord2f(1,1);	glVertex2(c[2]);
-		glTexCoord2f(1,0);	glVertex2(c[3]);
-		glEnd();
+			glBegin(GL_QUADS);
+			glTexCoord2f(0,0);	glVertex2(c[0]);
+			glTexCoord2f(0,1);	glVertex2(c[1]);
+			glTexCoord2f(1,1);	glVertex2(c[2]);
+			glTexCoord2f(1,0);	glVertex2(c[3]);
+			glEnd();
+			g->SetTexUnits(0);
+		}
 }
 
 static bool is_ground_traffic_route(WED_Thing * r)
@@ -442,12 +445,10 @@ bool	WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GU
 					g->SetTexUnits(0);
 				}
 			}
-			GetZoomer()->LLToPixelv(ends, ends, 2);
 			mATCEdges.push_back(Segment2(ends[0], ends[1]));
 		}
 		else // gotta be truck route then
 		{
-			GetZoomer()->LLToPixelv(ends, ends, 2);
 			mGTEdges.push_back(Segment2(ends[0], ends[1]));
 		}
 	}
