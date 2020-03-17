@@ -900,8 +900,7 @@ static int SelectAndParents(ISelectable * what, void * ref)
 	WED_Thing * who = dynamic_cast<WED_Thing *>(what);
 	while(who)
 	{
-		if (all->count(who)) return 0;
-		all->insert(who);
+		if (!all->insert(who).second) return 0;
 		who = who->GetParent();
 	}
 	return 0;
