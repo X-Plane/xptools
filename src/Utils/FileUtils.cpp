@@ -196,8 +196,7 @@ FILE_case_correct_path::operator const char * (void) const { return path; }
 bool FILE_exists(const char * path)
 {
 #if IBM
-	struct _stat ss;
-	if (_wstat(convert_str_to_utf16(path).c_str(),&ss) < 0) return false;
+	if (_waccess(convert_str_to_utf16(path).c_str(),0) == -1) return false;
 #else
 	FILE_case_correct_path path2(path);
 	struct stat ss;
