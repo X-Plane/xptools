@@ -470,37 +470,39 @@ void	WED_DoSetCurrentAirport(IResolver * inResolver)
 
 static bool WED_NoLongerViable(WED_Thing * t, bool strict)
 {
-	IGISPointSequence * sq = dynamic_cast<IGISPointSequence *>(t);
-	if (sq)
+	if(t->CountChildren() < 4)  // avoid the dynamic_casting and facade loading if its obviously obsolete
 	{
-		int min_children = 2;
-		WED_Thing * parent = t->GetParent();
-		WED_FacadePlacement * facade;
-		if (parent && dynamic_cast<WED_OverlayImage *>(parent))
-			min_children = 4;
-		else if (parent && (facade = dynamic_cast<WED_FacadePlacement *>(parent)))
-			min_children = facade->GetTopoMode() == WED_FacadePlacement::topo_Chain ? 2 : 3;  // allow some 2-node facades. No strict check, as hafaces can not have holes
-		else if (parent && dynamic_cast<WED_GISPolygon *>(parent))		// Strict rules for delete key require 3 points to a polygon - prevents degenerate holes.
-			min_children = strict ? 3 : 2;								// Loose requirements for repair require 2 - matches minimum apt.dat spec.
-		if(t->CountSources() == 2 && t->GetNthSource(0) == NULL) return true;
-		if(t->CountSources() == 2 && t->GetNthSource(1) == NULL) return true;
+		if(dynamic_cast<IGISPointSequence *>(t))
+		{
+			int min_children = 2;
+			WED_Thing * parent = t->GetParent();
+			WED_FacadePlacement * facade;
+			if (parent && parent->GetClass() == WED_OverlayImage::sClass)
+				min_children = 4;
+			else if (parent && parent->GetClass() == WED_FacadePlacement::sClass)
+				min_children = dynamic_cast<WED_FacadePlacement *>(parent)->GetTopoMode() == WED_FacadePlacement::topo_Chain ? 2 : 3;  // allow some 2-node facades. No strict check, as facades can not have holes
+			else if (parent && strict && dynamic_cast<WED_GISPolygon *>(parent))		// Strict rules for delete key require 3 points to a polygon - prevents degenerate holes.
+				min_children = 3;
+			if (t->CountSources() == 2 && t->GetNthSource(0) == NULL) return true;
+			if (t->CountSources() == 2 && t->GetNthSource(1) == NULL) return true;
 
-		if ((t->CountChildren() + t->CountSources()) < min_children)
-			return true;
+			if ((t->CountChildren() + t->CountSources()) < min_children)
+				return true;
+		}
 	}
 
-	if(SAFE_CAST(WED_TaxiRouteNode,t) &&
+	if(t->GetClass() == WED_TaxiRouteNode::sClass &&
 		SAFE_CAST(IGISComposite,t->GetParent()) &&
 		t->CountViewers() == 0)
 		return true;
 #if ROAD_EDITING
-	if(SAFE_CAST(WED_RoadNode,t) &&
+	if (t->GetClass() == WED_RoadNode::sClass &&
 		SAFE_CAST(IGISComposite,t->GetParent()) &&
 		t->CountViewers() == 0)
 		return true;
 #endif
-	IGISPolygon * p = dynamic_cast<IGISPolygon *>(t);
-	if (p && t->CountChildren() == 0)
+	if (t->CountChildren() == 0 &&
+		dynamic_cast<IGISPolygon *>(t))
 		return true;
 
 	return false;
