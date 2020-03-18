@@ -372,10 +372,12 @@ double VectorMeters2NorthHeading(const Point2& ref, const Point2& p, const Vecto
 
 void MetersToLLE(const Point2& ref, int count, Point2 * pts)
 {
+	double cos_lat = MTR_TO_DEG_LAT / cos(ref.y() * DEG_TO_RAD);
+	
 	while(count--)
 	{
 		pts->y_ = ref.y() + pts->y() * MTR_TO_DEG_LAT;
-		pts->x_ = ref.x() + pts->x() * MTR_TO_DEG_LAT / cos(pts->y() * DEG_TO_RAD);
+		pts->x_ = ref.x() + pts->x() * cos_lat;
 
 		++pts;
 	}

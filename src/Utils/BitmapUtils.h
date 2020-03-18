@@ -196,7 +196,7 @@ void	DestroyBitmap(const struct ImageInfo * inImageInfo);
 
 //Put in a file path the image name at the end and get back -1 for error or a
 //supported image code (see the enum SupportedTypes
-int GetSupportedType(const char * path);
+int GetSupportedType(const string& path);
 
 //Attempts to make a supported image type using GetSupportedType and the various CreateBitmapFromX utils
 //Error codes are passed back up and returned by the method

@@ -208,40 +208,6 @@ vector<vector<WED_ATCFrequency*> > CollectAirportFrequencies(WED_Thing* who)
 	return sub_frequencies;
 }
 
-// This digs out the resource for any WED_Thing that uses resources - it knows all of the types that
-// use resources - used for library checks.
-static bool GetThingResource(WED_Thing * who, string& r)
-{
-	WED_ObjPlacement * obj;
-	WED_FacadePlacement * fac;
-	WED_ForestPlacement * fst;
-	WED_LinePlacement * lin;
-	WED_StringPlacement * str;
-	WED_PolygonPlacement * pol;
-	WED_DrapedOrthophoto * ort;
-
-	#define CAST_WITH_CHECK(CLASS,VAR) \
-	if(who->GetClass() == CLASS::sClass && (VAR = dynamic_cast<CLASS *>(who)) != NULL) { \
-		VAR->GetResource(r); \
-		return true; }
-
-	CAST_WITH_CHECK(WED_ObjPlacement,obj)
-	CAST_WITH_CHECK(WED_FacadePlacement,fac)
-	CAST_WITH_CHECK(WED_ForestPlacement,fst)
-	CAST_WITH_CHECK(WED_LinePlacement,lin)
-	CAST_WITH_CHECK(WED_StringPlacement,str)
-	CAST_WITH_CHECK(WED_PolygonPlacement,pol)
-	CAST_WITH_CHECK(WED_DrapedOrthophoto,ort)
-
-	return false;
-}
-
-static bool IsThingResource(WED_Thing * who)
-{
-	string r;
-	return GetThingResource(who,r);
-}
-
 bool isGroundRoute(WED_Thing* taxi_route)
 {
 	WED_TaxiRoute* ground_rt = static_cast<WED_TaxiRoute*>(taxi_route);
@@ -601,7 +567,7 @@ static void ValidateOnePolygon(WED_GISPolygon* who, validation_error_vector& msg
 	}
 }
 
-static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* library_mgr, validation_error_vector& msgs, WED_Airport * parent_apt)
+static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, validation_error_vector& msgs, WED_Airport * parent_apt)
 {
 	// Don't validate hidden stuff - we won't export it!
 	WED_Entity * ee = dynamic_cast<WED_Entity *>(who);
@@ -609,20 +575,10 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* library_mgr, v
 		return;
 
 	if(who->GetClass() == WED_FacadePlacement::sClass)
-	{
 		ValidateOneFacadePlacement(who, msgs, parent_apt);
-	}
 
 	if(who->GetClass() == WED_ForestPlacement::sClass)
-	{
 		ValidateOneForestPlacement(who, msgs, parent_apt);
-	}
-
-	WED_GISPolygon * poly = dynamic_cast<WED_GISPolygon  *> (who);
-	if (poly)
-	{
-		ValidateOnePolygon(poly, msgs, parent_apt);
-	}
 
 	if(gExportTarget == wet_gateway)
 	{
@@ -632,38 +588,40 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* library_mgr, v
 	}
 
 	//--Validate resources-----------------------------------------------------
-	IHasResource* resource_containing_who = dynamic_cast<IHasResource*>(who);
+	IHasResource* who_hasRes = dynamic_cast<IHasResource*>(who);
 
-	if(resource_containing_who != NULL)
+	if(who_hasRes != NULL)
 	{
-		string resource_str;
-		resource_containing_who->GetResource(resource_str);
-
-		//1. Is the resource entirely missing
+		string res;
+		who_hasRes->GetResource(res);
+		
+		if(gExportTarget == wet_gateway)
+		{
+			if(!lib_mgr->IsResourceDefault(res))
+				msgs.push_back(validation_error_t(string("The library path '") + res + "' is not part of X-Plane's default installation and cannot be submitted to the global airport database.",
+				err_gateway_resource_not_in_default_library, who, parent_apt));
+			if(lib_mgr->IsResourceDeprecatedOrPrivate(res))
+				msgs.push_back(validation_error_t(string("The library path '") + res + "' is a deprecated or private X-Plane resource and cannot be used in global airports.",
+				err_gateway_resource_private_or_depricated,	who, parent_apt));
+		}
 
 		string path;
-		if (GetSupportedType(resource_str.c_str()) != -1)
-		{
-			path = gPackageMgr->ComputePath(library_mgr->GetLocalPackage(), resource_str);
-		}
+		if (GetSupportedType(res) != -1)  // strictly - only Draped Orthos may have that
+			path = gPackageMgr->ComputePath(lib_mgr->GetLocalPackage(), res);
 		else
-		{
-			path = library_mgr->GetResourcePath(resource_str);
-		}
+			path = lib_mgr->GetResourcePath(res);
 
-		if(FILE_exists(path.c_str()) == false)
+		if(!FILE_exists(path.c_str()))
 		{
 			if(parent_apt != NULL)
 			{
-				msgs.push_back(validation_error_t(string(who->HumanReadableType()) + "'s resource " + resource_str + " cannot be found.", err_resource_cannot_be_found, who, parent_apt));
+				msgs.push_back(validation_error_t(string(who->HumanReadableType()) + "'s resource " + res + " cannot be found.", err_resource_cannot_be_found, who, parent_apt));
 			}
 		}
 
-		::transform(resource_str.begin(), resource_str.end(), resource_str.begin(), ::tolower);
-
 		//3. What happen if the user free types a real resource of the wrong type into the box?
 		bool matches = false;
-#define EXTENSION_DOES_MATCH(CLASS,EXT) (who->GetClass() == CLASS::sClass && FILE_get_file_extension(resource_str) == EXT) ? true : false;
+#define EXTENSION_DOES_MATCH(CLASS,EXT) (who->GetClass() == CLASS::sClass && FILE_get_file_extension(res) == EXT) ? true : false;
 		matches |= EXTENSION_DOES_MATCH(WED_DrapedOrthophoto, "pol");
 		matches |= EXTENSION_DOES_MATCH(WED_DrapedOrthophoto, FILE_get_file_extension(path)); //This may be a tautology
 		matches |= EXTENSION_DOES_MATCH(WED_FacadePlacement,  "fac");
@@ -676,16 +634,25 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* library_mgr, v
 
 		if(matches == false)
 		{
-			msgs.push_back(validation_error_t("Resource " + resource_str + " does not have the correct file type", err_resource_does_not_have_correct_file_type, who, parent_apt));
+			msgs.push_back(validation_error_t("Resource '" + res + "' does not have the correct file type", 
+								err_resource_does_not_have_correct_file_type, who, parent_apt));
 		}
 	}
+	
+	WED_GISPolygon * poly = dynamic_cast<WED_GISPolygon  *> (who);
+	if (poly)
+	{
+		ValidateOnePolygon(poly, msgs, parent_apt);
+		return;  // There are no nested polygons. No need to digg deeper.
+	}
+
 	//-----------------------------------------------------------------------//
 	int nn = who->CountChildren();
 	for (int n = 0; n < nn; ++n)
 	{
 		WED_Thing * c = who->GetNthChild(n);
 		if(c->GetClass() != WED_Airport::sClass)
-			ValidateDSFRecursive(c, library_mgr, msgs, parent_apt);
+			ValidateDSFRecursive(c, lib_mgr, msgs, parent_apt);
 	}
 }
 
@@ -1069,43 +1036,6 @@ static void ValidateATCFlows(WED_Airport* apt, validation_error_vector& msgs, se
 			}
 		}
 	}
-#if 0
-	for(vector<WED_TaxiRoute *>::iterator t = taxi_routes.begin(); t != taxi_routes.end(); ++t)
-	{
-		WED_TaxiRoute * taxi = *t;
-		string name;
-		taxi->GetName(name);
-		// See bug http://dev.x-plane.com/bugbase/view.php?id=602 - blank names are okay!
-		//			if (name.empty() && !taxi->IsRunway())
-		//			{
-		//				msg = "This taxi route has no name.  All taxi routes must have a name so that ATC can give taxi instructions.";
-		//			}
-
-		if(taxi->HasInvalidHotZones(legal_rwy_oneway))
-		{
-			msgs.push_back(validation_error_t(  string("The taxi route '") + name + "' has hot zones for runways not present at its airport.",
-												err_taxi_route_has_hot_zones_not_present,
-												taxi, apt));
-		}
-
-		if(taxi->IsRunway())
-			if(legal_rwy_twoway.count(taxi->GetRunway()) == 0)
-			{
-				msgs.push_back(validation_error_t(string("The taxi route '") + name + "' is set to a runway not present at the airport.", err_taxi_route_set_to_runway_not_present, taxi, apt));
-			}
-
-		Point2	start, end;
-		taxi->GetNthPoint(0)->GetLocation(gis_Geo, start);
-		taxi->GetNthPoint(1)->GetLocation(gis_Geo, end);
-		if(start == end)
-		{
-#if CHECK_ZERO_LENGTH
-			msgs.push_back(validation_error_t(string("The taxi route '") + name + "' is zero length.", err_taxi_route_zero_length, taxi,apt));
-#endif
-		}
-	}
-	TJunctionTest(taxi_routes, msgs, apt);
-#endif
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------
@@ -1159,9 +1089,8 @@ static void ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vec
             vector<WED_Runway *>::const_iterator r(runways.begin());
             while(r != runways.end())
             {
-                WED_GISLine_Width * lw = dynamic_cast<WED_GISLine_Width *>(*r);
-
-                if(((*r)->GetSurface() <= surf_Concrete || (*r)->GetSurface() == surf_Trans || unpaved_OK) && lw->GetLength() >= req_rwy_len && lw->GetWidth() >= req_rwy_wid)
+                if(((*r)->GetSurface() <= surf_Concrete || (*r)->GetSurface() == surf_Trans || unpaved_OK) 
+					&& (*r)->GetLength() >= req_rwy_len && (*r)->GetWidth() >= req_rwy_wid)
                         break;
                 ++r;
             }
@@ -1964,6 +1893,169 @@ static void ValidateOneTruckParking(WED_TruckParkingLocation* truck_parking,vali
 		msgs.push_back(validation_error_t(ss, err_truck_parking_car_count, truck_parking, apt));
 	}
 }
+
+static void ValidateCIFP(const vector<WED_Runway *>& runways, const vector<WED_Sealane *>& sealanes, const set<int>& legal_rwy_oneway,
+				MFMemFile * mf, validation_error_vector& msgs, WED_Airport* apt)
+{
+		map<int,Point3> CIFP_rwys;
+		set<int> rwys_missing;
+		string icao;
+		apt->GetName(icao);
+		
+		if(apt->ContainsMetaDataKey(wed_AddMetaDataICAO))
+		{
+			string icao_meta = apt->GetMetaDataValue(wed_AddMetaDataICAO);
+			if(!icao_meta.empty()) icao = icao_meta;
+		}
+		if (mf)                         // for speed - maybe store the CIFP data in a vector, 
+		{                               // so we dont have to re-parse it for every airport ?
+			MFScanner	s;
+			MFS_init(&s, mf);
+			MFS_string_eol(&s,NULL);    // skip first line, so Tyler can put a comment/version in there
+
+			while(!MFS_done(&s))        // build a list of all runways CIFP dats knows about at this airport
+			{
+				if(MFS_string_match_no_case(&s,icao.c_str(),false))
+				{
+					string rnam;
+					MFS_string(&s,&rnam);
+					double lat = MFS_double(&s);
+					double lon = MFS_double(&s);
+					double disp= MFS_double(&s);
+
+					int rwy_enum=ENUM_LookupDesc(ATCRunwayOneway,rnam.c_str());
+					if (rwy_enum != atc_rwy_None)
+					{
+						CIFP_rwys[rwy_enum]=Point3(lon,lat,disp);
+						rwys_missing.insert(rwy_enum);
+					}
+				}
+				MFS_string_eol(&s,NULL);
+			}
+		}
+		// first check: all runway present at current airport
+		
+		for(auto r : legal_rwy_oneway)
+			rwys_missing.erase(r);
+			
+		for(auto i : sealanes)
+		{
+			string name;	i->GetName(name);
+			vector<string> parts;
+			tokenize_string(name.begin(),name.end(),back_inserter(parts), '/');
+	
+			for(auto p : parts)
+			{
+				if(p.back() == 'W')	p.pop_back();                       // We want to allow sealanes with or without W suffix to satisfy CIFP validation
+				int e = ENUM_LookupDesc(ATCRunwayOneway,p.c_str());
+				if(legal_rwy_oneway.find(e) == legal_rwy_oneway.end())   // but only if that name does not collide with a paved runway at the same airport
+					rwys_missing.erase(e);
+			}
+		}
+		if (!rwys_missing.empty())
+		{
+			string msg = "Could not find runway(s) ";
+			for(auto r : rwys_missing)
+				if(r > 1) { msg += ENUM_Desc(r); msg += " "; }
+			msg += "required by CIFP data at airport " + icao + ". ";
+			msgs.push_back(validation_error_t(msg, err_airport_no_runway_matching_cifp, apt, apt));
+		}
+		
+		// second check: all verify location accuracy of runways present
+		
+		for(auto r : runways)
+		{
+			int r_enum[2];
+			pair<int,int> p = r->GetRunwayEnumsOneway();
+			r_enum[0] = p.first; r_enum[1] = p.second;
+
+			Point2 r_loc[2];
+			r->GetSource()->GetLocation(gis_Geo, r_loc[0]);
+			r->GetTarget()->GetLocation(gis_Geo, r_loc[1]);
+
+			float CIFP_LOCATION_ERROR = 10.0;
+
+			if(r->GetSurface() != surf_Asphalt && r->GetSurface() != surf_Concrete)   // for unpaved runways ...
+			{
+				float r_wid = r->GetWidth() / 2.0;
+				CIFP_LOCATION_ERROR =  fltlim(r_wid, CIFP_LOCATION_ERROR, 50.0);   // allow the error circle to be as wide as a unpaved runway, within reason
+			}
+
+			for(int i = 0; i < 2; ++i)       // loop to cover both runway ends
+			{
+				map<int,Point3>::iterator r_cifp;
+				if((r_cifp = CIFP_rwys.find(r_enum[i])) != CIFP_rwys.end())     // check if this runway is mentioned in CIFP data
+				{
+					Point2 rwy_cifp(Point2(r_cifp->second.x, r_cifp->second.y));
+					float rwy_err = LonLatDistMeters(r_loc[i], rwy_cifp);
+
+					Point2 thr_cifp(rwy_cifp);
+					if (r_cifp->second.z > 0.0)
+					{
+						Point2 opposing_rwy_cifp(Point2(CIFP_rwys[r_enum[1-i]].x, CIFP_rwys[r_enum[1-i]].y));      // what to do if CIFP only exist for one runway end ?
+
+						float rwy_len_cifp = LonLatDistMeters(rwy_cifp, opposing_rwy_cifp);
+						thr_cifp += Vector2(rwy_cifp,opposing_rwy_cifp) / rwy_len_cifp * r_cifp->second.z;
+					}
+
+					Point2 thr_loc(r_loc[i]);
+					if (i)
+					{
+						Point2 corners[4];
+						if (r->GetCornersDisp2(corners))
+							thr_loc = Midpoint2(corners[0],corners[3]);
+					}
+					else
+					{
+						Point2 corners[4];
+						if (r->GetCornersDisp1(corners))
+							thr_loc = Midpoint2(corners[1],corners[2]);
+					}
+
+					float thr_err = LonLatDistMeters(thr_loc, thr_cifp);
+
+					if (thr_err > CIFP_LOCATION_ERROR)
+					{
+						stringstream ss;
+						if (rwy_err < CIFP_LOCATION_ERROR)
+							ss  << "Runway " << ENUM_Desc(r_cifp->first) << " threshold displacement not matching gateway CIFP data. Move runway displaced threshold to indicated location.";
+						else
+							ss  << "Runway " << ENUM_Desc(r_cifp->first) << " threshold not within " <<  CIFP_LOCATION_ERROR << "m of location mandated by gateway CIFP data.";
+						msgs.push_back(validation_error_t(ss.str(), err_runway_matching_cifp_mislocated, r, apt));
+#if DEBUG_VIS_LINES
+						const int NUM_PTS = 20;
+						Point2 pt_cir[NUM_PTS];
+						for (int j = 0; j < NUM_PTS; ++j)
+							pt_cir[j] = Point2(CIFP_LOCATION_ERROR*sin(2.0*j*M_PI/NUM_PTS), CIFP_LOCATION_ERROR*cos(2.0*j*M_PI/NUM_PTS));
+							
+						MetersToLLE(thr_cifp, NUM_PTS, pt_cir);
+						for (int j = 0; j < NUM_PTS; ++j)
+							debug_mesh_line(pt_cir[j],pt_cir[(j+1)%NUM_PTS], DBG_LIN_COLOR);
+#endif
+					}
+					if (rwy_err > CIFP_LOCATION_ERROR)
+					{
+						stringstream ss;
+						if (thr_err > CIFP_LOCATION_ERROR)
+							ss  << "Runway " << ENUM_Desc(r_cifp->first) << " end not within " <<  CIFP_LOCATION_ERROR << "m of location recommended by gateway CIFP data.";
+						else
+							ss  << "Runway " << ENUM_Desc(r_cifp->first) << " end not within " <<  CIFP_LOCATION_ERROR << "m of location recommended by gateway CIFP data. Move runway end to indicated location and pull back displaced threshold distance so runway threshold stays at current location";
+						msgs.push_back(validation_error_t(ss.str(), warn_runway_matching_cifp_mislocated, r, apt));
+#if DEBUG_VIS_LINES
+						const int NUM_PTS = 20;
+						Point2 pt_cir[NUM_PTS];
+						for (int j = 0; j < NUM_PTS; ++j)
+							pt_cir[j] = Point2(CIFP_LOCATION_ERROR*sin(2.0*j*M_PI/NUM_PTS), CIFP_LOCATION_ERROR*cos(2.0*j*M_PI/NUM_PTS));
+						MetersToLLE(rwy_cifp, NUM_PTS, pt_cir);
+						for (int j = 0; j < NUM_PTS; j+=2)                                             // draw a dashed circle only, as its only a warning
+							debug_mesh_line(pt_cir[j],pt_cir[(j+1)%NUM_PTS], DBG_LIN_COLOR);
+#endif
+					}
+				}
+			}
+		}
+}
+
 //------------------------------------------------------------------------------------------------------------------------------------
 #pragma mark -
 //------------------------------------------------------------------------------------------------------------------------------------
@@ -2006,7 +2098,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
             err_type = warn_airport_name_style;
 
 		if(strlen_utf8(name) > 30)
-			msgs.push_back(validation_error_t("Airport name is longer than 30 characters.", err_type, apt,apt));
+			msgs.push_back(validation_error_t(string("Airport name '") + name + "' is longer than 30 characters.", err_type, apt,apt));
 
 		if(isspace(name[0]) || isspace(name[name.length()-1]))
 			msgs.push_back(validation_error_t("Airport name includes leading or trailing spaces.", err_type, apt,apt));
@@ -2164,184 +2256,9 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 			msgs.push_back(validation_error_t("Only Orthophotos with automatic subtexture selection can be exported to the Gateway. Please hide or remove selected Orthophotos.",
 						err_gateway_orthophoto_cannot_be_exported, orthos_illegal, apt));
 
-		vector<WED_Thing *>	res_users;
-		CollectRecursive(apt, back_inserter(res_users), ThingNotHidden, IsThingResource);
-		for(vector<WED_Thing *>::iterator ru = res_users.begin(); ru != res_users.end(); ++ru)
-		{
-			string res;
-			if(GetThingResource(*ru,res))
-			{
-				if(!lib_mgr->IsResourceDefault(res))
-					msgs.push_back(validation_error_t(string("The library path '") + res + "' is not part of X-Plane's default installation and cannot be submitted to the global airport database.",
-					err_gateway_resource_not_in_default_library,
-						*ru, apt));
-				if(lib_mgr->IsResourceDeprecatedOrPrivate(res))
-					msgs.push_back(validation_error_t(string("The library path '") + res + "' is a deprecated or private X-Plane resource and cannot be used in global airports.",
-					err_gateway_resource_private_or_depricated,
-						*ru, apt));
-			}
-		}
-
 		// verify existence of required runways
-		map<int,Point3> CIFP_rwys;
-		set<int> rwys_missing;
-		if(apt->ContainsMetaDataKey(wed_AddMetaDataICAO))
-		{
-			string icao_meta = apt->GetMetaDataValue(wed_AddMetaDataICAO);
-			if(!icao_meta.empty()) icao = icao_meta;
-		}
-		if (mf)
-		{
-			MFScanner	s;
-			MFS_init(&s, mf);
-			MFS_string_eol(&s,NULL);    // skip first line, so Tyler can put a comment/version in there
+		ValidateCIFP(runways, sealanes, legal_rwy_oneway, mf, msgs, apt);
 
-			while(!MFS_done(&s))        // build a list of all runways CIFP dats knows about at this airport
-			{
-				if(MFS_string_match_no_case(&s,icao.c_str(),false))
-				{
-					string rnam;
-					MFS_string(&s,&rnam);
-					double lat = MFS_double(&s);
-					double lon = MFS_double(&s);
-					double disp= MFS_double(&s);
-
-					int rwy_enum=ENUM_LookupDesc(ATCRunwayOneway,rnam.c_str());
-					if (rwy_enum != atc_rwy_None)
-					{
-						CIFP_rwys[rwy_enum]=Point3(lon,lat,disp);
-						rwys_missing.insert(rwy_enum);
-					}
-				}
-				MFS_string_eol(&s,NULL);
-			}
-		}
-		for(set<int>::iterator i = legal_rwy_oneway.begin(); i != legal_rwy_oneway.end(); ++i)
-		{
-			rwys_missing.erase(*i);    // remove those runways that can be found in the scenery for this airport
-		}
-		for(auto i : sealanes)
-		{
-			string name;	i->GetName(name);
-			vector<string> parts;  tokenize_string(name.begin(),name.end(),back_inserter(parts), '/');
-	
-			for(auto p : parts)
-			{
-				if(p.back() == 'W')	p.pop_back();                       // We want to allow sealanes with or without W suffix to satisfy CIFP validation
-				int e = ENUM_LookupDesc(ATCRunwayOneway,p.c_str());
-				if(legal_rwy_oneway.find(e) == legal_rwy_oneway.end())   // but only if that name does not collide with a paved runway at the same airport
-				{
-					rwys_missing.erase(e);
-				}
-			}
-		}
-		if (!rwys_missing.empty())
-		{
-			stringstream ss;
-			ss  << "Could not find runway(s) ";
-			for(set<int>::iterator i = rwys_missing.begin(); i != rwys_missing.end(); ++i)
-				if(*i > 1) ss << ENUM_Desc(*i) << " ";
-			ss << "required by CIFP data at airport " << icao << ". ";
-			msgs.push_back(validation_error_t(ss.str(), err_airport_no_runway_matching_cifp, apt, apt));
-		}
-		// verify location accuracy of runways with CIFP data
-		for(vector<WED_Runway *>::iterator r = runways.begin(); r != runways.end(); ++r)
-		{
-			int r_enum[2];
-			pair<int,int> p = (*r)->GetRunwayEnumsOneway();
-			r_enum[0] = p.first; r_enum[1] = p.second;
-
-			Point2 r_loc[2];
-			(*r)->GetSource()->GetLocation(gis_Geo, r_loc[0]);
-			(*r)->GetTarget()->GetLocation(gis_Geo, r_loc[1]);
-
-			float CIFP_LOCATION_ERROR = 10.0;
-
-			if((*r)->GetSurface() != surf_Asphalt && (*r)->GetSurface() != surf_Concrete)   // for unpaved runways ...
-			{
-				float r_wid = (*r)->GetWidth() / 2.0;
-				CIFP_LOCATION_ERROR =  fltlim(r_wid, CIFP_LOCATION_ERROR, 50.0);   // allow the error circle to be as wide as a unpaved runway, within reason
-			}
-
-			for(int i = 0; i < 2; ++i)       // loop to cover both runway ends
-			{
-				map<int,Point3>::iterator r_cifp;
-				if((r_cifp = CIFP_rwys.find(r_enum[i])) != CIFP_rwys.end())     // check if this runway is mentioned in CIFP data
-				{
-					Point2 rwy_cifp(Point2(r_cifp->second.x, r_cifp->second.y));
-					float rwy_err = LonLatDistMeters(r_loc[i], rwy_cifp);
-
-					Point2 thr_cifp(rwy_cifp);
-					if (r_cifp->second.z > 0.0)
-					{
-						Point2 opposing_rwy_cifp(Point2(CIFP_rwys[r_enum[1-i]].x, CIFP_rwys[r_enum[1-i]].y));      // what to do if CIFP only exist for one runway end ?
-
-						float rwy_len_cifp = LonLatDistMeters(rwy_cifp, opposing_rwy_cifp);
-						thr_cifp += Vector2(rwy_cifp,opposing_rwy_cifp) / rwy_len_cifp * r_cifp->second.z;
-					}
-
-					Point2 thr_loc(r_loc[i]);
-					if (i)
-					{
-						Point2 corners[4];
-						if ((*r)->GetCornersDisp2(corners))
-							thr_loc = Midpoint2(corners[0],corners[3]);
-					}
-					else
-					{
-						Point2 corners[4];
-						if ((*r)->GetCornersDisp1(corners))
-							thr_loc = Midpoint2(corners[1],corners[2]);
-					}
-
-					float thr_err = LonLatDistMeters(thr_loc, thr_cifp);
-
-					if (thr_err > CIFP_LOCATION_ERROR)
-					{
-						stringstream ss;
-						if (rwy_err < CIFP_LOCATION_ERROR)
-							ss  << "Runway " << ENUM_Desc(r_cifp->first) << " threshold displacement not matching gateway CIFP data. Move runway displaced threshold to indicated location.";
-						else
-							ss  << "Runway " << ENUM_Desc(r_cifp->first) << " threshold not within " <<  CIFP_LOCATION_ERROR << "m of location mandated by gateway CIFP data.";
-						msgs.push_back(validation_error_t(ss.str(), err_runway_matching_cifp_mislocated, *r, apt));
-#if DEBUG_VIS_LINES
-						const int NUM_PTS = 20;
-						Point2 pt_cir[NUM_PTS];
-						for (int j = 0; j < NUM_PTS; ++j)
-							pt_cir[j] = Point2(CIFP_LOCATION_ERROR*sin(2.0*j*M_PI/NUM_PTS), CIFP_LOCATION_ERROR*cos(2.0*j*M_PI/NUM_PTS));
-						MetersToLLE(thr_cifp, NUM_PTS, pt_cir);
-						for (int j = 0; j < NUM_PTS; ++j)
-							debug_mesh_line(pt_cir[j],pt_cir[(j+1)%NUM_PTS], DBG_LIN_COLOR);
-#if 0
-						for (int j = 0; j < NUM_PTS; ++j)
-							pt_cir[j] = Point2(CIFP_LOCATION_ERROR*sin(2.0*j*M_PI/NUM_PTS), CIFP_LOCATION_ERROR*cos(2.0*j*M_PI/NUM_PTS));
-						MetersToLLE(thr_loc, NUM_PTS, pt_cir);
-						for (int j = 0; j < NUM_PTS; ++j)
-							debug_mesh_line(pt_cir[j],pt_cir[(j+1)%NUM_PTS], 0,1,1,0,1,1);
-#endif
-#endif
-					}
-					if (rwy_err > CIFP_LOCATION_ERROR)
-					{
-						stringstream ss;
-						if (thr_err > CIFP_LOCATION_ERROR)
-							ss  << "Runway " << ENUM_Desc(r_cifp->first) << " end not within " <<  CIFP_LOCATION_ERROR << "m of location recommended by gateway CIFP data.";
-						else
-							ss  << "Runway " << ENUM_Desc(r_cifp->first) << " end not within " <<  CIFP_LOCATION_ERROR << "m of location recommended by gateway CIFP data. Move runway end to indicated location and pull back displaced threshold distance so runway threshold stays at current location";
-						msgs.push_back(validation_error_t(ss.str(), warn_runway_matching_cifp_mislocated, *r, apt));
-#if DEBUG_VIS_LINES
-						const int NUM_PTS = 20;
-						Point2 pt_cir[NUM_PTS];
-						for (int j = 0; j < NUM_PTS; ++j)
-							pt_cir[j] = Point2(CIFP_LOCATION_ERROR*sin(2.0*j*M_PI/NUM_PTS), CIFP_LOCATION_ERROR*cos(2.0*j*M_PI/NUM_PTS));
-						MetersToLLE(rwy_cifp, NUM_PTS, pt_cir);
-						for (int j = 0; j < NUM_PTS; j+=2)                                             // draw a dashed circle only, as its only a warning
-							debug_mesh_line(pt_cir[j],pt_cir[(j+1)%NUM_PTS], DBG_LIN_COLOR);
-#endif
-					}
-				}
-			}
-		}
 	}
 
 	ValidatePointSequencesRecursive(apt, msgs,apt);
@@ -2403,7 +2320,7 @@ validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane,
 		else
 			mf = MemFile_Open(res.out_path.c_str());
 	}
-{
+
 auto t0 = std::chrono::high_resolution_clock::now();
 
 	for(vector<WED_Airport *>::iterator a = apts.begin(); a != apts.end(); ++a)
@@ -2421,9 +2338,8 @@ auto t0 = std::chrono::high_resolution_clock::now();
 	
 auto t1 = std::chrono::high_resolution_clock::now();
 chrono::duration<double> elapsed = t1-t0;
-printf("0 to 1 time: %lf\n", elapsed.count());
+printf("Validation time: %lf\n", elapsed.count());
 
-}
 	string logfile(gPackageMgr->ComputePath(lib_mgr->GetLocalPackage(), "validation_report.txt"));
 	FILE * fi = fopen(logfile.c_str(), "w");
 
@@ -2442,7 +2358,7 @@ printf("0 to 1 time: %lf\n", elapsed.count());
 
 		if (fi != NULL)
 			fprintf(fi, "%s: %s %s\n", aname.c_str(), v->msg.c_str(), warn);
-		fprintf(stdout, "%s: %s %s\n", aname.c_str(), v->msg.c_str(), warn);
+//		fprintf(stdout, "%s: %s %s\n", aname.c_str(), v->msg.c_str(), warn);
 	}
 	fclose(fi);
 
@@ -2450,20 +2366,6 @@ printf("0 to 1 time: %lf\n", elapsed.count());
 	{
 		if(!skipErrorDialog) new WED_ValidateDialog(resolver, pane, msgs, abortMsg);
 
-/*		ISelection * sel = WED_GetSelect(resolver);
-		wrl->StartOperation("Select Invalid");
-		sel->Clear();
-
-		for(vector<WED_Thing *>::iterator b = msgs.front().bad_objects.begin(); b != msgs.front().bad_objects.end(); ++b)
-			sel->Insert(*b);
-		wrl->CommitOperation();
-
-		if(first_error != msgs.end())
-			DoUserAlert((first_error->msg + "\n\nFor a full list of messages see\n" + logfile).c_str());
-		else
-			DoUserAlert((string("No errors exist, but there is at least one warning:\n\n") + msgs.front().msg
-			                     + "\n\nFor a full list of messages see\n" + logfile).c_str());
-*/
 		if(first_error == msgs.end())
 			return validation_warnings_only;
 		else

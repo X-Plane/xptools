@@ -324,11 +324,9 @@ int		CreateNewBitmap(long inWidth, long inHeight, short inChannels, struct Image
 	return 0;
 }
 
-int GetSupportedType(const char * path)
+int GetSupportedType(const string& path)
 {
-	string extension;
-		
-	extension = FILE_get_file_extension(path);
+	string extension(FILE_get_file_extension(path));
 
 	if(extension == "bmp") return WED_BMP;
 	if(extension == "dds") return WED_DDS;
