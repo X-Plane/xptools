@@ -1390,6 +1390,8 @@ void WED_DoImportFromGateway(WED_Document * resolver, WED_MapPane * pane)
 	return;
 }
 
+#if GATEWAY_IMPORT_FEATURES
+
 static WED_Thing * find_airport_by_icao_recursive(const string& icao, WED_Thing * who)
 {
 	if(WED_Airport::sClass == who->GetClass())
@@ -1427,57 +1429,56 @@ static const string get_airport_id_from_gateway_file_path(const char * file_path
 		tname = tname.substr(0,p);
 	return tname;
 }
+
 WED_Thing * get_airport_from_gateway_file_path(const char * file_path, WED_Thing * wrl)
 {
 	return find_airport_by_icao_recursive(get_airport_id_from_gateway_file_path(file_path), wrl);
 }
-
 
 //This is from an older method of importing things which involved manually getting the files from the hard drive
 void	WED_DoImportDSFText(IResolver * resolver)
 {
 	WED_Thing * wrl = WED_GetWorld(resolver);
 
-	char * paths = GetMultiFilePathFromUser("Import DSF file...", "Import", FILE_DIALOG_IMPORT_DSF);
-	if(paths)
+	char dir_path[200];
+	bool success = GetFilePathFromUser(getFile_PickFolder, "Import all files in directory...", "Import", FILE_DIALOG_IMPORT_DSF, dir_path, 200);
+	const string dir = string(dir_path) + '/';
+	if(success)
 	{
-		char * free_me = paths;
-		
 		wrl->StartOperation("Import DSF");
 		
-		while(*paths)
+		vector<string> all_files;
+		FILE_get_directory(dir, &all_files, NULL);
+		
+		for(auto& it : all_files)                  // first pass is all XXXX.dat files, i.e. the apt.dat's
 		{
-			if(strstr(paths,".dat"))
-			{			
-				WED_ImportOneAptFile(paths,wrl,NULL);
-				WED_DoInvisibleUpdateMetadata(SAFE_CAST(WED_Airport, get_airport_from_gateway_file_path(paths, wrl)));
+			if(FILE_get_file_extension(it) == "dat")
+			{
+				const string path = dir + it;
+				WED_ImportOneAptFile(path, wrl, NULL);
+				WED_DoInvisibleUpdateMetadata(SAFE_CAST(WED_Airport, get_airport_from_gateway_file_path(path.c_str(), wrl)));
 			}
-			paths = paths + strlen(paths) + 1;
 		}
 		
-		paths = free_me;
-
-		while(*paths)
+		for(auto it : all_files)                 // seconds pass is all other XXX.* files, thats presumed the DSF's, in text format
 		{
-			if(!strstr(paths,".dat"))
+			if(FILE_get_file_extension(it) != "dat")
 			{
-				WED_Thing * g = get_airport_from_gateway_file_path(paths, wrl);
+				const string path = dir + it;
+				WED_Thing * g = get_airport_from_gateway_file_path(path.c_str(), wrl);
 				if(g == NULL)
 				{
 					g = WED_Group::CreateTyped(wrl->GetArchive());
-					g->SetName(paths);
+					g->SetName(path);
 					g->SetParent(wrl,wrl->CountChildren());
 				}
-				DSF_Import(paths, g);
-		//		DSF_Importer importer;
-		//		importer.do_import_txt(paths, g);
-			}	
-			paths = paths + strlen(paths) + 1;
+				WED_ImportText(path.c_str(), g);
+			}
 		}
 		
 		wrl->CommitOperation();
-		free(free_me);
 	}
 }
 
+#endif /* GATEWAY_IMPORT_FEATURES */
 #endif /* HAS_GATEWAY */

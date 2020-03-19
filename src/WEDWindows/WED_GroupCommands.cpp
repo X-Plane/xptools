@@ -3905,42 +3905,25 @@ set<string> build_agp_list()
 	return agp_list;
 }
 
-typedef WED_ObjPlacement WED_AgpPlacement;
-int		WED_CanBreakApartSpecialAgps(IResolver* resolver)
+int		WED_CanBreakApartAgps(IResolver* resolver)
 {
-	//Returns true if the selection
-	//- is not empty
-	//- only has .agp files (of all kinds)
-	ISelection* sel = WED_GetSelect(resolver);
+	//Returns true if the selection contains only .agp objects
+	
 	vector<ISelectable*> selected;
-	sel->GetSelectionVector(selected);
+	WED_GetSelect(resolver)->GetSelectionVector(selected);
 
-	if (!selected.empty())
+	if (selected.empty()) return false;
+	
+	for (auto itr : selected)
 	{
-		for (vector<ISelectable*>::iterator itr = selected.begin(); itr != selected.end(); ++itr)
-		{
-			WED_AgpPlacement* agp = dynamic_cast<WED_AgpPlacement*>(*itr);
-			if (agp != NULL)
-			{
-				string agp_resource;
-				agp->GetResource(agp_resource);
-				if(FILE_get_file_extension(agp_resource) != "agp")
-				{
-					return false;
-				}
-			}
-			else
-			{
-				return false;
-			}
-		}
-
-		return true;
+		WED_AgpPlacement* agp = dynamic_cast<WED_AgpPlacement*>(itr);
+		if (!agp) return false;
+		
+		string agp_resource;
+		agp->GetResource(agp_resource);
+		if(FILE_get_file_extension(agp_resource) != "agp") return false;
 	}
-	else
-	{
-		return false;
-	}
+	return true;
 }
 
 template <typename From, typename To>
@@ -3955,48 +3938,113 @@ static bool is_null(T test)
 	return test == NULL;
 }
 
-void	WED_DoBreakApartSpecialAgps(IResolver* resolver)
+int wed_break_apart_special_agps(WED_Airport* apt, const vector<WED_AgpPlacement*>& agp_placements, WED_ResourceMgr * rmgr, set<WED_ObjPlacement*>& out_added_objs)
 {
-	//Collect all obj_placements from the world
-	WED_Thing* root = WED_GetWorld(resolver);
+	//The list of agp files we've decided to be special "service truck related"
+	set<string> agp_list = build_agp_list();
 
-	ISelection * sel = WED_GetSelect(resolver);
+	//To translate from lat/lon to meters
+	CoordTranslator2 translator;
+	Bbox2 box;
+	apt->GetBounds(gis_Geo, box);
+	CreateTranslatorForBounds(box, translator);
 
+	set<WED_AgpPlacement*> replaced_agps;
+
+	//For all agps
+	for (auto agp : agp_placements)
+	{
+		//Otherwise we have big problems
+		DebugAssert(agp->CountChildren() == 0);
+
+		string agp_resource;
+		agp->GetResource(agp_resource);
+
+		//Is the agp found in the special agp list?
+		if (agp_list.find(agp_resource) != agp_list.end())
+		{
+			//Break it all up here
+			const agp_t * agp_data;
+			if (rmgr->GetAGP(agp_resource, agp_data))
+			{
+				Point2 agp_origin_geo;
+				agp->GetLocation(gis_Geo, agp_origin_geo);
+				Point2 agp_origin_m = translator.Forward(agp_origin_geo);
+
+				for (auto& agp_obj : agp_data->objs)
+				{
+					Vector2 torotate(agp_origin_m, Point2(agp_origin_m.x() + agp_obj.x, agp_origin_m.y() + agp_obj.y));
+
+					//Note!! WED has clockwise heading, C's cos and sin functions are ccw in radians. We reverse directions and negate again
+					torotate.rotate_by_degrees(agp->GetHeading()*-1);
+					torotate *= -1;
+
+					Point2 new_point_m = Point2(agp_origin_m.x() - torotate.x(), agp_origin_m.y() - torotate.y());
+					Point2 new_point_geo = translator.Reverse(new_point_m);
+
+					WED_ObjPlacement* new_obj = WED_ObjPlacement::CreateTyped(apt->GetArchive());
+					new_obj->SetLocation(gis_Geo, new_point_geo);
+
+					//Other data that is important to resetting up the object
+					new_obj->SetDefaultMSL();
+					new_obj->SetHeading(agp_obj.r + agp->GetHeading());
+					new_obj->SetName(agp_obj.name);
+					new_obj->SetParent(agp->GetParent(), agp->GetMyPosition());
+					new_obj->SetResource(agp_obj.name);
+					new_obj->SetShowLevel(agp->GetShowLevel());
+
+					out_added_objs.insert(new_obj);
+				}
+			}
+
+			replaced_agps.insert(agp);
+		}
+	}
+
+	for (set<WED_AgpPlacement*>::iterator itr_agp = replaced_agps.begin(); itr_agp != replaced_agps.end(); ++itr_agp)
+	{
+		(*itr_agp)->SetParent(NULL, 0);
+		(*itr_agp)->Delete();
+	}
+
+	return replaced_agps.size();
+}
+
+void	WED_DoBreakApartAgps(IResolver* resolver)
+{
+	WED_Thing * root = WED_GetWorld(resolver);
+	WED_ResourceMgr * rmgr	= WED_GetResourceMgr(resolver);
+	WED_LibraryMgr * lmgr	= WED_GetLibraryMgr(resolver);
+	ISelection * sel 		= WED_GetSelect(resolver);
+	
 	vector<ISelectable*> selected;
 	sel->GetSelectionVector(selected);
-	DebugAssert(selected.empty() == false);
 
 	vector<WED_AgpPlacement*> agp_placements;
-	std::transform(selected.begin(), selected.end(), back_inserter(agp_placements), cast<ISelectable*, WED_AgpPlacement*>);
-	agp_placements.erase(std::remove_if(agp_placements.begin(), agp_placements.end(), is_null<WED_AgpPlacement*>), agp_placements.end());
-
-	if(!agp_placements.empty())
+	for (auto itr : selected)
 	{
-		root->StartOperation("Break Apart Special Agps");
-		sel->Clear();
+		WED_AgpPlacement* agp = dynamic_cast<WED_AgpPlacement*>(itr);
+		if (agp)
+			agp_placements.push_back(agp);
+	}
 
-		//We'll have at least one!
-		WED_Airport * apt = WED_GetParentAirport(agp_placements[0]);
+	root->StartOperation("Break Apart Agps");
+	sel->Clear();
+	
+	set<WED_AgpPlacement*> replaced_agps;
+	set<WED_ObjPlacement*> added_objs;
+
+	//For all agps
+	for(auto agp : agp_placements)
+	{
+	
+		WED_Airport * apt = WED_GetParentAirport(agp);
 		if(apt == NULL)
 		{
 			root->AbortCommand();
-			DoUserAlert("Agp(s) must be in an airport in the heirarchy");
+			DoUserAlert("All selected Agp's must be in an airport in the hierarchy");
 			return;
 		}
-
-		if(CountChildOfTypeRecursive<IGISEntity>(apt, false) <= 1)
-		{
-			sel->Select(apt);
-			root->AbortCommand();
-			DoUserAlert("Airport only contains one Agp: breaking apart cannot occur. Add something else to the airport first");
-			return;
-		}
-
-		//The list of agp files we've decided to be special "service truck related"
-		set<string> agp_list = build_agp_list();
-
-		//To access agp files
-		WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 
 		//To translate from lat/lon to meters
 		CoordTranslator2 translator;
@@ -4005,98 +4053,91 @@ void	WED_DoBreakApartSpecialAgps(IResolver* resolver)
 		CreateTranslatorForBounds(box,translator);
 
 		//A set of all the agps that we're going to replace
-		set<WED_AgpPlacement*> replaced_agps;
-		set<WED_ObjPlacement*> added_objs;
 
-		//For all agps
-		for(vector<WED_AgpPlacement*>::iterator agp = agp_placements.begin(); agp != agp_placements.end(); ++agp)
+		string agp_resource;
+		agp->GetResource(agp_resource);
+
+		const agp_t * agp_data;
+		if(rmgr->GetAGP(agp_resource, agp_data))
 		{
-			//Otherwise we have big problems
-			DebugAssert((*agp)->CountChildren() == 0);
-
-			string agp_resource;
-			(*agp)->GetResource(agp_resource);
-
-			//Is the agp found in the special agp list?
-			if(agp_list.find(agp_resource) != agp_list.end())
+			bool all_obj_public = true;
+			for (auto& agp_obj : agp_data->objs)
 			{
-				//Break it all up here
-				const agp_t * agp_data;
-				if(rmgr->GetAGP(agp_resource, agp_data))
+				if(lmgr->IsResourceDeprecatedOrPrivate(agp_obj.name))
 				{
-					Point2 agp_origin_geo;
-					(*agp)->GetLocation(gis_Geo,agp_origin_geo);
-					Point2 agp_origin_m = translator.Forward(agp_origin_geo);
-
-					for (auto& agp_obj : agp_data->objs)
-					{
-						Vector2 torotate(agp_origin_m, Point2(agp_origin_m.x() + agp_obj.x, agp_origin_m.y() + agp_obj.y));
-
-						//Note!! WED has clockwise heading, C's cos and sin functions are ccw in radians. We reverse directions and negate again
-						torotate.rotate_by_degrees((*agp)->GetHeading()*-1);
-						torotate *= -1;
-
-						Point2 new_point_m = Point2(agp_origin_m.x() - torotate.x(), agp_origin_m.y() - torotate.y());
-						Point2 new_point_geo = translator.Reverse(new_point_m);
-
-						WED_ObjPlacement* new_obj = WED_ObjPlacement::CreateTyped(root->GetArchive());
-						new_obj->SetLocation(gis_Geo, new_point_geo);
-
-						//Other data that is important to resetting up the object
-						new_obj->SetDefaultMSL();
-						new_obj->SetHeading(agp_obj.r + (*agp)->GetHeading());
-						new_obj->SetName(agp_obj.name);
-						new_obj->SetParent((*agp)->GetParent(), (*agp)->GetMyPosition());
-						new_obj->SetResource(agp_obj.name);
-						new_obj->SetShowLevel((*agp)->GetShowLevel());
-
-						added_objs.insert(new_obj);
-					}
+					all_obj_public = false;
+					break;
 				}
+			}
+			if(all_obj_public)
+			{
+				Point2 agp_origin_geo;
+				agp->GetLocation(gis_Geo,agp_origin_geo);
+				Point2 agp_origin_m = translator.Forward(agp_origin_geo);
 
-				replaced_agps.insert(*agp);
+				for (auto& agp_obj : agp_data->objs)
+				{
+					Vector2 torotate(agp_origin_m, Point2(agp_origin_m.x() + agp_obj.x, agp_origin_m.y() + agp_obj.y));
+
+					//Note!! WED has clockwise heading, C's cos and sin functions are ccw in radians. We reverse directions and negate again
+					torotate.rotate_by_degrees(agp->GetHeading()*-1);
+					torotate *= -1;
+
+					Point2 new_point_m = Point2(agp_origin_m.x() - torotate.x(), agp_origin_m.y() - torotate.y());
+					Point2 new_point_geo = translator.Reverse(new_point_m);
+
+					WED_ObjPlacement* new_obj = WED_ObjPlacement::CreateTyped(root->GetArchive());
+					new_obj->SetLocation(gis_Geo, new_point_geo);
+
+					//Other data that is important to resetting up the object
+					new_obj->SetDefaultMSL();
+					new_obj->SetHeading(agp_obj.r + agp->GetHeading());
+					new_obj->SetName(FILE_get_file_name(agp_obj.name));
+					new_obj->SetParent(agp->GetParent(), agp->GetMyPosition());
+					new_obj->SetResource(agp_obj.name);
+					new_obj->SetShowLevel(agp->GetShowLevel());
+
+					added_objs.insert(new_obj);
+				}
+				replaced_agps.insert(agp);
 			}
 		}
+	}
 
-		for (set<WED_AgpPlacement*>::iterator itr_agp = replaced_agps.begin(); itr_agp != replaced_agps.end(); ++itr_agp)
-		{
-			(*itr_agp)->SetParent(NULL, 0);
-			(*itr_agp)->Delete();
-		}
+	for (auto itr_agp : replaced_agps)
+	{
+		itr_agp->SetParent(NULL, 0);
+		itr_agp->Delete();
+	}
 
-		for (set<WED_ObjPlacement*>::iterator itr_obj = added_objs.begin(); itr_obj != added_objs.end(); ++itr_obj)
-		{
-			string obj_resource;
-			(*itr_obj)->GetResource(obj_resource);
-			sel->Insert(*itr_obj);
-		}
+	for (auto itr_obj : added_objs)
+	{
+		//string obj_resource;
+		//(*itr_obj)->GetResource(obj_resource);
+		sel->Insert(itr_obj);
+	}
 
-		if(added_objs.size() == 0)
-		{
-			sel->Clear();
-			root->AbortOperation();
-			DoUserAlert("Nothing to replace"); //IMPORTANT: Do not call DoUserAlert during an operation!!!
-		}
-		else
-		{
-			root->CommitOperation();
-
-			stringstream ss;
-			ss << "Replaced " << replaced_agps.size() << " Agp objects with " << added_objs.size() << " Obj files";
-			DoUserAlert(ss.str().c_str());
-		}
+	if(replaced_agps.size() == 0)
+	{
+		sel->Clear();
+		root->AbortOperation();
+		DoUserAlert("No agp's with public objects found. Nothing replaced."); //IMPORTANT: Do not call DoUserAlert during an operation!!!
 	}
 	else
 	{
-		DoUserAlert("There are no relavent special Agps to break apart");
+		root->CommitOperation();
+
+		stringstream ss;
+		ss << "Replaced " << replaced_agps.size() << " Agp objects with " << added_objs.size() << " Objects.";
+		DoUserAlert(ss.str().c_str());
 	}
 }
 
 int	WED_CanReplaceVehicleObj(IResolver* resolver)
 {
 	//Returns true if there are any Obj files in the selection.
-	auto sel = WED_GetSelect(resolver);
-	return sel->IterateSelectionOr(Iterate_IsClass, (void*)WED_ObjPlacement::sClass);
+	auto apt = WED_GetCurrentAirport(resolver);
+	return apt != nullptr;
 }
 
 struct vehicle_replacement_info
@@ -4173,21 +4214,24 @@ static map<string,vehicle_replacement_info> build_replacement_table()
 	return table;
 }
 
-void	WED_DoReplaceVehicleObj(IResolver* resolver)
+void	WED_DoReplaceVehicleObj(IResolver* resolver, WED_Airport* apt)
 {
 	WED_Thing * root = WED_GetWorld(resolver);
 	vector<WED_ObjPlacement*> obj_placements;
-	//CollectRecursive(root, WED_ObjPlacement::sClass, back_inserter(obj_placements));
+	
+	WED_Thing* collection_start = apt == NULL ? root : apt;
+	CollectRecursive(collection_start, back_inserter(obj_placements), WED_ObjPlacement::sClass);
 
 	if(!obj_placements.empty())
 	{
 		int replace_count = 0;
 		root->StartOperation("Replace Objects");
 		map<string,vehicle_replacement_info> table = build_replacement_table();
-
+		
+#if !TYLER_MODE
 		ISelection * sel = WED_GetSelect(resolver);
 		sel->Clear();
-
+#endif
 		for(vector<WED_ObjPlacement*>::iterator itr = obj_placements.begin(); itr != obj_placements.end(); ++itr)
 		{
 			string resource;
@@ -4215,29 +4259,38 @@ void	WED_DoReplaceVehicleObj(IResolver* resolver)
 				replace_count++;
 				(*itr)->SetParent(NULL, 0);
 				(*itr)->Delete();
-
+#if !TYLER_MODE
 				sel->Insert(parking_loc);
+#endif
 			}
 		}
 
 		if(replace_count == 0)
 		{
+#if !TYLER_MODE
 			sel->Clear();
+#endif
 			root->AbortOperation();
+#if !TYLER_MODE
 			DoUserAlert("Nothing to replace");
+#endif
 		}
 		else
 		{
 			root->CommitOperation();
-
+#if !TYLER_MODE
 			stringstream ss;
 			ss << "Replaced " << replace_count << " objects";
+
 			DoUserAlert(ss.str().c_str());
+#endif
 		}
 	}
 	else
 	{
+#if !TYLER_MODE
 		DoUserAlert("Nothing to replace");
+#endif
 	}
 }
 //-----------------------------------------------------------------------------
@@ -4329,10 +4382,14 @@ static void collect_ramps_recursive(WED_Thing * who, vector<WED_RampPosition *>&
 		collect_ramps_recursive(who->GetNthChild(n), out_ramps, out_conflicting_objs, rmgr);
 }
 
-static int wed_upgrade_airports_recursive(WED_Thing * who, WED_ResourceMgr * rmgr, ISelection * sel)
+int wed_upgrade_one_airport(WED_Thing* who, WED_ResourceMgr* rmgr, ISelection* sel)
 {
 	int did_work = 0;
-	if(who->GetClass() == WED_Airport::sClass)
+	vector<WED_RampPosition *> ramps;
+	vector<obj_conflict_info> objs;
+	collect_ramps_recursive(who, ramps, objs, rmgr);
+
+	for (vector<WED_RampPosition *>::iterator r = ramps.begin(); r != ramps.end(); ++r)
 	{
 		vector<WED_RampPosition *> ramps;
 		vector<obj_conflict_info> objs;
@@ -4388,8 +4445,17 @@ static int wed_upgrade_airports_recursive(WED_Thing * who, WED_ResourceMgr * rmg
 				o->obj->Delete();
 				did_work = 1;
 			}
-
 		}
+	}
+	return did_work;
+}
+
+static int wed_upgrade_airports_recursive(WED_Thing * who, WED_ResourceMgr * rmgr, ISelection * sel)
+{
+	int did_work = 0;
+	if(who->GetClass() == WED_Airport::sClass)
+	{
+		did_work = wed_upgrade_one_airport(who, rmgr, sel);
 	}
 	int nn = who->CountChildren();
 	for(int n = 0; n < nn; ++n)
@@ -4405,12 +4471,13 @@ void WED_UpgradeRampStarts(IResolver * resolver)
 	WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 	ISelection * sel = WED_GetSelect(resolver);
 	root->StartCommand("Upgrade Ramp Positions");
+
 	int did_work = wed_upgrade_airports_recursive(root, rmgr, sel);
-	if(did_work)
+
+	if (did_work)
 		root->CommitOperation();
 	else
 		root->AbortOperation();
-
 }
 
 // ****** Runway Auto Rename & Move Stuff. Ugly code, its a BETA !!! *****

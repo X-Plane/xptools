@@ -68,7 +68,10 @@
 
 // These turn on the features to import the global apt databaes for the purpose of building a final scenery pack
 // from the gateway.  You don't need this.
-#define GATEWAY_IMPORT_FEATURES 0
+#define GATEWAY_IMPORT_FEATURES 1
+
+// no validation upon export, but special heuristics for agp expansion before export. Only makes sense if GATEWAY_IMPORT_FEATURES is set.
+#define TYLER_MODE 1
 
 // After running ATC Runway Validation, show the hitboxes used for hot zone tests
 // 0 = never, 1 = only those causing a violation, 2 = always show all

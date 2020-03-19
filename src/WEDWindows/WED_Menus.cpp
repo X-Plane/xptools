@@ -32,7 +32,7 @@
 static const GUI_MenuItem_t	kAppMenu[] = {
 { "About WED...",		0,	0,	0,	0 },
 { "-",					0,	0,	0,	0 },
-{	NULL,				0,		0,					0,	0					},
+{	NULL,				0,	0,	0,	0 },
 };
 
 
@@ -55,7 +55,7 @@ static const GUI_MenuItem_t	kFileMenu[] = {
 {	"Import from Airport Scenery Gateway...",0,0,				0,	wed_ImportGateway	},
 #endif
 #if GATEWAY_IMPORT_FEATURES
-{	"Import Airport Scenery Gateway Extracts...",0,0,				0,	wed_ImportGatewayExtract },
+{	"Import Scenery Gateway Extracts...",0,0,						0,	wed_ImportGatewayExtract },
 #endif
 {	"-",					0,		0,								0,	0					},
 {	"&Export apt.dat...",	'S',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_ExportApt		},
@@ -109,13 +109,12 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	"Con&vert To",			0,		0,								0,	0				},
 //{	"Make Draped Pol&ygons",0,		0,								0,	wed_Overlay		},
 //{	"Make Routing",			0,		0,								0,	wed_MakeRouting },
+{	"Explode Agp's",		0,    	0,                              0,  wed_BreakApartAgps },
 {	"-",					0,  	0,								0,	0				},
 {	"Move &First",			'[',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_MoveFirst	},
 {	"&Move Up",				'[',	gui_ControlFlag,				0,	wed_MovePrev	},
 {	"Move Do&wn",			']',	gui_ControlFlag,				0,	wed_MoveNext	},
 {	"Move &Last",			']',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_MoveLast	},
-{	"Explode Special Agps",   0,    0,                              0,  wed_BreakApartSpecialAgps  },
-{	"Replace Vehicle Objects", 0,	0,								0,  wed_ReplaceVehicleObj	},
 {	NULL,					0,		0,								0,	0				},
 };
 
@@ -219,9 +218,10 @@ static const GUI_MenuItem_t kAirportMenu[] = {
 {	"Add &Metadata",			0,		0,										0, 0 },
 {	"Update Metadata",			0,		0,										0, wed_UpdateMetadata},
 {	"No Airport Selected",		'E',	gui_ControlFlag+gui_ShiftFlag,			0, wed_EditApt	},
-{	"-",							0,		0,									0,	0			},
-{	"Upgrade Ramps",				0,		0,									0,	wed_UpgradeRamps},
+{	"-",						0,		0,									0,	0			},
+{	"Upgrade Ramps",			0,		0,									0,	wed_UpgradeRamps},
 {	"Align Airports",			0,		0,									0,	wed_AlignApt},
+{	"Replace Vehicle Objects",	0,		0,								0,  wed_ReplaceVehicleObj	},
 {	NULL,						0,		0,										0, 0,				}
 };
 

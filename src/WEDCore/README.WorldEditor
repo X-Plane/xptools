@@ -18,6 +18,7 @@ WED 2.3
    - fix endcaps for bezier curved lines not following curve in map
    - fix validation not checking GT routes intersecting runways win some airports
    Features:
+   - "Explode AGP's" can handle any .agp containing only public or local objects
    - new validation for ATC networks being fully connected and reachable
    - new validation for Hot-Zone tagged taxi routes not connected to other routes
    - show aproximate ground truck + AI A/C routes near ramp starts in ATC layer

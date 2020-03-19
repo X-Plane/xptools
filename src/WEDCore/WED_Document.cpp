@@ -58,9 +58,8 @@
 // TODO:
 // migrate all old stuff
 // wire dirty to obj persistence
-#if DEV
+
 #include "PerfUtils.h"
-#endif
 
 #include "WED_Globals.h"
 int gIsFeet;
@@ -304,9 +303,8 @@ void	WED_Document::Revert(void)
 	mUndo.__StartCommand("Revert from Saved.",__FILE__,__LINE__);
 
 	try {
-#if DEV
 		StElapsedTime	etime("Read time");
-#endif
+		
 		WED_XMLReader	reader;
 		reader.PushHandler(this);
 		string fname(mFilePath);

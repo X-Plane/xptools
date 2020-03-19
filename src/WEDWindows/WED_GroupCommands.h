@@ -36,6 +36,13 @@ class	WED_GISEdge;
 class	WED_MapZoomerNew;
 class	WED_Thing;
 
+class	ISelection;
+class	WED_Airport;
+class	WED_ObjPlacement;
+class	WED_ResourceMgr;
+
+typedef WED_ObjPlacement WED_AgpPlacement;
+
 int		WED_CanGroup(IResolver * inResolver);
 int		WED_CanUngroup(IResolver * inResolver);
 void	WED_DoGroup(IResolver * inResolver);
@@ -146,12 +153,15 @@ void	WED_DoMoveSelectionTo(IResolver * resolver, WED_Thing * dest, int dest_slot
 
 int		WED_Repair(IResolver * resolver);
 
-int		WED_CanBreakApartSpecialAgps(IResolver* resolver);
-void	WED_DoBreakApartSpecialAgps(IResolver* resolver);
+int		wed_break_apart_special_agps(WED_Airport* apt, const vector<WED_AgpPlacement*>& agp_placements, WED_ResourceMgr * rmgr, set<WED_ObjPlacement*>& out_added_objs);
+int		WED_CanBreakApartAgps(IResolver* resolver);
+void	WED_DoBreakApartAgps(IResolver* resolver);
 
 int		WED_CanReplaceVehicleObj(IResolver* resolver);
-void	WED_DoReplaceVehicleObj(IResolver* resolver);
+void	WED_DoReplaceVehicleObj(IResolver* resolver, WED_Airport* apt = NULL);
 
+
+int wed_upgrade_one_airport(WED_Thing* who, WED_ResourceMgr* rmgr, ISelection* sel);
 void WED_UpgradeRampStarts(IResolver * resolver);
 void WED_AlignAirports(IResolver * resolver);
 

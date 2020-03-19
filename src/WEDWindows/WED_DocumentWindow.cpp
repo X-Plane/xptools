@@ -306,7 +306,11 @@ WED_DocumentWindow::WED_DocumentWindow(
 	mMapPane->FromPrefs(inDocument);
 	mPropPane->FromPrefs(inDocument,0);
 	// doc/use_feet and doc/InfoDMS are global only preferences now, not read from each document any more
+#if TYLER_MODE
+	gExportTarget = wet_latest_xplane;
+#else
 	gExportTarget = (WED_Export_Target) inDocument->ReadIntPref("doc/export_target",gExportTarget);
+#endif
 	
 	int wedXMLversion = inDocument->ReadIntPref("doc/xml_compatibility",0);
 	int wedTHISversion[4] = { WED_VERSION_BIN };
@@ -420,7 +424,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_MovePrev:	WED_DoReorder(mDocument,-1,0);	return 1;
 	case wed_MoveNext:	WED_DoReorder(mDocument, 1,0);	return 1;
 	case wed_MoveLast:	WED_DoReorder(mDocument, 1,1);	return 1;
-	case wed_BreakApartSpecialAgps: WED_DoBreakApartSpecialAgps(mDocument); return 1;
+	case wed_BreakApartAgps: WED_DoBreakApartAgps(mDocument); return 1;
 	case wed_ReplaceVehicleObj:  WED_DoReplaceVehicleObj(mDocument); return 1;
 	case wed_AddATCFreq:WED_DoMakeNewATCFreq(mDocument); return 1;
 	case wed_AddATCFlow: WED_DoMakeNewATCFlow(mDocument); return 1;
@@ -554,7 +558,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_MovePrev:	return WED_CanReorder(mDocument,-1,0);
 	case wed_MoveNext:	return WED_CanReorder(mDocument, 1,0);
 	case wed_MoveLast:	return WED_CanReorder(mDocument, 1,1);
-	case wed_BreakApartSpecialAgps: return WED_CanBreakApartSpecialAgps(mDocument);
+	case wed_BreakApartAgps: return WED_CanBreakApartAgps(mDocument);
 	case wed_ReplaceVehicleObj:  return WED_CanReplaceVehicleObj(mDocument);
 	case gui_Save:		return mDocument->IsDirty();
 	case gui_Revert:	return mDocument->IsDirty() && mDocument->IsOnDisk();
@@ -586,9 +590,9 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_ImportOrtho:	return 1;
 #if HAS_GATEWAY
 	case wed_ImportGateway:	return WED_CanImportFromGateway(mDocument);
-#endif
 #if GATEWAY_IMPORT_FEATURES
-	case wed_ImportGatewayExtract: return 1;
+	case wed_ImportGatewayExtract: return gModeratorMode || TYLER_MODE;
+#endif
 #endif
 	case wed_Validate:		return 1;
 
@@ -661,7 +665,11 @@ void	WED_DocumentWindow::ReceiveMessage(
 		mPropPane->FromPrefs(prefs,0);
 
 		// doc/use_feet and doc/InfoDMS are global only preferences now, not read from each document any more
+	#if TYLER_MODE
+		gExportTarget = wet_latest_xplane;
+	#else
 		gExportTarget = (WED_Export_Target) mDocument->ReadIntPref("doc/export_target",gExportTarget);
+	#endif
 		XWin::SetFilePath(NULL,mDocument->IsDirty());
 	}
 	else if(inMsg == msg_ArchiveChanged)

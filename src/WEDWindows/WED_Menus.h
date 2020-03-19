@@ -74,7 +74,7 @@ enum {
 	wed_MovePrev,
 	wed_MoveNext,
 	wed_MoveLast,
-	wed_BreakApartSpecialAgps,
+	wed_BreakApartAgps,
 	wed_ReplaceVehicleObj,
 	// Convert To menu
 	wed_ConvertToPolygon,

@@ -22,34 +22,37 @@
  */
 
 #include "WED_DSFImport.h"
+
 #include "DSFLib.h"
-#include "WED_Group.h"
-#include "WED_ExclusionZone.h"
-#include "WED_EnumSystem.h"
-#include "WED_ObjPlacement.h"
+#include "DSF2Text.h"
 #include "PlatformUtils.h"
+#include "FileUtils.h"
+#include "STLUtils.h"
+
+#include "WED_AptIE.h"
+#include "WED_EnumSystem.h"
+#include "WED_GISUtils.h"
+#include "WED_MetadataUpdate.h"
 #include "WED_SimpleBoundaryNode.h"
 
+#include "WED_Airport.h"
+#include "WED_DrapedOrthophoto.h"
+#include "WED_ExclusionZone.h"
 #include "WED_FacadePlacement.h"
+#include "WED_FacadeRing.h"
+#include "WED_FacadeNode.h"
 #include "WED_ForestPlacement.h"
+#include "WED_ForestRing.h"
+#include "WED_Group.h"
 #include "WED_StringPlacement.h"
 #include "WED_LinePlacement.h"
+#include "WED_ObjPlacement.h"
 #include "WED_PolygonPlacement.h"
-#include "WED_DrapedOrthophoto.h"
 #include "WED_Ring.h"
-
 #include "WED_TextureBezierNode.h"
 #include "WED_TextureNode.h"
 #include "WED_SimpleBezierBoundaryNode.h"
 #include "WED_SimpleBoundaryNode.h"
-#include "WED_ForestRing.h"
-#include "WED_FacadeRing.h"
-#include "WED_FacadeNode.h"
-#include "DSF2Text.h"
-#include "WED_GISUtils.h"
-#include "STLUtils.h"
-#include "WED_AptIE.h"
-#include "WED_Airport.h"
 #if ROAD_EDITING
 #include "WED_RoadNode.h"
 #include "WED_RoadEdge.h"
@@ -911,9 +914,9 @@ int DSF_Import(const char * path, WED_Thing * base)
 	return importer.do_import_dsf(path, base);
 }
 
-
 void WED_ImportText(const char * path, WED_Thing * base)
 {
 	DSF_Importer importer;
 	importer.do_import_txt(path, base);
 }
+
