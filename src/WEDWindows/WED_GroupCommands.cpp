@@ -4094,10 +4094,9 @@ void	WED_DoBreakApartSpecialAgps(IResolver* resolver)
 
 int	WED_CanReplaceVehicleObj(IResolver* resolver)
 {
-	//Returns true if there are any Obj files in the world.
-	//TODO: This Aught to be the current airport
-	WED_Thing * root = WED_GetWorld(resolver);
-	return CountChildOfTypeRecursive<WED_ObjPlacement>(root,true);
+	//Returns true if there are any Obj files in the selection.
+	auto sel = WED_GetSelect(resolver);
+	return sel->IterateSelectionOr(Iterate_IsClass, (void*)WED_ObjPlacement::sClass);
 }
 
 struct vehicle_replacement_info
