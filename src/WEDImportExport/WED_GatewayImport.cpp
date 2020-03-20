@@ -1441,7 +1441,7 @@ void	WED_DoImportDSFText(IResolver * resolver)
 	WED_Thing * wrl = WED_GetWorld(resolver);
 
 	char dir_path[200];
-	bool success = GetFilePathFromUser(getFile_PickFolder, "Import all files in directory...", "Import", FILE_DIALOG_IMPORT_DSF, dir_path, 200);
+	bool success = GetFilePathFromUser(getFile_PickFolder, "Import all files in directory...", "Import", FILE_DIALOG_IMPORT_DSF, dir_path, sizeof(dir_path));
 	const string dir = string(dir_path) + '/';
 	if(success)
 	{
@@ -1452,7 +1452,7 @@ void	WED_DoImportDSFText(IResolver * resolver)
 		
 		for(auto& it : all_files)                  // first pass is all XXXX.dat files, i.e. the apt.dat's
 		{
-			if(FILE_get_file_extension(it) == "dat")
+			if(it.find(".dat") != string::npos)
 			{
 				const string path = dir + it;
 				WED_ImportOneAptFile(path, wrl, NULL);
@@ -1460,9 +1460,9 @@ void	WED_DoImportDSFText(IResolver * resolver)
 			}
 		}
 		
-		for(auto it : all_files)                 // seconds pass is all other XXX.* files, thats presumed the DSF's, in text format
+		for(auto& it : all_files)                 // seconds pass is all other XXX.* files, thats presumed the DSF's, in text format
 		{
-			if(FILE_get_file_extension(it) != "dat")
+			if(it.find(".dat") == string::npos)
 			{
 				const string path = dir + it;
 				WED_Thing * g = get_airport_from_gateway_file_path(path.c_str(), wrl);

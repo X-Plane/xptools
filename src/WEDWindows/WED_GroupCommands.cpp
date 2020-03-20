@@ -22,22 +22,13 @@
  */
 #include "WED_GroupCommands.h"
 
-#include "WED_Airport.h"
-#include "WED_ATCFrequency.h"
-#include "WED_ATCFlow.h"
-#include "WED_ATCRunwayUse.h"
-#include "WED_ATCTimeRule.h"
-#include "WED_ATCWindRule.h"
-#include "WED_AirportNode.h"
-#include "WED_RampPosition.h"
-#include "WED_TruckParkingLocation.h"
-
 #include "ISelection.h"
 #include "ILibrarian.h"
 
 #include "AssertUtils.h"
 #include "BitmapUtils.h"
 #include "CompGeomUtils.h"
+#include "CompGeomDefs2.h"
 #include "GISUtils.h"
 #include "FileUtils.h"
 #include "MathUtils.h"
@@ -48,17 +39,33 @@
 #include "XObjDefs.h"
 #include "XESConstants.h"
 
+#include "WED_AirportChain.h"
+#include "WED_Airport.h"
+#include "WED_ATCFrequency.h"
+#include "WED_ATCFlow.h"
+#include "WED_ATCRunwayUse.h"
+#include "WED_ATCTimeRule.h"
+#include "WED_ATCWindRule.h"
+#include "WED_AirportNode.h"
 #include "WED_DrapedOrthophoto.h"
 #include "WED_Group.h"
 #include "WED_GISEdge.h"
 #include "WED_FacadePlacement.h"
+#include "WED_LinePlacement.h"
 #include "WED_ObjPlacement.h"
 #include "WED_Orthophoto.h"
 #include "WED_OverlayImage.h"
+#include "WED_PolygonPlacement.h"
+#include "WED_RampPosition.h"
 #include "WED_Ring.h"
 #include "WED_RoadNode.h"
+#include "WED_Runway.h"
+#include "WED_SimpleBezierBoundaryNode.h"
+#include "WED_SimpleBoundaryNode.h"
 #include "WED_TextureNode.h"
 #include "WED_TaxiRouteNode.h"
+#include "WED_Taxiway.h"
+#include "WED_TruckParkingLocation.h"
 
 #include "WED_EnumSystem.h"
 #include "WED_GISUtils.h"
@@ -67,30 +74,11 @@
 #include "WED_Menus.h"
 #include "WED_MetaDataKeys.h"
 #include "WED_MapZoomerNew.h"
+#include "WED_MarqueeTool.h"
 #include "WED_ResourceMgr.h"
 #include "WED_ToolUtils.h"
 #include "WED_UIDefs.h"
-#include "XObjDefs.h"
-#include "CompGeomDefs2.h"
-#include "CompGeomUtils.h"
-#include "WED_GISEdge.h"
-#include "GISUtils.h"
-#include "MathUtils.h"
-#include "WED_EnumSystem.h"
-#include "CompGeomUtils.h"
-#include "WED_AirportChain.h"
-#include "WED_HierarchyUtils.h"
-#include "WED_Orthophoto.h"
-#include "WED_FacadePlacement.h"
-#include "WED_GISUtils.h"
-#include "WED_LinePlacement.h"
-#include "WED_PolygonPlacement.h"
-#include "WED_SimpleBezierBoundaryNode.h"
-#include "WED_SimpleBoundaryNode.h"
-#include "WED_Taxiway.h"
 
-#include <algorithm>
-#include <map>
 #include <sstream>
 
 #if DEV
@@ -2710,14 +2698,12 @@ static bool lesser_y_then_x_merge_class_map(const pair<Point2, pair<const char *
 
 static bool is_within_snapping_distance(const merge_class_map::iterator& first_thing, const merge_class_map::iterator& second_thing, const CoordTranslator2& translator)
 {
-	const int MAX_DIST_M_SQ = 1;
+	const float MAX_DIST_M_SQ = 1.0;
 
-	Point2 first_pos_m       = translator.Forward(first_thing->first);
-	Point2 second_thing_pos_m = translator.Forward(second_thing->first);
-	double a_sqr = pow((second_thing_pos_m.x() - first_pos_m.x()), 2);
-	double b_sqr = pow (second_thing_pos_m.y() - first_pos_m.y(), 2);
-	double sum_a_b = a_sqr + b_sqr;
-	bool is_snappable =  sum_a_b < MAX_DIST_M_SQ;
+	Point2 first_pos_m  = translator.Forward(first_thing->first);
+	Point2 second_pos_m = translator.Forward(second_thing->first);
+
+	bool is_snappable =  first_pos_m.squared_distance(second_pos_m) < MAX_DIST_M_SQ;
 	return is_snappable;
 }
 
@@ -2726,16 +2712,13 @@ static const char * get_merge_tag_for_thing(IGISPoint * ething)
 	// In order to merge, we haveto at least be a thing AND a point,
 	// and have a parent that is a thing and an entity.  (If that's
 	// not true, @#$ knows what is selected.)
-	if(ething == NULL)
-		return NULL;
-	WED_Thing * thing = dynamic_cast<WED_Thing *>(ething);
+	
+	WED_Thing * thing = SAFE_CAST(WED_Thing, ething);
 	if(thing == NULL)
 		return NULL;
 
 	WED_Thing * parent = thing->GetParent();
-	if(parent == NULL)
-		return NULL;
-	IGISEntity * eparent = dynamic_cast<IGISEntity *>(parent);
+	IGISEntity * eparent = SAFE_CAST(IGISEntity, parent);
 	if(eparent == NULL)
 		return NULL;
 
@@ -2746,13 +2729,8 @@ static const char * get_merge_tag_for_thing(IGISPoint * ething)
 		// the user select two windsocks and, um, "merge" them.
 		if(thing->CountViewers() > 0)
 			return ething->GetGISSubtype();
-		else
-			return NULL;
 	}
-	else
-	{
-		return NULL;
-	}
+	return NULL;
 }
 
 static int iterate_can_merge(ISelectable * who, void * ref)
@@ -3144,14 +3122,10 @@ static bool is_node_merge(IResolver * resolver)
 	//1. Ensure all of the selection is mergeable, collect
 	merge_class_map sinkmap;
 	if (!sel->IterateSelectionAnd(iterate_can_merge, &sinkmap))
-	{
 		return false;
-	}
 
 	if (sinkmap.size() > 10000 || sinkmap.size() < 2)
-	{
 		return false;
-	}
 
 	//2. Sort by location, a small optimization
 	sort(sinkmap.begin(), sinkmap.end(), lesser_y_then_x_merge_class_map);
@@ -3182,14 +3156,7 @@ static bool is_node_merge(IResolver * resolver)
 	}
 
 	//Ensure expected UI behavior - Only perfect merges are allowed
-	if (can_snap_objects.size() == sinkmap.size())
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
+	return can_snap_objects.size() == sinkmap.size();
 }
 
 int	WED_CanMerge(IResolver * resolver)
@@ -3256,7 +3223,6 @@ static void do_chain_merge(ISelection * sel, const chain_merge_info_t & info)
 			info.c1->SetParent(NULL, 0);
 			to_delete.insert(info.c1);
 		}
-
 	}
 
 	WED_AddChildrenRecursive(to_delete);
@@ -3716,8 +3682,6 @@ static int accum_box(ISelectable * who, void * ref)
 	return 0;
 }
 
-#include "WED_MarqueeTool.h"
-
 void WED_DoCopyToAirport(IResolver * resolver)
 {
   	WED_Airport * curApt = WED_GetCurrentAirport(resolver);
@@ -3806,87 +3770,7 @@ int		WED_Repair(IResolver * resolver)
 // Obj and Agp Replacement
 //----------------------------------------------------------------------------
 
-template <typename T>
-static int CountChildOfTypeRecursive(WED_Thing* thing, bool must_be_visible)
-{
-	int num_analyzed = 0;
-	return CountChildOfTypeRecursive<T>(thing, must_be_visible, 0, num_analyzed); //Needed to offset counting "thing" as a child if it matches type T
-}
-
-//Warning: Don't call this overload, call the wrapper version
-template <typename T>
-static int CountChildOfTypeRecursive(WED_Thing* thing, bool must_be_visible, int accumulator, int& num_analyzed)
-{
-	T* test_thing = dynamic_cast<T*>(thing);
-	++num_analyzed;
-
-	if(test_thing != NULL)
-	{
-		WED_Entity* test_ent = dynamic_cast<WED_Entity*>(thing);
-		if (test_ent == NULL)
-		{
-			return accumulator;
-		}
-		else if(test_ent->GetHidden() && must_be_visible == true)
-		{
-			return accumulator;
-		}
-		else
-		{
-			if (num_analyzed > 1)
-			{
-				accumulator += 1;
-			}
-		}
-	}
-
-	int nc = thing->CountChildren();
-	for(int n = 0; n < nc; ++n)
-	{
-		int old_accum = accumulator;
-		int new_accum = CountChildOfTypeRecursive<T>(thing->GetNthChild(n), must_be_visible, accumulator, num_analyzed);
-
-		if(new_accum != old_accum)
-		{
-			accumulator = new_accum;
-			continue;
-		}
-	}
-
-	return accumulator;
-}
-
-//template <typename OutputIterator>
-/*static void CollectRecursive(WED_Thing * thing, OutputIterator oi)
-{
-	// TODO: do fast WED type ptr check on sClass before any other casts?
-	// Factor out WED_Entity check to avoid second dynamic cast?
-	WED_Entity * ent = dynamic_cast<WED_Entity*>(thing);
-	if(ent && ent->GetHidden())
-	{
-		return;
-	}
-
-	typedef typename OutputIterator::container_type::value_type VT;
-	VT ct = dynamic_cast<VT>(thing);
-	bool took_it = false;
-	if(ct)
-	{
-		oi = ct;
-		took_it = true;
-	}
-
-	if(!took_it)
-	{
-		int nc = thing->CountChildren();
-		for(int n = 0; n < nc; ++n)
-		{
-			CollectRecursive(thing->GetNthChild(n), oi);
-		}
-	}
-}*/
-
-set<string> build_agp_list()
+static set<string> build_agp_list()
 {
 	set<string> agp_list;
 	//-------------------------------------------------------------------------
@@ -3926,40 +3810,46 @@ int		WED_CanBreakApartAgps(IResolver* resolver)
 	return true;
 }
 
-template <typename From, typename To>
-static To cast(From test)
+static void replace_all_obj_in_agp(WED_AgpPlacement* agp, const agp_t * agp_data, WED_Archive* archive, vector<WED_ObjPlacement*>& out_added_objs)
 {
-	return dynamic_cast<To>(test);
+	Point2 agp_origin_geo;
+	agp->GetLocation(gis_Geo, agp_origin_geo);
+
+	for (auto& agp_obj : agp_data->objs)
+	{
+		Vector2 torotate(agp_obj.x, agp_obj.y);
+
+		//Note!! WED has clockwise heading, C's cos and sin functions are ccw in radians. We reverse directions and negate again
+		torotate.rotate_by_degrees(agp->GetHeading()*-1);
+		torotate *= -1;
+		
+		Point2 new_point_geo = agp_origin_geo -VectorMetersToLL(agp_origin_geo, torotate);
+
+		WED_ObjPlacement* new_obj = WED_ObjPlacement::CreateTyped(archive);
+		new_obj->SetLocation(gis_Geo, new_point_geo);
+
+		//Other data that is important to resetting up the object
+		new_obj->SetHeading(agp_obj.r + agp->GetHeading());
+		new_obj->SetName(FILE_get_file_name(agp_obj.name));
+		new_obj->SetParent(agp->GetParent(), agp->GetMyPosition());
+		new_obj->SetResource(agp_obj.name);
+		new_obj->SetShowLevel(agp->GetShowLevel());
+
+		out_added_objs.push_back(new_obj);
+	}
 }
 
-template <typename T>
-static bool is_null(T test)
-{
-	return test == NULL;
-}
-
-int wed_break_apart_special_agps(WED_Airport* apt, const vector<WED_AgpPlacement*>& agp_placements, WED_ResourceMgr * rmgr, set<WED_ObjPlacement*>& out_added_objs)
+int wed_break_apart_special_agps(const vector<WED_AgpPlacement*>& agp_placements, WED_ResourceMgr * rmgr, vector<WED_ObjPlacement*>& out_added_objs)
 {
 	//The list of agp files we've decided to be special "service truck related"
 	set<string> agp_list = build_agp_list();
+	vector<WED_AgpPlacement*> replaced_agps;
 
-	//To translate from lat/lon to meters
-	CoordTranslator2 translator;
-	Bbox2 box;
-	apt->GetBounds(gis_Geo, box);
-	CreateTranslatorForBounds(box, translator);
-
-	set<WED_AgpPlacement*> replaced_agps;
-
-	//For all agps
 	for (auto agp : agp_placements)
 	{
-		//Otherwise we have big problems
-		DebugAssert(agp->CountChildren() == 0);
-
 		string agp_resource;
+		
 		agp->GetResource(agp_resource);
-
 		//Is the agp found in the special agp list?
 		if (agp_list.find(agp_resource) != agp_list.end())
 		{
@@ -3967,44 +3857,16 @@ int wed_break_apart_special_agps(WED_Airport* apt, const vector<WED_AgpPlacement
 			const agp_t * agp_data;
 			if (rmgr->GetAGP(agp_resource, agp_data))
 			{
-				Point2 agp_origin_geo;
-				agp->GetLocation(gis_Geo, agp_origin_geo);
-				Point2 agp_origin_m = translator.Forward(agp_origin_geo);
-
-				for (auto& agp_obj : agp_data->objs)
-				{
-					Vector2 torotate(agp_origin_m, Point2(agp_origin_m.x() + agp_obj.x, agp_origin_m.y() + agp_obj.y));
-
-					//Note!! WED has clockwise heading, C's cos and sin functions are ccw in radians. We reverse directions and negate again
-					torotate.rotate_by_degrees(agp->GetHeading()*-1);
-					torotate *= -1;
-
-					Point2 new_point_m = Point2(agp_origin_m.x() - torotate.x(), agp_origin_m.y() - torotate.y());
-					Point2 new_point_geo = translator.Reverse(new_point_m);
-
-					WED_ObjPlacement* new_obj = WED_ObjPlacement::CreateTyped(apt->GetArchive());
-					new_obj->SetLocation(gis_Geo, new_point_geo);
-
-					//Other data that is important to resetting up the object
-					new_obj->SetDefaultMSL();
-					new_obj->SetHeading(agp_obj.r + agp->GetHeading());
-					new_obj->SetName(agp_obj.name);
-					new_obj->SetParent(agp->GetParent(), agp->GetMyPosition());
-					new_obj->SetResource(agp_obj.name);
-					new_obj->SetShowLevel(agp->GetShowLevel());
-
-					out_added_objs.insert(new_obj);
-				}
+				replace_all_obj_in_agp(agp, agp_data, agp->GetArchive(), out_added_objs);
+				replaced_agps.push_back(agp);
 			}
-
-			replaced_agps.insert(agp);
 		}
 	}
 
-	for (set<WED_AgpPlacement*>::iterator itr_agp = replaced_agps.begin(); itr_agp != replaced_agps.end(); ++itr_agp)
+	for (auto itr_agp : replaced_agps)
 	{
-		(*itr_agp)->SetParent(NULL, 0);
-		(*itr_agp)->Delete();
+		itr_agp->SetParent(NULL, 0);
+		itr_agp->Delete();
 	}
 
 	return replaced_agps.size();
@@ -4012,7 +3874,7 @@ int wed_break_apart_special_agps(WED_Airport* apt, const vector<WED_AgpPlacement
 
 void	WED_DoBreakApartAgps(IResolver* resolver)
 {
-	WED_Thing * root = WED_GetWorld(resolver);
+	WED_Thing * root 		= WED_GetWorld(resolver);
 	WED_ResourceMgr * rmgr	= WED_GetResourceMgr(resolver);
 	WED_LibraryMgr * lmgr	= WED_GetLibraryMgr(resolver);
 	ISelection * sel 		= WED_GetSelect(resolver);
@@ -4029,35 +3891,16 @@ void	WED_DoBreakApartAgps(IResolver* resolver)
 	}
 
 	root->StartOperation("Break Apart Agps");
-	sel->Clear();
 	
-	set<WED_AgpPlacement*> replaced_agps;
-	set<WED_ObjPlacement*> added_objs;
-
-	//For all agps
+	vector<WED_AgpPlacement*> replaced_agps;
+	vector<WED_ObjPlacement*> added_objs;
+	
 	for(auto agp : agp_placements)
 	{
-	
-		WED_Airport * apt = WED_GetParentAirport(agp);
-		if(apt == NULL)
-		{
-			root->AbortCommand();
-			DoUserAlert("All selected Agp's must be in an airport in the hierarchy");
-			return;
-		}
-
-		//To translate from lat/lon to meters
-		CoordTranslator2 translator;
-		Bbox2 box;
-		apt->GetBounds(gis_Geo, box);
-		CreateTranslatorForBounds(box,translator);
-
-		//A set of all the agps that we're going to replace
-
 		string agp_resource;
-		agp->GetResource(agp_resource);
-
 		const agp_t * agp_data;
+		
+		agp->GetResource(agp_resource);
 		if(rmgr->GetAGP(agp_resource, agp_data))
 		{
 			bool all_obj_public = true;
@@ -4071,35 +3914,8 @@ void	WED_DoBreakApartAgps(IResolver* resolver)
 			}
 			if(all_obj_public)
 			{
-				Point2 agp_origin_geo;
-				agp->GetLocation(gis_Geo,agp_origin_geo);
-				Point2 agp_origin_m = translator.Forward(agp_origin_geo);
-
-				for (auto& agp_obj : agp_data->objs)
-				{
-					Vector2 torotate(agp_origin_m, Point2(agp_origin_m.x() + agp_obj.x, agp_origin_m.y() + agp_obj.y));
-
-					//Note!! WED has clockwise heading, C's cos and sin functions are ccw in radians. We reverse directions and negate again
-					torotate.rotate_by_degrees(agp->GetHeading()*-1);
-					torotate *= -1;
-
-					Point2 new_point_m = Point2(agp_origin_m.x() - torotate.x(), agp_origin_m.y() - torotate.y());
-					Point2 new_point_geo = translator.Reverse(new_point_m);
-
-					WED_ObjPlacement* new_obj = WED_ObjPlacement::CreateTyped(root->GetArchive());
-					new_obj->SetLocation(gis_Geo, new_point_geo);
-
-					//Other data that is important to resetting up the object
-					new_obj->SetDefaultMSL();
-					new_obj->SetHeading(agp_obj.r + agp->GetHeading());
-					new_obj->SetName(FILE_get_file_name(agp_obj.name));
-					new_obj->SetParent(agp->GetParent(), agp->GetMyPosition());
-					new_obj->SetResource(agp_obj.name);
-					new_obj->SetShowLevel(agp->GetShowLevel());
-
-					added_objs.insert(new_obj);
-				}
-				replaced_agps.insert(agp);
+				replace_all_obj_in_agp(agp, agp_data, root->GetArchive(), added_objs);
+				replaced_agps.push_back(agp);
 			}
 		}
 	}
@@ -4110,34 +3926,50 @@ void	WED_DoBreakApartAgps(IResolver* resolver)
 		itr_agp->Delete();
 	}
 
-	for (auto itr_obj : added_objs)
-	{
-		//string obj_resource;
-		//(*itr_obj)->GetResource(obj_resource);
-		sel->Insert(itr_obj);
-	}
-
 	if(replaced_agps.size() == 0)
 	{
-		sel->Clear();
 		root->AbortOperation();
-		DoUserAlert("No agp's with public objects found. Nothing replaced."); //IMPORTANT: Do not call DoUserAlert during an operation!!!
+		DoUserAlert("No agp's with all public objects found. Nothing replaced."); //IMPORTANT: Do not call DoUserAlert during an operation!!!
 	}
 	else
 	{
+		sel->Clear();
+		sel->Insert(set<ISelectable*>(added_objs.begin(), added_objs.end()));
 		root->CommitOperation();
 
 		stringstream ss;
-		ss << "Replaced " << replaced_agps.size() << " Agp objects with " << added_objs.size() << " Objects.";
+		ss << "Replaced " << replaced_agps.size() << " Agp objects with " << sel->GetSelectionCount() << " Objects.";
 		DoUserAlert(ss.str().c_str());
 	}
 }
 
-int	WED_CanReplaceVehicleObj(IResolver* resolver)
+template <typename T>
+static bool HasChildOfTypeRecursive(WED_Thing* thing, bool must_be_visible)
 {
-	//Returns true if there are any Obj files in the selection.
-	auto apt = WED_GetCurrentAirport(resolver);
-	return apt != nullptr;
+	if(thing->GetClass() == T::sClass)
+	{
+		if(must_be_visible)
+		{
+			if(auto e = dynamic_cast<WED_Entity *>(thing))
+				return !e->GetHidden();
+		}
+		else
+			return true;
+	}
+	int nc = thing->CountChildren();
+	for(int n = 0; n < nc; ++n)
+	{
+		if(HasChildOfTypeRecursive<T>(thing->GetNthChild(n), must_be_visible))
+			return true;
+	}
+	return false;
+}
+
+int	WED_CanReplaceVehicleObj(WED_Airport* apt)
+{
+	//Returns true if there are any Obj files in the airport.
+	if(!apt) return false;
+	return HasChildOfTypeRecursive<WED_ObjPlacement>(apt, true);  // takes way too log if its a big airport. We only need ONE !
 }
 
 struct vehicle_replacement_info
@@ -4163,51 +3995,25 @@ static map<string,vehicle_replacement_info> build_replacement_table()
 {
 	map<string,vehicle_replacement_info> table;
 
-	//atc_ServiceTruck_Baggage_Loader
 	table.insert(make_pair("lib/airport/Ramp_Equipment/Belt_Loader.obj", vehicle_replacement_info(atc_ServiceTruck_Baggage_Loader, 0)));
-
 	table.insert(make_pair("lib/airport/vehicles/baggage_handling/belt_loader.obj", vehicle_replacement_info(atc_ServiceTruck_Baggage_Loader, 0)));
-
-	//atc_ServiceTruck_Baggage_Train
-	stringstream ss;
 	for(int i = 1; i <= 5; ++i)
 	{
- 		ss << "lib/airport/Ramp_Equipment/Lugg_Train_Straight" << i << ".obj";
-		table.insert(make_pair(ss.str(), vehicle_replacement_info(atc_ServiceTruck_Baggage_Train,i)));
-		ss.clear();
-		ss.str("");
+ 		string s = "lib/airport/Ramp_Equipment/Lugg_Train_Straight" + to_string(i) + ".obj";
+		table.insert(make_pair(s, vehicle_replacement_info(atc_ServiceTruck_Baggage_Train,i)));
 	}
-
 	table.insert(make_pair("lib/airport/Ramp_Equipment/Luggage_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_Baggage_Train,0)));
-
-	//atc_ServiceTruck_Crew_Car
 	table.insert(make_pair("lib/airport/vehicles/servicing/crew_car.obj", vehicle_replacement_info(atc_ServiceTruck_Crew_Car,0)));
-
-	//atc_ServiceTruck_Crew_Ferrari
 	table.insert(make_pair("lib/airport/vehicles/servicing/crew_ferrari.obj", vehicle_replacement_info(atc_ServiceTruck_Crew_Ferrari, 0)));
-
 	//atc_ServiceTruck_Crew_Limo
 	//TODO: Waiting for art asset
-
-	//atc_ServiceTruck_Food
 	table.insert(make_pair("lib/airport/vehicles/servicing/catering_truck.obj", vehicle_replacement_info(atc_ServiceTruck_Food,0)));
-
-	//atc_ServiceTruck_FuelTruck_Liner
 	table.insert(make_pair("lib/airport/Common_Elements/vehicles/hyd_disp_truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Liner, 0)));
-
 	//!!Important!! - Large and Small are reversed on purpose!
-
-	//atc_ServiceTruck_FuelTruck_Jet
 	table.insert(make_pair("lib/airport/Common_Elements/vehicles/Small_Fuel_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Jet,0)));
-
-	//atc_ServiceTruck_FuelTruck_Prop
 	table.insert(make_pair("lib/airport/Common_Elements/vehicles/Large_Fuel_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Prop,0)));
-
-	//atc_ServiceTruck_Ground_Power_Unit
 	table.insert(make_pair("lib/airport/vehicles/baggage_handling/tractor.obj", vehicle_replacement_info(atc_ServiceTruck_Ground_Power_Unit,0)));
 	table.insert(make_pair("ib/airport/Ramp_Equipment/GPU_1.obj", vehicle_replacement_info(atc_ServiceTruck_Ground_Power_Unit,0)));
-
-	//atc_ServiceTruck_Pushback
 	table.insert(make_pair("lib/airport/Ramp_Equipment/Tow_Tractor_1.obj", vehicle_replacement_info(atc_ServiceTruck_Pushback,0)));
 	table.insert(make_pair("lib/airport/Ramp_Equipment/Tow_Tractor_2.obj", vehicle_replacement_info(atc_ServiceTruck_Pushback,0)));
 
@@ -4281,19 +4087,15 @@ void	WED_DoReplaceVehicleObj(IResolver* resolver, WED_Airport* apt)
 #if !TYLER_MODE
 			stringstream ss;
 			ss << "Replaced " << replace_count << " objects";
-
 			DoUserAlert(ss.str().c_str());
 #endif
 		}
 	}
-	else
-	{
 #if !TYLER_MODE
+	else
 		DoUserAlert("Nothing to replace");
 #endif
-	}
 }
-//-----------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------------------------------
 #pragma mark -
@@ -4481,8 +4283,6 @@ void WED_UpgradeRampStarts(IResolver * resolver)
 }
 
 // ****** Runway Auto Rename & Move Stuff. Ugly code, its a BETA !!! *****
-
-#include "WED_Runway.h"
 
 struct changelist_t
 {

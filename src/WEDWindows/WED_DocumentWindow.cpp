@@ -402,8 +402,6 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case gui_Redo:	if (um->HasRedo()) { um->Redo(); return 1; }	break;
 	case gui_Clear:		WED_DoClear(mDocument); return 1;
 	case wed_Crop:		WED_DoCrop(mDocument); return 1;
-	//case wed_Overlay:	WED_MakeOrthos(mDocument); return 1;
-//	case wed_MakeRouting:WED_MakeRouting(mDocument); return 1;
 	case wed_Merge:		WED_DoMerge(mDocument); return 1;
 	case wed_Split:		WED_DoSplit(mDocument); return 1;
 	case wed_Align:		WED_DoAlign(mDocument); return 1;
@@ -524,9 +522,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 						else				{								return 0; }
 	case gui_Clear:		return	WED_CanClear(mDocument);
 	case wed_Crop:		return	WED_CanCrop(mDocument);
-//	case wed_MakeRouting:
 	case wed_Merge:		return WED_CanMerge(mDocument);
-	case wed_Overlay:														return 1;
 	case gui_Close:															return 1;
 	case wed_Split:		return WED_CanSplit(mDocument);
 	case wed_Align:		return WED_CanAlign(mDocument);
@@ -559,7 +555,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_MoveNext:	return WED_CanReorder(mDocument, 1,0);
 	case wed_MoveLast:	return WED_CanReorder(mDocument, 1,1);
 	case wed_BreakApartAgps: return WED_CanBreakApartAgps(mDocument);
-	case wed_ReplaceVehicleObj:  return WED_CanReplaceVehicleObj(mDocument);
+	case wed_ReplaceVehicleObj:  return WED_CanReplaceVehicleObj(WED_GetCurrentAirport(mDocument));
 	case gui_Save:		return mDocument->IsDirty();
 	case gui_Revert:	return mDocument->IsDirty() && mDocument->IsOnDisk();
 

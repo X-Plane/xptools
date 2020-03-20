@@ -144,27 +144,23 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 					agp_placements.push_back(*obj_itr);
 				}
 			}
-			set<WED_ObjPlacement*> out_added_objs;
-			set<WED_AgpPlacement*> out_replaced_agps;
+
+			vector<WED_ObjPlacement*> out_added_objs;
 			wrl->StartCommand("Break Apart Special Agps");
-			int num_replaced = wed_break_apart_special_agps(*apt_itr, agp_placements, rmgr, out_added_objs);
+			int num_replaced = wed_break_apart_special_agps(agp_placements, rmgr, out_added_objs);
 			if (num_replaced == 0)
-			{
 				wrl->AbortCommand();
-			}
 			else
-			{
 				wrl->CommitCommand();
-			}
 
 			//Easy out
 			if (num_replaced > 0 || out_added_objs.size() > 0)
 			{
-//				WED_DoReplaceVehicleObj(resolver,*apt_itr);
+				WED_DoReplaceVehicleObj(resolver,*apt_itr);
 			}
-//			else if (WED_CanReplaceVehicleObj(*apt_itr) == true)
+			else if (WED_CanReplaceVehicleObj(*apt_itr))
 			{
-//				WED_DoReplaceVehicleObj(resolver,*apt_itr);
+				WED_DoReplaceVehicleObj(resolver,*apt_itr);
 			}
 		}
 
@@ -177,12 +173,12 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 void	WED_DoExportPack(WED_Document * resolver, WED_MapPane * pane)
 {
 #if TYLER_MODE
-    // do you heuristics stuff here.
+    // do any pre-export modifications here.
 	DoHueristicAnalysisAndAutoUpgrade(resolver);
 #else
 	// Just don't ever export if we are invalid.  Avoid the case where we write junk to a file!
-	// Special case: in Tyler's bulk-Gateway-export-mode, Tyler can be trusted to run the validation *first*, before attempting to
-	// export... and if the export blows up or something, it's Tyler's fault.
+	// Special case: in Tyler's bulk-Gateway-export-mode, the suitability for export is to be established with other means,
+	// ... and if the export blows up or something, it's Tyler's fault :(
 	if(!WED_ValidateApt(resolver, pane))
 		return;
 #endif
@@ -199,7 +195,6 @@ void	WED_DoExportPack(WED_Document * resolver, WED_MapPane * pane)
 		EnforceRecursive_MetaDataGuiLabel(w);
 
 	WED_ExportPackToPath(g, resolver, pack_base, problem_children);
-
 
 	if(!problem_children.empty())
 	{

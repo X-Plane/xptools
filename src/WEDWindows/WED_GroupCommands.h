@@ -24,20 +24,18 @@
 #ifndef WED_GroupCommands_H
 #define WED_GroupCommands_H
 
-#include <map>
-
 class	IGISEdge;
 class	IResolver;
+class	ISelection;
 
 class	Point2;
 
 class	WED_Archive;
-class	WED_GISEdge;
 class	WED_MapZoomerNew;
 class	WED_Thing;
 
-class	ISelection;
 class	WED_Airport;
+class	WED_GISEdge;
 class	WED_ObjPlacement;
 class	WED_ResourceMgr;
 
@@ -153,11 +151,11 @@ void	WED_DoMoveSelectionTo(IResolver * resolver, WED_Thing * dest, int dest_slot
 
 int		WED_Repair(IResolver * resolver);
 
-int		wed_break_apart_special_agps(WED_Airport* apt, const vector<WED_AgpPlacement*>& agp_placements, WED_ResourceMgr * rmgr, set<WED_ObjPlacement*>& out_added_objs);
+int		wed_break_apart_special_agps(const vector<WED_AgpPlacement*>& agp_placements, WED_ResourceMgr * rmgr, vector<WED_ObjPlacement*>& out_added_objs);
 int		WED_CanBreakApartAgps(IResolver* resolver);
 void	WED_DoBreakApartAgps(IResolver* resolver);
 
-int		WED_CanReplaceVehicleObj(IResolver* resolver);
+int		WED_CanReplaceVehicleObj(WED_Airport* apt);
 void	WED_DoReplaceVehicleObj(IResolver* resolver, WED_Airport* apt = NULL);
 
 
