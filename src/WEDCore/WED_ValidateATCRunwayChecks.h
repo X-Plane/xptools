@@ -28,6 +28,7 @@
 #include "GISUtils.h"
 
 class WED_Airport;
+class WED_ATCFlow;
 class WED_ResourceMgr;
 
 #include "AptDefs.h"
@@ -38,6 +39,10 @@ class WED_ResourceMgr;
 #include "WED_EnumSystem.h"
 
 struct validation_error_t;
+
+typedef vector<WED_ATCFlow*>       FlowVec_t;
+typedef vector<WED_Runway*>        RunwayVec_t;
+typedef vector<WED_TaxiRoute*>     TaxiRouteVec_t;
 
 struct RunwayInfo
 {
@@ -154,6 +159,6 @@ struct TaxiRouteInfo
 };
 
 void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs, /*const TaxiRouteVec_t& all_taxiroutes_plain,*/
-	const vector<WED_Runway *>& all_runways, const set<int>& legal_rwy_oneway, const set<int>& legal_rwy_twoway, WED_ResourceMgr * res_mgr);
+	const RunwayVec_t& all_runways, const set<int>& legal_rwy_oneway, const set<int>& legal_rwy_twoway, const FlowVec_t& all_flows, WED_ResourceMgr * res_mgr);
 
 #endif

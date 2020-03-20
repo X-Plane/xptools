@@ -612,12 +612,7 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 			path = lib_mgr->GetResourcePath(res);
 
 		if(!FILE_exists(path.c_str()))
-		{
-			if(parent_apt != NULL)
-			{
 				msgs.push_back(validation_error_t(string(who->HumanReadableType()) + "'s resource " + res + " cannot be found.", err_resource_cannot_be_found, who, parent_apt));
-			}
-		}
 
 		//3. What happen if the user free types a real resource of the wrong type into the box?
 		bool matches = false;
@@ -813,7 +808,7 @@ static void ValidateOneATCRunwayUse(WED_ATCRunwayUse* use, validation_error_vect
 
 typedef vector<int> surfWindVec_t;  // the maximum amount of wind from any given direction that should be tested for
 
-static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs, set<int>& legal_rwy_oneway, WED_Airport * apt, const vector<int>& dep_freqs, surfWindVec_t& sWindsCov)
+static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs, const set<int>& legal_rwy_oneway, WED_Airport * apt, const vector<int>& dep_freqs, surfWindVec_t& sWindsCov)
 {
 	// Check ATC Flow visibility > 0, ceiling > 0, ICAO code is set, at least one arrival and one departure runway and
 	// is not using any runway in opposing directions simultaneously for either arr or dep
@@ -978,11 +973,8 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 		msgs.push_back(validation_error_t("Airport flow must specify at least one active arrival and one departure runway", err_flow_no_arr_or_no_dep_runway, flow, apt));
 }
 
-static void ValidateATCFlows(WED_Airport* apt, validation_error_vector& msgs, set<int>& legal_rwy_oneway)
+static void ValidateATCFlows(const vector<WED_ATCFlow*>& flows, WED_Airport* apt, validation_error_vector& msgs, const set<int>& legal_rwy_oneway)
 {
-	vector<WED_ATCFlow *>		flows;
-	CollectRecursive(apt,back_inserter(flows),       IgnoreVisiblity, TakeAlways, WED_ATCFlow::sClass);
-
 	if(!flows.empty() && gExportTarget == wet_xplane_900)
 		msgs.push_back(validation_error_t("ATC flows are only supported in X-Plane 10 and newer.", err_flow_flows_only_for_gte_xp10, flows, apt));
 
@@ -993,21 +985,17 @@ static void ValidateATCFlows(WED_Airport* apt, validation_error_vector& msgs, se
 	CollectRecursive(apt, back_inserter<vector<WED_ATCFrequency*> >(ATC_freqs), IgnoreVisiblity, TakeAlways);
 
 	vector<int> departure_freqs;
-	for(vector<WED_ATCFrequency*>::iterator d = ATC_freqs.begin(); d != ATC_freqs.end(); ++d)
+	for(auto f : ATC_freqs)
 	{
 		AptATCFreq_t freq_info;
-		(*d)->Export(freq_info);
+		f->Export(freq_info);
 		if(ENUM_Import(ATCFrequency, freq_info.atc_type) == atc_Departure)
-		{
 			departure_freqs.push_back(freq_info.freq);
-		}
 	}
 	surfWindVec_t covSurfWinds(360, 0);                  // winds up to this level have been covered by ATC flows
 
-	for(vector<WED_ATCFlow *>::iterator f = flows.begin(); f != flows.end(); ++f)
-	{
-		ValidateOneATCFlow(*f, msgs, legal_rwy_oneway, apt, departure_freqs, covSurfWinds);
-	}
+	for(auto f : flows)
+		ValidateOneATCFlow(f, msgs, legal_rwy_oneway, apt, departure_freqs, covSurfWinds);
 	
 	int uncovSpd = ATC_FLOW_MAX_WIND;
 	if(!flows.empty())
@@ -2062,27 +2050,6 @@ static void ValidateCIFP(const vector<WED_Runway *>& runways, const vector<WED_S
 
 static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, WED_LibraryMgr* lib_mgr, WED_ResourceMgr * res_mgr, MFMemFile * mf)
 {
-	/*--Validate Airport Rules-------------------------------------------------
-		Airport Name rules
-		  - Empty ICAO code
-		  - ICAO used twice in airport
-		  - Duplicate runway names
-		  - Duplicate helipad names
-		  - No runways or helipads or sealanes at all
-		  - Gateway: illegal use of third party library resources
-	 */
-
-	vector<WED_Runway *>		runways;
-	vector<WED_Helipad *>		helipads;
-	vector<WED_Sealane *>		sealanes;
-	vector<WED_AirportSign *>	signs;
-	vector<WED_Taxiway *>		taxiways;
-	vector<WED_TruckDestination*>     truck_destinations;
-	vector<WED_TruckParkingLocation*> truck_parking_locs;
-	vector<WED_RampPosition*>	ramps;
-	vector<WED_Thing *>			runway_or_sealane;
-	vector<WED_AirportBoundary *> boundaries;
-
 	string name, icao;
 	apt->GetName(name);
 	apt->GetICAO(icao);
@@ -2119,7 +2086,6 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 			msgs.push_back(validation_error_t("The airport name should use the abbreviations 'Intl', 'Rgnl' and 'Muni' instead of full words.", warn_airport_name_style, apt,apt));
 		if (icao_lcase != "niue" && contains_word(name_lcase, icao_lcase.c_str()))
 			msgs.push_back(validation_error_t("The airport name should not include the ICAO code. Use the common name only.", warn_airport_name_style, apt,apt));
-
 	}
 	if(icao.empty())
 		msgs.push_back(validation_error_t(string("The airport '") + name + "' has an empty Airport ID.", err_airport_icao, apt,apt));
@@ -2130,30 +2096,67 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	if(points.size())
 		msgs.push_back(validation_error_t("Airport contains doubled ATC routing nodes. These should be merged.", err_airport_ATC_network, points, apt));
 
-	set<int>		legal_rwy_oneway;
-	set<int>		legal_rwy_twoway;
+	vector<WED_Runway *>		runways;
+	vector<WED_Helipad *>		helipads;
+	vector<WED_Sealane *>		sealanes;
+	vector<WED_AirportSign *>	signs;
+	vector<WED_Taxiway *>		taxiways;
+	vector<WED_TruckDestination*>     truck_destinations;
+	vector<WED_TruckParkingLocation*> truck_parking_locs;
+	vector<WED_RampPosition*>	ramps;
+	vector<WED_Thing *>			runway_or_sealane;
+	vector<WED_AirportBoundary *> boundaries;
+	vector<WED_ATCFlow *>		flows;
 
-	// todo: replace this by ONE recursion over everything and sortings things as needed
-	// cuz - those Thing <-> Entity dynamic_cast's take forever. 50% of CPU time in validation is for casting.
-	CollectRecursive(apt, back_inserter(runways),  WED_Runway::sClass);
-	CollectRecursive(apt, back_inserter(helipads), WED_Helipad::sClass);
-	CollectRecursive(apt, back_inserter(sealanes), WED_Sealane::sClass);
-	CollectRecursive(apt, back_inserter(signs),    WED_AirportSign::sClass);
-	CollectRecursive(apt, back_inserter(taxiways), WED_Taxiway::sClass);
-	CollectRecursive(apt, back_inserter(truck_destinations), WED_TruckDestination::sClass);
-	CollectRecursive(apt, back_inserter(truck_parking_locs), WED_TruckParkingLocation::sClass);
-	CollectRecursive(apt, back_inserter(ramps),      WED_RampPosition::sClass);
-	CollectRecursive(apt, back_inserter(boundaries), WED_AirportBoundary::sClass);
+	// those Thing <-> Entity dynamic_cast's take forever. 50% of CPU time in validation is for casting.
+	
+	//CollectRecursive(apt, back_inserter(runways),  WED_Runway::sClass);
+	//CollectRecursive(apt, back_inserter(helipads), WED_Helipad::sClass);
+	//CollectRecursive(apt, back_inserter(sealanes), WED_Sealane::sClass);
+	//CollectRecursive(apt, back_inserter(signs),    WED_AirportSign::sClass);
+	//CollectRecursive(apt, back_inserter(taxiways), WED_Taxiway::sClass);
+	//CollectRecursive(apt, back_inserter(ramps),    WED_RampPosition::sClass);
+	//CollectRecursive(apt, back_inserter(truck_destinations), WED_TruckDestination::sClass);
+	//CollectRecursive(apt, back_inserter(truck_parking_locs), WED_TruckParkingLocation::sClass);
+	//CollectRecursive(apt, back_inserter(boundaries), WED_AirportBoundary::sClass);
+	CollectRecursive(apt, back_inserter(flows),      WED_ATCFlow::sClass);
+
+	// so replace this by ONE recursion that captures all we need
+	
+	std::function<void(WED_Thing *)> CollectEntitiesRecursive = [&] (WED_Thing * thing)
+	{
+		const char * c = thing->GetClass();
+	#define COLLECT(type, vector) \
+		if(c == type::sClass) { \
+			auto p = static_cast<type *>(thing); \
+			if(!p->GetHidden())	vector.push_back(p); \
+			return; \
+		}
+			 COLLECT(WED_Runway,       runways)
+		else COLLECT(WED_Helipad,      helipads)
+		else COLLECT(WED_Sealane,      sealanes)
+		else COLLECT(WED_AirportSign,  signs)
+		else COLLECT(WED_Taxiway,      taxiways)
+		else COLLECT(WED_RampPosition, ramps)
+		else COLLECT(WED_AirportBoundary,      boundaries)
+		else COLLECT(WED_TruckDestination,     truck_destinations)
+		else COLLECT(WED_TruckParkingLocation, truck_parking_locs)
+	#undef COLLECT
+		else
+		{
+			auto p = dynamic_cast<WED_Entity *>(thing);
+			if(!p || p->GetHidden()) return;         // don't recurse into non-entities, we don't need what could be in there
+		}
+		int nc = thing->CountChildren();
+		for (int n = 0; n < nc; ++n)
+			CollectEntitiesRecursive(thing->GetNthChild(n));
+	};
 
 	copy(runways.begin(), runways.end(), back_inserter(runway_or_sealane));
 	copy(sealanes.begin(), sealanes.end(), back_inserter(runway_or_sealane));
-
-	if(CheckDuplicateNames(helipads,msgs,apt,"A helipad name is used more than once."))
-		return;
-
-	if(CheckDuplicateNames(runway_or_sealane,msgs,apt,"A runway or sealane name is used more than once."))
-		return;
-
+	
+	set<int>		legal_rwy_oneway;
+	set<int>		legal_rwy_twoway;
 	WED_GetAllRunwaysOneway(apt, legal_rwy_oneway);
 	WED_GetAllRunwaysTwoway(apt, legal_rwy_twoway);
 
@@ -2175,9 +2178,14 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		default:
 			Assert("Unknown Airport Type");
 	}
-
-	WED_DoATCRunwayChecks(*apt, msgs, runways, legal_rwy_oneway, legal_rwy_twoway, res_mgr);
-	ValidateATCFlows(apt, msgs, legal_rwy_oneway);
+	
+	CheckDuplicateNames(helipads,msgs,apt,"A helipad name is used more than once.");
+	if(!CheckDuplicateNames(runway_or_sealane,msgs,apt,"A runway or sealane name is used more than once."))
+	{
+	   // there checks in these that create utterly misleading results if runway names are ambigeous
+		WED_DoATCRunwayChecks(*apt, msgs, runways, legal_rwy_oneway, legal_rwy_twoway, flows, res_mgr);
+		ValidateATCFlows(flows, apt, msgs, legal_rwy_oneway);
+	}
 	ValidateAirportFrequencies(apt, msgs);
 
 	for(auto s : signs)
@@ -2273,17 +2281,14 @@ validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane,
 	gMeshLines.clear();
 	gMeshPolygons.clear();
 #endif
-
 	validation_error_vector		msgs;
 
 	if(wrl == NULL) wrl = WED_GetWorld(resolver);
-
 	WED_LibraryMgr * lib_mgr = 	WED_GetLibraryMgr(resolver);
-	WED_ResourceMgr * res_mgr = 	WED_GetResourceMgr(resolver);
+	WED_ResourceMgr * res_mgr = WED_GetResourceMgr(resolver);
 
 	vector<WED_Airport *> apts;
-	CollectRecursiveNoNesting(wrl, back_inserter(apts),WED_Airport::sClass);
-
+	CollectRecursiveNoNesting(wrl, back_inserter(apts),WED_Airport::sClass); // problem: Finds Airports only 1 level deep.
 
 	// get data about runways from CIFP data
 	MFMemFile * mf = NULL;

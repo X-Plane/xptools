@@ -30,9 +30,6 @@
 #include "WED_PreviewLayer.h"
 
 typedef vector<WED_ATCRunwayUse*>  ATCRunwayUseVec_t;
-typedef vector<WED_ATCFlow*>       FlowVec_t;
-typedef vector<WED_Runway*>        RunwayVec_t;
-typedef vector<WED_TaxiRoute*>     TaxiRouteVec_t;
 
 //We're just using WED_GISPoint because old WED and airports
 typedef vector<WED_GISPoint*>      TaxiRouteNodeVec_t;
@@ -45,13 +42,11 @@ typedef vector<TaxiRouteInfo>      TaxiRouteInfoVec_t;
 // - if no taxiway vector is passed, being mentioned in a flow is sufficient to consider it active
 static RunwayInfoVec_t CollectPotentiallyActiveRunways( const TaxiRouteInfoVec_t& all_taxiroutes,
 														const RunwayInfoVec_t& all_runways_info,
+														const FlowVec_t& flows,
 														ATCRunwayUseVec_t& use_rules,
 														validation_error_vector& msgs,
 														WED_Airport* apt)
 {
-	FlowVec_t flows;
-	CollectRecursive(apt,back_inserter<FlowVec_t>(flows),WED_ATCFlow::sClass);
-
 	//Find all potentially active runways:
 	//0 flows means treat all runways as potentially active
 	//>1 means find all runways mentioned, ignoring duplicates
@@ -1012,7 +1007,8 @@ static void TestInvalidHotZOneTags(const TaxiRouteInfoVec_t& taxi_routes, const 
 //-----------------------------------------------------------------------------
 
 void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs, /*const TaxiRouteVec_t& all_taxiroutes_plain,*/ 
-							const vector<WED_Runway *>& all_runways, const set<int>& legal_rwy_oneway, const set<int>& legal_rwy_twoway,	WED_ResourceMgr * res_mgr)
+							const RunwayVec_t& all_runways, const set<int>& legal_rwy_oneway, const set<int>& legal_rwy_twoway,
+							const FlowVec_t& all_flows,	WED_ResourceMgr * res_mgr)
 {
 	Bbox2 box;
 	apt.GetBounds(gis_Geo, box);
@@ -1058,7 +1054,7 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs, /*co
 		}
 
 		ATCRunwayUseVec_t all_use_rules;
-		RunwayInfoVec_t potentially_active_runways = CollectPotentiallyActiveRunways(all_aircraftroutes, all_runways_info, all_use_rules, msgs, &apt);
+		RunwayInfoVec_t potentially_active_runways = CollectPotentiallyActiveRunways(all_aircraftroutes, all_runways_info, all_flows, all_use_rules, msgs, &apt);
 		
 		FullyConnectedNetworkCheck(all_aircraftroutes_plain, msgs, &apt);
 		
