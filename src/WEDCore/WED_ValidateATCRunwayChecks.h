@@ -158,7 +158,7 @@ struct TaxiRouteInfo
 	vector<WED_GISPoint*> nodes;
 };
 
-void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs, /*const TaxiRouteVec_t& all_taxiroutes_plain,*/
-	const RunwayVec_t& all_runways, const set<int>& legal_rwy_oneway, const set<int>& legal_rwy_twoway, const FlowVec_t& all_flows, WED_ResourceMgr * res_mgr);
+void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs, const TaxiRouteVec_t& all_taxiroutes_plain,
+	const RunwayVec_t& all_runways, const set<int>& legal_rwy_oneway, const set<int>& legal_rwy_twoway, const FlowVec_t& all_flows,  WED_ResourceMgr * res_mgr);
 
 #endif

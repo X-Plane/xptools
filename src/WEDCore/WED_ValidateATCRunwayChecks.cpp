@@ -1006,17 +1006,14 @@ static void TestInvalidHotZOneTags(const TaxiRouteInfoVec_t& taxi_routes, const 
 
 //-----------------------------------------------------------------------------
 
-void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs, /*const TaxiRouteVec_t& all_taxiroutes_plain,*/ 
+void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs, const TaxiRouteVec_t& all_taxiroutes_plain,
 							const RunwayVec_t& all_runways, const set<int>& legal_rwy_oneway, const set<int>& legal_rwy_twoway,
-							const FlowVec_t& all_flows,	WED_ResourceMgr * res_mgr)
+							const FlowVec_t& all_flows, WED_ResourceMgr * res_mgr)
 {
 	Bbox2 box;
 	apt.GetBounds(gis_Geo, box);
 	CoordTranslator2 translator;
 	CreateTranslatorForBounds(box,translator); // equivalent to MapZoomerNew: Pre-calculates cos(lat) to covert LL->Meter with linear algebra, only
-	
-	TaxiRouteVec_t all_taxiroutes_plain;
-	CollectRecursive(&apt,back_inserter<TaxiRouteVec_t>(all_taxiroutes_plain)); // that includes GT routes
 	
 	TaxiRouteInfoVec_t	all_taxiroutes_info;
 	TaxiRouteVec_t 		all_aircraftroutes_plain;

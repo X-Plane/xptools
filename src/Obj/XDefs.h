@@ -67,11 +67,11 @@
 #define WITHNWLINK 0
 
 // These turn on the features to import the global apt databaes for the purpose of building a final scenery pack
-// from the gateway.  You don't need this.
+// from the gateway.  You don't need this. But its Ok to build and the menu item greyed out unless the moderator mode is set in preferences.
 #define GATEWAY_IMPORT_FEATURES 1
 
 // no validation upon export, but special heuristics for agp expansion before export. Only makes sense if GATEWAY_IMPORT_FEATURES is set.
-#define TYLER_MODE 1
+#define TYLER_MODE 0
 
 // After running ATC Runway Validation, show the hitboxes used for hot zone tests
 // 0 = never, 1 = only those causing a violation, 2 = always show all
