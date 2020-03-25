@@ -20,8 +20,8 @@
  * THE SOFTWARE.
  *
  */
-#include <QtCore/QtCore>
-#include <QtGui/QtGui>
+#include <FL/Fl.H>
+#include <FL/fl_ask.H>
 #include "PlatformUtils.h"
 #include <stdio.h>
 #include <sys/stat.h>
@@ -100,44 +100,45 @@ int		GetFilePathFromUser(
 					char * 				outFileName,
 					int					inBufSize)
 {
-	switch(inType)
-	{
-		case getFile_Open:
-		{
-			QString fileName = QFileDialog::getOpenFileName(0,QString::fromUtf8(inPrompt));
-			if (!fileName.length())
-				return 0;
-			else {
-				::strncpy(outFileName, fileName.toUtf8().constData(), inBufSize);
-				return 1;
-			}
-		}
-		case getFile_Save:
-		{
-			QString fileName = QFileDialog::getSaveFileName(0,QString::fromUtf8(inPrompt));
-			if (!fileName.length())
-				return 0;
-			else {
-				::strncpy(outFileName, fileName.toUtf8().constData(), inBufSize);
-				return 1;
-			}
-		}
-		case getFile_PickFolder:
-		{
-			QString dir = QFileDialog::getExistingDirectory(0, QString::fromUtf8(inPrompt),
-			                                                "", QFileDialog::ShowDirsOnly);
-			if (!dir.length())
-				return 0;
-			else {
-				if(dir.endsWith ('/'))
-						dir.truncate(dir.size()-1);
-				::strncpy(outFileName, dir.toUtf8().constData(), inBufSize);
-				return 1;
-			}
-		}
-		default:
-			return 0;
-	}
+//	switch(inType)
+//	{
+//		case getFile_Open:
+//		{
+//			QString fileName = QFileDialog::getOpenFileName(0,QString::fromUtf8(inPrompt));
+//			if (!fileName.length())
+//				return 0;
+//			else {
+//				::strncpy(outFileName, fileName.toUtf8().constData(), inBufSize);
+//				return 1;
+//			}
+//		}
+//		case getFile_Save:
+//		{
+//			QString fileName = QFileDialog::getSaveFileName(0,QString::fromUtf8(inPrompt));
+//			if (!fileName.length())
+//				return 0;
+//			else {
+//				::strncpy(outFileName, fileName.toUtf8().constData(), inBufSize);
+//				return 1;
+//			}
+//		}
+//		case getFile_PickFolder:
+//		{
+//			QString dir = QFileDialog::getExistingDirectory(0, QString::fromUtf8(inPrompt),
+//			                                                "", QFileDialog::ShowDirsOnly);
+//			if (!dir.length())
+//				return 0;
+//			else {
+//				if(dir.endsWith ('/'))
+//						dir.truncate(dir.size()-1);
+//				::strncpy(outFileName, dir.toUtf8().constData(), inBufSize);
+//				return 1;
+//			}
+//		}
+//		default:
+//
+//	}
+	return 0;
 }
 
 char *	GetMultiFilePathFromUser(
@@ -146,38 +147,40 @@ char *	GetMultiFilePathFromUser(
 					int					inID)
 {
 
-	QStringList fileNames = QFileDialog::getOpenFileNames(0,QString::fromUtf8(inPrompt));
+//	QStringList fileNames = QFileDialog::getOpenFileNames(0,QString::fromUtf8(inPrompt));
+//
+//	vector<string> outFiles;
+//	if (fileNames.empty()) return NULL;
+//	for(int i=0; i < fileNames.size(); ++i)
+//	{
+//		if(!fileNames.at(i).isEmpty())
+//			outFiles.push_back(fileNames[i].toUtf8().constData());
+//	}
+//
+//	if(outFiles.size() < 1) return NULL;
+//
+//	int buf_size = 1;
+//	for(int i = 0; i < outFiles.size(); ++i)
+//		buf_size += (outFiles[i].size() + 1);
+//
+//	char * ret = (char *) malloc(buf_size);
+//	char * p = ret;
+//
+//	for(int i = 0; i < outFiles.size(); ++i)
+//	{
+//		strcpy(p, outFiles[i].c_str());
+//		p += (outFiles[i].size() + 1);
+//	}
+//	*p = 0;
 
-	vector<string> outFiles;
-	if (fileNames.empty()) return NULL;
-	for(int i=0; i < fileNames.size(); ++i)
-	{
-		if(!fileNames.at(i).isEmpty())
-			outFiles.push_back(fileNames[i].toUtf8().constData());
-	}
-
-	if(outFiles.size() < 1) return NULL;
-
-	int buf_size = 1;
-	for(int i = 0; i < outFiles.size(); ++i)
-		buf_size += (outFiles[i].size() + 1);
-
-	char * ret = (char *) malloc(buf_size);
-	char * p = ret;
-
-	for(int i = 0; i < outFiles.size(); ++i)
-	{
-		strcpy(p, outFiles[i].c_str());
-		p += (outFiles[i].size() + 1);
-	}
-	*p = 0;
-
-	return ret;
+	return NULL;
 }
 
 void	DoUserAlert(const char * inMsg)
 {
-	QMessageBox::warning(0, "", QString::fromUtf8(inMsg));
+	fl_message_hotspot(false);
+
+	fl_alert(inMsg);
 }
 
 void	ShowProgressMessage(const char * inMsg, float * inProgress)
@@ -188,22 +191,25 @@ void	ShowProgressMessage(const char * inMsg, float * inProgress)
 
 int		ConfirmMessage(const char * inMsg, const char * proceedBtn, const char * cancelBtn)
 {
-	return (QMessageBox::question(0,"", QString::fromUtf8(inMsg), proceedBtn, cancelBtn) == 0 ) ;
+	fl_message_hotspot(false);
+	return fl_choice(inMsg,proceedBtn,cancelBtn,0);
 }
 
 int DoSaveDiscardDialog(const char * inMessage1, const char * inMessage2)
 {
-	int res = QMessageBox::question(0, QString::fromUtf8(inMessage1), QString::fromUtf8(inMessage2),
-	QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
-	QMessageBox::Cancel);
-	switch (res)
-	{
-		case QMessageBox::Save:
-			return close_Save;
-		case QMessageBox::Discard:
-			return close_Discard;
-		case QMessageBox::Cancel:
-		default:
-			return close_Cancel;
-	}
+//	int res = QMessageBox::question(0, QString::fromUtf8(inMessage1), QString::fromUtf8(inMessage2),
+//	QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
+//	QMessageBox::Cancel);
+//	switch (res)
+//	{
+//		case QMessageBox::Save:
+//			return close_Save;
+//		case QMessageBox::Discard:
+//			return close_Discard;
+//		case QMessageBox::Cancel:
+//		default:
+//			return close_Cancel;
+//	}
+	return 1;
 }
+

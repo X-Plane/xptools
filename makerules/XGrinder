@@ -11,7 +11,7 @@ LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
 
 ifdef PLAT_LINUX
 #LDFLAGS		+= -nodefaultlibs
-LIBS		+= -lQtCore -lQtGui -lpthread
+LIBS		+= -lfltk -lfltk_gl -lpthread
 endif #PLAT_LINUX
 
 ifdef PLAT_MINGW
@@ -33,7 +33,6 @@ endif #PLAT_DARWIN
 ifdef PLAT_LINUX
 SOURCES += ./src/Utils/PlatformUtils.lin.cpp
 SOURCES += ./src/UI/XWin.lin.cpp
-MOCSRC += ./src/UI/XWin.h
 endif #PLAT_LINUX
 
 ifdef PLAT_MINGW

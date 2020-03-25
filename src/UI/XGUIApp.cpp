@@ -42,7 +42,7 @@ int		main(int argc, char ** argv)
 {
 	init_ns_stuff();
 
-	XGrindInit();
+	XGrindInit(argc,argv);
 
 	vector<string> files;
 
@@ -94,12 +94,9 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 #if LIN
 int main(int argc, char* argv[])
 {
-	QApplication app(argc, argv);
-
-	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
-	XGrindInit();
+	XGrindInit(argc,argv);
 	setlocale(LC_ALL,"C");
-	return app.exec();
+	return Fl::run();
 }
 #endif
 

@@ -44,7 +44,7 @@
 	- (NSView *) view;
 	- (void) timerFired;
 	- (void) menuItemPicked:(id) sender;
-	- (void) menu_picked:(id) sender;	
+	- (void) menu_picked:(id) sender;
 	@end
 
 #else
@@ -58,11 +58,11 @@
 #endif
 
 #if LIN
-#define xmenu QMenu*
-#include <QtCore/QtCore>
-#include <QtGui/QtGui>
-#include <QtGui/QMainWindow>
-
+#include <FL/Fl.H>
+#include <FL/Fl_Window.H>
+#include <FL/Fl_Menu_Bar.H>
+#include <FL/Fl_Menu_.H>
+#define xmenu Fl_Menu_Item *
 enum {
   _NET_WM_STATE_REMOVE,
   _NET_WM_STATE_ADD,
@@ -73,6 +73,12 @@ typedef struct tagPOINT {
   int x;
   int y;
 } POINT, *PPOINT;
+
+typedef struct t_xmenu_cmd{
+  Fl_Menu_Item * menu;
+  int cmd;
+} xmenu_cmd,*x_menu_cmd;
+
 #endif
 
 #define	BUTTON_DIM 16
@@ -95,12 +101,10 @@ class	XWin
 : public XWinFileReceiver
 #endif
 #if LIN
-: public QMainWindow
+: public Fl_Window
 #endif
 {
-#if LIN
-	Q_OBJECT
-#endif
+
 public:
 
 #if IBM
@@ -108,18 +112,6 @@ public:
 #else
         typedef void *	XContext;
 #endif
-#if LIN
-	XWin(int default_dnd, QWidget *parent = 0);
-	XWin(
-		int		default_dnd,
-		const char * 	inTitle,
-		int		inAttributes,
-		int		inX,
-		int		inY,
-		int		inWidth,
-		int		inHeight,
-		QWidget *parent = 0);
-#else
 	XWin(int default_dnd);
 	XWin(
 		int		default_dnd,
@@ -129,7 +121,7 @@ public:
 		int		inY,
 		int		inWidth,
 		int		inHeight);
-#endif
+
 	virtual					~XWin();
 
 	// Manipulators, etc.
@@ -222,7 +214,7 @@ public:
 													// 1 = we are in the modal loop and the drag is happening
 													// 2 = we are in the modal loop but the drag is over.  This tells us that we SHOULD
 													//	   exit the loop but we haven't YET exited the loop.  See endedAtPoint in .mm
-	
+
 		// Mac common handlers for obj-C's 5 million event messages.
 		void					EventButtonDown(int x, int y, int button, int has_control_key);
 		void					EventButtonUp  (int x, int y, int button					 );
@@ -282,31 +274,40 @@ protected:
 
 	int		mDragging; // Button being dragged or -1 if none ;
 	int		mWantFakeUp;
-	int		mBlockEvents;	
+	int		mBlockEvents;
 	int		mTimer;
 	POINT	mMouse;
+
+
 public:
+	Fl_Menu_Bar * mBar;
+	const Fl_Menu_Item * lastItem;
 	int GetMenuBarHeight(void);
-	virtual void ReceiveFilesFromDrag(const vector<string>& inFiles);
+	virtual void ReceiveFilesFromDrag(const string& inFiles);
 	bool mInited;
-private slots:
-	void onMenuAction(QAction* a);
+
 protected:
-	void closeEvent(QCloseEvent* e);
-	void resizeEvent(QResizeEvent* e);
-	void mousePressEvent(QMouseEvent* e);
-	void mouseReleaseEvent(QMouseEvent* e);
-	void mouseMoveEvent(QMouseEvent* e);
-	void wheelEvent(QWheelEvent* e);
-	void keyPressEvent(QKeyEvent* e);
-	void keyReleaseEvent(QKeyEvent* e);
-	void dragEnterEvent(QDragEnterEvent* e);
-	void dragLeaveEvent(QDragLeaveEvent* e);
-	void dragMoveEvent(QDragMoveEvent* e);
-	void dropEvent(QDropEvent* e);
-	void focusInEvent(QFocusEvent* e);
-	void focusOutEvent(QFocusEvent* e);
-	void timerEvent(QTimerEvent *e);
+
+	void draw();
+	int handle(int e);
+	void resize(int x,int y,int w,int h);
+	static void window_cb(Fl_Widget *widget, void * data);
+	static void menu_cb(Fl_Widget *w, void * data);
+//	void closeEvent(QCloseEvent* e);
+//	void resizeEvent(QResizeEvent* e);
+//	void mousePressEvent(QMouseEvent* e);
+//	void mouseReleaseEvent(QMouseEvent* e);
+//	void mouseMoveEvent(QMouseEvent* e);
+//	void wheelEvent(QWheelEvent* e);
+//	void keyPressEvent(QKeyEvent* e);
+//	void keyReleaseEvent(QKeyEvent* e);
+//	void dragEnterEvent(QDragEnterEvent* e);
+//	void dragLeaveEvent(QDragLeaveEvent* e);
+//	void dragMoveEvent(QDragMoveEvent* e);
+//	void dropEvent(QDropEvent* e);
+//	void focusInEvent(QFocusEvent* e);
+//	void focusOutEvent(QFocusEvent* e);
+//	void timerEvent(QTimerEvent *e);
 
 #endif
 

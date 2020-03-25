@@ -1,4 +1,6 @@
 #include "XWin.h"
+#include <FL/filename.H>
+#include "STLUtils.h"
 
 XWin::XWin(
 	int		default_dnd,
@@ -7,58 +9,35 @@ XWin::XWin(
 	int		inX,
 	int		inY,
 	int		inWidth,
-	int		inHeight,
-	QWidget *parent) : QMainWindow(parent), mInited(false)
+	int		inHeight)
+	: Fl_Window(inX,inY,inWidth,inHeight,inTitle),
+      mInited(false),mBar(nullptr)
 {
 	mDragging    =-1;
 	mWantFakeUp  = 0;
 	mBlockEvents = 0;
 	mMouse.x     = 0;
 	mMouse.y     = 0;
-	SetTitle(inTitle);
-
-//	printf("New WinGeo %d %d\n",inX, inY);
+	mTimer=0;
 
 	if(inAttributes & xwin_style_centered)
-		this->setGeometry(QStyle::alignedRect(Qt::LeftToRight,Qt::AlignCenter, this->size(), qApp->desktop()->availableGeometry()));
-	else
-		MoveTo(inX, inY);
-	
-	Resize(inWidth, inHeight);
-	
-	if(inAttributes & xwin_style_modal)
 	{
-		this->setWindowFlags(windowFlags()| Qt::Dialog);
-		this->setWindowModality(Qt::ApplicationModal);
+		this->position((Fl::w() - this->w())/2, (Fl::h() - this->h())/2 );
 	}
 
-	if( !(inAttributes & xwin_style_resizable) )
-	{
-		this->setFixedSize(this->size());
-	}
-	// TODO:mroe: 
-	// Some KDE-Style's want to use all 'empty' areas of a window to move it .
-	// They try to detect them when the mouse-events comes through to the Mainwindow, and grab the mouse.  
-	// It's clearly a mess , doing such stuff from outside.
-	// Since XWin is our mainwindow and handles all events , that is not that good for us.
-	// The preferred way would be :  the gl-window should have his own event-funcs. 
-	// But what comes next?
-	// Anyway, since many have this problem, 'Oxygen' has a property introduced what is now also accepted by qt-curve. 
-	// Perhaps it becomes a standard.
-	setProperty( "_kde_no_window_grab", true );
-	//mroe: WA_DeleteOnClose is not set by default , we need this to get all our destr called
-	//and the entire thing really removed from memory
-	setAttribute(Qt::WA_DeleteOnClose, true);
+	if(inAttributes & xwin_style_modal)	    set_modal();
+	if(inAttributes & xwin_style_visible)	set_visible();
+	if(inAttributes & xwin_style_resizable) resizable(this);
 
-	setFocusPolicy(Qt::StrongFocus);
-	setMouseTracking(true);
-	if (default_dnd)
-		setAcceptDrops(true);
-	mTimer=0;
+//	if (default_dnd)
+//		setAcceptDrops(true);
+
+	callback( window_cb );
 	mInited = true;
+	printf("Xwin ctor\n");
 }
 
-XWin::XWin(int default_dnd, QWidget *parent) : QMainWindow(parent), mInited(false)
+XWin::XWin(int default_dnd) : Fl_Window(100,100), mInited(false),mBar(nullptr)
 {
 	mDragging    =-1;
 	mWantFakeUp  = 0;
@@ -66,180 +45,231 @@ XWin::XWin(int default_dnd, QWidget *parent) : QMainWindow(parent), mInited(fals
 	mMouse.x     = 0;
 	mMouse.y     = 0;
 
-	setProperty( "_kde_no_window_grab", true );
-
-	setAttribute(Qt::WA_DeleteOnClose, true);
-
-	setMouseTracking(true);
-	setFocusPolicy(Qt::StrongFocus);
-	if (default_dnd)
-		setAcceptDrops(true);
 	mTimer=0;
+	resizable(this);
+	callback( window_cb );
 	mInited = true;
 }
 
 XWin::~XWin()
 {
+	printf("Xwin dtor\n");
 }
 
-void XWin::closeEvent(QCloseEvent* e)
+/*FLTK draw callback*/
+void XWin::draw()
 {
-	if (Closed())
-		e->accept();
-	else
-		e->ignore();
-}
-
-void XWin::resizeEvent(QResizeEvent* e)
-{
-	if (mInited) {
-		Resized(e->size().width(), e->size().height());
+	if(mInited)
+	{
+		Update(0);
+		draw_children();
 	}
 }
 
-void XWin::mousePressEvent(QMouseEvent* e)
+
+//void XWin::timerEvent(QTimerEvent* e)
+//{
+//	Timer();
+//}
+//
+
+/*FLTK event callback*/
+int XWin::handle(int e)
 {
-	unsigned int rbtn = e->button();
-	int btn = 0;
-	for (;(rbtn!=0)&&(btn<BUTTON_DIM);rbtn>>=1,btn++);
-	if (btn==0 || btn > 3)  return;
-	btn--;
 
-	mMouse.x = e->x();
-	mMouse.y = e->y();
+	/*handle menubar*/
+	if(mBar && Fl::event_y() <= mBar->h() && e == FL_PUSH)
+	   if(mBar->handle(e)){show();return 1;}
 
-	if(mBlockEvents) return;
-
-	if(mDragging == -1)
+	switch(e)
 	{
-		mDragging = btn;
-		ClickDown(mMouse.x, mMouse.y, btn);
-		
-		if(mWantFakeUp)
+		/*MOUSE events */
+		case FL_PUSH:{
+			int btn = Fl::event_button()-1;
+			printf("push\n");
+			mMouse.x = Fl::event_x();
+			mMouse.y = Fl::event_y();
+
+			if(mBlockEvents) return 1;
+
+			if(mDragging == -1)
+			{
+				mDragging = btn;
+				ClickDown(mMouse.x, mMouse.y, btn);
+
+				if(mWantFakeUp)
+				{
+					int btn = mDragging;
+					mDragging = -1;
+					ClickUp(mMouse.x, mMouse.y, btn);
+					mWantFakeUp = 0;
+				}
+			}
+		}
+		return 1;
+		case FL_RELEASE:{
+			int btn =Fl::event_button()-1;
+			printf("release\n");
+			mMouse.x = Fl::event_x();
+			mMouse.y = Fl::event_y();
+
+			if(mBlockEvents) return 1;
+
+			if(mDragging == btn)
+			{
+				mDragging = -1;
+				ClickUp(mMouse.x, mMouse.y, btn);
+			}
+		}
+		return 1;
+		case FL_DRAG:{
+ 			ClickDrag(Fl::event_x(),Fl::event_y(),mDragging);
+		}
+		 return 1;
+		case FL_MOVE:{
+
+			if(Fl::event_x() == mMouse.x && Fl::event_y() == mMouse.y) return 1;
+
+			mMouse.x = Fl::event_x();
+			mMouse.y = Fl::event_y();
+
+			ClickMove(mMouse.x, mMouse.y);
+		}
+		return 1;
+		case FL_MOUSEWHEEL:{
+			mMouse.x = Fl::event_x();
+			mMouse.y = Fl::event_y();
+      		MouseWheel(mMouse.x, mMouse.y, (Fl::event_dy() < 0) ? 1 : -1, 0);
+		}
+		return 1;
+		case FL_KEYDOWN:{
+			uint32_t utf32char = 0;
+			int l = Fl::event_length();
+	     	if (l > 0)
+			{
+				int len;
+				const char * p = Fl::event_text();
+				const char * e = p+l;
+				utf32char = fl_utf8decode(p,e,&l);
+			}
+			KeyPressed(utf32char,Fl::event_key(), 0, 0);
+		}
+		return 1;
+		case FL_KEYUP:{
+		}
+		return 1;
+		/*WIDGET events */
+		case FL_ACTIVATE:{
+			printf("FL_ACTIVATE \n");
+		}
+		return 1;
+		case FL_DEACTIVATE:{
+			printf("FL_DEACTIVATE \n");
+		}
+		return 1;
+
+		/*FOCUS events */
+		case FL_FOCUS:{
+			 printf("FL_FOCUS \n");
+			 Activate(1);
+		}
+		return 1;
+		case FL_UNFOCUS:{
+			 printf("FL_UNFOCUS \n");
+			 Activate(0);
+		}
+		return 1;
+
+		/*DND events */
+		case FL_DND_ENTER:
+		case FL_DND_DRAG :
+		case FL_DND_LEAVE:
+		case FL_DND_RELEASE:
+		return 1;
+		case FL_PASTE:{
+			 printf("FL_PASTE Win %s\n",Fl::event_text());
+			 string files(Fl::event_text());
+			 ReceiveFilesFromDrag(files);
+		}
+		return 1;
+		case FL_SHORTCUT:
+
+		return 0;
+
+		/*OTHER Window events */
+		default:
+		   return Fl_Window::handle(e);
+	}
+}
+
+/*FLTK resize callback*/
+void XWin::resize(int x,int y,int w,int h)
+{
+	printf(" XWin::resize inited %d\n",mInited);
+    bool is_move_only = ( w == this->w() && h == this->h() );
+	Fl_Widget::resize(x,y,w,h);
+	if(is_move_only || !mInited) return;
+	printf(" XWin::resize others \n");
+	if(mBar) mBar->size(w,mBar->h());
+	Resized(w,h);
+}
+
+
+static void clearOwnMenusRecursive(const Fl_Menu_Item * parent)
+{
+	for ( int t=0; t<parent->size(); t++)
+	{
+		const Fl_Menu_Item * menu = parent + t;
+
+		if(menu->label() && menu->flags&FL_SUBMENU_POINTER)
 		{
-			int btn = mDragging;
-			mDragging = -1;
-			ClickUp(mMouse.x, mMouse.y, btn);
-			mWantFakeUp = 0;
+			const Fl_Menu_Item * submenu = (const Fl_Menu_Item *) menu->user_data();
+			clearOwnMenusRecursive(submenu);
+
+			for (int i=0; i<submenu->size(); i++)
+			{
+				const Fl_Menu_Item * m = submenu + i;
+
+				if(!m->label()) break;
+
+				if(m->text != nullptr)
+					free((void*)m->text);
+
+				if(m->user_data_ != nullptr)
+					delete (xmenu_cmd *) m->user_data_;
+
+			}
+
+			delete [] submenu;
+			((Fl_Menu_Item *) menu)->user_data(NULL);
 		}
 	}
 }
 
-void XWin::mouseReleaseEvent(QMouseEvent* e)
+/*FLTK window about to close callback*/
+void XWin::window_cb(Fl_Widget *widget, void *)
 {
-	unsigned int rbtn = e->button();
-	int btn = 0;
-	for (;(rbtn!=0)&&(btn<BUTTON_DIM);rbtn>>=1,btn++);
-	if (btn==0 || btn > 3) return;
-	btn--;
-	mMouse.x = e->x();
-	mMouse.y = e->y();
+	XWin * w = (XWin *)widget;
+	if (!w->Closed() ) return;
 
-	if(mBlockEvents) return;
-
-	if(mDragging == btn)
-	{
-		mDragging = -1;
-		ClickUp(mMouse.x, mMouse.y, btn);
-	}
+	if(w->mBar) clearOwnMenusRecursive(w->mBar->menu());
+	w->hide();
 }
 
-void XWin::mouseMoveEvent(QMouseEvent* e)
-{
-	mMouse.x = e->x();
-	mMouse.y = e->y();
-
-	//mroe: We need the above calls , 
-	// also to get the event proceeded for the dragdetect in GUI_Windows::IsDrag.
-	// Seems the event is droped if the function does nothing.
-	// Having thecurrent mouse-position ever is not that bad at all.
-	if(mBlockEvents) return;
-
-	if((mDragging >= 0 ) && (mDragging < BUTTON_DIM))
-	{
-		ClickDrag(mMouse.x, mMouse.y,mDragging);
-		
-		if(mWantFakeUp)
-		{
-			int btn = mDragging;
-			mDragging = -1;
-			ClickUp(mMouse.x, mMouse.y, btn);
-			mWantFakeUp = 0;
-		}
-	}
-	else
-	{
-		ClickMove(mMouse.x, mMouse.y);
-	}
-}
-
-void XWin::wheelEvent(QWheelEvent* e)
-{
-	mMouse.x = e->x();
-	mMouse.y = e->y();
-
-	MouseWheel(mMouse.x, mMouse.y, (e->delta() < 0) ? -1 : 1, 0);
-}
-
-void XWin::keyPressEvent(QKeyEvent* e)
-{
-	uint32_t utf32char = 0;
-	if (e->text().size())
-	{
-		utf32char = e->text().toUcs4().at(0);
-	}
-	KeyPressed(utf32char, e->key(), 0, 0);
-}
-
-void XWin::keyReleaseEvent(QKeyEvent* e)
-{}
-
-void XWin::dragEnterEvent(QDragEnterEvent* e)
-{
-	if (e->mimeData()->hasFormat("text/uri-list"))
-		e->acceptProposedAction();
-}
-
-void XWin::dragLeaveEvent(QDragLeaveEvent* e)
-{}
-
-void XWin::dragMoveEvent(QDragMoveEvent* e)
-{}
-
-void XWin::dropEvent(QDropEvent* e)
-{
-	vector<string> inFiles;
-	QList<QUrl> urls = e->mimeData()->urls();
-	for (int i = 0; i < urls.size(); ++i) {
-		if (urls.at(i).scheme() == "file")
-			inFiles.push_back(urls.at(i).toLocalFile().toStdString());
-	}
-	ReceiveFilesFromDrag(inFiles);
-}
-
-void XWin::timerEvent(QTimerEvent* e)
-{
-	Timer();
-}
-
-void XWin::focusInEvent(QFocusEvent* e)
-{
-	if(e->reason()==Qt::ActiveWindowFocusReason)
-		Activate(1);
-}
-
-void XWin::focusOutEvent(QFocusEvent* e)
-{
-	if(e->reason()==Qt::ActiveWindowFocusReason)
-		Activate(0);
-}
 
 /* prevent pure virtual function calls. ben, we need to restructure this,
 ** it hinders us using deep inheritance schemes, typically needed by Qt
 */
 
+void XWin::Activate(int inActive)
+{
+	printf("XWin::Activate %d\n",inActive);
+	if(inActive) this->activate();
+}
+
 void XWin::Resized(int inWidth, int inHeight)
-{}
+{
+}
 
 bool XWin::Closed(void)
 {
@@ -247,11 +277,12 @@ bool XWin::Closed(void)
 }
 
 void XWin::Update(XContext ctx)
-{}
+{
+}
 
 void XWin::SetTitle(const char * inTitle)
 {
-	setWindowTitle(QString::fromUtf8(inTitle));
+	this->label(inTitle);
 }
 
 void XWin::SetFilePath(const char * inPath,bool modified)
@@ -260,217 +291,232 @@ void XWin::SetFilePath(const char * inPath,bool modified)
 
 void XWin::MoveTo(int inX, int inY)
 {
-	QPoint myPos(inX, inY);
-	
-	QDesktopWidget * dt = QApplication::desktop();
-	QRect myScreen = dt->availableGeometry(dt->screenNumber(this));
-	//printf("MoveTo %d %d. Im on screen %d which is at %d %d\n",inX, inY, dt->screenNumber(this), myScreen.left(), myScreen.top());
-
-// About the WindowManager vs QT idiocracy under X11
-// Upon initial placement, the WM hasn't decided yet on which screen to place the new widget.
-// So if you move the winow in Qt to some coordinate, that is meant as a coordinate relative to the *default* screen.
-// But is that coordinate is *outside* the area of the default screen, the WM will notice that and move the window 
-// automatically to the screen where the (relative) coordinates point to. Qt then reads back the coordinates after
-// placement to stay in sync with what the WM did. But stupid Qt4 mis-understand those coordinates as still relative to 
-// the default screen - which isn't true. So we counteract this here. In QT5 this should not be neccesary any more.
-
-	if(myScreen.contains(inX,inY))
-	{
-		//printf("Its is within myScreen - substract my screen offset\n");
-		myPos -= myScreen.topLeft();                       // account for actual monitor we're on
-		setGeometry(myPos.x(), myPos.y() - GetMenuBarHeight(), width(), height());
-	}
-	else
-	{
-		myScreen = dt->availableGeometry(-1);
-		//printf("Its outside myScreen - rather substract default screen offset %d %d\n", myScreen.left(), myScreen.top());
-		myPos -= myScreen.topLeft();                       // account for actual monitor we're on
-		setGeometry(myPos.x(), myPos.y() - GetMenuBarHeight(), width(), height());
-	}
+    //TODO: check for multi screen settings*/
+	this->position(inX,inY);
 }
 
 void XWin::Resize(int inWidth, int inHeight)
 {
-	int w = inWidth;
-	int h = inHeight + GetMenuBarHeight();
-	//mroe:   to resize a non-resizable window
-	if( (this->minimumSize() == this->size()) && (this->maximumSize() == this->size()) )
-		this->setFixedSize(w, h);
-	else
-		this->resize(w, h);
+	this->size(inWidth,inHeight);
 }
 
 void XWin::ForceRefresh(void)
 {
-	Update(0);
+	flush();
 }
 
 void XWin::UpdateNow(void)
 {
-	ForceRefresh();
+	redraw();
 }
 
 void XWin::SetVisible(bool visible)
 {
-	if(visible)
-	{
-		raise();
-		activateWindow();
-	}
-	setVisible(visible);
+  if(mInited)visible ? show() : hide();
 }
 
 bool XWin::GetVisible(void) const
 {
-	return isVisible();
+	return visible();
 }
 
 bool XWin::GetActive(void) const
 {
-	return isActiveWindow();
+	return active();
 }
 
 void XWin::SetTimerInterval(double seconds)
 {
-	 if (seconds)
-	 {
-	 	if (mTimer)
-		{
-			killTimer(mTimer);
-			mTimer = startTimer(seconds);
-		}
-		else
-		  mTimer = startTimer(seconds);
-	 }
-	 else
-	 {
-		killTimer(mTimer);
-		mTimer=0;
-	 }
+//	 if (seconds)
+//	 {
+//	 	if (mTimer)
+//		{
+//			killTimer(mTimer);
+//			mTimer = startTimer(seconds);
+//		}
+//		else
+//		  mTimer = startTimer(seconds);
+//	 }
+//	 else
+//	 {
+//		killTimer(mTimer);
+//		mTimer=0;
+//	 }
 }
 
 void XWin::GetBounds(int * outX, int * outY)
 {
-	if (outX) *outX = this->size().width();
-	if (outY) *outY = this->size().height() - GetMenuBarHeight();
+	if (outX) *outX = this->w();
+	if (outY) *outY = this->h() - GetMenuBarHeight();
 }
 
 void XWin::GetWindowLoc(int * outX, int * outY)
 {
-	QDesktopWidget * dt = QApplication::desktop();
-	QRect myScreen = dt->availableGeometry(dt->screenNumber(this));
-
-	QPoint absPos = geometry().topLeft() + QPoint(0,GetMenuBarHeight()) + myScreen.topLeft(); // does not include window decorations - deliberately !
-		
-	// printf("GetLoc rel pos is x=%d y=%d, myScreen is %d, absolute pos %d %d\n", geometry().x(), geometry().y()+GetMenuBarHeight(), dt->screenNumber(this), absPos.x(), absPos.y());
-		
-	if (outX) *outX = absPos.x();
-	if (outY) *outY = absPos.y();
+	//TODO: check for multi screen settings
+	if (outX) *outX = this->x();
+	if (outY) *outY = this->y();
 }
 
 void XWin::GetDesktop(int bounds[4])
 {
-	QDesktopWidget * dt = QApplication::desktop();
-	int num_screens = dt->screenCount();
-	
-	bounds[0] = bounds[1] = 32000;
-	bounds[2] = bounds[3] = 0;
-	for (int s = 0; s < num_screens; ++s)
-	{
-		QRect screen = dt->availableGeometry(s);
-//		printf("Screen %d: l=%d t=%d w=%d h=%d\n", s, screen.left(), screen.top(), screen.width(), screen.height());
-		bounds[0] = min(bounds[0], screen.left());
-		bounds[1] = min(bounds[1], screen.top());
-		bounds[2] = max(bounds[2], screen.right());
-		bounds[3] = max(bounds[1], screen.bottom());
-	}
-	//printf("Primary screen is %d, I'm on screen %d\n", dt->primaryScreen(), dt->screenNumber(this));
-	//printf("Desktop l=%d t=%d r=%d b=%d\n", bounds[0], bounds[1], bounds[2], bounds[3]);
-	//printf("Desktop union size w=%d h=%d\n", dt-> dt->width(), dt->height());
+//	QDesktopWidget * dt = QApplication::desktop();
+//	int num_screens = dt->screenCount();
+//
+//	bounds[0] = bounds[1] = 32000;
+//	bounds[2] = bounds[3] = 0;
+//	for (int s = 0; s < num_screens; ++s)
+//	{
+//		QRect screen = dt->availableGeometry(s);
+////		printf("Screen %d: l=%d t=%d w=%d h=%d\n", s, screen.left(), screen.top(), screen.width(), screen.height());
+//		bounds[0] = min(bounds[0], screen.left());
+//		bounds[1] = min(bounds[1], screen.top());
+//		bounds[2] = max(bounds[2], screen.right());
+//		bounds[3] = max(bounds[1], screen.bottom());
+//	}
+//	//printf("Primary screen is %d, I'm on screen %d\n", dt->primaryScreen(), dt->screenNumber(this));
+//	//printf("Desktop l=%d t=%d r=%d b=%d\n", bounds[0], bounds[1], bounds[2], bounds[3]);
+//	//printf("Desktop union size w=%d h=%d\n", dt-> dt->width(), dt->height());
+
 }
 
 
 void XWin::GetMouseLoc(int * outX, int * outY)
 {
-	if (outX) *outX = mMouse.x;
-	if (outY) *outY = mMouse.y;
+	if (outX) *outX = Fl::event_x();
+	if (outY) *outY = Fl::event_y();
 }
 
-void XWin::ReceiveFilesFromDrag(const vector<string>& inFiles)
+void XWin::ReceiveFilesFromDrag(const string& inFiles)
 {
-	ReceiveFiles(inFiles, 0, 0);
+	vector<string>	files;
+    auto b = inFiles.begin();
+	while(b != inFiles.end())
+	{
+		while(b != inFiles.end() && *b == '\n') ++b;
+		auto m1(b);
+		while(b != inFiles.end() && *b != '\n') ++b;
+		auto m2(b);
+
+		if(m1 != m2)
+		{
+			string path(m1,m2);
+			size_t pos = path.find("file://");      //only filepaths
+			if(pos != std::string::npos)
+			{
+				files.push_back(path.substr(7));
+				printf("file s %s\n",files.back().c_str());
+			}
+		}
+	}
+
+	if(files.size() > 0)
+			ReceiveFiles(files, 0, 0);
 }
 
-void XWin::onMenuAction(QAction* a)
+void XWin::menu_cb(Fl_Widget *w, void * data)
 {
-	QMenu * amenu = (QMenu *) a->parent();
-	int cmd = amenu->actions().indexOf(a);
-	HandleMenuCmd(amenu,cmd);
+	Fl_Menu_Bar *bar = (Fl_Menu_Bar*)w;		        // Get the menubar widget
+	const Fl_Menu_Item *item = bar->mvalue();		// Get the menu item that was picked
+	Fl_Menu_Item * m=(Fl_Menu_Item *) item;
+	printf("cb %d %s\n",item->first(),item->first()->label());
+	xmenu_cmd* cmd = (xmenu_cmd*) data;
+	if(!cmd) return;
+	printf("menu %d %d item %s cmd %d \n",item->value(),m->value(),cmd->menu,cmd->cmd);
+	XWin* win = (XWin*) bar->parent();
+	win->HandleMenuCmd(cmd->menu,cmd->cmd);
 }
 
 xmenu XWin::GetMenuBar(void)
 {
-	QMenu* amenu = (QMenu*) this->menuBar();
-	return (QMenu*) this->menuBar();
+	if(!mBar)
+	{
+		mBar = new Fl_Menu_Bar(0,0,w(),labelsize()+10);
+	    add(mBar);
+		this->size(this->w(),this->h() + mBar->h());
+		mBar->labelfont(FL_HELVETICA);
+		mBar->selection_color(FL_BLUE);
+		//mroe: thats to get an empty initalized menu
+		mBar->add("",0,nullptr,nullptr);
+		mBar->remove(0);
+		printf("mbar added\n");
+	}
+	printf("mbar\n");
+	return (Fl_Menu_Item *) mBar->menu();
 }
 
 int XWin::GetMenuBarHeight(void)
 {
-	int mb_height = 0;
-	QWidget* mb = layout()->menuBar();
-	if(mb) mb_height = mb->sizeHint().height();
-	return mb_height;
+	if (mBar != nullptr) return mBar->h();
+	return 0;
 }
 
 xmenu XWin::CreateMenu(xmenu parent, int item, const char * inTitle)
 {
-	QMenu * newmenu = new QMenu(inTitle,parent);
-	//FIXME:mroe is parent->window() always the mainwindow ?
-	connect(newmenu,SIGNAL(triggered(QAction*)),parent->window(),SLOT(onMenuAction(QAction*)));
-	if (item == -1)
-	    parent->addMenu(newmenu);
-	else
-		parent->actions().at(item)->setMenu(newmenu);
-	return newmenu;
+	if(!parent) return NULL;
+
+	xmenu new_menu = new Fl_Menu_Item[20*sizeof(Fl_Menu_Item )];
+	memset(new_menu,0,20*sizeof(Fl_Menu_Item ));
+
+	int idx= parent->insert(item,inTitle,0,nullptr,(void*)new_menu,FL_SUBMENU_POINTER);
+	return new_menu;
 }
 
 int XWin::AppendMenuItem(xmenu menu, const char * inTitle)
 {
-	QAction * aact = menu->addAction(inTitle);
-	return  menu->actions().count()-1;
+	if(!menu) return -1;
+
+	xmenu_cmd * cmd = new xmenu_cmd;
+
+	int idx = menu->add(inTitle,0,menu_cb,cmd);
+	cmd->menu = menu;
+	cmd->cmd  = idx;
+
+	return idx;
 }
 
 int XWin::AppendSeparator(xmenu menu)
 {
-	menu->addSeparator();
-	return  menu->actions().count()-1;
+	if(!menu) return -1;
+
+	Fl_Menu_Item * last = menu + (menu->size()-2);
+    last->flags = last->flags|FL_MENU_DIVIDER;
+	char buf[256];
+	strcpy(buf,last->label());
+	strcat(buf,"_");
+	return  menu->add(buf,0,NULL,NULL,FL_MENU_INVISIBLE|FL_MENU_DIVIDER);
 }
 
 void XWin::CheckMenuItem(xmenu menu, int item, bool inCheck)
 {
-   	 QAction * aact = menu->actions().at(item);
-	 aact->setCheckable(inCheck);
-	 aact->setChecked(inCheck);
+	if(!menu) return;
+	Fl_Menu_Item * m = menu + item;
+
+	m->flags |= FL_MENU_TOGGLE ;
+	inCheck ? m->set() : m->clear();
 }
 
 void XWin::EnableMenuItem(xmenu menu, int item, bool inEnable)
 {
-   	 QAction * aact = menu->actions().at(item);
-	 aact->setEnabled(inEnable);
+
+	printf("enable \n");
+//   QAction * aact = menu->actions().at(item);
+//	 aact->setEnabled(inEnable);
 }
 
 void XWin::DrawMenuBar(void)
-{}
+{
+}
 
 int XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int button, int current)
 {
 	if(!in_menu) return -1;
-	QAction * aaction = in_menu->exec(this->mapToGlobal(QPoint(mouse_x,mouse_y)));
-	
-	if(mDragging == button)
-	{
-		mWantFakeUp = 1;
-	}
-	
-	return in_menu->actions().indexOf(aaction);
+//	QAction * aaction = in_menu->exec(this->mapToGlobal(QPoint(mouse_x,mouse_y)));
+//
+//	if(mDragging == button)
+//	{
+//		mWantFakeUp = 1;
+//	}
+//
+//	return in_menu->actions().indexOf(aaction);
+	return -1;
 }

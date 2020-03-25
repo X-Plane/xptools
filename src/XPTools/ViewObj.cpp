@@ -602,13 +602,15 @@ void	XGrindFiles(const vector<string>& files)
 	}
 }
 
-void	XGrindInit(void)
+void	XGrindInit(int argc, char* argv[])
 {
 	XObjWin * win = new XObjWin(NULL);
-	
+
 	win->GetMenuBar();
+#if LIN
+	win->show(argc,argv);
+#endif
 	win->ForceRefresh();
-	
 
 	const char * ext = (const char *) glGetString(GL_EXTENSIONS);
 	int	major=0, minor=0, revision=0;

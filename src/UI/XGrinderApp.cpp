@@ -28,6 +28,11 @@
 #if APL
 #include "ObjCUtils.h"
 #endif
+#if LIN
+#include <FL/Fl.H>
+#include <FL/fl_draw.H>
+#include <stdarg.h>
+#endif
 
 class	XGrinderWin;
 
@@ -60,10 +65,6 @@ public:
 	virtual	void			ReceiveFiles(const vector<string>& inFiles, int x, int y) { XGrindFiles(inFiles); }
 	virtual	int				KeyPressed(uint32_t, long, long, long) { return 1; }
 	virtual	int				HandleMenuCmd(xmenu inMenu, int inCommand) { return XGrinderMenuPick(inMenu, inCommand); };
-#if LIN
-protected:
-	void paintEvent(QPaintEvent* e);
-#endif
 };
 
 XGrinderWin::XGrinderWin() : XWin(1, gTitle.c_str(),
@@ -72,27 +73,28 @@ XGrinderWin::XGrinderWin() : XWin(1, gTitle.c_str(),
 {
 }
 
-#if LIN
-void XGrinderWin::paintEvent(QPaintEvent* e)
-{
-	int x = rect().x();
-	int y = rect().y() + this->menuBar()->height();
-	int w = rect().width();
-	int h = rect().height();
-
-	QPainter paint(this);
-	paint.drawText(x,y,w,h,Qt::TextWordWrap ,gCurMessage );
-	paint.end();
-}
-#endif
-
 void XGrinderWin::Update(XWin::XContext ctx)
 {
 	int		w, h;
 	this->GetBounds(&w, &h);
 
 #if LIN
-    this->update(0,0,w,h);
+
+	int mh = gWin->GetMenuBarHeight();
+	fl_rectf (0,mh,w,h,FL_BACKGROUND2_COLOR);
+
+	fl_color(0);
+	int fh = fl_height() - fl_descent();
+	int y = mh + fh;
+
+	char msg[1024];int n = -1;double width;
+	const char * p = gCurMessage;
+	while ( n != 0)
+    {
+		p = fl_expand_text(p,msg,1024,w,n,width,1,0);
+		fl_draw(msg,0,y);
+		y  += fh;
+	}
 #endif
 #if APL
 	erase_a_rect(0,0,w,h);
@@ -130,7 +132,9 @@ void	XGrinder_SetWindowTitle(const char * title)
 
 void	XGrinder_Quit(void)
 {
+#if !LIN
 	exit(0);
+#endif
 }
 
 xmenu	XGrinder_AddMenu(const char * title, const char ** items)
@@ -151,14 +155,12 @@ xmenu	XGrinder_AddMenu(const char * title, const char ** items)
 #if LIN
 int main(int argc, char* argv[])
 {
-	QApplication app(argc, argv);
-
-	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 	gWin = new XGrinderWin();
 	XGrindInit(gTitle);
-	gWin->show();
+    gWin->show(argc,argv);
 	gWin->ForceRefresh();
-	return app.exec();
+
+	return Fl::run();
 }
 #endif
 

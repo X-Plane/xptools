@@ -91,7 +91,7 @@ FILE* xpt_popen(const char *command, const char *mode)
 
 	spawn_process(const_cast<char*>(command));
 
-	// Spawn process has given these 3 handles to our child.  We no longer need our copies.  We close them now; 
+	// Spawn process has given these 3 handles to our child.  We no longer need our copies.  We close them now;
 	// for example, we are not going to put data down the child's stdout pipe - we READ from the other side.
 
 /* close child-side handles */

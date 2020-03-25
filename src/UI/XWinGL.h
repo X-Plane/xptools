@@ -33,20 +33,23 @@
 #elif IBM
 	#include "glew.h"
 #else  // LIN
-	#include <QtOpenGL/QGLWidget>
+	#include <FL/Fl_Gl_Window.H>
+	#include <glew.h>
 
 class	XWinGL;
 
-class glWidget : public QGLWidget
+class glWidget : public Fl_Gl_Window
 {
-	Q_OBJECT
+
 public:
-	glWidget(QWidget *parent, XWinGL* xwin, QGLWidget* share);
+	glWidget(XWinGL* xwin,int w,int h,Fl_Gl_Window* share);
 	virtual ~glWidget(void);
+	void draw();
+
 protected:
-	void resizeGL(int inWidth, int inHeight);
-	void paintGL(void);
-	void initializeGL(void);
+	int handle(int e);
+    void resize(int X,int Y,int W,int H);
+
 // 	void focusInEvent(QFocusEvent* e);
 // 	void focusOutEvent(QFocusEvent* e);
 private:
@@ -65,7 +68,7 @@ private:
    typedef void (APIENTRY * PFNGLMULTITEXCOORD2FVARBPROC   )(GLenum,const GLfloat *);
    typedef void (APIENTRY * PFNGLACTIVETEXTUREARBPROC      )(GLenum                );
    typedef void (APIENTRY * PFNGLCLIENTACTIVETEXTUREARBPROC)(GLenum texture        );
-   typedef void (APIENTRY * PFNGLCOMPRESSEDTEXIMAGE2DARBPROC)(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, GLvoid* data); 
+   typedef void (APIENTRY * PFNGLCOMPRESSEDTEXIMAGE2DARBPROC)(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, GLvoid* data);
 
    extern PFNGLMULTITEXCOORD2FARBPROC     glMultiTexCoord2fARB	;
    extern PFNGLMULTITEXCOORD2FVARBPROC    glMultiTexCoord2fvARB;
@@ -124,17 +127,11 @@ private:
 
 class	XWinGL : public XWin
 {
-#if LIN
-	Q_OBJECT
-public:
-	XWinGL(int default_dnd, XWinGL * inShare, QWidget* parent = 0);
-	XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX, int inY, int inWidth, int inHeight, XWinGL * inShare, QWidget* parent = 0);
-#else
 public:
 
 	XWinGL(int default_dnd, XWinGL * inShare);
 	XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX, int inY, int inWidth, int inHeight, XWinGL * inShare);
-#endif
+
 	virtual					~XWinGL();
 
 			void			SetGLContext(void);
