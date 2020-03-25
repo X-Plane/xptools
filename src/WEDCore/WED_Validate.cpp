@@ -150,17 +150,6 @@ static int get_opposite_rwy(int rwy_enum)
 	return atc_Runway_None;
 }
 
-static bool cmp_frequency_type(WED_ATCFrequency* freq1, WED_ATCFrequency* freq2)
-{
-	AptATCFreq_t freq_info1;
-	freq1->Export(freq_info1);
-
-	AptATCFreq_t freq_info2;
-	freq2->Export(freq_info2);
-
-	return freq_info1.atc_type > freq_info2.atc_type;
-}
-
 static string format_freq(int f)
 {
 	int mhz = f / 1000;
@@ -168,44 +157,6 @@ static string format_freq(int f)
 	stringstream ss;
 	ss << mhz << "." << std::setw(3) << std::setfill('0') << khz;
 	return ss.str();
-}
-
-vector<vector<WED_ATCFrequency*> > CollectAirportFrequencies(WED_Thing* who)
-{
-	vector<WED_ATCFrequency*> frequencies;
-	CollectRecursive(who, back_inserter<vector<WED_ATCFrequency*> >(frequencies), IgnoreVisiblity, TakeAlways);
-
-	std::sort(frequencies.begin(),frequencies.end(), cmp_frequency_type);
-
-	vector<vector<WED_ATCFrequency*> > sub_frequencies;
-
-	vector<WED_ATCFrequency*>::iterator freq_itr = frequencies.begin();
-	while(freq_itr != frequencies.end())
-	{
-		sub_frequencies.push_back(vector<WED_ATCFrequency*>());
-
-		AptATCFreq_t freq_info;
-		(*freq_itr)->Export(freq_info);
-
-		int old_type = freq_info.atc_type;
-
-		while(freq_itr != frequencies.end())
-		{
-			(*freq_itr)->Export(freq_info);
-
-			if (freq_info.atc_type == old_type)
-			{
-				sub_frequencies.back().push_back(*freq_itr);
-				++freq_itr;
-				continue;
-			}
-			else
-			{
-				break;
-			}
-		}
-	}
-	return sub_frequencies;
 }
 
 // This template buidls an error list for a subset of objects that have the same name - one validation error is generated
@@ -645,22 +596,26 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 //------------------------------------------------------------------------------------------------------------------------------------
 // ATC VALIDATIONS
 //------------------------------------------------------------------------------------------------------------------------------------
-#pragma mark -
 
-static void ValidateAirportFrequencies(WED_Airport* who, validation_error_vector& msgs)
+static void ValidateAirportFrequencies(const vector<WED_ATCFrequency*> frequencies, WED_Airport* who, validation_error_vector& msgs)
 {
-	//Collect all frequencies and group them by type into smaller vectors
-	vector<vector<WED_ATCFrequency*> > sub_freqs = CollectAirportFrequencies(who);
+	// Collection of all freq by ATC type, regardless of frequency
+	map<int, vector<WED_ATCFrequency*> > any_by_type;
+	for (auto freq_itr : frequencies)
+	{
+		AptATCFreq_t freq_info;
+		freq_itr->Export(freq_info);
+		any_by_type[freq_info.atc_type].push_back(freq_itr);
+	}
 
 	vector<WED_ATCFrequency* > has_atc;
-
 	bool has_tower = false;
 
-	//Key=frequency like 12880 or 99913, Value is pointer to WED_ATCFrequency, part of the data model
-	map<int, vector<WED_ATCFrequency*> > all_freqs;
+	// Collection of all freq that fall into the airband, i.e.e used by the sim, mapped by frequency
+	map<int, vector<WED_ATCFrequency*> > airband_by_freq;
 
 	//For all groups see if each group has atleast one valid member (especially for Delivery, Ground, and Tower)
-	for(vector<vector<WED_ATCFrequency*> >::iterator itr = sub_freqs.begin(); itr != sub_freqs.end(); ++itr)
+	for(auto atc_type : any_by_type)
 	{
 		bool found_one_valid = false;
 		bool found_one_oob = false;		// found an out-of-band frequency for our use
@@ -668,14 +623,14 @@ static void ValidateAirportFrequencies(WED_Airport* who, validation_error_vector
 		//Contains values like "128.80" or "0.25" or "999.13"
 		AptATCFreq_t freq_info;
 
-		DebugAssert(!itr->empty());
+		DebugAssert(!atc_type.second.empty());
 
-		for(vector<WED_ATCFrequency*>::iterator freq = itr->begin(); freq != itr->end(); ++freq)
+		for(auto freq : atc_type.second)
 		{
-			(*freq)->Export(freq_info);
+			freq->Export(freq_info);
 			string freq_str = format_freq(freq_info.freq);
 
-			all_freqs[freq_info.freq].push_back(*freq);
+			airband_by_freq[freq_info.freq].push_back(freq);
 
 			const int freq_type = ENUM_Import(ATCFrequency, freq_info.atc_type);
 			is_xplane_atc_related = freq_type == atc_Delivery || freq_type == atc_Ground || freq_type == atc_Tower;
@@ -687,12 +642,12 @@ static void ValidateAirportFrequencies(WED_Airport* who, validation_error_vector
 			if(freq_type == atc_Tower)
 				has_tower = true;
 			else if(is_xplane_atc_related)
-				has_atc.push_back(*freq);
+				has_atc.push_back(freq);
 
 			if(freq_info.freq < ATC_min_frequency || freq_info.freq >= 1000000 || (freq_info.freq >= 137000 && freq_info.freq < 200000) )
 			{
 				msgs.push_back(validation_error_t(string("Frequency ") + freq_str + " not in the range of " + to_string(ATC_min_frequency/1000) + 
-				                                         " .. 137 or 200 .. 1000 MHz.", err_freq_not_between_0_and_1000_mhz, *freq,who));
+				                                         " .. 137 or 200 .. 1000 MHz.", err_freq_not_between_0_and_1000_mhz, freq, who));
 				continue;
 			}
 
@@ -704,7 +659,7 @@ static void ValidateAirportFrequencies(WED_Airport* who, validation_error_vector
 			{
 				if (freq_info.freq > 121475 && freq_info.freq < 121525)
 						msgs.push_back(validation_error_t(string("The ATC frequency ") + freq_str + " is within the guardband of the emergency frequency.",
-								err_atc_freq_must_be_on_25khz_spacing,	*freq, who));
+								err_atc_freq_must_be_on_25khz_spacing,	freq, who));
 
 				int mod25 = freq_info.freq % 25;
 				bool is_25k_raster	= mod25 == 0;
@@ -713,12 +668,12 @@ static void ValidateAirportFrequencies(WED_Airport* who, validation_error_vector
 				if(!is_833k_chan && !is_25k_raster)
 				{
 					msgs.push_back(validation_error_t(string("The ATC frequency ") + freq_str + " is not a valid 8.33kHz channel number.",
-						err_atc_freq_must_be_on_8p33khz_spacing, *freq, who));
+						err_atc_freq_must_be_on_8p33khz_spacing, freq, who));
 				}
 				else if(!is_25k_raster && gExportTarget < wet_xplane_1130)
 				{
 					msgs.push_back(validation_error_t(string("The ATC frequency ") + freq_str + " is not a multiple of 25kHz as required prior to X-plane 11.30.",
-						err_atc_freq_must_be_on_25khz_spacing,	*freq, who));
+						err_atc_freq_must_be_on_25khz_spacing, freq, who));
 				}
 				else
 				{
@@ -730,7 +685,7 @@ static void ValidateAirportFrequencies(WED_Airport* who, validation_error_vector
 					if(!is_25k_raster && (bounds.ymin() < 34.0 || bounds.xmin() < -11.0 || bounds.xmax() > 35.0) )     // rougly the outline of europe
 					{
 						msgs.push_back(validation_error_t(string("ATC frequency ") + freq_str + " on 8.33kHz raster is used outside of Europe.",
-							warn_atc_freq_on_8p33khz_spacing,	*freq, who));
+							warn_atc_freq_on_8p33khz_spacing, freq, who));
 					}
 				}
 			}
@@ -741,39 +696,33 @@ static void ValidateAirportFrequencies(WED_Airport* who, validation_error_vector
 			stringstream ss;
 			ss  << "Could not find at least one VHF band ATC Frequency for group " << ENUM_Desc(ENUM_Import(ATCFrequency, freq_info.atc_type)) << ". "
 			    << "VHF band is 118 - 137 MHz and frequency raster 25/8.33kHz depending on targeted X-plane version.";
-			msgs.push_back(validation_error_t(ss.str(), err_freq_could_not_find_at_least_one_valid_freq_for_group, *itr, who));
+			msgs.push_back(validation_error_t(ss.str(), err_freq_could_not_find_at_least_one_valid_freq_for_group, atc_type.second, who));
 		}
 	}
 
-	for (map<int, vector<WED_ATCFrequency *> >::iterator f = all_freqs.begin(); f != all_freqs.end(); ++f)
+	for (auto freq : airband_by_freq)
 	{
-		if (f->second.size() > 1)
+		vector<WED_ATCFrequency *> services_on_same_freq;
+		copy_if(freq.second.begin(), freq.second.end(), back_inserter(services_on_same_freq), [](WED_ATCFrequency * itr)
 		{
-			vector<WED_Thing*> problem_children;
-			for (vector<WED_ATCFrequency*>::iterator itr = f->second.begin(); itr != f->second.end(); ++itr)
-			{
-				AptATCFreq_t apt_atc_freq;
-				(*itr)->Export(apt_atc_freq);
-				const int freq_type = ENUM_Import(ATCFrequency,apt_atc_freq.atc_type);
-				if (freq_type == atc_AWOS     ||
-					freq_type == atc_Delivery ||
-					freq_type == atc_Ground   ||
-					freq_type == atc_Tower)
-				{
-					problem_children.push_back(*itr);
-				}
-			}
+			AptATCFreq_t apt_atc_freq;
+			itr->Export(apt_atc_freq);
+			const int freq_type = ENUM_Import(ATCFrequency, apt_atc_freq.atc_type);
+			return freq_type == atc_AWOS   || freq_type == atc_Delivery ||
+				   freq_type == atc_Ground || freq_type == atc_Tower;
+		} );
 
-			if (problem_children.size() > 1)
-			{
-				msgs.push_back(validation_error_t(string("The frequency ") + format_freq(f->first) + " is used more than once at this airport.", err_freq_duplicate_freq, problem_children, who));
-			}
+		if (services_on_same_freq.size() > 1)
+		{
+			msgs.push_back(validation_error_t(string("The frequency ") + format_freq(freq.first) + " is used for more than one service at this airport.",
+				err_freq_duplicate_freq, services_on_same_freq, who));
 		}
 	}
 
 	if(!has_atc.empty() && !has_tower)
 	{
-		msgs.push_back(validation_error_t("This airport has ground or delivery but no tower.  Add a control tower frequency or remove ground/delivery.", err_freq_airport_has_gnd_or_del_but_no_tower, has_atc, who));
+		msgs.push_back(validation_error_t("This airport has ground or delivery but no tower.  Add a control tower frequency or remove ground/delivery.", 
+			err_freq_airport_has_gnd_or_del_but_no_tower, has_atc, who));
 	}
 
 }
@@ -963,16 +912,13 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 		msgs.push_back(validation_error_t("Airport flow must specify at least one active arrival and one departure runway", err_flow_no_arr_or_no_dep_runway, flow, apt));
 }
 
-static void ValidateATCFlows(const vector<WED_ATCFlow*>& flows, WED_Airport* apt, validation_error_vector& msgs, const set<int>& legal_rwy_oneway)
+static void ValidateATCFlows(const vector<WED_ATCFlow*>& flows, const vector<WED_ATCFrequency*> ATC_freqs, WED_Airport* apt, validation_error_vector& msgs, const set<int>& legal_rwy_oneway)
 {
 	if(!flows.empty() && gExportTarget == wet_xplane_900)
 		msgs.push_back(validation_error_t("ATC flows are only supported in X-Plane 10 and newer.", err_flow_flows_only_for_gte_xp10, flows, apt));
 
 	if(CheckDuplicateNames(flows, msgs, apt, "Two or more airport flows have the same name."))
 		return;
-
-	vector<WED_ATCFrequency*> ATC_freqs;
-	CollectRecursive(apt, back_inserter<vector<WED_ATCFrequency*> >(ATC_freqs), IgnoreVisiblity, TakeAlways);
 
 	vector<int> departure_freqs;
 	for(auto f : ATC_freqs)
@@ -1872,6 +1818,42 @@ static void ValidateOneTruckParking(WED_TruckParkingLocation* truck_parking,vali
 	}
 }
 
+MFMemFile * ReadCIFP()
+{
+	WED_file_cache_request  mCacheRequest;
+	mCacheRequest.in_cert = WED_get_GW_cert();
+	mCacheRequest.in_domain = cache_domain_metadata_csv;    // cache expiration time = 1 day
+	mCacheRequest.in_folder_prefix = "scenery_packs";
+	mCacheRequest.in_url = WED_URL_CIFP_RUNWAYS;
+
+	WED_file_cache_response res = gFileCache.request_file(mCacheRequest);
+
+	/* ToDo: get a better way to do automatic retryies for cache updates.
+		Ultimately, during the actual gateway submission we MUST wait and get full verification
+		at all times. */
+	for (int i = 0; i < 5; ++i)
+	{
+		if (res.out_status == cache_status_downloading)
+		{
+			printf("Download of Runway Data in progress, trying again in 1 sec\n");
+			this_thread::sleep_for(chrono::seconds(1));
+			res = gFileCache.request_file(mCacheRequest);
+		}
+	}
+
+	if (res.out_status != cache_status_available)
+	{
+		stringstream ss;
+		ss << "Error downloading list of CIFP data compliant runway names and coordinates from scenery gateway.\n" << res.out_error_human;
+		ss << "\nSkipping this part of validation.";
+		DoUserAlert(ss.str().c_str());
+		return nullptr;
+	}
+	else
+		return MemFile_Open(res.out_path.c_str());
+}
+
+
 static void ValidateCIFP(const vector<WED_Runway *>& runways, const vector<WED_Sealane *>& sealanes, const set<int>& legal_rwy_oneway,
 				MFMemFile * mf, validation_error_vector& msgs, WED_Airport* apt)
 {
@@ -2034,86 +2016,68 @@ static void ValidateCIFP(const vector<WED_Runway *>& runways, const vector<WED_S
 		}
 }
 
-//------------------------------------------------------------------------------------------------------------------------------------
-#pragma mark -
-//------------------------------------------------------------------------------------------------------------------------------------
-
-static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, WED_LibraryMgr* lib_mgr, WED_ResourceMgr * res_mgr, MFMemFile * mf)
+static void ValidateAptName(const string name, const string icao, validation_error_vector& msgs, WED_Airport* apt)
 {
-	string name, icao;
-	apt->GetName(name);
-	apt->GetICAO(icao);
-	validate_error_t err_type;
-
-	if(name.empty())
-		msgs.push_back(validation_error_t("Airport has no name.", err_airport_name, apt,apt));
+	if (name.empty())
+		msgs.push_back(validation_error_t("Airport has no name.", err_airport_name, apt, apt));
 	else
 	{
-	    if(gExportTarget == wet_gateway)
-            err_type = err_airport_name;
-        else
-            err_type = warn_airport_name_style;
+		validate_error_t err_type = gExportTarget == wet_gateway ? err_airport_name : warn_airport_name_style;
 
-		if(strlen_utf8(name) > 30)
-			msgs.push_back(validation_error_t(string("Airport name '") + name + "' is longer than 30 characters.", err_type, apt,apt));
+		if (strlen_utf8(name) > 30)
+			msgs.push_back(validation_error_t(string("Airport name '") + name + "' is longer than 30 characters.", err_type, apt, apt));
 
-		if(isspace(name[0]) || isspace(name[name.length()-1]))
-			msgs.push_back(validation_error_t("Airport name includes leading or trailing spaces.", err_type, apt,apt));
+		if (isspace(name[0]) || isspace(name[name.length() - 1]))
+			msgs.push_back(validation_error_t("Airport name includes leading or trailing spaces.", err_type, apt, apt));
 
 		int lcase = count_if(name.begin(), name.end(), ::islower);
 		int ucase = count_if(name.begin(), name.end(), ::isupper);
 		if (ucase > 2 && lcase == 0)
-			msgs.push_back(validation_error_t("Airport name is all upper case.", warn_airport_name_style, apt,apt));
+			msgs.push_back(validation_error_t("Airport name is all upper case.", err_type, apt, apt));
 
 		string name_lcase(name), icao_lcase(icao);
 		::transform(name_lcase.begin(), name_lcase.end(), name_lcase.begin(), ::tolower);  // waiting for C++11 ...
 		::transform(icao_lcase.begin(), icao_lcase.end(), icao_lcase.begin(), ::tolower);  // waiting for C++11 ...
 
-		if (contains_word(name_lcase,"airport"))
-			msgs.push_back(validation_error_t("The airport name should not include the word 'Airport'.", warn_airport_name_style, apt,apt));
-		if (contains_word(name_lcase,"international") || contains_word(name_lcase,"int")|| contains_word(name_lcase,"regional")
-			|| contains_word(name_lcase,"municipal"))
-			msgs.push_back(validation_error_t("The airport name should use the abbreviations 'Intl', 'Rgnl' and 'Muni' instead of full words.", warn_airport_name_style, apt,apt));
+		if (contains_word(name_lcase, "airport"))
+			msgs.push_back(validation_error_t("The airport name should not include the word 'Airport'.", warn_airport_name_style, apt, apt));
+		if (contains_word(name_lcase, "international") || contains_word(name_lcase, "int") || contains_word(name_lcase, "regional")
+			|| contains_word(name_lcase, "municipal"))
+			msgs.push_back(validation_error_t("The airport name should use the abbreviations 'Intl', 'Rgnl' and 'Muni' instead of full words.", warn_airport_name_style, apt, apt));
 		if (icao_lcase != "niue" && contains_word(name_lcase, icao_lcase.c_str()))
-			msgs.push_back(validation_error_t("The airport name should not include the ICAO code. Use the common name only.", warn_airport_name_style, apt,apt));
+			msgs.push_back(validation_error_t("The airport name should not include the ICAO code. Use the common name only.", warn_airport_name_style, apt, apt));
 	}
-	if(icao.empty())
-		msgs.push_back(validation_error_t(string("The airport '") + name + "' has an empty Airport ID.", err_airport_icao, apt,apt));
-	else if(!is_all_alnum(icao))
-		msgs.push_back(validation_error_t(string("The Airport ID for airport '") + name + "' must contain ASCII alpha-numeric characters only.", err_airport_icao, apt,apt));
+	if (icao.empty())
+		msgs.push_back(validation_error_t(string("The airport '") + name + "' has an empty Airport ID.", err_airport_icao, apt, apt));
+	else if (!is_all_alnum(icao))
+		msgs.push_back(validation_error_t(string("The Airport ID for airport '") + name + "' must contain ASCII alpha-numeric characters only.", err_airport_icao, apt, apt));
+}
 
-	set<WED_Thing*> points = WED_select_doubles(apt);
-	if(points.size())
-		msgs.push_back(validation_error_t("Airport contains doubled ATC routing nodes. These should be merged.", err_airport_ATC_network, points, apt));
+//------------------------------------------------------------------------------------------------------------------------------------
+#pragma mark -
+//------------------------------------------------------------------------------------------------------------------------------------
 
-	vector<WED_Runway *>		runways;
-	vector<WED_Helipad *>		helipads;
-	vector<WED_Sealane *>		sealanes;
-	vector<WED_AirportSign *>	signs;
-	vector<WED_Taxiway *>		taxiways;
-	vector<WED_TruckDestination*>     truck_destinations;
+static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, WED_LibraryMgr * lib_mgr, WED_ResourceMgr * res_mgr, MFMemFile * mf)
+{
+	vector<WED_Runway *>			runways;
+	vector<WED_Helipad *>			helipads;
+	vector<WED_Sealane *>			sealanes;
+	vector<WED_AirportSign *>		signs;
+	vector<WED_Taxiway *>			taxiways;
+	vector<WED_TruckDestination*>   truck_destinations;
 	vector<WED_TruckParkingLocation*> truck_parking_locs;
-	vector<WED_TaxiRoute *>		taxiroutes;
-	vector<WED_RampPosition*>	ramps;
-	vector<WED_AirportBoundary *> boundaries;
-	vector<WED_ATCFlow *>		flows;
-	vector<WED_DrapedOrthophoto *> orthos;
+	vector<WED_TaxiRoute *>			taxiroutes;
+	vector<WED_RampPosition*>		ramps;
+	vector<WED_AirportBoundary *>	boundaries;
+	vector<WED_ATCFlow *>			flows;
+	vector<WED_ATCFrequency*>		freqs;
+
+	vector<WED_DrapedOrthophoto *>	orthos;
 
 	// those Thing <-> Entity dynamic_cast's take forever. 50% of CPU time in validation is for casting.
-	
-	//CollectRecursive(apt, back_inserter(runways),  WED_Runway::sClass);
-	//CollectRecursive(apt, back_inserter(helipads), WED_Helipad::sClass);
+	// CollectRecursive(apt, back_inserter(runways),  WED_Runway::sClass);
 	//CollectRecursive(apt, back_inserter(sealanes), WED_Sealane::sClass);
-	//CollectRecursive(apt, back_inserter(signs),    WED_AirportSign::sClass);
-	//CollectRecursive(apt, back_inserter(taxiways), WED_Taxiway::sClass);
-	//CollectRecursive(apt, back_inserter(ramps),    WED_RampPosition::sClass);
-	//CollectRecursive(apt, back_inserter(truck_destinations), WED_TruckDestination::sClass);
-	//CollectRecursive(apt, back_inserter(truck_parking_locs), WED_TruckParkingLocation::sClass);
-	//CollectRecursive(apt, back_inserter(boundaries), WED_AirportBoundary::sClass);
-	//CollectRecursive(apt, back_inserter(flows),      WED_ATCFlow::sClass);
-	//CollectRecursive(apt, back_inserter(GT_routes),  ThingNotHidden, isGroundRoute, WED_TaxiRoute::sClass);
-	//CollectRecursive(apt, back_inserter(orthos),     WED_DrapedOrthophoto::sClass);
-
+	// ...
 	// so replace this by ONE recursion that captures all we need
 	
 	std::function<void(WED_Thing *)> CollectEntitiesRecursive = [&] (WED_Thing * thing)
@@ -2134,13 +2098,18 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		else COLLECT(WED_AirportBoundary,      boundaries)
 		else COLLECT(WED_TruckDestination,     truck_destinations)
 		else COLLECT(WED_TruckParkingLocation, truck_parking_locs)
-		else COLLECT(WED_TaxiRoute,				taxiroutes)
-		else COLLECT(WED_DrapedOrthophoto,		orthos)
+		else COLLECT(WED_TaxiRoute,            taxiroutes)
+		else COLLECT(WED_DrapedOrthophoto,     orthos)
 #undef COLLECT
 		else if (c == WED_ATCFlow::sClass) {
 				auto p = static_cast<WED_ATCFlow *>(thing);
 				if (p) flows.push_back(p);
-					return;
+				return;
+		}
+		else if (c == WED_ATCFrequency::sClass) {
+			auto p = static_cast<WED_ATCFrequency *>(thing);
+			if (p) freqs.push_back(p);
+			return;
 		}
 		else
 		{
@@ -2166,7 +2135,13 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	WED_GetAllRunwaysOneway(apt, legal_rwy_oneway);
 	WED_GetAllRunwaysTwoway(apt, legal_rwy_twoway);
 
-   err_type = gExportTarget == wet_gateway ? err_airport_no_rwys_sealanes_or_helipads : warn_airport_no_rwys_sealanes_or_helipads;
+	string name, icao;
+	apt->GetName(name);
+	apt->GetICAO(icao);
+	ValidateAptName(name, icao, msgs, apt);
+
+	validate_error_t err_type = gExportTarget == wet_gateway ? err_airport_no_rwys_sealanes_or_helipads : warn_airport_no_rwys_sealanes_or_helipads;
+
 	switch(apt->GetAirportType())
 	{
 		case type_Airport:
@@ -2184,15 +2159,19 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		default:
 			Assert("Unknown Airport Type");
 	}
-	
+
+	set<WED_Thing*> points = WED_select_doubles(apt);
+	if (points.size())
+		msgs.push_back(validation_error_t("Airport contains doubled ATC routing nodes. These should be merged.", err_airport_ATC_network, points, apt));
+
 	CheckDuplicateNames(helipads,msgs,apt,"A helipad name is used more than once.");
 	if(!CheckDuplicateNames(runway_or_sealane,msgs,apt,"A runway or sealane name is used more than once."))
 	{
 	   // there checks in these that create utterly misleading results if runway names are ambigeous
 		WED_DoATCRunwayChecks(*apt, msgs, taxiroutes, runways, legal_rwy_oneway, legal_rwy_twoway, flows, res_mgr);
-		ValidateATCFlows(flows, apt, msgs, legal_rwy_oneway);
+		ValidateATCFlows(flows, freqs, apt, msgs, legal_rwy_oneway);
 	}
-	ValidateAirportFrequencies(apt, msgs);
+	ValidateAirportFrequencies(freqs, apt, msgs);
 
 	for(auto s : signs)
 		ValidateOneTaxiSign(s, msgs, apt);
@@ -2256,19 +2235,15 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 			res_mgr->GetPol(res,pol);
 
 			if (!pol->mSubBoxes.size())
-			{
 				orthos_illegal.push_back(*o);
-			}
 //			else
 //				printf("kosher ortho, has %d subtex\n", pol->mSubBoxes.size());
 		}
 		if(!orthos_illegal.empty())
 			msgs.push_back(validation_error_t("Only Orthophotos with automatic subtexture selection can be exported to the Gateway. Please hide or remove selected Orthophotos.",
 						err_gateway_orthophoto_cannot_be_exported, orthos_illegal, apt));
-
-		// verify existence of required runways
-		ValidateCIFP(runways, sealanes, legal_rwy_oneway, mf, msgs, apt);
-
+		if(mf) 
+			ValidateCIFP(runways, sealanes, legal_rwy_oneway, mf, msgs, apt);
 	}
 
 	ValidatePointSequencesRecursive(apt, msgs,apt);
@@ -2290,49 +2265,18 @@ validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane,
 	WED_ResourceMgr * res_mgr = WED_GetResourceMgr(resolver);
 
 	vector<WED_Airport *> apts;
-	CollectRecursiveNoNesting(wrl, back_inserter(apts),WED_Airport::sClass); // problem: Finds Airports only 1 level deep.
+	CollectRecursiveNoNesting(wrl, back_inserter(apts), WED_Airport::sClass); // problem: Finds Airports only 1 level deep.
 
 	// get data about runways from CIFP data
-	MFMemFile * mf = NULL;
+	MFMemFile * mf = nullptr; 
 	if(gExportTarget == wet_gateway)
-	{
-		WED_file_cache_request  mCacheRequest;
-		mCacheRequest.in_cert = WED_get_GW_cert();
-		mCacheRequest.in_domain = cache_domain_metadata_csv;    // cache expiration time = 1 day
-		mCacheRequest.in_folder_prefix = "scenery_packs";
-		mCacheRequest.in_url = WED_URL_CIFP_RUNWAYS;
-
-		WED_file_cache_response res = gFileCache.request_file(mCacheRequest);
-
-	/* ToDo: get a better way to do automatic retryies for cache updates.
-		Ultimately, during the actual gateway submission we MUST wait and get full verification
-		at all times. */
-		for (int i = 0; i < 5; ++i)
-		{
-			if(res.out_status == cache_status_downloading)
-			{
-				printf("Download of Runway Data in progress, trying again in 1 sec\n");
-				this_thread::sleep_for(chrono::seconds(1));
-				res = gFileCache.request_file(mCacheRequest);
-			}
-		}
-
-		if(res.out_status != cache_status_available)
-		{
-			stringstream ss;
-			ss << "Error downloading list of CIFP data compliant runway names and coordinates from scenery gateway.\n" << res.out_error_human;
-			ss << "\nSkipping this part of validation.";
-			DoUserAlert(ss.str().c_str());
-		}
-		else
-			mf = MemFile_Open(res.out_path.c_str());
-	}
+		mf = ReadCIFP();
 
 #if DEV
 	auto t0 = std::chrono::high_resolution_clock::now();
 #endif
-	for(vector<WED_Airport *>::iterator a = apts.begin(); a != apts.end(); ++a)
-		ValidateOneAirport(*a, msgs, lib_mgr, res_mgr, mf);
+	for(auto a : apts)
+		ValidateOneAirport(a, msgs, lib_mgr, res_mgr, mf);
 
 	// These are programmed to NOT iterate up INTO airports.  But you can START them at an airport.
 	// So...IF wrl (which MIGHT be the world or MIGHt be a selection or might be an airport) turns out to
@@ -2347,27 +2291,26 @@ validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane,
 	char c[50]; snprintf(c, 50, "Validation time was %.3lf s.", elapsed);
 	msgs.push_back(validation_error_t(c, warn_airport_impossible_size, wrl, nullptr));
 #endif
-
 	if (mf) MemFile_Close(mf);
+
 	string logfile(gPackageMgr->ComputePath(lib_mgr->GetLocalPackage(), "validation_report.txt"));
 	FILE * fi = fopen(logfile.c_str(), "w");
 
-	validation_error_vector::iterator first_error = msgs.end();
-	for(validation_error_vector::iterator v = msgs.begin(); v != msgs.end(); ++v)
+	bool warnings_only = true;
+	for(auto& v : msgs)
 	{
 		const char * warn = "";
 		string aname;
-		if(v->airport)
-			v->airport->GetICAO(aname);
+		if(v.airport)
+			v.airport->GetICAO(aname);
 
-		if(v->err_code > warnings_start_here)
+		if(v.err_code > warnings_start_here)
 			warn = "(warning only)";
-		else if(first_error == msgs.end())
-			first_error = v;
+		else 
+			warnings_only = false;
 
-		if (fi != NULL)
-			fprintf(fi, "%s: %s %s\n", aname.c_str(), v->msg.c_str(), warn);
-//		fprintf(stdout, "%s: %s %s\n", aname.c_str(), v->msg.c_str(), warn);
+		if (fi)	fprintf(fi, "%s: %s %s\n", aname.c_str(), v.msg.c_str(), warn);
+//		fprintf(stdout, "%s: %s %s\n", aname.c_str(), v.msg.c_str(), warn);
 	}
 	fclose(fi);
 
@@ -2375,10 +2318,7 @@ validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane,
 	{
 		if(!skipErrorDialog) new WED_ValidateDialog(resolver, pane, msgs, abortMsg);
 
-		if(first_error == msgs.end())
-			return validation_warnings_only;
-		else
-			return validation_errors;
+		return warnings_only ? validation_warnings_only : validation_errors;
 	}
 	else return validation_clean;
 }

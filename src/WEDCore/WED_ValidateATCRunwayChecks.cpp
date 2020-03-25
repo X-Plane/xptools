@@ -910,28 +910,26 @@ static void TJunctionCrossingTest(const TaxiRouteInfoVec_t& all_taxiroutes, vali
 	const double ZERO_LENGTH_THRESHOLD = 1.00;
 
 	set<WED_TaxiRoute *> crossing_edges, short_edges;
-	for (auto& tr_a : all_taxiroutes)
+	for (auto tr_a = all_taxiroutes.cbegin(); tr_a != all_taxiroutes.cend(); ++tr_a)
 	{
-		Segment2 edge_a = tr_a.segment_m;
+		Segment2 edge_a = tr_a->segment_m;
 		if (Vector2(edge_a.p1, edge_a.p2).squared_length() < ZERO_LENGTH_THRESHOLD * ZERO_LENGTH_THRESHOLD)
-			short_edges.insert(tr_a.ptr);
+			short_edges.insert(tr_a->ptr);
 		
-		for (auto& tr_b : all_taxiroutes)           // go only from tr_a +1 to end == save half of all crossing/colocated tests
+		for (auto tr_b = tr_a + 1; tr_b != all_taxiroutes.end(); ++tr_b)
 		{
-			Segment2 edge_b = tr_b.segment_m;
+			Segment2 edge_b = tr_b->segment_m;
 
-			if (&tr_a == &tr_b)	continue;
-			
 			// Skip if the edges are colocated at one end, i.e. are propper merged or not so propper unmerged nodes
-			// should also catch testing one edge agaist itself
+			// should also catch testing one edge against itself
 			if (edge_a.p1 == edge_b.p1 || edge_a.p1 == edge_b.p2 ||
 				edge_a.p2 == edge_b.p1 || edge_a.p2 == edge_b.p2 ) continue;
 
 			Point2 tmp;
 			if (edge_a.intersect(edge_b,tmp))
 			{
-				crossing_edges.insert(tr_a.ptr);
-				crossing_edges.insert(tr_b.ptr);
+				crossing_edges.insert(tr_a->ptr);
+				crossing_edges.insert(tr_b->ptr);
 				continue;
 			}
 
@@ -939,21 +937,35 @@ static void TJunctionCrossingTest(const TaxiRouteInfoVec_t& all_taxiroutes, vali
 			{
 				// its also worth changing this to Bezier2.is_near() to prepare for future curved edges
 				double dist_b_node_to_a_edge = i ? edge_a.squared_distance(edge_b.p2) : edge_a.squared_distance(edge_b.p1);
-			//	double dist_a_node_to_b_edge = i ? edge_b.squared_distance(edge_a.p2) : edge_b.squared_distance(edge_a.p1); // do this if only iterating tr_a+1
-
 				if (dist_b_node_to_a_edge < TJUNCTION_THRESHOLD * TJUNCTION_THRESHOLD)
 				{
 					set<WED_Thing*> node_viewers;
-					tr_b.nodes[i]->GetAllViewers(node_viewers);
+					tr_b->nodes[i]->GetAllViewers(node_viewers);
 
 					if (node_viewers.size() == 1)
 					{	
 						vector<WED_Thing*> problem_children;
-						problem_children.push_back(tr_a.ptr);
-						problem_children.push_back(tr_b.nodes[i]);
+						problem_children.push_back(tr_a->ptr);
+						problem_children.push_back(tr_b->nodes[i]);
 
-						msgs.push_back(validation_error_t("Taxi route " + tr_a.name + " is not joined to a destination route.", 
+						msgs.push_back(validation_error_t("Taxi route " + tr_a->name + " is not joined to a destination route.", 
 												err_taxi_route_not_joined_to_dest_route, problem_children, apt));
+					}
+				}
+				double dist_a_node_to_b_edge = i ? edge_b.squared_distance(edge_a.p2) : edge_b.squared_distance(edge_a.p1);
+				if (dist_a_node_to_b_edge < TJUNCTION_THRESHOLD * TJUNCTION_THRESHOLD)
+				{
+					set<WED_Thing*> node_viewers;
+					tr_a->nodes[i]->GetAllViewers(node_viewers);
+
+					if (node_viewers.size() == 1)
+					{
+						vector<WED_Thing*> problem_children;
+						problem_children.push_back(tr_b->ptr);
+						problem_children.push_back(tr_a->nodes[i]);
+
+						msgs.push_back(validation_error_t("Taxi route " + tr_b->name + " is not joined to a destination route.",
+							err_taxi_route_not_joined_to_dest_route, problem_children, apt));
 					}
 				}
 			}
