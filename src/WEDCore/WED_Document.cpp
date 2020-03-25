@@ -172,7 +172,7 @@ void	WED_Document::Save(void)
 
 	enum {none,nobackup,both};
 	int stage = none;
-
+	
 	//Create the strings path.
 	//earth.wed.xml,
 	//earth.wed.bak.xml,
@@ -227,13 +227,14 @@ void	WED_Document::Save(void)
 	}
 	
 	//Create an xml file by opening the file located on the hard drive (windows)
-	//open a file for writing creating/nukeing if necissary
+	//open a file for writing creating/nukeing if neccessary
 
 	FILE * xml_file = fopen(xml.c_str(),"w");
 
 	if(xml_file == NULL)
 	{
-		DoUserAlert("Please check file path for errors or missing parts");
+		string msg = "Can not open '" + xml + "' for writing.";
+		DoUserAlert(msg.c_str());
 		return;
 	}
 
@@ -249,19 +250,18 @@ void	WED_Document::Save(void)
 	int fcloseErr = fclose(xml_file);
 	if(ferrorErr != 0 || fcloseErr != 0)
 	{
-		//This is the error handling switch
+		string msg =  "Error while writing '" + xml + "'";
 		switch(stage)
 		{
 			case none:
 				FILE_delete_file(xml.c_str(), false);
-				DoUserAlert("Please check file path for errors or missing parts");
 				break;
 			case nobackup:
 				//Delete's the bad save
 				FILE_delete_file(xml.c_str(), false);
 				//un-renames the old one
 				FILE_rename_file(bakXML.c_str(),xml.c_str());
-				DoUserAlert("Please check file path for errors or missing parts");
+				msg += " or creating backup '" + bakXML;
 				break;
 			case both:
 				//delete incomplete file
@@ -272,9 +272,11 @@ void	WED_Document::Save(void)
 
 				//un-rename earth.wed.bak.bak.xml to earth.wed.bak.xml
 				FILE_rename_file(tempBakBak.c_str(), bakXML.c_str());
-				DoUserAlert("Please check file path for errors or missing parts");
+				msg += " or renaming backups to '" + bakXML + "' or '" + tempBakBak;
 				break;
 		}
+		msg += "'.";
+		DoUserAlert(msg.c_str());
 	}	
 	else
 	{
