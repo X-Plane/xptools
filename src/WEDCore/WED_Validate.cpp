@@ -526,6 +526,18 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 		if(who->GetClass() != WED_Group::sClass)
 		if(!parent_apt)
 			msgs.push_back(validation_error_t("Elements of your project are outside the hierarchy of the airport you are trying to export.", err_airport_elements_outside_hierarchy, who,NULL));
+
+		if(who->GetClass() == WED_ObjPlacement::sClass)
+		{
+			auto obj = static_cast<WED_ObjPlacement *>(who);
+			if(int t = obj->HasCustomMSL())
+			{
+				stringstream ss;
+				ss << "The use of " << (t == 1 ? "set_MSL=" : "set_AGL=") << (int) obj->GetCustomMSL() << '.' << abs((int) (obj->GetCustomMSL()*10.0)) % 10 << 'm';
+				ss << " is discouraged on the scenery gateway. Use only in well justified cases.";
+				msgs.push_back(validation_error_t(ss.str(), warn_object_custom_elev, who, parent_apt));
+			}
+		}
 	}
 
 	//--Validate resources-----------------------------------------------------
@@ -2272,7 +2284,7 @@ validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane,
 	if(gExportTarget == wet_gateway)
 		mf = ReadCIFP();
 
-#if DEV
+#if 1 //DEV
 	auto t0 = std::chrono::high_resolution_clock::now();
 #endif
 	for(auto a : apts)
@@ -2285,7 +2297,7 @@ validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane,
 	ValidatePointSequencesRecursive(wrl, msgs,dynamic_cast<WED_Airport *>(wrl));
 	ValidateDSFRecursive(wrl, lib_mgr, msgs, dynamic_cast<WED_Airport *>(wrl));
 
-#if DEV
+#if 1 //DEV
 	auto t1 = std::chrono::high_resolution_clock::now();
 	chrono::duration<double> elapsed = t1-t0;
 	char c[50]; snprintf(c, 50, "Validation time was %.3lf s.", elapsed);

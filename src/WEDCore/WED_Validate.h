@@ -155,6 +155,7 @@ enum validate_error_t
 	warn_atc_flow_short_time,
 	warn_atcrwy_marking,
 	warn_facades_curved_only_type2,
+	warn_object_custom_elev,
 	warn_truckroutes_but_no_starts,
 	warn_ramp_start_size_implausible,
 	warn_runway_matching_cifp_mislocated
