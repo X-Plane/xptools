@@ -359,10 +359,10 @@ public:
 	{
 	}
 
-	static void	AddObject(
+	static void	AddObjectWithMode(
 					unsigned int	inObjectType,
 					double			inCoordinates[4],
-					int				inCoordDepth,
+					obj_elev_mode	inMode,
 					void *			inRef)
 	{
 #if !NO_OBJ
@@ -370,10 +370,10 @@ public:
 		WED_ObjPlacement * obj = WED_ObjPlacement::CreateTyped(me->archive);
 		obj->SetResource(me->obj_table[inObjectType]);
 		obj->SetLocation(gis_Geo,Point2(inCoordinates[0],inCoordinates[1]));
-		if(inCoordDepth == 4)
-			obj->SetCustomMSL(inCoordinates[3]);
-		else
+		if (inMode == obj_ModeDraped)
 			obj->SetDefaultMSL();
+		else
+			obj->SetCustomMSL(inCoordinates[3], inMode == obj_ModeAGL);
 		obj->SetHeading(inCoordinates[2]);
 		obj->SetName(me->obj_table_names[inObjectType]);
 		obj->SetParent(me->get_cat_parent(dsf_cat_objects),me->get_cat_parent(dsf_cat_objects)->CountChildren());
@@ -870,7 +870,7 @@ public:
 
 		DSFCallbacks_t cb = {	NextPass, AcceptTerrainDef, AcceptObjectDef, AcceptPolygonDef, AcceptNetworkDef, AcceptRasterDef, AcceptProperty,
 								BeginPatch, BeginPrimitive, AddPatchVertex, EndPrimitive, EndPatch,
-								AddObject,
+								AddObjectWithMode,
 								BeginSegment, AddSegmentShapePoint, EndSegment,
 								BeginPolygon, BeginPolygonWinding, AddPolygonPoint,EndPolygonWinding, EndPolygon, AddRasterData, SetFilter };
 
@@ -890,7 +890,7 @@ public:
 
 		DSFCallbacks_t cb = {	NextPass, AcceptTerrainDef, AcceptObjectDef, AcceptPolygonDef, AcceptNetworkDef, AcceptRasterDef, AcceptProperty,
 								BeginPatch, BeginPrimitive, AddPatchVertex, EndPrimitive, EndPatch,
-								AddObject,
+								AddObjectWithMode,
 								BeginSegment, AddSegmentShapePoint, EndSegment,
 								BeginPolygon, BeginPolygonWinding, AddPolygonPoint,EndPolygonWinding, EndPolygon, AddRasterData, SetFilter };
 

@@ -140,7 +140,7 @@ void DSF2Text_EndPatch(
 void DSF2Text_AddObjectWithMode(
 	unsigned int	inObjectType,
 	double			inCoordinates[],
-	int				inMode,
+	obj_elev_mode	inMode,
 	void *			inRef)
 {
 	if(inObjectType >= count_obj)

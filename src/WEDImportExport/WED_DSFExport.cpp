@@ -1220,7 +1220,7 @@ static int	DSF_ExportTileRecursive(
 				if(obj->HasCustomMSL())
 				{
 					xyrz[3] = obj->GetCustomMSL();
-					cbs->AddObjectWithMode_f(idx, xyrz, obj->HasCustomMSL(), writer);
+					cbs->AddObjectWithMode_f(idx, xyrz, (obj_elev_mode) obj->HasCustomMSL(), writer);
 				}
 				else
 					cbs->AddObjectWithMode_f(idx, xyrz, obj_ModeDraped, writer);

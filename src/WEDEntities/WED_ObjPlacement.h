@@ -44,7 +44,7 @@ public:
 			int			HasCustomMSL(void) const;
 			double		GetCustomMSL(void) const;
 			
-			void		SetCustomMSL(double msl);
+			void		SetCustomMSL(double msl,  bool is_AGL);
 			void		SetDefaultMSL(void);
 	virtual void		GetNthPropertyDict(int n, PropertyDict_t& dict) const;
 	virtual	void		GetNthPropertyDictItem(int n, int e, string& item) const;

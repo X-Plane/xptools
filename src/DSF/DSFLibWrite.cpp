@@ -337,7 +337,7 @@ public:
 	static void	AddObjectWithMode(
 					unsigned int	inObjectType,
 					double			inCoordinates[4],
-					int				inMode,
+					obj_elev_mode	inMode,
 					void *			inRef);
 	static void BeginSegment(
 					unsigned int	inNetworkType,
@@ -1715,7 +1715,7 @@ void	DSFFileWriterImp::EndPatch(
 void	DSFFileWriterImp::AddObjectWithMode(
 				unsigned int	inObjectType,
 				double			inCoordinates[4],
-				int				inMode,
+				obj_elev_mode	inMode,
 				void *			inRef)
 {
 	Assert(inMode == obj_ModeDraped || inMode == obj_ModeMSL || inMode == obj_ModeAGL);

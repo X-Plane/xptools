@@ -74,7 +74,7 @@ enum {
 	dsf_CmdAll	   = 0xFF	/* Return everything at once.					*/
 };
 
-enum {
+enum obj_elev_mode {
 
 	obj_ModeDraped = 0,	// 3 coords, lon/lat/rotation
 	obj_ModeMSL = 1,	// 4 coords, lon/lat/rotation/MSL ele
@@ -141,7 +141,7 @@ struct	DSFCallbacks_t {
 	void (*	AddObjectWithMode_f)(
 					unsigned int	inObjectType,
 					double			inCoordinates[4],	// Lon Lat Rot [MSL]
-					int				inMode,				// Draped/AGL/MSL enum
+					obj_elev_mode	inMode,				// Draped/AGL/MSL enum
 					void *			inRef);
 
 	/* This function adds a complete chain.  All chains
