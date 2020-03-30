@@ -48,12 +48,20 @@
 	XML write time for large files by 35%.
 	
 	Benchmarked throughtput is 75 sec for 14 million items (global airports) to create a 5.5GB xml file.
+	
+	2020 update:
+	
+	The half the putc() and all of the sprintf() are gone now, down to 60sec for the 5.5GB XML file now.
+	The STL memory allocation for STL strings aren't much of an issue - as all but long text parameters 
+	all fit into the intrinsic space inside the string objects itself. Together with reserve(7) for the
+	attributes, which are now a vector - that means a single malloc for most WED_XMLElements.
 
 */
 
 #define FIX_EMPTY 0
+#define FAST_SPRINTF_REPLACEMENTS 1
 
-inline void fi_indent(int n, FILE * fi) { while(n--) fputc(' ', fi); }
+inline void fi_indent(int n, FILE * fi) { const char * spaces = "          "; fwrite(spaces, min(n, 10), 1, fi); }
 
 inline string str_escape(const string& str)
 {
@@ -133,6 +141,7 @@ WED_XMLElement::WED_XMLElement(
 									FILE *				f) : 
 	file(f), indent(i), name(n), flushed(false), parent(NULL)
 {
+	attrs.reserve(7);
 }
 
 WED_XMLElement::~WED_XMLElement()
@@ -145,7 +154,8 @@ WED_XMLElement::~WED_XMLElement()
 		for(auto a : attrs)
 		{
 			fputc(' ',file); fputs(a.first,file); fputs("=\"",file);
-			fputs(a.second.c_str(), file);
+//			fputs(a.second.c_str(), file);
+			fwrite(a.second.c_str(), a.second.size(), 1, file);  // faster, no strlen() needed
 			fputc('"',file);
 		}
 
@@ -186,7 +196,8 @@ void WED_XMLElement::flush_from(WED_XMLElement * who)
 		for(auto a : attrs)
 		{
 			fputc(' ',file); fputs(a.first,file); fputs("=\"",file);
-			fputs(a.second.c_str(), file);
+//			fputs(a.second.c_str(), file);
+			fwrite(a.second.c_str(), a.second.size(), 1, file);  // faster, no strlen() needed
 			fputc('"',file);
 		}
 		fputs(">\n",file);
@@ -204,27 +215,6 @@ void WED_XMLElement::flush_from(WED_XMLElement * who)
 	flushed = true;
 }
 
-inline char * to_chars(char * str, int len, int num)
-{
-        char *p = str+len-1;
-        *p = 0;
-        if(num == 0) { --p; *p = '0'; return p; }
-
-        int negative = num  < 0;
-        if(negative) num = -num;
-
-        while (num != 0)
-        {
-                --p;
-                int remainder = num / 10;
-                int this_digit = num - 10 * remainder;
-                *p = '0' + this_digit;
-                num = remainder;
-                if (p == str) return p;
-        }
-        if(negative) { --p; *p = '-'; }
-        return p;
-}
 
 void					WED_XMLElement::add_attr_int(const char * name, int value)
 {
@@ -234,9 +224,31 @@ void					WED_XMLElement::add_attr_int(const char * name, int value)
 	DebugAssert(name && *name);	
 #endif
 	DebugAssert(!flushed);
-//	attrs[name] = to_string(value); // its friggin slow - wanna spend 10% of the _whole_ time to save in his _one_ line ???
-	char c[16];
-	attrs.push_back(make_pair(name, string(to_chars(c, sizeof(c), value))));
+//	attrs[name] = to_string(value); // using a map or to_string() is friggin slow - wanna spend 10% of the _whole_ time to save in his _one_ line ???
+#if FAST_SPRINTF_REPLACEMENTS
+	if(value == 0)
+		attrs.push_back(make_pair(name, string("0")));
+	else
+	{
+		char c[12];             // suffcient digits to hold even -2^31
+		char *p = c+sizeof(c);
+		bool negative =  value < 0;
+		if(negative) value = -value;
+
+		while (value != 0)
+		{
+//			int remainder =  value / 10;
+			int remainder =  ((long long) value * 214748365) >> 31;  // works for all 32bit ints, takes 4 CPU clocks, rather than 22 for IDIV
+			int this_digit = value - 10 * remainder;
+			*--p = '0' + this_digit;
+			value = remainder;
+		}
+		if(negative) *--p = '-';
+		attrs.push_back(make_pair(name, string(p, c+sizeof(c)-p)));
+	}
+#else
+	attrs.push_back(make_pair(name, to_string(value)));
+#endif
 }
 
 void					WED_XMLElement::add_attr_double(const char * name, double value, int dec)
@@ -251,9 +263,58 @@ void					WED_XMLElement::add_attr_double(const char * name, double value, int de
 		attrs.push_back(make_pair(name, string("0.0")));
 	else
 	{
-		char buf[32];
-		snprintf(buf,32,"%.*lf",dec,value);
-		attrs.push_back(make_pair(name, string(buf)));
+		char c[20];
+#if FAST_SPRINTF_REPLACEMENTS
+		char *p = c+sizeof(c)-dec-1;
+		bool negative =  value < 0;
+		if(negative) value = -value;
+
+		char *dp = p;
+		if(dec)
+			*dp = '.';
+		else
+			p++;
+		
+		if(dec == 9)
+			value += 0.0000000005;
+		else
+		{
+			double add(0.5);
+			for(int i = 0; i < dec; ++i)
+				add *= 0.1;
+			value += add;
+		}
+
+		int ivalue = value;
+		value -= ivalue;
+
+		if(ivalue == 0)
+			*--p = '0';
+		else
+			while(ivalue != 0)
+			{
+				if(p == c) break;
+//				int remainder =  ivalue / 10;
+				int remainder =  ((unsigned) ivalue * 52429U) >> 19;   // works upto 81919, takes 4 CPU clocks, rather than 22 for IDIV
+				int this_digit =  ivalue - 10 * remainder;
+				*--p = '0' + this_digit;
+				ivalue = remainder;
+			}
+		if(negative && p != c) *--p = '-';
+
+		while(dec--)
+		{
+			value *= 10.0;
+			int this_digit = value;
+			value -= this_digit;
+			*++dp = '0' + this_digit;
+		}
+
+		attrs.push_back(make_pair(name, string(p, c+sizeof(c)-p)));
+#else
+		snprintf(c, 20, "%.*lf",dec, value);
+		attrs.push_back(make_pair(name, string(c)));
+#endif
 	}
 }
 
