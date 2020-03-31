@@ -173,18 +173,23 @@ void		WED_PropertyHelper::StartElement(
 								const XML_Char *	name,
 								const XML_Char **	atts)
 {
-	int n;
-	for(n = 0; n < mItems.size(); ++n)
+	int ni = mItems.size();
+	for(int n = 0; n < ni; ++n)
 	if(mItems[n]->WantsElement(reader,name))
 		return;
 
+	int nn = 0;
 	while(*atts)
 	{
 		const XML_Char * k = *atts++;
 		const XML_Char * v = *atts++;
-		for(n = 0; n < mItems.size(); ++n)
-		if(mItems[n]->WantsAttribute(name,k,v))
-			break;
+		for(int n = 0; n < ni; ++n)
+		{
+			nn++;                                     // dont start searching all params from 0 all over again
+			if (nn >= ni) nn = 1;                     // they're usually in the XML in the same order as we have them
+			if(mItems[nn]->WantsAttribute(name,k,v))  // mItems[0] is never the one - its the "Class" pseudo-property
+				break;
+		}
 	}
 }
 
