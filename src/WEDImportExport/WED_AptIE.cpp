@@ -177,28 +177,9 @@ static void ExportLinearPath(WED_AirportChain * chain, AptPolygon_t& poly)
 /**
  * Recursively walks the root tree to collect all elements of the specified type.
  * 
- * For instance, you might use this to collect all WED_TaxiRouteNode objects
- * within an airport (and store them in the order the same relative order that they
- * were listed in the editor).
+ * limited to a specific subset of nodes.  WHY not just copy keepers to elements?  
+ * The resulting vector is IN HIERARCHY ORDER but only contains keepers.
  */
-template<class T>
-static void CollectAllElementsOfType(WED_Thing * root, vector<T *> & elements)
-{
-	T * r = dynamic_cast<T*>(root);
-	if(r)
-	{
-		elements.push_back(r);
-	}
-	
-	int nn = root->CountChildren();
-	for(int n = 0; n < nn; ++n)
-	{
-		CollectAllElementsOfType<T>(root->GetNthChild(n), elements);
-	}
-}
-
-// Just like above, but limits to a specific subset of nodes.  WHY not just copy keepers to elements?  
-// The resulting vector is IN HIERARCHY ORDER but only contains keepers.
 
 template<class T>
 static void CollectAllElementsOfTypeInSet(WED_Thing * root, vector<T *> & elements, const set<T *>& keepers)
@@ -216,8 +197,6 @@ static void CollectAllElementsOfTypeInSet(WED_Thing * root, vector<T *> & elemen
 		CollectAllElementsOfTypeInSet<T>(root->GetNthChild(n), elements, keepers);
 	}
 }
-
-
 
 /**
  * "Exports" the list of nodes into the airport network
@@ -276,40 +255,21 @@ static void MakeEdgeRouting(vector<WED_TaxiRoute *>& edges, AptNetwork_t& net, v
 
 void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 {
-	WED_Airport *			apt;
-	WED_AirportBeacon *		bcn;
-	WED_AirportBoundary *	bou;
-	WED_AirportChain *		cha;
-	WED_AirportSign *		sgn;
-	WED_ATCFrequency *		atc;
-	WED_Helipad *			hel;
-	WED_LightFixture *		lit;
-	WED_RampPosition *		ram;
-	WED_Runway *			rwy;
-	WED_Sealane *			sea;
-	WED_Taxiway *			tax;
-	WED_TowerViewpoint *	twr;
-	WED_Windsock *			win;
-	WED_ATCFlow *			flw;
-	WED_ATCRunwayUse *		use;
-	WED_ATCTimeRule *		tim;
-	WED_ATCWindRule *		wnd;
-	WED_TruckDestination *	dst;
-	WED_TruckParkingLocation*trk;
-
 	int holes, h;
 	
 	WED_Entity * ent = dynamic_cast<WED_Entity *>(what);
 	if (ent && ent->GetHidden()) return;
-	
+
+	const char * cls = what->GetClass();
 
 	/* Special case bug fix: for old alphas we used the airport ring type (not the generic ring) to
 	 * build the interior ring of an overlay image.  If we recurse through the overlay image we  get
 	 * a bogus export. */
-	if(dynamic_cast<WED_OverlayImage *>(what)) return;
+	if(cls == WED_OverlayImage::sClass) return;
 
-	if (apt = dynamic_cast<WED_Airport *>(what))
+	if(cls == WED_Airport::sClass)
 	{
+		auto * apt = static_cast<WED_Airport *>(what);
 		apts.push_back(AptInfo_t());
 		apt->Export(apts.back());
 		
@@ -334,15 +294,17 @@ void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 		MakeNodeRouting(nodes, apts.back().taxi_route);
 		MakeEdgeRouting(edges, apts.back().taxi_route, &nodes);
 	}
-	else if (bcn = dynamic_cast<WED_AirportBeacon *>(what))
+	else if (cls == WED_AirportBeacon::sClass)
 	{
+		auto bcn = static_cast<WED_AirportBeacon *>(what);
 		bcn->Export(apts.back().beacon);
 	}
-	else if (bou = dynamic_cast<WED_AirportBoundary *>(what))
+	else if (cls == WED_AirportBoundary::sClass)
 	{
+		auto bou = static_cast<WED_AirportBoundary *>(what);
 		apts.back().boundaries.push_back(AptBoundary_t());
 		bou->Export(apts.back().boundaries.back());
-		cha = dynamic_cast<WED_AirportChain*>(bou->GetOuterRing());
+		auto cha = dynamic_cast<WED_AirportChain*>(bou->GetOuterRing());
 		if (cha) ExportLinearPath(cha, apts.back().boundaries.back().area);
 		holes = bou->GetNumHoles();
 		for (h = 0; h < holes; ++h)
@@ -353,49 +315,57 @@ void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 		return;	// bail out - we already got the children.
 
 	}
-	else if (cha = dynamic_cast<WED_AirportChain *>(what))
+	else if (cls == WED_AirportChain::sClass)
 	{
+		auto cha = static_cast<WED_AirportChain *>(what);
 		apts.back().lines.push_back(AptMarking_t());
 		cha->Export(apts.back().lines.back());
 		ExportLinearPath(cha, apts.back().lines.back().area);
 		return;	// don't waste time with nodes - for speed
 	}
-	else if (sgn = dynamic_cast<WED_AirportSign *>(what))
+	else if (cls == WED_AirportSign::sClass)
 	{
+		auto sgn = static_cast<WED_AirportSign *>(what);
 		apts.back().signs.push_back(AptSign_t());
 		sgn->Export(apts.back().signs.back());
 	}
-	else if (hel = dynamic_cast<WED_Helipad *>(what))
+	else if (cls == WED_Helipad::sClass)
 	{
+		auto hel = static_cast<WED_Helipad *>(what);
 		apts.back().helipads.push_back(AptHelipad_t());
 		hel->Export(apts.back().helipads.back());
 	}
-	else if (lit = dynamic_cast<WED_LightFixture *>(what))
+	else if (cls == WED_LightFixture::sClass)
 	{
+		auto lit = static_cast<WED_LightFixture *>(what);
 		apts.back().lights.push_back(AptLight_t());
 		lit->Export(apts.back().lights.back());
 	}
-	else if (ram = dynamic_cast<WED_RampPosition *>(what))
+	else if (cls == WED_RampPosition::sClass)
 	{
+		auto ram = static_cast<WED_RampPosition *>(what);
 		apts.back().gates.push_back(AptGate_t());
 		ram->Export(apts.back().gates.back());
 	}
-	else if (rwy = dynamic_cast<WED_Runway *>(what))
+	else if (cls == WED_Runway::sClass)
 	{
+		auto rwy = static_cast<WED_Runway *>(what);
 		apts.back().runways.push_back(AptRunway_t());
 		rwy->Export(apts.back().runways.back());
 	}
-	else if (sea = dynamic_cast<WED_Sealane *>(what))
+	else if (cls == WED_Sealane::sClass)
 	{
+		auto sea = static_cast<WED_Sealane *>(what);
 		apts.back().sealanes.push_back(AptSealane_t());
 		sea->Export(apts.back().sealanes.back());
 	}
-	else if (tax = dynamic_cast<WED_Taxiway *>(what))
+	else if (cls == WED_Taxiway::sClass)
 	{
+		auto tax = static_cast<WED_Taxiway *>(what);
 		apts.back().taxiways.push_back(AptTaxiway_t());
 		tax->Export(apts.back().taxiways.back());
 
-		cha = dynamic_cast<WED_AirportChain*>(tax->GetOuterRing());
+		auto cha = dynamic_cast<WED_AirportChain*>(tax->GetOuterRing());
 		if (cha) ExportLinearPath(cha, apts.back().taxiways.back().area);
 		holes = tax->GetNumHoles();
 		for (h = 0; h < holes; ++h)
@@ -405,47 +375,56 @@ void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 		}
 		return; // bail out - we already got the children
 	}
-	else if (twr = dynamic_cast<WED_TowerViewpoint *>(what))
+	else if (cls == WED_TowerViewpoint::sClass)
 	{
+	auto twr = static_cast<WED_TowerViewpoint *>(what);
 		twr->Export(apts.back().tower);
 	}
-	else if (win = dynamic_cast<WED_Windsock *>(what))
+	else if (cls == WED_Windsock::sClass)
 	{
+		auto win = static_cast<WED_Windsock *>(what);
 		apts.back().windsocks.push_back(AptWindsock_t());
 		win->Export(apts.back().windsocks.back());
 	}
-	else if (atc = dynamic_cast<WED_ATCFrequency *>(what))
+	else if (cls == WED_ATCFrequency::sClass)
 	{
+		auto atc = static_cast<WED_ATCFrequency *>(what);
 		apts.back().atc.push_back(AptATCFreq_t());
 		atc->Export(apts.back().atc.back());
 	}
-	else if(flw = dynamic_cast<WED_ATCFlow *>(what))
+	else if(cls == WED_ATCFlow::sClass)
 	{
+		auto flw = static_cast<WED_ATCFlow *>(what);
 		apts.back().flows.push_back(AptFlow_t());
 		flw->Export(apts.back().flows.back());
 	}
-	else if(use = dynamic_cast<WED_ATCRunwayUse *>(what))
+	else if(cls == WED_ATCRunwayUse::sClass)
 	{
+		auto use = static_cast<WED_ATCRunwayUse *>(what);
 		apts.back().flows.back().runway_rules.push_back(AptRunwayRule_t());
 		use->Export(apts.back().flows.back().runway_rules.back());
 	}
-	else if(tim = dynamic_cast<WED_ATCTimeRule *>(what))
+	else if(cls == WED_ATCTimeRule::sClass)
 	{
+		auto tim = static_cast<WED_ATCTimeRule *>(what);
 		apts.back().flows.back().time_rules.push_back(AptTimeRule_t());
 		tim->Export(apts.back().flows.back().time_rules.back());
 	}
-	else if(wnd = dynamic_cast<WED_ATCWindRule *>(what))
+	else if(cls == WED_ATCWindRule::sClass)
 	{
+		auto wnd = static_cast<WED_ATCWindRule *>(what);
 		apts.back().flows.back().wind_rules.push_back(AptWindRule_t());
 		wnd->Export(apts.back().flows.back().wind_rules.back());
 	}
-	else if(trk = dynamic_cast<WED_TruckParkingLocation*>(what))
+	else if(cls == WED_TruckParkingLocation::sClass)
 	{
+		auto trk = static_cast<WED_TruckParkingLocation*>(what);
 		apts.back().truck_parking.push_back(AptTruckParking_t());
 		trk->Export(apts.back().truck_parking.back());
 	}
-	else if(dst = dynamic_cast<WED_TruckDestination*>(what))
+	else if(cls == WED_TruckDestination::sClass)
 	{
+		auto dst = static_cast<WED_TruckDestination*>(what);
 		apts.back().truck_destinations.push_back(AptTruckDestination_t());
 		dst->Export(apts.back().truck_destinations.back());
 	}
