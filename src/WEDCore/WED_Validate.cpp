@@ -530,12 +530,20 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 		if(who->GetClass() == WED_ObjPlacement::sClass)
 		{
 			auto obj = static_cast<WED_ObjPlacement *>(who);
-			if(int t = obj->HasCustomMSL())
+			if (int t = obj->HasCustomMSL())
 			{
 				stringstream ss;
-				ss << "The use of " << (t == 1 ? "set_MSL=" : "set_AGL=") << (int) obj->GetCustomMSL() << '.' << abs((int) (obj->GetCustomMSL()*10.0)) % 10 << 'm';
-				ss << " is discouraged on the scenery gateway. Use only in well justified cases.";
-				msgs.push_back(validation_error_t(ss.str(), warn_object_custom_elev, who, parent_apt));
+				ss << "The use of " << (t == 1 ? "set_MSL=" : "set_AGL=") << (int)obj->GetCustomMSL() << '.' << abs((int)(obj->GetCustomMSL()*10.0)) % 10 << 'm';
+				if (t == 1)
+				{
+					ss << " is not allowed on the scenery gateway.";
+					msgs.push_back(validation_error_t(ss.str(), err_object_custom_elev, who, parent_apt));
+				}
+				else
+				{
+					ss << " is discouraged on the scenery gateway. Use only in well justified cases.";
+					msgs.push_back(validation_error_t(ss.str(), warn_object_custom_elev, who, parent_apt));
+				}
 			}
 		}
 	}

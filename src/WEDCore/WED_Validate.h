@@ -94,6 +94,7 @@ enum validate_error_t
 	err_heli_not_adequetely_long,
 	err_heli_not_adequetely_wide,
 	err_orthophoto_bad_uv_map,
+	err_object_custom_elev,
 	err_ramp_airlines_contains_non_lowercase_letters,
 	err_ramp_airlines_is_not_in_groups_of_three,
 	err_ramp_airlines_is_not_spaced_correctly,
