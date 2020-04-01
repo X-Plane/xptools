@@ -121,6 +121,7 @@ inline bool is_curved(int code) { return code == apt_lin_crv || code == apt_rng_
 static void ExportLinearPath(WED_AirportChain * chain, AptPolygon_t& poly)
 {
 	int n = chain->GetNumPoints();
+	poly.reserve(poly.size() + n);     // may need more (bezier handles), but its a good start
 	int l = n-1;
 	bool closed = chain->IsClosed();
 	set<int>	no_attrs;
@@ -177,7 +178,7 @@ static void ExportLinearPath(WED_AirportChain * chain, AptPolygon_t& poly)
 /**
  * Recursively walks the root tree to collect all elements of the specified type.
  * 
- * limited to a specific subset of nodes.  WHY not just copy keepers to elements?  
+ * limited to a specific subset of nodes.  WHY not just copy keepers to elements?
  * The resulting vector is IN HIERARCHY ORDER but only contains keepers.
  */
 
@@ -201,9 +202,9 @@ static void CollectAllElementsOfTypeInSet(WED_Thing * root, vector<T *> & elemen
 /**
  * "Exports" the list of nodes into the airport network
  */
-static void MakeNodeRouting(vector<IGISPoint *>& nodes, AptNetwork_t& net)
+static void MakeNodeRouting(const vector<IGISPoint *>& nodes, AptNetwork_t& net)
 {
-	for(vector<IGISPoint *>::iterator n = nodes.begin(); n != nodes.end(); ++n)
+	for(auto n = nodes.begin(); n != nodes.end(); ++n)
 	{
 		AptRouteNode_t nd;
 		// Node's ID is its index in file order	
@@ -221,26 +222,26 @@ static void MakeNodeRouting(vector<IGISPoint *>& nodes, AptNetwork_t& net)
  * "Exports" the list of edges into the airport network
  * @param nodes The list of all taxi route nodes in the airport (required to get accurate IDs for the nodes)
  */
-static void MakeEdgeRouting(vector<WED_TaxiRoute *>& edges, AptNetwork_t& net, vector<IGISPoint *> * nodes)
+static void MakeEdgeRouting(const vector<WED_TaxiRoute *>& edges, AptNetwork_t& net, const vector<IGISPoint *>& nodes)
 {
-	for(vector<WED_TaxiRoute *>::iterator e = edges.begin(); e != edges.end(); ++e)
+	for(auto e : edges)
 	{
 		AptRouteEdge_t ne;
 		AptServiceRoadEdge_t se;
-		(*e)->Export(ne,se);
-		bool is_truxiroute = (*e)->AllowTrucks();
+		e->Export(ne,se);
+		bool is_truxiroute = e->AllowTrucks();
 
 		AptEdgeBase_t * base = is_truxiroute ? (AptEdgeBase_t *) &se : (AptEdgeBase_t *) &ne;
 		
 		// Node's ID is its index in file order
-		vector<IGISPoint *>::iterator pos_src = std::find(nodes->begin(), nodes->end(), (*e)->GetNthPoint(0));
-		base->src = std::distance(nodes->begin(), pos_src);
+		auto pos_src = std::find(nodes.begin(), nodes.end(), e->GetNthPoint(0));
+		base->src = std::distance(nodes.begin(), pos_src);
 		
-		vector<IGISPoint *>::iterator pos_dst = std::find(nodes->begin(), nodes->end(), (*e)->GetNthPoint(1));
-		base->dst = std::distance(nodes->begin(), pos_dst);;
+		auto pos_dst = std::find(nodes.begin(), nodes.end(), e->GetNthPoint(1));
+		base->dst = std::distance(nodes.begin(), pos_dst);;
 		
 		Bezier2 b;
-		if((*e)->GetSide(gis_Geo, 0, b))
+		if(e->GetSide(gis_Geo, 0, b))
 		{
 			base->shape.push_back(make_pair(b.c1,true));
 			base->shape.push_back(make_pair(b.c2,true));
@@ -253,10 +254,10 @@ static void MakeEdgeRouting(vector<WED_TaxiRoute *>& edges, AptNetwork_t& net, v
 	}
 }
 
-void	AptExportRecursive(WED_Thing * what, AptVector& apts)
+void	AptExportRecursive(WED_Thing * what, AptVector& apts, vector<WED_TaxiRoute *>& edges)
 {
 	int holes, h;
-	
+
 	WED_Entity * ent = dynamic_cast<WED_Entity *>(what);
 	if (ent && ent->GetHidden()) return;
 
@@ -273,26 +274,12 @@ void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 		apts.push_back(AptInfo_t());
 		apt->Export(apts.back());
 		
-		vector<WED_TaxiRoute *> edges;			// These are in
-		vector<IGISPoint *>		nodes;			// hierarchy order for stability!
-		set<IGISPoint *>		wanted_nodes;
-
-		CollectRecursive(apt, back_inserter(edges), WED_TaxiRoute::sClass);
-
-		for(vector<WED_TaxiRoute *>::iterator e = edges.begin(); e != edges.end(); ++e)
-		{
-			IGISPoint* point_0 = (*e)->GetNthPoint(0);
-			IGISPoint* point_1 = (*e)->GetNthPoint(1);
-			DebugAssert(point_0 != NULL && point_1 != NULL);
-
-			wanted_nodes.insert(point_0);
-			wanted_nodes.insert(point_1);
-		}
-		
-		CollectAllElementsOfTypeInSet<IGISPoint>(apt, nodes, wanted_nodes);
-
-		MakeNodeRouting(nodes, apts.back().taxi_route);
-		MakeEdgeRouting(edges, apts.back().taxi_route, &nodes);
+		DebugAssert(edges.empty());
+	}
+	else if (cls == WED_TaxiRoute::sClass)
+	{
+		auto tr = static_cast<WED_TaxiRoute *>(what);
+		edges.push_back(tr);
 	}
 	else if (cls == WED_AirportBeacon::sClass)
 	{
@@ -431,7 +418,33 @@ void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 
 	int cc = what->CountChildren();
 	for (int i = 0; i < cc; ++i)
-		AptExportRecursive(what->GetNthChild(i), apts);
+		AptExportRecursive(what->GetNthChild(i), apts, edges);
+
+	if (cls == WED_Airport::sClass)
+	{
+		if (edges.size())
+		{
+			vector<IGISPoint *>		nodes;			// these are in hierarchy order for stability!
+			set<IGISPoint *>		wanted_nodes;
+			for (auto e : edges)
+			{
+				IGISPoint* point_0 = e->GetNthPoint(0);
+				IGISPoint* point_1 = e->GetNthPoint(1);
+				DebugAssert(point_0 != NULL && point_1 != NULL);
+
+				wanted_nodes.insert(point_0);
+				wanted_nodes.insert(point_1);
+			}
+
+			nodes.reserve(wanted_nodes.size());
+			auto * apt = static_cast<WED_Airport *>(what);
+			CollectAllElementsOfTypeInSet<IGISPoint>(apt, nodes, wanted_nodes);
+
+			MakeNodeRouting(nodes, apts.back().taxi_route);
+			MakeEdgeRouting(edges, apts.back().taxi_route, nodes);
+			edges.clear();
+		}
+	}
 }
 
 void	WED_AptExport(
@@ -439,7 +452,8 @@ void	WED_AptExport(
 				const char *	file_path)
 {
 	AptVector	apts;
-	AptExportRecursive(container, apts);
+	vector<WED_TaxiRoute *> edges;
+	AptExportRecursive(container, apts, edges);
 	WriteAptFile(file_path,apts, get_apt_export_version());
 }
 
@@ -449,7 +463,8 @@ void	WED_AptExport(
 				void *			ref)
 {
 	AptVector	apts;
-	AptExportRecursive(container, apts);
+	vector<WED_TaxiRoute *> edges;
+	AptExportRecursive(container, apts, edges);
 	WriteAptFileProcs(print_func, ref, apts, get_apt_export_version());
 }
 
@@ -676,10 +691,6 @@ static void add_to_bucket(WED_Thing * child, WED_Thing * apt, const string& name
 		//}
 
 	child->SetParent(b->second, b->second->CountChildren());
-}
-
-void recursive_delete_empty_groups(WED_Thing* group)
-{
 }
 
 void	WED_AptImport(

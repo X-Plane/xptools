@@ -1082,7 +1082,6 @@ void DSF_AccumPolygonWithHoles(
 // -1 = cull
 static int	DSF_HeightRangeRecursive(WED_Thing * what, double& out_msl_min, double& out_msl_max, const Bbox2& bounds)
 {
-	WED_ObjPlacement * obj;
 	IGISEntity * ent;
 	if((ent = dynamic_cast<IGISEntity *>(what)) != NULL)
 	{
@@ -1095,8 +1094,8 @@ static int	DSF_HeightRangeRecursive(WED_Thing * what, double& out_msl_min, doubl
 	sClass_t c = what->GetClass();
 	
 	if(c == WED_ObjPlacement::sClass)
-	if((obj = dynamic_cast<WED_ObjPlacement *>(what)) != NULL)
 	{
+		auto obj = static_cast<WED_ObjPlacement *>(what);
 		if(obj->HasCustomMSL())
 		{
 			out_msl_min = out_msl_max = obj->GetCustomMSL();
@@ -1154,25 +1153,7 @@ static int	DSF_ExportTileRecursive(
 						int							show_level,
 						DSF_export_info_t&		export_info )
 {
-	int real_thingies = 0;
-
-	WED_ObjPlacement * obj;
-	WED_FacadePlacement * fac;
-	WED_ForestPlacement * fst;
-	WED_StringPlacement * str;
-	WED_LinePlacement * lin;
-	WED_PolygonPlacement * pol;
-	WED_DrapedOrthophoto * orth;
-	WED_ExclusionZone * xcl;
-#if ROAD_EDITING
-	WED_RoadEdge * roa;
-#endif
-	WED_Airport * apt;
-
-	int idx;
-	string r;
-	
-	WED_Entity * ent = dynamic_cast<WED_Entity *>(what);
+	WED_Entity * ent = static_cast<WED_Entity *>(what);
 	if (!ent || ent->GetHidden())
 		return 0;
 
@@ -1184,24 +1165,22 @@ static int	DSF_ExportTileRecursive(
 		return 0;
 
 	Point2	centroid = ent_box.centroid();
-	bool centroid_ob = false;
-	if(centroid.x() < cull_bounds.xmin() ||
-	   centroid.y() < cull_bounds.ymin() ||
-	   centroid.x() >=cull_bounds.xmax() ||
-	   centroid.y() >=cull_bounds.ymax())
-	{
-		centroid_ob = true;
-	}
+	bool centroid_ob = centroid.x() < cull_bounds.xmin() ||	centroid.y() < cull_bounds.ymin() ||
+					   centroid.x() >= cull_bounds.xmax() || centroid.y() >= cull_bounds.ymax();
 
+	int real_thingies = 0;
+	int idx;
+	string r;
+	WED_Airport * apt;
 	sClass_t c = what->GetClass();
 
 	//------------------------------------------------------------------------------------------------------------
 	// OBJECT EXPORTER
 	//------------------------------------------------------------------------------------------------------------
 
-	if(c == 	WED_ObjPlacement::sClass)
-	if((obj = dynamic_cast<WED_ObjPlacement *>(what)) != NULL)
+	if(c == WED_ObjPlacement::sClass)
 	{
+		auto obj = static_cast<WED_ObjPlacement *>(what);
 		if(show_level == obj->GetShowLevel())
 		{
 			obj->GetResource(r);
@@ -1233,9 +1212,9 @@ static int	DSF_ExportTileRecursive(
 	// FACADE EXPORTER
 	//------------------------------------------------------------------------------------------------------------
 
-	if(c == 	WED_FacadePlacement::sClass)
-	if((fac = dynamic_cast<WED_FacadePlacement *>(what)) != NULL)
+	if(c == WED_FacadePlacement::sClass)
 	{
+		auto fac = static_cast<WED_FacadePlacement *>(what);
 		if(show_level == fac->GetShowLevel())
 		{
 			fac->GetResource(r);
@@ -1453,9 +1432,9 @@ static int	DSF_ExportTileRecursive(
 		// EXCLUSION EXPORTER
 		//------------------------------------------------------------------------------------------------------------
 
-		if(c == 	WED_ExclusionZone::sClass)
-		if((xcl = dynamic_cast<WED_ExclusionZone *>(what)) != NULL)
+		if(c == WED_ExclusionZone::sClass)
 		{
+			auto xcl = static_cast<WED_ExclusionZone *>(what);
 			set<int> xtypes;
 			xcl->GetExclusions(xtypes);
 			Point2 minp, maxp;
@@ -1494,9 +1473,9 @@ static int	DSF_ExportTileRecursive(
 		// FOREST EXPORTER
 		//------------------------------------------------------------------------------------------------------------
 
-		if(c == 	WED_ForestPlacement::sClass)
-		if((fst = dynamic_cast<WED_ForestPlacement *>(what)) != NULL)
+		if(c == WED_ForestPlacement::sClass)
 		{
+			auto fst = static_cast<WED_ForestPlacement *>(what);
 			fst->GetResource(r);
 			idx = io_table.accum_pol(r,show_level);
 
@@ -1578,9 +1557,9 @@ static int	DSF_ExportTileRecursive(
 		// OBJ STRING EXPORTER
 		//------------------------------------------------------------------------------------------------------------
 
-		if(c == 	WED_StringPlacement::sClass)
-		if((str = dynamic_cast<WED_StringPlacement *>(what)) != NULL)
+		if(c == WED_StringPlacement::sClass)
 		{
+			auto str = static_cast<WED_StringPlacement *>(what);
 			str->GetResource(r);
 			idx = io_table.accum_pol(r,show_level);
 			bool bez = WED_HasBezierSeq(str);
@@ -1618,9 +1597,9 @@ static int	DSF_ExportTileRecursive(
 		// OBJ LINE EXPORTER
 		//------------------------------------------------------------------------------------------------------------
 
-		if(c == 	WED_LinePlacement::sClass)
-		if((lin = dynamic_cast<WED_LinePlacement *>(what)) != NULL)
+		if(c == WED_LinePlacement::sClass)
 		{
+			auto lin = static_cast<WED_LinePlacement *>(what);
 			lin->GetResource(r);
 			idx = io_table.accum_pol(r,show_level);
 			bool bez = WED_HasBezierSeq(lin);
@@ -1702,9 +1681,9 @@ static int	DSF_ExportTileRecursive(
 		// DRAPED POLYGON
 		//------------------------------------------------------------------------------------------------------------
 
-		if(c == 	WED_PolygonPlacement::sClass)
-		if((pol = dynamic_cast<WED_PolygonPlacement *>(what)) != NULL)
+		if(c == WED_PolygonPlacement::sClass)
 		{
+			auto pol = static_cast<WED_PolygonPlacement *>(what);
 			pol->GetResource(r);
 			idx = io_table.accum_pol(r,show_level);
 			bool bez = WED_HasBezierPol(pol);
@@ -1758,10 +1737,9 @@ static int	DSF_ExportTileRecursive(
 		// UV-MAPPED DRAPED POLYGON
 		//------------------------------------------------------------------------------------------------------------
 
-		if(c == 	WED_DrapedOrthophoto::sClass)
-		if((orth = dynamic_cast<WED_DrapedOrthophoto *>(what)) != NULL)
+		if(c == WED_DrapedOrthophoto::sClass)
 		{
-			//Get the relative path
+			auto orth = static_cast<WED_DrapedOrthophoto *>(what);
 			orth->GetResource(r);
 #if WED
 			if(orth->IsNew())
@@ -2036,28 +2014,26 @@ static int	DSF_ExportTileRecursive(
 		// ROAD EXPORTER
 		//------------------------------------------------------------------------------------------------------------
 		
-		if ((roa = dynamic_cast<WED_RoadEdge*>(what)) != NULL)
+		if (c == WED_RoadEdge::sClass)
 		{
+			auto roa = static_cast<WED_RoadEdge*>(what);
 			string asset;
 			roa->GetResource(asset);
 			dsf_road_grid_helper * grid = io_table.accum_net(asset);
 			grid->add_segment(roa);
 			++real_thingies;
-			
 			return real_thingies;
 		}
 	#endif // ROAD_EDITING
 	}
 
-	if(c == 	WED_Airport::sClass)
+	if(c == WED_Airport::sClass)
 	{
-		if((apt = dynamic_cast<WED_Airport*>(what)) != NULL)
-		{
-			apt->GetICAO(r);
-			idx = io_table.accum_filter(r.c_str());
-			cbs->SetFilter_f(idx,writer);
-			io_table.set_filter(idx);
-		}
+		apt = static_cast<WED_Airport*>(what);
+		apt->GetICAO(r);
+		idx = io_table.accum_filter(r.c_str());
+		cbs->SetFilter_f(idx,writer);
+		io_table.set_filter(idx);
 	}
 	else apt = NULL;
 	
@@ -2227,18 +2203,13 @@ int DSF_ExportAirportOverlay(IResolver * resolver, WED_Airport  * apt, const str
 {
 	if(apt->GetHidden())
 		return 1;
-
-	//----------------------------------------------------------------------------------------------------
-
 	string icao;
 	apt->GetICAO(icao);
-
 	string dsf_path = package + icao + ".txt";
 
 	FILE * dsf = fopen(dsf_path.c_str(),"w");
 	if(dsf)
 	{
-
 		DSFCallbacks_t	cbs;
 		DSF2Text_CreateWriterCallbacks(&cbs);
 		print_funcs_s pf;
