@@ -2292,7 +2292,7 @@ validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane,
 	if(gExportTarget == wet_gateway)
 		mf = ReadCIFP();
 
-#if 1 //DEV
+#if DEV
 	auto t0 = std::chrono::high_resolution_clock::now();
 #endif
 	for(auto a : apts)
@@ -2305,10 +2305,10 @@ validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane,
 	ValidatePointSequencesRecursive(wrl, msgs,dynamic_cast<WED_Airport *>(wrl));
 	ValidateDSFRecursive(wrl, lib_mgr, msgs, dynamic_cast<WED_Airport *>(wrl));
 
-#if 1 //DEV
+#if DEV
 	auto t1 = std::chrono::high_resolution_clock::now();
 	chrono::duration<double> elapsed = t1-t0;
-	char c[50]; snprintf(c, 50, "Validation time was %.3lf s.", elapsed);
+	char c[50]; snprintf(c, 50, "Validation time was %.3lf s.", elapsed.count());
 	msgs.push_back(validation_error_t(c, warn_airport_impossible_size, wrl, nullptr));
 #endif
 	if (mf) MemFile_Close(mf);
