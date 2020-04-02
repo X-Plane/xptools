@@ -566,6 +566,14 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 				err_gateway_resource_private_or_depricated,	who, parent_apt));
 		}
 
+		if(FILE_get_file_extension(res) == "agp")
+		{
+			auto obj = dynamic_cast<WED_ObjPlacement *>(who);
+			if (obj && obj->HasCustomMSL())
+				msgs.push_back(validation_error_t("Custom elevations for .agp objects are not supported by X-plane.", 
+					gExportTarget == wet_gateway ? err_object_custom_elev :  warn_object_custom_elev, who, parent_apt));
+		}
+
 		string path;
 		if (GetSupportedType(res) != -1)  // strictly - only Draped Orthos may have that
 			path = gPackageMgr->ComputePath(lib_mgr->GetLocalPackage(), res);
