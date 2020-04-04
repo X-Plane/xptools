@@ -736,9 +736,6 @@ void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
 					{
 						if(res.out_status == cache_status_downloading)
 						{
-							DecorateGUIWindow("Getting version info for " + cur_airport.icao);
-							Redraw();
-							GLDraw();
 							this_thread::sleep_for(chrono::milliseconds(300));
 							res = gFileCache.request_file(mCacheRequest);
 						}
