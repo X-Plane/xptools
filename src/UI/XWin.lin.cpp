@@ -31,8 +31,7 @@ XWin::XWin(
 
 //	if (default_dnd)
 //		setAcceptDrops(true);
-
-	callback( window_cb );
+ 	callback( window_cb );
 	mInited = true;
 	printf("Xwin ctor\n");
 }
@@ -78,8 +77,13 @@ int XWin::handle(int e)
 {
 
 	/*handle menubar*/
-	if(mBar && Fl::event_y() <= mBar->h() && e == FL_PUSH)
-	   if(mBar->handle(e)){show();return 1;}
+	if(mBar &&  (Fl::event_y() <= mBar->h() && e == FL_PUSH ))
+		if(mBar->handle(e))
+		{
+			//FIXME:mroe this to get the window indicatingg active again
+			//hide();show();
+			return 1;
+		}
 
 	switch(e)
 	{
@@ -170,13 +174,12 @@ int XWin::handle(int e)
 
 		/*FOCUS events */
 		case FL_FOCUS:{
+			 Fl_Window::set_active();
 			 printf("FL_FOCUS \n");
-			 Activate(1);
 		}
 		return 1;
 		case FL_UNFOCUS:{
 			 printf("FL_UNFOCUS \n");
-			 Activate(0);
 		}
 		return 1;
 
@@ -246,6 +249,24 @@ static void clearOwnMenusRecursive(const Fl_Menu_Item * parent)
 	}
 }
 
+
+
+/**FLTK CALLBACK functs**/
+
+/*FLTK  menu callback*/
+void XWin::menu_cb(Fl_Widget *w, void * data)
+{
+	Fl_Menu_Bar *bar = (Fl_Menu_Bar*)w;		        // Get the menubar widget
+	const Fl_Menu_Item *item = bar->mvalue();		// Get the menu item that was picked
+	Fl_Menu_Item * m=(Fl_Menu_Item *) item;
+	printf("cb %d %s\n",item->first(),item->first()->label());
+	xmenu_cmd* cmd = (xmenu_cmd*) data;
+	if(!cmd) return;
+	printf("menu %d %d item %d cmd %d \n",item->value(),m->value(),cmd->menu,cmd->cmd);
+	XWin* win = (XWin*) bar->parent();
+	win->HandleMenuCmd(cmd->menu,cmd->cmd);
+}
+
 /*FLTK window about to close callback*/
 void XWin::window_cb(Fl_Widget *widget, void *)
 {
@@ -253,7 +274,17 @@ void XWin::window_cb(Fl_Widget *widget, void *)
 	if (!w->Closed() ) return;
 
 	if(w->mBar) clearOwnMenusRecursive(w->mBar->menu());
+
 	w->hide();
+}
+
+/*FLTK timeout callback*/
+void XWin::timeout_cb(void * data)
+{
+	if(!data) return;
+	XWin * w = (XWin *) data;
+	w->Timer();
+    Fl::repeat_timeout(w->mTimer,timeout_cb,w);
 }
 
 
@@ -264,7 +295,7 @@ void XWin::window_cb(Fl_Widget *widget, void *)
 void XWin::Activate(int inActive)
 {
 	printf("XWin::Activate %d\n",inActive);
-	if(inActive) this->activate();
+	inActive ? this->show() : this->clear_active();
 }
 
 void XWin::Resized(int inWidth, int inHeight)
@@ -327,21 +358,24 @@ bool XWin::GetActive(void) const
 
 void XWin::SetTimerInterval(double seconds)
 {
-//	 if (seconds)
-//	 {
-//	 	if (mTimer)
-//		{
-//			killTimer(mTimer);
-//			mTimer = startTimer(seconds);
-//		}
-//		else
-//		  mTimer = startTimer(seconds);
-//	 }
-//	 else
-//	 {
-//		killTimer(mTimer);
-//		mTimer=0;
-//	 }
+	if(seconds)
+	{
+		if(mTimer)
+		{
+			Fl::remove_timeout(timeout_cb,this);
+			Fl::add_timeout(seconds,timeout_cb,this);
+		}
+		else
+		{
+			Fl::add_timeout(seconds,timeout_cb,this);
+			mTimer=seconds;
+		}
+	}
+	else
+	{
+		Fl::remove_timeout(timeout_cb,this);
+		mTimer=0;
+	}
 }
 
 void XWin::GetBounds(int * outX, int * outY)
@@ -413,34 +447,19 @@ void XWin::ReceiveFilesFromDrag(const string& inFiles)
 			ReceiveFiles(files, 0, 0);
 }
 
-void XWin::menu_cb(Fl_Widget *w, void * data)
-{
-	Fl_Menu_Bar *bar = (Fl_Menu_Bar*)w;		        // Get the menubar widget
-	const Fl_Menu_Item *item = bar->mvalue();		// Get the menu item that was picked
-	Fl_Menu_Item * m=(Fl_Menu_Item *) item;
-	printf("cb %d %s\n",item->first(),item->first()->label());
-	xmenu_cmd* cmd = (xmenu_cmd*) data;
-	if(!cmd) return;
-	printf("menu %d %d item %s cmd %d \n",item->value(),m->value(),cmd->menu,cmd->cmd);
-	XWin* win = (XWin*) bar->parent();
-	win->HandleMenuCmd(cmd->menu,cmd->cmd);
-}
-
 xmenu XWin::GetMenuBar(void)
 {
 	if(!mBar)
 	{
-		mBar = new Fl_Menu_Bar(0,0,w(),labelsize()+10);
+		mBar = new Fl_Menu_Bar(0,0,w(),labelsize() + 10);
 	    add(mBar);
 		this->size(this->w(),this->h() + mBar->h());
-		mBar->labelfont(FL_HELVETICA);
+    	mBar->labelfont(FL_HELVETICA);
 		mBar->selection_color(FL_BLUE);
 		//mroe: thats to get an empty initalized menu
 		mBar->add("",0,nullptr,nullptr);
 		mBar->remove(0);
-		printf("mbar added\n");
 	}
-	printf("mbar\n");
 	return (Fl_Menu_Item *) mBar->menu();
 }
 

@@ -275,7 +275,7 @@ protected:
 	int		mDragging; // Button being dragged or -1 if none ;
 	int		mWantFakeUp;
 	int		mBlockEvents;
-	int		mTimer;
+    double	mTimer;
 	POINT	mMouse;
 
 
@@ -291,23 +291,10 @@ protected:
 	void draw();
 	int handle(int e);
 	void resize(int x,int y,int w,int h);
+
 	static void window_cb(Fl_Widget *widget, void * data);
 	static void menu_cb(Fl_Widget *w, void * data);
-//	void closeEvent(QCloseEvent* e);
-//	void resizeEvent(QResizeEvent* e);
-//	void mousePressEvent(QMouseEvent* e);
-//	void mouseReleaseEvent(QMouseEvent* e);
-//	void mouseMoveEvent(QMouseEvent* e);
-//	void wheelEvent(QWheelEvent* e);
-//	void keyPressEvent(QKeyEvent* e);
-//	void keyReleaseEvent(QKeyEvent* e);
-//	void dragEnterEvent(QDragEnterEvent* e);
-//	void dragLeaveEvent(QDragLeaveEvent* e);
-//	void dragMoveEvent(QDragMoveEvent* e);
-//	void dropEvent(QDropEvent* e);
-//	void focusInEvent(QFocusEvent* e);
-//	void focusOutEvent(QFocusEvent* e);
-//	void timerEvent(QTimerEvent *e);
+	static void timeout_cb(void * data);
 
 #endif
 
