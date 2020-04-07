@@ -46,7 +46,7 @@ int ci_char_traits::compare(const char* s1, const char* s2, size_t n)
 	return 0;
 }
 
-const char* ci_char_traits::find(const char* s, int n, char a)
+const char* ci_char_traits::find(const char* s, size_t n, char a)
 {
 	const int ua(std::toupper(a));
 	while (n-- != 0)

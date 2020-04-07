@@ -23,6 +23,10 @@
 
 #define FACADES 0
 
+#if IBM
+#include "glew.h"
+#endif
+
 #include "XObjDefs.h"
 #include "XWinGL.h"
 #include "ObjDraw.h"
@@ -606,6 +610,12 @@ void	XGrindInit(void)
 {
 	XObjWin * win = new XObjWin(NULL);
 	
+#if IBM
+	GLenum err = glewInit();
+	if (err != GLEW_OK)
+		AssertPrintf("Can not init GLEW: '%s'\n", glewGetErrorString(err));
+#endif
+
 	win->GetMenuBar();
 	win->ForceRefresh();
 	
