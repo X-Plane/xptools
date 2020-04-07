@@ -9,10 +9,11 @@ DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
 #FORCEREBUILD_SUFFIX := _ov
 
 ifdef PLAT_LINUX
-LDFLAGS		+= -rdynamic
-LDFLAGS		+= -Wl,--exclude-libs,ALL
-LIBS		+= -lQtCore -lQtGui -lQtOpenGL -lGL -lGLU -ldl -lpthread
+//LDFLAGS		+= -rdynamic
+//LDFLAGS		+= -Wl,--exclude-libs,ALL
 LIBS		+= -Wl,-Bdynamic
+LIBS		+= /usr/lib64/libfltk_gl.a  /usr/lib64/libfltk.a
+LIBS		+= -lGL -lGLU -lXrender -lXcursor -lXfixes -lXext -lXft -lfontconfig -lXinerama -pthread -ldl -lm -lX11
 endif #PLAT_LINUX
 
 ifdef PLAT_MINGW
@@ -50,8 +51,6 @@ SOURCES += ./src/Utils/PlatformUtils.lin.cpp
 SOURCES += ./src/UI/XWin.lin.cpp
 SOURCES += ./src/UI/XWinGL.lin.cpp
 SOURCES += ./src/Utils/glew.c
-MOCSRC += ./src/UI/XWin.h
-MOCSRC += ./src/UI/XWinGL.h
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN

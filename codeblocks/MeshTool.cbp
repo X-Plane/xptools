@@ -4,12 +4,12 @@
 	<Project>
 		<Option title="MeshTool" />
 		<Option makefile_is_custom="1" />
-		<Option execution_dir="../../../xptools" />
+		<Option execution_dir="../../xptools" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
 		<Build>
 			<Target title="Release-opt">
-				<Option output="../../build/Linux/release_opt/MeshTool" prefix_auto="0" extension_auto="0" />
+				<Option output="../build/Linux/release_opt/MeshTool" prefix_auto="0" extension_auto="0" />
 				<Option working_dir="~" />
 				<Option object_output="./" />
 				<Option type="1" />
@@ -28,7 +28,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="Debug">
-				<Option output="../../build/Linux/debug/Meshtool" prefix_auto="0" extension_auto="0" />
+				<Option output="../build/Linux/debug/Meshtool" prefix_auto="0" extension_auto="0" />
 				<Option working_dir="~" />
 				<Option object_output="./" />
 				<Option type="1" />
@@ -47,7 +47,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="(default)">
-				<Option output="../../build/Linux/debug/MeshTool" prefix_auto="0" extension_auto="0" />
+				<Option output="../build/Linux/debug/MeshTool" prefix_auto="0" extension_auto="0" />
 				<Option working_dir="~" />
 				<Option object_output="./" />
 				<Option type="1" />

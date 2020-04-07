@@ -1,95 +1,156 @@
 #include "XWinGL.h"
 
-glWidget::glWidget(QWidget *parent, XWinGL* xwin, QGLWidget* share) : QGLWidget(parent, share)
+glWidget::glWidget(XWinGL* xwin,int w,int h,Fl_Gl_Window* share) : Fl_Gl_Window(w,h)
 {
-	mXWinGL = xwin;
+   mXWinGL = xwin;
+
+   mode(FL_RGB | FL_ALPHA | FL_DEPTH | FL_DOUBLE);
+   resizable(this);
+   set_visible();
+   printf("glWidget ctor \n");
 }
 
 glWidget::~glWidget()
-{}
-
-
-void glWidget::resizeGL(int inWidth, int inHeight)
 {
-	if (mXWinGL->mInited) {
-		glViewport(0, 0, inWidth, inHeight);
-		mXWinGL->GLReshaped(inWidth, inHeight);
+   printf("glWidget dtor \n");
+}
+
+void glWidget::draw()
+{
+	if(!valid())
+	 {
+		int W= w();int H=h();
+        glLoadIdentity();
+		glViewport(0,0,W,H);
+		valid(1);
+	 }
+
+	if (mXWinGL->mInited)
+	{
+		mXWinGL->GLDraw();
 	}
 }
 
-void glWidget::paintGL(void)
+int glWidget::handle(int e)
 {
-	if (mXWinGL->mInited)
-		mXWinGL->GLDraw();
+     printf("glWidget::handle \n");
+	/* Glew init */
+    static int first = 1;
+    if (first && e == FL_SHOW && shown()) {
+
+      first = 0;
+      make_current();
+      int err= glewInit();
+	  printf(" glewInit %d\n",err);
+    }
+
+	/* DnD related events */
+	switch(e)
+	{
+		case FL_DND_ENTER:
+		case FL_DND_DRAG:
+		case FL_DND_LEAVE:
+			return 1;
+		case FL_DND_RELEASE:
+
+			return 1;
+		case FL_PASTE:{
+			 //printf("FL_PASTE %s\n",Fl::event_text());
+			 string files(Fl::event_text());
+			 mXWinGL->ReceiveFilesFromDrag(files);
+			return 1;}
+
+		default:
+		  return Fl_Gl_Window::handle(e);
+	}
 }
 
-void glWidget::initializeGL(void)
-{}
+
+void glWidget::resize(int X,int Y,int W,int H)
+{
+	printf("glWidget::resize \n");
+    Fl_Gl_Window::resize(0,mXWinGL->GetMenuBarHeight(),W,H-mXWinGL->GetMenuBarHeight());
+	glViewport(0,0,w(),h());
+    mXWinGL->GLReshaped(w(),h());
+}
+
+
 
 // void glWidget::focusInEvent(QFocusEvent* e)
 // {
 // 	if (mXWinGL->mInited && e->reason()==Qt::ActiveWindowFocusReason)
 // 		mXWinGL->Activate(1);
 // }
-// 
+//
 // void glWidget::focusOutEvent(QFocusEvent* e)
 // {
 // 	if (mXWinGL->mInited && e->reason()==Qt::ActiveWindowFocusReason)
 // 		mXWinGL->Activate(0);
 // }
 
-XWinGL::XWinGL(int default_dnd, XWinGL* inShare, QWidget* parent) : XWin(default_dnd, parent), mInited(false)
+XWinGL::XWinGL(int default_dnd, XWinGL* inShare) : XWin(default_dnd), mInited(false)
 {
-	mGlWidget = new glWidget(this, this, inShare?inShare->mGlWidget:0);
-	mGlWidget->setMouseTracking(true);
-	//mGlWidget->setFocusPolicy(Qt::StrongFocus);
-	setCentralWidget(mGlWidget);
-	layout()->update();
-	layout()->activate();
-	mGlWidget->updateGL();
-	XWin::SetVisible(true);
+
+	mGlWidget = new glWidget(this, 100,100,inShare?inShare->mGlWidget:0);
+
+//	mGlWidget->setMouseTracking(true);
+//	//mGlWidget->setFocusPolicy(Qt::StrongFocus);
+//	setCentralWidget(mGlWidget);
+//	layout()->update();
+//	layout()->activate();
+//	XWin::SetVisible(true);
 	XWinGL::mInited = true;
 	// Ben says: pixel packing expected to be "byte-packed" on all OSes - put here to mimic behavior of other
 	// OSes.  If someone wants to push this down into the implementation to factor it, go for it - I'm avoiding
 	// jamming stuff into code I don't have a ton of situational wwareness for.
    glPixelStorei	(GL_UNPACK_ALIGNMENT,1				);
-   glPixelStorei	(GL_PACK_ALIGNMENT  ,1				);	
-}
-
-XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX, int inY, int inWidth, int inHeight, XWinGL * inShare, QWidget* parent) : XWin(default_dnd, inTitle, inAttributes, inX, inY, inWidth, inHeight, parent), mInited(false)
-{
-	mGlWidget = new glWidget(this, this, inShare?inShare->mGlWidget:0);
-	mGlWidget->setMouseTracking(true);
-	//mGlWidget->setFocusPolicy(Qt::StrongFocus);
-	setCentralWidget(mGlWidget);
-	layout()->update();
-	layout()->activate();
-	mGlWidget->updateGL();
-	if (inAttributes & xwin_style_visible) {
-		XWin::SetVisible(true);
-	}
-	XWinGL::mInited = true;
-   glPixelStorei	(GL_UNPACK_ALIGNMENT,1				);
    glPixelStorei	(GL_PACK_ALIGNMENT  ,1				);
 }
 
+XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX, int inY, int inWidth, int inHeight, XWinGL * inShare) : XWin(default_dnd, inTitle, inAttributes, inX, inY, inWidth, inHeight), mInited(false)
+{
+	mGlWidget = new glWidget(this,inWidth,inHeight,inShare?inShare->mGlWidget:0);
+	this->Fl_Group::add(mGlWidget);
+	XWinGL::mInited = true;
+//	mGlWidget->setMouseTracking(true);
+//	//mGlWidget->setFocusPolicy(Qt::StrongFocus);
+//	setCentralWidget(mGlWidget);
+//	layout()->update();
+
+//	mGlWidget->updateGL();
+//	if (inAttributes & xwin_style_visible) {
+//		XWin::SetVisible(true);
+//	}
+
+
+
+   glPixelStorei	(GL_UNPACK_ALIGNMENT,1				);
+   glPixelStorei	(GL_PACK_ALIGNMENT  ,1				);
+ }
+
 XWinGL::~XWinGL()
 {
-	mGlWidget->makeCurrent();
+	mGlWidget->make_current();
 	delete mGlWidget;
 }
 
-void                    XWinGL::Resized(int w, int h)
-{}
+void XWinGL::Resized(int w, int h)
+{
+	printf("XWinGL::Resized\n");
+	mGlWidget->size(w,h);
+}
 
-void                    XWinGL::SetGLContext(void)
-{}
+void XWinGL::SetGLContext(void)
+{
+}
 
-void                    XWinGL::SwapBuffer(void)
-{}
+void XWinGL::SwapBuffer(void)
+{
+}
 
 void XWinGL::Update(XContext ctx)
 {
-	if (XWinGL::mInited)
-		mGlWidget->update();
+	printf("XWinGL::Update Inited=%d\n",this->mInited);
+
+    mGlWidget->redraw();
 }

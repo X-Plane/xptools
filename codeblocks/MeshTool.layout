@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<FileVersion major="1" minor="0" />
+	<ActiveTarget name="Release-opt" />
+	<File name="../../src/XESCore/Airports.cpp" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="22336" topLine="592" />
+		</Cursor>
+	</File>
+	<File name="../../src/XESCore/MapAlgs.cpp" open="0" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="64171" topLine="1842" />
+		</Cursor>
+	</File>
+	<File name="../../src/Utils/AssertUtils.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1148" topLine="19" />
+		</Cursor>
+	</File>
+	<File name="../../src/XESCore/Zoning.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="33375" topLine="1084" />
+		</Cursor>
+	</File>
+	<File name="../../src/Utils/PerfUtils.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3551" topLine="116" />
+		</Cursor>
+	</File>
+	<File name="../../src/XESCore/MapAlgs.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="9239" topLine="244" />
+		</Cursor>
+	</File>
+	<File name="../../src/XESCore/AptIO.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="10509" topLine="293" />
+		</Cursor>
+	</File>
+	<File name="../../src/Utils/STLUtils.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2314" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="../../src/XESCore/DSFBuilder.cpp" open="1" top="1" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="8977" topLine="282" />
+		</Cursor>
+	</File>
+	<File name="../../src/XESCore/DEMDefs.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="9193" topLine="200" />
+		</Cursor>
+	</File>
+	<File name="../../src/Utils/CompGeomUtils.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1198" topLine="252" />
+		</Cursor>
+	</File>
+	<File name="../../src/DSF/DSFLibWrite.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="35600" topLine="1069" />
+		</Cursor>
+	</File>
+	<File name="../../src/Utils/CompGeomDefs2.h" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="5014" topLine="113" />
+		</Cursor>
+	</File>
+	<File name="../../src/DSF/DSFLib.h" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="7312" topLine="166" />
+		</Cursor>
+	</File>
+	<File name="../../src/Utils/PlatformUtils.lin.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1174" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="../../src/XESCore/AptDefs.h" open="0" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="12899" topLine="489" />
+		</Cursor>
+	</File>
+	<File name="../../src/Utils/GISUtils.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="16260" topLine="588" />
+		</Cursor>
+	</File>
+	<File name="../../src/Utils/PlatformUtils.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3280" topLine="66" />
+		</Cursor>
+	</File>
+	<File name="../../src/XESCore/DEMAlgs.cpp" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3431" topLine="576" />
+		</Cursor>
+	</File>
+	<File name="../../src/MeshTool/MeshTool.cpp" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1158" topLine="96" />
+		</Cursor>
+	</File>
+	<File name="../../src/Utils/CompGeomUtils.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="5030" topLine="122" />
+		</Cursor>
+	</File>
+	<File name="../../src/MeshTool/MeshTool_Create.cpp" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="165" />
+		</Cursor>
+	</File>
+	<File name="../../src/Utils/GISUtils.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="5125" topLine="79" />
+		</Cursor>
+	</File>
+	<File name="../../src/XESCore/DEMDefs.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="9752" topLine="432" />
+		</Cursor>
+	</File>
+	<File name="../../src/DSF/DSFPointPool.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2977" topLine="78" />
+		</Cursor>
+	</File>
+	<File name="../../src/XESCore/NetAlgs.cpp" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="9240" topLine="283" />
+		</Cursor>
+	</File>
+	<File name="../../src/XESCore/DEMAlgs.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2467" topLine="46" />
+		</Cursor>
+	</File>
+	<File name="../../src/Utils/AssertUtils.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="38" />
+		</Cursor>
+	</File>
+</CodeBlocks_layout_file>

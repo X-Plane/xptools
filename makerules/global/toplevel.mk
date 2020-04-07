@@ -33,21 +33,21 @@ endif
 
 ifdef PLAT_LINUX
 
-MOCEXISTS	:= $(shell moc -E /dev/null > /dev/null 2>&1; echo $$?)
-MOCQT4EXISTS	:= $(shell moc-qt4 -E /dev/null > /dev/null 2>&1; echo $$?)
+#MOCEXISTS	:= $(shell moc -E /dev/null > /dev/null 2>&1; echo $$?)
+#MOCQT4EXISTS	:= $(shell moc-qt4 -E /dev/null > /dev/null 2>&1; echo $$?)
 
-ifneq ($(MOCEXISTS), 0)
-ifneq ($(MOCQT4EXISTS), 0)
-$(error neither 'moc' nor 'moc-qt4' found, install qt4-dev)
-endif
-endif
+#ifneq ($(MOCEXISTS), 0)
+#ifneq ($(MOCQT4EXISTS), 0)
+#$(error neither 'moc' nor 'moc-qt4' found, install qt4-dev)
+#endif
+#endif
 
-ifeq ($(MOCQT4EXISTS), 0)
-MOC	:= moc-qt4
-endif
-ifeq ($(MOCEXISTS), 0)
-MOC	:= moc
-endif
+#ifeq ($(MOCQT4EXISTS), 0)
+#MOC	:= moc-qt4
+#endif
+#ifeq ($(MOCEXISTS), 0)
+#MOC	:= moc
+#endif
 
 ifeq ($(ARCHITECTURE), x86_64)
 ifeq ($(cross), m32)
