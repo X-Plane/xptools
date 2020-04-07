@@ -465,7 +465,7 @@ void WED_GatewayImportDialog::Next()
 		mICAO_AptProvider.GetSelection(apts);
 		if(apts.size() > 1)
 		{
-			int max_imports = 50;   // some artifical limit to prevent the gateway being loaded by robots
+			int max_imports = 150;   // some artifical limit to prevent the gateway being loaded by robots
 			mVersions_VersionsSelected.clear();
 			mVersions_Vers.clear();
 			for(set<int>::iterator apt = apts.begin(); apt != apts.end(); ++apt)
@@ -869,25 +869,34 @@ void WED_GatewayImportDialog::SelectWithFile()
 	if (fn)
 	{
 		int	low_x, low_y, high_x, high_y;
-		char icao[12];
+		char *icao;
 
 		mICAO_AptProvider.SelectionStart(1);
 		mICAO_AptProvider.SelectGetLimits(low_x, low_y, high_x, high_y);
 		while (!feof(fn))
 		{
 			fgets(c, sizeof(c), fn);
-			if (sscanf(c, "%11s", icao) == 1)
-			{
-				for (int i = low_y; i <= high_y; ++i)
+			icao = c;
+			for(int i = 0; i < sizeof(c)-12; ++i)
+				if (c[i] == ' ') ++icao;
+				else break;
+				
+			icao[10] = 0;
+			for(int i = 0; i < 10; ++i)
+				if (icao[i] < '0' || (icao[i] > '9' && icao[i] < 'A') || icao[i] > 'Z') 
 				{
-					GUI_CellContent	content;
-					mICAO_AptProvider.GetCellContent(low_x, i, content);
-					if (content.text_val == icao)
-					{
-						mICAO_AptProvider.SelectionStart(0);
-						mICAO_AptProvider.SelectRange(low_x, i, high_x, i, 0);
-						break;
-					}
+					icao[i] = 0;
+					break;
+				}
+			for (int i = low_y; i <= high_y; ++i)
+			{
+				GUI_CellContent	content;
+				mICAO_AptProvider.GetCellContent(low_x, i, content);
+				if (content.text_val == icao)
+				{
+					mICAO_AptProvider.SelectionStart(0);
+					mICAO_AptProvider.SelectRange(low_x, i, high_x, i, 0);
+					break;
 				}
 			}
 		}
