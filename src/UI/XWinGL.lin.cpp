@@ -33,18 +33,7 @@ void glWidget::draw()
 
 int glWidget::handle(int e)
 {
-     printf("glWidget::handle \n");
-	/* Glew init */
-    static int first = 1;
-    if (first && e == FL_SHOW && shown()) {
-
-      first = 0;
-      make_current();
-      int err= glewInit();
-	  printf(" glewInit %d\n",err);
-    }
-
-	/* DnD related events */
+ 	/* DnD related events */
 	switch(e)
 	{
 		case FL_DND_ENTER:
@@ -151,6 +140,11 @@ void XWinGL::SwapBuffer(void)
 void XWinGL::Update(XContext ctx)
 {
 	printf("XWinGL::Update Inited=%d\n",this->mInited);
-
     mGlWidget->redraw();
 }
+
+void XWinGL::MakeGLCurrent()
+{
+    mGlWidget->make_current();
+}
+

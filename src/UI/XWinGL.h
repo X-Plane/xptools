@@ -169,6 +169,7 @@ private:
 	glWidget*		mGlWidget;
 public:
 	bool			mInited;
+	void			MakeGLCurrent();
 #endif
 
 };
