@@ -23,9 +23,16 @@
 
 #define FACADES 0
 
-#if IBM
-#include "glew.h"
+#if APL
+	#include <OpenGL/gl.h>
+	#include <OpenGL/glext.h>
+	#include <OpenGL/glu.h>
+#else
+	#include "glew.h"
+//	#include <GL/gl.h>
+//	#include <GL/glu.h>
 #endif
+
 
 #include "XObjDefs.h"
 #include "XWinGL.h"
@@ -44,16 +51,6 @@
 #include <time.h>
 #include "PerfUtils.h"
 
-#if APL
-	#include <OpenGL/gl.h>
-	#include <OpenGL/glext.h>
-	#include <OpenGL/glu.h>
-#else
-	#include <GL/gl.h>
-	#include <GL/glu.h>
-#endif
-
-//#include <glut.h>
 
 #if SOTHIS_TEST
 // XPopup testpopup;
@@ -610,7 +607,7 @@ void	XGrindInit(void)
 {
 	XObjWin * win = new XObjWin(NULL);
 	
-#if IBM
+#if !APL
 	GLenum err = glewInit();
 	if (err != GLEW_OK)
 		AssertPrintf("Can not init GLEW: '%s'\n", glewGetErrorString(err));
