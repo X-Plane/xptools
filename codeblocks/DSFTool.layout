@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<FileVersion major="1" minor="0" />
+	<ActiveTarget name="(default)" />
+	<File name="../src/Utils/AssertUtils.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2356" topLine="37" />
+		</Cursor>
+	</File>
+	<File name="../src/DSF/DSFLib.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="11016" topLine="344" />
+		</Cursor>
+	</File>
+	<File name="../src/DSF/DSFPointPool.h" open="0" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2035" topLine="28" />
+		</Cursor>
+	</File>
+	<File name="../src/DSFTools/DSF2Text.cpp" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="18749" topLine="510" />
+		</Cursor>
+	</File>
+	<File name="../src/DSFTools/DSFToolCmdLine.cpp" open="0" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1155" topLine="17" />
+		</Cursor>
+	</File>
+	<File name="../src/XPTools/version.h" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="249" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="../src/Utils/FileUtils.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="7461" topLine="256" />
+		</Cursor>
+	</File>
+	<File name="../src/DSF/DSFLibWrite.cpp" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="6424" topLine="202" />
+		</Cursor>
+	</File>
+	<File name="../src/DSFTools/DSF2Text.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1526" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="../src/DSF/DSFPointPool.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="16465" topLine="27" />
+		</Cursor>
+	</File>
+	<File name="../src/DSF/DSFLib.h" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="7312" topLine="166" />
+		</Cursor>
+	</File>
+</CodeBlocks_layout_file>
