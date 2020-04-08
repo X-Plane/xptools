@@ -157,7 +157,8 @@ enum validate_error_t
 	warn_facades_curved_only_type2,
 	warn_truckroutes_but_no_starts,
 	warn_ramp_start_size_implausible,
-	warn_runway_matching_cifp_mislocated
+	warn_runway_equipment_type_unlikely,
+	warn_runway_matching_cifp_mislocated,
 };
 
 // The validation error record stores a single validation problem for reporting.

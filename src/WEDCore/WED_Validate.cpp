@@ -1511,6 +1511,31 @@ static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& 
 						msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' is misaligned with its runway name.", err_rwy_misaligned_with_name, who,apt));
 				}
 		}
+
+		vector<WED_ATCRunwayUse *> uses;
+		if (apt != nullptr) CollectRecursive(apt, back_inserter(uses), IgnoreVisiblity, TakeAlways, WED_ATCRunwayUse::sClass);
+		for (WED_ATCRunwayUse *use : uses)
+		{
+			AptRunwayRule_t urule;
+			use->Export(urule);
+			int rwyNum = use->GetRunway();
+
+			std::pair<int, int> enum_1wy = rwy->GetRunwayEnumsOneway();
+
+			if (rwyNum == enum_1wy.first || rwyNum == enum_1wy.second)
+			{
+				if (((urule.equipment & atc_Heavies != 0) && rwy->GetLength() < 2300) ||
+					((urule.equipment & atc_Jets != 0) && rwy->GetLength() < 1800)
+					)
+				{
+					string txt("Runway ");
+					txt += ENUM_Desc(rwyNum);
+					txt += " is probably too short for the equipment types in flow rules.";
+
+					msgs.push_back(validation_error_t(txt, warn_runway_equipment_type_unlikely, use, apt));
+				}
+			}
+		}
 	}
 }
 
