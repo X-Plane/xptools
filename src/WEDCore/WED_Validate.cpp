@@ -836,10 +836,12 @@ static void ValidateOneATCRunwayUse(WED_ATCRunwayUse* use, validation_error_vect
 
 	AptInfo_t ainfo;
 	apt->Export(ainfo);
-    if(gExportTarget == wet_gateway && ainfo.has_atc_twr)
-	if(find(dep_freqs.begin(), dep_freqs.end(), urule.dep_freq) == dep_freqs.end())
+	if (gExportTarget == wet_gateway && ainfo.has_atc_twr)
 	{
-		msgs.push_back(validation_error_t("ATC runway use departure frequency is not matching any ATC departure frequency defined at this airport.", err_rwy_use_no_matching_dept_freq, use, apt));
+		if (find(dep_freqs.begin(), dep_freqs.end(), urule.dep_freq) == dep_freqs.end())
+		{
+			msgs.push_back(validation_error_t("ATC runway use departure frequency is not matching any ATC departure/tower frequency defined at this airport.", err_rwy_use_no_matching_dept_freq, use, apt));
+		}
 	}
 }
 
@@ -1116,13 +1118,22 @@ static void ValidateATC(WED_Airport* apt, validation_error_vector& msgs, set<int
 	CollectRecursive(apt, back_inserter<vector<WED_ATCFrequency*> >(ATC_freqs), IgnoreVisiblity, TakeAlways);
 
 	vector<int> departure_freqs;
-	for(vector<WED_ATCFrequency*>::iterator d = ATC_freqs.begin(); d != ATC_freqs.end(); ++d)
+	// If no departure frequencies are defined for this airport, try Tower.
+	for (int depFreqType : {atc_Departure, atc_Tower})
 	{
-		AptATCFreq_t freq_info;
-		(*d)->Export(freq_info);
-		if(ENUM_Import(ATCFrequency, freq_info.atc_type) == atc_Departure)
+		for (vector<WED_ATCFrequency *>::iterator d = ATC_freqs.begin(); d != ATC_freqs.end(); ++d)
 		{
-			departure_freqs.push_back(freq_info.freq);
+			AptATCFreq_t freq_info;
+			(*d)->Export(freq_info);
+			if (ENUM_Import(ATCFrequency, freq_info.atc_type) == depFreqType)
+			{
+				departure_freqs.push_back(freq_info.freq);
+			}
+		}
+
+		if (!departure_freqs.empty())
+		{
+			break;
 		}
 	}
 	surfWindVec_t covSurfWinds(360, 0);                  // winds up to this level have been covered by ATC flows
