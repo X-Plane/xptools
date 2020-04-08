@@ -972,6 +972,9 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 		int maxWindFixed = intlim(windData.dir_hi_degs_mag,0,359);
 		int thisFlowSpdFixed = intlim(windData.max_speed_knots,1,ATC_FLOW_MAX_WIND);
 		
+		if ((thisFlowSpdFixed == ATC_FLOW_MAX_WIND) && (minWindFixed == 0) && (maxWindFixed == 359))
+			msgs.push_back(validation_error_t("ATC wind rule has no effect (0-359, high speed).", warn_atc_rule_wind_pointless, wrule, apt));
+
 		// get all winds that the rules allow for this flow and and are still "available, i.e. not handled by prior flows already
 		if (minWindFixed < maxWindFixed)
 		{
@@ -1022,6 +1025,8 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 			
 		if(timeData.start_zulu > 0 || timeData.end_zulu < 2359)
 			isActive24_7 = false;
+		else
+			msgs.push_back(validation_error_t("ATC time rule has no effect (0000 - 2359).", warn_atc_rule_time_pointless, trule, apt));
 
 		int wrapped_end_zulu = timeData.start_zulu < timeData.end_zulu ? timeData.end_zulu : timeData.end_zulu + 2400;
 		if(wrapped_end_zulu - timeData.start_zulu < 100)

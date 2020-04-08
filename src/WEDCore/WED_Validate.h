@@ -151,6 +151,8 @@ enum validate_error_t
 	warn_atc_flow_never_reached,
 	warn_atc_flow_insufficient_coverage,
 	warn_atc_flow_short_time,
+	warn_atc_rule_time_pointless,
+	warn_atc_rule_wind_pointless,
 	warn_atcrwy_marking,
 	warn_facades_curved_only_type2,
 	warn_truckroutes_but_no_starts,
