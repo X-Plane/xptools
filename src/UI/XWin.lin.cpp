@@ -187,7 +187,8 @@ int XWin::handle(int e)
 		case FL_DND_RELEASE:
 		return 1;
 		case FL_PASTE:{
-			 char c[200];
+			 //TODO: can carry a list of filenames , can become much more
+			 char c[2048];
 			 strncpy(c, Fl::event_text(), sizeof(c));
 			 fl_decode_uri(c);
 			 printf("XWin::handle FL_PASTE Win %s\n",c);
@@ -413,8 +414,8 @@ void XWin::GetDesktop(int bounds[4])
 
 void XWin::GetMouseLoc(int * outX, int * outY)
 {
-	if (outX) *outX = Fl::event_x();
-	if (outY) *outY = Fl::event_y();
+	if (outX) *outX = mMouse.x;
+	if (outY) *outY = mMouse.y;
 }
 
 void XWin::ReceiveFilesFromDrag(const string& inFiles)
@@ -516,10 +517,7 @@ void XWin::CheckMenuItem(xmenu menu, int item, bool inCheck)
 
 void XWin::EnableMenuItem(xmenu menu, int item, bool inEnable)
 {
-
 	printf("enable \n");
-//   QAction * aact = menu->actions().at(item);
-//	 aact->setEnabled(inEnable);
 }
 
 void XWin::DrawMenuBar(void)

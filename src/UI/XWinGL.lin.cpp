@@ -45,7 +45,8 @@ int glWidget::handle(int e)
 
 			return 1;
 		case FL_PASTE:{
-			 char c[200];
+			  //TODO: can carry a list of filenames , can become much more
+			 char c[2048];
 			 strncpy(c, Fl::event_text(), sizeof(c));
 			 fl_decode_uri(c);
 			 printf("glWidget::handle FL_PASTE Win %s\n",c);
