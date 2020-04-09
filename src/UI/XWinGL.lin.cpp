@@ -1,4 +1,5 @@
 #include "XWinGL.h"
+#include <FL/filename.H>
 
 glWidget::glWidget(XWinGL* xwin,int w,int h,Fl_Gl_Window* share) : Fl_Gl_Window(w,h)
 {
@@ -44,9 +45,11 @@ int glWidget::handle(int e)
 
 			return 1;
 		case FL_PASTE:{
-			 //printf("FL_PASTE %s\n",Fl::event_text());
-			 string files(Fl::event_text());
-			 mXWinGL->ReceiveFilesFromDrag(files);
+			 char c[200];
+			 strncpy(c, Fl::event_text(), sizeof(c));
+			 fl_decode_uri(c);
+			 printf("glWidget::handle FL_PASTE Win %s\n",c);
+			 mXWinGL->ReceiveFilesFromDrag(c);
 			return 1;}
 
 		default:

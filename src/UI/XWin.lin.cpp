@@ -190,9 +190,11 @@ int XWin::handle(int e)
 		case FL_DND_RELEASE:
 		return 1;
 		case FL_PASTE:{
-			 printf("FL_PASTE Win %s\n",Fl::event_text());
-			 string files(Fl::event_text());
-			 ReceiveFilesFromDrag(files);
+			 char c[200];
+			 strncpy(c, Fl::event_text(), sizeof(c));
+			 fl_decode_uri(c);
+			 printf("XWin::handle FL_PASTE Win %s\n",c);
+			 ReceiveFilesFromDrag(c);
 		}
 		return 1;
 		case FL_SHORTCUT:
