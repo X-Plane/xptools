@@ -11,8 +11,8 @@ LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
 
 ifdef PLAT_LINUX
 #LDFLAGS	+= -nodefaultlibs
-LIBS		+= /usr/lib64/libfltk_gl.a -lGL /usr/lib64/libfltk.a -lXrender -lXcursor -lXfixes -lXext -lXft -lfontconfig -lXinerama -pthread -ldl -lm -lX11
-#LIBS		+= -lfltk -lfltk_gl -lpthread
+LIBS		+= -lfltk -lfltk_gl -lpthread
+//LIBS		+= /usr/lib64/libfltk_gl.a -lGL /usr/lib64/libfltk.a -lXrender -lXcursor -lXfixes -lXext -lXft -lfontconfig -lXinerama -pthread -ldl -lm -lX11
 endif #PLAT_LINUX
 
 ifdef PLAT_MINGW

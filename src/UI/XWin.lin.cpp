@@ -66,11 +66,8 @@ void XWin::draw()
 }
 
 
-//void XWin::timerEvent(QTimerEvent* e)
-//{
-//	Timer();
-//}
-//
+
+/**FLTK CALLBACK functs**/
 
 /*FLTK event callback*/
 int XWin::handle(int e)
@@ -251,10 +248,6 @@ static void clearOwnMenusRecursive(const Fl_Menu_Item * parent)
 	}
 }
 
-
-
-/**FLTK CALLBACK functs**/
-
 /*FLTK  menu callback*/
 void XWin::menu_cb(Fl_Widget *w, void * data)
 {
@@ -290,8 +283,10 @@ void XWin::timeout_cb(void * data)
 }
 
 
+/** xptool GUI   **/
+
 /* prevent pure virtual function calls. ben, we need to restructure this,
-** it hinders us using deep inheritance schemes, typically needed by Qt
+** it hinders us using deep inheritance schemes
 */
 
 void XWin::Activate(int inActive)
@@ -453,11 +448,14 @@ xmenu XWin::GetMenuBar(void)
 {
 	if(!mBar)
 	{
-		mBar = new Fl_Menu_Bar(0,0,w(),labelsize() + 10);
+		mBar = new Fl_Menu_Bar(0,0,w(),labelsize() + 16);
 	    add(mBar);
 		this->size(this->w(),this->h() + mBar->h());
-    	mBar->labelfont(FL_HELVETICA);
+		mBar->box(FL_FLAT_BOX );
+		mBar->down_box(FL_GTK_THIN_DOWN_BOX  );
 		mBar->selection_color(FL_BLUE);
+		//mBar->textfont(4);
+		mBar->textsize(14);
 		//mroe: thats to get an empty initalized menu
 		mBar->add("",0,nullptr,nullptr);
 		mBar->remove(0);
@@ -479,13 +477,13 @@ xmenu XWin::CreateMenu(xmenu parent, int item, const char * inTitle)
 	memset(new_menu,0,20*sizeof(Fl_Menu_Item ));
 
 	int idx= parent->insert(item,inTitle,0,nullptr,(void*)new_menu,FL_SUBMENU_POINTER);
+
 	return new_menu;
 }
 
 int XWin::AppendMenuItem(xmenu menu, const char * inTitle)
 {
 	if(!menu) return -1;
-
 	xmenu_cmd * cmd = new xmenu_cmd;
 
 	int idx = menu->add(inTitle,0,menu_cb,cmd);
@@ -504,7 +502,7 @@ int XWin::AppendSeparator(xmenu menu)
 	char buf[256];
 	strcpy(buf,last->label());
 	strcat(buf,"_");
-	return  menu->add(buf,0,NULL,NULL,FL_MENU_INVISIBLE|FL_MENU_DIVIDER);
+	return menu->add(buf,0,NULL,NULL,FL_MENU_INVISIBLE|FL_MENU_DIVIDER);
 }
 
 void XWin::CheckMenuItem(xmenu menu, int item, bool inCheck)
