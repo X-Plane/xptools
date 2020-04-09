@@ -1524,8 +1524,8 @@ static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& 
 
 			if (rwyNum == enum_1wy.first || rwyNum == enum_1wy.second)
 			{
-				if (((urule.equipment & atc_Heavies != 0) && rwy->GetLength() < 2300) ||
-					((urule.equipment & atc_Jets != 0) && rwy->GetLength() < 1800)
+				if (((urule.equipment & atc_traffic_heavies != 0) && rwy->GetLength() < 2250) ||
+					((urule.equipment & atc_traffic_jets != 0) && rwy->GetLength() < 1800)
 					)
 				{
 					string txt("Runway ");
