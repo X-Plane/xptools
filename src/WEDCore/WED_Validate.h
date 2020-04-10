@@ -150,16 +150,18 @@ enum validate_error_t
 	warn_airport_name_style,
 	warn_airport_no_rwys_sealanes_or_helipads,
 	warn_atc_freq_on_8p33khz_spacing,
+	warn_atc_flow_ceiling_unlikely,
 	warn_atc_flow_excessive_tailwind,
 	warn_atc_flow_never_reached,
 	warn_atc_flow_insufficient_coverage,
 	warn_atc_flow_short_time,
+	warn_atc_flow_visibility_unlikely,
 	warn_atcrwy_marking,
 	warn_facades_curved_only_type2,
 	warn_object_custom_elev,
 	warn_truckroutes_but_no_starts,
 	warn_ramp_start_size_implausible,
-	warn_runway_matching_cifp_mislocated
+	warn_runway_matching_cifp_mislocated,
 };
 
 // The validation error record stores a single validation problem for reporting.
