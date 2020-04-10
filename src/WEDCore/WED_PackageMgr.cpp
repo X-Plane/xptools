@@ -389,11 +389,20 @@ void		WED_PackageMgr::Rescan(bool alwaysBroadcast)
 	if (FILE_exists(logfile_name.c_str()) &&
 		FILE_read_file_to_string(logfile_name, logfile_contents) == 0)
 	{
-		size_t v_pos = logfile_contents.find("X-Plane");  // version string is the one behind the X-plane keyword
+		size_t v_pos = string::npos;
+		for (const char *pkg : { " X-Plane ", " Plane Maker " })
+		{
+			v_pos = logfile_contents.find(pkg);  // version string is the one behind the package name
+			if (v_pos != string::npos && v_pos < 100)
+			{
+				v_pos += strlen(pkg);
+				break;
+			}
+		}
 		if (v_pos != string::npos && v_pos < 100)
 		{
 			char v[16];
-			sscanf(logfile_contents.c_str()+v_pos+8,"%15s",v);
+			sscanf(logfile_contents.c_str()+v_pos,"%15s",v);
 			XPversion = v;
 		}
 	}
