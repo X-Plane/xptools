@@ -936,6 +936,10 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 		msgs.push_back(validation_error_t(string("ATC Flow '") + name + "' has a blank ICAO code for its visibility METAR source.", err_flow_blank_ICAO_for_METAR,  flow, apt));
 	if( (exp.visibility_sm < 0.0) ||  (exp.ceiling_ft < 0))
 		msgs.push_back(validation_error_t(string("ATC Flow '") + name + "' ceiling and visibility must be positive numbers.", err_flow_visibility_negative, flow, apt));
+	if (exp.visibility_sm > 20.0)
+		msgs.push_back(validation_error_t(string("ATC Flow '") + name + "' visibility is probably unintentionally high.", warn_atc_flow_visibility_unlikely, flow, apt));
+	if (exp.ceiling_ft > 10000.0)
+		msgs.push_back(validation_error_t(string("ATC Flow '") + name + "' ceiling is probably unintentionally high.", warn_atc_flow_ceiling_unlikely, flow, apt));
 
 	if(name.empty())
 		msgs.push_back(validation_error_t("An ATC Flow has a blank name. You must name every flow.", err_flow_blank_name, flow, apt));
