@@ -1,6 +1,45 @@
 #include "XWin.h"
 #include <FL/filename.H>
 #include "STLUtils.h"
+#include <FL/names.h>
+
+
+static void clearSubmenusRecursive(const Fl_Menu_Item *  menu)
+{
+	if(!menu) return;
+	int sz = menu->size();
+	printf("-> menu      %s %p\n",menu->label(),menu);
+	for ( int t=0; t < sz ; t++)
+	{
+		Fl_Menu_Item * item = (Fl_Menu_Item *) &menu[t];
+		printf("%d menu     %s %p\n",t,item->label(),item);
+		if(!item->label()) break;
+
+		if(item->flags&FL_SUBMENU_POINTER)
+		{
+			const Fl_Menu_Item * submenu = (const Fl_Menu_Item *) item->user_data();
+			clearSubmenusRecursive(submenu);
+			item->user_data(nullptr);
+		}
+		else
+		{
+			if(item->user_data_ != nullptr)
+			{
+				delete (xmenu_cmd *)item->user_data_;
+				item->user_data_ = nullptr;
+			}
+		}
+
+		if(item->text != nullptr)
+		{
+			free((void*)item->text);
+			item->text = nullptr;
+		}
+	}
+
+	printf("-> delete      %s %p\n",menu->label(),menu);
+	delete [] menu;
+}
 
 XWin::XWin(
 	int		default_dnd,
@@ -11,7 +50,7 @@ XWin::XWin(
 	int		inWidth,
 	int		inHeight)
 	: Fl_Window(inX,inY,inWidth,inHeight,inTitle),
-      mInited(false),mBar(nullptr)
+      mInited(false),mMenuBar(nullptr)
 {
 	mDragging    =-1;
 	mWantFakeUp  = 0;
@@ -32,11 +71,12 @@ XWin::XWin(
 //	if (default_dnd)
 //		setAcceptDrops(true);
  	callback( window_cb );
+	end();
 	mInited = true;
-	printf("Xwin ctor\n");
+	printf("XWin ctor\n");
 }
 
-XWin::XWin(int default_dnd) : Fl_Window(100,100), mInited(false),mBar(nullptr)
+XWin::XWin(int default_dnd) : Fl_Window(100,100), mInited(false),mMenuBar(nullptr)
 {
 	mDragging    =-1;
 	mWantFakeUp  = 0;
@@ -47,13 +87,17 @@ XWin::XWin(int default_dnd) : Fl_Window(100,100), mInited(false),mBar(nullptr)
 	mTimer=0;
 	resizable(this);
 	callback( window_cb );
+	end();
 	mInited = true;
 }
 
 XWin::~XWin()
 {
-	printf("Xwin dtor\n");
+	if(mMenuBar) delete mMenuBar;
 }
+
+
+/**FLTK CALLBACK functs**/
 
 /*FLTK draw callback*/
 void XWin::draw()
@@ -65,144 +109,186 @@ void XWin::draw()
 	}
 }
 
-
-
-/**FLTK CALLBACK functs**/
+inline int fltkBtnToXBtn(const int inButton )
+{
+	int btn = -1;
+	switch (inButton)
+	{
+		 case FL_LEFT_MOUSE	:  btn = 0; break;
+		 case FL_RIGHT_MOUSE : btn = 1; break;
+		 case FL_MIDDLE_MOUSE: btn = 2; break;
+	}
+	return btn;
+}
 
 /*FLTK event callback*/
 int XWin::handle(int e)
 {
+	string appnm("unknown");
+	if(label()) appnm = label();
+	//printf("%s  EVENT: %s(%d)\n", name,fl_eventnames[e], e);
 
 	/*handle menubar*/
-	if(mBar &&  (Fl::event_y() <= mBar->h() && e == FL_PUSH ))
-		if(mBar->handle(e))
-		{
-			//FIXME:mroe this to get the window indicatingg active again
-			//hide();show();
-			return 1;
-		}
-
-	switch(e)
+	if(mMenuBar &&  Fl::event_inside(mMenuBar))
 	{
-		/*MOUSE events */
-		case FL_PUSH:{
-			int btn = Fl::event_button()-1;
-			printf("push\n");
-			mMouse.x = Fl::event_x();
-			mMouse.y = Fl::event_y();
-
-			if(mBlockEvents) return 1;
-
-			if(mDragging == -1)
-			{
-				mDragging = btn;
-				ClickDown(mMouse.x, mMouse.y, btn);
-
-				if(mWantFakeUp)
-				{
-					int btn = mDragging;
-					mDragging = -1;
-					ClickUp(mMouse.x, mMouse.y, btn);
-					mWantFakeUp = 0;
-				}
-			}
-		}
-		return 1;
-		case FL_RELEASE:{
-			int btn =Fl::event_button()-1;
-			printf("release\n");
-			mMouse.x = Fl::event_x();
-			mMouse.y = Fl::event_y();
-
-			if(mBlockEvents) return 1;
-
-			if(mDragging == btn)
-			{
-				mDragging = -1;
-				ClickUp(mMouse.x, mMouse.y, btn);
-			}
-		}
-		return 1;
-		case FL_DRAG:{
- 			ClickDrag(Fl::event_x(),Fl::event_y(),mDragging);
-		}
-		 return 1;
-		case FL_MOVE:{
-
-			if(Fl::event_x() == mMouse.x && Fl::event_y() == mMouse.y) return 1;
-
-			mMouse.x = Fl::event_x();
-			mMouse.y = Fl::event_y();
-
-			ClickMove(mMouse.x, mMouse.y);
-		}
-		return 1;
-		case FL_MOUSEWHEEL:{
-			mMouse.x = Fl::event_x();
-			mMouse.y = Fl::event_y();
-      		MouseWheel(mMouse.x, mMouse.y, (Fl::event_dy() < 0) ? 1 : -1, 0);
-		}
-		return 1;
-		case FL_KEYDOWN:{
-			uint32_t utf32char = 0;
-			int l = Fl::event_length();
-	     	if (l > 0)
-			{
-				int len;
-				const char * p = Fl::event_text();
-				const char * e = p+l;
-				utf32char = fl_utf8decode(p,e,&l);
-			}
-			KeyPressed(utf32char,Fl::event_key(), 0, 0);
-		}
-		return 1;
-		case FL_KEYUP:{
-		}
-		return 1;
-		/*WIDGET events */
-		case FL_ACTIVATE:{
-			printf("FL_ACTIVATE \n");
-		}
-		return 1;
-		case FL_DEACTIVATE:{
-			printf("FL_DEACTIVATE \n");
-		}
-		return 1;
-
-		/*FOCUS events */
-		case FL_FOCUS:{
-			 Fl_Window::set_active();
-			 printf("FL_FOCUS \n");
-		}
-		return 1;
-		case FL_UNFOCUS:{
-			 printf("FL_UNFOCUS \n");
-		}
-		return 1;
-
-		/*DND events */
-		case FL_DND_ENTER:
-		case FL_DND_DRAG :
-		case FL_DND_LEAVE:
-		case FL_DND_RELEASE:
-		return 1;
-		case FL_PASTE:{
-			 //TODO: can carry a list of filenames , can become much more
-			 char c[2048];
-			 strncpy(c, Fl::event_text(), sizeof(c));
-			 fl_decode_uri(c);
-			 printf("XWin::handle FL_PASTE Win %s\n",c);
-			 ReceiveFilesFromDrag(c);
-		}
-		return 1;
-		case FL_SHORTCUT:
-
-		return 0;
-
-		/*OTHER Window events */
-		default:
-		   return Fl_Window::handle(e);
+		//mroe: if we detect a click on the menubar , thats the time before show something ,
+ 		//We can e.g. update the menu content here;
+		if(e == FL_PUSH  &&  mMenuBar->callback()) mMenuBar->do_callback();
+		int result  = mMenuBar->handle(e);
+	    //TODO:mroe:posibly solve the window activation bug here
+		// ...
+		if (result) return -1;
 	}
+
+   switch(e)
+   {
+
+	/*MOUSE events */
+
+	case FL_PUSH:{
+	  printf("FL_PUSH %s\n",appnm.c_str());
+
+	  int btn  = fltkBtnToXBtn(Fl::event_button());
+	  mMouse.x = Fl::event_x();
+	  mMouse.y = Fl::event_y();
+
+	  if(mBlockEvents) return 1;
+
+	  if(mDragging == -1)
+	  {
+		 mDragging = btn;
+		 ClickDown(mMouse.x, mMouse.y, btn);
+
+		 if(mWantFakeUp)
+		 {
+			int btn = mDragging;
+			mDragging = -1;
+			ClickUp(mMouse.x, mMouse.y, btn);
+			mWantFakeUp = 0;
+		 }
+	  }
+	}
+	return 1;
+	case FL_RELEASE:{
+	  printf("FL_RELEASE %s\n",appnm.c_str());
+
+	  int btn  = fltkBtnToXBtn(Fl::event_button());
+	  mMouse.x = Fl::event_x();
+	  mMouse.y = Fl::event_y();
+
+	  if(mBlockEvents) return 1;
+
+	  if(mDragging == btn)
+	  {
+		 mDragging = -1;
+		 ClickUp(mMouse.x, mMouse.y, btn);
+	  }
+	}
+	return 1;
+	case FL_DRAG:{
+
+		if(mBlockEvents) return 1;
+		if(fltkBtnToXBtn(Fl::event_button()) == mDragging)
+		{
+	  		ClickDrag(Fl::event_x(),Fl::event_y(),mDragging);
+		}
+	}
+	return 1;
+	case FL_MOVE:{
+
+	  if(Fl::event_x() == mMouse.x && Fl::event_y() == mMouse.y) return 1;
+
+	  mMouse.x = Fl::event_x();
+	  mMouse.y = Fl::event_y();
+
+	  ClickMove(mMouse.x, mMouse.y);
+	}
+	return 1;
+	case FL_MOUSEWHEEL:{
+	  mMouse.x = Fl::event_x();
+	  mMouse.y = Fl::event_y();
+		 MouseWheel(mMouse.x, mMouse.y, (Fl::event_dy() < 0) ? 1 : -1, 0);
+	}
+	return 1;
+	case FL_SHORTCUT:{
+	   //printf("FL_SHORTCUT \n");
+	   if(Fl::event_key() == FL_Escape) return 1;    //FLTK would close the window when ESC
+	}
+	return 1;
+	case FL_KEYDOWN:{
+	  uint32_t utf32char = 0;
+	  int l = Fl::event_length();
+	  if (l > 0)
+	  {
+		 int len;
+		 const char * p = Fl::event_text();
+		 const char * e = p+l;
+		 utf32char = fl_utf8decode(p,e,&l);
+	  }
+	  KeyPressed(utf32char,Fl::event_key(), 0, 0);
+	}
+	return 0;											//do not supress key strokes for others , we get no shortcuts otherwise
+	case FL_KEYUP:{
+	}
+	return 0;
+	/*WIDGET events */
+
+	case FL_ACTIVATE:{
+	  printf("FL_ACTIVATE %s\n",appnm.c_str());
+	   Activate(true);
+	}
+	return 1;
+	case FL_DEACTIVATE:{
+	  printf("FL_DEACTIVATE %s\n",appnm.c_str());
+	   Activate(false);
+	}
+	return 1;
+
+	/*FOCUS events */
+	case FL_FOCUS:{
+	   printf("FL_FOCUS %s\n",appnm.c_str());
+	   Activate(true);
+	}
+	return 1;
+	case FL_UNFOCUS:{
+	   printf("FL_UNFOCUS %s\n",appnm.c_str());
+	   Activate(false);
+	}
+	return 1;
+	case FL_ENTER:{
+	   printf("FL_ENTER %s\n",appnm.c_str());
+
+	}
+	return 0;
+	case FL_LEAVE:{
+	   printf("FL_LEAVE %s\n",appnm.c_str());
+
+	}
+	return 0;
+
+	/*DND events */
+	case FL_DND_ENTER:
+	case FL_DND_DRAG :
+	case FL_DND_LEAVE:
+	case FL_DND_RELEASE:
+	return 1;
+	case FL_PASTE:{
+	   //TODO: can carry a list of filenames , can become much more
+	   char c[2048];
+	   strncpy(c, Fl::event_text(), sizeof(c));
+	   fl_decode_uri(c);
+	   printf("XWin::handle FL_PASTE Win %s\n",c);
+	   ReceiveFilesFromDrag(c);
+	}
+	return 1;
+
+
+	/*OTHER Window events */
+	//default:
+	//   return Fl_Window::handle(e);
+	}
+ 	return Fl_Window::handle(e);
+	//return  0;
 }
 
 /*FLTK resize callback*/
@@ -213,40 +299,8 @@ void XWin::resize(int x,int y,int w,int h)
 	Fl_Widget::resize(x,y,w,h);
 	if(is_move_only || !mInited) return;
 	printf(" XWin::resize others \n");
-	if(mBar) mBar->size(w,mBar->h());
+	if(mMenuBar) mMenuBar->size(w,mMenuBar->h());
 	Resized(w,h);
-}
-
-
-static void clearOwnMenusRecursive(const Fl_Menu_Item * parent)
-{
-	for ( int t=0; t<parent->size(); t++)
-	{
-		const Fl_Menu_Item * menu = parent + t;
-
-		if(menu->label() && menu->flags&FL_SUBMENU_POINTER)
-		{
-			const Fl_Menu_Item * submenu = (const Fl_Menu_Item *) menu->user_data();
-			clearOwnMenusRecursive(submenu);
-
-			for (int i=0; i<submenu->size(); i++)
-			{
-				const Fl_Menu_Item * m = submenu + i;
-
-				if(!m->label()) break;
-
-				if(m->text != nullptr)
-					free((void*)m->text);
-
-				if(m->user_data_ != nullptr)
-					delete (xmenu_cmd *) m->user_data_;
-
-			}
-
-			delete [] submenu;
-			((Fl_Menu_Item *) menu)->user_data(NULL);
-		}
-	}
 }
 
 /*FLTK  menu callback*/
@@ -258,9 +312,17 @@ void XWin::menu_cb(Fl_Widget *w, void * data)
 	printf("cb %d %s\n",item->first(),item->first()->label());
 	xmenu_cmd* cmd = (xmenu_cmd*) data;
 	if(!cmd) return;
-	printf("menu %d %d item %d cmd %d \n",item->value(),m->value(),cmd->menu,cmd->cmd);
+	printf("menu %d %d item %d cmd %d \n",item->value(),m->value(),cmd->data,cmd->cmd);
 	XWin* win = (XWin*) bar->parent();
-	win->HandleMenuCmd(cmd->menu,cmd->cmd);
+	win->HandleMenuCmd((xmenu )cmd->data,cmd->cmd);
+}
+
+/*FLTK  menubar callback*/
+void XWin::menubar_cb(Fl_Widget *w, void * data)
+{
+	if(!w ) return;
+	printf("menubar_cb called \n");
+	Fl_Menu_Bar * bar = (Fl_Menu_Bar *) w;
 }
 
 /*FLTK window about to close callback*/
@@ -268,9 +330,6 @@ void XWin::window_cb(Fl_Widget *widget, void *)
 {
 	XWin * w = (XWin *)widget;
 	if (!w->Closed() ) return;
-
-	if(w->mBar) clearOwnMenusRecursive(w->mBar->menu());
-
 	w->hide();
 }
 
@@ -283,18 +342,11 @@ void XWin::timeout_cb(void * data)
     Fl::repeat_timeout(w->mTimer,timeout_cb,w);
 }
 
-
 /** xptool GUI   **/
 
 /* prevent pure virtual function calls. ben, we need to restructure this,
 ** it hinders us using deep inheritance schemes
 */
-
-void XWin::Activate(int inActive)
-{
-	printf("XWin::Activate %d\n",inActive);
-	inActive ? this->show() : this->clear_active();
-}
 
 void XWin::Resized(int inWidth, int inHeight)
 {
@@ -341,7 +393,16 @@ void XWin::UpdateNow(void)
 
 void XWin::SetVisible(bool visible)
 {
-  if(mInited)visible ? show() : hide();
+	printf("XWin::SetVisible visible=%d\n",visible);
+
+	if(visible)
+	{
+		show();show();
+	}
+	else
+	{
+		hide();
+	}
 }
 
 bool XWin::GetVisible(void) const
@@ -351,29 +412,24 @@ bool XWin::GetVisible(void) const
 
 bool XWin::GetActive(void) const
 {
-	return active();
+    return active_r();
 }
 
 void XWin::SetTimerInterval(double seconds)
 {
-	if(seconds)
-	{
-		if(mTimer)
-		{
-			Fl::remove_timeout(timeout_cb,this);
-			Fl::add_timeout(seconds,timeout_cb,this);
-		}
-		else
-		{
-			Fl::add_timeout(seconds,timeout_cb,this);
-			mTimer=seconds;
-		}
-	}
-	else
-	{
-		Fl::remove_timeout(timeout_cb,this);
-		mTimer=0;
-	}
+    if(seconds)
+    {
+        if(mTimer)
+            Fl::remove_timeout(timeout_cb,this);
+
+        Fl::add_timeout(seconds,timeout_cb,this);
+        mTimer=seconds;
+    }
+    else
+    {
+        Fl::remove_timeout(timeout_cb,this);
+        mTimer=0;
+    }
 }
 
 void XWin::GetBounds(int * outX, int * outY)
@@ -447,35 +503,40 @@ void XWin::ReceiveFilesFromDrag(const string& inFiles)
 
 xmenu XWin::GetMenuBar(void)
 {
-	if(!mBar)
-	{
-		mBar = new Fl_Menu_Bar(0,0,w(),labelsize() + 16);
-	    add(mBar);
-		this->size(this->w(),this->h() + mBar->h());
-		mBar->box(FL_FLAT_BOX );
-		mBar->down_box(FL_GTK_THIN_DOWN_BOX  );
-		mBar->selection_color(FL_BLUE);
-		//mBar->textfont(4);
-		mBar->textsize(14);
-		//mroe: thats to get an empty initalized menu
-		mBar->add("",0,nullptr,nullptr);
-		mBar->remove(0);
-	}
-	return (Fl_Menu_Item *) mBar->menu();
+   if(!mMenuBar)
+   {
+      mMenuBar = new Fl_Menu_Bar(0,0,w(),labelsize() + 16);
+      add(mMenuBar);
+      this->size(this->w(),this->h() + mMenuBar->h());
+	  mMenuBar->callback(menubar_cb);
+      mMenuBar->box(FL_FLAT_BOX );
+      mMenuBar->down_box(FL_GTK_THIN_DOWN_BOX);
+      mMenuBar->selection_color(FL_BLUE);
+      //mMenuBar->textfont(0);
+      mMenuBar->textsize(12);
+      //mroe: thats to get an empty initalized menu
+      //mMenuBar->add("test",0,nullptr,nullptr);
+      //mMenuBar->remove(0);
+      xmenu new_menu = new Fl_Menu_Item[MENU_SIZE * sizeof(Fl_Menu_Item )];
+      memset(new_menu,0,MENU_SIZE * sizeof(Fl_Menu_Item ));
+      mMenuBar->menu(new_menu);
+   }
+
+   return (Fl_Menu_Item *) mMenuBar->menu();
 }
 
 int XWin::GetMenuBarHeight(void)
 {
-	if (mBar != nullptr) return mBar->h();
+	if (mMenuBar != nullptr) return mMenuBar->h();
 	return 0;
 }
 
 xmenu XWin::CreateMenu(xmenu parent, int item, const char * inTitle)
 {
-	if(!parent) return NULL;
+	if(!parent || parent->size() > MENU_SIZE) return NULL;
 
-	xmenu new_menu = new Fl_Menu_Item[20*sizeof(Fl_Menu_Item )];
-	memset(new_menu,0,20*sizeof(Fl_Menu_Item ));
+	xmenu new_menu = new Fl_Menu_Item[MENU_SIZE * sizeof(Fl_Menu_Item )];
+	memset(new_menu,0,MENU_SIZE * sizeof(Fl_Menu_Item ));
 
 	int idx= parent->insert(item,inTitle,0,nullptr,(void*)new_menu,FL_SUBMENU_POINTER);
 
@@ -484,11 +545,12 @@ xmenu XWin::CreateMenu(xmenu parent, int item, const char * inTitle)
 
 int XWin::AppendMenuItem(xmenu menu, const char * inTitle)
 {
-	if(!menu) return -1;
-	xmenu_cmd * cmd = new xmenu_cmd;
+	if(!menu || menu->size() > MENU_SIZE) return -1;
+	xmenu_cmd * cmd = new xmenu_cmd();
 
 	int idx = menu->add(inTitle,0,menu_cb,cmd);
-	cmd->menu = menu;
+
+	cmd->data = menu;
 	cmd->cmd  = idx;
 
 	return idx;
@@ -496,13 +558,13 @@ int XWin::AppendMenuItem(xmenu menu, const char * inTitle)
 
 int XWin::AppendSeparator(xmenu menu)
 {
-	if(!menu) return -1;
+	if(!menu || menu->size() > MENU_SIZE) return -1;
 
 	Fl_Menu_Item * last = menu + (menu->size()-2);
     last->flags = last->flags|FL_MENU_DIVIDER;
 	char buf[256];
-	strcpy(buf,last->label());
-	strcat(buf,"_");
+	strcpy(buf,last->label());													//the item title must be unique
+	strcat(buf,"_");															// adding '_' to the last name does this
 	return menu->add(buf,0,NULL,NULL,FL_MENU_INVISIBLE|FL_MENU_DIVIDER);
 }
 
@@ -517,7 +579,8 @@ void XWin::CheckMenuItem(xmenu menu, int item, bool inCheck)
 
 void XWin::EnableMenuItem(xmenu menu, int item, bool inEnable)
 {
-	printf("enable \n");
+	/* #warning : XWin::EnableMenuItem not implemented yet */
+	fprintf(stderr,"XWin::EnableMenuItem not implemented\n");
 }
 
 void XWin::DrawMenuBar(void)
@@ -527,13 +590,17 @@ void XWin::DrawMenuBar(void)
 int XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int button, int current)
 {
 	if(!in_menu) return -1;
-//	QAction * aaction = in_menu->exec(this->mapToGlobal(QPoint(mouse_x,mouse_y)));
-//
-//	if(mDragging == button)
-//	{
-//		mWantFakeUp = 1;
-//	}
-//
-//	return in_menu->actions().indexOf(aaction);
-	return -1;
+
+	int idx = current;
+	const Fl_Menu_Item * item = in_menu->popup(mouse_x,mouse_y,0,0,mMenuBar);
+
+	if(item)
+	   idx = in_menu->size() - item->size();
+
+	if(mDragging == button)
+	{
+		mWantFakeUp = 1;
+	}
+
+	return  idx;
 }

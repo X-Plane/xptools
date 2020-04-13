@@ -42,6 +42,6 @@ void	GUI_LaunchURL(const char * url)
 		ShellExecuteW(NULL,L"open",convert_str_to_utf16(url).c_str(),NULL,NULL,SW_SHOWNORMAL);
 	#endif
 	#if LIN
-     	QDesktopServices::openUrl(QString::fromUtf8(url));
+     	//QDesktopServices::openUrl(QString::fromUtf8(url));
     #endif
 }

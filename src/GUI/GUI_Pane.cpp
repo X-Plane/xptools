@@ -41,7 +41,7 @@
 using std::find;
 
 #if LIN
-#include <QtGui/QApplication>
+#include <FL/Fl.H>
 #endif
 
 
@@ -72,14 +72,15 @@ GUI_KeyFlags GUI_Pane::GetModifiersNow(void)
 	return flags;
 #else
 	GUI_KeyFlags	flags = 0;
-	Qt::KeyboardModifiers modstate = QApplication::keyboardModifiers();
+	int modstate = Fl::event_state();
 
-	if (modstate & Qt::MetaModifier||modstate & Qt::AltModifier)
+	if (modstate & FL_ALT | modstate & FL_META)
 		flags |= gui_OptionAltFlag;
-	if (modstate & Qt::ShiftModifier)
+	if (modstate & FL_SHIFT)
 		flags |= gui_ShiftFlag;
-	if (modstate & Qt::ControlModifier)
+	if (modstate & FL_CTRL)
 		flags |= gui_ControlFlag;
+
 	return flags;
 #endif
 }
@@ -112,7 +113,7 @@ void		GUI_Pane::TrapFocus(void)
 #include <typeinfo>
 #endif
 void GUI_Pane::PrintDebugInfo(int indentLevel)
-{	
+{
 	//Creates a temporary string
 	string temp;
 	//gets the descriptor
@@ -143,7 +144,7 @@ void GUI_Pane::PrintDebugInfo(int indentLevel)
 		printf("%*s *Bounds(L,B,R,T): %d %d %d %d\n",indentLevel+1,"", tempBounds[0], tempBounds[1], tempBounds[2], tempBounds[3]);
 		printf("%*s *Visible Bounds(L,B,R,T): %d %d %d %d \n",indentLevel+1,"", tempVisBounds[0], tempVisBounds[1], tempVisBounds[2], tempVisBounds[3]);
 		printf("%*s *Sticky(L,B,R,T): %.1f %.1f %.1f %.1f \n", indentLevel+1,"", tempSticky[0],tempSticky[1],tempSticky[2],tempSticky[3]);
-	
+
 		//The recursive part
 		//If this pane has children
 		if(mChildren.size() != 0)
@@ -162,7 +163,7 @@ void GUI_Pane::PrintDebugInfo(int indentLevel)
 
 
 void GUI_Pane::FPrintDebugInfo(FILE * pFile, int indentLevel)
-{	
+{
 	//Creates a temporary string
 	string temp;
 	//gets the descriptor
@@ -193,7 +194,7 @@ void GUI_Pane::FPrintDebugInfo(FILE * pFile, int indentLevel)
 		fprintf(pFile,"%*s *Bounds(L,B,R,T): %d %d %d %d\n",indentLevel+1,"", tempBounds[0], tempBounds[1], tempBounds[2], tempBounds[3]);
 		fprintf(pFile,"%*s *Visible Bounds(L,B,R,T): %d %d %d %d \n",indentLevel+1,"", tempVisBounds[0], tempVisBounds[1], tempVisBounds[2], tempVisBounds[3]);
 		fprintf(pFile,"%*s *Sticky(L,B,R,T): %.1f %.1f %.1f %.1f \n", indentLevel+1,"", tempSticky[0],tempSticky[1],tempSticky[2],tempSticky[3]);
-	
+
 		//The recursive part
 		//If this pane has children
 		if(mChildren.size() != 0)
@@ -208,7 +209,7 @@ void GUI_Pane::FPrintDebugInfo(FILE * pFile, int indentLevel)
 		{
 			return;
 		}
-		
+
 }
 
 void GUI_Pane::DrawWireFrame(int realBounds[4], bool prinf)

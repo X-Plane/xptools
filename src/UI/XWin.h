@@ -62,6 +62,8 @@
 #include <FL/Fl_Window.H>
 #include <FL/Fl_Menu_Bar.H>
 #include <FL/Fl_Menu_.H>
+
+#define MENU_SIZE 30
 #define xmenu Fl_Menu_Item *
 enum {
   _NET_WM_STATE_REMOVE,
@@ -75,9 +77,9 @@ typedef struct tagPOINT {
 } POINT, *PPOINT;
 
 typedef struct t_xmenu_cmd{
-  Fl_Menu_Item * menu;
   int cmd;
-} xmenu_cmd,*x_menu_cmd;
+  void * data;
+} xmenu_cmd, *x_menu_cmd;
 
 #endif
 
@@ -280,7 +282,7 @@ protected:
 
 
 public:
-	Fl_Menu_Bar * mBar;
+	Fl_Menu_Bar * mMenuBar;
 	const Fl_Menu_Item * lastItem;
 	int GetMenuBarHeight(void);
 	virtual void ReceiveFilesFromDrag(const string& inFiles);
@@ -294,6 +296,7 @@ protected:
 
 	static void window_cb(Fl_Widget *widget, void * data);
 	static void menu_cb(Fl_Widget *w, void * data);
+	static void menubar_cb(Fl_Widget *w, void * data);
 	static void timeout_cb(void * data);
 
 #endif

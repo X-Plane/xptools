@@ -20,8 +20,7 @@
  * THE SOFTWARE.
  *
  */
-#include <FL/Fl.H>
-#include <FL/fl_ask.H>
+
 #include "PlatformUtils.h"
 #include <stdio.h>
 #include <sys/stat.h>
@@ -29,6 +28,9 @@
 #include <cstring>
 #include <string>
 #include <linux/limits.h>
+#include <FL/Fl.H>
+#include <FL/fl_ask.H>
+#include <Fl_Native_File_Chooser.H>
 
 string GetApplicationPath()
 {
@@ -92,6 +94,8 @@ string GetTempFilesFolder()
 	return string(temp_path);
 }
 
+static Fl_Native_File_Chooser gFileDialog;
+
 int		GetFilePathFromUser(
 					int					inType,
 					const char * 		inPrompt,
@@ -100,44 +104,25 @@ int		GetFilePathFromUser(
 					char * 				outFileName,
 					int					inBufSize)
 {
-//	switch(inType)
-//	{
-//		case getFile_Open:
-//		{
-//			QString fileName = QFileDialog::getOpenFileName(0,QString::fromUtf8(inPrompt));
-//			if (!fileName.length())
-//				return 0;
-//			else {
-//				::strncpy(outFileName, fileName.toUtf8().constData(), inBufSize);
-//				return 1;
-//			}
-//		}
-//		case getFile_Save:
-//		{
-//			QString fileName = QFileDialog::getSaveFileName(0,QString::fromUtf8(inPrompt));
-//			if (!fileName.length())
-//				return 0;
-//			else {
-//				::strncpy(outFileName, fileName.toUtf8().constData(), inBufSize);
-//				return 1;
-//			}
-//		}
-//		case getFile_PickFolder:
-//		{
-//			QString dir = QFileDialog::getExistingDirectory(0, QString::fromUtf8(inPrompt),
-//			                                                "", QFileDialog::ShowDirsOnly);
-//			if (!dir.length())
-//				return 0;
-//			else {
-//				if(dir.endsWith ('/'))
-//						dir.truncate(dir.size()-1);
-//				::strncpy(outFileName, dir.toUtf8().constData(), inBufSize);
-//				return 1;
-//			}
-//		}
-//		default:
-//
-//	}
+
+    gFileDialog.title(inPrompt);
+
+	switch(inType)
+	{
+		case getFile_Open:       gFileDialog.type(Fl_Native_File_Chooser::BROWSE_FILE);      break;
+		case getFile_Save:       gFileDialog.type(Fl_Native_File_Chooser::BROWSE_SAVE_FILE); break;
+		case getFile_PickFolder: gFileDialog.type(Fl_Native_File_Chooser::BROWSE_DIRECTORY); break;
+
+        default: return 0;
+
+    }
+
+    if( gFileDialog.show() == 0 )
+    {
+        ::strncpy(outFileName,gFileDialog.filename(),inBufSize);
+        return 1;
+    }
+
 	return 0;
 }
 
@@ -147,49 +132,52 @@ char *	GetMultiFilePathFromUser(
 					int					inID)
 {
 
-//	QStringList fileNames = QFileDialog::getOpenFileNames(0,QString::fromUtf8(inPrompt));
-//
-//	vector<string> outFiles;
-//	if (fileNames.empty()) return NULL;
-//	for(int i=0; i < fileNames.size(); ++i)
-//	{
-//		if(!fileNames.at(i).isEmpty())
-//			outFiles.push_back(fileNames[i].toUtf8().constData());
-//	}
-//
-//	if(outFiles.size() < 1) return NULL;
-//
-//	int buf_size = 1;
-//	for(int i = 0; i < outFiles.size(); ++i)
-//		buf_size += (outFiles[i].size() + 1);
-//
-//	char * ret = (char *) malloc(buf_size);
-//	char * p = ret;
-//
-//	for(int i = 0; i < outFiles.size(); ++i)
-//	{
-//		strcpy(p, outFiles[i].c_str());
-//		p += (outFiles[i].size() + 1);
-//	}
-//	*p = 0;
+    gFileDialog.title(inPrompt);
+    gFileDialog.type(Fl_Native_File_Chooser::BROWSE_MULTI_FILE);
 
-	return NULL;
+    if( gFileDialog.show() != 0 ) return NULL;
+
+    int file_cnt(gFileDialog.count());
+    if(file_cnt == 0 )  return NULL;
+
+    vector<string> outFiles;
+    for (int i=0; i < file_cnt; ++i )
+	{
+		if(strlen(gFileDialog.filename(i)) > 0)
+			outFiles.push_back(gFileDialog.filename(i));
+	}
+
+	int buf_size = 1;
+	for(int i = 0; i < outFiles.size(); ++i)
+    {
+		buf_size += (outFiles[i].size() + 1);
+    }
+	char * ret = (char *) malloc(buf_size);
+	char * p = ret;
+
+	for(int i = 0; i < outFiles.size(); ++i)
+	{
+		strcpy(p, outFiles[i].c_str());
+		p += (outFiles[i].size() + 1);
+	}
+	*p = 0;
+
+    return ret ;
 }
 
-void	DoUserAlert(const char * inMsg)
+void DoUserAlert(const char * inMsg)
 {
 	fl_message_hotspot(false);
-
 	fl_alert(inMsg);
 }
 
-void	ShowProgressMessage(const char * inMsg, float * inProgress)
+void ShowProgressMessage(const char * inMsg, float * inProgress)
 {
 	if(inProgress)	fprintf(stderr,"%s: %f\n",inMsg,100.0f * *inProgress);
 	else			fprintf(stderr,"%s\n",inMsg);
 }
 
-int		ConfirmMessage(const char * inMsg, const char * proceedBtn, const char * cancelBtn)
+int ConfirmMessage(const char * inMsg, const char * proceedBtn, const char * cancelBtn)
 {
 	fl_message_hotspot(false);
 	return fl_choice(inMsg,proceedBtn,cancelBtn,0);
@@ -197,19 +185,7 @@ int		ConfirmMessage(const char * inMsg, const char * proceedBtn, const char * ca
 
 int DoSaveDiscardDialog(const char * inMessage1, const char * inMessage2)
 {
-//	int res = QMessageBox::question(0, QString::fromUtf8(inMessage1), QString::fromUtf8(inMessage2),
-//	QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
-//	QMessageBox::Cancel);
-//	switch (res)
-//	{
-//		case QMessageBox::Save:
-//			return close_Save;
-//		case QMessageBox::Discard:
-//			return close_Discard;
-//		case QMessageBox::Cancel:
-//		default:
-//			return close_Cancel;
-//	}
-	return 1;
+	fl_message_hotspot(false);
+	return fl_choice(inMessage2,"Save","Discard","Cancel");
 }
 

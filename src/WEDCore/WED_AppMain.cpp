@@ -113,7 +113,6 @@ HINSTANCE gInstance = NULL;
 #include "initializer.h"
 #endif
 
-
 #if IBM
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 #else
@@ -129,7 +128,7 @@ int main(int argc, char * argv[])
 #if LIN
 	Initializer linit(&argc, &argv, false);
 #endif // LIN
-	
+
 #if LIN || APL
 	WED_Application	app(argc, argv);
 #else // Windows
@@ -155,11 +154,11 @@ int main(int argc, char * argv[])
 	// sustain OpenGL.
 
 	WED_AboutBox * about = new WED_AboutBox(&app);
+	about->show(argc,argv);
 	WED_MakeMenus(&app);
-	#if LIN
-	//mroe: resize after update the menubar
-	about->Resize(about->centralWidget()->width(),about->centralWidget()->height());
-	#endif
+	//about->hide();
+
+
 	WED_StartWindow * start = new WED_StartWindow(&app);
 
 	start->Show();
@@ -197,9 +196,9 @@ int main(int argc, char * argv[])
 	setlocale(LC_ALL,"C");
 	#if LIN
 	//TODO:mroe: maybe we can set this to LC_ALL for all other OS's .
-	//In the case of linux we must , since standard C locale is not utf-8	
+	//In the case of linux we must , since standard C locale is not utf-8
 	setlocale(LC_CTYPE,"en_US.UTF-8");
-	//mroe: for now , every CString holding a filepath must be wrapped by QString::fromUtf8() to convert to QString.	
+	//mroe: for now , every CString holding a filepath must be wrapped by QString::fromUtf8() to convert to QString.
 	//(mainly in the dialogs and the window caption to show it to the user)
 	//Setting this global for the app could be the better solution.
 	//QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));

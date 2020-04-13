@@ -57,9 +57,9 @@ inline int OGL2Client_Y(int y, HWND w) { RECT c; GetClientRect(w,&c); return c.b
 #define mWindow 0
 
 inline int GUI_Window::Client2OGL_X(int x, void* w) { return x; }
-inline int GUI_Window::Client2OGL_Y(int y, void* w) { return (this->size().height() - y ); }
+inline int GUI_Window::Client2OGL_Y(int y, void* w) { return (this->h() - y ); }
 inline int GUI_Window::OGL2Client_X(int x, void* w) { return x; }
-inline int GUI_Window::OGL2Client_Y(int y, void* w) { return (this->size().height() - y ); }
+inline int GUI_Window::OGL2Client_Y(int y, void* w) { return (this->h() - y ); }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 // LIN DND
@@ -69,72 +69,72 @@ inline int GUI_Window::OGL2Client_Y(int y, void* w) { return (this->size().heigh
 //TODO:mroe we are shipping no data yet !
 //			providing calls in DragData seems sufficient for WED
 
-void GUI_Window::dragEnterEvent(QDragEnterEvent* e)
-{
-	int x = OGL2Client_X(e->pos().x(),mWindow);
-	int y = OGL2Client_Y(e->pos().y(),mWindow);
-
-	GUI_DragData_Adapter  adapter(NULL);
-	GUI_DragOperation allowed;
-	allowed = (this->InternalDragEnter(x,y,&adapter,
-				OP_LIN2GUI(e->possibleActions()),
-				OP_LIN2GUI(e->proposedAction())));
-
-	this->mInDrag = 1;
-	this->SetTimerInterval(0.05);
-	this->mLastDragX = x;
-	this->mLastDragY = y;
-
-	if (allowed == gui_Drag_None)
-		e->setDropAction(Qt::IgnoreAction);
-	//FIXME:mroe:if we comein from outside , drop is not allowed from pane
-	//untill the targetrect riched , anyhow we must allow the drag here .
-	e->acceptProposedAction();
-}
-
-void GUI_Window::dragMoveEvent(QDragMoveEvent* e)
-{
-	int x = OGL2Client_X(e->pos().x(),mWindow);
-	int y = OGL2Client_Y(e->pos().y(),mWindow);
-
-	GUI_DragData_Adapter  adapter(NULL);
-	GUI_DragOperation allowed;
-	allowed = (this->InternalDragOver(x,y,&adapter,
-				OP_LIN2GUI(e->possibleActions()),
-				OP_LIN2GUI(e->proposedAction())));
-
-	this->mLastDragX = x;
-	this->mLastDragY = y;
-
-	if (allowed == gui_Drag_None)
-		e->setDropAction(Qt::IgnoreAction);
-	else
-		e->acceptProposedAction();
-}
-
-void GUI_Window::dragLeaveEvent(QDragLeaveEvent* e)
-{
-	this->mInDrag = 0;
-	this->SetTimerInterval(0);
-	this->InternalDragLeave();
-}
-
-void GUI_Window::dropEvent(QDropEvent* e)
-{
-	int x = OGL2Client_X(e->pos().x(),mWindow);
-	int y = OGL2Client_Y(e->pos().y(),mWindow);
-
-	this->mInDrag = 0;
-	this->SetTimerInterval(0);
-
-	GUI_DragData_Adapter  adapter(NULL);
-	GUI_DragOperation allowed;
-	allowed = (this->InternalDrop(x,y,&adapter,
-				OP_LIN2GUI(e->possibleActions()),
-				OP_LIN2GUI(e->proposedAction())));
-
-	this->InternalDragLeave();
-}
+//void GUI_Window::dragEnterEvent(QDragEnterEvent* e)
+//{
+//	int x = OGL2Client_X(e->pos().x(),mWindow);
+//	int y = OGL2Client_Y(e->pos().y(),mWindow);
+//
+//	GUI_DragData_Adapter  adapter(NULL);
+//	GUI_DragOperation allowed;
+//	allowed = (this->InternalDragEnter(x,y,&adapter,
+//				OP_LIN2GUI(e->possibleActions()),
+//				OP_LIN2GUI(e->proposedAction())));
+//
+//	this->mInDrag = 1;
+//	this->SetTimerInterval(0.05);
+//	this->mLastDragX = x;
+//	this->mLastDragY = y;
+//
+//	if (allowed == gui_Drag_None)
+//		e->setDropAction(Qt::IgnoreAction);
+//	//FIXME:mroe:if we comein from outside , drop is not allowed from pane
+//	//untill the targetrect riched , anyhow we must allow the drag here .
+//	e->acceptProposedAction();
+//}
+//
+//void GUI_Window::dragMoveEvent(QDragMoveEvent* e)
+//{
+//	int x = OGL2Client_X(e->pos().x(),mWindow);
+//	int y = OGL2Client_Y(e->pos().y(),mWindow);
+//
+//	GUI_DragData_Adapter  adapter(NULL);
+//	GUI_DragOperation allowed;
+//	allowed = (this->InternalDragOver(x,y,&adapter,
+//				OP_LIN2GUI(e->possibleActions()),
+//				OP_LIN2GUI(e->proposedAction())));
+//
+//	this->mLastDragX = x;
+//	this->mLastDragY = y;
+//
+//	if (allowed == gui_Drag_None)
+//		e->setDropAction(Qt::IgnoreAction);
+//	else
+//		e->acceptProposedAction();
+//}
+//
+//void GUI_Window::dragLeaveEvent(QDragLeaveEvent* e)
+//{
+//	this->mInDrag = 0;
+//	this->SetTimerInterval(0);
+//	this->InternalDragLeave();
+//}
+//
+//void GUI_Window::dropEvent(QDropEvent* e)
+//{
+//	int x = OGL2Client_X(e->pos().x(),mWindow);
+//	int y = OGL2Client_Y(e->pos().y(),mWindow);
+//
+//	this->mInDrag = 0;
+//	this->SetTimerInterval(0);
+//
+//	GUI_DragData_Adapter  adapter(NULL);
+//	GUI_DragOperation allowed;
+//	allowed = (this->InternalDrop(x,y,&adapter,
+//				OP_LIN2GUI(e->possibleActions()),
+//				OP_LIN2GUI(e->proposedAction())));
+//
+//	this->InternalDragLeave();
+//}
 #endif
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -376,18 +376,18 @@ int		GUI_Window::AdvancedDragEntered(void * ns_dragging_info)
 		if(drag_has_option_key(ns_dragging_info))
 			recommended = gui_Drag_Copy;
 	}
-	
+
 	allowed = InternalDragEnter(x, y, &adapter, allowed, recommended);
 	mInDrag = 1;
 	SetTimerInterval(0.05);
 	mLastDragX = x;
 	mLastDragY = y;
-	
+
 	ForceRefresh();
-	
+
 	return OP_GUI2Mac(allowed);
 }
-	
+
 int		GUI_Window::AdvancedDragUpdated(void * ns_dragging_info)
 {
 	GUI_DragMgr_Adapter adapter(ns_dragging_info);
@@ -401,13 +401,13 @@ int		GUI_Window::AdvancedDragUpdated(void * ns_dragging_info)
 		if(drag_has_option_key(ns_dragging_info))
 			recommended = gui_Drag_Copy;
 	}
-	
+
 	allowed = InternalDragOver(x, y, &adapter, allowed, recommended);
 	mLastDragX = x;
 	mLastDragY = y;
-	
+
 	ForceRefresh();
-	
+
 	return OP_GUI2Mac(allowed);
 }
 
@@ -432,16 +432,16 @@ int		GUI_Window::AdvancedPerformDrop(void * ns_dragging_info)
 		if(drag_has_option_key(ns_dragging_info))
 			recommended = gui_Drag_Copy;
 	}
-	
+
 	allowed = InternalDrop(x, y, &adapter, allowed, recommended);
 	mLastDragX = x;
 	mLastDragY = y;
-	
+
 	mInDrag = 0;
 	SetTimerInterval(0.0);
 	InternalDragLeave();
 	ForceRefresh();
-	
+
 	return OP_GUI2Mac(allowed);
 }
 #endif
@@ -526,15 +526,24 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBound
 		SendMessage(mToolTip, TTM_ADDTOOL, 0, (LPARAM) &ti);
 	#endif
 	#if LIN
+
 		if( !(inAttributes & xwin_style_popup) && !(inAttributes & xwin_style_modal))
 		{
-			this->setMenuBar(gApplication->getqmenu());
-			this->Resize(inBounds[2]-inBounds[0],inBounds[3]-inBounds[1]);
+			GetMenuBar(); // create one
+			if(sWindows.size() > 0)
+			{
+				//mMenuBar->menu(gApplication->mMenu);
+				mMenuBar->copy((*sWindows.begin())->GetMenuBar());
+			}
+
+
 		}
 		else
 			gApplication->setCutnPasteShortcuts(this);
 
-		QApplication::setActiveWindow(this);
+		if(mMenuBar) mMenuBar->callback(gApplication->update_menus_cb);
+		//Fl::first_window(this);
+
 	#endif
 	sWindows.insert(this);
 	mBounds[0] = 0;
@@ -542,6 +551,10 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBound
 	XWinGL::GetBounds(mBounds+2,mBounds+3);
 	memset(mMouseFocusPane,0,sizeof(mMouseFocusPane));
 	mVisible = inAttributes & xwin_style_visible;
+	#if LIN
+	SetVisible(mVisible);
+	activate();
+	#endif
 	mClearColorRGBA[0] = 1.0;
 	mClearColorRGBA[1] = 1.0;
 	mClearColorRGBA[2] = 1.0;
@@ -549,10 +562,12 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBound
 	mClearDepth = false;
 	mClearColor = true;
 	mDesc = inTitle;
+#if !LIN
 	mState.Init();
-
+#endif
 	// BEN SEZ: this is probably a bad idea...
 	FocusChain(1);
+	printf("GUI_Window ctor\n");
 }
 
 void	GUI_Window::SetClearSpecs(bool inDoClearColor, bool inDoClearDepth, float inClearColor[4])
@@ -606,7 +621,7 @@ void			GUI_Window::ClickUp(int inX, int inY, int inButton)
 	}
 	mMouseFocusPane[inButton] = NULL;
 	this->GetRootForCommander()->EndDefer();
-	
+
 }
 
 void			GUI_Window::ClickDrag(int inX, int inY, int inButton)
@@ -632,11 +647,11 @@ void		GUI_Window::ClickMove(int inX, int inY)
 	#if LIN
 		int cursor = this->InternalGetCursor(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow));
 		switch(cursor) {
-		case gui_Cursor_Resize_H:	this->setCursor(Qt::SizeHorCursor);	break;
-		case gui_Cursor_Resize_V:	this->setCursor(Qt::SizeVerCursor);	break;
+		case gui_Cursor_Resize_H:	this->cursor(FL_CURSOR_WE);	break;
+		case gui_Cursor_Resize_V:	this->cursor(FL_CURSOR_NS);	break;
 		case gui_Cursor_None:
 		case gui_Cursor_Arrow:
-		default:					this->setCursor(Qt::ArrowCursor);	break;
+		default:					this->cursor(FL_CURSOR_DEFAULT);	break;
 		}
 	#endif
 }
@@ -682,7 +697,7 @@ void			GUI_Window::GLReshaped(int inWidth, int inHeight)
 	{
 		for (vector<GUI_Pane *>::iterator c = mChildren.begin(); c != mChildren.end(); ++c)
 			(*c)->ParentResized(oldBounds, mBounds);
-#if !LIN
+#if 1 // !LIN
 			Refresh();
 #endif
 	}
@@ -691,7 +706,14 @@ void			GUI_Window::GLReshaped(int inWidth, int inHeight)
 void			GUI_Window::GLDraw(void)
 {
 	SetGLContext();
-
+#if LIN
+	if(!XWinGL::mInited)
+	{
+		printf("init gl\n");
+		mState.Init();
+		XWinGL::mInited = true;
+	}
+#endif
 	int	w, h;
 	XWinGL::GetBounds(&w, &h);
 	glViewport(0, 0, w, h);
@@ -995,31 +1017,30 @@ int			GUI_Window::KeyPressed(uint32_t inKey, long inMsg, long inParam1, long inP
 #endif
 #if LIN
 	charCode = inKey;
-        Qt::KeyboardModifiers modstate = QApplication::keyboardModifiers();
+     int modstate = Fl::event_state();
 
-	if (modstate & Qt::AltModifier||modstate & Qt::MetaModifier)
+	if (modstate & FL_ALT | modstate & FL_META)
 		flags |= gui_OptionAltFlag;
-	if (modstate & Qt::ShiftModifier)
+	if (modstate & FL_SHIFT)
 		flags |= gui_ShiftFlag;
-	if (modstate & Qt::ControlModifier)
+	if (modstate & FL_CTRL)
 		flags |= gui_ControlFlag;
 
- 	if (!(modstate & Qt::AltModifier))
+ 	if (!(modstate & FL_ALT))
  		flags |= gui_DownFlag;
 
 	switch (inMsg)
 	{
-		case Qt::Key_Enter:
-		case Qt::Key_Return:	charCode = GUI_KEY_RETURN;	break;
-		case Qt::Key_Escape:	charCode = GUI_KEY_ESCAPE;	break;
-		case Qt::Key_Tab:
-		case Qt::Key_Backtab:	charCode = GUI_KEY_TAB;		break;
-		case Qt::Key_Back:	charCode = GUI_KEY_BACK;	break;
-		case Qt::Key_Delete:	charCode = GUI_KEY_DELETE;	break;
-		case Qt::Key_Left:	charCode = GUI_KEY_LEFT;	break;
-		case Qt::Key_Up:	charCode = GUI_KEY_UP;		break;
-		case Qt::Key_Right:	charCode = GUI_KEY_RIGHT;	break;
-		case Qt::Key_Down:	charCode = GUI_KEY_DOWN;	break;
+		case FL_Enter:
+		case FL_KP_Enter:		charCode = GUI_KEY_RETURN;	break;
+		case FL_Escape:			charCode = GUI_KEY_ESCAPE;	break;
+		case FL_Tab:			charCode = GUI_KEY_TAB;		break;
+		case FL_BackSpace:		charCode = GUI_KEY_BACK;	break;
+		case FL_Delete:			charCode = GUI_KEY_DELETE;	break;
+		case FL_Left:			charCode = GUI_KEY_LEFT;	break;
+		case FL_Up:				charCode = GUI_KEY_UP;		break;
+		case FL_Right:			charCode = GUI_KEY_RIGHT;	break;
+		case FL_Down:			charCode = GUI_KEY_DOWN;	break;
 	}
     // are the same as virtualkey
 	if ((0x2F < inMsg) && (inMsg < 0x5b))
@@ -1028,17 +1049,16 @@ int			GUI_Window::KeyPressed(uint32_t inKey, long inMsg, long inParam1, long inP
 	{
 	  switch(inMsg)
 	  {
-		case Qt::Key_Enter:
-		case Qt::Key_Return:	virtualCode = GUI_VK_RETURN;	break;
-		case Qt::Key_Escape:	virtualCode = GUI_VK_ESCAPE;	break;
-		case Qt::Key_Tab:
-		case Qt::Key_Backtab:	virtualCode = GUI_VK_TAB;	break;						
-		case Qt::Key_PageUp:	virtualCode = GUI_VK_PRIOR;	break;
-		case Qt::Key_PageDown:	virtualCode = GUI_VK_NEXT;	break;
-		case Qt::Key_End:	virtualCode = GUI_VK_END;	break;
-		case Qt::Key_Home:	virtualCode = GUI_VK_HOME;	break;
-		case Qt::Key_Left :	virtualCode = GUI_VK_LEFT;	break;
-		case Qt::Key_Right:	virtualCode = GUI_VK_RIGHT;	break;
+		case FL_Enter:
+		case FL_KP_Enter:		virtualCode = GUI_VK_RETURN;	break;
+		case FL_Escape:			virtualCode = GUI_VK_ESCAPE;	break;
+		case FL_Tab:			virtualCode = GUI_VK_TAB;	break;
+		case FL_Page_Up:		virtualCode = GUI_VK_PRIOR;	break;
+		case FL_Page_Down:		virtualCode = GUI_VK_NEXT;	break;
+		case FL_End:			virtualCode = GUI_VK_END;	break;
+		case FL_Home:			virtualCode = GUI_VK_HOME;	break;
+		case FL_Left :			virtualCode = GUI_VK_LEFT;	break;
+		case FL_Right:			virtualCode = GUI_VK_RIGHT;	break;
 		default: virtualCode = 0;
 	  }
 	}
@@ -1105,16 +1125,17 @@ int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, in
 
 	if  (popup_temp)  gApplication->RebuildMenu(popup_temp, items);
 	else popup_temp = gApplication->CreateMenu("popup temp", items, gApplication->GetPopupContainer(),0);
-		
+
 	int ret = TrackPopupCommands((xmenu) popup_temp,OGL2Client_X(x,mWindow), OGL2Client_Y(y,mWindow), button, current);
-	return ret;	
+	return ret;
 }
 
 
 bool				GUI_Window::IsDragClick(int x, int y, int button)
 {
+
 	#if APL
-	
+
 		return run_event_tracking_until_move_or_up(button);
 
 	#elif IBM
@@ -1135,23 +1156,32 @@ bool				GUI_Window::IsDragClick(int x, int y, int button)
 
 	#else
 
-	bool isdrag = false;
-
-	unsigned int sbtn = 1 << button;
-	QPoint startPos(OGL2Client_X(x,mWindow),OGL2Client_Y(y,mWindow));
-	
-	mBlockEvents = 1;// mroe:this blocks all button events for the GUI in XWin
-	while( !isdrag && (QApplication::mouseButtons() & (Qt::MouseButton)sbtn))
+    int btn_msk = 0;
+	switch (button)
 	{
-		QCoreApplication::processEvents() ;
-		QPoint currentPos(mMouse.x,mMouse.y);
-		isdrag = ((startPos - currentPos).manhattanLength() >= QApplication::startDragDistance());
+		case 0: btn_msk |= FL_BUTTON1;	break;
+		case 1:	btn_msk |= FL_BUTTON3;	break;
+		case 2: btn_msk |= FL_BUTTON2;	break;
+	}
+
+	bool isdrag     = false;
+	bool isreleased = false;
+
+	mBlockEvents = 1;
+	while( !isdrag && !isreleased)
+	{
+		Fl::wait(); //process until somthing happens
+
+		if(Fl::event() == FL_DRAG ) isdrag = !Fl::event_is_click();
+
+		if( !(Fl::event_buttons() &  btn_msk)) isreleased = true;
+
 	}
 	mBlockEvents = 0;
-	mWantFakeUp  = 1;
 
-	return isdrag;
-
+	mWantFakeUp = 1;
+	printf("--> is drag %d\n",isdrag ? 1:0);
+	return isdrag ;
 	#endif
 }
 
@@ -1170,7 +1200,7 @@ GUI_DragOperation	GUI_Window::DoDragAndDrop(
 {
 	DebugAssert(fetch_func == NULL);
 	#if APL
-	
+
 		vector<string> types;
 		GUI_GetMacNativeDragTypeList(types);
 		vector<const char *> raw(types.size());
@@ -1178,13 +1208,13 @@ GUI_DragOperation	GUI_Window::DoDragAndDrop(
 		{
 			raw[i] = types[i].c_str();
 		}
-	
+
 		register_drag_types_for_window(mWindow, raw.size(), &raw[0]);
-	
+
 		void * item = GUI_LoadOneSimpleDrag(type_count, inTypes, sizes, ptrs, where);
 
 		DoMacDragAndDrop(1, &item, OP_GUI2Mac(operations));
-		
+
 		return gui_Drag_None;
 
 	#elif IBM
@@ -1207,16 +1237,24 @@ GUI_DragOperation	GUI_Window::DoDragAndDrop(
 	#else
 
 	// TODO:mroe must create a dataobj class ( a wrapper around Qmimedata maybe) ;
-	QDrag *drag = new QDrag(this);
-	QMimeData *mimeData = new QMimeData;
-	//mimeData->setData(mimeType, data);
-	drag->setMimeData(mimeData);
-	//start the drag
-	GUI_DragOperation result = OP_LIN2GUI(drag->start(OP_GUI2LIN(operations)));
+	//QDrag *drag = new QDrag(this);
+	//QMimeData *mimeData = new QMimeData;
+	////mimeData->setData(mimeType, data);
+	//drag->setMimeData(mimeData);
+	////start the drag
+	//GUI_DragOperation result = OP_LIN2GUI(drag->start(OP_GUI2LIN(operations)));
 
-	return result;
+		return gui_Drag_None; //result;
 	#endif
 }
+
+#if LIN
+GUI_Window *  GUI_Window::AnyXWND(void)
+{
+	if (sWindows.empty()) return NULL;
+	return *sWindows.begin();
+}
+#endif
 
 #if IBM
 HWND GUI_Window::AnyHWND(void)
@@ -1390,8 +1428,8 @@ void GUI_Window::EnableMenusWin(void)
 	// Why do we need the root commander?  We want to follow
 	// the _active_ window's focus chain, now the latent focus
 	// chain of the first window.  Maybe we can rewrite this
-	// someday to take the window that actually got the WM 
-	// message?? 
+	// someday to take the window that actually got the WM
+	// message??
 	for(CmdMap_t::iterator cmd = cmds.begin(); cmd != cmds.end(); ++cmd)
 		cmd->second.enabled = me->GetRootForCommander()->DispatchCanHandleCommand(cmd->first,cmd->second.new_name,cmd->second.checked);
 

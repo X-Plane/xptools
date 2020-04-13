@@ -25,15 +25,15 @@
 #define GUI_APPLICATION_H
 
 #if LIN
-#include <QtCore/QtCore>
-#include <QtGui/QtGui>
+#include <FL/Fl_Menu.H>
+#include <FL/Fl_Menu_.H>
+#include <FL/Fl_Menu_Bar.H>
 #endif
 
 #include "GUI_Commander.h"
 #include "GUI_Timer.h"
 #include "CmdLine.h"
 
-class GUI_QtMenu;
 class GUI_Window;
 
 /*
@@ -87,54 +87,22 @@ public:
 #endif
 
 #if LIN
-    QMenuBar* getqmenu();
+   Fl_Menu_Item *      mMenu;
+	void static update_menus_cb(Fl_Widget* w,void * data);
     void      setCutnPasteShortcuts(GUI_Window * parent);
 #endif
-	
+
 	const CmdLine args;
-	
+
 private:
 
 	bool                mDone;
-#if !LIN
 	set<GUI_Menu>		mMenus;
-#else
-	QList<GUI_QtMenu*>  mMenus;
-	QMenu *             mPopup;
-	QApplication*       qapp;
-#endif
-};
 
 #if LIN
-class GUI_QtMenu : public QMenu
-{
-	Q_OBJECT
-public:
-	GUI_QtMenu(const QString& text ,GUI_Application *app);
-	~GUI_QtMenu();
-
-private:
-	GUI_Application* app;
-protected:
-	void showEvent( QShowEvent * e );
-	void hideEvent( QHideEvent * e );
-};
-
-class GUI_QtAction : public QAction
-{
-	Q_OBJECT
-public:
-	GUI_QtAction(const QString& text,QObject * parent,const QString& sc ,int cmd, GUI_Application *app,bool checkable);
-	~GUI_QtAction();
-
-public slots:
-	void ontriggered();
-
-private:
-	GUI_Application* app;
-};
-
+	Fl_Menu_Item *      mPopup;
 #endif
+};
 
 extern	GUI_Application *	gApplication;
 

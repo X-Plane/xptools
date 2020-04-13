@@ -29,50 +29,25 @@
 #endif
 
 #if LIN
-#if 0
-#include <pthread.h>
-/*
-#include <signal.h>
-#include <time.h>
-#include <unistd.h>
-*/
-class GUI_Timer;
-
-typedef struct teh_args_t
-{
-	float sec;
-	GUI_Timer* callme;
-} teh_args_t;
-#endif
-#include <QtCore/QTimer>
-
+#include <FL/Fl.H>
 #endif
 
 class	GUI_Timer
-#if LIN
-: public QTimer {
-	Q_OBJECT
-#else
 {
-#endif
-public:
+	public:
 
-						 GUI_Timer(void);
-	virtual				~GUI_Timer(void);
+							 GUI_Timer(void);
+		virtual				~GUI_Timer(void);
 
-			void		Start(float seconds);
-			void		Stop(void);
+				void		Start(float seconds);
+				void		Stop(void);
 
-	virtual	void		TimerFired(void)=0;
-#if LIN
-public slots:
-	void		TimerCB(void);
-#endif
+		virtual	void		TimerFired(void)=0;
 
-private:
+	private:
 
 	#if APL
-	
+
 		CFRunLoopTimerRef					mTimer;
 
 		static void				TimerCB(CFRunLoopTimerRef timer, void * data);
@@ -82,26 +57,9 @@ private:
 		UINT_PTR	mID;
 
 	#elif LIN
-#if 0
 	public:
-        static void TimerCB(void *args);
-        bool is_running;
-/*
-		timer_t mTimer;
-*/
-    private:
-		static void* teh_threadroutine(void* args);
-		pthread_t* teh_thread;
-		teh_args_t targ;
-/*
-		struct sigaction action;
-		struct timespec tsres;
-		struct itimerspec its;
-		struct sigevent ev;
-*/
-#endif
+        static void timeout_cb(void *args);
+		double mTimer;
 	#endif
-
 };
-
 #endif

@@ -608,7 +608,7 @@ void	XGrindInit(int argc, char* argv[])
 	XObjWin * win = new XObjWin(NULL);
 #if LIN
 	win->show(argc,argv);
-	win->MakeGLCurrent();
+	win->SetGLContext();
 #endif
 #if !APL
 	GLenum err = glewInit();

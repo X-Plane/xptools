@@ -305,8 +305,8 @@ bool			GUI_GetTextFromClipboard(string& outText)
 	#endif
 #else
     //TODO:  basic text clipboard implementation for now
-     QClipboard* cb = QApplication::clipboard();
-     outText = string(cb->text().toUtf8());
+     //QClipboard* cb = QApplication::clipboard();
+     //outText = string(cb->text().toUtf8());
 #endif
 	return true;
 }
@@ -327,9 +327,9 @@ bool			GUI_SetTextToClipboard(const string& inText)
 	return GUI_Clipboard_SetData(1, &text, &sz, &ptr);
 	#else
     //TODO:  basic text clipboard implementation for now
-     QClipboard* cb = QApplication::clipboard();
-     QString tex = QString::fromUtf8(inText.c_str());
-      cb->setText(tex);
+    // QClipboard* cb = QApplication::clipboard();
+    //QString tex = QString::fromUtf8(inText.c_str());
+    //  cb->setText(tex);
 	#endif
 }
 
@@ -761,12 +761,12 @@ void * GUI_LoadOneSimpleDrag(
 							const int				bounds[4])
 {
 	vector<const char *>	raw_types;
-	
+
 	for(int i = 0; i < inTypeCount; ++i)
 	{
 		raw_types.push_back(sCITs[inTypes[i]].c_str());
 	}
-	
+
 	return create_drag_item_with_data(inTypeCount, &raw_types[0],sizes, ptrs,bounds);
 }
 
