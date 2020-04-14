@@ -191,7 +191,7 @@ void	WED_DoExportPack(WED_Document * resolver, WED_MapPane * pane)
 	string pack_base;
 	l->LookupPath(pack_base);
 
-	if(gExportTarget == wet_gateway)
+	if(gExportTarget == wet_gateway || TYLER_MODE)
 		EnforceRecursive_MetaDataGuiLabel(w);
 
 	WED_ExportPackToPath(g, resolver, pack_base, problem_children);
