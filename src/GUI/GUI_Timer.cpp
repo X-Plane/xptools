@@ -37,7 +37,9 @@ GUI_Timer::GUI_Timer(void)
 	#if IBM
 		mID = 0;
 	#endif
-
+	#if LIN
+		mTimer = 0;
+	#endif
 }
 
 GUI_Timer::~GUI_Timer(void)
@@ -54,7 +56,11 @@ GUI_Timer::~GUI_Timer(void)
 		}
 #endif
 #if LIN
-
+		if (mTimer != 0)
+		{
+			Fl::remove_timeout(timeout_cb,this);
+			mTimer=0;
+		}
 #endif
 }
 
