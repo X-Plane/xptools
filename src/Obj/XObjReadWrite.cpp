@@ -591,7 +591,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 
 	bool	stop = false;
 
-	int trimax, linemax, lightmax, idxmax;
+	int trimax = 0, linemax = 0, lightmax = 0, idxmax = 0;
 	int tricount = 0, linecount = 0, lightcount = 0, idxcount = 0;
 	float	stdat[8];
 

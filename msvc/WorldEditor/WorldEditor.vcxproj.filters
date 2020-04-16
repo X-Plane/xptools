@@ -1756,7 +1756,9 @@
     <Image Include="..\..\src\WEDResources\WED.ico">
       <Filter>WEDResources</Filter>
     </Image>
-    <Image Include="..\..\src\WEDResources\tilt_tool.png" />
+    <Image Include="..\..\src\WEDResources\tilt_tool.png">
+      <Filter>WEDResources</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\WEDResources\map_tools.psd">
