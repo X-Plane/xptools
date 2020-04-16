@@ -133,7 +133,8 @@ int XWin::handle(int e)
 	{
 		//mroe: if we detect a click on the menubar , thats the time before show something ,
  		//We can e.g. update the menu content here;
-		if(e == FL_PUSH  &&  mMenuBar->callback()) mMenuBar->do_callback();
+		if( mMenuBar->callback() && e == FL_PUSH ) mMenuBar->do_callback();
+
 		int result  = mMenuBar->handle(e);
 	    //TODO:mroe:posibly solve the window activation bug here
 		// ...
@@ -146,43 +147,43 @@ int XWin::handle(int e)
 	/*MOUSE events */
 
 	case FL_PUSH:{
-	  printf("FL_PUSH %s\n",appnm.c_str());
+		printf("FL_PUSH %s\n",appnm.c_str());
 
-	  int btn  = fltkBtnToXBtn(Fl::event_button());
-	  mMouse.x = Fl::event_x();
-	  mMouse.y = Fl::event_y();
+		int btn  = fltkBtnToXBtn(Fl::event_button());
+		mMouse.x = Fl::event_x();
+		mMouse.y = Fl::event_y();
 
-	  if(mBlockEvents) return 1;
+		if(mBlockEvents) return 1;
 
-	  if(mDragging == -1)
-	  {
-		 mDragging = btn;
-		 ClickDown(mMouse.x, mMouse.y, btn);
+		if(mDragging == -1)
+		{
+			 mDragging = btn;
+			 ClickDown(mMouse.x, mMouse.y, btn);
 
-		 if(mWantFakeUp)
-		 {
-			int btn = mDragging;
-			mDragging = -1;
-			ClickUp(mMouse.x, mMouse.y, btn);
-			mWantFakeUp = 0;
-		 }
-	  }
+			 if(mWantFakeUp)
+			 {
+				int btn = mDragging;
+				mDragging = -1;
+				ClickUp(mMouse.x, mMouse.y, btn);
+				mWantFakeUp = 0;
+			}
+		}
 	}
 	return 1;
 	case FL_RELEASE:{
-	  printf("FL_RELEASE %s\n",appnm.c_str());
+		printf("FL_RELEASE %s\n",appnm.c_str());
 
-	  int btn  = fltkBtnToXBtn(Fl::event_button());
-	  mMouse.x = Fl::event_x();
-	  mMouse.y = Fl::event_y();
+		int btn  = fltkBtnToXBtn(Fl::event_button());
+		mMouse.x = Fl::event_x();
+		mMouse.y = Fl::event_y();
 
-	  if(mBlockEvents) return 1;
+		if(mBlockEvents) return 1;
 
-	  if(mDragging == btn)
-	  {
+		if(mDragging == btn)
+		{
 		 mDragging = -1;
 		 ClickUp(mMouse.x, mMouse.y, btn);
-	  }
+		}
 	}
 	return 1;
 	case FL_DRAG:{
@@ -190,42 +191,42 @@ int XWin::handle(int e)
 		if(mBlockEvents) return 1;
 		if(fltkBtnToXBtn(Fl::event_button()) == mDragging)
 		{
-	  		ClickDrag(Fl::event_x(),Fl::event_y(),mDragging);
+			ClickDrag(Fl::event_x(),Fl::event_y(),mDragging);
 		}
 	}
 	return 1;
 	case FL_MOVE:{
 
-	  if(Fl::event_x() == mMouse.x && Fl::event_y() == mMouse.y) return 1;
+		if(Fl::event_x() == mMouse.x && Fl::event_y() == mMouse.y) return 1;
 
-	  mMouse.x = Fl::event_x();
-	  mMouse.y = Fl::event_y();
+		mMouse.x = Fl::event_x();
+		mMouse.y = Fl::event_y();
 
-	  ClickMove(mMouse.x, mMouse.y);
+		ClickMove(mMouse.x, mMouse.y);
 	}
 	return 1;
 	case FL_MOUSEWHEEL:{
-	  mMouse.x = Fl::event_x();
-	  mMouse.y = Fl::event_y();
-		 MouseWheel(mMouse.x, mMouse.y, (Fl::event_dy() < 0) ? 1 : -1, 0);
+		mMouse.x = Fl::event_x();
+		mMouse.y = Fl::event_y();
+		MouseWheel(mMouse.x, mMouse.y, (Fl::event_dy() < 0) ? 1 : -1, 0);
 	}
 	return 1;
 	case FL_SHORTCUT:{
-	   //printf("FL_SHORTCUT \n");
-	   if(Fl::event_key() == FL_Escape) return 1;    //FLTK would close the window when ESC
+		printf("FL_SHORTCUT \n");
+		if(Fl::event_key() == FL_Escape) return 1;    //FLTK would close the window when ESC pressed
 	}
-	return 1;
+	return 0;										  //do not supress key strokes for others , we get no global shortcuts otherwise
 	case FL_KEYDOWN:{
-	  uint32_t utf32char = 0;
-	  int l = Fl::event_length();
-	  if (l > 0)
-	  {
-		 int len;
-		 const char * p = Fl::event_text();
-		 const char * e = p+l;
-		 utf32char = fl_utf8decode(p,e,&l);
-	  }
-	  KeyPressed(utf32char,Fl::event_key(), 0, 0);
+		uint32_t utf32char = 0;
+		int l = Fl::event_length();
+		if (l > 0)
+		{
+		int len;
+		const char * p = Fl::event_text();
+		const char * e = p+l;
+		utf32char = fl_utf8decode(p,e,&l);
+		}
+		KeyPressed(utf32char,Fl::event_key(), 0, 0);
 	}
 	return 0;											//do not supress key strokes for others , we get no shortcuts otherwise
 	case FL_KEYUP:{
@@ -234,34 +235,34 @@ int XWin::handle(int e)
 	/*WIDGET events */
 
 	case FL_ACTIVATE:{
-	  printf("FL_ACTIVATE %s\n",appnm.c_str());
-	   Activate(true);
+		printf("FL_ACTIVATE %s\n",appnm.c_str());
+		Activate(true);
 	}
 	return 1;
 	case FL_DEACTIVATE:{
-	  printf("FL_DEACTIVATE %s\n",appnm.c_str());
-	   Activate(false);
+		printf("FL_DEACTIVATE %s\n",appnm.c_str());
+		Activate(false);
 	}
 	return 1;
 
 	/*FOCUS events */
 	case FL_FOCUS:{
-	   printf("FL_FOCUS %s\n",appnm.c_str());
-	   Activate(true);
+		printf("FL_FOCUS %s\n",appnm.c_str());
+		Activate(true);
 	}
 	return 1;
 	case FL_UNFOCUS:{
-	   printf("FL_UNFOCUS %s\n",appnm.c_str());
-	   Activate(false);
+		printf("FL_UNFOCUS %s\n",appnm.c_str());
+		Activate(false);
 	}
 	return 1;
 	case FL_ENTER:{
-	   printf("FL_ENTER %s\n",appnm.c_str());
+		printf("FL_ENTER %s\n",appnm.c_str());
 
 	}
 	return 0;
 	case FL_LEAVE:{
-	   printf("FL_LEAVE %s\n",appnm.c_str());
+		printf("FL_LEAVE %s\n",appnm.c_str());
 
 	}
 	return 0;
@@ -273,12 +274,12 @@ int XWin::handle(int e)
 	case FL_DND_RELEASE:
 	return 1;
 	case FL_PASTE:{
-	   //TODO: can carry a list of filenames , can become much more
-	   char c[2048];
-	   strncpy(c, Fl::event_text(), sizeof(c));
-	   fl_decode_uri(c);
-	   printf("XWin::handle FL_PASTE Win %s\n",c);
-	   ReceiveFilesFromDrag(c);
+		//TODO: can carry a list of filenames , can become much more
+		char c[2048];
+		strncpy(c, Fl::event_text(), sizeof(c));
+		fl_decode_uri(c);
+		printf("XWin::handle FL_PASTE Win %s\n",c);
+		ReceiveFilesFromDrag(c);
 	}
 	return 1;
 

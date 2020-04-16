@@ -26,7 +26,6 @@
 
 #if LIN
 #include <FL/Fl_Menu.H>
-#include <FL/Fl_Menu_.H>
 #include <FL/Fl_Menu_Bar.H>
 #endif
 

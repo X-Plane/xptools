@@ -94,8 +94,6 @@ string GetTempFilesFolder()
 	return string(temp_path);
 }
 
-static Fl_Native_File_Chooser gFileDialog;
-
 int		GetFilePathFromUser(
 					int					inType,
 					const char * 		inPrompt,
@@ -104,26 +102,31 @@ int		GetFilePathFromUser(
 					char * 				outFileName,
 					int					inBufSize)
 {
+    int ret = 0;
 
-    gFileDialog.title(inPrompt);
+    Fl_Native_File_Chooser * mFileDialog = new Fl_Native_File_Chooser();
+
+    mFileDialog->title(inPrompt);
 
 	switch(inType)
 	{
-		case getFile_Open:       gFileDialog.type(Fl_Native_File_Chooser::BROWSE_FILE);      break;
-		case getFile_Save:       gFileDialog.type(Fl_Native_File_Chooser::BROWSE_SAVE_FILE); break;
-		case getFile_PickFolder: gFileDialog.type(Fl_Native_File_Chooser::BROWSE_DIRECTORY); break;
+		case getFile_Open:       mFileDialog->type(Fl_Native_File_Chooser::BROWSE_FILE);      break;
+		case getFile_Save:       mFileDialog->type(Fl_Native_File_Chooser::BROWSE_SAVE_FILE); break;
+		case getFile_PickFolder: mFileDialog->type(Fl_Native_File_Chooser::BROWSE_DIRECTORY); break;
 
-        default: return 0;
-
+        default: { if(mFileDialog) delete mFileDialog;  return ret;}
     }
 
-    if( gFileDialog.show() == 0 )
+
+    if(mFileDialog->show() == 0)
     {
-        ::strncpy(outFileName,gFileDialog.filename(),inBufSize);
-        return 1;
+        ::strncpy(outFileName,mFileDialog->filename(),inBufSize);
+       ret = 1;
     }
 
-	return 0;
+
+    if(mFileDialog) delete mFileDialog;
+    return ret ;
 }
 
 char *	GetMultiFilePathFromUser(
@@ -131,37 +134,42 @@ char *	GetMultiFilePathFromUser(
 					const char *		inAction,
 					int					inID)
 {
+    char * ret = NULL;
+    Fl_Native_File_Chooser * mFileDialog = new Fl_Native_File_Chooser();
 
-    gFileDialog.title(inPrompt);
-    gFileDialog.type(Fl_Native_File_Chooser::BROWSE_MULTI_FILE);
+    mFileDialog->title(inPrompt);
+    mFileDialog->type(Fl_Native_File_Chooser::BROWSE_MULTI_FILE);
 
-    if( gFileDialog.show() != 0 ) return NULL;
-
-    int file_cnt(gFileDialog.count());
-    if(file_cnt == 0 )  return NULL;
-
-    vector<string> outFiles;
-    for (int i=0; i < file_cnt; ++i )
-	{
-		if(strlen(gFileDialog.filename(i)) > 0)
-			outFiles.push_back(gFileDialog.filename(i));
-	}
-
-	int buf_size = 1;
-	for(int i = 0; i < outFiles.size(); ++i)
+    if(mFileDialog->show() == 0)
     {
-		buf_size += (outFiles[i].size() + 1);
+        int file_cnt(mFileDialog->count());
+        if(file_cnt == 0 ){ if(mFileDialog) delete mFileDialog; return ret;}
+
+        vector<string> outFiles;
+        for (int i=0; i < file_cnt; ++i )
+        {
+            if(strlen(mFileDialog->filename(i)) > 0)
+                outFiles.push_back(mFileDialog->filename(i));
+        }
+
+        int buf_size = 1;
+        for(int i = 0; i < outFiles.size(); ++i)
+        {
+            buf_size += (outFiles[i].size() + 1);
+        }
+
+        ret = (char *) malloc(buf_size);
+        char * p = ret;
+
+        for(int i = 0; i < outFiles.size(); ++i)
+        {
+            strcpy(p, outFiles[i].c_str());
+            p += (outFiles[i].size() + 1);
+        }
+        *p = 0;
     }
-	char * ret = (char *) malloc(buf_size);
-	char * p = ret;
 
-	for(int i = 0; i < outFiles.size(); ++i)
-	{
-		strcpy(p, outFiles[i].c_str());
-		p += (outFiles[i].size() + 1);
-	}
-	*p = 0;
-
+    if(mFileDialog) delete mFileDialog;
     return ret ;
 }
 
