@@ -54,7 +54,11 @@ GUI_Timer::~GUI_Timer(void)
 		}
 #endif
 #if LIN
-
+		if (mTimer != 0)
+		{
+			Fl::remove_timeout(timeout_cb,this);
+			mTimer=0;
+		}
 #endif
 }
 
