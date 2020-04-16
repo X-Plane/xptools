@@ -163,20 +163,30 @@ static void update_menu_recursive(const Fl_Menu_Item *  menu)
 		int cmd = mc->cmd;
 		if(cmd == 0) continue;
 		GUI_Application * app = (GUI_Application *) mc->data;
-		int  ioCheck = 0;
+		int ioCheck = 0;
 		string ioName;
-		//printf("set : %s \n",item->label());
 		int enabled = app->DispatchCanHandleCommand(cmd,ioName,ioCheck);
 		//printf("enabled:%d checked:%d  name: %s \n",enabled,ioCheck,ioName.c_str());
+		if(!ioName.empty())
+		{
+			if(item->text != nullptr)
+				free((void*)item->text);
+
+			char * new_name  = (char *) malloc(ioName.size()+1);
+			strncpy(new_name,ioName.c_str(),ioName.size()+1);
+
+			item->label(new_name);
+		}
 
 		enabled ? item->activate():item->deactivate();
 		if(ioCheck)
 		{
-			item->flags = item->flags | FL_MENU_TOGGLE;
+			item->flags |= FL_MENU_TOGGLE;
 			item->set();
 		}
 		else
 		{
+			item->flags &= ~FL_MENU_TOGGLE;
 			item->clear();
 		}
 	}

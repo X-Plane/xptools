@@ -364,7 +364,7 @@ void XWin::Update(XContext ctx)
 
 void XWin::SetTitle(const char * inTitle)
 {
-	this->label(inTitle);
+	this->copy_label(inTitle);
 }
 
 void XWin::SetFilePath(const char * inPath,bool modified)
