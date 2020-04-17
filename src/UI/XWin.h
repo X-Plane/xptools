@@ -291,7 +291,7 @@ public:
 protected:
 
 	void draw();
-	int handle(int e);
+	virtual int handle(int e);
 	void resize(int x,int y,int w,int h);
 
 	static void window_cb(Fl_Widget *widget, void * data);

@@ -29,35 +29,6 @@ void glWidget::draw()
 		mXWinGL->GLDraw();
 }
 
-int glWidget::handle(int e)
-{
-
-	int ret = Fl_Gl_Window::handle(e);
-
- 	/* DnD related events */
-	switch(e)
-	{
-		case FL_DND_ENTER:
-		case FL_DND_DRAG:
-		case FL_DND_LEAVE:
-			return 1;
-		case FL_DND_RELEASE:
-
-			return 1;
-		case FL_PASTE:{
-			  //TODO: can carry a list of filenames , can become much more
-			 char c[2048];
-			 strncpy(c, Fl::event_text(), sizeof(c));
-			 fl_decode_uri(c);
-			 printf("glWidget::handle FL_PASTE Win %s\n",c);
-			 mXWinGL->ReceiveFilesFromDrag(c);
-			return 1;}
-	}
-
-	return ret;
-}
-
-
 void glWidget::resize(int X,int Y,int W,int H)
 {
 	printf("glWidget::resize \n");
@@ -66,19 +37,6 @@ void glWidget::resize(int X,int Y,int W,int H)
     mXWinGL->GLReshaped(w(),h());
 }
 
-
-
-// void glWidget::focusInEvent(QFocusEvent* e)
-// {
-// 	if (mXWinGL->mInited && e->reason()==Qt::ActiveWindowFocusReason)
-// 		mXWinGL->Activate(1);
-// }
-//
-// void glWidget::focusOutEvent(QFocusEvent* e)
-// {
-// 	if (mXWinGL->mInited && e->reason()==Qt::ActiveWindowFocusReason)
-// 		mXWinGL->Activate(0);
-// }
 
 XWinGL::XWinGL(int default_dnd, XWinGL* inShare) : XWin(default_dnd), mInited(false)
 {

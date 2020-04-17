@@ -398,7 +398,7 @@ void XWin::SetVisible(bool visible)
 
 	if(visible)
 	{
-		show();show();
+		show();
 	}
 	else
 	{

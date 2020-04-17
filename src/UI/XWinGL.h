@@ -47,11 +47,9 @@ public:
 	void draw();
 
 protected:
-	int handle(int e);
+
     void resize(int X,int Y,int W,int H);
 
-// 	void focusInEvent(QFocusEvent* e);
-// 	void focusOutEvent(QFocusEvent* e);
 private:
 	XWinGL* mXWinGL;
 };
@@ -169,7 +167,6 @@ private:
 	glWidget*		mGlWidget;
 public:
 	bool			mInited;
-	void			MakeGLCurrent();
 #endif
 
 };
