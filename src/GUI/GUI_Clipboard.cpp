@@ -30,18 +30,25 @@
 	#include "GUI_Unicode.h"
 #endif
 #if LIN
-#include <QtGui/QApplication>
-#include <QtGui/QClipboard>
-#include <QtCore/QString>
+	#include "FL/Fl.H"
 #endif
 
-#if APL
+#if APL || LIN
 	typedef	string	GUI_CIT;		// Clipboard Internal Type
 #elif IBM
-	typedef	CLIPFORMAT	GUI_CIT;		// Clipboard Internal Type
-#else
-    #warning linux fixme here
-	typedef	int	GUI_CIT;
+	typedef	CLIPFORMAT	GUI_CIT;    // Clipboard Internal Type
+#endif
+
+#if LIN
+#define mTOTAL_FLTK_CLIPFORMATS 2
+
+static string get_nth_clipboard_format(int n)
+{
+	if( n == 0 ) return Fl::clipboard_plain_text;
+	if( n == 1 ) return Fl::clipboard_image;
+	return NULL;
+}
+
 #endif
 
 enum {
@@ -79,13 +86,13 @@ void GUI_InitClipboard(void)
 		sCITs.push_back(get_pasteboard_text_type());
 	#elif IBM
 		sCITs.push_back(CF_UNICODETEXT);
-	#else
-		#warning implement clipboard init() for linux
+	#elif LIN
+		sCITs.push_back(Fl::clipboard_plain_text);
 	#endif
-	sClipStrings.push_back("text");
+		sClipStrings.push_back("text");
 }
 
-GUI_ClipType	GUI_RegisterPrivateClipType(const char * clip_type)
+GUI_ClipType GUI_RegisterPrivateClipType(const char * clip_type)
 {
 	for (int n = 0; n < sClipStrings.size(); ++n)
 	{
@@ -94,19 +101,17 @@ GUI_ClipType	GUI_RegisterPrivateClipType(const char * clip_type)
 	}
 
 	sClipStrings.push_back(clip_type);
-	#if APL
+	#if APL || LIN
 		string full_type = "com.laminar.";
 		full_type += clip_type;
 		sCITs.push_back(full_type);
 	#elif IBM
 		sCITs.push_back(CF_PRIVATEFIRST + sCITs.size() - gui_First_Private);
-	#else
-		#warning implement clipboard type for linux
 	#endif
 	return sCITs.size()-1;
 }
 
-GUI_ClipType	GUI_GetTextClipType(void)
+GUI_ClipType GUI_GetTextClipType(void)
 {
 	return gui_Clip_Text;
 }
@@ -124,22 +129,24 @@ void GUI_GetMacNativeDragTypeList(vector<string>& out_types)
 
 #pragma mark -
 
-bool			GUI_Clipboard_HasClipType(GUI_ClipType inType)
+bool GUI_Clipboard_HasClipType(GUI_ClipType inType)
 {
 	#if APL
 		return clipboard_has_type(sCITs[inType].c_str());
 	#elif IBM
 		return (IsClipboardFormatAvailable(sCITs[inType]));
-	#else
-		#warning implement clipboard typecheck for linux
+	#elif LIN
+		//TODO:mroe  unfortunatly that does not work , likly because we are in the menu special grab thing  at this point
+		//return = Fl::clipboard_contains(sCITs[inType].c_str());
+		return 1;
 	#endif
 }
 
-void			GUI_Clipboard_GetTypes(vector<GUI_ClipType>& outTypes)
+void GUI_Clipboard_GetTypes(vector<GUI_ClipType>& outTypes)
 {
+		outTypes.clear();
 	#if APL
 		int total = count_clipboard_formats();
-		outTypes.clear();
 		for (int n = 0; n < total; ++n)
 		{
 			GUI_CIT raw_type = get_nth_clipboard_format(n);
@@ -149,7 +156,6 @@ void			GUI_Clipboard_GetTypes(vector<GUI_ClipType>& outTypes)
 		}
 	#elif IBM
 		int total = CountClipboardFormats();
-		outTypes.clear();
 		for (int n = 0; n < total; ++n)
 		{
 			GUI_CIT raw_type = EnumClipboardFormats(n);
@@ -157,8 +163,15 @@ void			GUI_Clipboard_GetTypes(vector<GUI_ClipType>& outTypes)
 			if (CIT2GUI(raw_type, ct))
 				outTypes.push_back(ct);
 		}
-	#else
-		#warning implement clipboard getTypes for linux
+	#elif LIN
+		int total = mTOTAL_FLTK_CLIPFORMATS;
+		for (int n = 0; n < total; ++n)
+		{
+			GUI_CIT raw_type = get_nth_clipboard_format(n);
+			GUI_ClipType ct;
+			if (CIT2GUI(raw_type, ct))
+				outTypes.push_back(ct);
+		}
 	#endif
 }
 
@@ -185,12 +198,10 @@ struct	StGlobalLock {
 	HGLOBAL handle;
 	void *	ptr;
 };
-
-
-
 #endif
 
-int				GUI_Clipboard_GetSize(GUI_ClipType inType)
+
+int GUI_Clipboard_GetSize(GUI_ClipType inType)
 {
 	#if APL
 		return get_clipboard_data_size(sCITs[inType].c_str());
@@ -208,12 +219,26 @@ int				GUI_Clipboard_GetSize(GUI_ClipType inType)
 		int sz = GlobalSize(hglb);
 		return sz;
 
-	#else
-		#warning implement clipboard GetSize for linux
+	#elif LIN
+		//if(!Fl::clipboard_contains(sCITs[inType].c_str())) return 0;
+// 		Fl::paste(*Fl::focus(),1);
+//
+//		while(!g_clipboard_recieved && Fl::event() == FL_NO_EVENT)
+//		{
+//			Fl::check();
+//
+//			if(g_clipboard_recieved)
+//			{
+//				g_clipboard_recieved = false;
+//				return Fl::event_length();
+//			}
+//		}
+		return 0;
+
 	#endif
 }
 
-bool			GUI_Clipboard_GetData(GUI_ClipType inType, int size, void * ptr)
+bool GUI_Clipboard_GetData(GUI_ClipType inType, int size, void * ptr)
 {
 	#if APL
 		int amt = copy_data_of_type(sCITs[inType].c_str(), ptr, size);
@@ -239,11 +264,19 @@ bool			GUI_Clipboard_GetData(GUI_ClipType inType, int size, void * ptr)
 		memcpy(ptr, lock_it(), size);
 		return true;
 
-	#else
-		#warning implement clipboard getData() for linux
+	#elif LIN
+//		if(g_clipboard_recieved)
+//		{
+//				memcpy(ptr,Fl::event_text(), size);
+//				printf("GUI_Clipboard_GetData --> %s \n",ptr);
+//				g_clipboard_recieved = false;
+//				return true;
+//		}
+
+		return false;
 	#endif
 }
-bool			GUI_Clipboard_SetData(int type_count, GUI_ClipType inTypes[], int sizes[], const void * ptrs[])
+bool GUI_Clipboard_SetData(int type_count, GUI_ClipType inTypes[], int sizes[], const void * ptrs[])
 {
 	#if APL
 		clear_clipboard();
@@ -278,8 +311,12 @@ bool			GUI_Clipboard_SetData(int type_count, GUI_ClipType inTypes[], int sizes[]
 		}
 		return true;
 
-	#else
-		#warning implement clipboard setData() for linux
+	#elif LIN
+		for (int n = 0; n < type_count; ++n)
+		{
+			Fl::copy((const char *) ptrs[n],sizes[n],0,sCITs[inTypes[n]].c_str());
+		}
+		return true;
 	#endif
 }
 
@@ -287,36 +324,33 @@ bool			GUI_Clipboard_SetData(int type_count, GUI_ClipType inTypes[], int sizes[]
 // CONVENIENCE ROUTINES
 //---------------------------------------------------------------------------------------------------------
 
-bool			GUI_GetTextFromClipboard(string& outText)
+bool GUI_GetTextFromClipboard(string& outText)
 {
-#if !LIN
 	GUI_ClipType text = GUI_GetTextClipType();
 	if (!GUI_Clipboard_HasClipType(text)) return false;
+	printf("GUI_GetTextFromClipboard 0\n");
 	int sz = GUI_Clipboard_GetSize(text);
+	printf("GUI_GetTextFromClipboard 1 %d\n",sz);
 	if (sz <= 0) return false;
+	printf("GUI_GetTextFromClipboard 2\n");
 	vector<char> buf(sz);
 	if (!GUI_Clipboard_GetData(text, sz, &*buf.begin())) return false;
-	#if APL
+	printf("GUI_GetTextFromClipboard->   %s \n",buf.begin());
+	#if APL ||  LIN
 		outText = string(buf.begin(),buf.begin()+sz);
 	#elif IBM
 		const UTF16 * p = (const UTF16 *) &buf[0];
 		string_utf16 str16(p,p+sz/2-1);
 		outText = convert_utf16_to_str(str16);
 	#endif
-#else
-    //TODO:  basic text clipboard implementation for now
-     //QClipboard* cb = QApplication::clipboard();
-     //outText = string(cb->text().toUtf8());
-#endif
 	return true;
 }
 
-bool			GUI_SetTextToClipboard(const string& inText)
+bool GUI_SetTextToClipboard(const string& inText)
 {
-    #if !LIN
 	GUI_ClipType text = GUI_GetTextClipType();
 	const void * ptr;
-	#if APL
+	#if APL || LIN
 		ptr = inText.c_str();
 		int sz = inText.size();
 	#elif IBM
@@ -324,13 +358,8 @@ bool			GUI_SetTextToClipboard(const string& inText)
 		ptr = (const void *) &str16[0];
 		int sz = 2*(inText.size()+1);
 	#endif
+
 	return GUI_Clipboard_SetData(1, &text, &sz, &ptr);
-	#else
-    //TODO:  basic text clipboard implementation for now
-    // QClipboard* cb = QApplication::clipboard();
-    //QString tex = QString::fromUtf8(inText.c_str());
-    //  cb->setText(tex);
-	#endif
 }
 
 
@@ -778,8 +807,6 @@ void * GUI_LoadOneSimpleDrag(
 //---------------------------------------------------------------------------------------------------------
 
 #if LIN
-# warning DND is not fully implemented for Linux
-// TODO:mroe must create a dataobj class ( a wrapper around Qmimedata maybe) ;
 
 // mroe: implementation of a adapter like MAC version
 GUI_DragData_Adapter::GUI_DragData_Adapter(void * data_obj) : mObject(data_obj)
@@ -812,7 +839,6 @@ int		GUI_DragData_Adapter::GetNthItemSize(int n, GUI_ClipType ct)
 
 bool	GUI_DragData_Adapter::GetNthItemData(int n, GUI_ClipType ct, int size, void * ptr)
 {
- // TODO:mroe GetNthItemData not implemented yet ;
 	return false;
 }
 

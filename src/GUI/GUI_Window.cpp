@@ -61,80 +61,80 @@ inline int GUI_Window::Client2OGL_Y(int y, void* w) { return (this->h() - y ); }
 inline int GUI_Window::OGL2Client_X(int x, void* w) { return x; }
 inline int GUI_Window::OGL2Client_Y(int y, void* w) { return (this->h() - y ); }
 
+
 //---------------------------------------------------------------------------------------------------------------------------------------
 // LIN DND
 //---------------------------------------------------------------------------------------------------------------------------------------
 
+int GUI_Window::handle(int e )
+{
 
-//TODO:mroe we are shipping no data yet !
-//			providing calls in DragData seems sufficient for WED
+	int x = OGL2Client_X(Fl::event_x(),(void*) this);
+	int y = OGL2Client_Y(Fl::event_y(),(void*) this);
 
-//void GUI_Window::dragEnterEvent(QDragEnterEvent* e)
-//{
-//	int x = OGL2Client_X(e->pos().x(),mWindow);
-//	int y = OGL2Client_Y(e->pos().y(),mWindow);
-//
-//	GUI_DragData_Adapter  adapter(NULL);
-//	GUI_DragOperation allowed;
-//	allowed = (this->InternalDragEnter(x,y,&adapter,
-//				OP_LIN2GUI(e->possibleActions()),
-//				OP_LIN2GUI(e->proposedAction())));
-//
-//	this->mInDrag = 1;
-//	this->SetTimerInterval(0.05);
-//	this->mLastDragX = x;
-//	this->mLastDragY = y;
-//
-//	if (allowed == gui_Drag_None)
-//		e->setDropAction(Qt::IgnoreAction);
-//	//FIXME:mroe:if we comein from outside , drop is not allowed from pane
-//	//untill the targetrect riched , anyhow we must allow the drag here .
-//	e->acceptProposedAction();
-//}
-//
-//void GUI_Window::dragMoveEvent(QDragMoveEvent* e)
-//{
-//	int x = OGL2Client_X(e->pos().x(),mWindow);
-//	int y = OGL2Client_Y(e->pos().y(),mWindow);
-//
-//	GUI_DragData_Adapter  adapter(NULL);
-//	GUI_DragOperation allowed;
-//	allowed = (this->InternalDragOver(x,y,&adapter,
-//				OP_LIN2GUI(e->possibleActions()),
-//				OP_LIN2GUI(e->proposedAction())));
-//
-//	this->mLastDragX = x;
-//	this->mLastDragY = y;
-//
-//	if (allowed == gui_Drag_None)
-//		e->setDropAction(Qt::IgnoreAction);
-//	else
-//		e->acceptProposedAction();
-//}
-//
-//void GUI_Window::dragLeaveEvent(QDragLeaveEvent* e)
-//{
-//	this->mInDrag = 0;
-//	this->SetTimerInterval(0);
-//	this->InternalDragLeave();
-//}
-//
-//void GUI_Window::dropEvent(QDropEvent* e)
-//{
-//	int x = OGL2Client_X(e->pos().x(),mWindow);
-//	int y = OGL2Client_Y(e->pos().y(),mWindow);
-//
-//	this->mInDrag = 0;
-//	this->SetTimerInterval(0);
-//
-//	GUI_DragData_Adapter  adapter(NULL);
-//	GUI_DragOperation allowed;
-//	allowed = (this->InternalDrop(x,y,&adapter,
-//				OP_LIN2GUI(e->possibleActions()),
-//				OP_LIN2GUI(e->proposedAction())));
-//
-//	this->InternalDragLeave();
-//}
+	switch(e){
+
+		/*DND events */
+		case FL_DND_ENTER:{
+
+			GUI_DragData_Adapter  adapter(NULL);
+			GUI_DragOperation allowed;
+			allowed = (this->InternalDragEnter(x,y,&adapter,OP_LIN2GUI(1),OP_LIN2GUI(1)));
+
+			this->mInDrag = 1;
+			this->SetTimerInterval(0.05);
+			this->mLastDragX = x;
+			this->mLastDragY = y;
+
+			if (allowed == gui_Drag_None) return 0;
+			//FIXME:mroe:if we comein from outside , drop is not allowed from pane
+			//untill the targetrect riched , anyhow we must allow the drag here .
+			return 1;
+		}
+		case FL_DND_DRAG :{
+
+			GUI_DragData_Adapter  adapter(NULL);
+			GUI_DragOperation allowed;
+			allowed = (this->InternalDragOver(x,y,&adapter,OP_LIN2GUI(1),OP_LIN2GUI(1)));
+
+			this->mLastDragX = x;
+			this->mLastDragY = y;
+
+			if (allowed == gui_Drag_None) return 0;
+		}
+		return 1;
+		case FL_DND_LEAVE:{
+
+			this->mInDrag = 0;
+			this->SetTimerInterval(0);
+			this->InternalDragLeave();
+		}
+		return 1;
+		case FL_DND_RELEASE:{
+
+			this->mInDrag = 0;
+			this->SetTimerInterval(0);
+
+			GUI_DragData_Adapter  adapter(NULL);
+			GUI_DragOperation allowed = (this->InternalDrop(x,y,&adapter,OP_LIN2GUI(1),OP_LIN2GUI(1)));
+
+			this->InternalDragLeave();
+		}
+		return 0;
+
+		/*CLIPBOARD events , also called when FL_DND_RELEASE result is 1 after a drag*/
+		case FL_PASTE:{
+
+				printf("GUI_Window::handle event:FL_PASTE \n");
+				g_clipboard_recieved = true;
+		}
+		return 1;
+
+	}
+
+	return XWin::handle(e);
+}
+
 #endif
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -1234,17 +1234,11 @@ GUI_DragOperation	GUI_Window::DoDragAndDrop(
 		PostMessage(mWindow, mMouseFocusButton ? WM_RBUTTONUP : WM_LBUTTONUP, 0, MAKELONG(OGL2Client_X(x,mWindow),OGL2Client_Y(y,mWindow)));
 
 		return result;
-	#else
-
-	// TODO:mroe must create a dataobj class ( a wrapper around Qmimedata maybe) ;
-	//QDrag *drag = new QDrag(this);
-	//QMimeData *mimeData = new QMimeData;
-	////mimeData->setData(mimeType, data);
-	//drag->setMimeData(mimeData);
-	////start the drag
-	//GUI_DragOperation result = OP_LIN2GUI(drag->start(OP_GUI2LIN(operations)));
-
-		return gui_Drag_None; //result;
+	#elif LIN
+		Fl::copy("drag",5, 0) ; 	//mroe: this is probably not necessary, but nice to have for debug purpose
+		//mroe: simply starts a drag ,it is enough to make WED happy.
+		int res = Fl::dnd();
+		return gui_Drag_None;
 	#endif
 }
 

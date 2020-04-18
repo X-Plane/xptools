@@ -138,7 +138,7 @@ int XWin::handle(int e)
 		int result  = mMenuBar->handle(e);
 	    //TODO:mroe:posibly solve the window activation bug here
 		// ...
-		if (result) return -1;
+		if(result) return -1;
 	}
 
    switch(e)
@@ -217,14 +217,16 @@ int XWin::handle(int e)
 	}
 	return 0;										  //do not supress key strokes for others , we get no global shortcuts otherwise
 	case FL_KEYDOWN:{
+		printf("FL_KEYDOWN \n");
+
 		uint32_t utf32char = 0;
 		int l = Fl::event_length();
 		if (l > 0)
 		{
-		int len;
-		const char * p = Fl::event_text();
-		const char * e = p+l;
-		utf32char = fl_utf8decode(p,e,&l);
+			int len;
+			const char * p = Fl::event_text();
+			const char * e = p+l;
+			utf32char = fl_utf8decode(p,e,&l);
 		}
 		KeyPressed(utf32char,Fl::event_key(), 0, 0);
 	}

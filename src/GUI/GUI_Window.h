@@ -137,10 +137,13 @@ private:
 	int				mMouseFocusButton;	// Remembered for a drag-and-drop
 #endif
 #if LIN
+
 	int Client2OGL_X(int x, void* w);
 	int Client2OGL_Y(int y, void* w);
 	int OGL2Client_X(int x, void* w);
 	int OGL2Client_Y(int y, void* w);
+
+	int handle(int e);
 
 	static	GUI_Window *  AnyXWND(void);		// Used by app - we need to get SOME window to build the FIRST menubar.
 #endif

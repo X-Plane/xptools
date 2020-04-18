@@ -242,18 +242,21 @@ void GUI_GetMacNativeDragTypeList(vector<string>& out_types);
 //---------------------------------------------------------------------------------------------------------
 
 #if LIN
-#include <QtGui/QClipboard>
 
-inline  Qt::DropActions OP_GUI2LIN(GUI_DragOperation fx)
+static bool g_clipboard_recieved = false;
+
+inline int OP_GUI2LIN(GUI_DragOperation fx)
 {
-	return (fx & gui_Drag_Move ? Qt::MoveAction : Qt::IgnoreAction) |
-		   (fx & gui_Drag_Copy ? Qt::CopyAction : Qt::IgnoreAction);
+	return (fx & gui_Drag_Move ? 1 : 0) |
+		   (fx & gui_Drag_Copy ? 2 : 0);
+	return 0;
 }
 
-inline GUI_DragOperation	OP_LIN2GUI(Qt::DropActions fx)
+inline GUI_DragOperation	OP_LIN2GUI(int fx)
 {
-	return (fx & Qt::MoveAction ? gui_Drag_Move : gui_Drag_None) +
-		   (fx & Qt::CopyAction ? gui_Drag_Copy : gui_Drag_None);
+	return (fx & 1 ? gui_Drag_Move : gui_Drag_None) +
+		   (fx & 2 ? gui_Drag_Copy : gui_Drag_None);
+	return 0;
 }
 
 
