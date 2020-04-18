@@ -211,14 +211,11 @@ int XWin::handle(int e)
 		MouseWheel(mMouse.x, mMouse.y, (Fl::event_dy() < 0) ? 1 : -1, 0);
 	}
 	return 1;
-	case FL_SHORTCUT:{
-		printf("FL_SHORTCUT \n");
-		if(Fl::event_key() == FL_Escape) return 1;    //FLTK would close the window when ESC pressed
-	}
-	return 0;										  //do not supress key strokes for others , we get no global shortcuts otherwise
+
+	/*KEY events*/
 	case FL_KEYDOWN:{
 		printf("FL_KEYDOWN \n");
-
+		if(Fl::event_command() || Fl::event_alt()) return 0;			  // propagate further for shortcuts
 		uint32_t utf32char = 0;
 		int l = Fl::event_length();
 		if (l > 0)
@@ -230,10 +227,17 @@ int XWin::handle(int e)
 		}
 		KeyPressed(utf32char,Fl::event_key(), 0, 0);
 	}
-	return 0;											//do not supress key strokes for others , we get no shortcuts otherwise
+	return 1;
 	case FL_KEYUP:{
+
 	}
-	return 0;
+	return 1;
+	case FL_SHORTCUT:{
+		printf("FL_SHORTCUT \n");
+		if(Fl::event_key() == FL_Escape) return 1;  //FLTK would close the window when ESC pressed
+	}
+	return 0;                                       //do not supress key strokes for others , we get no global shortcuts otherwise
+
 	/*WIDGET events */
 
 	case FL_ACTIVATE:{

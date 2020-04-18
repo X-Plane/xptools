@@ -31,6 +31,7 @@
 #endif
 #if LIN
 	#include "FL/Fl.H"
+	#include  "AssertUtils.h"
 #endif
 
 #if APL || LIN
@@ -47,6 +48,18 @@ static string get_nth_clipboard_format(int n)
 	if( n == 0 ) return Fl::clipboard_plain_text;
 	if( n == 1 ) return Fl::clipboard_image;
 	return NULL;
+}
+
+static bool gClipboardRecieved = 0;
+
+int Get_ClipboardRecieved()
+{
+	return gClipboardRecieved;
+}
+
+void Set_ClipboardRecieved(int s)
+{
+	gClipboardRecieved = s;
 }
 
 #endif
@@ -136,8 +149,9 @@ bool GUI_Clipboard_HasClipType(GUI_ClipType inType)
 	#elif IBM
 		return (IsClipboardFormatAvailable(sCITs[inType]));
 	#elif LIN
-		//TODO:mroe  unfortunatly that does not work , likly because we are in the menu special grab thing  at this point
+		//TODO:mroe  unfortunatly that does not work , likly because we are in the menu-special-grab state
 		//return = Fl::clipboard_contains(sCITs[inType].c_str());
+		//However , we check this later in code again;
 		return 1;
 	#endif
 }
@@ -220,19 +234,24 @@ int GUI_Clipboard_GetSize(GUI_ClipType inType)
 		return sz;
 
 	#elif LIN
-		//if(!Fl::clipboard_contains(sCITs[inType].c_str())) return 0;
-// 		Fl::paste(*Fl::focus(),1);
-//
-//		while(!g_clipboard_recieved && Fl::event() == FL_NO_EVENT)
-//		{
-//			Fl::check();
-//
-//			if(g_clipboard_recieved)
-//			{
-//				g_clipboard_recieved = false;
-//				return Fl::event_length();
-//			}
-//		}
+
+ 		Set_ClipboardRecieved(false);
+		Fl::paste(*Fl::focus(),1);
+
+		// wait for the PASTE event roundtrip
+		//FIXME:mroe we can get an infinity loop here if things going wrong ,we need an good abort condition
+		#warning fix me here
+		while(1)
+		{
+			Fl::wait();
+
+			if(Get_ClipboardRecieved())
+			if(strcmp(sCITs[inType].c_str() ,Fl::event_clipboard_type()) == 0)
+			{
+				return Fl::event_length();
+			}
+		}
+
 		return 0;
 
 	#endif
@@ -265,15 +284,12 @@ bool GUI_Clipboard_GetData(GUI_ClipType inType, int size, void * ptr)
 		return true;
 
 	#elif LIN
-//		if(g_clipboard_recieved)
-//		{
-//				memcpy(ptr,Fl::event_text(), size);
-//				printf("GUI_Clipboard_GetData --> %s \n",ptr);
-//				g_clipboard_recieved = false;
-//				return true;
-//		}
+		DebugAssert(size==Fl::event_length());
+		//TODO:mroe: this needs some more care
+		memcpy(ptr,Fl::event_text(), size);
+		Set_ClipboardRecieved(false);
+		return true;
 
-		return false;
 	#endif
 }
 bool GUI_Clipboard_SetData(int type_count, GUI_ClipType inTypes[], int sizes[], const void * ptrs[])
@@ -328,14 +344,10 @@ bool GUI_GetTextFromClipboard(string& outText)
 {
 	GUI_ClipType text = GUI_GetTextClipType();
 	if (!GUI_Clipboard_HasClipType(text)) return false;
-	printf("GUI_GetTextFromClipboard 0\n");
 	int sz = GUI_Clipboard_GetSize(text);
-	printf("GUI_GetTextFromClipboard 1 %d\n",sz);
 	if (sz <= 0) return false;
-	printf("GUI_GetTextFromClipboard 2\n");
 	vector<char> buf(sz);
 	if (!GUI_Clipboard_GetData(text, sz, &*buf.begin())) return false;
-	printf("GUI_GetTextFromClipboard->   %s \n",buf.begin());
 	#if APL ||  LIN
 		outText = string(buf.begin(),buf.begin()+sz);
 	#elif IBM
@@ -839,6 +851,7 @@ int		GUI_DragData_Adapter::GetNthItemSize(int n, GUI_ClipType ct)
 
 bool	GUI_DragData_Adapter::GetNthItemData(int n, GUI_ClipType ct, int size, void * ptr)
 {
+ // TODO:mroe GetNthItemData not implemented yet ;
 	return false;
 }
 

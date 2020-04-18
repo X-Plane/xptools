@@ -243,7 +243,7 @@ void GUI_GetMacNativeDragTypeList(vector<string>& out_types);
 
 #if LIN
 
-static bool g_clipboard_recieved = false;
+
 
 inline int OP_GUI2LIN(GUI_DragOperation fx)
 {
@@ -258,6 +258,9 @@ inline GUI_DragOperation	OP_LIN2GUI(int fx)
 		   (fx & 2 ? gui_Drag_Copy : gui_Drag_None);
 	return 0;
 }
+
+int  Get_ClipboardRecieved();
+void Set_ClipboardRecieved(int s);
 
 
 // mroe:We need a adapter to present GUI's generic drag & drop data in Linux too.
