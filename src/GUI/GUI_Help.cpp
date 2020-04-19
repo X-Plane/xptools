@@ -26,8 +26,7 @@
 #include "GUI_Unicode.h"
 #endif
 #if LIN
-#include <QtGui/QDesktopServices>
-#include <QtCore/QUrl>
+#include <FL/filename.H>
 #endif
 
 void	GUI_LaunchURL(const char * url)
@@ -42,6 +41,6 @@ void	GUI_LaunchURL(const char * url)
 		ShellExecuteW(NULL,L"open",convert_str_to_utf16(url).c_str(),NULL,NULL,SW_SHOWNORMAL);
 	#endif
 	#if LIN
-     	//QDesktopServices::openUrl(QString::fromUtf8(url));
+		 fl_open_uri(url);
     #endif
 }

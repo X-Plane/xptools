@@ -59,6 +59,10 @@ XWin::XWin(
 	mMouse.y     = 0;
 	mTimer=0;
 
+	// FLTK expects the titel label pointer points ever to valid data ,
+	//copy_label makes a privat copy for the case the source for the text is lost
+	copy_label(inTitle);
+
 	if(inAttributes & xwin_style_centered)
 	{
 		this->position((Fl::w() - this->w())/2, (Fl::h() - this->h())/2 );
@@ -83,18 +87,23 @@ XWin::XWin(int default_dnd) : Fl_Window(100,100), mInited(false),mMenuBar(nullpt
 	mBlockEvents = 0;
 	mMouse.x     = 0;
 	mMouse.y     = 0;
-
 	mTimer=0;
+
 	resizable(this);
 	callback( window_cb );
 	end();
 	mInited = true;
+	printf("XWin limited ctor\n");
 }
 
 XWin::~XWin()
 {
-	if(mMenuBar) delete mMenuBar;
-	mMenuBar = nullptr;
+	printf("XWin dtor\n");
+
+//	if(mMenuBar)
+//	{
+//		clearSubmenusRecursive(mMenuBar->menu());
+//	}
 }
 
 
@@ -130,11 +139,11 @@ int XWin::handle(int e)
 	//printf("%s  EVENT: %s(%d)\n", name,fl_eventnames[e], e);
 
 	/*handle menubar*/
-	if(mMenuBar &&  Fl::event_inside(mMenuBar))
+	if( mMenuBar && ( Fl::event_inside(mMenuBar) || e == FL_SHORTCUT ) )
 	{
 		//mroe: if we detect a click on the menubar , thats the time before something is shown,
  		//We can e.g. update the menu content here;
-		if( mMenuBar->callback() && e == FL_PUSH ) mMenuBar->do_callback();
+		if( mMenuBar->callback() && e == FL_PUSH) mMenuBar->do_callback();
 
 		int result  = mMenuBar->handle(e);
 	    //TODO:mroe:posibly solve the window activation bug here
