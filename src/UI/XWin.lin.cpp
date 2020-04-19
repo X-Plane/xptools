@@ -94,6 +94,7 @@ XWin::XWin(int default_dnd) : Fl_Window(100,100), mInited(false),mMenuBar(nullpt
 XWin::~XWin()
 {
 	if(mMenuBar) delete mMenuBar;
+	mMenuBar = nullptr;
 }
 
 
@@ -131,7 +132,7 @@ int XWin::handle(int e)
 	/*handle menubar*/
 	if(mMenuBar &&  Fl::event_inside(mMenuBar))
 	{
-		//mroe: if we detect a click on the menubar , thats the time before show something ,
+		//mroe: if we detect a click on the menubar , thats the time before something is shown,
  		//We can e.g. update the menu content here;
 		if( mMenuBar->callback() && e == FL_PUSH ) mMenuBar->do_callback();
 
@@ -220,7 +221,6 @@ int XWin::handle(int e)
 		int l = Fl::event_length();
 		if (l > 0)
 		{
-			int len;
 			const char * p = Fl::event_text();
 			const char * e = p+l;
 			utf32char = fl_utf8decode(p,e,&l);
@@ -329,7 +329,7 @@ void XWin::menubar_cb(Fl_Widget *w, void * data)
 {
 	if(!w ) return;
 	printf("menubar_cb called \n");
-	Fl_Menu_Bar * bar = (Fl_Menu_Bar *) w;
+	//Fl_Menu_Bar * bar = (Fl_Menu_Bar *) w;
 }
 
 /*FLTK window about to close callback*/

@@ -188,12 +188,34 @@ void ShowProgressMessage(const char * inMsg, float * inProgress)
 int ConfirmMessage(const char * inMsg, const char * proceedBtn, const char * cancelBtn)
 {
 	fl_message_hotspot(false);
-	return fl_choice(inMsg,proceedBtn,cancelBtn,0);
+
+	int result = 0;
+	switch (fl_choice(inMsg,proceedBtn,cancelBtn,0))
+	{
+	  case 0: result = 1; break; // proceedBtn
+	  case 1: result = 0; break; // cancelBtn (default)
+	}
+
+	if(Fl::event_key(FL_Escape)) result = 0;
+
+	return result;
 }
+
 
 int DoSaveDiscardDialog(const char * inMessage1, const char * inMessage2)
 {
 	fl_message_hotspot(false);
-	return fl_choice(inMessage2,"Save","Discard","Cancel");
+
+	int result = close_Cancel;
+	switch (fl_choice(inMessage2,"Discard","Cancel","Save"))
+	{
+	  case 0: result = close_Discard; break;
+	  case 1: result = close_Cancel;  break; //(default)
+	  case 2: result = close_Save;    break;
+	}
+
+	if(Fl::event_key(FL_Escape)) result = close_Cancel;
+
+	return result;
 }
 
