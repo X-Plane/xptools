@@ -142,9 +142,11 @@ void CALLBACK	GUI_Timer::TimerCB(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD d
 void GUI_Timer::timeout_cb(void *args)
 {
 	if(!args) return;
-
 	GUI_Timer* me = reinterpret_cast<GUI_Timer*>(args);
 	me->TimerFired();
+	//TDO:mroe we loose some precicion , maybe is good enough as it is
+	if(me->mTimer)
+		Fl::repeat_timeout(me->mTimer,timeout_cb,args);
 }
 #endif
 
