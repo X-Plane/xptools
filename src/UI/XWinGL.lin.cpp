@@ -73,9 +73,6 @@ XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX,
 XWinGL::~XWinGL()
 {
 	printf("XWinGL dtor\n");
-	mGlWidget->make_current();
-	mGlWidget->hide();
-	delete mGlWidget;
 }
 
 void XWinGL::Resized(int w, int h)
