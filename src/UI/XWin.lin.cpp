@@ -77,7 +77,7 @@ XWin::XWin(
  	callback( window_cb );
 	end();
 	mInited = true;
-	printf("XWin ctor\n");
+	printf("XWin ctor %dx%d+%d+%d\n", inWidth, inHeight, inX, inY);
 }
 
 XWin::XWin(int default_dnd) : Fl_Window(100,100), mInited(false),mMenuBar(nullptr)
@@ -310,11 +310,11 @@ int XWin::handle(int e)
 /*FLTK resize callback*/
 void XWin::resize(int x,int y,int w,int h)
 {
-	printf(" XWin::resize inited %d\n",mInited);
+	printf(" XWin::resize inited %d  %dx%d+%d+%d\n",mInited, w,h,x,y);
     bool is_move_only = ( w == this->w() && h == this->h() );
-	Fl_Widget::resize(x,y,w,h);
+	Fl_Window::resize(x,y,w,h);
 	if(is_move_only || !mInited) return;
-	printf(" XWin::resize others \n");
+	printf(" XWin::resize others\n");
 	if(mMenuBar) mMenuBar->size(w,mMenuBar->h());
 	Resized(w,h);
 }
@@ -389,11 +389,13 @@ void XWin::SetFilePath(const char * inPath,bool modified)
 void XWin::MoveTo(int inX, int inY)
 {
     //TODO: check for multi screen settings*/
+	printf("XWin::MoveTo %d %d\n",inX, inY);
 	this->position(inX,inY);
 }
 
 void XWin::Resize(int inWidth, int inHeight)
 {
+	printf("XWin::Resize %d %d\n",inWidth, inHeight);
 	this->size(inWidth,inHeight);
 }
 
@@ -459,28 +461,26 @@ void XWin::GetWindowLoc(int * outX, int * outY)
 	//TODO: check for multi screen settings
 	if (outX) *outX = this->x();
 	if (outY) *outY = this->y();
+printf("WindowLoc l=%d t=%d\n", x(), y());
 }
 
 void XWin::GetDesktop(int bounds[4])
 {
-//	QDesktopWidget * dt = QApplication::desktop();
-//	int num_screens = dt->screenCount();
-//
-//	bounds[0] = bounds[1] = 32000;
-//	bounds[2] = bounds[3] = 0;
-//	for (int s = 0; s < num_screens; ++s)
-//	{
-//		QRect screen = dt->availableGeometry(s);
-////		printf("Screen %d: l=%d t=%d w=%d h=%d\n", s, screen.left(), screen.top(), screen.width(), screen.height());
-//		bounds[0] = min(bounds[0], screen.left());
-//		bounds[1] = min(bounds[1], screen.top());
-//		bounds[2] = max(bounds[2], screen.right());
-//		bounds[3] = max(bounds[1], screen.bottom());
-//	}
-//	//printf("Primary screen is %d, I'm on screen %d\n", dt->primaryScreen(), dt->screenNumber(this));
-//	//printf("Desktop l=%d t=%d r=%d b=%d\n", bounds[0], bounds[1], bounds[2], bounds[3]);
-//	//printf("Desktop union size w=%d h=%d\n", dt-> dt->width(), dt->height());
+	bounds[0] = bounds[1] = 32000;
+	bounds[2] = bounds[3] = 0;
+	int num_screens = Fl::screen_count();
+	for (int s = 0; s < num_screens; ++s)
+	{
+		int X,Y,W,H;
+		Fl::screen_xywh(X, Y, W, H, s);
 
+printf("Screen %d: l=%d t=%d w=%d h=%d\n", s, X, Y, W, H);
+		bounds[0] = min(bounds[0], X);
+		bounds[1] = min(bounds[1], Y);
+		bounds[2] = max(bounds[2], X+W);
+		bounds[3] = max(bounds[1], Y+H);
+	}
+printf("Total Desktop l=%d t=%d r=%d b=%d\n", bounds[0], bounds[1], bounds[2], bounds[3]);
 }
 
 
