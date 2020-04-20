@@ -362,7 +362,7 @@ GUI_Menu		GUI_Application::GetMenuBar(void)
 	if (w)
 	{
 		mMenu = w->GetMenuBar();
-		w->mMenuBar->global();					//this makes shortcuts works
+		//w->mMenuBar->global();					//this makes shortcuts works
 	}
 	return mMenu;
 #endif

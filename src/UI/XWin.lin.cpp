@@ -136,26 +136,36 @@ int XWin::handle(int e)
 {
 	string appnm("unknown");
 	if(label()) appnm = label();
-	//printf("%s  EVENT: %s(%d)\n", name,fl_eventnames[e], e);
+
 
 	/*handle menubar*/
 	if( mMenuBar && ( Fl::event_inside(mMenuBar) || e == FL_SHORTCUT ) )
 	{
 		//mroe: if we detect a click on the menubar , thats the time before something is shown,
  		//We can e.g. update the menu content here;
-		if( mMenuBar->callback() && e == FL_PUSH) mMenuBar->do_callback();
+		static bool want_update=true;
+		if( mMenuBar->callback() && (e == FL_PUSH || e == FL_SHORTCUT ) )
+		{
+			if (e == FL_PUSH || want_update) mMenuBar->do_callback(); //this updates the menus
+			// mroe:there comes a few sc events not handled by the menu
+			// we update the menu only once until this sc is handled by the Menu
+			if (e == FL_SHORTCUT) want_update = false;
 
-		int result  = mMenuBar->handle(e);
+		}
+
+		int result = mMenuBar->handle(e);
 	    //TODO:mroe:posibly solve the window activation bug here
 		// ...
+
+		if(result && e == FL_SHORTCUT) want_update = true;
 		if(result) return -1;
 	}
 
+	/*handle for GUI*/
    switch(e)
    {
 
 	/*MOUSE events */
-
 	case FL_PUSH:{
 		printf("FL_PUSH %s\n",appnm.c_str());
 
@@ -275,12 +285,12 @@ int XWin::handle(int e)
 		printf("FL_ENTER %s\n",appnm.c_str());
 
 	}
-	return 0;
+	return 1;
 	case FL_LEAVE:{
 		printf("FL_LEAVE %s\n",appnm.c_str());
 
 	}
-	return 0;
+	return 1;
 
 	/*DND events */
 	case FL_DND_ENTER:
@@ -298,11 +308,10 @@ int XWin::handle(int e)
 	}
 	return 1;
 
-
-	/*OTHER Window events */
 	//default:
 	//   return Fl_Window::handle(e);
 	}
+	/*OTHER Window events */
  	return Fl_Window::handle(e);
 	//return  0;
 }
@@ -524,10 +533,12 @@ xmenu XWin::GetMenuBar(void)
       mMenuBar = new Fl_Menu_Bar(0,0,w(),labelsize() + 16);
       add(mMenuBar);
       this->size(this->w(),this->h() + mMenuBar->h());
+
 	  mMenuBar->callback(menubar_cb);
       mMenuBar->box(FL_FLAT_BOX );
       mMenuBar->down_box(FL_GTK_THIN_DOWN_BOX);
-      mMenuBar->selection_color(FL_BLUE);
+      int r=84,g=133,b=198;// giving the menubar the same selection color as GUI widgets
+      mMenuBar->selection_color(fl_rgb_color(r,g,b));
       //mMenuBar->textfont(0);
       mMenuBar->textsize(12);
       //mroe: thats to get an empty initalized menu

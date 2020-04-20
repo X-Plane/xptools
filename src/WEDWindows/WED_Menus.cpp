@@ -276,7 +276,7 @@ void WED_MakeMenus(GUI_Application * inApp)
 		"&File", kFileMenu, inApp->GetMenuBar(), 0);
 
 	GUI_Menu export_target_menu = inApp->CreateMenu(
-		"Export Target", kExportTargetMenu, file_menu, 9);
+		"Target X-Plane Version", kExportTargetMenu, file_menu, 9);
 
 	GUI_Menu edit_menu = inApp->CreateMenu(
 		"&Edit", kEditMenu, inApp->GetMenuBar(), 0);
