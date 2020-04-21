@@ -1073,8 +1073,13 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 			}
 		}
 		process_texture_path(p,fac->wall_tex);
-		process_texture_path(p,fac->roof_tex);
-		
+		if(fac->has_roof)
+		{
+			if(fac->roof_tex.empty())
+				fac->roof_tex = fac->wall_tex;
+			else
+				process_texture_path(p,fac->roof_tex);
+		}
 		height_desc_for_facade(*fac, fac->h_range);
 	}
 	return true;

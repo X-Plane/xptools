@@ -17,7 +17,8 @@ WED 2.3.0b1 4/3/20
    Bug Fix:
    - fix endcaps for bezier curved lines not following curve in map
    - fix validation not checking GT routes intersecting runways win some airports
-   - WED-1277: Make error messages when saving xml files more particular
+   - WED-1277: make error messages when saving xml files more particular
+   - WED-1294: support facades with single wall+roof texture
    Features:
    - WED-1270: support gateway download driven by Airport ID list from external file
    - "Explode AGP's" can handle any .agp containing only public or local objects
