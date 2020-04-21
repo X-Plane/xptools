@@ -53,7 +53,7 @@ void		WED_AboutBox::Draw(GUI_GraphState * state)
 	int tile_sel[4] = { 0, 0, 1, 1 };
 	GUI_Pane::GetBounds(bounds);
 	GUI_DrawStretched(state, "about.png", bounds, tile_sel);
-	
+
 	int font = gFontSize > 14 ? font_UI_Small : font_UI_Basic;
 
 	float f = GUI_GetLineHeight(font);
@@ -75,7 +75,7 @@ void		WED_AboutBox::Draw(GUI_GraphState * state)
 		"For more detail see 'Permitted Uses' in the",
 		"Help menu or visit http://www.esri.com",
 		0 };
-	
+
 	int n = 0;
 	while(main_text[n])
 	{

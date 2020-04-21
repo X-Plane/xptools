@@ -154,7 +154,12 @@ int main(int argc, char * argv[])
 	// sustain OpenGL.
 
 	WED_AboutBox * about = new WED_AboutBox(&app);
+#if LIN
+	//TODO:mroe replace this and
+	//FIXME:mroe LIN version has no a app icon since years
+	about->xclass("WED");
 	about->show(argc,argv);
+#endif
 	WED_MakeMenus(&app);
 	//about->hide();
 
