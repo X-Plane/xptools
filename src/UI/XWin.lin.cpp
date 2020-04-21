@@ -321,7 +321,7 @@ void XWin::resize(int x,int y,int w,int h)
 {
 	printf(" XWin::resize inited %d  %dx%d+%d+%d\n",mInited, w,h,x,y);
     bool is_move_only = ( w == this->w() && h == this->h() );
-	Fl_Window::resize(x,y,w,h);
+	Fl_Widget::resize(x,y,w,h);
 	if(is_move_only || !mInited) return;
 	printf(" XWin::resize others\n");
 	if(mMenuBar) mMenuBar->size(w,mMenuBar->h());
