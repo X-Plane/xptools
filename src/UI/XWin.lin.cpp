@@ -320,11 +320,11 @@ int XWin::handle(int e)
 void XWin::resize(int x,int y,int w,int h)
 {
 	printf(" XWin::resize inited %d  %dx%d+%d+%d\n",mInited, w,h,x,y);
-    bool is_move_only = ( w == this->w() && h == this->h() );
-	Fl_Widget::resize(x,y,w,h);
+	bool is_move_only = ( w == this->w() && h == this->h() );
+	Fl_Window::resize(x,y,w,h);
 	if(is_move_only || !mInited) return;
-	printf(" XWin::resize others\n");
-	if(mMenuBar) mMenuBar->size(w,mMenuBar->h());
+	//printf(" XWin::resize others\n");
+	//if(mMenuBar) mMenuBar->size(w,mMenuBar->h());
 	Resized(w,h);
 }
 
@@ -530,23 +530,32 @@ xmenu XWin::GetMenuBar(void)
 {
    if(!mMenuBar)
    {
-      mMenuBar = new Fl_Menu_Bar(0,0,w(),labelsize() + 16);
-      add(mMenuBar);
-      this->size(this->w(),this->h() + mMenuBar->h());
+	  mMenuBar = new Fl_Menu_Bar(0,0,w(),labelsize() + 16);
+	  this->insert(*mMenuBar,0);
+
+	  int mbar_h = mMenuBar->h();
+	  this->size(this->w(),this->h() + mbar_h);
+	  for(int i = 1; i < this->children() ; ++i)
+	  {
+			int new_y =  this->child(i)->y() + mbar_h;
+			int new_h =  this->child(i)->h() - mbar_h;
+			this->child(i)->resize(this->child(i)->x(),new_y,this->child(i)->w(),new_h);
+	  }
+	  init_sizes();
 
 	  mMenuBar->callback(menubar_cb);
-      mMenuBar->box(FL_FLAT_BOX );
-      mMenuBar->down_box(FL_GTK_THIN_DOWN_BOX);
-      int r=84,g=133,b=198;// giving the menubar the same selection color as GUI widgets
-      mMenuBar->selection_color(fl_rgb_color(r,g,b));
-      //mMenuBar->textfont(0);
-      mMenuBar->textsize(12);
-      //mroe: thats to get an empty initalized menu
-      //mMenuBar->add("test",0,nullptr,nullptr);
-      //mMenuBar->remove(0);
-      xmenu new_menu = new Fl_Menu_Item[MENU_SIZE * sizeof(Fl_Menu_Item )];
-      memset(new_menu,0,MENU_SIZE * sizeof(Fl_Menu_Item ));
-      mMenuBar->menu(new_menu);
+	  mMenuBar->box(FL_FLAT_BOX );
+	  mMenuBar->down_box(FL_GTK_THIN_DOWN_BOX);
+	  int r=84,g=133,b=198;// giving the menubar the same selection color as GUI widgets
+	  mMenuBar->selection_color(fl_rgb_color(r,g,b));
+	  //mMenuBar->textfont(0);
+	  mMenuBar->textsize(12);
+	  //mroe: thats to get an empty initalized menu
+	  //mMenuBar->add("test",0,nullptr,nullptr);
+	  //mMenuBar->remove(0);
+	  xmenu new_menu = new Fl_Menu_Item[MENU_SIZE * sizeof(Fl_Menu_Item )];
+	  memset(new_menu,0,MENU_SIZE * sizeof(Fl_Menu_Item ));
+	  mMenuBar->menu(new_menu);
    }
 
    return (Fl_Menu_Item *) mMenuBar->menu();

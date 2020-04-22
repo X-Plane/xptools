@@ -32,7 +32,7 @@ void glWidget::draw()
 void glWidget::resize(int X,int Y,int W,int H)
 {
 	printf("glWidget::resize \n");
-    Fl_Gl_Window::resize(0,mXWinGL->GetMenuBarHeight(),W,H-mXWinGL->GetMenuBarHeight());
+    Fl_Gl_Window::resize(X,Y,W,H);
 	//glViewport(0,0,w(),h());
     mXWinGL->GLReshaped(w(),h());
 }
@@ -41,7 +41,7 @@ void glWidget::resize(int X,int Y,int W,int H)
 XWinGL::XWinGL(int default_dnd, XWinGL* inShare) : XWin(default_dnd), mInited(false)
 {
 	mGlWidget = new glWidget(this, 100,100,inShare?inShare->mGlWidget:0);
-	add(mGlWidget);
+	add_resizable(*mGlWidget);
 	//XWinGL::mInited = true;
 	// Ben says: pixel packing expected to be "byte-packed" on all OSes - put here to mimic behavior of other
 	// OSes.  If someone wants to push this down into the implementation to factor it, go for it - I'm avoiding
@@ -53,7 +53,7 @@ XWinGL::XWinGL(int default_dnd, XWinGL* inShare) : XWin(default_dnd), mInited(fa
 XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX, int inY, int inWidth, int inHeight, XWinGL * inShare) : XWin(default_dnd, inTitle, inAttributes, inX, inY, inWidth, inHeight), mInited(false)
 {
 	mGlWidget = new glWidget(this,inWidth,inHeight,inShare?inShare->mGlWidget:0);
-	add(mGlWidget);
+	add_resizable(*mGlWidget);
 
 	//mGlWidget->show();
 
@@ -78,7 +78,6 @@ XWinGL::~XWinGL()
 void XWinGL::Resized(int w, int h)
 {
 	printf("XWinGL::Resized\n");
-	mGlWidget->size(w,h);
 }
 
 void XWinGL::SetGLContext(void)
