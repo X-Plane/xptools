@@ -805,7 +805,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 		if(fltrange(fac_height,f.min_agl,f.max_agl))
 		{
 			int scp_levels = (fac_height - f.min_agl) / f.step_agl;
-			double hgt = scp_levels * f.step_agl;
+			double scpAGL = scp_levels * f.step_agl;
 			fac_height = f.floors;
 			for(auto& s : f.choices)
 			{
@@ -815,14 +815,16 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 					Point2 facOrig = footprint.side(0).midpoint();
 					Vector2 dir (footprint[1],footprint[0]);
 					double facRot = atan2(dir.y(), dir.x()) * RAD_TO_DEG;
+					Vector2 base_xz(s.base_xzr[0], s.base_xzr[1]);
+					base_xz.rotate_by_degrees(facRot - 90.0);
+					Point2 scpOrig = facOrig + base_xz;
 					if(!s.base_obj.empty())
 					{
 						const XObj8 * oo;
 						if(rman->GetObjRelative(s.base_obj, vpath, oo))
 						{
 							draw_obj_at_xyz(tman, oo,
-								facOrig.x() + s.base_xzr[0], 0.0, facOrig.y() + s.base_xzr[1],
-								facRot + s.base_xzr[2], g);
+								scpOrig.x(), 0.0, scpOrig.y(), facRot + s.base_xzr[2], g);
 						} 
 					}
 					if(!s.towr_obj.empty())
@@ -831,8 +833,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 						if(rman->GetObjRelative(s.towr_obj, vpath, oo))
 						{
 							draw_obj_at_xyz(tman, oo,
-								facOrig.x() + s.towr_xzr[0], hgt, facOrig.y() + s.towr_xzr[1],
-								facRot + s.towr_xzr[2], g);
+								scpOrig.x(), scpAGL, scpOrig.y(), facRot + s.towr_xzr[2], g);
 						} 
 					}
 					break;
