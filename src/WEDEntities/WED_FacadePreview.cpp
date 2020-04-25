@@ -800,33 +800,43 @@ struct obj {
 void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, const fac_info_t& info, const Polygon2& footprint, const vector<int>& choices,
 	double fac_height, GUI_GraphState * g, bool want_thinWalls, double ppm_for_culling)
 {
-	for(auto f : info.scrapers)
+	for(auto& f : info.scrapers)
 	{
 		if(fltrange(fac_height,f.min_agl,f.max_agl))
 		{
-			fac_height = (fac_height - f.min_agl) / f.step_agl;
-			double hgt = fac_height * f.step_agl;
-			string scp_base(f.choices[0].base_obj);
-			if(!scp_base.empty())
+			int scp_levels = (fac_height - f.min_agl) / f.step_agl;
+			double hgt = scp_levels * f.step_agl;
+			fac_height = f.floors;
+			for(auto& s : f.choices)
 			{
-				const XObj8 * oo;
-				if(rman->GetObjRelative(scp_base, vpath, oo))
+				if(true)   // pin test
 				{
-					draw_obj_at_xyz(tman, oo,
-						f.choices[0].base_xzr[0], hgt, f.choices[0].base_xzr[1],
-						f.choices[0].base_xzr[2]-90, g);
-				} 
-			}
-			string scp_twr(f.choices[0].towr_obj);
-			if(!scp_twr.empty())
-			{
-				const XObj8 * oo;
-				if(rman->GetObjRelative(scp_twr, vpath, oo))
-				{
-					draw_obj_at_xyz(tman, oo,
-						f.choices[0].towr_xzr[0], hgt, f.choices[0].towr_xzr[1],
-						f.choices[0].towr_xzr[2]-90, g);
-				} 
+					// determine center of first segment
+					Point2 facOrig = footprint.side(0).midpoint();
+					Vector2 dir (footprint[1],footprint[0]);
+					double facRot = atan2(dir.y(), dir.x()) * RAD_TO_DEG;
+					if(!s.base_obj.empty())
+					{
+						const XObj8 * oo;
+						if(rman->GetObjRelative(s.base_obj, vpath, oo))
+						{
+							draw_obj_at_xyz(tman, oo,
+								facOrig.x() + s.base_xzr[0], 0.0, facOrig.y() + s.base_xzr[1],
+								facRot + s.base_xzr[2], g);
+						} 
+					}
+					if(!s.towr_obj.empty())
+					{
+						const XObj8 * oo;
+						if(rman->GetObjRelative(s.towr_obj, vpath, oo))
+						{
+							draw_obj_at_xyz(tman, oo,
+								facOrig.x() + s.towr_xzr[0], hgt, facOrig.y() + s.towr_xzr[1],
+								facRot + s.towr_xzr[2], g);
+						} 
+					}
+					break;
+				}
 			}
 			break;
 		}

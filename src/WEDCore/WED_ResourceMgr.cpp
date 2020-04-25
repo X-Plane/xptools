@@ -674,13 +674,10 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 					if (choice.towr_obj.empty())
 						FAIL("Could not load tower OBJ for FACADE_SCRAPER_MODEL")
 				}
-				/* skip scanning the pins for now
-				while(m.TXT_has_word())
-					choice.pins.push_back(m.TXT_flt_scan());
-				if(choice.pins.size() % 1)
-				{
+				while(MFS_has_word(&s))
+					choice.pins.push_back(MFS_double(&s));
+				if(choice.pins.size() % 2)
 					FAIL("Odd numberof pins")
-				}	*/
 				fac->scrapers.back().choices.push_back(choice);
 			}
 			else if (MFS_string_match(&s,"FACADE_SCRAPER_MODEL_OFFSET",false))
@@ -709,12 +706,10 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 					WED_clean_vpath(file);
 					choice.towr_obj = file;
 				}
-/*				while(m.TXT_has_word())
-					choice.pins.push_back(m.TXT_flt_scan());
-				if(choice.pins.size() % 1)
-				{
+				while(MFS_has_word(&s))
+					choice.pins.push_back(MFS_double(&s));
+				if(choice.pins.size() % 2)
 					FAIL("Odd numberof pins")
-				} */
 				fac->scrapers.back().choices.push_back(choice);
 			}
 // scraper pad command is not implemented
