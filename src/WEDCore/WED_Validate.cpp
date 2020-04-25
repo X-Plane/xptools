@@ -2262,7 +2262,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 			(*o)->GetResource(res);
 			res_mgr->GetPol(res,pol);
 
-			if (!pol->mSubBoxes.size())
+			if (!pol || !pol->mSubBoxes.size())
 				orthos_illegal.push_back(*o);
 //			else
 //				printf("kosher ortho, has %d subtex\n", pol->mSubBoxes.size());
