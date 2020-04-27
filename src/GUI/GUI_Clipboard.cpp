@@ -236,7 +236,9 @@ int GUI_Clipboard_GetSize(GUI_ClipType inType)
 	#elif LIN
 
  		Set_ClipboardRecieved(false);
-		Fl::paste(*Fl::focus(),1);
+		printf("start paste typ: %s wnd: %p\n",sCITs[inType].c_str(),Fl::focus());
+		Fl::paste(*Fl::focus(),1,sCITs[inType].c_str());
+
 
 		// wait for the PASTE event roundtrip
 		//FIXME:mroe we can get an infinity loop here if things going wrong ,we need an good abort condition
@@ -246,7 +248,6 @@ int GUI_Clipboard_GetSize(GUI_ClipType inType)
 			Fl::wait();
 
 			if(Get_ClipboardRecieved())
-			if(strcmp(sCITs[inType].c_str() ,Fl::event_clipboard_type()) == 0)
 			{
 				return Fl::event_length();
 			}
@@ -287,6 +288,7 @@ bool GUI_Clipboard_GetData(GUI_ClipType inType, int size, void * ptr)
 		DebugAssert(size==Fl::event_length());
 		//TODO:mroe: this needs some more care
 		memcpy(ptr,Fl::event_text(), size);
+		printf("clipboard get data txt:%s wnd: %p\n", Fl::event_text(),Fl::focus());
 		Set_ClipboardRecieved(false);
 		return true;
 
@@ -330,7 +332,7 @@ bool GUI_Clipboard_SetData(int type_count, GUI_ClipType inTypes[], int sizes[], 
 	#elif LIN
 		for (int n = 0; n < type_count; ++n)
 		{
-			Fl::copy((const char *) ptrs[n],sizes[n],0,sCITs[inTypes[n]].c_str());
+			Fl::copy((const char *) ptrs[n],sizes[n],1,sCITs[inTypes[n]].c_str());
 		}
 		return true;
 	#endif

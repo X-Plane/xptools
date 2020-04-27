@@ -125,7 +125,7 @@ int GUI_Window::handle(int e )
 		/*CLIPBOARD events , also called when FL_DND_RELEASE result is 1 after a drag*/
 		case FL_PASTE:{
 				//TODO:mroe check for content and type and such
-
+				printf("FL_PASTE txt: %s  wnd: %p\n",Fl::event_text(),Fl::focus());
 				Set_ClipboardRecieved(true);
 		}
 		return 1;
