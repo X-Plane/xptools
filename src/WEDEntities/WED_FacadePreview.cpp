@@ -796,12 +796,19 @@ struct obj {
 	float	x,y,z,r;
 };
 
+#include "GUI_DrawUtils.h"
+#include "WED_DebugLayer.h"
 
 void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, const fac_info_t& info, const Polygon2& footprint, const vector<int>& choices,
 	double fac_height, GUI_GraphState * g, bool want_thinWalls, double ppm_for_culling)
 {
 	for(auto& f : info.scrapers)
 	{
+		// determine center of first segment
+		Point2 facOrig = footprint.side(0).midpoint();
+		Vector2 dir (footprint[1],footprint[0]);
+		double facRot = atan2(dir.y(), dir.x()) * RAD_TO_DEG;
+					
 		if(fltrange(fac_height,f.min_agl,f.max_agl))
 		{
 			int scp_levels = (fac_height - f.min_agl) / f.step_agl;
@@ -809,12 +816,33 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 			fac_height = f.floors;
 			for(auto& s : f.choices)
 			{
-				if(true)   // pin test
+				bool pinsInside(true);
+				for(int i = 0; i < s.pins.size(); i+=2)
 				{
-					// determine center of first segment
-					Point2 facOrig = footprint.side(0).midpoint();
-					Vector2 dir (footprint[1],footprint[0]);
-					double facRot = atan2(dir.y(), dir.x()) * RAD_TO_DEG;
+					Vector2 pin_loc(s.pins[i], s.pins[i+1]);
+					pin_loc.rotate_by_degrees(facRot);
+					Point2 pin = facOrig + pin_loc;
+					if(!footprint.inside(pin))
+					{
+						pinsInside = false;
+						break;
+					}
+				}
+				if(pinsInside)
+				{
+		#if 1
+					glColor4f(1,0,1,1);
+					glPointSize(3);
+					glBegin(GL_POINTS);
+					for(int i = 0; i < s.pins.size(); i+=2)
+					{
+						Vector2 pin_loc(s.pins[i], s.pins[i+1]);
+						pin_loc.rotate_by_degrees(facRot);
+						Point2 pin = facOrig + pin_loc;
+						glVertex3f(pin.x(), 120.0, pin.y());
+					}
+					glEnd();
+		#endif
 					Vector2 base_xz(s.base_xzr[0], s.base_xzr[1]);
 					base_xz.rotate_by_degrees(facRot - 90.0);
 					Point2 scpOrig = facOrig + base_xz;
