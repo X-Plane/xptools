@@ -532,6 +532,20 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 			auto obj = static_cast<WED_ObjPlacement *>(who);
 			if (int t = obj->HasCustomMSL())
 			{
+				if (t == 2) // don't warn about set_AGL if the .agp has scrapers
+				{
+					const agp_t * agp;
+					string vpath;
+					WED_ResourceMgr * rmgr = WED_GetResourceMgr(who->GetArchive()->GetResolver());
+					obj->GetResource(vpath);
+					if (rmgr && rmgr->GetAGP(vpath, agp))
+						for (auto& o :agp->objs)
+							if (o.scp_step > 0.0)
+							{
+								t = 0;
+								break;
+							}
+				}
 				stringstream ss;
 				ss << "The use of " << (t == 1 ? "set_MSL=" : "set_AGL=") << (int)obj->GetCustomMSL() << '.' << abs((int)(obj->GetCustomMSL()*10.0)) % 10 << 'm';
 				if (t == 1)
@@ -539,7 +553,7 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 					ss << " is not allowed on the scenery gateway.";
 					msgs.push_back(validation_error_t(ss.str(), err_object_custom_elev, who, parent_apt));
 				}
-				else
+				else if(t == 2)
 				{
 					ss << " is discouraged on the scenery gateway. Use only in well justified cases.";
 					msgs.push_back(validation_error_t(ss.str(), warn_object_custom_elev, who, parent_apt));
@@ -564,14 +578,6 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 			if(lib_mgr->IsResourceDeprecatedOrPrivate(res))
 				msgs.push_back(validation_error_t(string("The library path '") + res + "' is a deprecated or private X-Plane resource and cannot be used in global airports.",
 				err_gateway_resource_private_or_depricated,	who, parent_apt));
-		}
-
-		if(FILE_get_file_extension(res) == "agp")
-		{
-			auto obj = dynamic_cast<WED_ObjPlacement *>(who);
-			if (obj && obj->HasCustomMSL())
-				msgs.push_back(validation_error_t("Custom elevations for .agp objects are not supported by X-plane.", 
-					gExportTarget == wet_gateway ? err_object_custom_elev :  warn_object_custom_elev, who, parent_apt));
 		}
 
 		string path;
