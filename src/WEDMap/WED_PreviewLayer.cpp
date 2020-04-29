@@ -247,7 +247,7 @@ void Obj_SetNoDraped(void * ref)
 
 static ObjDrawFuncs10_t kFuncs  = { Obj_SetupPoly, Obj_SetupLine, Obj_SetupLight, Obj_SetupMovie, Obj_SetupPanel, Obj_TexCoord, Obj_TexCoordPointer, Obj_GetAnimParam, Obj_SetDraped, Obj_SetNoDraped };
 
-void draw_obj_at_ll(ITexMgr * tman, const XObj8 * o, const Point2& loc, float r, GUI_GraphState * g, WED_MapZoomerNew * zoomer)
+void draw_obj_at_ll(ITexMgr * tman, const XObj8 * o, const Point2& loc, float agl, float r, GUI_GraphState * g, WED_MapZoomerNew * zoomer)
 {
 	if (!o) return;
 	TexRef	ref = tman->LookupTexture(o->texture.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);			
@@ -256,14 +256,15 @@ void draw_obj_at_ll(ITexMgr * tman, const XObj8 * o, const Point2& loc, float r,
 	int id2 = ref2 ? tman->GetTexID(ref2) : 0;
 	g->SetTexUnits(1);
 	if(id1)g->BindTex(id1,0);
+	Point2 l = zoomer->LLToPixel(loc);
+	float ppm = zoomer->GetPPM();
+
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
-	Point2 l = zoomer->LLToPixel(loc);
-	glTranslatef(l.x(),l.y(),0.0);
-	float ppm = zoomer->GetPPM();
+	glTranslatef(l.x(), l.y(), agl * ppm);
 	glScalef(ppm,ppm,ppm);
 	glRotatef(90, 1,0,0);
-	glRotatef(r, 0, -1, 0);
+	glRotatef(r, 0,-1,0);
 	Obj_DrawStruct ds = { g, id1, id2 };
 	ObjDraw8(*o, 0, &kFuncs, &ds); 
 	glPopMatrix();
@@ -280,11 +281,103 @@ void draw_obj_at_xyz(ITexMgr * tman, const XObj8 * o, double x, double y, double
 	if(id1)g->BindTex(id1,0);
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
-
 	glTranslatef(x,y,z);
 	glRotatef(r, 0, -1, 0);
 	Obj_DrawStruct ds = { g, id1, id2 };
 	ObjDraw8(*o, 0, &kFuncs, &ds); 
+	glPopMatrix();
+}
+
+void draw_agp_at_xyz(ITexMgr * tman, const agp_t * agp, double x, double y, double z, float agl, float r, GUI_GraphState * g)
+{
+	if (!agp) return;
+
+	TexRef	ref = tman->LookupTexture(agp->base_tex.c_str(), true, tex_Linear | tex_Mipmap | tex_Compress_Ok | tex_Always_Pad);
+	int id1 = ref ? tman->GetTexID(ref) : 0;
+	if (id1) g->BindTex(id1, 0);
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glTranslatef(x, y, z);
+	glRotatef(r, 0, -1, 0);
+	glColor3f(1, 1, 1);
+	if (!agp->tile.empty() && !agp->hide_tiles)
+	{
+		glDisable(GL_CULL_FACE);
+		glBegin(GL_TRIANGLE_FAN);
+		for (int n = 0; n < agp->tile.size(); n += 4)
+		{
+			glTexCoord2f(agp->tile[n + 2], agp->tile[n + 3]);
+			glVertex3f(agp->tile[n], 0, -agp->tile[n + 1]);
+		}
+		glEnd();
+		glEnable(GL_CULL_FACE);
+	}
+	for (auto& o : agp->objs)
+		if (o.scp_step > 0.0)
+		{
+			if (agl >= o.scp_min && agl <= o.scp_max)
+				agl = roundf(agl / o.scp_step) * o.scp_step;
+			else
+				agl = 0.0;
+			draw_obj_at_xyz(tman, o.obj, o.x, agl, -o.y, o.r, g);
+		}
+		else
+			draw_obj_at_xyz(tman, o.obj, o.x, o.z, -o.y, o.r, g);
+
+	for (auto& f : agp->facs)
+		draw_facade(tman, nullptr, f.name, *(f.fac), f.locs, f.walls, f.height, g, true);
+	glPopMatrix();
+}
+
+void draw_agp_at_ll(ITexMgr * tman, const agp_t * agp, const Point2& loc, float agl, float r, GUI_GraphState * g, WED_MapZoomerNew * zoomer, int preview_level)
+{
+	if (!agp) return;
+	Point2 pix = zoomer->LLToPixel(loc);
+	float ppm = zoomer->GetPPM();
+
+	TexRef	ref = tman->LookupTexture(agp->base_tex.c_str(), true, tex_Linear | tex_Mipmap | tex_Compress_Ok | tex_Always_Pad);
+	int id1 = ref ? tman->GetTexID(ref) : 0;
+	if (id1) g->BindTex(id1, 0);
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glTranslatef(pix.x(), pix.y(), 0);
+	glScalef(ppm, ppm, ppm);
+	glRotatef(90, 1, 0, 0);
+	glRotatef(r, 0, -1, 0);
+	glColor3f(1, 1, 1);
+	if (!agp->tile.empty() && !agp->hide_tiles)
+	{
+		glDisable(GL_CULL_FACE);
+		glBegin(GL_TRIANGLE_FAN);
+		for (int n = 0; n < agp->tile.size(); n += 4)
+		{
+			glTexCoord2f(agp->tile[n + 2], agp->tile[n + 3]);
+			glVertex3f(agp->tile[n], 0, -agp->tile[n + 1]);
+		}
+		glEnd();
+		glEnable(GL_CULL_FACE);
+	}
+	for (auto& o : agp->objs)
+	{
+		if ((o.show_lo + o.show_hi) / 2 <= preview_level)
+		if (ppm * max(o.obj->xyz_max[0] - o.obj->xyz_min[0], o.obj->xyz_max[2] - o.obj->xyz_min[2]) > MIN_PIXELS_PREVIEW)
+		{
+			if (o.scp_step > 0.0)
+			{
+				if (agl >= o.scp_min && agl <= o.scp_max)
+					agl = roundf(agl / o.scp_step) * o.scp_step;
+				else
+					agl = 0.0;
+				draw_obj_at_xyz(tman, o.obj, o.x, agl, -o.y, o.r, g);
+			}
+			else
+				draw_obj_at_xyz(tman, o.obj, o.x, o.z, -o.y, o.r, g);
+		}
+	}
+	for (auto& f : agp->facs)
+		draw_facade(tman, nullptr, f.name, *(f.fac), f.locs, f.walls, f.height, g, true, ppm);
 	glPopMatrix();
 }
 
@@ -782,7 +875,7 @@ static void draw_string_preview(const vector<Point2>& pts, double& d0, double ds
 			while(obj_this_seg >= 0)
 			{
 				if (cur_pos.x() < E && cur_pos.x() > W && cur_pos.y() > S && cur_pos.y() < N)
-					draw_obj_at_ll(tman, obj, zoomer->PixelToLL(cur_pos+off), hdg, g, zoomer);
+					draw_obj_at_ll(tman, obj, zoomer->PixelToLL(cur_pos+off), 0.0, hdg, g, zoomer);
 				cur_pos += dir * (ds / len_m);
 				obj_this_seg--;
 			}
@@ -1162,68 +1255,32 @@ struct	preview_object : public WED_PreviewItem {
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
 	{
 		WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
-		ITexMgr *	tman = WED_GetTexMgr(resolver);
-		ILibrarian * lmgr = WED_GetLibrarian(resolver);
-		string vpath;
+		ITexMgr *		tman = WED_GetTexMgr(resolver);
+		ILibrarian *	lmgr = WED_GetLibrarian(resolver);
+		string			vpath;
+		const XObj8 *	o;
+		const agp_t *	agp;
+		Point2			loc;
 
 		obj->GetResource(vpath);
-		const XObj8 * o;
-		const agp_t * agp;
-		if(rmgr->GetObj(vpath,o))
+		obj->GetLocation(gis_Geo, loc);
+
+		g->SetState(false, 1, false, false, true, true, true);
+		glColor4f(1, 1, 1, 1);
+
+		float agl = obj->HasCustomMSL() > 1 ? obj->GetCustomMSL() : 0.0;
+
+		if(rmgr->GetObj(vpath, o))
+			draw_obj_at_ll(tman,   o, loc, agl, obj->GetHeading(), g, zoomer);
+		else if (rmgr->GetAGP(vpath, agp))
 		{
-			g->SetState(false,1,false,false,true,true,true);
-			glColor3f(1,1,1);
-			Point2 loc;
-			obj->GetLocation(gis_Geo,loc);
-			draw_obj_at_ll(tman, o, loc, obj->GetHeading(), g, zoomer);
-		}
-		else if (rmgr->GetAGP(vpath,agp))
-		{
-			Point2 loc;
-			obj->GetLocation(gis_Geo,loc);
-			g->SetState(false,1,false,true,true,true,true);
-			TexRef	ref = tman->LookupTexture(agp->base_tex.c_str() ,true, tex_Linear|tex_Mipmap|tex_Compress_Ok|tex_Always_Pad);
-			int id1 = ref  ? tman->GetTexID(ref ) : 0;
-			if(id1)g->BindTex(id1,0);
-			glMatrixMode(GL_MODELVIEW);
-			glPushMatrix();
-			loc = zoomer->LLToPixel(loc);
-			float r = obj->GetHeading();
-			glTranslatef(loc.x(), loc.y(), 0);
-			float ppm = zoomer->GetPPM();
-			glScalef(ppm, ppm, ppm);
-			glRotatef(90, 1, 0 ,0);
-			glRotatef(r, 0, -1, 0);
-			glColor3f(1, 1, 1);
-			if(!agp->tile.empty() && !agp->hide_tiles)
-			{
-				glDisable(GL_CULL_FACE);
-				glBegin(GL_TRIANGLE_FAN);
-				for(int n = 0; n < agp->tile.size(); n += 4)
-				{
-					glTexCoord2f(agp->tile[n+2],agp->tile[n+3]);
-					glVertex3f(agp->tile[n],0,-agp->tile[n+1]);
-				}
-				glEnd();
-				glEnable(GL_CULL_FACE);
-			}
-			for(auto& o : agp->objs)
-			{
-				if((o.show_lo + o.show_hi)/2 <= preview_level)
-					if(ppm * max(o.obj->xyz_max[0] - o.obj->xyz_min[0], o.obj->xyz_max[2] - o.obj->xyz_min[2]) > MIN_PIXELS_PREVIEW)
-					{
-						draw_obj_at_xyz(tman, o.obj, o.x, o.z, -o.y, o.r, g);
-					}
-			}
-			glPopMatrix();
+			draw_agp_at_ll(tman, agp, loc, agl, obj->GetHeading(), g, zoomer, preview_level);
 		}
 		else
 		{
-			Point2 l;
-			obj->GetLocation(gis_Geo,l);
-			l = zoomer->LLToPixel(l);
+			loc = zoomer->LLToPixel(loc);
 			glColor3f(1,0,0);
-			GUI_PlotIcon(g,"map_missing_obj.png", l.x(),l.y(),0,1.0);
+			GUI_PlotIcon(g,"map_missing_obj.png", loc.x(),loc.y(), 0, 1.0);
 		}
 	}
 };
@@ -1264,7 +1321,7 @@ struct	preview_truck : public WED_PreviewItem {
 			Point2 loc;
 			trk->GetLocation(gis_Geo,loc);
 			double trk_heading = trk->GetHeading();
-			draw_obj_at_ll(tman, o1, loc, trk_heading, g, zoomer);
+			draw_obj_at_ll(tman, o1, loc, 0.0, trk_heading, g, zoomer);
 
 			if(trk->GetTruckType() == atc_ServiceTruck_Baggage_Train)
 			{
@@ -1279,7 +1336,7 @@ struct	preview_truck : public WED_PreviewItem {
 					for(int c = 0; c < trk->GetNumberOfCars(); ++c)
 					{
 						loc -= (llv * gap);
-						draw_obj_at_ll(tman, o2, loc, trk_heading, g, zoomer);
+						draw_obj_at_ll(tman, o2, loc, 0.0, trk_heading, g, zoomer);
 						gap = 3.598;
 					}
 				}
@@ -1295,7 +1352,7 @@ struct	preview_truck : public WED_PreviewItem {
 					Vector2 llv = VectorMetersToLL(loc, dirv);
 
 					loc -= (llv * gap);
-					draw_obj_at_ll(tman, o2, loc, trk_heading, g, zoomer);
+					draw_obj_at_ll(tman, o2, loc, 0.0, trk_heading, g, zoomer);
 				}
 			}
 		}
@@ -1349,9 +1406,9 @@ struct	preview_light : public WED_PreviewItem {
 					dirv = VectorMetersToLL(light.location,dirv);
 					
 					light.location -= dirv;
-					draw_obj_at_ll(tman, o, light.location, light.heading, g, zoomer);
+					draw_obj_at_ll(tman, o, light.location, 0.0, light.heading, g, zoomer);
 					light.location += dirv * 2.0;
-					draw_obj_at_ll(tman, o, light.location, light.heading, g, zoomer);
+					draw_obj_at_ll(tman, o, light.location, 0.0, light.heading, g, zoomer);
 					break;
 				}
 				case apt_gls_papi_left:
@@ -1365,13 +1422,13 @@ struct	preview_light : public WED_PreviewItem {
 					light.location -= dirv * 1.5;
 					for(int n = 0; n < 4; n++)
 					{
-						draw_obj_at_ll(tman, o, light.location, light.heading, g, zoomer);
+						draw_obj_at_ll(tman, o, light.location, 0.0, light.heading, g, zoomer);
 						light.location += dirv;
 					}
 					break;
 				}
 				default:
-					draw_obj_at_ll(tman, o, light.location, light.heading, g, zoomer);
+					draw_obj_at_ll(tman, o, light.location, 0.0, light.heading, g, zoomer);
 			}
 
 		}

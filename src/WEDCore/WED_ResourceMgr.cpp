@@ -1336,7 +1336,7 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 	int	 rotation = 0;
 	double anchor_x = 0.0, anchor_y = 0.0;
 	agp->hide_tiles = 0;
-	vector<string>	obj_paths;
+	vector<string>	obj_paths, fac_paths;
 
 	bool is_mesh_shader = false;
 
@@ -1373,6 +1373,13 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 			MFS_string(&s,&p);
 			WED_clean_vpath(p);          // cant say here yet if its a relative rpath or a vpath.
 			obj_paths.push_back(p);
+		}
+		else if (MFS_string_match(&s, "FACADE", false))
+		{
+			string p;
+			MFS_string(&s, &p);
+			WED_clean_vpath(p);          // cant say here yet if its a relative rpath or a vpath.
+			fac_paths.push_back(p);
 		}
 		else if(MFS_string_match(&s,"#object_wed",false))
 		{
@@ -1448,6 +1455,25 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 				agp->objs.back().name = obj_paths[obj_idx];
 				agp->objs.back().show_lo = MFS_int(&s);
 				agp->objs.back().show_hi = MFS_int(&s);
+				agp->objs.back().scp_step = 0.0;
+			}
+			else
+				agp->objs.pop_back(); // ignore instances with OOB index
+		}
+		else if (MFS_string_match(&s, "OBJ_SCRAPER", false))
+		{
+			agp->objs.push_back(agp_t::obj_t());
+			agp->objs.back().x = MFS_double(&s) * tex_s * tex_x;
+			agp->objs.back().y = MFS_double(&s) * tex_t * tex_y;
+			agp->objs.back().r = MFS_double(&s);
+			agp->objs.back().z = 0.0;
+			int obj_idx = MFS_int(&s);
+			if (obj_idx >= 0 && obj_idx < obj_paths.size())
+			{
+				agp->objs.back().name = obj_paths[obj_idx];
+				agp->objs.back().scp_min = MFS_double(&s);
+				agp->objs.back().scp_max = MFS_double(&s);
+				agp->objs.back().scp_step = MFS_double(&s);
 			}
 			else
 				agp->objs.pop_back(); // ignore instances with OOB index
@@ -1465,9 +1491,30 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 				agp->objs.back().name = obj_paths[obj_idx];
 				agp->objs.back().show_lo = MFS_int(&s);
 				agp->objs.back().show_hi = MFS_int(&s);
+				agp->objs.back().scp_step = 0.0;
 			}
 			else
 				agp->objs.pop_back(); // ignore instances with OOB index
+		}
+		else if (MFS_string_match(&s, "FAC_WALLS", false))
+		{
+			agp->facs.push_back(agp_t::fac_t());
+			int fac_idx = MFS_int(&s);
+			if (fac_idx >= 0 && fac_idx < fac_paths.size())
+			{
+				agp->facs.back().name = fac_paths[fac_idx];
+				agp->facs.back().height = MFS_double(&s);
+				while (MFS_has_word(&s))
+				{
+					Point2 p;
+					p.x_ = MFS_double(&s) * tex_s * tex_x;
+					p.y_ = MFS_double(&s) * tex_t * tex_y;
+					agp->facs.back().locs.push_back(p);
+					agp->facs.back().walls.push_back(MFS_int(&s));
+				}
+			}
+			else
+				agp->facs.pop_back(); // ignore instances with OOB index
 		}
 		else if(MFS_string_match(&s,"ANCHOR_PT",false))
 		{
@@ -1503,6 +1550,15 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 		do_rotate(rotation, o.x, o.y);
 		o.r += 90.0 * rotation;
 	}
+	for (auto& f : agp->facs)
+		for(auto& l : f.locs)
+		{
+			float x = l.x_ - anchor_x;
+			float y = l.y_ - anchor_y;
+			do_rotate(rotation, x, y);
+			l.x_ = x;
+			l.y_ = -y;
+		}
 
 	agp->xyz_min[0] = agp->xyz_min[1] = agp->xyz_min[2] =  999.0;
 	agp->xyz_max[0] = agp->xyz_max[1] = agp->xyz_max[2] = -999.0;
@@ -1557,6 +1613,29 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 		else
 			o = agp->objs.erase(o);
 	}
+
+	auto f = agp->facs.begin();
+	while (f != agp->facs.end())
+	{
+		const fac_info_t * fac;
+		if(GetFac(f->name, fac))                // doesn't take rpaths, only vpaths
+		{
+			f->fac = fac;
+			for (auto& l : f->locs)
+			{
+				agp->xyz_min[0] = min(agp->xyz_min[0], (float) l.x());
+				agp->xyz_max[0] = max(agp->xyz_max[0], (float) l.x());
+				agp->xyz_min[2] = min(agp->xyz_min[2], (float) l.y());
+				agp->xyz_max[2] = max(agp->xyz_max[2], (float) l.y());
+			}
+			agp->xyz_min[1] = min(agp->xyz_min[1], 0.0f);    // do better - figure the real height limits
+			agp->xyz_max[1] = min(agp->xyz_max[1], 2.0f);
+			f++;
+		}
+		else
+			f = agp->facs.erase(f);
+	}
+
 	return true;
 }
 

@@ -27,6 +27,7 @@
 #include "WED_MapLayer.h"
 
 struct	XObj8;
+struct	agp_t;
 class	ITexMgr;
 
 // We need int values for layer groups - these weird numbers actually came out of X-Plane's internal engine...who knew.
@@ -94,6 +95,7 @@ private:
 };
 
 void draw_obj_at_xyz(ITexMgr * tman, const XObj8 * o, double x, double y, double z, float r, GUI_GraphState * g);
+void draw_agp_at_xyz(ITexMgr * tman, const agp_t * agp, double x, double y, double z, float agl, float r, GUI_GraphState * g);
 int layer_group_for_string(const char * s, int o, int def);
 
 #endif /* WED_PreviewLayer_H */
