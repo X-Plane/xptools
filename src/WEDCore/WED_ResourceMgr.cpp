@@ -1496,6 +1496,26 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 			else
 				agp->objs.pop_back(); // ignore instances with OOB index
 		}
+		else if (MFS_string_match(&s, "FAC", false))
+		{
+			agp->facs.push_back(agp_t::fac_t());
+			int fac_idx = MFS_int(&s);
+			if (fac_idx >= 0 && fac_idx < fac_paths.size())
+			{
+				agp->facs.back().name = fac_paths[fac_idx];
+				agp->facs.back().height = MFS_double(&s);
+				while (MFS_has_word(&s))
+				{
+					Point2 p;
+					p.x_ = MFS_double(&s) * tex_s * tex_x;
+					p.y_ = MFS_double(&s) * tex_t * tex_y;
+					agp->facs.back().locs.push_back(p);
+					agp->facs.back().walls.push_back(0);
+				}
+			}
+			else
+				agp->facs.pop_back(); // ignore instances with OOB index
+		}
 		else if (MFS_string_match(&s, "FAC_WALLS", false))
 		{
 			agp->facs.push_back(agp_t::fac_t());

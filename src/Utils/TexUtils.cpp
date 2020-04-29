@@ -303,7 +303,6 @@ static void swap_blocks(char *a, char *b, GLint type)
 		swap(x->alphas.rows[1], x->alphas.rows[2]);
 		swap(y->alphas.rows[0], y->alphas.rows[3]);
 		swap(y->alphas.rows[1], y->alphas.rows[2]);
-		
 		swap(x->colors.rows[0], x->colors.rows[3]);
 		swap(x->colors.rows[1], x->colors.rows[2]);
 		swap(y->colors.rows[0], y->colors.rows[3]);
@@ -318,6 +317,31 @@ static void swap_blocks(char *a, char *b, GLint type)
 		swap(x->rows[1], x->rows[2]);
 		swap(y->rows[0], y->rows[3]);
 		swap(y->rows[1], y->rows[2]);
+	}
+}
+
+static void swap_blocks(char *a, GLint type)
+{
+	if (type == GL_COMPRESSED_RGBA_S3TC_DXT5_EXT)
+	{
+		DXT5Block * x = (DXT5Block *)a;
+		swap_12bit_idx(x->alphas.idx);
+		swap(x->colors.rows[0], x->colors.rows[3]);
+		swap(x->colors.rows[1], x->colors.rows[2]);
+	}
+	else if (type == GL_COMPRESSED_RGBA_S3TC_DXT3_EXT)
+	{
+		DXT3Block * x = (DXT3Block *)a;
+		swap(x->alphas.rows[0], x->alphas.rows[3]);
+		swap(x->alphas.rows[1], x->alphas.rows[2]);
+		swap(x->colors.rows[0], x->colors.rows[3]);
+		swap(x->colors.rows[1], x->colors.rows[2]);
+	}
+	else
+	{
+		DXT1Block * x = (DXT1Block *)a;
+		swap(x->rows[0], x->rows[3]);
+		swap(x->rows[1], x->rows[2]);
 	}
 }
 
@@ -354,7 +378,7 @@ bool	LoadTextureFromDDS(
 	int x = SWAP32(desc->dwWidth);
 	int y = SWAP32(desc->dwHeight);
 
-	if (y != NextPowerOf2(y) || y < 8) return false;  // flipping code can only handle certain heights
+	if (y != NextPowerOf2(y)) return false;  // flipping code can only handle certain heights
 
 	if (outWidth) *outWidth = x;
 	if (outHeight) *outHeight = y;
@@ -363,22 +387,27 @@ bool	LoadTextureFromDDS(
 
 	glBindTexture(GL_TEXTURE_2D, in_tex_num);
 
-	int mips_sent = 0;
 	for (int level = 0; level <= mips; ++level)
 	{
-		int data_len = x * y / 16 * dds_blocksize;
+		int data_len = max(1 , (x * y) / 16) *  dds_blocksize;
 		if((data + data_len) > mem_end) return false;        // not enough data for mipmaps = broken dds !
 
 		// lossless flip image in Y-direction to match orientation of all other textures in XPtools/X-plane
-		// - which use the old MSFT DIB convention (0,0) == left bottom. But DXT is starting at the top.
+		// to match old MSFT DIB convention (0,0) == left bottom, but DXT starts at left top.
 		{
-			if (x < 4 || y < 8) break;      // swap algorithm can't deal with such small mipmaps. Nor do we really need them. 
-			int line_len = data_len / (y / 4);
-			int blocks_per_line = line_len / dds_blocksize;
+			int blocks_per_line = max(1, x / 4);
+			int line_len = blocks_per_line * dds_blocksize;
 			int swap_count = y / 4 / 2;
 			char * dds_line1 = data;
 			char * dds_line2 = data + data_len - line_len;
 
+			printf("%dx%d %dx%d %d %d/%d\n", *outWidth, *outHeight, x, y, swap_count, level, mips);
+			if(swap_count == 0)
+				for (int i = 0; i < blocks_per_line; i++)
+				{
+					swap_blocks(dds_line1, glformat);
+					dds_line1 += dds_blocksize;
+				}
 			while (swap_count--)
 			{
 				for (int i = 0; i < blocks_per_line; i++)
@@ -392,14 +421,11 @@ bool	LoadTextureFromDDS(
 		}
 
 		glCompressedTexImage2D( GL_TEXTURE_2D, level, glformat, x, y, 0, data_len, data);
-		mips_sent++;
 
 		x >>= 1;
 		y >>= 1;
 		data += data_len;
 	}
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mips_sent - 1);
 
 	if (inFlags & tex_Linear)
 	{
