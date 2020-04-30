@@ -201,17 +201,20 @@ int XWin::handle(int e)
 
 		if(mDragging == btn)
 		{
-		 mDragging = -1;
-		 ClickUp(mMouse.x, mMouse.y, btn);
+			mDragging = -1;
+			ClickUp(mMouse.x, mMouse.y, btn);
 		}
 	}
 	return 1;
 	case FL_DRAG:{
 
+		mMouse.x = Fl::event_x();
+		mMouse.y = Fl::event_y();
+
 		if(mBlockEvents) return 1;
 		if(fltkBtnToXBtn(Fl::event_button()) == mDragging)
 		{
-			ClickDrag(Fl::event_x(),Fl::event_y(),mDragging);
+			ClickDrag(mMouse.x,mMouse.y,mDragging);
 		}
 	}
 	return 1;

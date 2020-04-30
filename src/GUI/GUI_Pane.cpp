@@ -74,7 +74,7 @@ GUI_KeyFlags GUI_Pane::GetModifiersNow(void)
 	GUI_KeyFlags	flags = 0;
 	int modstate = Fl::event_state();
 
-	if (modstate & FL_ALT | modstate & FL_META)
+	if (modstate & (FL_ALT | FL_META))
 		flags |= gui_OptionAltFlag;
 	if (modstate & FL_SHIFT)
 		flags |= gui_ShiftFlag;
