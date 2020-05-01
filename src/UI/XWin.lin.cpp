@@ -531,16 +531,21 @@ xmenu XWin::GetMenuBar(void)
    if(!mMenuBar)
    {
 	  mMenuBar = new Fl_Menu_Bar(0,0,w(),labelsize() + 16);
+	  int mbar_h = mMenuBar->h();
+	  Fl_Widget * resizable_widget = this->resizable();
+	  resizable(this);
+	  this->size(this->w(),this->h() + mbar_h);
 	  this->insert(*mMenuBar,0);
 
-	  int mbar_h = mMenuBar->h();
-	  this->size(this->w(),this->h() + mbar_h);
 	  for(int i = 1; i < this->children() ; ++i)
 	  {
 			int new_y =  this->child(i)->y() + mbar_h;
 			int new_h =  this->child(i)->h() - mbar_h;
+			resizable(child(i));
 			this->child(i)->resize(this->child(i)->x(),new_y,this->child(i)->w(),new_h);
 	  }
+
+	  this->resizable(resizable_widget);
 	  init_sizes();
 
 	  mMenuBar->callback(menubar_cb);
