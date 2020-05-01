@@ -27,7 +27,6 @@
 #include <stdio.h>
 #endif
 
-#include "WED_AboutBox.h"
 #include "WED_Document.h"
 #include "WED_Assert.h"
 #include "WED_StartWindow.h"
@@ -119,6 +118,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 int main(int argc, char * argv[])
 #endif
 {
+
 #if IBM
 	gInstance = hInstance;
 	SetErrorMode(SEM_NOOPENFILEERRORBOX|SEM_FAILCRITICALERRORS);
@@ -126,7 +126,7 @@ int main(int argc, char * argv[])
 	GUI_MemoryHog::InstallNewHandler();
 	GUI_InitClipboard();
 #if LIN
-	Initializer linit(&argc, &argv, false);
+//	Initializer linit(&argc, &argv, false);
 #endif // LIN
 
 #if LIN || APL
@@ -153,21 +153,9 @@ int main(int argc, char * argv[])
 	// This means one window must always be in existence.  That window is the about box...which stays hidden but allocated to
 	// sustain OpenGL.
 
-	WED_AboutBox * about = new WED_AboutBox(&app);
-#if LIN
-	//TODO:mroe replace this and
-	//FIXME:mroe LIN version has no a app icon since years
-	about->xclass("WED");
-	about->show(argc,argv);
-#endif
+	WED_StartWindow * start = new WED_StartWindow(&app);   // here we initialize the fonts - but the 
 	WED_MakeMenus(&app);
-	//about->hide();
-
-
-	WED_StartWindow * start = new WED_StartWindow(&app);
-
 	start->Show();
-
 	start->ShowMessage("Initializing...");
 //	XESInit();
 
@@ -195,8 +183,6 @@ int main(int argc, char * argv[])
 	REGISTER_LIST_ATC
 	#undef _R
 
-	app.SetAbout(about);
-
 	start->ShowMessage(string());
 	setlocale(LC_ALL,"C");
 	#if LIN
@@ -209,11 +195,6 @@ int main(int argc, char * argv[])
 	//QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
 	#endif
 	app.Run();
-    // we're out of eventloop here, deleting windows on linux implies sending messages to them,
-    // so this would fail.
-	#if !LIN
-	    delete about;
-	#endif
 
 	GUI_MemoryHog::RemoveNewHandler();
 

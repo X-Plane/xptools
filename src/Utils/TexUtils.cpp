@@ -24,15 +24,11 @@
 #include "AssertUtils.h"
 #include "BitmapUtils.h"
 
-#if IBM
-	// gotta do this cuz MSFT hasn't updated their openGL headers in 23 years ... its STILL OGL 1.1 from 1996 !!
-	#include "glew.h"
-#elif APL
+#if APL
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glu.h>
 #else
-	#include <GL/gl.h>
-	#include <GL/glu.h>
+	#include "glew.h"
 #endif
 
 struct  gl_info_t {
@@ -43,25 +39,31 @@ struct  gl_info_t {
 	int		max_tex_size;
 };
 
-static gl_info_t gl_info = { 0 };
+gl_info_t gl_info = { 0 };
 
 #define INIT_GL_INFO		if(gl_info.gl_major_version == 0) init_gl_info(&gl_info);
 
-static void init_gl_info(gl_info_t * i)
+void init_gl_info(gl_info_t * i)
 {
+#if IBM || LIN
+	GLenum err = glewInit();
+	if (err != GLEW_OK)
+		AssertPrintf("Can not init GLEW: '%s'\n", glewGetErrorString(err));
+#endif
+
 	const char * ver_str = (const char *)glGetString(GL_VERSION);
 	const char * ext_str = (const char *)glGetString(GL_EXTENSIONS);
 
 	sscanf(ver_str,"%d", &i->gl_major_version);
-	if(i->gl_major_version < 2)
-		AssertPrintf("OpenGL 2.0 or higher required. Found version '%s'\n", ver_str);
+	if(i->gl_major_version < 3)
+		AssertPrintf("OpenGL 3.0 or higher required. Found version '%s'\n", ver_str);
 	
 	i->has_tex_compression = strstr(ext_str,"GL_ARB_texture_compression") != NULL;
 	i->has_non_pots = strstr(ext_str,"GL_ARB_texture_non_power_of_two") != NULL;
 	i->has_bgra = strstr(ext_str,"GL_EXT_bgra") != NULL;
 
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE,&i->max_tex_size);
-	// if(i->max_tex_size > 8192)	i->max_tex_size = 8192;
+	if(i->max_tex_size > 2*8192)	i->max_tex_size = 2*8192;
 	if(i->has_tex_compression)	glHint(GL_TEXTURE_COMPRESSION_HINT,GL_NICEST);
 }
 

@@ -185,6 +185,7 @@ WED_AptImportDialog::~WED_AptImportDialog()
 
 bool	WED_AptImportDialog::Closed(void)
 {
+	AsyncDestroy();
 	return true;
 }
 
