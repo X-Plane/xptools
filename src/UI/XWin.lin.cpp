@@ -72,8 +72,6 @@ XWin::XWin(
 	if(inAttributes & xwin_style_visible)	set_visible();
 	if(inAttributes & xwin_style_resizable) resizable(this);
 
-//	if (default_dnd)
-//		setAcceptDrops(true);
  	callback( window_cb );
 	end();
 	mInited = true;
@@ -89,7 +87,6 @@ XWin::XWin(int default_dnd) : Fl_Window(100,100), mInited(false),mMenuBar(nullpt
 	mMouse.y     = 0;
 	mTimer=0;
 
-	resizable(this);
 	callback( window_cb );
 	end();
 	mInited = true;
