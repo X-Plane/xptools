@@ -142,22 +142,14 @@ int XWin::handle(int e)
 	{
 		//mroe: if we detect a click on the menubar , thats the time before something is shown,
  		//We can e.g. update the menu content here;
-		static bool want_update=true;
 		if( mMenuBar->callback() && (e == FL_PUSH || e == FL_SHORTCUT ) )
 		{
-			if (e == FL_PUSH || want_update) mMenuBar->do_callback(); //this updates the menus
-			// mroe:there comes a few sc events not handled by the menu
-			// we update the menu only once until this sc is handled by the Menu
-			if (e == FL_SHORTCUT) want_update = false;
-
+			 mMenuBar->do_callback(); //this updates the menus
 		}
-
 		int result = mMenuBar->handle(e);
 	    //TODO:mroe:posibly solve the window activation bug here
 		// ...
-
-		if(result && e == FL_SHORTCUT) want_update = true;
-		if(result) return -1;
+		if(result) return 1;
 	}
 
 	/*handle for GUI*/
@@ -261,9 +253,9 @@ int XWin::handle(int e)
 	#if DEV && DEBUG_EVENTS
 		printf("FL_SHORTCUT \n");
 	#endif // DEV
-		if(Fl::event_key() == FL_Escape) return 1;  //FLTK would close the window when ESC pressed
+		//if(Fl::event_key() == FL_Escape) return 1;  //FLTK would close the window when ESC pressed
 	}
-	return 0;                                       //do not supress key strokes for others , we get no global shortcuts otherwise
+	return 1;      		// we stop the shortcut propagation here because it pings back twice to us , lets see if someone miss a sc
 
 	/*WIDGET events */
 

@@ -199,19 +199,20 @@ static void menu_cb(Fl_Widget *w, void * data)
 	if(!w || ! data) return;
 
 	Fl_Menu_Bar * bar = (Fl_Menu_Bar *) w;
-
-	int idx = bar->value();
-
-	printf("menu idx %d \n", idx);
-
 	xmenu_cmd * mc = (xmenu_cmd *) data;
 	int cmd = mc->cmd;
+
+	printf("menu cmd:%d\n",cmd);
+
 	GUI_Application * app = (GUI_Application *) mc->data;
-	int  ioCheck = 0;
-    string ioName;
+	//TODO:mroe: currently the whole menu is updated every time, also when a shortcut combination pressed
+    //probably we need that code back when we have a better solution
+	//int  ioCheck = 0;
+    //string ioName;
     //mroe : We must check again if the cmd can be handled ,
     //		 because shortcut-actions allways enabled
-    if(app->DispatchCanHandleCommand(cmd,ioName,ioCheck))
+
+    //if(app->DispatchCanHandleCommand(cmd,ioName,ioCheck))
 			app->DispatchHandleCommand(cmd);
 }
 
@@ -571,32 +572,32 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 			}
 			else
 			{/*is part of a menu structure */
-				string sc = "";
+
+				int sc = 0;
 				if(items[n].key != 0)
 				{
-					if (items[n].flags & gui_OptionAltFlag) {sc += "#";}
-					if (items[n].flags & gui_ShiftFlag)     {sc += "+";}
-					if (items[n].flags & gui_ControlFlag)   {sc += "^";}
+					if (items[n].flags & gui_OptionAltFlag) {sc += FL_ALT;}
+					if (items[n].flags & gui_ShiftFlag)     {sc += FL_SHIFT;}
+					if (items[n].flags & gui_ControlFlag)   {sc += FL_CTRL;}
 
 					char key_cstr[2] = { items[n].key , 0 };
-					sc += tolower(key_cstr[0]);
-//					switch(items[n].key)
-//					{
-//						case GUI_KEY_UP    :    sc += "Up";     break;
-//						case GUI_KEY_DOWN  :    sc += "Down";   break;
-//						case GUI_KEY_RIGHT :	sc += "Right";  break;
-//						case GUI_KEY_LEFT  :    sc += "Left";   break;
-//						case GUI_KEY_BACK  :    sc += "Del";    break;
-//						case GUI_KEY_RETURN:    sc += "Return"; break;
-//						default            :    sc += key_cstr; break;
-//					}
+					switch(items[n].key)
+					{
+						case GUI_KEY_UP    :    sc += FL_Up;       break;
+						case GUI_KEY_DOWN  :    sc += FL_Down;     break;
+						case GUI_KEY_RIGHT :	sc += FL_Right;    break;
+						case GUI_KEY_LEFT  :    sc += FL_Left;     break;
+						case GUI_KEY_BACK  :    sc += FL_BackSpace;break;
+						case GUI_KEY_RETURN:    sc += FL_Enter;    break;
+						default            :    sc += tolower(key_cstr[0]); break;
+					}
 				}
 
    			    xmenu_cmd * menu_cmd = new xmenu_cmd();
 				menu_cmd->cmd  = items[n].cmd;
 				menu_cmd->data = this;
 
-				int idx = menu->add(itemname.c_str(),sc.c_str(),menu_cb,menu_cmd,FL_MENU_INACTIVE);
+				int idx = menu->add(itemname.c_str(),sc,menu_cb,menu_cmd,FL_MENU_INACTIVE);
 			    Fl_Menu_Item * m = menu + idx;
 				if(items[n].checked)  m->flags = m->flags| FL_MENU_TOGGLE;
 				items[n].checked ? m->set() : m->clear();
