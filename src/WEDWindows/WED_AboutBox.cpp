@@ -32,7 +32,7 @@
 
 static int aboutbox_bounds[4] = { 0, 0, 512, 384};
 
-WED_AboutBox::WED_AboutBox(GUI_Commander * cmdr) : GUI_Window("About WED", xwin_style_movable | xwin_style_centered, aboutbox_bounds, cmdr)
+WED_AboutBox::WED_AboutBox(GUI_Commander * cmdr) : GUI_Window("About WED", xwin_style_movable | xwin_style_centered | xwin_style_popup, aboutbox_bounds, cmdr)
 {
 }
 
@@ -109,7 +109,6 @@ void		WED_AboutBox::Draw(GUI_GraphState * state)
 			credits[n],align_Center);
 		++n;
 	}
-
 }
 
 int			WED_AboutBox::MouseDown(int x, int y, int button)

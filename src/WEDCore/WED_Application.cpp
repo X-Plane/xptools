@@ -96,7 +96,7 @@ RadioButton::RadioButton(int x0, int y0, WED_Settings * parent,  const int * var
 bool WED_Settings::Closed(void)
 {
 	Hide();
-	return false;  // don't destroy window under MS Windows- just hide it, so we can later Show() it again
+	return true; // false;  // don't destroy window under MS Windows- just hide it, so we can later Show() it again
 }
 
 
@@ -240,11 +240,6 @@ WED_Application::~WED_Application()
 {
 }
 
-void	WED_Application::SetAbout(GUI_Window * about_box)
-{
-	mAboutBox = about_box;
-}
-
 void	WED_Application::OpenFiles(const vector<string>& inFiles)
 {
 }
@@ -300,13 +295,15 @@ int		WED_Application::CanHandleCommand(int command, string& ioName, int& ioCheck
 
 void	WED_Application::AboutBox(void)
 {
-	if (mAboutBox)	mAboutBox->Show();
+	if(!mAboutBox) mAboutBox = new WED_AboutBox( this );
+	mAboutBox->mInited = false;
+	mAboutBox->Show();
 }
 
 void	WED_Application::Preferences(void)
 {
-//	DoUserAlert("WED does not yet have any preferences.");
 	if(!mSettingsWin) mSettingsWin = new WED_Settings( this );
+	mSettingsWin->mInited = false;
 	mSettingsWin->Show();
 }
 
