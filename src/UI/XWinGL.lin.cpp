@@ -53,8 +53,10 @@ XWinGL::XWinGL(int default_dnd, XWinGL* inShare) : XWin(default_dnd), mInited(fa
 XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX, int inY, int inWidth, int inHeight, XWinGL * inShare) : XWin(default_dnd, inTitle, inAttributes, inX, inY, inWidth, inHeight), mInited(false)
 {
 	mGlWidget = new glWidget(this,inWidth,inHeight,inShare?inShare->mGlWidget:0);
-	add_resizable(*mGlWidget);
-
+	if(inAttributes & xwin_style_resizable)
+		add_resizable(*mGlWidget);
+	else
+		add(*mGlWidget);
 	//mGlWidget->show();
 
 	//mGlWidget->make_current();
@@ -63,7 +65,6 @@ XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX,
 //	if (inAttributes & xwin_style_visible) {
 //		XWin::SetVisible(true);
 //	}
-
 
 
    glPixelStorei	(GL_UNPACK_ALIGNMENT,1				);

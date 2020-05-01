@@ -249,14 +249,12 @@ inline int OP_GUI2LIN(GUI_DragOperation fx)
 {
 	return (fx & gui_Drag_Move ? 1 : 0) |
 		   (fx & gui_Drag_Copy ? 2 : 0);
-	return 0;
 }
 
 inline GUI_DragOperation	OP_LIN2GUI(int fx)
 {
 	return (fx & 1 ? gui_Drag_Move : gui_Drag_None) +
 		   (fx & 2 ? gui_Drag_Copy : gui_Drag_None);
-	return 0;
 }
 
 int  Get_ClipboardRecieved();

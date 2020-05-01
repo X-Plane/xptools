@@ -178,8 +178,7 @@ void GUI_Clipboard_GetTypes(vector<GUI_ClipType>& outTypes)
 				outTypes.push_back(ct);
 		}
 	#elif LIN
-		int total = mTOTAL_FLTK_CLIPFORMATS;
-		for (int n = 0; n < total; ++n)
+		for (int n = 0; n < mTOTAL_FLTK_CLIPFORMATS ; ++n)
 		{
 			GUI_CIT raw_type = get_nth_clipboard_format(n);
 			GUI_ClipType ct;
