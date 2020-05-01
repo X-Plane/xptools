@@ -3,6 +3,7 @@
 #include "STLUtils.h"
 #include <FL/names.h>
 
+#define DEBUG_EVENTS 0
 
 static void clearSubmenusRecursive(const Fl_Menu_Item *  menu)
 {
@@ -121,7 +122,7 @@ inline int fltkBtnToXBtn(const int inButton )
 	int btn = -1;
 	switch (inButton)
 	{
-		 case FL_LEFT_MOUSE	:  btn = 0; break;
+		 case FL_LEFT_MOUSE  : btn = 0; break;
 		 case FL_RIGHT_MOUSE : btn = 1; break;
 		 case FL_MIDDLE_MOUSE: btn = 2; break;
 	}
@@ -131,9 +132,10 @@ inline int fltkBtnToXBtn(const int inButton )
 /*FLTK event callback*/
 int XWin::handle(int e)
 {
+	#if DEV && DEBUG_EVENTS
 	string appnm("unknown");
 	if(label()) appnm = label();
-
+	#endif // DEV
 
 	/*handle menubar*/
 	if( mMenuBar && ( Fl::event_inside(mMenuBar) || e == FL_SHORTCUT ) )
@@ -164,8 +166,9 @@ int XWin::handle(int e)
 
 	/*MOUSE events */
 	case FL_PUSH:{
+	#if DEV && DEBUG_EVENTS
 		printf("FL_PUSH %s\n",appnm.c_str());
-
+    #endif // DEV
 		int btn  = fltkBtnToXBtn(Fl::event_button());
 		mMouse.x = Fl::event_x();
 		mMouse.y = Fl::event_y();
@@ -188,8 +191,9 @@ int XWin::handle(int e)
 	}
 	return 1;
 	case FL_RELEASE:{
+	#if DEV && DEBUG_EVENTS
 		printf("FL_RELEASE %s\n",appnm.c_str());
-
+	#endif // DEV
 		int btn  = fltkBtnToXBtn(Fl::event_button());
 		mMouse.x = Fl::event_x();
 		mMouse.y = Fl::event_y();
@@ -234,7 +238,9 @@ int XWin::handle(int e)
 
 	/*KEY events*/
 	case FL_KEYDOWN:{
+	#if DEV && DEBUG_EVENTS
 		printf("FL_KEYDOWN \n");
+	#endif // DEV
 		if(Fl::event_command() || Fl::event_alt()) return 0;			  // propagate further for shortcuts
 		uint32_t utf32char = 0;
 		int l = Fl::event_length();
@@ -252,7 +258,9 @@ int XWin::handle(int e)
 	}
 	return 1;
 	case FL_SHORTCUT:{
+	#if DEV && DEBUG_EVENTS
 		printf("FL_SHORTCUT \n");
+	#endif // DEV
 		if(Fl::event_key() == FL_Escape) return 1;  //FLTK would close the window when ESC pressed
 	}
 	return 0;                                       //do not supress key strokes for others , we get no global shortcuts otherwise
@@ -260,35 +268,45 @@ int XWin::handle(int e)
 	/*WIDGET events */
 
 	case FL_ACTIVATE:{
+	#if DEV && DEBUG_EVENTS
 		printf("FL_ACTIVATE %s\n",appnm.c_str());
+	#endif // DEV
 		Activate(true);
 	}
 	return 1;
 	case FL_DEACTIVATE:{
+	#if DEV && DEBUG_EVENTS
 		printf("FL_DEACTIVATE %s\n",appnm.c_str());
+	#endif // DEV
 		Activate(false);
 	}
 	return 1;
 
 	/*FOCUS events */
 	case FL_FOCUS:{
+	#if DEV && DEBUG_EVENTS
 		printf("FL_FOCUS %s\n",appnm.c_str());
+	#endif // DEV
 		Activate(true);
 	}
 	return 1;
 	case FL_UNFOCUS:{
+	#if DEV && DEBUG_EVENTS
 		printf("FL_UNFOCUS %s\n",appnm.c_str());
+	#endif // DEV
 		Activate(false);
 	}
 	return 1;
 	case FL_ENTER:{
+	#if DEV && DEBUG_EVENTS
 		printf("FL_ENTER %s\n",appnm.c_str());
-
+	#endif // DEV
 	}
 	return 1;
 	case FL_LEAVE:{
+	#if DEV && DEBUG_EVENTS
 		printf("FL_LEAVE %s\n",appnm.c_str());
-
+	#endif // DEV
 	}
 	return 1;
 
