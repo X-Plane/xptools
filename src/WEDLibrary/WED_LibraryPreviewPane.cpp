@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2012, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -51,7 +51,7 @@
 #include "XObjDefs.h"
 #include "ObjDraw.h"
 
-enum { 
+enum {
 	next_variant = GUI_APP_MESSAGES
 };
 
@@ -60,7 +60,7 @@ WED_LibraryPreviewPane::WED_LibraryPreviewPane(GUI_Commander * cmdr, WED_Resourc
 {
 		int k_reg[4] = { 0, 0, 1, 3 };
 		int k_hil[4] = { 0, 1, 1, 3 };
-		
+
 //		int b[4]; GetBounds(b);  // No good, bounds not established at this point
 
 		mNextButton = new GUI_Button("push_buttons.png",btn_Push,k_reg, k_hil,k_reg,k_hil);
@@ -71,7 +71,7 @@ WED_LibraryPreviewPane::WED_LibraryPreviewPane(GUI_Commander * cmdr, WED_Resourc
 		mNextButton->SetMsg(next_variant,0);
 		mNextButton->AddListener(this);
 		mNextButton->Hide();
-		
+
 }
 
 void		WED_LibraryPreviewPane::ReceiveMessage(GUI_Broadcaster * inSrc, intptr_t inMsg, intptr_t inParam)
@@ -82,7 +82,7 @@ void		WED_LibraryPreviewPane::ReceiveMessage(GUI_Broadcaster * inSrc, intptr_t i
 			mVariant++;
 		else
 			mVariant = 0;
-		
+
 		char s[16]; sprintf(s,"%d/%d",mVariant+1,mNumVariants);
 		mNextButton->SetDescriptor(s);
 	}
@@ -94,9 +94,9 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 	mType = res_type;
 	mVariant = 0;
 //	mHgt = 0.0;
-	
-	if(res_type == res_Object || res_type == res_Facade) 
-	{	
+
+	if(res_type == res_Object || res_type == res_Facade)
+	{
 		mNumVariants = mResMgr->GetNumVariants(r);
 		if(mNumVariants >1)
 		{
@@ -106,7 +106,7 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 		}
 		else
 			mNextButton->Hide();
-	
+
 		if(res_type == res_Facade)
 		{
 			const fac_info_t * fac;
@@ -181,14 +181,14 @@ int	WED_LibraryPreviewPane::MouseDown(int x, int y, int button)
 	mTheOrig=mThe;
 	mHgtOrig=mHgt;
 	mWidOrig=mWid;
-	
+
 	int b[4]; GetBounds(b);
-	
+
     if (mType == res_Polygon)
     {
 		const pol_info_t * pol;
 		mResMgr->GetPol(mRes,pol);
-		
+
 		float prev_space = min(b[2]-b[0],b[3]-b[1]);
 		float ds = prev_space / mZoom * mDs;
 		float dt = prev_space / mZoom * mDt;
@@ -234,7 +234,7 @@ int	WED_LibraryPreviewPane::MouseDown(int x, int y, int button)
 		}
 		else
 			mResMgr->SetPolUV(mRes,Bbox2());                 // there are no subboxes defined at all
-		
+
 		Refresh();
 	}
 	return 1;
@@ -256,7 +256,7 @@ void	WED_LibraryPreviewPane::MouseDrag(int x, int y, int button)
 	{
 		mPsi = mPsiOrig + dx * 0.5;
 		mThe = mTheOrig - dy * 0.5;
-		
+
 		mThe = fltlim(mThe,-85,85);                 // prevent some vertical objects fading completely out of view
 		if (mType == res_Facade)
 			mPsi = fltwrap(mPsi, 0, 90*mWalls);      // adjusted for propper annotations and showing mmore than 4 walls
@@ -277,6 +277,25 @@ int		WED_LibraryPreviewPane::MouseMove  (int x, int y)
 	return 1;
 }
 
+GUI_DragOperation   WED_LibraryPreviewPane::DragEnter(int x, int y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended)
+{
+	return allowed;
+}
+
+GUI_DragOperation   WED_LibraryPreviewPane::DragOver(int x, int y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended)
+{
+	return allowed;
+}
+
+GUI_DragOperation   WED_LibraryPreviewPane::Drop(int x, int y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended)
+{
+	#if DEV
+	printf(" WED_LibraryPreviewPane::Drop drag:%p allowed:%d recommend:%d\n",drag,allowed,recommended);
+	#endif
+	return gui_Drag_None;
+}
+
+
 #define VIEW_DISTANCE 2.5   // set to 0 for isometric, non-perspective view used before WED 2.1
 #define USE_2X2MSAA 1
 
@@ -292,11 +311,11 @@ void	WED_LibraryPreviewPane::begin3d(int *b, double radius_m)
 
 	glPushAttrib(GL_VIEWPORT_BIT);
 	glViewport(b[0],b[1],b[2]-b[0],b[3]-b[1]);
-	
+
 	GLfloat light_pos[4] = { -1, 1, 1, 0};          // x right, y up, z front
 	glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
 	glEnable(GL_LIGHT0);
-	
+
 	GLfloat ambient_color[4] = { 2, 2, 2, 2 };
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient_color);
 	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, false);
@@ -304,7 +323,7 @@ void	WED_LibraryPreviewPane::begin3d(int *b, double radius_m)
 #if USE_2X2MSAA
 	glGenFramebuffers(1, &mFBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
-	
+
 	glGenRenderbuffers(1, &mColBuf);
 	glBindRenderbuffer(GL_RENDERBUFFER, mColBuf);
 	glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_RGB, dx, dy);
@@ -314,7 +333,7 @@ void	WED_LibraryPreviewPane::begin3d(int *b, double radius_m)
 	glBindRenderbuffer(GL_RENDERBUFFER, mDepthBuf);
 	glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH_COMPONENT, dx, dy);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, mDepthBuf);
-	
+
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mFBO); // copy the background - can't spec any blend mode when Bliting buffer back at the end
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 	glBlitFramebuffer(b[0], b[1], dx, dy, 0, 0, dx, dy, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT, GL_NEAREST);
@@ -324,7 +343,7 @@ void	WED_LibraryPreviewPane::begin3d(int *b, double radius_m)
 	glPushMatrix();
 	glLoadIdentity();
 #ifdef VIEW_DISTANCE
-	glFrustum(sx * -act_radius, sx * act_radius, sy * -act_radius, sy * act_radius, 
+	glFrustum(sx * -act_radius, sx * act_radius, sy * -act_radius, sy * act_radius,
 					(VIEW_DISTANCE - 1.0) * radius_m, (VIEW_DISTANCE + 1.0) * radius_m);
 #else
 	glOrtho(sx * -act_radius, sx * act_radius, sy * -act_radius, sy * act_radius, -radius_m, radius_m);
@@ -337,7 +356,7 @@ void	WED_LibraryPreviewPane::begin3d(int *b, double radius_m)
 #endif
 	glRotatef(mThe,1,0,0);
 	glRotatef(mPsi,0,1,0);
-	
+
 }
 
 void	WED_LibraryPreviewPane::end3d(int *b)
@@ -347,7 +366,7 @@ void	WED_LibraryPreviewPane::end3d(int *b)
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 	glPopAttrib();
-	
+
 #if USE_2X2MSAA
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, mFBO);
@@ -367,7 +386,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 	int b[4]; GetBounds(b);
 
 	const XObj8 * o = nullptr;
-	
+
 	const agp_t * agp = nullptr;
 	const pol_info_t * pol = nullptr;
 	const lin_info_t * lin = nullptr;
@@ -388,7 +407,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 					{
 						g->SetState(false,1,false,!pol->kill_alpha,!pol->kill_alpha,false,false);
 						g->BindTex(tex_id,0);
-						
+
 						float prev_space = min(b[2]-b[0],b[3]-b[1]);
 						float ds = prev_space / mZoom * mDs;
 						float dt = prev_space / mZoom * mDt;
@@ -398,7 +417,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 						float x2 = (dx + ds) /2;
 						float y1 = (dy - dt) /2;
 						float y2 = (dy + dt) /2;
-						
+
 						glBegin(GL_QUADS);
 						if(pol->wrap)
 						{
@@ -415,7 +434,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 							glTexCoord2f(1,0); glVertex2f(x2,y1);
 						}
 						glEnd();
-						
+
 						if (!pol->mUVBox.is_null())                   // draw a box around the selected texture area
 						{
 							g->Reset();
@@ -427,7 +446,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 							glVertex2f(x1 + ds * pol->mUVBox.p1.x(), y1 + dt * pol->mUVBox.p2.y());
 							glEnd();
 						}
-					}	
+					}
 				}
 			}
 			break;
@@ -443,13 +462,13 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 					{
 						g->SetState(false,1,false,true,true,false,false);
 						g->BindTex(tex_id,0);
-						
+
 						// always fit into vertical size of window
 						float dt = (b[3]-b[1]) / mZoom;
-						
+
 						glBegin(GL_QUADS);
 						for (int n=0; n<lin->s1.size(); ++n)
-						{	
+						{
 							float ds = dt * (lin->scale_s * (lin->s2[n]-lin->s1[n]) / lin->scale_t);
 							float dx = b[2] - b[0];
 							float dy = b[3] - b[1];
@@ -457,14 +476,14 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 							float x2 = (dx + ds) /2;
 							float y1 = (dy - dt) /2;
 							float y2 = (dy + dt) /2;
-							
+
 							glTexCoord2f(lin->s1[n], 0); glVertex2f(x1,y1);
 							glTexCoord2f(lin->s1[n], 1); glVertex2f(x1,y2);
 							glTexCoord2f(lin->s2[n],1); glVertex2f(x2,y2);
 							glTexCoord2f(lin->s2[n],0); glVertex2f(x2,y1);
 						}
 						glEnd();
-					}	
+					}
 				}
 			}
 			break;
@@ -477,7 +496,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				Point2 corner(-mWid*0.5, mWid*0.5);
 
 				int front_side = intround(mPsi/90) % mWalls;
-					
+
 				int n_max = 4;
 				if(!fac->is_ring && fac->wallName.size() >= 4) n_max=5;
 				for (int n = 0; n < n_max; ++n)
@@ -494,14 +513,14 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				}
 				double real_radius = fltmax3(30.0, mWid, 1.2*mHgt);
 				begin3d(b, real_radius);
-				
+
 				glTranslatef(0.0, -mHgt*0.4, 0.0);
 				g->EnableAlpha(true, true);
 				g->EnableDepth(true, true);
 				glClear(GL_DEPTH_BUFFER_BIT);
-				
+
 				draw_facade(mTexMgr, mResMgr, mRes, *fac, footprint, choices, mHgt, g, true);
-				
+
 				// draw "ground" plane
 				g->SetTexUnits(0);
 				if(mRes.find("piers") != mRes.npos)
@@ -565,7 +584,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 			}
 			break;
 		}
-		
+
 		// plot some additional information about the previewed object
 		char buf1[120] = "", buf2[120] = "";
 		switch(mType)
@@ -577,8 +596,8 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 					int raw_side = intround(mPsi/90) % mWalls;
 					int front_side = raw_side;
 					if(front_side < 0 || front_side >= n_wall) front_side = 0;
-					
-					snprintf(buf1, sizeof(buf1), "Wall \'%s\' intended for %s @ w=%.1lf%c", fac->wallName[front_side].c_str(), fac->wallUse[front_side].c_str(), 
+
+					snprintf(buf1, sizeof(buf1), "Wall \'%s\' intended for %s @ w=%.1lf%c", fac->wallName[front_side].c_str(), fac->wallUse[front_side].c_str(),
 						mWid / (gIsFeet ? 0.3048 : 1), gIsFeet ? '\'' : 'm');
 					snprintf(buf2, sizeof(buf2), "Type %d, %d wall%s for %s @ h=%dm", fac->is_new ? 2 : 1, n_wall, n_wall > 1 ? "s" : "", fac->h_range.c_str(), mHgt);
 				}
