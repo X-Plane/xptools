@@ -77,6 +77,7 @@ int GUI_Window::handle(int e )
 		/*DND events */
 		case FL_DND_ENTER:{
 
+			printf(" GUI_Window:: FL_DND_ENTER \n");
 			GUI_DragData_Adapter  adapter(NULL);
 			GUI_DragOperation allowed;
 			allowed = (this->InternalDragEnter(x,y,&adapter,OP_LIN2GUI(1),OP_LIN2GUI(1)));
@@ -111,22 +112,29 @@ int GUI_Window::handle(int e )
 		}
 		return 1;
 		case FL_DND_RELEASE:{
+			printf(" GUI_Window:: FL_DND_RELEASE type:%p ,content: %s  \n", Fl::event_clipboard(),Fl::event_text());
 
-			this->mInDrag = 0;
-			this->SetTimerInterval(0);
-
-			GUI_DragData_Adapter  adapter(NULL);
-			GUI_DragOperation allowed = (this->InternalDrop(x,y,&adapter,OP_LIN2GUI(1),OP_LIN2GUI(1)));
-
-			this->InternalDragLeave();
 		}
-		return 0;
+		return 1;
 
 		/*CLIPBOARD events , also called when FL_DND_RELEASE result is 1 after a drag*/
 		case FL_PASTE:{
+
+			if(mInDrag)	//paste comes from Drag
+			{
+				printf("FL_PASTE drag type: %s ,txt: %s\n",Fl::event_clipboard_type(),Fl::event_text());
+				this->mInDrag = 0;
+			    this->SetTimerInterval(0);
+				GUI_DragData_Adapter adapter((void*) Fl::event_text());
+				GUI_DragOperation allowed = (this->InternalDrop(x,y,&adapter,OP_LIN2GUI(1),OP_LIN2GUI(1)));
+				this->InternalDragLeave();
+			}
+			else
+			{
 				//TODO:mroe check for content and type and such
-				printf("FL_PASTE txt: %s  wnd: %p\n",Fl::event_text(),Fl::focus());
+				printf("FL_PASTE clip  txt: %s  wnd: %p\n",Fl::event_text(),Fl::focus());
 				Set_ClipboardRecieved(true);
+			}
 		}
 		return 1;
 
@@ -1235,7 +1243,9 @@ GUI_DragOperation	GUI_Window::DoDragAndDrop(
 
 		return result;
 	#elif LIN
-		Fl::copy("drag",5, 0) ; 	//mroe: this is probably not necessary, but nice to have for debug purpose
+
+		Fl::copy("wed_drag",9,0) ; //mroe: this is probably not necessary, but nice to have for debug purpose
+
 		//mroe: simply starts a drag ,it is enough to make WED happy.
 		int res = Fl::dnd();
 		return gui_Drag_None;
