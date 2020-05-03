@@ -543,7 +543,9 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 
 		if (!strcmp(items[n].name, "-"))
 		{   /*addSeparator()*/
-			XWin::AppendSeparator(menu);
+			if( menu->size() < 2) return ;
+			Fl_Menu_Item * last = menu + (menu->size()-2);
+			last->flags = last->flags|FL_MENU_DIVIDER;
 		}
 		else
 		{

@@ -254,6 +254,7 @@ int XWin::handle(int e)
 		printf("FL_SHORTCUT \n");
 	#endif // DEV
 		//if(Fl::event_key() == FL_Escape) return 1;  //FLTK would close the window when ESC pressed
+		//if(Fl::event_alt()) return 0;
 	}
 	return 1;      		// we stop the shortcut propagation here because it pings back twice to us , lets see if someone miss a sc
 
