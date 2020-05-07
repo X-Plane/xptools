@@ -126,7 +126,7 @@ int main(int argc, char * argv[])
 	GUI_MemoryHog::InstallNewHandler();
 	GUI_InitClipboard();
 #if LIN
-//	Initializer linit(&argc, &argv, false);
+	Initializer linit(&argc, &argv, false);
 #endif // LIN
 
 #if LIN || APL
@@ -153,8 +153,12 @@ int main(int argc, char * argv[])
 	// This means one window must always be in existence.  That window is the about box...which stays hidden but allocated to
 	// sustain OpenGL.
 
-	WED_StartWindow * start = new WED_StartWindow(&app);   // here we initialize the fonts - but the 
+	WED_StartWindow * start = new WED_StartWindow(&app);   // here we initialize the fonts - but the
 	WED_MakeMenus(&app);
+	#if LIN
+	start->xclass("WED");
+	start->show(argc, argv);
+	#endif
 	start->Show();
 	start->ShowMessage("Initializing...");
 //	XESInit();
@@ -189,10 +193,6 @@ int main(int argc, char * argv[])
 	//TODO:mroe: maybe we can set this to LC_ALL for all other OS's .
 	//In the case of linux we must , since standard C locale is not utf-8
 	setlocale(LC_CTYPE,"en_US.UTF-8");
-	//mroe: for now , every CString holding a filepath must be wrapped by QString::fromUtf8() to convert to QString.
-	//(mainly in the dialogs and the window caption to show it to the user)
-	//Setting this global for the app could be the better solution.
-	//QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
 	#endif
 	app.Run();
 
