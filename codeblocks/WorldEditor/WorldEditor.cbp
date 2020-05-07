@@ -695,6 +695,8 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../src/libtess2/Source/tess.h" />
+		<Unit filename="../../src/linuxinit/initializer.cpp" />
+		<Unit filename="../../src/linuxinit/initializer.h" />
 		<Unit filename="../../src/lzma19/Asm/x86/7zAsm.asm" />
 		<Unit filename="../../src/lzma19/Asm/x86/7zCrcOpt.asm" />
 		<Unit filename="../../src/lzma19/Asm/x86/AesOpt.asm" />

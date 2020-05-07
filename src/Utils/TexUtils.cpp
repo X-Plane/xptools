@@ -401,7 +401,7 @@ bool	LoadTextureFromDDS(
 			char * dds_line1 = data;
 			char * dds_line2 = data + data_len - line_len;
 
-			printf("%dx%d %dx%d %d %d/%d\n", *outWidth, *outHeight, x, y, swap_count, level, mips);
+//			printf("%dx%d %dx%d %d %d/%d\n", *outWidth, *outHeight, x, y, swap_count, level, mips);
 			if(swap_count == 0)
 				for (int i = 0; i < blocks_per_line; i++)
 				{
@@ -422,8 +422,8 @@ bool	LoadTextureFromDDS(
 
 		glCompressedTexImage2D( GL_TEXTURE_2D, level, glformat, x, y, 0, data_len, data);
 
-		x >>= 1;
-		y >>= 1;
+		x = max(1, x >> 1);
+		y = max(1, y >> 1);
 		data += data_len;
 	}
 
