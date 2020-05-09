@@ -271,7 +271,7 @@ int XWin::handle(int e)
 	#endif // DEV
 
 	}
-	return 1;
+	return 0;
 
 	/*WIDGET events */
 
