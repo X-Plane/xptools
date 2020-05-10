@@ -64,7 +64,7 @@
 #include <FL/Fl_Menu_.H>
 
 #define MENU_SIZE 30
-#define xmenu Fl_Menu_Item *
+#define xmenu const Fl_Menu_Item *
 enum {
   _NET_WM_STATE_REMOVE,
   _NET_WM_STATE_ADD,
@@ -283,7 +283,7 @@ protected:
 
 public:
 	Fl_Menu_Bar * mMenuBar;
-	const Fl_Menu_Item * lastItem;
+	void ClearMenus(const Fl_Menu_Item *  menu);
 	int GetMenuBarHeight(void);
 	virtual void ReceiveFilesFromDrag(const string& inFiles);
 	bool mInited;

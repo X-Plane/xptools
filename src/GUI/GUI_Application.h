@@ -86,7 +86,7 @@ public:
 #endif
 
 #if LIN
-   Fl_Menu_Item *      mMenu;
+    const Fl_Menu_Item *    mMenu;
 	void static update_menus_cb(Fl_Widget* w,void * data);
     void      setCutnPasteShortcuts(GUI_Window * parent);
 #endif
@@ -95,11 +95,11 @@ public:
 
 private:
 
-	bool                mDone;
-	set<GUI_Menu>		mMenus;
+	bool                 mDone;
+	set<GUI_Menu>		 mMenus;
 
 #if LIN
-	Fl_Menu_Item *      mPopup;
+	const Fl_Menu_Item * mPopup;
 #endif
 };
 

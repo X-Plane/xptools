@@ -104,6 +104,10 @@ XWin::~XWin()
 //	}
 }
 
+void XWin::ClearMenus(const Fl_Menu_Item *  menu)
+{
+	clearSubmenusRecursive(menu);
+}
 
 /**FLTK CALLBACK functs**/
 
@@ -343,12 +347,22 @@ int XWin::handle(int e)
 /*FLTK resize callback*/
 void XWin::resize(int x,int y,int w,int h)
 {
-	printf(" XWin::resize inited %d  %dx%d+%d+%d\n",mInited, w,h,x,y);
-	bool is_move_only = ( w == this->w() && h == this->h() );
+	printf(" XWin::resize %dx%d+%d+%d\n",w,h,x,y);
+	bool no_resize = ( w == this->w() && h == this->h() );
+	bool not_moved = ( x == this->x() && y == this->y() );
+	if( no_resize & not_moved ) return;
+
+	int  mbar_h = mMenuBar ? mMenuBar->h() : 0;
+
 	Fl_Window::resize(x,y,w,h);
-	if(is_move_only || !mInited) return;
-	//printf(" XWin::resize others\n");
-	//if(mMenuBar) mMenuBar->size(w,mMenuBar->h());
+
+	if(no_resize) return;
+
+	if(mMenuBar && this->resizable() == this)
+	{
+	   mMenuBar->size(w,mbar_h);
+	}
+
 	Resized(w,h);
 }
 
@@ -582,12 +596,12 @@ xmenu XWin::GetMenuBar(void)
 	  //mroe: thats to get an empty initalized menu
 	  //mMenuBar->add("test",0,nullptr,nullptr);
 	  //mMenuBar->remove(0);
-	  xmenu new_menu = new Fl_Menu_Item[MENU_SIZE * sizeof(Fl_Menu_Item )];
+	  Fl_Menu_Item * new_menu = new Fl_Menu_Item[MENU_SIZE * sizeof(Fl_Menu_Item )];
 	  memset(new_menu,0,MENU_SIZE * sizeof(Fl_Menu_Item ));
 	  mMenuBar->menu(new_menu);
    }
 
-   return (Fl_Menu_Item *) mMenuBar->menu();
+   return mMenuBar->menu();
 }
 
 int XWin::GetMenuBarHeight(void)
@@ -600,10 +614,11 @@ xmenu XWin::CreateMenu(xmenu parent, int item, const char * inTitle)
 {
 	if(!parent || parent->size() > MENU_SIZE) return NULL;
 
-	xmenu new_menu = new Fl_Menu_Item[MENU_SIZE * sizeof(Fl_Menu_Item )];
+	Fl_Menu_Item * new_menu = new Fl_Menu_Item[MENU_SIZE * sizeof(Fl_Menu_Item )];
 	memset(new_menu,0,MENU_SIZE * sizeof(Fl_Menu_Item ));
 
-	int idx= parent->insert(item,inTitle,0,nullptr,(void*)new_menu,FL_SUBMENU_POINTER);
+	Fl_Menu_Item * p = (Fl_Menu_Item *) parent;
+	int idx= p->insert(item,inTitle,0,nullptr,(void*)new_menu,FL_SUBMENU_POINTER);
 
 	return new_menu;
 }
@@ -613,9 +628,10 @@ int XWin::AppendMenuItem(xmenu menu, const char * inTitle)
 	if(!menu || menu->size() > MENU_SIZE) return -1;
 	xmenu_cmd * cmd = new xmenu_cmd();
 
-	int idx = menu->add(inTitle,0,menu_cb,cmd);
+	Fl_Menu_Item * m = (Fl_Menu_Item *) menu;
+	int idx = m->add(inTitle,0,menu_cb,cmd);
 
-	cmd->data = menu;
+	cmd->data = m;
 	cmd->cmd  = idx;
 
 	return idx;
@@ -625,18 +641,19 @@ int XWin::AppendSeparator(xmenu menu)
 {
 	if(!menu || menu->size() > MENU_SIZE) return -1;
 
-	Fl_Menu_Item * last = menu + (menu->size()-2);
-    last->flags = last->flags|FL_MENU_DIVIDER;
+	Fl_Menu_Item * m	= (Fl_Menu_Item *) menu ;
+	Fl_Menu_Item * last = (Fl_Menu_Item *) m + (m->size()-2);
+	last->flags = last->flags|FL_MENU_DIVIDER;
 	char buf[256];
 	strcpy(buf,last->label());													//the item title must be unique
 	strcat(buf,"_");															// adding '_' to the last name does this
-	return menu->add(buf,0,NULL,NULL,FL_MENU_INVISIBLE|FL_MENU_DIVIDER);
+	return m->add(buf,0,NULL,NULL,FL_MENU_INVISIBLE|FL_MENU_DIVIDER);
 }
 
 void XWin::CheckMenuItem(xmenu menu, int item, bool inCheck)
 {
 	if(!menu) return;
-	Fl_Menu_Item * m = menu + item;
+	Fl_Menu_Item * m = (Fl_Menu_Item *) menu + item;
 
 	m->flags |= FL_MENU_TOGGLE ;
 	inCheck ? m->set() : m->clear();

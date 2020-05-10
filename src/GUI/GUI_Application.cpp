@@ -128,7 +128,7 @@ static void clearSubmenusRecursive(const Fl_Menu_Item *  menu)
 	delete [] menu;
 }
 
-static void clear_menu(Fl_Menu_Item* menu)
+static void clear_menu(const Fl_Menu_Item* menu)
 {
 	for (int i=0; i < MENU_SIZE; i++)
 	{
@@ -140,7 +140,7 @@ static void clear_menu(Fl_Menu_Item* menu)
 			delete (xmenu_cmd *) m->user_data_;
 	}
 
-	memset(menu,0,MENU_SIZE*sizeof(Fl_Menu_Item ));
+	memset((Fl_Menu_Item *) menu,0,MENU_SIZE*sizeof(Fl_Menu_Item ));
 }
 
 static void update_menu_recursive(const Fl_Menu_Item *  menu)
@@ -358,14 +358,14 @@ GUI_Menu		GUI_Application::GetMenuBar(void)
 	return mbar;
 #else
 
-	if(mMenu) return mMenu;
+	if(mMenu) return (void*) mMenu;
 	GUI_Window* w = GUI_Window::AnyXWND();
 	if (w)
 	{
 		mMenu = w->GetMenuBar();
 		//w->mMenuBar->global();					//this makes shortcuts works
 	}
-	return mMenu;
+	return (void*) mMenu;
 #endif
 }
 
@@ -421,9 +421,9 @@ GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t 
 		if (mPopup == NULL)
 		{
 			mPopup = new Fl_Menu_Item[MENU_SIZE*sizeof(Fl_Menu_Item )];
-			memset(mPopup,0,MENU_SIZE*sizeof(Fl_Menu_Item ));
+			memset( (Fl_Menu_Item *)mPopup,0,MENU_SIZE*sizeof(Fl_Menu_Item ));
 		}
-		new_menu = mPopup;
+		new_menu = (Fl_Menu_Item *) mPopup;
 	}
 	else
 	{

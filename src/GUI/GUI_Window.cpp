@@ -1244,7 +1244,7 @@ GUI_DragOperation	GUI_Window::DoDragAndDrop(
 		return result;
 	#elif LIN
 
-		Fl::copy("wed_drag",9,0) ; //mroe: this is probably not necessary, but nice to have for debug purpose
+		Fl::copy("",0,0) ; //mroe: this is probably not necessary, but nice to have for debug purpose
 
 		//mroe: simply starts a drag ,it is enough to make WED happy.
 		int res = Fl::dnd();
