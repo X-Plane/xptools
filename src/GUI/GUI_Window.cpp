@@ -80,7 +80,7 @@ int GUI_Window::handle(int e )
 
 			if      (Fl::test_shortcut(FL_CTRL+'x')) cmd = gui_Cut  ;
 			else if (Fl::test_shortcut(FL_CTRL+'c')) cmd = gui_Copy ;
-            else if (Fl::test_shortcut(FL_CTRL+'v')) cmd = gui_Paste;
+			else if (Fl::test_shortcut(FL_CTRL+'v')) cmd = gui_Paste;
 
 			if(cmd)
 			{
@@ -509,14 +509,8 @@ void CopyMenusRecursive(HMENU src, HMENU dst)
 }
 #endif
 
-#if LIN
-#define DEFAULT_DND 1
-#else
-#define DEFAULT_DND 0
-#endif
-
 GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBounds[4], GUI_Commander * inCommander) : GUI_Commander(inCommander),
-	XWinGL(DEFAULT_DND, inTitle, inAttributes, inBounds[0], inBounds[1], inBounds[2]-inBounds[0], inBounds[3]-inBounds[1], sWindows.empty() ? NULL : *sWindows.begin())
+	XWinGL(0, inTitle, inAttributes, inBounds[0], inBounds[1], inBounds[2]-inBounds[0], inBounds[3]-inBounds[1], sWindows.empty() ? NULL : *sWindows.begin())
 {
 	mInDrag = 0;
 	#if IBM

@@ -168,7 +168,7 @@ static void update_menu_recursive(const Fl_Menu_Item *  menu)
 		int ioCheck = 0;
 		string ioName;
 		int enabled = app->DispatchCanHandleCommand(cmd,ioName,ioCheck);
-		//printf("enabled:%d checked:%d  name: %s \n",enabled,ioCheck,ioName.c_str());
+
 		if(!ioName.empty())
 		{
 			if(item->text != nullptr)
