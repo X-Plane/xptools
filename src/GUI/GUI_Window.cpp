@@ -26,6 +26,7 @@
 #include "GUI_Application.h"
 #include "AssertUtils.h"
 #include "GUI_Clipboard.h"
+#include "GUI_Menus.h"
 
 #if IBM
 #include "GUI_Unicode.h"
@@ -63,12 +64,38 @@ inline int GUI_Window::OGL2Client_Y(int y, void* w) { return (this->h() - y ); }
 
 
 //---------------------------------------------------------------------------------------------------------------------------------------
-// LIN DND
+// LIN Advanced handle events
 //---------------------------------------------------------------------------------------------------------------------------------------
 
 int GUI_Window::handle(int e )
 {
+	/*Copy&Paste Shortcut events */
+	if(e == FL_SHORTCUT)
+	{
+		//This is to get shortcut functionality for Copy/Paste even windows have no menu bar.
+		//TODO:mroe hardcoded ; we should  probably revamp this to enable customisation from the app .
+		if(!mMenuBar)
+		{
+			unsigned int cmd = 0;
 
+			if      (Fl::test_shortcut(FL_CTRL+'x')) cmd = gui_Cut  ;
+			else if (Fl::test_shortcut(FL_CTRL+'c')) cmd = gui_Copy ;
+            else if (Fl::test_shortcut(FL_CTRL+'v')) cmd = gui_Paste;
+
+			if(cmd)
+			{
+				int ioCheck = 0;
+				string ioName;
+				if(this->DispatchCanHandleCommand(cmd,ioName,ioCheck))
+				{
+					printf("GUI_Window::handle FL_SHORTCUT cmd:%d\n",cmd);
+					return this->DispatchHandleCommand(cmd);
+				}
+			}
+		}
+	}
+
+	/*DND events */
 	int x = OGL2Client_X(Fl::event_x(),(void*) this);
 	int y = OGL2Client_Y(Fl::event_y(),(void*) this);
 
@@ -544,13 +571,8 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBound
 				mMenuBar->copy((*sWindows.begin())->GetMenuBar());
 			}
 
-
+			if(mMenuBar && gApplication) mMenuBar->callback(gApplication->update_menus_cb);
 		}
-		else
-			gApplication->setCutnPasteShortcuts(this);
-
-		if(mMenuBar) mMenuBar->callback(gApplication->update_menus_cb);
-		//Fl::first_window(this);
 
 	#endif
 	sWindows.insert(this);

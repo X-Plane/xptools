@@ -130,7 +130,9 @@ static void clearSubmenusRecursive(const Fl_Menu_Item *  menu)
 
 static void clear_menu(const Fl_Menu_Item* menu)
 {
-	for (int i=0; i < MENU_SIZE; i++)
+	if(!menu) return;
+	int msize = menu->size();
+	for (int i=0; i <= msize; i++)
 	{
 		const Fl_Menu_Item * m = menu + i;
 		//printf("%d menu clear  %s %p %p\n",i,m->label(),m->text,m->user_data_);
@@ -140,7 +142,7 @@ static void clear_menu(const Fl_Menu_Item* menu)
 			delete (xmenu_cmd *) m->user_data_;
 	}
 
-	memset((Fl_Menu_Item *) menu,0,MENU_SIZE*sizeof(Fl_Menu_Item ));
+	memset((Fl_Menu_Item *) menu,0,msize*sizeof(Fl_Menu_Item ));
 }
 
 static void update_menu_recursive(const Fl_Menu_Item *  menu)
@@ -225,18 +227,6 @@ void GUI_Application::update_menus_cb(Fl_Widget *w, void * data)
 
 }
 
-void GUI_Application::setCutnPasteShortcuts(GUI_Window * parent)
-{
-//	GUI_QtAction * HK;
-//	HK = new GUI_QtAction("", parent, "Ctrl+X" , gui_Cut,   this, false);  // use same definitions as in WED_Menus.cpp
-//	parent->addAction(HK);
-//	HK = new GUI_QtAction("", parent, "Ctrl+C" , gui_Copy,  this, false);
-//	parent->addAction(HK);
-//	HK = new GUI_QtAction("", parent, "Ctrl+V" , gui_Paste, this, false);
-//	parent->addAction(HK);
-}
-
-
 #endif
 #if IBM
 
@@ -300,7 +290,6 @@ if(mPopup)
 {
 	clear_menu(mPopup);
 	delete [] mPopup;
-	mPopup=nullptr;
 	clearSubmenusRecursive(mMenu);
 	mMenu=nullptr;
 }
@@ -575,7 +564,7 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 			else
 			{/*is part of a menu structure */
 
-				int sc = 0;
+				unsigned int sc = 0;
 				if(items[n].key != 0)
 				{
 					if (items[n].flags & gui_OptionAltFlag) {sc += FL_ALT;}
