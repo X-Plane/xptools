@@ -6,7 +6,7 @@
 glWidget::glWidget(XWinGL* xwin,int w,int h,Fl_Gl_Window* share) : Fl_Gl_Window(w,h)
 {
    mXWinGL = xwin;
-   //Fl::visual(FL_RGB8);
+
    set_visible();
    printf("glWidget ctor \n");
 }
@@ -18,22 +18,14 @@ glWidget::~glWidget()
 
 void glWidget::draw()
 {
-//		if(!valid())
-//		{
-//			int W= w();int H=h();
-//			glLoadIdentity();
-//			glViewport(0,0,W,H);
-//			valid(1);
-//		}
-
-		mXWinGL->GLDraw();
+	mXWinGL->GLDraw();
 }
 
 void glWidget::resize(int X,int Y,int W,int H)
 {
 	printf("glWidget::resize \n");
     Fl_Gl_Window::resize(X,Y,W,H);
-	//glViewport(0,0,w(),h());
+
     mXWinGL->GLReshaped(w(),h());
 }
 
@@ -57,15 +49,6 @@ XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX,
 		add_resizable(*mGlWidget);
 	else
 		add(*mGlWidget);
-	//mGlWidget->show();
-
-	//mGlWidget->make_current();
-	//XWinGL::mInited = true;
-
-//	if (inAttributes & xwin_style_visible) {
-//		XWin::SetVisible(true);
-//	}
-
 
    glPixelStorei	(GL_UNPACK_ALIGNMENT,1				);
    glPixelStorei	(GL_PACK_ALIGNMENT  ,1				);

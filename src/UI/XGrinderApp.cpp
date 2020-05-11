@@ -157,10 +157,15 @@ int main(int argc, char* argv[])
 {
 	gWin = new XGrinderWin();
 	XGrindInit(gTitle);
-    gWin->show(argc,argv);
-	gWin->ForceRefresh();
+	gWin->xclass(gTitle.c_str());
+	gWin->show(argc,argv);
 
-	return Fl::run();
+	int res = Fl::run();
+
+	if(gWin->mMenuBar)
+		gWin->ClearMenus(gWin->mMenuBar->menu());
+
+	return res;
 }
 #endif
 

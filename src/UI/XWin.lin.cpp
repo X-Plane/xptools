@@ -9,11 +9,9 @@ static void clearSubmenusRecursive(const Fl_Menu_Item *  menu)
 {
 	if(!menu) return;
 	int sz = menu->size();
-	printf("-> menu      %s %p\n",menu->label(),menu);
 	for ( int t=0; t < sz ; t++)
 	{
 		Fl_Menu_Item * item = (Fl_Menu_Item *) &menu[t];
-		printf("%d menu     %s %p\n",t,item->label(),item);
 		if(!item->label()) break;
 
 		if(item->flags&FL_SUBMENU_POINTER)
@@ -37,8 +35,6 @@ static void clearSubmenusRecursive(const Fl_Menu_Item *  menu)
 			item->text = nullptr;
 		}
 	}
-
-	printf("-> delete      %s %p\n",menu->label(),menu);
 	delete [] menu;
 }
 
@@ -97,7 +93,7 @@ XWin::XWin(int default_dnd) : Fl_Window(100,100), mInited(false),mMenuBar(nullpt
 XWin::~XWin()
 {
 	printf("XWin dtor\n");
-
+//
 //	if(mMenuBar)
 //	{
 //		clearSubmenusRecursive(mMenuBar->menu());
