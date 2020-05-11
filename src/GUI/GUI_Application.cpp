@@ -286,13 +286,15 @@ GUI_Application::GUI_Application(const char * arg) : args(arg),
 GUI_Application::~GUI_Application()
 {
 #if LIN
-if(mPopup)
-{
-	clear_menu(mPopup);
-	delete [] mPopup;
+
+	if(mPopup)
+	{
+		clear_menu(mPopup);
+		delete [] mPopup;
+	}
+
 	clearSubmenusRecursive(mMenu);
-	mMenu=nullptr;
-}
+
 #endif
 	DebugAssert(gApplication == this);
 	gApplication = NULL;
