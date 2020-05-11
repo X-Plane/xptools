@@ -621,7 +621,7 @@ xmenu XWin::CreateMenu(xmenu parent, int item, const char * inTitle)
 
 int XWin::AppendMenuItem(xmenu menu, const char * inTitle)
 {
-	if(!menu || menu->size() > MENU_SIZE) return -1;
+	if(!menu || menu->size() > MENU_SIZE-1) return -1;
 	xmenu_cmd * cmd = new xmenu_cmd();
 
 	Fl_Menu_Item * m = (Fl_Menu_Item *) menu;
@@ -635,7 +635,7 @@ int XWin::AppendMenuItem(xmenu menu, const char * inTitle)
 
 int XWin::AppendSeparator(xmenu menu)
 {
-	if(!menu || menu->size() > MENU_SIZE) return -1;
+	if(!menu || menu->size() > MENU_SIZE-1) return -1;
 
 	Fl_Menu_Item * m	= (Fl_Menu_Item *) menu ;
 	Fl_Menu_Item * last = (Fl_Menu_Item *) m + (m->size()-2);

@@ -132,7 +132,7 @@ static void clear_menu(const Fl_Menu_Item* menu)
 {
 	if(!menu) return;
 	int msize = menu->size();
-	for (int i=0; i <= msize; i++)
+	for (int i=0; i < msize; i++)
 	{
 		const Fl_Menu_Item * m = menu + i;
 		//printf("%d menu clear  %s %p %p\n",i,m->label(),m->text,m->user_data_);
@@ -418,7 +418,7 @@ GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t 
 	{
 		Fl_Menu_Item * parent_menu = (Fl_Menu_Item *) parent;
 
-	    if(parent_menu->size() > MENU_SIZE) return NULL;
+	    if(parent_menu->size() > MENU_SIZE-1) return NULL;
 
 		Fl_Menu_Item * menu = new Fl_Menu_Item[MENU_SIZE*sizeof(Fl_Menu_Item )];
 		memset(menu,0,MENU_SIZE*sizeof(Fl_Menu_Item ));
@@ -525,7 +525,7 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 	int n = 0;
 	while (items[n].name)
 	{
-		if( menu->size() > MENU_SIZE ) return ;
+		if( menu->size() > MENU_SIZE-1 ) return ;
 
 		string	itemname(items[n].name);
 		bool is_disable = IsDisabledString(itemname);
