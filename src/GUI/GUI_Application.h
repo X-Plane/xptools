@@ -25,6 +25,7 @@
 #define GUI_APPLICATION_H
 
 #if LIN
+#define POPUPMENU_SIZE 20
 #include <FL/Fl_Menu.H>
 #include <FL/Fl_Menu_Bar.H>
 #endif

@@ -608,7 +608,7 @@ int XWin::GetMenuBarHeight(void)
 
 xmenu XWin::CreateMenu(xmenu parent, int item, const char * inTitle)
 {
-	if(!parent || parent->size() > MENU_SIZE) return NULL;
+	if(!parent || parent->size() > MENU_SIZE-1) return NULL;
 
 	Fl_Menu_Item * new_menu = new Fl_Menu_Item[MENU_SIZE * sizeof(Fl_Menu_Item )];
 	memset(new_menu,0,MENU_SIZE * sizeof(Fl_Menu_Item ));
