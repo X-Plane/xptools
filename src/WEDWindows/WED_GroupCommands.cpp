@@ -4749,7 +4749,7 @@ static void add_chains(WED_Thing * dst, const vector<WED_GISChain*>& chains)
 		else
 			dst_chain = WED_Ring::CreateTyped(dst->GetArchive());
 		move_points(chains[i], dst_chain);
-		if (!is_ccw(dst_chain))
+		if (is_ccw(dst_chain) == (i > 0))
 			dst_chain->Reverse(gis_Geo);
 		dst_chain->SetParent(dst, i);
 	}

@@ -20,6 +20,7 @@ WED 2.3.0b1 4/28/20
    - WED-1277: make error messages when saving xml files more particular
    - WED-1294: support facades with single wall+roof texture
    - WED-1299: fix CTD in GW validation with orthophotos w/images as resources
+   - WED-1311: fix holes in polygon incorrectly wound after "convert to"
    Features:
    - WED-1293: show facades when part of .agp definitions
    - WED-1270: support gateway download driven by Airport ID list from external file
