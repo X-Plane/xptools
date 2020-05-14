@@ -1204,7 +1204,6 @@ bool				GUI_Window::IsDragClick(int x, int y, int button)
 	mBlockEvents = 0;
 
 	mWantFakeUp = 1;
-	printf("--> is drag %d\n",isdrag ? 1:0);
 	return isdrag ;
 	#endif
 }

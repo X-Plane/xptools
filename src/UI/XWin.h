@@ -63,7 +63,7 @@
 #include <FL/Fl_Menu_Bar.H>
 #include <FL/Fl_Menu_.H>
 
-#define MENU_SIZE 40
+#define MENU_ARRAY_SIZE 40
 #define xmenu const Fl_Menu_Item *
 enum {
   _NET_WM_STATE_REMOVE,

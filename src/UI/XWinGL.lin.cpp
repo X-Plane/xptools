@@ -6,7 +6,6 @@
 glWidget::glWidget(XWinGL* xwin,int w,int h,Fl_Gl_Window* share) : Fl_Gl_Window(w,h)
 {
    mXWinGL = xwin;
-
    set_visible();
    printf("glWidget ctor \n");
 }
@@ -25,7 +24,6 @@ void glWidget::resize(int X,int Y,int W,int H)
 {
 	printf("glWidget::resize \n");
     Fl_Gl_Window::resize(X,Y,W,H);
-
     mXWinGL->GLReshaped(w(),h());
 }
 

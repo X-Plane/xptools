@@ -410,23 +410,23 @@ GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t 
 	{
 		if (mPopup == NULL)
 		{
-			mPopup = new Fl_Menu_Item[POPUPMENU_SIZE*sizeof(Fl_Menu_Item)];
-			memset( (Fl_Menu_Item *)mPopup,0,POPUPMENU_SIZE*sizeof(Fl_Menu_Item) );
+			mPopup = new Fl_Menu_Item[POPUP_ARRAY_SIZE*sizeof(Fl_Menu_Item)];
+			memset( (Fl_Menu_Item *)mPopup,0,POPUP_ARRAY_SIZE*sizeof(Fl_Menu_Item) );
 		}
 		new_menu = (Fl_Menu_Item *) mPopup;
 	}
 	else
 	{
 		Fl_Menu_Item * parent_menu = (Fl_Menu_Item *) parent;
-	    if(parent_menu->size() > MENU_SIZE-1) return NULL;
+	    if(parent_menu->size() > MENU_ARRAY_SIZE-1) return NULL;
 
 //		int sz = 0;
 //		while(items[sz].name) ++sz;
 //		++sz;
 //		printf("create menu %s size %d\n",inTitle,sz);
 
-		Fl_Menu_Item * menu = new Fl_Menu_Item[MENU_SIZE*sizeof(Fl_Menu_Item )];
-		memset(menu,0,MENU_SIZE*sizeof(Fl_Menu_Item ));
+		Fl_Menu_Item * menu = new Fl_Menu_Item[MENU_ARRAY_SIZE*sizeof(Fl_Menu_Item )];
+		memset(menu,0,MENU_ARRAY_SIZE*sizeof(Fl_Menu_Item ));
 
 		if (parent == this->GetMenuBar())
 		{
@@ -533,13 +533,13 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 	{
 		if(menu == mPopup)
 		{
-			DebugAssert(!(menu->size() > POPUPMENU_SIZE-1));
-			if(menu->size() > POPUPMENU_SIZE-1) return;
+			DebugAssert(!(menu->size() > POPUP_ARRAY_SIZE-1));
+			if(menu->size() > POPUP_ARRAY_SIZE-1) return;
 		}
 		else
 		{
-			DebugAssert(!(menu->size() > MENU_SIZE-1));
-			if(menu->size() > MENU_SIZE-1) return;
+			DebugAssert(!(menu->size() > MENU_ARRAY_SIZE-1));
+			if(menu->size() > MENU_ARRAY_SIZE-1) return;
 		}
 
 		string	itemname(items[n].name);

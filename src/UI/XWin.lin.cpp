@@ -159,7 +159,6 @@ int XWin::handle(int e)
 		int result = mMenuBar->handle(e);
 
 		if(result && e == FL_SHORTCUT) want_menu_update = 1;
-	    //TODO:mroe:posibly solve the window activation bug here
 		// ...
 		if(result) return 1;
 	}
@@ -343,17 +342,16 @@ int XWin::handle(int e)
 /*FLTK resize callback*/
 void XWin::resize(int x,int y,int w,int h)
 {
-	printf(" XWin::resize %dx%d+%d+%d\n",w,h,x,y);
 	bool no_resize = ( w == this->w() && h == this->h() );
 	bool not_moved = ( x == this->x() && y == this->y() );
 	if( no_resize & not_moved ) return;
 
+	printf(" XWin::resize %dx%d+%d+%d\n",w,h,x,y);
 	int  mbar_h = mMenuBar ? mMenuBar->h() : 0;
 
 	Fl_Window::resize(x,y,w,h);
 
 	if(no_resize) return;
-
 	if(mMenuBar && this->resizable() == this)
 	{
 	   mMenuBar->size(w,mbar_h);
@@ -431,7 +429,6 @@ void XWin::SetFilePath(const char * inPath,bool modified)
 
 void XWin::MoveTo(int inX, int inY)
 {
-    //TODO: check for multi screen settings*/
 	printf("XWin::MoveTo %d %d\n",inX, inY);
 	this->position(inX,inY);
 }
@@ -455,7 +452,6 @@ void XWin::UpdateNow(void)
 void XWin::SetVisible(bool visible)
 {
 	printf("XWin::SetVisible visible=%d\n",visible);
-
 	if(visible)
 	{
 		show();
@@ -501,7 +497,6 @@ void XWin::GetBounds(int * outX, int * outY)
 
 void XWin::GetWindowLoc(int * outX, int * outY)
 {
-	//TODO: check for multi screen settings
 	if (outX) *outX = this->x();
 	if (outY) *outY = this->y();
 printf("WindowLoc l=%d t=%d\n", x(), y());
@@ -525,7 +520,6 @@ printf("Screen %d: l=%d t=%d w=%d h=%d\n", s, X, Y, W, H);
 	}
 printf("Total Desktop l=%d t=%d r=%d b=%d\n", bounds[0], bounds[1], bounds[2], bounds[3]);
 }
-
 
 void XWin::GetMouseLoc(int * outX, int * outY)
 {
@@ -592,8 +586,8 @@ xmenu XWin::GetMenuBar(void)
 	  //mroe: thats to get an empty initalized menu
 	  //mMenuBar->add("test",0,nullptr,nullptr);
 	  //mMenuBar->remove(0);
-	  Fl_Menu_Item * new_menu = new Fl_Menu_Item[MENU_SIZE * sizeof(Fl_Menu_Item )];
-	  memset(new_menu,0,MENU_SIZE * sizeof(Fl_Menu_Item ));
+	  Fl_Menu_Item * new_menu = new Fl_Menu_Item[MENU_ARRAY_SIZE * sizeof(Fl_Menu_Item )];
+	  memset(new_menu,0,MENU_ARRAY_SIZE * sizeof(Fl_Menu_Item ));
 	  mMenuBar->menu(new_menu);
    }
 
@@ -608,10 +602,10 @@ int XWin::GetMenuBarHeight(void)
 
 xmenu XWin::CreateMenu(xmenu parent, int item, const char * inTitle)
 {
-	if(!parent || parent->size() > MENU_SIZE-1) return NULL;
+	if(!parent || parent->size() > MENU_ARRAY_SIZE-1) return NULL;
 
-	Fl_Menu_Item * new_menu = new Fl_Menu_Item[MENU_SIZE * sizeof(Fl_Menu_Item )];
-	memset(new_menu,0,MENU_SIZE * sizeof(Fl_Menu_Item ));
+	Fl_Menu_Item * new_menu = new Fl_Menu_Item[MENU_ARRAY_SIZE * sizeof(Fl_Menu_Item )];
+	memset(new_menu,0,MENU_ARRAY_SIZE * sizeof(Fl_Menu_Item ));
 
 	Fl_Menu_Item * p = (Fl_Menu_Item *) parent;
 	int idx= p->insert(item,inTitle,0,nullptr,(void*)new_menu,FL_SUBMENU_POINTER);
@@ -621,7 +615,7 @@ xmenu XWin::CreateMenu(xmenu parent, int item, const char * inTitle)
 
 int XWin::AppendMenuItem(xmenu menu, const char * inTitle)
 {
-	if(!menu || menu->size() > MENU_SIZE-1) return -1;
+	if(!menu || menu->size() > MENU_ARRAY_SIZE-1) return -1;
 	xmenu_cmd * cmd = new xmenu_cmd();
 
 	Fl_Menu_Item * m = (Fl_Menu_Item *) menu;
@@ -635,7 +629,7 @@ int XWin::AppendMenuItem(xmenu menu, const char * inTitle)
 
 int XWin::AppendSeparator(xmenu menu)
 {
-	if(!menu || menu->size() > MENU_SIZE-1) return -1;
+	if(!menu || menu->size() > MENU_ARRAY_SIZE-1) return -1;
 
 	Fl_Menu_Item * m	= (Fl_Menu_Item *) menu ;
 	Fl_Menu_Item * last = (Fl_Menu_Item *) m + (m->size()-2);
