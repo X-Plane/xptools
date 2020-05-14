@@ -24,8 +24,10 @@ WED 2.3.0b1 4/28/20
    - WED-1293: show facades when part of .agp definitions
    - WED-1270: support gateway download driven by Airport ID list from external file
    - "Explode AGP's" can handle any .agp containing only public or local objects
-   - new validation for ATC networks being fully connected and reachable
-   - new validation for Hot-Zone tagged taxi routes not connected to other routes
+   - validate ATC networks being fully connected and reachable
+   - validate Hot-Zone tagged taxi routes not connected to other routes
+   - validate all run/taxiways and rampstarts inside airport boundary (GW only)
+   - validate all scenery within airport boundary bounds + 0.5 nm (GW only)
    - show aproximate ground truck + AI A/C routes near ramp starts in ATC layer
    - XPD-9302,9240,9243 support "set_AGL" for objects available with XP11.50b1+
    - new gateway target validation error/warning for set_MSL/set_AGL objects

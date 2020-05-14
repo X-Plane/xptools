@@ -94,6 +94,9 @@
 // 7 nm = 13 km = 42500 feet
 #define MAX_SPAN_GATEWAY_NM 7
 
+// maximum distance for any scenery from the airport boundary, gateway only
+#define DSF_OVERSIZE_NM  0.5
+
 // ATC flow tailwind components and wind rule coverage tested up to this windspeed
 #define ATC_FLOW_MAX_WIND 35
 
@@ -429,7 +432,7 @@ static void ValidateOnePolygon(WED_GISPolygon* who, validation_error_vector& msg
 			if (ips)
 			{
 				{   // this would be much easier if we'd  code that as a member function of WED_GisChain: So we'd have access to mCachePts, i.e. the ordered vector of points
-				    // until then - here we build our own vector of points by polling some other verctor of points ...
+				    // until then - here we build our own vector of points by polling some other vector of points ...
 					vector <Point2> seq;
 					int n_pts = ips->GetNumPoints();
 					for(int n = 0; n < n_pts; ++n)
@@ -1247,30 +1250,16 @@ static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& 
 			msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' has mismatched runway numbers - high end is not the reciprocal of the low-end.", err_rwy_name_mismatched_runway_numbers, who,apt));
 	}
 
+	auto * lw = dynamic_cast<WED_GISLine_Width *>(who);
+	if(lw)
 	{
-		WED_GISLine_Width * lw = dynamic_cast<WED_GISLine_Width *>(who);
-		Assert(lw);
 		if (lw->GetWidth() < 5 || lw->GetLength() < 100)
-		{
 			msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' must be at least 5 meters wide by 100 meters long.", err_rwy_unrealistically_small, who, apt));
-		}
-
-		WED_Runway * rwy = dynamic_cast<WED_Runway *>(who);
-		if (rwy)
-		{
-			if((rwy->GetSurface() == surf_Trans || rwy->GetSurface() == surf_Water) && gExportTarget == wet_gateway)
-			{
-				msgs.push_back(validation_error_t("Water or transparent are no valid surface types for runways.", err_rwy_surface_water_not_valid, who,apt));
-			}
-
-			if (rwy->GetDisp1() + rwy->GetDisp2() > rwy->GetLength()) msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' has overlapping displaced thresholds.", err_rwy_overlapping_displaced_thresholds, who,apt));
-
-			if(rwy->GetRoughness() < 0.0 || rwy->GetRoughness() > 1.0) msgs.push_back(validation_error_t(string("The runway '") + name + "' has an illegal surface roughness. It should be in the range 0 to 1.", err_rwy_surface_illegal_roughness, who,apt));
-		}
-
 		Point2 ends[2];
+		
 		lw->GetNthPoint(0)->GetLocation(gis_Geo,ends[0]);
 		lw->GetNthPoint(1)->GetLocation(gis_Geo,ends[1]);
+		
 		Bbox2	runway_extent(ends[0],ends[1]);
 		if (runway_extent.xmin() < -180.0 ||
 			runway_extent.xmax() >  180.0 ||
@@ -1303,9 +1292,23 @@ static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& 
 				}
 		}
 	}
+	
+	auto * rwy = dynamic_cast<WED_Runway *>(who);
+	if (rwy)
+	{
+		if (rwy->GetSurface() == surf_Water)
+			msgs.push_back(validation_error_t("Water is no valid surface type for runways.", err_rwy_surface_water_not_valid, who, apt));
+		if (gExportTarget == wet_gateway && rwy->GetSurface() == surf_Trans)
+			msgs.push_back(validation_error_t("Transparent runways are not allowed on the Scenery Gateway.", err_rwy_surface_water_not_valid, who, apt));
+		if (rwy->GetDisp1() + rwy->GetDisp2() > rwy->GetLength())
+			msgs.push_back(validation_error_t(string("The runway '") + name + "' has overlapping displaced thresholds.", err_rwy_overlapping_displaced_thresholds, who, apt));
+		if (rwy->GetRoughness() < 0.0 || rwy->GetRoughness() > 1.0)
+			msgs.push_back(validation_error_t(string("The runway '") + name + "' has an illegal surface roughness. It should be in the range 0 to 1.", err_rwy_surface_illegal_roughness, who, apt));
+
+	}
 }
 
-static void ValidateOneHelipad(WED_Helipad* who, validation_error_vector& msgs, WED_Airport * apt)
+static void ValidateOneHelipad(WED_Helipad* heli, validation_error_vector& msgs, WED_Airport * apt)
 {
 	/*--Helipad Validation Rules-----------------------------------------------
 		Helipad Name rules
@@ -1319,43 +1322,40 @@ static void ValidateOneHelipad(WED_Helipad* who, validation_error_vector& msgs, 
 		  - Helipad is less than one meter long
 	 */
 	string name, n1;
-	who->GetName(name);
+	heli->GetName(name);
 
 	n1 = name;
 	if (n1.empty())
 	{
-		msgs.push_back(validation_error_t("The selected helipad has no name.", err_heli_name_none, who,apt));
+		msgs.push_back(validation_error_t("The selected helipad has no name.", err_heli_name_none, heli,apt));
 	}
 	else
 	{
 		if (n1[0] != 'H')
 		{
-			msgs.push_back(validation_error_t(string("The helipad '") + name + "' does not start with the letter H.", err_heli_name_does_not_start_with_h, who,apt));
+			msgs.push_back(validation_error_t(string("The helipad '") + name + "' does not start with the letter H.", err_heli_name_does_not_start_with_h, heli, apt));
 		}
 		else
 		{
 			if(n1.length() > 3)
-			{
-				msgs.push_back(validation_error_t(string("The helipad '") + name + "' is longer than the maximum 3 characters.", err_heli_name_longer_than_allowed, who,apt));
-			}
+				msgs.push_back(validation_error_t(string("The helipad '") + name + "' is longer than the maximum 3 characters.", err_heli_name_longer_than_allowed, heli, apt));
 
 			n1.erase(0,1);
 			for (int i = 0; i < n1.length(); ++i)
 			{
 				if (n1[i] < '0' || n1[i] > '9')
 				{
-					msgs.push_back(validation_error_t(string("The helipad '") + name + "' contains illegal characters in its name.  It must be in the form H<number>.", err_heli_name_illegal_characters, who,apt));
+					msgs.push_back(validation_error_t(string("The helipad '") + name + "' contains illegal characters in its name.  It must be in the form H<number>.", err_heli_name_illegal_characters, heli, apt));
 					break;
 				}
 			}
 		}
 	}
 
-	{
-		WED_Helipad * heli = dynamic_cast<WED_Helipad *>(who);
-		if (heli->GetWidth() < 1.0) msgs.push_back(validation_error_t(string("The helipad '") + name + "' is less than one meter wide.", err_heli_not_adequetely_wide, who,apt));
-		if (heli->GetLength() < 1.0) msgs.push_back(validation_error_t(string("The helipad '") + name + "' is less than one meter long.", err_heli_not_adequetely_long, who,apt));
-	}
+	if (heli->GetWidth() < 1.0) 
+		msgs.push_back(validation_error_t(string("The helipad '") + name + "' is less than one meter wide.", err_heli_not_adequetely_wide, heli, apt));
+	if (heli->GetLength() < 1.0) 
+		msgs.push_back(validation_error_t(string("The helipad '") + name + "' is less than one meter long.", err_heli_not_adequetely_long, heli, apt));
 }
 
 static bool has_a_number(const string& s)
@@ -1798,10 +1798,8 @@ static void ValidateOneTaxiway(WED_Taxiway* twy, validation_error_vector& msgs, 
 		Hole of taxiway is not at least 3 sided
 	 */
 
-	if(twy->GetSurface() == surf_Water && gExportTarget == wet_gateway)
-	{
+	if(twy->GetSurface() == surf_Water)
 		msgs.push_back(validation_error_t("Water is not a valid surface type for taxiways.", err_taxiway_surface_water_not_valid_type, twy,apt));
-	}
 
 	IGISPointSequence * ps;
 	ps = twy->GetOuterRing();
@@ -2176,10 +2174,10 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	string name, icao;
 	apt->GetName(name);
 	apt->GetICAO(icao);
+
 	ValidateAptName(name, icao, msgs, apt);
 
 	validate_error_t err_type = gExportTarget == wet_gateway ? err_airport_no_rwys_sealanes_or_helipads : warn_airport_no_rwys_sealanes_or_helipads;
-
 	switch(apt->GetAirportType())
 	{
 		case type_Airport:
@@ -2236,31 +2234,91 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		ValidateAirportMetadata(apt,msgs,apt);
 
 	err_type = gExportTarget == wet_gateway ? err_airport_impossible_size : warn_airport_impossible_size;
+	Bbox2 bounds;
+	apt->GetBounds(gis_Geo, bounds);
+	int lg_apt_mult = ( icao == "KEDW" ? 3.0 : 1.0);  // because this one has the runways on all surrounding salt flats included
+	if(bounds.xspan() > lg_apt_mult * MAX_SPAN_GATEWAY_NM / 60.0 / cos(bounds.centroid().y() * DEG_TO_RAD) ||     // correction for higher lattitudes
+			bounds.yspan() > lg_apt_mult* MAX_SPAN_GATEWAY_NM / 60.0)
 	{
-		Bbox2 bounds;
-		apt->GetBounds(gis_Geo, bounds);
-		int lg_apt_mult = ( icao == "KEDW" ? 3.0 : 1.0);  // because this one has the runways on all surrounding salt flats included
-		if(bounds.xspan() > lg_apt_mult * MAX_SPAN_GATEWAY_NM / 60.0 / cos(bounds.centroid().y() * DEG_TO_RAD) ||     // correction for higher lattitudes
-				bounds.yspan() > lg_apt_mult* MAX_SPAN_GATEWAY_NM / 60.0)
-		{
-			msgs.push_back(validation_error_t("This airport is impossibly large. Perhaps a part of the airport has been accidentally moved far away or is not correctly placed in the hierarchy?", err_type, apt,apt));
-		}
+		msgs.push_back(validation_error_t("This airport is impossibly large. Perhaps a part of the airport has been accidentally moved far away or is not correctly placed in the hierarchy?", err_type, apt,apt));
 	}
+
 	if (truck_parking_locs.size() && GT_routes.empty())
 		msgs.push_back(validation_error_t("Truck parking locations require at least one taxi route for ground trucks", err_truck_parking_no_ground_taxi_routes, truck_parking_locs.front(), apt));
 	
 	if(GT_routes.size() && truck_parking_locs.empty())
 		msgs.push_back(validation_error_t("Ground routes are defined, but no service vehicle starts. This disables all ground traffic, including auto generated pushback vehicles.", warn_truckroutes_but_no_starts, apt,apt));
-		
+
 	if(gExportTarget == wet_gateway)
 	{
 		if(!runways.empty() && boundaries.empty())
             msgs.push_back(validation_error_t("This airport contains runway(s) but no airport boundary.", 	err_airport_no_boundary, apt,apt));
 
+		Bbox2 apt_bounds;
 		for(auto b : boundaries)
 		{
 			if(WED_HasBezierPol(b))
 				msgs.push_back(validation_error_t("Do not use bezier curves in airport boundaries.", err_apt_boundary_bez_curve_used, b, apt));
+
+			Bbox2	 bdy_bounds;
+			b->GetBounds(gis_Geo,bdy_bounds);
+			apt_bounds += bdy_bounds;
+			
+			Polygon2 bdy;
+			auto ps = b->GetOuterRing();
+			int np = ps->GetNumPoints();
+			bdy.reserve(np);
+			
+			for(int i = 0; i < np; i++)
+			{
+				Point2 pt;
+				ps->GetNthPoint(i)->GetLocation(gis_Geo, pt);
+				bdy.push_back(pt);
+			}
+		
+			for(auto r : runways)
+			{
+				Point2 corners[4];
+				r->GetCorners(gis_Geo, corners);
+				for(int i = 0; i < 4; i++)
+					if(!bdy.inside(corners[i]))
+					{
+						msgs.push_back(validation_error_t("Runway not fully inside airport boundary.", err_airport_outside_boundary, r, apt));
+						break;
+					}
+			}
+			for(auto t : taxiways)
+			{
+				auto t_ps = t->GetOuterRing();
+				int t_np = t_ps->GetNumPoints();
+				for(int i = 0; i < t_np; i++)
+				{
+					Point2 pt;
+					t_ps->GetNthPoint(i)->GetLocation(gis_Geo, pt);
+					if(!bdy.inside(pt))
+					{
+						msgs.push_back(validation_error_t("Taxiway not fully inside airport boundary.", err_airport_outside_boundary, t->GetNthChild(0)->GetNthChild(i), apt));
+						break;
+					}
+				}
+			}
+			for(auto r : ramps)
+			{
+				Point2 pt;
+				r->GetLocation(gis_Geo, pt);
+				if(!bdy.inside(pt))
+					msgs.push_back(validation_error_t("Ramp Start outside airport boundary.", err_airport_outside_boundary, r, apt));
+			}
+		}
+
+		apt_bounds.expand(DSF_OVERSIZE_NM / cos(apt_bounds.centroid().y() * DEG_TO_RAD) / 60.0, DSF_OVERSIZE_NM / 60.0 );
+		if(!boundaries.empty() && !apt_bounds.contains(bounds))
+		{
+			msgs.push_back(validation_error_t("Airport contains scenery far outside the airport boundary.", err_airport_far_outside_boundary, apt, apt));
+			debug_mesh_segment(apt_bounds.left_side(), DBG_LIN_COLOR);
+			debug_mesh_segment(apt_bounds.right_side(), DBG_LIN_COLOR);
+			debug_mesh_segment(apt_bounds.top_side(), DBG_LIN_COLOR);
+			debug_mesh_segment(apt_bounds.bottom_side(), DBG_LIN_COLOR);
 		}
 		// allow some draped orthophotos (like grund painted signs)
 		vector<WED_DrapedOrthophoto *> orthos_illegal;
@@ -2275,7 +2333,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 			if (!pol || !pol->mSubBoxes.size())
 				orthos_illegal.push_back(*o);
 //			else
-//				printf("kosher ortho, has %d subtex\n", pol->mSubBoxes.size());
+//				printf("kosher ortho, has %ld subtex\n", pol->mSubBoxes.size());
 		}
 		if(!orthos_illegal.empty())
 			msgs.push_back(validation_error_t("Only Orthophotos with automatic subtexture selection can be exported to the Gateway. Please hide or remove selected Orthophotos.",

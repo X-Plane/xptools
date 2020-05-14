@@ -41,6 +41,8 @@ enum validate_error_t
 	err_airport_no_rwys_sealanes_or_helipads,
 	err_airport_metadata_invalid,
 	err_airport_no_runway_matching_cifp,
+	err_airport_outside_boundary,
+	err_airport_far_outside_boundary,
 	err_apt_boundary_bez_curve_used,
 	err_atc_taxi_routes_only_for_gte_xp10,
 	err_atc_taxi_routes_not_connected,
