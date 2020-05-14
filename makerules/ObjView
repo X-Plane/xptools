@@ -9,11 +9,12 @@ DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
 #FORCEREBUILD_SUFFIX := _ov
 
 ifdef PLAT_LINUX
-//LDFLAGS		+= -rdynamic
+LDFLAGS		+= -rdynamic
 //LDFLAGS		+= -Wl,--exclude-libs,ALL
-LIBS		+= -Wl,-Bdynamic
 LIBS		+= -lfltk  -lfltk_gl -lGL -lGLU -lpthread -lm
+LIBS		+= -Wl,-Bdynamic
 //LIBS		+= -lGL -lGLU -lXrender -lXcursor -lXfixes -lXext -lXft -lfontconfig -lXinerama -pthread -ldl -lm -lX11
+
 endif #PLAT_LINUX
 
 ifdef PLAT_MINGW

@@ -36,7 +36,7 @@
 #if APL
 	#include <OpenGL/gl.h>
 #else
-	#include <GL/gl.h>
+	#include <glew.h>
 #endif
 
 class	RF_MapZoomer;
