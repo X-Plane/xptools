@@ -90,16 +90,21 @@ void GUI_Application::TryQuitCB(void * ref)
 
 
 #endif
+#define DEBUG_CLEAR_MENU 0
 #if LIN
 static void clearSubmenusRecursive(const Fl_Menu_Item *  menu)
 {
 	if(!menu) return;
 	int sz = menu->size();
+	#if DEBUG_CLEAR_MENU
 	printf("-> menu      %s %p\n",menu->label(),menu);
+	#endif // DEBUG_CLEAR_MENU
 	for ( int t=0; t < sz ; t++)
 	{
 		Fl_Menu_Item * item = (Fl_Menu_Item *) &menu[t];
+	#if DEBUG_CLEAR_MENU
 		printf("%d menu     %s %p\n",t,item->label(),item);
+	#endif // DEBUG_CLEAR_MENU
 		if(!item->label()) break;
 
 		if(item->flags&FL_SUBMENU_POINTER)
@@ -123,8 +128,9 @@ static void clearSubmenusRecursive(const Fl_Menu_Item *  menu)
 			item->text = nullptr;
 		}
 	}
-
+	#if DEBUG_CLEAR_MENU
 	printf("-> delete      %s %p\n",menu->label(),menu);
+	#endif // DEBUG_CLEAR_MENU
 	delete [] menu;
 }
 
@@ -319,10 +325,8 @@ void			GUI_Application::Run(void)
 	}
 #endif
 #if LIN
-	while (!mDone)
-	{
-		Fl::wait();
-	}
+	while(!mDone && Fl::wait()) // Fl::wait() returns 1 if atleast one window shown
+	{}
 #endif
 }
 

@@ -238,6 +238,8 @@ WED_Application::WED_Application(const char * args) : GUI_Application(args),
 
 WED_Application::~WED_Application()
 {
+	if (mAboutBox)    delete mAboutBox;
+	if (mSettingsWin) delete mSettingsWin;
 }
 
 void	WED_Application::OpenFiles(const vector<string>& inFiles)

@@ -196,6 +196,8 @@ int main(int argc, char * argv[])
 	#endif
 	app.Run();
 
+	delete start;
+
 	GUI_MemoryHog::RemoveNewHandler();
 
 	string xsys;

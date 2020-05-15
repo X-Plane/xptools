@@ -608,6 +608,7 @@ void	GUI_Window::SetClearSpecs(bool inDoClearColor, bool inDoClearDepth, float i
 
 GUI_Window::~GUI_Window()
 {
+	printf("GUI_Window dtor\n");
 	#if IBM
 //		SetWindowLongPtrW(mWindow,GWLP_WNDPROC,(LONG_PTR) mBaseProc);
 		mDND->Release();
