@@ -41,6 +41,8 @@ enum validate_error_t
 	err_airport_no_rwys_sealanes_or_helipads,
 	err_airport_metadata_invalid,
 	err_airport_no_runway_matching_cifp,
+	err_airport_outside_boundary,
+	err_airport_far_outside_boundary,
 	err_apt_boundary_bez_curve_used,
 	err_atc_taxi_routes_only_for_gte_xp10,
 	err_atc_taxi_routes_not_connected,
@@ -150,16 +152,18 @@ enum validate_error_t
 	warn_airport_name_style,
 	warn_airport_no_rwys_sealanes_or_helipads,
 	warn_atc_freq_on_8p33khz_spacing,
+	warn_atc_flow_ceiling_unlikely,
 	warn_atc_flow_excessive_tailwind,
 	warn_atc_flow_never_reached,
 	warn_atc_flow_insufficient_coverage,
 	warn_atc_flow_short_time,
+	warn_atc_flow_visibility_unlikely,
 	warn_atcrwy_marking,
 	warn_facades_curved_only_type2,
 	warn_object_custom_elev,
 	warn_truckroutes_but_no_starts,
 	warn_ramp_start_size_implausible,
-	warn_runway_matching_cifp_mislocated
+	warn_runway_matching_cifp_mislocated,
 };
 
 // The validation error record stores a single validation problem for reporting.

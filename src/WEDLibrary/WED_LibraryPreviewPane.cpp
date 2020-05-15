@@ -110,13 +110,20 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 		if(res_type == res_Facade)
 		{
 			const fac_info_t * fac;
-			mResMgr->GetFac(mRes,fac);
-			//mWalls = 4 * ( (intlim(fac->wallName.size(),4,16)+3) / 4);
-			mWalls = intlim(fac->wallName.size(),4,16);
-			if(!fac->is_new) mHgt = intlim(mHgt,fac->min_floors,fac->max_floors);
-//			mHgt = fac->is_new ? 10 : fac->min_floors;
-//			mWid = 20.0;
-		}	
+			if (mResMgr->GetFac(mRes, fac))
+			{
+				mWalls = intlim(fac->wallName.size(), 4, 16);
+				if (!fac->is_new) mHgt = intlim(mHgt, fac->min_floors, fac->max_floors);
+				//			mHgt = fac->is_new ? 10 : fac->min_floors;
+				//			mWid = 20.0;
+			}
+		}
+		else
+		{
+			const agp_t * agp;
+			if (mResMgr->GetAGP(mRes, agp))
+				mHgt = 0.0;
+		}
 	}
 	else
 	{
@@ -237,8 +244,7 @@ void	WED_LibraryPreviewPane::MouseDrag(int x, int y, int button)
 {
 	float dx = x - mX;
 	float dy = y - mY;
-	
-	if(mType == res_Facade && button == 1)
+	if((mType == res_Facade || mType == res_Object) && button == 1)
 	{
 		mHgt = mHgtOrig + (fabs(dy) < 100.0 ? dy * 0.1 : sign(dy)*(fabs(dy)-80) * 0.5);
 		mHgt = intlim(mHgt,0,250);
@@ -554,15 +560,12 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 									o->xyz_max[0]-o->xyz_min[0],
 									o->xyz_max[1]-o->xyz_min[1],
 									o->xyz_max[2]-o->xyz_min[2]);
-				double xyz_off[3] = { -(o->xyz_max[0]+o->xyz_min[0])*0.5f,
-				                      -(o->xyz_max[1]+o->xyz_min[1])*0.5f,
-				                      -(o->xyz_max[2]+o->xyz_min[2])*0.5f };
+				double xyz_off[3] = { -(o->xyz_max[0]+o->xyz_min[0])*0.5,
+				                      -(o->xyz_max[1]+o->xyz_min[1])*0.5,
+				                      -(o->xyz_max[2]+o->xyz_min[2])*0.5 };
 
 				begin3d(b, real_radius);
-				
-				draw_obj_at_xyz(mTexMgr, o,
-					xyz_off[0], xyz_off[1], xyz_off[2],	0, g);
-						
+				draw_obj_at_xyz(mTexMgr, o, xyz_off[0], xyz_off[1], xyz_off[2],	0, g);
 				end3d(b);
 			}
 			else if (mResMgr->GetAGP(mRes,agp))
@@ -571,33 +574,12 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 									agp->xyz_max[0] - agp->xyz_min[0],
 									agp->xyz_max[1] - agp->xyz_min[1],
 									agp->xyz_max[2] - agp->xyz_min[2]);
+				double xyz_off[3] = { -(agp->xyz_max[0] + agp->xyz_min[0]) * 0.5,
+									  -(agp->xyz_max[1] + agp->xyz_min[1]) * 0.5,
+									  (agp->xyz_max[2] + agp->xyz_min[2]) * 0.5 };
 
 				begin3d(b, real_radius);
-				
-				glTranslatef((agp->xyz_max[0] + agp->xyz_min[0]) * -0.5,
-							 (agp->xyz_max[1] + agp->xyz_min[1]) * -0.5,
-							 (agp->xyz_max[2] + agp->xyz_min[2]) * 0.5);
-
-				if(!agp->tile.empty() && !agp->hide_tiles)
-				{
-					TexRef	ref = mTexMgr->LookupTexture(agp->base_tex.c_str(), true, tex_Linear | tex_Mipmap | tex_Compress_Ok);
-					int id1 = ref ? mTexMgr->GetTexID(ref) : 0;
-					if (id1)g->BindTex(id1, 0);
-
-					glDisable(GL_CULL_FACE);
-					glBegin(GL_TRIANGLE_FAN);
-					for(int n = 0; n < agp->tile.size(); n += 4)
-					{
-						glTexCoord2f(agp->tile[n+2],agp->tile[n+3]);
-						glVertex3f(agp->tile[n],0,-agp->tile[n+1]);
-					}
-					glEnd();
-					glEnable(GL_CULL_FACE);
-				}	
-				for(auto& o : agp->objs)
-				{
-					draw_obj_at_xyz(mTexMgr, o.obj, o.x, o.z, -o.y, o.r, g);
-				}
+				draw_agp_at_xyz(mTexMgr, agp, xyz_off[0], xyz_off[1], xyz_off[2], mHgt, 0, g);
 				end3d(b);
 			}
 			break;
@@ -639,17 +621,24 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 			case res_String:
 				if (o)
 				{
-					if(agp)
-						snprintf(buf1, sizeof(buf1), "%s", agp->description.c_str());
-					else if(str)
-						snprintf(buf1, sizeof(buf1), "%s", str->description.c_str());
-					else
-						snprintf(buf1, sizeof(buf1), "%s", o->description.c_str());
-					
-					int n = sprintf(buf2,"max h=%.1f%s", o->xyz_max[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");
+					snprintf(buf1, sizeof(buf1), "%s", o->description.c_str());
+					int n = sprintf(buf2, "max h=%.1f%s", o->xyz_max[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");
 					if (o->xyz_min[1] < -0.07)
-						sprintf(buf2+n,", below ground to %.1f%s", o->xyz_min[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");
+						n += sprintf(buf2 + n, ", below ground to %.1f%s", o->xyz_min[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");
 				}
+				else if(agp)
+				{
+					snprintf(buf1, sizeof(buf1), "%s", agp->description.c_str());
+					int n = sprintf(buf2, "max h=%.1f%s", agp->xyz_max[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");
+					for (auto& a : agp->objs)
+						if(a.scp_step > 0.0)
+						{
+							sprintf(buf2 + n, ", supports set_AGL %.1f .. %.1f%s @ h=%dm", a.scp_min / (gIsFeet ? 0.3048 : 1.0), a.scp_max / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m", mHgt);
+							break;
+						}
+				}
+				else if (str)
+					snprintf(buf1, sizeof(buf1), "%s", str->description.c_str());
 				break;
 		}
 		float text_color[4] = { 1,1,1,1 };

@@ -1,11 +1,3 @@
-#include <algorithm>
-#include <iterator>
-#include <sstream>
-#include <iomanip>
-#include <queue>
-#include <functional>
-#include <iostream>
-
 #define DBG_LIN_COLOR 1,0,1,1,0,1
 
 #if DEV
@@ -28,6 +20,8 @@
 #include "CompGeomUtils.h"
 #include "GISUtils.h"
 #include "WED_PreviewLayer.h"
+
+#include <sstream>
 
 typedef vector<WED_ATCRunwayUse*>  ATCRunwayUseVec_t;
 

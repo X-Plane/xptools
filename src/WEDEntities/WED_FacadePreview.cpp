@@ -796,43 +796,83 @@ struct obj {
 	float	x,y,z,r;
 };
 
+#include "GUI_DrawUtils.h"
+#include "WED_DebugLayer.h"
 
 void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, const fac_info_t& info, const Polygon2& footprint, const vector<int>& choices,
 	double fac_height, GUI_GraphState * g, bool want_thinWalls, double ppm_for_culling)
 {
-	for(auto f : info.scrapers)
+	if(rman)
+	for(auto& f : info.scrapers)
 	{
+		// determine center of first segment
+		Point2 facOrig = footprint.side(0).midpoint();
+		Vector2 dir (footprint[1],footprint[0]);
+		double facRot = atan2(dir.y(), dir.x()) * RAD_TO_DEG;
+					
 		if(fltrange(fac_height,f.min_agl,f.max_agl))
 		{
-			fac_height = (fac_height - f.min_agl) / f.step_agl;
-			double hgt = fac_height * f.step_agl;
-			string scp_base(f.choices[0].base_obj);
-			if(!scp_base.empty())
+			int scp_levels = (fac_height - f.min_agl) / f.step_agl;
+			double scpAGL = scp_levels * f.step_agl;
+			fac_height = f.floors;
+			for(auto& s : f.choices)
 			{
-				const XObj8 * oo;
-				if(rman->GetObjRelative(scp_base, vpath, oo))
+				bool pinsInside(true);
+				for(int i = 0; i < s.pins.size(); i+=2)
 				{
-					draw_obj_at_xyz(tman, oo,
-						f.choices[0].base_xzr[0], hgt, f.choices[0].base_xzr[1],
-						f.choices[0].base_xzr[2]-90, g);
-				} 
-			}
-			string scp_twr(f.choices[0].towr_obj);
-			if(!scp_twr.empty())
-			{
-				const XObj8 * oo;
-				if(rman->GetObjRelative(scp_twr, vpath, oo))
+					Vector2 pin_loc(s.pins[i], s.pins[i+1]);
+					pin_loc.rotate_by_degrees(facRot);
+					Point2 pin = facOrig + pin_loc;
+					if(!footprint.inside(pin))
+					{
+						pinsInside = false;
+						break;
+					}
+				}
+				if(pinsInside)
 				{
-					draw_obj_at_xyz(tman, oo,
-						f.choices[0].towr_xzr[0], hgt, f.choices[0].towr_xzr[1],
-						f.choices[0].towr_xzr[2]-90, g);
-				} 
+		#if 1
+					glColor4f(1,0,1,1);
+					glPointSize(3);
+					glBegin(GL_POINTS);
+					for(int i = 0; i < s.pins.size(); i+=2)
+					{
+						Vector2 pin_loc(s.pins[i], s.pins[i+1]);
+						pin_loc.rotate_by_degrees(facRot);
+						Point2 pin = facOrig + pin_loc;
+						glVertex3f(pin.x(), 120.0, pin.y());
+					}
+					glEnd();
+		#endif
+					Vector2 base_xz(s.base_xzr[0], s.base_xzr[1]);
+					base_xz.rotate_by_degrees(facRot - 90.0);
+					Point2 scpOrig = facOrig + base_xz;
+					if(!s.base_obj.empty())
+					{
+						const XObj8 * oo;
+						if(rman->GetObjRelative(s.base_obj, vpath, oo))
+						{
+							draw_obj_at_xyz(tman, oo,
+								scpOrig.x(), 0.0, scpOrig.y(), facRot + s.base_xzr[2], g);
+						} 
+					}
+					if(!s.towr_obj.empty())
+					{
+						const XObj8 * oo;
+						if(rman->GetObjRelative(s.towr_obj, vpath, oo))
+						{
+							draw_obj_at_xyz(tman, oo,
+								scpOrig.x(), scpAGL, scpOrig.y(), facRot + s.towr_xzr[2], g);
+						} 
+					}
+					break;
+				}
 			}
 			break;
 		}
 	}
 
-	TexRef	tRef = tman->LookupTexture(info.wall_tex.c_str() ,true, tex_Compress_Ok);
+	TexRef	tRef = tman->LookupTexture(info.wall_tex.c_str() ,true, tex_Compress_Ok | tex_Wrap | tex_Mipmap);
 	g->SetTexUnits(1);
 	g->BindTex(tRef  ? tman->GetTexID(tRef) : 0, 0);
 	
@@ -1056,7 +1096,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 
 	if (info.has_roof) // && want_roof
 	{
-		tRef = tman->LookupTexture(info.roof_tex.c_str() ,true, tex_Wrap|tex_Compress_Ok);
+		tRef = tman->LookupTexture(info.roof_tex.c_str() ,true, tex_Wrap | tex_Compress_Ok | tex_Mipmap);
 		g->BindTex(tRef ? tman->GetTexID(tRef) : 0, 0);
 
 		// all facdes are drawn cw (!)

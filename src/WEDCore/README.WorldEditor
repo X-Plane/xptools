@@ -13,16 +13,22 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 2.3.0b1 4/3/20
+WED 2.3.0b1 4/28/20
    Bug Fix:
    - fix endcaps for bezier curved lines not following curve in map
    - fix validation not checking GT routes intersecting runways win some airports
-   - WED-1277: Make error messages when saving xml files more particular
+   - WED-1277: make error messages when saving xml files more particular
+   - WED-1294: support facades with single wall+roof texture
+   - WED-1299: fix CTD in GW validation with orthophotos w/images as resources
+   - WED-1311: fix holes in polygon incorrectly wound after "convert to"
    Features:
+   - WED-1293: show facades when part of .agp definitions
    - WED-1270: support gateway download driven by Airport ID list from external file
    - "Explode AGP's" can handle any .agp containing only public or local objects
-   - new validation for ATC networks being fully connected and reachable
-   - new validation for Hot-Zone tagged taxi routes not connected to other routes
+   - validate ATC networks being fully connected and reachable
+   - validate Hot-Zone tagged taxi routes not connected to other routes
+   - validate all run/taxiways and rampstarts inside airport boundary (GW only)
+   - validate all scenery within airport boundary bounds + 0.5 nm (GW only)
    - show aproximate ground truck + AI A/C routes near ramp starts in ATC layer
    - XPD-9302,9240,9243 support "set_AGL" for objects available with XP11.50b1+
    - new gateway target validation error/warning for set_MSL/set_AGL objects
