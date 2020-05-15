@@ -446,7 +446,7 @@ void XWin::ForceRefresh(void)
 
 void XWin::UpdateNow(void)
 {
-	redraw();
+	Fl::check();
 }
 
 void XWin::SetVisible(bool visible)
