@@ -986,7 +986,7 @@ static void TestInvalidHotZOneTags(const TaxiRouteInfoVec_t& taxi_routes, const 
 
 		if(tr.ptr->HasInvalidHotZones(legal_rwy_oneway))
 		{
-			msgs.push_back(validation_error_t(string("The taxi route '") + tr.name + "' has hot zones for runways not present at its airport.",
+			msgs.push_back(validation_error_t(string("Taxi route '") + tr.name + "' has hot zones for runways not present at its airport.",
 									err_taxi_route_has_hot_zones_not_present, tr.ptr, apt));
 		}
 
@@ -994,7 +994,7 @@ static void TestInvalidHotZOneTags(const TaxiRouteInfoVec_t& taxi_routes, const 
 		{
 			if (legal_rwy_twoway.count(tr.ptr->GetRunway()) == 0)
 			{
-				msgs.push_back(validation_error_t(string("The taxi route '") + tr.name + "' is set to a runway not present at the airport.",
+				msgs.push_back(validation_error_t(string("Taxi route '") + tr.name + "' is set to a runway not present at the airport.",
 					err_taxi_route_set_to_runway_not_present, tr.ptr, apt));
 			}
 		}
@@ -1006,6 +1006,28 @@ static void TestInvalidHotZOneTags(const TaxiRouteInfoVec_t& taxi_routes, const 
 					msgs.push_back(validation_error_t("Taxi routes with HotZone tags most be connected on both ends to other taxi routes.",
 						err_taxi_route_has_hot_zones_but_not_connected, tr.nodes[i], apt));
 				}
+		}
+	}
+}
+
+static void TwyNameCheck(const TaxiRouteInfoVec_t& all_taxiroutes_info, validation_error_vector& msgs, WED_Airport *apt)
+{
+	for(auto& tr : all_taxiroutes_info)
+	{
+		if(!tr.ptr->IsRunway())
+		{
+			if(tr.name.size() > 3)
+				msgs.push_back(validation_error_t(string("Taxi route '") + tr.name + "' name is unusually long, should be less than 4 characters.",
+							warn_taxi_route_name_unusual, tr.ptr, apt));
+			else if(!tr.name.empty())
+			{ 
+				bool ok = isalpha(tr.name[0]);
+				if(tr.name.size() > 1) ok &= isalnum(tr.name[1]);
+				if(tr.name.size() > 2) ok &= isdigit(tr.name[2]);
+				if(!ok)
+					msgs.push_back(validation_error_t(string("Taxi route '") + tr.name + "' name is likely wrong, should be 1-2 letters optionally followed by 1-2 digits or empty.",
+							warn_taxi_route_name_unusual, tr.ptr, apt));
+			}
 		}
 	}
 }
@@ -1042,6 +1064,7 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs, cons
 	}
 
 	TJunctionCrossingTest(all_taxiroutes_info, msgs, &apt);
+	TwyNameCheck(all_taxiroutes_info, msgs, &apt);
 
 	RunwayInfoVec_t all_runways_info;
 	for(auto& itr : all_runways)

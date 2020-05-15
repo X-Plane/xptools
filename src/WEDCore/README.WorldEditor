@@ -29,9 +29,10 @@ WED 2.3.0b1 4/28/20
    - validate Hot-Zone tagged taxi routes not connected to other routes
    - validate all run/taxiways and rampstarts inside airport boundary (GW only)
    - validate all scenery within airport boundary bounds + 0.5 nm (GW only)
+   - validate to prevent set_MSL and warn about set_AGL objects (GW only)
+   - warn if taxi route name is unusual
    - show aproximate ground truck + AI A/C routes near ramp starts in ATC layer
    - XPD-9302,9240,9243 support "set_AGL" for objects available with XP11.50b1+
-   - new gateway target validation error/warning for set_MSL/set_AGL objects
    - recognize keyword '#wed_text' to display text in preview window
    - speedup facade object drawing, same way as done for .agp
    - speedup validation for large datasets, for gateway use

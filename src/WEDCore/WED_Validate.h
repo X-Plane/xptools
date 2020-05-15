@@ -161,6 +161,7 @@ enum validate_error_t
 	warn_atcrwy_marking,
 	warn_facades_curved_only_type2,
 	warn_object_custom_elev,
+	warn_taxi_route_name_unusual,
 	warn_truckroutes_but_no_starts,
 	warn_ramp_start_size_implausible,
 	warn_runway_matching_cifp_mislocated,
