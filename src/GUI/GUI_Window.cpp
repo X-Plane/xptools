@@ -104,16 +104,12 @@ int GUI_Window::handle(int e )
 		/*DND events */
 		case FL_DND_ENTER:{
 
-			printf(" GUI_Window:: FL_DND_ENTER \n");
+			printf(" GUI_Window::FL_DND_ENTER \n");
 			GUI_DragData_Adapter  adapter(NULL);
 			GUI_DragOperation allowed;
 			allowed = (this->InternalDragEnter(x,y,&adapter,OP_LIN2GUI(1),OP_LIN2GUI(1)));
-
+			this->InternalDragScroll(x,y);
 			this->mInDrag = 1;
-			this->SetTimerInterval(0.05);
-			this->mLastDragX = x;
-			this->mLastDragY = y;
-
 			if (allowed == gui_Drag_None) return 0;
 			//FIXME:mroe:if we comein from outside , drop is not allowed from pane
 			//untill the targetrect riched , anyhow we must allow the drag here .
@@ -124,18 +120,16 @@ int GUI_Window::handle(int e )
 			GUI_DragData_Adapter  adapter(NULL);
 			GUI_DragOperation allowed;
 			allowed = (this->InternalDragOver(x,y,&adapter,OP_LIN2GUI(1),OP_LIN2GUI(1)));
-
-			this->mLastDragX = x;
-			this->mLastDragY = y;
+			this->InternalDragScroll(x,y);
 
 			if (allowed == gui_Drag_None) return 0;
 		}
 		return 1;
 		case FL_DND_LEAVE:{
-
-			this->mInDrag = 0;
-			this->SetTimerInterval(0);
+			printf(" GUI_Window::FL_DND_LEAVE \n");
 			this->InternalDragLeave();
+			this->mInDrag = 0;
+			Fl::pushed(0); // this kills the DnD
 		}
 		return 1;
 		case FL_DND_RELEASE:{
@@ -151,7 +145,6 @@ int GUI_Window::handle(int e )
 			{
 				printf("FL_PASTE drag type: %s ,txt: %s\n",Fl::event_clipboard_type(),Fl::event_text());
 				this->mInDrag = 0;
-			    this->SetTimerInterval(0);
 				GUI_DragData_Adapter adapter((void*) Fl::event_text());
 				GUI_DragOperation allowed = (this->InternalDrop(x,y,&adapter,OP_LIN2GUI(1),OP_LIN2GUI(1)));
 				this->InternalDragLeave();
