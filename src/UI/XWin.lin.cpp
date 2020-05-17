@@ -559,7 +559,7 @@ xmenu XWin::GetMenuBar(void)
 	if(!mMenuBar)
 	{
 		int font_height = max(14,this->labelsize());
-		mMenuBar = new Fl_Menu_Bar(0,0,w(),font_height + 8);
+		mMenuBar = new Fl_Menu_Bar(0,0,w(),font_height + 10);
 		mMenuBar->textsize(font_height);
 
 		int mbar_h = mMenuBar->h();
