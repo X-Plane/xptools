@@ -153,6 +153,9 @@ int main(int argc, char * argv[])
 	// This means one window must always be in existence.  That window is the about box...which stays hidden but allocated to
 	// sustain OpenGL.
 
+	GUI_Prefs_Read("WED");
+	WED_Document::ReadGlobalPrefs();
+
 	WED_StartWindow * start = new WED_StartWindow(&app);   // here we initialize the fonts - but the
 	WED_MakeMenus(&app);
 	#if LIN
@@ -162,10 +165,6 @@ int main(int argc, char * argv[])
 	start->Show();
 	start->ShowMessage("Initializing...");
 //	XESInit();
-
-	start->ShowMessage("Reading Prefs...");
-	GUI_Prefs_Read("WED");
-	WED_Document::ReadGlobalPrefs();
 
 	start->ShowMessage("Scanning X-System Folder...");
 	pMgr.SetXPlaneFolder(GUI_GetPrefString("packages","xsystem",""));

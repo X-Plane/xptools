@@ -5,8 +5,6 @@
 
 #define DEBUG_EVENTS 0
 
-extern int gFontSize;
-
 static void clearSubmenusRecursive(const Fl_Menu_Item *  menu)
 {
 	if(!menu) return;
@@ -558,12 +556,9 @@ void XWin::ReceiveFilesFromDrag(const string& inFiles)
 
 xmenu XWin::GetMenuBar(void)
 {
-	printf("XWin::GetMenuBar %d\n", gFontSize);
 	if(!mMenuBar)
 	{
-		int font_height = labelsize();
-		if(gFontSize > 12 && gFontSize < 20)    // mm: won't work on initial window - as preferences haven't been read, yet
-			font_height = gFontSize;
+		int font_height = max(14,this->labelsize());
 		mMenuBar = new Fl_Menu_Bar(0,0,w(),font_height + 8);
 		mMenuBar->textsize(font_height);
 

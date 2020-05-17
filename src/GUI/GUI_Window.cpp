@@ -26,6 +26,7 @@
 #include "GUI_Application.h"
 #include "AssertUtils.h"
 #include "GUI_Clipboard.h"
+#include "GUI_Fonts.h"
 #include "GUI_Menus.h"
 
 #if IBM
@@ -549,16 +550,20 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBound
 	#endif
 	#if LIN
 
+		this->labelsize((int)GUI_GetFontSize(0));
 		if( !(inAttributes & xwin_style_popup) && !(inAttributes & xwin_style_modal))
 		{
 			GetMenuBar(); // create one
-			if(sWindows.size() > 0)
+			if(mMenuBar)
 			{
-				//mMenuBar->menu(gApplication->mMenu);
-				mMenuBar->copy((*sWindows.begin())->GetMenuBar());
-			}
+				if(sWindows.size() > 0)
+				{
+					//mMenuBar->menu(gApplication->mMenu);
+					mMenuBar->copy((*sWindows.begin())->GetMenuBar());
+				}
 
-			if(mMenuBar && gApplication) mMenuBar->callback(gApplication->update_menus_cb);
+				if(gApplication) mMenuBar->callback(gApplication->update_menus_cb);
+			}
 		}
 
 	#endif
