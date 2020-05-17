@@ -5,6 +5,8 @@
 
 #define DEBUG_EVENTS 0
 
+extern int gFontSize;
+
 static void clearSubmenusRecursive(const Fl_Menu_Item *  menu)
 {
 	if(!menu) return;
@@ -556,42 +558,47 @@ void XWin::ReceiveFilesFromDrag(const string& inFiles)
 
 xmenu XWin::GetMenuBar(void)
 {
-   if(!mMenuBar)
-   {
-	  mMenuBar = new Fl_Menu_Bar(0,0,w(),labelsize() + 16);
-	  int mbar_h = mMenuBar->h();
-	  Fl_Widget * resizable_widget = this->resizable();
-	  resizable(this);
-	  this->size(this->w(),this->h() + mbar_h);
-	  this->insert(*mMenuBar,0);
+	printf("XWin::GetMenuBar %d\n", gFontSize);
+	if(!mMenuBar)
+	{
+		int font_height = labelsize();
+		if(gFontSize > 12 && gFontSize < 20)    // mm: won't work on initial window - as preferences haven't been read, yet
+			font_height = gFontSize;
+		mMenuBar = new Fl_Menu_Bar(0,0,w(),font_height + 8);
+		mMenuBar->textsize(font_height);
 
-	  for(int i = 1; i < this->children() ; ++i)
-	  {
+		int mbar_h = mMenuBar->h();
+		Fl_Widget * resizable_widget = this->resizable();
+		resizable(this);
+		this->size(this->w(),this->h() + mbar_h);
+		this->insert(*mMenuBar,0);
+
+		for(int i = 1; i < this->children() ; ++i)
+		{
 			int new_y =  this->child(i)->y() + mbar_h;
 			int new_h =  this->child(i)->h() - mbar_h;
 			resizable(child(i));
 			this->child(i)->resize(this->child(i)->x(),new_y,this->child(i)->w(),new_h);
-	  }
+		}
 
-	  this->resizable(resizable_widget);
-	  init_sizes();
+		this->resizable(resizable_widget);
+		init_sizes();
 
-	  mMenuBar->callback(menubar_cb);
-	  mMenuBar->box(FL_FLAT_BOX );
-	  mMenuBar->down_box(FL_GTK_THIN_DOWN_BOX);
-	  int r=84,g=133,b=198;// giving the menubar the same selection color as GUI widgets
-	  mMenuBar->selection_color(fl_rgb_color(r,g,b));
-	  //mMenuBar->textfont(0);
-	  mMenuBar->textsize(12);
-	  //mroe: thats to get an empty initalized menu
-	  //mMenuBar->add("test",0,nullptr,nullptr);
-	  //mMenuBar->remove(0);
-	  Fl_Menu_Item * new_menu = new Fl_Menu_Item[MENU_ARRAY_SIZE * sizeof(Fl_Menu_Item )];
-	  memset(new_menu,0,MENU_ARRAY_SIZE * sizeof(Fl_Menu_Item ));
-	  mMenuBar->menu(new_menu);
-   }
+		mMenuBar->callback(menubar_cb);
+		mMenuBar->box(FL_FLAT_BOX );
+		mMenuBar->down_box(FL_GTK_THIN_DOWN_BOX);
+		int r=84,g=133,b=198;// giving the menubar the same selection color as GUI widgets
+		mMenuBar->selection_color(fl_rgb_color(r,g,b));
+		//mMenuBar->textfont(0);
 
-   return mMenuBar->menu();
+		//mroe: thats to get an empty initalized menu
+		//mMenuBar->add("test",0,nullptr,nullptr);
+		//mMenuBar->remove(0);
+		Fl_Menu_Item * new_menu = new Fl_Menu_Item[MENU_ARRAY_SIZE * sizeof(Fl_Menu_Item )];
+		memset(new_menu,0,MENU_ARRAY_SIZE * sizeof(Fl_Menu_Item ));
+		mMenuBar->menu(new_menu);
+	}
+	return mMenuBar->menu();
 }
 
 int XWin::GetMenuBarHeight(void)
