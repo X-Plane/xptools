@@ -268,13 +268,6 @@ ifdef PLAT_DARWIN
 endif
 endif
 
-ifdef TYPE_EXECUTABLE
-ifdef PLAT_LINUX
-	LDFLAGS		+= -no-pie
-endif
-endif
-
-
 
 ##
 # determine intermediate filenames
