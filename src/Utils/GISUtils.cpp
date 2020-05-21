@@ -102,6 +102,7 @@ bool	FetchTIFFCorners(const char * inFileName, double corners[8], int& post_pos)
 static int GTIFPrintFunc(char * txt, void *a)
 {
 	LOG_MSG(txt);
+	return 0;
 }
 
 bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos, int width, int height)

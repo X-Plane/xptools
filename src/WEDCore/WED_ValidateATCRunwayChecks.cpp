@@ -1022,8 +1022,8 @@ static void TwyNameCheck(const TaxiRouteInfoVec_t& all_taxiroutes_info, validati
 			else if(!tr.name.empty())
 			{ 
 				bool ok = isalpha(tr.name[0]);
-				if(tr.name.size() > 1) ok &= isalnum(tr.name[1]);
-				if(tr.name.size() > 2) ok &= isdigit(tr.name[2]);
+				if(tr.name.size() > 1) ok &= (bool) isalnum(tr.name[1]);
+				if(tr.name.size() > 2) ok &= (bool) isdigit(tr.name[2]);
 				if(!ok)
 					msgs.push_back(validation_error_t(string("Taxi route '") + tr.name + "' name is likely wrong, should be 1-2 letters optionally followed by 1-2 digits or empty.",
 							warn_taxi_route_name_unusual, tr.ptr, apt));

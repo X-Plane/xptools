@@ -135,7 +135,7 @@ int main(int argc, char * argv[])
 	{
 #if IBM
 		LOG_MSG("log.txt for WordEditor " WED_VERSION_STRING " ( Win )\n");
-#elseif APL
+#elif APL
 		LOG_MSG("log.txt for WordEditor " WED_VERSION_STRING " ( OSX )\n");
 #else
 		LOG_MSG("log.txt for WordEditor " WED_VERSION_STRING " ( Linux )\n");
