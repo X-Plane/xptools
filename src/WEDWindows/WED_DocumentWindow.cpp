@@ -270,26 +270,28 @@ WED_DocumentWindow::WED_DocumentWindow(
 	// (which is the bounding box around ALL monitors) - then ignore the preferences
 	// and the new window will pop up fullscreen on the primary monitor instead.
 
-//	printf("FullScreen xy %d %d wh %d %d\n", xy[0], xy[1], zw[0], zw[1]);
+	
+	LOG_MSG("I/Doc opening new scenery window, initial win xy %d %d wh %d %d\n", xy[0], xy[1], zw[0], zw[0]);
 	
 	int safe_rect[4] = { xy[0], xy[1], xy[0] + zw[0], xy[1] + zw[1] };
 	XWin::GetDesktop(safe_rect);
+	LOG_MSG("I/Doc desktop rect %d %d %d %d\n", safe_rect[0], safe_rect[1], safe_rect[2], safe_rect[3]);
 
-	xy[0]  = inDocument->ReadIntPref("window/x_loc",xy[0]);
-	xy[1]  = inDocument->ReadIntPref("window/y_loc",xy[1]);
+	xy[0] = inDocument->ReadIntPref("window/x_loc",xy[0]);
+	xy[1] = inDocument->ReadIntPref("window/y_loc",xy[1]);
 	zw[0] = inDocument->ReadIntPref("window/width",zw[0]);
 	zw[1] = inDocument->ReadIntPref("window/height",zw[1]);
 
-//	printf("from Prefs xy %d %d wh %d %d\n", xy[0], xy[1], zw[0], zw[1]);
+	LOG_MSG("I/Doc size from prefs xy %d %d wh %d %d\n", xy[0], xy[1], zw[0], zw[1]);
 
 	if(xy[0] < safe_rect[2]-100 && xy[1] < safe_rect[3]-100 &&
 	  (xy[0] + zw[0]) >= safe_rect[0]+100 && (xy[1] + zw[1]) >= safe_rect[1]+100)
 	{
 		SetBounds(xy[0],xy[1],xy[0]+zw[0],xy[1]+zw[1]);
 	}
-//	else
-//		printf("SafeRect was triggerd\n");
-
+	else
+		LOG_MSG("E/Doc SafeRect was triggerd\n");
+		
 	int main_split = inDocument->ReadIntPref("window/main_split",zw[0] / 5);
 	int main_split2 = inDocument->ReadIntPref("window/main_split2",zw[0] * 2 / 3);
 	int prop_split = inDocument->ReadIntPref("window/prop_split",zw[1] / 2);

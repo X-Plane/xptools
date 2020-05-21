@@ -3759,6 +3759,13 @@ int		WED_Repair(IResolver * resolver)
 	accum_unviable_recursive(root,unviable);
 	if(unviable.empty())
 		return false;
+	LOG_MSG("E/Repair:\n");
+	for(auto u : unviable)
+	{
+		string nam;
+		u->GetName(nam);
+		LOG_MSG("  Deleting %s '%s'\n",u->HumanReadableType(), nam.c_str());
+	}
 	root->StartOperation("Repair");
 	WED_RecursiveDelete(unviable);
 	WED_SetAnyAirport(resolver);

@@ -52,18 +52,12 @@ static	bool	TransformTiffCorner(GTIF * gtif, GTIFDefn * defn, double x, double y
     /* Try to transform the coordinate into PCS space */
     if( !GTIFImageToPCS( gtif, &x, &y ) )
     {
-#if DEV
-			printf( "GTIF to PCS failed\n");
-			fflush(stdout);
-#endif
+		LOG_MSG("  GTIF to PCS failed\n");
         return false;
 	}
     if( defn->Model == ModelTypeGeographic )
     {
-#if DEV
-			printf( "GTIF ModelIsGeo=yes => done\n");
-			fflush(stdout);
-#endif
+		LOG_MSG("  ModelIsGeo=yes: %lf %lf\n",x,y);
     	outLon = x;
     	outLat = y;
     	return true;
@@ -74,19 +68,11 @@ static	bool	TransformTiffCorner(GTIF * gtif, GTIFDefn * defn, double x, double y
         {
 			outLon = x;
 			outLat = y;
-#if DEV
-			printf( "GTIF Proj4 worked: %lf %lf\n",x,y);
-			fflush(stdout);
-#endif
+			LOG_MSG("  Proj4 worked: %lf %lf\n",x,y);
 			return true;
 		}
-#if DEV
-	else
-	{
-		printf( "GTIF Proj4 failed\n");
-		fflush(stdout);
-	}
-#endif
+		else
+			LOG_MSG("  Proj4 failed\n");
 	}
 	return false;
 }
@@ -105,11 +91,17 @@ bool	FetchTIFFCorners(const char * inFileName, double corners[8], int& post_pos)
 #endif
 	if (tiffFile)
 	{
+		LOG_MSG("I/Gis Importing geotiff %s\n", inFileName);
 		retVal = FetchTIFFCornersWithTIFF(tiffFile, corners, post_pos);
 		XTIFFClose(tiffFile);
 	}
 #endif
 	return retVal;
+}
+
+static int GTIFPrintFunc(char * txt, void *a)
+{
+	LOG_MSG(txt);
 }
 
 bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos, int width, int height)
@@ -119,19 +111,15 @@ bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos,
 	GTIF * gtif = GTIFNew(tiffFile);
 	if (gtif)
 	{
-#if DEV
-		GTIFPrint(gtif, 0, 0);
-#endif
+		GTIFPrint(gtif, GTIFPrintFunc, 0);
+
 		GTIFDefn 	defn;
         if( GTIFGetDefn( gtif, &defn ) )
         {
-#if DEV
-			printf( "\n");
-			GTIFPrintDefn(&defn, stdout);
-			
-			printf( "\nPROJ.4 Definition: %s\n", GTIFGetProj4Defn(&defn));
-			fflush(stdout);
+#ifdef LOG_MSG
+			GTIFPrintDefn(&defn, gLogFile ? gLogFile : stdout);
 #endif
+			LOG_MSG("PROJ.4 Definition: %s\n", GTIFGetProj4Defn(&defn));
         	int xs, ys;
 			double xsize,ysize;
             TIFFGetField( tiffFile, TIFFTAG_IMAGEWIDTH, &xs );

@@ -160,6 +160,7 @@ char *	GetMultiFilePathFromUser(
 
 void	DoUserAlert(const char * inMsg)
 {
+	LOG_MSG("I/Alert %s\n",inMsg);
 	NSAlert *alert = [[NSAlert alloc] init];;
 	[alert setMessageText:[NSString stringWithUTF8String:inMsg]];
 	[alert runModal];
@@ -168,6 +169,7 @@ void	DoUserAlert(const char * inMsg)
 
 int		ConfirmMessage(const char * inMsg, const char * proceedBtn, const char * cancelBtn)
 {
+	LOG_MSG("I/Confirm %s\n",inMsg);
 	NSAlert *alert = [[NSAlert alloc] init];;
 	[alert setMessageText:[NSString stringWithUTF8String:inMsg]];
 	[alert addButtonWithTitle:[NSString stringWithUTF8String:proceedBtn]];
