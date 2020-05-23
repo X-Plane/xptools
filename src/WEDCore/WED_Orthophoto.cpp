@@ -61,34 +61,33 @@ WED_Ring * WED_RingfromImage(char * path, WED_Archive * arch, WED_MapZoomerNew *
 		}
 	}
 	
-	ImageInfo	inf;
-	if(LoadBitmapFromAnyFile(path, &inf))  // just to get width + height ...
-	{
-		DoUserAlert("Unable to open image file.");
-		return NULL;
-	}
-
 	if (!has_geo)
 	{
-		double	nn,ss,ee,ww;
-		zoomer->GetPixelBounds(ww,ss,ee,nn);
+		ImageInfo	inf;
+		double pix_w = 1.0;
+		double pix_h = 1.0;
+		if (!LoadBitmapFromAnyFile(path, &inf))  // just to get width + height ...
+		{
+			pix_w = inf.width;
+			pix_h = inf.height;
+			DestroyBitmap(&inf);
+		}
 
-		Point2 center((ee+ww)*0.5,(nn+ss)*0.5);
+		double	nn, ss, ee, ww;
+		zoomer->GetPixelBounds(ww, ss, ee, nn);
+		Point2 center((ee + ww)*0.5, (nn + ss)*0.5);
 
-		double grow_x = 0.5*(ee-ww)/((double) inf.width);
-		double grow_y = 0.5*(nn-ss)/((double) inf.height);
+		double grow_x = 0.5*(ee - ww) / pix_w;
+		double grow_y = 0.5*(nn - ss) / pix_h;
 
-		double pix_w, pix_h;
+		if (grow_x < grow_y) { pix_w *= grow_x; pix_h *= grow_x; }
+		else                 { pix_w *= grow_y; pix_h *= grow_y; }
 
-		if (grow_x < grow_y) { pix_w = grow_x * (double) inf.width;	pix_h = grow_x * (double) inf.height; }
-		else				 { pix_w = grow_y * (double) inf.width;	pix_h = grow_y * (double) inf.height; }
-
-		coords[0] = zoomer->PixelToLL(center + Vector2(-pix_w,-pix_h));
-		coords[1] = zoomer->PixelToLL(center + Vector2( pix_w,-pix_h));
-		coords[2] = zoomer->PixelToLL(center + Vector2( pix_w,+pix_h));
-		coords[3] = zoomer->PixelToLL(center + Vector2(-pix_w,+pix_h));
+		coords[0] = zoomer->PixelToLL(center + Vector2(-pix_w, -pix_h));
+		coords[1] = zoomer->PixelToLL(center + Vector2(pix_w, -pix_h));
+		coords[2] = zoomer->PixelToLL(center + Vector2(pix_w, +pix_h));
+		coords[3] = zoomer->PixelToLL(center + Vector2(-pix_w, +pix_h));
 	}
-	DestroyBitmap(&inf);
 
 	WED_Ring * rng = WED_Ring::CreateTyped(arch);
 	rng->SetName("Image Boundary");
