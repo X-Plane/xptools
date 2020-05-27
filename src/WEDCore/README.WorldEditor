@@ -38,9 +38,10 @@ WED 2.3.0b1 ?/??/20
    - speedup validation for large datasets, for gateway use
    - use lighting and anti-aliasing in preview window
 
-WED 2.2.1r1 5/26/20
+WED 2.2.1r1 5/27/20
    Bug Fix:
    - make runway CIFP validation ignore apts tagged only with local_code
+   - make meta data update use same ICAO resolution logic as CIFP validation.
 
 WED 2.2.0r3 2/19/20
    Bug Fix:

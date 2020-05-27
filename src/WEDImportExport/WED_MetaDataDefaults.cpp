@@ -44,8 +44,17 @@ bool fill_in_airport_metadata_defaults(WED_Airport & airport, const CSVParser::C
 
 	//Find the airport in the table match
 	string icao;
-	airport.GetICAO(icao);
-	
+	if(airport.ContainsMetaDataKey(wed_AddMetaDataICAO))
+		icao = airport.GetMetaDataValue(wed_AddMetaDataICAO);
+	if (icao.empty() && airport.ContainsMetaDataKey(wed_AddMetaDataFAA))
+		icao = airport.GetMetaDataValue(wed_AddMetaDataFAA);
+	if (icao.empty() && airport.ContainsMetaDataKey(wed_AddMetaDataLocal))
+	{
+		icao = airport.GetMetaDataValue(wed_AddMetaDataLocal);
+		if (!icao.empty()) return false;
+	}
+	if(icao.empty()) airport.GetICAO(icao);
+
 	int i = 0;
 	for ( ; i < table.GetRows().size(); ++i)
 	{
