@@ -13,6 +13,10 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 2.2.1r1 5/26/20
+   Bug Fix:
+   - make runway CIFP validation ignore apts tagged only with local_code
+
 WED 2.2.0r3 2/19/20
    Bug Fix:
    - fix resource names on windows for local objects and orthophotos after import from DSF

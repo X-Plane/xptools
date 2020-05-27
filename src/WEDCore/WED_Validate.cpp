@@ -2309,6 +2309,17 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 			string icao_meta = apt->GetMetaDataValue(wed_AddMetaDataICAO);
 			if(!icao_meta.empty()) icao = icao_meta;
 		}
+		else if (apt->ContainsMetaDataKey(wed_AddMetaDataFAA))
+		{
+			string faa_meta = apt->GetMetaDataValue(wed_AddMetaDataFAA);
+			if (!faa_meta.empty()) icao = faa_meta;
+		}
+		else if (apt->ContainsMetaDataKey(wed_AddMetaDataLocal))
+		{
+			string local_meta = apt->GetMetaDataValue(wed_AddMetaDataLocal);
+			if (!local_meta.empty()) icao = "*";  // choose something that NEVER matches any CIFP data
+		}
+
 		if (mf)
 		{
 			MFScanner	s;
