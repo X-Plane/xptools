@@ -238,18 +238,14 @@ int GUI_Clipboard_GetSize(GUI_ClipType inType)
 		printf("start paste typ: %s wnd: %p\n",sCITs[inType].c_str(),Fl::focus());
 		Fl::paste(*Fl::focus(),1,sCITs[inType].c_str());
 
-
+		// TODO:mroe --> revisit
+		// to not loop forever if things going wrong  Key_up brings us back for now
 		// wait for the PASTE event roundtrip
-		//FIXME:mroe we can get an infinity loop here if things going wrong ,we need an good abort condition
-		#warning fix me here
-		while(1)
+		while(Fl::event() != FL_KEYUP)
 		{
 			Fl::wait();
-
 			if(Get_ClipboardRecieved())
-			{
 				return Fl::event_length();
-			}
 		}
 
 		return 0;
