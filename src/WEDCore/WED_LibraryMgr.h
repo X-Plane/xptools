@@ -127,7 +127,7 @@ private:
 			string::size_type pl = lhs.find_last_of('/') ;
 			string::size_type pr = rhs.find_last_of('/') ;
 
-			if(pl == pr)
+			if(pl == pr && pl < lhs.length()-2 && pr < rhs.length()-2)
 			{
 				if(pl == string::npos)
 					pl = 0;
