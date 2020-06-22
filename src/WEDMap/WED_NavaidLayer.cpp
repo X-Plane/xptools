@@ -142,7 +142,7 @@ static void parse_apt_dat(MFMemFile * str, map<string, navaid_t>& tAirports, con
 {
 	MFScanner	s;
 	MFS_init(&s, str);
-	int versions[] = { 1000, 1021, 1050, 1100, 1130, 0 };
+	int versions[] = { 1000, 1021, 1050, 1100, 1150, 0 };
 		
 	if(MFS_xplane_header(&s,versions,NULL,NULL))
 	{
