@@ -41,10 +41,12 @@ typedef	struct tiff TIFF;
 // Important: these are CENTER-PIXEL corners, e.g. where EXACTLY does the MIDDLE
 // of the CORNERS of the image go?  If the image is an area pixel WITHIN a tile,
 // these are going to seem to be a bit small for a tile!
-bool	FetchTIFFCorners(const char * inFileName, double corners[8], int& post_pos);
-//The the special default parameters at the end are used for when a GeoTIFF passed in does not have the correct width and height
-//For instance, a 1x1 GeoTiff inside a JPEG2000 where it has not scaled the projection correctly and you must use the JPEG2000's data
-bool	FetchTIFFCornersWithTIFF(TIFF * inTiff, double corners[8], int& post_pos, int width=0, int height=0);
+
+// Pass the pointer to the vector and get it filled with coordinates of evenly spaced points to perfectly warp/project 
+// the texture to the WED stereographic map. Also used for accurate placement of orthophoto subtextures upon import.
+
+bool	FetchTIFFCorners(const char * inFileName, double corners[8], int& post_pos, vector<Point2> * gcp=nullptr);
+bool	FetchTIFFCornersWithTIFF(TIFF * inTiff, double corners[8], int& post_pos, vector<Point2> * gcp=nullptr);
 
 // This routine converts UTM to lat/lon coordinates.  X and Y should be
 // in meters.  Zone should be positive 1-60 for north or -1-60 for south.

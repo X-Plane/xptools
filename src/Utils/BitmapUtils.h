@@ -225,6 +225,18 @@ void	CopyBitmapSection(
 			long				inDstRight,
 			long				inDstBottom);
 
+void	CopyBitmapSectionSharp(                     // includes light unsharp mask when downscaling more than 10%
+			const struct ImageInfo&	inSrc,
+			      struct ImageInfo&	inDst,
+			long				inSrcLeft,
+			long				inSrcTop,
+			long				inSrcRight,
+			long				inSrcBottom,
+			long				inDstLeft,
+			long				inDstTop,
+			long				inDstRight,
+			long				inDstBottom);
+			
 void	CopyBitmapSectionWarped(
 			const struct ImageInfo *	inSrc,
 			const struct ImageInfo *	inDst,
@@ -241,7 +253,7 @@ void	CopyBitmapSectionWarped(
 			long				inDstRight,
 			long				inDstBottom);
 
-void	CopyBitmapSectionDirect(
+void	CopyBitmapSectionDirect(                     // always exact pixel-for-pixel copy w/o scaling or processing
 			const struct ImageInfo&		inSrc,
 			const struct ImageInfo&		inDst,
 			long						inSrcLeft,

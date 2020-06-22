@@ -38,6 +38,8 @@ WED 2.3.0b1 ?/??/20
    - speedup facade object drawing, same way as done for .agp
    - speedup validation for large datasets, for gateway use
    - use lighting and anti-aliasing in preview window
+   - use full map projection, if available, with ReferenceImages & at OrthoPhoto import
+   - support importing OrthoPhotos at half pixelcount for improved files sizes
 
 WED 2.2.1r1 5/27/20
    Bug Fix:
