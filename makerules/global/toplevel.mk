@@ -105,8 +105,8 @@ endif
 ifdef PLAT_LINUX
 	DEFINES		:= -DLIN=1 -DIBM=0 -DAPL=0
 	CFLAGS		:= $(M32_SWITCH) -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
-	CXXFLAGS	:= $(M32_SWITCH) -std=c++11 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
-	LDFLAGS		:= $(M32_SWITCH) -static-libgcc
+	CXXFLAGS	:= $(M32_SWITCH) -std=c++14 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
+	LDFLAGS		:= $(M32_SWITCH) -no-pie
 	BARE_LDFLAGS	:=
 	STRIPFLAGS	:= -s -x
 endif
@@ -120,8 +120,8 @@ endif
 ifdef PLAT_MINGW
 	DEFINES		:= -DLIN=0 -DIBM=1 -DAPL=0 -DBOOST_THREAD_USE_LIB=1
 	CFLAGS		:= $(M32_SWITCH) -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
-	CXXFLAGS	:= $(M32_SWITCH) -std=c++11 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
-	LDFLAGS		:= $(M32_SWITCH) -static-libgcc
+	CXXFLAGS	:= $(M32_SWITCH) -std=c++14 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
+	LDFLAGS		:= $(M32_SWITCH)
 	BARE_LDFLAGS	:=
 	STRIPFLAGS	:= -s -x
 endif

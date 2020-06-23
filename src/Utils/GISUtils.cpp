@@ -92,7 +92,7 @@ static	bool	TransformTiffCorner(GTIF * gtif, GTIFDefn * defn, double x, double y
 }
 #endif
 
-bool	FetchTIFFCorners(const char * inFileName, double corners[8], int& post_pos)
+bool	FetchTIFFCorners(const char * inFileName, double corners[8], int& post_pos, vector<Point2> * gcp)
 {
 	bool retVal = false;
 #if USE_TIF
@@ -105,14 +105,14 @@ bool	FetchTIFFCorners(const char * inFileName, double corners[8], int& post_pos)
 #endif
 	if (tiffFile)
 	{
-		retVal = FetchTIFFCornersWithTIFF(tiffFile, corners, post_pos);
+		retVal = FetchTIFFCornersWithTIFF(tiffFile, corners, post_pos, gcp);
 		XTIFFClose(tiffFile);
 	}
 #endif
 	return retVal;
 }
 
-bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos, int width, int height)
+bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos, vector<Point2> * gcp)
 {
 	bool retVal = false;
 #if USE_TIF
@@ -133,28 +133,15 @@ bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos,
 			fflush(stdout);
 #endif
         	int xs, ys;
-			double xsize,ysize;
             TIFFGetField( tiffFile, TIFFTAG_IMAGEWIDTH, &xs );
             TIFFGetField( tiffFile, TIFFTAG_IMAGELENGTH, &ys );
+			double xsize(xs), ysize(ys);
 
 			uint16 pixel_type;
-			double dx=0.0;
-			double dy=0.0;
-
-			//If there is the optional width and height
-			if(width > 0 && height > 0)
-			{
-				xsize=width;
-				ysize=height;
-			}
-			else
-			{
-				xsize=xs;
-				ysize=ys;
-			}
+			double dx(0.0), dy(0.0);
 
 			if (GTIFKeyGet(gtif,GTRasterTypeGeoKey, &pixel_type, 0, 1) != 1)
-				pixel_type=RasterPixelIsArea;
+				pixel_type = RasterPixelIsArea;
 
 			// If we are a 'point sampled' file, the upper right edge _IS_ the last pixels!  Thus
 			// passing in the number of pixels induces an off-by-one.  Cut the size by one to fix this.
@@ -164,7 +151,7 @@ bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos,
 				ysize -= 1.0;
 			}
 
-			if(pixel_type==RasterPixelIsArea && post_pos == dem_want_Post)
+			if(pixel_type == RasterPixelIsArea && post_pos == dem_want_Post)
 			{
 				// This is an area-pixel DEM, but we are going to reinterpret it via pixel centers.
 				// This will INSET the corners of the pixels by 1/2 pixel to the sample centers.
@@ -172,7 +159,7 @@ bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos,
 				dy=0.5;
 			}
 
-			if(pixel_type==RasterPixelIsPoint && post_pos == dem_want_Area)
+			if(pixel_type == RasterPixelIsPoint && post_pos == dem_want_Area)
 			{
 				// This is a center post sampled image, but we are going to treat it as area.  Each
 				// pixel "sticks out" a bit in its coverage, so extend.
@@ -188,22 +175,20 @@ bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos,
 	        	TransformTiffCorner(gtif, &defn,	   dx,		 dy, corners[4], corners[5]) &&
 	        	TransformTiffCorner(gtif, &defn, xsize-dx,		 dy, corners[6], corners[7]))
 	        {
-				// Ben says: we used to snap round.  Since the 'far' tie point is calculated by res * pixels
-				// and res might be 1/1200 or 1/1201, we get floating point crud in our tiff calcs.  But
-				// if we aren't known to be on 1-degree boundaries, this snap rounding is just wrong.  So:
-				// don't round - we need good precision in other places.  Instead, we can round in the raster-import cmd.
-//				corners[0]=round_by_parts_guess(corners[0],xs);
-//				corners[2]=round_by_parts_guess(corners[2],xs);
-//				corners[4]=round_by_parts_guess(corners[4],xs);
-//				corners[6]=round_by_parts_guess(corners[6],xs);
-//
-//				corners[1]=round_by_parts_guess(corners[1],ys);
-//				corners[3]=round_by_parts_guess(corners[3],ys);
-//				corners[5]=round_by_parts_guess(corners[5],ys);
-//				corners[7]=round_by_parts_guess(corners[7],ys);
-
-
 	        	retVal = true;
+	        }
+	        
+	        if(gcp) gcp->clear();
+			if(gcp && (xsize > 1536 || ysize > 1536)) // calculate control points for map warping/projection, if texture has high resolution
+	        {
+				const int divs = intlim(max((xsize+512) / 1024, (ysize+512) / 1024),2,10);
+				for(int y = 0; y <= divs; y++)
+					for(int x = 0; x <= divs; x++)
+					{
+						double lon, lat;
+						if (TransformTiffCorner(gtif, &defn, dx + x * xsize / divs, ysize - y * ysize / divs - dy, lon, lat))
+							gcp->push_back(Point2(lon,lat));
+					}
 	        }
 		}
 		GTIFFree(gtif);
