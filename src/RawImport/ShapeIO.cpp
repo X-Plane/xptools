@@ -1366,53 +1366,83 @@ bool	ReadShapeFile(
 
 	CGAL::Arr_walk_along_line_point_location<Arrangement_2>	locator(io_map);
 
+	bool is_pts = shape_type == SHPT_POINT || shape_type == SHPT_POINTZ || shape_type == SHPT_POINTM;
+
 	int step = entity_count ? (entity_count / 150) : 2;
 	for(int n = 0; n < entity_count; ++n)
 	{
 		PROGRESS_CHECK(inFunc, 0, 1, "Reading shape file...", n, entity_count, step)
 		SHPObject * obj = SHPReadObject(file, n);
 
-		GISPolyObjPlacement_t np ;
-		np.mRepType = LookupTokenCreate(DBFReadStringAttribute(db,obj->nShapeId,dsf_asset_name));
-		np.mParam = DBFReadIntegerAttribute(db,obj->nShapeId,dsf_param);
-		
-		for (int part = 0; part < obj->nParts; ++part)
+		if(is_pts)
 		{
-			int start_idx = obj->panPartStart[part];
-			int stop_idx = ((part+1) == obj->nParts) ? obj->nVertices : obj->panPartStart[part+1];
-			Polygon2	p;
-			for (int i = start_idx; i < stop_idx; ++i)
+			GISObjPlacement_t no;
+			no.mRepType = LookupTokenCreate(DBFReadStringAttribute(db,obj->nShapeId,dsf_asset_name));
+			no.mHeading = DBFReadIntegerAttribute(db,obj->nShapeId,dsf_param);
+
+			no.mLocation = Point2(obj->padfX[0],obj->padfY[0]);
+
+			SHPDestroyObject(obj);
+
+			CGAL::Object lobj = locator.locate(ben2cgal<Pmwx::Point_2>(no.mLocation));
+			Face_const_handle ff;
+			if(CGAL::assign(ff,lobj))
 			{
-				Point2 pt(obj->padfX[i],obj->padfY[i]);
-				p.push_back(pt);
+				Face_handle f = io_map.non_const_handle(ff);
+				f->data().mObjs.push_back(no);
 			}
-			np.mShape.push_back(p);
-		}
-
-		SHPDestroyObject(obj);
-
-		if(np.mShape.empty() || np.mShape[0].empty())
-			continue;
-
-		CGAL::Object lobj = locator.locate(ben2cgal<Pmwx::Point_2>(np.mShape[0][0]));
-		Face_const_handle ff;
-		if(CGAL::assign(ff,lobj))
-		{
-			Face_handle f = io_map.non_const_handle(ff);
-			f->data().mPolyObjs.push_back(np);
+			else
+			{
+	#if DEV
+				debug_mesh_point(no.mLocation,1,0,0);
+	#endif
+				fprintf(stderr,"WARNING: point %d could not be placed.\n", n);
+			}
 		}
 		else
 		{
-#if DEV
-			for(vector<Polygon2>::iterator p = np.mShape.begin(); p != np.mShape.end(); ++p)
+			GISPolyObjPlacement_t np ;
+			np.mRepType = LookupTokenCreate(DBFReadStringAttribute(db,obj->nShapeId,dsf_asset_name));
+			np.mParam = DBFReadIntegerAttribute(db,obj->nShapeId,dsf_param);
+			
+			for (int part = 0; part < obj->nParts; ++part)
 			{
-				for(Polygon2::const_side_iterator pp = p->sides_begin(); pp != p->sides_end(); ++pp)
+				int start_idx = obj->panPartStart[part];
+				int stop_idx = ((part+1) == obj->nParts) ? obj->nVertices : obj->panPartStart[part+1];
+				Polygon2	p;
+				for (int i = start_idx; i < stop_idx; ++i)
 				{
-					debug_mesh_line((*pp).p1,(*pp).p2,1,0,0,1,0,0);
+					Point2 pt(obj->padfX[i],obj->padfY[i]);
+					p.push_back(pt);
 				}
+				np.mShape.push_back(p);
 			}
-#endif
-			fprintf(stderr,"WARNING: polygon %d could not be placed.\n", n);
+
+			SHPDestroyObject(obj);
+
+			if(np.mShape.empty() || np.mShape[0].empty())
+				continue;
+
+			CGAL::Object lobj = locator.locate(ben2cgal<Pmwx::Point_2>(np.mShape[0][0]));
+			Face_const_handle ff;
+			if(CGAL::assign(ff,lobj))
+			{
+				Face_handle f = io_map.non_const_handle(ff);
+				f->data().mPolyObjs.push_back(np);
+			}
+			else
+			{
+	#if DEV
+				for(vector<Polygon2>::iterator p = np.mShape.begin(); p != np.mShape.end(); ++p)
+				{
+					for(Polygon2::const_side_iterator pp = p->sides_begin(); pp != p->sides_end(); ++pp)
+					{
+						debug_mesh_line((*pp).p1,(*pp).p2,1,0,0,1,0,0);
+					}
+				}
+	#endif
+				fprintf(stderr,"WARNING: polygon %d could not be placed.\n", n);
+			}
 		}
 	}
 
