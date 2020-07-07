@@ -1696,12 +1696,13 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	{
 		for (pointObj = pf->data().mObjs.begin(); pointObj != pf->data().mObjs.end(); ++pointObj)
 		{
-			coords2[0] = CGAL::to_double(pointObj->mLocation.x());
-			coords2[1] = CGAL::to_double(pointObj->mLocation.y());
+			coords3[0] = CGAL::to_double(pointObj->mLocation.x());
+			coords3[1] = CGAL::to_double(pointObj->mLocation.y());
+			coords3[2] = (pointObj->mHeading < 0.0) ? (pointObj->mHeading + 360.0) : pointObj->mHeading;
 			cbs.AddObject_f(
 				objects[pointObj->mRepType],
-				coords2,
-				(pointObj->mHeading < 0.0) ? (pointObj->mHeading + 360.0) : pointObj->mHeading,
+				coords3,
+				3,
 				writer2);
 			++total_objs;
 		}
