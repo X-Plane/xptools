@@ -370,6 +370,7 @@
     <ClInclude Include="..\..\src\UI\XWin32DND.h" />
     <ClInclude Include="..\..\src\UI\XWinGL.h" />
     <ClInclude Include="..\..\src\Utils\AssertUtils.h" />
+    <ClInclude Include="..\..\src\Utils\BitmapUtils.h" />
     <ClInclude Include="..\..\src\Utils\CmdLine.h" />
     <ClInclude Include="..\..\src\Utils\CompGeomUtils.h" />
     <ClInclude Include="..\..\src\Utils\CSVParser.h" />

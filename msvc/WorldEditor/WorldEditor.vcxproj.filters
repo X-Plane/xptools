@@ -1688,6 +1688,9 @@
     <ClInclude Include="..\..\src\libtess2\Source\tess.h">
       <Filter>libtess2</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\Utils\BitmapUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\src\WEDResources\about.png">
