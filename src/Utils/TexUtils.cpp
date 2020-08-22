@@ -28,8 +28,10 @@
 	// gotta do this cuz MSFT hasn't updated their openGL headers in 23 years ... its STILL OGL 1.1 from 1996 !!
 	#include "glew.h"
 #elif APL
+	#include "glew.h"
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glu.h>
+	#include "glew.h"
 #else
 	#include <GL/gl.h>
 	#include <GL/glu.h>
