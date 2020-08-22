@@ -541,10 +541,13 @@ struct	DSF_ResourceTable {
 #endif
 	int accum_filter(const string& icao_filter)
 	{
-		map<string,int>::iterator i = filter_idx.find(icao_filter);
-		if(i != filter_idx.end()) return i->second;
-		filter_idx[icao_filter] = filters.size();
-		filters.push_back(icao_filter);
+		string icao_filter_uc(icao_filter);      // X-Plane auto-capitalizes apt.dat entries upon reading and compares filters case-sensitive ...
+		for_each(icao_filter_uc.begin(), icao_filter_uc.end(), [](char & c) { c = toupper(c); });
+
+		map<string, int>::iterator i = filter_idx.find(icao_filter_uc);
+		if (i != filter_idx.end()) return i->second;
+		filter_idx[icao_filter_uc] = filters.size();
+		filters.push_back(icao_filter_uc);
 		return filters.size()-1;
 	}
 
