@@ -22,19 +22,13 @@
  */
 
 #include "GUI_GraphState.h"
+#include "glew.h"
 
 #if APL
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glext.h>
-#elif IBM
-	#include "glew.h"
-	#include "AssertUtils.h"
-#else
-	#include "glew.h"
-	#include "AssertUtils.h"
-//	#include <GL/gl.h>
-//	#include <GL/glext.h>
 #endif
+	#include "AssertUtils.h"
 
 #include "XWinGL.h"
 
@@ -62,11 +56,9 @@ void		GUI_GraphState::Init(void)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-#if IBM || LIN
 	GLenum err = glewInit();
 	if (err != GLEW_OK)
 		AssertPrintf("Can not init GLEW: '%s'\n", glewGetErrorString(err));
-#endif
 	Reset();
 }
 

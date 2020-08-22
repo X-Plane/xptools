@@ -57,6 +57,7 @@
 		0236B9732034264A0046900C /* check_buttons.png in Resources */ = {isa = PBXBuildFile; fileRef = 0236B971203425CE0046900C /* check_buttons.png */; };
 		0269A8551FF5F8F00085A37C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
 		0269A8561FF5F8F10085A37C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
+		028B41EC24F1840A00018953 /* glew.c in Sources */ = {isa = PBXBuildFile; fileRef = 028B41E824F1829A00018953 /* glew.c */; };
 		029EC5B9239B095300A7C5E1 /* exclaim.png in Resources */ = {isa = PBXBuildFile; fileRef = 029EC5B7239B094B00A7C5E1 /* exclaim.png */; };
 		02A30B7E20F7A80B008CC1CB /* line_BSolidWhite.png in Resources */ = {isa = PBXBuildFile; fileRef = 025E09DF20D2F11200DD8856 /* line_BSolidWhite.png */; };
 		02B03C1020C72068000F81F0 /* WED_Line_Selector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02B03C0D20C71DE5000F81F0 /* WED_Line_Selector.cpp */; };
@@ -1118,6 +1119,9 @@
 		0224ED2820048B7F004729CD /* WED_ValidateList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ValidateList.h; sourceTree = "<group>"; };
 		0236B971203425CE0046900C /* check_buttons.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = check_buttons.png; sourceTree = "<group>"; };
 		025E09DF20D2F11200DD8856 /* line_BSolidWhite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = line_BSolidWhite.png; sourceTree = "<group>"; };
+		028B41E824F1829A00018953 /* glew.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = glew.c; sourceTree = "<group>"; };
+		028B41E924F1829A00018953 /* glew.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = glew.h; sourceTree = "<group>"; };
+		028B41EA24F1829A00018953 /* glxew.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = glxew.h; sourceTree = "<group>"; };
 		029EC5B7239B094B00A7C5E1 /* exclaim.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = exclaim.png; sourceTree = "<group>"; };
 		02B03C0D20C71DE5000F81F0 /* WED_Line_Selector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Line_Selector.cpp; sourceTree = "<group>"; };
 		02B03C0E20C71DE5000F81F0 /* WED_Line_Selector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Line_Selector.h; sourceTree = "<group>"; };
@@ -3118,6 +3122,9 @@
 		D6BC376A0AB22C85003949C5 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				028B41E824F1829A00018953 /* glew.c */,
+				028B41E924F1829A00018953 /* glew.h */,
+				028B41EA24F1829A00018953 /* glxew.h */,
 				D612485821E5B39300FA030C /* UTL_interval.h */,
 				D612485721E5B35300FA030C /* RTree2.h */,
 				D6F3F0891D072BE800188B28 /* CSVParser.cpp */,
@@ -5082,6 +5089,7 @@
 				D6183B9C1D7CAD8900E606E9 /* WED_TruckDestination.cpp in Sources */,
 				D6FEF45918EB045C0035421F /* WED_AptTable.cpp in Sources */,
 				D6FEF50418EB176A0035421F /* GUI_FormWindow.cpp in Sources */,
+				028B41EC24F1840A00018953 /* glew.c in Sources */,
 				D6FEF55C18EB23B40035421F /* GUI_Label.cpp in Sources */,
 				D60628E01EA110D90007CC13 /* WED_HierarchyUtils.cpp in Sources */,
 				D6E4C95418EC91DE000D98B8 /* json_reader.cpp in Sources */,
