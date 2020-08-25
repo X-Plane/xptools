@@ -22,13 +22,14 @@
  */
 
 #include "GUI_GraphState.h"
+#include "glew.h"
 
 #if APL
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glext.h>
-#else
-	#include "glew.h"
 #endif
+
+#include "AssertUtils.h"
 
 #include "XWinGL.h"
 

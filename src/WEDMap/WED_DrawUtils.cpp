@@ -169,13 +169,8 @@ void glPolygon2(const Point2 * pts, bool has_uv, const int * contours, int n, fl
 	if(!raw_pts.empty())
 		tessAddContour(tess, 2, &raw_pts[0], 2 * sizeof(GLfloat), raw_pts.size() / 2);
 
-	const TESSreal nrm[3] = { 0, 0, 1 };
-	int ok = tessTesselate(tess, TESS_WINDING_NONZERO, TESS_POLYGONS, 3, 2, nrm);
-
-	if(ok)
-//	if( tessGetVertexCount(tess) != n) // don't be better than XP or gluTess and show textureing with self-intersecting contours
-//		printf("vertex in %d out %d\n", tessGetVertexCount(tess), n);
-//	else
+	if(tessTesselate(tess, TESS_WINDING_NONZERO, TESS_POLYGONS, 3, 2, 0))
+	if(tessGetVertexCount(tess) == n) // don't be better than gluTess (used in XP) and show textureing with self-intersecting contours
 	{
 		const TESSindex* vert_idx = tessGetElements(tess);
 		int tri_count = tessGetElementCount(tess);
