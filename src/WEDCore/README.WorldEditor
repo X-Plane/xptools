@@ -13,7 +13,7 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 2.3.0b1 8/22/20
+WED 2.3.0b1 8/24/20
    Bug Fix:
    - fix endcaps for bezier curved lines not following curve in map
    - fix validation not checking GT routes intersecting runways win some airports
@@ -41,6 +41,7 @@ WED 2.3.0b1 8/22/20
    - use lighting and anti-aliasing in preview window
    - use full map projection, if available, with ReferenceImages & at OrthoPhoto import
    - support importing OrthoPhotos at half pixelcount for improved files sizes
+   - support new XP11.50 earth_nav.dat format, fixes navaids missing in NAVAID layer
 
 WED 2.2.1r1 5/27/20
    Bug Fix:

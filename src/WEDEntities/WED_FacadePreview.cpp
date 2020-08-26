@@ -1100,9 +1100,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 		g->BindTex(tRef ? tman->GetTexID(tRef) : 0, 0);
 
 		// all facdes are drawn cw (!)
-#if !LIBTESS
 		glCullFace(GL_FRONT);
-#endif
 		glNormal3f(0,1,0);
 
 		if(!info.roof_s.empty() && roof_pts.size() < 5)

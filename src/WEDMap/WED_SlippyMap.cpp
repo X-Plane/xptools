@@ -110,7 +110,7 @@ WED_URL_ESRI_TILES "${z}/${y}/${x}.jpg" };
 
 static const int max_zoom[PREDEFINED_MAPS] = {
 16,        // OSM tiles below this zoom are not cached, but on-demand generated. Openstreetmap foundation asks to limit their use.
-18 };      // ESRI maps are available down to this level in general
+17 };      // ESRI maps are available down to this level in general
 
 
 static inline int long2tilex(double lon, int z)

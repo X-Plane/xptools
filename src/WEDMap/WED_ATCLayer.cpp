@@ -16,6 +16,7 @@
 #include "GISUtils.h"
 #include "MathUtils.h"
 #include "TexUtils.h"
+#include "XESConstants.h"
 #include "GUI_DrawUtils.h"
 #include "GUI_Fonts.h"
 #include "GUI_GraphState.h"
@@ -434,13 +435,13 @@ bool	WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GU
 					d[0].squared_distance(d[1]) > sqr(20+6.0*nam.size()) )      // and long enough
 				{
 					glPushMatrix();
-					Point2 label_xy = GetZoomer()->LLToPixel(Midpoint2(ends[0],ends[1]));
+					Point2 label_xy = Midpoint2(ends[0],ends[1]);
 					glTranslatef(label_xy.x(), label_xy.y(), 0);
-					double hdg = VectorDegs2NorthHeading(ends[0],ends[1], Vector2(ends[0],ends[1]));
-					if (hdg > 180.0) hdg -=180; // dont print label upside down
-					glRotated(90.0-hdg,0,0,1);
-					float white[4] = { 1.0, 1.0, 1.0, 1.0 };
-					GUI_FontDraw(g, font_UI_Basic, white,  0, -4, nam.c_str(), align_Center);
+					Vector2 dir(ends[1], ends[0]);
+					float hdg = fltwrap(atan2f(dir.dy, dir.dx) * RAD_TO_DEG, -90, 90);
+					glRotatef(hdg,0,0,1);
+					const float white[4] = { 1, 1, 1, 1 };
+					GUI_FontDraw(g, font_UI_Basic, white, 0, -4, nam.c_str(), align_Center);
 					glPopMatrix();
 					g->SetTexUnits(0);
 				}
