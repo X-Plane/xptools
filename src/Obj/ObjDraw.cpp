@@ -325,13 +325,13 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 #if XOBJ8_USE_VBO
 				if(obj.geo_VBO)
 				{
-					glDrawElements(GL_TRIANGLES, cmd->idx_count, GL_UNSIGNED_INT, (void *) (cmd->idx_offset * sizeof(GLuint)));
-//					glBindBuffer(GL_ARRAY_BUFFER, 0);
-//					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+					glDrawElements(GL_TRIANGLES, cmd->idx_count, GL_UNSIGNED_INT, (void *) (cmd->idx_offset * sizeof(GLuint)));	CHECK_GL_ERR
+//					glBindBuffer(GL_ARRAY_BUFFER, 0);				CHECK_GL_ERR
+//					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);		CHECK_GL_ERR
 				}
 				else
 #endif
-					glDrawElements(GL_TRIANGLES, cmd->idx_count, GL_UNSIGNED_INT, &obj.indices[cmd->idx_offset]);
+					glDrawElements(GL_TRIANGLES, cmd->idx_count, GL_UNSIGNED_INT, &obj.indices[cmd->idx_offset]);	CHECK_GL_ERR
 				CHECK_GL_ERR
 				break;
 			case obj8_Lines:
@@ -341,6 +341,10 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 				}
 				if (arrayMode_Lin != arrayMode)
 				{
+#if XOBJ8_USE_VBO
+					glBindBuffer(GL_ARRAY_BUFFER, 0);				CHECK_GL_ERR
+					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);		CHECK_GL_ERR
+#endif
 					arrayMode = arrayMode_Lin;
 					glVertexPointer(3, GL_FLOAT, 24, obj.geo_lines.get(0));								CHECK_GL_ERR
 					glColorPointer(3, GL_FLOAT, 24, ((const char *) obj.geo_lines.get(0)) + 12);		CHECK_GL_ERR
@@ -358,6 +362,10 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 				}
 				if (arrayMode_Lgt != arrayMode)
 				{
+#if XOBJ8_USE_VBO
+					glBindBuffer(GL_ARRAY_BUFFER, 0);				CHECK_GL_ERR
+					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);		CHECK_GL_ERR
+#endif
 					arrayMode = arrayMode_Lgt;
 					glVertexPointer(3, GL_FLOAT, 24, obj.geo_lights.get(0));							CHECK_GL_ERR
 					glColorPointer(3, GL_FLOAT, 24, ((const char *) obj.geo_lights.get(0)) + 12);		CHECK_GL_ERR
