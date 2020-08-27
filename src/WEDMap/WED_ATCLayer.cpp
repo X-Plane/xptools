@@ -59,7 +59,7 @@ static double box_edge_distance(Point2 p, const Bbox2 b)   // returns positive i
 
 static void lines_to_nearest(const vector<Segment2>& starts, const vector<Segment2>& edges, const Bbox2& screen_bounds, double err_2nd, GUI_GraphState * g)
 {
-//	if (starts.size() * edges.size() > 10000) return;        // skip drawing too complex scenarios - takes too long
+	if (starts.size() * edges.size() > 10000) return;        // skip drawing too complex scenarios - takes too long
 
 	for (auto pix : starts)
 	{
