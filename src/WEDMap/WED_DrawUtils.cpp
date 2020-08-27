@@ -180,39 +180,25 @@ void glPolygon2(const Point2 * pts, bool has_uv, const int * contours, int n, fl
 		{
 			const TESSindex * vidx = tessGetVertexIndices(tess);
 			glBegin(GL_TRIANGLES);
-			if (height == 0.0)
-				while(tri_count--)
-					for (int i = 0 ; i < 3; i++)
-					{
-						if(*vert_idx == TESS_UNDEF) break;
-						glTexCoord2(pts[1 + 2 * vidx[*vert_idx]]); glVertex2fv(&verts[2 * (*vert_idx)]);
-						vert_idx++;
-					}
-			else
-				while(tri_count--)
-					for (int i = 0 ; i < 3; i++)
-					{
-						if(*vert_idx == TESS_UNDEF) break;
-						glTexCoord2(pts[1 + 2 * vidx[*vert_idx]]); glVertex3f(verts[2 * (*vert_idx)], height, verts[2 * (*vert_idx) + 1]);
-						vert_idx++;
-					}
+			while(tri_count--)
+				for (int i = 0 ; i < 3; i++)
+				{
+					if(*vert_idx == TESS_UNDEF) break;
+					glTexCoord2(pts[1 + 2 * vidx[*vert_idx]]); glVertex3f(verts[2 * (*vert_idx)], height, verts[2 * (*vert_idx) + 1]);
+					vert_idx++;
+				}
 			glEnd();
 		}
 		else
 		{
 	#if 1
 			glBegin(GL_TRIANGLES);
-			if (height == 0.0)
-				while(tri_count--)
-					for (int i = 0 ; i < 3; i++)
-						glVertex2fv(&verts[2 * (*vert_idx++)]);
-			else
-				while(tri_count--)
-					for (int i = 0 ; i < 3; i++)
-					{
-						glVertex3f(verts[2 * (*vert_idx)], height, verts[2 * (*vert_idx) + 1]);
-						vert_idx++;
-					}
+			while(tri_count--)
+				for (int i = 0 ; i < 3; i++)
+				{
+					glVertex3f(verts[2 * (*vert_idx)], height, verts[2 * (*vert_idx) + 1]);
+					vert_idx++;
+				}
 			glEnd();
 	#else  // not any faster, cuz of too many state changes -> cache those ?
 			glVertexPointer(2, GL_FLOAT, 2 * sizeof(TESSreal), verts);
