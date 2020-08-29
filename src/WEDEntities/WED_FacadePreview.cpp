@@ -1209,6 +1209,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 						
 						if(oo && !cull_obj(oo, ppm_for_culling))
 						{
+							glCullFace(GL_BACK);
 							for(int s = (footprint[0].x() - loc0.x()) / info.roof_scale_s; s < ((footprint[1].x() - loc0.x()) / info.roof_scale_s) - 1; ++s)
 								for(int t = ((-footprint[0].y() - loc0.y()) / info.roof_scale_t) + 1; t < ((-footprint[2].y() - loc0.y()) / info.roof_scale_t) + 1; ++t)
 								{
@@ -1218,6 +1219,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 									} 
 								}
 							g->BindTex(tRef ? tman->GetTexID(tRef) : 0, 0);
+							glCullFace(GL_FRONT);
 						}
 					}
 				}

@@ -13,6 +13,18 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 2.3.0
+    Bug Fix:
+    - fix facade roof object appearance in facade preview
+    - fix false warning opening pre-WED 2.0 files in WED 2.0+ after use of WED-2.3 beta
+
+WED 2.3.0b2 8/26/20
+   Bug Fix:
+   - fix crash when viewing objects with lines in map
+   - fix overzealous ATC taxiway name validations
+   - fix some facade roof not showing as expected
+   - fix ESRI slippy map not showing at very high zoom levels in some places
+
 WED 2.3.0b1 8/24/20
    Bug Fix:
    - fix endcaps for bezier curved lines not following curve in map

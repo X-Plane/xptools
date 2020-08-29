@@ -28,34 +28,12 @@
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glext.h>
 #endif
-
-#include "AssertUtils.h"
+	#include "AssertUtils.h"
 
 #include "XWinGL.h"
 
-#if DEV
-	void GraphState_GL_ERR(int err)
-	{
-		if (err != 0)
-			printf("GL ERROR: %d\n", err);
-	}
-#endif
-
-struct  gl_info_t {
-	int		gl_major_version;
-	bool	has_tex_compression;
-	bool	has_non_pots;
-	bool	has_bgra;
-	int		max_tex_size;
-};
-
-extern struct gl_info_t gl_info;
-void init_gl_info(gl_info_t *);
-
 void		GUI_GraphState::Init(void)
 {
-	if(gl_info.gl_major_version == 0) init_gl_info(&gl_info);
-
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 	glFrontFace(GL_CW);
@@ -70,6 +48,9 @@ void		GUI_GraphState::Init(void)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
+	GLenum err = glewInit();
+	if (err != GLEW_OK)
+		AssertPrintf("Can not init GLEW: '%s'\n", glewGetErrorString(err));
 	Reset();
 }
 

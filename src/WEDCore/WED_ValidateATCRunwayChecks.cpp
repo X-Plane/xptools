@@ -1014,7 +1014,7 @@ static void TwyNameCheck(const TaxiRouteInfoVec_t& all_taxiroutes_info, validati
 {
 	for(auto& tr : all_taxiroutes_info)
 	{
-		if(!tr.ptr->IsRunway())
+		if(tr.is_aircraft_route && !tr.ptr->IsRunway())
 		{
 			if(tr.name.size() > 3)
 				msgs.push_back(validation_error_t(string("Taxi route '") + tr.name + "' name is unusually long, should be less than 4 characters.",
@@ -1022,8 +1022,8 @@ static void TwyNameCheck(const TaxiRouteInfoVec_t& all_taxiroutes_info, validati
 			else if(!tr.name.empty())
 			{ 
 				bool ok = isalpha(tr.name[0]);
-				if(tr.name.size() > 1) ok &= isalnum(tr.name[1]);
-				if(tr.name.size() > 2) ok &= isdigit(tr.name[2]);
+				if(tr.name.size() > 1 && !isalnum(tr.name[1])) ok = false;
+				if(tr.name.size() > 2 && !isdigit(tr.name[2])) ok = false;
 				if(!ok)
 					msgs.push_back(validation_error_t(string("Taxi route '") + tr.name + "' name is likely wrong, should be 1-2 letters optionally followed by 1-2 digits or empty.",
 							warn_taxi_route_name_unusual, tr.ptr, apt));

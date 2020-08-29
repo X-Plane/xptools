@@ -182,8 +182,7 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 	if (outWidth) *outWidth = useIt->width;
 	if (outHeight) *outHeight = useIt->height;
 
-	glBindTexture(GL_TEXTURE_2D, inTexNum);
-
+	glBindTexture(GL_TEXTURE_2D, inTexNum);  CHECK_GL_ERR
 	
 	int	iformat, glformat;
 	if (useIt->channels == 1)
@@ -221,9 +220,9 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 	}
 
 	if (inFlags & tex_Mipmap)
-		gluBuild2DMipmaps(GL_TEXTURE_2D, iformat, useIt->width, useIt->height, glformat, GL_UNSIGNED_BYTE, useIt->data);
+		gluBuild2DMipmaps(GL_TEXTURE_2D, iformat, useIt->width, useIt->height, glformat, GL_UNSIGNED_BYTE, useIt->data); CHECK_GL_ERR
 	else
-		glTexImage2D(GL_TEXTURE_2D, 0, iformat, useIt->width ,useIt->height, 0,	glformat, GL_UNSIGNED_BYTE, useIt->data);
+		glTexImage2D(GL_TEXTURE_2D, 0, iformat, useIt->width ,useIt->height, 0,	glformat, GL_UNSIGNED_BYTE, useIt->data); CHECK_GL_ERR
 
 	if (resize)
 		DestroyBitmap(&rescaleBits);
@@ -463,7 +462,7 @@ bool	LoadTextureFromDDS(
 			}
 		}
 
-		glCompressedTexImage2D( GL_TEXTURE_2D, level, glformat, x, y, 0, data_len, data);
+		glCompressedTexImage2D( GL_TEXTURE_2D, level, glformat, x, y, 0, data_len, data); CHECK_GL_ERR
 
 		x = max(1, x >> 1);
 		y = max(1, y >> 1);
