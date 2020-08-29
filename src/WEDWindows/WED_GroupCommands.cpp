@@ -3764,7 +3764,13 @@ int		WED_Repair(IResolver * resolver)
 	{
 		string nam;
 		u->GetName(nam);
-		LOG_MSG("  Deleting %s '%s'\n",u->HumanReadableType(), nam.c_str());
+		LOG_MSG("  Deleting %s '%s'",u->HumanReadableType(), nam.c_str());
+		if (WED_Thing * parent = u->GetParent())
+		{
+			parent->GetName(nam);
+			LOG_MSG(" from parent %s '%s'", parent->HumanReadableType(), nam.c_str());
+		}
+		LOG_MSG("\n");
 	}
 	root->StartOperation("Repair");
 	WED_RecursiveDelete(unviable);

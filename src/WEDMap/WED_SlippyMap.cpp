@@ -53,7 +53,7 @@
 
 #define SHOW_DEBUG_INFO 0
 
-#define MIN_ZOOM  13        // stop displaying OSM at all below this level
+#define MIN_ZOOM  13        // stop displaying slippys at all below this level
 #define MAX_ZOOM  17        // for custom mode maps (predefined maps have their own limits below)
 
 #define TILE_FACTOR 0.8     // save tiles by zooming in a bit later than at 1:1 pixel ratio.
@@ -67,6 +67,42 @@ static const char * attributions[PREDEFINED_MAPS] = {
 // ToDo: use shorter specific ESRI attribution by downloading https://static.arcgis.com/attribution/World_Imagery
 //       and decode it per https://github.com/Esri/esri-leaflet  (which is java code)
 "© Esri, DigitalGlobe, GeoEye, Earthstar Geographics, CNES/Airbus DS, USDA, USGS, AeroGRID and the GIS User Community" };
+
+struct attrib_t {
+	char zoomMax;
+	char zoomMin;
+	char score;
+	float bounds[4];
+};
+
+vector<pair<string, vector<attrib_t> > > slippyAttrib;
+
+static string ESRI_attributions(float lon, float lat, int z)
+{
+	// get_JSON_string (once per session)
+	// get all relevant data (zl 17-13) Vector<attribution,Vector<{zl_min, zl_max, score, BBox2}> >
+   
+	string attrib;
+	int score = 0;
+	for(auto& s : slippyAttrib)
+	{
+		for(auto& a : s.second)
+		{
+			if(z >= a.zoomMin && z <= a.zoomMax)
+			{
+				if(lon >= a.bounds[0] && lon <= a.bounds[2] &&
+				   lat >= a.bounds[1] && lat <= a.bounds[3])
+					{
+						score += a.score;
+						if(!attrib.empty()) attrib += ",";
+						attrib += s.first;
+						if(score >= 100) return attrib;
+					}
+			}
+		}
+	}
+	return attrib.empty() ? attributions[1] : attrib;
+}
 
 static const char * tile_url[PREDEFINED_MAPS] = {
 WED_URL_OSM_TILES  "${z}/${x}/${y}.png",

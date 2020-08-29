@@ -1896,15 +1896,21 @@ static void ValidateCIFP(const vector<WED_Runway *>& runways, const vector<WED_S
 		map<int,Point3> CIFP_rwys;
 		set<int> rwys_missing;
 		string icao;
-		apt->GetName(icao);
 		
 		if(apt->ContainsMetaDataKey(wed_AddMetaDataICAO))
+			icao = apt->GetMetaDataValue(wed_AddMetaDataICAO);
+		if (icao.empty() && apt->ContainsMetaDataKey(wed_AddMetaDataFAA))
+			icao = apt->GetMetaDataValue(wed_AddMetaDataFAA);
+		if (icao.empty() && apt->ContainsMetaDataKey(wed_AddMetaDataLocal))
 		{
-			string icao_meta = apt->GetMetaDataValue(wed_AddMetaDataICAO);
-			if(!icao_meta.empty()) icao = icao_meta;
+			icao = apt->GetMetaDataValue(wed_AddMetaDataLocal);
+			if (!icao.empty())	icao = "*";  // choose something that NEVER matches any CIFP data
 		}
-		if (mf)                         // for speed - maybe store the CIFP data in a vector, 
-		{                               // so we dont have to re-parse it for every airport ?
+		if (icao.empty())
+			apt->GetICAO(icao);
+
+		if (mf)
+		{
 			MFScanner	s;
 			MFS_init(&s, mf);
 			MFS_string_eol(&s,NULL);    // skip first line, so Tyler can put a comment/version in there

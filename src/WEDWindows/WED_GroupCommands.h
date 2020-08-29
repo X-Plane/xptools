@@ -28,7 +28,7 @@ class	IGISEdge;
 class	IResolver;
 class	ISelection;
 
-class	Point2;
+struct	Point2;
 
 class	WED_Archive;
 class	WED_MapZoomerNew;

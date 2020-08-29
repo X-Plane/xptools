@@ -28,8 +28,10 @@
 	// gotta do this cuz MSFT hasn't updated their openGL headers in 23 years ... its STILL OGL 1.1 from 1996 !!
 	#include "glew.h"
 #elif APL
+	#include "glew.h"
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glu.h>
+	#include "glew.h"
 #else
 	#include <GL/gl.h>
 	#include <GL/glu.h>
@@ -63,7 +65,9 @@ static void init_gl_info(gl_info_t * i)
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE,&i->max_tex_size);
 	// if(i->max_tex_size > 2*8192)	i->max_tex_size = 2*8192;
 	if(i->has_tex_compression)	glHint(GL_TEXTURE_COMPRESSION_HINT,GL_NICEST);
-	LOG_MSG("OpenGL Version   : %s\nMax texture size : %d\n\n", ver_str, i->max_tex_size);
+	LOG_MSG("OpenGL renderer  : %s\n", glGetString(GL_RENDERER));
+	LOG_MSG("OpenGL Version   : %s\n", ver_str);
+	LOG_MSG("Max texture size : %d\n", i->max_tex_size);
 }
 
 /*****************************************************************************************
@@ -176,8 +180,7 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 	if (outWidth) *outWidth = useIt->width;
 	if (outHeight) *outHeight = useIt->height;
 
-	glBindTexture(GL_TEXTURE_2D, inTexNum);
-
+	glBindTexture(GL_TEXTURE_2D, inTexNum);  CHECK_GL_ERR
 	
 	int	iformat, glformat;
 	if (useIt->channels == 1)
@@ -215,9 +218,9 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 	}
 
 	if (inFlags & tex_Mipmap)
-		gluBuild2DMipmaps(GL_TEXTURE_2D, iformat, useIt->width, useIt->height, glformat, GL_UNSIGNED_BYTE, useIt->data);
+		gluBuild2DMipmaps(GL_TEXTURE_2D, iformat, useIt->width, useIt->height, glformat, GL_UNSIGNED_BYTE, useIt->data); CHECK_GL_ERR
 	else
-		glTexImage2D(GL_TEXTURE_2D, 0, iformat, useIt->width ,useIt->height, 0,	glformat, GL_UNSIGNED_BYTE, useIt->data);
+		glTexImage2D(GL_TEXTURE_2D, 0, iformat, useIt->width ,useIt->height, 0,	glformat, GL_UNSIGNED_BYTE, useIt->data); CHECK_GL_ERR
 
 	if (resize)
 		DestroyBitmap(&rescaleBits);
@@ -309,7 +312,7 @@ static void swap_blocks(char *a, char *b, GLint type)
 		swap(y->colors.rows[0], y->colors.rows[3]);
 		swap(y->colors.rows[1], y->colors.rows[2]);
 	}
-	else
+	else if (type == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT)
 	{
 		DXT1Block * x = (DXT1Block *) a;
 		DXT1Block * y = (DXT1Block *) b;
@@ -318,6 +321,21 @@ static void swap_blocks(char *a, char *b, GLint type)
 		swap(x->rows[1], x->rows[2]);
 		swap(y->rows[0], y->rows[3]);
 		swap(y->rows[1], y->rows[2]);
+	}
+	else // BC4 or BC5
+	{
+		DXT5AlphaBlock * x = (DXT5AlphaBlock  *)a;
+		DXT5AlphaBlock * y = (DXT5AlphaBlock  *)b;
+		swap(*x, *y);
+		swap_12bit_idx(x->idx);
+		swap_12bit_idx(y->idx);
+		if (type == GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT)
+		{
+			++x; ++y;
+			swap(*x, *y);
+			swap_12bit_idx(x->idx);
+			swap_12bit_idx(y->idx);
+		}
 	}
 }
 
@@ -338,11 +356,21 @@ static void swap_blocks(char *a, GLint type)
 		swap(x->colors.rows[0], x->colors.rows[3]);
 		swap(x->colors.rows[1], x->colors.rows[2]);
 	}
-	else
+	else if (type == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT)
 	{
 		DXT1Block * x = (DXT1Block *)a;
 		swap(x->rows[0], x->rows[3]);
 		swap(x->rows[1], x->rows[2]);
+	}
+	else // BC4 or BC5
+	{
+		DXT5AlphaBlock * x = (DXT5AlphaBlock  *)a;
+		swap_12bit_idx(x->idx);
+		if (type == GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT)
+		{
+			++x;
+			swap_12bit_idx(x->idx);
+		}
 	}
 }
 
@@ -362,24 +390,35 @@ bool	LoadTextureFromDDS(
 
 	if (strncmp(desc->dwMagic, "DDS ", 4) != 0) return false;
 	if((SWAP32(desc->dwSize)) != (sizeof(*desc) - sizeof(desc->dwMagic))) return false;
-	if(strncmp(desc->ddpfPixelFormat.dwFourCC, "DXT",3) != 0 ) return false;
 
-	GLenum glformat = 0;
+	GLenum glformat;
 	int	dds_blocksize;
-	switch(desc->ddpfPixelFormat.dwFourCC[3])
-	{
+
+	if (strncmp(desc->ddpfPixelFormat.dwFourCC, "DXT", 3) == 0)
+		switch (desc->ddpfPixelFormat.dwFourCC[3])
+		{
 		case '1':	dds_blocksize = 8;  glformat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;	break;
 		case '3':	dds_blocksize = 16; glformat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;	break;
 		case '5':	dds_blocksize = 16; glformat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;	break;
 		default: return false;
-	}
+		}
+	else if (strncmp(desc->ddpfPixelFormat.dwFourCC, "ATI", 3) == 0)
+		switch (desc->ddpfPixelFormat.dwFourCC[3])
+		{
+		case '1':	dds_blocksize = 8;  glformat = GL_COMPRESSED_RED_RGTC1_EXT;			break;
+		case '2':	dds_blocksize = 16; glformat = GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT; break; // for normal maps, some day
+		default: return false;
+		}
+	else
+		return false;
+
 	int mips = 0;
 	if(inFlags & tex_Mipmap && (SWAP32(desc->dwFlags)) & DDSD_MIPMAPCOUNT)
 		mips = SWAP32(desc->dwMipMapCount);
 	int x = SWAP32(desc->dwWidth);
 	int y = SWAP32(desc->dwHeight);
 
-	if (y != NextPowerOf2(y)) return false;  // flipping code can only handle certain heights
+	if ((mips && y != NextPowerOf2(y)) || y % 8 != 0) return false;  // flipping code can only handle certain heights
 
 	if (outWidth) *outWidth = x;
 	if (outHeight) *outHeight = y;
@@ -421,7 +460,7 @@ bool	LoadTextureFromDDS(
 			}
 		}
 
-		glCompressedTexImage2D( GL_TEXTURE_2D, level, glformat, x, y, 0, data_len, data);
+		glCompressedTexImage2D( GL_TEXTURE_2D, level, glformat, x, y, 0, data_len, data); CHECK_GL_ERR
 
 		x = max(1, x >> 1);
 		y = max(1, y >> 1);

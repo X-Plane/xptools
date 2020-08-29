@@ -130,6 +130,7 @@ void			XWinGL::Resized(int inWidth, int inHeight)
 void			XWinGL::Update(XContext ctx)
 {
 	wglMakeCurrent(mDC, mContext);
-	this->GLDraw();
+	this->GLDraw(); 
+	CHECK_GL_ERR  CHECK_GL_ERR  CHECK_GL_ERR
 	SwapBuffers(mDC);
 }

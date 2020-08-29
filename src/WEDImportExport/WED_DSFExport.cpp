@@ -541,10 +541,13 @@ struct	DSF_ResourceTable {
 #endif
 	int accum_filter(const string& icao_filter)
 	{
-		map<string,int>::iterator i = filter_idx.find(icao_filter);
-		if(i != filter_idx.end()) return i->second;
-		filter_idx[icao_filter] = filters.size();
-		filters.push_back(icao_filter);
+		string icao_filter_uc(icao_filter);      // X-Plane auto-capitalizes apt.dat entries upon reading and compares filters case-sensitive ...
+		for_each(icao_filter_uc.begin(), icao_filter_uc.end(), [](char & c) { c = toupper(c); });
+
+		map<string, int>::iterator i = filter_idx.find(icao_filter_uc);
+		if (i != filter_idx.end()) return i->second;
+		filter_idx[icao_filter_uc] = filters.size();
+		filters.push_back(icao_filter_uc);
 		return filters.size()-1;
 	}
 
@@ -1759,7 +1762,7 @@ static int	DSF_ExportTileRecursive(
 
 				if(is_backout_path(relativePath) || is_dir_sep(relativePath[0]) || relativePath[1] == ':')
 				{
-					DoUserAlert((msg + "The image resource must be a relative path to a location within the scenery directory, aborting DSF Export.").c_str());
+					DoUserAlert((msg + "The image resource must be a relative path to a location inside the sceneries directory, aborting DSF Export.").c_str());
 					return -1;
 				}
 
@@ -1790,7 +1793,7 @@ static int	DSF_ExportTileRecursive(
 				* Enjoy your new orthophoto
 				*/
 				
-				if(date_cmpr_res == dcr_firstIsNew || date_cmpr_res == dcr_same)
+				if(1) // date_cmpr_res == dcr_firstIsNew || date_cmpr_res == dcr_same)
 				{
 	#if DEV
 					StElapsedTime	etime("DDS export time");
@@ -1852,7 +1855,7 @@ static int	DSF_ExportTileRecursive(
 					*/
 					if(is1Ksource)
 					{
-						if(DDSwidth != UVMwidth)
+						if(DDSwidth > UVMwidth)
 						{
 							if(UVbounds.ymin() > 0.0 && UVMright % 512 == 0)
 							{
@@ -1877,7 +1880,7 @@ static int	DSF_ExportTileRecursive(
 								}
 							}
 						}
-						if(DDSheight != UVMheight)
+						if(DDSheight > UVMheight)
 						{
 							if(UVbounds.xmin() > 0.0 && UVMtop % 512 == 0)
 							{
@@ -1909,13 +1912,13 @@ static int	DSF_ExportTileRecursive(
 						if(UVMwidth == DDSwidth && UVMheight == DDSheight)
 						{
 //					printf("1:1 copy\n");
-							CopyBitmapSectionDirect(imgInfo,DDSInfo, UVMleft, UVMbottom, 0, 0, DDSwidth, DDSheight);
+							CopyBitmapSectionDirect(imgInfo, DDSInfo, UVMleft, UVMbottom, 0, 0, DDSwidth, DDSheight);
 						}
 						else
 						{
 //					printf("scaled copy\n");
-							CopyBitmapSection(&imgInfo,&DDSInfo, UVMleft, UVMbottom, UVMright, UVMtop,
-																				0,       0,    DDSwidth, DDSheight);
+							CopyBitmapSectionSharp(imgInfo, DDSInfo, UVMleft, UVMbottom, UVMright, UVMtop,
+																				0, 0, DDSwidth, DDSheight);
 						}
 						if(gOrthoExport)
 						{

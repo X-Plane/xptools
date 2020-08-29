@@ -142,7 +142,7 @@ static void parse_apt_dat(MFMemFile * str, map<string, navaid_t>& tAirports, con
 {
 	MFScanner	s;
 	MFS_init(&s, str);
-	int versions[] = { 1000, 1021, 1050, 1100, 1130, 0 };
+	int versions[] = { 1000, 1021, 1050, 1100, 1150, 0 };
 		
 	if(MFS_xplane_header(&s,versions,NULL,NULL))
 	{
@@ -228,7 +228,7 @@ static void parse_nav_dat(MFMemFile * str, vector<navaid_t>& mNavaids, bool merg
 {
 	MFScanner	s;
 	MFS_init(&s, str);
-	int versions[] = { 1000, 1021, 1050, 1100, 1130, 0 };
+	int versions[] = { 1000, 1021, 1050, 1100, 1150, 0 };
 		
 	if(MFS_xplane_header(&s,versions,NULL,NULL))
 	{
@@ -313,7 +313,7 @@ static void parse_atc_dat(MFMemFile * str, vector<navaid_t>& mNavaids)
 {
 	MFScanner	s;
 	MFS_init(&s, str);
-	int versions[] = { 1000, 1130, 0 };
+	int versions[] = { 1000, 1100, 0 };
 		
 	if(MFS_xplane_header(&s,versions,"ATCFILE",NULL))
 	{

@@ -603,6 +603,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 	outObj.lods.back().lod_near = outObj.lods.back().lod_far = 0;
 #if XOBJ8_USE_VBO
 	outObj.geo_VBO = 0;
+	outObj.idx_VBO = 0;
 #endif
 	while (!stop && TXT_MAP_continue(cur_ptr, end_ptr))
 	{
@@ -684,15 +685,39 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		// IDX <n>
 		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "IDX", xfals))
 		{
-			if (idxcount >= idxmax) { idxcount++; break; }
-			outObj.indices[idxcount++] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			if (idxcount >= idxmax)
+			{
+				LOG_MSG("E/Obj %s number of idx exceeds declared idx count %d\n", inFile, idxmax);
+				break;
+			}
+			unsigned int idx = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			if (idx < tricount)
+				outObj.indices[idxcount++] = idx;
+			else
+			{
+				LOG_MSG("E/Obj %s idx #%d points to index %d exceeding range of tris read %d\n", inFile, idxcount, idx, tricount);
+				outObj.indices[idxcount++] = 0;
+			}
 		}
 		// IDX10 <n> x 10
 		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "IDX10", xfals))
 		{
-			if (idxcount >= idxmax - 9) { idxcount+=10; break; };
+			if (idxcount+9 >= idxmax)
+			{
+				LOG_MSG("E/Obj %s number of idx exceeds declared idx count %d\n", inFile, idxmax);
+				break;
+			}
 			for (n = 0; n < 10; ++n)
-				outObj.indices[idxcount++] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			{
+				unsigned int idx = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+				if (idx < tricount)
+					outObj.indices[idxcount++] = idx;
+				else
+				{
+					LOG_MSG("E/Obj %s idx #%d points to index %d exceeding range of tris read %d\n", inFile, idxcount, idx, tricount);
+					outObj.indices[idxcount++] = 0;
+				}
+			}
 		}
 		// TRIS offset count
 		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "TRIS", xfals))

@@ -169,13 +169,8 @@ void glPolygon2(const Point2 * pts, bool has_uv, const int * contours, int n, fl
 	if(!raw_pts.empty())
 		tessAddContour(tess, 2, &raw_pts[0], 2 * sizeof(GLfloat), raw_pts.size() / 2);
 
-	const TESSreal nrm[3] = { 0, 0, 1 };
-	int ok = tessTesselate(tess, TESS_WINDING_NONZERO, TESS_POLYGONS, 3, 2, nrm);
-
-	if(ok)
-//	if( tessGetVertexCount(tess) != n) // don't be better than XP or gluTess and show textureing with self-intersecting contours
-//		printf("vertex in %d out %d\n", tessGetVertexCount(tess), n);
-//	else
+	if(tessTesselate(tess, TESS_WINDING_NONZERO, TESS_POLYGONS, 3, 2, 0))
+	if(tessGetVertexCount(tess) == n) // don't be better than gluTess (used in XP) and show textureing with self-intersecting contours
 	{
 		const TESSindex* vert_idx = tessGetElements(tess);
 		int tri_count = tessGetElementCount(tess);
@@ -185,11 +180,11 @@ void glPolygon2(const Point2 * pts, bool has_uv, const int * contours, int n, fl
 		{
 			const TESSindex * vidx = tessGetVertexIndices(tess);
 			glBegin(GL_TRIANGLES);
-			if (height == 0.0)
-				while(tri_count--)
-					for (int i = 0 ; i < 3; i++)
+			if (height == -1.0f)
+				while (tri_count--)
+					for (int i = 0; i < 3; i++)
 					{
-						if(*vert_idx == TESS_UNDEF) break;
+						if (*vert_idx == TESS_UNDEF) break;
 						glTexCoord2(pts[1 + 2 * vidx[*vert_idx]]); glVertex2fv(&verts[2 * (*vert_idx)]);
 						vert_idx++;
 					}
@@ -207,9 +202,9 @@ void glPolygon2(const Point2 * pts, bool has_uv, const int * contours, int n, fl
 		{
 	#if 1
 			glBegin(GL_TRIANGLES);
-			if (height == 0.0)
-				while(tri_count--)
-					for (int i = 0 ; i < 3; i++)
+			if (height == -1.0f)
+				while (tri_count--)
+					for (int i = 0; i < 3; i++)
 						glVertex2fv(&verts[2 * (*vert_idx++)]);
 			else
 				while(tri_count--)
@@ -237,7 +232,7 @@ void glPolygon2(const Point2 * pts, bool has_uv, const int * contours, int n, fl
 	gluTessCallback(tess, GLU_TESS_END,		(void (CALLBACK *)(void))TessEnd);
 	if(has_uv)
 	{
-		if(height == 0)
+		if(height == -1.0f)
 			gluTessCallback(tess, GLU_TESS_VERTEX,	(void (CALLBACK *)(void))TessVertexUV);
 		else
 			gluTessCallback(tess, GLU_TESS_VERTEX_DATA,	(void (CALLBACK *)(void))TessVertexUVh);

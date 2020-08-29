@@ -179,7 +179,8 @@ int			WED_LibraryMgr::GetResourceType(const string& r)
 string		WED_LibraryMgr::GetResourcePath(const string& r, int variant)
 {
 	res_map_t::iterator me = res_table.find(r);
-	if (me==res_table.end()) return string();
+	if (me==res_table.end() || r != me->first)  // this prevents the case-insensitive compare (needed for desired sort order in libmgr list) 
+		return string();                        // to deliver a match if the cases mis-match - which is X-Plane behavior
 	DebugAssert(variant < me->second.real_paths.size());
 	return me->second.real_paths[variant];
 }
