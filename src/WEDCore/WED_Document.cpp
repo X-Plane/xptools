@@ -593,7 +593,9 @@ void	WED_Document::WriteGlobalPrefs(void)
 	GUI_SetPrefString("preferences","OrthoExport",gOrthoExport ? "1" : "0");
 	
 	for (map<string,string>::iterator i = sGlobalPrefs.begin(); i != sGlobalPrefs.end(); ++i)
-		GUI_SetPrefString("doc_prefs", i->first.c_str(), i->second.c_str());
+		if(i->first != "doc/xml_compatibility")          // why NOT write that ? Cuz WED 2.0 ... 2.2 read that and if an PRE wed-2.0 document 
+			                                             // is opened - it uses this instead, resulting in false warnings
+			GUI_SetPrefString("doc_prefs", i->first.c_str(), i->second.c_str());
 }
 
 void		WED_Document::StartElement(
