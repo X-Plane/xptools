@@ -4,6 +4,8 @@
 #include <FL/names.h>
 
 #define DEBUG_EVENTS 0
+#define DEBUG_MENUS 0
+#define DEBUG_DND 0
 
 static void clearSubmenusRecursive(const Fl_Menu_Item *  menu)
 {
@@ -72,7 +74,6 @@ XWin::XWin(
  	callback( window_cb );
 	end();
 	mInited = true;
-	printf("XWin ctor %dx%d+%d+%d\n", inWidth, inHeight, inX, inY);
 }
 
 XWin::XWin(int default_dnd) : Fl_Window(100,100), mInited(false),mMenuBar(nullptr)
@@ -87,13 +88,10 @@ XWin::XWin(int default_dnd) : Fl_Window(100,100), mInited(false),mMenuBar(nullpt
 	callback( window_cb );
 	end();
 	mInited = true;
-	printf("XWin limited ctor\n");
 }
 
 XWin::~XWin()
 {
-	printf("XWin dtor\n");
-//
 //	if(mMenuBar)
 //	{
 //		clearSubmenusRecursive(mMenuBar->menu());
@@ -135,7 +133,7 @@ int XWin::handle(int e)
 	#if DEV && DEBUG_EVENTS
 	string appnm("unknown");
 	if(label()) appnm = label();
-	#endif // DEV
+	#endif // DEV && DEBUG_EVENTS
 
 	static bool want_menu_update = 1;
 
@@ -171,7 +169,7 @@ int XWin::handle(int e)
 	case FL_PUSH:{
 	#if DEV && DEBUG_EVENTS
 		printf("FL_PUSH %s\n",appnm.c_str());
-    #endif // DEV
+    #endif // DEV && DEBUG_EVENTS
 		int btn  = fltkBtnToXBtn(Fl::event_button());
 		mMouse.x = Fl::event_x();
 		mMouse.y = Fl::event_y();
@@ -196,7 +194,7 @@ int XWin::handle(int e)
 	case FL_RELEASE:{
 	#if DEV && DEBUG_EVENTS
 		printf("FL_RELEASE %s\n",appnm.c_str());
-	#endif // DEV
+	#endif // DEV && DEBUG_EVENTS
 		int btn  = fltkBtnToXBtn(Fl::event_button());
 		mMouse.x = Fl::event_x();
 		mMouse.y = Fl::event_y();
@@ -243,7 +241,7 @@ int XWin::handle(int e)
 	case FL_KEYDOWN:{
 	#if DEV && DEBUG_EVENTS
 		printf("FL_KEYDOWN \n");
-	#endif // DEV
+	#endif // DEV && DEBUG_EVENTS
 		if(Fl::event_command() || Fl::event_alt()) return 0;			  // propagate further for shortcuts
 		uint32_t utf32char = 0;
 		int l = Fl::event_length();
@@ -259,7 +257,7 @@ int XWin::handle(int e)
 	case FL_KEYUP:{
 	#if DEV && DEBUG_EVENTS
 		printf("FL_KEYUP \n");
-	#endif // DEV
+	#endif // DEV && DEBUG_EVENTS
 		//if the shortcut is not handled by the menu we need a menu update with the next sc key stroke
 		want_menu_update = 1;
 	}
@@ -267,7 +265,7 @@ int XWin::handle(int e)
 	case FL_SHORTCUT:{
 	#if DEV && DEBUG_EVENTS
 		printf("FL_SHORTCUT \n");
-	#endif // DEV
+	#endif // DEV && DEBUG_EVENTS
 
 	}
 	return 0;
@@ -277,14 +275,14 @@ int XWin::handle(int e)
 	case FL_ACTIVATE:{
 	#if DEV && DEBUG_EVENTS
 		printf("FL_ACTIVATE %s\n",appnm.c_str());
-	#endif // DEV
+	#endif // DEV && DEBUG_EVENTS
 		Activate(true);
 	}
 	return 1;
 	case FL_DEACTIVATE:{
 	#if DEV && DEBUG_EVENTS
 		printf("FL_DEACTIVATE %s\n",appnm.c_str());
-	#endif // DEV
+	#endif // DEV && DEBUG_EVENTS
 		Activate(false);
 	}
 	return 1;
@@ -293,27 +291,27 @@ int XWin::handle(int e)
 	case FL_FOCUS:{
 	#if DEV && DEBUG_EVENTS
 		printf("FL_FOCUS %s\n",appnm.c_str());
-	#endif // DEV
+	#endif // DEV && DEBUG_EVENTS
 		Activate(true);
 	}
 	return 1;
 	case FL_UNFOCUS:{
 	#if DEV && DEBUG_EVENTS
 		printf("FL_UNFOCUS %s\n",appnm.c_str());
-	#endif // DEV
+	#endif // DEV && DEBUG_EVENTS
 		Activate(false);
 	}
 	return 1;
 	case FL_ENTER:{
 	#if DEV && DEBUG_EVENTS
 		printf("FL_ENTER %s\n",appnm.c_str());
-	#endif // DEV
+	#endif // DEV && DEBUG_EVENTS
 	}
 	return 1;
 	case FL_LEAVE:{
 	#if DEV && DEBUG_EVENTS
 		printf("FL_LEAVE %s\n",appnm.c_str());
-	#endif // DEV
+	#endif // DEV && DEBUG_EVENTS
 	}
 	return 1;
 
@@ -328,7 +326,9 @@ int XWin::handle(int e)
 		char c[2048];
 		strncpy(c, Fl::event_text(), sizeof(c));
 		fl_decode_uri(c);
+	#if DEV && DEBUG_EVENTS
 		printf("XWin::handle FL_PASTE Win %s\n",c);
+	#endif // DEV && DEBUG_EVENTS
 		ReceiveFilesFromDrag(c);
 	}
 	return 1;
@@ -346,9 +346,7 @@ void XWin::resize(int x,int y,int w,int h)
 	bool not_moved = ( x == this->x() && y == this->y() );
 	if( no_resize & not_moved ) return;
 
-	printf(" XWin::resize %dx%d+%d+%d\n",w,h,x,y);
 	int  mbar_h = mMenuBar ? mMenuBar->h() : 0;
-
 	Fl_Window::resize(x,y,w,h);
 
 	if(no_resize) return;
@@ -356,7 +354,6 @@ void XWin::resize(int x,int y,int w,int h)
 	{
 	   mMenuBar->size(w,mbar_h);
 	}
-
 	Resized(w,h);
 }
 
@@ -366,10 +363,14 @@ void XWin::menu_cb(Fl_Widget *w, void * data)
 	Fl_Menu_Bar *bar = (Fl_Menu_Bar*)w;		        // Get the menubar widget
 	const Fl_Menu_Item *item = bar->mvalue();		// Get the menu item that was picked
 	Fl_Menu_Item * m=(Fl_Menu_Item *) item;
+	#if DEV && DEBUG_MENUS
 	printf("cb %d %s\n",item->first(),item->first()->label());
+	#endif // DEV && DEBUG_MENUS
 	xmenu_cmd* cmd = (xmenu_cmd*) data;
 	if(!cmd) return;
+	#if DEV && DEBUG_MENUS
 	printf("menu %d %d item %d cmd %d \n",item->value(),m->value(),cmd->data,cmd->cmd);
+	#endif // DEV && DEBUG_MENUS
 	XWin* win = (XWin*) bar->parent();
 	win->HandleMenuCmd((xmenu )cmd->data,cmd->cmd);
 }
@@ -378,7 +379,9 @@ void XWin::menu_cb(Fl_Widget *w, void * data)
 void XWin::menubar_cb(Fl_Widget *w, void * data)
 {
 	if(!w ) return;
+	#if DEV && DEBUG_MENUS
 	printf("menubar_cb called \n");
+	#endif // DEV && DEBUG_MENUS
 	//Fl_Menu_Bar * bar = (Fl_Menu_Bar *) w;
 }
 
@@ -429,13 +432,11 @@ void XWin::SetFilePath(const char * inPath,bool modified)
 
 void XWin::MoveTo(int inX, int inY)
 {
-	printf("XWin::MoveTo %d %d\n",inX, inY);
 	this->position(inX,inY);
 }
 
 void XWin::Resize(int inWidth, int inHeight)
 {
-	printf("XWin::Resize %d %d\n",inWidth, inHeight);
 	this->size(inWidth,inHeight);
 }
 
@@ -451,7 +452,6 @@ void XWin::UpdateNow(void)
 
 void XWin::SetVisible(bool visible)
 {
-	printf("XWin::SetVisible visible=%d\n",visible);
 	if(visible)
 	{
 		show();
@@ -499,7 +499,7 @@ void XWin::GetWindowLoc(int * outX, int * outY)
 {
 	if (outX) *outX = this->x();
 	if (outY) *outY = this->y();
-printf("WindowLoc l=%d t=%d\n", x(), y());
+	//printf("WindowLoc l=%d t=%d\n", x(), y());
 }
 
 void XWin::GetDesktop(int bounds[4])
@@ -511,14 +511,13 @@ void XWin::GetDesktop(int bounds[4])
 	{
 		int X,Y,W,H;
 		Fl::screen_xywh(X, Y, W, H, s);
-
-printf("Screen %d: l=%d t=%d w=%d h=%d\n", s, X, Y, W, H);
+		//printf("Screen %d: l=%d t=%d w=%d h=%d\n", s, X, Y, W, H);
 		bounds[0] = min(bounds[0], X);
 		bounds[1] = min(bounds[1], Y);
 		bounds[2] = max(bounds[2], X+W);
 		bounds[3] = max(bounds[1], Y+H);
 	}
-printf("Total Desktop l=%d t=%d r=%d b=%d\n", bounds[0], bounds[1], bounds[2], bounds[3]);
+	//printf("Total Desktop l=%d t=%d r=%d b=%d\n", bounds[0], bounds[1], bounds[2], bounds[3]);
 }
 
 void XWin::GetMouseLoc(int * outX, int * outY)
@@ -545,7 +544,9 @@ void XWin::ReceiveFilesFromDrag(const string& inFiles)
 			if(pos != std::string::npos)
 			{
 				files.push_back(path.substr(7));
+				#if DEV && DEBUG_DND
 				printf("file s %s\n",files.back().c_str());
+				#endif // DEV && DEBUG_DND
 			}
 		}
 	}

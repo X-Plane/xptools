@@ -1,19 +1,16 @@
 #include "XWinGL.h"
 #include <FL/Fl.H>
 #include <FL/filename.H>
-	#include "AssertUtils.h"
+#include "AssertUtils.h"
 
 glWidget::glWidget(XWinGL* xwin,int w,int h,Fl_Gl_Window* share) : Fl_Gl_Window(w,h)
 {
    mXWinGL = xwin;
    set_visible();
-   printf("glWidget ctor \n");
 }
 
 glWidget::~glWidget()
-{
-   printf("glWidget dtor \n");
-}
+{}
 
 void glWidget::draw()
 {
@@ -22,7 +19,6 @@ void glWidget::draw()
 
 void glWidget::resize(int X,int Y,int W,int H)
 {
-	printf("glWidget::resize \n");
     Fl_Gl_Window::resize(X,Y,W,H);
     mXWinGL->GLReshaped(w(),h());
 }
@@ -54,12 +50,10 @@ XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX,
 
 XWinGL::~XWinGL()
 {
-	printf("XWinGL dtor\n");
 }
 
 void XWinGL::Resized(int w, int h)
 {
-	printf("XWinGL::Resized\n");
 }
 
 void XWinGL::SetGLContext(void)

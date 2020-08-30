@@ -90,8 +90,11 @@ void GUI_Application::TryQuitCB(void * ref)
 
 
 #endif
-#define DEBUG_CLEAR_MENU 0
+
 #if LIN
+#define DEBUG_MENU 0
+#define DEBUG_CLEAR_MENU 0
+
 static void clearSubmenusRecursive(const Fl_Menu_Item *  menu)
 {
 	if(!menu) return;
@@ -209,9 +212,9 @@ static void menu_cb(Fl_Widget *w, void * data)
 	Fl_Menu_Bar * bar = (Fl_Menu_Bar *) w;
 	xmenu_cmd * mc = (xmenu_cmd *) data;
 	int cmd = mc->cmd;
-
+	#if DEBUG_MENU
 	printf("menu cmd:%d\n",cmd);
-
+	#endif
 	GUI_Application * app = (GUI_Application *) mc->data;
 	//TODO:mroe: currently the whole menu is updated every time, also when a shortcut combination pressed
     //probably we need that code back when we have a better solution
@@ -226,11 +229,12 @@ static void menu_cb(Fl_Widget *w, void * data)
 
 void GUI_Application::update_menus_cb(Fl_Widget *w, void * data)
 {
+	#if DEBUG_MENU
 	printf("GUI_Application::update_menus_cb \n");
+	#endif
 	if(!w ) return;
 	Fl_Menu_Bar * bar = (Fl_Menu_Bar *) w;
 	update_menu_recursive(bar->menu());
-
 }
 
 #endif

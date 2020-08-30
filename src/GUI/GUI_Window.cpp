@@ -57,6 +57,8 @@ inline int OGL2Client_Y(int y, HWND w) { RECT c; GetClientRect(w,&c); return c.b
 
 #if LIN
 #define mWindow 0
+#define DEBUG_DND 0
+#define DEBUG_MENUS 0
 
 inline int GUI_Window::Client2OGL_X(int x, void* w) { return x; }
 inline int GUI_Window::Client2OGL_Y(int y, void* w) { return (this->h() - y ); }
@@ -89,7 +91,9 @@ int GUI_Window::handle(int e )
 				string ioName;
 				if(this->DispatchCanHandleCommand(cmd,ioName,ioCheck))
 				{
+					#if DEV && DEBUG_MENUS
 					printf("GUI_Window::handle FL_SHORTCUT cmd:%d\n",cmd);
+					#endif // DEV && DEBUG_MENUS
 					return this->DispatchHandleCommand(cmd);
 				}
 			}
@@ -104,8 +108,9 @@ int GUI_Window::handle(int e )
 
 		/*DND events */
 		case FL_DND_ENTER:{
-
+			#if DEV && DEBUG_DND
 			printf(" GUI_Window::FL_DND_ENTER \n");
+			#endif // DEV && DEBUG_DND
 			GUI_DragData_Adapter  adapter(NULL);
 			GUI_DragOperation allowed;
 			allowed = (this->InternalDragEnter(x,y,&adapter,OP_LIN2GUI(1),OP_LIN2GUI(1)));
@@ -127,15 +132,18 @@ int GUI_Window::handle(int e )
 		}
 		return 1;
 		case FL_DND_LEAVE:{
+			#if DEV && DEBUG_DND
 			printf(" GUI_Window::FL_DND_LEAVE \n");
+			#endif // DEV && DEBUG_DND
 			this->InternalDragLeave();
 			this->mInDrag = 0;
 			Fl::pushed(0); // this kills the DnD
 		}
 		return 1;
 		case FL_DND_RELEASE:{
+			#if DEV && DEBUG_DND
 			printf(" GUI_Window:: FL_DND_RELEASE type:%p ,content: %s  \n", Fl::event_clipboard(),Fl::event_text());
-
+			#endif // DEV && DEBUG_DND
 		}
 		return 1;
 
@@ -144,7 +152,9 @@ int GUI_Window::handle(int e )
 
 			if(mInDrag)	//paste comes from Drag
 			{
+				#if DEV && DEBUG_DND			
 				printf("FL_PASTE drag type: %s ,txt: %s\n",Fl::event_clipboard_type(),Fl::event_text());
+				#endif // DEV && DEBUG_DND			
 				this->mInDrag = 0;
 				GUI_DragData_Adapter adapter((void*) Fl::event_text());
 				GUI_DragOperation allowed = (this->InternalDrop(x,y,&adapter,OP_LIN2GUI(1),OP_LIN2GUI(1)));
@@ -152,8 +162,11 @@ int GUI_Window::handle(int e )
 			}
 			else
 			{
-				//TODO:mroe check for content and type and such
+				#if DEV && DEBUG_DND
 				printf("FL_PASTE clip  txt: %s  wnd: %p\n",Fl::event_text(),Fl::focus());
+				#endif // DEV && DEBUG_DND	
+
+				//TODO:mroe check for content and type and such		
 				Set_ClipboardRecieved(true);
 			}
 		}
@@ -584,12 +597,11 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBound
 	mClearDepth = false;
 	mClearColor = true;
 	mDesc = inTitle;
-#if !LIN
+#if !LIN // with FLTK we have to do this after window construction (first GL_Draw call) 
 	mState.Init();
 #endif
 	// BEN SEZ: this is probably a bad idea...
 	FocusChain(1);
-	printf("GUI_Window ctor\n");
 }
 
 void	GUI_Window::SetClearSpecs(bool inDoClearColor, bool inDoClearDepth, float inClearColor[4])
@@ -606,7 +618,6 @@ void	GUI_Window::SetClearSpecs(bool inDoClearColor, bool inDoClearDepth, float i
 
 GUI_Window::~GUI_Window()
 {
-	printf("GUI_Window dtor\n");
 	#if IBM
 //		SetWindowLongPtrW(mWindow,GWLP_WNDPROC,(LONG_PTR) mBaseProc);
 		mDND->Release();
@@ -732,7 +743,7 @@ void			GUI_Window::GLDraw(void)
 #if LIN
 	if(!XWinGL::mInited)
 	{
-		printf("init gl\n");
+		//printf("init gl\n");
 		mState.Init();
 		XWinGL::mInited = true;
 	}
