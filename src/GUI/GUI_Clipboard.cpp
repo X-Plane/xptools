@@ -233,11 +233,10 @@ int GUI_Clipboard_GetSize(GUI_ClipType inType)
 		return sz;
 
 	#elif LIN
-
+		//printf("start paste typ: %s wnd: %p\n",sCITs[inType].c_str(),Fl::focus());
+		if(strcmp(sCITs[inType].c_str(),Fl::clipboard_plain_text) != 0) return 0;
  		Set_ClipboardRecieved(false);
-		printf("start paste typ: %s wnd: %p\n",sCITs[inType].c_str(),Fl::focus());
-		Fl::paste(*Fl::focus(),1,sCITs[inType].c_str());
-
+		Fl::paste(*Fl::focus(),1);
 		// TODO:mroe --> revisit
 		// to not loop forever if things going wrong  Key_up brings us back for now
 		// wait for the PASTE event roundtrip
@@ -249,7 +248,6 @@ int GUI_Clipboard_GetSize(GUI_ClipType inType)
 		}
 
 		return 0;
-
 	#endif
 }
 
@@ -283,7 +281,7 @@ bool GUI_Clipboard_GetData(GUI_ClipType inType, int size, void * ptr)
 		DebugAssert(size==Fl::event_length());
 		//TODO:mroe: this needs some more care
 		memcpy(ptr,Fl::event_text(), size);
-		printf("clipboard get data txt:%s wnd: %p\n", Fl::event_text(),Fl::focus());
+		//printf("clipboard get data txt:%s wnd: %p\n", Fl::event_text(),Fl::focus());
 		Set_ClipboardRecieved(false);
 		return true;
 
