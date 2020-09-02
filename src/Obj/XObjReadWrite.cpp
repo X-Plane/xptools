@@ -1529,8 +1529,6 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 
 	outObj.geo_tri.get_minmax(outObj.xyz_min,outObj.xyz_max);
 	
-	printf("Obj8Read: done with %s\n", inFile);
-
 	return true;
 }
 
