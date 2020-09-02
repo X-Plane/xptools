@@ -288,7 +288,9 @@ static bool RunwaysTaxiRouteValencesCheck (const RunwayInfo& runway_info,
 			{
 				if(out_start_taxiroute == NULL)
 				{
-					out_start_taxiroute = filter_viewers_by_is_runway(*node_itr,runway_info.name).front();
+					auto xxx = filter_viewers_by_is_runway(*node_itr,runway_info.name);
+					if(xxx.size())
+						out_start_taxiroute = xxx.front();
 				}
 				++num_valence_of_1;
 			}
