@@ -39,6 +39,11 @@
 #include <Carbon/Carbon.h>		// we use this for vkeys/low mem accessors to keyboard
 #endif
 
+#if LIN
+#include <FL/Fl_Tooltip.H>
+#endif
+
+
 static set<GUI_Window *>	sWindows;
 
 #if APL
@@ -100,11 +105,39 @@ int GUI_Window::handle(int e )
 		}
 	}
 
-	/*DND events */
+
 	int x = OGL2Client_X(Fl::event_x(),(void*) this);
 	int y = OGL2Client_Y(Fl::event_y(),(void*) this);
 
 	switch(e){
+
+	   /*Tooltip handling*/
+		case FL_MOVE:{
+
+			if (x < this->mTipBounds[0] || y < this->mTipBounds[1] || x > this->mTipBounds[2] || y > this->mTipBounds[3])
+			{
+				if(mTipIsActive)
+				{
+					Fl_Tooltip::exit(this);
+					mTipIsActive=false;
+					break;
+				}
+
+				string tip_txt;
+				if( this->InternalGetHelpTip(x,y,this->mTipBounds,tip_txt ) && !tip_txt.empty())
+				{
+					this->copy_tooltip(tip_txt.c_str());
+					Fl_Tooltip::enter_area(this,Fl::event_x(),Fl::event_y(),100,100,this->tooltip());
+					mTipIsActive = true;
+				}
+				else
+				{
+				    this->copy_tooltip("");
+				}
+			}
+
+			break;
+		}
 
 		/*DND events */
 		case FL_DND_ENTER:{
@@ -562,8 +595,11 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBound
 		SendMessage(mToolTip, TTM_ADDTOOL, 0, (LPARAM) &ti);
 	#endif
 	#if LIN
-
 		this->labelsize((int)GUI_GetFontSize(0));
+		mTipBounds[0] = mTipBounds[1] = mTipBounds[2] = mTipBounds[3] = 0 ;
+		mTipIsActive=false;
+		Fl_Tooltip::size(this->labelsize()-2);
+
 		if( !(inAttributes & xwin_style_popup) && !(inAttributes & xwin_style_modal))
 		{
 			GetMenuBar(); // create one
