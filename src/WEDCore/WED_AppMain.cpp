@@ -110,6 +110,7 @@ HINSTANCE gInstance = NULL;
 
 #if LIN
 #include "initializer.h"
+#include <Fl.H>
 #endif
 
 FILE * gLogFile;
@@ -140,8 +141,11 @@ int main(int argc, char * argv[])
 		LOG_MSG("log.txt for WordEditor " WED_VERSION_STRING " ( OSX )\n");
 #else
 		LOG_MSG("log.txt for WordEditor " WED_VERSION_STRING " ( Linux )\n");
-#endif		
+#endif
 		LOG_MSG(" compiled on " __DATE__ " " __TIME__ "\n");
+#if LIN
+		LOG_MSG("FLTK API version %d\n",Fl::api_version());
+#endif
 		time_t now = time(0);
 		char * now_s = ctime(&now);
 		LOG_MSG("WED started on %s\n", now_s);

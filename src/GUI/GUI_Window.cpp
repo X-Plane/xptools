@@ -116,6 +116,8 @@ int GUI_Window::handle(int e )
 
 			if (x < this->mTipBounds[0] || y < this->mTipBounds[1] || x > this->mTipBounds[2] || y > this->mTipBounds[3])
 			{
+				mTipBounds[0] = 0; mTipBounds[1] = 0; mTipBounds[2] = 0; mTipBounds[3] = 0;
+
 				if(mTipIsActive)
 				{
 					Fl_Tooltip::exit(this);
@@ -127,7 +129,7 @@ int GUI_Window::handle(int e )
 				if( this->InternalGetHelpTip(x,y,this->mTipBounds,tip_txt ) && !tip_txt.empty())
 				{
 					this->copy_tooltip(tip_txt.c_str());
-					Fl_Tooltip::enter_area(this,Fl::event_x(),Fl::event_y(),100,100,this->tooltip());
+					Fl_Tooltip::enter_area(this,x,y,100,100,this->tooltip());
 					mTipIsActive = true;
 				}
 				else
