@@ -129,7 +129,7 @@ int GUI_Window::handle(int e )
 				if( this->InternalGetHelpTip(x,y,this->mTipBounds,tip_txt ) && !tip_txt.empty())
 				{
 					this->copy_tooltip(tip_txt.c_str());
-					Fl_Tooltip::enter_area(this,x,y,100,100,this->tooltip());
+					Fl_Tooltip::enter_area(this,Fl::event_x(),Fl::event_y(),100,100,this->tooltip());
 					mTipIsActive = true;
 				}
 				else
@@ -600,7 +600,6 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBound
 		this->labelsize((int)GUI_GetFontSize(0));
 		mTipBounds[0] = mTipBounds[1] = mTipBounds[2] = mTipBounds[3] = 0 ;
 		mTipIsActive=false;
-		Fl_Tooltip::size(this->labelsize()-2);
 
 		if( !(inAttributes & xwin_style_popup) && !(inAttributes & xwin_style_modal))
 		{

@@ -60,6 +60,9 @@
 // wire dirty to obj persistence
 
 #include "WED_Globals.h"
+#if LIN
+#include <FL/Fl_Tooltip.H>
+#endif
 int gIsFeet;
 int gInfoDMS;
 int gModeratorMode;
@@ -577,6 +580,9 @@ void	WED_Document::ReadGlobalPrefs(void)
 	int FontSize = atoi(GUI_GetPrefString("preferences","FontSize","12"));
 	gFontSize = intlim(FontSize, 10, 18);
 	GUI_SetFontSizes(gFontSize);
+	#if LIN
+	Fl_Tooltip::size(gFontSize-2);
+	#endif
 	gOrthoExport = atoi(GUI_GetPrefString("preferences","OrthoExport","1"));
 }
 

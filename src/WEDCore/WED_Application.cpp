@@ -39,6 +39,9 @@
 #include "GUI_TextField.h"
 
 #include "WED_Globals.h"
+#if LIN
+#include <FL/Fl_Tooltip.H>
+#endif
 
 static int settings_bounds[4] = { 0, 0, 512, 384};
 
@@ -131,6 +134,9 @@ void WED_Settings::ReceiveMessage(
 			((GUI_TextField *) inParam)->GetDescriptor(new_val);
 			gFontSize = max(10,min(18,atoi(new_val.c_str())));
 			GUI_SetFontSizes(gFontSize);
+			#if LIN
+			Fl_Tooltip::size(gFontSize-2);
+			#endif
 	}
 	else if(inMsg == (intptr_t) &gOrthoExport)
 	{
