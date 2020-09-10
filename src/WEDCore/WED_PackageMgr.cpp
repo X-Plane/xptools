@@ -124,6 +124,7 @@ bool		WED_PackageMgr::SetXPlaneFolder(const string& root)
 	if (MF_GetFileType(dir.c_str(),mf_CheckType) != mf_Directory)
 		return false;
 	
+	LOG_MSG("X-System folder  : %s\n", root.c_str());
 	system_path = root;
 	Rescan(true);
 	return true;

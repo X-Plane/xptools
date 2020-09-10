@@ -194,6 +194,13 @@
 
 #define SUPPORT_STL
 
+#if WED
+	extern FILE * gLogFile;
+	#define LOG_MSG(...) if(gLogFile) fprintf(gLogFile, __VA_ARGS__)
+#else
+	#define LOG_MSG(...)
+#endif
+
 #if IBM // OS specific file handling hacks
 	#define WINDOWS_LEAN_AND_MEAN
 	#include <winsock2.h>

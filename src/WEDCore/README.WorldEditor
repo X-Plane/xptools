@@ -38,6 +38,7 @@ WED 2.3.0b1 8/24/20
    - fix some OpenSceneryX items not shown in library manager
    - fix DSF airport scenery not showing when Airport ID contains lower case letters
    Features:
+   - WED-338: WED now writes a WED_log.txt to help debugging crashes
    - WED-1293: show facades when part of .agp definitions
    - WED-1270: support gateway download driven by Airport ID list from external file
    - "Explode AGP's" can handle any .agp containing only public or local objects

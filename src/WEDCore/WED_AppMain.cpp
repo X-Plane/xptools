@@ -21,32 +21,30 @@
  *
  */
 
- #define __DEBUGGING__
+#define __DEBUGGING__
 #if DEV
 //Adds the abilty to bring up a console for debuging
 #include <stdio.h>
 #endif
 
 #include "WED_AboutBox.h"
-#include "WED_Document.h"
 #include "WED_Assert.h"
-#include "WED_StartWindow.h"
-#include "GUI_Clipboard.h"
-#include "GUI_Resources.h"
 #include "WED_Application.h"
+#include "WED_Document.h"
+#include "FileUtils.h"
+#include "WED_FileCache.h"
+#include "WED_Menus.h"
 #include "WED_PackageMgr.h"
-#include "GUI_Pane.h"
+#include "WED_StartWindow.h"
+#include "WED_Version.h"
+
+#include "GUI_Clipboard.h"
 #include "GUI_Fonts.h"
 #include "GUI_Window.h"
 #include "GUI_Prefs.h"
+#include "GUI_Resources.h"
 
-#include "WED_Menus.h"
-
-#include "GUI_ScrollerPane.h"
-#include "GUI_TextField.h"
-#include "GUI_Splitter.h"
-
-#include "WED_FileCache.h"
+#include <ctime>
 
 #define	REGISTER_LIST	\
 	_R(WED_Airport) \
@@ -109,10 +107,12 @@ REGISTER_LIST_ATC
 #if IBM
 HINSTANCE gInstance = NULL;
 #endif
+
 #if LIN
-#include "initializer.h"
+ // #include "initializer.h"
 #endif
 
+FILE * gLogFile;
 
 #if IBM
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
@@ -127,8 +127,25 @@ int main(int argc, char * argv[])
 	GUI_MemoryHog::InstallNewHandler();
 	GUI_InitClipboard();
 #if LIN
-	Initializer linit(&argc, &argv, false);
+	// Initializer linit(&argc, &argv, false);
 #endif // LIN
+
+	gLogFile = fopen((FILE_get_dir_name(GetApplicationPath()) + "WED_Log.txt").c_str(), "w");
+	if (gLogFile)
+	{
+#if IBM
+		LOG_MSG("log.txt for WordEditor " WED_VERSION_STRING " ( Win )\n");
+#elif APL
+		LOG_MSG("log.txt for WordEditor " WED_VERSION_STRING " ( OSX )\n");
+#else
+		LOG_MSG("log.txt for WordEditor " WED_VERSION_STRING " ( Linux )\n");
+#endif		
+		LOG_MSG(" compiled on " __DATE__ " " __TIME__ "\n");
+		time_t now = time(0);
+		char * now_s = ctime(&now);
+		LOG_MSG("WED started on %s\n", now_s);
+		fflush(gLogFile);
+	}
 	
 #if LIN || APL
 	WED_Application	app(argc, argv);
@@ -220,5 +237,9 @@ int main(int argc, char * argv[])
 	WED_Document::WriteGlobalPrefs();
 	GUI_Prefs_Write("WED");
 
+
+	LOG_MSG("----- WED has shut down -----\n");
+	if(gLogFile) fclose(gLogFile);
+	
 	return 0;
 }

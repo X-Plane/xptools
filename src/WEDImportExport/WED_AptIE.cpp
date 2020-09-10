@@ -577,18 +577,12 @@ static WED_AirportChain * ImportLinearPath(const AptPolygon_t& path, WED_Archive
 	return ret;
 }
 
-struct	LazyLog_t {
-	const char *	path;
-	FILE *			fi;
-};
-
 void LazyPrintf(void * ref, const char * fmt, ...)
 {
 	va_list	arg;
 	va_start(arg, fmt);
-	LazyLog_t * l = (LazyLog_t *) ref;
-	if (l->fi == NULL) l->fi = fopen(l->path,"w");
-	if (l->fi) vfprintf(l->fi,fmt,arg);
+	*(bool *) ref = true;
+	if (gLogFile) vfprintf(gLogFile, fmt, arg);
 	va_end(arg);
 }
 
@@ -703,9 +697,7 @@ void	WED_AptImport(
 	bool import_ok = true;
 	for (AptVector::iterator apt = apts.begin(); apt != apts.end(); ++apt)
 	{
-		string log_path(file_path);
-		log_path += ".log";
-		LazyLog_t log = { log_path.c_str(), NULL };
+		bool log = false;
 
 		bool apt_ok = CheckATCRouting(*apt);
 		if(!apt_ok)
@@ -1081,15 +1073,14 @@ void	WED_AptImport(
 			}
 		}
 
-		if (log.fi)
+		if (log)
 		{
-			fclose(log.fi);
 			import_ok = false;
 		}
 	}
 
 	if(!import_ok)
-		DoUserAlert("There were problems during the import.  A log file has been created in the same file as the apt.dat file.");
+		DoUserAlert("There were problems during the import. See WED_Log.txt for details");
 }
 
 int		WED_CanImportApt(IResolver * resolver)
@@ -1132,6 +1123,7 @@ void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane
 			                   "Use File->Import from Scenery Gateway whenever possible.", "Proceed import of apt.dat", "Cancel"))
 				return;
 		
+		LOG_MSG("I/Apt Importing apt.dat from %s\n",f->c_str());
 		string result = ReadAptFile(f->c_str(), one_apt);
 		if (!result.empty())
 		{
@@ -1152,6 +1144,7 @@ void	WED_ImportOneAptFile(
 				vector<WED_Airport *> *	out_apts)
 {
 	AptVector		apts;
+	LOG_MSG("I/Apt Importing apt.dat from %s\n",in_path.c_str());
 	string result = ReadAptFile(in_path.c_str(), apts);
 	if(!result.empty())
 	{

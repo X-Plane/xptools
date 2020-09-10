@@ -55,16 +55,19 @@ static void init_gl_info(gl_info_t * i)
 	const char * ext_str = (const char *)glGetString(GL_EXTENSIONS);
 
 	sscanf(ver_str,"%d", &i->gl_major_version);
-	if(i->gl_major_version < 2)
-		AssertPrintf("OpenGL 2.0 or higher required. Found version '%s'\n", ver_str);
+	if(i->gl_major_version < 3)
+		AssertPrintf("OpenGL 3.0 or higher required. Found version '%s'\n", ver_str);
 	
 	i->has_tex_compression = strstr(ext_str,"GL_ARB_texture_compression") != NULL;
 	i->has_non_pots = strstr(ext_str,"GL_ARB_texture_non_power_of_two") != NULL;
 	i->has_bgra = strstr(ext_str,"GL_EXT_bgra") != NULL;
 
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE,&i->max_tex_size);
-	// if(i->max_tex_size > 8192)	i->max_tex_size = 8192;
+	// if(i->max_tex_size > 2*8192)	i->max_tex_size = 2*8192;
 	if(i->has_tex_compression)	glHint(GL_TEXTURE_COMPRESSION_HINT,GL_NICEST);
+	LOG_MSG("OpenGL renderer  : %s\n", glGetString(GL_RENDERER));
+	LOG_MSG("OpenGL Version   : %s\n", ver_str);
+	LOG_MSG("Max texture size : %d\n", i->max_tex_size);
 }
 
 /*****************************************************************************************

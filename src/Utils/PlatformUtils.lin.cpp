@@ -92,6 +92,24 @@ string GetTempFilesFolder()
 	return string(temp_path);
 }
 
+string GetPrefFilesFolder()
+{
+	const char * tpath  = getenv("TMPDIR");
+	if(!tpath)
+		tpath = "/tmp";
+	char temp_path[PATH_MAX] = { 0 };
+	int n = snprintf(temp_path,PATH_MAX,"%s/xptools-%d",tpath,getuid());
+	if( n < 0 || n >= PATH_MAX)
+		return "";
+
+	struct stat ss;
+	if (stat(temp_path,&ss) < 0)
+		if(mkdir(temp_path,0700) !=0)
+			return "";
+
+	return string(temp_path);
+}
+
 int		GetFilePathFromUser(
 					int					inType,
 					const char * 		inPrompt,
@@ -177,6 +195,7 @@ char *	GetMultiFilePathFromUser(
 
 void	DoUserAlert(const char * inMsg)
 {
+	LOG_MSG("I/Alert %s\n",inMsg);
 	QMessageBox::warning(0, "", QString::fromUtf8(inMsg));
 }
 
@@ -188,6 +207,7 @@ void	ShowProgressMessage(const char * inMsg, float * inProgress)
 
 int		ConfirmMessage(const char * inMsg, const char * proceedBtn, const char * cancelBtn)
 {
+	LOG_MSG("I/Confirm %s\n",inMsg);
 	return (QMessageBox::question(0,"", QString::fromUtf8(inMsg), proceedBtn, cancelBtn) == 0 ) ;
 }
 
