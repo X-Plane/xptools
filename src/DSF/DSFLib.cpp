@@ -66,6 +66,10 @@ const char *	dsfErrorMessages[] = {
 // Define this to 1 to have the reader print detailed error messages before it returns an error code.
 #define DEBUG_MESSAGES 1
 
+#ifdef LOG_MSG
+	#define printf LOG_MSG
+#endif
+
 // These debug macros are used to swap the headers around.
 #if BIG
 	#if APL

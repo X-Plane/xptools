@@ -68,8 +68,11 @@ void init_gl_info(gl_info_t * i)
 	i->has_bgra = strstr(ext_str,"GL_EXT_bgra") != NULL;
 
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE,&i->max_tex_size);
-	if(i->max_tex_size > 2*8192)	i->max_tex_size = 2*8192;
+	// if(i->max_tex_size > 2*8192)	i->max_tex_size = 2*8192;
 	if(i->has_tex_compression)	glHint(GL_TEXTURE_COMPRESSION_HINT,GL_NICEST);
+	LOG_MSG("OpenGL renderer  : %s\n", glGetString(GL_RENDERER));
+	LOG_MSG("OpenGL Version   : %s\n", ver_str);
+	LOG_MSG("Max texture size : %d\n", i->max_tex_size);
 }
 
 /*****************************************************************************************

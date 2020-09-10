@@ -59,8 +59,6 @@
 // migrate all old stuff
 // wire dirty to obj persistence
 
-#include "PerfUtils.h"
-
 #include "WED_Globals.h"
 int gIsFeet;
 int gInfoDMS;
@@ -242,9 +240,6 @@ void	WED_Document::Save(void)
 		//If everything else has worked
 	if(ferrorErr == 0)
 	{
-#if DEV
-		StElapsedTime	etime("Save time");
-#endif
 		WriteXML(xml_file);
 	}
 	int fcloseErr = fclose(xml_file);
@@ -305,8 +300,6 @@ void	WED_Document::Revert(void)
 	mUndo.__StartCommand("Revert from Saved.",__FILE__,__LINE__);
 
 	try {
-		StElapsedTime	etime("Read time");
-		
 		WED_XMLReader	reader;
 		reader.PushHandler(this);
 		string fname(mFilePath);
@@ -315,11 +308,15 @@ void	WED_Document::Revert(void)
 
 		// First: try to IO the XML file.
 		bool xml_exists;
+		LOG_MSG("I/Doc reading XML from %s\n", fname.c_str());
+
 		string result = reader.ReadFile(fname.c_str(),&xml_exists);
 
 		if(xml_exists && !result.empty())
+		{
+			LOG_MSG("E/Doc Error reading XML %s",result.c_str());
 			WED_ThrowPrintf("Unable to open XML file: %s",result.c_str());
-
+		}
 		if(xml_exists)
 		{
 			mOnDisk=true;

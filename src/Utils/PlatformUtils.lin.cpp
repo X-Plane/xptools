@@ -175,6 +175,7 @@ char *	GetMultiFilePathFromUser(
 
 void DoUserAlert(const char * inMsg)
 {
+	LOG_MSG("I/Alert %s\n",inMsg);
 	fl_message_hotspot(false);
 	fl_alert(inMsg);
 }
@@ -187,6 +188,7 @@ void ShowProgressMessage(const char * inMsg, float * inProgress)
 
 int ConfirmMessage(const char * inMsg, const char * proceedBtn, const char * cancelBtn)
 {
+	LOG_MSG("I/Confirm %s\n",inMsg);
 	fl_message_hotspot(false);
 
 	int result = 0;

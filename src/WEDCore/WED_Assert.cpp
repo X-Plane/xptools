@@ -23,38 +23,19 @@
  */
 
 #include "WED_Assert.h"
-#include "WED_Version.h"
 #include "AssertUtils.h"
 #include "PlatformUtils.h"
+#include "FileUtils.h"
 
-static char gAssertBuf[1000];
-
-static const char * trim_file(const char * p)
-{
-	const char * ret = p;
-	while(*p)
-	{
-		if(*p == '\\' || *p == ':' || *p == '/')
-			ret = p+1;
-		++p;
-	}
-	return ret;
-}
-
-
+static char gAssertBuf[512];
 
 void WED_AssertHandler_f(const char * condition, const char * file, int line)
 {
-	FILE * efile = fopen("error.out", "a");
-	fprintf(efile ? efile : stderr, "ASSERTION FAILED: %s (%s:%d.)\n", condition, trim_file(file), line);
-	if (efile) fclose(efile);
-
-	snprintf(gAssertBuf, 1000, "WorldEditor " WED_VERSION_STRING " has hit an error due to a bug. Please report on gatewaybugs.x-plane.com:\n"
-						"%s (%s:%d.)\n", condition, trim_file(file), line);
-
-	DoUserAlert(gAssertBuf);
-
-	throw wed_assert_fail_exception(condition, file, line);
+	LOG_MSG("E/Assert %s (%s:%d)\n", condition, FILE_get_file_name(file).c_str(), line);
+	snprintf(gAssertBuf, 512, "WED has hit an error '%s' due to a bug. Please report on gatewaybugs.x-plane.com "
+	                          "and attach the file %sWED_Log.txt", condition, FILE_get_dir_name(GetApplicationPath()).c_str());
+//	DoUserAlert(gAssertBuf);
+	throw wed_assert_fail_exception(gAssertBuf, file, line);
 }
 
 void	WED_AssertInit(void)

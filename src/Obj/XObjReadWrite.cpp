@@ -593,6 +593,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 
 	int trimax = 0, linemax = 0, lightmax = 0, idxmax = 0;
 	int tricount = 0, linecount = 0, lightcount = 0, idxcount = 0;
+	int anims = 0;
 	float	stdat[8];
 
 	XObjCmd8	cmd;
@@ -629,6 +630,8 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		// POINT_COUNTS tris lines lites geo indices
 		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "POINT_COUNTS", xfals))
 		{
+			if(trimax || linemax || lightmax || idxmax)
+				LOG_MSG("E/Obj more than one POINT_COUNTS line in %s\n",inFile);
 			trimax = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			linemax = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			lightmax = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
@@ -644,7 +647,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		// VT <x> <y> <z> <nx> <ny> <nz> <s> <t>
 		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "VT", xfals))
 		{
-			if (tricount >= trimax) break;
+			if (tricount >= trimax) { tricount++; break; }
 			stdat[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			stdat[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			stdat[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
@@ -658,7 +661,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		// VLINE <x> <y> <z> <r> <g> <b>
 		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "VLINE", xfals))
 		{
-			if (linecount >= linemax) break;
+			if (linecount >= linemax) { linecount++; break; }
 			stdat[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			stdat[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			stdat[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
@@ -670,7 +673,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		// VLIGHT <x> <y> <z> <r> <g> <b>
 		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "VLIGHT", xfals))
 		{
-			if (lightcount >= lightmax) break;
+			if (lightcount >= lightmax) { lightcount++; break; }
 			stdat[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			stdat[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			stdat[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
@@ -684,7 +687,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		{
 			if (idxcount >= idxmax)
 			{
-				printf("Obj8Read %s number of idx exceeds declared idx count %d\n", inFile, idxmax);
+				LOG_MSG("E/Obj %s number of idx exceeds declared idx count %d\n", inFile, idxmax);
 				break;
 			}
 			unsigned int idx = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
@@ -692,7 +695,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 				outObj.indices[idxcount++] = idx;
 			else
 			{
-				printf("Obj8Read %s idx #%d points to index %d exceeding range of tris read %d\n", inFile, idxcount, idx, tricount);
+				LOG_MSG("E/Obj %s idx #%d points to index %d exceeding range of tris read %d\n", inFile, idxcount, idx, tricount);
 				outObj.indices[idxcount++] = 0;
 			}
 		}
@@ -701,7 +704,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		{
 			if (idxcount+9 >= idxmax)
 			{
-				printf("Obj8Read %s number of idx exceeds declared idx count %d\n", inFile, idxmax);
+				LOG_MSG("E/Obj %s number of idx exceeds declared idx count %d\n", inFile, idxmax);
 				break;
 			}
 			for (n = 0; n < 10; ++n)
@@ -711,7 +714,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 					outObj.indices[idxcount++] = idx;
 				else
 				{
-					printf("Obj8Read %s idx #%d points to index %d exceeding range of tris read %d\n", inFile, idxcount, idx, tricount);
+					LOG_MSG("E/Obj %s idx #%d points to index %d exceeding range of tris read %d\n", inFile, idxcount, idx, tricount);
 					outObj.indices[idxcount++] = 0;
 				}
 			}
@@ -795,12 +798,14 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		// ANIM_begin
 		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "ANIM_begin", xfals))
 		{
+			anims++;
 			cmd.cmd = anim_Begin;
 			outObj.lods.back().cmds.push_back(cmd);
 		}
 		// ANIM_end
 		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "ANIM_end", xfals))
 		{
+			anims--;
 			cmd.cmd = anim_End;
 			outObj.lods.back().cmds.push_back(cmd);
 		}
@@ -1523,10 +1528,17 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 	} // While loop
 
 	free(mem_buf);
-
-	if (tricount != trimax) printf("Obj8Read %s tris declared %d != read %d\n", inFile, tricount, trimax);
-	if (idxcount != idxmax) printf("Obj8Read %s idx declared %d != read %d\n", inFile, idxcount, idxmax);
-
+	
+	if(trimax != tricount)
+		LOG_MSG("E/Obj number of %s do not match POINT_COUNTS in %s\n", "VT", inFile);
+	if(linemax != linecount)
+		LOG_MSG("E/Obj number of %s do not match POINT_COUNTS in %s\n", "VLINE", inFile);
+	if(lightmax != lightcount)
+		LOG_MSG("E/Obj number of %s do not match POINT_COUNTS in %s\n", "VLIGHT", inFile);
+	if(idxmax != idxcount)
+		LOG_MSG("E/Obj number of %s do not match POINT_COUNTS in %s\n", "IDX", inFile);
+	if(anims != 0)
+		LOG_MSG("E/Obj imbalanced # ANIM_begin/end commands in %s\n", inFile);
 	outObj.geo_tri.get_minmax(outObj.xyz_min,outObj.xyz_max);
 	
 	return true;

@@ -521,10 +521,19 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t const*& info)
 		{
 			pol->kill_alpha=true;
 		}
-		else if (MFS_string_match(&s,"LAYER_GROUP",false))
+		else if (MFS_string_match(&s,"LAYER_GROUP", false))
 		{
 			MFS_string(&s,&pol->group);
 			pol->group_offset = MFS_int(&s);
+			if(abs(pol->group_offset) > 5)
+				LOG_MSG("E/Pol offset for LAYER_GROUP out of bounds in %s\n", p.c_str());
+		}
+		else if (MFS_string_match(&s,"SURFACE", false))
+		{
+			string tmp;
+			MFS_string(&s,&tmp);
+			if(tmp != "asphalt" && tmp != "concrete" && tmp != "grass" && tmp != "gravel" && tmp != "dirt" && tmp != "snow") 
+				LOG_MSG("E/Pol illegal SURFACE type in %s\n", p.c_str());
 		}
 		
 		if (MFS_string_match(&s,"#wed_text", false)) 
@@ -568,8 +577,6 @@ void	WED_ResourceMgr::ReceiveMessage(
 		Purge();
 	}
 }
-
-#define FAIL(s) { printf("%s: %s\n",vpath.c_str(),s); return false; }
 
 bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int variant)
 {
@@ -659,31 +666,27 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 			{
 				REN_facade_scraper_t::tower_t choice;
 				if(fac->scrapers.empty())
-					FAIL("Cannot have FACADE_SCRAPER_MODEL without FACADE_SCRAPER.")
+					LOG_MSG("E/Fac FACADE_SCRAPER_MODEL without FACADE_SCRAPER in %s\n", p.c_str());
 				string file;
 				MFS_string(&s,&file);
 				WED_clean_vpath(file);
 				choice.base_obj = file;
-				if (choice.base_obj.empty())
-					FAIL("Could not load base OBJ for FACADE_SCRAPER_MODEL")
 				MFS_string(&s,&file);
 				if(file != "-")
 				{
 					WED_clean_vpath(file);
 					choice.towr_obj = file;
-					if (choice.towr_obj.empty())
-						FAIL("Could not load tower OBJ for FACADE_SCRAPER_MODEL")
 				}
 				while(MFS_has_word(&s))
 					choice.pins.push_back(MFS_double(&s));
 				if(choice.pins.size() % 2)
-					FAIL("Odd numberof pins")
+					LOG_MSG("E/Fac odd numberof pin coordinates in %s\n", p.c_str());
 				fac->scrapers.back().choices.push_back(choice);
 			}
 			else if (MFS_string_match(&s,"FACADE_SCRAPER_MODEL_OFFSET",false))
 			{
 				if(fac->scrapers.empty())
-					FAIL("Cannot have FACADE_SCRAPER_MODEL_OFFSET without FACADE_SCRAPER.")
+					LOG_MSG("E/Fac FACADE_SCRAPER_MODEL_OFFSET without FACADE_SCRAPER in %s\n", p.c_str());
 				REN_facade_scraper_t::tower_t choice;
 				string file;
 				choice.base_xzr[0] = MFS_double(&s);
@@ -693,8 +696,6 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 				WED_clean_vpath(file);
 				MFS_int(&s); MFS_int(&s);  // skip showlevel restrictions
 				choice.base_obj = file;
-				if (choice.base_obj.empty())
-					FAIL("Could not load base OBJ for FACADE_SCRAPER_MODEL")
 
 				choice.towr_xzr[0] = MFS_double(&s);
 				choice.towr_xzr[1] = MFS_double(&s);
@@ -709,7 +710,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 				while(MFS_has_word(&s))
 					choice.pins.push_back(MFS_double(&s));
 				if(choice.pins.size() % 2)
-					FAIL("Odd numberof pins")
+					LOG_MSG("E/Fac odd numberof pin coordinates in %s\n", p.c_str());
 				fac->scrapers.back().choices.push_back(choice);
 			}
 // scraper pad command is not implemented
@@ -768,7 +769,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 					fac->walls.back().y_scale = MFS_double(&s);
 					
 					if(fac->walls.back().x_scale < 0.01 || fac->walls.back().y_scale < 0.01)
-						printf("facade has a scale less than 1 cm per texture. This is probably a bad facade.\n");
+						LOG_MSG("E/Fac scale less than 1 cm per texture, probably bad facade. %s\n", p.c_str());
 				}
 				else if (MFS_string_match(&s,"ROOF_SLOPE", false))
 				{
@@ -986,7 +987,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 					// xint show_hi = MFS_int(&s);
 					REN_facade_roof_t::robj o = { s_coord, t_coord, 0.0, idx };
 					if(fac->floors.empty() || fac->floors.back().roofs.empty())
-						FAIL("This facade uses a roof object that is not inside a roof.")
+						LOG_MSG("E/Fac roof object not inside a roof in %s\n", p.c_str());
 					else
 						fac->floors.back().roofs.back().roof_objs.push_back(o);
 				}
@@ -1000,7 +1001,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 					// xint show_hi = MFS_int(&s);
 					REN_facade_roof_t::robj o = { s_coord, t_coord, r, idx };
 					if(fac->floors.empty() || fac->floors.back().roofs.empty())
-						FAIL("This facade uses a roof object that is not inside a roof.")
+						LOG_MSG("E/Fac roof object not inside a roof in %s\n", p.c_str());
 					else
 						fac->floors.back().roofs.back().roof_objs.push_back(o);
 				}
@@ -1065,6 +1066,9 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 				fac->xobjs.push_back(nullptr);
 				if(GetObjRelative(obj_nam, vpath, o))
 					fac->xobjs.back() = o;
+				else
+					LOG_MSG("E/Fac can not load object %s in %s\n", obj_nam.c_str(), p.c_str());
+
 			}
 		}
 		process_texture_path(p,fac->wall_tex);
@@ -1374,7 +1378,7 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 			WED_clean_vpath(p);          // cant say here yet if its a relative rpath or a vpath.
 			obj_paths.push_back(p);
 		}
-		else if (MFS_string_match(&s, "FACADE", false))
+		else if (MFS_string_match(&s,"FACADE", false))
 		{
 			string p;
 			MFS_string(&s, &p);
@@ -1458,7 +1462,10 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 				agp->objs.back().scp_step = 0.0;
 			}
 			else
+			{
 				agp->objs.pop_back(); // ignore instances with OOB index
+				LOG_MSG("E/Agp object index out of bounds in %s\n",p.c_str());
+			}
 		}
 		else if (MFS_string_match(&s, "OBJ_SCRAPER", false))
 		{
@@ -1476,7 +1483,10 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 				agp->objs.back().scp_step = MFS_double(&s);
 			}
 			else
+			{
 				agp->objs.pop_back(); // ignore instances with OOB index
+				LOG_MSG("E/Agp object index out of bounds in %s\n",p.c_str());
+			}
 		}
 		else if(MFS_string_match(&s,"OBJ_DELTA",false))
 		{
@@ -1494,7 +1504,10 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 				agp->objs.back().scp_step = 0.0;
 			}
 			else
+			{
 				agp->objs.pop_back(); // ignore instances with OOB index
+				LOG_MSG("E/Agp object index out of bounds in %s\n",p.c_str());
+			}
 		}
 		else if (MFS_string_match(&s, "FAC", false))
 		{
@@ -1514,7 +1527,10 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 				}
 			}
 			else
+			{
 				agp->facs.pop_back(); // ignore instances with OOB index
+				LOG_MSG("E/Agp facade index out of bounds in %s\n",p.c_str());
+			}
 		}
 		else if (MFS_string_match(&s, "FAC_WALLS", false))
 		{
@@ -1534,7 +1550,10 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 				}
 			}
 			else
+			{
 				agp->facs.pop_back(); // ignore instances with OOB index
+				LOG_MSG("E/Agp facade index out of bounds in %s\n",p.c_str());
+			}
 		}
 		else if(MFS_string_match(&s,"ANCHOR_PT",false))
 		{
@@ -1631,7 +1650,10 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 			o++;
 		}
 		else
+		{
 			o = agp->objs.erase(o);
+			LOG_MSG("E/Agp can not load object %s in %s\n", o->name.c_str(), p.c_str());
+		}
 	}
 
 	auto f = agp->facs.begin();
@@ -1653,7 +1675,10 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 			f++;
 		}
 		else
+		{
 			f = agp->facs.erase(f);
+			LOG_MSG("E/Agp can not load facade %s in %s\n", f->name.c_str(), p.c_str());
+		}
 	}
 
 	return true;
