@@ -1102,7 +1102,7 @@ struct	preview_facade : public preview_polygon {
 		IGISPointSequence * ps = fac->GetOuterRing();
 		glColor4f(1,1,1,1);
 		
-		if(fac->HasCustomWalls())
+		if(1) // fac->HasCustomWalls())
 		{
 			ITexMgr * tman = WED_GetTexMgr(resolver);
 			Polygon2 pts;
@@ -1133,8 +1133,13 @@ struct	preview_facade : public preview_polygon {
 					pts.push_back(Point2(v.dx, -v.dy));
 				}
 				
-				ps->GetSide(gis_Param,i,b);
-				choices.push_back(b.p1.x());
+				if(fac->HasCustomWalls())
+				{
+					ps->GetSide(gis_Param, i, b);
+					choices.push_back(b.p1.x());
+				}
+				else
+					choices.push_back(0);   // we skip the clever geometry dependent wall auto-wall selection that XP does. Sorry.
 				
 				if(i == n-1 && !ps->IsClosed())
 					choices.push_back(0);
