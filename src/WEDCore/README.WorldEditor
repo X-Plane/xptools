@@ -13,12 +13,14 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 2.3.0b3
+WED 2.3.0b3 9/9/20
     Bug Fix:
     - fix facade roof object appearance in facade preview
     - fix facade roofs not showing in map without "pick walls" property
     - fix false warning opening pre-WED 2.0 files in WED 2.0+ after use of WED-2.3 beta
     - fix crash in ATC taxiroute runway segment validation
+   Features:
+    - WED-338: Write all messages and information to a WED_Log.txt
 
 WED 2.3.0b2 8/26/20
    Bug Fix:
