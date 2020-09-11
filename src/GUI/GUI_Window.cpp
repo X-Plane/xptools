@@ -125,11 +125,13 @@ int GUI_Window::handle(int e )
 					break;
 				}
 
-				string tip_txt;
-				if( this->InternalGetHelpTip(x,y,this->mTipBounds,tip_txt ) && !tip_txt.empty())
+				string txt;
+				if( this->InternalGetHelpTip(x,y,this->mTipBounds,txt ) && !txt.empty())
 				{
+					//TODO:mroe , this is a workaround for margin_width not settable before 10301
+					string tip_txt = "   " + txt + "   ";
 					this->copy_tooltip(tip_txt.c_str());
-					Fl_Tooltip::enter_area(this,Fl::event_x(),Fl::event_y(),100,100,this->tooltip());
+					Fl_Tooltip::enter(this);
 					mTipIsActive = true;
 				}
 				else
