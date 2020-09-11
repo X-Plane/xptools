@@ -135,7 +135,7 @@ void WED_Settings::ReceiveMessage(
 			gFontSize = max(10,min(18,atoi(new_val.c_str())));
 			GUI_SetFontSizes(gFontSize);
 			#if LIN
-			Fl_Tooltip::size(gFontSize-2);
+			Fl_Tooltip::size((int)GUI_GetFontSize(1));
 			#endif
 	}
 	else if(inMsg == (intptr_t) &gOrthoExport)

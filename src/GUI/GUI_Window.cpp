@@ -600,7 +600,7 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBound
 	#endif
 	#if LIN
 		this->labelsize((int)GUI_GetFontSize(0));
-		Fl_Tooltip::size(this->labelsize()-2);
+		Fl_Tooltip::size((int)GUI_GetFontSize(1));
 		mTipBounds[0] = mTipBounds[1] = mTipBounds[2] = mTipBounds[3] = 0 ;
 		mTipIsActive=false;
 
