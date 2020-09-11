@@ -41,6 +41,7 @@
 #include "WED_Document.h"
 #include "WED_DocumentWindow.h"
 #include "WED_Version.h"
+#include "GUI_Prefs.h"
 
 #define MARGIN_BELOW_BUTTONS 5
 #define MARGIN_ABOVE_BUTTONS 5
@@ -167,7 +168,20 @@ void	WED_StartWindow::ShowMessage(const string& msg)
 		mOpen->Show();
 		mChange->Show();
 		if (gPackageMgr->HasSystemFolder())
+		{
+			string name;
+			gPackageMgr->GetRecentName(name);
+			if(!name.empty())
+			{
+				int id = mPackageList->SelectPackage(name);
+				if (id == -1)
+					gPackageMgr->SetRecentName("");
+				else
+					mTable->RevealRow(mPackageList->GetRowCount()-id-2);
+			}
+
 			mScroller->Show();
+		}
 		else
 			mScroller->Hide();
 	}
@@ -350,6 +364,7 @@ int			WED_StartWindow::HandleCommand(int command)
 					nd.w = new WED_DocumentWindow(name.c_str(), this->GetCmdParent(), nd.d);
 					sDocs.push_back(nd);
 					mPackageList->LockPackage(nd.n);
+					gPackageMgr->SetRecentName(name);
 					nd.d->AddListener(this);
 				} catch(exception& e) {
 					DoUserAlert(e.what());				
