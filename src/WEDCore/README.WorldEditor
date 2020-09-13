@@ -16,6 +16,7 @@ CHANGE HISTORY
 WED 2.3.0b4
    Features:
     - WED-1322: Validate apts w/ATC tower have at least one start supporting AI operation
+    - Validate only type=misc starts in runway hotzones
 
 WED 2.3.0b3 9/9/20
     Bug Fix:
