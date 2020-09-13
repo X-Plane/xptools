@@ -13,6 +13,10 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 2.3.0b4
+   Features:
+    - WED-1322: Validate apts w/ATC tower have at least one start supporting AI operation
+
 WED 2.3.0b3 9/9/20
     Bug Fix:
     - fix facade roof object appearance in facade preview

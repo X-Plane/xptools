@@ -105,6 +105,7 @@ enum validate_error_t
 	err_ramp_op_type_and_airlines_only_allowed_at_gates_and_tie_downs,
 	err_ramp_start_must_have_at_least_one_equip,
 	err_ramp_start_with_specific_traffic_and_types_only_for_gte_xp10,
+	err_ramp_need_starts_suitable_for_ai_ops,
 	err_resource_cannot_be_found,
 	err_resource_does_not_have_correct_file_type,
 	err_runway_matching_cifp_mislocated,
