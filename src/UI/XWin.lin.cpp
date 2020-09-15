@@ -437,7 +437,7 @@ void XWin::MoveTo(int inX, int inY)
 
 void XWin::Resize(int inWidth, int inHeight)
 {
-	this->size(inWidth,inHeight);
+	this->size(inWidth,inHeight + GetMenuBarHeight());
 }
 
 void XWin::ForceRefresh(void)
