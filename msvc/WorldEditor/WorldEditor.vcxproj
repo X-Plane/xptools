@@ -575,6 +575,7 @@
     <Image Include="..\..\src\WEDResources\WED.ico" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\src\WEDCore\README.WorldEditor" />
     <None Include="..\..\src\WEDResources\icons\map_airport.png" />
     <None Include="..\..\src\WEDResources\icons\map_beacon.png" />
     <None Include="..\..\src\WEDResources\icons\map_helipad.png" />

@@ -634,7 +634,7 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 // ATC VALIDATIONS
 //------------------------------------------------------------------------------------------------------------------------------------
 
-static void ValidateAirportFrequencies(const vector<WED_ATCFrequency*> frequencies, WED_Airport* who, validation_error_vector& msgs)
+static bool ValidateAirportFrequencies(const vector<WED_ATCFrequency*> frequencies, WED_Airport* who, validation_error_vector& msgs)
 {
 	// Collection of all freq by ATC type, regardless of frequency
 	map<int, vector<WED_ATCFrequency*> > any_by_type;
@@ -761,7 +761,7 @@ static void ValidateAirportFrequencies(const vector<WED_ATCFrequency*> frequenci
 		msgs.push_back(validation_error_t("This airport has ground or delivery but no tower.  Add a control tower frequency or remove ground/delivery.", 
 			err_freq_airport_has_gnd_or_del_but_no_tower, has_atc, who));
 	}
-
+	return has_tower;
 }
 
 static void ValidateOneATCRunwayUse(WED_ATCRunwayUse* use, validation_error_vector& msgs, WED_Airport * apt, const vector<int> dep_freqs)
@@ -1008,10 +1008,11 @@ static void ValidateATCFlows(const vector<WED_ATCFlow*>& flows, const vector<WED
 //------------------------------------------------------------------------------------------------------------------------------------
 #pragma mark -
 
-static void ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vector& msgs, WED_Airport * apt, const vector<WED_Runway *>& runways)
+static int ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vector& msgs, WED_Airport * apt, const vector<WED_Runway *>& runways)
 {
 	AptGate_t	g;
 	ramp->Export(g);
+	int is_ai_capable(0);
 
 	if(gExportTarget == wet_xplane_900)
 		if(g.equipment != 0)
@@ -1065,16 +1066,17 @@ static void ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vec
                 msgs.push_back(validation_error_t("Ramp size is implausibly large given largest available runway at this airport.", warn_ramp_start_size_implausible, ramp, apt));
             }
         }
-
+		if(g.type == atc_ramp_gate || g.type == atc_ramp_tie_down)
+			is_ai_capable = 1;
 
 		string airlines_str = WED_RampPosition::CorrectAirlinesString(g.airlines);
 		string orig_airlines_str = ramp->GetAirlines();
 
 		//Our flag to keep going until we find an error
-		if(airlines_str == "")
+		if(airlines_str.empty())
 		{
 			//Error:"not really an error, we're just done here"
-			return;
+			return is_ai_capable;
 		}
 
 		//Add another space on the end, so everything should be exactly "ABC " or "ABC DEF GHI ..."
@@ -1085,7 +1087,7 @@ static void ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vec
 			if(airlines_str.size() % 4 != 0)
 			{
 				msgs.push_back(validation_error_t(string("Ramp start airlines string '") + orig_airlines_str + "' is not in groups of three letters.", err_ramp_airlines_is_not_in_groups_of_three, ramp, apt));
-				return;
+				return is_ai_capable;
 			}
 
 			for(int i = airlines_str.length() - 1; i > 0; i -= 4)
@@ -1105,7 +1107,7 @@ static void ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vec
 						if(*itr == ' ')
 						{
 							msgs.push_back(validation_error_t(string("Ramp start airlines string '") + orig_airlines_str + "' is not in groups of three letters.", err_ramp_airlines_is_not_in_groups_of_three, ramp, apt));
-							return;
+							return is_ai_capable;
 						}
 						else
 						{
@@ -1119,9 +1121,9 @@ static void ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vec
 		else
 		{
 			msgs.push_back(validation_error_t(string("Ramp start airlines string '") + orig_airlines_str + "' does not contain at least one valid airline code.", err_ramp_airlines_no_valid_airline_codes, ramp, apt));
-			return;
 		}
 	}
+	return is_ai_capable;
 }
 
 static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& msgs, WED_Airport * apt)
@@ -2210,10 +2212,11 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	if(!CheckDuplicateNames(runway_or_sealane,msgs,apt,"A runway or sealane name is used more than once."))
 	{
 	   // there checks in these that create utterly misleading results if runway names are ambigeous
-		WED_DoATCRunwayChecks(*apt, msgs, taxiroutes, runways, legal_rwy_oneway, legal_rwy_twoway, flows, res_mgr);
+		WED_DoATCRunwayChecks(*apt, msgs, taxiroutes, runways, legal_rwy_oneway, legal_rwy_twoway, flows, res_mgr, ramps);
 		ValidateATCFlows(flows, freqs, apt, msgs, legal_rwy_oneway);
 	}
-	ValidateAirportFrequencies(freqs, apt, msgs);
+
+	bool has_ATC = ValidateAirportFrequencies(freqs, apt, msgs);
 
 	for(auto s : signs)
 		ValidateOneTaxiSign(s, msgs, apt);
@@ -2233,8 +2236,9 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	for(auto h : helipads)
 		ValidateOneHelipad(h, msgs,apt);
 
+	int ai_useable_ramps = 0;
 	for(auto r : ramps)
-		ValidateOneRampPosition(r, msgs, apt, runways);
+		ai_useable_ramps += ValidateOneRampPosition(r, msgs, apt, runways);
 
 	if(gExportTarget >= wet_xplane_1050)
 		ValidateAirportMetadata(apt,msgs,apt);
@@ -2254,6 +2258,9 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	
 	if(GT_routes.size() && truck_parking_locs.empty())
 		msgs.push_back(validation_error_t("Ground routes are defined, but no service vehicle starts. This disables all ground traffic, including auto generated pushback vehicles.", warn_truckroutes_but_no_starts, apt,apt));
+
+	if (has_ATC && ai_useable_ramps < 1)
+			msgs.push_back(validation_error_t("Airports with ATC towers frequencies must have at least one Ramp Start of type=gate or tiedown.", err_ramp_need_starts_suitable_for_ai_ops, apt, apt));
 
 	if(gExportTarget == wet_gateway)
 	{
@@ -2374,7 +2381,7 @@ validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane,
 	if(gExportTarget == wet_gateway)
 		mf = ReadCIFP();
 
-#if DEV
+#if 0 // DEV
 	auto t0 = std::chrono::high_resolution_clock::now();
 #endif
 	for(auto a : apts)
@@ -2387,7 +2394,7 @@ validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane,
 	ValidatePointSequencesRecursive(wrl, msgs,dynamic_cast<WED_Airport *>(wrl));
 	ValidateDSFRecursive(wrl, lib_mgr, msgs, dynamic_cast<WED_Airport *>(wrl));
 
-#if DEV
+#if 0// DEV
 	auto t1 = std::chrono::high_resolution_clock::now();
 	chrono::duration<double> elapsed = t1-t0;
 	char c[50]; snprintf(c, 50, "Validation time was %.3lf s.", elapsed.count());

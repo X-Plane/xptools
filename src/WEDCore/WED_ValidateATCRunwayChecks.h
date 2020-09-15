@@ -30,6 +30,7 @@
 class WED_Airport;
 class WED_ATCFlow;
 class WED_ResourceMgr;
+class WED_RampPosition;
 
 #include "AptDefs.h"
 #include "WED_Runway.h"
@@ -159,6 +160,7 @@ struct TaxiRouteInfo
 };
 
 void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs, const TaxiRouteVec_t& all_taxiroutes_plain,
-	const RunwayVec_t& all_runways, const set<int>& legal_rwy_oneway, const set<int>& legal_rwy_twoway, const FlowVec_t& all_flows,  WED_ResourceMgr * res_mgr);
+	const RunwayVec_t& all_runways, const set<int>& legal_rwy_oneway, const set<int>& legal_rwy_twoway, const FlowVec_t& all_flows,  WED_ResourceMgr * res_mgr,
+	const vector<WED_RampPosition*>& ramps);
 
 #endif

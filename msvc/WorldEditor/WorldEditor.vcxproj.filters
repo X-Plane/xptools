@@ -1860,6 +1860,9 @@
     <None Include="..\..\src\WEDResources\icons\navmap_seaport.png">
       <Filter>WEDResources\icons</Filter>
     </None>
+    <None Include="..\..\src\WEDCore\README.WorldEditor">
+      <Filter>WEDCore</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\WEDResources\WED.rc">
