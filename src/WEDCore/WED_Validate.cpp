@@ -634,7 +634,7 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 // ATC VALIDATIONS
 //------------------------------------------------------------------------------------------------------------------------------------
 
-static void ValidateAirportFrequencies(const vector<WED_ATCFrequency*> frequencies, WED_Airport* who, validation_error_vector& msgs)
+static bool ValidateAirportFrequencies(const vector<WED_ATCFrequency*> frequencies, WED_Airport* who, validation_error_vector& msgs)
 {
 	// Collection of all freq by ATC type, regardless of frequency
 	map<int, vector<WED_ATCFrequency*> > any_by_type;
@@ -761,7 +761,7 @@ static void ValidateAirportFrequencies(const vector<WED_ATCFrequency*> frequenci
 		msgs.push_back(validation_error_t("This airport has ground or delivery but no tower.  Add a control tower frequency or remove ground/delivery.", 
 			err_freq_airport_has_gnd_or_del_but_no_tower, has_atc, who));
 	}
-
+	return has_tower;
 }
 
 static void ValidateOneATCRunwayUse(WED_ATCRunwayUse* use, validation_error_vector& msgs, WED_Airport * apt, const vector<int> dep_freqs)
@@ -2215,7 +2215,8 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		WED_DoATCRunwayChecks(*apt, msgs, taxiroutes, runways, legal_rwy_oneway, legal_rwy_twoway, flows, res_mgr, ramps);
 		ValidateATCFlows(flows, freqs, apt, msgs, legal_rwy_oneway);
 	}
-	ValidateAirportFrequencies(freqs, apt, msgs);
+
+	bool has_ATC = ValidateAirportFrequencies(freqs, apt, msgs);
 
 	for(auto s : signs)
 		ValidateOneTaxiSign(s, msgs, apt);
@@ -2258,11 +2259,8 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	if(GT_routes.size() && truck_parking_locs.empty())
 		msgs.push_back(validation_error_t("Ground routes are defined, but no service vehicle starts. This disables all ground traffic, including auto generated pushback vehicles.", warn_truckroutes_but_no_starts, apt,apt));
 
-	AptInfo_t apt_info;
-	apt->Export(apt_info);
-	if (apt_info.has_atc_twr)
-		if (ai_useable_ramps < 1)
-			msgs.push_back(validation_error_t("Airports with ATC towers must have at least one Ramp Start of type=gate or tiedown.", err_ramp_need_starts_suitable_for_ai_ops, apt, apt));
+	if (has_ATC && ai_useable_ramps < 1)
+			msgs.push_back(validation_error_t("Airports with ATC towers frequencies must have at least one Ramp Start of type=gate or tiedown.", err_ramp_need_starts_suitable_for_ai_ops, apt, apt));
 
 	if(gExportTarget == wet_gateway)
 	{
