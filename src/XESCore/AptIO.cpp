@@ -1197,7 +1197,7 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 	{
 		fprintf(fi, CRLF);
 		fprintf(fi, "%d %6d %d %d %s %s" CRLF, apt->kind_code, apt->elevation_ft,
-				apt->has_atc_twr, apt->default_buildings,
+				version < 1000 ? apt->has_atc_twr : 0, apt->default_buildings,
 				apt->icao.c_str(), apt->name.c_str());
 		
 		for(int i = 0; i < apt->meta_data.size(); ++i)
