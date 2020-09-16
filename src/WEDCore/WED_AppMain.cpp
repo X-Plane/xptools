@@ -146,6 +146,23 @@ int main(int argc, char * argv[])
 		LOG_MSG("WED started on %s\n", now_s);
 		fflush(gLogFile);
 	}
+
+	char * oc = setlocale(LC_ALL, NULL);
+	LOG_MSG("Original locale    %.2lf '%s'\n", 3.14, oc);
+
+	oc = setlocale(LC_ALL,"de_DE.utf-8");
+	LOG_MSG("LC_ALL=de_DE.UTF-8 %.2lf '%s'\n", 3.14, oc);
+	
+	oc = setlocale(LC_ALL,"C");
+	LOG_MSG("LC_ALL=C           %.2lf '%s'\n", 3.14, oc);
+	
+	oc = setlocale(LC_ALL,"en_US.UTF-8");
+	LOG_MSG("LC_ALL=en_US.UTF-8 %.2lf '%s'\n\n", 3.14, oc);
+	
+	oc = setlocale(LC_ALL,"C.UTF-8");
+	LOG_MSG("LC_ALL=C.UTF-8     %.2lf '%s'\n", 3.14, oc);
+
+	fflush(gLogFile);
 	
 #if LIN || APL
 	WED_Application	app(argc, argv);
@@ -193,7 +210,7 @@ int main(int argc, char * argv[])
 
 	start->ShowMessage("Initializing WED File Cache");
 	gFileCache.init();
-  //	start->ShowMessage("Loading DEM tables...");
+//	start->ShowMessage("Loading DEM tables...");
 //	LoadDEMTables();
 //	start->ShowMessage("Loading OBJ tables...");
 //	LoadObjTables();
@@ -209,19 +226,10 @@ int main(int argc, char * argv[])
 	#undef _R
 
 	app.SetAbout(about);
-
 	start->ShowMessage(string());
-	setlocale(LC_ALL,"C");
-	#if LIN
-	//TODO:mroe: maybe we can set this to LC_ALL for all other OS's .
-	//In the case of linux we must , since standard C locale is not utf-8	
-	setlocale(LC_CTYPE,"en_US.UTF-8");
-	//mroe: for now , every CString holding a filepath must be wrapped by QString::fromUtf8() to convert to QString.	
-	//(mainly in the dialogs and the window caption to show it to the user)
-	//Setting this global for the app could be the better solution.
-	//QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
-	#endif
+	
 	app.Run();
+	
     // we're out of eventloop here, deleting windows on linux implies sending messages to them,
     // so this would fail.
 	#if !LIN
@@ -236,7 +244,6 @@ int main(int argc, char * argv[])
 
 	WED_Document::WriteGlobalPrefs();
 	GUI_Prefs_Write("WED");
-
 
 	LOG_MSG("----- WED has shut down -----\n");
 	if(gLogFile) fclose(gLogFile);
