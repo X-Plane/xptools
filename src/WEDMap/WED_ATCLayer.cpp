@@ -194,42 +194,32 @@ static void make_arrow_line(Point2 p[5])
 
 void WED_ATCLayer_DrawAircraft(WED_RampPosition * pos, GUI_GraphState * g, WED_MapZoomerNew * z)
 {
-		Point2 nose_wheel;
-		pos->GetLocation(gis_Geo, nose_wheel);
-		int icao_width = pos->GetWidth();
-
-		double mtr = 5;
-		double offset = 0;
 		int id = 0;
 		
-		switch(icao_width) {
-		case width_A:	mtr = 15.0;	offset = 1.85;	id = GUI_GetTextureResource("ClassA.png",tex_Linear|tex_Mipmap,NULL);	break;
-		case width_B:	mtr = 27.0;	offset = 2.75; id = GUI_GetTextureResource("ClassB.png",tex_Linear|tex_Mipmap,NULL);	break;
-		case width_C:	mtr = 41.0;	offset = 4.70; id = GUI_GetTextureResource("ClassC.png",tex_Linear|tex_Mipmap,NULL);	break;
-		case width_D:	mtr = 56.0;	offset = 9.50; id = GUI_GetTextureResource("ClassD.png",tex_Linear|tex_Mipmap,NULL);	break;
-		case width_E:	mtr = 72.0;	offset = 8.20; id = GUI_GetTextureResource("ClassE.png",tex_Linear|tex_Mipmap,NULL);	break;
-		case width_F:	mtr = 80.0;	offset = 8.80; id = GUI_GetTextureResource("ClassF.png",tex_Linear|tex_Mipmap,NULL);	break;
+		switch(pos->GetWidth()) {
+		case width_A:	id = GUI_GetTextureResource("ClassA.png",tex_Linear|tex_Mipmap,NULL);	break;
+		case width_B:	id = GUI_GetTextureResource("ClassB.png",tex_Linear|tex_Mipmap,NULL);	break;
+		case width_C:	id = GUI_GetTextureResource("ClassC.png",tex_Linear|tex_Mipmap,NULL);	break;
+		case width_D:	id = GUI_GetTextureResource("ClassD.png",tex_Linear|tex_Mipmap,NULL);	break;
+		case width_E:	id = GUI_GetTextureResource("ClassE.png",tex_Linear|tex_Mipmap,NULL);	break;
+		case width_F:	id = GUI_GetTextureResource("ClassF.png",tex_Linear|tex_Mipmap,NULL);	break;
 		}
-		
-		Point2	c[4];
-		Quad_1to4(nose_wheel, pos->GetHeading(), mtr, mtr, c);
 		
 		if (id)
 		{
 			g->BindTex(id, 0);
 			g->SetTexUnits(1);
 
+			Point2 tips[4];
+			pos->GetTips(tips);
+			Point2	c[4];
+			Vector2 span(tips[1], tips[3]);
+			c[1] = tips[0] + span * 0.5;
+			c[2] = tips[0] - span * 0.5;
+			c[3] = tips[2] - span * 0.5;
+			c[0] = tips[2] + span * 0.5;
+			
 			z->LLToPixelv(c,c,4);
-		
-			Vector2	v_left (c[1],c[0]);
-			Vector2 v_right(c[2],c[3]);
-		
-			double relative_slip = (mtr * 0.5 - offset) / mtr;
-		
-			c[0] += v_left * relative_slip;
-			c[1] += v_left * relative_slip;
-			c[2] += v_right* relative_slip;
-			c[3] += v_right* relative_slip;
 		
 			glBegin(GL_QUADS);
 			glTexCoord2f(0,0);	glVertex2(c[0]);
@@ -281,39 +271,27 @@ bool	WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GU
 			glColor4f(0, 1, 0, 0.4);
 		WED_ATCLayer_DrawAircraft(pos, g, GetZoomer());
 
-		Point2 nose_wheel;
-		pos->GetLocation(gis_Geo, nose_wheel);
-		Vector2 dirToTail_m;
-		NorthHeading2VectorMeters(nose_wheel, nose_wheel, pos->GetHeading() + 180.0, dirToTail_m);
-
-		double fuse_len, fuse_width;
-		int icao_size = pos->GetWidth();
-		switch (icao_size)
-		{
-			case width_A:	fuse_len = 15.0;	fuse_width = 2.0; break;
-			case width_B:	fuse_len = 27.0;	fuse_width = 3.0; break;
-			case width_C:	fuse_len = 41.0;	fuse_width = 5.0; break;
-			case width_D:	fuse_len = 56.0;	fuse_width = 6.5; break;
-			case width_E:	fuse_len = 72.0;	fuse_width = 8.2; break;
-			case width_F:	fuse_len = 80.0;	fuse_width = 9.0; break;
-		}
+		Point2 tips[4];
+		pos->GetTips(tips);
+		Vector2 fuseToTail(tips[0], tips[2]);
+		Vector2 wingToRight(tips[3], tips[1]);
 
 		Segment2 aim2dest;
-		aim2dest.p1 = nose_wheel + VectorMetersToLL(nose_wheel, dirToTail_m * fuse_len * 0.9);  // aiming point - relevant for network entry/exit point
-		aim2dest.p2 = nose_wheel + VectorMetersToLL(nose_wheel, dirToTail_m * fuse_len * 0.5);  // final endpoint drawn/destination of route
+		aim2dest.p2 = tips[2];                                      // final endpoint drawn/destination of route
+		aim2dest.p1 = aim2dest.p2 + fuseToTail * 0.2;               // aiming point - relevant for network entry/exit point
 		aim2dest.p1 = GetZoomer()->LLToPixel(aim2dest.p1);
 		aim2dest.p2 = GetZoomer()->LLToPixel(aim2dest.p2);
 		mStarts.push_back(aim2dest);
 
-		aim2dest.p1 = nose_wheel + VectorMetersToLL(nose_wheel, dirToTail_m * fuse_len * 0.1 + dirToTail_m.perpendicular_ccw() * (fuse_len * 0.5 + 10.0));
-		aim2dest.p2 = nose_wheel + VectorMetersToLL(nose_wheel, dirToTail_m * fuse_len * 0.1 + dirToTail_m.perpendicular_ccw() * fuse_width);
+		aim2dest.p2 = tips[0] + fuseToTail * 0.25 + wingToRight * 0.07;
+		aim2dest.p1 = aim2dest.p2                 + wingToRight * 0.4;
 		aim2dest.p1 = GetZoomer()->LLToPixel(aim2dest.p1);
 		aim2dest.p2 = GetZoomer()->LLToPixel(aim2dest.p2);
 		mServices.push_back(aim2dest);
-		if(icao_size > width_B)
+		if(pos->GetWidth() > width_B)
 		{
-			aim2dest.p1 = nose_wheel + VectorMetersToLL(nose_wheel, dirToTail_m * fuse_len * 0.6 + dirToTail_m.perpendicular_ccw() * (fuse_len * 0.5 + 10.0));
-			aim2dest.p2 = nose_wheel + VectorMetersToLL(nose_wheel, dirToTail_m * fuse_len * 0.6 + dirToTail_m.perpendicular_ccw() * fuse_width);
+			aim2dest.p2 = tips[0]     + fuseToTail * 0.7 + wingToRight * 0.07;
+			aim2dest.p1 = aim2dest.p2 + fuseToTail * 0.15 + wingToRight * 0.4;
 			aim2dest.p1 = GetZoomer()->LLToPixel(aim2dest.p1);
 			aim2dest.p2 = GetZoomer()->LLToPixel(aim2dest.p2);
 			mServices.push_back(aim2dest);
