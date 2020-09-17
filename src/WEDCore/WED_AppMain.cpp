@@ -109,10 +109,15 @@ HINSTANCE gInstance = NULL;
 #endif
 
 #if LIN
- // #include "initializer.h"
+  #include "initializer.h"
 #endif
 
 FILE * gLogFile;
+
+#include <locale.h>
+
+#include <locale>
+#include <iostream>
 
 #if IBM
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
@@ -120,6 +125,19 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 int main(int argc, char * argv[])
 #endif
 {
+	char loc_str[200];
+	char * loc_p = loc_str;
+	char * cl = setlocale(LC_ALL, NULL);                      // C and C++ standards clearly say this should always be "C"
+	loc_p += sprintf(loc_p, "Orig %.2lf '%s'", 10003.14, cl);
+	cl = setlocale(LC_ALL, "");                               // just for curiosity - let's see what the users settinsg are
+	loc_p += sprintf(loc_p, " set Local %.2lf '%s'", 10003.14, cl);   
+	cl = setlocale(LC_ALL, "C");                              // lets set it back to what we need
+	loc_p += sprintf(loc_p, " set C %.2lf '%s'", 10003.14, cl);
+	
+//	locale::global(locale("C"));
+//	cout.imbue(locale("C"));
+	
+	// do all locale settinsg FIRST - as they will only apply to streams opened after this.
 #if IBM
 	gInstance = hInstance;
 	SetErrorMode(SEM_NOOPENFILEERRORBOX|SEM_FAILCRITICALERRORS);
@@ -127,7 +145,7 @@ int main(int argc, char * argv[])
 	GUI_MemoryHog::InstallNewHandler();
 	GUI_InitClipboard();
 #if LIN
-	// Initializer linit(&argc, &argv, false);
+	Initializer linit(&argc, &argv, false);
 #endif // LIN
 
 	gLogFile = fopen((FILE_get_dir_name(GetApplicationPath()) + "WED_Log.txt").c_str(), "w");
@@ -144,31 +162,20 @@ int main(int argc, char * argv[])
 		time_t now = time(0);
 		char * now_s = ctime(&now);
 		LOG_MSG("WED started on %s\n", now_s);
+
+		LOG_MSG("I/MAIN locale %s\n", loc_str);
+		LOG_MSG("I/MAIN locale now %.2lf LC_CTYPE = '%s' LC_ALL='%s'\n\n", 10003.14, setlocale(LC_CTYPE,NULL), setlocale(LC_ALL,NULL));
 		fflush(gLogFile);
 	}
 
-	char * oc = setlocale(LC_ALL, NULL);
-	LOG_MSG("Original locale    %.2lf '%s'\n", 3.14, oc);
-
-	oc = setlocale(LC_ALL,"de_DE.utf-8");
-	LOG_MSG("LC_ALL=de_DE.UTF-8 %.2lf '%s'\n", 3.14, oc);
-	
-	oc = setlocale(LC_ALL,"C");
-	LOG_MSG("LC_ALL=C           %.2lf '%s'\n", 3.14, oc);
-	
-	oc = setlocale(LC_ALL,"en_US.UTF-8");
-	LOG_MSG("LC_ALL=en_US.UTF-8 %.2lf '%s'\n\n", 3.14, oc);
-	
-	oc = setlocale(LC_ALL,"C.UTF-8");
-	LOG_MSG("LC_ALL=C.UTF-8     %.2lf '%s'\n", 3.14, oc);
-
-	fflush(gLogFile);
-	
+	LOG_MSG("I/MAIN locale b4  app %.2lf LC_CTYPE = '%s' LC_ALL='%s'\n\n", 10003.14, setlocale(LC_CTYPE,NULL), setlocale(LC_ALL,NULL));
 #if LIN || APL
 	WED_Application	app(argc, argv);
 #else // Windows
 	WED_Application	app(lpCmdLine);
 #endif
+	LOG_MSG("I/MAIN locale aft app %.2lf LC_CTYPE = '%s' LC_ALL='%s'\n\n", 10003.14, setlocale(LC_CTYPE,NULL), setlocale(LC_ALL,NULL));
+	
 	WED_PackageMgr	pMgr(NULL);
 
 	#if IBM && DEV
@@ -187,7 +194,7 @@ int main(int argc, char * argv[])
 	// at least one shared context so that the textures are not purged.
 	// This means one window must always be in existence.  That window is the about box...which stays hidden but allocated to
 	// sustain OpenGL.
-
+	
 	WED_AboutBox * about = new WED_AboutBox(&app);
 	WED_MakeMenus(&app);
 	#if LIN
@@ -198,9 +205,6 @@ int main(int argc, char * argv[])
 
 	start->Show();
 
-	start->ShowMessage("Initializing...");
-//	XESInit();
-
 	start->ShowMessage("Reading Prefs...");
 	GUI_Prefs_Read("WED");
 	WED_Document::ReadGlobalPrefs();
@@ -210,10 +214,6 @@ int main(int argc, char * argv[])
 
 	start->ShowMessage("Initializing WED File Cache");
 	gFileCache.init();
-//	start->ShowMessage("Loading DEM tables...");
-//	LoadDEMTables();
-//	start->ShowMessage("Loading OBJ tables...");
-//	LoadObjTables();
 
 	start->ShowMessage("Loading ENUM system...");
 	WED_AssertInit();
