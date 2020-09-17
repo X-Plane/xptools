@@ -238,7 +238,7 @@ GUI_Application::GUI_Application(const char * arg) : args(arg),
 	qapp = new QApplication(argc, argv);
 	setlocale(LC_ALL, "C");
 	
-	LOG_MSG("I/GUI_APP locale aft Qapp %.2lf LC_CTYPE = '%s' LC_ALL='%s'\n", 10003.14, setlocale(LC_CTYPE,NULL), setlocale(LC_ALL,NULL));
+	LOG_MSG("I/GUI_APP locale aft Qapp %s %.2lf LC_CTYPE = '%s' LC_ALL='%s'\n", "Čü", 10003.14, setlocale(LC_CTYPE,NULL), setlocale(LC_ALL,NULL));
 	
 	qapp->setAttribute(Qt::AA_DontUseNativeMenuBar);
 	mPopup = NULL;

@@ -123,15 +123,15 @@ int main(int argc, char * argv[])
 /*	char loc_str[200];
 	char * loc_p = loc_str;
 	char * cl = setlocale(LC_ALL, NULL);                      // C and C++ standards clearly say this should always be "C"
-	loc_p += sprintf(loc_p, "Orig %.2lf '%s'", 10003.14, cl);
+	loc_p += sprintf(loc_p, "Orig %s %.2lf '%s'", "Čü", 10003.14, cl);
 	cl = setlocale(LC_ALL, "");                               // just for curiosity - let's see what the users settinsg are
-	loc_p += sprintf(loc_p, " set Local %.2lf '%s'", 10003.14, cl);   
+	loc_p += sprintf(loc_p, " set Local %s %.2lf '%s'", "Čü", 10003.14, cl);   
 	cl = setlocale(LC_ALL, "C");                              // lets set it back to what we need
-	loc_p += sprintf(loc_p, " set C %.2lf '%s'", 10003.14, cl);
+	loc_p += sprintf(loc_p, " set C %s %.2lf '%s'", "Čü", 10003.14, cl);
 	
 //	locale::global(locale("C"));
 //	cout.imbue(locale("C"));
-*/	
+*/
 	// do all locale settinsg FIRST - as they will only apply to streams opened after this.
 #if IBM
 	gInstance = hInstance;
@@ -159,7 +159,7 @@ int main(int argc, char * argv[])
 		LOG_MSG("WED started on %s\n", now_s);
 
 //		LOG_MSG("I/MAIN locale %s\n", loc_str);                          // datalog the locale trials atthe very beginning
-		LOG_MSG("I/MAIN locale now %.2lf LC_CTYPE = '%s' LC_ALL='%s'\n", 10003.14, setlocale(LC_CTYPE,NULL), setlocale(LC_ALL,NULL));
+		LOG_MSG("I/MAIN locale now %s %.2lf LC_CTYPE = '%s' LC_ALL='%s'\n", "Čü", 10003.14, setlocale(LC_CTYPE,NULL), setlocale(LC_ALL,NULL));
 		fflush(gLogFile);
 	}
 
