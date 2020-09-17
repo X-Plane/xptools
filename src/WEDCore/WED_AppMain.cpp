@@ -114,18 +114,13 @@ HINSTANCE gInstance = NULL;
 
 FILE * gLogFile;
 
-#include <locale.h>
-
-#include <locale>
-#include <iostream>
-
 #if IBM
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 #else
 int main(int argc, char * argv[])
 #endif
 {
-	char loc_str[200];
+/*	char loc_str[200];
 	char * loc_p = loc_str;
 	char * cl = setlocale(LC_ALL, NULL);                      // C and C++ standards clearly say this should always be "C"
 	loc_p += sprintf(loc_p, "Orig %.2lf '%s'", 10003.14, cl);
@@ -136,7 +131,7 @@ int main(int argc, char * argv[])
 	
 //	locale::global(locale("C"));
 //	cout.imbue(locale("C"));
-	
+*/	
 	// do all locale settinsg FIRST - as they will only apply to streams opened after this.
 #if IBM
 	gInstance = hInstance;
@@ -163,19 +158,16 @@ int main(int argc, char * argv[])
 		char * now_s = ctime(&now);
 		LOG_MSG("WED started on %s\n", now_s);
 
-		LOG_MSG("I/MAIN locale %s\n", loc_str);
-		LOG_MSG("I/MAIN locale now %.2lf LC_CTYPE = '%s' LC_ALL='%s'\n\n", 10003.14, setlocale(LC_CTYPE,NULL), setlocale(LC_ALL,NULL));
+//		LOG_MSG("I/MAIN locale %s\n", loc_str);                          // datalog the locale trials atthe very beginning
+		LOG_MSG("I/MAIN locale now %.2lf LC_CTYPE = '%s' LC_ALL='%s'\n", 10003.14, setlocale(LC_CTYPE,NULL), setlocale(LC_ALL,NULL));
 		fflush(gLogFile);
 	}
 
-	LOG_MSG("I/MAIN locale b4  app %.2lf LC_CTYPE = '%s' LC_ALL='%s'\n\n", 10003.14, setlocale(LC_CTYPE,NULL), setlocale(LC_ALL,NULL));
 #if LIN || APL
 	WED_Application	app(argc, argv);
 #else // Windows
 	WED_Application	app(lpCmdLine);
 #endif
-	LOG_MSG("I/MAIN locale aft app %.2lf LC_CTYPE = '%s' LC_ALL='%s'\n\n", 10003.14, setlocale(LC_CTYPE,NULL), setlocale(LC_ALL,NULL));
-	
 	WED_PackageMgr	pMgr(NULL);
 
 	#if IBM && DEV

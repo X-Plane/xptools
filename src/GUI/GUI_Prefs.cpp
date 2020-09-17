@@ -217,7 +217,7 @@ void			GUI_Prefs_Write(const char * app_name)
     #endif
 	pref_dir += ".prefs";
 
-	LOG_MSG("I/PREF WR locale now %.2lf LC_CTYPE = '%s' LC_ALL='%s'\n\n", 10003.14, setlocale(LC_CTYPE,NULL), setlocale(LC_ALL,NULL));
+	LOG_MSG("I/PREF WR locale now %.2lf LC_CTYPE = '%s' LC_ALL='%s'\n", 10003.14, setlocale(LC_CTYPE,NULL), setlocale(LC_ALL,NULL));
 
 	FILE * fi = fopen(pref_dir.c_str(), "w");
 	if (fi == NULL) { DoUserAlert("Warning: preferences file could not be written - could not write file."); return; }
