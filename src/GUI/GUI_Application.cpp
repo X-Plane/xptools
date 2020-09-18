@@ -235,6 +235,7 @@ GUI_Application::GUI_Application(const char * arg) : args(arg),
 #endif
 #if LIN
 	qapp = new QApplication(argc, argv);
+	setlocale(LC_ALL,"C");
 	qapp->setAttribute(Qt::AA_DontUseNativeMenuBar);
 	mPopup = NULL;
 #endif
