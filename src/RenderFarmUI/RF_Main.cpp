@@ -602,9 +602,12 @@ int main(int argc, char * argv[])
 	fifo_timer * t = new fifo_timer;
 	t->Start(0.1);
 
-	int bounds[4] = { 0, 20, 1280, 1024 };
+	int bounds[4] = { 0, 20, 1280, 1004 };
 	GUI_Window * main_window = new GUI_Window("RenderFarm", xwin_style_visible, bounds, &app);
-
+#if LIN
+	main_window->xclass("RenderFarm");
+	main_window->show(argc,argv);
+#endif
 	bounds[3] -= bounds[1];
 	bounds[1] = 0;
 

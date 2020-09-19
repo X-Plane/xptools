@@ -10,7 +10,7 @@ FORCEREBUILD_SUFFIX := _rfui
 
 ifdef PLAT_LINUX
 LDFLAGS		+= -rdynamic
-#LDFLAGS	+= -Wl,--exclude-libs,ALL
+LDFLAGS		+= -Wl,--exclude-libs,ALL
 LIBS		+= -lfltk -lfltk_gl -lGL -lGLU -ldl
 LIBS		+= -lpthread
 LIBS		+= -Wl,-Bdynamic
