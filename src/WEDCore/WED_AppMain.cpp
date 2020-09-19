@@ -110,7 +110,7 @@ HINSTANCE gInstance = NULL;
 
 #if LIN
 #include "initializer.h"
-#include <Fl.H>
+#include <FL/Fl.H>
 #endif
 
 FILE * gLogFile;

@@ -30,7 +30,7 @@
 #include <linux/limits.h>
 #include <FL/Fl.H>
 #include <FL/fl_ask.H>
-#include <Fl_Native_File_Chooser.H>
+#include <FL/Fl_Native_File_Chooser.H>
 
 string GetApplicationPath()
 {
