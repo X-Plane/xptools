@@ -674,19 +674,17 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info, // The relevan
 	{
 		return Polygon2(0);
 	}
+	bool paved = runway_info.runway_ptr->GetSurface() == surf_Asphalt || runway_info.runway_ptr->GetSurface() == surf_Concrete;
 
 	//Unfortunatly due to the messy real world we must have unrealistically low thresholds to avoid edge case after edge case for very airport
 	//that doesn't play by the rules, was grandfathered in, or was built on Mt. Doom and needs to avoid the volcanic dust clouds. You know, the usual.
 	double HITZONE_OVERFLY_THRESHOLD_M = 100.00;
-	
-	if(runway_info.runway_ptr->GetSurface() != apt_surf_asphalt && runway_info.runway_ptr->GetSurface() != apt_surf_asphalt)
+	if(!paved)
 		HITZONE_OVERFLY_THRESHOLD_M = 50.0; // reduced arrival end clearance requirements for these
 
-	double HITZONE_WIDTH_THRESHOLD_M; 		// Width of Runway Protection Zone beyond runway width, each side
-	if (runway_info.runway_ptr->GetLength() < 1500.0)
+	double HITZONE_WIDTH_THRESHOLD_M = 30.0;  // Width of Runway Protection Zone beyond runway width, each side
+	if (!paved || runway_info.runway_ptr->GetLength() < 1500.0 || runway_info.runway_ptr->GetWidth() < 20.0)
 		HITZONE_WIDTH_THRESHOLD_M = 10.0;	// good guess, FAA advisory 150' from CL is impractically wide for many small airfields
-	else
-		HITZONE_WIDTH_THRESHOLD_M = 30.0;	// good guess, again, FAA is too wishfull
 
 	Polygon2 runway_hit_box(runway_info.corners_geo);
 	/*         top   ^
@@ -763,7 +761,7 @@ static bool DoHotZoneChecks( const RunwayInfo& runway_info,
 	
 		for (int make_arrival = 0; make_arrival < 2; make_arrival++)
 		{
-			//Make the hitbox baed on the runway and which side (low/high) you're currently on and if you need to be making arrival or departure
+			//Make the hitbox based on the runway and which side (low/high) you're currently on and if you need to be making arrival or departure
 			Polygon2 hit_box = MakeHotZoneHitBox(runway_info, runway_number, (bool)make_arrival);
 			bool hitbox_error = false;
 
@@ -771,12 +769,21 @@ static bool DoHotZoneChecks( const RunwayInfo& runway_info,
 
 			for (auto r : ramps)
 			{
-				Point2 pt;
-				r->GetLocation(gis_Geo, pt);
-				if (hit_box.inside(pt) && r->GetType() != atc_ramp_misc)
+				if (r->GetType() != atc_Ramp_Misc)
 				{
-					ramps_near_rwy.insert(r);
-					hitbox_error = true;
+					Point2 pt[4];
+					r->GetTips(pt);
+					for(int i = 0; i <4; ++i)
+						if (hit_box.inside(pt[i]))
+						{
+							ramps_near_rwy.insert(r);
+							hitbox_error = true;
+#if DEBUG_VIS_LINES
+							debug_mesh_line(pt[0],pt[2], DBG_LIN_COLOR);
+							debug_mesh_line(pt[1],pt[3], DBG_LIN_COLOR);
+#endif
+							break;
+						}
 				}
 			}
 

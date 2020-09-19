@@ -24,6 +24,7 @@
 #include "WED_RampPosition.h"
 #include "AptDefs.h"
 #include "WED_EnumSystem.h"
+#include "GISUtils.h"
 
 DEFINE_PERSISTENT(WED_RampPosition)
 TRIVIAL_COPY(WED_RampPosition, WED_GISPoint_Heading)
@@ -152,6 +153,38 @@ string  WED_RampPosition::GetAirlines() const
 int	WED_RampPosition::GetWidth() const
 {
 	return width.value;
+}
+
+void WED_RampPosition::GetTips(Point2 c[4]) const
+{
+	double fuse_len, nose_offset, wingspan, wing_offset;
+	switch (width.value)
+	{
+			case width_A: fuse_len = 11.0; wingspan = 14.0; nose_offset = 1.0; wing_offset =  -4.5; break;
+			case width_B: fuse_len = 28.0; wingspan = 27.0; nose_offset = 2.7; wing_offset = -15.0; break;
+			case width_C: fuse_len = 43.0; wingspan = 41.0; nose_offset = 4.7; wing_offset = -23.0; break;
+			case width_D: fuse_len = 56.0; wingspan = 56.0; nose_offset = 9.5; wing_offset = -38.0; break;
+			case width_E: fuse_len = 72.0; wingspan = 72.0; nose_offset = 8.2; wing_offset = -45.0; break;
+			case width_F: fuse_len = 80.0; wingspan = 80.0; nose_offset = 8.8; wing_offset = -50.0; break;
+	}
+
+	Point2 nosewheel_loc;
+	GetLocation(gis_Geo, nosewheel_loc);
+	
+	Vector2 nose_dir(0,1);
+	nose_dir.rotate_by_degrees(-GetHeading());
+	Vector2 right_dir(nose_dir.perpendicular_cw());
+
+	if(ramp_type.value == atc_Ramp_Misc)
+		c[0] = Point2(0,0) + nose_dir * fuse_len / 2.0;     // tip of nose
+	else
+		c[0] = Point2(0,0) + nose_dir * nose_offset;
+		
+	c[1] = c[0] + right_dir * wingspan / 2.0 + nose_dir * wing_offset;
+	c[2] = c[0] - nose_dir * fuse_len;
+	c[3] = c[0] - right_dir * wingspan / 2.0 + nose_dir * wing_offset;
+
+	MetersToLLE(nosewheel_loc, 4, c);
 }
 
 int		WED_RampPosition::GetType() const

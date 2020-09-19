@@ -95,7 +95,7 @@
 #define MAX_SPAN_GATEWAY_NM 7
 
 // maximum distance for any scenery from the airport boundary, gateway only
-#define DSF_OVERSIZE_NM  0.5
+#define APT_OVERSIZE_NM  0.5
 
 // ATC flow tailwind components and wind rule coverage tested up to this windspeed
 #define ATC_FLOW_MAX_WIND 35
@@ -2324,14 +2324,33 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 			}
 		}
 
-		apt_bounds.expand(DSF_OVERSIZE_NM / cos(apt_bounds.centroid().y() * DEG_TO_RAD) / 60.0, DSF_OVERSIZE_NM / 60.0 );
+		apt_bounds.expand(APT_OVERSIZE_NM / cos(apt_bounds.centroid().y() * DEG_TO_RAD) / 60.0, APT_OVERSIZE_NM / 60.0 );
 		if(!boundaries.empty() && !apt_bounds.contains(bounds))
 		{
-			msgs.push_back(validation_error_t("Airport contains scenery far outside the airport boundary.", err_airport_far_outside_boundary, apt, apt));
-			debug_mesh_segment(apt_bounds.left_side(), DBG_LIN_COLOR);
-			debug_mesh_segment(apt_bounds.right_side(), DBG_LIN_COLOR);
-			debug_mesh_segment(apt_bounds.top_side(), DBG_LIN_COLOR);
-			debug_mesh_segment(apt_bounds.bottom_side(), DBG_LIN_COLOR);
+			vector<WED_Thing *> not_hidden;
+			CollectRecursive(apt, back_inserter(not_hidden), ThingNotHidden, [&] (WED_Thing* v) 
+					{ 
+						Bbox2 b;
+						if(auto p = dynamic_cast<WED_GISPolygon *>(v))
+						{
+							p->GetBounds(gis_Geo, b);
+							return !apt_bounds.contains(b);
+						}
+						else if(auto p = dynamic_cast<WED_GISPoint *>(v))
+						{
+							p->GetBounds(gis_Geo, b);
+							return !apt_bounds.contains(b);
+						}
+						return false;
+					});
+			if(not_hidden.size())
+			{
+				msgs.push_back(validation_error_t("Airport contains scenery far outside the airport boundary.", err_airport_far_outside_boundary, not_hidden, apt));
+				debug_mesh_segment(apt_bounds.left_side(), DBG_LIN_COLOR);
+				debug_mesh_segment(apt_bounds.right_side(), DBG_LIN_COLOR);
+				debug_mesh_segment(apt_bounds.top_side(), DBG_LIN_COLOR);
+				debug_mesh_segment(apt_bounds.bottom_side(), DBG_LIN_COLOR);
+			}
 		}
 		// allow some draped orthophotos (like grund painted signs)
 		vector<WED_DrapedOrthophoto *> orthos_illegal;
