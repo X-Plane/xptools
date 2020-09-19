@@ -175,29 +175,29 @@ int main(int argc, char * argv[])
 	// at least one shared context so that the textures are not purged.
 	// This means one window must always be in existence.  That window is the about box...which stays hidden but allocated to
 	// sustain OpenGL.
+	// mroe: this first window is the StartWindow now
 
 	GUI_Prefs_Read("WED");
 	WED_Document::ReadGlobalPrefs();
 
 	WED_StartWindow * start = new WED_StartWindow(&app);   // here we initialize the fonts - but the
+	#if LIN
+	//mroe: FLTK sets LC_CType and set it not back to "C"
+	//seems only to happen when creating the first window
+	setlocale(LC_ALL,"C");
+	#endif
 	WED_MakeMenus(&app);
 	#if LIN
 	start->xclass("WED");
-	start->show(argc, argv);
+	start->show(1, argv);  //mroe: WED has own cmd line arguments , this suppresses FLTK trys parse own args
 	#endif
 	start->Show();
-	start->ShowMessage("Initializing...");
-//	XESInit();
 
 	start->ShowMessage("Scanning X-System Folder...");
 	pMgr.SetXPlaneFolder(GUI_GetPrefString("packages","xsystem",""));
 
 	start->ShowMessage("Initializing WED File Cache");
 	gFileCache.init();
-  //	start->ShowMessage("Loading DEM tables...");
-//	LoadDEMTables();
-//	start->ShowMessage("Loading OBJ tables...");
-//	LoadObjTables();
 
 	start->ShowMessage("Loading ENUM system...");
 	WED_AssertInit();
@@ -210,12 +210,7 @@ int main(int argc, char * argv[])
 	#undef _R
 
 	start->ShowMessage(string());
-	setlocale(LC_ALL,"C");
-	#if LIN
-	//TODO:mroe: maybe we can set this to LC_ALL for all other OS's .
-	//In the case of linux we must , since standard C locale is not utf-8
-	setlocale(LC_CTYPE,"en_US.UTF-8");
-	#endif
+
 	app.Run();
 
 	delete start;
