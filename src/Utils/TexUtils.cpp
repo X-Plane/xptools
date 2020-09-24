@@ -28,9 +28,11 @@
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glu.h>
 #else
+	#include "glew.h"
 	#include <GL/gl.h>
 	#include <GL/glu.h>
 #endif
+
 
 struct  gl_info_t {
 	int		gl_major_version;
