@@ -53,7 +53,15 @@ XWinGL::XWinGL(int default_dnd, XWinGL* inShare, QWidget* parent) : XWin(default
 	// OSes.  If someone wants to push this down into the implementation to factor it, go for it - I'm avoiding
 	// jamming stuff into code I don't have a ton of situational wwareness for.
    glPixelStorei	(GL_UNPACK_ALIGNMENT,1				);
-   glPixelStorei	(GL_PACK_ALIGNMENT  ,1				);	
+   glPixelStorei	(GL_PACK_ALIGNMENT  ,1				);
+
+	if(!inShare)
+	{
+		if(GLint err = glewInit())
+			LOG_MSG("I/WGL glewInit failed\n");
+		else
+			LOG_MSG("I/WGL glewInit OK\n");
+	}
 }
 
 XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX, int inY, int inWidth, int inHeight, XWinGL * inShare, QWidget* parent) : XWin(default_dnd, inTitle, inAttributes, inX, inY, inWidth, inHeight, parent), mInited(false)
@@ -69,8 +77,16 @@ XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX,
 		XWin::SetVisible(true);
 	}
 	XWinGL::mInited = true;
-   glPixelStorei	(GL_UNPACK_ALIGNMENT,1				);
-   glPixelStorei	(GL_PACK_ALIGNMENT  ,1				);
+	glPixelStorei	(GL_UNPACK_ALIGNMENT,1				);
+	glPixelStorei	(GL_PACK_ALIGNMENT  ,1				);
+
+	if(!inShare)
+	{
+		if(GLint err = glewInit())
+			LOG_MSG("I/WGL glewInit failed\n");
+		else
+			LOG_MSG("I/WGL glewInit OK\n");
+	}
 }
 
 XWinGL::~XWinGL()
