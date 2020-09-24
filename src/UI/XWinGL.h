@@ -23,8 +23,6 @@
 #ifndef XWINGL_H
 #define XWINGL_H
 
-#include "glew.h"
-
 #if APL
 	#include <OpenGL/gl.h>
 	#if __OBJC__
@@ -32,7 +30,11 @@
 	#else
 		typedef void NSOpenGLView;
 	#endif
-#elif LIN
+#else
+  #include "glew.h"
+#endif
+
+#if LIN
 	#include <QtOpenGL/QGLWidget>
 
 class	XWinGL;
