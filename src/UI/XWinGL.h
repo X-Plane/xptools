@@ -30,11 +30,10 @@
 	#else
 		typedef void NSOpenGLView;
 	#endif
-#else
-  #include "glew.h"
-#endif
-
-#if LIN
+#elif IBM
+	#include "glew.h"
+#elif LIN
+	#include "glew.h"
 	#include <QtOpenGL/QGLWidget>
 
 class	XWinGL;

@@ -117,7 +117,7 @@ bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos,
 		GTIFDefn 	defn;
         if( GTIFGetDefn( gtif, &defn ) )
         {
-#ifdef LOG_MSG
+#if WED
 			GTIFPrintDefn(&defn, gLogFile ? gLogFile : stdout);
 #endif
 			LOG_MSG("PROJ.4 Definition: %s\n", GTIFGetProj4Defn(&defn));
