@@ -24,17 +24,15 @@
 #include "AssertUtils.h"
 #include "BitmapUtils.h"
 
-#if IBM
-	// gotta do this cuz MSFT hasn't updated their openGL headers in 23 years ... its STILL OGL 1.1 from 1996 !!
-	#include "glew.h"
-#elif APL
-	#include "glew.h"
+#if APL
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glu.h>
-	#include "glew.h"
 #else
 	#include "glew.h"
+	#include <GL/gl.h>
+	#include <GL/glu.h>
 #endif
+
 
 struct  gl_info_t {
 	int		gl_major_version;
@@ -42,37 +40,52 @@ struct  gl_info_t {
 	bool	has_non_pots;
 	bool	has_bgra;
 	int		max_tex_size;
+	bool	has_rgtc;
 };
 
-gl_info_t gl_info = { 0 };
+static gl_info_t gl_info = { 0 };
 
 #define INIT_GL_INFO		if(gl_info.gl_major_version == 0) init_gl_info(&gl_info);
 
-void init_gl_info(gl_info_t * i)
+static void init_gl_info(gl_info_t * i)
 {
-#if IBM || LIN
-	GLenum err = glewInit();
-	if (err != GLEW_OK)
-		AssertPrintf("Can not init GLEW: '%s'\n", glewGetErrorString(err));
-#endif
-
-	const char * ver_str = (const char *)glGetString(GL_VERSION);
-	const char * ext_str = (const char *)glGetString(GL_EXTENSIONS);
+	CHECK_GL_ERR
+	const char * ver_str = (const char *)glGetString(GL_VERSION);      CHECK_GL_ERR
+	const char * ext_str = (const char *)glGetString(GL_EXTENSIONS);   CHECK_GL_ERR
 
 	sscanf(ver_str,"%d", &i->gl_major_version);
+#if APL
+/* Apple only gives by default a 2.1 compatible openGL contexts.
+   BUT if openGL 3.2 or higher compatible contexts are requested by adding
+   "NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion3_2Core," just as the textbooks
+   say - no context is created any more on my 2008 iMac, i.e. most openGl functions 
+   unavailable. The GL_VERSION string changes to 3.1 though. Go figure.
+   So we can only test for 2.1 core functionality available here and pray ...
+*/
+	if(i->gl_major_version < 2)
+	{
+		LOG_MSG("OpenGL 2.0 or higher required. Found version '%s'\n", ver_str);
+		AssertPrintf("OpenGL 2.0 or higher required. Found version '%s'\n", ver_str);
+	}
+#else
 	if(i->gl_major_version < 3)
+	{
+		LOG_MSG("OpenGL 3.0 or higher required. Found version '%s'\n", ver_str);
 		AssertPrintf("OpenGL 3.0 or higher required. Found version '%s'\n", ver_str);
-	
+	}
+#endif
 	i->has_tex_compression = strstr(ext_str,"GL_ARB_texture_compression") != NULL;
 	i->has_non_pots = strstr(ext_str,"GL_ARB_texture_non_power_of_two") != NULL;
 	i->has_bgra = strstr(ext_str,"GL_EXT_bgra") != NULL;
+	i->has_rgtc = strstr(ext_str,"GL_ARB_texture_compression_rgtc") != NULL;
 
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE,&i->max_tex_size);
 	// if(i->max_tex_size > 2*8192)	i->max_tex_size = 2*8192;
 	if(i->has_tex_compression)	glHint(GL_TEXTURE_COMPRESSION_HINT,GL_NICEST);
 	LOG_MSG("OpenGL renderer  : %s\n", glGetString(GL_RENDERER));
 	LOG_MSG("OpenGL Version   : %s\n", ver_str);
-	LOG_MSG("Max texture size : %d\n", i->max_tex_size);
+	LOG_MSG("Max texture size : %d   DXT : %d   POTs : %d   RGTC : %d\n\n", i->max_tex_size, 
+	                                        i->has_tex_compression, i->has_non_pots, i->has_rgtc);
 }
 
 /*****************************************************************************************
@@ -334,7 +347,7 @@ static void swap_blocks(char *a, char *b, GLint type)
 		swap(*x, *y);
 		swap_12bit_idx(x->idx);
 		swap_12bit_idx(y->idx);
-		if (type == GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT)
+		if (type == GL_COMPRESSED_SIGNED_RG_RGTC2)
 		{
 			++x; ++y;
 			swap(*x, *y);
@@ -371,7 +384,7 @@ static void swap_blocks(char *a, GLint type)
 	{
 		DXT5AlphaBlock * x = (DXT5AlphaBlock  *)a;
 		swap_12bit_idx(x->idx);
-		if (type == GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT)
+		if (type == GL_COMPRESSED_SIGNED_RG_RGTC2)
 		{
 			++x;
 			swap_12bit_idx(x->idx);
@@ -407,11 +420,11 @@ bool	LoadTextureFromDDS(
 		case '5':	dds_blocksize = 16; glformat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;	break;
 		default: return false;
 		}
-	else if (strncmp(desc->ddpfPixelFormat.dwFourCC, "ATI", 3) == 0)
+	else if (gl_info.has_rgtc && strncmp(desc->ddpfPixelFormat.dwFourCC, "ATI", 3) == 0)
 		switch (desc->ddpfPixelFormat.dwFourCC[3])
 		{
-		case '1':	dds_blocksize = 8;  glformat = GL_COMPRESSED_RED_RGTC1_EXT;			break;
-		case '2':	dds_blocksize = 16; glformat = GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT; break; // for normal maps, some day
+		case '1':	dds_blocksize = 8;  glformat = GL_COMPRESSED_RED_RGTC1;			break;
+		case '2':	dds_blocksize = 16; glformat = GL_COMPRESSED_SIGNED_RG_RGTC2; break; // for normal maps, some day
 		default: return false;
 		}
 	else

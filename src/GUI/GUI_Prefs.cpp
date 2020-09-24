@@ -117,6 +117,9 @@ inline bool	is_spc(const char p) { return p == '\t' || p == ' '; }
 inline void	skip_space(const char *&p, const char * e) { while(p<e && is_spc(*p)) ++p; }
 inline void	skip_eol(const char *&p, const char * e) { while(p<e && is_eol(*p)) ++p; }
 
+#include <locale.h>
+#include <locale>
+
 void			GUI_Prefs_Read(const char *app_name)
 {
 	sPrefs.clear();
@@ -130,6 +133,9 @@ void			GUI_Prefs_Read(const char *app_name)
 	pref_dir += app_name;
     #endif
 	pref_dir += ".prefs";
+	
+	LOG_MSG("I/PREF RD locale %s %.2lf LC_CTYPE = '%s' LC_ALL='%s'\n", "Čü", 10003.14, setlocale(LC_CTYPE,NULL), setlocale(LC_ALL,NULL));
+
 	MFMemFile* f = MemFile_Open(pref_dir.c_str());
 	GUI_PrefSection_t * cur=NULL;
 	if(f)
@@ -210,6 +216,8 @@ void			GUI_Prefs_Write(const char * app_name)
 	pref_dir += app_name;
     #endif
 	pref_dir += ".prefs";
+
+	LOG_MSG("I/PREF WR locale %s %.2lf LC_CTYPE = '%s' LC_ALL='%s'\n", "Čü", 10003.14, setlocale(LC_CTYPE,NULL), setlocale(LC_ALL,NULL));
 
 	FILE * fi = fopen(pref_dir.c_str(), "w");
 	if (fi == NULL) { DoUserAlert("Warning: preferences file could not be written - could not write file."); return; }

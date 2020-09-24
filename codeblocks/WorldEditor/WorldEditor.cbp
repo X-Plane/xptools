@@ -244,6 +244,10 @@
 		<Unit filename="../../src/Utils/XChunkyFileUtils.cpp" />
 		<Unit filename="../../src/Utils/XChunkyFileUtils.h" />
 		<Unit filename="../../src/Utils/XUtils.h" />
+		<Unit filename="../../src/Utils/glew.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/Utils/glew.h" />
 		<Unit filename="../../src/Utils/md5.c">
 			<Option compilerVar="CC" />
 		</Unit>

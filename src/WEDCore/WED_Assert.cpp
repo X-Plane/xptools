@@ -31,10 +31,9 @@ static char gAssertBuf[512];
 
 void WED_AssertHandler_f(const char * condition, const char * file, int line)
 {
-	LOG_MSG("E/Assert %s (%s:%d)\n", condition, FILE_get_file_name(file).c_str(), line);
 	snprintf(gAssertBuf, 512, "WED has hit an error '%s' due to a bug. Please report on gatewaybugs.x-plane.com "
 	                          "and attach the file %sWED_Log.txt", condition, FILE_get_dir_name(GetApplicationPath()).c_str());
-//	DoUserAlert(gAssertBuf);
+	DoUserAlert(gAssertBuf);
 	throw wed_assert_fail_exception(gAssertBuf, file, line);
 }
 

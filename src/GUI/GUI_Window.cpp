@@ -603,6 +603,7 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBound
 		Fl_Tooltip::size((int)GUI_GetFontSize(1));
 		mTipBounds[0] = mTipBounds[1] = mTipBounds[2] = mTipBounds[3] = 0 ;
 		mTipIsActive=false;
+		mStateInited=false;
 
 		if( !(inAttributes & xwin_style_popup) && !(inAttributes & xwin_style_modal))
 		{
@@ -781,11 +782,10 @@ void			GUI_Window::GLDraw(void)
 {
 	SetGLContext();
 #if LIN
-	if(!XWinGL::mInited)
+	if(!mStateInited)
 	{
-		//printf("init gl\n");
 		mState.Init();
-		XWinGL::mInited = true;
+		mStateInited = true;
 	}
 #endif
 	int	w, h;

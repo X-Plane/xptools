@@ -22,7 +22,6 @@
  */
 
 #include "GUI_GraphState.h"
-#include "glew.h"
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -48,9 +47,6 @@ void		GUI_GraphState::Init(void)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-	GLenum err = glewInit();
-	if (err != GLEW_OK)
-		AssertPrintf("Can not init GLEW: '%s'\n", glewGetErrorString(err));
 	Reset();
 }
 
@@ -71,13 +67,13 @@ void		GUI_GraphState::SetTexUnits(int count)
 {
 	for (int n = 0; n < 4; ++n)
 	{
-		glActiveTextureARB(GL_TEXTURE0_ARB+n);
+		glActiveTexture(GL_TEXTURE0_ARB+n);
 		if (n < count)
 			glEnable(GL_TEXTURE_2D);
 		else
 			glDisable(GL_TEXTURE_2D);
 	}
-	glActiveTextureARB(GL_TEXTURE0_ARB);
+	glActiveTexture(GL_TEXTURE0_ARB);
 }
 
 void		GUI_GraphState::EnableFog(bool fog)
@@ -116,11 +112,8 @@ void		GUI_GraphState::EnableDepth(bool read, bool write)
 
 void		GUI_GraphState::BindTex(int id, int unit)
 {
-	#if OPTIMIZE
-		eliminate dupe bindings?
-	#endif
-	glActiveTextureARB(GL_TEXTURE0_ARB + unit);
+	glActiveTexture(GL_TEXTURE0_ARB + unit);
 	glBindTexture(GL_TEXTURE_2D, id);
-	glActiveTextureARB(GL_TEXTURE0_ARB);
+	glActiveTexture(GL_TEXTURE0_ARB);
 
 }

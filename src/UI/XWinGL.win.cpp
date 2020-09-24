@@ -56,8 +56,19 @@ XWinGL::XWinGL(int default_dnd, XWinGL * inShare) :
 	if (!wglMakeCurrent(mDC, mContext))
 		throw "can't set context";
 
-   glPixelStorei	(GL_UNPACK_ALIGNMENT,1				);
-   glPixelStorei	(GL_PACK_ALIGNMENT  ,1				);
+	glPixelStorei	(GL_UNPACK_ALIGNMENT,1				);
+	glPixelStorei	(GL_PACK_ALIGNMENT  ,1				);
+
+	if(!inShare)
+	{
+		if(GLint err = glewInit())
+		{
+			LOG_MSG("I/WGL glewInit failed\n");
+			throw "can't init glew";
+		}
+		else
+			LOG_MSG("I/WGL glewInit OK\n");
+	}
 }
 
 
@@ -88,15 +99,26 @@ XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX,
 	if (!mContext)
 		throw "can't make context";
 
-   if (inShare)
-	   if (!wglShareLists(inShare->mContext,mContext))
-		   throw "Can't share lists";
+	if (inShare)
+		if (!wglShareLists(inShare->mContext,mContext))
+			throw "Can't share lists";
 
 	if (!wglMakeCurrent(mDC, mContext))
-		throw "can't set context";
+			throw "can't set context";
 
-   glPixelStorei	(GL_UNPACK_ALIGNMENT,1				);
-   glPixelStorei	(GL_PACK_ALIGNMENT  ,1				);
+	glPixelStorei	(GL_UNPACK_ALIGNMENT,1				);
+	glPixelStorei	(GL_PACK_ALIGNMENT  ,1				);
+
+	if(!inShare)
+	{
+		if(GLint err = glewInit())
+		{
+			LOG_MSG("I/WGL glewInit failed\n");
+			throw "can't init glew";
+		}
+		else
+			LOG_MSG("I/WGL glewInit OK\n");
+	}
 }
 
 XWinGL::~XWinGL()
