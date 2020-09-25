@@ -42,7 +42,7 @@ glWidget::~glWidget()
 
 void glWidget::draw()
 {
-    if (!this->valid())
+    if (!this->context_valid())
 	{
 		mXWinGL->mCtxValid = false;
 		glPixelStorei	(GL_UNPACK_ALIGNMENT,1);
