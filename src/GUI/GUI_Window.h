@@ -146,8 +146,6 @@ private:
 	int             mTipBounds[4];
 	bool            mTipIsActive;
 
-	bool            mStateInited;
-
 	int handle(int e);
 
 	static	GUI_Window *  AnyXWND(void);		// Used by app - we need to get SOME window to build the FIRST menubar.

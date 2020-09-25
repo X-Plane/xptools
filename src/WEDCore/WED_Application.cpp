@@ -304,18 +304,12 @@ int		WED_Application::CanHandleCommand(int command, string& ioName, int& ioCheck
 void	WED_Application::AboutBox(void)
 {
 	if(!mAboutBox) mAboutBox = new WED_AboutBox( this );
-#if LIN
-	mAboutBox->mInited = false;
-#endif
 	mAboutBox->Show();
 }
 
 void	WED_Application::Preferences(void)
 {
 	if(!mSettingsWin) mSettingsWin = new WED_Settings( this );
-#if LIN
-	mSettingsWin->mInited = false;
-#endif
 	mSettingsWin->Show();
 }
 

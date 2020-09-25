@@ -23,12 +23,7 @@
 
 #include "GUI_GraphState.h"
 
-#if APL
-	#include <OpenGL/gl.h>
-	#include <OpenGL/glext.h>
-#endif
-	#include "AssertUtils.h"
-
+#include "AssertUtils.h"
 #include "XWinGL.h"
 
 void		GUI_GraphState::Init(void)

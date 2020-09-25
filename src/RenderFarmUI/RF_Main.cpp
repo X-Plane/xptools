@@ -23,6 +23,7 @@
 
 // Stuff we need to init
 //#include "XWidgetApp.h"
+#include "GUI_Window.h"
 #include "GUI_MemoryHog.h"
 #include "GUI_Clipboard.h"
 #include "GUI_Timer.h"
@@ -54,7 +55,6 @@
 #include "RF_Msgs.h"
 #include "RF_Application.h"
 #include "RF_MapView.h"
-#include "GUI_Window.h"
 #include "MathUtils.h"
 #include "RF_Selection.h"
 #include "NetHelpers.h"
@@ -300,10 +300,7 @@ static	GISTool_RegCmd_t		sUtilCmds[] = {
 };
 
 
-
-
-
-static int fifo = NULL;
+static int fifo = 0;
 
 static float CheckFifo(void)
 {

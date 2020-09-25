@@ -30,12 +30,12 @@
 	#else
 		typedef void NSOpenGLView;
 	#endif
-#else
-  #include "glew.h"
-#endif
-
-#if LIN
+#elif IBM
+	#include "glew.h"
+#elif LIN
+	#include "glew.h"
 #include <FL/Fl_Gl_Window.H>
+
 
 class	XWinGL;
 
@@ -101,8 +101,12 @@ private:
 
 #if LIN
 	glWidget*		mGlWidget;
+
+
 public:
-	bool			mInited;
+	bool			mGLInited;
+	bool			mCtxValid;
+	//GLContext		mContext;
 #endif
 
 };
