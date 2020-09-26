@@ -4071,6 +4071,9 @@
 			attributes = {
 				LastUpgradeCheck = 0710;
 				TargetAttributes = {
+					D6C579BC0C7E3C7B00FCB4C1 = {
+						ProvisioningStyle = Automatic;
+					};
 					D6ED369A0B67964D00D5484E = {
 						DevelopmentTeam = 7U46C6N6EP;
 						ProvisioningStyle = Manual;
@@ -5496,6 +5499,7 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "";
 				COMBINE_HIDPI_IMAGES = YES;
+				DEPLOYMENT_LOCATION = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"USE_JPEG=1",
@@ -5528,6 +5532,7 @@
 					libs/local/lib/libcurl.a,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.laminar_research.WED;
+				STRINGS_FILE_OUTPUT_ENCODING = "UTF-8";
 			};
 			name = Phone;
 		};
@@ -5579,6 +5584,8 @@
 		D60E98F70EDDDEEA0096DE0E /* Phone */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				DEVELOPMENT_TEAM = "";
 				OTHER_LDFLAGS = (
 					libs/local/lib/libsquish.a,
 					libs/local/lib/libpng.a,
@@ -5957,6 +5964,8 @@
 		D6C579D40C7E3C7B00FCB4C1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				DEVELOPMENT_TEAM = "";
 				OTHER_LDFLAGS = (
 					libs/local/lib/libsquish.a,
 					libs/local/lib/libpng.a,
@@ -5967,6 +5976,8 @@
 		D6C579D50C7E3C7B00FCB4C1 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				DEVELOPMENT_TEAM = "";
 				OTHER_LDFLAGS = (
 					libs/local/lib/libsquish.a,
 					libs/local/lib/libpng.a,
@@ -6003,6 +6014,7 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "";
 				COMBINE_HIDPI_IMAGES = YES;
+				DEPLOYMENT_LOCATION = NO;
 				GCC_DEBUGGING_SYMBOLS = full;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
@@ -6036,6 +6048,7 @@
 					libs/local/lib/libcurl.a,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.laminar_research.WED;
+				STRINGS_FILE_OUTPUT_ENCODING = "UTF-8";
 			};
 			name = Debug;
 		};
@@ -6044,6 +6057,7 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "";
 				COMBINE_HIDPI_IMAGES = YES;
+				DEPLOYMENT_LOCATION = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"USE_JPEG=1",
@@ -6076,6 +6090,7 @@
 					libs/local/lib/libcurl.a,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.laminar_research.WED;
+				STRINGS_FILE_OUTPUT_ENCODING = "UTF-8";
 			};
 			name = Release;
 		};
@@ -6138,6 +6153,8 @@
 		D6F01D740CDABA8D00A3F1B0 /* DebugOpt */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				DEVELOPMENT_TEAM = "";
 				OTHER_LDFLAGS = (
 					libs/local/lib/libsquish.a,
 					libs/local/lib/libpng.a,
@@ -6170,6 +6187,7 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "";
 				COMBINE_HIDPI_IMAGES = YES;
+				DEPLOYMENT_LOCATION = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"USE_JPEG=1",
@@ -6202,6 +6220,7 @@
 					libs/local/lib/libcurl.a,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.laminar_research.WED;
+				STRINGS_FILE_OUTPUT_ENCODING = "UTF-8";
 			};
 			name = DebugOpt;
 		};
