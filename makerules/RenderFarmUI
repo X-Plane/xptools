@@ -13,6 +13,7 @@ LDFLAGS		+= -rdynamic
 LDFLAGS		+= -Wl,--exclude-libs,ALL
 ifdef FLTK_STATIC
 LIBS		+= $(shell fltk-config --use-gl --ldstaticflags)
+LIBS		+= -lGLU
 else
 LIBS		+= -lfltk -lfltk_gl -lGL -lGLU -ldl -lpthread
 endif #FLTK_STATIC
