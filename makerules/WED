@@ -17,15 +17,11 @@ endif
 
 LDFLAGS		+= -rdynamic
 LDFLAGS		+= -Wl,--exclude-libs,ALL
-#LIBS		+= /usr/lib64/libfltk.a
-#LIBS		+= /usr/lib64/libfltk_gl.a
-#LIBS		+= -lXrender -lXcursor -lXfixes -lXext -lXft -lfontconfig -lXinerama  -lX11
-LIBS		+= -lfltk
-LIBS		+= -lfltk_gl
-LIBS		+= -lGL
-LIBS		+= -lGLU
-LIBS		+= -ldl
-LIBS		+= -lpthread
+ifdef FLTK_STATIC
+LIBS		+= $(shell fltk-config --use-gl --ldstaticflags)
+else
+LIBS		+= -lfltk -lfltk_gl -lGL -lGLU -ldl -lpthread
+endif #FLTK_STATIC
 LIBS		+= -lcurl -lssl -lcrypto
 LIBS		+= -Wl,-Bdynamic
 endif #PLAT_LINUX
