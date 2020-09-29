@@ -11,8 +11,12 @@ FORCEREBUILD_SUFFIX := _rfui
 ifdef PLAT_LINUX
 LDFLAGS		+= -rdynamic
 LDFLAGS		+= -Wl,--exclude-libs,ALL
-LIBS		+= -lfltk -lfltk_gl -lGL -lGLU -ldl
-LIBS		+= -lpthread
+ifdef FLTK_STATIC
+LIBS		+= $(shell fltk-config --use-gl --ldstaticflags)
+LIBS		+= -lGLU
+else
+LIBS		+= -lfltk -lfltk_gl -lGL -lGLU -ldl -lpthread
+endif #FLTK_STATIC
 LIBS		+= -Wl,-Bdynamic
 endif #PLAT_LINUX
 
