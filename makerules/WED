@@ -17,6 +17,7 @@ else
 LIBS		+= -lfltk -lfltk_gl -lGL 
 endif #FLTK_STATIC
 LIBS		+= -lGLU -ldl -lpthread
+LIBS		+= -static-libstdc++ -Wl,-Bstatic -lm
 LIBS		+= -Wl,-Bdynamic
 endif #PLAT_LINUX
 
