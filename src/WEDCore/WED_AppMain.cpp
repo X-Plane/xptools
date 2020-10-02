@@ -154,14 +154,18 @@ int main(int argc, char * argv[])
 #else
 		LOG_MSG("log.txt for WordEditor " WED_VERSION_STRING " ( Linux )\n");
 #endif
-		LOG_MSG(" compiled on " __DATE__ " " __TIME__ "\n");
-#if LIN
-		LOG_MSG("FLTK API version %d\n",Fl::api_version());
-#endif
+		LOG_MSG(" compiled on " __DATE__ " " __TIME__ " with " __VERSION__ " \n");
 		time_t now = time(0);
 		char * now_s = ctime(&now);
 		LOG_MSG("WED started on %s\n", now_s);
 
+#if LIN
+#if FL_API_VERSION < 10304
+		LOG_MSG("FLTK compiletime API %d\n", FL_API_VERSION);
+#else
+		LOG_MSG("FLTK runtime API %d compiletime API %d\n", Fl::api_version(), FL_API_VERSION);
+#endif
+#endif
 //		LOG_MSG("I/MAIN locale %s\n", loc_str);                          // datalog the locale trials atthe very beginning
 		LOG_MSG("I/MAIN locale now %s %.2lf LC_CTYPE = '%s' LC_ALL='%s'\n", "Čü", 10003.14, setlocale(LC_CTYPE,NULL), setlocale(LC_ALL,NULL));
 		fflush(gLogFile);
