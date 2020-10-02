@@ -149,19 +149,21 @@ int main(int argc, char * argv[])
 	{
 #if IBM
 		LOG_MSG("log.txt for WordEditor " WED_VERSION_STRING " ( Win )\n");
+		LOG_MSG(" compiled on " __DATE__ " " __TIME__ " with MSC %d\n", _MSC_VER);
 #elif APL
 		LOG_MSG("log.txt for WordEditor " WED_VERSION_STRING " ( OSX )\n");
+		LOG_MSG(" compiled on " __DATE__ " " __TIME__ " with " __VERSION__ "\n");
 #else
 		LOG_MSG("log.txt for WordEditor " WED_VERSION_STRING " ( Linux )\n");
+		LOG_MSG(" compiled on " __DATE__ " " __TIME__ " with " __VERSION__ "\n");
 #endif
-		LOG_MSG(" compiled on " __DATE__ " " __TIME__ " with " __VERSION__ " \n");
 		time_t now = time(0);
 		char * now_s = ctime(&now);
 		LOG_MSG("WED started on %s\n", now_s);
 
 #if LIN
-#if FL_API_VERSION < 10304
-		LOG_MSG("FLTK compiletime API %d\n", FL_API_VERSION);
+#if FL_PATCH_VERSION < 4
+		LOG_MSG("FLTK compiletime API %d\n", FL_MAJOR_VERSION*10000 + FL_MINOR_VERSION*100 + FL_PATCH_VERSION);
 #else
 		LOG_MSG("FLTK runtime API %d compiletime API %d\n", Fl::api_version(), FL_API_VERSION);
 #endif
