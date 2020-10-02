@@ -132,8 +132,8 @@ endif
 ####################################
 
 ifeq ($(conf), release_opt)
-	CFLAGS		+= -Ofast -flto -fomit-frame-pointer -fstrict-aliasing
-	CXXFLAGS	+= -Ofast -flto -fomit-frame-pointer -fstrict-aliasing
+	CFLAGS		+= -O2 -fomit-frame-pointer -fstrict-aliasing
+	CXXFLAGS	+= -O2 -fomit-frame-pointer -fstrict-aliasing
 	DEFINES		+= -DDEV=0 -DNDEBUG
 	StripDebug	:= Yes
 else ifeq ($(conf), release)
