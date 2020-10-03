@@ -41,13 +41,21 @@
 #endif
 
 #if LIN
+#if FL_PATCH_VERSION > 3
 #define mTOTAL_FLTK_CLIPFORMATS 2
+#else
+#define mTOTAL_FLTK_CLIPFORMATS 1
+static const char * const m_fl_clipboard_plain_text = "text/plain";
+#endif
 
 static string get_nth_clipboard_format(int n)
 {
 	#if FL_PATCH_VERSION > 3
 	if( n == 0 ) return Fl::clipboard_plain_text;
 	if( n == 1 ) return Fl::clipboard_image;
+	#else
+	if( n == 0 ) return m_fl_clipboard_plain_text;
+	printf("rr\n");
 	#endif
 	return NULL;
 }
@@ -101,8 +109,12 @@ void GUI_InitClipboard(void)
 		sCITs.push_back(get_pasteboard_text_type());
 	#elif IBM
 		sCITs.push_back(CF_UNICODETEXT);
-	#elif LIN && FL_PATCH_VERSION > 3
+	#elif LIN
+		#if FL_PATCH_VERSION > 3
 		sCITs.push_back(Fl::clipboard_plain_text);
+		#else
+		sCITs.push_back(m_fl_clipboard_plain_text);
+		#endif
 	#endif
 		sClipStrings.push_back("text");
 }
@@ -238,6 +250,9 @@ int GUI_Clipboard_GetSize(GUI_ClipType inType)
 		//printf("start paste typ: %s wnd: %p\n",sCITs[inType].c_str(),Fl::focus());
 		#if FL_PATCH_VERSION > 3
 		if(strcmp(sCITs[inType].c_str(),Fl::clipboard_plain_text) != 0) return 0;
+		#else
+		if(strcmp(sCITs[inType].c_str(),m_fl_clipboard_plain_text) != 0) return 0;
+		#endif
  		Set_ClipboardRecieved(false);
 		Fl::paste(*Fl::focus(),1);
 		// TODO:mroe --> revisit
@@ -249,7 +264,6 @@ int GUI_Clipboard_GetSize(GUI_ClipType inType)
 			if(Get_ClipboardRecieved())
 				return Fl::event_length();
 		}
-		#endif
 		return 0;
 	#endif
 }
@@ -326,12 +340,15 @@ bool GUI_Clipboard_SetData(int type_count, GUI_ClipType inTypes[], int sizes[], 
 		return true;
 
 	#elif LIN
-		#if FL_PATCH_VERSION > 3
 		for (int n = 0; n < type_count; ++n)
 		{
+			#if FL_PATCH_VERSION > 3
 			Fl::copy((const char *) ptrs[n],sizes[n],1,sCITs[inTypes[n]].c_str());
+			#else
+			Fl::copy((const char *) ptrs[n],sizes[n],1);
+			#endif
 		}
-		#endif
+
 		return true;
 	#endif
 }
