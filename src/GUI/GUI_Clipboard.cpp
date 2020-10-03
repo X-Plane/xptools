@@ -55,7 +55,6 @@ static string get_nth_clipboard_format(int n)
 	if( n == 1 ) return Fl::clipboard_image;
 	#else
 	if( n == 0 ) return m_fl_clipboard_plain_text;
-	printf("rr\n");
 	#endif
 	return NULL;
 }
