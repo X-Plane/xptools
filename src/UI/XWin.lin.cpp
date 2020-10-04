@@ -348,7 +348,9 @@ int XWin::handle(int e)
 		//TODO: can carry a list of filenames , can become much more
 		char c[2048];
 		strncpy(c, Fl::event_text(), sizeof(c));
-		#if FL_PATCH_VERSION > 0 //TODO:mroe: what todo else
+		#if FL_PATCH_VERSION < 1
+		#error FLTK 1.3.0 is not supported , no fl_decode_uri
+		#else
 		fl_decode_uri(c);
 		#endif
 	#if DEV && DEBUG_EVENTS
