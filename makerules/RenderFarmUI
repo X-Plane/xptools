@@ -10,20 +10,19 @@ FORCEREBUILD_SUFFIX := _rfui
 
 ifdef PLAT_LINUX
 LDFLAGS		+= -rdynamic
-LDFLAGS		+= -Wl,--exclude-libs,ALL
+LDFLAGS		+= -Wl,--exclude-libs,libpng
 LIBS		+= -lQtCore -lQtGui -lQtOpenGL -lGL -lGLU -ldl
 LIBS		+= -lpthread
-LIBS		+= -Wl,-Bdynamic
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN
 LDFLAGS		+= -framework Carbon -framework OpenGL -framework AppKit
+LIBS		+= ./libs/local/lib/libboost_thread.a
+LIBS		+= ./libs/local/lib/libboost_system.a
 endif #PLAT_DARWIN
 
 LIBS		+= ./libs/local/lib/libCGAL.a
 LIBS		+= ./libs/local/lib/libCGAL_Core.a
-LIBS		+= ./libs/local/lib/libboost_thread.a
-LIBS		+= ./libs/local/lib/libboost_system.a
 LIBS		+= ./libs/local/lib/libgmp.a
 LIBS		+= ./libs/local/lib/libgmpxx.a
 LIBS		+= ./libs/local/lib/libsquish.a

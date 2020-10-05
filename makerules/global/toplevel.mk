@@ -105,14 +105,14 @@ endif
 ifdef PLAT_LINUX
 	DEFINES		:= -DLIN=1 -DIBM=0 -DAPL=0
 	CFLAGS		:= $(M32_SWITCH) -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
-	CXXFLAGS	:= $(M32_SWITCH) -std=c++14 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
+	CXXFLAGS	:= $(M32_SWITCH) -std=c++14 -pthread -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
 	LDFLAGS		:= $(M32_SWITCH) -no-pie
 	BARE_LDFLAGS	:=
 	STRIPFLAGS	:= -s -x
 endif
 ifdef PLAT_DARWIN
 	DEFINES		:= -DLIN=0 -DIBM=0 -DAPL=1
-	CXXFLAGS	:= $(M32_SWITCH) -mmacosx-version-min=10.9 -std=c++11 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -fvisibility=hidden
+	CXXFLAGS	:= $(M32_SWITCH) -mmacosx-version-min=10.9 -std=c++14 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -fvisibility=hidden
 	CFLAGS		:= $(M32_SWITCH) -mmacosx-version-min=10.9 -Wno-deprecated-declarations -Wno-multichar -fvisibility=hidden
 	LDFLAGS		:= $(M32_SWITCH) -mmacosx-version-min=10.9
 	STRIPFLAGS	:= -x
