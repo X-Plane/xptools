@@ -10,16 +10,13 @@ FORCEREBUILD_SUFFIX	:= _wed
 
 ifdef PLAT_LINUX
 LDFLAGS		+= -rdynamic
-LDFLAGS		+= -Wl,--exclude-libs,ALL
-LIBS		+= -lQtCore
-LIBS		+= -lQtGui
-LIBS		+= -lQtOpenGL
-LIBS		+= -lGL
-LIBS		+= -lGLU
-LIBS		+= -ldl
-LIBS		+= -lpthread
-#LIBS		+= -lcurl -lssl -lcrypto
-LIBS		+= -Wl,-Bdynamic
+LDFLAGS		+= -Wl,--exclude-libs,libpng
+ifdef FLTK_STATIC
+LIBS		+= $(shell fltk-config --use-gl --ldstaticflags)
+else
+LIBS		+= -lfltk -lfltk_gl -lGL 
+endif #FLTK_STATIC
+LIBS		+= -lGLU -ldl -lpthread
 endif #PLAT_LINUX
 
 ifdef PLAT_MINGW
@@ -79,10 +76,6 @@ SOURCES += ./src/Utils/PlatformUtils.lin.cpp
 SOURCES += ./src/UI/XWin.lin.cpp
 SOURCES += ./src/UI/XWinGL.lin.cpp
 SOURCES += ./src/Utils/glew.c
-MOCSRC += ./src/UI/XWin.h
-MOCSRC += ./src/UI/XWinGL.h
-MOCSRC += ./src/GUI/GUI_Timer.h
-MOCSRC += ./src/GUI/GUI_Application.h
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN

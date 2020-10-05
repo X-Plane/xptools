@@ -109,7 +109,8 @@ HINSTANCE gInstance = NULL;
 #endif
 
 #if LIN
-  #include "initializer.h"
+#include "initializer.h"
+#include <FL/Fl.H>
 #endif
 
 FILE * gLogFile;
@@ -148,16 +149,25 @@ int main(int argc, char * argv[])
 	{
 #if IBM
 		LOG_MSG("log.txt for WordEditor " WED_VERSION_STRING " ( Win )\n");
+		LOG_MSG(" compiled on " __DATE__ " " __TIME__ " with MSC %d\n", _MSC_VER);
 #elif APL
 		LOG_MSG("log.txt for WordEditor " WED_VERSION_STRING " ( OSX )\n");
+		LOG_MSG(" compiled on " __DATE__ " " __TIME__ " with " __VERSION__ "\n");
 #else
 		LOG_MSG("log.txt for WordEditor " WED_VERSION_STRING " ( Linux )\n");
-#endif		
-		LOG_MSG(" compiled on " __DATE__ " " __TIME__ "\n");
+		LOG_MSG(" compiled on " __DATE__ " " __TIME__ " with " __VERSION__ "\n");
+#endif
 		time_t now = time(0);
 		char * now_s = ctime(&now);
 		LOG_MSG("WED started on %s\n", now_s);
 
+#if LIN
+#if FL_PATCH_VERSION < 4
+		LOG_MSG("FLTK compiletime API %d\n", FL_MAJOR_VERSION*10000 + FL_MINOR_VERSION*100 + FL_PATCH_VERSION);
+#else
+		LOG_MSG("FLTK runtime API %d compiletime API %d\n", Fl::api_version(), FL_API_VERSION);
+#endif
+#endif
 //		LOG_MSG("I/MAIN locale %s\n", loc_str);                          // datalog the locale trials atthe very beginning
 		LOG_MSG("I/MAIN locale now %s %.2lf LC_CTYPE = '%s' LC_ALL='%s'\n", "Čü", 10003.14, setlocale(LC_CTYPE,NULL), setlocale(LC_ALL,NULL));
 		fflush(gLogFile);
@@ -186,20 +196,23 @@ int main(int argc, char * argv[])
 	// at least one shared context so that the textures are not purged.
 	// This means one window must always be in existence.  That window is the about box...which stays hidden but allocated to
 	// sustain OpenGL.
-	
-	WED_AboutBox * about = new WED_AboutBox(&app);
-	WED_MakeMenus(&app);
-	#if LIN
-	//mroe: resize after update the menubar
-	about->Resize(about->centralWidget()->width(),about->centralWidget()->height());
-	#endif
-	WED_StartWindow * start = new WED_StartWindow(&app);
+	// mroe: this first window is the StartWindow now
 
-	start->Show();
-
-	start->ShowMessage("Reading Prefs...");
 	GUI_Prefs_Read("WED");
 	WED_Document::ReadGlobalPrefs();
+
+	WED_StartWindow * start = new WED_StartWindow(&app);   // here we initialize the fonts - but the
+	#if LIN
+	//mroe: FLTK sets LC_CType and set it not back to "C"
+	//seems only to happen when creating the first window
+	setlocale(LC_ALL,"C");
+	#endif
+	WED_MakeMenus(&app);
+	#if LIN
+	start->xclass("WED");
+	start->show(1, argv);  //mroe: WED has own cmd line arguments , this suppresses FLTK trys parse own args
+	#endif
+	start->Show();
 
 	start->ShowMessage("Scanning X-System Folder...");
 	pMgr.SetXPlaneFolder(GUI_GetPrefString("packages","xsystem",""));
@@ -217,16 +230,11 @@ int main(int argc, char * argv[])
 	REGISTER_LIST_ATC
 	#undef _R
 
-	app.SetAbout(about);
 	start->ShowMessage(string());
-	
+
 	app.Run();
-	
-    // we're out of eventloop here, deleting windows on linux implies sending messages to them,
-    // so this would fail.
-	#if !LIN
-	    delete about;
-	#endif
+
+	delete start;
 
 	GUI_MemoryHog::RemoveNewHandler();
 

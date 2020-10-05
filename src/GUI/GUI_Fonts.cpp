@@ -390,6 +390,10 @@ void 	GUI_SetFontSizes(float sizePix)
 	TT_reset_font(font_Max);
 }
 
+float	GUI_GetFontSize(int inFontID)
+{
+	return tt_sizes[inFontID];
+}
 
 float GUI_MeasureRange(int inFontID, const char * inStart, const char * inEnd)
 {

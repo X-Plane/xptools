@@ -34,22 +34,23 @@
 	#include "glew.h"
 #elif LIN
 	#include "glew.h"
-	#include <QtOpenGL/QGLWidget>
+#include <FL/Fl_Gl_Window.H>
+
 
 class	XWinGL;
 
-class glWidget : public QGLWidget
+class glWidget : public Fl_Gl_Window
 {
-	Q_OBJECT
+
 public:
-	glWidget(QWidget *parent, XWinGL* xwin, QGLWidget* share);
+	glWidget(XWinGL* xwin,int w,int h,Fl_Gl_Window* share);
 	virtual ~glWidget(void);
+	void draw();
+
 protected:
-	void resizeGL(int inWidth, int inHeight);
-	void paintGL(void);
-	void initializeGL(void);
-// 	void focusInEvent(QFocusEvent* e);
-// 	void focusOutEvent(QFocusEvent* e);
+
+    void resize(int X,int Y,int W,int H);
+
 private:
 	XWinGL* mXWinGL;
 };
@@ -60,17 +61,11 @@ private:
 
 class	XWinGL : public XWin
 {
-#if LIN
-	Q_OBJECT
-public:
-	XWinGL(int default_dnd, XWinGL * inShare, QWidget* parent = 0);
-	XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX, int inY, int inWidth, int inHeight, XWinGL * inShare, QWidget* parent = 0);
-#else
 public:
 
 	XWinGL(int default_dnd, XWinGL * inShare);
 	XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX, int inY, int inWidth, int inHeight, XWinGL * inShare);
-#endif
+
 	virtual					~XWinGL();
 
 			void			SetGLContext(void);
@@ -106,8 +101,12 @@ private:
 
 #if LIN
 	glWidget*		mGlWidget;
+
+
 public:
-	bool			mInited;
+	bool			mGLInited;
+	bool			mCtxValid;
+	//GLContext		mContext;
 #endif
 
 };
