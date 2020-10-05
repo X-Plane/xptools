@@ -66,6 +66,11 @@ bool	RasterShapeFile(
 			const char *			feature_desc,
 			ProgressFunc			inFunc);
 
+bool	ReadShapeFile(
+			const char *			inFile,
+			Pmwx&					io_map,
+			ProgressFunc			inFunc);
+
 bool	WriteShapefile(
 			const char *			in_file,
 			Pmwx&					in_map,

@@ -28,7 +28,7 @@
 #include "MapPolygon.h"
 #include "ConfigSystem.h"
 #include "MapAlgs.h"
-//#include "GISTool_Globals.h"
+#include "GISTool_Globals.h"
 #include "MapTopology.h"
 #include "MapHelpers.h"
 #include "PolyRasterUtils.h"
@@ -1311,6 +1311,145 @@ bool	RasterShapeFile(
 			r->second.AdvanceScanline(y);
 		}
 	}
+
+	return true;
+}
+
+bool	ReadShapeFile(
+			const char *			in_file,
+			Pmwx&					io_map,
+			ProgressFunc			inFunc)
+{
+	SHPHandle file =  SHPOpen(in_file, "rb");
+	if(!file)
+	{
+		fprintf(stderr,"Unable to open shape file '%s'\n", in_file);
+		return false;
+	}
+	DBFHandle db = DBFOpen(in_file,"rb");
+	if(!db)
+	{
+		fprintf(stderr,"Unable to open shape file DB '%s'\n", in_file);
+		SHPClose(file);
+		return false;
+	}
+	
+	for(int f = 0; f < DBFGetFieldCount(db); ++f)
+	{
+		char fname[256];
+		int width, dec;
+		DBFGetFieldInfo(db, f, fname, &width, &dec);
+		printf("%d: %s (%d/%d)\n", f, fname, width,dec);
+	}
+
+	int dsf_param = DBFGetFieldIndex(db,"param");
+	int dsf_asset_name = DBFGetFieldIndex(db,"asset_name");
+
+	if(dsf_param == -1 || dsf_asset_name == -1)
+	{
+		if(dsf_param == -1)
+			fprintf(stderr,"Error: unable to find field 'param' for SHP DB.\n");
+		if(dsf_asset_name == -1)
+			fprintf(stderr,"Error: unable to find field 'asset_name' for SHP DB.\n");
+		DBFClose(db);
+		SHPClose(file);
+		return false;
+	}
+
+		int		entity_count;
+		int		shape_type;
+		double	bounds_lo[4], bounds_hi[4];
+
+	SHPGetInfo(file, &entity_count, &shape_type, bounds_lo, bounds_hi);
+
+	PROGRESS_START(inFunc, 0, 1, "Reading shape file...")
+
+	CGAL::Arr_walk_along_line_point_location<Arrangement_2>	locator(io_map);
+
+	bool is_pts = shape_type == SHPT_POINT || shape_type == SHPT_POINTZ || shape_type == SHPT_POINTM;
+
+	int step = entity_count ? (entity_count / 150) : 2;
+	for(int n = 0; n < entity_count; ++n)
+	{
+		PROGRESS_CHECK(inFunc, 0, 1, "Reading shape file...", n, entity_count, step)
+		SHPObject * obj = SHPReadObject(file, n);
+
+		if(is_pts)
+		{
+			GISObjPlacement_t no;
+			no.mRepType = LookupTokenCreate(DBFReadStringAttribute(db,obj->nShapeId,dsf_asset_name));
+			no.mHeading = DBFReadIntegerAttribute(db,obj->nShapeId,dsf_param);
+
+			no.mLocation = Point2(obj->padfX[0],obj->padfY[0]);
+
+			SHPDestroyObject(obj);
+
+			CGAL::Object lobj = locator.locate(ben2cgal<Pmwx::Point_2>(no.mLocation));
+			Face_const_handle ff;
+			if(CGAL::assign(ff,lobj))
+			{
+				Face_handle f = io_map.non_const_handle(ff);
+				f->data().mObjs.push_back(no);
+			}
+			else
+			{
+	#if DEV
+				debug_mesh_point(no.mLocation,1,0,0);
+	#endif
+				fprintf(stderr,"WARNING: point %d could not be placed.\n", n);
+			}
+		}
+		else
+		{
+			GISPolyObjPlacement_t np ;
+			np.mRepType = LookupTokenCreate(DBFReadStringAttribute(db,obj->nShapeId,dsf_asset_name));
+			np.mParam = DBFReadIntegerAttribute(db,obj->nShapeId,dsf_param);
+			
+			for (int part = 0; part < obj->nParts; ++part)
+			{
+				int start_idx = obj->panPartStart[part];
+				int stop_idx = ((part+1) == obj->nParts) ? obj->nVertices : obj->panPartStart[part+1];
+				Polygon2	p;
+				for (int i = start_idx; i < stop_idx; ++i)
+				{
+					Point2 pt(obj->padfX[i],obj->padfY[i]);
+					p.push_back(pt);
+				}
+				np.mShape.push_back(p);
+			}
+
+			SHPDestroyObject(obj);
+
+			if(np.mShape.empty() || np.mShape[0].empty())
+				continue;
+
+			CGAL::Object lobj = locator.locate(ben2cgal<Pmwx::Point_2>(np.mShape[0][0]));
+			Face_const_handle ff;
+			if(CGAL::assign(ff,lobj))
+			{
+				Face_handle f = io_map.non_const_handle(ff);
+				f->data().mPolyObjs.push_back(np);
+			}
+			else
+			{
+	#if DEV
+				for(vector<Polygon2>::iterator p = np.mShape.begin(); p != np.mShape.end(); ++p)
+				{
+					for(Polygon2::const_side_iterator pp = p->sides_begin(); pp != p->sides_end(); ++pp)
+					{
+						debug_mesh_line((*pp).p1,(*pp).p2,1,0,0,1,0,0);
+					}
+				}
+	#endif
+				fprintf(stderr,"WARNING: polygon %d could not be placed.\n", n);
+			}
+		}
+	}
+
+	PROGRESS_DONE(inFunc, 0, 1, "Reading shape file...")
+
+	SHPClose(file);
+	DBFClose(db);
 
 	return true;
 }
