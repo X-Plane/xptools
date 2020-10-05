@@ -1756,8 +1756,11 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	{
 		Assert(obdef->second != NO_VALUE);
 		Assert(obdef->second != DEM_NO_DATA);
-		string objName = gObjLibPrefix + FetchTokenString(obdef->second);
-		objName += ".obj";
+		string objName = FetchTokenString(obdef->second);
+		if(objName.find('.') == objName.npos)
+		{
+			objName = gObjLibPrefix + objName + ".obj";
+		}
 		cbs.AcceptObjectDef_f(objName.c_str(), writer2);
 	}
 
