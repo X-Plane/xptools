@@ -9,7 +9,7 @@ DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
 #FORCEREBUILD_SUFFIX := _mt
 
 ifdef PLAT_LINUX
-LIBS		+= -lpthread
+LIBS		+= -pthread
 endif #PLAT_LINUX
 
 ifdef PLAT_MINGW
