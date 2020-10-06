@@ -557,20 +557,19 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBound
 	XWinGL(0, inTitle, inAttributes, inBounds[0], inBounds[1], inBounds[2]-inBounds[0], inBounds[3]-inBounds[1], sWindows.empty() ? NULL : *sWindows.begin())
 {
 	mInDrag = 0;
-	#if IBM
+#if IBM
 		mDND = new GUI_Window_DND(this, mWindow);
 		mBaseProc = (WNDPROC) GetWindowLongPtr(mWindow,GWLP_WNDPROC);
 		SetWindowLongPtrW(mWindow,GWLP_USERDATA,(LONG_PTR)this);
 		SetWindowLongPtrW(mWindow,GWLP_WNDPROC,(LONG_PTR)SubclassFunc);
 
-		if (!sWindows.empty() && !(inAttributes & xwin_style_modal))
+		if (!sWindows.empty() && !(inAttributes & (xwin_style_modal | xwin_style_popup)))
 		{
 			HMENU new_mbar = ::CreateMenu();
 			::SetMenu(mWindow,new_mbar);
 			CopyMenusRecursive(::GetMenu((*sWindows.begin())->mWindow),new_mbar);
 			::DrawMenuBar(mWindow);
 		}
-
 		mToolTip = CreateWindowEx(
 					WS_EX_TOPMOST,
 					TOOLTIPS_CLASS,
@@ -620,10 +619,14 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBound
 		}
 
 	#endif
-	sWindows.insert(this);
 	mBounds[0] = 0;
 	mBounds[1] = 0;
 	XWinGL::GetBounds(mBounds+2,mBounds+3);
+#if IBM
+	if(sWindows.empty())
+		mBounds[3] -= 20;  // aproximate menu height, only for very first window - which is created before a menu is set
+#endif
+	sWindows.insert(this);
 	memset(mMouseFocusPane,0,sizeof(mMouseFocusPane));
 	mVisible = inAttributes & xwin_style_visible;
 	#if LIN

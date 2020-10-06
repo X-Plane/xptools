@@ -200,18 +200,12 @@ int main(int argc, char * argv[])
 
 	GUI_Prefs_Read("WED");
 	WED_Document::ReadGlobalPrefs();
+
+	WED_StartWindow * start = new WED_StartWindow(&app);
+	WED_MakeMenus(&app);
 #if LIN
-	// FLTK needs the window to exist for the menus to be set up
-	WED_StartWindow * start = new WED_StartWindow(&app);
-	//mroe: FLTK sets LC_CType and set it not back to "C"
-	//seems only to happen when creating the first window
-	setlocale(LC_ALL,"C");
-	WED_MakeMenus(&app);
-	start->show(1, argv);  //mroe: WED has own cmd line arguments , this suppresses FLTK trys parse own args
-#else
-	// Windows needs the menu created first - so the windows metrics are created properly
-	WED_MakeMenus(&app);
-	WED_StartWindow * start = new WED_StartWindow(&app);
+	setlocale(LC_ALL, "C");   //mroe: FLTK sets user locale upon first window creation only, does not set it not back to "C"
+	start->show(1, argv);     //mroe: WED has own cmd line arguments, this prevents FLTK from parsing them
 #endif
 	start->Show();
 
