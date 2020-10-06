@@ -200,18 +200,19 @@ int main(int argc, char * argv[])
 
 	GUI_Prefs_Read("WED");
 	WED_Document::ReadGlobalPrefs();
-
-	WED_StartWindow * start = new WED_StartWindow(&app);   // here we initialize the fonts - but the
-	#if LIN
+#if LIN
+	// FLTK needs the window to exist for the menus to be set up
+	WED_StartWindow * start = new WED_StartWindow(&app);
 	//mroe: FLTK sets LC_CType and set it not back to "C"
 	//seems only to happen when creating the first window
 	setlocale(LC_ALL,"C");
-	#endif
 	WED_MakeMenus(&app);
-	#if LIN
-	start->xclass("WED");
 	start->show(1, argv);  //mroe: WED has own cmd line arguments , this suppresses FLTK trys parse own args
-	#endif
+#else
+	// Windows needs the menu created first - so the windows metrics are created properly
+	WED_MakeMenus(&app);
+	WED_StartWindow * start = new WED_StartWindow(&app);
+#endif
 	start->Show();
 
 	start->ShowMessage("Scanning X-System Folder...");
