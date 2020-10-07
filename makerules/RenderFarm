@@ -10,8 +10,6 @@ DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
 
 LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL_Core.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libboost_thread.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libboost_system.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libmpfr.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgmp.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgmpxx.a
@@ -25,11 +23,13 @@ LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
 
 ifdef PLAT_LINUX
-LIBS		+= -lpthread -lrt
+LIBS		+= -lpthread
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN
 LDFLAGS		+= -framework Carbon
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libboost_thread.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libboost_system.a
 endif #PLAT_DARWIN
 
 ##

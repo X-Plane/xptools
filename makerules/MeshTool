@@ -9,41 +9,21 @@ DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
 #FORCEREBUILD_SUFFIX := _mt
 
 ifdef PLAT_LINUX
-LDFLAGS		+= -static
-LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libboost_thread.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libboost_system.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgeotiff.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libshp.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libproj.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
-LIBS		+= -lpthread -lrt
+LIBS		+= -pthread
 endif #PLAT_LINUX
 
 ifdef PLAT_MINGW
 LDFLAGS		+= -static
 DEFINES		+= -DMINGW_BUILD=1
-LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libboost_thread.dll
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgeotiff.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libshp.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libproj.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
 endif #PLAT_MINGW
 
 ifdef PLAT_DARWIN
 LDFLAGS		+= -framework Carbon
-LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libboost_thread.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libboost_system.a
+endif #PLAT_DARWIN
+
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgeotiff.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libshp.a
@@ -52,7 +32,6 @@ LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
-endif #PLAT_DARWIN
 
 
 ##

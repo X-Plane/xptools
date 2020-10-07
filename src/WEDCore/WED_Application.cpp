@@ -99,7 +99,7 @@ RadioButton::RadioButton(int x0, int y0, WED_Settings * parent,  const int * var
 bool WED_Settings::Closed(void)
 {
 	Hide();
-	return true; // false;  // don't destroy window under MS Windows- just hide it, so we can later Show() it again
+	return false;
 }
 
 
@@ -142,12 +142,11 @@ void WED_Settings::ReceiveMessage(
 	{
 			gOrthoExport = ((GUI_Button *) inParam)->GetValue();
 	}
-/*	else if (inMsg == kMsg_Close)
+	else if (inMsg == kMsg_Close)
 	{
 		Hide();
-		AsyncDestroy();
+//		AsyncDestroy();
 	}
- */
 }
 
 
@@ -220,14 +219,14 @@ WED_Settings::WED_Settings(GUI_Commander * cmdr) : GUI_Window("WED Preferences",
 	label2->Show();
 
 
-/*	GUI_Button * close_btn = new GUI_Button("push_buttons.png",btn_Push,k_no, k_yes, k_no, k_yes);
+	GUI_Button * close_btn = new GUI_Button("push_buttons.png",btn_Push,k_no, k_yes, k_no, k_yes);
 	close_btn->SetBounds(220,5,290,5+GUI_GetImageResourceHeight("push_buttons.png")/3);
 	close_btn->Show();
 	close_btn->SetDescriptor("Close");
 	close_btn->SetParent(this);
 	close_btn->AddListener(this);
 	close_btn->SetMsg(kMsg_Close,0);
-*/
+
  }
 
 #if LIN

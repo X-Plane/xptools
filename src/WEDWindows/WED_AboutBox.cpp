@@ -32,7 +32,7 @@
 
 static int aboutbox_bounds[4] = { 0, 0, 600, 420};
 
-WED_AboutBox::WED_AboutBox(GUI_Commander * cmdr) : GUI_Window("About WED", xwin_style_movable | xwin_style_centered | xwin_style_popup, aboutbox_bounds, cmdr)
+WED_AboutBox::WED_AboutBox(GUI_Commander * cmdr) : GUI_Window("About WED", xwin_style_movable | xwin_style_centered | xwin_style_popup , aboutbox_bounds, cmdr)
 {
 }
 
