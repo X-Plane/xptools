@@ -17,6 +17,7 @@ WED 2.3.0b4
     Bug Fix:
     - WED-1324: for XP1000+ targets export has_ATC in apt.dat rowcode 1 always as 0
     - fix validation for far-off-airport items to skip hidden items
+    - fix OSX not resolving symbolic links at Orthophoto Import
    Features:
     - WED-1322: Validate apts w/ATC tower have at least one start supporting AI operation
     - Validate only type=misc starts in runway hotzones
