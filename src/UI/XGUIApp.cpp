@@ -42,7 +42,7 @@ int		main(int argc, char ** argv)
 {
 	init_ns_stuff();
 
-	XGrindInit(argc,argv);
+	XGrindInit();
 
 	vector<string> files;
 

@@ -603,7 +603,11 @@ void	XGrindFiles(const vector<string>& files)
 	}
 }
 
-void	XGrindInit(int argc, char* argv[])
+#if LIN
+void	XGrindInit(int& argc, char* argv[])
+#else
+void	XGrindInit()
+#endif //if LIN
 {
 	XObjWin * win = new XObjWin(NULL);
 #if LIN
