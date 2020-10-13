@@ -13,6 +13,10 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 2.3.0r2
+    Bug Fix:
+    - fix Orthophoto export to only run if image file is newer than textures on disk
+    
 WED 2.3.0r1 10/7/20
     Bug Fix:
     - WED-1324: for XP1000+ targets export has_ATC in apt.dat rowcode 1 always as 0

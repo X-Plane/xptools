@@ -1793,7 +1793,7 @@ static int	DSF_ExportTileRecursive(
 				* Enjoy your new orthophoto
 				*/
 				
-				if(1) // date_cmpr_res == dcr_firstIsNew || date_cmpr_res == dcr_same)
+				if(date_cmpr_res == dcr_firstIsNew || date_cmpr_res == dcr_same)
 				{
 	#if DEV
 					StElapsedTime	etime("DDS export time");
@@ -1864,7 +1864,7 @@ static int	DSF_ExportTileRecursive(
 								{
 									UVMleft = desired_left;
 									UVbounds_used.p1.x_ = 1.0 - ((double) UVMwidth) / DDSwidth;
-//						printf("save a scale: use w= %d of %d w/unused left\n", UVMwidth, DDSwidth);
+									LOG_MSG("I/DSF save a scale: using w=%d/%d pix, leaving some unused on left\n", UVMwidth, DDSwidth);
 									UVMwidth = DDSwidth;
 								}
 							}
@@ -1875,7 +1875,7 @@ static int	DSF_ExportTileRecursive(
 								{
 									UVMright = desired_right;
 									UVbounds_used.p2.x_ = ((double) UVMwidth) / DDSwidth;
-///						printf("save a scale: use w= %d of %d w/unused right\n", UVMwidth, DDSwidth);
+									LOG_MSG("I/DSF save a scale: using w=%d/%d pix, leaving some unused on right\n", UVMwidth, DDSwidth);
 									UVMwidth = DDSwidth;
 								}
 							}
@@ -1889,7 +1889,7 @@ static int	DSF_ExportTileRecursive(
 								{
 									UVMbottom = desired_bottom;
 									UVbounds_used.p1.y_ = 1.0 - ((double) UVMheight) / DDSheight;
-//						printf("save a scale: use h= %d of %d w/unused bottom\n", UVMheight, DDSheight);
+									LOG_MSG("I/DSF save a scale: using h=%d/%d pix, leaving some unused on bottom\n", UVMheight, DDSheight);
 									UVMheight = DDSheight;
 								}
 							}
@@ -1900,7 +1900,7 @@ static int	DSF_ExportTileRecursive(
 								{
 									UVMtop = desired_top;
 									UVbounds_used.p2.y_ = ((double) UVMheight) / DDSheight;
-//						printf("save a scale: use h= %d of %d w/unused top\n", UVMheight, DDSheight);
+									LOG_MSG("I/DSF save a scale: using h=%d/%d pix, leaving some unused on top\n", UVMheight, DDSheight);
 									UVMheight = DDSheight;
 								}
 							}
@@ -1911,14 +1911,14 @@ static int	DSF_ExportTileRecursive(
 					{
 						if(UVMwidth == DDSwidth && UVMheight == DDSheight)
 						{
-//					printf("1:1 copy\n");
 							CopyBitmapSectionDirect(imgInfo, DDSInfo, UVMleft, UVMbottom, 0, 0, DDSwidth, DDSheight);
+							LOG_MSG("I/DSF exporting ortho tile %s at 1:1 scale\n", absPathDDS.c_str());
 						}
 						else
 						{
-//					printf("scaled copy\n");
 							CopyBitmapSectionSharp(imgInfo, DDSInfo, UVMleft, UVMbottom, UVMright, UVMtop,
 																				0, 0, DDSwidth, DDSheight);
+							LOG_MSG("I/DSF exporting ortho tile %s scaled\n", absPathDDS.c_str());
 						}
 						if(gOrthoExport)
 						{
