@@ -442,6 +442,9 @@ GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t 
 		}
 		else
 		{
+			//mroe: If the names matches , FLTK inserts the submenu there without taking the ID into account.
+			//Also the given item id is not correct anymore since all "-" divider fields was removed in the fltk menu.
+			//Thats why the given parent item id is redundant and we have to take care that the names match.
 			parent_menu->insert(parentItem,inTitle,0,0,menu,FL_SUBMENU_POINTER);
 		}
 

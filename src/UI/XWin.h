@@ -65,11 +65,6 @@
 
 #define MENU_ARRAY_SIZE 40
 #define xmenu const Fl_Menu_Item *
-enum {
-  _NET_WM_STATE_REMOVE,
-  _NET_WM_STATE_ADD,
-  _NET_WM_STATE_TOGGLE
-};
 
 typedef struct tagPOINT {
   int x;
