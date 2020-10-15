@@ -356,13 +356,11 @@ GUI_Menu		GUI_Application::GetMenuBar(void)
 	::SetMenu(hwnd, mbar);
 	return mbar;
 #else
-
 	if(mMenu) return (void*) mMenu;
 	GUI_Window* w = GUI_Window::AnyXWND();
 	if (w)
 	{
 		mMenu = w->GetMenuBar();
-		//w->mMenuBar->global();					//this makes shortcuts works
 	}
 	return (void*) mMenu;
 #endif
@@ -426,26 +424,28 @@ GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t 
 	else
 	{
 		Fl_Menu_Item * parent_menu = (Fl_Menu_Item *) parent;
-	    if(parent_menu->size() > MENU_ARRAY_SIZE-1) return NULL;
 
-//		int sz = 0;
-//		while(items[sz].name) ++sz;
-//		++sz;
+		int sz = 0;
+		while(items[sz].name) ++sz;
+		++sz;
 //		printf("create menu %s size %d\n",inTitle,sz);
 
-		Fl_Menu_Item * menu = new Fl_Menu_Item[MENU_ARRAY_SIZE*sizeof(Fl_Menu_Item )];
-		memset(menu,0,MENU_ARRAY_SIZE*sizeof(Fl_Menu_Item ));
+		Fl_Menu_Item * menu = new Fl_Menu_Item[sz*sizeof(Fl_Menu_Item )];
+		memset(menu,0,sz*sizeof(Fl_Menu_Item ));
 
 		if (parent == this->GetMenuBar())
 		{
+			if(parent_menu->size() > MENU_ARRAY_SIZE-1) return NULL;
 			parent_menu->add(inTitle,0,0,menu,FL_SUBMENU_POINTER);
 		}
 		else
 		{
-			//mroe: If the names matches , FLTK inserts the submenu there without taking the ID into account.
+			//TODO: mroe: If the names matches , FLTK inserts the submenu there without taking the ID into account.
 			//Also the given item id is not correct anymore since all "-" divider fields was removed in the fltk menu.
 			//Thats why the given parent item id is redundant and we have to take care that the names match.
+			int parent_menu_sz = parent_menu->size();
 			parent_menu->insert(parentItem,inTitle,0,0,menu,FL_SUBMENU_POINTER);
+			DebugAssert(parent_menu_sz == parent_menu->size());
 		}
 
 		new_menu = menu;
@@ -547,29 +547,25 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 			DebugAssert(!(menu->size() > POPUP_ARRAY_SIZE-1));
 			if(menu->size() > POPUP_ARRAY_SIZE-1) return;
 		}
-		else
-		{
-			DebugAssert(!(menu->size() > MENU_ARRAY_SIZE-1));
-			if(menu->size() > MENU_ARRAY_SIZE-1) return;
-		}
 
 		string	itemname(items[n].name);
 		bool is_disable = IsDisabledString(itemname);
 
-		if (!strcmp(items[n].name, "-"))
-		{   /*addSeparator()*/
+		if (!strcmp(items[n].name, "-")) /*addSeparator()*/
+		{
 			if( menu->size() < 2) return ;
 			Fl_Menu_Item * last = menu + (menu->size()-2);
 			last->flags = last->flags|FL_MENU_DIVIDER;
 		}
 		else
-		{
-			if (!items[n].cmd )
-			{/*is single popup  or a submenu */
+		{	//replace slashes in names , FLTK creates a submenu after slash
+			for(int i=0;i < itemname.size();++i)
+				if(itemname[i] == '/') itemname[i] = '|';
 
-				if(menu == mPopup)
-				{/*we have popup already */
-
+			if (!items[n].cmd ) /*is single popup or a submenu */
+			{
+				if(menu == mPopup) /*we have popup already */
+				{
 				    int idx = menu->add(itemname.c_str(),0,0);
 
 					Fl_Menu_Item * m = menu + idx;
@@ -588,9 +584,8 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 					menu->add(itemname.c_str(),0,0);
 				}
 			}
-			else
-			{/*is part of a menu structure */
-
+			else /*is part of a menu structure */
+			{
 				unsigned int sc = 0;
 				if(items[n].key != 0)
 				{
