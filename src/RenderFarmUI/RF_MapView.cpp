@@ -226,12 +226,12 @@ void	RF_MapView::MakeMenus(void)
 	}
 	dem_menus.back().name = 0;
 
-	gApplication->CreateMenu("DEM Choice", &*dem_menus.begin(),view_menu, 0);
+	gApplication->CreateMenu("Raster Layer", &*dem_menus.begin(),view_menu, 0);
 
 	for(int n = 0; n < DEMChoiceCount; ++n)
 		dem_menus[n].cmd = viewCmd_DEMDataChoice_Start + n;
 
-	gApplication->CreateMenu("DEM Data Choice", &*dem_menus.begin(),view_menu, 2);
+	gApplication->CreateMenu("Show Raster Data", &*dem_menus.begin(),view_menu, 2);
 
 }
 
