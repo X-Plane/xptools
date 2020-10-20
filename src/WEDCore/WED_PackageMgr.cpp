@@ -252,11 +252,11 @@ int WED_PackageMgr::CreateNewCustomPackage(void)
 
 		int found_in_our_list = 0;
 		for(int p = 0; p < custom_packages.size(); ++p)
-		if (strcasecmp(name.c_str(), custom_packages[n].name.c_str()) == 0)
-		{
-			found_in_our_list = 1;
-			break;
-		}
+			if (strcasecmp(name.c_str(), custom_packages[p].name.c_str()) == 0)
+			{
+				found_in_our_list = 1;
+				break;
+			}
 		if (found_in_our_list)
 			continue;
 
