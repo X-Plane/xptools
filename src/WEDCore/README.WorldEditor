@@ -13,9 +13,10 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 2.3.0r2
+WED 2.3.0r2 10/19/20
     Bug Fix:
     - fix Orthophoto export to only run if image file is newer than textures on disk
+    - fix temporary files after gateway import not removed
     
 WED 2.3.0r1 10/7/20
     Bug Fix:
