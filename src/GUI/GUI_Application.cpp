@@ -558,17 +558,20 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 			last->flags = last->flags|FL_MENU_DIVIDER;
 		}
 		else
-		{	//replace slashes in names , FLTK creates a submenu after slash
-			for(int i=0;i < itemname.size();++i)
-				if(itemname[i] == '/') itemname[i] = '|';
+		{
+			string tempname;
+			tempname.resize(itemname.size(),'-');
+			//mroe:This is to deal with menu names containing slashes . FLTK would creates a submenu after a slash .
+			//To workaround this , we using a placeholder string with same length and rename it after the menu item is added.
 
 			if (!items[n].cmd ) /*is single popup or a submenu */
 			{
 				if(menu == mPopup) /*we have popup already */
 				{
-				    int idx = menu->add(itemname.c_str(),0,0);
+				    int idx = menu->add(tempname.c_str(),nullptr,0);
 
 					Fl_Menu_Item * m = menu + idx;
+					strcpy((char*) m->text,itemname.c_str());
 
 					if(items[n].checked)
 					{
@@ -581,7 +584,7 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 				}
 				else
 				{
-					menu->add(itemname.c_str(),0,0);
+					menu->add(itemname.c_str(),nullptr,0);
 				}
 			}
 			else /*is part of a menu structure */
@@ -610,8 +613,9 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 				menu_cmd->cmd  = items[n].cmd;
 				menu_cmd->data = this;
 
-				int idx = menu->add(itemname.c_str(),sc,menu_cb,menu_cmd,FL_MENU_INACTIVE);
-			    Fl_Menu_Item * m = menu + idx;
+				int idx = menu->add(tempname.c_str(),sc,menu_cb,menu_cmd,FL_MENU_INACTIVE);
+				Fl_Menu_Item * m = menu + idx;
+				strcpy((char*) m->text,itemname.c_str());
 				if(items[n].checked)  m->flags = m->flags| FL_MENU_TOGGLE;
 				items[n].checked ? m->set() : m->clear();
 				is_disable ? m->deactivate() : m->activate();
