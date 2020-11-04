@@ -1,7 +1,7 @@
 Title:  WorldEditor Manual  
 Template: manual
 Home: http://developer.x-plane.com/docs/scenery/  
-Version: 2.0
+Version: 2.3
 
 ## Introduction and Setup ##
 
@@ -17,7 +17,7 @@ Scenery in the X-Plane simulator can include essentially everything outside the 
 
 #### What the Scenery is Made Of ####
 
-Scenery in the X-Plane desktop simulator is made up of both scenery files (DSF files) and text files that describe the various entities in the scenery package. This includes object files for describing buildings, network files for describing road patterns, forest files for describing vegetation, and so on.
+Scenery in the X-Plane desktop simulator is made up of both scenery files (apt.dat and DSF files) and "resources", text files that describe the various entities referenced in the scenery package. This includes object files for describing buildings, network files for describing road patterns, forest files for describing vegetation, and so on.
 
 In our scenery system, the world is divided into 1 degree latitude by 1 degree longitude tiles, each one of which is defined by one file. Custom scenery is stored in packages, or folders which contain all relevant files. Objects (in the form of OBJ files) can be placed at any location. These objects are most commonly buildings, but they could be houses, airplanes, or even people---X-Plane doesn't know the difference. In addition to these custom objects, custom terrain textures may be used to create [orthophoto][3]-style scenery.
 
@@ -33,9 +33,8 @@ The new scenery generation tools make extensive use of open source libraries; in
 
 ##### The Scenery Creation Community & Additional Resources #####
 
-The moderated yahoo mailing list, [x-plane-scenery][4], gives scenery authors a place to discuss technical issues regarding the creation of scenery. The group home page has a "join" button if you have a Yahoo ID. To join the group without a Yahoo ID, simply send a blank email to [x-plane-scenery-subscribe@yahoogroups.com][5].
 
-[X-Plane.org][6] has web-based forums, including a forum dedicated to scenery creation. Additional guides, tutorials, tips and tricks can also be found on the [X-Plane Developer][7] site, including a [13 part video tutorial][8] on airport creation.
+[X-Plane.org][4] has web-based forums, including a forum dedicated to [scenery creation][5]. Additional guides, tutorials, tips and tricks can also be found on the [X-Plane Developer][7] site, including a [13 part video tutorial][8] on airport creation.
 
 To file any reports of bugs or problems with WorldEditor (or any of the other scenery tools), visit [the scenery tools bug base][9].
 
@@ -47,18 +46,21 @@ The X-Plane 8/9/10/11 scenery file formats differ from the old X-Plane 7 formats
 
 WorldEditor (or WED) is the scenery creation and editing tool for the X-Plane flight simulator. It is designed to be a graphical tool for editing scenery overlays. It is able to:
 
-*   create custom airports or custom scenery,
-*   customize a local airport using built-in airport elements,
-*   customize the air traffic control flow at an airport, and
+*   create full custom airports,
+*   create off-airport full custom overlay scenery,
+*   customize a default X-Plane airport using built-in airport elements,
+*   customize the air traffic control flow at an airport,
+*   up- and download default X-Plane airports to the [X-Plane Scenery Gateway][6]
 *   output scenery or airport data files which can be shared with the community.
 
-WED is _not_ used to edit base terrain meshes, the files which give shape to terrain in X-Plane. To edit these files, use [MeshTool][10], a command-line tool to build base meshes from raw data. WED is also not used to edit or create 3-D models of aircraft, buildings, or other objects in the world. For information on using 3-D modeling programs such as AC3D or Blender to create X-Plane objects, see the [X-Plane Developer site][11], or [download the Plane Maker manual][12].
+WED is _not_ used to edit base terrain meshes. Although these files also share the suffix `.dsf`, these files are different in that they give
+shape to terrain in X‑Plane. To create these files, use [MeshTool][10], a command-line tool to build base meshes from raw data. WED is also not used to edit or create 3-D models of aircraft, buildings, or other objects in the world. For information on using 3-D modeling programs such as AC3D or Blender to create X-Plane objects, see the [X-Plane Developer site][11], or [download the Plane Maker manual][12].
 
 #### Downloading and Installing WorldEditor ####
 
 To use WorldEditor, do the following:
 
-1.  [Visit the X-Plane Developer site][13] and download the version of WED for your operating system. Save it to a location you will be able to find it, like the Desktop. 
+1.  [Visit the X-Plane Developer WorldEditor page][13] and download the version of WED for your operating system. Save it to a location you will be able to find it, like the Desktop.
 
 2.  Extract the WED executable from the ZIP file you just downloaded and save it somewhere you will be able to find it later (you can put it in your X-Plane directory, but this is not strictly necessary). WED is a single-executable file only, so no installer or other special installation procedures are required.
 
@@ -66,11 +68,11 @@ To use WorldEditor, do the following:
 
 4. If this is your first first time launching WorldEditor, you must point the application to your X-Plane installation. To do this, click the **Choose X-Plane Folder** button in the bottom right of the window as seen in [Figure 1][14]. In the new window that opens, navigate to your X-Plane folder, and click **Select** or **OK**.
 
-<img src="http://developer.x-plane.com/wp-content/uploads/2014/08/Choose-folder.jpg" alt="A first launch of WorldEditor, with all options disabled except for 'Choose X-Plane Folder'" width="590px" class="centerMe" id="choosefolder" />
+![WED first start](images/New_20/Uninitialized.png)
 
 <p class="cap"><strong>Figure 1</strong>: A first launch of WorldEditor, with all options disabled except for "Choose X-Plane Folder"</p>
 
-5. WED will verify this as a valid X-Plane installation, then the remaining "New" and "Open" buttons will be enabled, and WED is ready to be used.
+WED will verify the selected folder as a valid X‑Plane installation by testing for the presence of the "Resources/default scenery/" and "Custom Scenery/" folders inside that location. After that the remaining “New” and “Open” buttons will be enabled, and WED is ready to be used.
 
 ### X-Plane Scenery Concepts ###
 
@@ -89,11 +91,11 @@ WED's own files have the advantage of letting WED save scenery information that 
 
 1.  You must "build" your scenery pack (which exports all of your work to the X-Plane file formats) before you will see anything in X-Plane. Doing a normal "save" in WED won't create real X-Plane scenery. To export a scenery pack, open the File menu and click **Export Scenery Pack**, or press Ctrl+B on the keyboard (Command+B on a Mac).  In addition, you can export directly to the Airport Scenery Gateway. We discuss this more in the section [Exporting the Scenery][16].
 
-2.  Building scenery does a "compile" to your scenery pack with WED's latest work---this can overwrite and destroy existing scenery if you already have a package in your Custom Scenery folder with the same name (e.g., if you have previously exported this scenery package).
+2.  Exporting scenery does a "compile" of your scenery pack with WED's latest work---this can overwrite and destroy existing scenery if you already have a package in your Custom Scenery folder with the same name (e.g., if you have previously exported this scenery package).
 
 3.  Because WED _only_ opens earth.wed.xml files, if you have created scenery packs in other programs like Overlay Editor, or if you want to open scenery packs for which you don't have the earth.wed.xml file, that scenery must be _imported_ before you can edit them. See the section [Synchronizing with Other Editors][17] for details on how to do this.
 
-4.  You must set an export target.  Basically the export target sets the oldest version of X-Plane that can use the output scenery pack (though you also have the option of setting the Global Airport Database as your target.)  When the export target is set older, the relevant new features in WED are then _not_ allowed.  For example, if you set an export target of X-Plane 10.50, then you will not see any ground support vehicles in any version of X-Plane, as these features were not writable to scenery files compatible with that X-Plane version.  
+4.  You must set an export target.  Basically the export target sets the oldest version of X-Plane that can use the output scenery pack (though you also have the option of setting the Global Airport Database as your target.)  When the export target is set older, the relevant new features in WED are then _not_ exported.  For example, if you set an export target of X-Plane 10.50, then you will not see any ground support vehicles in any version of X-Plane, as these features were not compatible with that X-Plane version.  
 
 	The **Validate** command, which you can access either through the file 	menu, or by pressing Shift-Ctrl-V on the keyboard (Shift-Command-V on a 	Mac) checks the WED file based on the current export target.
 
@@ -101,115 +103,226 @@ WED's own files have the advantage of letting WED save scenery information that 
 
 ## Using the WorldEditor Interface ##
 
-The WorldEditor interface has the following features (where numbers correspond to those in [Figure 2][18]):
-
-1. Library pane
-2. Library preview pane
-3. Toolbar 
-4. Tool defaults settings 
-5. Map pane
-6. Hierarchy pane
-7. Attributes pane with editing tabs
-8. Scenery package list (seen in [Figure 3][19])
-
-![WED 1.6 interface](images/intro/interface1-6.jpg)
-
-<p class="cap"><strong>Figure 2</strong>: A typical WorldEditor window, whose components are numbered to correspond with the preceding list</p>
-
-![initial menu](images/intro/scenery_packs_WED20.jpg)
-
-<p class="cap"><strong>Figure 3</strong>: The scenery package list, visible when launching WED</p>
-
 ### The Scenery Package List ###
 
-The scenery package list, shown in [Figure 3][20] above, is the window visible when you first launch WED. By clicking a package name from this list, then clicking the **Open Scenery Package** button, you can open an existing scenery package. Alternatively, you can use the **New Scenery Package** button to create a new custom scenery pack.
+![WED 2 Package Chooser](images/New_20/LibraryChooser.png)
 
-The first column of the list of available scenery packs shows some information about the contents of each folder: 
+<p class="cap"><strong>Figure 2</strong>: The scenery package list, visible when launching WED</p>
 
-* "WED Airport" indicates a earth.wed.xml file is included that can directly be opened by WED. 
-* "Airport" indicates there are one or more X-Plane airport definitions included in the pack.
-	* "WED Airport" indicates overlay scenery while "Airport" indicates the 	contents of the scenery pack will need to be "imported" into WED before the 	contents are visible or editable in WED. 
-* A "Library" usually only contains art asset definitions intended for use by other scenery packs. 
-* If the middle column is empty the pack may contain base mesh scenery, not editable by WED, or may be an empty pack/directory created by the "New" button.
+By clicking any row from the table visible in [Figure 2](#thescenerypackagelist), then clicking the **Open Scenery Package** button, you can open an existing scenery package. Alternatively, you can use the **New Scenery Package** button to create a new, empty custom scenery pack.
+
+The first column of the table can indicate a library or scenery that is disabled in the `scenery_packs.ini` configuration file. X-Plane will not display such sceneries, but WED will still allow these to be edited. Disabled libraries will not be used by neither X-Plane nor WED.
+
+The second column shows some information about the contents of each scenery:
+
+-   “WED Airport” indicates a earth.wed.xml file is included in the pack and the scenery is ready for immediate editing in WED.
+-   “Airport” indicates there are one or more X‑Plane airport definitions included in the pack. But the contents of the scenery pack will need to be “imported” into WED before the contents are visible or editable in WED.
+-   If the middle column is empty, the pack may contain base mesh scenery, not editable by WED, or may be an empty pack / folder created by the “New” button.
+-   A “Library” usually only contains art asset definitions intended for use by other scenery packs. These packs are not editable in WED.
+
+The third column is the name of the folder that holds the scenery pack or library. The name has no relevance to X-Plane or WED and can be changed any time without affecting the scenery packs functionality.
+
+Note that WED does *not* support windows shortcuts. Scenery packs not actually present in the 'Custom Scenery' folder must be referred to by [symbolic links](https://en.wikipedia.org/wiki/Symbolic_link) instead to be visible and useable in WED. See also the [Windows blog](https://blogs.windows.com/windowsdeveloper/2016/12/02/symlinks-windows-10/) or [Howto Geek](https://www.howtogeek.com/howto/16226/complete-guide-to-symbolic-links-symlinks-on-windows-or-linux/) how to create symbolic links in windows.
+
+The line at the very top of [Figure 2](#thescenerypackagelist) shows the X-Plane folder last selected by the **Choose X-Plane Folder** button as well as the version information from the last time X-Plane was run in that folder.
+
+### The WED Scenery Editing Window ###
+
+<img id="wedwindow" src="images/New_20/MapWindow.jpg" alt="WED Window" style="min-width:1000px; max-width=1000px" height="599px" usemap="#wedwindowareas">
+
+<map name="wedwindowareas">
+  <area shape="rect" coords="  0, 60,240,350" title="Library Pane" href="#thelibrarypane">
+  <area shape="rect" coords="  0,370,240,599" title="Library Preview Pane" href="#thelibrarypreviewpane">
+  <area shape="rect" coords="255, 60,325,599" title="Toolbar" href="#thetoolbar">
+  <area shape="rect" coords="  0,  0,500, 50" title="Tool Defaults" href="#thetooldefaultspane">
+  <area shape="rect" coords="340, 60,740,599" title="Map Pane" href="#themappane">
+  <area shape="rect" coords="760, 60,999,260" title="Hierachy Pane" href="#thehierarchypane">
+  <area shape="rect" coords="760,320,999,599" title="Attributes Pane" href="#theattributespane">
+  <area shape="rect" coords="760,270,999,310" title="Editing Tabs" href="#theeditingtabs">
+</map>
+
+<p class="cap"><strong>Figure 3</strong>: A typical WorldEditor window, click on the image for more information</p>
+
+1. Library Pane - items available for placing in the scenery
+2. Library Preview Pane - preview of item selected in Library pane
+3. Toolbar
+4. Tool Defaults
+5. Map Pane
+6. Hierachy Pane - items already placed in scenery
+7. Attributes Pane - properties of items selected in the Map / Hierachy pane
+8. Editing Tabs
+
+All panes are user adjustable in size by dragging the dividers in between them. You can reset all panes to a usefull size very similar to [Figure 3](#wedwindow) by clicking on "Restore Frames in the View menu.
+
+Additionally the left side panes (labeled 1+2 in [Figure 3](#wedwindow)) and right side panes (labeled 6-8 in [Figure 3](#wedwindow)) can be made to automatically open and close by moving the mouse to the side of the WED Window:
+
+If you set either pane vertical divider so the side panes are fairly narrow (less than 100 pixels wide), but *not* completely closed - move the mouse over that narrow area and the corresponding side pane will expand automatically to a preset, usefull size. Move the mouse back over the center panes (labeled 3-5 in [Figure 3](#wedwindow)) and the side pane will return immediately to its narrow size.
 
 ### The Map Pane ###
 
-The map pane, numbered 5 in [Figure 2][21] above, takes up the largest portion of the window by default. This is the pane that gives a bird's-eye view of the scenery package as it stands. By mousing over the map pane and scrolling with your mouse, you can zoom in or out (note that the zoom will center around wherever your mouse is located---if you place it in the bottom right and scroll up, you will zoom in _toward_ the bottom right of the window). 
+The map pane, numbered 5 in [Figure 3](#wedwindow) above, takes up the largest portion of the window by default. This is the pane that gives a top-down view of the scenery package as it stands. By mousing over the map pane and scrolling with your mouse, you can zoom in or out (note that the zoom will center around wherever your mouse is located---if you place it in the bottom right and scroll up, you will zoom in _toward_ the bottom right of the window).
+
+You can pan around in the map pane around by dragging it with the mouse while holding down the *right* mouse key.
 
 If you ever lose your place in this view, you can click View from the menu and select Zoom World (to zoom out to where you can see the whole planet) or Zoom Package (to fit the view to the scenery package itself).
 
 In this pane, you can visually add, move, and remove elements from the scenery package. The effect of clicking on an element in the map pane depends on what tool is selected in the toolbar.
 
+In the right top corner of the map pane is a set of buttons to "tilt" the map pane, i.e. show the 3D elements viewed from an oblique angle. This is also known as a "birds eye view" and it allows to see the vertical walls of buildings and get a sense of the height of items.
+
 ### The Toolbar ###
 
 <div class="floatRight" style="width:170px">
-<img src="http://www.x-plane.com/wp-content/uploads/2016/12/toolbar1-6.jpg" alt="The tools in the toolbar, numbered in correspondance with the list in the Toolbar section" width="82px" class="aligncenter" id="figtoolbar" /><br />
+<img src="images/New_20/map_tools.jpg" alt="The toolbar" width="158px" class="aligncenter" id="figtoolbar" /><br />
 <p class="cap text_left"><strong>Figure 4</strong>: The tools in the toolbar, numbered in correspondance with the list to the left</p>
 </div>
 
-The toolbar, numbered 3 in [Figure 2][22] above and seen in [Figure 4][23] to the right, selects the "tool" currently in use. Different tools are able to modify different types of things in the map pane. These are as follows (moving top-to-bottom, left-to-right as in [Figure 4][24]):
+The toolbar, numbered 3 in [Figure 3](#wedwindow) above and seen in [Figure 4][23] to the right, selects the "tool" currently in use. Different tools are able to modify different types of things in the map pane. These are as follows:
 
-1.  <dl><dt>Vertex tool ![The vertex tool icon in WED][image-1]</dt><dd>Used to select and manipulate vertices or any other type of "point" (such as runway endpoints, points in a facade, 3-D objects, object headings, etc.). You can either click the point directly, or click and drag to create a box within which all points will be selected. Depending on the point's type, holding Alt when you click may change the tool's behavior (e.g., an Alt+click on a point in a facade allows you to create a curve from that point).  </dd><dd>This tool is similar to the marquee tool (both are for manipulating existing objects), but importantly different: the vertex tool if for _points_, while the marquee tool is for _whole entities_. Generally, it is a good idea to use the vertex tool to manipulate individual points and entities, and use the marquee tool to move, rotate, and scale selected items.</dd><dd>**Shortcut key**: v</dd></dl>
+1.  **Vertex tool**   Shortcut key: **v**  
+    Used to select and manipulate vertices or any point-type entity
+    (such as runway endpoints, points in a facade, 3-D objects, object
+    headings, etc.). You can either click the point directly, or drag-click
+    to create a box within which all points will be selected.
+    Depending on the point’s type, holding Alt when you click may change
+    the tool’s behavior (e.g., an Alt+click on a point in a facade
+    allows you to create a curve from that point).
 
-2.  <dl><dt>Runway creation tool ![The runway tool icon in WED][image-2]</dt><dd>Used to graphically add runways, blastpads, and displaced thresholds. Click somewhere on the map to set the first endpoint of the runway, then click again to set the second endpoint.</dd><dd>**Shortcut key**: r</dd></dl>
+2.  **Marquee tool** Shortcut key: **m**  
+    Used to drag a rectangle to select whole entities (i.e., all the points
+    that make it up) or groups of entities. Or click on an entity to select all
+    parts of it.
 
-3.  <dl><dt>Helipad tool ![The helipad tool icon in WED][image-3]</dt><dd>Used to graphically create helipads.</dd><dd>**Shortcut key**: h</dd></dl>
+    The two above tools differ in that the vertex tool is intended to
+    manipulate individual points and point-type entities, while the marquee
+    tool is made to move, rotate, and scale area-type entities or groups of
+    items.
 
-4.  <dl><dt>Taxiline tool ![The taxiline tool icon in WED][image-4]</dt><dd>Used to create taxiline paths for runways.</dd><dd>**Shortcut key**: l</dd></dl>
+3.  **Runway tool**  Shortcut key: **r**  
+    Creates runways, which can optionally include blastpads and displaced
+    thresholds. Click somewhere on the map to set the first endpoint of
+    the runway, then click again to set the second endpoint.
 
-5.  <dl><dt>Light fixture tool ![The light fixture tool icon in WED][image-5]</dt><dd>Used to place light fixtures such as PAPI/VASI or wigwags.</dd><dd>**Shortcut key**: f</dd></dl>
+4.  **Sealane tool** Shortcut key: **s**  
+    Creates sealanes (to be placed on water) that seaplanes take off and land
+    from, lined with buoys.
 
-6.  <dl><dt>Airport beacon tool ![The airport beacon tool icon in WED][image-6]</dt><dd>Used to place rotating airport beacons.</dd><dd>**Shortcut key**: e</dd></dl>
+5.  **Helipad tool**  Shortcut key: **h**  
+    Creates helipads.
 
-7.  <dl><dt>Tower viewpoint tool ![The tower viewpoint tool icon in WED][image-7]</dt><dd>Used to set control tower viewpoints (the point from which users in X-Plane will see their aircraft when they select the Tower Viewpoint from the View menu).</dd><dd>**Shortcut key**: a</dd></dl>
+6. **Taxiway tool** Shortcut key: **t**  
+    Creates taxiways via closed Bezier paths. These are functional
+    as well as visible scenery elements that define areas that aircraft are
+    intended to move on. For all other visual surface markings use tool #22
+    "Polygon tool". 
 
-8.  <dl><dt>Boundary tool ![The boundary tool icon in WED][image-8]</dt><dd>Used to add fencing (via Bezier polygons) around airports.</dd><dd>**Shortcut key**: b</dd></dl>
+7.  **Taxiline tool**  Shortcut key: **l**  
+    Creates line markings on taxi- and runways, optionally accompanied by
+    light fixtures. Use tool #21 "Line tool" for all other line markings.
 
-9.  <dl><dt>Object tool ![The object tool icon in WED][image-9]</dt><dd>Used to visually place an object (a `.obj` file or `.agp` scene file) of the type currently selected in the library pane (numbered 1 in [Figure 2][25] and described [below][26]). For more information on objects, see the section [Adding Objects and Auto-Generating Scenes][27] later in this manual.</dd></dl>
+8.  **Hole tool** Shortcut key: **k**  
+    Creates holes in any existing polygon or taxiway. Often used to cut out
+    pavement to make the underlying terrain, e.g. airport grass visible.
 
-10.  <dl><dt>Forest tool ![The forest tool icon in WED][image-10]</dt><dd>Used to draw forested regions, which may be filled with trees in X-Plane depending on the user's forest density settings. The type of trees that will be used depends on the `.for` file resource you specify.</dd></dl>
+9.  **Light fixture tool** Shortcut key: **f**  
+    Places runway related light fixtures such as PAPI/VASI or wigwags.
 
-11.  <dl><dt>Line tool ![The line tool icon in WED][image-11]</dt><dd>Used to draw miscellaneous lines, such as sidewalks, using Bezier curves.</dd></dl>
+10. **Sign tool** Shortcut key: **g**  
+    Places 3D run- or taxiway signs.
 
-12.  <dl><dt>Exclusion tool ![The exclusion tool icon in WED][image-12]</dt><dd>Used to draw "exclusion zones," which are lat-lon rectangles that prevent elements of lower-priority tiles (e.g., X-Plane's autogenerated cities or forests) from being loaded in the area. Excluded types must be selected from the drop down menu. For example, if an overlay tile contained placements for custom buildings for Manhattan, the author would also create an exclusion zone around Manhattan and select "Objects" from Exclusions menu to prevent the default buildings (that ship with X-Plane) from appearing there.</dd></dl>
+11. **Airport beacon tool**  
+    Places the rotating airport beacon.
 
-13.  <dl><dt>Marquee tool ![The marquee tool icon in WED][image-13]</dt><dd>Used to drag a rectangle to select an entity (i.e., all the points that make it up), or to click on an entity to select it.</dd><dd>**Shortcut key**: m</dd></dl>
+12. **Windsock tool**  
+    Places windsocks.
 
-14.  <dl><dt>Sealane tool ![The sealane tool icon in WED][image-14]</dt><dd>Used to create sealanes with buoys.</dd><dd>**Shortcut key**: s</dd></dl>
+13. **Tower viewpoint tool**  
+    Used to set control tower viewpoints (the point from which users in
+    X‑Plane will see their aircraft when they select the Tower Viewpoint
+    from the View menu).
 
-15.  <dl><dt>Taxiway tool ![The taxiway tool icon in WED][image-15]</dt><dd>Used to create taxiways via closed Bezier paths.</dd><dd>**Shortcut key**: t</dd></dl>
+14. **Ramp start tool** Shortcut key: **o**  
+    Places locations that can be selected as start locations at airport. They
+    are additionally used by AI traffic as parking locations as well as the
+    "Draw parked aircraft" simulator feature to show aircraft parked
+    permanently on the ground.
 
-16.  <dl><dt>Hole tool ![The hole tool icon in WED][image-16]</dt><dd>Used to create holes through which grass (or possibly other pavement) is visible through Bezier taxiways.</dd><dd>**Shortcut key**: k</dd></dl>
+15. **Boundary tool**  
+    Creates boundaries around airports. These do not immediately create
+    visible changes in sceneries, but define the area that will be kept free
+    of 3D autogen in *future* base mesh sceneries. Wirhin those boundaries
+    the terrain will be made relatively smooth to facilitate operating aircraft
+    on. The boundary should, at a minimum, enclose all Run- and Taxiways.
 
-17.  <dl><dt>Sign tool ![The sign tool icon in WED][image-17]</dt><dd>Used to place runway signs.</dd><dd>**Shortcut key**: g</dd></dl>
+16. **Taxi route tool**  
+    Used to define the paths which ATC will use to direct traffic around
+    the airport. These routes are used for all of  
+    * progressive taxi instruction for the users aircraft
+    * directing AI aircraft between parking positions and the runway
+    * ground service vehicles moving on the airport
 
-18.  <dl><dt>Windsock tool ![The windsock tool icon in WED][image-18]</dt><dd>Used to add windsocks.</dd><dd>**Shortcut key**: w</dd></dl>
+17. **Facade tool**  
+    Used to draw facade boundaries (from `.fac` files) using Bezier
+    curves. For more information on facades, see the section [Adding
+    Facades](#addingfacades) later in this manual.
 
-19.  <dl><dt>Ramp start tool ![The ramp start tool icon in WED][image-19]</dt><dd>Used to place starting points for aircraft.</dd><dd>**Shortcut key**: o</dd></dl>
+18. **Object tool**   
+    Places an object (a `.obj` art asset or `.agp` group of art assets)
+    of the type currently selected in the library pane (numbered 1
+    in [Figure 3](#wedwindow) and described [below](#thelibrarypane)).
+    For more information on objects, see the section [Adding Objects and
+    Auto-Generating Scenes](#addingobjectsandauto-generatingscenes)
+    later in this manual.
 
-20.  <dl><dt>Taxi route tool ![The taxi route tool icon in WED][image-20]</dt><dd>Used to define the paths which ATC will use to direct traffic around the airport.</dd></dl>
+19. **Forest tool**  
+    Used to draw forested regions, which may be filled with trees in
+    X‑Plane depending on the user’s forest density settings. As well as
+    lines of trees or locations of individual trees. The type of trees that
+    will be used depends on the `.for` file resource you specify.
 
-21.  <dl><dt>Facade tool ![The facade tool icon in WED][image-21]</dt><dd>Used to draw facade boundaries (from `.fac` files) using Bezier curves. For more information on facades, see the section [Adding Facades][28] later in this manual.</dd></dl>
+20. **String tool**  
+    Used to place object strings (a number of otherwise standard `.obj`
+    files placed repeatedly along a line, as defined in a `.str` file).
 
-22.  <dl><dt>String tool ![The string tool icon in WED][image-22]</dt><dd>Used to place object strings (a number of otherwise standard `.obj` files along a line, defined for use here in a `.str` file).</dd></dl>
+21. **Line tool**  
+    Creates miscellaneous lines or linear surface markings, such as
+    road markings, sidewalks or narrow surface features, using Bezier
+    curves. Visial appearance is defined by `.lin` files.
 
-23.  <dl><dt>Polygon tool ![The polygon tool icon in WED][image-23]</dt><dd>Used for drawing miscellaneous polygons (from `.pol` files---often simple textures).</dd></dl>
+22. **Polygon tool**  
+    Used for drawing miscellaneous polygons (from `.pol` files—often
+    simple textures).
 
-24. <dl><dt>Truck Parking tool ![The truck parking tool icon in WED](images/intro/truck_parking.jpg)</dt><dd>Used to place service vehicle starting points.</dd></dl>
+23. **Exclusion tool**  
+    Used to draw “exclusion zones,” which are lat-lon rectangles that
+    prevent elements of lower-priority tiles (e.g., X-Plane’s
+    autogenerated cities or forests) from being loaded in the area.
+    Excluded types must be selected from the drop down menu. For
+    example, if an overlay tile contained placements for custom
+    buildings for Manhattan, the author would also create an exclusion
+    zone around Manhattan and select “Objects” from Exclusions menu to
+    prevent the default buildings (that ship with X-Plane) from
+    appearing there.
 
-25. <dl><dt>Truck destination tool ![The truck destination tool icon in WED](images/intro/truck_destination.jpg)</dt><dd>Used to place service vehicle destination points.</dd></dl>
+24. **Truck Parking tool**  
+    Used to place location where ground service vehicle are parked while
+    waiting to calls to service aircraft.
+
+25. **Truck destination tool**  
+    Used to place desination to create additional random ground service
+    vehicle movements, aka "joyrides".
 
 For more detail on the tools described above, see the chapter [Editing Using the Map Tools][29].
 
 ### The Tool Defaults Pane ###
 
-Numbered 4 in [Figure 2][30], the tool defaults pane changes the settings for the currently selected tool. The available settings vary by the tool. For instance, the vertex tool's only option is whether or not to snap to vertices (that is, to "jump" to existing points when dragging some vertex). The runway tool, on the other hand, can specify the runway's surface and shoulder material (concrete, grass, snow, etc.), the roughness of the runway, the presence of centerline lights, and so on. For many tools, you can change the default resource by selecting that tool, then clicking an asset in the library pane (described [below][31]) that is usable by that tool.
+Numbered 4 in [Figure 3](#wedwindow), the tool defaults pane changes the settings for the currently selected tool. The available settings vary by the tool. For instance, the vertex tool's only option is whether or not to snap to vertices (that is, to "jump" to existing points when dragging some vertex). The runway tool, on the other hand, can specify the runway's surface and shoulder material (concrete, grass, snow, etc.), the roughness of the runway, the presence of centerline lights, and so on. For many tools, you can change the default resource by selecting that tool, then clicking an asset in the library pane (described [below][31]) that is usable by that tool.
 
 Before using any tool, set up the preferences first and you won't have to edit later.  When you change the defaults for a tool, WED will remember those changes so that the next time you use the tool, it will be set up the same way. This saves time when drawing many similar types of things.
 
 ### The Library Pane ###
 
-The library pane, numbered 1 in [Figure 2][32], displays art assets currently available for inclusion in the scenery. Here, you can browse through the files in the X-Plane library using their virtual paths. (For our purposes, a full understanding of the library system is not required, but for further reading, see the appendix [About the X-Plane Library System][33].) Selecting an asset will also select an appropriate tool---for instance, if you select a `.obj` file, the object tool will become active, and if you select a `.for` file, the forest tool will become active.
+The library pane, numbered 1 in [Figure 3](#wedwindow), displays art assets currently available for inclusion in the scenery. Here, you can browse through the files in the X-Plane library using their virtual paths. (For our purposes, a full understanding of the library system is not required, but for further reading, see the appendix [About the X-Plane Library System][33].) Selecting an asset will also select an appropriate tool---for instance, if you select a `.obj` file, the object tool will become active, and if you select a `.for` file, the forest tool will become active.
 
 If you are looking for a specific asset, you can search the library using the "Filter" & "Choose Pack" boxes at the top of the pane. Click the "Choose Pack" box to display a drop down list of available library packs, and select the pack you'd like to search within.  Next, type a search term in the "filter" box to see all available objects within the pack that include that term. For instance, if you were looking for a specific ATC tower, you might type "control\_tower," with the "airport scenery" pack selected.  The library pane would show the Classic\_Tower\_1 object, among others. 
 
@@ -217,17 +330,24 @@ You may also search the library using the special search operators `$` and `^`. 
 
 ### The Library Preview Pane ###
 
-The library preview pane, numbered 2 in [Figure 2][34], shows an accurate, real-time preview of some (but not all) art assets. When you select a `.pol` file in the library pane, the pane will be filled with the texture defined by that polygon asset. When you select a '.lin', '.for', `.obj` or `.agp` file in the library pane, a 3-D preview of the object or scene will appear in the preview pane. By clicking and dragging this preview, you can change your perspective, and you can zoom in using the scroll wheel on your mouse.
+The library preview pane, numbered 2 in [Figure 3](#wedwindow), shows an accurate, real-time preview of some (but not all) art assets. When you select a `.pol` file in the library pane, the pane will be filled with the texture defined by that polygon asset. When you select a '.lin', '.for', `.obj` or `.agp` file in the library pane, a 3-D preview of the object or scene will appear in the preview pane. By clicking and dragging this preview, you can change your perspective, and you can zoom in using the scroll wheel on your mouse.
 
-Previews for some '.fac' files are available. If there is  more than one variant of the .fac file, you can also use the button in the preview pane to toggle through the options. Keep in mind that X-Plane will select one at random every time scenery is loaded--there is no way to specify a variant the simulator should always use, so make sure your scenery design looks acceptable with _any_ of these variants.
+Rotate the preview object to see all wall types available for the facade.
+This works even if there are more than 4 wall types-just keep spinning !
+Facades also can change in appearance depending on the height and width
+of any given wall. Drag the mouse holding the right button (as opposed
+to the left button, which is used to rotate the object) to change the
+height and width of the preview object and note the changes in appearance.
+
+If there is  more than one variant of the .fac file, you can also use the button in the preview pane to toggle through the options. Keep in mind that X-Plane will select one at random every time scenery is loaded--there is no way to specify a variant the simulator should always use, so make sure your scenery design looks acceptable with _any_ of these variants.
 
 ### The Hierarchy Pane ###
 
 ![The hierarchy pane in WED][image-24]
 
-[cap]**Figure 5**: The hierarchy pane in WED[/cap]
+<p class="cap"><strong>Figure 5</strong>: The hierarchy pane in WED</p>
 
-The hierarchy pane, numbered 6 in [Figure 2][35] and shown enlarged in [Figure 5][36], shows every element currently in the scenery package.
+The hierarchy pane, numbered 6 in [Figure 3](#wedwindow) and shown enlarged in [Figure 5][36], shows every element currently in the scenery package.
 
 Using this pane, you can select an element or group by clicking on it. This will highlight that element in both the hierarchy and map panes. By double-clicking on an entity in the hierarchy, you can rename it.
 
@@ -235,31 +355,35 @@ By clicking and dragging an entity in this pane, you can change the order in whi
 
 To place one or more entities in a group, select them and press Ctrl+G on the keyboard (Command+G on Macs), or select Group from the Edit menu. To ungroup elements (that is, remove a group, leaving all entities the group previously contained at the same "level" as the group was), select a group label and press Ctrl+Shift+G (Command+Shift+G on Macs), or select Ungroup from the Edit menu.
 
-By clicking the lock icon, you can lock an element or group to prevent further visual editing. Note that is applies only to editing within the map pane; changing the element's properties in the editing tabs (beneath the hierarchy pane, described [below][38]) is still possible. Note also that this property applies recursively: if a group in which an element resides is locked, that element will also be locked.
+By clicking the lock icon, you can lock an element or group to prevent further visual editing. Note that is applies only to editing within the map pane; changing the element's properties in the editing tabs (beneath the hierarchy pane, described [below](#theeditingtabs) is still possible. Note also that this property applies recursively: if a group in which an element resides is locked, that element will also be locked.
 
 Next to the lock icon is an icon that looks like an eye. This toggles the visibility of an element or group. Invisible elements will not be exported for use in X-Plane, and will of course not be visible in the map pane.
 
 To delete entities, select them in the hierarchy and press the Backspace or Delete key on the keyboard, or select Clear from the Edit menu.
 
-### The Editing Tabs and the Attributes Pane ###
+### The Attributes Pane ###
 
-![The editing tabs in WED][image-25]
+![The editing tabs in WED][images/intro/editing_tabs.png]
 
-[cap]**Figure 6**: The editing tabs and attributes pane in WED[/cap]
+<p class="cap"><strong>Figure 6</strong>: The editing tabs and attributes pane in WED</p>
 
-The attributes pane, numbered 7 in [Figure 2][39] and seen in [Figure 6][40], contains a number of editing tabs, which allow for editing of elements based on their type. The first tab, labeled Selection, shows in full detail whatever scenery element is currently selected. Because of this, it changes the properties displayed in order to match the currently selected element.
+The attributes pane, numbered 7 in [Figure 3](#wedwindow) and seen in [Figure 6][40], contains a number of editing tabs, which allow for editing of elements based on their type. The first tab, labeled Selection, shows in full detail whatever scenery element is currently selected. Because of this, it changes the properties displayed in order to match the currently selected element.
+
+### The Editing Tabs ###
 
 The tabs reduce clutter by selectively limiting the visible entities in the map pane. They also lock the hidden objects so they cannot be moved on the map by mistake when in a tab mode.
 
+The Selection tab makes all types of scenery items selectable and shows everything, except for some clearances around ATC routes and road networks.
+
 The Pavement tab allows you to access only the underlying ground cover of the airport, with other details removed. Only runways, taxiways, draped polygons and orthophotos are unlocked and visible in this mode.
 
-The ATC Taxi + Flow tab allows you to easily edit ATC operations at an airport. Only ramp starts and ATC taxi routes are unlocked, but most pavement, such as taxiways, runways, facades, and orthophotos are visible but locked from editing.
+The Taxi Routes tab allows you to easily edit ATC operations at an airport. Only ramp starts and ATC taxi routes are unlocked, but most pavement, such as taxiways, runways, facades, and orthophotos are visible but locked from editing.
 
 The Lights and Markings tab allows editing of non-sign details on top of base pavements. Line and string files, taxiway lines, light fixtures and windsocks are unlocked in this mode, with underlying pavement visible but locked.
 
 The 3D Objects tab allows you to edit 3D clutter and buildings, such as facades, forests, and objects. Underlying pavement is visible but locked again in this mode.
 
-The Exclusions and Boundaries tab allows fine editing of exclusion zones and airport boundaries, with most airport features visible but locked in this mode.
+The Exclusion and Boundary tab allows fine editing of exclusion zones and airport boundaries, with most airport features visible but locked in this mode.
 
 The Texture tab is for texture mapping a custom draped polygon file named "Draped Orthophoto." To add these to the scenery, select a .pol file in the library pane, then select **Use Texture Map** in the tool defaults pane. Some .pol art assets (such as the DrapedRunwaySigns.pol) come with special pre-defined "subtextures" that can be pre-selected by a mouse click on the relevant part of the texture in the library preview pane.
 
@@ -275,11 +399,11 @@ Signs in the hierarchy are shown as a rendered preview of what the sign will loo
 
 ### Preferences ###
 
+![preferences window](images/New_20/PreferencesWindow.jpg)
+
+<p class="cap"><strong>Figure 7</strong>: The options in the preferences window</p>
+
 WED has globalized preference settings that will apply to every scenery pack. This menu is found under File > Preferences (or WED > Preferences on Mac OS). Here you can change between meters and feet, or how the coordinates are displayed in the map (although you can only enter coordinates as decimals still). The size of all text in WED can be specified as well. Most tables and menus will adjust to this size instantly, but some may require a restart of WED for best appearance. See the section "[Using Orthophotos for Scenery and Guides][]" for information on how to use the Tile Server Custom URL field.
-
-![preferences window](intro/preferences.png)
-
-[cap]**Figure 7**: The options in the preferences window[/cap]
 
 ## Creating Airports and Overlay Scenery ##
 
@@ -297,7 +421,7 @@ To begin, we will create a new scenery package in WorldEditor. Launch WED and cl
 
 ![Clicking the New Scenery Package button from the WorldEditor launch window](images/intro/new-package.jpg)
 
-[cap]**Figure 8**: Clicking the New Scenery Package button from the WorldEditor launch window[/cap]
+<p class="cap"><strong>Figure 8</strong>: Clicking the New Scenery Package button from the WorldEditor launch window</p>
 
 Click on the new airport in the list and type a name for it (this name is unimportant except as an identifier for your own use). With the name entered, click the **Open Scenery Package** button. After a moment, the WED drafting window will appear, showing a new, empty scenery package.
 
@@ -349,9 +473,9 @@ An important concept in WED is the idea of the "current airport." The current ai
 
 To switch between current airports, select the airport you would like to edit from the hierarchy pane, then select **Edit Airport (airport name)** from under the Airport drop down menu. 
 
-![The current airport listed in the upper left of the map pane (in this case, KOJC Johnson County)][image-27]
+![The current airport listed in the upper left of the map pane][images/updates/current_airport.jpg]
 
-[cap]**Figure 10**: The current airport listed in the upper left of the map pane (in this case, KOJC/Olathe-Johnson County Executive)[/cap]
+<p class="cap"><strong>Figure 10</strong>: The current airport listed in the upper left of the map pane (in this case, KOJC/Olathe-Johnson County Executive)</p>
 
 ### Using Orthophotos for Scenery and Guides ###
 
@@ -359,7 +483,7 @@ When drawing runways, adding lighting, and so on (all discussed in the rest of t
 
 ![OSM KSEA example](images/New_20/OSM-map.jpg)
 
-[cap]**Figure 10**: The OpenStreetMap data underlying the KSEA demo area[/cap]
+<p class="cap"><strong>Figure 10</strong>: The OpenStreetMap data underlying the KSEA demo area</p>
 
 Another very popular option is to trace features from satellite imagery. This is supported by choosing View menu > Slippy Maps > **ESRI Imagery**. This imagery is also data is cached on disk and available for offline use the same way as the OpenStreetMap data. 
 
@@ -389,7 +513,7 @@ Supported image file types are: .bmp, .dds, .jpg, .png, and .tif. The recommende
 
 ![orthophoto inserted](images/New_20/importh_orthophoto.jpg)
 
-[cap]**Figure 11**: An orthophoto inserted into a WED project[/cap]
+<p class="cap"><strong>Figure 11</strong>: An orthophoto inserted into a WED project</p>
 
 To get started, open the File menu and select the **Import Orthophoto** option. Note that the image file must be located inside the scenery pack's folder as all output files created by WED will be placed in the same location. Navigate to this folder and select the orthophoto files you downloaded previously. Assuming the coordinate information in the files is correct (and that the file type includes embedded coordinates), WED will automatically place the images where they should be. 
 
@@ -434,7 +558,7 @@ Having finished modifying a runway visually, you may want to lock it (as describ
 
 ![navaid overlay](images/New_20/navaid_overlay.png)
 
-[cap]**Figure 12**: The NAVAID overlay preview at KHIO[/cap]
+<p class="cap"><strong>Figure 12</strong>: The NAVAID overlay showing ILS localizer, Glideslope and Inner Marker correctly aligned with runway</p>
 
 Note this NAVAID layer is read-only--in other words it cannot be edited in WED. To request a fix to any discrepancies observed, file a bug report in the "NAVAIDs" tab on the Airport Scenery Gateway "[Report a Problem](https://gateway.x-plane.com/bugs)" page.
 
@@ -541,7 +665,7 @@ For each object, you can choose at what object density (set in X-Plane's renderi
 
 ![Adding an object to a scenery package][image-29]
 
-[cap]**Figure 15**: Adding an object to a scenery package[/cap]
+<p class="cap"><strong>Figure 15</strong>: Adding an object to a scenery package</p>
 
 Note that in many cases, your drawn objects don't have to match the objects in the orthophoto, due to the fact that X-Plane will draw concrete pads where they would be in real life, and these pads will go on top of the orthophoto.
 
@@ -628,7 +752,7 @@ The three tools used in creating service vehicle networks are:
 
 ![example routes](images/WED_16/truck_routes.png)
 
-[cap]**Figure 17**: Example of truck routes, parking spots and destinations at KSEA, as seen in the ATC Taxi + Flow tab view.[/cap]
+<p class="cap"><strong>Figure 17</strong>: Example of truck routes, parking spots and destinations at KSEA, as seen in the ATC Taxi + Flow tab view.</p>
 
 The available types of service vehicles are:
 
@@ -651,7 +775,7 @@ Service vehicles are good at maneuvering near their docking locations and need r
 
 ![space to maneuver](images/WED_16/GndTraf_Maneuver.jpg)
 
-[cap]**Figure 18**: Space for the service vehicles to maneuver around the right (starboard) side of aircraft is indicated by the purple striped area.[/cap]
+<p class="cap"><strong>Figure 18</strong>: Space for the service vehicles to maneuver around the right (starboard) side of aircraft is indicated by the purple striped area.</p>
 
 The truck destination tool is used to place a location that will randomly call the specified service vehicles. Pick all the types of vehicles that will be allowed to use it in the drop down of the toolbar, then click in the map pane to place the destinations. Vehicles will drive to the spot and park there briefly in order to create more traffic activity at the airport. 
 
@@ -764,7 +888,7 @@ Holding modifier keys change the way selection operates in the following ways wh
 
 ![duplicating lines](images/New_20/line_modifier.jpg)
 
-[cap]**Figure 19**: Using Modifier keys to duplicate lines[/cap]
+<p class="cap"><strong>Figure 19</strong>: Using Modifier keys to duplicate lines</p>
 
 * CTRL/Command key: toggle the newly selected item's status. Unselected entities will be added to the existing selection, already selected entities will be removed from the existing selection.
 
@@ -893,7 +1017,7 @@ To convert from one type of node to another, use the modifier keys Shift, Ctrl (
 
 ![Chart for converting between Bezier node types in WED][image-30]
 
-[cap]**Figure 24**: Chart for converting between Bezier node types in WED[/cap]
+<p class="cap"><strong>Figure 24</strong>: Chart for converting between Bezier node types in WED</p>
 
 ##### Adding Nodes #####
 
@@ -937,7 +1061,7 @@ Some older sceneries may use different Airport IDs. To find the correct, current
 
 ![navaid overlay at KSEA](images/New_20/navaid_overly.png)
 
-[cap]**Figure 26**: The NAVAID overlay layer at KSEA[/cap]
+<p class="cap"><strong>Figure 26</strong>: The NAVAID overlay layer at KSEA</p>
 
 This layer will show VFR-map-style airport, heliport and seaport icons along with the assigned Airport ID for each.
 
@@ -957,10 +1081,10 @@ For additional help, first search for a solution on the [X-Plane Q & A site](htt
 
 When sending a bug report, please include as much information as possible----anything that the X‑Plane development crew might need to know in order to reproduce the malfunction. This includes (but is not limited to) the following information:
 
-1. The operating system being used
-1. The version of the program in question
-3. The hardware in use (if the issue only occurs when using certain hardware)
-4. The exact steps (as specific and step-by-step as possible) required to reproduce the problem
+1.  The file `WED_log.txt` found in the same directory as the WED executable.
+    This file includes all hardware and software version information.
+2.  All exact steps (as specific and step-by-step as possible) required
+    to reproduce the problem.
 
 Additionally, before filing a bug report, please:
 
@@ -1014,8 +1138,7 @@ To file a bug report, please visit the [Airport Scenery Gateway][75] and create 
 | Crop Unselected           | Deletes every unselected element from the WED project.  Parents and children of the selected elements in the hierarchy are kept. |
 | Convert to | Convert taxiways, draped polygons, airport line markings or lines into another type of entity of this list. |
 | Move First, Move Up, Move Down, Move Last | Change the ordering of the selected object in the hierarchy pane (e.g., selecting move first will cause the selected element to be highest in whatever group it is in).  |
-| Explode Special Agps 	| Break apart some .agp groups into individual objects. |
-| Replace Vehicle Objects | Replace static ground service .objs with X-Plane 11 ground service functions. |
+| Break Apart APG's        | Break apart .agp groups into individual objects, if all .obj referenced are public. |
 
 ### The View Menu ###
 
@@ -1030,9 +1153,9 @@ To file a bug report, please visit the [Airport Scenery Gateway][75] and create 
 | Object Density            | Shows a preview of the objects that a user would see at a given object density (set in the Rendering Options window in X-Plane). |
 | Pick Overlay Image        | Creates a new overlay image from disk for reference purposes only. |
 | Toggle World Map          | Turns the low-resolution background world map on or off. When checked, the background map is enabled. |
-| Toggle Navaids | Toggles map icons and NAVAID locations. |
+| Toggle Navaids            | Toggles background layer with airport icons and NAVAID locations. |
 | Slippy Map | Toggles OpenStreetMap or ESRI map information. |
-| Toggle Preview            | Toggles semi-realistic preview of objects, AGPs, pavement, some facade files, and `.pol` files. When checked, these previews are enabled. |
+| Toggle Preview            | Toggles semi-realistic preview of objects, AGPs, facades and most other art assets. When checked, these previews are enabled. |
 | Restore Frames            | Resets the frames of the WED editing window to their default position. |
 
 ### Select Menu ###
@@ -1064,6 +1187,7 @@ To file a bug report, please visit the [Airport Scenery Gateway][75] and create 
 | Edit Airport *[airport]*  | Changes the current airport to the selected one.      |
 | Upgrade Ramps | Auto-update pre X-Plane 10.50 style ramp starts with useful defaults. |
 | Align Airports | Mass-move airports to bring runways into CIFP compliance. |
+| Replace Vehicle Objects   | Replace static ground service .objs with X-Plane 11 ground service functions. |
 
 ## Property Reference ##
 
@@ -1071,6 +1195,14 @@ The following is a list of object types with descriptions of the properties asso
 
 | Property name   | Description                                                    |
 | --------------- | -------------------------------------------------------------- |
+|                               **Airport**                                       ||
+| Type            | Seaports and Heliport do not support "Always flatten"          |
+| Field Elevation | Elevation to use when Airport terrain is flattened at run-time |
+| Has ATC         | Property specifying ATC availability (X-Plane 9 only)          |
+| Airport ID      | Handle used to idenify and disambuguate airport sceneries. NOT used in user facing displays in X-Plane 10.45 and later |
+| Always Flatten  | Flatten terrain completely to elev. specified in Field Elevation |
+| Left Hand Driving | Ground Service Vehicles drive on left side of centerline     |
+| Scenery ID      | For Scenery Gateway internal revision control purposes, only.  |
 |                               **Airport Beacon**                                ||
 | Type            | The type of beacon at this location.                    |
 |                             **Airport Boundary**                                ||
@@ -1082,7 +1214,6 @@ The following is a list of object types with descriptions of the properties asso
 |                             **Airport Sign**                                    ||
 | Name            | Interpreted as a sign code for these entities. See the `apt.dat` [1000 file specification][78] for the meaning of the sign codes.   |
 | Heading | Specifies the direction the front of the sign faces. |
-| Type | Currently only "default" is supported. |
 | Size | Size of the sign, defined as one of several preset sizes. |
 |                             **ATC Flow** (X-Plane 10 only)                      ||
 | METAR ICAO            | The METAR ICAO code of the airport whose weather determines the use of this flow. For smaller airports, their flow may be dictated by a nearer larger airport, so this ICAO may not be the ICAO of the airport that contains the flow!     |
@@ -1092,7 +1223,7 @@ The following is a list of object types with descriptions of the properties asso
 | Pattern direction | Defines whether the airport uses left or right traffic.      |
 |                             **ATC Frequency**                                   ||
 | Type           | The type of frequency (e.g. ground, delivery, etc.)             |
-| Frequency      | The actual frequency, in MHz.                                   |
+| Frequency      | The actual frequency or 8.33kHz channel number, in MHz.         |
 |                             **ATC Runway Use** (X-Plane 10 only)                ||
 | Runway         | The runway to use                                               |
 | Departure Frequency | The actual departure frequency, in MHz. |
@@ -1107,8 +1238,9 @@ The following is a list of object types with descriptions of the properties asso
 | METAR ICAO           | The ICAO of the airport whose wind is being measured. Like ceilings, the airport whose weather determines flow may not be the same as the airport you are currently working with; small airports must often do what big airports dictate.    |
 |Direction from/to | Defines the range the wind must come from for the flow to be used. |
 | Max speed (knots) | The maximum wind speed for which this rule is in effect. |
-|                             **Draped Orthophoto `.pol`**                        ||
+|                             **Draped Orthophoto**                        ||
 | Resource       | The file name of the `.pol` file that defines the texture for the draped orthophoto                 |
+| Texture Top, Bottom, Left, Right| UV texture bounds used for automatic re-calculation of texture UV coordinates when polygon geometric shape changes. 1,0,0,1 results in the full texture being stretched to cover polygon shape. 0,0,0,0 or Top==Bottom or Left==Right disables automatic coordinate calculation |
 |                             **Exclusion Zone**                                  ||
 | Exclusions | These define what types of 3-D entities are excluded below this rectangle. The OBJ exclusion excludes objects and auto-generated X-Plane 10 elements.  |
 |                             **Facade**                                          ||
@@ -1133,9 +1265,10 @@ The following is a list of object types with descriptions of the properties asso
 |                             **Line Placement**                                   ||
 | Resource       | The path to the `.lin` file that defines the look of this line.  |
 | Closed         | When checked, WED will automatically close the line to make a loop.  |
+| = Airport Line | Virtual property to invoke the Line Style Selector GUI, offering to select a resource that matches the appearance of the choices available for Airport Line Markings |
 |                             **Object Placement**                                 ||
-| Set MSL | Check this to specify the vertical position of the object explicitly (available in X-Plane 10 only).   |
-| MSL height     | When "Has Custom MSL Height" is checked, this is the height above mean sea level at which the reference point of the object is located (available in X-Plane 10 only). |
+| Elevation Mode  | Select to place the object either at ground level "None", at an height relative to ground level "set_AGL" or at an absolute elevation "set_MSL". Set_MSL is available starting with XP10, set_AGL requires XP11.50 or later. |
+| Elevation      | Height in MSL or AGL as per Elevation Mode property.             |
 | Resource       | The path to the `.obj` or `.agp` file that defines the look of this object placement.  |
 | Show level     | The minimum rendering settings at which this object is guaranteed to appear.  By picking higher rendering settings in this menu, you allow X-Plane to not display your object when the user's rendering settings are low.  If you pick "default", your facade will always appear.  |
 |                             **Polygon Placement**                                ||
@@ -1144,6 +1277,9 @@ The following is a list of object types with descriptions of the properties asso
 |                             **Ramp Position**                                    ||
 | Ramp start type      | The type of parking spot (available in X-Plane 10 only).          |
 | Equipment      | Selects all airplane classes that can legally park at this spot (available in X-Plane 10 only).  |
+| Size           | Largest size of aircraft to use the position (X-Plane 10.45+ only) |
+| Ramp Operation Type | Types of aircraft that park to use the position (X-Plane 10.45+ only) |
+| Airlines       | List of 3-letter airline codes to specify liveries for parked aircraft (X-Plane 10.45+ only) |
 |                             **Runway**                                           ||
 | Width | Change the default width. |
 | Surface        | The material the runway itself is built out of.                  |
@@ -1168,6 +1304,8 @@ The following is a list of object types with descriptions of the properties asso
 |                             **Taxi Route**                                   ||
 | Split | Cannot (and should not) be changed. |
 | One way        | Check this if traffic on this route should only flow in one direction.  Be careful with this property, as it puts pressure on ATC to make circuitous routes.  |
+| Size           | Maximum size / wingspan of aircraft per [ICAO classification](https://developer.x-plane.com/article/atc-taxi-route-authoring) allowed to traveling the segment |
+| Allowed Vehicles | Type of traffic handled by route: Aircraft or Ground Vehicles |
 | Runway         | Select which runway the ATC taxi route is on.                |
 | Departures     | A set of all runways that this route intersects with for the purpose of departures. This can include an intersection between the route and the airspace after the departure end of the runway.  |
 | Arrivals       | A set of all runways that this route intersects with for the purpose of arrivals. This can include an intersection of the route with the airspace before the touchdown zone or after the departure end.      |
@@ -1437,16 +1575,16 @@ All default beaches in X-Plane exist in one image file and are referenced via on
 [1]:	#gettingstarted
 [2]:	http://pdfcrowd.com/
 [3]:	http://en.wikipedia.org/wiki/Orthophoto "The Orthophoto article on Wikipedia"
-[4]:	https://groups.yahoo.com/neo/groups/x-plane-scenery/info
-[5]:	mailto:x-plane-scenery-subscribe@yahoogroups.com
-[6]:	http://forums.x-plane.org/index.php?act=idx
+[4]:	http://forums.x-plane.org
+[5]:	http://forums.x-plane.org/index.php?/forums/forum/7-scenery-development-forum/
+[6]:	https://gateway.x-plane.com
 [7]:	http://developer.x-plane.com/docs/scenery/
 [8]:	https://www.youtube.com/playlist?list=PLMlRNmHeyivDv8OLFArflWLt_ZQJWD1oU
 [9]:	https://gateway.x-plane.com/bugs
 [10]:	http://developer.x-plane.com/tools/ "Download MeshTool at the X-Plane Developer site"
 [11]:	http://developer.x-plane.com/ "X-Plane Developer"
 [12]:	http://www.x-plane.com/files/manuals/Plane_Maker_manual.pdf "Download the Plane Maker Manual (PDF)"
-[13]:	http://developer.x-plane.com/tools/worldeditor/ "Download MeshTool at the X-Plane Developer site"
+[13]:	http://developer.x-plane.com/tools/worldeditor/ "WorldEditor Download page"
 [14]:	#choosefolder
 [15]:	#appendix:anatomyofthex-planescenerysystem "Jump to Anatomy of the X-Plane Scenery System"
 [16]:	#exportingthescenery
@@ -1524,38 +1662,8 @@ All default beaches in X-Plane exist in one image file and are referenced via on
 [88]:	http://developer.x-plane.com/?article=advanced-airport-creation
 [89]:	http://ww1.jeppesen.com/documents/aviation/business/ifr-paper-services/airport-signs.pdf
 [90]:	#directionalpointtools
-[91]:	#glyphs
-[92]:	http://forums.x-plane.org/index.php?showforum=7
 
-[image-1]:	http://www.x-plane.com/images/WED/intro/tool_icons/vertex.png
-[image-2]:	http://www.x-plane.com/images/WED/intro/tool_icons/runway.png
-[image-3]:	http://www.x-plane.com/images/WED/intro/tool_icons/heli.png
-[image-4]:	http://www.x-plane.com/images/WED/intro/tool_icons/taxiline.png
-[image-5]:	http://www.x-plane.com/images/WED/intro/tool_icons/light.png
-[image-6]:	http://www.x-plane.com/images/WED/intro/tool_icons/beacon.png
-[image-7]:	http://www.x-plane.com/images/WED/intro/tool_icons/tower.png
-[image-8]:	http://www.x-plane.com/images/WED/intro/tool_icons/boundary.png
-[image-9]:	http://www.x-plane.com/images/WED/intro/tool_icons/object.png
-[image-10]:	http://www.x-plane.com/images/WED/intro/tool_icons/forest.png
-[image-11]:	http://www.x-plane.com/images/WED/intro/tool_icons/line.png
-[image-12]:	http://www.x-plane.com/images/WED/intro/tool_icons/exclusion.png
-[image-13]:	http://www.x-plane.com/images/WED/intro/tool_icons/marquee.png
-[image-14]:	http://www.x-plane.com/images/WED/intro/tool_icons/sealane.png
-[image-15]:	http://www.x-plane.com/images/WED/intro/tool_icons/taxi.png
-[image-16]:	http://www.x-plane.com/images/WED/intro/tool_icons/hole.png
-[image-17]:	http://www.x-plane.com/images/WED/intro/tool_icons/sign.png
-[image-18]:	http://www.x-plane.com/images/WED/intro/tool_icons/wind.png
-[image-19]:	http://www.x-plane.com/images/WED/intro/tool_icons/ramp.png
-[image-20]:	http://www.x-plane.com/images/WED/intro/tool_icons/route.png
-[image-21]:	http://www.x-plane.com/images/WED/intro/tool_icons/fac.png
-[image-22]:	http://www.x-plane.com/images/WED/intro/tool_icons/string.png
-[image-23]:	http://www.x-plane.com/images/WED/intro/tool_icons/poly.png
 [image-24]:	http://www.x-plane.com/images/WED/intro/hierarchy.jpg
-[image-25]:	images/intro/editing_tabs.png
-[image-26]:	http://www.x-plane.com/images/WED/tutorial/newpack.gif
-[image-27]:	images/updates/current_airport.jpg
 [image-28]:	http://www.x-plane.com/images/WED/tutorial/example_boundary.jpg
 [image-29]:	http://developer.x-plane.com/wp-content/uploads/2014/12/rotate_obj.jpg
 [image-30]:	http://www.x-plane.com/images/WED/bezier/conversion_chart.png
-[image-31]:	images/taxisigns/glyphs.png
-[image-32]:	images/taxisigns/bookcase.png
