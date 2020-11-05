@@ -7,7 +7,7 @@ Version: 2.3
 
 **About This Manual**
 
-This is version 2.0 of the manual for WorldEditor. To use this manual, you can jump to a section by clicking its title in the table of contents on the side.  Clicking on terms highlighted in blue [like this][1] will take you directly to the relevant text or section. To search for a specific term or set of words, press "ctrl" ("command" on a Mac) + "f" to type the term and be taken to it anywhere in the document. For a PDF version of this manual, use an HTML to PDF converter such as [pdfcrowd.com][2].
+This is version 2.3 of the manual for WorldEditor. To use this manual, you can jump to a section by clicking its title in the table of contents on the side.  Clicking on terms highlighted in blue [like this][1] will take you directly to the relevant text or section. To search for a specific term or set of words, press "ctrl" ("command" on a Mac) + "f" to type the term and be taken to it anywhere in the document. For a PDF version of this manual, use an HTML to PDF converter such as [pdfcrowd.com][2].
 
 ### Introduction to Scenery Development in X-Plane ###
 
@@ -172,12 +172,12 @@ In the right top corner of the map pane is a set of buttons to "tilt" the map pa
 
 ### The Toolbar ###
 
+The toolbar, numbered 3 in [Figure 3](#wedwindow) above and seen in [Figure 4][23] below to the right, selects the "tool" currently in use. Different tools are able to modify different types of things in the map pane. These are as follows:
+
 <div class="floatRight" style="width:170px">
-<img src="images/New_20/map_tools.jpg" alt="The toolbar" width="158px" class="aligncenter" id="figtoolbar" /><br />
+<img src="images/New_20/map_tools.jpg" alt="The toolbar" width="158px" class="aligncenter" id="figtoolbar"><br>
 <p class="cap text_left"><strong>Figure 4</strong>: The tools in the toolbar, numbered in correspondance with the list to the left</p>
 </div>
-
-The toolbar, numbered 3 in [Figure 3](#wedwindow) above and seen in [Figure 4][23] to the right, selects the "tool" currently in use. Different tools are able to modify different types of things in the map pane. These are as follows:
 
 1.  **Vertex tool**   Shortcut key: **v**  
     Used to select and manipulate vertices or any point-type entity
@@ -250,14 +250,12 @@ The toolbar, numbered 3 in [Figure 3](#wedwindow) above and seen in [Figure 4][2
 15. **Boundary tool**  
     Creates boundaries around airports. These do not immediately create
     visible changes in sceneries, but define the area that will be kept free
-    of 3D autogen in *future* base mesh sceneries. Wirhin those boundaries
-    the terrain will be made relatively smooth to facilitate operating aircraft
-    on. The boundary should, at a minimum, enclose all Run- and Taxiways.
-
+    of 3D autogen in *future* base mesh sceneries.
+    
 16. **Taxi route tool**  
-    Used to define the paths which ATC will use to direct traffic around
-    the airport. These routes are used for all of  
-    * progressive taxi instruction for the users aircraft
+    Used to define the paths along which traffic moves aabout the airport. 
+    These routes are used for all of  
+    * progressive taxi instructions for the users aircraft
     * directing AI aircraft between parking positions and the runway
     * ground service vehicles moving on the airport
 
@@ -343,7 +341,7 @@ If there is  more than one variant of the .fac file, you can also use the button
 
 ### The Hierarchy Pane ###
 
-![The hierarchy pane in WED][image-24]
+![The hierarchy pane in WED](http://www.x-plane.com/images/WED/intro/hierarchy.jpg)
 
 <p class="cap"><strong>Figure 5</strong>: The hierarchy pane in WED</p>
 
@@ -363,7 +361,7 @@ To delete entities, select them in the hierarchy and press the Backspace or Dele
 
 ### The Attributes Pane ###
 
-![The editing tabs in WED][images/intro/editing_tabs.png]
+![The editing tabs in WED](images/intro/editing_tabs.png)
 
 <p class="cap"><strong>Figure 6</strong>: The editing tabs and attributes pane in WED</p>
 
@@ -371,7 +369,7 @@ The attributes pane, numbered 7 in [Figure 3](#wedwindow) and seen in [Figure 6]
 
 ### The Editing Tabs ###
 
-The tabs reduce clutter by selectively limiting the visible entities in the map pane. They also lock the hidden objects so they cannot be moved on the map by mistake when in a tab mode.
+The tabs numbered 8 [Figure 3](#wedwindow) reduce clutter by selectively limiting the visible entities in the map pane. They also lock the hidden objects so they cannot be moved on the map by mistake when in a tab mode.
 
 The Selection tab makes all types of scenery items selectable and shows everything, except for some clearances around ATC routes and road networks.
 
@@ -647,9 +645,9 @@ Guidelines for drawing the airport boundary:
 *   The airport boundary does not need to be very detailed---the boundary is slightly blended in the DSF file.
 [Figure 14][62] shows a possible boundary for BWI. Note that the forest areas are probably on the property of the airport legally, but are not part of the airport boundary in the diagram so that the trees are not replaced with grass when the airport is built.
 
-![An example of determining an boundary][image-28]
+![Determining an boundary](http://www.x-plane.com/images/WED/tutorial/example_boundary.jpg)
 
-[cap]**Figure 14**: An example of determining an boundary[/cap]
+<p><strong>Figure 14</strong>: An example of determining an boundary</p>
 
 To draw an airport boundary, select the boundary tool and click at each corner around the airport. This is the area that will be flattened in X-Plane and filled with airport grass the next time global scenery is cut. The boundary has no impact on the way your scenery is shown in X-Plane--it is only used when submitted to the Gateway and only for a future version of X-Plane. When drawing the outline, be sure to go in one direction---either all clockwise or all counter-clockwise. When you have placed the last corner, press the Enter key to commit the points to the boundary. At this point, the boundary will appear in the object hierarchy pane; you can then name it there.
 
@@ -663,7 +661,7 @@ To add an object to your scenery, first find it in the library browser (the pane
 
 For each object, you can choose at what object density (set in X-Plane's rendering options) that object will be visible. In the object's "show with" field (visible in the attributes pane), you can choose to always have X-Plane draw the object (by selecting "default") or have X-Plane only draw the object at the highest level of object density (by selecting "too many"), or somewhere in between.
 
-![Adding an object to a scenery package][image-29]
+![Adding am object](http://developer.x-plane.com/wp-content/uploads/2014/12/rotate_obj.jpg)
 
 <p class="cap"><strong>Figure 15</strong>: Adding an object to a scenery package</p>
 
@@ -1015,7 +1013,7 @@ When drawing curves, it is extremely common to convert between node types while 
 
 To convert from one type of node to another, use the modifier keys Shift, Ctrl (Command on Macs), and Alt keys in combination with single clicking or clicking and dragging. [Figure 24[73] lists the keystroke combinations to convert between the node types.
 
-![Chart for converting between Bezier node types in WED][image-30]
+![Converting between Bezier node types](http://www.x-plane.com/images/WED/bezier/conversion_chart.png)
 
 <p class="cap"><strong>Figure 24</strong>: Chart for converting between Bezier node types in WED</p>
 
@@ -1061,13 +1059,14 @@ Some older sceneries may use different Airport IDs. To find the correct, current
 
 ![navaid overlay at KSEA](images/New_20/navaid_overly.png)
 
-<p class="cap"><strong>Figure 26</strong>: The NAVAID overlay layer at KSEA</p>
+<p class="cap"><strong>Figure 26</strong>: The NAVAID overlay layer showing scenery and nearby air- and heliport.</p>
 
-This layer will show VFR-map-style airport, heliport and seaport icons along with the assigned Airport ID for each.
+This layer will show VFR-map-style all airports, heliports and seaports in the default X-Plane database along with the officially assigned Airport ID for each.
 
 ### Improving Performance of WorldEditor ###
 
 If you have performance issues with WED, you can turn off the visual preview of objects. To do so, open the View menu and click **Toggle Preview**.
+Initial scenery load time is increased notably by the NAVAID layer, which can also be toggled off in the view menu.
 
 ### Recovering from a Crash ###
 
@@ -1662,8 +1661,3 @@ All default beaches in X-Plane exist in one image file and are referenced via on
 [88]:	http://developer.x-plane.com/?article=advanced-airport-creation
 [89]:	http://ww1.jeppesen.com/documents/aviation/business/ifr-paper-services/airport-signs.pdf
 [90]:	#directionalpointtools
-
-[image-24]:	http://www.x-plane.com/images/WED/intro/hierarchy.jpg
-[image-28]:	http://www.x-plane.com/images/WED/tutorial/example_boundary.jpg
-[image-29]:	http://developer.x-plane.com/wp-content/uploads/2014/12/rotate_obj.jpg
-[image-30]:	http://www.x-plane.com/images/WED/bezier/conversion_chart.png
