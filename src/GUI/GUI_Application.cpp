@@ -429,7 +429,6 @@ GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t 
 		while(items[sz].name) ++sz;
 		++sz;
 //		printf("create menu %s size %d\n",inTitle,sz);
-
 		Fl_Menu_Item * menu = new Fl_Menu_Item[sz*sizeof(Fl_Menu_Item )];
 		memset(menu,0,sz*sizeof(Fl_Menu_Item ));
 
@@ -440,12 +439,25 @@ GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t 
 		}
 		else
 		{
-			//TODO: mroe: If the names matches , FLTK inserts the submenu there without taking the ID into account.
-			//Also the given item id is not correct anymore since all "-" divider fields was removed in the fltk menu.
-			//Thats why the given parent item id is redundant and we have to take care that the names match.
-			int parent_menu_sz = parent_menu->size();
-			parent_menu->insert(parentItem,inTitle,0,0,menu,FL_SUBMENU_POINTER);
-			DebugAssert(parent_menu_sz == parent_menu->size());
+			// mroe:we have to subtract separator rows from parentItem-idx since they are not separate items in FLTK version
+			int idx = parentItem;
+			for(int t=0; t < idx ; t++)
+			{
+				Fl_Menu_Item * item = (Fl_Menu_Item *) &parent_menu[t];
+				if(item->flags&FL_MENU_DIVIDER) idx--;
+			}
+
+			if(idx > parent_menu->size()-1) return NULL;
+			Fl_Menu_Item * submenu_parent = parent_menu + idx ;
+
+			//mroe: With FLTK we can not have a command on a submenu item ; userdata are either the cmd or a pointer to the submenu array
+			//if something in the user_data_ , the submenu item has probably a cmd assigned.(May wrong position index or a cmd on a submenu item)
+			DebugAssert(submenu_parent->user_data_ == nullptr);
+			if(submenu_parent->user_data_ == nullptr)
+			{
+				submenu_parent->flags |= FL_SUBMENU_POINTER;
+				submenu_parent->user_data(menu);
+			}
 		}
 
 		new_menu = menu;
@@ -566,25 +578,15 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 
 			if (!items[n].cmd ) /*is single popup or a submenu */
 			{
+				int idx = menu->add(tempname.c_str(),nullptr,0);
+				Fl_Menu_Item * m = menu + idx;
+				strcpy((char*) m->text,itemname.c_str());
+
 				if(menu == mPopup) /*we have popup already */
 				{
-				    int idx = menu->add(tempname.c_str(),nullptr,0);
-
-					Fl_Menu_Item * m = menu + idx;
-					strcpy((char*) m->text,itemname.c_str());
-
-					if(items[n].checked)
-					{
-						m->flags |= FL_MENU_TOGGLE;
-						m->set();
-					}
-					else
-						m->clear();
+					if(items[n].checked) m->flags |= FL_MENU_TOGGLE;
+					items[n].checked ? m->set()  : m->clear();
 					is_disable ? m->deactivate() : m->activate();
-				}
-				else
-				{
-					menu->add(itemname.c_str(),nullptr,0);
 				}
 			}
 			else /*is part of a menu structure */
@@ -616,7 +618,7 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 				int idx = menu->add(tempname.c_str(),sc,menu_cb,menu_cmd,FL_MENU_INACTIVE);
 				Fl_Menu_Item * m = menu + idx;
 				strcpy((char*) m->text,itemname.c_str());
-				if(items[n].checked)  m->flags = m->flags| FL_MENU_TOGGLE;
+				if(items[n].checked) m->flags |= FL_MENU_TOGGLE;
 				items[n].checked ? m->set() : m->clear();
 				is_disable ? m->deactivate() : m->activate();
 			}
