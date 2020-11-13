@@ -63,13 +63,8 @@
 #include <FL/Fl_Menu_Bar.H>
 #include <FL/Fl_Menu_.H>
 
-#define MENU_ARRAY_SIZE 40
+#define MENU_ARRAY_SIZE 20
 #define xmenu const Fl_Menu_Item *
-enum {
-  _NET_WM_STATE_REMOVE,
-  _NET_WM_STATE_ADD,
-  _NET_WM_STATE_TOGGLE
-};
 
 typedef struct tagPOINT {
   int x;
