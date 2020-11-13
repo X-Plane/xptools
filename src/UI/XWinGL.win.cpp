@@ -63,7 +63,7 @@ XWinGL::XWinGL(int default_dnd, XWinGL * inShare) :
 	{
 		if(GLint err = glewInit())
 		{
-			LOG_MSG("I/WGL glewInit failed\n");
+			LOG_MSG("I/WGL glewInit failed\n"); LOG_FLUSH();
 			throw "can't init glew";
 		}
 		else
@@ -113,7 +113,7 @@ XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX,
 	{
 		if(GLint err = glewInit())
 		{
-			LOG_MSG("I/WGL glewInit failed\n");
+			LOG_MSG("I/WGL glewInit failed\n"); LOG_FLUSH();
 			throw "can't init glew";
 		}
 		else

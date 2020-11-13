@@ -29,7 +29,6 @@
 	#include <OpenGL/glu.h>
 #else
 	#include "glew.h"
-	#include <GL/gl.h>
 	#include <GL/glu.h>
 #endif
 
@@ -58,9 +57,9 @@ static void init_gl_info(gl_info_t * i)
 /* Apple only gives by default a 2.1 compatible openGL contexts.
    BUT if openGL 3.2 or higher compatible contexts are requested by adding
    "NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion3_2Core," just as the textbooks
-   say - no context is created any more on my 2008 iMac, i.e. most openGl functions 
-   unavailable. The GL_VERSION string changes to 3.1 though. Go figure.
-   So we can only test for 2.1 core functionality available here and pray ...
+   say - all openGl 1/2 direct drawing is disbled. i.e. most openGl functions used
+   by WED are unavailable. So we can only test for openGL 2 core functionality available 
+   here and pray glew gets us the rest ...
 */
 	if(i->gl_major_version < 2)
 	{
@@ -81,11 +80,15 @@ static void init_gl_info(gl_info_t * i)
 
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE,&i->max_tex_size);
 	// if(i->max_tex_size > 2*8192)	i->max_tex_size = 2*8192;
-	if(i->has_tex_compression)	glHint(GL_TEXTURE_COMPRESSION_HINT,GL_NICEST);
-	LOG_MSG("OpenGL renderer  : %s\n", glGetString(GL_RENDERER));
+	if(i->has_tex_compression)	glHint(GL_TEXTURE_COMPRESSION_HINT,GL_NICEST); CHECK_GL_ERR
+	LOG_MSG("OpenGL renderer  : %s\n", glGetString(GL_RENDERER));              CHECK_GL_ERR
 	LOG_MSG("OpenGL Version   : %s\n", ver_str);
-	LOG_MSG("Max texture size : %d   DXT : %d   POTs : %d   RGTC : %d\n\n", i->max_tex_size, 
+	LOG_MSG("Max texture size : %5d  DXT : %d   POT : %d  RGTC : %d\n", i->max_tex_size,
 	                                        i->has_tex_compression, i->has_non_pots, i->has_rgtc);
+	LOG_MSG("                          FBO : %d   VBO : %d  MSext : %d\n", strstr(ext_str, "GL_ARB_framebuffer_object") != nullptr,
+											strstr(ext_str, "GL_ARB_vertex_buffer_object") != nullptr,
+	                                        strstr(ext_str, "GL_EXT_framebuffer_multisample") != nullptr);
+	LOG_FLUSH();
 }
 
 /*****************************************************************************************

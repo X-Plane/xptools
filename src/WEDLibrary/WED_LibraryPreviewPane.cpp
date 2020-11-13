@@ -25,9 +25,10 @@
 
 #if APL
 	#include <OpenGL/gl.h>
+	#include <OpenGL/glu.h>
 #else
 	#include "glew.h"
-//	#include <GL/gl.h>
+	#include <GL/glu.h>
 #endif
 
 #include "ITexMgr.h"
@@ -71,7 +72,17 @@ WED_LibraryPreviewPane::WED_LibraryPreviewPane(GUI_Commander * cmdr, WED_Resourc
 		mNextButton->SetMsg(next_variant,0);
 		mNextButton->AddListener(this);
 		mNextButton->Hide();
-
+#if APL
+		mMSAA = 0;
+		const char * ext_str = (const char *)glGetString(GL_EXTENSIONS);
+		if(strstr(ext_str, "GL_ARB_framebuffer_object") != nullptr)
+		{
+			mMSAA = 1;
+			LOG_MSG("I/Lpp MSAA enabled\n");
+		}
+#else
+		msaa = 1; // as they all have openGL 3.0 minimum requirement and its core there
+#endif
 }
 
 void		WED_LibraryPreviewPane::ReceiveMessage(GUI_Broadcaster * inSrc, intptr_t inMsg, intptr_t inParam)
@@ -299,18 +310,17 @@ GUI_DragOperation   WED_LibraryPreviewPane::Drop(int x, int y, GUI_DragData * dr
 #define VIEW_DISTANCE 2.5   // set to 0 for isometric, non-perspective view used before WED 2.1
 #define USE_2X2MSAA 1
 
-void	WED_LibraryPreviewPane::begin3d(int *b, double radius_m)
+void	WED_LibraryPreviewPane::begin3d(const int *b, double radius_m)
 {
-	double dx = b[2] - b[0];
-	double dy = b[3] - b[1];
+	int dx = b[2] - b[0];
+	int dy = b[3] - b[1];
 
-	double sx = ((dx > dy) ? (dx / dy) : 1.0)/2;
-	double sy = ((dx > dy) ? 1.0 : (dy / dx))/2;
+	double sx = ((dx > dy) ? ((double) dx / (double) dy) : 1.0) * 0.5;
+	double sy = ((dx > dy) ? 1.0 : ((double) dy / (double) dx)) * 0.5;
 
 	double act_radius = radius_m * mZoom;
 
 	glPushAttrib(GL_VIEWPORT_BIT);
-	glViewport(b[0],b[1],b[2]-b[0],b[3]-b[1]);
 
 	GLfloat light_pos[4] = { -1, 1, 1, 0};          // x right, y up, z front
 	glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
@@ -321,24 +331,45 @@ void	WED_LibraryPreviewPane::begin3d(int *b, double radius_m)
 	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, false);
 	glEnable(GL_LIGHTING);
 #if USE_2X2MSAA
-	glGenFramebuffers(1, &mFBO);
-	glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
+	if(mMSAA)
+	{
+		glGenFramebuffers(1, &mFBO);
+		glBindFramebuffer(GL_FRAMEBUFFER, mFBO);          CHECK_GL_ERR
 
-	glGenRenderbuffers(1, &mColBuf);
-	glBindRenderbuffer(GL_RENDERBUFFER, mColBuf);
-	glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_RGB, dx, dy);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, mColBuf);
+		glGenRenderbuffers(1, &mColBuf);                  CHECK_GL_ERR
+		glBindRenderbuffer(GL_RENDERBUFFER, mColBuf);     CHECK_GL_ERR
+		glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_RGB, dx, dy); CHECK_GL_ERR
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, mColBuf); CHECK_GL_ERR
+	
+		glGenRenderbuffers(1, &mDepthBuf);                CHECK_GL_ERR
+		glBindRenderbuffer(GL_RENDERBUFFER, mDepthBuf);   CHECK_GL_ERR
+		glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH_COMPONENT, dx, dy); CHECK_GL_ERR
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, mDepthBuf); CHECK_GL_ERR
 
-	glGenRenderbuffers(1, &mDepthBuf);
-	glBindRenderbuffer(GL_RENDERBUFFER, mDepthBuf);
-	glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH_COMPONENT, dx, dy);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, mDepthBuf);
-
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mFBO); // copy the background - can't spec any blend mode when Bliting buffer back at the end
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-	glBlitFramebuffer(b[0], b[1], dx, dy, 0, 0, dx, dy, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-	glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
+		if(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
+		{
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mFBO); CHECK_GL_ERR // copy the background - since we dont use any
+	                                                                   // blend mode when Bliting buffer back at the end
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+			glBlitFramebuffer(b[0], b[1], dx, dy, 0, 0, dx, dy, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT, GL_NEAREST); CHECK_GL_ERR
+			glBindFramebuffer(GL_FRAMEBUFFER, mFBO);      CHECK_GL_ERR
+			glViewport(0, 0, dx, dy);                     CHECK_GL_ERR
+		}
+		else
+		{
+			LOG_MSG("E/Lpp FBO incomplete %d %d %s %s\n", mColBuf, mDepthBuf, gluErrorString(glGetError()), gluErrorString(glGetError()));
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			glDeleteFramebuffers(1, &mFBO);
+			glDeleteRenderbuffers(1, &mColBuf);
+			glDeleteRenderbuffers(1, &mDepthBuf);
+			mMSAA = 0;
+			glViewport(b[0], b[1], dx, dy);
+		}
+	}
+	else
 #endif
+	glViewport(b[0], b[1], dx, dy);
+
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
@@ -356,10 +387,9 @@ void	WED_LibraryPreviewPane::begin3d(int *b, double radius_m)
 #endif
 	glRotatef(mThe,1,0,0);
 	glRotatef(mPsi,0,1,0);
-
 }
 
-void	WED_LibraryPreviewPane::end3d(int *b)
+void	WED_LibraryPreviewPane::end3d(const int *b)
 {
 	glDisable(GL_LIGHTING);
 	glPopMatrix();
@@ -368,16 +398,20 @@ void	WED_LibraryPreviewPane::end3d(int *b)
 	glPopAttrib();
 
 #if USE_2X2MSAA
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, mFBO);
-	glDrawBuffer(GL_BACK);
-	int dx = b[2] - b[0];
-	int dy = b[3] - b[1];
-	glBlitFramebuffer(0, 0, dx, dy, b[0], b[1], dx, dy, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-	glDeleteFramebuffers(1, &mFBO);
-	glDeleteRenderbuffers(1, &mColBuf);
-	glDeleteRenderbuffers(1, &mDepthBuf);
+	if(mMSAA)
+	{
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);      CHECK_GL_ERR
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, mFBO);   CHECK_GL_ERR
+		glDrawBuffer(GL_BACK);                          CHECK_GL_ERR
+		int dx = b[2] - b[0];
+		int dy = b[3] - b[1];
+		glBlitFramebuffer(0, 0, dx, dy, b[0], b[1], dx, dy, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT, GL_NEAREST);  CHECK_GL_ERR
+		glDeleteFramebuffers(1, &mFBO);
+		glDeleteRenderbuffers(1, &mColBuf);
+		glDeleteRenderbuffers(1, &mDepthBuf);
+	}
 #endif
+
 }
 
 

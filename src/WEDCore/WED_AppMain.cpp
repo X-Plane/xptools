@@ -105,12 +105,14 @@ REGISTER_LIST_ATC
 #include "WED_EnumSystem.h"
 
 #if IBM
-HINSTANCE gInstance = NULL;
+H INSTANCE gInstance = NULL;
+#else
+#include <sys/utsname.h>
 #endif
 
 #if LIN
-#include "initializer.h"
-#include <FL/Fl.H>
+  #include "initializer.h"
+  #include <FL/Fl.H>
 #endif
 
 FILE * gLogFile;
@@ -121,19 +123,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 int main(int argc, char * argv[])
 #endif
 {
-/*	char loc_str[200];
-	char * loc_p = loc_str;
-	char * cl = setlocale(LC_ALL, NULL);                      // C and C++ standards clearly say this should always be "C"
-	loc_p += sprintf(loc_p, "Orig %s %.2lf '%s'", "Čü", 10003.14, cl);
-	cl = setlocale(LC_ALL, "");                               // just for curiosity - let's see what the users settinsg are
-	loc_p += sprintf(loc_p, " set Local %s %.2lf '%s'", "Čü", 10003.14, cl);   
-	cl = setlocale(LC_ALL, "C");                              // lets set it back to what we need
-	loc_p += sprintf(loc_p, " set C %s %.2lf '%s'", "Čü", 10003.14, cl);
-	
-//	locale::global(locale("C"));
-//	cout.imbue(locale("C"));
-*/
-	// do all locale settinsg FIRST - as they will only apply to streams opened after this.
 #if IBM
 	gInstance = hInstance;
 	SetErrorMode(SEM_NOOPENFILEERRORBOX|SEM_FAILCRITICALERRORS);
@@ -148,13 +137,12 @@ int main(int argc, char * argv[])
 	if (gLogFile)
 	{
 #if IBM
-		LOG_MSG("log.txt for WordEditor " WED_VERSION_STRING " ( Win )\n");
+		LOG_MSG("log.txt for WordEditor " WED_VERSION_STRING " ( Windows )\n");
 		LOG_MSG(" compiled on " __DATE__ " " __TIME__ " with MSC %d\n", _MSC_VER);
-#elif APL
-		LOG_MSG("log.txt for WordEditor " WED_VERSION_STRING " ( OSX )\n");
-		LOG_MSG(" compiled on " __DATE__ " " __TIME__ " with " __VERSION__ "\n");
 #else
-		LOG_MSG("log.txt for WordEditor " WED_VERSION_STRING " ( Linux )\n");
+		struct utsname uts;
+		uname(&uts);
+		LOG_MSG("log.txt for WordEditor " WED_VERSION_STRING " ( %s %s )\n", uts.sysname, uts.release);
 		LOG_MSG(" compiled on " __DATE__ " " __TIME__ " with " __VERSION__ "\n");
 #endif
 		time_t now = time(0);
@@ -170,7 +158,7 @@ int main(int argc, char * argv[])
 #endif
 //		LOG_MSG("I/MAIN locale %s\n", loc_str);                          // datalog the locale trials atthe very beginning
 		LOG_MSG("I/MAIN locale now %s %.2lf LC_CTYPE = '%s' LC_ALL='%s'\n", "Čü", 10003.14, setlocale(LC_CTYPE,NULL), setlocale(LC_ALL,NULL));
-		fflush(gLogFile);
+		LOG_FLUSH();
 	}
 
 #if LIN || APL
@@ -227,6 +215,7 @@ int main(int argc, char * argv[])
 
 	start->ShowMessage(string());
 
+	LOG_MSG("I/MAIN initializations done, run app now ...\n"); LOG_FLUSH();
 	app.Run();
 
 	delete start;

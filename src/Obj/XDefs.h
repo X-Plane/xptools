@@ -197,8 +197,10 @@
 #if WED
 	extern FILE * gLogFile;
 	#define LOG_MSG(...) if(gLogFile) fprintf(gLogFile, __VA_ARGS__)
+	#define LOG_FLUSH()  fflush(gLogFile)
 #else
 	#define LOG_MSG(...)
+	#define LOG_FLUSH()
 #endif
 
 #if IBM // OS specific file handling hacks

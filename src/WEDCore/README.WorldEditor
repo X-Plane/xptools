@@ -13,6 +13,11 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 3.3.1 beta 1
+    Bug Fix:
+    - improve Log.txt completeless when crashing
+    - attempt to fix library preview visibility w/some video drivers
+
 WED 2.3.0r2 10/19/20
     Bug Fix:
     - fix Orthophoto export to only run if image file is newer than textures on disk

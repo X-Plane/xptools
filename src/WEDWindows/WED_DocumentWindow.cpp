@@ -271,7 +271,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	// and the new window will pop up fullscreen on the primary monitor instead.
 
 	
-	LOG_MSG("I/Doc opening new scenery window, initial win xy %d %d wh %d %d\n", xy[0], xy[1], zw[0], zw[0]);
+	LOG_MSG("I/Doc opening new scenery window, initial win xy %d %d wh %d %d\n", xy[0], xy[1], zw[0], zw[1]);
 	
 	int safe_rect[4] = { xy[0], xy[1], xy[0] + zw[0], xy[1] + zw[1] };
 	XWin::GetDesktop(safe_rect);
@@ -290,7 +290,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 		SetBounds(xy[0],xy[1],xy[0]+zw[0],xy[1]+zw[1]);
 	}
 	else
-		LOG_MSG("E/Doc SafeRect was triggerd\n");
+		LOG_MSG("W/Doc SafeRect was triggerd\n");
 		
 	int main_split = inDocument->ReadIntPref("window/main_split",zw[0] / 5);
 	int main_split2 = inDocument->ReadIntPref("window/main_split2",zw[0] * 2 / 3);
