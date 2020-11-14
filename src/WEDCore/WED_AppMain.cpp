@@ -105,7 +105,7 @@ REGISTER_LIST_ATC
 #include "WED_EnumSystem.h"
 
 #if IBM
-H INSTANCE gInstance = NULL;
+HINSTANCE gInstance = NULL;
 #else
 #include <sys/utsname.h>
 #endif
