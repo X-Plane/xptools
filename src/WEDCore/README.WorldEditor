@@ -13,11 +13,11 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 3.3.1 beta 1
+WED 2.3.1b1
     Bug Fix:
     - improve Log.txt completeless when crashing
 	- WED-1332 fix (linux only) selection of ATC taxiroute runway tags
-    - WED-1333 attempt to fix library preview visibility w/some video drivers
+    - WED-1333 fix library preview visibility when AA settings overridden by video drivers
 
 WED 2.3.0r2 10/19/20
     Bug Fix:
