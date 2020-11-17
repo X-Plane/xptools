@@ -179,10 +179,18 @@ static DEMViewInfo_t	kDEMs[] = {
 const int DEMChoiceCount = sizeof(kDEMs) / sizeof(DEMViewInfo_t);
 
 GUI_MenuItem_t	kViewItems[] = {
+#if LIN // with FLTK we can not have a command on a submenu item ; userdata are either the cmd or a pointer to the submenu array
+{	"Raster Layer",							0,				0,										0,	0						},
+#else
 {	"Raster Layer",							0,				0,										0,	viewCmd_DEMChoice		},
+#endif
 {	"Show Grid lines on Raster Layer",		'G',			gui_ControlFlag,						0,	viewCmd_ShowGrids		},
 //{	"Show Tensors",							'T',			gui_ControlFlag,						0,	viewCmd_ShowTensor		},
+#if LIN // with FLTK we can not have a command on a submenu item ; userdata are either the cmd or a pointer to the submenu array
+{	"Show Raster Data",						0,				0,										0,	0						},
+#else
 {	"Show Raster Data",						0,				0,										0,	viewCmd_DEMDataChoice	},
+#endif
 {	"Show Extent",							'E',			gui_ControlFlag,						0,	viewCmd_ShowExtent		},
 {	"Show Shading on Raster Layer",			'S',			gui_ControlFlag,						0,	viewCmd_ShowShading		},
 {	"Shade Map Faces With Superblock Color",'S',			gui_ControlFlag + gui_ShiftFlag,		0,	viewCmd_ShowSuper		},
