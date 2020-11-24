@@ -58,7 +58,7 @@
 #include "STLUtils.h"
 #include "WED_RoadEdge.h"
 
-#if 1 // DEV
+#if DEV
 #include "PerfUtils.h"
 #endif
 
@@ -1771,7 +1771,9 @@ static int	DSF_ExportTileRecursive(
 				string absPathPOL = pkg + relativePathPOL;
 
 				r = relativePathPOL;		// Resource name comes from the pol no matter what we compress to disk.
-				
+#if IBM
+				std::replace(r.begin(), r.end(), '\\', '/');  // improve backward comp. with older WED versions that don't (yet) convert these to '/' at import. XP is fine with either.
+#endif
 				if(absPathDDS == absPathIMG)
 				{
 					DoUserAlert((msg + "Output file would overwrite source file, aborting DSF Export. Change polygon name.").c_str());
@@ -2005,10 +2007,10 @@ static int	DSF_ExportTileRecursive(
 					cbs->EndPolygon_f(writer);
 				}
 			}
-			
+#if WED
 			if(orth->IsNew())
 				what->AbortOperation(); // this will nicely undo the UV mapping rescaling we did :)
-
+#endif
 			return real_thingies;
 		}
 		
@@ -2154,7 +2156,7 @@ static int DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& 
 
 int DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, set<WED_Thing *>& problem_children)
 {
-#if 1 // DEV
+#if DEV
 	StElapsedTime	etime("Export time");
 #endif
 	g_dropped_pts = false;
