@@ -2241,7 +2241,11 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		ai_useable_ramps += ValidateOneRampPosition(r, msgs, apt, runways);
 
 	if(gExportTarget >= wet_xplane_1050)
+	{
 		ValidateAirportMetadata(apt,msgs,apt);
+		if(has_ATC && ai_useable_ramps < 1)
+			msgs.push_back(validation_error_t("Airports with ATC towers frequencies must have at least one Ramp Start of type=gate or tiedown.", err_ramp_need_starts_suitable_for_ai_ops, apt, apt));
+	}
 
 	err_type = gExportTarget == wet_gateway ? err_airport_impossible_size : warn_airport_impossible_size;
 	Bbox2 bounds;
@@ -2258,9 +2262,6 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	
 	if(GT_routes.size() && truck_parking_locs.empty())
 		msgs.push_back(validation_error_t("Ground routes are defined, but no service vehicle starts. This disables all ground traffic, including auto generated pushback vehicles.", warn_truckroutes_but_no_starts, apt,apt));
-
-	if (has_ATC && ai_useable_ramps < 1)
-			msgs.push_back(validation_error_t("Airports with ATC towers frequencies must have at least one Ramp Start of type=gate or tiedown.", err_ramp_need_starts_suitable_for_ai_ops, apt, apt));
 
 	if(gExportTarget == wet_gateway)
 	{
