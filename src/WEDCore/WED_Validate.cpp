@@ -2268,6 +2268,10 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
             msgs.push_back(validation_error_t("This airport contains runway(s) but no airport boundary.", 	err_airport_no_boundary, apt,apt));
 
 		Bbox2 apt_bounds;
+		auto oob_runways(runways);
+		auto oob_taxiways(taxiways);
+		auto oob_ramps(ramps);
+		
 		for(auto b : boundaries)
 		{
 			if(WED_HasBezierPol(b))
@@ -2289,40 +2293,61 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 				bdy.push_back(pt);
 			}
 		
-			for(auto r : runways)
+			for(auto r = oob_runways.begin(); r != oob_runways.end();)
 			{
 				Point2 corners[4];
-				r->GetCorners(gis_Geo, corners);
+				(*r)->GetCorners(gis_Geo, corners);
 				for(int i = 0; i < 4; i++)
+				{
 					if(!bdy.inside(corners[i]))
 					{
-						msgs.push_back(validation_error_t("Runway not fully inside airport boundary.", err_airport_outside_boundary, r, apt));
+						++r;
 						break;
 					}
+					if(i == 3)
+						r = oob_runways.erase(r);
+				}
 			}
-			for(auto t : taxiways)
+			vector<WED_Thing *> oob_vertices;
+			for(auto t = oob_taxiways.begin(); t != oob_taxiways.end();)
 			{
-				auto t_ps = t->GetOuterRing();
+				auto t_ps = (*t)->GetOuterRing();
 				int t_np = t_ps->GetNumPoints();
+				oob_vertices.clear();
+				
 				for(int i = 0; i < t_np; i++)
 				{
 					Point2 pt;
 					t_ps->GetNthPoint(i)->GetLocation(gis_Geo, pt);
 					if(!bdy.inside(pt))
-					{
-						msgs.push_back(validation_error_t("Taxiway not fully inside airport boundary.", err_airport_outside_boundary, t->GetNthChild(0)->GetNthChild(i), apt));
-						break;
-					}
+						oob_vertices.push_back((*t)->GetNthChild(0)->GetNthChild(i));
+				}
+				if(oob_vertices.size() == 0)
+					t = oob_taxiways.erase(t);
+				else if(oob_vertices.size() == t_np)
+					++t;                           // fully outside -> keep checking with next boundary
+				else
+				{
+					msgs.push_back(validation_error_t("Taxiway not fully inside airport boundary.", err_airport_outside_boundary, oob_vertices, apt));
+					t = oob_taxiways.erase(t);
 				}
 			}
-			for(auto r : ramps)
+			for(auto r = oob_ramps.begin(); r != oob_ramps.end();)
 			{
 				Point2 pt;
-				r->GetLocation(gis_Geo, pt);
-				if(!bdy.inside(pt))
-					msgs.push_back(validation_error_t("Ramp Start outside airport boundary.", err_airport_outside_boundary, r, apt));
+				(*r)->GetLocation(gis_Geo, pt);
+				if(bdy.inside(pt))
+					r = oob_ramps.erase(r);
+				else
+					++r;
 			}
 		}
+		for(auto r : oob_runways)
+			msgs.push_back(validation_error_t("Runway not fully inside airport boundary.", err_airport_outside_boundary, r, apt));
+		for(auto t : oob_taxiways)
+			msgs.push_back(validation_error_t("Taxiway not inside airport boundary.", err_airport_outside_boundary, t, apt));
+		for(auto r : oob_ramps)
+			msgs.push_back(validation_error_t("Ramp Start not inside airport boundary.", err_airport_outside_boundary, r, apt));
 
 		apt_bounds.expand(APT_OVERSIZE_NM / cos(apt_bounds.centroid().y() * DEG_TO_RAD) / 60.0, APT_OVERSIZE_NM / 60.0 );
 		if(!boundaries.empty() && !apt_bounds.contains(bounds))

@@ -19,6 +19,7 @@ WED 2.3.1b1
 	- WED-1332 fix (linux only) selection of ATC taxiroute runway tags
     - WED-1333 fix library preview visibility when AA settings overridden by video drivers
 	- WED-1335 fix orthophoto's imported from some DSF using inorrect vpath separator
+    - WED-1340: fix validation not recognizing all boundaries of an airport
 
 WED 2.3.0r2 10/19/20
     Bug Fix:
