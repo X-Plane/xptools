@@ -81,7 +81,7 @@ WED_LibraryPreviewPane::WED_LibraryPreviewPane(GUI_Commander * cmdr, WED_Resourc
 			LOG_MSG("I/Lpp MSAA enabled\n");
 		}
 #else
-		msaa = 1; // as they all have openGL 3.0 minimum requirement and its core there
+		mMSAA = 1; // as they all have openGL 3.0 minimum requirement and its core there
 #endif
 }
 
@@ -331,6 +331,8 @@ void	WED_LibraryPreviewPane::begin3d(const int *b, double radius_m)
 	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, false);
 	glEnable(GL_LIGHTING);
 #if USE_2X2MSAA
+	if (GetModifiersNow() & gui_ShiftFlag) mMSAA = 0; else mMSAA = 1;
+
 	if(mMSAA)
 	{
 		glGenFramebuffers(1, &mFBO);
