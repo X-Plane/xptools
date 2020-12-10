@@ -14,6 +14,8 @@ menu to view it online.
 CHANGE HISTORY
 
 WED 2.3.1b1
+   Features:
+    - support metadata tag 'closed', dereive from [X] in airport name at GW im/export
     Bug Fix:
     - improve Log.txt completeless when crashing
 	- WED-1332 fix (linux only) selection of ATC taxiroute runway tags

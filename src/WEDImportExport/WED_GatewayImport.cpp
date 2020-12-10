@@ -1124,7 +1124,6 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(const string& json_
         DoUserAlert("Import failed - no valid data found !");
     else
 	{
-        fill_in_airport_metadata_defaults(*out_apt[0], mAirportMetadataCSVPath);
         out_apt[0]->StateChanged();
 		g = out_apt[0];
 		g->SetSceneryID(root["scenery"]["sceneryId"].asInt());
@@ -1135,6 +1134,9 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(const string& json_
 	{
 		WED_ImportText(dsfTextPath.c_str(), (WED_Thing *) g);
 	}
+
+	if(!out_apt.empty())
+		fill_in_airport_metadata_defaults(*out_apt[0], mAirportMetadataCSVPath); // this also sets gui 2D/3D metadata flags - so do after dsf has been added
 
 #if !SAVE_ON_HDD && !GATEWAY_IMPORT_FEATURES
 	//clean up our files ICAOid.dat and potentially ICAOid.txt

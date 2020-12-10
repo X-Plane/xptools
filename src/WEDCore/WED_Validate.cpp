@@ -1757,6 +1757,21 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 		else
 			msgs.push_back(validation_error_t(txt + " does not exist, but is needed by the XP 11.35+ GUI", warn_airport_metadata_invalid, who, apt));
 	}
+
+	if(who->ContainsMetaDataKey(wed_AddMetaDataClosed))
+	{
+		string isClosed = who->GetMetaDataValue(wed_AddMetaDataClosed);
+		if (isClosed == "1" )
+		{
+			string name;
+			apt->GetName(name);
+			if(name.c_str()[0] != '[' || tolower(name.c_str()[1]) != 'x' || name.c_str()[2] != ']')
+				msgs.push_back(validation_error_t("Metadata indicates airport is closed, but name does not start with [X]", warn_airport_metadata_invalid, who, apt));
+		}
+		else if(isClosed != "0")
+				add_formated_metadata_error(error_template, wed_AddMetaDataClosed, "must be either 0 or 1", who, msgs, apt);
+	}
+
 }
 
 static void ValidateOneTaxiSign(WED_AirportSign* airSign, validation_error_vector& msgs, WED_Airport * apt)

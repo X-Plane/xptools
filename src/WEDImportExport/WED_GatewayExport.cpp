@@ -876,6 +876,17 @@ void Enforce_MetaDataGuiLabel(WED_Airport * apt)
 		apt->AddMetaDataKey(META_KeyName(wed_AddMetaDataLGuiLabel), has3D);
 		apt->CommitOperation();
 	}
+	
+	string name;
+	apt->GetName(name);
+
+	if(name.c_str()[0] == '[' && tolower(name.c_str()[1]) == 'x' && name.c_str()[2] == ']')
+	{
+		if(apt->ContainsMetaDataKey("closed"))
+			apt->EditMetaDataKey("closed", "1");
+		else
+			apt->AddMetaDataKey("closed", "1");
+	}	
 }
 
 void EnforceRecursive_MetaDataGuiLabel(WED_Thing * thing)
