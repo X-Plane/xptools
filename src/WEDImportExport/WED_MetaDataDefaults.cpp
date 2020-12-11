@@ -93,7 +93,7 @@ bool fill_in_airport_metadata_defaults(WED_Airport & airport, const CSVParser::C
 		}
 	}
 	
-	Enforce_MetaDataGuiLabel(&airport);
+	found_data |= Enforce_MetaDataGuiLabel(&airport);
 
 	return found_data;
 }
