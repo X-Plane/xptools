@@ -265,10 +265,13 @@ curl_http_get_file::thread_proc(void * param)
 	
 	curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, "");  // empty string is expanded into all methods supported by this version of curl.
 #if WED
+	LOG_MSG("I/CURL setting up download\n");
+	fflush(gLogFile);
+	curl_easy_setopt(curl, CURLOPT_STDERR, gLogFile);
 #include "WED_Version.h"
-	curl_easy_setopt(curl,  CURLOPT_USERAGENT, "WorldEditor/" WED_VERSION_STRING_SHORT );  // OSM tile server requires a referer string
+	curl_easy_setopt(curl, CURLOPT_USERAGENT, "WorldEditor/" WED_VERSION_STRING_SHORT );  // OSM tile server requires a referer string
 #endif
-#if DEV	
+#if 1 // DEV	
 	curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
 #endif	
 //	curl_easy_setopt(curl, CURLOPT_TIMEOUT, 0);
@@ -293,6 +296,11 @@ curl_http_get_file::thread_proc(void * param)
 	}
 	
 	CURLcode res = curl_easy_perform(curl);
+
+#if WED
+	LOG_MSG("I/CURL perform() done\n");
+	fflush(gLogFile);
+#endif
 	
 	// A note on thread safety: we need to ensure that writes to memory of our error code or data go out BEFORE
 	// we flip the bit to say we are done.  So we use
