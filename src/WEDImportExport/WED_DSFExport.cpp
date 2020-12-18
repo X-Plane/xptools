@@ -51,6 +51,7 @@
 #include "zip.h"
 #include <stdarg.h>
 #include "IResolver.h"
+#include "ITexMgr.h"
 #include "WED_ResourceMgr.h"
 #include "BitmapUtils.h"
 #include "GISUtils.h"
@@ -1770,13 +1771,9 @@ static int	DSF_ExportTileRecursive(
 				string absPathDDS = pkg + relativePathDDS;
 				string absPathPOL = pkg + relativePathPOL;
 
-				r = relativePathPOL;		// Resource name comes from the pol no matter what we compress to disk.
-#if IBM
-				std::replace(r.begin(), r.end(), '\\', '/');  // improve backward comp. with older WED versions that don't (yet) convert these to '/' at import. XP is fine with either.
-#endif
 				if(absPathDDS == absPathIMG)
 				{
-					DoUserAlert((msg + "Output file would overwrite source file, aborting DSF Export. Change polygon name.").c_str());
+					DoUserAlert((msg + "Output DDS file would overwrite source file, aborting DSF Export. Change polygon name.").c_str());
 					return -1;
 				}
 				
@@ -1810,7 +1807,6 @@ static int	DSF_ExportTileRecursive(
 							export_info.orthoFile = "";
 						}
 						if(LoadBitmapFromAnyFile(absPathIMG.c_str(),&export_info.orthoImg)) // to cut into pieces, only. Make sure its not forcibly rescaled
-//						if(MakeSupportedType(absPathIMG.c_str(),&export_info.orthoImg))
 						{
 							DoUserAlert((msg + "Unable to convert the image file '" + absPathIMG + "'to a DDS file, aborting DSF Export.").c_str());
 							return -1;
@@ -1818,6 +1814,12 @@ static int	DSF_ExportTileRecursive(
 						else
 						{
 							export_info.orthoFile = absPathIMG;
+
+							// force reload of texture from disk - for visual confirmation that WED realized the image had changed
+							ITexMgr * tman = WED_GetTexMgr(resolver);
+							string relImgPath;
+							orth->GetResource(relImgPath);
+							tman->DropTexture(relImgPath.c_str());
 						}
 					}
 					ImageInfo imgInfo(export_info.orthoImg);
@@ -1961,6 +1963,10 @@ static int	DSF_ExportTileRecursive(
 
 				what->StartOperation("Norm Ortho");
 				orth->Rescale(gis_UV, UVbounds, UVbounds_used);
+				r = relativePathPOL;		// Resource name comes from the pol no matter what we compress to disk.
+#if IBM
+				std::replace(r.begin(), r.end(), '\\', '/');  // improve backward comp. with older WED versions that don't (yet) convert these to '/' at import. XP is fine with either.
+#endif
 			}
 #endif
 			idx = io_table.accum_pol(r,show_level);

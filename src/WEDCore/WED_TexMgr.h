@@ -33,6 +33,7 @@ public:
 	virtual				~WED_TexMgr();
 
 	virtual	TexRef		LookupTexture(const char * path, bool is_absolute, int flags);
+	virtual void		DropTexture(const char * path);
 
 	virtual	int			GetTexID(TexRef ref);
 	virtual	void		GetTexInfo(

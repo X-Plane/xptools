@@ -51,6 +51,18 @@ WED_TexMgr::~WED_TexMgr()
 	}
 }
 
+void 		WED_TexMgr::DropTexture(const char * path)
+{
+	TexMap::iterator i = mTexes.find(path);
+	if (i != mTexes.end())
+	{
+		GLuint id = i->second->tex_id;
+		glDeleteTextures(1, &id);
+		delete i->second;
+		mTexes.erase(i);
+	}
+}
+
 TexRef		WED_TexMgr::LookupTexture(const char * path, bool is_absolute, int flags)
 {
 	TexMap::iterator i = mTexes.find(path);
