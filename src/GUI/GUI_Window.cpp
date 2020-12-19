@@ -143,6 +143,8 @@ int GUI_Window::handle(int e )
 			break;
 		}
 
+		//TODO:mroe: DnD is only partially implemented. FLTK has only limited DnD functionality yet.
+
 		/*DND events */
 		case FL_DND_ENTER:{
 			#if DEV && DEBUG_DND
@@ -181,6 +183,10 @@ int GUI_Window::handle(int e )
 			#if DEV && DEBUG_DND
 			printf(" GUI_Window:: FL_DND_RELEASE type:%p ,content: %s  \n", Fl::event_clipboard(),Fl::event_text());
 			#endif // DEV && DEBUG_DND
+			GUI_DragData_Adapter  adapter(NULL);
+			GUI_DragOperation allowed;
+			allowed = (this->InternalDragOver(x,y,&adapter,OP_LIN2GUI(1),OP_LIN2GUI(1)));
+			if (allowed == gui_Drag_None) return 0;
 		}
 		return 1;
 

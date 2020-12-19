@@ -72,16 +72,22 @@ WED_LibraryPreviewPane::WED_LibraryPreviewPane(GUI_Commander * cmdr, WED_Resourc
 		mNextButton->SetMsg(next_variant,0);
 		mNextButton->AddListener(this);
 		mNextButton->Hide();
-#if APL
-		mMSAA = 0;
-		const char * ext_str = (const char *)glGetString(GL_EXTENSIONS);
-		if(strstr(ext_str, "GL_ARB_framebuffer_object") != nullptr)
+		
+		mMSAA = 1;
+		GLint tmp;
+		glGetIntegerv(GL_SAMPLES, &tmp);
+		if(tmp > 1)
 		{
-			mMSAA = 1;
-			LOG_MSG("I/Lpp MSAA enabled\n");
+			mMSAA = 0;
+			LOG_MSG("I/Lpp MSAA externally overridden already\n");
 		}
-#else
-		mMSAA = 1; // as they all have openGL 3.0 minimum requirement and its core there
+#if APL
+		const char * ext_str = (const char *)glGetString(GL_EXTENSIONS);
+		if(strstr(ext_str, "GL_ARB_framebuffer_object") == nullptr)
+		{
+			mMSAA = 0;
+			LOG_MSG("I/Lpp no FBO's - MSAA disabled\n");
+		}
 #endif
 }
 
