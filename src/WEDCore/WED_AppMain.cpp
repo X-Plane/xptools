@@ -76,6 +76,8 @@
 	_R(WED_SimpleBezierBoundaryNode) \
 	_R(WED_LinePlacement) \
 	_R(WED_StringPlacement) \
+	_R(WED_AutogenPlacement) \
+	_R(WED_AutogenNode) \
 	_R(WED_ForestPlacement) \
 	_R(WED_FacadePlacement) \
 	_R(WED_PolygonPlacement) \

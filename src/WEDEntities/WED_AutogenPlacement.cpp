@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, Laminar Research.
+ * Copyright (c) 2008, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,22 +21,37 @@
  *
  */
 
-#ifndef WED_Version_H
-#define WED_Version_H
+#include "WED_AutogenPlacement.h"
 
-// This file must be ALL macros - it is included by the MSVC .rc compiler
-// so you can't go using const int and other fancy-pants C++ stuff!
+DEFINE_PERSISTENT(WED_AutogenPlacement)
+TRIVIAL_COPY(WED_AutogenPlacement,WED_GISPolygon)
 
-// These versions are used in about boxes, resources, info boxes, etc.
-#define	WED_VERSION				2.3.1git_ags
-#define	WED_VERSION_STRING		"2.3.1git_ags"
-#define	WED_VERSION_STRING_SHORT	"2.3.1"			// omit beta/release number
-#define	WED_VERSION_RES			WED_VERSION_STRING
-#define	WED_VERSION_BIN			2,3,1,0
+WED_AutogenPlacement::WED_AutogenPlacement(WED_Archive * a, int i) : WED_GISPolygon(a,i),
+	height  (this,PROP_Name("Height",          XML_Name("autogen_placement","height")),10.0,3,1),
+	resource(this,PROP_Name("Resource",        XML_Name("autogen_placement","resource")), "")
+{
+}
 
-// This numeric is used by the gateway to understand if our WED is up-to-date.
-// Format 1 digit major + 2 digit middle + 1 digit minor version + last digit
-// last digit is 0 for all beta versions or matches release version
-#define WED_VERSION_NUMERIC		20310
+WED_AutogenPlacement::~WED_AutogenPlacement()
+{
+}
 
-#endif /* WED_Version_H */
+void	WED_AutogenPlacement::GetResource(	  string& r) const
+{
+	r = resource.value;
+}
+
+void	WED_AutogenPlacement::SetResource(const string& r)
+{
+	resource = r;
+}
+
+double	WED_AutogenPlacement::GetHeight(void) const
+{
+	return height.value;
+}
+
+void	WED_AutogenPlacement::SetHeight(double h)
+{
+	height = h;
+}

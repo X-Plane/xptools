@@ -40,7 +40,6 @@ enum CreateTool_t {
 	create_String,
 	create_Line,
 	create_Polygon
-
 };
 
 class	WED_CreatePolygonTool : public WED_CreateToolBase {
@@ -72,9 +71,12 @@ protected:
 		WED_PropIntEnumSetFilterVal		mMarkingsLights;
 
 		WED_PropStringText				mResource;
-		WED_PropDoubleText				mHeight;
+		WED_PropDoubleTextMeters		mHeight;
 		WED_PropDoubleText				mDensity;
-		WED_PropDoubleText				mSpacing;
+
+		WED_PropDoubleTextMeters		mSpacing;
+		WED_PropDoubleTextMeters		mAgsHght;
+		WED_PropBoolText				mAutogen;
 		
 		WED_PropBoolText				mUVMap;
 		WED_PropBoolText				mPickWalls;

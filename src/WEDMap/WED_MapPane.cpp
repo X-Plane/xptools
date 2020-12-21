@@ -333,6 +333,7 @@ void WED_MapPane::SetResource(const string& r, int res_type)
 	case res_Forest:	mFstTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mFstTool)));	break;
 	case res_String:	mStrTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mStrTool)));	break;
 	case res_Line:		mLinTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mLinTool)));	break;
+	case res_Autogen:	mStrTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mStrTool)));	break;
 	case res_Polygon:	mPolTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mPolTool)));	break;
 	}
 }
