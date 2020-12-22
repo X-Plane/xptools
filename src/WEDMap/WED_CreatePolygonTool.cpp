@@ -94,9 +94,8 @@ WED_CreatePolygonTool::WED_CreatePolygonTool(
 		mHeight(tool   == create_Facade  ? this : NULL,PROP_Name("Height",   XML_Name("","")), 10.0, 4, 2),
 		mDensity(tool  == create_Forest  ? this : NULL,PROP_Name("Density",  XML_Name("","")), 1.0, 3, 2),
 
-		mSpacing(tool  == create_String  ? this : NULL,PROP_Name("Spacing",  XML_Name("","")), 5.0, 3, 1),
-		mAutogen(tool  == create_String  ? this : NULL,PROP_Name("Autogen",   XML_Name("","")), 0),
-		mAgsHght(tool  == create_String  ? this : NULL,PROP_Name("Height",   XML_Name("","")), 10.0, 3, 1),
+		mSpacing(tool  == create_String  ? this : NULL,PROP_Name("Spacing  (.str)",  XML_Name("","")), 5.0, 3, 1),
+		mAgsHght(tool  == create_String  ? this : NULL,PROP_Name("Height (.ags/.agb)",   XML_Name("","")), 10.0, 3, 1),
 
 		mUVMap(tool == create_Polygon    ? this : NULL,PROP_Name("Use Texture Map - Orthophoto", XML_Name("","")), 0),
 		mPickWalls(tool == create_Facade ? this : NULL,PROP_Name("Pick Walls", XML_Name("","")), 0)
@@ -133,7 +132,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 
 	int is_bezier = mType != create_Forest && mType != create_Boundary;
 	int is_apt = mType <= create_Hole;
-	int is_autogen = mType == create_String ? mAutogen.value : 0;
+	int is_autogen = mType == create_String ? mResource.value.substr(mResource.value.length() - 4) == ".ags" : 0;
 	int is_poly = (mType != create_Hole && mType != create_String && mType != create_Line) || is_autogen;
 	int is_texed = mType == create_Polygon ? mUVMap.value : 0;
 	int is_forest = mType == create_Forest;
@@ -434,10 +433,6 @@ void		WED_CreatePolygonTool::SetResource(const string& r)
 		mUVMap.value = !pol_i->wrap;
 	else if(rmgr->GetFac(mResource.value, fac_i))
 		mMinPts = !fac_i->is_ring && !fac_i->has_roof ? 2 : 3;                        // allow placement of some 2-node facades
-	else if(mResource.value.substr(mResource.value.length() - 4) == ".ags")
-		mAutogen = 1;
-	else if(mResource.value.substr(mResource.value.length() - 4) == ".str")
-		mAutogen = 0;
 }
 
 void	WED_CreatePolygonTool::GetNthPropertyDict(int n, PropertyDict_t& dict) const

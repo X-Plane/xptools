@@ -76,7 +76,6 @@ protected:
 
 		WED_PropDoubleTextMeters		mSpacing;
 		WED_PropDoubleTextMeters		mAgsHght;
-		WED_PropBoolText				mAutogen;
 		
 		WED_PropBoolText				mUVMap;
 		WED_PropBoolText				mPickWalls;

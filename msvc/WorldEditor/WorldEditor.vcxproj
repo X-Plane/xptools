@@ -154,6 +154,8 @@
     <ClCompile Include="..\..\src\WEDEntities\WED_ATCRunwayUse.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_ATCTimeRule.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_ATCWindRule.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_AutogenNode.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_AutogenPlacement.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_DrapedOrthophoto.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_Entity.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_ExclusionZone.cpp" />
@@ -431,6 +433,8 @@
     <ClInclude Include="..\..\src\WEDEntities\WED_ATCRunwayUse.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_ATCTimeRule.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_ATCWindRule.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_AutogenNode.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_AutogenPlacement.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_DrapedOrthophoto.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_Entity.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_ExclusionZone.h" />
