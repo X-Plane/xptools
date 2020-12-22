@@ -13,7 +13,7 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 2.3.1r1
+WED 2.3.1r1 12/22/20
    Features:
     - reload Orthophoto at export when image has changed and new DDS were created
     Bug Fix:
@@ -23,7 +23,7 @@ WED 2.3.1b1  12/12/20
    Features:
     - support metadata tag 'closed', dereive from [X] in airport name at GW im/export
     Bug Fix:
-    - improve Log.txt completeless when crashing
+    - improve Log.txt completeness when crashing
 	- WED-1332 fix (linux only) selection of ATC taxiroute runway tags
     - WED-1333 fix library preview visibility when AA settings overridden by video drivers
 	- WED-1335 fix orthophoto's from some DSF using inorrect vpath separator in OSX/Linux
