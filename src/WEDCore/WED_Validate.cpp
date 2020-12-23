@@ -1757,6 +1757,21 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 		else
 			msgs.push_back(validation_error_t(txt + " does not exist, but is needed by the XP 11.35+ GUI", warn_airport_metadata_invalid, who, apt));
 	}
+
+	if(who->ContainsMetaDataKey(wed_AddMetaDataClosed))
+	{
+		string isClosed = who->GetMetaDataValue(wed_AddMetaDataClosed);
+		if (isClosed == "1" )
+		{
+			string name;
+			apt->GetName(name);
+			if(name.c_str()[0] != '[' || tolower(name.c_str()[1]) != 'x' || name.c_str()[2] != ']')
+				msgs.push_back(validation_error_t("Metadata indicates airport is closed, but name does not start with [X]", warn_airport_metadata_invalid, who, apt));
+		}
+		else if(isClosed != "0")
+				add_formated_metadata_error(error_template, wed_AddMetaDataClosed, "must be either 0 or 1", who, msgs, apt);
+	}
+
 }
 
 static void ValidateOneTaxiSign(WED_AirportSign* airSign, validation_error_vector& msgs, WED_Airport * apt)
@@ -2241,7 +2256,11 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		ai_useable_ramps += ValidateOneRampPosition(r, msgs, apt, runways);
 
 	if(gExportTarget >= wet_xplane_1050)
+	{
 		ValidateAirportMetadata(apt,msgs,apt);
+		if(has_ATC && ai_useable_ramps < 1)
+			msgs.push_back(validation_error_t("Airports with ATC towers frequencies must have at least one Ramp Start of type=gate or tiedown.", err_ramp_need_starts_suitable_for_ai_ops, apt, apt));
+	}
 
 	err_type = gExportTarget == wet_gateway ? err_airport_impossible_size : warn_airport_impossible_size;
 	Bbox2 bounds;
@@ -2259,15 +2278,16 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	if(GT_routes.size() && truck_parking_locs.empty())
 		msgs.push_back(validation_error_t("Ground routes are defined, but no service vehicle starts. This disables all ground traffic, including auto generated pushback vehicles.", warn_truckroutes_but_no_starts, apt,apt));
 
-	if (has_ATC && ai_useable_ramps < 1)
-			msgs.push_back(validation_error_t("Airports with ATC towers frequencies must have at least one Ramp Start of type=gate or tiedown.", err_ramp_need_starts_suitable_for_ai_ops, apt, apt));
-
 	if(gExportTarget == wet_gateway)
 	{
 		if(!runways.empty() && boundaries.empty())
             msgs.push_back(validation_error_t("This airport contains runway(s) but no airport boundary.", 	err_airport_no_boundary, apt,apt));
 
 		Bbox2 apt_bounds;
+		auto oob_runways(runways);
+		auto oob_taxiways(taxiways);
+		auto oob_ramps(ramps);
+		
 		for(auto b : boundaries)
 		{
 			if(WED_HasBezierPol(b))
@@ -2289,40 +2309,61 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 				bdy.push_back(pt);
 			}
 		
-			for(auto r : runways)
+			for(auto r = oob_runways.begin(); r != oob_runways.end();)
 			{
 				Point2 corners[4];
-				r->GetCorners(gis_Geo, corners);
+				(*r)->GetCorners(gis_Geo, corners);
 				for(int i = 0; i < 4; i++)
+				{
 					if(!bdy.inside(corners[i]))
 					{
-						msgs.push_back(validation_error_t("Runway not fully inside airport boundary.", err_airport_outside_boundary, r, apt));
+						++r;
 						break;
 					}
+					if(i == 3)
+						r = oob_runways.erase(r);
+				}
 			}
-			for(auto t : taxiways)
+			vector<WED_Thing *> oob_vertices;
+			for(auto t = oob_taxiways.begin(); t != oob_taxiways.end();)
 			{
-				auto t_ps = t->GetOuterRing();
+				auto t_ps = (*t)->GetOuterRing();
 				int t_np = t_ps->GetNumPoints();
+				oob_vertices.clear();
+				
 				for(int i = 0; i < t_np; i++)
 				{
 					Point2 pt;
 					t_ps->GetNthPoint(i)->GetLocation(gis_Geo, pt);
 					if(!bdy.inside(pt))
-					{
-						msgs.push_back(validation_error_t("Taxiway not fully inside airport boundary.", err_airport_outside_boundary, t->GetNthChild(0)->GetNthChild(i), apt));
-						break;
-					}
+						oob_vertices.push_back((*t)->GetNthChild(0)->GetNthChild(i));
+				}
+				if(oob_vertices.size() == 0)
+					t = oob_taxiways.erase(t);
+				else if(oob_vertices.size() == t_np)
+					++t;                           // fully outside -> keep checking with next boundary
+				else
+				{
+					msgs.push_back(validation_error_t("Taxiway not fully inside airport boundary.", err_airport_outside_boundary, oob_vertices, apt));
+					t = oob_taxiways.erase(t);
 				}
 			}
-			for(auto r : ramps)
+			for(auto r = oob_ramps.begin(); r != oob_ramps.end();)
 			{
 				Point2 pt;
-				r->GetLocation(gis_Geo, pt);
-				if(!bdy.inside(pt))
-					msgs.push_back(validation_error_t("Ramp Start outside airport boundary.", err_airport_outside_boundary, r, apt));
+				(*r)->GetLocation(gis_Geo, pt);
+				if(bdy.inside(pt))
+					r = oob_ramps.erase(r);
+				else
+					++r;
 			}
 		}
+		for(auto r : oob_runways)
+			msgs.push_back(validation_error_t("Runway not fully inside airport boundary.", err_airport_outside_boundary, r, apt));
+		for(auto t : oob_taxiways)
+			msgs.push_back(validation_error_t("Taxiway not inside airport boundary.", err_airport_outside_boundary, t, apt));
+		for(auto r : oob_ramps)
+			msgs.push_back(validation_error_t("Ramp Start not inside airport boundary.", err_airport_outside_boundary, r, apt));
 
 		apt_bounds.expand(APT_OVERSIZE_NM / cos(apt_bounds.centroid().y() * DEG_TO_RAD) / 60.0, APT_OVERSIZE_NM / 60.0 );
 		if(!boundaries.empty() && !apt_bounds.contains(bounds))

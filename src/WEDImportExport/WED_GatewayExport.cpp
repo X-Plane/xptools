@@ -521,7 +521,12 @@ void WED_GatewayExportDialog::Submit()
 	{
 		DebugAssert(mApt);
 		WED_Airport * apt = mApt;
-		fill_in_airport_metadata_defaults(*mApt, mAirportMetadataCSVPath);
+		mApt->StartOperation("Update metadata");
+		if(fill_in_airport_metadata_defaults(*mApt, mAirportMetadataCSVPath))
+			mApt->CommitOperation();
+		else
+			mApt->AbortOperation();
+
 		string apt_name = this->GetField(gw_icao);
 		string act_name;
 		apt->GetName(act_name);
@@ -587,7 +592,6 @@ void WED_GatewayExportDialog::Submit()
 			FILE_delete_file(targ_folder_zip.c_str(), false);
 		}
 
-		Enforce_MetaDataGuiLabel(apt);
 		if(has_dsf(apt))
 		if(DSF_ExportAirportOverlay(mResolver, apt, targ_folder, mProblemChildren))
 		{
@@ -866,41 +870,48 @@ void WED_GatewayExportDialog::TimerFired()
 	}
 }
 
-void Enforce_MetaDataGuiLabel(WED_Airport * apt)
+bool Enforce_MetaDataGuiLabel(WED_Airport * apt)
 {
 	string has3D(GatewayExport_has_3d(apt) ? "3D" : "2D");
+	string name;
+	apt->GetName(name);
+	bool isClosed = name.c_str()[0] == '[' && tolower(name.c_str()[1]) == 'x' && name.c_str()[2] == ']';
 
-	if(!apt->ContainsMetaDataKey(wed_AddMetaDataLGuiLabel) || apt->GetMetaDataValue(wed_AddMetaDataLGuiLabel) != has3D)
+	if(!apt->ContainsMetaDataKey(wed_AddMetaDataLGuiLabel) ||
+	   (isClosed && !apt->ContainsMetaDataKey(wed_AddMetaDataClosed)) ||
+	   (gExportTarget == wet_gateway && has3D != apt->GetMetaDataValue(wed_AddMetaDataLGuiLabel)))
 	{
-		apt->StartOperation("Force Meta Tag 'GUI Label'");
 		apt->AddMetaDataKey(META_KeyName(wed_AddMetaDataLGuiLabel), has3D);
-		apt->CommitOperation();
+		apt->AddMetaDataKey(META_KeyName(wed_AddMetaDataClosed), "1");
+		return true;
 	}
+	else
+		return false;
 }
 
-void EnforceRecursive_MetaDataGuiLabel(WED_Thing * thing)
+bool EnforceRecursive_MetaDataGuiLabel(WED_Thing * thing)
 {
 	WED_Entity * ent = dynamic_cast<WED_Entity *>(thing);
 	if (!ent || ent->GetHidden())
-		return;
+		return false;
 
 	WED_Airport * apt = dynamic_cast<WED_Airport *>(thing);
 	if (apt)
 	{
-		Enforce_MetaDataGuiLabel(apt);
-		return;
+		return Enforce_MetaDataGuiLabel(apt);
 	}
 
+	bool changedMeta = false;
 	if (thing->GetClass() == WED_Group::sClass)
 	{
 		int cc = thing->CountChildren();
 		for (int c = 0; c < cc; ++c)
 		{
 			WED_Thing * child = thing->GetNthChild(c);
-			EnforceRecursive_MetaDataGuiLabel(child);
+			changedMeta |= EnforceRecursive_MetaDataGuiLabel(child);
 		}
 	}
-	return;
+	return changedMeta;
 }
 
 const string WED_get_GW_api_url()

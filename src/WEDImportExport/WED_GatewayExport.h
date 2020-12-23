@@ -34,8 +34,8 @@ int		WED_CanExportToGateway(IResolver * resolver);
 void	WED_DoExportToGateway(WED_Document * resolver);
 
 bool GatewayExport_has_3d(WED_Airport * who);
-void Enforce_MetaDataGuiLabel(WED_Airport * apt);
-void EnforceRecursive_MetaDataGuiLabel(WED_Thing * thing);
+bool Enforce_MetaDataGuiLabel(WED_Airport * apt);
+bool EnforceRecursive_MetaDataGuiLabel(WED_Thing * thing);
 
 const string WED_get_GW_api_url();
 const string WED_get_GW_cert();

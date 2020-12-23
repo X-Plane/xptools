@@ -612,6 +612,7 @@ public:
 			me->want_uv=inParam == 65535;
 			me->want_bezier=me->want_uv ? (inCoordDepth == 8) : (inCoordDepth == 4);
 			me->want_wall=false;
+			std::replace(r.begin(), r.end(), '\\', '/');  // DSF created with older windows WED used backslash for local orthophoto paths
 			if(me->want_uv)
 			{
 				WED_DrapedOrthophoto * orth = WED_DrapedOrthophoto::CreateTyped(me->archive);

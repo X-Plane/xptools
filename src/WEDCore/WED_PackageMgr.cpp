@@ -398,6 +398,7 @@ void		WED_PackageMgr::Rescan(bool alwaysBroadcast)
 			XPversion = v;
 		}
 	}
+	LOG_MSG("I/PMgr Detected XP version %s\n", XPversion.c_str());
 }
 
 string		WED_PackageMgr::ComputePath(const string& package, const string& rel_file) const

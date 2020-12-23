@@ -693,7 +693,7 @@ int XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int button
 {
 	if(!in_menu) return -1;
 
-	int idx = current;
+	int idx = -1;
 	const Fl_Menu_Item * item = in_menu->popup(mouse_x,mouse_y,0,0,mMenuBar);
 
 	if(item)
