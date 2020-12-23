@@ -62,9 +62,8 @@ enum CACHE_error_type
 struct WED_file_cache_request
 {
 	WED_file_cache_request();
-	WED_file_cache_request(const string& cert, CACHE_domain domain, const string& folder_prefix, const string& url);
+	WED_file_cache_request(CACHE_domain domain, const string& folder_prefix, const string& url);
 
-	string in_cert;           // Our security certification
 	CACHE_domain in_domain;   // Domain policy for the file, stores information on how files should be downloaded and kept
 	string in_folder_prefix;  // A folder prefix to place this cached file in, no leading or trailing slash
 	string in_url;            // The URL to request from, cached inside CACHE_CacheObject

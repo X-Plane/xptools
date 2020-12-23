@@ -75,7 +75,6 @@ static void get_airports(map<string, navaid_t>& tAirports)
 {
 	WED_file_cache_request	mCacheRequest;
 	
-	mCacheRequest.in_cert = WED_get_GW_url();
 	mCacheRequest.in_domain = cache_domain_airports_json;
 	mCacheRequest.in_folder_prefix = "scenery_packs" DIR_STR "GatewayImport";
 	mCacheRequest.in_url = WED_get_GW_url() + "airports";

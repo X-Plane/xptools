@@ -38,7 +38,6 @@ bool Enforce_MetaDataGuiLabel(WED_Airport * apt);
 bool EnforceRecursive_MetaDataGuiLabel(WED_Thing * thing);
 
 const string WED_get_GW_api_url();
-const string WED_get_GW_cert();
 
 #endif
 
