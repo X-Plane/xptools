@@ -34,6 +34,7 @@
 #define	WED_VERSION_RES			WED_VERSION_STRING
 #define	WED_VERSION_BIN			2,3,1,1
 
+
 // This numeric is used by the gateway to understand if our WED is up-to-date.
 // Format 1 digit major + 2 digit middle + 1 digit minor version + last digit
 // last digit is 0 for all beta versions or matches release version
