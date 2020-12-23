@@ -2,10 +2,9 @@ X-Plane Scenery Tools README
 ====================================================================
 
 The X-Plane Scenery Tools (XPTools) code base is the source code tree for all 
-of the Laminar Research scenery creation/editing tools.  This code does not 
-include X-Plane and the "X-Apps" (PlaneMaker, WorldMaker, AirfoilMaker, and 
-Briefer).  It does include source to the ac3d x-plane plugin, WED, the various
-tools and our global scenery generator RenderFarm.
+of the Laminar Research scenery creation/editing tools. This does not 
+include X-Plane, Plane Maker, or Airfoil Maker.  It does include source to WorldEditor (WED),
+and our global scenery generator RenderFarm, and other tools.
 
 The latest info on basic usage of this repository can be found [on the X-Plane
 Developer site](https://developer.x-plane.com/code/).
@@ -16,13 +15,13 @@ Licensing and Copyright
 
 The code original to Laminar Research lives in the sub-directory "src" and is licensed
 under the MIT/X11 license.  If you find a source file with no copyright, or double/
-conflicting copyright, please report this (see contact info below)---this is 
+conflicting copyright, please report this (see contact info below)—this is 
 probably a clerical error.
 
 The directory `libs` contains tarballs of a number of publicly available open
-source libraries---they are included for convenience in building.  I believe
+source libraries—they are included for convenience in building.  I believe
 that all of the libsrc libraries are under either an MIT/X11-type or GPL-type
-license---if you find a library that is incompatible with WED's licensing,
+license—if you find a library that is incompatible with WED's licensing,
 please report this.
 
 Build materials are in the root directory.
@@ -46,9 +45,8 @@ Top Level File Structure
     - Microsoft Visual Studio 2017 project files for Windows
 - codeblocks
     - code::blocks project file to build WED for Linux
-
 - msvc_libs
-    - subrepo with pre-compiled 3rd party libraries, only used under Window. 
+    - subrepo with pre-compiled 3rd party libraries, only used on Windows when compiling with Visual Studio. 
        The file "howto_build.txt" documents in this directory documents how the
        libraries were originally compiled from the included source.
 - libs
@@ -59,8 +57,7 @@ Top Level File Structure
 - makerules
     - Master makefile to build all tools for Linux, can also build all tools under OSX.
 - src
-    - The main source tree for the various tools and exewcutable of XPtools.
-
+    - The main source tree for the various tools and executable of XPtools.
 - test
     - Collection of files for regression testing of WED
 - scripts
