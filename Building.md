@@ -5,14 +5,15 @@ The X-Plane Scenery Tools are available as source code, as well as binaries. Thi
 - [Setting Up Your Build Environment](#setting-up-your-build-environment)
     - [macOS](#macos)
     - [Windows](#windows)
-        - [Using MinGW on Windows](#using-mingw-on-windows)
     - [Linux](#linux)
 - [Getting the Source Code](#getting-the-source-code)
 - [Compiling the Program](#compiling-the-program)
     - [Building Libraries (Mac, Linux, and MinGW only)](#building-libraries-mac-linux-and-mingw-only)
-    - [Building the Applications on Linux or MinGW](#building-the-applications-on-linux-or-mingw)
+    - [Getting the libraries (windows-only)](#getting-the-libraries-windows-only)
+    - [Building the Applications from the command line on Linux or macOS](#building-the-applications-from-the-command-line-on-linux-or-macos)
     - [Building on Windows Using Visual Studio](#building-on-windows-using-visual-studio)
     - [Building on macOS Using XCode](#building-on-macos-using-xcode)
+    - [Building on Linux Using Code::Blocks](#building-on-linux-using-codeblocks)
 
 
 ## Setting Up Your Build Environment
@@ -21,103 +22,76 @@ The X-Plane scenery tools code (XPTools) can be compiled for Mac, Windows, or Li
 
 ### macOS
 
-To build on macOS, you’ll need at least macOS 10.12 (Sierra) and the latest version of Xcode ([free in the Mac App Store](https://apps.apple.com/us/app/xcode/id497799835?mt=12)) your OS supports.
+To build on macOS, you’ll need at least macOS 10.11 (El Capitan) and Xcode 8.3 or higher ([free in the Mac App Store](https://apps.apple.com/us/app/xcode/id497799835?mt=12)).
 
-You also need a command-line version of [CMake](http://www.cmake.org/) installed. The easiest way to get CMake is via [Homebrew](https://brew.sh): `$ brew install cmake`
+You also need a command-line version of [CMake](http://www.cmake.org/) installed. Beside downloading a binary from the cmake website, it can also be installed via [Homebrew](https://brew.sh): `$ brew install cmake`
 
 ### Windows
 
-There are two choices for toolchains on Windows.
-
-1. If you want to work on WED 1.3 or later (i.e., any version we’ve shipped for years now) you can use [Visual Studio](https://visualstudio.microsoft.com/vs/features/cplusplus/) 2017 or later (the free Community edition is fine). This is the easier, and recommended option.
-2. If you want to work on older versions of WED (pre-1.3) you will need to use MinGW.
+Building on Windows requires [Visual Studio](https://visualstudio.microsoft.com/vs/features/cplusplus/) 2017 or later (the free Community edition is fine).
 
 In addition to the standard installation of Microsoft Visual Studio Community, you’ll also need some kind of Git client; [Git GUI](http://msysgit.github.io/) is a simple choice, and the command-line syntax listed here will work in the “GIT Bash” shell that comes with it.
 
-The rest of this section covers using MinGW—if you’re using Visual Studio (recommended), jump ahead to [Getting the source code](#getting-the-source-code).
-
-#### Using MinGW on Windows
-
-**WARNING:** Make sure there are no spaces in the paths up to the code on Windows! The Makefile does not handle this case yet. You may want to consider this when installing the tools.
-
-MinGW is the supported compiler—you will need to set up a full mingw environment with GCC 4.2.x or newer. The simplest way to do that is with the XPTools Environment Installer, which can be downloaded [here](http://dev.x-plane.com/download/tools/xptools-env-installer-1.2.0.exe).
-
-The installer is a net-installer—that is, it will download the latest components to the build environment. The build environment is entirely self-contained – simply delete it when done – it does not install any registry keys, COM components, or other global “stuff”.
-
-To start the environment, run `startenv.bat` from the root of the installation directory. It will put you automatically in the Scenery Tools Source directory if you choosed to download the sources during the installation, or into your home directory if you skipped that step.
-
-To update the build environment itself (i.e. when we added a new gcc release for example) just start the environment and execute following commands:
-
-    cd /
-    git pull origin master:master
-
-This however might fail when we update bash or git in the environment because Windows locks files which are currently in use. In this case just re-run the Buildenvironment Installer over an existing installation to update the environment (you will need an installer version >= 1.1.1 for this to work).
-
-Similary you can update the Scenery Tools source tree with:
-
-    cd /xptools
-    git pull origin master:master
-
-Note that you aren’t on the master branch after a fresh installation, but a specific commit because the Scenery Tools tree is registered as a git submodule in the build environment. Therefore you need to make sure that you switch to the master branch before building the tools after updating the tree (you need to do this only once after a fresh installation):
-
-    cd /xptools
-    git checkout master
+Very old (WED 1.3 and earlier) versions were built using MingW - but this toolchain isn't maintained since.
 
 ### Linux
 
-You will need GCC 7, along with a few other packages:
+You will need the gcc compiler, version 5.4 or newer, which should be installed by default on pretty much any system. In addition you will need cmake version 3.0+ and developer files for a few libraries installed:
 
-* gnu make
-* gnu coreutils
-* binutils, binutils-devel if applicable for libbfd.a
-* libmpfr-devel
-* qt4-devel
-* mesa-libGL-devel, mesa-libGLU-devel or the proprietary variants from ATI or NVidia
-* libcurl4-openssl-dev
+* libc and make tools, package gcc-?-dev (the ? denotes the gcc version you want to use)
 
-* * *
+* X11 and openGL. When the binary AMD or Nvida video drivers are installed - these all come with a full set of developer bindings. When using MESA drivers, package libglu-mesa and its dependencies will provide all these.
+
+* FTTK toolkit version 1.3, package libfltk1.3-dev
+* cURL, package libcurl4-openssl-dev
+
+When compiling WED 2.2 and earlier or XPTools version 15-3 and earlier - the Qt4 toolkit, package Qt4-dev is required instead of the FLTK toolkit.
+
+It is also highly recommended to install the Code::Blocks IDE, version 13 or higher, for which solution files are available for most xptools starting with WED 1.7. But pure command line builds for all tools are fully supported as well.
 
 ## Getting the Source Code
 
 The source code now lives on [GitHub](https://github.com/X-Plane/xptools)! You can browse the code online, download it, or clone it using all of the standard GitHub techniques. Clone the complete repo like this:
 
-    git clone --recurse-submodules https://github.com/X-Plane/xptools.git
-
-(Note that `--recurse-submodules` is necessary to also get the libraries to build from source.)
+    git clone https://github.com/X-Plane/xptools.git
 
 If you don’t want a complete clone of the code, you can of course use GitHub to just download a ZIP of the most recent code, or download any major release; binary tools releases have matching tags in the repo.
 
-* * *
-
 ## Compiling the Program
 
-The scenery tools source code depends on a large number of third party libraries; to make cross-platform development easier, they live in a Git sub-module (`libs` for Mac, Linux, and MinGW, `msvc_libs` for Visual Studio on Windows).
+The scenery tools source code depends on a large number of third party libraries; to make cross-platform development easier, they live in a Git sub-module (`libs` for Mac, Linux and MinGW, `msvc_libs` for Visual Studio on Windows).
 
-### Building Libraries (Mac, Linux, and MinGW only)
+### Building Libraries (Mac, Linux and MinGW only)
 
-(This step is not necessary when using MSVC to build WorldEditor 1.3 or newer on Windows.)
+(This step is not necessary on Windows using MSVC)
 
-The first time you want to compile, you need to first download and compile your libraries. From your repository you can do this:
+The first time you want to compile, you need to first download and compile your libraries. These libraries are updated infrequently. From your repository you can do this:
 
-    git submodule update --init
+    git submodule init
+    git submodule update libs
     cd libs
     make -j
 
-The libraries can take 20-30 minutes to compile!
+The libraries can take 5-10 minutes to compile!
 
-### Building the Applications on Linux or MinGW
+### Getting the Libraries (Windows only)
 
-I tried to make this process as simple as possible. First of all make sure that you have following prerequisites installed:
+(This step is not necessary on macOS or Linux)
 
-* development packages of libbfd (mostly included in binutils), libmpfr, libz and boost
-* gcc 7
-* gnu make
+Compiling the required libraries requires a number of manual steps - so a precompiled set of libraries along with the patched source code is provided in the msvc_libs subdirectory. To get this from the repository do this:
 
-then just do a
+    git submodule init
+    git submodule update msvc_libs
+
+Note that WED versions 1.X and xptools before version 19-4 are using 32bit tools and MSVC 2010, while WED 2.x and xptools 19-4 and later are 64bit binaries and all libraries are created for Win10 / MSVC 2017 toolchains, only. So the `submodule update` step needs to be repeated anytime a different branch with changes to the submodule pointer is checked out.
+
+### Building the Applications from the command line on Linux or macOS
+
+Go to the Scenery Tools root directory (same dir as where these instructions can be found) and just do a 
 
     make -j
 
-in the Scenery Tools root directory. After awhile, the output can be found under
+This will build the tool using default options for debugging. After awhile, the output can be found under
 
     [xptools dir]/build/[platform]/[configuration]
 
@@ -132,7 +106,9 @@ where `[configuration]` can be one of the following:
 * `debug`
 * `debug_opt`
 
-The `_opt` variants are built with `-O2` set, the others with `-O0`. `release` variants are built with `-DDEV=0` set, while `debug` variants have `-DDEV=1`.
+The `release` configuration is built with maximum optimizations `-Ofast -flto`, `debug` with no optimization at all '-O0' and when no configuration is specified, optimizations suitable for most debugging tasks (platform dependent) are used.
+
+The `release` configuration are built with `-DDEV=0` set, while `debug` and default variants have `-DDEV=1`.
 
 To clean the tree you can do:
 
@@ -149,7 +125,6 @@ Available tools are:
 * `DDSTool`
 * `DSFTool`
 * `MeshTool`
-* `ObjConverter`
 * `ObjView`
 * `RenderFarm`
 * `RenderFarmUI`
@@ -158,11 +133,13 @@ Available tools are:
 
 ### Building on Windows Using Visual Studio
 
-The MSVC solution file (`.sln`) can be found in `msvc/XPTools.sln`, and it contains projects that build WorldEditor and the reset of the tools. The MSVC project uses the standard debug and release targets.
+The MSVC solution file (`.sln`) can be found in `msvc/XPTools.sln`, and it contains projects that build WorldEditor and the reset of the tools.
 
 ### Building on macOS Using XCode
 
 The XCode project is in the root of the repo, `SceneryTools.xcodeproj`. There is one target for each of the scenery tools—simply pick a configuration, target, and build.
 
-**Important**: Before building on the Mac for the first time, you must build the libraries as described above.
+### Building on Linux Using Code::Blocks
+
+The project files (`.cbp`) for most xptools can be found in the `codeblocks` directory. The IDE is set up to build using the regular command line makefiles and not its internal build tools - so the results are guaranteed identical to command line builds.
 
