@@ -13,22 +13,26 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 2.4.0
+   Features:
+    - use native secure internet connectivity on all operating systems
+
 WED 2.3.1r1 12/22/20
    Features:
     - reload Orthophoto at export when image has changed and new DDS were created
     Bug Fix:
-	- WED-1341 fix (linux only) uncommanded exclusion zone changes when canceling edits
+    - WED-1341 fix (linux only) uncommanded exclusion zone changes when canceling edits
 
 WED 2.3.1b1  12/12/20
    Features:
     - support metadata tag 'closed', dereive from [X] in airport name at GW im/export
     Bug Fix:
     - improve Log.txt completeness when crashing
-	- WED-1332 fix (linux only) selection of ATC taxiroute runway tags
+    - WED-1332 fix (linux only) selection of ATC taxiroute runway tags
     - WED-1333 fix library preview visibility when AA settings overridden by video drivers
-	- WED-1335 fix orthophoto's from some DSF using inorrect vpath separator in OSX/Linux
+    - WED-1335 fix orthophoto's from some DSF using inorrect vpath separator in OSX/Linux
     - WED-1340 fix validation not recognizing all boundaries of an airport
-	- fix false alarms in ramp start validation for export targets older than XP10.45
+    - fix false alarms in ramp start validation for export targets older than XP10.45
 
 WED 2.3.0r2 10/19/20
     Bug Fix:

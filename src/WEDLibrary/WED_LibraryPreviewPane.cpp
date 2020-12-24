@@ -337,6 +337,8 @@ void	WED_LibraryPreviewPane::begin3d(const int *b, double radius_m)
 	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, false);
 	glEnable(GL_LIGHTING);
 #if USE_2X2MSAA
+	if (GetModifiersNow() & gui_ShiftFlag) mMSAA = 0; else mMSAA = 1;
+
 	if(mMSAA)
 	{
 		glGenFramebuffers(1, &mFBO);
