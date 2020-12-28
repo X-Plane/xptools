@@ -15,7 +15,8 @@ CHANGE HISTORY
 
 WED 2.4.0
    Features:
-    - use native secure internet connectivity on all operating systems
+   - use native secure internet connectivity on all operating systems
+   - requires glibc-2.27 (ubuntu 18.04 and other 2018-era systems) despite building on 20.04
 
 WED 2.3.1r1 12/22/20
    Features:
