@@ -10,7 +10,6 @@ FORCEREBUILD_SUFFIX	:= _wed
 
 ifdef PLAT_LINUX
 LDFLAGS		+= -rdynamic
-LDFLAGS         += -L./libs/local$(MULTI_SUFFIX)/lib
 LDFLAGS		+= -Wl,--exclude-libs,libpng
 ifdef FLTK_STATIC
 LIBS		+= $(shell fltk-config --use-gl --ldstaticflags)

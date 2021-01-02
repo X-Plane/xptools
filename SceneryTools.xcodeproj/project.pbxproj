@@ -5534,7 +5534,7 @@
 				INFOPLIST_FILE = Src/WEDResources/WED_Info.plist;
 				INFOPLIST_PREFIX_HEADER = src/WEDCore/WED_Version.h;
 				INFOPLIST_PREPROCESS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libexpat.a,
 					libs/local/lib/libpng.a,
@@ -6049,7 +6049,7 @@
 				INFOPLIST_FILE = src/WEDResources/WED_Info.plist;
 				INFOPLIST_PREFIX_HEADER = src/WEDCore/WED_Version.h;
 				INFOPLIST_PREPROCESS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libexpat.a,
 					libs/local/lib/libpng.a,
@@ -6090,7 +6090,7 @@
 				INFOPLIST_FILE = Src/WEDResources/WED_Info.plist;
 				INFOPLIST_PREFIX_HEADER = src/WEDCore/WED_Version.h;
 				INFOPLIST_PREPROCESS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libexpat.a,
 					libs/local/lib/libpng.a,
@@ -6219,7 +6219,7 @@
 				INFOPLIST_FILE = Src/WEDResources/WED_Info.plist;
 				INFOPLIST_PREFIX_HEADER = src/WEDCore/WED_Version.h;
 				INFOPLIST_PREPROCESS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libexpat.a,
 					libs/local/lib/libpng.a,
