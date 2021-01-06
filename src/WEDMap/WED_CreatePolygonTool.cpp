@@ -329,7 +329,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 
 		if(is_apt)                      node = bnode = anode = WED_AirportNode::CreateTyped(GetArchive());
 		else if(is_facade)              node = bnode = WED_FacadeNode::CreateTyped(GetArchive());
-		else if(is_autogen)             node = bnode = WED_AutogenNode::CreateTyped(GetArchive());
+		else if(is_autogen)             node = WED_AutogenNode::CreateTyped(GetArchive());
 		else if(is_bezier && is_texed)  node = bnode = tbnode = WED_TextureBezierNode::CreateTyped(GetArchive());
 		else if(is_bezier)              node = bnode = WED_SimpleBezierBoundaryNode::CreateTyped(GetArchive());
 		else if(is_texed)               node = tnode = WED_TextureNode::CreateTyped(GetArchive());

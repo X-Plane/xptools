@@ -844,7 +844,7 @@ public:
 			{
 				WED_AutogenNode * a = WED_AutogenNode::CreateTyped(me->archive);
 				node=a;
-				a->SetBezierLocation(gis_Geo, me->pts[n]);
+				a->SetLocation(gis_Geo, me->pts[n].pt);
 				a->SetSpawning(me->autogen_rings > 0);
 			}
 			else if (me->want_bezier)
