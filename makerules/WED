@@ -39,11 +39,7 @@ LDFLAGS		+= -framework Carbon -framework OpenGL -framework AppKit
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libboost_thread.a
 endif #PLAT_DARWIN
 
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libcurl.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libssl.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libcrypto.a
-#LIBS           := ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
-#LIBS           += ./libs/local$(MULTI_SUFFIX)/lib/libCGAL_Core.a
+LIBS		+= -lcurl
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libexpat.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgeotiff.a

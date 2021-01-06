@@ -491,12 +491,6 @@ WED_GatewayExportDialog::WED_GatewayExportDialog(WED_Airport * apt, WED_Document
 
 void WED_GatewayExportDialog::StartCSVDownload()
 {
-	//Get Certification
-	const string cert(WED_get_GW_cert());
-	if(cert.empty())
-		this->AsyncDestroy();
-
-	mCacheRequest.in_cert = cert;
 	mCacheRequest.in_domain = cache_domain_metadata_csv;
 	mCacheRequest.in_folder_prefix = "scenery_packs";
 	mCacheRequest.in_url = WED_URL_AIRPORT_METADATA_CSV;
@@ -737,20 +731,12 @@ void WED_GatewayExportDialog::Submit()
 			return;
 		#endif
 
-		const string cert(WED_get_GW_cert());
-		if(cert.empty())
-		{
-			this->AsyncDestroy();
-		}
-		else
-		{
-			mCurl = new curl_http_get_file(WED_get_GW_api_url() + "scenery", nullptr, &reqstr, &mResponse, cert);
-			this->Reset("", "", "", false);
-			this->AddLabel("Uploading airport to Gateway.");
-			this->AddLabel("This could take up to one minute.");
-			gExportTarget = old_target;
-			Start(1.0);
-		}
+		mCurl = new curl_http_get_file(WED_get_GW_api_url() + "scenery", nullptr, &reqstr, &mResponse);
+		this->Reset("", "", "", false);
+		this->AddLabel("Uploading airport to Gateway.");
+		this->AddLabel("This could take up to one minute.");
+		gExportTarget = old_target;
+		Start(1.0);
 	}
 	else if(mPhase == expt_dialog_done)
 	{
@@ -876,17 +862,19 @@ bool Enforce_MetaDataGuiLabel(WED_Airport * apt)
 	string name;
 	apt->GetName(name);
 	bool isClosed = name.c_str()[0] == '[' && tolower(name.c_str()[1]) == 'x' && name.c_str()[2] == ']';
+	bool changed_meta = false;
 
-	if(!apt->ContainsMetaDataKey(wed_AddMetaDataLGuiLabel) ||
-	   (isClosed && !apt->ContainsMetaDataKey(wed_AddMetaDataClosed)) ||
-	   (gExportTarget == wet_gateway && has3D != apt->GetMetaDataValue(wed_AddMetaDataLGuiLabel)))
+	if (!apt->ContainsMetaDataKey(wed_AddMetaDataLGuiLabel))
 	{
 		apt->AddMetaDataKey(META_KeyName(wed_AddMetaDataLGuiLabel), has3D);
-		apt->AddMetaDataKey(META_KeyName(wed_AddMetaDataClosed), "1");
-		return true;
+		changed_meta = true;
 	}
-	else
-		return false;
+	if(isClosed && !apt->ContainsMetaDataKey(wed_AddMetaDataClosed))
+	{
+		apt->AddMetaDataKey(META_KeyName(wed_AddMetaDataClosed), "1");
+		changed_meta = true;
+	}
+	return changed_meta;
 }
 
 bool EnforceRecursive_MetaDataGuiLabel(WED_Thing * thing)
@@ -920,13 +908,5 @@ const string WED_get_GW_api_url()
 	if(url.empty())	
 		url = WED_URL_GATEWAY "apiv1/";
 	return url;
-}
-
-const string WED_get_GW_cert()
-{
-	string s(gApplication->args.get_value("--gateway_crt"));
-	if (s.empty())
-		GUI_GetTempResourcePath("gateway.crt", s);
-	return s;
 }
 #endif /* HAS_GATEWAY */

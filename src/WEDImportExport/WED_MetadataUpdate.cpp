@@ -47,11 +47,6 @@
  */
 static bool fill_cache_request_for_metadata_csv(WED_file_cache_request * out_cache_req)
 {
-	string cert(WED_get_GW_cert());
-	if(cert.empty())
-		return false;
-
-	out_cache_req->in_cert = cert;
 	out_cache_req->in_domain = cache_domain_metadata_csv;
 	out_cache_req->in_folder_prefix = "scenery_packs";
 	out_cache_req->in_url = WED_URL_AIRPORT_METADATA_CSV;
