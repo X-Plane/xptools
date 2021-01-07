@@ -285,7 +285,7 @@ public:
 
 protected:
 
-	void draw();
+	//void draw();
 	virtual int handle(int e);
 	void resize(int x,int y,int w,int h);
 
