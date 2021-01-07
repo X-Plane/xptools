@@ -330,7 +330,10 @@ void			GUI_Application::Run(void)
 #endif
 #if LIN
 	while(!mDone && Fl::wait()) // Fl::wait() returns 1 if atleast one window shown
-	{}
+	{
+		while(Fl::damage())
+			Fl::wait(0);
+	}
 #endif
 }
 
