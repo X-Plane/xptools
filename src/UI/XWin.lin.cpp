@@ -128,15 +128,6 @@ void XWin::ClearMenus(const Fl_Menu_Item *  menu)
 
 /**FLTK CALLBACK functs**/
 
-///*FLTK draw callback*/
-//void XWin::draw()
-//{
-//	if(mInited)
-//	{
-//		Update(0);
-//		draw_children();
-//	}
-//}
 
 inline int fltkBtnToXBtn(const int inButton )
 {

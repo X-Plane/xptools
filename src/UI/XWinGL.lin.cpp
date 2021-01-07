@@ -110,7 +110,5 @@ void XWinGL::SwapBuffer(void)
 
 void XWinGL::Update(XContext ctx)
 {
-	//static int c = 0;
-	//printf("update GL %d\n",++c);
     mGlWidget->redraw();
 }
