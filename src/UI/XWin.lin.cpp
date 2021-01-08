@@ -128,6 +128,15 @@ void XWin::ClearMenus(const Fl_Menu_Item *  menu)
 
 /**FLTK CALLBACK functs**/
 
+/*FLTK draw callback*/
+void XWin::draw()
+{
+	if(mInited)
+	{
+		Update(0);
+		draw_children();
+	}
+}
 
 inline int fltkBtnToXBtn(const int inButton )
 {
@@ -437,7 +446,6 @@ bool XWin::Closed(void)
 
 void XWin::Update(XContext ctx)
 {
-	this->redraw();
 }
 
 void XWin::SetTitle(const char * inTitle)
@@ -461,7 +469,7 @@ void XWin::Resize(int inWidth, int inHeight)
 
 void XWin::ForceRefresh(void)
 {
-	Update(0);
+	this->redraw();
 }
 
 void XWin::UpdateNow(void)
