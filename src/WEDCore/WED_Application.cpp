@@ -98,6 +98,7 @@ RadioButton::RadioButton(int x0, int y0, WED_Settings * parent,  const int * var
 
 bool WED_Settings::Closed(void)
 {
+	this->TakeFocus();// more: removes the focus from the edit fields if any ; stops the cursor blink timer.
 	Hide();
 	return false;
 }
@@ -114,14 +115,17 @@ void WED_Settings::ReceiveMessage(
 	{
 			gIsFeet = ((GUI_Button *) inParam)->GetValue();
 			BroadcastMessage(GUI_TABLE_CONTENT_CHANGED,0);
+			this->TakeFocus();
 	}
 	else if(inMsg == (intptr_t) &gInfoDMS)
 	{
 			gInfoDMS = ((GUI_Button *) inParam)->GetValue();
+			this->TakeFocus();
 	}
 	else if(inMsg == (intptr_t) &gModeratorMode)
 	{
 			gModeratorMode = ((GUI_Button *) inParam)->GetValue();
+			this->TakeFocus();
 	}
 	else if(inMsg == (intptr_t) &gCustomSlippyMap)
 	{
@@ -141,9 +145,11 @@ void WED_Settings::ReceiveMessage(
 	else if(inMsg == (intptr_t) &gOrthoExport)
 	{
 			gOrthoExport = ((GUI_Button *) inParam)->GetValue();
+			this->TakeFocus();
 	}
 	else if (inMsg == kMsg_Close)
 	{
+		this->TakeFocus();
 		Hide();
 //		AsyncDestroy();
 	}
