@@ -169,8 +169,8 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	mTools.push_back(					NULL);
 	mTools.push_back(					NULL);
 
-	mTools.push_back(					NULL); // icon for .ags/.agb placement
 	mTools.push_back(					NULL); // icon for JetWay placement
+	mTools.push_back(mAgsTool=			new WED_CreatePolygonTool("Autogen",mMap, mMap, resolver, archive, create_Autogen));
 
 	mTools.push_back(					new WED_CreatePointTool("Truck Parking", mMap, mMap, resolver, archive, create_TruckParking));
 	mTools.push_back(					new WED_CreatePointTool("Truck Destination", mMap, mMap, resolver, archive, create_TruckDestination));
@@ -343,7 +343,7 @@ void WED_MapPane::SetResource(const string& r, int res_type)
 	case res_Forest:	mFstTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mFstTool)));	break;
 	case res_String:	mStrTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mStrTool)));	break;
 	case res_Line:		mLinTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mLinTool)));	break;
-	case res_Autogen:	mStrTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mStrTool)));	break;
+	case res_Autogen:	mAgsTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mAgsTool)));	break;
 	case res_Polygon:	mPolTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mPolTool)));	break;
 	}
 }

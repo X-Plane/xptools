@@ -85,16 +85,12 @@ static void debug_it(const vector<BezierPoint2>& pts)
 			pts[n].hi.y() - pts[n].pt.y());
 }
 
-inline bool end_match(const char * str, const char * suf)
+static bool end_match(const string& str, const char suf[4])
 {
-	int ls = strlen(suf);
-	int lstr = strlen(str);
-	if(lstr > ls)
-	{
-		return strcmp(str+lstr-ls,suf) == 0;
-	}
+	if(str.size() >= 4)
+		return memcmp(str.c_str() + str.size() - 4, suf, 4) == 0;
 	else
-	return false;
+		return false;
 }
 
 enum dsf_import_category {
@@ -156,6 +152,7 @@ public:
 	bool				want_bezier;
 	bool				want_wall;
 	int					autogen_rings;
+	int					autogen_spelling;
 
 	WED_Thing * get_cat_parent(dsf_import_category cat)
 	{
@@ -546,12 +543,12 @@ public:
 		me->want_uv = false;
 		me->want_wall = false;
 		me->autogen_rings = 0;
+		me->autogen_spelling = -1;
 
 		dsf_import_category cat = dsf_cat_objects;
 
 #if !NO_FAC
-
-		if(end_match(r.c_str(),".fac"))
+		if(end_match(r,".fac"))
 		{
 			// Ben says: .fac must be 2-coord for v9.  But...maybe for v10 we allow curved facades?
 			me->want_bezier=(inCoordDepth >= 4);
@@ -568,7 +565,7 @@ public:
 #endif
 
 #if !NO_FOR
-		if(end_match(r.c_str(),".for"))
+		else if(end_match(r,".for"))
 		{
 			me->want_bezier=false;
 			WED_ForestPlacement * forst = WED_ForestPlacement::CreateTyped(me->archive);
@@ -582,7 +579,7 @@ public:
 #endif
 
 #if !NO_LIN
-		if(end_match(r.c_str(),".lin"))
+		else if(end_match(r,".lin"))
 		{
 			me->want_bezier=inCoordDepth == 4;
 			WED_LinePlacement * lin = WED_LinePlacement::CreateTyped(me->archive);
@@ -595,7 +592,7 @@ public:
 #endif
 
 #if !NO_STR
-		if(end_match(r.c_str(),".str"))
+		else if(end_match(r,".str"))
 		{
 			me->want_bezier=inCoordDepth == 4;
 			WED_StringPlacement * str = WED_StringPlacement::CreateTyped(me->archive);
@@ -606,22 +603,30 @@ public:
 			cat = dsf_cat_strings;
 
 		}
-		else if(end_match(r.c_str(),".ags"))
+#endif
+
+#if !NO_AG
+		else if(end_match(r, ".ags") || end_match(r, ".agb"))
 		{
-			me->want_bezier=inCoordDepth == 4;
+			me->want_bezier=false;
 			WED_AutogenPlacement * ags = WED_AutogenPlacement::CreateTyped(me->archive);
 			me->poly = ags;
 			me->ring = NULL;
-			ags->SetHeight(((inParam >> 8) & 255) *4);
-			me->autogen_rings = inParam & 255;
 			ags->SetResource(r);
-//			me->accum_ags.clear();
+			ags->SetHeight(((inParam >> 8) & 255) * 4);
+			if(ags->IsAGBlock())
+			{
+				me->autogen_rings = -1;
+				ags->SetSpelling(inParam & 255);
+			}
+			else
+				me->autogen_rings = inParam & 255;
 			cat = dsf_cat_autogen;
 		}
 #endif
 
 #if !NO_POL
-		if(end_match(r.c_str(),".pol") || end_match(r.c_str(),".agb"))
+		else if(end_match(r,".pol"))
 		{
 			me->want_uv=inParam == 65535;
 			me->want_bezier=me->want_uv ? (inCoordDepth == 8) : (inCoordDepth == 4);

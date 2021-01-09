@@ -34,13 +34,19 @@ DECLARE_PERSISTENT(WED_AutogenPlacement)
 public:
 
 	virtual	bool			IsClosed	(void	) const	{ return true; }
+			bool			IsAGBlock     (void) const;
+
 			double			GetHeight	(void) const;
 			void			SetHeight   (double h);
+			int				GetSpelling	(void) const;
+			void			SetSpelling (int s);
 
 	virtual void			GetResource(	  string& r) const;
 	virtual void			SetResource(const string& r);
 
-	virtual const char *	HumanReadableType(void) const { return "Autogen String"; }
+	virtual void			GetNthPropertyInfo(int n, PropertyInfo_t& info) const;
+
+	virtual const char *	HumanReadableType(void) const { return "Autogen"; }
 
 protected:
 
@@ -50,6 +56,7 @@ private:
 
 	WED_PropStringText			resource;
 	WED_PropDoubleTextMeters	height;
+	WED_PropIntText				spelling;
 };
 
 #endif /* WED_AutogenPlacement_H */

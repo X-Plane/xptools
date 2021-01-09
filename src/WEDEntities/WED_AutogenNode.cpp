@@ -57,3 +57,16 @@ void	WED_AutogenNode::GetLocation		(GISLayer_t l,       Point2& p) const
 	if(l == gis_Param) p = Point2(spawning.value,0.0);
 	else				WED_GISPoint::GetLocation(l, p);
 }
+
+void	WED_AutogenNode::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
+{
+	if(n == PropertyItemNumber(&spawning))
+		if(auto pp = GetParent()->GetParent())
+			if(auto ags = dynamic_cast<WED_AutogenPlacement *>(pp))
+				if(ags->IsAGBlock())
+				{
+					info.prop_name = "."; // Do not show elevation property if its not relevant
+					return;
+				}
+	WED_Thing::GetNthPropertyInfo(n, info);
+}

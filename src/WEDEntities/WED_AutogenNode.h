@@ -39,6 +39,8 @@ public:
 			bool	GetSpawning(void) const;
 			void	SetSpawning(bool sp);
 
+	virtual void	GetNthPropertyInfo(int n, PropertyInfo_t& info) const;
+
 	virtual const char *	HumanReadableType(void) const { return "Autogen Node"; }
 
 private:

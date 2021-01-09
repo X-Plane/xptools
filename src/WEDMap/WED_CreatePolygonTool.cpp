@@ -53,11 +53,12 @@
 #include "MathUtils.h"
 
 // this must match enum CreateTool_t in WED_CreatePolygonTool.h
-static const char * kCreateCmds[] = { "Taxiway", "Boundary", "Marking", "Hole", "Facade", "Forest", "String", "Line", "Autogen", "Polygon" };
+static const char * kCreateCmds[] = { "Taxiway", "Boundary", "Marking", "Hole", "Facade",
+                                      "Forest", "String", "Line", "Autogen", "Polygon" };
 
-static const int kIsAirport[] = { 1, 1, 1,  0,     0, 0,  0, 0, 0 };
-static const int kRequireClosed[] = { 1, 1, 0, 1,    1, 1, 0, 0, 1 };
-static const int kAllowCurved[] = { 1, 0, 1, 1,    1, 0,  1, 1, 1 };
+static const int kIsAirport[] =     { 1, 1, 1, 0, 0,   0, 0, 0, 0, 0 };
+static const int kRequireClosed[] = { 1, 1, 0, 1, 1,   1, 0, 0, 1, 1 };
+static const int kAllowCurved[] =   { 1, 0, 1, 1, 1,   0, 1, 1, 0, 1 };
 
 string stripped_resource(const string& r)
 {
@@ -91,11 +92,11 @@ WED_CreatePolygonTool::WED_CreatePolygonTool(
 		mMarkingsLights(tool <= create_Hole ? this : NULL,PROP_Name("Lights",   XML_Name("","")), ".Markings", 101, 199, 1),
 
 		mResource(tool >  create_Hole    ? this : NULL,PROP_Name("Resource", XML_Name("","")), ""),
-		mHeight(tool   == create_Facade  ? this : NULL,PROP_Name("Height",   XML_Name("","")), 10.0, 4, 2),
+		mHeight(tool   == create_Facade  ? this : NULL,PROP_Name("Height",   XML_Name("","")), 10.0, 5, 2),
 		mDensity(tool  == create_Forest  ? this : NULL,PROP_Name("Density",  XML_Name("","")), 1.0, 3, 2),
 
-		mSpacing(tool  == create_String  ? this : NULL,PROP_Name("Spacing  (.str)",  XML_Name("","")), 5.0, 3, 1),
-		mAgsHght(tool  == create_String  ? this : NULL,PROP_Name("Height (.ags/.agb)",   XML_Name("","")), 10.0, 3, 1),
+		mSpacing(tool  == create_String  ? this : NULL,PROP_Name("Spacing",  XML_Name("","")), 5.0, 5, 1),
+		mAgsHght(tool  == create_Autogen ? this : NULL,PROP_Name("Autogen Height",   XML_Name("","")), 10.0, 6, 1),
 
 		mUVMap(tool == create_Polygon    ? this : NULL,PROP_Name("Use Texture Map - Orthophoto", XML_Name("","")), 0),
 		mPickWalls(tool == create_Facade ? this : NULL,PROP_Name("Pick Walls", XML_Name("","")), 0)
@@ -132,7 +133,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 
 	int is_bezier = mType != create_Forest && mType != create_Boundary;
 	int is_apt = mType <= create_Hole;
-	int is_autogen = mType == create_String ? mResource.value.substr(mResource.value.length() - 4) == ".ags" : 0;
+	int is_autogen = mType == create_Autogen;
 	int is_poly = (mType != create_Hole && mType != create_String && mType != create_Line) || is_autogen;
 	int is_texed = mType == create_Polygon ? mUVMap.value : 0;
 	int is_forest = mType == create_Forest;
@@ -249,8 +250,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 			fst->SetDensity(mDensity.value);
 		}
 		break;
-	case create_String:
-		if(is_autogen)
+	case create_Autogen:
 		{
 			WED_AutogenPlacement * ags = WED_AutogenPlacement::CreateTyped(GetArchive());
 			outer_ring->SetParent(ags,0);
@@ -262,7 +262,8 @@ void	WED_CreatePolygonTool::AcceptPath(
 			ags->SetResource(mResource.value);
 			ags->SetHeight(mAgsHght.value);
 		}
-		else
+		break;
+	case create_String:
 		{
 			WED_StringPlacement * str = WED_StringPlacement::CreateTyped(GetArchive());
 			outer_ring = str;

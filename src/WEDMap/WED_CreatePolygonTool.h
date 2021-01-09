@@ -34,11 +34,12 @@ enum CreateTool_t {
 	create_Boundary,
 	create_Marks,
 	create_Hole,
-
 	create_Facade,
+
 	create_Forest,
 	create_String,
 	create_Line,
+	create_Autogen,
 	create_Polygon
 };
 
@@ -59,7 +60,7 @@ public:
 	// WED_MapToolNew
 	virtual	const char *		GetStatusText(void);
 
-	virtual	void		GetNthPropertyDict(int n, PropertyDict_t& dict) const;	
+	virtual	void		GetNthPropertyDict(int n, PropertyDict_t& dict) const;
 
 protected:
 
@@ -76,7 +77,7 @@ protected:
 
 		WED_PropDoubleTextMeters		mSpacing;
 		WED_PropDoubleTextMeters		mAgsHght;
-		
+
 		WED_PropBoolText				mUVMap;
 		WED_PropBoolText				mPickWalls;
 

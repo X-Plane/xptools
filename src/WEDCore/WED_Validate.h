@@ -32,6 +32,8 @@ class	WED_Document;
 //Keep this enum strictly organized by alphabetical order and sub catagory. Make this collection easily grep-able
 enum validate_error_t
 {
+	err_agb_poly_has_holes,
+	err_agb_poly_not_4_sided,
 	err_airport_elements_outside_hierarchy,
 	err_airport_impossible_size,
 	err_airport_icao,
@@ -207,7 +209,7 @@ enum validation_result_t {
 };
 
 // Collection primitives - these recursively walk the composition and pull out all entities of a given type.
-validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * root = NULL, 
+validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * root = NULL,
 	bool skipErrorDialog = false, const char * abortMsg = "Dismiss");	// if root not null, only do this sub-tree
 
 #endif

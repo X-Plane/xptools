@@ -265,14 +265,14 @@ WED_DocumentWindow::WED_DocumentWindow(
 	// a machine with a much larger dekstop. So...
 	//
 	// Coming in we have the default rect for a window - hopefully it is BIG because we
-	// pass xwin_style_fullscreen to XWin.  So if our currnet location does not allow 
-	// for at least one 100x100 pixel corner to be inside the current Desktop 
+	// pass xwin_style_fullscreen to XWin.  So if our currnet location does not allow
+	// for at least one 100x100 pixel corner to be inside the current Desktop
 	// (which is the bounding box around ALL monitors) - then ignore the preferences
 	// and the new window will pop up fullscreen on the primary monitor instead.
 
-	
+
 	LOG_MSG("I/Doc opening new scenery window, initial win xy %d %d wh %d %d\n", xy[0], xy[1], zw[0], zw[1]);
-	
+
 	int safe_rect[4] = { xy[0], xy[1], xy[0] + zw[0], xy[1] + zw[1] };
 	XWin::GetDesktop(safe_rect);
 	LOG_MSG("I/Doc desktop rect %d %d %d %d\n", safe_rect[0], safe_rect[1], safe_rect[2], safe_rect[3]);
@@ -291,7 +291,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	}
 	else
 		LOG_MSG("W/Doc SafeRect was triggerd\n");
-		
+
 	int main_split = inDocument->ReadIntPref("window/main_split",zw[0] / 5);
 	int main_split2 = inDocument->ReadIntPref("window/main_split2",zw[0] * 2 / 3);
 	int prop_split = inDocument->ReadIntPref("window/prop_split",zw[1] / 2);
@@ -313,7 +313,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 #else
 	gExportTarget = (WED_Export_Target) inDocument->ReadIntPref("doc/export_target",gExportTarget);
 #endif
-	
+
 	int wedXMLversion = inDocument->ReadIntPref("doc/xml_compatibility",0);
 	int wedTHISversion[4] = { WED_VERSION_BIN };
 	if(wedTHISversion[0] * 100 + wedTHISversion[1] < wedXMLversion)
@@ -631,13 +631,13 @@ void	WED_DocumentWindow::ReceiveMessage(
 
 		// not writing doc/use_feet any more. Its a global preference now.
 		prefs->WriteIntPref("doc/export_target",gExportTarget);
-		// minimum WED version expected to read this .xml correctly 
+		// minimum WED version expected to read this .xml correctly
 		// endcding: 100x WED major version + 1 x middle version number
 		//  8.33k freqs added in 2.0 are fine back to at least 1.5, saved with 3 decimal places ever since
 		//  WED 1.7 added new airport line marking styles
 		//  WED 2.3 added set_AGL commands
 //		if(docHas_SetAGL())
-			prefs->WriteIntPref("doc/xml_compatibility",203);
+			prefs->WriteIntPref("doc/xml_compatibility",204);
 //		else
 //			prefs->WriteIntPref("doc/xml_compatibility",107);
 		prefs->WriteIntPref("window/main_split",mMainSplitter->GetSplitPoint());
