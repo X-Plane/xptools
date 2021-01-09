@@ -1226,15 +1226,36 @@ struct	preview_autogen: public preview_polygon {
 		IGISPointSequence * ps = ags->GetOuterRing();
 		int tile_width = min(zoomer->GetPPM() * 20.0, 10.0);
         g->SetState(false,0,false,true,true,false,false);
+		vector<Point2>	pts;
         if(tile_width > 0)
         {
 			glLineWidth(tile_width);
 			glColor4f(1, 1, 0, .3);
 			int n = ps->GetNumSides();
+			if(ags->IsAGBlock())          // cross with same orientation as first segment to indicate block alignment
+			{
+				Bezier2		b;
+				ps->GetSide(gis_Geo, 0, b);
+				b.p1 = zoomer->LLToPixel(b.p1);
+				b.p2 = zoomer->LLToPixel(b.p2);
+				Vector2	dir(b.p1, b.p2);
+				dir *= 0.2;
+				Bbox2 		box;
+				ags->GetBounds(gis_Geo, box);
+				Point2 center(zoomer->LLToPixel(box.centroid()));
+				pts.reserve(4);
+				pts.push_back(center + dir);
+				pts.push_back(center - dir);
+				dir = dir.perpendicular_cw();
+				pts.push_back(center + dir);
+				pts.push_back(center - dir);
+
+				glShape2v(GL_LINES, pts.data(), pts.size());
+			}
 			for(int i = 0; i < n; ++i)
 			{
-                vector<Point2>	pts;
-                SideToPoints(ps,i,zoomer, pts);
+				pts.clear();
+				SideToPoints(ps,i,zoomer, pts);
 
 				Bezier2		bp;
 				ps->GetSide(gis_Param,i,bp);
