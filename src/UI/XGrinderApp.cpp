@@ -65,6 +65,11 @@ public:
 	virtual	void			ReceiveFiles(const vector<string>& inFiles, int x, int y) { XGrindFiles(inFiles); }
 	virtual	int				KeyPressed(uint32_t, long, long, long) { return 1; }
 	virtual	int				HandleMenuCmd(xmenu inMenu, int inCommand) { return XGrinderMenuPick(inMenu, inCommand); };
+
+#if LIN
+protected:
+	void draw();
+#endif
 };
 
 XGrinderWin::XGrinderWin() : XWin(1, gTitle.c_str(),
@@ -73,11 +78,12 @@ XGrinderWin::XGrinderWin() : XWin(1, gTitle.c_str(),
 {
 }
 
-void XGrinderWin::Update(XWin::XContext ctx)
+#if LIN
+void XGrinderWin::draw()
 {
 	int		w, h;
 	this->GetBounds(&w, &h);
-#if LIN
+
 	int mh = GetMenuBarHeight();
 	fl_rectf (0,mh,w,h,FL_BACKGROUND2_COLOR);
 
@@ -93,7 +99,18 @@ void XGrinderWin::Update(XWin::XContext ctx)
 		fl_draw(msg,0,y);
 		y  += fh;
 	}
+
+	draw_children();
+}
 #endif
+
+void XGrinderWin::Update(XWin::XContext ctx)
+{
+#if LIN
+	this->redraw();
+#else
+	int		w, h;
+	this->GetBounds(&w, &h);
 #if APL
 	erase_a_rect(0,0,w,h);
 	draw_text(0,0,w,h,gCurMessage);
@@ -108,6 +125,7 @@ void XGrinderWin::Update(XWin::XContext ctx)
 	if (gCurMessage[0] != 0)
 		TextOut(ctx, 0, 0, gCurMessage, strlen(gCurMessage));
 #endif
+#endif // LIN
 }
 
 void	XGrinder_ShowMessage(const char * fmt, ...)

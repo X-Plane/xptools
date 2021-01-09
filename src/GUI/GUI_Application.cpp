@@ -35,6 +35,12 @@
 #include <commctrl.h>
 #endif
 
+#if LIN
+#define CONT_DRAWING 0
+#define DEBUG_MENU 0
+#define DEBUG_CLEAR_MENU 0
+#endif
+
 GUI_Application *	gApplication = NULL;
 
 static bool IsDisabledString(string& ioString)
@@ -92,9 +98,6 @@ void GUI_Application::TryQuitCB(void * ref)
 #endif
 
 #if LIN
-#define DEBUG_MENU 0
-#define DEBUG_CLEAR_MENU 0
-
 static void clearSubmenusRecursive(const Fl_Menu_Item *  menu)
 {
 	if(!menu) return;
@@ -331,8 +334,10 @@ void			GUI_Application::Run(void)
 #if LIN
 	while(!mDone && Fl::wait()) // Fl::wait() returns 1 if atleast one window shown
 	{
-		while(Fl::damage())
+#if CONT_DRAWING
+		while(!mDone && Fl::damage())
 			Fl::wait(0);
+#endif
 	}
 #endif
 }
