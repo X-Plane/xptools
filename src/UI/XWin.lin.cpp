@@ -72,7 +72,7 @@ XWin::XWin(
 	int		inWidth,
 	int		inHeight)
 	: Fl_Window(inX,inY,inWidth,inHeight,inTitle),
-      mInited(false),mMenuBar(nullptr)
+		mInited(false),mMenuBar(nullptr),mUpdateCallbackActive(false)
 {
 	mDragging    =-1;
 	mWantFakeUp  = 0;
@@ -99,7 +99,8 @@ XWin::XWin(
 	mInited = true;
 }
 
-XWin::XWin(int default_dnd) : Fl_Window(100,100), mInited(false),mMenuBar(nullptr)
+XWin::XWin(int default_dnd) : Fl_Window(100,100),
+		mInited(false),mMenuBar(nullptr),mUpdateCallbackActive(false)
 {
 	mDragging    =-1;
 	mWantFakeUp  = 0;
@@ -115,6 +116,8 @@ XWin::XWin(int default_dnd) : Fl_Window(100,100), mInited(false),mMenuBar(nullpt
 
 XWin::~XWin()
 {
+	Fl::remove_idle(update_cb, this);
+	Fl::remove_timeout(timeout_cb,this);
 //	if(mMenuBar)
 //	{
 //		clearSubmenusRecursive(mMenuBar->menu());
@@ -128,7 +131,6 @@ void XWin::ClearMenus(const Fl_Menu_Item *  menu)
 
 /**FLTK CALLBACK functs**/
 
-
 inline int fltkBtnToXBtn(const int inButton )
 {
 	int btn = -1;
@@ -139,6 +141,17 @@ inline int fltkBtnToXBtn(const int inButton )
 		 case FL_MIDDLE_MOUSE: btn = 2; break;
 	}
 	return btn;
+}
+
+static bool btnDown(int btn)
+{
+	switch(btn)
+	{
+		case 0:		return Fl::event_button1() != 0;
+		case 1:		return Fl::event_button3() != 0;
+		case 2:		return Fl::event_button2() != 0;
+		default:	return false;
+	}
 }
 
 /*FLTK event callback*/
@@ -228,7 +241,9 @@ int XWin::handle(int e)
 		mMouse.y = Fl::event_y();
 
 		if(mBlockEvents) return 1;
-		if(fltkBtnToXBtn(Fl::event_button()) == mDragging)
+		// Note: Can't use Fl::event_button() here because it is documented
+		// to return garbage outside of FL_PUSH and FL_RELEASE.
+		if(btnDown(mDragging))
 		{
 			ClickDrag(mMouse.x,mMouse.y,mDragging);
 		}
@@ -420,6 +435,15 @@ void XWin::timeout_cb(void * data)
     Fl::repeat_timeout(w->mTimer,timeout_cb,w);
 }
 
+/*FLTK idle callback for calling Update()*/
+void XWin::update_cb(void * arg)
+{
+	Fl::remove_idle(update_cb, arg);
+	XWin * win = static_cast<XWin *>(arg);
+	win->mUpdateCallbackActive = false;
+	win->Update(0);
+}
+
 /** xptool GUI   **/
 
 /* prevent pure virtual function calls. ben, we need to restructure this,
@@ -437,7 +461,7 @@ bool XWin::Closed(void)
 
 void XWin::Update(XContext ctx)
 {
-	this->redraw();
+	redraw();
 }
 
 void XWin::SetTitle(const char * inTitle)
@@ -461,7 +485,27 @@ void XWin::Resize(int inWidth, int inHeight)
 
 void XWin::ForceRefresh(void)
 {
-	Update(0);
+	// Instead of calling Update() directly, we need to do so via an idle
+	// callback, which we remove again immediately once it is called. Doing
+	// this via an idle callback is necessary to support the case where
+	// Refresh() is called inside Draw(). FLTK resets the damage bits of a
+	// window _after_ drawing the window. This means that any calls to
+	// redraw() that are made while drawing the window are essentially
+	// ignored.
+	// Note: It might seem that it would be easier to do this from a
+	// one-shot timeout. Unlike an idle callback, we wouldn't need to
+	// explicitly remove the one-shot timeout. However, FLTK versions
+	// prior to 1.3.6 contain a bug where timeouts that are set within
+	// Fl::flush() (i.e. while drawing a window) are ignored, and this is
+	// exactly the use case we are interested in. Many distributions still
+	// ship with FLTK 1.3.5, so we use the idle callback instead.
+	// For more information on the bug, see
+	// https://www.fltk.org/str.php?L3188
+	if (!mUpdateCallbackActive)
+	{
+		mUpdateCallbackActive = true;
+		Fl::add_idle(update_cb, this);
+	}
 }
 
 void XWin::UpdateNow(void)

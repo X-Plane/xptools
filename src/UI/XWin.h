@@ -274,6 +274,7 @@ protected:
 	int		mBlockEvents;
     double	mTimer;
 	POINT	mMouse;
+	bool	mUpdateCallbackActive;
 
 
 public:
@@ -292,6 +293,7 @@ protected:
 	static void menu_cb(Fl_Widget *w, void * data);
 	static void menubar_cb(Fl_Widget *w, void * data);
 	static void timeout_cb(void * data);
+	static void update_cb(void * arg);
 
 #endif
 
