@@ -37,8 +37,7 @@ void	UTL_http_encode_url(string& io_url)
 
 curl_http_get_file::curl_http_get_file(
 							const string&			inURL,
-							const string&			outDestFile,
-							const string&			inCert) :
+							const string&			outDestFile) :
 	m_progress(-1),
 	m_status(in_progress),
 	m_halt(0),
@@ -46,8 +45,7 @@ curl_http_get_file::curl_http_get_file(
 	m_url(inURL),
 	m_dest_buffer(NULL),
 	m_errcode(0),
-	m_last_dl_amount(0.0),
-	m_cert(inCert)
+	m_last_dl_amount(0.0)
 {
 	UTL_http_encode_url(m_url);
 
@@ -66,16 +64,14 @@ curl_http_get_file::curl_http_get_file(
 
 curl_http_get_file::curl_http_get_file(
 							const string&			inURL,
-							vector<char>*		outDestBuffer,
-							const string&			inCert) :
+							vector<char>*		outDestBuffer) :
 	m_progress(-1),
 	m_status(in_progress),
 	m_halt(0),
 	m_url(inURL),
 	m_dest_buffer(outDestBuffer),
 	m_errcode(0),
-	m_last_dl_amount(0.0),
-	m_cert(inCert)
+	m_last_dl_amount(0.0)
 {
 	UTL_http_encode_url(m_url);
 
@@ -95,16 +91,14 @@ curl_http_get_file::curl_http_get_file(
 							const string&			inURL,
 							const string *			post_data,
 							const string *			put_data,
-							vector<char>*			outBuffer,
-							const string&			inCert) :
+							vector<char>*			outBuffer) :
 	m_progress(-1),
 	m_status(in_progress),
 	m_halt(0),
 	m_url(inURL),
 	m_post(post_data ? *post_data : string()),
 	m_put(put_data ? *put_data : string()),
-	m_dest_buffer(outBuffer),
-	m_cert(inCert)
+	m_dest_buffer(outBuffer)
 {
 	UTL_http_encode_url(m_url);
 
@@ -276,10 +270,6 @@ curl_http_get_file::thread_proc(void * param)
 #endif	
 //	curl_easy_setopt(curl, CURLOPT_TIMEOUT, 0);
 	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 60.0);
-
-	if(!me->m_cert.empty())
-		curl_easy_setopt(curl, CURLOPT_CAINFO, me->m_cert.c_str());
-
 
 	if(!me->m_post.empty())
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, me->m_post.c_str());

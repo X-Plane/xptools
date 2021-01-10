@@ -491,12 +491,6 @@ WED_GatewayExportDialog::WED_GatewayExportDialog(WED_Airport * apt, WED_Document
 
 void WED_GatewayExportDialog::StartCSVDownload()
 {
-	//Get Certification
-	const string cert(WED_get_GW_cert());
-	if(cert.empty())
-		this->AsyncDestroy();
-
-	mCacheRequest.in_cert = cert;
 	mCacheRequest.in_domain = cache_domain_metadata_csv;
 	mCacheRequest.in_folder_prefix = "scenery_packs";
 	mCacheRequest.in_url = WED_URL_AIRPORT_METADATA_CSV;
@@ -737,20 +731,12 @@ void WED_GatewayExportDialog::Submit()
 			return;
 		#endif
 
-		const string cert(WED_get_GW_cert());
-		if(cert.empty())
-		{
-			this->AsyncDestroy();
-		}
-		else
-		{
-			mCurl = new curl_http_get_file(WED_get_GW_api_url() + "scenery", nullptr, &reqstr, &mResponse, cert);
-			this->Reset("", "", "", false);
-			this->AddLabel("Uploading airport to Gateway.");
-			this->AddLabel("This could take up to one minute.");
-			gExportTarget = old_target;
-			Start(1.0);
-		}
+		mCurl = new curl_http_get_file(WED_get_GW_api_url() + "scenery", nullptr, &reqstr, &mResponse);
+		this->Reset("", "", "", false);
+		this->AddLabel("Uploading airport to Gateway.");
+		this->AddLabel("This could take up to one minute.");
+		gExportTarget = old_target;
+		Start(1.0);
 	}
 	else if(mPhase == expt_dialog_done)
 	{
@@ -922,13 +908,5 @@ const string WED_get_GW_api_url()
 	if(url.empty())	
 		url = WED_URL_GATEWAY "apiv1/";
 	return url;
-}
-
-const string WED_get_GW_cert()
-{
-	string s(gApplication->args.get_value("--gateway_crt"));
-	if (s.empty())
-		GUI_GetTempResourcePath("gateway.crt", s);
-	return s;
 }
 #endif /* HAS_GATEWAY */

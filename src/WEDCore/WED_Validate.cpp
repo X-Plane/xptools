@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2013, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -1874,7 +1874,6 @@ static void ValidateOneTruckParking(WED_TruckParkingLocation* truck_parking,vali
 MFMemFile * ReadCIFP()
 {
 	WED_file_cache_request  mCacheRequest;
-	mCacheRequest.in_cert = WED_get_GW_cert();
 	mCacheRequest.in_domain = cache_domain_metadata_csv;    // cache expiration time = 1 day
 	mCacheRequest.in_folder_prefix = "scenery_packs";
 	mCacheRequest.in_url = WED_URL_CIFP_RUNWAYS;
