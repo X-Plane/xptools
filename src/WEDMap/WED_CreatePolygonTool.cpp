@@ -416,6 +416,12 @@ WED_Thing *		WED_CreatePolygonTool::GetHost(int& idx)
 		// A few polygons do NOT get holes: facades, um...that's it for now.
 		if(igp->GetClass() == WED_FacadePlacement::sClass)
 			return NULL;
+		if(igp->GetClass() == WED_AutogenPlacement::sClass)
+		{
+			auto ags = dynamic_cast<WED_AutogenPlacement *>(igp);
+			if(ags && ags->IsAGBlock())
+				return NULL;
+		}
 		return igp;
 	} else
 		return WED_GetCreateHost(GetResolver(), kIsAirport[mType], true, idx);
