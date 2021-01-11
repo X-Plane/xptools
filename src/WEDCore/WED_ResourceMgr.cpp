@@ -913,7 +913,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 				{
 					tpl->meshes.push_back(REN_facade_template_t::mesh());
 					MFS_double(&s);
-					MFS_double(&s);
+					tpl->meshes.back().far_lod_meters = MFS_double(&s);
 					MFS_double(&s);
 					int num_vert = MFS_double(&s);
 					int num_idx = MFS_double(&s);

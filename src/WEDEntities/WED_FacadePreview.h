@@ -122,6 +122,7 @@ struct REN_facade_template_t {
 //		asset_freq	freq;		
 	};
 	struct mesh {
+		double			far_lod_meters;
 		vector<xflt> 	xyz;
 		vector<xflt>	nml;
 		vector<xflt> 	uv;      // 5 floats per vertex, skipping normals
