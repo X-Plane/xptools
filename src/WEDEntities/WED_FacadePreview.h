@@ -231,6 +231,19 @@ struct	REN_FacadeLOD_t {
 
 /**********************/
 
+#if DEV
+struct FacadeStats
+{
+	int numWallsTested = 0;
+	int numWallsBigEnough = 0;
+
+	int numLODsTested = 0;
+	int numLODsDrawn = 0;
+};
+
+void ResetFacadeStats();
+const FacadeStats& GetFacadeStats();
+#endif
 
 void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, const fac_info_t& info, const Polygon2& footprint, const vector<int>& choices, 
 	double fac_height, GUI_GraphState * g, bool want_thinWalls, WED_Camera& camera, double min_pixel_size = MIN_PIXELS_PREVIEW);

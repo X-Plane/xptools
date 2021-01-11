@@ -798,6 +798,20 @@ struct obj {
 #include "GUI_DrawUtils.h"
 #include "WED_DebugLayer.h"
 
+#if DEV
+static FacadeStats facade_stats;
+
+void ResetFacadeStats()
+{
+	facade_stats = FacadeStats();
+}
+
+const FacadeStats& GetFacadeStats()
+{
+	return facade_stats;
+}
+#endif
+
 static void handle_scrapers(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, const fac_info_t& info, const Polygon2& footprint, double fac_height, GUI_GraphState * g, WED_Camera& camera)
 {
 	if(rman)
@@ -942,6 +956,8 @@ static void handle_type1(const fac_info_t& info, const Polygon2& footprint, cons
 
 static void handle_type2(ITexMgr * tman, const fac_info_t& info, const Polygon2& footprint, const vector<int>& choices, GUI_GraphState * g, bool want_thinWalls, WED_Camera& camera, double min_pixel_size, TexRef	tRef, int n_wall, const REN_facade_floor_t * bestFloor, Polygon2& roof_pts, double& roof_height, Bbox2& roof_extent)
 {
+	const double MIN_WALL_SIZE_PIXELS = 5.0;
+
 	Vector2 miter;
 
 	for (int w = 0; w < n_wall; ++w)
@@ -954,15 +970,30 @@ static void handle_type2(ITexMgr * tman, const fac_info_t& info, const Polygon2&
 		Point3 p1XYZ(inBase.p1.x(), inBase.p1.y(), 0);
 		Point3 p2XYZ(inBase.p2.x(), inBase.p2.y(), 0);
 		double distance = min(camera.PointDistance(p1XYZ), camera.PointDistance(p2XYZ));
+		// Avoid negative distances, which can happen if one point of the facade lies behind
+		// the camera. 1 meter seems like a distance that should make everything render at
+		// maximum detail.
+		if (distance < 1.0)
+			distance = 1.0;
+
+#if DEV
+		++facade_stats.numWallsTested;
+#endif
+		if (camera.PixelSize(distance, seg_length) < MIN_WALL_SIZE_PIXELS)
+				continue;
+
+#if DEV
+		++facade_stats.numWallsBigEnough;
+#endif
+
+		Point2 thisPt = footprint[w];
+		roof_pts.push_back(thisPt);
+		roof_extent += thisPt;
 
 		const REN_facade_wall_t * bestWall = &bestFloor->walls[intmin2(bestFloor->walls.size() - 1, choices[w])];
 		UTL_spelling_t our_choice;
 		UTL_pick_spelling(bestWall->spellings, seg_length, our_choice, 0);
 		seg_length /= our_choice.total;
-
-		Point2 thisPt = footprint[w];
-		roof_pts.push_back(thisPt);
-		roof_extent += thisPt;
 
 		double mi_first, mi_last;
 		{
@@ -1040,8 +1071,15 @@ static void handle_type2(ITexMgr * tman, const fac_info_t& info, const Polygon2&
 
 				for (auto& m : t.meshes) // all meshes == maximum LOD detail, all the time. 
 				{
+#if DEV
+					++facade_stats.numLODsTested;
+#endif
 					if (distance > m.far_lod_meters)
 						continue;
+
+#if DEV
+					++facade_stats.numLODsDrawn;
+#endif
 
 					for (auto ind : m.idx)
 					{
