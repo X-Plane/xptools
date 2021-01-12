@@ -211,12 +211,14 @@ char *	GetMultiFilePathFromUser(
 
 void	DoUserAlert(const char * inMsg)
 {
+	LOG_MSG("I/Alert %s\n",inMsg);
 	HWND thisWin = GetForegroundWindow();
 	MessageBoxW(thisWin, convert_str_to_utf16(inMsg).c_str(), L"Alert", MB_OK | MB_ICONWARNING | MB_TOPMOST |MB_TASKMODAL);
 }
 
 int		ConfirmMessage(const char * inMsg, const char * proceedBtn, const char * cancelBtn)
 {
+	LOG_MSG("I/Confirm %s\n",inMsg);
 	bool no_or_cancel = string(cancelBtn).find("Cancel") == string::npos;
 
 	HWND thisWin = GetForegroundWindow();

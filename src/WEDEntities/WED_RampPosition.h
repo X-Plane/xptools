@@ -43,6 +43,7 @@ public:
 	string  GetAirlines() const;
 	int		GetType() const;
 	int		GetWidth() const;
+	void	GetTips(Point2 c[4]) const;              // nose, tail, both wing tips. Takes heading, siize and offset(type=misc) into account
 	void	GetEquipment(set<int>& out_eq) const;
 	int		GetRampOperationType() const;
 	

@@ -63,9 +63,9 @@ void GUI_Application::MenuUpdateCB(void * ref, int cmd, char * io_name, int * io
 	GUI_Application * me = reinterpret_cast<GUI_Application *>(ref);
 
 	if(cmd == 0) return;
-	
+
 	string name(io_name);
-	
+
 	if (me->DispatchCanHandleCommand(cmd, name, *io_check))
 	{
 		NukeAmpersand(name);
@@ -90,99 +90,153 @@ void GUI_Application::TryQuitCB(void * ref)
 
 
 #endif
+
 #if LIN
+#define DEBUG_MENU 0
+#define DEBUG_CLEAR_MENU 0
 
-GUI_QtMenu::GUI_QtMenu
-(const QString& text , GUI_Application *app)
-:QMenu(text),app(app)
-{}
-
-GUI_QtMenu::~GUI_QtMenu()
-{}
-
-void GUI_QtMenu::showEvent( QShowEvent * e )
+static void clearSubmenusRecursive(const Fl_Menu_Item *  menu)
 {
-    QList<QAction*> actlist = this->actions();
-    QList<QAction*>::iterator it = actlist.begin();
-    for (it ; it != actlist.end(); ++it)
-    {
-        int cmd = (*it)->data().toInt();
-        if (cmd)
-        {
-            int checked = 0;
-            string new_name;
-            (*it)->setEnabled(app->DispatchCanHandleCommand(cmd,new_name,checked));
-            if (!new_name.empty())(*it)->setText(QString::fromStdString(new_name));
-            (*it)->setCheckable(checked);
-            (*it)->setChecked(checked);
-        }
-    }
+	if(!menu) return;
+	int sz = menu->size();
+	#if DEBUG_CLEAR_MENU
+	printf("-> menu      %s %p\n",menu->label(),menu);
+	#endif // DEBUG_CLEAR_MENU
+	for ( int t=0; t < sz ; t++)
+	{
+		Fl_Menu_Item * item = (Fl_Menu_Item *) &menu[t];
+	#if DEBUG_CLEAR_MENU
+		printf("%d menu     %s %p\n",t,item->label(),item);
+	#endif // DEBUG_CLEAR_MENU
+		if(!item->label()) break;
+
+		if(item->flags&FL_SUBMENU_POINTER)
+		{
+			const Fl_Menu_Item * submenu = (const Fl_Menu_Item *) item->user_data();
+			clearSubmenusRecursive(submenu);
+			item->user_data(nullptr);
+		}
+		else
+		{
+			if(item->user_data_ != nullptr)
+			{
+				delete (xmenu_cmd *)item->user_data_;
+				item->user_data_ = nullptr;
+			}
+		}
+
+		if(item->text != nullptr)
+		{
+			free((void*)item->text);
+			item->text = nullptr;
+		}
+	}
+	#if DEBUG_CLEAR_MENU
+	printf("-> delete      %s %p\n",menu->label(),menu);
+	#endif // DEBUG_CLEAR_MENU
+	delete [] menu;
 }
 
-void GUI_QtMenu::hideEvent( QHideEvent * e )
+static void clear_menu(const Fl_Menu_Item* menu)
 {
-    // mroe:
-    // We must set to 'enabled' again, since we have disabled
-    // items and their shortcut-action while showevent .
-    QList<QAction*> actlist = this->actions();
-    QList<QAction*>::iterator it = actlist.begin();
-    for (it ; it != actlist.end(); ++it)
-    {
-        int cmd = (*it)->data().toInt();
-        if (cmd)  (*it)->setEnabled(true);
-    }
-    this->QMenu::hideEvent(e);
+	if(!menu) return;
+	int msize = menu->size();
+	for (int i=0; i < msize; i++)
+	{
+		const Fl_Menu_Item * m = menu + i;
+		//printf("%d menu clear  %s %p %p\n",i,m->label(),m->text,m->user_data_);
+		if(m->text != nullptr)
+			free((void*)m->text);
+		if(m->user_data_ != nullptr)
+			delete (xmenu_cmd *) m->user_data_;
+	}
+
+	memset((Fl_Menu_Item *) menu,0,msize*sizeof(Fl_Menu_Item ));
 }
 
-GUI_QtAction::GUI_QtAction
-(const QString& text,QObject * parent,const QString& sc ,int cmd, GUI_Application *app, bool checkable)
-: QAction(text,parent) ,app(app)
-{	
-	setData(cmd);
-	setShortcut(sc);
-	setCheckable(checkable);
-	setChecked(checkable);
-	connect(this, SIGNAL(triggered()), this, SLOT(ontriggered()));
+static void update_menu_recursive(const Fl_Menu_Item *  menu)
+{
+	for ( int t=0; t < menu->size(); t++)
+	{
+		Fl_Menu_Item * item = (Fl_Menu_Item *) &menu[t];
+		//printf("%d  %s \n",t,item->label());
+		if(!item->label())break;
+
+		if(item->flags&FL_SUBMENU_POINTER)
+		{
+			const Fl_Menu_Item * submenu = (const Fl_Menu_Item *) item->user_data();
+			update_menu_recursive(submenu);
+			continue;
+		}
+
+		xmenu_cmd * mc = (xmenu_cmd *) item->user_data();
+		if(!mc) continue;
+		int cmd = mc->cmd;
+		if(cmd == 0) continue;
+		GUI_Application * app = (GUI_Application *) mc->data;
+		int ioCheck = 0;
+		string ioName;
+		int enabled = app->DispatchCanHandleCommand(cmd,ioName,ioCheck);
+
+		if(!ioName.empty())
+		{
+			if(item->text != nullptr)
+				free((void*)item->text);
+
+			char * new_name  = (char *) malloc(ioName.size()+1);
+			strncpy(new_name,ioName.c_str(),ioName.size()+1);
+
+			item->label(new_name);
+		}
+
+		enabled ? item->activate():item->deactivate();
+		if(ioCheck)
+		{
+			item->flags |= FL_MENU_TOGGLE;
+			item->set();
+		}
+		else
+		{
+			item->flags &= ~FL_MENU_TOGGLE;
+			item->clear();
+		}
+	}
 }
 
-GUI_QtAction::~GUI_QtAction()
-{}
 
-void GUI_QtAction::ontriggered()
-{	
-    int cmd = data().toInt();
-    if (!cmd) return;
-    int  ioCheck = 0;
-    string ioName;
+static void menu_cb(Fl_Widget *w, void * data)
+{
+
+	if(!w || ! data) return;
+
+	Fl_Menu_Bar * bar = (Fl_Menu_Bar *) w;
+	xmenu_cmd * mc = (xmenu_cmd *) data;
+	int cmd = mc->cmd;
+	#if DEBUG_MENU
+	printf("menu cmd:%d\n",cmd);
+	#endif
+	GUI_Application * app = (GUI_Application *) mc->data;
+	//TODO:mroe: currently the whole menu is updated every time, also when a shortcut combination pressed
+    //probably we need that code back when we have a better solution
+	//int  ioCheck = 0;
+    //string ioName;
     //mroe : We must check again if the cmd can be handled ,
-    //		because shortcut-actions allways enabled .
-    if(app->DispatchCanHandleCommand(cmd,ioName,ioCheck))
+    //		 because shortcut-actions allways enabled
+
+    //if(app->DispatchCanHandleCommand(cmd,ioName,ioCheck))
 			app->DispatchHandleCommand(cmd);
 }
 
-void GUI_Application::setCutnPasteShortcuts(GUI_Window * parent)
+void GUI_Application::update_menus_cb(Fl_Widget *w, void * data)
 {
-	GUI_QtAction * HK;
-	HK = new GUI_QtAction("", parent, "Ctrl+X" , gui_Cut,   this, false);  // use same definitions as in WED_Menus.cpp
-	parent->addAction(HK);
-	HK = new GUI_QtAction("", parent, "Ctrl+C" , gui_Copy,  this, false);
-	parent->addAction(HK);
-	HK = new GUI_QtAction("", parent, "Ctrl+V" , gui_Paste, this, false);
-	parent->addAction(HK);
+	#if DEBUG_MENU
+	printf("GUI_Application::update_menus_cb \n");
+	#endif
+	if(!w ) return;
+	Fl_Menu_Bar * bar = (Fl_Menu_Bar *) w;
+	update_menu_recursive(bar->menu());
 }
 
-
-QMenuBar* GUI_Application::getqmenu()
-{
-    QMenuBar * mbar = new QMenuBar(0);
-    QList<GUI_QtMenu*>::iterator iter = mMenus.begin();
-    while (iter != mMenus.end())
-	{
-		mbar->addMenu(*iter);
-		++iter;
-	}
-    return mbar;
-}
 #endif
 #if IBM
 
@@ -234,16 +288,23 @@ GUI_Application::GUI_Application(const char * arg) : args(arg),
 	InitCommonControls();
 #endif
 #if LIN
-	qapp = new QApplication(argc, argv);
-	qapp->setAttribute(Qt::AA_DontUseNativeMenuBar);
 	mPopup = NULL;
+	mMenu  = NULL;
 #endif
 }
 
 GUI_Application::~GUI_Application()
 {
-#if LIN	
-	if(mPopup) delete mPopup;
+#if LIN
+
+	if(mPopup)
+	{
+		clear_menu(mPopup);
+		delete [] mPopup;
+	}
+
+	clearSubmenusRecursive(mMenu);
+
 #endif
 	DebugAssert(gApplication == this);
 	gApplication = NULL;
@@ -268,8 +329,8 @@ void			GUI_Application::Run(void)
 	}
 #endif
 #if LIN
-	qapp->connect(qapp, SIGNAL(lastWindowClosed()), qapp, SLOT(quit()));
-	qapp->exec();
+	while(!mDone && Fl::wait()) // Fl::wait() returns 1 if atleast one window shown
+	{}
 #endif
 }
 
@@ -280,32 +341,29 @@ void			GUI_Application::Quit(void)
 	// On quit, use NS to kill the runloop.
 	stop_app();
 #endif
-#if LIN
-	qapp->quit();
-#endif
 }
 
 GUI_Menu		GUI_Application::GetMenuBar(void)
 {
-	#if APL
-		return get_menu_bar();
-	#elif IBM
-		HWND hwnd = GUI_Window::AnyHWND();
-		if (hwnd == NULL) return NULL;
-		HMENU mbar = ::GetMenu(hwnd);
-		if (mbar != NULL) return mbar;
-		mbar = ::CreateMenu();
-		::SetMenu(hwnd, mbar);
-		return mbar;
-	#else
-	QMainWindow* mwindow = ((QMainWindow*)qapp->activeWindow());
-	if (mwindow)
+#if APL
+	return get_menu_bar();
+#elif IBM
+	HWND hwnd = GUI_Window::AnyHWND();
+	if (hwnd == NULL) return NULL;
+	HMENU mbar = ::GetMenu(hwnd);
+	if (mbar != NULL) return mbar;
+	mbar = ::CreateMenu();
+	::SetMenu(hwnd, mbar);
+	return mbar;
+#else
+	if(mMenu) return (void*) mMenu;
+	GUI_Window* w = GUI_Window::AnyXWND();
+	if (w)
 	{
-		QMenuBar* mbar =  mwindow->menuBar();
-		return mbar;
+		mMenu = w->GetMenuBar();
 	}
-	return NULL;
-	#endif
+	return (void*) mMenu;
+#endif
 }
 
 GUI_Menu		GUI_Application::GetPopupContainer(void)
@@ -321,7 +379,6 @@ GUI_Menu		GUI_Application::GetPopupContainer(void)
 
 GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t items[], GUI_Menu	parent, int parentItem)
 {
-
 #if APL
 	string title(inTitle);
 	NukeAmpersand(title);
@@ -354,33 +411,62 @@ GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t 
 #endif
 #if LIN
 	GUI_Menu new_menu = NULL;
-	
-	if(parent == GetPopupContainer()) 
+
+	if(parent == GetPopupContainer())
 	{
-		if (mPopup == NULL) mPopup = new QMenu(0);			 
-		new_menu = mPopup;
+		if (mPopup == NULL)
+		{
+			mPopup = new Fl_Menu_Item[POPUP_ARRAY_SIZE*sizeof(Fl_Menu_Item)];
+			memset( (Fl_Menu_Item *)mPopup,0,POPUP_ARRAY_SIZE*sizeof(Fl_Menu_Item) );
+		}
+		new_menu = (Fl_Menu_Item *) mPopup;
 	}
 	else
 	{
-		GUI_QtMenu* new_qtmenu = new GUI_QtMenu(inTitle ,this);
+		Fl_Menu_Item * parent_menu = (Fl_Menu_Item *) parent;
 
-		if (parent==GetMenuBar())
+		int sz = 0;
+		while(items[sz].name) ++sz;
+		++sz;
+//		printf("create menu %s size %d\n",inTitle,sz);
+		Fl_Menu_Item * menu = new Fl_Menu_Item[sz*sizeof(Fl_Menu_Item )];
+		memset(menu,0,sz*sizeof(Fl_Menu_Item ));
+
+		if (parent == this->GetMenuBar())
 		{
-			mMenus << new_qtmenu;
-			((QMenuBar*) parent)->addMenu(new_qtmenu);
+			if(parent_menu->size() > MENU_ARRAY_SIZE-1) return NULL;
+			parent_menu->add(inTitle,0,0,menu,FL_SUBMENU_POINTER);
 		}
 		else
 		{
-			((GUI_QtMenu*) parent)->actions().at(parentItem)->setMenu(new_qtmenu);	
-		}	
-		
-		new_menu = new_qtmenu;
+			// mroe:we have to subtract separator rows from parentItem-idx since they are not separate items in FLTK version
+			int idx = parentItem;
+			for(int t=0; t < idx ; t++)
+			{
+				Fl_Menu_Item * item = (Fl_Menu_Item *) &parent_menu[t];
+				if(item->flags&FL_MENU_DIVIDER) idx--;
+			}
+
+			if(idx > parent_menu->size()-1) return NULL;
+			Fl_Menu_Item * submenu_parent = parent_menu + idx ;
+
+			//mroe: With FLTK we can not have a command on a submenu item ; userdata are either the cmd or a pointer to the submenu array
+			//if something in the user_data_ , the submenu item has probably a cmd assigned.(May wrong position index or a cmd on a submenu item)
+			DebugAssert(submenu_parent->user_data_ == nullptr);
+			if(submenu_parent->user_data_ == nullptr)
+			{
+				submenu_parent->flags |= FL_SUBMENU_POINTER;
+				submenu_parent->user_data(menu);
+			}
+		}
+
+		new_menu = menu;
 	}
 #endif
 	RebuildMenu(new_menu, items);
-#if !LIN
+
 	mMenus.insert(new_menu);
-#endif
+
 #if IBM
 	if (parent)
 		DrawMenuBar(GUI_Window::AnyHWND());
@@ -392,18 +478,18 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 {
 	#if APL
 		clear_menu(new_menu);
-	
+
 		int n = 0;
 		while (items[n].name)
 		{
 			string	itemname(items[n].name);
 			NukeAmpersand(itemname);
 			bool is_disable = IsDisabledString(itemname);
-			
+
 			char shortcut[4] = { 0 };
 			if(items[n].key != 0)
 				shortcut[0] = tolower(items[n].key);
-			
+
 			if(itemname=="-")
 			add_separator(new_menu);
 			else
@@ -460,58 +546,83 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 		}
 	#elif LIN
 	if(new_menu == NULL) return ;
-	QMenu * menu = (QMenu*) new_menu;
-	menu->clear();
-	
-	QAction * act;
+
+	Fl_Menu_Item * menu = (Fl_Menu_Item *) new_menu;
+
+	clear_menu(menu);
+
 	int n = 0;
 	while (items[n].name)
 	{
+		if(menu == mPopup)
+		{
+			DebugAssert(!(menu->size() > POPUP_ARRAY_SIZE-1));
+			if(menu->size() > POPUP_ARRAY_SIZE-1) return;
+		}
+
 		string	itemname(items[n].name);
 		bool is_disable = IsDisabledString(itemname);
-	
-		if (!strcmp(items[n].name, "-"))
-			menu->addSeparator();
+
+		if (!strcmp(items[n].name, "-")) /*addSeparator()*/
+		{
+			if( menu->size() < 2) return ;
+			Fl_Menu_Item * last = menu + (menu->size()-2);
+			last->flags = last->flags|FL_MENU_DIVIDER;
+		}
 		else
-			if (!items[n].cmd )
+		{
+			string tempname;
+			tempname.resize(itemname.size(),'-');
+			//mroe:This is to deal with menu names containing slashes . FLTK would creates a submenu after a slash .
+			//To workaround this , we using a placeholder string with same length and rename it after the menu item is added.
+
+			if (!items[n].cmd ) /*is single popup or a submenu */
 			{
-				if(menu == mPopup)
+				int idx = menu->add(tempname.c_str(),nullptr,0);
+				Fl_Menu_Item * m = menu + idx;
+				strcpy((char*) m->text,itemname.c_str());
+
+				if(menu == mPopup) /*we have popup already */
 				{
-					act = menu->addAction(itemname.c_str());
-					act->setCheckable(items[n].checked);
-					act->setChecked(items[n].checked);
-					if (is_disable) act->setEnabled(false);
+					if(items[n].checked) m->flags |= FL_MENU_TOGGLE;
+					items[n].checked ? m->set()  : m->clear();
+					is_disable ? m->deactivate() : m->activate();
 				}
-				else
-				{
-					menu->addMenu(itemname.c_str());
-				}				
 			}
-			else
+			else /*is part of a menu structure */
 			{
-				QString	sc = "";
+				unsigned int sc = 0;
 				if(items[n].key != 0)
 				{
-					if (items[n].flags & gui_ControlFlag)	{sc += "Ctrl+";}
-					if (items[n].flags & gui_ShiftFlag)     {sc += "Shift+";}
-					if (items[n].flags & gui_OptionAltFlag) {sc += "Alt+";}
-					char key_cstr[2] = { items[n].key, 0 };
+					if (items[n].flags & gui_OptionAltFlag) {sc += FL_ALT;}
+					if (items[n].flags & gui_ShiftFlag)     {sc += FL_SHIFT;}
+					if (items[n].flags & gui_ControlFlag)   {sc += FL_CTRL;}
+
+					char key_cstr[2] = { items[n].key , 0 };
 					switch(items[n].key)
 					{
-						case GUI_KEY_UP:	sc += "Up";     break;
-						case GUI_KEY_DOWN:	sc += "Down";   break;
-						case GUI_KEY_RIGHT:	sc += "Right";  break;
-						case GUI_KEY_LEFT:	sc += "Left";   break;
-						case GUI_KEY_BACK:	sc += "Del";    break;
-						case GUI_KEY_RETURN:	sc += "Return"; break;
-						default:            	sc += key_cstr; break;
+						case GUI_KEY_UP    :    sc += FL_Up;       break;
+						case GUI_KEY_DOWN  :    sc += FL_Down;     break;
+						case GUI_KEY_RIGHT :	sc += FL_Right;    break;
+						case GUI_KEY_LEFT  :    sc += FL_Left;     break;
+						case GUI_KEY_BACK  :    sc += FL_BackSpace;break;
+						case GUI_KEY_RETURN:    sc += FL_Enter;    break;
+						default            :    sc += tolower(key_cstr[0]); break;
 					}
 				}
 
-				menu->addAction(act = new GUI_QtAction(itemname.c_str(),menu,sc,items[n].cmd,this,false));
-				if(is_disable)
-					act->setEnabled(false);
+   			    xmenu_cmd * menu_cmd = new xmenu_cmd();
+				menu_cmd->cmd  = items[n].cmd;
+				menu_cmd->data = this;
+
+				int idx = menu->add(tempname.c_str(),sc,menu_cb,menu_cmd,FL_MENU_INACTIVE);
+				Fl_Menu_Item * m = menu + idx;
+				strcpy((char*) m->text,itemname.c_str());
+				if(items[n].checked) m->flags |= FL_MENU_TOGGLE;
+				items[n].checked ? m->set() : m->clear();
+				is_disable ? m->deactivate() : m->activate();
 			}
+		}
 		++n;
 	}
 	#endif

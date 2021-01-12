@@ -29,14 +29,6 @@
 #define random rand
 #endif
 
-void test(void)
-{
-		unsigned long * a, * b;
-	vector<int> path;
-	calc_quilt_vertical<unsigned long, unsigned long>(a, 1, 40, b, 1, 50, 40, 40, path);
-
-}
-
 void	quilt_images(
 					struct ImageInfo& lhs,
 					struct ImageInfo& rhs,

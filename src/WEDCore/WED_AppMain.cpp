@@ -21,32 +21,30 @@
  *
  */
 
- #define __DEBUGGING__
+#define __DEBUGGING__
 #if DEV
 //Adds the abilty to bring up a console for debuging
 #include <stdio.h>
 #endif
 
 #include "WED_AboutBox.h"
-#include "WED_Document.h"
 #include "WED_Assert.h"
-#include "WED_StartWindow.h"
-#include "GUI_Clipboard.h"
-#include "GUI_Resources.h"
 #include "WED_Application.h"
+#include "WED_Document.h"
+#include "FileUtils.h"
+#include "WED_FileCache.h"
+#include "WED_Menus.h"
 #include "WED_PackageMgr.h"
-#include "GUI_Pane.h"
+#include "WED_StartWindow.h"
+#include "WED_Version.h"
+
+#include "GUI_Clipboard.h"
 #include "GUI_Fonts.h"
 #include "GUI_Window.h"
 #include "GUI_Prefs.h"
+#include "GUI_Resources.h"
 
-#include "WED_Menus.h"
-
-#include "GUI_ScrollerPane.h"
-#include "GUI_TextField.h"
-#include "GUI_Splitter.h"
-
-#include "WED_FileCache.h"
+#include <ctime>
 
 #define	REGISTER_LIST	\
 	_R(WED_Airport) \
@@ -124,11 +122,16 @@ REGISTER_LIST_ATC
 
 #if IBM
 HINSTANCE gInstance = NULL;
-#endif
-#if LIN
-#include "initializer.h"
+#else
+#include <sys/utsname.h>
 #endif
 
+#if LIN
+  #include "initializer.h"
+  #include <FL/Fl.H>
+#endif
+
+FILE * gLogFile;
 
 #if IBM
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
@@ -145,7 +148,35 @@ int main(int argc, char * argv[])
 #if LIN
 	Initializer linit(&argc, &argv, false);
 #endif // LIN
-	
+
+	gLogFile = fopen((FILE_get_dir_name(GetApplicationPath()) + "WED_Log.txt").c_str(), "w");
+	if (gLogFile)
+	{
+#if IBM
+		LOG_MSG("log.txt for WordEditor " WED_VERSION_STRING " ( Windows )\n");
+		LOG_MSG(" compiled on " __DATE__ " " __TIME__ " with MSC %d\n", _MSC_VER);
+#else
+		struct utsname uts;
+		uname(&uts);
+		LOG_MSG("log.txt for WordEditor " WED_VERSION_STRING " ( %s %s )\n", uts.sysname, uts.release);
+		LOG_MSG(" compiled on " __DATE__ " " __TIME__ " with " __VERSION__ "\n");
+#endif
+		time_t now = time(0);
+		char * now_s = ctime(&now);
+		LOG_MSG("WED started on %s\n", now_s);
+
+#if LIN
+#if FL_PATCH_VERSION < 4
+		LOG_MSG("FLTK compiletime API %d\n", FL_MAJOR_VERSION*10000 + FL_MINOR_VERSION*100 + FL_PATCH_VERSION);
+#else
+		LOG_MSG("FLTK runtime API %d compiletime API %d\n", Fl::api_version(), FL_API_VERSION);
+#endif
+#endif
+//		LOG_MSG("I/MAIN locale %s\n", loc_str);                          // datalog the locale trials atthe very beginning
+		LOG_MSG("I/MAIN locale now %s %.2lf LC_CTYPE = '%s' LC_ALL='%s'\n", "Čü", 10003.14, setlocale(LC_CTYPE,NULL), setlocale(LC_ALL,NULL));
+		LOG_FLUSH();
+	}
+
 #if LIN || APL
 	WED_Application	app(argc, argv);
 #else // Windows
@@ -169,33 +200,24 @@ int main(int argc, char * argv[])
 	// at least one shared context so that the textures are not purged.
 	// This means one window must always be in existence.  That window is the about box...which stays hidden but allocated to
 	// sustain OpenGL.
+	// mroe: this first window is the StartWindow now
 
-	WED_AboutBox * about = new WED_AboutBox(&app);
-	WED_MakeMenus(&app);
-	#if LIN
-	//mroe: resize after update the menubar
-	about->Resize(about->centralWidget()->width(),about->centralWidget()->height());
-	#endif
-	WED_StartWindow * start = new WED_StartWindow(&app);
-
-	start->Show();
-
-	start->ShowMessage("Initializing...");
-//	XESInit();
-
-	start->ShowMessage("Reading Prefs...");
 	GUI_Prefs_Read("WED");
 	WED_Document::ReadGlobalPrefs();
+
+	WED_StartWindow * start = new WED_StartWindow(&app);
+	WED_MakeMenus(&app);
+#if LIN
+	setlocale(LC_ALL, "C");   //mroe: FLTK sets user locale upon first window creation only, does not set it not back to "C"
+	start->show(1, argv);     //mroe: WED has own cmd line arguments, this prevents FLTK from parsing them
+#endif
+	start->Show();
 
 	start->ShowMessage("Scanning X-System Folder...");
 	pMgr.SetXPlaneFolder(GUI_GetPrefString("packages","xsystem",""));
 
 	start->ShowMessage("Initializing WED File Cache");
 	gFileCache.init();
-  //	start->ShowMessage("Loading DEM tables...");
-//	LoadDEMTables();
-//	start->ShowMessage("Loading OBJ tables...");
-//	LoadObjTables();
 
 	start->ShowMessage("Loading ENUM system...");
 	WED_AssertInit();
@@ -207,25 +229,12 @@ int main(int argc, char * argv[])
 	REGISTER_LIST_ATC
 	#undef _R
 
-	app.SetAbout(about);
-
 	start->ShowMessage(string());
-	setlocale(LC_ALL,"C");
-	#if LIN
-	//TODO:mroe: maybe we can set this to LC_ALL for all other OS's .
-	//In the case of linux we must , since standard C locale is not utf-8	
-	setlocale(LC_CTYPE,"en_US.UTF-8");
-	//mroe: for now , every CString holding a filepath must be wrapped by QString::fromUtf8() to convert to QString.	
-	//(mainly in the dialogs and the window caption to show it to the user)
-	//Setting this global for the app could be the better solution.
-	//QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
-	#endif
+
+	LOG_MSG("I/MAIN initializations done, run app now ...\n"); LOG_FLUSH();
 	app.Run();
-    // we're out of eventloop here, deleting windows on linux implies sending messages to them,
-    // so this would fail.
-	#if !LIN
-	    delete about;
-	#endif
+
+	delete start;
 
 	GUI_MemoryHog::RemoveNewHandler();
 
@@ -236,5 +245,8 @@ int main(int argc, char * argv[])
 	WED_Document::WriteGlobalPrefs();
 	GUI_Prefs_Write("WED");
 
+	LOG_MSG("----- WED has shut down -----\n");
+	if(gLogFile) fclose(gLogFile);
+	
 	return 0;
 }

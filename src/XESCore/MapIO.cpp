@@ -121,7 +121,7 @@ void ReadObjPlacement(IOReader& inReader, GISObjPlacement_t& p, const TokenConve
 	p.mRepType = c[p.mRepType];
 	inReader.ReadDouble(x);
 	inReader.ReadDouble(y);
-//	p.mLocation = Point_2(x, y);
+	p.mLocation = Point2(x,y);
 	inReader.ReadDouble(p.mHeading);
 	int derived;
 	inReader.ReadInt(derived);

@@ -52,8 +52,7 @@ public:
 	time_t           get_last_time_modified() const;
 	void             set_last_time_modified(time_t mtime);
 
-	//Creates and opens a cURL handle to a given url, with a certificate and optional reserve size
-	void             create_RAII_curl_hndl(const string& url, const string& cert, int buf_reserve_size=0);
+	void             create_RAII_curl_hndl(const string& url, int buf_reserve_size=0);
 
 	//Returns the current RAII_CurlHandle object or NULL if there is none
 	RAII_CurlHandle* const get_RAII_curl_hndl();

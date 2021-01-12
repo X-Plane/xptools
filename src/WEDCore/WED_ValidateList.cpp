@@ -243,9 +243,8 @@ void WED_ValidateDialog::ReceiveMessage(
 			sel->Clear();
 			set<int>	selected;
 			mMsgTable.GetSelection(selected);
-			for(set<int>::iterator i = selected.begin(); i != selected.end(); ++i)
-				for(vector<WED_Thing *>::iterator b = msgs_orig[*i].bad_objects.begin(); b != msgs_orig[*i].bad_objects.end(); ++b)
-					sel->Insert(*b);
+			for(auto i : selected)
+				sel->Insert(set<ISelectable*>(msgs_orig[i].bad_objects.begin(), msgs_orig[i].bad_objects.end()));
 			wrl->CommitOperation();
 		}
 		if (inMsg == GUI_TABLE_CONTENT_CHANGED) break;

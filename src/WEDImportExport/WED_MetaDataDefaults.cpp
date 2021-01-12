@@ -1,6 +1,8 @@
 #include "WED_MetaDataDefaults.h"
 #include "WED_Airport.h"
 #include "WED_MetaDataKeys.h"
+#include "WED_GatewayExport.h"
+
 #include "WED_Menus.h" // for wed_AddMetaDataBegin and wed_AddMetaDataEnd
 #include "CSVParser.h"
 #include <fstream>
@@ -32,7 +34,7 @@ bool	fill_in_airport_metadata_defaults(WED_Airport & airport, const string& file
 	CSVParser::CSVTable table = CSVParser(',', str).ParseCSV();
 	
 	if (table.GetRows().size() < 1)                         //  See WED-701, file on server had syntax error
-        printf("Error parsing %s !\n", file_path.c_str());  //  DoUserAlert() might be over the top
+        LOG_MSG("E/MDDef while parsing %s !\n", file_path.c_str());  //  DoUserAlert() might be over the top
 
 	t.close();
 	return fill_in_airport_metadata_defaults(airport, table);
@@ -44,8 +46,17 @@ bool fill_in_airport_metadata_defaults(WED_Airport & airport, const CSVParser::C
 
 	//Find the airport in the table match
 	string icao;
-	airport.GetICAO(icao);
-	
+	if(airport.ContainsMetaDataKey(wed_AddMetaDataICAO))
+		icao = airport.GetMetaDataValue(wed_AddMetaDataICAO);
+	if (icao.empty() && airport.ContainsMetaDataKey(wed_AddMetaDataFAA))
+		icao = airport.GetMetaDataValue(wed_AddMetaDataFAA);
+	if (icao.empty() && airport.ContainsMetaDataKey(wed_AddMetaDataLocal))
+	{
+		icao = airport.GetMetaDataValue(wed_AddMetaDataLocal);
+		if (!icao.empty()) return false;
+	}
+	if(icao.empty()) airport.GetICAO(icao);
+
 	int i = 0;
 	for ( ; i < table.GetRows().size(); ++i)
 	{
@@ -56,36 +67,33 @@ bool fill_in_airport_metadata_defaults(WED_Airport & airport, const CSVParser::C
 		}
 	}
 
-	//We hit the end
-	if(i < table.GetRows().size() == false)
-	{
-		return false;
-	}
+	bool found_data = i < table.GetRows().size();
 
-	//For every column (excluding airport_id), copy if missing key or key's value is ""
-	CSVParser::CSVTable::CSVHeader column_headers = table.GetHeader();
-	for (i = 1; i < default_values.size(); i++)
+	if(found_data)
 	{
-		string key = column_headers[i];
-		string default_value = default_values[i];
-		
-		const KeyEnum key_enum = META_KeyEnumFromName(key);
-		if(key_enum > wed_AddMetaDataBegin && key_enum < wed_AddMetaDataEnd) // We *only* want to insert keys we recognize
+		//For every column (excluding airport_id), copy if missing key or key's value is ""
+		CSVParser::CSVTable::CSVHeader column_headers = table.GetHeader();
+		for (i = 1; i < default_values.size(); i++)
 		{
-			//For every of our column do They (airport) have this?
-			bool has_key = airport.ContainsMetaDataKey(key);
-			if(has_key)
+			string key = column_headers[i];
+			string default_value = default_values[i];
+
+			const KeyEnum key_enum = META_KeyEnumFromName(key);
+			if(key_enum > wed_AddMetaDataBegin && key_enum < wed_AddMetaDataEnd) // We *only* want to insert keys we recognize
 			{
-				if(airport.GetMetaDataValue(key) == "")
+				//For every of our column do They (airport) have this?
+				if(airport.ContainsMetaDataKey(key))
 				{
-					airport.EditMetaDataKey(key,default_value);
+					if(airport.GetMetaDataValue(key).empty())
+						airport.EditMetaDataKey(key,default_value);
 				}
-			}
-			else
-			{
-				airport.AddMetaDataKey(key, default_value);
+				else
+					airport.AddMetaDataKey(key, default_value);
 			}
 		}
 	}
-	return true;
+	
+	found_data |= Enforce_MetaDataGuiLabel(&airport);
+
+	return found_data;
 }

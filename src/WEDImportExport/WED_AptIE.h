@@ -32,6 +32,7 @@ class	IResolver;
 class	WED_Document;
 class	WED_MapPane;
 class	WED_Airport;
+class	WED_TaxiRoute;
 
 void	WED_AptImport(
 				WED_Archive *			archive,
@@ -55,9 +56,7 @@ void	WED_AptExport(
 // A little bit dangerous but this can be a good way
 // to convert a selection into an aptdefs.h construct.
 // This is really an internal utility.
-void	AptExportRecursive(WED_Thing * what, 
-				AptVector& apts);
-
+void	AptExportRecursive(WED_Thing * what, AptVector& apts, vector<WED_TaxiRoute *>& edges);
 
 int		WED_CanExportApt(IResolver * resolver);
 void	WED_DoExportApt(WED_Document * resolver, WED_MapPane * pane);

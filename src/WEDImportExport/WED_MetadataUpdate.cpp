@@ -47,11 +47,6 @@
  */
 static bool fill_cache_request_for_metadata_csv(WED_file_cache_request * out_cache_req)
 {
-	string cert(WED_get_GW_cert());
-	if(cert.empty())
-		return false;
-
-	out_cache_req->in_cert = cert;
 	out_cache_req->in_domain = cache_domain_metadata_csv;
 	out_cache_req->in_folder_prefix = "scenery_packs";
 	out_cache_req->in_url = WED_URL_AIRPORT_METADATA_CSV;
@@ -225,12 +220,15 @@ void WED_UpdateMetadataDialog::Submit()
 		bool success = fill_in_airport_metadata_defaults(*mApt, mAirportMetadataCSVPath);
 		if(success == false)
 		{
+			const char * msg = "Could not find metadata, check Airport ID or if airport is supported.\n";
+			LOG_MSG("I/MDU Updating metadata for %s: %s\n", icao.c_str(), msg);
 			mApt->AbortCommand();
 			this->Reset("","","Exit",true);
-			this->AddLabel("Could not find metadata, check Airport ID or if airport is supported.");
+			this->AddLabel(msg);
 		}
 		else
 		{
+			LOG_MSG("I/MDU Metadata update for %s sucessfull.\n", icao.c_str());
 			mApt->CommitCommand();
 
 			this->Reset("","OK","",true);
@@ -262,9 +260,11 @@ void WED_UpdateMetadataDialog::TimerFired()
 			}
 			else if(res.out_status == cache_status_error)
 			{
+				string err = InterpretNetworkError(&this->mAirportMetadataCURLHandle->get_curl_handle());
+				LOG_MSG("E/MDU Metadata update failed due to error '%s'\n", err.c_str());
 				mPhase = update_dialog_done;
 				this->Reset("","","Exit",true);
-				this->AddLabel(InterpretNetworkError(&this->mAirportMetadataCURLHandle->get_curl_handle()));
+				this->AddLabel(err);
 			}
 		}
 		return;
@@ -299,13 +299,13 @@ void	WED_DoInvisibleUpdateMetadata(WED_Airport * apt)
 			}
 			else if(res.out_status == cache_status_error)
 			{
-				printf("Failed to auto-update airport metadata due to cache error\n");
+				LOG_MSG("E/MDUi auto-update airport metadata failed due to cache error '%s'\n", res.out_error_human.c_str());
 			}
 		}
 	}
 	else
 	{
+		LOG_MSG("I/MDUi %s\n", "Filling metadata with defaults\n");
 		bool success = fill_in_airport_metadata_defaults(*apt, s_csv);
 	}
 }
-

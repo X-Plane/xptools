@@ -270,26 +270,28 @@ WED_DocumentWindow::WED_DocumentWindow(
 	// (which is the bounding box around ALL monitors) - then ignore the preferences
 	// and the new window will pop up fullscreen on the primary monitor instead.
 
-//	printf("FullScreen xy %d %d wh %d %d\n", xy[0], xy[1], zw[0], zw[1]);
+	
+	LOG_MSG("I/Doc opening new scenery window, initial win xy %d %d wh %d %d\n", xy[0], xy[1], zw[0], zw[1]);
 	
 	int safe_rect[4] = { xy[0], xy[1], xy[0] + zw[0], xy[1] + zw[1] };
 	XWin::GetDesktop(safe_rect);
+	LOG_MSG("I/Doc desktop rect %d %d %d %d\n", safe_rect[0], safe_rect[1], safe_rect[2], safe_rect[3]);
 
-	xy[0]  = inDocument->ReadIntPref("window/x_loc",xy[0]);
-	xy[1]  = inDocument->ReadIntPref("window/y_loc",xy[1]);
+	xy[0] = inDocument->ReadIntPref("window/x_loc",xy[0]);
+	xy[1] = inDocument->ReadIntPref("window/y_loc",xy[1]);
 	zw[0] = inDocument->ReadIntPref("window/width",zw[0]);
 	zw[1] = inDocument->ReadIntPref("window/height",zw[1]);
 
-//	printf("from Prefs xy %d %d wh %d %d\n", xy[0], xy[1], zw[0], zw[1]);
+	LOG_MSG("I/Doc size from prefs xy %d %d wh %d %d\n", xy[0], xy[1], zw[0], zw[1]);
 
 	if(xy[0] < safe_rect[2]-100 && xy[1] < safe_rect[3]-100 &&
 	  (xy[0] + zw[0]) >= safe_rect[0]+100 && (xy[1] + zw[1]) >= safe_rect[1]+100)
 	{
 		SetBounds(xy[0],xy[1],xy[0]+zw[0],xy[1]+zw[1]);
 	}
-//	else
-//		printf("SafeRect was triggerd\n");
-
+	else
+		LOG_MSG("W/Doc SafeRect was triggerd\n");
+		
 	int main_split = inDocument->ReadIntPref("window/main_split",zw[0] / 5);
 	int main_split2 = inDocument->ReadIntPref("window/main_split2",zw[0] * 2 / 3);
 	int prop_split = inDocument->ReadIntPref("window/prop_split",zw[1] / 2);
@@ -306,7 +308,11 @@ WED_DocumentWindow::WED_DocumentWindow(
 	mMapPane->FromPrefs(inDocument);
 	mPropPane->FromPrefs(inDocument,0);
 	// doc/use_feet and doc/InfoDMS are global only preferences now, not read from each document any more
+#if TYLER_MODE
+	gExportTarget = wet_latest_xplane;
+#else
 	gExportTarget = (WED_Export_Target) inDocument->ReadIntPref("doc/export_target",gExportTarget);
+#endif
 	
 	int wedXMLversion = inDocument->ReadIntPref("doc/xml_compatibility",0);
 	int wedTHISversion[4] = { WED_VERSION_BIN };
@@ -398,8 +404,6 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case gui_Redo:	if (um->HasRedo()) { um->Redo(); return 1; }	break;
 	case gui_Clear:		WED_DoClear(mDocument); return 1;
 	case wed_Crop:		WED_DoCrop(mDocument); return 1;
-	//case wed_Overlay:	WED_MakeOrthos(mDocument); return 1;
-//	case wed_MakeRouting:WED_MakeRouting(mDocument); return 1;
 	case wed_Merge:		WED_DoMerge(mDocument); return 1;
 	case wed_Split:		WED_DoSplit(mDocument); return 1;
 	case wed_Align:		WED_DoAlign(mDocument); return 1;
@@ -420,7 +424,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_MovePrev:	WED_DoReorder(mDocument,-1,0);	return 1;
 	case wed_MoveNext:	WED_DoReorder(mDocument, 1,0);	return 1;
 	case wed_MoveLast:	WED_DoReorder(mDocument, 1,1);	return 1;
-	case wed_BreakApartSpecialAgps: WED_DoBreakApartSpecialAgps(mDocument); return 1;
+	case wed_BreakApartAgps: WED_DoBreakApartAgps(mDocument); return 1;
 	case wed_ReplaceVehicleObj:  WED_DoReplaceVehicleObj(mDocument); return 1;
 	case wed_AddATCFreq:WED_DoMakeNewATCFreq(mDocument); return 1;
 	case wed_AddATCFlow: WED_DoMakeNewATCFlow(mDocument); return 1;
@@ -523,9 +527,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 						else				{								return 0; }
 	case gui_Clear:		return	WED_CanClear(mDocument);
 	case wed_Crop:		return	WED_CanCrop(mDocument);
-//	case wed_MakeRouting:
 	case wed_Merge:		return WED_CanMerge(mDocument);
-	case wed_Overlay:														return 1;
 	case gui_Close:															return 1;
 	case wed_Split:		return WED_CanSplit(mDocument);
 	case wed_Align:		return WED_CanAlign(mDocument);
@@ -557,8 +559,8 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_MovePrev:	return WED_CanReorder(mDocument,-1,0);
 	case wed_MoveNext:	return WED_CanReorder(mDocument, 1,0);
 	case wed_MoveLast:	return WED_CanReorder(mDocument, 1,1);
-	case wed_BreakApartSpecialAgps: return WED_CanBreakApartSpecialAgps(mDocument);
-	case wed_ReplaceVehicleObj:  return WED_CanReplaceVehicleObj(mDocument);
+	case wed_BreakApartAgps: return WED_CanBreakApartAgps(mDocument);
+	case wed_ReplaceVehicleObj:  return WED_CanReplaceVehicleObj(WED_GetCurrentAirport(mDocument));
 	case gui_Save:		return mDocument->IsDirty();
 	case gui_Revert:	return mDocument->IsDirty() && mDocument->IsOnDisk();
 
@@ -592,9 +594,9 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_ImportOrtho:	return 1;
 #if HAS_GATEWAY
 	case wed_ImportGateway:	return WED_CanImportFromGateway(mDocument);
-#endif
 #if GATEWAY_IMPORT_FEATURES
-	case wed_ImportGatewayExtract: return 1;
+	case wed_ImportGatewayExtract: return gModeratorMode || TYLER_MODE;
+#endif
 #endif
 	case wed_Validate:		return 1;
 
@@ -635,8 +637,15 @@ void	WED_DocumentWindow::ReceiveMessage(
 
 		// not writing doc/use_feet any more. Its a global preference now.
 		prefs->WriteIntPref("doc/export_target",gExportTarget);
-		prefs->WriteIntPref("doc/xml_compatibility",107);     // minimum WED version expected to read this .xml correctly - 1.7 added new airport line marking styles
-		                                                      // 8.33k freqs added in 2.0 are fine back to at least 1.5, saved with 3 decimal places ever since
+		// minimum WED version expected to read this .xml correctly 
+		// endcding: 100x WED major version + 1 x middle version number
+		//  8.33k freqs added in 2.0 are fine back to at least 1.5, saved with 3 decimal places ever since
+		//  WED 1.7 added new airport line marking styles
+		//  WED 2.3 added set_AGL commands
+//		if(docHas_SetAGL())
+			prefs->WriteIntPref("doc/xml_compatibility",203);
+//		else
+//			prefs->WriteIntPref("doc/xml_compatibility",107);
 		prefs->WriteIntPref("window/main_split",mMainSplitter->GetSplitPoint());
 		prefs->WriteIntPref("window/main_split2",mMainSplitter2->GetSplitPoint());
 		prefs->WriteIntPref("window/prop_split",mPropSplitter->GetSplitPoint());
@@ -660,7 +669,11 @@ void	WED_DocumentWindow::ReceiveMessage(
 		mPropPane->FromPrefs(prefs,0);
 
 		// doc/use_feet and doc/InfoDMS are global only preferences now, not read from each document any more
+	#if TYLER_MODE
+		gExportTarget = wet_latest_xplane;
+	#else
 		gExportTarget = (WED_Export_Target) mDocument->ReadIntPref("doc/export_target",gExportTarget);
+	#endif
 		XWin::SetFilePath(NULL,mDocument->IsDirty());
 	}
 	else if(inMsg == msg_ArchiveChanged)

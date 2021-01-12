@@ -68,6 +68,7 @@ struct	pol_info_t {
 	int			ddsHeight_Pxls;
 	vector <Bbox2>	mSubBoxes;       // for subTexture selection in PreviewPanel
 	Bbox2		mUVBox;              // set by PreviewPanel from selected subTexture
+	string		description;
 };
 
 #include "WED_FacadePreview.h"
@@ -93,7 +94,9 @@ struct fac_info_t : public REN_FacadeLOD_t {
 	bool					noroofmesh;
 	bool					nowallmesh;
 	list<REN_facade_floor_t>	floors;
-	vector<string>		objs;			// names of type 2 objects
+	vector<string>			objs;				// names of type 2 objects
+	vector<const XObj8 *>	xobjs;				// names of type 2 objects
+
 	float					roof_scale_s;
 	float					roof_scale_t;
 	
@@ -115,12 +118,15 @@ struct	lin_info_t {
 	vector<float>	s1,sm,s2;
 	vector<caps>	start_caps, end_caps;
 	int			align;
+	bool		hasDecal;
+	string		description;
 };
 
 struct	str_info_t {
 	float		offset;
 	float		rotation;
 	vector<string> objs;
+	string		description;
 };
 
 struct	road_info_t {
@@ -145,14 +151,24 @@ struct agp_t {
 		int			show_lo,show_hi;
 		string		name;
 		const XObj8 * obj;              // resolving name is slow - so keep the obj around
+		float		scp_min, scp_max, scp_step; // scp_step nonzero indicates scraper extension
+	};
+	struct fac_t {
+		float		height;
+		Polygon2	locs;
+		vector<int> walls;
+		string		name;
+		const fac_info_t * fac;         // resolving name is slow - so keep the direct pointer around
 	};
 	string			base_tex;
 	string			mesh_tex;
 	int				hide_tiles;
 	vector<float>	tile;	// the base tile in x,y,s,t quads.
 	vector<obj_t>	objs;
+	vector<fac_t>	facs;
 	float			xyz_min[3];
 	float			xyz_max[3];
+	string			description;
 };
 
 

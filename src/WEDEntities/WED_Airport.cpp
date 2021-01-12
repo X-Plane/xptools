@@ -58,7 +58,7 @@ L   - NS_AIRPORT
 WED_Airport::WED_Airport(WED_Archive * a, int i) : WED_GISComposite(a,i),
 	airport_type	(this,PROP_Name("Type",				XML_Name("airport",	"kind")),		Airport_Type, type_Airport),
 	elevation		(this,PROP_Name("Field Elevation",	XML_Name("airport",	"elevation")),	0,6,1),
-	has_atc			(this,PROP_Name("Has ATC",			XML_Name("airport",	"has_atc")),		1),
+	has_atc			(this,PROP_Name("Has ATC (XP9 only)",	XML_Name("airport",	"has_atc")),		1),
 	icao			(this,PROP_Name("Airport ID",		XML_Name("airport",	"icao")),		"xxxx"),
 	always_flatten	(this,PROP_Name("Always Flatten",	XML_Name("airport", "always_flatten")), 0),
 	drive_on_left	(this,PROP_Name("Left Hand Driving",XML_Name("airport", "drive_on_left")), 0),
@@ -87,8 +87,6 @@ int		WED_Airport::GetSceneryID(void) const
 }
 
 void		WED_Airport::SetAirportType(int x) { airport_type = x; }
-void		WED_Airport::SetElevation(double x) { elevation = x; }
-void		WED_Airport::SetHasATC(int x) { has_atc= x; }
 void		WED_Airport::SetICAO(const string& x) { icao = x; }
 void		WED_Airport::SetSceneryID(int x) { scenery_id = x; }
 

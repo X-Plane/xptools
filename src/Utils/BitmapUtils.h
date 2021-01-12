@@ -196,7 +196,7 @@ void	DestroyBitmap(const struct ImageInfo * inImageInfo);
 
 //Put in a file path the image name at the end and get back -1 for error or a
 //supported image code (see the enum SupportedTypes
-int GetSupportedType(const char * path);
+int GetSupportedType(const string& path);
 
 //Attempts to make a supported image type using GetSupportedType and the various CreateBitmapFromX utils
 //Error codes are passed back up and returned by the method
@@ -225,6 +225,18 @@ void	CopyBitmapSection(
 			long				inDstRight,
 			long				inDstBottom);
 
+void	CopyBitmapSectionSharp(                     // includes light unsharp mask when downscaling more than 10%
+			const struct ImageInfo&	inSrc,
+			      struct ImageInfo&	inDst,
+			long				inSrcLeft,
+			long				inSrcTop,
+			long				inSrcRight,
+			long				inSrcBottom,
+			long				inDstLeft,
+			long				inDstTop,
+			long				inDstRight,
+			long				inDstBottom);
+			
 void	CopyBitmapSectionWarped(
 			const struct ImageInfo *	inSrc,
 			const struct ImageInfo *	inDst,
@@ -241,7 +253,7 @@ void	CopyBitmapSectionWarped(
 			long				inDstRight,
 			long				inDstBottom);
 
-void	CopyBitmapSectionDirect(
+void	CopyBitmapSectionDirect(                     // always exact pixel-for-pixel copy w/o scaling or processing
 			const struct ImageInfo&		inSrc,
 			const struct ImageInfo&		inDst,
 			long						inSrcLeft,

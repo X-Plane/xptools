@@ -112,17 +112,17 @@ private:
 #endif
 
 #if APL
-	
+
 	// For OS SX, we get a bunch of call-backs from XWin because we can't run ObjC code directly in GUI_window.cpp.
 	virtual int					CalcHelpTip(int x, int y, int bounds[4], string& msg);
 	virtual	int					AdvancedDragEntered(void * ns_dragging_info);
 	virtual	int					AdvancedDragUpdated(void * ns_dragging_info);
 	virtual	void				AdvancedDragExited(void * ns_dragging_info);
 	virtual	int					AdvancedPerformDrop(void * ns_dragging_info);
-	
+
 	virtual	void				GotCommandHack(int command);
-	
-	
+
+
 #endif
 
 	GUI_GraphState	mState;
@@ -137,15 +137,18 @@ private:
 	int				mMouseFocusButton;	// Remembered for a drag-and-drop
 #endif
 #if LIN
+
 	int Client2OGL_X(int x, void* w);
 	int Client2OGL_Y(int y, void* w);
 	int OGL2Client_X(int x, void* w);
 	int OGL2Client_Y(int y, void* w);
-protected:
-	void dragEnterEvent(QDragEnterEvent* e);
-	void dragLeaveEvent(QDragLeaveEvent* e);
-	void dragMoveEvent(QDragMoveEvent* e);
-	void dropEvent(QDropEvent* e);
+
+	int             mTipBounds[4];
+	bool            mTipIsActive;
+
+	int handle(int e);
+
+	static	GUI_Window *  AnyXWND(void);		// Used by app - we need to get SOME window to build the FIRST menubar.
 #endif
 };
 

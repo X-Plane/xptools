@@ -555,7 +555,7 @@ struct AptInfo_t {
 	string				icao;
 	string				name;
 	int					elevation_ft;
-	int					has_atc_twr;
+	int					has_atc_twr;            // not used in 1000
 	int					default_buildings;		// not used in 850
 	std::vector<std::pair<string,string> > meta_data; //Contains meta data for real and synthetic properties
 

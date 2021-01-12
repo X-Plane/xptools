@@ -22,48 +22,49 @@
  */
 
 #include "WED_ToolUtils.h"
+
 #include "ISelection.h"
-#include "WED_Thing.h"
-#include "WED_EnumSystem.h"
-#include "GUI_Pane.h"
 #include "IResolver.h"
 #include "ILibrarian.h"
 #include "GISUtils.h"
 #include "ITexMgr.h"
-#include "WED_Airport.h"
 #include "STLUtils.h"
 #include <list>
 
+#include "GUI_Pane.h"
 #include "GUI_Clipboard.h"
-#include "WED_Group.h"
+#include "WED_ResourceMgr.h"
+#include "WED_LibraryMgr.h"
+#include "WED_EnumSystem.h"
+
+#include "WED_Airport.h"
 #include "WED_AirportBeacon.h"
 #include "WED_AirportBoundary.h"
 #include "WED_AirportChain.h"
 #include "WED_AirportNode.h"
 #include "WED_AirportSign.h"
-#include "WED_Helipad.h"
-#include "WED_LightFixture.h"
-#include "WED_RampPosition.h"
-#include "WED_Runway.h"
-#include "WED_RunwayNode.h"
-#include "WED_TextureNode.h"
-#include "WED_SimpleBoundaryNode.h"
-#include "WED_Sealane.h"
-#include "WED_Taxiway.h"
-#include "WED_TowerViewpoint.h"
-#include "WED_Windsock.h"
-#include "WED_ResourceMgr.h"
 #include "WED_ATCFlow.h"
 #include "WED_ATCFrequency.h"
 #include "WED_ATCRunwayUse.h"
 #include "WED_ATCTimeRule.h"
 #include "WED_ATCWindRule.h"
+#include "WED_Group.h"
+#include "WED_Helipad.h"
+#include "WED_LightFixture.h"
+#include "WED_RampPosition.h"
+#include "WED_RoadNode.h"
+#include "WED_Runway.h"
+#include "WED_RunwayNode.h"
+#include "WED_SimpleBoundaryNode.h"
+#include "WED_Sealane.h"
+#include "WED_Taxiway.h"
 #include "WED_TaxiRoute.h"
 #include "WED_TaxiRouteNode.h"
+#include "WED_TextureNode.h"
 #include "WED_TruckDestination.h"
 #include "WED_TruckParkingLocation.h"
-#include "WED_RoadNode.h"
-#include "WED_LibraryMgr.h"
+#include "WED_TowerViewpoint.h"
+#include "WED_Windsock.h"
 
 using std::list;
 
@@ -356,11 +357,17 @@ bool			WED_IsSelectionNested(IResolver * resolver)
 
 bool WED_IsFolder(WED_Thing * what)
 {
+#if 0  // this code is nice and abstract, but all those dynamic_casts are SLOW. Its usually not relevant as the
+	   // hierachy list is cached - but when changing selection with a huge selection set this here is 6% of the overall reponse time
 	if(dynamic_cast<IGISPolygon*>(what))					return false;
 	if(dynamic_cast<IGISPointSequence*>(what))				return false;
 	if(dynamic_cast<IGISComposite*>(what))					return true;
 	if(strcmp(what->GetClass(), WED_ATCFlow::sClass)==0)	return true;
 	return false;
+#else
+	const char * c = what->GetClass();
+	return (c == WED_Group::sClass || c == WED_ATCFlow::sClass || c == WED_Airport::sClass);
+#endif
 }
 
 WED_Thing *		WED_HasSingleSelectionOfType(IResolver * resolver, const char * in_class)

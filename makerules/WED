@@ -9,32 +9,20 @@ DEFINES			+= -DUSE_JPEG=1 -DUSE_TIF=1 -DWED=1 -DNO_CGAL=1
 FORCEREBUILD_SUFFIX	:= _wed
 
 ifdef PLAT_LINUX
-
-CURL_FEATURES := $(shell curl-config --features)
-ifeq (, $(findstring SSL, $(CURL_FEATURES)))
-$(error no curl or not features SSL )
-endif
-
 LDFLAGS		+= -rdynamic
-LDFLAGS		+= -Wl,--exclude-libs,ALL
-LIBS		+= -lQtCore
-LIBS		+= -lQtGui
-LIBS		+= -lQtOpenGL
-LIBS		+= -lGL
-LIBS		+= -lGLU
-LIBS		+= -ldl
-LIBS		+= -lpthread
-LIBS		+= -lcurl -lssl -lcrypto
-LIBS		+= -Wl,-Bdynamic
+LDFLAGS		+= -Wl,--exclude-libs,libpng
+ifdef FLTK_STATIC
+LIBS		+= $(shell fltk-config --use-gl --ldstaticflags)
+else
+LIBS		+= -lfltk -lfltk_gl -lGL 
+endif #FLTK_STATIC
+LIBS		+= -lGLU -ldl -lpthread
 endif #PLAT_LINUX
 
 ifdef PLAT_MINGW
 WIN_RESOURCES	+= ./src/WEDResources/WED.rc
 LDFLAGS		+= -Wl,-subsystem,windows
 DEFINES		+= -D_WIN32_IE=0x0501 -D_WIN32_WINNT=0x0501 -DMINGW_BUILD=1
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libcurl.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libssl.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libcrypto.a
 LIBS		+= -lglu32
 LIBS		+= -lopengl32
 LIBS		+= -lgdi32
@@ -49,13 +37,9 @@ endif #PLAT_MINGW
 ifdef PLAT_DARWIN
 LDFLAGS		+= -framework Carbon -framework OpenGL -framework AppKit
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libboost_thread.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libcurl.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libssl.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libcrypto.a
 endif #PLAT_DARWIN
 
-#LIBS           := ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
-#LIBS           += ./libs/local$(MULTI_SUFFIX)/lib/libCGAL_Core.a
+LIBS		+= -lcurl
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libexpat.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgeotiff.a
@@ -87,10 +71,7 @@ SOURCES += ./src/Utils/PlatformUtils.lin.cpp
 #SOURCES += ./src/Network/PCSBSocketUDP.lin.cpp
 SOURCES += ./src/UI/XWin.lin.cpp
 SOURCES += ./src/UI/XWinGL.lin.cpp
-MOCSRC += ./src/UI/XWin.h
-MOCSRC += ./src/UI/XWinGL.h
-MOCSRC += ./src/GUI/GUI_Timer.h
-MOCSRC += ./src/GUI/GUI_Application.h
+SOURCES += ./src/Utils/glew.c
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN
@@ -365,6 +346,14 @@ SOURCES += ./src/lzma19/C/Delta.c
 SOURCES += ./src/lzma19/C/LzmaDec.c
 SOURCES += ./src/lzma19/C/Lzma2Dec.c
 
+SOURCES += ./src/libtess2/Source/tess.c
+SOURCES += ./src/libtess2/Source/bucketalloc.c
+SOURCES += ./src/libtess2/Source/dict.c
+SOURCES += ./src/libtess2/Source/mesh.c
+SOURCES += ./src/libtess2/Source/priorityq.c
+SOURCES += ./src/libtess2/Source/sweep.c
+SOURCES += ./src/libtess2/Source/geom.c
+
 ##
 # resources
 ###########
@@ -390,7 +379,6 @@ RESOURCES += ./src/WEDResources/scroll_btn_h.png
 RESOURCES += ./src/WEDResources/scroll_btn_v.png
 RESOURCES += ./src/WEDResources/scrollbar_corner.png
 RESOURCES += ./src/WEDResources/about.png
-RESOURCES += ./src/WEDResources/gateway.crt
 RESOURCES += ./src/WEDResources/COPYING
 RESOURCES += ./src/WEDResources/colors.png
 RESOURCES += ./src/WEDResources/taxi_sign.png
@@ -438,14 +426,6 @@ RESOURCES += ./src/WEDResources/tables/sider.png
 RESOURCES += ./src/WEDResources/tables/property_bar.png
 RESOURCES += ./src/WEDResources/tables/arrows.png
 RESOURCES += ./src/WEDResources/tables/delete.png
-#RESOURCES += ./src/WEDResources/world/earth_12.jpg
-#RESOURCES += ./src/WEDResources/world/earth_41.jpg
-#RESOURCES += ./src/WEDResources/world/earth_22.jpg
-#RESOURCES += ./src/WEDResources/world/earth_31.jpg
-#RESOURCES += ./src/WEDResources/world/earth_21.jpg
-#RESOURCES += ./src/WEDResources/world/earth_32.jpg
-#RESOURCES += ./src/WEDResources/world/earth_11.jpg
-#RESOURCES += ./src/WEDResources/world/earth_42.jpg
 RESOURCES += ./src/WEDResources/worldmap.jpg
 RESOURCES += ./src/WEDResources/pavement/dirt.png
 RESOURCES += ./src/WEDResources/pavement/gravel.png

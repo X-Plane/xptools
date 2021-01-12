@@ -10,20 +10,23 @@ FORCEREBUILD_SUFFIX := _rfui
 
 ifdef PLAT_LINUX
 LDFLAGS		+= -rdynamic
-LDFLAGS		+= -Wl,--exclude-libs,ALL
-LIBS		+= -lQtCore -lQtGui -lQtOpenGL -lGL -lGLU -ldl
-LIBS		+= -lpthread
-LIBS		+= -Wl,-Bdynamic
+LDFLAGS		+= -Wl,--exclude-libs,libpng
+ifdef FLTK_STATIC
+LIBS		+= $(shell fltk-config --use-gl --ldstaticflags)
+else
+LIBS		+= -lfltk -lfltk_gl -lGL
+endif #FLTK_STATIC
+LIBS		+= -lGLU -ldl -lpthread
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN
 LDFLAGS		+= -framework Carbon -framework OpenGL -framework AppKit
+LIBS		+= ./libs/local/lib/libboost_thread.a
+LIBS		+= ./libs/local/lib/libboost_system.a
 endif #PLAT_DARWIN
 
 LIBS		+= ./libs/local/lib/libCGAL.a
 LIBS		+= ./libs/local/lib/libCGAL_Core.a
-LIBS		+= ./libs/local/lib/libboost_thread.a
-LIBS		+= ./libs/local/lib/libboost_system.a
 LIBS		+= ./libs/local/lib/libgmp.a
 LIBS		+= ./libs/local/lib/libgmpxx.a
 LIBS		+= ./libs/local/lib/libsquish.a
@@ -48,10 +51,7 @@ SOURCES += ./src/Network/PCSBSocket.lin.cpp
 SOURCES += ./src/Network/PCSBSocketUDP.lin.cpp
 SOURCES += ./src/UI/XWin.lin.cpp
 SOURCES += ./src/UI/XWinGL.lin.cpp
-MOCSRC += ./src/UI/XWin.h
-MOCSRC += ./src/UI/XWinGL.h
-MOCSRC += ./src/GUI/GUI_Timer.h
-MOCSRC += ./src/GUI/GUI_Application.h
+SOURCES += ./src/Utils/glew.c
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN

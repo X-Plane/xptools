@@ -45,8 +45,6 @@ public:
 #endif
 	virtual			~WED_Application();
 
-			void	SetAbout(GUI_Window * about_box);
-
 	virtual	void	OpenFiles(const vector<string>& inFiles);
 	virtual	void	AboutBox(void);
 	virtual	void	Preferences(void);

@@ -94,10 +94,9 @@ FILE * x_fopen(const char * _Filename, const char * _Mode)
 
 #define LOG_CASE_DESENS 0
 
-#if LOG_CASE_DESENS
-	#define	LOG_MSG(fmt,...) printf(fmt, __VA_ARGS__)
-#else
-	#define	LOG_MSG(fmt,...)
+#if !LOG_CASE_DESENS
+	#undef  LOG_MSG
+	#define	LOG_MSG(...)
 #endif
 
 static int desens_partial(DIR * dir, char * io_file)
@@ -170,8 +169,7 @@ int FILE_case_correct(char * buf)
 		{
 			*q = '/';
 			p = q+1;
-			if (!worked)
-			{
+			if (!worked)			{
 				LOG_MSG("  Partial-desens failed.  Done at '%s'\n",buf);
 				return 0;
 			}
@@ -196,8 +194,7 @@ FILE_case_correct_path::operator const char * (void) const { return path; }
 bool FILE_exists(const char * path)
 {
 #if IBM
-	struct _stat ss;
-	if (_wstat(convert_str_to_utf16(path).c_str(),&ss) < 0) return false;
+	if (_waccess(convert_str_to_utf16(path).c_str(),0) == -1) return false;
 #else
 	FILE_case_correct_path path2(path);
 	struct stat ss;

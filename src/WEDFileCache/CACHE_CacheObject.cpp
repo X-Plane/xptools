@@ -74,11 +74,11 @@ void             CACHE_CacheObject::set_last_time_modified(time_t mtime)
 	m_last_time_modified = mtime;
 }
 
-void CACHE_CacheObject::create_RAII_curl_hndl(const string& url, const string& cert, int buf_reserve_size)
+void CACHE_CacheObject::create_RAII_curl_hndl(const string& url, int buf_reserve_size)
 {
 	//Close off any previous handles to make way for this new one
 	this->close_RAII_curl_hndl();
-	m_RAII_curl_hndl = new RAII_CurlHandle(url, cert, buf_reserve_size);
+	m_RAII_curl_hndl = new RAII_CurlHandle(url, buf_reserve_size);
 	m_last_url = m_RAII_curl_hndl->get_curl_handle().get_url();
 }
 

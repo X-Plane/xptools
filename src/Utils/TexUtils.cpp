@@ -24,16 +24,14 @@
 #include "AssertUtils.h"
 #include "BitmapUtils.h"
 
-#if IBM
-	// gotta do this cuz MSFT hasn't updated their openGL headers in 23 years ... its STILL OGL 1.1 from 1996 !!
-	#include "glew.h"
-#elif APL
+#if APL
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glu.h>
 #else
-	#include <GL/gl.h>
+	#include "glew.h"
 	#include <GL/glu.h>
 #endif
+
 
 struct  gl_info_t {
 	int		gl_major_version;
@@ -41,6 +39,7 @@ struct  gl_info_t {
 	bool	has_non_pots;
 	bool	has_bgra;
 	int		max_tex_size;
+	bool	has_rgtc;
 };
 
 static gl_info_t gl_info = { 0 };
@@ -49,20 +48,47 @@ static gl_info_t gl_info = { 0 };
 
 static void init_gl_info(gl_info_t * i)
 {
-	const char * ver_str = (const char *)glGetString(GL_VERSION);
-	const char * ext_str = (const char *)glGetString(GL_EXTENSIONS);
+	CHECK_GL_ERR
+	const char * ver_str = (const char *)glGetString(GL_VERSION);      CHECK_GL_ERR
+	const char * ext_str = (const char *)glGetString(GL_EXTENSIONS);   CHECK_GL_ERR
 
 	sscanf(ver_str,"%d", &i->gl_major_version);
+#if APL
+/* Apple only gives by default a 2.1 compatible openGL contexts.
+   BUT if openGL 3.2 or higher compatible contexts are requested by adding
+   "NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion3_2Core," just as the textbooks
+   say - all openGl 1/2 direct drawing is disbled. i.e. most openGl functions used
+   by WED are unavailable. So we can only test for openGL 2 core functionality available 
+   here and pray glew gets us the rest ...
+*/
 	if(i->gl_major_version < 2)
+	{
+		LOG_MSG("OpenGL 2.0 or higher required. Found version '%s'\n", ver_str);
 		AssertPrintf("OpenGL 2.0 or higher required. Found version '%s'\n", ver_str);
-	
+	}
+#else
+	if(i->gl_major_version < 3)
+	{
+		LOG_MSG("OpenGL 3.0 or higher required. Found version '%s'\n", ver_str);
+		AssertPrintf("OpenGL 3.0 or higher required. Found version '%s'\n", ver_str);
+	}
+#endif
 	i->has_tex_compression = strstr(ext_str,"GL_ARB_texture_compression") != NULL;
 	i->has_non_pots = strstr(ext_str,"GL_ARB_texture_non_power_of_two") != NULL;
 	i->has_bgra = strstr(ext_str,"GL_EXT_bgra") != NULL;
+	i->has_rgtc = strstr(ext_str,"GL_ARB_texture_compression_rgtc") != NULL;
 
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE,&i->max_tex_size);
-	// if(i->max_tex_size > 8192)	i->max_tex_size = 8192;
-	if(i->has_tex_compression)	glHint(GL_TEXTURE_COMPRESSION_HINT,GL_NICEST);
+	// if(i->max_tex_size > 2*8192)	i->max_tex_size = 2*8192;
+	if(i->has_tex_compression)	glHint(GL_TEXTURE_COMPRESSION_HINT,GL_NICEST); CHECK_GL_ERR
+	LOG_MSG("OpenGL renderer  : %s\n", glGetString(GL_RENDERER));              CHECK_GL_ERR
+	LOG_MSG("OpenGL Version   : %s\n", ver_str);
+	LOG_MSG("Max texture size : %5d  DXT : %d   POT : %d  RGTC : %d\n", i->max_tex_size,
+	                                        i->has_tex_compression, i->has_non_pots, i->has_rgtc);
+	LOG_MSG("                          FBO : %d   VBO : %d  MSext : %d\n", strstr(ext_str, "GL_ARB_framebuffer_object") != nullptr,
+											strstr(ext_str, "GL_ARB_vertex_buffer_object") != nullptr,
+	                                        strstr(ext_str, "GL_EXT_framebuffer_multisample") != nullptr);
+	LOG_FLUSH();
 }
 
 /*****************************************************************************************
@@ -175,8 +201,7 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 	if (outWidth) *outWidth = useIt->width;
 	if (outHeight) *outHeight = useIt->height;
 
-	glBindTexture(GL_TEXTURE_2D, inTexNum);
-
+	glBindTexture(GL_TEXTURE_2D, inTexNum);  CHECK_GL_ERR
 	
 	int	iformat, glformat;
 	if (useIt->channels == 1)
@@ -214,9 +239,9 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 	}
 
 	if (inFlags & tex_Mipmap)
-		gluBuild2DMipmaps(GL_TEXTURE_2D, iformat, useIt->width, useIt->height, glformat, GL_UNSIGNED_BYTE, useIt->data);
+		gluBuild2DMipmaps(GL_TEXTURE_2D, iformat, useIt->width, useIt->height, glformat, GL_UNSIGNED_BYTE, useIt->data); CHECK_GL_ERR
 	else
-		glTexImage2D(GL_TEXTURE_2D, 0, iformat, useIt->width ,useIt->height, 0,	glformat, GL_UNSIGNED_BYTE, useIt->data);
+		glTexImage2D(GL_TEXTURE_2D, 0, iformat, useIt->width ,useIt->height, 0,	glformat, GL_UNSIGNED_BYTE, useIt->data); CHECK_GL_ERR
 
 	if (resize)
 		DestroyBitmap(&rescaleBits);
@@ -303,13 +328,12 @@ static void swap_blocks(char *a, char *b, GLint type)
 		swap(x->alphas.rows[1], x->alphas.rows[2]);
 		swap(y->alphas.rows[0], y->alphas.rows[3]);
 		swap(y->alphas.rows[1], y->alphas.rows[2]);
-		
 		swap(x->colors.rows[0], x->colors.rows[3]);
 		swap(x->colors.rows[1], x->colors.rows[2]);
 		swap(y->colors.rows[0], y->colors.rows[3]);
 		swap(y->colors.rows[1], y->colors.rows[2]);
 	}
-	else
+	else if (type == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT)
 	{
 		DXT1Block * x = (DXT1Block *) a;
 		DXT1Block * y = (DXT1Block *) b;
@@ -318,6 +342,56 @@ static void swap_blocks(char *a, char *b, GLint type)
 		swap(x->rows[1], x->rows[2]);
 		swap(y->rows[0], y->rows[3]);
 		swap(y->rows[1], y->rows[2]);
+	}
+	else // BC4 or BC5
+	{
+		DXT5AlphaBlock * x = (DXT5AlphaBlock  *)a;
+		DXT5AlphaBlock * y = (DXT5AlphaBlock  *)b;
+		swap(*x, *y);
+		swap_12bit_idx(x->idx);
+		swap_12bit_idx(y->idx);
+		if (type == GL_COMPRESSED_SIGNED_RG_RGTC2)
+		{
+			++x; ++y;
+			swap(*x, *y);
+			swap_12bit_idx(x->idx);
+			swap_12bit_idx(y->idx);
+		}
+	}
+}
+
+static void swap_blocks(char *a, GLint type)
+{
+	if (type == GL_COMPRESSED_RGBA_S3TC_DXT5_EXT)
+	{
+		DXT5Block * x = (DXT5Block *)a;
+		swap_12bit_idx(x->alphas.idx);
+		swap(x->colors.rows[0], x->colors.rows[3]);
+		swap(x->colors.rows[1], x->colors.rows[2]);
+	}
+	else if (type == GL_COMPRESSED_RGBA_S3TC_DXT3_EXT)
+	{
+		DXT3Block * x = (DXT3Block *)a;
+		swap(x->alphas.rows[0], x->alphas.rows[3]);
+		swap(x->alphas.rows[1], x->alphas.rows[2]);
+		swap(x->colors.rows[0], x->colors.rows[3]);
+		swap(x->colors.rows[1], x->colors.rows[2]);
+	}
+	else if (type == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT)
+	{
+		DXT1Block * x = (DXT1Block *)a;
+		swap(x->rows[0], x->rows[3]);
+		swap(x->rows[1], x->rows[2]);
+	}
+	else // BC4 or BC5
+	{
+		DXT5AlphaBlock * x = (DXT5AlphaBlock  *)a;
+		swap_12bit_idx(x->idx);
+		if (type == GL_COMPRESSED_SIGNED_RG_RGTC2)
+		{
+			++x;
+			swap_12bit_idx(x->idx);
+		}
 	}
 }
 
@@ -337,24 +411,35 @@ bool	LoadTextureFromDDS(
 
 	if (strncmp(desc->dwMagic, "DDS ", 4) != 0) return false;
 	if((SWAP32(desc->dwSize)) != (sizeof(*desc) - sizeof(desc->dwMagic))) return false;
-	if(strncmp(desc->ddpfPixelFormat.dwFourCC, "DXT",3) != 0 ) return false;
 
-	GLenum glformat = 0;
+	GLenum glformat;
 	int	dds_blocksize;
-	switch(desc->ddpfPixelFormat.dwFourCC[3])
-	{
+
+	if (strncmp(desc->ddpfPixelFormat.dwFourCC, "DXT", 3) == 0)
+		switch (desc->ddpfPixelFormat.dwFourCC[3])
+		{
 		case '1':	dds_blocksize = 8;  glformat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;	break;
 		case '3':	dds_blocksize = 16; glformat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;	break;
 		case '5':	dds_blocksize = 16; glformat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;	break;
 		default: return false;
-	}
+		}
+	else if (gl_info.has_rgtc && strncmp(desc->ddpfPixelFormat.dwFourCC, "ATI", 3) == 0)
+		switch (desc->ddpfPixelFormat.dwFourCC[3])
+		{
+		case '1':	dds_blocksize = 8;  glformat = GL_COMPRESSED_RED_RGTC1;			break;
+		case '2':	dds_blocksize = 16; glformat = GL_COMPRESSED_SIGNED_RG_RGTC2; break; // for normal maps, some day
+		default: return false;
+		}
+	else
+		return false;
+
 	int mips = 0;
 	if(inFlags & tex_Mipmap && (SWAP32(desc->dwFlags)) & DDSD_MIPMAPCOUNT)
 		mips = SWAP32(desc->dwMipMapCount);
 	int x = SWAP32(desc->dwWidth);
 	int y = SWAP32(desc->dwHeight);
 
-	if (y != NextPowerOf2(y) || y < 8) return false;  // flipping code can only handle certain heights
+	if ((mips && y != NextPowerOf2(y)) || y % 8 != 0) return false;  // flipping code can only handle certain heights
 
 	if (outWidth) *outWidth = x;
 	if (outHeight) *outHeight = y;
@@ -363,22 +448,27 @@ bool	LoadTextureFromDDS(
 
 	glBindTexture(GL_TEXTURE_2D, in_tex_num);
 
-	int mips_sent = 0;
 	for (int level = 0; level <= mips; ++level)
 	{
-		int data_len = x * y / 16 * dds_blocksize;
+		int data_len = max(1 , (x * y) / 16) *  dds_blocksize;
 		if((data + data_len) > mem_end) return false;        // not enough data for mipmaps = broken dds !
 
 		// lossless flip image in Y-direction to match orientation of all other textures in XPtools/X-plane
-		// - which use the old MSFT DIB convention (0,0) == left bottom. But DXT is starting at the top.
+		// to match old MSFT DIB convention (0,0) == left bottom, but DXT starts at left top.
 		{
-			if (x < 4 || y < 8) break;      // swap algorithm can't deal with such small mipmaps. Nor do we really need them. 
-			int line_len = data_len / (y / 4);
-			int blocks_per_line = line_len / dds_blocksize;
+			int blocks_per_line = max(1, x / 4);
+			int line_len = blocks_per_line * dds_blocksize;
 			int swap_count = y / 4 / 2;
 			char * dds_line1 = data;
 			char * dds_line2 = data + data_len - line_len;
 
+//			printf("%dx%d %dx%d %d %d/%d\n", *outWidth, *outHeight, x, y, swap_count, level, mips);
+			if(swap_count == 0)
+				for (int i = 0; i < blocks_per_line; i++)
+				{
+					swap_blocks(dds_line1, glformat);
+					dds_line1 += dds_blocksize;
+				}
 			while (swap_count--)
 			{
 				for (int i = 0; i < blocks_per_line; i++)
@@ -391,15 +481,12 @@ bool	LoadTextureFromDDS(
 			}
 		}
 
-		glCompressedTexImage2D( GL_TEXTURE_2D, level, glformat, x, y, 0, data_len, data);
-		mips_sent++;
+		glCompressedTexImage2D( GL_TEXTURE_2D, level, glformat, x, y, 0, data_len, data); CHECK_GL_ERR
 
-		x >>= 1;
-		y >>= 1;
+		x = max(1, x >> 1);
+		y = max(1, y >> 1);
 		data += data_len;
 	}
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mips_sent - 1);
 
 	if (inFlags & tex_Linear)
 	{

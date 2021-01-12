@@ -58,9 +58,6 @@
 // TODO:
 // migrate all old stuff
 // wire dirty to obj persistence
-#if DEV
-#include "PerfUtils.h"
-#endif
 
 #include "WED_Globals.h"
 int gIsFeet;
@@ -173,7 +170,7 @@ void	WED_Document::Save(void)
 
 	enum {none,nobackup,both};
 	int stage = none;
-
+	
 	//Create the strings path.
 	//earth.wed.xml,
 	//earth.wed.bak.xml,
@@ -228,13 +225,14 @@ void	WED_Document::Save(void)
 	}
 	
 	//Create an xml file by opening the file located on the hard drive (windows)
-	//open a file for writing creating/nukeing if necissary
+	//open a file for writing creating/nukeing if neccessary
 
 	FILE * xml_file = fopen(xml.c_str(),"w");
 
 	if(xml_file == NULL)
 	{
-		DoUserAlert("Please check file path for errors or missing parts");
+		string msg = "Can not open '" + xml + "' for writing.";
+		DoUserAlert(msg.c_str());
 		return;
 	}
 
@@ -242,27 +240,23 @@ void	WED_Document::Save(void)
 		//If everything else has worked
 	if(ferrorErr == 0)
 	{
-#if DEV
-		StElapsedTime	etime("Save time");
-#endif
 		WriteXML(xml_file);
 	}
 	int fcloseErr = fclose(xml_file);
 	if(ferrorErr != 0 || fcloseErr != 0)
 	{
-		//This is the error handling switch
+		string msg =  "Error while writing '" + xml + "'";
 		switch(stage)
 		{
 			case none:
 				FILE_delete_file(xml.c_str(), false);
-				DoUserAlert("Please check file path for errors or missing parts");
 				break;
 			case nobackup:
 				//Delete's the bad save
 				FILE_delete_file(xml.c_str(), false);
 				//un-renames the old one
 				FILE_rename_file(bakXML.c_str(),xml.c_str());
-				DoUserAlert("Please check file path for errors or missing parts");
+				msg += " or creating backup '" + bakXML;
 				break;
 			case both:
 				//delete incomplete file
@@ -273,9 +267,11 @@ void	WED_Document::Save(void)
 
 				//un-rename earth.wed.bak.bak.xml to earth.wed.bak.xml
 				FILE_rename_file(tempBakBak.c_str(), bakXML.c_str());
-				DoUserAlert("Please check file path for errors or missing parts");
+				msg += " or renaming backups to '" + bakXML + "' or '" + tempBakBak;
 				break;
 		}
+		msg += "'.";
+		DoUserAlert(msg.c_str());
 	}	
 	else
 	{
@@ -304,9 +300,6 @@ void	WED_Document::Revert(void)
 	mUndo.__StartCommand("Revert from Saved.",__FILE__,__LINE__);
 
 	try {
-#if DEV
-		StElapsedTime	etime("Read time");
-#endif
 		WED_XMLReader	reader;
 		reader.PushHandler(this);
 		string fname(mFilePath);
@@ -315,11 +308,15 @@ void	WED_Document::Revert(void)
 
 		// First: try to IO the XML file.
 		bool xml_exists;
+		LOG_MSG("I/Doc reading XML from %s\n", fname.c_str());
+
 		string result = reader.ReadFile(fname.c_str(),&xml_exists);
 
 		if(xml_exists && !result.empty())
+		{
+			LOG_MSG("E/Doc Error reading XML %s",result.c_str());
 			WED_ThrowPrintf("Unable to open XML file: %s",result.c_str());
-
+		}
 		if(xml_exists)
 		{
 			mOnDisk=true;
@@ -593,7 +590,9 @@ void	WED_Document::WriteGlobalPrefs(void)
 	GUI_SetPrefString("preferences","OrthoExport",gOrthoExport ? "1" : "0");
 	
 	for (map<string,string>::iterator i = sGlobalPrefs.begin(); i != sGlobalPrefs.end(); ++i)
-		GUI_SetPrefString("doc_prefs", i->first.c_str(), i->second.c_str());
+		if(i->first != "doc/xml_compatibility")          // why NOT write that ? Cuz WED 2.0 ... 2.2 read that and if an PRE wed-2.0 document 
+			                                             // is opened - it uses this instead, resulting in false warnings
+			GUI_SetPrefString("doc_prefs", i->first.c_str(), i->second.c_str());
 }
 
 void		WED_Document::StartElement(

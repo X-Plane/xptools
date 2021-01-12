@@ -41,8 +41,6 @@ public:
 	
 	void		SetSceneryID(int new_id);
 	void		SetAirportType(int airport_type);
-	void		SetElevation(double elev);
-	void		SetHasATC(int has_atc);
 	void		SetICAO(const string& icao);
 
 	typedef std::pair<string,string> meta_data_entry;

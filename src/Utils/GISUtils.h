@@ -41,10 +41,12 @@ typedef	struct tiff TIFF;
 // Important: these are CENTER-PIXEL corners, e.g. where EXACTLY does the MIDDLE
 // of the CORNERS of the image go?  If the image is an area pixel WITHIN a tile,
 // these are going to seem to be a bit small for a tile!
-bool	FetchTIFFCorners(const char * inFileName, double corners[8], int& post_pos);
-//The the special default parameters at the end are used for when a GeoTIFF passed in does not have the correct width and height
-//For instance, a 1x1 GeoTiff inside a JPEG2000 where it has not scaled the projection correctly and you must use the JPEG2000's data
-bool	FetchTIFFCornersWithTIFF(TIFF * inTiff, double corners[8], int& post_pos, int width=0, int height=0);
+
+// Pass the pointer to the vector and get it filled with coordinates of evenly spaced points to perfectly warp/project 
+// the texture to the WED stereographic map. Also used for accurate placement of orthophoto subtextures upon import.
+
+bool	FetchTIFFCorners(const char * inFileName, double corners[8], int& post_pos, vector<Point2> * gcp=nullptr);
+bool	FetchTIFFCornersWithTIFF(TIFF * inTiff, double corners[8], int& post_pos, vector<Point2> * gcp=nullptr);
 
 // This routine converts UTM to lat/lon coordinates.  X and Y should be
 // in meters.  Zone should be positive 1-60 for north or -1-60 for south.
@@ -101,8 +103,6 @@ inline double round_by_parts_guess(double c, int parts)
 		return round_by_parts(c, parts  );	
 }
 
-
-
 void NorthHeading2VectorMeters(const Point2& ref, const Point2& p, double heading, Vector2& dir);
 double VectorMeters2NorthHeading(const Point2& ref, const Point2& p, const Vector2& dir);
 void NorthHeading2VectorDegs(const Point2& ref, const Point2& p, double heading, Vector2& dir);
@@ -114,15 +114,25 @@ void MetersToLLE(const Point2& ref, int count, Point2 * pts);
 Vector2 VectorLLToMeters(const Point2& ref, const Vector2& v);
 Vector2 VectorMetersToLL(const Point2& ref, const Vector2& v);
 
-
-
+// extend line have a a width 
 void	Quad_2to4(const Point2 ends[2], double width_mtr, Point2 corners[4]);
+
+// get centerline from wide line
 void	Quad_4to2(const Point2 corners[4], Point2 ends[2], double& width_mtr);
+
+// get box around center point
 void	Quad_1to4(const Point2& ctr, double heading, double len_mtr, double width_mtr, Point2 corners[4]);
+
+// get center from box, 0-1 is a side, 1-2 goes across the 'head'
 void	Quad_4to1(const Point2 corners[4], Point2& ctr, double& heading, double& len_mtr, double& width_mtr);
 
+// get center from segment
 void	Quad_2to1(const Point2 ends[2], Point2& ctr, double& heading, double& len_mtr);
+
+// get line from center point
 void	Quad_1to2(const Point2& ctr, double heading, double len_mtr, Point2 ends[2]);
+
+// get center from the diagonal of a width_mtr wide box
 void	Quad_diagto1(const Point2 ends[2], double width_mtr, Point2& ctr, double& heading, double& len_mtr, int swapped);
 
 void	Quad_MoveSide2(Point2 ends[2], double& width_mtr, int side, const Vector2& delta);

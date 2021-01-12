@@ -247,7 +247,7 @@ void Obj_SetNoDraped(void * ref)
 
 static ObjDrawFuncs10_t kFuncs  = { Obj_SetupPoly, Obj_SetupLine, Obj_SetupLight, Obj_SetupMovie, Obj_SetupPanel, Obj_TexCoord, Obj_TexCoordPointer, Obj_GetAnimParam, Obj_SetDraped, Obj_SetNoDraped };
 
-void draw_obj_at_ll(ITexMgr * tman, const XObj8 * o, const Point2& loc, float r, GUI_GraphState * g, WED_MapZoomerNew * zoomer)
+void draw_obj_at_ll(ITexMgr * tman, const XObj8 * o, const Point2& loc, float agl, float r, GUI_GraphState * g, WED_MapZoomerNew * zoomer)
 {
 	if (!o) return;
 	TexRef	ref = tman->LookupTexture(o->texture.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);			
@@ -256,14 +256,15 @@ void draw_obj_at_ll(ITexMgr * tman, const XObj8 * o, const Point2& loc, float r,
 	int id2 = ref2 ? tman->GetTexID(ref2) : 0;
 	g->SetTexUnits(1);
 	if(id1)g->BindTex(id1,0);
+	Point2 l = zoomer->LLToPixel(loc);
+	float ppm = zoomer->GetPPM();
+
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
-	Point2 l = zoomer->LLToPixel(loc);
-	glTranslatef(l.x(),l.y(),0.0);
-	float ppm = zoomer->GetPPM();
+	glTranslatef(l.x(), l.y(), agl * ppm);
 	glScalef(ppm,ppm,ppm);
 	glRotatef(90, 1,0,0);
-	glRotatef(r, 0, -1, 0);
+	glRotatef(r, 0,-1,0);
 	Obj_DrawStruct ds = { g, id1, id2 };
 	ObjDraw8(*o, 0, &kFuncs, &ds); 
 	glPopMatrix();
@@ -280,11 +281,103 @@ void draw_obj_at_xyz(ITexMgr * tman, const XObj8 * o, double x, double y, double
 	if(id1)g->BindTex(id1,0);
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
-
 	glTranslatef(x,y,z);
 	glRotatef(r, 0, -1, 0);
 	Obj_DrawStruct ds = { g, id1, id2 };
 	ObjDraw8(*o, 0, &kFuncs, &ds); 
+	glPopMatrix();
+}
+
+void draw_agp_at_xyz(ITexMgr * tman, const agp_t * agp, double x, double y, double z, float agl, float r, GUI_GraphState * g)
+{
+	if (!agp) return;
+
+	TexRef	ref = tman->LookupTexture(agp->base_tex.c_str(), true, tex_Linear | tex_Mipmap | tex_Compress_Ok | tex_Always_Pad);
+	int id1 = ref ? tman->GetTexID(ref) : 0;
+	if (id1) g->BindTex(id1, 0);
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glTranslatef(x, y, z);
+	glRotatef(r, 0, -1, 0);
+	glColor3f(1, 1, 1);
+	if (!agp->tile.empty() && !agp->hide_tiles)
+	{
+		glDisable(GL_CULL_FACE);
+		glBegin(GL_TRIANGLE_FAN);
+		for (int n = 0; n < agp->tile.size(); n += 4)
+		{
+			glTexCoord2f(agp->tile[n + 2], agp->tile[n + 3]);
+			glVertex3f(agp->tile[n], 0, -agp->tile[n + 1]);
+		}
+		glEnd();
+		glEnable(GL_CULL_FACE);
+	}
+	for (auto& o : agp->objs)
+		if (o.scp_step > 0.0)
+		{
+			if (agl >= o.scp_min && agl <= o.scp_max)
+				agl = roundf(agl / o.scp_step) * o.scp_step;
+			else
+				agl = 0.0;
+			draw_obj_at_xyz(tman, o.obj, o.x, agl, -o.y, o.r, g);
+		}
+		else
+			draw_obj_at_xyz(tman, o.obj, o.x, o.z, -o.y, o.r, g);
+
+	for (auto& f : agp->facs)
+		draw_facade(tman, nullptr, f.name, *(f.fac), f.locs, f.walls, f.height, g, true);
+	glPopMatrix();
+}
+
+void draw_agp_at_ll(ITexMgr * tman, const agp_t * agp, const Point2& loc, float agl, float r, GUI_GraphState * g, WED_MapZoomerNew * zoomer, int preview_level)
+{
+	if (!agp) return;
+	Point2 pix = zoomer->LLToPixel(loc);
+	float ppm = zoomer->GetPPM();
+
+	TexRef	ref = tman->LookupTexture(agp->base_tex.c_str(), true, tex_Linear | tex_Mipmap | tex_Compress_Ok | tex_Always_Pad);
+	int id1 = ref ? tman->GetTexID(ref) : 0;
+	if (id1) g->BindTex(id1, 0);
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glTranslatef(pix.x(), pix.y(), 0);
+	glScalef(ppm, ppm, ppm);
+	glRotatef(90, 1, 0, 0);
+	glRotatef(r, 0, -1, 0);
+	glColor3f(1, 1, 1);
+	if (!agp->tile.empty() && !agp->hide_tiles)
+	{
+		glDisable(GL_CULL_FACE);
+		glBegin(GL_TRIANGLE_FAN);
+		for (int n = 0; n < agp->tile.size(); n += 4)
+		{
+			glTexCoord2f(agp->tile[n + 2], agp->tile[n + 3]);
+			glVertex3f(agp->tile[n], 0, -agp->tile[n + 1]);
+		}
+		glEnd();
+		glEnable(GL_CULL_FACE);
+	}
+	for (auto& o : agp->objs)
+	{
+		if ((o.show_lo + o.show_hi) / 2 <= preview_level)
+		if (ppm * max(o.obj->xyz_max[0] - o.obj->xyz_min[0], o.obj->xyz_max[2] - o.obj->xyz_min[2]) > MIN_PIXELS_PREVIEW)
+		{
+			if (o.scp_step > 0.0)
+			{
+				if (agl >= o.scp_min && agl <= o.scp_max)
+					agl = roundf(agl / o.scp_step) * o.scp_step;
+				else
+					agl = 0.0;
+				draw_obj_at_xyz(tman, o.obj, o.x, agl, -o.y, o.r, g);
+			}
+			else
+				draw_obj_at_xyz(tman, o.obj, o.x, o.z, -o.y, o.r, g);
+		}
+	}
+	for (auto& f : agp->facs)
+		draw_facade(tman, nullptr, f.name, *(f.fac), f.locs, f.walls, f.height, g, true, ppm);
 	glPopMatrix();
 }
 
@@ -558,7 +651,35 @@ static void draw_line_preview(const vector<Point2>& pts, const lin_info_t& linfo
 	double uv_dt      =  (linfo.s2[l]-linfo.s1[l]) / 2.0 * linfo.scale_s / linfo.scale_t; // correction factor for 'slanted' texture ends
 	double uv_t2      = 0.0;                                                              // accumulator for texture t, so each starts where the previous ended
 	bool is_ring = pts.front() == pts.back();
+	
+	double startcap_t = 0.0;
+	double endcap_t = 0.0;
+	int start_of_endcap = pts.size();
+	double endcap_frac_t = 0.0;
+	
+	if(!is_ring)
+	{
+		if(linfo.start_caps.size() > l)
+			startcap_t = linfo.start_caps[l].t2 - linfo.start_caps[l].t1;
 
+		if(linfo.end_caps.size() > l)
+		{
+			endcap_t = linfo.end_caps[l].t2 - linfo.end_caps[l].t1;
+			start_of_endcap = pts.size()-2;
+			while(start_of_endcap > 0)
+			{
+				double prev_t = endcap_frac_t;
+				endcap_frac_t += sqrt(Segment2(pts[start_of_endcap], pts[start_of_endcap+1]).squared_length()) / PPM / linfo.scale_t;
+				if(endcap_frac_t > endcap_t)
+				{
+					endcap_frac_t = endcap_t - prev_t;
+					break;
+				}
+				start_of_endcap--;
+			}
+		}
+	}
+	
 	Vector2	dir2(pts[1],pts[0]);
 	dir2.normalize();
 	if(is_ring)
@@ -568,12 +689,13 @@ static void draw_line_preview(const vector<Point2>& pts, const lin_info_t& linfo
 		dir2 = (dir2 + dir_last) / (1.0 + dir_last.dot(dir2));
 	}
 	dir2 = dir2.perpendicular_ccw();   // direction perpendicular to previous segment
-
+	
+	
 	for (int j = 0; j < pts.size()-1; ++j)
 	{
 		Vector2	dir1(dir2);
 		Vector2 dir = Vector2(pts[j+1],pts[j]);
-		dir.normalize();                    // direction of this segment
+		double len = dir.normalize();        // direction of this segment
 		if(j < pts.size()-2+is_ring)
 		{
 			int n = j < pts.size()-2 ? j+2 : 1;
@@ -585,7 +707,7 @@ static void draw_line_preview(const vector<Point2>& pts, const lin_info_t& linfo
 		dir2 = dir2.perpendicular_ccw();
 
 		double uv_t1(uv_t2);
-		uv_t2 += sqrt(Vector2(pts[j+1], pts[j]).squared_length()) / PPM / linfo.scale_t;
+		uv_t2 += len / PPM / linfo.scale_t;
 		double d1 = uv_dt * dir.dot(dir1);
 		double d2 = uv_dt * dir.dot(dir2);
 		
@@ -594,44 +716,49 @@ static void draw_line_preview(const vector<Point2>& pts, const lin_info_t& linfo
 		Point2 end_left   (pts[j+1] + dir2 * (offset - half_width));
 		Point2 end_right  (pts[j+1] + dir2 * (offset + half_width));
 		
-		if(!is_ring)
+		if(startcap_t > 0.0)
 		{
-			if(j == 0 && linfo.start_caps.size() > l)
-			{
-				double len = (linfo.start_caps[l].t2 - linfo.start_caps[l].t1) * linfo.scale_t;
-				glBegin(GL_QUADS);
-					glTexCoord2f(linfo.start_caps[l].s1,linfo.start_caps[l].t1); glVertex2(start_left);
-					glTexCoord2f(linfo.start_caps[l].s2,linfo.start_caps[l].t1); glVertex2(start_right);
-					start_left  -= dir * len * PPM;
-					start_right -= dir * len * PPM;
-					uv_t2 -= (linfo.start_caps[l].t2 - linfo.start_caps[l].t1);
-					glTexCoord2f(linfo.start_caps[l].s2,linfo.start_caps[l].t2); glVertex2(start_right);
-					glTexCoord2f(linfo.start_caps[l].s1,linfo.start_caps[l].t2); glVertex2(start_left);
-				glEnd();
-			}
-			if(j == pts.size()-2 && linfo.end_caps.size() > l)
-			{
-				double len = (linfo.end_caps[l].t2 - linfo.end_caps[l].t1) * linfo.scale_t;
-				glBegin(GL_QUADS);
-					glTexCoord2f(linfo.end_caps[l].s2,linfo.end_caps[l].t2); glVertex2(end_right);
-					glTexCoord2f(linfo.end_caps[l].s1,linfo.end_caps[l].t2); glVertex2(end_left);
-					end_left  += dir * len * PPM;
-					end_right += dir * len * PPM;
-					uv_t2 -= (linfo.end_caps[l].t2 - linfo.end_caps[l].t1);
-					glTexCoord2f(linfo.end_caps[l].s1,linfo.end_caps[l].t1); glVertex2(end_left);
-					glTexCoord2f(linfo.end_caps[l].s2,linfo.end_caps[l].t1); glVertex2(end_right);
-				glEnd();
-			}
+			double cap_len_t = linfo.start_caps[l].t2 - linfo.start_caps[l].t1;
+			double t = min(startcap_t, uv_t2 - uv_t1);
+			glBegin(GL_QUADS);
+				glTexCoord2f(linfo.start_caps[l].s1,linfo.start_caps[l].t2-startcap_t); glVertex2(start_left);
+				glTexCoord2f(linfo.start_caps[l].s2,linfo.start_caps[l].t2-startcap_t); glVertex2(start_right);
+				start_left  = Segment2(start_left, end_left).midpoint(t/(uv_t2 - uv_t1));
+				start_right = Segment2(start_right, end_right).midpoint(t/(uv_t2 - uv_t1));
+				startcap_t -= t;
+				glTexCoord2f(linfo.start_caps[l].s2,linfo.start_caps[l].t2-startcap_t); glVertex2(start_right);
+				glTexCoord2f(linfo.start_caps[l].s1,linfo.start_caps[l].t2-startcap_t); glVertex2(start_left);
+			glEnd();
+			if(startcap_t > 0.0) continue;
+			uv_t1 = 0.0;
+			uv_t2 -= cap_len_t;
+		}
+		
+		if(j >= start_of_endcap)
+		{
+			endcap_frac_t = min(endcap_frac_t,uv_t2 - uv_t1);
+			glBegin(GL_QUADS);
+				glTexCoord2f(linfo.end_caps[l].s2,linfo.end_caps[l].t2-endcap_t + endcap_frac_t); glVertex2(end_right);
+				glTexCoord2f(linfo.end_caps[l].s1,linfo.end_caps[l].t2-endcap_t + endcap_frac_t); glVertex2(end_left);
+				end_left  = Segment2(end_left, start_left).midpoint(endcap_frac_t/(uv_t2 - uv_t1));
+				end_right = Segment2(end_right, start_right).midpoint(endcap_frac_t/(uv_t2 - uv_t1));
+				glTexCoord2f(linfo.end_caps[l].s1,linfo.end_caps[l].t2-endcap_t); glVertex2(end_left);
+				glTexCoord2f(linfo.end_caps[l].s2,linfo.end_caps[l].t2-endcap_t); glVertex2(end_right);
+			glEnd();
+			endcap_t -= endcap_frac_t;
+			endcap_frac_t = 1.0;           // cram as much endcap as it gets into the next segment
+			if(j > start_of_endcap) continue;
 		}
 		
 		if(j == pts.size()-2 && linfo.align > 0) uv_t2 = round_by_parts(uv_t2, linfo.align);
-		
+
 		glBegin(GL_QUADS);
 			glTexCoord2f(linfo.s1[l],uv_t1 + d1); glVertex2(start_left);
 			glTexCoord2f(linfo.s2[l],uv_t1 - d1); glVertex2(start_right);
 			glTexCoord2f(linfo.s2[l],uv_t2 - d2); glVertex2(end_right);
 			glTexCoord2f(linfo.s1[l],uv_t2 + d2); glVertex2(end_left);
 		glEnd();
+
 	}
 }
 
@@ -748,7 +875,7 @@ static void draw_string_preview(const vector<Point2>& pts, double& d0, double ds
 			while(obj_this_seg >= 0)
 			{
 				if (cur_pos.x() < E && cur_pos.x() > W && cur_pos.y() > S && cur_pos.y() < N)
-					draw_obj_at_ll(tman, obj, zoomer->PixelToLL(cur_pos+off), hdg, g, zoomer);
+					draw_obj_at_ll(tman, obj, zoomer->PixelToLL(cur_pos+off), 0.0, hdg, g, zoomer);
 				cur_pos += dir * (ds / len_m);
 				obj_this_seg--;
 			}
@@ -975,7 +1102,7 @@ struct	preview_facade : public preview_polygon {
 		IGISPointSequence * ps = fac->GetOuterRing();
 		glColor4f(1,1,1,1);
 		
-		if(fac->HasCustomWalls())
+		if(1) // fac->HasCustomWalls())
 		{
 			ITexMgr * tman = WED_GetTexMgr(resolver);
 			Polygon2 pts;
@@ -1006,8 +1133,13 @@ struct	preview_facade : public preview_polygon {
 					pts.push_back(Point2(v.dx, -v.dy));
 				}
 				
-				ps->GetSide(gis_Param,i,b);
-				choices.push_back(b.p1.x());
+				if(fac->HasCustomWalls())
+				{
+					ps->GetSide(gis_Param, i, b);
+					choices.push_back(b.p1.x());
+				}
+				else
+					choices.push_back(0);   // we skip the clever geometry dependent wall auto-wall selection that XP does. Sorry.
 				
 				if(i == n-1 && !ps->IsClosed())
 					choices.push_back(0);
@@ -1128,68 +1260,32 @@ struct	preview_object : public WED_PreviewItem {
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
 	{
 		WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
-		ITexMgr *	tman = WED_GetTexMgr(resolver);
-		ILibrarian * lmgr = WED_GetLibrarian(resolver);
-		string vpath;
+		ITexMgr *		tman = WED_GetTexMgr(resolver);
+		ILibrarian *	lmgr = WED_GetLibrarian(resolver);
+		string			vpath;
+		const XObj8 *	o;
+		const agp_t *	agp;
+		Point2			loc;
 
 		obj->GetResource(vpath);
-		const XObj8 * o;
-		const agp_t * agp;
-		if(rmgr->GetObj(vpath,o))
+		obj->GetLocation(gis_Geo, loc);
+
+		g->SetState(false, 1, false, false, true, true, true);
+		glColor4f(1, 1, 1, 1);
+
+		float agl = obj->HasCustomMSL() > 1 ? obj->GetCustomMSL() : 0.0;
+
+		if(rmgr->GetObj(vpath, o))
+			draw_obj_at_ll(tman,   o, loc, agl, obj->GetHeading(), g, zoomer);
+		else if (rmgr->GetAGP(vpath, agp))
 		{
-			g->SetState(false,1,false,false,true,true,true);
-			glColor3f(1,1,1);
-			Point2 loc;
-			obj->GetLocation(gis_Geo,loc);
-			draw_obj_at_ll(tman, o, loc, obj->GetHeading(), g, zoomer);
-		}
-		else if (rmgr->GetAGP(vpath,agp))
-		{
-			Point2 loc;
-			obj->GetLocation(gis_Geo,loc);
-			g->SetState(false,1,false,true,true,true,true);
-			TexRef	ref = tman->LookupTexture(agp->base_tex.c_str() ,true, tex_Linear|tex_Mipmap|tex_Compress_Ok|tex_Always_Pad);
-			int id1 = ref  ? tman->GetTexID(ref ) : 0;
-			if(id1)g->BindTex(id1,0);
-			glMatrixMode(GL_MODELVIEW);
-			glPushMatrix();
-			loc = zoomer->LLToPixel(loc);
-			float r = obj->GetHeading();
-			glTranslatef(loc.x(), loc.y(), 0);
-			float ppm = zoomer->GetPPM();
-			glScalef(ppm, ppm, ppm);
-			glRotatef(90, 1, 0 ,0);
-			glRotatef(r, 0, -1, 0);
-			glColor3f(1, 1, 1);
-			if(!agp->tile.empty() && !agp->hide_tiles)
-			{
-				glDisable(GL_CULL_FACE);
-				glBegin(GL_TRIANGLE_FAN);
-				for(int n = 0; n < agp->tile.size(); n += 4)
-				{
-					glTexCoord2f(agp->tile[n+2],agp->tile[n+3]);
-					glVertex3f(agp->tile[n],0,-agp->tile[n+1]);
-				}
-				glEnd();
-				glEnable(GL_CULL_FACE);
-			}
-			for(auto& o : agp->objs)
-			{
-				if((o.show_lo + o.show_hi)/2 <= preview_level)
-					if(ppm * max(o.obj->xyz_max[0] - o.obj->xyz_min[0], o.obj->xyz_max[2] - o.obj->xyz_min[2]) > MIN_PIXELS_PREVIEW)
-					{
-						draw_obj_at_xyz(tman, o.obj, o.x,0,-o.y,o.r, g);
-					}
-			}
-			glPopMatrix();
+			draw_agp_at_ll(tman, agp, loc, agl, obj->GetHeading(), g, zoomer, preview_level);
 		}
 		else
 		{
-			Point2 l;
-			obj->GetLocation(gis_Geo,l);
-			l = zoomer->LLToPixel(l);
+			loc = zoomer->LLToPixel(loc);
 			glColor3f(1,0,0);
-			GUI_PlotIcon(g,"map_missing_obj.png", l.x(),l.y(),0,1.0);
+			GUI_PlotIcon(g,"map_missing_obj.png", loc.x(),loc.y(), 0, 1.0);
 		}
 	}
 };
@@ -1230,7 +1326,7 @@ struct	preview_truck : public WED_PreviewItem {
 			Point2 loc;
 			trk->GetLocation(gis_Geo,loc);
 			double trk_heading = trk->GetHeading();
-			draw_obj_at_ll(tman, o1, loc, trk_heading, g, zoomer);
+			draw_obj_at_ll(tman, o1, loc, 0.0, trk_heading, g, zoomer);
 
 			if(trk->GetTruckType() == atc_ServiceTruck_Baggage_Train)
 			{
@@ -1245,7 +1341,7 @@ struct	preview_truck : public WED_PreviewItem {
 					for(int c = 0; c < trk->GetNumberOfCars(); ++c)
 					{
 						loc -= (llv * gap);
-						draw_obj_at_ll(tman, o2, loc, trk_heading, g, zoomer);
+						draw_obj_at_ll(tman, o2, loc, 0.0, trk_heading, g, zoomer);
 						gap = 3.598;
 					}
 				}
@@ -1261,7 +1357,7 @@ struct	preview_truck : public WED_PreviewItem {
 					Vector2 llv = VectorMetersToLL(loc, dirv);
 
 					loc -= (llv * gap);
-					draw_obj_at_ll(tman, o2, loc, trk_heading, g, zoomer);
+					draw_obj_at_ll(tman, o2, loc, 0.0, trk_heading, g, zoomer);
 				}
 			}
 		}
@@ -1315,9 +1411,9 @@ struct	preview_light : public WED_PreviewItem {
 					dirv = VectorMetersToLL(light.location,dirv);
 					
 					light.location -= dirv;
-					draw_obj_at_ll(tman, o, light.location, light.heading, g, zoomer);
+					draw_obj_at_ll(tman, o, light.location, 0.0, light.heading, g, zoomer);
 					light.location += dirv * 2.0;
-					draw_obj_at_ll(tman, o, light.location, light.heading, g, zoomer);
+					draw_obj_at_ll(tman, o, light.location, 0.0, light.heading, g, zoomer);
 					break;
 				}
 				case apt_gls_papi_left:
@@ -1331,13 +1427,13 @@ struct	preview_light : public WED_PreviewItem {
 					light.location -= dirv * 1.5;
 					for(int n = 0; n < 4; n++)
 					{
-						draw_obj_at_ll(tman, o, light.location, light.heading, g, zoomer);
+						draw_obj_at_ll(tman, o, light.location, 0.0, light.heading, g, zoomer);
 						light.location += dirv;
 					}
 					break;
 				}
 				default:
-					draw_obj_at_ll(tman, o, light.location, light.heading, g, zoomer);
+					draw_obj_at_ll(tman, o, light.location, 0.0, light.heading, g, zoomer);
 			}
 
 		}
