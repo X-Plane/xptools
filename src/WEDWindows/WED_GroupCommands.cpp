@@ -1159,10 +1159,13 @@ set<WED_GISEdge *> WED_do_select_crossing(const vector<WED_GISEdge *>& edges , B
 	// Ben says: yes this totally sucks - replace it someday?
 	for (int i = 0; i < edges.size(); ++i)
 	{
+		Bezier2 b1, b2;
 		IGISEdge * ii = edges[i];
 		DebugAssert(ii);
 		ii->GetBounds(gis_Geo,edge_bounds);
 		if(!cull_bounds.is_empty() && !cull_bounds.overlap(edge_bounds)) continue;
+
+		bool isb1 = ii->GetSide(gis_Geo, 0, b1);
 
 		for (int j = i + 1; j < edges.size(); ++j)
 		{
@@ -1175,10 +1178,7 @@ set<WED_GISEdge *> WED_do_select_crossing(const vector<WED_GISEdge *>& edges , B
 
 			if(!(ii->GetGISSubtype() == jj->GetGISSubtype())) continue;
 
-			Bezier2 b1, b2;
-			bool isb1, isb2;
-
-			isb2 = jj->GetSide(gis_Geo, 0, b2);
+			bool isb2 = jj->GetSide(gis_Geo, 0, b2);
 
 			if (isb1 || isb2)
 			{   // should never get here, as edges (used for ATC routes only) are not supposed to have bezier segments
