@@ -169,8 +169,8 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	mTools.push_back(					NULL);
 	mTools.push_back(					NULL);
 
-	mTools.push_back(					NULL); // icon for .ags/.agb placement
 	mTools.push_back(					NULL); // icon for JetWay placement
+	mTools.push_back(					NULL); // icon for .ags/.agb placement
 
 	mTools.push_back(					new WED_CreatePointTool("Truck Parking", mMap, mMap, resolver, archive, create_TruckParking));
 	mTools.push_back(					new WED_CreatePointTool("Truck Destination", mMap, mMap, resolver, archive, create_TruckDestination));
