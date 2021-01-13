@@ -1114,7 +1114,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 {
 	handle_scrapers(tman, rman, vpath, info, footprint, fac_height, g, camera);
 
-	TexRef	tRef = tman->LookupTexture(info.wall_tex.c_str() ,true, tex_Compress_Ok | tex_Wrap | tex_Mipmap);
+	TexRef	tRef = tman->LookupTexture(info.wall_tex ,true, tex_Compress_Ok | tex_Wrap | tex_Mipmap);
 	g->SetTexUnits(1);
 	g->BindTex(tRef  ? tman->GetTexID(tRef) : 0, 0);
 	
@@ -1156,7 +1156,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 
 	if (info.has_roof) // && want_roof
 	{
-		tRef = tman->LookupTexture(info.roof_tex.c_str() ,true, tex_Wrap | tex_Compress_Ok | tex_Mipmap);
+		tRef = tman->LookupTexture(info.roof_tex ,true, tex_Wrap | tex_Compress_Ok | tex_Mipmap);
 		g->BindTex(tRef ? tman->GetTexID(tRef) : 0, 0);
 
 		// all facdes are drawn cw (!)

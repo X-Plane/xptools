@@ -63,12 +63,12 @@ void 		WED_TexMgr::DropTexture(const char * path)
 	}
 }
 
-TexRef		WED_TexMgr::LookupTexture(const char * path, bool is_absolute, int flags)
+TexRef		WED_TexMgr::LookupTexture(const std::string& path, bool is_absolute, int flags)
 {
 	TexMap::iterator i = mTexes.find(path);
 	if (i == mTexes.end())
 	{
-		return LoadTexture(path, is_absolute,flags);
+		return LoadTexture(path, is_absolute, flags);
 	}
 	return i->second;
 }
@@ -96,7 +96,7 @@ void		WED_TexMgr::GetTexInfo(
 	if (org_y) *org_y = i->org_y;
 }
 
-WED_TexMgr::TexInfo *	WED_TexMgr::LoadTexture(const char * path, bool is_absolute, int flags)
+WED_TexMgr::TexInfo *	WED_TexMgr::LoadTexture(const std::string& path, bool is_absolute, int flags)
 {
 	string fpath(is_absolute ? path : gPackageMgr->ComputePath(mPackage, path));
 	TexInfo * inf = NULL;

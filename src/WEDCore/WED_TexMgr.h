@@ -32,7 +32,7 @@ public:
 						 WED_TexMgr(const string& package);
 	virtual				~WED_TexMgr();
 
-	virtual	TexRef		LookupTexture(const char * path, bool is_absolute, int flags);
+	virtual	TexRef		LookupTexture(const std::string& path, bool is_absolute, int flags);
 	virtual void		DropTexture(const char * path);
 
 	virtual	int			GetTexID(TexRef ref);
@@ -63,7 +63,7 @@ private:
 
 	string	mPackage;
 
-	TexInfo *	LoadTexture(const char * path, bool is_absolute, int flags);
+	TexInfo *	LoadTexture(const std::string& path, bool is_absolute, int flags);
 
 };
 

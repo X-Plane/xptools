@@ -157,7 +157,7 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 
 		if(mResMgr->GetPol(mRes,pol))
 		{
-			TexRef	tref = mTexMgr->LookupTexture(pol->base_tex.c_str(), true, pol->wrap ? (tex_Compress_Ok | tex_Wrap) : tex_Compress_Ok);
+			TexRef	tref = mTexMgr->LookupTexture(pol->base_tex, true, pol->wrap ? (tex_Compress_Ok | tex_Wrap) : tex_Compress_Ok);
 			if (tref)
 			{
 				mTexMgr->GetTexInfo(tref, &tex_x, &tex_y, NULL, NULL, NULL, NULL);
@@ -443,7 +443,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 		case res_Polygon:
 			if(mResMgr->GetPol(mRes,pol))
 			{
-				TexRef	tref = mTexMgr->LookupTexture(pol->base_tex.c_str(),true, pol->wrap ? (tex_Compress_Ok|tex_Wrap) : tex_Compress_Ok);
+				TexRef	tref = mTexMgr->LookupTexture(pol->base_tex,true, pol->wrap ? (tex_Compress_Ok|tex_Wrap) : tex_Compress_Ok);
 				if(tref != NULL)
 				{
 					int tex_id = mTexMgr->GetTexID(tref);
@@ -498,7 +498,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 		case res_Line:
 			if(mResMgr->GetLin(mRes,lin))
 			{
-				TexRef	tref = mTexMgr->LookupTexture(lin->base_tex.c_str(),true, tex_Compress_Ok);
+				TexRef	tref = mTexMgr->LookupTexture(lin->base_tex,true, tex_Compress_Ok);
 				if(tref != NULL)
 				{
 					int tex_id = mTexMgr->GetTexID(tref);

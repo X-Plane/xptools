@@ -153,7 +153,7 @@ static bool setup_taxi_texture(int surface_code, double heading, const Point2& c
 static bool setup_pol_texture(ITexMgr * tman, const pol_info_t& pol, double heading, bool no_proj, const Point2& centroid, GUI_GraphState * g,
 							const WED_MapProjection& projection, float alpha, bool isAbsPath = true)
 {
-	TexRef	ref = tman->LookupTexture(pol.base_tex.c_str(),true, pol.wrap ? (tex_Compress_Ok|tex_Wrap|tex_Always_Pad) : tex_Compress_Ok|tex_Always_Pad);
+	TexRef	ref = tman->LookupTexture(pol.base_tex,true, pol.wrap ? (tex_Compress_Ok|tex_Wrap|tex_Always_Pad) : tex_Compress_Ok|tex_Always_Pad);
 	if(ref == NULL) return false;
 	int tex_id = tman->GetTexID(ref);
 
@@ -254,8 +254,8 @@ static ObjDrawFuncs10_t kFuncs  = { Obj_SetupPoly, Obj_SetupLine, Obj_SetupLight
 void draw_obj_at_ll(ITexMgr * tman, const XObj8 * o, const Point2& loc, float agl, float r, GUI_GraphState * g, const WED_MapProjection& projection, WED_Camera & camera)
 {
 	if (!o) return;
-	TexRef	ref = tman->LookupTexture(o->texture.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);			
-	TexRef	ref2 = o->texture_draped.empty() ? ref : tman->LookupTexture(o->texture_draped.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);
+	TexRef	ref = tman->LookupTexture(o->texture ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);			
+	TexRef	ref2 = o->texture_draped.empty() ? ref : tman->LookupTexture(o->texture_draped ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);
 	int id1 = ref  ? tman->GetTexID(ref ) : 0;
 	int id2 = ref2 ? tman->GetTexID(ref2) : 0;
 	g->SetTexUnits(1);
@@ -276,8 +276,8 @@ void draw_obj_at_ll(ITexMgr * tman, const XObj8 * o, const Point2& loc, float ag
 void draw_obj_at_xyz(ITexMgr * tman, const XObj8 * o, double x, double y, double z, float r, GUI_GraphState * g, WED_Camera& camera)
 {
 	if (!o) return;
-	TexRef	ref = tman->LookupTexture(o->texture.c_str(), true, tex_Wrap | tex_Compress_Ok | tex_Always_Pad);
-	TexRef	ref2 = o->texture_draped.empty() ? ref : tman->LookupTexture(o->texture_draped.c_str(), true, tex_Wrap | tex_Compress_Ok | tex_Always_Pad);
+	TexRef	ref = tman->LookupTexture(o->texture, true, tex_Wrap | tex_Compress_Ok | tex_Always_Pad);
+	TexRef	ref2 = o->texture_draped.empty() ? ref : tman->LookupTexture(o->texture_draped, true, tex_Wrap | tex_Compress_Ok | tex_Always_Pad);
 	int id1 = ref ? tman->GetTexID(ref) : 0;
 	int id2 = ref2 ? tman->GetTexID(ref2) : 0;
 	g->SetTexUnits(1);
@@ -295,7 +295,7 @@ void draw_agp_at_xyz(ITexMgr * tman, const agp_t * agp, double x, double y, doub
 {
 	if (!agp) return;
 
-	TexRef	ref = tman->LookupTexture(agp->base_tex.c_str(), true, tex_Linear | tex_Mipmap | tex_Compress_Ok | tex_Always_Pad);
+	TexRef	ref = tman->LookupTexture(agp->base_tex, true, tex_Linear | tex_Mipmap | tex_Compress_Ok | tex_Always_Pad);
 	int id1 = ref ? tman->GetTexID(ref) : 0;
 	if (id1) g->BindTex(id1, 0);
 
@@ -338,7 +338,7 @@ void draw_agp_at_ll(ITexMgr * tman, const agp_t * agp, const Point2& loc, float 
 	Point2 pix = projection.LLToXY(loc);
 	float ppm = projection.XYUnitsPerMeter();
 
-	TexRef	ref = tman->LookupTexture(agp->base_tex.c_str(), true, tex_Linear | tex_Mipmap | tex_Compress_Ok | tex_Always_Pad);
+	TexRef	ref = tman->LookupTexture(agp->base_tex, true, tex_Linear | tex_Mipmap | tex_Compress_Ok | tex_Always_Pad);
 	int id1 = ref ? tman->GetTexID(ref) : 0;
 	if (id1) g->BindTex(id1, 0);
 
@@ -781,7 +781,7 @@ struct	preview_line : WED_PreviewItem {
 		if (!rmgr->GetLin(vpath,linfo)) return;
 
 		ITexMgr *	tman = WED_GetTexMgr(resolver);
-		TexRef tref = tman->LookupTexture(linfo->base_tex.c_str(),true,tex_Compress_Ok);
+		TexRef tref = tman->LookupTexture(linfo->base_tex,true,tex_Compress_Ok);
 		int tex_id = 0;
 		if(tref) tex_id = tman->GetTexID(tref);
 
@@ -978,7 +978,7 @@ struct	preview_airportlines : WED_PreviewItem {
 			if (lmgr->GetLineVpath(t, vpath))
 				if (rmgr->GetLin(vpath, linfo))
 				{
-					TexRef tref = tman->LookupTexture(linfo->base_tex.c_str(),true,tex_Compress_Ok);
+					TexRef tref = tman->LookupTexture(linfo->base_tex,true,tex_Compress_Ok);
 					if(tref) tex_id = tman->GetTexID(tref);
 				}
 			

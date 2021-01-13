@@ -26,13 +26,15 @@
 
 #include "IBase.h"
 
+#include <string>
+
 typedef	void *	TexRef;
 
 class	ITexMgr : public virtual IBase {
 public:
 
-	virtual	TexRef		LookupTexture(const char * path, bool is_absolute, int flags)=0;
-	virtual	void 		DropTexture(const char * path)=0;
+	virtual	TexRef		LookupTexture(const std::string& path, bool is_absolute, int flags) = 0;
+	virtual	void 		DropTexture(const char * path) = 0;
 
 	virtual	int			GetTexID(TexRef ref)=0;
 	virtual	void		GetTexInfo(

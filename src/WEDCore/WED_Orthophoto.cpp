@@ -184,7 +184,7 @@ void	WED_MakeOrthos(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 				if (rng0)
 				{
 					ITexMgr *	tman = WED_GetTexMgr(inResolver);
-					TexRef tref = tman->LookupTexture(img_path.c_str(), false, tex_Compress_Ok|tex_Linear);
+					TexRef tref = tman->LookupTexture(img_path, false, tex_Compress_Ok|tex_Linear);
 
 					if(tref != NULL)
 					{
