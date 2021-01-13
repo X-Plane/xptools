@@ -14,6 +14,8 @@ menu to view it online.
 CHANGE HISTORY
 
 WED 2.4.0
+   Bug Fix:
+   - validate ICAO_Code meta tag to meet ICAO nomenclature
    Features:
    - use native secure internet connectivity on all operating systems
    - show 3D preview for beacons, windsocks
