@@ -173,12 +173,12 @@ int XWin::handle(int e)
 		if( mMenuBar->callback() )
 		if( e == FL_PUSH || (e == FL_SHORTCUT && want_menu_update ) )
 		{
-			 mMenuBar->do_callback(); //this updates the menus
+			mMenuBar->do_callback(); //this updates the menus
 
 			//mroe: sometimes the SHORTCUT is not handled by the menu when it first occurs.
 			//We get this sc event up to three times. To avoid updating the whole menu every time,
 			//the update is skipped until the shortcut is been handled or a key is released.
-			 if(e == FL_SHORTCUT) want_menu_update = 0;
+			if(e == FL_SHORTCUT) want_menu_update = 0;
 		}
 
 		int result = mMenuBar->handle(e);

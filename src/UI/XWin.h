@@ -275,10 +275,10 @@ protected:
     double	mTimer;
 	POINT	mMouse;
 	bool	mUpdateCallbackActive;
-
+	Fl_Menu_Bar * mMenuBar;
 
 public:
-	Fl_Menu_Bar * mMenuBar;
+
 	void ClearMenus(const Fl_Menu_Item *  menu);
 	int GetMenuBarHeight(void);
 	virtual void ReceiveFilesFromDrag(const string& inFiles);
