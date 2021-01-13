@@ -1298,6 +1298,10 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 						new_pts.push_back(Point2( (dirVec.dot(Vector2(p))   + dirDot)  / info.roof_scale_s,
 						                           (perpVec.dot(Vector2(p)) + perpDot) / info.roof_scale_t));
 					}
+					if (bestFloor->roofs[xtra_roofs].two_sided)
+						glDisable(GL_CULL_FACE);
+					else
+						glEnable(GL_CULL_FACE);
 					glPolygon2(new_pts.data(), true, nullptr, roof_pts.size(), roof_height);
 					
 					xtra_roofs--;
