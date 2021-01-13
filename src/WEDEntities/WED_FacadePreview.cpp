@@ -960,6 +960,9 @@ static void handle_type2(ITexMgr * tman, const fac_info_t& info, const Polygon2&
 
 	Vector2 miter;
 
+	// Declare this outside the loop, then just clear it on every iteration. This reduces the
+	// number of memory allocations made for the vectors contained in UTL_spelling_t.
+	UTL_spelling_t our_choice;
 	for (int w = 0; w < n_wall; ++w)
 	{
 		Segment2 inBase(footprint.side(w));
@@ -991,7 +994,7 @@ static void handle_type2(ITexMgr * tman, const fac_info_t& info, const Polygon2&
 		roof_extent += thisPt;
 
 		const REN_facade_wall_t * bestWall = &bestFloor->walls[intmin2(bestFloor->walls.size() - 1, choices[w])];
-		UTL_spelling_t our_choice;
+		our_choice.clear();
 		UTL_pick_spelling(bestWall->spellings, seg_length, our_choice, 0);
 		seg_length /= our_choice.total;
 
