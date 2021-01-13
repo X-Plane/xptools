@@ -260,7 +260,7 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 	float v;
 
 	for (vector<XObjLOD8>::const_iterator lod = obj.lods.begin(); lod != obj.lods.end(); ++lod)
-	if ((lod->lod_near <= dist && dist < lod->lod_far) || obj.lods.size() == 1)	// lods = 1 - maybe no lod directive, lod dist could be 0,0.
+	if ((lod->lod_near <= dist && dist < lod->lod_far) || (obj.lods.size() == 1 && lod->lod_far == 0.f))	// if lod_far is zero, we had no LOD directive
 	{
 		float	mat_col[3] = { 1.0, 1.0, 1.0 };
 

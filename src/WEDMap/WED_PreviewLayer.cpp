@@ -251,17 +251,32 @@ void Obj_SetNoDraped(void * ref)
 
 static ObjDrawFuncs10_t kFuncs  = { Obj_SetupPoly, Obj_SetupLine, Obj_SetupLight, Obj_SetupMovie, Obj_SetupPanel, Obj_TexCoord, Obj_TexCoordPointer, Obj_GetAnimParam, Obj_SetDraped, Obj_SetNoDraped };
 
+static bool has_lod_at_distance(const XObj8& obj, double distance)
+{
+	if (obj.lods.size() == 1 && obj.lods.back().lod_far == 0.f)
+		return true;
+
+	for (vector<XObjLOD8>::const_iterator lod = obj.lods.begin(); lod != obj.lods.end(); ++lod)
+		if (lod->lod_near <= distance && distance < lod->lod_far)
+			return true;
+
+	return false;
+}
+
 void draw_obj_at_ll(ITexMgr * tman, const XObj8 * o, const Point2& loc, float agl, float r, GUI_GraphState * g, const WED_MapProjection& projection, WED_Camera & camera)
 {
 	if (!o) return;
+	Point2 l = projection.LLToXY(loc);
+	float ppm = projection.XYUnitsPerMeter();
+	double distance = camera.PointDistance(Point3(l.x(), l.y(), agl * ppm));
+	if (!has_lod_at_distance(*o, distance))
+		return;
 	TexRef	ref = tman->LookupTexture(o->texture ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);			
 	TexRef	ref2 = o->texture_draped.empty() ? ref : tman->LookupTexture(o->texture_draped ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);
 	int id1 = ref  ? tman->GetTexID(ref ) : 0;
 	int id2 = ref2 ? tman->GetTexID(ref2) : 0;
 	g->SetTexUnits(1);
 	if(id1)g->BindTex(id1,0);
-	Point2 l = projection.LLToXY(loc);
-	float ppm = projection.XYUnitsPerMeter();
 
 	camera.PushMatrix();
 	camera.Translate(Vector3(l.x(), l.y(), agl * ppm));
@@ -269,13 +284,16 @@ void draw_obj_at_ll(ITexMgr * tman, const XObj8 * o, const Point2& loc, float ag
 	camera.Rotate(90, Vector3(1, 0, 0));
 	camera.Rotate(r, Vector3(0, -1, 0));
 	Obj_DrawStruct ds = { g, id1, id2 };
-	ObjDraw8(*o, camera.PointDistance(Point3(0, 0, 0)), &kFuncs, &ds);
+	ObjDraw8(*o, distance, &kFuncs, &ds);
 	camera.PopMatrix();
 }
 
 void draw_obj_at_xyz(ITexMgr * tman, const XObj8 * o, double x, double y, double z, float r, GUI_GraphState * g, WED_Camera& camera)
 {
 	if (!o) return;
+	double distance = camera.PointDistance(Point3(x, y, z));
+	if (!has_lod_at_distance(*o, distance))
+		return;
 	TexRef	ref = tman->LookupTexture(o->texture, true, tex_Wrap | tex_Compress_Ok | tex_Always_Pad);
 	TexRef	ref2 = o->texture_draped.empty() ? ref : tman->LookupTexture(o->texture_draped, true, tex_Wrap | tex_Compress_Ok | tex_Always_Pad);
 	int id1 = ref ? tman->GetTexID(ref) : 0;
@@ -286,7 +304,6 @@ void draw_obj_at_xyz(ITexMgr * tman, const XObj8 * o, double x, double y, double
 	camera.Translate({ x, y, z });
 	camera.Rotate(r, { 0, -1, 0 });
 	Obj_DrawStruct ds = { g, id1, id2 };
-	float distance = camera.PointDistance(Point3(0, 0, 0));
 	ObjDraw8(*o, distance, &kFuncs, &ds);
 	camera.PopMatrix();
 }
