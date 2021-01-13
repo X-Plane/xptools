@@ -51,6 +51,11 @@ void		WED_PolygonPlacement::GetResource(	  string& r) const
 	r = resource.value;
 }
 
+const string&	WED_PolygonPlacement::GetResource() const
+{
+	return resource.value;
+}
+
 void		WED_PolygonPlacement::SetResource(const string& r)
 {
 	resource = r;

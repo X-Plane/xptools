@@ -57,6 +57,11 @@ void		WED_FacadePlacement::GetResource(	  string& r) const
 	r = resource.value;
 }
 
+const string&	WED_FacadePlacement::GetResource() const
+{
+	return resource.value;
+}
+
 void		WED_FacadePlacement::SetResource(const string& r)
 {
 	resource = r;

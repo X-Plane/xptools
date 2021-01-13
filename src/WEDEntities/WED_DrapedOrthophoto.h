@@ -50,8 +50,10 @@ public:
 			double		GetHeading(void) const;
 			void		SetHeading(double h);
 
-		virtual void	GetResource(	  string& r) const;
-		virtual void	SetResource(const string& r);
+	virtual void			GetResource(	  string& r) const;
+			const string&	GetResource() const;
+	virtual void			SetResource(const string& r);
+
 			//Checks if the draped orthophoto being used is the old .pol system or the new .someimagetype
 			//True if new, false if old, optional way to get the suffix
 			bool		IsNew( string* out_string=NULL);

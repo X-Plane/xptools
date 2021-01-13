@@ -37,6 +37,7 @@ public:
 			void			SetClosed(int closure);
 
 	virtual void			GetResource(	  string& r) const;
+			const string&	GetResource() const;
 	virtual void			SetResource(const string& r);
 
 	virtual const char *	HumanReadableType(void) const { return "Line"; }

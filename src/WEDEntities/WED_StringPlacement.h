@@ -39,6 +39,7 @@ public:
 			void			SetSpacing(double spacing);
 
 	virtual void			GetResource(	  string& r) const;
+			const string&	GetResource() const;
 	virtual void			SetResource(const string& r);
 
 	virtual const char *	HumanReadableType(void) const { return "Object String"; }

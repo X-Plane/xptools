@@ -54,6 +54,11 @@ void		WED_LinePlacement::GetResource(	  string& r) const
 	r = resource.value;
 }
 
+const string&	WED_LinePlacement::GetResource() const
+{
+	return resource.value;
+}
+
 void		WED_LinePlacement::SetResource(const string& r)
 {
 	resource = r;

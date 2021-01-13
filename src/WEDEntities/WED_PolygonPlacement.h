@@ -33,17 +33,18 @@ DECLARE_PERSISTENT(WED_PolygonPlacement)
 
 public:
 
-			double		GetHeading(void) const;
-			void		SetHeading(double h);
+			double			GetHeading(void) const;
+			void			SetHeading(double h);
 
-	virtual void		GetResource(	  string& r) const;
-	virtual void		SetResource(const string& r);
+	virtual void			GetResource(	  string& r) const;
+			const string&	GetResource() const;
+	virtual void			SetResource(const string& r);
 
 	virtual const char *	HumanReadableType(void) const { return "Draped Polygon"; }
 
 protected:
 
-	virtual	bool		IsInteriorFilled(void) const { return true; }
+	virtual	bool			IsInteriorFilled(void) const { return true; }
 
 private:
 

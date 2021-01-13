@@ -47,8 +47,9 @@ public:
 			double		GetHeight(void) const;
 			void		SetHeight(double h);
 
-	virtual void		GetResource(	  string& r) const;
-	virtual void		SetResource(const string& r);
+	virtual void			GetResource(	  string& r) const;
+			const string&	GetResource() const;
+	virtual void			SetResource(const string& r);
 
 			TopoMode	GetTopoMode(void) const;
 

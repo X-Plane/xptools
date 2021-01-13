@@ -49,6 +49,11 @@ void		WED_DrapedOrthophoto::GetResource(	  string& r) const
 	r = resource.value;
 }
 
+const string&	WED_DrapedOrthophoto::GetResource() const
+{
+	return resource.value;
+}
+
 void		WED_DrapedOrthophoto::SetResource(const string& r)
 {
 	resource = r;

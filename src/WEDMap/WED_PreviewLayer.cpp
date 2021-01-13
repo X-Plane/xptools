@@ -792,10 +792,8 @@ struct	preview_line : WED_PreviewItem {
 	void draw_it(const WED_MapProjection& projection, WED_Camera & camera, GUI_GraphState * g, float mPavementAlpha) override
 	{
 		WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
-		string vpath;
 		const lin_info_t * linfo;
-		lin->GetResource(vpath);
-		if (!rmgr->GetLin(vpath,linfo)) return;
+		if (!rmgr->GetLin(lin->GetResource(),linfo)) return;
 
 		ITexMgr *	tman = WED_GetTexMgr(resolver);
 		TexRef tref = tman->LookupTexture(linfo->base_tex,true,tex_Compress_Ok);
@@ -915,9 +913,8 @@ struct	preview_string : WED_PreviewItem {
 	void draw_it(const WED_MapProjection& projection, WED_Camera & camera, GUI_GraphState * g, float mPavementAlpha) override
 	{
 		WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
-		string vpath;
 		const str_info_t * sinfo;
-		str->GetResource(vpath);
+		const string& vpath = str->GetResource();
 		if (!rmgr->GetStr(vpath,sinfo)) return;
 
 		IGISPointSequence * ps = SAFE_CAST(IGISPointSequence,str);
@@ -1179,8 +1176,7 @@ struct	preview_facade : public preview_polygon {
 					choices.push_back(0);
 			}
 
-			string vpath;
-			fac->GetResource(vpath);
+			const string& vpath = fac->GetResource();
 			const fac_info_t * info;
 			WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 			
@@ -1230,11 +1226,9 @@ struct	preview_pol : public preview_polygon {
 	{
 		WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 		ITexMgr *	tman = WED_GetTexMgr(resolver);
-		string vpath;
 		const pol_info_t * pol_info;
 	
-		pol->GetResource(vpath);
-		if(rmgr->GetPol(vpath,pol_info))
+		if(rmgr->GetPol(pol->GetResource(),pol_info))
 		{
 			Point2 pt0;
 			pol->GetOuterRing()->GetNthPoint(0)->GetLocation(gis_Geo, pt0);
@@ -1260,9 +1254,7 @@ struct	preview_ortho : public preview_polygon {
 		//If this ortho is new
 		if(orth->IsNew() == true)
 		{
-			string rpath;
-			orth->GetResource(rpath);
-			TexRef	tref = tman->LookupTexture(rpath.c_str(), false, tex_Compress_Ok|tex_Linear);
+			TexRef	tref = tman->LookupTexture(orth->GetResource(), false, tex_Compress_Ok|tex_Linear);
 			if(tref == NULL) return;
 			if(int tex_id = tman->GetTexID(tref))
 			{
@@ -1273,10 +1265,8 @@ struct	preview_ortho : public preview_polygon {
 		}
 		else
 		{
-			string vpath;
 			const pol_info_t * pol_info;
-			orth->GetResource(vpath);
-			if(!rmgr->GetPol(vpath,pol_info)) return;
+			if(!rmgr->GetPol(orth->GetResource(),pol_info)) return;
 			setup_pol_texture(tman, *pol_info, 0.0, true, Point2(), g, projection, mPavementAlpha);
 		}
 		preview_polygon::draw_it(projection,camera,g,mPavementAlpha);
@@ -1294,12 +1284,11 @@ struct	preview_object : public WED_PreviewItem {
 		WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 		ITexMgr *		tman = WED_GetTexMgr(resolver);
 		ILibrarian *	lmgr = WED_GetLibrarian(resolver);
-		string			vpath;
 		const XObj8 *	o;
 		const agp_t *	agp;
 		Point2			loc;
 
-		obj->GetResource(vpath);
+		const string& vpath = obj->GetResource();
 		obj->GetLocation(gis_Geo, loc);
 
 		g->SetState(false, 1, false, true, true, true, true);
@@ -1577,12 +1566,11 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		WED_PolygonPlacement * pol = SAFE_CAST(WED_PolygonPlacement, entity);
 		if(pol)	
 		{
-			string vpath;
 			const pol_info_t * pol_info;
 			int lg = group_TaxiwaysBegin;
 			WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetResolver());
 			
-			pol->GetResource(vpath);
+			const string& vpath = pol->GetResource();
 			if(!vpath.empty() && rmgr->GetPol(vpath,pol_info) && !pol_info->group.empty())
 				lg = layer_group_for_string(pol_info->group.c_str(),pol_info->group_offset, lg);
 			mPreviewItems.push_back(new preview_pol(pol,lg, GetResolver()));
@@ -1593,12 +1581,11 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		WED_DrapedOrthophoto * orth = SAFE_CAST(WED_DrapedOrthophoto, entity);
 		if (orth)
 		{
-			string vpath;
 			const pol_info_t * pol_info;
 			int lg = group_TaxiwaysBegin;
 			WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetResolver());
 
-			orth->GetResource(vpath);
+			const string& vpath = orth->GetResource();
 			if(!vpath.empty() && rmgr->GetPol(vpath,pol_info) && !pol_info->group.empty())
 				lg = layer_group_for_string(pol_info->group.c_str(),pol_info->group_offset, lg);
 			mPreviewItems.push_back(new preview_ortho(orth,lg, GetResolver()));

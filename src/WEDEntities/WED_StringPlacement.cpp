@@ -52,6 +52,11 @@ void		WED_StringPlacement::GetResource(	  string& r) const
 	r = resource.value;
 }
 
+const string&	WED_StringPlacement::GetResource() const
+{
+	return resource.value;
+}
+
 void		WED_StringPlacement::SetResource(const string& r)
 {
 	resource = r;

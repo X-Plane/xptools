@@ -37,8 +37,9 @@ public:
 
 	virtual Bbox3		GetVisibleBounds() const;
 	virtual	bool		Cull(const Bbox2& b) const;
-	virtual void		GetResource(	  string& r) const;
-	virtual void		SetResource(const string& r);
+	virtual void			GetResource(	  string& r) const;
+			const string&	GetResource() const;
+	virtual void			SetResource(const string& r);
 	virtual void		SetHeading(double h);
 	virtual	void		Rotate(GISLayer_t l,const Point2& center, double angle);
 
