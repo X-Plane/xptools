@@ -917,7 +917,7 @@ struct	preview_string : WED_PreviewItem {
 				if(real_radius * zoomer->GetPPM() > MIN_PIXELS_PREVIEW)             // cutoff size for real preview
 				{
 					ITexMgr * tman = WED_GetTexMgr(resolver);
-					g->SetState(false,1,false,false,true,false,false);
+					g->SetState(false, 1, false, true, true, true, true);
 					glColor3f(1,1,1);
 
 					double ds = str->GetSpacing();
