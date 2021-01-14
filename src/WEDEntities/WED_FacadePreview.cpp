@@ -1042,6 +1042,7 @@ static void handle_type2(ITexMgr * tman, const fac_info_t& info, const Polygon2&
 			camera.Translate(Vector3(thisPt.x(), 0, thisPt.y()));
 			camera.Rotate(angle, Vector3(0, 1, 0));
 
+			bool drewObject = false;
 			for (auto o : t.objs)
 			{
 				const XObj8 * oo(info.xobjs[o.idx]);
@@ -1049,9 +1050,11 @@ static void handle_type2(ITexMgr * tman, const fac_info_t& info, const Polygon2&
 				if (oo && !cull_obj(oo, position, camera, min_pixel_size))
 				{
 					draw_obj_at_xyz(tman, oo, position.x, position.y, position.z, o.xyzr[3], g, camera);
+					drewObject = true;
 				}
 			}
-			g->BindTex(tRef ? tman->GetTexID(tRef) : 0, 0);
+			if (drewObject)
+				g->BindTex(tRef ? tman->GetTexID(tRef) : 0, 0);
 
 			camera.Scale(1.0, 1.0, segMult);
 #if 0
