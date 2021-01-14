@@ -209,25 +209,16 @@ static void update_menu_recursive(const Fl_Menu_Item *  menu)
 
 static void menu_cb(Fl_Widget *w, void * data)
 {
-
 	if(!w || ! data) return;
-
 	Fl_Menu_Bar * bar = (Fl_Menu_Bar *) w;
+	GUI_Window * win = (GUI_Window*)(bar->parent()->as_window());
+	if(!win) return;
 	xmenu_cmd * mc = (xmenu_cmd *) data;
 	int cmd = mc->cmd;
 	#if DEBUG_MENU
-	printf("menu cmd:%d\n",cmd);
+	printf("menu cmd:%d win:%p\n",cmd,win);
 	#endif
-	GUI_Application * app = (GUI_Application *) mc->data;
-	//TODO:mroe: currently the whole menu is updated every time, also when a shortcut combination pressed
-    //probably we need that code back when we have a better solution
-	//int  ioCheck = 0;
-    //string ioName;
-    //mroe : We must check again if the cmd can be handled ,
-    //		 because shortcut-actions allways enabled
-
-    //if(app->DispatchCanHandleCommand(cmd,ioName,ioCheck))
-			app->DispatchHandleCommand(cmd);
+	if(cmd)	win->DispatchHandleCommand(cmd);
 }
 
 void GUI_Application::update_menus(const Fl_Menu_Item * menu)

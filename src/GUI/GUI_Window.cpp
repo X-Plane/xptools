@@ -90,13 +90,7 @@ int GUI_Window::handle(int e )
 				if(data)
 				{
 					unsigned int cmd = data->cmd;
-					if(cmd)
-					{
-						#if DEV && DEBUG_MENUS
-						printf("GUI_Window::handle FL_SHORTCUT dispatch cmd:%d\n",cmd);
-						#endif // DEV && DEBUG_MENUS
-						return this->DispatchHandleCommand(cmd);
-					}
+					if(cmd) return this->DispatchHandleCommand(cmd);
 				}
 			}
 		}
