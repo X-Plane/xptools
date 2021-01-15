@@ -568,11 +568,11 @@ void WED_MapPreviewPane::FromPrefs(IDocPrefs * prefs)
 {
 	const double qnan = std::numeric_limits<double>::quiet_NaN();
 
-	double camera_lon = prefs->ReadDoublePref("map_preview_window/camera_lon", qnan);
-	double camera_lat = prefs->ReadDoublePref("map_preview_window/camera_lat", qnan);
-	double camera_agl = prefs->ReadDoublePref("map_preview_window/camera_agl", qnan);
-	double camera_yaw = prefs->ReadDoublePref("map_preview_window/camera_yaw", qnan);
-	double camera_pitch = prefs->ReadDoublePref("map_preview_window/camera_pitch", qnan);
+	double camera_lon = prefs->ReadDoublePref("map_preview_window/camera_lon", qnan, IDocPrefs::pref_type_doc);
+	double camera_lat = prefs->ReadDoublePref("map_preview_window/camera_lat", qnan, IDocPrefs::pref_type_doc);
+	double camera_agl = prefs->ReadDoublePref("map_preview_window/camera_agl", qnan, IDocPrefs::pref_type_doc);
+	double camera_yaw = prefs->ReadDoublePref("map_preview_window/camera_yaw", qnan, IDocPrefs::pref_type_doc);
+	double camera_pitch = prefs->ReadDoublePref("map_preview_window/camera_pitch", qnan, IDocPrefs::pref_type_doc);
 
 	if (!std::isnan(camera_lon) && !std::isnan(camera_lat) && !std::isnan(camera_agl) && !std::isnan(camera_yaw) && !std::isnan(camera_pitch))
 	{
@@ -605,11 +605,11 @@ void WED_MapPreviewPane::ToPrefs(IDocPrefs * prefs)
 {
 	Point3 position = mCamera->Position();
 	Point2 positionLL = this->PixelToLL(Point2(position.x, position.y));
-	prefs->WriteDoublePref("map_preview_window/camera_lon", positionLL.x());
-	prefs->WriteDoublePref("map_preview_window/camera_lat", positionLL.y());
-	prefs->WriteDoublePref("map_preview_window/camera_agl", position.z);
-	prefs->WriteDoublePref("map_preview_window/camera_yaw", mYaw);
-	prefs->WriteDoublePref("map_preview_window/camera_pitch", mPitch);
+	prefs->WriteDoublePref("map_preview_window/camera_lon", positionLL.x(), IDocPrefs::pref_type_doc);
+	prefs->WriteDoublePref("map_preview_window/camera_lat", positionLL.y(), IDocPrefs::pref_type_doc);
+	prefs->WriteDoublePref("map_preview_window/camera_agl", position.z, IDocPrefs::pref_type_doc);
+	prefs->WriteDoublePref("map_preview_window/camera_yaw", mYaw, IDocPrefs::pref_type_doc);
+	prefs->WriteDoublePref("map_preview_window/camera_pitch", mPitch, IDocPrefs::pref_type_doc);
 }
 
 void WED_MapPreviewPane::StartMoving()
