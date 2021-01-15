@@ -118,15 +118,15 @@ XWin::~XWin()
 {
 	Fl::remove_idle(update_cb, this);
 	Fl::remove_timeout(timeout_cb,this);
-//	if(mMenuBar)
-//	{
-//		clearSubmenusRecursive(mMenuBar->menu());
-//	}
 }
 
-void XWin::ClearMenus(const Fl_Menu_Item *  menu)
+void XWin::ClearMenus()
 {
-	clearSubmenusRecursive(menu);
+	if(mMenuBar)
+	{
+		clearSubmenusRecursive(mMenuBar->menu());
+		mMenuBar->menu(nullptr);
+	}
 }
 
 /**FLTK CALLBACK functs**/

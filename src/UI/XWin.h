@@ -279,7 +279,7 @@ protected:
 
 public:
 
-	void ClearMenus(const Fl_Menu_Item *  menu);
+	void ClearMenus();
 	int GetMenuBarHeight(void);
 	virtual void ReceiveFilesFromDrag(const string& inFiles);
 	bool mInited;

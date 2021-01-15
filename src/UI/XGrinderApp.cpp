@@ -178,8 +178,7 @@ int main(int argc, char* argv[])
 
 	int res = Fl::run();
 
-	if(gWin->mMenuBar)
-		gWin->ClearMenus(gWin->mMenuBar->menu());
+    gWin->ClearMenus();
 
 	return res;
 }
