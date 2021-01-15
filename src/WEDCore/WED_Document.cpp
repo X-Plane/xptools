@@ -482,70 +482,53 @@ void	WED_Document::ReducePath(string& io_path)
 }
 
 
-int			WED_Document::ReadIntPref(const char * in_key, int in_default)
+int			WED_Document::ReadIntPref(const char * in_key, int in_default, unsigned type)
 {
-	string key(in_key);
-	map<string,string>::iterator i = mDocPrefs.find(key);
-	if (i == mDocPrefs.end())
-	{
-		i = sGlobalPrefs.find(key);
-		if (i == sGlobalPrefs.end())
-			return in_default;
-		return atoi(i->second.c_str());
-	}
-	return atoi(i->second.c_str());
+	std::string value;
+	if (ReadPrefInternal(in_key, type, value))
+		return atoi(value.c_str());
+	else
+		return in_default;
 }
 
-void		WED_Document::WriteIntPref(const char * in_key, int in_value)
+void		WED_Document::WriteIntPref(const char * in_key, int in_value, unsigned type)
 {
 	char buf[256];
 	sprintf(buf,"%d",in_value);
-	mDocPrefs[in_key] = buf;
-	sGlobalPrefs[in_key] = buf;
+	WriteStringPref(in_key, buf, type);
 }
 
-double			WED_Document::ReadDoublePref(const char * in_key, double in_default)
+double			WED_Document::ReadDoublePref(const char * in_key, double in_default, unsigned type)
 {
-	string key(in_key);
-	map<string,string>::iterator i = mDocPrefs.find(key);
-	if (i == mDocPrefs.end())
-	{
-		i = sGlobalPrefs.find(key);
-		if (i == sGlobalPrefs.end())
-			return in_default;
-		return atof(i->second.c_str());
-	}
-	return atof(i->second.c_str());
+	std::string value;
+	if (ReadPrefInternal(in_key, type, value))
+		return atof(value.c_str());
+	else
+		return in_default;
 }
 
-void		WED_Document::WriteDoublePref(const char * in_key, double in_value)
+void		WED_Document::WriteDoublePref(const char * in_key, double in_value, unsigned type)
 {
 	char buf[256];
 	sprintf(buf,"%lf",in_value);
-	mDocPrefs[in_key] = buf;
-	sGlobalPrefs[in_key] = buf;
+	WriteStringPref(in_key, buf, type);
 }
 
-
-
-string			WED_Document::ReadStringPref(const char * in_key, const string& in_default)
+string			WED_Document::ReadStringPref(const char * in_key, const string& in_default, unsigned type)
 {
-	string key(in_key);
-	map<string,string>::iterator i = mDocPrefs.find(key);
-	if (i == mDocPrefs.end())
-	{
-		i = sGlobalPrefs.find(key);
-		if (i == sGlobalPrefs.end())
-			return in_default;
-		return i->second;
-	}
-	return i->second;
+	std::string value;
+	if (ReadPrefInternal(in_key, type, value))
+		return value;
+	else
+		return in_default;
 }
 
-void		WED_Document::WriteStringPref(const char * in_key, const string& in_value)
+void		WED_Document::WriteStringPref(const char * in_key, const string& in_value, unsigned type)
 {
-	mDocPrefs[in_key] = in_value;
-	sGlobalPrefs[in_key] = in_value;
+	if (type & pref_type_doc)
+		mDocPrefs[in_key] = in_value;
+	if (type & pref_type_global)
+		sGlobalPrefs[in_key] = in_value;
 }
 
 void		WED_Document::ReadIntSetPref(const char * in_key, set<int>& out_value)
@@ -691,6 +674,26 @@ void WED_Document::Panic(void)
 		WriteXML(xml_file);
 		fclose(xml_file);
 	}
+}
+
+bool		WED_Document::ReadPrefInternal(const char * in_key, unsigned type, string &out_value) const
+{
+	string key(in_key);
+	map<string, string>::const_iterator i;
+	bool found = false;
+	if (type & pref_type_doc)
+	{
+		i = mDocPrefs.find(key);
+		found = (i != mDocPrefs.end());
+	}
+	if (!found && (type & pref_type_global))
+	{
+		i = sGlobalPrefs.find(key);
+		found = (i != sGlobalPrefs.end());
+	}
+	if (found)
+		out_value = i->second;
+	return found;
 }
 
 void		WED_Document::WriteXML(FILE * xml_file)
