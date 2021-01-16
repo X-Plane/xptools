@@ -113,6 +113,7 @@ HINSTANCE gInstance = NULL;
 #if LIN
   #include "initializer.h"
   #include <FL/Fl.H>
+  #include <FL/x.H>
 #endif
 
 FILE * gLogFile;
@@ -193,6 +194,8 @@ int main(int argc, char * argv[])
 	WED_MakeMenus(&app);
 #if LIN
 	setlocale(LC_ALL, "C");   //mroe: FLTK sets user locale upon first window creation only, does not set it not back to "C"
+	start->default_xclass("WED");
+	start->SetIcon("WED_icon.png",true);
 	start->show(1, argv);     //mroe: WED has own cmd line arguments, this prevents FLTK from parsing them
 #endif
 	start->Show();

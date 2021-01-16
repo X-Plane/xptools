@@ -1319,6 +1319,24 @@ GUI_Window *  GUI_Window::AnyXWND(void)
 	if (sWindows.empty()) return NULL;
 	return *sWindows.begin();
 }
+
+#include "BitmapUtils.h"
+#include "GUI_Resources.h"
+
+static void SetIcon_f(GUI_Window * window,const char* path , bool default_icon)
+{
+	ImageInfo info;
+	if(GUI_GetImageResource(path,&info) == -1) return;
+	FlipImageY(info);
+	Fl_RGB_Image icon_image(info.data, info.width, info.height,info.channels,info.pad);
+	default_icon ? window->default_icon(&icon_image) : window->icon(&icon_image);
+	DestroyBitmap(&info);
+}
+
+void  GUI_Window::SetIcon(const char* path , bool default_icon)
+{
+	SetIcon_f(this,path,default_icon);
+}
 #endif
 
 #if IBM
