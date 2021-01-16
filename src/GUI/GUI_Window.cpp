@@ -602,18 +602,15 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBound
 		if( !(inAttributes & xwin_style_popup) && !(inAttributes & xwin_style_modal))
 		{
 			GetMenuBar(); // create one
-			if(mMenuBar)
+			if(mMenuBar && gApplication)
 			{
 				if(sWindows.size() > 0)
 				{
-					const Fl_Menu_Item * mbar_menu = mMenuBar->menu();
-					mMenuBar->copy((*sWindows.begin())->GetMenuBar());
-					//mroe: as it is now, XWin::GetMenuBar() provides a custom empty menu array structure
-					//for the topbar that we must delete.Fl_Menu_->copy() does it not for custom menu arrays
-					if(mbar_menu) delete [] mbar_menu;
+					XWin::ClearMenus();
+					mMenuBar->copy((const Fl_Menu_Item *) gApplication->GetMenuBar());
 				}
 
-				if(gApplication) mMenuBar->callback(GUI_Application::update_menus_cb);
+				mMenuBar->callback(GUI_Application::update_menus_cb);
 			}
 		}
 	#endif
