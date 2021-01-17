@@ -784,6 +784,7 @@ struct	preview_line : WED_PreviewItem {
 	struct Options
 	{
 		bool drawSkeletonIfLineTooThin;
+		double minLineThicknessPixels;
 	};
 	WED_LinePlacement * lin;
 	IResolver * resolver;
@@ -814,7 +815,7 @@ struct	preview_line : WED_PreviewItem {
 			Bbox2 bbLatLon;
 			lin->GetBounds(gis_Geo, bbLatLon);
 			Bbox2 bbXYZ(projection.LLToXY(bbLatLon.p1), projection.LLToXY(bbLatLon.p2));
-			if (camera.PixelSize(Bbox3(bbXYZ), linfo->eff_width) < MIN_PIXELS_PREVIEW || !tex_id)             // cutoff size for real preview
+			if (camera.PixelSize(Bbox3(bbXYZ), linfo->eff_width) < options.minLineThicknessPixels || !tex_id)             // cutoff size for real preview
 			{
 				if (!options.drawSkeletonIfLineTooThin)
 					return;
@@ -1541,7 +1542,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		if(taxi)	
 		{
 			mPreviewItems.push_back(new preview_taxiway(taxi,mTaxiLayer++));
-			if (MaxLineWidthPixels(*taxi, 0.4, *GetProjection(), *GetCamera()) > MIN_PIXELS_PREVIEW) // there can be so many, make visibility decision here already for performance
+			if (MaxLineWidthPixels(*taxi, 0.4, *GetProjection(), *GetCamera()) > mOptions.minLineThicknessPixels) // there can be so many, make visibility decision here already for performance
 			{
 				IGISPointSequence * ps = taxi->GetOuterRing();
 				mPreviewItems.push_back(new preview_airportlines(ps, group_Markings, GetResolver()));
@@ -1613,6 +1614,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		{
 			preview_line::Options lineOptions;
 			lineOptions.drawSkeletonIfLineTooThin = mOptions.drawSkeletonIfLineTooThin;
+			lineOptions.minLineThicknessPixels = mOptions.minLineThicknessPixels;
 			mPreviewItems.push_back(new preview_line(line, group_Markings, GetResolver(), lineOptions));
 		}
 	}
@@ -1625,7 +1627,8 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 			chn->GetBounds(gis_Geo, bbLatLon);
 			Bbox2 bbXYZ(GetProjection()->LLToXY(bbLatLon.p1), GetProjection()->LLToXY(bbLatLon.p2));
 			// there can be so many, make visibility decision here already for performance
-			if(GetCamera()->PixelSize(Bbox3(bbXYZ), 0.4) > MIN_PIXELS_PREVIEW)	      // criteria matches where mRealLines disappear in StructureLayer
+			// if minLineThicknessPixels is MIN_PIXELS_PREVIEW, criterion matches where mRealLines disappear in StructureLayer
+			if(GetCamera()->PixelSize(Bbox3(bbXYZ), 0.4) > mOptions.minLineThicknessPixels)
 			{
 				mPreviewItems.push_back(new preview_airportlines(chn, group_Markings, GetResolver()));
 				mPreviewItems.push_back(new preview_airportlights(chn, group_Objects, GetResolver()));

@@ -163,6 +163,7 @@ WED_MapPreviewPane::WED_MapPreviewPane(GUI_Commander * cmdr, WED_Document * docu
 	options.drawFacadeWalls = true;
 	options.drawFacadeOutline = false;
 	options.drawSkeletonIfLineTooThin = false;
+	options.minLineThicknessPixels = 1.0;
 	mPreviewLayer->SetOptions(options);
 
 	SetForwardVector();

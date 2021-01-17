@@ -75,6 +75,7 @@ public:
 		bool drawFacadeWalls = false;
 		bool drawFacadeOutline = true;
 		bool drawSkeletonIfLineTooThin = true;
+		double minLineThicknessPixels = MIN_PIXELS_PREVIEW;
 	};
 
 						WED_PreviewLayer(GUI_Pane * host, const WED_MapProjection * projection,
