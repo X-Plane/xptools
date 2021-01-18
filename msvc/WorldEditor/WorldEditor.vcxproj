@@ -238,6 +238,7 @@
     <ClCompile Include="..\..\src\WEDMap\WED_MapBkgnd.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_MapLayer.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_MapPane.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_MapProjection.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_MapToolNew.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_MapZoomerNew.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_MarqueeTool.cpp" />
@@ -514,6 +515,7 @@
     <ClInclude Include="..\..\src\WEDMap\WED_MapBkgnd.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_MapLayer.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_MapPane.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_MapProjection.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_MapToolNew.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_MapZoomerNew.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_MarqueeTool.h" />
