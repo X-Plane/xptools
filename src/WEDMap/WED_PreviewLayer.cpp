@@ -1293,6 +1293,8 @@ struct	preview_object : public WED_PreviewItem {
 	}
 };
 
+#include "WED_Sign_Editor.h"
+
 struct	preview_taxisign : public WED_PreviewItem {
 	WED_AirportSign * ts;
 	IResolver * resolver;
@@ -1314,9 +1316,9 @@ struct	preview_taxisign : public WED_PreviewItem {
 		switch(ts->GetHeight())
 		{
 			case size_SmallRemaining:
-			case size_SmallTaxi:   sign_scale = 0.011; break;
-			case size_MediumTaxi:  sign_scale = 0.015; break;
-			default:               sign_scale = 0.018;
+			case size_SmallTaxi:   sign_scale = 0.010; break;
+			case size_MediumTaxi:  sign_scale = 0.013; break;
+			default:               sign_scale = 0.016;
 		}
 //			g->SetState(false,1,false,false,true,true,true);
 		g->EnableDepth(true, true);
@@ -1331,7 +1333,10 @@ struct	preview_taxisign : public WED_PreviewItem {
 		glScalef(ppm, ppm, ppm);
 		glRotatef(hdg, 0, 0, -1);
 
-		const int w = name.size() * 5;
+		sign_data tsign;
+		tsign.from_code(name);
+
+		const int w = max(tsign.calc_width(0), tsign.calc_width(1)) / 2;
 		const int d =  6;
 		const int h = 55;
 
