@@ -49,6 +49,7 @@
 #include "WED_AirportBeacon.h"
 #include "WED_AirportChain.h"
 #include "WED_AirportNode.h"
+#include "WED_AirportSign.h"
 #include "WED_ForestPlacement.h"
 #include "WED_FacadePlacement.h"
 #include "WED_DrapedOrthophoto.h"
@@ -1291,6 +1292,83 @@ struct	preview_object : public WED_PreviewItem {
 		}
 	}
 };
+
+struct	preview_taxisign : public WED_PreviewItem {
+	WED_AirportSign * ts;
+	IResolver * resolver;
+	preview_taxisign(WED_AirportSign * s, int l, IResolver * r) : WED_PreviewItem(l), ts(s), resolver(r) { }
+	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
+	{
+		ITexMgr *	tman = WED_GetTexMgr(resolver);
+
+		Point2 loc;
+		double hdg;
+		int letters;
+		string name;
+
+		ts->GetLocation(gis_Geo,loc);
+		hdg = ts->GetHeading();
+		ts->GetName(name);
+
+		double sign_scale;
+		switch(ts->GetHeight())
+		{
+			case size_SmallRemaining:
+			case size_SmallTaxi:   sign_scale = 0.011; break;
+			case size_MediumTaxi:  sign_scale = 0.015; break;
+			default:               sign_scale = 0.018;
+		}
+//			g->SetState(false,1,false,false,true,true,true);
+		g->EnableDepth(true, true);
+		glColor3f(0.4,0.3,0.1);
+
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+
+		double ppm = zoomer->GetPPM() * sign_scale;
+		Point2 l = zoomer->LLToPixel(loc);
+		glTranslatef(l.x(), l.y(), ppm * 10);
+		glScalef(ppm, ppm, ppm);
+		glRotatef(hdg, 0, 0, -1);
+
+		const int w = name.size() * 5;
+		const int d =  6;
+		const int h = 55;
+
+		glEnable(GL_NORMALIZE);
+		glBegin(GL_TRIANGLE_FAN);
+			glVertex3i(-w,  d,  0);  glNormal3i(0,h,d);
+			glVertex3i( w,  d,  0);
+			glVertex3i( w,  0,  h);
+			glVertex3i(-w,  0,  h);
+		glEnd();
+		glColor3f(0.15, 0.15, 0.15);
+		glBegin(GL_TRIANGLES);
+			glVertex3i( w,  d,  0);  glNormal3i(1,0,0);
+			glVertex3i( w, -d,  0);
+			glVertex3i( w,  0,  h);
+		glEnd();
+
+		glRotatef(180, 0, 0, -1);
+
+		glBegin(GL_TRIANGLE_FAN);
+			glVertex3i(-w,  d,  0);  glNormal3i(0,h,d);
+			glVertex3i( w,  d,  0);
+			glVertex3i( w,  0,  h);
+			glVertex3i(-w,  0,  h);
+		glEnd();
+		glBegin(GL_TRIANGLES);
+			glVertex3i( w,  d,  0);  glNormal3i(1,0,0);
+			glVertex3i( w, -d,  0);
+			glVertex3i( w,  0,  h);
+		glEnd();
+		glDisable(GL_NORMALIZE);
+
+		glPopMatrix();
+	}
+};
+
+
 struct	preview_windsock : public WED_PreviewItem {
 	WED_Windsock * ws;
 	IResolver * resolver;
@@ -1311,12 +1389,6 @@ struct	preview_windsock : public WED_PreviewItem {
 			g->SetState(false,1,false,false,true,true,true);
 			glColor3f(1,1,1);
 			draw_obj_at_ll(tman, o, loc, 0.0, 120.0, g, zoomer);
-		}
-		else
-		{
-			loc = zoomer->LLToPixel(loc);
-			glColor3f(1,0,0);
-			GUI_PlotIcon(g,"map_missing_obj.png", loc.x(),loc.y(), 0, 1.0);
 		}
 	}
 };
@@ -1350,12 +1422,6 @@ struct	preview_beacon : public WED_PreviewItem {
 			g->SetState(false,1,false,false,true,true,true);
 			glColor3f(1,1,1);
 			draw_obj_at_ll(tman, o, loc, 0.0, 0.0, g, zoomer);
-		}
-		else
-		{
-			loc = zoomer->LLToPixel(loc);
-			glColor3f(1,0,0);
-			GUI_PlotIcon(g,"map_missing_obj.png", loc.x(),loc.y(), 0, 1.0);
 		}
 	}
 };
@@ -1706,6 +1772,14 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		{
 			if (auto bcn = SAFE_CAST(WED_AirportBeacon, entity))
 				mPreviewItems.push_back(new preview_beacon(bcn, group_Objects, GetResolver()));
+		}
+	}
+	else if (sub_class == WED_AirportSign::sClass)
+	{
+		if(GetZoomer()->GetPPM() * 0.2 > MIN_PIXELS_PREVIEW)
+		{
+			if (auto tsign = SAFE_CAST(WED_AirportSign, entity))
+				mPreviewItems.push_back(new preview_taxisign(tsign, group_Objects, GetResolver()));
 		}
 	}
 	return true;
