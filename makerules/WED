@@ -211,6 +211,7 @@ SOURCES += ./src/WEDMap/WED_MapProjection.cpp
 SOURCES += ./src/WEDMap/WED_MapToolNew.cpp
 SOURCES += ./src/WEDMap/WED_MapZoomerNew.cpp
 SOURCES += ./src/WEDMap/WED_MarqueeTool.cpp
+SOURCES += ./src/WEDMap/WED_PerspectiveCamera.cpp
 SOURCES += ./src/WEDMap/WED_StructureLayer.cpp
 #SOURCES += ./src/WEDMap/WED_TerraserverLayer.cpp
 SOURCES += ./src/WEDMap/WED_ToolInfoAdapter.cpp
