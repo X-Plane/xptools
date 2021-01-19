@@ -28,6 +28,8 @@
 #include <vector>
 using std::vector;
 
+#include "CompGeomDefs2.h"
+
 
 /*
 
@@ -59,6 +61,7 @@ struct Point3 {
 	Point3& operator -= (const Vector3& v);
 	Point3 operator+(const Vector3& v) const;
 	Point3 operator-(const Vector3& v) const;
+	Vector3 operator-(const Point3& v) const;
 
 	inline double squared_distance(const Point3& p) const { return (p.x - x) * (p.x - x) + (p.y - y) * (p.y - y) + (p.z - z) * (p.z - z); }
 
@@ -161,6 +164,98 @@ struct Line3 {
 
 	Point3	p;
 	Vector3	v;
+};
+
+/****************************************************************************************************
+ * Bbox3
+ ****************************************************************************************************/
+
+ /*
+	 Bbox3 - A three-dimensional bounding box using the same conventions as its two-dimensional counterpart Bbox2.
+ */
+
+struct	Bbox3 {
+	Bbox3() : p1(0, 0, 0), p2(-1, -1, -1) { }
+	Bbox3(double x1, double y1, double z1, double x2, double y2, double z2)
+		: p1(x1, y1, z1), p2(x2, y2, z2)
+	{
+		if (p1.x > p2.x) swap(p1.x, p2.x);
+		if (p1.y > p2.y) swap(p1.y, p2.y);
+		if (p1.z > p2.z) swap(p1.z, p2.z);
+	}
+	Bbox3(const Point3& in_p1, const Point3& in_p2)
+		: p1(in_p1), p2(in_p2)
+	{
+		if (p1.x > p2.x) swap(p1.x, p2.x);
+		if (p1.y > p2.y) swap(p1.y, p2.y);
+		if (p1.z > p2.z) swap(p1.z, p2.z);
+	}
+	explicit Bbox3(const Bbox2& bb2)
+		: p1(bb2.xmin(), bb2.ymin(), 0.0), p2(bb2.xmax(), bb2.ymax(), 0.0) {}
+	Bbox3(const Bbox3& rhs) = default;
+	Bbox3& operator=(const Bbox3& rhs) { p1 = rhs.p1; p2 = rhs.p2; return *this; }
+	Bbox3& operator+=(const Bbox3& rhs)
+	{
+		if (rhs.is_null()) 	return *this;
+		if (is_null()) { p1 = rhs.p1; p2 = rhs.p2; return *this; }
+		else {
+			p1.x = min(p1.x, rhs.p1.x);
+			p1.y = min(p1.y, rhs.p1.y);
+			p1.z = min(p1.z, rhs.p1.z);
+			p2.x = max(p2.x, rhs.p2.x);
+			p2.y = max(p2.y, rhs.p2.y);
+			p2.z = max(p2.z, rhs.p2.z);
+			return *this;
+		}
+	}
+
+	double		xmin() const { return p1.x; }
+	double		ymin() const { return p1.y; }
+	double		zmin() const { return p1.z; }
+	double		xmax() const { return p2.x; }
+	double		ymax() const { return p2.y; }
+	double		zmax() const { return p2.z; }
+
+	bool		is_empty() const { return p1.x == p2.x || p1.y == p2.y || p1.z == p2.z; }
+	bool		is_point() const { return p1 == p2; }
+	bool		is_null() const { return p1.x > p2.x || p1.y > p2.y || p1.z > p2.z; }
+
+	bool		contains(const Point3& p) const
+	{
+		if (is_null()) return false;
+		return (xmin() <= p.x && p.x <= xmax() &&
+			ymin() <= p.y && p.y <= ymax() &&
+			zmin() <= p.z && p.z <= zmax());
+	}
+
+	template <class Fn>
+	void for_each_corner(Fn f) const
+	{
+		// These slightly unorthodox for loops ensure that we don't call the function
+		// multiple times with the same point if the extent of the bounding box is
+		// zero along some dimension.
+		for (double x = xmin(); ; x = xmax())
+		{
+			for (double y = ymin(); ; y = ymax())
+			{
+				for (double z = zmin(); ; z = zmax())
+				{
+					if (!f(Point3(x, y, z)))
+						return;
+					if (z == zmax())
+						break;
+				}
+				if (y == ymax())
+					break;
+			}
+			if (x == xmax())
+				break;
+		}
+	}
+
+	Point3	p1;
+	Point3	p2;
+
 };
 
 /****************************************************************************************************
@@ -275,6 +370,7 @@ inline Point3& Point3::operator += (const Vector3& v) { x += v.dx; y += v.dy; z 
 inline Point3& Point3::operator -= (const Vector3& v) { x -= v.dx; y -= v.dy; z -= v.dz; return *this; }
 inline Point3 Point3::operator+(const Vector3& v) const { return Point3(x + v.dx, y + v.dy, z + v.dz); }
 inline Point3 Point3::operator-(const Vector3& v) const { return Point3(x - v.dx, y - v.dy, z - v.dz); }
+inline Vector3 Point3::operator-(const Point3& p) const { return Vector3(x - p.x, y - p.y, z - p.z); }
 
 inline	Vector3	Vector3::cross (const Vector3& v) const
 {
