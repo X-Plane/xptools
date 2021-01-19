@@ -1698,6 +1698,9 @@
     <ClInclude Include="..\..\src\WEDMap\WED_MapProjection.h">
       <Filter>WEDMap</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\WEDMap\WED_Camera.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\src\WEDResources\about.png">
