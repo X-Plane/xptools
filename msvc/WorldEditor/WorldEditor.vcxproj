@@ -505,6 +505,7 @@
     <ClInclude Include="..\..\src\WEDLibrary\WED_LibraryPane.h" />
     <ClInclude Include="..\..\src\WEDLibrary\WED_LibraryPreviewPane.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_ATCLayer.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_Camera.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_Colors.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_CreateBoxTool.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_CreateEdgeTool.h" />
