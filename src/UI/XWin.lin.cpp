@@ -150,6 +150,17 @@ inline int fltkBtnToXBtn(const int inButton )
 	return btn;
 }
 
+static bool btnDown(int btn)
+{
+	switch(btn)
+	{
+		case 0:		return Fl::event_button1() != 0;
+		case 1:		return Fl::event_button3() != 0;
+		case 2:		return Fl::event_button2() != 0;
+		default:	return false;
+	}
+}
+
 /*FLTK event callback*/
 int XWin::handle(int e)
 {
@@ -237,7 +248,9 @@ int XWin::handle(int e)
 		mMouse.y = Fl::event_y();
 
 		if(mBlockEvents) return 1;
-		if(fltkBtnToXBtn(Fl::event_button()) == mDragging)
+		// Note: Can't use Fl::event_button() here because it is documented
+		// to return garbage outside of FL_PUSH and FL_RELEASE.
+		if(btnDown(mDragging))
 		{
 			ClickDrag(mMouse.x,mMouse.y,mDragging);
 		}
