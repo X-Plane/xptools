@@ -38,6 +38,7 @@ enum {
 //	msg_SelectionChanged,
 
 	msg_ArchiveChanged,
+	msg_ArchiveChangedEphemerally,
 
 	msg_DocWillSave,
 	msg_DocLoaded,
