@@ -861,6 +861,11 @@
     <ClCompile Include="..\..\src\libtess2\Source\tess.c">
       <Filter>libtess2</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\WEDMap\WED_MapPreviewPane.cpp">
+      <Filter>WEDMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\WEDMap\WED_MapPreviewWindow.cpp">
+      <Filter>WEDMap</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\WEDMap\WED_MapProjection.cpp">
       <Filter>WEDMap</Filter>
@@ -1700,6 +1705,12 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Utils\BitmapUtils.h">
       <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDMap\WED_MapPreviewPane.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDMap\WED_MapPreviewWindow.h">
+      <Filter>WEDMap</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDMap\WED_MapProjection.h">
       <Filter>WEDMap</Filter>
