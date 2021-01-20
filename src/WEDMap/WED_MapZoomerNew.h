@@ -24,7 +24,8 @@
 #define WED_MAPZOOMERNEW_H
 
 #include "GUI_ScrollerPane.h"
-#include "CompGeomDefs2.h"
+#include "WED_Camera.h"
+#include "WED_MapProjection.h"
 
 /*
 
@@ -45,7 +46,7 @@
 
 */
 
-class	WED_MapZoomerNew : public GUI_ScrollerPaneContent {
+class	WED_MapZoomerNew : public GUI_ScrollerPaneContent, public WED_Camera {
 public:
 
 					 WED_MapZoomerNew();
@@ -54,20 +55,22 @@ public:
 	// This API is called by just about anything that needs to do coordinate
 	// conversion.
 
-			double	XPixelToLon(double);
-			double	YPixelToLat(double);
-			double	LonToXPixel(double);
-			double	LatToYPixel(double);
+			double	XPixelToLon(double) const;
+			double	YPixelToLat(double) const;
+			double	LonToXPixel(double) const;
+			double	LatToYPixel(double) const;
 
-			Point2	PixelToLL(const Point2& p);
-			Point2	LLToPixel(const Point2& p);
+			Point2	PixelToLL(const Point2& p) const;
+			Point2	LLToPixel(const Point2& p) const;
 
-			void	PixelToLLv(Point2 * dst, const Point2 * src, int n);
-			void	LLToPixelv(Point2 * dst, const Point2 * src, int n);
+			void	PixelToLLv(Point2 * dst, const Point2 * src, int n) const;
+			void	LLToPixelv(Point2 * dst, const Point2 * src, int n) const;
 
-			double	GetPPM(void);
-			double	GetClickRadius(double pixels);
-			long long	CacheKey(void) { return mCacheKey; }
+			double	GetPPM(void) const;
+			double	GetClickRadius(double pixels) const;
+			long long	CacheKey(void) const { return mCacheKey; }
+
+			const WED_MapProjection& Projection() const { return mProjection; }
 
 	// This API is called by the map class to set up and modify the zoomer
 
@@ -126,6 +129,22 @@ public:
 	virtual	void	ScrollH(float xOffset);
 	virtual	void	ScrollV(float yOffset);
 
+	bool PointVisible(const Point3& point) const override;
+	bool BboxVisible(const Bbox3& bbox) const override;
+	double PointDistance(const Point3& point) const override
+	{
+		return 0.0;
+	}
+	double PixelSize(double zCamera, double featureSize) const override;
+	double PixelSize(const Bbox3& bbox) const override;
+	double PixelSize(const Bbox3& bbox, double featureSize) const override;
+	double PixelSize(const Point3& position, double diameter) const override;
+	void PushMatrix() override;
+	void PopMatrix() override;
+	void Translate(const Vector3& v) override;
+	void Scale(double sx, double sy, double sz) override;
+	void Rotate(double deg, const Vector3& axis) override;
+
 protected:
 			void	SetPixelBounds(					// Set the area on the screen the user
 							double 	inLeft,			// can see.
@@ -137,6 +156,7 @@ protected:
 private:
 
 			void	RecalcAspectRatio(void);
+			void	UpdateProjection();
 
 	double	mPixels[4];
 	double	mLogicalBounds[4];
@@ -144,6 +164,7 @@ private:
 	double	mLonCenter;
 	double	mLonCenterCOS;
 	long long mCacheKey;
+	WED_MapProjection mProjection;
 protected:
 	double	mPixel2DegLat;
 
