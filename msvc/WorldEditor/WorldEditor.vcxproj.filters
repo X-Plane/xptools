@@ -867,6 +867,12 @@
     <ClCompile Include="..\..\src\WEDEntities\WED_AutogenPlacement.cpp">
       <Filter>WEDEntities</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\WEDMap\WED_MapPreviewPane.cpp">
+      <Filter>WEDMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\WEDMap\WED_MapPreviewWindow.cpp">
+      <Filter>WEDMap</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\WEDMap\WED_MapProjection.cpp">
       <Filter>WEDMap</Filter>
     </ClCompile>
@@ -1708,6 +1714,13 @@
     </ClInclude>
     <ClInclude Include="..\..\src\WEDEntities\WED_AutogenPlacement.h">
       <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDMap\WED_MapPreviewPane.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDMap\WED_MapPreviewWindow.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\WEDMap\WED_MapProjection.h">
       <Filter>WEDMap</Filter>
     </ClInclude>
