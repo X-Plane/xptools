@@ -104,40 +104,60 @@ void	WED_ObjPlacement::Rotate(GISLayer_t l,const Point2& center, double angle)
 
 double 	WED_ObjPlacement::GetVisibleDeg(void) const
 {
-	return visibleWithinDeg; // one note - 
-}
-
-bool		WED_ObjPlacement::Cull(const Bbox2& b) const
-{
-
 	// caching the objects dimension here for off-display culling in the map view. Its disregarding object rotation
 	// and any lattitude dependency in the conversion, so the value will be choosen sufficiently pessimistic.
 #if WED
-	if(visibleWithinDeg < 0.0)                            // so we only do this once for each object, ever
+	if (visibleWithinDeg < 0.0)                            // so we only do this once for each object, ever
 	{
-		float * f = (float *) &visibleWithinDeg;          // tricking the compiler, breaking all rules. But Cull() must be const ...
-		*f = GLOBAL_WED_ART_ASSET_FUDGE_FACTOR;           // the old, brain-dead visibility rule of thumb
+		visibleWithinDeg = GLOBAL_WED_ART_ASSET_FUDGE_FACTOR;           // the old, brain-dead visibility rule of thumb
+		visibleWithinMeters = 10.0;                       // just a wild guess
 		WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetArchive()->GetResolver());
-		if(rmgr)
+		if (rmgr)
 		{
 			const XObj8 * o;
 			const agp_t * agp;
 			Point2	my_loc;
-			GetLocation(gis_Geo,my_loc);
+			GetLocation(gis_Geo, my_loc);
 			double mtr_to_lon = MTR_TO_DEG_LAT / cos(my_loc.y() * DEG_TO_RAD);
 
-//			int n = GetNumVariants(resource.value);   // no need to cycle through these - only the first variant is used for preview
+			//			int n = GetNumVariants(resource.value);   // no need to cycle through these - only the first variant is used for preview
 			if (rmgr->GetObj(resource.value, o))
 			{
-				*f = pythag(max(fabs(o->xyz_max[0]), fabs(o->xyz_min[0])), max(fabs(o->xyz_max[2]), fabs(o->xyz_min[2]))) * 1.2 * mtr_to_lon;
+				visibleWithinDeg = mtr_to_lon * pythag(max(fabs(o->xyz_max[0]), fabs(o->xyz_min[0])), max(fabs(o->xyz_max[2]), fabs(o->xyz_min[2]))) * 1.2;
+				visibleWithinMeters = pythag(
+					max(fabs(o->xyz_max[0]), fabs(o->xyz_min[0])),
+					max(fabs(o->xyz_max[1]), fabs(o->xyz_min[1])),
+					max(fabs(o->xyz_max[2]), fabs(o->xyz_min[2])));
+				height = o->xyz_max[1];
 			}
-			else if(rmgr->GetAGP(resource.value,agp))
+			else if (rmgr->GetAGP(resource.value, agp))
 			{
-				*f = pythag(max(fabs(agp->xyz_max[0]), fabs(agp->xyz_min[0])), max(fabs(agp->xyz_max[2]), fabs(agp->xyz_min[2]))) * 1.2 * mtr_to_lon;
+				visibleWithinDeg = mtr_to_lon * pythag(max(fabs(agp->xyz_max[0]), fabs(agp->xyz_min[0])), max(fabs(agp->xyz_max[2]), fabs(agp->xyz_min[2]))) * 1.2;
+				visibleWithinMeters = pythag(
+					max(fabs(agp->xyz_max[0]), fabs(agp->xyz_min[0])),
+					max(fabs(agp->xyz_max[1]), fabs(agp->xyz_min[1])),
+					max(fabs(agp->xyz_max[2]), fabs(agp->xyz_min[2])));
+				height = agp->xyz_max[1];
 			}
 		}
 	}
 #endif
+
+	return visibleWithinDeg; // one note - 
+}
+
+double 	WED_ObjPlacement::GetVisibleMeters(void) const
+{
+	GetVisibleDeg();
+
+	return visibleWithinMeters;
+}
+
+bool		WED_ObjPlacement::Cull(const Bbox2& b) const
+{
+	// Make sure visibleWithinDeg has been updated.
+	GetVisibleDeg();
+
 // This adds a radical approach to culling - drop ALL visible part, like preview/structure/handles/highlight if its too small.
 // Thois will make items completely invisible, but keeps thm selectable. Very similar as the "too small to go in" apprach where whole
 // groups or airport drop out of view.
