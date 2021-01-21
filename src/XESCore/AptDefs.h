@@ -77,11 +77,11 @@ enum {
 	apt_freq_twr_1k		= 1054,
 	apt_freq_app_1k		= 1055,
 	apt_freq_dep_1k		= 1056,
-	
+
 	apt_flow_rwy_rule	= 1100,
 	apt_flow_pattern	= 1101,
 	apt_flow_rwy_rule1k	= 1110,         // XP 1130 1kHz resolution freq
-	
+
 	apt_taxi_header		= 1200,			// 1200 <name>
 	apt_taxi_node		= 1201,			// 1201 <lat> <lon> <type> <id, 0 based sequence, ascending> <name>
 	apt_taxi_edge		= 1202,			// 1202 <src> <dst> <oneway flag> <runway flag/taxi width> <name>
@@ -97,10 +97,10 @@ enum {
 	apt_startup_loc_new	= 1300,			// 1300 lat lon heading misc|gate|tie_down|hangar traffic name
 	apt_startup_loc_extended = 1301,	// 1301 size opertaions_type airline_list
 	apt_meta_data = 1302,				// 1302 <key> <value>
-	
+
 	apt_truck_parking	= 1400,			// 1400 lat lon heading type cars name
 	apt_truck_destination = 1401,		// 1401 lat lon heading type|type|type... name
-	
+
 	// Surface codes
 	apt_surf_none		= 0,
 	apt_surf_asphalt,
@@ -118,6 +118,14 @@ enum {
 	apt_surf_water,
 	apt_surf_ice,					// 850 only
 	apt_surf_transparent,
+	apt_surf_asphalt_1   = 20,
+	apt_surf_asphalt_2,
+	apt_surf_asphalt_3,
+	apt_surf_asphalt_4,
+	apt_surf_asphalt_5,
+	apt_surf_concrete_1  = 30,
+	apt_surf_concrete_2,
+	apt_surf_concrete_3,
 
 	// Light Fixture Codes (850)
 	apt_gls_vasi			= 1,
@@ -143,6 +151,7 @@ enum {
 	apt_reil_none = 0,
 	apt_reil_omni,
 	apt_reil_uni,
+	apt_no_reil_but_thr,  // added for (1200)
 	// Edge Light Codes (810)
 	apt_edge_none_810 = 1,
 	apt_edge_MIRL_810,
@@ -179,6 +188,14 @@ enum {
 	apt_shoulder_none = 0,
 	apt_shoulder_asphalt,
 	apt_shoulder_concrete,
+	apt_shoulder_asphalt_1 = 20,
+	apt_shoulder_asphalt_2,
+	apt_shoulder_asphalt_3,
+	apt_shoulder_asphalt_4,
+	apt_shoulder_asphalt_5,
+	apt_shoulder_concrete_1 = 30,
+	apt_shoulder_concrete_2,
+	apt_shoulder_concrete_3,
 
 	// Runway markings
 	apt_mark_none = 0,
@@ -187,8 +204,17 @@ enum {
 	apt_mark_precision,
 	apt_mark_non_precision_UK,	// 850 only
 	apt_mark_precision_UK,
+	apt_mark_visualY = 11,
+	apt_mark_non_precisionY,
+	apt_mark_precisionY,
 	// Helipad Markings
 	apt_mark_heli_default = 0,	// 850 only
+
+	// Rwu Marking sizes (1200)
+	apt_mark_auto = 0,
+	apt_mark_small,
+	apt_mark_medium,
+	apt_mark_large,
 
 	// Airport beacons
 	apt_beacon_none = 0,
@@ -236,30 +262,30 @@ enum {
 	apt_light_hold_short_flash,
 	apt_light_hold_short_centerline,
 	apt_light_bounary,
-	
+
 	// ATC Crap
-	
+
 	apt_pattern_left = 1,
 	apt_pattern_right = 2,
-	
+
 	atc_traffic_heavies = 1,
 	atc_traffic_jets = 2,
 	atc_traffic_turbos = 4,
 	atc_traffic_props = 8,
 	atc_traffic_helis = 16,
 	atc_traffic_fighters = 32,
-	
+
 	atc_traffic_all = (atc_traffic_heavies|atc_traffic_jets|atc_traffic_turbos|atc_traffic_props|atc_traffic_helis|atc_traffic_fighters),
-	
+
 	atc_op_arrivals = 1,
 	atc_op_departures = 2,
 	atc_op_all = (atc_op_arrivals | atc_op_departures),
-	
+
 	atc_ramp_misc = 0,
 	atc_ramp_gate = 1,
 	atc_ramp_tie_down = 2,
 	atc_ramp_hangar = 3,
-	
+
 	atc_width_A = 0,
 	atc_width_B = 1,
 	atc_width_C = 2,
@@ -272,7 +298,7 @@ enum {
 	ramp_operation_airline = 2,
 	ramp_operation_cargo = 3,
 	ramp_operation_military = 4,
-	
+
 	//First entry of the service truck types
 	apt_truck_baggage_loader = 0,
 	apt_truck_baggage_train,
@@ -465,8 +491,8 @@ struct AptRunwayRule_t {
 	int				dep_heading_lo;		// lo == hi if "any" is okay.
 	int				dep_heading_hi;		// This filters the use of the runway by where we are going, to keep traffic from crossing in-air.
 	int				ini_heading_lo;		// This is the range of initial headings the tower can issue.
-	int				ini_heading_hi;		
-};	
+	int				ini_heading_hi;
+};
 typedef vector<AptRunwayRule_t>	AptRunwayRuleVector;
 
 struct AptWindRule_t {
@@ -490,7 +516,7 @@ struct AptFlow_t {
 	int							ceiling_ft;
 	float						visibility_sm;
 	AptTimeRuleVector			time_rules;
-	AptWindRuleVector			wind_rules;	
+	AptWindRuleVector			wind_rules;
 	int							pattern_side;
 	string						pattern_runway;
 	AptRunwayRuleVector			runway_rules;
@@ -519,7 +545,7 @@ struct AptRouteEdge_t : AptEdgeBase_t {
 	set<string>					hot_depart;
 	set<string>					hot_arrive;
 	set<string>					hot_ils;
-	
+
 };
 
 struct AptServiceRoadEdge_t : AptEdgeBase_t {
@@ -570,10 +596,9 @@ struct AptInfo_t {
 
 	AptPavementVector	pavements;				// 810 structures
 	AptGateVector		gates;					// shared structures
-	
+
 	AptTruckParkingVector		truck_parking;
 	AptTruckDestinationVector	truck_destinations;
-	
 	AptTowerPt_t		tower;
 	AptBeacon_t			beacon;
 	AptWindsockVector	windsocks;

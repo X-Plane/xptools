@@ -92,12 +92,13 @@ private:
 
 	WED_PropIntEnum			surface;
 	WED_PropIntEnum			shoulder;
+	WED_PropDoubleTextMeters	shoulder_width;
 	WED_PropDoubleText		roughness;
 	WED_PropBoolText		center_lites;
 	WED_PropIntEnum			edge_lites;
 	WED_PropBoolText		remaining_signs;
+	WED_PropIntEnum			line_size;
 
-//	WED_PropStringText			id1;
 	WED_PropDoubleTextMeters	disp1;
 	WED_PropDoubleTextMeters	blas1;
 	WED_PropIntEnum				mark1;
@@ -105,7 +106,6 @@ private:
 	WED_PropBoolText			tdzl1;
 	WED_PropIntEnum				reil1;
 
-//	WED_PropStringText			id2;
 	WED_PropDoubleTextMeters	disp2;
 	WED_PropDoubleTextMeters	blas2;
 	WED_PropIntEnum				mark2;

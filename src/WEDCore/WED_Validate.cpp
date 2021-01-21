@@ -2009,7 +2009,7 @@ static void ValidateCIFP(const vector<WED_Runway *>& runways, const vector<WED_S
 
 			float CIFP_LOCATION_ERROR = 10.0;
 
-			if(r->GetSurface() != surf_Asphalt && r->GetSurface() != surf_Concrete)   // for unpaved runways ...
+			if(r->GetSurface() >= surf_Grass)   // for unpaved runways ...
 			{
 				float r_wid = r->GetWidth() / 2.0;
 				CIFP_LOCATION_ERROR =  fltlim(r_wid, CIFP_LOCATION_ERROR, 50.0);   // allow the error circle to be as wide as a unpaved runway, within reason

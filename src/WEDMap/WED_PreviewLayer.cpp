@@ -181,6 +181,61 @@ static bool setup_pol_texture(ITexMgr * tman, const pol_info_t& pol, double head
 	return true;
 }
 
+static bool setup_taxi_texture(int surface_code, double heading, const Point2& centroid, GUI_GraphState * g, WED_MapZoomerNew * z, float alpha,
+		IResolver * resolver)
+{
+
+	int surface_num = ENUM_Export(surface_code);
+	if(surface_num >= apt_surf_asphalt_1)
+	{
+		char buf[64];
+		sprintf(buf, "lib/airport/default_runways/%s_%d/runway.pol", surface_num < apt_surf_concrete_1 ? "asphalt" : "concrete", (surface_num % 10) + 1);
+
+		WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
+		ITexMgr *	tman = WED_GetTexMgr(resolver);
+		const pol_info_t * pol_info;
+
+		if(rmgr->GetPol(buf, pol_info))
+			if(setup_pol_texture(tman, *pol_info, heading, false, centroid, g, z, alpha))
+				return true;
+
+		surface_code = surface_num < apt_surf_concrete_1 ? surf_Asphalt : surf_Concrete;
+	}
+
+	int tex_id = 0;
+
+	switch(surface_code)
+	{
+		case shoulder_Asphalt:
+		case surf_Asphalt:	tex_id = GUI_GetTextureResource("asphalt.png",tex_Wrap+tex_Linear+tex_Mipmap,NULL);	break;
+		case shoulder_Concrete:
+		case surf_Concrete:	tex_id = GUI_GetTextureResource("concrete.png",tex_Wrap+tex_Linear+tex_Mipmap,NULL);break;
+		case surf_Grass:	tex_id = GUI_GetTextureResource("grass.png",tex_Wrap+tex_Linear+tex_Mipmap,NULL);	break;
+		case surf_Dirt:		tex_id = GUI_GetTextureResource("dirt.png",tex_Wrap+tex_Linear+tex_Mipmap,NULL);	break;
+		case surf_Gravel:	tex_id = GUI_GetTextureResource("gravel.png",tex_Wrap+tex_Linear+tex_Mipmap,NULL);	break;
+		case surf_Lake:		tex_id = GUI_GetTextureResource("lake.png",tex_Wrap+tex_Linear+tex_Mipmap,NULL);	break;
+		case surf_Water:	tex_id = GUI_GetTextureResource("water.png",tex_Wrap+tex_Linear+tex_Mipmap,NULL);	break;
+		case surf_Snow:		tex_id = GUI_GetTextureResource("snow.png",tex_Wrap+tex_Linear+tex_Mipmap,NULL);	break;
+		case surf_Trans:
+		case shoulder_None:
+		default: return false;
+	}
+	if (!tex_id)
+	{
+		g->SetState(false,0,false,true,true,false,false);
+		glColor4f(0.5,0.5,0.5,alpha);
+		return true;
+	}
+	else
+	{
+		g->SetState(false,1,false,true,true,false,false);
+		glColor4f(1,1,1,alpha);
+		g->BindTex(tex_id,0);
+		setup_transformation(heading, 6.25, 6.25, centroid, z);
+		return true;
+	}
+}
+
 struct	Obj_DrawStruct {
 	GUI_GraphState *	g;
 	int					tex;
@@ -428,7 +483,8 @@ struct sort_item_by_layer {	bool operator()(WED_PreviewItem * lhs, WED_PreviewIt
 struct	preview_runway : public WED_PreviewItem {
 	WED_Runway * rwy;
 	int			 do_shoulders;
-	preview_runway(WED_Runway * r, int l, int is_shoulders) : WED_PreviewItem(l), rwy(r), do_shoulders(is_shoulders) { }
+	IResolver * res;
+	preview_runway(WED_Runway * r, int l, int is_shoulders, IResolver * re) : WED_PreviewItem(l), rwy(r), do_shoulders(is_shoulders), res(re) { }
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
 	{
 		Point2 	corners[4], shoulders[8], blas1[4], blas2[4];
@@ -444,14 +500,14 @@ struct	preview_runway : public WED_PreviewItem {
 		{
 			// "Solid" geometry.
 			if(!do_shoulders)
-			if (setup_taxi_texture(rwy->GetSurface(),rwy->GetHeading(), zoomer->LLToPixel(rwy->GetCenter()), g,zoomer, mPavementAlpha))
+			if (setup_taxi_texture(rwy->GetSurface(),rwy->GetHeading(), zoomer->LLToPixel(rwy->GetCenter()), g,zoomer, mPavementAlpha, res))
 			{
 											glShape2v(GL_QUADS, corners, 4);
 				if (has_blas1)				glShape2v(GL_QUADS, blas1,4);
 				if (has_blas2)				glShape2v(GL_QUADS, blas2,4);
 			}
 			if(do_shoulders)
-			if (setup_taxi_texture(rwy->GetShoulder(),rwy->GetHeading(), zoomer->LLToPixel(rwy->GetCenter()), g,zoomer, mPavementAlpha))
+			if (setup_taxi_texture(rwy->GetShoulder(),rwy->GetHeading(), zoomer->LLToPixel(rwy->GetCenter()), g,zoomer, mPavementAlpha, res))
 			{
 				if (has_shoulders)			glShape2v(GL_QUADS, shoulders, 8);
 			}
@@ -538,18 +594,18 @@ struct	preview_runway : public WED_PreviewItem {
 
 struct	preview_helipad : public WED_PreviewItem {
 	WED_Helipad * heli;
-	preview_helipad(WED_Helipad * h, int l) : WED_PreviewItem(l), heli(h) { }
+	IResolver * res;
+	preview_helipad(WED_Helipad * h, int l, IResolver * r) : WED_PreviewItem(l), heli(h), res(r) { }
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
 	{
-		GLfloat storage[4];
-		Point2 corners[4];
-		heli->GetCorners(gis_Geo,corners);
-		zoomer->LLToPixelv(corners, corners, 4);
-
 		if (mPavementAlpha > 0.0f)
 		{
-			g->SetState(false,0,false, true,true, false,false);
-			glColor4fv(WED_Color_Surface(heli->GetSurface(), mPavementAlpha, storage));
+			Point2 corners[4];
+			heli->GetCorners(gis_Geo, corners);
+			zoomer->LLToPixelv(corners, corners, 4);
+
+			setup_taxi_texture(heli->GetSurface(),heli->GetHeading(), corners[0], g, zoomer, mPavementAlpha, res);
+
 			glShape2v(GL_QUADS, corners, 4);
 		}
 	}
@@ -601,7 +657,8 @@ struct	preview_polygon : public WED_PreviewItem {
 
 struct	preview_taxiway : public preview_polygon {
 	WED_Taxiway * taxi;
-	preview_taxiway(WED_Taxiway * t, int l) : preview_polygon(t, l, false), taxi(t) { }
+	IResolver * res;
+	preview_taxiway(WED_Taxiway * t, int l, IResolver * r) : preview_polygon(t, l, false), taxi(t), res(r) { }
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
 	{
 		// I tried "LODing" out the solid pavement, but the margin between when the pavement can disappear and when the whole
@@ -613,7 +670,7 @@ struct	preview_taxiway : public preview_polygon {
 		taxi->GetOuterRing()->GetNthPoint(0)->GetLocation(gis_Geo, centroid);
 		centroid = zoomer->LLToPixel(centroid);
 
-		if (setup_taxi_texture(taxi->GetSurface(), taxi->GetHeading(), centroid, g, zoomer, mPavementAlpha))
+		if (setup_taxi_texture(taxi->GetSurface(), taxi->GetHeading(), centroid, g, zoomer, mPavementAlpha, res))
 		{
 			preview_polygon::preview_polygon::draw_it(zoomer,g,mPavementAlpha);
 		}
@@ -1220,7 +1277,6 @@ struct	preview_pol : public preview_polygon {
 	}
 };
 
-
 struct	preview_autogen: public preview_polygon {
 	WED_AutogenPlacement * ags;
 	IResolver * resolver;
@@ -1570,7 +1626,6 @@ struct	preview_truck : public WED_PreviewItem {
 	}
 };
 
-
 struct	preview_light : public WED_PreviewItem {
 	WED_LightFixture * lgt;
 	IResolver * resolver;
@@ -1679,14 +1734,14 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		WED_Runway * rwy = SAFE_CAST(WED_Runway,entity);
 		if(rwy)
 		{
-			mPreviewItems.push_back(new preview_runway(rwy,mRunwayLayer++,0));
-			mPreviewItems.push_back(new preview_runway(rwy,mShoulderLayer++,1));
+			mPreviewItems.push_back(new preview_runway(rwy,mRunwayLayer++,0,GetResolver()));
+			mPreviewItems.push_back(new preview_runway(rwy,mShoulderLayer++,1,GetResolver()));
 		}
 	}
 	else if (sub_class == WED_Helipad::sClass)
 	{
 		WED_Helipad * heli = SAFE_CAST(WED_Helipad,entity);
-		if(heli)	mPreviewItems.push_back(new preview_helipad(heli,mRunwayLayer++));
+		if(heli)	mPreviewItems.push_back(new preview_helipad(heli,mRunwayLayer++,GetResolver()));
 	}
 	else if (sub_class == WED_Sealane::sClass)
 	{
@@ -1698,7 +1753,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		WED_Taxiway * taxi = SAFE_CAST(WED_Taxiway,entity);
 		if(taxi)
 		{
-			mPreviewItems.push_back(new preview_taxiway(taxi,mTaxiLayer++));
+			mPreviewItems.push_back(new preview_taxiway(taxi,mTaxiLayer++,GetResolver()));
 			if(GetZoomer()->GetPPM() * 0.4 > MIN_PIXELS_PREVIEW)        // there can be so many, make visibility decision here already for performance
 			{
 				IGISPointSequence * ps = taxi->GetOuterRing();

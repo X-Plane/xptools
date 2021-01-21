@@ -4322,7 +4322,7 @@ static bool IsRwyMatching(const WED_Runway * rwy, const struct changelist_t * en
     Point2 rwy_loc0, rwy_loc1;
 	Point2 corners[4];
 
-	if (rwy->GetSurface() != surf_Asphalt && rwy->GetSurface() != surf_Concrete ) return 0;      // if its not solid data - we're not moving the airport because of it
+	if (rwy->GetSurface() >= surf_Grass) return 0;      // if its not solid data - we're not moving the airport because of it
 
 	rwy->GetTarget()->GetLocation(gis_Geo, rwy_loc1);
 	if (rwy->GetCornersDisp2(corners))
@@ -4795,10 +4795,19 @@ static int get_surface(WED_Thing * t)
 	{
 		string resource;
 		polygon->GetResource(resource);
+		int surf_num = 0;
+
+		if(resource.substr(0,strlen("lib/airport/default_runways/")) == "lib/airport/default_runways/")
+		{
+			auto pos = resource.find('_', strlen("lib/airport/default_runways/"));
+			if(pos != string::npos)
+				surf_num = resource[pos + 1] - '0' + 1;
+		}
+
 		if (resource.find("concrete") != string::npos)
-			return surf_Concrete;
+			return intlim(surf_Concrete + surf_num, surf_Concrete, surf_Grass -1);
 		else
-			return surf_Asphalt;
+			return intlim(surf_Asphalt + surf_num, surf_Asphalt, surf_Concrete -1);
 	}
 	WED_LinePlacement * line = dynamic_cast<WED_LinePlacement*>(t);
 	if (line)
@@ -4833,16 +4842,38 @@ static void set_surface(WED_Thing * t, int surface, WED_LibraryMgr * lmgr)
 	WED_Taxiway * taxiway = dynamic_cast<WED_Taxiway*>(t);
 	if (taxiway)
 	{
-		taxiway->SetSurface(surface);
-		return;
+		if(ENUM_Domain(surface) == Surface_Type)
+			taxiway->SetSurface(surface);
+		else
+			taxiway->SetSurface(surf_Asphalt);
 	}
 	WED_PolygonPlacement * polygon = dynamic_cast<WED_PolygonPlacement*>(t);
 	if (polygon)
 	{
-		if (surface == surf_Asphalt)
-			polygon->SetResource("lib/airport/pavement/asphalt_3D.pol");
+		string resource;
+		if (ENUM_Domain(surface) == Surface_Type && ENUM_Export(surface) >= apt_surf_asphalt_1)
+		{
+			resource = "lib/airport/default_runways/";
+			if (surface >= surf_Concrete_1)
+			{
+				resource += "concrete";
+				resource += '_';
+				resource += to_string(surface - surf_Concrete);
+			}
+			else
+			{
+				resource += "asphalt";
+				resource += '_';
+				resource += to_string(surface - surf_Asphalt);
+			}
+			resource += "/runway.pol";
+		}
+		else if (surface == surf_Concrete)
+			resource = "lib/airport/pavement/concrete_1D.pol";
 		else
-			polygon->SetResource("lib/airport/pavement/concrete_1D.pol");
+			resource = "lib/airport/pavement/asphalt_1D.pol";
+
+		polygon->SetResource(resource);
 		return;
 	}
 	WED_LinePlacement * line = dynamic_cast<WED_LinePlacement*>(t);
@@ -4853,9 +4884,10 @@ static void set_surface(WED_Thing * t, int surface, WED_LibraryMgr * lmgr)
 		{
 			line->SetResource(vpath);
 		}
+		return;
 	}
 	WED_AirportChain * chain = dynamic_cast<WED_AirportChain*>(t);
-	if(chain)
+	if(chain && ENUM_Domain(surface) == LinearFeature)
 	{
 		set<int> attr;
 		attr.insert(surface);

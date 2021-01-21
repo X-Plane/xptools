@@ -392,6 +392,8 @@
 		<Unit filename="../../src/WEDEntities/WED_Group.h" />
 		<Unit filename="../../src/WEDEntities/WED_Helipad.cpp" />
 		<Unit filename="../../src/WEDEntities/WED_Helipad.h" />
+		<Unit filename="../../src/WEDEntities/WED_Jetway.cpp" />
+		<Unit filename="../../src/WEDEntities/WED_Jetway.h" />
 		<Unit filename="../../src/WEDEntities/WED_KeyObjects.cpp" />
 		<Unit filename="../../src/WEDEntities/WED_KeyObjects.h" />
 		<Unit filename="../../src/WEDEntities/WED_LightFixture.cpp" />
@@ -609,6 +611,14 @@
 		<Unit filename="../../src/WEDResources/map_tools.png" />
 		<Unit filename="../../src/WEDResources/map_tools2_blank.png" />
 		<Unit filename="../../src/WEDResources/map_tools_blank.png" />
+		<Unit filename="../../src/WEDResources/pavement/asphalt.png" />
+		<Unit filename="../../src/WEDResources/pavement/concrete.png" />
+		<Unit filename="../../src/WEDResources/pavement/dirt.png" />
+		<Unit filename="../../src/WEDResources/pavement/grass.png" />
+		<Unit filename="../../src/WEDResources/pavement/gravel.png" />
+		<Unit filename="../../src/WEDResources/pavement/lake.png" />
+		<Unit filename="../../src/WEDResources/pavement/snow.png" />
+		<Unit filename="../../src/WEDResources/pavement/water.png" />
 		<Unit filename="../../src/WEDResources/push_buttons.png" />
 		<Unit filename="../../src/WEDResources/pushbutton.png" />
 		<Unit filename="../../src/WEDResources/radiobutton.png" />

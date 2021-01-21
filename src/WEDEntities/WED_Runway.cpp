@@ -46,10 +46,12 @@ TRIVIAL_COPY(WED_Runway, WED_GISLine_Width)
 WED_Runway::WED_Runway(WED_Archive * a, int i) : WED_GISLine_Width(a,i),
 	surface			(this,PROP_Name("Surface",				XML_Name("runway","surface")),		Surface_Type,	surf_Concrete),
 	shoulder		(this,PROP_Name("Shoulder",				XML_Name("runway","shoulder")),		Shoulder_Type,	shoulder_None),
+	shoulder_width	(this,PROP_Name("Shoulder Width",		XML_Name("runway","shoulder_width")),0,4,1),
 	roughness		(this,PROP_Name("Roughness",			XML_Name("runway","roughness")),	0.25,4,2),
 	center_lites	(this,PROP_Name("Centerline Lights",	XML_Name("runway","center_lites")),	1),
 	edge_lites		(this,PROP_Name("Edge Lights",			XML_Name("runway","edge_lites")),	Edge_Lights,	edge_MIRL),
 	remaining_signs	(this,PROP_Name("Distance Signs",		XML_Name("runway","distance_signs")),1),
+	line_size		(this,PROP_Name("Line Size",			XML_Name("runway","line_size")),	Marking_Size,	mark_Auto),
 
 	disp1			(this,PROP_Name("Displaced Threshold 1",XML_Name("runway","displaced1")),	0,6,1),
 	blas1			(this,PROP_Name("Blastpad 1",			XML_Name("runway","blastpad1")),	0,6,1),
@@ -83,7 +85,7 @@ bool	WED_Runway::Cull(const Bbox2& b) const
 	if(GetCornersBlas2(c))
 	for(n=0;n<4;++n)
 		me+=c[n];
-	if(GetCornersShoulders(c))	
+	if(GetCornersShoulders(c))
 	for(n=0;n<8;++n)
 		me+=c[n];
 	if(appl1.value || appl2.value)
@@ -96,7 +98,7 @@ bool	WED_Runway::Cull(const Bbox2& b) const
 		if(appl1.value) me += p1 - dir / rwy_len * 735;  // covers 2400' ALSF
 		if(appl2.value) me += p2 + dir / rwy_len * 735;
 	}
-	return b.overlap(me);	
+	return b.overlap(me);
 }
 
 pair<int,int>	WED_Runway::GetRunwayEnumsOneway() const
@@ -106,10 +108,10 @@ pair<int,int>	WED_Runway::GetRunwayEnumsOneway() const
 
 	vector<string> parts;
 	tokenize_string(name.begin(),name.end(),back_inserter(parts), '/');
-	
+
 	if(parts.size() != 1 && parts.size() != 2)
 		return pair<int,int>(atc_Runway_None,atc_Runway_None);
-	
+
 	int e1 = ENUM_LookupDesc(ATCRunwayOneway,parts[0].c_str());
 	if(e1 == -1)
 	{
@@ -118,7 +120,7 @@ pair<int,int>	WED_Runway::GetRunwayEnumsOneway() const
 		if(e1 == -1)
 			return pair<int,int>(atc_Runway_None,atc_Runway_None);
 	}
-	
+
 	int e2 = atc_Runway_None;
 	if(parts.size() == 2)
 	{
@@ -131,10 +133,10 @@ pair<int,int>	WED_Runway::GetRunwayEnumsOneway() const
 				e2 = atc_Runway_None;
 		}
 	}
-	
+
 	return make_pair(e1, e2);
 }
-	
+
 int				WED_Runway::GetRunwayEnumsTwoway() const
 {
 	string name;
@@ -148,10 +150,10 @@ int				WED_Runway::GetRunwayEnumsTwoway() const
 	e1 = ENUM_LookupDesc(ATCRunwayTwoway,namez.c_str());
 	if(e1 != -1)
 		return e1;
-	
+
 	name += "/XXX";
 	namez += "/XXX";
-	
+
 	e1 = ENUM_LookupDesc(ATCRunwayTwoway,name.c_str());
 	if(e1 != -1)
 		return e1;
@@ -299,14 +301,24 @@ bool		WED_Runway::GetCornersShoulders(Point2 corners[8]) const
 	bounds[2] = corners[2];
 	bounds[3] = corners[3];
 
-	corners[0] = Segment2(bounds[0],bounds[3]).midpoint(-0.25);
-	corners[1] = Segment2(bounds[1],bounds[2]).midpoint(-0.25);
+	double shoulder_frac = 0.25;
+	if(gExportTarget >= wet_xplane_1200)
+	{
+		double w = GetWidth();
+		if (w > 0.5 && shoulder_width.value > 0.5) shoulder_frac = round(shoulder_width.value) / w;
+	}
+	Vector2 shoulder_vec(bounds[0],bounds[3]);
+	shoulder_vec *= shoulder_frac;
+
+	corners[0] = bounds[0] - shoulder_vec;
+	corners[1] = bounds[1] - shoulder_vec;
 	corners[2] = bounds[1];
 	corners[3] = bounds[0];
 	corners[4] = bounds[3];
 	corners[5] = bounds[2];
-	corners[6] = Segment2(bounds[1],bounds[2]).midpoint( 1.25);
-	corners[7] = Segment2(bounds[0],bounds[3]).midpoint( 1.25);
+	corners[6] = bounds[2] + shoulder_vec;
+	corners[7] = bounds[3] + shoulder_vec;
+
 	return true;
 }
 
@@ -380,10 +392,12 @@ void		WED_Runway::Import(const AptRunway_t& x, void (* print_func)(void *, const
 				 SetWidth	(x.width_mtr);
 
 	surface			= ENUM_Import(Surface_Type,		x.surf_code				);
-	shoulder		= ENUM_Import(Shoulder_Type,	x.shoulder_code			);
+	shoulder		= ENUM_Import(Shoulder_Type,	x.shoulder_code % 100	);
+	shoulder_width	= 								x.shoulder_code / 100	;
 	roughness		= fltlim(						x.roughness_ratio,0.0f,1.0f);
-	center_lites	=								x.has_centerline		 ;
-	edge_lites		= ENUM_Import(Edge_Lights,		x.edge_light_code		);
+	center_lites	=								x.has_centerline % 10	;
+	edge_lites		= ENUM_Import(Edge_Lights,		x.edge_light_code % 10	);
+	line_size		=								x.edge_light_code / 10	;
 	remaining_signs =								x.has_distance_remaining ;
 
 	if (surface == -1)
@@ -461,10 +475,10 @@ void		WED_Runway::Export(		 AptRunway_t& x) const
 							 x.width_mtr = GetWidth();
 
 	x.surf_code				 = ENUM_Export(surface.value   );
-	x.shoulder_code			 = ENUM_Export(shoulder.value  );
+	x.shoulder_code			 = ENUM_Export(shoulder.value  ) + 100 * intround(shoulder_width.value);
 	x.roughness_ratio		 = fltlim     (roughness,0.0f,1.0f);
-	x.has_centerline		 =			   center_lites		;
-	x.edge_light_code		 = ENUM_Export(edge_lites.value);
+	x.has_centerline		 =			   center_lites       + 10 * line_size.value;
+	x.edge_light_code		 = ENUM_Export(edge_lites.value)  + 10 * line_size.value;
 	x.has_distance_remaining =			   remaining_signs	;
 
 	string	full;
@@ -514,7 +528,7 @@ void  WED_Runway::PropEditCallback(int before)
 	static pair<int,int> old_enum_1wy;
 	static set<int> old_all_rwys;
 	static WED_Airport * apt;
-	
+
 	if (before)
 	{
 		StateChanged(wed_Change_Properties);
@@ -535,7 +549,7 @@ void  WED_Runway::PropEditCallback(int before)
 		int new_enum = GetRunwayEnumsTwoway();
 		if (new_enum == atc_rwy_None)
 		{
-			int	res = ConfirmMessage("New runway name is illegal, Smart Runway Rename can not be applied. Really use new name ?", 
+			int	res = ConfirmMessage("New runway name is illegal, Smart Runway Rename can not be applied. Really use new name ?",
 						"Yes, use new name", "Keep old name");
 			if(res == 0)
 				SetName(string(ENUM_Desc(old_enum)));
@@ -546,7 +560,7 @@ void  WED_Runway::PropEditCallback(int before)
 			int renamed_taxi=0;         // keep statistics of modified items
 			int renamed_flows=0;
 			int renamed_signs=0;
-			
+
 			vector<WED_TaxiRoute *>	taxi_routes;
 			if(apt) CollectRecursive(apt,back_inserter(taxi_routes), WED_TaxiRoute::sClass);
 			vector<WED_ATCFlow *> flows;
@@ -555,21 +569,21 @@ void  WED_Runway::PropEditCallback(int before)
 			if(apt) CollectRecursive(apt, back_inserter(uses), IgnoreVisiblity, TakeAlways, WED_ATCRunwayUse::sClass);
 			vector<WED_AirportSign *> signs;
 			if(apt) CollectRecursive(apt, back_inserter(signs), WED_AirportSign::sClass);
-			
+
 			if (old_all_rwys.find(new_enum) != old_all_rwys.end())
 			{
 				DoUserAlert("Another runway of same name already exists, Smart Runway Rename will not be applied.");
 				return;
 			}
-	
-			if(apt) 
+
+			if(apt)
 			{
 				apt->CommitCommand();
 				apt->StartCommand("Smart Runway Rename");
 			}
-			
+
 			pair<int,int> new_enum_1wy = GetRunwayEnumsOneway();
-			
+
 			for(vector<WED_TaxiRoute *>::iterator t = taxi_routes.begin(); t != taxi_routes.end(); ++t)
 			{
 				// move all hotzone tags
@@ -587,7 +601,7 @@ void  WED_Runway::PropEditCallback(int before)
 					hotZ.insert(new_enum_1wy.second);
 				}
 				(*t)->SetHotArrive(hotZ);
-				
+
 				hotZ = (*t)->GetHotDepart();
 				if (hotZ.erase(old_enum_1wy.first))
 				{
@@ -600,7 +614,7 @@ void  WED_Runway::PropEditCallback(int before)
 					hotZ.insert(new_enum_1wy.second);
 				}
 				(*t)->SetHotDepart(hotZ);
-				
+
 				hotZ = (*t)->GetHotILS();
 				if (hotZ.erase(old_enum_1wy.first))
 				{
@@ -613,7 +627,7 @@ void  WED_Runway::PropEditCallback(int before)
 					hotZ.insert(new_enum_1wy.second);
 				}
 				(*t)->SetHotILS(hotZ);
-			
+
 				if ((*t)->GetRunway() == old_enum)
 				{
 					renamed=true;
@@ -651,7 +665,7 @@ void  WED_Runway::PropEditCallback(int before)
 			new_rwys.push_back(ENUM_Desc(new_enum_1wy.second));
 			old_rwys.push_back(ENUM_Desc(old_enum_1wy.first));
 			new_rwys.push_back(ENUM_Desc(new_enum_1wy.first));
-			
+
 			if (old_rwys.back()[0] == '0')  // also search & replace a sign that has no leading zero in rwy number
 			{
 				old_rwys.push_back(old_rwys.back().substr(1));
@@ -670,10 +684,10 @@ void  WED_Runway::PropEditCallback(int before)
 					{
 						size_t len = label.length();
 						size_t next_pos = pos + old_rwy.length();
-						
+
 						char prec_char = len > 0 ? label[pos-1] : '!';
 						char next_char = next_pos < len ? label[next_pos] : '!';
-						
+
 						// gotta be a bit more conservative than just looking for a substring,
 						// don't change a sign "GATE 12" when renaming Rwy 12.
 						if (!isalnum(prec_char) && !isalnum(next_char))
