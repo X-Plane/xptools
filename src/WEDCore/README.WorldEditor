@@ -15,6 +15,8 @@ CHANGE HISTORY
 
 WED 2.4.0
    Bug Fix:
+   - WED-1353 GUI_ScrollBar has uninitialized vars
+   - WED-1347 stops cursor blink timer in Settings window when loose focus
    - validate ICAO_Code meta tag to meet ICAO nomenclature
    Features:
    - use native secure internet connectivity on all operating systems
