@@ -31,7 +31,7 @@
 #include "IPropertyObject.h"
 class	GUI_Pane;
 
-class	WED_MapToolNew : public WED_MapLayer, public WED_PropertyHelper {
+class	WED_MapToolNew : public WED_MapLayerWithZoomer, public WED_PropertyHelper {
 public:
 
 						 		 WED_MapToolNew(const char * tool_name, GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver);

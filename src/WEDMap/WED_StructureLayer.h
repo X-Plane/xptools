@@ -3,7 +3,7 @@
 
 #include "WED_MapLayer.h"
 
-class	WED_StructureLayer : public WED_MapLayer {
+class	WED_StructureLayer : public WED_MapLayerWithZoomer {
 public:
 
 						 WED_StructureLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver);

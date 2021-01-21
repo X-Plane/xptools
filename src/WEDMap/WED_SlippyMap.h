@@ -32,7 +32,7 @@ class	WED_file_cache_request;
 
 enum yCoord_t { yNone, yNormal, yYahoo, yOSGeo };
 
-class	WED_SlippyMap : public WED_MapLayer, public GUI_Timer {
+class	WED_SlippyMap : public WED_MapLayerWithZoomer, public GUI_Timer {
 public:
 
 					 WED_SlippyMap(GUI_Pane * h, WED_MapZoomerNew * zoomer, IResolver * resolver);

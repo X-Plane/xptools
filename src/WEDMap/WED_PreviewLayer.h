@@ -65,7 +65,7 @@ struct	WED_PreviewItem {
 };
 
 
-class WED_PreviewLayer  : public WED_MapLayer {
+class WED_PreviewLayer  : public WED_MapLayerWithZoomer {
 public:
 
 						 WED_PreviewLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver);

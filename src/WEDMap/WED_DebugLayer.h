@@ -26,7 +26,7 @@
 
 #include "WED_MapLayer.h"
 
-class WED_DebugLayer : public WED_MapLayer {
+class WED_DebugLayer : public WED_MapLayerWithZoomer {
 public:
 						 WED_DebugLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver);
 	virtual				~WED_DebugLayer();

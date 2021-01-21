@@ -33,7 +33,7 @@
 	#include <GL/gl.h>
 #endif
 
-WED_MapBkgnd::WED_MapBkgnd(GUI_Pane * h, WED_MapZoomerNew * zoomer, IResolver * i) : WED_MapLayer(h, zoomer, i)
+WED_MapBkgnd::WED_MapBkgnd(GUI_Pane * h, WED_MapZoomerNew * zoomer, IResolver * i) : WED_MapLayerWithZoomer(h, zoomer, i)
 {
 }
 

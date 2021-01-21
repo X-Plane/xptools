@@ -171,7 +171,7 @@ static void get_tile_range_for_box(const double bounds[4], int z, int tiles[4])
 
 
 WED_SlippyMap::WED_SlippyMap(GUI_Pane * h, WED_MapZoomerNew * zoomer, IResolver * resolver)
-	: WED_MapLayer(h, zoomer, resolver),
+	: WED_MapLayerWithZoomer(h, zoomer, resolver),
 	m_cache_request(NULL),
 	mMapMode(0)
 {

@@ -336,7 +336,7 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	// draw a bar of suitable length to indicate current map scale
 	#define MIN_BAR_LEN  100    // minimum length of bar in pixels
 	
-	float scale = MIN_BAR_LEN * (gIsFeet ? MTR_TO_FT : 1.0) / cur->mZoomer->GetPPM();
+	float scale = MIN_BAR_LEN * (gIsFeet ? MTR_TO_FT : 1.0) / cur->GetProjection()->XYUnitsPerMeter();
 	int bar_len;
 	int bar_Yoff = textH * 0.75;
 	

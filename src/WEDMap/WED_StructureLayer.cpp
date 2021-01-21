@@ -73,7 +73,7 @@
 
 
 WED_StructureLayer::WED_StructureLayer(GUI_Pane * h, WED_MapZoomerNew * zoomer, IResolver * resolver) :
-	WED_MapLayer(h, zoomer, resolver)
+	WED_MapLayerWithZoomer(h, zoomer, resolver)
 {
 	mRealLines = true;
 	mVertices = true;

@@ -14,7 +14,7 @@
 
 class WED_RampPosition;
 
-class	WED_ATCLayer : public WED_MapLayer {
+class	WED_ATCLayer : public WED_MapLayerWithZoomer {
 public:
 
 						 WED_ATCLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver);

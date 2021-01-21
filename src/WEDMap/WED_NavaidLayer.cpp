@@ -397,7 +397,7 @@ static void parse_atc_dat(MFMemFile * str, vector<navaid_t>& mNavaids)
 
 
 WED_NavaidLayer::WED_NavaidLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver) :
-	WED_MapLayer(host,zoomer,resolver)
+	WED_MapLayerWithZoomer(host,zoomer,resolver)
 {
     SetVisible(false);
 	// ToDo: when using the gateway JSON data, initiate asynchronous load/update here.

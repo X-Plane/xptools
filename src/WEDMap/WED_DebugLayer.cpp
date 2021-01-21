@@ -28,7 +28,7 @@
 #include "WED_MapZoomerNew.h"
 
 WED_DebugLayer::WED_DebugLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver) : 
-	WED_MapLayer(host, zoomer, resolver)
+	WED_MapLayerWithZoomer(host, zoomer, resolver)
 {
 }
 

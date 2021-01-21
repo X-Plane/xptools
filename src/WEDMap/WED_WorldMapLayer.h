@@ -27,7 +27,7 @@
 #include "WED_MapLayer.h"
 class ITexMgr;
 
-class WED_WorldMapLayer : public WED_MapLayer {
+class WED_WorldMapLayer : public WED_MapLayerWithZoomer {
 public:
 
 						 WED_WorldMapLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver);

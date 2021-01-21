@@ -33,8 +33,9 @@
 
 #include "WED_MapZoomerNew.h"
 
-WED_MapLayer::WED_MapLayer(GUI_Pane * h, WED_MapZoomerNew * z, IResolver * i) :
-	mZoomer(z), mResolver(i), mHost(h), mHideFilter(NULL), mLockFilter(NULL)
+WED_MapLayer::WED_MapLayer(GUI_Pane * h, const WED_MapProjection * projection,
+	WED_Camera * camera, IResolver * i) :
+	mProjection(projection), mCamera(camera), mResolver(i), mHost(h), mHideFilter(NULL), mLockFilter(NULL)
 
 {
 	int dims[2];
@@ -65,22 +66,22 @@ WED_MapLayer::~WED_MapLayer()
 
 double		WED_MapLayer::GetFurnitureIconScale(void) const
 {
-	return doblim(GetZoomer()->GetPPM() * mFurnitureFactor,0.001,1.0);
+	return doblim(GetProjection()->XYUnitsPerMeter() * mFurnitureFactor,0.001,1.0);
 }
 
 double		WED_MapLayer::GetFurnitureIconRadius(void) const
 {
-	return doblim(GetZoomer()->GetPPM() * mFurnitureFactor,0.001,1.0) * mFurnitureRadius;
+	return doblim(GetProjection()->XYUnitsPerMeter() * mFurnitureFactor,0.001,1.0) * mFurnitureRadius;
 }
 
 double		WED_MapLayer::GetAirportIconScale(void) const
 {
-	return doblim(GetZoomer()->GetPPM() * mAirportFactor,0.5,1.0);
+	return doblim(GetProjection()->XYUnitsPerMeter() * mAirportFactor,0.5,1.0);
 }
 
 double		WED_MapLayer::GetAirportIconRadius(void) const
 {
-	return doblim(GetZoomer()->GetPPM() * mAirportFactor, 0.5,1.0) * mAirportRadius;
+	return doblim(GetProjection()->XYUnitsPerMeter() * mAirportFactor, 0.5,1.0) * mAirportRadius;
 }
 
 bool		WED_MapLayer::IsVisible(void) const
@@ -182,3 +183,6 @@ bool	WED_MapLayer::IsLockedNow(WED_Thing * ent) const
 	}
 	return e->GetLocked();
 }
+
+WED_MapLayerWithZoomer::WED_MapLayerWithZoomer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver)
+	: WED_MapLayer(host, &zoomer->Projection(), zoomer, resolver), mZoomer(zoomer) {}

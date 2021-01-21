@@ -38,7 +38,7 @@ struct navaid_t {
 	vector<Point2> shape;
 };
 
-class WED_NavaidLayer : public WED_MapLayer {
+class WED_NavaidLayer : public WED_MapLayerWithZoomer {
 public:
 
 						 WED_NavaidLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver);

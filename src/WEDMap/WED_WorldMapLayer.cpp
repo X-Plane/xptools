@@ -39,7 +39,7 @@
 #endif
 
 WED_WorldMapLayer::WED_WorldMapLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver) :
-	WED_MapLayer(host,zoomer,resolver)
+	WED_MapLayerWithZoomer(host,zoomer,resolver)
 {
 	mTexMgr = WED_GetTexMgr(resolver);
 	gPackageMgr->GetXPlaneFolder(mBitmapPath);

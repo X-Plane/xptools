@@ -24,7 +24,7 @@
 #include "WED_MapToolNew.h"
 
 
-WED_MapToolNew::WED_MapToolNew(const char * tname, GUI_Pane * h, WED_MapZoomerNew * z, IResolver * i) : WED_MapLayer(h, z, i), tool_name(tname)
+WED_MapToolNew::WED_MapToolNew(const char * tname, GUI_Pane * h, WED_MapZoomerNew * z, IResolver * i) : WED_MapLayerWithZoomer(h, z, i), tool_name(tname)
 {
 	has_anchor1 = false;
 	has_anchor2 = false;

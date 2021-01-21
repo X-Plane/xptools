@@ -29,6 +29,8 @@
 #define MIN_PIXELS_PREVIEW 5.0   // cutt off preview if object is (roughly) smaller than this many pixels.
 											// For airport lines/light, show structural preview if they are smaller than this instead
 
+class	WED_Camera;
+class	WED_MapProjection;
 class	WED_MapZoomerNew;
 class	GUI_GraphState;
 class	IGISEntity;
@@ -54,7 +56,8 @@ typedef vector<FilterSpec> MapFilter_t;
 class	WED_MapLayer {
 public:
 
-						 WED_MapLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver);
+						 WED_MapLayer(GUI_Pane * host, const WED_MapProjection * projection,
+							WED_Camera * camera, IResolver * resolver);
 	virtual				~WED_MapLayer();
 	
 	virtual	int					HandleClickDown(int inX, int inY, int inButton, GUI_KeyFlags modifiers) { return 0; }
@@ -83,16 +86,18 @@ public:
 	// it is assumed that ALL tools get clicks.  But by asking for clicks, layers can jump in and grab the mouse too.
 	virtual	void		GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks)=0;
 
+	bool				IsVisibleNow(IGISEntity * ent) const;
+	bool				IsVisibleNow(WED_Thing * ent) const;
+	bool				IsLockedNow(IGISEntity * ent) const;
+	bool				IsLockedNow(WED_Thing * ent) const;
+
 protected:
 
-	inline	WED_MapZoomerNew *	GetZoomer(void) const { return mZoomer; }
+	const WED_MapProjection *	GetProjection(void) const { return mProjection; }
+	WED_Camera *				GetCamera(void) const { return mCamera; }
 	inline	IResolver *			GetResolver(void) const { return mResolver; }
 	inline	GUI_Pane *			GetHost(void) const { return mHost; }
-	
-			bool				IsVisibleNow(IGISEntity * ent) const;
-			bool				IsVisibleNow(WED_Thing * ent) const;
-			bool				IsLockedNow(IGISEntity * ent) const;
-			bool				IsLockedNow(WED_Thing * ent) const;
+
 
 	// WED defines two types of icons: furniture icons for all the stuff in an airport (VASI/PAPI, signs, windsocks) and airport
 	// icons for the iconic representation of an entire airport at far view.  In both cases we have two vars:
@@ -109,13 +114,12 @@ protected:
 
 private:
 
-	friend		class	WED_Map;		// for visible-now filter accessors
+	friend		class	WED_Map;				// for visible-now filter accessors
 
 						 WED_MapLayer();
 
 	bool					mVisible;
 
-	WED_MapZoomerNew *		mZoomer;
 	IResolver *				mResolver;
 	GUI_Pane *				mHost;
 
@@ -128,6 +132,27 @@ private:
 	
 	const MapFilter_t *		mHideFilter;
 	const MapFilter_t *		mLockFilter;
+
+	const WED_MapProjection *	mProjection;
+	WED_Camera *				mCamera;
+
+};
+
+class	WED_MapLayerWithZoomer : public WED_MapLayer {
+public:
+
+	WED_MapLayerWithZoomer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver);
+
+protected:
+	WED_MapZoomerNew *	GetZoomer(void) const { return mZoomer; }
+
+private:
+
+	friend		class	WED_Map;		// for visible-now filter accessors
+
+	WED_MapLayerWithZoomer();
+
+	WED_MapZoomerNew *		mZoomer;
 
 };
 
