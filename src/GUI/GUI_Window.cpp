@@ -676,6 +676,29 @@ GUI_Window::~GUI_Window()
 	sWindows.erase(this);
 }
 
+void			GUI_Window::SetBoundsSafe(int x1, int y1, int x2, int y2)
+{
+	// This is a safety-hack.  The user's prefs may specify the window at a location that
+	// is off screen, either because the prefs are borked or because the doc came from
+	// a machine with a much larger desktop. So...
+	//
+	// If our current location does not allow for at least one 100x100 pixel corner to be
+	// inside the current Desktop (which is the bounding box around ALL monitors) - then
+	// ignore the values passed in and keep the window at its current position.
+
+	int safe_rect[4];
+	XWin::GetDesktop(safe_rect);
+	LOG_MSG("I/Win desktop rect %d %d %d %d\n", safe_rect[0], safe_rect[1], safe_rect[2], safe_rect[3]);
+
+	if (x1 < safe_rect[2] - 100 && y1 < safe_rect[3] - 100 &&
+		x2 >= safe_rect[0] + 100 && y2 >= safe_rect[1] + 100)
+	{
+		SetBounds(x1, y1, x2, y2);
+	}
+	else
+		LOG_MSG("W/Win SafeRect was triggerd\n");
+}
+
 void			GUI_Window::ClickDown(int inX, int inY, int inButton)
 {
 	DebugAssert(mMouseFocusPane[inButton] == NULL);
