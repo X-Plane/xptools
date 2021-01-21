@@ -82,6 +82,21 @@ void	WED_RampPosition::Export(		 AptGate_t& x) const
 	x.airlines = WED_RampPosition::CorrectAirlinesString(airlines.value);
 }
 
+Bbox3	WED_RampPosition::GetVisibleBounds() const
+{
+	Bbox2 bbox2;
+	Point2 tips[4];
+	GetTips(tips);
+
+	for (const auto& tip : tips)
+		bbox2 += tip;
+
+	Bbox3 bbox3(bbox2);
+	bbox3.p2.z = GetMaxHeight();
+
+	return bbox3;
+}
+
 void	WED_RampPosition::SetType(int	rt)
 {
 	ramp_type = rt;
@@ -185,6 +200,20 @@ void WED_RampPosition::GetTips(Point2 c[4]) const
 	c[3] = c[0] - right_dir * wingspan / 2.0 + nose_dir * wing_offset;
 
 	MetersToLLE(nosewheel_loc, 4, c);
+}
+
+double	WED_RampPosition::GetMaxHeight() const
+{
+	switch (width.value)
+	{
+	case width_A: return 6.1;
+	case width_B: return 9.1;
+	case width_C: return 13.7;
+	case width_D: return 18.3;
+	case width_E: return 20.1;
+	case width_F: return 24.4;
+	default: return 0.0;
+	}
 }
 
 int		WED_RampPosition::GetType() const

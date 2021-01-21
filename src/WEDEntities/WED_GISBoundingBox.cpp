@@ -99,6 +99,13 @@ bool			WED_GISBoundingBox::PtOnFrame		(GISLayer_t l,const Point2& p, double d) c
 	return true;
 }
 
+Bbox3	WED_GISBoundingBox::GetVisibleBounds() const
+{
+	Bbox2 bounds2d;
+	GetBounds(gis_Geo, bounds2d);
+	return Bbox3(bounds2d.xmin(), bounds2d.ymin(), 0.0, bounds2d.xmax(), bounds2d.ymax(), 0.0);
+}
+
 bool	WED_GISBoundingBox::Cull(const Bbox2& b) const
 {
 	Bbox2	me;

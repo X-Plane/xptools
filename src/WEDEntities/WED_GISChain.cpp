@@ -125,6 +125,13 @@ bool			WED_GISChain::PtOnFrame		(GISLayer_t l,const Point2& p, double d	 ) const
 	return false;
 }
 
+Bbox3	WED_GISChain::GetVisibleBounds() const
+{
+	Bbox2 bounds2d;
+	GetBounds(gis_Geo, bounds2d);
+	return Bbox3(bounds2d.xmin(), bounds2d.ymin(), 0.0, bounds2d.xmax(), bounds2d.ymax(), 0.0);
+}
+
 bool	WED_GISChain::Cull(const Bbox2& bounds) const
 {
 	Bbox2	me;

@@ -98,6 +98,13 @@ bool			WED_GISLine::PtOnFrame		(GISLayer_t l,const Point2& p, double dist ) cons
 	return s.is_near(p,dist);
 }
 
+Bbox3 WED_GISLine::GetVisibleBounds() const
+{
+	Bbox2 bounds2d;
+	GetBounds(gis_Geo, bounds2d);
+	return Bbox3(bounds2d.xmin(), bounds2d.ymin(), 0.0, bounds2d.xmax(), bounds2d.ymax(), 0.0);
+}
+
 bool WED_GISLine::Cull(const Bbox2& b) const
 {
 	Bbox2	me;

@@ -34,6 +34,7 @@ DECLARE_PERSISTENT(WED_Runway)
 
 public:
 
+	virtual Bbox3	GetVisibleBounds() const;
 	virtual	bool	Cull(const Bbox2& b) const;
 
 	// These routines return a rectangle for the given sub-rect of the runway.  Like all rects
@@ -89,6 +90,7 @@ public:
 	virtual	void         PropEditCallback(int before);
 
 private:
+	Bbox2		VisibleBounds2D() const;
 
 	WED_PropIntEnum			surface;
 	WED_PropIntEnum			shoulder;

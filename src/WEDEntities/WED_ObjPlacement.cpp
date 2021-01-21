@@ -153,6 +153,21 @@ double 	WED_ObjPlacement::GetVisibleMeters(void) const
 	return visibleWithinMeters;
 }
 
+Bbox3		WED_ObjPlacement::GetVisibleBounds() const
+{
+	// Make sure visibleWithinDeg has been updated.
+	GetVisibleDeg();
+
+	Point2	my_loc;
+	GetLocation(gis_Geo, my_loc);
+
+	double agl = (has_msl.value == obj_setAGL) ? msl.value : 0.0;
+	Point3 loc3d(my_loc.x(), my_loc.y(), agl);
+
+	return Bbox3(loc3d - Vector3(visibleWithinDeg, visibleWithinDeg, 0),
+				 loc3d + Vector3(visibleWithinDeg, visibleWithinDeg, height));
+}
+
 bool		WED_ObjPlacement::Cull(const Bbox2& b) const
 {
 	// Make sure visibleWithinDeg has been updated.

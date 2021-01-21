@@ -135,6 +135,14 @@ bool		WED_FacadePlacement::HasLayer		(GISLayer_t layer							  ) const
 	return					WED_GISPolygon::HasLayer(layer);
 }
 
+Bbox3		WED_FacadePlacement::GetVisibleBounds() const
+{
+	Bbox2 bounds2d;
+	GetBounds(gis_Geo, bounds2d);
+	// Add some slop to the height as the true rendered height may differ from the height that is set.
+	return Bbox3(bounds2d.xmin(), bounds2d.ymin(), 0.0, bounds2d.xmax(), bounds2d.ymax(), GetHeight() + 5.0);
+}
+
 void		WED_FacadePlacement::SetCustomWalls(bool has) 
 {
 	pick_walls = (has ? 1 : 0);

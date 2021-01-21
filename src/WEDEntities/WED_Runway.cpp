@@ -71,31 +71,15 @@ WED_Runway::~WED_Runway()
 {
 }
 
+Bbox3	WED_Runway::GetVisibleBounds() const
+{
+	Bbox2	me = VisibleBounds2D();
+	return Bbox3(me.xmin(), me.ymin(), 0.0, me.xmax(), me.ymax(), 0.0);
+}
+
 bool	WED_Runway::Cull(const Bbox2& b) const
 {
-	Bbox2	me;
-	GetBounds(gis_Geo,me);
-	Point2	c[8];
-	int n;
-	if(GetCornersBlas1(c))
-	for(n=0;n<4;++n)
-		me+=c[n];
-	if(GetCornersBlas2(c))
-	for(n=0;n<4;++n)
-		me+=c[n];
-	if(GetCornersShoulders(c))	
-	for(n=0;n<8;++n)
-		me+=c[n];
-	if(appl1.value || appl2.value)
-	{
-		Point2 p1, p2;
-		GetSource()->GetLocation(gis_Geo,p1);
-		GetTarget()->GetLocation(gis_Geo,p2);
-		Vector2 dir(p1, p2);
-		double rwy_len = LonLatDistMeters(p1, p2);
-		if(appl1.value) me += p1 - dir / rwy_len * 735;  // covers 2400' ALSF
-		if(appl2.value) me += p2 + dir / rwy_len * 735;
-	}
+	Bbox2	me = VisibleBounds2D();
 	return b.overlap(me);	
 }
 
@@ -698,3 +682,30 @@ void  WED_Runway::PropEditCallback(int before)
 	}
 }
 
+Bbox2 WED_Runway::VisibleBounds2D() const
+{
+	Bbox2	me;
+	GetBounds(gis_Geo, me);
+	Point2	c[8];
+	int n;
+	if (GetCornersBlas1(c))
+		for (n = 0; n < 4; ++n)
+			me += c[n];
+	if (GetCornersBlas2(c))
+		for (n = 0; n < 4; ++n)
+			me += c[n];
+	if (GetCornersShoulders(c))
+		for (n = 0; n < 8; ++n)
+			me += c[n];
+	if (appl1.value || appl2.value)
+	{
+		Point2 p1, p2;
+		GetSource()->GetLocation(gis_Geo, p1);
+		GetTarget()->GetLocation(gis_Geo, p2);
+		Vector2 dir(p1, p2);
+		double rwy_len = LonLatDistMeters(p1, p2);
+		if (appl1.value) me += p1 - dir / rwy_len * 735;  // covers 2400' ALSF
+		if (appl2.value) me += p2 + dir / rwy_len * 735;
+	}
+	return me;
+}

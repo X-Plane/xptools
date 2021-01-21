@@ -122,6 +122,12 @@ bool			WED_GISComposite::PtOnFrame		(GISLayer_t l, const Point2& p, double d) co
 	return false;
 }
 
+Bbox3 WED_GISComposite::GetVisibleBounds() const
+{
+	RebuildCache(CacheBuild(cache_Spatial | cache_Topological));
+	return mCacheVisibleBounds;
+}
+
 bool WED_GISComposite::Cull(const Bbox2& b) const
 {
 	Bbox2 me;
@@ -201,7 +207,8 @@ void	WED_GISComposite::RebuildCache(int flags) const
 	if(flags & cache_Spatial)
 	{
 		mCacheBounds = Bbox2();
-		mCacheBoundsUV = Bbox2();	
+		mCacheBoundsUV = Bbox2();
+		mCacheVisibleBounds = Bbox3();
 		int n = mEntities.size();
 		for (int i = 0; i <  n; ++i)
 		{
@@ -217,6 +224,7 @@ void	WED_GISComposite::RebuildCache(int flags) const
 					mCacheBoundsUV += child;
 				} else
 					mHasUV = false;
+				mCacheVisibleBounds += ent->GetVisibleBounds();
 			}
 		}
 	}		

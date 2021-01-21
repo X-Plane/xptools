@@ -42,6 +42,7 @@ public:
 	};
 
 	virtual	bool			HasLayer		(GISLayer_t layer							  ) const;
+	virtual Bbox3			GetVisibleBounds() const;
 
 			double		GetHeight(void) const;
 			void		SetHeight(double h);
