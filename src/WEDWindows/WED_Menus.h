@@ -117,6 +117,9 @@ enum {
 	wed_ToggleLiveView,
 #endif
 	wed_TogglePreview,
+	wed_TogglePreviewWindow,
+	wed_ShowMapAreaInPreviewWindow,
+	wed_CenterMapOnPreviewCamera,
 	wed_RestorePanes,
 	// Select Menu
 	wed_SelectParent,
