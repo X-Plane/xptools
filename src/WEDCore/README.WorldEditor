@@ -14,9 +14,11 @@ menu to view it online.
 CHANGE HISTORY
 
 WED 2.4.0
+   Bug Fix:
+   - validate ICAO_Code meta tag to meet ICAO nomenclature
    Features:
    - use native secure internet connectivity on all operating systems
-   - requires glibc-2.27 (ubuntu 18.04 and other 2018-era systems) despite building on 20.04
+   - show 3D preview for beacons, windsocks
 
 WED 2.3.1r1 12/22/20
    Features:
@@ -39,7 +41,7 @@ WED 2.3.0r2 10/19/20
     Bug Fix:
     - fix Orthophoto export to only run if image file is newer than textures on disk
     - fix temporary files after gateway import not removed
-    
+
 WED 2.3.0r1 10/7/20
     Bug Fix:
     - WED-1324: for XP1000+ targets export has_ATC in apt.dat rowcode 1 always as 0
@@ -190,7 +192,7 @@ WED 2.1.0b1 6/3/19
 	- multi-threaded DDS texture compression for large Orthophotos, 3.5x faster
 	- WED-1149: Improve download cache size management, reduces WED startup time
 	- XPD-10080: Add meta tag to classify airport as 2D or 3D
-	
+
    Bug Fixes:
 	- WED-1201: Fix typo in airline code validation error message
 	- WED-1199: fix potential segfault when reading files
@@ -201,7 +203,7 @@ WED 2.1.0b1 6/3/19
 	- WED-1162: Create new ground truck routes w/ no aircaft (hotzone) attributes set
 	- WED-524: Can't recover window if pack was saved on a larger screen
 	- WED-432: Fix WED window positioning when using multiple monitors under Linux
-	
+
 WED 2.0.0r4 4/07/19
 	Bug Fixes:
 	- WED-1178: Fix X-Plane 11.30 format apt.dat importing ATC frequencies always as "tower"
