@@ -37,9 +37,11 @@
 #if APL
 #define __DEBUGGING__
 #include <Carbon/Carbon.h>		// we use this for vkeys/low mem accessors to keyboard
+#include <CoreGraphics/CoreGraphics.h>
 #endif
 
 #if LIN
+#include <FL/Fl.H>
 #include <FL/Fl_Tooltip.H>
 #endif
 
@@ -1147,8 +1149,12 @@ int			GUI_Window::KeyPressed(uint32_t inKey, long inMsg, long inParam1, long inP
 		case FL_Page_Down:		virtualCode = GUI_VK_NEXT;	break;
 		case FL_End:			virtualCode = GUI_VK_END;	break;
 		case FL_Home:			virtualCode = GUI_VK_HOME;	break;
-		case FL_Left :			virtualCode = GUI_VK_LEFT;	break;
+		case FL_Left:			virtualCode = GUI_VK_LEFT;	break;
+		case FL_Up:			virtualCode = GUI_VK_UP;	break;
 		case FL_Right:			virtualCode = GUI_VK_RIGHT;	break;
+		case FL_Down:			virtualCode = GUI_VK_DOWN;	break;
+		case ',':			virtualCode = GUI_VK_COMMA;	break;
+		case '.':			virtualCode = GUI_VK_PERIOD;	break;
 		default: virtualCode = 0;
 	  }
 	}
@@ -1200,6 +1206,61 @@ void		GUI_Window::GetMouseLocNow(int * out_x, int * out_y)
 	XWinGL::GetMouseLoc(&x, &y);
 	if (out_x) *out_x = Client2OGL_X(x, mWindow);
 	if (out_y) *out_y = Client2OGL_Y(y, mWindow);;
+}
+
+static int PlatformVkFromPortableVk(int virtualKey)
+{
+#if LIN
+	if (0x2F < virtualKey && virtualKey < 0x5b)
+		return virtualKey;
+	else
+	{
+		switch(virtualKey)
+	  	{
+			case GUI_VK_RETURN:	return FL_Enter;
+			case GUI_VK_ESCAPE:	return FL_Escape;
+			case GUI_VK_TAB:	return FL_Tab;
+			case GUI_VK_PRIOR:	return FL_Page_Up;
+			case GUI_VK_NEXT:	return FL_Page_Down;
+			case GUI_VK_END:	return FL_End;
+			case GUI_VK_HOME:	return FL_Home;
+			case GUI_VK_LEFT:	return FL_Left;
+			case GUI_VK_UP:		return FL_Up;
+			case GUI_VK_RIGHT:	return FL_Right;
+			case GUI_VK_DOWN:	return FL_Down;
+			case GUI_VK_COMMA:	return ',';
+			case GUI_VK_PERIOD:	return '.';
+			default:		return 0;
+		}
+	}
+#else
+	static std::unordered_map<int, int> platformFromPortable = []()
+	{
+		std::unordered_map<int, int> rval;
+		for (int i = 0; i < 256; ++i)
+			rval[gui_Key_Map[i]] = i;
+		return rval;
+	}();
+	auto iter = platformFromPortable.find(virtualKey);
+	if (iter == platformFromPortable.end())
+		return 0;
+	else
+		return iter->second;
+#endif
+}
+
+bool		GUI_Window::IsKeyPressedNow(int virtualKey)
+{
+	int platformVk = PlatformVkFromPortableVk(virtualKey);
+	if (platformVk == 0)
+		return false;
+#if APL
+	return CGEventSourceKeyState(kCGEventSourceStateCombinedSessionState, platformVk);
+#elif IBM
+	return (::GetKeyState(platformVk) & ~1) != 0;
+#else
+	return Fl::get_key(platformVk) != 0;
+#endif
 }
 
 void		GUI_Window::PopupMenu(GUI_Menu menu, int x, int y, int button)
