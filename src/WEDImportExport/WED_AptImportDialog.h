@@ -28,6 +28,7 @@
 class	WED_Archive;
 class	GUI_FilterBar;
 class	WED_MapPane;
+class	WED_MapPreviewPane;
 
 #include "GUI_Window.h"
 #include "GUI_Listener.h"
@@ -41,7 +42,7 @@ class WED_AptImportDialog : public GUI_Window, public GUI_Listener, public GUI_D
 		
 public:
 
-						 WED_AptImportDialog(GUI_Commander * cmdr, AptVector& apts, const string& path, WED_Document * resolver, WED_Archive * archive, WED_MapPane * pane);
+						 WED_AptImportDialog(GUI_Commander * cmdr, AptVector& apts, const string& path, WED_Document * resolver, WED_Archive * archive, WED_MapPane * pane, WED_MapPreviewPane * previewPane);
 	virtual				~WED_AptImportDialog();
 	
 	virtual	bool		Closed(void);
@@ -56,6 +57,7 @@ public:
 private:
 
 	WED_MapPane *			mMapPane;
+	WED_MapPreviewPane *	mMapPreviewPane;
 
 	GUI_FilterBar *			mFilter;
 

@@ -1088,7 +1088,7 @@ int		WED_CanImportApt(IResolver * resolver)
 	return 1;
 }
 
-void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane * pane)
+void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane * pane, WED_MapPreviewPane * previewPane)
 {
 	vector<string>	fnames;
 		
@@ -1135,7 +1135,7 @@ void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane
 		apts.insert(apts.end(),one_apt.begin(),one_apt.end());
 	}
 	
-	WED_AptImportDialog * importer = new WED_AptImportDialog(gApplication, apts, fnames[0], resolver, archive, pane);
+	WED_AptImportDialog * importer = new WED_AptImportDialog(gApplication, apts, fnames[0], resolver, archive, pane, previewPane);
 }
 
 void	WED_ImportOneAptFile(

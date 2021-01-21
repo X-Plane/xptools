@@ -35,6 +35,7 @@
 #include "WED_Messages.h"
 #include "WED_Document.h"
 #include "WED_MapPane.h"
+#include "WED_MapPreviewPane.h"
 #include "WED_Airport.h"
 
 static int import_bounds_default[4] = { 0, 0, 500, 500 };
@@ -46,15 +47,17 @@ enum {
 };
 
 WED_AptImportDialog::WED_AptImportDialog(
-		GUI_Commander * cmdr, 
-		AptVector&		apts,
-		const string&	file_path,
-		WED_Document *	resolver, 
-		WED_Archive *	archive,
-		WED_MapPane *	pane) : 
+		GUI_Commander *		cmdr, 
+		AptVector&			apts,
+		const string&		file_path,
+		WED_Document *		resolver, 
+		WED_Archive *		archive,
+		WED_MapPane *		pane,
+		WED_MapPreviewPane * previewPane) : 
 	GUI_Window("Import apt.dat", xwin_style_resizable|xwin_style_visible|xwin_style_centered|xwin_style_modal, import_bounds_default, cmdr),
 	mTextTable(this,100,0),
 	mMapPane(pane),
+	mMapPreviewPane(previewPane),
 	mResolver(resolver),
 	mArchive(archive),
 	mPath(file_path),
@@ -221,6 +224,7 @@ void WED_AptImportDialog::DoIt(void)
 
 		wrl->CommitOperation();
 		mMapPane->ZoomShowSel();
+		mMapPreviewPane->DisplayExtent(mMapPane->GetMapVisibleBounds(), 1.0);
 	}
 }
 

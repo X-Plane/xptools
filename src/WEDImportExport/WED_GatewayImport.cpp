@@ -42,6 +42,7 @@
 #include "WED_Document.h"
 #include "WED_PackageMgr.h"
 #include "WED_MapPane.h"
+#include "WED_MapPreviewPane.h"
 #include "WED_MetaDataDefaults.h"
 #include "WED_Url.h"
 #include "WED_Globals.h"
@@ -196,7 +197,7 @@ typedef vector<char> JSON_BUF;
 class WED_GatewayImportDialog : public GUI_Window, public GUI_Listener, public GUI_Timer, public GUI_Destroyable
 {
 public:
-	WED_GatewayImportDialog(WED_Document * resolver, WED_MapPane * pane, GUI_Commander * cmdr);
+	WED_GatewayImportDialog(WED_Document * resolver, WED_MapPane * pane, WED_MapPreviewPane * previewPane, GUI_Commander * cmdr);
 	~WED_GatewayImportDialog();
 
 private:
@@ -219,19 +220,20 @@ private:
 	friend class WED_AppMain;
 #endif
 
-	int					mPhase;//Our simple stage counter for our simple fsm
+	int						mPhase;//Our simple stage counter for our simple fsm
 
-	WED_Document *		mResolver;
-	WED_MapPane *		mMapPane;
+	WED_Document *			mResolver;
+	WED_MapPane *			mMapPane;
+	WED_MapPreviewPane *	mMapPreviewPane;
 
 	//The cache request info struct for requesting files
 	WED_file_cache_request	mCacheRequest;
 
 	//Where the airport metadata csv file was ultimately downloaded to
-	string              mAirportMetadataCSVPath;
+	string					mAirportMetadataCSVPath;
 
 	//The buffers of the specific packs downloaded at the end
-	vector<string>	mSpecificBufs;
+	vector<string>			mSpecificBufs;
 
 //--GUI parts
 
@@ -323,10 +325,11 @@ int WED_GatewayImportDialog::import_bounds_default[4] = { 0, 0, 800, 500 };
 
 
 //--Implemation of WED_GateWayImportDialog class-------------------------------
-WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_MapPane * pane, GUI_Commander * cmdr) :
+WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_MapPane * pane, WED_MapPreviewPane * previewPane, GUI_Commander * cmdr) :
 	GUI_Window("Import from Gateway",xwin_style_visible|xwin_style_centered|xwin_style_resizable|xwin_style_modal,import_bounds_default,cmdr),
 	mResolver(resolver),
 	mMapPane(pane),
+	mMapPreviewPane(previewPane),
 	mPhase(imp_dialog_download_airport_metadata),
 	mICAO_AptProvider(&mICAO_Apts, gModeratorMode ? "Date Accepted" : "Checkout until", gModeratorMode ? "User Name": "by Artist"),
 	mICAO_TextTable(this,100,0),
@@ -627,6 +630,7 @@ void WED_GatewayImportDialog::TimerFired()
 
 						//Zoom to the airport
 						mMapPane->ZoomShowSel();
+						mMapPreviewPane->DisplayExtent(mMapPane->GetMapVisibleBounds(), 1.0);
 
 						wrl->CommitOperation();
 						this->AsyncDestroy();//All done!
@@ -1385,9 +1389,9 @@ int	WED_CanImportFromGateway(IResolver * resolver)
 	return 1;
 }
 
-void WED_DoImportFromGateway(WED_Document * resolver, WED_MapPane * pane)
+void WED_DoImportFromGateway(WED_Document * resolver, WED_MapPane * pane, WED_MapPreviewPane * previewPane)
 {
-	new WED_GatewayImportDialog(resolver, pane,gApplication);
+	new WED_GatewayImportDialog(resolver, pane, previewPane, gApplication);
 	return;
 }
 

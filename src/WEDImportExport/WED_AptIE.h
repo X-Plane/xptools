@@ -31,6 +31,7 @@ class	WED_Archive;
 class	IResolver;
 class	WED_Document;
 class	WED_MapPane;
+class	WED_MapPreviewPane;
 class	WED_Airport;
 class	WED_TaxiRoute;
 
@@ -62,7 +63,7 @@ int		WED_CanExportApt(IResolver * resolver);
 void	WED_DoExportApt(WED_Document * resolver, WED_MapPane * pane);
 
 int		WED_CanImportApt(IResolver * resolver);
-void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane * pane);
+void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane * pane, WED_MapPreviewPane * previewPane);
 
 // Given a WED_thing, put airports at file path into it - must be called inside an undo operation!
 void	WED_ImportOneAptFile(
