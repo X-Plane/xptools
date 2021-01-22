@@ -662,6 +662,8 @@
 		<Unit filename="../../src/WEDWindows/WED_Menus.h" />
 		<Unit filename="../../src/WEDWindows/WED_PackageListAdapter.cpp" />
 		<Unit filename="../../src/WEDWindows/WED_PackageListAdapter.h" />
+		<Unit filename="../../src/WEDWindows/WED_Road_Selector.cpp" />
+		<Unit filename="../../src/WEDWindows/WED_Road_Selector.h" />
 		<Unit filename="../../src/WEDWindows/WED_Sign_Editor.cpp" />
 		<Unit filename="../../src/WEDWindows/WED_Sign_Editor.h" />
 		<Unit filename="../../src/WEDWindows/WED_StartWindow.cpp" />

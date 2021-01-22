@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Laminar Research.
+ * Copyright (c) 2021, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,8 +21,8 @@
  *
  */
 
-#ifndef WED_Line_Selector_h
-#define WED_Line_Selector_h
+#ifndef WED_Road_Selector_h
+#define WED_Road_Selector_h
 
 #include "GUI_Pane.h"
 #include "GUI_TextTable.h"
@@ -30,17 +30,17 @@
 
 class GUI_GraphState;
 
-struct entry {
+struct road_entry {
 	string	name;
 	bool	checked;
 	int		enu;
-	entry(const char * c = "") : name(c), checked(false), enu(-1) {}
+	road_entry(const char * c = "") : name(c), checked(false), enu(-1) {}
 };
 
 //class WED_Line_Selector : public GUI_Pane, public GUI_Commander {
-class WED_Line_Selector : public GUI_EditorInsert {
+class WED_Road_Selector : public GUI_EditorInsert {
 public:
-			WED_Line_Selector(GUI_Commander * parent, const GUI_EnumDictionary& dict);
+			WED_Road_Selector(GUI_Commander * parent, const GUI_EnumDictionary& dict);
 
 	void	Draw(GUI_GraphState * state) override;
 
@@ -61,8 +61,8 @@ protected:
 
 private:
 
-#define LINESEL_MAX_ROWS 40
-	entry			mDict[LINESEL_MAX_ROWS][2];
+#define ROADSEL_MAX_ROWS 40
+	road_entry		mDict[ROADSEL_MAX_ROWS][2];
 	int				mColWidth[2];
 
 	int 			mChoice;
@@ -70,4 +70,4 @@ private:
 	int				mRows, mCols;
 };
 
-#endif /* WED_Line_Selector_h */
+#endif /* WED_Road_Selector_h */

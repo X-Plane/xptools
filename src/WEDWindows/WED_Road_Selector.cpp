@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Laminar Research.
+ * Copyright (c) 2021, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,7 +21,7 @@
  *
  */
 
-#include "WED_Line_Selector.h"
+#include "WED_Road_Selector.h"
 #include "AssertUtils.h"
 #include "GUI_DrawUtils.h"
 #include "GUI_Fonts.h"
@@ -38,62 +38,46 @@
 
 #define HGT   18           // height of each text row
 #define MARG   5           // padding all round the text fields
-#define ICON  18           // width of the icon preceding a text field
+#define ICON  18           // width of the checkmark icon preceding a text field
 
-WED_Line_Selector::WED_Line_Selector(GUI_Commander * parent, const GUI_EnumDictionary& dict)
-	: mChoice(-1),
+WED_Road_Selector::WED_Road_Selector(GUI_Commander * parent, const GUI_EnumDictionary& dict) :
+	mChoice(-1),
 	mR(0), mC(0),
-	mRows(0), mCols(1),
+	mRows(0), mCols(0),
 	GUI_EditorInsert(parent)
 {
-	for(int i = 0; i < LINESEL_MAX_ROWS; ++i)
-		for(int j = 0; j <2; ++j)
-			mDict[i][j] = entry();
+	for(int i = 0; i < ROADSEL_MAX_ROWS; ++i)
+		for(int j = 0; j < 2; ++j)
+			mDict[i][j] = road_entry();
 
 	mColWidth[0] = 0; mColWidth[1] = 0;
+	int rows = 0;
 
 	for(auto d : dict)
 	{
-		int linetype = ENUM_Export(d.first);
-		int col = 0;
-		if(linetype < 50)
+		if(rows >= ROADSEL_MAX_ROWS)
 		{
-			linetype += 50;
+			if(mCols < 1) mCols++;
+			else continue;
+			rows = 0;
 		}
-		else if(linetype < 100)
-		{
-			linetype -= 50;
-			mCols = 2;
-			col = 1;
-		}
+		mDict[rows][mCols].name = d.second.first;
+		mDict[rows][mCols].enu = d.first;
+		mRows = max(mRows, rows);
 
-		int i;
-		for(i = 0; i < mRows; ++i)
-			if(ENUM_Export(mDict[i][1-col].enu) == linetype)
-			{
-				mDict[i][col].name = d.second.first;
-				mDict[i][col].enu = d.first;
-				break;
-			}
-		if(i == mRows && mRows < LINESEL_MAX_ROWS-1)
-		{
-			mDict[i][col].name = d.second.first;
-			mDict[i][col].enu = d.first;
-			mRows++;
-		}
+		int col_width = GUI_MeasureRange(font_UI_Basic, d.second.first.c_str(), d.second.first.c_str()+d.second.first.size()) + ICON + MARG;
+		mColWidth[mCols] = max(mColWidth[mCols], col_width);
 
-		auto col_width = GUI_MeasureRange(font_UI_Basic, d.second.first.c_str(), d.second.first.c_str()+d.second.first.size()) + 2*ICON + MARG;
-		if(col_width > mColWidth[col])
-		  mColWidth[col] = col_width;
+		rows++;
 	}
+	mCols++;
 }
 
-void	WED_Line_Selector::Draw(GUI_GraphState * g)
+void	WED_Road_Selector::Draw(GUI_GraphState * g)
 {
 	int b[4];
 	GetBounds(b);
 	g->SetState(0,0,0, 0,0, 0,0);
-//	glColor4fv(WED_Color_RGBA(wed_TextField_Bkgnd));
 	glColor4fv(WED_Color_RGBA(wed_Tabs_Text));
 	glBegin(GL_QUADS);
 	glVertex2i(b[0],b[1]);
@@ -112,7 +96,7 @@ void	WED_Line_Selector::Draw(GUI_GraphState * g)
 			if(mDict[i][j].name.empty()) continue;
 
 			int box[4];
-			box[0] = tab_left + 2*ICON + 2;
+			box[0] = tab_left + ICON + 2;
 			box[1] = tab_top - HGT * (i+1);
 			box[2] = tab_left + mColWidth[j];
 			box[3] = tab_top - HGT * i;
@@ -137,9 +121,6 @@ void	WED_Line_Selector::Draw(GUI_GraphState * g)
 
 				glColor4f(1,1,1,1);
 				int selector[4] = { 0, 0, 1, 1 };
-				string icn(ENUM_Name(mDict[i][j].enu));
-				icn += ".png";
-				GUI_DrawCentered(g, icn.c_str(), box, 0, 0, selector, NULL, NULL);
 
 				if(mDict[i][j].checked)
 				{
@@ -156,7 +137,7 @@ void	WED_Line_Selector::Draw(GUI_GraphState * g)
 	}
 }
 
-int		WED_Line_Selector::MouseMove(int x, int y)
+int		WED_Road_Selector::MouseMove(int x, int y)
 {
 	int b[4];
 	GetBounds(b);
@@ -167,7 +148,7 @@ int		WED_Line_Selector::MouseMove(int x, int y)
 	return 1;
 }
 
-int		WED_Line_Selector::MouseDown(int x, int y, int button)
+int		WED_Road_Selector::MouseDown(int x, int y, int button)
 {
 	int b[4];
 	GetBounds(b);
@@ -183,7 +164,7 @@ int		WED_Line_Selector::MouseDown(int x, int y, int button)
 	return 1;
 }
 
-int		WED_Line_Selector::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)
+int		WED_Road_Selector::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)
 {
 	if(inFlags & gui_DownFlag)
 		switch(inKey)
@@ -211,27 +192,23 @@ int		WED_Line_Selector::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags in
 	return 0;
 }
 
-bool WED_Line_Selector::SetData(const GUI_CellContent& c)
+bool WED_Road_Selector::SetData(const GUI_CellContent& c)
 {
-	bool found(false);
-	for(auto s : c.int_set_val)
-	{
-		for(int i = 0; i < mRows; ++i)
-			for(int j = 0; j < mCols; ++j)
+	for(int i = 0; i < mRows; ++i)
+		for(int j = 0; j < mCols; ++j)
+		{
+			if(mDict[i][j].enu == c.int_val)
 			{
-				if(mDict[i][j].enu == s)
-				{
-					mDict[i][j].checked = true;
-					mR = i; mC = j;
-					found = true;
-				}
+				mDict[i][j].checked = true;
+				mR = i; mC = j;
+				Refresh();
+				return true; // found;
 			}
-	}
-	Refresh();
-	return found;        // could not find selection in available choices
+		}
+	return false; // could not find selection in available choices
 }
 
-void WED_Line_Selector::GetSizeHint(int * w, int * h)
+void WED_Road_Selector::GetSizeHint(int * w, int * h)
 {
 	int tot_width = 2 * MARG;
 	for(int i = 0; i < mCols; ++i)
@@ -241,7 +218,7 @@ void WED_Line_Selector::GetSizeHint(int * w, int * h)
 	*h = 2 * MARG + HGT * mRows;
 }
 
-void WED_Line_Selector::GetData(GUI_CellContent& c)
+void WED_Road_Selector::GetData(GUI_CellContent& c)
 {
 	c.int_val = mChoice;            // lines and lights are also exclusive sets, so only int_val is used in AcceptEdit();
 }

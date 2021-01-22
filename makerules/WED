@@ -244,6 +244,7 @@ SOURCES += ./src/WEDWindows/WED_PackageListAdapter.cpp
 SOURCES += ./src/WEDWindows/WED_StartWindow.cpp
 SOURCES += ./src/WEDWindows/WED_Sign_Editor.cpp
 SOURCES += ./src/WEDWindows/WED_Line_Selector.cpp
+SOURCES += ./src/WEDWindows/WED_Road_Selector.cpp
 SOURCES += ./src/GUI/GUI_Broadcaster.cpp
 SOURCES += ./src/GUI/GUI_Button.cpp
 SOURCES += ./src/GUI/GUI_ChangeView.cpp
