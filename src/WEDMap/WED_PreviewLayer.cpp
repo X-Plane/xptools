@@ -1285,7 +1285,7 @@ struct	preview_object : public WED_PreviewItem {
 		obj->GetResource(vpath);
 		obj->GetLocation(gis_Geo, loc);
 
-		g->SetState(false, 1, false, false, true, true, true);
+		g->SetState(false, 1, false, true, true, true, true);
 		glColor4f(1, 1, 1, 1);
 
 		float agl = obj->HasCustomMSL() > 1 ? obj->GetCustomMSL() : 0.0;
@@ -1336,7 +1336,7 @@ struct	preview_truck : public WED_PreviewItem {
 		agp_t agp;
 		if(!vpath1.empty() && rmgr->GetObj(vpath1,o1))
 		{
-			g->SetState(false,1,false,false,true,true,true);
+			g->SetState(false,1,false,true,true,true,true);
 			glColor3f(1,1,1);
 			Point2 loc;
 			trk->GetLocation(gis_Geo,loc);
@@ -1414,7 +1414,7 @@ struct	preview_light : public WED_PreviewItem {
 		const XObj8 * o = NULL;
 		if(!vpath.empty() && rmgr->GetObj(vpath,o))
 		{
-			g->SetState(false,1,false,false,true,true,true);
+			g->SetState(false,1,false,true,true,true,true);
 			glColor3f(1,1,1);
 			
 			switch(light.light_code) 
