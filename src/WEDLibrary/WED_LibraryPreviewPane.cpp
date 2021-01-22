@@ -44,6 +44,7 @@
 #include "WED_Menus.h"
 
 #include "WED_Colors.h"
+#include "WED_DummyCamera.h"
 #include "WED_LibraryMgr.h"
 #include "WED_Globals.h"
 #include "WED_ResourceMgr.h"
@@ -435,6 +436,8 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 	const fac_info_t * fac = nullptr;
 	const str_info_t * str = nullptr;
 
+	WED_DummyCamera camera;
+
 	if(!mRes.empty())
 	{	switch(mType) {
 		case res_Polygon:
@@ -561,7 +564,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				g->EnableDepth(true, true);
 				glClear(GL_DEPTH_BUFFER_BIT);
 
-				draw_facade(mTexMgr, mResMgr, mRes, *fac, footprint, choices, mHgt, g, true);
+				draw_facade(mTexMgr, mResMgr, mRes, *fac, footprint, choices, mHgt, g, true, camera);
 
 				// draw "ground" plane
 				g->SetTexUnits(0);
@@ -607,7 +610,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				                      -(o->xyz_max[2]+o->xyz_min[2])*0.5 };
 
 				begin3d(b, real_radius);
-				draw_obj_at_xyz(mTexMgr, o, xyz_off[0], xyz_off[1], xyz_off[2],	0, g);
+				draw_obj_at_xyz(mTexMgr, o, xyz_off[0], xyz_off[1], xyz_off[2],	0, g, camera);
 				end3d(b);
 			}
 			else if (mResMgr->GetAGP(mRes,agp))
@@ -621,7 +624,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 									  (agp->xyz_max[2] + agp->xyz_min[2]) * 0.5 };
 
 				begin3d(b, real_radius);
-				draw_agp_at_xyz(mTexMgr, agp, xyz_off[0], xyz_off[1], xyz_off[2], mHgt, 0, g);
+				draw_agp_at_xyz(mTexMgr, agp, xyz_off[0], xyz_off[1], xyz_off[2], mHgt, 0, g, camera);
 				end3d(b);
 			}
 			break;

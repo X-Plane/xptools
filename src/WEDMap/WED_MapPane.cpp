@@ -153,7 +153,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	mLayers.push_back(mSlippyMap =		new WED_SlippyMap(mMap, mMap, resolver));
 	mLayers.push_back(mStructureLayer = new WED_StructureLayer(mMap, mMap, resolver));
 	mLayers.push_back(mATCLayer =		new WED_ATCLayer(mMap, mMap, resolver));
-	mLayers.push_back(mPreview =		new WED_PreviewLayer(mMap, mMap, resolver));
+	mLayers.push_back(mPreview =		new WED_PreviewLayer(mMap, &mMap->Projection(), mMap, resolver));
 	mLayers.push_back(mNavaidMap =		new WED_NavaidLayer(mMap, mMap, resolver));
 //	mLayers.push_back(mTileserver =		new WED_TileServerLayer(mMap, mMap, resolver));
 	mLayers.push_back(					new WED_DebugLayer(mMap, mMap, resolver));

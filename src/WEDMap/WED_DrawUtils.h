@@ -35,6 +35,8 @@
 class	GUI_GraphState;
 class	IGISPointSequence;
 class	IGISPolygon;
+class	WED_Camera;
+class	WED_MapProjection;
 class	WED_MapZoomerNew;
 
 inline void glVertex2(const Point2& p) { glVertex2d(p.x(),p.y()); }
@@ -67,9 +69,11 @@ int BezierPtsCount(const Bezier2& b, WED_MapZoomerNew * z);
 // A note on UV mapping: we encode a point sequence for UV mapping as a pair of points, the vertex coord followed by the UV coords.
 // So it's an interleaved array.  This is what PointSequenceToVector returns too.
 void glPolygon2(const Point2 * pts, bool has_uv, const int * contours, int n, float height = -1);
-void PointSequenceToVector(IGISPointSequence * ps, WED_MapZoomerNew * z, vector<Point2>& pts, bool get_uv, vector<int>& contours,
-	int is_hole, bool dupFirst = false);  // dupFirst == duplicate first/last node even on closed rings. Not desired to build polygons, but desired to draw lines
-void SideToPoints(IGISPointSequence * ps, int n, WED_MapZoomerNew * z,  vector<Point2>& out_pts);
+void PointSequenceToVector(IGISPointSequence * ps, const WED_MapProjection&	projection, const WED_Camera& camera,
+	vector<Point2>& pts, bool get_uv, vector<int>& contours, int is_hole, bool dupFirst = false);  // dupFirst == duplicate first/last node even on closed rings. Not desired to build polygons, but desired to draw lines
+void PointSequenceToVector(IGISPointSequence * ps, WED_MapZoomerNew * z,
+	vector<Point2>& pts, bool get_uv, vector<int>& contours, int is_hole, bool dupFirst = false);  // dupFirst == duplicate first/last node even on closed rings. Not desired to build polygons, but desired to draw lines
+void SideToPoints(IGISPointSequence * ps, int n, const WED_MapProjection& projection, const WED_Camera& camera, vector<Point2>& out_pts);
 
 
 #endif /* WED_DrawUtils_H */

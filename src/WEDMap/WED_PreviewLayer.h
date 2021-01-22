@@ -25,10 +25,13 @@
 #define WED_PreviewLayer_H
 
 #include "WED_MapLayer.h"
+#include "WED_MapZoomerNew.h"
 
 struct	XObj8;
 struct	agp_t;
 class	ITexMgr;
+class	WED_Camera;
+class	WED_MapProjection;
 
 // We need int values for layer groups - these weird numbers actually came out of X-Plane's internal engine...who knew.
 // The important thing is that the spacing is enough to ensure separation even when we have lots of runways or taxiways.
@@ -61,20 +64,28 @@ struct	WED_PreviewItem {
 	WED_PreviewItem(int l) : layer(l) { }
 	virtual ~WED_PreviewItem() { }
 	virtual	int	 get_layer(void) { return layer; }
-	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float pavement_alpha)=0;
+	virtual void draw_it(const WED_MapProjection & projection, WED_Camera & camera, GUI_GraphState * g, float pavement_alpha) = 0;
 };
 
 
-class WED_PreviewLayer  : public WED_MapLayerWithZoomer {
+class WED_PreviewLayer  : public WED_MapLayer {
 public:
+	struct Options {
+		bool clearDepthBuffer = true;
+		bool drawFacadeWalls = false;
+		bool drawFacadeOutline = true;
+		bool drawSkeletonIfLineTooThin = true;
+	};
 
-						 WED_PreviewLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver);
+						WED_PreviewLayer(GUI_Pane * host, const WED_MapProjection * projection,
+							 WED_Camera * camera, IResolver * resolver);
 	virtual				~WED_PreviewLayer();
 
 			void		SetPavementTransparency(float alpha);
 			float		GetPavementTransparency(void) const;
 			void		SetObjDensity(int density);
 			int			GetObjDensity(void) const;
+			void		SetOptions(const Options& options);
 
 	virtual	bool		DrawEntityVisualization		(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected);
 	virtual	void		GetCaps						(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks);
@@ -84,6 +95,7 @@ private:
 
 	float							mPavementAlpha;
 	int								mObjDensity;
+	Options							mOptions;
 	
 	// This stuff is built temporarily between the entity and final draw.
 	vector<WED_PreviewItem *>	mPreviewItems;
@@ -91,11 +103,10 @@ private:
 	int							mTaxiLayer;			// IS the hierarchy/export order, which is good.
 	int							mShoulderLayer;
 
-
 };
 
-void draw_obj_at_xyz(ITexMgr * tman, const XObj8 * o, double x, double y, double z, float r, GUI_GraphState * g);
-void draw_agp_at_xyz(ITexMgr * tman, const agp_t * agp, double x, double y, double z, float agl, float r, GUI_GraphState * g);
+void draw_obj_at_xyz(ITexMgr * tman, const XObj8 * o, double x, double y, double z, float r, GUI_GraphState * g, WED_Camera& camera);
+void draw_agp_at_xyz(ITexMgr * tman, const agp_t * agp, double x, double y, double z, float agl, float r, GUI_GraphState * g, WED_Camera& camera);
 int layer_group_for_string(const char * s, int o, int def);
 
 #endif /* WED_PreviewLayer_H */

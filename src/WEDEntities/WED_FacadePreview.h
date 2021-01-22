@@ -28,6 +28,7 @@
 
 struct  XObj8;
 struct fac_info_t;
+class WED_Camera;
 
 typedef int xint;
 typedef float xflt;
@@ -40,6 +41,7 @@ typedef unsigned char 	xbyt;
 #define dev_assert(x) DebugAssert(x)
 #include "AssertUtils.h"
 #include "MathUtils.h"
+#include "WED_MapLayer.h"
 
 /****************************************************************************************************************
  * SPELLING
@@ -230,7 +232,7 @@ struct	REN_FacadeLOD_t {
 
 
 void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, const fac_info_t& info, const Polygon2& footprint, const vector<int>& choices, 
-	double fac_height, GUI_GraphState * g, bool want_thinWalls, double ppm_for_culling = 100);
+	double fac_height, GUI_GraphState * g, bool want_thinWalls, WED_Camera& camera, double min_pixel_size = MIN_PIXELS_PREVIEW);
 	
 void height_desc_for_facade(const fac_info_t& info, string& h_decription);
 

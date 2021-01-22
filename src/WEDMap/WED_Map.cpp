@@ -24,6 +24,7 @@
 #include "WED_Map.h"
 #include "WED_MapLayer.h"
 #include "WED_MapToolNew.h"
+#include "WED_PreviewLayer.h"
 #include "WED_ToolUtils.h"
 #include "WED_Messages.h"
 #include "WED_Globals.h"
@@ -152,6 +153,13 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	for (l = mLayers.begin(); l != mLayers.end(); ++l)
 	if((*l)->IsVisible())
 	{
+		if (auto previewLayer = dynamic_cast<WED_PreviewLayer *>(*l))
+		{
+			WED_PreviewLayer::Options previewOptions;
+			previewOptions.drawFacadeWalls = (xTilt != 0.0 || yTilt != 0.0);
+			previewLayer->SetOptions(previewOptions);
+		}
+
 		(*l)->GetCaps(draw_ent_v, draw_ent_s, wants_sel, wants_clicks);
 		if (base && draw_ent_v) DrawVisFor(*l, cur == *l, b_geo, base, state, wants_sel ? sel : NULL, 0);
 		

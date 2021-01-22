@@ -38,40 +38,41 @@
 	#endif
 #endif
 
-int BezierPtsCount(const Bezier2& b, WED_MapZoomerNew * z)
+static int BezierPtsCount(const Bezier2& b, const WED_Camera * camera)
 {
 	int pixels_approx = sqrt(Vector2(b.p1,b.c1).squared_length()) +
 						sqrt(Vector2(b.c1,b.c2).squared_length()) +
 						sqrt(Vector2(b.c2,b.p2).squared_length());
 	int point_count = intlim(pixels_approx / BEZ_PIX_PER_SEG, BEZ_MIN_SEGS, BEZ_MAX_SEGS);
 
-	if(z && point_count > BEZ_MIN_SEGS)
+	if(camera && point_count > BEZ_MIN_SEGS)
 	{
 		Bbox2 bb;
 		double zb[4];
 		bool visible = true;
 
 		b.bounds_fast(bb);
-		z->GetPixelBounds(zb[0], zb[1], zb[2], zb[3]);
 
-		if( bb.xmax() < zb[0]) visible = false;
-		if( bb.xmin() > zb[2]) visible = false;
-		if( bb.ymax() < zb[1]) visible = false;
-		if( bb.ymin() > zb[3]) visible = false;
-
-		if (!visible) point_count = BEZ_MIN_SEGS; // greatly simplify not visible beziers
+		if (!camera->BboxVisible(Bbox3(bb)))
+			point_count = BEZ_MIN_SEGS; // greatly simplify not visible bezierss
 	}
 	return point_count;
 }
 
+int BezierPtsCount(const Bezier2& b, WED_MapZoomerNew * z)
+{
+	return BezierPtsCount(b, static_cast<const WED_Camera *>(z));
+}
+
 void PointSequenceToVector(
-			IGISPointSequence *		ps,
-			WED_MapZoomerNew *		z,
-			vector<Point2>&			pts,
-			bool					get_uv,
-			vector<int>&			contours,
-			int						is_hole,
-			bool					dupFirst)
+			IGISPointSequence *			ps,
+			const WED_MapProjection&	projection,
+			const WED_Camera&			camera,
+			vector<Point2>&				pts,
+			bool						get_uv,
+			vector<int>&				contours,
+			int							is_hole,
+			bool						dupFirst)
 {
 	int n = ps->GetNumSides();
 	
@@ -81,12 +82,12 @@ void PointSequenceToVector(
 		if(get_uv) ps->GetSide(gis_UV,i,buv);
 		if (ps->GetSide(gis_Geo,i,b))
 		{
-			b.p1 = z->LLToPixel(b.p1);
-			b.p2 = z->LLToPixel(b.p2);
-			b.c1 = z->LLToPixel(b.c1);
-			b.c2 = z->LLToPixel(b.c2);
+			b.p1 = projection.LLToXY(b.p1);
+			b.p2 = projection.LLToXY(b.p2);
+			b.c1 = projection.LLToXY(b.c1);
+			b.c2 = projection.LLToXY(b.c2);
 
-			int point_count = BezierPtsCount(b,z);
+			int point_count = BezierPtsCount(b, &camera);
 
 			pts.reserve(pts.capacity() + point_count * (get_uv ? 2 : 1));
 			contours.reserve(contours.capacity() + point_count);
@@ -106,17 +107,29 @@ void PointSequenceToVector(
 		}
 		else
 		{
-							pts.push_back(z->LLToPixel(b.p1));
+							pts.push_back(projection.LLToXY(b.p1));
 			if(get_uv)		pts.push_back(buv.p1);
 			contours.push_back(i == 0 ? is_hole : 0);
 			if (i == n-1 && (!ps->IsClosed() || dupFirst))
 			{
-							pts.push_back(z->LLToPixel(b.p2));
+							pts.push_back(projection.LLToXY(b.p2));
 				if(get_uv)	pts.push_back(buv.p2);
 				contours.push_back(0);
 			}
 		}
 	}
+}
+
+void PointSequenceToVector(
+	IGISPointSequence *			ps,
+	WED_MapZoomerNew *			z,
+	vector<Point2>&				pts,
+	bool						get_uv,
+	vector<int>&				contours,
+	int							is_hole,
+	bool						dupFirst)
+{
+	PointSequenceToVector(ps, z->Projection(), *z, pts, get_uv, contours, is_hole, dupFirst);
 }
 
 #if !LIBTESS
@@ -597,17 +610,17 @@ void DrawLineAttrs(const Point2 * pts, int cnt, const set<int>& attrs)
 	glDisable(GL_LINE_STIPPLE);
 }
 
-void SideToPoints(IGISPointSequence * ps, int i, WED_MapZoomerNew * z,  vector<Point2>& pts)
+void SideToPoints(IGISPointSequence * ps, int i, const WED_MapProjection& projection, const WED_Camera& camera, vector<Point2>& pts)
 {
 	Bezier2		b;
 	if (ps->GetSide(gis_Geo,i,b))
 	{
-		b.p1 = z->LLToPixel(b.p1);
-		b.p2 = z->LLToPixel(b.p2);
-		b.c1 = z->LLToPixel(b.c1);
-		b.c2 = z->LLToPixel(b.c2);
+		b.p1 = projection.LLToXY(b.p1);
+		b.p2 = projection.LLToXY(b.p2);
+		b.c1 = projection.LLToXY(b.c1);
+		b.c2 = projection.LLToXY(b.c2);
 
-		int point_count = BezierPtsCount(b,z);
+		int point_count = BezierPtsCount(b,&camera);
 
 		pts.reserve(point_count+1);
 		for (int n = 0; n <= point_count; ++n)
@@ -616,7 +629,7 @@ void SideToPoints(IGISPointSequence * ps, int i, WED_MapZoomerNew * z,  vector<P
 	}
 	else
 	{
-		pts.push_back(z->LLToPixel(b.p1));
-		pts.push_back(z->LLToPixel(b.p2));
+		pts.push_back(projection.LLToXY(b.p1));
+		pts.push_back(projection.LLToXY(b.p2));
 	}
 }

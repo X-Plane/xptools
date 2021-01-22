@@ -38,11 +38,10 @@
 #include "WED_PreviewLayer.h"
 
 
-static bool cull_obj(const XObj8 * o, double ppm)                   // cut off if laterally smaller than 5 pixels
+static bool cull_obj(const XObj8 * o, const Point3& position, const WED_Camera& camera, double min_pixel_size)
 {
-	double pix = ppm * max(o->xyz_max[0] - o->xyz_min[0], o->xyz_max[2] - o->xyz_min[2]);
-//	printf("pix %.1lf\n", sqrt(pix));
-	return pix < MIN_PIXELS_PREVIEW;
+	double size_meters = max(o->xyz_max[0] - o->xyz_min[0], o->xyz_max[2] - o->xyz_min[2]);
+	return camera.PixelSize(position, size_meters) < min_pixel_size;
 }
 
 static bool closer_to(double a, double b, double x)
@@ -800,7 +799,7 @@ struct obj {
 #include "WED_DebugLayer.h"
 
 void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, const fac_info_t& info, const Polygon2& footprint, const vector<int>& choices,
-	double fac_height, GUI_GraphState * g, bool want_thinWalls, double ppm_for_culling)
+	double fac_height, GUI_GraphState * g, bool want_thinWalls, WED_Camera& camera, double min_pixel_size)
 {
 	if(rman)
 	for(auto& f : info.scrapers)
@@ -853,7 +852,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 						if(rman->GetObjRelative(s.base_obj, vpath, oo))
 						{
 							draw_obj_at_xyz(tman, oo,
-								scpOrig.x(), 0.0, scpOrig.y(), facRot + s.base_xzr[2], g);
+								scpOrig.x(), 0.0, scpOrig.y(), facRot + s.base_xzr[2], g, camera);
 						} 
 					}
 					if(!s.towr_obj.empty())
@@ -862,7 +861,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 						if(rman->GetObjRelative(s.towr_obj, vpath, oo))
 						{
 							draw_obj_at_xyz(tman, oo,
-								scpOrig.x(), scpAGL, scpOrig.y(), facRot + s.towr_xzr[2], g);
+								scpOrig.x(), scpAGL, scpOrig.y(), facRot + s.towr_xzr[2], g, camera);
 						} 
 					}
 					break;
@@ -1030,22 +1029,24 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 				const REN_facade_template_t& t = bestFloor->templates[ch];
 				double segMult = seg_length * t.bounds[2];
 				
-				glPushMatrix();
-				glTranslatef(thisPt.x(), 0, thisPt.y());
 				float angle = atan2(perpDir.y(), -perpDir.x()) * RAD_TO_DEG;
-				glRotatef(angle, 0, 1, 0);
+				camera.PushMatrix();
+				camera.Translate({ thisPt.x(), 0, thisPt.y() });
+				camera.Rotate(angle, { 0, 1, 0 });
 				
 				for(auto o: t.objs)
 				{
 					const XObj8 * oo(info.xobjs[o.idx]);
-					if(oo && !cull_obj(oo, ppm_for_culling))
+					Point3 position(o.xyzr[0], o.xyzr[1], o.xyzr[2] * seg_length);
+					if(oo && !cull_obj(oo, position, camera, min_pixel_size))
 					{
-						draw_obj_at_xyz(tman, oo, o.xyzr[0], o.xyzr[1], o.xyzr[2] * seg_length, o.xyzr[3], g);
+						draw_obj_at_xyz(tman, oo, position.x, position.y, position.z, o.xyzr[3], g, camera);
 					} 
 				}
 				g->BindTex(tRef  ? tman->GetTexID(tRef) : 0, 0);
 				
-				glScalef(1.0, 1.0, segMult);
+				camera.Scale(1.0, 1.0, segMult);
+
 #if 0
 				// There's gotta be some way to abuse some perspective transform to do the chamfering at the ends of a wall.
 				// If so, indexed drawing could be used again, vertex+attribute data drawn from a VBO - bingo !
@@ -1084,7 +1085,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 					}
 				}
 				glEnd();
-				glPopMatrix();
+				camera.PopMatrix();
 				first++;
 				thisPt += segDir * segMult;
 			}
@@ -1207,15 +1208,16 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 						const XObj8 * oo(info.xobjs[ro.obj]);
 						float ro_r = ro.str[2] + atan2(perpVec.y(), perpVec.x()) * RAD_TO_DEG + 90.0;
 						
-						if(oo && !cull_obj(oo, ppm_for_culling))
+						if(oo)
 						{
 							glCullFace(GL_BACK);
 							for(int s = (footprint[0].x() - loc0.x()) / info.roof_scale_s; s < ((footprint[1].x() - loc0.x()) / info.roof_scale_s) - 1; ++s)
 								for(int t = ((-footprint[0].y() - loc0.y()) / info.roof_scale_t) + 1; t < ((-footprint[2].y() - loc0.y()) / info.roof_scale_t) + 1; ++t)
 								{
 									Point2 xy = loc_uv + dirVec * s * info.roof_scale_s - perpVec * t * info.roof_scale_t;
+									if (!cull_obj(oo, Point3(xy.x(), roof_height, xy.y()), camera, min_pixel_size))
 									{
-										draw_obj_at_xyz(tman, oo, xy.x(), roof_height, xy.y(), ro_r, g);
+										draw_obj_at_xyz(tman, oo, xy.x(), roof_height, xy.y(), ro_r, g, camera);
 									} 
 								}
 							g->BindTex(tRef ? tman->GetTexID(tRef) : 0, 0);
