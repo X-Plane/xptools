@@ -37,6 +37,17 @@ struct road_entry {
 	road_entry(const char * c = "") : name(c), checked(false), enu(-1) {}
 };
 
+struct road_choices {
+	struct  sfx_t {
+		int idx;
+		int enu;
+		sfx_t(int i, int e) : idx(i), enu(e) {};
+		};
+	string prefix;
+	vector<sfx_t> combis;
+	road_choices(string s) : prefix(s) {};
+};
+
 //class WED_Line_Selector : public GUI_Pane, public GUI_Commander {
 class WED_Road_Selector : public GUI_EditorInsert {
 public:
@@ -61,13 +72,14 @@ protected:
 
 private:
 
-#define ROADSEL_MAX_ROWS 40
-	road_entry		mDict[ROADSEL_MAX_ROWS][2];
-	int				mColWidth[2];
+	vector<road_choices> mRd_prefix;   // prefix plus pairs of valid suffixes and emums
+	vector<string>	mRd_suffix;
+	int				mPfx;              // current selections
+	int				mSfx;
+	int				mChoice;           // original choice when tarted, used in case of abort
 
-	int 			mChoice;
+	int				mColWidth[2];
 	int				mR, mC;
-	int				mRows, mCols;
 };
 
 #endif /* WED_Road_Selector_h */

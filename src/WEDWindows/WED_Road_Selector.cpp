@@ -23,6 +23,7 @@
 
 #include "WED_Road_Selector.h"
 #include "AssertUtils.h"
+#include "MathUtils.h"
 #include "GUI_DrawUtils.h"
 #include "GUI_Fonts.h"
 #include "GUI_GraphState.h"
@@ -40,37 +41,87 @@
 #define MARG   5           // padding all round the text fields
 #define ICON  18           // width of the checkmark icon preceding a text field
 
-WED_Road_Selector::WED_Road_Selector(GUI_Commander * parent, const GUI_EnumDictionary& dict) :
-	mChoice(-1),
+WED_Road_Selector::WED_Road_Selector(GUI_Commander * parent, const GUI_EnumDictionary& dict)
+	: mChoice(-1),
 	mR(0), mC(0),
-	mRows(0), mCols(0),
+	mPfx(-1), mSfx(-1),
 	GUI_EditorInsert(parent)
 {
-	for(int i = 0; i < ROADSEL_MAX_ROWS; ++i)
-		for(int j = 0; j < 2; ++j)
-			mDict[i][j] = road_entry();
+	set<string> pfx,sfx;
+	for(auto d : dict)
+	{
+		string name = d.second.first;
+		auto p = name.find('/');
+		string prefix;
+		if(p != string::npos)
+		{
+			prefix = name.substr(0,p);
+			sfx.insert(name.substr(p+1));
+		}
+		else
+			prefix = name;
 
-	mColWidth[0] = 0; mColWidth[1] = 0;
-	int rows = 0;
+		if(pfx.insert(prefix).second)
+			mRd_prefix.push_back(prefix);
+	}
+
+	mColWidth[1] = 0;
+	for(auto s : sfx)
+	{
+		auto col_width = GUI_MeasureRange(font_UI_Basic, s.c_str(), s.c_str()+s.size()) + ICON + MARG;
+		if(col_width > mColWidth[1])
+			mColWidth[1] = col_width;
+
+		mRd_suffix.push_back(s);
+	}
+	sort(mRd_suffix.begin(),mRd_suffix.end());
+	mRd_suffix.push_back("");
+
+	mColWidth[0] = 0;
+	for(auto s : pfx)
+	{
+		auto col_width = GUI_MeasureRange(font_UI_Basic, s.c_str(), s.c_str()+s.size()) + ICON + MARG;
+		if(col_width > mColWidth[0])
+			mColWidth[0] = col_width;
+	}
 
 	for(auto d : dict)
 	{
-		if(rows >= ROADSEL_MAX_ROWS)
+		string name = d.second.first;
+		auto p = name.find('/');
+
+		string prefix, suffix;
+		if(p != string::npos)
 		{
-			if(mCols < 1) mCols++;
-			else continue;
-			rows = 0;
+			prefix =  name.substr(0,p);
+			suffix  = name.substr(p+1);
 		}
-		mDict[rows][mCols].name = d.second.first;
-		mDict[rows][mCols].enu = d.first;
-		mRows = max(mRows, rows);
+		else
+			prefix = name;
 
-		int col_width = GUI_MeasureRange(font_UI_Basic, d.second.first.c_str(), d.second.first.c_str()+d.second.first.size()) + ICON + MARG;
-		mColWidth[mCols] = max(mColWidth[mCols], col_width);
-
-		rows++;
+		for(auto& r : mRd_prefix)
+		{
+			if(r.prefix == prefix)
+			{
+				int idx = find(mRd_suffix.begin(), mRd_suffix.end(), suffix) - mRd_suffix.begin();
+				r.combis.push_back(road_choices::sfx_t(idx, d.first));
+				break;
+			}
+		}
 	}
-	mCols++;
+
+	for(auto& r : mRd_suffix)
+	{
+		auto p = r.find("wet");
+		if(p != string::npos)            // replace those 'wet' suffixes by something more meaningful to users
+		{
+			if(r[p-1] == '/' ) r[p-1] = ' ';
+			r.erase(p);
+			r += "<no sidewalk>";
+		}
+		if(r.empty())
+			r = "<no suffix>";
+	}
 }
 
 void	WED_Road_Selector::Draw(GUI_GraphState * g)
@@ -89,51 +140,76 @@ void	WED_Road_Selector::Draw(GUI_GraphState * g)
 	int tab_top  = b[3] - MARG;
 	int tab_left = b[0] + MARG;
 
-	for(int j = 0; j < mCols; ++j)
+	for(int i = 0; i < mRd_prefix.size(); i++)
 	{
-		for(int i = 0; i < mRows; ++i)
+		int box[4];
+		box[0] = tab_left + ICON + 2;
+		box[1] = tab_top - HGT * (i+1);
+		box[2] = tab_left + mColWidth[0];
+		box[3] = tab_top - HGT * i;
+
+		if(i == mR && mC == 0)
 		{
-			if(mDict[i][j].name.empty()) continue;
+			g->SetState(0,0,0, 0,0, 0,0);
+			glColor4fv(WED_Color_RGBA(wed_TextField_Hilite));
+			glBegin(GL_QUADS);
+			glVertex2i(box[0],box[1]);
+			glVertex2i(box[0],box[3]);
+			glVertex2i(box[2],box[3]);
+			glVertex2i(box[2],box[1]);
+			glEnd();
+		}
+		GUI_FontDraw(g, font_UI_Basic, WED_Color_RGBA(wed_TextField_Text), box[0]+2, box[1] + 4, mRd_prefix[i].prefix.c_str());
 
-			int box[4];
-			box[0] = tab_left + ICON + 2;
-			box[1] = tab_top - HGT * (i+1);
-			box[2] = tab_left + mColWidth[j];
-			box[3] = tab_top - HGT * i;
+		if(i == mPfx)
+		{
+			int selector[4] = { 1, 0, 2, 1 };
+			box[0] = tab_left;
+			box[2] = box[0] + ICON;
+			GUI_DrawCentered(g, "check.png", box, 0, 0, selector, NULL, NULL);
+		}
+	}
 
-			if(i == mR && j == mC)
+	tab_left += mColWidth[0];
+
+	for(int i = 0; i < mRd_suffix.size(); i++)
+	{
+		int box[4];
+		box[0] = tab_left + ICON + 2;
+		box[1] = tab_top - HGT * (i+1);
+		box[2] = tab_left + mColWidth[1];
+		box[3] = tab_top - HGT * i;
+
+		if(i == mR && mC == 1)
+		{
+			g->SetState(0,0,0, 0,0, 0,0);
+			glColor4fv(WED_Color_RGBA(wed_TextField_Hilite));
+			glBegin(GL_QUADS);
+			glVertex2i(box[0],box[1]);
+			glVertex2i(box[0],box[3]);
+			glVertex2i(box[2],box[3]);
+			glVertex2i(box[2],box[1]);
+			glEnd();
+		}
+		WED_Color tcolor = wed_pure_white;
+		for(auto c : mRd_prefix[mPfx].combis)
+		{
+			if(c.idx == i)
 			{
-				g->SetState(0,0,0, 0,0, 0,0);
-				glColor4fv(WED_Color_RGBA(wed_TextField_Hilite));
-				glBegin(GL_QUADS);
-				glVertex2i(box[0],box[1]);
-				glVertex2i(box[0],box[3]);
-				glVertex2i(box[2],box[3]);
-				glVertex2i(box[2],box[1]);
-				glEnd();
-			}
-			GUI_FontDraw(g, font_UI_Basic, WED_Color_RGBA(wed_TextField_Text), box[0]+2, box[1] + 4, mDict[i][j].name.c_str());
-
-			if (mDict[i][j].enu > 0)
-			{
-				box[0] = tab_left + ICON;
-				box[2] = box[0] + ICON;
-
-				glColor4f(1,1,1,1);
-				int selector[4] = { 0, 0, 1, 1 };
-
-				if(mDict[i][j].checked)
-				{
-					box[0] -= ICON;
-					box[2] -= ICON;
-				 	selector[0] = 1;
-					selector[2] = 2;
-					glColor4f(0,0,0,1);
-					GUI_DrawCentered(g, "check.png", box, 0, 0, selector, NULL, NULL);
-				}
+				tcolor = wed_TextField_Text;
+				break;
 			}
 		}
-		tab_left += mColWidth[j];
+		GUI_FontDraw(g, font_UI_Basic, WED_Color_RGBA(tcolor), box[0]+2, box[1] + 4, mRd_suffix[i].c_str());
+
+		if(i == mSfx)
+		{
+			int selector[4] = { 1, 0, 2, 1 };
+			box[0] = tab_left;
+			box[2] = box[0] + ICON;
+			glColor4fv(WED_Color_RGBA(tcolor));
+			GUI_DrawCentered(g, "check.png", box, 0, 0, selector, NULL, NULL);
+		}
 	}
 }
 
@@ -155,12 +231,24 @@ int		WED_Road_Selector::MouseDown(int x, int y, int button)
 
 	mR = (b[3] - MARG - y) / HGT;
 	mC = x > b[0] + mColWidth[0] ? 1 : 0;
-//	printf("click @ %d,%d: r,c %d,%d\n",x,y, mR,mC);
-	mChoice = mDict[mR][mC].enu;
 
-	if(mChoice >= 0)
-		DispatchKeyPress(GUI_KEY_RETURN, GUI_VK_RETURN, GetModifiersNow());
-
+	if(mC == 0)
+	{
+		mPfx = mR;
+	}
+	else
+	{
+		mSfx = mR;
+		for(auto d : mRd_prefix[mPfx].combis)
+		{
+			if(d.idx == mR)
+			{
+				DispatchKeyPress(GUI_KEY_RETURN, GUI_VK_RETURN, GetModifiersNow());
+				break;
+			}
+		}
+	}
+	Refresh();
 	return 1;
 }
 
@@ -170,11 +258,19 @@ int		WED_Road_Selector::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags in
 		switch(inKey)
 		{
 			case GUI_KEY_LEFT:
-				if (mC > 0) mC--;
+				if (mC)
+				{
+					mC = 0;
+					mR = intmin2(mR, mRd_prefix.size()-1);
+				}
 				Refresh();
 				return 1;
 			case GUI_KEY_RIGHT:
-				if (mC < mCols-1) mC++;
+				if (mC == 0)
+				{
+					mC = 1;
+					mR = intmin2(mR, mRd_suffix.size()-1);
+				}
 				Refresh();
 				return 1;
 			case GUI_KEY_UP:
@@ -182,25 +278,50 @@ int		WED_Road_Selector::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags in
 				Refresh();
 				return 1;
 			case GUI_KEY_DOWN:
-				if (mR < mRows-1) mR++;
+				if(mC)
+				{
+					if(mR < mRd_suffix.size()-1) mR++;
+				}
+				else
+				{
+					if(mR < mRd_prefix.size()-1) mR++;
+				}
 				Refresh();
 				return 1;
 			case GUI_KEY_RETURN:
-				mChoice = mDict[mR][mC].enu;
-				return 0;
+				if(mC)
+				{
+					mSfx = mR;
+					for(auto d : mRd_prefix[mPfx].combis)
+					{
+						if(d.idx == mR)
+							return 0;
+					}
+					Refresh();
+					return 1;
+				}
+				else
+				{
+					mPfx = mR;
+					Refresh();
+					return 1;
+				}
 		}
 	return 0;
 }
 
 bool WED_Road_Selector::SetData(const GUI_CellContent& c)
 {
-	for(int i = 0; i < mRows; ++i)
-		for(int j = 0; j < mCols; ++j)
+	mChoice = c.int_val;
+
+	for(int i = 0; i < mRd_prefix.size(); ++i)
+		for(int j = 0; j < mRd_prefix[i].combis.size(); ++j)
 		{
-			if(mDict[i][j].enu == c.int_val)
+			if(mRd_prefix[i].combis[j].enu == c.int_val)
 			{
-				mDict[i][j].checked = true;
-				mR = i; mC = j;
+				mPfx = i;
+				mSfx = mRd_prefix[i].combis[j].idx;
+				mR = i; mC = 0;
 				Refresh();
 				return true; // found;
 			}
@@ -210,15 +331,19 @@ bool WED_Road_Selector::SetData(const GUI_CellContent& c)
 
 void WED_Road_Selector::GetSizeHint(int * w, int * h)
 {
-	int tot_width = 2 * MARG;
-	for(int i = 0; i < mCols; ++i)
-		tot_width += mColWidth[i];
-
-	*w = tot_width;
-	*h = 2 * MARG + HGT * mRows;
+	*w = 2 * MARG + mColWidth[0] + mColWidth[1];
+	*h = 2 * MARG + HGT * max(mRd_prefix.size(), mRd_suffix.size());
 }
 
 void WED_Road_Selector::GetData(GUI_CellContent& c)
 {
-	c.int_val = mChoice;            // lines and lights are also exclusive sets, so only int_val is used in AcceptEdit();
+	if(mPfx >= 0 && mPfx < mRd_prefix.size())
+		for(auto p : mRd_prefix[mPfx].combis)
+			if(p.idx == mSfx)
+			{
+				c.int_val = p.enu;
+				return;
+			}
+
+	c.int_val = mChoice;
 }
