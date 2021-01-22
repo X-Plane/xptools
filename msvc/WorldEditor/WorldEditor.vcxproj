@@ -233,6 +233,7 @@
     <ClCompile Include="..\..\src\WEDMap\WED_CreateToolBase.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_DebugLayer.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_DrawUtils.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_DummyCamera.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_HandleToolBase.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_Map.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_MapBkgnd.cpp" />
@@ -512,6 +513,7 @@
     <ClInclude Include="..\..\src\WEDMap\WED_CreateToolBase.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_DebugLayer.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_DrawUtils.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_DummyCamera.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_HandleToolBase.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_Map.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_MapBkgnd.h" />
