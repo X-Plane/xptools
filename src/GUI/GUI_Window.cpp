@@ -604,8 +604,8 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBound
 		SendMessage(mToolTip, TTM_ADDTOOL, 0, (LPARAM) &ti);
 	#endif
 	#if LIN
-		this->labelsize((int)GUI_GetFontSize(0));
-		Fl_Tooltip::size((int)GUI_GetFontSize(1));
+		this->labelsize((int)GUI_GetFontSize(font_UI_Basic));
+		Fl_Tooltip::size((int)GUI_GetFontSize(font_UI_Small));
 		mTipBounds[0] = mTipBounds[1] = mTipBounds[2] = mTipBounds[3] = 0 ;
 		mTipIsActive=false;
 
