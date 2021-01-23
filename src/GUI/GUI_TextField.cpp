@@ -52,8 +52,8 @@ GUI_TextField::GUI_TextField(int scrollH, GUI_Commander * parent) :
 
 	mLogicalBounds[0] = 0;
 	mLogicalBounds[1] = 0;
-	mLogicalBounds[2] = 100;
-	mLogicalBounds[3] = 100;
+	mLogicalBounds[2] = 0;
+	mLogicalBounds[3] = 0;
 	mMargins[0] = mMargins[1] = mMargins[2] = mMargins[3] = 0.0f;
 
 	for (int n = 0; n < 256; ++n)
@@ -143,7 +143,6 @@ void		GUI_TextField::Draw(GUI_GraphState * state)
 	glVertex2i(b[2],b[1]);
 	glEnd();
 	glLineWidth(1);
-
 	mState = state;
 	OGLE::Draw(mCaret && IsActiveNow() && IsFocused());
 	mState = NULL;
@@ -317,11 +316,11 @@ void		GUI_TextField::GetScrollBounds(float outTotalBounds[4], float outVisibleBo
 
 void		GUI_TextField::ScrollV(float vOffset)
 {
-	int	vbounds[4];
-	GetBounds(vbounds);
 	mLogicalBounds[3] -= mLogicalBounds[1];
-	mLogicalBounds[1] = vbounds[1] - vOffset;
+	mLogicalBounds[1] -= vOffset * GetLineHeight();
 	mLogicalBounds[3] += mLogicalBounds[1];
+	ConstrainLogicalBounds();
+	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 	Refresh();
 }
 
@@ -364,7 +363,16 @@ void			GUI_TextField::GetLogicalBounds(
 void			GUI_TextField::SetLogicalHeight(
 						float 			height)
 {
-	mLogicalBounds[1] = mLogicalBounds[3] - height;
+	mLogicalBounds[3] = mLogicalBounds[1] + height;
+
+	//TODO:mroe: We have to add the necessary space when multi line.
+	//Single line fields have nout enough space in the visual bounds what leads to undesired behavior.
+	//Probably we should distinkt multi and single line fields.
+	//See OGLE - BUG 07 .
+	if(height > GetLineHeight())
+	{
+		mLogicalBounds[3] += mMargins[1] + mMargins[3];
+	}
 	ConstrainLogicalBounds();
 	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 	Refresh();
