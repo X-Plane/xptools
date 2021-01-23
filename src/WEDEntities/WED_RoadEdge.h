@@ -63,7 +63,7 @@ protected:
 
 private:
 
-			bool			get_valid_road_info(road_info_t * optional_info) const;
+	const road_info_t * 	get_valid_road_info(void) const;
 
 	WED_PropStringText		resource;
 	WED_PropIntText			start_layer;

@@ -72,7 +72,7 @@ WED_LibraryPreviewPane::WED_LibraryPreviewPane(GUI_Commander * cmdr, WED_Resourc
 		mNextButton->SetMsg(next_variant,0);
 		mNextButton->AddListener(this);
 		mNextButton->Hide();
-		
+
 		mMSAA = 1;
 		GLint tmp;
 		glGetIntegerv(GL_SAMPLES, &tmp);
@@ -261,7 +261,7 @@ void	WED_LibraryPreviewPane::MouseDrag(int x, int y, int button)
 {
 	float dx = x - mX;
 	float dy = y - mY;
-	if((mType == res_Facade || mType == res_Object) && button == 1)
+	if((mType == res_Facade || mType == res_Road) && button == 1)
 	{
 		mHgt = mHgtOrig + (fabs(dy) < 100.0 ? dy * 0.1 : sign(dy)*(fabs(dy)-80) * 0.5);
 		mHgt = intlim(mHgt,0,250);
@@ -348,7 +348,7 @@ void	WED_LibraryPreviewPane::begin3d(const int *b, double radius_m)
 		glBindRenderbuffer(GL_RENDERBUFFER, mColBuf);     CHECK_GL_ERR
 		glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_RGB, dx, dy); CHECK_GL_ERR
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, mColBuf); CHECK_GL_ERR
-	
+
 		glGenRenderbuffers(1, &mDepthBuf);                CHECK_GL_ERR
 		glBindRenderbuffer(GL_RENDERBUFFER, mDepthBuf);   CHECK_GL_ERR
 		glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH_COMPONENT, dx, dy); CHECK_GL_ERR
@@ -434,6 +434,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 	const lin_info_t * lin = nullptr;
 	const fac_info_t * fac = nullptr;
 	const str_info_t * str = nullptr;
+	const road_info_t * rd = nullptr;
 
 	if(!mRes.empty())
 	{	switch(mType) {
@@ -625,6 +626,40 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				end3d(b);
 			}
 			break;
+
+		case res_Road:
+			if(mResMgr->GetRoad(mRes,rd))
+			{
+				int i = intlim(mWid*0.5 - 1,0,rd->vroad_types.size()-1);
+				map<int,road_info_t::vroad_t>::const_iterator it = rd->vroad_types.begin();
+				for(int j = 0; j < i; j++) it++;
+				int rd_idx = it->second.rd_type;
+
+				auto& t = rd->road_types.at(rd_idx);
+				if(auto tref = mTexMgr->LookupTexture(rd->textures[t.tex_idx].c_str(),true, tex_Compress_Ok))
+				{
+					if(auto tex_id = mTexMgr->GetTexID(tref))
+					{
+						g->SetState(false,1,false,true,true,false,false);
+						g->BindTex(tex_id,0);
+
+						const float length = 30.0;
+						begin3d(b, length);
+						glDisable(GL_CULL_FACE);
+						glColor4f(0,0,0,0);
+						glBegin(GL_POLYGON);
+							float v = 2.0 * length / t.length;
+							glTexCoord2f(t.s_left,  0); glVertex3f(-t.width * 0.5, -5,  length);
+							glTexCoord2f(t.s_right, 0); glVertex3f( t.width * 0.5, -5,  length);
+							glTexCoord2f(t.s_right, v); glVertex3f( t.width * 0.5,  5, -length);
+							glTexCoord2f(t.s_left,  v); glVertex3f(-t.width * 0.5,  5, -length);
+						glEnd();
+						glColor4f(1,1,1,1);
+						end3d(b);
+					}
+				}
+			}
+			break;
 		}
 
 		// plot some additional information about the previewed object
@@ -681,6 +716,16 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				}
 				else if (str)
 					snprintf(buf1, sizeof(buf1), "%s", str->description.c_str());
+				break;
+			case res_Road:
+				if(rd)
+				{
+					int i = intlim(mWid*0.5-1,0,rd->vroad_types.size()-1);
+					map<int,road_info_t::vroad_t>::const_iterator it = rd->vroad_types.begin();
+					for(int j = 0; j < i; j++) it++;
+					snprintf(buf1, sizeof(buf1), "Road #%d \'%s\'", i, it->second.description.c_str());
+					snprintf(buf2, sizeof(buf2), "Total %ld road types", rd->vroad_types.size());
+				}
 				break;
 		}
 		float text_color[4] = { 1,1,1,1 };

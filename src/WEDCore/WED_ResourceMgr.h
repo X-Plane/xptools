@@ -75,7 +75,7 @@ struct	pol_info_t {
 
 struct fac_info_t : public REN_FacadeLOD_t {
 
-	fac_info_t() { is_new = false ; is_ring = true; doubled = two_sided = false;  min_floors = 1; max_floors  = 999; has_roof = false; 
+	fac_info_t() { is_new = false ; is_ring = true; doubled = two_sided = false;  min_floors = 1; max_floors  = 999; has_roof = false;
 						noroofmesh = nowallmesh = false; }
 
 	bool			is_new;       // set if version 1000, aka type 2
@@ -83,13 +83,13 @@ struct fac_info_t : public REN_FacadeLOD_t {
 	string		roof_tex;
 	bool			is_ring; 	  // can be drawn as open polygon
 	bool			two_sided;
-	
+
 	// Facade Scrapers
 	vector<REN_facade_scraper_t>	scrapers;
-	
+
 	// V1 only
 	// vector<FacadeLOD_t>		lods;  // WED does not recognize anything but the LOD that starts at 0
-	
+
 	// V2 only
 	bool					noroofmesh;
 	bool					nowallmesh;
@@ -99,7 +99,7 @@ struct fac_info_t : public REN_FacadeLOD_t {
 
 	float					roof_scale_s;
 	float					roof_scale_t;
-	
+
 	// WED only
 	vector<string>	wallName;      // wall names, for property window etc
 	vector<string>	wallUse;       // official width range supported by this wall
@@ -139,7 +139,7 @@ struct	road_info_t {
 		float		width, length;    // texture scaling
 		float 	s_left, s_right;	// st coordinates on texture (t is always 0 to 1)
 	};
-	
+
 	map<int, vroad_t>	vroad_types;
 	map<int, road_t>	road_types;
 	vector<string>		textures;
@@ -192,7 +192,7 @@ public:
 			bool	GetObj(const string& path, XObj8 const *& obj, int variant = 0);
 			bool	GetObjRelative(const string& obj_path, const string& parent_path, XObj8 const *& obj);
 			bool	GetAGP(const string& path, agp_t const *& info);
-			bool	GetRoad(const string& path, road_info_t& out_info);
+			bool	GetRoad(const string& path, const road_info_t *& out_info);
 
 	virtual	void	ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
@@ -202,7 +202,7 @@ public:
 private:
 
 			XObj8 * LoadObj(const string& abspath);
-	
+
 	unordered_map<string,vector<fac_info_t> > mFac;
 	unordered_map<string,pol_info_t>		mPol;
 	unordered_map<string,lin_info_t>		mLin;
@@ -212,8 +212,8 @@ private:
 	unordered_map<string,agp_t>				mAGP;
 #if ROAD_EDITING
 	unordered_map<string,road_info_t>		mRoad;
-#endif	
+#endif
 	WED_LibraryMgr *				mLibrary;
-};	
+};
 
 #endif /* WED_ResourceMgr_H */

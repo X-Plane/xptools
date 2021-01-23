@@ -44,7 +44,7 @@
 WED_Road_Selector::WED_Road_Selector(GUI_Commander * parent, const GUI_EnumDictionary& dict)
 	: mChoice(-1),
 	mR(0), mC(0),
-	mPfx(-1), mSfx(-1),
+	mPfx(0), mSfx(0),
 	GUI_EditorInsert(parent)
 {
 	set<string> pfx,sfx;
@@ -194,7 +194,7 @@ void	WED_Road_Selector::Draw(GUI_GraphState * g)
 		WED_Color tcolor = wed_pure_white;
 		for(auto c : mRd_prefix[mPfx].combis)
 		{
-			if(c.idx == i)
+		if(c.idx == i)
 			{
 				tcolor = wed_TextField_Text;
 				break;
@@ -326,7 +326,7 @@ bool WED_Road_Selector::SetData(const GUI_CellContent& c)
 				return true; // found;
 			}
 		}
-	return false; // could not find selection in available choices
+	return true; //false; // could not find selection in available choices
 }
 
 void WED_Road_Selector::GetSizeHint(int * w, int * h)

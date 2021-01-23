@@ -75,14 +75,13 @@ bool			WED_RoadEdge::IsOneway(void) const
 
 double 		WED_RoadEdge::GetWidth(void) const
 {
-	road_info_t r;
-	if(get_valid_road_info(&r))
+	if(auto r = get_valid_road_info())
 	{
-		auto vr = r.vroad_types.find(subtype.value);
-		if (vr != r.vroad_types.end())
+		auto vr = r->vroad_types.find(subtype.value);
+		if (vr != r->vroad_types.end())
 		{
-			auto rd = r.road_types.find(vr->second.rd_type);
-			if ( rd != r.road_types.end())
+			auto rd = r->road_types.find(vr->second.rd_type);
+			if ( rd != r->road_types.end())
 				return rd->second.width;
 		}
 	}
@@ -94,7 +93,7 @@ void		WED_RoadEdge::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 	WED_GISEdge::GetNthPropertyInfo(n, info);
 	if(n == PropertyItemNumber(&subtype))
 	{
-		if(get_valid_road_info(NULL))
+		if(get_valid_road_info())
 		{
 			info.prop_kind = prop_RoadType;
 //			info.prop_kind = prop_Enum;
@@ -108,7 +107,7 @@ void		WED_RoadEdge::GetNthProperty(int n, PropertyVal_t& val) const
 	WED_GISEdge::GetNthProperty(n, val);
 	if(n == PropertyItemNumber(&subtype))
 	{
-		if(get_valid_road_info(NULL))
+		if(get_valid_road_info())
 		{
 			val.prop_kind = prop_RoadType;
 //			val.prop_kind = prop_Enum;
@@ -120,7 +119,7 @@ void		WED_RoadEdge::SetNthProperty(int n, const PropertyVal_t& val)
 {
 	if(n == PropertyItemNumber(&subtype))
 	{
-		if(get_valid_road_info(NULL))
+		if(get_valid_road_info())
 		{
 			PropertyVal_t v(val);
 			v.prop_kind = prop_Int;
@@ -137,10 +136,9 @@ void		WED_RoadEdge::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 	dict.clear();
 	if(n == PropertyItemNumber(&subtype))
 	{
-		road_info_t r;
-		if(get_valid_road_info(&r))
+		if(auto r = get_valid_road_info())
 		{
-			for(auto i : r.vroad_types)
+			for(auto i : r->vroad_types)
 			{
 				dict[i.first] = make_pair(i.second.description, true);
 			}
@@ -154,11 +152,10 @@ void		WED_RoadEdge::GetNthPropertyDictItem(int n, int e, string& item) const
 {
 	if(n == PropertyItemNumber(&subtype))
 	{
-		road_info_t r;
-		if(get_valid_road_info(&r))
+		if(auto r = get_valid_road_info())
 		{
-			auto i = r.vroad_types.find(subtype.value);
-			if (i != r.vroad_types.end())
+			auto i = r->vroad_types.find(subtype.value);
+			if (i != r->vroad_types.end())
 			{
 				item = i->second.description;
 				return;
@@ -182,24 +179,16 @@ void		WED_RoadEdge::GetNthPropertyDictItem(int n, int e, string& item) const
 	WED_GISEdge::GetNthPropertyDictItem(n, e, item);
 }
 
-bool		WED_RoadEdge::get_valid_road_info(road_info_t * optional_info) const
+const road_info_t * WED_RoadEdge::get_valid_road_info() const
 {
 #if WED
-	road_info_t temp;
-	road_info_t * i = optional_info ? optional_info : &temp;
-
-	IResolver * resolver;
-	WED_ResourceMgr * mgr;
-	if((resolver = GetArchive()->GetResolver()) != NULL)
-	if((mgr = WED_GetResourceMgr(resolver)) != NULL)
-	{
-		road_info_t r;
-		if(mgr->GetRoad(resource.value, *i))
-		if(i->vroad_types.size() > 0)
-			return true;
-	}
+	WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetArchive()->GetResolver());
+	const road_info_t * r;
+	if(rmgr && rmgr->GetRoad(resource.value, r))
+		if(r->vroad_types.size() > 0)
+			return r;
 #endif
-	return false;
+	return nullptr;
 }
 
 #endif

@@ -48,7 +48,6 @@ struct road_choices {
 	road_choices(string s) : prefix(s) {};
 };
 
-//class WED_Line_Selector : public GUI_Pane, public GUI_Commander {
 class WED_Road_Selector : public GUI_EditorInsert {
 public:
 			WED_Road_Selector(GUI_Commander * parent, const GUI_EnumDictionary& dict);
