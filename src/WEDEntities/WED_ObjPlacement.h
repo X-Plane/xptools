@@ -59,11 +59,13 @@ public:
 			double 		GetVisibleDeg(void) const;
 			// Visible radius in meters. Takes extent in all three spatial directions into account.
 			double		GetVisibleMeters(void) const;
-			double		GetHeight(void) const;
+			unsigned	ObjectGeometry(void) const;
 
 	virtual const char *	HumanReadableType(void) const { return "Object"; }
 
 private:
+
+			unsigned	ObjectGeometryUncached(void) const;
 
 	WED_PropIntEnum				has_msl;
 	WED_PropDoubleTextMeters	msl;	
@@ -73,6 +75,8 @@ private:
 	mutable float				visibleWithinDeg;     // for culling in the map_view
 	mutable float				visibleWithinMeters;  // for culling in the 3D preview window
 	mutable float				height;
+	mutable bool				objectGeometrySet;
+	mutable unsigned			objectGeometry;
 };
 
 

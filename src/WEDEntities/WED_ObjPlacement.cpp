@@ -29,6 +29,7 @@
 #include "MathUtils.h"
 #include "CompGeomDefs2.h"
 #include "XESConstants.h"
+#include "ObjDraw.h"
 
 DEFINE_PERSISTENT(WED_ObjPlacement)
 TRIVIAL_COPY(WED_ObjPlacement,WED_GISPoint_Heading)
@@ -39,7 +40,7 @@ WED_ObjPlacement::WED_ObjPlacement(WED_Archive * a, int i) :
 	msl    (this,PROP_Name("Elevation",     XML_Name("obj_placement","msl")), 0, 5, 3),
 	resource  (this,PROP_Name("Resource",  XML_Name("obj_placement","resource")),""),
 	show_level(this,PROP_Name("Show with", XML_Name("obj_placement","show_level")), ShowLevel, show_Level1),
-	visibleWithinDeg(-1.0)
+	visibleWithinDeg(-1.0), objectGeometrySet(false)
 {
 }
 
@@ -71,6 +72,7 @@ void		WED_ObjPlacement::SetResource(const string& r)
 {
 	resource = r;
 	visibleWithinDeg = -1.0; // force re-evaluation when object is changed
+	objectGeometrySet = false;
 }
 
 void		WED_ObjPlacement::SetHeading(double h)
@@ -156,6 +158,71 @@ double 	WED_ObjPlacement::GetVisibleMeters(void) const
 	GetVisibleDeg();
 
 	return visibleWithinMeters;
+}
+
+unsigned	WED_ObjPlacement::ObjectGeometry(void) const
+{
+	if (!objectGeometrySet)
+	{
+		objectGeometry = ObjectGeometryUncached();
+		objectGeometrySet = true;
+	}
+	return objectGeometry;
+}
+
+static unsigned GeometrySingleObject(const XObj8 * obj)
+{
+	unsigned result = 0;
+
+	for (const auto &lod : obj->lods)
+	{
+		ObjGeometry currentGeom = objgeom_Regular;
+		for (const auto &cmd : lod.cmds)
+		{
+			switch(cmd.cmd)
+			{
+			case obj8_Tris:
+			case obj8_Lines:
+			case obj8_Lights:
+				result |= currentGeom;
+				break;
+			case attr_Draped:
+				currentGeom = objgeom_Draped;
+				break;
+			case attr_NoDraped:
+				currentGeom = objgeom_Regular;
+				break;
+			}
+		}
+	}
+	return result;
+}
+
+unsigned	WED_ObjPlacement::ObjectGeometryUncached(void) const
+{
+	WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetArchive()->GetResolver());
+	if (!rmgr)
+		return 0;
+	const XObj8 * o;
+	const agp_t * agp;
+	if (rmgr->GetObj(resource.value, o))
+		return GeometrySingleObject(o);
+	else if (rmgr->GetAGP(resource.value, agp))
+	{
+		unsigned geom = 0;
+		if (!agp->facs.empty())
+			geom |= objgeom_Regular;
+		if (!agp->tile.empty() && !agp->hide_tiles)
+			geom |= objgeom_Draped;
+		for (const auto& o : agp->objs)
+		{
+			if (geom == (objgeom_Draped | objgeom_Regular))
+				break;
+			geom |= GeometrySingleObject(o.obj);
+		}
+		return geom;
+	}
+	return 0;
 }
 
 Bbox3		WED_ObjPlacement::GetVisibleBounds() const

@@ -247,7 +247,7 @@ inline float	key_extrap(float input, const vector<XObjKey>& table, int n)
 }
 
 
-void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref)
+void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref, unsigned geom_to_draw)
 {
 	CHECK_GL_ERR
 	if (funcs == NULL) funcs = &sDefault;
@@ -263,11 +263,14 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 	if ((lod->lod_near <= dist && dist < lod->lod_far) || (obj.lods.size() == 1 && lod->lod_far == 0.f))	// if lod_far is zero, we had no LOD directive
 	{
 		float	mat_col[3] = { 1.0, 1.0, 1.0 };
+		ObjGeometry current_geom = objgeom_Regular;
 
 		for (vector<XObjCmd8>::const_iterator cmd = lod->cmds.begin(); cmd != lod->cmds.end(); ++cmd)
 		{
 			switch(cmd->cmd) {
 			case obj8_Tris:
+				if ((geom_to_draw & current_geom) == 0)
+					continue;
 				want_draw = tex_is_cockpit ? drawMode_Pan : drawMode_Tri;
 				if (want_draw != drawMode) {
 					if (want_draw == drawMode_Pan)	funcs->SetupPanel_f(ref);
@@ -322,6 +325,8 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 #endif
 				break;
 			case obj8_Lines:
+				if ((geom_to_draw & current_geom) == 0)
+					continue;
 				if (drawMode_Lin != drawMode) {
 					funcs->SetupLine_f(ref);	CHECK_GL_ERR
 					drawMode = drawMode_Lin;
@@ -343,6 +348,8 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 				glDrawElements(GL_LINES, cmd->idx_count, GL_UNSIGNED_INT, &obj.indices[cmd->idx_offset]);	CHECK_GL_ERR
 				break;
 			case obj8_Lights:
+				if ((geom_to_draw & current_geom) == 0)
+					continue;
 				if (drawMode_Lgt != drawMode) {
 					funcs->SetupLight_f(ref);	CHECK_GL_ERR
 					drawMode = drawMode_Lgt;
@@ -415,8 +422,8 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 				{	glDisable(GL_POLYGON_OFFSET_FILL);glPolygonOffset(0.0, 0.0);glDepthMask(GL_TRUE);	}
 				CHECK_GL_ERR
 				break;
-			case attr_Draped:	funcs->SetupDraped_f(ref);	break;
-			case attr_NoDraped:	funcs->SetupNoDraped_f(ref);	break;
+			case attr_Draped:	current_geom = objgeom_Draped; funcs->SetupDraped_f(ref);	break;
+			case attr_NoDraped:	current_geom = objgeom_Regular; funcs->SetupNoDraped_f(ref);	break;
 			} // Case
 
 		} // cmd loop

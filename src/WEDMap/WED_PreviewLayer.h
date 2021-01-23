@@ -24,6 +24,7 @@
 #ifndef WED_PreviewLayer_H
 #define WED_PreviewLayer_H
 
+#include "ObjDraw.h"
 #include "WED_MapLayer.h"
 #include "WED_MapZoomerNew.h"
 
@@ -106,7 +107,7 @@ private:
 
 };
 
-void draw_obj_at_xyz(ITexMgr * tman, const XObj8 * o, double x, double y, double z, float r, GUI_GraphState * g, WED_Camera& camera);
+void draw_obj_at_xyz(ITexMgr * tman, const XObj8 * o, double x, double y, double z, float r, GUI_GraphState * g, WED_Camera& camera, unsigned geom_to_draw = objgeom_Regular | objgeom_Draped);
 void draw_agp_at_xyz(ITexMgr * tman, const agp_t * agp, double x, double y, double z, float agl, float r, GUI_GraphState * g, WED_Camera& camera);
 int layer_group_for_string(const char * s, int o, int def);
 

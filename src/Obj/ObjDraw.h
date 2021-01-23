@@ -51,7 +51,13 @@ struct	ObjDrawFuncs10_t {
 	void (* SetupNoDraped_f)(void * ref);
 };
 
+enum ObjGeometry : unsigned
+{
+	objgeom_Regular = 0x01,
+	objgeom_Draped = 0x02,
+};
+
 void	ObjDraw(const XObj& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref);
-void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref);
+void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref, unsigned geom_to_draw = objgeom_Regular | objgeom_Draped);
 
 #endif
