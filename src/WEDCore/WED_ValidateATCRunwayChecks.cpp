@@ -14,6 +14,7 @@
 #include "WED_PolygonPlacement.h"
 #include "WED_Runway.h"
 #include "WED_TaxiRoute.h"
+#include "WED_RampPosition.h"
 
 #include "WED_ResourceMgr.h"
 #include "WED_HierarchyUtils.h"
@@ -663,7 +664,7 @@ static bool FindIfMarked( const int runway_number,        //enum from ATCRunwayO
 }
 
 //Returns polygon in lat/lon
-static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info, // The relavent runway info
+static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info, // The relevant runway info
 								   int runway_number,             // The runway number we're doing
 								   bool make_arrival)             // add arrival protection area, but *only if* runway is used for arrivals
 {
@@ -673,16 +674,17 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info, // The relaven
 	{
 		return Polygon2(0);
 	}
+	bool paved = runway_info.runway_ptr->GetSurface() == surf_Asphalt || runway_info.runway_ptr->GetSurface() == surf_Concrete;
 
 	//Unfortunatly due to the messy real world we must have unrealistically low thresholds to avoid edge case after edge case for very airport
 	//that doesn't play by the rules, was grandfathered in, or was built on Mt. Doom and needs to avoid the volcanic dust clouds. You know, the usual.
 	double HITZONE_OVERFLY_THRESHOLD_M = 100.00;
+	if(!paved)
+		HITZONE_OVERFLY_THRESHOLD_M = 50.0; // reduced arrival end clearance requirements for these
 
-	double HITZONE_WIDTH_THRESHOLD_M; 		// Width of Runway Protection Zone beyond runway width, each side
-	if (runway_info.runway_ptr->GetLength() < 1500.0)
+	double HITZONE_WIDTH_THRESHOLD_M = 30.0;  // Width of Runway Protection Zone beyond runway width, each side
+	if (!paved || runway_info.runway_ptr->GetLength() < 1500.0 || runway_info.runway_ptr->GetWidth() < 20.0)
 		HITZONE_WIDTH_THRESHOLD_M = 10.0;	// good guess, FAA advisory 150' from CL is impractically wide for many small airfields
-	else
-		HITZONE_WIDTH_THRESHOLD_M = 30.0;	// good guess, again, FAA is too wishfull
 
 	Polygon2 runway_hit_box(runway_info.corners_geo);
 	/*         top   ^
@@ -746,21 +748,45 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info, // The relaven
 
 static bool DoHotZoneChecks( const RunwayInfo& runway_info,
 							 const TaxiRouteInfoVec_t& all_taxiroutes,
+							const vector<WED_RampPosition*>& ramps,
 							 validation_error_vector& msgs,
 							 WED_Airport* apt)
 {
 	int original_num_errors = msgs.size();
+	set<WED_RampPosition *> ramps_near_rwy;
+
 	for (int runway_side = 0; runway_side < 2; ++runway_side)
 	{
 		int runway_number = runway_info.runway_numbers[runway_side];
 	
 		for (int make_arrival = 0; make_arrival < 2; make_arrival++)
 		{
-			//Make the hitbox baed on the runway and which side (low/high) you're currently on and if you need to be making arrival or departure
+			//Make the hitbox based on the runway and which side (low/high) you're currently on and if you need to be making arrival or departure
 			Polygon2 hit_box = MakeHotZoneHitBox(runway_info, runway_number, (bool)make_arrival);
-			
+			bool hitbox_error = false;
+
 			if(hit_box.empty()) continue;
-				
+
+			for (auto r : ramps)
+			{
+				if (r->GetType() != atc_Ramp_Misc)
+				{
+					Point2 pt[4];
+					r->GetTips(pt);
+					for(int i = 0; i <4; ++i)
+						if (hit_box.inside(pt[i]))
+						{
+							ramps_near_rwy.insert(r);
+							hitbox_error = true;
+#if DEBUG_VIS_LINES
+							debug_mesh_line(pt[0],pt[2], DBG_LIN_COLOR);
+							debug_mesh_line(pt[1],pt[3], DBG_LIN_COLOR);
+#endif
+							break;
+						}
+				}
+			}
+
 			for(auto& taxiroute_itr : all_taxiroutes)
 			{
 				// even if its not intersecting the box - it could be completely inside
@@ -768,39 +794,31 @@ static bool DoHotZoneChecks( const RunwayInfo& runway_info,
 				{
 					if(runway_info.IsHotForArrival(runway_number) && static_cast<bool>(make_arrival) == true )
 					{
-						bool hitbox_error = FindIfMarked(runway_number, taxiroute_itr, taxiroute_itr.hot_arrivals, "arrivals", msgs, apt);
-#if DEBUG_VIS_LINES
-#if DEBUG_VIS_LINES < 2
-						if (hitbox_error)
-#endif
-						{
-							debug_mesh_segment(hit_box.side(0), DBG_LIN_COLOR); //left side
-							debug_mesh_segment(hit_box.side(1), DBG_LIN_COLOR); //top side
-							debug_mesh_segment(hit_box.side(2), DBG_LIN_COLOR); //right side
-							debug_mesh_segment(hit_box.side(3), DBG_LIN_COLOR); //bottom side
-						}
-#endif
+						hitbox_error |= FindIfMarked(runway_number, taxiroute_itr, taxiroute_itr.hot_arrivals, "arrivals", msgs, apt);
 					}
 
 					if(runway_info.IsHotForDeparture(runway_number) && static_cast<bool>(make_arrival) == false)
 					{
-						bool hitbox_error = FindIfMarked(runway_number, taxiroute_itr, taxiroute_itr.hot_departures, "departures", msgs, apt);
-#if DEBUG_VIS_LINES
-#if DEBUG_VIS_LINES < 2
-						if (hitbox_error)
-#endif
-						{
-							debug_mesh_segment(hit_box.side(0), DBG_LIN_COLOR); //left side
-							debug_mesh_segment(hit_box.side(1), DBG_LIN_COLOR); //top side
-							debug_mesh_segment(hit_box.side(2), DBG_LIN_COLOR); //right side
-							debug_mesh_segment(hit_box.side(3), DBG_LIN_COLOR); //bottom side
-						}
-#endif
+						hitbox_error |= FindIfMarked(runway_number, taxiroute_itr, taxiroute_itr.hot_departures, "departures", msgs, apt);
 					}
 				}
 			}
+#if DEBUG_VIS_LINES
+#if DEBUG_VIS_LINES < 2
+			if (hitbox_error)
+#endif
+			{
+				debug_mesh_segment(hit_box.side(0), DBG_LIN_COLOR); //left side
+				debug_mesh_segment(hit_box.side(1), DBG_LIN_COLOR); //top side
+				debug_mesh_segment(hit_box.side(2), DBG_LIN_COLOR); //right side
+				debug_mesh_segment(hit_box.side(3), DBG_LIN_COLOR); //bottom side
+			}
+#endif
 		}
 	}
+	if(ramps_near_rwy.size())
+		msgs.push_back(validation_error_t("Only Ramp Starts of type=misc are allowed near runways", err_ramp_only_misc_starts_in_hotzones, 
+																		ramps_near_rwy, apt));
 	return msgs.size() - original_num_errors == 0 ? true : false;
 }
 
@@ -810,11 +828,10 @@ static void AnyTruckRouteNearRunway( const RunwayInfo& runway_info,
 							 const TaxiRouteInfoVec_t& all_routes,
 							 validation_error_vector& msgs, WED_Airport* apt)
 {
-	int original_num_errors = msgs.size();
-
+	set<WED_TaxiRoute*> close_routes;
 	Polygon2 runway_hit_box(runway_info.corners_geo);
 	
-	Vector2 side_ext = runway_info.width_vec_1m * 15.0;  // Require 10m side clearance - some 15m to the *cenerline* of that road
+	Vector2 side_ext = runway_info.width_vec_1m * 15.0;  // Require 10m side clearance, some 15m to the *centerline* of that road
 	Vector2 len_ext  = runway_info.dir_vec_1m   * 30.0;  // required distance of ground traffic routes from runway ends in meters
 	if(runway_info.runway_ptr->GetLength() > 1500.0 ) len_ext *= 2.0; // Require more off-end clearance for full-size runways
 	runway_hit_box[0] -= len_ext + side_ext;
@@ -826,22 +843,25 @@ static void AnyTruckRouteNearRunway( const RunwayInfo& runway_info,
 	{
 		if(runway_hit_box.intersects(route_itr.segment_geo) || runway_hit_box.inside(route_itr.segment_geo.p1))
 		{
-			string msg = "Truck Route " + route_itr.name + " is too close to runway " + runway_info.name;
-			msgs.push_back(validation_error_t(msg, err_atcrwy_truck_route_too_close_to_runway, route_itr.ptr, apt));
+			close_routes.insert(route_itr.ptr);
 		}
 	}
 
-#if DEBUG_VIS_LINES
-#if DEBUG_VIS_LINES < 2
-    if (msgs.size() - original_num_errors != 0)
-#endif
+    if (close_routes.size())
     {
+		string msg = "Truck Route too close to runway " + runway_info.name;
+		msgs.push_back(validation_error_t(msg, err_atcrwy_truck_route_too_close_to_runway, close_routes, apt));
+			
+#if DEBUG_VIS_LINES == 2
+	}
+	{
+#elif DEBUG_VIS_LINES
         debug_mesh_segment(runway_hit_box.side(0), DBG_LIN_COLOR); //left side
         debug_mesh_segment(runway_hit_box.side(1), DBG_LIN_COLOR); //top side
         debug_mesh_segment(runway_hit_box.side(2), DBG_LIN_COLOR); //right side
         debug_mesh_segment(runway_hit_box.side(3), DBG_LIN_COLOR); //bottom side
-	}
 #endif
+	}
 }
 
 
@@ -1014,31 +1034,38 @@ static void TestInvalidHotZOneTags(const TaxiRouteInfoVec_t& taxi_routes, const 
 
 static void TwyNameCheck(const TaxiRouteInfoVec_t& all_taxiroutes_info, validation_error_vector& msgs, WED_Airport *apt)
 {
+	unordered_map<string, set<WED_TaxiRoute*> > long_named, odd_named;
 	for(auto& tr : all_taxiroutes_info)
 	{
 		if(tr.is_aircraft_route && !tr.ptr->IsRunway())
 		{
 			if(tr.name.size() > 3)
-				msgs.push_back(validation_error_t(string("Taxi route '") + tr.name + "' name is unusually long, should be less than 4 characters.",
-							warn_taxi_route_name_unusual, tr.ptr, apt));
+				long_named[tr.name].insert(tr.ptr);
 			else if(!tr.name.empty())
 			{ 
 				bool ok = isalpha(tr.name[0]);
 				if(tr.name.size() > 1 && !isalnum(tr.name[1])) ok = false;
 				if(tr.name.size() > 2 && !isdigit(tr.name[2])) ok = false;
 				if(!ok)
-					msgs.push_back(validation_error_t(string("Taxi route '") + tr.name + "' name is likely wrong, should be 1-2 letters optionally followed by 1-2 digits or empty.",
-							warn_taxi_route_name_unusual, tr.ptr, apt));
+					odd_named[tr.name].insert(tr.ptr);
+				
 			}
 		}
 	}
+	for(auto t : long_named)
+		msgs.push_back(validation_error_t(string("Taxi route '") + t.first+ "' name is unusually long, should be less than 4 characters.",
+			warn_taxi_route_name_unusual, t.second, apt));
+			
+	for(auto t : odd_named)
+		msgs.push_back(validation_error_t(string("Taxi route '") + t.first + "' name is likely wrong, should be 1-2 letters optionally followed by 1-2 digits or empty.",
+			warn_taxi_route_name_unusual, t.second, apt));
 }
 
 //-----------------------------------------------------------------------------
 
 void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs, const TaxiRouteVec_t& all_taxiroutes_plain,
 							const RunwayVec_t& all_runways, const set<int>& legal_rwy_oneway, const set<int>& legal_rwy_twoway,
-							const FlowVec_t& all_flows, WED_ResourceMgr * res_mgr)
+							const FlowVec_t& all_flows, WED_ResourceMgr * res_mgr, const vector<WED_RampPosition*>& ramps)
 {
 	Bbox2 box;
 	apt.GetBounds(gis_Geo, box);
@@ -1122,7 +1149,7 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs, cons
 			}
 	#endif
 			AssignRunwayUse(runway_info_itr, all_use_rules);
-			bool passes_hotzone_checks = DoHotZoneChecks(runway_info_itr, all_taxiroutes_info, msgs, &apt);
+			bool passes_hotzone_checks = DoHotZoneChecks(runway_info_itr, all_taxiroutes_info, ramps, msgs, &apt);
 			//Nothing to do here yet until we have more checks after this
 		}
 	}

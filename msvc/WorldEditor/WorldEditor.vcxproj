@@ -575,6 +575,7 @@
     <Image Include="..\..\src\WEDResources\WED.ico" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\src\WEDCore\README.WorldEditor" />
     <None Include="..\..\src\WEDResources\icons\map_airport.png" />
     <None Include="..\..\src\WEDResources\icons\map_beacon.png" />
     <None Include="..\..\src\WEDResources\icons\map_helipad.png" />
@@ -658,7 +659,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libcurl_a.lib;libexpatMT.lib;freetype.lib;jpeg.lib;libpng.lib;squish.lib;libtiff.lib;geotiff.lib;proj.lib;zlibstat.lib;comctl32.lib;glu32.lib;Opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libcurl_a.lib;libexpatMT.lib;freetype.lib;jpeg.lib;libpng.lib;squish.lib;libtiff.lib;geotiff.lib;proj.lib;zlibstat.lib;comctl32.lib;glu32.lib;Opengl32.lib;ws2_32.lib;wldap32.lib;crypt32.lib;normaliz.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
       <LargeAddressAware>true</LargeAddressAware>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -688,7 +689,7 @@
       </GenerateDebugInformation>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <LargeAddressAware>true</LargeAddressAware>
-      <AdditionalDependencies>libcurl_a.lib;libexpatMT.lib;freetype.lib;jpeg.lib;libpng.lib;squish.lib;libtiff.lib;geotiff.lib;proj.lib;zlibstat.lib;comctl32.lib;glu32.lib;Opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libcurl_a.lib;libexpatMT.lib;freetype.lib;jpeg.lib;libpng.lib;squish.lib;libtiff.lib;geotiff.lib;proj.lib;zlibstat.lib;comctl32.lib;glu32.lib;Opengl32.lib;ws2_32.lib;wldap32.lib;crypt32.lib;normaliz.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>

@@ -10,8 +10,13 @@ DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
 
 ifdef PLAT_LINUX
 LDFLAGS		+= -rdynamic
-LDFLAGS		+= -Wl,--exclude-libs,ALL
-LIBS		+= -lQtCore -lQtGui -lQtOpenGL -lGL -lGLU -ldl -lpthread
+LDFLAGS		+= -Wl,--exclude-libs,libpng
+ifdef FLTK_STATIC
+LIBS		+= $(shell fltk-config --use-gl --ldstaticflags)
+LIBS		+= -lGLU
+else
+LIBS		+= -lfltk -lfltk_gl -lGL -lGLU -lpthread
+endif #FLTK_STATIC
 LIBS		+= -Wl,-Bdynamic
 endif #PLAT_LINUX
 
@@ -50,8 +55,6 @@ SOURCES += ./src/Utils/PlatformUtils.lin.cpp
 SOURCES += ./src/UI/XWin.lin.cpp
 SOURCES += ./src/UI/XWinGL.lin.cpp
 SOURCES += ./src/Utils/glew.c
-MOCSRC += ./src/UI/XWin.h
-MOCSRC += ./src/UI/XWinGL.h
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN

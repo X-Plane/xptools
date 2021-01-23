@@ -64,7 +64,9 @@
 #endif
 #include "WED_SlippyMap.h"
 
-char	kToolKeys[] = {
+#define TOOLICON_ROWS 15
+
+char	kToolKeys[2*TOOLICON_ROWS] = {
 	0, 0,
 	0, 0, 0, 0,
 	0, 0, 0, 0,
@@ -73,7 +75,8 @@ char	kToolKeys[] = {
 	'e', 'w', 'f', 'g',
 
 	'l', 'k', 'h', 't',
-	'r', 's', 'v', 'm'
+	'r', 's', 'v', 'm',
+	0, 0, 0, 0
 };
 
 enum //Must be kept in sync with TabPane
@@ -163,6 +166,11 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	}
 #endif
 	// TOOLS
+	mTools.push_back(					NULL);
+	mTools.push_back(					NULL);
+
+	mTools.push_back(					NULL); // icon for JetWay placement
+	mTools.push_back(					NULL); // icon for .ags/.agb placement
 
 	mTools.push_back(					new WED_CreatePointTool("Truck Parking", mMap, mMap, resolver, archive, create_TruckParking));
 	mTools.push_back(					new WED_CreatePointTool("Truck Destination", mMap, mMap, resolver, archive, create_TruckDestination));
@@ -208,6 +216,8 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	mTools.push_back(					new WED_VertexTool("Vertex",mMap, mMap, resolver, 1));
 	mTools.push_back(					new WED_MarqueeTool("Marquee",mMap, mMap, resolver));
 
+	Assert(mTools.size() == 2 * TOOLICON_ROWS);
+
 	mInfoAdapter = new WED_ToolInfoAdapter(GUI_GetImageResourceHeight("property_bar.png") / 2);
 	mTextTable = new GUI_TextTable(cmdr,12,0);
 	mTable = new GUI_Table(1);
@@ -236,7 +246,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 
 	mInfoAdapter->AddListener(mTable);
 
-	mToolbar = new GUI_ToolBar(2,13,"map_tools.png");
+	mToolbar = new GUI_ToolBar(2,TOOLICON_ROWS,"map_tools.png");
 	mToolbar->SizeToBitmap();
 	mToolbar->Show();
 	mToolbar->SetParent(this);
@@ -723,7 +733,7 @@ void hide_all_persistents(MapFilter_t& hide_list)
 	hide_list.push_back(WED_ATCRunwayUse::sClass);
 	hide_list.push_back(WED_TruckDestination::sClass);
 	hide_list.push_back(WED_TruckParkingLocation::sClass);
-	
+
 #if ROAD_EDITING
 	hide_list.push_back(WED_RoadEdge::sClass);
 #endif // ROAD_EDITING

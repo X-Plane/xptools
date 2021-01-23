@@ -39,6 +39,9 @@
 #include "GUI_TextField.h"
 
 #include "WED_Globals.h"
+#if LIN
+#include <FL/Fl_Tooltip.H>
+#endif
 
 static int settings_bounds[4] = { 0, 0, 512, 384};
 
@@ -59,7 +62,7 @@ RadioButton::RadioButton(int x0, int y0, WED_Settings * parent,  const int * var
 	int h = GUI_GetImageResourceHeight(texture) * 0.4;
 
 	float white[4] = { 1, 1, 1, 1 };
-	
+
 	int x1 = x0 + 120;
 
 	GUI_Label * label = new GUI_Label();
@@ -68,7 +71,7 @@ RadioButton::RadioButton(int x0, int y0, WED_Settings * parent,  const int * var
 	label->SetDescriptor(desc);
 	label->SetParent(parent);
 	label->Show();
-	
+
 	GUI_Button * btn_0 = new GUI_Button(texture, btn_Radio, r_nil, r_nil, r_yes, r_yes);
 	btn_0->SetBounds(x1,y0,x1+220,y0+h);
 	btn_0->SetDescriptor(text0);
@@ -82,11 +85,11 @@ RadioButton::RadioButton(int x0, int y0, WED_Settings * parent,  const int * var
 	btn_1->Show();
 	btn_1->AddListener(parent);
 	btn_1->SetMsg((intptr_t) var,  (intptr_t) btn_1);
-	
+
 	btn_0->AddRadioFriend(btn_1);
 	btn_1->AddRadioFriend(btn_0);
-	
-	if (*var == 0) 
+
+	if (*var == 0)
 		btn_0->SetValue(1.0);
 	else
 		btn_1->SetValue(1.0);
@@ -95,8 +98,9 @@ RadioButton::RadioButton(int x0, int y0, WED_Settings * parent,  const int * var
 
 bool WED_Settings::Closed(void)
 {
+	this->TakeFocus();// more: removes the focus from the edit fields if any ; stops the cursor blink timer.
 	Hide();
-	return false;  // don't destroy window under MS Windows- just hide it, so we can later Show() it again
+	return false;
 }
 
 
@@ -106,19 +110,22 @@ void WED_Settings::ReceiveMessage(
 							intptr_t				inParam)
 {
 //	printf("WS Msg %p %ld %ld\n", inSrc, inMsg, inParam);
-	
+
 	if(inMsg == (intptr_t) &gIsFeet)
 	{
 			gIsFeet = ((GUI_Button *) inParam)->GetValue();
 			BroadcastMessage(GUI_TABLE_CONTENT_CHANGED,0);
+			this->TakeFocus();
 	}
 	else if(inMsg == (intptr_t) &gInfoDMS)
 	{
 			gInfoDMS = ((GUI_Button *) inParam)->GetValue();
+			this->TakeFocus();
 	}
 	else if(inMsg == (intptr_t) &gModeratorMode)
 	{
 			gModeratorMode = ((GUI_Button *) inParam)->GetValue();
+			this->TakeFocus();
 	}
 	else if(inMsg == (intptr_t) &gCustomSlippyMap)
 	{
@@ -131,17 +138,21 @@ void WED_Settings::ReceiveMessage(
 			((GUI_TextField *) inParam)->GetDescriptor(new_val);
 			gFontSize = max(10,min(18,atoi(new_val.c_str())));
 			GUI_SetFontSizes(gFontSize);
+			#if LIN
+			Fl_Tooltip::size((int)GUI_GetFontSize(1));
+			#endif
 	}
 	else if(inMsg == (intptr_t) &gOrthoExport)
 	{
 			gOrthoExport = ((GUI_Button *) inParam)->GetValue();
+			this->TakeFocus();
 	}
-/*	else if (inMsg == kMsg_Close)
+	else if (inMsg == kMsg_Close)
 	{
+		this->TakeFocus();
 		Hide();
-		AsyncDestroy();
+//		AsyncDestroy();
 	}
- */
 }
 
 
@@ -155,10 +166,10 @@ WED_Settings::WED_Settings(GUI_Commander * cmdr) : GUI_Window("WED Preferences",
 
 	RadioButton(220, 350 , this, &gIsFeet, "Length Units", "Meters", "Feet");
 	RadioButton(220, 300 , this, &gInfoDMS, "Info Bar\nCoordinates", "DD.DDDDD", "DD MM SS");
-	
+
 	int k_yes[4] = { 0, 1, 1, 3 };
 	int k_no[4]  = { 0, 2, 1, 3 };
-	
+
 	float * white = WED_Color_RGBA(wed_Table_Text);
 
 	GUI_Button * moderator_btn = new GUI_Button("check_buttons.png",btn_Check,k_no, k_no, k_yes, k_yes);
@@ -168,7 +179,7 @@ WED_Settings::WED_Settings(GUI_Commander * cmdr) : GUI_Window("WED Preferences",
 	moderator_btn->SetParent(this);
 	moderator_btn->AddListener(this);
 	moderator_btn->SetMsg((intptr_t) &gModeratorMode, (intptr_t) moderator_btn);
-	
+
 	GUI_Button * png_btn = new GUI_Button("check_buttons.png",btn_Check,k_no, k_no, k_yes, k_yes);
 	png_btn->SetBounds(340,230,510,230+GUI_GetImageResourceHeight("check_buttons.png")/3);
 	png_btn->Show();
@@ -212,16 +223,16 @@ WED_Settings::WED_Settings(GUI_Commander * cmdr) : GUI_Window("WED Preferences",
 	label2->SetParent(this);
 	label2->SetDescriptor("Font Size");
 	label2->Show();
-	
-	
-/*	GUI_Button * close_btn = new GUI_Button("push_buttons.png",btn_Push,k_no, k_yes, k_no, k_yes);
+
+
+	GUI_Button * close_btn = new GUI_Button("push_buttons.png",btn_Push,k_no, k_yes, k_no, k_yes);
 	close_btn->SetBounds(220,5,290,5+GUI_GetImageResourceHeight("push_buttons.png")/3);
 	close_btn->Show();
 	close_btn->SetDescriptor("Close");
 	close_btn->SetParent(this);
 	close_btn->AddListener(this);
 	close_btn->SetMsg(kMsg_Close,0);
-*/
+
  }
 
 #if LIN
@@ -238,11 +249,8 @@ WED_Application::WED_Application(const char * args) : GUI_Application(args),
 
 WED_Application::~WED_Application()
 {
-}
-
-void	WED_Application::SetAbout(GUI_Window * about_box)
-{
-	mAboutBox = about_box;
+	if (mAboutBox)    delete mAboutBox;
+	if (mSettingsWin) delete mSettingsWin;
 }
 
 void	WED_Application::OpenFiles(const vector<string>& inFiles)
@@ -261,7 +269,7 @@ int		WED_Application::HandleCommand(int command)
 		GUI_LaunchURL(WED_URL_OSM_FIXTHEMAP);
 		return 1;
 	case wed_HelpScenery:
-		// LR maintains a forwarding directory for all v10-class products 
+		// LR maintains a forwarding directory for all v10-class products
 		// so that we can restructure our content management without breaking binary
 		// apps in-field.  So...this is the perma-marker for WED 1.1 scenery help.
 		GUI_LaunchURL(WED_URL_HELP_SCENERY);
@@ -300,12 +308,12 @@ int		WED_Application::CanHandleCommand(int command, string& ioName, int& ioCheck
 
 void	WED_Application::AboutBox(void)
 {
-	if (mAboutBox)	mAboutBox->Show();
+	if(!mAboutBox) mAboutBox = new WED_AboutBox( this );
+	mAboutBox->Show();
 }
 
 void	WED_Application::Preferences(void)
 {
-//	DoUserAlert("WED does not yet have any preferences.");
 	if(!mSettingsWin) mSettingsWin = new WED_Settings( this );
 	mSettingsWin->Show();
 }

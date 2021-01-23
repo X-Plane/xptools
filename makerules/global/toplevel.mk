@@ -33,21 +33,21 @@ endif
 
 ifdef PLAT_LINUX
 
-MOCEXISTS	:= $(shell moc -E /dev/null > /dev/null 2>&1; echo $$?)
-MOCQT4EXISTS	:= $(shell moc-qt4 -E /dev/null > /dev/null 2>&1; echo $$?)
+#MOCEXISTS	:= $(shell moc -E /dev/null > /dev/null 2>&1; echo $$?)
+#MOCQT4EXISTS	:= $(shell moc-qt4 -E /dev/null > /dev/null 2>&1; echo $$?)
 
-ifneq ($(MOCEXISTS), 0)
-ifneq ($(MOCQT4EXISTS), 0)
-$(error neither 'moc' nor 'moc-qt4' found, install qt4-dev)
-endif
-endif
+#ifneq ($(MOCEXISTS), 0)
+#ifneq ($(MOCQT4EXISTS), 0)
+#$(error neither 'moc' nor 'moc-qt4' found, install qt4-dev)
+#endif
+#endif
 
-ifeq ($(MOCQT4EXISTS), 0)
-MOC	:= moc-qt4
-endif
-ifeq ($(MOCEXISTS), 0)
-MOC	:= moc
-endif
+#ifeq ($(MOCQT4EXISTS), 0)
+#MOC	:= moc-qt4
+#endif
+#ifeq ($(MOCEXISTS), 0)
+#MOC	:= moc
+#endif
 
 ifeq ($(ARCHITECTURE), x86_64)
 ifeq ($(cross), m32)
@@ -104,23 +104,23 @@ endif
 
 ifdef PLAT_LINUX
 	DEFINES		:= -DLIN=1 -DIBM=0 -DAPL=0
-	CFLAGS		:= $(M32_SWITCH) -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
-	CXXFLAGS	:= $(M32_SWITCH) -std=c++14 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
+	CFLAGS		:= $(M32_SWITCH) -Wno-deprecated-declarations -Wno-multichar -frounding-math
+	CXXFLAGS	:= $(M32_SWITCH) -std=c++14 -pthread -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -frounding-math
 	LDFLAGS		:= $(M32_SWITCH) -no-pie
 	BARE_LDFLAGS	:=
 	STRIPFLAGS	:= -s -x
 endif
 ifdef PLAT_DARWIN
 	DEFINES		:= -DLIN=0 -DIBM=0 -DAPL=1
-	CXXFLAGS	:= $(M32_SWITCH) -mmacosx-version-min=10.9 -std=c++11 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -fvisibility=hidden
-	CFLAGS		:= $(M32_SWITCH) -mmacosx-version-min=10.9 -Wno-deprecated-declarations -Wno-multichar -fvisibility=hidden
-	LDFLAGS		:= $(M32_SWITCH) -mmacosx-version-min=10.9
+	CXXFLAGS	:= $(M32_SWITCH) -mmacosx-version-min=10.11 -std=c++14 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -fvisibility=hidden
+	CFLAGS		:= $(M32_SWITCH) -mmacosx-version-min=10.11 -Wno-deprecated-declarations -Wno-multichar -fvisibility=hidden
+	LDFLAGS		:= $(M32_SWITCH) -mmacosx-version-min=10.11
 	STRIPFLAGS	:= -x
 endif
 ifdef PLAT_MINGW
 	DEFINES		:= -DLIN=0 -DIBM=1 -DAPL=0 -DBOOST_THREAD_USE_LIB=1
-	CFLAGS		:= $(M32_SWITCH) -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
-	CXXFLAGS	:= $(M32_SWITCH) -std=c++14 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
+	CFLAGS		:= $(M32_SWITCH) -Wno-deprecated-declarations -Wno-multichar -frounding-math
+	CXXFLAGS	:= $(M32_SWITCH) -std=c++14 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -frounding-math
 	LDFLAGS		:= $(M32_SWITCH)
 	BARE_LDFLAGS	:=
 	STRIPFLAGS	:= -s -x
@@ -134,6 +134,15 @@ endif
 ifeq ($(conf), release_opt)
 	CFLAGS		+= -Ofast -flto -fomit-frame-pointer -fstrict-aliasing
 	CXXFLAGS	+= -Ofast -flto -fomit-frame-pointer -fstrict-aliasing
+ifdef PLAT_LINUX
+	LDFLAGS		+= -flto=$(shell nproc)
+	# see libs/patches/libcurl.c: due to bugs in the gnu ld linker, we need to use googles gold linker
+	# to make the trick with unversioned symbols work out for __builtin math functions like pow/exp etc.
+	HAS_GOLD 	:= $(shell ld.gold -v >/dev/null 2>&1; echo $$?)
+ifeq ($(HAS_GOLD), 0)
+	LDFLAGS		+= -fuse-ld=gold
+endif
+endif
 	DEFINES		+= -DDEV=0 -DNDEBUG
 	StripDebug	:= Yes
 else ifeq ($(conf), release)

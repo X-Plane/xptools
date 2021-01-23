@@ -20,8 +20,7 @@
  * THE SOFTWARE.
  *
  */
-#include <QtCore/QtCore>
-#include <QtGui/QtGui>
+
 #include "PlatformUtils.h"
 #include <stdio.h>
 #include <sys/stat.h>
@@ -29,6 +28,9 @@
 #include <cstring>
 #include <string>
 #include <linux/limits.h>
+#include <FL/Fl.H>
+#include <FL/fl_ask.H>
+#include <FL/Fl_Native_File_Chooser.H>
 
 string GetApplicationPath()
 {
@@ -92,24 +94,6 @@ string GetTempFilesFolder()
 	return string(temp_path);
 }
 
-string GetPrefFilesFolder()
-{
-	const char * tpath  = getenv("TMPDIR");
-	if(!tpath)
-		tpath = "/tmp";
-	char temp_path[PATH_MAX] = { 0 };
-	int n = snprintf(temp_path,PATH_MAX,"%s/xptools-%d",tpath,getuid());
-	if( n < 0 || n >= PATH_MAX)
-		return "";
-
-	struct stat ss;
-	if (stat(temp_path,&ss) < 0)
-		if(mkdir(temp_path,0700) !=0)
-			return "";
-
-	return string(temp_path);
-}
-
 int		GetFilePathFromUser(
 					int					inType,
 					const char * 		inPrompt,
@@ -118,44 +102,31 @@ int		GetFilePathFromUser(
 					char * 				outFileName,
 					int					inBufSize)
 {
+    int ret = 0;
+
+    Fl_Native_File_Chooser * mFileDialog = new Fl_Native_File_Chooser();
+
+    mFileDialog->title(inPrompt);
+
 	switch(inType)
 	{
-		case getFile_Open:
-		{
-			QString fileName = QFileDialog::getOpenFileName(0,QString::fromUtf8(inPrompt));
-			if (!fileName.length())
-				return 0;
-			else {
-				::strncpy(outFileName, fileName.toUtf8().constData(), inBufSize);
-				return 1;
-			}
-		}
-		case getFile_Save:
-		{
-			QString fileName = QFileDialog::getSaveFileName(0,QString::fromUtf8(inPrompt));
-			if (!fileName.length())
-				return 0;
-			else {
-				::strncpy(outFileName, fileName.toUtf8().constData(), inBufSize);
-				return 1;
-			}
-		}
-		case getFile_PickFolder:
-		{
-			QString dir = QFileDialog::getExistingDirectory(0, QString::fromUtf8(inPrompt),
-			                                                "", QFileDialog::ShowDirsOnly);
-			if (!dir.length())
-				return 0;
-			else {
-				if(dir.endsWith ('/'))
-						dir.truncate(dir.size()-1);
-				::strncpy(outFileName, dir.toUtf8().constData(), inBufSize);
-				return 1;
-			}
-		}
-		default:
-			return 0;
-	}
+		case getFile_Open:       mFileDialog->type(Fl_Native_File_Chooser::BROWSE_FILE);      break;
+		case getFile_Save:       mFileDialog->type(Fl_Native_File_Chooser::BROWSE_SAVE_FILE); break;
+		case getFile_PickFolder: mFileDialog->type(Fl_Native_File_Chooser::BROWSE_DIRECTORY); break;
+
+        default: { if(mFileDialog) delete mFileDialog;  return ret;}
+    }
+
+
+    if(mFileDialog->show() == 0)
+    {
+        ::strncpy(outFileName,mFileDialog->filename(),inBufSize);
+       ret = 1;
+    }
+
+
+    if(mFileDialog) delete mFileDialog;
+    return ret ;
 }
 
 char *	GetMultiFilePathFromUser(
@@ -163,67 +134,90 @@ char *	GetMultiFilePathFromUser(
 					const char *		inAction,
 					int					inID)
 {
+    char * ret = NULL;
+    Fl_Native_File_Chooser * mFileDialog = new Fl_Native_File_Chooser();
 
-	QStringList fileNames = QFileDialog::getOpenFileNames(0,QString::fromUtf8(inPrompt));
+    mFileDialog->title(inPrompt);
+    mFileDialog->type(Fl_Native_File_Chooser::BROWSE_MULTI_FILE);
 
-	vector<string> outFiles;
-	if (fileNames.empty()) return NULL;
-	for(int i=0; i < fileNames.size(); ++i)
-	{
-		if(!fileNames.at(i).isEmpty())
-			outFiles.push_back(fileNames[i].toUtf8().constData());
-	}
+    if(mFileDialog->show() == 0)
+    {
+        int file_cnt(mFileDialog->count());
+        if(file_cnt == 0 ){ if(mFileDialog) delete mFileDialog; return ret;}
 
-	if(outFiles.size() < 1) return NULL;
+        vector<string> outFiles;
+        for (int i=0; i < file_cnt; ++i )
+        {
+            if(strlen(mFileDialog->filename(i)) > 0)
+                outFiles.push_back(mFileDialog->filename(i));
+        }
 
-	int buf_size = 1;
-	for(int i = 0; i < outFiles.size(); ++i)
-		buf_size += (outFiles[i].size() + 1);
+        int buf_size = 1;
+        for(int i = 0; i < outFiles.size(); ++i)
+        {
+            buf_size += (outFiles[i].size() + 1);
+        }
 
-	char * ret = (char *) malloc(buf_size);
-	char * p = ret;
+        ret = (char *) malloc(buf_size);
+        char * p = ret;
 
-	for(int i = 0; i < outFiles.size(); ++i)
-	{
-		strcpy(p, outFiles[i].c_str());
-		p += (outFiles[i].size() + 1);
-	}
-	*p = 0;
+        for(int i = 0; i < outFiles.size(); ++i)
+        {
+            strcpy(p, outFiles[i].c_str());
+            p += (outFiles[i].size() + 1);
+        }
+        *p = 0;
+    }
 
-	return ret;
+    if(mFileDialog) delete mFileDialog;
+    return ret ;
 }
 
-void	DoUserAlert(const char * inMsg)
+void DoUserAlert(const char * inMsg)
 {
 	LOG_MSG("I/Alert %s\n",inMsg);
-	QMessageBox::warning(0, "", QString::fromUtf8(inMsg));
+	fl_message_hotspot(false);
+	fl_alert(inMsg);
 }
 
-void	ShowProgressMessage(const char * inMsg, float * inProgress)
+void ShowProgressMessage(const char * inMsg, float * inProgress)
 {
 	if(inProgress)	fprintf(stderr,"%s: %f\n",inMsg,100.0f * *inProgress);
 	else			fprintf(stderr,"%s\n",inMsg);
 }
 
-int		ConfirmMessage(const char * inMsg, const char * proceedBtn, const char * cancelBtn)
+int ConfirmMessage(const char * inMsg, const char * proceedBtn, const char * cancelBtn)
 {
 	LOG_MSG("I/Confirm %s\n",inMsg);
-	return (QMessageBox::question(0,"", QString::fromUtf8(inMsg), proceedBtn, cancelBtn) == 0 ) ;
+	fl_message_hotspot(false);
+
+	int result = 0;
+	switch (fl_choice(inMsg,proceedBtn,cancelBtn,0))
+	{
+	  case 0: result = 1; break; // proceedBtn
+	  case 1: result = 0; break; // cancelBtn (default)
+	}
+
+	if(Fl::event_key(FL_Escape)) result = 0;
+
+	return result;
 }
+
 
 int DoSaveDiscardDialog(const char * inMessage1, const char * inMessage2)
 {
-	int res = QMessageBox::question(0, QString::fromUtf8(inMessage1), QString::fromUtf8(inMessage2),
-	QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
-	QMessageBox::Cancel);
-	switch (res)
+	fl_message_hotspot(false);
+
+	int result = close_Cancel;
+	switch (fl_choice(inMessage2,"Discard","Cancel","Save"))
 	{
-		case QMessageBox::Save:
-			return close_Save;
-		case QMessageBox::Discard:
-			return close_Discard;
-		case QMessageBox::Cancel:
-		default:
-			return close_Cancel;
+	  case 0: result = close_Discard; break;
+	  case 1: result = close_Cancel;  break; //(default)
+	  case 2: result = close_Save;    break;
 	}
+
+	if(Fl::event_key(FL_Escape)) result = close_Cancel;
+
+	return result;
 }
+

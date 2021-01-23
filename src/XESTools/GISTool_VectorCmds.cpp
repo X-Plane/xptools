@@ -614,6 +614,23 @@ static int DoShapeImport(const vector<const char *>& args)
 	return 0;
 }
 
+#define HELP_SHAPE_AG \
+"-shape_ag <filename> [...<filename>]\n" \
+"Imports AG directly into a map from a shapefile."
+static int DoShapeAG(const vector<const char *>& args)
+{
+	for(int n = 0; n < args.size(); ++n)
+	{
+		if(!ReadShapeFile(args[n], gMap, gProgress))
+		{
+			if(gVerbose) printf("Failed to import %s\n", args[n]);
+			return 1;
+		}
+	}
+	return 0;
+}
+
+
 #define HELP_SHAPE_EXPORT \
 "-shapefile_write <flags> <terain_type> <filename>\n" \
 "Export a shape file.  Mode letters (similar to tar syntax are):\n" \
@@ -930,6 +947,7 @@ static	GISTool_RegCmd_t		sVectorCmds[] = {
 { "-gshhs", 		1, 1, 	DoGSHHSImport, 			"Import GSHHS shorelines.", "" },
 { "-shapefile", 	5, -1, 	DoShapeImport, 			"Import ESRI Shape File.", HELP_SHAPE_IMPORT },
 { "-shapefile_write", 3, 3, 	DoShapeExport, 		"Export ESRI Shape File.", HELP_SHAPE_EXPORT },
+{ "-shape_ag", 1, -1, 			DoShapeAG,			"Import ESRI Shape Fil as AG", HELP_SHAPE_AG },
 { "-shapefile_raster", 4, 4, DoShapeRaster,			"Raster shapefile.", "" },
 { "-reduce_vectors", 1, 1,	DoReduceVectors,		"Simplify vector map by a certain error distance.", HELP_REDUCE_VECTORS },
 { "-remove_outsets", 2, 2, DoRemoveOutsets,			"Remove square outset piers from water areas.", HELP_REMOVE_OUTSETS },

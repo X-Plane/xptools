@@ -9,7 +9,8 @@
 
 const MetaDataKey known_keys[] = {
 // wed_AddMetaDataBegin
-{	"City/Locality",   "city"        },         // wed_AddMetaDataCity
+{	"City|Locality",   "city"        },         // wed_AddMetaDataCity
+{	"Airport Closed",  "closed"      },         // wed_AddMetaDataClosed
 {	"Country",         "country"     },         // wed_AddMetaDataCountry
 {	"Datum Latitude",  "datum_lat"   },         // wed_AddMetaDataDatumLat
 {	"Datum Longitude", "datum_lon"   },         // wed_AddMetaDataDatumLon
@@ -20,7 +21,7 @@ const MetaDataKey known_keys[] = {
 {	"Local Code",      "local_code"  },         // wed_AddMetaDataLocal
 {	"Local Authorithy","local_authority" },     // wed_AddMetaDataLocAuth
 {	"Region Code",     "region_code" },         // wed_AddMetaDataRegionCode
-{	"State/Province",  "state"       },         // wed_AddMetaDataState
+{	"State|Province",  "state"       },         // wed_AddMetaDataState
 {	"Transition Altitude", "transition_alt"  }, // wed_AddMetaDataTransitionAlt
 {	"Transition Level",    "transition_level"}  // wed_AddMetaDataTransitionLevel
 // wed_AddMetaDataEnd

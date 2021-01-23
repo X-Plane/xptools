@@ -78,6 +78,7 @@ float	GUI_GetLineHeight(int inFontID);
 float	GUI_GetLineDescent(int inFontID);
 float	GUI_GetLineAscent(int inFontID);
 
+float	GUI_GetFontSize(int inFontID);
 void 	GUI_SetFontSizes(float sizePix);
 
 void	GUI_TruncateText(

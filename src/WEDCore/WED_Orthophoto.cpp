@@ -204,16 +204,16 @@ void	WED_MakeOrthos(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 							if(last_answer < 0)
 							{
 								stringstream msg;
-								auto w = (kpix_x * 1024 == orig_x && kpix_y * 1024 == orig_y) ? "Exact size" : "Upscaled size";
-								msg << w << " " << kpix_x << " x " << kpix_x << " Kpix, ";
+								auto w = (kpix_x * 1024 == orig_x && kpix_y * 1024 == orig_y) ? "This image is exactly " : "This image will be upscaled to ";
+								msg << w << " " << kpix_x << " x " << kpix_y << " Kpix, ";
 								msg.precision(1);
 								msg << std::fixed;
-								msg << LonLatDistMeters(corner[0], corner[1]) / kpix_x / 1024 << " x " << LonLatDistMeters(corner[0], corner[3]) / kpix_y / 1024<< " m/pix\n";
+								msg << LonLatDistMeters(corner[0], corner[1]) / (kpix_x * 1024.0) << " x " << LonLatDistMeters(corner[0], corner[3]) / (kpix_y * 1024.0) << " m/pix\n";
 								msg << "Total DDS texture size ~" << intround(kpix_x * kpix_y * 0.7) << " MB\n";
 								msg << "\n";
-								msg << "Optimized size " << kopt_x << " x " << kopt_y << " Kpix, ";
-								msg << LonLatDistMeters(corner[0], corner[1]) / kopt_x / 1024 << " x " << LonLatDistMeters(corner[0], corner[3]) / kopt_y / 1024 << " m/pix\n";
-								msg << "Total DDS texture size ~" << intround(kopt_x * kopt_y * 0.7) << " MB\n";
+								msg << "Use a space-optimized resolution of " << kopt_x << " x " << kopt_y << " Kpix, ";
+								msg << LonLatDistMeters(corner[0], corner[1]) / (kopt_x * 1024.0) << " x " << LonLatDistMeters(corner[0], corner[3]) / (kopt_y * 1024.0) << " m/pix\n";
+								msg << "Total DDS texture size ~" << intround(kopt_x * kopt_y * 0.7) << " MB instead ?\n";
 								
 								last_answer = ConfirmMessage(msg.str().c_str(), "Optimized size", w);   // returns 0 or 1
 							}

@@ -428,15 +428,6 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_Ma
 		mLabel->SetSticky(1,0,1,1);
 		DecorateGUIWindow();
 
-	//Get Certification
-	string cert(WED_get_GW_cert());
-	if(cert.empty())
-	{
-		mPhase = imp_dialog_error;
-		DecorateGUIWindow("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
-	}
-	mCacheRequest.in_cert = cert;
-
 	StartCSVDownload();
 }
 
@@ -725,7 +716,7 @@ void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
 
 				if (tmp["AcceptedSceneryCount"].asInt() > tmp["ApprovedSceneryCount"].asInt())
 				{
-					//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airport/ICAO"
+					//Makes the url "https://gateway.x-plane.com/apiv1/airport/ICAO"
 					mCacheRequest.in_url = WED_get_GW_api_url() + "airport/" + cur_airport.icao;
 					mCacheRequest.in_domain = cache_domain_airport_versions_json;
 					mCacheRequest.in_folder_prefix = "scenery_packs" DIR_STR "GatewayImport" DIR_STR + cur_airport.icao;
@@ -952,7 +943,7 @@ void WED_GatewayImportDialog::StartICAODownload()
 	mCacheRequest.in_domain = cache_domain_airports_json;
 	mCacheRequest.in_folder_prefix = "scenery_packs" DIR_STR "GatewayImport";
 
-	//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airports"
+	//Makes the url "https://gateway.x-plane.com/apiv1/airports"
 	mCacheRequest.in_url = WED_get_GW_api_url() + "airports";
 
 	Start(0.1);
@@ -974,7 +965,7 @@ bool WED_GatewayImportDialog::StartVersionsDownload()
 	//Current airport selected
 	AptInfo_t current_apt = mICAO_Apts.at(*out_selection.begin());
 
-	//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airport/ICAO"
+	//Makes the url "https://gateway.x-plane.com/apiv1/airport/ICAO"
 	mCacheRequest.in_url = WED_get_GW_api_url() + "airport/" + current_apt.icao;
 	mCacheRequest.in_domain = cache_domain_airport_versions_json;
 
@@ -1124,7 +1115,6 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(const string& json_
         DoUserAlert("Import failed - no valid data found !");
     else
 	{
-        fill_in_airport_metadata_defaults(*out_apt[0], mAirportMetadataCSVPath);
         out_apt[0]->StateChanged();
 		g = out_apt[0];
 		g->SetSceneryID(root["scenery"]["sceneryId"].asInt());
@@ -1135,6 +1125,9 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(const string& json_
 	{
 		WED_ImportText(dsfTextPath.c_str(), (WED_Thing *) g);
 	}
+
+	if(!out_apt.empty())
+		fill_in_airport_metadata_defaults(*out_apt[0], mAirportMetadataCSVPath); // this also sets gui 2D/3D metadata flags - so do after dsf has been added
 
 #if !SAVE_ON_HDD && !GATEWAY_IMPORT_FEATURES
 	//clean up our files ICAOid.dat and potentially ICAOid.txt

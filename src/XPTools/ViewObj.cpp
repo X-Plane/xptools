@@ -603,19 +603,25 @@ void	XGrindFiles(const vector<string>& files)
 	}
 }
 
-void	XGrindInit(void)
+#if LIN
+void	XGrindInit(int& argc, char* argv[])
+#else
+void	XGrindInit()
+#endif //if LIN
 {
 	XObjWin * win = new XObjWin(NULL);
-	
+#if LIN
+	win->show(argc,argv);
+	win->SetGLContext();
+#endif
 #if !APL
 	GLenum err = glewInit();
 	if (err != GLEW_OK)
 		AssertPrintf("Can not init GLEW: '%s'\n", glewGetErrorString(err));
 #endif
-
 	win->GetMenuBar();
+
 	win->ForceRefresh();
-	
 
 	const char * ext = (const char *) glGetString(GL_EXTENSIONS);
 	int	major=0, minor=0, revision=0;

@@ -916,42 +916,44 @@ void	DrawMapBucketed(
 			double	y1 = CGAL::to_double(fi->second->data().mObjs[j].mLocation.y());
 			double r = fi->second->data().mObjs[j].mHeading;
 
-			double	w = 0.5 * gRepTable[gRepFeatureIndex[fi->second->data().mObjs[j].mRepType]].width_min;
-			double	h = 0.5 * gRepTable[gRepFeatureIndex[fi->second->data().mObjs[j].mRepType]].depth_min;
+			if(gRepFeatureIndex.count(fi->second->data().mObjs[j].mRepType))
+			{
+				double	w = 0.5 * gRepTable[gRepFeatureIndex[fi->second->data().mObjs[j].mRepType]].width_min;
+				double	h = 0.5 * gRepTable[gRepFeatureIndex[fi->second->data().mObjs[j].mRepType]].depth_min;
 
-			Point2	corners[4];
-			Quad_1to4(Point2(x1,y1), r, 2.0 * h, 2.0 * w, corners);
+				Point2	corners[4];
+				Quad_1to4(Point2(x1,y1), r, 2.0 * h, 2.0 * w, corners);
 
-			float x_scale = /*(screenWidth / mapWidth) */ 1.0 /  (DEG_TO_MTR_LAT * cos (y1 * DEG_TO_RAD));
-			float y_scale = /*(screenHeight / mapHeight) */ 1.0 /  (DEG_TO_MTR_LAT   );
+				float x_scale = /*(screenWidth / mapWidth) */ 1.0 /  (DEG_TO_MTR_LAT * cos (y1 * DEG_TO_RAD));
+				float y_scale = /*(screenHeight / mapHeight) */ 1.0 /  (DEG_TO_MTR_LAT   );
 
-//			x1 = screenLeft + ((x1 - mapWest) * screenWidth / mapWidth);
-//			y1 = screenBottom + ((y1 - mapSouth) * screenHeight / mapHeight);
+	//			x1 = screenLeft + ((x1 - mapWest) * screenWidth / mapWidth);
+	//			y1 = screenBottom + ((y1 - mapSouth) * screenHeight / mapHeight);
 
-			glPushMatrix();
-			glTranslatef(x1, y1, 0.0);
-			glScalef(x_scale, y_scale, 1.0);
-			glRotatef(r, 0, 0, -1);
+				glPushMatrix();
+				glTranslatef(x1, y1, 0.0);
+				glScalef(x_scale, y_scale, 1.0);
+				glRotatef(r, 0, 0, -1);
 
-			glBegin(GL_QUADS);
-			glVertex2f(-w, -h);
-			glVertex2f(-w,  h);
-			glVertex2f( w,  h);
-			glVertex2f( w, -h);
-			glEnd();
-			glPopMatrix();
-			
-			glBegin(GL_LINE_LOOP);
-			glColor3f(1,1,1);
-			glVertex2f(corners[0].x(),corners[0].y());
-			glColor3f(1,1,0);
-			glVertex2f(corners[1].x(),corners[1].y());
-			glColor3f(0,1,0);
-			glVertex2f(corners[2].x(),corners[2].y());
-			glColor3f(0,1,1);
-			glVertex2f(corners[3].x(),corners[3].y());
-			glEnd();
-			
+				glBegin(GL_QUADS);
+				glVertex2f(-w, -h);
+				glVertex2f(-w,  h);
+				glVertex2f( w,  h);
+				glVertex2f( w, -h);
+				glEnd();
+				glPopMatrix();
+				
+				glBegin(GL_LINE_LOOP);
+				glColor3f(1,1,1);
+				glVertex2f(corners[0].x(),corners[0].y());
+				glColor3f(1,1,0);
+				glVertex2f(corners[1].x(),corners[1].y());
+				glColor3f(0,1,0);
+				glVertex2f(corners[2].x(),corners[2].y());
+				glColor3f(0,1,1);
+				glVertex2f(corners[3].x(),corners[3].y());
+				glEnd();
+			}			
 		}
 
 		for(int pass = 0; pass < 2; ++pass)

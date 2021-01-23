@@ -95,6 +95,7 @@ FILE * x_fopen(const char * _Filename, const char * _Mode)
 #define LOG_CASE_DESENS 0
 
 #if !LOG_CASE_DESENS
+	#undef  LOG_MSG
 	#define	LOG_MSG(...)
 #endif
 

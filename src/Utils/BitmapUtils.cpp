@@ -31,6 +31,8 @@
 
 #include <errno.h>
 #include <thread>
+#include <png.h>
+#include <zlib.h>
 
 #if IBM
 #include "GUI_Unicode.h"
@@ -156,7 +158,6 @@ extern "C" {
 }
 #endif
 
-#include <png.h>
 #if USE_TIF
 #include <tiffio.h>
 #endif

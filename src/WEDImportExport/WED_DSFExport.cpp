@@ -51,6 +51,7 @@
 #include "zip.h"
 #include <stdarg.h>
 #include "IResolver.h"
+#include "ITexMgr.h"
 #include "WED_ResourceMgr.h"
 #include "BitmapUtils.h"
 #include "GISUtils.h"
@@ -58,7 +59,7 @@
 #include "STLUtils.h"
 #include "WED_RoadEdge.h"
 
-#if 1 // DEV
+#if DEV
 #include "PerfUtils.h"
 #endif
 
@@ -1770,11 +1771,9 @@ static int	DSF_ExportTileRecursive(
 				string absPathDDS = pkg + relativePathDDS;
 				string absPathPOL = pkg + relativePathPOL;
 
-				r = relativePathPOL;		// Resource name comes from the pol no matter what we compress to disk.
-				
 				if(absPathDDS == absPathIMG)
 				{
-					DoUserAlert((msg + "Output file would overwrite source file, aborting DSF Export. Change polygon name.").c_str());
+					DoUserAlert((msg + "Output DDS file would overwrite source file, aborting DSF Export. Change polygon name.").c_str());
 					return -1;
 				}
 				
@@ -1793,7 +1792,7 @@ static int	DSF_ExportTileRecursive(
 				* Enjoy your new orthophoto
 				*/
 				
-				if(1) // date_cmpr_res == dcr_firstIsNew || date_cmpr_res == dcr_same)
+				if(date_cmpr_res == dcr_firstIsNew || date_cmpr_res == dcr_same)
 				{
 	#if DEV
 					StElapsedTime	etime("DDS export time");
@@ -1808,7 +1807,6 @@ static int	DSF_ExportTileRecursive(
 							export_info.orthoFile = "";
 						}
 						if(LoadBitmapFromAnyFile(absPathIMG.c_str(),&export_info.orthoImg)) // to cut into pieces, only. Make sure its not forcibly rescaled
-//						if(MakeSupportedType(absPathIMG.c_str(),&export_info.orthoImg))
 						{
 							DoUserAlert((msg + "Unable to convert the image file '" + absPathIMG + "'to a DDS file, aborting DSF Export.").c_str());
 							return -1;
@@ -1816,6 +1814,12 @@ static int	DSF_ExportTileRecursive(
 						else
 						{
 							export_info.orthoFile = absPathIMG;
+
+							// force reload of texture from disk - for visual confirmation that WED realized the image had changed
+							ITexMgr * tman = WED_GetTexMgr(resolver);
+							string relImgPath;
+							orth->GetResource(relImgPath);
+							tman->DropTexture(relImgPath.c_str());
 						}
 					}
 					ImageInfo imgInfo(export_info.orthoImg);
@@ -1864,7 +1868,7 @@ static int	DSF_ExportTileRecursive(
 								{
 									UVMleft = desired_left;
 									UVbounds_used.p1.x_ = 1.0 - ((double) UVMwidth) / DDSwidth;
-//						printf("save a scale: use w= %d of %d w/unused left\n", UVMwidth, DDSwidth);
+									LOG_MSG("I/DSF save a scale: using w=%d/%d pix, leaving some unused on left\n", UVMwidth, DDSwidth);
 									UVMwidth = DDSwidth;
 								}
 							}
@@ -1875,7 +1879,7 @@ static int	DSF_ExportTileRecursive(
 								{
 									UVMright = desired_right;
 									UVbounds_used.p2.x_ = ((double) UVMwidth) / DDSwidth;
-///						printf("save a scale: use w= %d of %d w/unused right\n", UVMwidth, DDSwidth);
+									LOG_MSG("I/DSF save a scale: using w=%d/%d pix, leaving some unused on right\n", UVMwidth, DDSwidth);
 									UVMwidth = DDSwidth;
 								}
 							}
@@ -1889,7 +1893,7 @@ static int	DSF_ExportTileRecursive(
 								{
 									UVMbottom = desired_bottom;
 									UVbounds_used.p1.y_ = 1.0 - ((double) UVMheight) / DDSheight;
-//						printf("save a scale: use h= %d of %d w/unused bottom\n", UVMheight, DDSheight);
+									LOG_MSG("I/DSF save a scale: using h=%d/%d pix, leaving some unused on bottom\n", UVMheight, DDSheight);
 									UVMheight = DDSheight;
 								}
 							}
@@ -1900,7 +1904,7 @@ static int	DSF_ExportTileRecursive(
 								{
 									UVMtop = desired_top;
 									UVbounds_used.p2.y_ = ((double) UVMheight) / DDSheight;
-//						printf("save a scale: use h= %d of %d w/unused top\n", UVMheight, DDSheight);
+									LOG_MSG("I/DSF save a scale: using h=%d/%d pix, leaving some unused on top\n", UVMheight, DDSheight);
 									UVMheight = DDSheight;
 								}
 							}
@@ -1911,14 +1915,14 @@ static int	DSF_ExportTileRecursive(
 					{
 						if(UVMwidth == DDSwidth && UVMheight == DDSheight)
 						{
-//					printf("1:1 copy\n");
 							CopyBitmapSectionDirect(imgInfo, DDSInfo, UVMleft, UVMbottom, 0, 0, DDSwidth, DDSheight);
+							LOG_MSG("I/DSF exporting ortho tile %s at 1:1 scale\n", absPathDDS.c_str());
 						}
 						else
 						{
-//					printf("scaled copy\n");
 							CopyBitmapSectionSharp(imgInfo, DDSInfo, UVMleft, UVMbottom, UVMright, UVMtop,
 																				0, 0, DDSwidth, DDSheight);
+							LOG_MSG("I/DSF exporting ortho tile %s scaled\n", absPathDDS.c_str());
 						}
 						if(gOrthoExport)
 						{
@@ -1959,6 +1963,10 @@ static int	DSF_ExportTileRecursive(
 
 				what->StartOperation("Norm Ortho");
 				orth->Rescale(gis_UV, UVbounds, UVbounds_used);
+				r = relativePathPOL;		// Resource name comes from the pol no matter what we compress to disk.
+#if IBM
+				std::replace(r.begin(), r.end(), '\\', '/');  // improve backward comp. with older WED versions that don't (yet) convert these to '/' at import. XP is fine with either.
+#endif
 			}
 #endif
 			idx = io_table.accum_pol(r,show_level);
@@ -2005,10 +2013,10 @@ static int	DSF_ExportTileRecursive(
 					cbs->EndPolygon_f(writer);
 				}
 			}
-			
+#if WED
 			if(orth->IsNew())
 				what->AbortOperation(); // this will nicely undo the UV mapping rescaling we did :)
-
+#endif
 			return real_thingies;
 		}
 		
@@ -2154,7 +2162,7 @@ static int DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& 
 
 int DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, set<WED_Thing *>& problem_children)
 {
-#if 1 // DEV
+#if DEV
 	StElapsedTime	etime("Export time");
 #endif
 	g_dropped_pts = false;

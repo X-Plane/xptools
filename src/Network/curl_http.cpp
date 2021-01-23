@@ -37,8 +37,7 @@ void	UTL_http_encode_url(string& io_url)
 
 curl_http_get_file::curl_http_get_file(
 							const string&			inURL,
-							const string&			outDestFile,
-							const string&			inCert) :
+							const string&			outDestFile) :
 	m_progress(-1),
 	m_status(in_progress),
 	m_halt(0),
@@ -46,8 +45,7 @@ curl_http_get_file::curl_http_get_file(
 	m_url(inURL),
 	m_dest_buffer(NULL),
 	m_errcode(0),
-	m_last_dl_amount(0.0),
-	m_cert(inCert)
+	m_last_dl_amount(0.0)
 {
 	UTL_http_encode_url(m_url);
 
@@ -66,16 +64,14 @@ curl_http_get_file::curl_http_get_file(
 
 curl_http_get_file::curl_http_get_file(
 							const string&			inURL,
-							vector<char>*		outDestBuffer,
-							const string&			inCert) :
+							vector<char>*		outDestBuffer) :
 	m_progress(-1),
 	m_status(in_progress),
 	m_halt(0),
 	m_url(inURL),
 	m_dest_buffer(outDestBuffer),
 	m_errcode(0),
-	m_last_dl_amount(0.0),
-	m_cert(inCert)
+	m_last_dl_amount(0.0)
 {
 	UTL_http_encode_url(m_url);
 
@@ -95,16 +91,14 @@ curl_http_get_file::curl_http_get_file(
 							const string&			inURL,
 							const string *			post_data,
 							const string *			put_data,
-							vector<char>*			outBuffer,
-							const string&			inCert) :
+							vector<char>*			outBuffer) :
 	m_progress(-1),
 	m_status(in_progress),
 	m_halt(0),
 	m_url(inURL),
 	m_post(post_data ? *post_data : string()),
 	m_put(put_data ? *put_data : string()),
-	m_dest_buffer(outBuffer),
-	m_cert(inCert)
+	m_dest_buffer(outBuffer)
 {
 	UTL_http_encode_url(m_url);
 
@@ -265,18 +259,17 @@ curl_http_get_file::thread_proc(void * param)
 	
 	curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, "");  // empty string is expanded into all methods supported by this version of curl.
 #if WED
+	LOG_MSG("I/CURL setting up download\n");
+	fflush(gLogFile);
+	curl_easy_setopt(curl, CURLOPT_STDERR, gLogFile);
 #include "WED_Version.h"
-	curl_easy_setopt(curl,  CURLOPT_USERAGENT, "WorldEditor/" WED_VERSION_STRING_SHORT );  // OSM tile server requires a referer string
+	curl_easy_setopt(curl, CURLOPT_USERAGENT, "WorldEditor/" WED_VERSION_STRING_SHORT );  // OSM tile server requires a referer string
 #endif
-#if DEV	
+#if 1 // DEV	
 	curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
 #endif	
 //	curl_easy_setopt(curl, CURLOPT_TIMEOUT, 0);
 	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 60.0);
-
-	if(!me->m_cert.empty())
-		curl_easy_setopt(curl, CURLOPT_CAINFO, me->m_cert.c_str());
-
 
 	if(!me->m_post.empty())
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, me->m_post.c_str());
@@ -293,6 +286,11 @@ curl_http_get_file::thread_proc(void * param)
 	}
 	
 	CURLcode res = curl_easy_perform(curl);
+
+#if WED
+	LOG_MSG("I/CURL perform() done\n");
+	fflush(gLogFile);
+#endif
 	
 	// A note on thread safety: we need to ensure that writes to memory of our error code or data go out BEFORE
 	// we flip the bit to say we are done.  So we use

@@ -38,6 +38,7 @@ public:
 	void	Export(		 AptBeacon_t& x) const;
 
 	void			SetKind(int kind);
+	int 			GetKind(void) const;
 
 	virtual const char *	HumanReadableType(void) const { return "Airport Beacon"; }
 

@@ -134,7 +134,7 @@ bool		WED_PackageMgr::SetXPlaneFolder(const string& root)
 	if (MF_GetFileType(dir.c_str(),mf_CheckType) != mf_Directory)
 		return false;
 	
-	LOG_MSG("X-System folder  : %s\n", root.c_str());
+	LOG_MSG("\nX-System folder  : %s\n", root.c_str());
 	system_path = root;
 	Rescan(true);
 	return true;
@@ -262,11 +262,11 @@ int WED_PackageMgr::CreateNewCustomPackage(void)
 
 		int found_in_our_list = 0;
 		for(int p = 0; p < custom_packages.size(); ++p)
-		if (strcasecmp(name.c_str(), custom_packages[n].name.c_str()) == 0)
-		{
-			found_in_our_list = 1;
-			break;
-		}
+			if (strcasecmp(name.c_str(), custom_packages[p].name.c_str()) == 0)
+			{
+				found_in_our_list = 1;
+				break;
+			}
 		if (found_in_our_list)
 			continue;
 
@@ -408,6 +408,7 @@ void		WED_PackageMgr::Rescan(bool alwaysBroadcast)
 			XPversion = v;
 		}
 	}
+	LOG_MSG("I/PMgr Detected XP version %s\n", XPversion.c_str());
 }
 
 string		WED_PackageMgr::ComputePath(const string& package, const string& rel_file) const
@@ -425,6 +426,20 @@ string		WED_PackageMgr::ReducePath(const string& package, const string& full_fil
 	if(prefix.size() >= 2 && partial.size() >= 2 &&
 		prefix[1] == ':' && partial[1] == ':' &&
 		prefix[0] != partial[0]) return full_file;
+#elif APL
+	// OSX NSOpenPanel returns "resolved" paths, i.e. if the directory structure includes a symbolic link, the
+	// real directory the link points to is returned. If the package directory itself is created with a symlink -
+	// we are in trouble.
+	// Strangely - if the file ifself is a symlink that one doe NOT get resolved - so no special handling needed for that.
+	
+	FILE * pipe = popen((string("cd '") + prefix + "'; pwd -P").c_str(),"r");
+	if(pipe)
+	{
+		char buf[256];
+		fgets(buf, sizeof(buf), pipe);
+		prefix = string(buf, strlen(buf)-1) + DIR_STR; // cut off \n at the end
+		pclose(pipe);
+	}
 #endif
 
 	int n = 0;

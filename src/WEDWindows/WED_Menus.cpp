@@ -213,7 +213,7 @@ static const GUI_MenuItem_t kAirportMenu[] = {
 {	"Create Runway Use",		0,		0,										0, wed_AddATCRunwayUse },
 {	"Create Runway Time Rule",	0,		0,										0, wed_AddATCTimeRule },
 {	"Create Runway Wind rule",	0,		0,										0, wed_AddATCWindRule },
-{	"Add &Metadata",			0,		0,										0, 0 },
+{	"Add &Meta Data",			0,		0,										0, 0 },
 {	"Update Metadata",			0,		0,										0, wed_UpdateMetadata},
 {	"No Airport Selected",		'E',	gui_ControlFlag+gui_ShiftFlag,			0, wed_EditApt	},
 {	"-",						0,		0,									0,	0			},
@@ -276,7 +276,7 @@ void WED_MakeMenus(GUI_Application * inApp)
 		"&File", kFileMenu, inApp->GetMenuBar(), 0);
 
 	GUI_Menu export_target_menu = inApp->CreateMenu(
-		"Export Target", kExportTargetMenu, file_menu, 9);
+		"Target X-Plane Version", kExportTargetMenu, file_menu, 9);
 
 	GUI_Menu edit_menu = inApp->CreateMenu(
 		"&Edit", kEditMenu, inApp->GetMenuBar(), 0);
@@ -291,7 +291,7 @@ void WED_MakeMenus(GUI_Application * inApp)
 		"&View", kViewMenu, inApp->GetMenuBar(), 0);
 
 	GUI_Menu	pave_menu = inApp->CreateMenu(
-		"Pavement T&ransparency",	kPavementMenu, view_menu, 6);
+		"Pavement Transparenc&y",	kPavementMenu, view_menu, 6);
 
 	GUI_Menu	objd_menu = inApp->CreateMenu(
 		"&Object Density", kObjDensityMenu, view_menu, 7);

@@ -266,7 +266,7 @@ void DSFPrint_EndPatch(
 void DSFPrint_AddObjectWithMode(
 				unsigned int	inObjectType,
 				double			inCoordinates[],
-				int				inMode,
+				obj_elev_mode			inMode,
 				void *			inRef)
 {
 #if OBJ_HISTO
