@@ -46,8 +46,10 @@
 #include "WED_MapZoomerNew.h"
 #include "WED_ToolUtils.h"
 
+#include "WED_AirportBeacon.h"
 #include "WED_AirportChain.h"
 #include "WED_AirportNode.h"
+#include "WED_AirportSign.h"
 #include "WED_ForestPlacement.h"
 #include "WED_FacadePlacement.h"
 #include "WED_DrapedOrthophoto.h"
@@ -61,6 +63,7 @@
 #include "WED_Taxiway.h"
 #include "WED_TruckParkingLocation.h"
 #include "WED_LightFixture.h"
+#include "WED_Windsock.h"
 
 #if APL
 #include <OpenGL/gl.h>
@@ -80,7 +83,7 @@ inline void setup_transformation(double heading, double scale_s, double scale_t,
 								0.0,	0.0,	0.0,	 1.0 };
 
 		double ppm = z->GetPPM();
-		
+
 //		for (int n = 0; n < 16; ++n)
 //			m1[n] /= ppm;
 		m1[0] /= ppm * scale_s;
@@ -110,11 +113,11 @@ static void kill_transform(void)
 	glDisable(GL_TEXTURE_GEN_S);
 	glDisable(GL_TEXTURE_GEN_T);
 }
- 
+
 static bool setup_taxi_texture(int surface_code, double heading, const Point2& centroid, GUI_GraphState * g, WED_MapZoomerNew * z, float alpha)
 {
 	int tex_id = 0;
-	switch(surface_code) 
+	switch(surface_code)
 	{
 		case shoulder_Asphalt:
 		case surf_Asphalt:	tex_id = GUI_GetTextureResource("asphalt.png",tex_Wrap+tex_Linear+tex_Mipmap,NULL);	break;
@@ -126,7 +129,7 @@ static bool setup_taxi_texture(int surface_code, double heading, const Point2& c
 		case surf_Lake:		tex_id = GUI_GetTextureResource("lake.png",tex_Wrap+tex_Linear+tex_Mipmap,NULL);	break;
 		case surf_Water:	tex_id = GUI_GetTextureResource("water.png",tex_Wrap+tex_Linear+tex_Mipmap,NULL);	break;
 		case surf_Snow:		tex_id = GUI_GetTextureResource("snow.png",tex_Wrap+tex_Linear+tex_Mipmap,NULL);	break;
-		case surf_Trans:	
+		case surf_Trans:
 		case shoulder_None:
 		default: return false;
 	}
@@ -234,7 +237,7 @@ float Obj_GetAnimParam(const char * string, float v1, float v2, void * ref)
 }
 
 void Obj_SetDraped(void * ref)
-{	
+{
 	Obj_DrawStruct * d= (Obj_DrawStruct*) ref;
 	d->g->BindTex(d->drp,0);
 }
@@ -250,7 +253,7 @@ static ObjDrawFuncs10_t kFuncs  = { Obj_SetupPoly, Obj_SetupLine, Obj_SetupLight
 void draw_obj_at_ll(ITexMgr * tman, const XObj8 * o, const Point2& loc, float agl, float r, GUI_GraphState * g, WED_MapZoomerNew * zoomer)
 {
 	if (!o) return;
-	TexRef	ref = tman->LookupTexture(o->texture.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);			
+	TexRef	ref = tman->LookupTexture(o->texture.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);
 	TexRef	ref2 = o->texture_draped.empty() ? ref : tman->LookupTexture(o->texture_draped.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);
 	int id1 = ref  ? tman->GetTexID(ref ) : 0;
 	int id2 = ref2 ? tman->GetTexID(ref2) : 0;
@@ -266,14 +269,14 @@ void draw_obj_at_ll(ITexMgr * tman, const XObj8 * o, const Point2& loc, float ag
 	glRotatef(90, 1,0,0);
 	glRotatef(r, 0,-1,0);
 	Obj_DrawStruct ds = { g, id1, id2 };
-	ObjDraw8(*o, 0, &kFuncs, &ds); 
+	ObjDraw8(*o, 0, &kFuncs, &ds);
 	glPopMatrix();
 }
 
 void draw_obj_at_xyz(ITexMgr * tman, const XObj8 * o, double x, double y, double z, float r, GUI_GraphState * g)
 {
 	if (!o) return;
-	TexRef	ref = tman->LookupTexture(o->texture.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);			
+	TexRef	ref = tman->LookupTexture(o->texture.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);
 	TexRef	ref2 = o->texture_draped.empty() ? ref : tman->LookupTexture(o->texture_draped.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);
 	int id1 = ref  ? tman->GetTexID(ref ) : 0;
 	int id2 = ref2 ? tman->GetTexID(ref2) : 0;
@@ -284,7 +287,7 @@ void draw_obj_at_xyz(ITexMgr * tman, const XObj8 * o, double x, double y, double
 	glTranslatef(x,y,z);
 	glRotatef(r, 0, -1, 0);
 	Obj_DrawStruct ds = { g, id1, id2 };
-	ObjDraw8(*o, 0, &kFuncs, &ds); 
+	ObjDraw8(*o, 0, &kFuncs, &ds);
 	glPopMatrix();
 }
 
@@ -405,10 +408,10 @@ int layer_group_for_string(const char * s, int o, int def)
 	while(kGroupNames[n].name)
 	{
 		if(strcasecmp(s,kGroupNames[n].name) == 0)
-			return (o < 0) ? (kGroupNames[n].group_lo + o) : (kGroupNames[n].group_hi + o);		
+			return (o < 0) ? (kGroupNames[n].group_lo + o) : (kGroupNames[n].group_hi + o);
 		++n;
 	}
-	return def;	
+	return def;
 }
 
 /***************************************************************************************************************************************************
@@ -420,7 +423,7 @@ struct sort_item_by_layer {	bool operator()(WED_PreviewItem * lhs, WED_PreviewIt
 
 
 struct	preview_runway : public WED_PreviewItem {
-	WED_Runway * rwy;	
+	WED_Runway * rwy;
 	int			 do_shoulders;
 	preview_runway(WED_Runway * r, int l, int is_shoulders) : WED_PreviewItem(l), rwy(r), do_shoulders(is_shoulders) { }
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
@@ -485,7 +488,7 @@ struct	preview_runway : public WED_PreviewItem {
 				if(info.app_light_code[dir])
 				{
 					glColor4ub(255,255,255,128);
- 
+
 					double spacing = 200*FT_TO_MTR;
 					double length = 1400*FT_TO_MTR;
 					if(info.app_light_code[dir] == apt_app_ALSFI || info.app_light_code[dir] == apt_app_ALSFII ||
@@ -531,7 +534,7 @@ struct	preview_runway : public WED_PreviewItem {
 };
 
 struct	preview_helipad : public WED_PreviewItem {
-	WED_Helipad * heli;	
+	WED_Helipad * heli;
 	preview_helipad(WED_Helipad * h, int l) : WED_PreviewItem(l), heli(h) { }
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
 	{
@@ -545,12 +548,12 @@ struct	preview_helipad : public WED_PreviewItem {
 			g->SetState(false,0,false, true,true, false,false);
 			glColor4fv(WED_Color_Surface(heli->GetSurface(), mPavementAlpha, storage));
 			glShape2v(GL_QUADS, corners, 4);
-		}		
+		}
 	}
 };
 
 struct	preview_sealane : public WED_PreviewItem {
-	WED_Sealane * sea;	
+	WED_Sealane * sea;
 	preview_sealane(WED_Sealane * s, int l) : WED_PreviewItem(l), sea(s) { }
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
 	{
@@ -565,7 +568,7 @@ struct	preview_sealane : public WED_PreviewItem {
 			glColor4fv(WED_Color_RGBA_Alpha(wed_Surface_Water,mPavementAlpha, storage));
 			glShape2v(GL_QUADS, corners, 4);
 		}
-	
+
 	}
 };
 
@@ -594,7 +597,7 @@ struct	preview_polygon : public WED_PreviewItem {
 };
 
 struct	preview_taxiway : public preview_polygon {
-	WED_Taxiway * taxi;	
+	WED_Taxiway * taxi;
 	preview_taxiway(WED_Taxiway * t, int l) : preview_polygon(t, l, false), taxi(t) { }
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
 	{
@@ -602,11 +605,11 @@ struct	preview_taxiway : public preview_polygon {
 		// airport can is tiny...most pavement is, while visually insignificant, still sprawling, so a bbox-sizes test is poor.
 		// Any other test is too expensive, and for the small pavement squares that would get wiped out, the cost of drawing them
 		// is negligable anyway.
-		
-		Point2 centroid; 
+
+		Point2 centroid;
 		taxi->GetOuterRing()->GetNthPoint(0)->GetLocation(gis_Geo, centroid);
 		centroid = zoomer->LLToPixel(centroid);
-		
+
 		if (setup_taxi_texture(taxi->GetSurface(), taxi->GetHeading(), centroid, g, zoomer, mPavementAlpha))
 		{
 			preview_polygon::preview_polygon::draw_it(zoomer,g,mPavementAlpha);
@@ -616,7 +619,7 @@ struct	preview_taxiway : public preview_polygon {
 };
 
 struct	preview_forest : public preview_polygon {
-	WED_ForestPlacement * fst;	
+	WED_ForestPlacement * fst;
 	preview_forest(WED_ForestPlacement * f, int l) : preview_polygon(f,l,false), fst(f) { }
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
 	{
@@ -639,7 +642,7 @@ struct	preview_forest : public preview_polygon {
 				glShape2v(GL_LINES/*GL_LINE_STRIP*/, &*pts.begin(), pts.size());
 				glLineWidth(1);
 
-			}			
+			}
 		}
 	}
 };
@@ -651,12 +654,12 @@ static void draw_line_preview(const vector<Point2>& pts, const lin_info_t& linfo
 	double uv_dt      =  (linfo.s2[l]-linfo.s1[l]) / 2.0 * linfo.scale_s / linfo.scale_t; // correction factor for 'slanted' texture ends
 	double uv_t2      = 0.0;                                                              // accumulator for texture t, so each starts where the previous ended
 	bool is_ring = pts.front() == pts.back();
-	
+
 	double startcap_t = 0.0;
 	double endcap_t = 0.0;
 	int start_of_endcap = pts.size();
 	double endcap_frac_t = 0.0;
-	
+
 	if(!is_ring)
 	{
 		if(linfo.start_caps.size() > l)
@@ -679,7 +682,7 @@ static void draw_line_preview(const vector<Point2>& pts, const lin_info_t& linfo
 			}
 		}
 	}
-	
+
 	Vector2	dir2(pts[1],pts[0]);
 	dir2.normalize();
 	if(is_ring)
@@ -689,8 +692,8 @@ static void draw_line_preview(const vector<Point2>& pts, const lin_info_t& linfo
 		dir2 = (dir2 + dir_last) / (1.0 + dir_last.dot(dir2));
 	}
 	dir2 = dir2.perpendicular_ccw();   // direction perpendicular to previous segment
-	
-	
+
+
 	for (int j = 0; j < pts.size()-1; ++j)
 	{
 		Vector2	dir1(dir2);
@@ -710,12 +713,12 @@ static void draw_line_preview(const vector<Point2>& pts, const lin_info_t& linfo
 		uv_t2 += len / PPM / linfo.scale_t;
 		double d1 = uv_dt * dir.dot(dir1);
 		double d2 = uv_dt * dir.dot(dir2);
-		
+
 		Point2 start_left (pts[j]   + dir1 * (offset - half_width));
 		Point2 start_right(pts[j]   + dir1 * (offset + half_width));
 		Point2 end_left   (pts[j+1] + dir2 * (offset - half_width));
 		Point2 end_right  (pts[j+1] + dir2 * (offset + half_width));
-		
+
 		if(startcap_t > 0.0)
 		{
 			double cap_len_t = linfo.start_caps[l].t2 - linfo.start_caps[l].t1;
@@ -733,7 +736,7 @@ static void draw_line_preview(const vector<Point2>& pts, const lin_info_t& linfo
 			uv_t1 = 0.0;
 			uv_t2 -= cap_len_t;
 		}
-		
+
 		if(j >= start_of_endcap)
 		{
 			endcap_frac_t = min(endcap_frac_t,uv_t2 - uv_t1);
@@ -749,7 +752,7 @@ static void draw_line_preview(const vector<Point2>& pts, const lin_info_t& linfo
 			endcap_frac_t = 1.0;           // cram as much endcap as it gets into the next segment
 			if(j > start_of_endcap) continue;
 		}
-		
+
 		if(j == pts.size()-2 && linfo.align > 0) uv_t2 = round_by_parts(uv_t2, linfo.align);
 
 		glBegin(GL_QUADS);
@@ -792,7 +795,7 @@ struct	preview_line : WED_PreviewItem {
 			if(linfo->eff_width * zoomer->GetPPM() < MIN_PIXELS_PREVIEW || !tex_id)             // cutoff size for real preview
 			{
 				g->SetState(false,0,false,false,false,false,false);
-				
+
 				int locked = 0;
 				WED_Entity * thing = dynamic_cast<WED_Entity *>(lin);
 				while(thing)
@@ -804,7 +807,7 @@ struct	preview_line : WED_PreviewItem {
 					glColor3fv(linfo->rgb);
 				else                           // do some color correction to account for the green vs grey line
 					glColor3f(min(1.0,linfo->rgb[0]+0.2),max(0.0,linfo->rgb[1]-0.0),min(1.0,linfo->rgb[2]+0.2));
-					
+
 				for(int i = 0; i < lin->GetNumSides(); ++i)
 				{
 					vector<Point2>	pts;
@@ -829,13 +832,13 @@ struct	preview_line : WED_PreviewItem {
 	}
 };
 
-static void draw_string_preview(const vector<Point2>& pts, double& d0, double ds, const str_info_t& sinfo, WED_MapZoomerNew * zoomer, 
+static void draw_string_preview(const vector<Point2>& pts, double& d0, double ds, const str_info_t& sinfo, WED_MapZoomerNew * zoomer,
 	GUI_GraphState * g, ITexMgr * tman, const XObj8 * obj)
 {
 	double ppm = zoomer->GetPPM();
 
 	// strings, like taxiway perimeter lights - can be very big - and lights only get visible when zoomed in very close and are still small.
-	// So it almost certain - the vast majority will be _far_ off screen. So lets not care about their size in screenspace , offset etc 
+	// So it almost certain - the vast majority will be _far_ off screen. So lets not care about their size in screenspace , offset etc
 	// just cull the ones *very* far off screen.
 
 	double E, W, N, S;
@@ -849,8 +852,8 @@ static void draw_string_preview(const vector<Point2>& pts, double& d0, double ds
 	{
 		Vector2 dir = Vector2(pts[j],pts[j+1]);
 		double len_m = sqrt(dir.squared_length()) / ppm;
-		
-		if (ds-d0 > len_m) 
+
+		if (ds-d0 > len_m)
 		{
 			d0 += len_m;
 		}
@@ -860,18 +863,18 @@ static void draw_string_preview(const vector<Point2>& pts, double& d0, double ds
 			Vector2 off = dir.perpendicular_cw();
 			off.normalize();
 			off *= sinfo.offset * ppm;
-			
+
 			double d1 = ds - d0;
 			double x;
 			double left_after =  modf((len_m - d1) / ds, &x) * ds;
 			int obj_this_seg = x;
-			
+
 			Point2 cur_pos(pts[j]);
-			if(d0 > 0.0) 
+			if(d0 > 0.0)
 				cur_pos += dir * (d1 / len_m);
 			else
 				obj_this_seg++;
-			
+
 			while(obj_this_seg >= 0)
 			{
 				if (cur_pos.x() < E && cur_pos.x() > W && cur_pos.y() > S && cur_pos.y() < N)
@@ -911,7 +914,7 @@ struct	preview_string : WED_PreviewItem {
 					ITexMgr * tman = WED_GetTexMgr(resolver);
 					g->SetState(false,1,false,false,true,false,false);
 					glColor3f(1,1,1);
-		
+
 					double ds = str->GetSpacing();
 					double d0 = ds * 0.5;
 
@@ -931,7 +934,7 @@ struct	preview_string : WED_PreviewItem {
 struct	preview_airportlines : WED_PreviewItem {
 	IGISPointSequence * ps;
 	IResolver * res;
-	
+
 	preview_airportlines(IGISPointSequence * ips, int l, IResolver * r) : WED_PreviewItem(l), ps(ips), res(r) {}
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
 	{
@@ -946,7 +949,7 @@ struct	preview_airportlines : WED_PreviewItem {
 			set<int> attrs;
 			WED_AirportNode * apt_node = dynamic_cast<WED_AirportNode*>(ps->GetNthPoint(i));
 			if (apt_node) apt_node->GetAttributes(attrs);
-			
+
 			int t = 0;
 			for(set<int>::const_iterator a = attrs.begin(); a != attrs.end(); ++a)
 			{
@@ -970,7 +973,7 @@ struct	preview_airportlines : WED_PreviewItem {
 					TexRef tref = tman->LookupTexture(linfo->base_tex.c_str(),true,tex_Compress_Ok);
 					if(tref) tex_id = tman->GetTexID(tref);
 				}
-			
+
 			if(tex_id)
 			{
 				vector<Point2> pts;
@@ -984,8 +987,8 @@ struct	preview_airportlines : WED_PreviewItem {
 				{
 					if (pts.size()) pts.pop_back();
 					SideToPoints(ps, i, zoomer, pts);
-					
-					if(i < ps->GetNumSides()-1) 
+
+					if(i < ps->GetNumSides()-1)
 					{
 						apt_node = dynamic_cast<WED_AirportNode*>(ps->GetNthPoint(i+1));
 						if (apt_node) apt_node->GetAttributes(attrs);
@@ -1026,14 +1029,14 @@ struct	preview_airportlights : WED_PreviewItem {
 		WED_ResourceMgr * rmgr = WED_GetResourceMgr(res);
 		WED_LibraryMgr  * lmgr = WED_GetLibraryMgr(res);
 		ITexMgr         * tman = WED_GetTexMgr(res);
-		                  
+
 		int i = 0;
 		while (i < ps->GetNumSides())
 		{
 			set<int> attrs;
 			WED_AirportNode * apt_node = dynamic_cast<WED_AirportNode*>(ps->GetNthPoint(i));
 			if (apt_node) apt_node->GetAttributes(attrs);
-			
+
 			int t = 0;
 			for(set<int>::const_iterator a = attrs.begin(); a != attrs.end(); ++a)
 			{
@@ -1054,7 +1057,7 @@ struct	preview_airportlights : WED_PreviewItem {
 				if(t == apt_light_taxi_edge || t == apt_light_bounary) ds = 20.0;          // twy edge lights
 				if(t == apt_light_hold_short || t == apt_light_hold_short_flash) ds = 2.0;  // hold lights
 				double d0 = ds * 0.5;
-				
+
 				g->SetState(false,1,false,true,true,false,false);
 				glColor3f(1,1,1);
 
@@ -1062,8 +1065,8 @@ struct	preview_airportlights : WED_PreviewItem {
 				{
 					if (pts.size()) pts.pop_back();
 					SideToPoints(ps, i, zoomer, pts);
-					
-					if(i < ps->GetNumSides()-1) 
+
+					if(i < ps->GetNumSides()-1)
 					{
 						apt_node = dynamic_cast<WED_AirportNode*>(ps->GetNthPoint(i+1));
 						if (apt_node) apt_node->GetAttributes(attrs);
@@ -1101,38 +1104,38 @@ struct	preview_facade : public preview_polygon {
 		                           0, 1, 1,  0, 0, 1,  1, 0, 1,};  // aqua, blue, cyan
 		IGISPointSequence * ps = fac->GetOuterRing();
 		glColor4f(1,1,1,1);
-		
+
 		if(1) // fac->HasCustomWalls())
 		{
 			ITexMgr * tman = WED_GetTexMgr(resolver);
 			Polygon2 pts;
 			vector<int> choices;
-			
+
 			int n = ps->GetNumSides();
 			pts.reserve(n);
 			choices.reserve(n);
-			
+
 			Point2 ref_pt;
 			ps->GetNthPoint(0)->GetLocation(gis_Geo, ref_pt);
-			
+
 			for(int i = 0; i < n; ++i)
 			{
 				Bezier2		b;
 				ps->GetSide(gis_Geo,i,b);
-				
+
 				Vector2 v(VectorLLToMeters(ref_pt, Vector2(ref_pt,b.p1)));
-				// The facade preview code uses -Z / north facing coordinates, same a the OBJ8's. 
+				// The facade preview code uses -Z / north facing coordinates, same a the OBJ8's.
 				// So we invert the y coordinates here, which will in 3D space be the Z coordinates.
-				
+
 				pts.push_back(Point2(v.dx, -v.dy));
-				
+
 				if(i == n-1 && !ps->IsClosed())
 				{
 					// we count on LTO to optimize this seriously, to remove all those redundant cos(ref_pt.y) calculations.
 					v = VectorLLToMeters(ref_pt, Vector2(ref_pt,b.p2));
 					pts.push_back(Point2(v.dx, -v.dy));
 				}
-				
+
 				if(fac->HasCustomWalls())
 				{
 					ps->GetSide(gis_Param, i, b);
@@ -1140,7 +1143,7 @@ struct	preview_facade : public preview_polygon {
 				}
 				else
 					choices.push_back(0);   // we skip the clever geometry dependent wall auto-wall selection that XP does. Sorry.
-				
+
 				if(i == n-1 && !ps->IsClosed())
 					choices.push_back(0);
 			}
@@ -1149,7 +1152,7 @@ struct	preview_facade : public preview_polygon {
 			fac->GetResource(vpath);
 			const fac_info_t * info;
 			WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
-			
+
 			g->SetState(false,0,false,true,true,true,true);
 
 			float mat[16];
@@ -1167,7 +1170,7 @@ struct	preview_facade : public preview_polygon {
 				draw_facade(tman, rmgr, vpath, *info, pts, choices, fac->GetHeight(), g, isTilted, 0.7*ppm);
 			glPopMatrix();
 		}
-		
+
 		g->SetState(false,0,false,true,true,false,false);
 //		glLineWidth(2);
 		int n = ps->GetNumSides();
@@ -1175,9 +1178,9 @@ struct	preview_facade : public preview_polygon {
 		{
 			vector<Point2>	pts;
 			SideToPoints(ps,i,zoomer, pts);
-			
+
 			int param = 0;
-			if(fac->HasCustomWalls())				
+			if(fac->HasCustomWalls())
 			{
 				Bezier2		bp;
 				ps->GetSide(gis_Param,i,bp);
@@ -1185,7 +1188,7 @@ struct	preview_facade : public preview_polygon {
 			}
 			glColor3fv(colors + (param % 6) * 3);
 			glShapeOffset2v(GL_LINES/*GL_LINE_STRIP*/, &*pts.begin(), pts.size(), -2);
-		}			
+		}
 //		glLineWidth(1);
 	}
 };
@@ -1200,7 +1203,7 @@ struct	preview_pol : public preview_polygon {
 		ITexMgr *	tman = WED_GetTexMgr(resolver);
 		string vpath;
 		const pol_info_t * pol_info;
-	
+
 		pol->GetResource(vpath);
 		if(rmgr->GetPol(vpath,pol_info))
 		{
@@ -1210,21 +1213,21 @@ struct	preview_pol : public preview_polygon {
 			setup_pol_texture(tman, *pol_info, pol->GetHeading(), false, pt0, g, zoomer, mPavementAlpha);
 			preview_polygon::draw_it(zoomer, g, mPavementAlpha);
 			kill_transform();
-		}	
+		}
 
 	}
 };
 
 struct	preview_ortho : public preview_polygon {
-	WED_DrapedOrthophoto * orth;	
+	WED_DrapedOrthophoto * orth;
 	IResolver * resolver;
 	preview_ortho(WED_DrapedOrthophoto * o, int l, IResolver * r) : preview_polygon(o,l,true), orth(o), resolver(r) { }
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
 	{
 		WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 		ITexMgr *	tman = WED_GetTexMgr(resolver);
-		
-		
+
+
 		//If this ortho is new
 		if(orth->IsNew() == true)
 		{
@@ -1253,7 +1256,7 @@ struct	preview_ortho : public preview_polygon {
 };
 
 struct	preview_object : public WED_PreviewItem {
-	WED_ObjPlacement * obj;	
+	WED_ObjPlacement * obj;
 	int	preview_level;
 	IResolver * resolver;
 	preview_object(WED_ObjPlacement * o, int l, int pl, IResolver * r) : WED_PreviewItem(l), obj(o), resolver(r), preview_level(pl) { }
@@ -1286,6 +1289,144 @@ struct	preview_object : public WED_PreviewItem {
 			loc = zoomer->LLToPixel(loc);
 			glColor3f(1,0,0);
 			GUI_PlotIcon(g,"map_missing_obj.png", loc.x(),loc.y(), 0, 1.0);
+		}
+	}
+};
+
+#include "WED_Sign_Editor.h"
+
+struct	preview_taxisign : public WED_PreviewItem {
+	WED_AirportSign * ts;
+	IResolver * resolver;
+	preview_taxisign(WED_AirportSign * s, int l, IResolver * r) : WED_PreviewItem(l), ts(s), resolver(r) { }
+	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
+	{
+		ITexMgr *	tman = WED_GetTexMgr(resolver);
+
+		Point2 loc;
+		double hdg;
+		int letters;
+		string name;
+
+		ts->GetLocation(gis_Geo,loc);
+		hdg = ts->GetHeading();
+		ts->GetName(name);
+
+		double sign_scale;
+		switch(ts->GetHeight())
+		{
+			case size_SmallRemaining:
+			case size_SmallTaxi:   sign_scale = 0.010; break;
+			case size_MediumTaxi:  sign_scale = 0.013; break;
+			default:               sign_scale = 0.016;
+		}
+//			g->SetState(false,1,false,false,true,true,true);
+		g->EnableDepth(true, true);
+		glColor3f(0.4,0.3,0.1);
+
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+
+		double ppm = zoomer->GetPPM() * sign_scale;
+		Point2 l = zoomer->LLToPixel(loc);
+		glTranslatef(l.x(), l.y(), ppm * 10);
+		glScalef(ppm, ppm, ppm);
+		glRotatef(hdg, 0, 0, -1);
+
+		sign_data tsign;
+		tsign.from_code(name);
+
+		const int w = max(tsign.calc_width(0), tsign.calc_width(1)) / 2;
+		const int d =  6;
+		const int h = 55;
+
+		glEnable(GL_NORMALIZE);
+		glBegin(GL_TRIANGLE_FAN);
+			glVertex3i(-w,  d,  0);  glNormal3i(0,h,d);
+			glVertex3i( w,  d,  0);
+			glVertex3i( w,  0,  h);
+			glVertex3i(-w,  0,  h);
+		glEnd();
+		glColor3f(0.15, 0.15, 0.15);
+		glBegin(GL_TRIANGLES);
+			glVertex3i( w,  d,  0);  glNormal3i(1,0,0);
+			glVertex3i( w, -d,  0);
+			glVertex3i( w,  0,  h);
+		glEnd();
+
+		glRotatef(180, 0, 0, -1);
+
+		glBegin(GL_TRIANGLE_FAN);
+			glVertex3i(-w,  d,  0);  glNormal3i(0,h,d);
+			glVertex3i( w,  d,  0);
+			glVertex3i( w,  0,  h);
+			glVertex3i(-w,  0,  h);
+		glEnd();
+		glBegin(GL_TRIANGLES);
+			glVertex3i( w,  d,  0);  glNormal3i(1,0,0);
+			glVertex3i( w, -d,  0);
+			glVertex3i( w,  0,  h);
+		glEnd();
+		glDisable(GL_NORMALIZE);
+
+		glPopMatrix();
+	}
+};
+
+
+struct	preview_windsock : public WED_PreviewItem {
+	WED_Windsock * ws;
+	IResolver * resolver;
+	preview_windsock(WED_Windsock * w, int l, IResolver * r) : WED_PreviewItem(l), ws(w), resolver(r) { }
+	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
+	{
+		WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
+		ITexMgr *	tman = WED_GetTexMgr(resolver);
+		ILibrarian * lmgr = WED_GetLibrarian(resolver);
+
+		glColor3f(1,1,1);
+		Point2 loc;
+		ws->GetLocation(gis_Geo,loc);
+		const XObj8 * o = NULL;
+
+		if(rmgr->GetObj("lib/airport/landscape/windsock.obj",o))
+		{
+			g->SetState(false,1,false,false,true,true,true);
+			glColor3f(1,1,1);
+			draw_obj_at_ll(tman, o, loc, 0.0, 120.0, g, zoomer);
+		}
+	}
+};
+
+struct	preview_beacon : public WED_PreviewItem {
+	WED_AirportBeacon * bcn;
+	IResolver * resolver;
+	preview_beacon(WED_AirportBeacon * b, int l, IResolver * r) : WED_PreviewItem(l), bcn(b), resolver(r) { }
+	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
+	{
+		WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
+		ITexMgr *	tman = WED_GetTexMgr(resolver);
+		ILibrarian * lmgr = WED_GetLibrarian(resolver);
+		const char * vpath;
+
+		glColor3f(1,1,1);
+		Point2 loc;
+		bcn->GetLocation(gis_Geo,loc);
+		const XObj8 * o = NULL;
+
+		switch(bcn->GetKind())
+		{
+			case beacon_Seaport:         vpath = "lib/airport/beacons/beacon_heliport.obj"; break;
+			case beacon_Heliport:        vpath = "lib/airport/beacons/beacon_seaport.obj"; break;
+			case beacon_MilitaryAirport: vpath = "lib/airport/beacons/beacon_mil.obj"; break;
+			default /*beacon_Airport*/ : vpath = "lib/airport/beacons/beacon_airport_big.obj";
+		}
+
+		if(rmgr->GetObj(vpath, o))
+		{
+			g->SetState(false,1,false,false,true,true,true);
+			glColor3f(1,1,1);
+			draw_obj_at_ll(tman, o, loc, 0.0, 0.0, g, zoomer);
 		}
 	}
 };
@@ -1385,8 +1526,8 @@ struct	preview_light : public WED_PreviewItem {
 		string vpath;
 		AptLight_t light;
 		lgt->Export(light);
-		
-		switch(light.light_code) 
+
+		switch(light.light_code)
 		{
 			case apt_gls_vasi:          vpath = "lib/airport/lights/slow/VASI.obj";break;
 			case apt_gls_vasi_tricolor: vpath = "lib/airport/lights/slow/VASI3.obj";break;
@@ -1401,15 +1542,15 @@ struct	preview_light : public WED_PreviewItem {
 		{
 			g->SetState(false,1,false,false,true,true,true);
 			glColor3f(1,1,1);
-			
-			switch(light.light_code) 
+
+			switch(light.light_code)
 			{
 				case apt_gls_vasi:
 				{
 					Vector2 dirv(0,75);
 					dirv.rotate_by_degrees(-light.heading);
 					dirv = VectorMetersToLL(light.location,dirv);
-					
+
 					light.location -= dirv;
 					draw_obj_at_ll(tman, o, light.location, 0.0, light.heading, g, zoomer);
 					light.location += dirv * 2.0;
@@ -1423,7 +1564,7 @@ struct	preview_light : public WED_PreviewItem {
 					Vector2 dirv(8,0);
 					dirv.rotate_by_degrees(-light.heading);
 					dirv = VectorMetersToLL(light.location,dirv);
-					
+
 					light.location -= dirv * 1.5;
 					for(int n = 0; n < 4; n++)
 					{
@@ -1445,8 +1586,8 @@ struct	preview_light : public WED_PreviewItem {
  * DRAWING OBJECT
  ***************************************************************************************************************************************************/
 
-WED_PreviewLayer::WED_PreviewLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver) : 
-	WED_MapLayer(host, zoomer, resolver), 
+WED_PreviewLayer::WED_PreviewLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver) :
+	WED_MapLayer(host, zoomer, resolver),
 	mPavementAlpha(1.0f),
 	mObjDensity(6),
 	mRunwayLayer(group_RunwaysBegin),
@@ -1471,7 +1612,7 @@ void		WED_PreviewLayer::GetCaps						(bool& draw_ent_v, bool& draw_ent_s, bool& 
 bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected)
 {
 	const char *	sub_class	= entity->GetGISSubtype();
-	
+
 	/******************************************************************************************************************************
 	 * RUNWAYS, HELIPADS, SEALANES, TAIXWAYS, AND OTHER AIRPORT-RELATED GOO
 	 ******************************************************************************************************************************/
@@ -1490,15 +1631,15 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		WED_Helipad * heli = SAFE_CAST(WED_Helipad,entity);
 		if(heli)	mPreviewItems.push_back(new preview_helipad(heli,mRunwayLayer++));
 	}
-	else if (sub_class == WED_Sealane::sClass)	
+	else if (sub_class == WED_Sealane::sClass)
 	{
 		WED_Sealane * sea = SAFE_CAST(WED_Sealane,entity);
 		if(sea)		mPreviewItems.push_back(new preview_sealane(sea,mRunwayLayer++));
-	}	
+	}
 	else if (sub_class == WED_Taxiway::sClass)
 	{
 		WED_Taxiway * taxi = SAFE_CAST(WED_Taxiway,entity);
-		if(taxi)	
+		if(taxi)
 		{
 			mPreviewItems.push_back(new preview_taxiway(taxi,mTaxiLayer++));
 			if(GetZoomer()->GetPPM() * 0.4 > MIN_PIXELS_PREVIEW)        // there can be so many, make visibility decision here already for performance
@@ -1506,7 +1647,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 				IGISPointSequence * ps = taxi->GetOuterRing();
 				mPreviewItems.push_back(new preview_airportlines(ps, group_Markings, GetResolver()));
 				mPreviewItems.push_back(new preview_airportlights(ps, group_Objects, GetResolver()));
-					
+
 				int n = taxi->GetNumHoles();
 				for (int i = 0; i < n; ++i)
 				{
@@ -1524,20 +1665,20 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	else if (sub_class == WED_PolygonPlacement::sClass)
 	{
 		WED_PolygonPlacement * pol = SAFE_CAST(WED_PolygonPlacement, entity);
-		if(pol)	
+		if(pol)
 		{
 			string vpath;
 			const pol_info_t * pol_info;
 			int lg = group_TaxiwaysBegin;
 			WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetResolver());
-			
+
 			pol->GetResource(vpath);
 			if(!vpath.empty() && rmgr->GetPol(vpath,pol_info) && !pol_info->group.empty())
 				lg = layer_group_for_string(pol_info->group.c_str(),pol_info->group_offset, lg);
 			mPreviewItems.push_back(new preview_pol(pol,lg, GetResolver()));
 		}
 	}
-	else if (sub_class == WED_DrapedOrthophoto::sClass)	
+	else if (sub_class == WED_DrapedOrthophoto::sClass)
 	{
 		WED_DrapedOrthophoto * orth = SAFE_CAST(WED_DrapedOrthophoto, entity);
 		if (orth)
@@ -1552,7 +1693,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 				lg = layer_group_for_string(pol_info->group.c_str(),pol_info->group_offset, lg);
 			mPreviewItems.push_back(new preview_ortho(orth,lg, GetResolver()));
 		}
-	}	
+	}
 	else if (sub_class == WED_FacadePlacement::sClass)
 	{
 		WED_FacadePlacement * fac = SAFE_CAST(WED_FacadePlacement, entity);
@@ -1598,7 +1739,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	{
 		WED_ObjPlacement * obj = SAFE_CAST(WED_ObjPlacement, entity);
 		if(obj)
-			if(obj->GetShowLevel() <= mObjDensity) 	
+			if(obj->GetShowLevel() <= mObjDensity)
 			{
 				double n,s,e,w;
 				GetZoomer()->GetMapVisibleBounds(w,s,e,n);
@@ -1622,6 +1763,30 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 			if (lgt)	mPreviewItems.push_back(new preview_light(lgt, group_Objects, GetResolver()));
 		}
 	}
+	else if (sub_class == WED_Windsock::sClass)
+	{
+		if(GetZoomer()->GetPPM() * 1.0 > MIN_PIXELS_PREVIEW)
+		{
+			if (auto ws = SAFE_CAST(WED_Windsock, entity))
+				mPreviewItems.push_back(new preview_windsock(ws, group_Objects, GetResolver()));
+		}
+	}
+	else if (sub_class == WED_AirportBeacon::sClass)
+	{
+		if(GetZoomer()->GetPPM() * 1.0 > MIN_PIXELS_PREVIEW)
+		{
+			if (auto bcn = SAFE_CAST(WED_AirportBeacon, entity))
+				mPreviewItems.push_back(new preview_beacon(bcn, group_Objects, GetResolver()));
+		}
+	}
+	else if (sub_class == WED_AirportSign::sClass)
+	{
+		if(GetZoomer()->GetPPM() * 0.2 > MIN_PIXELS_PREVIEW)
+		{
+			if (auto tsign = SAFE_CAST(WED_AirportSign, entity))
+				mPreviewItems.push_back(new preview_taxisign(tsign, group_Objects, GetResolver()));
+		}
+	}
 	return true;
 }
 
@@ -1629,7 +1794,7 @@ void		WED_PreviewLayer::DrawVisualization			(bool inCurent, GUI_GraphState * g)
 {
 	// This is called after per-entity visualization; we have one preview item for everything we need.
 	// sort, draw, nuke 'em.
-	
+
 	g->EnableDepth(true,true);         // turn on z-buffering - otherwise we can't clear the z-buffer
 	glClear(GL_DEPTH_BUFFER_BIT);
 
@@ -1666,4 +1831,4 @@ int			WED_PreviewLayer::GetObjDensity(void) const
 {
 	return mObjDensity;
 }
-	
+

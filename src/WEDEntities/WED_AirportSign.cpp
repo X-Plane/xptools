@@ -49,6 +49,11 @@ void	WED_AirportSign::SetHeight(int h)
 	height = h;
 }
 
+int		WED_AirportSign::GetHeight(void) const
+{
+	return height.value;
+}
+
 void		WED_AirportSign::Import(const AptSign_t& x, void (* print_func)(void *, const char *, ...), void * ref)
 {
 	SetLocation(gis_Geo, x.location);
@@ -87,7 +92,7 @@ void		WED_AirportSign::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 	{
 		DebugAssert(info.prop_kind == prop_String);
 		info.prop_kind = prop_TaxiSign;
-	}	
+	}
 }
 
 void		WED_AirportSign::GetNthProperty(int n, PropertyVal_t& val) const

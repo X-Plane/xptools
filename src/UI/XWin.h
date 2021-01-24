@@ -274,18 +274,18 @@ protected:
 	int		mBlockEvents;
     double	mTimer;
 	POINT	mMouse;
-
+	bool	mUpdateCallbackActive;
+	Fl_Menu_Bar * mMenuBar;
 
 public:
-	Fl_Menu_Bar * mMenuBar;
-	void ClearMenus(const Fl_Menu_Item *  menu);
+
+	void ClearMenus();
 	int GetMenuBarHeight(void);
 	virtual void ReceiveFilesFromDrag(const string& inFiles);
 	bool mInited;
 
 protected:
 
-	void draw();
 	virtual int handle(int e);
 	void resize(int x,int y,int w,int h);
 
@@ -293,6 +293,7 @@ protected:
 	static void menu_cb(Fl_Widget *w, void * data);
 	static void menubar_cb(Fl_Widget *w, void * data);
 	static void timeout_cb(void * data);
+	static void update_cb(void * arg);
 
 #endif
 
