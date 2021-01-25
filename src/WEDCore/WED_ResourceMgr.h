@@ -131,13 +131,31 @@ struct	str_info_t {
 
 struct	road_info_t {
 	struct vroad_t {
-		string 	description;      // text to display in menu's
-		int		rd_type;				// index into road_types
+		string 	description;    // text to display in menu's
+		int		rd_type;		// index into road_types
 	};
 	struct road_t {
-		int		tex_idx;				// index into textures[]
-		float		width, length;    // texture scaling
-		float 	s_left, s_right;	// st coordinates on texture (t is always 0 to 1)
+		struct obj_t {
+			string  path;
+			float lat_offs;
+			float rotation;
+		};
+		struct wire_t {
+			float lat_offs;
+			float end_height;
+			float droop;
+		};
+		struct seg_t {
+			float 	left, right;	    // lateral position in meters
+			float 	s_left, s_right;	// lateral s coordinates on texture (t is always 0 to 1)
+		};
+		int		tex_idx;			// index into textures[]
+		float	width, length;      // texture scaling
+		vector<seg_t>  segs;
+//		float 	s_left, s_right;	// st coordinates on texture (t is always 0 to 1)
+		vector<obj_t>  vert_objs;
+		vector<obj_t>  dist_objs;
+		vector<wire_t> wires;
 	};
 
 	map<int, vroad_t>	vroad_types;

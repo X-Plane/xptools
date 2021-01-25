@@ -1747,7 +1747,14 @@ bool	WED_ResourceMgr::GetRoad(const string& path, const road_info_t *& out_info)
 			vroad.rd_type = MFS_int(&s);
 
 			if (last_vroad)
-				rd->vroad_types[last_vroad] = vroad;  // we assume the last one is what we want for the preview
+//				rd->vroad_types[last_vroad] = vroad;  // if we take the last road choice for previews, thats usually the bridges.
+                                                      // we can assume the first segment is just the pavement and minimal sidewalks,
+													  // which is OK for a 'simple' preview using only a SINGLE degment
+			{
+				rd->vroad_types[last_vroad] = vroad;  // the first road choice is usually the non-wet/non-graded one, with full sidewalks etc
+				                                      // but often built from multiple segements - so we need to show them all to be meaningfull
+				last_vroad = 0;
+			}
 		}
 		else if(MFS_string_match(&s, "TEXTURE", false))
 		{
@@ -1758,8 +1765,8 @@ bool	WED_ResourceMgr::GetRoad(const string& path, const road_info_t *& out_info)
 		}
 		else if(MFS_string_match(&s, "ROAD_TYPE", false))
 		{
-			last_road    = MFS_int(&s);  	// road type number
-			road.width   = MFS_double(&s);			// width in mtr
+			last_road    = MFS_int(&s);   	        // road type number
+			road.width   = MFS_double(&s);          // nominal width of pavement in mtr
 			road.length  = MFS_double(&s);			// length for repeating texture in mtr
 			road.tex_idx = MFS_int(&s);       	 	// texture index
 			// ignore the rgb definitions for map display colors, for now
@@ -1768,7 +1775,7 @@ bool	WED_ResourceMgr::GetRoad(const string& path, const road_info_t *& out_info)
 
 //			printf("road %d w=%.1f\n",last_road, road.width);
 		}
-		else if(MFS_string_match(&s, "ROAD_CENTER, false))
+		else if(MFS_string_match(&s, "ROAD_CENTER", false))
 		{
 			last_center  = MFS_double(&s);         // define lateral offset relative to vector, added to everything
 		}
@@ -1778,41 +1785,51 @@ bool	WED_ResourceMgr::GetRoad(const string& path, const road_info_t *& out_info)
 		}
 		else if(MFS_string_match(&s, "SEGMENT_DRAPED", false))
 		{
-			road.tex_idx = MFS_int(&s);  	 	// texture index
+			auto& r = rd->road_types[last_road];
+
+			r.tex_idx = MFS_int(&s);
 			MFS_double(&s);						// min lod
 			double lod = MFS_double(&s);		// max lod
-			if (max_lod < lod)
+			if (max_lod <= lod)
 			{
+				if(max_lod < lod) r.segs.clear();
 				max_lod = lod;
-				MFS_double(&s);
+				r.segs.push_back(road_info_t::road_t::seg_t());
 
 				MFS_double(&s);
-				road.s_left = MFS_double(&s) / last_scale;
-				MFS_double(&s);
-				road.s_right = MFS_double(&s) / last_scale;
 
-				rd->road_types[last_road] = road;
+				r.segs.back().left   = MFS_double(&s) - last_center;
+				r.segs.back().s_left = MFS_double(&s) / last_scale;
+				r.segs.back().right   = MFS_double(&s) - last_center;
+				r.segs.back().s_right = MFS_double(&s) / last_scale;
 			}
+
 //			printf("road %d w=%.1f\n",last_road, road.width);
 		}
 		else if(MFS_string_match(&s, "SEGMENT_GRADED", false))
 		{
-			road.tex_idx = MFS_int(&s);  	 	// texture index
+			auto& r = rd->road_types[last_road];
+
+			r.tex_idx = MFS_int(&s);
 			MFS_double(&s);						// min lod
 			double lod = MFS_double(&s);		// max lod
-			if (max_lod < lod)
+			if (max_lod <= lod)
 			{
+				if(max_lod < lod) r.segs.clear();
 				max_lod = lod;
+				r.segs.push_back(road_info_t::road_t::seg_t());
+
 				MFS_double(&s);
 
-				MFS_double(&s);  // ignore height for now
-				MFS_double(&s);
-				road.s_left = MFS_double(&s) / last_scale;
-				MFS_double(&s);  // ignore height for now
-				MFS_double(&s);
-				road.s_right = MFS_double(&s) / last_scale;
+				double h_left =        MFS_double(&s);
+				r.segs.back().left   = MFS_double(&s) - last_center;
+				r.segs.back().s_left = MFS_double(&s) / last_scale;
+				double h_right =        MFS_double(&s);
+				r.segs.back().right   = MFS_double(&s) - last_center;
+				r.segs.back().s_right = MFS_double(&s) / last_scale;
 
-				rd->road_types[last_road] = road;
+//				if(h_left != h_right)
+//					r.segs.pop_back();                  // ignore the sloped sections for our previews
 			}
 //			printf("road %d w=%.1f\n",last_road, road.width);
 		}
@@ -1824,37 +1841,46 @@ bool	WED_ResourceMgr::GetRoad(const string& path, const road_info_t *& out_info)
 			                   MFS_int(&s);        // on ground/elevated
 			double frequency = MFS_double(&s);
 			double strt_offs = MFS_double(&s);
+
+			if(frequency == 0.0)
+			{
+				rd->road_types[last_road].vert_objs.push_back(road_info_t::road_t::obj_t());
+				auto& o = rd->road_types[last_road].vert_objs.back();
+				o.path     = obj_path;
+				o.lat_offs = lat_offs - last_center;
+				o.rotation = rotation;
+			}
 		}
 		else if(MFS_string_match(&s, "WIRE", false))
 		{
-			             MFS_double(&s);     // min lod
-			double lod = MFS_double(&s);     // max lod
-			if (max_lod < lod)
-			{
-				max_lod = lod;
-				double lat_offs  = MFS_double(&s);
-				double vert_offs = MFS_double(&s);		// at
-				double droop_rat = MFS_double(&s);		// 0 no droop, 1 touches ground in middle
+			rd->road_types[last_road].wires.push_back(road_info_t::road_t::wire_t());
+			auto& w = rd->road_types[last_road].wires.back();
 
-				// add wire to vector - there is usually multiple wires
-			}
+			               MFS_double(&s);     // min lod
+			               MFS_double(&s);     // max lod
+			w.lat_offs =  (MFS_double(&s) -0.5) * rd->road_types[last_road].width;  // convert to absolute offset
+			w.end_height = MFS_double(&s);
+			w.droop =      MFS_double(&s);	   // 0 no droop, 1 touches ground in middle
 		}
 		else if(MFS_string_match(&s, "OBJECT_DRAPED", false))
 		{
 			string type;       MFS_string(&s, &type);
 			if(type == "DIST")                       // there are also BEGIN and END types - placed where vectors dead-end
 			{
-				string obj_path;   MFS_string(&s, &obj_path);
-				double lat_offs  = MFS_double(&s);   // min offset
-				                   MFS_double(&s);   // max offset, if not same, random variation
-				double rotation  = MFS_double(&s);   // min rotation
-				                   MFS_double(&s);   // max rotation
-				                   MFS_double(&s);   // usually int, but sometimes float representing almost whole numbers plus tiny (1e-6) offsets
-				                   MFS_double(&s);   // same as above
-				                   MFS_string(&s, &type); // two floats in x.x/y.y format or one int
-				                   MFS_string(&s, &type); // two floats in x.x/y.y format or one int
-				                   MFS_int(&s);
-				                   MFS_int(&s);
+				rd->road_types[last_road].dist_objs.push_back(road_info_t::road_t::obj_t());
+				auto& o = rd->road_types[last_road].dist_objs.back();
+
+							  MFS_string(&s, &o.path);
+				o.lat_offs  = MFS_double(&s) - last_center;   // min offset
+				              MFS_double(&s);   // max offset, if not same, random variation
+				o.rotation  = MFS_double(&s);   // min rotation
+				              MFS_double(&s);   // max rotation
+				              MFS_double(&s);   // usually int, but sometimes float representing almost whole numbers plus tiny (1e-6) offsets
+				              MFS_double(&s);   // same as above
+				              MFS_string(&s, &type); // two floats in x.x/y.y format or one int
+				              MFS_string(&s, &type); // two floats in x.x/y.y format or one int
+				              MFS_int(&s);
+				              MFS_int(&s);
 			}
 		}
 		else if(MFS_string_match(&s, "OBJECT_GRADED", false))
@@ -1862,30 +1888,36 @@ bool	WED_ResourceMgr::GetRoad(const string& path, const road_info_t *& out_info)
 			string type;       MFS_string(&s, &type);
 			if(type == "DIST")                      // placed by distance along vector
 			{
-				string obj_path;   MFS_string(&s, &obj_path);
-				double lat_offs  = MFS_double(&s);   // min offset
-				                   MFS_double(&s);   // max offset, if not same, random variation
-				double rotation  = MFS_double(&s);   // min rotation
-				                   MFS_double(&s);   // max rotation
-				                   MFS_double(&s);   // usually int, but sometimes float representing almost whole numbers plus tiny (1e-6) offsets
-				                   MFS_double(&s);   // same as above
-				                   MFS_string(&s, &type); // two floats in x.x/y.y format or one int
-				                   MFS_string(&s, &type); // same as above
-				                   MFS_int(&s);
-				                   MFS_int(&s);
+				rd->road_types[last_road].dist_objs.push_back(road_info_t::road_t::obj_t());
+				auto& o = rd->road_types[last_road].dist_objs.back();
+
+							  MFS_string(&s, &o.path);
+				o.lat_offs  = MFS_double(&s) - last_center;   // min offset
+				              MFS_double(&s);   // max offset, if not same, random variation
+				o.rotation  = MFS_double(&s);   // min rotation
+				              MFS_double(&s);   // max rotation
+				              MFS_double(&s);   // usually int, but sometimes float representing almost whole numbers plus tiny (1e-6) offsets
+				              MFS_double(&s);   // same as above
+				              MFS_string(&s, &type); // two floats in x.x/y.y format or one int
+				              MFS_string(&s, &type); // same as above
+				              MFS_int(&s);
+				              MFS_int(&s);
 			}
 			else if(type == "VERT")                 // placed only at vertices, e.g. powerlines
 			{
-				string obj_path;   MFS_string(&s, &obj_path);
-				double lat_offs  = MFS_double(&s);   // min offset
-				                   MFS_double(&s);   // max offset, if not same, random variation
-				double rotation  = MFS_double(&s);   // min rotation
-				                   MFS_double(&s);   // max rotation
-				                   MFS_double(&s);   // usually int, but sometimes float representing almost whole numbers plus tiny (1e-6) offsets
-				                   MFS_double(&s);   // same as above
-				                   MFS_string(&s, &type); // two floats in x.x/y.y format usually all zero
-				                   MFS_string(&s, &type); // same as above
-:q!			}
+				rd->road_types[last_road].vert_objs.push_back(road_info_t::road_t::obj_t());
+				auto& o = rd->road_types[last_road].vert_objs.back();
+
+				              MFS_string(&s, &o.path);
+				o.lat_offs  = MFS_double(&s) - last_center;   // min offset
+				              MFS_double(&s);   // max offset, if not same, random variation
+				o.rotation  = MFS_double(&s);   // min rotation
+				              MFS_double(&s);   // max rotation
+				              MFS_double(&s);   // usually int, but sometimes float representing almost whole numbers plus tiny (1e-6) offsets
+				              MFS_double(&s);   // same as above
+							  MFS_string(&s, &type); // two floats in x.x/y.y format usually all zero
+				              MFS_string(&s, &type); // same as above
+			}
 		}
 		else if(MFS_string_match(&s, "OBJECT_FREQ", false))
 		{

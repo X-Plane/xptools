@@ -529,6 +529,7 @@ void			WED_MapPane::FromPrefs(IDocPrefs * prefs)
 				switch(inf.prop_kind) {
 				case prop_Int:
 				case prop_Bool:
+				case prop_RoadType:
 				case prop_Enum:
 					val.int_val = atoi(v.c_str());
 					break;
@@ -596,6 +597,7 @@ void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
 			switch(val.prop_kind) {
 			case prop_Int:
 			case prop_Bool:
+			case prop_RoadType:
 			case prop_Enum:
 				snprintf(buf,16,"%d",val.int_val);
 				v = buf;
@@ -823,7 +825,7 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 #if ROAD_EDITING
 		unhide_persistent(hide_list, WED_RoadEdge::sClass);
 		unhide_persistent(hide_list, WED_RoadNode::sClass);
-#endif		
+#endif
 		unhide_persistent(hide_list, WED_TruckDestination::sClass);
 		unhide_persistent(hide_list, WED_TruckParkingLocation::sClass);
 	}

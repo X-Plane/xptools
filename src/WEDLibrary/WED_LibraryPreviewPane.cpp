@@ -51,6 +51,9 @@
 
 #include "XObjDefs.h"
 #include "ObjDraw.h"
+#include "XESConstants.h"
+
+#define length_with_units(x) (x)*(gIsFeet ? MTR_TO_FT : 1), gIsFeet ? "ft" : "m"
 
 enum {
 	next_variant = GUI_APP_MESSAGES
@@ -261,7 +264,7 @@ void	WED_LibraryPreviewPane::MouseDrag(int x, int y, int button)
 {
 	float dx = x - mX;
 	float dy = y - mY;
-	if((mType == res_Facade || mType == res_Road) && button == 1)
+	if((mType == res_Facade || mType == res_Object || mType == res_Road) && button == 1)
 	{
 		mHgt = mHgtOrig + (fabs(dy) < 100.0 ? dy * 0.1 : sign(dy)*(fabs(dy)-80) * 0.5);
 		mHgt = intlim(mHgt,0,250);
@@ -383,7 +386,7 @@ void	WED_LibraryPreviewPane::begin3d(const int *b, double radius_m)
 	glLoadIdentity();
 #ifdef VIEW_DISTANCE
 	glFrustum(sx * -act_radius, sx * act_radius, sy * -act_radius, sy * act_radius,
-					(VIEW_DISTANCE - 1.0) * radius_m, (VIEW_DISTANCE + 1.0) * radius_m);
+					(VIEW_DISTANCE - 1.0) * radius_m, 2*(VIEW_DISTANCE + 1.0) * radius_m);
 #else
 	glOrtho(sx * -act_radius, sx * act_radius, sy * -act_radius, sy * act_radius, -radius_m, radius_m);
 #endif
@@ -630,34 +633,71 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 		case res_Road:
 			if(mResMgr->GetRoad(mRes,rd))
 			{
-				int i = intlim(mWid*0.5 - 1,0,rd->vroad_types.size()-1);
+				int i = intlim(mWid/2,0,rd->vroad_types.size()-1);
+				//i=0;
 				map<int,road_info_t::vroad_t>::const_iterator it = rd->vroad_types.begin();
 				for(int j = 0; j < i; j++) it++;
 				int rd_idx = it->second.rd_type;
 
+				if(!rd->road_types.count(rd_idx)) break;
 				auto& t = rd->road_types.at(rd_idx);
-				if(auto tref = mTexMgr->LookupTexture(rd->textures[t.tex_idx].c_str(),true, tex_Compress_Ok))
+
+				const float length = 50.0;
+				begin3d(b, length);
+				if(auto tref = mTexMgr->LookupTexture(rd->textures[t.tex_idx].c_str(),true, tex_Wrap+tex_Linear))
 				{
 					if(auto tex_id = mTexMgr->GetTexID(tref))
 					{
 						g->SetState(false,1,false,true,true,false,false);
 						g->BindTex(tex_id,0);
-
-						const float length = 30.0;
-						begin3d(b, length);
 						glDisable(GL_CULL_FACE);
-						glColor4f(0,0,0,0);
-						glBegin(GL_POLYGON);
-							float v = 2.0 * length / t.length;
-							glTexCoord2f(t.s_left,  0); glVertex3f(-t.width * 0.5, -5,  length);
-							glTexCoord2f(t.s_right, 0); glVertex3f( t.width * 0.5, -5,  length);
-							glTexCoord2f(t.s_right, v); glVertex3f( t.width * 0.5,  5, -length);
-							glTexCoord2f(t.s_left,  v); glVertex3f(-t.width * 0.5,  5, -length);
-						glEnd();
-						glColor4f(1,1,1,1);
-						end3d(b);
+						float v = 4.0 * length / t.length;
+						for(auto s : t.segs)
+						{
+							glBegin(GL_POLYGON);
+								glTexCoord2f(s.s_left,  0); glVertex3f(s.left,  0,  length * 2.0f);
+								glTexCoord2f(s.s_right, 0); glVertex3f(s.right, 0,  length * 2.0f);
+								glTexCoord2f(s.s_right, v); glVertex3f(s.right, 0, -length * 2.0f);
+								glTexCoord2f(s.s_left,  v); glVertex3f(s.left,  0, -length * 2.0f);
+							glEnd();
+						}
 					}
 				}
+				if(t.vert_objs.size())
+				{
+					const float front_twr = length * 0.7;
+					const float back_twr = -length * 0.7;
+					if(mResMgr->GetObjRelative(t.vert_objs.back().path, mRes, o))
+					{
+						draw_obj_at_xyz(mTexMgr, o, t.vert_objs.back().lat_offs, 0, front_twr, t.vert_objs.back().rotation, g);
+						draw_obj_at_xyz(mTexMgr, o, t.vert_objs.back().lat_offs, 0, back_twr,  t.vert_objs.back().rotation, g);
+					}
+					for(auto w : t.wires)
+					{
+						g->SetState(false,0,false,true,true,false,false);
+						glColor3f(0.1,0.1,0.1);
+						glBegin(GL_LINE_STRIP);
+							const float span = front_twr - back_twr;
+							const int steps = 20;
+							float pos = front_twr;
+							float rel_d = 1.0;
+							for(int i = 0; i <= steps; i++)
+							{
+								glVertex3f(w.lat_offs, w.end_height * (1.0f - (1.0f - rel_d*rel_d) * w.droop), pos);
+								rel_d -= 2.0 / steps;
+								pos -= span / steps;
+							}
+						glEnd();
+					}
+				}
+				if(0) // t.dist_objs.size())
+				{
+					if(mResMgr->GetObjRelative(t.dist_objs.back().path, mRes, o))
+					{
+		//				draw_obj_at_xyz(mTexMgr, o, t.dist_objs.back().lat_offs, 0, front_twr, t.dist_objs.back().rotation, g);
+					}
+				}
+				end3d(b);
 			}
 			break;
 		}
@@ -674,8 +714,8 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 					int front_side = raw_side;
 					if(front_side < 0 || front_side >= n_wall) front_side = 0;
 
-					snprintf(buf1, sizeof(buf1), "Wall \'%s\' intended for %s @ w=%.1lf%c", fac->wallName[front_side].c_str(), fac->wallUse[front_side].c_str(),
-						mWid / (gIsFeet ? 0.3048 : 1), gIsFeet ? '\'' : 'm');
+					snprintf(buf1, sizeof(buf1), "Wall \'%s\' intended for %s @ w=%.1lf%s", fac->wallName[front_side].c_str(), fac->wallUse[front_side].c_str(),
+						length_with_units(mWid));
 					snprintf(buf2, sizeof(buf2), "Type %d, %d wall%s for %s @ h=%dm", fac->is_new ? 2 : 1, n_wall, n_wall > 1 ? "s" : "", fac->h_range.c_str(), mHgt);
 				}
 				else
@@ -699,18 +739,18 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				if (o)
 				{
 					snprintf(buf1, sizeof(buf1), "%s", o->description.c_str());
-					int n = sprintf(buf2, "max h=%.1f%s", o->xyz_max[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");
+					int n = sprintf(buf2, "max h=%.1f%s", length_with_units(o->xyz_max[1]));
 					if (o->xyz_min[1] < -0.07)
-						n += sprintf(buf2 + n, ", below ground to %.1f%s", o->xyz_min[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");
+						n += sprintf(buf2 + n, ", below ground to %.1f%s", length_with_units(o->xyz_min[1]));
 				}
 				else if(agp)
 				{
 					snprintf(buf1, sizeof(buf1), "%s", agp->description.c_str());
-					int n = sprintf(buf2, "max h=%.1f%s", agp->xyz_max[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");
+					int n = sprintf(buf2, "max h=%.1f%s", length_with_units(agp->xyz_max[1]));
 					for (auto& a : agp->objs)
 						if(a.scp_step > 0.0)
 						{
-							sprintf(buf2 + n, ", supports set_AGL %.1f .. %.1f%s @ h=%dm", a.scp_min / (gIsFeet ? 0.3048 : 1.0), a.scp_max / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m", mHgt);
+							sprintf(buf2 + n, ", supports set_AGL %.1f .. %.1f%s @ h=%dm", a.scp_min * (gIsFeet ? MTR_TO_FT : 1), length_with_units(a.scp_max), mHgt);
 							break;
 						}
 				}
@@ -720,10 +760,19 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 			case res_Road:
 				if(rd)
 				{
-					int i = intlim(mWid*0.5-1,0,rd->vroad_types.size()-1);
+					int i = intlim(mWid/2,0,rd->vroad_types.size()-1);
 					map<int,road_info_t::vroad_t>::const_iterator it = rd->vroad_types.begin();
 					for(int j = 0; j < i; j++) it++;
-					snprintf(buf1, sizeof(buf1), "Road #%d \'%s\'", i, it->second.description.c_str());
+					if(rd->road_types.count(it->second.rd_type))
+					{
+						auto& r = rd->road_types.at(it->second.rd_type);
+						if(r.wires.size())
+							snprintf(buf1, sizeof(buf1), "Road #%d \'%s\' h=%.0f%s", i, it->second.description.c_str(), length_with_units(r.wires.back().end_height));
+						else
+							snprintf(buf1, sizeof(buf1), "Road #%d \'%s\' w=%.0f%s", i, it->second.description.c_str(), length_with_units(r.width));
+					}
+					else
+						snprintf(buf1, sizeof(buf1), "Road #%d \'%s\'", i, it->second.description.c_str());
 					snprintf(buf2, sizeof(buf2), "Total %ld road types", rd->vroad_types.size());
 				}
 				break;
