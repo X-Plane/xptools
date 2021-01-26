@@ -1736,6 +1736,7 @@ bool	WED_ResourceMgr::GetRoad(const string& path, const road_info_t *& out_info)
 		{
 			MFS_int(&s);
 			last_vroad = MFS_int(&s);		// vroad type number
+			vroad.rd_type = 0;
 			MFS_double(&s);
 			MFS_double(&s);
 
@@ -1746,7 +1747,7 @@ bool	WED_ResourceMgr::GetRoad(const string& path, const road_info_t *& out_info)
 			MFS_double(&s);
 			vroad.rd_type = MFS_int(&s);
 
-			if (last_vroad)
+			if (last_vroad && vroad.rd_type)
 //				rd->vroad_types[last_vroad] = vroad;  // if we take the last road choice for previews, thats usually the bridges.
                                                       // we can assume the first segment is just the pavement and minimal sidewalks,
 													  // which is OK for a 'simple' preview using only a SINGLE degment
@@ -1787,11 +1788,12 @@ bool	WED_ResourceMgr::GetRoad(const string& path, const road_info_t *& out_info)
 		{
 			auto& r = rd->road_types[last_road];
 
-			r.tex_idx = MFS_int(&s);
+			int tex_idx = MFS_int(&s);
 			MFS_double(&s);						// min lod
 			double lod = MFS_double(&s);		// max lod
 			if (max_lod <= lod)
 			{
+				r.tex_idx = tex_idx;
 				if(max_lod < lod) r.segs.clear();
 				max_lod = lod;
 				r.segs.push_back(road_info_t::road_t::seg_t());
@@ -1810,7 +1812,7 @@ bool	WED_ResourceMgr::GetRoad(const string& path, const road_info_t *& out_info)
 		{
 			auto& r = rd->road_types[last_road];
 
-			r.tex_idx = MFS_int(&s);
+			int tex_idx = MFS_int(&s);
 			MFS_double(&s);						// min lod
 			double lod = MFS_double(&s);		// max lod
 			if (max_lod <= lod)
@@ -1821,15 +1823,18 @@ bool	WED_ResourceMgr::GetRoad(const string& path, const road_info_t *& out_info)
 
 				MFS_double(&s);
 
-				double h_left =        MFS_double(&s);
 				r.segs.back().left   = MFS_double(&s) - last_center;
+				double h_left =        MFS_double(&s);
 				r.segs.back().s_left = MFS_double(&s) / last_scale;
-				double h_right =        MFS_double(&s);
 				r.segs.back().right   = MFS_double(&s) - last_center;
+				double h_right =        MFS_double(&s);
 				r.segs.back().s_right = MFS_double(&s) / last_scale;
 
-//				if(h_left != h_right)
-//					r.segs.pop_back();                  // ignore the sloped sections for our previews
+				if(h_left != 0.0 || h_right != 0.0)
+					r.segs.pop_back();                  // ignore the elevated/sloped sections for our previews
+				else
+					r.tex_idx = tex_idx;
+
 			}
 //			printf("road %d w=%.1f\n",last_road, road.width);
 		}

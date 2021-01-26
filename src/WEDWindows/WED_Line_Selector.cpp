@@ -93,7 +93,6 @@ void	WED_Line_Selector::Draw(GUI_GraphState * g)
 	int b[4];
 	GetBounds(b);
 	g->SetState(0,0,0, 0,0, 0,0);
-//	glColor4fv(WED_Color_RGBA(wed_TextField_Bkgnd));
 	glColor4fv(WED_Color_RGBA(wed_Tabs_Text));
 	glBegin(GL_QUADS);
 	glVertex2i(b[0],b[1]);
@@ -101,6 +100,15 @@ void	WED_Line_Selector::Draw(GUI_GraphState * g)
 	glVertex2i(b[2],b[3]);
 	glVertex2i(b[2],b[1]);
 	glEnd();
+	glColor4fv(WED_Color_RGBA(wed_Table_Gridlines));
+	glLineWidth(2);
+	glBegin(GL_LINE_LOOP);
+	glVertex2i(b[0],b[1]);
+	glVertex2i(b[0],b[3]);
+	glVertex2i(b[2],b[3]);
+	glVertex2i(b[2],b[1]);
+	glEnd();
+	glLineWidth(2);
 
 	int tab_top  = b[3] - MARG;
 	int tab_left = b[0] + MARG;
