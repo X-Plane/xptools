@@ -438,6 +438,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 	const fac_info_t * fac = nullptr;
 	const str_info_t * str = nullptr;
 	const road_info_t * rd = nullptr;
+	map<int,road_info_t::vroad_t>::const_iterator vr_it;
 
 	if(!mRes.empty())
 	{	switch(mType) {
@@ -635,9 +636,9 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 			{
 				int i = intlim(mWid/2,0,rd->vroad_types.size()-1);
 				//i=0;
-				map<int,road_info_t::vroad_t>::const_iterator it = rd->vroad_types.begin();
-				for(int j = 0; j < i; j++) it++;
-				int rd_idx = it->second.rd_type;
+				vr_it = rd->vroad_types.begin();
+				for(int j = 0; j < i; j++) vr_it++;
+				int rd_idx = vr_it->second.rd_type;
 
 				if(!rd->road_types.count(rd_idx)) break;
 				auto& t = rd->road_types.at(rd_idx);
@@ -760,13 +761,10 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 			case res_Road:
 				if(rd)
 				{
-					int i = intlim(mWid/2,0,rd->vroad_types.size()-1);
-					map<int,road_info_t::vroad_t>::const_iterator it = rd->vroad_types.begin();
-					for(int j = 0; j < i; j++) it++;
-					int n = snprintf(buf1, sizeof(buf1), "Road #%d \'%s\'", it->second.rd_type, it->second.description.c_str());
-					if(rd->road_types.count(it->second.rd_type))
+					int n = snprintf(buf1, sizeof(buf1), "Road #%d \'%s\'", vr_it->second.rd_type, vr_it->second.description.c_str());
+					if(rd->road_types.count(vr_it->second.rd_type))
 					{
-						auto& r = rd->road_types.at(it->second.rd_type);
+						auto& r = rd->road_types.at(vr_it->second.rd_type);
 						if(r.wires.size())
 							snprintf(buf1+n, sizeof(buf1)-n, " h=%.0f%s", length_with_units(r.wires.front().end_height)); // assuming first wire is near top
 						else

@@ -74,14 +74,6 @@ private:
 	WED_ToolInfoAdapter *	mInfoAdapter;
 
 	IResolver *				mResolver;
-
-//	WED_CreatePointTool *	mObjTool;
-//	WED_CreatePolygonTool *	mFacTool;
-//	WED_CreatePolygonTool * mFstTool;
-//	WED_CreatePolygonTool * mStrTool;
-//	WED_CreatePolygonTool * mLinTool;
-//	WED_CreatePolygonTool * mPolTool;
-
 };
 
 #endif /* WED_TCEPane_H */

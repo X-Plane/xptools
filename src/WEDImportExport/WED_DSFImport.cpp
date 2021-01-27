@@ -45,6 +45,8 @@
 #include "WED_ForestRing.h"
 #include "WED_Group.h"
 #include "WED_StringPlacement.h"
+#include "WED_AutogenPlacement.h"
+#include "WED_AutogenNode.h"
 #include "WED_LinePlacement.h"
 #include "WED_ObjPlacement.h"
 #include "WED_PolygonPlacement.h"
@@ -83,16 +85,12 @@ static void debug_it(const vector<BezierPoint2>& pts)
 			pts[n].hi.y() - pts[n].pt.y());
 }
 
-inline bool end_match(const char * str, const char * suf)
+static bool end_match(const string& str, const char suf[4])
 {
-	int ls = strlen(suf);
-	int lstr = strlen(str);
-	if(lstr > ls)
-	{
-		return strcmp(str+lstr-ls,suf) == 0;
-	}
+	if(str.size() >= 4)
+		return memcmp(str.c_str() + str.size() - 4, suf, 4) == 0;
 	else
-	return false;
+		return false;
 }
 
 enum dsf_import_category {
@@ -102,6 +100,7 @@ enum dsf_import_category {
 	dsf_cat_forests,
 	dsf_cat_lines,
 	dsf_cat_strings,
+	dsf_cat_autogen,
 	dsf_cat_orthophoto,
 	dsf_cat_draped_poly,
 	dsf_cat_roads,
@@ -116,6 +115,7 @@ static const char * k_dsf_cat_names[dsf_cat_DIM] = {
 	"Forests",
 	"Lines",
 	"Strings",
+	"Autogen",
 	"Orthophotos",
 	"Draped Polygons",
 	"Roads",
@@ -155,12 +155,13 @@ public:
 	bool				want_uv;
 	bool				want_bezier;
 	bool				want_wall;
-
 	int 				dsf_cat_filter;       // categories, e.g. .for, .obj
 	vector<string>		dsf_AptID_filter;     // Airport ID's
 	vector<bool>		filter_table;     	  // Airport ID IDX
 	bool				filter_on;            // global switch to filter out stuff
 	Bbox2 				cull_bound;
+	int					autogen_rings;
+	int					autogen_spelling;
 
 	WED_Thing * get_cat_parent(dsf_import_category cat)
 	{
@@ -342,7 +343,6 @@ public:
 		if(strcmp(inProp, "sim/exclude_pol") == 0)	me->make_exclusion(inValue, exclude_Pol);
 		if(strcmp(inProp, "sim/exclude_str") == 0)	me->make_exclusion(inValue, exclude_Str);
 #endif
-
 	}
 
 	static void	BeginPatch(
@@ -578,15 +578,17 @@ public:
 
 		me->poly = NULL;
 		me->ring = NULL;
+		me->want_uv = false;
+		me->want_wall = false;
+		me->autogen_rings = 0;
+		me->autogen_spelling = -1;
 
 		dsf_import_category cat = dsf_cat_objects;
 
 #if !NO_FAC
-
-		if( me->dsf_cat_filter & dsf_filter_facades && end_match(r.c_str(),".fac" ))
+		if( me->dsf_cat_filter & dsf_filter_facades && end_match(r,".fac" ))
 		{
 			// Ben says: .fac must be 2-coord for v9.  But...maybe for v10 we allow curved facades?
-			me->want_uv=false;
 			me->want_bezier=(inCoordDepth >= 4);
 			me->want_wall = (inCoordDepth == 3 || inCoordDepth == 5);
 			WED_FacadePlacement * fac = WED_FacadePlacement::CreateTyped(me->archive);
@@ -601,11 +603,9 @@ public:
 #endif
 
 #if !NO_FOR
-		if(me->dsf_cat_filter & dsf_filter_forests && end_match(r.c_str(),".for"))
+		else if(me->dsf_cat_filter & dsf_filter_forests && end_match(r,".for"))
 		{
-			me->want_uv=false;
 			me->want_bezier=false;
-			me->want_wall=false;
 			WED_ForestPlacement * forst = WED_ForestPlacement::CreateTyped(me->archive);
 			me->poly = forst;
 			me->ring = NULL;
@@ -617,11 +617,9 @@ public:
 #endif
 
 #if !NO_LIN
-		if( me->dsf_cat_filter & dsf_filter_lines && end_match(r.c_str(),".lin"))
+		else if( me->dsf_cat_filter & dsf_filter_lines && end_match(r,".lin"))
 		{
-			me->want_uv=false;
 			me->want_bezier=inCoordDepth == 4;
-			me->want_wall=false;
 			WED_LinePlacement * lin = WED_LinePlacement::CreateTyped(me->archive);
 			me->poly = NULL;
 			me->ring = lin;
@@ -632,26 +630,44 @@ public:
 #endif
 
 #if !NO_STR
-		if( me->dsf_cat_filter & dsf_filter_strings && (end_match(r.c_str(),".str") || end_match(r.c_str(),".ags")) )
+		else if( me->dsf_cat_filter & dsf_filter_strings && (end_match(r.c_str(),".str") || end_match(r,".ags")) )
 		{
-			me->want_uv=false;
 			me->want_bezier=inCoordDepth == 4;
-			me->want_wall=false;
 			WED_StringPlacement * str = WED_StringPlacement::CreateTyped(me->archive);
 			me->poly = NULL;
 			me->ring = str;
 			str->SetSpacing(inParam);
 			str->SetResource(r);
 			cat = dsf_cat_strings;
+
+		}
+#endif
+
+#if !NO_AG
+		else if(end_match(r, ".ags") || end_match(r, ".agb"))
+		{
+			me->want_bezier=false;
+			WED_AutogenPlacement * ags = WED_AutogenPlacement::CreateTyped(me->archive);
+			me->poly = ags;
+			me->ring = NULL;
+			ags->SetResource(r);
+			ags->SetHeight(((inParam >> 8) & 255) * 4);
+			if(ags->IsAGBlock())
+			{
+				me->autogen_rings = -1;
+				ags->SetSpelling(inParam & 255);
+			}
+			else
+				me->autogen_rings = inParam & 255;
+			cat = dsf_cat_autogen;
 		}
 #endif
 
 #if !NO_POL
-		if(me->dsf_cat_filter & dsf_filter_draped_poly && (end_match(r.c_str(),".pol") || end_match(r.c_str(),".agb")))
+		else if(me->dsf_cat_filter & dsf_filter_draped_poly && (end_match(r,".pol") || end_match(r,".agb")))
 		{
 			me->want_uv=inParam == 65535;
 			me->want_bezier=me->want_uv ? (inCoordDepth == 8) : (inCoordDepth == 4);
-			me->want_wall=false;
 			std::replace(r.begin(), r.end(), '\\', '/');  // DSF created with older windows WED used backslash for local orthophoto paths
 			if(me->want_uv)
 			{
@@ -840,6 +856,8 @@ public:
 
 		}
 
+		int i = me->ring->CountChildren();
+
 		for(int n = 0; n < me->pts.size(); ++n)
 		{
 			WED_Thing * node;
@@ -865,6 +883,13 @@ public:
 				if(me->want_wall)
 					b->SetWallType(me->walls[n]);
 			}
+			else if (me->autogen_rings != 0)
+			{
+				WED_AutogenNode * a = WED_AutogenNode::CreateTyped(me->archive);
+				node=a;
+				a->SetLocation(gis_Geo, me->pts[n].pt);
+				a->SetSpawning(me->autogen_rings > 0);
+			}
 			else if (me->want_bezier)
 			{
 				WED_SimpleBezierBoundaryNode * b = WED_SimpleBezierBoundaryNode::CreateTyped(me->archive);
@@ -878,9 +903,17 @@ public:
 				nd->SetLocation(gis_Geo,me->pts[n].pt);
 			}
 			node->SetParent(me->ring,me->ring->CountChildren());
-			node->SetName("Point");
+			char c[32];
+			snprintf(c,32,"Point %d/%d", i, n);
+			node->SetName(c);
 		}
 
+		if (me->autogen_rings > 0)
+		{
+			--me->autogen_rings;
+			if(me->autogen_rings == 0)
+				me->autogen_rings = -1;
+		}
 
 		if (me->poly != NULL)
 			me->ring = NULL;
@@ -890,6 +923,78 @@ public:
 					void *			inRef)
 	{
 		DSF_Importer * me = (DSF_Importer *) inRef;
+
+		if(me->poly && me->poly->GetClass() == WED_AutogenPlacement::sClass)
+		{
+			// make a single winding out of all connected windings
+			int n_wdg = me->poly->CountChildren() - 1;
+			vector<WED_Thing *> wdgs;
+			for(int n = 0; n < n_wdg; ++n)
+			{
+				wdgs.push_back(me->poly->GetNthChild(1));
+				wdgs.back()->SetParent(NULL,0);
+			}
+
+			me->ring = me->poly->GetNthChild(0);
+			int n_pts = me->ring->CountChildren();
+			Point2 first_pt, last_pt;
+			dynamic_cast<IGISPoint *>(me->ring->GetNthChild(0))      ->GetLocation(gis_Geo, first_pt);
+			dynamic_cast<IGISPoint *>(me->ring->GetNthChild(n_pts-1))->GetLocation(gis_Geo, last_pt);
+
+			while(n_wdg)
+			{
+				for(auto w = wdgs.begin(); w != wdgs.end(); w++)
+				{
+					Point2 pt;
+					n_pts = (*w)->CountChildren();
+					dynamic_cast<IGISPoint *>((*w)->GetNthChild(0))->GetLocation(gis_Geo, pt);
+					if(pt == last_pt)
+					{
+						// insert this contour after existing data
+						int last_n = me->ring->CountChildren();
+						--last_n;                                        // remove duplicated last point of existing sequence
+						WED_Thing * t = me->ring->GetNthChild(last_n);
+						t->SetParent(NULL,0);
+						t->Delete();
+						for(int n = 0; n < n_pts; ++n)
+							(*w)->GetNthChild(0)->SetParent(me->ring, n + last_n);
+						(*w)->Delete();
+						w = wdgs.erase(w);
+					    dynamic_cast<IGISPoint *>(me->ring->GetNthChild(last_n + n_pts - 1))->GetLocation(gis_Geo, last_pt);
+						break;
+					}
+					dynamic_cast<IGISPoint *>((*w)->GetNthChild(n_pts-1))->GetLocation(gis_Geo, pt);
+					if(pt == first_pt)
+					{
+						// insert this contour before existing data
+						--n_pts;                                       // remove duplicated last point of contour to be added
+						WED_Thing * t = (*w)->GetNthChild(n_pts);
+						t->SetParent(NULL,0);
+						t->Delete();
+						for(int n = 0; n < n_pts; ++n)
+							(*w)->GetNthChild(0)->SetParent(me->ring, n);
+						(*w)->Delete();
+						w = wdgs.erase(w);
+					    dynamic_cast<IGISPoint *>(me->ring->GetNthChild(0))->GetLocation(gis_Geo, first_pt);
+						break;
+					}
+				}
+				-- n_wdg;
+			}
+			if(first_pt == last_pt)
+            {
+                WED_Thing *t = me->ring->GetNthChild(me->ring->CountChildren()-1);
+                t->SetParent(NULL,0);
+                t->Delete();
+            }
+            else
+            {
+                LOG_MSG("E/DSFi Polygon outer ring not closed\n");
+            }
+			// in case some wdg is a real hole, i.e. has no point in common with the outer winding at all - thes are left now
+			for(auto w : wdgs)
+				w->SetParent(me->poly,1);
+		}
 		me->poly = NULL;
 	}
 

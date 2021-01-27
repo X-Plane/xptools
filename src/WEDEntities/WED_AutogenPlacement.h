@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, Laminar Research.
+ * Copyright (c) 2020, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,22 +21,42 @@
  *
  */
 
-#ifndef WED_Version_H
-#define WED_Version_H
+#ifndef WED_AutogenPlacement_H
+#define WED_AutogenPlacement_H
 
-// This file must be ALL macros - it is included by the MSVC .rc compiler
-// so you can't go using const int and other fancy-pants C++ stuff!
+#include "WED_GISPolygon.h"
+#include "IHasResource.h"
 
-// These versions are used in about boxes, resources, info boxes, etc.
-#define	WED_VERSION				2.4.0git_rd+ag
-#define	WED_VERSION_STRING		"2.4.0git_rd+ag"
-#define	WED_VERSION_STRING_SHORT	"2.4.0"			// omit beta  number
-#define	WED_VERSION_RES			WED_VERSION_STRING
-#define	WED_VERSION_BIN			2,4,0,0
+class WED_AutogenPlacement : public WED_GISPolygon, public IHasResource {
 
-// This numeric is used by the gateway to understand if our WED is up-to-date.
-// Format 1 digit major + 2 digit middle + 1 digit minor version + last digit
-// last digit is 0 for all beta versions or matches release version
-#define WED_VERSION_NUMERIC		20400
+DECLARE_PERSISTENT(WED_AutogenPlacement)
 
-#endif /* WED_Version_H */
+public:
+
+	virtual	bool			IsClosed	(void	) const	{ return true; }
+			bool			IsAGBlock     (void) const;
+
+			double			GetHeight	(void) const;
+			void			SetHeight   (double h);
+			int				GetSpelling	(void) const;
+			void			SetSpelling (int s);
+
+	virtual void			GetResource(	  string& r) const;
+	virtual void			SetResource(const string& r);
+
+	virtual void			GetNthPropertyInfo(int n, PropertyInfo_t& info) const;
+
+	virtual const char *	HumanReadableType(void) const { return "Autogen"; }
+
+protected:
+
+	virtual	bool			IsInteriorFilled(void) const { return true; }
+
+private:
+
+	WED_PropStringText			resource;
+	WED_PropDoubleTextMeters	height;
+	WED_PropIntText				spelling;
+};
+
+#endif /* WED_AutogenPlacement_H */

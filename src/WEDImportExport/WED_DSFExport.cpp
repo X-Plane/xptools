@@ -36,6 +36,7 @@
 #include "WED_FacadePlacement.h"
 #include "WED_ForestPlacement.h"
 #include "WED_StringPlacement.h"
+#include "WED_AutogenPlacement.h"
 #include "WED_LinePlacement.h"
 #include "WED_PolygonPlacement.h"
 #include "WED_DrapedOrthophoto.h"
@@ -1630,6 +1631,110 @@ static int	DSF_ExportTileRecursive(
 					DSF_AccumChain(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, str->GetSpacing(), 0);
 				}
 			}
+			return real_thingies;
+		}
+
+		//------------------------------------------------------------------------------------------------------------
+		// AUTOGEN STRING EXPORTER
+		//------------------------------------------------------------------------------------------------------------
+
+		if(c == WED_AutogenPlacement::sClass)
+		{
+			auto ags = static_cast<WED_AutogenPlacement *>(what);
+			ags->GetResource(r);
+			idx = io_table.accum_pol(r,show_level);
+			bool bez = WED_HasBezierPol(ags);
+			int n_spawning = 1;
+
+			vector<Polygon2> 	pol_area;
+			vector<vector<Polygon2> >	pol_cuts;
+
+			// start at contour 1, keep going until not spawning
+			// write as first polygon all these, including the first not spawning point.
+			// add to spawning.
+			// then take last point again, keep going until spwning flips etc
+			// add do spawn/nonspawn as needed
+
+			vector<Polygon2>			pol_nonspawning;
+			IGISPointSequence * ips = ags->GetOuterRing();
+			int n_ips = ips->GetNumPoints();
+			bool last_pt_spawn = true;
+			pol_area.push_back(Polygon2());
+			Point2 pt, param;
+
+			for(int n = 0; n < n_ips; n++)
+			{
+				ips->GetNthPoint(n)->GetLocation(gis_Geo, pt);
+
+				if(last_pt_spawn)
+					pol_area.back().push_back(pt);
+				else
+					pol_nonspawning.back().push_back(pt);
+
+				ips->GetNthPoint(n)->GetLocation(gis_Param, param);
+				if(param.x() != last_pt_spawn)
+				{
+					if(last_pt_spawn)
+					{
+						pol_nonspawning.push_back(Polygon2());
+						pol_nonspawning.back().push_back(pt);
+						last_pt_spawn = false;
+					}
+					else
+					{
+						pol_area.push_back(Polygon2());
+						pol_area.back().push_back(pt);
+						last_pt_spawn = true;
+						n_spawning++;
+					}
+				}
+			}
+			// all winding together must form a closed closed pol, first point is also last point in last contour
+			ips->GetNthPoint(0)->GetLocation(gis_Geo, pt);
+			if(last_pt_spawn)
+				pol_area.back().push_back(pt);
+			else
+				pol_nonspawning.back().push_back(pt);
+
+			// append non-spawning vectors at the very end
+			for(auto ns : pol_nonspawning)
+				pol_area.push_back(ns);
+
+			// assume all other contours are holes, so add these at the end
+			int n_holes = ags->GetNumHoles();
+			for(int n = 0; n < n_holes; n++)
+			{
+				pol_area.push_back(Polygon2());
+				if (!WED_PolygonForPointSequence(ags->GetNthHole(n), pol_area.back(), CLOCKWISE))
+					return false;
+			}
+
+			++real_thingies;
+			int para = intlim(intround(ags->GetHeight() * 0.25), 0, 255) << 8;
+			if(ags->IsAGBlock())
+				para += intlim(ags->GetSpelling(), 0, 255);
+			else
+				para += intlim(n_spawning, 0, 255);
+			cbs->BeginPolygon_f(idx, para, 2, writer);
+			DSF_AccumPolygonWithHoles(pol_area, safe_bounds, cbs, writer);
+			cbs->EndPolygon_f(writer);
+
+/*              Do we want to allow strings to cross tile boundaries ???
+
+			if(!clip_polygon(pol_area,pol_cuts,cull_bounds))
+			{
+				problem_children.insert(what);
+				pol_cuts.clear();
+
+			}
+			for(vector<vector<Polygon2> >::iterator i = pol_cuts.begin(); i != pol_cuts.end(); ++i)
+			{
+				++real_thingies;
+				cbs->BeginPolygon_f(idx,pol->GetHeading(),bez ? 4 : 2,writer);
+				DSF_AccumPolygonWithHoles(*i, safe_bounds, cbs, writer);
+				cbs->EndPolygon_f(writer);
+			}
+*/
 			return real_thingies;
 		}
 

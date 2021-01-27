@@ -861,6 +861,12 @@
     <ClCompile Include="..\..\src\libtess2\Source\tess.c">
       <Filter>libtess2</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\WEDEntities\WED_AutogenNode.cpp">
+      <Filter>WEDEntities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\WEDEntities\WED_AutogenPlacement.cpp">
+      <Filter>WEDEntities</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\WEDCore\WED_Application.h">
@@ -1690,6 +1696,12 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Utils\BitmapUtils.h">
       <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDEntities\WED_AutogenNode.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDEntities\WED_AutogenPlacement.h">
+      <Filter>WEDEntities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

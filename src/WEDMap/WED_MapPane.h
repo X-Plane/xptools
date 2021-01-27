@@ -123,6 +123,7 @@ private:
 	WED_CreatePolygonTool * mFstTool;
 	WED_CreatePolygonTool * mStrTool;
 	WED_CreatePolygonTool * mLinTool;
+	WED_CreatePolygonTool * mAgsTool;
 	WED_CreatePolygonTool * mPolTool;
 
 };

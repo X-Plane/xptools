@@ -345,6 +345,10 @@
 		<Unit filename="../../src/WEDEntities/WED_AirportNode.h" />
 		<Unit filename="../../src/WEDEntities/WED_AirportSign.cpp" />
 		<Unit filename="../../src/WEDEntities/WED_AirportSign.h" />
+		<Unit filename="../../src/WEDEntities/WED_AutogenNode.cpp" />
+		<Unit filename="../../src/WEDEntities/WED_AutogenNode.h" />
+		<Unit filename="../../src/WEDEntities/WED_AutogenPlacement.cpp" />
+		<Unit filename="../../src/WEDEntities/WED_AutogenPlacement.h" />
 		<Unit filename="../../src/WEDEntities/WED_DrapedOrthophoto.cpp" />
 		<Unit filename="../../src/WEDEntities/WED_DrapedOrthophoto.h" />
 		<Unit filename="../../src/WEDEntities/WED_Entity.cpp" />
