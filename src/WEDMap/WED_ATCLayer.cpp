@@ -418,7 +418,7 @@ bool	WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GU
 				vector<Point2> pts;
 				vector<Point2> strip;
 
-				double offs_pix = 0.5 * mtr * z->GetPPM();
+				float offs_pix = 0.5 * mtr * z->GetPPM();
 
 				b.p1 = z->LLToPixel(b.p1);
 				b.p2 = z->LLToPixel(b.p2);
@@ -433,18 +433,30 @@ bool	WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GU
 
 				strip.reserve(2*pts.size());
 
+				Vector2	dir;
 				for (int i = 0; i <= point_count; ++i)
 				{
 					Vector2	dir1,dir2;
 					if (i > 0  )           dir1 = Vector2(pts[i-1],pts[i  ]);
 					if (i < point_count-1) dir2 = Vector2(pts[i  ],pts[i+1]);
-					Vector2	dir = dir1+dir2;
+					dir = dir1+dir2;
 					dir = dir.perpendicular_ccw();
 					dir.normalize();
 					dir *= offs_pix;
 					strip.push_back(pts[i] - dir);
 					strip.push_back(pts[i] + dir);
 				}
+				if(seg->IsOneway())
+				{
+					dir = dir.perpendicular_ccw();
+					while(Vector2(strip.back(), b.p2).squared_length() < sqr(offs_pix) * 1.6 && strip.size() > 6)
+					{
+						strip.pop_back();
+						strip.pop_back();
+					}
+					strip.push_back(b.p2);
+				}
+
 				glBegin(GL_TRIANGLE_STRIP);
 				glVertex2v(strip.data(), strip.size());
 				glEnd();
@@ -467,13 +479,25 @@ bool	WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GU
 			}
 			else
 			{
-				Point2 ends[2]; ends[0] = b.p1; ends[1] = b.p2;
-				Point2 c[4];
-				Quad_2to4(ends, mtr, c);
-				z->LLToPixelv(c,c,4);
+				Point2 ends[2]; ends[0] = b.p2; ends[1] = b.p1;
+				Point2 c[5];
+				int np = 4;
+				if(seg->IsOneway())
+				{
+					np = 5;
+					c[0] = ends[0];
+					Vector2 dir(ends[0], ends[1]);
+					dir.normalize();
+					dir *= 0.5e-4;
+					ends[0] += dir;
+					Quad_2to4(ends, mtr, c+1);
+				}
+				else
+					Quad_2to4(ends, mtr, c);
+				z->LLToPixelv(c,c,np);
 
 				glBegin(GL_TRIANGLE_FAN);
-				glVertex2v(c,4);
+					glVertex2v(c,np);
 				glEnd();
 
 				int layers = min(max(seg->GetStartLayer(), seg->GetEndLayer()), 3);

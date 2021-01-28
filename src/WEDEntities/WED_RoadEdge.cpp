@@ -70,7 +70,17 @@ WED_RoadEdge::~WED_RoadEdge()
 
 bool			WED_RoadEdge::IsOneway(void) const
 {
-	return true;
+	if(auto r = get_valid_road_info())
+	{
+		auto vr = r->vroad_types.find(subtype.value);
+		if (vr != r->vroad_types.end())
+		{
+			auto rd = r->road_types.find(vr->second.rd_type);
+			if ( rd != r->road_types.end())
+				return rd->second.oneway;
+		}
+	}
+	return false;
 }
 
 double 		WED_RoadEdge::GetWidth(void) const
@@ -82,7 +92,7 @@ double 		WED_RoadEdge::GetWidth(void) const
 		{
 			auto rd = r->road_types.find(vr->second.rd_type);
 			if ( rd != r->road_types.end())
-				return rd->second.width;
+				return rd->second.traffic_width;
 		}
 	}
 	return 0.0;

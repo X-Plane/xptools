@@ -1723,6 +1723,10 @@ bool	WED_ResourceMgr::GetRoad(const string& path, const road_info_t *& out_info)
 	double last_scale = 0.0;
 	double last_center = 0.0;
 
+	double leftmost_lane = 999;
+	double rightmost_lane = -999;
+	int	lane_direction = -1;
+
 	while(!MFS_done(&s))
 	{
 		if(MFS_string_match(&s,"#VROAD", false))
@@ -1770,9 +1774,14 @@ bool	WED_ResourceMgr::GetRoad(const string& path, const road_info_t *& out_info)
 			road.width   = MFS_double(&s);          // nominal width of pavement in mtr
 			road.length  = MFS_double(&s);			// length for repeating texture in mtr
 			road.tex_idx = MFS_int(&s);       	 	// texture index
+			road.traffic_width = 0.0;
+			road.oneway = true;
 			// ignore the rgb definitions for map display colors, for now
 			rd->road_types[last_road] = road;
 			max_lod = 0.0;
+			leftmost_lane = 999;
+			rightmost_lane = -999;
+			lane_direction = -1;
 
 //			printf("road %d w=%.1f\n",last_road, road.width);
 		}
@@ -1841,7 +1850,7 @@ bool	WED_ResourceMgr::GetRoad(const string& path, const road_info_t *& out_info)
 		else if(MFS_string_match(&s, "OBJECT", false))
 		{
 			string obj_path;   MFS_string(&s, &obj_path);
-			double lat_offs  = MFS_double(&s);
+			double lat_offs  = (MFS_double(&s) - 0.5) * rd->road_types[last_road].width;
 			double rotation  = MFS_double(&s);
 			                   MFS_int(&s);        // on ground/elevated
 			double frequency = MFS_double(&s);
@@ -1866,6 +1875,13 @@ bool	WED_ResourceMgr::GetRoad(const string& path, const road_info_t *& out_info)
 			w.lat_offs =  (MFS_double(&s) -0.5) * rd->road_types[last_road].width;  // convert to absolute offset
 			w.end_height = MFS_double(&s);
 			w.droop =      MFS_double(&s);	   // 0 no droop, 1 touches ground in middle
+
+			if(leftmost_lane > w.lat_offs)  leftmost_lane = w.lat_offs;
+			if(rightmost_lane < w.lat_offs) rightmost_lane = w.lat_offs;
+			double traffic_width = rightmost_lane - leftmost_lane + 4.0;
+			if(traffic_width > rd->road_types[last_road].traffic_width)
+				rd->road_types[last_road].traffic_width = traffic_width;
+			rd->road_types[last_road].oneway = false;
 		}
 		else if(MFS_string_match(&s, "OBJECT_DRAPED", false))
 		{
@@ -1944,6 +1960,29 @@ bool	WED_ResourceMgr::GetRoad(const string& path, const road_info_t *& out_info)
 		else if(MFS_string_match(&s, "OBJECT_ALT", false))
 		{
 			string obj_path;   MFS_string(&s, &obj_path);
+		}
+		else if(MFS_string_match(&s, "CAR_DRAPED", false) || MFS_string_match(&s, "CAR_GRADED", false))
+		{
+			int    dir = MFS_int(&s);         // traffic direction
+			double lat = MFS_double(&s);	  // traffic lateral offset
+
+			// the width parameter for roads is pretty misleading - its the maximum width with all possible sidewalks etc.
+			// we want the traffic lanes only
+
+			if(leftmost_lane > lat)  leftmost_lane = lat;
+			if(rightmost_lane < lat) rightmost_lane = lat;
+
+			double traffic_width = rightmost_lane - leftmost_lane + 4.0;
+
+			if(lane_direction < 0) lane_direction = dir;
+			else if(lane_direction != dir) rd->road_types[last_road].oneway = false;
+
+			if(traffic_width > rd->road_types[last_road].traffic_width)
+				rd->road_types[last_road].traffic_width = traffic_width;
+		}
+		else if(MFS_string_match(&s, "TRAIN", true))
+		{
+			rd->road_types[last_road].traffic_width = 4.0;
 		}
 		MFS_string_eol(&s, NULL);
 	}

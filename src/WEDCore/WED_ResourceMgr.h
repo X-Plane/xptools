@@ -151,6 +151,8 @@ struct	road_info_t {
 		};
 		int		tex_idx;			// index into textures[]
 		float	width, length;      // texture scaling
+		float	traffic_width;      // inferred from CAR lanes
+		bool	oneway;
 		vector<seg_t>  segs;
 //		float 	s_left, s_right;	// st coordinates on texture (t is always 0 to 1)
 		vector<obj_t>  vert_objs;
