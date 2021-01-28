@@ -44,6 +44,7 @@
 #include "WED_OverlayImage.h"
 #include "WED_FacadeNode.h"
 #include "WED_RampPosition.h"
+#include "WED_RoadEdge.h"
 #include "WED_Taxiway.h"
 #include "WED_TaxiRoute.h"
 #include "WED_TruckDestination.h"
@@ -620,6 +621,7 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 		matches |= EXTENSION_DOES_MATCH(WED_StringPlacement,  "str");
 		matches |= EXTENSION_DOES_MATCH(WED_AutogenPlacement, "ags");
 		matches |= EXTENSION_DOES_MATCH(WED_AutogenPlacement, "agb");
+		matches |= EXTENSION_DOES_MATCH(WED_RoadEdge,         "net");
 
 		if(matches == false)
 		{
@@ -2127,6 +2129,83 @@ static void ValidateAptName(const string name, const string icao, validation_err
 		msgs.push_back(validation_error_t(string("The Airport ID for airport '") + name + "' must contain ASCII alpha-numeric characters only.", err_airport_icao, apt, apt));
 }
 
+static void ValidateRoads(const vector<WED_RoadEdge *>& roads, WED_Airport* apt, validation_error_vector& msgs)
+{
+	// Hard problems
+	// crossing tile boundary
+	// referencing unknown (v)road-type (e.g. after changing the resource property)
+
+	// Soft problems (only partially implemented, yet)
+	// zero length segments (length under 3m)
+	// disconnected vertices
+	// T-junctions
+	// colocated segments (sharing both ends with another segment)
+	// connected dissimilar elements (road-railroad-powerline)
+
+	// Style issues - Gateway no-no's
+	// resource not right
+
+	for(auto r : roads)
+	{
+//		if(r->GetStartLayer() < 0 || r->GetStartLayer() > 5 ||
+//			 r->GetEndLayer() < 0 || r->GetEndLayer() > 5)
+//			msgs.push_back(validation_error_t(string("All road layers must be in the range of 0 to 5"), err_net_resource, r, apt));
+
+		Bezier2 s;
+		int ns = r->GetNumSides();     // we have plans to allow multi-segment roads ...
+		int i;
+		for(i = 0; i < ns; i++)
+		{
+			r->GetSide(gis_Geo, i, s);
+			double x1 = floor(s.p1.x());
+			double x2 = floor(s.p2.x());
+			if(x1 != x2)
+			{
+				if(x1 > x2)
+				{
+					if(x1 == s.p1.x() && x1 - 1.0 == x2) continue;
+				}
+				else
+				{
+					if(x2 == s.p2.x() && x2 - 1.0 == x1) continue;
+				}
+				break;
+			}
+
+			double y1 = floor(s.p1.y());
+			double y2 = floor(s.p2.y());
+			if(y1 != y2)
+			{
+				if(y1 > y2)
+				{
+					if(y1 == s.p1.y() && y1 - 1.0 == y2) continue;
+				}
+				else
+				{
+					if(y2 == s.p2.y() && y2 - 1.0 == y1) continue;
+				}
+				break;
+			}
+			if(!r->IsValidSubtype())
+				msgs.push_back(validation_error_t(string("Road Edge references undefined road type"), err_net_undefined_type, r, apt));
+
+			if(LonLatDistMeters(s.p1, s.p2) < 3.0)
+				msgs.push_back(validation_error_t(string("Road edge is too short"), err_net_zero_length, r, apt));
+
+		}
+		if(i != ns)
+			msgs.push_back(validation_error_t(string("Road edge must not cross tile boundaries"), err_net_crosses_tile_bdy, r, apt));
+
+		if(gExportTarget >= wet_gateway)
+		{
+			string res;
+			r->GetResource(res);
+			if(res != "lib/g10/roads" && res != "lib/g10/roads_EU.net")
+				msgs.push_back(validation_error_t(string("Only roads from lib/g10/roads.net or lib/g10/roads_EU.net are allowed on the gateway") , err_net_resource, r, apt));
+		}
+	}
+}
+
 //------------------------------------------------------------------------------------------------------------------------------------
 #pragma mark -
 //------------------------------------------------------------------------------------------------------------------------------------
@@ -2147,6 +2226,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	vector<WED_ATCFrequency*>		freqs;
 
 	vector<WED_DrapedOrthophoto *>	orthos;
+	vector<WED_RoadEdge *>			roads;
 
 	// those Thing <-> Entity dynamic_cast's take forever. 50% of CPU time in validation is for casting.
 	// CollectRecursive(apt, back_inserter(runways),  WED_Runway::sClass);
@@ -2174,6 +2254,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		else COLLECT(WED_TruckParkingLocation, truck_parking_locs)
 		else COLLECT(WED_TaxiRoute,            taxiroutes)
 		else COLLECT(WED_DrapedOrthophoto,     orthos)
+		else COLLECT(WED_RoadEdge,             roads)
 #undef COLLECT
 		else if (c == WED_ATCFlow::sClass) {
 				auto p = static_cast<WED_ATCFlow *>(thing);
@@ -2269,6 +2350,8 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	int ai_useable_ramps = 0;
 	for(auto r : ramps)
 		ai_useable_ramps += ValidateOneRampPosition(r, msgs, apt, runways);
+
+	ValidateRoads(roads, apt, msgs);
 
 	if(gExportTarget >= wet_xplane_1050)
 	{
@@ -2466,7 +2549,7 @@ validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane,
 	// So...IF wrl (which MIGHT be the world or MIGHt be a selection or might be an airport) turns out to
 	// be an airport, we hvae to tell it "this is our credited airport."  Dynamic cast gives us the airport
 	// or null for 'free' stuff.
-	ValidatePointSequencesRecursive(wrl, msgs,dynamic_cast<WED_Airport *>(wrl));
+	ValidatePointSequencesRecursive(wrl, msgs, dynamic_cast<WED_Airport *>(wrl));
 	ValidateDSFRecursive(wrl, lib_mgr, msgs, dynamic_cast<WED_Airport *>(wrl));
 
 #if 0// DEV

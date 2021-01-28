@@ -189,6 +189,18 @@ void		WED_RoadEdge::GetNthPropertyDictItem(int n, int e, string& item) const
 	WED_GISEdge::GetNthPropertyDictItem(n, e, item);
 }
 
+bool	WED_RoadEdge::IsValidSubtype(void) const
+{
+	if(auto inf = get_valid_road_info())
+	{
+		auto vi = inf->vroad_types.find(subtype.value);
+		if(vi != inf->vroad_types.end())
+			if(inf->road_types.find(vi->second.rd_type) != inf->road_types.end())
+				return true;
+	}
+	return false;
+}
+
 const road_info_t * WED_RoadEdge::get_valid_road_info() const
 {
 #if WED
