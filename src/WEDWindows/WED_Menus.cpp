@@ -51,7 +51,7 @@ static const GUI_MenuItem_t	kFileMenu[] = {
 {	"&Import apt.dat...",	'I',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_ImportApt		},
 {	"Import DS&F...",		0,		0,								0,	wed_ImportDSF		},
 #if ROAD_EDITING
-{	"Import Roads",		   0,		0,								0,	wed_ImportRoads		},
+{	"Import Roads + AutoGen ...",0,	0,								0,	wed_ImportRoads		},
 #endif
 {	"Import Ortho&photo...", 0,		0,								0,	wed_ImportOrtho		},
 #if HAS_GATEWAY

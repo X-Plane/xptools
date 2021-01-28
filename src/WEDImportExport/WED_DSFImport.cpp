@@ -630,7 +630,7 @@ public:
 #endif
 
 #if !NO_STR
-		else if( me->dsf_cat_filter & dsf_filter_strings && (end_match(r.c_str(),".str") || end_match(r,".ags")) )
+		else if(me->dsf_cat_filter & dsf_filter_strings && end_match(r,".str"))
 		{
 			me->want_bezier=inCoordDepth == 4;
 			WED_StringPlacement * str = WED_StringPlacement::CreateTyped(me->archive);
@@ -644,7 +644,7 @@ public:
 #endif
 
 #if !NO_AG
-		else if(end_match(r, ".ags") || end_match(r, ".agb"))
+		else if(me->dsf_cat_filter & dsf_filter_autogen && (end_match(r, ".ags") || end_match(r, ".agb")))
 		{
 			me->want_bezier=false;
 			WED_AutogenPlacement * ags = WED_AutogenPlacement::CreateTyped(me->archive);
@@ -1119,7 +1119,7 @@ void	WED_DoImportRoads(IResolver * resolver)
 	Bbox2 bounds;
 	excl->GetBounds(gis_Geo,bounds);
 
-	char * path = GetMultiFilePathFromUser("Import Roads from DSF file...", "Import", FILE_DIALOG_IMPORT_DSF);
+	char * path = GetMultiFilePathFromUser("Import Roads & AG from DSF file...", "Import", FILE_DIALOG_IMPORT_DSF);
 	if(path)
 	{
 		char * free_me = path;
@@ -1131,7 +1131,7 @@ void	WED_DoImportRoads(IResolver * resolver)
 			WED_Group * g = WED_Group::CreateTyped(wrl->GetArchive());
 			g->SetName(path);
 			g->SetParent(wrl,wrl->CountChildren());
-			int result = DSF_Import_Partial(path, g, dsf_filter_roads, bounds);
+			int result = DSF_Import_Partial(path, g, dsf_filter_roads | dsf_filter_autogen, bounds);
 			if(result != dsf_ErrOK)
 			{
 				string msg = string("The file '") + path + string("' could not be imported as a DSF:\n")
