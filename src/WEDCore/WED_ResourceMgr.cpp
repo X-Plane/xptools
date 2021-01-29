@@ -1800,10 +1800,10 @@ bool	WED_ResourceMgr::GetRoad(const string& path, const road_info_t *& out_info)
 			int tex_idx = MFS_int(&s);
 			MFS_double(&s);						// min lod
 			double lod = MFS_double(&s);		// max lod
-			if (max_lod <= lod)
+		//	if (max_lod <= lod)
 			{
 				r.tex_idx = tex_idx;
-				if(max_lod < lod) r.segs.clear();
+		//		if(max_lod < lod) r.segs.clear();
 				max_lod = lod;
 				r.segs.push_back(road_info_t::road_t::seg_t());
 
@@ -1824,9 +1824,9 @@ bool	WED_ResourceMgr::GetRoad(const string& path, const road_info_t *& out_info)
 			int tex_idx = MFS_int(&s);
 			MFS_double(&s);						// min lod
 			double lod = MFS_double(&s);		// max lod
-			if (max_lod <= lod)
+		//	if (max_lod <= lod)
 			{
-				if(max_lod < lod) r.segs.clear();
+		//		if(max_lod < lod) r.segs.clear();
 				max_lod = lod;
 				r.segs.push_back(road_info_t::road_t::seg_t());
 
@@ -1988,6 +1988,72 @@ bool	WED_ResourceMgr::GetRoad(const string& path, const road_info_t *& out_info)
 	}
 
 	MemFile_Close(mf);
+
+#if 0
+	const char * dir = "/home/xplane/XP11/Custom Scenery/lin_roads/";
+	bool euro = path.find("_EU") != string::npos;
+
+	if(euro) FILE_make_dir_exist((string(dir) + "roads_EU").c_str());
+	else     FILE_make_dir_exist((string(dir) + "roads").c_str());
+
+	char buf[256];
+	snprintf(buf,sizeof(buf), "%slibrary.txt", dir);
+	FILE * lib_fp = fopen(buf, "a");
+//	fprintf(lib_fp,"I\n800\nLIBRARY\n\n");
+//	fprintf(lib_fp,"PUBLIC\n");
+
+	for(auto r : rd->vroad_types)
+	{
+		auto& rr = rd->road_types.at(r.second.rd_type);
+
+		string nam(r.second.description);
+		if(nam.substr(0,4) == "rail" || nam.substr(0,5) == "power") continue;
+
+		for(int i = 0; i<nam.size(); i++)
+			if(nam[i] == '/') nam[i] = '_';
+		snprintf(buf,sizeof(buf), "%s%s/%d-%s.lin",dir, euro ? "roads_EU" : "roads", r.first, nam.c_str());
+
+		FILE * fp = fopen(buf, "w"); if(!fp) continue;
+
+		fprintf(fp,"I\n850\nLINE_PAINT\n\n");
+		string tex(rd->textures[rr.tex_idx]);
+		fprintf(fp,"TEXTURE ../%s\n", tex.c_str());
+		if(tex.find("CoresResidentialDry") != string::npos)
+		{
+			fprintf(fp,"TEXTURE_NORMAL 1.0 ../%s\n", (tex.substr(0,tex.size() - 4) + "_NML.png").c_str());
+		}
+
+		double w = 0, x_scale; 		// get scale from widest segment - narrow segments are inaccurate due to integer pixel resolution of st coords
+		for(auto s : rr.segs)
+			if ( s.s_right - s.s_left > w)
+			{
+				w = s.s_right - s.s_left;
+				x_scale = (s.left - s.right) / (s.s_left - s.s_right);
+			}
+		printf("%d %.2lf\n",r.first,x_scale);
+		fprintf(fp,"LOD 10000\nTEX_WIDTH 2048\nSCALE %.1lf %.1lf\n", x_scale, rr.length);
+		int x=0;
+		for(auto s = rr.segs.rbegin(); s != rr.segs.rend(); s++)
+		{
+			double   center = (s->left+s->right)/2.0;           // this is where it needs to be placed, lateral offset in meters
+			double s_center = (s->s_left+s->s_right)/2.0;       // this is where the center of the st coords for this segment actually are
+			fprintf(fp, "S_OFFSET %d %d %d %d\n", x, intround(s->s_left*2048), intround((s_center - center / x_scale)*2048) + (center > 3.0 ? 1 : 0), intround(s->s_right*2048));
+			x++;
+		}
+		fprintf(fp, "MIRROR\n");
+		fprintf(fp, "LAYER_GROUP roads -1\n");
+		if(nam.find("hwy") != string::npos)
+			fprintf(fp, "DECAL_LIB lib/g10/decals/road_hwy.dcl\n");
+		else
+			fprintf(fp, "DECAL_LIB lib/g10/decals/road%s_dry.dcl\n", euro ? "_EU" : "_res" );
+		fclose(fp);
+
+//		fprintf(lib_fp,"EXPORT lib/g10/%s/roads/%d-%s.lin\t\t\troads%s/%d-%s.lin\n", euro ? "EU" : "US", r.first, nam.c_str(),
+//		                                                                             euro ? "_EU" : "",  r.first, nam.c_str());
+	}
+	fclose(lib_fp);
+#endif
+
 	for(auto& t : rd->textures)
 		process_texture_path(p, t);
 	return true;
