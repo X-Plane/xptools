@@ -25,6 +25,7 @@ WED 2.4.0
    Features:
    - use native secure internet connectivity on all operating systems
    - show 3D preview for beacons, windsocks
+   - fix preview for .lin commands with offset layers in preview pane
 
 WED 2.3.1r1 12/22/20
    Features:

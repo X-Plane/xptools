@@ -46,30 +46,30 @@
 #endif
 
 /* Resouce Manager Theory of operation:
-	It provides access to all properties/details of any art asset referenced in WED.	Normally these art assets are 
+	It provides access to all properties/details of any art asset referenced in WED.	Normally these art assets are
 	identified by a virtual path (vpath). This is how all non-local assets are indexed in the RegMgr's databases.
    As the library manager also know about all art assets local to a scenery - these can also be referenced by
    the vpath - althought this is rather a real path, relative to the scenery directory here.
-   
+
    Additionally - some art assets like .agp, .fac and .str can also reference other .obj assets in their definitions.
-   These can be either vpaths or real path's relative to the art assets location. These are loadable by the 
-   GetObjRelative, only. It takes the art asset name of the referencing asset plus the resouce same of the 
-   objects referenced. Then it uses the LibraryMgr to see if that object matches any existing vpath. If not, 
+   These can be either vpaths or real path's relative to the art assets location. These are loadable by the
+   GetObjRelative, only. It takes the art asset name of the referencing asset plus the resouce same of the
+   objects referenced. Then it uses the LibraryMgr to see if that object matches any existing vpath. If not,
    it attempts to load the object by calculating the absolute path and load it under that name.
-   
+
    This causes currenly two issues:
-   
+
    E.g. some agp references a resource via a relative path (e.g. ../objects/xxx.obj) is stored in duplicate in WED.
-   As the ResMgr would not knwo there is also one or more vpath's referencing the same objects. It causes some 
+   As the ResMgr would not knwo there is also one or more vpath's referencing the same objects. It causes some
    duplication, but no further ill effects. It could be avoided by translating such relative paths at art asset read-in time,
    using the libMgr to identify any relative path that is pointing to the same absolute path as any existing vapth and
    then replace the relative path by the vpath.
-   
+
    E.g. some agp references a resource as above, but that relative path is identical to an existing local art asset.
-   E.g. objects/xxx.obj. As the LibMgr also recognizes this as as valid vpath - it will resolve it to the local object, 
+   E.g. objects/xxx.obj. As the LibMgr also recognizes this as as valid vpath - it will resolve it to the local object,
    rather than return "not found" and let it fall back to a path relative to the .agp's location.
-   
-   A possible fix for this is to reverse the search order for such item, i.e. first see if the object specified can be 
+
+   A possible fix for this is to reverse the search order for such item, i.e. first see if the object specified can be
    found at a path relative to the referencing art assets location. If not - ask the lib Mgr to resolve a path for it.
 */
 
@@ -78,7 +78,7 @@ static void process_texture_path(const string& path_of_obj, string& path_of_tex)
 	string parent(FILE_get_dir_name(path_of_obj));
 	path_of_tex = FILE_get_file_name_wo_extensions(path_of_tex);
 	WED_clean_rpath(path_of_tex);
-	
+
 	while (path_of_tex.length() > 2 && path_of_tex[0] == '.' && path_of_tex[1] == '.')
 	{
 		path_of_tex.erase(0,2);
@@ -107,7 +107,7 @@ void	WED_ResourceMgr::Purge(void)
 	for(auto& i : mObj)
 		for(auto j : i.second)
 			delete j;
-						
+
 	mPol.clear();
 	mLin.clear();
 	mObj.clear();
@@ -228,7 +228,7 @@ bool	WED_ResourceMgr::GetObj(const string& vpath, XObj8 const *& obj, int varian
 	}
 
 	DebugAssert(variant < mLibrary->GetNumVariants(vpath));
-	
+
 //printf("GetObj trying to load '%s' V=%d/%d\n", path.c_str(), variant, n_variants);
 	for (int v = first_needed; v <= variant; ++v)  // load only the variants we need but don't have yet
 	{
@@ -287,7 +287,7 @@ bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t const *& info)
 		MemFile_Close(lin);
 		return false;
 	}
-	
+
 	lin_info_t * out_info = &mLin[path];
 	info = out_info;
 
@@ -306,7 +306,7 @@ bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t const *& info)
 	out_info->end_caps.clear();
 	out_info->align = 0;
 	out_info->hasDecal = false;
-	
+
 	while(!MFS_done(&s))
 	{
 		if (MFS_string_match(&s,"TEXTURE", false))
@@ -338,7 +338,7 @@ bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t const *& info)
 			float s1 = MFS_double(&s);
 			float sm = MFS_double(&s);
 			float s2 = MFS_double(&s);
-			if (s2 > s1 && s2 > sm)
+			if (s2 > s1)
 			{
 				out_info->s1.push_back(s1/tex_width);
 				out_info->sm.push_back(sm/tex_width);
@@ -373,18 +373,18 @@ bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t const *& info)
 		{
 			out_info->hasDecal=true;
 		}
-		
-		if (MFS_string_match(&s,"#wed_text", false)) 
+
+		if (MFS_string_match(&s,"#wed_text", false))
 			MFS_string_eol(&s,&out_info->description);
-		else 
+		else
 			MFS_string_eol(&s,NULL);
 	}
 	MemFile_Close(lin);
-	
-	if (out_info->s1.size() < 1) 
+
+	if (out_info->s1.size() < 1)
 		return false;
 
-	out_info->eff_width = out_info->scale_s * ( out_info->s2[0] - out_info->s1[0] - 4 / tex_width ); // assume 2 transparent pixels on each side
+	out_info->eff_width = out_info->scale_s * ( out_info->s2[0] - out_info->s1[0] - 2 / tex_width ); // assume one transparent pixels on each side
 
 	process_texture_path(p,out_info->base_tex);
 	return true;
@@ -414,7 +414,7 @@ bool	WED_ResourceMgr::GetStr(const string& path, str_info_t const *& info)
 		MemFile_Close(str);
 		return false;
 	}
-	
+
 	str_info_t * out_info = &mStr[path];
 	info = out_info;
 
@@ -436,8 +436,8 @@ bool	WED_ResourceMgr::GetStr(const string& path, str_info_t const *& info)
 			WED_clean_vpath(obj_res);
 			out_info->objs.push_back(obj_res);
 		}
-		
-		if (MFS_string_match(&s,"#wed_text", false)) 
+
+		if (MFS_string_match(&s,"#wed_text", false))
 			MFS_string_eol(&s,&out_info->description);
 		else
 			MFS_string_eol(&s,NULL);
@@ -455,7 +455,7 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t const*& info)
 		info = &i->second;
 		return true;
 	}
-	
+
 	info = nullptr;
 	string p = mLibrary->GetResourcePath(path);
 	MFMemFile * file = MemFile_Open(p.c_str());
@@ -497,7 +497,7 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t const*& info)
 			pol->proj_s = MFS_double(&s);
 			pol->proj_t = MFS_double(&s);
 		}
-		else if (MFS_string_match(&s,"#subtex", false)) 
+		else if (MFS_string_match(&s,"#subtex", false))
 		{
 			float s1 = MFS_double(&s);
 			float t1 = MFS_double(&s);
@@ -532,11 +532,11 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t const*& info)
 		{
 			string tmp;
 			MFS_string(&s,&tmp);
-			if(tmp != "asphalt" && tmp != "concrete" && tmp != "grass" && tmp != "gravel" && tmp != "dirt" && tmp != "snow") 
+			if(tmp != "asphalt" && tmp != "concrete" && tmp != "grass" && tmp != "gravel" && tmp != "dirt" && tmp != "snow")
 				LOG_MSG("E/Pol illegal SURFACE type in %s\n", p.c_str());
 		}
-		
-		if (MFS_string_match(&s,"#wed_text", false)) 
+
+		if (MFS_string_match(&s,"#wed_text", false))
 			MFS_string_eol(&s,&pol->description);
 		else
 			MFS_string_eol(&s,NULL);
@@ -592,7 +592,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 		else
 			first_needed = i->second.size();
 	}
-	
+
 	DebugAssert(variant < mLibrary->GetNumVariants(vpath));
 
 	for(int v = first_needed; v <=  variant; ++v)
@@ -601,7 +601,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 
 		MFMemFile * file = MemFile_Open(p.c_str());
 		if(!file) return false;
-		
+
 		MFScanner	s;
 		MFS_init(&s, file);
 
@@ -630,9 +630,9 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 				not_nearest_lod = (MFS_double(&s) > 0.1);   // skip all info on the far out LOD's
 			}
 			else if(not_nearest_lod)
-			{	
+			{
 				MFS_string_eol(&s,NULL);
-				continue;	
+				continue;
 			}
 			else if (MFS_string_match(&s,"SHADER_ROOF", true))
 			{
@@ -743,7 +743,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 					if(fac->floors.size() == 1)
 					{
 						string buf;	MFS_string(&s,&buf);
-						if(!buf.empty()) 
+						if(!buf.empty())
 							fac->wallName.push_back(buf);
 						else
 							fac->wallName.push_back(string("#") + to_string(fac->floors.back().walls.size()));
@@ -752,7 +752,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 				char c[64];
 				snprintf(c, 64, "w=%.3g to %.3g%c", min_width / (gIsFeet ? 0.3048 : 1.0 ), max_width / (gIsFeet ? 0.3048 : 1.0 ), gIsFeet ? '\'' : 'm') ;
 				fac->wallUse.push_back(c);
-			} 
+			}
 			else if (MFS_string_match(&s,"RING", false))
 			{
 				fac->is_ring = MFS_int(&s) > 0;
@@ -767,21 +767,21 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 				{
 					fac->walls.back().x_scale = MFS_double(&s);
 					fac->walls.back().y_scale = MFS_double(&s);
-					
+
 					if(fac->walls.back().x_scale < 0.01 || fac->walls.back().y_scale < 0.01)
 						LOG_MSG("E/Fac scale less than 1 cm per texture, probably bad facade. %s\n", p.c_str());
 				}
 				else if (MFS_string_match(&s,"ROOF_SLOPE", false))
 				{
 					fac->walls.back().roof_slope = MFS_double(&s);
-					
-					if(fac->walls.back().roof_slope >= 90.0 || 
+
+					if(fac->walls.back().roof_slope >= 90.0 ||
 						fac->walls.back().roof_slope <= -90.0)
 					{
 						fac->tex_correct_slope = true;
 					}
 					string buf;	MFS_string(&s,&buf);
-					
+
 					if(buf == "SLANT")
 					{
 						fac->tex_correct_slope = true;
@@ -792,43 +792,43 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 					float f1 = MFS_double(&s) * scale_t;
 					float f2 = MFS_double(&s) * scale_t;
 					fac->walls.back().t_floors.push_back(pair<float, float>(f1,f2));
-					++fac->walls.back().bottom; 
-				} 
+					++fac->walls.back().bottom;
+				}
 				else if (MFS_string_match(&s,"MIDDLE",false))
 				{
 					float f1 = MFS_double(&s) * scale_t;
 					float f2 = MFS_double(&s) * scale_t;
 					fac->walls.back().t_floors.push_back(pair<float, float>(f1,f2));
-					++fac->walls.back().middle; 
-				} 
+					++fac->walls.back().middle;
+				}
 				else if (MFS_string_match(&s,"TOP",false))
 				{
 					float f1 = MFS_double(&s) * scale_t;
 					float f2 = MFS_double(&s) * scale_t;
 					fac->walls.back().t_floors.push_back(pair<float, float>(f1,f2));
-					++fac->walls.back().top; 
-				} 
+					++fac->walls.back().top;
+				}
 				else if (MFS_string_match(&s,"LEFT",false))
 				{
 					float f1 = MFS_double(&s) * scale_s;
 					float f2 = MFS_double(&s) * scale_s;
 					fac->walls.back().s_panels.push_back(pair<float, float>(f1,f2));
-					++fac->walls.back().left; 
-				} 
+					++fac->walls.back().left;
+				}
 				else if (MFS_string_match(&s,"CENTER",false))
 				{
 					float f1 = MFS_double(&s) * scale_s;
 					float f2 = MFS_double(&s) * scale_s;
 					fac->walls.back().s_panels.push_back(pair<float, float>(f1,f2));
-					++fac->walls.back().center; 
-				} 
+					++fac->walls.back().center;
+				}
 				else if (MFS_string_match(&s,"RIGHT",false))
 				{
 					float f1 = MFS_double(&s) * scale_s;
 					float f2 = MFS_double(&s) * scale_s;
 					fac->walls.back().s_panels.push_back(pair<float, float>(f1,f2));
-					++fac->walls.back().right; 
-				} 
+					++fac->walls.back().right;
+				}
 				else if (MFS_string_match(&s,"ROOF", false))
 				{
 					fac->roof_s.push_back(MFS_double(&s) * scale_s);
@@ -1009,7 +1009,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 			MFS_string_eol(&s,NULL);
 		}
 		MemFile_Close(file);
-		
+
 //printf("f=%ld, t=%ld w=%ld\n",fac->floors.size(), fac->floors.back().templates.size(),	fac->floors.back().walls.size());
 
 		if(fac->is_new)
@@ -1114,10 +1114,10 @@ bool	WED_ResourceMgr::GetFor(const string& path, XObj8 const *& obj)
 		obj = &i->second;
 		return true;
 	}
-	
+
 	obj = nullptr;
 	string p = mLibrary->GetResourcePath(path);
-	
+
 	MFMemFile * fi = MemFile_Open(p.c_str());
 	if(!fi) return false;
 
@@ -1159,7 +1159,7 @@ bool	WED_ResourceMgr::GetFor(const string& path, XObj8 const *& obj)
 		{
 			rand_x = MFS_double(&s);
 			rand_y = MFS_double(&s);
-		}		
+		}
 		else if (MFS_string_match(&s,"TREE", false))
 		{
 			tree_t t;
@@ -1176,7 +1176,7 @@ bool	WED_ResourceMgr::GetFor(const string& path, XObj8 const *& obj)
 			if (fabs(t.w) > 0.001 && t.y > 0.001 )   // there are some .for with zero size tree's in XP10 and OpensceneryX uses negative widths ...
 				tree.push_back(t);
 		}
-		
+
 		if (MFS_string_match(&s,"#wed_text", false))
 			MFS_string_eol(&s, &desc);
 		else
@@ -1189,13 +1189,13 @@ bool	WED_ResourceMgr::GetFor(const string& path, XObj8 const *& obj)
 	int varieties =  tree.size();
 	vector <tree_t> treev = tree;
 	tree.clear();
-	
+
 	if (varieties < 1) return false;
 
 #if 0		// truely random tree choice, taken into account each tree's relative percentage
 			// it works, but not so perfect for a forest with a relatively small number of tree's
 			// e.g. a 36 tree forest with one tree ocurring at 3.5% may have either 0, 1 or 2 of that kind
-					
+
 	for (int i=0; i<TPR*TPR; ++i)
 	{
 		int species = 0;
@@ -1205,14 +1205,14 @@ bool	WED_ResourceMgr::GetFor(const string& path, XObj8 const *& obj)
 				break;
 			else
 				prob-=treev[species].pct;
-		// if the pct for all tree's don't add up too 100% - species #0 will make up for it. 
+		// if the pct for all tree's don't add up too 100% - species #0 will make up for it.
 		// XP seems to do the same.
-		
+
 		tree.push_back(treev[species]);
 	}
 #else
 	int species[TPR*TPR] = {};
-	
+
 	for (int i=varieties-1; i>0; --i)
 		for (int j=0; j<round(treev[i].pct/100.0*TPR*TPR); ++j)
 		{
@@ -1220,8 +1220,8 @@ bool	WED_ResourceMgr::GetFor(const string& path, XObj8 const *& obj)
 			do
 			{
 				int where = ((float) TPR*TPR*rand())/RAND_MAX;
-				if(where >= 0 && where < TPR*TPR && !species[where]) 
-				{ 
+				if(where >= 0 && where < TPR*TPR && !species[where])
+				{
 					species[where] = i;
 					break;
 				}
@@ -1229,15 +1229,15 @@ bool	WED_ResourceMgr::GetFor(const string& path, XObj8 const *& obj)
 		}
 	for (int i=0; i<TPR*TPR; ++i)
 		tree.push_back(treev[species[i]]);
-#endif		
-	
+#endif
+
 	// fills a XObj8-structure for library preview
 	XObj8 * new_obj = &mFor[path];
 	XObjCmd8 cmd;
 
 	new_obj->texture = tex;
 	process_texture_path(p, new_obj->texture);
-	
+
 	int quads=0;
 
 	// "VT "
@@ -1256,12 +1256,12 @@ bool	WED_ResourceMgr::GetFor(const string& path, XObj8 const *& obj)
 			float z = t_w * cos(rot);
 
 			quads++;
-			
+
 			float pt[8];
 			pt[3] = 0.0;
 			pt[4] = 1.0;
 			pt[5] = 0.0;
-			
+
 			pt[0] = t_x - x*(tree[i].o/tree[i].w);
 			pt[1] = 0.0;
 			pt[2] = t_y - z*(tree[i].o/tree[i].w);
@@ -1316,7 +1316,7 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 		info = &i->second;
 		return true;
 	}
-	
+
 	string p = mLibrary->GetResourcePath(path);
 	MFMemFile * file = MemFile_Open(p.c_str());
 	if(!file) return false;
@@ -1331,7 +1331,7 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 		MemFile_Close(file);
 		return false;
 	}
-	
+
 	agp_t * agp = &mAGP[path];
 	info = agp;
 
@@ -1403,12 +1403,12 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 			double x2 = s2 * tex_s * tex_x;
 			double y1 = t1 * tex_t * tex_y;
 			double y2 = t2 * tex_t * tex_y;
-			
+
 			s1 *= tex_s;
 			s2 *= tex_s;
 			t1 *= tex_t;
 			t2 *= tex_t;
-			
+
 			anchor_x = (x1 + x2) * 0.5;
 			anchor_y = (y1 + y2) * 0.5;
 			agp->tile[ 0] = x1;
@@ -1568,8 +1568,8 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 		{
 			is_mesh_shader = true;
 		}
-		
-		if (MFS_string_match(&s,"#wed_text", false)) 
+
+		if (MFS_string_match(&s,"#wed_text", false))
 			MFS_string_eol(&s,&agp->description);
 		else
 			MFS_string_eol(&s,NULL);
@@ -1601,7 +1601,7 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 
 	agp->xyz_min[0] = agp->xyz_min[1] = agp->xyz_min[2] =  999.0;
 	agp->xyz_max[0] = agp->xyz_max[1] = agp->xyz_max[2] = -999.0;
-	
+
 	for(int n = 0; n < agp->tile.size(); n += 4)
 	{
 		agp->xyz_min[0] = min(agp->xyz_min[0], agp->tile[n]);
@@ -1693,7 +1693,7 @@ bool	WED_ResourceMgr::GetRoad(const string& path, road_info_t& out_info)
 		out_info = i->second;
 		return true;
 	}
-	
+
 	string p = mLibrary->GetResourcePath(path);
 	MFMemFile * road = MemFile_Open(p.c_str());
 	if(!road) return false;
@@ -1708,9 +1708,9 @@ bool	WED_ResourceMgr::GetRoad(const string& path, road_info_t& out_info)
 		MemFile_Close(road);
 		return false;
 	}
-	
+
 	string last_name;
-	
+
 	while(!MFS_done(&s))
 	{
 		if(MFS_string_match(&s,"#VROAD",false))
@@ -1725,7 +1725,7 @@ bool	WED_ResourceMgr::GetRoad(const string& path, road_info_t& out_info)
 		}
 		MFS_string_eol(&s, NULL);
 	}
-	
+
 	MemFile_Close(road);
 	mRoad[path] = out_info;
 	return true;
