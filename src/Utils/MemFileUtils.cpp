@@ -482,7 +482,7 @@ MFMemFile * 	MemFile_Open(const char * inPath)
 
 cleanmmap:
 	if (addr != 0 && addr != (void *) -1) munmap(addr, len);
-	if (fd) close(fd);
+	if (fd > 0) close(fd);
 	fd = 0;
 	addr = NULL;
 	fi = fopen(path, "rb");

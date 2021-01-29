@@ -149,6 +149,10 @@ private:
 	int handle(int e);
 
 	static	GUI_Window *  AnyXWND(void);		// Used by app - we need to get SOME window to build the FIRST menubar.
+
+public:
+	void  SetIcon(const char* path , bool default_icon = false);
+
 #endif
 };
 

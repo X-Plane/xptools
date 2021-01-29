@@ -1597,7 +1597,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 		string icao_code        = who->GetMetaDataValue(wed_AddMetaDataICAO);
 		string error_content;
 
-		if (air_org_code_valid(4,4, true, icao_code, error_content) == false && icao_code.empty() == false)
+		if (!icao_code.empty() && (air_org_code_valid(4,4, false, icao_code, error_content) == false || tolower(icao_code[0]) == 'x'))
 		{
 			add_formated_metadata_error(error_template, wed_AddMetaDataICAO, error_content, who, msgs, apt);
 		}

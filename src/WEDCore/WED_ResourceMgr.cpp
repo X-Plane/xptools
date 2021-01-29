@@ -338,7 +338,7 @@ bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t const *& info)
 			float s1 = MFS_double(&s);
 			float sm = MFS_double(&s);
 			float s2 = MFS_double(&s);
-			if (s2 > s1 && s2 > sm)
+			if (s2 > s1)
 			{
 				out_info->s1.push_back(s1/tex_width);
 				out_info->sm.push_back(sm/tex_width);
@@ -384,7 +384,7 @@ bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t const *& info)
 	if (out_info->s1.size() < 1)
 		return false;
 
-	out_info->eff_width = out_info->scale_s * ( out_info->s2[0] - out_info->s1[0] - 4 / tex_width ); // assume 2 transparent pixels on each side
+	out_info->eff_width = out_info->scale_s * ( out_info->s2[0] - out_info->s1[0] - 2 / tex_width ); // assume one transparent pixels on each side
 
 	process_texture_path(p,out_info->base_tex);
 	return true;
@@ -1726,6 +1726,7 @@ bool	WED_ResourceMgr::GetRoad(const string& path, const road_info_t *& out_info)
 	double leftmost_lane = 999;
 	double rightmost_lane = -999;
 	int	lane_direction = -1;
+//	string last_name;
 
 	while(!MFS_done(&s))
 	{
@@ -2056,6 +2057,7 @@ bool	WED_ResourceMgr::GetRoad(const string& path, const road_info_t *& out_info)
 
 	for(auto& t : rd->textures)
 		process_texture_path(p, t);
+
 	return true;
 }
 #endif

@@ -34,15 +34,15 @@ using std::vector;
 
 /*
 
-		BUG: cut-copy-paste reveals MAJOR repagination problems!
-		BUG: scroll-reveal is off by a line on the down side.
-		BUG: when we down-arrow or up-arrow and the line is too short, we tend to get in AFTER the return, which makes it seem like
-				we go an extra line.  This also gets us stuck in a recursive patern
-		BUG: click isnt centered on the MIDDLE of a character.  We need to deal with off-by-one-ish-ness in measure funcs!!
-		BUG: scroll wheel busted
-		BUG: word-break is bad when we cannot keep a whole word.  Not so good. we take 1 char - we should take the min # of chars??!
-		BUG: when the window is bigger than the logical bounds, we are NOT properly aligned. Can we fix this??
-		BUG: put char on very end of text.  press return - caret does not advance to next line
+	01 BUG: cut-copy-paste reveals MAJOR repagination problems!
+	02 BUG: scroll-reveal is off by a line on the down side.
+	03 BUG: when we down-arrow or up-arrow and the line is too short, we tend to get in AFTER the return, which makes it seem like
+			we go an extra line.  This also gets us stuck in a recursive patern
+	04 BUG: click isnt centered on the MIDDLE of a character.  We need to deal with off-by-one-ish-ness in measure funcs!!
+	05 BUG: scroll wheel busted
+	06 BUG: word-break is bad when we cannot keep a whole word.  Not so good. we take 1 char - we should take the min # of chars??!
+	07 BUG: when the window is bigger than the logical bounds, we are NOT properly aligned. Can we fix this??
+	08 BUG: put char on very end of text.  press return - caret does not advance to next line
 			This is because a new line is not started with ZERO chars on it.....hrm....
 
 	TODO: double-click and tripple-click words?
@@ -191,7 +191,11 @@ static int			OGLE_LineLengthInternal(
 		total_width += handle->callbacks.MeasureString_f(handle, cur_p, break_p);
 
 		if (total_width > width)
-			return (total_chars > 0 ? total_chars : 1);
+		{
+			if(total_chars > 0) return total_chars;
+			total_chars = handle->callbacks.FitStringFwd_f(handle, start_p, end_p,width);
+			return  total_chars > 0 ? total_chars : 1;
+		}
 
 		total_chars += (break_p - cur_p);
 		start_p = break_p;
@@ -213,8 +217,8 @@ static void			OGLE_RepaginateInternal(
 	float				line_height;
 
 	// MAJOR HACK ALERT!!
-	start_line = 0;
-	change_stop_char = 0;
+	//start_line = 0;
+	//change_stop_char = 0;
 
 	callbacks->GetLogicalBounds_f(handle, logical);
 	logical[4] = logical[2] - logical[0];
@@ -738,9 +742,9 @@ void			OGLE_RevealSelection(
 
 	line_height = handle->callbacks.GetLineHeight_f(handle);
 	int char_pos = handle->active_side ? handle->sel_end : handle->sel_start;
-	int line = OGLE_CharPosToLine(handle, char_pos);
 
-	sel_rect[1] = logical[3] - (line+(1-handle->active_side)) * line_height;
+	int line = OGLE_CharPosToLine(handle, char_pos);
+	sel_rect[1] = logical[3] - (line+(handle->active_side)) * line_height;
 	sel_rect[0] = logical[0] + handle->callbacks.MeasureString_f(handle, sp + OGLE_LineStart(handle, line, ep-sp), sp + char_pos);
 
 	float		where[2] = { visible[0] - logical[0], visible[1] - logical[1] };
@@ -758,7 +762,7 @@ void			OGLE_RevealSelection(
 	if (hmax < hmin) hmax = hmin;
 	float vmin = 0;
 	float vmax = logical[5] - visible[5];
-	if (hmax < hmin) hmin = hmax;
+	if (vmax < vmin) vmin = vmax;
 
 //	if (where[0] < hmin) where[0] = hmin;
 //	if (where[0] > hmax) where[0] = hmax;

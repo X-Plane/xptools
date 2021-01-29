@@ -511,23 +511,24 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 						g->BindTex(tex_id,0);
 
 						// always fit into vertical size of window
-						float dt = (b[3]-b[1]) / mZoom;
+						float win_scale =(b[3] - b[1]) / mZoom;
+						float center_x = (b[2] - b[0]) * 0.5f;
+						float center_y = (b[3] - b[1]) * 0.5f;
+						float y1 = center_y - 0.5f * win_scale;
+						float y2 = center_y + 0.5f * win_scale;
 
 						glBegin(GL_QUADS);
-						for (int n=0; n<lin->s1.size(); ++n)
+						for (int n = lin->s1.size() - 1; n >= 0; n--)
 						{
-							float ds = dt * (lin->scale_s * (lin->s2[n]-lin->s1[n]) / lin->scale_t);
-							float dx = b[2] - b[0];
-							float dy = b[3] - b[1];
-							float x1 = (dx - ds) /2;
-							float x2 = (dx + ds) /2;
-							float y1 = (dy - dt) /2;
-							float y2 = (dy + dt) /2;
+							float left  = (lin->s1[n] - lin->sm[n]) * lin->scale_s / lin->scale_t;
+							float right = (lin->s2[n] - lin->sm[n]) * lin->scale_s / lin->scale_t;
+							float x1 = center_x + left * win_scale;
+							float x2 = center_x + right * win_scale;
 
-							glTexCoord2f(lin->s1[n], 0); glVertex2f(x1,y1);
-							glTexCoord2f(lin->s1[n], 1); glVertex2f(x1,y2);
-							glTexCoord2f(lin->s2[n],1); glVertex2f(x2,y2);
-							glTexCoord2f(lin->s2[n],0); glVertex2f(x2,y1);
+							glTexCoord2f(lin->s1[n], 0); glVertex2f(x1, y1 + n * 0.1 * win_scale);
+							glTexCoord2f(lin->s1[n], 1); glVertex2f(x1, y2 + n * 0.1 * win_scale);
+							glTexCoord2f(lin->s2[n], 1); glVertex2f(x2, y2 + n * 0.1 * win_scale);
+							glTexCoord2f(lin->s2[n], 0); glVertex2f(x2, y1 + n * 0.1 * win_scale);
 						}
 						glEnd();
 					}

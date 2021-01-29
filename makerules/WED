@@ -14,7 +14,7 @@ LDFLAGS		+= -Wl,--exclude-libs,libpng
 ifdef FLTK_STATIC
 LIBS		+= $(shell fltk-config --use-gl --ldstaticflags)
 else
-LIBS		+= -lfltk -lfltk_gl -lGL 
+LIBS		+= -lfltk -lfltk_gl -lGL
 endif #FLTK_STATIC
 LIBS		+= -lGLU -ldl -lpthread
 endif #PLAT_LINUX
@@ -362,7 +362,7 @@ SOURCES += ./src/libtess2/Source/geom.c
 ###########
 
 ifdef PLAT_LINUX
-RESOURCES := ./src/WEDResources/WED.ico
+RESOURCES := ./src/WEDResources/WED_icon.png
 else
 RESOURCES := ./src/WEDResources/WED.icns
 XIB_RESOURCE := ./src/WEDResources/WEDMainMenu.xib

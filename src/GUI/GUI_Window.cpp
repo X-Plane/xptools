@@ -63,7 +63,6 @@ inline int OGL2Client_Y(int y, HWND w) { RECT c; GetClientRect(w,&c); return c.b
 #if LIN
 #define mWindow 0
 #define DEBUG_DND 0
-#define DEBUG_MENUS 0
 
 inline int GUI_Window::Client2OGL_X(int x, void* w) { return x; }
 inline int GUI_Window::Client2OGL_Y(int y, void* w) { return (this->h() - y ); }
@@ -77,29 +76,21 @@ inline int GUI_Window::OGL2Client_Y(int y, void* w) { return (this->h() - y ); }
 
 int GUI_Window::handle(int e )
 {
-	/*Copy&Paste Shortcut events */
-	if(e == FL_SHORTCUT)
+	/* handles shortcut events when the does not have a menubar */
+	if(e == FL_SHORTCUT && !mMenuBar && gApplication )
 	{
-		//This is to get shortcut functionality for Copy/Paste even windows have no menu bar.
-		//TODO:mroe hardcoded ; we should  probably revamp this to enable customisation from the app .
-		if(!mMenuBar)
+		const Fl_Menu_Item * menu = (const Fl_Menu_Item *)gApplication->GetMenu();
+		if(menu)
 		{
-			unsigned int cmd = 0;
-
-			if      (Fl::test_shortcut(FL_CTRL+'x')) cmd = gui_Cut  ;
-			else if (Fl::test_shortcut(FL_CTRL+'c')) cmd = gui_Copy ;
-			else if (Fl::test_shortcut(FL_CTRL+'v')) cmd = gui_Paste;
-
-			if(cmd)
+			GUI_Application::update_menus(menu);
+			const Fl_Menu_Item * item = menu->test_shortcut();
+			if(item)
 			{
-				int ioCheck = 0;
-				string ioName;
-				if(this->DispatchCanHandleCommand(cmd,ioName,ioCheck))
+				xmenu_cmd * data = (xmenu_cmd *) item->user_data();
+				if(data)
 				{
-					#if DEV && DEBUG_MENUS
-					printf("GUI_Window::handle FL_SHORTCUT cmd:%d\n",cmd);
-					#endif // DEV && DEBUG_MENUS
-					return this->DispatchHandleCommand(cmd);
+					unsigned int cmd = data->cmd;
+					if(cmd) return this->DispatchHandleCommand(cmd);
 				}
 			}
 		}
@@ -214,7 +205,6 @@ int GUI_Window::handle(int e )
 			}
 		}
 		return 1;
-
 	}
 
 	return XWin::handle(e);
@@ -604,26 +594,25 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBound
 		SendMessage(mToolTip, TTM_ADDTOOL, 0, (LPARAM) &ti);
 	#endif
 	#if LIN
-		this->labelsize((int)GUI_GetFontSize(0));
-		Fl_Tooltip::size((int)GUI_GetFontSize(1));
+		this->labelsize((int)GUI_GetFontSize(font_UI_Basic));
+		Fl_Tooltip::size((int)GUI_GetFontSize(font_UI_Small));
 		mTipBounds[0] = mTipBounds[1] = mTipBounds[2] = mTipBounds[3] = 0 ;
 		mTipIsActive=false;
 
 		if( !(inAttributes & xwin_style_popup) && !(inAttributes & xwin_style_modal))
 		{
 			GetMenuBar(); // create one
-			if(mMenuBar)
+			if(mMenuBar && gApplication)
 			{
 				if(sWindows.size() > 0)
 				{
-					//mMenuBar->menu(gApplication->mMenu);
-					mMenuBar->copy((*sWindows.begin())->GetMenuBar());
+					XWin::ClearMenus();
+					mMenuBar->copy((const Fl_Menu_Item *) gApplication->GetMenuBar());
 				}
 
-				if(gApplication) mMenuBar->callback(gApplication->update_menus_cb);
+				mMenuBar->callback(GUI_Application::update_menus_cb);
 			}
 		}
-
 	#endif
 	mBounds[0] = 0;
 	mBounds[1] = 0;
@@ -1326,6 +1315,24 @@ GUI_Window *  GUI_Window::AnyXWND(void)
 {
 	if (sWindows.empty()) return NULL;
 	return *sWindows.begin();
+}
+
+#include "BitmapUtils.h"
+#include "GUI_Resources.h"
+
+static void SetIcon_f(GUI_Window * window,const char* path , bool default_icon)
+{
+	ImageInfo info;
+	if(GUI_GetImageResource(path,&info) == -1) return;
+	FlipImageY(info);
+	Fl_RGB_Image icon_image(info.data, info.width, info.height,info.channels,info.pad);
+	default_icon ? window->default_icon(&icon_image) : window->icon(&icon_image);
+	DestroyBitmap(&info);
+}
+
+void  GUI_Window::SetIcon(const char* path , bool default_icon)
+{
+	SetIcon_f(this,path,default_icon);
 }
 #endif
 
