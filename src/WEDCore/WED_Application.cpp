@@ -139,8 +139,21 @@ void WED_Settings::ReceiveMessage(
 			gFontSize = max(10,min(18,atoi(new_val.c_str())));
 			GUI_SetFontSizes(gFontSize);
 			#if LIN
-			Fl_Tooltip::size((int)GUI_GetFontSize(1));
+			Fl_Tooltip::size((int)GUI_GetFontSize(font_UI_Small));
 			#endif
+			int field_height = gFontSize+gFontSize/2;
+			int b[4];
+			if(mCustom_box)
+			{
+				mCustom_box->GetBounds(b);
+				mCustom_box->SetBounds(b[0],b[3]-field_height,b[2],b[3]);
+			}
+			if(mFont_box)
+			{
+				mFont_box->GetBounds(b);
+				mFont_box->SetBounds(b[0],b[1],b[2],b[1]+field_height);
+			}
+
 	}
 	else if(inMsg == (intptr_t) &gOrthoExport)
 	{
@@ -189,36 +202,40 @@ WED_Settings::WED_Settings(GUI_Commander * cmdr) : GUI_Window("WED Preferences",
 	png_btn->SetValue(gOrthoExport);
 	png_btn->SetMsg((intptr_t) &gOrthoExport, (intptr_t) png_btn);
 
-	GUI_TextField * custom_box = new GUI_TextField(true, this);
+	int field_height = gFontSize+gFontSize/2;
+
+	mCustom_box = new GUI_TextField(true, this);
 	GUI_Label * label = new GUI_Label();
-	custom_box->SetBounds(20,140,490,160);
-	label->SetBounds     (20,162,300,180);
-	custom_box->SetWidth(1000);
-	custom_box->SetParent(this);
-	custom_box->AddListener(this);
-	custom_box->SetKeyMsg((intptr_t) &gCustomSlippyMap, (intptr_t) custom_box);
-	custom_box->SetDescriptor(gCustomSlippyMap);
-	custom_box->Show();
-	custom_box->SetKeyAllowed(GUI_KEY_RETURN, false);
-	custom_box->SetKeyAllowed(GUI_VK_ESCAPE, false);
-	custom_box->SetKeyAllowed('\\', false);
+	mCustom_box->SetMargins(3,2,3,2);
+	mCustom_box->SetBounds(20,140-field_height,490,140);
+	label->SetBounds(20,142,300,162);
+	mCustom_box->SetWidth(1000);
+	mCustom_box->SetParent(this);
+	mCustom_box->AddListener(this);
+	mCustom_box->SetKeyMsg((intptr_t) &gCustomSlippyMap, (intptr_t) mCustom_box);
+	mCustom_box->SetDescriptor(gCustomSlippyMap);
+	mCustom_box->Show();
+	mCustom_box->SetKeyAllowed(GUI_KEY_RETURN, false);
+	mCustom_box->SetKeyAllowed(GUI_VK_ESCAPE, false);
+	mCustom_box->SetKeyAllowed('\\', false);
 	label->SetColors(white);
 	label->SetParent(this);
 	label->SetDescriptor("Tile Server Custom URL");
 	label->Show();
 
-	GUI_TextField * font_box = new GUI_TextField(false, this);
+	mFont_box = new GUI_TextField(false, this);
 	GUI_Label * label2 = new GUI_Label();
-	font_box->SetBounds(340,200,400,220);
-	label2->SetBounds  (220,200,350,220);
-	font_box->SetParent(this);
-	font_box->AddListener(this);
-	font_box->SetKeyMsg((intptr_t) &gFontSize, (intptr_t) font_box);
-	font_box->SetDescriptor(to_string(gFontSize));
-	font_box->Show();
-	font_box->SetKeyAllowed(GUI_KEY_RETURN, false);
-	font_box->SetKeyAllowed(GUI_VK_ESCAPE, false);
-	font_box->SetKeyAllowed('\\', false);
+	mFont_box->SetMargins(3,2,3,2);
+	mFont_box->SetBounds(340,190,400,190+field_height);
+	label2->SetBounds  (220,190,350,210);
+	mFont_box->SetParent(this);
+	mFont_box->AddListener(this);
+	mFont_box->SetKeyMsg((intptr_t) &gFontSize, (intptr_t) mFont_box);
+	mFont_box->SetDescriptor(to_string(gFontSize));
+	mFont_box->Show();
+	mFont_box->SetKeyAllowed(GUI_KEY_RETURN, false);
+	mFont_box->SetKeyAllowed(GUI_VK_ESCAPE, false);
+	mFont_box->SetKeyAllowed('\\', false);
 	label2->SetColors(white);
 	label2->SetParent(this);
 	label2->SetDescriptor("Font Size");

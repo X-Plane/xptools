@@ -28,11 +28,13 @@
 #include "GUI_Window.h"
 #include "GUI_Listener.h"
 #include "GUI_Broadcaster.h"
+#include "GUI_TextField.h"
 //#include "GUI_Destroyable.h"
 
 class WED_Settings;
 class GUI_Button;
 class GUI_Packer;
+
 
 class	WED_Application : public GUI_Application {
 public:
@@ -70,6 +72,11 @@ public:
 					GUI_Broadcaster *	inSrc,
 					intptr_t    		inMsg,
 					intptr_t			inParam);
+
+private:
+
+	GUI_TextField * mCustom_box;
+	GUI_TextField * mFont_box;
 };
 
 #endif
