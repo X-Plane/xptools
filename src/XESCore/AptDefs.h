@@ -204,13 +204,14 @@ enum {
 	apt_mark_precision,
 	apt_mark_non_precision_UK,	// 850 only
 	apt_mark_precision_UK,
+	apt_mark_precision_EASA,    // 1200 only
 	apt_mark_visualY = 11,
 	apt_mark_non_precisionY,
 	apt_mark_precisionY,
 	// Helipad Markings
 	apt_mark_heli_default = 0,	// 850 only
 
-	// Rwu Marking sizes (1200)
+	// Rwy Marking sizes (new in 1200)
 	apt_mark_auto = 0,
 	apt_mark_small,
 	apt_mark_medium,
