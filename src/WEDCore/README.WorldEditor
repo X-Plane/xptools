@@ -26,6 +26,7 @@ WED 2.4.0
    - use native secure internet connectivity on all operating systems
    - show 3D preview for beacons, windsocks
    - fix preview for .lin commands with offset layers in preview pane
+   - WED-1359: change OOW mouse click for LineEditor from accept to cancel edit
 
 WED 2.3.1r1 12/22/20
    Features:
