@@ -39,6 +39,15 @@ public:
 	virtual void		GetResource(	  string& r) const;
 	virtual void		SetResource(const string& r);
 
+int			CountProperties(void) const override;
+int			FindProperty(const char * in_prop) const override;
+void		GetNthPropertyInfo(int n, PropertyInfo_t& info) const override;
+void		GetNthPropertyDict(int n, PropertyDict_t& dict) const override;
+void		GetNthPropertyDictItem(int n, int e, string& item) const override;
+void		GetNthProperty(int n, PropertyVal_t& val) const override;
+void		SetNthProperty(int n, const PropertyVal_t& val) override;
+
+
 	virtual const char *	HumanReadableType(void) const { return "Draped Polygon"; }
 
 protected:

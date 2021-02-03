@@ -27,6 +27,7 @@ WED 2.4.0
    - show 3D preview for beacons, windsocks
    - fix preview for .lin commands with offset layers in preview pane
    - WED-1359: change OOW mouse click for LineEditor from accept to cancel edit
+   - support choosing taxiway equivalent styles for draped polygons
 
 WED 2.3.1r1 12/22/20
    Features:

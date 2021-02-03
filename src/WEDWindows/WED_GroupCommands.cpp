@@ -4839,7 +4839,7 @@ static void set_surface(WED_Thing * t, int surface, WED_LibraryMgr * lmgr)
 	if (polygon)
 	{
 		if (surface == surf_Asphalt)
-			polygon->SetResource("lib/airport/pavement/asphalt_1D.pol");
+			polygon->SetResource("lib/airport/pavement/asphalt_3D.pol");
 		else
 			polygon->SetResource("lib/airport/pavement/concrete_1D.pol");
 		return;
