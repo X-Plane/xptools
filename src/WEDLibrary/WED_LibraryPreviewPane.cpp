@@ -646,7 +646,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 
 				const float length = 50.0;
 				begin3d(b, length);
-				if(auto tref = mTexMgr->LookupTexture(rd->textures[t.tex_idx].c_str(),true, tex_Wrap+tex_Linear))
+				if(auto tref = mTexMgr->LookupTexture(rd->textures[t.tex_idx].c_str(),true, tex_Wrap+tex_Mipmap+tex_Linear))
 				{
 					if(auto tex_id = mTexMgr->GetTexID(tref))
 					{
