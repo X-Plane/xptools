@@ -39,7 +39,7 @@ enum {
 	res_Polygon
 #if ROAD_EDITING
 	,res_Road
-#endif	
+#endif
 };
 
 // "Virtual" package numbers...package mgr IDs packages as 0-based index.  These meta-constants are used for filtering in special ways.
@@ -71,7 +71,7 @@ public:
 				 WED_LibraryMgr(const string& local_package);
 				~WED_LibraryMgr();
 
-				
+
 	//Returns "My Package" of .../Custom Scenery/My Package
 	//Combine with WED_PackageMgr::ComputePath to save a file in the package dir
 	string		GetLocalPackage() const;
@@ -80,13 +80,13 @@ public:
 	void		GetResourceChildren(const string& r, int filter_package, vector<string>& children);	// Pass empty resource to get roots
 	int			GetResourceType(const string& r);
 	string		GetResourcePath(const string& r, int variant = 0);
-	
+
 				// This returns true if the resource whose virtual path is "r" comes from the default library that x-plane ships with.
 	bool		IsResourceDefault(const string& r);
 	bool		IsResourceLocal(const string& r);
 	bool		IsResourceLibrary(const string& r);
 	bool		IsResourceDeprecatedOrPrivate(const string& r);
-		
+
 	string		CreateLocalResourcePath(const string& r);
 
 	virtual	void	ReceiveMessage(
@@ -98,8 +98,11 @@ public:
 	bool		DoesPackHaveLibraryItems(int package_number);
 				// indicates if art asset exported by multiple exports, i.e. has randomized appearance
 	int			GetNumVariants(const string& r);
-				// get vpath for a apt.dat taxiline line type #.
+				// gets all known apt.dat taxiline line type #.
 	bool		GetLineVpath(int lt, string& vpath);
+				// gets all vpaths witin same vdir
+	bool		GetSameDir(const string& r, vector<pair<string, int> >& vpaths);
+
 
 private:
 

@@ -122,6 +122,11 @@ int		WED_ResourceMgr::GetNumVariants(const string& path)
 	return mLibrary->GetNumVariants(path);
 }
 
+bool	WED_ResourceMgr::GetSimilar(const string& r, vector<pair<string, int> >& vpaths)
+{
+	return mLibrary->GetSameDir(r, vpaths);
+}
+
 XObj8 * WED_ResourceMgr::LoadObj(const string& abspath)
 {
 	XObj8 * new_obj = new XObj8;
