@@ -199,10 +199,11 @@ int	WED_LibraryPreviewPane::ScrollWheel(int x, int y, int dist, int axis)
 
 void	WED_LibraryPreviewPane::MouseUp(int x, int y, int button)
 {
-	int b[4]; GetBounds(b);
 
 	if(mX == x && mY == y && mType == res_Directory && mRess.size() && button == 0)
 	{
+		int b[4]; GetBounds(b);
+
 		int w = b[2] - b[0];
 		int h = b[3] - b[1];
 
@@ -212,10 +213,10 @@ void	WED_LibraryPreviewPane::MouseUp(int x, int y, int button)
 		int pos_x = (x - b[0]) / float (w) * num_x;
 		int pos_y = (y - b[1]) / float (h) * num_y;
 
-		for(auto& mr : mRess)
-			LOG_MSG("%s, %d\n", mr.first.c_str(), mr.second);
-		LOG_MSG("pos_x=%d pos_y=%d %d\n", pos_x, pos_y, pos_x + num_x * (num_y - pos_y - 1));
-		LOG_FLUSH();
+//		for(auto& mr : mRess)
+//			LOG_MSG("%s, %d\n", mr.first.c_str(), mr.second);
+//		LOG_MSG("pos_x=%d pos_y=%d %d\n", pos_x, pos_y, pos_x + num_x * (num_y - pos_y - 1));
+//		LOG_FLUSH();
 
 		//SetResource(mRess[pos_x + num_x * (num_y - pos_y - 1)].first, mRess[pos_x + num_x * (num_y - pos_y - 1)].second);
 		BroadcastMessage(WED_PRIVATE_MSG_BASE, (intptr_t) mRess[pos_x + num_x * (num_y - pos_y - 1)].first.c_str());
@@ -225,8 +226,6 @@ void	WED_LibraryPreviewPane::MouseUp(int x, int y, int button)
 
 int	WED_LibraryPreviewPane::MouseDown(int x, int y, int button)
 {
-	int b[4]; GetBounds(b);
-
 	mX = x;
 	mY = y;
 	mPsiOrig=mPsi;
@@ -239,22 +238,23 @@ int	WED_LibraryPreviewPane::MouseDown(int x, int y, int button)
 		const pol_info_t * pol;
 		mResMgr->GetPol(mRes,pol);
 
-		float prev_space = min(b[2]-b[0],b[3]-b[1]);
-
-		TexRef	tref = mTexMgr->LookupTexture(pol->base_tex.c_str(),true, pol->wrap ? (tex_Compress_Ok|tex_Wrap) : tex_Compress_Ok);
-		int tex_x, tex_y;
-		mTexMgr->GetTexInfo(tref, &tex_x, &tex_y, NULL, NULL, NULL, NULL);
-		float tex_aspect = float(pol->proj_s * tex_x) / float(pol->proj_t * tex_y);
-		float ds = prev_space / mZoom * tex_aspect > 1.0 ? 1.0 : tex_aspect;
-		float dt = prev_space / mZoom * tex_aspect > 1.0 ? 1.0/tex_aspect : 1.0;
-
-		float x1 = 0.5 *(b[2] + b[0] - ds);         // texture left bottom corner
-		float y1 = 0.5* (b[3] + b[1] - dt);
-
-		Point2 st = Point2((x-x1)/ds, (y-y1)/dt);   // texture coodinates where we clicked at
-
 		if (pol->mSubBoxes.size())
 		{
+			int b[4]; GetBounds(b);
+			float prev_space = min(b[2]-b[0],b[3]-b[1]);
+
+			TexRef	tref = mTexMgr->LookupTexture(pol->base_tex.c_str(),true, pol->wrap ? (tex_Compress_Ok|tex_Wrap) : tex_Compress_Ok);
+			int tex_x, tex_y;
+			mTexMgr->GetTexInfo(tref, &tex_x, &tex_y, NULL, NULL, NULL, NULL);
+			float tex_aspect = float(pol->proj_s * tex_x) / float(pol->proj_t * tex_y);
+			float ds = prev_space / mZoom * tex_aspect > 1.0 ? 1.0 : tex_aspect;
+			float dt = prev_space / mZoom * tex_aspect > 1.0 ? 1.0/tex_aspect : 1.0;
+
+			float x1 = 0.5 *(b[2] + b[0] - ds);         // texture left bottom corner
+			float y1 = 0.5* (b[3] + b[1] - dt);
+
+			Point2 st = Point2((x-x1)/ds, (y-y1)/dt);   // texture coodinates where we clicked at
+
 			// go through list of subtexture boxes and find if we clicked inside one
 			static int lastBox = -1;                // the box we clicked on the last time. Helps to cycle trough overlapping boxes
 			int        firstBox = 999;              // the first box that fits this click location
@@ -323,8 +323,7 @@ void	WED_LibraryPreviewPane::MouseDrag(int x, int y, int button)
 
 int		WED_LibraryPreviewPane::MouseMove(int x, int y)
 {
-	int b[4];
-	GetBounds(b);
+	int b[4]; GetBounds(b);
 	if(b[2] - b[0] > 0 && b[2] - b[0] < 100)
 	{
 		DispatchHandleCommand(wed_autoOpenLibPane);
@@ -538,13 +537,15 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, const int 
 						glBegin(GL_QUADS);
 						if(pol->wrap)
 						{
-							glTexCoord2f(extrap(x1,0,x2,1,b[0]),	extrap(y1,0,y2,1,b[1]));			glVertex2f(b[0],b[1]);
-							glTexCoord2f(extrap(x1,0,x2,1,b[0]),	extrap(y1,0,y2,1,b[3]));			glVertex2f(b[0],b[3]);
-							glTexCoord2f(extrap(x1,0,x2,1,b[2]),	extrap(y1,0,y2,1,b[3]));			glVertex2f(b[2],b[3]);
-							glTexCoord2f(extrap(x1,0,x2,1,b[2]),	extrap(y1,0,y2,1,b[1]));			glVertex2f(b[2],b[1]);
+							glTexCoord2f(extrap(x1,0,x2,1,b[0]), extrap(y1,0,y2,1,b[1]));	glVertex2f(b[0],b[1]);
+							glTexCoord2f(extrap(x1,0,x2,1,b[0]), extrap(y1,0,y2,1,b[3]));	glVertex2f(b[0],b[3]);
+							glTexCoord2f(extrap(x1,0,x2,1,b[2]), extrap(y1,0,y2,1,b[3]));	glVertex2f(b[2],b[3]);
+							glTexCoord2f(extrap(x1,0,x2,1,b[2]), extrap(y1,0,y2,1,b[1]));	glVertex2f(b[2],b[1]);
 						}
 						else
 						{
+							x1 += b[0]; x2 += b[0];
+							y1 += b[1]; y2 += b[1];
 							glTexCoord2f(0,0); glVertex2f(x1,y1);
 							glTexCoord2f(0,1); glVertex2f(x1,y2);
 							glTexCoord2f(1,1); glVertex2f(x2,y2);
@@ -570,35 +571,34 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, const int 
 		case res_Line:
 			if(mResMgr->GetLin(res,lin))
 			{
-				TexRef	tref = mTexMgr->LookupTexture(lin->base_tex.c_str(),true, tex_Compress_Ok);
+				TexRef	tref = mTexMgr->LookupTexture(lin->base_tex.c_str(),true, tex_Wrap|tex_Compress_Ok);
 				if(tref != NULL)
 				{
 					int tex_id = mTexMgr->GetTexID(tref);
-
 					if (tex_id != 0)
 					{
 						g->SetState(false,1,false,true,true,false,false);
 						g->BindTex(tex_id,0);
 
 						// always fit into vertical size of window
-						float win_scale =(b[3] - b[1]) / mZoom;
-						float center_x = (b[2] - b[0]) * 0.5f;
-						float center_y = (b[3] - b[1]) * 0.5f;
-						float y1 = center_y - 0.5f * win_scale;
-						float y2 = center_y + 0.5f * win_scale;
+						float win_scale = (b[3] - b[1]) / mZoom;
+						float center_x = (b[2] + b[0]) * 0.5f;
+						float y1 = b[1] + (label != nullptr ? 15 : 0);
 
 						glBegin(GL_QUADS);
-						for (int n = lin->s1.size() - 1; n >= 0; n--)
+						for (int n = 0; n < lin->s1.size(); n++)
+//						for (int n = lin->s1.size() - 1; n >= 0; n--)
 						{
 							float left  = (lin->s1[n] - lin->sm[n]) * lin->scale_s / lin->scale_t;
 							float right = (lin->s2[n] - lin->sm[n]) * lin->scale_s / lin->scale_t;
+
 							float x1 = center_x + left * win_scale;
 							float x2 = center_x + right * win_scale;
 
-							glTexCoord2f(lin->s1[n], 0); glVertex2f(x1, y1 + n * 0.1 * win_scale);
-							glTexCoord2f(lin->s1[n], 1); glVertex2f(x1, y2 + n * 0.1 * win_scale);
-							glTexCoord2f(lin->s2[n], 1); glVertex2f(x2, y2 + n * 0.1 * win_scale);
-							glTexCoord2f(lin->s2[n], 0); glVertex2f(x2, y1 + n * 0.1 * win_scale);
+							glTexCoord2f(lin->s1[n], 0);     glVertex2f(x1, y1);
+							glTexCoord2f(lin->s1[n], mZoom); glVertex2f(x1, b[3]);
+							glTexCoord2f(lin->s2[n], mZoom); glVertex2f(x2, b[3]);
+							glTexCoord2f(lin->s2[n], 0);     glVertex2f(x2, y1);
 						}
 						glEnd();
 					}
@@ -728,13 +728,13 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, const int 
 					break;
 				case res_Polygon:
 					if(pol)
-						snprintf(buf1, sizeof(buf1), "%s %s", pol->description.c_str(), pol->hasDecal ? "(decal not shown)" : "");
+						snprintf(buf1, sizeof(buf1), "%s", pol->description.c_str());
 					if (pol && pol->mSubBoxes.size())
 						sprintf(buf2, "Select desired part of texture by clicking on it");
 					break;
 				case res_Line:
 					if(lin)
-						snprintf(buf1, sizeof(buf1), "%s %s", lin->description.c_str(), lin->hasDecal ? "(decal not shown)" : "");
+						snprintf(buf1, sizeof(buf1), "%s", lin->description.c_str());
 					if (lin && lin->s1.size() && lin->s2.size())
 						snprintf(buf2, sizeof(buf2), "w~%.0f%s",lin->eff_width * (gIsFeet ? 100.0/2.54 : 100.0), gIsFeet ? "in" : "cm" );
 					break;
