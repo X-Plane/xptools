@@ -100,7 +100,7 @@ void		WED_PolygonPlacement::GetNthPropertyDict(int n, PropertyDict_t& dict) cons
 		for(map<int, string>::iterator i = dm.begin(); i != dm.end(); ++i)
 		{
 			// if(gExportTarget < wet_xp1200)  disable all new XP12 only styles
-			dict.insert(PropertyDict_t::value_type(i->first, make_pair(i->second,true)));
+			dict.insert(PropertyDict_t::value_type(i->first, make_pair(i->second,i->first < surf_Grass)));
 			if(i->first > max_key) max_key = i->first;
 		}
 	}
@@ -159,8 +159,8 @@ void		WED_PolygonPlacement::SetNthProperty(int n, const PropertyVal_t& val)
 //				resource = vpath;
 			switch(val.int_val) // surftype)
 			{
-				case surf_Asphalt:  resource = "lib/airport/pavement/asphalt_1D.pol"; return;
-				case surf_Concrete: resource = "lib/airport/pavement/concrete_3D.pol"; return;
+				case surf_Asphalt:  resource = "lib/airport/pavement/asphalt_3D.pol"; return;
+				case surf_Concrete: resource = "lib/airport/pavement/concrete_1D.pol"; return;
 			}
 		}
 #endif
