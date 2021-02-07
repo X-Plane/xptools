@@ -247,8 +247,8 @@ int	WED_LibraryPreviewPane::MouseDown(int x, int y, int button)
 			int tex_x, tex_y;
 			mTexMgr->GetTexInfo(tref, &tex_x, &tex_y, NULL, NULL, NULL, NULL);
 			float tex_aspect = float(pol->proj_s * tex_x) / float(pol->proj_t * tex_y);
-			float ds = prev_space / mZoom * tex_aspect > 1.0 ? 1.0 : tex_aspect;
-			float dt = prev_space / mZoom * tex_aspect > 1.0 ? 1.0/tex_aspect : 1.0;
+			float ds = prev_space / mZoom * (tex_aspect > 1.0 ? 1.0 : tex_aspect);
+			float dt = prev_space / mZoom * (tex_aspect > 1.0 ? 1.0/tex_aspect : 1.0);
 
 			float x1 = 0.5 *(b[2] + b[0] - ds);         // texture left bottom corner
 			float y1 = 0.5* (b[3] + b[1] - dt);
