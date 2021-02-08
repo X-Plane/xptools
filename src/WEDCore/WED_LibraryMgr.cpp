@@ -179,7 +179,7 @@ int			WED_LibraryMgr::GetResourceType(const string& r)
 string		WED_LibraryMgr::GetResourcePath(const string& r, int variant)
 {
 	res_map_t::iterator me = res_table.find(r);
-	if (me==res_table.end() || r != me->first)  // this prevents the case-insensitive compare (needed for desired sort order in libmgr list) 
+	if (me==res_table.end() || r != me->first)  // this prevents the case-insensitive compare (needed for desired sort order in libmgr list)
 		return string();                        // to deliver a match if the cases mis-match - which is X-Plane behavior
 	DebugAssert(variant < me->second.real_paths.size());
 	return me->second.real_paths[variant];
@@ -237,6 +237,31 @@ int		WED_LibraryMgr::GetNumVariants(const string& r)
 	res_map_t::const_iterator me = res_table.find(r);
 	if (me==res_table.end()) return 1;
 	return me->second.real_paths.size();
+}
+
+bool	WED_LibraryMgr::GetSameDir(const string& r, vector<pair<string, int> >& vpaths)
+{
+	auto it = res_table.find(r);
+
+	string vpath(r);
+	if(it->second.res_type != res_Directory)
+	{
+		vpath.erase(vpath.find_last_of('/'));
+		res_table.find(vpath);
+	}
+	if(it == res_table.end()) return false;
+	it++;
+
+	while(it != res_table.end() && strncmp(it->first.c_str(), vpath.c_str(), vpath.size()) == 0)
+	{
+		auto pos = it->first.size();
+		if(it->second.res_type != res_Directory)
+			pos = it->first.find_last_of('/');
+		if(it->second.status >= status_Public && strncmp(it->first.c_str(), vpath.c_str(), pos) == 0)
+			vpaths.push_back(make_pair(it->first, it->second.res_type));
+		it++;
+	}
+	return vpaths.size();
 }
 
 
@@ -297,7 +322,7 @@ void		WED_LibraryMgr::Rescan()
 			{
 				string vpath, rpath;
 				bool is_export_backup = false;
-				
+
 				if( MFS_string_match(&s,"EXPORT",false) ||
 				    MFS_string_match(&s,"EXPORT_EXTEND",false) ||
 				    MFS_string_match(&s,"EXPORT_EXCLUDE",false) ||
