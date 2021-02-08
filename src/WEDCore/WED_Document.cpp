@@ -71,18 +71,19 @@ static set<WED_Document *> sDocuments;
 static map<string,string>	sGlobalPrefs;
 
 WED_Document::WED_Document(
-								const string& 		package,
-								double				inBounds[4]) :
-//	mProperties(mDB.get()),
+	const string& 		package,
+	double				inBounds[4]) :
+	//	mProperties(mDB.get()),
 	mPackage(package),
 	mFilePath(gPackageMgr->ComputePath(package, "earth.wed")),
-//	mDB(mFilePath.c_str()),
-//	mPackage(inPackage),
+	//	mDB(mFilePath.c_str()),
+	//	mPackage(inPackage),
 #if WITHNWLINK
 	mServer(NULL),
 	mNWLink(NULL),
 	mOnDisk(false),
 #endif
+	mPrefsChanged(false),
 	mUndo(&mArchive, this),
 	mArchive(this)
 {
@@ -277,6 +278,7 @@ void	WED_Document::Save(void)
 	{
 		// This is the save-was-okay case.
 		mOnDisk=true;
+		mPrefsChanged=false;
 	}
 	
 	//if the second backup still exists after the error handling
@@ -320,6 +322,7 @@ void	WED_Document::Revert(void)
 		if(xml_exists)
 		{
 			mOnDisk=true;
+			mPrefsChanged = false;
 		}
 		else
 		{
@@ -367,7 +370,12 @@ void	WED_Document::Revert(void)
 
 bool	WED_Document::IsDirty(void)
 {
-	return mArchive.IsDirty() != 0;
+	return mArchive.IsDirty() != 0 || mPrefsChanged;
+}
+
+void	WED_Document::SetDirty(void)
+{
+	mPrefsChanged = true;
 }
 
 bool	WED_Document::IsOnDisk(void)
@@ -491,7 +499,13 @@ int			WED_Document::ReadIntPref(const char * in_key, int in_default)
 		i = sGlobalPrefs.find(key);
 		if (i == sGlobalPrefs.end())
 			return in_default;
-		return atoi(i->second.c_str());
+
+		int val = atoi(i->second.c_str());
+		if (strcmp(in_key, "doc/export_target") == 0)        // ignore a few things when creating new, empty docs. Too many users get confused by inheriting "unusual" settings
+			val = max(wet_latest_xplane, val);
+		else if (strcmp(in_key, "map/obj_density") == 0)
+			return in_default;
+		return val;
 	}
 	return atoi(i->second.c_str());
 }

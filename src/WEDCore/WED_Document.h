@@ -119,6 +119,7 @@ public:
 	void				Save(void);
 	void				Revert(void);
 	bool				IsDirty(void);
+	void				SetDirty();
 	bool				IsOnDisk(void);
 
 	// LEGACY STUFF
@@ -141,6 +142,7 @@ private:
 	string				mFilePath;
 	string				mPackage;
 	bool				mOnDisk;
+	bool				mPrefsChanged;
 
 	//sql_db				mDB;
 	WED_Archive			mArchive;
@@ -161,7 +163,6 @@ private:
 	string						mDocPrefsActName;		// Temporary for tracking the current int-set on read-i.
 	map<string,string>			mDocPrefs;				// All string, int and double (non-set) prefs
 	map<string,set<int> >		mDocPrefsItems;			// The int-set prefs, separated out.
-
 };
 
 #endif
