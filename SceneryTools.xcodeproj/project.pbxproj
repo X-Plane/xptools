@@ -78,6 +78,8 @@
 		02B03C4120C72126000F81F0 /* line_TaxiCenterUni.png in Resources */ = {isa = PBXBuildFile; fileRef = 02B03C2120C720C7000F81F0 /* line_TaxiCenterUni.png */; };
 		02B03C4220C7212B000F81F0 /* line_Unknown.png in Resources */ = {isa = PBXBuildFile; fileRef = 02B03C2220C720C7000F81F0 /* line_Unknown.png */; };
 		02B03C4320C72130000F81F0 /* line_BBrokenRed.png in Resources */ = {isa = PBXBuildFile; fileRef = 02B03C1120C720A1000F81F0 /* line_BBrokenRed.png */; };
+		02B0D4B125D476C60076F8C6 /* WED_AutogenNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02B0D4AB25D476990076F8C6 /* WED_AutogenNode.cpp */; };
+		02B0D4B225D476D60076F8C6 /* WED_AutogenPlacement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02B0D4AD25D476990076F8C6 /* WED_AutogenPlacement.cpp */; };
 		02BDCCFF23A97E2700208CD2 /* tilt_tool.png in Resources */ = {isa = PBXBuildFile; fileRef = 02BDCCFD23A97E0400208CD2 /* tilt_tool.png */; };
 		02BFA21321C1B5970090D527 /* navmap_seaport.png in Resources */ = {isa = PBXBuildFile; fileRef = 02BFA21021C1B58D0090D527 /* navmap_seaport.png */; };
 		02BFA21421C1B59C0090D527 /* navmap_airport.png in Resources */ = {isa = PBXBuildFile; fileRef = 02BFA20F21C1B58D0090D527 /* navmap_airport.png */; };
@@ -443,7 +445,6 @@
 		D63A82E21A9F9E37008D218D /* ObjTables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38690AB22C85003949C5 /* ObjTables.cpp */; };
 		D63B0C481189FC06002F58BB /* RF_SpecialCommands.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956F070F82E96900F6718E /* RF_SpecialCommands.cpp */; };
 		D63CC9F713E85B8B00468132 /* WED_XMLWriter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63CC9F613E85B8B00468132 /* WED_XMLWriter.cpp */; };
-		D63D3A33192FA28F0004534A /* gateway.crt in Resources */ = {isa = PBXBuildFile; fileRef = D63D3A32192FA28F0004534A /* gateway.crt */; };
 		D63D8E6113F32E5500E353E8 /* map_missing_obj.png in Resources */ = {isa = PBXBuildFile; fileRef = D63D8E6013F32E5500E353E8 /* map_missing_obj.png */; };
 		D63F725C117FB60900AB7C1F /* BlockAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63F725B117FB60900AB7C1F /* BlockAlgs.cpp */; };
 		D63F725D117FB60900AB7C1F /* BlockAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63F725B117FB60900AB7C1F /* BlockAlgs.cpp */; };
@@ -1143,6 +1144,10 @@
 		02B03C2020C720C7000F81F0 /* line_SolidYellowW.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = line_SolidYellowW.png; sourceTree = "<group>"; };
 		02B03C2120C720C7000F81F0 /* line_TaxiCenterUni.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = line_TaxiCenterUni.png; sourceTree = "<group>"; };
 		02B03C2220C720C7000F81F0 /* line_Unknown.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = line_Unknown.png; sourceTree = "<group>"; };
+		02B0D4AB25D476990076F8C6 /* WED_AutogenNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_AutogenNode.cpp; sourceTree = "<group>"; };
+		02B0D4AC25D476990076F8C6 /* WED_AutogenNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_AutogenNode.h; sourceTree = "<group>"; };
+		02B0D4AD25D476990076F8C6 /* WED_AutogenPlacement.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_AutogenPlacement.cpp; sourceTree = "<group>"; };
+		02B0D4AE25D476990076F8C6 /* WED_AutogenPlacement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_AutogenPlacement.h; sourceTree = "<group>"; };
 		02BDCCFD23A97E0400208CD2 /* tilt_tool.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tilt_tool.png; sourceTree = "<group>"; };
 		02BFA20F21C1B58D0090D527 /* navmap_airport.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = navmap_airport.png; sourceTree = "<group>"; };
 		02BFA21021C1B58D0090D527 /* navmap_seaport.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = navmap_seaport.png; sourceTree = "<group>"; };
@@ -1422,7 +1427,6 @@
 		D63A801F1A997EB5008D218D /* COPYING */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = COPYING; sourceTree = "<group>"; };
 		D63CC9F513E85B8B00468132 /* WED_XMLWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_XMLWriter.h; sourceTree = "<group>"; };
 		D63CC9F613E85B8B00468132 /* WED_XMLWriter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_XMLWriter.cpp; sourceTree = "<group>"; };
-		D63D3A32192FA28F0004534A /* gateway.crt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = gateway.crt; sourceTree = "<group>"; };
 		D63D8E6013F32E5500E353E8 /* map_missing_obj.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = map_missing_obj.png; sourceTree = "<group>"; };
 		D63F7255117FAB3500AB7C1F /* BlockDefs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BlockDefs.h; sourceTree = "<group>"; };
 		D63F725A117FB60900AB7C1F /* BlockAlgs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BlockAlgs.h; sourceTree = "<group>"; };
@@ -3693,7 +3697,6 @@
 				D6B69CDE1C582B6A005C78C5 /* parking_spots */,
 				D6C21A3B1C41A5DB00EE5FB3 /* taxi_sign.png */,
 				D63A801F1A997EB5008D218D /* COPYING */,
-				D63D3A32192FA28F0004534A /* gateway.crt */,
 				D6080504154659A7001BE1A9 /* push_buttons.png */,
 				0236B971203425CE0046900C /* check_buttons.png */,
 				D6E30556105F8EE7009E6E7F /* tce_tools.png */,
@@ -3739,6 +3742,10 @@
 		D6ED413C0B6ADE0100D5484E /* WEDEntities */ = {
 			isa = PBXGroup;
 			children = (
+				02B0D4AB25D476990076F8C6 /* WED_AutogenNode.cpp */,
+				02B0D4AC25D476990076F8C6 /* WED_AutogenNode.h */,
+				02B0D4AD25D476990076F8C6 /* WED_AutogenPlacement.cpp */,
+				02B0D4AE25D476990076F8C6 /* WED_AutogenPlacement.h */,
 				D612485421E5AA5D00FA030C /* WED_ATCTimeRule.h */,
 				D612485321E5AA5D00FA030C /* WED_ATCWindRule.h */,
 				D612485521E5AA5D00FA030C /* WED_FacadePreview.h */,
@@ -4270,7 +4277,6 @@
 				D6FE7C81173EC49C007721F2 /* map_tree.png in Resources */,
 				02B03C3E20C72119000F81F0 /* line_SolidOrange.png in Resources */,
 				D6B69CE51C582B6A005C78C5 /* ClassA.png in Resources */,
-				D63D3A33192FA28F0004534A /* gateway.crt in Resources */,
 				D63A80201A997EB5008D218D /* COPYING in Resources */,
 				02B03C3920C720FF000F81F0 /* line_BSolidYellowW.png in Resources */,
 				02B03C3F20C7211E000F81F0 /* line_SolidRed.png in Resources */,
@@ -4938,6 +4944,7 @@
 				D6FF2CAC0B6F7D6B00960D5E /* GUI_SimpleTableGeometry.cpp in Sources */,
 				D60A99AE0B7A57E0002680BD /* GUI_Packer.cpp in Sources */,
 				D6367D1A0B82123400091AFC /* WED_Select.cpp in Sources */,
+				02B0D4B225D476D60076F8C6 /* WED_AutogenPlacement.cpp in Sources */,
 				D63680BA0B8A0F4B00091AFC /* GUI_Destroyable.cpp in Sources */,
 				D636817C0B8AC62600091AFC /* WED_GISPoint.cpp in Sources */,
 				D63681810B8AC67B00091AFC /* WED_GISPoint_Bezier.cpp in Sources */,
@@ -4977,6 +4984,7 @@
 				D62FCE640BD513C600ED6CF8 /* WED_Windsock.cpp in Sources */,
 				D62FCE900BD5177D00ED6CF8 /* WED_TowerViewpoint.cpp in Sources */,
 				02D82420239EF2990008DBF2 /* BraIA64.c in Sources */,
+				02B0D4B125D476C60076F8C6 /* WED_AutogenNode.cpp in Sources */,
 				D62FCEB60BD5191F00ED6CF8 /* WED_AirportSign.cpp in Sources */,
 				D62FCEE20BD51B2900ED6CF8 /* WED_RampPosition.cpp in Sources */,
 				D62FCEEC0BD51BBE00ED6CF8 /* WED_LightFixture.cpp in Sources */,
