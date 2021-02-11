@@ -80,6 +80,7 @@
 		02B03C4320C72130000F81F0 /* line_BBrokenRed.png in Resources */ = {isa = PBXBuildFile; fileRef = 02B03C1120C720A1000F81F0 /* line_BBrokenRed.png */; };
 		02B0D4B125D476C60076F8C6 /* WED_AutogenNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02B0D4AB25D476990076F8C6 /* WED_AutogenNode.cpp */; };
 		02B0D4B225D476D60076F8C6 /* WED_AutogenPlacement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02B0D4AD25D476990076F8C6 /* WED_AutogenPlacement.cpp */; };
+		02B0D4B625D47C850076F8C6 /* WED_Road_Selector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02B0D4B325D47C7F0076F8C6 /* WED_Road_Selector.cpp */; };
 		02BDCCFF23A97E2700208CD2 /* tilt_tool.png in Resources */ = {isa = PBXBuildFile; fileRef = 02BDCCFD23A97E0400208CD2 /* tilt_tool.png */; };
 		02BFA21321C1B5970090D527 /* navmap_seaport.png in Resources */ = {isa = PBXBuildFile; fileRef = 02BFA21021C1B58D0090D527 /* navmap_seaport.png */; };
 		02BFA21421C1B59C0090D527 /* navmap_airport.png in Resources */ = {isa = PBXBuildFile; fileRef = 02BFA20F21C1B58D0090D527 /* navmap_airport.png */; };
@@ -1148,6 +1149,8 @@
 		02B0D4AC25D476990076F8C6 /* WED_AutogenNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_AutogenNode.h; sourceTree = "<group>"; };
 		02B0D4AD25D476990076F8C6 /* WED_AutogenPlacement.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_AutogenPlacement.cpp; sourceTree = "<group>"; };
 		02B0D4AE25D476990076F8C6 /* WED_AutogenPlacement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_AutogenPlacement.h; sourceTree = "<group>"; };
+		02B0D4B325D47C7F0076F8C6 /* WED_Road_Selector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Road_Selector.cpp; sourceTree = "<group>"; };
+		02B0D4B425D47C7F0076F8C6 /* WED_Road_Selector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Road_Selector.h; sourceTree = "<group>"; };
 		02BDCCFD23A97E0400208CD2 /* tilt_tool.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tilt_tool.png; sourceTree = "<group>"; };
 		02BFA20F21C1B58D0090D527 /* navmap_airport.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = navmap_airport.png; sourceTree = "<group>"; };
 		02BFA21021C1B58D0090D527 /* navmap_seaport.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = navmap_seaport.png; sourceTree = "<group>"; };
@@ -3385,6 +3388,8 @@
 		D6BC37E70AB22C85003949C5 /* WEDWindows */ = {
 			isa = PBXGroup;
 			children = (
+				02B0D4B325D47C7F0076F8C6 /* WED_Road_Selector.cpp */,
+				02B0D4B425D47C7F0076F8C6 /* WED_Road_Selector.h */,
 				02B03C0D20C71DE5000F81F0 /* WED_Line_Selector.cpp */,
 				02B03C0E20C71DE5000F81F0 /* WED_Line_Selector.h */,
 				D608C9821E01B8F8002E68F9 /* WED_LibraryFilterBar.cpp */,
@@ -4997,6 +5002,7 @@
 				D62FD0090BD54B9F00ED6CF8 /* WED_AirportChain.cpp in Sources */,
 				D62FD0B70BD555B800ED6CF8 /* WED_Taxiway.cpp in Sources */,
 				D62FD0D90BD55AE000ED6CF8 /* WED_AirportBoundary.cpp in Sources */,
+				02B0D4B625D47C850076F8C6 /* WED_Road_Selector.cpp in Sources */,
 				D6139E200BD5793500D50803 /* WED_StructureLayer.cpp in Sources */,
 				D613A2E00BD64C1800D50803 /* WED_TerraserverLayer.cpp in Sources */,
 				D613A3240BD6506F00D50803 /* Terraserver.cpp in Sources */,

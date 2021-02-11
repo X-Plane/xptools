@@ -79,7 +79,7 @@ WED_CreateEdgeTool::WED_CreateEdgeTool(
 	mWidth(tool == create_TaxiRoute ?        this : NULL,PROP_Name("Size",            XML_Name("","")), ATCIcaoWidth, width_E),
 #if ROAD_EDITING
 	mLayer(tool == create_Road ?             this : NULL,PROP_Name("Layer",           XML_Name("","")), 0, 2),
-	mSubtype(tool == create_Road ?           this : NULL,PROP_Name("Type",            XML_Name("","")), 1, 3),
+	mSubtype(tool == create_Road ?           this : NULL,PROP_Name("Type",            XML_Name("","")), 100, 3),
 	mResource(tool == create_Road ?          this : NULL,PROP_Name("Resource",        XML_Name("","")), "lib/g10/roads.net"),
 #endif
 	mSlop(                                   this,        PROP_Name("Slop",           XML_Name("","")), 10, 2)
