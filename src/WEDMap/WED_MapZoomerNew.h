@@ -125,9 +125,9 @@ public:
 							double	inNorth);
 
 
-	virtual	void	GetScrollBounds(float outTotalBounds[4], float outVisibleBounds[4]);
-	virtual	void	ScrollH(float xOffset);
-	virtual	void	ScrollV(float yOffset);
+	void	GetScrollBounds(float outTotalBounds[4], float outVisibleBounds[4]) override;
+	void	ScrollH(float xOffset) override;
+	void	ScrollV(float yOffset) override;
 
 	bool PointVisible(const Point3& point) const override;
 	bool BboxVisible(const Bbox3& bbox) const override;
