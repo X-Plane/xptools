@@ -2712,7 +2712,7 @@ static const char * get_merge_tag_for_thing(IGISPoint * ething)
 	// In order to merge, we haveto at least be a thing AND a point,
 	// and have a parent that is a thing and an entity.  (If that's
 	// not true, @#$ knows what is selected.)
-	
+
 	WED_Thing * thing = SAFE_CAST(WED_Thing, ething);
 	if(thing == NULL)
 		return NULL;
@@ -3805,17 +3805,17 @@ static set<string> build_agp_list()
 int		WED_CanBreakApartAgps(IResolver* resolver)
 {
 	//Returns true if the selection contains only .agp objects
-	
+
 	vector<ISelectable*> selected;
 	WED_GetSelect(resolver)->GetSelectionVector(selected);
 
 	if (selected.empty()) return false;
-	
+
 	for (auto itr : selected)
 	{
 		WED_AgpPlacement* agp = dynamic_cast<WED_AgpPlacement*>(itr);
 		if (!agp) return false;
-		
+
 		string agp_resource;
 		agp->GetResource(agp_resource);
 		if(FILE_get_file_extension(agp_resource) != "agp") return false;
@@ -3828,14 +3828,15 @@ static void replace_all_obj_in_agp(WED_AgpPlacement* agp, const agp_t * agp_data
 	Point2 agp_origin_geo;
 	agp->GetLocation(gis_Geo, agp_origin_geo);
 
-	for (auto& agp_obj : agp_data->objs)
+	auto ti = agp_data->tiles.front();
+	for (auto& agp_obj : ti.objs)
 	{
 		Vector2 torotate(agp_obj.x, agp_obj.y);
 
 		//Note!! WED has clockwise heading, C's cos and sin functions are ccw in radians. We reverse directions and negate again
 		torotate.rotate_by_degrees(agp->GetHeading()*-1);
 		torotate *= -1;
-		
+
 		Point2 new_point_geo = agp_origin_geo -VectorMetersToLL(agp_origin_geo, torotate);
 
 		WED_ObjPlacement* new_obj = WED_ObjPlacement::CreateTyped(archive);
@@ -3861,7 +3862,7 @@ int wed_break_apart_special_agps(const vector<WED_AgpPlacement*>& agp_placements
 	for (auto agp : agp_placements)
 	{
 		string agp_resource;
-		
+
 		agp->GetResource(agp_resource);
 		//Is the agp found in the special agp list?
 		if (agp_list.find(agp_resource) != agp_list.end())
@@ -3891,7 +3892,7 @@ void	WED_DoBreakApartAgps(IResolver* resolver)
 	WED_ResourceMgr * rmgr	= WED_GetResourceMgr(resolver);
 	WED_LibraryMgr * lmgr	= WED_GetLibraryMgr(resolver);
 	ISelection * sel 		= WED_GetSelect(resolver);
-	
+
 	vector<ISelectable*> selected;
 	sel->GetSelectionVector(selected);
 
@@ -3904,20 +3905,20 @@ void	WED_DoBreakApartAgps(IResolver* resolver)
 	}
 
 	root->StartOperation("Break Apart Agps");
-	
+
 	vector<WED_AgpPlacement*> replaced_agps;
 	vector<WED_ObjPlacement*> added_objs;
-	
+
 	for(auto agp : agp_placements)
 	{
 		string agp_resource;
 		const agp_t * agp_data;
-		
+
 		agp->GetResource(agp_resource);
 		if(rmgr->GetAGP(agp_resource, agp_data))
 		{
 			bool all_obj_public = true;
-			for (auto& agp_obj : agp_data->objs)
+			for (auto& agp_obj : agp_data->tiles.front().objs)
 			{
 				if(lmgr->IsResourceDeprecatedOrPrivate(agp_obj.name))
 				{
@@ -4037,7 +4038,7 @@ void	WED_DoReplaceVehicleObj(IResolver* resolver, WED_Airport* apt)
 {
 	WED_Thing * root = WED_GetWorld(resolver);
 	vector<WED_ObjPlacement*> obj_placements;
-	
+
 	WED_Thing* collection_start = apt == NULL ? root : apt;
 	CollectRecursive(collection_start, back_inserter(obj_placements), WED_ObjPlacement::sClass);
 
@@ -4046,7 +4047,7 @@ void	WED_DoReplaceVehicleObj(IResolver* resolver, WED_Airport* apt)
 		int replace_count = 0;
 		root->StartOperation("Replace Objects");
 		map<string,vehicle_replacement_info> table = build_replacement_table();
-		
+
 #if !TYLER_MODE
 		ISelection * sel = WED_GetSelect(resolver);
 		sel->Clear();
@@ -4858,7 +4859,7 @@ static void set_surface(WED_Thing * t, int surface, WED_LibraryMgr * lmgr)
 	{
 		set<int> attr;
 		attr.insert(surface);
-		
+
 		int num_ent = chain->GetNumEntities();
 		for(int i = 0; i < num_ent; i++)
 		{
@@ -4961,7 +4962,7 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 				set_closed(dst, chains[i]->IsClosed());
 
 				move_points(chains[i], dst);
-				
+
 				set_surface(dst, get_surface(src),WED_GetLibraryMgr(resolver));
 
 				sel->Insert(dst);

@@ -72,7 +72,7 @@ WED_LibraryPreviewPane::WED_LibraryPreviewPane(GUI_Commander * cmdr, WED_Resourc
 		mNextButton->SetMsg(next_variant,0);
 		mNextButton->AddListener(this);
 		mNextButton->Hide();
-		
+
 		mMSAA = 1;
 		GLint tmp;
 		glGetIntegerv(GL_SAMPLES, &tmp);
@@ -348,7 +348,7 @@ void	WED_LibraryPreviewPane::begin3d(const int *b, double radius_m)
 		glBindRenderbuffer(GL_RENDERBUFFER, mColBuf);     CHECK_GL_ERR
 		glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_RGB, dx, dy); CHECK_GL_ERR
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, mColBuf); CHECK_GL_ERR
-	
+
 		glGenRenderbuffers(1, &mDepthBuf);                CHECK_GL_ERR
 		glBindRenderbuffer(GL_RENDERBUFFER, mDepthBuf);   CHECK_GL_ERR
 		glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH_COMPONENT, dx, dy); CHECK_GL_ERR
@@ -592,6 +592,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 					if(str->objs.size())
 						mResMgr->GetObjRelative(str->objs.front(), mRes, o);    // do the cheap thing: show only the first object. Could show a whole line ...
 			}
+		case res_Autogen:
 		case res_Object:
 			g->SetState(false,1,false,true,true,true,true);
 			glClear(GL_DEPTH_BUFFER_BIT);
@@ -612,17 +613,21 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 			}
 			else if (mResMgr->GetAGP(mRes,agp))
 			{
-				double real_radius=pythag(
-									agp->xyz_max[0] - agp->xyz_min[0],
-									agp->xyz_max[1] - agp->xyz_min[1],
-									agp->xyz_max[2] - agp->xyz_min[2]);
-				double xyz_off[3] = { -(agp->xyz_max[0] + agp->xyz_min[0]) * 0.5,
-									  -(agp->xyz_max[1] + agp->xyz_min[1]) * 0.5,
-									  (agp->xyz_max[2] + agp->xyz_min[2]) * 0.5 };
+				for(int i = 0; i < intmin2(4, agp->tiles.size()); i++)
+				{
+					auto ti = agp->tiles[i];
+					double real_radius=pythag(
+										ti.xyz_max[0] - ti.xyz_min[0],
+										ti.xyz_max[1] - ti.xyz_min[1],
+										ti.xyz_max[2] - ti.xyz_min[2]);
+					double xyz_off[3] = { -(ti.xyz_max[0] + ti.xyz_min[0]) * 0.5,
+										  -(ti.xyz_max[1] + ti.xyz_min[1]) * 0.5,
+										   (ti.xyz_max[2] + ti.xyz_min[2]) * 0.5 };
 
-				begin3d(b, real_radius);
-				draw_agp_at_xyz(mTexMgr, agp, xyz_off[0], xyz_off[1], xyz_off[2], mHgt, 0, g);
-				end3d(b);
+					begin3d(b, real_radius * (agp->tiles.size() > 1 ? 2.0 : 1.0));
+					draw_agp_at_xyz(mTexMgr, agp, xyz_off[0] + (ti.xyz_max[0] - ti.xyz_min[0]) * (i > 1 ? i - 1 : -i), xyz_off[1], xyz_off[2], mHgt, 0, g, i);
+					end3d(b);
+				}
 			}
 			break;
 		}
@@ -671,8 +676,8 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				else if(agp)
 				{
 					snprintf(buf1, sizeof(buf1), "%s", agp->description.c_str());
-					int n = sprintf(buf2, "max h=%.1f%s", agp->xyz_max[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");
-					for (auto& a : agp->objs)
+					int n = sprintf(buf2, "max h=%.1f%s", agp->tiles.front().xyz_max[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");
+					for (auto& a : agp->tiles.front().objs)
 						if(a.scp_step > 0.0)
 						{
 							sprintf(buf2 + n, ", supports set_AGL %.1f .. %.1f%s @ h=%dm", a.scp_min / (gIsFeet ? 0.3048 : 1.0), a.scp_max / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m", mHgt);

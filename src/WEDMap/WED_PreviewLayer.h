@@ -33,22 +33,22 @@ class	ITexMgr;
 // We need int values for layer groups - these weird numbers actually came out of X-Plane's internal engine...who knew.
 // The important thing is that the spacing is enough to ensure separation even when we have lots of runways or taxiways.
 enum {
-	group_Terrain	= 5,				
-	group_Beaches	= 25,				
+	group_Terrain	= 5,
+	group_Beaches	= 25,
 
-	group_AirportsBegin	= 60,			
+	group_AirportsBegin	= 60,
 		group_ShouldersBegin = 70,
 		group_ShouldersEnd = 90,
-		group_TaxiwaysBegin = 100,		
-		group_TaxiwaysEnd = 1000,		
-		group_RunwaysBegin = 1100,		
-		group_RunwaysEnd = 1900,		
-		
-		group_Markings = 1920,			
-		
+		group_TaxiwaysBegin = 100,
+		group_TaxiwaysEnd = 1000,
+		group_RunwaysBegin = 1100,
+		group_RunwaysEnd = 1900,
+
+		group_Markings = 1920,
+
 	group_AirportsEnd = 1930,
-	
-	group_Footprints	= 1940,			
+
+	group_Footprints	= 1940,
 	group_Roads			= 1950,
 	group_Objects		= 1960,
 	group_LightObjects	= 1965,
@@ -84,7 +84,7 @@ private:
 
 	float							mPavementAlpha;
 	int								mObjDensity;
-	
+
 	// This stuff is built temporarily between the entity and final draw.
 	vector<WED_PreviewItem *>	mPreviewItems;
 	int							mRunwayLayer;		// Keep adding 1 to layer as we find runways, etc.  This means the runway's layer order
@@ -95,7 +95,7 @@ private:
 };
 
 void draw_obj_at_xyz(ITexMgr * tman, const XObj8 * o, double x, double y, double z, float r, GUI_GraphState * g);
-void draw_agp_at_xyz(ITexMgr * tman, const agp_t * agp, double x, double y, double z, float agl, float r, GUI_GraphState * g);
+void draw_agp_at_xyz(ITexMgr * tman, const agp_t * agp, double x, double y, double z, float agl, float r, GUI_GraphState * g, int tile_idx = 0);
 int layer_group_for_string(const char * s, int o, int def);
 
 #endif /* WED_PreviewLayer_H */
