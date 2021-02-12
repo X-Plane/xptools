@@ -202,6 +202,7 @@ int main(int argc, char * argv[])
 
 	start->ShowMessage("Scanning X-System Folder...");
 	pMgr.SetXPlaneFolder(GUI_GetPrefString("packages","xsystem",""));
+	pMgr.SetRecentName(GUI_GetPrefString("packages","Recent",""));
 
 	start->ShowMessage("Initializing WED File Cache");
 	gFileCache.init();
@@ -225,9 +226,11 @@ int main(int argc, char * argv[])
 
 	GUI_MemoryHog::RemoveNewHandler();
 
-	string xsys;
+	string xsys,name;
 	pMgr.GetXPlaneFolder(xsys);
+	pMgr.GetRecentName(name);
 	GUI_SetPrefString("packages","xsystem",xsys.c_str());
+	GUI_SetPrefString("packages","Recent",name.c_str());
 
 	WED_Document::WriteGlobalPrefs();
 	GUI_Prefs_Write("WED");

@@ -39,6 +39,7 @@ public:
 			int		GetSelection(string * package);
 			void	CreateBlankNew(void);
 			void	SelectPackage(int n);
+			int     SelectPackage(const string& package);
 			void	LockPackage(const string& name);
 			void	UnlockPackage(const string& name);
 	virtual void	GetCellContent(
