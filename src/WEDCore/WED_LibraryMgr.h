@@ -36,6 +36,7 @@ enum {
 	res_Forest,
 	res_String,
 	res_Line,
+	res_Autogen,
 	res_Polygon
 #if ROAD_EDITING
 	,res_Road

@@ -60,6 +60,7 @@
 #include "WED_ObjPlacement.h"
 #include "WED_PolygonPlacement.h"
 #include "WED_StringPlacement.h"
+#include "WED_AutogenPlacement.h"
 #include "WED_Taxiway.h"
 #include "WED_TruckParkingLocation.h"
 #include "WED_LightFixture.h"
@@ -1214,7 +1215,61 @@ struct	preview_pol : public preview_polygon {
 			preview_polygon::draw_it(zoomer, g, mPavementAlpha);
 			kill_transform();
 		}
+	}
+};
 
+
+struct	preview_autogen: public preview_polygon {
+	WED_AutogenPlacement * ags;
+	IResolver * resolver;
+	preview_autogen(WED_AutogenPlacement * a, int l, IResolver * r) : preview_polygon(a,l,false), ags(a), resolver(r) { }
+	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
+	{
+		IGISPointSequence * ps = ags->GetOuterRing();
+		int tile_width = min(zoomer->GetPPM() * 20.0, 10.0);
+        g->SetState(false,0,false,true,true,false,false);
+		vector<Point2>	pts;
+        if(tile_width > 0)
+        {
+			glLineWidth(tile_width);
+			glColor4f(1, 1, 0, .3);
+			int n = ps->GetNumSides();
+			if(ags->IsAGBlock())          // cross with same orientation as first segment to indicate block alignment
+			{
+				Bezier2		b;
+				ps->GetSide(gis_Geo, 0, b);
+				b.p1 = zoomer->LLToPixel(b.p1);
+				b.p2 = zoomer->LLToPixel(b.p2);
+				Vector2	dir(b.p1, b.p2);
+				dir *= 0.2;
+				Bbox2 		box;
+				ags->GetBounds(gis_Geo, box);
+				Point2 center(zoomer->LLToPixel(box.centroid()));
+				pts.reserve(4);
+				pts.push_back(center + dir);
+				pts.push_back(center - dir);
+				dir = dir.perpendicular_cw();
+				pts.push_back(center + dir);
+				pts.push_back(center - dir);
+
+				glShape2v(GL_LINES, pts.data(), pts.size());
+			}
+			for(int i = 0; i < n; ++i)
+			{
+				pts.clear();
+				SideToPoints(ps,i,zoomer, pts);
+
+				Bezier2		bp;
+				ps->GetSide(gis_Param,i,bp);
+				bool spawning = bp.p1.x();
+
+				if(spawning)
+					glShapeOffset2v(GL_LINES, pts.data(), pts.size(), 1 + 0.5 * tile_width);
+			}
+			glLineWidth(1);
+		}
+		glColor4f(1, 1, 0, .2);
+		preview_polygon::draw_it(zoomer, g, mPavementAlpha);
 	}
 };
 
@@ -1729,6 +1784,12 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		WED_StringPlacement * str = SAFE_CAST(WED_StringPlacement, entity);
 		if(str)
 			mPreviewItems.push_back(new preview_string(str, group_Objects, GetResolver()));
+	}
+	else if (sub_class == WED_AutogenPlacement::sClass)
+	{
+		WED_AutogenPlacement * ags = SAFE_CAST(WED_AutogenPlacement, entity);
+		if(ags)
+			mPreviewItems.push_back(new preview_autogen(ags, group_Objects, GetResolver()));
 	}
 
 	/******************************************************************************************************************************

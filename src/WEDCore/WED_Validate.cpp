@@ -37,6 +37,7 @@
 #include "WED_ForestPlacement.h"
 #include "WED_ObjPlacement.h"
 #include "WED_StringPlacement.h"
+#include "WED_AutogenPlacement.h"
 #include "WED_LinePlacement.h"
 #include "WED_PolygonPlacement.h"
 #include "WED_DrapedOrthophoto.h"
@@ -508,6 +509,19 @@ static void ValidateOnePolygon(WED_GISPolygon* who, validation_error_vector& msg
 				}
 			}
 		}
+		if(who->GetClass() == WED_AutogenPlacement::sClass)
+		{
+			auto ags = dynamic_cast<WED_AutogenPlacement *>(who);
+			string res;
+			ags->GetResource(res);
+			if(res[res.size()-1] == 'b')
+			{
+				if(ags->GetNthChild(0)->CountChildren() != 4)
+					msgs.push_back(validation_error_t("AutoGenBlock polygons must have exactly 4 sides.", err_agb_poly_not_4_sided, who, apt));
+				if(ags->CountChildren() > 1)
+					msgs.push_back(validation_error_t("AutoGenBlock polygons must not have holes.", err_agb_poly_has_holes, who, apt));
+			}
+		}
 	}
 }
 
@@ -604,6 +618,8 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 		matches |= EXTENSION_DOES_MATCH(WED_ObjPlacement,     "agp");
 		matches |= EXTENSION_DOES_MATCH(WED_PolygonPlacement, "pol");
 		matches |= EXTENSION_DOES_MATCH(WED_StringPlacement,  "str");
+		matches |= EXTENSION_DOES_MATCH(WED_AutogenPlacement, "ags");
+		matches |= EXTENSION_DOES_MATCH(WED_AutogenPlacement, "agb");
 
 		if(matches == false)
 		{

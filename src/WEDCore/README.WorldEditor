@@ -22,13 +22,15 @@ WED 2.4.0
    - WED-1353 GUI_ScrollBar has uninitialized vars
    - WED-1347 stops cursor blink timer in Settings window when loose focus
    - validate ICAO_Code meta tag to meet ICAO nomenclature
-   Features:
-   - use native secure internet connectivity on all operating systems
-   - show 3D preview for beacons, windsocks
    - fix preview for .lin commands with offset layers in preview pane
-   - WED-1359: change OOW mouse click for LineEditor from accept to cancel edit
+   Features:
+   - show gridded preview for library vdirectories
    - support choosing taxiway equivalent styles for draped polygons
-   - show content of library directories in preview window
+   - support autogen .agb/.ags entities (but no on-map previews)
+   - preselect last opened scenery at startup
+   - show on-map 3D previews for beacons, windsocks, 3D taxi signs
+   - use native secure internet connectivity on all operating systems
+   - WED-1359: change OOW mouse click for LineEditor from accept to cancel edit
    - automatically change ExportTarget at GW import, avoid inheriting unexpected values
 
 WED 2.3.1r1 12/22/20

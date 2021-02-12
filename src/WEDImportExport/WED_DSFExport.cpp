@@ -36,6 +36,7 @@
 #include "WED_FacadePlacement.h"
 #include "WED_ForestPlacement.h"
 #include "WED_StringPlacement.h"
+#include "WED_AutogenPlacement.h"
 #include "WED_LinePlacement.h"
 #include "WED_PolygonPlacement.h"
 #include "WED_DrapedOrthophoto.h"
@@ -206,7 +207,7 @@ static bool hasPartialTransparency(ImageInfo * info)
 {
 	if(info->channels < 4) return false;
 	int semiTransPixels = 0;
-	
+
 	unsigned char * src = info->data + 3;
 	for(int y = info->height; y > 0; y--)
 	{
@@ -1096,7 +1097,7 @@ static int	DSF_HeightRangeRecursive(WED_Thing * what, double& out_msl_min, doubl
 	}
 
 	sClass_t c = what->GetClass();
-	
+
 	if(c == WED_ObjPlacement::sClass)
 	{
 		auto obj = static_cast<WED_ObjPlacement *>(what);
@@ -1136,7 +1137,7 @@ static int	DSF_HeightRangeRecursive(WED_Thing * what, double& out_msl_min, doubl
 				any_inside = 1;
 		}
 	}
-	
+
 	if(!any_inside && ent && ent->GetGISClass() != gis_Composite)
 		return 0;
 
@@ -1429,9 +1430,9 @@ static int	DSF_ExportTileRecursive(
 		}
 		return real_thingies;
 	}
-	
+
 	if(show_level == 6)
-	{	
+	{
 		//------------------------------------------------------------------------------------------------------------
 		// EXCLUSION EXPORTER
 		//------------------------------------------------------------------------------------------------------------
@@ -1598,6 +1599,110 @@ static int	DSF_ExportTileRecursive(
 		}
 
 		//------------------------------------------------------------------------------------------------------------
+		// AUTOGEN STRING EXPORTER
+		//------------------------------------------------------------------------------------------------------------
+
+		if(c == WED_AutogenPlacement::sClass)
+		{
+			auto ags = static_cast<WED_AutogenPlacement *>(what);
+			ags->GetResource(r);
+			idx = io_table.accum_pol(r,show_level);
+			bool bez = WED_HasBezierPol(ags);
+			int n_spawning = 1;
+
+			vector<Polygon2> 	pol_area;
+			vector<vector<Polygon2> >	pol_cuts;
+
+			// start at contour 1, keep going until not spawning
+			// write as first polygon all these, including the first not spawning point.
+			// add to spawning.
+			// then take last point again, keep going until spwning flips etc
+			// add do spawn/nonspawn as needed
+
+			vector<Polygon2>			pol_nonspawning;
+			IGISPointSequence * ips = ags->GetOuterRing();
+			int n_ips = ips->GetNumPoints();
+			bool last_pt_spawn = true;
+			pol_area.push_back(Polygon2());
+			Point2 pt, param;
+
+			for(int n = 0; n < n_ips; n++)
+			{
+				ips->GetNthPoint(n)->GetLocation(gis_Geo, pt);
+
+				if(last_pt_spawn)
+					pol_area.back().push_back(pt);
+				else
+					pol_nonspawning.back().push_back(pt);
+
+				ips->GetNthPoint(n)->GetLocation(gis_Param, param);
+				if(param.x() != last_pt_spawn)
+				{
+					if(last_pt_spawn)
+					{
+						pol_nonspawning.push_back(Polygon2());
+						pol_nonspawning.back().push_back(pt);
+						last_pt_spawn = false;
+					}
+					else
+					{
+						pol_area.push_back(Polygon2());
+						pol_area.back().push_back(pt);
+						last_pt_spawn = true;
+						n_spawning++;
+					}
+				}
+			}
+			// all winding together must form a closed closed pol, first point is also last point in last contour
+			ips->GetNthPoint(0)->GetLocation(gis_Geo, pt);
+			if(last_pt_spawn)
+				pol_area.back().push_back(pt);
+			else
+				pol_nonspawning.back().push_back(pt);
+
+			// append non-spawning vectors at the very end
+			for(auto ns : pol_nonspawning)
+				pol_area.push_back(ns);
+
+			// assume all other contours are holes, so add these at the end
+			int n_holes = ags->GetNumHoles();
+			for(int n = 0; n < n_holes; n++)
+			{
+				pol_area.push_back(Polygon2());
+				if (!WED_PolygonForPointSequence(ags->GetNthHole(n), pol_area.back(), CLOCKWISE))
+					return false;
+			}
+
+			++real_thingies;
+			int para = intlim(intround(ags->GetHeight() * 0.25), 0, 255) << 8;
+			if(ags->IsAGBlock())
+				para += intlim(ags->GetSpelling(), 0, 255);
+			else
+				para += intlim(n_spawning, 0, 255);
+			cbs->BeginPolygon_f(idx, para, 2, writer);
+			DSF_AccumPolygonWithHoles(pol_area, safe_bounds, cbs, writer);
+			cbs->EndPolygon_f(writer);
+
+/*              Do we want to allow strings to cross tile boundaries ???
+
+			if(!clip_polygon(pol_area,pol_cuts,cull_bounds))
+			{
+				problem_children.insert(what);
+				pol_cuts.clear();
+
+			}
+			for(vector<vector<Polygon2> >::iterator i = pol_cuts.begin(); i != pol_cuts.end(); ++i)
+			{
+				++real_thingies;
+				cbs->BeginPolygon_f(idx,pol->GetHeading(),bez ? 4 : 2,writer);
+				DSF_AccumPolygonWithHoles(*i, safe_bounds, cbs, writer);
+				cbs->EndPolygon_f(writer);
+			}
+*/
+			return real_thingies;
+		}
+
+		//------------------------------------------------------------------------------------------------------------
 		// OBJ LINE EXPORTER
 		//------------------------------------------------------------------------------------------------------------
 
@@ -1753,12 +1858,12 @@ static int	DSF_ExportTileRecursive(
 
 				// can't use the image name any more to determine the .pol/.dds names, as the same image could be used for multiple Orthos.
 				// So we assume the 'Name" contains the image name plus some suffix to make it unique
-				
+
 				string relativePath(FILE_get_dir_name(r) + FILE_get_file_name_wo_extensions(msg));
-				
+
 				string relativePathDDS = relativePath + ( gOrthoExport ? ".dds" : ".png");
 				string relativePathPOL = relativePath + ".pol";
-				
+
 				msg = string("The polygon '") + msg + "' cannot be converted to an orthophoto: ";
 
 				if(is_backout_path(relativePath) || is_dir_sep(relativePath[0]) || relativePath[1] == ':')
@@ -1776,11 +1881,11 @@ static int	DSF_ExportTileRecursive(
 					DoUserAlert((msg + "Output DDS file would overwrite source file, aborting DSF Export. Change polygon name.").c_str());
 					return -1;
 				}
-				
+
 				Bbox2 UVbounds; orth->GetBounds(gis_UV, UVbounds);
 				Bbox2 UVbounds_used(0,0,1,1);                            // we may end up not using all of the texture
 				WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
-				
+
 				date_cmpr_result_t date_cmpr_res = FILE_date_cmpr(absPathIMG.c_str(),absPathDDS.c_str());
 				//-----------------
 				/* How to export a orthophoto
@@ -1791,7 +1896,7 @@ static int	DSF_ExportTileRecursive(
 				* Create the .pol with the file format in mind
 				* Enjoy your new orthophoto
 				*/
-				
+
 				if(date_cmpr_res == dcr_firstIsNew || date_cmpr_res == dcr_same)
 				{
 	#if DEV
@@ -1824,17 +1929,17 @@ static int	DSF_ExportTileRecursive(
 					}
 					ImageInfo imgInfo(export_info.orthoImg);
 					ImageInfo DDSInfo;
-					
+
 					int UVMleft   = intround(imgInfo.width * UVbounds.xmin());
 					int UVMright  = intround(imgInfo.width * UVbounds.xmax());
 					int UVMtop    = intround(imgInfo.height * UVbounds.ymax());
 					int UVMbottom = intround(imgInfo.height * UVbounds.ymin());
-					
+
 					/* If the source image is a multiple of 1k pix/side - we want to avoid scaling the subtextures as much as possible.
 					   So in case the UV coords are a tiny bit off - rather round towards a size that allows keeping 1:1 pixel ratio.
 					*/
 					bool is1Ksource = imgInfo.width % 1024 == 0 && imgInfo.height % 1024 == 0;
-					
+
 					if(is1Ksource)
 					{
 						if(UVMleft   % 512 == 1) UVMleft -= 1;   else if(UVMleft   % 512 == 511) UVMleft += 1;
@@ -1842,10 +1947,10 @@ static int	DSF_ExportTileRecursive(
 						if(UVMtop    % 512 == 1) UVMtop -= 1;    else if(UVMtop    % 512 == 511) UVMtop += 1;
 						if(UVMbottom % 512 == 1) UVMbottom -= 1; else if(UVMbottom % 512 == 511) UVMbottom += 1;
 					}
-					
+
 					int UVMwidth  = UVMright - UVMleft;
 					int UVMheight = UVMtop - UVMbottom;
-					
+
 					int DDSwidth = 1;
 					int DDSheight = 1;
 
@@ -1941,7 +2046,7 @@ static int	DSF_ExportTileRecursive(
 					DoUserAlert(msg.c_str());
 					return -1;
 				}
-				
+
 				if(!FILE_exists(absPathPOL.c_str()))
 				{
 					ImageInfo DDSInfo;
@@ -1953,7 +2058,7 @@ static int	DSF_ExportTileRecursive(
 						//-------------------------------------------
 						pol_info_t out_info = { FILE_get_file_name(relativePathDDS), false,
 							/*SCALE*/ (float) LonLatDistMeters(b.p1,Point2(b.p2.x(), b.p1.y())), (float) LonLatDistMeters(b.p1,Point2(b.p1.x(), b.p2.y())),  // althought its irrelevant here
-							false, false, 
+							false, false,
 							/*LAYER_GROUP*/ "TERRAIN", +1,
 							/*LOAD_CENTER*/ (float) center.y(), (float) center.x(), (float) LonLatDistMeters(b.p1,b.p2), intmax2(DDSInfo.height,DDSInfo.width) };
 						rmgr->WritePol(absPathPOL, out_info);
@@ -1971,20 +2076,20 @@ static int	DSF_ExportTileRecursive(
 #endif
 			idx = io_table.accum_pol(r,show_level);
 			bool bez = WED_HasBezierPol(orth);
-			
+
 			if(bez)
 			{
 				vector<BezierPolygon2uv>			orth_area;
 				vector<vector<BezierPolygon2uv> >	orth_cuts;
-				
+
 				WED_BezierPolygonWithHolesForPolygon(orth, orth_area);
-				
+
 				if(!clip_polygon(orth_area,orth_cuts,cull_bounds))
 				{
 					problem_children.insert(what);
 					orth_cuts.clear();
 				}
-				
+
 				for(vector<vector<BezierPolygon2uv> >::iterator i = orth_cuts.begin(); i != orth_cuts.end(); ++i)
 				{
 					++real_thingies;
@@ -2019,12 +2124,12 @@ static int	DSF_ExportTileRecursive(
 #endif
 			return real_thingies;
 		}
-		
+
 	#if ROAD_EDITING
 		//------------------------------------------------------------------------------------------------------------
 		// ROAD EXPORTER
 		//------------------------------------------------------------------------------------------------------------
-		
+
 		if (c == WED_RoadEdge::sClass)
 		{
 			auto roa = static_cast<WED_RoadEdge*>(what);
@@ -2047,11 +2152,11 @@ static int	DSF_ExportTileRecursive(
 		io_table.set_filter(idx);
 	}
 	else apt = NULL;
-	
+
 	//------------------------------------------------------------------------------------------------------------
-	// RECURSION 
+	// RECURSION
 	//------------------------------------------------------------------------------------------------------------
-	
+
 	if(apt || c == WED_Group::sClass)  // only recurse if there is actually a possibility of more DSF content in there
 	{
 		int cc = what->CountChildren();
@@ -2069,7 +2174,7 @@ static int	DSF_ExportTileRecursive(
 			}
 		}
 	}
-	
+
 	if(apt)
 	{
 		cbs->SetFilter_f(-1,writer);
@@ -2089,8 +2194,8 @@ static int DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& 
 	Bbox2	cull(x,y,x+1,y+1);
 
 	int cull_code = DSF_HeightRangeRecursive(base,msl_min,msl_max, cull);    // also finds if tile has anything goint into it
-	
-	if(cull_code < 0) 
+
+	if(cull_code < 0)
 		return 0;
 	else if(cull_code > 0)
 	{
@@ -2139,7 +2244,7 @@ static int DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& 
 	{
 		snprintf(buffer, 255, "%sEarth nav data" DIR_STR "%+03d%+04d",	pkg.c_str(), latlon_bucket(y), latlon_bucket(x)	);
 		FILE_make_dir_exist(buffer);
-		
+
 		snprintf(buffer, 255, "%sEarth nav data" DIR_STR "%+03d%+04d" DIR_STR "%+03d%+04d.dsf", pkg.c_str(), latlon_bucket(y), latlon_bucket(x), y, x);
 		DSFWriteToFile(buffer, writer);
 	}
@@ -2247,7 +2352,7 @@ int DSF_ExportAirportOverlay(IResolver * resolver, WED_Airport  * apt, const str
 		int entities = 0;
 		for(int show_level = 6; show_level >= 1; --show_level)
 			entities += DSF_ExportTileRecursive(apt, resolver, package, cull_bounds, safe_bounds, rsrc, &cbs, writer, problem_children, show_level, DSF_export_info);
-			
+
 		Assert(DSF_export_info.orthoImg.data == NULL); //  In this type of export - orthoimages are not allowed. So this should never happen.
 
 		rsrc.write_tables(cbs,writer);
