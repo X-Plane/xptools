@@ -1313,6 +1313,114 @@ bool	WED_ResourceMgr::GetFor(const string& path, XObj8 const *& obj)
 	return true;
 }
 
+void WED_ResourceMgr::setup_tile(agp_t::tile_t * agp, int rotation, const string& path)
+{
+	for(int n = 0; n < agp->tile.size(); n += 4)
+	{
+		agp->tile[n  ] -= agp->anchor_x;
+		agp->tile[n+1] -= agp->anchor_y;
+		do_rotate(rotation,agp->tile[n  ],agp->tile[n+1]);
+	}
+	for(auto& o : agp->objs)
+	{
+		o.x -= agp->anchor_x;
+		o.y -= agp->anchor_y;
+		do_rotate(rotation, o.x, o.y);
+		o.r += 90 * rotation;
+	}
+	for (auto& f : agp->facs)
+		for(auto& l : f.locs)
+		{
+			float x = l.x_ - agp->anchor_x;
+			float y = l.y_ - agp->anchor_y;
+			do_rotate(rotation, x, y);
+			l.x_ = x;
+			l.y_ = -y;
+		}
+
+	agp->xyz_min[0] = agp->xyz_min[1] = agp->xyz_min[2] =  999.0;
+	agp->xyz_max[0] = agp->xyz_max[1] = agp->xyz_max[2] = -999.0;
+
+	for(int n = 0; n < agp->tile.size(); n += 4)
+	{
+		agp->xyz_min[0] = min(agp->xyz_min[0], agp->tile[n]);
+		agp->xyz_max[0] = max(agp->xyz_max[0], agp->tile[n]);
+		agp->xyz_min[2] = min(agp->xyz_min[2], agp->tile[n+1]);
+		agp->xyz_max[2] = max(agp->xyz_max[2], agp->tile[n+1]);
+	}
+
+	auto o = agp->objs.begin();
+	while(o != agp->objs.end())
+	{
+		const XObj8 * oo;
+		if(GetObjRelative(o->name, path, oo))
+		{
+			o->obj = oo;
+			if (fabs(o->r-180.0) < 45.0)  // account for rotation, very roughly only
+			{
+					agp->xyz_min[0] = min(agp->xyz_min[0], oo->xyz_min[0] + o->x);
+					agp->xyz_max[0] = max(agp->xyz_max[0], oo->xyz_max[0] + o->x);
+					agp->xyz_min[2] = min(agp->xyz_min[2], oo->xyz_min[2] + o->y);
+					agp->xyz_max[2] = max(agp->xyz_max[2], oo->xyz_max[2] + o->y);
+			}
+			else if (fabs(o->r-90.0) < 45.0)
+			{
+					agp->xyz_min[0] = min(agp->xyz_min[0],-oo->xyz_min[2] + o->x);
+					agp->xyz_max[0] = max(agp->xyz_max[0],-oo->xyz_max[2] + o->x);
+					agp->xyz_min[2] = min(agp->xyz_min[2], oo->xyz_min[0] + o->y);
+					agp->xyz_max[2] = max(agp->xyz_max[2], oo->xyz_max[0] + o->y);
+			}
+			else if (fabs(o->r+90.0) < 45.0)
+			{
+					agp->xyz_min[0] = min(agp->xyz_min[0], oo->xyz_max[2] + o->x);
+					agp->xyz_max[0] = max(agp->xyz_max[0], oo->xyz_min[2] + o->x);
+					agp->xyz_min[2] = min(agp->xyz_min[2],-oo->xyz_max[0] + o->y);
+					agp->xyz_max[2] = max(agp->xyz_max[2],-oo->xyz_min[0] + o->y);
+			}
+			else
+			{
+					agp->xyz_min[0] = min(agp->xyz_min[0],-oo->xyz_max[0] + o->x);
+					agp->xyz_max[0] = max(agp->xyz_max[0],-oo->xyz_min[0] + o->x);
+					agp->xyz_min[2] = min(agp->xyz_min[2],-oo->xyz_max[2] + o->y);
+					agp->xyz_max[2] = max(agp->xyz_max[2],-oo->xyz_min[2] + o->y);
+			}
+			agp->xyz_min[1] = min(agp->xyz_min[1], oo->xyz_min[1] + o->z);
+			agp->xyz_max[1] = max(agp->xyz_max[1], oo->xyz_max[1] + o->z);
+			o++;
+		}
+		else
+		{
+			o = agp->objs.erase(o);
+			LOG_MSG("E/Agp can not load object %s in %s\n", o->name.c_str(), path.c_str());
+		}
+	}
+
+	auto f = agp->facs.begin();
+	while (f != agp->facs.end())
+	{
+		const fac_info_t * fac;
+		if(GetFac(f->name, fac))                // doesn't take rpaths, only vpaths
+		{
+			f->fac = fac;
+/*			for (auto& l : f->locs)
+			{
+				agp->xyz_min[0] = min(agp->xyz_min[0], (float) l.x());
+				agp->xyz_max[0] = max(agp->xyz_max[0], (float) l.x());
+				agp->xyz_min[2] = min(agp->xyz_min[2], (float) l.y());
+				agp->xyz_max[2] = max(agp->xyz_max[2], (float) l.y());
+			}
+			agp->xyz_min[1] = min(agp->xyz_min[1], 0.0f);    // do better - figure the real height limits
+			agp->xyz_max[1] = min(agp->xyz_max[1], 2.0f); */
+			f++;
+		}
+		else
+		{
+			f = agp->facs.erase(f);
+			LOG_MSG("E/Agp can not load facade %s in %s\n", f->name.c_str(), path.c_str());
+		}
+	}
+}
+
 bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 {
 	auto i = mAGP.find(path);
@@ -1331,7 +1439,12 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 
 	int versions[] = { 1000, 0 };
 	int v;
-	if((v=MFS_xplane_header(&s,versions,"AG_POINT",NULL)) == 0)
+
+//	if( (v=MFS_xplane_header(&s,versions,"AG_POINT",NULL)) == 0)
+	string l1; MFS_string_eol(&s, &l1);
+	v = MFS_int(&s); MFS_string_eol(&s,NULL);
+	string l3; MFS_string_eol(&s, &l3);
+	if((l1 != "I" && l1 != "A") || v != 1000 || (l3 != "AG_POINT" && l3 == "AG_STRING" && l3 == "AG_BLOCK"))
 	{
 		MemFile_Close(file);
 		return false;
@@ -1343,11 +1456,11 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 	double tex_s = 1.0, tex_t = 1.0;		// these scale from pixels to UV coords
 	double tex_x = 1.0, tex_y = 1.0;		// meters for tex, x & y
 	int	 rotation = 0;
-	double anchor_x = 0.0, anchor_y = 0.0;
 	agp->hide_tiles = 0;
 	vector<string>	obj_paths, fac_paths;
 
 	bool is_mesh_shader = false;
+	agp_t::tile_t * ti = nullptr;
 
 	while(!MFS_done(&s))
 	{
@@ -1399,7 +1512,9 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 		}
 		else if(MFS_string_match(&s,"TILE",false))
 		{
-			agp->tile.resize(16);
+			if(ti) setup_tile(ti, rotation, path);
+			agp->tiles.push_back(agp_t::tile_t());
+			ti = &agp->tiles.back();
 			double s1 = MFS_double(&s);
 			double t1 = MFS_double(&s);
 			double s2 = MFS_double(&s);
@@ -1409,29 +1524,27 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 			double y1 = t1 * tex_t * tex_y;
 			double y2 = t2 * tex_t * tex_y;
 
-			s1 *= tex_s;
-			s2 *= tex_s;
-			t1 *= tex_t;
-			t2 *= tex_t;
+			s1 *= tex_s; s2 *= tex_s;
+			t1 *= tex_t; t2 *= tex_t;
 
-			anchor_x = (x1 + x2) * 0.5;
-			anchor_y = (y1 + y2) * 0.5;
-			agp->tile[ 0] = x1;
-			agp->tile[ 1] = y1;
-			agp->tile[ 2] = s1;
-			agp->tile[ 3] = t1;
-			agp->tile[ 4] = x2;
-			agp->tile[ 5] = y1;
-			agp->tile[ 6] = s2;
-			agp->tile[ 7] = t1;
-			agp->tile[ 8] = x2;
-			agp->tile[ 9] = y2;
-			agp->tile[10] = s2;
-			agp->tile[11] = t2;
-			agp->tile[12] = x1;
-			agp->tile[13] = y2;
-			agp->tile[14] = s1;
-			agp->tile[15] = t2;
+			ti->anchor_x = (x1 + x2) * 0.5;
+			ti->anchor_y = (y1 + y2) * 0.5;
+			ti->tile.resize(16);
+			ti->tile[ 0] = x1;	ti->tile[ 1] = y1;
+			ti->tile[ 2] = s1;	ti->tile[ 3] = t1;
+			ti->tile[ 4] = x2;	ti->tile[ 5] = y1;
+			ti->tile[ 6] = s2;	ti->tile[ 7] = t1;
+
+			ti->tile[ 8] = x2; ti->tile[ 9] = y2;
+			ti->tile[10] = s2; ti->tile[11] = t2;
+			ti->tile[12] = x1; ti->tile[13] = y2;
+			ti->tile[14] = s1; ti->tile[15] = t2;
+		}
+		else if(MFS_string_match(&s,"SUB_GRID",false))
+		{
+			agp->tiles.push_back(agp_t::tile_t());
+			ti = &agp->tiles.back();
+			agp->hide_tiles = true;
 		}
 		else if(MFS_string_match(&s,"ROTATION",false))
 		{
@@ -1439,131 +1552,131 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 		}
 		else if(MFS_string_match(&s,"CROP_POLY",false))
 		{
-			agp->tile.clear();
+			ti->tile.clear();
 			while(MFS_has_word(&s))
 			{
 				double ps = MFS_double(&s);
 				double pt = MFS_double(&s);
-				agp->tile.push_back(ps * tex_s * tex_x);
-				agp->tile.push_back(pt * tex_t * tex_y);
-				agp->tile.push_back(ps * tex_s);
-				agp->tile.push_back(pt * tex_t);
+				ti->tile.push_back(ps * tex_s * tex_x);
+				ti->tile.push_back(pt * tex_t * tex_y);
+				ti->tile.push_back(ps * tex_s);
+				ti->tile.push_back(pt * tex_t);
 			}
 		}
 		else if(MFS_string_match(&s,"OBJ_DRAPED",false) ||
 				MFS_string_match(&s,"OBJ_GRADED",false))
 		{
-			agp->objs.push_back(agp_t::obj_t());
-			agp->objs.back().x = MFS_double(&s) * tex_s * tex_x;
-			agp->objs.back().y = MFS_double(&s) * tex_t * tex_y;
-			agp->objs.back().r = MFS_double(&s);
-			agp->objs.back().z = 0.0;
+			ti->objs.push_back(agp_t::obj_t());
+			ti->objs.back().x = MFS_double(&s) * tex_s * tex_x;
+			ti->objs.back().y = MFS_double(&s) * tex_t * tex_y;
+			ti->objs.back().r = MFS_double(&s);
+			ti->objs.back().z = 0.0;
 			int obj_idx = MFS_int(&s);
 			if(obj_idx >= 0 && obj_idx < obj_paths.size())
 			{
-				agp->objs.back().name = obj_paths[obj_idx];
-				agp->objs.back().show_lo = MFS_int(&s);
-				agp->objs.back().show_hi = MFS_int(&s);
-				agp->objs.back().scp_step = 0.0;
+				ti->objs.back().name = obj_paths[obj_idx];
+				ti->objs.back().show_lo = MFS_int(&s);
+				ti->objs.back().show_hi = MFS_int(&s);
+				ti->objs.back().scp_step = 0.0;
 			}
 			else
 			{
-				agp->objs.pop_back(); // ignore instances with OOB index
+				ti->objs.pop_back(); // ignore instances with OOB index
 				LOG_MSG("E/Agp object index out of bounds in %s\n",p.c_str());
 			}
 		}
 		else if (MFS_string_match(&s, "OBJ_SCRAPER", false))
 		{
-			agp->objs.push_back(agp_t::obj_t());
-			agp->objs.back().x = MFS_double(&s) * tex_s * tex_x;
-			agp->objs.back().y = MFS_double(&s) * tex_t * tex_y;
-			agp->objs.back().r = MFS_double(&s);
-			agp->objs.back().z = 0.0;
+			ti->objs.push_back(agp_t::obj_t());
+			ti->objs.back().x = MFS_double(&s) * tex_s * tex_x;
+			ti->objs.back().y = MFS_double(&s) * tex_t * tex_y;
+			ti->objs.back().r = MFS_double(&s);
+			ti->objs.back().z = 0.0;
 			int obj_idx = MFS_int(&s);
 			if (obj_idx >= 0 && obj_idx < obj_paths.size())
 			{
-				agp->objs.back().name = obj_paths[obj_idx];
-				agp->objs.back().scp_min = MFS_double(&s);
-				agp->objs.back().scp_max = MFS_double(&s);
-				agp->objs.back().scp_step = MFS_double(&s);
+				ti->objs.back().name = obj_paths[obj_idx];
+				ti->objs.back().scp_min = MFS_double(&s);
+				ti->objs.back().scp_max = MFS_double(&s);
+				ti->objs.back().scp_step = MFS_double(&s);
 			}
 			else
 			{
-				agp->objs.pop_back(); // ignore instances with OOB index
+				ti->objs.pop_back(); // ignore instances with OOB index
 				LOG_MSG("E/Agp object index out of bounds in %s\n",p.c_str());
 			}
 		}
 		else if(MFS_string_match(&s,"OBJ_DELTA",false))
 		{
-			agp->objs.push_back(agp_t::obj_t());
-			agp->objs.back().x = MFS_double(&s) * tex_s * tex_x;
-			agp->objs.back().y = MFS_double(&s) * tex_t * tex_y;
-			agp->objs.back().r = MFS_double(&s);
-			agp->objs.back().z = MFS_double(&s);
+			ti->objs.push_back(agp_t::obj_t());
+			ti->objs.back().x = MFS_double(&s) * tex_s * tex_x;
+			ti->objs.back().y = MFS_double(&s) * tex_t * tex_y;
+			ti->objs.back().r = MFS_double(&s);
+			ti->objs.back().z = MFS_double(&s);
 			int obj_idx = MFS_int(&s);
 			if(obj_idx >= 0 && obj_idx < obj_paths.size())
 			{
-				agp->objs.back().name = obj_paths[obj_idx];
-				agp->objs.back().show_lo = MFS_int(&s);
-				agp->objs.back().show_hi = MFS_int(&s);
-				agp->objs.back().scp_step = 0.0;
+				ti->objs.back().name = obj_paths[obj_idx];
+				ti->objs.back().show_lo = MFS_int(&s);
+				ti->objs.back().show_hi = MFS_int(&s);
+				ti->objs.back().scp_step = 0.0;
 			}
 			else
 			{
-				agp->objs.pop_back(); // ignore instances with OOB index
+				ti->objs.pop_back(); // ignore instances with OOB index
 				LOG_MSG("E/Agp object index out of bounds in %s\n",p.c_str());
 			}
 		}
 		else if (MFS_string_match(&s, "FAC", false))
 		{
-			agp->facs.push_back(agp_t::fac_t());
+			ti->facs.push_back(agp_t::fac_t());
 			int fac_idx = MFS_int(&s);
 			if (fac_idx >= 0 && fac_idx < fac_paths.size())
 			{
-				agp->facs.back().name = fac_paths[fac_idx];
-				agp->facs.back().height = MFS_double(&s);
+				ti->facs.back().name = fac_paths[fac_idx];
+				ti->facs.back().height = MFS_double(&s);
 				while (MFS_has_word(&s))
 				{
 					Point2 p;
 					p.x_ = MFS_double(&s) * tex_s * tex_x;
 					p.y_ = MFS_double(&s) * tex_t * tex_y;
-					agp->facs.back().locs.push_back(p);
-					agp->facs.back().walls.push_back(0);
+					ti->facs.back().locs.push_back(p);
+					ti->facs.back().walls.push_back(0);
 				}
 			}
 			else
 			{
-				agp->facs.pop_back(); // ignore instances with OOB index
+				ti->facs.pop_back(); // ignore instances with OOB index
 				LOG_MSG("E/Agp facade index out of bounds in %s\n",p.c_str());
 			}
 		}
 		else if (MFS_string_match(&s, "FAC_WALLS", false))
 		{
-			agp->facs.push_back(agp_t::fac_t());
+			ti->facs.push_back(agp_t::fac_t());
 			int fac_idx = MFS_int(&s);
 			if (fac_idx >= 0 && fac_idx < fac_paths.size())
 			{
-				agp->facs.back().name = fac_paths[fac_idx];
-				agp->facs.back().height = MFS_double(&s);
+				ti->facs.back().name = fac_paths[fac_idx];
+				ti->facs.back().height = MFS_double(&s);
 				while (MFS_has_word(&s))
 				{
 					Point2 p;
 					p.x_ = MFS_double(&s) * tex_s * tex_x;
 					p.y_ = MFS_double(&s) * tex_t * tex_y;
-					agp->facs.back().locs.push_back(p);
-					agp->facs.back().walls.push_back(MFS_int(&s));
+					ti->facs.back().locs.push_back(p);
+					ti->facs.back().walls.push_back(MFS_int(&s));
 				}
 			}
 			else
 			{
-				agp->facs.pop_back(); // ignore instances with OOB index
+				ti->facs.pop_back(); // ignore instances with OOB index
 				LOG_MSG("E/Agp facade index out of bounds in %s\n",p.c_str());
 			}
 		}
 		else if(MFS_string_match(&s,"ANCHOR_PT",false))
 		{
-			anchor_x = MFS_double(&s) * tex_s * tex_x;
-			anchor_y = MFS_double(&s) * tex_t * tex_y;
+			ti->anchor_x = MFS_double(&s) * tex_s * tex_x;
+			ti->anchor_y = MFS_double(&s) * tex_t * tex_y;
 		}
 		else if (MFS_string_match(&s,"HIDE_TILES",true))
 		{
@@ -1579,113 +1692,9 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 		else
 			MFS_string_eol(&s,NULL);
 	}
+	if(ti) setup_tile(ti, rotation, path);
+
 	MemFile_Close(file);
-
-	for(int n = 0; n < agp->tile.size(); n += 4)
-	{
-		agp->tile[n  ] -= anchor_x;
-		agp->tile[n+1] -= anchor_y;
-		do_rotate(rotation,agp->tile[n  ],agp->tile[n+1]);
-	}
-	for(auto& o : agp->objs)
-	{
-		o.x -= anchor_x;
-		o.y -= anchor_y;
-		do_rotate(rotation, o.x, o.y);
-		o.r += 90.0 * rotation;
-	}
-	for (auto& f : agp->facs)
-		for(auto& l : f.locs)
-		{
-			float x = l.x_ - anchor_x;
-			float y = l.y_ - anchor_y;
-			do_rotate(rotation, x, y);
-			l.x_ = x;
-			l.y_ = -y;
-		}
-
-	agp->xyz_min[0] = agp->xyz_min[1] = agp->xyz_min[2] =  999.0;
-	agp->xyz_max[0] = agp->xyz_max[1] = agp->xyz_max[2] = -999.0;
-
-	for(int n = 0; n < agp->tile.size(); n += 4)
-	{
-		agp->xyz_min[0] = min(agp->xyz_min[0], agp->tile[n]);
-		agp->xyz_max[0] = max(agp->xyz_max[0], agp->tile[n]);
-		agp->xyz_min[2] = min(agp->xyz_min[2], agp->tile[n+1]);
-		agp->xyz_max[2] = max(agp->xyz_max[2], agp->tile[n+1]);
-	}
-
-	auto o = agp->objs.begin();
-	while(o != agp->objs.end())
-	{
-		const XObj8 * oo;
-		if(GetObjRelative(o->name, path, oo))
-		{
-			o->obj = oo;
-			if (fabs(o->r-180.0) < 45.0)  // account for rotation, very roughly only
-			{
-					agp->xyz_min[0] = min(agp->xyz_min[0], oo->xyz_min[0] + o->x);
-					agp->xyz_max[0] = max(agp->xyz_max[0], oo->xyz_max[0] + o->x);
-					agp->xyz_min[2] = min(agp->xyz_min[2], oo->xyz_min[2] + o->y);
-					agp->xyz_max[2] = max(agp->xyz_max[2], oo->xyz_max[2] + o->y);
-			}
-			else if (fabs(o->r-90.0) < 45.0)
-			{
-					agp->xyz_min[0] = min(agp->xyz_min[0],-oo->xyz_min[2] + o->x);
-					agp->xyz_max[0] = max(agp->xyz_max[0],-oo->xyz_max[2] + o->x);
-					agp->xyz_min[2] = min(agp->xyz_min[2], oo->xyz_min[0] + o->y);
-					agp->xyz_max[2] = max(agp->xyz_max[2], oo->xyz_max[0] + o->y);
-			}
-			else if (fabs(o->r+90.0) < 45.0)
-			{
-					agp->xyz_min[0] = min(agp->xyz_min[0], oo->xyz_min[2] + o->x);
-					agp->xyz_max[0] = max(agp->xyz_max[0], oo->xyz_max[2] + o->x);
-					agp->xyz_min[2] = min(agp->xyz_min[2],-oo->xyz_min[0] + o->y);
-					agp->xyz_max[2] = max(agp->xyz_max[2],-oo->xyz_max[0] + o->y);
-			}
-			else
-			{
-					agp->xyz_min[0] = min(agp->xyz_min[0],-oo->xyz_min[0] + o->x);
-					agp->xyz_max[0] = max(agp->xyz_max[0],-oo->xyz_max[0] + o->x);
-					agp->xyz_min[2] = min(agp->xyz_min[2],-oo->xyz_min[2] + o->y);
-					agp->xyz_max[2] = max(agp->xyz_max[2],-oo->xyz_max[2] + o->y);
-			}
-			agp->xyz_min[1] = min(agp->xyz_min[1], oo->xyz_min[1] + o->z);
-			agp->xyz_max[1] = max(agp->xyz_max[1], oo->xyz_max[1] + o->z);
-			o++;
-		}
-		else
-		{
-			o = agp->objs.erase(o);
-			LOG_MSG("E/Agp can not load object %s in %s\n", o->name.c_str(), p.c_str());
-		}
-	}
-
-	auto f = agp->facs.begin();
-	while (f != agp->facs.end())
-	{
-		const fac_info_t * fac;
-		if(GetFac(f->name, fac))                // doesn't take rpaths, only vpaths
-		{
-			f->fac = fac;
-			for (auto& l : f->locs)
-			{
-				agp->xyz_min[0] = min(agp->xyz_min[0], (float) l.x());
-				agp->xyz_max[0] = max(agp->xyz_max[0], (float) l.x());
-				agp->xyz_min[2] = min(agp->xyz_min[2], (float) l.y());
-				agp->xyz_max[2] = max(agp->xyz_max[2], (float) l.y());
-			}
-			agp->xyz_min[1] = min(agp->xyz_min[1], 0.0f);    // do better - figure the real height limits
-			agp->xyz_max[1] = min(agp->xyz_max[1], 2.0f);
-			f++;
-		}
-		else
-		{
-			f = agp->facs.erase(f);
-			LOG_MSG("E/Agp can not load facade %s in %s\n", f->name.c_str(), p.c_str());
-		}
-	}
-
 	return true;
 }
 

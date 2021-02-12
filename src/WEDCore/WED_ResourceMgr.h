@@ -148,14 +148,19 @@ struct agp_t {
 		string		name;
 		const fac_info_t * fac;         // resolving name is slow - so keep the direct pointer around
 	};
+	struct tile_t {
+		vector<float>	tile;	// the base tile in x,y,s,t quads.
+		vector<obj_t>	objs;
+		vector<fac_t>	facs;
+		float			xyz_min[3];
+		float			xyz_max[3];
+		float 			anchor_x, anchor_y;
+		tile_t(void) : anchor_x(0), anchor_y(0) { }
+	};
 	string			base_tex;
 	string			mesh_tex;
 	int				hide_tiles;
-	vector<float>	tile;	// the base tile in x,y,s,t quads.
-	vector<obj_t>	objs;
-	vector<fac_t>	facs;
-	float			xyz_min[3];
-	float			xyz_max[3];
+	vector<tile_t>	tiles;
 	string			description;
 };
 
@@ -191,6 +196,7 @@ public:
 private:
 
 			XObj8 * LoadObj(const string& abspath);
+			void    setup_tile(agp_t::tile_t * agp, int rotation, const string& path);
 
 	unordered_map<string,vector<fac_info_t> > mFac;
 	unordered_map<string,pol_info_t>		mPol;

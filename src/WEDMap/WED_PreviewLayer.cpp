@@ -292,7 +292,7 @@ void draw_obj_at_xyz(ITexMgr * tman, const XObj8 * o, double x, double y, double
 	glPopMatrix();
 }
 
-void draw_agp_at_xyz(ITexMgr * tman, const agp_t * agp, double x, double y, double z, float agl, float r, GUI_GraphState * g)
+void draw_agp_at_xyz(ITexMgr * tman, const agp_t * agp, double x, double y, double z, float agl, float r, GUI_GraphState * g, int tile_idx)
 {
 	if (!agp) return;
 
@@ -305,19 +305,20 @@ void draw_agp_at_xyz(ITexMgr * tman, const agp_t * agp, double x, double y, doub
 	glTranslatef(x, y, z);
 	glRotatef(r, 0, -1, 0);
 	glColor3f(1, 1, 1);
-	if (!agp->tile.empty() && !agp->hide_tiles)
+	auto ti = agp->tiles[tile_idx];
+	if (!ti.tile.empty() && !agp->hide_tiles)
 	{
 		glDisable(GL_CULL_FACE);
 		glBegin(GL_TRIANGLE_FAN);
-		for (int n = 0; n < agp->tile.size(); n += 4)
+		for (int n = 0; n < ti.tile.size(); n += 4)
 		{
-			glTexCoord2f(agp->tile[n + 2], agp->tile[n + 3]);
-			glVertex3f(agp->tile[n], 0, -agp->tile[n + 1]);
+			glTexCoord2f(ti.tile[n + 2], ti.tile[n + 3]);
+			glVertex3f(ti.tile[n], 0, -ti.tile[n + 1]);
 		}
 		glEnd();
 		glEnable(GL_CULL_FACE);
 	}
-	for (auto& o : agp->objs)
+	for (auto& o : ti.objs)
 		if (o.scp_step > 0.0)
 		{
 			if (agl >= o.scp_min && agl <= o.scp_max)
@@ -329,7 +330,7 @@ void draw_agp_at_xyz(ITexMgr * tman, const agp_t * agp, double x, double y, doub
 		else
 			draw_obj_at_xyz(tman, o.obj, o.x, o.z, -o.y, o.r, g);
 
-	for (auto& f : agp->facs)
+	for (auto& f : ti.facs)
 		draw_facade(tman, nullptr, f.name, *(f.fac), f.locs, f.walls, f.height, g, true);
 	glPopMatrix();
 }
@@ -351,19 +352,20 @@ void draw_agp_at_ll(ITexMgr * tman, const agp_t * agp, const Point2& loc, float 
 	glRotatef(90, 1, 0, 0);
 	glRotatef(r, 0, -1, 0);
 	glColor3f(1, 1, 1);
-	if (!agp->tile.empty() && !agp->hide_tiles)
+	auto ti = agp->tiles.front();
+	if (!ti.tile.empty() && !agp->hide_tiles)
 	{
 		glDisable(GL_CULL_FACE);
 		glBegin(GL_TRIANGLE_FAN);
-		for (int n = 0; n < agp->tile.size(); n += 4)
+		for (int n = 0; n < ti.tile.size(); n += 4)
 		{
-			glTexCoord2f(agp->tile[n + 2], agp->tile[n + 3]);
-			glVertex3f(agp->tile[n], 0, -agp->tile[n + 1]);
+			glTexCoord2f(ti.tile[n + 2], ti.tile[n + 3]);
+			glVertex3f(ti.tile[n], 0, -ti.tile[n + 1]);
 		}
 		glEnd();
 		glEnable(GL_CULL_FACE);
 	}
-	for (auto& o : agp->objs)
+	for (auto& o : ti.objs)
 	{
 		if ((o.show_lo + o.show_hi) / 2 <= preview_level)
 		if (ppm * max(o.obj->xyz_max[0] - o.obj->xyz_min[0], o.obj->xyz_max[2] - o.obj->xyz_min[2]) > MIN_PIXELS_PREVIEW)
@@ -380,7 +382,7 @@ void draw_agp_at_ll(ITexMgr * tman, const agp_t * agp, const Point2& loc, float 
 				draw_obj_at_xyz(tman, o.obj, o.x, o.z, -o.y, o.r, g);
 		}
 	}
-	for (auto& f : agp->facs)
+	for (auto& f : ti.facs)
 		draw_facade(tman, nullptr, f.name, *(f.fac), f.locs, f.walls, f.height, g, true, ppm);
 	glPopMatrix();
 }

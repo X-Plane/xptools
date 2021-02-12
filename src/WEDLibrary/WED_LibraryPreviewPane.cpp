@@ -668,6 +668,7 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, const int 
 					if(str->objs.size())
 						mResMgr->GetObjRelative(str->objs.front(), res, o);    // do the cheap thing: show only the first object. Could show a whole line ...
 			}
+		case res_Autogen:
 		case res_Object:
 			g->SetState(false,1,false,true,true,true,true);
 			glClear(GL_DEPTH_BUFFER_BIT);
@@ -688,17 +689,21 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, const int 
 			}
 			else if (mResMgr->GetAGP(res,agp))
 			{
-				double real_radius = fltmax3(
-									agp->xyz_max[0] - agp->xyz_min[0],
-									agp->xyz_max[1] - agp->xyz_min[1],
-									agp->xyz_max[2] - agp->xyz_min[2]);
-				double xyz_off[3] = { -(agp->xyz_max[0] + agp->xyz_min[0]) * 0.5,
-									  -(agp->xyz_max[1] + agp->xyz_min[1]) * 0.5,
-									   (agp->xyz_max[2] + agp->xyz_min[2]) * 0.5 };
+				for(int i = 0; i < intmin2(4, agp->tiles.size()); i++)
+				{
+					auto ti = agp->tiles[i];
+					double real_radius=pythag(
+										ti.xyz_max[0] - ti.xyz_min[0],
+										ti.xyz_max[1] - ti.xyz_min[1],
+										ti.xyz_max[2] - ti.xyz_min[2]);
+					double xyz_off[3] = { -(ti.xyz_max[0] + ti.xyz_min[0]) * 0.5,
+										  -(ti.xyz_max[1] + ti.xyz_min[1]) * 0.5,
+										   (ti.xyz_max[2] + ti.xyz_min[2]) * 0.5 };
 
-				begin3d(b, real_radius);
-				draw_agp_at_xyz(mTexMgr, agp, xyz_off[0], xyz_off[1], xyz_off[2], mHgt, 0, g);
-				end3d(b);
+					begin3d(b, real_radius * (agp->tiles.size() > 1 ? 2.0 : 1.0));
+					draw_agp_at_xyz(mTexMgr, agp, xyz_off[0] + (ti.xyz_max[0] - ti.xyz_min[0]) * (i > 1 ? i - 1 : -i), xyz_off[1], xyz_off[2], mHgt, 0, g, i);
+					end3d(b);
+				}
 			}
 			break;
 		}
@@ -711,57 +716,57 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, const int 
 			char buf1[120] = "", buf2[120] = "";
 			switch(type)
 			{
-				case res_Facade:
-					if(fac && fac->wallName.size())
-					{
-						int n_wall = fac->wallName.size();
-						int raw_side = intround(mPsi/90) % mWalls;
-						int front_side = raw_side;
-						if(front_side < 0 || front_side >= n_wall) front_side = 0;
+			case res_Facade:
+				if(fac && fac->wallName.size())
+				{
+					int n_wall = fac->wallName.size();
+					int raw_side = intround(mPsi/90) % mWalls;
+					int front_side = raw_side;
+					if(front_side < 0 || front_side >= n_wall) front_side = 0;
 
-						snprintf(buf1, sizeof(buf1), "Wall \'%s\' intended for %s @ w=%.1lf%c", fac->wallName[front_side].c_str(), fac->wallUse[front_side].c_str(),
-							mWid / (gIsFeet ? 0.3048 : 1), gIsFeet ? '\'' : 'm');
-						snprintf(buf2, sizeof(buf2), "Type %d, %d wall%s for %s @ h=%dm", fac->is_new ? 2 : 1, n_wall, n_wall > 1 ? "s" : "", fac->h_range.c_str(), mHgt);
-					}
-					else
-						sprintf(buf2, "No preview for this facade available");
-					break;
-				case res_Polygon:
-					if(pol)
-						snprintf(buf1, sizeof(buf1), "%s", pol->description.c_str());
-					if (pol && pol->mSubBoxes.size())
-						sprintf(buf2, "Select desired part of texture by clicking on it");
-					break;
-				case res_Line:
-					if(lin)
-						snprintf(buf1, sizeof(buf1), "%s", lin->description.c_str());
-					if (lin && lin->s1.size() && lin->s2.size())
-						snprintf(buf2, sizeof(buf2), "w~%.0f%s",lin->eff_width * (gIsFeet ? 100.0/2.54 : 100.0), gIsFeet ? "in" : "cm" );
-					break;
-				case res_Object:
-				case res_Forest:
-				case res_String:
-					if (o)
-					{
-						snprintf(buf1, sizeof(buf1), "%s", o->description.c_str());
-						int n = sprintf(buf2, "max h=%.1f%s", o->xyz_max[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");
-						if (o->xyz_min[1] < -0.07)
-							n += sprintf(buf2 + n, ", below ground to %.1f%s", o->xyz_min[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");
-					}
-					else if(agp)
-					{
-						snprintf(buf1, sizeof(buf1), "%s", agp->description.c_str());
-						int n = sprintf(buf2, "max h=%.1f%s", agp->xyz_max[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");
-						for (auto& a : agp->objs)
-							if(a.scp_step > 0.0)
-							{
-								sprintf(buf2 + n, ", supports set_AGL %.1f .. %.1f%s @ h=%dm", a.scp_min / (gIsFeet ? 0.3048 : 1.0), a.scp_max / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m", mHgt);
-								break;
-							}
-					}
-					else if (str)
-						snprintf(buf1, sizeof(buf1), "%s", str->description.c_str());
-					break;
+					snprintf(buf1, sizeof(buf1), "Wall \'%s\' intended for %s @ w=%.1lf%c", fac->wallName[front_side].c_str(), fac->wallUse[front_side].c_str(),
+						mWid / (gIsFeet ? 0.3048 : 1), gIsFeet ? '\'' : 'm');
+					snprintf(buf2, sizeof(buf2), "Type %d, %d wall%s for %s @ h=%dm", fac->is_new ? 2 : 1, n_wall, n_wall > 1 ? "s" : "", fac->h_range.c_str(), mHgt);
+				}
+				else
+					sprintf(buf2, "No preview for this facade available");
+				break;
+			case res_Polygon:
+				if(pol)
+					snprintf(buf1, sizeof(buf1), "%s %s", pol->description.c_str(), pol->hasDecal ? "(decal not shown)" : "");
+				if (pol && pol->mSubBoxes.size())
+					sprintf(buf2, "Select desired part of texture by clicking on it");
+				break;
+			case res_Line:
+				if(lin)
+					snprintf(buf1, sizeof(buf1), "%s %s", lin->description.c_str(), lin->hasDecal ? "(decal not shown)" : "");
+				if (lin && lin->s1.size() && lin->s2.size())
+					snprintf(buf2, sizeof(buf2), "w~%.0f%s",lin->eff_width * (gIsFeet ? 100.0/2.54 : 100.0), gIsFeet ? "in" : "cm" );
+				break;
+			case res_Object:
+			case res_Forest:
+			case res_String:
+				if (o)
+				{
+					snprintf(buf1, sizeof(buf1), "%s", o->description.c_str());
+					int n = sprintf(buf2, "max h=%.1f%s", o->xyz_max[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");
+					if (o->xyz_min[1] < -0.07)
+						n += sprintf(buf2 + n, ", below ground to %.1f%s", o->xyz_min[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");
+				}
+				else if(agp)
+				{
+					snprintf(buf1, sizeof(buf1), "%s", agp->description.c_str());
+					int n = sprintf(buf2, "max h=%.1f%s", agp->tiles.front().xyz_max[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");
+					for (auto& a : agp->tiles.front().objs)
+						if(a.scp_step > 0.0)
+						{
+							sprintf(buf2 + n, ", supports set_AGL %.1f .. %.1f%s @ h=%dm", a.scp_min / (gIsFeet ? 0.3048 : 1.0), a.scp_max / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m", mHgt);
+							break;
+						}
+				}
+				else if (str)
+					snprintf(buf1, sizeof(buf1), "%s", str->description.c_str());
+				break;
 			}
 
 			if (buf1[0])

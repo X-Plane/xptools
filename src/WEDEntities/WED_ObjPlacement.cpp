@@ -33,7 +33,7 @@
 DEFINE_PERSISTENT(WED_ObjPlacement)
 TRIVIAL_COPY(WED_ObjPlacement,WED_GISPoint_Heading)
 
-WED_ObjPlacement::WED_ObjPlacement(WED_Archive * a, int i) : 
+WED_ObjPlacement::WED_ObjPlacement(WED_Archive * a, int i) :
 	WED_GISPoint_Heading(a,i),
 	has_msl(this,PROP_Name("Elevation Mode", XML_Name("obj_placement","custom_msl")), ObjElevationType, obj_setToGround),
 	msl    (this,PROP_Name("Elevation",     XML_Name("obj_placement","msl")), 0, 5, 3),
@@ -104,7 +104,7 @@ void	WED_ObjPlacement::Rotate(GISLayer_t l,const Point2& center, double angle)
 
 double 	WED_ObjPlacement::GetVisibleDeg(void) const
 {
-	return visibleWithinDeg; // one note - 
+	return visibleWithinDeg; // one note -
 }
 
 bool		WED_ObjPlacement::Cull(const Bbox2& b) const
@@ -133,7 +133,8 @@ bool		WED_ObjPlacement::Cull(const Bbox2& b) const
 			}
 			else if(rmgr->GetAGP(resource.value,agp))
 			{
-				*f = pythag(max(fabs(agp->xyz_max[0]), fabs(agp->xyz_min[0])), max(fabs(agp->xyz_max[2]), fabs(agp->xyz_min[2]))) * 1.2 * mtr_to_lon;
+				auto ti = agp->tiles.front();
+				*f = pythag(max(fabs(ti.xyz_max[0]), fabs(ti.xyz_min[0])), max(fabs(ti.xyz_max[2]), fabs(ti.xyz_min[2]))) * 1.2 * mtr_to_lon;
 			}
 		}
 	}
@@ -142,7 +143,7 @@ bool		WED_ObjPlacement::Cull(const Bbox2& b) const
 // Thois will make items completely invisible, but keeps thm selectable. Very similar as the "too small to go in" apprach where whole
 // groups or airport drop out of view.
 // Results in only a verw cases in users surprises - as large group of isolated items (like forests drawn as individual tree objects).
-// This practive of drawing trees comoes a popular "bad paractive" for gateway airports now - which result in sceneries that do not scale 
+// This practive of drawing trees comoes a popular "bad paractive" for gateway airports now - which result in sceneries that do not scale
 // very well with rendering settings.
 // This concept could be enhanced by passing an additional parameter into the Cull() function to allow items to cull themselves differently
 // based on structure/preview or even tool views.
