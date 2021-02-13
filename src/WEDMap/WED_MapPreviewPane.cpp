@@ -54,7 +54,8 @@
 // display Frames Per Second. Will peg CPU/GPU load at 100%, only useable for diaganostic purposes.
 #define SHOW_FPS 0
 
-static constexpr double DRAW_DISTANCE = 50e3;
+static constexpr double DRAW_DISTANCE = 50e3; // m
+static constexpr double MIN_EYE_HEIGHT = 1.5; // m
 
 struct DrawVisStats
 {
@@ -314,18 +315,62 @@ int	WED_MapPreviewPane::MouseDown(int x, int y, int button)
 
 	mX = x;
 	mY = y;
+	mTimeLastDrag = GetTimeNow();
+	mDragVelocity = Vector3();
 
 	return 1;
 }
 
+static bool IntersectGroundPlane(const Point3& origin, const Vector3& dir, Point3 * intersection)
+{
+	// There's obviously no intersection if the direction vector points away from the ground.
+	// However, we also refuse to produce an intersection if the direction vector points towards
+	// the ground at a very shallow angle, as this will produce an intersection far away from the
+	// camera, which produces larger movements than the user likely expects.
+	if (dir.dz > -0.05)
+		return false;
+
+	*intersection = Point3(origin.x - origin.z / dir.dz * dir.dx, origin.y - origin.z / dir.dz * dir.dy, 0);
+	return true;
+}
+
+static Vector3 ForwardVector(double yaw, double pitch)
+{
+	return { sin(yaw * DEG_TO_RAD) * cos(pitch * DEG_TO_RAD),
+			 cos(yaw * DEG_TO_RAD) * cos(pitch * DEG_TO_RAD),
+			 sin(pitch * DEG_TO_RAD) };
+}
+
 void WED_MapPreviewPane::MouseDrag(int x, int y, int button)
 {
-	if (button == 1)
+	if (button == 0 && GetModifiersNow() == 0)
+	{
+		Vector3 vecFrom = mCamera->Unproject(Point2(mX, mY));
+		Vector3 vecTo = mCamera->Unproject(Point2(x, y));
+
+		Point3 from, to;
+		if (IntersectGroundPlane(mCamera->Position(), vecFrom, &from) && IntersectGroundPlane(mCamera->Position(), vecTo, &to))
+		{
+			MoveCameraToXYZ(mCamera->Position() - (to - from));
+			double elapsedTime = GetTimeNow() - mTimeLastDrag;
+			if (elapsedTime > 0)
+			{
+				Vector3 xyzVelocity = (from - to) / elapsedTime;
+				constexpr double integrationTime = 0.05; // s
+				double newFactor = min(elapsedTime / integrationTime, 1.0);
+				mDragVelocity = xyzVelocity * newFactor + mDragVelocity * (1 - newFactor);
+			}
+			Refresh();
+		}
+	}
+
+	if ((button == 0 && GetModifiersNow() == gui_ControlFlag) || button == 1)
 	{
 		float dx = x - mX;
 		float dy = y - mY;
-		mX = x;
-		mY = y;
+
+		double oldYaw = mYaw;
+		double oldPitch = mPitch;
 		mYaw += dx * 0.2;
 		mPitch += dy * 0.2;
 
@@ -333,8 +378,55 @@ void WED_MapPreviewPane::MouseDrag(int x, int y, int button)
 		mYaw = fltwrap(mYaw, -180, 180);
 
 		SetForwardVector();
+
+		if (button == 0 && GetModifiersNow() == gui_ControlFlag)
+		{
+			Vector3 forward = ForwardVector(oldYaw, oldPitch);
+			Point3 orbitCenter;
+			if (IntersectGroundPlane(mCamera->Position(), forward, &orbitCenter))
+			{
+				double dist = sqrt((mCamera->Position() - orbitCenter).squared_length());
+				MoveCameraToXYZ(orbitCenter - mCamera->Forward() * dist);
+			}
+		}
+
 		Refresh();
 	}
+
+	mX = x;
+	mY = y;
+	mTimeLastDrag = GetTimeNow();
+}
+
+void WED_MapPreviewPane::MouseUp(int x, int y, int button)
+{
+	if (button == 0 && GetModifiersNow() == 0)
+	{
+		mVelocity.dx = mCamera->Right().dot(mDragVelocity);
+		mVelocity.dy = mCamera->Forward().dot(mDragVelocity);
+		mVelocity.dz = mCamera->Up().dot(mDragVelocity);
+
+		StartMoving();
+	}
+}
+
+int WED_MapPreviewPane::ScrollWheel(int x, int y, int dist, int axis)
+{
+	Vector3 dir = mCamera->Unproject(Point2(x, y));
+
+	Point3 intersection;
+	if (IntersectGroundPlane(mCamera->Position(), dir, &intersection))
+	{
+		double distance = sqrt((intersection - mCamera->Position()).squared_length());
+		double minDistance = MIN_EYE_HEIGHT / mCamera->Position().z * distance;
+		distance *= pow(0.9, dist);
+		if (distance < minDistance)
+			distance = minDistance;
+		MoveCameraToXYZ(intersection - dir * distance);
+		Refresh();
+	}
+
+	return 1;
 }
 
 int WED_MapPreviewPane::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)
@@ -498,8 +590,8 @@ void WED_MapPreviewPane::HandleKeyMove()
 	// when there is a big pause (maybe due to resource loading) that prevents refreshes
 	// from happening regularly.
 	Point3 position = mCamera->Position() + xyzVelocity * min(elapsedTime, 0.2);
-	if (position.z < 1.5)
-		position.z = 1.5;
+	if (position.z < MIN_EYE_HEIGHT)
+		position.z = MIN_EYE_HEIGHT;
 	MoveCameraToXYZ(position);
 
 	constexpr double minVelocity = 0.5; // m/s
@@ -522,8 +614,7 @@ void WED_MapPreviewPane::MoveCameraToXYZ(const Point3& xyz)
 
 void WED_MapPreviewPane::SetForwardVector()
 {
-	Vector3 forward(sin(mYaw * DEG_TO_RAD) * cos(mPitch * DEG_TO_RAD), cos(mYaw * DEG_TO_RAD) * cos(mPitch * DEG_TO_RAD), sin(mPitch * DEG_TO_RAD));
-	mCamera->SetForward(forward);
+	mCamera->SetForward(ForwardVector(mYaw, mPitch));
 }
 
 void WED_MapPreviewPane::InitGL(int *b)
