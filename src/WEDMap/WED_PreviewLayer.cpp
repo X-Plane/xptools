@@ -274,7 +274,7 @@ void draw_obj_at_ll(ITexMgr * tman, const XObj8 * o, const Point2& loc, float ag
 	glPopMatrix();
 }
 
-void draw_obj_at_xyz(ITexMgr * tman, const XObj8 * o, double x, double y, double z, float r, GUI_GraphState * g)
+void draw_obj_at_xyz(ITexMgr * tman, const XObj8 * o, double x, double y, double z, float heading, GUI_GraphState * g)
 {
 	if (!o) return;
 	TexRef	ref = tman->LookupTexture(o->texture.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);
@@ -286,13 +286,13 @@ void draw_obj_at_xyz(ITexMgr * tman, const XObj8 * o, double x, double y, double
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glTranslatef(x,y,z);
-	glRotatef(r, 0, -1, 0);
+	glRotatef(heading, 0, -1, 0);
 	Obj_DrawStruct ds = { g, id1, id2 };
 	ObjDraw8(*o, 0, &kFuncs, &ds);
 	glPopMatrix();
 }
 
-void draw_agp_at_xyz(ITexMgr * tman, const agp_t * agp, double x, double y, double z, float agl, float r, GUI_GraphState * g, int tile_idx)
+void draw_agp_at_xyz(ITexMgr * tman, const agp_t * agp, double x, double y, double z, float height, float heading, GUI_GraphState * g, int tile_idx)
 {
 	if (!agp) return;
 
@@ -303,7 +303,7 @@ void draw_agp_at_xyz(ITexMgr * tman, const agp_t * agp, double x, double y, doub
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glTranslatef(x, y, z);
-	glRotatef(r, 0, -1, 0);
+	glRotatef(heading, 0, -1, 0);
 	glColor3f(1, 1, 1);
 	auto ti = agp->tiles[tile_idx];
 	if (!ti.tile.empty() && !agp->hide_tiles)
@@ -321,11 +321,11 @@ void draw_agp_at_xyz(ITexMgr * tman, const agp_t * agp, double x, double y, doub
 	for (auto& o : ti.objs)
 		if (o.scp_step > 0.0)
 		{
-			if (agl >= o.scp_min && agl <= o.scp_max)
-				agl = roundf(agl / o.scp_step) * o.scp_step;
+			if (height >= o.scp_min)
+				height = min(o.scp_max - o.scp_min, roundf(height / o.scp_step) * o.scp_step - o.scp_min);
 			else
-				agl = 0.0;
-			draw_obj_at_xyz(tman, o.obj, o.x, agl, -o.y, o.r, g);
+				height = 0.0;
+			draw_obj_at_xyz(tman, o.obj, o.x, height, -o.y, o.r, g);
 		}
 		else
 			draw_obj_at_xyz(tman, o.obj, o.x, o.z, -o.y, o.r, g);
@@ -335,7 +335,7 @@ void draw_agp_at_xyz(ITexMgr * tman, const agp_t * agp, double x, double y, doub
 	glPopMatrix();
 }
 
-void draw_agp_at_ll(ITexMgr * tman, const agp_t * agp, const Point2& loc, float agl, float r, GUI_GraphState * g, WED_MapZoomerNew * zoomer, int preview_level)
+void draw_agp_at_ll(ITexMgr * tman, const agp_t * agp, const Point2& loc, float height, float heading, GUI_GraphState * g, WED_MapZoomerNew * zoomer, int preview_level)
 {
 	if (!agp) return;
 	Point2 pix = zoomer->LLToPixel(loc);
@@ -350,7 +350,7 @@ void draw_agp_at_ll(ITexMgr * tman, const agp_t * agp, const Point2& loc, float 
 	glTranslatef(pix.x(), pix.y(), 0);
 	glScalef(ppm, ppm, ppm);
 	glRotatef(90, 1, 0, 0);
-	glRotatef(r, 0, -1, 0);
+	glRotatef(heading, 0, -1, 0);
 	glColor3f(1, 1, 1);
 	auto ti = agp->tiles.front();
 	if (!ti.tile.empty() && !agp->hide_tiles)
@@ -372,11 +372,11 @@ void draw_agp_at_ll(ITexMgr * tman, const agp_t * agp, const Point2& loc, float 
 		{
 			if (o.scp_step > 0.0)
 			{
-				if (agl >= o.scp_min && agl <= o.scp_max)
-					agl = roundf(agl / o.scp_step) * o.scp_step;
+				if (height >= o.scp_min && height <= o.scp_max)
+					height = roundf(height / o.scp_step) * o.scp_step;
 				else
-					agl = 0.0;
-				draw_obj_at_xyz(tman, o.obj, o.x, agl, -o.y, o.r, g);
+					height = 0.0;
+				draw_obj_at_xyz(tman, o.obj, o.x, height, -o.y, o.r, g);
 			}
 			else
 				draw_obj_at_xyz(tman, o.obj, o.x, o.z, -o.y, o.r, g);

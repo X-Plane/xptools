@@ -1456,6 +1456,7 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 	double tex_s = 1.0, tex_t = 1.0;		// these scale from pixels to UV coords
 	double tex_x = 1.0, tex_y = 1.0;		// meters for tex, x & y
 	int	 rotation = 0;
+	int	 last_id = -1;
 	agp->hide_tiles = 0;
 	vector<string>	obj_paths, fac_paths;
 
@@ -1510,11 +1511,16 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 			WED_clean_vpath(p);
 			obj_paths.back() = p;      // use this one instead of the OBJECT X-plane would use.
 		}
+		else if(MFS_string_match(&s,"TILE_ID",false))
+		{
+			last_id = MFS_int(&s);
+		}
 		else if(MFS_string_match(&s,"TILE",false))
 		{
 			if(ti) setup_tile(ti, rotation, path);
 			agp->tiles.push_back(agp_t::tile_t());
 			ti = &agp->tiles.back();
+			ti->id = last_id;
 			double s1 = MFS_double(&s);
 			double t1 = MFS_double(&s);
 			double s2 = MFS_double(&s);
@@ -1577,7 +1583,6 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 				ti->objs.back().name = obj_paths[obj_idx];
 				ti->objs.back().show_lo = MFS_int(&s);
 				ti->objs.back().show_hi = MFS_int(&s);
-				ti->objs.back().scp_step = 0.0;
 			}
 			else
 			{
@@ -1599,6 +1604,7 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 				ti->objs.back().scp_min = MFS_double(&s);
 				ti->objs.back().scp_max = MFS_double(&s);
 				ti->objs.back().scp_step = MFS_double(&s);
+				if(ti->objs.back().scp_step > 0.0) { ti->has_scp = true; agp->has_scp = true; }
 			}
 			else
 			{
@@ -1619,7 +1625,6 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 				ti->objs.back().name = obj_paths[obj_idx];
 				ti->objs.back().show_lo = MFS_int(&s);
 				ti->objs.back().show_hi = MFS_int(&s);
-				ti->objs.back().scp_step = 0.0;
 			}
 			else
 			{

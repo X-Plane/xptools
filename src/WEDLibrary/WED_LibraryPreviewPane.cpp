@@ -154,6 +154,7 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 				//			mHgt = fac->is_new ? 10 : fac->min_floors;
 				//			mWid = 20.0;
 			}
+			mWid = fltlim(mWid,10,150);
 		}
 		else
 		{
@@ -172,6 +173,8 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 			mRess.clear();
 			mResMgr->GetSimilar(mRes, mRess);
 		}
+		else if(res_type == res_Autogen)
+			mWid = 0.0;
 	}
 }
 
@@ -299,13 +302,21 @@ void	WED_LibraryPreviewPane::MouseDrag(int x, int y, int button)
 {
 	float dx = x - mX;
 	float dy = y - mY;
-	if((mType == res_Facade || mType == res_Object) && button == 1)
+	if((mType == res_Facade || mType == res_Object || mType == res_Autogen) && button == 1)
 	{
 		mHgt = mHgtOrig + (fabs(dy) < 100.0 ? dy * 0.1 : sign(dy)*(fabs(dy)-80) * 0.5);
 		mHgt = intlim(mHgt,0,250);
 
-		mWid = mWidOrig + (fabs(dx) < 100.0 ? dx * 0.2 : sign(dx)*(fabs(dx)-60.0) * 0.5);
-		mWid = fltlim(mWid,1,150);
+		if	(mType == res_Autogen)
+		{
+			mWid = mWidOrig + dx * 0.2;
+			mWid = fltlim(mWid,0,250);
+		}
+		else
+		{
+			mWid = mWidOrig + (fabs(dx) < 100.0 ? dx * 0.2 : sign(dx)*(fabs(dx)-60.0) * 0.5);
+			mWid = fltlim(mWid,1,150);
+		}
 	}
 	else
 	{
@@ -420,7 +431,7 @@ void	WED_LibraryPreviewPane::begin3d(const int *b, double radius_m)
 	glLoadIdentity();
 #ifdef VIEW_DISTANCE
 	glFrustum(sx * -act_radius, sx * act_radius, sy * -act_radius, sy * act_radius,
-					(VIEW_DISTANCE - 1.0) * radius_m, (VIEW_DISTANCE + 1.0) * radius_m);
+					(VIEW_DISTANCE - 1.0) * radius_m, 2.0 * (VIEW_DISTANCE + 1.0) * radius_m);
 #else
 	glOrtho(sx * -act_radius, sx * act_radius, sy * -act_radius, sy * act_radius, -radius_m, radius_m);
 #endif
@@ -689,19 +700,24 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, const int 
 			}
 			else if (mResMgr->GetAGP(res,agp))
 			{
-				for(int i = 0; i < intmin2(4, agp->tiles.size()); i++)
-				{
-					auto ti = agp->tiles[i];
-					double real_radius=pythag(
-										ti.xyz_max[0] - ti.xyz_min[0],
-										ti.xyz_max[1] - ti.xyz_min[1],
-										ti.xyz_max[2] - ti.xyz_min[2]);
-					double xyz_off[3] = { -(ti.xyz_max[0] + ti.xyz_min[0]) * 0.5,
-										  -(ti.xyz_max[1] + ti.xyz_min[1]) * 0.5,
-										   (ti.xyz_max[2] + ti.xyz_min[2]) * 0.5 };
+				double real_radius=pythag(                 // not ideal - only scaling from first tile, Tiles down throw might be much larger
+									agp->tiles[0].xyz_max[0] - agp->tiles[0].xyz_min[0],
+									agp->tiles[0].xyz_max[1] - agp->tiles[0].xyz_min[1],
+									agp->tiles[0].xyz_max[2] - agp->tiles[0].xyz_min[2]);
+				double xyz_off[3];
+				xyz_off[1] = -(agp->tiles[0].xyz_max[1] + agp->tiles[0].xyz_min[1]) * 0.5;
 
-					begin3d(b, real_radius * (agp->tiles.size() > 1 ? 2.0 : 1.0));
-					draw_agp_at_xyz(mTexMgr, agp, xyz_off[0] + (ti.xyz_max[0] - ti.xyz_min[0]) * (i > 1 ? i - 1 : -i), xyz_off[1], xyz_off[2], mHgt, 0, g, i);
+				for(int i = 0; i < intmin2(5, agp->tiles.size()); i++)
+				{
+					int tile_idx = intlim(i + mWid * 0.2, 0, agp->tiles.size()-1);
+					auto ti = agp->tiles[tile_idx];
+					xyz_off[0] = -(ti.xyz_max[0] + ti.xyz_min[0]) * 0.5;
+				//	xyz_off[1] = -(ti.xyz_max[1] + ti.xyz_min[1]) * 0.5;
+					xyz_off[2] =  (ti.xyz_max[2] + ti.xyz_min[2]) * 0.5;
+					double row_offs = agp->tiles.size() > 1 ? (ti.xyz_max[0] - ti.xyz_min[0]) * (i-0.8) : 0.0;
+
+					begin3d(b, real_radius);
+					draw_agp_at_xyz(mTexMgr, agp, xyz_off[0] + row_offs, xyz_off[1], xyz_off[2], mHgt, 0, g, tile_idx);
 					end3d(b);
 				}
 			}
@@ -743,6 +759,7 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, const int 
 				if (lin && lin->s1.size() && lin->s2.size())
 					snprintf(buf2, sizeof(buf2), "w~%.0f%s",lin->eff_width * (gIsFeet ? 100.0/2.54 : 100.0), gIsFeet ? "in" : "cm" );
 				break;
+			case res_Autogen:
 			case res_Object:
 			case res_Forest:
 			case res_String:
@@ -755,14 +772,32 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, const int 
 				}
 				else if(agp)
 				{
-					snprintf(buf1, sizeof(buf1), "%s", agp->description.c_str());
-					int n = sprintf(buf2, "max h=%.1f%s", agp->tiles.front().xyz_max[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");
-					for (auto& a : agp->tiles.front().objs)
-						if(a.scp_step > 0.0)
-						{
-							sprintf(buf2 + n, ", supports set_AGL %.1f .. %.1f%s @ h=%dm", a.scp_min / (gIsFeet ? 0.3048 : 1.0), a.scp_max / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m", mHgt);
-							break;
-						}
+					int n = 0;
+					int tile_idx = intlim(mWid * 0.2, 0, agp->tiles.size()-1);
+					if(agp->tiles.size() > 1)
+					{
+						if(agp->tiles[tile_idx].id >= 0)
+							n = sprintf(buf1, "TILE_ID \'%d\' ", agp->tiles[tile_idx].id);
+						sprintf(buf1 + n, "%sshowing tiles #%d+ @ h=%dm", agp->tiles[tile_idx].has_scp ? "has scrapers, " : "", tile_idx, mHgt);
+						n = sprintf(buf2, "%ld tiles, ", agp->tiles.size());
+					}
+					else
+						snprintf(buf1, sizeof(buf1), "%s", agp->description.c_str());
+
+					n += sprintf(buf2 + n, "max h=%.1f%s", agp->tiles[tile_idx].xyz_max[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");
+					if(agp->has_scp)
+					{
+						double min_scp(999), max_scp(0);
+						for (auto& t : agp->tiles)
+							if(t.has_scp)
+								for (auto& a : t.objs)
+									if(a.scp_step > 0.0)
+									{
+										if(a.scp_min < min_scp) min_scp = a.scp_min;
+										if(a.scp_max > max_scp) max_scp = a.scp_max;
+									}
+						sprintf(buf2 + n, ", varies for heights %.1f - %.1f%s", min_scp / (gIsFeet ? 0.3048 : 1.0), max_scp / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");
+					}
 				}
 				else if (str)
 					snprintf(buf1, sizeof(buf1), "%s", str->description.c_str());

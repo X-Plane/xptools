@@ -210,7 +210,7 @@ bool	WED_LibraryMgr::IsResourceDeprecatedOrPrivate(const string& r)
 {
 	res_map_t::const_iterator me = res_table.find(r);
 	if (me==res_table.end()) return false;
-	return me->second.status < status_Yellow;                  // status "Yellow' is still deemed public wrt validation, i.e. allowed on the gateway
+	return me->second.status < status_SemiDeprecated;                  // status "Yellow' is still deemed public wrt validation, i.e. allowed on the gateway
 }
 
 bool	WED_LibraryMgr::DoesPackHaveLibraryItems(int package)
@@ -380,7 +380,7 @@ void		WED_LibraryMgr::Rescan()
 					else if(MFS_string_match(&s,"DEPRECATED",true))
 						cur_status = status_Deprecated;
 					else if(MFS_string_match(&s,"SEMI_DEPRECATED",true))
-						cur_status = status_Yellow;
+						cur_status = status_SemiDeprecated;
 
 					MFS_string_eol(&s,NULL);
 				}
@@ -616,7 +616,7 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 		if(i == res_table.end())
 		{
 			res_info_t new_info;
-			new_info.status = status;
+			new_info.status = rt == res_Autogen ? status_Public : status;    // XXX temporary for alpha testing - so we can drool about at all that stuff
 			new_info.res_type = rt;
 			new_info.packages.insert(package);
 			if(rt > res_Directory)                      // speedup/memory saver: no need to store this for directories

@@ -140,6 +140,7 @@ struct agp_t {
 		string		name;
 		const XObj8 * obj;              // resolving name is slow - so keep the obj around
 		float		scp_min, scp_max, scp_step; // scp_step nonzero indicates scraper extension
+		obj_t(void) : scp_step(0), scp_min(9999), scp_max(9999), obj(nullptr) { }
 	};
 	struct fac_t {
 		float		height;
@@ -155,13 +156,17 @@ struct agp_t {
 		float			xyz_min[3];
 		float			xyz_max[3];
 		float 			anchor_x, anchor_y;
-		tile_t(void) : anchor_x(0), anchor_y(0) { }
+		int				id;
+		bool			has_scp;
+		tile_t(void) : anchor_x(0), anchor_y(0), has_scp(false) { }
 	};
 	string			base_tex;
 	string			mesh_tex;
-	int				hide_tiles;
+	bool			hide_tiles;
 	vector<tile_t>	tiles;
 	string			description;
+	bool			has_scp;
+	agp_t(void) : has_scp(false) { }
 };
 
 
