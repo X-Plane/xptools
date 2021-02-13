@@ -97,6 +97,15 @@ void WED_PerspectiveCamera::ApplyModelViewMatrix()
 	DebugAssert(ModelViewMatrixConsistent());
 }
 
+Vector3 WED_PerspectiveCamera::Unproject(const Point2& point)
+{
+	// Direction in camera coordinates.
+	Vector3 dirCamera((point.x() / mViewportWidth - 0.5) * mWidth, (point.y() / mViewportHeight - 0.5) * mHeight, mNearClip);
+	dirCamera.normalize();
+
+	return Right() * dirCamera.dx + Up() * dirCamera.dy + Forward() * dirCamera.dz;
+}
+
 std::vector<Point3> WED_PerspectiveCamera::FrustumCorners() const
 {
 	std::vector<Point3> corners;
@@ -123,7 +132,7 @@ double WED_PerspectiveCamera::PointDistance(const Point3& point) const
 
 double WED_PerspectiveCamera::PixelSize(double zCamera, double featureSize) const
 {
-	// If neede for performance, we could precompute some stuff so we only have
+	// If needed for performance, we could precompute some stuff so we only have
 	// a single value that we divide by zCamera. Beyond that, we could turn this
 	// into a "should this be visible" function that takes a minimum pixel size.
 	// This would help allow us to avoid the division.

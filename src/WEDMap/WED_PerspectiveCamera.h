@@ -57,6 +57,9 @@ public:
 	// is called before calling this method.
 	void ApplyModelViewMatrix();
 
+	// For a given point on the viewport, returns the corresponding view ray in world coordinates.
+	Vector3 Unproject(const Point2& point);
+
 	// Returns the corners of the view frustum.
 	std::vector<Point3> FrustumCorners() const;
 
