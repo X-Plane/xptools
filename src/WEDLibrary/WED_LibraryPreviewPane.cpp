@@ -48,6 +48,7 @@
 #include "WED_Globals.h"
 #include "WED_ResourceMgr.h"
 #include "WED_PreviewLayer.h"
+#include "WED_Messages.h"
 
 #include "XObjDefs.h"
 #include "ObjDraw.h"
@@ -58,6 +59,25 @@
 enum {
 	next_variant = GUI_APP_MESSAGES
 };
+
+static int best_num_rows(int items, int num_cols)
+{
+	return ceil(items / float(max(num_cols, 1)));
+}
+
+static int best_num_cols(int items, int w_pixels, int h_pixels)
+{
+	int cols = max(1,intround(sqrt(items * w_pixels / float(h_pixels))));
+	int rows = best_num_rows(items, cols);
+	int last_row = items % cols;
+	while (last_row > 0 && cols > 2 && rows > 1 && cols - 1 - last_row >= rows -1)
+	{
+	  cols--;
+	  last_row += rows - 1;
+	}
+	return cols;
+}
+
 
 WED_LibraryPreviewPane::WED_LibraryPreviewPane(GUI_Commander * cmdr, WED_ResourceMgr * res_mgr, ITexMgr * tex_mgr) : GUI_Commander(cmdr), mResMgr(res_mgr), mTexMgr(tex_mgr),mZoom(1.0),
                                mPsi(10),mThe(10), mHgt(10), mWid(20), mWalls(4)
@@ -137,6 +157,7 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 				//			mHgt = fac->is_new ? 10 : fac->min_floors;
 				//			mWid = 20.0;
 			}
+			mWid = fltlim(mWid,10,150);
 		}
 		else
 		{
@@ -149,25 +170,14 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 	{
 		mNumVariants = 1;     // we haven't yet implemented variant display for anything else
 		mNextButton->Hide();
-	}
-
-	if (res_type == res_Polygon)
-	{
-		int tex_x, tex_y;
-		float tex_aspect = 1.0;
-		const pol_info_t * pol;
-
-		if(mResMgr->GetPol(mRes,pol))
+		if(res_type == res_Directory)
 		{
-			TexRef	tref = mTexMgr->LookupTexture(pol->base_tex.c_str(), true, pol->wrap ? (tex_Compress_Ok | tex_Wrap) : tex_Compress_Ok);
-			if (tref)
-			{
-				mTexMgr->GetTexInfo(tref, &tex_x, &tex_y, NULL, NULL, NULL, NULL);
-				tex_aspect = float(pol->proj_s * tex_x) / float(pol->proj_t * tex_y);
-			}
+			mWalls = 1;
+			mRess.clear();
+			mResMgr->GetSimilar(mRes, mRess);
 		}
-		mDs = tex_aspect > 1.0 ? 1.0 : tex_aspect;
-		mDt = tex_aspect > 1.0 ? 1.0/tex_aspect : 1.0;
+		else if(res_type == res_Autogen)
+			mWid = 0.0;
 	}
 }
 
@@ -193,6 +203,33 @@ int	WED_LibraryPreviewPane::ScrollWheel(int x, int y, int dist, int axis)
 	return 1;
 }
 
+void	WED_LibraryPreviewPane::MouseUp(int x, int y, int button)
+{
+
+	if(mX == x && mY == y && mType == res_Directory && mRess.size() && button == 0)
+	{
+		int b[4]; GetBounds(b);
+
+		int w = b[2] - b[0];
+		int h = b[3] - b[1];
+
+		int num_x = best_num_cols(mRess.size(), w, h);
+		int num_y = best_num_rows(mRess.size(), num_x);
+
+		int pos_x = (x - b[0]) / float (w) * num_x;
+		int pos_y = (y - b[1]) / float (h) * num_y;
+
+//		for(auto& mr : mRess)
+//			LOG_MSG("%s, %d\n", mr.first.c_str(), mr.second);
+//		LOG_MSG("pos_x=%d pos_y=%d %d\n", pos_x, pos_y, pos_x + num_x * (num_y - pos_y - 1));
+//		LOG_FLUSH();
+
+		//SetResource(mRess[pos_x + num_x * (num_y - pos_y - 1)].first, mRess[pos_x + num_x * (num_y - pos_y - 1)].second);
+		BroadcastMessage(WED_PRIVATE_MSG_BASE, (intptr_t) mRess[pos_x + num_x * (num_y - pos_y - 1)].first.c_str());
+		Refresh();
+	}
+}
+
 int	WED_LibraryPreviewPane::MouseDown(int x, int y, int button)
 {
 	mX = x;
@@ -202,24 +239,28 @@ int	WED_LibraryPreviewPane::MouseDown(int x, int y, int button)
 	mHgtOrig=mHgt;
 	mWidOrig=mWid;
 
-	int b[4]; GetBounds(b);
-
     if (mType == res_Polygon)
     {
 		const pol_info_t * pol;
 		mResMgr->GetPol(mRes,pol);
 
-		float prev_space = min(b[2]-b[0],b[3]-b[1]);
-		float ds = prev_space / mZoom * mDs;
-		float dt = prev_space / mZoom * mDt;
-
-		float x1 = 0.5 *(b[2] + b[0] - ds);         // texture left bottom corner
-		float y1 = 0.5* (b[3] + b[1] - dt);
-
-		Point2 st = Point2((x-x1)/ds, (y-y1)/dt);   // texture coodinates where we clicked at
-
 		if (pol->mSubBoxes.size())
 		{
+			int b[4]; GetBounds(b);
+			float prev_space = min(b[2]-b[0],b[3]-b[1]);
+
+			TexRef	tref = mTexMgr->LookupTexture(pol->base_tex.c_str(),true, pol->wrap ? (tex_Compress_Ok|tex_Wrap) : tex_Compress_Ok);
+			int tex_x, tex_y;
+			mTexMgr->GetTexInfo(tref, &tex_x, &tex_y, NULL, NULL, NULL, NULL);
+			float tex_aspect = float(pol->proj_s * tex_x) / float(pol->proj_t * tex_y);
+			float ds = prev_space / mZoom * (tex_aspect > 1.0 ? 1.0 : tex_aspect);
+			float dt = prev_space / mZoom * (tex_aspect > 1.0 ? 1.0/tex_aspect : 1.0);
+
+			float x1 = 0.5 *(b[2] + b[0] - ds);         // texture left bottom corner
+			float y1 = 0.5* (b[3] + b[1] - dt);
+
+			Point2 st = Point2((x-x1)/ds, (y-y1)/dt);   // texture coodinates where we clicked at
+
 			// go through list of subtexture boxes and find if we clicked inside one
 			static int lastBox = -1;                // the box we clicked on the last time. Helps to cycle trough overlapping boxes
 			int        firstBox = 999;              // the first box that fits this click location
@@ -264,13 +305,21 @@ void	WED_LibraryPreviewPane::MouseDrag(int x, int y, int button)
 {
 	float dx = x - mX;
 	float dy = y - mY;
-	if((mType == res_Facade || mType == res_Object || mType == res_Road) && button == 1)
+	if((mType == res_Facade || mType == res_Object || mType == res_Road || mType == res_Autogen) && button == 1)
 	{
 		mHgt = mHgtOrig + (fabs(dy) < 100.0 ? dy * 0.1 : sign(dy)*(fabs(dy)-80) * 0.5);
 		mHgt = intlim(mHgt,0,250);
 
-		mWid = mWidOrig + (fabs(dx) < 100.0 ? dx * 0.2 : sign(dx)*(fabs(dx)-60.0) * 0.5);
-		mWid = fltlim(mWid,1,150);
+		if	(mType == res_Autogen)
+		{
+			mWid = mWidOrig + dx * 0.2;
+			mWid = fltlim(mWid,0,250);
+		}
+		else
+		{
+			mWid = mWidOrig + (fabs(dx) < 100.0 ? dx * 0.2 : sign(dx)*(fabs(dx)-60.0) * 0.5);
+			mWid = fltlim(mWid,1,150);
+		}
 	}
 	else
 	{
@@ -286,10 +335,9 @@ void	WED_LibraryPreviewPane::MouseDrag(int x, int y, int button)
 	Refresh();
 }
 
-int		WED_LibraryPreviewPane::MouseMove  (int x, int y)
+int		WED_LibraryPreviewPane::MouseMove(int x, int y)
 {
-	int b[4];
-	GetBounds(b);
+	int b[4]; GetBounds(b);
 	if(b[2] - b[0] > 0 && b[2] - b[0] < 100)
 	{
 		DispatchHandleCommand(wed_autoOpenLibPane);
@@ -362,7 +410,7 @@ void	WED_LibraryPreviewPane::begin3d(const int *b, double radius_m)
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mFBO); CHECK_GL_ERR // copy the background - since we dont use any
 	                                                                   // blend mode when Bliting buffer back at the end
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-			glBlitFramebuffer(b[0], b[1], dx, dy, 0, 0, dx, dy, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT, GL_NEAREST); CHECK_GL_ERR
+			glBlitFramebuffer(b[0], b[1], b[2], b[3], 0, 0, dx, dy, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT, GL_NEAREST); CHECK_GL_ERR
 			glBindFramebuffer(GL_FRAMEBUFFER, mFBO);      CHECK_GL_ERR
 			glViewport(0, 0, dx, dy);                     CHECK_GL_ERR
 		}
@@ -402,11 +450,9 @@ void	WED_LibraryPreviewPane::begin3d(const int *b, double radius_m)
 
 void	WED_LibraryPreviewPane::end3d(const int *b)
 {
-	glDisable(GL_LIGHTING);
 	glPopMatrix();
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
-	glPopAttrib();
 
 #if USE_2X2MSAA
 	if(mMSAA)
@@ -416,22 +462,55 @@ void	WED_LibraryPreviewPane::end3d(const int *b)
 		glDrawBuffer(GL_BACK);                          CHECK_GL_ERR
 		int dx = b[2] - b[0];
 		int dy = b[3] - b[1];
-		glBlitFramebuffer(0, 0, dx, dy, b[0], b[1], dx, dy, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT, GL_NEAREST);  CHECK_GL_ERR
+		glBlitFramebuffer(0, 0, dx, dy, b[0], b[1], b[2], b[3], GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT, GL_NEAREST);  CHECK_GL_ERR
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);  			CHECK_GL_ERR
 		glDeleteFramebuffers(1, &mFBO);
 		glDeleteRenderbuffers(1, &mColBuf);
 		glDeleteRenderbuffers(1, &mDepthBuf);
 	}
+	glDisable(GL_LIGHTING);
+	glPopAttrib();
 #endif
 
 }
 
-
 void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 {
-	int b[4]; GetBounds(b);
+		int b[4]; GetBounds(b);
+		if(mType == res_Directory && mRess.size())
+		{
+			int w = b[2] - b[0];
+			int h = b[3] - b[1];
 
+			int num_x = best_num_cols(mRess.size(), w, h);
+			int num_y = best_num_rows(mRess.size(), num_x);
+
+			int x = 0;
+			int y = num_y - 1;
+			for(auto& r : mRess)
+			{
+				int bb[4];
+				bb[0] = b[0] + w / num_x * x;
+				bb[2] = b[0] + w / num_x * (x+1);
+				bb[1] = b[1] + h / num_y * y;
+				bb[3] = b[1] + h / num_y * (y+1);
+
+				DrawOneItem(r.second, r.first, bb, g, r.first.c_str()+r.first.find_last_of('/') + 1);
+				x++;
+				if(x >= num_x)
+				{
+					x = 0;
+					y--;
+				}
+			}
+		}
+		else
+			DrawOneItem(mType, mRes, b, g);
+}
+
+void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, const int b[4], GUI_GraphState * g, const char * label)
+{
 	const XObj8 * o = nullptr;
-
 	const agp_t * agp = nullptr;
 	const pol_info_t * pol = nullptr;
 	const lin_info_t * lin = nullptr;
@@ -440,14 +519,20 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 	const road_info_t * rd = nullptr;
 	map<int,road_info_t::vroad_t>::const_iterator vr_it;
 
-	if(!mRes.empty())
-	{	switch(mType) {
+	if(!res.empty())
+	{	switch(type) {
 		case res_Polygon:
-			if(mResMgr->GetPol(mRes,pol))
+			if(mResMgr->GetPol(res,pol))
 			{
 				TexRef	tref = mTexMgr->LookupTexture(pol->base_tex.c_str(),true, pol->wrap ? (tex_Compress_Ok|tex_Wrap) : tex_Compress_Ok);
 				if(tref != NULL)
 				{
+					int tex_x, tex_y;
+					mTexMgr->GetTexInfo(tref, &tex_x, &tex_y, NULL, NULL, NULL, NULL);
+					float tex_aspect = float(pol->proj_s * tex_x) / float(pol->proj_t * tex_y);
+					float Ds = tex_aspect > 1.0 ? 1.0 : tex_aspect;
+					float Dt = tex_aspect > 1.0 ? 1.0/tex_aspect : 1.0;
+
 					int tex_id = mTexMgr->GetTexID(tref);
 
 					if (tex_id != 0)
@@ -456,8 +541,8 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 						g->BindTex(tex_id,0);
 
 						float prev_space = min(b[2]-b[0],b[3]-b[1]);
-						float ds = prev_space / mZoom * mDs;
-						float dt = prev_space / mZoom * mDt;
+						float ds = prev_space / mZoom * Ds;
+						float dt = prev_space / mZoom * Dt;
 						float dx = b[2] - b[0];
 						float dy = b[3] - b[1];
 						float x1 = (dx - ds) /2;
@@ -468,13 +553,15 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 						glBegin(GL_QUADS);
 						if(pol->wrap)
 						{
-							glTexCoord2f(extrap(x1,0,x2,1,b[0]),	extrap(y1,0,y2,1,b[1]));			glVertex2f(b[0],b[1]);
-							glTexCoord2f(extrap(x1,0,x2,1,b[0]),	extrap(y1,0,y2,1,b[3]));			glVertex2f(b[0],b[3]);
-							glTexCoord2f(extrap(x1,0,x2,1,b[2]),	extrap(y1,0,y2,1,b[3]));			glVertex2f(b[2],b[3]);
-							glTexCoord2f(extrap(x1,0,x2,1,b[2]),	extrap(y1,0,y2,1,b[1]));			glVertex2f(b[2],b[1]);
+							glTexCoord2f(extrap(x1,0,x2,1,b[0]), extrap(y1,0,y2,1,b[1]));	glVertex2f(b[0],b[1]);
+							glTexCoord2f(extrap(x1,0,x2,1,b[0]), extrap(y1,0,y2,1,b[3]));	glVertex2f(b[0],b[3]);
+							glTexCoord2f(extrap(x1,0,x2,1,b[2]), extrap(y1,0,y2,1,b[3]));	glVertex2f(b[2],b[3]);
+							glTexCoord2f(extrap(x1,0,x2,1,b[2]), extrap(y1,0,y2,1,b[1]));	glVertex2f(b[2],b[1]);
 						}
 						else
 						{
+							x1 += b[0]; x2 += b[0];
+							y1 += b[1]; y2 += b[1];
 							glTexCoord2f(0,0); glVertex2f(x1,y1);
 							glTexCoord2f(0,1); glVertex2f(x1,y2);
 							glTexCoord2f(1,1); glVertex2f(x2,y2);
@@ -498,37 +585,36 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 			}
 			break;
 		case res_Line:
-			if(mResMgr->GetLin(mRes,lin))
+			if(mResMgr->GetLin(res,lin))
 			{
-				TexRef	tref = mTexMgr->LookupTexture(lin->base_tex.c_str(),true, tex_Compress_Ok);
+				TexRef	tref = mTexMgr->LookupTexture(lin->base_tex.c_str(),true, tex_Wrap|tex_Compress_Ok);
 				if(tref != NULL)
 				{
 					int tex_id = mTexMgr->GetTexID(tref);
-
 					if (tex_id != 0)
 					{
 						g->SetState(false,1,false,true,true,false,false);
 						g->BindTex(tex_id,0);
 
 						// always fit into vertical size of window
-						float win_scale =(b[3] - b[1]) / mZoom;
-						float center_x = (b[2] - b[0]) * 0.5f;
-						float center_y = (b[3] - b[1]) * 0.5f;
-						float y1 = center_y - 0.5f * win_scale;
-						float y2 = center_y + 0.5f * win_scale;
+						float win_scale = (b[3] - b[1]) / mZoom;
+						float center_x = (b[2] + b[0]) * 0.5f;
+						float y1 = b[1] + (label != nullptr ? 15 : 0);
 
 						glBegin(GL_QUADS);
-						for (int n = lin->s1.size() - 1; n >= 0; n--)
+						for (int n = 0; n < lin->s1.size(); n++)
+//						for (int n = lin->s1.size() - 1; n >= 0; n--)
 						{
 							float left  = (lin->s1[n] - lin->sm[n]) * lin->scale_s / lin->scale_t;
 							float right = (lin->s2[n] - lin->sm[n]) * lin->scale_s / lin->scale_t;
+
 							float x1 = center_x + left * win_scale;
 							float x2 = center_x + right * win_scale;
 
-							glTexCoord2f(lin->s1[n], 0); glVertex2f(x1, y1 + n * 0.1 * win_scale);
-							glTexCoord2f(lin->s1[n], 1); glVertex2f(x1, y2 + n * 0.1 * win_scale);
-							glTexCoord2f(lin->s2[n], 1); glVertex2f(x2, y2 + n * 0.1 * win_scale);
-							glTexCoord2f(lin->s2[n], 0); glVertex2f(x2, y1 + n * 0.1 * win_scale);
+							glTexCoord2f(lin->s1[n], 0);     glVertex2f(x1, y1);
+							glTexCoord2f(lin->s1[n], mZoom); glVertex2f(x1, b[3]);
+							glTexCoord2f(lin->s2[n], mZoom); glVertex2f(x2, b[3]);
+							glTexCoord2f(lin->s2[n], 0);     glVertex2f(x2, y1);
 						}
 						glEnd();
 					}
@@ -536,7 +622,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 			}
 			break;
 		case res_Facade:
-			if (mResMgr->GetFac(mRes, fac, mVariant))
+			if (mResMgr->GetFac(res, fac, mVariant))
 			{
 				Polygon2 footprint;
 				vector<int> choices;
@@ -559,7 +645,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 					corner += n<3 ? dir : dir *0.8;  // open type facade need last point duplicated, even if drawn as closed loop
 					dir = dir.perpendicular_cw();
 				}
-				double real_radius = fltmax3(30.0, mWid, 1.2*mHgt);
+				double real_radius = 1.2 * fltmax3(30.0, mWid, 1.2*mHgt);
 				begin3d(b, real_radius);
 
 				glTranslatef(0.0, -mHgt*0.4, 0.0);
@@ -574,7 +660,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				if(mRes.find("piers") != mRes.npos)
 					glColor4f(0.0, 0.2, 0.4, 0.7);   // darkish blue water
 				else
-					glColor4f(0.2, 0.4, 0.2, 0.8);   // green lawn, almost opaque
+					glColor4f(0.2, 0.4, 0.2, 0.7);   // green lawn, almost opaque
 
 				g->EnableLighting(false);
 				glDisable(GL_CULL_FACE);
@@ -589,22 +675,23 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 			}
 			break;
 		case res_Forest:
-			if(!mResMgr->GetFor(mRes,o))
+			if(!mResMgr->GetFor(res,o))
 				break;
 		case res_String:
 			if(!o)
 			{
-				if(mResMgr->GetStr(mRes,str))
+				if(mResMgr->GetStr(res,str))
 					if(str->objs.size())
-						mResMgr->GetObjRelative(str->objs.front(), mRes, o);    // do the cheap thing: show only the first object. Could show a whole line ...
+						mResMgr->GetObjRelative(str->objs.front(), res, o);    // do the cheap thing: show only the first object. Could show a whole line ...
 			}
+		case res_Autogen:
 		case res_Object:
 			g->SetState(false,1,false,true,true,true,true);
 			glClear(GL_DEPTH_BUFFER_BIT);
 
-			if (o || mResMgr->GetObj(mRes,o,mVariant))
+			if (o || mResMgr->GetObj(res,o,mVariant))
 			{
-				double real_radius=pythag(
+				double real_radius = fltmax3(
 									o->xyz_max[0]-o->xyz_min[0],
 									o->xyz_max[1]-o->xyz_min[1],
 									o->xyz_max[2]-o->xyz_min[2]);
@@ -616,19 +703,28 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				draw_obj_at_xyz(mTexMgr, o, xyz_off[0], xyz_off[1], xyz_off[2],	0, g);
 				end3d(b);
 			}
-			else if (mResMgr->GetAGP(mRes,agp))
+			else if (mResMgr->GetAGP(res,agp))
 			{
-				double real_radius=pythag(
-									agp->xyz_max[0] - agp->xyz_min[0],
-									agp->xyz_max[1] - agp->xyz_min[1],
-									agp->xyz_max[2] - agp->xyz_min[2]);
-				double xyz_off[3] = { -(agp->xyz_max[0] + agp->xyz_min[0]) * 0.5,
-									  -(agp->xyz_max[1] + agp->xyz_min[1]) * 0.5,
-									  (agp->xyz_max[2] + agp->xyz_min[2]) * 0.5 };
+				double real_radius=pythag(                 // not ideal - only scaling from first tile, Tiles down throw might be much larger
+									agp->tiles[0].xyz_max[0] - agp->tiles[0].xyz_min[0],
+									agp->tiles[0].xyz_max[1] - agp->tiles[0].xyz_min[1],
+									agp->tiles[0].xyz_max[2] - agp->tiles[0].xyz_min[2]);
+				double xyz_off[3];
+				xyz_off[1] = -(agp->tiles[0].xyz_max[1] + agp->tiles[0].xyz_min[1]) * 0.5;
 
-				begin3d(b, real_radius);
-				draw_agp_at_xyz(mTexMgr, agp, xyz_off[0], xyz_off[1], xyz_off[2], mHgt, 0, g);
-				end3d(b);
+				for(int i = 0; i < intmin2(5, agp->tiles.size()); i++)
+				{
+					int tile_idx = intlim(i + mWid * 0.2, 0, agp->tiles.size()-1);
+					auto ti = agp->tiles[tile_idx];
+					xyz_off[0] = -(ti.xyz_max[0] + ti.xyz_min[0]) * 0.5;
+				//	xyz_off[1] = -(ti.xyz_max[1] + ti.xyz_min[1]) * 0.5;
+					xyz_off[2] =  (ti.xyz_max[2] + ti.xyz_min[2]) * 0.5;
+					double row_offs = agp->tiles.size() > 1 ? (ti.xyz_max[0] - ti.xyz_min[0]) * (i-0.8) : 0.0;
+
+					begin3d(b, real_radius);
+					draw_agp_at_xyz(mTexMgr, agp, xyz_off[0] + row_offs, xyz_off[1], xyz_off[2], mHgt, 0, g, tile_idx);
+					end3d(b);
+				}
 			}
 			break;
 
@@ -704,10 +800,14 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 			break;
 		}
 
-		// plot some additional information about the previewed object
-		char buf1[120] = "", buf2[120] = "";
-		switch(mType)
+		if (label)
+			GUI_FontDraw(g, font_UI_Small, WED_Color_RGBA(wed_pure_white), (b[2]+b[0])/2,b[1]+5, label, align_Center);
+		else
 		{
+			// plot some additional information about the previewed object
+			char buf1[120] = "", buf2[120] = "";
+			switch(type)
+			{
 			case res_Facade:
 				if(fac && fac->wallName.size())
 				{
@@ -735,6 +835,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				if (lin && lin->s1.size() && lin->s2.size())
 					snprintf(buf2, sizeof(buf2), "w~%.0f%s",lin->eff_width * (gIsFeet ? 100.0/2.54 : 100.0), gIsFeet ? "in" : "cm" );
 				break;
+			case res_Autogen:
 			case res_Object:
 			case res_Forest:
 			case res_String:
@@ -747,14 +848,32 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				}
 				else if(agp)
 				{
-					snprintf(buf1, sizeof(buf1), "%s", agp->description.c_str());
-					int n = sprintf(buf2, "max h=%.1f%s", length_with_units(agp->xyz_max[1]));
-					for (auto& a : agp->objs)
-						if(a.scp_step > 0.0)
-						{
-							sprintf(buf2 + n, ", supports set_AGL %.1f .. %.1f%s @ h=%dm", a.scp_min * (gIsFeet ? MTR_TO_FT : 1), length_with_units(a.scp_max), mHgt);
-							break;
-						}
+					int n = 0;
+					int tile_idx = intlim(mWid * 0.2, 0, agp->tiles.size()-1);
+					if(agp->tiles.size() > 1)
+					{
+						if(agp->tiles[tile_idx].id >= 0)
+							n = sprintf(buf1, "TILE_ID \'%d\' ", agp->tiles[tile_idx].id);
+						sprintf(buf1 + n, "%sshowing tiles #%d+ @ h=%dm", agp->tiles[tile_idx].has_scp ? "has scrapers, " : "", tile_idx, mHgt);
+						n = sprintf(buf2, "%d tiles, ", (int) agp->tiles.size());
+					}
+					else
+						snprintf(buf1, sizeof(buf1), "%s", agp->description.c_str());
+
+					n += sprintf(buf2 + n, "max h=%.1f%s", length_with_units(agp->tiles[tile_idx].xyz_max[1]));
+					if(agp->has_scp)
+					{
+						double min_scp(999), max_scp(0);
+						for (auto& t : agp->tiles)
+							if(t.has_scp)
+								for (auto& a : t.objs)
+									if(a.scp_step > 0.0)
+									{
+										if(a.scp_min < min_scp) min_scp = a.scp_min;
+										if(a.scp_max > max_scp) max_scp = a.scp_max;
+									}
+						sprintf(buf2 + n, ", varies for heights %.1f - %.1f%s", min_scp / (gIsFeet ? 0.3048 : 1.0), length_with_units(max_scp));
+					}
 				}
 				else if (str)
 					snprintf(buf1, sizeof(buf1), "%s", str->description.c_str());
@@ -771,14 +890,15 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 						else
 							snprintf(buf1+n, sizeof(buf1)-n, " w=%.0f%s", length_with_units(r.width));
 					}
-					snprintf(buf2, sizeof(buf2), "Total %ld vroad, %ld road types", rd->vroad_types.size(), rd->road_types.size());
+					snprintf(buf2, sizeof(buf2), "Total %d vroad, %d road types", (int) rd->vroad_types.size(), (int) rd->road_types.size());
 				}
 				break;
+			}
+
+			if (buf1[0])
+				GUI_FontDraw(g, font_UI_Basic, WED_Color_RGBA(wed_pure_white), b[0]+5,b[1]+20, buf1);
+			if (buf2[0])
+				GUI_FontDraw(g, font_UI_Basic, WED_Color_RGBA(wed_pure_white), b[0]+5,b[1]+5, buf2);
 		}
-		float text_color[4] = { 1,1,1,1 };
-		if (buf1[0])
-			GUI_FontDraw(g, font_UI_Basic, text_color, b[0]+5,b[1]+25, buf1);
-		if (buf2[0])
-			GUI_FontDraw(g, font_UI_Basic, text_color, b[0]+5,b[1]+10, buf2);
 	}
 }

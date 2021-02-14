@@ -36,8 +36,10 @@ public:
 
 	bool		HasSystemFolder(void) const;
 	bool		GetXPlaneFolder(string& root) const;
-
 	bool		SetXPlaneFolder(const string& root);
+
+	void		GetRecentName(string& name) const;
+	void		SetRecentName(const string& name);
 
 	int			CountCustomPackages(void) const;
 	
@@ -80,6 +82,7 @@ private:
 	vector<WED_PackageInfo> default_packages;
 
 	string			XPversion;     // apparent version of XP install, from examining Log.txt
+	string			RecentPkgName;
 };
 
 extern WED_PackageMgr *		gPackageMgr;

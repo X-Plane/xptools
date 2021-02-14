@@ -1482,7 +1482,10 @@ void	GUI_TextTable::ReceiveMessage(
 		TerminateEdit(true,false,false);
 	if(inMsg == GUI_MOUSE_OUTSIDE_BOUNDS)
 	{
-		TerminateEdit(true, false, true);
+		if(mEditInfo.content_type != gui_Cell_TaxiText)
+			TerminateEdit(false, false, true);      // default OOB click is "cancel"
+		else
+			TerminateEdit(true, false, true);       // TaxiEditor needs the OOB click to be enter - as there is no mouse action to accept the edit
 	}
 }
 

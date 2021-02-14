@@ -3843,7 +3843,8 @@ static void replace_all_obj_in_agp(WED_AgpPlacement* agp, const agp_t * agp_data
 	Point2 agp_origin_geo;
 	agp->GetLocation(gis_Geo, agp_origin_geo);
 
-	for (auto& agp_obj : agp_data->objs)
+	auto ti = agp_data->tiles.front();
+	for (auto& agp_obj : ti.objs)
 	{
 		Vector2 torotate(agp_obj.x, agp_obj.y);
 
@@ -3932,7 +3933,7 @@ void	WED_DoBreakApartAgps(IResolver* resolver)
 		if(rmgr->GetAGP(agp_resource, agp_data))
 		{
 			bool all_obj_public = true;
-			for (auto& agp_obj : agp_data->objs)
+			for (auto& agp_obj : agp_data->tiles.front().objs)
 			{
 				if(lmgr->IsResourceDeprecatedOrPrivate(agp_obj.name))
 				{
@@ -4854,7 +4855,7 @@ static void set_surface(WED_Thing * t, int surface, WED_LibraryMgr * lmgr)
 	if (polygon)
 	{
 		if (surface == surf_Asphalt)
-			polygon->SetResource("lib/airport/pavement/asphalt_1D.pol");
+			polygon->SetResource("lib/airport/pavement/asphalt_3D.pol");
 		else
 			polygon->SetResource("lib/airport/pavement/concrete_1D.pol");
 		return;

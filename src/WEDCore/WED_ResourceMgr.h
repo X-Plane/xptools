@@ -172,6 +172,7 @@ struct agp_t {
 		string		name;
 		const XObj8 * obj;              // resolving name is slow - so keep the obj around
 		float		scp_min, scp_max, scp_step; // scp_step nonzero indicates scraper extension
+		obj_t(void) : scp_step(0), scp_min(9999), scp_max(9999), obj(nullptr) { }
 	};
 	struct fac_t {
 		float		height;
@@ -180,15 +181,24 @@ struct agp_t {
 		string		name;
 		const fac_info_t * fac;         // resolving name is slow - so keep the direct pointer around
 	};
+	struct tile_t {
+		vector<float>	tile;	// the base tile in x,y,s,t quads.
+		vector<obj_t>	objs;
+		vector<fac_t>	facs;
+		float			xyz_min[3];
+		float			xyz_max[3];
+		float 			anchor_x, anchor_y;
+		int				id;
+		bool			has_scp;
+		tile_t(void) : anchor_x(0), anchor_y(0), has_scp(false) { }
+	};
 	string			base_tex;
 	string			mesh_tex;
-	int				hide_tiles;
-	vector<float>	tile;	// the base tile in x,y,s,t quads.
-	vector<obj_t>	objs;
-	vector<fac_t>	facs;
-	float			xyz_min[3];
-	float			xyz_max[3];
+	bool			hide_tiles;
+	vector<tile_t>	tiles;
 	string			description;
+	bool			has_scp;
+	agp_t(void) : has_scp(false) { }
 };
 
 
@@ -207,6 +217,7 @@ public:
 			bool	GetStr(const string& path, str_info_t const *& info);
 			bool	GetFor(const string& path, XObj8 const *& obj);
 			int		GetNumVariants(const string& path);
+			bool	GetSimilar(const string& r, vector<pair<string, int> >& vpaths);
 
 			void	WritePol(const string& abspath, const pol_info_t& out_info); // side note: shouldn't this be in_info?
 			bool	GetObj(const string& path, XObj8 const *& obj, int variant = 0);
@@ -222,6 +233,7 @@ public:
 private:
 
 			XObj8 * LoadObj(const string& abspath);
+			void    setup_tile(agp_t::tile_t * agp, int rotation, const string& path);
 
 	unordered_map<string,vector<fac_info_t> > mFac;
 	unordered_map<string,pol_info_t>		mPol;

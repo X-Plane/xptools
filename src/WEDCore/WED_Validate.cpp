@@ -557,7 +557,7 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 					WED_ResourceMgr * rmgr = WED_GetResourceMgr(who->GetArchive()->GetResolver());
 					obj->GetResource(vpath);
 					if (rmgr && rmgr->GetAGP(vpath, agp))
-						for (auto& o :agp->objs)
+						for (auto& o :agp->tiles.front().objs)
 							if (o.scp_step > 0.0)
 							{
 								t = 0;

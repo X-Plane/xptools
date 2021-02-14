@@ -480,13 +480,13 @@ int	WED_DocumentWindow::HandleCommand(int command)
 #endif
 	case wed_Validate:		if (WED_ValidateApt(mDocument, mMapPane) == validation_clean) DoUserAlert("Your layout is valid - no problems were found."); return 1;
 
-	case wed_Export900:	gExportTarget = wet_xplane_900;	Refresh(); return 1;
-	case wed_Export1000:gExportTarget = wet_xplane_1000;	Refresh(); return 1;
-	case wed_Export1021:gExportTarget = wet_xplane_1021;	Refresh(); return 1;
-	case wed_Export1050:gExportTarget = wet_xplane_1050;	Refresh(); return 1;
-	case wed_Export1100:gExportTarget = wet_xplane_1100;	Refresh(); return 1;
-	case wed_Export1130:gExportTarget = wet_xplane_1130;	Refresh(); return 1;
-	case wed_ExportGateway:gExportTarget = wet_gateway;	Refresh(); return 1;
+	case wed_Export900:	 if (gExportTarget != wet_xplane_900) { gExportTarget = wet_xplane_900; mDocument->SetDirty(); Refresh(); } return 1;
+	case wed_Export1000: if (gExportTarget != wet_xplane_1000) { gExportTarget = wet_xplane_1000; mDocument->SetDirty(); Refresh(); } return 1;
+	case wed_Export1021: if (gExportTarget != wet_xplane_1021) { gExportTarget = wet_xplane_1021; mDocument->SetDirty(); Refresh(); } return 1;
+	case wed_Export1050: if (gExportTarget != wet_xplane_1050) { gExportTarget = wet_xplane_1050; mDocument->SetDirty(); Refresh(); } return 1;
+	case wed_Export1100: if (gExportTarget != wet_xplane_1100) { gExportTarget = wet_xplane_1100; mDocument->SetDirty(); Refresh(); } return 1;
+	case wed_Export1130: if (gExportTarget != wet_xplane_1130) { gExportTarget = wet_xplane_1130; mDocument->SetDirty(); Refresh(); } return 1;
+	case wed_ExportGateway:if (gExportTarget != wet_gateway) { gExportTarget = wet_gateway; mDocument->SetDirty(); Refresh(); } return 1;
 
 #if WITHNWLINK
 	case wed_ToggleLiveView :
