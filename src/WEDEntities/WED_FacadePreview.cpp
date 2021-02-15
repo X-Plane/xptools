@@ -1160,7 +1160,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 		handle_type2(tman, info, footprint, choices, g, want_thinWalls, camera, min_pixel_size, tRef, n_wall, bestFloor, roof_pts, roof_height, roof_extent);
 	}
 
-	if (info.has_roof) // && want_roof
+	if (info.has_roof && roof_pts.size() > 2) // && want_roof
 	{
 		tRef = tman->LookupTexture(info.roof_tex ,true, tex_Wrap | tex_Compress_Ok | tex_Mipmap);
 		g->BindTex(tRef ? tman->GetTexID(tRef) : 0, 0);
