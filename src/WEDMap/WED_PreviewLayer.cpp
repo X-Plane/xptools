@@ -1704,8 +1704,8 @@ struct	preview_road : WED_PreviewItem {
 					Vector2 perp = dir.perpendicular_ccw();   // direction perpendicular
 
 					glBegin(GL_TRIANGLE_STRIP);
-						glTexCoord2f(s.s_left, t); glVertex2(pts[0] - perp * left);
-						glTexCoord2f(s.s_right,t); glVertex2(pts[0] - perp * right);
+						glTexCoord2f(s.s_left, t); glVertex2(pts[0] + perp * left);
+						glTexCoord2f(s.s_right,t); glVertex2(pts[0] + perp * right);
 
 						for (int j = 1; j < pts.size(); ++j)
 						{
@@ -1721,8 +1721,8 @@ struct	preview_road : WED_PreviewItem {
 								perp = dir;
 							perp = perp.perpendicular_ccw();
 
-							glTexCoord2f(s.s_left,  t); glVertex2(pts[j] - perp * left);
-							glTexCoord2f(s.s_right, t); glVertex2(pts[j] - perp * right);
+							glTexCoord2f(s.s_left,  t); glVertex2(pts[j] + perp * left);
+							glTexCoord2f(s.s_right, t); glVertex2(pts[j] + perp * right);
 							dir = dir_next;
 						}
 					glEnd();
