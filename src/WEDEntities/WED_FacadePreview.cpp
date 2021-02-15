@@ -1094,7 +1094,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 			roof_pts.push_back(footprint.back());    // we didn't process the last wall - but still need a complete roof. E.g. Fenced Parking Facades.
 	}
 
-	if (info.has_roof) // && want_roof
+	if (info.has_roof && roof_pts.size() > 2) // && want_roof
 	{
 		tRef = tman->LookupTexture(info.roof_tex.c_str() ,true, tex_Wrap | tex_Compress_Ok | tex_Mipmap);
 		g->BindTex(tRef ? tman->GetTexID(tRef) : 0, 0);
