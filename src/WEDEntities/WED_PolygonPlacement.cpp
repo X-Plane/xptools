@@ -99,8 +99,11 @@ void		WED_PolygonPlacement::GetNthPropertyDict(int n, PropertyDict_t& dict) cons
 		int max_key = -1;
 		for(map<int, string>::iterator i = dm.begin(); i != dm.end(); ++i)
 		{
-			// if(gExportTarget < wet_xp1200)  disable all new XP12 only styles
-			dict.insert(PropertyDict_t::value_type(i->first, make_pair(i->second,i->first < surf_Grass)));
+			bool surfAvail = i->first == surf_Asphalt || i->first == surf_Concrete;
+			if (gExportTarget >= wet_xplane_1200)
+				if (i->first < surf_Grass)
+					surfAvail = true;
+			dict.insert(PropertyDict_t::value_type(i->first, make_pair(i->second, surfAvail)));
 			if(i->first > max_key) max_key = i->first;
 		}
 	}
@@ -155,7 +158,7 @@ void		WED_PolygonPlacement::SetNthProperty(int n, const PropertyVal_t& val)
 		if (resolver)
 		{
 			string vpath;
-//			if(WED_GetLibraryMgr(resolver)->GetLineSurfPath(surftype, vpath))
+//			if(WED_GetLibraryMgr(resolver)->GetSurfPath(surftype, vpath))
 //				resource = vpath;
 			switch(val.int_val) // surftype)
 			{
