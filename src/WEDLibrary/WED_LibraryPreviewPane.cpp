@@ -34,6 +34,7 @@
 #include "ITexMgr.h"
 #include "TexUtils.h"
 #include "MathUtils.h"
+#include "BitmapUtils.h"
 
 #include "GUI_DrawUtils.h"
 #include "GUI_Broadcaster.h"
@@ -109,6 +110,7 @@ WED_LibraryPreviewPane::WED_LibraryPreviewPane(GUI_Commander * cmdr, WED_Resourc
 			LOG_MSG("I/Lpp no FBO's - MSAA disabled\n");
 		}
 #endif
+		mLightBackground = false;
 }
 
 void		WED_LibraryPreviewPane::ReceiveMessage(GUI_Broadcaster * inSrc, intptr_t inMsg, intptr_t inParam)
@@ -175,6 +177,45 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 		}
 		else if(res_type == res_Autogen)
 			mWid = 0.0;
+	}
+
+	if (res_type == res_Line)
+	{
+		const lin_info_t * lin;
+		if (mResMgr->GetLin(mRes, lin))
+		{
+			ImageInfo info;
+			if (!LoadBitmapFromAnyFile(lin->base_tex.c_str(), &info))
+			{
+				double luminance = 0.0;
+				int n = 0;
+				for (int y = 0; y < info.height; y++)
+					for (int i = 0; i < lin->s1.size(); i++)
+					{
+						for (int x = lin->s1[i] * info.width; x <= intround(lin->s2[i] * info.width); x++)
+						{
+							unsigned char * pix = info.data + (y * info.width + x) * info.channels;
+
+							if (info.channels == 3 ||
+								(info.channels == 4 && pix[3] > 30))
+							{
+								luminance += 0.2 * pix[0] + 0.5 * pix[1] + 0.3 * pix[2];
+								n++;
+							}
+							else
+							{
+								luminance += *pix;
+								n++;
+							}
+						}
+					}
+				luminance /= n;
+				printf("lum = %.1lf, n=%d\n", luminance, n);
+				DestroyBitmap(&info);
+
+				mLightBackground = luminance < 50.0;
+			}
+		}
 	}
 }
 
@@ -505,7 +546,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 			DrawOneItem(mType, mRes, b, g);
 }
 
-void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, const int b[4], GUI_GraphState * g, const char * label)
+void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, int b[4], GUI_GraphState * g, const char * label)
 {
 	const XObj8 * o = nullptr;
 	const agp_t * agp = nullptr;
@@ -588,6 +629,11 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, const int 
 					int tex_id = mTexMgr->GetTexID(tref);
 					if (tex_id != 0)
 					{
+						if (mLightBackground)
+						{
+							int kTileAll[4] = { 0,0,1,1 };
+							GUI_DrawStretched(g, "gradient_light.png", b, kTileAll);
+						}
 						g->SetState(false,1,false,true,true,false,false);
 						g->BindTex(tex_id,0);
 
@@ -756,8 +802,11 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, const int 
 			case res_Line:
 				if(lin)
 					snprintf(buf1, sizeof(buf1), "%s %s", lin->description.c_str(), lin->hasDecal ? "(decal not shown)" : "");
-				if (lin && lin->s1.size() && lin->s2.size())
-					snprintf(buf2, sizeof(buf2), "w~%.0f%s",lin->eff_width * (gIsFeet ? 100.0/2.54 : 100.0), gIsFeet ? "in" : "cm" );
+				if (lin && lin->s1.size())
+					if(lin->eff_width < 1.5)
+						snprintf(buf2, sizeof(buf2), "w~%.0f%s",lin->eff_width * (gIsFeet ? 100.0/2.54 : 100.0), gIsFeet ? "in" : "cm" );
+					else
+						snprintf(buf2, sizeof(buf2), "w~%.1f%s", lin->eff_width / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "ft" : "m");
 				break;
 			case res_Autogen:
 			case res_Object:
@@ -779,7 +828,7 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, const int 
 						if(agp->tiles[tile_idx].id >= 0)
 							n = sprintf(buf1, "TILE_ID \'%d\' ", agp->tiles[tile_idx].id);
 						sprintf(buf1 + n, "%sshowing tiles #%d+ @ h=%dm", agp->tiles[tile_idx].has_scp ? "has scrapers, " : "", tile_idx, mHgt);
-						n = sprintf(buf2, "%ld tiles, ", agp->tiles.size());
+						n = sprintf(buf2, "%d tiles, ", (int) agp->tiles.size());
 					}
 					else
 						snprintf(buf1, sizeof(buf1), "%s", agp->description.c_str());
