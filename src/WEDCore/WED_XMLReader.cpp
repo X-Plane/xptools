@@ -81,7 +81,7 @@ string	WED_XMLReader::ReadFile(const char * filename, bool * exists)
 			XML_Error e = XML_GetErrorCode(parser);
 			if(err.empty())
 				err = XML_ErrorString(e);
-			printf("%s At: %zd,%zd\n", err.c_str(), XML_GetCurrentLineNumber(parser), XML_GetCurrentColumnNumber(parser));
+			LOG_MSG("%s At: %zd,%zd\n", err.c_str(), XML_GetCurrentLineNumber(parser), XML_GetCurrentColumnNumber(parser));
 			break;
 		}
 		//if total read == 0

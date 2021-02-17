@@ -98,6 +98,9 @@ static int get_apt_export_version()
 	case wet_xplane_1130:
 		version = 1130;
 		break;
+	case wet_xplane_1200:
+		version = 1200;
+		break;
 	default:
 		DebugAssert(!"You forgot to add a case!");
 		break;
