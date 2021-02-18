@@ -4787,30 +4787,24 @@ static void copy_heading(WED_Thing * src, WED_Thing * dst)
 
 static int get_surface(WED_Thing * t)
 {
-	WED_Taxiway * taxiway = dynamic_cast<WED_Taxiway*>(t);
-	if (taxiway)
+	if(auto taxiway = dynamic_cast<WED_Taxiway*>(t))
 		return taxiway->GetSurface();
-	WED_PolygonPlacement * polygon = dynamic_cast<WED_PolygonPlacement*>(t);
-	if (polygon)
+	if(auto polygon = dynamic_cast<WED_PolygonPlacement*>(t))
 	{
 		string resource;
 		polygon->GetResource(resource);
-		int surf_num = 0;
 
-		if(resource.substr(0,strlen("lib/airport/default_runways/")) == "lib/airport/default_runways/")
+		int enu = WED_GetLibraryMgr(t->GetArchive()->GetResolver())->GetSurfEnum(resource);
+		if (enu < 0)
 		{
-			auto pos = resource.find('_', strlen("lib/airport/default_runways/"));
-			if(pos != string::npos)
-				surf_num = resource[pos + 1] - '0' + 1;
+			if (resource.find("concrete") != string::npos)
+				enu = surf_Concrete;
+			else
+				enu = surf_Asphalt;
 		}
-
-		if (resource.find("concrete") != string::npos)
-			return intlim(surf_Concrete + surf_num, surf_Concrete, surf_Grass -1);
-		else
-			return intlim(surf_Asphalt + surf_num, surf_Asphalt, surf_Concrete -1);
+		return enu;
 	}
-	WED_LinePlacement * line = dynamic_cast<WED_LinePlacement*>(t);
-	if (line)
+	if(auto line = dynamic_cast<WED_LinePlacement*>(t))
 	{
 		string resource;
 		line->GetResource(resource);
@@ -4819,75 +4813,43 @@ static int get_surface(WED_Thing * t)
 			resource.erase(0,strlen("lib/airport/lines/"));
 			int linetype;
 			if(sscanf(resource.c_str(),"%d",&linetype) == 1)
-			{
-				int enu = ENUM_Import(LinearFeature,linetype);
-				return enu;
+				return ENUM_Import(LinearFeature,linetype);
 			}
-		}
 	}
-	WED_AirportChain * chain = dynamic_cast<WED_AirportChain*>(t);
-	if(chain)
+	if(auto chain = dynamic_cast<WED_AirportChain*>(t))
 	{
 		// return value only if whl chain same style ... need to break up multi-linestyle chains beforehand
 		string resource;
 		chain->GetResource(resource);
-		int enu = ENUM_LookupDesc(LinearFeature, resource.c_str());
-		return enu;
+		return ENUM_LookupDesc(LinearFeature, resource.c_str());
 	}
 	return surf_Asphalt;
 }
 
 static void set_surface(WED_Thing * t, int surface, WED_LibraryMgr * lmgr)
 {
-	WED_Taxiway * taxiway = dynamic_cast<WED_Taxiway*>(t);
-	if (taxiway)
+	if(auto taxiway = dynamic_cast<WED_Taxiway*>(t))
 	{
 		if(ENUM_Domain(surface) == Surface_Type)
 			taxiway->SetSurface(surface);
 		else
 			taxiway->SetSurface(surf_Asphalt);
 	}
-	WED_PolygonPlacement * polygon = dynamic_cast<WED_PolygonPlacement*>(t);
-	if (polygon)
+	if (auto polygon = dynamic_cast<WED_PolygonPlacement*>(t))
 	{
 		string resource;
-		if (ENUM_Domain(surface) == Surface_Type && ENUM_Export(surface) >= apt_surf_asphalt_1)
-		{
-			resource = "lib/airport/default_runways/";
-			if (surface >= surf_Concrete_1)
-			{
-				resource += "concrete";
-				resource += '_';
-				resource += to_string(surface - surf_Concrete);
-			}
-			else
-			{
-				resource += "asphalt";
-				resource += '_';
-				resource += to_string(surface - surf_Asphalt);
-			}
-			resource += "/runway.pol";
-		}
-		else if (surface == surf_Concrete)
-			resource = "lib/airport/pavement/concrete_1D.pol";
-		else
+		if (!WED_GetLibraryMgr(t->GetArchive()->GetResolver())->GetSurfVpath(surface, resource))
 			resource = "lib/airport/pavement/asphalt_1D.pol";
-
 		polygon->SetResource(resource);
-		return;
 	}
-	WED_LinePlacement * line = dynamic_cast<WED_LinePlacement*>(t);
-	if (line)
+	if(auto line = dynamic_cast<WED_LinePlacement*>(t))
 	{
 		string(vpath);
 		if (lmgr->GetLineVpath(ENUM_Export(surface), vpath))
-		{
 			line->SetResource(vpath);
-		}
-		return;
 	}
-	WED_AirportChain * chain = dynamic_cast<WED_AirportChain*>(t);
-	if(chain && ENUM_Domain(surface) == LinearFeature)
+	if(auto chain = dynamic_cast<WED_AirportChain*>(t))
+	if(ENUM_Domain(surface) == LinearFeature)
 	{
 		set<int> attr;
 		attr.insert(surface);
@@ -4895,8 +4857,7 @@ static void set_surface(WED_Thing * t, int surface, WED_LibraryMgr * lmgr)
 		int num_ent = chain->GetNumEntities();
 		for(int i = 0; i < num_ent; i++)
 		{
-			WED_AirportNode * node = dynamic_cast<WED_AirportNode*>(chain->GetNthEntity(i));
-			if(node)
+			if(auto node = dynamic_cast<WED_AirportNode*>(chain->GetNthEntity(i)))
 				node->SetAttributes(attr);
 		}
 	}
@@ -4904,15 +4865,10 @@ static void set_surface(WED_Thing * t, int surface, WED_LibraryMgr * lmgr)
 
 static void set_closed(WED_Thing * t, bool closed)
 {
-	WED_AirportChain * ac = dynamic_cast<WED_AirportChain*>(t);
-	if (ac)
-	{
-		ac->SetClosed(closed ? 1 : 0);
-		return;
-	}
-	WED_LinePlacement * lp = dynamic_cast<WED_LinePlacement*>(t);
-	if (lp)
-		lp->SetClosed(closed ? 1 : 0);
+	if(auto ac = dynamic_cast<WED_AirportChain*>(t))
+		ac->SetClosed(closed);
+	else if(auto lp = dynamic_cast<WED_LinePlacement*>(t))
+		lp->SetClosed(closed);
 }
 
 void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)

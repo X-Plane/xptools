@@ -23,6 +23,8 @@
 
 #include "WED_PolygonPlacement.h"
 #include "WED_EnumSystem.h"
+#include "WED_ToolUtils.h"
+#include "WED_LibraryMgr.h"
 
 DEFINE_PERSISTENT(WED_PolygonPlacement)
 TRIVIAL_COPY(WED_PolygonPlacement,WED_GISPolygon)
@@ -96,15 +98,11 @@ void		WED_PolygonPlacement::GetNthPropertyDict(int n, PropertyDict_t& dict) cons
 
 		DOMAIN_Members(Surface_Type,dm);
 
-		int max_key = -1;
+		string dummy;
 		for(map<int, string>::iterator i = dm.begin(); i != dm.end(); ++i)
 		{
-			bool surfAvail = i->first == surf_Asphalt || i->first == surf_Concrete;
-			if (gExportTarget >= wet_xplane_1200)
-				if (i->first < surf_Grass)
-					surfAvail = true;
+			bool surfAvail = WED_GetLibraryMgr(GetArchive()->GetResolver())->GetSurfVpath(i->first, dummy);
 			dict.insert(PropertyDict_t::value_type(i->first, make_pair(i->second, surfAvail)));
-			if(i->first > max_key) max_key = i->first;
 		}
 	}
 	else
@@ -129,18 +127,7 @@ void		WED_PolygonPlacement::GetNthProperty(int n, PropertyVal_t& val) const
 	if (n >= WED_GISPolygon::CountProperties())
 	{
 			val.prop_kind = prop_Enum;
-			if(resource.value == "lib/airport/pavement/concrete_1D.pol")
-			{
-				val.int_val = surf_Concrete;
-				return;
-			}
-
-			else if(resource.value == "lib/airport/pavement/asphalt_3D.pol")
-			{
-				val.int_val = surf_Asphalt; // ENUM_Import(Surf_Type,linetype);
-				return;
-			}
-			val.int_val = -1;
+			val.int_val = WED_GetLibraryMgr(GetArchive()->GetResolver())->GetSurfEnum(resource.value);
 	}
 	else
 		WED_GISPolygon::GetNthProperty(n, val);
@@ -151,21 +138,11 @@ void		WED_PolygonPlacement::SetNthProperty(int n, const PropertyVal_t& val)
 	if (n >= WED_GISPolygon::CountProperties())
 	{
 //		int surftype = ENUM_Export(*(val.int_val));
-
 //		printf("SET int_val %d set_val.begin %d (%ld) linetype %d\n",val.int_val, *(val.set_val.cbegin()), val.set_val.size(), linetype);
 #if WED
-		IResolver * resolver = GetArchive()->GetResolver();
-		if (resolver)
-		{
-			string vpath;
-//			if(WED_GetLibraryMgr(resolver)->GetSurfPath(surftype, vpath))
-//				resource = vpath;
-			switch(val.int_val) // surftype)
-			{
-				case surf_Asphalt:  resource = "lib/airport/pavement/asphalt_3D.pol"; return;
-				case surf_Concrete: resource = "lib/airport/pavement/concrete_1D.pol"; return;
-			}
-		}
+		string vpath;
+		if(WED_GetLibraryMgr(GetArchive()->GetResolver())->GetSurfVpath(val.int_val, vpath))
+			resource = vpath;
 #endif
 	}
 	else

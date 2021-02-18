@@ -389,6 +389,7 @@ void		WED_LibraryMgr::Rescan()
 		}
 	}
 	RescanLines();
+	RescanSurfaces();
 
 	string package_base;
 	package_base=gPackageMgr->ComputePath(local_package,"");
@@ -581,6 +582,111 @@ void WED_LibraryMgr::RescanLines()
 		m++;
 	}
 }
+
+void WED_LibraryMgr::RescanSurfaces()
+{
+	default_surfaces.clear();
+	unordered_map<string, string> types_rpaths;
+
+	auto m = res_table.begin();
+	while (m != res_table.end() && m->first.find("lib/airport/default_runways/", 0) == string::npos)
+		++m;
+
+	if(m != res_table.end())
+	{
+		while (m != res_table.end() && m->first.find("lib/airport/default_runways/", 0) != string::npos)
+		{
+			if (m->second.res_type != res_Directory)
+			{
+				string nam(m->first);
+				nam.erase(0, strlen("lib/airport/default_runways/"));
+				if (nam.find("/taxiway.pol") != string::npos)
+				{
+					nam.erase(nam.find_first_of('/'));
+					if (m->second.real_paths.size())
+						types_rpaths[nam] = m->second.real_paths.front();
+				}
+			}
+			++m;
+		}
+		for (auto r : res_table)
+		{
+			if (r.second.is_default && r.second.res_type == res_Polygon && r.second.status >= status_Public && r.second.real_paths.size())
+			{
+				auto it = types_rpaths.begin();
+				while (it != types_rpaths.end())
+				{
+					if (it->second == r.second.real_paths.front())
+					{
+						if (it->first == "dirt")
+							default_surfaces[surf_Dirt] = r.first;
+						else if (it->first == "grass")
+								default_surfaces[surf_Grass] = r.first;
+						else if (it->first == "gravel")
+							default_surfaces[surf_Gravel] = r.first;
+						else if (it->first == "lakebed")
+							default_surfaces[surf_Lake] = r.first;
+						else if (it->first == "snow")
+							default_surfaces[surf_Snow] = r.first;
+						else
+						{
+							if (it->first.find("asphalt") != string::npos)
+							{
+								int n;
+								if (sscanf(it->first.c_str(), "asphalt_%d", &n) == 1 && n > 0 && n <= 5)
+									default_surfaces[surf_Asphalt_1 + n -1] = r.first;
+								else
+									default_surfaces[surf_Asphalt] = r.first;
+							}
+							else if (it->first.find("concrete") != string::npos)
+							{
+								int n;
+								if (sscanf(it->first.c_str(), "concrete_%d", &n) == 1 && n > 0 && n <= 3)
+									default_surfaces[surf_Concrete_1 + n - 1] = r.first;
+								else
+									default_surfaces[surf_Concrete] = r.first;
+
+							}
+						}
+						it = types_rpaths.erase(it);
+					}
+					else
+						it++;
+				}
+			}
+		}
+		printf("found %d matching\n", default_surfaces.size());
+	}
+
+	if(default_surfaces.size() == 0)
+	{
+		default_surfaces[surf_Asphalt] = "lib/airport/pavement/asphalt_3D.pol";
+		default_surfaces[surf_Concrete] = "lib/airport/pavement/concrete_1D.pol";
+	}
+}
+
+bool WED_LibraryMgr::GetSurfVpath(int surf, string &res)
+{
+	auto it = default_surfaces.find(surf);
+	if (it != default_surfaces.end())
+	{
+		res = it->second;
+		return true;
+	}
+	else
+		return false;
+}
+
+int WED_LibraryMgr::GetSurfEnum(const string &res)
+{
+	for(auto v : default_surfaces)
+	{
+		if(v.second == res)
+			return v.first;
+	}
+	return -1;
+}
+
 
 void WED_LibraryMgr::AccumResource(const string& path, int package, const string& rpath, bool is_backup, bool is_default, int status)
 {
