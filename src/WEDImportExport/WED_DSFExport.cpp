@@ -1348,6 +1348,12 @@ static int	DSF_ExportTileRecursive(
 						else if(centroid_ob)
 							chain.clear();
 
+						if (fac->HasDockingCabin())
+						{
+							chain.pop_back();
+							chain.pop_back();
+						}
+
 						if(!chain.empty())
 						{
 							++real_thingies;
@@ -1368,6 +1374,12 @@ static int	DSF_ExportTileRecursive(
 							clip_segments(chain,cull_bounds);
 						else if(centroid_ob)
 							chain.clear();
+
+						if (fac->HasDockingCabin())
+						{
+							chain.pop_back();
+							chain.pop_back();
+						}
 
 						if(!chain.empty())
 						{

@@ -103,7 +103,18 @@ struct fac_info_t : public REN_FacadeLOD_t {
 	// WED only
 	vector<string>	wallName;      // wall names, for property window etc
 	vector<string>	wallUse;       // official width range supported by this wall
-	string         h_range;       // official heights (or height range) of the facade
+	string			h_range;       // official heights (or height range) of the facade
+
+	// jetway facade stuff
+	struct tunnel_t {
+		int idx;
+		string obj;
+		const XObj8 * o;
+		int size_code;
+	};
+	vector<tunnel_t>	tunnels;
+	int					cabin_idx;
+	int					style_code;
 };
 
 struct	lin_info_t {

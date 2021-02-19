@@ -283,7 +283,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 		if (TextScanner_FormatScan(s, "i", &vers) != 1) ok = "Invalid version";
 		if (vers != 703 && vers != 715 && vers != 810 && vers != 850 && vers != 1000 && vers != 1050 && vers != 1100 && vers != 1130 && vers != 1200)
 		{
-		  if (vers > 1200)
+		  if (vers > LATEST_APT_VERSION)
 			ok = "Format is newer than supported by this version of WED";
 		  else
 			ok = "Illegal version";
@@ -1069,6 +1069,29 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				outApts.back().truck_destinations.push_back(truck_dest);
 			}
 			break;
+		case apt_jetway:
+			if (vers < 1200) ok = "Error: no jetways in older apt.dat files.";
+			else if (outApts.empty()) ok = "Error: jetway outside an airport.";
+			else
+			{
+				Jetway_t j;
+				if (TextScanner_FormatScan(s, "iddfiifff|",
+					&rec_code,
+					&j.location.x_,      // this is LON LAT - different that usual
+					&j.location.y_,
+					&j.install_heading,
+					&j.style_code,
+					&j.size_code,
+					&j.parked_tunnel_angle,  // always zero
+					&j.parked_tunnel_length,
+					&j.parked_cab_angle) < 8)
+				{
+					ok = "Error: Illegal jetway";
+				}
+
+				outApts.back().jetways.push_back(j);
+			}
+			break;
 		case apt_done:
 			forceDone = true;
 			break;
@@ -1514,6 +1537,15 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 					}
 				}
 			}
+
+			if(version >= 1200)
+				for (auto const& jetway : apt->jetways)
+				{
+					fprintf(fi, "%2d % 3.8lf % 3.8lf % 4.2f %d %d % 4.2f % 4.2f % 4.2f" CRLF,
+						apt_jetway, jetway.location.x(), jetway.location.y(), jetway.install_heading,
+						jetway.style_code, jetway.size_code, jetway.parked_tunnel_angle,
+						jetway.parked_tunnel_length, jetway.parked_cab_angle);
+				}
 		}
 	}
 	fprintf(fi, "%d" CRLF, apt_done);

@@ -1010,6 +1010,25 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 					else
 						fac->floors.back().roofs.back().roof_objs.push_back(o);
 				}
+				else if (MFS_string_match(&s, "#cabin", false))
+				{
+					fac->cabin_idx = fac->wallName.size() - 1;
+					fac->style_code = MFS_int(&s);
+				}
+				else if (MFS_string_match(&s, "#tunnel", false))
+				{
+					while (true)
+					{
+						string obj;
+						MFS_string(&s, &obj);
+						if (!MFS_has_word(&s))
+							break;
+						fac->tunnels.push_back(fac_info_t::tunnel_t());
+						fac->tunnels.back().idx = fac->wallName.size() - 1;
+						fac->tunnels.back().obj = obj;
+						fac->tunnels.back().size_code = MFS_int(&s);
+					}
+				}
 			}
 			MFS_string_eol(&s,NULL);
 		}
@@ -1074,6 +1093,14 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 				else
 					LOG_MSG("E/Fac can not load object %s in %s\n", obj_nam.c_str(), p.c_str());
 
+			}
+			if (fac->tunnels.size())
+			{
+				for (auto& t : fac->tunnels)
+				{
+					if(!GetObjRelative(t.obj, vpath, t.o))
+						LOG_MSG("E/Fac can not load object %s in %s\n", t.obj.c_str(), p.c_str());
+				}
 			}
 		}
 		process_texture_path(p,fac->wall_tex);
