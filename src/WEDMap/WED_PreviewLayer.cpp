@@ -1114,6 +1114,7 @@ struct	preview_facade : public preview_polygon {
 		glColor4f(1,1,1,1);
 
 		g->SetState(false, 0, false, true, true, true, true);
+
 		if(1) // fac->HasCustomWalls())
 		{
 			WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
@@ -1175,7 +1176,7 @@ struct	preview_facade : public preview_polygon {
 					if (my_tun.o)
 						draw_obj_at_ll(tman, my_tun.o, b.p1, 0, VectorDegs2NorthHeading(b.p1, b.p1, Vector2(b.p1, b.p2)), g, zoomer, cbk);
 
-					g->SetState(false, 0, false, true, true, true, true);
+					g->SetState(false, 0, false, true, true, false, false);
 					glColor4f(1, 0, 0, 0.2);
 
 					Point2	b1 = zoomer->LLToPixel(b.p1);
@@ -1202,6 +1203,7 @@ struct	preview_facade : public preview_polygon {
 							glVertex2(b1 + dir * extension_max);
 						}
 					glEnd();
+					g->EnableDepth(true, true);
 
 				}
 				if (i > n-2 && fac->HasDockingCabin())
@@ -1232,7 +1234,6 @@ struct	preview_facade : public preview_polygon {
 					choices.push_back(0);
 			}
 
-			g->EnableDepth(true, true);
 			float mat[16];
 			glGetFloatv(GL_PROJECTION_MATRIX, mat);
 			bool isTilted = (mat[2] != 0.0 || mat[6] != 0.0);
@@ -1248,8 +1249,8 @@ struct	preview_facade : public preview_polygon {
 			glPopMatrix();
 		}
 
-		g->SetState(false,0,false,true,true,false,false);
-//		glLineWidth(2);
+		g->SetState(false, 0, false, true, true, false, false);
+		//		glLineWidth(2);
 		int n = ps->GetNumSides();
 		for(int i = 0; i < n; ++i)
 		{
