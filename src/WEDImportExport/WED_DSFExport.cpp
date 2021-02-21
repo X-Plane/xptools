@@ -79,7 +79,9 @@ struct DSF_export_info_t
 	ImageInfo	orthoImg;      // in case an orthoimage is to be converted/exported, store its info, so it does not need to be loaded it repeatedly
 	string		orthoFile;     // path to last orthoImage - so we know if there is a 2nd one to deal with - in which case we drop the first
 
-	DSF_export_info_t() { orthoImg.data = NULL; }
+	bool		DockingJetways;
+
+	DSF_export_info_t() : DockingJetways(true) { orthoImg.data = NULL; }
 };
 
 extern int gOrthoExport;
@@ -717,7 +719,8 @@ static void	DSF_AccumChainBezier(
 						void *									writer,
 						int										idx,
 						int										param,
-						int										auto_closed)
+						int										auto_closed,
+						double									lastPt_param)
 {
 	vector<Bezier2p>::const_iterator n = start;
 
@@ -743,6 +746,10 @@ static void	DSF_AccumChainBezier(
 						bounds);
 				if(!auto_closed || i != (pts_triple.size()-1))
 				{
+					if(e == end && i == (pts_triple.size() - 1))
+						c[2] = lastPt_param;
+					if (e == end && i == (pts_triple.size() - 2) && pts_triple[i].pt == pts_triple[i+1].pt)
+						c[2] = lastPt_param;
 					cbs->AddPolygonPoint_f(c,writer);
 				}
 			}
@@ -815,7 +822,8 @@ static void	DSF_AccumChain(
 						void *								writer,
 						int									idx,
 						int									param,
-						int									auto_closed)
+						int									auto_closed,
+						double								lastPt_param)
 {
 	vector<Segment2p>::const_iterator next;
 	for(vector<Segment2p>::const_iterator i = start; i != end; ++i)
@@ -847,7 +855,7 @@ static void	DSF_AccumChain(
 		else if(next == end && (i->target() != start->source() || !auto_closed))
 		{
 			assemble_dsf_pt(c, i->target(), NULL, bounds);
-			c[2] = i->param;
+			c[2] = lastPt_param;
 			cbs->AddPolygonPoint_f(c,writer);
 		}
 
@@ -1348,7 +1356,7 @@ static int	DSF_ExportTileRecursive(
 						else if(centroid_ob)
 							chain.clear();
 
-						if (fac->HasDockingCabin())
+						if (fac->HasDockingCabin() && export_info.DockingJetways)
 						{
 							chain.pop_back();
 							chain.pop_back();
@@ -1360,7 +1368,11 @@ static int	DSF_ExportTileRecursive(
 							if(fac_is_auto_closed && bad_match(chain.front(),chain.back()))
 								problem_children.insert(what);
 							else
-								DSF_AccumChainBezier(chain.cbegin(),chain.cend(), safe_bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
+							{
+								Point2 pt;
+								seq->GetNthPoint(seq->GetNumPoints() - 1)->GetLocation(gis_Param, pt);
+								DSF_AccumChainBezier(chain.cbegin(), chain.cend(), safe_bounds, cbs, writer, idx, fac->GetHeight(), fac_is_auto_closed, pt.x());
+							}
 						}
 					}
 					else
@@ -1375,7 +1387,7 @@ static int	DSF_ExportTileRecursive(
 						else if(centroid_ob)
 							chain.clear();
 
-						if (fac->HasDockingCabin())
+						if (fac->HasDockingCabin() && export_info.DockingJetways)
 						{
 							chain.pop_back();
 							chain.pop_back();
@@ -1387,7 +1399,11 @@ static int	DSF_ExportTileRecursive(
 							if(fac_is_auto_closed && bad_match(chain.front(),chain.back()))
 								problem_children.insert(what);
 							else
-								DSF_AccumChain(chain.cbegin(),chain.cend(), safe_bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
+							{
+								Point2 pt;
+								seq->GetNthPoint(seq->GetNumPoints() - 1)->GetLocation(gis_Param, pt);
+								DSF_AccumChain(chain.cbegin(), chain.cend(), safe_bounds, cbs, writer, idx, fac->GetHeight(), fac_is_auto_closed, pt.x());
+							}
 						}
 					}
 				}
@@ -2360,6 +2376,7 @@ int DSF_ExportAirportOverlay(IResolver * resolver, WED_Airport  * apt, const str
 
 		DSF_ResourceTable	rsrc;
 		DSF_export_info_t DSF_export_info;
+		DSF_export_info.DockingJetways = false; // keep jetways as facades. Then no need to mtach up apt.dat jetways and DSF facades at import from GW
 
 		int entities = 0;
 		for(int show_level = 6; show_level >= 1; --show_level)

@@ -258,7 +258,7 @@ static void MakeEdgeRouting(const vector<WED_TaxiRoute *>& edges, AptNetwork_t& 
 	}
 }
 
-void	AptExportRecursive(WED_Thing * what, AptVector& apts, vector<WED_TaxiRoute *>& edges)
+void	AptExportRecursive(WED_Thing * what, AptVector& apts, vector<WED_TaxiRoute *>& edges, bool Dockingjetways)
 {
 	int holes, h;
 
@@ -419,7 +419,7 @@ void	AptExportRecursive(WED_Thing * what, AptVector& apts, vector<WED_TaxiRoute 
 		apts.back().truck_destinations.push_back(AptTruckDestination_t());
 		dst->Export(apts.back().truck_destinations.back());
 	}
-	else if (cls == WED_FacadePlacement::sClass)
+	else if (cls == WED_FacadePlacement::sClass && Dockingjetways)
 	{
 		auto dst = static_cast<WED_FacadePlacement*>(what);
 		if (dst->HasDockingCabin())
@@ -431,7 +431,7 @@ void	AptExportRecursive(WED_Thing * what, AptVector& apts, vector<WED_TaxiRoute 
 
 	int cc = what->CountChildren();
 	for (int i = 0; i < cc; ++i)
-		AptExportRecursive(what->GetNthChild(i), apts, edges);
+		AptExportRecursive(what->GetNthChild(i), apts, edges, Dockingjetways);
 
 	if (cls == WED_Airport::sClass)
 	{
@@ -460,13 +460,11 @@ void	AptExportRecursive(WED_Thing * what, AptVector& apts, vector<WED_TaxiRoute 
 	}
 }
 
-void	WED_AptExport(
-				WED_Thing *		container,
-				const char *	file_path)
+void	WED_AptExport(WED_Thing * container, const char * file_path, bool DockingJetways)
 {
 	AptVector	apts;
 	vector<WED_TaxiRoute *> edges;
-	AptExportRecursive(container, apts, edges);
+	AptExportRecursive(container, apts, edges, DockingJetways);
 	WriteAptFile(file_path,apts, get_apt_export_version());
 }
 
@@ -477,7 +475,7 @@ void	WED_AptExport(
 {
 	AptVector	apts;
 	vector<WED_TaxiRoute *> edges;
-	AptExportRecursive(container, apts, edges);
+	AptExportRecursive(container, apts, edges, true);
 	WriteAptFileProcs(print_func, ref, apts, get_apt_export_version());
 }
 
