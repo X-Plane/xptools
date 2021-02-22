@@ -23,6 +23,8 @@ WED 2.4.0
    - WED-1347 stops cursor blink timer in Settings window when loose focus
    - validate ICAO_Code meta tag to meet ICAO nomenclature
    - fix preview for .lin commands with offset layers in preview pane
+   - fix endcap not showing for lines with two vertices only
+   - refine tesselation to show fill for polygons with colocated nodes
    Features:
    - show gridded preview for library vdirectories
    - support choosing taxiway equivalent styles for draped polygons
