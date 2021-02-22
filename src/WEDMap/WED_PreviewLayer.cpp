@@ -672,8 +672,10 @@ static void draw_line_preview(const vector<Point2>& pts, const lin_info_t& linfo
 		{
 			endcap_t = linfo.end_caps[l].t2 - linfo.end_caps[l].t1;
 			start_of_endcap = pts.size()-2;
-			while(start_of_endcap > 0)
+			bool once = true;
+			while(start_of_endcap > 0 || once)
 			{
+				once = false;
 				double prev_t = endcap_frac_t;
 				endcap_frac_t += sqrt(Segment2(pts[start_of_endcap], pts[start_of_endcap+1]).squared_length()) / PPM / linfo.scale_t;
 				if(endcap_frac_t > endcap_t)
