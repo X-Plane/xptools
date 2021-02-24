@@ -29,17 +29,17 @@
 #include "GUI_Commander.h"
 #include "GUI_Listener.h"
 #include "GUI_Pane.h"
+#include "WED_MapZoomerNew.h"
 
 #include <memory>
 
 class IDocPrefs;
 class WED_Document;
 class WED_MapProjection;
-class WED_MapZoomerNew;
 class WED_PerspectiveCamera;
 class WED_PreviewLayer;
 
-class WED_MapPreviewPane : public GUI_Pane, public GUI_Listener, public GUI_Commander {
+class WED_MapPreviewPane : public GUI_Pane, public WED_MapZoomerNew, public GUI_Listener, public GUI_Commander {
 public:
 
 	WED_MapPreviewPane(GUI_Commander * cmdr, WED_Document * document);
@@ -75,8 +75,8 @@ private:
 
 	WED_Document * mDocument;
 	std::unique_ptr<WED_MapProjection> mMapProjection;
-	std::unique_ptr<WED_PerspectiveCamera> mCamera;
-	std::unique_ptr<WED_PreviewLayer> mPreviewLayer;
+	WED_PerspectiveCamera * mCamera;
+	WED_PreviewLayer *	mPreviewLayer;
 	float mYaw, mPitch;
 	float mX, mY;
 

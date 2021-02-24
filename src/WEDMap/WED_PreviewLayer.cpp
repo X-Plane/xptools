@@ -1808,7 +1808,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 			{
 				double n,s,e,w;
 				GetZoomer()->GetMapVisibleBounds(w,s,e,n);
-				if(obj->GetVisibleDeg() > (e-w) * 0.005)        // skip below 1/2% map width. Obj's also tend to overestimate their size
+//				if(obj->GetVisibleDeg() > (e-w) * 0.005)        // skip below 1/2% map width. Obj's also tend to overestimate their size
 					mPreviewItems.push_back(new preview_object(obj,group_Objects, mObjDensity, GetResolver()));
 			}
 	}

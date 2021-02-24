@@ -24,6 +24,8 @@
 #ifndef WED_MAPPANE_H
 #define WED_MAPPANE_H
 
+
+#include "CompGeomDefs2.h"
 #include "GUI_Pane.h"
 #include "GUI_Listener.h"
 #include "GUI_Commander.h"
@@ -72,6 +74,8 @@ public:
 	virtual				~WED_MapPane();
 
 			void		ZoomShowAll(void);
+			Bbox2		GetMapVisibleBounds(void);
+
 			void		ZoomShowSel(double scale = 1.05);   // scale is area shown vs size of object, i.e. by default 5% margin all around
 
 			void		SetResource(const string& r, int res_type);

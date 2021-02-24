@@ -52,6 +52,8 @@
 #include "WED_LibraryPane.h"
 #include "WED_LibraryPreviewPane.h"
 #include "WED_LinePlacement.h"
+#include "WED_MapPreviewPane.h"
+#include "WED_MapPreviewWindow.h"
 #include "WED_PolygonPlacement.h"
 #include "WED_Routing.h"
 #include "WED_Taxiway.h"
@@ -252,6 +254,13 @@ WED_DocumentWindow::WED_DocumentWindow(
 	mPropPane->SetSticky(1,0.5,1,1);
 
 	/****************************************************************************************************************************************************************
+	 * MAP PREVIEW WINDOW
+	****************************************************************************************************************************************************************/
+
+	mMapPreviewWindow = new WED_MapPreviewWindow(this, mDocument);
+	mMapPreviewPane = mMapPreviewWindow->MapPreviewPane();
+
+	/****************************************************************************************************************************************************************
 	 * FINAL CLEANUP
 	****************************************************************************************************************************************************************/
 
@@ -286,6 +295,8 @@ WED_DocumentWindow::WED_DocumentWindow(
 
 
 	mMapPane->FromPrefs(inDocument);
+	mMapPreviewWindow->FromPrefs(inDocument);
+	mMapPreviewPane->FromPrefs(inDocument);
 	mPropPane->FromPrefs(inDocument,0);
 	// doc/use_feet and doc/InfoDMS are global only preferences now, not read from each document any more
 #if TYLER_MODE
@@ -310,6 +321,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 
 WED_DocumentWindow::~WED_DocumentWindow()
 {
+	delete mMapPreviewWindow;
 }
 
 int	WED_DocumentWindow::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)
@@ -347,6 +359,18 @@ int	WED_DocumentWindow::HandleCommand(int command)
 			mPropSplitter->AlignContentsAt(prop_split);
 			mLibSplitter->AlignContentsAt(prev_split);
 		}
+		return 1;
+	case wed_TogglePreviewWindow:
+		if (mMapPreviewWindow->IsVisible())
+			mMapPreviewWindow->Hide();
+		else
+			mMapPreviewWindow->Show();
+		return 1;
+	case wed_ShowMapAreaInPreviewWindow:
+//xxx		mMapPreviewPane->DisplayExtent(mMapPane->GetMapVisibleBounds(), 1.0);
+		return 1;
+	case wed_CenterMapOnPreviewCamera:
+//xxx		mMapPane->CenterOnPoint(mMapPreviewPane->CameraPositionLL());
 		return 1;
 	case wed_autoOpenLibPane:
 		if (mAutoOpen == 0)
@@ -521,6 +545,11 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_ConvertToTaxiway:	return WED_CanConvertTo(mDocument, &IsType<WED_Taxiway>, true);
 	case wed_ConvertToTaxiline:	return WED_CanConvertTo(mDocument, &IsType<WED_AirportChain>, false);
 	case wed_ConvertToLine:		return WED_CanConvertTo(mDocument, &IsType<WED_LinePlacement>, false);
+
+	case wed_TogglePreviewWindow:	ioCheck = mMapPreviewWindow->IsVisible(); return 1;
+	case wed_ShowMapAreaInPreviewWindow:	return 1;
+	case wed_CenterMapOnPreviewCamera:	return 1;
+
 	case wed_AddATCFreq:return WED_CanMakeNewATCFreq(mDocument);
 	case wed_AddATCFlow:return WED_CanMakeNewATCFlow(mDocument);
 	case wed_AddATCRunwayUse:return WED_CanMakeNewATCRunwayUse(mDocument);
@@ -607,6 +636,8 @@ void	WED_DocumentWindow::ReceiveMessage(
 	{
 		IDocPrefs * prefs = reinterpret_cast<IDocPrefs *>(inParam);
 		mMapPane->ToPrefs(prefs);
+		mMapPreviewPane->ToPrefs(prefs);
+		mMapPreviewWindow->ToPrefs(prefs);
 		mPropPane->ToPrefs(prefs,0);
 
 		// not writing doc/use_feet any more. Its a global preference now.
@@ -640,6 +671,8 @@ void	WED_DocumentWindow::ReceiveMessage(
 	{
 		IDocPrefs * prefs = reinterpret_cast<IDocPrefs *>(inParam);
 		mMapPane->FromPrefs(prefs);
+		mMapPreviewWindow->FromPrefs(prefs);
+		mMapPreviewPane->FromPrefs(prefs);
 		mPropPane->FromPrefs(prefs,0);
 
 		// doc/use_feet and doc/InfoDMS are global only preferences now, not read from each document any more

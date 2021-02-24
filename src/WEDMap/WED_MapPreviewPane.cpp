@@ -66,11 +66,14 @@ struct DrawVisStats
 	int numTooSmallComposite = 0;
 };
 
+#include "WED_MapProjection.h"
+
 static void DrawVisFor(WED_MapLayer * layer, const WED_MapProjection& projection, const WED_Camera& camera, IGISEntity * what, GUI_GraphState * g, int depth, DrawVisStats * stats)
 {
 	const float TOO_SMALL_TO_GO_IN = 20.0;
 	const float MIN_PIXELS_TO_DRAW = 5.0;
 
+#if 0
 	if (!layer->IsVisibleNow(what))	return;
 
 	Bbox3 bboxLL = what->GetVisibleBounds();
@@ -122,6 +125,21 @@ static void DrawVisFor(WED_MapLayer * layer, const WED_MapProjection& projection
 #endif
 			}
 		}
+#else
+	IGISComposite * c;
+
+	if (layer->DrawEntityVisualization(false, what, g, false))
+		if (what->GetGISClass() == gis_Composite && (c = SAFE_CAST(IGISComposite, what)) != NULL)
+		{
+			if (1) // camera.PixelSize(bboxXY) > TOO_SMALL_TO_GO_IN || (p1 == p2) || depth == 0)	// Why p1 == p2?  If the composite contains ONLY ONE POINT it is zero-size.  We'd LOD out.  But if
+			{																				// it contains one thing then we might as well ALWAYS draw it - it's relatively cheap!
+				int t = c->GetNumEntities();												// Depth == 0 means we draw ALL top level objects -- good for airports.
+				for (int n = t - 1; n >= 0; --n)
+					DrawVisFor(layer, projection, camera, c->GetNthEntity(n), g, depth + 1, stats);
+			}
+		}
+#endif
+
 }
 
 static int GetVkPref(const char * key, int defaultVk)
@@ -148,23 +166,36 @@ static GUI_KeyFlags GetModifierPref(const char * key, GUI_KeyFlags defaultModifi
 WED_MapPreviewPane::WED_MapPreviewPane(GUI_Commander * cmdr, WED_Document * document)
 	: GUI_Commander(cmdr),
 	  mDocument(document),
-      mMapProjection(std::make_unique<WED_MapProjection>()),
-	  mCamera(std::make_unique<WED_PerspectiveCamera>(0.5, DRAW_DISTANCE)),
-	  mPreviewLayer(std::make_unique<WED_PreviewLayer>(this, mMapProjection.get(), mCamera.get(), document)),
+	  mMapProjection(std::make_unique<WED_MapProjection>()),
+//	  mCamera(std::make_unique<WED_PerspectiveCamera>(0.5, DRAW_DISTANCE)),
+//	  mPreviewLayer(std::make_unique<WED_PreviewLayer>(this, mMapProjection.get(), mCamera.get(), document)),
 	  mYaw(0.f),
 	  mPitch(-10.f)
 {
+// ToDo: Setup MapZoomerNew propperly so projected items get drawn,
+// replace WED_MapProjection with wrapper reading/setting MapZoomerNew as needed.
+// Or eliminate entirely and add MapZoomer for info not yet available.
+
+// Much later - re-think culling strategy so it can rely only on MapZoomerNew info the usual way.
+// We can not afford to nuke all the early culling in PreviewLayer based on GetPPM().
+
+	mCamera = new WED_PerspectiveCamera(0.5, DRAW_DISTANCE);
+	this->cam = mCamera;
+
+	mPreviewLayer = new WED_PreviewLayer(this, this, document);
+
 	mMapProjection->SetXYUnitsPerMeter(1.0);
 
 	mDocument->GetArchive()->AddListener(this);
 
+#if 0
 	WED_PreviewLayer::Options options;
 	options.clearDepthBuffer = false;
 	options.drawFacadeWalls = true;
 	options.drawFacadeOutline = false;
 	options.drawSkeletonIfLineTooThin = false;
 	mPreviewLayer->SetOptions(options);
-
+#endif
 	SetForwardVector();
 
 	Bbox2 box;
@@ -174,6 +205,10 @@ WED_MapPreviewPane::WED_MapPreviewPane(GUI_Commander * cmdr, WED_Document * docu
 	ent->GetBounds(gis_Geo, box);
 
 	DisplayExtent(box, 0.5);
+
+	this->SetMapLogicalBounds(box.p1.x(), box.p1.y(), box.p2.x(), box.p2.y());
+//	this->SetPixelBounds(-0.5, -0.5, 0.5, 0.5);                                    // thats possibly wrong, see SetXYUnitsPerMeter = 1
+	this->SetPixelBounds(0, 0, 111120.0 * box.xspan(), 111120.0 * box.yspan());
 
 	mCameraLeftVk = GetVkPref("CameraLeftVk", GUI_VK_LEFT);
 	mCameraRightVk = GetVkPref("CameraRightVk", GUI_VK_RIGHT);
@@ -213,8 +248,23 @@ void WED_MapPreviewPane::Draw(GUI_GraphState * state)
 	InitGL(b);
 
 	DrawVisStats stats;
-	DrawVisFor(mPreviewLayer.get(), *mMapProjection, *mCamera, base, state, 0, &stats);
-#if 0
+	DrawVisFor(mPreviewLayer, *mMapProjection, *mCamera, base, state, 0, &stats);
+
+#if 1
+{
+	Point3  p = mCamera->Position();
+	Vector3 d = mCamera->Forward();
+
+    printf("Cam pos %11.5lf %.5lf %.5lf dir %.5lf %.5lf %.5lf\n", p.x, p.y, p.z, d.dx, d.dy, d.dz);
+    printf("Proj PPM %.5lf Orig %11.5lf %11.5lf Unit %11.5lf %11.5lf\n", mMapProjection->XYUnitsPerMeter(),
+                    mMapProjection->LonToX(0), mMapProjection->LatToY(0),
+                    mMapProjection->LonToX(1), mMapProjection->LatToY(1));
+
+    printf("Zoom PPM %11.5lf Orig %11.5lf %11.5lf Unit %11.5lf %11.5lf\n", this->GetPPM(),
+                    this->LonToXPixel(0), this->LatToYPixel(0),
+                    this->LonToXPixel(1), this->LatToYPixel(1));
+
+}
 #if DEV
 	printf("%d / %d culled, %d / %d too small, %d / %d too small (composite)\n",
 		stats.numCulled, stats.numCullTests, stats.numTooSmall, stats.numSizeTests,
@@ -369,7 +419,7 @@ void WED_MapPreviewPane::DisplayExtent(const Bbox2& extent, double relativeDista
 {
 	if (extent.is_empty() || extent.is_null()) return;
 
-	Point2 centerLL = extent.p1 + Vector2(extent.p2.x() - extent.p1.x(), extent.p2.y() - extent.p1.y()) * 0.5;
+	Point2 centerLL = extent.centroid();
 	mMapProjection->SetOriginLL(centerLL);
 	mMapProjection->SetStandardParallel(centerLL.y());
 
@@ -412,7 +462,7 @@ void WED_MapPreviewPane::FromPrefs(IDocPrefs * prefs)
 		mMapProjection->SetStandardParallel(camera_lat);
 
 		mCamera->MoveTo(Point3(0, 0, camera_agl));
-		
+
 		mYaw = camera_yaw;
 		mPitch = camera_pitch;
 		SetForwardVector();

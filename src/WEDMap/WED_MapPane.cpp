@@ -356,6 +356,13 @@ void	WED_MapPane::ZoomShowAll(void)
 	mMap->ZoomShowAll();
 }
 
+Bbox2 WED_MapPane::GetMapVisibleBounds()
+{
+	Bbox2 bounds;
+	mMap->GetMapVisibleBounds(bounds.p1.x_, bounds.p1.y_, bounds.p2.x_, bounds.p2.y_);
+	return bounds;
+}
+
 void WED_MapPane::ZoomShowSel(double scale)   // by default show just a bit more than the objects size
 {
 	Bbox2 box;

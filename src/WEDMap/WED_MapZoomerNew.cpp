@@ -32,82 +32,76 @@ inline	double	rescale(double s1, double s2, double d1, double d2, double v)
 	return ((v - s1) * (d2 - d1) / (s2 - s1)) + d1;
 }
 
-WED_MapZoomerNew::WED_MapZoomerNew(WED_Camera * c) : cam(c)
+WED_MapZoomerNew::WED_MapZoomerNew(WED_Camera * c)
+	: cam(c),
+	  mCacheKey(0),
+	  mPixels{0, 0, 1, 1},
+	  mLogicalBounds{-180, -90, 180, 90},
+	  mLonCenter(0), mLatCenter(0),
+	  mCenterX(0.5), mCenterY(0.5),
+	  mPixel2DegLat(1.0)
 {
-	mCacheKey = 0;
-	mPixels[0] = 0.0;
-	mPixels[1] = 0.0;
-	mPixels[2] = 1.0;
-	mPixels[3] = 1.0;
-	mLogicalBounds[0] = -180.0;
-	mLogicalBounds[1] =  -90.0;
-	mLogicalBounds[2] =  180.0;
-	mLogicalBounds[3] =   90.0;
-
-	mPixel2DegLat = 1.0;
-	mLonCenter = mLatCenter = 0.0;
 	RecalcAspectRatio();
-
 }
 
 WED_MapZoomerNew::~WED_MapZoomerNew()
 {
 }
 
-double	WED_MapZoomerNew::XPixelToLon(double x)
+double	WED_MapZoomerNew::XPixelToLon(double x) const
 {
-	return mLonCenter + (x - (mPixels[2]+mPixels[0])*0.5) * mPixel2DegLat / mLonCenterCOS;
-
+	return mLonCenter + (x - mCenterX) * mPixel2DegLat / mLonCenterCOS;
 }
 
-double	WED_MapZoomerNew::YPixelToLat(double y)
+double	WED_MapZoomerNew::YPixelToLat(double y) const
 {
-	return mLatCenter + (y - (mPixels[3]+mPixels[1])*0.5) * mPixel2DegLat;
+	return mLatCenter + (y - mCenterY) * mPixel2DegLat;
 }
 
-double	WED_MapZoomerNew::LonToXPixel(double lon)
+double	WED_MapZoomerNew::LonToXPixel(double lon) const
 {
-	return (mPixels[2]+mPixels[0])*0.5 + (lon - mLonCenter) * mLonCenterCOS / mPixel2DegLat;
+	return mCenterX + (lon - mLonCenter) * mLonCenterCOS / mPixel2DegLat;
 }
 
-double	WED_MapZoomerNew::LatToYPixel(double lat)
+double	WED_MapZoomerNew::LatToYPixel(double lat) const
 {
-	return (mPixels[3]+mPixels[1])*0.5 + (lat - mLatCenter) / mPixel2DegLat;
+	return mCenterY + (lat - mLatCenter) / mPixel2DegLat;
 }
 
-Point2	WED_MapZoomerNew::PixelToLL(const Point2& p)
+Point2	WED_MapZoomerNew::PixelToLL(const Point2& p) const
 {
 	return Point2(XPixelToLon(p.x()), YPixelToLat(p.y()));
 }
 
-Point2	WED_MapZoomerNew::LLToPixel(const Point2& p)
+Point2	WED_MapZoomerNew::LLToPixel(const Point2& p) const
 {
 	return Point2(LonToXPixel(p.x()), LatToYPixel(p.y()));
 }
 
-void	WED_MapZoomerNew::PixelToLLv(Point2 * dst, const Point2 * src, int n)
+void	WED_MapZoomerNew::PixelToLLv(Point2 * dst, const Point2 * src, int n) const
 {
 	while(n--)
 		*dst++ = PixelToLL(*src++);
 }
 
-void	WED_MapZoomerNew::LLToPixelv(Point2 * dst, const Point2 * src, int n)
+void	WED_MapZoomerNew::LLToPixelv(Point2 * dst, const Point2 * src, int n) const
 {
 	while(n--)
 		*dst++ = LLToPixel(*src++);
 }
 
-double	WED_MapZoomerNew::GetPPM(void)
+double	WED_MapZoomerNew::GetPPM(void) const
 {
 	#if BENTODO
 	can we do better?
+	// return fabs(LatToYPixel(MTR_TO_DEG_LAT) - LatToYPixel(0.0));
 	#endif
-	return fabs(LatToYPixel(MTR_TO_DEG_LAT) - LatToYPixel(0.0));
+	return MTR_TO_DEG_LAT / mPixel2DegLat;
 }
 
-double WED_MapZoomerNew::GetClickRadius(double p)
+double WED_MapZoomerNew::GetClickRadius(double p) const
 {
-	return fabs(YPixelToLat(p) - YPixelToLat(0));
+	return p * mPixel2DegLat;
 }
 
 
@@ -118,10 +112,12 @@ void	WED_MapZoomerNew::SetPixelBounds(
 					double	inTop)
 {
 	++mCacheKey;
-	mPixels[0] = inLeft;
+	mPixels[0] = inLeft;           // there is some redundancy here ...
 	mPixels[1] = inBottom;
 	mPixels[2] = inRight;
 	mPixels[3] = inTop;
+	mCenterX = 0.5 * (inLeft + inRight);
+	mCenterY = 0.5 * (inBottom + inTop);
 	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 }
 
@@ -266,63 +262,6 @@ void	WED_MapZoomerNew::ZoomAround(
 	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 }
 
-/*
-void	WED_MapZoomerNew::ScrollReveal(
-				double	inLon,
-				double	inLat)
-{
-	double	delta_lon = inLon - ((mVisibleBounds[0] + mVisibleBounds[2]) * 0.5);
-	double	delta_lat = inLat - ((mVisibleBounds[1] + mVisibleBounds[3]) * 0.5);
-	mVisibleBounds[0] += delta_lon;
-	mVisibleBounds[1] += delta_lat;
-	mVisibleBounds[2] += delta_lon;
-	mVisibleBounds[3] += delta_lat;
-	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
-
-}
-
-
-void	WED_MapZoomerNew::ScrollReveal(
-				double	inWest,
-				double	inSouth,
-				double	inEast,
-				double	inNorth)
-{
-	if (inWest == inEast || inNorth == inSouth)
-	{
-		ScrollReveal((inWest + inEast) * 0.5, (inNorth + inSouth) * 0.5);
-		return;
-	}
-	double	width = (inEast - inWest) * 0.5;
-	double	height = (inNorth - inSouth) * 0.5;
-	double	aspect = height / width;
-	double	x = (inEast + inWest) * 0.5;
-	double	y =	(inNorth + inSouth) * 0.5;
-
-	double	viewWidth = mPixels[2] - mPixels[0];
-	double	viewHeight = mPixels[3] - mPixels[1];
-	double	visAspectPixels = viewHeight / viewWidth;
-	double	visAspectLogical = visAspectPixels / mAspectRatio;
-
-
-	if (aspect > visAspectLogical)
-	{
-		mVisibleBounds[0] = x - height / visAspectLogical;
-		mVisibleBounds[1] = y - height;
-		mVisibleBounds[2] = x + height / visAspectLogical;
-		mVisibleBounds[3] = y + height;
-
-	} else {
-
-		mVisibleBounds[0] = x - width;
-		mVisibleBounds[1] = y - width * visAspectLogical;
-		mVisibleBounds[2] = x + width;
-		mVisibleBounds[3] = y + width * visAspectLogical;
-	}
-	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
-}
-*/
-
 void	WED_MapZoomerNew::GetScrollBounds(float outTotalBounds[4], float outVisibleBounds[4])
 {
 	double vbounds[4];
@@ -372,6 +311,8 @@ void	WED_MapZoomerNew::RecalcAspectRatio(void)
 	else
 		mLonCenterCOS = cos(min(fabs(top_lat),fabs(bot_lat)) * DEG_TO_RAD);
 }
+
+/********** new funcs for 3D preview / prespective projection *********/
 
 void	WED_MapZoomerNew::PushMatrix(void)
 {

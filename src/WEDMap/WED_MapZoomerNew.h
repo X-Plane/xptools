@@ -56,19 +56,19 @@ public:
 	// This API is called by just about anything that needs to do coordinate
 	// conversion.
 
-			double	XPixelToLon(double);
-			double	YPixelToLat(double);
-			double	LonToXPixel(double);
-			double	LatToYPixel(double);
+			double	XPixelToLon(double) const;
+			double	YPixelToLat(double) const;
+			double	LonToXPixel(double) const;
+			double	LatToYPixel(double) const;
 
-			Point2	PixelToLL(const Point2& p);
-			Point2	LLToPixel(const Point2& p);
+			Point2	PixelToLL(const Point2& p) const;
+			Point2	LLToPixel(const Point2& p) const;
 
-			void	PixelToLLv(Point2 * dst, const Point2 * src, int n);
-			void	LLToPixelv(Point2 * dst, const Point2 * src, int n);
+			void	PixelToLLv(Point2 * dst, const Point2 * src, int n) const;
+			void	LLToPixelv(Point2 * dst, const Point2 * src, int n) const;
 
-			double	GetPPM(void);
-			double	GetClickRadius(double pixels);
+			double	GetPPM(void) const;
+			double	GetClickRadius(double pixels) const;
 			long long	CacheKey(void) { return mCacheKey; }
 
 	// This API is called by the map class to set up and modify the zoomer
@@ -136,14 +136,12 @@ public:
 
 		WED_Camera * cam;
 
-
 protected:
 			void	SetPixelBounds(					// Set the area on the screen the user
 							double 	inLeft,			// can see.
 							double	inBottom,
 							double	inRight,
 							double	inTop);
-
 
 private:
 
@@ -153,8 +151,11 @@ private:
 	double	mLogicalBounds[4];
 	double	mLatCenter;
 	double	mLonCenter;
+	double	mCenterX;
+	double	mCenterY;
 	double	mLonCenterCOS;
 	long long mCacheKey;
+
 protected:
 	double	mPixel2DegLat;
 
