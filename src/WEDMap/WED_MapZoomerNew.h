@@ -134,9 +134,10 @@ public:
 			void	Scalef(float x, float y, float z);
 			void	PopMatrix(void);
 
-		WED_Camera * cam;
-
 protected:
+			void	SetPPM(double ppm);
+	WED_Camera * 	cam;
+
 			void	SetPixelBounds(					// Set the area on the screen the user
 							double 	inLeft,			// can see.
 							double	inBottom,

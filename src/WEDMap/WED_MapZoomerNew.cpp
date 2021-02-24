@@ -118,6 +118,7 @@ void	WED_MapZoomerNew::SetPixelBounds(
 	mPixels[3] = inTop;
 	mCenterX = 0.5 * (inLeft + inRight);
 	mCenterY = 0.5 * (inBottom + inTop);
+
 	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 }
 
@@ -132,6 +133,11 @@ void	WED_MapZoomerNew::SetMapLogicalBounds(
 	mLogicalBounds[1] = inSouth;
 	mLogicalBounds[2] = inEast;
 	mLogicalBounds[3] = inNorth;
+
+	mLonCenter = 0.5 * (inWest + inEast);
+	mLatCenter = 0.5 * (inNorth + inSouth);
+	mLonCenterCOS = cos(mLatCenter * DEG_TO_RAD);
+
 	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 }
 
@@ -249,16 +255,13 @@ void	WED_MapZoomerNew::ZoomAround(
 	//    the lower left.
 	// 3. Scroll the map back.
 
-	double px = (mPixels[0]+mPixels[2]) * 0.5;
-	double py = (mPixels[1]+mPixels[3]) * 0.5;
-
-	PanPixels(centerXPixel, centerYPixel, px,py);
+	PanPixels(centerXPixel, centerYPixel, mCenterX, mCenterY);
 
 	if (zoomFactor <= 1.0 || mPixel2DegLat > 1e-8) // limit manual zoom in to 1 mm/pixel (108,900 meter / deg lat)
 		mPixel2DegLat /= zoomFactor;
 	RecalcAspectRatio();
 
-	PanPixels(px,py, centerXPixel, centerYPixel);
+	PanPixels(mCenterX, mCenterY, centerXPixel, centerYPixel);
 	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 }
 
@@ -352,4 +355,10 @@ void	WED_MapZoomerNew::PopMatrix(void)
 		cam->PopMatrix();
 	else
 		glPopMatrix();
+}
+
+void	WED_MapZoomerNew::SetPPM(double ppm)
+{
+	if(ppm > 0.0)
+		mPixel2DegLat = MTR_TO_DEG_LAT / ppm;
 }

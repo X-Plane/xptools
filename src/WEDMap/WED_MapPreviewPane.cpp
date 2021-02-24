@@ -185,6 +185,8 @@ WED_MapPreviewPane::WED_MapPreviewPane(GUI_Commander * cmdr, WED_Document * docu
 	mPreviewLayer = new WED_PreviewLayer(this, this, document);
 
 	mMapProjection->SetXYUnitsPerMeter(1.0);
+	this->SetPixelBounds(-1,-1,1,1);
+	this->SetPPM(1.0);
 
 	mDocument->GetArchive()->AddListener(this);
 
@@ -206,9 +208,20 @@ WED_MapPreviewPane::WED_MapPreviewPane(GUI_Commander * cmdr, WED_Document * docu
 
 	DisplayExtent(box, 0.5);
 
-	this->SetMapLogicalBounds(box.p1.x(), box.p1.y(), box.p2.x(), box.p2.y());
-//	this->SetPixelBounds(-0.5, -0.5, 0.5, 0.5);                                    // thats possibly wrong, see SetXYUnitsPerMeter = 1
-	this->SetPixelBounds(0, 0, 111120.0 * box.xspan(), 111120.0 * box.yspan());
+{
+	Point3  p = mCamera->Position();
+	Vector3 d = mCamera->Forward();
+
+    printf("Cam pos %11.5lf %.5lf %.5lf dir %.5lf %.5lf %.5lf\n", p.x, p.y, p.z, d.dx, d.dy, d.dz);
+    printf("Proj PPM %11.5lf Orig %11.5lf %11.5lf Unit %11.5lf %11.5lf\n", mMapProjection->XYUnitsPerMeter(),
+                    mMapProjection->LonToX(0), mMapProjection->LatToY(0),
+                    mMapProjection->LonToX(1), mMapProjection->LatToY(1));
+
+	this->SetPixelBounds(-1,-1,1,1);
+    printf("Zoom PPM %11.5lf Orig %11.5lf %11.5lf Unit %11.5lf %11.5lf\n", this->GetPPM(),
+                    this->LonToXPixel(0), this->LatToYPixel(0),
+                    this->LonToXPixel(1), this->LatToYPixel(1));
+}
 
 	mCameraLeftVk = GetVkPref("CameraLeftVk", GUI_VK_LEFT);
 	mCameraRightVk = GetVkPref("CameraRightVk", GUI_VK_RIGHT);
@@ -256,7 +269,7 @@ void WED_MapPreviewPane::Draw(GUI_GraphState * state)
 	Vector3 d = mCamera->Forward();
 
     printf("Cam pos %11.5lf %.5lf %.5lf dir %.5lf %.5lf %.5lf\n", p.x, p.y, p.z, d.dx, d.dy, d.dz);
-    printf("Proj PPM %.5lf Orig %11.5lf %11.5lf Unit %11.5lf %11.5lf\n", mMapProjection->XYUnitsPerMeter(),
+    printf("Proj PPM %11.5lf Orig %11.5lf %11.5lf Unit %11.5lf %11.5lf\n", mMapProjection->XYUnitsPerMeter(),
                     mMapProjection->LonToX(0), mMapProjection->LatToY(0),
                     mMapProjection->LonToX(1), mMapProjection->LatToY(1));
 
@@ -423,6 +436,8 @@ void WED_MapPreviewPane::DisplayExtent(const Bbox2& extent, double relativeDista
 	mMapProjection->SetOriginLL(centerLL);
 	mMapProjection->SetStandardParallel(centerLL.y());
 
+	this->SetMapLogicalBounds(extent.p1.x(), extent.p1.y(), extent.p2.x(), extent.p2.y());
+
 	Point2 p1XY = mMapProjection->LLToXY(extent.p1);
 	Point2 p2XY = mMapProjection->LLToXY(extent.p2);
 
@@ -460,6 +475,8 @@ void WED_MapPreviewPane::FromPrefs(IDocPrefs * prefs)
 	{
 		mMapProjection->SetOriginLL({ camera_lon, camera_lat });
 		mMapProjection->SetStandardParallel(camera_lat);
+
+		this->SetMapLogicalBounds(camera_lon, camera_lat, camera_lon, camera_lat);
 
 		mCamera->MoveTo(Point3(0, 0, camera_agl));
 
@@ -566,6 +583,9 @@ void WED_MapPreviewPane::MoveCameraToXYZ(const Point3& xyz)
 	Point2 ll = mMapProjection->XYToLL({ xyz.x, xyz.y });
 	mMapProjection->SetOriginLL(ll);
 	mMapProjection->SetStandardParallel(ll.y());
+
+	this->SetMapLogicalBounds(ll.x(), ll.y(), ll.x(), ll.y());
+
 	mCamera->MoveTo({ 0, 0, xyz.z });
 }
 
@@ -577,12 +597,6 @@ void WED_MapPreviewPane::SetForwardVector()
 
 void WED_MapPreviewPane::InitGL(int *b)
 {
-	double dx = b[2] - b[0];
-	double dy = b[3] - b[1];
-
-	double sx = ((dx > dy) ? (dx / dy) : 1.0) / 2;
-	double sy = ((dx > dy) ? 1.0 : (dy / dx)) / 2;
-
 	glPushAttrib(GL_VIEWPORT_BIT);
 	glViewport(b[0], b[1], b[2] - b[0], b[3] - b[1]);
 
