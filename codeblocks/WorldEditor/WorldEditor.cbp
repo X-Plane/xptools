@@ -488,6 +488,7 @@
 		<Unit filename="../../src/WEDLibrary/WED_LibraryPreviewPane.h" />
 		<Unit filename="../../src/WEDMap/WED_ATCLayer.cpp" />
 		<Unit filename="../../src/WEDMap/WED_ATCLayer.h" />
+		<Unit filename="../../src/WEDMap/WED_Camera.h" />
 		<Unit filename="../../src/WEDMap/WED_Colors.cpp" />
 		<Unit filename="../../src/WEDMap/WED_Colors.h" />
 		<Unit filename="../../src/WEDMap/WED_CreateBoxTool.cpp" />
@@ -516,6 +517,8 @@
 		<Unit filename="../../src/WEDMap/WED_MapLayer.h" />
 		<Unit filename="../../src/WEDMap/WED_MapPane.cpp" />
 		<Unit filename="../../src/WEDMap/WED_MapPane.h" />
+		<Unit filename="../../src/WEDMap/WED_MapProjection.cpp" />
+		<Unit filename="../../src/WEDMap/WED_MapProjection.h" />
 		<Unit filename="../../src/WEDMap/WED_MapToolNew.cpp" />
 		<Unit filename="../../src/WEDMap/WED_MapToolNew.h" />
 		<Unit filename="../../src/WEDMap/WED_MapZoomerNew.cpp" />
@@ -524,6 +527,8 @@
 		<Unit filename="../../src/WEDMap/WED_MarqueeTool.h" />
 		<Unit filename="../../src/WEDMap/WED_NavaidLayer.cpp" />
 		<Unit filename="../../src/WEDMap/WED_NavaidLayer.h" />
+		<Unit filename="../../src/WEDMap/WED_PerspectiveCamera.cpp" />
+		<Unit filename="../../src/WEDMap/WED_PerspectiveCamera.h" />
 		<Unit filename="../../src/WEDMap/WED_PreviewLayer.cpp" />
 		<Unit filename="../../src/WEDMap/WED_PreviewLayer.h" />
 		<Unit filename="../../src/WEDMap/WED_SlippyMap.cpp" />
