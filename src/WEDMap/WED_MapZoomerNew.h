@@ -45,10 +45,12 @@
 
 */
 
+#include "WED_Camera.h"
+
 class	WED_MapZoomerNew : public GUI_ScrollerPaneContent {
 public:
 
-					 WED_MapZoomerNew();
+					 WED_MapZoomerNew(WED_Camera * c = nullptr);
 	virtual			~WED_MapZoomerNew();
 	// The map zoomer converts lat/lon coordinates to pixel coordinates.
 	// This API is called by just about anything that needs to do coordinate
@@ -125,6 +127,15 @@ public:
 	virtual	void	GetScrollBounds(float outTotalBounds[4], float outVisibleBounds[4]);
 	virtual	void	ScrollH(float xOffset);
 	virtual	void	ScrollV(float yOffset);
+
+			void	PushMatrix(void);
+			void	Rotatef(float r, float x, float y, float z);
+			void	Translatef(float x, float y, float z);
+			void	Scalef(float x, float y, float z);
+			void	PopMatrix(void);
+
+		WED_Camera * cam;
+
 
 protected:
 			void	SetPixelBounds(					// Set the area on the screen the user

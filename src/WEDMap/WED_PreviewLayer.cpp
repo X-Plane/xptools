@@ -264,14 +264,14 @@ void draw_obj_at_ll(ITexMgr * tman, const XObj8 * o, const Point2& loc, float ag
 	float ppm = zoomer->GetPPM();
 
 	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glTranslatef(l.x(), l.y(), agl * ppm);
-	glScalef(ppm,ppm,ppm);
-	glRotatef(90, 1,0,0);
-	glRotatef(r, 0,-1,0);
+	zoomer->PushMatrix();
+	zoomer->Translatef(l.x(), l.y(), agl * ppm);
+	zoomer->Scalef(ppm,ppm,ppm);
+	zoomer->Rotatef(90, 1,0,0);
+	zoomer->Rotatef(r, 0,-1,0);
 	Obj_DrawStruct ds = { g, id1, id2 };
 	ObjDraw8(*o, 0, &kFuncs, &ds);
-	glPopMatrix();
+	zoomer->PopMatrix();
 }
 
 void draw_obj_at_xyz(ITexMgr * tman, const XObj8 * o, double x, double y, double z, float heading, GUI_GraphState * g)
@@ -346,11 +346,11 @@ void draw_agp_at_ll(ITexMgr * tman, const agp_t * agp, const Point2& loc, float 
 	if (id1) g->BindTex(id1, 0);
 
 	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glTranslatef(pix.x(), pix.y(), 0);
-	glScalef(ppm, ppm, ppm);
-	glRotatef(90, 1, 0, 0);
-	glRotatef(heading, 0, -1, 0);
+	zoomer->PushMatrix();
+	zoomer->Translatef(pix.x(), pix.y(), 0);
+	zoomer->Scalef(ppm, ppm, ppm);
+	zoomer->Rotatef(90, 1, 0, 0);
+	zoomer->Rotatef(heading, 0, -1, 0);
 	glColor3f(1, 1, 1);
 	auto ti = agp->tiles.front();
 	if (!ti.tile.empty() && !agp->hide_tiles)
@@ -384,7 +384,7 @@ void draw_agp_at_ll(ITexMgr * tman, const agp_t * agp, const Point2& loc, float 
 	}
 	for (auto& f : ti.facs)
 		draw_facade(tman, nullptr, f.name, *(f.fac), f.locs, f.walls, f.height, g, true, ppm);
-	glPopMatrix();
+	zoomer->PopMatrix();
 }
 
 // Given a group name and an offset, this comes up with the total layer number...
@@ -1165,15 +1165,15 @@ struct	preview_facade : public preview_polygon {
 			bool isTilted = (mat[2] != 0.0 || mat[6] != 0.0);
 
 			glMatrixMode(GL_MODELVIEW);
-			glPushMatrix();
+			zoomer->PushMatrix();
 			Point2 l = zoomer->LLToPixel(ref_pt);
-			glTranslatef(l.x(),l.y(),0.0);
+			zoomer->Translatef(l.x(),l.y(),0.0);
 			float ppm = zoomer->GetPPM();
-			glScalef(ppm,ppm,ppm);
-			glRotatef(90, 1,0,0);
+			zoomer->Scalef(ppm,ppm,ppm);
+			zoomer->Rotatef(90, 1,0,0);
 			if(rmgr->GetFac(vpath, info))
 				draw_facade(tman, rmgr, vpath, *info, pts, choices, fac->GetHeight(), g, isTilted, 0.7*ppm);
-			glPopMatrix();
+			zoomer->PopMatrix();
 		}
 
 		g->SetState(false,0,false,true,true,false,false);
@@ -1384,13 +1384,13 @@ struct	preview_taxisign : public WED_PreviewItem {
 		glColor3f(0.4,0.3,0.1);
 
 		glMatrixMode(GL_MODELVIEW);
-		glPushMatrix();
+		zoomer->PushMatrix();
 
 		double ppm = zoomer->GetPPM() * sign_scale;
 		Point2 l = zoomer->LLToPixel(loc);
-		glTranslatef(l.x(), l.y(), ppm * 10);
-		glScalef(ppm, ppm, ppm);
-		glRotatef(hdg, 0, 0, -1);
+		zoomer->Translatef(l.x(), l.y(), ppm * 10);
+		zoomer->Scalef(ppm, ppm, ppm);
+		zoomer->Rotatef(hdg, 0, 0, -1);
 
 		sign_data tsign;
 		tsign.from_code(name);
@@ -1428,7 +1428,7 @@ struct	preview_taxisign : public WED_PreviewItem {
 		glEnd();
 		glDisable(GL_NORMALIZE);
 
-		glPopMatrix();
+		zoomer->PopMatrix();
 	}
 };
 

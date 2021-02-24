@@ -24,12 +24,15 @@
 #include "GUI_Messages.h"
 #include "XESConstants.h"
 
+#include "CompGeomDefs3.h"
+#include "glew.h"
+
 inline	double	rescale(double s1, double s2, double d1, double d2, double v)
 {
 	return ((v - s1) * (d2 - d1) / (s2 - s1)) + d1;
 }
 
-WED_MapZoomerNew::WED_MapZoomerNew()
+WED_MapZoomerNew::WED_MapZoomerNew(WED_Camera * c) : cam(c)
 {
 	mCacheKey = 0;
 	mPixels[0] = 0.0;
@@ -196,13 +199,13 @@ void	WED_MapZoomerNew::ZoomShowArea(
 
 	double required_width_logical = inEast - inWest;
 	double required_height_logical = inNorth - inSouth;
-	
+
 	if(required_width_logical == 0)
 		required_width_logical = 0.00001;
-	
+
 	if(required_height_logical == 0)
 		required_height_logical = 0.00001;
-		
+
 	double pix_avail_width = mPixels[2] - mPixels[0];
 	double pix_avail_height = mPixels[3] - mPixels[1];
 
@@ -368,4 +371,44 @@ void	WED_MapZoomerNew::RecalcAspectRatio(void)
 		mLonCenterCOS = 1.0;
 	else
 		mLonCenterCOS = cos(min(fabs(top_lat),fabs(bot_lat)) * DEG_TO_RAD);
+}
+
+void	WED_MapZoomerNew::PushMatrix(void)
+{
+	if(cam)
+		cam->PushMatrix();
+	else
+		glPushMatrix();
+}
+
+void	WED_MapZoomerNew::Rotatef(float r, float x, float y, float z)
+{
+	if(cam)
+		cam->Rotate(r, Vector3(x, y, z));
+	else
+		glRotatef(r, x, y, z);
+}
+
+void	WED_MapZoomerNew::Translatef(float x, float y, float z)
+{
+	if(cam)
+		cam->Translate(Vector3(x, y, z));
+	else
+		glTranslatef(x, y, z);
+}
+
+void	WED_MapZoomerNew::Scalef(float x, float y, float z)
+{
+	if(cam)
+		cam->Scale(x, y, z);
+	else
+		glScalef(x, y, z);
+}
+
+void	WED_MapZoomerNew::PopMatrix(void)
+{
+	if(cam)
+		cam->PopMatrix();
+	else
+		glPopMatrix();
 }
