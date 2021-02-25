@@ -199,6 +199,15 @@ static bool CheckDuplicateNames(const T& container, validation_error_vector& msg
 	return ret;
 }
 
+template <typename T>
+bool all_in_range(const T* values, T lower_limit, T upper_limit)
+{
+	for(int i = 0; i < sizeof(T); ++i)
+		if(values[i] < lower_limit || values[i] > upper_limit)
+			return false;
+	return true;
+}
+
 static void ValidateOnePointSequence(WED_Thing* who, validation_error_vector& msgs, IGISPointSequence* ps, WED_Airport * apt)
 {
         /* Point Sequence Rules
@@ -1323,6 +1332,10 @@ static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& 
 		if (rwy->GetRoughness() < 0.0 || rwy->GetRoughness() > 1.0)
 			msgs.push_back(validation_error_t(string("The runway '") + name + "' has an illegal surface roughness. It should be in the range 0 to 1.", err_rwy_surface_illegal_roughness, who, apt));
 
+		AptRunway_t r;
+		rwy->Export(r);
+		if(!all_in_range(r.skids, 0.0f, 1.0f))
+			msgs.push_back(validation_error_t("Runway skid mark density and length properties must all be in the range 0 to 1.", err_rwy_dirt_prop_illegal, who, apt));
 	}
 }
 

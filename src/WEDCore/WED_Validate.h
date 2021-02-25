@@ -112,6 +112,7 @@ enum validate_error_t
 	err_resource_cannot_be_found,
 	err_resource_does_not_have_correct_file_type,
 	err_runway_matching_cifp_mislocated,
+	err_rwy_dirt_prop_illegal,
 	err_rwy_end_outside_of_map,
 	err_rwy_end_not_matching_cifp,
 	err_rwy_misaligned_with_name,

@@ -69,6 +69,7 @@ public:
 
 	int			GetSurface(void) const;
 	int			GetShoulder(void) const;
+	bool		GetMarkings(double skids[2]) const;
 
 	double		GetDisp1(void) const;
 	double		GetDisp2(void) const;
@@ -112,7 +113,10 @@ private:
 	WED_PropIntEnum				appl2;
 	WED_PropBoolText			tdzl2;
 	WED_PropIntEnum				reil2;
-
+	WED_PropDoubleText			skids1;
+	WED_PropDoubleText			skid_len1;
+	WED_PropDoubleText			skids2;
+	WED_PropDoubleText			skid_len2;
 };
 
 #endif /* WED_RUNWAY_H */

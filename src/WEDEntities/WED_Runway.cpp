@@ -39,6 +39,8 @@
 
 #include <sstream>
 
+#define SKID_LEN_DEFAULT 0.2
+#define SKIDS_DEFAULT 0.5
 
 DEFINE_PERSISTENT(WED_Runway)
 TRIVIAL_COPY(WED_Runway, WED_GISLine_Width)
@@ -65,7 +67,11 @@ WED_Runway::WED_Runway(WED_Archive * a, int i) : WED_GISLine_Width(a,i),
 	mark2			(this,PROP_Name("Markings 2",			XML_Name("runway","markings2")),	Runway_Markings,mark_NonPrecis),
 	appl2			(this,PROP_Name("Approach Lights 2",	XML_Name("runway","app_lites2")),	Light_App,		app_MALSF),
 	tdzl2			(this,PROP_Name("TDZ Lights 2",			XML_Name("runway","TDZL2")),		1),
-	reil2			(this,PROP_Name("REIL strobes 2",		XML_Name("runway","REIL2")),		REIL_Lights,	reil_None)
+	reil2			(this,PROP_Name("REIL strobes 2",		XML_Name("runway","REIL2")),		REIL_Lights,	reil_None),
+	skids1			(this,PROP_Name("Skids Dens. 1",		XML_Name("runway","skids1")),		SKIDS_DEFAULT,4,2),
+	skid_len1		(this,PROP_Name("Skids Length 1",		XML_Name("runway","skid_len1")),	SKID_LEN_DEFAULT,4,2),
+	skids2			(this,PROP_Name("Skids Dens. 2",		XML_Name("runway","skids2")),		SKIDS_DEFAULT,4,2),
+	skid_len2		(this,PROP_Name("Skids Length 2",		XML_Name("runway","skid_len2")),	SKID_LEN_DEFAULT,4,2)
 {
 }
 
@@ -368,6 +374,16 @@ double		WED_Runway::GetBlas1(void) const { return blas1.value; }
 double		WED_Runway::GetBlas2(void) const { return blas2.value; }
 double		WED_Runway::GetRoughness(void) const { return roughness.value; }
 
+bool		WED_Runway::GetMarkings(double skids[2]) const
+{
+	if((skids1 <= 0.0 || skid_len1 <= 0.0) && (skids2 <= 0.0 || skid_len2 <= 0.0))
+		return false;
+
+	skids[0] = skids1;
+	skids[1] = skids2;
+	return true;
+}
+
 
 	void		WED_Runway::SetSurface(int x) { surface = x; }
 	void		WED_Runway::SetShoulder(int x) { shoulder = x; }
@@ -463,9 +479,13 @@ void		WED_Runway::Import(const AptRunway_t& x, void (* print_func)(void *, const
 		print_func(ref,"Error importing runway: high-end reil code %d is illegal (not a member of type %s).\n", x.reil_code[1], DOMAIN_Desc(reil2.domain));
 		reil2 = reil_None;
 	}
-
-
-
+	if(x.has_skids)
+	{
+		skids1 = x.skids[0];
+		skid_len1 = x.skid_len[0];
+		skids2 = x.skids[1];
+		skid_len2 = x.skid_len[1];
+	}
 }
 
 void		WED_Runway::Export(		 AptRunway_t& x) const
@@ -475,7 +495,7 @@ void		WED_Runway::Export(		 AptRunway_t& x) const
 							 x.width_mtr = GetWidth();
 
 	x.surf_code				 = ENUM_Export(surface.value   );
-	x.shoulder_code			 = ENUM_Export(shoulder.value  ) + 100 * intround(shoulder_width.value);
+	x.shoulder_code			 = ENUM_Export(shoulder.value  ) + 100 * max(0,intround(shoulder_width.value));
 	x.roughness_ratio		 = fltlim     (roughness,0.0f,1.0f);
 	x.has_centerline		 =			   center_lites       + 10 * line_size.value;
 	x.edge_light_code		 = ENUM_Export(edge_lites.value)  + 10 * line_size.value;
@@ -509,6 +529,16 @@ void		WED_Runway::Export(		 AptRunway_t& x) const
 	x.has_tdzl		[1] =			  tdzl2		  ;
 	x.reil_code		[1] = ENUM_Export(reil2.value);
 
+	if(skid_len1 != SKID_LEN_DEFAULT || skid_len2 != SKID_LEN_DEFAULT || skids1 != SKIDS_DEFAULT || skids2 != SKIDS_DEFAULT)
+	{
+		x.has_skids = true;
+		x.skids			[0] = 			skids1;
+		x.skid_len		[0] = 			skid_len1;
+		x.skids			[1] = 			skids2;
+		x.skid_len		[1] = 			skid_len2;
+	}
+	else
+		x.has_skids = false;
 }
 
 

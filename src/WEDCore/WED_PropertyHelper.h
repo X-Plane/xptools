@@ -66,13 +66,13 @@ class	WED_XMLElement;
    with just 1 byte. The vector<class *> is reduces to a memory-local char[] - saving overall
    another 24% of total memory and 5% CPU time on load, save and export.
 
-   The maximum number of properties for any WEDEntity is 24 right now (Runways), so we define the
-   byte array to have 25 entries (plus one byte for the array size parameter).
+   The maximum number of properties for any WEDEntity is 28 right now (Runways), so we define the
+   byte array to have 29 entries (plus one byte for the array size parameter).
 
    Set below to 0 to disable this 2nd level of trickery.
 */
 
-#define PROP_PTR_OPT 25
+#define PROP_PTR_OPT 29
 
 class	WED_PropertyItem {
 public:

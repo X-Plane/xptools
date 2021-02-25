@@ -53,6 +53,7 @@ enum {
 	apt_rwy_new 		= 100,			// These replace the old type 10 record.
 	apt_sea_new 		= 101,
 	apt_heli_new 		= 102,
+	apt_rwy_skids		= 105,
 	apt_taxi_new 		= 110,
 	apt_free_chain		= 120,
 	apt_boundary 		= 130,
@@ -315,7 +316,7 @@ enum {
 
 	apt_truck_destination_fuel_farm = 0,
 	apt_truck_destination_baggage_hall
-	
+
 };
 
 inline bool apt_code_is_curve(int code) { return code == apt_lin_crv || code == apt_rng_crv || code == apt_end_crv; }
@@ -342,6 +343,11 @@ struct	AptRunway_t {
 	int			app_light_code[2];
 	int			has_tdzl[2];
 	int			reil_code[2];
+
+	// rowcode 105 data
+	bool		has_skids;
+	float		skids[2];
+	float		skid_len[2];
 };
 typedef vector<AptRunway_t>		AptRunwayVector;
 
