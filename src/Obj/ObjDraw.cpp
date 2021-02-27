@@ -28,8 +28,8 @@
 	#include "glew.h"
 #endif
 #include <math.h>
-#include <stdio.h>
 #include <algorithm>
+#include "MathUtils.h"
 
 #ifndef CHECK_GL_ERR
 	#define	CHECK_GL_ERR
@@ -78,7 +78,7 @@ static void	Default_SetNoDraped(void * ref) { }
 
 static	ObjDrawFuncs10_t sDefault = {
 	Default_SetupPoly, Default_SetupLine, Default_SetupLight,
-	Default_SetupMovie, Default_SetupPanel, Default_TexCoord, Default_TexCoordPointer, Default_GetAnimParam, 
+	Default_SetupMovie, Default_SetupPanel, Default_TexCoord, Default_TexCoordPointer, Default_GetAnimParam,
 	Default_SetDraped, Default_SetNoDraped
 };
 
@@ -223,12 +223,6 @@ struct compare_key {
 	}
 };
 
-inline float	extrap(float x1, float y1, float x2, float y2, float x)
-{
-	if (x1 == x2) return (y1 + y2) * 0.5;
-	return (x-x1) * (y2 - y1) / (x2 - x1) + y1;
-}
-
 inline float	key_extrap(float input, const vector<XObjKey>& table, int n)
 {
 	if (table.empty()) return 0.0f;
@@ -246,6 +240,22 @@ inline float	key_extrap(float input, const vector<XObjKey>& table, int n)
 	return extrap(p1->key,p1->v[n],p2->key,p2->v[n], input);
 }
 
+// very simple conversion to 16 bit floating point, its not handling NAN, infinity, nor will it create subnormals
+
+static uint16_t half(float f)
+{
+	if (-6E-5f < f && f < 6E-5f )
+		return 0x0000;
+	else if (f > 65504.0f)
+		f = 65504.0f;
+	else if (f < -65504.0f)
+		f = -65504.0f;
+
+	int x = *(int *) &f;
+	return    ((x >> 16) & 0x8000)                               // mantissa sign
+		  | ((((x & 0x7f800000) - 0x38000000) >> 13 ) & 0x7C00)  // exponent
+		  |   ((x >> 13) & 0x03ff);                              // mantissa
+}
 
 void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref)
 {
@@ -256,8 +266,34 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 	bool	tex_is_cockpit = false;
 	int 	want_draw;
 	const XObjAnim8 * anim;
-
 	float v;
+
+
+#if XOBJ8_USE_VBO
+
+	#define HALF_SIZE_VBO 1
+	#define VBO_10b_NRML 1
+
+ #if HALF_SIZE_VBO
+		#define VBO_VEC_FMT  GL_SHORT
+		#define VBO_ST_FMT   GL_HALF_FLOAT
+		#define VBO_VEC_T    GLshort
+
+		glPushMatrix();
+		#define MAX_SCALE 32766.9
+		double scale = MAX_SCALE / fltmax6(-obj.xyz_min[0], obj.xyz_max[0], -obj.xyz_min[1], obj.xyz_max[1], -obj.xyz_min[2], obj.xyz_max[2]);
+		glScalef(1.0 / scale, 1.0 / scale, 1.0 / scale);
+	//	glEnable(GL_NORMALIZE);
+		glEnable(GL_RESCALE_NORMAL);
+	#else
+		#define VBO_VEC_FMT  GL_FLOAT
+		#define VBO_ST_FMT   GL_FLOAT
+		#define VBO_VEC_T    GLfloat
+	#endif
+#endif
+    #define VBO_OFFS1    (3*sizeof(VBO_VEC_T))
+    #define VBO_OFFS2    (VBO_OFFS1 + 3*sizeof(VBO_VEC_T))
+    #define VBO_STRIDE   (VBO_OFFS2 + 2*sizeof(VBO_VEC_T))
 
 	for (vector<XObjLOD8>::const_iterator lod = obj.lods.begin(); lod != obj.lods.end(); ++lod)
 	if ((lod->lod_near <= dist && dist < lod->lod_far) || obj.lods.size() == 1)	// lods = 1 - maybe no lod directive, lod dist could be 0,0.
@@ -293,22 +329,88 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 
 						glBindBuffer(GL_ARRAY_BUFFER, obj.geo_VBO);          CHECK_GL_ERR
 						glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, obj.idx_VBO);  CHECK_GL_ERR
+						*(const_cast<bool*>(&obj.short_idx)) = obj.geo_tri.count() < 65536;
 
-						// todo: reduce VBO size by storing normals as GL_INT_2_10_10_10_REV, uv's as GL_UNSIGNED_SHORT
-						// or go all out and normalize vertices to GL_SHORT, then glScale/glRotate based on xyz_min[]/max[] data
+			#if HALF_SIZE_VBO
+						{
+							union ogl_vert { GLfloat f[4]; GLint i[4]; GLshort s[8]; GLushort u[8]; GLbyte b[16]; };
+							vector<ogl_vert> tmp;
+							int n = obj.geo_tri.count();
+							tmp.reserve(n);
+							const float * f = obj.geo_tri.get(0);
+							for(int i = 0; i < n; ++i)
+							{
+								tmp.push_back(ogl_vert());
+//                              Using integers & scale with model projection has 5 bits more resolution than halfs
+//								tmp.back().u[0] = half(*f++);
+//								tmp.back().u[1] = half(*f++);
+//								tmp.back().u[2] = half(*f++);
+								tmp.back().s[0] = *f++ * scale;
+								tmp.back().s[1] = *f++ * scale;
+								tmp.back().s[2] = *f++ * scale;
+					#define INT_MIN -32768LL
+					#define INT_MAX  32767LL
+					#if VBO_10b_NRML
+//								Free two bytes (and two bits) for future use ...
+								tmp.back().i[2] = (max(-512, min((int) (*f++ * 511), 511)) & 0x3FF)
+												| ((max(-512, min((int) (*f++ * 511), 511)) & 0x3FF) << 10)
+												| ((max(-512, min((int) (*f++ * 511), 511)) & 0x3FF) << 20);
+//								Or squeeze another byte - but its no good for colors (unsigned !) if this vert happens to be
+//                              used for line or light drawing, as the normals are colors then. And by just looking at the
+//                              vertex data one can't say - only by going though all LINE and LIGHT commands one could find out
+//								tmp.back().b[8]  = max(-128, min(*f++ * 127, 127));
+//								tmp.back().b[9]  = max(-128, min(*f++ * 127, 127));
+//								tmp.back().b[10] = max(-128, min(*f++ * 127, 127));
+					#else
+								tmp.back().s[3] = max(INT_MIN, min((long long) (*f++ * INT_MAX), INT_MAX));
+								tmp.back().s[4] = max(INT_MIN, min((long long) (*f++ * INT_MAX), INT_MAX));
+								tmp.back().s[5] = max(INT_MIN, min((long long) (*f++ * INT_MAX), INT_MAX));
+					#endif
+								tmp.back().u[6] = half(*f++);
+								tmp.back().u[7] = half(*f++);
+//                              This requires using VertexAttributePointers & shaders, as OGL < 2 has no way to enable normalized ints
+//								tmp.back().s[6] = max(INT_MIN, min((long long) (*f++ * INT_MAX), INT_MAX));
+//								tmp.back().s[7] = max(INT_MIN, min((long long) (*f++ * INT_MAX), INT_MAX));
+							}
+							glBufferData(GL_ARRAY_BUFFER, obj.geo_tri.count()*VBO_STRIDE, tmp.data(), GL_STATIC_DRAW); CHECK_GL_ERR
+						}
+			#else
 						glBufferData(GL_ARRAY_BUFFER, obj.geo_tri.count()*sizeof(GLfloat)*8, obj.geo_tri.get(0), GL_STATIC_DRAW); CHECK_GL_ERR
-						// todo: use GL_UNSIGNED_SHORT indices for objects under 64k indices (as most ? frequently used objects are small)
-						glBufferData(GL_ELEMENT_ARRAY_BUFFER, obj.indices.size()*sizeof(GLuint), &obj.indices[0], GL_STATIC_DRAW); CHECK_GL_ERR
+			#endif
 
+			#if HALF_SIZE_VBO
+						if(obj.short_idx)
+						{
+							vector<GLushort> tmp;
+							tmp.reserve(obj.indices.size());
+							for(auto i : obj.indices)
+								tmp.push_back(i);
+
+							glBufferData(GL_ELEMENT_ARRAY_BUFFER, obj.indices.size()*sizeof(GLushort), tmp.data(), GL_STATIC_DRAW); CHECK_GL_ERR
+						}
+						else
+			#endif
+						glBufferData(GL_ELEMENT_ARRAY_BUFFER, obj.indices.size()*sizeof(GLuint), &obj.indices[0], GL_STATIC_DRAW); CHECK_GL_ERR
 						// obj.geo_tri.delete();       // todo: free that now unused memory
+						                               // but if we do - we need to store the idx size info somewhere
+						//obj.indices.clear();
 					}
-					const GLfloat * vert_ptr = nullptr;
-#else
-					const GLfloat * vert_ptr = obj.geo_tri.get(0);
+					const char * vert_ptr = nullptr;
+#else  // XOBJ8_USE_VBO
+					const char * vert_ptr = obj.geo_tri.get(0);
 #endif
-					glVertexPointer			(3, GL_FLOAT, 8*sizeof(GLfloat), vert_ptr         );	CHECK_GL_ERR
-					glNormalPointer			(	GL_FLOAT, 8*sizeof(GLfloat), vert_ptr + 3	  );	CHECK_GL_ERR
-					funcs->TexCoordPointer_f(2, GL_FLOAT, 8*sizeof(GLfloat), vert_ptr + 6, ref);	CHECK_GL_ERR
+					glVertexPointer			(3, VBO_VEC_FMT,           VBO_STRIDE, vert_ptr                 );	CHECK_GL_ERR
+			#if VBO_10b_NRML
+					glNormalPointer			(	GL_INT_2_10_10_10_REV, VBO_STRIDE, vert_ptr + VBO_OFFS1 + 2 );	CHECK_GL_ERR
+			#else		                                               // yes - we're leaving 2 bytes unused and go for aligned loads instead
+					glNormalPointer			(	VBO_VEC_FMT,           VBO_STRIDE, vert_ptr + VBO_OFFS1     );	CHECK_GL_ERR
+			#endif
+					funcs->TexCoordPointer_f(2, VBO_ST_FMT,			   VBO_STRIDE, vert_ptr + VBO_OFFS2, ref);	CHECK_GL_ERR
+
+//                  thats how it can be done with normalized ints for the st coordinates, but needs writing & loading shaders
+//					glVertexAttribPointer(0, 2, GL_SHORT,              GL_FALSE, VBO_STRIDE, vert_ptr             );
+//					glVertexAttribPointer(1, 1, GL_INT_2_10_10_10_REV, GL_TRUE,  VBO_STRIDE, vert_ptr + VBO_OFFS1 );
+//					glVertexAttribPointer(2, 2, GL_SHORT,              GL_TRUE,  VBO_STRIDE, vert_ptr + VBO_OFFS2 );
 				}
 				glEnableClientState(GL_VERTEX_ARRAY);				CHECK_GL_ERR
 				glEnableClientState(GL_NORMAL_ARRAY);				CHECK_GL_ERR
@@ -316,7 +418,8 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 				glDisableClientState(GL_COLOR_ARRAY);				CHECK_GL_ERR
 				glColor3fv(mat_col);								CHECK_GL_ERR
 #if XOBJ8_USE_VBO
-				glDrawElements(GL_TRIANGLES, cmd->idx_count, GL_UNSIGNED_INT, (void *) (sizeof(GLuint) * cmd->idx_offset)); CHECK_GL_ERR
+				glDrawElements(GL_TRIANGLES, cmd->idx_count, obj.short_idx ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT,
+					                   (void *) (sizeof(GLushort) * (2-obj.short_idx) * cmd->idx_offset));   CHECK_GL_ERR
 #else
 				glDrawElements(GL_TRIANGLES, cmd->idx_count, GL_UNSIGNED_INT, &obj.indices[cmd->idx_offset]); CHECK_GL_ERR
 #endif
@@ -333,14 +436,19 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 					glBindBuffer(GL_ARRAY_BUFFER, 0);				CHECK_GL_ERR
 					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);		CHECK_GL_ERR
 #endif
-					glVertexPointer(3, GL_FLOAT, 24, obj.geo_lines.get(0));								CHECK_GL_ERR
-					glColorPointer(3, GL_FLOAT, 24, ((const char *) obj.geo_lines.get(0)) + 12);		CHECK_GL_ERR
+					glVertexPointer(3, GL_FLOAT, 8*sizeof(float), obj.geo_lines.get(0));								CHECK_GL_ERR
+					glColorPointer(3, GL_FLOAT, 8*sizeof(float), ((const char *) obj.geo_lines.get(0)) + 3*sizeof(float)); CHECK_GL_ERR
 				}
 				glEnableClientState(GL_VERTEX_ARRAY);			CHECK_GL_ERR
 				glDisableClientState(GL_NORMAL_ARRAY);			CHECK_GL_ERR
 				glDisableClientState(GL_TEXTURE_COORD_ARRAY);	CHECK_GL_ERR
 				glEnableClientState(GL_COLOR_ARRAY);			CHECK_GL_ERR
+#if XOBJ8_USE_VBO
+				glDrawElements(GL_LINES, cmd->idx_count, obj.short_idx ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT,
+					                   (void *) (sizeof(GLushort) * (2-obj.short_idx) * cmd->idx_offset));   CHECK_GL_ERR
+#else
 				glDrawElements(GL_LINES, cmd->idx_count, GL_UNSIGNED_INT, &obj.indices[cmd->idx_offset]);	CHECK_GL_ERR
+#endif
 				break;
 			case obj8_Lights:
 				if (drawMode_Lgt != drawMode) {
@@ -354,8 +462,8 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 					glBindBuffer(GL_ARRAY_BUFFER, 0);				CHECK_GL_ERR
 					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);		CHECK_GL_ERR
 #endif
-					glVertexPointer(3, GL_FLOAT, 24, obj.geo_lights.get(0));							CHECK_GL_ERR
-					glColorPointer(3, GL_FLOAT, 24, ((const char *) obj.geo_lights.get(0)) + 12);		CHECK_GL_ERR
+					glVertexPointer(3, GL_FLOAT, 8*sizeof(float), obj.geo_lights.get(0));							CHECK_GL_ERR
+					glColorPointer(3, GL_FLOAT, 8*sizeof(float), ((const char *) obj.geo_lights.get(0)) + 3*sizeof(float));	CHECK_GL_ERR
 				}
 				glEnableClientState(GL_VERTEX_ARRAY);				CHECK_GL_ERR
 				glDisableClientState(GL_NORMAL_ARRAY);				CHECK_GL_ERR
@@ -420,7 +528,7 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 			} // Case
 
 		} // cmd loop
-		
+
 		funcs->SetupNoDraped_f(ref);
 		{ float amb[4] = { 0.2, 0.2, 0.2, 1.0 }, diff[4] = { 0.8, 0.8, 0.8, 1.0 }, zero[4] = { 0.0, 0.0, 0.0, 1.0 };
 			glMaterialfv(GL_FRONT, GL_AMBIENT, amb);
@@ -429,14 +537,15 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 			glMaterialfv(GL_FRONT, GL_EMISSION, zero);
 			glColor3f(1.0, 1.0, 1.0);
 			mat_col[0] = mat_col[1] = mat_col[2] = 1.0;
-			glMateriali (GL_FRONT,GL_SHININESS,0); 
+			glMateriali (GL_FRONT,GL_SHININESS,0);
 		}
-		
+
 	} // our LOD
 #if XOBJ8_USE_VBO
 	glBindBuffer(GL_ARRAY_BUFFER, 0);				CHECK_GL_ERR
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);		CHECK_GL_ERR
+	#if HALF_SIZE_VBO
+	glPopMatrix();
+	#endif
 #endif
 }
-
-

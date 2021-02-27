@@ -132,7 +132,7 @@ enum {
 	attr_Draw_Enable,
 	attr_Solid_Wall,
 	attr_No_Solid_Wall,
-	
+
 	// 1000 commands
 	attr_Draped,
 	attr_NoDraped,
@@ -142,7 +142,7 @@ enum {
 	/* ATTR_shadow */
 
 	attr_Manip_Drag_Axis_Pix,
-	
+
 	// 1050 commands
 	attr_Manip_Command_Knob,
 	attr_Manip_Command_Switch_Up_Down,
@@ -150,7 +150,7 @@ enum {
 	attr_Manip_Axis_Knob,
 	attr_Manip_Axis_Switch_Up_Down,
 	attr_Manip_Axis_Switch_Left_Right,
-	
+
 	// 1100 commands
 	attr_Cockpit_Device,
 	attr_Cockpit_Lit_Only,
@@ -158,13 +158,13 @@ enum {
 	attr_Manip_Command_Knob2,
 	attr_Manip_Command_Switch_Up_Down2,
 	attr_Manip_Command_Switch_Left_Right2,
-	
+
 	// Future particle system...
 	attr_Emitter,
 
 	// v11
 	attr_Magnet,
-	
+
 	attr_Max
 };
 
@@ -225,7 +225,7 @@ struct XObjKey {
 	XObjKey() { key = 0.0f; v[0] = v[1] = v[2] = 0.0f; }
 	float					key;
 	float					v[3];		// angle for rotation, XYZ for translation
-	
+
 	bool eq_key(const XObjKey& rhs) const { return key == rhs.key;											 }
 	bool eq_val(const XObjKey& rhs) const { return v[0] == rhs.v[0] && v[1] == rhs.v[1] && v[2] == rhs.v[2]; }
 	bool eq	   (const XObjKey& rhs) const { return eq_key(rhs) && eq_val(rhs);								 }
@@ -261,10 +261,10 @@ struct XObjManip8 {
 	string					cursor;
 	string					tooltip;
 	float					mouse_wheel_delta;
-	
+
 	vector<XObjKey>			rotation_key_frames;
 	vector<XObjDetentRange>	detents;
-	
+
 };
 
 struct XObjEmitter8 {
@@ -304,7 +304,7 @@ struct	XObj8 {
 	string 					texture_draped;
 	int						use_metalness;
 	int						glass_blending;
-	
+
 	string					particle_system;
 	vector<XObjPanelRegion8>regions;
 	vector<int>				indices;
@@ -312,6 +312,7 @@ struct	XObj8 {
 #if XOBJ8_USE_VBO
 	unsigned int			geo_VBO;
 	unsigned int			idx_VBO;
+	bool					short_idx;
 #endif
 	ObjPointPool			geo_lines;
 	ObjPointPool			geo_lights;
