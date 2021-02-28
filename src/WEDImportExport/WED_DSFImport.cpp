@@ -992,7 +992,7 @@ public:
 		return res;
 	}
 
-	void do_import_txt(const char * file_name, WED_Thing * base)
+	int do_import_txt(const char * file_name, WED_Thing * base)
 	{
 		master_parent = base;
 		archive = master_parent->GetArchive();
@@ -1010,10 +1010,7 @@ public:
 		if(bucket_parents[i])
 			bucket_parents[i]->SetParent(master_parent, master_parent->CountChildren());
 
-
-//		int res = DSFReadFile(file_name, &cb, NULL, this);
-//		if(res != 0)
-//			printf("DSF Error: %d\n", res);
+		return ok != 0 ? dsf_ErrOK : dsf_ErrCouldNotReadFile;
 	}
 };
 
@@ -1023,10 +1020,9 @@ int DSF_Import(const char * path, WED_Thing * base)
 	DSF_Importer importer;
 	return importer.do_import_dsf(path, base);
 }
-
-void WED_ImportText(const char * path, WED_Thing * base)
+int WED_ImportText(const char * path, WED_Thing * base)
 {
 	DSF_Importer importer;
-	importer.do_import_txt(path, base);
+	return importer.do_import_txt(path, base);
 }
 

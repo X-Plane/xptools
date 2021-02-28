@@ -34,6 +34,7 @@ WED 2.4.0
    - use native secure internet connectivity on all operating systems
    - WED-1359: change OOW mouse click for LineEditor from accept to cancel edit
    - automatically change ExportTarget at GW import, avoid inheriting unexpected values
+   - support import of text format DSF files
 
 WED 2.3.1r1 12/22/20
    Features:

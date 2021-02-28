@@ -34,6 +34,6 @@ class	ILibrarian;
 // intermediate and thus kind of weird to have in a public API.
 
 int 	DSF_Import(const char * file, WED_Thing * base);
-void	WED_ImportText(const char * path, WED_Thing * base);
+int 	WED_ImportText(const char * path, WED_Thing * base);
 
 #endif /* WED_DSFImport_H */
