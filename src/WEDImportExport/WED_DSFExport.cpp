@@ -1356,7 +1356,7 @@ static int	DSF_ExportTileRecursive(
 						else if(centroid_ob)
 							chain.clear();
 
-						if (fac->HasDockingCabin() && export_info.DockingJetways)
+						if (!chain.empty() && export_info.DockingJetways && fac->HasDockingCabin())
 						{
 							chain.pop_back();
 							chain.pop_back();
@@ -1387,7 +1387,7 @@ static int	DSF_ExportTileRecursive(
 						else if(centroid_ob)
 							chain.clear();
 
-						if (fac->HasDockingCabin() && export_info.DockingJetways)
+						if (!chain.empty() && export_info.DockingJetways && fac->HasDockingCabin())
 						{
 							chain.pop_back();
 							chain.pop_back();
@@ -2315,6 +2315,7 @@ int DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, se
 	int DSF_export_tile_res = 0;
 
 	DSF_export_info_t DSF_export_info;   // We kept the last loaded orthoimage open, so it does not have to be loaded repeatedly. This gates parallel DSF exports.
+	DSF_export_info.DockingJetways = gExportTarget >= wet_xplane_1200;
 
 	for (int y = tile_south; y < tile_north; ++y)
 	{

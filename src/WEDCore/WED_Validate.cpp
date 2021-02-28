@@ -394,6 +394,12 @@ static void ValidateOneFacadePlacement(WED_Thing* who, validation_error_vector& 
 			}
 		}
 	}
+
+	if(gExportTarget >= wet_xplane_1200 && fac->HasDockingCabin())
+	{
+		if(!apt)
+			msgs.push_back(validation_error_t("Facades with Docking Jetways must be inside an airport hierachy", err_facade_illegal_wall, who, apt));
+	}
 }
 
 static void ValidateOneForestPlacement(WED_Thing* who, validation_error_vector& msgs, WED_Airport * apt)
