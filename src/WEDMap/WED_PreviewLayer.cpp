@@ -1379,8 +1379,8 @@ struct	preview_taxisign : public WED_PreviewItem {
 			case size_MediumTaxi:  sign_scale = 0.013; break;
 			default:               sign_scale = 0.016;
 		}
-//			g->SetState(false,1,false,false,true,true,true);
-		g->EnableDepth(true, true);
+		g->SetState(false,0,false,false,true,true,true);
+//		g->EnableDepth(true, true);
 		glColor3f(0.4,0.3,0.1);
 
 		glMatrixMode(GL_MODELVIEW);
