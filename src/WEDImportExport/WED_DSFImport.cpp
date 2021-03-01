@@ -123,7 +123,7 @@ static const char * k_dsf_cat_names[dsf_cat_DIM] = {
 class	DSF_Importer {
 public:
 
-	DSF_Importer() {
+	DSF_Importer() : is_overlay(false) {
 		for(int n = 0; n < 7; ++n)
 			req_level_obj[n] = req_level_agp[n] = req_level_fac[n] = -1;
 		for(int n = 0; n < dsf_cat_DIM; ++n)
@@ -153,6 +153,7 @@ public:
 	bool				want_wall;
 	int					autogen_rings;
 	int					autogen_spelling;
+	bool 				is_overlay;
 
 	WED_Thing * get_cat_parent(dsf_import_category cat)
 	{
@@ -327,6 +328,9 @@ public:
 		if(strcmp(inProp, "sim/require_object") == 0)	me->handle_req_obj(inValue);
 		if(strcmp(inProp, "sim/require_agpoint") == 0)	me->handle_req_agp(inValue);
 		if(strcmp(inProp, "sim/require_facade") == 0)	me->handle_req_fac(inValue);
+
+		if(strcmp(inProp, "sim/overlay") == 0 && atoi(inValue) == 1)
+			me->is_overlay = true;
 	}
 
 	static void	BeginPatch(
@@ -1018,11 +1022,21 @@ public:
 int DSF_Import(const char * path, WED_Thing * base)
 {
 	DSF_Importer importer;
-	return importer.do_import_dsf(path, base);
+	int res = importer.do_import_dsf(path, base);
+
+	if(res == dsf_ErrOK && !importer.is_overlay)
+		DoUserAlert("WED is a Overlay Scenery Editor,\nbut the DSF to be imported is Base Mesh Scenery.\n"
+		            "All scenery elements only valid for base mesh scenery will be ignored.\n");
+	return res;
 }
 int WED_ImportText(const char * path, WED_Thing * base)
 {
 	DSF_Importer importer;
-	return importer.do_import_txt(path, base);
+	int res = importer.do_import_txt(path, base);
+
+	if(res == dsf_ErrOK && !importer.is_overlay)
+		DoUserAlert("WED is a Overlay Scenery Editor,\nbut the DSF to be imported is Base Mesh Scenery.\n"
+		            "All scenery elements only valid for base mesh scenery will be ignored.\n");
+	return res;
 }
 
