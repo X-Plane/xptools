@@ -23,6 +23,8 @@ WED 2.4.0
    - WED-1347 stops cursor blink timer in Settings window when loose focus
    - validate ICAO_Code meta tag to meet ICAO nomenclature
    - fix preview for .lin commands with offset layers in preview pane
+   - fix endcap not showing for lines with two vertices only
+   - refine tesselation to show fill for polygons with colocated nodes
    Features:
    - show gridded preview for library vdirectories
    - support choosing taxiway equivalent styles for draped polygons
@@ -32,6 +34,7 @@ WED 2.4.0
    - use native secure internet connectivity on all operating systems
    - WED-1359: change OOW mouse click for LineEditor from accept to cancel edit
    - automatically change ExportTarget at GW import, avoid inheriting unexpected values
+   - support import of text format DSF files
 
 WED 2.3.1r1 12/22/20
    Features:

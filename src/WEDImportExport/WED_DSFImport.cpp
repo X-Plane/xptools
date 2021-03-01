@@ -126,7 +126,7 @@ static const char * k_dsf_cat_names[dsf_cat_DIM] = {
 class	DSF_Importer {
 public:
 
-	DSF_Importer() : dsf_cat_filter(dsf_filter_all), cull_bound(Bbox2(-180,-90,180,90)), filter_on(false)
+	DSF_Importer() : is_overlay(false), dsf_cat_filter(dsf_filter_all), cull_bound(Bbox2(-180,-90,180,90)), filter_on(false)
 	{
 		for(int n = 0; n < 7; ++n)
 			req_level_obj[n] = req_level_agp[n] = req_level_fac[n] = -1;
@@ -162,6 +162,7 @@ public:
 	Bbox2 				cull_bound;
 	int					autogen_rings;
 	int					autogen_spelling;
+	bool 				is_overlay;
 
 	WED_Thing * get_cat_parent(dsf_import_category cat)
 	{
@@ -343,6 +344,8 @@ public:
 		if(strcmp(inProp, "sim/exclude_pol") == 0)	me->make_exclusion(inValue, exclude_Pol);
 		if(strcmp(inProp, "sim/exclude_str") == 0)	me->make_exclusion(inValue, exclude_Str);
 #endif
+		if(strcmp(inProp, "sim/overlay") == 0 && atoi(inValue) == 1)
+			me->is_overlay = true;
 	}
 
 	static void	BeginPatch(
@@ -1012,8 +1015,6 @@ public:
 			me->filter_on = me->filter_table[filterId];
 		else
 			me->filter_on = false;
-
-printf("Filter %s\n", me->filter_on ? "ON" : "OFF");
 	}
 
 	int do_import_dsf(const char * file_name, WED_Thing * base)
@@ -1037,7 +1038,7 @@ printf("Filter %s\n", me->filter_on ? "ON" : "OFF");
 		return res;
 	}
 
-	void do_import_txt(const char * file_name, WED_Thing * base)
+	int do_import_txt(const char * file_name, WED_Thing * base)
 	{
 		master_parent = base;
 		archive = master_parent->GetArchive();
@@ -1055,17 +1056,18 @@ printf("Filter %s\n", me->filter_on ? "ON" : "OFF");
 		if(bucket_parents[i])
 			bucket_parents[i]->SetParent(master_parent, master_parent->CountChildren());
 
-
-//		int res = DSFReadFile(file_name, &cb, NULL, this);
-//		if(res != 0)
-//			printf("DSF Error: %d\n", res);
+		return ok != 0 ? dsf_ErrOK : dsf_ErrCouldNotReadFile;
 	}
 };
 
 int DSF_Import(const char * path, WED_Thing * base)
 {
 	DSF_Importer importer;
-	return importer.do_import_dsf(path, base);
+	int res = importer.do_import_dsf(path, base);
+	if(res == dsf_ErrOK && !importer.is_overlay)
+		DoUserAlert("WED is a Overlay Scenery Editor,\nbut the DSF to be imported is Base Mesh Scenery.\n"
+		            "All scenery elements only valid for base mesh scenery will be ignored.\n");
+	return res;
 }
 
 int DSF_Import_Partial(const char * path, WED_Thing * base, int inCatFilter, const Bbox2& cull_bound, const vector<string>& inAptFilter)
@@ -1076,13 +1078,20 @@ int DSF_Import_Partial(const char * path, WED_Thing * base, int inCatFilter, con
 	importer.dsf_cat_filter = inCatFilter;
 	importer.dsf_AptID_filter = inAptFilter;
 
+	// do not warn about importing non-overlay DSF's when being this explicit about what to import.
+	// e.g. importing roads only is almost certainly always done from base mesh DSFF's.
 	return importer.do_import_dsf(path, base);
 }
 
-void WED_ImportText(const char * path, WED_Thing * base)
+int WED_ImportText(const char * path, WED_Thing * base)
 {
 	DSF_Importer importer;
-	importer.do_import_txt(path, base);
+	int res = importer.do_import_txt(path, base);
+
+	if(res == dsf_ErrOK && !importer.is_overlay)
+		DoUserAlert("WED is a Overlay Scenery Editor,\nbut the DSF to be imported is Base Mesh Scenery.\n"
+		            "All scenery elements only valid for base mesh scenery will be ignored.\n");
+	return res;
 }
 
 #if WED

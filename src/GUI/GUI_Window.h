@@ -41,6 +41,9 @@ public:
 
 			void			SetClearSpecs(bool inDoClearColor, bool inDoClearDepth, float inClearColor[4]);
 
+							// Sets window bounds, but only if at least a 100x100 pixel corner remains visible.
+			void			SetBoundsSafe(int x1, int y1, int x2, int y2);
+
 	// From GUI_Pane
 	virtual void			Refresh(void);
 	virtual	void			PopupMenu(GUI_Menu menu, int x, int y, int button);

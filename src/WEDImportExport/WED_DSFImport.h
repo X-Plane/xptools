@@ -40,7 +40,7 @@ int		WED_CanImportRoads(IResolver * resolver);
 void	WED_DoImportRoads(IResolver * resolver);
 
 int 	DSF_Import(const char * file, WED_Thing * base);
-void	WED_ImportText(const char * path, WED_Thing * base);
+int 	WED_ImportText(const char * path, WED_Thing * base);
 
 
 enum dsf_filter_category {

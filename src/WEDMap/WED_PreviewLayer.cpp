@@ -672,8 +672,10 @@ static void draw_line_preview(const vector<Point2>& pts, const lin_info_t& linfo
 		{
 			endcap_t = linfo.end_caps[l].t2 - linfo.end_caps[l].t1;
 			start_of_endcap = pts.size()-2;
-			while(start_of_endcap > 0)
+			bool once = true;
+			while(start_of_endcap > 0 || once)
 			{
+				once = false;
 				double prev_t = endcap_frac_t;
 				endcap_frac_t += sqrt(Segment2(pts[start_of_endcap], pts[start_of_endcap+1]).squared_length()) / PPM / linfo.scale_t;
 				if(endcap_frac_t > endcap_t)
@@ -915,7 +917,7 @@ struct	preview_string : WED_PreviewItem {
 				if(real_radius * zoomer->GetPPM() > MIN_PIXELS_PREVIEW)             // cutoff size for real preview
 				{
 					ITexMgr * tman = WED_GetTexMgr(resolver);
-					g->SetState(false,1,false,false,true,false,false);
+					g->SetState(false, 1, false, true, true, true, true);
 					glColor3f(1,1,1);
 
 					double ds = str->GetSpacing();
@@ -1330,7 +1332,7 @@ struct	preview_object : public WED_PreviewItem {
 		obj->GetResource(vpath);
 		obj->GetLocation(gis_Geo, loc);
 
-		g->SetState(false, 1, false, false, true, true, true);
+		g->SetState(false, 1, false, true, true, true, true);
 		glColor4f(1, 1, 1, 1);
 
 		float agl = obj->HasCustomMSL() > 1 ? obj->GetCustomMSL() : 0.0;
@@ -1377,8 +1379,8 @@ struct	preview_taxisign : public WED_PreviewItem {
 			case size_MediumTaxi:  sign_scale = 0.013; break;
 			default:               sign_scale = 0.016;
 		}
-//			g->SetState(false,1,false,false,true,true,true);
-		g->EnableDepth(true, true);
+		g->SetState(false,0,false,false,true,true,true);
+//		g->EnableDepth(true, true);
 		glColor3f(0.4,0.3,0.1);
 
 		glMatrixMode(GL_MODELVIEW);
@@ -1519,7 +1521,7 @@ struct	preview_truck : public WED_PreviewItem {
 		agp_t agp;
 		if(!vpath1.empty() && rmgr->GetObj(vpath1,o1))
 		{
-			g->SetState(false,1,false,false,true,true,true);
+			g->SetState(false,1,false,true,true,true,true);
 			glColor3f(1,1,1);
 			Point2 loc;
 			trk->GetLocation(gis_Geo,loc);
@@ -1597,7 +1599,7 @@ struct	preview_light : public WED_PreviewItem {
 		const XObj8 * o = NULL;
 		if(!vpath.empty() && rmgr->GetObj(vpath,o))
 		{
-			g->SetState(false,1,false,false,true,true,true);
+			g->SetState(false,1,false,true,true,true,true);
 			glColor3f(1,1,1);
 
 			switch(light.light_code)
@@ -1852,7 +1854,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	else if (sub_class == WED_ForestPlacement::sClass)
 	{
 		WED_ForestPlacement * forst = SAFE_CAST(WED_ForestPlacement, entity);
-		if(forst) mPreviewItems.push_back(new preview_forest(forst, group_Objects));
+		if(forst) mPreviewItems.push_back(new preview_forest(forst, group_Terrain));
 	}
 	else if(sub_class == WED_LinePlacement::sClass)
 	{

@@ -969,6 +969,11 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 						fac->floors.back().roofs.push_back(REN_facade_roof_t(MFS_double(&s)));
 					fac->has_roof = true;
 				}
+				else if (MFS_string_match(&s, "TWO_SIDED_ROOF", true))
+				{
+					if (!fac->floors.back().roofs.empty())
+						fac->floors.back().roofs.back().two_sided = true;
+				}
 				else if(MFS_string_match(&s,"ROOF_SCALE", false))
 				{
 					fac->roof_scale_s = MFS_double(&s);
