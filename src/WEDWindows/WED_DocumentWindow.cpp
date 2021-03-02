@@ -367,10 +367,10 @@ int	WED_DocumentWindow::HandleCommand(int command)
 			mMapPreviewWindow->Show();
 		return 1;
 	case wed_ShowMapAreaInPreviewWindow:
-//xxx		mMapPreviewPane->DisplayExtent(mMapPane->GetMapVisibleBounds(), 1.0);
+		mMapPreviewPane->DisplayExtent(mMapPane->GetMapVisibleBounds(), 1.0);
 		return 1;
 	case wed_CenterMapOnPreviewCamera:
-//xxx		mMapPane->CenterOnPoint(mMapPreviewPane->CameraPositionLL());
+		mMapPane->CenterOnPoint(mMapPreviewPane->CameraPositionLL());
 		return 1;
 	case wed_autoOpenLibPane:
 		if (mAutoOpen == 0)
