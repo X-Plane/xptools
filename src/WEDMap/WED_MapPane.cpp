@@ -376,6 +376,18 @@ void WED_MapPane::ZoomShowSel(double scale)   // by default show just a bit more
 	mMap->Refresh();
 }
 
+void WED_MapPane::CenterOnPoint(const Point2& centerLL)
+{
+	double west, south, east, north;
+	mMap->GetMapVisibleBounds(west, south, east, north);
+	double lonExtent = east - west;
+	double latExtent = north - south;
+	mMap->ZoomShowArea(
+		centerLL.x() - lonExtent / 2, centerLL.y() - latExtent / 2,
+		centerLL.x() + lonExtent / 2, centerLL.y() + latExtent / 2);
+	Refresh();
+}
+
 int		WED_MapPane::Map_KeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)
 {
 	if (mMap->HandleKeyPress(inKey, inVK, inFlags)) return 1;

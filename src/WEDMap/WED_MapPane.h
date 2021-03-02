@@ -77,6 +77,7 @@ public:
 			Bbox2		GetMapVisibleBounds(void);
 
 			void		ZoomShowSel(double scale = 1.05);   // scale is area shown vs size of object, i.e. by default 5% margin all around
+			void		CenterOnPoint(const Point2& centerLL);
 
 			void		SetResource(const string& r, int res_type);
 
