@@ -873,9 +873,6 @@
     <ClCompile Include="..\..\src\WEDMap\WED_MapPreviewWindow.cpp">
       <Filter>WEDMap</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\WEDMap\WED_MapProjection.cpp">
-      <Filter>WEDMap</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\WEDMap\WED_PerspectiveCamera.cpp">
       <Filter>WEDMap</Filter>
     </ClCompile>
@@ -1719,9 +1716,6 @@
       <Filter>WEDMap</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDMap\WED_MapPreviewWindow.h">
-      <Filter>WEDMap</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\WEDMap\WED_MapProjection.h">
       <Filter>WEDMap</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDMap\WED_Camera.h">

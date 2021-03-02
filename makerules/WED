@@ -209,7 +209,6 @@ SOURCES += ./src/WEDMap/WED_MapLayer.cpp
 SOURCES += ./src/WEDMap/WED_MapPane.cpp
 SOURCES += ./src/WEDMap/WED_MapPreviewPane.cpp
 SOURCES += ./src/WEDMap/WED_MapPreviewWindow.cpp
-SOURCES += ./src/WEDMap/WED_MapProjection.cpp
 SOURCES += ./src/WEDMap/WED_MapToolNew.cpp
 SOURCES += ./src/WEDMap/WED_MapZoomerNew.cpp
 SOURCES += ./src/WEDMap/WED_MarqueeTool.cpp

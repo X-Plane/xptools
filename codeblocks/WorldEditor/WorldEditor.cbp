@@ -521,8 +521,6 @@
 		<Unit filename="../../src/WEDMap/WED_MapPreviewPane.h" />
 		<Unit filename="../../src/WEDMap/WED_MapPreviewWindow.cpp" />
 		<Unit filename="../../src/WEDMap/WED_MapPreviewWindow.h" />
-		<Unit filename="../../src/WEDMap/WED_MapProjection.cpp" />
-		<Unit filename="../../src/WEDMap/WED_MapProjection.h" />
 		<Unit filename="../../src/WEDMap/WED_MapToolNew.cpp" />
 		<Unit filename="../../src/WEDMap/WED_MapToolNew.h" />
 		<Unit filename="../../src/WEDMap/WED_MapZoomerNew.cpp" />
