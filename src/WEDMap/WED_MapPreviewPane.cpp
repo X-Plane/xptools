@@ -66,7 +66,7 @@ struct DrawVisStats
 	int numTooSmallComposite = 0;
 };
 
-static void DrawVisFor(WED_MapLayer * layer, const WED_MapZoomerNew& zoomer, const WED_Camera& camera, IGISEntity * what, GUI_GraphState * g, int depth, DrawVisStats * stats)
+static void DrawVisFor(WED_MapLayer * layer, const Bbox2& bounds, const WED_MapZoomerNew& zoomer, const WED_Camera& camera, IGISEntity * what, GUI_GraphState * g, int depth, DrawVisStats * stats)
 {
 	const float TOO_SMALL_TO_GO_IN = 20.0;
 	const float MIN_PIXELS_TO_DRAW = 5.0;
@@ -124,6 +124,17 @@ static void DrawVisFor(WED_MapLayer * layer, const WED_MapZoomerNew& zoomer, con
 			}
 		}
 #else
+#if DEV
+	++stats->numCullTests;
+#endif
+	if(!what->Cull(bounds))
+	{
+#if DEV
+		++stats->numCulled;
+#endif
+		return;
+	}
+
 	IGISComposite * c;
 
 	if (layer->DrawEntityVisualization(false, what, g, false))
@@ -133,7 +144,7 @@ static void DrawVisFor(WED_MapLayer * layer, const WED_MapZoomerNew& zoomer, con
 			{																				// it contains one thing then we might as well ALWAYS draw it - it's relatively cheap!
 				int t = c->GetNumEntities();												// Depth == 0 means we draw ALL top level objects -- good for airports.
 				for (int n = t - 1; n >= 0; --n)
-					DrawVisFor(layer, zoomer, camera, c->GetNthEntity(n), g, depth + 1, stats);
+					DrawVisFor(layer, bounds, zoomer, camera, c->GetNthEntity(n), g, depth + 1, stats);
 			}
 		}
 #endif
@@ -250,8 +261,14 @@ void WED_MapPreviewPane::Draw(GUI_GraphState * state)
 
 	InitGL(b);
 
+	// Compute lat/lon bounding box by projecting camera frustum onto ground
+	// plane and converting to lat/lon.
+	Bbox2 b_geo;
+	for (const auto& corner : mCamera->FrustumCorners())
+		b_geo += this->PixelToLL({corner.x, corner.y});
+
 	DrawVisStats stats;
-	DrawVisFor(mPreviewLayer, *this, *mCamera, base, state, 0, &stats);
+	DrawVisFor(mPreviewLayer, b_geo, *this, *mCamera, base, state, 0, &stats);
 
 #if 1
 {

@@ -25,6 +25,8 @@
 
 #include "WED_Camera.h"
 
+#include <vector>
+
 /*
 	WED_PerspectiveCamera
 
@@ -54,6 +56,9 @@ public:
 	// Applies the camera's model-view matrix to the current OpenGL matrix. Make sure glMatrixMode(GL_MODELVIEW)
 	// is called before calling this method.
 	void ApplyModelViewMatrix();
+
+	// Returns the corners of the view frustum.
+	std::vector<Point3> FrustumCorners() const;
 
 	const Point3& Position() const
 	{

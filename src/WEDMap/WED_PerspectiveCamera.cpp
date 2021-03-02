@@ -104,6 +104,25 @@ void WED_PerspectiveCamera::ApplyModelViewMatrix()
 	DebugAssert(ModelViewMatrixConsistent());
 }
 
+std::vector<Point3> WED_PerspectiveCamera::FrustumCorners() const
+{
+	std::vector<Point3> corners;
+
+	corners.reserve(8);
+	corners.push_back(Position() + Forward() * mNearClip - Right() * (mWidth / 2) - Up() * (mHeight / 2));
+	corners.push_back(Position() + Forward() * mNearClip + Right() * (mWidth / 2) - Up() * (mHeight / 2));
+	corners.push_back(Position() + Forward() * mNearClip - Right() * (mWidth / 2) + Up() * (mHeight / 2));
+	corners.push_back(Position() + Forward() * mNearClip + Right() * (mWidth / 2) + Up() * (mHeight / 2));
+	double widthFar = mFarClip / mNearClip * mWidth;
+	double heightFar = mFarClip / mNearClip * mHeight;
+	corners.push_back(Position() + Forward() * mFarClip - Right() * (widthFar / 2) - Up() * (heightFar / 2));
+	corners.push_back(Position() + Forward() * mFarClip + Right() * (widthFar / 2) - Up() * (heightFar / 2));
+	corners.push_back(Position() + Forward() * mFarClip - Right() * (widthFar / 2) + Up() * (heightFar / 2));
+	corners.push_back(Position() + Forward() * mFarClip + Right() * (widthFar / 2) + Up() * (heightFar / 2));
+
+	return corners;
+}
+
 bool WED_PerspectiveCamera::PointVisible(const Point3& point) const
 {
 	UpdateFrustumPlanes();
