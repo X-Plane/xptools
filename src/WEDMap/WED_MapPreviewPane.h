@@ -35,7 +35,6 @@
 
 class IDocPrefs;
 class WED_Document;
-class WED_MapProjection;
 class WED_PerspectiveCamera;
 class WED_PreviewLayer;
 
@@ -74,7 +73,6 @@ private:
 	void				FinishGL();
 
 	WED_Document * mDocument;
-	std::unique_ptr<WED_MapProjection> mMapProjection;
 	WED_PerspectiveCamera * mCamera;
 	WED_PreviewLayer *	mPreviewLayer;
 	float mYaw, mPitch;

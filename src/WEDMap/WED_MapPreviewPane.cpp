@@ -66,9 +66,7 @@ struct DrawVisStats
 	int numTooSmallComposite = 0;
 };
 
-#include "WED_MapProjection.h"
-
-static void DrawVisFor(WED_MapLayer * layer, const WED_MapProjection& projection, const WED_Camera& camera, IGISEntity * what, GUI_GraphState * g, int depth, DrawVisStats * stats)
+static void DrawVisFor(WED_MapLayer * layer, const WED_MapZoomerNew& zoomer, const WED_Camera& camera, IGISEntity * what, GUI_GraphState * g, int depth, DrawVisStats * stats)
 {
 	const float TOO_SMALL_TO_GO_IN = 20.0;
 	const float MIN_PIXELS_TO_DRAW = 5.0;
@@ -135,7 +133,7 @@ static void DrawVisFor(WED_MapLayer * layer, const WED_MapProjection& projection
 			{																				// it contains one thing then we might as well ALWAYS draw it - it's relatively cheap!
 				int t = c->GetNumEntities();												// Depth == 0 means we draw ALL top level objects -- good for airports.
 				for (int n = t - 1; n >= 0; --n)
-					DrawVisFor(layer, projection, camera, c->GetNthEntity(n), g, depth + 1, stats);
+					DrawVisFor(layer, zoomer, camera, c->GetNthEntity(n), g, depth + 1, stats);
 			}
 		}
 #endif
@@ -166,15 +164,11 @@ static GUI_KeyFlags GetModifierPref(const char * key, GUI_KeyFlags defaultModifi
 WED_MapPreviewPane::WED_MapPreviewPane(GUI_Commander * cmdr, WED_Document * document)
 	: GUI_Commander(cmdr),
 	  mDocument(document),
-	  mMapProjection(std::make_unique<WED_MapProjection>()),
 //	  mCamera(std::make_unique<WED_PerspectiveCamera>(0.5, DRAW_DISTANCE)),
-//	  mPreviewLayer(std::make_unique<WED_PreviewLayer>(this, mMapProjection.get(), mCamera.get(), document)),
 	  mYaw(0.f),
 	  mPitch(-10.f)
 {
 // ToDo: Setup MapZoomerNew propperly so projected items get drawn,
-// replace WED_MapProjection with wrapper reading/setting MapZoomerNew as needed.
-// Or eliminate entirely and add MapZoomer for info not yet available.
 
 // Much later - re-think culling strategy so it can rely only on MapZoomerNew info the usual way.
 // We can not afford to nuke all the early culling in PreviewLayer based on GetPPM().
@@ -184,7 +178,6 @@ WED_MapPreviewPane::WED_MapPreviewPane(GUI_Commander * cmdr, WED_Document * docu
 
 	mPreviewLayer = new WED_PreviewLayer(this, this, document);
 
-	mMapProjection->SetXYUnitsPerMeter(1.0);
 	this->SetPixelBounds(-1,-1,1,1);
 	this->SetPPM(1.0);
 
@@ -213,9 +206,6 @@ WED_MapPreviewPane::WED_MapPreviewPane(GUI_Commander * cmdr, WED_Document * docu
 	Vector3 d = mCamera->Forward();
 
     printf("Cam pos %11.5lf %.5lf %.5lf dir %.5lf %.5lf %.5lf\n", p.x, p.y, p.z, d.dx, d.dy, d.dz);
-    printf("Proj PPM %11.5lf Orig %11.5lf %11.5lf Unit %11.5lf %11.5lf\n", mMapProjection->XYUnitsPerMeter(),
-                    mMapProjection->LonToX(0), mMapProjection->LatToY(0),
-                    mMapProjection->LonToX(1), mMapProjection->LatToY(1));
 
 	this->SetPixelBounds(-1,-1,1,1);
     printf("Zoom PPM %11.5lf Orig %11.5lf %11.5lf Unit %11.5lf %11.5lf\n", this->GetPPM(),
@@ -261,7 +251,7 @@ void WED_MapPreviewPane::Draw(GUI_GraphState * state)
 	InitGL(b);
 
 	DrawVisStats stats;
-	DrawVisFor(mPreviewLayer, *mMapProjection, *mCamera, base, state, 0, &stats);
+	DrawVisFor(mPreviewLayer, *this, *mCamera, base, state, 0, &stats);
 
 #if 1
 {
@@ -269,9 +259,6 @@ void WED_MapPreviewPane::Draw(GUI_GraphState * state)
 	Vector3 d = mCamera->Forward();
 
     printf("Cam pos %11.5lf %.5lf %.5lf dir %.5lf %.5lf %.5lf\n", p.x, p.y, p.z, d.dx, d.dy, d.dz);
-    printf("Proj PPM %11.5lf Orig %11.5lf %11.5lf Unit %11.5lf %11.5lf\n", mMapProjection->XYUnitsPerMeter(),
-                    mMapProjection->LonToX(0), mMapProjection->LatToY(0),
-                    mMapProjection->LonToX(1), mMapProjection->LatToY(1));
 
     printf("Zoom PPM %11.5lf Orig %11.5lf %11.5lf Unit %11.5lf %11.5lf\n", this->GetPPM(),
                     this->LonToXPixel(0), this->LatToYPixel(0),
@@ -433,13 +420,11 @@ void WED_MapPreviewPane::DisplayExtent(const Bbox2& extent, double relativeDista
 	if (extent.is_empty() || extent.is_null()) return;
 
 	Point2 centerLL = extent.centroid();
-	mMapProjection->SetOriginLL(centerLL);
-	mMapProjection->SetStandardParallel(centerLL.y());
 
 	this->SetMapLogicalBounds(extent.p1.x(), extent.p1.y(), extent.p2.x(), extent.p2.y());
 
-	Point2 p1XY = mMapProjection->LLToXY(extent.p1);
-	Point2 p2XY = mMapProjection->LLToXY(extent.p2);
+	Point2 p1XY = this->LLToPixel(extent.p1);
+	Point2 p2XY = this->LLToPixel(extent.p2);
 
 	Vector3 forwardWithoutZ = mCamera->Forward();
 	forwardWithoutZ.dz = 0;
@@ -458,7 +443,7 @@ void WED_MapPreviewPane::DisplayExtent(const Bbox2& extent, double relativeDista
 Point2 WED_MapPreviewPane::CameraPositionLL() const
 {
 	Point3 position = mCamera->Position();
-	return mMapProjection->XYToLL(Point2(position.x, position.y));
+	return this->PixelToLL(Point2(position.x, position.y));
 }
 
 void WED_MapPreviewPane::FromPrefs(IDocPrefs * prefs)
@@ -473,9 +458,6 @@ void WED_MapPreviewPane::FromPrefs(IDocPrefs * prefs)
 
 	if (!std::isnan(camera_lon) && !std::isnan(camera_lat) && !std::isnan(camera_agl) && !std::isnan(camera_yaw) && !std::isnan(camera_pitch))
 	{
-		mMapProjection->SetOriginLL({ camera_lon, camera_lat });
-		mMapProjection->SetStandardParallel(camera_lat);
-
 		this->SetMapLogicalBounds(camera_lon, camera_lat, camera_lon, camera_lat);
 
 		mCamera->MoveTo(Point3(0, 0, camera_agl));
@@ -504,7 +486,7 @@ void WED_MapPreviewPane::FromPrefs(IDocPrefs * prefs)
 void WED_MapPreviewPane::ToPrefs(IDocPrefs * prefs)
 {
 	Point3 position = mCamera->Position();
-	Point2 positionLL = mMapProjection->XYToLL(Point2(position.x, position.y));
+	Point2 positionLL = this->PixelToLL(Point2(position.x, position.y));
 	prefs->WriteDoublePref("map_preview_window/camera_lon", positionLL.x());
 	prefs->WriteDoublePref("map_preview_window/camera_lat", positionLL.y());
 	prefs->WriteDoublePref("map_preview_window/camera_agl", position.z);
@@ -580,9 +562,7 @@ void WED_MapPreviewPane::HandleKeyMove()
 
 void WED_MapPreviewPane::MoveCameraToXYZ(const Point3& xyz)
 {
-	Point2 ll = mMapProjection->XYToLL({ xyz.x, xyz.y });
-	mMapProjection->SetOriginLL(ll);
-	mMapProjection->SetStandardParallel(ll.y());
+	Point2 ll = this->PixelToLL({ xyz.x, xyz.y });
 
 	this->SetMapLogicalBounds(ll.x(), ll.y(), ll.x(), ll.y());
 
