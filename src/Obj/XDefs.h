@@ -48,6 +48,12 @@
 	#error NO PLATFORM!
 #endif
 
+#if DEV
+	#define CHECK_GL_ERR if(int e = glGetError()) { printf("glError %d in %s line %d\n",e , __FILE__, __LINE__); fflush(stdout); }
+#else
+	#define CHECK_GL_ERR
+#endif
+
 /***********************************************************************************************************************************************
  * GLOBAL FEATURE CONTROL
  ***********************************************************************************************************************************************/
@@ -67,8 +73,11 @@
 #define WITHNWLINK 0
 
 // These turn on the features to import the global apt databaes for the purpose of building a final scenery pack
-// from the gateway.  You don't need this.
+// from the gateway.  You don't need this. Be aware that temp files after gateway import will NOT be removed if activated.
 #define GATEWAY_IMPORT_FEATURES 0
+
+// no validation upon export, but special heuristics for agp expansion before export. Only makes sense if GATEWAY_IMPORT_FEATURES is set.
+#define TYLER_MODE 0
 
 // After running ATC Runway Validation, show the hitboxes used for hot zone tests
 // 0 = never, 1 = only those causing a violation, 2 = always show all
@@ -88,6 +97,12 @@
 
 // This enables direct import of 7z compressed dsf's.
 #define USE_7Z 1
+
+// Store XObj8 data in VBO on GPU
+#define XOBJ8_USE_VBO 1
+
+// Use libtess2 instead of gluTess
+#define LIBTESS 1
 
 // This is a big hack that is no more used much ... 
 // WED entities are culled based on a bounding rect - and objects now know their worst case bounding box, based on their visualization, too.
@@ -178,6 +193,15 @@
 #include <stdint.h>
 
 #define SUPPORT_STL
+
+#if WED
+	extern FILE * gLogFile;
+	#define LOG_MSG(...) if(gLogFile) fprintf(gLogFile, __VA_ARGS__)
+	#define LOG_FLUSH()  fflush(gLogFile)
+#else
+	#define LOG_MSG(...)
+	#define LOG_FLUSH()
+#endif
 
 #if IBM // OS specific file handling hacks
 	#define WINDOWS_LEAN_AND_MEAN

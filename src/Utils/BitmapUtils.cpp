@@ -31,6 +31,8 @@
 
 #include <errno.h>
 #include <thread>
+#include <png.h>
+#include <zlib.h>
 
 #if IBM
 #include "GUI_Unicode.h"
@@ -156,7 +158,6 @@ extern "C" {
 }
 #endif
 
-#include <png.h>
 #if USE_TIF
 #include <tiffio.h>
 #endif
@@ -324,11 +325,9 @@ int		CreateNewBitmap(long inWidth, long inHeight, short inChannels, struct Image
 	return 0;
 }
 
-int GetSupportedType(const char * path)
+int GetSupportedType(const string& path)
 {
-	string extension;
-		
-	extension = FILE_get_file_extension(path);
+	string extension(FILE_get_file_extension(path));
 
 	if(extension == "bmp") return WED_BMP;
 	if(extension == "dds") return WED_DDS;
@@ -402,6 +401,29 @@ void	DestroyBitmap(const struct ImageInfo * inImageInfo)
 	free(inImageInfo->data);
 }
 
+static void copy_sharpen(int x_size, int y_size, const unsigned char * b4sharp, unsigned char * sharp);
+
+void	CopyBitmapSectionSharp(
+			const struct ImageInfo&	inSrc,
+			      struct ImageInfo&	inDst,
+			long inSrcLeft, long inSrcTop, long inSrcRight, long inSrcBottom,
+			long inDstLeft, long inDstTop, long inDstRight, long inDstBottom)
+{
+	CopyBitmapSection(&inSrc, &inDst, inSrcLeft, inSrcTop, inSrcRight, inSrcBottom,
+	                                     inDstLeft, inDstTop, inDstRight, inDstBottom);
+
+	if(inDst.channels == 4 && (double) (inDstLeft - inDstRight) / (double) (inSrcLeft - inSrcRight) < 0.9
+	                        && (double) (inDstTop - inDstBottom) / (double) (inSrcTop - inSrcBottom) < 0.9)
+	{
+		ImageInfo tmp;
+		CreateNewBitmap(inDst.width, inDst.height, inDst.channels, &tmp);
+		
+		copy_sharpen(inDst.width, inDst.height, inDst.data, tmp.data);
+		
+		free(inDst.data);
+		inDst.data = tmp.data;
+	}
+}
 
 void	CopyBitmapSection(
 			const struct ImageInfo *	inSrc,
@@ -1496,7 +1518,7 @@ static void	in_place_scaleY(int x, int y, unsigned char * src, unsigned char * d
 			if(p <= 0.04045f)	return p / 12.92f;
 			else              return fastpow(p * (1.0f/1.055f) + (0.055f/1.055f),2.4);
 		} 
-	#elif 1 // gamma=2.4 aproximation, no scaling: 5msec
+	#elif 1 // gamma=2.4 aproximation, no scaling: 35msec
 	   // WC relative gamma error 9% and maintains to_srgb(from_srgb(x)) == x  for all x
 	   // aproximation is to use (x-5)^2 and x^0.5+5 for x^2.4, x^(1/2.4) as a pretty close fit for x > 30/255,
 	   // and adjust the slope & intercept for the linear part of the curve as well
@@ -1539,7 +1561,7 @@ static void	in_place_scaleY(int x, int y, unsigned char * src, unsigned char * d
 			}
 		}
 	}
-#else  // SSE gamma = 2.0 verion: 8 msec !!!
+#else  // SSE gamma = 2.0 version: 8 msec !!!
 	#include <smmintrin.h>
 	#define SCALE_SSE 1
 
@@ -1726,13 +1748,13 @@ inline void unsharpPixelH(unsigned char * sharp, const unsigned char * orig)
 	sharp[3] = orig[3];
 }
 
-static void in_place_sharpen(int x, int y, const unsigned char * b4sharp, unsigned char * sharp)
+static void copy_sharpen(int x_size, int y_size, const unsigned char * b4sharp, unsigned char * sharp)
 {
-	int rb = x * 4;
+	int rb = x_size * 4;
 	// top row
 	*((int *) sharp) = *((int *) b4sharp);       // top left corner - just copy
 	sharp += 4; b4sharp += 4;
-	for(int xx = 1; xx < x-1; xx++)
+	for(int xx = 1; xx < x_size-1; xx++)
 	{
 		unsharpPixelH(sharp, b4sharp);
 		sharp += 4; b4sharp += 4;
@@ -1740,16 +1762,16 @@ static void in_place_sharpen(int x, int y, const unsigned char * b4sharp, unsign
 	*((int *) sharp) =  *((int *) b4sharp);       // top right corner - just copy
 	sharp += 4; b4sharp += 4;
 	// middle rows
-	for(int yy = 1; yy < y-1; yy++)
+	for(int yy = 1; yy < y_size-1; yy++)
 	{
 		unsharpPixelV(sharp, b4sharp, rb);
 		sharp += 4; b4sharp += 4;
-		for(int xx = 1; xx < x-1; xx++)
+		for(int xx = 1; xx < x_size-1; xx++)
 		{
 			unsharpPixel(sharp++, b4sharp++, rb);
 			unsharpPixel(sharp++, b4sharp++, rb);
 			unsharpPixel(sharp++, b4sharp++, rb);
-			*sharp++ = *b4sharp++;
+			*sharp++ = *b4sharp++;                 // don't sharpen alpha channel
 		}
 		unsharpPixelV(sharp, b4sharp, rb);
 		sharp += 4; b4sharp += 4;
@@ -1757,7 +1779,7 @@ static void in_place_sharpen(int x, int y, const unsigned char * b4sharp, unsign
 	// bottom row
 	*((int *) sharp) =  *((int *) b4sharp);       // bottom left corner - just copy
 	sharp += 4; b4sharp += 4;
-	for(int xx = 1; xx < x-1; xx++)
+	for(int xx = 1; xx < x_size-1; xx++)
 	{
 		unsharpPixelH(sharp, b4sharp);
 		sharp += 4; b4sharp += 4;
@@ -1834,7 +1856,7 @@ int	WriteBitmapToDDS_MT(struct ImageInfo& ioImage, int dxt, const char * file_na
 
 #if SHARPEN_MIPS
 		if(src.width > 4 && src.height > 4)                             // don't sharpen the last few mipmaps, as its mostly border pixels that won't sharpen that well
-			in_place_sharpen(src.width, src.height, src.data, mip_ptr);
+			copy_sharpen(src.width, src.height, src.data, mip_ptr);
 		else
 #endif
 			memcpy(mip_ptr, src.data, src.width * src.height * 4);        // nothing gets sharpened, still need to move the data to the location its expected to be

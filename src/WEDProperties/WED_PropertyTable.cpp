@@ -220,6 +220,11 @@ void	WED_PropertyTable::GetCellContent(
 		the_content.content_type = gui_Cell_TaxiText;
 		the_content.text_val = val.string_val;
 		break;
+	case prop_RoadType:
+		the_content.content_type = gui_Cell_RoadType;
+		t->GetNthPropertyDictItem(idx, val.int_val,the_content.text_val);
+		the_content.int_val = val.int_val;
+		break;
 	case prop_FilePath:
 		the_content.content_type = gui_Cell_FileText;
 		the_content.text_val = val.string_val;
@@ -231,7 +236,7 @@ void	WED_PropertyTable::GetCellContent(
 		the_content.bool_partial = 0;
 		if (mColNames[mVertical ? cell_y : cell_x] == "Locked")	{ the_content.bool_val = gui_Bool_Lock;		if (!the_content.int_val)	the_content.bool_partial = AnyLocked(t); }
 		if (mColNames[mVertical ? cell_y : cell_x] == "Hidden")	{ the_content.bool_val = gui_Bool_Visible;	if (!the_content.int_val)	the_content.bool_partial = AnyHidden(t); }
-		
+
 		if((mColNames[mVertical ? cell_y : cell_x] == "Locked" || mColNames[mVertical ? cell_y : cell_x] == "Hidden") &&
 			SAFE_CAST(WED_GISPolygon,my_parent))
 			{
@@ -367,6 +372,7 @@ void	WED_PropertyTable::AcceptEdit(
 		if (inf.prop_kind == prop_FilePath	&& content.content_type != gui_Cell_FileText)	continue;
 		if (inf.prop_kind == prop_Bool		&& content.content_type != gui_Cell_CheckBox)	continue;
 		if (inf.prop_kind == prop_Enum		&& content.content_type != gui_Cell_Enum	)	continue;
+		if (inf.prop_kind == prop_RoadType	&& content.content_type != gui_Cell_RoadType)	continue;
 		if (inf.prop_kind == prop_EnumSet	&& ( content.content_type != gui_Cell_EnumSet &&
 												 content.content_type != gui_Cell_LineEnumSet ))	continue;
 
@@ -402,6 +408,10 @@ void	WED_PropertyTable::AcceptEdit(
 			break;
 		case prop_Enum:
 			val.prop_kind = prop_Enum;
+			val.int_val = content.int_val;
+			break;
+		case prop_RoadType:
+			val.prop_kind = prop_RoadType;
 			val.int_val = content.int_val;
 			break;
 		case prop_EnumSet:
@@ -900,8 +910,7 @@ static int SelectAndParents(ISelectable * what, void * ref)
 	WED_Thing * who = dynamic_cast<WED_Thing *>(what);
 	while(who)
 	{
-		if (all->count(who)) return 0;
-		all->insert(who);
+		if (!all->insert(who).second) return 0;
 		who = who->GetParent();
 	}
 	return 0;
@@ -1116,7 +1125,7 @@ int collect_recusive(WED_Thing * thing, const ci_string& isearch_filter, vector<
 	bool is_match = ithing_name.find(isearch_filter) != ci_string::npos;
 	IHasResource * has_resource = NULL;
 	IHasAttr * has_attr = NULL;
-	
+
 	if (is_match == false)
 	{
 		string res;

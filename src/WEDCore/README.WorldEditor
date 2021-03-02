@@ -13,6 +13,118 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 2.4.0
+   Bug Fix:
+   - Partial fix of long standing OGLE bugs
+      - disappearing content when select numeric edit fields,
+      - mess with vertical scrolling ,
+      - errors in multi line text edit fields like in Gateway export dialog
+   - WED-1353 GUI_ScrollBar has uninitialized vars
+   - WED-1347 stops cursor blink timer in Settings window when loose focus
+   - validate ICAO_Code meta tag to meet ICAO nomenclature
+   - fix preview for .lin commands with offset layers in preview pane
+   - fix endcap not showing for lines with two vertices only
+   - refine tesselation to show fill for polygons with colocated nodes
+   Features:
+   - show gridded preview for library vdirectories
+   - support choosing taxiway equivalent styles for draped polygons
+   - support autogen .agb/.ags entities (but no on-map previews)
+   - preselect last opened scenery at startup
+   - show on-map 3D previews for beacons, windsocks, 3D taxi signs
+   - use native secure internet connectivity on all operating systems
+   - WED-1359: change OOW mouse click for LineEditor from accept to cancel edit
+   - automatically change ExportTarget at GW import, avoid inheriting unexpected values
+   - support import of text format DSF files
+
+WED 2.3.1r1 12/22/20
+   Features:
+    - reload Orthophoto at export when image has changed and new DDS were created
+    Bug Fix:
+    - WED-1341 fix (linux only) uncommanded exclusion zone changes when canceling edits
+
+WED 2.3.1b1  12/12/20
+   Features:
+    - support metadata tag 'closed', dereive from [X] in airport name at GW im/export
+    Bug Fix:
+    - improve Log.txt completeness when crashing
+    - WED-1332 fix (linux only) selection of ATC taxiroute runway tags
+    - WED-1333 fix library preview visibility when AA settings overridden by video drivers
+    - WED-1335 fix orthophoto's from some DSF using inorrect vpath separator in OSX/Linux
+    - WED-1340 fix validation not recognizing all boundaries of an airport
+    - fix false alarms in ramp start validation for export targets older than XP10.45
+
+WED 2.3.0r2 10/19/20
+    Bug Fix:
+    - fix Orthophoto export to only run if image file is newer than textures on disk
+    - fix temporary files after gateway import not removed
+
+WED 2.3.0r1 10/7/20
+    Bug Fix:
+    - WED-1324: for XP1000+ targets export has_ATC in apt.dat rowcode 1 always as 0
+    - fix validation for far-off-airport items to skip hidden items
+    - fix OSX not resolving symbolic links at Orthophoto Import
+   Features:
+    - WED-1322: Validate apts w/ATC tower have at least one start supporting AI operation
+    - Validate only type=misc starts in runway hotzones
+    - improved logging of localization status
+    - Linux version based on FLTK
+
+WED 2.3.0b3 9/9/20
+    Bug Fix:
+    - fix facade roof object appearance in facade preview
+    - fix facade roofs not showing in map without "pick walls" property
+    - fix false warning opening pre-WED 2.0 files in WED 2.0+ after use of WED-2.3 beta
+    - fix crash in ATC taxiroute runway segment validation
+   Features:
+    - WED-338: Write all messages and information to a WED_Log.txt
+
+WED 2.3.0b2 8/26/20
+   Bug Fix:
+   - fix crash when viewing objects with lines in map
+   - fix overzealous ATC taxiway name validations
+   - fix some facade roof not showing as expected
+   - fix ESRI slippy map not showing at very high zoom levels in some places
+
+WED 2.3.0b1 8/24/20
+   Bug Fix:
+   - fix endcaps for bezier curved lines not following curve in map
+   - fix validation not checking GT routes intersecting runways win some airports
+   - WED-1277: make error messages when saving xml files more particular
+   - WED-1294: support facades with single wall+roof texture
+   - WED-1299: fix CTD in GW validation with orthophotos w/images as resources
+   - WED-1311: fix holes in polygon incorrectly wound after "convert to"
+   - fix some OpenSceneryX items not shown in library manager
+   - fix DSF airport scenery not showing when Airport ID contains lower case letters
+   Features:
+   - WED-338: WED now writes a WED_log.txt to help debugging crashes
+   - WED-1293: show facades when part of .agp definitions
+   - WED-1270: support gateway download driven by Airport ID list from external file
+   - "Explode AGP's" can handle any .agp containing only public or local objects
+   - validate ATC networks being fully connected and reachable
+   - validate Hot-Zone tagged taxi routes not connected to other routes
+   - validate all run/taxiways and rampstarts inside airport boundary (GW only)
+   - validate all scenery within airport boundary bounds + 0.5 nm (GW only)
+   - validate to prevent set_MSL and warn about set_AGL objects (GW only)
+   - warn if taxi route name is unusual
+   - show aproximate ground truck + AI A/C routes near ramp starts in ATC layer
+   - XPD-9302,9240,9243 support "set_AGL" for objects available with XP11.50b1+
+   - recognize keyword '#wed_text' to display text in preview window
+   - speedup facade object drawing, same way as done for .agp
+   - speedup validation for large datasets, for gateway use
+   - use lighting and anti-aliasing in preview window
+   - use full map projection, if available, with ReferenceImages & at OrthoPhoto import
+   - support importing OrthoPhotos at half pixelcount for improved files sizes
+   - support new XP11.50 earth_nav.dat format, fixes navaids missing in NAVAID layer
+
+WED 2.2.1r1 5/27/20
+   Bug Fix:
+   - make runway CIFP validation ignore apts tagged only with local_code
+   - make meta data update use same ICAO resolution logic as CIFP validation.
+
+WED 2.2.0r3 2/19/20
+   Bug Fix:
+   - fix resource names on windows for local objects and orthophotos after import from DSF
+
 WED 2.2.0r2 2/3/20
    Bug Fix:
    - fix crash when .agp specifying non-existent annotations are visible in the map
@@ -96,7 +208,7 @@ WED 2.1.0b1 6/3/19
 	- multi-threaded DDS texture compression for large Orthophotos, 3.5x faster
 	- WED-1149: Improve download cache size management, reduces WED startup time
 	- XPD-10080: Add meta tag to classify airport as 2D or 3D
-	
+
    Bug Fixes:
 	- WED-1201: Fix typo in airline code validation error message
 	- WED-1199: fix potential segfault when reading files
@@ -107,7 +219,7 @@ WED 2.1.0b1 6/3/19
 	- WED-1162: Create new ground truck routes w/ no aircaft (hotzone) attributes set
 	- WED-524: Can't recover window if pack was saved on a larger screen
 	- WED-432: Fix WED window positioning when using multiple monitors under Linux
-	
+
 WED 2.0.0r4 4/07/19
 	Bug Fixes:
 	- WED-1178: Fix X-Plane 11.30 format apt.dat importing ATC frequencies always as "tower"

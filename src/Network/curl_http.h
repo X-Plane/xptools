@@ -42,20 +42,17 @@ public:
 
 				curl_http_get_file(
 							const string&			inURL,
-							const string&			outDestFile,
-							const string&			inCert=string());
+							const string&			outDestFile);
 
 				curl_http_get_file(
 							const string&			inURL,
-							vector<char>*			outDestBuffer,
-							const string&			inCert);
+							vector<char>*			outDestBuffer);
 
 				curl_http_get_file(
 							const string&			inURL,
 							const string *			inPostInfo,
 							const string *			inPutInfo,
-							vector<char>*			outBuffer,
-							const string&			inCert=string());
+							vector<char>*			outBuffer);
 				
 				~curl_http_get_file();
 	
@@ -101,7 +98,6 @@ private:
 		string					m_url;
 		string					m_post;
 		string					m_put;
-		string					m_cert;
 		
 		double					m_last_dl_amount;
 		time_t					m_last_data_time;

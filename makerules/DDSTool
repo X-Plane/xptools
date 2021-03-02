@@ -9,32 +9,16 @@ DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
 #FORCEREBUILD_SUFFIX := _ddst
 
 ifdef PLAT_LINUX
-LDFLAGS		+= -static
-LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
-LIBS		+= -lpthread
+LIBS		+= -pthread
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN
-LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
 LDFLAGS		+= -framework Carbon
 endif #PLAT_DARWIN
 
 ifdef PLAT_MINGW
 LDFLAGS		+= -static
 DEFINES		+= -DMINGW_BUILD=1
-LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
 
 ifeq ($(conf), phone)
 LIBS		+= ./libs/local/lib/ATI_Compress_1_7_DLL.lib
@@ -42,6 +26,11 @@ endif
 
 endif #PLAT_MINGW
 
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
 
 ##
 # sources

@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2009, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -56,7 +56,7 @@ public:
 									CreateEdge_t		tool_type);
 
 	virtual				~WED_CreateEdgeTool();
-				
+
 	// WED_MapToolNew
 	virtual	const char *		GetStatusText(void);
 
@@ -73,9 +73,9 @@ private:
 	WED_PropIntEnum			mRunway;
 	WED_PropIntEnumSet		mHotDepart;
 	WED_PropIntEnumSet		mHotArrive;
-	WED_PropIntEnumSet		mHotILS;		
+	WED_PropIntEnumSet		mHotILS;
 	WED_PropIntEnum			mWidth;
-	
+
 	WED_PropStringText		mName;
 	WED_PropIntText			mSlop;
 
@@ -93,13 +93,13 @@ private:
 							int						closed);
 	virtual	bool		CanCreateNow(void);
 
-			// FILTERING: we don't actually want our network-creation tools to pick up just ANY part of the airport.  Filter field (if not null) is the 
+			// FILTERING: we don't actually want our network-creation tools to pick up just ANY part of the airport.  Filter field (if not null) is the
 			// name of the classes that we 'intersect' with.  It should be the edge class name.
 			void		FindNear(   WED_Thing * host, IGISEntity * ent, const char * filter, const Point2& loc, WED_Thing *& out_thing,         double& out_dsq);
 			void		FindNearP2S(WED_Thing * host, IGISEntity * ent, const char * filter, const Point2& loc, IGISPointSequence *& out_thing, double& out_dsg ,const double dst);
 			WED_Thing *	GetHost(int& idx);
 
-	bool		get_valid_road_info(road_info_t * optional_info) const;
+	const road_info_t *	get_valid_road_info(void) const;
 
 		CreateEdge_t	mType;
 

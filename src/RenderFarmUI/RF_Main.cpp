@@ -23,6 +23,7 @@
 
 // Stuff we need to init
 //#include "XWidgetApp.h"
+#include "GUI_Window.h"
 #include "GUI_MemoryHog.h"
 #include "GUI_Clipboard.h"
 #include "GUI_Timer.h"
@@ -54,7 +55,6 @@
 #include "RF_Msgs.h"
 #include "RF_Application.h"
 #include "RF_MapView.h"
-#include "GUI_Window.h"
 #include "MathUtils.h"
 #include "RF_Selection.h"
 #include "NetHelpers.h"
@@ -300,10 +300,7 @@ static	GISTool_RegCmd_t		sUtilCmds[] = {
 };
 
 
-
-
-
-static int fifo = NULL;
+static int fifo = 0;
 
 static float CheckFifo(void)
 {
@@ -602,9 +599,12 @@ int main(int argc, char * argv[])
 	fifo_timer * t = new fifo_timer;
 	t->Start(0.1);
 
-	int bounds[4] = { 0, 20, 1280, 1024 };
+	int bounds[4] = { 0, 20, 1280, 1004 };
 	GUI_Window * main_window = new GUI_Window("RenderFarm", xwin_style_visible, bounds, &app);
-
+#if LIN
+	main_window->xclass("RenderFarm");
+	main_window->show(argc,argv);
+#endif
 	bounds[3] -= bounds[1];
 	bounds[1] = 0;
 

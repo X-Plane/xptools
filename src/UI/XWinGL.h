@@ -32,23 +32,25 @@
 	#endif
 #elif IBM
 	#include "glew.h"
-#else  // LIN
-	#include <QtOpenGL/QGLWidget>
+#elif LIN
+	#include "glew.h"
+#include <FL/Fl_Gl_Window.H>
+
 
 class	XWinGL;
 
-class glWidget : public QGLWidget
+class glWidget : public Fl_Gl_Window
 {
-	Q_OBJECT
+
 public:
-	glWidget(QWidget *parent, XWinGL* xwin, QGLWidget* share);
+	glWidget(XWinGL* xwin,int w,int h,Fl_Gl_Window* share);
 	virtual ~glWidget(void);
+	void draw();
+
 protected:
-	void resizeGL(int inWidth, int inHeight);
-	void paintGL(void);
-	void initializeGL(void);
-// 	void focusInEvent(QFocusEvent* e);
-// 	void focusOutEvent(QFocusEvent* e);
+
+    void resize(int X,int Y,int W,int H);
+
 private:
 	XWinGL* mXWinGL;
 };
@@ -57,84 +59,13 @@ private:
 
 #include "XWin.h"
 
-#if 0 // IBM
-	// Ben says: glext.h doesn't come with stock MSVC.  Here we include the few extensions we gotta have by hand.  Maybe someday we'll use GLEW.
-    // Michaels answer: #define someday Decemer 13 2019
-
-   typedef void (APIENTRY * PFNGLMULTITEXCOORD2FARBPROC    )(GLenum,GLfloat,GLfloat);
-   typedef void (APIENTRY * PFNGLMULTITEXCOORD2FVARBPROC   )(GLenum,const GLfloat *);
-   typedef void (APIENTRY * PFNGLACTIVETEXTUREARBPROC      )(GLenum                );
-   typedef void (APIENTRY * PFNGLCLIENTACTIVETEXTUREARBPROC)(GLenum texture        );
-   typedef void (APIENTRY * PFNGLCOMPRESSEDTEXIMAGE2DARBPROC)(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, GLvoid* data); 
-
-   extern PFNGLMULTITEXCOORD2FARBPROC     glMultiTexCoord2fARB	;
-   extern PFNGLMULTITEXCOORD2FVARBPROC    glMultiTexCoord2fvARB;
-   extern PFNGLACTIVETEXTUREARBPROC       glActiveTextureARB	;
-   extern PFNGLCLIENTACTIVETEXTUREARBPROC glClientActiveTextureARB;
-   extern PFNGLCOMPRESSEDTEXIMAGE2DARBPROC	glCompressedTexImage2DARB	;
-
-#define GL_TEXTURE0_ARB                   0x84C0
-#define GL_TEXTURE1_ARB                   0x84C1
-#define GL_TEXTURE2_ARB                   0x84C2
-#define GL_TEXTURE3_ARB                   0x84C3
-#define GL_TEXTURE4_ARB                   0x84C4
-#define GL_TEXTURE5_ARB                   0x84C5
-#define GL_TEXTURE6_ARB                   0x84C6
-#define GL_TEXTURE7_ARB                   0x84C7
-#define GL_TEXTURE8_ARB                   0x84C8
-#define GL_TEXTURE9_ARB                   0x84C9
-#define GL_TEXTURE10_ARB                  0x84CA
-#define GL_TEXTURE11_ARB                  0x84CB
-#define GL_TEXTURE12_ARB                  0x84CC
-#define GL_TEXTURE13_ARB                  0x84CD
-#define GL_TEXTURE14_ARB                  0x84CE
-#define GL_TEXTURE15_ARB                  0x84CF
-#define GL_TEXTURE16_ARB                  0x84D0
-#define GL_TEXTURE17_ARB                  0x84D1
-#define GL_TEXTURE18_ARB                  0x84D2
-#define GL_TEXTURE19_ARB                  0x84D3
-#define GL_TEXTURE20_ARB                  0x84D4
-#define GL_TEXTURE21_ARB                  0x84D5
-#define GL_TEXTURE22_ARB                  0x84D6
-#define GL_TEXTURE23_ARB                  0x84D7
-#define GL_TEXTURE24_ARB                  0x84D8
-#define GL_TEXTURE25_ARB                  0x84D9
-#define GL_TEXTURE26_ARB                  0x84DA
-#define GL_TEXTURE27_ARB                  0x84DB
-#define GL_TEXTURE28_ARB                  0x84DC
-#define GL_TEXTURE29_ARB                  0x84DD
-#define GL_TEXTURE30_ARB                  0x84DE
-#define GL_TEXTURE31_ARB                  0x84DF
-#define GL_ACTIVE_TEXTURE_ARB             0x84E0
-#define GL_CLIENT_ACTIVE_TEXTURE_ARB      0x84E1
-#define GL_MAX_TEXTURE_UNITS_ARB          0x84E2
-
-#define GL_COMPRESSED_RGB                 0x84ED
-#define GL_COMPRESSED_RGBA                0x84EE
-#define GL_TEXTURE_COMPRESSION_HINT       0x84EF
-#define GL_TEXTURE_COMPRESSED_IMAGE_SIZE  0x86A0
-#define GL_TEXTURE_COMPRESSED             0x86A1
-#define GL_NUM_COMPRESSED_TEXTURE_FORMATS 0x86A2
-#define GL_COMPRESSED_TEXTURE_FORMATS     0x86A3
-
-#define GL_CLAMP_TO_EDGE                  0x812F
-
-#endif
-
-
 class	XWinGL : public XWin
 {
-#if LIN
-	Q_OBJECT
-public:
-	XWinGL(int default_dnd, XWinGL * inShare, QWidget* parent = 0);
-	XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX, int inY, int inWidth, int inHeight, XWinGL * inShare, QWidget* parent = 0);
-#else
 public:
 
 	XWinGL(int default_dnd, XWinGL * inShare);
 	XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX, int inY, int inWidth, int inHeight, XWinGL * inShare);
-#endif
+
 	virtual					~XWinGL();
 
 			void			SetGLContext(void);
@@ -170,8 +101,12 @@ private:
 
 #if LIN
 	glWidget*		mGlWidget;
+
+
 public:
-	bool			mInited;
+	bool			mGLInited;
+	bool			mCtxValid;
+	//GLContext		mContext;
 #endif
 
 };

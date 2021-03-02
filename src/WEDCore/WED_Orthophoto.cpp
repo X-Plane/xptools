@@ -26,10 +26,11 @@
 #include "FileUtils.h"
 #include "TexUtils.h"
 #include "Interpolation.h"
+#include <sstream>
 
 #define KPIXELS 2     // maximum texture size per side in kibi-pixels before splitting up orthos at import into smaller chunks
 
-WED_Ring * WED_RingfromImage(char * path, WED_Archive * arch, WED_MapZoomerNew * zoomer, bool use_bezier)
+WED_Ring * WED_RingfromImage(char * path, WED_Archive * arch, WED_MapZoomerNew * zoomer, bool use_bezier, vector<Point2> * gcp)
 {
 	Point2	coords[4];
 	int has_geo = 0;
@@ -38,7 +39,7 @@ WED_Ring * WED_RingfromImage(char * path, WED_Archive * arch, WED_MapZoomerNew *
 	{
 		double c[8];
 		int pos =  dem_want_Area;
-		if (FetchTIFFCorners(path, c, pos))
+		if (FetchTIFFCorners(path, c, pos, gcp))
 		{
 			if (c[1] < c[5])
 			{
@@ -61,34 +62,33 @@ WED_Ring * WED_RingfromImage(char * path, WED_Archive * arch, WED_MapZoomerNew *
 		}
 	}
 	
-	ImageInfo	inf;
-	if(LoadBitmapFromAnyFile(path, &inf))  // just to get width + height ...
-	{
-		DoUserAlert("Unable to open image file.");
-		return NULL;
-	}
-
 	if (!has_geo)
 	{
-		double	nn,ss,ee,ww;
-		zoomer->GetPixelBounds(ww,ss,ee,nn);
+		ImageInfo	inf;
+		double pix_w = 1.0;
+		double pix_h = 1.0;
+		if (!LoadBitmapFromAnyFile(path, &inf))  // just to get width + height ...
+		{
+			pix_w = inf.width;
+			pix_h = inf.height;
+			DestroyBitmap(&inf);
+		}
 
-		Point2 center((ee+ww)*0.5,(nn+ss)*0.5);
+		double	nn, ss, ee, ww;
+		zoomer->GetPixelBounds(ww, ss, ee, nn);
+		Point2 center((ee + ww)*0.5, (nn + ss)*0.5);
 
-		double grow_x = 0.5*(ee-ww)/((double) inf.width);
-		double grow_y = 0.5*(nn-ss)/((double) inf.height);
+		double grow_x = 0.5*(ee - ww) / pix_w;
+		double grow_y = 0.5*(nn - ss) / pix_h;
 
-		double pix_w, pix_h;
+		if (grow_x < grow_y) { pix_w *= grow_x; pix_h *= grow_x; }
+		else                 { pix_w *= grow_y; pix_h *= grow_y; }
 
-		if (grow_x < grow_y) { pix_w = grow_x * (double) inf.width;	pix_h = grow_x * (double) inf.height; }
-		else				 { pix_w = grow_y * (double) inf.width;	pix_h = grow_y * (double) inf.height; }
-
-		coords[0] = zoomer->PixelToLL(center + Vector2(-pix_w,-pix_h));
-		coords[1] = zoomer->PixelToLL(center + Vector2( pix_w,-pix_h));
-		coords[2] = zoomer->PixelToLL(center + Vector2( pix_w,+pix_h));
-		coords[3] = zoomer->PixelToLL(center + Vector2(-pix_w,+pix_h));
+		coords[0] = zoomer->PixelToLL(center + Vector2(-pix_w, -pix_h));
+		coords[1] = zoomer->PixelToLL(center + Vector2(pix_w, -pix_h));
+		coords[2] = zoomer->PixelToLL(center + Vector2(pix_w, +pix_h));
+		coords[3] = zoomer->PixelToLL(center + Vector2(-pix_w, +pix_h));
 	}
-	DestroyBitmap(&inf);
 
 	WED_Ring * rng = WED_Ring::CreateTyped(arch);
 	rng->SetName("Image Boundary");
@@ -120,6 +120,40 @@ static int largest_pow2(int x, int pow2)  // return largest power-of-2 upto pow2
     return 0;
 }
 
+static Point2 interpol_LonLat(double UV_x, double UV_y, double dUV, const Point2 * LonLat, int y_stride)
+{
+	int A, B, C, D;
+
+	if(y_stride > 1)
+	{
+		int xi0 = floor(UV_x / dUV);
+		int xi1 = ceil (UV_x / dUV);
+		int yi0 = floor(UV_y / dUV);
+		int yi1 = ceil (UV_y / dUV);
+		
+		UV_x = UV_x / dUV - xi0;
+		UV_y = UV_y / dUV - yi0;
+		
+		A = xi0 + yi1 * y_stride;
+		B = xi1 + yi1 * y_stride;
+		C = xi0 + yi0 * y_stride;
+		D = xi1 + yi0 * y_stride;
+	}
+	else
+	{
+		A = 3;
+		B = 2;
+		C = 0;
+		D = 1;
+	}
+
+	return Point2(
+		BilinearInterpolate2d( LonLat[A].x(), LonLat[B].x(), LonLat[C].x(), LonLat[D].x(),
+						UV_x, 1.0 - UV_y),
+		BilinearInterpolate2d( LonLat[A].y(), LonLat[B].y(), LonLat[C].y(), LonLat[D].y(),
+						UV_x, 1.0 - UV_y)
+				 );
+}
 
 void	WED_MakeOrthos(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 {
@@ -135,6 +169,7 @@ void	WED_MakeOrthos(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 		wrl->StartOperation("Create Ortho Image");
 		sel->Clear();
 
+		int last_answer = -1;  // on multi-file import, only ask _once_ to use full or reduced size import
 		while(*path)
 		{
 			string base_tex(FILE_get_file_name(path));
@@ -143,7 +178,9 @@ void	WED_MakeOrthos(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 				
 			if (base_tex.find(" ") == base_tex.npos && img_path[0] != '.' && img_path[0] != DIR_CHAR && img_path[1] != ':')
 			{
-				WED_Ring * rng0 = WED_RingfromImage(path, arch, zoomer, true);
+				vector<Point2> gcp;
+				WED_Ring * rng0 = WED_RingfromImage(path, arch, zoomer, true, &gcp);
+				int gcp_divs = intround(sqrt(gcp.size()));
 				if (rng0)
 				{
 					ITexMgr *	tman = WED_GetTexMgr(inResolver);
@@ -151,66 +188,84 @@ void	WED_MakeOrthos(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 
 					if(tref != NULL)
 					{
-						int org_x, org_y;
-
-						tman->GetTexInfo(tref, NULL, NULL, NULL, NULL, &org_x, &org_y);
-						int kpix_x = ceil(org_x / 1024.0);  // rounded up result
-						int kpix_y = ceil(org_y / 1024.0);
-
+						int orig_x, orig_y;
+						tman->GetTexInfo(tref, NULL, NULL, NULL, NULL, &orig_x, &orig_y);
+						int kpix_x = ceil(orig_x / 1024.0);    // round up, never loose resolution
+						int kpix_y = ceil(orig_y / 1024.0);
+						
 						Point2 corner[4];
 						for(int i = 0; i < 4; ++i)
 							dynamic_cast<WED_TextureBezierNode *>(rng0->GetNthPoint(i))->GetLocation(gis_Geo,corner[i]);
-
+							
+						int kopt_x = ceil(orig_x / 1600.0);    // typ 70%, min 64% of original resolution
+						int kopt_y = ceil(orig_y / 1600.0);
+						if(kopt_x < kpix_x || kopt_y < kpix_y)
+						{
+							if(last_answer < 0)
+							{
+								stringstream msg;
+								auto w = (kpix_x * 1024 == orig_x && kpix_y * 1024 == orig_y) ? "This image is exactly " : "This image will be upscaled to ";
+								msg << w << " " << kpix_x << " x " << kpix_y << " Kpix, ";
+								msg.precision(1);
+								msg << std::fixed;
+								msg << LonLatDistMeters(corner[0], corner[1]) / (kpix_x * 1024.0) << " x " << LonLatDistMeters(corner[0], corner[3]) / (kpix_y * 1024.0) << " m/pix\n";
+								msg << "Total DDS texture size ~" << intround(kpix_x * kpix_y * 0.7) << " MB\n";
+								msg << "\n";
+								msg << "Use a space-optimized resolution of " << kopt_x << " x " << kopt_y << " Kpix, ";
+								msg << LonLatDistMeters(corner[0], corner[1]) / (kopt_x * 1024.0) << " x " << LonLatDistMeters(corner[0], corner[3]) / (kopt_y * 1024.0) << " m/pix\n";
+								msg << "Total DDS texture size ~" << intround(kopt_x * kopt_y * 0.7) << " MB instead ?\n";
+								
+								last_answer = ConfirmMessage(msg.str().c_str(), "Optimized size", w);   // returns 0 or 1
+							}
+							if(last_answer > 0)
+							{
+								kpix_x = kopt_x;
+								kpix_y = kopt_y;
+							}
+						}
+						
 						int x0 = 0, x1 = largest_pow2(kpix_x, KPIXELS);
 						while(x0 < kpix_x)
 						{
 							int y0 = 0, y1 = largest_pow2(kpix_y, KPIXELS);
 							while(y0 < kpix_y)
 							{
-								WED_Ring * rng = dynamic_cast<WED_Ring *>(rng0->Clone());
+								auto rng = dynamic_cast<WED_Ring *>(rng0->Clone());
+								auto igp = dynamic_cast<IGISPointSequence *>(rng);
 								
 								Bbox2 b;
 								b.p1 = Point2(((double) x0)/kpix_x, ((double) y0)/kpix_y );
 								b.p2 = Point2(((double) x1)/kpix_x, ((double) y1)/kpix_y );
-								
 								rng->Rescale(gis_UV, Bbox2(0,0,1,1), b);
 								
+								double df = 0.0;
+								Point2 * pts = corner;
+								if(gcp_divs > 1)                  // if map projection info is available for the underlying source image 
+								{
+									df = 1.0 / (gcp_divs - 1);
+									pts = gcp.data();             // use ground control points, i.e. place the subtextures to propper projected/warped locations
+								}
+
 								Point2 p;
 								// lower left
-								dynamic_cast<WED_TextureBezierNode *>(rng0->GetNthPoint(0))->GetLocation(gis_Geo,p);
-								p.x_ = BilinearInterpolate2d( corner[3].x(), corner[2].x(), corner[0].x(), corner[1].x(),
-												b.p1.x(), 1.0-b.p1.y());
-								p.y_ = BilinearInterpolate2d( corner[3].y(), corner[2].y(), corner[0].y(), corner[1].y(),
-												b.p1.x(), 1.0-b.p1.y());
-								dynamic_cast<WED_TextureBezierNode *>(rng->GetNthPoint(0))->SetLocation(gis_Geo,p);
+								p = interpol_LonLat(b.p1.x(), b.p1.y(), df, pts, gcp_divs);
+								igp->GetNthPoint(0)->SetLocation(gis_Geo,p);
 								// lower right
-								dynamic_cast<WED_TextureBezierNode *>(rng0->GetNthPoint(1))->GetLocation(gis_Geo,p);
-								p.x_ = BilinearInterpolate2d( corner[3].x(), corner[2].x(), corner[0].x(), corner[1].x(),
-												b.p2.x(), 1.0-b.p1.y());
-								p.y_ = BilinearInterpolate2d( corner[3].y(), corner[2].y(), corner[0].y(), corner[1].y(),
-												b.p2.x(), 1.0-b.p1.y());
-								dynamic_cast<WED_TextureBezierNode *>(rng->GetNthPoint(1))->SetLocation(gis_Geo,p);
+								p = interpol_LonLat(b.p2.x(), b.p1.y(), df, pts, gcp_divs);
+								igp->GetNthPoint(1)->SetLocation(gis_Geo,p);
 								// upper right
-								dynamic_cast<WED_TextureBezierNode *>(rng0->GetNthPoint(2))->GetLocation(gis_Geo,p);
-								p.x_ = BilinearInterpolate2d( corner[3].x(), corner[2].x(), corner[0].x(), corner[1].x(),
-												b.p2.x(), 1.0-b.p2.y());
-								p.y_ = BilinearInterpolate2d( corner[3].y(), corner[2].y(), corner[0].y(), corner[1].y(),
-												b.p2.x(), 1.0-b.p2.y());
-								dynamic_cast<WED_TextureBezierNode *>(rng->GetNthPoint(2))->SetLocation(gis_Geo,p);
+								p = interpol_LonLat(b.p2.x(), b.p2.y(), df, pts, gcp_divs);
+								igp->GetNthPoint(2)->SetLocation(gis_Geo,p);
 								// upper left
-								dynamic_cast<WED_TextureBezierNode *>(rng0->GetNthPoint(3))->GetLocation(gis_Geo,p);
-								p.x_ = BilinearInterpolate2d( corner[3].x(), corner[2].x(), corner[0].x(), corner[1].x(),
-												b.p1.x(), 1.0-b.p2.y());
-								p.y_ = BilinearInterpolate2d( corner[3].y(), corner[2].y(), corner[0].y(), corner[1].y(),
-												b.p1.x(), 1.0-b.p2.y());
-								dynamic_cast<WED_TextureBezierNode *>(rng->GetNthPoint(3))->SetLocation(gis_Geo,p);
+								p = interpol_LonLat(b.p1.x(), b.p2.y(), df, pts, gcp_divs);
+								igp->GetNthPoint(3)->SetLocation(gis_Geo,p);
 
 								WED_DrapedOrthophoto * dpol = WED_DrapedOrthophoto::CreateTyped(arch);
 								rng->SetParent(dpol,0);
 								dpol->SetParent(wrl,0);
 								sel->Insert(dpol);
 								dpol->SetResource(img_path);
-								dpol->SetSubTexture(b);             // do we want that ? Yes, so one can at least punch holes into them gracefully.
+								dpol->SetSubTexture(b);             // Turn on auto-redraping. So one can punch holes into them w/o distortion.
 
 								string::size_type pos = base_tex.find_last_of('.');
 								char s[10] = ""; if(x0 > 0 || y0 > 0) snprintf(s,10,"+%dk+%dk", x0, y0);
@@ -230,7 +285,7 @@ void	WED_MakeOrthos(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 			else
 			{
 				char msg[200]; snprintf(msg,200,"Orthoimage name/path not acceptable:\n\n%s\n\n"
-					    "Spaces are not allowed and location must be inside the scenery directory.", img_path.c_str());
+					    "Spaces are not allowed and location must be inside this sceneries directory.", img_path.c_str());
 				DoUserAlert(msg);
 			}
 			path += strlen(path) + 1;

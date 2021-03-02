@@ -35,11 +35,7 @@ typedef unsigned char 	xbyt;
 #define xtrue			true
 #define xfals			false
 
-#if APL
-#include <OpenGL/glu.h>
-#else
-#include <GL/glu.h>
-#endif
+
 
 #define dev_assert(x) DebugAssert(x)
 #include "AssertUtils.h"
@@ -125,6 +121,7 @@ struct REN_facade_template_t {
 	};
 	struct mesh {
 		vector<xflt> 	xyz;
+		vector<xflt>	nml;
 		vector<xflt> 	uv;      // 5 floats per vertex, skipping normals
 		vector<xint>	idx;
 	};
@@ -201,16 +198,17 @@ struct tower_t
 		}
 		string			base_obj;			// OBJ to be used
 		string			towr_obj;			// tower object - can be empty range if base-only scraper -- it happens!
-		xflt				base_xzr[3];
-		xflt				towr_xzr[3];
+		xflt			base_xzr[3];
+		xflt			towr_xzr[3];
+		vector<float>	pins;
 	};
 
 //	vector<obj_ref>				assets;
 	vector<tower_t>		choices;
-	xflt						min_agl;			// range of AGL where this scraper rule applies
-	xflt						max_agl;
-	xflt						step_agl;		// Step from min AGL up for height
-	xint						floors;			// number of floors to use for facade base
+	xflt				min_agl;			// range of AGL where this scraper rule applies
+	xflt				max_agl;
+	xflt				step_agl;		// Step from min AGL up for height
+	xint				floors;			// number of floors to use for facade base
 };
 
 struct	REN_FacadeLOD_t {

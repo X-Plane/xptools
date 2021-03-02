@@ -17,13 +17,12 @@ scrollbar_corner.png	GUI_RES		scrollbar_corner.png
 
 /* app UI elements */
 about.png				GUI_RES		about.png
-gateway.crt				GUI_RES		gateway.crt
 COPYING					GUI_RES		COPYING
 colors.png				GUI_RES		colors.png
 map_tools.png			GUI_RES		map_tools.png
 taxi_sign.png			GUI_RES		taxi_sign.png
 tce_tools.png			GUI_RES		tce_tools.png
-exclaim.png			GUI_RES		exclaim.png
+exclaim.png				GUI_RES		exclaim.png
 tilt_tool.png			GUI_RES		tilt_tool.png
 
 /* Start window */
@@ -130,7 +129,7 @@ line_BSolidBlue.png			GUI_RES		line_types/line_BSolidBlue.png
 line_SolidYellowW.png			GUI_RES		line_types/line_SolidYellowW.png
 line_BSolidYellowW.png			GUI_RES		line_types/line_BSolidYellowW.png
 line_ILSCriticalCenterW.png		GUI_RES		line_types/line_ILSCriticalCenterW.png
-line_BILSCriticalCenterW.png		GUI_RES		line_types/line_BILSCriticalCenterW.png
+line_BILSCriticalCenterW.png	GUI_RES		line_types/line_BILSCriticalCenterW.png
 line_TaxiCenterUni.png			GUI_RES		line_types/line_TaxiCenterUni.png
 line_HoldShortCenterUni.png		GUI_RES		line_types/line_HoldShortCenterUni.png
 line_BSolidWhite.png			GUI_RES		line_types/line_BSolidWhite.png

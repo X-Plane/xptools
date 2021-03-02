@@ -79,7 +79,7 @@ WED_CreateEdgeTool::WED_CreateEdgeTool(
 	mWidth(tool == create_TaxiRoute ?        this : NULL,PROP_Name("Size",            XML_Name("","")), ATCIcaoWidth, width_E),
 #if ROAD_EDITING
 	mLayer(tool == create_Road ?             this : NULL,PROP_Name("Layer",           XML_Name("","")), 0, 2),
-	mSubtype(tool == create_Road ?           this : NULL,PROP_Name("Type",            XML_Name("","")), 1, 3),
+	mSubtype(tool == create_Road ?           this : NULL,PROP_Name("Type",            XML_Name("","")), 100, 3),
 	mResource(tool == create_Road ?          this : NULL,PROP_Name("Resource",        XML_Name("","")), "lib/g10/roads.net"),
 #endif
 	mSlop(                                   this,        PROP_Name("Slop",           XML_Name("","")), 10, 2)
@@ -559,10 +559,9 @@ void	WED_CreateEdgeTool::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 #if ROAD_EDITING
 	if(n == PropertyItemNumber(&mSubtype))
 	{
-		road_info_t r;
-		if(get_valid_road_info(&r))
+		if(auto r = get_valid_road_info())
 		{
-			for(auto i : r.vroad_types)
+			for(auto i : r->vroad_types)
 			{
 				dict[i.first] = make_pair(i.second.description, true);
 			}
@@ -620,9 +619,9 @@ void		WED_CreateEdgeTool::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 #if ROAD_EDITING
 	if(n == PropertyItemNumber(&mSubtype))
 	{
-		if(get_valid_road_info(NULL))
+		if(get_valid_road_info())
 		{
-			info.prop_kind = prop_Enum;
+			info.prop_kind = prop_RoadType;
 			return;
 		}
 	}
@@ -654,9 +653,9 @@ void		WED_CreateEdgeTool::GetNthProperty(int n, PropertyVal_t& val) const
 #if ROAD_EDITING
 	if(n == PropertyItemNumber(&mSubtype))
 	{
-		if(get_valid_road_info(NULL))
+		if(get_valid_road_info())
 		{
-			val.prop_kind = prop_Enum;
+			val.prop_kind = prop_RoadType;
 		}
 	}
 #endif
@@ -667,7 +666,7 @@ void		WED_CreateEdgeTool::SetNthProperty(int n, const PropertyVal_t& val)
 #if ROAD_EDITING
 	if(n == PropertyItemNumber(&mSubtype))
 	{
-		if(get_valid_road_info(NULL))
+		if(get_valid_road_info())
 		{
 			PropertyVal_t v(val);
 			v.prop_kind = prop_Int;
@@ -685,11 +684,10 @@ void		WED_CreateEdgeTool::GetNthPropertyDictItem(int n, int e, string& item) con
 #if ROAD_EDITING
 	if(n == PropertyItemNumber(&mSubtype))
 	{
-		road_info_t r;
-		if(get_valid_road_info(&r))
+		if(auto r = get_valid_road_info())
 		{
-			auto i = r.vroad_types.find(mSubtype.value);
-			if (i != r.vroad_types.end())
+			auto i = r->vroad_types.find(mSubtype.value);
+			if (i != r->vroad_types.end())
 			{
 				item = i->second.description;
 				return;
@@ -716,20 +714,13 @@ void		WED_CreateEdgeTool::GetNthPropertyDictItem(int n, int e, string& item) con
 
 
 #if ROAD_EDITING
-bool		WED_CreateEdgeTool::get_valid_road_info(road_info_t * optional_info) const
+const road_info_t *	WED_CreateEdgeTool::get_valid_road_info(void) const
 {
-	road_info_t temp;
-	road_info_t * i = optional_info ? optional_info : &temp;
-
-	IResolver * resolver;
-	WED_ResourceMgr * mgr;
-	if((mgr = WED_GetResourceMgr(GetResolver())) != NULL)
-	{
-		road_info_t r;
-		if(mgr->GetRoad(mResource.value, *i))
-		if(i->vroad_types.size() > 0)
-			return true;
-	}
-	return false;
+	WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetResolver());
+	const road_info_t * r;
+	if(rmgr && rmgr->GetRoad(mResource.value, r))
+		if(r->vroad_types.size() > 0)
+			return r;
+	return nullptr;
 }
 #endif

@@ -86,7 +86,7 @@
 #endif
 
 // set this to one to leave the master zip blobs on disk for later examination
-#define KEEP_UPLOAD_MASTER_ZIP 0
+#define KEEP_UPLOAD_MASTER_ZIP (TYLER_MODE)
 
 // write out lots of airports as .json files on disk - allows multi-select, no user interaction, for bulk import.
 #define BULK_SPLAT_IO 0
@@ -474,12 +474,6 @@ WED_GatewayExportDialog::WED_GatewayExportDialog(WED_Airport * apt, WED_Document
 
 void WED_GatewayExportDialog::StartCSVDownload()
 {
-	//Get Certification
-	const string cert(WED_get_GW_cert());
-	if(cert.empty())
-		this->AsyncDestroy();
-
-	mCacheRequest.in_cert = cert;
 	mCacheRequest.in_domain = cache_domain_metadata_csv;
 	mCacheRequest.in_folder_prefix = "scenery_packs";
 	mCacheRequest.in_url = WED_URL_AIRPORT_METADATA_CSV;
@@ -504,7 +498,12 @@ void WED_GatewayExportDialog::Submit()
 	{
 		DebugAssert(mApt);
 		WED_Airport * apt = mApt;
-		fill_in_airport_metadata_defaults(*mApt, mAirportMetadataCSVPath);
+		mApt->StartOperation("Update metadata");
+		if(fill_in_airport_metadata_defaults(*mApt, mAirportMetadataCSVPath))
+			mApt->CommitOperation();
+		else
+			mApt->AbortOperation();
+
 		string apt_name = this->GetField(gw_icao);
 		string act_name;
 		apt->GetName(act_name);
@@ -570,7 +569,6 @@ void WED_GatewayExportDialog::Submit()
 			FILE_delete_file(targ_folder_zip.c_str(), false);
 		}
 
-		Enforce_MetaDataGuiLabel(apt);
 		if(has_dsf(apt))
 		if(DSF_ExportAirportOverlay(mResolver, apt, targ_folder, mProblemChildren))
 		{
@@ -716,20 +714,12 @@ void WED_GatewayExportDialog::Submit()
 			return;
 		#endif
 
-		const string cert(WED_get_GW_cert());
-		if(cert.empty())
-		{
-			this->AsyncDestroy();
-		}
-		else
-		{
-			mCurl = new curl_http_get_file(WED_get_GW_api_url() + "scenery", nullptr, &reqstr, &mResponse, cert);
-			this->Reset("", "", "", false);
-			this->AddLabel("Uploading airport to Gateway.");
-			this->AddLabel("This could take up to one minute.");
-			gExportTarget = old_target;
-			Start(1.0);
-		}
+		mCurl = new curl_http_get_file(WED_get_GW_api_url() + "scenery", nullptr, &reqstr, &mResponse);
+		this->Reset("", "", "", false);
+		this->AddLabel("Uploading airport to Gateway.");
+		this->AddLabel("This could take up to one minute.");
+		gExportTarget = old_target;
+		Start(1.0);
 	}
 	else if(mPhase == expt_dialog_done)
 	{
@@ -849,41 +839,50 @@ void WED_GatewayExportDialog::TimerFired()
 	}
 }
 
-void Enforce_MetaDataGuiLabel(WED_Airport * apt)
+bool Enforce_MetaDataGuiLabel(WED_Airport * apt)
 {
 	string has3D(GatewayExport_has_3d(apt) ? "3D" : "2D");
+	string name;
+	apt->GetName(name);
+	bool isClosed = name.c_str()[0] == '[' && tolower(name.c_str()[1]) == 'x' && name.c_str()[2] == ']';
+	bool changed_meta = false;
 
-	if(!apt->ContainsMetaDataKey(wed_AddMetaDataLGuiLabel) || apt->GetMetaDataValue(wed_AddMetaDataLGuiLabel) != has3D)
+	if (!apt->ContainsMetaDataKey(wed_AddMetaDataLGuiLabel))
 	{
-		apt->StartOperation("Force Meta Tag 'GUI Label'");
 		apt->AddMetaDataKey(META_KeyName(wed_AddMetaDataLGuiLabel), has3D);
-		apt->CommitOperation();
+		changed_meta = true;
 	}
+	if(isClosed && !apt->ContainsMetaDataKey(wed_AddMetaDataClosed))
+	{
+		apt->AddMetaDataKey(META_KeyName(wed_AddMetaDataClosed), "1");
+		changed_meta = true;
+	}
+	return changed_meta;
 }
 
-void EnforceRecursive_MetaDataGuiLabel(WED_Thing * thing)
+bool EnforceRecursive_MetaDataGuiLabel(WED_Thing * thing)
 {
 	WED_Entity * ent = dynamic_cast<WED_Entity *>(thing);
 	if (!ent || ent->GetHidden())
-		return;
+		return false;
 
 	WED_Airport * apt = dynamic_cast<WED_Airport *>(thing);
 	if (apt)
 	{
-		Enforce_MetaDataGuiLabel(apt);
-		return;
+		return Enforce_MetaDataGuiLabel(apt);
 	}
 
+	bool changedMeta = false;
 	if (thing->GetClass() == WED_Group::sClass)
 	{
 		int cc = thing->CountChildren();
 		for (int c = 0; c < cc; ++c)
 		{
 			WED_Thing * child = thing->GetNthChild(c);
-			EnforceRecursive_MetaDataGuiLabel(child);
+			changedMeta |= EnforceRecursive_MetaDataGuiLabel(child);
 		}
 	}
-	return;
+	return changedMeta;
 }
 
 const string WED_get_GW_api_url()
@@ -892,13 +891,5 @@ const string WED_get_GW_api_url()
 	if(url.empty())	
 		url = WED_URL_GATEWAY "apiv1/";
 	return url;
-}
-
-const string WED_get_GW_cert()
-{
-	string s(gApplication->args.get_value("--gateway_crt"));
-	if (s.empty())
-		GUI_GetTempResourcePath("gateway.crt", s);
-	return s;
 }
 #endif /* HAS_GATEWAY */

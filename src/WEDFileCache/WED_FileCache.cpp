@@ -32,16 +32,14 @@ WED_FileCache gFileCache;
 
 //--WED_file_cache_request---------------------------------------------------
 WED_file_cache_request::WED_file_cache_request()
-	: in_cert(""),
-	  in_domain(cache_domain_none),
+	: in_domain(cache_domain_none),
 	  in_folder_prefix(""),
 	  in_url("")
 {
 }
 
-WED_file_cache_request::WED_file_cache_request(const string & cert, CACHE_domain domain, const string & folder_prefix, const string & url)
-	: in_cert(cert),
-	  in_domain(domain),
+WED_file_cache_request::WED_file_cache_request(CACHE_domain domain, const string & folder_prefix, const string & url)
+	: in_domain(domain),
 	  in_folder_prefix(folder_prefix),
 	  in_url(url)
 {
@@ -49,7 +47,7 @@ WED_file_cache_request::WED_file_cache_request(const string & cert, CACHE_domain
 
 ostream & operator<<(ostream & os, const WED_file_cache_request & rhs)
 {
-	return os << "cert: " << rhs.in_cert << " domain: " <<  rhs.in_domain << " prefix: " << rhs.in_folder_prefix << " url: " << rhs.in_url;
+	return os << " domain: " <<  rhs.in_domain << " prefix: " << rhs.in_folder_prefix << " url: " << rhs.in_url;
 }
 
 //---------------------------------------------------------------------------//
@@ -299,7 +297,7 @@ WED_file_cache_response WED_FileCache::start_new_cache_object(WED_file_cache_req
 	CACHE_file_cache.push_back(new CACHE_CacheObject());
 	CACHE_CacheObject& co = *CACHE_file_cache.back();
 	
-	co.create_RAII_curl_hndl(req.in_url, req.in_cert);
+	co.create_RAII_curl_hndl(req.in_url);
 	
 	return WED_file_cache_response(co.get_RAII_curl_hndl()->get_curl_handle().get_progress(),
 								   "",

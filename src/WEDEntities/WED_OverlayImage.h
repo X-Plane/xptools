@@ -27,6 +27,8 @@
 #include "WED_GISPolygon.h"
 #include "IGIS.h"
 
+typedef vector<Point2> gcp_t;    // ground control points - for warping/projection
+
 class WED_OverlayImage : public WED_GISPolygon, public virtual IGISQuad {
 
 DECLARE_PERSISTENT(WED_OverlayImage)
@@ -36,6 +38,7 @@ public:
 	void		GetImage(string& image_file) const;
 	void		SetImage(const string& image_file);
 	double		GetAlpha(void) const;
+	const gcp_t * 	GetGcpMat(void);
 
 	virtual	void	GetCorners(GISLayer_t l,Point2 corners[4]) const;
 
@@ -53,9 +56,11 @@ protected:
 
 private:
 
-	WED_PropFileText			mImageFile;
-	WED_PropDoubleText			mAlpha;
-
+	WED_PropFileText		mImageFile;
+	WED_PropDoubleText		mAlpha;
+	bool					mGcpSet;
+public:
+	gcp_t					mGcp;
 };
 
 #endif /* WED_OverlayImage_H */

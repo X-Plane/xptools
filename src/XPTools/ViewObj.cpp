@@ -23,6 +23,17 @@
 
 #define FACADES 0
 
+#if APL
+	#include <OpenGL/gl.h>
+	#include <OpenGL/glext.h>
+	#include <OpenGL/glu.h>
+#else
+	#include "glew.h"
+//	#include <GL/gl.h>
+//	#include <GL/glu.h>
+#endif
+
+
 #include "XObjDefs.h"
 #include "XWinGL.h"
 #include "ObjDraw.h"
@@ -40,16 +51,6 @@
 #include <time.h>
 #include "PerfUtils.h"
 
-#if APL
-	#include <OpenGL/gl.h>
-	#include <OpenGL/glext.h>
-	#include <OpenGL/glu.h>
-#else
-	#include <GL/gl.h>
-	#include <GL/glu.h>
-#endif
-
-//#include <glut.h>
 
 #if SOTHIS_TEST
 // XPopup testpopup;
@@ -602,13 +603,25 @@ void	XGrindFiles(const vector<string>& files)
 	}
 }
 
-void	XGrindInit(void)
+#if LIN
+void	XGrindInit(int& argc, char* argv[])
+#else
+void	XGrindInit()
+#endif //if LIN
 {
 	XObjWin * win = new XObjWin(NULL);
-	
+#if LIN
+	win->show(argc,argv);
+	win->SetGLContext();
+#endif
+#if !APL
+	GLenum err = glewInit();
+	if (err != GLEW_OK)
+		AssertPrintf("Can not init GLEW: '%s'\n", glewGetErrorString(err));
+#endif
 	win->GetMenuBar();
+
 	win->ForceRefresh();
-	
 
 	const char * ext = (const char *) glGetString(GL_EXTENSIONS);
 	int	major=0, minor=0, revision=0;

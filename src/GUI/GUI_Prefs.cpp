@@ -117,6 +117,9 @@ inline bool	is_spc(const char p) { return p == '\t' || p == ' '; }
 inline void	skip_space(const char *&p, const char * e) { while(p<e && is_spc(*p)) ++p; }
 inline void	skip_eol(const char *&p, const char * e) { while(p<e && is_eol(*p)) ++p; }
 
+#include <locale.h>
+#include <locale>
+
 void			GUI_Prefs_Read(const char *app_name)
 {
 	sPrefs.clear();
@@ -130,6 +133,7 @@ void			GUI_Prefs_Read(const char *app_name)
 	pref_dir += app_name;
     #endif
 	pref_dir += ".prefs";
+	
 	MFMemFile* f = MemFile_Open(pref_dir.c_str());
 	GUI_PrefSection_t * cur=NULL;
 	if(f)

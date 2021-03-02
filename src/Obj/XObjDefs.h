@@ -309,6 +309,10 @@ struct	XObj8 {
 	vector<XObjPanelRegion8>regions;
 	vector<int>				indices;
 	ObjPointPool			geo_tri;
+#if XOBJ8_USE_VBO
+	unsigned int			geo_VBO;
+	unsigned int			idx_VBO;
+#endif
 	ObjPointPool			geo_lines;
 	ObjPointPool			geo_lights;
 	vector<XObjAnim8>		animation;
@@ -319,6 +323,7 @@ struct	XObj8 {
 	float					xyz_min[3];
 	float					xyz_max[3];
 	float					fixed_heading;
+	string					description;
 };
 
 #endif

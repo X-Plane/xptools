@@ -38,6 +38,6 @@ enum {
 
 #define	BEZ_MIN_SEGS		4
 #define BEZ_MAX_SEGS		100
-#define	BEZ_PIX_PER_SEG		10
+#define	BEZ_PIX_PER_SEG		20
 
 #endif

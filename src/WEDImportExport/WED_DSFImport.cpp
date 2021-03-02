@@ -22,34 +22,39 @@
  */
 
 #include "WED_DSFImport.h"
+
 #include "DSFLib.h"
-#include "WED_Group.h"
-#include "WED_ExclusionZone.h"
-#include "WED_EnumSystem.h"
-#include "WED_ObjPlacement.h"
+#include "DSF2Text.h"
 #include "PlatformUtils.h"
+#include "FileUtils.h"
+#include "STLUtils.h"
+
+#include "WED_AptIE.h"
+#include "WED_EnumSystem.h"
+#include "WED_GISUtils.h"
+#include "WED_MetadataUpdate.h"
 #include "WED_SimpleBoundaryNode.h"
 
-#include "WED_FacadePlacement.h"
-#include "WED_ForestPlacement.h"
-#include "WED_StringPlacement.h"
-#include "WED_LinePlacement.h"
-#include "WED_PolygonPlacement.h"
+#include "WED_Airport.h"
 #include "WED_DrapedOrthophoto.h"
+#include "WED_ExclusionZone.h"
+#include "WED_FacadePlacement.h"
+#include "WED_FacadeRing.h"
+#include "WED_FacadeNode.h"
+#include "WED_ForestPlacement.h"
+#include "WED_ForestRing.h"
+#include "WED_Group.h"
+#include "WED_StringPlacement.h"
+#include "WED_AutogenPlacement.h"
+#include "WED_AutogenNode.h"
+#include "WED_LinePlacement.h"
+#include "WED_ObjPlacement.h"
+#include "WED_PolygonPlacement.h"
 #include "WED_Ring.h"
-
 #include "WED_TextureBezierNode.h"
 #include "WED_TextureNode.h"
 #include "WED_SimpleBezierBoundaryNode.h"
 #include "WED_SimpleBoundaryNode.h"
-#include "WED_ForestRing.h"
-#include "WED_FacadeRing.h"
-#include "WED_FacadeNode.h"
-#include "DSF2Text.h"
-#include "WED_GISUtils.h"
-#include "STLUtils.h"
-#include "WED_AptIE.h"
-#include "WED_Airport.h"
 #if ROAD_EDITING
 #include "WED_RoadNode.h"
 #include "WED_RoadEdge.h"
@@ -80,16 +85,12 @@ static void debug_it(const vector<BezierPoint2>& pts)
 			pts[n].hi.y() - pts[n].pt.y());
 }
 
-inline bool end_match(const char * str, const char * suf)
+static bool end_match(const string& str, const char suf[4])
 {
-	int ls = strlen(suf);
-	int lstr = strlen(str);
-	if(lstr > ls)
-	{
-		return strcmp(str+lstr-ls,suf) == 0;
-	}
+	if(str.size() >= 4)
+		return memcmp(str.c_str() + str.size() - 4, suf, 4) == 0;
 	else
-	return false;
+		return false;
 }
 
 enum dsf_import_category {
@@ -99,6 +100,7 @@ enum dsf_import_category {
 	dsf_cat_forests,
 	dsf_cat_lines,
 	dsf_cat_strings,
+	dsf_cat_autogen,
 	dsf_cat_orthophoto,
 	dsf_cat_draped_poly,
 	dsf_cat_roads,
@@ -113,6 +115,7 @@ static const char * k_dsf_cat_names[dsf_cat_DIM] = {
 	"Forests",
 	"Lines",
 	"Strings",
+	"Autogen",
 	"Orthophotos",
 	"Draped Polygons",
 	"Roads",
@@ -123,7 +126,7 @@ static const char * k_dsf_cat_names[dsf_cat_DIM] = {
 class	DSF_Importer {
 public:
 
-	DSF_Importer() : dsf_cat_filter(dsf_filter_all), cull_bound(Bbox2(-180,-90,180,90)), filter_on(false)
+	DSF_Importer() : is_overlay(false), dsf_cat_filter(dsf_filter_all), cull_bound(Bbox2(-180,-90,180,90)), filter_on(false)
 	{
 		for(int n = 0; n < 7; ++n)
 			req_level_obj[n] = req_level_agp[n] = req_level_fac[n] = -1;
@@ -152,12 +155,14 @@ public:
 	bool				want_uv;
 	bool				want_bezier;
 	bool				want_wall;
-
 	int 				dsf_cat_filter;       // categories, e.g. .for, .obj
 	vector<string>		dsf_AptID_filter;     // Airport ID's
 	vector<bool>		filter_table;     	  // Airport ID IDX
 	bool				filter_on;            // global switch to filter out stuff
 	Bbox2 				cull_bound;
+	int					autogen_rings;
+	int					autogen_spelling;
+	bool 				is_overlay;
 
 	WED_Thing * get_cat_parent(dsf_import_category cat)
 	{
@@ -339,7 +344,8 @@ public:
 		if(strcmp(inProp, "sim/exclude_pol") == 0)	me->make_exclusion(inValue, exclude_Pol);
 		if(strcmp(inProp, "sim/exclude_str") == 0)	me->make_exclusion(inValue, exclude_Str);
 #endif
-
+		if(strcmp(inProp, "sim/overlay") == 0 && atoi(inValue) == 1)
+			me->is_overlay = true;
 	}
 
 	static void	BeginPatch(
@@ -374,10 +380,10 @@ public:
 	{
 	}
 
-	static void	AddObject(
+	static void	AddObjectWithMode(
 					unsigned int	inObjectType,
 					double			inCoordinates[4],
-					int				inCoordDepth,
+					obj_elev_mode	inMode,
 					void *			inRef)
 	{
 #if !NO_OBJ
@@ -387,10 +393,10 @@ public:
 			WED_ObjPlacement * obj = WED_ObjPlacement::CreateTyped(me->archive);
 			obj->SetResource(me->obj_table[inObjectType]);
 			obj->SetLocation(gis_Geo,Point2(inCoordinates[0],inCoordinates[1]));
-			if(inCoordDepth == 4)
-				obj->SetCustomMSL(inCoordinates[3]);
-			else
+			if (inMode == obj_ModeDraped)
 				obj->SetDefaultMSL();
+			else
+				obj->SetCustomMSL(inCoordinates[3], inMode == obj_ModeAGL);
 			obj->SetHeading(inCoordinates[2]);
 			obj->SetName(me->obj_table_names[inObjectType]);
 			obj->SetParent(me->get_cat_parent(dsf_cat_objects),me->get_cat_parent(dsf_cat_objects)->CountChildren());
@@ -398,7 +404,7 @@ public:
 		}
 #endif
 	}
-	
+
 	static void	BeginSegment(
 					unsigned int	inNetworkType,
 					unsigned int	inNetworkSubtype,
@@ -489,6 +495,7 @@ public:
 
 		int start_level = me->accum_road[0].second;
 		int end_level = inCoordinates[2];
+		int curr_level = start_level;
 		me->accum_road.front().second = 0;
 		me->accum_road.back().second = 0;
 
@@ -516,6 +523,7 @@ public:
 			if(n == last)
 			{
 				edge->AddSource(road_end, 1);
+				edge->SetEndLayer(end_level);
 			}
 			else
 			{
@@ -573,15 +581,17 @@ public:
 
 		me->poly = NULL;
 		me->ring = NULL;
+		me->want_uv = false;
+		me->want_wall = false;
+		me->autogen_rings = 0;
+		me->autogen_spelling = -1;
 
 		dsf_import_category cat = dsf_cat_objects;
 
 #if !NO_FAC
-
-		if( me->dsf_cat_filter & dsf_filter_facades && end_match(r.c_str(),".fac" ))
+		if( me->dsf_cat_filter & dsf_filter_facades && end_match(r,".fac" ))
 		{
 			// Ben says: .fac must be 2-coord for v9.  But...maybe for v10 we allow curved facades?
-			me->want_uv=false;
 			me->want_bezier=(inCoordDepth >= 4);
 			me->want_wall = (inCoordDepth == 3 || inCoordDepth == 5);
 			WED_FacadePlacement * fac = WED_FacadePlacement::CreateTyped(me->archive);
@@ -596,11 +606,9 @@ public:
 #endif
 
 #if !NO_FOR
-		if(me->dsf_cat_filter & dsf_filter_forests && end_match(r.c_str(),".for"))
+		else if(me->dsf_cat_filter & dsf_filter_forests && end_match(r,".for"))
 		{
-			me->want_uv=false;
 			me->want_bezier=false;
-			me->want_wall=false;
 			WED_ForestPlacement * forst = WED_ForestPlacement::CreateTyped(me->archive);
 			me->poly = forst;
 			me->ring = NULL;
@@ -612,11 +620,9 @@ public:
 #endif
 
 #if !NO_LIN
-		if( me->dsf_cat_filter & dsf_filter_lines && end_match(r.c_str(),".lin"))
+		else if( me->dsf_cat_filter & dsf_filter_lines && end_match(r,".lin"))
 		{
-			me->want_uv=false;
 			me->want_bezier=inCoordDepth == 4;
-			me->want_wall=false;
 			WED_LinePlacement * lin = WED_LinePlacement::CreateTyped(me->archive);
 			me->poly = NULL;
 			me->ring = lin;
@@ -627,26 +633,45 @@ public:
 #endif
 
 #if !NO_STR
-		if( me->dsf_cat_filter & dsf_filter_strings && (end_match(r.c_str(),".str") || end_match(r.c_str(),".ags")) )
+		else if(me->dsf_cat_filter & dsf_filter_strings && end_match(r,".str"))
 		{
-			me->want_uv=false;
 			me->want_bezier=inCoordDepth == 4;
-			me->want_wall=false;
 			WED_StringPlacement * str = WED_StringPlacement::CreateTyped(me->archive);
 			me->poly = NULL;
 			me->ring = str;
 			str->SetSpacing(inParam);
 			str->SetResource(r);
 			cat = dsf_cat_strings;
+
+		}
+#endif
+
+#if !NO_AG
+		else if(me->dsf_cat_filter & dsf_filter_autogen && (end_match(r, ".ags") || end_match(r, ".agb")))
+		{
+			me->want_bezier=false;
+			WED_AutogenPlacement * ags = WED_AutogenPlacement::CreateTyped(me->archive);
+			me->poly = ags;
+			me->ring = NULL;
+			ags->SetResource(r);
+			ags->SetHeight(((inParam >> 8) & 255) * 4);
+			if(ags->IsAGBlock())
+			{
+				me->autogen_rings = -1;
+				ags->SetSpelling(inParam & 255);
+			}
+			else
+				me->autogen_rings = inParam & 255;
+			cat = dsf_cat_autogen;
 		}
 #endif
 
 #if !NO_POL
-		if(me->dsf_cat_filter & dsf_filter_draped_poly && (end_match(r.c_str(),".pol") || end_match(r.c_str(),".agb")))
+		else if(me->dsf_cat_filter & dsf_filter_draped_poly && (end_match(r,".pol") || end_match(r,".agb")))
 		{
 			me->want_uv=inParam == 65535;
 			me->want_bezier=me->want_uv ? (inCoordDepth == 8) : (inCoordDepth == 4);
-			me->want_wall=false;
+			std::replace(r.begin(), r.end(), '\\', '/');  // DSF created with older windows WED used backslash for local orthophoto paths
 			if(me->want_uv)
 			{
 				WED_DrapedOrthophoto * orth = WED_DrapedOrthophoto::CreateTyped(me->archive);
@@ -834,6 +859,8 @@ public:
 
 		}
 
+		int i = me->ring->CountChildren();
+
 		for(int n = 0; n < me->pts.size(); ++n)
 		{
 			WED_Thing * node;
@@ -859,6 +886,13 @@ public:
 				if(me->want_wall)
 					b->SetWallType(me->walls[n]);
 			}
+			else if (me->autogen_rings != 0)
+			{
+				WED_AutogenNode * a = WED_AutogenNode::CreateTyped(me->archive);
+				node=a;
+				a->SetLocation(gis_Geo, me->pts[n].pt);
+				a->SetSpawning(me->autogen_rings > 0);
+			}
 			else if (me->want_bezier)
 			{
 				WED_SimpleBezierBoundaryNode * b = WED_SimpleBezierBoundaryNode::CreateTyped(me->archive);
@@ -872,9 +906,17 @@ public:
 				nd->SetLocation(gis_Geo,me->pts[n].pt);
 			}
 			node->SetParent(me->ring,me->ring->CountChildren());
-			node->SetName("Point");
+			char c[32];
+			snprintf(c,32,"Point %d/%d", i, n);
+			node->SetName(c);
 		}
 
+		if (me->autogen_rings > 0)
+		{
+			--me->autogen_rings;
+			if(me->autogen_rings == 0)
+				me->autogen_rings = -1;
+		}
 
 		if (me->poly != NULL)
 			me->ring = NULL;
@@ -884,6 +926,78 @@ public:
 					void *			inRef)
 	{
 		DSF_Importer * me = (DSF_Importer *) inRef;
+
+		if(me->poly && me->poly->GetClass() == WED_AutogenPlacement::sClass)
+		{
+			// make a single winding out of all connected windings
+			int n_wdg = me->poly->CountChildren() - 1;
+			vector<WED_Thing *> wdgs;
+			for(int n = 0; n < n_wdg; ++n)
+			{
+				wdgs.push_back(me->poly->GetNthChild(1));
+				wdgs.back()->SetParent(NULL,0);
+			}
+
+			me->ring = me->poly->GetNthChild(0);
+			int n_pts = me->ring->CountChildren();
+			Point2 first_pt, last_pt;
+			dynamic_cast<IGISPoint *>(me->ring->GetNthChild(0))      ->GetLocation(gis_Geo, first_pt);
+			dynamic_cast<IGISPoint *>(me->ring->GetNthChild(n_pts-1))->GetLocation(gis_Geo, last_pt);
+
+			while(n_wdg)
+			{
+				for(auto w = wdgs.begin(); w != wdgs.end(); w++)
+				{
+					Point2 pt;
+					n_pts = (*w)->CountChildren();
+					dynamic_cast<IGISPoint *>((*w)->GetNthChild(0))->GetLocation(gis_Geo, pt);
+					if(pt == last_pt)
+					{
+						// insert this contour after existing data
+						int last_n = me->ring->CountChildren();
+						--last_n;                                        // remove duplicated last point of existing sequence
+						WED_Thing * t = me->ring->GetNthChild(last_n);
+						t->SetParent(NULL,0);
+						t->Delete();
+						for(int n = 0; n < n_pts; ++n)
+							(*w)->GetNthChild(0)->SetParent(me->ring, n + last_n);
+						(*w)->Delete();
+						w = wdgs.erase(w);
+					    dynamic_cast<IGISPoint *>(me->ring->GetNthChild(last_n + n_pts - 1))->GetLocation(gis_Geo, last_pt);
+						break;
+					}
+					dynamic_cast<IGISPoint *>((*w)->GetNthChild(n_pts-1))->GetLocation(gis_Geo, pt);
+					if(pt == first_pt)
+					{
+						// insert this contour before existing data
+						--n_pts;                                       // remove duplicated last point of contour to be added
+						WED_Thing * t = (*w)->GetNthChild(n_pts);
+						t->SetParent(NULL,0);
+						t->Delete();
+						for(int n = 0; n < n_pts; ++n)
+							(*w)->GetNthChild(0)->SetParent(me->ring, n);
+						(*w)->Delete();
+						w = wdgs.erase(w);
+					    dynamic_cast<IGISPoint *>(me->ring->GetNthChild(0))->GetLocation(gis_Geo, first_pt);
+						break;
+					}
+				}
+				-- n_wdg;
+			}
+			if(first_pt == last_pt)
+            {
+                WED_Thing *t = me->ring->GetNthChild(me->ring->CountChildren()-1);
+                t->SetParent(NULL,0);
+                t->Delete();
+            }
+            else
+            {
+                LOG_MSG("E/DSFi Polygon outer ring not closed\n");
+            }
+			// in case some wdg is a real hole, i.e. has no point in common with the outer winding at all - thes are left now
+			for(auto w : wdgs)
+				w->SetParent(me->poly,1);
+		}
 		me->poly = NULL;
 	}
 
@@ -901,8 +1015,6 @@ public:
 			me->filter_on = me->filter_table[filterId];
 		else
 			me->filter_on = false;
-			
-printf("Filter %s\n", me->filter_on ? "ON" : "OFF");
 	}
 
 	int do_import_dsf(const char * file_name, WED_Thing * base)
@@ -912,10 +1024,11 @@ printf("Filter %s\n", me->filter_on ? "ON" : "OFF");
 
 		DSFCallbacks_t cb = {	NextPass, AcceptTerrainDef, AcceptObjectDef, AcceptPolygonDef, AcceptNetworkDef, AcceptRasterDef, AcceptProperty,
 								BeginPatch, BeginPrimitive, AddPatchVertex, EndPrimitive, EndPatch,
-								AddObject,
+								AddObjectWithMode,
 								BeginSegment, AddSegmentShapePoint, EndSegment,
 								BeginPolygon, BeginPolygonWinding, AddPolygonPoint,EndPolygonWinding, EndPolygon, AddRasterData, SetFilter };
 
+		LOG_MSG("I/DSF Importing binary DSF from %s\n",file_name);
 		int res = DSFReadFile(file_name, malloc, free, &cb, NULL, this);
 
 		for(int i = 0; i < dsf_cat_DIM; ++i)
@@ -925,56 +1038,65 @@ printf("Filter %s\n", me->filter_on ? "ON" : "OFF");
 		return res;
 	}
 
-	void do_import_txt(const char * file_name, WED_Thing * base)
+	int do_import_txt(const char * file_name, WED_Thing * base)
 	{
 		master_parent = base;
 		archive = master_parent->GetArchive();
 
 		DSFCallbacks_t cb = {	NextPass, AcceptTerrainDef, AcceptObjectDef, AcceptPolygonDef, AcceptNetworkDef, AcceptRasterDef, AcceptProperty,
 								BeginPatch, BeginPrimitive, AddPatchVertex, EndPrimitive, EndPatch,
-								AddObject,
+								AddObjectWithMode,
 								BeginSegment, AddSegmentShapePoint, EndSegment,
 								BeginPolygon, BeginPolygonWinding, AddPolygonPoint,EndPolygonWinding, EndPolygon, AddRasterData, SetFilter };
 
+		LOG_MSG("I/DSF Importing text DSF from %s\n",file_name);
 		int ok = Text2DSFWithWriter(file_name, &cb, this);
 
 		for(int i = 0; i < dsf_cat_DIM; ++i)
 		if(bucket_parents[i])
 			bucket_parents[i]->SetParent(master_parent, master_parent->CountChildren());
 
-
-//		int res = DSFReadFile(file_name, &cb, NULL, this);
-//		if(res != 0)
-//			printf("DSF Error: %d\n", res);
+		return ok != 0 ? dsf_ErrOK : dsf_ErrCouldNotReadFile;
 	}
 };
 
 int DSF_Import(const char * path, WED_Thing * base)
 {
 	DSF_Importer importer;
-	return importer.do_import_dsf(path, base);
+	int res = importer.do_import_dsf(path, base);
+	if(res == dsf_ErrOK && !importer.is_overlay)
+		DoUserAlert("WED is a Overlay Scenery Editor,\nbut the DSF to be imported is Base Mesh Scenery.\n"
+		            "All scenery elements only valid for base mesh scenery will be ignored.\n");
+	return res;
 }
 
 int DSF_Import_Partial(const char * path, WED_Thing * base, int inCatFilter, const Bbox2& cull_bound, const vector<string>& inAptFilter)
 {
 	DSF_Importer importer;
-	
+
 	importer.cull_bound = cull_bound;
 	importer.dsf_cat_filter = inCatFilter;
 	importer.dsf_AptID_filter = inAptFilter;
 
+	// do not warn about importing non-overlay DSF's when being this explicit about what to import.
+	// e.g. importing roads only is almost certainly always done from base mesh DSFF's.
 	return importer.do_import_dsf(path, base);
 }
 
-void WED_ImportText(const char * path, WED_Thing * base)
+int WED_ImportText(const char * path, WED_Thing * base)
 {
 	DSF_Importer importer;
-	importer.do_import_txt(path, base);
+	int res = importer.do_import_txt(path, base);
+
+	if(res == dsf_ErrOK && !importer.is_overlay)
+		DoUserAlert("WED is a Overlay Scenery Editor,\nbut the DSF to be imported is Base Mesh Scenery.\n"
+		            "All scenery elements only valid for base mesh scenery will be ignored.\n");
+	return res;
 }
 
 #if WED
-// code that uses GUI or Res/Lib/PkgMgr fuctions 
-// i.e. stuff that isn't desireable in command-line applications re-using WED code
+	// code that uses GUI or Res/Lib/PkgMgr fuctions
+	// i.e. stuff that isn't desireable in command-line applications re-using WED code
 
 #include "WED_ToolUtils.h"
 #include "WED_UIDefs.h"
@@ -1006,7 +1128,7 @@ void	WED_DoImportRoads(IResolver * resolver)
 	Bbox2 bounds;
 	excl->GetBounds(gis_Geo,bounds);
 
-	char * path = GetMultiFilePathFromUser("Import Roads from DSF file...", "Import", FILE_DIALOG_IMPORT_DSF);
+	char * path = GetMultiFilePathFromUser("Import Roads & AG from DSF file...", "Import", FILE_DIALOG_IMPORT_DSF);
 	if(path)
 	{
 		char * free_me = path;
@@ -1018,7 +1140,7 @@ void	WED_DoImportRoads(IResolver * resolver)
 			WED_Group * g = WED_Group::CreateTyped(wrl->GetArchive());
 			g->SetName(path);
 			g->SetParent(wrl,wrl->CountChildren());
-			int result = DSF_Import_Partial(path, g, dsf_filter_roads, bounds);
+			int result = DSF_Import_Partial(path, g, dsf_filter_roads | dsf_filter_autogen, bounds);
 			if(result != dsf_ErrOK)
 			{
 				string msg = string("The file '") + path + string("' could not be imported as a DSF:\n")

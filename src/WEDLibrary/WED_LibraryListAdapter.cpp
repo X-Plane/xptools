@@ -60,6 +60,7 @@ void	WED_LibraryListAdapter::SetMap(WED_MapPane * amap, WED_LibraryPreviewPane *
 {
 	mMap = amap;
 	mPreview = apreview;
+	mPreview->AddListener(this);
 }
 
 void	WED_LibraryListAdapter::SetFilter(const string& f, int int_val)
@@ -94,15 +95,15 @@ void	WED_LibraryListAdapter::GetCellContent(
 	string pPath = cell_y < mCache.size() ? GetNthCacheIndex(cell_y,true) : "";
 
 	string path = cell_y < mCache.size() ? GetNthCacheIndex(cell_y,false) : "";
-	
+
 	c.content_type = (cell_y < mCache.size()) ? gui_Cell_EditText : gui_Cell_None;
-	
+
 	//Defaults 0, makes !special or !normal
-	
+
 	c.can_delete = false;
 	c.can_edit = false;
 	c.can_disclose = 0; //Default no.
-	
+
 	c.can_select = true;
 	c.can_drag = false;
 	c.indent_level = 0;
@@ -120,7 +121,7 @@ void	WED_LibraryListAdapter::GetCellContent(
 	{
 		c.can_disclose = 1;
 	}
-	
+
 	if(cell_y == mCatLocInd || cell_y == mCatLibInd )
 	{
 		c.text_val = pPath;
@@ -266,7 +267,7 @@ int		WED_LibraryListAdapter::SelectDisclose(
 	*/
 	vector<string>::iterator itr = find(mCache.begin(),mCache.end(),mSel);
 	string tempMSel = "";
-	
+
 	if(*itr == mLocalStr || *itr == mLibraryStr)
 	{
 		tempMSel = GetNthCacheIndex(distance(mCache.begin(),itr),false);
@@ -275,7 +276,7 @@ int		WED_LibraryListAdapter::SelectDisclose(
 	{
 		tempMSel = GetNthCacheIndex(distance(mCache.begin(),itr),true);
 	}
-	
+
 	if ((!mSel.empty() && mLibrary->GetResourceType(tempMSel) == res_Directory) ||
 		mSel == mLocalStr || mSel == mLibraryStr)
 	{
@@ -339,6 +340,15 @@ void	WED_LibraryListAdapter::ReceiveMessage(
 		mCacheValid = false;
 		BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);
 	}
+	else if(inSrc == mPreview && inMsg == WED_PRIVATE_MSG_BASE)
+	{
+		string tmp((char *) inParam);
+		LOG_MSG("42: %s\n", tmp.c_str()); LOG_FLUSH();
+
+		SelectDisclose(1, 0);
+		SetSel(mLibraryStr+tmp, tmp);
+		// figure out how to scroll the selected cell into the middle of the scrolled pane
+	}
 }
 
 void WED_LibraryListAdapter::DoFilter()
@@ -362,7 +372,7 @@ void WED_LibraryListAdapter::DoFilter()
 					if(mCache[p].size() < mCache[i].size() &&
 						strncasecmp(mCache[p].c_str(),mCache[i].c_str(),mCache[p].size()) == 0)
 					{
-						keepers.push_back(mCache[p]);			
+						keepers.push_back(mCache[p]);
 					}
 				}
 				//Add the string to keepers
@@ -380,16 +390,16 @@ void WED_LibraryListAdapter::DoFilter()
 
 	//Set the locations of mCatLocInd and mCatLibInd
 	mCatLibInd = -1 ;
-	mCatLocInd = -1 ;	
-	
+	mCatLocInd = -1 ;
+
 	for(vector<string>::iterator itr = mCache.begin(); itr != mCache.end(); ++itr)
 	{
 		if(*itr == mLocalStr)
 		{
-			mCatLocInd = distance(mCache.begin(),itr);	
+			mCatLocInd = distance(mCache.begin(),itr);
 		}
 		if(*itr == mLibraryStr)
-		{	
+		{
 			mCatLibInd = distance(mCache.begin(),itr);
 		}
 	}
@@ -410,7 +420,7 @@ void	WED_LibraryListAdapter::SetOpen(const string& r, int open)
 void	WED_LibraryListAdapter::RebuildCache()
 {
 	//If the cache is valid, exit early because it doesn't need to rebuild
-	if(mCacheValid) 
+	if(mCacheValid)
 	{
 		return;
 	}
@@ -420,10 +430,10 @@ void	WED_LibraryListAdapter::RebuildCache()
 
 	//Set the cache to be valid
 	mCacheValid = true;
-	
+
 	//Clear out all strings inside
 	mCache.clear();
-	
+
 	mCache.push_back(mLocalStr);
 	mCatLocInd = mCache.size()-1;
 
@@ -449,7 +459,7 @@ void	WED_LibraryListAdapter::RebuildCache()
 	{
 		//Goes to the data model and gets all of the root items that are in the library
 		mLibrary->GetResourceChildren("",mCurPakVal,rootItems);
-	
+
 		//For all root items
 		for(vector<string>::iterator s = rootItems.begin(); s != rootItems.end(); ++s)
 		{
@@ -497,7 +507,7 @@ void WED_LibraryListAdapter::SetSel(const string& s,const string& noPrefix)
 			if(mMap)
 				mMap->SetResource(noPrefix, mLibrary->GetResourceType(noPrefix));
 		}
-		
+
 		mSel = s;
 	}
 }
@@ -505,7 +515,7 @@ void WED_LibraryListAdapter::SetSel(const string& s,const string& noPrefix)
 string WED_LibraryListAdapter::GetNthCacheIndex (int index, bool noPrefix)
 {
 	string path = mCache[index];
-	/*mCache by this point will look something like 
+	/*mCache by this point will look something like
 	* index 0
 	* ...
 	* index mCatLibInd
@@ -552,7 +562,7 @@ string WED_LibraryListAdapter::GetNthCacheIndex (int index, bool noPrefix)
 	}
 	else
 	{
-		// This is just to shut the compiler up - 
+		// This is just to shut the compiler up -
 		// mCatLocInd is the LAST item in the array since the cache is
 		// upside down.  So if we fall out here, our index is bad.
 		DebugAssert(!"Out of bounds index.");

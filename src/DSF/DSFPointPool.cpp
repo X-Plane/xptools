@@ -156,13 +156,13 @@ pair<int, int>	DSFSharedPointPool::AcceptContiguous(const DSFTupleVector& inPoin
 pair<int, int>	DSFSharedPointPool::AcceptContiguousPool(int p, SharedSubPool * pool, const DSFTupleVector& inPoints)
 {
 	int n;
-	pair<int,int> retval(p, pool->mPoints.size());
+	pair<int,int> retval(p, (int)pool->mPoints.size());
 	for (n = 0; n < inPoints.size(); ++n)
 	{
 		DSFTuple	pt(inPoints[n]);
 		pt.encode(pool->mOffset,pool->mScale);
 		pool->mPointsIndex.insert(hash_map<DSFTuple, int>::value_type(
-					pt, pool->mPoints.size()));
+					pt, (int)pool->mPoints.size()));
 		pool->mPoints.push_back(pt);
 	}
 	return retval;
@@ -239,7 +239,7 @@ pair<int, int>	DSFSharedPointPool::AcceptShared(const DSFTuple& inPoint)
 		int our_pos = exemplar->mPoints.size();
 		exemplar->mPoints.push_back(point);
 		exemplar->mPointsIndex.insert(hash_map<DSFTuple, int>::value_type(point, our_pos));
-		return pair<int, int>(mPools.size()-1, our_pos);
+		return pair<int, int>((int)mPools.size()-1, our_pos);
 	}
 
 	// We hit this encode failure if we are out of pool bounds.
@@ -546,7 +546,7 @@ int				DSF32BitPointPool::CountShared(const DSFTupleVector& inPoints)
 
 DSFPointPoolLoc	DSF32BitPointPool::AcceptContiguous(const DSFTupleVector& inPoints)
 {
-	DSFPointPoolLoc	result(0, mPoints.size());
+	DSFPointPoolLoc	result(0, (int)mPoints.size());
 	for (int n = 0; n < inPoints.size(); ++n)
 	{
 		DSFTuple	pt(inPoints[n]);
@@ -555,7 +555,7 @@ DSFPointPoolLoc	DSF32BitPointPool::AcceptContiguous(const DSFTupleVector& inPoin
 			return DSFPointPoolLoc(-1, -1);
 		}
 
-		mPointsIndex.insert(hash_map<DSFTuple, int>::value_type(pt, mPoints.size()));
+		mPointsIndex.insert(hash_map<DSFTuple, int>::value_type(pt, (int)mPoints.size()));
 		mPoints.push_back(pt);
 	}
 	return result;
@@ -571,8 +571,8 @@ DSFPointPoolLoc	DSF32BitPointPool::AcceptShared(const DSFTuple& inPoint)
 	if (iter != mPointsIndex.end())
 		return DSFPointPoolLoc(0, iter->second);
 
-	DSFPointPoolLoc	result(0, mPoints.size());
-	mPointsIndex.insert(hash_map<DSFTuple, int>::value_type(pt, mPoints.size()));
+	DSFPointPoolLoc	result(0, (int)mPoints.size());
+	mPointsIndex.insert(hash_map<DSFTuple, int>::value_type(pt, (int)mPoints.size()));
 	mPoints.push_back(pt);
 	return result;
 }
@@ -665,7 +665,7 @@ void DSFOptimizePrimitives(
 			{
 				indices.push_back(vertices.size());
 				vertices.push_back(*v);
-				point_index.insert(idx_t::value_type(*v,vertices.size()-1));
+				point_index.insert(idx_t::value_type(*v,(int)vertices.size()-1));
 			}
 			else
 			{

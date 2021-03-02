@@ -28,6 +28,11 @@
 #if APL
 #include "ObjCUtils.h"
 #endif
+#if LIN
+#include <FL/Fl.H>
+#include <FL/fl_draw.H>
+#include <stdarg.h>
+#endif
 
 class	XGrinderWin;
 
@@ -60,9 +65,10 @@ public:
 	virtual	void			ReceiveFiles(const vector<string>& inFiles, int x, int y) { XGrindFiles(inFiles); }
 	virtual	int				KeyPressed(uint32_t, long, long, long) { return 1; }
 	virtual	int				HandleMenuCmd(xmenu inMenu, int inCommand) { return XGrinderMenuPick(inMenu, inCommand); };
+
 #if LIN
 protected:
-	void paintEvent(QPaintEvent* e);
+	void draw();
 #endif
 };
 
@@ -73,27 +79,38 @@ XGrinderWin::XGrinderWin() : XWin(1, gTitle.c_str(),
 }
 
 #if LIN
-void XGrinderWin::paintEvent(QPaintEvent* e)
+void XGrinderWin::draw()
 {
-	int x = rect().x();
-	int y = rect().y() + this->menuBar()->height();
-	int w = rect().width();
-	int h = rect().height();
+	int		w, h;
+	this->GetBounds(&w, &h);
 
-	QPainter paint(this);
-	paint.drawText(x,y,w,h,Qt::TextWordWrap ,gCurMessage );
-	paint.end();
+	int mh = GetMenuBarHeight();
+	fl_rectf (0,mh,w,h,FL_BACKGROUND2_COLOR);
+
+	fl_color(0);
+	int fh = fl_height() - fl_descent();
+	int y = mh + fh;
+
+	char msg[1024];int n = -1;double width;
+	const char * p = gCurMessage;
+	while ( n != 0)
+    {
+		p = fl_expand_text(p,msg,1024,w,n,width,1,0);
+		fl_draw(msg,0,y);
+		y  += fh;
+	}
+
+	draw_children();
 }
 #endif
 
 void XGrinderWin::Update(XWin::XContext ctx)
 {
+#if LIN
+	this->redraw();
+#else
 	int		w, h;
 	this->GetBounds(&w, &h);
-
-#if LIN
-    this->update(0,0,w,h);
-#endif
 #if APL
 	erase_a_rect(0,0,w,h);
 	draw_text(0,0,w,h,gCurMessage);
@@ -108,6 +125,7 @@ void XGrinderWin::Update(XWin::XContext ctx)
 	if (gCurMessage[0] != 0)
 		TextOut(ctx, 0, 0, gCurMessage, strlen(gCurMessage));
 #endif
+#endif // LIN
 }
 
 void	XGrinder_ShowMessage(const char * fmt, ...)
@@ -130,7 +148,9 @@ void	XGrinder_SetWindowTitle(const char * title)
 
 void	XGrinder_Quit(void)
 {
+#if !LIN
 	exit(0);
+#endif
 }
 
 xmenu	XGrinder_AddMenu(const char * title, const char ** items)
@@ -151,14 +171,16 @@ xmenu	XGrinder_AddMenu(const char * title, const char ** items)
 #if LIN
 int main(int argc, char* argv[])
 {
-	QApplication app(argc, argv);
-
-	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 	gWin = new XGrinderWin();
 	XGrindInit(gTitle);
-	gWin->show();
-	gWin->ForceRefresh();
-	return app.exec();
+	gWin->xclass(gTitle.c_str());
+	gWin->show(argc,argv);
+
+	int res = Fl::run();
+
+    gWin->ClearMenus();
+
+	return res;
 }
 #endif
 

@@ -24,13 +24,15 @@
 #include "WED_OverlayImage.h"
 #include "WED_ToolUtils.h"
 #include "GISUtils.h"
+#include "DEMIO.h"
 
 DEFINE_PERSISTENT(WED_OverlayImage)
 TRIVIAL_COPY(WED_OverlayImage, WED_GISPolygon)
 
 WED_OverlayImage::WED_OverlayImage(WED_Archive * a, int i) : WED_GISPolygon(a,i),
 	mImageFile(this,PROP_Name("File",  XML_Name("overlay_image","file_path")),""),
-	mAlpha    (this,PROP_Name("Alpha", XML_Name("overlay_image","alpha")), 1.0, 3.0, 1.0)
+	mAlpha    (this,PROP_Name("Alpha", XML_Name("overlay_image","alpha")), 1.0, 3.0, 1.0),
+	mGcpSet(false)
 {
 }
 
@@ -48,9 +50,31 @@ double		WED_OverlayImage::GetAlpha(void) const
 	return mAlpha.value;
 }
 
-void		WED_OverlayImage::SetImage(const string& image_file)
+#include "IResolver.h"
+#include "ILibrarian.h"
+#include "WED_Archive.h"
+
+void	WED_OverlayImage::SetImage(const string& image_file)
 {
+	// evict old img from texMgr
 	mImageFile = image_file;
+	mGcp.clear();
+}
+
+const gcp_t * WED_OverlayImage::GetGcpMat(void)
+{
+	if(!mGcp.size())
+	{
+		ILibrarian *   lib = WED_GetLibrarian(GetArchive()->GetResolver());
+		string s(mImageFile.value);
+		lib->LookupPath(s);
+	
+		double dummy[8];
+		int post_pos = dem_want_Area;
+		if(!FetchTIFFCorners(s.c_str(), dummy, post_pos, &mGcp))
+			mGcp.push_back(Point2());   // single point only indicates we tried, but failed
+	}
+	return &mGcp;
 }
 
 void	WED_OverlayImage::GetCorners(GISLayer_t l,Point2 corners[4]) const

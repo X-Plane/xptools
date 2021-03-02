@@ -329,7 +329,7 @@ struct	XPointPool::XPointPoolImp {
 		memcpy(p.xyz, xyz, sizeof(p.xyz));
 		memcpy(p.st, st, sizeof(p.st));
 		pts.push_back(p);
-		index.insert(map<string,int>::value_type(key, pts.size()));
+		index.insert(map<string,int>::value_type(key, (int)pts.size()));
 		pts.push_back(p);
 		return pts.size()-1;
 	}

@@ -91,7 +91,10 @@ static int SB_BuildMetrix(
 	return 1;
 }
 
-GUI_ScrollBar::GUI_ScrollBar()
+GUI_ScrollBar::GUI_ScrollBar() :
+mClickPart(0),
+mInPart(0),
+mSlop(0.0)
 {
 }
 

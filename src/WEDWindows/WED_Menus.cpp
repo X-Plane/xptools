@@ -32,7 +32,7 @@
 static const GUI_MenuItem_t	kAppMenu[] = {
 { "About WED...",		0,	0,	0,	0 },
 { "-",					0,	0,	0,	0 },
-{	NULL,				0,		0,					0,	0					},
+{	NULL,				0,	0,	0,	0 },
 };
 
 
@@ -51,14 +51,14 @@ static const GUI_MenuItem_t	kFileMenu[] = {
 {	"&Import apt.dat...",	'I',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_ImportApt		},
 {	"Import DS&F...",		0,		0,								0,	wed_ImportDSF		},
 #if ROAD_EDITING
-{	"Import Roads",		   0,		0,								0,	wed_ImportRoads		},
+{	"Import Roads + AutoGen ...",0,	0,								0,	wed_ImportRoads		},
 #endif
 {	"Import Ortho&photo...", 0,		0,								0,	wed_ImportOrtho		},
 #if HAS_GATEWAY
 {	"Import from Airport Scenery Gateway...",0,0,				0,	wed_ImportGateway	},
 #endif
 #if GATEWAY_IMPORT_FEATURES
-{	"Import Airport Scenery Gateway Extracts...",0,0,				0,	wed_ImportGatewayExtract },
+{	"Import Scenery Gateway Extracts...",0,0,						0,	wed_ImportGatewayExtract },
 #endif
 {	"-",					0,		0,								0,	0					},
 {	"&Export apt.dat...",	'S',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_ExportApt		},
@@ -110,15 +110,12 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	"Rotate",				'R',	gui_ControlFlag,				0,	wed_Rotate		},
 {	"Cr&op Unselected",		0,		0,								0,	wed_Crop		},
 {	"Con&vert To",			0,		0,								0,	0				},
-//{	"Make Draped Pol&ygons",0,		0,								0,	wed_Overlay		},
-//{	"Make Routing",			0,		0,								0,	wed_MakeRouting },
+{	"Break Apart Agp's",	0,    	0,                              0,  wed_BreakApartAgps },
 {	"-",					0,  	0,								0,	0				},
 {	"Move &First",			'[',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_MoveFirst	},
 {	"&Move Up",				'[',	gui_ControlFlag,				0,	wed_MovePrev	},
 {	"Move Do&wn",			']',	gui_ControlFlag,				0,	wed_MoveNext	},
 {	"Move &Last",			']',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_MoveLast	},
-{	"Explode Special Agps",   0,    0,                              0,  wed_BreakApartSpecialAgps  },
-{	"Replace Vehicle Objects", 0,	0,								0,  wed_ReplaceVehicleObj	},
 {	NULL,					0,		0,								0,	0				},
 };
 
@@ -219,12 +216,13 @@ static const GUI_MenuItem_t kAirportMenu[] = {
 {	"Create Runway Use",		0,		0,										0, wed_AddATCRunwayUse },
 {	"Create Runway Time Rule",	0,		0,										0, wed_AddATCTimeRule },
 {	"Create Runway Wind rule",	0,		0,										0, wed_AddATCWindRule },
-{	"Add &Metadata",			0,		0,										0, 0 },
+{	"Add &Meta Data",			0,		0,										0, 0 },
 {	"Update Metadata",			0,		0,										0, wed_UpdateMetadata},
 {	"No Airport Selected",		'E',	gui_ControlFlag+gui_ShiftFlag,			0, wed_EditApt	},
-{	"-",							0,		0,									0,	0			},
-{	"Upgrade Ramps",				0,		0,									0,	wed_UpgradeRamps},
+{	"-",						0,		0,									0,	0			},
+{	"Upgrade Ramps",			0,		0,									0,	wed_UpgradeRamps},
 {	"Align Airports",			0,		0,									0,	wed_AlignApt},
+{	"Replace Vehicle Objects",	0,		0,								0,  wed_ReplaceVehicleObj	},
 {	NULL,						0,		0,										0, 0,				}
 };
 
@@ -281,7 +279,7 @@ void WED_MakeMenus(GUI_Application * inApp)
 		"&File", kFileMenu, inApp->GetMenuBar(), 0);
 
 	GUI_Menu export_target_menu = inApp->CreateMenu(
-		"Export Target", kExportTargetMenu, file_menu, 9);
+		"Target X-Plane Version", kExportTargetMenu, file_menu, 9);
 
 	GUI_Menu edit_menu = inApp->CreateMenu(
 		"&Edit", kEditMenu, inApp->GetMenuBar(), 0);
@@ -296,7 +294,7 @@ void WED_MakeMenus(GUI_Application * inApp)
 		"&View", kViewMenu, inApp->GetMenuBar(), 0);
 
 	GUI_Menu	pave_menu = inApp->CreateMenu(
-		"Pavement T&ransparency",	kPavementMenu, view_menu, 6);
+		"Pavement Transparenc&y",	kPavementMenu, view_menu, 6);
 
 	GUI_Menu	objd_menu = inApp->CreateMenu(
 		"&Object Density", kObjDensityMenu, view_menu, 7);

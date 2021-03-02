@@ -58,9 +58,6 @@
 // TODO:
 // migrate all old stuff
 // wire dirty to obj persistence
-#if DEV
-#include "PerfUtils.h"
-#endif
 
 #include "WED_Globals.h"
 int gIsFeet;
@@ -74,18 +71,19 @@ static set<WED_Document *> sDocuments;
 static map<string,string>	sGlobalPrefs;
 
 WED_Document::WED_Document(
-								const string& 		package,
-								double				inBounds[4]) :
-//	mProperties(mDB.get()),
+	const string& 		package,
+	double				inBounds[4]) :
+	//	mProperties(mDB.get()),
 	mPackage(package),
 	mFilePath(gPackageMgr->ComputePath(package, "earth.wed")),
-//	mDB(mFilePath.c_str()),
-//	mPackage(inPackage),
+	//	mDB(mFilePath.c_str()),
+	//	mPackage(inPackage),
 #if WITHNWLINK
 	mServer(NULL),
 	mNWLink(NULL),
 	mOnDisk(false),
 #endif
+	mPrefsChanged(false),
 	mUndo(&mArchive, this),
 	mArchive(this)
 {
@@ -180,16 +178,16 @@ void	WED_Document::Save(void)
 	//earth.wed.bak.bak.xml, deleted before the user sees it.
 
 	//All or some of these are used through out
-	
+
 	string xml = mFilePath;
 	xml += ".xml";
-	
-	string bakXML = xml;	
+
+	string bakXML = xml;
 	bakXML = bakXML.insert((bakXML.length()-4),".bak");
 
 	string tempBakBak = bakXML;
 	tempBakBak = tempBakBak.insert((bakXML.length()-4),".bak");
-	
+
 	bool earth_wed_xml = FILE_exists(xml.c_str());
 	bool earth_wed_bak_xml = FILE_exists(bakXML.c_str());
 
@@ -221,20 +219,21 @@ void	WED_Document::Save(void)
 	case both:
 		//next rename the current earth.wed.bak.xml to earth.wed.bak.bak.xml
 		FILE_rename_file(bakXML.c_str(),tempBakBak.c_str());
-		
+
 		//Rename the current earth.wed.xml to earth.wed.bak.xml
 		FILE_rename_file(xml.c_str(),bakXML.c_str());
 		break;
 	}
-	
+
 	//Create an xml file by opening the file located on the hard drive (windows)
-	//open a file for writing creating/nukeing if necissary
+	//open a file for writing creating/nukeing if neccessary
 
 	FILE * xml_file = fopen(xml.c_str(),"w");
 
 	if(xml_file == NULL)
 	{
-		DoUserAlert("Please check file path for errors or missing parts");
+		string msg = "Can not open '" + xml + "' for writing.";
+		DoUserAlert(msg.c_str());
 		return;
 	}
 
@@ -242,27 +241,23 @@ void	WED_Document::Save(void)
 		//If everything else has worked
 	if(ferrorErr == 0)
 	{
-#if DEV
-		StElapsedTime	etime("Save time");
-#endif
 		WriteXML(xml_file);
 	}
 	int fcloseErr = fclose(xml_file);
 	if(ferrorErr != 0 || fcloseErr != 0)
 	{
-		//This is the error handling switch
+		string msg =  "Error while writing '" + xml + "'";
 		switch(stage)
 		{
 			case none:
 				FILE_delete_file(xml.c_str(), false);
-				DoUserAlert("Please check file path for errors or missing parts");
 				break;
 			case nobackup:
 				//Delete's the bad save
 				FILE_delete_file(xml.c_str(), false);
 				//un-renames the old one
 				FILE_rename_file(bakXML.c_str(),xml.c_str());
-				DoUserAlert("Please check file path for errors or missing parts");
+				msg += " or creating backup '" + bakXML;
 				break;
 			case both:
 				//delete incomplete file
@@ -273,16 +268,19 @@ void	WED_Document::Save(void)
 
 				//un-rename earth.wed.bak.bak.xml to earth.wed.bak.xml
 				FILE_rename_file(tempBakBak.c_str(), bakXML.c_str());
-				DoUserAlert("Please check file path for errors or missing parts");
+				msg += " or renaming backups to '" + bakXML + "' or '" + tempBakBak;
 				break;
 		}
-	}	
+		msg += "'.";
+		DoUserAlert(msg.c_str());
+	}
 	else
 	{
 		// This is the save-was-okay case.
 		mOnDisk=true;
+		mPrefsChanged=false;
 	}
-	
+
 	//if the second backup still exists after the error handling
 	if(FILE_exists(tempBakBak.c_str()) == true)
 	{
@@ -304,9 +302,6 @@ void	WED_Document::Revert(void)
 	mUndo.__StartCommand("Revert from Saved.",__FILE__,__LINE__);
 
 	try {
-#if DEV
-		StElapsedTime	etime("Read time");
-#endif
 		WED_XMLReader	reader;
 		reader.PushHandler(this);
 		string fname(mFilePath);
@@ -315,20 +310,25 @@ void	WED_Document::Revert(void)
 
 		// First: try to IO the XML file.
 		bool xml_exists;
+		LOG_MSG("I/Doc reading XML from %s\n", fname.c_str());
+
 		string result = reader.ReadFile(fname.c_str(),&xml_exists);
 
 		if(xml_exists && !result.empty())
+		{
+			LOG_MSG("E/Doc Error reading XML %s",result.c_str());
 			WED_ThrowPrintf("Unable to open XML file: %s",result.c_str());
-
+		}
 		if(xml_exists)
 		{
 			mOnDisk=true;
+			mPrefsChanged = false;
 		}
 		else
 		{
 				/* We have a brand new blank doc.  In WED 1.0, we ran a SQL script that built the core objects,
 				 * then we IO-ed it in.  In WED 1.1 we just build the world and the few named objs immediately. */
-				 
+
 				// BASIC DOCUMENT STRUCTURE:
 				// The first object ever made gets ID 1 and is the "root" - the one known object.  The WED doc goes
 				// to "object 1" to get started.
@@ -370,7 +370,12 @@ void	WED_Document::Revert(void)
 
 bool	WED_Document::IsDirty(void)
 {
-	return mArchive.IsDirty() != 0;
+	return mArchive.IsDirty() != 0 || mPrefsChanged;
+}
+
+void	WED_Document::SetDirty(void)
+{
+	mPrefsChanged = true;
 }
 
 bool	WED_Document::IsOnDisk(void)
@@ -398,7 +403,7 @@ bool	WED_Document::TryClose(void)
 	}
 #endif
 	AsyncDestroy();     // This prevents most class deconstructors from being executed.
-	
+
 	delete this;        // So we do that ... its needed by WED_ResourceMgr
 	return true;
 }
@@ -494,7 +499,13 @@ int			WED_Document::ReadIntPref(const char * in_key, int in_default)
 		i = sGlobalPrefs.find(key);
 		if (i == sGlobalPrefs.end())
 			return in_default;
-		return atoi(i->second.c_str());
+
+		int val = atoi(i->second.c_str());
+		if (strcmp(in_key, "doc/export_target") == 0)        // ignore a few things when creating new, empty docs. Too many users get confused by inheriting "unusual" settings
+			val = wet_latest_xplane;
+		else if (strcmp(in_key, "map/obj_density") == 0)
+			return in_default;
+		return val;
 	}
 	return atoi(i->second.c_str());
 }
@@ -573,7 +584,7 @@ static void PrefCB(const char * key, const char * value, void * ref)
 void	WED_Document::ReadGlobalPrefs(void)
 {
 	GUI_EnumSection("doc_prefs", PrefCB, NULL);
-	
+
 	gIsFeet  = atoi(GUI_GetPrefString("preferences","use_feet","0"));
 	gInfoDMS = atoi(GUI_GetPrefString("preferences","InfoDMS","0"));
 	gCustomSlippyMap = GUI_GetPrefString("preferences","CustomSlippyMap","");
@@ -591,9 +602,11 @@ void	WED_Document::WriteGlobalPrefs(void)
 	string FontSize(to_string(gFontSize));
 	GUI_SetPrefString("preferences","FontSize",FontSize.c_str());
 	GUI_SetPrefString("preferences","OrthoExport",gOrthoExport ? "1" : "0");
-	
+
 	for (map<string,string>::iterator i = sGlobalPrefs.begin(); i != sGlobalPrefs.end(); ++i)
-		GUI_SetPrefString("doc_prefs", i->first.c_str(), i->second.c_str());
+		if(i->first != "doc/xml_compatibility")          // why NOT write that ? Cuz WED 2.0 ... 2.2 read that and if an PRE wed-2.0 document
+			                                             // is opened - it uses this instead, resulting in false warnings
+			GUI_SetPrefString("doc_prefs", i->first.c_str(), i->second.c_str());
 }
 
 void		WED_Document::StartElement(

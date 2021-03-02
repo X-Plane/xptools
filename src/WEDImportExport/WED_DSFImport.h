@@ -40,7 +40,7 @@ int		WED_CanImportRoads(IResolver * resolver);
 void	WED_DoImportRoads(IResolver * resolver);
 
 int 	DSF_Import(const char * file, WED_Thing * base);
-void	WED_ImportText(const char * path, WED_Thing * base);
+int 	WED_ImportText(const char * path, WED_Thing * base);
 
 
 enum dsf_filter_category {
@@ -54,10 +54,11 @@ enum dsf_filter_category {
 	dsf_filter_draped_poly = 128,
 	dsf_filter_roads = 256,
 	dsf_filter_terrain = 512,
-	dsf_filter_all = 1023
+	dsf_filter_autogen = 1024,
+	dsf_filter_all = 2047
 };
 
-int		DSF_Import_Partial(const char * path, WED_Thing * base, int inCatFilter, 
+int		DSF_Import_Partial(const char * path, WED_Thing * base, int inCatFilter,
 							const Bbox2&  cull_bound = Bbox2(-180,-90,180,90),  const vector<string>& inAptFilter = vector<string>());
 
 #endif /* WED_DSFImport_H */
