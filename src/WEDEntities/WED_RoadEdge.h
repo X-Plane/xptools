@@ -44,6 +44,7 @@ public:
 	int				GetSubtype(void) const { return subtype.value; }
 	void			SetSubtype(int s) { subtype = s; }
 	bool			IsValidSubtype(void) const;
+	bool			HasWires(void) const;
 	double 			GetWidth(void) const;
 
 	void			GetResource(string& r) const override { r = resource.value; }

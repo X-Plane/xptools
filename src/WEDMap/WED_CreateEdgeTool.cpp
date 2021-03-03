@@ -171,9 +171,9 @@ void		WED_CreateEdgeTool::AcceptPath(
 	// For each node we want to add, we are going to find a nearby existing node - and if we find one, we
 	// lock our location to theirs.  This "direct hit" will get consoldiated during create.  (By moving our
 	// path first, we don't get false intersections when the user meant to hit end to end.)
-	
+
 	// limited to things inside the same group !!!
-	
+
 	for(int p = 0; p < pts.size(); ++p)
 	{
 		double	dist=frame_dist*frame_dist;
@@ -221,11 +221,11 @@ void		WED_CreateEdgeTool::AcceptPath(
 	Bbox2 tool_created_bounds;
 	double	dist=frame_dist*frame_dist;
 	WED_Thing * src = NULL, * dst = NULL;
-	
+
 	if(mType == create_TaxiRoute)
 	{
 		WED_TaxiRoute *	new_edge = NULL;
-		
+
 		FindNear(host_for_merging, NULL, edge_class,pts[0],src,dist);
 		if(src == NULL)
 		{
@@ -293,13 +293,13 @@ void		WED_CreateEdgeTool::AcceptPath(
 	else // mType == create_Road
 	{
 		WED_RoadEdge * new_edge = NULL;
-		
+
 		bool start_edge = true;
 		bool start_edge_next = false;
 
 		int sp = 0;
 		int stop = pts.size(); // closed ? pts.size() : pts.size()-1;
-		
+
 		for(int p = 0; p < stop; p++)
 		{
 			dst = nullptr;
@@ -326,11 +326,11 @@ void		WED_CreateEdgeTool::AcceptPath(
 			}
 			else
 				start_edge_next = p != 0;
-			
+
 			if((start_edge && p > 0) || p == stop-1)
 			{
 				new_edge->AddSource(dst,1);
-				new_edge->SetSideBezier(gis_Geo,Bezier2(in_pts[sp], 
+				new_edge->SetSideBezier(gis_Geo,Bezier2(in_pts[sp],
 														has_dirs[sp]   ? dirs_hi[sp]   : in_pts[sp],
 														has_dirs[p] ? dirs_lo[p] : in_pts[p],
 														in_pts[p]),  -1);
@@ -342,7 +342,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 				tool_created_bounds += new_edge_bounds;
 				sel->Insert(new_edge);
 			}
-				
+
 			if(start_edge)
 			{
 	printf("Start Edge\n");
@@ -355,7 +355,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 				new_edge->AddSource(dst,0);
 				if(start_edge) sp = p;
 			}
-			
+
 			if(start_edge || p == stop-1)
 				dst->SetParent(host_for_parent,idx);
 			else
@@ -365,11 +365,24 @@ void		WED_CreateEdgeTool::AcceptPath(
 	printf("next interation with start = %d\n",start_edge);
 		}
 	}
-	
+
 	//Collect edges in the current airport
 	vector<WED_GISEdge*> all_edges;
 	CollectRecursive(host_for_parent, back_inserter(all_edges), edge_class);
-	
+
+	//Filter out powerlines
+	auto e = all_edges.begin();
+	while(e != all_edges.end())
+	{
+		if(auto r = dynamic_cast<WED_RoadEdge *>(*e))
+			if(r->HasWires())
+			{
+				e = all_edges.erase(e);
+				continue;
+			}
+		++e;
+	}
+
 	//filter them for just the crossing ones
 	set<WED_GISEdge*> crossing_edges = WED_do_select_crossing(all_edges, tool_created_bounds);
 
@@ -377,7 +390,9 @@ void		WED_CreateEdgeTool::AcceptPath(
 	vector<split_edge_info_t> edges_to_split;
 
 	for(set<WED_GISEdge*>::iterator e = crossing_edges.begin(); e != crossing_edges.end(); ++e)
+	{
 		edges_to_split.push_back(cast_WED_GISEdge_to_split_edge_info_t(*e, find(tool_created_edges.begin(), tool_created_edges.end(), *e) != tool_created_edges.end()));
+	}
 
 	edge_to_child_edges_map_t new_pieces = run_split_on_edges(edges_to_split);
 

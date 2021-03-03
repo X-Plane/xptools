@@ -201,6 +201,21 @@ bool	WED_RoadEdge::IsValidSubtype(void) const
 	return false;
 }
 
+bool	WED_RoadEdge::HasWires(void) const
+{
+	if(auto inf = get_valid_road_info())
+	{
+		auto vi = inf->vroad_types.find(subtype.value);
+		if(vi != inf->vroad_types.end())
+		{
+			auto ri = inf->road_types.find(vi->second.rd_type);
+			if( ri != inf->road_types.end() && ri->second.wires.size() > 0)
+				return true;
+		}
+	}
+	return false;
+}
+
 const road_info_t * WED_RoadEdge::get_valid_road_info() const
 {
 #if WED
