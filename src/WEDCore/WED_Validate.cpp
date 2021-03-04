@@ -2206,7 +2206,7 @@ static void ValidateRoads(const vector<WED_RoadEdge *> roads, validation_error_v
 		{
 			string res;
 			r->GetResource(res);
-			if(res != "lib/g10/roads" && res != "lib/g10/roads_EU.net")
+			if(res != "lib/g10/roads.net" && res != "lib/g10/roads_EU.net")
 				msgs.push_back(validation_error_t("Only roads from lib/g10/roads.net or lib/g10/roads_EU.net are allowed on the gateway", err_net_resource, r, apt));
 		}
 	}
@@ -2396,7 +2396,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	if(!CheckDuplicateNames(runway_or_sealane,msgs,apt,"A runway or sealane name is used more than once."))
 	{
 	   // there checks in these that create utterly misleading results if runway names are ambigeous
-		WED_DoATCRunwayChecks(*apt, msgs, taxiroutes, runways, legal_rwy_oneway, legal_rwy_twoway, flows, res_mgr, ramps);
+		WED_DoATCRunwayChecks(*apt, msgs, taxiroutes, runways, legal_rwy_oneway, legal_rwy_twoway, flows, res_mgr, ramps, roads);
 		ValidateATCFlows(flows, freqs, apt, msgs, legal_rwy_oneway);
 	}
 
