@@ -25,6 +25,7 @@ WED 2.4.0
    - fix preview for .lin commands with offset layers in preview pane
    - fix endcap not showing for lines with two vertices only
    - refine tesselation to show fill for polygons with colocated nodes
+   - XSG-11489: Fix gateway flags for airports with odd ATC taxi/ground_service routes
    Features:
    - show gridded preview for library vdirectories
    - support choosing taxiway equivalent styles for draped polygons

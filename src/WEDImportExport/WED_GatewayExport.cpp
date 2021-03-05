@@ -131,76 +131,29 @@ static bool has_any_of_class(WED_Thing * who, const char ** classes)
 	return false;
 }
 
-static void count_all_of_classes_recursive(const WED_Thing * who, hash_map<const char*, vector<const WED_Thing*> >& classes, int& total)
-{
-	for (auto& c : classes)
-	{
-		if (who->GetClass() == c.first)
-		{
-			c.second.push_back(who);
-			++total;
-		}
-	}
-
-	int n, nn = who->CountChildren();
-	for (n = 0; n < nn; ++n)
-	{
-		count_all_of_classes_recursive(who->GetNthChild(n), classes, total);
-	}
-}
-
-static int count_all_of_classes(const WED_Thing * who, hash_map<const char *, vector<const WED_Thing*> >& classes)
-{
-	int total = 0;
-	count_all_of_classes_recursive(who, classes, total);
-	return total;
-}
 
 // ATC classes - the entire flow hierarchy sits below WED_ATCFlow, so we only need that.
 // Nodes are auxilary to WED_TaxiRoute, so the taxi route covers all edges.
 const char * k_atc_flow_class[] = { WED_ATCFlow::sClass, 0 };
-const char * k_atc_taxi_route_class[] = { WED_TaxiRoute::sClass, 0 };
-
-const char * k_atc_ground_route_class[] = { WED_TaxiRoute::sClass, //of type Ground Vehicles
-											WED_TruckDestination::sClass,
-											WED_TruckParkingLocation::sClass, 0 };
-
-// In apt.dat, taxi route lines are 1200 through 1204
-static bool has_atc_taxi_route(WED_Airport * who) { return has_any_of_class(who, k_atc_taxi_route_class); }
 
 // In apt.dat, flow lines are 1100 and 1101
 static bool has_atc_flow(WED_Airport * who) { return has_any_of_class(who, k_atc_flow_class); }
 
-static bool is_of_type_ground_vehicles(WED_Thing* route)
+enum route_types {
+	aircraft_route,
+	truck_route,
+	};
+
+static bool has_routes(WED_Airport* who, route_types type)
 {
-	return static_cast<WED_TaxiRoute*>(route)->AllowTrucks();
-}
+	vector<WED_TaxiRoute*> routes;
 
-static bool has_atc_ground_routes(WED_Airport* who)
-{
-	hash_map<const char*, vector<const WED_Thing*> > classes;
-	classes.insert(make_pair(k_atc_ground_route_class[0], vector<const WED_Thing*>()));
-	classes.insert(make_pair(k_atc_ground_route_class[1], vector<const WED_Thing*>()));
-	classes.insert(make_pair(k_atc_ground_route_class[2], vector<const WED_Thing*>()));
-
-	int total_found = count_all_of_classes(who, classes);
-
-	if (total_found == 0)
-	{
-		return false;
-	}
-	//If we have a situation where we only have taxiroutes to tell us if we have ground vehicles, we must test them
-	else if(classes[WED_TaxiRoute::sClass].size() > 0 && classes[WED_TruckParkingLocation::sClass].size() == 0 && classes[WED_TruckDestination::sClass].size() == 0)
-	{
-		vector<WED_TaxiRoute*> routes;
-		CollectRecursive(who, back_inserter(routes), ThingNotHidden, is_of_type_ground_vehicles, WED_TaxiRoute::sClass);
-
-		return routes.empty() == true ? false : true;
-	}
+	if(type == truck_route)
+		CollectRecursive(who, back_inserter(routes), ThingNotHidden, [](WED_Thing* route)->bool { return static_cast<WED_TaxiRoute*>(route)->AllowTrucks(); }, WED_TaxiRoute::sClass);
 	else
-	{
-		return true;
-	}
+		CollectRecursive(who, back_inserter(routes), ThingNotHidden, [](WED_Thing* route)->bool { return static_cast<WED_TaxiRoute*>(route)->AllowAircraft(); }, WED_TaxiRoute::sClass);
+
+	return routes.size() > 0;
 }
 
 // We are intentionally IGNORING lin/pol/str and exclusion zones...this is 3-d in the 'user' sense
@@ -654,7 +607,7 @@ void WED_GatewayExportDialog::Submit()
 		scenery["aptName"] = apt_name;
 		scenery["artistComments"] = comment;
 		scenery["clientVersion"] = WED_VERSION_NUMERIC;
-        
+
         Bbox2 apt_bounds;
         apt->GetBounds(gis_Geo, apt_bounds);
         const Point2 apt_centroid = apt_bounds.centroid();
@@ -665,9 +618,9 @@ void WED_GatewayExportDialog::Submit()
 		string features;
 		if(has_atc_flow(apt))
 			features += "," + to_string(ATC_FLOW_TAG);
-		if(has_atc_taxi_route(apt))
+		if(has_routes(apt, aircraft_route))
 			features += "," + to_string(ATC_TAXI_ROUTE_TAG);
-		if (has_atc_ground_routes(apt))
+		if (has_routes(apt, truck_route))
 			features += "," + to_string(ATC_GROUND_ROUTES_TAG);
 
 		if(!features.empty())                        // remove leading ","
@@ -676,7 +629,6 @@ void WED_GatewayExportDialog::Submit()
 		scenery["features"] = features;
 		scenery["validatedAgainst"] = gPackageMgr->GetXPversion();
 		scenery["icao"] = icao;
-		scenery["masterZipBlob"] = uu64;
 
 		if(parid.empty())
 		{
@@ -686,9 +638,12 @@ void WED_GatewayExportDialog::Submit()
 		{
 			scenery["parentId"] = parid;
 		}
-
-		scenery["password"] = pwd;
 		scenery["type"] = GatewayExport_has_3d(apt) ? "3D" : "2D";
+
+		LOG_MSG("I/GWExp\n %s", scenery.toStyledString().c_str());
+
+		scenery["masterZipBlob"] = uu64;
+		scenery["password"] = pwd;
 		scenery["userId"] = uname;
 
 		Json::Value req;
@@ -696,7 +651,7 @@ void WED_GatewayExportDialog::Submit()
 
 		string reqstr=req.toStyledString();
 
-		printf("%s\n",reqstr.c_str());
+//		printf("%s\n",reqstr.c_str());
 
 		#if BULK_SPLAT_IO || SPLAT_CURL_IO
 			// This code exists to service the initial upload of the gateway...
@@ -809,11 +764,13 @@ void WED_GatewayExportDialog::TimerFired()
 
 			if(!good_msg.empty())
 			{
+				LOG_MSG("I/GWExp %s", good_msg.c_str());
 				this->Reset("Learn More", "OK","", true);
 				this->AddLabel(good_msg);
 			}
 			else
 			{
+				LOG_MSG("E/GWExp %s", bad_msg.c_str());
 				this->Reset("", "","Cancel", true);
 				this->AddLabel(bad_msg);
 			}
@@ -888,7 +845,7 @@ bool EnforceRecursive_MetaDataGuiLabel(WED_Thing * thing)
 const string WED_get_GW_api_url()
 {
 	string url(gApplication->args.get_value("--gateway_api_url"));
-	if(url.empty())	
+	if(url.empty())
 		url = WED_URL_GATEWAY "apiv1/";
 	return url;
 }

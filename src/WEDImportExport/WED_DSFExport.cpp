@@ -1667,8 +1667,6 @@ static int	DSF_ExportTileRecursive(
 			bool bez = WED_HasBezierPol(ags);
 			int n_spawning = 1;
 
-			vector<Polygon2> 	pol_area;
-			vector<vector<Polygon2> >	pol_cuts;
 
 			// start at contour 1, keep going until not spawning
 			// write as first polygon all these, including the first not spawning point.
@@ -1676,86 +1674,83 @@ static int	DSF_ExportTileRecursive(
 			// then take last point again, keep going until spwning flips etc
 			// add do spawn/nonspawn as needed
 
-			vector<Polygon2>			pol_nonspawning;
-			IGISPointSequence * ips = ags->GetOuterRing();
-			int n_ips = ips->GetNumPoints();
-			bool last_pt_spawn = true;
-			pol_area.push_back(Polygon2());
-			Point2 pt, param;
+			vector<Polygon2p>			pol_area_raw;
+			Assert(WED_PolygonWithHolesForPolygon(ags,pol_area_raw));
 
-			for(int n = 0; n < n_ips; n++)
-			{
-				ips->GetNthPoint(n)->GetLocation(gis_Geo, pt);
-
-				if(last_pt_spawn)
-					pol_area.back().push_back(pt);
-				else
-					pol_nonspawning.back().push_back(pt);
-
-				ips->GetNthPoint(n)->GetLocation(gis_Param, param);
-				if(param.x() != last_pt_spawn)
-				{
-					if(last_pt_spawn)
-					{
-						pol_nonspawning.push_back(Polygon2());
-						pol_nonspawning.back().push_back(pt);
-						last_pt_spawn = false;
-					}
-					else
-					{
-						pol_area.push_back(Polygon2());
-						pol_area.back().push_back(pt);
-						last_pt_spawn = true;
-						n_spawning++;
-					}
-				}
-			}
-			// all winding together must form a closed closed pol, first point is also last point in last contour
-			ips->GetNthPoint(0)->GetLocation(gis_Geo, pt);
-			if(last_pt_spawn)
-				pol_area.back().push_back(pt);
-			else
-				pol_nonspawning.back().push_back(pt);
-
-			// append non-spawning vectors at the very end
-			for(auto ns : pol_nonspawning)
-				pol_area.push_back(ns);
-
-			// assume all other contours are holes, so add these at the end
-			int n_holes = ags->GetNumHoles();
-			for(int n = 0; n < n_holes; n++)
-			{
-				pol_area.push_back(Polygon2());
-				if (!WED_PolygonForPointSequence(ags->GetNthHole(n), pol_area.back(), CLOCKWISE))
-					return false;
-			}
-
-			++real_thingies;
-			int para = intlim(intround(ags->GetHeight() * 0.25), 0, 255) << 8;
-			if(ags->IsAGBlock())
-				para += intlim(ags->GetSpelling(), 0, 255);
-			else
-				para += intlim(n_spawning, 0, 255);
-			cbs->BeginPolygon_f(idx, para, 2, writer);
-			DSF_AccumPolygonWithHoles(pol_area, safe_bounds, cbs, writer);
-			cbs->EndPolygon_f(writer);
-
-/*              Do we want to allow strings to cross tile boundaries ???
-
-			if(!clip_polygon(pol_area,pol_cuts,cull_bounds))
+			vector<vector<Polygon2p> >	pol_cuts;
+			if(!clip_polygon(pol_area_raw, pol_cuts, cull_bounds))
 			{
 				problem_children.insert(what);
 				pol_cuts.clear();
-
 			}
-			for(vector<vector<Polygon2> >::iterator i = pol_cuts.begin(); i != pol_cuts.end(); ++i)
+
+			for(auto cuts : pol_cuts)
 			{
+				bool last_pt_spawn = true;
+				vector<Polygon2> 	pol_area;
+				vector<Polygon2>	pol_nonspawning;
+				pol_area.push_back(Polygon2());
+
+				for(auto p2p : cuts.front())
+				{
+					if(last_pt_spawn)
+						pol_area.back().push_back(p2p.p1);
+					else
+						pol_nonspawning.back().push_back(p2p.p1);
+
+					if(p2p.param) 	// segments created during clipping coincide exactly with clipping box bounds, must be non-spawning
+					{
+						if( (p2p.p1.x() == p2p.p2.x() && (p2p.p1.x() == cull_bounds.xmin() || p2p.p1.x() == cull_bounds.xmax())) ||
+							(p2p.p1.y() == p2p.p2.y() && (p2p.p1.y() == cull_bounds.ymin() || p2p.p1.y() == cull_bounds.ymax())) )
+								p2p.param = false;
+					}
+
+					if(p2p.param != last_pt_spawn)
+					{
+						if(last_pt_spawn)
+						{
+							pol_nonspawning.push_back(Polygon2());
+							pol_nonspawning.back().push_back(p2p.p1);
+							last_pt_spawn = false;
+						}
+						else
+						{
+							pol_area.push_back(Polygon2());
+							pol_area.back().push_back(p2p.p1);
+							last_pt_spawn = true;
+							n_spawning++;
+						}
+					}
+				}
+				if(last_pt_spawn)
+					pol_area.back().push_back(cuts.front().front().p1);
+				else
+					pol_nonspawning.back().push_back(cuts.front().front().p1);
+
+				// append non-spawning vectors at the end
+				for(auto ns : pol_nonspawning)
+					pol_area.push_back(ns);
+
+				// all other contours are holes, so add append at end
+				auto h2p = cuts.begin();
+				for(++h2p; h2p != cuts.end(); ++h2p)
+				{
+					pol_area.push_back(Polygon2());
+					for(auto p2p : *h2p)
+						pol_area.back().push_back(p2p.p1);
+				}
+
 				++real_thingies;
-				cbs->BeginPolygon_f(idx,pol->GetHeading(),bez ? 4 : 2,writer);
-				DSF_AccumPolygonWithHoles(*i, safe_bounds, cbs, writer);
+				int para = intlim(intround(ags->GetHeight() * 0.25), 0, 255) << 8;
+				if(ags->IsAGBlock())
+					para += intlim(ags->GetSpelling(), 0, 255);
+				else
+					para += intlim(n_spawning, 0, 255);
+				cbs->BeginPolygon_f(idx, para, 2, writer);
+				DSF_AccumPolygonWithHoles(pol_area, safe_bounds, cbs, writer);
 				cbs->EndPolygon_f(writer);
 			}
-*/
+
 			return real_thingies;
 		}
 
