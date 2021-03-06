@@ -38,6 +38,8 @@
 
 #include "WED_GroupCommands.h"
 
+#define DEBUG_CREATE_ROADS 0
+
 static const char * kCreateCmds[] = { "Taxiway Route Line", "Road" };
 static const int kIsAirport[] = { 1, 0 };
 
@@ -173,7 +175,6 @@ void		WED_CreateEdgeTool::AcceptPath(
 	// path first, we don't get false intersections when the user meant to hit end to end.)
 
 	// limited to things inside the same group !!!
-
 	for(int p = 0; p < pts.size(); ++p)
 	{
 		double	dist=frame_dist*frame_dist;
@@ -313,8 +314,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 					dst->SetName(mName.value + "_start");
 					static_cast<WED_GISPoint *>(dst)->SetLocation(gis_Geo,pts[p]);
 				}
-				else
-				{
+				else				{
 					dst = WED_SimpleBezierBoundaryNode::CreateTyped(GetArchive());
 					dst->SetName("Shape Point");
 					auto wbp = static_cast<WED_GISPoint_Bezier *>(dst);
@@ -324,16 +324,34 @@ void		WED_CreateEdgeTool::AcceptPath(
 				}
 				start_edge_next = false;
 			}
-			else
+			else // dst node hit , but it could be a shape node , must converted and dst edge splitted
+			{
+				if(dst->GetClass() != WED_RoadNode::sClass)
+				{
+					if(dst->GetClass() == WED_SimpleBezierBoundaryNode::sClass)
+					{
+						auto wbp = static_cast<WED_GISPoint_Bezier *>(dst);
+						wbp->GetLocation(gis_Geo,pts[p]);
+						//TODO:mroe: make this more safe
+						WED_GISEdge * dst_edge = dynamic_cast<WED_GISEdge *>(dst->GetParent());
+						if(dst_edge != nullptr)
+						{
+							WED_Thing * dst_np = dynamic_cast<WED_Thing *>(dst_edge->SplitEdge(Point2(pts[p]),0.0));
+							if(dst_np) dst = dst_np;
+						}
+					}
+				}
+
 				start_edge_next = p != 0;
+			}
 
 			if((start_edge && p > 0) || p == stop-1)
 			{
 				new_edge->AddSource(dst,1);
 				new_edge->SetSideBezier(gis_Geo,Bezier2(in_pts[sp],
 														has_dirs[sp]   ? dirs_hi[sp]   : in_pts[sp],
-														has_dirs[p] ? dirs_lo[p] : in_pts[p],
-														in_pts[p]),  -1);
+														has_dirs[p] ? dirs_lo[p] : pts[p],
+														pts[p]),  -1);
 				// Do this last - half-built edge inserted the world destabilizes accessors.
 				new_edge->SetParent(host_for_parent,idx);
 				tool_created_edges.push_back(new_edge);
@@ -345,7 +363,9 @@ void		WED_CreateEdgeTool::AcceptPath(
 
 			if(start_edge)
 			{
-	printf("Start Edge\n");
+				#if DEV && DEBUG_CREATE_ROADS
+				printf("Start Edge\n");
+				#endif
 				new_edge = WED_RoadEdge::CreateTyped(GetArchive());
 				new_edge->SetSubtype(mSubtype.value);
 				new_edge->SetStartLayer(mLayer.value);
@@ -362,7 +382,9 @@ void		WED_CreateEdgeTool::AcceptPath(
 				dst->SetParent(new_edge,new_edge->CountChildren());
 
 			start_edge = start_edge_next;
-	printf("next interation with start = %d\n",start_edge);
+			#if DEV && DEBUG_CREATE_ROADS
+			printf("next interation with start = %d\n",start_edge);
+			#endif
 		}
 	}
 
@@ -459,7 +481,9 @@ void WED_CreateEdgeTool::FindNear(WED_Thing * host, IGISEntity * ent, const char
 			if(filter == NULL || filter == t->GetClass())
 			if((ps = dynamic_cast<IGISPointSequence*>(e)) != NULL)
 			{
-	printf("FindNear NumPts = %d\n", ps->GetNumPoints());
+				#if DEV && DEBUG_CREATE_ROADS
+				printf("FindNear NumPts = %d\n", ps->GetNumPoints());
+				#endif
 				for(int n = 0; n < ps->GetNumPoints(); ++n)
 				{
 					p = ps->GetNthPoint(n);

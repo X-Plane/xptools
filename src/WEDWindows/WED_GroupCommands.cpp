@@ -89,6 +89,8 @@
 
 #define DOUBLE_PT_DIST (1.0 * MTR_TO_DEG_LAT)
 
+#define DEBUG_EDGE_CROSSING 0
+
 namespace std
 {
 	template <> struct less<Point2>
@@ -1194,8 +1196,9 @@ set<WED_GISEdge *> WED_do_select_crossing(WED_Thing * t)
 
 set<WED_GISEdge *> WED_do_select_crossing(const vector<WED_GISEdge *>& edges , Bbox2& cull_bounds)
 {
+	#if DEV && DEBUG_EDGE_CROSSING
 	printf("select crossing on %ld edges\n",edges.size());
-
+	#endif
 	set<WED_GISEdge*> crossed_edges;
 	Bbox2 edge_bounds;
 	// Ben says: yes this totally sucks - replace it someday?
@@ -1207,7 +1210,9 @@ set<WED_GISEdge *> WED_do_select_crossing(const vector<WED_GISEdge *>& edges , B
 		ii->GetBounds(gis_Geo,edge_bounds);
 		if(!cull_bounds.is_empty() && !cull_bounds.overlap(edge_bounds))
 		{
-	printf("edge %d outside cull_bounds\n",i);
+			#if DEV && DEBUG_EDGE_CROSSING
+			printf("edge %d outside cull_bounds\n",i);
+			#endif
 			continue;
 		}
 
@@ -1222,14 +1227,16 @@ set<WED_GISEdge *> WED_do_select_crossing(const vector<WED_GISEdge *>& edges , B
 			jj->GetBounds(gis_Geo,edge_bounds);
 			if(!cull_bounds.is_empty() && !cull_bounds.overlap(edge_bounds))
 			{
-	printf("edges %d %d bounds dont overlap\n",i,j);
+				#if DEV && DEBUG_EDGE_CROSSING
+				printf("edges %d %d bounds dont overlap\n",i,j);
+				#endif
 				continue;
 			}
 
 			if(ii->GetGISSubtype() != jj->GetGISSubtype()) continue;
-
-	printf("edges %d %d bounds do overlap !!\n",i,j);
-
+			#if DEV && DEBUG_EDGE_CROSSING
+			printf("edges %d %d bounds do overlap !!\n",i,j);
+			#endif
 			for(int si = 0; si < ii->GetNumSides(); si++)
 				for(int sj = 0; sj < jj->GetNumSides(); sj++)
 				{
