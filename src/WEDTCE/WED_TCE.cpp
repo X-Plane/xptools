@@ -112,10 +112,10 @@ void		WED_TCE::Draw(GUI_GraphState * state)
 			glBegin(GL_QUADS);
 			float minv = mWrap ? -32 :  0;
 			float maxv = mWrap ?  32 :  1;
-			glTexCoord2f(minv,minv); glVertex2f(z->LonToXPixel(minv),z->LatToYPixel(minv));
-			glTexCoord2f(minv,maxv); glVertex2f(z->LonToXPixel(minv),z->LatToYPixel(maxv));
-			glTexCoord2f(maxv,maxv); glVertex2f(z->LonToXPixel(maxv),z->LatToYPixel(maxv));
-			glTexCoord2f(maxv,minv); glVertex2f(z->LonToXPixel(maxv),z->LatToYPixel(minv));
+			glTexCoord2f(minv,minv); glVertex2(z->LLToPixel(Point2(minv, minv)));
+			glTexCoord2f(minv,maxv); glVertex2(z->LLToPixel(Point2(minv, maxv)));
+			glTexCoord2f(maxv,maxv); glVertex2(z->LLToPixel(Point2(maxv, maxv)));
+			glTexCoord2f(maxv,minv); glVertex2(z->LLToPixel(Point2(maxv, minv)));
 			glEnd();
 			state->SetState(false,0,false,true,true,false,false);
 			glColor4f(1,1,1,0.5);
@@ -291,7 +291,7 @@ void WED_TCE::CalcBgknd(void)
 
 		ITexMgr *	tman = WED_GetTexMgr(mResolver);
 		WED_ResourceMgr * rmgr = WED_GetResourceMgr(mResolver);
-		
+
 	Bbox2		needed_area;
 
 	for(vector<IGISEntity*>::iterator e = possibles.begin(); e != possibles.end(); ++e)

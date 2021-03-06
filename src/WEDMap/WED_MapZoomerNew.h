@@ -56,8 +56,8 @@ public:
 	// This API is called by just about anything that needs to do coordinate
 	// conversion.
 
-			double	XPixelToLon(double) const;
-			double	YPixelToLat(double) const;
+			double	XPixelToLon(double) const;  // Warning: With Map projection - these fonversions only work for points near the center of the map.
+			double	YPixelToLat(double) const;  // Use PixelToLL / LLToPixel whenever possible, as only these include GeographicProjection
 			double	LonToXPixel(double) const;
 			double	LatToYPixel(double) const;
 
@@ -147,6 +147,7 @@ protected:
 private:
 
 			void	RecalcAspectRatio(void);
+			double	wagner_proj_mult(double lat) const;
 
 	double	mPixels[4];
 	double	mLogicalBounds[4];

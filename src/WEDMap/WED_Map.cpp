@@ -41,12 +41,12 @@
 #include <time.h>
 
 // This is the size that a GIS composite must be to cause us to skip iterating down into it, in pixels.
-// The idea is that when we are zoomed way out and we have a bunch of global airports, we don't want to 
-// iterate into each airport just to realize that all details are too small to draw.  
+// The idea is that when we are zoomed way out and we have a bunch of global airports, we don't want to
+// iterate into each airport just to realize that all details are too small to draw.
 //
-// So we measure the container to make a judgment.  
+// So we measure the container to make a judgment.
 //
-// Because we have to add the object hang-over slop to our cull decision, the size of cull in screen space 
+// Because we have to add the object hang-over slop to our cull decision, the size of cull in screen space
 // is surprisingly big.  In other words, we might pick 20 pixels as the cutoff because we have 1 pixel of
 // airport and 19 pixels of slop.
 #define TOO_SMALL_TO_GO_IN 20.0
@@ -66,7 +66,7 @@ WED_Map::WED_Map(IResolver * in_resolver, GUI_Commander * cmdr) : GUI_Commander(
 {
 		int k_reg[4] = { 0, 0, 4, 2 };
 		int k_act[4] = { 0, 0, 4, 2 };
-		
+
 		int b[4]; GetBounds(b);  // No good, bounds not established at this point
 
 #define TB_X b[2]-77
@@ -79,7 +79,7 @@ WED_Map::WED_Map(IResolver * in_resolver, GUI_Commander * cmdr) : GUI_Commander(
 				k_reg[1] = y;
 				k_act[0] = k_reg[0] + 2;
 				k_act[1] = k_reg[1];
-				
+
 				mTiltButton[x+2*y] = new GUI_Button("tilt_tool.png", btn_RadioChk, k_reg, k_reg, k_act, k_act);
 				mTiltButton[x+2*y]->SetBounds(TB_X + TB_SIZE * (y+x),   TB_Y + TB_SIZE * (x==y ? 1 : 2*y  ),
 				                              TB_X + TB_SIZE * (y+x+1), TB_Y + TB_SIZE * (x==y ? 2 : 2*y+1) );
@@ -141,10 +141,10 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	int b[4];
 	GetBounds(b);
 	GetMapVisibleBounds(b_geo.p1.x_,b_geo.p1.y_,b_geo.p2.x_,b_geo.p2.y_);
-	
+
 	ISelection * sel = GetSel();
 	IGISEntity * base = GetGISBase();
-	
+
 	float xTilt = 0.6 * (mTiltButton[3]->GetValue() - mTiltButton[0]->GetValue());
 	float yTilt = 0.6 * (mTiltButton[2]->GetValue() - mTiltButton[1]->GetValue());
 
@@ -154,7 +154,7 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	{
 		(*l)->GetCaps(draw_ent_v, draw_ent_s, wants_sel, wants_clicks);
 		if (base && draw_ent_v) DrawVisFor(*l, cur == *l, b_geo, base, state, wants_sel ? sel : NULL, 0);
-		
+
 		if(draw_ent_v && (xTilt != 0.0 || yTilt != 0.0))
 		{
 			glMatrixMode(GL_PROJECTION);
@@ -170,9 +170,9 @@ void		WED_Map::Draw(GUI_GraphState * state)
 			glMultMatrixf(m);
 			glMatrixMode(GL_MODELVIEW);
 		}
-		
+
 		(*l)->DrawVisualization(cur == *l, state);
-		
+
 		if(draw_ent_v && (xTilt != 0.0 || yTilt != 0.0))
 		{
 			glMatrixMode(GL_PROJECTION);
@@ -180,7 +180,7 @@ void		WED_Map::Draw(GUI_GraphState * state)
 			glMatrixMode(GL_MODELVIEW);
 		}
 	}
-	
+
 	for (l = mLayers.begin(); l != mLayers.end(); ++l)
 	if((*l)->IsVisible())
 	{
@@ -188,7 +188,7 @@ void		WED_Map::Draw(GUI_GraphState * state)
 		if (base && draw_ent_s) DrawStrFor(*l, cur == *l, b_geo, base, state, wants_sel ? sel : NULL, 0);
 		(*l)->DrawStructure(cur == *l, state);
 	}
-	
+
 	for (l = mLayers.begin(); l != mLayers.end(); ++l)
 	if((*l)->IsVisible())
 	{
@@ -224,7 +224,7 @@ void		WED_Map::Draw(GUI_GraphState * state)
 		}
 		GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[3] - 3.0*textH, n.c_str());
 	}
-	
+
 	if(!mFilterName.empty())
 		GUI_FontDraw(state, font_UI_Basic, white, b[0]+5, b[3] - 2.0*textH, mFilterName.c_str());
 
@@ -250,10 +250,8 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	if (!has_a1 && !has_a2 && !has_d && !has_h)
 	{
 		Point2 o,n;
-		o.x_ = XPixelToLon(mX_Orig);
-		o.y_ = YPixelToLat(mY_Orig);
-		n.x_ = XPixelToLon(x);
-		n.y_ = YPixelToLat(y);
+		o = PixelToLL(Point2(mX_Orig, mY_Orig));
+		n = PixelToLL(Point2(x,y));
 
 		if (mIsDownExtraCount)
 		{
@@ -295,9 +293,9 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	if (has_h)				p += sprintf(p," heading: %.1lf", head);
 
 	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + textH + 5, mouse_loc);
-	
+
 	p = mouse_loc;
-	
+
 #if SHOW_FPS
 	#ifndef GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX
 	#define GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX 0x9049
@@ -335,11 +333,11 @@ void		WED_Map::Draw(GUI_GraphState * state)
 
 	// draw a bar of suitable length to indicate current map scale
 	#define MIN_BAR_LEN  100    // minimum length of bar in pixels
-	
+
 	float scale = MIN_BAR_LEN * (gIsFeet ? MTR_TO_FT : 1.0) / cur->mZoomer->GetPPM();
 	int bar_len;
 	int bar_Yoff = textH * 0.75;
-	
+
 	if      (scale < 1.0)   bar_len = 1;
 	else if (scale < 3.0)   bar_len = 3;
 	else if (scale < 10.0)  bar_len = 10;
@@ -347,7 +345,7 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	else if (scale < 100.0) bar_len = 100;
 	else                    bar_len = 300;
 	sprintf(p, " %3d%c", bar_len, gIsFeet? '\'' : 'm');
-		
+
 	state->SetState(0,0,0,1,1,0,0);
 	glColor4fv(white);
 	glBegin(GL_LINES);
@@ -356,7 +354,7 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	glVertex2i(b[0]+ 50 + SHOW_FPS*140 + (int)(MIN_BAR_LEN * bar_len / scale), b[1] + bar_Yoff);
 	glVertex2i(b[0]+ 50 + SHOW_FPS*140, b[1] + bar_Yoff);
 	glEnd();
-	
+
     GUI_FontDraw(state, font_UI_Basic, white, b[0] + 5, b[1] + 5, mouse_loc);
 	#if SHOW_FPS
         Refresh();
@@ -402,7 +400,7 @@ void		WED_Map::DrawStrFor(WED_MapLayer * layer, int current, const Bbox2& bounds
 		Bbox2	on_screen;
 		what->GetBounds(gis_Geo, on_screen);
 //		on_screen.expand(GLOBAL_WED_ART_ASSET_FUDGE_FACTOR);
-		
+
 		Point2 p1 = this->LLToPixel(on_screen.p1);
 		Point2 p2 = this->LLToPixel(on_screen.p2);
 		Vector2 span(p1,p2);
@@ -426,21 +424,21 @@ int			WED_Map::MouseDown(int x, int y, int button)
 
 	if(button==0)
 	{
-		mClickLayer = NULL;	
+		mClickLayer = NULL;
 		for(vector<WED_MapLayer *>::iterator l = mLayers.begin(); l != mLayers.end(); ++l)
 		{
 			bool draw_ent_v, draw_ent_s, wants_sel, wants_clicks;
 			(*l)->GetCaps(draw_ent_v, draw_ent_s, wants_sel, wants_clicks);
 			if(wants_clicks)
 			{
-				if((*l)->HandleClickDown(x,y,button, GetModifiersNow())) { 
+				if((*l)->HandleClickDown(x,y,button, GetModifiersNow())) {
 					mClickLayer = *l;
 					break;
 				}
 			}
 		}
 	}
-	if(button == 0 && mClickLayer == NULL && mTool && mTool->HandleClickDown(x,y,button, GetModifiersNow())) { mClickLayer=mTool; }	
+	if(button == 0 && mClickLayer == NULL && mTool && mTool->HandleClickDown(x,y,button, GetModifiersNow())) { mClickLayer=mTool; }
 
 	if(button==1)
 	{

@@ -81,7 +81,7 @@ static string ESRI_attributions(float lon, float lat, int z)
 {
 	// get_JSON_string (once per session)
 	// get all relevant data (zl 17-13) Vector<attribution,Vector<{zl_min, zl_max, score, BBox2}> >
-   
+
 	string attrib;
 	int score = 0;
 	for(auto& s : slippyAttrib)
@@ -217,7 +217,7 @@ void	WED_SlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 			double pbounds[4];
 			get_ll_box_for_tile(z, x, y, tbounds);
 
-			pbounds[0] = zoomer->LonToXPixel(tbounds[0]);
+			pbounds[0] = zoomer->LonToXPixel(tbounds[0]); // this isn't drawing with Geographic projection ...
 			pbounds[2] = zoomer->LonToXPixel(tbounds[2]);
 
 			pbounds[1] = zoomer->LatToYPixel(tbounds[1]);
@@ -433,7 +433,7 @@ void	WED_SlippyMap::SetMode(int mode)
 		url_printf_fmt = tile_url[mode-1];
 	else
 		url_printf_fmt = gCustomSlippyMap;
-		
+
 	y_coordinate_math = yNone;
 	if     (replace_token(url_printf_fmt, "${y}",  "%2$d")) 	y_coordinate_math = yNormal;
 	else if(replace_token(url_printf_fmt, "${!y}", "%2$d")) 	y_coordinate_math = yYahoo;

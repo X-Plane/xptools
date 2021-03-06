@@ -26,6 +26,7 @@
 #include "GUI_GraphState.h"
 #include "GUI_Fonts.h"
 #include "WED_Colors.h"
+#include "WED_DrawUtils.h"
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -61,7 +62,7 @@ void		WED_MapBkgnd::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 	lb = GetZoomer()->LatToYPixel(lb);
 	lt = GetZoomer()->LatToYPixel(lt);
 
-	g->SetState(false,false,false, false, false, false,false); 
+	g->SetState(false,false,false, false, false, false,false);
 	glBegin(GL_QUADS);
 #if 0
 	//This is really obsolete - we have that nice background gradient already - lets show it iff !!
@@ -115,26 +116,30 @@ void		WED_MapBkgnd::DrawStructure(bool inCurrent, GUI_GraphState * g)
 	double longest_span = max(lon_span,lat_span);
 	int divisions = 1;
 	if (longest_span > 20)	divisions = 10;
-	if (longest_span > 90)	divisions = 45;
+	if (longest_span > 90)	divisions = 30;
 
 	int cl = floor(vl / divisions) * divisions;
 	int cb = floor(vb / divisions) * divisions;
 	int cr = ceil(vr / divisions) * divisions;
 	int ct = ceil(vt / divisions) * divisions;
 
-	glBegin(GL_LINES);
 	for(int t = cl; t <= cr; t += divisions)
 	{
-		glVertex2d(GetZoomer()->LonToXPixel(t), lb);
-		glVertex2d(GetZoomer()->LonToXPixel(t), lt);
+		glBegin(GL_LINE_STRIP);
+		for(int y = floor(vb); y < vt; y += 10)
+			glVertex2(GetZoomer()->LLToPixel(Point2(t, y)));
+		glVertex2(GetZoomer()->LLToPixel(Point2(t, vt)));
+		glEnd();
 	}
 	for(int t = cb; t <= ct; t += divisions)
 	{
-		glVertex2d(ll, GetZoomer()->LatToYPixel(t));
-		glVertex2d(lr, GetZoomer()->LatToYPixel(t));
+		glBegin(GL_LINE_STRIP);
+		for(int x = floor(vl); x < vr; x += 10)
+			glVertex2(GetZoomer()->LLToPixel(Point2(x, t)));
+		glVertex2(GetZoomer()->LLToPixel(Point2(vr, t)));
+		glEnd();
 	}
-	glEnd();
-	
+
 	if(longest_span > 1.0 && longest_span < 5.0)
 		for(int lon = cl; lon < cr; lon += divisions)
 			for(int lat = cb; lat < ct; lat += divisions)

@@ -42,6 +42,7 @@
 #include "MathUtils.h"
 #include "XESConstants.h"
 #include "GUI_GraphState.h"
+#include "WED_DrawUtils.h"
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -307,7 +308,7 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 					else
 					{
 						Vector2 to_real_handle(mRotateCtr, mTaxiDest);
-						
+
 						to_real_handle = VectorLLToMeters(mRotateCtr,to_real_handle);
 						int cw_steps = n - mRotateIndex;
 						while(cw_steps > 0)
@@ -322,7 +323,7 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 						}
 						to_real_handle = VectorMetersToLL(mRotateCtr, to_real_handle);
 						*p = mRotateCtr + to_real_handle;
-					}	
+					}
 					if (dir) *dir = Vector2(mRotateCtr, *p);
 					if (con_type) *con_type = handle_Rotate;
 				}
@@ -338,7 +339,7 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 				pt_h->GetLocation(gis_Geo,*p);
 				Vector2	vdir;
 				NorthHeading2VectorMeters(*p,*p,pt_h->GetHeading()+dobmax2(n-1,0)*90.0,vdir);
-				
+
 				if(n > 0)
 				{
 					Point2 orig (*p);
@@ -374,10 +375,10 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 			if(con_type) *con_type = handle_None;
 			Bezier2 bez;
 			s->GetSide(gis_Geo,n/4, bez);
-			
+
 			if(p)
 			{
-				switch(n % 4) 
+				switch(n % 4)
 				{
 					case 0: *p = bez.p1;	break;
 					case 1: *p = bez.c1;	break;
@@ -396,7 +397,7 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 			Bezier2	b;
 			if(con_type) *con_type = handle_None;
 			if(active) *active = 0;
-			
+
 			if(e->GetSide(gis_Geo, 0, b))
 			{
 				switch(n) {
@@ -446,7 +447,7 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 			return;
 		}
 		break;
-	}	
+	}
 	DebugAssert(!"Cast failed!");
 	return;
 }
@@ -463,7 +464,7 @@ int		WED_VertexTool::GetLinks		    (intptr_t id) const
 	IGISLine * ln;
 	IGISPointSequence * s;
 	IGISEdge * e;
-	
+
 	if (quad)															return 4;
 	else switch(en->GetGISClass()) {
 	case gis_Point_Bezier:
@@ -780,7 +781,7 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 			case 1:	if (!pt_b->GetControlHandleLo(gis_Geo,p)) n=3;	break;
 			case 2: if (!pt_b->GetControlHandleHi(gis_Geo,p)) n=3;	break;
 			}
-			io_pt += delta;	
+			io_pt += delta;
 
 			if (mods & gui_OptionAltFlag)
 				p = io_pt;
@@ -827,7 +828,7 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 					mTaxiDest = p;
 				}
 
-				mTaxiDest += delta;				
+				mTaxiDest += delta;
 				Vector2 dir = Vector2(mRotateCtr,mTaxiDest);
 				dir.normalize();
 				pt_h->SetHeading(VectorDegs2NorthHeading(mRotateCtr,mRotateCtr,dir)-mRotateOffset);
@@ -1068,7 +1069,7 @@ void	WED_VertexTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta,
 
 	Bbox2	old_b(Point2(0,0),Point2(1,1));
 	Bbox2	new_b(old_b);
-	
+
 	if(mNewSplitPoint)
 	{
 		new_b += delta;
@@ -1094,7 +1095,7 @@ void	WED_VertexTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta,
 			Vector2 n = VectorLLToMeters(p1,Vector2(p1,p2));
 			n = n.perpendicular_ccw();
 			Vector2 delta_m = VectorLLToMeters(p1,delta);
-			new_b += VectorMetersToLL(p1,n.projection(delta_m)); 
+			new_b += VectorMetersToLL(p1,n.projection(delta_m));
 
 			gp1->Rescale(gis_Geo, old_b, new_b);
 			gp2->Rescale(gis_Geo, old_b, new_b);
@@ -1147,10 +1148,10 @@ void	WED_VertexTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta,
 				GetZoomer()->LLToPixel(p2),
 				GetZoomer()->LLToPixel(sp2)).squared_length();
 			}
-			
-			//mroe: thats to makes sure that [at least] the snap points exactly matches . 
-			//the vector math is precise  , so this is possibly a bit paranoid .  
-			if(dist1 <= dist2) 
+
+			//mroe: thats to makes sure that [at least] the snap points exactly matches .
+			//the vector math is precise  , so this is possibly a bit paranoid .
+			if(dist1 <= dist2)
 			{
 				gp1->SetLocation(gis_Geo,sp1);
 				gp2->SetLocation(gis_Geo,p2 + Vector2(p1,sp1));
@@ -1167,7 +1168,7 @@ void	WED_VertexTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta,
 	WED_Thing * node = dynamic_cast <WED_Thing *> (en);
 	WED_DrapedOrthophoto * ortho = SAFE_CAST(WED_DrapedOrthophoto,node->GetParent());
 	if (ortho) ortho->Redrape();
-#endif	
+#endif
 }
 
 WED_HandleToolBase::EntityHandling_t	WED_VertexTool::TraverseEntity(IGISEntity * ent, int pt_sel)
@@ -1258,7 +1259,7 @@ void		WED_VertexTool::AddEntityRecursive(IGISEntity * e, const Bbox2& vis_area )
 
 		if ((ps = SAFE_CAST(IGISPointSequence, e)) != NULL)
 		{
-			mEntityCache.push_back(e);		
+			mEntityCache.push_back(e);
 			c = ps->GetNumPoints();
 			for (n = 0; n < c; ++n)
 				AddEntityRecursive(ps->GetNthPoint(n),vis_area);
@@ -1448,8 +1449,8 @@ void		WED_VertexTool::DrawSelected			(bool inCurrent, GUI_GraphState * g)
 		g->SetState(false,false, false, true, true, false, false);
 		glColor4f(1,1,1,0.5);
 		glBegin(GL_LINES);
-		glVertex2f(GetZoomer()->LonToXPixel(mRotateCtr.x()),GetZoomer()->LatToYPixel(mRotateCtr.y()));
-		glVertex2f(GetZoomer()->LonToXPixel(mTaxiDest.x()),GetZoomer()->LatToYPixel(mTaxiDest.y()));
+		glVertex2(GetZoomer()->LLToPixel(mRotateCtr));
+		glVertex2(GetZoomer()->LLToPixel(mTaxiDest));
 		glEnd();
 	}
 }

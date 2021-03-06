@@ -25,6 +25,7 @@
 #include "XESConstants.h"
 
 #include "CompGeomDefs3.h"
+#include "MathUtils.h"
 #include "glew.h"
 
 inline	double	rescale(double s1, double s2, double d1, double d2, double v)
@@ -68,13 +69,35 @@ double	WED_MapZoomerNew::LatToYPixel(double lat) const
 	return mCenterY + (lat - mLatCenter) / mPixel2DegLat;
 }
 
+double	WED_MapZoomerNew::wagner_proj_mult(double lat) const
+{
+	return sqrtf(1.0-3.0*(lat/180.0)*(lat/180.0));
+}
+
+#define THR 0.05
+
 Point2	WED_MapZoomerNew::PixelToLL(const Point2& p) const
 {
+	if(mPixel2DegLat > THR)
+	{
+		double blend = min(1.0, (mPixel2DegLat - THR)/THR);
+		Point2 pt(XPixelToLon(p.x()), YPixelToLat(p.y()));
+		pt.y_ = min(max(pt.y(), mLogicalBounds[1]), mLogicalBounds[3]);
+		return Point2( pt.x() / (1.0 + blend * (wagner_proj_mult(pt.y()) - 1.0)),
+		               pt.y() / (1.0 + blend *  0                              ));
+	}
+
 	return Point2(XPixelToLon(p.x()), YPixelToLat(p.y()));
 }
 
 Point2	WED_MapZoomerNew::LLToPixel(const Point2& p) const
 {
+	if(mPixel2DegLat > THR)
+	{
+		double blend = min(1.0, (mPixel2DegLat - THR)/THR);
+		return Point2(LonToXPixel( p.x() * (1.0 + blend * (wagner_proj_mult(p.y()) - 1.0) )),
+		              LatToYPixel( p.y() * (1.0 + blend *  0                              )));
+	}
 	return Point2(LonToXPixel(p.x()), LatToYPixel(p.y()));
 }
 
@@ -160,10 +183,26 @@ void	WED_MapZoomerNew::GetMapVisibleBounds(
 					double&	outEast,
 					double&	outNorth)
 {
+
+	Point2 coords[8];
+	coords[0] = PixelToLL(Point2(mPixels[0], mPixels[1]));
+	coords[1] = PixelToLL(Point2(mPixels[0], (mPixels[1] + mPixels[3]) * 0.5));
+	coords[2] = PixelToLL(Point2(mPixels[0], mPixels[3]));
+	coords[3] = PixelToLL(Point2((mPixels[0] + mPixels[2]) * 0.5, mPixels[3]));
+	coords[4] = PixelToLL(Point2(mPixels[2], mPixels[3]));
+	coords[5] = PixelToLL(Point2(mPixels[2], (mPixels[1] + mPixels[3]) * 0.5));
+	coords[6] = PixelToLL(Point2(mPixels[2], mPixels[1]));
+	coords[7] = PixelToLL(Point2((mPixels[0] + mPixels[2]) * 0.5, mPixels[1]));
+
+	outWest = fltmin3(coords[0].x(), coords[1].x(), coords[2].x());
+	outSouth = fltmin3(coords[6].y(), coords[7].y(), coords[0].y());
+	outEast = fltmax3(coords[4].x(), coords[5].x(), coords[6].x());
+	outNorth = fltmax3(coords[2].y(), coords[3].y(), coords[4].y());
+/*
 	outWest = XPixelToLon	(mPixels[0]);
 	outSouth = YPixelToLat	(mPixels[1]);
 	outEast = XPixelToLon	(mPixels[2]);
-	outNorth = YPixelToLat	(mPixels[3]);
+	outNorth = YPixelToLat	(mPixels[3]); */
 }
 
 void	WED_MapZoomerNew::GetMapLogicalBounds(
@@ -249,19 +288,15 @@ void	WED_MapZoomerNew::ZoomAround(
 {
 	++mCacheKey;
 
-	// Zoom the map around a point.  We do this in three steps because I am lazy:
-	// 1. Scroll the map so that we are zooming around the lower left corner.
-	// 2. Zoom the map by adjusting only the top and right logical bounds, not
-	//    the lower left.
-	// 3. Scroll the map back.
-
-	PanPixels(centerXPixel, centerYPixel, mCenterX, mCenterY);
+	Point2 old_geo = PixelToLL(Point2(centerXPixel, centerYPixel));
 
 	if (zoomFactor <= 1.0 || mPixel2DegLat > 1e-8) // limit manual zoom in to 1 mm/pixel (108,900 meter / deg lat)
 		mPixel2DegLat /= zoomFactor;
 	RecalcAspectRatio();
 
-	PanPixels(mCenterX, mCenterY, centerXPixel, centerYPixel);
+	Point2 new_pix = LLToPixel(old_geo);
+	PanPixels(new_pix.x(), new_pix.y(), centerXPixel, centerYPixel);
+
 	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 }
 

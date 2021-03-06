@@ -26,6 +26,7 @@
 #include "GUI_GraphState.h"
 #include "GUI_Resources.h"
 #include "WED_MapZoomerNew.h"
+#include "WED_DrawUtils.h"
 #include "WED_ToolUtils.h"
 #include "WED_TexMgr.h"
 #include "WED_PackageMgr.h"
@@ -54,14 +55,20 @@ void		WED_WorldMapLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 {
 	double ll,lb,lr,lt;	// logical boundary
 	double vl,vb,vr,vt;	// visible boundry
+	double sl,sb,sr,st;	// screen  boundary
 
 	GetZoomer()->GetMapLogicalBounds(ll,lb,lr,lt);
 	GetZoomer()->GetMapVisibleBounds(vl,vb,vr,vt);
+	GetZoomer()->GetPixelBounds(sl,sb,sr,st);
 
 	vl = max(vl,ll);
 	vb = max(vb,lb);
 	vr = min(vr,lr);
 	vt = min(vt,lt);
+	int l = 10 * (int) floor(vl / 10.0);
+	int b = 10 * (int) floor(vb / 10.0);
+	int r = 10 * (int) ceil(vr / 10.0);
+	int t = 10 * (int) ceil(vt / 10.0);
 
 	int	tex_id = GUI_GetTextureResource("worldmap.jpg", 0, NULL);   // draw the low res background first, any available higher res tiles right over it.
 	if (tex_id)                                                     // The higher res tiles have alpha masked water, so we need some blue underneath anyways
@@ -69,31 +76,22 @@ void		WED_WorldMapLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 		g->SetState(0, 1, 0,    0, 1,  0, 0);
 		glColor4f(1.0, 1.0, 1.0, 1.0);
 		g->BindTex(tex_id, 0);
-		glBegin(GL_QUADS);
-		glTexCoord2f(0.0, 0.0);
-		glVertex2f( GetZoomer()->LonToXPixel(-180 ),
-					GetZoomer()->LatToYPixel( -90 ));
-		glTexCoord2f(0.0, 1.0);
-		glVertex2f( GetZoomer()->LonToXPixel(-180 ),
-					GetZoomer()->LatToYPixel(  90 ));
-		glTexCoord2f(1.0, 1.0);
-		glVertex2f( GetZoomer()->LonToXPixel( 180 ),
-					GetZoomer()->LatToYPixel(  90 ));
-		glTexCoord2f(1.0, 0.0);
-		glVertex2f( GetZoomer()->LonToXPixel( 180 ),
-					GetZoomer()->LatToYPixel( -90 ));
-		glEnd();
+		for (int y = b; y < t; y += 10)
+		{
+			glBegin(GL_TRIANGLE_STRIP);
+			for (int x = l; x <= r; x += 10)
+			{
+				glTexCoord2f((x+180)/360.0, (y+90)/180.0);	glVertex2( GetZoomer()->LLToPixel(Point2(x,y)) );
+				glTexCoord2f((x+180)/360.0, (y+100)/180.0);	glVertex2( GetZoomer()->LLToPixel(Point2(x,y+10)) );
+			}
+			glEnd();
+		}
 	}
 
 	double lon_span = vr - vl;               // draw the high res tiles only if zoomed in enough
 	double lat_span = vt - vb;
 	if (lon_span < 30.0 && lat_span < 20.0)  // covering a 30 deg span requires up to 4 textures at 10 deg each - depending of how they are aligned
 	{
-		int l = 10 * (int) floor(vl / 10.0);
-		int b = 10 * (int) floor(vb / 10.0);
-		int r = 10 * (int) ceil(vr / 10.0);
-		int t = 10 * (int) ceil(vt / 10.0);
-
 		for (int y = b; y < t; y += 10)
 			for (int x = l; x < r; x += 10)
 			{
@@ -107,24 +105,16 @@ void		WED_WorldMapLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 					{
 						g->BindTex(tex_id, 0);
 						glBegin(GL_QUADS);
-						glTexCoord2f(0.0, 0.0);
-						glVertex2f( GetZoomer()->LonToXPixel( x    ),
-									GetZoomer()->LatToYPixel( y    ));
-						glTexCoord2f(0.0, 1.0);
-						glVertex2f( GetZoomer()->LonToXPixel( x    ),
-									GetZoomer()->LatToYPixel( y+10 ));
-						glTexCoord2f(1.0, 1.0);
-						glVertex2f( GetZoomer()->LonToXPixel( x+10 ),
-									GetZoomer()->LatToYPixel( y+10 ));
-						glTexCoord2f(1.0, 0.0);
-						glVertex2f( GetZoomer()->LonToXPixel( x+10 ),
-									GetZoomer()->LatToYPixel( y    ));
+						glTexCoord2f(0.0, 0.0);	glVertex2( GetZoomer()->LLToPixel(Point2(x,   y   )));
+						glTexCoord2f(0.0, 1.0);	glVertex2( GetZoomer()->LLToPixel(Point2(x,   y+10)));
+						glTexCoord2f(1.0, 1.0);	glVertex2( GetZoomer()->LLToPixel(Point2(x+10,y+10)));
+						glTexCoord2f(1.0, 0.0);	glVertex2( GetZoomer()->LLToPixel(Point2(x+10,y   )));
 						glEnd();
 					}
 				}
 			}
 	}
-	
+
 }
 
 void		WED_WorldMapLayer::GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks)

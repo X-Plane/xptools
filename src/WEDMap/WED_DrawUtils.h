@@ -69,7 +69,9 @@ int BezierPtsCount(const Bezier2& b, WED_MapZoomerNew * z);
 void glPolygon2(const Point2 * pts, bool has_uv, const int * contours, int n, float height = -1);
 void PointSequenceToVector(IGISPointSequence * ps, WED_MapZoomerNew * z, vector<Point2>& pts, bool get_uv, vector<int>& contours,
 	int is_hole, bool dupFirst = false);  // dupFirst == duplicate first/last node even on closed rings. Not desired to build polygons, but desired to draw lines
+
 void SideToPoints(IGISPointSequence * ps, int n, WED_MapZoomerNew * z,  vector<Point2>& out_pts);
+void BoxToPoints(const Point2& p1, const Point2& p2, WED_MapZoomerNew * z, vector<Point2>& pts);
 
 
 #endif /* WED_DrawUtils_H */

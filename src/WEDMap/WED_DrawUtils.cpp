@@ -624,3 +624,20 @@ void SideToPoints(IGISPointSequence * ps, int i, WED_MapZoomerNew * z,  vector<P
 		pts.push_back(z->LLToPixel(b.p2));
 	}
 }
+
+void BoxToPoints(const Point2& p1, const Point2& p2, WED_MapZoomerNew * z, vector<Point2>& pts)
+{
+		Vector2 dLat(0.0, p1.y() - p2.y());
+		Vector2 dLon(p1.x() - p2.x(), 0.0);
+
+		pts.reserve(8);
+		pts.push_back(z->LLToPixel(p1));
+		pts.push_back(z->LLToPixel(p1 - dLat * 0.5 ));
+		pts.push_back(z->LLToPixel(p1 - dLat ));
+		pts.push_back(z->LLToPixel(p2 + dLon * 0.5 ));
+		pts.push_back(z->LLToPixel(p2));
+		pts.push_back(z->LLToPixel(p2 + dLat * 0.5 ));
+		pts.push_back(z->LLToPixel(p2 + dLat ));
+		pts.push_back(z->LLToPixel(p1 - dLon * 0.5 ));
+}
+
