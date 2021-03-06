@@ -331,7 +331,7 @@ IGISPoint *	WED_GISEdge::SplitSide(const Point2& p, double dist)  // MM: add arg
 {
 	StateChanged();
 	Bezier2		nearest_side_b;
-	
+
 	int nearest_side = -1;
 	bool nearest_is_b = false;
 	double nearest_dist = 999.0; // dist * dist;
@@ -398,10 +398,19 @@ IGISPoint *	WED_GISEdge::SplitEdge(const Point2& p, double dist)  // MM: add arg
 		bool is_b = this->GetSide(gis_Geo,i,b);
 		if(b.p1 == p) hit_point = i;
 		if(i == ns-1 && b.p2 == p) hit_point = ns;
+		if(hit_point > -1)
+		{
+			nearest_side = i;
+			nearest_is_b = is_b;
+			nearest_side_b = b;
+			break;
+		}
+
 		if (is_b)
 			d = Segment2(p, b.midpoint(b.approx_t_for_xy(p.x(), p.y()))).squared_length();
 		else
 			d = b.as_segment().squared_distance(p);
+
 		if(d < nearest_dist)
 		{
 			nearest_dist = d;
@@ -411,7 +420,11 @@ IGISPoint *	WED_GISEdge::SplitEdge(const Point2& p, double dist)  // MM: add arg
 		}
 	}
 	
-	if(nearest_side < 0) return nullptr;       // nothing is close enough
+	if(nearest_side < 0)
+	{
+		return nullptr;       // nothing is close enough
+	}
+
 	if(hit_point == 0 || hit_point == ns)
 	{
 		return nullptr; // for now, just abort
@@ -455,10 +468,15 @@ IGISPoint *	WED_GISEdge::SplitEdge(const Point2& p, double dist)  // MM: add arg
 		for(int i = 0; i < ns-1; i++)
 		{
 			if(i < nearest_side || i == (hit_point - 1))
+			{
 				obsolete_nodes.insert(me2->GetNthChild(i));
+			}
 			if(i >= nearest_side || i == (hit_point - 1))
+			{
 				obsolete_nodes.insert(this->GetNthChild(i));
+			}
 		}
+
 		WED_RecursiveDelete(obsolete_nodes);
 		CacheBuild(cache_Spatial);
 	}
@@ -467,12 +485,14 @@ IGISPoint *	WED_GISEdge::SplitEdge(const Point2& p, double dist)  // MM: add arg
 	{
 		Bezier2 b1, b2;
 		if(hit_point < 0)
+		{
 			nearest_side_b.partition(b1, b2, nearest_side_b.approx_t_for_xy(p.x(), p.y()));
+		}
 		else
 		{
 			b1 = prev_side_b;
-			nearest_side--;
 			b2 = nearest_side_b;
+			nearest_side--;
 		}
 		DebugAssert(nearest_side < GetNumSides());
 		this->SetSideBezier(gis_Geo, b1, nearest_side);
@@ -481,15 +501,24 @@ IGISPoint *	WED_GISEdge::SplitEdge(const Point2& p, double dist)  // MM: add arg
 	else
 	{
 		Segment2 s1, s2;
-		Point2 pp = nearest_side_b.as_segment().projection(p);
-
-		s1.p1 = nearest_side_b.p1;
-		s1.p2 = pp;
-		s2.p1 = pp;
-		s2.p2 = nearest_side_b.p2;
-
+		if(hit_point < 0)
+		{
+			Point2  pp = nearest_side_b.as_segment().projection(p);
+			s1.p1 = nearest_side_b.p1;
+			s1.p2 = pp;
+			s2.p1 = pp;
+			s2.p2 = nearest_side_b.p2;
+		}
+		else
+		{
+			s1.p1 = prev_side_b.p1;
+			s1.p2 = p;
+			s2.p1 = p;
+			s2.p2 = nearest_side_b.p2;
+			nearest_side--;
+		}
 		this->SetSide(gis_Geo, s1, nearest_side);
-		if(hit_point < 0) me2->SetSide(gis_Geo, s2, 0);
+		me2->SetSide(gis_Geo, s2, 0);
 	}
 	
 	return dynamic_cast<IGISPoint *>(np);

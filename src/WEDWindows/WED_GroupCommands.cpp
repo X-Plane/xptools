@@ -1689,7 +1689,12 @@ static void do_chain_split(ISelection * sel, const chain_split_info_t & info)
 	{
 		Point2 pt;
 		info.p->GetLocation(gis_Geo, pt);
-		info.e->SplitEdge(pt, 0.0);
+		IGISPoint * gp =  info.e->SplitEdge(pt, 0.0);
+		if(gp)
+		{
+			sel->Clear();
+			sel->Insert(gp);
+		}
 	}
 	else if (info.c->IsClosed())
 	{
@@ -3227,10 +3232,32 @@ static bool is_node_merge(IResolver * resolver)
 
 		set<WED_Thing *> viewers;
 		thing->GetAllViewers(viewers);
+		if(viewers.size() > 2) return false;
+
 		for(auto v : viewers)
 		{
 			if(v->GetClass() != WED_RoadEdge::sClass) return false;
 		}
+
+		WED_RoadEdge * road_edge_1 = dynamic_cast<WED_RoadEdge *>(*viewers.begin());
+		WED_RoadEdge * road_edge_2 = dynamic_cast<WED_RoadEdge *>(*(++viewers.begin()));
+		if(road_edge_1 == nullptr || road_edge_2 == nullptr) return false;
+		// check for road subtype
+		if(road_edge_1->GetSubtype() != road_edge_2->GetSubtype()) return false;
+
+		// check for direction
+		Bezier2 b1,b2;
+		road_edge_1->GetSide(gis_Geo,-1,b1);
+		road_edge_2->GetSide(gis_Geo,-1,b2);
+		if(b1.p2 != b2.p1 && b1.p1 != b2.p2) return false;
+
+		// check resource match
+		string resource_1,resource_2;
+		road_edge_1->GetResource(resource_1);
+		road_edge_2->GetResource(resource_2);
+		if(resource_1 != resource_2) return false;
+
+
 		return true;
 	}
 
@@ -3508,53 +3535,68 @@ static void do_node_merge(IResolver * resolver)
 		WED_Thing * thing = dynamic_cast<WED_Thing *>(sel->GetNthSelection(0));
 		if(thing)
 		{
+			sel->Clear();
 			set<WED_Thing *> viewers;
 			thing->GetAllViewers(viewers);
 			WED_Thing * edge = *viewers.begin();
-
-			auto node = WED_SimpleBezierBoundaryNode::CreateTyped(thing->GetArchive());
-			node->SetName("Shape Point");
+			WED_Thing * obsolete_edge = *(++viewers.begin());
 
 			bool add_edge_end = edge->GetNthSource(0) == thing;
 
-			if(add_edge_end)
-				node->SetParent(edge, 0);
-			else
-				node->SetParent(edge, edge->CountChildren());
+			WED_GISEdge * ge_1 = dynamic_cast<WED_GISEdge *>(edge);
+			WED_GISEdge * ge_2 = dynamic_cast<WED_GISEdge *>(obsolete_edge);
 
-			Point2 p;
-			dynamic_cast<WED_GISPoint *>(thing)->GetLocation(gis_Geo,p);
-			node->SetLocation(gis_Geo,p);
-
-			WED_Thing * obsolete_edge = *(++viewers.begin());
-			int nc = obsolete_edge->CountChildren();
-			if(obsolete_edge->GetNthSource(0) == thing)
+			if(ge_1 && ge_2)
 			{
-				for(int i = 0; i < nc; i++)
-					if(add_edge_end)
-						obsolete_edge->GetNthChild(0)->SetParent(edge,0);
-					else
-						obsolete_edge->GetNthChild(0)->SetParent(edge,edge->CountChildren());
+				auto node = WED_SimpleBezierBoundaryNode::CreateTyped(thing->GetArchive());
+				node->SetName("Shape Point");
 
-				edge->ReplaceSource(thing, obsolete_edge->GetNthSource(1));
-			}
-			else if(obsolete_edge->GetNthSource(1) == thing)
-			{
-				for(int i = nc - 1; i >= 0; i--)
-					if(add_edge_end)
+				Bezier2 b1,b2;
+				bool is_bez_1 = ge_1->GetSide(gis_Geo,-1,b1);
+				bool is_bez_2 = ge_2->GetSide(gis_Geo,-1,b2);
+
+				int nc = obsolete_edge->CountChildren();
+
+				if(is_bez_1 || is_bez_2) node->SetSplit(true);
+				if(add_edge_end == false)
+				{
+					DebugAssert(b1.p2 == b2.p1);
+					node->SetParent(edge, edge->CountChildren());
+					node->SetLocation(gis_Geo,b1.p2);
+
+					if(is_bez_1 && (b1.p2 != b1.c2)) node->SetControlHandleLo(gis_Geo, b1.c2);
+					if(is_bez_2 && (b2.p1 != b2.c1)) node->SetControlHandleHi(gis_Geo, b2.c1);
+
+					for(int i = 0; i < nc; i++)
+							obsolete_edge->GetNthChild(i)->SetParent(edge,edge->CountChildren());
+
+					edge->ReplaceSource(thing, obsolete_edge->GetNthSource(1));
+					//TODO:mroe: no clue why we must do it afterwards
+					if(is_bez_2 && (b2.p2 != b2.c2)) ge_1->SetSideBezier(gis_Geo,Bezier2(b1.p1,b1.c1,b2.c2,b2.p2),-1);
+				}
+				else
+				{
+					DebugAssert(b2.p2 == b1.p1);
+					node->SetParent(edge, 0);
+					node->SetLocation(gis_Geo,b2.p2);
+					if(is_bez_1 && (b1.p1 != b1.c1)) node->SetControlHandleHi(gis_Geo, b1.c1);
+					if(is_bez_2 && (b2.p2 != b2.c2)) node->SetControlHandleLo(gis_Geo, b2.c2);
+
+					for(int i = nc - 1; i >= 0; i--)
 						obsolete_edge->GetNthChild(i)->SetParent(edge,0);
-					else
-						obsolete_edge->GetNthChild(i)->SetParent(edge,edge->CountChildren());
 
-				edge->ReplaceSource(thing, obsolete_edge->GetNthSource(0));
+					edge->ReplaceSource(thing, obsolete_edge->GetNthSource(0));
+					//TODO:mroe: no clue why we must do it afterwards
+					if(is_bez_2 && (b2.p1 != b2.c1)) ge_1->SetSideBezier(gis_Geo,Bezier2(b2.p1,b2.c1,b1.c2,b1.p2),-1);
+				}
+
+				sel->Insert(node);
+				viewers.clear();
+				viewers.insert(thing);
+				WED_RecursiveDelete(viewers);	// this makes obsolete_edge unviable and thus removed it as well
 			}
-			else
-				DebugAssert(0);
-
-			viewers.clear();
-			viewers.insert(thing);
-			WED_RecursiveDelete(viewers);	// this makes obsolete_edge unviable and thus removed it as well
 		}
+
 		op->CommitOperation();
 		return;
 	}
