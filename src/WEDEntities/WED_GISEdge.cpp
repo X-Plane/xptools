@@ -25,6 +25,7 @@
 #include "GISUtils.h"
 #include "WED_GroupCommands.h"
 #include "WED_SimpleBezierBoundaryNode.h"
+#include "WED_TaxiRoute.h"
 
 TRIVIAL_COPY(WED_GISEdge, WED_Entity)
 
@@ -329,6 +330,12 @@ WED_Thing *		WED_GISEdge::CreateSplitNode()
 
 IGISPoint *	WED_GISEdge::SplitSide(const Point2& p, double dist)  // MM: add argument what segment to split ?
 {
+	//TODO:mroe: thats to keep old behaviour for TaxiRoute edges for now
+	if(this->GetGISSubtype() == WED_TaxiRoute::sClass)
+	{
+		return SplitEdge(p,dist);
+	}
+
 	StateChanged();
 	Bezier2		nearest_side_b;
 
@@ -359,7 +366,7 @@ IGISPoint *	WED_GISEdge::SplitSide(const Point2& p, double dist)  // MM: add arg
 	if(nearest_side < 0) return nullptr;       // nothing is close enough
 
 	auto np = WED_SimpleBezierBoundaryNode::CreateTyped(GetArchive());
-	
+
 	np->SetParent(this, nearest_side);
 	np->SetName("Shape Point");
 

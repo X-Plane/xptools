@@ -869,7 +869,6 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 	case gis_Edge:
 		if((e = SAFE_CAST(IGISEdge,en)) != NULL)
 		{
-			printf("handle %d\n", n);
 			if(n == 1 || n == e->GetNumSides() * 4 - 1)
 			{
 				GUI_KeyFlags mods = GetHost()->GetModifiersNow();
@@ -1073,12 +1072,10 @@ void	WED_VertexTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta,
 
 		if (mods & gui_OptionAltFlag)
 		{
-		printf("SplitSide\n");
 			mNewSplitPoint = seq->SplitSide(io_pt, GetZoomer()->GetClickRadius(4));
 		}
 		else
 		{
-		printf("LinkBy\n");
 			mNewSplitPoint = NULL;
 		}
 
