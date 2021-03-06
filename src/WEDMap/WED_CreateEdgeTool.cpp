@@ -348,8 +348,8 @@ void		WED_CreateEdgeTool::AcceptPath(
 			if((start_edge && p > 0) || p == stop-1)
 			{
 				new_edge->AddSource(dst,1);
-				new_edge->SetSideBezier(gis_Geo,Bezier2(in_pts[sp],
-														has_dirs[sp]   ? dirs_hi[sp]   : in_pts[sp],
+				new_edge->SetSideBezier(gis_Geo,Bezier2(pts[sp],
+														has_dirs[sp]   ? dirs_hi[sp]   : pts[sp],
 														has_dirs[p] ? dirs_lo[p] : pts[p],
 														pts[p]),  -1);
 				// Do this last - half-built edge inserted the world destabilizes accessors.
