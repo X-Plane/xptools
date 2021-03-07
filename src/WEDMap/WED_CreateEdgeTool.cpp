@@ -322,7 +322,6 @@ void		WED_CreateEdgeTool::AcceptPath(
 				}
 				else
 				{
-
 					dst = WED_SimpleBezierBoundaryNode::CreateTyped(GetArchive());
 					dst->SetName("Shape Point");
 					dst->SetParent(new_edge,new_edge->CountChildren());
@@ -349,7 +348,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 						}
 					}
 				}
-				stop_edge != start_edge;
+				stop_edge = (p > 0);
 			}
 
 			if(stop_edge)
