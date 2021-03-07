@@ -66,7 +66,7 @@ struct DrawVisStats
 	int numTooSmallComposite = 0;
 };
 
-static void DrawVisFor(WED_MapLayer * layer, const Bbox2& bounds, const WED_MapZoomerNew& zoomer, const WED_Camera& camera, IGISEntity * what, GUI_GraphState * g, int depth, DrawVisStats * stats)
+static void DrawVisFor(WED_MapLayer * layer, const Bbox2& bounds, const WED_MapZoomerNew& zoomer, IGISEntity * what, GUI_GraphState * g, int depth, DrawVisStats * stats)
 {
 	const float TOO_SMALL_TO_GO_IN = 20.0;
 	const float MIN_PIXELS_TO_DRAW = 5.0;
@@ -140,11 +140,24 @@ static void DrawVisFor(WED_MapLayer * layer, const Bbox2& bounds, const WED_MapZ
 	if (layer->DrawEntityVisualization(false, what, g, false))
 		if (what->GetGISClass() == gis_Composite && (c = SAFE_CAST(IGISComposite, what)) != NULL)
 		{
-			if (1) // camera.PixelSize(bboxXY) > TOO_SMALL_TO_GO_IN || (p1 == p2) || depth == 0)	// Why p1 == p2?  If the composite contains ONLY ONE POINT it is zero-size.  We'd LOD out.  But if
+#if DEV
+			++stats->numSizeTestsComposite;
+#endif
+			Bbox2 bboxLL;
+			what->GetBounds(gis_Geo, bboxLL);
+			Point2 p1 = zoomer.LLToPixel(bboxLL.p1);
+			Point2 p2 = zoomer.LLToPixel(bboxLL.p2);
+			if (zoomer.PixelSize(bboxLL) > TOO_SMALL_TO_GO_IN || (p1 == p2) || depth == 0)	// Why p1 == p2?  If the composite contains ONLY ONE POINT it is zero-size.  We'd LOD out.  But if
 			{																				// it contains one thing then we might as well ALWAYS draw it - it's relatively cheap!
 				int t = c->GetNumEntities();												// Depth == 0 means we draw ALL top level objects -- good for airports.
 				for (int n = t - 1; n >= 0; --n)
-					DrawVisFor(layer, bounds, zoomer, camera, c->GetNthEntity(n), g, depth + 1, stats);
+					DrawVisFor(layer, bounds, zoomer, c->GetNthEntity(n), g, depth + 1, stats);
+			}
+			else
+			{
+#if DEV
+				++stats->numTooSmallComposite;
+#endif
 			}
 		}
 #endif
@@ -271,7 +284,7 @@ void WED_MapPreviewPane::Draw(GUI_GraphState * state)
 	this->GetMapVisibleBounds(b_geo.p1.x_, b_geo.p1.y_, b_geo.p2.x_, b_geo.p2.y_);
 
 	DrawVisStats stats;
-	DrawVisFor(mPreviewLayer, b_geo, *this, *mCamera, base, state, 0, &stats);
+	DrawVisFor(mPreviewLayer, b_geo, *this, base, state, 0, &stats);
 
 #if 1
 {
