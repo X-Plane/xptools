@@ -424,6 +424,26 @@ int layer_group_for_string(const char * s, int o, int def)
 
 struct sort_item_by_layer {	bool operator()(WED_PreviewItem * lhs, WED_PreviewItem * rhs) const { return lhs->get_layer() < rhs->get_layer(); } };
 
+static double PixelSize(const WED_GISPolygon * poly, double featureSizeMeters, const WED_MapZoomerNew * zoomer)
+{
+	Bbox2 bb;
+	poly->GetBounds(gis_Geo, bb);
+	return zoomer->PixelSize(bb, featureSizeMeters);
+}
+
+static double PixelSize(const WED_GISChain * chain, double featureSizeMeters, const WED_MapZoomerNew * zoomer)
+{
+	Bbox2 bb;
+	chain->GetBounds(gis_Geo, bb);
+	return zoomer->PixelSize(bb, featureSizeMeters);
+}
+
+static double PixelSize(const WED_GISPoint * point, double diameterMeters, const WED_MapZoomerNew * zoomer)
+{
+	Point2 ll;
+	point->GetLocation(gis_Geo, ll);
+	return zoomer->PixelSize(ll, diameterMeters);
+}
 
 struct	preview_runway : public WED_PreviewItem {
 	WED_Runway * rwy;
@@ -797,7 +817,7 @@ struct	preview_line : WED_PreviewItem {
 
 		IGISPointSequence * ps = SAFE_CAST(IGISPointSequence,lin);
 		if(ps)
-			if(linfo->eff_width * zoomer->GetPPM() < MIN_PIXELS_PREVIEW || !tex_id)             // cutoff size for real preview
+			if(PixelSize(lin, linfo->eff_width, zoomer) < MIN_PIXELS_PREVIEW || !tex_id)             // cutoff size for real preview
 			{
 				g->SetState(false,0,false,false,false,false,false);
 
@@ -914,7 +934,7 @@ struct	preview_string : WED_PreviewItem {
 						o->xyz_max[0]- o->xyz_min[0],
 						o->xyz_max[2]- o->xyz_min[2]);
 
-				if(real_radius * zoomer->GetPPM() > MIN_PIXELS_PREVIEW)             // cutoff size for real preview
+				if(PixelSize(str, real_radius, zoomer) > MIN_PIXELS_PREVIEW)             // cutoff size for real preview
 				{
 					ITexMgr * tman = WED_GetTexMgr(resolver);
 					g->SetState(false, 1, false, true, true, true, true);
@@ -1667,7 +1687,6 @@ void		WED_PreviewLayer::GetCaps						(bool& draw_ent_v, bool& draw_ent_s, bool& 
 	wants_clicks = false;
 }
 
-
 bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected)
 {
 	const char *	sub_class	= entity->GetGISSubtype();
@@ -1701,7 +1720,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		if(taxi)
 		{
 			mPreviewItems.push_back(new preview_taxiway(taxi,mTaxiLayer++));
-			if(GetZoomer()->GetPPM() * 0.4 > MIN_PIXELS_PREVIEW)        // there can be so many, make visibility decision here already for performance
+			if(PixelSize(taxi, 0.4, GetZoomer()) > MIN_PIXELS_PREVIEW)        // there can be so many, make visibility decision here already for performance
 			{
 				IGISPointSequence * ps = taxi->GetOuterRing();
 				mPreviewItems.push_back(new preview_airportlines(ps, group_Markings, GetResolver()));
@@ -1775,8 +1794,9 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		WED_AirportChain * chn = SAFE_CAST(WED_AirportChain, entity);
 		if(chn)
 		{
-			double ppm = GetZoomer()->GetPPM();       // there can be so many, make visibility decision here already for performance
-			if(ppm * 0.4 > MIN_PIXELS_PREVIEW)	      // criteria matches where mRealLines disappear in StructureLayer
+			// there can be so many, make visibility decision here already for performance
+			// criteria matches where mRealLines disappear in StructureLayer
+			if(PixelSize(chn, 0.4, GetZoomer()) > MIN_PIXELS_PREVIEW)
 			{
 				mPreviewItems.push_back(new preview_airportlines(chn, group_Markings, GetResolver()));
 				mPreviewItems.push_back(new preview_airportlights(chn, group_Objects, GetResolver()));
@@ -1814,41 +1834,45 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	}
 	else if (sub_class == WED_TruckParkingLocation::sClass)
 	{
-		if(GetZoomer()->GetPPM() * 5.0 > MIN_PIXELS_PREVIEW)   // there can be so many, make visibility decision here already for performance
+		WED_TruckParkingLocation * trk = SAFE_CAST(WED_TruckParkingLocation, entity);
+		if (trk)
 		{
-			WED_TruckParkingLocation * trk = SAFE_CAST(WED_TruckParkingLocation, entity);
-			if (trk)	mPreviewItems.push_back(new preview_truck(trk, group_Objects, GetResolver()));
+			// there can be so many, make visibility decision here already for performance
+			if (PixelSize(trk, 5.0, GetZoomer()) > MIN_PIXELS_PREVIEW)
+				mPreviewItems.push_back(new preview_truck(trk, group_Objects, GetResolver()));
 		}
 	}
 	else if (sub_class == WED_LightFixture::sClass)
 	{
-		if(GetZoomer()->GetPPM() * 1.0 > MIN_PIXELS_PREVIEW)
+		WED_LightFixture * lgt = SAFE_CAST(WED_LightFixture, entity);
+		if (lgt)
 		{
-			WED_LightFixture * lgt = SAFE_CAST(WED_LightFixture, entity);
-			if (lgt)	mPreviewItems.push_back(new preview_light(lgt, group_Objects, GetResolver()));
+			// there can be so many, make visibility decision here already for performance
+			if (PixelSize(lgt, 1.0, GetZoomer()) > MIN_PIXELS_PREVIEW)
+				mPreviewItems.push_back(new preview_light(lgt, group_Objects, GetResolver()));
 		}
 	}
 	else if (sub_class == WED_Windsock::sClass)
 	{
-		if(GetZoomer()->GetPPM() * 1.0 > MIN_PIXELS_PREVIEW)
+		if (auto ws = SAFE_CAST(WED_Windsock, entity))
 		{
-			if (auto ws = SAFE_CAST(WED_Windsock, entity))
+			if (PixelSize(ws, 1.0, GetZoomer()) > MIN_PIXELS_PREVIEW)
 				mPreviewItems.push_back(new preview_windsock(ws, group_Objects, GetResolver()));
 		}
 	}
 	else if (sub_class == WED_AirportBeacon::sClass)
 	{
-		if(GetZoomer()->GetPPM() * 1.0 > MIN_PIXELS_PREVIEW)
+		if (auto bcn = SAFE_CAST(WED_AirportBeacon, entity))
 		{
-			if (auto bcn = SAFE_CAST(WED_AirportBeacon, entity))
+			if (PixelSize(bcn, 1.0, GetZoomer()) > MIN_PIXELS_PREVIEW)
 				mPreviewItems.push_back(new preview_beacon(bcn, group_Objects, GetResolver()));
 		}
 	}
 	else if (sub_class == WED_AirportSign::sClass)
 	{
-		if(GetZoomer()->GetPPM() * 0.2 > MIN_PIXELS_PREVIEW)
+		if (auto tsign = SAFE_CAST(WED_AirportSign, entity))
 		{
-			if (auto tsign = SAFE_CAST(WED_AirportSign, entity))
+			if (PixelSize(tsign, 0.2, GetZoomer()) > MIN_PIXELS_PREVIEW)
 				mPreviewItems.push_back(new preview_taxisign(tsign, group_Objects, GetResolver()));
 		}
 	}

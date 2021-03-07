@@ -200,9 +200,6 @@ WED_MapPreviewPane::WED_MapPreviewPane(GUI_Commander * cmdr, WED_Document * docu
 	// OpenGL coordinates. This is important for floating-point precision: The closer
 	// objects are to the camera, the more precision we need.
 
-	// ToDo: re-think size culling strategy so it can rely only on MapZoomerNew info the usual way.
-	// We can not afford to nuke all the early culling in PreviewLayer based on GetPPM().
-
 	mCamera = new WED_PerspectiveCamera(0.5, DRAW_DISTANCE);
 	this->cam = mCamera;
 
