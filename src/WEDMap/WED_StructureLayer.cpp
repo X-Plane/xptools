@@ -416,19 +416,22 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 
 					if(kind == gis_Edge && pts.size() >= 2)
 					{
+
 						IGISEdge * gisedge = SAFE_CAST(IGISEdge, ps);
 						WED_RoadEdge * re = dynamic_cast<WED_RoadEdge *>(entity);
-
 						if(gisedge->IsOneway() || re != nullptr)
 						{
-							if(re)
+							double scale = z->GetPPM()/35;
+							Vector2 orient(pts[pts.size()-2],pts[pts.size()-1]);
+							if(re && scale > 0.0256)
 							{
-								if(i == 0 )  GUI_PlotIcon(g, "handle_closeloop.png", b.p1.x(), b.p1.y(), 0.0, 1.1);
-								if(i == n-1) GUI_PlotIcon(g, "handle_closeloop.png", b.p2.x(), b.p2.y(), 0.0, 1.1);
+								if(i == 0 )  GUI_PlotIcon(g, "Junction.png", b.p1.x(), b.p1.y(), 0, scale);
+								if(i == n-1) GUI_PlotIcon(g, "Junction.png", b.p2.x(), b.p2.y(), 0, scale);
+								GUI_PlotIcon(g,"ArrowHeadBig.png", pts.back().x(), pts.back().y(),atan2(orient.dx,orient.dy) * RAD_TO_DEG, scale);
 							}
 
-							Vector2 orient(pts[pts.size()-2],pts[pts.size()-1]);
-							GUI_PlotIcon(g,"handle_arrowhead.png", pts.back().x(), pts.back().y(),atan2(orient.dx,orient.dy) * RAD_TO_DEG, 1.0);
+							if(!re)
+								GUI_PlotIcon(g,"handle_arrowhead.png", pts.back().x(), pts.back().y(),atan2(orient.dx,orient.dy) * RAD_TO_DEG, 1);
 
 							g->SetTexUnits(0);
 						}
