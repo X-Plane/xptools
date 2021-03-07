@@ -58,7 +58,8 @@ enum {
 // We'll subclass this for each kind of preview we make.
 struct	WED_PreviewItem {
 	int			layer;
-	WED_PreviewItem(int l) : layer(l) { }
+	unsigned	option_bits;
+	WED_PreviewItem(int l, unsigned opt = 0) : layer(l), option_bits(opt) { }
 	virtual ~WED_PreviewItem() { }
 	virtual	int	 get_layer(void) { return layer; }
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float pavement_alpha)=0;
@@ -67,6 +68,13 @@ struct	WED_PreviewItem {
 
 class WED_PreviewLayer  : public WED_MapLayer {
 public:
+	struct Options {
+		bool clearDepthBuffer = true;
+		bool drawFacadeWalls = false;
+		bool drawFacadeOutline = true;
+		bool drawSkeletonIfLineTooThin = true;
+		int minLineThicknessPixels = MIN_PIXELS_PREVIEW;
+	};
 
 						 WED_PreviewLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver);
 	virtual				~WED_PreviewLayer();
@@ -75,6 +83,7 @@ public:
 			float		GetPavementTransparency(void) const;
 			void		SetObjDensity(int density);
 			int			GetObjDensity(void) const;
+			void		SetOptions(const Options& options);
 
 	virtual	bool		DrawEntityVisualization		(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected);
 	virtual	void		GetCaps						(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks);
@@ -84,6 +93,7 @@ private:
 
 	float							mPavementAlpha;
 	int								mObjDensity;
+	Options							mOptions;
 
 	// This stuff is built temporarily between the entity and final draw.
 	vector<WED_PreviewItem *>	mPreviewItems;

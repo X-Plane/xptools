@@ -793,7 +793,15 @@ static void draw_line_preview(const vector<Point2>& pts, const lin_info_t& linfo
 struct	preview_line : WED_PreviewItem {
 	WED_LinePlacement * lin;
 	IResolver * resolver;
-	preview_line(WED_LinePlacement * ln, int l, IResolver * r) : WED_PreviewItem(l), lin(ln), resolver(r) {}
+	static constexpr unsigned DRAW_SKELETON_IF_LINE_TOO_THIN_BIT = 0x8000000;
+	static constexpr unsigned MIN_LINE_THICKNESS_MASK = 0x7fffffff;
+	preview_line(WED_LinePlacement * ln, int l, IResolver * r, bool drawSkeletonIfLineTooThin, unsigned minLineThicknessPixels)
+		: WED_PreviewItem(l), lin(ln), resolver(r)
+	{
+		option_bits = minLineThicknessPixels;
+		if (drawSkeletonIfLineTooThin)
+			option_bits |= DRAW_SKELETON_IF_LINE_TOO_THIN_BIT;
+	}
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
 	{
 		WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
@@ -817,8 +825,11 @@ struct	preview_line : WED_PreviewItem {
 
 		IGISPointSequence * ps = SAFE_CAST(IGISPointSequence,lin);
 		if(ps)
-			if(PixelSize(lin, linfo->eff_width, zoomer) < MIN_PIXELS_PREVIEW || !tex_id)             // cutoff size for real preview
+			if(PixelSize(lin, linfo->eff_width, zoomer) < (option_bits & MIN_LINE_THICKNESS_MASK) || !tex_id)             // cutoff size for real preview
 			{
+				if ((option_bits & DRAW_SKELETON_IF_LINE_TOO_THIN_BIT) == 0)
+					return;
+
 				g->SetState(false,0,false,false,false,false,false);
 
 				int locked = 0;
@@ -1122,7 +1133,16 @@ struct	preview_airportlights : WED_PreviewItem {
 struct	preview_facade : public preview_polygon {
 	WED_FacadePlacement * fac;
 	IResolver * resolver;
-	preview_facade(WED_FacadePlacement * f, int l, IResolver * r) : preview_polygon(f,l,false), fac(f), resolver(r) { }
+	static constexpr unsigned DRAW_WALL_BIT = 0x1;
+	static constexpr unsigned DRAW_OUTLINE_BIT = 0x2;
+	preview_facade(WED_FacadePlacement * f, int l, IResolver * r, bool draw_walls, bool draw_outline)
+		: preview_polygon(f,l,false), fac(f), resolver(r)
+	{
+		if (draw_walls)
+			option_bits |= DRAW_WALL_BIT;
+		if (draw_outline)
+			option_bits |= DRAW_OUTLINE_BIT;
+	}
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
 	{
 		const float colors[18] = { 1, 0, 0,	 1, 1, 0,  0, 1, 0,    // red, yellow, green
@@ -1180,10 +1200,6 @@ struct	preview_facade : public preview_polygon {
 
 			g->SetState(false,0,false,true,true,true,true);
 
-			float mat[16];
-			glGetFloatv(GL_PROJECTION_MATRIX, mat);
-			bool isTilted = (mat[2] != 0.0 || mat[6] != 0.0);
-
 			glMatrixMode(GL_MODELVIEW);
 			zoomer->PushMatrix();
 			Point2 l = zoomer->LLToPixel(ref_pt);
@@ -1192,29 +1208,32 @@ struct	preview_facade : public preview_polygon {
 			zoomer->Scalef(ppm,ppm,ppm);
 			zoomer->Rotatef(90, 1,0,0);
 			if(rmgr->GetFac(vpath, info))
-				draw_facade(tman, rmgr, vpath, *info, pts, choices, fac->GetHeight(), g, isTilted, 0.7*ppm);
+				draw_facade(tman, rmgr, vpath, *info, pts, choices, fac->GetHeight(), g, (option_bits & DRAW_WALL_BIT) != 0, 0.7*ppm);
 			zoomer->PopMatrix();
 		}
 
-		g->SetState(false,0,false,true,true,false,false);
-//		glLineWidth(2);
-		int n = ps->GetNumSides();
-		for(int i = 0; i < n; ++i)
+		if (option_bits & DRAW_OUTLINE_BIT)
 		{
-			vector<Point2>	pts;
-			SideToPoints(ps,i,zoomer, pts);
-
-			int param = 0;
-			if(fac->HasCustomWalls())
+			g->SetState(false,0,false,true,true,false,false);
+//			glLineWidth(2);
+			int n = ps->GetNumSides();
+			for(int i = 0; i < n; ++i)
 			{
-				Bezier2		bp;
-				ps->GetSide(gis_Param,i,bp);
-				param = bp.p1.x();
+				vector<Point2>	pts;
+				SideToPoints(ps,i,zoomer, pts);
+
+				int param = 0;
+				if(fac->HasCustomWalls())
+				{
+					Bezier2		bp;
+					ps->GetSide(gis_Param,i,bp);
+					param = bp.p1.x();
+				}
+				glColor3fv(colors + (param % 6) * 3);
+				glShapeOffset2v(GL_LINES/*GL_LINE_STRIP*/, &*pts.begin(), pts.size(), -2);
 			}
-			glColor3fv(colors + (param % 6) * 3);
-			glShapeOffset2v(GL_LINES/*GL_LINE_STRIP*/, &*pts.begin(), pts.size(), -2);
+//			glLineWidth(1);
 		}
-//		glLineWidth(1);
 	}
 };
 
@@ -1720,7 +1739,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		if(taxi)
 		{
 			mPreviewItems.push_back(new preview_taxiway(taxi,mTaxiLayer++));
-			if(PixelSize(taxi, 0.4, GetZoomer()) > MIN_PIXELS_PREVIEW)        // there can be so many, make visibility decision here already for performance
+			if(PixelSize(taxi, 0.4, GetZoomer()) > mOptions.minLineThicknessPixels)        // there can be so many, make visibility decision here already for performance
 			{
 				IGISPointSequence * ps = taxi->GetOuterRing();
 				mPreviewItems.push_back(new preview_airportlines(ps, group_Markings, GetResolver()));
@@ -1776,7 +1795,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	{
 		WED_FacadePlacement * fac = SAFE_CAST(WED_FacadePlacement, entity);
 		if(fac && fac->GetShowLevel() <= mObjDensity)
-			mPreviewItems.push_back(new preview_facade(fac,group_Objects, GetResolver()));
+			mPreviewItems.push_back(new preview_facade(fac, group_Objects, GetResolver(), mOptions.drawFacadeWalls, mOptions.drawFacadeOutline));
 	}
 	else if (sub_class == WED_ForestPlacement::sClass)
 	{
@@ -1787,7 +1806,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	{
 		WED_LinePlacement * line = SAFE_CAST(WED_LinePlacement, entity);
 		if(line)
-			mPreviewItems.push_back(new preview_line(line, group_Markings, GetResolver()));
+			mPreviewItems.push_back(new preview_line(line, group_Markings, GetResolver(), mOptions.drawSkeletonIfLineTooThin, mOptions.minLineThicknessPixels));
 	}
 	else if(sub_class == WED_AirportChain::sClass)
 	{
@@ -1795,8 +1814,8 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		if(chn)
 		{
 			// there can be so many, make visibility decision here already for performance
-			// criteria matches where mRealLines disappear in StructureLayer
-			if(PixelSize(chn, 0.4, GetZoomer()) > MIN_PIXELS_PREVIEW)
+			// if minLineThicknessPixels is MIN_PIXELS_PREVIEW, criterion matches where mRealLines disappear in StructureLayer
+			if(PixelSize(chn, 0.4, GetZoomer()) > mOptions.minLineThicknessPixels)
 			{
 				mPreviewItems.push_back(new preview_airportlines(chn, group_Markings, GetResolver()));
 				mPreviewItems.push_back(new preview_airportlights(chn, group_Objects, GetResolver()));
@@ -1884,8 +1903,11 @@ void		WED_PreviewLayer::DrawVisualization			(bool inCurent, GUI_GraphState * g)
 	// This is called after per-entity visualization; we have one preview item for everything we need.
 	// sort, draw, nuke 'em.
 
-	g->EnableDepth(true,true);         // turn on z-buffering - otherwise we can't clear the z-buffer
-	glClear(GL_DEPTH_BUFFER_BIT);
+	if (mOptions.clearDepthBuffer)
+	{
+		g->EnableDepth(true, true);         // turn on z-buffering - otherwise we can't clear the z-buffer
+		glClear(GL_DEPTH_BUFFER_BIT);
+	}
 
 	sort(mPreviewItems.begin(),mPreviewItems.end(),sort_item_by_layer());
 	for(vector<WED_PreviewItem *>::iterator i = mPreviewItems.begin(); i != mPreviewItems.end(); ++i)
@@ -1921,3 +1943,7 @@ int			WED_PreviewLayer::GetObjDensity(void) const
 	return mObjDensity;
 }
 
+void		WED_PreviewLayer::SetOptions(const Options& options)
+{
+	mOptions = options;
+}
