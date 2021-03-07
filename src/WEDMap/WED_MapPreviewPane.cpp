@@ -179,10 +179,16 @@ WED_MapPreviewPane::WED_MapPreviewPane(GUI_Commander * cmdr, WED_Document * docu
 	  mYaw(0.f),
 	  mPitch(-10.f)
 {
-// ToDo: Setup MapZoomerNew propperly so projected items get drawn,
+	// We set up the WED_MapZoomerNew as follows:
+	// - The "ppm" value is set to 1, so "pixels" correspond to meters.
+	// - The "lat/lon center" position corresponds to the position of the camera
+	// - The "pixel center" position is always at 0, 0
+	// The latter two points together imply that the camera is always at x=0, y=0 in
+	// OpenGL coordinates. This is important for floating-point precision: The closer
+	// objects are to the camera, the more precision we need.
 
-// Much later - re-think culling strategy so it can rely only on MapZoomerNew info the usual way.
-// We can not afford to nuke all the early culling in PreviewLayer based on GetPPM().
+	// ToDo: re-think size culling strategy so it can rely only on MapZoomerNew info the usual way.
+	// We can not afford to nuke all the early culling in PreviewLayer based on GetPPM().
 
 	mCamera = new WED_PerspectiveCamera(0.5, DRAW_DISTANCE);
 	this->cam = mCamera;
@@ -261,11 +267,8 @@ void WED_MapPreviewPane::Draw(GUI_GraphState * state)
 
 	InitGL(b);
 
-	// Compute lat/lon bounding box by projecting camera frustum onto ground
-	// plane and converting to lat/lon.
 	Bbox2 b_geo;
-	for (const auto& corner : mCamera->FrustumCorners())
-		b_geo += this->PixelToLL({corner.x, corner.y});
+	this->GetMapVisibleBounds(b_geo.p1.x_, b_geo.p1.y_, b_geo.p2.x_, b_geo.p2.y_);
 
 	DrawVisStats stats;
 	DrawVisFor(mPreviewLayer, b_geo, *this, *mCamera, base, state, 0, &stats);
@@ -584,12 +587,28 @@ void WED_MapPreviewPane::MoveCameraToXYZ(const Point3& xyz)
 	this->SetMapLogicalBounds(ll.x(), ll.y(), ll.x(), ll.y());
 
 	mCamera->MoveTo({ 0, 0, xyz.z });
+
+	UpdateMapVisibleArea();
 }
 
 void WED_MapPreviewPane::SetForwardVector()
 {
 	Vector3 forward(sin(mYaw * DEG_TO_RAD) * cos(mPitch * DEG_TO_RAD), cos(mYaw * DEG_TO_RAD) * cos(mPitch * DEG_TO_RAD), sin(mPitch * DEG_TO_RAD));
 	mCamera->SetForward(forward);
+	UpdateMapVisibleArea();
+}
+
+void WED_MapPreviewPane::UpdateMapVisibleArea()
+{
+	// Project view frustum to the ground plane and find a bounding box around it.
+	Bbox2 visArea;
+	for (const auto& corner : mCamera->FrustumCorners())
+		visArea += Point2(corner.x, corner.y);
+
+	this->SetPixelBounds(visArea.xmin(), visArea.ymin(), visArea.xmax(), visArea.ymax());
+
+	// SetPixelBounds() changes the "pixel center" position, so reset it to (0, 0).
+	this->SetPixelCenter(0.0, 0.0);
 }
 
 void WED_MapPreviewPane::InitGL(int *b)

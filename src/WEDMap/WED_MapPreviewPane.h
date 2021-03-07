@@ -69,6 +69,7 @@ private:
 	void				HandleKeyMove();
 	void				MoveCameraToXYZ(const Point3& xyz);
 	void				SetForwardVector();
+	void				UpdateMapVisibleArea();
 	void				InitGL(int *b);
 	void				FinishGL();
 
