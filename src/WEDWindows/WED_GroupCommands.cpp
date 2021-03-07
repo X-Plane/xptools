@@ -1909,7 +1909,7 @@ static void do_ring_split(ISelection * sel, const ring_split_info_t & info)
 	op->CommitOperation();
 }
 
-map<WED_Thing*,vector<WED_Thing*> > run_split_on_edges(vector<split_edge_info_t>& edges)
+map<WED_Thing*,vector<WED_Thing*> > run_split_on_edges(vector<split_edge_info_t>& edges ,bool no_uncrossed)
 {
 	map<WED_Thing*, vector<WED_Thing*> > new_pieces;
 	//
@@ -1978,7 +1978,7 @@ map<WED_Thing*,vector<WED_Thing*> > run_split_on_edges(vector<split_edge_info_t>
 		edges[i].sort_along_edge();
 
 		// If the edge is uncrossed the user is just subdividing it - split it at the midpoint.
-		if (edges[i].splits.empty())
+		if (!no_uncrossed && edges[i].splits.empty())
 		{
 			Bezier2 b;
 			if(edges[i].edge->GetSide(gis_Geo,-1,b))

@@ -95,7 +95,7 @@ typedef map<WED_Thing*, vector<WED_Thing*> > edge_to_child_edges_map_t;
 
 //Given a vector of splittable objects and splittable edges, preform the actual math
 //It returns a vector of the new pieces
-edge_to_child_edges_map_t run_split_on_edges(vector<split_edge_info_t>& edges);
+edge_to_child_edges_map_t run_split_on_edges(vector<split_edge_info_t>& edges,bool no_uncrossed = false);
 void	WED_DoSplit(IResolver * resolver);
 int		WED_CanAlign(IResolver * resolver);
 void	WED_DoAlign(IResolver * resolver);

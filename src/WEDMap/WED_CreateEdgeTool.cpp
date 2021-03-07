@@ -38,7 +38,7 @@
 
 #include "WED_GroupCommands.h"
 
-#define DEBUG_CREATE_ROADS 1
+#define DEBUG_CREATE_ROADS 0
 
 static const char * kCreateCmds[] = { "Taxiway Route Line", "Road" };
 static const int kIsAirport[] = { 1, 0 };
@@ -423,7 +423,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 		edges_to_split.push_back(cast_WED_GISEdge_to_split_edge_info_t(*e, find(tool_created_edges.begin(), tool_created_edges.end(), *e) != tool_created_edges.end()));
 	}
 
-	edge_to_child_edges_map_t new_pieces = run_split_on_edges(edges_to_split);
+	edge_to_child_edges_map_t new_pieces = run_split_on_edges(edges_to_split,true);
 
 	//For all the tool_created_edges that were split
 	for(vector<WED_GISEdge*>::iterator itr = tool_created_edges.begin();
