@@ -421,13 +421,13 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 						WED_RoadEdge * re = dynamic_cast<WED_RoadEdge *>(entity);
 						if(gisedge->IsOneway() || re != nullptr)
 						{
-							double scale = z->GetPPM()/35;
+							double scale = z->GetPPM()/64;
 							Vector2 orient(pts[pts.size()-2],pts[pts.size()-1]);
 							if(re && scale > 0.0256)
 							{
 								if(i == 0 )  GUI_PlotIcon(g, "Junction.png", b.p1.x(), b.p1.y(), 0, scale);
 								if(i == n-1) GUI_PlotIcon(g, "Junction.png", b.p2.x(), b.p2.y(), 0, scale);
-								GUI_PlotIcon(g,"ArrowHeadBig.png", pts.back().x(), pts.back().y(),atan2(orient.dx,orient.dy) * RAD_TO_DEG, scale);
+								GUI_PlotIcon(g,"ArrowHeadBig.png", pts.back().x(), pts.back().y(),atan2(orient.dx,orient.dy) * RAD_TO_DEG,scale*0.6);
 							}
 
 							if(!re)
