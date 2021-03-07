@@ -143,6 +143,9 @@ protected:
 							double	inBottom,
 							double	inRight,
 							double	inTop);
+			void	SetPixelCenter(					// Set the position in pixel coordinates
+							double x,				// that corresponds to the lat/lon center position.
+							double y);
 
 private:
 

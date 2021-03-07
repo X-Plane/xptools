@@ -122,6 +122,12 @@ void	WED_MapZoomerNew::SetPixelBounds(
 	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 }
 
+void	WED_MapZoomerNew::SetPixelCenter(double x, double y)
+{
+	mCenterX = x;
+	mCenterY = y;
+}
+
 void	WED_MapZoomerNew::SetMapLogicalBounds(
 					double	inWest,
 					double	inSouth,
