@@ -311,7 +311,11 @@ void		WED_CreateEdgeTool::AcceptPath(
 				if(start_edge || p == stop-1)
 				{
 					dst = WED_RoadNode::CreateTyped(GetArchive());
-					dst->SetName(mName.value + "_start");
+					if(p == stop-1)
+						dst->SetName(mName.value + "_stop");
+					else
+						dst->SetName(mName.value + "_start");
+
 					static_cast<WED_GISPoint *>(dst)->SetLocation(gis_Geo,pts[p]);
 				}
 				else				{
@@ -337,6 +341,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 						if(dst_edge != nullptr)
 						{
 							WED_Thing * dst_np = dynamic_cast<WED_Thing *>(dst_edge->SplitEdge(Point2(pts[p]),0.0));
+							DebugAssert(dst_np != nullptr);
 							if(dst_np) dst = dst_np;
 						}
 					}
@@ -345,7 +350,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 				start_edge_next = p != 0;
 			}
 
-			if((start_edge && p > 0) || p == stop-1)
+			if((start_edge && p > 0) || start_edge_next || p == stop-1)
 			{
 				new_edge->AddSource(dst,1);
 				new_edge->SetSideBezier(gis_Geo,Bezier2(pts[sp],

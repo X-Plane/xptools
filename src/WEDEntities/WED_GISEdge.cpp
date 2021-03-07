@@ -456,8 +456,8 @@ IGISPoint *	WED_GISEdge::SplitEdge(const Point2& p, double dist)  // MM: add arg
 	np->SetParent(p1->GetParent(), p1->GetMyPosition()+1);
 
 	string name;
-	p1->GetName(name);
-	np->SetName(name);
+	GetName(name);
+	np->SetName(name + "_split");
 	
 	WED_GISEdge * me2 = dynamic_cast<WED_GISEdge*>(this->Clone()); // this also clones all children it may have
 	me2->SetParent(this->GetParent(),this->GetMyPosition()+1);
