@@ -38,7 +38,7 @@
 
 #include "WED_GroupCommands.h"
 
-#define DEBUG_CREATE_ROADS 0
+#define DEBUG_CREATE_ROADS 1
 
 static const char * kCreateCmds[] = { "Taxiway Route Line", "Road" };
 static const int kIsAirport[] = { 1, 0 };
@@ -296,19 +296,20 @@ void		WED_CreateEdgeTool::AcceptPath(
 		WED_RoadEdge * new_edge = NULL;
 
 		bool start_edge = true;
-		bool start_edge_next = false;
+		bool stop_edge = false;
 
 		int sp = 0;
 		int stop = pts.size(); // closed ? pts.size() : pts.size()-1;
 
 		for(int p = 0; p < stop; p++)
 		{
+			stop_edge = (p == stop-1);
 			dst = nullptr;
 			dist = frame_dist*frame_dist;
 			FindNear(host_for_merging, NULL, edge_class, pts[p], dst, dist);
 			if(!dst)
 			{
-				if(start_edge || p == stop-1)
+				if(start_edge || stop_edge)
 				{
 					dst = WED_RoadNode::CreateTyped(GetArchive());
 					if(p == stop-1)
@@ -316,17 +317,20 @@ void		WED_CreateEdgeTool::AcceptPath(
 					else
 						dst->SetName(mName.value + "_start");
 
+					dst->SetParent(host_for_parent,idx);
 					static_cast<WED_GISPoint *>(dst)->SetLocation(gis_Geo,pts[p]);
 				}
-				else				{
+				else
+				{
+
 					dst = WED_SimpleBezierBoundaryNode::CreateTyped(GetArchive());
 					dst->SetName("Shape Point");
+					dst->SetParent(new_edge,new_edge->CountChildren());
 					auto wbp = static_cast<WED_GISPoint_Bezier *>(dst);
 					wbp->SetLocation(gis_Geo,pts[p]);
 					wbp->SetControlHandleLo(gis_Geo, has_dirs[p] ? dirs_lo[p] : pts[p]);
 					wbp->SetControlHandleHi(gis_Geo, has_dirs[p] ? dirs_hi[p] : pts[p]);
 				}
-				start_edge_next = false;
 			}
 			else // dst node hit , but it could be a shape node , must converted and dst edge splitted
 			{
@@ -336,7 +340,6 @@ void		WED_CreateEdgeTool::AcceptPath(
 					{
 						auto wbp = static_cast<WED_GISPoint_Bezier *>(dst);
 						wbp->GetLocation(gis_Geo,pts[p]);
-						//TODO:mroe: make this more safe
 						WED_GISEdge * dst_edge = dynamic_cast<WED_GISEdge *>(dst->GetParent());
 						if(dst_edge != nullptr)
 						{
@@ -346,12 +349,14 @@ void		WED_CreateEdgeTool::AcceptPath(
 						}
 					}
 				}
-
-				start_edge_next = p != 0;
+				stop_edge != start_edge;
 			}
 
-			if((start_edge && p > 0) || start_edge_next || p == stop-1)
+			if(stop_edge)
 			{
+				#if DEV && DEBUG_CREATE_ROADS
+				printf("End Edge\n");
+				#endif
 				new_edge->AddSource(dst,1);
 				new_edge->SetSideBezier(gis_Geo,Bezier2(pts[sp],
 														has_dirs[sp]   ? dirs_hi[sp]   : pts[sp],
@@ -364,6 +369,8 @@ void		WED_CreateEdgeTool::AcceptPath(
 				new_edge->GetBounds(gis_Geo,new_edge_bounds);
 				tool_created_bounds += new_edge_bounds;
 				sel->Insert(new_edge);
+				stop_edge = false;
+				start_edge = p != stop-1;
 			}
 
 			if(start_edge)
@@ -378,15 +385,10 @@ void		WED_CreateEdgeTool::AcceptPath(
 				new_edge->SetName(mName);
 				new_edge->SetResource(mResource.value);
 				new_edge->AddSource(dst,0);
-				if(start_edge) sp = p;
+				sp = p;
+				start_edge = false;
 			}
 
-			if(start_edge || p == stop-1)
-				dst->SetParent(host_for_parent,idx);
-			else
-				dst->SetParent(new_edge,new_edge->CountChildren());
-
-			start_edge = start_edge_next;
 			#if DEV && DEBUG_CREATE_ROADS
 			printf("next interation with start = %d\n",start_edge);
 			#endif
