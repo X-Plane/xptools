@@ -33,8 +33,7 @@
 
 WED_PerspectiveCamera::WED_PerspectiveCamera(double nearClip, double farClip)
 	: mNearClip(nearClip), mFarClip(farClip), mWidth(mNearClip), mHeight(mNearClip),
-	mViewportWidth(1024), mViewportHeight(1024),
-	mFrustumPlanesDirty(true)
+	mViewportWidth(1024), mViewportHeight(1024)
 {
 	mXform.position = Point3(0, 0, 0);
 	mXform.forward = Vector3(0, 1, 0);
@@ -45,8 +44,6 @@ WED_PerspectiveCamera::WED_PerspectiveCamera(double nearClip, double farClip)
 void WED_PerspectiveCamera::MoveTo(const Point3& position)
 {
 	mXform.position = position;
-
-	mFrustumPlanesDirty = true;
 }
 
 void WED_PerspectiveCamera::SetForward(const Vector3& forward)
@@ -61,8 +58,6 @@ void WED_PerspectiveCamera::SetForward(const Vector3& forward)
 	mXform.up = mXform.right.cross(mXform.forward);
 	// Strictly, this normalization isn't needed, but we'll do it anyway.
 	mXform.up.normalize();
-
-	mFrustumPlanesDirty = true;
 }
 
 void WED_PerspectiveCamera::SetFOV(double horizontalFovDeg, double viewportWidth, double viewportHeight)
@@ -78,8 +73,6 @@ void WED_PerspectiveCamera::SetFOV(double horizontalFovDeg, double viewportWidth
 
 	mWidth = widthNormalized * mNearClip;
 	mHeight = heightNormalized * mNearClip;
-
-	mFrustumPlanesDirty = true;
 }
 
 void WED_PerspectiveCamera::ApplyProjectionMatrix()
@@ -121,44 +114,6 @@ std::vector<Point3> WED_PerspectiveCamera::FrustumCorners() const
 	corners.push_back(Position() + Forward() * mFarClip + Right() * (widthFar / 2) + Up() * (heightFar / 2));
 
 	return corners;
-}
-
-bool WED_PerspectiveCamera::PointVisible(const Point3& point) const
-{
-	UpdateFrustumPlanes();
-
-	for (const auto& plane : mFrustumPlanes)
-		if (!plane.on_normal_side(point))
-			return false;
-
-	return true;
-}
-
-bool WED_PerspectiveCamera::BboxVisible(const Bbox3& bbox) const
-{
-	UpdateFrustumPlanes();
-
-	// For a bounding box to be invisible, all of its corners must be on the
-	// non-visible side of at least one of the bounding planes.
-	// This is a pretty simple test, but it's pretty expensive; optimize if
-	// it turns out this is a bottleneck.
-
-	for (const auto& plane : mFrustumPlanes) {
-		bool visible = false;
-		bbox.for_each_corner([&plane, &visible](const Point3& corner)
-		{
-			if (plane.on_normal_side(corner))
-			{
-				visible = true;
-				return false;
-			}
-			return true;
-		});
-		if (!visible)
-			return false;
-	}
-
-	return true;
 }
 
 double WED_PerspectiveCamera::PointDistance(const Point3& point) const
@@ -229,8 +184,6 @@ void WED_PerspectiveCamera::PopMatrix()
 	mXform = mXformStack.back();
 	mXformStack.pop_back();
 
-	mFrustumPlanesDirty = true;
-
 	DebugAssert(ModelViewMatrixConsistent());
 }
 
@@ -242,8 +195,6 @@ void WED_PerspectiveCamera::Translate(const Vector3& v)
 	glTranslated(v.dx, v.dy, v.dz);
 
 	mXform.position -= v;
-
-	mFrustumPlanesDirty = true;
 
 	DebugAssert(ModelViewMatrixConsistent());
 }
@@ -269,8 +220,6 @@ void WED_PerspectiveCamera::Scale(double sx, double sy, double sz)
 	mXform.up.dz *= sz;
 	mXform.forward.dz *= sz;
 	mXform.position.z /= sz;
-
-	mFrustumPlanesDirty = true;
 
 	DebugAssert(ModelViewMatrixConsistent());
 }
@@ -315,24 +264,7 @@ void WED_PerspectiveCamera::Rotate(double deg, const Vector3& axis)
 	mXform.forward = Vector3(forward.dot(col1), forward.dot(col2), forward.dot(col3));
 	mXform.position = Point3(position.dot(col1), position.dot(col2), position.dot(col3));
 
-	mFrustumPlanesDirty = true;
-
 	DebugAssert(ModelViewMatrixConsistent());
-}
-
-void WED_PerspectiveCamera::UpdateFrustumPlanes() const
-{
-	if (!mFrustumPlanesDirty) return;
-
-	// Normals point towards inside of frustum.
-	mFrustumPlanes[0] = Plane3(Position() + Forward() * mNearClip, Forward());
-	mFrustumPlanes[1] = Plane3(Position() + Forward() * mFarClip, -Forward());
-	mFrustumPlanes[2] = Plane3(Position(), -Right() * mNearClip + Forward() * (mWidth / 2));
-	mFrustumPlanes[3] = Plane3(Position(), Right() * mNearClip + Forward() * (mWidth / 2));
-	mFrustumPlanes[4] = Plane3(Position(), -Up() * mNearClip + Forward() * (mHeight / 2));
-	mFrustumPlanes[5] = Plane3(Position(), Up() * mNearClip + Forward() * (mHeight / 2));
-
-	mFrustumPlanesDirty = false;
 }
 
 static bool ApproxEqual(const Vector3& vec1, const Vector3& vec2, double epsilon = 1e-4)
