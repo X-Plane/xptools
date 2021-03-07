@@ -323,6 +323,40 @@ void	WED_MapZoomerNew::RecalcAspectRatio(void)
 
 /********** new funcs for 3D preview / prespective projection *********/
 
+double	WED_MapZoomerNew::PixelSize(const Bbox2& bboxLL) const
+{
+	Point2 p1 = LLToPixel(bboxLL.p1);
+	Point2 p2 = LLToPixel(bboxLL.p2);
+
+	if(cam)
+		return cam->PixelSize(Bbox3(p1.x(), p1.y(), 0.0, p2.x(), p2.y(), 0.0));
+	else
+		return max(fabs(p1.x() - p2.x()), fabs(p1.y() - p2.y())) * GetPPM();
+}
+
+double	WED_MapZoomerNew::PixelSize(const Bbox2& bboxLL, double featureSize) const
+{
+	if(cam)
+	{
+		Point2 p1 = LLToPixel(bboxLL.p1);
+		Point2 p2 = LLToPixel(bboxLL.p2);
+		return cam->PixelSize(Bbox3(p1.x(), p1.y(), 0.0, p2.x(), p2.y(), 0.0), featureSize);
+	}
+	else
+		return featureSize * GetPPM();
+}
+
+double	WED_MapZoomerNew::PixelSize(const Point2& positionLL, double diameter) const
+{
+	if(cam)
+	{
+		Point2 posPixel = LLToPixel(positionLL);
+		return cam->PixelSize({posPixel.x(), posPixel.y(), 0.0}, diameter);
+	}
+	else
+		return diameter * GetPPM();
+}
+
 void	WED_MapZoomerNew::PushMatrix(void)
 {
 	if(cam)

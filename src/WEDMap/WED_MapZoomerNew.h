@@ -128,6 +128,11 @@ public:
 	virtual	void	ScrollH(float xOffset);
 	virtual	void	ScrollV(float yOffset);
 
+			// Note that unlike the corresponding WED_Camera methods, these take lat/lon coordinates.
+			double	PixelSize(const Bbox2& bboxLL) const;
+			double	PixelSize(const Bbox2& bboxLL, double featureSize) const;
+			double	PixelSize(const Point2& positionLL, double diameter) const;
+
 			void	PushMatrix(void);
 			void	Rotatef(float r, float x, float y, float z);
 			void	Translatef(float x, float y, float z);
