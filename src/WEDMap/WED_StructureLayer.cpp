@@ -423,23 +423,17 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 						{
 							Vector2 orient1(pts[0],pts[1]);
 							Vector2 orient2(pts[pts.size()-2],pts[pts.size()-1]);
-							if(re && z->GetPPM() > 0.4)
+							double sq_len = Vector2(b.p1,b.p2).squared_length();
+
+							if( re && (sq_len > 25*25) )
 							{
-								if( (i == 0) || (i == n-1))
+								if( i == 0 )
 								{
-									double sq_len = Vector2(b.p1,b.p2).squared_length();
-									if(i == 0 )
-									{
-										GUI_PlotIcon(g, "handle_closeloop.png", b.p1.x(), b.p1.y(), 0, 1);
-										if( sq_len > 25*25 )
-											GUI_PlotIcon(g,"ArrowHeadRoadS.png", pts.front().x(), pts.front().y(),atan2(orient1.dx,orient1.dy) * RAD_TO_DEG,1);
-									}
-									if(i == n-1)
-									{
-										GUI_PlotIcon(g, "handle_closeloop.png", b.p2.x(), b.p2.y(), 0, 1);
-										if( sq_len > 25*25 )
-											GUI_PlotIcon(g,"ArrowHeadRoadE.png", pts.back().x() , pts.back().y() ,atan2(orient2.dx,orient2.dy) * RAD_TO_DEG,1);
-									}
+									GUI_PlotIcon(g,"ArrowHeadRoadS.png", pts.front().x(), pts.front().y(),atan2(orient1.dx,orient1.dy) * RAD_TO_DEG,1);
+								}
+								if(i == n-1)
+								{
+									GUI_PlotIcon(g,"ArrowHeadRoadE.png", pts.back().x() , pts.back().y() ,atan2(orient2.dx,orient2.dy) * RAD_TO_DEG,1);
 								}
 							}
 
