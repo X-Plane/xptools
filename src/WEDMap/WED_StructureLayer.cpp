@@ -421,17 +421,25 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 						WED_RoadEdge * re = dynamic_cast<WED_RoadEdge *>(entity);
 						if(gisedge->IsOneway() || re != nullptr)
 						{
-							double scale = z->GetPPM()/64;
-							Vector2 orient(pts[pts.size()-2],pts[pts.size()-1]);
-							if(re && scale > 0.0256)
+							Vector2 orient1(pts[0],pts[1]);
+							Vector2 orient2(pts[pts.size()-2],pts[pts.size()-1]);
+							if(re && z->GetPPM() > 0.5)
 							{
-								if(i == 0 )  GUI_PlotIcon(g, "Junction.png", b.p1.x(), b.p1.y(), 0, scale);
-								if(i == n-1) GUI_PlotIcon(g, "Junction.png", b.p2.x(), b.p2.y(), 0, scale);
-								GUI_PlotIcon(g,"ArrowHeadBig.png", pts.back().x(), pts.back().y(),atan2(orient.dx,orient.dy) * RAD_TO_DEG,scale*0.6);
+								if(i == 0 )  GUI_PlotIcon(g, "handle_closeloop.png", b.p1.x(), b.p1.y(), 0, 1);
+								if(i == n-1) GUI_PlotIcon(g, "handle_closeloop.png", b.p2.x(), b.p2.y(), 0, 1);
+
+								double sq_len = Vector2(b.p1,b.p2).squared_length();
+								if( sq_len > 25*25 )
+								{
+									GUI_PlotIcon(g,"ArrowHeadRoadE.png", pts.back().x() , pts.back().y() ,atan2(orient2.dx,orient2.dy) * RAD_TO_DEG,1);
+
+									if( sq_len > 50*50)
+										GUI_PlotIcon(g,"ArrowHeadRoadS.png", pts.front().x(), pts.front().y(),atan2(orient1.dx,orient1.dy) * RAD_TO_DEG,1);
+								}
 							}
 
 							if(!re)
-								GUI_PlotIcon(g,"handle_arrowhead.png", pts.back().x(), pts.back().y(),atan2(orient.dx,orient.dy) * RAD_TO_DEG, 1);
+								GUI_PlotIcon(g,"handle_arrowhead.png", pts.back().x(), pts.back().y(),atan2(orient2.dx,orient2.dy) * RAD_TO_DEG, 1);
 
 							g->SetTexUnits(0);
 						}
