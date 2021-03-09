@@ -45,6 +45,7 @@
 #include "WED_FacadeNode.h"
 #include "WED_RampPosition.h"
 #include "WED_RoadEdge.h"
+#include "WED_RoadNode.h"
 #include "WED_Taxiway.h"
 #include "WED_TaxiRoute.h"
 #include "WED_TruckDestination.h"
@@ -2128,7 +2129,15 @@ static void ValidateAptName(const string name, const string icao, validation_err
 	else if (!is_all_alnum(icao))
 		msgs.push_back(validation_error_t(string("The Airport ID for airport '") + name + "' must contain ASCII alpha-numeric characters only.", err_airport_icao, apt, apt));
 }
-#include "WED_RoadNode.h"
+
+static bool near_but_not_on_boundary(Point2& p)
+{
+	double dlon = fabs(round(p.x()) - p.x());
+	double dlat = fabs(round(p.y()) - p.y());
+	if(dlon == 0.0 || dlat == 0.0)
+		return false;
+	return  dlon < 3 * MTR_TO_DEG_LAT || dlat <  2 * MTR_TO_DEG_LAT;    // not precise - fast, but good enough. There are no roads at high lattitudes :)
+}
 
 static void ValidateRoads(const vector<WED_RoadEdge *> roads, validation_error_vector& msgs, WED_Airport* apt)
 {
@@ -2166,8 +2175,15 @@ static void ValidateRoads(const vector<WED_RoadEdge *> roads, validation_error_v
 				msgs.push_back(validation_error_t("Road references undefined road type", err_net_undefined_type, r, apt));
 
 			if(i == 0)
+			{
 				nodes[dynamic_cast<WED_Thing *>(r->GetNthPoint(i))] = s.p1;
+				if(near_but_not_on_boundary(s.p1))
+					msgs.push_back(validation_error_t("Road nodes must be either exactly on or a few meters away from DSF tile boundaries.", err_net_crosses_tile_bdy, r, apt));
+			}
 			nodes[dynamic_cast<WED_Thing *>(r->GetNthPoint(i+1))] = s.p2;
+			if(near_but_not_on_boundary(s.p2))
+				msgs.push_back(validation_error_t("Road nodes must be either exactly on or a few meters away from DSF tile boundaries.", err_net_crosses_tile_bdy, r, apt));
+
 
 			double x1 = floor(s.p1.x());
 			double x2 = floor(s.p2.x());
@@ -2199,8 +2215,6 @@ static void ValidateRoads(const vector<WED_RoadEdge *> roads, validation_error_v
 				break;
 			}
 		}
-		if(i != ns)
-			msgs.push_back(validation_error_t("Road must not cross tile boundaries", err_net_crosses_tile_bdy, r, apt));
 
 		if(gExportTarget >= wet_gateway)
 		{
@@ -2264,10 +2278,11 @@ static void ValidateRoads(const vector<WED_RoadEdge *> roads, validation_error_v
 						vector<WED_Thing *> unmergeable { x->first, y->first };
 						msgs.push_back(validation_error_t("Road intersections can not be at shape points, split and merge.", err_net_unmerged, unmergeable, apt));
 					}
-					else if(apt == nullptr) // the general ATC network doubled node check at airport gets this one, too.
+					else // if(apt == nullptr) // the general ATC network doubled node check at airport gets this one, too.
 					{
 						vector<WED_Thing *> unmerged { x->first, y->first };
-						msgs.push_back(validation_error_t("Doubled road junction. These should be merged.", err_net_unmerged, unmerged, apt));
+						if( x->second.x() != (double) ((int) x->second.x()) && x->second.y() != (double) ((int) x->second.y()) )
+							msgs.push_back(validation_error_t("Doubled road junction. These should be merged.", err_net_unmerged, unmerged, apt));
 					}
 			}
 		}

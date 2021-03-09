@@ -83,7 +83,7 @@ bool			WED_RoadEdge::IsOneway(void) const
 	return false;
 }
 
-double 		WED_RoadEdge::GetWidth(void) const
+pair<double, double> WED_RoadEdge::GetWidth(void) const
 {
 	if(auto r = get_valid_road_info())
 	{
@@ -92,10 +92,10 @@ double 		WED_RoadEdge::GetWidth(void) const
 		{
 			auto rd = r->road_types.find(vr->second.rd_type);
 			if ( rd != r->road_types.end())
-				return rd->second.traffic_width;
+				return make_pair(rd->second.width, rd->second.traffic_width);
 		}
 	}
-	return 0.0;
+	return make_pair(0, 0);
 }
 
 void		WED_RoadEdge::GetNthPropertyInfo(int n, PropertyInfo_t& info) const

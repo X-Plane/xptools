@@ -438,36 +438,35 @@ bool	WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GU
 
 		g->SetState(false, 0, false, false, true, false, false);
 		WED_MapZoomerNew * z = GetZoomer();
-		double mtr = seg->GetWidth();
+		pair<double, double> mtr = seg->GetWidth();
 
 		int num_sides = seg->GetNumSides();
 		int layers = min(max(seg->GetStartLayer(), seg->GetEndLayer()), 3);
+		glLineWidth(2);
 
-		if(mtr > 0.0)
+		Bezier2 b;
+
+		if( (mtr.second > 0.0 ? mtr.second : mtr.first) * z->GetPPM() > 2.0)
+		for(int ns = 0 ; ns < num_sides; ns++)
 		{
-			for(int ns = 0 ; ns < num_sides; ns++)
+			if(seg->GetSide(gis_Geo, ns, b))
 			{
-				Bezier2 b;
-				glColor4f(0.4, 1, 1, 0.4);         // desaturated cyan
+				b.p1 = z->LLToPixel(b.p1);
+				b.p2 = z->LLToPixel(b.p2);
+				b.c1 = z->LLToPixel(b.c1);
+				b.c2 = z->LLToPixel(b.c2);
 
-				if(seg->GetSide(gis_Geo, ns, b))
+				int point_count = BezierPtsCount(b,z);
+				vector<Point2> pts;
+				pts.reserve(point_count);
+
+				for (int n = 0; n <= point_count; ++n)
+					pts.push_back(b.midpoint((float) n / (float) point_count));
+
+				double offs_pix = 0.5 * mtr.second * z->GetPPM();
+				if(offs_pix > 0.0)
 				{
-					vector<Point2> pts;
 					vector<Point2> strip;
-
-					double offs_pix = 0.5 * mtr * z->GetPPM();
-
-					b.p1 = z->LLToPixel(b.p1);
-					b.p2 = z->LLToPixel(b.p2);
-					b.c1 = z->LLToPixel(b.c1);
-					b.c2 = z->LLToPixel(b.c2);
-
-					int point_count = BezierPtsCount(b,z);
-					pts.reserve(point_count+1);
-
-					for (int n = 0; n <= point_count; ++n)
-						pts.push_back(b.midpoint((float) n / (float) point_count));
-
 					strip.reserve(2*pts.size());
 
 					for (int i = 0; i <= point_count; ++i)
@@ -482,97 +481,103 @@ bool	WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GU
 						strip.push_back(pts[i] - dir);
 						strip.push_back(pts[i] + dir);
 					}
+					glColor4f(0.4, 1, 1, 0.4);         // desaturated cyan
 					glBegin(GL_TRIANGLE_STRIP);
 					glVertex2v(strip.data(), strip.size());
 					glEnd();
-
-					if(layers)
-					{
-						glColor4f(0.4, 1, 1, 1.0);         // bright cyan
-						glLineWidth(2);
-						for(int l = 1; l <= layers; l++)
-						{
-
-							int begin_of_rails = seg->GetStartLayer() < l ? 0 : -1;
-							int end_of_rails = num_sides - (seg->GetEndLayer() < l ? num_sides : 0);
-
-							int skip_pts = 0;
-							int num_pts = pts.size();
-
-							if(ns < begin_of_rails) continue;
-							if(ns == begin_of_rails)
-							{
-								skip_pts = pts.size()/2; num_pts -= skip_pts;
-							}
-							if(ns > end_of_rails) continue;
-							if(ns == end_of_rails)
-							{
-								num_pts -= pts.size()/2-1;
-							}
-
-							glShapeOffset2v(GL_LINE_STRIP, pts.data() + skip_pts, num_pts,  offs_pix + 3 * (l-1));
-							glShapeOffset2v(GL_LINE_STRIP, pts.data() + skip_pts, num_pts, -offs_pix - 3 * (l-1));
-						}
-					}
 				}
 				else
+					offs_pix = 0.5 * mtr.first * z->GetPPM();
+				if(layers)
 				{
-					Point2 ends[2]; ends[0] = b.p2; ends[1] = b.p1;
-					Point2 c[5];
-					int np = 4;
+					glColor4f(0.4, 1, 1, 1.0);         // bright cyan
+					for(int l = 1; l <= layers; l++)
+					{
+						int begin_of_rails = seg->GetStartLayer() < l ? 0 : -1;
+						int end_of_rails = num_sides - (seg->GetEndLayer() < l ? num_sides : 0);
+
+						int skip_pts = 0;
+						int num_pts = pts.size();
+
+						if(ns < begin_of_rails) continue;
+						if(ns == begin_of_rails)
+						{
+							skip_pts = pts.size()/2; num_pts -= skip_pts;
+						}
+						if(ns > end_of_rails) continue;
+						if(ns == end_of_rails)
+						{
+							num_pts -= pts.size()/2-1;
+						}
+						glShapeOffset2v(GL_LINE_STRIP, pts.data() + skip_pts, num_pts,  offs_pix + 3 * (l-1));
+						glShapeOffset2v(GL_LINE_STRIP, pts.data() + skip_pts, num_pts, -offs_pix - 3 * (l-1));
+					}
+				}
+			}
+			else
+			{
+				Point2 ends[2]; ends[0] = b.p2; ends[1] = b.p1;
+				Point2 c[5];
+				int np = 4;
+				if(mtr.second > 0.0)
+				{
 					if(seg->IsOneway())
 					{
 						np = 5;
-						c[0] = ends[0];
+						c[4] = ends[0];
 						Vector2 dir(ends[0], ends[1]);
 						dir.normalize();
 						dir *= 0.5e-4;
 						ends[0] += dir;
-						Quad_2to4(ends, mtr, c+1);
+						Quad_2to4(ends, mtr.second, c);
 					}
 					else
-						Quad_2to4(ends, mtr, c);
+						Quad_2to4(ends, mtr.second, c);
 					z->LLToPixelv(c,c,np);
 
+					glColor4f(0.4, 1, 1, 0.4);         // desaturated cyan
 					glBegin(GL_TRIANGLE_FAN);
 						glVertex2v(c,np);
 					glEnd();
-
-					if(layers)
+				}
+				if(layers)
+				{
+					if(mtr.second == 0.0)
 					{
-						glColor4f(0.4, 1, 1, 1.0);         // bright cyan
-						glLineWidth(2);
-						for(int l = 1; l <= layers; l++)
+						Quad_2to4(ends, mtr.first, c);
+						z->LLToPixelv(c,c,np);
+					}
+					glColor4f(0.4, 1, 1, 1.0);         // bright cyan
+					for(int l = 1; l <= layers; l++)
+					{
+						Point2 sides[4] = { c[0], c[1], c[2], c[3] };
+						Vector2 dir(c[0], c[1]);
+
+						int begin_of_rails = seg->GetStartLayer() < l ? 0 : -1;
+						int end_of_rails = num_sides - (seg->GetEndLayer() < l ? num_sides : 0);
+
+						if(ns < begin_of_rails) continue;
+						if(ns == begin_of_rails)
 						{
-							Point2 sides[4] = { c[0], c[1], c[2], c[3] };
-							Vector2 dir(c[0], c[1]);
-
-							int begin_of_rails = seg->GetStartLayer() < l ? 0 : -1;
-							int end_of_rails = num_sides - (seg->GetEndLayer() < l ? num_sides : 0);
-
-							if(ns < begin_of_rails) continue;
-							if(ns == begin_of_rails)
-							{
-								sides[1] -= dir * 0.5; sides[2] -= dir * 0.5;
-							}
-							if(ns > end_of_rails) continue;
-							if(ns == end_of_rails)
-							{
-								sides[0] += dir * 0.5; sides[3] += dir * 0.5;
-							}
-
-							if(l > 1)
-							{
-								Vector2 perp(c[1],c[2]);
-								perp.normalize();
-								perp *= 3 * (l - 1);
-								sides[0] -= perp; sides[1] -= perp; sides[2] += perp; sides[3] += perp;
-							}
-
-							glBegin(GL_LINES);
-							glVertex2v(sides,4);
-							glEnd();
+							sides[1] -= dir * 0.5; sides[2] -= dir * 0.5;
 						}
+						if(ns > end_of_rails) continue;
+						if(ns == end_of_rails)
+						{
+							sides[0] += dir * 0.5; sides[3] += dir * 0.5;
+						}
+
+						if(l > 1)
+						{
+							Vector2 perp(c[1],c[2]);
+							perp.normalize();
+							perp *= 3 * (l - 1);
+							sides[0] -= perp; sides[1] -= perp; sides[2] += perp; sides[3] += perp;
+						}
+
+						glBegin(GL_LINES);
+						glVertex2v(sides,4);
+						glEnd();
 					}
 				}
 			}
