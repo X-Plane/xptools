@@ -425,7 +425,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 							Vector2 orient2(pts[pts.size()-2],pts[pts.size()-1]);
 							double sq_len = Vector2(b.p1,b.p2).squared_length();
 
-							if( re && (sq_len > 25*25) )
+							if( mVertices && re && (sq_len > 25*25) )
 							{
 								if( i == 0 )
 								{
