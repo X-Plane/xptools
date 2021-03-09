@@ -14,28 +14,29 @@ menu to view it online.
 CHANGE HISTORY
 
 WED 2.4.0
-   Bug Fix:
-   - Partial fix of long standing OGLE bugs
-      - disappearing content when select numeric edit fields,
-      - mess with vertical scrolling ,
-      - errors in multi line text edit fields like in Gateway export dialog
-   - WED-1353 GUI_ScrollBar has uninitialized vars
-   - WED-1347 stops cursor blink timer in Settings window when loose focus
-   - validate ICAO_Code meta tag to meet ICAO nomenclature
-   - fix preview for .lin commands with offset layers in preview pane
-   - fix endcap not showing for lines with two vertices only
-   - refine tesselation to show fill for polygons with colocated nodes
-   - XSG-11489: Fix gateway flags for airports with odd ATC taxi/ground_service routes
    Features:
-   - show gridded preview for library vdirectories
+   - WED-120, 306, 380 edit road networks incl. basic on-map previews
+   - edit autogen .agb/.ags (but no on-map previews)
+   - show gridded preview for library pane directories
    - support choosing taxiway equivalent styles for draped polygons
-   - support autogen .agb/.ags entities (but no on-map previews)
    - preselect last opened scenery at startup
    - show on-map 3D previews for beacons, windsocks, 3D taxi signs
    - use native secure internet connectivity on all operating systems
    - WED-1359: change OOW mouse click for LineEditor from accept to cancel edit
    - automatically change ExportTarget at GW import, avoid inheriting unexpected values
    - support import of text format DSF files
+   Bug Fix:
+   - Partial fix of long standing OGLE bugs
+      - disappearing content when select numeric edit fields,
+      - mess with vertical scrolling,
+      - errors in multi line text edit fields like in Gateway export dialog
+   - WED-1353 GUI_ScrollBar has uninitialized variables
+   - WED-1347 stops cursor blink timer in Settings window when loose focus
+   - validate ICAO_Code meta tag to meet ICAO nomenclature
+   - fix preview for .lin commands with offset layers in preview pane
+   - fix endcap not showing for lines with two vertices only
+   - refine tesselation to show fill for polygons with colocated nodes
+   - XSG-11489: Fix gateway flags for airports with odd ATC taxi/ground_service routes
 
 WED 2.3.1r1 12/22/20
    Features:

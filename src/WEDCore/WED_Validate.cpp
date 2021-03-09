@@ -2142,15 +2142,14 @@ static bool near_but_not_on_boundary(Point2& p)
 static void ValidateRoads(const vector<WED_RoadEdge *> roads, validation_error_vector& msgs, WED_Airport* apt)
 {
 	// Hard problems
-	// crossing tile boundary
 	// referencing unknown (v)road-type (e.g. after changing the resource property)
 
 	// Soft problems (only partially implemented, yet)
 	// zero length segments (length under 3m)
 	// disconnected vertices
-	// T-junctions
+	// T-junctions                                                     not yet done
 	// colocated segments (sharing both ends with another segment)
-	// connected dissimilar elements (road-railroad-powerline)
+	// connected dissimilar elements (road-railroad-powerline)         not yet done
 
 	// Style issues - Gateway no-no's
 	// resource not right
@@ -2166,8 +2165,7 @@ static void ValidateRoads(const vector<WED_RoadEdge *> roads, validation_error_v
 
 		Bezier2 s;
 		int ns = r->GetNumSides();     // we have plans to allow multi-segment roads ...
-		int i;
-		for(i = 0; i < ns; i++)
+		for(int i = 0; i < ns; i++)
 		{
 			r->GetSide(gis_Geo, i, s);
 
@@ -2183,37 +2181,6 @@ static void ValidateRoads(const vector<WED_RoadEdge *> roads, validation_error_v
 			nodes[dynamic_cast<WED_Thing *>(r->GetNthPoint(i+1))] = s.p2;
 			if(near_but_not_on_boundary(s.p2))
 				msgs.push_back(validation_error_t("Road nodes must be either exactly on or a few meters away from DSF tile boundaries.", err_net_crosses_tile_bdy, r, apt));
-
-
-			double x1 = floor(s.p1.x());
-			double x2 = floor(s.p2.x());
-			if(x1 != x2)
-			{
-				if(x1 > x2)
-				{
-					if(x1 == s.p1.x() && x1 - 1.0 == x2) continue;
-				}
-				else
-				{
-					if(x2 == s.p2.x() && x2 - 1.0 == x1) continue;
-				}
-				break;
-			}
-
-			double y1 = floor(s.p1.y());
-			double y2 = floor(s.p2.y());
-			if(y1 != y2)
-			{
-				if(y1 > y2)
-				{
-					if(y1 == s.p1.y() && y1 - 1.0 == y2) continue;
-				}
-				else
-				{
-					if(y2 == s.p2.y() && y2 - 1.0 == y1) continue;
-				}
-				break;
-			}
 		}
 
 		if(gExportTarget >= wet_gateway)
@@ -2287,11 +2254,6 @@ static void ValidateRoads(const vector<WED_RoadEdge *> roads, validation_error_v
 			}
 		}
 	}
-
-	// t-junction test ? Nah - skip that
-	// Crossing segments, if on same level
-
-	// last: optimize speed by generalizing bucketed test also used for doubled nodes
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------
