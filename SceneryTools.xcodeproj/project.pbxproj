@@ -57,6 +57,8 @@
 		0236B9732034264A0046900C /* check_buttons.png in Resources */ = {isa = PBXBuildFile; fileRef = 0236B971203425CE0046900C /* check_buttons.png */; };
 		0269A8551FF5F8F00085A37C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
 		0269A8561FF5F8F10085A37C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
+		028A6FE725F897C90002FDF5 /* ArrowHeadRoadE.png in Resources */ = {isa = PBXBuildFile; fileRef = 028A6FE325F897C30002FDF5 /* ArrowHeadRoadE.png */; };
+		028A6FE825F897CC0002FDF5 /* ArrowHeadRoadS.png in Resources */ = {isa = PBXBuildFile; fileRef = 028A6FE425F897C30002FDF5 /* ArrowHeadRoadS.png */; };
 		028B41EC24F1840A00018953 /* glew.c in Sources */ = {isa = PBXBuildFile; fileRef = 028B41E824F1829A00018953 /* glew.c */; };
 		029EC5B9239B095300A7C5E1 /* exclaim.png in Resources */ = {isa = PBXBuildFile; fileRef = 029EC5B7239B094B00A7C5E1 /* exclaim.png */; };
 		02A30B7E20F7A80B008CC1CB /* line_BSolidWhite.png in Resources */ = {isa = PBXBuildFile; fileRef = 025E09DF20D2F11200DD8856 /* line_BSolidWhite.png */; };
@@ -1122,6 +1124,8 @@
 		0224ED2820048B7F004729CD /* WED_ValidateList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ValidateList.h; sourceTree = "<group>"; };
 		0236B971203425CE0046900C /* check_buttons.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = check_buttons.png; sourceTree = "<group>"; };
 		025E09DF20D2F11200DD8856 /* line_BSolidWhite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = line_BSolidWhite.png; sourceTree = "<group>"; };
+		028A6FE325F897C30002FDF5 /* ArrowHeadRoadE.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ArrowHeadRoadE.png; sourceTree = "<group>"; };
+		028A6FE425F897C30002FDF5 /* ArrowHeadRoadS.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ArrowHeadRoadS.png; sourceTree = "<group>"; };
 		028B41E824F1829A00018953 /* glew.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = glew.c; sourceTree = "<group>"; };
 		028B41E924F1829A00018953 /* glew.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = glew.h; sourceTree = "<group>"; };
 		028B41EA24F1829A00018953 /* glxew.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = glxew.h; sourceTree = "<group>"; };
@@ -3697,6 +3701,8 @@
 		D6ED3E1E0B6A636C00D5484E /* WEDResources */ = {
 			isa = PBXGroup;
 			children = (
+				028A6FE325F897C30002FDF5 /* ArrowHeadRoadE.png */,
+				028A6FE425F897C30002FDF5 /* ArrowHeadRoadS.png */,
 				02BDCCFD23A97E0400208CD2 /* tilt_tool.png */,
 				029EC5B7239B094B00A7C5E1 /* exclaim.png */,
 				D6B69CDE1C582B6A005C78C5 /* parking_spots */,
@@ -4267,6 +4273,7 @@
 				D67B2A090C5661A100A21ABC /* line_OtherHold.png in Resources */,
 				02A30B7E20F7A80B008CC1CB /* line_BSolidWhite.png in Resources */,
 				D67B2A0A0C5661A100A21ABC /* line_RunwayHold.png in Resources */,
+				028A6FE725F897C90002FDF5 /* ArrowHeadRoadE.png in Resources */,
 				D67B2A0B0C5661A100A21ABC /* line_SolidWhite.png in Resources */,
 				D67B2A0C0C5661A100A21ABC /* line_SolidYellow.png in Resources */,
 				D67B2A0D0C5661A100A21ABC /* line_TaxiCenter.png in Resources */,
@@ -4275,6 +4282,7 @@
 				02198CC021A275F7008FDB0C /* nav_ndb.png in Resources */,
 				D67B2A100C5661A100A21ABC /* line_WideBrokenSingle.png in Resources */,
 				D6C390020FA0D93400EFA56C /* sans.ttf in Resources */,
+				028A6FE825F897CC0002FDF5 /* ArrowHeadRoadS.png in Resources */,
 				D6E30557105F8EE7009E6E7F /* tce_tools.png in Resources */,
 				D63D8E6113F32E5500E353E8 /* map_missing_obj.png in Resources */,
 				D6C21A3C1C41A5DB00EE5FB3 /* taxi_sign.png in Resources */,
