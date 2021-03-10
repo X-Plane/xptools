@@ -125,7 +125,7 @@ static const char * k_dsf_cat_names[dsf_cat_DIM] = {
 class	DSF_Importer {
 public:
 
-	DSF_Importer() : is_overlay(false), dsf_cat_filter(dsf_filter_all), cull_bound(Bbox2(-180,-90,180,90)), filter_on(false)
+	DSF_Importer() : is_overlay(false), dsf_cat_filter(dsf_filter_all), filter_on(false)
 	{
 		for(int n = 0; n < 7; ++n)
 			req_level_obj[n] = req_level_agp[n] = req_level_fac[n] = -1;
@@ -158,10 +158,45 @@ public:
 	vector<string>		dsf_AptID_filter;     // Airport ID's
 	vector<bool>		filter_table;     	  // Airport ID IDX
 	bool				filter_on;            // global switch to filter out stuff
-	Bbox2 				cull_bound;
+	vector<Bbox2>		cull_bounds;
 	int					autogen_rings;
 	int					autogen_spelling;
 	bool 				is_overlay;
+
+
+	bool areas_contains_segment(const Segment2& in_seg)
+	{
+		if(cull_bounds.empty()) return true;
+
+		for(auto b : cull_bounds )
+		{
+			if(b.contains(in_seg.p1) || b.contains(in_seg.p2)) return true;
+		}
+		return false;
+	}
+
+	bool areas_contains_point(const Point2& in_pnt)
+	{
+		if(cull_bounds.empty()) return true;
+
+		for(auto b : cull_bounds )
+		{
+			if(b.contains(in_pnt)) return true;
+		}
+		return false;
+	}
+
+	bool areas_bounds_overlap(const Bbox2& in_bound)
+	{
+		if(cull_bounds.empty()) return true;
+
+		for(auto b : cull_bounds )
+		{
+			if(b.overlap(in_bound)) return true;
+		}
+		return false;
+	}
+
 
 	WED_Thing * get_cat_parent(dsf_import_category cat)
 	{
@@ -444,7 +479,8 @@ public:
 #if !NO_NET
 		DSF_Importer * me = (DSF_Importer *) inRef;
 		if(!(me->dsf_cat_filter & dsf_filter_roads) || me->filter_on) return;
-		if(!me->cull_bound.contains(me->accum_road[0].first) && !me->cull_bound.contains(Point2(inCoordinates[0], inCoordinates[1])))
+		Segment2 segm(me->accum_road[0].first,Point2(inCoordinates[0], inCoordinates[1]));
+		if(!me->areas_contains_segment(segm))
 		{
 			me->accum_road.clear();
 			return;
@@ -937,31 +973,28 @@ public:
 				wdgs.back()->SetParent(NULL,0);
 			}
 
-			if (!me->cull_bound.is_null())
+			if(auto ags = static_cast<WED_AutogenPlacement *>(me->poly))
 			{
-				if(auto ags = static_cast<WED_AutogenPlacement *>(me->poly))
+				Bbox2 ags_bounds;
+				ags->GetBounds(gis_Geo, ags_bounds);
+				if (!me->areas_bounds_overlap(ags_bounds))  // this isn't strictly right ... as the points might not be inside the box, but all around it.
 				{
-					Bbox2 ags_bounds;
-					ags->GetBounds(gis_Geo, ags_bounds);
-					if (!me->cull_bound.overlap(ags_bounds))  // this isn't strictly right ... as the points might not be inside the box, but all around it.
+					wdgs.push_back(me->poly->GetNthChild(0));
+					wdgs.back()->SetParent(NULL, 0);
+					for (auto w : wdgs)
 					{
-						wdgs.push_back(me->poly->GetNthChild(0));
-						wdgs.back()->SetParent(NULL, 0);
-						for (auto w : wdgs)
+						for (int n = w->CountChildren(); n > 0 ; --n)
 						{
-							for (int n = w->CountChildren(); n > 0 ; --n)
-							{
-								auto c = w->GetNthChild(0);
-								c->SetParent(NULL, 0);
-								c->Delete();
-							}
-							w->Delete();
+							auto c = w->GetNthChild(0);
+							c->SetParent(NULL, 0);
+							c->Delete();
 						}
-						me->poly->SetParent(NULL, 0);
-						me->poly->Delete();
-						me->poly = NULL;
-						return;
+						w->Delete();
 					}
+					me->poly->SetParent(NULL, 0);
+					me->poly->Delete();
+					me->poly = NULL;
+					return;
 				}
 			}
 
@@ -1097,11 +1130,11 @@ int DSF_Import(const char * path, WED_Thing * base)
 	return res;
 }
 
-int DSF_Import_Partial(const char * path, WED_Thing * base, int inCatFilter, const Bbox2& cull_bound, const vector<string>& inAptFilter)
+int DSF_Import_Partial(const char * path, WED_Thing * base, int inCatFilter, const vector<Bbox2>& inBounds, const vector<string>& inAptFilter)
 {
 	DSF_Importer importer;
 
-	importer.cull_bound = cull_bound;
+	importer.cull_bounds = inBounds;
 	importer.dsf_cat_filter = inCatFilter;
 	importer.dsf_AptID_filter = inAptFilter;
 
@@ -1131,60 +1164,81 @@ int WED_ImportText(const char * path, WED_Thing * base)
 
 int		WED_CanImportRoads(IResolver * resolver)
 {
-	WED_Thing * t = WED_HasSingleSelectionOfType(resolver, WED_ExclusionZone::sClass);
-	if(t == NULL ) return 0;
-	WED_ExclusionZone * excl = dynamic_cast<WED_ExclusionZone *>(t);
-	if(excl == NULL) return 0;
-	set<int> excl_types;
-	excl->GetExclusions(excl_types);
-	if(excl_types.find(exclude_Net) != excl_types.end()) return 1;
+	ISelection * sel = WED_GetSelect(resolver);
+	if(!sel->IterateSelectionAnd(Iterate_IsClass,(void*) WED_ExclusionZone::sClass)) return 0;
 
-	return 0;
+	vector<WED_Thing *> things;
+	sel->IterateSelectionOr(Iterate_CollectThings, &things);
+
+	for(auto t : things)
+	{
+		WED_ExclusionZone * excl = dynamic_cast<WED_ExclusionZone *>(t);
+		if(excl == nullptr) return 0;
+		set<int> excl_types;
+		excl->GetExclusions(excl_types);
+		if(excl_types.find(exclude_Net) == excl_types.end()) return 0;
+	}
+
+	return 1;
 }
 
 void	WED_DoImportRoads(IResolver * resolver)
 {
-	WED_Thing * wrl = WED_GetWorld(resolver);
-	WED_Thing * t = WED_HasSingleSelectionOfType(resolver, WED_ExclusionZone::sClass);
-	if(t == NULL) return ;
-	WED_ExclusionZone * excl = dynamic_cast<WED_ExclusionZone *>(t);
-	if(excl == NULL) return ;
-	set<int> excl_types;
-	excl->GetExclusions(excl_types);
-	int dsf_filters = dsf_filter_roads;
-	if(excl_types.find(exclude_Str) != excl_types.end()) dsf_filters |= dsf_filter_autogen;
+	ISelection * sel = WED_GetSelect(resolver);
+	if(!sel->IterateSelectionAnd(Iterate_IsClass,(void*) WED_ExclusionZone::sClass)) return ;
 
-	Bbox2 bounds;
-	excl->GetBounds(gis_Geo,bounds);
+	vector<WED_Thing *> things;
+	sel->IterateSelectionOr(Iterate_CollectThings, &things);
 
-	vector<string> matching_dsf;
+	vector<Bbox2> excl_bounds;
+	bool do_import_autogen = false;
+	for(auto t : things)
+	{
+		WED_ExclusionZone * excl = dynamic_cast<WED_ExclusionZone *>(t);
+		if(excl == nullptr) return;
+		set<int> excl_types;
+		excl->GetExclusions(excl_types);
+		if(excl_types.find(exclude_Net) == excl_types.end()) continue;
+		if(excl_types.find(exclude_Str) != excl_types.end()) do_import_autogen = true ;
+		Bbox2 b;
+		excl->GetBounds(gis_Geo,b);
+		excl_bounds.push_back(b);
+	}
+
+	int dsf_filters = do_import_autogen ? dsf_filter_roads|dsf_filter_autogen : dsf_filter_roads ;
+
+	set<string> matching_dsf;
 	pair<int, int> glob_scn = gPackageMgr->GlobalPackages();
 
-	for(int lon = floor(bounds.xmin()); lon < ceil(bounds.xmax()); lon++)
-		for (int lat = floor(bounds.ymin()); lat < ceil(bounds.ymax()); lat++)
-			for (int pkg = glob_scn.first; pkg <= glob_scn.second; pkg++)
-			{
-				string path;
-				gPackageMgr->GetNthPackagePath(pkg, path);
-				char buf[256];
-				snprintf(buf, sizeof(buf), "%s" DIR_STR "Earth nav data" DIR_STR "%+03d%+04d" DIR_STR "%+03d%+04d.dsf", path.c_str(),
-					lat > 0 ? (lat / 10) * 10 : ((-lat + 9) / 10) * -10, lon > 0 ? (lon / 10) * 10 : ((-lon + 9) / 10) * -10, lat, lon);
-				if (FILE_exists(buf))
+	for(auto bb : excl_bounds )
+	{
+		for(int lon = floor(bb.xmin()); lon < ceil(bb.xmax()); lon++)
+			for (int lat = floor(bb.ymin()); lat < ceil(bb.ymax()); lat++)
+				for (int pkg = glob_scn.first; pkg <= glob_scn.second; pkg++)
 				{
-					matching_dsf.push_back(buf);
-					break;
+					string path;
+					gPackageMgr->GetNthPackagePath(pkg, path);
+					char buf[256];
+					snprintf(buf, sizeof(buf), "%s" DIR_STR "Earth nav data" DIR_STR "%+03d%+04d" DIR_STR "%+03d%+04d.dsf", path.c_str(),
+						lat > 0 ? (lat / 10) * 10 : ((-lat + 9) / 10) * -10, lon > 0 ? (lon / 10) * 10 : ((-lon + 9) / 10) * -10, lat, lon);
+					if (FILE_exists(buf))
+					{
+						matching_dsf.insert(buf);
+						break;
+					}
 				}
-			}
+	}
 
 	if(matching_dsf.size())
 	{
+		WED_Thing * wrl = WED_GetWorld(resolver);
 		wrl->StartOperation("Import Roads");
 		for(auto& path : matching_dsf)
 		{
 			WED_Group * g = WED_Group::CreateTyped(wrl->GetArchive());
 			g->SetName(path);
 			g->SetParent(wrl,wrl->CountChildren());
-			int result = DSF_Import_Partial(path.c_str(), g, dsf_filters, bounds);
+			int result = DSF_Import_Partial(path.c_str(), g, dsf_filters, excl_bounds);
 			if(result != dsf_ErrOK)
 			{
 				string msg = string("The file '") + path + string("' could not be imported as a DSF:\n")
