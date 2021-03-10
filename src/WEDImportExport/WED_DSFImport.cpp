@@ -71,7 +71,6 @@
 #define NO_NET !ROAD_EDITING
 #define NO_EXC 0
 
-
 static void debug_it(const vector<BezierPoint2>& pts)
 {
 	for(int n = 0; n < pts.size(); ++n)
@@ -938,6 +937,34 @@ public:
 				wdgs.back()->SetParent(NULL,0);
 			}
 
+			if (!me->cull_bound.is_null())
+			{
+				if(auto ags = static_cast<WED_AutogenPlacement *>(me->poly))
+				{
+					Bbox2 ags_bounds;
+					ags->GetBounds(gis_Geo, ags_bounds);
+					if (!me->cull_bound.overlap(ags_bounds))  // this isn't strictly right ... as the points might not be inside the box, but all around it.
+					{
+						wdgs.push_back(me->poly->GetNthChild(0));
+						wdgs.back()->SetParent(NULL, 0);
+						for (auto w : wdgs)
+						{
+							for (int n = w->CountChildren(); n > 0 ; --n)
+							{
+								auto c = w->GetNthChild(0);
+								c->SetParent(NULL, 0);
+								c->Delete();
+							}
+							w->Delete();
+						}
+						me->poly->SetParent(NULL, 0);
+						me->poly->Delete();
+						me->poly = NULL;
+						return;
+					}
+				}
+			}
+
 			me->ring = me->poly->GetNthChild(0);
 			int n_pts = me->ring->CountChildren();
 			Point2 first_pt, last_pt;
@@ -1100,6 +1127,7 @@ int WED_ImportText(const char * path, WED_Thing * base)
 
 #include "WED_ToolUtils.h"
 #include "WED_UIDefs.h"
+#include "WED_PackageMgr.h"
 
 int		WED_CanImportRoads(IResolver * resolver)
 {
@@ -1123,38 +1151,50 @@ void	WED_DoImportRoads(IResolver * resolver)
 	if(excl == NULL) return ;
 	set<int> excl_types;
 	excl->GetExclusions(excl_types);
-	if(excl_types.find(exclude_Net) == excl_types.end()) return;
+	int dsf_filters = dsf_filter_roads;
+	if(excl_types.find(exclude_Str) != excl_types.end()) dsf_filters |= dsf_filter_autogen;
 
 	Bbox2 bounds;
 	excl->GetBounds(gis_Geo,bounds);
 
-	char * path = GetMultiFilePathFromUser("Import Roads & AG from DSF file...", "Import", FILE_DIALOG_IMPORT_DSF);
-	if(path)
+	vector<string> matching_dsf;
+	pair<int, int> glob_scn = gPackageMgr->GlobalPackages();
+
+	for(int lon = floor(bounds.xmin()); lon < ceil(bounds.xmax()); lon++)
+		for (int lat = floor(bounds.ymin()); lat < ceil(bounds.ymax()); lat++)
+			for (int pkg = glob_scn.first; pkg <= glob_scn.second; pkg++)
+			{
+				string path;
+				gPackageMgr->GetNthPackagePath(pkg, path);
+				char buf[256];
+				snprintf(buf, sizeof(buf), "%s" DIR_STR "Earth nav data" DIR_STR "%+03d%+04d" DIR_STR "%+03d%+04d.dsf", path.c_str(),
+					lat > 0 ? (lat / 10) * 10 : ((-lat + 9) / 10) * -10, lon > 0 ? (lon / 10) * 10 : ((-lon + 9) / 10) * -10, lat, lon);
+				if (FILE_exists(buf))
+				{
+					matching_dsf.push_back(buf);
+					break;
+				}
+			}
+
+	if(matching_dsf.size())
 	{
-		char * free_me = path;
-
 		wrl->StartOperation("Import Roads");
-
-		while(*path)
+		for(auto& path : matching_dsf)
 		{
 			WED_Group * g = WED_Group::CreateTyped(wrl->GetArchive());
 			g->SetName(path);
 			g->SetParent(wrl,wrl->CountChildren());
-			int result = DSF_Import_Partial(path, g, dsf_filter_roads | dsf_filter_autogen, bounds);
+			int result = DSF_Import_Partial(path.c_str(), g, dsf_filters, bounds);
 			if(result != dsf_ErrOK)
 			{
 				string msg = string("The file '") + path + string("' could not be imported as a DSF:\n")
 							+ dsfErrorMessages[result];
 				DoUserAlert(msg.c_str());
 				wrl->AbortOperation();
-				free(free_me);
 				return;
 			}
-
-			path = path + strlen(path) + 1;
 		}
 		wrl->CommitOperation();
-		free(free_me);
 	}
 }
 
