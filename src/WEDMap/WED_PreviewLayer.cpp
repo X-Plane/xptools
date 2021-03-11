@@ -1125,8 +1125,6 @@ struct	preview_facade : public preview_polygon {
 	preview_facade(WED_FacadePlacement * f, int l, IResolver * r) : preview_polygon(f,l,false), fac(f), resolver(r) { }
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
 	{
-		const float colors[18] = { 1, 0, 0,	 1, 1, 0,  0, 1, 0,    // red, yellow, green
-		                           0, 1, 1,  0, 0, 1,  1, 0, 1,};  // aqua, blue, cyan
 		IGISPointSequence * ps = fac->GetOuterRing();
 		glColor4f(1,1,1,1);
 
@@ -1180,10 +1178,6 @@ struct	preview_facade : public preview_polygon {
 
 			g->SetState(false,0,false,true,true,true,true);
 
-			float mat[16];
-			glGetFloatv(GL_PROJECTION_MATRIX, mat);
-			bool isTilted = (mat[2] != 0.0 || mat[6] != 0.0);
-
 			glMatrixMode(GL_MODELVIEW);
 			zoomer->PushMatrix();
 			Point2 l = zoomer->LLToPixel(ref_pt);
@@ -1192,29 +1186,10 @@ struct	preview_facade : public preview_polygon {
 			zoomer->Scalef(ppm,ppm,ppm);
 			zoomer->Rotatef(90, 1,0,0);
 			if(rmgr->GetFac(vpath, info))
-				draw_facade(tman, rmgr, vpath, *info, pts, choices, fac->GetHeight(), g, isTilted, 0.7*ppm);
+				draw_facade(tman, rmgr, vpath, *info, pts, choices, fac->GetHeight(), g, true, 0.7*ppm);
 			zoomer->PopMatrix();
 		}
 
-		g->SetState(false,0,false,true,true,false,false);
-//		glLineWidth(2);
-		int n = ps->GetNumSides();
-		for(int i = 0; i < n; ++i)
-		{
-			vector<Point2>	pts;
-			SideToPoints(ps,i,zoomer, pts);
-
-			int param = 0;
-			if(fac->HasCustomWalls())
-			{
-				Bezier2		bp;
-				ps->GetSide(gis_Param,i,bp);
-				param = bp.p1.x();
-			}
-			glColor3fv(colors + (param % 6) * 3);
-			glShapeOffset2v(GL_LINES/*GL_LINE_STRIP*/, &*pts.begin(), pts.size(), -2);
-		}
-//		glLineWidth(1);
 	}
 };
 
@@ -1720,7 +1695,10 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		if(taxi)
 		{
 			mPreviewItems.push_back(new preview_taxiway(taxi,mTaxiLayer++));
-			if(PixelSize(taxi, 0.4, GetZoomer()) > MIN_PIXELS_PREVIEW)        // there can be so many, make visibility decision here already for performance
+
+// f'd up - its culling by taxiway polygon size and not by gis chain line width. And thats after all the dynamic casting, boundig box pulling and all ...oh my.
+
+			if(PixelSize(taxi, 0.4, GetZoomer()) > mOptions.minLineThicknessPixels)        // there can be so many, make visibility decision here already for performance
 			{
 				IGISPointSequence * ps = taxi->GetOuterRing();
 				mPreviewItems.push_back(new preview_airportlines(ps, group_Markings, GetResolver()));
@@ -1796,7 +1774,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		{
 			// there can be so many, make visibility decision here already for performance
 			// criteria matches where mRealLines disappear in StructureLayer
-			if(PixelSize(chn, 0.4, GetZoomer()) > MIN_PIXELS_PREVIEW)
+			if(PixelSize(chn, 0.4, GetZoomer()) > mOptions.minLineThicknessPixels)
 			{
 				mPreviewItems.push_back(new preview_airportlines(chn, group_Markings, GetResolver()));
 				mPreviewItems.push_back(new preview_airportlights(chn, group_Objects, GetResolver()));
@@ -1828,7 +1806,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 			{
 				double n,s,e,w;
 				GetZoomer()->GetMapVisibleBounds(w,s,e,n);
-//				if(obj->GetVisibleDeg() > (e-w) * 0.005)        // skip below 1/2% map width. Obj's also tend to overestimate their size
+				if(obj->GetVisibleDeg() > (e-w) * 0.005)        // skip below 1/2% map width. Obj's also tend to overestimate their size
 					mPreviewItems.push_back(new preview_object(obj,group_Objects, mObjDensity, GetResolver()));
 			}
 	}
@@ -1921,3 +1899,7 @@ int			WED_PreviewLayer::GetObjDensity(void) const
 	return mObjDensity;
 }
 
+void		WED_PreviewLayer::SetOptions(const Options& options)
+{
+	mOptions = options;
+}

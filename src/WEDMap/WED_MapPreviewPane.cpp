@@ -211,14 +211,10 @@ WED_MapPreviewPane::WED_MapPreviewPane(GUI_Commander * cmdr, WED_Document * docu
 
 	mDocument->GetArchive()->AddListener(this);
 
-#if 0
 	WED_PreviewLayer::Options options;
-	options.clearDepthBuffer = false;
-	options.drawFacadeWalls = true;
-	options.drawFacadeOutline = false;
-	options.drawSkeletonIfLineTooThin = false;
+	options.minLineThicknessPixels = 1;
 	mPreviewLayer->SetOptions(options);
-#endif
+
 	SetForwardVector();
 
 	Bbox2 box;

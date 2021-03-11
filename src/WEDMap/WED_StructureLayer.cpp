@@ -50,6 +50,7 @@
 #include "WED_TruckDestination.h"
 #include "WED_Airport.h"
 #include "WED_RampPosition.h"
+#include "WED_FacadePlacement.h"
 #include "WED_FacadeRing.h"
 #include "WED_Windsock.h"
 #include "WED_AirportBeacon.h"
@@ -410,6 +411,23 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 						glColor4fv(WED_Color_RGBA(struct_color));
 					}
 					
+					if(sub_class == WED_FacadeRing::sClass)
+					{
+						const float colors[18] = { 1, 0, 0,	 1, 1, 0,  0, 1, 0,    // red, yellow, green
+												   0, 1, 1,  0, 0, 1,  1, 0, 1,};  // aqua, blue, cyan
+						int param = 0;
+						auto fac = dynamic_cast<WED_FacadePlacement*>(dynamic_cast<WED_Thing*>(entity)->GetParent());
+						if(fac && fac->HasCustomWalls())
+						{
+							Bezier2		bp;
+							ps->GetSide(gis_Param,i,b);
+							param = b.p1.x();
+						}
+						glColor3fv(colors + (param % 6) * 3);
+						glShapeOffset2v(GL_LINE_STRIP, &*pts.begin(), pts.size(), -2);
+						glColor4fv(WED_Color_RGBA(struct_color));
+					}
+
 					DrawLineAttrs(&*pts.begin(), pts.size(), attrs);
 					if(!attrs.empty()) glColor4fv(WED_Color_RGBA(struct_color));
 					
