@@ -21,6 +21,8 @@
  *
  */
 
+#include "glew.h"
+
 #include "XObjReadWrite.h"
 #include "ObjConvert.h"
 #include "CompGeomDefs2.h"
@@ -36,7 +38,6 @@
 #include "WED_ResourceMgr.h"
 #include "WED_FacadePreview.h"
 #include "WED_PreviewLayer.h"
-
 
 static bool cull_obj(const XObj8 * o, double ppm)                   // cut off if laterally smaller than 5 pixels
 {
@@ -974,7 +975,29 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 			}
 		}
 		if(!bestFloor || bestFloor->walls.empty()) return;
-		
+
+#define NUM_VBO 2
+		static GLuint vbo[2* NUM_VBO];
+		static int pingpong(-1);
+		vector<float> vbuf(8 * 1000, 0.0f);
+
+		if (pingpong < 0)
+		{
+			vector<GLuint> ibuf(1000, 0);
+			glGenBuffers(2*NUM_VBO, vbo);
+			for(int i = 0; i < NUM_VBO*2; i += 2)
+			{
+				glBindBuffer(GL_ARRAY_BUFFER, vbo[i]);
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[i + 1]);
+				glBufferData(GL_ARRAY_BUFFER, vbuf.size() * sizeof(GLfloat), vbuf.data(), GL_DYNAMIC_DRAW); CHECK_GL_ERR
+				glBufferData(GL_ELEMENT_ARRAY_BUFFER, ibuf.size() * sizeof(GLuint), ibuf.data(), GL_DYNAMIC_DRAW); CHECK_GL_ERR
+			}
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+			pingpong = 0;
+		}
+
 		for(int w = 0; w < n_wall; ++w)
 		{
 			Segment2 inBase(footprint.side(w));
@@ -1060,36 +1083,90 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 					glMultMatrixf(mat);
 				}
 #endif
-				glBegin(GL_TRIANGLES);
+//				glBegin(GL_TRIANGLES);
+				glEnableClientState(GL_VERTEX_ARRAY);			CHECK_GL_ERR
+				glEnableClientState(GL_NORMAL_ARRAY);			CHECK_GL_ERR
+				glEnableClientState(GL_TEXTURE_COORD_ARRAY);	CHECK_GL_ERR
+				glDisableClientState(GL_COLOR_ARRAY);			CHECK_GL_ERR
 
-				if(!info.nowallmesh && (want_thinWalls || (info.has_roof && t.bounds[1] > 0.5) || (!info.is_ring && t.bounds[0] > 0.5)))
-				
-				for(auto& m : t.meshes) // all meshes == maximum LOD detail, all the time. 
+				if (!info.nowallmesh && (want_thinWalls || (info.has_roof && t.bounds[1] > 0.5) || (!info.is_ring && t.bounds[0] > 0.5)))
 				{
-					for(auto ind : m.idx)
+
+					for (auto& m : t.meshes) // all meshes == maximum LOD detail, all the time.
 					{
-						glTexCoord2fv(&m.uv[2*ind]);
-						glNormal3fv(&m.nml[3*ind]);
 #if 0
-						glVertex3fv(&m.xyz[3*ind]);
+						for (auto ind : m.idx)
+						{
+							glTexCoord2fv(&m.uv[2 * ind]);
+							glNormal3fv(&m.nml[3 * ind]);
+#if 0
+							glVertex3fv(&m.xyz[3 * ind]);
 #else
-						float y = m.xyz[3*ind+2];
-						float x = m.xyz[3*ind];
-						if(first == 1)
-							y +=  mi_first/segMult * x * (1.0+y);
-						if(first == our_choice.indices.size())
-							y +=  mi_last/segMult * x * m.xyz[3*ind+2];
-						glVertex3f(m.xyz[3*ind], m.xyz[3*ind+1], y);
+							float y = m.xyz[3 * ind + 2];
+							float x = m.xyz[3 * ind];
+							if (first == 1)
+								y += mi_first / segMult * x * (1.0 + y);
+							if (first == our_choice.indices.size())
+								y += mi_last / segMult * x * m.xyz[3 * ind + 2];
+							glVertex3f(m.xyz[3 * ind], m.xyz[3 * ind + 1], y);
 #endif						
+						}
+#else
+						glBindBuffer(GL_ARRAY_BUFFER, vbo[0 + pingpong]);
+						glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1 + pingpong]);
+//						glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+//						glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1]);
+
+						const GLfloat * vert_ptr = nullptr;
+						glVertexPointer(3, GL_FLOAT, 8 * sizeof(GLfloat), vert_ptr);		CHECK_GL_ERR
+						glNormalPointer(GL_FLOAT, 8 * sizeof(GLfloat), vert_ptr + 3);	CHECK_GL_ERR
+						glTexCoordPointer(2, GL_FLOAT, 8 * sizeof(GLfloat), vert_ptr + 6);	CHECK_GL_ERR
+
+						pingpong += 2;
+						if (pingpong >= NUM_VBO*2)
+							pingpong = 0;
+
+						vbuf.clear();
+						int ni = m.xyz.size() / 3;
+						for (int ind = 0; ind < ni; ++ind)
+						{
+							float y = m.xyz[3 * ind + 2];
+							float x = m.xyz[3 * ind];
+							if (first == 1)
+								y += mi_first / segMult * x * (1.0 + y);
+							if (first == our_choice.indices.size())
+								y += mi_last / segMult * x * y;
+							vbuf.push_back(x);
+							vbuf.push_back(m.xyz[3 * ind + 1]);
+							vbuf.push_back(y);
+							vbuf.push_back(m.nml[3 * ind]);
+							vbuf.push_back(m.nml[3 * ind] + 1);
+							vbuf.push_back(m.nml[3 * ind] + 2);
+							vbuf.push_back(m.uv[2 * ind]);
+							vbuf.push_back(m.uv[2 * ind + 1]);
+						}
+
+						glBufferSubData(GL_ARRAY_BUFFER,         0, vbuf.size() * sizeof(GLfloat), vbuf.data()); CHECK_GL_ERR
+						glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, m.idx.size() * sizeof(GLuint), m.idx.data()); CHECK_GL_ERR
+
+						glDrawElements(GL_TRIANGLES, m.idx.size(), GL_UNSIGNED_INT,  nullptr); CHECK_GL_ERR
+#endif
 					}
 				}
-				glEnd();
+//				glEnd();
+				glDisableClientState(GL_VERTEX_ARRAY);			CHECK_GL_ERR
+				glDisableClientState(GL_NORMAL_ARRAY);			CHECK_GL_ERR
+				glDisableClientState(GL_TEXTURE_COORD_ARRAY);	CHECK_GL_ERR
+				glBindBuffer(GL_ARRAY_BUFFER, 0);				CHECK_GL_ERR
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);		CHECK_GL_ERR
 				glPopMatrix();
 				first++;
 				thisPt += segDir * segMult;
 			}
 			mi_first = mi_last;
 		}
+//		glDeleteBuffers(2, vbo);
+
 		if(info.has_roof && !info.is_ring)
 			roof_pts.push_back(footprint.back());    // we didn't process the last wall - but still need a complete roof. E.g. Fenced Parking Facades.
 	}
