@@ -68,15 +68,20 @@
 
 char	kToolKeys[2*TOOLICON_ROWS] = {
 	0, 0,
-	0, 0, 0, 0,
-	0, 0, 0, 0,
-
-	'b', 0, 'a', 'o',
-	'e', 'w', 'f', 'g',
-
-	'l', 'k', 'h', 't',
-	'r', 's', 'v', 'm',
-	0, 0, 0, 0
+	0, 0,
+	0, 0,
+	0, 0,
+	0, 0,
+	0, 0,
+	0, 0,
+	'b', 0,
+	'a', 'o',
+	'e', 'w',
+	'f', 'g',
+	'l', 'k',
+	'h', 't',
+	'r', 's',
+	'v', 'm'
 };
 
 enum //Must be kept in sync with TabPane
