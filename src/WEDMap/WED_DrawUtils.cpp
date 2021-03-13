@@ -88,8 +88,8 @@ void PointSequenceToVector(
 
 			int point_count = BezierPtsCount(b,z);
 
-			pts.reserve(pts.capacity() + point_count * (get_uv ? 2 : 1));
-			contours.reserve(contours.capacity() + point_count);
+			pts.reserve(pts.size() + point_count * (get_uv ? 2 : 1));
+			contours.reserve(contours.size() + point_count);
 			for (int k = 0; k < point_count; ++k)
 			{
 							pts.push_back(b.midpoint((float) k / (float) point_count));
@@ -145,7 +145,7 @@ static void CALLBACK TessVertexUVh(const Point2 * p, float * h)
 
 void glPolygon2(const Point2 * pts, bool has_uv, const int * contours, int n, float height)
 {
-#if 1 // LIBTESS
+#if LIBTESS
 	TESStesselator * tess = tessNewTess(NULL);
 	const Point2 * pts_p(pts);
 	vector<GLfloat>	raw_pts;
