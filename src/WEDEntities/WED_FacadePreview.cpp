@@ -979,6 +979,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 			vector<GLfloat> vert;
 			for (auto& f : info.floors)
 				for (auto& t : f.templates)
+				{
 					for (auto& m : t.meshes)
 					{
 						const_cast<int&>(m.idx_start) = idx.size();
@@ -999,13 +1000,14 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 							vert.push_back(m.uv[2 * ind + 1]);
 						}
 					}
+				}
 			GLuint vbo[2];
 			glGenBuffers(2, vbo);
 			glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1]);
 			glBufferData(GL_ARRAY_BUFFER, vert.size() * sizeof(GLfloat), vert.data(), GL_STATIC_DRAW); CHECK_GL_ERR
-				glBufferData(GL_ELEMENT_ARRAY_BUFFER, idx.size() * sizeof(GLushort), idx.data(), GL_STATIC_DRAW); CHECK_GL_ERR
-				glBindBuffer(GL_ARRAY_BUFFER, 0);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, idx.size() * sizeof(GLushort), idx.data(), GL_STATIC_DRAW); CHECK_GL_ERR
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 			const_cast<unsigned int&>(info.vert_vbo) = vbo[0];
 			const_cast<unsigned int&>(info.idx_vbo) = vbo[1];
@@ -1027,6 +1029,11 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 			pingpong = 0;
 		}
+		glEnableClientState(GL_VERTEX_ARRAY);			CHECK_GL_ERR
+		glEnableClientState(GL_NORMAL_ARRAY);			CHECK_GL_ERR
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);	CHECK_GL_ERR
+		glDisableClientState(GL_COLOR_ARRAY);			CHECK_GL_ERR
+
 		Vector2 miter;
 		for(int w = 0; w < n_wall; ++w)
 		{
@@ -1076,29 +1083,36 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 				else
 					mi_last = 0.0;
 			}
+			glPushMatrix();
+			glTranslatef(thisPt.x(), 0, thisPt.y());
+			float angle = atan2(perpDir.y(), -perpDir.x()) * RAD_TO_DEG;
+			glRotatef(angle, 0, 1, 0);
+			glScalef(1.0, 1.0, seg_length);
 
 			int first = 1;
 			for(auto ch : our_choice.indices)
 			{
 				const REN_facade_template_t& t = bestFloor->templates[ch];
 				double segMult = seg_length * t.bounds[2];
-				
-				glPushMatrix();
-				glTranslatef(thisPt.x(), 0, thisPt.y());
-				float angle = atan2(perpDir.y(), -perpDir.x()) * RAD_TO_DEG;
-				glRotatef(angle, 0, 1, 0);
-				
-				for(auto o: t.objs)
+
+				if(t.objs.size())
 				{
-					const XObj8 * oo(info.xobjs[o.idx]);
-					if(oo && !cull_obj(oo, ppm_for_culling))
+					glPushMatrix();
+					glScalef(1.0, 1.0, 1.0/seg_length);              // so we're not drawing objects at a (slightly) wrong scale
+					for(auto o: t.objs)
 					{
-						draw_obj_at_xyz(tman, oo, o.xyzr[0], o.xyzr[1], o.xyzr[2] * seg_length, o.xyzr[3], g);
-					} 
+						const XObj8 * oo(info.xobjs[o.idx]);
+						if(oo && !cull_obj(oo, ppm_for_culling))
+						{
+							draw_obj_at_xyz(tman, oo, o.xyzr[0], o.xyzr[1], o.xyzr[2] * seg_length, o.xyzr[3], g);
+						} 
+					}
+					glPopMatrix();
+					g->BindTex(tRef ? tman->GetTexID(tRef) : 0, 0);
+					glEnableClientState(GL_VERTEX_ARRAY);
+					glEnableClientState(GL_NORMAL_ARRAY);
+					glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 				}
-				g->BindTex(tRef  ? tman->GetTexID(tRef) : 0, 0);
-				
-				glScalef(1.0, 1.0, seg_length);
 #if 0
 				// There's gotta be some way to abuse some perspective transform to do the chamfering at the ends of a wall.
 				// If so, indexed drawing could be used again, vertex+attribute data drawn from a VBO - bingo !
@@ -1113,12 +1127,6 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 					glMultMatrixf(mat);
 				}
 #endif
-//				glBegin(GL_TRIANGLES);
-				glEnableClientState(GL_VERTEX_ARRAY);			CHECK_GL_ERR
-				glEnableClientState(GL_NORMAL_ARRAY);			CHECK_GL_ERR
-				glEnableClientState(GL_TEXTURE_COORD_ARRAY);	CHECK_GL_ERR
-				glDisableClientState(GL_COLOR_ARRAY);			CHECK_GL_ERR
-
 				if (!info.nowallmesh && (want_thinWalls || (info.has_roof && t.bounds[1] > 0.5) || (!info.is_ring && t.bounds[0] > 0.5)))
 				{
 					for (auto& m : t.meshes) // all meshes == maximum LOD detail, all the time.
@@ -1146,8 +1154,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 								vbuf.push_back(m.uv[2 * ind + 1]);
 							}
 							++pingpong;
-							if (pingpong >= NUM_VBO)
-								pingpong = 0;
+							if (pingpong >= NUM_VBO) pingpong = 0;
 
 							glBindBuffer(GL_ARRAY_BUFFER, sbo[pingpong]);
 							glBufferSubData(GL_ARRAY_BUFFER, 0, vbuf.size() * sizeof(GLfloat), vbuf.data());
@@ -1164,19 +1171,16 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 						glDrawElements(GL_TRIANGLES, m.idx_cnt, GL_UNSIGNED_SHORT, ((GLushort *)0) + m.idx_start); CHECK_GL_ERR
 					}
 				}
-//				glEnd();
-				glDisableClientState(GL_VERTEX_ARRAY);			CHECK_GL_ERR
-				glDisableClientState(GL_NORMAL_ARRAY);			CHECK_GL_ERR
-				glDisableClientState(GL_TEXTURE_COORD_ARRAY);	CHECK_GL_ERR
-				glBindBuffer(GL_ARRAY_BUFFER, 0);				CHECK_GL_ERR
-				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);		CHECK_GL_ERR
-				glPopMatrix();
 				first++;
-				thisPt += segDir * segMult;
+				glTranslatef(0, 0, -t.bounds[2]);
 			}
-			mi_first = mi_last;
+			glPopMatrix();
 		}
-//		glDeleteBuffers(2, vbo);
+		glDisableClientState(GL_VERTEX_ARRAY);			CHECK_GL_ERR
+		glDisableClientState(GL_NORMAL_ARRAY);			CHECK_GL_ERR
+		glDisableClientState(GL_TEXTURE_COORD_ARRAY);	CHECK_GL_ERR
+		glBindBuffer(GL_ARRAY_BUFFER, 0);				CHECK_GL_ERR
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);		CHECK_GL_ERR
 
 		if(info.has_roof && !info.is_ring)
 			roof_pts.push_back(footprint.back());    // we didn't process the last wall - but still need a complete roof. E.g. Fenced Parking Facades.
