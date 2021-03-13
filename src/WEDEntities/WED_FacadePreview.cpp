@@ -33,6 +33,8 @@
 #include "ITexMgr.h"
 #include "TexUtils.h"
 #include "GUI_GraphState.h"
+#include "GUI_DrawUtils.h"
+#include "WED_DebugLayer.h"
 #include "WED_DrawUtils.h"
 
 #include "WED_ResourceMgr.h"
@@ -797,9 +799,6 @@ struct obj {
 	float	x,y,z,r;
 };
 
-#include "GUI_DrawUtils.h"
-#include "WED_DebugLayer.h"
-
 void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, const fac_info_t& info, const Polygon2& footprint, const vector<int>& choices,
 	double fac_height, GUI_GraphState * g, bool want_thinWalls, double ppm_for_culling)
 {
@@ -962,9 +961,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 	}
 	else // type 2 facades
 	{
-		Vector2 miter;
 		roof_height =  -9.9e9;
-
 		for(auto& f : info.floors)
 		{
 			double h = f.max_roof_height();
@@ -976,28 +973,61 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 		}
 		if(!bestFloor || bestFloor->walls.empty()) return;
 
-#define NUM_VBO 2
-		static GLuint vbo[2* NUM_VBO];
-		static int pingpong(-1);
-		vector<float> vbuf(8 * 1000, 0.0f);
-
-		if (pingpong < 0)
+		if (info.idx_vbo == 0)
 		{
-			vector<GLuint> ibuf(1000, 0);
-			glGenBuffers(2*NUM_VBO, vbo);
-			for(int i = 0; i < NUM_VBO*2; i += 2)
-			{
-				glBindBuffer(GL_ARRAY_BUFFER, vbo[i]);
-				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[i + 1]);
-				glBufferData(GL_ARRAY_BUFFER, vbuf.size() * sizeof(GLfloat), vbuf.data(), GL_DYNAMIC_DRAW); CHECK_GL_ERR
-				glBufferData(GL_ELEMENT_ARRAY_BUFFER, ibuf.size() * sizeof(GLuint), ibuf.data(), GL_DYNAMIC_DRAW); CHECK_GL_ERR
-			}
-			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			vector<GLushort> idx;
+			vector<GLfloat> vert;
+			for (auto& f : info.floors)
+				for (auto& t : f.templates)
+					for (auto& m : t.meshes)
+					{
+						const_cast<int&>(m.idx_start) = idx.size();
+						const_cast<int&>(m.idx_cnt) = m.idx.size();
+						for (auto i : m.idx)
+							idx.push_back(i);
+						const_cast<int&>(m.mesh_start) = vert.size();
+						int ni = m.xyz.size() / 3;
+						for (int ind = 0; ind < ni; ++ind)
+						{
+							vert.push_back(m.xyz[3 * ind]);
+							vert.push_back(m.xyz[3 * ind + 1]);
+							vert.push_back(m.xyz[3 * ind + 2]);
+							vert.push_back(m.nml[3 * ind]);
+							vert.push_back(m.nml[3 * ind] + 1);
+							vert.push_back(m.nml[3 * ind] + 2);
+							vert.push_back(m.uv[2 * ind]);
+							vert.push_back(m.uv[2 * ind + 1]);
+						}
+					}
+			GLuint vbo[2];
+			glGenBuffers(2, vbo);
+			glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1]);
+			glBufferData(GL_ARRAY_BUFFER, vert.size() * sizeof(GLfloat), vert.data(), GL_STATIC_DRAW); CHECK_GL_ERR
+				glBufferData(GL_ELEMENT_ARRAY_BUFFER, idx.size() * sizeof(GLushort), idx.data(), GL_STATIC_DRAW); CHECK_GL_ERR
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-			pingpong = 0;
+			const_cast<unsigned int&>(info.vert_vbo) = vbo[0];
+			const_cast<unsigned int&>(info.idx_vbo) = vbo[1];
 		}
 
+		static vector<GLfloat> vbuf; // for speed - so its not re-allocated for each facade draw
+#define NUM_VBO 2
+		static GLuint sbo[NUM_VBO];
+		static int pingpong(-1);
+		if (pingpong < 0)
+		{
+			vbuf.assign(8*1024, 0.0f);   // todo: error check - could there be larger meshes for any one wall segment ?
+			glGenBuffers(NUM_VBO, sbo);
+			for(int i = 0; i < NUM_VBO; ++i)
+			{
+				glBindBuffer(GL_ARRAY_BUFFER, sbo[i]);
+				glBufferData(GL_ARRAY_BUFFER, vbuf.size() * sizeof(GLfloat), vbuf.data(), GL_DYNAMIC_DRAW); CHECK_GL_ERR
+			}
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			pingpong = 0;
+		}
+		Vector2 miter;
 		for(int w = 0; w < n_wall; ++w)
 		{
 			Segment2 inBase(footprint.side(w));
@@ -1068,7 +1098,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 				}
 				g->BindTex(tRef  ? tman->GetTexID(tRef) : 0, 0);
 				
-				glScalef(1.0, 1.0, segMult);
+				glScalef(1.0, 1.0, seg_length);
 #if 0
 				// There's gotta be some way to abuse some perspective transform to do the chamfering at the ends of a wall.
 				// If so, indexed drawing could be used again, vertex+attribute data drawn from a VBO - bingo !
@@ -1091,66 +1121,47 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 
 				if (!info.nowallmesh && (want_thinWalls || (info.has_roof && t.bounds[1] > 0.5) || (!info.is_ring && t.bounds[0] > 0.5)))
 				{
-
 					for (auto& m : t.meshes) // all meshes == maximum LOD detail, all the time.
 					{
-#if 0
-						for (auto ind : m.idx)
-						{
-							glTexCoord2fv(&m.uv[2 * ind]);
-							glNormal3fv(&m.nml[3 * ind]);
-#if 0
-							glVertex3fv(&m.xyz[3 * ind]);
-#else
-							float y = m.xyz[3 * ind + 2];
-							float x = m.xyz[3 * ind];
-							if (first == 1)
-								y += mi_first / segMult * x * (1.0 + y);
-							if (first == our_choice.indices.size())
-								y += mi_last / segMult * x * m.xyz[3 * ind + 2];
-							glVertex3f(m.xyz[3 * ind], m.xyz[3 * ind + 1], y);
-#endif						
-						}
-#else
-						glBindBuffer(GL_ARRAY_BUFFER, vbo[0 + pingpong]);
-						glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1 + pingpong]);
-//						glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-//						glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1]);
-
 						const GLfloat * vert_ptr = nullptr;
-						glVertexPointer(3, GL_FLOAT, 8 * sizeof(GLfloat), vert_ptr);		CHECK_GL_ERR
-						glNormalPointer(GL_FLOAT, 8 * sizeof(GLfloat), vert_ptr + 3);	CHECK_GL_ERR
-						glTexCoordPointer(2, GL_FLOAT, 8 * sizeof(GLfloat), vert_ptr + 6);	CHECK_GL_ERR
-
-						pingpong += 2;
-						if (pingpong >= NUM_VBO*2)
-							pingpong = 0;
-
-						vbuf.clear();
-						int ni = m.xyz.size() / 3;
-						for (int ind = 0; ind < ni; ++ind)
+						if (first == 1 || first == our_choice.indices.size())
 						{
-							float y = m.xyz[3 * ind + 2];
-							float x = m.xyz[3 * ind];
-							if (first == 1)
-								y += mi_first / segMult * x * (1.0 + y);
-							if (first == our_choice.indices.size())
-								y += mi_last / segMult * x * y;
-							vbuf.push_back(x);
-							vbuf.push_back(m.xyz[3 * ind + 1]);
-							vbuf.push_back(y);
-							vbuf.push_back(m.nml[3 * ind]);
-							vbuf.push_back(m.nml[3 * ind] + 1);
-							vbuf.push_back(m.nml[3 * ind] + 2);
-							vbuf.push_back(m.uv[2 * ind]);
-							vbuf.push_back(m.uv[2 * ind + 1]);
+							vbuf.clear();
+							int ni = m.xyz.size() / 3;
+							for (int ind = 0; ind < ni; ++ind)
+							{
+								float y = m.xyz[3 * ind + 2];
+								float x = m.xyz[3 * ind];
+								if (first == 1)
+									y += mi_first * x * (1.0 + y / t.bounds[2]);
+								if (first == our_choice.indices.size())
+									y += mi_last * x * y / t.bounds[2];
+								vbuf.push_back(x);
+								vbuf.push_back(m.xyz[3 * ind + 1]);
+								vbuf.push_back(y);
+								vbuf.push_back(m.nml[3 * ind]);
+								vbuf.push_back(m.nml[3 * ind] + 1);
+								vbuf.push_back(m.nml[3 * ind] + 2);
+								vbuf.push_back(m.uv[2 * ind]);
+								vbuf.push_back(m.uv[2 * ind + 1]);
+							}
+							++pingpong;
+							if (pingpong >= NUM_VBO)
+								pingpong = 0;
+
+							glBindBuffer(GL_ARRAY_BUFFER, sbo[pingpong]);
+							glBufferSubData(GL_ARRAY_BUFFER, 0, vbuf.size() * sizeof(GLfloat), vbuf.data());
 						}
-
-						glBufferSubData(GL_ARRAY_BUFFER,         0, vbuf.size() * sizeof(GLfloat), vbuf.data()); CHECK_GL_ERR
-						glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, m.idx.size() * sizeof(GLuint), m.idx.data()); CHECK_GL_ERR
-
-						glDrawElements(GL_TRIANGLES, m.idx.size(), GL_UNSIGNED_INT,  nullptr); CHECK_GL_ERR
-#endif
+						else
+						{
+							glBindBuffer(GL_ARRAY_BUFFER, info.vert_vbo);
+							vert_ptr = ((GLfloat *) 0) + m.mesh_start;
+						}
+						glVertexPointer(  3, GL_FLOAT, 8 * sizeof(GLfloat), vert_ptr);		CHECK_GL_ERR
+						glNormalPointer(     GL_FLOAT, 8 * sizeof(GLfloat), vert_ptr + 3);	CHECK_GL_ERR
+						glTexCoordPointer(2, GL_FLOAT, 8 * sizeof(GLfloat), vert_ptr + 6);	CHECK_GL_ERR
+						glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, info.idx_vbo);
+						glDrawElements(GL_TRIANGLES, m.idx_cnt, GL_UNSIGNED_SHORT, ((GLushort *)0) + m.idx_start); CHECK_GL_ERR
 					}
 				}
 //				glEnd();

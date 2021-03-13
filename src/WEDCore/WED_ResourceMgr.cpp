@@ -945,7 +945,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 				}
 				else if(tpl && MFS_string_match(&s,"IDX", false))
 				{
-					while(MFS_has_word(&s))
+					while (MFS_has_word(&s))
 						tpl->meshes.back().idx.push_back(MFS_int(&s));
 				}
 				else if(tpl && (MFS_string_match(&s,"ATTACH_DRAPED", false) || MFS_string_match(&s,"ATTACH_GRADED", false)))
@@ -1047,10 +1047,9 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 					t.bounds[1] = xyz_max[0];               // to ID walls that protrude outwards from roofs
 					t.bounds[2] = xyz_max[2] - xyz_min[2];  // used all thoughout to scale segment widths
 
-					// normalize z-direction coordinates
 					for(auto& m : t.meshes)
-						for(int i = 0; i < m.xyz.size(); i +=3 )
-							m.xyz[i+2] = interp(xyz_min[2], 0.0, xyz_max[2], 1.0, m.xyz[i+2])-1;
+						for(int i = 0; i < m.xyz.size(); i += 3)
+							m.xyz[i + 2] -= xyz_max[2];    // right-adjust all wall segments to go from -xx to 0
 				}
 
 				for(auto& w : f.walls)

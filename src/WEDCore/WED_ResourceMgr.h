@@ -75,7 +75,7 @@ struct	pol_info_t {
 
 struct fac_info_t : public REN_FacadeLOD_t {
 
-	fac_info_t() { is_new = false ; is_ring = true; doubled = two_sided = false;  min_floors = 1; max_floors  = 999; has_roof = false;
+	fac_info_t() : idx_vbo(0), vert_vbo(0) { is_new = false ; is_ring = true; doubled = two_sided = false;  min_floors = 1; max_floors  = 999; has_roof = false;
 						noroofmesh = nowallmesh = false; }
 
 	bool			is_new;       // set if version 1000, aka type 2
@@ -103,7 +103,9 @@ struct fac_info_t : public REN_FacadeLOD_t {
 	// WED only
 	vector<string>	wallName;      // wall names, for property window etc
 	vector<string>	wallUse;       // official width range supported by this wall
-	string         h_range;       // official heights (or height range) of the facade
+	string			h_range;       // official heights (or height range) of the facade
+	unsigned int	vert_vbo;
+	unsigned int	idx_vbo;
 };
 
 struct	lin_info_t {
