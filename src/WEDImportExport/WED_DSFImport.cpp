@@ -970,9 +970,10 @@ public:
 
 			if(auto ags = static_cast<WED_AutogenPlacement *>(me->poly))
 			{
-				Bbox2 ags_bounds;
-				ags->GetBounds(gis_Geo, ags_bounds);
-				if (!me->is_in_bounds) // !areas_bounds_overlap(ags_bounds))  // this isn't strictly right ... as the points might not be inside the box, but all around it.
+				//Bbox2 ags_bounds;
+				//ags->GetBounds(gis_Geo, ags_bounds);
+				//if(!areas_bounds_overlap(ags_bounds)) // this isn't strictly right ... as the points might not be inside the box, but all around it.
+				if (!me->is_in_bounds)
 				{
 					wdgs.push_back(me->poly->GetNthChild(0));
 					wdgs.back()->SetParent(NULL, 0);
