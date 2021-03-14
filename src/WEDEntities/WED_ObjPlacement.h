@@ -52,7 +52,11 @@ public:
 
 			void		SetShowLevel(int show_level);
 			int			GetShowLevel(void) const;
-			double 	GetVisibleDeg(void) const;
+
+			// Visible radius in degrees of latitude / longitude. Only takes horizontal extent, not height into account.
+			double 		GetVisibleDeg(void) const;
+			// Visible radius in meters. Takes extent in all three spatial directions into account.
+			double		GetVisibleMeters(void) const;
 
 	virtual const char *	HumanReadableType(void) const { return "Object"; }
 
@@ -63,7 +67,8 @@ private:
 	WED_PropStringText			resource;
 	WED_PropIntEnum				show_level;
 
-	float						visibleWithinDeg;     // for culling in the map_view
+	mutable float				visibleWithinDeg;     // for culling in the map_view
+	mutable float				visibleWithinMeters;
 };
 
 
