@@ -48,6 +48,7 @@ class	WED_NavaidLayer;
 
 class	WED_CreatePointTool;
 class	WED_CreatePolygonTool;
+class	WED_CreateEdgeTool;
 class	IResolver;
 class	IDocPrefs;
 class	WED_Archive;
@@ -125,7 +126,9 @@ private:
 	WED_CreatePolygonTool * mLinTool;
 	WED_CreatePolygonTool * mAgsTool;
 	WED_CreatePolygonTool * mPolTool;
-
+#if ROAD_EDITING
+	WED_CreateEdgeTool    * mNetTool;
+#endif
 };
 
 

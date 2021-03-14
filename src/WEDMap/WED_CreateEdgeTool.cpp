@@ -595,7 +595,15 @@ void WED_CreateEdgeTool::FindNearP2S(WED_Thing * host, IGISEntity * ent, const c
 	}
 }
 
-
+#if ROAD_EDITING
+void	WED_CreateEdgeTool::SetResource(const string& r)
+{
+	if(mType == create_Road)
+	{
+		mResource.value = r;
+	}
+}
+#endif
 
 void	WED_CreateEdgeTool::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 {
