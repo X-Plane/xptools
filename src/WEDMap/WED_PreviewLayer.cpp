@@ -1860,9 +1860,6 @@ void		WED_PreviewLayer::DrawVisualization			(bool inCurent, GUI_GraphState * g)
 	// This is called after per-entity visualization; we have one preview item for everything we need.
 	// sort, draw, nuke 'em.
 
-	g->EnableDepth(true,true);         // turn on z-buffering - otherwise we can't clear the z-buffer
-	glClear(GL_DEPTH_BUFFER_BIT);
-
 	sort(mPreviewItems.begin(),mPreviewItems.end(),sort_item_by_layer());
 	for(vector<WED_PreviewItem *>::iterator i = mPreviewItems.begin(); i != mPreviewItems.end(); ++i)
 	{
