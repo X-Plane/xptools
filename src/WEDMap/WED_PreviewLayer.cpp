@@ -1408,7 +1408,7 @@ struct	preview_taxisign : public WED_PreviewItem {
 			glVertex3i( w,  0,  h);
 		glEnd();
 
-		glRotatef(180, 0, 0, -1);
+		zoomer->Rotatef(180, 0, 0, -1);
 
 		glBegin(GL_TRIANGLE_FAN);
 			glVertex3i(-w,  d,  0);  glNormal3i(0,h,d);
