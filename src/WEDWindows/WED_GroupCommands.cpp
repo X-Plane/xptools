@@ -3229,7 +3229,7 @@ static bool is_node_merge(IResolver * resolver)
 	//   0.016719 seconds.
 	//StElapsedTime can_merge_timer("WED_CanMerge");
 	ISelection * sel = WED_GetSelect(resolver);
-
+#if ROAD_EDITING
 	if(sel->GetSelectionCount() == 1) // this means merge two edges here into one
 	{
 		WED_Thing * thing = dynamic_cast<WED_Thing *>(sel->GetNthSelection(0));
@@ -3264,9 +3264,9 @@ static bool is_node_merge(IResolver * resolver)
 		road_edge_2->GetResource(resource_2);
 		if(resource_1 != resource_2) return false;
 
-
 		return true;
 	}
+#endif
 
 	if(sel->GetSelectionCount() < 2)
 		return false;		// can't merging 1 thing mean merge two endges into one
@@ -3291,6 +3291,27 @@ static bool is_node_merge(IResolver * resolver)
 		//For each item after that
 		for (merge_class_map::iterator merge_pair_itr = thing_1_itr + 1; merge_pair_itr != sinkmap.end(); ++merge_pair_itr)
 		{
+#if ROAD_EDITING
+			// do not merge roads with different resources
+			if( thing_1_itr->second.first == WED_RoadNode::sClass
+			 && merge_pair_itr->second.first == WED_RoadNode::sClass)
+			{
+				set<WED_Thing *> viewers1,viewers2;
+				thing_1_itr->second.second->GetAllViewers(viewers1);
+				merge_pair_itr->second.second->GetAllViewers(viewers2);
+				if(viewers1.size() < 1 || viewers2.size() < 1 ) return false;
+
+				WED_RoadEdge * road_edge_1 = dynamic_cast<WED_RoadEdge *>(*viewers1.begin());
+				WED_RoadEdge * road_edge_2 = dynamic_cast<WED_RoadEdge *>(*viewers2.begin());
+
+				if(road_edge_1 == nullptr || road_edge_2 == nullptr) return false;
+
+				string res1,res2;
+				road_edge_1->GetResource(res1);
+				road_edge_2->GetResource(res2);
+				if(res1 != res2) return false;
+			}
+#endif
 			//If the two things are within snapping distance of each other, record so
 			if (is_within_snapping_distance(thing_1_itr, merge_pair_itr))
 			{
@@ -3624,8 +3645,31 @@ static void do_node_merge(IResolver * resolver)
 			{
 				const char * tag_1 = start_thing->second.first;
 				const char * tag_2 = merge_pair->second.first;
+				bool tags_matches = tag_1 == tag_2 ;
+#if ROAD_EDITING
+				//do not merge road nodes with different resource
+				if(tags_matches && tag_1 == WED_RoadNode::sClass )
+				{
+					tags_matches = false;
+					set<WED_Thing *> viewers1,viewers2;
+					start_thing->second.second->GetAllViewers(viewers1);
+					merge_pair->second.second->GetAllViewers(viewers2);
+					if(viewers1.size() > 0 && viewers2.size() > 0 )
+					{
+						WED_RoadEdge * road_edge_1 = dynamic_cast<WED_RoadEdge *>(*viewers1.begin());
+						WED_RoadEdge * road_edge_2 = dynamic_cast<WED_RoadEdge *>(*viewers2.begin());
 
-				if (is_within_snapping_distance(start_thing, merge_pair) && tag_1 == tag_2)
+						if(road_edge_1 != nullptr && road_edge_2 != nullptr)
+						{
+							string res1,res2;
+							road_edge_1->GetResource(res1);
+							road_edge_2->GetResource(res2);
+							tags_matches = (res1 == res2) ;
+						}
+					}
+				}
+#endif
+				if (tags_matches && is_within_snapping_distance(start_thing, merge_pair))
 				{
 					vector<WED_Thing*> sub_list = vector<WED_Thing*>();
 					sub_list.push_back(start_thing->second.second);
