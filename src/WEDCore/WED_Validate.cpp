@@ -2185,10 +2185,15 @@ static void ValidateRoads(const vector<WED_RoadEdge *> roads, validation_error_v
 
 		if(gExportTarget >= wet_gateway)
 		{
+#if 1
+			msgs.push_back(validation_error_t("Roads networks are not (yet) allowed on the gateway", err_net_resource, roads, apt));
+			return;
+#else
 			string res;
 			r->GetResource(res);
 			if(res != "lib/g10/roads.net" && res != "lib/g10/roads_EU.net")
 				msgs.push_back(validation_error_t("Only roads from lib/g10/roads.net or lib/g10/roads_EU.net are allowed on the gateway", err_net_resource, r, apt));
+#endif
 		}
 	}
 
