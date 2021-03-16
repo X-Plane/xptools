@@ -729,7 +729,7 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, const int 
 			break;
 
 		case res_Road:
-			if(mResMgr->GetRoad(mRes,rd))
+			if(mResMgr->GetRoad(res,rd))
 			{
 				int i = intlim(mWid/2,0,rd->vroad_types.size()-1);
 				//i=0;
@@ -766,7 +766,7 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, const int 
 				{
 					const float front_twr = length * 0.7;
 					const float back_twr = -length * 0.7;
-					if(mResMgr->GetObjRelative(t.vert_objs.back().path, mRes, o))
+					if(mResMgr->GetObjRelative(t.vert_objs.back().path, res, o))
 					{
 						draw_obj_at_xyz(mTexMgr, o, t.vert_objs.back().lat_offs, 0, front_twr, t.vert_objs.back().rotation, g);
 						draw_obj_at_xyz(mTexMgr, o, t.vert_objs.back().lat_offs, 0, back_twr,  t.vert_objs.back().rotation, g);
@@ -791,7 +791,7 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, const int 
 				}
 				if(0) // t.dist_objs.size())
 				{
-					if(mResMgr->GetObjRelative(t.dist_objs.back().path, mRes, o))
+					if(mResMgr->GetObjRelative(t.dist_objs.back().path, res, o))
 					{
 		//				draw_obj_at_xyz(mTexMgr, o, t.dist_objs.back().lat_offs, 0, front_twr, t.dist_objs.back().rotation, g);
 					}
