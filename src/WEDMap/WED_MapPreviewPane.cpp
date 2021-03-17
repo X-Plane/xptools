@@ -61,8 +61,6 @@ struct DrawVisStats
 {
 	int numCullTests = 0;
 	int numCulled = 0;
-	int numSizeTests = 0;
-	int numTooSmall = 0;
 	int numSizeTestsComposite = 0;
 	int numTooSmallComposite = 0;
 };
@@ -72,59 +70,6 @@ static void DrawVisFor(WED_MapLayer * layer, const Bbox2& bounds, const WED_MapZ
 	const float TOO_SMALL_TO_GO_IN = 20.0;
 	const float MIN_PIXELS_TO_DRAW = 5.0;
 
-#if 0
-	if (!layer->IsVisibleNow(what))	return;
-
-	Bbox3 bboxLL = what->GetVisibleBounds();
-	Point2 p1 = projection.LLToXY(Point2(bboxLL.xmin(), bboxLL.ymin()));
-	Point2 p2 = projection.LLToXY(Point2(bboxLL.xmax(), bboxLL.ymax()));
-	Bbox3 bboxXY(p1.x(), p1.y(), bboxLL.zmin(), p2.x(), p2.y(), bboxLL.zmax());
-
-#if DEV
-	++stats->numCullTests;
-#endif
-	if (!camera.BboxVisible(bboxXY))
-	{
-#if DEV
-		++stats->numCulled;
-#endif
-		return;
-	}
-
-	// TODO: Clean up
-#if DEV
-	++stats->numSizeTests;
-#endif
-	if (camera.PixelSize(bboxXY) < MIN_PIXELS_TO_DRAW)
-	{
-#if DEV
-		++stats->numTooSmall;
-#endif
-		return;
-	}
-
-	IGISComposite * c;
-
-	if (layer->DrawEntityVisualization(false, what, g, false))
-		if (what->GetGISClass() == gis_Composite && (c = SAFE_CAST(IGISComposite, what)) != NULL)
-		{
-#if DEV
-			++stats->numSizeTestsComposite;
-#endif
-			if (camera.PixelSize(bboxXY) > TOO_SMALL_TO_GO_IN || (p1 == p2) || depth == 0)	// Why p1 == p2?  If the composite contains ONLY ONE POINT it is zero-size.  We'd LOD out.  But if
-			{																				// it contains one thing then we might as well ALWAYS draw it - it's relatively cheap!
-				int t = c->GetNumEntities();												// Depth == 0 means we draw ALL top level objects -- good for airports.
-				for (int n = t - 1; n >= 0; --n)
-					DrawVisFor(layer, projection, camera, c->GetNthEntity(n), g, depth + 1, stats);
-			}
-			else
-			{
-#if DEV
-				++stats->numTooSmallComposite;
-#endif
-			}
-		}
-#else
 	if (!layer->IsVisibleNow(what))	return;
 
 #if DEV
@@ -163,8 +108,6 @@ static void DrawVisFor(WED_MapLayer * layer, const Bbox2& bounds, const WED_MapZ
 #endif
 			}
 		}
-#endif
-
 }
 
 static int GetVkPref(const char * key, int defaultVk)
@@ -227,17 +170,7 @@ WED_MapPreviewPane::WED_MapPreviewPane(GUI_Commander * cmdr, WED_Document * docu
 
 	DisplayExtent(box, 0.5);
 
-{
-	Point3  p = mCamera->Position();
-	Vector3 d = mCamera->Forward();
-
-    printf("Cam pos %11.5lf %.5lf %.5lf dir %.5lf %.5lf %.5lf\n", p.x, p.y, p.z, d.dx, d.dy, d.dz);
-
 	this->SetPixelBounds(-1,-1,1,1);
-    printf("Zoom PPM %11.5lf Orig %11.5lf %11.5lf Unit %11.5lf %11.5lf\n", this->GetPPM(),
-                    this->LonToXPixel(0), this->LatToYPixel(0),
-                    this->LonToXPixel(1), this->LatToYPixel(1));
-}
 
 	mCameraLeftVk = GetVkPref("CameraLeftVk", GUI_VK_LEFT);
 	mCameraRightVk = GetVkPref("CameraRightVk", GUI_VK_RIGHT);
@@ -282,23 +215,9 @@ void WED_MapPreviewPane::Draw(GUI_GraphState * state)
 	DrawVisStats stats;
 	DrawVisFor(mPreviewLayer, b_geo, *this, base, state, 0, &stats);
 
-#if 1
-{
-	Point3  p = mCamera->Position();
-	Vector3 d = mCamera->Forward();
-
-    printf("Cam pos %11.5lf %.5lf %.5lf dir %.5lf %.5lf %.5lf\n", p.x, p.y, p.z, d.dx, d.dy, d.dz);
-
-    printf("Zoom PPM %11.5lf Orig %11.5lf %11.5lf Unit %11.5lf %11.5lf\n", this->GetPPM(),
-                    this->LonToXPixel(0), this->LatToYPixel(0),
-                    this->LonToXPixel(1), this->LatToYPixel(1));
-
-}
-#if DEV
-	printf("%d / %d culled, %d / %d too small, %d / %d too small (composite)\n",
-		stats.numCulled, stats.numCullTests, stats.numTooSmall, stats.numSizeTests,
-		stats.numTooSmallComposite, stats.numSizeTestsComposite);
-#endif
+#if DEV && 0
+	printf("%d / %d culled, %d / %d too small (composite)\n",
+		stats.numCulled, stats.numCullTests, stats.numTooSmallComposite, stats.numSizeTestsComposite);
 #endif
 
 	// Draw the sky.
@@ -348,16 +267,6 @@ void WED_MapPreviewPane::Draw(GUI_GraphState * state)
 	glEnd();
 	GUI_FontDraw(state, font_UI_Basic, white, 0, 12, "N", align_Center);
 	glPopMatrix();
-
-#if 0
-#if DEV
-	const FacadeStats& facade_stats = GetFacadeStats();
-	printf("%d / %d walls big enough, %d / %d LODs drawn\n",
-		facade_stats.numWallsBigEnough, facade_stats.numWallsTested,
-		facade_stats.numLODsDrawn, facade_stats.numLODsTested);
-	ResetFacadeStats();
-#endif
-#endif
 
 #if SHOW_FPS
 	static clock_t  last_time = 0;
