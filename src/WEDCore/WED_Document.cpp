@@ -314,6 +314,10 @@ void	WED_Document::Revert(void)
 
 		string result = reader.ReadFile(fname.c_str(),&xml_exists);
 
+		for (auto sp : mDocPrefs)
+			LOG_MSG("I/Doc prefs %s = %s\n", sp.first.c_str(), sp.second.c_str());
+		LOG_FLUSH();
+
 		if(xml_exists && !result.empty())
 		{
 			LOG_MSG("E/Doc Error reading XML %s",result.c_str());
@@ -348,7 +352,7 @@ void	WED_Document::Revert(void)
 				sel->SetName("selection");
 				key->SetName("choices");
 				wrl->SetName("world");
-
+				LOG_MSG("I/Doc brand new empty doc\n");
 		}
 	} catch(...) {
 		// don't bail out of the load loop without aborting the command - otherwise undo mgr goes ape.
