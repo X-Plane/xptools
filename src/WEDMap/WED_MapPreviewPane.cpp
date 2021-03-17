@@ -125,6 +125,8 @@ static void DrawVisFor(WED_MapLayer * layer, const Bbox2& bounds, const WED_MapZ
 			}
 		}
 #else
+	if (!layer->IsVisibleNow(what))	return;
+
 #if DEV
 	++stats->numCullTests;
 #endif
