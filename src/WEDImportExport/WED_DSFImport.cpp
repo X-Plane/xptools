@@ -1172,10 +1172,9 @@ int		WED_CanImportRoads(IResolver * resolver)
 		if(excl == nullptr) return 0;
 		set<int> excl_types;
 		excl->GetExclusions(excl_types);
-		if(excl_types.find(exclude_Net) == excl_types.end()) return 0;
+		if(excl_types.count(exclude_Net)) return 1;
 	}
-
-	return 1;
+	return 0;
 }
 
 void	WED_DoImportRoads(IResolver * resolver)
