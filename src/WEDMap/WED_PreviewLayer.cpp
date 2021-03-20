@@ -629,11 +629,7 @@ struct	preview_taxiway : public preview_polygon {
 		// Any other test is too expensive, and for the small pavement squares that would get wiped out, the cost of drawing them
 		// is negligable anyway.
 
-		Point2 centroid;
-		taxi->GetOuterRing()->GetNthPoint(0)->GetLocation(gis_Geo, centroid);
-		centroid = zoomer->LLToPixel(centroid);
-
-		if (setup_taxi_texture(taxi->GetSurface(), taxi->GetHeading(), centroid, g, zoomer, mPavementAlpha))
+		if (setup_taxi_texture(taxi->GetSurface(), taxi->GetHeading(), Point2(), g, zoomer, mPavementAlpha))
 		{
 			preview_polygon::preview_polygon::draw_it(zoomer,g,mPavementAlpha);
 		}
@@ -1207,10 +1203,7 @@ struct	preview_pol : public preview_polygon {
 		pol->GetResource(vpath);
 		if(rmgr->GetPol(vpath,pol_info))
 		{
-			Point2 pt0;
-			pol->GetOuterRing()->GetNthPoint(0)->GetLocation(gis_Geo, pt0);
-			pt0 = zoomer->LLToPixel(pt0);
-			setup_pol_texture(tman, *pol_info, pol->GetHeading(), false, pt0, g, zoomer, mPavementAlpha);
+			setup_pol_texture(tman, *pol_info, pol->GetHeading(), false, Point2(), g, zoomer, mPavementAlpha);
 			preview_polygon::draw_it(zoomer, g, mPavementAlpha);
 			kill_transform();
 		}
