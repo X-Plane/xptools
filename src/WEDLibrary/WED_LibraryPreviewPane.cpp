@@ -742,11 +742,12 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, const int 
 
 				const float length = 50.0;
 				begin3d(b, length);
+				g->SetState(false, 1, false, true, true, true, true);
+				glClear(GL_DEPTH_BUFFER_BIT);
 				if(auto tref = mTexMgr->LookupTexture(rd->textures[t.tex_idx].c_str(),true, tex_Wrap+tex_Mipmap+tex_Linear))
 				{
 					if(auto tex_id = mTexMgr->GetTexID(tref))
 					{
-						g->SetState(false,1,false,true,true,false,false);
 						g->BindTex(tex_id,0);
 						glDisable(GL_CULL_FACE);
 						float v = 4.0 * length / t.length;
@@ -789,11 +790,16 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, const int 
 						glEnd();
 					}
 				}
-				if(0) // t.dist_objs.size())
+				if(t.dist_objs.size())
 				{
-					if(mResMgr->GetObjRelative(t.dist_objs.back().path, res, o))
+					float long_pos = length * 0.7;   // there isn't much info on the spacing and frequency parameters for newer commands.
+					for(auto d : t.dist_objs)        // so we print each object once with uniform spacing.
 					{
-		//				draw_obj_at_xyz(mTexMgr, o, t.dist_objs.back().lat_offs, 0, front_twr, t.dist_objs.back().rotation, g);
+						if(mResMgr->GetObjRelative(d.path, res, o))
+						{
+							draw_obj_at_xyz(mTexMgr, o, d.lat_offs, 0, long_pos, d.rotation, g);
+							long_pos -= length * 1.4 / t.dist_objs.size();
+						}
 					}
 				}
 				end3d(b);
