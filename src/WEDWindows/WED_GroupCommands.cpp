@@ -3251,17 +3251,20 @@ static bool is_node_merge(IResolver * resolver)
 		// check for road subtype
 		if(road_edge_1->GetSubtype() != road_edge_2->GetSubtype()) return false;
 
-		// check for direction
 		Bezier2 b1,b2;
 		road_edge_1->GetSide(gis_Geo,-1,b1);
 		road_edge_2->GetSide(gis_Geo,-1,b2);
+		// check for direction
 		if(b1.p2 != b2.p1 && b1.p1 != b2.p2) return false;
-
 		// check resource match
 		string resource_1,resource_2;
 		road_edge_1->GetResource(resource_1);
 		road_edge_2->GetResource(resource_2);
 		if(resource_1 != resource_2) return false;
+		// check if it would be closed ( start = end node)
+		bool add_edge_end = road_edge_1->GetNthSource(0) == thing;
+		if( add_edge_end && road_edge_1->GetNthSource(1) == road_edge_2->GetNthSource(0)) return false;
+		if(!add_edge_end && road_edge_1->GetNthSource(0) == road_edge_2->GetNthSource(1)) return false;
 
 		return true;
 	}
@@ -3573,6 +3576,13 @@ static void do_node_merge(IResolver * resolver)
 			WED_Thing * obsolete_edge = *(++viewers.begin());
 
 			bool add_edge_end = edge->GetNthSource(0) == thing;
+
+			if( ( add_edge_end && edge->GetNthSource(1) == obsolete_edge->GetNthSource(0)) ||
+			    (!add_edge_end && edge->GetNthSource(0) == obsolete_edge->GetNthSource(1)) )    // this would endup in closed edge ( start = end node)
+			{
+				op->AbortOperation();
+				return;
+			}
 
 			WED_GISEdge * ge_1 = dynamic_cast<WED_GISEdge *>(edge);
 			WED_GISEdge * ge_2 = dynamic_cast<WED_GISEdge *>(obsolete_edge);
