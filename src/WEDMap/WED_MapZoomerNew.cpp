@@ -20,6 +20,60 @@
  * THE SOFTWARE.
  *
  */
+
+/* Geographic projection motivation
+
+ - improve accuracy of LARGE objects defined in meter-space compare to objects placed by coordinates.
+   E.g. when placing a FS2XP object with draped ground markings and the zooming in to a location far away
+   (some 10,00 feet / 3km) from the objects origin.
+   Currently this results in discrepancies of upto 3-5 feet between the WED and X-Plane depictions 
+   at moderate lattitudes.
+
+ - improve accuracy of LONG line segments relative to (small) objects placed at specific corrdinates.
+   E.e. a group of individual objects (manually places runway light or polygonal/line based centerline markings) 
+   will NOT match the E-W runway at Anchorage by ~1 foot in N/S directions in the center of that runway.
+
+ * Technical reasons of discrepancies
+
+ - change of longitudinal scale with lattitude
+   WED up to 2.3 used a mercator projected map, i.e. the map scale was constant for all pixel<->coordinate
+   transformations inside as well as outside the current map window and deternined by the center of the
+   map window. All parallels and meridians were straight lines.
+   Earth radius was constant, i.e. an spherical globe with a radius so 1 deg lattitude is exactly 60.0 nm.
+
+ - lack of projection of 'straight' lines between two vertices
+   Lines in OGL are straight between ththeir coordinate based endpoint location, not great circles as in X-Plane.
+
+ - lack of projection of 'objects' defined and drawn in meterspace.
+   openGL is limited to linear transformations. A object placed the poles has notable curvature in E-W direction 
+   compared to the constant lattitude paralel.
+
+   The new code supports, all optional and modular,
+   - arbitrary map projection LLoPixel and PixelToLL, including north heading rotation with longitude
+   - GRS80 ellipsoid to model the flattening at the poles
+   - local general ground elevation to model change of scale with earth local radius
+   - smooth transition from one projection to another while zooming in/out. Currently used to change from
+     the 'main' map projection to an generally more "right" looking compromise projection when zooed out 
+     very far, i.e. (almost) all of the world map is visible.
+*/
+
+// when zoomed out to near world-level - change projection to a nicer looking and better area- and distance 
+// preserving Wagner IV. The main use of this is to verify all UI elements use projected transformations.
+// https://en.wikipedia.org/wiki/Wagner_VI_projection
+
+#define USE_WAGNER 1
+#define THR_WAGNER 0.1
+
+// when zoomed in, change projection from mercator to gnomonic, to
+// - allow items defined in meter-space (like objects or lines) to NOT require warping,
+//   i.e. make great circles to be EXACTLY straight lines in the map
+// - (better) preserve distances from map center for objects at moderate distances from map center
+// https://en.wikipedia.org/wiki/Gnomonic_projection
+
+#define USE_GNOMONIC 1
+#define EXACT		 1
+#define THR_GNOMONIC 0.05
+
 #include "WED_MapZoomerNew.h"
 #include "GUI_Messages.h"
 #include "XESConstants.h"
@@ -71,33 +125,96 @@ double	WED_MapZoomerNew::LatToYPixel(double lat) const
 
 double	WED_MapZoomerNew::wagner_proj_mult(double lat) const
 {
-	return sqrtf(1.0-3.0*(lat/180.0)*(lat/180.0));
+	float l(lat);
+	return sqrtf(1.0f-3.0f*(l/180.0f)*(l/180.0f));
 }
 
-#define THR 0.05
+double	WED_MapZoomerNew::gnomonic_proj_cos(double lat) const
+{
+	float l(lat * DEG_TO_RAD);
+	return cosf(l);
+}
 
 Point2	WED_MapZoomerNew::PixelToLL(const Point2& p) const
 {
-	if(mPixel2DegLat > THR)
+#if USE_GNOMONIC
+	#define sinr(x) sin((x) * DEG_TO_RAD)
+	#define cosr(x) cos((x) * DEG_TO_RAD)
+
+	if (mPixel2DegLat < THR_GNOMONIC)
 	{
-		double blend = min(1.0, (mPixel2DegLat - THR)/THR);
+		Point2 pt((p.x() - mCenterX) * mPixel2DegLat, (p.y() - mCenterY) * mPixel2DegLat);
+#if EXACT
+		// https://mathworld.wolfram.com/GnomonicProjection.html
+		pt.x_ *= DEG_TO_RAD;
+		pt.y_ *= DEG_TO_RAD;
+		double rho = sqrt(pt.x() * pt.x() + pt.y() * pt.y());
+		double c = atan(rho);
+		double lat = RAD_TO_DEG * asin(cos(c) * sinr(mLatCenter) + pt.y() * sin(c) * cosr(mLatCenter) / rho);
+		double lon = mLonCenter + RAD_TO_DEG * atan2(pt.x() * sin(c), rho * cosr(mLatCenter) * cos(c) - pt.y() * sinr(mLatCenter) * sin(c));
+#else
+		double lat = mLatCenter + pt.y();
+		double lon = mLonCenter + pt.x() / gnomonic_proj_cos(lat);
+#endif
+		if (mPixel2DegLat > THR_GNOMONIC * 0.3)
+		{
+			double blend = min(0.7, (THR_GNOMONIC - mPixel2DegLat) / THR_GNOMONIC) / 0.7;
+			return Point2(XPixelToLon(p.x()) * (1.0 - blend) + lon * blend,
+						  YPixelToLat(p.y()) * (1.0 - blend) + lat * blend);
+		}
+		else
+			return Point2(lon, lat);
+	}
+#endif
+#if USE_WAGNER
+	if(mPixel2DegLat > THR_WAGNER)
+	{
+		double blend = min(1.0, (mPixel2DegLat - THR_WAGNER)/THR_WAGNER);
 		Point2 pt(XPixelToLon(p.x()), YPixelToLat(p.y()));
 		pt.y_ = min(max(pt.y(), mLogicalBounds[1]), mLogicalBounds[3]);
 		return Point2( pt.x() / (1.0 + blend * (wagner_proj_mult(pt.y()) - 1.0)),
 		               pt.y() / (1.0 + blend *  0                              ));
 	}
-
+#endif
 	return Point2(XPixelToLon(p.x()), YPixelToLat(p.y()));
 }
 
 Point2	WED_MapZoomerNew::LLToPixel(const Point2& p) const
 {
-	if(mPixel2DegLat > THR)
+#if USE_GNOMONIC
+	if (mPixel2DegLat < THR_GNOMONIC)
 	{
-		double blend = min(1.0, (mPixel2DegLat - THR)/THR);
+		Point2 pt(p);
+		pt.x_ = min(max(pt.x(), mLogicalBounds[0]), mLogicalBounds[2]);
+		pt.y_ = min(max(pt.y(), mLogicalBounds[1]), mLogicalBounds[3]);
+
+#if EXACT
+		// https://mathworld.wolfram.com/GnomonicProjection.html
+		double c = sinr(mLatCenter) * sinr(pt.y()) + cosr(mLatCenter) * cosr(pt.y()) * cosr(pt.x() - mLonCenter);
+		double x = mCenterX + (cosr(pt.y()) * sinr((pt.x() - mLonCenter)) / c) * RAD_TO_DEG / mPixel2DegLat;
+		double y = mCenterY + ((cosr(mLatCenter) * sinr(pt.y()) - sinr(mLatCenter) * cosr(pt.y()) * cosr(pt.x() - mLonCenter)) / c) * RAD_TO_DEG / mPixel2DegLat;
+#else
+		double x = mCenterX + (pt.x() - mLonCenter)  * gnomonic_proj_cos(pt.y()) / mPixel2DegLat;
+		double y = LatToYPixel(pt.y());
+#endif
+		if (mPixel2DegLat > THR_GNOMONIC * 0.3)
+		{
+			double blend = min(0.7, (THR_GNOMONIC - mPixel2DegLat) / THR_GNOMONIC) / 0.7;
+			return Point2(LonToXPixel(p.x()) * (1.0-blend) + x * blend,
+						  LatToYPixel(p.y()) * (1.0-blend) + y * blend);
+		}
+		else
+			return Point2(x,y);
+	}
+#endif
+#if USE_WAGNER
+	if(mPixel2DegLat > THR_WAGNER)
+	{
+		double blend = min(1.0, (mPixel2DegLat - THR_WAGNER)/THR_WAGNER);
 		return Point2(LonToXPixel( p.x() * (1.0 + blend * (wagner_proj_mult(p.y()) - 1.0) )),
 		              LatToYPixel( p.y() * (1.0 + blend *  0                              )));
 	}
+#endif
 	return Point2(LonToXPixel(p.x()), LatToYPixel(p.y()));
 }
 

@@ -104,11 +104,13 @@ void		WED_WorldMapLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 					if (tex_id)
 					{
 						g->BindTex(tex_id, 0);
-						glBegin(GL_QUADS);
-						glTexCoord2f(0.0, 0.0);	glVertex2( GetZoomer()->LLToPixel(Point2(x,   y   )));
-						glTexCoord2f(0.0, 1.0);	glVertex2( GetZoomer()->LLToPixel(Point2(x,   y+10)));
-						glTexCoord2f(1.0, 1.0);	glVertex2( GetZoomer()->LLToPixel(Point2(x+10,y+10)));
-						glTexCoord2f(1.0, 0.0);	glVertex2( GetZoomer()->LLToPixel(Point2(x+10,y   )));
+						glBegin(GL_TRIANGLE_STRIP);
+						glTexCoord2f(0.0, 0.0);	glVertex2(GetZoomer()->LLToPixel(Point2(x,    y   )));
+						glTexCoord2f(0.0, 1.0);	glVertex2(GetZoomer()->LLToPixel(Point2(x,    y+10)));
+						glTexCoord2f(0.5, 0.0);	glVertex2(GetZoomer()->LLToPixel(Point2(x+ 5, y   )));
+						glTexCoord2f(0.5, 1.0);	glVertex2(GetZoomer()->LLToPixel(Point2(x+ 5, y+10)));
+						glTexCoord2f(1.0, 0.0);	glVertex2(GetZoomer()->LLToPixel(Point2(x+10, y   )));
+						glTexCoord2f(1.0, 1.0);	glVertex2(GetZoomer()->LLToPixel(Point2(x+10, y+10)));
 						glEnd();
 					}
 				}

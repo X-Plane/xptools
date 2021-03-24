@@ -113,10 +113,11 @@ void		WED_MapBkgnd::DrawStructure(bool inCurrent, GUI_GraphState * g)
 
 	double lon_span = vr - vl;
 	double lat_span = vt - vb;
-	double longest_span = max(lon_span,lat_span);
 	int divisions = 1;
-	if (longest_span > 20)	divisions = 10;
-	if (longest_span > 90)	divisions = 30;
+	if (lat_span > 12)	divisions = 10;
+	if (lat_span > 50)	divisions = 30;
+//	if (GetZoomer()->GetPPM() < 8e-4)	divisions = 10;
+//	if (GetZoomer()->GetPPM() < 1.5e-4)	divisions = 30;
 
 	int cl = floor(vl / divisions) * divisions;
 	int cb = floor(vb / divisions) * divisions;
@@ -131,22 +132,28 @@ void		WED_MapBkgnd::DrawStructure(bool inCurrent, GUI_GraphState * g)
 		glVertex2(GetZoomer()->LLToPixel(Point2(t, vt)));
 		glEnd();
 	}
+
+	int sub_div = lon_span < 120 ? min(divisions, 5) : divisions;
 	for(int t = cb; t <= ct; t += divisions)
 	{
 		glBegin(GL_LINE_STRIP);
-		for(int x = floor(vl); x < vr; x += 10)
+		int x = floor(vl);
+		glVertex2(GetZoomer()->LLToPixel(Point2(x, t)));
+		for(x = sub_div * ceil(vl / sub_div); x < vr; x += sub_div)
 			glVertex2(GetZoomer()->LLToPixel(Point2(x, t)));
 		glVertex2(GetZoomer()->LLToPixel(Point2(vr, t)));
 		glEnd();
 	}
 
-	if(longest_span > 1.0 && longest_span < 5.0)
+	if(lon_span > 1.0 && lon_span < 5.0)
 		for(int lon = cl; lon < cr; lon += divisions)
 			for(int lat = cb; lat < ct; lat += divisions)
 			{
 				char tilename[16];
 				snprintf(tilename,16,"%+02d%+03d.dsf",lat,lon);
-				GUI_FontDraw(g,font_UI_Small,WED_Color_RGBA(wed_Map_Gridlines),GetZoomer()->LonToXPixel(lon)+1.0,GetZoomer()->LatToYPixel(lat)+3.0,tilename, align_Left);
+				Point2 pt(lon, lat);
+				pt = GetZoomer()->LLToPixel(pt);
+				GUI_FontDraw(g,font_UI_Small,WED_Color_RGBA(wed_Map_Gridlines),pt.x()+2,pt.y()+5,tilename, align_Left);
 			}
 }
 
