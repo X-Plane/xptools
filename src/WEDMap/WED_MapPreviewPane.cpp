@@ -140,11 +140,8 @@ WED_MapPreviewPane::WED_MapPreviewPane(GUI_Commander * cmdr, WED_Document * docu
 {
 	// We set up the WED_MapZoomerNew as follows:
 	// - The "ppm" value is set to 1, so "pixels" correspond to meters.
-	// - The "lat/lon center" position corresponds to the position of the camera
-	// - The "pixel center" position is always at 0, 0
-	// The latter two points together imply that the camera is always at x=0, y=0 in
-	// OpenGL coordinates. This is important for floating-point precision: The closer
-	// objects are to the camera, the more precision we need.
+	// - The "pixel center" position is always at 0, 0. This implies that the
+	//   "lat/lon center" position always maps to OpenGL coordinates of 0, 0.
 
 	mCamera = new WED_PerspectiveCamera(0.5, DRAW_DISTANCE);
 	this->cam = mCamera;
@@ -238,8 +235,6 @@ void WED_MapPreviewPane::Draw(GUI_GraphState * state)
 	glEnable(GL_POLYGON_OFFSET_FILL);
 	glPolygonOffset(5.f, 1.f);
 	glColor4f(0.2, 0.4, 0.2, 1.0);
-	// We don't strictly need this, as we always keep the camera at the origin,
-	// but we'll do it anyway in case we ever decide to break that invariant.
 	Point3 position = mCamera->Position();
 	glBegin(GL_TRIANGLE_FAN);
 	glVertex2f(position.x - DRAW_DISTANCE, position.y + DRAW_DISTANCE);
@@ -595,11 +590,7 @@ void WED_MapPreviewPane::HandleKeyMove()
 
 void WED_MapPreviewPane::MoveCameraToXYZ(const Point3& xyz)
 {
-	Point2 ll = this->PixelToLL({ xyz.x, xyz.y });
-
-	this->SetMapLogicalBounds(ll.x(), ll.y(), ll.x(), ll.y());
-
-	mCamera->MoveTo({ 0, 0, xyz.z });
+	mCamera->MoveTo(xyz);
 
 	UpdateMapVisibleArea();
 }
