@@ -803,53 +803,27 @@ struct	preview_line : WED_PreviewItem {
 		int tex_id = 0;
 		if(tref) tex_id = tman->GetTexID(tref);
 
-		if(tex_id)
-		{
-			g->SetState(false,1,false,true,true,false,false);
-			g->BindTex(tex_id,0);
-			glColor3f(1,1,1);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		}
+		if(!tex_id)
+			return;
+
+		g->SetState(false,1,false,true,true,false,false);
+		g->BindTex(tex_id,0);
+		glColor3f(1,1,1);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 		IGISPointSequence * ps = SAFE_CAST(IGISPointSequence,lin);
 		if(ps)
-			if(PixelSize(lin, linfo->eff_width, zoomer) < MIN_PIXELS_PREVIEW || !tex_id)             // cutoff size for real preview
+		{
+			glFrontFace(GL_CCW);
+			for (int l = 0; l < linfo->s1.size(); ++l)
 			{
-				g->SetState(false,0,false,false,false,false,false);
-
-				int locked = 0;
-				WED_Entity * thing = dynamic_cast<WED_Entity *>(lin);
-				while(thing)
-				{
-					if(thing->GetLocked())	{ locked=1; break; }
-					thing = dynamic_cast<WED_Entity *>(thing->GetParent());
-				}
-				if (locked)
-					glColor3fv(linfo->rgb);
-				else                           // do some color correction to account for the green vs grey line
-					glColor3f(min(1.0,linfo->rgb[0]+0.2),max(0.0,linfo->rgb[1]-0.0),min(1.0,linfo->rgb[2]+0.2));
-
-				for(int i = 0; i < lin->GetNumSides(); ++i)
-				{
-					vector<Point2>	pts;
-					SideToPoints(ps,i,zoomer, pts);
-					glLineWidth(3);
-					glShape2v(GL_LINES, &*pts.begin(), pts.size());
-					glLineWidth(1);
-				}
+				vector<Point2>	pts;
+				vector<int> cont;
+				PointSequenceToVector(ps,zoomer,pts,false,cont,0,true);
+				draw_line_preview(pts, *linfo, l, zoomer->GetPPM());
 			}
-			else
-			{
-				glFrontFace(GL_CCW);
-				for (int l = 0; l < linfo->s1.size(); ++l)
-				{
-					vector<Point2>	pts;
-					vector<int> cont;
-					PointSequenceToVector(ps,zoomer,pts,false,cont,0,true);
-					draw_line_preview(pts, *linfo, l, zoomer->GetPPM());
-				}
-				glFrontFace(GL_CW);
-			}
+			glFrontFace(GL_CW);
+		}
 	}
 };
 
@@ -1758,7 +1732,11 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	{
 		WED_LinePlacement * line = SAFE_CAST(WED_LinePlacement, entity);
 		if(line)
-			mPreviewItems.push_back(new preview_line(line, group_Markings, GetResolver()));
+		{
+			// criteria matches where mRealLines disappear in StructureLayer
+			if(PixelSize(line, 0.4, GetZoomer()) > mOptions.minLineThicknessPixels)
+				mPreviewItems.push_back(new preview_line(line, group_Markings, GetResolver()));
+		}
 	}
 	else if(sub_class == WED_AirportChain::sClass)
 	{
