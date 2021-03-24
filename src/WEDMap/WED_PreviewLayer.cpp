@@ -1163,10 +1163,6 @@ struct	preview_facade : public preview_polygon {
 
 			g->SetState(false,0,false,true,true,true,true);
 
-			float mat[16];
-			glGetFloatv(GL_PROJECTION_MATRIX, mat);
-			bool isTilted = (mat[2] != 0.0 || mat[6] != 0.0);
-
 			glMatrixMode(GL_MODELVIEW);
 			glPushMatrix();
 			Point2 l = zoomer->LLToPixel(ref_pt);
@@ -1175,7 +1171,7 @@ struct	preview_facade : public preview_polygon {
 			glScalef(ppm,ppm,ppm);
 			glRotatef(90, 1,0,0);
 			if(rmgr->GetFac(vpath, info))
-				draw_facade(tman, rmgr, vpath, *info, pts, choices, fac->GetHeight(), g, isTilted, 0.7*ppm);
+				draw_facade(tman, rmgr, vpath, *info, pts, choices, fac->GetHeight(), g, true, 0.7*ppm);
 			glPopMatrix();
 		}
 

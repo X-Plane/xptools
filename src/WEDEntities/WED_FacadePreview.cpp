@@ -1132,7 +1132,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 					for (auto& m : t.meshes) // all meshes == maximum LOD detail, all the time.
 					{
 						const GLfloat * vert_ptr = nullptr;
-						if (first == 1 || first == our_choice.indices.size())
+						if ((first == 1 || first == our_choice.indices.size()) && ppm_for_culling * t.bounds[0] > 5.0)
 						{
 							vbuf.clear();
 							int ni = m.xyz.size() / 3;
