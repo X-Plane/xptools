@@ -224,25 +224,29 @@ void WED_MapPreviewPane::Draw(GUI_GraphState * state)
 	glClearColor(0.6, 0.6, 0.9, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	state->EnableDepth(true, true);         // turn on z-buffering - otherwise we can't clear the z-buffer
+	state->SetState(false, 0, false, false, true, true, true);
 	glClear(GL_DEPTH_BUFFER_BIT);
 
-	// Draw a ground plane.
-	state->SetState(false, 0, false, false, true, true, true);
+	// Draw a ground plane. This also initializes the z-buffer to cut off underground parts of 3D objects.
+	//
+	// We use glPolygonOffset() to push the ground plane slightly back in z. This avoids z-fighting with
+	// draped ground polygons in .obj/.agp which are (incorrectly) drawn in the same drawing phase as the
+	// objects themselves and therefore have to be drawn with the z-buffer on.
+	// This will not avoid z-fighting of multiple draped polygons that overlap with each other, but this
+	// is fine; In X-Plane, there is no guarantee on the draw order for these either, so the visibility
+	// in the sim is actually undefined (although constant after loading the scenery, so it won't flicker).
 	glEnable(GL_POLYGON_OFFSET_FILL);
-	glPolygonOffset(1.f, 1.f);
+	glPolygonOffset(5.f, 1.f);
 	glColor4f(0.2, 0.4, 0.2, 1.0);
 	// We don't strictly need this, as we always keep the camera at the origin,
 	// but we'll do it anyway in case we ever decide to break that invariant.
 	Point3 position = mCamera->Position();
-	glFrontFace(GL_CCW);
-	glBegin(GL_QUADS);
-	glVertex2f(position.x - DRAW_DISTANCE, position.y - DRAW_DISTANCE);
-	glVertex2f(position.x + DRAW_DISTANCE, position.y - DRAW_DISTANCE);
-	glVertex2f(position.x + DRAW_DISTANCE, position.y + DRAW_DISTANCE);
+	glBegin(GL_TRIANGLE_FAN);
 	glVertex2f(position.x - DRAW_DISTANCE, position.y + DRAW_DISTANCE);
+	glVertex2f(position.x + DRAW_DISTANCE, position.y + DRAW_DISTANCE);
+	glVertex2f(position.x + DRAW_DISTANCE, position.y - DRAW_DISTANCE);
+	glVertex2f(position.x - DRAW_DISTANCE, position.y - DRAW_DISTANCE);
 	glEnd();
-	glFrontFace(GL_CW);
 	glDisable(GL_POLYGON_OFFSET_FILL);
 
 	mPreviewLayer->DrawVisualization(false, state);
