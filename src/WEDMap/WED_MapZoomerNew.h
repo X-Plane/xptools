@@ -49,7 +49,6 @@
 
 class	WED_MapZoomerNew : public GUI_ScrollerPaneContent {
 public:
-
 					 WED_MapZoomerNew(WED_Camera * c = nullptr);
 	virtual			~WED_MapZoomerNew();
 	// The map zoomer converts lat/lon coordinates to pixel coordinates.
@@ -160,12 +159,24 @@ private:
 	double	mLonCenter;
 	double	mCenterX;
 	double	mCenterY;
-	double	mLonCenterCOS;
+	double	mLatCenterCOS, mLatCenterSIN;
+	double  mCenterCOS;
 	long long mCacheKey;
 
-protected:
-	double	mPixel2DegLat;
+	class mapScale {
+	public:
+		mapScale(void) : mDegLat2Pixel(1.0), mPixel2DegLat(1.0), mPPM(1.0) {}
 
+		void   operator= (double Pixel2DegLat);
+		double operator()(void) const { return mPixel2DegLat; }
+		double inv(void) const { return mDegLat2Pixel; }
+		double ppm(void) const { return mPPM; }
+	private:
+		double	mPixel2DegLat;
+		double	mDegLat2Pixel;
+		double	mPPM;
+	};
+	mapScale	mPixel2DegLat;
 };
 
 #endif

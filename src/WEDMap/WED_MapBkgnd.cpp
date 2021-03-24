@@ -133,7 +133,7 @@ void		WED_MapBkgnd::DrawStructure(bool inCurrent, GUI_GraphState * g)
 		glEnd();
 	}
 
-	int sub_div = lon_span < 120 ? min(divisions, 5) : divisions;
+	int sub_div = min(divisions, 5);
 	for(int t = cb; t <= ct; t += divisions)
 	{
 		glBegin(GL_LINE_STRIP);
