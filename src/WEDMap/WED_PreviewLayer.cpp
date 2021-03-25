@@ -174,6 +174,7 @@ static bool setup_pol_texture(ITexMgr * tman, const pol_info_t& pol, double head
 			glDisable(GL_TEXTURE_GEN_S);
 			glDisable(GL_TEXTURE_GEN_T);
 		}
+		else
 			setup_transformation(heading, pol.proj_s, pol.proj_t, centroid, z);
 	}
 	else
