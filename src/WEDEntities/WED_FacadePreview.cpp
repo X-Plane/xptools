@@ -1019,7 +1019,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 		static int pingpong(-1);
 		if (pingpong < 0)
 		{
-			vbuf.assign(8*1024, 0.0f);   // todo: error check - could there be larger meshes for any one wall segment ?
+			vbuf.assign(8*2560, 0.0f);   // todo: error check - could there be larger meshes for any one wall segment ? Update: Yes there is - Mod_Garage_2.fac
 			glGenBuffers(NUM_VBO, sbo);
 			for(int i = 0; i < NUM_VBO; ++i)
 			{
