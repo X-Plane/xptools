@@ -398,16 +398,21 @@ void		WED_CreateEdgeTool::AcceptPath(
 	vector<WED_GISEdge*> all_edges;
 	CollectRecursive(host_for_parent, back_inserter(all_edges), edge_class);
 
-	//Filter out powerlines
+	//Filter out edges not want to split ; powerlines or edges from different resource
 	auto e = all_edges.begin();
 	while(e != all_edges.end())
 	{
-		if(auto r = dynamic_cast<WED_RoadEdge *>(*e))
-			if(r->HasWires())
+		if( (*e)->GetClass() == WED_RoadEdge::sClass )
+		{
+			auto r = static_cast<WED_RoadEdge *>(*e);
+			string resource;
+			r->GetResource(resource);
+			if( r->HasWires() || mResource.value != resource )
 			{
 				e = all_edges.erase(e);
 				continue;
 			}
+		}
 		++e;
 	}
 
@@ -484,12 +489,22 @@ void WED_CreateEdgeTool::FindNear(WED_Thing * host, IGISEntity * ent, const char
 		case gis_Ring:
 		case gis_Edge:
 		case gis_Chain:
+#if ROAD_EDITING
+			if(filter == WED_RoadEdge::sClass && t->GetClass() == WED_RoadEdge::sClass )
+			{
+				WED_RoadEdge * wre = static_cast<WED_RoadEdge *>(t);
+				string resource;
+				wre->GetResource(resource);
+				if(mResource.value != resource) return;
+			}
+#endif
 			if(filter == NULL || filter == t->GetClass())
 			if((ps = dynamic_cast<IGISPointSequence*>(e)) != NULL)
 			{
 				#if DEV && DEBUG_CREATE_ROADS
 				printf("FindNear NumPts = %d\n", ps->GetNumPoints());
 				#endif
+
 				for(int n = 0; n < ps->GetNumPoints(); ++n)
 				{
 					p = ps->GetNthPoint(n);
@@ -548,6 +563,15 @@ void WED_CreateEdgeTool::FindNearP2S(WED_Thing * host, IGISEntity * ent, const c
 		case gis_Ring:
 		case gis_Edge:
 		case gis_Chain:
+#if ROAD_EDITING
+			if(filter == WED_RoadEdge::sClass && t->GetClass() == WED_RoadEdge::sClass)
+			{
+				WED_RoadEdge * wre = static_cast<WED_RoadEdge *>(t);
+				string resource;
+				wre->GetResource(resource);
+				if(mResource.value != resource) return;
+			}
+#endif
 			if(filter == NULL || t->GetClass() == filter)
 			if((ps = dynamic_cast<IGISPointSequence*>(e)) != NULL)
 			{
@@ -595,7 +619,15 @@ void WED_CreateEdgeTool::FindNearP2S(WED_Thing * host, IGISEntity * ent, const c
 	}
 }
 
-
+#if ROAD_EDITING
+void	WED_CreateEdgeTool::SetResource(const string& r)
+{
+	if(mType == create_Road)
+	{
+		mResource.value = r;
+	}
+}
+#endif
 
 void	WED_CreateEdgeTool::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 {

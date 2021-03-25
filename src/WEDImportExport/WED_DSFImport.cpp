@@ -125,7 +125,7 @@ static const char * k_dsf_cat_names[dsf_cat_DIM] = {
 class	DSF_Importer {
 public:
 
-	DSF_Importer() : is_overlay(false), dsf_cat_filter(dsf_filter_all), filter_on(false)
+	DSF_Importer() : is_overlay(false), dsf_cat_filter(dsf_filter_all), filter_on(false) ,is_in_bounds(false)
 	{
 		for(int n = 0; n < 7; ++n)
 			req_level_obj[n] = req_level_agp[n] = req_level_fac[n] = -1;
@@ -159,15 +159,14 @@ public:
 	vector<bool>		filter_table;     	  // Airport ID IDX
 	bool				filter_on;            // global switch to filter out stuff
 	vector<Bbox2>		cull_bounds;
+	int					is_in_bounds;
 	int					autogen_rings;
 	int					autogen_spelling;
 	bool 				is_overlay;
 
 
-	bool areas_contains_segment(const Segment2& in_seg)
+	bool isInBounds(const Segment2& in_seg)
 	{
-		if(cull_bounds.empty()) return true;
-
 		for(auto b : cull_bounds )
 		{
 			if(b.contains(in_seg.p1) || b.contains(in_seg.p2)) return true;
@@ -175,28 +174,14 @@ public:
 		return false;
 	}
 
-	bool areas_contains_point(const Point2& in_pnt)
+	bool isInBounds(const Point2& in_pnt)
 	{
-		if(cull_bounds.empty()) return true;
-
 		for(auto b : cull_bounds )
 		{
 			if(b.contains(in_pnt)) return true;
 		}
 		return false;
 	}
-
-	bool areas_bounds_overlap(const Bbox2& in_bound)
-	{
-		if(cull_bounds.empty()) return true;
-
-		for(auto b : cull_bounds )
-		{
-			if(b.overlap(in_bound)) return true;
-		}
-		return false;
-	}
-
 
 	WED_Thing * get_cat_parent(dsf_import_category cat)
 	{
@@ -480,7 +465,7 @@ public:
 		DSF_Importer * me = (DSF_Importer *) inRef;
 		if(!(me->dsf_cat_filter & dsf_filter_roads) || me->filter_on) return;
 		Segment2 segm(me->accum_road[0].first,Point2(inCoordinates[0], inCoordinates[1]));
-		if(!me->areas_contains_segment(segm))
+		if(!me->cull_bounds.empty() && !me->isInBounds(segm))
 		{
 			me->accum_road.clear();
 			return;
@@ -622,6 +607,8 @@ public:
 		me->autogen_spelling = -1;
 
 		dsf_import_category cat = dsf_cat_objects;
+
+		me->is_in_bounds = me->cull_bounds.empty();
 
 #if !NO_FAC
 		if( me->dsf_cat_filter & dsf_filter_facades && end_match(r,".fac" ))
@@ -833,6 +820,14 @@ public:
 			p.lo = p.hi = p.pt;
 			me->pts.push_back(p);
 		}
+
+		if(!me->is_in_bounds)
+		{
+			Point2 p;
+			p.x_ = inCoordinates[0];
+			p.y_ = inCoordinates[1];
+			me->is_in_bounds = me->isInBounds(p);
+		}
 	}
 
 	static void	EndPolygonWinding(
@@ -975,9 +970,10 @@ public:
 
 			if(auto ags = static_cast<WED_AutogenPlacement *>(me->poly))
 			{
-				Bbox2 ags_bounds;
-				ags->GetBounds(gis_Geo, ags_bounds);
-				if (!me->areas_bounds_overlap(ags_bounds))  // this isn't strictly right ... as the points might not be inside the box, but all around it.
+				//Bbox2 ags_bounds;
+				//ags->GetBounds(gis_Geo, ags_bounds);
+				//if(!areas_bounds_overlap(ags_bounds)) // this isn't strictly right ... as the points might not be inside the box, but all around it.
+				if (!me->is_in_bounds)
 				{
 					wdgs.push_back(me->poly->GetNthChild(0));
 					wdgs.back()->SetParent(NULL, 0);
@@ -1176,10 +1172,9 @@ int		WED_CanImportRoads(IResolver * resolver)
 		if(excl == nullptr) return 0;
 		set<int> excl_types;
 		excl->GetExclusions(excl_types);
-		if(excl_types.find(exclude_Net) == excl_types.end()) return 0;
+		if(excl_types.count(exclude_Net)) return 1;
 	}
-
-	return 1;
+	return 0;
 }
 
 void	WED_DoImportRoads(IResolver * resolver)

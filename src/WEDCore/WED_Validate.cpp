@@ -2185,10 +2185,15 @@ static void ValidateRoads(const vector<WED_RoadEdge *> roads, validation_error_v
 
 		if(gExportTarget >= wet_gateway)
 		{
+#if 1
+			msgs.push_back(validation_error_t("Roads networks are not (yet) allowed on the gateway", err_net_resource, roads, apt));
+			return;
+#else
 			string res;
 			r->GetResource(res);
 			if(res != "lib/g10/roads.net" && res != "lib/g10/roads_EU.net")
 				msgs.push_back(validation_error_t("Only roads from lib/g10/roads.net or lib/g10/roads_EU.net are allowed on the gateway", err_net_resource, r, apt));
+#endif
 		}
 	}
 
@@ -2228,16 +2233,29 @@ static void ValidateRoads(const vector<WED_RoadEdge *> roads, validation_error_v
 				y->first->GetAllViewers(sy);
 				if(sy.empty()) sy.insert(y->first->GetParent());
 				bool isShort = false;
+
 				for(auto xi : sx)
 				{
 					for(auto yi : sy)
+					{
 						if(xi == yi)
 						{
 							msgs.push_back(validation_error_t("Road has one or more short segments", err_net_zero_length, xi, apt));
 							isShort = true;
 							break;
 						}
-					if(isShort) break;
+						auto re_x = dynamic_cast<WED_RoadEdge *>(xi);
+						auto re_y = dynamic_cast<WED_RoadEdge *>(yi);
+						string res_x, res_y;
+						re_x->GetResource(res_x);
+						re_y->GetResource(res_y);
+						if(res_x != res_y)
+						{
+							isShort = true; // dont run doubled nodes check on unmerged roads belonging to different nets
+							break;
+						}
+					}
+					if (isShort) break;
 				}
 				if(!isShort)
 					if(x->first->CountViewers() == 0 || y->first->CountViewers() == 0)
@@ -2245,7 +2263,7 @@ static void ValidateRoads(const vector<WED_RoadEdge *> roads, validation_error_v
 						vector<WED_Thing *> unmergeable { x->first, y->first };
 						msgs.push_back(validation_error_t("Road intersections can not be at shape points, split and merge.", err_net_unmerged, unmergeable, apt));
 					}
-					else // if(apt == nullptr) // the general ATC network doubled node check at airport gets this one, too.
+					else
 					{
 						vector<WED_Thing *> unmerged { x->first, y->first };
 						if( x->second.x() != (double) ((int) x->second.x()) && x->second.y() != (double) ((int) x->second.y()) )

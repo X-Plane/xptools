@@ -1643,8 +1643,11 @@ struct	preview_road : WED_PreviewItem {
 		if(!rmgr->GetRoad(vpath,rds)) return;
 
 		int sub_type = road->GetSubtype();
-		int rd_type = rds->vroad_types.at(sub_type).rd_type;
-		auto& rd = rds->road_types.at(rd_type);
+		auto vroads_i = rds->vroad_types.find(sub_type);
+		if(vroads_i == rds->vroad_types.end()) return;
+		auto roads_i = rds->road_types.find(vroads_i->second.rd_type);
+		if(roads_i == rds->road_types.end()) return;
+		auto& rd = roads_i->second;
 		ITexMgr *	tman = WED_GetTexMgr(resolver);
 		TexRef tref = tman->LookupTexture(rds->textures[rd.tex_idx].c_str(),true,tex_Wrap+tex_Mipmap+tex_Linear);
 

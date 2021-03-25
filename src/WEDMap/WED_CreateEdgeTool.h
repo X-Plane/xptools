@@ -65,6 +65,9 @@ public:
 	virtual	void			GetNthPropertyDict(int n, PropertyDict_t& dict) const;
 	virtual	void			GetNthPropertyDictItem(int n, int e, string& item) const;
 	virtual	void			GetNthPropertyInfo(int n, PropertyInfo_t& info) const;
+#if ROAD_EDITING
+	void			        SetResource(const string& r);
+#endif
 
 private:
 

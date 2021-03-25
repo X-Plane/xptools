@@ -3229,7 +3229,7 @@ static bool is_node_merge(IResolver * resolver)
 	//   0.016719 seconds.
 	//StElapsedTime can_merge_timer("WED_CanMerge");
 	ISelection * sel = WED_GetSelect(resolver);
-
+#if ROAD_EDITING
 	if(sel->GetSelectionCount() == 1) // this means merge two edges here into one
 	{
 		WED_Thing * thing = dynamic_cast<WED_Thing *>(sel->GetNthSelection(0));
@@ -3239,7 +3239,6 @@ static bool is_node_merge(IResolver * resolver)
 
 		set<WED_Thing *> viewers;
 		thing->GetAllViewers(viewers);
-		if(viewers.size() > 2) return false;
 
 		for(auto v : viewers)
 		{
@@ -3252,21 +3251,24 @@ static bool is_node_merge(IResolver * resolver)
 		// check for road subtype
 		if(road_edge_1->GetSubtype() != road_edge_2->GetSubtype()) return false;
 
-		// check for direction
 		Bezier2 b1,b2;
 		road_edge_1->GetSide(gis_Geo,-1,b1);
 		road_edge_2->GetSide(gis_Geo,-1,b2);
+		// check for direction
 		if(b1.p2 != b2.p1 && b1.p1 != b2.p2) return false;
-
 		// check resource match
 		string resource_1,resource_2;
 		road_edge_1->GetResource(resource_1);
 		road_edge_2->GetResource(resource_2);
 		if(resource_1 != resource_2) return false;
-
+		// check if it would be closed ( start = end node)
+		bool add_edge_end = road_edge_1->GetNthSource(0) == thing;
+		if( add_edge_end && road_edge_1->GetNthSource(1) == road_edge_2->GetNthSource(0)) return false;
+		if(!add_edge_end && road_edge_1->GetNthSource(0) == road_edge_2->GetNthSource(1)) return false;
 
 		return true;
 	}
+#endif
 
 	if(sel->GetSelectionCount() < 2)
 		return false;		// can't merging 1 thing mean merge two endges into one
@@ -3291,6 +3293,31 @@ static bool is_node_merge(IResolver * resolver)
 		//For each item after that
 		for (merge_class_map::iterator merge_pair_itr = thing_1_itr + 1; merge_pair_itr != sinkmap.end(); ++merge_pair_itr)
 		{
+#if ROAD_EDITING
+			//do not merge road nodes from same edge or with different resource
+			if( thing_1_itr->second.first == WED_RoadNode::sClass
+			 && merge_pair_itr->second.first == WED_RoadNode::sClass)
+			{
+				set<WED_Thing *> viewers1,viewers2;
+				thing_1_itr->second.second->GetAllViewers(viewers1);
+				merge_pair_itr->second.second->GetAllViewers(viewers2);
+
+				for(auto v1 : viewers1)
+					for(auto v2 : viewers2)
+					{
+						if(v1 == v2) return false;  // same edge , do not merge
+						WED_RoadEdge * road_edge_1 = dynamic_cast<WED_RoadEdge *>(v1);
+						WED_RoadEdge * road_edge_2 = dynamic_cast<WED_RoadEdge *>(v2);
+
+						if(road_edge_1 == nullptr || road_edge_2 == nullptr) return false;
+
+						string res1,res2;
+						road_edge_1->GetResource(res1);
+						road_edge_2->GetResource(res2);
+						if(res1 != res2) return false;
+					}
+			}
+#endif
 			//If the two things are within snapping distance of each other, record so
 			if (is_within_snapping_distance(thing_1_itr, merge_pair_itr))
 			{
@@ -3550,6 +3577,13 @@ static void do_node_merge(IResolver * resolver)
 
 			bool add_edge_end = edge->GetNthSource(0) == thing;
 
+			if( ( add_edge_end && edge->GetNthSource(1) == obsolete_edge->GetNthSource(0)) ||
+			    (!add_edge_end && edge->GetNthSource(0) == obsolete_edge->GetNthSource(1)) )    // this would endup in closed edge ( start = end node)
+			{
+				op->AbortOperation();
+				return;
+			}
+
 			WED_GISEdge * ge_1 = dynamic_cast<WED_GISEdge *>(edge);
 			WED_GISEdge * ge_2 = dynamic_cast<WED_GISEdge *>(obsolete_edge);
 
@@ -3624,8 +3658,46 @@ static void do_node_merge(IResolver * resolver)
 			{
 				const char * tag_1 = start_thing->second.first;
 				const char * tag_2 = merge_pair->second.first;
+				bool can_be_merged = tag_1 == tag_2 ;
+#if ROAD_EDITING
+				//do not merge road nodes from same edge or with different resource
+				if(can_be_merged && tag_1 == WED_RoadNode::sClass )
+				{
+					set<WED_Thing *> viewers1,viewers2;
+					start_thing->second.second->GetAllViewers(viewers1);
+					merge_pair->second.second->GetAllViewers(viewers2);
 
-				if (is_within_snapping_distance(start_thing, merge_pair) && tag_1 == tag_2)
+					for(auto v1 : viewers1)
+					{
+						for(auto v2 : viewers2)
+						{
+							if(v1 == v2)					//do not merge start and end node of same edge
+							{
+								can_be_merged = false;
+								break;
+							}
+
+							WED_RoadEdge * road_edge_1 = dynamic_cast<WED_RoadEdge *>(v1);
+							WED_RoadEdge * road_edge_2 = dynamic_cast<WED_RoadEdge *>(v2);
+
+							if(road_edge_1 != nullptr && road_edge_2 != nullptr)
+							{
+								string res1,res2;
+								road_edge_1->GetResource(res1);
+								road_edge_2->GetResource(res2);
+								if(res1 != res2)
+								{
+									can_be_merged = false;
+									break;
+								}
+							}
+						}
+
+						if(!can_be_merged) break;
+					}
+				}
+#endif
+				if (can_be_merged && is_within_snapping_distance(start_thing, merge_pair))
 				{
 					vector<WED_Thing*> sub_list = vector<WED_Thing*>();
 					sub_list.push_back(start_thing->second.second);
