@@ -67,7 +67,7 @@
 #define	CGAL_BETA_SIMPLIFIER 0
 
 // Road-grid editor - NOT even remotely done yet, leave this off, dude.
-#define ROAD_EDITING 0
+#define ROAD_EDITING 1
 
 // mroe : -- really early stage of dev , do not change.
 #define WITHNWLINK 0

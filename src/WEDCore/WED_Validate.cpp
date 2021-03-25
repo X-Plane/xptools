@@ -44,6 +44,8 @@
 #include "WED_OverlayImage.h"
 #include "WED_FacadeNode.h"
 #include "WED_RampPosition.h"
+#include "WED_RoadEdge.h"
+#include "WED_RoadNode.h"
 #include "WED_Taxiway.h"
 #include "WED_TaxiRoute.h"
 #include "WED_TruckDestination.h"
@@ -620,6 +622,7 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 		matches |= EXTENSION_DOES_MATCH(WED_StringPlacement,  "str");
 		matches |= EXTENSION_DOES_MATCH(WED_AutogenPlacement, "ags");
 		matches |= EXTENSION_DOES_MATCH(WED_AutogenPlacement, "agb");
+		matches |= EXTENSION_DOES_MATCH(WED_RoadEdge,         "net");
 
 		if(matches == false)
 		{
@@ -2127,6 +2130,132 @@ static void ValidateAptName(const string name, const string icao, validation_err
 		msgs.push_back(validation_error_t(string("The Airport ID for airport '") + name + "' must contain ASCII alpha-numeric characters only.", err_airport_icao, apt, apt));
 }
 
+static bool near_but_not_on_boundary(Point2& p)
+{
+	double dlon = fabs(round(p.x()) - p.x());
+	double dlat = fabs(round(p.y()) - p.y());
+	if(dlon == 0.0 || dlat == 0.0)
+		return false;
+	return  dlon < 3 * MTR_TO_DEG_LAT || dlat <  2 * MTR_TO_DEG_LAT;    // not precise - fast, but good enough. There are no roads at high lattitudes :)
+}
+
+static void ValidateRoads(const vector<WED_RoadEdge *> roads, validation_error_vector& msgs, WED_Airport* apt)
+{
+	// Hard problems
+	// referencing unknown (v)road-type (e.g. after changing the resource property)
+
+	// Soft problems (only partially implemented, yet)
+	// zero length segments (length under 3m)
+	// disconnected vertices
+	// T-junctions                                                     not yet done
+	// colocated segments (sharing both ends with another segment)
+	// connected dissimilar elements (road-railroad-powerline)         not yet done
+
+	// Style issues - Gateway no-no's
+	// resource not right
+
+	unordered_map<WED_Thing *, Point2> nodes;
+	nodes.reserve(roads.size());
+
+	for(auto r : roads)
+	{
+//		if(r->GetStartLayer() < 0 || r->GetStartLayer() > 5 ||
+//			 r->GetEndLayer() < 0 || r->GetEndLayer() > 5)
+//			msgs.push_back(validation_error_t(string("All road layers must be in the range of 0 to 5"), err_net_resource, r, apt));
+
+		Bezier2 s;
+		int ns = r->GetNumSides();     // we have plans to allow multi-segment roads ...
+		for(int i = 0; i < ns; i++)
+		{
+			r->GetSide(gis_Geo, i, s);
+
+			if(!r->IsValidSubtype())
+				msgs.push_back(validation_error_t("Road references undefined road type", err_net_undefined_type, r, apt));
+
+			if(i == 0)
+			{
+				nodes[dynamic_cast<WED_Thing *>(r->GetNthPoint(i))] = s.p1;
+				if(near_but_not_on_boundary(s.p1))
+					msgs.push_back(validation_error_t("Road nodes must be either exactly on or a few meters away from DSF tile boundaries.", err_net_crosses_tile_bdy, r, apt));
+			}
+			nodes[dynamic_cast<WED_Thing *>(r->GetNthPoint(i+1))] = s.p2;
+			if(near_but_not_on_boundary(s.p2))
+				msgs.push_back(validation_error_t("Road nodes must be either exactly on or a few meters away from DSF tile boundaries.", err_net_crosses_tile_bdy, r, apt));
+		}
+
+		if(gExportTarget >= wet_gateway)
+		{
+			string res;
+			r->GetResource(res);
+			if(res != "lib/g10/roads.net" && res != "lib/g10/roads_EU.net")
+				msgs.push_back(validation_error_t("Only roads from lib/g10/roads.net or lib/g10/roads_EU.net are allowed on the gateway", err_net_resource, r, apt));
+		}
+	}
+
+	// any nodes too close to each other and not connected
+	for(auto x = nodes.begin(); x != nodes.end(); ++x)
+	{
+		if(x->first->CountViewers() > 1)
+		{
+			set<WED_Thing *> viewers;
+			x->first->GetAllViewers(viewers);
+			int layers[5] = { 0 };
+			for(auto v : viewers)
+			{
+				bool isStart = v->GetNthSource(0) == x->first;
+				if(auto e = dynamic_cast<WED_RoadEdge *>(v))
+					if(isStart)
+						++layers[intlim(e->GetStartLayer(), 0, 4)];
+					else
+						++layers[intlim(e->GetEndLayer(), 0, 4)];
+			}
+			for(int i = 0; i < 5; i++)
+				if(layers[i] == 1)
+				{
+					msgs.push_back(validation_error_t("Mismatched road layers at intersection", warn_net_level_mismatch, x->first, apt));
+					break;
+				}
+		}
+
+		auto y = x;
+		for(++y; y !=  nodes.end(); ++y)
+		{
+			if(LonLatDistMeters(x->second, y->second) < 3.0)
+			{
+				set<WED_Thing *> sx, sy;
+				x->first->GetAllViewers(sx);
+				if(sx.empty()) sx.insert(x->first->GetParent());
+				y->first->GetAllViewers(sy);
+				if(sy.empty()) sy.insert(y->first->GetParent());
+				bool isShort = false;
+				for(auto xi : sx)
+				{
+					for(auto yi : sy)
+						if(xi == yi)
+						{
+							msgs.push_back(validation_error_t("Road has one or more short segments", err_net_zero_length, xi, apt));
+							isShort = true;
+							break;
+						}
+					if(isShort) break;
+				}
+				if(!isShort)
+					if(x->first->CountViewers() == 0 || y->first->CountViewers() == 0)
+					{
+						vector<WED_Thing *> unmergeable { x->first, y->first };
+						msgs.push_back(validation_error_t("Road intersections can not be at shape points, split and merge.", err_net_unmerged, unmergeable, apt));
+					}
+					else // if(apt == nullptr) // the general ATC network doubled node check at airport gets this one, too.
+					{
+						vector<WED_Thing *> unmerged { x->first, y->first };
+						if( x->second.x() != (double) ((int) x->second.x()) && x->second.y() != (double) ((int) x->second.y()) )
+							msgs.push_back(validation_error_t("Doubled road junction. These should be merged.", err_net_unmerged, unmerged, apt));
+					}
+			}
+		}
+	}
+}
+
 //------------------------------------------------------------------------------------------------------------------------------------
 #pragma mark -
 //------------------------------------------------------------------------------------------------------------------------------------
@@ -2145,6 +2274,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	vector<WED_AirportBoundary *>	boundaries;
 	vector<WED_ATCFlow *>			flows;
 	vector<WED_ATCFrequency*>		freqs;
+	vector<WED_RoadEdge*>			roads;
 
 	vector<WED_DrapedOrthophoto *>	orthos;
 
@@ -2174,6 +2304,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		else COLLECT(WED_TruckParkingLocation, truck_parking_locs)
 		else COLLECT(WED_TaxiRoute,            taxiroutes)
 		else COLLECT(WED_DrapedOrthophoto,     orthos)
+		else COLLECT(WED_RoadEdge,  		   roads)
 #undef COLLECT
 		else if (c == WED_ATCFlow::sClass) {
 				auto p = static_cast<WED_ATCFlow *>(thing);
@@ -2242,7 +2373,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	if(!CheckDuplicateNames(runway_or_sealane,msgs,apt,"A runway or sealane name is used more than once."))
 	{
 	   // there checks in these that create utterly misleading results if runway names are ambigeous
-		WED_DoATCRunwayChecks(*apt, msgs, taxiroutes, runways, legal_rwy_oneway, legal_rwy_twoway, flows, res_mgr, ramps);
+		WED_DoATCRunwayChecks(*apt, msgs, taxiroutes, runways, legal_rwy_oneway, legal_rwy_twoway, flows, res_mgr, ramps, roads);
 		ValidateATCFlows(flows, freqs, apt, msgs, legal_rwy_oneway);
 	}
 
@@ -2269,6 +2400,8 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	int ai_useable_ramps = 0;
 	for(auto r : ramps)
 		ai_useable_ramps += ValidateOneRampPosition(r, msgs, apt, runways);
+
+	ValidateRoads(roads, msgs, apt);
 
 	if(gExportTarget >= wet_xplane_1050)
 	{
@@ -2462,11 +2595,41 @@ validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane,
 	for(auto a : apts)
 		ValidateOneAirport(a, msgs, lib_mgr, res_mgr, mf);
 
+	vector<WED_RoadEdge*> off_airport_roads;
+
+	std::function<void(WED_Thing *)> CollectEntitiesRecursiveNoApts = [&] (WED_Thing * thing)
+	{
+		const auto c = thing->GetClass();
+#define COLLECT(type, vector) \
+		if(c == type::sClass) { \
+			auto p = static_cast<type *>(thing); \
+			if(!p->GetHidden())	vector.push_back(p); \
+			return; \
+		}
+		COLLECT(WED_RoadEdge,	off_airport_roads)
+#undef COLLECT
+		if(c != WED_Group::sClass)
+			return;         // don't recurse into anything but groups.
+		else
+		{
+			auto p = static_cast<WED_Group *>(thing);
+			if(p->GetHidden())
+				return;
+			int nc = thing->CountChildren();
+			for (int n = 0; n < nc; ++n)
+				CollectEntitiesRecursiveNoApts(thing->GetNthChild(n));
+		}
+	};
+
+	CollectEntitiesRecursiveNoApts(wrl);
+	ValidateRoads(off_airport_roads, msgs, nullptr);
+
 	// These are programmed to NOT iterate up INTO airports.  But you can START them at an airport.
 	// So...IF wrl (which MIGHT be the world or MIGHt be a selection or might be an airport) turns out to
 	// be an airport, we hvae to tell it "this is our credited airport."  Dynamic cast gives us the airport
-	// or null for 'free' stuff.
-	ValidatePointSequencesRecursive(wrl, msgs,dynamic_cast<WED_Airport *>(wrl));
+	// or null for 'off airport' stuff.
+
+	ValidatePointSequencesRecursive(wrl, msgs, dynamic_cast<WED_Airport *>(wrl));
 	ValidateDSFRecursive(wrl, lib_mgr, msgs, dynamic_cast<WED_Airport *>(wrl));
 
 #if 0// DEV

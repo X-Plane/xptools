@@ -45,6 +45,8 @@
 #include "WED_EnumSystem.h"
 #include "WED_MapZoomerNew.h"
 #include "WED_ToolUtils.h"
+#include "WED_Sign_Editor.h"
+
 
 #include "WED_AirportBeacon.h"
 #include "WED_AirportChain.h"
@@ -58,6 +60,7 @@
 #include "WED_Helipad.h"
 #include "WED_LinePlacement.h"
 #include "WED_ObjPlacement.h"
+#include "WED_RoadEdge.h"
 #include "WED_PolygonPlacement.h"
 #include "WED_StringPlacement.h"
 #include "WED_AutogenPlacement.h"
@@ -1156,10 +1159,6 @@ struct	preview_facade : public preview_polygon {
 
 			g->SetState(false,0,false,true,true,true,true);
 
-			float mat[16];
-			glGetFloatv(GL_PROJECTION_MATRIX, mat);
-			bool isTilted = (mat[2] != 0.0 || mat[6] != 0.0);
-
 			glMatrixMode(GL_MODELVIEW);
 			glPushMatrix();
 			Point2 l = zoomer->LLToPixel(ref_pt);
@@ -1168,7 +1167,7 @@ struct	preview_facade : public preview_polygon {
 			glScalef(ppm,ppm,ppm);
 			glRotatef(90, 1,0,0);
 			if(rmgr->GetFac(vpath, info))
-				draw_facade(tman, rmgr, vpath, *info, pts, choices, fac->GetHeight(), g, isTilted, 0.7*ppm);
+				draw_facade(tman, rmgr, vpath, *info, pts, choices, fac->GetHeight(), g, true, 0.7*ppm);
 			glPopMatrix();
 		}
 
@@ -1344,8 +1343,6 @@ struct	preview_object : public WED_PreviewItem {
 		}
 	}
 };
-
-#include "WED_Sign_Editor.h"
 
 struct	preview_taxisign : public WED_PreviewItem {
 	WED_AirportSign * ts;
@@ -1633,6 +1630,94 @@ struct	preview_light : public WED_PreviewItem {
 	}
 };
 
+struct	preview_road : WED_PreviewItem {
+	WED_RoadEdge * road;
+	IResolver * resolver;
+	preview_road(WED_RoadEdge * ro, int l, IResolver * r) : WED_PreviewItem(l), road(ro), resolver(r) {}
+	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
+	{
+		WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
+		string vpath;
+		road->GetResource(vpath);
+		const road_info_t * rds;
+		if(!rmgr->GetRoad(vpath,rds)) return;
+
+		int sub_type = road->GetSubtype();
+		int rd_type = rds->vroad_types.at(sub_type).rd_type;
+		auto& rd = rds->road_types.at(rd_type);
+		ITexMgr *	tman = WED_GetTexMgr(resolver);
+		TexRef tref = tman->LookupTexture(rds->textures[rd.tex_idx].c_str(),true,tex_Wrap+tex_Mipmap+tex_Linear);
+
+		int tex_id = 0;
+		if(tref) tex_id = tman->GetTexID(tref);
+
+		IGISPointSequence * ps = SAFE_CAST(IGISPointSequence,road);
+		auto PPM = zoomer->GetPPM();
+
+		if(ps)
+		{
+			if((rd.width * PPM) < 4*MIN_PIXELS_PREVIEW || !tex_id)             // cutoff size for real preview
+			{
+				g->SetState(false,0,false,false,false,false,false);
+				glColor4f(0.3, 0.3, 0.3, mPavementAlpha);
+
+				for(int i = 0; i < road->GetNumSides(); ++i)
+				{
+					vector<Point2>	pts;
+					SideToPoints(ps,i,zoomer, pts);
+					glLineWidth(5);
+					glShape2v(GL_LINES, &*pts.begin(), pts.size());
+					glLineWidth(1);
+				}
+			}
+			else
+			{
+				g->SetState(false,1,false,true,true,false,false);
+				g->BindTex(tex_id,0);
+				glColor3f(1,1,1);
+				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+				for (auto s : rd.segs)
+				{
+					vector<Point2>	pts;
+					vector<int> cont;
+					PointSequenceToVector(ps,zoomer,pts,false,cont,0,true);
+
+					double left  = s.left  * PPM;
+					double right = s.right * PPM;
+					double t = 0.0;                                                              // accumulator for texture t, so each starts where the previous ended
+
+					Vector2	dir(pts[1],pts[0]);               // direction of this segment
+					double len = dir.normalize();
+					Vector2 perp = dir.perpendicular_ccw();   // direction perpendicular
+
+					glBegin(GL_TRIANGLE_STRIP);
+						glTexCoord2f(s.s_right,t); glVertex2(pts[0] + perp * right);
+						glTexCoord2f(s.s_left, t); glVertex2(pts[0] + perp * left);
+
+						for (int j = 1; j < pts.size(); ++j)
+						{
+							t += len / (rd.length * PPM);
+							Vector2 dir_next;
+							if(j < pts.size()-1)
+							{
+								dir_next = Vector2(pts[j+1],pts[j]);
+								len = dir_next.normalize();
+								perp = (dir + dir_next) / (1.0 + dir.dot(dir_next));
+							}
+							else
+								perp = dir;
+							perp = perp.perpendicular_ccw();
+
+							glTexCoord2f(s.s_right, t); glVertex2(pts[j] + perp * right);
+							glTexCoord2f(s.s_left,  t); glVertex2(pts[j] + perp * left);
+							dir = dir_next;
+						}
+					glEnd();
+				}
+			}
+		}
+	}
+};
 
 /***************************************************************************************************************************************************
  * DRAWING OBJECT
@@ -1843,6 +1928,14 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		{
 			if (auto tsign = SAFE_CAST(WED_AirportSign, entity))
 				mPreviewItems.push_back(new preview_taxisign(tsign, group_Objects, GetResolver()));
+		}
+	}
+	else if (sub_class == WED_RoadEdge::sClass)
+	{
+	//	if(GetZoomer()->GetPPM() * 0.2 > MIN_PIXELS_PREVIEW)
+		{
+			if (auto rd = SAFE_CAST(WED_RoadEdge, entity))
+				mPreviewItems.push_back(new preview_road(rd, group_Roads, GetResolver()));
 		}
 	}
 	return true;

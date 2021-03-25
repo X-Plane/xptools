@@ -255,69 +255,114 @@ public:
 	vector<node>			m_nodes;
 	vector<edge>			m_edges;
 
-	void add_segment(WED_RoadEdge * e);
+	void add_segment(WED_RoadEdge * e, const Bbox2& cull_bounds);
 
 	void remove_dupes();
-	void assign_ids();
-	void export_to_dsf(	int						net_type,
+	void assign_ids(int& idx);
+	void export_to_dsf(	int&					node_offset,
+						int						net_type,
 						const DSFCallbacks_t *	cbs,
 						void *					writer);
-
-
 };
 
-void dsf_road_grid_helper::add_segment(WED_RoadEdge * e)
+void dsf_road_grid_helper::add_segment(WED_RoadEdge * e, const Bbox2& cull_bounds)
 {
-	IGISPoint * start = e->GetNthPoint(0);
-	IGISPoint * end = e->GetNthPoint(1);
+	int n = e->GetNumSides();
 
-	node_index::iterator si = m_node_index.find(start);
-	node_index::iterator ei = m_node_index.find(end);
+	IGISPoint * gp_start = e->GetNthPoint(0);
+	IGISPoint * gp_end = e->GetNthPoint(n);
 
-	edge new_edge;
-	new_edge.start_level = e->GetStartLayer();
-	new_edge.end_level = e->GetEndLayer();
-	new_edge.subtype = e->GetSubtype();
-	if(si == m_node_index.end())
-	{
-		new_edge.start_node = m_nodes.size();
-		si = m_node_index.insert(make_pair(start, m_nodes.size())).first;
-		m_nodes.push_back(node());
-	}
-	else
-	{
-		new_edge.start_node = si->second;
-	}
+	Point2 sp,ep;
+	gp_start->GetLocation(gis_Geo,sp);
+	gp_end->GetLocation(gis_Geo,ep);
 
-	if(ei == m_node_index.end())
+	Bezier2 b ;
+	vector<Bezier2> segm;
+	for(int s = 0; s < n ;++s)
 	{
-		new_edge.end_node = m_nodes.size();
-		ei = m_node_index.insert(make_pair(end, m_nodes.size())).first;
-		m_nodes.push_back(node());
-	}
-	else
-	{
-		new_edge.end_node = ei->second;
-	}
-
-	m_nodes[si->second].edges.push_back(m_edges.size());
-	m_nodes[ei->second].edges.push_back(m_edges.size());
-
-	Bezier2 b;
-	if(e->GetSide(gis_Geo, 0, b)) // We are a real bezier:
-	{
-		if(b.p1 == b.c1)
+		if(e->GetSide(gis_Geo, s , b)) // We are a real bezier:  make always qubic
 		{
-			b.c1 = b.p1 + b.derivative(0.01);
+			if(b.p1 == b.c1)
+			{
+				b.c1 = b.p1 + b.derivative(0.01);
+			}
+			else if(b.p2 == b.c2)
+			{
+				b.c2 = b.p2 - b.derivative(0.99);
+			}
 		}
-		else if(b.p2 == b.c2)
-		{
-			b.c2 = b.p2 - b.derivative(0.99);
-		}
+		segm.push_back(b);
 	}
-	new_edge.path.push_back(b);
 
-	m_edges.push_back(new_edge);
+	clip_segments(segm,cull_bounds);
+	if(segm.empty()) return;					//the whole segment is out of the bounds or something else is wrong
+   
+	auto part_st  = segm.begin(); 
+	auto segm_end = segm.end();
+
+	while(part_st != segm_end)
+	{
+		auto part_en = find_contiguous_beziers(part_st,segm_end);
+		if(part_st != part_en)
+		{	
+			edge new_edge;
+			new_edge.subtype = e->GetSubtype();
+
+		    new_edge.path.assign(part_st,part_en);
+
+			if(new_edge.path.front().p1 == sp)							//start point is unchanged , not cutted
+			{
+				new_edge.start_level = e->GetStartLayer();
+				node_index::iterator si = m_node_index.find(gp_start);
+				if(si == m_node_index.end())
+				{
+					new_edge.start_node = m_nodes.size();
+					si = m_node_index.insert(make_pair(gp_start, m_nodes.size())).first;
+					m_nodes.push_back(node());
+				}
+				else
+				{
+					new_edge.start_node = si->second;
+				}
+				m_nodes[si->second].edges.push_back(m_edges.size());
+			}
+			else											//start point is new after culling , creating new own node
+			{
+				new_edge.start_level = e->GetEndLayer();    // ToDo: mroe: revisit , using original endlayer for every newly split node
+				new_edge.start_node = m_nodes.size();
+				m_nodes.push_back(node());
+				m_nodes[m_nodes.size()-1].edges.push_back(m_edges.size());
+			}
+
+			if( new_edge.path.back().p2 == ep)							//end point is unchanged , not cutted
+			{
+				new_edge.end_level = e->GetEndLayer();
+				node_index::iterator ei = m_node_index.find(gp_end);
+				if(ei == m_node_index.end())
+				{
+					new_edge.end_node = m_nodes.size();
+					ei = m_node_index.insert(make_pair(gp_end, m_nodes.size())).first;
+					m_nodes.push_back(node());
+				}
+				else
+				{
+					new_edge.end_node = ei->second;
+				}
+				m_nodes[ei->second].edges.push_back(m_edges.size());
+			}
+			else											//end point is new after culling , creating new own node
+			{
+				new_edge.end_level = e->GetEndLayer();
+				new_edge.end_node = m_nodes.size();
+				m_nodes.push_back(node());
+				m_nodes[m_nodes.size()-1].edges.push_back(m_edges.size());
+			}
+
+			m_edges.push_back(new_edge);
+		}
+
+		part_st = part_en;
+	}
 }
 
 void dsf_road_grid_helper::remove_dupes()
@@ -335,7 +380,8 @@ void dsf_road_grid_helper::remove_dupes()
 				edge * ee1 = &m_edges[e1];
 				edge * ee2 = &m_edges[e2];
 
-				if(ee1->level_is_uniform() && ee2->level_is_uniform())
+				//TODO: mroe revisit ; rubberband fix , nodes with level -999 marked to merge as shape point
+				if((ee1->level_is_uniform() && ee2->level_is_uniform()) || ((ee1->level_for_node(n) == -999) && (ee2->level_for_node(n) == -999)))
 				if(ee1->level_for_node(n) == ee2->level_for_node(n) && ee1->subtype == ee2->subtype)	// Only merge if level and subtype matches
 				{
 					DebugAssert(ee1->start_node == n || ee1->end_node == n);
@@ -390,9 +436,8 @@ void dsf_road_grid_helper::remove_dupes()
 }
 
 
-void dsf_road_grid_helper::assign_ids()
+void dsf_road_grid_helper::assign_ids(int& idx)
 {
-	int idx = 1;
 	for(vector<node>::iterator n = m_nodes.begin(); n != m_nodes.end(); ++n)
 	{
 		if(n->edges.empty())
@@ -403,14 +448,15 @@ void dsf_road_grid_helper::assign_ids()
 }
 
 void dsf_road_grid_helper::export_to_dsf(
+	int&					node_offs,
 	int						net_type,
 	const DSFCallbacks_t *	cbs,
 	void *					writer)
 {
 	remove_dupes();
-	assign_ids();
+	assign_ids(node_offs);
 
-				double coords[4];
+	double coords[4];
 
 	for(vector<edge>::iterator e = m_edges.begin(); e != m_edges.end(); ++e)
 	if(!e->path.empty())
@@ -479,10 +525,9 @@ struct	DSF_ResourceTable {
 
 #if ROAD_EDITING
 	vector<string>				net_defs;
-	map<string, int>			net_defs_idx;
-
-	list<dsf_road_grid_helper>	net_grids;		// list to avoid massive realloc thrash on second grid?
+	map<pair<string, int>, pair<int, dsf_road_grid_helper> > net_defs_idx;
 #endif
+
 	vector<string>				filters;
 	map<string, int>			filter_idx;
 
@@ -522,23 +567,31 @@ struct	DSF_ResourceTable {
 		return				  pol_defs.size()-1;
 	}
 #if ROAD_EDITING
-	dsf_road_grid_helper * accum_net(const string& f)
+	dsf_road_grid_helper * accum_net(const string& f, int idx)
 	{
 		int ret = 0;
-		map<string,int>::iterator i = net_defs_idx.find(f);
+		auto i = net_defs_idx.find(make_pair(f, idx));
 		if(i != net_defs_idx.end())
-			ret = i->second;
+			return &i->second.second;
 		else
 		{
-			net_defs_idx[f] = net_defs.size();
-			net_defs.push_back(f);
-			net_grids.push_back(dsf_road_grid_helper());
-			ret = net_defs.size()-1;
+			i = net_defs_idx.begin();
+			while(i != net_defs_idx.end())
+			{
+				if(i->first.first == f) break;
+				i++;
+			}
+			if(i == net_defs_idx.end())
+			{
+				net_defs_idx[make_pair(f, idx)] = make_pair(net_defs.size(), dsf_road_grid_helper());
+				net_defs.push_back(f);
+			}
+			else
+			{
+				net_defs_idx[make_pair(f, idx)] = make_pair(i->second.first, dsf_road_grid_helper());
+			}
+			return &net_defs_idx[make_pair(f, idx)].second;
 		}
-
-		list<dsf_road_grid_helper>::iterator it = net_grids.begin();
-		advance(it, ret);
-		return &*it;
 	}
 #endif
 	int accum_filter(const string& icao_filter)
@@ -564,12 +617,16 @@ struct	DSF_ResourceTable {
 		for(vector<pair<string,string> >::iterator e = exclusions[-1].begin(); e != exclusions[-1].end(); ++e)
 			cbs.AcceptProperty_f(e->first.c_str(), e->second.c_str(), writer);
 #if ROAD_EDITING
-		list<dsf_road_grid_helper>::iterator grid = net_grids.begin();
-		int road_idx = 0;
-		for(vector<string>::iterator s = net_defs.begin(); s != net_defs.end(); ++s, ++grid, ++road_idx)
+		for(auto s : net_defs)
 		{
-			cbs.AcceptNetworkDef_f(s->c_str(), writer);
-			grid->export_to_dsf(road_idx, &cbs, writer);
+			int road_node = 1;                            // number networks per network definition
+			cbs.AcceptNetworkDef_f(s.c_str(), writer);
+			for(auto m : net_defs_idx)
+				if(m.first.first == s)
+				{
+					cbs.SetFilter_f(m.first.second, writer);
+					m.second.second.export_to_dsf(road_node, m.second.first, &cbs, writer);
+				}
 		}
 #endif
 		int idx = 0;
@@ -1156,7 +1213,7 @@ static int	DSF_ExportTileRecursive(
 						void *						writer,
 						set<WED_Thing *>&			problem_children,
 						int							show_level,
-						DSF_export_info_t&		export_info )
+						DSF_export_info_t *			export_info )
 {
 	WED_Entity * ent = static_cast<WED_Entity *>(what);
 	if (!ent || ent->GetHidden())
@@ -1897,23 +1954,23 @@ static int	DSF_ExportTileRecursive(
 	#if DEV
 					StElapsedTime	etime("DDS export time");
 	#endif
-					if(export_info.orthoFile != absPathIMG)
+					if(export_info->orthoFile != absPathIMG)
 					{
-						if(!export_info.orthoFile.empty())
+						if(!export_info->orthoFile.empty())
 						{
-							Assert(export_info.orthoImg.data);
-							free(export_info.orthoImg.data);
-							export_info.orthoImg.data = NULL;
-							export_info.orthoFile = "";
+							Assert(export_info->orthoImg.data);
+							free(export_info->orthoImg.data);
+							export_info->orthoImg.data = NULL;
+							export_info->orthoFile = "";
 						}
-						if(LoadBitmapFromAnyFile(absPathIMG.c_str(),&export_info.orthoImg)) // to cut into pieces, only. Make sure its not forcibly rescaled
+						if(LoadBitmapFromAnyFile(absPathIMG.c_str(),&export_info->orthoImg)) // to cut into pieces, only. Make sure its not forcibly rescaled
 						{
 							DoUserAlert((msg + "Unable to convert the image file '" + absPathIMG + "'to a DDS file, aborting DSF Export.").c_str());
 							return -1;
 						}
 						else
 						{
-							export_info.orthoFile = absPathIMG;
+							export_info->orthoFile = absPathIMG;
 
 							// force reload of texture from disk - for visual confirmation that WED realized the image had changed
 							ITexMgr * tman = WED_GetTexMgr(resolver);
@@ -1922,7 +1979,7 @@ static int	DSF_ExportTileRecursive(
 							tman->DropTexture(relImgPath.c_str());
 						}
 					}
-					ImageInfo imgInfo(export_info.orthoImg);
+					ImageInfo imgInfo(export_info->orthoImg);
 					ImageInfo DDSInfo;
 
 					int UVMleft   = intround(imgInfo.width * UVbounds.xmin());
@@ -2130,8 +2187,8 @@ static int	DSF_ExportTileRecursive(
 			auto roa = static_cast<WED_RoadEdge*>(what);
 			string asset;
 			roa->GetResource(asset);
-			dsf_road_grid_helper * grid = io_table.accum_net(asset);
-			grid->add_segment(roa);
+			dsf_road_grid_helper * grid = io_table.accum_net(asset, io_table.cur_filter);
+			grid->add_segment(roa,cull_bounds);
 			++real_thingies;
 			return real_thingies;
 		}
@@ -2179,7 +2236,7 @@ static int	DSF_ExportTileRecursive(
 	return real_thingies;
 }
 
-static int DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& pkg, int x, int y, set <WED_Thing *>& problem_children, DSF_export_info_t& export_info)
+int DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& pkg, int x, int y, set <WED_Thing *>& problem_children, DSF_export_info_t * export_info)
 {
 	void *			writer;
 	DSFCallbacks_t	cbs;
@@ -2281,13 +2338,13 @@ int DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, se
 
 	int DSF_export_tile_res = 0;
 
-	DSF_export_info_t DSF_export_info;   // We kept the last loaded orthoimage open, so it does not have to be loaded repeatedly. This gates parallel DSF exports.
-
+	DSF_export_info_t DSF_export_info;   // Keeping the last loaded orthoimage open, so it does not have to be loaded repeatedly.
+	                                     // This gates parallel DSF exports, though.
 	for (int y = tile_south; y < tile_north; ++y)
 	{
 		for (int x = tile_west; x < tile_east; ++x)
 		{
-			DSF_export_tile_res = DSF_ExportTile(base, resolver, package, x, y, problem_children, DSF_export_info);
+			DSF_export_tile_res = DSF_ExportTile(base, resolver, package, x, y, problem_children, &DSF_export_info);
 			if (DSF_export_tile_res == -1) break;
 		}
 		if (DSF_export_tile_res == -1) break;
@@ -2346,7 +2403,7 @@ int DSF_ExportAirportOverlay(IResolver * resolver, WED_Airport  * apt, const str
 
 		int entities = 0;
 		for(int show_level = 6; show_level >= 1; --show_level)
-			entities += DSF_ExportTileRecursive(apt, resolver, package, cull_bounds, safe_bounds, rsrc, &cbs, writer, problem_children, show_level, DSF_export_info);
+			entities += DSF_ExportTileRecursive(apt, resolver, package, cull_bounds, safe_bounds, rsrc, &cbs, writer, problem_children, show_level, &DSF_export_info);
 
 		Assert(DSF_export_info.orthoImg.data == NULL); //  In this type of export - orthoimages are not allowed. So this should never happen.
 
