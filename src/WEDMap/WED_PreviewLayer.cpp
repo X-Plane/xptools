@@ -91,9 +91,7 @@ inline void setup_transformation(double heading, double scale_s, double scale_t,
 		m1[5] /= ppm * scale_t;
 		applyRotation(m1, heading, 0, 0, 1);
 
-		double l,b,r,t;
-		z->GetPixelBounds(l,b,r,t);
-		applyTranslation(m1, l-origin.x_, b-origin.y_ ,0);
+		applyTranslation(m1, -origin.x_, -origin.y_ , 0);
 
 		double	proj_tex_s[4], proj_tex_t[4];
 		proj_tex_s[0] = m1[0 ];
@@ -113,6 +111,14 @@ static void kill_transform(void)
 {
 	glDisable(GL_TEXTURE_GEN_S);
 	glDisable(GL_TEXTURE_GEN_T);
+}
+
+static Point2 some_nearby_fixed_loc(WED_MapZoomerNew * z)
+{
+	Point2 pt = z->PixelToLL(Point2());  // some arbitrary point near the visible map
+	pt.x_ = round(pt.x());               // This makes the point 'essentially' fixed when zooming/panning around in the 3D view
+	pt.y_ = round(pt.y());               // but at the same time is close enough so the 32b floats on the GPU give accurate UV coordinates
+	return z->LLToPixel(pt);
 }
 
 static bool setup_taxi_texture(int surface_code, double heading, const Point2& centroid, GUI_GraphState * g, WED_MapZoomerNew * z, float alpha)
@@ -168,7 +174,6 @@ static bool setup_pol_texture(ITexMgr * tman, const pol_info_t& pol, double head
 			glDisable(GL_TEXTURE_GEN_S);
 			glDisable(GL_TEXTURE_GEN_T);
 		}
-		else
 			setup_transformation(heading, pol.proj_s, pol.proj_t, centroid, z);
 	}
 	else
@@ -629,7 +634,7 @@ struct	preview_taxiway : public preview_polygon {
 		// Any other test is too expensive, and for the small pavement squares that would get wiped out, the cost of drawing them
 		// is negligable anyway.
 
-		if (setup_taxi_texture(taxi->GetSurface(), taxi->GetHeading(), Point2(), g, zoomer, mPavementAlpha))
+		if (setup_taxi_texture(taxi->GetSurface(), taxi->GetHeading(), some_nearby_fixed_loc(zoomer), g, zoomer, mPavementAlpha))
 		{
 			preview_polygon::preview_polygon::draw_it(zoomer,g,mPavementAlpha);
 		}
@@ -1177,7 +1182,7 @@ struct	preview_pol : public preview_polygon {
 		pol->GetResource(vpath);
 		if(rmgr->GetPol(vpath,pol_info))
 		{
-			setup_pol_texture(tman, *pol_info, pol->GetHeading(), false, Point2(), g, zoomer, mPavementAlpha);
+			setup_pol_texture(tman, *pol_info, pol->GetHeading(), false, some_nearby_fixed_loc(zoomer), g, zoomer, mPavementAlpha);
 			preview_polygon::draw_it(zoomer, g, mPavementAlpha);
 			kill_transform();
 		}
