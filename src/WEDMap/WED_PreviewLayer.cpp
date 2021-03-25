@@ -1151,6 +1151,10 @@ struct	preview_facade : public preview_polygon {
 			const fac_info_t * info;
 			WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 
+			Bbox2 bb_geo;
+			fac->GetBounds(gis_Geo, bb_geo);
+			double ppm_for_culling = zoomer->PixelSize(bb_geo, 1.0);
+
 			g->SetState(false,0,false,true,true,true,true);
 
 			glMatrixMode(GL_MODELVIEW);
@@ -1160,8 +1164,9 @@ struct	preview_facade : public preview_polygon {
 			float ppm = zoomer->GetPPM();
 			zoomer->Scalef(ppm,ppm,ppm);
 			zoomer->Rotatef(90, 1,0,0);
+
 			if(rmgr->GetFac(vpath, info))
-				draw_facade(tman, rmgr, vpath, *info, pts, choices, fac->GetHeight(), g, true, 0.7*ppm);
+				draw_facade(tman, rmgr, vpath, *info, pts, choices, fac->GetHeight(), g, true, 0.7 * ppm_for_culling);
 			zoomer->PopMatrix();
 		}
 
