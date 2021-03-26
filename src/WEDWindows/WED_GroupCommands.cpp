@@ -27,8 +27,8 @@
 
 #include "AssertUtils.h"
 #include "BitmapUtils.h"
-#include "CompGeomUtils.h"
 #include "CompGeomDefs2.h"
+#include "CompGeomUtils.h"
 #include "GISUtils.h"
 #include "FileUtils.h"
 #include "MathUtils.h"
@@ -38,6 +38,7 @@
 #include "AptDefs.h"
 #include "XObjDefs.h"
 #include "XESConstants.h"
+#include "XObjDefs.h"
 
 #include "WED_AirportChain.h"
 #include "WED_Airport.h"
@@ -48,9 +49,8 @@
 #include "WED_ATCWindRule.h"
 #include "WED_AirportNode.h"
 #include "WED_DrapedOrthophoto.h"
-#include "WED_Group.h"
-#include "WED_GISEdge.h"
 #include "WED_FacadePlacement.h"
+#include "WED_Group.h"
 #include "WED_LinePlacement.h"
 #include "WED_ObjPlacement.h"
 #include "WED_Orthophoto.h"
@@ -58,6 +58,7 @@
 #include "WED_PolygonPlacement.h"
 #include "WED_RampPosition.h"
 #include "WED_Ring.h"
+#include "WED_RoadEdge.h"
 #include "WED_RoadNode.h"
 #include "WED_Runway.h"
 #include "WED_SimpleBezierBoundaryNode.h"
@@ -87,6 +88,8 @@
 #endif
 
 #define DOUBLE_PT_DIST (1.0 * MTR_TO_DEG_LAT)
+
+#define DEBUG_EDGE_CROSSING 0
 
 namespace std
 {
@@ -510,7 +513,7 @@ static void WED_AddChildrenRecursive(set<WED_Thing *>& who)
 // Deletes everything in 'who', along with any parents, sources and viewers that the deletion
 // makes unviable.
 // Requirement: For every object in 'who', all of its children must also be be in 'who'.
-static void WED_RecursiveDelete(set<WED_Thing *>& who)
+void WED_RecursiveDelete(set<WED_Thing *>& who)
 {
 	// This is sort of a scary mess.  We are going to delete everyone in 'who'.  But this might have
 	// some reprecussions on other objects.
@@ -585,12 +588,51 @@ void	WED_DoClear(IResolver * resolver)
 	sel->Clear();
 
 	set<WED_AirportNode *>	common_nodes;
-	for (set<WED_Thing *>::iterator i = who.begin(); i != who.end(); ++i)
+	set<WED_Thing *>	shape_points;
+
+	for (auto i : who)
 	{
-		WED_AirportNode * n = dynamic_cast<WED_AirportNode*>(*i);
+		auto n = dynamic_cast<WED_AirportNode *>(i);
 		if(n && n->CountViewers() == 2)
 			common_nodes.insert(n);
+
+		auto r = dynamic_cast<WED_RoadNode *>(i);
+		if(r)
+		{
+			set<WED_Thing *> viewers;
+			r->GetAllViewers(viewers);
+			for(auto v : viewers)
+			{
+				auto e = dynamic_cast<WED_GISEdge *>(v);
+				if(e && e->GetNumSides() > 1)
+				{
+					DebugAssert(e->GetNthSource(0) == i || e->GetNthSource(1) == i);
+
+					WED_RoadNode * rn = dynamic_cast<WED_RoadNode *>(r->Clone());
+					rn->SetParent(e->GetParent(),e->GetMyPosition()+1);
+
+					Bezier2 b;
+					if(e->GetNthSource(0) == i)
+					{
+						e->GetSide(gis_Geo, 1, b);
+						e->ReplaceSource(r,rn);
+						e->SetSideBezier(gis_Geo, b, 0);
+						shape_points.insert(e->GetNthChild(0));
+					}
+					else
+					{
+						e->GetSide(gis_Geo, e->GetNumSides()-2, b);
+						e->ReplaceSource(r,rn);
+						e->SetSideBezier(gis_Geo, b, e->GetNumSides()-1);
+						shape_points.insert(e->GetNthChild(e->CountChildren()-1));
+					}
+				}
+			}
+		}
 	}
+	for(auto s : shape_points)
+		who.insert(s);
+
 	for(set<WED_AirportNode *>::iterator n = common_nodes.begin(); n != common_nodes.end(); ++n)
 	{
 		set<WED_Thing *> viewers;
@@ -1104,6 +1146,12 @@ set<WED_Thing *> WED_select_doubles(WED_Thing * t)
 			DebugAssert(ii);
 			DebugAssert(jj);
 
+//			if(!(ii->GetGISSubtype() == jj->GetGISSubtype())) continue;
+
+//			Point2 p1, p2;
+//			ii->GetLocation(gis_Geo, p1);
+//			jj->GetLocation(gis_Geo, p2);
+
 			if(p1.squared_distance(p2) < (DOUBLE_PT_DIST*DOUBLE_PT_DIST))
 			{
 				doubles.insert(pts[i]);
@@ -1142,53 +1190,85 @@ set<WED_GISEdge *> WED_do_select_crossing(WED_Thing * t)
 {
 	vector<WED_GISEdge *> edges;
 	CollectRecursive(t, back_inserter(edges), ThingNotHidden, IsGraphEdge);
-
-	return WED_do_select_crossing(edges);
+	Bbox2 emptybox(0,0,0,0);
+	return WED_do_select_crossing(edges,emptybox);
 }
 
-set<WED_GISEdge *> WED_do_select_crossing(const vector<WED_GISEdge *> edges)
+set<WED_GISEdge *> WED_do_select_crossing(const vector<WED_GISEdge *>& edges , Bbox2& cull_bounds)
 {
+	#if DEV && DEBUG_EDGE_CROSSING
+	printf("select crossing on %ld edges\n",edges.size());
+	#endif
 	set<WED_GISEdge*> crossed_edges;
+	Bbox2 edge_bounds;
 	// Ben says: yes this totally sucks - replace it someday?
 	for (int i = 0; i < edges.size(); ++i)
 	{
-		IGISEdge * ii = edges[i];
 		Bezier2 b1, b2;
-		bool isb1, isb2;
-		isb1 = ii->GetSide(gis_Geo, 0, b1);
+		IGISEdge * ii = edges[i];
+		DebugAssert(ii);
+		ii->GetBounds(gis_Geo,edge_bounds);
+		if(!cull_bounds.is_empty() && !cull_bounds.overlap(edge_bounds))
+		{
+			#if DEV && DEBUG_EDGE_CROSSING
+			printf("edge %d outside cull_bounds\n",i);
+			#endif
+			continue;
+		}
+
+		bool isb1 = ii->GetSide(gis_Geo, 0, b1);
 
 		for (int j = i + 1; j < edges.size(); ++j)
 		{
 			IGISEdge * jj = edges[j];
-			DebugAssert(ii != jj);
-			DebugAssert(ii);
 			DebugAssert(jj);
+			DebugAssert(ii != jj);
 
-			isb2 = jj->GetSide(gis_Geo, 0, b2);
-
-			if (isb1 || isb2)
-			{   // should never get here, as edges (used for ATC routes only) are not supposed to have bezier segments
-				if (b1.intersect(b2, 10))
-				{
-					crossed_edges.insert(edges[i]);
-					crossed_edges.insert(edges[j]);
-				}
-			}
-			else
+			jj->GetBounds(gis_Geo,edge_bounds);
+			if(!cull_bounds.is_empty() && !cull_bounds.overlap(edge_bounds))
 			{
-				Point2 x;
-				if (b1.p1 != b2.p1 &&
-					b1.p2 != b2.p2 &&
-					b1.p1 != b2.p2 &&
-					b1.p2 != b2.p1)
+				#if DEV && DEBUG_EDGE_CROSSING
+				printf("edges %d %d bounds dont overlap\n",i,j);
+				#endif
+				continue;
+			}
+
+			if(ii->GetGISSubtype() != jj->GetGISSubtype()) continue;
+			#if DEV && DEBUG_EDGE_CROSSING
+			printf("edges %d %d bounds do overlap !!\n",i,j);
+			#endif
+			for(int si = 0; si < ii->GetNumSides(); si++)
+				for(int sj = 0; sj < jj->GetNumSides(); sj++)
 				{
-					if (b1.as_segment().intersect(b2.as_segment(), x))
+					Bezier2 b1, b2;
+
+					bool isb1 = ii->GetSide(gis_Geo, si, b1);
+					bool isb2 = jj->GetSide(gis_Geo, sj, b2);
+
+					if (isb1 || isb2)
 					{
-						crossed_edges.insert(edges[i]);
-						crossed_edges.insert(edges[j]);
+						if (b1.intersect(b2, 10))
+						{
+							crossed_edges.insert(edges[i]);
+							crossed_edges.insert(edges[j]);
+						}
+					}
+					else
+					{
+						Point2 x;
+						if (b1.p1 != b2.p1 &&
+							b1.p2 != b2.p2 &&
+							b1.p1 != b2.p2 &&
+							b1.p2 != b2.p1)
+						{
+							if (b1.as_segment().intersect(b2.as_segment(), x))
+							{
+								crossed_edges.insert(edges[i]);
+								crossed_edges.insert(edges[j]);
+							}
+						}
 					}
 				}
-			}
 		}
 	}
 
@@ -1377,12 +1457,8 @@ static int	unsplittable(ISelectable * base, void * ref)
 	WED_Thing * t = dynamic_cast<WED_Thing *>(base);
 	if (!t) return 1;
 
-	// Network edges are always splittable
-	if(dynamic_cast<IGISEdge *>(base))
-		return 0;
+	if(dynamic_cast<IGISEdge *>(base)) return t->CountChildren() != 0; // multi-segmented edges can't be split from the menu - down-click on a segment instead
 
-	IGISPoint * p = dynamic_cast<IGISPoint *>(base);
-	if (!p) return 1;
 //	WED_AirportNode * a = dynamic_cast<WED_AirportNode *>(base);
 //	if (!a) return 1;
 
@@ -1391,6 +1467,8 @@ static int	unsplittable(ISelectable * base, void * ref)
 
 	IGISPointSequence * s = dynamic_cast<IGISPointSequence*>(parent);
 	if (!s) return 1;
+
+	if(s->GetGISClass() == gis_Edge) return 0;
 
 	if (s->GetGISClass() != gis_Ring && s->GetGISClass() != gis_Chain) return 1;
 
@@ -1487,6 +1565,7 @@ namespace
 {
 struct chain_split_info_t {
 	WED_GISChain * c;
+	WED_GISEdge *  e;
 	WED_GISPoint * p;
 };
 
@@ -1505,14 +1584,14 @@ static bool is_chain_split(ISelection * sel, chain_split_info_t * info)
 	if(sel->GetSelectionCount() != 1)
 		return false;
 	WED_GISPoint * p = dynamic_cast<WED_GISPoint*>(sel->GetNthSelection(0));
-	if(!p)
-		return false;
+	if(!p) return false;
 
 	// The point must have a WED_GISChain parent
-	WED_GISChain * c = dynamic_cast<WED_GISChain*>(p->GetParent());
-	if(!c)
-		return false;
+	WED_GISChain * c = dynamic_cast<WED_GISChain *>(p->GetParent());
+	WED_GISEdge * e = dynamic_cast<WED_GISEdge *>(p->GetParent());
+	if(!c && !e) return false;
 
+	if(c)
 	if(c->IsClosed())
 	{
 		// If the chain is closed, it must be a WED_AirportChain, and its parent must not be a WED_GISPolygon.
@@ -1527,9 +1606,17 @@ static bool is_chain_split(ISelection * sel, chain_split_info_t * info)
 			return false;
 	}
 
+	if(e)
+	{
+			// If its an edge, the point must not be one of the sources
+			WED_Thing * t = p;
+			if(e->GetNthSource(0) == t || e->GetNthSource(1) ==  t)
+				return false;
+	}
 	if(info)
 	{
 		info->c = c;
+		info->e = e;
 		info->p = p;
 	}
 
@@ -1605,7 +1692,18 @@ static void do_chain_split(ISelection * sel, const chain_split_info_t & info)
 
 	int pos = info.p->GetMyPosition();
 
-	if (info.c->IsClosed())
+	if(info.e)
+	{
+		Point2 pt;
+		info.p->GetLocation(gis_Geo, pt);
+		IGISPoint * gp =  info.e->SplitEdge(pt, 0.0);
+		if(gp)
+		{
+			sel->Clear();
+			sel->Insert(gp);
+		}
+	}
+	else if (info.c->IsClosed())
 	{
 		WED_AirportChain * ac = dynamic_cast<WED_AirportChain *>(info.c);
 		if (!ac)
@@ -1811,7 +1909,7 @@ static void do_ring_split(ISelection * sel, const ring_split_info_t & info)
 	op->CommitOperation();
 }
 
-map<WED_Thing*,vector<WED_Thing*> > run_split_on_edges(vector<split_edge_info_t>& edges)
+map<WED_Thing*,vector<WED_Thing*> > run_split_on_edges(vector<split_edge_info_t>& edges ,bool no_uncrossed)
 {
 	map<WED_Thing*, vector<WED_Thing*> > new_pieces;
 	//
@@ -1822,31 +1920,47 @@ map<WED_Thing*,vector<WED_Thing*> > run_split_on_edges(vector<split_edge_info_t>
 	// segments...if the intersection is in the interior, we accumulate it on
 	// the edge.  This is O(N^2) - a sweep line would be better if we ever have
 	// data sets big enough to need it.
-	for (int i = 0; i < edges.size(); ++i)
-	{
-		Segment2 is;
-
-		edges[i].edge->GetNthPoint(0)->GetLocation(gis_Geo, is.p1);
-		edges[i].edge->GetNthPoint(1)->GetLocation(gis_Geo, is.p2);
-		for (int j = 0; j < i; ++j)
-		if(edges[i].active || edges[j].active)								// At least one edge MUST be active or we do not split.
+	for (int i = 0; i < edges.size(); ++i)                        // MM: It would likely be more efficient to keep track of the particular segment(s) of overlap
+	{                                                             // within each edge. And factor out a generic IGIS PointSequnce intersect algorithm.
+		Bezier2 ib;                                               // Its done during validation for self-insersecting polygons as well.
+		for(int ii = 0; ii < edges[i].edge->GetNumSides(); ii++)
 		{
-			Segment2 js;
-			edges[j].edge->GetNthPoint(0)->GetLocation(gis_Geo, js.p1);
-			edges[j].edge->GetNthPoint(1)->GetLocation(gis_Geo, js.p2);
+			bool ibIsBez = edges[i].edge->GetSide(gis_Geo,ii,ib);
 
-			if (is.p1 != is.p2 &&
-				js.p1 != js.p2 &&
-				is.p1 != js.p1 &&
-				is.p2 != js.p2 &&
-				is.p1 != js.p2 &&
-				is.p2 != js.p1)
+			for (int j = 0; j < i; ++j)
+			if(edges[i].active || edges[j].active)								// At least one edge MUST be active or we do not split.
 			{
-				Point2 x;
-				if (is.intersect(js, x))
+				Bezier2 jb;
+				for(int jj = 0; jj < edges[j].edge->GetNumSides(); jj++)
 				{
-					edges[i].splits.push_back(x);
-					edges[j].splits.push_back(x);
+					bool jbIsBez = edges[j].edge->GetSide(gis_Geo,jj, jb);
+
+					if (ib.p1 != ib.p2 &&    // MM: do we really need2test for zero-length/degenerated edges intersecting ?
+						jb.p1 != jb.p2 &&    // same here
+						ib.p1 != jb.p1 &&
+						ib.p2 != jb.p2 &&
+						ib.p1 != jb.p2 &&
+						ib.p2 != jb.p1)
+					{
+						Point2 x;
+						if( ibIsBez || jbIsBez )
+						{
+							//ToDo:mroe check precision and calculation time
+							if (ib.intersect(jb,10,x))
+							{
+								edges[i].splits.push_back(x);
+								edges[j].splits.push_back(x);
+							}
+						}
+						else
+						{
+							if (ib.as_segment().intersect(jb.as_segment(), x))
+							{
+								edges[i].splits.push_back(x);
+								edges[j].splits.push_back(x);
+							}
+						}
+					}
 				}
 			}
 		}
@@ -1864,12 +1978,17 @@ map<WED_Thing*,vector<WED_Thing*> > run_split_on_edges(vector<split_edge_info_t>
 		edges[i].sort_along_edge();
 
 		// If the edge is uncrossed the user is just subdividing it - split it at the midpoint.
-		if (edges[i].splits.empty())
+		if (!no_uncrossed && edges[i].splits.empty())
 		{
-			Segment2 s;
-			edges[i].edge->GetNthPoint(0)->GetLocation(gis_Geo, s.p1);
-			edges[i].edge->GetNthPoint(1)->GetLocation(gis_Geo, s.p2);
-			edges[i].splits.push_back(s.midpoint());
+			Bezier2 b;
+			if(edges[i].edge->GetSide(gis_Geo,-1,b))
+			{
+				edges[i].splits.push_back(b.midpoint(0.5));
+			}
+			else
+			{
+				edges[i].splits.push_back(b.as_segment().midpoint());
+			}
 		}
 
 		// Now we go BACKWARD from high to low - we do this because the GIS Edge's split makes the clone
@@ -1878,7 +1997,7 @@ map<WED_Thing*,vector<WED_Thing*> > run_split_on_edges(vector<split_edge_info_t>
 		for (vector<Point2>::reverse_iterator r = edges[i].splits.rbegin(); r != edges[i].splits.rend(); ++r)
 		{
 			// If we had a 'T' then in theory SplitSide could return NULL?
-			IGISPoint * split = edges[i].edge->SplitSide(*r, 0.0);
+			IGISPoint * split = edges[i].edge->SplitEdge(*r, 0.0);
 			if (split)
 			{
 				// Bucket our new node for merging later
@@ -1920,15 +2039,11 @@ void do_edge_split(ISelection * sel)
 	hack_t	info;
 	info.first = sel;
 	info.second = &who;
-
 	sel->IterateSelectionOr(collect_splits, &info);
 
 	vector<split_edge_info_t> edges;
-
 	sel->IterateSelectionOr(collect_edges, &edges);
-
 	if (who.empty() && edges.empty()) return;
-
 	op->StartOperation("Split Segments.");
 
 	//
@@ -2696,15 +2811,14 @@ static bool lesser_y_then_x_merge_class_map(const pair<Point2, pair<const char *
 	return (lhs.first.y() == rhs.first.y()) ? (lhs.first.x() < rhs.first.x()) : (lhs.first.y() < rhs.first.y());
 }
 
-static bool is_within_snapping_distance(const merge_class_map::iterator& first_thing, const merge_class_map::iterator& second_thing, const CoordTranslator2& translator)
+static bool is_within_snapping_distance(const merge_class_map::iterator& first_thing, const merge_class_map::iterator& second_thing)
 {
-	const float MAX_DIST_M_SQ = 1.0;
+	// since we're not using the coordTranslator any more, we have no way to cache the cos(lattitude) to calculate distances quick.
+	// so we shortcut the more complex calculation by testing for lattitude first
 
-	Point2 first_pos_m  = translator.Forward(first_thing->first);
-	Point2 second_pos_m = translator.Forward(second_thing->first);
+	if (fabs(first_thing->first.y() - second_thing->first.y()) > MTR_TO_DEG_LAT) return 0;
 
-	bool is_snappable =  first_pos_m.squared_distance(second_pos_m) < MAX_DIST_M_SQ;
-	return is_snappable;
+	return LonLatDistMeters(first_thing->first, second_thing->first) < 1.0;
 }
 
 static const char * get_merge_tag_for_thing(IGISPoint * ething)
@@ -3115,9 +3229,49 @@ static bool is_node_merge(IResolver * resolver)
 	//   0.016719 seconds.
 	//StElapsedTime can_merge_timer("WED_CanMerge");
 	ISelection * sel = WED_GetSelect(resolver);
+#if ROAD_EDITING
+	if(sel->GetSelectionCount() == 1) // this means merge two edges here into one
+	{
+		WED_Thing * thing = dynamic_cast<WED_Thing *>(sel->GetNthSelection(0));
+		if( thing == nullptr ||
+			thing->GetClass() != WED_RoadNode::sClass ||
+			thing->CountViewers() != 2) return false;
+
+		set<WED_Thing *> viewers;
+		thing->GetAllViewers(viewers);
+
+		for(auto v : viewers)
+		{
+			if(v->GetClass() != WED_RoadEdge::sClass) return false;
+		}
+
+		WED_RoadEdge * road_edge_1 = dynamic_cast<WED_RoadEdge *>(*viewers.begin());
+		WED_RoadEdge * road_edge_2 = dynamic_cast<WED_RoadEdge *>(*(++viewers.begin()));
+		if(road_edge_1 == nullptr || road_edge_2 == nullptr) return false;
+		// check for road subtype
+		if(road_edge_1->GetSubtype() != road_edge_2->GetSubtype()) return false;
+
+		Bezier2 b1,b2;
+		road_edge_1->GetSide(gis_Geo,-1,b1);
+		road_edge_2->GetSide(gis_Geo,-1,b2);
+		// check for direction
+		if(b1.p2 != b2.p1 && b1.p1 != b2.p2) return false;
+		// check resource match
+		string resource_1,resource_2;
+		road_edge_1->GetResource(resource_1);
+		road_edge_2->GetResource(resource_2);
+		if(resource_1 != resource_2) return false;
+		// check if it would be closed ( start = end node)
+		bool add_edge_end = road_edge_1->GetNthSource(0) == thing;
+		if( add_edge_end && road_edge_1->GetNthSource(1) == road_edge_2->GetNthSource(0)) return false;
+		if(!add_edge_end && road_edge_1->GetNthSource(0) == road_edge_2->GetNthSource(1)) return false;
+
+		return true;
+	}
+#endif
 
 	if(sel->GetSelectionCount() < 2)
-		return false;		// can't merge 1 thing!
+		return false;		// can't merging 1 thing mean merge two endges into one
 
 	//1. Ensure all of the selection is mergeable, collect
 	merge_class_map sinkmap;
@@ -3130,13 +3284,6 @@ static bool is_node_merge(IResolver * resolver)
 	//2. Sort by location, a small optimization
 	sort(sinkmap.begin(), sinkmap.end(), lesser_y_then_x_merge_class_map);
 
-	//Find the bounds for the current airport
-	WED_Airport* apt = WED_GetCurrentAirport(resolver);
-	Bbox2 bb;
-	CoordTranslator2 translator;
-	apt->GetBounds(gis_Geo, bb);
-	CreateTranslatorForBounds(bb, translator);
-
 	//Keeps track of which objects we've discovered we can snap (hopefully all)
 	set<merge_class_map::iterator> can_snap_objects;
 
@@ -3146,8 +3293,33 @@ static bool is_node_merge(IResolver * resolver)
 		//For each item after that
 		for (merge_class_map::iterator merge_pair_itr = thing_1_itr + 1; merge_pair_itr != sinkmap.end(); ++merge_pair_itr)
 		{
+#if ROAD_EDITING
+			//do not merge road nodes from same edge or with different resource
+			if( thing_1_itr->second.first == WED_RoadNode::sClass
+			 && merge_pair_itr->second.first == WED_RoadNode::sClass)
+			{
+				set<WED_Thing *> viewers1,viewers2;
+				thing_1_itr->second.second->GetAllViewers(viewers1);
+				merge_pair_itr->second.second->GetAllViewers(viewers2);
+
+				for(auto v1 : viewers1)
+					for(auto v2 : viewers2)
+					{
+						if(v1 == v2) return false;  // same edge , do not merge
+						WED_RoadEdge * road_edge_1 = dynamic_cast<WED_RoadEdge *>(v1);
+						WED_RoadEdge * road_edge_2 = dynamic_cast<WED_RoadEdge *>(v2);
+
+						if(road_edge_1 == nullptr || road_edge_2 == nullptr) return false;
+
+						string res1,res2;
+						road_edge_1->GetResource(res1);
+						road_edge_2->GetResource(res2);
+						if(res1 != res2) return false;
+					}
+			}
+#endif
 			//If the two things are within snapping distance of each other, record so
-			if (is_within_snapping_distance(thing_1_itr, merge_pair_itr, translator))
+			if (is_within_snapping_distance(thing_1_itr, merge_pair_itr))
 			{
 				can_snap_objects.insert(thing_1_itr);
 				can_snap_objects.insert(merge_pair_itr);
@@ -3374,7 +3546,7 @@ static void do_node_merge(IResolver * resolver)
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	op->StartOperation("Merge Nodes");
 
-	DebugAssert(sel->GetSelectionCount() >= 2);
+	DebugAssert(sel->GetSelectionCount() >= 1);
 
 	//Validate and collect from selection
 	merge_class_map sinkmap;
@@ -3389,21 +3561,89 @@ static void do_node_merge(IResolver * resolver)
 	if (sinkmap.size() > 10000)
 	{
 		DoUserAlert("You have too many things selected to merge them, deselect some of them first");
+		op->AbortOperation();
 		return;
 	}
-	else if (sinkmap.size() < 2)
+	else if (sinkmap.size() == 1)  // merge two RoadEdges connected to a RoadNode
 	{
+		WED_Thing * thing = dynamic_cast<WED_Thing *>(sel->GetNthSelection(0));
+		if(thing)
+		{
+			sel->Clear();
+			set<WED_Thing *> viewers;
+			thing->GetAllViewers(viewers);
+			WED_Thing * edge = *viewers.begin();
+			WED_Thing * obsolete_edge = *(++viewers.begin());
+
+			bool add_edge_end = edge->GetNthSource(0) == thing;
+
+			if( ( add_edge_end && edge->GetNthSource(1) == obsolete_edge->GetNthSource(0)) ||
+			    (!add_edge_end && edge->GetNthSource(0) == obsolete_edge->GetNthSource(1)) )    // this would endup in closed edge ( start = end node)
+			{
+				op->AbortOperation();
+				return;
+			}
+
+			WED_GISEdge * ge_1 = dynamic_cast<WED_GISEdge *>(edge);
+			WED_GISEdge * ge_2 = dynamic_cast<WED_GISEdge *>(obsolete_edge);
+
+			if(ge_1 && ge_2)
+			{
+				auto node = WED_SimpleBezierBoundaryNode::CreateTyped(thing->GetArchive());
+				node->SetName("Shape Point");
+
+				Bezier2 b1,b2;
+				bool is_bez_1 = ge_1->GetSide(gis_Geo,-1,b1);
+				bool is_bez_2 = ge_2->GetSide(gis_Geo,-1,b2);
+
+				int nc = obsolete_edge->CountChildren();
+
+				if(is_bez_1 || is_bez_2) node->SetSplit(true);
+				if(add_edge_end == false)
+				{
+					DebugAssert(b1.p2 == b2.p1);
+					node->SetParent(edge, edge->CountChildren());
+					node->SetLocation(gis_Geo,b1.p2);
+
+					if(is_bez_1 && (b1.p2 != b1.c2)) node->SetControlHandleLo(gis_Geo, b1.c2);
+					if(is_bez_2 && (b2.p1 != b2.c1)) node->SetControlHandleHi(gis_Geo, b2.c1);
+
+					for(int i = 0; i < nc; i++)
+							obsolete_edge->GetNthChild(i)->SetParent(edge,edge->CountChildren());
+
+					edge->ReplaceSource(thing, obsolete_edge->GetNthSource(1));
+					//TODO:mroe: no clue why we must do it afterwards
+					if(is_bez_2 && (b2.p2 != b2.c2)) ge_1->SetSideBezier(gis_Geo,Bezier2(b1.p1,b1.c1,b2.c2,b2.p2),-1);
+				}
+				else
+				{
+					DebugAssert(b2.p2 == b1.p1);
+					node->SetParent(edge, 0);
+					node->SetLocation(gis_Geo,b2.p2);
+					if(is_bez_1 && (b1.p1 != b1.c1)) node->SetControlHandleHi(gis_Geo, b1.c1);
+					if(is_bez_2 && (b2.p2 != b2.c2)) node->SetControlHandleLo(gis_Geo, b2.c2);
+
+					for(int i = nc - 1; i >= 0; i--)
+						obsolete_edge->GetNthChild(i)->SetParent(edge,0);
+
+					edge->ReplaceSource(thing, obsolete_edge->GetNthSource(0));
+					//TODO:mroe: no clue why we must do it afterwards
+					if(is_bez_2 && (b2.p1 != b2.c1)) ge_1->SetSideBezier(gis_Geo,Bezier2(b2.p1,b2.c1,b1.c2,b1.p2),-1);
+				}
+
+				sel->Insert(node);
+				viewers.clear();
+				viewers.insert(thing);
+				WED_RecursiveDelete(viewers);	// this makes obsolete_edge unviable and thus removed it as well
+			}
+		}
+
+		op->CommitOperation();
 		return;
 	}
 
 	//2. Sort by location, a small optimization
 	sort(sinkmap.begin(), sinkmap.end(), lesser_y_then_x_merge_class_map);
-
-	WED_Airport* apt = WED_GetCurrentAirport(resolver);
-	Bbox2 bb;
-	CoordTranslator2 translator;
-	apt->GetBounds(gis_Geo, bb);
-	CreateTranslatorForBounds(bb, translator);
 
 	//All the nodes that will end up snapped
 	set<WED_Thing*> snapped_nodes;
@@ -3418,8 +3658,46 @@ static void do_node_merge(IResolver * resolver)
 			{
 				const char * tag_1 = start_thing->second.first;
 				const char * tag_2 = merge_pair->second.first;
+				bool can_be_merged = tag_1 == tag_2 ;
+#if ROAD_EDITING
+				//do not merge road nodes from same edge or with different resource
+				if(can_be_merged && tag_1 == WED_RoadNode::sClass )
+				{
+					set<WED_Thing *> viewers1,viewers2;
+					start_thing->second.second->GetAllViewers(viewers1);
+					merge_pair->second.second->GetAllViewers(viewers2);
 
-				if (is_within_snapping_distance(start_thing, merge_pair, translator) && tag_1 == tag_2)
+					for(auto v1 : viewers1)
+					{
+						for(auto v2 : viewers2)
+						{
+							if(v1 == v2)					//do not merge start and end node of same edge
+							{
+								can_be_merged = false;
+								break;
+							}
+
+							WED_RoadEdge * road_edge_1 = dynamic_cast<WED_RoadEdge *>(v1);
+							WED_RoadEdge * road_edge_2 = dynamic_cast<WED_RoadEdge *>(v2);
+
+							if(road_edge_1 != nullptr && road_edge_2 != nullptr)
+							{
+								string res1,res2;
+								road_edge_1->GetResource(res1);
+								road_edge_2->GetResource(res2);
+								if(res1 != res2)
+								{
+									can_be_merged = false;
+									break;
+								}
+							}
+						}
+
+						if(!can_be_merged) break;
+					}
+				}
+#endif
+				if (can_be_merged && is_within_snapping_distance(start_thing, merge_pair))
 				{
 					vector<WED_Thing*> sub_list = vector<WED_Thing*>();
 					sub_list.push_back(start_thing->second.second);

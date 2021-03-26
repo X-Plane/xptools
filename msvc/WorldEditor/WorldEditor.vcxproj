@@ -272,6 +272,7 @@
     <ClCompile Include="..\..\src\WEDWindows\WED_Line_Selector.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_Menus.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_PackageListAdapter.cpp" />
+    <ClCompile Include="..\..\src\WEDWindows\WED_Road_Selector.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_Sign_Editor.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_StartWindow.cpp" />
     <ClCompile Include="..\..\src\XESCore\AptIO.cpp" />
@@ -554,6 +555,7 @@
     <ClInclude Include="..\..\src\WEDWindows\WED_Line_Selector.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_Menus.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_PackageListAdapter.h" />
+    <ClInclude Include="..\..\src\WEDWindows\WED_Road_Selector.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_Sign_Editor.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_StartWindow.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_UIDefs.h" />

@@ -58,6 +58,7 @@
 #include "WED_DrawUtils.h"
 #include "GUI_DrawUtils.h"
 #include "WED_TaxiRoute.h"
+#include "WED_RoadEdge.h"
 #include "WED_RoadNode.h"
 #include "WED_AirportBoundary.h"
 #include "WED_ATCLayer.h"
@@ -176,7 +177,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 			if (has_blas2)				glShape2v(GL_LINE_LOOP, blas2, 4);
 
 			float * white = locked ? WED_Color_RGBA(wed_StructureLocked) : WED_Color_RGBA(wed_pure_white);
-			
+
 			if (mRealLines) glColor4fv(white);
 			if (has_disp1)				glShape2v(GL_LINE_LOOP, disp1,4);
 			if (has_disp2)				glShape2v(GL_LINE_LOOP, disp2,4);
@@ -196,7 +197,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 
 				pair<int,int> e = rwy->GetRunwayEnumsOneway();
 				float hdg = rwy->GetHeading();
-				
+
 				if(e.first != atc_Runway_None)
 				{
 					glPushMatrix();                  // rotate the numbers properly
@@ -205,7 +206,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 					GUI_FontDraw(g, font_UI_Basic, white, 0, 10, ENUM_Desc(e.first), align_Center);
 					glPopMatrix();
 				}
-				if(e.second != atc_Runway_None) 
+				if(e.second != atc_Runway_None)
 				{
 					glPushMatrix();
 					glTranslatef(Th2.x(), Th2.y(), 0);
@@ -229,7 +230,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 			WED_AirportBeacon *		beacon;
 			IGISPoint *				pt = NULL;
 			const char *			icon = NULL;
-			
+
 				 if (sub_class == WED_TowerViewpoint::sClass&& (tower  = SAFE_CAST(WED_TowerViewpoint, entity)) != NULL) pt = tower , icon = "map_towerview.png";
 			else if (sub_class == WED_Windsock::sClass		&& (sock   = SAFE_CAST(WED_Windsock		 , entity)) != NULL) pt = sock  , icon = "map_windsock.png" ;
 			else if (sub_class == WED_AirportBeacon::sClass && (beacon = SAFE_CAST(WED_AirportBeacon , entity)) != NULL) pt = beacon, icon = "map_beacon.png"   ;
@@ -237,10 +238,10 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 //			else pt = SAFE_CAST(IGISPoint,entity);
 			if (pt)
 			{
-				if (icon) 
+				if (icon)
 				{
 					// Pretty much all non-heading single point entities should have SOME kind of icon!!
-					// Off-hand I think windsocks, tower viewpoints and airport-beacons are the only ones 
+					// Off-hand I think windsocks, tower viewpoints and airport-beacons are the only ones
 					// we have right now.
 					Point2			l;
 					pt->GetLocation(gis_Geo,l);
@@ -435,7 +436,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 						pts.push_back(b.p1);
 						pts.push_back(b.p2);
 						if (i == 0 && sub_class == WED_FacadeRing::sClass)
-						{    
+						{
 							mp = b.p1 + Vector2(b.p1, b.p2) * 0.5;  // facade ground contact / 1st segment marker
 						}
 					}
@@ -446,7 +447,6 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 						g->SetTexUnits(0);
 						glColor4fv(WED_Color_RGBA(struct_color));
 					}
-					
 					if(sub_class == WED_FacadeRing::sClass)
 					{
 						const float colors[18] = { 1, 0, 0,	 1, 1, 0,  0, 1, 0,    // red, yellow, green
@@ -466,14 +466,33 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 
 					DrawLineAttrs(&*pts.begin(), pts.size(), attrs);
 					if(!attrs.empty()) glColor4fv(WED_Color_RGBA(struct_color));
-					
+
 					if(kind == gis_Edge && pts.size() >= 2)
 					{
+
 						IGISEdge * gisedge = SAFE_CAST(IGISEdge, ps);
-						if(gisedge->IsOneway())
+						WED_RoadEdge * re = dynamic_cast<WED_RoadEdge *>(entity);
+						if(gisedge->IsOneway() || re != nullptr)
 						{
-							Vector2 orient(pts[pts.size()-2],pts[pts.size()-1]);
-							GUI_PlotIcon(g,"handle_arrowhead.png", pts.back().x(), pts.back().y(),atan2(orient.dx,orient.dy) * RAD_TO_DEG, 1.0);
+							Vector2 orient1(pts[0],pts[1]);
+							Vector2 orient2(pts[pts.size()-2],pts[pts.size()-1]);
+							double sq_len = Vector2(b.p1,b.p2).squared_length();
+
+							if( mVertices && re && (sq_len > 25*25) )
+							{
+								if( i == 0 )
+								{
+									GUI_PlotIcon(g,"ArrowHeadRoadS.png", pts.front().x(), pts.front().y(),atan2(orient1.dx,orient1.dy) * RAD_TO_DEG,1);
+								}
+								if(i == n-1)
+								{
+									GUI_PlotIcon(g,"ArrowHeadRoadE.png", pts.back().x() , pts.back().y() ,atan2(orient2.dx,orient2.dy) * RAD_TO_DEG,1);
+								}
+							}
+
+							if(!re)
+								GUI_PlotIcon(g,"handle_arrowhead.png", pts.back().x(), pts.back().y(),atan2(orient2.dx,orient2.dy) * RAD_TO_DEG, 1);
+
 							g->SetTexUnits(0);
 						}
 					}
@@ -562,7 +581,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 		break;
 
 	case gis_Composite:
-		if(sub_class != WED_AirportBoundary::sClass)      // boundaries are not down-clickable in the interior, but still get a highlighted interior 
+		if(sub_class != WED_AirportBoundary::sClass)      // boundaries are not down-clickable in the interior, but still get a highlighted interior
 			break;
 	case gis_Polygon:
 		/******************************************************************************************************************************************************
@@ -637,9 +656,9 @@ bool		WED_StructureLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity *
 					ITexMgr * mgr = WED_GetTexMgr(GetResolver());
 					TexRef ref = mgr->LookupTexture(img_file.c_str(),false,tex_Compress_Ok);
 					g->SetState(0,ref ? 1 : 0,0, 1, 1, 0, 0);
-					
-					if (ref) 
-					{ 
+
+					if (ref)
+					{
 						g->BindTex(mgr->GetTexID(ref),0);
 						int vis_x, vis_y, tot_x, tot_y;
 						mgr->GetTexInfo(ref,&vis_x,&vis_y,&tot_x,&tot_y, NULL, NULL);
@@ -688,7 +707,7 @@ bool		WED_StructureLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity *
 		}
 		break;
 	}
-	// This one is important - we want a clean state for the per-entity structure drawing. 
+	// This one is important - we want a clean state for the per-entity structure drawing.
 	// This code is executed ONCE prior to all pre-entity drawing, so even the first entity is visible.
 	g->SetState(false,0,false,false,true,false,false);
 	return true;

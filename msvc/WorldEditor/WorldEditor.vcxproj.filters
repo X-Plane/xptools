@@ -876,6 +876,9 @@
     <ClCompile Include="..\..\src\WEDMap\WED_PerspectiveCamera.cpp">
       <Filter>WEDMap</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\WEDWindows\WED_Road_Selector.cpp">
+      <Filter>WEDWindows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\WEDCore\WED_Application.h">
@@ -1723,6 +1726,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\WEDMap\WED_PerspectiveCamera.h">
       <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDWindows\WED_Road_Selector.h">
+      <Filter>WEDWindows</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
