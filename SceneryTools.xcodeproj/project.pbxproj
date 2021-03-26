@@ -47,6 +47,9 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		020F938A260D960B0077222C /* WED_MapPreviewPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 020F9381260D96040077222C /* WED_MapPreviewPane.cpp */; };
+		020F938B260D96180077222C /* WED_MapPreviewWindow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 020F9383260D96040077222C /* WED_MapPreviewWindow.cpp */; };
+		020F938C260D961B0077222C /* WED_PerspectiveCamera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 020F9385260D96040077222C /* WED_PerspectiveCamera.cpp */; };
 		02198CB4219F6929008FDB0C /* WED_NavaidLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02198CAE219F68B8008FDB0C /* WED_NavaidLayer.cpp */; };
 		02198CB5219F6946008FDB0C /* WED_SlippyMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02198CB0219F68B8008FDB0C /* WED_SlippyMap.cpp */; };
 		02198CBE21A275EA008FDB0C /* nav_gs.png in Resources */ = {isa = PBXBuildFile; fileRef = 02198CB621A2759E008FDB0C /* nav_gs.png */; };
@@ -1112,6 +1115,13 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		020F9380260D95CE0077222C /* WED_Camera.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Camera.h; sourceTree = "<group>"; };
+		020F9381260D96040077222C /* WED_MapPreviewPane.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_MapPreviewPane.cpp; sourceTree = "<group>"; };
+		020F9382260D96040077222C /* WED_MapPreviewPane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_MapPreviewPane.h; sourceTree = "<group>"; };
+		020F9383260D96040077222C /* WED_MapPreviewWindow.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_MapPreviewWindow.cpp; sourceTree = "<group>"; };
+		020F9384260D96040077222C /* WED_MapPreviewWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_MapPreviewWindow.h; sourceTree = "<group>"; };
+		020F9385260D96040077222C /* WED_PerspectiveCamera.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_PerspectiveCamera.cpp; sourceTree = "<group>"; };
+		020F9386260D96040077222C /* WED_PerspectiveCamera.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_PerspectiveCamera.h; sourceTree = "<group>"; };
 		02198CAE219F68B8008FDB0C /* WED_NavaidLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_NavaidLayer.cpp; sourceTree = "<group>"; };
 		02198CAF219F68B8008FDB0C /* WED_NavaidLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_NavaidLayer.h; sourceTree = "<group>"; };
 		02198CB0219F68B8008FDB0C /* WED_SlippyMap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_SlippyMap.cpp; sourceTree = "<group>"; };
@@ -3331,6 +3341,13 @@
 		D6BC37E10AB22C85003949C5 /* WEDMap */ = {
 			isa = PBXGroup;
 			children = (
+				020F9381260D96040077222C /* WED_MapPreviewPane.cpp */,
+				020F9382260D96040077222C /* WED_MapPreviewPane.h */,
+				020F9383260D96040077222C /* WED_MapPreviewWindow.cpp */,
+				020F9384260D96040077222C /* WED_MapPreviewWindow.h */,
+				020F9385260D96040077222C /* WED_PerspectiveCamera.cpp */,
+				020F9386260D96040077222C /* WED_PerspectiveCamera.h */,
+				020F9380260D95CE0077222C /* WED_Camera.h */,
 				02198CAE219F68B8008FDB0C /* WED_NavaidLayer.cpp */,
 				02198CAF219F68B8008FDB0C /* WED_NavaidLayer.h */,
 				02198CB0219F68B8008FDB0C /* WED_SlippyMap.cpp */,
@@ -4867,6 +4884,7 @@
 				D6ED36A00B67964D00D5484E /* BitmapUtils.cpp in Sources */,
 				D6ED36A10B67964D00D5484E /* EndianUtils.c in Sources */,
 				D6ED36A20B67964D00D5484E /* MatrixUtils.cpp in Sources */,
+				020F938B260D96180077222C /* WED_MapPreviewWindow.cpp in Sources */,
 				02D82418239EF2790008DBF2 /* 7zFile.c in Sources */,
 				D6ED36A30B67964D00D5484E /* PlatformUtils.mac.mm in Sources */,
 				D6ED36A40B67964D00D5484E /* TexUtils.cpp in Sources */,
@@ -4928,6 +4946,7 @@
 				D6ED37230B67964D00D5484E /* GISUtils.cpp in Sources */,
 				D6ED37240B67964D00D5484E /* ProgressUtils.cpp in Sources */,
 				D6ED37250B67964D00D5484E /* UIUtils.cpp in Sources */,
+				020F938C260D961B0077222C /* WED_PerspectiveCamera.cpp in Sources */,
 				D6ED37270B67964D00D5484E /* XObjReadWrite.cpp in Sources */,
 				D6ED372B0B67964D00D5484E /* perlin.cpp in Sources */,
 				D6ED37350B67964D00D5484E /* GUI_Application.cpp in Sources */,
@@ -5127,6 +5146,7 @@
 				D6FEF45918EB045C0035421F /* WED_AptTable.cpp in Sources */,
 				D6FEF50418EB176A0035421F /* GUI_FormWindow.cpp in Sources */,
 				028B41EC24F1840A00018953 /* glew.c in Sources */,
+				020F938A260D960B0077222C /* WED_MapPreviewPane.cpp in Sources */,
 				D6FEF55C18EB23B40035421F /* GUI_Label.cpp in Sources */,
 				D60628E01EA110D90007CC13 /* WED_HierarchyUtils.cpp in Sources */,
 				D6E4C95418EC91DE000D98B8 /* json_reader.cpp in Sources */,
