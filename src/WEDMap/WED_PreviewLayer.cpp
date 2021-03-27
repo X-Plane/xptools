@@ -447,6 +447,13 @@ static double PixelSize(const WED_GISChain * chain, double featureSizeMeters, co
 	return zoomer->PixelSize(bb, featureSizeMeters);
 }
 
+static double PixelSize(const WED_GISEdge * edge, double featureSizeMeters, const WED_MapZoomerNew * zoomer)
+{
+	Bbox2 bb;
+	edge->GetBounds(gis_Geo, bb);
+	return zoomer->PixelSize(bb, featureSizeMeters);
+}
+
 static double PixelSize(const WED_GISPoint * point, double diameterMeters, const WED_MapZoomerNew * zoomer)
 {
 	Point2 ll;
@@ -1642,7 +1649,7 @@ struct	preview_road : WED_PreviewItem {
 
 		if(ps)
 		{
-			if((rd.width * PPM) < 4*MIN_PIXELS_PREVIEW || !tex_id)             // cutoff size for real preview
+			if(PixelSize(road, rd.width, zoomer) < 4*MIN_PIXELS_PREVIEW || !tex_id)             // cutoff size for real preview
 			{
 				g->SetState(false,0,false,false,false,false,false);
 				glColor4f(0.3, 0.3, 0.3, mPavementAlpha);
