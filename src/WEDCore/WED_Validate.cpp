@@ -2163,6 +2163,9 @@ static void ValidateRoads(const vector<WED_RoadEdge *> roads, validation_error_v
 //			 r->GetEndLayer() < 0 || r->GetEndLayer() > 5)
 //			msgs.push_back(validation_error_t(string("All road layers must be in the range of 0 to 5"), err_net_resource, r, apt));
 
+		if(r->GetNthSource(0) == r->GetNthSource(1))
+			msgs.push_back(validation_error_t("Road edge erroneous. Loop to itself.", err_net_edge_loop, r, apt));
+
 		Bezier2 s;
 		int ns = r->GetNumSides();     // we have plans to allow multi-segment roads ...
 		for(int i = 0; i < ns; i++)
