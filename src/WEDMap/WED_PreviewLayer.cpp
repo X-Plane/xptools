@@ -1912,7 +1912,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	{
 		if (auto ws = SAFE_CAST(WED_Windsock, entity))
 		{
-			if (PixelSize(ws, 1.0, GetZoomer()) > MIN_PIXELS_PREVIEW)
+			if (PixelSize(ws, 5.0, GetZoomer()) > MIN_PIXELS_PREVIEW)
 				mPreviewItems.push_back(new preview_windsock(ws, group_Objects, GetResolver()));
 		}
 	}
@@ -1920,7 +1920,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	{
 		if (auto bcn = SAFE_CAST(WED_AirportBeacon, entity))
 		{
-			if (PixelSize(bcn, 1.0, GetZoomer()) > MIN_PIXELS_PREVIEW)
+			if (PixelSize(bcn, 20.0, GetZoomer()) > MIN_PIXELS_PREVIEW)
 				mPreviewItems.push_back(new preview_beacon(bcn, group_Objects, GetResolver()));
 		}
 	}
@@ -1928,7 +1928,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	{
 		if (auto tsign = SAFE_CAST(WED_AirportSign, entity))
 		{
-			if (PixelSize(tsign, 0.2, GetZoomer()) > MIN_PIXELS_PREVIEW)
+			if (PixelSize(tsign, 5.0, GetZoomer()) > MIN_PIXELS_PREVIEW)
 				mPreviewItems.push_back(new preview_taxisign(tsign, group_Objects, GetResolver()));
 		}
 	}
