@@ -2003,8 +2003,8 @@ static int	DSF_ExportTileRecursive(
 					int UVMwidth  = UVMright - UVMleft;
 					int UVMheight = UVMtop - UVMbottom;
 
-					int DDSwidth = 1;
-					int DDSheight = 1;
+					int DDSwidth = 4;
+					int DDSheight = 4;
 
 					while(DDSwidth < UVMwidth && DDSwidth < 2048) DDSwidth <<= 1;      // round up dimensions under 2k to a power of 2 AND limit to 2k
 					while(DDSheight < UVMheight && DDSheight < 2048) DDSheight <<= 1;
@@ -2066,6 +2066,13 @@ static int	DSF_ExportTileRecursive(
 								}
 							}
 						}
+					}
+					else
+					{
+						if (UVMwidth < UVMheight * 0.7)        // avoid up-rezzing too much, 1025x2047 texture would otherwise grow to 2048x2048
+							if (DDSwidth >= DDSheight) DDSwidth = DDSheight / 2;
+						if (UVMheight < UVMwidth * 0.7)
+							if (DDSheight >= DDSwidth) DDSheight = DDSwidth / 2;
 					}
 
 					if (CreateNewBitmap(DDSwidth, DDSheight, imgInfo.channels, &DDSInfo) == 0)       // create array to hold upsized image
