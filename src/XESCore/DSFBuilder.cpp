@@ -927,12 +927,29 @@ static int IsAliased(int lu)
 	return 0;
 }
 
+static const char* label_for_dem_type(int dem_type)
+{
+	switch (dem_type) {
+		case dem_Elevation:   return "elevation";
+		case dem_Bathymetry:  return "sea_level";
+		case dem_SpringStart: return "spr1";
+		case dem_SpringEnd:   return "spr2";
+		case dem_SummerStart: return "sum1";
+		case dem_SummerEnd:   return "sum2";
+		case dem_FallStart:   return "fal1";
+		case dem_FallEnd:     return "fal2";
+		case dem_WinterStart: return "win1";
+		case dem_WinterEnd:   return "win2";
+		default: abort();
+	}
+}
+
 void	BuildDSF(
 			const char *	inFileName1,
 			const char *	inFileName2,
 			const DEMGeo&	inElevation,
 			const DEMGeo&	inBathymetry,
-			const DEMGeo&	inUrbanDensity,
+			const std::vector<DSFRasterInfo>& inRasters,
 //			const DEMGeo&	inVegeDem,
 			CDT&			inHiresMesh,
 //			CDT&			inLoresMesh,
@@ -1493,20 +1510,29 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	{
 		cbs.AcceptRasterDef_f("elevation",writer1);
 		cbs.AcceptRasterDef_f("sea_level",writer1);
-		cbs.AcceptRasterDef_f("bathymetry",writer1);
+
+		for (const auto& raster : inRasters)
+		{
+			const auto name = label_for_dem_type(raster.identity);
+			cbs.AcceptRasterDef_f(name, writer1);
+		}
 
 		DSFRasterHeader_t	header;
 		short * data = ConvertDEMTo<short>(inElevation,header, dsf_Raster_Format_Int,1.0,0.0);
 		must_dealloc.push_back(data);
 		cbs.AddRasterData_f(&header,data,writer1);
 
-//		data = ConvertDEMTo<short>(inSeaLevel,header, dsf_Raster_Format_Int,1.0,0.0);
-//		must_dealloc.push_back(data);
-//		cbs.AddRasterData_f(&header,data,writer1);
-
 		data = ConvertDEMTo<short>(inBathymetry,header, dsf_Raster_Format_Int,1.0,0.0);
 		must_dealloc.push_back(data);
 		cbs.AddRasterData_f(&header,data,writer1);
+
+		for (const auto& raster : inRasters)
+		{
+			auto data = ConvertDEMTo<unsigned char>(raster.geo, header, dsf_Raster_Format_Unsigned_Int, 1.0, 0.0);
+			must_dealloc.push_back(data);
+			header.scale = raster.output_scale;
+			cbs.AddRasterData_f(&header,data,writer1);
+		}
 	}
 
 	/****************************************************************

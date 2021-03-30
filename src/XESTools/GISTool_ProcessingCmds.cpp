@@ -551,12 +551,23 @@ static int DoBuildDSF(const vector<const char *>& args)
 
 	if(strcmp(args[0],"-") == 0) b1 = NULL; else CreatePackageForDSF(args[0], (int) gDem[dem_LandUse].mWest,(int) gDem[dem_LandUse].mSouth, buf1);
 	if(strcmp(args[1],"-") == 0) b2 = NULL; else CreatePackageForDSF(args[1], (int) gDem[dem_LandUse].mWest,(int) gDem[dem_LandUse].mSouth, buf2);
-	BuildDSF(b1,b2, 
-		gDem[dem_Elevation],
-//		gDem[dem_WaterSurface],
-		gDem[dem_Bathymetry],
-		gDem[dem_UrbanDensity],
-		gTriangulationHi, /*gTriangulationLo,*/ gMap, gRegion, gProgress);
+
+	std::vector<DSFRasterInfo> rasters;
+	for (int i = dem_SpringStart; i <= dem_WinterEnd; ++i)
+	{
+		auto it = gDem.find(i);
+		if (it != gDem.end())
+		{
+			// Change the scale so [0-183] becomes [0-365]
+			rasters.push_back({i, (365.f / 183.f), it->second });
+		}
+	}
+
+	BuildDSF(b1, b2,
+			 gDem[dem_Elevation],
+			 gDem[dem_Bathymetry],
+			 rasters,
+			 gTriangulationHi, /*gTriangulationLo,*/ gMap, gRegion, gProgress);
 	return 0;
 }
 

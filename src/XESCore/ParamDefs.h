@@ -72,6 +72,15 @@
 	TOKEN(dem_HydroQuantity)		// Quantity of water transit per DEM point
 	TOKEN(dem_HydroElevation)		// Water level or NO_VALUE for dry land for hydro reprocessing
 
+	TOKEN(dem_SpringStart)
+	TOKEN(dem_SpringEnd)
+	TOKEN(dem_SummerStart)
+	TOKEN(dem_SummerEnd)
+	TOKEN(dem_FallStart)
+	TOKEN(dem_FallEnd)
+	TOKEN(dem_WinterStart)
+	TOKEN(dem_WinterEnd)
+
 	/* These are enum DEMs. */
 //	TOKEN(dem_OrigLandUse)			//	Standard land use codes, USGS or XP6/7
 	TOKEN(dem_LandUse)				//	Standard land use codes, USGS or XP6/7
