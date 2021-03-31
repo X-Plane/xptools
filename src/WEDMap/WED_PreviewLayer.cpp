@@ -447,6 +447,13 @@ static double PixelSize(const WED_GISChain * chain, double featureSizeMeters, co
 	return zoomer->PixelSize(bb, featureSizeMeters);
 }
 
+static double PixelSize(const WED_GISEdge * edge, double featureSizeMeters, const WED_MapZoomerNew * zoomer)
+{
+	Bbox2 bb;
+	edge->GetBounds(gis_Geo, bb);
+	return zoomer->PixelSize(bb, featureSizeMeters);
+}
+
 static double PixelSize(const WED_GISPoint * point, double diameterMeters, const WED_MapZoomerNew * zoomer)
 {
 	Point2 ll;
@@ -1642,7 +1649,7 @@ struct	preview_road : WED_PreviewItem {
 
 		if(ps)
 		{
-			if((rd.width * PPM) < 4*MIN_PIXELS_PREVIEW || !tex_id)             // cutoff size for real preview
+			if(PixelSize(road, rd.width, zoomer) < 4*MIN_PIXELS_PREVIEW || !tex_id)             // cutoff size for real preview
 			{
 				g->SetState(false,0,false,false,false,false,false);
 				glColor4f(0.3, 0.3, 0.3, mPavementAlpha);
@@ -1905,7 +1912,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	{
 		if (auto ws = SAFE_CAST(WED_Windsock, entity))
 		{
-			if (PixelSize(ws, 1.0, GetZoomer()) > MIN_PIXELS_PREVIEW)
+			if (PixelSize(ws, 5.0, GetZoomer()) > MIN_PIXELS_PREVIEW)
 				mPreviewItems.push_back(new preview_windsock(ws, group_Objects, GetResolver()));
 		}
 	}
@@ -1913,7 +1920,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	{
 		if (auto bcn = SAFE_CAST(WED_AirportBeacon, entity))
 		{
-			if (PixelSize(bcn, 1.0, GetZoomer()) > MIN_PIXELS_PREVIEW)
+			if (PixelSize(bcn, 20.0, GetZoomer()) > MIN_PIXELS_PREVIEW)
 				mPreviewItems.push_back(new preview_beacon(bcn, group_Objects, GetResolver()));
 		}
 	}
@@ -1921,7 +1928,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	{
 		if (auto tsign = SAFE_CAST(WED_AirportSign, entity))
 		{
-			if (PixelSize(tsign, 0.2, GetZoomer()) > MIN_PIXELS_PREVIEW)
+			if (PixelSize(tsign, 5.0, GetZoomer()) > MIN_PIXELS_PREVIEW)
 				mPreviewItems.push_back(new preview_taxisign(tsign, group_Objects, GetResolver()));
 		}
 	}
