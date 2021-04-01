@@ -3261,10 +3261,18 @@ static bool is_node_merge(IResolver * resolver)
 		road_edge_1->GetResource(resource_1);
 		road_edge_2->GetResource(resource_2);
 		if(resource_1 != resource_2) return false;
-		// check if it would be closed ( start = end node)
-		bool add_edge_end = road_edge_1->GetNthSource(0) == thing;
-		if( add_edge_end && road_edge_1->GetNthSource(1) == road_edge_2->GetNthSource(0)) return false;
-		if(!add_edge_end && road_edge_1->GetNthSource(0) == road_edge_2->GetNthSource(1)) return false;
+
+		// check if one edge erroneous is a ring or would be closed ( start = end node)
+		WED_Thing * edge1_src0 = road_edge_1->GetNthSource(0);
+		WED_Thing * edge1_src1 = road_edge_1->GetNthSource(1);
+		WED_Thing * edge2_src0 = road_edge_2->GetNthSource(0);
+		WED_Thing * edge2_src1 = road_edge_2->GetNthSource(1);
+
+		if( edge1_src0 == edge1_src1 ) return false;
+		if( edge2_src0 == edge2_src1 ) return false;
+		bool add_edge_end = edge1_src0 == thing;
+		if( add_edge_end && edge1_src1 == edge2_src0 ) return false;
+		if(!add_edge_end && edge1_src0 == edge2_src1 ) return false;
 
 		return true;
 	}
