@@ -3240,14 +3240,12 @@ static bool is_node_merge(IResolver * resolver)
 		set<WED_Thing *> viewers;
 		thing->GetAllViewers(viewers);
 
-		for(auto v : viewers)
-		{
-			if(v->GetClass() != WED_RoadEdge::sClass) return false;
-		}
+		if( (*viewers.begin())->GetClass()     != WED_RoadEdge::sClass) return false;
+		if( (*(++viewers.begin()))->GetClass() != WED_RoadEdge::sClass) return false;
 
-		WED_RoadEdge * road_edge_1 = dynamic_cast<WED_RoadEdge *>(*viewers.begin());
-		WED_RoadEdge * road_edge_2 = dynamic_cast<WED_RoadEdge *>(*(++viewers.begin()));
-		if(road_edge_1 == nullptr || road_edge_2 == nullptr) return false;
+		WED_RoadEdge * road_edge_1 = static_cast<WED_RoadEdge *>(*viewers.begin());
+		WED_RoadEdge * road_edge_2 = static_cast<WED_RoadEdge *>(*(++viewers.begin()));
+
 		// check for road subtype
 		if(road_edge_1->GetSubtype() != road_edge_2->GetSubtype()) return false;
 
@@ -3265,11 +3263,11 @@ static bool is_node_merge(IResolver * resolver)
 		// check if one edge erroneous is a ring or would be closed ( start = end node)
 		WED_Thing * edge1_src0 = road_edge_1->GetNthSource(0);
 		WED_Thing * edge1_src1 = road_edge_1->GetNthSource(1);
+		if( edge1_src0 == edge1_src1 ) return false;
 		WED_Thing * edge2_src0 = road_edge_2->GetNthSource(0);
 		WED_Thing * edge2_src1 = road_edge_2->GetNthSource(1);
-
-		if( edge1_src0 == edge1_src1 ) return false;
 		if( edge2_src0 == edge2_src1 ) return false;
+
 		bool add_edge_end = edge1_src0 == thing;
 		if( add_edge_end && edge1_src1 == edge2_src0 ) return false;
 		if(!add_edge_end && edge1_src0 == edge2_src1 ) return false;
