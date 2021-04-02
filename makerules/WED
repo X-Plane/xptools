@@ -81,6 +81,7 @@ SOURCES += ./src/UI/ObjCUtils.cpp
 SOURCES += ./src/Utils/PlatformUtils.mac.cpp
 SOURCES += ./src/Network/PCSBSocket.lin.cpp
 SOURCES += ./src/Network/PCSBSocketUDP.lin.cpp
+SOURCES += ./src/Utils/glew.c
 endif #PLAT_DARWIN
 
 SOURCES += ./src/WEDCore/WED_AppMain.cpp
