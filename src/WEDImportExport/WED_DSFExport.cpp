@@ -296,15 +296,15 @@ void dsf_road_grid_helper::add_segment(WED_RoadEdge * e, const Bbox2& cull_bound
 
 	clip_segments(segm,cull_bounds);
 	if(segm.empty()) return;					//the whole segment is out of the bounds or something else is wrong
-   
-	auto part_st  = segm.begin(); 
+
+	auto part_st  = segm.begin();
 	auto segm_end = segm.end();
 
 	while(part_st != segm_end)
 	{
 		auto part_en = find_contiguous_beziers(part_st,segm_end);
 		if(part_st != part_en)
-		{	
+		{
 			edge new_edge;
 			new_edge.subtype = e->GetSubtype();
 
@@ -380,8 +380,7 @@ void dsf_road_grid_helper::remove_dupes()
 				edge * ee1 = &m_edges[e1];
 				edge * ee2 = &m_edges[e2];
 
-				//TODO: mroe revisit ; rubberband fix , nodes with level -999 marked to merge as shape point
-				if((ee1->level_is_uniform() && ee2->level_is_uniform()) || ((ee1->level_for_node(n) == -999) && (ee2->level_for_node(n) == -999)))
+				if(ee1->level_is_uniform() && ee2->level_is_uniform())
 				if(ee1->level_for_node(n) == ee2->level_for_node(n) && ee1->subtype == ee2->subtype)	// Only merge if level and subtype matches
 				{
 					DebugAssert(ee1->start_node == n || ee1->end_node == n);
@@ -405,6 +404,7 @@ void dsf_road_grid_helper::remove_dupes()
 						// Now we have e1->e2 for sure
 						// merge 1 then 2
 						DebugAssert(ee1->end_node == ee2->start_node);
+						if(ee1->start_node == ee2->end_node ) continue;  //we have a loop (a contour going to itself) we can't merge.
 
 						// Find the final destination of e2, and mark it as having e1 coming in.
 						node * dest = &m_nodes[ee2->end_node];

@@ -102,6 +102,7 @@ enum validate_error_t
 	err_net_undefined_type,
 	err_net_zero_length,
 	err_net_unmerged,
+	err_net_edge_loop,
 	err_orthophoto_bad_uv_map,
 	err_object_custom_elev,
 	err_ramp_airlines_contains_non_lowercase_letters,
