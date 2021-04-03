@@ -824,6 +824,18 @@ void			XWin::GetBounds(int * outX, int * outY)
 	if (outY) *outY = me_now.size.height;
 }
 
+void			XWin::GetDesktop(int bounds[4])
+{
+	NSRect desk = [[[NSScreen screens] objectAtIndex:0] visibleFrame];
+	
+	desk = [mWindow contentRectForFrameRect:desk];
+
+	bounds[0] = desk.origin.x;
+	bounds[1] = desk.origin.y;
+	bounds[2] = bounds[0] + desk.size.width;
+	bounds[3] = bounds[1] + desk.size.height;
+}
+
 void			XWin::GetWindowLoc(int * outX, int * outY)
 {
 	float h = [[[NSScreen screens] objectAtIndex:0] frame].size.height;

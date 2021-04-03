@@ -137,7 +137,7 @@ public:
 			bool			GetVisible(void) const;
 			bool			GetActive(void) const;
 #if APL
-			void			GetDesktop(int bounds[4]) {};
+			void			GetDesktop(int bounds[4]);
 #else
 			void			GetDesktop(int bounds[4]);  // absolute maximum size - encompassing all moniors or displays
 #endif

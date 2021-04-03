@@ -21,7 +21,11 @@
  *
  */
 
-#include "glew.h"
+#if APL
+	#include <OpenGL/gl.h>
+#else
+	#include "glew.h"
+#endif
 
 #include "XObjReadWrite.h"
 #include "ObjConvert.h"

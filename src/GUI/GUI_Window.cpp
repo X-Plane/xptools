@@ -675,7 +675,7 @@ void			GUI_Window::SetBoundsSafe(int x1, int y1, int x2, int y2)
 	// inside the current Desktop (which is the bounding box around ALL monitors) - then
 	// ignore the values passed in and keep the window at its current position.
 
-	int safe_rect[4];
+	int safe_rect[4] = { x1, y1, x2, y2 };
 	XWin::GetDesktop(safe_rect);
 	LOG_MSG("I/Win desktop rect xy1 %d %d xy2 %d %d\n", safe_rect[0], safe_rect[1], safe_rect[2], safe_rect[3]);
 	LOG_FLUSH();
@@ -687,7 +687,7 @@ void			GUI_Window::SetBoundsSafe(int x1, int y1, int x2, int y2)
 	}
 	else
 	{
-		LOG_MSG("W/Win SafeBounds triggerd, saved win pos NOT applied\n");
+		LOG_MSG("W/Win SafeBounds triggerd, requested win pos NOT applied\n");
 		LOG_FLUSH();
 	}
 }
