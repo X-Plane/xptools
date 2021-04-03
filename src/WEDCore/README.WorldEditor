@@ -13,6 +13,10 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 2.4.0b2
+   Bug Fix:
+   - fix scaled down window contents on OSX Big Sur with Retina displays
+
 WED 2.4.0b1 3/25/21
    Features:
    - WED-120, 306, 380 edit road networks incl. basic on-map previews
