@@ -30,12 +30,10 @@
 #include "GUI_Listener.h"
 #include "GUI_Pane.h"
 #include "WED_MapZoomerNew.h"
-
-#include <memory>
+#include "WED_PerspectiveCamera.h"
 
 class IDocPrefs;
 class WED_Document;
-class WED_PerspectiveCamera;
 class WED_PreviewLayer;
 
 class WED_MapPreviewPane : public GUI_Pane, public WED_MapZoomerNew, public GUI_Listener, public GUI_Commander {
@@ -76,8 +74,8 @@ private:
 	void				FinishGL();
 
 	WED_Document * mDocument;
-	WED_PerspectiveCamera * mCamera;
 	WED_PreviewLayer *	mPreviewLayer;
+	WED_PerspectiveCamera mCamera;
 	float mYaw, mPitch;
 	float mX, mY;
 

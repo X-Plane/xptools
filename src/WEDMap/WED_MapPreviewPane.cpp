@@ -134,7 +134,7 @@ static GUI_KeyFlags GetModifierPref(const char * key, GUI_KeyFlags defaultModifi
 WED_MapPreviewPane::WED_MapPreviewPane(GUI_Commander * cmdr, WED_Document * document)
 	: GUI_Commander(cmdr),
 	  mDocument(document),
-//	  mCamera(std::make_unique<WED_PerspectiveCamera>(0.5, DRAW_DISTANCE)),
+	  mCamera(0.5, DRAW_DISTANCE),
 	  mYaw(0.f),
 	  mPitch(-10.f)
 {
@@ -143,8 +143,7 @@ WED_MapPreviewPane::WED_MapPreviewPane(GUI_Commander * cmdr, WED_Document * docu
 	// - The "pixel center" position is always at 0, 0. This implies that the
 	//   "lat/lon center" position always maps to OpenGL coordinates of 0, 0.
 
-	mCamera = new WED_PerspectiveCamera(0.5, DRAW_DISTANCE);
-	this->cam = mCamera;
+	this->cam = &mCamera;
 
 	mPreviewLayer = new WED_PreviewLayer(this, this, document);
 
@@ -190,7 +189,7 @@ void WED_MapPreviewPane::SetBounds(int inBounds[4])
 	if (inBounds[0] == inBounds[2] || inBounds[1] == inBounds[3])
 		return;
 
-	mCamera->SetFOV(45.0, inBounds[2] - inBounds[0], inBounds[3] - inBounds[1]);
+	mCamera.SetFOV(45.0, inBounds[2] - inBounds[0], inBounds[3] - inBounds[1]);
 }
 
 void WED_MapPreviewPane::Draw(GUI_GraphState * state)
@@ -235,7 +234,7 @@ void WED_MapPreviewPane::Draw(GUI_GraphState * state)
 	glEnable(GL_POLYGON_OFFSET_FILL);
 	glPolygonOffset(5.f, 1.f);
 	glColor4f(0.2, 0.4, 0.2, 1.0);
-	Point3 position = mCamera->Position();
+	Point3 position = mCamera.Position();
 	glBegin(GL_TRIANGLE_FAN);
 	glVertex2f(position.x - DRAW_DISTANCE, position.y + DRAW_DISTANCE);
 	glVertex2f(position.x + DRAW_DISTANCE, position.y + DRAW_DISTANCE);
@@ -330,13 +329,13 @@ void WED_MapPreviewPane::MouseDrag(int x, int y, int button)
 {
 	if (button == 0 && GetModifiersNow() == 0)
 	{
-		Vector3 vecFrom = mCamera->Unproject(Point2(mX, mY));
-		Vector3 vecTo = mCamera->Unproject(Point2(x, y));
+		Vector3 vecFrom = mCamera.Unproject(Point2(mX, mY));
+		Vector3 vecTo = mCamera.Unproject(Point2(x, y));
 
 		Point3 from, to;
-		if (IntersectGroundPlane(mCamera->Position(), vecFrom, &from) && IntersectGroundPlane(mCamera->Position(), vecTo, &to))
+		if (IntersectGroundPlane(mCamera.Position(), vecFrom, &from) && IntersectGroundPlane(mCamera.Position(), vecTo, &to))
 		{
-			MoveCameraToXYZ(mCamera->Position() - (to - from));
+			MoveCameraToXYZ(mCamera.Position() - (to - from));
 			double elapsedTime = GetTimeNow() - mTimeLastDrag;
 			if (elapsedTime > 0)
 			{
@@ -368,10 +367,10 @@ void WED_MapPreviewPane::MouseDrag(int x, int y, int button)
 		{
 			Vector3 forward = ForwardVector(oldYaw, oldPitch);
 			Point3 orbitCenter;
-			if (IntersectGroundPlane(mCamera->Position(), forward, &orbitCenter))
+			if (IntersectGroundPlane(mCamera.Position(), forward, &orbitCenter))
 			{
-				double dist = sqrt((mCamera->Position() - orbitCenter).squared_length());
-				MoveCameraToXYZ(orbitCenter - mCamera->Forward() * dist);
+				double dist = sqrt((mCamera.Position() - orbitCenter).squared_length());
+				MoveCameraToXYZ(orbitCenter - mCamera.Forward() * dist);
 			}
 		}
 
@@ -387,9 +386,9 @@ void WED_MapPreviewPane::MouseUp(int x, int y, int button)
 {
 	if (button == 0 && GetModifiersNow() == 0)
 	{
-		mVelocity.dx = mCamera->Right().dot(mDragVelocity);
-		mVelocity.dy = mCamera->Forward().dot(mDragVelocity);
-		mVelocity.dz = mCamera->Up().dot(mDragVelocity);
+		mVelocity.dx = mCamera.Right().dot(mDragVelocity);
+		mVelocity.dy = mCamera.Forward().dot(mDragVelocity);
+		mVelocity.dz = mCamera.Up().dot(mDragVelocity);
 
 		StartMoving();
 	}
@@ -397,13 +396,13 @@ void WED_MapPreviewPane::MouseUp(int x, int y, int button)
 
 int WED_MapPreviewPane::ScrollWheel(int x, int y, int dist, int axis)
 {
-	Vector3 dir = mCamera->Unproject(Point2(x, y));
+	Vector3 dir = mCamera.Unproject(Point2(x, y));
 
 	Point3 intersection;
-	if (IntersectGroundPlane(mCamera->Position(), dir, &intersection))
+	if (IntersectGroundPlane(mCamera.Position(), dir, &intersection))
 	{
-		double distance = sqrt((intersection - mCamera->Position()).squared_length());
-		double minDistance = MIN_EYE_HEIGHT / mCamera->Position().z * distance;
+		double distance = sqrt((intersection - mCamera.Position()).squared_length());
+		double minDistance = MIN_EYE_HEIGHT / mCamera.Position().z * distance;
 		distance *= pow(0.9, dist);
 		if (distance < minDistance)
 			distance = minDistance;
@@ -454,7 +453,7 @@ void WED_MapPreviewPane::DisplayExtent(const Bbox2& extent, double relativeDista
 	Point2 p1XY = this->LLToPixel(extent.p1);
 	Point2 p2XY = this->LLToPixel(extent.p2);
 
-	Vector3 forwardWithoutZ = mCamera->Forward();
+	Vector3 forwardWithoutZ = mCamera.Forward();
 	forwardWithoutZ.dz = 0;
 	forwardWithoutZ.normalize();
 
@@ -470,7 +469,7 @@ void WED_MapPreviewPane::DisplayExtent(const Bbox2& extent, double relativeDista
 
 Point2 WED_MapPreviewPane::CameraPositionLL() const
 {
-	Point3 position = mCamera->Position();
+	Point3 position = mCamera.Position();
 	return this->PixelToLL(Point2(position.x, position.y));
 }
 
@@ -488,7 +487,7 @@ void WED_MapPreviewPane::FromPrefs(IDocPrefs * prefs)
 	{
 		this->SetMapLogicalBounds(camera_lon, camera_lat, camera_lon, camera_lat);
 
-		mCamera->MoveTo(Point3(0, 0, camera_agl));
+		mCamera.MoveTo(Point3(0, 0, camera_agl));
 
 		mYaw = camera_yaw;
 		mPitch = camera_pitch;
@@ -513,7 +512,7 @@ void WED_MapPreviewPane::FromPrefs(IDocPrefs * prefs)
 
 void WED_MapPreviewPane::ToPrefs(IDocPrefs * prefs)
 {
-	Point3 position = mCamera->Position();
+	Point3 position = mCamera.Position();
 	Point2 positionLL = this->PixelToLL(Point2(position.x, position.y));
 	prefs->WriteDoublePref("map_preview_window/camera_lon", positionLL.x(), IDocPrefs::pref_type_doc);
 	prefs->WriteDoublePref("map_preview_window/camera_lat", positionLL.y(), IDocPrefs::pref_type_doc);
@@ -566,14 +565,14 @@ void WED_MapPreviewPane::HandleKeyMove()
 
 	// Velocity in XYZ space.
 	Vector3 xyzVelocity =
-		mCamera->Right() * mVelocity.dx +
-		mCamera->Forward() * mVelocity.dy +
-		mCamera->Up() * mVelocity.dz;
+		mCamera.Right() * mVelocity.dx +
+		mCamera.Forward() * mVelocity.dy +
+		mCamera.Up() * mVelocity.dz;
 
 	// Limit the elapsed time so that we don't get any unexpectedly big jumps in position
 	// when there is a big pause (maybe due to resource loading) that prevents refreshes
 	// from happening regularly.
-	Point3 position = mCamera->Position() + xyzVelocity * min(elapsedTime, 0.2);
+	Point3 position = mCamera.Position() + xyzVelocity * min(elapsedTime, 0.2);
 	if (position.z < MIN_EYE_HEIGHT)
 		position.z = MIN_EYE_HEIGHT;
 	MoveCameraToXYZ(position);
@@ -590,14 +589,14 @@ void WED_MapPreviewPane::HandleKeyMove()
 
 void WED_MapPreviewPane::MoveCameraToXYZ(const Point3& xyz)
 {
-	mCamera->MoveTo(xyz);
+	mCamera.MoveTo(xyz);
 
 	UpdateMapVisibleArea();
 }
 
 void WED_MapPreviewPane::SetForwardVector()
 {
-	mCamera->SetForward(ForwardVector(mYaw, mPitch));
+	mCamera.SetForward(ForwardVector(mYaw, mPitch));
 	UpdateMapVisibleArea();
 }
 
@@ -605,7 +604,7 @@ void WED_MapPreviewPane::UpdateMapVisibleArea()
 {
 	// Project view frustum to the ground plane and find a bounding box around it.
 	Bbox2 visArea;
-	for (const auto& corner : mCamera->FrustumCorners())
+	for (const auto& corner : mCamera.FrustumCorners())
 		visArea += Point2(corner.x, corner.y);
 
 	this->SetPixelBounds(visArea.xmin(), visArea.ymin(), visArea.xmax(), visArea.ymax());
@@ -627,11 +626,11 @@ void WED_MapPreviewPane::InitGL(int *b)
 
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
-	mCamera->ApplyProjectionMatrix();
+	mCamera.ApplyProjectionMatrix();
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
-	mCamera->ApplyModelViewMatrix();
+	mCamera.ApplyModelViewMatrix();
 }
 
 void WED_MapPreviewPane::FinishGL()
