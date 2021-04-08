@@ -167,49 +167,15 @@ void			WED_GISEdge::Rescale			(GISLayer_t l,const Bbox2& old_bounds,const Bbox2&
 
 }
 
-void			WED_GISEdge::Rotate			(GISLayer_t l,const Point2& ctr, double a)
+void			WED_GISEdge::Rotate(GISLayer_t l,const Point2& ctr, double a)
 {
-	if (a != 0.0)
 	if(l == gis_Geo)
 	{
-		Point2 p1;
-		Point2 p2;
-		GetNthPoint(0)->GetLocation(l,p1);
-		GetNthPoint(1)->GetLocation(l,p2);
-		StateChanged();
-
-		Point2	pt_old_lo(p1.x() + ctrl_lon_lo.value, p1.y() + ctrl_lat_lo.value);
-		Point2	pt_old_hi(p2.x() + ctrl_lon_hi.value, p2.y() + ctrl_lat_hi.value);
-		Vector2	v_old_lo = VectorLLToMeters(ctr, Vector2(ctr,pt_old_lo));
-		Vector2	v_old_hi = VectorLLToMeters(ctr, Vector2(ctr,pt_old_hi));
-		double old_len_lo = sqrt(v_old_lo.squared_length());
-		double old_len_hi = sqrt(v_old_hi.squared_length());
-
-		double old_ang_lo = VectorMeters2NorthHeading(ctr,ctr,v_old_lo);
-		double old_ang_hi = VectorMeters2NorthHeading(ctr,ctr,v_old_hi);
-		Vector2	v_new_lo;
-		Vector2	v_new_hi;
-
-		NorthHeading2VectorMeters(ctr, ctr, old_ang_lo + a, v_new_lo);
-		NorthHeading2VectorMeters(ctr, ctr, old_ang_hi + a, v_new_hi);
-		v_new_lo.normalize();
-		v_new_hi.normalize();
-		v_new_lo *= old_len_lo;
-		v_new_hi *= old_len_hi;
-
-		v_new_lo = VectorMetersToLL(ctr,v_new_lo);
-		v_new_hi = VectorMetersToLL(ctr,v_new_hi);
-
-		GetNthPoint(0)->Rotate(l,ctr,a);
-		GetNthPoint(1)->Rotate(l,ctr,a);
-
-		GetNthPoint(0)->GetLocation(l,p1);
-		GetNthPoint(1)->GetLocation(l,p2);
-
-		ctrl_lon_lo.value = ctr.x() + v_new_lo.dx - p1.x();
-		ctrl_lon_hi.value = ctr.x() + v_new_hi.dx - p2.x();
-		ctrl_lat_lo.value = ctr.y() + v_new_lo.dy - p1.y();
-		ctrl_lat_hi.value = ctr.y() + v_new_hi.dy - p2.y();
+		for (int i = 0; i < this->GetNumPoints(); ++i)
+		{
+			IGISPoint * p = GetNthPoint(i);
+			p->Rotate(l,ctr, a);
+		}
 	}
 }
 

@@ -22,6 +22,9 @@ public:
 
 	virtual const char *	HumanReadableType(void) const { return "Road Network Node"; }
 
+	// from WED_GISPoint
+	virtual	void			Rotate(GISLayer_t l,const Point2& center, double angle) override;
+
 };
 #endif
 

@@ -2719,6 +2719,39 @@ static void DoMakeRegularPoly(IGISPointSequence * seq )
 	//initial heading of first segment
 	double a1 = VectorDegs2NorthHeading(ctr,ctr,Vector2(pol.at(0),pol.at(1)));
 
+	//edges are special , start and end bez ctr are owned by the edge
+	if( seq->GetGISClass() == gis_Edge)
+	{
+		IGISEdge * ge = dynamic_cast< IGISEdge *>(seq);
+		if(ge != nullptr)
+		{
+			Bezier2 b;
+			if(ge->GetSide(gis_Geo,-1,b))
+			{
+				Point2 p;
+				Vector2	v;
+				v.dx = 0.0;
+				v.dy = ru;
+				p = ctr + VectorMetersToLL(ctr,v);
+				v = v.perpendicular_ccw();
+				v.normalize();
+				v *= c;
+				b.c1 = b.p1 != b.c1  ? p - VectorMetersToLL(ctr, v) : p;
+				b.p1 = p;
+
+				v.dx = ru*sin((n-1) * w);
+				v.dy = ru*cos((n-1) * w);
+				p = ctr + VectorMetersToLL(ctr,v);
+				v = v.perpendicular_ccw();
+				v.normalize();
+				v *= c;
+				b.c2 = b.p2 != b.c2  ? p + VectorMetersToLL(ctr, v) : p;
+				b.p2 = p;
+				ge->SetSideBezier(gis_Geo,b,-1);
+			}
+		}
+	}
+
 	for( int i = 0 ; i < n ; ++i)
 	{
 		double h = i*w;
@@ -2730,6 +2763,7 @@ static void DoMakeRegularPoly(IGISPointSequence * seq )
 
 		BezierPoint2 bp;
 		IGISPoint_Bezier * bez;
+
 		if(seq->GetNthPoint(i)->GetGISClass() == gis_Point_Bezier)
 		{
 			if((bez = dynamic_cast<IGISPoint_Bezier *>(seq->GetNthPoint(i))) != NULL)
