@@ -22,6 +22,46 @@ WED_RoadNode::~WED_RoadNode()
 {
 }
 
+void WED_RoadNode::Rescale(GISLayer_t l,const Bbox2& old_bounds, const Bbox2& new_bounds)
+{
+
+	WED_GISPoint::Rescale(l,old_bounds,new_bounds);
+
+	if(l == gis_Geo)
+	{
+		set<WED_Thing *> viewers;
+		this->GetAllViewers(viewers);
+
+		//check for bez in edges that are viewers ,
+		for(auto viewer : viewers)
+		{
+			if(viewer->GetClass() == WED_RoadEdge::sClass)
+			{
+				WED_GISEdge * edge = static_cast<WED_GISEdge *>(viewer);
+				IGISPoint * gp1 = edge->GetNthPoint(0);
+			    IGISPoint * gp2 = edge->GetNthPoint(edge->GetNumPoints()-1);
+
+				Bezier2 b;
+				if(edge->GetSide(gis_Geo,-1,b))
+				{
+					if( this == gp1 && b.p1 != b.c1 )
+					{
+						b.c1.x_ = b.p1.x_ - old_bounds.rescale_to_xv_projected(new_bounds,b.p1.x_- b.c1.x_);
+						b.c1.y_ = b.p1.y_ - old_bounds.rescale_to_yv(new_bounds,b.p1.y_- b.c1.y_);
+						edge->SetSideBezier(gis_Geo,b,-1);
+					}
+					if( this == gp2 && b.p2 != b.c2 )
+					{
+						b.c2.x_ = b.p2.x_ - old_bounds.rescale_to_xv_projected(new_bounds,b.p2.x_- b.c2.x_);
+						b.c2.y_ = b.p2.y_ - old_bounds.rescale_to_yv(new_bounds,b.p2.y_- b.c2.y_);
+						edge->SetSideBezier(gis_Geo,b,-1);
+					}
+				}
+			}
+		}
+	}
+}
+
 
 void WED_RoadNode::Rotate(GISLayer_t l,const Point2& ctr, double a)
 {

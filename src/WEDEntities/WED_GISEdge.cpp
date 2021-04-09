@@ -149,14 +149,14 @@ void			WED_GISEdge::Rescale			(GISLayer_t l,const Bbox2& old_bounds,const Bbox2&
 		IGISPoint * p = GetNthPoint(n);
 		p->Rescale(l,old_bounds,new_bounds);
 	}
-	StateChanged();
-	if(l == gis_Geo)
-	{
-		ctrl_lon_lo.value = old_bounds.rescale_to_xv(new_bounds,ctrl_lon_lo.value );
-		ctrl_lat_lo.value = old_bounds.rescale_to_yv(new_bounds,ctrl_lat_lo.value );
-		ctrl_lon_hi.value = old_bounds.rescale_to_xv(new_bounds,ctrl_lon_hi.value );
-		ctrl_lat_hi.value = old_bounds.rescale_to_yv(new_bounds,ctrl_lat_hi.value );
-	}
+//	StateChanged();
+//	if(l == gis_Geo)
+//	{
+//		ctrl_lon_lo.value = old_bounds.rescale_to_xv(new_bounds,ctrl_lon_lo.value );
+//		ctrl_lat_lo.value = old_bounds.rescale_to_yv(new_bounds,ctrl_lat_lo.value );
+//		ctrl_lon_hi.value = old_bounds.rescale_to_xv(new_bounds,ctrl_lon_hi.value );
+//		ctrl_lat_hi.value = old_bounds.rescale_to_yv(new_bounds,ctrl_lat_hi.value );
+//	}
 /*	if(l == gis_UV)
 	{
 		mScL.value = old_bounds.rescale_to_xv(new_bounds,mScL.value);
