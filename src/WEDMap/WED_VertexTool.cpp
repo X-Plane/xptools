@@ -66,7 +66,6 @@ const double kQuadBlend3[9] = { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.5, 0.5, 0.25 };
 const int kSourceIndex[5] = { 2, 2, 2, 2, 2 };
 const int kTargetIndex[5] = { 0, 1, 3, 4, 5 };
 
-
 WED_VertexTool::WED_VertexTool(
 				const char *			tool_name,
 				GUI_Pane *				host,
@@ -85,6 +84,8 @@ WED_VertexTool::WED_VertexTool(
 		mNewSplitPoint(NULL),
 		mIsScale(0),
 		mRotateIndex(-1),
+		last_en(nullptr),
+		last_ptr(NULL),
 		mSnapToGrid(this,PROP_Name("Snap To Vertices", XML_Name("","")), 0)
 {
 	SetControlProvider(this);
@@ -132,34 +133,30 @@ intptr_t	WED_VertexTool::GetNthEntityID(int n) const
 	return reinterpret_cast<intptr_t>(mEntityCache[n]);
 }
 
-int		WED_VertexTool::CountControlHandles(intptr_t id						  ) const
+int		WED_VertexTool::CountControlHandles(intptr_t id) const
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
-	IGISQuad * quad = (en->GetGISSubtype() == WED_ExclusionZone::sClass || en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
-	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
+	bool quad = (en->GetGISSubtype() == WED_ExclusionZone::sClass || 
+		         en->GetGISSubtype() == WED_OverlayImage::sClass || 
+		         en->GetGISClass() == gis_Point_HeadingWidthLength ||
+		         en->GetGISClass() == gis_Line_Width );
+	bool rwy = (en->GetGISSubtype() == WED_Runway::sClass);
 
-	IGISPoint * pt;
-	IGISPoint_Bezier * pt_b;
-	IGISPoint_Heading * pt_h;
-	IGISLine * ln;
 	IGISPointSequence * s;
 	IGISEdge * e;
 
-	if (rwy)													return 13;
-	else if (quad)												return 9;
-	else switch(en->GetGISClass()) {
-	case gis_Point:
-		if ((pt = SAFE_CAST(IGISPoint,en)) != NULL)				return 1;
-		break;
-	case gis_Point_Bezier:
-		if ((pt_b = SAFE_CAST(IGISPoint_Bezier,en)) != NULL)	return 3;
-		break;
-	case gis_Point_Heading:
-		if ((pt_h = SAFE_CAST(IGISPoint_Heading, en)) != NULL)	return 5;
-		break;
-	case gis_Line:
-		if ((ln = SAFE_CAST(IGISLine,en)) != NULL)				return 2;
-		break;
+	if (rwy)                return 13;
+	else if (quad)
+	{
+		DebugAssert(dynamic_cast<IGISQuad *>(en));
+		return 9;
+	}
+	else switch(en->GetGISClass()) 
+	{
+	case gis_Point:         return 1;
+	case gis_Point_Bezier:  return 3;
+	case gis_Point_Heading: return 5;
+	case gis_Line:          return 2;
 	case gis_PointSequence:
 	case gis_Ring:
 	case gis_Chain:
@@ -177,8 +174,11 @@ int		WED_VertexTool::CountControlHandles(intptr_t id						  ) const
 void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, HandleType_t * con_type, Point2 * p, Vector2 * dir, float * radius) const
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
+	if (en != last_en) { last_ptr = NULL; last_en = en; }
+
 	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
-	IGISQuad * quad = (en->GetGISSubtype() == WED_ExclusionZone::sClass || en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
+	IGISQuad * quad = (en->GetGISSubtype() == WED_ExclusionZone::sClass || en->GetGISSubtype() == WED_OverlayImage::sClass || 
+		               en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? SAFE_CAST(IGISQuad, en) : NULL;
 
 	if (active) *active=1;
 	if (con_type) *con_type = handle_Square;
@@ -191,6 +191,7 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 	IGISLine * ln;
 	IGISPointSequence * s;
 	IGISEdge * e;
+
 	if (rwy && n >= 9)
 	{
 		Point2 corners[4];
@@ -251,7 +252,10 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 	}
 	else switch(en->GetGISClass()) {
 	case gis_Point:
-		if ((pt = SAFE_CAST(IGISPoint,en)) != NULL)
+//		if ((pt = SAFE_CAST(IGISPoint,en)) != NULL)
+		if (last_ptr) pt = reinterpret_cast<IGISPoint *>(last_ptr);
+		else { pt = dynamic_cast<IGISPoint *>(en); last_ptr = reinterpret_cast<intptr_t>(pt); }
+		if(pt)
 		{
 			if (con_type || radius)
 			{
@@ -270,7 +274,10 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 		}
 		break;
 	case gis_Point_Bezier:
-		if ((pt_b = SAFE_CAST(IGISPoint_Bezier,en)) != NULL)
+//		if ((pt_b = SAFE_CAST(IGISPoint_Bezier,en)) != NULL)
+		if(last_ptr) pt_b = reinterpret_cast<IGISPoint_Bezier *>(last_ptr);
+		else       { pt_b = dynamic_cast<IGISPoint_Bezier *>(en); last_ptr = reinterpret_cast<intptr_t>(pt_b); }
+		if(pt_b)
 		{
 				Point2 dummy;
 			if (active) *active = (n == 0);
@@ -303,7 +310,10 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 		}
 		break;
 	case gis_Point_Heading:
-		if ((pt_h = SAFE_CAST(IGISPoint_Heading, en)) != NULL)
+		// if ((pt_h = SAFE_CAST(IGISPoint_Heading, en)) != NULL)
+		if (last_ptr) pt_h = reinterpret_cast<IGISPoint_Heading *>(last_ptr);
+		else        { pt_h = dynamic_cast<IGISPoint_Heading *>(en); last_ptr = reinterpret_cast<intptr_t>(pt_h); }
+		if(pt_h)
 		{
 			if(mInEdit)
 			{
@@ -363,7 +373,10 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 		}
 		break;
 	case gis_Line:
-		if ((ln = SAFE_CAST(IGISLine,en)) != NULL)
+//		if ((ln = SAFE_CAST(IGISLine,en)) != NULL)
+		if (last_ptr) ln = reinterpret_cast<IGISLine *>(last_ptr);
+		else { ln = dynamic_cast<IGISLine *>(en); last_ptr = reinterpret_cast<intptr_t>(ln); }
+		if(ln)
 		{
 			if (n == 0) ln->GetSource()->GetLocation(gis_Geo,*p);
 			else		ln->GetTarget()->GetLocation(gis_Geo,*p);
@@ -373,7 +386,9 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 	case gis_PointSequence:
 	case gis_Chain:
 	case gis_Ring:
-		s = dynamic_cast<IGISPointSequence *>(en);
+//		s = dynamic_cast<IGISPointSequence *>(en);
+		if (last_ptr) s = reinterpret_cast<IGISPointSequence *>(last_ptr);
+		else { s = dynamic_cast<IGISPointSequence *>(en); last_ptr = reinterpret_cast<intptr_t>(s); }
 		DebugAssert(s);
 		if(s)
 		{
@@ -396,7 +411,9 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 		}
 		break;
 	case gis_Edge:
-		e = dynamic_cast<IGISEdge *>(en);
+		//e = dynamic_cast<IGISEdge *>(en);
+		if (last_ptr) e = reinterpret_cast<IGISEdge *>(last_ptr);
+		else { e= dynamic_cast<IGISEdge *>(en); last_ptr = reinterpret_cast<intptr_t>(e); }
 		DebugAssert(e);
 		if(e)
 		{
@@ -454,25 +471,22 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 int		WED_VertexTool::GetLinks		    (intptr_t id) const
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
-	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
-	IGISQuad * quad = (en->GetGISSubtype() == WED_ExclusionZone::sClass || en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
+	bool quad = (en->GetGISSubtype() == WED_ExclusionZone::sClass || en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width);
 
-	IGISPoint_Bezier * pt_b;
-	IGISPoint_Heading * pt_h;
-	IGISLine * ln;
 	IGISPointSequence * s;
 	IGISEdge * e;
 
-	if (quad)															return 4;
+	if (quad)
+	{
+		DebugAssert(dynamic_cast<IGISQuad *>(en));
+		return 4;
+	}
 	else switch(en->GetGISClass()) {
-	case gis_Point_Bezier:
-		if ((pt_b = SAFE_CAST(IGISPoint_Bezier,en)) != NULL)			return 2;
+	case gis_Point_Bezier:                return 2;
 		break;
-	case gis_Point_Heading:
-		if ((pt_h = SAFE_CAST(IGISPoint_Heading, en)) != NULL)			return 1;
+	case gis_Point_Heading:               return 1;
 		break;
-	case gis_Line:
-		if ((ln = SAFE_CAST(IGISLine,en)) != NULL)						return 1;
+	case gis_Line:                        return 1;
 		break;
 	case gis_PointSequence:
 	case gis_Ring:
@@ -492,11 +506,10 @@ void	WED_VertexTool::GetNthLinkInfo		(intptr_t id, int n, bool * active, LinkTyp
 	if (ltype) *ltype = link_Solid;
 
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
-	IGISPoint_Bezier * pt_b;
 
 	switch(en->GetGISClass()) {
 	case gis_Point_Bezier:
-		if ((pt_b = SAFE_CAST(IGISPoint_Bezier,en)) != NULL)
+		DebugAssert(dynamic_cast<IGISPoint_Bezier*>(en));
 		if (ltype)
 			*ltype = link_BezierCtrl;
 		break;
@@ -524,10 +537,13 @@ void	WED_VertexTool::GetNthLinkInfo		(intptr_t id, int n, bool * active, LinkTyp
 int		WED_VertexTool::GetNthLinkSource   (intptr_t id, int n) const
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
-	IGISQuad * quad = (en->GetGISSubtype() == WED_ExclusionZone::sClass || en->GetGISSubtype() == WED_OverlayImage::sClass || 
-	                   en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
-
-	if (quad) return n;
+	bool quad = (en->GetGISSubtype() == WED_ExclusionZone::sClass || en->GetGISSubtype() == WED_OverlayImage::sClass || 
+	                   en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width);
+	if (quad) 
+	{
+		DebugAssert(dynamic_cast<IGISQuad *>(en));
+		return n;
+	}
 	switch(en->GetGISClass()) {
 	case gis_Point_Bezier:		return 0;
 	case gis_Point_Heading:		return 0;
@@ -574,10 +590,13 @@ int		WED_VertexTool::GetNthLinkSourceCtl(intptr_t id, int n) const
 int		WED_VertexTool::GetNthLinkTarget   (intptr_t id, int n) const
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
-	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
-	IGISQuad * quad = (en->GetGISSubtype() == WED_ExclusionZone::sClass || en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
+	bool quad = (en->GetGISSubtype() == WED_ExclusionZone::sClass || en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width);
 
-	if (quad) return (n+1)%4;
+	if (quad) 
+	{
+		DebugAssert(dynamic_cast<IGISQuad *>(en));
+		return (n+1)%4;
+	}
 	switch(en->GetGISClass()) {
 	case gis_Point_Bezier:		return n+1;
 	case gis_Point_Heading:		return 1;
@@ -763,7 +782,7 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 		}
 		break;
 	case gis_Point_Bezier:
-		if ((pt_b = SAFE_CAST(IGISPoint_Bezier,en)) != NULL)
+		if ((pt_b = dynamic_cast<IGISPoint_Bezier*>(en)) != NULL)
 		{
 			GUI_KeyFlags mods = GetHost()->GetModifiersNow();
 			if (!mInEdit)
@@ -823,7 +842,7 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 		}
 		break;
 	case gis_Point_Heading:
-		if ((pt_h = SAFE_CAST(IGISPoint_Heading, en)) != NULL)
+		if ((pt_h = dynamic_cast<IGISPoint_Heading *>(en)) != NULL)
 		{
 			pt_h->GetLocation(gis_Geo,p);
 			if (n == 0)
@@ -1230,7 +1249,6 @@ WED_HandleToolBase::EntityHandling_t	WED_VertexTool::TraverseEntity(IGISEntity *
 
 void WED_VertexTool::GetEntityInternal(void) const
 {
-	ISelection * sel = WED_GetSelect(GetResolver());
 	WED_Thing * wrl = WED_GetWorld(GetResolver());
 	long long key_a = wrl->GetArchive()->CacheKey();
 	long long key_z = GetZoomer()->CacheKey();
@@ -1239,11 +1257,11 @@ void WED_VertexTool::GetEntityInternal(void) const
 	mEntityCacheKeyArchive = key_a;
 	mEntityCacheKeyZoomer = key_z;
 
+	ISelection * sel = WED_GetSelect(GetResolver());
 	DebugAssert(sel != NULL);
 	vector<ISelectable *>	iu;
 
 	mEntityCache.clear();
-
 
 	sel->GetSelectionVector(iu);
 	if (iu.empty()) return;

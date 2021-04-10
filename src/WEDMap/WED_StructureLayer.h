@@ -25,15 +25,12 @@ private:
 	bool				mRealLines;
 	bool				mVertices;
 
-	vector<int>			mAirportIconsX;
-	vector<int>			mAirportIconsY;
-	vector<float>		mAirportIconsC;
-	vector<int>			mSeaportIconsX;
-	vector<int>			mSeaportIconsY;
-	vector<float>		mSeaportIconsC;
-	vector<int>			mHeliportIconsX;
-	vector<int>			mHeliportIconsY;
-	vector<float>		mHeliportIconsC;
+	vector<short>		mAirportIconsXY;
+	vector<unsigned>	mAirportIconsC;
+	vector<short>		mSeaportIconsXY;
+	vector<unsigned>	mSeaportIconsC;
+	vector<short>		mHeliportIconsXY;
+	vector<unsigned>	mHeliportIconsC;
 };
 
 #endif

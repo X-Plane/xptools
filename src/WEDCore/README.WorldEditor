@@ -17,6 +17,7 @@ WED 2.4.0b2
    Bug Fix:
    - fix scaled down window contents on OSX Big Sur with Retina displays
    - fixes to editing/splitting/merging closed road loops
+   - large speedup in map window when many items are selected
 
 WED 2.4.0b1 3/25/21
    Features:

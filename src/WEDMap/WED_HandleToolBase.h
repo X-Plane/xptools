@@ -134,6 +134,8 @@ private:
 
 		vector<IGISEntity *>	mSelManip;
 
+		vector<short> rotateHeadXY;
+		vector<float> rotateHeadDirXY;
 };
 
 #endif /* WED_HANDLETOOLBASE_H */

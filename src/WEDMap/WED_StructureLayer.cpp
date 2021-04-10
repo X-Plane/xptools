@@ -98,7 +98,9 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 	int locked = IsLockedNow(entity);
 	WED_Color struct_color = selected ? (locked ? wed_StructureLockedSelected : wed_StructureSelected) :
 										(locked ? wed_StructureLocked		 : wed_Structure);
-	glColor4fv(WED_Color_RGBA(struct_color));
+	
+	float * colorf = WED_Color_RGBA(struct_color);
+	glColor4fv(colorf);
 
 	GISClass_t 		kind		= entity->GetGISClass();
 	const char *	sub_class	= entity->GetGISSubtype();
@@ -116,13 +118,14 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 			bounds.p2 = GetZoomer()->LLToPixel(bounds.p2);
 			if (bounds.xspan() < GetAirportTransWidth() && bounds.yspan() < GetAirportTransWidth())
 			{
-				float * f1 = WED_Color_RGBA(struct_color);
-				float * f2 = f1 + 4;
 				Point2 loc = Segment2(bounds.p1,bounds.p2).midpoint();
+				union { unsigned u; unsigned char c[4]; } colorb;
+				for (int i = 0; i < 4; ++i)
+					colorb.c[i] = intlim(colorf[i]*255, 0, 255);
 				switch(airport->GetAirportType()) {
-				case type_Airport:		mAirportIconsX.push_back(loc.x());	mAirportIconsY.push_back(loc.y());	mAirportIconsC.insert(mAirportIconsC.end(),f1,f2);		break;
-				case type_Seaport:		mSeaportIconsX.push_back(loc.x());	mSeaportIconsY.push_back(loc.y());	mSeaportIconsC.insert(mSeaportIconsC.end(),f1,f2);		break;
-				case type_Heliport:		mHeliportIconsX.push_back(loc.x());	mHeliportIconsY.push_back(loc.y());	mHeliportIconsC.insert(mHeliportIconsC.end(),f1,f2);	break;
+				case type_Airport:		mAirportIconsXY.push_back(loc.x());	mAirportIconsXY.push_back(loc.y());	mAirportIconsC.push_back(colorb.u);	break;
+				case type_Seaport:		mSeaportIconsXY.push_back(loc.x());	mSeaportIconsXY.push_back(loc.y());	mSeaportIconsC.push_back(colorb.u);	break;
+				case type_Heliport:		mHeliportIconsXY.push_back(loc.x());mHeliportIconsXY.push_back(loc.y());mHeliportIconsC.push_back(colorb.u);	break;
 				}
 				return false;
 			}
@@ -757,25 +760,22 @@ void		WED_StructureLayer::DrawStructure(bool inCurrent, GUI_GraphState * g)
 	// is not dealloated, so this works up a high-water-mark of icons.  This is good, as it means
 	// that in the long term our memory usage will stabilize.
 	float scale = GetAirportIconScale();
-	if (!mAirportIconsX.empty())
+	if (!mAirportIconsXY.empty())
 	{
-		GUI_PlotIconBulk(g,"map_airport.png", mAirportIconsX.size(), &*mAirportIconsX.begin(), &*mAirportIconsY.begin(), &*mAirportIconsC.begin(), scale);
-		mAirportIconsX.clear();
-		mAirportIconsY.clear();
+		GUI_PlotIconBulk(g,"map_airport.png", mAirportIconsXY.size()/2, mAirportIconsXY.data(), nullptr, mAirportIconsC.data(), scale);
+		mAirportIconsXY.clear();
 		mAirportIconsC.clear();
 	}
-	if (!mSeaportIconsX.empty())
+	if (!mSeaportIconsXY.empty())
 	{
-		GUI_PlotIconBulk(g,"map_seaport.png", mSeaportIconsX.size(), &*mSeaportIconsX.begin(), &*mSeaportIconsY.begin(), &*mSeaportIconsC.begin(), scale);
-		mSeaportIconsX.clear();
-		mSeaportIconsY.clear();
+		GUI_PlotIconBulk(g,"map_seaport.png", mSeaportIconsXY.size()/2, mSeaportIconsXY.data(), nullptr, mSeaportIconsC.data(), scale);
+		mSeaportIconsXY.clear();
 		mSeaportIconsC.clear();
 	}
-	if (!mHeliportIconsX.empty())
+	if (!mHeliportIconsXY.empty())
 	{
-		GUI_PlotIconBulk(g,"map_heliport.png", mHeliportIconsX.size(), &*mHeliportIconsX.begin(), &*mHeliportIconsY.begin(), &*mHeliportIconsC.begin(), scale);
-		mHeliportIconsX.clear();
-		mHeliportIconsY.clear();
+		GUI_PlotIconBulk(g,"map_heliport.png", mHeliportIconsXY.size()/2, mHeliportIconsXY.data(), nullptr, mHeliportIconsC.data(), scale);
+		mHeliportIconsXY.clear();
 		mHeliportIconsC.clear();
 	}
 }

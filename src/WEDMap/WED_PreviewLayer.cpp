@@ -1649,7 +1649,7 @@ struct	preview_road : WED_PreviewItem {
 
 		if(ps)
 		{
-			if(PixelSize(road, rd.width, zoomer) < 4*MIN_PIXELS_PREVIEW || !tex_id)             // cutoff size for real preview
+			if(PixelSize(road, rd.width, zoomer) < 2*MIN_PIXELS_PREVIEW || !tex_id)             // cutoff size for real preview
 			{
 				g->SetState(false,0,false,false,false,false,false);
 				glColor4f(0.3, 0.3, 0.3, mPavementAlpha);
@@ -1852,7 +1852,6 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		WED_AirportChain * chn = SAFE_CAST(WED_AirportChain, entity);
 		if(chn)
 		{
-			// there can be so many, make visibility decision here already for performance
 			// criteria matches where mRealLines disappear in StructureLayer
 			if(PixelSize(chn, 0.4, GetZoomer()) > mOptions.minLineThicknessPixels)
 			{
@@ -1893,7 +1892,6 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		WED_TruckParkingLocation * trk = SAFE_CAST(WED_TruckParkingLocation, entity);
 		if (trk)
 		{
-			// there can be so many, make visibility decision here already for performance
 			if (PixelSize(trk, 5.0, GetZoomer()) > MIN_PIXELS_PREVIEW)
 				mPreviewItems.push_back(new preview_truck(trk, group_Objects, GetResolver()));
 		}
@@ -1903,42 +1901,35 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		WED_LightFixture * lgt = SAFE_CAST(WED_LightFixture, entity);
 		if (lgt)
 		{
-			// there can be so many, make visibility decision here already for performance
 			if (PixelSize(lgt, 1.0, GetZoomer()) > MIN_PIXELS_PREVIEW)
 				mPreviewItems.push_back(new preview_light(lgt, group_Objects, GetResolver()));
 		}
 	}
 	else if (sub_class == WED_Windsock::sClass)
 	{
+		// there typically aren't many, no point in culling for size
 		if (auto ws = SAFE_CAST(WED_Windsock, entity))
-		{
-			if (PixelSize(ws, 5.0, GetZoomer()) > MIN_PIXELS_PREVIEW)
-				mPreviewItems.push_back(new preview_windsock(ws, group_Objects, GetResolver()));
-		}
+			mPreviewItems.push_back(new preview_windsock(ws, group_Objects, GetResolver()));
 	}
 	else if (sub_class == WED_AirportBeacon::sClass)
 	{
+		// there typically aren't many, no point in culling for size
 		if (auto bcn = SAFE_CAST(WED_AirportBeacon, entity))
-		{
-			if (PixelSize(bcn, 20.0, GetZoomer()) > MIN_PIXELS_PREVIEW)
-				mPreviewItems.push_back(new preview_beacon(bcn, group_Objects, GetResolver()));
-		}
+			mPreviewItems.push_back(new preview_beacon(bcn, group_Objects, GetResolver()));
 	}
 	else if (sub_class == WED_AirportSign::sClass)
 	{
 		if (auto tsign = SAFE_CAST(WED_AirportSign, entity))
 		{
-			if (PixelSize(tsign, 5.0, GetZoomer()) > MIN_PIXELS_PREVIEW)
+			if (PixelSize(tsign, 1.0, GetZoomer()) > MIN_PIXELS_PREVIEW)
 				mPreviewItems.push_back(new preview_taxisign(tsign, group_Objects, GetResolver()));
 		}
 	}
 	else if (sub_class == WED_RoadEdge::sClass)
 	{
-	//	if(GetZoomer()->GetPPM() * 0.2 > MIN_PIXELS_PREVIEW)
-		{
-			if (auto rd = SAFE_CAST(WED_RoadEdge, entity))
-				mPreviewItems.push_back(new preview_road(rd, group_Roads, GetResolver()));
-		}
+		//	size-dependent culling is done within draw function
+		if (auto rd = SAFE_CAST(WED_RoadEdge, entity))
+			mPreviewItems.push_back(new preview_road(rd, group_Roads, GetResolver()));
 	}
 	return true;
 }
