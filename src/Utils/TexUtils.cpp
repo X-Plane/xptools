@@ -433,7 +433,7 @@ bool	LoadTextureFromDDS(
 	else
 		return false;
 
-	int mips = 0;
+	int mips = 1;
 	if(inFlags & tex_Mipmap && (SWAP32(desc->dwFlags)) & DDSD_MIPMAPCOUNT)
 		mips = SWAP32(desc->dwMipMapCount);
 	int x = SWAP32(desc->dwWidth);
@@ -448,7 +448,7 @@ bool	LoadTextureFromDDS(
 
 	glBindTexture(GL_TEXTURE_2D, in_tex_num);
 
-	for (int level = 0; level <= mips; ++level)
+	for (int level = 0; level < mips; ++level)
 	{
 		int data_len = max(1 , (x * y) / 16) *  dds_blocksize;
 		if((data + data_len) > mem_end) return false;        // not enough data for mipmaps = broken dds !
