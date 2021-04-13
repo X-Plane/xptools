@@ -13,9 +13,10 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 2.4.0b2
+WED 2.4.0b2 4/13/21
    Bug Fix:
    - fix scaled down window contents on OSX Big Sur with Retina displays
+   - disable MSAA for library previews on retina macs
    - fixes to editing/splitting/merging closed road loops
    - large speedup in map window when many items are selected
 
