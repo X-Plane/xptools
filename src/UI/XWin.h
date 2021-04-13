@@ -137,10 +137,10 @@ public:
 			bool			GetVisible(void) const;
 			bool			GetActive(void) const;
 #if APL
-			void			GetDesktop(int bounds[4]);
-#else
-			void			GetDesktop(int bounds[4]);  // absolute maximum size - encompassing all moniors or displays
+			float			GetRetinaBounds(int fbuf[4]);  // returns if its a retina display
 #endif
+			void			GetDesktop(int bounds[4]);  // absolute maximum size - encompassing all moniors or displays
+
 			int				TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int button, int current);
 
 	// Callbacks

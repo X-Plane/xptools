@@ -269,9 +269,12 @@ WED_DocumentWindow::WED_DocumentWindow(
 	XWin::GetBounds(zw,zw+1);
 	XWin::GetWindowLoc(xy,xy+1);
 
-
 	LOG_MSG("I/Doc opening new scenery window, initial win xy %d %d wh %d %d\n", xy[0], xy[1], zw[0], zw[1]);
-
+#if APL
+	int ret[4];
+	float scal = XWin::GetRetinaBounds(ret);
+	LOG_MSG("I/Doc OSX backingScaleFactor %6.3f      fbuf xy %d %d wh %d %d\n", scal, ret[0], ret[1], ret[2]-ret[0], ret[3]-ret[1]);
+#endif
 	xy[0] = inDocument->ReadIntPref("window/x_loc",xy[0]);
 	xy[1] = inDocument->ReadIntPref("window/y_loc",xy[1]);
 	zw[0] = inDocument->ReadIntPref("window/width",zw[0]);

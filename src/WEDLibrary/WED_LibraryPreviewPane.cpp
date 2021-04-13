@@ -26,6 +26,7 @@
 #if APL
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glu.h>
+	#include "ObjCUtils.h"
 #else
 	#include "glew.h"
 	#include <GL/glu.h>
@@ -111,7 +112,15 @@ WED_LibraryPreviewPane::WED_LibraryPreviewPane(GUI_Commander * cmdr, WED_Resourc
 			mMSAA = 0;
 			LOG_MSG("I/Lpp no FBO's - MSAA disabled\n");
 		}
+
+		float f = get_retina_backing();
+		if (f != 1.0f)
+		{
+			mMSAA = 0;
+			LOG_MSG("I/Lpp backingScaleFactor %.3f - MSAA disabled\n", f);
+		}
 #endif
+		LOG_FLUSH();
 }
 
 void		WED_LibraryPreviewPane::ReceiveMessage(GUI_Broadcaster * inSrc, intptr_t inMsg, intptr_t inParam)
@@ -388,8 +397,7 @@ void	WED_LibraryPreviewPane::begin3d(const int *b, double radius_m)
 	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, false);
 	glEnable(GL_LIGHTING);
 #if USE_2X2MSAA
-	if (GetModifiersNow() & gui_ShiftFlag) mMSAA = 0; else mMSAA = 1;
-
+//	if (GetModifiersNow() & gui_ShiftFlag) mMSAA = 0; else mMSAA = 1;
 	if(mMSAA)
 	{
 		glGenFramebuffers(1, &mFBO);
@@ -413,6 +421,7 @@ void	WED_LibraryPreviewPane::begin3d(const int *b, double radius_m)
 			glBlitFramebuffer(b[0], b[1], b[2], b[3], 0, 0, dx, dy, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT, GL_NEAREST); CHECK_GL_ERR
 			glBindFramebuffer(GL_FRAMEBUFFER, mFBO);      CHECK_GL_ERR
 			glViewport(0, 0, dx, dy);                     CHECK_GL_ERR
+
 		}
 		else
 		{

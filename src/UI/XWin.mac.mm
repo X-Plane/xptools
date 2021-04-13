@@ -847,7 +847,18 @@ void			XWin::GetWindowLoc(int * outX, int * outY)
 	if (outY) *outY = h - me_now.origin.y;
 }
 
+float			XWin::GetRetinaBounds(int fbuf[4])
+{
+	NSRect rect = [mWindow frame];
+	rect = [mWindow contentRectForFrameRect:rect];
+	rect = [mWindow convertRectToBacking:rect];
 
+	fbuf[0] = rect.origin.x;
+	fbuf[1] = rect.origin.y;
+	fbuf[2] = fbuf[0] + rect.size.width;
+	fbuf[3] = fbuf[1] + rect.size.height;
+	return mWindow.backingScaleFactor;
+}
 
 void		XWin::GetMouseLoc(int * outX, int * outY)
 {
