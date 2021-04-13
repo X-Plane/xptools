@@ -25,6 +25,7 @@
 #include "GUI_GraphState.h"
 #include "TexUtils.h"
 #include "GUI_Resources.h"
+#include <math.h>
 #if APL
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glu.h>
