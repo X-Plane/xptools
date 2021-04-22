@@ -553,13 +553,22 @@ static int DoBuildDSF(const vector<const char *>& args)
 	if(strcmp(args[1],"-") == 0) b2 = NULL; else CreatePackageForDSF(args[1], (int) gDem[dem_LandUse].mWest,(int) gDem[dem_LandUse].mSouth, buf2);
 
 	std::vector<DSFRasterInfo> rasters;
+	{
+		const auto& it = gDem.find(dem_UrbanDensity);
+		if (it != gDem.end())
+		{
+			// Store 0-1 level into bytes
+			rasters.push_back({dem_UrbanDensity, (1.0f / 255.f), (1.0f / 255.f), it->second });
+		}
+	}
+
 	for (int i = dem_SpringStart; i <= dem_WinterEnd; ++i)
 	{
 		auto it = gDem.find(i);
 		if (it != gDem.end())
 		{
 			// Change the scale so [0-183] becomes [0-365]
-			rasters.push_back({i, (365.f / 183.f), it->second });
+			rasters.push_back({i, 1.0f, (365.f / 183.f), it->second });
 		}
 	}
 

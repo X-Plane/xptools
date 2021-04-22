@@ -932,6 +932,7 @@ static const char* label_for_dem_type(int dem_type)
 	switch (dem_type) {
 		case dem_Elevation:   return "elevation";
 		case dem_Bathymetry:  return "sea_level";
+		case dem_UrbanDensity:return "urban";
 		case dem_SpringStart: return "spr1";
 		case dem_SpringEnd:   return "spr2";
 		case dem_SummerStart: return "sum1";
@@ -1528,7 +1529,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 		for (const auto& raster : inRasters)
 		{
-			auto data = ConvertDEMTo<unsigned char>(raster.geo, header, dsf_Raster_Format_Unsigned_Int, 1.0, 0.0);
+			auto data = ConvertDEMTo<unsigned char>(raster.geo, header, dsf_Raster_Format_Unsigned_Int, raster.input_scale, 0.0);
 			must_dealloc.push_back(data);
 			header.scale = raster.output_scale;
 			cbs.AddRasterData_f(&header,data,writer1);

@@ -36,6 +36,7 @@ extern DSFBuildPrefs_t	gDSFBuildPrefs;
 
 struct DSFRasterInfo {
 	int identity;
+	float input_scale;
 	float output_scale;
 	const DEMGeo& geo;
 };
