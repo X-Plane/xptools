@@ -41,7 +41,7 @@ enum {
 		shp_Overlay			= 64,			// Do not clear previous data.
 		shp_ErrCheck		= 128			// Check for overlapping line segments, and fail if we find any.
 };
-typedef int shp_Flags;
+typedef unsigned int shp_Flags;
 
 // io_bounds - on input, this contains a bounding box that is used for cropping AND gridding.  On output, this contains the real bounds of the
 // shape file.  Note that if the shape file contains no entities inside the crop box, the crop box is returned unchanged.
