@@ -47,7 +47,7 @@
 // Ben says: this can be modified to printf the points.  If a shape-file import ever blows up,
 // we can use it to rapidly generate a numeric dataset - then we send a test program to the CGAL
 // team if they want one.
-#define ADD_PT_PAIR(a,b,c,d,e)	curves.emplace_back(Curve_2(Segment_2((a),(b)),(e)))
+#define ADD_PT_PAIR(a,b,c,d,e)	do { curves.emplace_back(Curve_2(Segment_2((a),(b)),(curves.size()))); curve_feature.push_back((e)); } while (0)
 
 
 /*
@@ -312,6 +312,7 @@ public:
 
 	typedef	set<int>	Prop_t;
 
+	const vector<int> *					curve_feature = nullptr;
 	const vector<shape_import_data> *	feature_map = nullptr;
 
 	void initialize_properties(Prop_t& io_properties) override
@@ -321,12 +322,16 @@ public:
 
 	void adjust_properties(Pmwx::Halfedge_handle edge, Prop_t& io_properties) override
 	{
-		for(int key : edge->curve().data())
+		for(const auto& key : edge->curve().data())
 		{
-			if(key >= 0 && key < feature_map->size())
+			if (key < 0 || key >= curve_feature->size())
+				continue;
+
+			const auto feature = (*curve_feature)[key];
+			if(feature >= 0 && feature < feature_map->size())
 			{
-				if(io_properties.count(key))	io_properties.erase(key);
-				else							io_properties.insert(key);
+				if(io_properties.count(feature))	io_properties.erase(feature);
+				else								io_properties.insert(feature);
 			}
 		}
 	}
@@ -464,12 +469,13 @@ struct shape_lock_traits {
 
 bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const char * feature_desc, double bounds[4], double simplify_mtr, int grid_steps, ProgressFunc	inFunc)
 {
-		int		killed = 0;
-		size_t	total = 0;
-		int		entity_count;
-		int		shape_type;
-		double	bounds_lo[4], bounds_hi[4];
-		static bool first_time = true;
+	int		killed = 0;
+	size_t	total = 0;
+	int		entity_count;
+	int		shape_type;
+	double	bounds_lo[4], bounds_hi[4];
+	static bool first_time = true;
+	const bool read_z = (flags & shp_Altitude) == shp_Altitude;
 
 	if(sProj) pj_free(sProj);sProj=nullptr;
 
@@ -528,6 +534,9 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 		io_map.clear();								// one-by-one burn in) we are going to work on the final map, so this is needed.
 
 	vector<Curve_2>							curves;
+	// Curve_2 -> feature_map index
+	vector<int>							curve_feature;
+	vector<tuple<boost::optional<double>,boost::optional<double>>> curve_elevation;
 
 	int feat = NO_VALUE;
 	if(flags & shp_Mode_Simple)
@@ -684,10 +693,14 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 				{
 					int start_idx = obj->panPartStart[part];
 					int stop_idx = ((part+1) == obj->nParts) ? obj->nVertices : obj->panPartStart[part+1];
-					Polygon_2	p;
+					vector<tuple<Point_2, boost::optional<double>>> p;
 					for (int i = start_idx; i < stop_idx; ++i)
 					{
 						Point_2 pt(obj->padfX[i],obj->padfY[i]);
+						boost::optional<double> pt_z;
+						if (read_z && obj->padfZ)
+							pt_z = obj->padfZ[i];
+
 						if(grid_steps || sProj)
 						{
 							Point2 raw_pt(obj->padfX[i],obj->padfY[i]);
@@ -695,41 +708,43 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 							if(grid_steps) round_grid(raw_pt, grid_steps);
 							pt = ben2cgal<Point_2>(raw_pt);
 						}
-						if(p.is_empty() || pt != p.vertex(p.size()-1))					// Do not add point if it equals the prev!
-							p.push_back(pt);
+
+						// Do not add point if it equals the prev!
+						if (p.empty() || pt != get<0>(p.back()))
+						{
+							p.emplace_back(pt, pt_z);
+						}
 					}
 
 					DebugAssert(p[0] == p[p.size()-1]);
-					while(p.size() > 0 && p[0] == p[p.size()-1])
-						p.erase(p.vertices_end()-1);
+					// Ignore any Z value for start & end merging
+					while(!p.empty() && std::get<0>(p[0]) == std::get<0>(p.back()))
+						p.erase(p.end()-1);
 
 					if(p.size() > 2)
 					{
-						if(p.is_simple())
+						// Convert part from a sequence of points to a sequence of curves.
+						for (size_t i = 0, j = 1; i < p.size(); ++i)
 						{
-							for(int s = 0; s < p.size(); ++s)
+							j = (i + 1) % p.size();
+
+							if (read_z && obj->nSHPType == SHPT_POLYGONZ)
 							{
-								curves.emplace_back(p.edge(s), n);
+								DebugAssert(get<1>(p[i]).has_value());
+								DebugAssert(get<1>(p[j]).has_value());
+								curve_elevation.emplace_back(get<1>(p[i]), get<1>(p[j]));
+							}
+							else
+							{
+								curve_elevation.emplace_back();
 							}
 
-						} else {
-
-							vector<Polygon_2>	simple_ones;
-							MakePolygonSimple(p,simple_ones);
-							#if DEV
-							for(vector<Polygon_2>::iterator t = simple_ones.begin(); t != simple_ones.end(); ++t)
-							{
-								DebugAssert(t->is_simple());
-								DebugAssert(t->is_counterclockwise_oriented());
-							}
-							#endif
-							for(auto & simple_one : simple_ones)
-							{
-								for(int s = 0; s < simple_one.size(); ++s)
-								{
-									curves.emplace_back(simple_one.edge(s), n);
-								}
-							}
+							ADD_PT_PAIR(
+									get<0>(p[i]),
+									get<0>(p[j]),
+									get<0>(p[i]),
+									get<0>(p[j]),
+									n);
 						}
 					}
 				}
@@ -752,12 +767,13 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 	 ************************************************************************************************************************************/
 
 	if(flags & shp_ErrCheck)
-		if(curves.empty())
+	{
+		if (curves.empty())
 		{
 			printf("Aborting because the shape file is empty within our insert area.\n");
 			return false;
 		}
-
+	}
 
 	if((flags & shp_Use_Crop))
 	{
@@ -766,28 +782,28 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 							Point_2(s_crop[2],s_crop[1]),
 							Point2(s_crop[0],s_crop[1]),
 							Point2(s_crop[2],s_crop[1]),
-							entity_count);
+							-1);
 
 		ADD_PT_PAIR(
 							Point_2(s_crop[2],s_crop[1]),
 							Point_2(s_crop[2],s_crop[3]),
 							Point2(s_crop[2],s_crop[1]),
 							Point2(s_crop[2],s_crop[3]),
-							entity_count+1);
+							-1);
 
 		ADD_PT_PAIR(
 							Point_2(s_crop[2],s_crop[3]),
 							Point_2(s_crop[0],s_crop[3]),
 							Point2(s_crop[2],s_crop[3]),
 							Point2(s_crop[0],s_crop[3]),
-							entity_count+2);
+							-1);
 
 		ADD_PT_PAIR(
 							Point_2(s_crop[0],s_crop[3]),
 							Point_2(s_crop[0],s_crop[1]),
 							Point2(s_crop[0],s_crop[3]),
 							Point2(s_crop[0],s_crop[1]),
-							entity_count+3);
+							-1);
 	}
 
 	Pmwx	local;
@@ -808,8 +824,6 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 	SHPClose(file);
 	if(db)	DBFClose(db);
 
-//	printf("Inserting %d curves into %d.\n", curves.size(), targ->number_of_edges());
-//	ISR(curves);
 	CGAL::insert(*targ, curves.begin(), curves.end());
 
 	nuke_container(curves);
@@ -830,6 +844,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 				f->set_visited(false);
 
 			toggle_properties_visitor	visitor;
+			visitor.curve_feature = &curve_feature;
 			visitor.feature_map = &feature_map;
 
 			visitor.Visit(targ);
@@ -868,6 +883,27 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 				simplifier.simplify(*targ, simplify_mtr*MTR_TO_NM * NM_TO_DEG_LAT, shape_lock_traits(), inFunc);
 
 				printf("After import simplify: %zd.\n", targ->number_of_halfedges());
+			}
+
+			for (auto he = targ->halfedges_begin(); he != targ->halfedges_end(); ++he)
+			{
+				for (const auto& key : he->curve().data())
+				{
+					if (key < 0 || key >= curve_elevation.size())
+						continue;
+
+					if (read_z)
+					{
+						const auto elevation = std::get<0>(curve_elevation[key]);
+						he->source()->data().mElevation = elevation;
+						if (elevation && !he->face()->is_unbounded())
+						{
+							// Edges with elevation must be burned to preserve the contour
+							he->data().mParams.emplace(he_MustBurn, 1.0);
+							he->face()->data().mHasElevation = true;
+						}
+					}
+				}
 			}
 
 			if(flags & shp_Overlay)
@@ -917,35 +953,35 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 			r.mFeatType = feat;
 			r.mRepType = NO_VALUE;
 
-			if(flags & shp_Mode_Simple)
-			if(flags & shp_Mode_Road)
-			for(Pmwx::Halfedge_iterator e = targ->halfedges_begin(); e != targ->halfedges_end(); ++e)
-			if(he_is_same_direction(e))
-				e->data().mSegments.push_back(r);
+			if ((flags & shp_Mode_Simple) && (flags & shp_Mode_Road))
+				for(Pmwx::Halfedge_iterator e = targ->halfedges_begin(); e != targ->halfedges_end(); ++e)
+					if(he_is_same_direction(e))
+						e->data().mSegments.push_back(r);
 
-			if(flags & shp_Mode_Map)
-			if(flags & shp_Mode_Road)
-			for(Pmwx::Edge_iterator eit = targ->edges_begin(); eit != targ->edges_end(); ++eit)
-			for(EdgeKey_iterator k = eit->curve().data().begin(); k != eit->curve().data().end(); ++k)
-			if(*k < entity_count)
-			{
-				r.mFeatType = feature_map[*k].feature;
-				r.mSourceHeight = r.mTargetHeight = feature_lay[*k];
-				if(feature_rev[*k])
-				{
-					if(he_is_same_direction(eit))
-						eit->twin()->data().mSegments.push_back(r);
-					else
-						eit->data().mSegments.push_back(r);
-				}
-				else
-				{
-					if(he_is_same_direction(eit))
-						eit->data().mSegments.push_back(r);
-					else
-						eit->twin()->data().mSegments.push_back(r);
-				}
-			}
+			if ((flags & shp_Mode_Map) && (flags & shp_Mode_Road))
+				for(Pmwx::Edge_iterator eit = targ->edges_begin(); eit != targ->edges_end(); ++eit)
+					for(const auto& key : eit->curve().data())
+					{
+						const auto feature = curve_feature[key];
+						if (feature > 0 && feature < entity_count)
+						{
+							r.mFeatType = feature_map[feature].feature;
+							r.mSourceHeight = r.mTargetHeight = feature_lay[feature];
+							if (feature_rev[feature])
+							{
+								if (he_is_same_direction(eit))
+									eit->twin()->data().mSegments.push_back(r);
+								else
+									eit->data().mSegments.push_back(r);
+							} else
+							{
+								if (he_is_same_direction(eit))
+									eit->data().mSegments.push_back(r);
+								else
+									eit->twin()->data().mSegments.push_back(r);
+							}
+						}
+					}
 
 			if(flags & shp_Mode_Coastline)
 			{
@@ -957,13 +993,16 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 
 				bool hosed = false;
 				for(Pmwx::Edge_iterator e = targ->edges_begin(); e != targ->edges_end(); ++e)
-				if(*e->curve().data().begin() < entity_count)
 				{
-					Pmwx::Halfedge_handle ee = he_get_same_direction(Halfedge_handle(e));
-					ee->twin()->face()->set_contained(true);
-					ee->twin()->face()->data().mTerrainType = feature;
-					if(ee->face()->contained())
-						hosed = true;
+					const auto key = *e->curve().data().begin();
+					if (key > 0 && key < entity_count)
+					{
+						Pmwx::Halfedge_handle ee = he_get_same_direction(Halfedge_handle(e));
+						ee->twin()->face()->set_contained(true);
+						ee->twin()->face()->data().mTerrainType = feature;
+						if(ee->face()->contained())
+							hosed = true;
+					}
 				}
 			}
 

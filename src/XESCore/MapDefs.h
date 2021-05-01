@@ -249,6 +249,7 @@ struct GIS_vertex_data {
 	bool mTunnelPortal;
 	bool mNeighborBurned;
 	bool mNeighborNotBurned;
+	boost::optional<double> mElevation;
 	inline void trim(void) { }
 #if OPENGL_MAP
 	float						mGL[2];				// Pre-expanded line!
@@ -307,6 +308,8 @@ public:
 	GISPolyObjPlacementVector	mPolyObjs;
 	int							mTemp1;							// Per face temp value
 	int							mTemp2;							// Per face temp value
+	//! If true, the DEM is not used inside the face
+	bool						mHasElevation = false;
 
 	bool		IsWater(void) const  { return (mTerrainType == terrain_Water); }
 	bool		HasParam(int p) const { return mParams.count(p) > 0; }
@@ -334,6 +337,7 @@ public:
 		mPolyObjs = x.mPolyObjs;
 		mTemp1 = x.mTemp1;
 		mTemp2 = x.mTemp2;
+		mHasElevation = x.mHasElevation;
 	}
 #if OPENGL_MAP
 	vector<const float *>		mGLTris;						// Pre-expanded triangle indices

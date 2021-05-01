@@ -830,14 +830,22 @@ CDT::Vertex_handle InsertAnyPoint(
 			const DEMGeo&			in_orig,
 			CDT&					io_mesh,
 			const Point_2&			p,
-			CDT::Face_handle&		hint)
+			CDT::Face_handle&		hint,
+			boost::optional<double>	ext_e = {})
 {
 	float e;
-	e = in_orig.value_linear(CGAL::to_double(p.x()), CGAL::to_double(p.y()));
-	if (e == DEM_NO_DATA)
-		e = in_orig.xy_nearest(CGAL::to_double(p.x()), CGAL::to_double(p.y()));
+	if (ext_e)
+	{
+		e = float(*ext_e);
+	}
+	else
+	{
+		e = in_orig.value_linear(CGAL::to_double(p.x()), CGAL::to_double(p.y()));
+		if (e == DEM_NO_DATA)
+			e = in_orig.xy_nearest(CGAL::to_double(p.x()), CGAL::to_double(p.y()));
 
-	DebugAssert(e != DEM_NO_DATA);
+		DebugAssert(e != DEM_NO_DATA);
+	}
 
 	CDT::Vertex_handle v = io_mesh.insert(p, hint);
 	hint = v->face();
@@ -1028,9 +1036,13 @@ void	AddConstraintPoints(
 		{
 			DebugAssert(!f1->is_unbounded());
 			DebugAssert(!f2->is_unbounded());
-			
-			v1 = InsertAnyPoint(master, outMesh, he->source()->point(), locale);
-			v2 = InsertAnyPoint(master, outMesh, he->target()->point(), locale);
+
+			// If the Vertex has elevation data, use that instead
+			const auto& source_elevation = he->source()->data().mElevation;
+			const auto& target_elevation = he->target()->data().mElevation;
+
+			v1 = InsertAnyPoint(master, outMesh, he->source()->point(), locale, source_elevation);
+			v2 = InsertAnyPoint(master, outMesh, he->target()->point(), locale, target_elevation);
 			v1->info().orig_vertex = he->source();
 			v2->info().orig_vertex = he->target();
 
@@ -1066,7 +1078,10 @@ void SubdivideConstraints(CDT& io_mesh, const DEMGeo& master, const DEMGeo& idea
 		pts.push_back(e->first);
 		
 		Vector_2	vec(e->first->point(),e->second->point());
-		
+
+		const bool has_shp_elevation = e->first->info().orig_vertex->data().mElevation &&
+				e->second->info().orig_vertex->data().mElevation;
+
 		int num_verts = IntegLine(
 								ideal_density, 
 									ideal_density.lon_to_x(CGAL::to_double(e->first->point().x())),
@@ -1080,11 +1095,20 @@ void SubdivideConstraints(CDT& io_mesh, const DEMGeo& master, const DEMGeo& idea
 			DebugAssert(r > 0.0);
 			DebugAssert(r < 1.0);
 			Point_2 p = e->first->point() + (vec * r);
-			pts.push_back(InsertAnyPoint(master, io_mesh, p, locale));
+			boost::optional<double> el;
+			if (has_shp_elevation)
+			{
+				el = e->first->info().height + (e->second->info().height - e->first->info().height) * r;
+			}
+
+			const auto inserted = InsertAnyPoint(master, io_mesh, p, locale, el);
+			pts.push_back(inserted);
 //			debug_mesh_point(cgal2ben(p),0,1,1);
 		}
 		
 		pts.push_back(e->second);
+
+		if (!has_shp_elevation)
 		for(int n = 1; n < pts.size(); ++n)
 			InsertMidPoints(master, io_mesh,pts[n-1],pts[n], locale);
 	}
@@ -1656,7 +1680,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 		AddEdgePoints(orig, deriv, 20, 1, fake_has_borders, temp_mesh);
 
 //		DEMGrid	gridlines(orig);
-		GreedyMeshBuild(temp_mesh, orig, deriv, gMeshPrefs.max_error, 0.0, gMeshPrefs.max_points, prog);
+		GreedyMeshBuild(temp_mesh, orig, deriv, inMap, gMeshPrefs.max_error, 0.0, gMeshPrefs.max_points, prog);
 		
 		// Now iterate and accumulate the vertices into a low res DEM - we will end up with linear vertex density per
 		// tile.
@@ -1695,7 +1719,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	PAUSE_STEP("Finished corners")
 	
 	/* TRIANGULATE CONSTRAINTS */
-	
+
 	AddConstraintPoints(inMap, orig, outMesh);
 	
 	PAUSE_STEP("Pre-simplify")
@@ -1713,7 +1737,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	}
 
 	PAUSE_STEP("Finished constraints")
-	
+
 	/* SUBDIVIDE CONSTRAINTS TO AVOID CREASE LINES IN MESH */
 	
 	SubdivideConstraints(outMesh, orig, best_density);
@@ -1773,11 +1797,11 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	}
 #endif	
 	
-	GreedyMeshBuild(outMesh, orig, deriv, /*gridlines,*/ gMeshPrefs.max_error, 0.0, (dry_ratio * 0.8 + 0.2) * gMeshPrefs.max_points, prog);
+	GreedyMeshBuild(outMesh, orig, deriv, inMap, /*gridlines,*/ gMeshPrefs.max_error, 0.0, (dry_ratio * 0.8 + 0.2) * gMeshPrefs.max_points, prog);
 
 	PAUSE_STEP("Finished greedy1")
 
-	GreedyMeshBuild(outMesh, orig, deriv, /*gridlines,*/ 0.0, gMeshPrefs.max_tri_size_m * MTR_TO_NM * NM_TO_DEG_LAT, gMeshPrefs.max_points, prog);
+	GreedyMeshBuild(outMesh, orig, deriv, inMap, /*gridlines,*/ 0.0, gMeshPrefs.max_tri_size_m * MTR_TO_NM * NM_TO_DEG_LAT, gMeshPrefs.max_points, prog);
 
 	PAUSE_STEP("Finished greedy2")
 
@@ -1788,29 +1812,52 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	// to borders.  So...we will subdivide the triangle into four by inserting the midpoints of each side of the triangle.
 	// We expect this to produce slightly more 'regular' results than subdiving into three triangles with the centroid.
 	{
-		set<Point_2> splits_needed;
+		Locator lp {inMap};
+
+		const auto split_cliff = [&](const auto& f, int i0, int i1) -> pair<Point_2,boost::optional<double>> {
+			auto point = CGAL::midpoint(f->vertex(i0)->point(),f->vertex(i1)->point());
+			boost::optional<double> elevation {};
+			bool use_existing_height = false;
+
+			const auto& r = lp.locate(point);
+			const Pmwx::Face_const_handle* face;
+			const Pmwx::Halfedge_const_handle* he;
+			if ((face = boost::get<Pmwx::Face_const_handle>(&r)))
+			{
+				use_existing_height = (*face)->data().mHasElevation;
+			}
+			else if ((he = boost::get<Pmwx::Halfedge_const_handle>(&r)))
+			{
+				use_existing_height = (*he)->face()->data().mHasElevation;
+			}
+
+			if (use_existing_height)
+			{
+				elevation = (f->vertex(i0)->info().height + f->vertex(i1)->info().height) * 0.5f;
+			}
+			return { point, { elevation } };
+		};
+
+		map<Point_2, boost::optional<double>> splits_needed;
 		for (CDT::Finite_faces_iterator f = outMesh.finite_faces_begin(); f != outMesh.finite_faces_end(); ++f)
 		{
-			if(tri_is_cliff(outMesh, f))
+			if(!tri_is_cliff(outMesh, f)) continue;
+
+			if(!tri_is_cliff(outMesh, f->neighbor(0)) ||
+			   !tri_is_cliff(outMesh, f->neighbor(1)) ||
+			   !tri_is_cliff(outMesh, f->neighbor(2)))
 			{
-				if(!tri_is_cliff(outMesh, f->neighbor(0)) ||
-				   !tri_is_cliff(outMesh, f->neighbor(1)) ||
-				   !tri_is_cliff(outMesh, f->neighbor(2)))
-				{
-					CDT::Triangle tr(outMesh.triangle(f));
-	//				splits_needed.insert(CGAL::centroid(tr));
-					splits_needed.insert(CGAL::midpoint(f->vertex(0)->point(),f->vertex(1)->point()));
-					splits_needed.insert(CGAL::midpoint(f->vertex(1)->point(),f->vertex(2)->point()));
-					splits_needed.insert(CGAL::midpoint(f->vertex(2)->point(),f->vertex(0)->point()));
-				}
+				splits_needed.insert(split_cliff(f, 0, 1));
+				splits_needed.insert(split_cliff(f, 1, 2));
+				splits_needed.insert(split_cliff(f, 2, 0));
 			}
 		}
 		
 		printf("Need %zd splits.\n", splits_needed.size());
 		hint = CDT::Face_handle();
-		for(set<Point_2>::iterator n = splits_needed.begin(); n != splits_needed.end(); ++n)
+		for(const auto& s : splits_needed)
 		{
-			InsertAnyPoint(orig, outMesh, *n, hint);
+			InsertAnyPoint(orig, outMesh, s.first, hint, s.second);
 	//		debug_mesh_point(cgal2ben(*n), 1, 0, 0);
 		}
 	}

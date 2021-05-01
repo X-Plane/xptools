@@ -76,7 +76,7 @@ inline bool must_burn_he(Halfedge_handle he)
 	Halfedge_handle tw = he->twin();
 	Face_handle f1 = he->face();
 	Face_handle f2 = tw->face();
-	
+
 	if(f1->is_unbounded() || f2->is_unbounded()) 
 		return false;
 

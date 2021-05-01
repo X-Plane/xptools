@@ -95,8 +95,14 @@ DSFBuildPrefs_t	gDSFBuildPrefs = { 1 };
 #define		SHOW_BEZIERS 0
 
 // These macros set the height and normal in the mesh to the new-style modes.
-#define USE_DEM_H(x,w,m,v)	((CategorizeVertex(m,v,terrain_Water) <= 0) ? (x) : -32768.0)
+#define USE_DEM_H(x,w,m,v)	(write_vertex_elevation(m,v) ? (x) : -32768.0)
 #define USE_DEM_N(x)		0.0f
+
+static bool write_vertex_elevation(const CDT& inMesh, const CDT::Vertex_handle& v) {
+	// TODO (devans): Only write out elevation if required to avoid DEM samples:
+	// return (v->info().orig_vertex->data().mElevation) || (CategorizeVertex(inMesh,v,terrain_Water) <= 0);
+	return true;
+}
 
 #if 0
 static void sub_heights(CDT& mesh, const DEMGeo& sl)

@@ -581,7 +581,8 @@ static int DoShapeImport(const vector<const char *>& args)
 	if(strstr(args[0], "s"))	flags |= shp_Mode_Simple;
 	if(strstr(args[0], "m"))	flags |= shp_Mode_Map;
 	if(strstr(args[0], "e"))	flags |= shp_ErrCheck;
-	
+	if(strstr(args[0], "a"))	flags |= shp_Altitude;
+
 	double err_margin = atof(args[2]);
 	int grid_steps = atoi(args[3]);
 

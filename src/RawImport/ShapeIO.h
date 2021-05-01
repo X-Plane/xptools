@@ -39,7 +39,8 @@ enum {
 		shp_Mode_Map		= 16,			// Use a map file for features.
 		shp_Use_Crop		= 32,			// Add the crop-box to the import on the fly.
 		shp_Overlay			= 64,			// Do not clear previous data.
-		shp_ErrCheck		= 128			// Check for overlapping line segments, and fail if we find any.
+		shp_ErrCheck		= 128,			// Check for overlapping line segments, and fail if we find any.
+		shp_Altitude		= 256,			// Import elevation from polygon vertex Z values.
 };
 typedef unsigned int shp_Flags;
 

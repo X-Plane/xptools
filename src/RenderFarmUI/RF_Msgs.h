@@ -68,7 +68,8 @@ enum {
 	viewCmd_ShowTensor,
 	viewCmd_DEMDataChoice,
 	viewCmd_ShowExtent,
-	
+	viewCmd_ShowMeshHeight,
+
 	viewCmd_RecalcDEM,
 	viewCmd_PrevDEM,
 	viewCmd_NextDEM,

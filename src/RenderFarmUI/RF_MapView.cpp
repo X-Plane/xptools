@@ -202,6 +202,7 @@ GUI_MenuItem_t	kViewItems[] = {
 {	"Show Extent",							'E',			gui_ControlFlag,						0,	viewCmd_ShowExtent		},
 {	"Show Shading on Raster Layer",			'S',			gui_ControlFlag,						0,	viewCmd_ShowShading		},
 {	"Shade Map Faces With Superblock Color",'S',			gui_ControlFlag + gui_ShiftFlag,		0,	viewCmd_ShowSuper		},
+{	"Show Mesh Elevation",				0,				0,										0,	viewCmd_ShowMeshHeight},
 {	"-",									0,				0,										0,	0						},
 {	"Recalculate Raster Data Preview",		'R',			gui_ControlFlag,						0,	viewCmd_RecalcDEM		},
 {	"Previous Raster",						GUI_KEY_UP,		gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_PrevDEM			},
@@ -264,6 +265,7 @@ int			sShowAirports =1;
 int			sShowShading = 1;
 int			sShowGrids = 0;
 int			sShowTensors = 1;
+bool		sShowMeshHeight = false;
 float		sShadingAzi = 315;
 float		sShadingDecl = 45;
 
@@ -307,6 +309,7 @@ int		RF_MapView::CanHandleCommand(int command, string& ioName, int& ioCheck)
 	case editCmd_SelectEdge:	ioCheck = (gSelectionMode == rf_Select_Edge);			return 1;
 	case editCmd_SelectFace:	ioCheck = (gSelectionMode == rf_Select_Face);			return 1;
 	case editCmd_SelectPoints:	ioCheck = (gSelectionMode == rf_Select_PointFeatures);	return 1;
+	case viewCmd_ShowMeshHeight:ioCheck = sShowMeshHeight;		return 1;
 	}
 
 	if(command >= viewCmd_DEMChoice_Start && command < viewCmd_DEMChoice_Stop)
@@ -376,6 +379,7 @@ int		RF_MapView::HandleCommand(int command)
 	case viewCmd_Airports:		sShowAirports = !sShowAirports;		return 1;
 	case viewCmd_ShowShading:	sShowShading = !sShowShading;		return 1;
 	case viewCmd_ShowSuper:		g_color_face_use_supr_tint = !g_color_face_use_supr_tint;		mNeedRecalcMapMeta = 1;	return 1;
+	case viewCmd_ShowMeshHeight: sShowMeshHeight = !sShowMeshHeight; mNeedRecalcMeshHiAlpha = true; return 1;
 
 	case viewCmd_ColorMapTerr:
 	case viewCmd_ColorMapZone:
@@ -702,6 +706,19 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 		{
 			RF_ProgressFunc(0, 1, "Updating graphics for terrain mesh colored preview...", 0.0);
 
+			double height_min = std::numeric_limits<double>::max();
+			double height_max = std::numeric_limits<double>::lowest();
+			if (sShowMeshHeight)
+			for (CDT::Finite_faces_iterator fit = gTriangulationHi.finite_faces_begin(); fit != gTriangulationHi.finite_faces_end(); ++fit)
+			{
+				for (int i = 0; i < 3; ++i)
+				{
+					height_min = std::min(height_min, fit->vertex(i)->info().height);
+					height_max = std::max(height_max, fit->vertex(i)->info().height);
+				}
+			}
+			double height_range = height_max - height_min;
+
 			if (mDLMeshFill != 0)	glDeleteLists(mDLMeshFill, MESH_BUCKET_SIZE * MESH_BUCKET_SIZE + 1);
 			mDLMeshFill = glGenLists(MESH_BUCKET_SIZE * MESH_BUCKET_SIZE + 1);
 
@@ -766,13 +783,42 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 							col[2] *= scale;
 						}
 						#endif
-						
 
-						glColor4fv(col);					glVertex2f(CGAL::to_double(p1.x()), CGAL::to_double(p1.y()));
-						glColor4fv(col);					glVertex2f(CGAL::to_double(p2.x()), CGAL::to_double(p2.y()));
-						glColor4fv(col);					glVertex2f(CGAL::to_double(p3.x()), CGAL::to_double(p3.y()));
+						float col_tri[3][4];
+						if (sShowMeshHeight)
+						{
+							col_tri[0][0] =
+							col_tri[0][1] =
+							col_tri[0][2] = (a->info().height - height_min) / height_range;
+							col_tri[0][3] = 1.0;
+
+							col_tri[1][0] =
+							col_tri[1][1] =
+							col_tri[1][2] = (b->info().height - height_min) / height_range;
+							col_tri[1][3] = 1.0;
+
+							col_tri[2][0] =
+							col_tri[2][1] =
+							col_tri[2][2] = (c->info().height - height_min) / height_range;
+							col_tri[2][3] = 1.0;
+						}
+						else
+						{
+							for (int i = 0; i < 3; ++i)
+							{
+								col_tri[i][0] = col[0];
+								col_tri[i][1] = col[1];
+								col_tri[i][2] = col[2];
+								col_tri[i][3] = col[3];
+							}
+						}
+
+						glColor4fv(col_tri[0]);				glVertex2f(CGAL::to_double(p1.x()), CGAL::to_double(p1.y()));
+						glColor4fv(col_tri[1]);				glVertex2f(CGAL::to_double(p2.x()), CGAL::to_double(p2.y()));
+						glColor4fv(col_tri[2]);				glVertex2f(CGAL::to_double(p3.x()), CGAL::to_double(p3.y()));
 
 #if DRAW_MESH_BORDERS
+						if (!sShowMeshHeight)
 						for (set<int>::iterator i = fit->info().terrain_border.begin(); i != fit->info().terrain_border.end(); ++i)
 						{
 							GetNaturalTerrainColor(*i, col);
@@ -1367,7 +1413,14 @@ put in  color enums?
 				k -= (h+1);
 
 			}
-			
+
+			if (f->data().mHasElevation)
+			{
+				sprintf(buf,"%s","Z");
+				FontDrawDarkBox(state, font_UI_Basic, white, l+5,k,9999, buf);
+				k -= (h+1);
+			}
+
 			vector<string>	poly_list;
 
 			for(GISObjPlacementVector::iterator i = f->data().mObjs.begin(); i != f->data().mObjs.end(); ++i)
