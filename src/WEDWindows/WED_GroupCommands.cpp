@@ -488,7 +488,7 @@ static bool WED_NoLongerViable(WED_Thing * t, bool strict)
 		return true;
 #if ROAD_EDITING
 	if (t->GetClass() == WED_RoadNode::sClass &&
-		SAFE_CAST(IGISComposite,t->GetParent()) &&
+		/*SAFE_CAST(IGISComposite,t->GetParent()) &&*/		// orphaned road nodes have no parent
 		t->CountViewers() == 0)
 		return true;
 #endif
