@@ -790,7 +790,7 @@ static void draw_line_preview(const vector<Point2>& pts, const lin_info_t& linfo
 			if(j > start_of_endcap) continue;
 		}
 
-		if(j == pts.size()-2 && linfo.align > 0) uv_t2 = round_by_parts(uv_t2, linfo.align);
+		if(j == pts.size()-2 && linfo.align > 0) uv_t2 = round_by_parts(uv_t2 - (linfo.end_caps.size() > l ? linfo.end_caps[l].t2-linfo.end_caps[l].t1 : 0.0), linfo.align);
 
 		glBegin(GL_QUADS);
 			glTexCoord2f(linfo.s1[l],uv_t1 + d1); glVertex2(start_left);
