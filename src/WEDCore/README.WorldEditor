@@ -13,6 +13,13 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 2.4.0rc1 5/8/21
+   Bug Fix:
+   - move forest layering in map to above polygons, below roads/objects
+   - fix distorted previews for lines with ALIGN and END_CAP attributes
+   - WED-1380 clean out orphaned road nodes from .xml database
+   - WED-1374 improve libcurl compatibility on Debian/Linux
+	
 WED 2.4.0b2 4/13/21
    Bug Fix:
    - fix scaled down window contents on OSX Big Sur with Retina displays
