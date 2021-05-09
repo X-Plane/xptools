@@ -1835,7 +1835,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	else if (sub_class == WED_ForestPlacement::sClass)
 	{
 		WED_ForestPlacement * forst = SAFE_CAST(WED_ForestPlacement, entity);
-		if(forst) mPreviewItems.push_back(new preview_forest(forst, group_Terrain));
+		if(forst) mPreviewItems.push_back(new preview_forest(forst, group_Footprints));
 	}
 	else if(sub_class == WED_LinePlacement::sClass)
 	{
