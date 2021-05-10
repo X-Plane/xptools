@@ -27,6 +27,9 @@
 #if APL
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glu.h>
+	#ifndef GL_COMPRESSED_RGBA_BPTC_UNORM_EXT
+		#define GL_COMPRESSED_RGBA_BPTC_UNORM_EXT 0x8E8C
+	#endif
 #else
 	#include "glew.h"
 	#include <GL/glu.h>
@@ -822,7 +825,7 @@ static void swap_blocks(char *a, char *b, GLint type)
 		swap(*x, *y);
 		swap_12bit_idx(x->idx);
 		swap_12bit_idx(y->idx);
-		if (type == GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT)
+		if (type == GL_COMPRESSED_RG_RGTC2)
 		{
 			++x; ++y;
 			swap(*x, *y);
@@ -945,9 +948,9 @@ bool	LoadTextureFromDDS(
 	else if (gl_info.has_rgtc && strncmp(desc->ddpfPixelFormat.dwFourCC, "ATI", 3) == 0)    // This format is NOT understood by X-Plane for now !!!
 		switch (desc->ddpfPixelFormat.dwFourCC[3])
 		{
-//		case '1':	dds_blocksize =  8; glformat = GL_COMPRESSED_RED_RGTC1_EXT;		         break; // BC4 decoded to red channel only
-		case '1':	dds_blocksize =  8; glformat = GL_COMPRESSED_LUMINANCE_LATC1_EXT;	     break; // BC4 decoded to rgb greyscale, e.g. crunch -DXT5A or BC4 in Gimp
-		case '2':	dds_blocksize = 16; glformat = GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT; break; // BC5 two uncorrelated channels (normals !), crunch -DXN
+		case '1':	dds_blocksize =  8; glformat = GL_COMPRESSED_RED_RGTC1;		       break; // BC4 decoded to red channel only
+//		case '1':	dds_blocksize =  8; glformat = GL_COMPRESSED_LUMINANCE_LATC1_EXT;  break; // BC4 decoded to rgb greyscale, e.g. crunch -DXT5A or BC4 in Gimp
+		case '2':	dds_blocksize = 16; glformat = GL_COMPRESSED_RG_RGTC2;             break; // BC5 two uncorrelated channels (normals !), crunch -DXN
 		default:	return false;
 		}
 	else  if (gl_info.has_bptc && strncmp(desc->ddpfPixelFormat.dwFourCC, "DX10", 4) == 0)  // This format is NOT understood by X-Plane for now !!!

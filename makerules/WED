@@ -36,7 +36,6 @@ endif #PLAT_MINGW
 
 ifdef PLAT_DARWIN
 LDFLAGS		+= -framework Carbon -framework OpenGL -framework AppKit
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libboost_thread.a
 endif #PLAT_DARWIN
 
 LIBS		+= -lcurl
