@@ -303,6 +303,10 @@ int		RF_MapView::CanHandleCommand(int command, string& ioName, int& ioCheck)
 	case viewCmd_MeshLines:		ioCheck = sShowMeshLines;		return 1;
 	case viewCmd_MeshTrisHi:	ioCheck = sShowMeshTrisHi;		return 1;
 	case viewCmd_MeshTerrains:	ioCheck = sShowMeshAlphas;		return 1;
+	case editCmd_SelectVertex:	ioCheck = (gSelectionMode == rf_Select_Vertex);			return 1;
+	case editCmd_SelectEdge:	ioCheck = (gSelectionMode == rf_Select_Edge);			return 1;
+	case editCmd_SelectFace:	ioCheck = (gSelectionMode == rf_Select_Face);			return 1;
+	case editCmd_SelectPoints:	ioCheck = (gSelectionMode == rf_Select_PointFeatures);	return 1;
 	}
 
 	if(command >= viewCmd_DEMChoice_Start && command < viewCmd_DEMChoice_Stop)
@@ -326,6 +330,7 @@ int		RF_MapView::CanHandleCommand(int command, string& ioName, int& ioCheck)
 int		RF_MapView::HandleCommand(int command)
 {
 	if(command >= specCmd_Screenshot && command <= specCmd_CheckEnums) { HandleSpecialCommand(command); return 1; }
+	if(command >= editCmd_SelectVertex && command <= editCmd_SelectPoints) { HandleSpecialCommand(command); return 1; }
 
 	if(command >= viewCmd_DEMChoice_Start && command < viewCmd_DEMChoice_Stop)
 	{

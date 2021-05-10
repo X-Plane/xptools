@@ -114,8 +114,12 @@ enum {
 	specCmd_MeshLU,
 	specCmd_PreviewSHP,
 	specCmd_KillObjs,
-	specCmd_CheckEnums
-	
+	specCmd_CheckEnums,
+
+	editCmd_SelectVertex,
+	editCmd_SelectEdge,
+	editCmd_SelectFace,
+	editCmd_SelectPoints,
 };
 
 
