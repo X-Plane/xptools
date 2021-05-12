@@ -466,6 +466,53 @@ static void swap_bc7m6_endpts(char * a)
 	*(uint64_t*) (a) = dst;
 }
 
+static void swap_bc7m7_sets(char * a)
+{
+	uint64_t src, dst;
+	
+	src = *(uint64_t*) (a + 1);                                // array starts at 16 bit offset - 1 byte = 6 bits
+	dst  =  src & 0xFFFF'C000'0000'003Full;
+	dst |= (src & (0xFFC0ull       | 0xFFC0ull << 20)) << 10;  // red & green
+	dst |= (src & (0xFFC0ull << 10 | 0xFFC0ull << 30)) >> 10;
+	*(uint64_t*) (a + 1) = dst;
+
+	src = *(uint64_t*) (a + 7);                                // offset 16 + 8 * 5 = 56 bis = 7 byte = 0 bits
+	dst  =  src & 0xFFFF'F000'0000'0000ull;
+	dst |= (src & (0x3FFull       | 0x3FFull << 20)) << 10;  // blue+alpha
+	dst |= (src & (0x3FFull << 10 | 0x3FFull << 30)) >> 10;
+	dst |= (src & 0x0003ull << 40) << 2 | (src & 0x000Cull << 40) >> 2;   // p-bits
+	*(uint64_t*) (a + 7) = dst;
+}
+
+static void swap_bc7m7_endpts(char * a, bool first, bool second)
+{
+	uint64_t src, dst;
+	
+	src = *(uint64_t*) (a + 1);
+	dst  =  src & 0xFFFF'C000'0000'003Full;
+	if(first) { dst |= (src & (0x07C0ull        | 0x07C0ull << 20)) << 5;
+	            dst |= (src & (0xF800ull        | 0xF800ull << 20)) >> 5; }
+	else        dst |=  src & (0xFFC0ull        | 0xFFC0ull << 20);
+	
+	if(second) { dst |= (src & (0x07C0ull << 10 | 0x07C0ull << 30)) << 5;
+	             dst |= (src & (0xF800ull << 10 | 0xF800ull << 30)) >> 5; }
+	else         dst |=  src & (0xFFC0ull << 10 | 0xFFC0ull << 30);
+	*(uint64_t*) (a + 1) = dst;
+
+	src = *(uint64_t*) (a + 7);
+	dst  =  src & 0xFFFF'F000'0000'0000ull;
+	if(first) { dst |= (src & (0x001Full        | 0x001Full << 20)) << 5;
+	            dst |= (src & (0x03E0ull        | 0x03E0ull << 20)) >> 5; 
+	            dst |=  src & (1ull << 40) >> 1 | src & (2ull << 40) >> 1; }
+	else        dst |=  src & (0x03FFull        | 0x03FFull << 20 | 0x3ull << 40);
+	
+	if(second) { dst |= (src & (0x001Full << 10 | 0x001Full << 30)) << 5;
+	             dst |= (src & (0x03E0ull << 10 | 0x03E0ull << 30)) >> 5;
+	             dst |=  src & (4ull<< 40) >> 1 | src & (8ull<< 40) >> 1; }
+	else         dst |=  src & (0x03FFull << 10 | 0x03FFull << 30 | 0xCull << 40);
+	*(uint64_t*) (a + 7) = dst;
+}
+
 // ***** y-flipping of BC7 format selector arrays ******
 
 static void swap_63bit_idx(char * a)
@@ -760,6 +807,54 @@ static void swap_bc7m3_idx(char * a, int part) // for comments see above swap_bc
 	swap_bc7m3_endpts(a, swap_seg1, swap_seg2);
 }
 
+static void swap_bc7m7_idx(char * a, int part) // for comments see above swap_bc7m1_idx()
+{
+	uint32_t src = *(uint32_t *) (a+12);
+	uint32_t dst, tmp;
+	
+	int lsb = src & 3;
+	
+	tmp = src & 0x07;
+	src &= ~0x07u;
+	src |= tmp >> 1;
+
+	uint32_t shift_pattern = ~0u >> (30 - 2 * bc7_anchor_idx[part]);
+	tmp = src & shift_pattern;
+	src &= ~shift_pattern;
+	src |= tmp >> 1;
+	
+	bool swapset = bc7_part_equiv[part] & 64;
+	int  newpart = bc7_part_equiv[part] & 63;
+	if(newpart != part)
+	{
+		part = newpart;
+		tmp = *(uint16_t *) a & 0xC0FFu;
+		*(uint16_t *) a = tmp | part << 8;
+		shift_pattern = ~0u >> (30 - 2 * bc7_anchor_idx[part]);
+	}
+	dst = (src & 0xFFu) << 24 | (src & 0xFF00u) << 8 | (src & 0xFF0000u) >> 8 | (src & 0xFF000000u) >> 24;
+
+	bool swap_seg1 = dst & 0x02;
+	bool swap_seg2 = dst & 0x02u << (2 * bc7_anchor_idx[part]);
+
+	uint32_t invert_pattern = (swap_seg2 ? bc7_part2bit[part] : 0) | (swap_seg1 ? ~bc7_part2bit[part] : 0);
+	dst = dst ^ invert_pattern;
+	
+	tmp = dst & shift_pattern >> 1;
+	dst &= ~shift_pattern;
+	dst |= tmp << 1;
+	            
+	tmp = dst & 0x03;
+	dst &= ~0x07u;
+	dst |= tmp << 1;
+	
+ 	dst |= lsb;
+	*(uint32_t *) (a+12) = dst;
+	
+	if(swapset) swap_bc7m7_sets(a);
+	swap_bc7m7_endpts(a, swap_seg1, swap_seg2);
+}
+
 static void swap_bc7_idx(char * a)
 {
 	int mode;
@@ -774,7 +869,7 @@ static void swap_bc7_idx(char * a)
 		case 4: swap_31b47b_idx(a); break;
 		case 5: swap_31b31b_idx(a); break;
 		case 6: swap_63bit_idx(a); break;
-//      case 7: similar to mode 3, same 2-bit indices, different 5555+P color endpoints w/equally ugly alignment as mode 3
+		case 7: swap_bc7m7_idx(a, *(unsigned short*)a >> 8 & 0x3F); break;
 		default: *a = 0; // make blocks with modes that can't be flipped (yet) transparent
 	}
 }
@@ -961,7 +1056,7 @@ bool	LoadTextureFromDDS(
 		default:	return false;
 		}
 	else  if (gl_info.has_bptc && strncmp(desc->ddpfPixelFormat.dwFourCC, "DX10", 4) == 0)  // This format is NOT understood by X-Plane for now !!!
-		{                                                                                   // Y-flipping partially implemented (modes 1,3-6 only), yet
+		{                                                                                   // Y-flipping partially implemented (modes 0,2 missing), still
 			const TEX_dds_dx10 * dx10hdr = (const TEX_dds_dx10 *) (mem_start + sizeof(*desc));
 			data += sizeof(TEX_dds_dx10);
 			
