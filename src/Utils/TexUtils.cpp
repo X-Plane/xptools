@@ -393,14 +393,16 @@ static void swap_bc7m3_endpts(char * a, bool first, bool second)
 	*(uint64_t*) (a + 1) = dst;
 
 	src = *(uint64_t*) (a + 8);
-	dst  =  src & 0xFFFF'FFFF'C000'0003ull;
+	dst  =  src & 0xFFFF'FFFC'0000'0003ull;
 	if(first) { dst |= (src & 0x01FCull) << 7;
-	            dst |= (src & 0xFE00ull) >> 7; }
-	else        dst |=  src & 0xFFFCull;                         // todo: pbits
+	            dst |= (src & 0xFE00ull) >> 7;
+	            dst |=  src & (1ull << 30) << 1 | src & (2ull << 30) >> 1; }
+	else        dst |=  src & 0x3FFFCull;
 	
 	if(second) { dst |= (src & 0x01FCull << 14) << 7;
-	             dst |= (src & 0xFE00ull << 14) >> 7; }
-	else         dst |=  src & 0xFFFCull << 14;                  // todo: pbits
+	             dst |= (src & 0xFE00ull << 14) >> 7;
+ 	             dst |=  src & (4ull << 30) << 1 | src & (8ull << 30) >> 1; }
+	else         dst |=  src & 0xCFFFCull << 14;
 	*(uint64_t*) (a + 8) = dst;
 }
 
@@ -408,8 +410,7 @@ static void swap_bc7m4_endpts(char * a, bool swap_col, bool swap_a)
 {
 	uint32_t src, dst;
 	
-	bool mode = *(uint8_t *) a & 0x08;
-	int rot = *(uint8_t *) a >> 5 & 3;   // todo: do these affect which component to swap ?
+	bool mode = *(uint8_t *) a & 0x80;
 	
 	if(mode ? swap_a : swap_col) 
 	{
@@ -503,12 +504,12 @@ static void swap_bc7m7_endpts(char * a, bool first, bool second)
 	dst  =  src & 0xFFFF'F000'0000'0000ull;
 	if(first) { dst |= (src & (0x001Full        | 0x001Full << 20)) << 5;
 	            dst |= (src & (0x03E0ull        | 0x03E0ull << 20)) >> 5; 
-	            dst |=  src & (1ull << 40) >> 1 | src & (2ull << 40) >> 1; }
+	            dst |=  src & (1ull << 40) << 1 | src & (2ull << 40) >> 1; }
 	else        dst |=  src & (0x03FFull        | 0x03FFull << 20 | 0x3ull << 40);
 	
 	if(second) { dst |= (src & (0x001Full << 10 | 0x001Full << 30)) << 5;
 	             dst |= (src & (0x03E0ull << 10 | 0x03E0ull << 30)) >> 5;
-	             dst |=  src & (4ull<< 40) >> 1 | src & (8ull<< 40) >> 1; }
+	             dst |=  src & (4ull<< 40) << 1 | src & (8ull<< 40) >> 1; }
 	else         dst |=  src & (0x03FFull << 10 | 0x03FFull << 30 | 0xCull << 40);
 	*(uint64_t*) (a + 7) = dst;
 }
@@ -690,7 +691,8 @@ static char bc7_anchor_idx[64] = {
     
 // From stareing long enough at https://rockets2000.wordpress.com/2015/05/19/bc7-partitions-subsets/ one can figure 
 // for each subset partition a matching one that is an exact vertically flipped equivalent.
-// Except for the last 2 partitions 62+63, those don't have one. So there will be a (slight) inaccuracy for these.
+// Except for the last 2 partitions 62+63, those don't have one. So there will be a (slight) inaccuracy for these,
+// as 4 pixels are moved to the other endpoint set.
 static uint8_t bc7_part_equiv[64] = {
 //   0       1       2       3       4       5       6       7 
      0,      1,      2,     23,     24,     25+64,  21+64,  19,
@@ -707,7 +709,7 @@ static uint8_t bc7_part_equiv[64] = {
 //  48      49      50      51      52      53      54      55
 	51,     50,     49,     48,     55,     54+64,  53+64,  52,
 //  56      57      58      59      60      61      62      63
-	57+64,  56+64,  59,     58,     61,     60,     62,     63    };
+	57+64,  56+64,  59,     58,     61,     60,     31+64,  27  };
 
 static void swap_bc7m1_idx(char * a, int part)
 {
