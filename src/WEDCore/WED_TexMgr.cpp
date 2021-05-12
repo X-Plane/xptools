@@ -107,9 +107,6 @@ WED_TexMgr::TexInfo *	WED_TexMgr::LoadTexture(const char * path, bool is_absolut
 	FILE * file = fopen(fpath.c_str(), "rb");
 	if (file)
 	{
-		char c[4];
-		if (fread(c, 1, 4, file) == 4 && strncmp(c, "DDS ",4) == 0) // cut it short, if no joy
-		{
 			fseek(file, 0, SEEK_END);
 			int fileLength = ftell(file);
 			fseek(file, 0, SEEK_SET);
@@ -121,18 +118,39 @@ WED_TexMgr::TexInfo *	WED_TexMgr::LoadTexture(const char * path, bool is_absolut
 					int siz_x, siz_y;
 					if (LoadTextureFromDDS(buffer, buffer + fileLength, tn, flags, &siz_x, &siz_y))
 					{
-//						printf("Direct loading DDS %s\n", fpath.c_str());
+//		printf("Direct loading DDS %s\n", fpath.c_str());
 						inf = new TexInfo;
 						inf->tex_id = tn;
 						inf->org_x = inf->vis_x = inf->act_x = siz_x;
 						inf->org_y = inf->vis_y = inf->act_y = siz_y;
 						mTexes[path] = inf;
 					}
+#if LOAD_BASISU_DIRECT
+					else if (LoadTextureFromBASISU(buffer, buffer + fileLength, tn, flags, &siz_x, &siz_y))
+					{
+//		printf("Direct loading Basisu %s\n", fpath.c_str());
+						inf = new TexInfo;
+						inf->tex_id = tn;
+						inf->org_x = inf->vis_x = inf->act_x = siz_x;
+						inf->org_y = inf->vis_y = inf->act_y = siz_y;
+						mTexes[path] = inf;
+					}
+#endif
+#if LOAD_KTX2_DIRECT
+					else if (LoadTextureFromKTX2(buffer, buffer + fileLength, tn, flags, &siz_x, &siz_y))
+					{
+//		printf("Direct loading KTX2 %s\n", fpath.c_str());
+						inf = new TexInfo;
+						inf->tex_id = tn;
+						inf->org_x = inf->vis_x = inf->act_x = siz_x;
+						inf->org_y = inf->vis_y = inf->act_y = siz_y;
+						mTexes[path] = inf;
+					}
+#endif
 				}
 				delete [] buffer;
 			}
 			fclose(file);
-		}
 	}
 	if(inf) return inf;
 

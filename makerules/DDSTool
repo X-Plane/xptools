@@ -36,12 +36,12 @@ LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
 # sources
 #########
 
-SOURCES += ./src/Utils/AssertUtils.cpp
-SOURCES += ./src/XPTools/DDSTool.cpp
-SOURCES += ./src/Utils/EndianUtils.c
-SOURCES += ./src/Utils/zip.c
-SOURCES += ./src/Utils/unzip.c
-SOURCES += ./src/Utils/BitmapUtils.cpp
-SOURCES += ./src/Utils/QuiltUtils.cpp
-SOURCES += ./src/Utils/FileUtils.cpp
-SOURCES += ./src/GUI/GUI_Unicode.cpp
+SOURCES += ./SDK/Utils/AssertUtils.cpp
+SOURCES += ./SDK/XPTools/DDSTool.cpp
+SOURCES += ./SDK/Utils/EndianUtils.c
+SOURCES += ./SDK/Utils/zip.c
+SOURCES += ./SDK/Utils/unzip.c
+SOURCES += ./SDK/Utils/BitmapUtils.cpp
+SOURCES += ./SDK/Utils/QuiltUtils.cpp
+SOURCES += ./SDK/Utils/FileUtils.cpp
+SOURCES += ./SDK/GUI/GUI_Unicode.cpp

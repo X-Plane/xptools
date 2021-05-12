@@ -330,34 +330,37 @@ SOURCES += ./src/XESCore/AptIO.cpp
 #SOURCES += ./src/XESCore/Bezier.cpp
 SOURCES += ./src/Obj/ObjConvert.cpp
 
-SOURCES += ./src/lib_json/src/lib_json/json_writer.cpp
-SOURCES += ./src/lib_json/src/lib_json/json_reader.cpp
-SOURCES += ./src/lib_json/src/lib_json/json_value.cpp
+SOURCES += ./SDK/lib_json/src/lib_json/json_writer.cpp
+SOURCES += ./SDK/lib_json/src/lib_json/json_reader.cpp
+SOURCES += ./SDK/lib_json/src/lib_json/json_value.cpp
 
-SOURCES += ./src/lzma19/C/7zArcIn.c
-SOURCES += ./src/lzma19/C/7zAlloc.c
-SOURCES += ./src/lzma19/C/7zBuf.c
-SOURCES += ./src/lzma19/C/7zCrc.c
-SOURCES += ./src/lzma19/C/7zCrcOpt.c
-SOURCES += ./src/lzma19/C/7zDec.c
-SOURCES += ./src/lzma19/C/7zFile.c
-SOURCES += ./src/lzma19/C/7zStream.c
-SOURCES += ./src/lzma19/C/Bcj2.c
-SOURCES += ./src/lzma19/C/Bra.c
-SOURCES += ./src/lzma19/C/Bra86.c
-SOURCES += ./src/lzma19/C/BraIA64.c
-SOURCES += ./src/lzma19/C/CpuArch.c
-SOURCES += ./src/lzma19/C/Delta.c
-SOURCES += ./src/lzma19/C/LzmaDec.c
-SOURCES += ./src/lzma19/C/Lzma2Dec.c
+SOURCES += ./SDK/lzma19/C/7zArcIn.c
+SOURCES += ./SDK/lzma19/C/7zAlloc.c
+SOURCES += ./SDK/lzma19/C/7zBuf.c
+SOURCES += ./SDK/lzma19/C/7zCrc.c
+SOURCES += ./SDK/lzma19/C/7zCrcOpt.c
+SOURCES += ./SDK/lzma19/C/7zDec.c
+SOURCES += ./SDK/lzma19/C/7zFile.c
+SOURCES += ./SDK/lzma19/C/7zStream.c
+SOURCES += ./SDK/lzma19/C/Bcj2.c
+SOURCES += ./SDK/lzma19/C/Bra.c
+SOURCES += ./SDK/lzma19/C/Bra86.c
+SOURCES += ./SDK/lzma19/C/BraIA64.c
+SOURCES += ./SDK/lzma19/C/CpuArch.c
+SOURCES += ./SDK/lzma19/C/Delta.c
+SOURCES += ./SDK/lzma19/C/LzmaDec.c
+SOURCES += ./SDK/lzma19/C/Lzma2Dec.c
 
-SOURCES += ./src/libtess2/Source/tess.c
-SOURCES += ./src/libtess2/Source/bucketalloc.c
-SOURCES += ./src/libtess2/Source/dict.c
-SOURCES += ./src/libtess2/Source/mesh.c
-SOURCES += ./src/libtess2/Source/priorityq.c
-SOURCES += ./src/libtess2/Source/sweep.c
-SOURCES += ./src/libtess2/Source/geom.c
+SOURCES += ./SDK/libtess2/Source/tess.c
+SOURCES += ./SDK/libtess2/Source/bucketalloc.c
+SOURCES += ./SDK/libtess2/Source/dict.c
+SOURCES += ./SDK/libtess2/Source/mesh.c
+SOURCES += ./SDK/libtess2/Source/priorityq.c
+SOURCES += ./SDK/libtess2/Source/sweep.c
+SOURCES += ./SDK/libtess2/Source/geom.c
+
+SOURCES += ./SDK/basisu_transcoder/basisu_transcoder.cpp
+SOURCES += ./SDK/zstd/zstd.c
 
 ##
 # resources

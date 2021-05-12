@@ -63,64 +63,64 @@
     <ClCompile Include="..\..\src\Utils\EndianUtils.c">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\7zAlloc.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\7zAlloc.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\7zArcIn.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\7zArcIn.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\7zBuf.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\7zBuf.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\7zBuf2.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\7zBuf2.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\7zCrc.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\7zCrc.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\7zCrcOpt.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\7zCrcOpt.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\7zDec.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\7zDec.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\7zFile.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\7zFile.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\7zStream.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\7zStream.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\Alloc.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\Alloc.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\Bcj2.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\Bcj2.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\Bcj2Enc.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\Bcj2Enc.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\Bra.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\Bra.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\Bra86.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\Bra86.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\BraIA64.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\BraIA64.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\CpuArch.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\CpuArch.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\Delta.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\Delta.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\Lzma2Dec.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\Lzma2Dec.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\Lzma86Dec.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\Lzma86Dec.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\LzmaDec.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\LzmaDec.c">
       <Filter>lzma19</Filter>
     </ClCompile>
   </ItemGroup>

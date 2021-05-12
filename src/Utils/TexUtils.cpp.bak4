@@ -27,18 +27,14 @@
 #if APL
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glu.h>
-	#ifndef GL_COMPRESSED_RGBA_BPTC_UNORM_EXT
-		#define GL_COMPRESSED_RGBA_BPTC_UNORM_EXT 0x8E8C
-	#endif
 #else
 	#include "glew.h"
 	#include <GL/glu.h>
 #endif
 
-#if LOAD_BASISU_DIRECT || LOAD_KTX2_DIRECT
+#if LOAD_KTX2_DIRECT_basisu
 	#include "basisu_transcoder.h"
-	using namespace basist;
-	static etc1_global_selector_codebook * basisuCodebook = nullptr;
+	static basist::etc1_global_selector_codebook * basisuCodebook = nullptr;
 #endif
 
 struct  gl_info_t {
@@ -99,8 +95,9 @@ static void init_gl_info(gl_info_t * i)
 											strstr(ext_str, "GL_ARB_vertex_buffer_object") != nullptr,
 	                                        strstr(ext_str, "GL_EXT_framebuffer_multisample") != nullptr);
 	LOG_FLUSH();
-#if LOAD_BASISU_DIRECT || LOAD_KTX2_DIRECT
-	basisu_transcoder_init();
+	
+#if LOAD_KTX2_DIRECT_basisu
+	basist::basisu_transcoder_init();
 	basisuCodebook = new etc1_global_selector_codebook(g_global_selector_cb_size, g_global_selector_cb);
 #endif
 }
@@ -149,7 +146,6 @@ void setGLflags(int inFlags)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	}
 }
-
 
 /*****************************************************************************************
  * LoadTextureFromFile
@@ -276,8 +272,7 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 	else
 		glTexImage2D(GL_TEXTURE_2D, 0, iformat, useIt->width ,useIt->height, 0,	glformat, GL_UNSIGNED_BYTE, useIt->data); CHECK_GL_ERR
 
-	if (resize)
-		DestroyBitmap(&rescaleBits);
+	if (resize)	DestroyBitmap(&rescaleBits);
 
 	setGLflags(inFlags);
 	return true;
@@ -832,7 +827,7 @@ static void swap_blocks(char *a, char *b, GLint type)
 		swap(*x, *y);
 		swap_12bit_idx(x->idx);
 		swap_12bit_idx(y->idx);
-		if (type == GL_COMPRESSED_RG_RGTC2)
+		if (type == GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT)
 		{
 			++x; ++y;
 			swap(*x, *y);
@@ -955,13 +950,13 @@ bool	LoadTextureFromDDS(
 	else if (gl_info.has_rgtc && strncmp(desc->ddpfPixelFormat.dwFourCC, "ATI", 3) == 0)    // This format is NOT understood by X-Plane for now !!!
 		switch (desc->ddpfPixelFormat.dwFourCC[3])
 		{
-		case '1':	dds_blocksize =  8; glformat = GL_COMPRESSED_RED_RGTC1;		       break; // BC4 decoded to red channel only
-//		case '1':	dds_blocksize =  8; glformat = GL_COMPRESSED_LUMINANCE_LATC1_EXT;  break; // BC4 decoded to rgb greyscale, e.g. crunch -DXT5A or BC4 in Gimp
-		case '2':	dds_blocksize = 16; glformat = GL_COMPRESSED_RG_RGTC2;             break; // BC5 two uncorrelated channels (normals !), crunch -DXN
+//		case '1':	dds_blocksize =  8; glformat = GL_COMPRESSED_RED_RGTC1_EXT;		         break; // BC4 decoded to red channel only
+		case '1':	dds_blocksize =  8; glformat = GL_COMPRESSED_LUMINANCE_LATC1_EXT;	     break; // BC4 decoded to rgb greyscale, e.g. crunch -DXT5A or BC4 in Gimp
+		case '2':	dds_blocksize = 16; glformat = GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT; break; // BC5 two uncorrelated channels (normals !), crunch -DXN
 		default:	return false;
 		}
 	else  if (gl_info.has_bptc && strncmp(desc->ddpfPixelFormat.dwFourCC, "DX10", 4) == 0)  // This format is NOT understood by X-Plane for now !!!
-		{                                                                                   // Y-flipping partially implemented (modes 1,3-6 only), yet
+		{                                                                                   // Y-flipping partially implemented (modes 1,5,6 only), yet
 			const TEX_dds_dx10 * dx10hdr = (const TEX_dds_dx10 *) (mem_start + sizeof(*desc));
 			data += sizeof(TEX_dds_dx10);
 			
@@ -970,7 +965,7 @@ bool	LoadTextureFromDDS(
 //				case 0x5F:   glformat = GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_EXT; break; // BC6  DXGI_FORMAT_BC6H_UF16
 //				case 0x60:   glformat = GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_EXT;   break; // BC6  DXGI_FORMAT_BC6H_SF16
 				case 0x62:   glformat = GL_COMPRESSED_RGBA_BPTC_UNORM_EXT;         break; // BC7  DXGI_FORMAT_BC7_UNORM
-				default: return false;													  // Deliberately don't read other DXGI/DDS formats
+				default: return false;													  // Deliberately don't read other DDS formats
 			}
 			dds_blocksize = 16;
 		}
@@ -978,18 +973,15 @@ bool	LoadTextureFromDDS(
 		return false;
 
 	int mips = 1;
-	if(inFlags & tex_Mipmap)
-	{
-		if (SWAP32(desc->dwFlags) & DDSD_MIPMAPCOUNT)
-			mips = SWAP32(desc->dwMipMapCount);
-	}
-	
-	int res_x  = SWAP32(desc->dwWidth);
-	int res_y = SWAP32(desc->dwHeight);
-	if (outWidth) *outWidth   = res_x;
-	if (outHeight) *outHeight = res_y;
+	if(inFlags & tex_Mipmap && (SWAP32(desc->dwFlags)) & DDSD_MIPMAPCOUNT)
+		mips = SWAP32(desc->dwMipMapCount);
 
-	if (res_y % 4 != 0) return false;  // flipping code can only handle certain heights
+	int x = SWAP32(desc->dwWidth);
+	int y = SWAP32(desc->dwHeight);
+	if (outWidth) *outWidth = x;
+	if (outHeight) *outHeight = y;
+
+	if ((mips && y != NextPowerOf2(y)) || y % 4 != 0) return false;  // flipping code can only handle certain heights
 
 	glBindTexture(GL_TEXTURE_2D, in_tex_num);
 
@@ -997,13 +989,13 @@ bool	LoadTextureFromDDS(
 	{
 		// lossless flip image in Y-direction to match orientation of all other textures in XPtools/X-plane
 		// to match old MSFT DIB convention (0,0) == left bottom, but DDS / DXT starts at left top.
-		BCx_y_flip(glformat, dds_blocksize, data, res_x, res_y);
+		BCx_y_flip(glformat, dds_blocksize, data, x, y);
 
-		int data_len = max(1 , (res_x  * res_y) / 16) *  dds_blocksize;
-		glCompressedTexImage2D( GL_TEXTURE_2D, level, glformat, res_x , res_y, 0, data_len, data); CHECK_GL_ERR
+		int data_len = max(1 , (x * y) / 16) *  dds_blocksize;
+		glCompressedTexImage2D( GL_TEXTURE_2D, level, glformat, x, y, 0, data_len, data); CHECK_GL_ERR
 
-		res_x = max(1, res_x >> 1);
-		res_y = max(1, res_y >> 1);
+		x = max(1, x >> 1);
+		y = max(1, y >> 1);
 		data += data_len;
 	}
 
@@ -1011,89 +1003,7 @@ bool	LoadTextureFromDDS(
 	return true;
 }
 
-#if LOAD_BASISU_DIRECT
-
-bool	LoadTextureFromBASISU(
-				char *			mem_start,
-				char *			mem_end,
-				int				in_tex_num,
-				int				inFlags,
-				int *			outWidth,
-				int *			outHeight)
-{
-	INIT_GL_INFO
-
-	int mem_len = mem_end - mem_start;
-	
-	basisu_transcoder transcoder(basisuCodebook);
-	basisu_image_info imgInfo;
-	
-	if (!transcoder.validate_header(mem_start, mem_len) ||
-		!transcoder.get_image_info (mem_start, mem_len, imgInfo, 0)) 
-		return false; // not a valid basisu file. Try other loaders ...
-
-	transcoder_texture_format bsformat;
-	GLenum glformat;
-
-	if(!gl_info.has_bptc && transcoder.get_tex_format(mem_start, mem_len) == basis_tex_format::cUASTC4x4) // ETC1S compressed basis files do
-	{                                                                           // not benefit from BC7 enough to justify the extra VRAM
-			bsformat = transcoder_texture_format::cTFBC7_RGBA;
-			glformat = GL_COMPRESSED_RGBA_BPTC_UNORM_EXT;
-	}
-	else if (imgInfo.m_alpha_flag)                                      // the basis format does not say if its 1-bit alpha,
-	{                                                                   // so we can't make the VRAM saving choice to go for DXT1
-			bsformat = transcoder_texture_format::cTFBC3_RGBA;          // the header allows for userdata, so a hint could be placed there
-			glformat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;                // ktx2 format has an entry vkformat - so there is very easy
-	}
-	else                                                                // cant tell either if its normals that should be transcoded to BC5,
-	{                                                                   // so that would have to be deduced from how its loaded, i.e. TEXTURE_NML
-			bsformat = transcoder_texture_format::cTFBC1_RGB;
-			glformat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-	}
-	int dds_blocksize = basis_get_bytes_per_block_or_pixel(bsformat);
-
-	if(!(inFlags & tex_Mipmap))
-		imgInfo.m_total_levels = 1;
-
-	if (outWidth) *outWidth = imgInfo.m_width;
-	if (outHeight) *outHeight = imgInfo.m_height;
-
-	if (imgInfo.m_height % 4 != 0) return false; // flipping code can only handle certain heights
-
-	glBindTexture(GL_TEXTURE_2D, in_tex_num);
-
-	int datasize = (imgInfo.m_width * imgInfo.m_height) / 16 * dds_blocksize;
-	char * data  = (char *) malloc(datasize);
-
-	transcoder.start_transcoding(mem_start, mem_len);
-
-	for (int level = 0; level < imgInfo.m_total_levels; ++level)
-	{
-		if(!transcoder.transcode_image_level(mem_start, mem_len, 0, level, data, datasize, bsformat))
-		{
-			LOG_MSG("E/Tex Basisu transcoding aborted mip=%d\n", level);
-			free(data);
-			return true;
-		}
-//		if(!basisuImgInfo.m_y_flipped)
-		BCx_y_flip(glformat, dds_blocksize, data, imgInfo.m_width, imgInfo.m_height);
-
-		int data_len = max(1u , (imgInfo.m_width * imgInfo.m_height) / 16) *  dds_blocksize;
-		glCompressedTexImage2D(GL_TEXTURE_2D, level, glformat, imgInfo.m_width, imgInfo.m_height, 0, data_len, data); CHECK_GL_ERR
-
-		imgInfo.m_width = max(1u, imgInfo.m_width >> 1);
-		imgInfo.m_height = max(1u, imgInfo.m_height >> 1);
-	}
-	transcoder.stop_transcoding();
-	free(data);
-
-	setGLflags(inFlags);
-	return true;
-}
-
-#endif // LOAD_BASISU_DIRECT
-
-#if LOAD_KTX2_DIRECT
+#if LOAD_KTX2_DIRECT_basisu
 
 bool	LoadTextureFromKTX2(
 				char *			mem_start,
@@ -1105,66 +1015,61 @@ bool	LoadTextureFromKTX2(
 {
 	INIT_GL_INFO
 
-	ktx2_transcoder transcoder(basisuCodebook);
+	basisu::basisu_transcoder transcoder(basisuCodebook);
+	basisu::basisu_file_info  basisuFileInfo;
+	basisu::basisu_image_info basisuInfo;
 	
-	if (!transcoder.init(mem_start, mem_end - mem_start))
-		return false; // not a valid ktx2 file. Try other loaders ...
+	if (!basisu::transcoder.validate_header(mem_start, mem_end - mem_start) ||
+	    !basisu::transcoder.get_file_info(mem_start, mem_end - mem_start, basisuFileInfo) ||
+		!basisu::transcoder.get_image_info(mem_start, mem_end - mem_start, basisuFileInfo, 0)) 
+		return false;  // not KTX format ! try the remaining CPU decoding strategies
 
-	transcoder_texture_format bsformat;
-	GLenum glformat;
+	int dds_blocksize = basisu::get_bytes_per_block(fmt);
+	int glformat ktx_tex->glInternalFormat;
 
-	if(!gl_info.has_bptc && transcoder.is_uastc())                  // ETC1S compressed basis files do
-	{                                                               // not benefit from BC7 enough to justify the extra VRAM
-			bsformat = transcoder_texture_format::cTFBC7_RGBA;
-			glformat = GL_COMPRESSED_RGBA_BPTC_UNORM_EXT;
-	}
-	else if (transcoder.get_has_alpha())                            // the ktx/basis formast do not say if its 1-bit alpha,
-	{                                                               // so we can't make the VRAM saving choice to go for DXT1
-			bsformat = transcoder_texture_format::cTFBC3_RGBA;
-			glformat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-	}
-	else                                                            // cant tell either if its normals that should be transcoded to BC5,
-	{                                                               // so that would have to be deduced from how its loaded, i.e. TEXTURE_NML
-			bsformat = transcoder_texture_format::cTFBC1_RGB;
-			glformat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-	}
-	int dds_blocksize = basis_get_bytes_per_block_or_pixel(bsformat);
-
+	if (glformat != GL_COMPRESSED_RGBA_S3TC_DXT1_EXT && glformat != GL_COMPRESSED_RGBA_S3TC_DXT5_EXT &&
+		glformat != GL_COMPRESSED_RGBA_BPTC_UNORM_EXT)
+	{
+		return false;                      // not a texture format we care about.
+	}                                      //  Todo: How to tell transcoder what we want ?? E.g. we want DXT1 over BC7 if no alpha ?
+	
 	int mips = 1;
-	if((inFlags & tex_Mipmap)) mips = transcoder.get_levels();
+	if(inFlags & tex_Mipmap) mips = basisuInfo.m_total_levels;
 
-	int res_x = transcoder.get_width();
-	int res_y = transcoder.get_height();
-	if (outWidth) *outWidth   = res_x;
-	if (outHeight) *outHeight = res_y;
+	int x = basisuInfo.m_width;
+	int y = basisuInfo.m_height;
+	if (outWidth) *outWidth = x;
+	if (outHeight) *outHeight = y;
 	
-	if (res_y % 4 != 0) return false; // flipping code can only handle certain heights
+	if ((mips && y != NextPowerOf2(y)) || y % 4 != 0)  // flipping code can only handle certain heights
+		return false;
 	
+//	char * data = (char *) ktx_tex->pData;
 	glBindTexture(GL_TEXTURE_2D, in_tex_num);
 	
-	int datablocks = (res_x * res_y) / 16 * dds_blocksize;
-	char * data  = (char *) malloc(datablocks);
-	
-	transcoder.start_transcoding();
+	bool basisu::start_transcoding(const void *pData, uint32_t data_size);
 
 	for (int level = 0; level < mips; ++level)
 	{
-		if(!transcoder.transcode_image_level(level, 0, 0, data, datablocks, bsformat))
-		{
-			LOG_MSG("E/Tex KTX2 transcoding aborted @mip %d\n", level);
-			free(data);
-			return true;
-		}
-//		if(!basisuImgInfo.m_y_flipped)
-		BCx_y_flip(glformat, dds_blocksize, data, res_x, res_y);
+		bool basisu::transcode_image_level(
+			const void *pData, uint32_t data_size, 
+			uint32_t image_index, uint32_t level_index, 
+			void *pOutput_blocks, uint32_t output_blocks_buf_size_in_blocks_or_pixels,
+			transcoder_texture_format fmt,
+			uint32_t decode_flags = 0, uint32_t output_row_pitch_in_blocks_or_pixels = 0, 
+			basisu_transcoder_state *pState = nullptr, uint32_t output_rows_in_pixels = 0);
+			
+		BCx_y_flip(glformat, dds_blocksize, data, x, y);
 
-		int data_len = max(1 , (res_x * res_y) / 16) *  dds_blocksize;
-		glCompressedTexImage2D(GL_TEXTURE_2D, level, glformat, res_x, res_y, 0, data_len, data); CHECK_GL_ERR
+		int data_len = max(1 , (x * y) / 16) *  dds_blocksize;
+		glCompressedTexImage2D(GL_TEXTURE_2D, level, glformat, x, y, 0, data_len, data); CHECK_GL_ERR
 
-		res_x = max(1, res_x >> 1);
-		res_y = max(1, res_y >> 1);
+		x = max(1, x >> 1);
+		y = max(1, y >> 1);
+		data += data_len;
+//		if (data > ktx_tex->pData + ktx_tex->dataSize) error !!!
 	}
-	free(data);
+	bool basisu::stop_transcoding();
 	
 	setGLflags(inFlags);
 	return true;
@@ -1173,4 +1078,3 @@ bool	LoadTextureFromKTX2(
 #endif // LOAD_KTX2_DIRECT
 
 #endif // LOAD_DDS_DIRECT
-

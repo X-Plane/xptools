@@ -780,85 +780,85 @@
     <ClCompile Include="..\..\src\Utils\glew.c">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\7zAlloc.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\7zAlloc.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\7zArcIn.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\7zArcIn.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\7zBuf.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\7zBuf.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\7zBuf2.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\7zBuf2.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\7zCrc.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\7zCrc.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\7zCrcOpt.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\7zCrcOpt.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\7zDec.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\7zDec.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\7zFile.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\7zFile.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\7zStream.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\7zStream.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\Alloc.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\Alloc.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\Bcj2.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\Bcj2.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\Bcj2Enc.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\Bcj2Enc.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\Bra.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\Bra.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\Bra86.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\Bra86.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\BraIA64.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\BraIA64.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\CpuArch.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\CpuArch.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\Delta.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\Delta.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\Lzma2Dec.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\Lzma2Dec.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\Lzma86Dec.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\Lzma86Dec.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma19\C\LzmaDec.c">
+    <ClCompile Include="..\..\SDK\lzma19\C\LzmaDec.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtess2\Source\bucketalloc.c">
+    <ClCompile Include="..\..\SDK\libtess2\Source\bucketalloc.c">
       <Filter>libtess2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtess2\Source\dict.c">
+    <ClCompile Include="..\..\SDK\libtess2\Source\dict.c">
       <Filter>libtess2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtess2\Source\geom.c">
+    <ClCompile Include="..\..\SDK\libtess2\Source\geom.c">
       <Filter>libtess2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtess2\Source\mesh.c">
+    <ClCompile Include="..\..\SDK\libtess2\Source\mesh.c">
       <Filter>libtess2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtess2\Source\priorityq.c">
+    <ClCompile Include="..\..\SDK\libtess2\Source\priorityq.c">
       <Filter>libtess2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtess2\Source\sweep.c">
+    <ClCompile Include="..\..\SDK\libtess2\Source\sweep.c">
       <Filter>libtess2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtess2\Source\tess.c">
+    <ClCompile Include="..\..\SDK\libtess2\Source\tess.c">
       <Filter>libtess2</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\WEDEntities\WED_AutogenNode.cpp">
@@ -1637,73 +1637,73 @@
     <ClInclude Include="..\..\src\Utils\wglew.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma19\C\7z.h">
+    <ClInclude Include="..\..\SDK\lzma19\C\7z.h">
       <Filter>lzma19</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma19\C\7zAlloc.h">
+    <ClInclude Include="..\..\SDK\lzma19\C\7zAlloc.h">
       <Filter>lzma19</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma19\C\7zBuf.h">
+    <ClInclude Include="..\..\SDK\lzma19\C\7zBuf.h">
       <Filter>lzma19</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma19\C\7zCrc.h">
+    <ClInclude Include="..\..\SDK\lzma19\C\7zCrc.h">
       <Filter>lzma19</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma19\C\7zFile.h">
+    <ClInclude Include="..\..\SDK\lzma19\C\7zFile.h">
       <Filter>lzma19</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma19\C\7zTypes.h">
+    <ClInclude Include="..\..\SDK\lzma19\C\7zTypes.h">
       <Filter>lzma19</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma19\C\Alloc.h">
+    <ClInclude Include="..\..\SDK\lzma19\C\Alloc.h">
       <Filter>lzma19</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma19\C\Bcj2.h">
+    <ClInclude Include="..\..\SDK\lzma19\C\Bcj2.h">
       <Filter>lzma19</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma19\C\Bra.h">
+    <ClInclude Include="..\..\SDK\lzma19\C\Bra.h">
       <Filter>lzma19</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma19\C\Compiler.h">
+    <ClInclude Include="..\..\SDK\lzma19\C\Compiler.h">
       <Filter>lzma19</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma19\C\CpuArch.h">
+    <ClInclude Include="..\..\SDK\lzma19\C\CpuArch.h">
       <Filter>lzma19</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma19\C\Delta.h">
+    <ClInclude Include="..\..\SDK\lzma19\C\Delta.h">
       <Filter>lzma19</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma19\C\Lzma2Dec.h">
+    <ClInclude Include="..\..\SDK\lzma19\C\Lzma2Dec.h">
       <Filter>lzma19</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma19\C\Lzma86.h">
+    <ClInclude Include="..\..\SDK\lzma19\C\Lzma86.h">
       <Filter>lzma19</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma19\C\LzmaDec.h">
+    <ClInclude Include="..\..\SDK\lzma19\C\LzmaDec.h">
       <Filter>lzma19</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtess2\Source\bucketalloc.h">
+    <ClInclude Include="..\..\SDK\libtess2\Source\bucketalloc.h">
       <Filter>libtess2</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Utils\CmdLine.h">
       <Filter>libtess2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtess2\Source\dict.h">
+    <ClInclude Include="..\..\SDK\libtess2\Source\dict.h">
       <Filter>libtess2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtess2\Source\geom.h">
+    <ClInclude Include="..\..\SDK\libtess2\Source\geom.h">
       <Filter>libtess2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtess2\Source\mesh.h">
+    <ClInclude Include="..\..\SDK\libtess2\Source\mesh.h">
       <Filter>libtess2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtess2\Source\priorityq.h">
+    <ClInclude Include="..\..\SDK\libtess2\Source\priorityq.h">
       <Filter>libtess2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtess2\Source\sweep.h">
+    <ClInclude Include="..\..\SDK\libtess2\Source\sweep.h">
       <Filter>libtess2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtess2\Source\tess.h">
+    <ClInclude Include="..\..\SDK\libtess2\Source\tess.h">
       <Filter>libtess2</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Utils\BitmapUtils.h">

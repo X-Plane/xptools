@@ -95,6 +95,12 @@
 // Load DDS textures directly into GPU w/o de- & re-compressing
 #define LOAD_DDS_DIRECT 1
 
+// use basis_universal to load .basis format supercompressed textures, requires LOAD_DDS_DIRECT
+#define LOAD_BASISU_DIRECT 1
+
+// use basis_universal to load .ktx format supercompressed textures, requires LOAD_DDS_DIRECT
+#define LOAD_KTX2_DIRECT 1
+
 // This enables direct import of 7z compressed dsf's.
 #define USE_7Z 1
 

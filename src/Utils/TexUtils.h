@@ -35,7 +35,6 @@ enum {
 //	tex_Nearest			=	32,	// Use nearest-neighbor - appears to be legacy that this is explicit?
 	tex_Compress_Ok		=	64,	// Allow driver-driven texture compression
 	tex_Always_Pad		=	128	// Force pad up to pow2 even if we have non-pots card.  Needed for UI
-
 };
 
 bool LoadTextureFromFile(
@@ -57,6 +56,22 @@ bool LoadTextureFromImage(
 				float *			outT);
 
 bool LoadTextureFromDDS(
+				char *			mem_start,
+				char *			mem_end,
+				int				in_tex_num,
+				int				inFlags,
+				int *			outWidth,
+				int *			outHeight);
+				
+bool LoadTextureFromBASISU(
+				char *			mem_start,
+				char *			mem_end,
+				int				in_tex_num,
+				int				inFlags,
+				int *			outWidth,
+				int *			outHeight);
+
+bool LoadTextureFromKTX2(
 				char *			mem_start,
 				char *			mem_end,
 				int				in_tex_num,
