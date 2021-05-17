@@ -71,6 +71,7 @@
 #include "WED_Colors.h"
 
 #define ALLOW_MULTI_IMPORT 1    // set this if you want to allow to import multiple airports at a time
+#define MULTI_MAX_FILES 100
 
 #if ALLOW_MULTI_IMPORT
 	#include "WED_AptTable.h"
@@ -456,16 +457,23 @@ void WED_GatewayImportDialog::Next()
 		mICAO_AptProvider.GetSelection(apts);
 		if(apts.size() > 1)
 		{
-			int max_imports = 150;   // some artifical limit to prevent the gateway being loaded by robots
+			int max_imports = MULTI_MAX_FILES;   // some artifical limit to prevent WED locking up for hours when selecting the whole gateway ...
 			mVersions_VersionsSelected.clear();
 			mVersions_Vers.clear();
 			for(set<int>::iterator apt = apts.begin(); apt != apts.end(); ++apt)
 			{
 				VerInfo_t v;
 				v.icao = mICAO_Apts.at(*apt).icao; v.sceneryId = mICAO_Apts.at(*apt).kind_code;
-				mVersions_Vers.push_back(v);
-				mVersions_VersionsSelected.insert(mVersions_Vers.size()-1);
-				if(!--max_imports) break;
+				if(v.sceneryId != 0) // prevent 404 error due to airport w/no scenery available, yet
+				{
+					mVersions_Vers.push_back(v);
+					mVersions_VersionsSelected.insert(mVersions_Vers.size()-1);
+				}
+				if(!--max_imports) 
+				{
+					DoUserAlert("Stopped after importing 100 airports, large gateway downloads are unsupported.");
+					break;
+				}
 			}
 			DecorateGUIWindow("Loading file(s) from hard drive, please wait...");
 			NextVersionsDownload();
@@ -708,12 +716,11 @@ void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
 				else
 					code += code2;
 			}
-			cur_airport.meta_data.push_back(make_pair("IcaoFaaLocal", code));   // its not really used at all, for now
+			cur_airport.meta_data.push_back(make_pair("IcaoFaaLocal", code));   // pseudo-tag to support selection by ANY of these 3 tags
+			cur_airport.kind_code = 0;                                          // scenery-ID of not deprecated, recommended version, if any
 			
 			if(gModeratorMode)
 			{
-				cur_airport.kind_code = 0;           // we put the scenery-ID to download in here
-
 				if (tmp["AcceptedSceneryCount"].asInt() > tmp["ApprovedSceneryCount"].asInt())
 				{
 					//Makes the url "https://gateway.x-plane.com/apiv1/airport/ICAO"
@@ -776,7 +783,8 @@ void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
 					if (!reserved.empty())
 						cur_airport.meta_data.push_back(make_pair(tmp["checkOutEndDate"].asString().substr(0,10), reserved));
 				}
-				cur_airport.kind_code = tmp["RecommendedSceneryId"].asInt();        // mis-using that property to support multi-airport import
+				if(tmp["Deprecated"].asInt() == 0)
+					cur_airport.kind_code = tmp["RecommendedSceneryId"].asInt();        // mis-using that property to support multi-airport import
 			}
 			//Add the current scenery object's airport code
 			mICAO_Apts.push_back(cur_airport);
