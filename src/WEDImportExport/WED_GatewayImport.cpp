@@ -70,8 +70,8 @@
 #include "GUI_TextTable.h"
 #include "WED_Colors.h"
 
-#define ALLOW_MULTI_IMPORT 1    // set this if you want to allow to import multiple airports at a time
-#define MULTI_MAX_FILES 100
+#define ALLOW_MULTI_IMPORT 1                       // set this if you want to allow to import multiple airports at a time
+#define MULTI_MAX_FILES TYLER_MODE ? 50000 : 100   // By default dont allow too many files to be downloaded in one swoop
 
 #if ALLOW_MULTI_IMPORT
 	#include "WED_AptTable.h"
@@ -299,9 +299,6 @@ private:
 	//From the downloaded JSON, fill the versions table
 	void FillVersionsFromJSON(const string& json_string);
 
-	//Attempts to download all the specific versions downloaded
-	void StartSpecificVersionDownload(int id, const string & icao);
-
 	//Once a specific version is downloaded this method decodes and imports it into the document
 	//Returns a pointer to the last imported airport
 	WED_Airport * ImportSpecificVersion(const string& json_string);
@@ -317,7 +314,6 @@ private:
 	void MakeVersionsTable(int bounds[4]);
 
 };
-
 
 
 int WED_GatewayImportDialog::import_bounds_default[4] = { 0, 0, 800, 500 };
@@ -730,11 +726,11 @@ void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
 
 					WED_file_cache_response res = gFileCache.request_file(mCacheRequest);
 
-					for (int i = 0; i < 10; ++i) // try downloading version info for 3sec. Should normally be enough.
+					for (int i = 0; i < 30; ++i) // try downloading version info for 3sec. Should normally be enough.
 					{
 						if(res.out_status == cache_status_downloading)
 						{
-							this_thread::sleep_for(chrono::milliseconds(300));
+							this_thread::sleep_for(chrono::milliseconds(100));
 							res = gFileCache.request_file(mCacheRequest);
 						}
 					}
@@ -986,19 +982,6 @@ bool WED_GatewayImportDialog::StartVersionsDownload()
 	return true;
 }
 
-void WED_GatewayImportDialog::StartSpecificVersionDownload(int id, const string& icao)
-{
-	mCacheRequest.in_url = WED_get_GW_api_url() + "scenery/" + to_string(id);
-	mCacheRequest.in_domain = cache_domain_scenery_pack;
-
-	stringstream ss;
-	ss << "scenery_packs" << DIR_STR << "GatewayImport" << DIR_STR << icao;
-	mCacheRequest.in_folder_prefix = ss.str();
-
-	Start(0.1);
-	mLabel->Show();
-}
-
 bool WED_GatewayImportDialog::NextVersionsDownload()
 {
 	if(mVersions_VersionsSelected.size() == 0)
@@ -1009,12 +992,24 @@ bool WED_GatewayImportDialog::NextVersionsDownload()
 	}
 	std::set<int>::iterator index = mVersions_VersionsSelected.begin();
 
-	int id = mVersions_Vers[*index].sceneryId;
 	//Start the download
-	StartSpecificVersionDownload(id,mVersions_Vers[*index].icao);
+	mCacheRequest.in_url = WED_get_GW_api_url() + "scenery/" + to_string(mVersions_Vers[*index].sceneryId);
+	mCacheRequest.in_domain = cache_domain_scenery_pack;
+	mCacheRequest.in_folder_prefix = string("scenery_packs" DIR_STR "GatewayImport" DIR_STR) + mVersions_Vers[*index].icao;
 
-	//Erase that one off the queue
-	mVersions_VersionsSelected.erase(mVersions_VersionsSelected.begin());
+	if(gFileCache.request_file(mCacheRequest).out_status == cache_status_available)
+	{
+		if(mVersions_VersionsSelected.size() > 1)
+			DecorateGUIWindow(string("Airport ") + mVersions_Vers[*index].icao + " is cached already.");
+		else
+			DecorateGUIWindow("Importing airport(s), please wait...");
+		Start(0.005);   // process w/no delay, but not too fast so multiple timer events accumulate
+	}
+	else
+		Start(0.1);
+
+	mVersions_VersionsSelected.erase(index);
+	mLabel->Show();
 	return true;
 }
 
