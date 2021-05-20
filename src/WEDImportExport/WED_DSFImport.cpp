@@ -416,7 +416,8 @@ public:
 				obj->SetDefaultMSL();
 			else
 				obj->SetCustomMSL(inCoordinates[3], inMode == obj_ModeAGL);
-			obj->SetHeading(inCoordinates[2]);
+//			static_cast<WED_GISPoint_Heading*>(obj)->WED_GISPoint_Heading::SetHeading(inCoordinates[2]); // avoid loading .obj definition to check for fixed heading flag
+			obj->WED_GISPoint_Heading::SetHeading(inCoordinates[2]); // avoid loading .obj definition to check for fixed heading flag
 			obj->SetName(me->obj_table_names[inObjectType]);
 			obj->SetParent(me->get_cat_parent(dsf_cat_objects),me->get_cat_parent(dsf_cat_objects)->CountChildren());
 			obj->SetShowLevel(me->GetShowForObjID(inObjectType));
