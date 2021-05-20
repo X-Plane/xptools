@@ -42,7 +42,6 @@
 #include "WED_Document.h"
 #include "WED_PackageMgr.h"
 #include "WED_MapPane.h"
-#include "WED_MetaDataDefaults.h"
 #include "WED_Url.h"
 #include "WED_Globals.h"
 
@@ -227,9 +226,6 @@ private:
 
 	//The cache request info struct for requesting files
 	WED_file_cache_request	mCacheRequest;
-
-	//Where the airport metadata csv file was ultimately downloaded to
-	string              mAirportMetadataCSVPath;
 
 	//The buffers of the specific packs downloaded at the end
 	vector<string>	mSpecificBufs;
@@ -578,7 +574,6 @@ void WED_GatewayImportDialog::TimerFired()
 
 				if(mPhase == imp_dialog_download_ICAO)
 				{
-					mAirportMetadataCSVPath = res.out_path;
 					StartICAODownload();
 
 					DecorateGUIWindow("Loading file from hard drive, please wait...");
@@ -1130,7 +1125,7 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(const string& json_
 	}
 
 	if(!out_apt.empty())
-		fill_in_airport_metadata_defaults(*out_apt[0], mAirportMetadataCSVPath); // this also sets gui 2D/3D metadata flags - so do after dsf has been added
+		WED_DoInvisibleUpdateMetadata(out_apt[0]);  // this also sets GUI 2D/3D metadata - so do it only after dsf contents has been added
 
 #if !SAVE_ON_HDD && !GATEWAY_IMPORT_FEATURES
 	//clean up our files ICAOid.dat and potentially ICAOid.txt
