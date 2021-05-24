@@ -13,6 +13,10 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 2.4.0rc2 5/24/21
+   Features:
+   - Undo WED-192 remove meta tag "Closed", validate correctly formed [X] in apt name
+
 WED 2.4.0rc1 5/8/21
    Bug Fix:
    - move forest layering in map to above polygons, below roads/objects

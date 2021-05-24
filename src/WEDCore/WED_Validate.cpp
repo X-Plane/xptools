@@ -1777,20 +1777,6 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 			msgs.push_back(validation_error_t(txt + " does not exist, but is needed by the XP 11.35+ GUI", warn_airport_metadata_invalid, who, apt));
 	}
 
-	if(who->ContainsMetaDataKey(wed_AddMetaDataClosed))
-	{
-		string isClosed = who->GetMetaDataValue(wed_AddMetaDataClosed);
-		if (isClosed == "1" )
-		{
-			string name;
-			apt->GetName(name);
-			if(name.c_str()[0] != '[' || tolower(name.c_str()[1]) != 'x' || name.c_str()[2] != ']')
-				msgs.push_back(validation_error_t("Metadata indicates airport is closed, but name does not start with [X]", warn_airport_metadata_invalid, who, apt));
-		}
-		else if(isClosed != "0")
-				add_formated_metadata_error(error_template, wed_AddMetaDataClosed, "must be either 0 or 1", who, msgs, apt);
-	}
-
 }
 
 static void ValidateOneTaxiSign(WED_AirportSign* airSign, validation_error_vector& msgs, WED_Airport * apt)
@@ -2123,6 +2109,15 @@ static void ValidateAptName(const string name, const string icao, validation_err
 			msgs.push_back(validation_error_t("The airport name should use the abbreviations 'Intl', 'Rgnl' and 'Muni' instead of full words.", warn_airport_name_style, apt, apt));
 		if (icao_lcase != "niue" && contains_word(name_lcase, icao_lcase.c_str()))
 			msgs.push_back(validation_error_t("The airport name should not include the ICAO code. Use the common name only.", warn_airport_name_style, apt, apt));
+
+		size_t p = name.find_first_of("({[");
+		if(p != string::npos)
+		{
+			size_t p2 = name.find_first_of(")}");
+			if((p2 - p) == 2 && name_lcase[p+1] == 'x')
+				msgs.push_back(validation_error_t("A closed airports name must start with '[X]'", err_type, apt, apt));
+		}
+		
 	}
 	if (icao.empty())
 		msgs.push_back(validation_error_t(string("The airport '") + name + "' has an empty Airport ID.", err_airport_icao, apt, apt));

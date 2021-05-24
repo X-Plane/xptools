@@ -801,17 +801,11 @@ bool Enforce_MetaDataGuiLabel(WED_Airport * apt)
 	string has3D(GatewayExport_has_3d(apt) ? "3D" : "2D");
 	string name;
 	apt->GetName(name);
-	bool isClosed = name.c_str()[0] == '[' && tolower(name.c_str()[1]) == 'x' && name.c_str()[2] == ']';
 	bool changed_meta = false;
 
 	if (!apt->ContainsMetaDataKey(wed_AddMetaDataLGuiLabel))
 	{
 		apt->AddMetaDataKey(META_KeyName(wed_AddMetaDataLGuiLabel), has3D);
-		changed_meta = true;
-	}
-	if(isClosed && !apt->ContainsMetaDataKey(wed_AddMetaDataClosed))
-	{
-		apt->AddMetaDataKey(META_KeyName(wed_AddMetaDataClosed), "1");
 		changed_meta = true;
 	}
 	return changed_meta;
