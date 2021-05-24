@@ -87,6 +87,7 @@ static const GUI_MenuItem_t kAdvancedMenu[] = {
 {	"Import Scenery Gateway Extracts...",0,0,						0,	wed_ImportGatewayExtract },
 #endif
 {	"&Export apt.dat...",	'S',	gui_ControlFlag + gui_ShiftFlag,0,	wed_ExportApt		},
+{	NULL,					0,		0,								0,	0					},
 };
 
 static const GUI_MenuItem_t	kEditMenu[] = {
@@ -289,7 +290,7 @@ void WED_MakeMenus(GUI_Application * inApp)
 		"Target X-Plane Version", kExportTargetMenu, file_menu, 9);
 
 	GUI_Menu advanced_menu = inApp->CreateMenu(
-		"Advanced ...", kAdvancedMenu, file_menu, 13 + 2 * HAS_GATEWAY + ROAD_EDITING);
+		"Advanced ...", kAdvancedMenu, file_menu, 13 + 2 * HAS_GATEWAY + ROAD_EDITING );
 
 	GUI_Menu edit_menu = inApp->CreateMenu(
 		"&Edit", kEditMenu, inApp->GetMenuBar(), 0);

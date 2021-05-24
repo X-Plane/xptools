@@ -24,9 +24,6 @@
 #include "AptIO.h"
 #include "ParamDefs.h"
 #include "MemFileUtils.h"
-#if OPENGL_MAP
-//#include "Airports.h"
-#endif
 #include "XESConstants.h"
 #include "GISUtils.h"
 #include "AssertUtils.h"
@@ -39,6 +36,17 @@
 #define ATC_VERS2 1050
 #define ATC_VERS3 1100
 
+#if TYLER_MODE                         // minimize apt.dat size by reducing precision, dropping irrelevant names
+  #define LLFMT  " %.7lf %.7lf"        // 1e-7 deg ~1 cm resolution
+  #define LLFMT2 " %.6lf %.6lf"        // 10 cm resolution for 'dynamic' scenery items
+  #define NFMT
+  #define N(x)
+#else
+  #define LLFMT  " % 012.8lf % 013.8lf"
+  #define LLFMT2 " % 012.8lf % 013.8lf"
+  #define NFMT   " %s"
+  #define N(x)   ,x->name.c_str();
+#endif
 
 #if OPENGL_MAP
 #include "Airports.h"
@@ -146,9 +154,9 @@ static void	print_apt_poly(int (*fprintf)(void * fi, const char * fmt, ...), voi
 {
 	for (AptPolygon_t::const_iterator s = poly.begin(); s != poly.end(); ++s)
 	{
-		fprintf(fi,"%d % 012.8lf % 013.8lf", s->code,CGAL2DOUBLE(s->pt.y()),CGAL2DOUBLE(s->pt.x()));
+		fprintf(fi,"%d" LLFMT, s->code,CGAL2DOUBLE(s->pt.y()),CGAL2DOUBLE(s->pt.x()));
 		if (s->code == apt_lin_crv || s->code == apt_rng_crv || s-> code == apt_end_crv)
-		fprintf(fi," % 012.8lf % 013.8lf", CGAL2DOUBLE(s->ctrl.y()),CGAL2DOUBLE(s->ctrl.x()));
+		fprintf(fi, LLFMT, CGAL2DOUBLE(s->ctrl.y()),CGAL2DOUBLE(s->ctrl.x()));
 		if (s->code != apt_end_seg && s->code != apt_end_crv)
 			for (set<int>::const_iterator a = s->attributes.begin(); a != s->attributes.end(); ++a)
 			{
@@ -170,7 +178,7 @@ static void	print_apt_poly(int (*fprintf)(void * fi, const char * fmt, ...), voi
 				else
 					fprintf(fi, " %d", *a);
 			}
-		fprintf(fi,CRLF);
+		fputs(CRLF, (FILE *) fi);
 	}
 }
 
@@ -1220,8 +1228,8 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 		for (AptRunwayVector::const_iterator rwy = apt->runways.begin(); rwy != apt->runways.end(); ++rwy)
 		{
 			fprintf(fi,"%d %4.2f %d %d %.2f %d %d %d "
-						"%s % 012.8lf % 013.8lf %4.0f %4.0f %d %d %d %d "
-						"%s % 012.8lf % 013.8lf %4.0f %4.0f %d %d %d %d" CRLF,
+						"%3s" LLFMT " %.0f %.0f %d %d %d %d "
+						"%s" LLFMT " %.0f %.0f %d %d %d %d" CRLF,
 						apt_rwy_new, rwy->width_mtr, rwy->surf_code, rwy->shoulder_code, rwy->roughness_ratio, rwy->has_centerline, rwy->edge_light_code, rwy->has_distance_remaining,
 						rwy->id[0].c_str(),CGAL2DOUBLE(rwy->ends.source().y()),CGAL2DOUBLE(rwy->ends.source().x()), rwy->disp_mtr[0],rwy->blas_mtr[0], rwy->marking_code[0],rwy->app_light_code[0], rwy->has_tdzl[0], rwy->reil_code[0],
 						rwy->id[1].c_str(),CGAL2DOUBLE(rwy->ends.target().y()),CGAL2DOUBLE(rwy->ends.target().x()), rwy->disp_mtr[1],rwy->blas_mtr[1], rwy->marking_code[1],rwy->app_light_code[1], rwy->has_tdzl[1], rwy->reil_code[1]);
@@ -1229,7 +1237,7 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 
 		for(AptSealaneVector::const_iterator sea = apt->sealanes.begin(); sea != apt->sealanes.end(); ++sea)
 		{
-			fprintf(fi,"%d %4.2f %d %s % 012.8lf % 013.8lf %s % 012.8lf % 013.8lf" CRLF,
+			fprintf(fi,"%d %4.2f %d %s" LLFMT2 " %s" LLFMT2 CRLF,
 					apt_sea_new, sea->width_mtr, sea->has_buoys,
 					sea->id[0].c_str(), CGAL2DOUBLE(sea->ends.source().y()), CGAL2DOUBLE(sea->ends.source().x()),
 					sea->id[1].c_str(), CGAL2DOUBLE(sea->ends.target().y()), CGAL2DOUBLE(sea->ends.target().x()));
@@ -1240,7 +1248,7 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 			double heading, len;
 			POINT2	center;
 			EndsToCenter(pav->ends, center, len, heading);
-			fprintf(fi,"%2d % 012.8lf % 013.8lf %s %6.2lf %6.0lf %4d.%04d %4d.%04d %4.0f "
+			fprintf(fi,"%d" LLFMT " %s %.1lf %6.0lf %4d.%04d %4d.%04d %4.0f "
 					   "%d%d%d%d%d%d %02d %d %d %3.2f %d %3d.%03d" CRLF, apt_rwy_old,
 				CGAL2DOUBLE(center.y()), CGAL2DOUBLE(center.x()), pav->name.c_str(), heading, len * MTR_TO_FT,
 				pav->disp1_ft, pav->disp2_ft, pav->blast1_ft, pav->blast2_ft, pav->width_ft,
@@ -1259,60 +1267,60 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 
 		for(AptHelipadVector::const_iterator heli = apt->helipads.begin(); heli != apt->helipads.end(); ++heli)
 		{
-			fprintf(fi,"%d %s % 012.8lf % 013.8lf %6.2lf %4.2f %4.2f %d %d %d %.2f %d" CRLF,
+			fprintf(fi,"%d %s" LLFMT " %.1lf %.2f %.2f %d %d %d %.2f %d" CRLF,
 				apt_heli_new, heli->id.c_str(), CGAL2DOUBLE(heli->location.y()), CGAL2DOUBLE(heli->location.x()), heli->heading, heli->length_mtr, heli->width_mtr,
 						heli->surface_code,heli->marking_code,heli->shoulder_code,heli->roughness_ratio,heli->edge_light_code);
 		}
 
 		for (AptTaxiwayVector::const_iterator taxi = apt->taxiways.begin(); taxi != apt->taxiways.end(); ++taxi)
 		{
-			fprintf(fi, "%d %d %.2f %6.4f %s" CRLF, apt_taxi_new, taxi->surface_code, taxi->roughness_ratio, taxi->heading, taxi->name.c_str());
+			fprintf(fi, "%d %d %.2f %.1f" NFMT CRLF, apt_taxi_new, taxi->surface_code, taxi->roughness_ratio, taxi->heading N(taxi));
 			print_apt_poly(fprintf,fi,taxi->area, version);
 		}
 
 		for (AptBoundaryVector::const_iterator bound = apt->boundaries.begin(); bound != apt->boundaries.end(); ++bound)
 		{
-			fprintf(fi, "%d %s" CRLF, apt_boundary, bound->name.c_str());
+			fprintf(fi, "%d" NFMT CRLF, apt_boundary N(bound));
 			print_apt_poly(fprintf,fi,bound->area, version);
 		}
 
 		for (AptMarkingVector::const_iterator lin = apt->lines.begin(); lin != apt->lines.end(); ++lin)
 		{
-			fprintf(fi, "%d %s" CRLF, apt_free_chain, lin->name.c_str());
+			fprintf(fi, "%d" NFMT CRLF, apt_free_chain N(lin));
 			print_apt_poly(fprintf,fi,lin->area, version);
 		}
 
 		for (AptLightVector::const_iterator light = apt->lights.begin(); light != apt->lights.end(); ++light)
 		{
-			fprintf(fi,"%d % 012.8lf % 013.8lf %d %6.4lf %3.2f %s" CRLF,
+			fprintf(fi,"%d" LLFMT " %d %.1lf %.2f" NFMT CRLF,
 					apt_papi, CGAL2DOUBLE(light->location.y()), CGAL2DOUBLE(light->location.x()), light->light_code,
-					light->heading, light->angle, light->name.c_str());
+					light->heading, light->angle N(light));
 		}
 
 		for (AptSignVector::const_iterator sign = apt->signs.begin(); sign != apt->signs.end(); ++sign)
 		{
-			fprintf(fi,"%d % 012.8lf % 013.8lf %6.4lf %d %d %s" CRLF,
+			fprintf(fi,"%d" LLFMT " %.1lf %d %d %s" CRLF,
 					apt_sign, CGAL2DOUBLE(sign->location.y()), CGAL2DOUBLE(sign->location.x()), sign->heading,
 					sign->style_code, sign->size_code, sign->text.c_str());
 		}
 
 
 		if (apt->tower.draw_obj != -1)
-			fprintf(fi, "%2d % 012.8lf % 013.8lf %6.2f %d %s" CRLF, apt_tower_loc,
+			fprintf(fi, "%d" LLFMT2 " %.0f %d" NFMT CRLF, apt_tower_loc,
 				CGAL2DOUBLE(apt->tower.location.y()), CGAL2DOUBLE(apt->tower.location.x()), apt->tower.height_ft,
-				apt->tower.draw_obj, apt->tower.name.c_str());
+				apt->tower.draw_obj N(apt));
 
 		for (AptGateVector::const_iterator gate = apt->gates.begin(); gate != apt->gates.end(); ++gate)
 		{
 			if((gate->type == atc_ramp_misc && gate->equipment == atc_traffic_all) || gate->equipment == 0 || !has_atc)
 			{
-				fprintf(fi, "%2d % 012.8lf % 013.8lf %6.2f %s" CRLF, apt_startup_loc,
+				fprintf(fi, "%d" LLFMT " %.1f %s" CRLF, apt_startup_loc,
 					CGAL2DOUBLE(gate->location.y()), CGAL2DOUBLE(gate->location.x()), gate->heading, gate->name.c_str());
 			}
 			else
 			{
 				//--1300 lat lon heading misc|gate|tie_down|hangar traffic name
-				fprintf(fi, "%2d % 012.8lf % 013.8lf %6.2f %s ", 
+				fprintf(fi, "%d" LLFMT2 " %.1f %s ", 
 					apt_startup_loc_new, //1300
 					CGAL2DOUBLE(gate->location.y()),//lat
 					CGAL2DOUBLE(gate->location.x()),//lon
@@ -1321,8 +1329,7 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 				);
 				print_bitfields(fprintf,fi,gate->equipment, equip_strings);
 			
-				fprintf(fi, " %s", gate->name.c_str());//name
-				fprintf(fi, "%s", CRLF);//Row is done
+				fprintf(fi, " %s" CRLF, gate->name.c_str()); //name
 				//-------------------------------------------------------------
 
 				if(has_atc2)
@@ -1340,20 +1347,20 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 						fprintf(fi,"%s", gate->airlines.c_str());
 					}
 				
-					fprintf(fi,"%s", CRLF);//Row is over
+					fputs(CRLF, (FILE *) fi);//Row is over
 					//---------------------------------------------------------
 				}
 			}
 		}
 
 		if (apt->beacon.color_code != apt_beacon_none)
-			fprintf(fi, "%2d % 012.8lf % 013.8lf %d %s" CRLF, apt_beacon,CGAL2DOUBLE( apt->beacon.location.y()),
-				CGAL2DOUBLE(apt->beacon.location.x()), apt->beacon.color_code, apt->beacon.name.c_str());
+			fprintf(fi, "%d" LLFMT " %d" NFMT CRLF, apt_beacon,CGAL2DOUBLE( apt->beacon.location.y()),
+				CGAL2DOUBLE(apt->beacon.location.x()), apt->beacon.color_code N(apt));
 
 		for (AptWindsockVector::const_iterator sock = apt->windsocks.begin(); sock != apt->windsocks.end(); ++sock)
 		{
-			fprintf(fi, "%2d % 012.8lf % 013.8lf %d %s" CRLF, apt_windsock, CGAL2DOUBLE(sock->location.y()), CGAL2DOUBLE(sock->location.x()),
-				sock->lit, sock->name.c_str());
+			fprintf(fi, "%d" LLFMT " %d" NFMT CRLF, apt_windsock, CGAL2DOUBLE(sock->location.y()), CGAL2DOUBLE(sock->location.x()),
+				sock->lit N(sock));
 		}
 
 		for (AptATCFreqVector::const_iterator atc = apt->atc.begin(); atc != apt->atc.end(); ++atc)
@@ -1397,7 +1404,7 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 					print_bitfields(fprintf,fi,rule->operations, op_strings);
 					fprintf(fi," ");
 					print_bitfields(fprintf,fi,rule->equipment, equip_strings);
-					fprintf(fi," %03d%03d %03d%03d %s" CRLF, rule->dep_heading_lo, rule->dep_heading_hi, rule->ini_heading_lo, rule->ini_heading_hi, rule->name.c_str());
+					fprintf(fi," %03d%03d %03d%03d" NFMT CRLF, rule->dep_heading_lo, rule->dep_heading_hi, rule->ini_heading_lo, rule->ini_heading_hi N(rule));
 				}
 			}
 
@@ -1412,7 +1419,7 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 					n != apt->taxi_route.nodes.end();
 					++n)
 				{
-					fprintf(fi, "%2d % 012.8lf % 013.8lf both %d %s" CRLF, apt_taxi_node, n->location.y(), n->location.x(), n->id, n->name.c_str());
+					fprintf(fi, "%d" LLFMT2 " both %d" NFMT CRLF, apt_taxi_node, n->location.y(), n->location.x(), n->id N(n));
 				}
 			}
 
@@ -1434,10 +1441,10 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 
 #if HAS_CURVED_ATC_ROUTE
 					for(vector<pair<Point2,bool> >::const_iterator s = e->shape.begin(); s != e->shape.end(); ++s)
-						fprintf(fi,"%2d % 012.8lf % 013.8lf" CRLF, (s->second && has_atc3) ? apt_taxi_control : apt_taxi_shape, s->first.y(), s->first.x());
+						fprintf(fi,"%d" LLFMT2 CRLF, (s->second && has_atc3) ? apt_taxi_control : apt_taxi_shape, s->first.y(), s->first.x());
 #else
 					for(vector<pair<Point2,bool> >::const_iterator s = e->shape.begin(); s != e->shape.end(); ++s)
-						fprintf(fi,"%2d % 012.8lf % 013.8lf" CRLF, apt_taxi_shape, s->first.y(), s->first.x());
+						fprintf(fi,"%d" LLFMT2 CRLF, apt_taxi_shape, s->first.y(), s->first.x());
 #endif
 					if(!e->hot_depart.empty())
 					{
@@ -1468,15 +1475,13 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 			{
 				for (vector<AptServiceRoadEdge_t>::const_iterator e = apt->taxi_route.service_roads.begin(); e != apt->taxi_route.service_roads.end(); ++e)
 				{
-					fprintf(fi, "%2d %d %d %s ", apt_taxi_truck_edge, e->src, e->dst, e->oneway ? "oneway" : "twoway");
-					fprintf(fi, " %s" CRLF, e->name.c_str());
-
+					fprintf(fi, "%d %d %d %s" NFMT CRLF, apt_taxi_truck_edge, e->src, e->dst, e->oneway ? "oneway" : "twoway" N(e));
 #if HAS_CURVED_ATC_ROUTE
 					for (vector<pair<Point2, bool> >::const_iterator s = e->shape.begin(); s != e->shape.end(); ++s)
-						fprintf(fi, "%2d % 012.8lf % 013.8lf" CRLF, (s->second && has_atc3) ? apt_taxi_control : apt_taxi_shape, s->first.y(), s->first.x());
+						fprintf(fi, "%d" LLFMT2 CRLF, (s->second && has_atc3) ? apt_taxi_control : apt_taxi_shape, s->first.y(), s->first.x());
 #else
 					for (vector<pair<Point2, bool> >::const_iterator s = e->shape.begin(); s != e->shape.end(); ++s)
-						fprintf(fi, "%2d % 012.8lf % 013.8lf" CRLF, apt_taxi_shape, s->first.y(), s->first.x());
+						fprintf(fi, "%d" LLFMT2 CRLF, apt_taxi_shape, s->first.y(), s->first.x());
 #endif
 				}
 			}
@@ -1492,9 +1497,9 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 						//Don't export car count unless our type is baggage_train
 						int car_count = trk->parking_type == apt_truck_baggage_train ? trk->train_car_count : 0;
 
-						fprintf(fi, "%2d % 3.8lf % 3.8lf % 4.2f %s %d %s" CRLF,
+						fprintf(fi, "%d" LLFMT2 " %.1f %s %d" NFMT CRLF,
 							apt_truck_parking, trk->location.y_, trk->location.x_, trk->heading,
-							truck_type_strings[trk->parking_type], car_count, trk->name.c_str());
+							truck_type_strings[trk->parking_type], car_count N(trk));
 					}
 				}
 				
@@ -1502,7 +1507,7 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 				{
 					for (AptTruckDestinationVector::const_iterator dst = apt->truck_destinations.begin(); dst != apt->truck_destinations.end(); ++dst)
 					{
-						fprintf(fi, "%2d % 3.8lf % 3.8lf % 4.2f ",
+						fprintf(fi, "%d" LLFMT2 "%.1f ",
 							apt_truck_destination, dst->location.y_, dst->location.x_, dst->heading);
 
 						for (set<int>::const_iterator tt = dst->truck_types.begin(); tt != dst->truck_types.end(); ++tt)
@@ -1510,7 +1515,7 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 							fprintf(fi, tt == dst->truck_types.begin() ? "%s" : "|%s",
 								truck_type_strings[*tt]);
 						}
-						fprintf(fi, " %s" CRLF, dst->name.c_str());
+						fprintf(fi, NFMT CRLF N(dst));
 					}
 				}
 			}
