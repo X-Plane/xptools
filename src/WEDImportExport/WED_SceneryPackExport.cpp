@@ -40,14 +40,6 @@
 #include "WED_UIDefs.h"
 #include "WED_Validate.h"
 
-#include "WED_Airport.h"
-#include "WED_EnumSystem.h"
-#include "WED_Group.h"
-#include "WED_RampPosition.h"
-#include "WED_TruckDestination.h"
-#include "WED_TruckParkingLocation.h"
-#include "WED_ObjPlacement.h"
-
 #include <iostream>
 
 void	WED_ExportPackToPath(WED_Thing * root, IResolver * resolver, const string& in_path, set<WED_Thing *>& problem_children)
@@ -72,6 +64,17 @@ int		WED_CanExportPack(IResolver * resolver)
 }
 
 #if TYLER_MODE
+
+#include "WED_Airport.h"
+#include "WED_EnumSystem.h"
+#include "WED_Group.h"
+#include "WED_RampPosition.h"
+#include "WED_TruckDestination.h"
+#include "WED_TruckParkingLocation.h"
+#include "WED_ObjPlacement.h"
+#include "WED_MetaDataKeys.h"
+#include "WED_Menus.h"
+
 static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 {
 	WED_Thing * wrl = WED_GetWorld(resolver);
@@ -80,9 +83,29 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 
 	WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 	ISelection * sel = WED_GetSelect(resolver);
+	
+	int deleted_illicit_icao = 0;
 
-	for (vector<WED_Airport*>::iterator apt_itr = apts.begin(); apt_itr != apts.end(); ++apt_itr)
+	for (auto apt_itr = apts.begin(); apt_itr != apts.end(); ++apt_itr)
 	{
+
+		//--Erase implausible ICAO tags----------------------------------------------
+		if ((*apt_itr)->ContainsMetaDataKey(wed_AddMetaDataICAO))
+		{
+			string ICAO_code = (*apt_itr)->GetMetaDataValue(wed_AddMetaDataICAO);
+
+			bool illicit = ICAO_code.size() != 4 || toupper(ICAO_code[0]) < 'A' || toupper(ICAO_code[0]) >= 'Z';
+			for (int i = 1; i < 4; i++)
+				illicit |= toupper(ICAO_code[i]) < 'A' || toupper(ICAO_code[i]) > 'Z';
+			if(illicit)
+			{
+				wrl->StartCommand("Upgrade Ramp Positions");
+				(*apt_itr)->EditMetaDataKey(META_KeyName(wed_AddMetaDataICAO),"");
+				wrl->CommitCommand();
+				deleted_illicit_icao++;
+			}
+		}
+
 		//--Ramp Positions-----------------------------------------------------------
 		vector<WED_RampPosition*> ramp_positions;
 		CollectRecursive(*apt_itr, back_inserter(ramp_positions),WED_RampPosition::sClass);
@@ -167,6 +190,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		double percent_done = (double)distance(apts.begin(), apt_itr) / apts.size() * 100;
 		printf("%0.0f%% through heuristic\n", percent_done);
 	}
+	printf("Deleted %d illicit ICAO meta tags\n", deleted_illicit_icao);
 }
 #endif
 
