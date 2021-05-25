@@ -36,6 +36,7 @@
 #include "WED_DSFImport.h"
 #include "WED_Document.h"
 #include "WED_GatewayExport.h"
+#include "WED_Group.h"
 #include "WED_GroupCommands.h"
 #include "WED_UIDefs.h"
 #include "WED_Validate.h"
@@ -67,7 +68,6 @@ int		WED_CanExportPack(IResolver * resolver)
 
 #include "WED_Airport.h"
 #include "WED_EnumSystem.h"
-#include "WED_Group.h"
 #include "WED_RampPosition.h"
 #include "WED_TruckDestination.h"
 #include "WED_TruckParkingLocation.h"
