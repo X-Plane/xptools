@@ -45,7 +45,7 @@
   #define LLFMT  " % 012.8lf % 013.8lf"
   #define LLFMT2 " % 012.8lf % 013.8lf"
   #define NFMT   " %s"
-  #define N(x)   ,x->name.c_str();
+  #define N(x)   ,x->name.c_str()
 #endif
 
 #if OPENGL_MAP
