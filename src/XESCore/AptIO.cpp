@@ -1513,7 +1513,7 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 				{
 					for (AptTruckDestinationVector::const_iterator dst = apt->truck_destinations.begin(); dst != apt->truck_destinations.end(); ++dst)
 					{
-						fprintf(fi, "%d" LLFMT2 "%.1f ",
+						fprintf(fi, "%d" LLFMT2 " %.1f ",
 							apt_truck_destination, dst->location.y_, dst->location.x_, dst->heading);
 
 						for (set<int>::const_iterator tt = dst->truck_types.begin(); tt != dst->truck_types.end(); ++tt)
