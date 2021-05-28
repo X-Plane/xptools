@@ -17,6 +17,7 @@ WED 2.4.0rc2 5/29/21
    Features:
    - Undo WED-192 remove meta tag "Closed", validate correctly formed [X] in apt name
    - improved automation for cutting the Global Airports
+   - renamed gateway import "Checkout until" into "Locked by" for consistency
 
 WED 2.4.0rc1 5/8/21
    Bug Fix:

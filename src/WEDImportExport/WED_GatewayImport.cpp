@@ -321,7 +321,7 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_Ma
 	mResolver(resolver),
 	mMapPane(pane),
 	mPhase(imp_dialog_download_airport_metadata),
-	mICAO_AptProvider(&mICAO_Apts, gModeratorMode ? "Date Accepted" : "Checkout until", gModeratorMode ? "User Name": "by Artist"),
+	mICAO_AptProvider(&mICAO_Apts, gModeratorMode ? "Date Accepted" : "Locked until", gModeratorMode ? "User Name": "by Artist"),
 	mICAO_TextTable(this,100,0),
 	mVersions_VerProvider(&mVersions_Vers),
 	mVersions_TextTable(this,100,0)
@@ -463,7 +463,7 @@ void WED_GatewayImportDialog::Next()
 				}
 				if(!--max_imports) 
 				{
-					DoUserAlert("Stopped after importing 100 airports, large gateway downloads are unsupported.");
+					DoUserAlert("Stopped after importing 500 airports, large gateway downloads are unsupported.");
 					break;
 				}
 			}
