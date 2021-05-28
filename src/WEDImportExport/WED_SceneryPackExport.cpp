@@ -89,7 +89,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 	for (auto apt_itr = apts.begin(); apt_itr != apts.end(); ++apt_itr)
 	{
 
-		//--Erase implausible ICAO tags----------------------------------------------
+		//--Erase implausible ICAO and undesired closed tags--------------------------
 		if ((*apt_itr)->ContainsMetaDataKey(wed_AddMetaDataICAO))
 		{
 			string ICAO_code = (*apt_itr)->GetMetaDataValue(wed_AddMetaDataICAO);
@@ -99,11 +99,17 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				illicit |= toupper(ICAO_code[i]) < 'A' || toupper(ICAO_code[i]) > 'Z';
 			if(illicit)
 			{
-				wrl->StartCommand("Upgrade Ramp Positions");
+				wrl->StartCommand("Delete bad icao");
 				(*apt_itr)->EditMetaDataKey(META_KeyName(wed_AddMetaDataICAO),"");
 				wrl->CommitCommand();
 				deleted_illicit_icao++;
 			}
+		}
+		if ((*apt_itr)->ContainsMetaDataKey("closed"))
+		{
+				wrl->StartCommand("Delete closed tag");
+				(*apt_itr)->EditMetaDataKey("closed","");
+				wrl->CommitCommand();
 		}
 
 		//--Ramp Positions-----------------------------------------------------------
