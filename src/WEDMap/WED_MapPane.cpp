@@ -68,15 +68,20 @@
 
 char	kToolKeys[2*TOOLICON_ROWS] = {
 	0, 0,
-	0, 0, 0, 0,
-	0, 0, 0, 0,
-
-	'b', 0, 'a', 'o',
-	'e', 'w', 'f', 'g',
-
-	'l', 'k', 'h', 't',
-	'r', 's', 'v', 'm',
-	0, 0, 0, 0
+	0, 0,
+	0, 0,
+	0, 0,
+	0, 0,
+	0, 0,
+	0, 0,
+	'b', 0,
+	'a', 'o',
+	'e', 'w',
+	'f', 'g',
+	'l', 'k',
+	'h', 't',
+	'r', 's',
+	'v', 'm'
 };
 
 enum //Must be kept in sync with TabPane
@@ -170,14 +175,14 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	mTools.push_back(					NULL);
 
 	mTools.push_back(					NULL); // icon for JetWay placement
-	mTools.push_back(					NULL); // icon for .ags/.agb placement
+	mTools.push_back(mAgsTool=			new WED_CreatePolygonTool("Autogen",mMap, mMap, resolver, archive, create_Autogen));
 
 	mTools.push_back(					new WED_CreatePointTool("Truck Parking", mMap, mMap, resolver, archive, create_TruckParking));
 	mTools.push_back(					new WED_CreatePointTool("Truck Destination", mMap, mMap, resolver, archive, create_TruckDestination));
 
 	mTools.push_back(					new WED_CreateBoxTool("Exclusions",mMap, mMap, resolver, archive, create_Exclusion));
 #if ROAD_EDITING
-	mTools.push_back(					new WED_CreateEdgeTool("Roads",mMap, mMap, resolver, archive, create_Road));
+	mTools.push_back(mNetTool=			new WED_CreateEdgeTool("Roads",mMap, mMap, resolver, archive, create_Road));
 #else
 	mTools.push_back(					NULL);
 #endif
@@ -338,12 +343,14 @@ int		WED_MapPane::MouseMove(int x, int y)
 void WED_MapPane::SetResource(const string& r, int res_type)
 {
 	switch(res_type) {
-	case res_Object:	mObjTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mObjTool)));	break;
-	case res_Facade:	mFacTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mFacTool)));	break;
-	case res_Forest:	mFstTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mFstTool)));	break;
-	case res_String:	mStrTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mStrTool)));	break;
-	case res_Line:		mLinTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mLinTool)));	break;
-	case res_Polygon:	mPolTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mPolTool)));	break;
+	case res_Object:    mObjTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mObjTool)));	break;
+	case res_Facade:    mFacTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mFacTool)));	break;
+	case res_Forest:    mFstTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mFstTool)));	break;
+	case res_String:    mStrTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mStrTool)));	break;
+	case res_Line:      mLinTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mLinTool)));	break;
+	case res_Autogen:   mAgsTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mAgsTool)));	break;
+	case res_Polygon:   mPolTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mPolTool)));	break;
+	case res_Road:      mNetTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mNetTool)));	break;
 	}
 }
 
@@ -353,6 +360,13 @@ void	WED_MapPane::ZoomShowAll(void)
 //	mMap->GetMapLogicalBounds(l,b,r,t);
 //	mMap->SetAspectRatio(1.0 / cos((b+t) * 0.5 * DEG_TO_RAD));
 	mMap->ZoomShowAll();
+}
+
+Bbox2 WED_MapPane::GetMapVisibleBounds()
+{
+	Bbox2 bounds;
+	mMap->GetMapVisibleBounds(bounds.p1.x_, bounds.p1.y_, bounds.p2.x_, bounds.p2.y_);
+	return bounds;
 }
 
 void WED_MapPane::ZoomShowSel(double scale)   // by default show just a bit more than the objects size
@@ -366,6 +380,18 @@ void WED_MapPane::ZoomShowSel(double scale)   // by default show just a bit more
 		mMap->ZoomShowArea(box.p1.x(),box.p1.y(),box.p2.x(),box.p2.y());
 	}
 	mMap->Refresh();
+}
+
+void WED_MapPane::CenterOnPoint(const Point2& centerLL)
+{
+	double west, south, east, north;
+	mMap->GetMapVisibleBounds(west, south, east, north);
+	double lonExtent = east - west;
+	double latExtent = north - south;
+	mMap->ZoomShowArea(
+		centerLL.x() - lonExtent / 2, centerLL.y() - latExtent / 2,
+		centerLL.x() + lonExtent / 2, centerLL.y() + latExtent / 2);
+	Refresh();
 }
 
 int		WED_MapPane::Map_KeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)
@@ -529,6 +555,7 @@ void			WED_MapPane::FromPrefs(IDocPrefs * prefs)
 				switch(inf.prop_kind) {
 				case prop_Int:
 				case prop_Bool:
+				case prop_RoadType:
 				case prop_Enum:
 					val.int_val = atoi(v.c_str());
 					break;
@@ -596,6 +623,7 @@ void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
 			switch(val.prop_kind) {
 			case prop_Int:
 			case prop_Bool:
+			case prop_RoadType:
 			case prop_Enum:
 				snprintf(buf,16,"%d",val.int_val);
 				v = buf;
@@ -664,6 +692,8 @@ void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
 #include "WED_FacadeNode.h"
 #include "WED_TaxiRoute.h"
 #include "WED_TaxiRouteNode.h"
+#include "WED_RoadEdge.h"
+#include "WED_RoadNode.h"
 #include "WED_ATCFlow.h"
 #include "WED_ATCTimeRule.h"
 #include "WED_ATCWindRule.h"
@@ -818,6 +848,10 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 		unhide_persistent(hide_list, WED_RampPosition::sClass);
 		unhide_persistent(hide_list, WED_TaxiRoute::sClass);
 		unhide_persistent(hide_list, WED_TaxiRouteNode::sClass);
+#if ROAD_EDITING
+		unhide_persistent(hide_list, WED_RoadEdge::sClass);
+		unhide_persistent(hide_list, WED_RoadNode::sClass);
+#endif
 		unhide_persistent(hide_list, WED_TruckDestination::sClass);
 		unhide_persistent(hide_list, WED_TruckParkingLocation::sClass);
 	}

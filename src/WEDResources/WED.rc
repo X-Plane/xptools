@@ -22,7 +22,7 @@ colors.png				GUI_RES		colors.png
 map_tools.png			GUI_RES		map_tools.png
 taxi_sign.png			GUI_RES		taxi_sign.png
 tce_tools.png			GUI_RES		tce_tools.png
-exclaim.png			GUI_RES		exclaim.png
+exclaim.png				GUI_RES		exclaim.png
 tilt_tool.png			GUI_RES		tilt_tool.png
 
 /* Start window */
@@ -36,6 +36,8 @@ handle_cross.png		GUI_RES		handles\handle_cross.png
 handle_square.png		GUI_RES		handles\handle_square.png
 handle_vertexround.png	GUI_RES		handles\handle_vertexround.png
 handle_arrowhead.png	GUI_RES		handles\handle_arrowhead.png
+ArrowHeadRoadS.png		GUI_RES		ArrowHeadRoadS.png
+ArrowHeadRoadE.png		GUI_RES		ArrowHeadRoadE.png
 /* handle_arrowhead_lg.png	GUI_RES		handles\handle_arrowhead_lg.png */
 handle_rotatehead.png	GUI_RES		handles\handle_rotatehead.png
 handle_closeloop.png	GUI_RES		handles\handle_closeloop.png
@@ -129,7 +131,7 @@ line_BSolidBlue.png			GUI_RES		line_types/line_BSolidBlue.png
 line_SolidYellowW.png			GUI_RES		line_types/line_SolidYellowW.png
 line_BSolidYellowW.png			GUI_RES		line_types/line_BSolidYellowW.png
 line_ILSCriticalCenterW.png		GUI_RES		line_types/line_ILSCriticalCenterW.png
-line_BILSCriticalCenterW.png		GUI_RES		line_types/line_BILSCriticalCenterW.png
+line_BILSCriticalCenterW.png	GUI_RES		line_types/line_BILSCriticalCenterW.png
 line_TaxiCenterUni.png			GUI_RES		line_types/line_TaxiCenterUni.png
 line_HoldShortCenterUni.png		GUI_RES		line_types/line_HoldShortCenterUni.png
 line_BSolidWhite.png			GUI_RES		line_types/line_BSolidWhite.png

@@ -46,7 +46,7 @@ struct WED_PackageInfo
 	WED_PackageInfo(const char * n) : name(n), hasPublicItems(false), hasAnyItems(false), hasXML(false), hasAPT(false), isDisabled(false) { }
 };
 
-WED_PackageMgr::WED_PackageMgr(const char * in_xplane_folder) : system_exists(false)
+WED_PackageMgr::WED_PackageMgr(const char * in_xplane_folder) : system_exists(false),RecentPkgName("")
 {
 	DebugAssert(gPackageMgr==NULL);
 	gPackageMgr=this;
@@ -58,6 +58,16 @@ WED_PackageMgr::~WED_PackageMgr()
 {
 	DebugAssert(gPackageMgr==this);
 	gPackageMgr=NULL;
+}
+
+void		WED_PackageMgr::GetRecentName(string& name) const
+{
+	name = RecentPkgName;
+}
+
+void		WED_PackageMgr::SetRecentName(const string& name)
+{
+	RecentPkgName  = name;
 }
 
 bool		WED_PackageMgr::HasSystemFolder(void) const
@@ -141,6 +151,12 @@ int			WED_PackageMgr::CountPackages(void) const
 		   global_packages.size() +
 		   default_packages.size();
 }
+
+pair<int, int>	WED_PackageMgr::GlobalPackages(void) const
+{
+	return make_pair(custom_packages.size(), custom_packages.size() + global_packages.size() - 1);
+}
+
 
 void		WED_PackageMgr::GetNthPackageName(int n, string& package) const
 {

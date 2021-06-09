@@ -9,6 +9,7 @@
 #include "WED_Airport.h"
 #include "WED_ATCLayer.h"
 #include "WED_RampPosition.h"
+#include "WED_RoadEdge.h"
 #include "WED_TaxiRoute.h"
 #include "WED_TruckDestination.h"
 
@@ -76,7 +77,7 @@ static void lines_to_nearest(const vector<Segment2>& starts, const vector<Segmen
 				{
 					if (dist < nearest_dist)
 					{
-						next_dist = nearest_dist; nearest_dist = dist; 
+						next_dist = nearest_dist; nearest_dist = dist;
 						next_pix = nearest_pix;   nearest_pix = p;
 					}
 					else
@@ -96,7 +97,7 @@ static void lines_to_nearest(const vector<Segment2>& starts, const vector<Segmen
 					next_pix = nearest_pix;   nearest_pix = pix_seg.p1;
 				}
 				else if(Vector2(nearest_pix, pix_seg.p1).squared_length() > 0.1 * dist)  // only take 2nd nearest if it goes to a noticeably different location
-				{                                                                        // that helps not only avoiding bogous hits on segment endpoints, but 
+				{                                                                        // that helps not only avoiding bogous hits on segment endpoints, but
 					next_dist = dist;                                                    // also keeping track of 'real' locations that would otherwise rank 3rd
 					next_pix = pix_seg.p1;
 				}
@@ -173,20 +174,20 @@ static void make_arrow_line(Point2 p[5])
 	// 0------------1
 	// S            D
 	// 3------------2
-	
+
 	// outgoing:
 	// 0-----------1
 	// S            2
 	// 4-----------3
-	
+
 	p[4] = p[3];
 	p[3] = p[2];
-	
+
 	Vector2 v1to3(p[1],p[3]);
-	
+
 	v1to3 *= 0.5;
 	p[2] = p[1] + v1to3;
-	
+
 	v1to3 = v1to3.perpendicular_cw();
 	p[1] += v1to3;
 	p[3] += v1to3;
@@ -195,7 +196,7 @@ static void make_arrow_line(Point2 p[5])
 void WED_ATCLayer_DrawAircraft(WED_RampPosition * pos, GUI_GraphState * g, WED_MapZoomerNew * z)
 {
 		int id = 0;
-		
+
 		switch(pos->GetWidth()) {
 		case width_A:	id = GUI_GetTextureResource("ClassA.png",tex_Linear|tex_Mipmap,NULL);	break;
 		case width_B:	id = GUI_GetTextureResource("ClassB.png",tex_Linear|tex_Mipmap,NULL);	break;
@@ -204,7 +205,7 @@ void WED_ATCLayer_DrawAircraft(WED_RampPosition * pos, GUI_GraphState * g, WED_M
 		case width_E:	id = GUI_GetTextureResource("ClassE.png",tex_Linear|tex_Mipmap,NULL);	break;
 		case width_F:	id = GUI_GetTextureResource("ClassF.png",tex_Linear|tex_Mipmap,NULL);	break;
 		}
-		
+
 		if (id)
 		{
 			g->BindTex(id, 0);
@@ -218,9 +219,9 @@ void WED_ATCLayer_DrawAircraft(WED_RampPosition * pos, GUI_GraphState * g, WED_M
 			c[2] = tips[0] - span * 0.5;
 			c[3] = tips[2] - span * 0.5;
 			c[0] = tips[2] + span * 0.5;
-			
+
 			z->LLToPixelv(c,c,4);
-		
+
 			glBegin(GL_QUADS);
 			glTexCoord2f(0,0);	glVertex2(c[0]);
 			glTexCoord2f(0,1);	glVertex2(c[1]);
@@ -320,14 +321,14 @@ bool	WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GU
 		Point2 ends[2];
 		seg->GetNthPoint(0)->GetLocation(gis_Geo, ends[0]);
 		seg->GetNthPoint(1)->GetLocation(gis_Geo, ends[1]);
-		
+
 		int icao_width = seg->GetWidth();
 		bool hot = seg->HasHotArrival() || seg->HasHotDepart();
 		bool ils = seg->HasHotILS();
 		bool rwy = seg->IsRunway();
 		bool road = seg->AllowTrucks() && !seg->AllowAircraft();
 		bool one_way = seg->IsOneway();
-		
+
 		int mtr1,mtr2;
 		if(road)
 			mtr1 = mtr2 = one_way ? 4.0 : 8.0;
@@ -342,7 +343,7 @@ bool	WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GU
 			case width_E:	mtr1 = 14.0;	mtr2 = 65.0;	break;
 			case width_F:	mtr1 = 16.0;	mtr2 = 80.0;	break;
 			}
-		
+
 		Point2	c[5], d[5];
 
 		GetZoomer()->LLToPixelv(ends, ends, 2);
@@ -355,7 +356,7 @@ bool	WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GU
 //		Quad_2to4(ends, mtr2, d);
 //		GetZoomer()->LLToPixelv(c, c, 4);
 //		GetZoomer()->LLToPixelv(d, d, 4);
-		
+
 		int np = 4;
 		if(one_way)
 		{
@@ -401,14 +402,14 @@ bool	WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GU
 		}
 		if (seg->AllowAircraft())              // display name of taxi route
 		{
-			string nam; 	
+			string nam;
 			if(seg->GetRunway() != atc_rwy_None)   // ideally this would not be needed, but cant figure a way to fix up name upon earth.wed.xml import
 				nam = ENUM_Desc(seg->GetRunway());
 			else
 				seg->GetName(nam);
-			
+
 			if(!nam.empty())
-			{ 
+			{
 				if (d[1].squared_distance(d[2]) > 20*20 &&         // draw labels only if segment wide enough
 					d[0].squared_distance(d[1]) > sqr(20+6.0*nam.size()) )      // and long enough
 				{
@@ -427,11 +428,162 @@ bool	WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GU
 			mATCEdges.push_back(Segment2(ends[0], ends[1]));
 		}
 		else // gotta be truck route then
-		{
 			mGTEdges.push_back(Segment2(ends[0], ends[1]));
+	}
+#if 1 // ROAD_EDITING
+	else if(entity->GetGISSubtype() == WED_RoadEdge::sClass)
+	{
+		WED_RoadEdge * seg = dynamic_cast<WED_RoadEdge *>(entity);
+		DebugAssert(seg);
+
+		g->SetState(false, 0, false, false, true, false, false);
+		WED_MapZoomerNew * z = GetZoomer();
+		pair<double, double> mtr = seg->GetWidth();
+
+		int num_sides = seg->GetNumSides();
+		int layers = min(max(seg->GetStartLayer(), seg->GetEndLayer()), 3);
+		glLineWidth(2);
+
+		Bezier2 b;
+
+		if( (mtr.second > 0.0 ? mtr.second : mtr.first) * z->GetPPM() > 2.0)
+		for(int ns = 0 ; ns < num_sides; ns++)
+		{
+			if(seg->GetSide(gis_Geo, ns, b))
+			{
+				b.p1 = z->LLToPixel(b.p1);
+				b.p2 = z->LLToPixel(b.p2);
+				b.c1 = z->LLToPixel(b.c1);
+				b.c2 = z->LLToPixel(b.c2);
+
+				int point_count = BezierPtsCount(b,z);
+				vector<Point2> pts;
+				pts.reserve(point_count);
+
+				for (int n = 0; n <= point_count; ++n)
+					pts.push_back(b.midpoint((float) n / (float) point_count));
+
+				double offs_pix = 0.5 * mtr.second * z->GetPPM();
+				if(offs_pix > 0.0)
+				{
+					vector<Point2> strip;
+					strip.reserve(2*pts.size());
+
+					for (int i = 0; i <= point_count; ++i)
+					{
+						Vector2	dir1,dir2;
+						if (i > 0  )           dir1 = Vector2(pts[i-1],pts[i  ]);
+						if (i < point_count-1) dir2 = Vector2(pts[i  ],pts[i+1]);
+						Vector2	dir = dir1+dir2;
+						dir = dir.perpendicular_ccw();
+						dir.normalize();
+						dir *= offs_pix;
+						strip.push_back(pts[i] - dir);
+						strip.push_back(pts[i] + dir);
+					}
+					glColor4f(0.4, 1, 1, 0.4);         // desaturated cyan
+					glBegin(GL_TRIANGLE_STRIP);
+					glVertex2v(strip.data(), strip.size());
+					glEnd();
+				}
+				else
+					offs_pix = 0.5 * mtr.first * z->GetPPM();
+				if(layers)
+				{
+					glColor4f(0.4, 1, 1, 1.0);         // bright cyan
+					for(int l = 1; l <= layers; l++)
+					{
+						int begin_of_rails = seg->GetStartLayer() < l ? 0 : -1;
+						int end_of_rails = num_sides - (seg->GetEndLayer() < l ? num_sides : 0);
+
+						int skip_pts = 0;
+						int num_pts = pts.size();
+
+						if(ns < begin_of_rails) continue;
+						if(ns == begin_of_rails)
+						{
+							skip_pts = pts.size()/2; num_pts -= skip_pts;
+						}
+						if(ns > end_of_rails) continue;
+						if(ns == end_of_rails)
+						{
+							num_pts -= pts.size()/2-1;
+						}
+						glShapeOffset2v(GL_LINE_STRIP, pts.data() + skip_pts, num_pts,  offs_pix + 3 * (l-1));
+						glShapeOffset2v(GL_LINE_STRIP, pts.data() + skip_pts, num_pts, -offs_pix - 3 * (l-1));
+					}
+				}
+			}
+			else
+			{
+				Point2 ends[2]; ends[0] = b.p2; ends[1] = b.p1;
+				Point2 c[5];
+				int np = 4;
+				if(mtr.second > 0.0)
+				{
+					if(seg->IsOneway())
+					{
+						np = 5;
+						c[4] = ends[0];
+						Vector2 dir(ends[0], ends[1]);
+						dir.normalize();
+						dir *= 0.5e-4;
+						ends[0] += dir;
+						Quad_2to4(ends, mtr.second, c);
+					}
+					else
+						Quad_2to4(ends, mtr.second, c);
+					z->LLToPixelv(c,c,np);
+
+					glColor4f(0.4, 1, 1, 0.4);         // desaturated cyan
+					glBegin(GL_TRIANGLE_FAN);
+						glVertex2v(c,np);
+					glEnd();
+				}
+				if(layers)
+				{
+					if(mtr.second == 0.0)
+					{
+						Quad_2to4(ends, mtr.first, c);
+						z->LLToPixelv(c,c,np);
+					}
+					glColor4f(0.4, 1, 1, 1.0);         // bright cyan
+					for(int l = 1; l <= layers; l++)
+					{
+						Point2 sides[4] = { c[0], c[1], c[2], c[3] };
+						Vector2 dir(c[0], c[1]);
+
+						int begin_of_rails = seg->GetStartLayer() < l ? 0 : -1;
+						int end_of_rails = num_sides - (seg->GetEndLayer() < l ? num_sides : 0);
+
+						if(ns < begin_of_rails) continue;
+						if(ns == begin_of_rails)
+						{
+							sides[1] -= dir * 0.5; sides[2] -= dir * 0.5;
+						}
+						if(ns > end_of_rails) continue;
+						if(ns == end_of_rails)
+						{
+							sides[0] += dir * 0.5; sides[3] += dir * 0.5;
+						}
+
+						if(l > 1)
+						{
+							Vector2 perp(c[1],c[2]);
+							perp.normalize();
+							perp *= 3 * (l - 1);
+							sides[0] -= perp; sides[1] -= perp; sides[2] += perp; sides[3] += perp;
+						}
+
+						glBegin(GL_LINES);
+						glVertex2v(sides,4);
+						glEnd();
+					}
+				}
+			}
 		}
 	}
-
+#endif
 	return true;
 }
 

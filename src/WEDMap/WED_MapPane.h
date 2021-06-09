@@ -24,6 +24,8 @@
 #ifndef WED_MAPPANE_H
 #define WED_MAPPANE_H
 
+
+#include "CompGeomDefs2.h"
 #include "GUI_Pane.h"
 #include "GUI_Listener.h"
 #include "GUI_Commander.h"
@@ -48,6 +50,7 @@ class	WED_NavaidLayer;
 
 class	WED_CreatePointTool;
 class	WED_CreatePolygonTool;
+class	WED_CreateEdgeTool;
 class	IResolver;
 class	IDocPrefs;
 class	WED_Archive;
@@ -72,7 +75,10 @@ public:
 	virtual				~WED_MapPane();
 
 			void		ZoomShowAll(void);
+			Bbox2		GetMapVisibleBounds(void);
+
 			void		ZoomShowSel(double scale = 1.05);   // scale is area shown vs size of object, i.e. by default 5% margin all around
+			void		CenterOnPoint(const Point2& centerLL);
 
 			void		SetResource(const string& r, int res_type);
 
@@ -123,8 +129,11 @@ private:
 	WED_CreatePolygonTool * mFstTool;
 	WED_CreatePolygonTool * mStrTool;
 	WED_CreatePolygonTool * mLinTool;
+	WED_CreatePolygonTool * mAgsTool;
 	WED_CreatePolygonTool * mPolTool;
-
+#if ROAD_EDITING
+	WED_CreateEdgeTool    * mNetTool;
+#endif
 };
 
 

@@ -13,10 +13,51 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 2.4.0
+WED 2.4.0rc2 5/29/21
    Features:
+   - Undo WED-192 remove meta tag "Closed", validate correctly formed [X] in apt name
+   - improved automation for cutting the Global Airports
+   - renamed gateway import "Checkout until" into "Locked by" for consistency
+
+WED 2.4.0rc1 5/8/21
+   Bug Fix:
+   - move forest layering in map to above polygons, below roads/objects
+   - fix distorted previews for lines with ALIGN and END_CAP attributes
+   - WED-1380 clean out orphaned road nodes from .xml database
+   - WED-1374 improve libcurl compatibility on Debian/Linux
+	
+WED 2.4.0b2 4/13/21
+   Bug Fix:
+   - fix scaled down window contents on OSX Big Sur with Retina displays
+   - disable MSAA for library previews on retina macs
+   - fixes to editing/splitting/merging closed road loops
+   - large speedup in map window when many items are selected
+
+WED 2.4.0b1 3/25/21
+   Features:
+   - WED-120, 306, 380 edit road networks incl. basic on-map previews
+   - true 3D scenery window
+   - edit autogen .agb/.ags (but no on-map previews)
+   - gridded previews for library pane directories
+   - support choosing taxiway equivalent styles for draped polygons
+   - preselect last opened scenery at startup
+   - show on-map 3D previews for beacons, windsocks, 3D taxi signs
    - use native secure internet connectivity on all operating systems
-   - requires glibc-2.27 (ubuntu 18.04 and other 2018-era systems) despite building on 20.04
+   - WED-1359: change OOW mouse click for LineEditor from accept to cancel edit
+   - automatically change ExportTarget at GW import, avoid inheriting unexpected values
+   - support import of text format DSF files
+   Bug Fix:
+   - Partial fix of long standing OGLE bugs
+      - disappearing content when select numeric edit fields,
+      - mess with vertical scrolling,
+      - errors in multi line text edit fields like in Gateway export dialog
+   - WED-1353 GUI_ScrollBar has uninitialized variables
+   - WED-1347 stops cursor blink timer in Settings window when loose focus
+   - validate ICAO_Code meta tag to meet ICAO nomenclature
+   - fix preview for .lin commands with offset layers in preview pane
+   - fix endcap not showing for lines with two vertices only
+   - refine tesselation to show fill for polygons with colocated nodes
+   - XSG-11489: Fix gateway flags for airports with odd ATC taxi/ground_service routes
 
 WED 2.3.1r1 12/22/20
    Features:
@@ -39,7 +80,7 @@ WED 2.3.0r2 10/19/20
     Bug Fix:
     - fix Orthophoto export to only run if image file is newer than textures on disk
     - fix temporary files after gateway import not removed
-    
+
 WED 2.3.0r1 10/7/20
     Bug Fix:
     - WED-1324: for XP1000+ targets export has_ATC in apt.dat rowcode 1 always as 0
@@ -190,7 +231,7 @@ WED 2.1.0b1 6/3/19
 	- multi-threaded DDS texture compression for large Orthophotos, 3.5x faster
 	- WED-1149: Improve download cache size management, reduces WED startup time
 	- XPD-10080: Add meta tag to classify airport as 2D or 3D
-	
+
    Bug Fixes:
 	- WED-1201: Fix typo in airline code validation error message
 	- WED-1199: fix potential segfault when reading files
@@ -201,7 +242,7 @@ WED 2.1.0b1 6/3/19
 	- WED-1162: Create new ground truck routes w/ no aircaft (hotzone) attributes set
 	- WED-524: Can't recover window if pack was saved on a larger screen
 	- WED-432: Fix WED window positioning when using multiple monitors under Linux
-	
+
 WED 2.0.0r4 4/07/19
 	Bug Fixes:
 	- WED-1178: Fix X-Plane 11.30 format apt.dat importing ATC frequencies always as "tower"

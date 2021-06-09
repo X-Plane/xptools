@@ -179,7 +179,7 @@ int			WED_LibraryMgr::GetResourceType(const string& r)
 string		WED_LibraryMgr::GetResourcePath(const string& r, int variant)
 {
 	res_map_t::iterator me = res_table.find(r);
-	if (me==res_table.end() || r != me->first)  // this prevents the case-insensitive compare (needed for desired sort order in libmgr list) 
+	if (me==res_table.end() || r != me->first)  // this prevents the case-insensitive compare (needed for desired sort order in libmgr list)
 		return string();                        // to deliver a match if the cases mis-match - which is X-Plane behavior
 	DebugAssert(variant < me->second.real_paths.size());
 	return me->second.real_paths[variant];
@@ -210,7 +210,7 @@ bool	WED_LibraryMgr::IsResourceDeprecatedOrPrivate(const string& r)
 {
 	res_map_t::const_iterator me = res_table.find(r);
 	if (me==res_table.end()) return false;
-	return me->second.status < status_Yellow;                  // status "Yellow' is still deemed public wrt validation, i.e. allowed on the gateway
+	return me->second.status < status_SemiDeprecated;                  // status "Yellow' is still deemed public wrt validation, i.e. allowed on the gateway
 }
 
 bool	WED_LibraryMgr::DoesPackHaveLibraryItems(int package)
@@ -237,6 +237,31 @@ int		WED_LibraryMgr::GetNumVariants(const string& r)
 	res_map_t::const_iterator me = res_table.find(r);
 	if (me==res_table.end()) return 1;
 	return me->second.real_paths.size();
+}
+
+bool	WED_LibraryMgr::GetSameDir(const string& r, vector<pair<string, int> >& vpaths)
+{
+	auto it = res_table.find(r);
+
+	string vpath(r);
+	if(it->second.res_type != res_Directory)
+	{
+		vpath.erase(vpath.find_last_of('/'));
+		res_table.find(vpath);
+	}
+	if(it == res_table.end()) return false;
+	it++;
+
+	while(it != res_table.end() && strncmp(it->first.c_str(), vpath.c_str(), vpath.size()) == 0)
+	{
+		auto pos = it->first.size();
+		if(it->second.res_type != res_Directory)
+			pos = it->first.find_last_of('/');
+		if(it->second.status >= status_Public && strncmp(it->first.c_str(), vpath.c_str(), pos) == 0)
+			vpaths.push_back(make_pair(it->first, it->second.res_type));
+		it++;
+	}
+	return vpaths.size();
 }
 
 
@@ -297,7 +322,7 @@ void		WED_LibraryMgr::Rescan()
 			{
 				string vpath, rpath;
 				bool is_export_backup = false;
-				
+
 				if( MFS_string_match(&s,"EXPORT",false) ||
 				    MFS_string_match(&s,"EXPORT_EXTEND",false) ||
 				    MFS_string_match(&s,"EXPORT_EXCLUDE",false) ||
@@ -355,7 +380,7 @@ void		WED_LibraryMgr::Rescan()
 					else if(MFS_string_match(&s,"DEPRECATED",true))
 						cur_status = status_Deprecated;
 					else if(MFS_string_match(&s,"SEMI_DEPRECATED",true))
-						cur_status = status_Yellow;
+						cur_status = status_SemiDeprecated;
 
 					MFS_string_eol(&s,NULL);
 				}
@@ -575,10 +600,8 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 	else if(suffix == "str") rt = res_String;
 	else if(suffix == "lin") rt = res_Line;
 	else if(suffix == "pol") rt = res_Polygon;
-// not sure we want to even list these ?
-// per Ben's explanation of May 2nd 2018 - we don't, until we support all parameters for these.
-//	else if(suffix == "ags") rt = res_Polygon;
-//	else if(suffix == "agb") rt = res_Polygon;
+	else if(suffix == "ags") rt = res_Autogen;
+	else if(suffix == "agb") rt = res_Autogen;
 #if ROAD_EDITING
 	else if(suffix == "net") rt = res_Road;
 #endif
@@ -593,7 +616,7 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 		if(i == res_table.end())
 		{
 			res_info_t new_info;
-			new_info.status = status;
+			new_info.status = rt == res_Autogen ? status_Public : status;    // XXX temporary for alpha testing - so we can drool about at all that stuff
 			new_info.res_type = rt;
 			new_info.packages.insert(package);
 			if(rt > res_Directory)                      // speedup/memory saver: no need to store this for directories

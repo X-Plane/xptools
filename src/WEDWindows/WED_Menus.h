@@ -40,6 +40,9 @@ enum {
 	wed_ExportToGateway,
 #endif
 	wed_ImportDSF,
+#if ROAD_EDITING
+	wed_ImportRoads,
+#endif
 	wed_ImportOrtho,
 #if HAS_GATEWAY
 	wed_ImportGateway,
@@ -117,6 +120,9 @@ enum {
 	wed_ToggleLiveView,
 #endif
 	wed_TogglePreview,
+	wed_TogglePreviewWindow,
+	wed_ShowMapAreaInPreviewWindow,
+	wed_CenterMapOnPreviewCamera,
 	wed_RestorePanes,
 	// Select Menu
 	wed_SelectParent,
@@ -146,7 +152,6 @@ enum {
 	//Organized by alphabetical order
 	wed_AddMetaDataBegin,//WARNING: DO NOT USE!
 	wed_AddMetaDataCity,// or Locality
-	wed_AddMetaDataClosed,
 	wed_AddMetaDataCountry,
 	wed_AddMetaDataDatumLat,
 	wed_AddMetaDataDatumLon,

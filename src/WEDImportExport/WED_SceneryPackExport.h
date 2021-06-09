@@ -36,7 +36,4 @@ void	WED_ExportPackToPath(WED_Thing * root, IResolver * resolver, const string& 
 int		WED_CanExportPack(IResolver * resolver);
 void	WED_DoExportPack(WED_Document * resolver, WED_MapPane * pane);
 
-int		WED_CanImportDSF(IResolver * resolver);
-void	WED_DoImportDSF(IResolver * resolver);
-
 #endif /* WED_SceneryPackExport_H */

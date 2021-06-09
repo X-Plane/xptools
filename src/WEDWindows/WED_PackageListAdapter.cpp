@@ -294,6 +294,22 @@ void	WED_PackageListAdapter::SelectPackage(int n)
 	BroadcastMessage(GUI_TABLE_CONTENT_CHANGED,0);
 }
 
+int		WED_PackageListAdapter::SelectPackage(const string& package)
+{
+	string name;
+	int cnt = gPackageMgr->CountCustomPackages();
+	for(unsigned int i = 0 ; i < cnt; ++i)
+	{
+		gPackageMgr->GetNthPackageName(i, name);
+		if( name == package )
+		{
+			SelectPackage(i);
+			return i;
+		}
+	}
+
+	return -1;
+}
 
 void	WED_PackageListAdapter::LockPackage(const string& name)
 {

@@ -32,6 +32,8 @@ class	WED_Document;
 //Keep this enum strictly organized by alphabetical order and sub catagory. Make this collection easily grep-able
 enum validate_error_t
 {
+	err_agb_poly_has_holes,
+	err_agb_poly_not_4_sided,
 	err_airport_elements_outside_hierarchy,
 	err_airport_impossible_size,
 	err_airport_icao,
@@ -95,6 +97,12 @@ enum validate_error_t
 	err_heli_name_none,
 	err_heli_not_adequetely_long,
 	err_heli_not_adequetely_wide,
+	err_net_crosses_tile_bdy,
+	err_net_resource,
+	err_net_undefined_type,
+	err_net_zero_length,
+	err_net_unmerged,
+	err_net_edge_loop,
 	err_orthophoto_bad_uv_map,
 	err_object_custom_elev,
 	err_ramp_airlines_contains_non_lowercase_letters,
@@ -162,6 +170,8 @@ enum validate_error_t
 	warn_atc_flow_visibility_unlikely,
 	warn_atcrwy_marking,
 	warn_facades_curved_only_type2,
+	warn_net_level_mismatch,
+	warn_net_hard_turn,
 	warn_object_custom_elev,
 	warn_taxi_route_name_unusual,
 	warn_truckroutes_but_no_starts,
@@ -207,7 +217,7 @@ enum validation_result_t {
 };
 
 // Collection primitives - these recursively walk the composition and pull out all entities of a given type.
-validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * root = NULL, 
+validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * root = NULL,
 	bool skipErrorDialog = false, const char * abortMsg = "Dismiss");	// if root not null, only do this sub-tree
 
 #endif

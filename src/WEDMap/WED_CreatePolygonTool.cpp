@@ -43,6 +43,8 @@
 #include "WED_DrapedOrthophoto.h"
 #include "WED_LinePlacement.h"
 #include "WED_StringPlacement.h"
+#include "WED_AutogenPlacement.h"
+#include "WED_AutogenNode.h"
 #include "WED_SimpleBezierBoundaryNode.h"
 #include "WED_SimpleBoundaryNode.h"
 #include "WED_TextureNode.h"
@@ -50,11 +52,13 @@
 #include "WED_ResourceMgr.h"
 #include "MathUtils.h"
 
-static const char * kCreateCmds[] = { "Taxiway", "Boundary", "Marking", "Hole", "Facade", "Forest", "String", "Line", "Polygon" };
+// this must match enum CreateTool_t in WED_CreatePolygonTool.h
+static const char * kCreateCmds[] = { "Taxiway", "Boundary", "Marking", "Hole", "Facade",
+                                      "Forest", "String", "Line", "Autogen", "Polygon" };
 
-static const int kIsAirport[] = { 1, 1, 1,  0,     0, 0,  0, 0, 0 };
-static const int kRequireClosed[] = { 1, 1, 0, 1,    1, 1, 0, 0, 1 };
-static const int kAllowCurved[] = { 1, 0, 1, 1,    1, 0,  1, 1, 1 };
+static const int kIsAirport[] =     { 1, 1, 1, 0, 0,   0, 0, 0, 0, 0 };
+static const int kRequireClosed[] = { 1, 1, 0, 1, 1,   1, 0, 0, 1, 1 };
+static const int kAllowCurved[] =   { 1, 0, 1, 1, 1,   0, 1, 1, 0, 1 };
 
 string stripped_resource(const string& r)
 {
@@ -81,17 +85,19 @@ WED_CreatePolygonTool::WED_CreatePolygonTool(
 	mType(tool),
 		mPavement(tool    == create_Taxi    ? this : NULL,PROP_Name("Pavement", XML_Name("","")),Surface_Type,surf_Concrete),
 		mRoughness(tool   == create_Taxi    ? this : NULL,PROP_Name("Roughness",XML_Name("","")),0.25,4,2),
-		mHeading(tool     == create_Taxi   || tool == create_Polygon ? 
+		mHeading(tool     == create_Taxi   || tool == create_Polygon ?
 		                                      this : NULL,PROP_Name("Heading",  XML_Name("","")),0,5,2),
 		mMarkings(tool    <= create_Hole    ? this : NULL,PROP_Name(".Markings",XML_Name("","")), LinearFeature, 0),
 		mMarkingsLines(tool <= create_Hole  ? this : NULL,PROP_Name("Markings", XML_Name("","")), ".Markings",   1,  99, 1),
 		mMarkingsLights(tool <= create_Hole ? this : NULL,PROP_Name("Lights",   XML_Name("","")), ".Markings", 101, 199, 1),
 
 		mResource(tool >  create_Hole    ? this : NULL,PROP_Name("Resource", XML_Name("","")), ""),
-		mHeight(tool   == create_Facade  ? this : NULL,PROP_Name("Height",   XML_Name("","")), 10.0, 4, 2),
+		mHeight(tool   == create_Facade  ? this : NULL,PROP_Name("Height",   XML_Name("","")), 10.0, 5, 2),
 		mDensity(tool  == create_Forest  ? this : NULL,PROP_Name("Density",  XML_Name("","")), 1.0, 3, 2),
-		mSpacing(tool  == create_String  ? this : NULL,PROP_Name("Spacing",  XML_Name("","")), 5.0, 3, 1),
-		
+
+		mSpacing(tool  == create_String  ? this : NULL,PROP_Name("Spacing",  XML_Name("","")), 5.0, 5, 1),
+		mAgsHght(tool  == create_Autogen ? this : NULL,PROP_Name("Autogen Height",   XML_Name("","")), 10.0, 6, 1),
+
 		mUVMap(tool == create_Polygon    ? this : NULL,PROP_Name("Use Texture Map - Orthophoto", XML_Name("","")), 0),
 		mPickWalls(tool == create_Facade ? this : NULL,PROP_Name("Pick Walls", XML_Name("","")), 0)
 {
@@ -127,11 +133,12 @@ void	WED_CreatePolygonTool::AcceptPath(
 
 	int is_bezier = mType != create_Forest && mType != create_Boundary;
 	int is_apt = mType <= create_Hole;
-	int is_poly = mType != create_Hole && mType != create_String && mType != create_Line;
+	int is_autogen = mType == create_Autogen;
+	int is_poly = (mType != create_Hole && mType != create_String && mType != create_Line) || is_autogen;
 	int is_texed = mType == create_Polygon ? mUVMap.value : 0;
 	int is_forest = mType == create_Forest;
 	int is_facade = mType == create_Facade;
-	
+
 	if(mType == create_Hole)
 	{
 		DebugAssert(host->CountChildren() > 0);
@@ -157,7 +164,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 	static int n = 0;
 	++n;
 
-	bool is_ccw = (mType == create_Marks || mType == create_String || mType == create_Line) ? true : is_ccw_polygon_pt(pts.begin(), pts.end());
+	bool is_ccw = (mType == create_Marks || (mType == create_String && !is_autogen) || mType == create_Line) ? true : is_ccw_polygon_pt(pts.begin(), pts.end());
 	if (mType == create_Hole) is_ccw = !is_ccw;
 
 	WED_DrapedOrthophoto * dpol = NULL;
@@ -243,6 +250,19 @@ void	WED_CreatePolygonTool::AcceptPath(
 			fst->SetDensity(mDensity.value);
 		}
 		break;
+	case create_Autogen:
+		{
+			WED_AutogenPlacement * ags = WED_AutogenPlacement::CreateTyped(GetArchive());
+			outer_ring->SetParent(ags,0);
+			ags->SetParent(host,idx);
+			ags->SetName(stripped_resource(mResource.value));
+			sprintf(buf,"Autogen %d Outer Ring",n);
+			outer_ring->SetName(buf);
+			sel->Select(ags);
+			ags->SetResource(mResource.value);
+			ags->SetHeight(mAgsHght.value);
+		}
+		break;
 	case create_String:
 		{
 			WED_StringPlacement * str = WED_StringPlacement::CreateTyped(GetArchive());
@@ -301,19 +321,20 @@ void	WED_CreatePolygonTool::AcceptPath(
 	for(int n = 0; n < pts.size(); ++n)
 	{
 		int idx = is_ccw ? n : pts.size()-n-1;
-		
+
 		WED_AirportNode *		anode=NULL;
 		WED_GISPoint_Bezier *	bnode=NULL;
 		WED_GISPoint *			node=NULL;
 		WED_TextureNode *		tnode=NULL;
 		WED_TextureBezierNode *	tbnode=NULL;
 
-		if(is_apt)							node = bnode = anode = WED_AirportNode::CreateTyped(GetArchive());
-		else if(is_facade)					node = bnode = WED_FacadeNode::CreateTyped(GetArchive());
-		else if (is_bezier && is_texed)		node = bnode = tbnode = WED_TextureBezierNode::CreateTyped(GetArchive());
-		else if (is_bezier)					node = bnode = WED_SimpleBezierBoundaryNode::CreateTyped(GetArchive());
-		else if (is_texed)					node = tnode = WED_TextureNode::CreateTyped(GetArchive());
-		else								node = WED_SimpleBoundaryNode::CreateTyped(GetArchive());
+		if(is_apt)                      node = bnode = anode = WED_AirportNode::CreateTyped(GetArchive());
+		else if(is_facade)              node = bnode = WED_FacadeNode::CreateTyped(GetArchive());
+		else if(is_autogen)             node = WED_AutogenNode::CreateTyped(GetArchive());
+		else if(is_bezier && is_texed)  node = bnode = tbnode = WED_TextureBezierNode::CreateTyped(GetArchive());
+		else if(is_bezier)              node = bnode = WED_SimpleBezierBoundaryNode::CreateTyped(GetArchive());
+		else if(is_texed)               node = tnode = WED_TextureNode::CreateTyped(GetArchive());
+		else                            node = WED_SimpleBoundaryNode::CreateTyped(GetArchive());
 
 		node->SetLocation(gis_Geo,pts[idx]);
 		if(bnode)
@@ -358,7 +379,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 	}
 	else if (mType == create_Hole && host->GetClass() == WED_DrapedOrthophoto::sClass)   // holes in orthos also need UV map set
 		dynamic_cast <WED_DrapedOrthophoto *> (host)->Redrape();
- 
+
 	GetArchive()->CommitCommand();
 }
 
@@ -390,11 +411,17 @@ WED_Thing *		WED_CreatePolygonTool::GetHost(int& idx)
 		ISelection * sel = WED_GetSelect(GetResolver());
 		if (sel->GetSelectionCount() != 1) return NULL;
 		WED_GISPolygon * igp = dynamic_cast<WED_GISPolygon *>(sel->GetNthSelection(0));
-		if(!igp) 
+		if(!igp)
 			return NULL;
 		// A few polygons do NOT get holes: facades, um...that's it for now.
 		if(igp->GetClass() == WED_FacadePlacement::sClass)
 			return NULL;
+		if(igp->GetClass() == WED_AutogenPlacement::sClass)
+		{
+			auto ags = dynamic_cast<WED_AutogenPlacement *>(igp);
+			if(ags && ags->IsAGBlock())
+				return NULL;
+		}
 		return igp;
 	} else
 		return WED_GetCreateHost(GetResolver(), kIsAirport[mType], true, idx);

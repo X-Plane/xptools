@@ -76,6 +76,8 @@
 	_R(WED_SimpleBezierBoundaryNode) \
 	_R(WED_LinePlacement) \
 	_R(WED_StringPlacement) \
+	_R(WED_AutogenPlacement) \
+	_R(WED_AutogenNode) \
 	_R(WED_ForestPlacement) \
 	_R(WED_FacadePlacement) \
 	_R(WED_PolygonPlacement) \
@@ -84,6 +86,22 @@
 	_R(WED_ForestRing) \
 	_R(WED_FacadeRing) \
 	_R(WED_FacadeNode)
+
+#if ROAD_EDITING
+
+#define REGISTER_LIST_ATC \
+	_R(WED_TaxiRoute) \
+	_R(WED_TaxiRouteNode) \
+	_R(WED_ATCFlow) \
+	_R(WED_ATCTimeRule) \
+	_R(WED_ATCWindRule) \
+	_R(WED_ATCRunwayUse) \
+	_R(WED_TruckParkingLocation) \
+	_R(WED_TruckDestination) \
+	_R(WED_RoadNode) \
+	_R(WED_RoadEdge)
+
+#else
 
 #define REGISTER_LIST_ATC \
 	_R(WED_TaxiRoute) \
@@ -94,8 +112,8 @@
 	_R(WED_ATCRunwayUse) \
 	_R(WED_TruckParkingLocation) \
 	_R(WED_TruckDestination)
-	//_R(WED_RoadNode) \
-	//_R(WED_RoadEdge)
+
+#endif
 
 #define _R(x)	extern void x##_Register();
 REGISTER_LIST
@@ -113,6 +131,7 @@ HINSTANCE gInstance = NULL;
 #if LIN
   #include "initializer.h"
   #include <FL/Fl.H>
+  #include <FL/x.H>
 #endif
 
 FILE * gLogFile;
@@ -193,12 +212,15 @@ int main(int argc, char * argv[])
 	WED_MakeMenus(&app);
 #if LIN
 	setlocale(LC_ALL, "C");   //mroe: FLTK sets user locale upon first window creation only, does not set it not back to "C"
+	start->default_xclass("WED");
+	start->SetIcon("WED_icon.png",true);
 	start->show(1, argv);     //mroe: WED has own cmd line arguments, this prevents FLTK from parsing them
 #endif
 	start->Show();
 
 	start->ShowMessage("Scanning X-System Folder...");
 	pMgr.SetXPlaneFolder(GUI_GetPrefString("packages","xsystem",""));
+	pMgr.SetRecentName(GUI_GetPrefString("packages","Recent",""));
 
 	start->ShowMessage("Initializing WED File Cache");
 	gFileCache.init();
@@ -222,9 +244,11 @@ int main(int argc, char * argv[])
 
 	GUI_MemoryHog::RemoveNewHandler();
 
-	string xsys;
+	string xsys,name;
 	pMgr.GetXPlaneFolder(xsys);
+	pMgr.GetRecentName(name);
 	GUI_SetPrefString("packages","xsystem",xsys.c_str());
+	GUI_SetPrefString("packages","Recent",name.c_str());
 
 	WED_Document::WriteGlobalPrefs();
 	GUI_Prefs_Write("WED");

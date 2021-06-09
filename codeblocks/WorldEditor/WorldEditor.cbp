@@ -77,6 +77,7 @@
 			<Add option="-DHAS_GATEWAY=1" />
 			<Add option="-DUSE_JPEG=1" />
 			<Add option="-DUSE_TIF=1" />
+			<Add option="-DROAD_EDITING=1" />
 		</Compiler>
 		<Unit filename="../../src/DSF/DSFDefs.h" />
 		<Unit filename="../../src/DSF/DSFLib.cpp" />
@@ -344,6 +345,10 @@
 		<Unit filename="../../src/WEDEntities/WED_AirportNode.h" />
 		<Unit filename="../../src/WEDEntities/WED_AirportSign.cpp" />
 		<Unit filename="../../src/WEDEntities/WED_AirportSign.h" />
+		<Unit filename="../../src/WEDEntities/WED_AutogenNode.cpp" />
+		<Unit filename="../../src/WEDEntities/WED_AutogenNode.h" />
+		<Unit filename="../../src/WEDEntities/WED_AutogenPlacement.cpp" />
+		<Unit filename="../../src/WEDEntities/WED_AutogenPlacement.h" />
 		<Unit filename="../../src/WEDEntities/WED_DrapedOrthophoto.cpp" />
 		<Unit filename="../../src/WEDEntities/WED_DrapedOrthophoto.h" />
 		<Unit filename="../../src/WEDEntities/WED_Entity.cpp" />
@@ -484,6 +489,7 @@
 		<Unit filename="../../src/WEDLibrary/WED_LibraryPreviewPane.h" />
 		<Unit filename="../../src/WEDMap/WED_ATCLayer.cpp" />
 		<Unit filename="../../src/WEDMap/WED_ATCLayer.h" />
+		<Unit filename="../../src/WEDMap/WED_Camera.h" />
 		<Unit filename="../../src/WEDMap/WED_Colors.cpp" />
 		<Unit filename="../../src/WEDMap/WED_Colors.h" />
 		<Unit filename="../../src/WEDMap/WED_CreateBoxTool.cpp" />
@@ -512,6 +518,10 @@
 		<Unit filename="../../src/WEDMap/WED_MapLayer.h" />
 		<Unit filename="../../src/WEDMap/WED_MapPane.cpp" />
 		<Unit filename="../../src/WEDMap/WED_MapPane.h" />
+		<Unit filename="../../src/WEDMap/WED_MapPreviewPane.cpp" />
+		<Unit filename="../../src/WEDMap/WED_MapPreviewPane.h" />
+		<Unit filename="../../src/WEDMap/WED_MapPreviewWindow.cpp" />
+		<Unit filename="../../src/WEDMap/WED_MapPreviewWindow.h" />
 		<Unit filename="../../src/WEDMap/WED_MapToolNew.cpp" />
 		<Unit filename="../../src/WEDMap/WED_MapToolNew.h" />
 		<Unit filename="../../src/WEDMap/WED_MapZoomerNew.cpp" />
@@ -520,6 +530,8 @@
 		<Unit filename="../../src/WEDMap/WED_MarqueeTool.h" />
 		<Unit filename="../../src/WEDMap/WED_NavaidLayer.cpp" />
 		<Unit filename="../../src/WEDMap/WED_NavaidLayer.h" />
+		<Unit filename="../../src/WEDMap/WED_PerspectiveCamera.cpp" />
+		<Unit filename="../../src/WEDMap/WED_PerspectiveCamera.h" />
 		<Unit filename="../../src/WEDMap/WED_PreviewLayer.cpp" />
 		<Unit filename="../../src/WEDMap/WED_PreviewLayer.h" />
 		<Unit filename="../../src/WEDMap/WED_SlippyMap.cpp" />
@@ -662,6 +674,8 @@
 		<Unit filename="../../src/WEDWindows/WED_Menus.h" />
 		<Unit filename="../../src/WEDWindows/WED_PackageListAdapter.cpp" />
 		<Unit filename="../../src/WEDWindows/WED_PackageListAdapter.h" />
+		<Unit filename="../../src/WEDWindows/WED_Road_Selector.cpp" />
+		<Unit filename="../../src/WEDWindows/WED_Road_Selector.h" />
 		<Unit filename="../../src/WEDWindows/WED_Sign_Editor.cpp" />
 		<Unit filename="../../src/WEDWindows/WED_Sign_Editor.h" />
 		<Unit filename="../../src/WEDWindows/WED_StartWindow.cpp" />

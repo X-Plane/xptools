@@ -63,6 +63,7 @@ enum GUI_CellContentType {
 	gui_Cell_EditText,			// string&string		string
 	gui_Cell_FileText,			// string&string		string
 	gui_Cell_TaxiText,			// string				string
+	gui_Cell_RoadType,          // string&int			int
 	gui_Cell_CheckBox,			// int val				int val
 	gui_Cell_Integer,			// string&int val		int val
 	gui_Cell_Double,			// string&double val	double val
@@ -79,7 +80,7 @@ enum GUI_BoolIcon {
 
 struct	GUI_CellContent {
 	GUI_CellContentType		content_type;
-	
+
 	//Ways we can interact with the cell
 	bool					can_delete;
 	int						can_edit;
@@ -141,11 +142,11 @@ struct	GUI_CellContent {
 			case gui_Cell_EnumSet: printf("*content_type: gui_Cell_EnumSet \n"); break;
 			//for(set<int>::iterator iter=int_set_val.begin();iter != int_set_val.end(); ++iter)
 			//{
-				
+
 			//}
 			default: printf("*content_type: %d \n", content_type); break;
 		}
-	}	
+	}
 	if(pcan_delete) printf("can_delete: %d \n", can_delete);
 	if(pcan_edit) printf("*can_edit: %d \n", can_edit);
 	if(pcan_disclose) printf("*can_disclose: %d \n", can_disclose);
@@ -195,7 +196,7 @@ public:
 	virtual	void	ToggleDisclose(
 						int							cell_x,
 						int							cell_y)=0;
-	
+
 	virtual void	DoDeleteCell(
 						int							cell_x,
 						int							cell_y)=0;
@@ -229,7 +230,7 @@ public:
 	virtual	int		SelectDisclose(
 						int							open_it,
 						int							all)=0;		// return true if you support this op.
-	
+
 	virtual	int		TabAdvance(
 						int&						io_x,
 						int&						io_y,
@@ -289,7 +290,7 @@ public:
 	virtual	void	GetHeaderContent(
 						int							cell_x,
 						GUI_HeaderContent&			the_content)=0;
-						
+
 	virtual	void	SelectHeaderCell(
 						int							cell_x)=0;
 
@@ -366,7 +367,7 @@ private:
 		gui_Insert_Top
 	};
 
-			void			CreateEdit(int cell_bounds[4], const vector<GUI_MenuItem_t> * dict = NULL);
+			void			CreateEdit(int cell_bounds[4], const GUI_EnumDictionary * dict = nullptr);
 			int				TerminateEdit(bool inSave, bool inAll, bool inDone);
 			GUI_DragPart	GetCellDragPart(int cell_bounds[4], int x, int y, int vertical);
 //			bool			HasEdit() { return mSignField != NULL || mTextField != NULL || mLineField != NULL; }
@@ -381,9 +382,9 @@ private:
 	int						mTrackLeft;
 	int						mTrackRight;
 	GUI_Table *				mParent;
-	
+
 	GUI_MouseCatcher *		mCatcher;
-	
+
 	GUI_EditorInsert * 		mEditor;      // TaxiSigns, Lines, Light have a special edit method
 	GUI_TextField *			mTextField;   // handles every thing else
 	GUI_TableGeometry *		mGeometry;

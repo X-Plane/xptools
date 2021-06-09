@@ -52,6 +52,8 @@
 #include "WED_LibraryPane.h"
 #include "WED_LibraryPreviewPane.h"
 #include "WED_LinePlacement.h"
+#include "WED_MapPreviewPane.h"
+#include "WED_MapPreviewWindow.h"
 #include "WED_PolygonPlacement.h"
 #include "WED_Routing.h"
 #include "WED_Taxiway.h"
@@ -252,6 +254,13 @@ WED_DocumentWindow::WED_DocumentWindow(
 	mPropPane->SetSticky(1,0.5,1,1);
 
 	/****************************************************************************************************************************************************************
+	 * MAP PREVIEW WINDOW
+	****************************************************************************************************************************************************************/
+
+	mMapPreviewWindow = new WED_MapPreviewWindow(this, mDocument);
+	mMapPreviewPane = mMapPreviewWindow->MapPreviewPane();
+
+	/****************************************************************************************************************************************************************
 	 * FINAL CLEANUP
 	****************************************************************************************************************************************************************/
 
@@ -260,23 +269,12 @@ WED_DocumentWindow::WED_DocumentWindow(
 	XWin::GetBounds(zw,zw+1);
 	XWin::GetWindowLoc(xy,xy+1);
 
-	// This is a safety-hack.  The user's prefs may specify the window at a location that
-	// is off screen, either because the prefs are borked or because the doc came from
-	// a machine with a much larger dekstop. So...
-	//
-	// Coming in we have the default rect for a window - hopefully it is BIG because we
-	// pass xwin_style_fullscreen to XWin.  So if our currnet location does not allow 
-	// for at least one 100x100 pixel corner to be inside the current Desktop 
-	// (which is the bounding box around ALL monitors) - then ignore the preferences
-	// and the new window will pop up fullscreen on the primary monitor instead.
-
-	
 	LOG_MSG("I/Doc opening new scenery window, initial win xy %d %d wh %d %d\n", xy[0], xy[1], zw[0], zw[1]);
-	
-	int safe_rect[4] = { xy[0], xy[1], xy[0] + zw[0], xy[1] + zw[1] };
-	XWin::GetDesktop(safe_rect);
-	LOG_MSG("I/Doc desktop rect %d %d %d %d\n", safe_rect[0], safe_rect[1], safe_rect[2], safe_rect[3]);
-
+#if APL
+	int ret[4];
+	float scal = XWin::GetRetinaBounds(ret);
+	LOG_MSG("I/Doc OSX backingScaleFactor %6.3f      fbuf xy %d %d wh %d %d\n", scal, ret[0], ret[1], ret[2]-ret[0], ret[3]-ret[1]);
+#endif
 	xy[0] = inDocument->ReadIntPref("window/x_loc",xy[0]);
 	xy[1] = inDocument->ReadIntPref("window/y_loc",xy[1]);
 	zw[0] = inDocument->ReadIntPref("window/width",zw[0]);
@@ -284,14 +282,8 @@ WED_DocumentWindow::WED_DocumentWindow(
 
 	LOG_MSG("I/Doc size from prefs xy %d %d wh %d %d\n", xy[0], xy[1], zw[0], zw[1]);
 
-	if(xy[0] < safe_rect[2]-100 && xy[1] < safe_rect[3]-100 &&
-	  (xy[0] + zw[0]) >= safe_rect[0]+100 && (xy[1] + zw[1]) >= safe_rect[1]+100)
-	{
-		SetBounds(xy[0],xy[1],xy[0]+zw[0],xy[1]+zw[1]);
-	}
-	else
-		LOG_MSG("W/Doc SafeRect was triggerd\n");
-		
+	SetBoundsSafe(xy[0], xy[1], xy[0] + zw[0], xy[1] + zw[1]);
+
 	int main_split = inDocument->ReadIntPref("window/main_split",zw[0] / 5);
 	int main_split2 = inDocument->ReadIntPref("window/main_split2",zw[0] * 2 / 3);
 	int prop_split = inDocument->ReadIntPref("window/prop_split",zw[1] / 2);
@@ -306,6 +298,8 @@ WED_DocumentWindow::WED_DocumentWindow(
 
 
 	mMapPane->FromPrefs(inDocument);
+	mMapPreviewWindow->FromPrefs(inDocument);
+	mMapPreviewPane->FromPrefs(inDocument);
 	mPropPane->FromPrefs(inDocument,0);
 	// doc/use_feet and doc/InfoDMS are global only preferences now, not read from each document any more
 #if TYLER_MODE
@@ -313,7 +307,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 #else
 	gExportTarget = (WED_Export_Target) inDocument->ReadIntPref("doc/export_target",gExportTarget);
 #endif
-	
+
 	int wedXMLversion = inDocument->ReadIntPref("doc/xml_compatibility",0);
 	int wedTHISversion[4] = { WED_VERSION_BIN };
 	if(wedTHISversion[0] * 100 + wedTHISversion[1] < wedXMLversion)
@@ -330,6 +324,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 
 WED_DocumentWindow::~WED_DocumentWindow()
 {
+	delete mMapPreviewWindow;
 }
 
 int	WED_DocumentWindow::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)
@@ -367,6 +362,18 @@ int	WED_DocumentWindow::HandleCommand(int command)
 			mPropSplitter->AlignContentsAt(prop_split);
 			mLibSplitter->AlignContentsAt(prev_split);
 		}
+		return 1;
+	case wed_TogglePreviewWindow:
+		if (mMapPreviewWindow->IsVisible())
+			mMapPreviewWindow->Hide();
+		else
+			mMapPreviewWindow->Show();
+		return 1;
+	case wed_ShowMapAreaInPreviewWindow:
+		mMapPreviewPane->DisplayExtent(mMapPane->GetMapVisibleBounds(), 1.0);
+		return 1;
+	case wed_CenterMapOnPreviewCamera:
+		mMapPane->CenterOnPoint(mMapPreviewPane->CameraPositionLL());
 		return 1;
 	case wed_autoOpenLibPane:
 		if (mAutoOpen == 0)
@@ -466,6 +473,9 @@ int	WED_DocumentWindow::HandleCommand(int command)
 #endif
 	case wed_ImportApt:		WED_DoImportApt(mDocument,mDocument->GetArchive(), mMapPane); return 1;
 	case wed_ImportDSF:		WED_DoImportDSF(mDocument); return 1;
+#if ROAD_EDITING
+	case wed_ImportRoads:	WED_DoImportRoads(mDocument); return 1;
+#endif
 	case wed_ImportOrtho:
 		mMapPane->Map_HandleCommand(command);
 		return 1;
@@ -477,13 +487,13 @@ int	WED_DocumentWindow::HandleCommand(int command)
 #endif
 	case wed_Validate:		if (WED_ValidateApt(mDocument, mMapPane) == validation_clean) DoUserAlert("Your layout is valid - no problems were found."); return 1;
 
-	case wed_Export900:	gExportTarget = wet_xplane_900;	Refresh(); return 1;
-	case wed_Export1000:gExportTarget = wet_xplane_1000;	Refresh(); return 1;
-	case wed_Export1021:gExportTarget = wet_xplane_1021;	Refresh(); return 1;
-	case wed_Export1050:gExportTarget = wet_xplane_1050;	Refresh(); return 1;
-	case wed_Export1100:gExportTarget = wet_xplane_1100;	Refresh(); return 1;
-	case wed_Export1130:gExportTarget = wet_xplane_1130;	Refresh(); return 1;
-	case wed_ExportGateway:gExportTarget = wet_gateway;	Refresh(); return 1;
+	case wed_Export900:	 if (gExportTarget != wet_xplane_900) { gExportTarget = wet_xplane_900; mDocument->SetDirty(); Refresh(); } return 1;
+	case wed_Export1000: if (gExportTarget != wet_xplane_1000) { gExportTarget = wet_xplane_1000; mDocument->SetDirty(); Refresh(); } return 1;
+	case wed_Export1021: if (gExportTarget != wet_xplane_1021) { gExportTarget = wet_xplane_1021; mDocument->SetDirty(); Refresh(); } return 1;
+	case wed_Export1050: if (gExportTarget != wet_xplane_1050) { gExportTarget = wet_xplane_1050; mDocument->SetDirty(); Refresh(); } return 1;
+	case wed_Export1100: if (gExportTarget != wet_xplane_1100) { gExportTarget = wet_xplane_1100; mDocument->SetDirty(); Refresh(); } return 1;
+	case wed_Export1130: if (gExportTarget != wet_xplane_1130) { gExportTarget = wet_xplane_1130; mDocument->SetDirty(); Refresh(); } return 1;
+	case wed_ExportGateway:if (gExportTarget != wet_gateway) { gExportTarget = wet_gateway; mDocument->SetDirty(); Refresh(); } return 1;
 
 #if WITHNWLINK
 	case wed_ToggleLiveView :
@@ -541,6 +551,11 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_ConvertToTaxiway:	return WED_CanConvertTo(mDocument, &IsType<WED_Taxiway>, true);
 	case wed_ConvertToTaxiline:	return WED_CanConvertTo(mDocument, &IsType<WED_AirportChain>, false);
 	case wed_ConvertToLine:		return WED_CanConvertTo(mDocument, &IsType<WED_LinePlacement>, false);
+
+	case wed_TogglePreviewWindow:	ioCheck = mMapPreviewWindow->IsVisible(); return 1;
+	case wed_ShowMapAreaInPreviewWindow:	return 1;
+	case wed_CenterMapOnPreviewCamera:	return 1;
+
 	case wed_AddATCFreq:return WED_CanMakeNewATCFreq(mDocument);
 	case wed_AddATCFlow:return WED_CanMakeNewATCFlow(mDocument);
 	case wed_AddATCRunwayUse:return WED_CanMakeNewATCRunwayUse(mDocument);
@@ -584,7 +599,10 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_ExportToGateway:	return WED_CanExportToGateway(mDocument);
 #endif
 	case wed_ImportApt:		return WED_CanImportApt(mDocument);
-	case wed_ImportDSF:		return WED_CanImportApt(mDocument);
+	case wed_ImportDSF:		return WED_CanImportDSF(mDocument);
+#if ROAD_EDITING
+	case wed_ImportRoads:	return WED_CanImportRoads(mDocument);
+#endif
 	case wed_ImportOrtho:	return 1;
 #if HAS_GATEWAY
 	case wed_ImportGateway:	return WED_CanImportFromGateway(mDocument);
@@ -627,17 +645,19 @@ void	WED_DocumentWindow::ReceiveMessage(
 	{
 		IDocPrefs * prefs = reinterpret_cast<IDocPrefs *>(inParam);
 		mMapPane->ToPrefs(prefs);
+		mMapPreviewPane->ToPrefs(prefs);
+		mMapPreviewWindow->ToPrefs(prefs);
 		mPropPane->ToPrefs(prefs,0);
 
 		// not writing doc/use_feet any more. Its a global preference now.
 		prefs->WriteIntPref("doc/export_target",gExportTarget);
-		// minimum WED version expected to read this .xml correctly 
+		// minimum WED version expected to read this .xml correctly
 		// endcding: 100x WED major version + 1 x middle version number
 		//  8.33k freqs added in 2.0 are fine back to at least 1.5, saved with 3 decimal places ever since
 		//  WED 1.7 added new airport line marking styles
 		//  WED 2.3 added set_AGL commands
 //		if(docHas_SetAGL())
-			prefs->WriteIntPref("doc/xml_compatibility",203);
+			prefs->WriteIntPref("doc/xml_compatibility",204);
 //		else
 //			prefs->WriteIntPref("doc/xml_compatibility",107);
 		prefs->WriteIntPref("window/main_split",mMainSplitter->GetSplitPoint());
@@ -660,6 +680,8 @@ void	WED_DocumentWindow::ReceiveMessage(
 	{
 		IDocPrefs * prefs = reinterpret_cast<IDocPrefs *>(inParam);
 		mMapPane->FromPrefs(prefs);
+		mMapPreviewWindow->FromPrefs(prefs);
+		mMapPreviewPane->FromPrefs(prefs);
 		mPropPane->FromPrefs(prefs,0);
 
 		// doc/use_feet and doc/InfoDMS are global only preferences now, not read from each document any more

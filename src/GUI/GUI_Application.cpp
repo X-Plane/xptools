@@ -35,6 +35,11 @@
 #include <commctrl.h>
 #endif
 
+#if LIN
+#define DEBUG_MENU 0
+#define DEBUG_CLEAR_MENU 0
+#endif
+
 GUI_Application *	gApplication = NULL;
 
 static bool IsDisabledString(string& ioString)
@@ -92,9 +97,6 @@ void GUI_Application::TryQuitCB(void * ref)
 #endif
 
 #if LIN
-#define DEBUG_MENU 0
-#define DEBUG_CLEAR_MENU 0
-
 static void clearSubmenusRecursive(const Fl_Menu_Item *  menu)
 {
 	if(!menu) return;
@@ -156,6 +158,7 @@ static void clear_menu(const Fl_Menu_Item* menu)
 
 static void update_menu_recursive(const Fl_Menu_Item *  menu)
 {
+	if(!menu) return;
 	for ( int t=0; t < menu->size(); t++)
 	{
 		Fl_Menu_Item * item = (Fl_Menu_Item *) &menu[t];
@@ -174,6 +177,7 @@ static void update_menu_recursive(const Fl_Menu_Item *  menu)
 		int cmd = mc->cmd;
 		if(cmd == 0) continue;
 		GUI_Application * app = (GUI_Application *) mc->data;
+		if(!app) continue;
 		int ioCheck = 0;
 		string ioName;
 		int enabled = app->DispatchCanHandleCommand(cmd,ioName,ioCheck);
@@ -203,28 +207,23 @@ static void update_menu_recursive(const Fl_Menu_Item *  menu)
 	}
 }
 
-
 static void menu_cb(Fl_Widget *w, void * data)
 {
-
 	if(!w || ! data) return;
-
 	Fl_Menu_Bar * bar = (Fl_Menu_Bar *) w;
+	GUI_Window * win = (GUI_Window*)(bar->parent()->as_window());
+	if(!win) return;
 	xmenu_cmd * mc = (xmenu_cmd *) data;
 	int cmd = mc->cmd;
 	#if DEBUG_MENU
-	printf("menu cmd:%d\n",cmd);
+	printf("menu cmd:%d win:%p\n",cmd,win);
 	#endif
-	GUI_Application * app = (GUI_Application *) mc->data;
-	//TODO:mroe: currently the whole menu is updated every time, also when a shortcut combination pressed
-    //probably we need that code back when we have a better solution
-	//int  ioCheck = 0;
-    //string ioName;
-    //mroe : We must check again if the cmd can be handled ,
-    //		 because shortcut-actions allways enabled
+	if(cmd)	win->DispatchHandleCommand(cmd);
+}
 
-    //if(app->DispatchCanHandleCommand(cmd,ioName,ioCheck))
-			app->DispatchHandleCommand(cmd);
+void GUI_Application::update_menus(const Fl_Menu_Item * menu)
+{
+	update_menu_recursive(menu);
 }
 
 void GUI_Application::update_menus_cb(Fl_Widget *w, void * data)
@@ -235,6 +234,19 @@ void GUI_Application::update_menus_cb(Fl_Widget *w, void * data)
 	if(!w ) return;
 	Fl_Menu_Bar * bar = (Fl_Menu_Bar *) w;
 	update_menu_recursive(bar->menu());
+}
+
+//mroe: thats to handle exeptions in the events
+int GUI_Application::event_dispatch_cb(int e, Fl_Window *w)
+{
+	try {
+
+		return Fl::handle_(e, w);
+	}
+	catch(...){
+		LOG_MSG("E/APP GUI_Application::event_dispatch_cb: exeption in events\n");
+		throw;
+	}
 }
 
 #endif
@@ -290,6 +302,7 @@ GUI_Application::GUI_Application(const char * arg) : args(arg),
 #if LIN
 	mPopup = NULL;
 	mMenu  = NULL;
+	Fl::event_dispatch(event_dispatch_cb);
 #endif
 }
 
@@ -361,6 +374,7 @@ GUI_Menu		GUI_Application::GetMenuBar(void)
 	if (w)
 	{
 		mMenu = w->GetMenuBar();
+		//w->mMenuBar->global(); //mroe: wont work because of X& Shortcuts are also ever dispatched to the menu bar of the first window
 	}
 	return (void*) mMenu;
 #endif

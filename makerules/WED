@@ -14,7 +14,7 @@ LDFLAGS		+= -Wl,--exclude-libs,libpng
 ifdef FLTK_STATIC
 LIBS		+= $(shell fltk-config --use-gl --ldstaticflags)
 else
-LIBS		+= -lfltk -lfltk_gl -lGL 
+LIBS		+= -lfltk -lfltk_gl -lGL
 endif #FLTK_STATIC
 LIBS		+= -lGLU -ldl -lpthread
 endif #PLAT_LINUX
@@ -36,7 +36,6 @@ endif #PLAT_MINGW
 
 ifdef PLAT_DARWIN
 LDFLAGS		+= -framework Carbon -framework OpenGL -framework AppKit
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libboost_thread.a
 endif #PLAT_DARWIN
 
 LIBS		+= -lcurl
@@ -118,6 +117,8 @@ SOURCES += ./src/WEDEntities/WED_AirportChain.cpp
 SOURCES += ./src/WEDEntities/WED_Airport.cpp
 SOURCES += ./src/WEDEntities/WED_AirportNode.cpp
 SOURCES += ./src/WEDEntities/WED_AirportSign.cpp
+SOURCES += ./src/WEDEntities/WED_AutogenPlacement.cpp
+SOURCES += ./src/WEDEntities/WED_AutogenNode.cpp
 SOURCES += ./src/WEDEntities/WED_ATCFlow.cpp
 SOURCES += ./src/WEDEntities/WED_ATCFrequency.cpp
 SOURCES += ./src/WEDEntities/WED_ATCRunwayUse.cpp
@@ -205,9 +206,12 @@ SOURCES += ./src/WEDMap/WED_Map.cpp
 SOURCES += ./src/WEDMap/WED_MapBkgnd.cpp
 SOURCES += ./src/WEDMap/WED_MapLayer.cpp
 SOURCES += ./src/WEDMap/WED_MapPane.cpp
+SOURCES += ./src/WEDMap/WED_MapPreviewPane.cpp
+SOURCES += ./src/WEDMap/WED_MapPreviewWindow.cpp
 SOURCES += ./src/WEDMap/WED_MapToolNew.cpp
 SOURCES += ./src/WEDMap/WED_MapZoomerNew.cpp
 SOURCES += ./src/WEDMap/WED_MarqueeTool.cpp
+SOURCES += ./src/WEDMap/WED_PerspectiveCamera.cpp
 SOURCES += ./src/WEDMap/WED_StructureLayer.cpp
 #SOURCES += ./src/WEDMap/WED_TerraserverLayer.cpp
 SOURCES += ./src/WEDMap/WED_ToolInfoAdapter.cpp
@@ -244,6 +248,7 @@ SOURCES += ./src/WEDWindows/WED_PackageListAdapter.cpp
 SOURCES += ./src/WEDWindows/WED_StartWindow.cpp
 SOURCES += ./src/WEDWindows/WED_Sign_Editor.cpp
 SOURCES += ./src/WEDWindows/WED_Line_Selector.cpp
+SOURCES += ./src/WEDWindows/WED_Road_Selector.cpp
 SOURCES += ./src/GUI/GUI_Broadcaster.cpp
 SOURCES += ./src/GUI/GUI_Button.cpp
 SOURCES += ./src/GUI/GUI_ChangeView.cpp
@@ -359,7 +364,7 @@ SOURCES += ./src/libtess2/Source/geom.c
 ###########
 
 ifdef PLAT_LINUX
-RESOURCES := ./src/WEDResources/WED.ico
+RESOURCES := ./src/WEDResources/WED_icon.png
 else
 RESOURCES := ./src/WEDResources/WED.icns
 XIB_RESOURCE := ./src/WEDResources/WEDMainMenu.xib
@@ -488,4 +493,5 @@ RESOURCES += ./src/WEDResources/parking_spots/ClassE.png
 RESOURCES += ./src/WEDResources/parking_spots/ClassF.png
 RESOURCES += ./src/WEDResources/icons/navmap_airport.png
 RESOURCES += ./src/WEDResources/icons/navmap_seaport.png
-
+RESOURCES += ./src/WEDResources/ArrowHeadRoadS.png
+RESOURCES += ./src/WEDResources/ArrowHeadRoadE.png
