@@ -529,16 +529,12 @@ void		WED_Runway::Export(		 AptRunway_t& x) const
 	x.has_tdzl		[1] =			  tdzl2		  ;
 	x.reil_code		[1] = ENUM_Export(reil2.value);
 
-	if(skid_len1 != SKID_LEN_DEFAULT || skid_len2 != SKID_LEN_DEFAULT || skids1 != SKIDS_DEFAULT || skids2 != SKIDS_DEFAULT)
-	{
-		x.has_skids = true;
-		x.skids			[0] = 			skids1;
-		x.skid_len		[0] = 			skid_len1;
-		x.skids			[1] = 			skids2;
-		x.skid_len		[1] = 			skid_len2;
-	}
-	else
-		x.has_skids = false;
+	x.has_skids = skid_len1 != SKID_LEN_DEFAULT || skid_len2 != SKID_LEN_DEFAULT || skids1 != SKIDS_DEFAULT || skids2 != SKIDS_DEFAULT;
+
+	x.skids			[0] = 			skids1;
+	x.skid_len		[0] = 			skid_len1;
+	x.skids			[1] = 			skids2;
+	x.skid_len		[1] = 			skid_len2;
 }
 
 

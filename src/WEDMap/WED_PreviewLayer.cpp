@@ -624,6 +624,28 @@ struct	preview_runway : public WED_PreviewItem {
 					}
 				}
 			g->SetState(false,0,false, true,true, false,false);
+			
+			if(gExportTarget >= wet_xplane_1200)
+				for(int dir = 0 ; dir <= 1; dir++)
+					if(info.skid_len[dir] > 0.0 && info.skids[dir] > 0.0)
+					{
+						Point2 skids[4];
+						Vector2 direction(corners[0], corners[1]);
+						Vector2 width(corners[1], corners[2]);
+						width *= 0.25;
+						
+						double skid_ends[2];
+						skid_ends[dir] = 0.1;
+						skid_ends[1-dir] = 0.5 + 0.3 * (1.0 - doblim(info.skid_len[dir],0,1));
+					
+						skids[0] = corners[0] + width + direction * skid_ends[0];
+						skids[1] = corners[1] + width - direction * skid_ends[1];
+						skids[2] = corners[2] - width - direction * skid_ends[1];
+						skids[3] = corners[3] - width + direction * skid_ends[0];
+						
+						glColor4f(0,0,0,0.1);
+						glShape2v(GL_QUADS, skids, 4);
+					}	
 		}
 	}
 };
