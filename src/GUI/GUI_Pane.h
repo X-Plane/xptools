@@ -184,6 +184,7 @@ public:
 
 			GUI_KeyFlags	GetModifiersNow(void);
 	virtual	void			GetMouseLocNow(int * out_x, int * out_y);
+	virtual bool			IsKeyPressedNow(int virtualKey);
 			float			GetTimeNow(void);
 
 			void			TrapFocus(void);

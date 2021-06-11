@@ -13,25 +13,51 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 2.4.0
-   Bug Fix:
-   - Partial fix of long standing OGLE bugs
-      - disappearing content when select numeric edit fields,
-      - mess with vertical scrolling ,
-      - errors in multi line text edit fields like in Gateway export dialog
-   - WED-1353 GUI_ScrollBar has uninitialized vars
-   - WED-1347 stops cursor blink timer in Settings window when loose focus
-   - validate ICAO_Code meta tag to meet ICAO nomenclature
-   - fix preview for .lin commands with offset layers in preview pane
+WED 2.4.0rc2 5/29/21
    Features:
-   - show gridded preview for library vdirectories
+   - Undo WED-192 remove meta tag "Closed", validate correctly formed [X] in apt name
+   - improved automation for cutting the Global Airports
+   - renamed gateway import "Checkout until" into "Locked by" for consistency
+
+WED 2.4.0rc1 5/8/21
+   Bug Fix:
+   - move forest layering in map to above polygons, below roads/objects
+   - fix distorted previews for lines with ALIGN and END_CAP attributes
+   - WED-1380 clean out orphaned road nodes from .xml database
+   - WED-1374 improve libcurl compatibility on Debian/Linux
+	
+WED 2.4.0b2 4/13/21
+   Bug Fix:
+   - fix scaled down window contents on OSX Big Sur with Retina displays
+   - disable MSAA for library previews on retina macs
+   - fixes to editing/splitting/merging closed road loops
+   - large speedup in map window when many items are selected
+
+WED 2.4.0b1 3/25/21
+   Features:
+   - WED-120, 306, 380 edit road networks incl. basic on-map previews
+   - true 3D scenery window
+   - edit autogen .agb/.ags (but no on-map previews)
+   - gridded previews for library pane directories
    - support choosing taxiway equivalent styles for draped polygons
-   - support autogen .agb/.ags entities (but no on-map previews)
    - preselect last opened scenery at startup
    - show on-map 3D previews for beacons, windsocks, 3D taxi signs
    - use native secure internet connectivity on all operating systems
    - WED-1359: change OOW mouse click for LineEditor from accept to cancel edit
    - automatically change ExportTarget at GW import, avoid inheriting unexpected values
+   - support import of text format DSF files
+   Bug Fix:
+   - Partial fix of long standing OGLE bugs
+      - disappearing content when select numeric edit fields,
+      - mess with vertical scrolling,
+      - errors in multi line text edit fields like in Gateway export dialog
+   - WED-1353 GUI_ScrollBar has uninitialized variables
+   - WED-1347 stops cursor blink timer in Settings window when loose focus
+   - validate ICAO_Code meta tag to meet ICAO nomenclature
+   - fix preview for .lin commands with offset layers in preview pane
+   - fix endcap not showing for lines with two vertices only
+   - refine tesselation to show fill for polygons with colocated nodes
+   - XSG-11489: Fix gateway flags for airports with odd ATC taxi/ground_service routes
 
 WED 2.3.1r1 12/22/20
    Features:

@@ -83,14 +83,15 @@ public:
 	// it is assumed that ALL tools get clicks.  But by asking for clicks, layers can jump in and grab the mouse too.
 	virtual	void		GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks)=0;
 
+			bool				IsVisibleNow(IGISEntity * ent) const;
+			bool				IsVisibleNow(WED_Thing * ent) const;
+
 protected:
 
 	inline	WED_MapZoomerNew *	GetZoomer(void) const { return mZoomer; }
 	inline	IResolver *			GetResolver(void) const { return mResolver; }
 	inline	GUI_Pane *			GetHost(void) const { return mHost; }
 	
-			bool				IsVisibleNow(IGISEntity * ent) const;
-			bool				IsVisibleNow(WED_Thing * ent) const;
 			bool				IsLockedNow(IGISEntity * ent) const;
 			bool				IsLockedNow(WED_Thing * ent) const;
 

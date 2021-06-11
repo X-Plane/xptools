@@ -122,13 +122,21 @@ struct TEX_dds_desc {
 	uint32_t            dwWidth;                // width of input surface
 	uint32_t			dwLinearSize;           // Formless late-allocated optimized surface size
 	uint32_t            dwDepth;				// Vol texes-depth.
-	uint32_t			dwMipMapCount;          // number of mip-map levels requestde
+	uint32_t			dwMipMapCount;          // number of mip-map levels
 	uint32_t            dwReserved1[11];        //
 	TEX_dds_pixelformat	ddpfPixelFormat;        // pixel format description of the surface
 	TEX_dds_caps2       ddsCaps;                // direct draw surface capabilities			DDSCAPS_TEXTURE, DDSCAPS_MIPMAP, DDSCAPS_COMPLEX		TEXTURE, LINEARSIZE, COMPLEX, MIPMAP, FOURCC)
 	uint32_t            dwReserved2;			//
 
 	TEX_dds_desc(int width, int height, int mips, int dxt);
+};
+
+struct TEX_dds_dx10 {
+    uint32_t      dxgiFormat;
+    uint32_t      resourceDimension;
+    uint32_t      miscFlag;         // See D3D11_RESOURCE_MISC_FLAG
+    uint32_t      arraySize;
+    uint32_t      reserved;
 };
 
 /* STANDARDS FOR CreateNewBitmapFromX: Returns 0 for all good, else each has its

@@ -28,13 +28,23 @@
 
 class IDocPrefs : public virtual IBase {
 public:
+	// Bitfield for where to store preferences.
+	// When reading preferences, if both document and global preferences are specified, we will try
+	// reading the preference from the doc first, then read the global preference if the document
+	// didn't contain it.
+	// Integer set preferences are only stored in the doc.
+	enum PrefType : unsigned
+	{
+		pref_type_doc = 1,
+		pref_type_global = 2,
+	};
 
-	virtual	int		ReadIntPref(const char * in_key, int in_default)=0;
-	virtual	void	WriteIntPref(const char * in_key, int in_value)=0;
-	virtual	double	ReadDoublePref(const char * in_key, double in_default)=0;
-	virtual	void	WriteDoublePref(const char * in_key, double in_value)=0;
-	virtual	string	ReadStringPref(const char * in_key, const string& in_default)=0;
-	virtual	void	WriteStringPref(const char * in_key, const string& in_value)=0;
+	virtual	int		ReadIntPref(const char * in_key, int in_default, unsigned type = pref_type_doc | pref_type_global)=0;
+	virtual	void	WriteIntPref(const char * in_key, int in_value, unsigned type = pref_type_doc | pref_type_global)=0;
+	virtual	double	ReadDoublePref(const char * in_key, double in_default, unsigned type = pref_type_doc | pref_type_global)=0;
+	virtual	void	WriteDoublePref(const char * in_key, double in_value, unsigned type = pref_type_doc | pref_type_global)=0;
+	virtual	string	ReadStringPref(const char * in_key, const string& in_default, unsigned type = pref_type_doc | pref_type_global)=0;
+	virtual	void	WriteStringPref(const char * in_key, const string& in_value, unsigned type = pref_type_doc | pref_type_global)=0;
 	virtual	void	ReadIntSetPref(const char * in_key, set<int>& out_value)=0;
 	virtual	void	WriteIntSetPref(const char * in_key, const set<int>& in_value)=0;
 };

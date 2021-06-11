@@ -47,6 +47,9 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		020F938A260D960B0077222C /* WED_MapPreviewPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 020F9381260D96040077222C /* WED_MapPreviewPane.cpp */; };
+		020F938B260D96180077222C /* WED_MapPreviewWindow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 020F9383260D96040077222C /* WED_MapPreviewWindow.cpp */; };
+		020F938C260D961B0077222C /* WED_PerspectiveCamera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 020F9385260D96040077222C /* WED_PerspectiveCamera.cpp */; };
 		02198CB4219F6929008FDB0C /* WED_NavaidLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02198CAE219F68B8008FDB0C /* WED_NavaidLayer.cpp */; };
 		02198CB5219F6946008FDB0C /* WED_SlippyMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02198CB0219F68B8008FDB0C /* WED_SlippyMap.cpp */; };
 		02198CBE21A275EA008FDB0C /* nav_gs.png in Resources */ = {isa = PBXBuildFile; fileRef = 02198CB621A2759E008FDB0C /* nav_gs.png */; };
@@ -57,7 +60,8 @@
 		0236B9732034264A0046900C /* check_buttons.png in Resources */ = {isa = PBXBuildFile; fileRef = 0236B971203425CE0046900C /* check_buttons.png */; };
 		0269A8551FF5F8F00085A37C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
 		0269A8561FF5F8F10085A37C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
-		028B41EC24F1840A00018953 /* glew.c in Sources */ = {isa = PBXBuildFile; fileRef = 028B41E824F1829A00018953 /* glew.c */; };
+		028A6FE725F897C90002FDF5 /* ArrowHeadRoadE.png in Resources */ = {isa = PBXBuildFile; fileRef = 028A6FE325F897C30002FDF5 /* ArrowHeadRoadE.png */; };
+		028A6FE825F897CC0002FDF5 /* ArrowHeadRoadS.png in Resources */ = {isa = PBXBuildFile; fileRef = 028A6FE425F897C30002FDF5 /* ArrowHeadRoadS.png */; };
 		029EC5B9239B095300A7C5E1 /* exclaim.png in Resources */ = {isa = PBXBuildFile; fileRef = 029EC5B7239B094B00A7C5E1 /* exclaim.png */; };
 		02A30B7E20F7A80B008CC1CB /* line_BSolidWhite.png in Resources */ = {isa = PBXBuildFile; fileRef = 025E09DF20D2F11200DD8856 /* line_BSolidWhite.png */; };
 		02B03C1020C72068000F81F0 /* WED_Line_Selector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02B03C0D20C71DE5000F81F0 /* WED_Line_Selector.cpp */; };
@@ -80,6 +84,7 @@
 		02B03C4320C72130000F81F0 /* line_BBrokenRed.png in Resources */ = {isa = PBXBuildFile; fileRef = 02B03C1120C720A1000F81F0 /* line_BBrokenRed.png */; };
 		02B0D4B125D476C60076F8C6 /* WED_AutogenNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02B0D4AB25D476990076F8C6 /* WED_AutogenNode.cpp */; };
 		02B0D4B225D476D60076F8C6 /* WED_AutogenPlacement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02B0D4AD25D476990076F8C6 /* WED_AutogenPlacement.cpp */; };
+		02B0D4B625D47C850076F8C6 /* WED_Road_Selector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02B0D4B325D47C7F0076F8C6 /* WED_Road_Selector.cpp */; };
 		02BDCCFF23A97E2700208CD2 /* tilt_tool.png in Resources */ = {isa = PBXBuildFile; fileRef = 02BDCCFD23A97E0400208CD2 /* tilt_tool.png */; };
 		02BFA21321C1B5970090D527 /* navmap_seaport.png in Resources */ = {isa = PBXBuildFile; fileRef = 02BFA21021C1B58D0090D527 /* navmap_seaport.png */; };
 		02BFA21421C1B59C0090D527 /* navmap_airport.png in Resources */ = {isa = PBXBuildFile; fileRef = 02BFA20F21C1B58D0090D527 /* navmap_airport.png */; };
@@ -1109,6 +1114,13 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		020F9380260D95CE0077222C /* WED_Camera.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Camera.h; sourceTree = "<group>"; };
+		020F9381260D96040077222C /* WED_MapPreviewPane.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_MapPreviewPane.cpp; sourceTree = "<group>"; };
+		020F9382260D96040077222C /* WED_MapPreviewPane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_MapPreviewPane.h; sourceTree = "<group>"; };
+		020F9383260D96040077222C /* WED_MapPreviewWindow.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_MapPreviewWindow.cpp; sourceTree = "<group>"; };
+		020F9384260D96040077222C /* WED_MapPreviewWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_MapPreviewWindow.h; sourceTree = "<group>"; };
+		020F9385260D96040077222C /* WED_PerspectiveCamera.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_PerspectiveCamera.cpp; sourceTree = "<group>"; };
+		020F9386260D96040077222C /* WED_PerspectiveCamera.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_PerspectiveCamera.h; sourceTree = "<group>"; };
 		02198CAE219F68B8008FDB0C /* WED_NavaidLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_NavaidLayer.cpp; sourceTree = "<group>"; };
 		02198CAF219F68B8008FDB0C /* WED_NavaidLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_NavaidLayer.h; sourceTree = "<group>"; };
 		02198CB0219F68B8008FDB0C /* WED_SlippyMap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_SlippyMap.cpp; sourceTree = "<group>"; };
@@ -1121,6 +1133,8 @@
 		0224ED2820048B7F004729CD /* WED_ValidateList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ValidateList.h; sourceTree = "<group>"; };
 		0236B971203425CE0046900C /* check_buttons.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = check_buttons.png; sourceTree = "<group>"; };
 		025E09DF20D2F11200DD8856 /* line_BSolidWhite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = line_BSolidWhite.png; sourceTree = "<group>"; };
+		028A6FE325F897C30002FDF5 /* ArrowHeadRoadE.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ArrowHeadRoadE.png; sourceTree = "<group>"; };
+		028A6FE425F897C30002FDF5 /* ArrowHeadRoadS.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ArrowHeadRoadS.png; sourceTree = "<group>"; };
 		028B41E824F1829A00018953 /* glew.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = glew.c; sourceTree = "<group>"; };
 		028B41E924F1829A00018953 /* glew.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = glew.h; sourceTree = "<group>"; };
 		028B41EA24F1829A00018953 /* glxew.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = glxew.h; sourceTree = "<group>"; };
@@ -1148,6 +1162,8 @@
 		02B0D4AC25D476990076F8C6 /* WED_AutogenNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_AutogenNode.h; sourceTree = "<group>"; };
 		02B0D4AD25D476990076F8C6 /* WED_AutogenPlacement.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_AutogenPlacement.cpp; sourceTree = "<group>"; };
 		02B0D4AE25D476990076F8C6 /* WED_AutogenPlacement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_AutogenPlacement.h; sourceTree = "<group>"; };
+		02B0D4B325D47C7F0076F8C6 /* WED_Road_Selector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Road_Selector.cpp; sourceTree = "<group>"; };
+		02B0D4B425D47C7F0076F8C6 /* WED_Road_Selector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Road_Selector.h; sourceTree = "<group>"; };
 		02BDCCFD23A97E0400208CD2 /* tilt_tool.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tilt_tool.png; sourceTree = "<group>"; };
 		02BFA20F21C1B58D0090D527 /* navmap_airport.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = navmap_airport.png; sourceTree = "<group>"; };
 		02BFA21021C1B58D0090D527 /* navmap_seaport.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = navmap_seaport.png; sourceTree = "<group>"; };
@@ -3324,6 +3340,13 @@
 		D6BC37E10AB22C85003949C5 /* WEDMap */ = {
 			isa = PBXGroup;
 			children = (
+				020F9381260D96040077222C /* WED_MapPreviewPane.cpp */,
+				020F9382260D96040077222C /* WED_MapPreviewPane.h */,
+				020F9383260D96040077222C /* WED_MapPreviewWindow.cpp */,
+				020F9384260D96040077222C /* WED_MapPreviewWindow.h */,
+				020F9385260D96040077222C /* WED_PerspectiveCamera.cpp */,
+				020F9386260D96040077222C /* WED_PerspectiveCamera.h */,
+				020F9380260D95CE0077222C /* WED_Camera.h */,
 				02198CAE219F68B8008FDB0C /* WED_NavaidLayer.cpp */,
 				02198CAF219F68B8008FDB0C /* WED_NavaidLayer.h */,
 				02198CB0219F68B8008FDB0C /* WED_SlippyMap.cpp */,
@@ -3385,6 +3408,8 @@
 		D6BC37E70AB22C85003949C5 /* WEDWindows */ = {
 			isa = PBXGroup;
 			children = (
+				02B0D4B325D47C7F0076F8C6 /* WED_Road_Selector.cpp */,
+				02B0D4B425D47C7F0076F8C6 /* WED_Road_Selector.h */,
 				02B03C0D20C71DE5000F81F0 /* WED_Line_Selector.cpp */,
 				02B03C0E20C71DE5000F81F0 /* WED_Line_Selector.h */,
 				D608C9821E01B8F8002E68F9 /* WED_LibraryFilterBar.cpp */,
@@ -3692,6 +3717,8 @@
 		D6ED3E1E0B6A636C00D5484E /* WEDResources */ = {
 			isa = PBXGroup;
 			children = (
+				028A6FE325F897C30002FDF5 /* ArrowHeadRoadE.png */,
+				028A6FE425F897C30002FDF5 /* ArrowHeadRoadS.png */,
 				02BDCCFD23A97E0400208CD2 /* tilt_tool.png */,
 				029EC5B7239B094B00A7C5E1 /* exclaim.png */,
 				D6B69CDE1C582B6A005C78C5 /* parking_spots */,
@@ -4262,6 +4289,7 @@
 				D67B2A090C5661A100A21ABC /* line_OtherHold.png in Resources */,
 				02A30B7E20F7A80B008CC1CB /* line_BSolidWhite.png in Resources */,
 				D67B2A0A0C5661A100A21ABC /* line_RunwayHold.png in Resources */,
+				028A6FE725F897C90002FDF5 /* ArrowHeadRoadE.png in Resources */,
 				D67B2A0B0C5661A100A21ABC /* line_SolidWhite.png in Resources */,
 				D67B2A0C0C5661A100A21ABC /* line_SolidYellow.png in Resources */,
 				D67B2A0D0C5661A100A21ABC /* line_TaxiCenter.png in Resources */,
@@ -4270,6 +4298,7 @@
 				02198CC021A275F7008FDB0C /* nav_ndb.png in Resources */,
 				D67B2A100C5661A100A21ABC /* line_WideBrokenSingle.png in Resources */,
 				D6C390020FA0D93400EFA56C /* sans.ttf in Resources */,
+				028A6FE825F897CC0002FDF5 /* ArrowHeadRoadS.png in Resources */,
 				D6E30557105F8EE7009E6E7F /* tce_tools.png in Resources */,
 				D63D8E6113F32E5500E353E8 /* map_missing_obj.png in Resources */,
 				D6C21A3C1C41A5DB00EE5FB3 /* taxi_sign.png in Resources */,
@@ -4854,6 +4883,7 @@
 				D6ED36A00B67964D00D5484E /* BitmapUtils.cpp in Sources */,
 				D6ED36A10B67964D00D5484E /* EndianUtils.c in Sources */,
 				D6ED36A20B67964D00D5484E /* MatrixUtils.cpp in Sources */,
+				020F938B260D96180077222C /* WED_MapPreviewWindow.cpp in Sources */,
 				02D82418239EF2790008DBF2 /* 7zFile.c in Sources */,
 				D6ED36A30B67964D00D5484E /* PlatformUtils.mac.mm in Sources */,
 				D6ED36A40B67964D00D5484E /* TexUtils.cpp in Sources */,
@@ -4915,6 +4945,7 @@
 				D6ED37230B67964D00D5484E /* GISUtils.cpp in Sources */,
 				D6ED37240B67964D00D5484E /* ProgressUtils.cpp in Sources */,
 				D6ED37250B67964D00D5484E /* UIUtils.cpp in Sources */,
+				020F938C260D961B0077222C /* WED_PerspectiveCamera.cpp in Sources */,
 				D6ED37270B67964D00D5484E /* XObjReadWrite.cpp in Sources */,
 				D6ED372B0B67964D00D5484E /* perlin.cpp in Sources */,
 				D6ED37350B67964D00D5484E /* GUI_Application.cpp in Sources */,
@@ -4997,6 +5028,7 @@
 				D62FD0090BD54B9F00ED6CF8 /* WED_AirportChain.cpp in Sources */,
 				D62FD0B70BD555B800ED6CF8 /* WED_Taxiway.cpp in Sources */,
 				D62FD0D90BD55AE000ED6CF8 /* WED_AirportBoundary.cpp in Sources */,
+				02B0D4B625D47C850076F8C6 /* WED_Road_Selector.cpp in Sources */,
 				D6139E200BD5793500D50803 /* WED_StructureLayer.cpp in Sources */,
 				D613A2E00BD64C1800D50803 /* WED_TerraserverLayer.cpp in Sources */,
 				D613A3240BD6506F00D50803 /* Terraserver.cpp in Sources */,
@@ -5112,7 +5144,7 @@
 				D6183B9C1D7CAD8900E606E9 /* WED_TruckDestination.cpp in Sources */,
 				D6FEF45918EB045C0035421F /* WED_AptTable.cpp in Sources */,
 				D6FEF50418EB176A0035421F /* GUI_FormWindow.cpp in Sources */,
-				028B41EC24F1840A00018953 /* glew.c in Sources */,
+				020F938A260D960B0077222C /* WED_MapPreviewPane.cpp in Sources */,
 				D6FEF55C18EB23B40035421F /* GUI_Label.cpp in Sources */,
 				D60628E01EA110D90007CC13 /* WED_HierarchyUtils.cpp in Sources */,
 				D6E4C95418EC91DE000D98B8 /* json_reader.cpp in Sources */,
@@ -5278,7 +5310,7 @@
 					"$(inherited)",
 				);
 				LLVM_LTO = NO;
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = macosx;
@@ -5328,7 +5360,7 @@
 					"$(inherited)",
 				);
 				LLVM_LTO = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = macosx;
 				WARNING_CFLAGS = (
@@ -5446,7 +5478,7 @@
 					"$(inherited)",
 				);
 				LLVM_LTO = NO;
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = macosx;
 				WARNING_CFLAGS = (
@@ -6329,7 +6361,7 @@
 					"$(inherited)",
 				);
 				LLVM_LTO = NO;
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = macosx;

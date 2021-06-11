@@ -40,6 +40,8 @@
 #include "WED_Line_Selector.h"
 #endif
 
+#include "WED_Road_Selector.h"
+
 #define RESIZE_MARGIN 4
 
 #if APL
@@ -487,7 +489,7 @@ int GUI_TextTable::CreateMenuFromDict(vector<GUI_MenuItem_t>& items, vector<int>
 		items[i].key = 0;
 		items[i].flags = 0;
 		items[i].cmd = 0;
-		if (mEditInfo.content_type == gui_Cell_Enum)
+		if (mEditInfo.content_type == gui_Cell_Enum || mEditInfo.content_type == gui_Cell_RoadType)
 		{
 			items[i].checked = (mEditInfo.int_val == it->first);
 			if (items[i].checked)
@@ -710,18 +712,18 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 			return 1;
 		}
 		break;
+	case gui_Cell_RoadType:
 	case gui_Cell_Enum:
 		{
 			GUI_EnumDictionary	dict;
 			mContent->GetEnumDictionary(cell_x, cell_y,dict);
 			if (!dict.empty())
 			{
-				vector<GUI_MenuItem_t>	items(dict.size()+1);
 #if USE_LINE_SELECTOR_POPUP
-				if(mEditInfo.content_type == gui_Cell_LineEnumSet)
+				if(mEditInfo.content_type == gui_Cell_LineEnumSet || mEditInfo.content_type == gui_Cell_RoadType)
 				{
 					cell_bounds[0] -= mEditInfo.indent_level * mCellIndent;	// clean out bounds...will get changed again later anyway
-					CreateEdit(cell_bounds,&items);
+					CreateEdit(cell_bounds, &dict);
 					mClickCellX = cell_x;
 					mClickCellY = cell_y;
 					return 1;
@@ -729,7 +731,8 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 				else
 #endif
 				{
-					vector<int>	enum_vals(dict.size());
+					vector<GUI_MenuItem_t>	items(dict.size()+1);
+					vector<int>				enum_vals(dict.size());
 					int cur = CreateMenuFromDict(items, enum_vals, dict);
 					int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0],cell_bounds[3],button, cur);
 					if (choice >= 0 && choice < enum_vals.size())
@@ -749,14 +752,11 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 			mContent->GetEnumDictionary(cell_x, cell_y,dict);
 			if (!dict.empty())
 			{
-				vector<GUI_MenuItem_t>	items(dict.size()+1);
-				vector<int>				enum_vals(dict.size());
-				int cur = CreateMenuFromDict(items, enum_vals, dict);
 #if USE_LINE_SELECTOR_POPUP
-				if(mEditInfo.content_type == gui_Cell_LineEnumSet)
+				if(mEditInfo.content_type == gui_Cell_LineEnumSet || mEditInfo.content_type == gui_Cell_RoadType)
 				{
 					cell_bounds[0] -= mEditInfo.indent_level * mCellIndent;	// clean out bounds...will get changed again later anyway
-					CreateEdit(cell_bounds,&items);
+					CreateEdit(cell_bounds, &dict);
 					mClickCellX = cell_x;
 					mClickCellY = cell_y;
 					return 1;
@@ -764,6 +764,9 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 				else
 #endif
 				{
+					vector<GUI_MenuItem_t>	items(dict.size()+1);
+					vector<int>				enum_vals(dict.size());
+					int cur = CreateMenuFromDict(items, enum_vals, dict);
 					int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0],cell_bounds[3],button, cur);
 					if (choice >= 0 && choice < enum_vals.size())
 					{
@@ -1129,9 +1132,9 @@ GUI_DragOperation	GUI_TextTable::CellDrop		(int cell_bounds[4], int cell_x, int 
 	return mLastOp;
 }
 
-void		GUI_TextTable::CreateEdit(int cell_bounds[4], const vector<GUI_MenuItem_t> * dict)
+void		GUI_TextTable::CreateEdit(int cell_bounds[4], const GUI_EnumDictionary * dict)
 {
-	if(mEditInfo.content_type == gui_Cell_TaxiText || mEditInfo.content_type == gui_Cell_LineEnumSet)
+	if(mEditInfo.content_type == gui_Cell_TaxiText || mEditInfo.content_type == gui_Cell_LineEnumSet || mEditInfo.content_type == gui_Cell_RoadType)
 	{
 		int pb[4];
 		GUI_Pane * parent = mParent;
@@ -1150,13 +1153,16 @@ void		GUI_TextTable::CreateEdit(int cell_bounds[4], const vector<GUI_MenuItem_t>
 			{
 				mEditor = new WED_Sign_Editor(this);
 			}
+			else if(mEditInfo.content_type == gui_Cell_RoadType)
+			{
+				if(dict == nullptr) return;
+				mEditor = new WED_Road_Selector(this, *dict);
+			}
 #if USE_LINE_SELECTOR_POPUP
 			else
 			{
-				if (dict == NULL) return;
-				WED_Line_Selector * mLineField = new WED_Line_Selector(this);
-				mLineField->SetChoices(dict);
-				mEditor = mLineField;
+				if(dict == nullptr) return;
+				mEditor = new WED_Line_Selector(this, *dict);
 			}
 #endif
 			mEditor->SetParent(mCatcher);
@@ -1256,7 +1262,7 @@ int			GUI_TextTable::TerminateEdit(bool inSave, bool in_all, bool in_close)
 
 	if (cmd_field && cmd_field->IsFocused() &&
 		(mEditInfo.content_type == gui_Cell_EditText || mEditInfo.content_type == gui_Cell_TaxiText ||  mEditInfo.content_type == gui_Cell_Integer ||
-		 mEditInfo.content_type == gui_Cell_Double || mEditInfo.content_type == gui_Cell_LineEnumSet ))
+		 mEditInfo.content_type == gui_Cell_Double || mEditInfo.content_type == gui_Cell_LineEnumSet || mEditInfo.content_type == gui_Cell_RoadType))
 	{
 		// This is a bit tricky: _if_ we are going to kill off the text field later, memorize the field and mark our member var
 		// as null now.  The reason: sometimes the call to our content's AcceptEdit below in the in_save block can cause a message like

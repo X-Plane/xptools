@@ -87,6 +87,22 @@
 	_R(WED_FacadeRing) \
 	_R(WED_FacadeNode)
 
+#if ROAD_EDITING
+
+#define REGISTER_LIST_ATC \
+	_R(WED_TaxiRoute) \
+	_R(WED_TaxiRouteNode) \
+	_R(WED_ATCFlow) \
+	_R(WED_ATCTimeRule) \
+	_R(WED_ATCWindRule) \
+	_R(WED_ATCRunwayUse) \
+	_R(WED_TruckParkingLocation) \
+	_R(WED_TruckDestination) \
+	_R(WED_RoadNode) \
+	_R(WED_RoadEdge)
+
+#else
+
 #define REGISTER_LIST_ATC \
 	_R(WED_TaxiRoute) \
 	_R(WED_TaxiRouteNode) \
@@ -96,8 +112,8 @@
 	_R(WED_ATCRunwayUse) \
 	_R(WED_TruckParkingLocation) \
 	_R(WED_TruckDestination)
-	//_R(WED_RoadNode) \
-	//_R(WED_RoadEdge)
+
+#endif
 
 #define _R(x)	extern void x##_Register();
 REGISTER_LIST

@@ -88,7 +88,7 @@ XWinGL::XWinGL(int default_dnd, XWinGL * inShare) :
 		[shared release];
 	}
 	[gl_view setOwner:this];
-	
+	[gl_view setWantsBestResolutionOpenGLSurface:NO];
 	[gl_view setAutoresizingMask:NSViewHeightSizable|NSViewWidthSizable];
 	
 	[parent addSubview:gl_view];
@@ -136,7 +136,8 @@ XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX,
 	}
 
 	[gl_view setOwner:this];
-	
+	[gl_view setWantsBestResolutionOpenGLSurface:NO];
+
 	[[gl_view openGLContext] makeCurrentContext];
 	
 	mContext = gl_view;

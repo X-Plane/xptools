@@ -824,6 +824,18 @@ void			XWin::GetBounds(int * outX, int * outY)
 	if (outY) *outY = me_now.size.height;
 }
 
+void			XWin::GetDesktop(int bounds[4])
+{
+	NSRect desk = [[[NSScreen screens] objectAtIndex:0] visibleFrame];
+	
+	desk = [mWindow contentRectForFrameRect:desk];
+
+	bounds[0] = desk.origin.x;
+	bounds[1] = desk.origin.y;
+	bounds[2] = bounds[0] + desk.size.width;
+	bounds[3] = bounds[1] + desk.size.height;
+}
+
 void			XWin::GetWindowLoc(int * outX, int * outY)
 {
 	float h = [[[NSScreen screens] objectAtIndex:0] frame].size.height;
@@ -835,7 +847,18 @@ void			XWin::GetWindowLoc(int * outX, int * outY)
 	if (outY) *outY = h - me_now.origin.y;
 }
 
+float			XWin::GetRetinaBounds(int fbuf[4])
+{
+	NSRect rect = [mWindow frame];
+	rect = [mWindow contentRectForFrameRect:rect];
+	rect = [mWindow convertRectToBacking:rect];
 
+	fbuf[0] = rect.origin.x;
+	fbuf[1] = rect.origin.y;
+	fbuf[2] = fbuf[0] + rect.size.width;
+	fbuf[3] = fbuf[1] + rect.size.height;
+	return mWindow.backingScaleFactor;
+}
 
 void		XWin::GetMouseLoc(int * outX, int * outY)
 {

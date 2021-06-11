@@ -68,6 +68,9 @@ struct	WED_PreviewItem {
 class WED_PreviewLayer  : public WED_MapLayer {
 public:
 
+struct Options {
+			int		minLineThicknessPixels = MIN_PIXELS_PREVIEW;
+	};
 						 WED_PreviewLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver);
 	virtual				~WED_PreviewLayer();
 
@@ -75,6 +78,7 @@ public:
 			float		GetPavementTransparency(void) const;
 			void		SetObjDensity(int density);
 			int			GetObjDensity(void) const;
+			void		SetOptions(const Options& options);
 
 	virtual	bool		DrawEntityVisualization		(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected);
 	virtual	void		GetCaps						(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks);
@@ -90,7 +94,7 @@ private:
 	int							mRunwayLayer;		// Keep adding 1 to layer as we find runways, etc.  This means the runway's layer order
 	int							mTaxiLayer;			// IS the hierarchy/export order, which is good.
 	int							mShoulderLayer;
-
+	Options						mOptions;
 
 };
 
