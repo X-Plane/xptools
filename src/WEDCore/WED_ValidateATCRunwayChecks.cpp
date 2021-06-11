@@ -15,6 +15,7 @@
 #include "WED_Runway.h"
 #include "WED_TaxiRoute.h"
 #include "WED_RampPosition.h"
+#include "WED_RoadEdge.h"
 
 #include "WED_ResourceMgr.h"
 #include "WED_HierarchyUtils.h"
@@ -825,32 +826,49 @@ static bool DoHotZoneChecks( const RunwayInfo& runway_info,
 // flag all ground traffic routes that cross a runways hitbox
 
 static void AnyTruckRouteNearRunway( const RunwayInfo& runway_info,
-							 const TaxiRouteInfoVec_t& all_routes,
+							 const TaxiRouteInfoVec_t& all_routes, const vector<WED_RoadEdge*>& roads,
 							 validation_error_vector& msgs, WED_Airport* apt)
 {
-	set<WED_TaxiRoute*> close_routes;
 	Polygon2 runway_hit_box(runway_info.corners_geo);
 
-	Vector2 side_ext = runway_info.width_vec_1m * 15.0;  // Require 10m side clearance, some 15m to the *centerline* of that road
-	Vector2 len_ext  = runway_info.dir_vec_1m   * 30.0;  // required distance of ground traffic routes from runway ends in meters
-	if(runway_info.runway_ptr->GetLength() > 1500.0 ) len_ext *= 2.0; // Require more off-end clearance for full-size runways
+	Vector2 side_ext = runway_info.width_vec_1m * (5.0 + 0.5 * runway_info.runway_ptr->GetWidth());  // to centerline of road. Edge-2-edge spacing is 5-10m less, depending on road width.
+	Vector2 len_ext  = runway_info.dir_vec_1m  * (runway_info.runway_ptr->GetLength() > 1500.0 ? 60.0 : 30.0);  // to go around end of runway
 	runway_hit_box[0] -= len_ext + side_ext;
 	runway_hit_box[1] += len_ext - side_ext;
 	runway_hit_box[2] += len_ext + side_ext;
 	runway_hit_box[3] -= len_ext - side_ext;
 
+	set<WED_TaxiRoute*> close_routes;
 	for(auto& route_itr : all_routes)
-	{
 		if(runway_hit_box.intersects(route_itr.segment_geo) || runway_hit_box.inside(route_itr.segment_geo.p1))
-		{
 			close_routes.insert(route_itr.ptr);
+
+	set<WED_RoadEdge*> close_roads;
+	for(auto road_itr : roads)
+	{
+		Bezier2 b;
+		Segment2 s;
+		for(int i = road_itr->GetNumSides() -1; i >= 0; --i)
+		{
+			road_itr->GetSide(gis_Geo, i, b);
+			s = b.as_segment();
+			if(runway_hit_box.intersects(s) || runway_hit_box.inside(s.p1))
+			{
+				close_roads.insert(road_itr);
+				break;
+			}
 		}
 	}
 
-    if (close_routes.size())
+    if (close_routes.size() || close_roads.size())
     {
-		string msg = "Truck Route too close to runway " + runway_info.name;
-		msgs.push_back(validation_error_t(msg, err_atcrwy_truck_route_too_close_to_runway, close_routes, apt));
+		if(close_routes.size())
+		{
+			string msg = "Ground Vehicle Route too close to runway " + runway_info.name;
+			msgs.push_back(validation_error_t(msg, err_atcrwy_truck_route_too_close_to_runway, close_routes, apt));
+		}
+		if(close_roads.size())
+			msgs.push_back(validation_error_t("Road too close to runway", err_atcrwy_truck_route_too_close_to_runway, close_roads, apt));
 
 #if DEBUG_VIS_LINES == 2
 	}
@@ -1065,7 +1083,8 @@ static void TwyNameCheck(const TaxiRouteInfoVec_t& all_taxiroutes_info, validati
 
 void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs, const TaxiRouteVec_t& all_taxiroutes_plain,
 							const RunwayVec_t& all_runways, const set<int>& legal_rwy_oneway, const set<int>& legal_rwy_twoway,
-							const FlowVec_t& all_flows, WED_ResourceMgr * res_mgr, const vector<WED_RampPosition*>& ramps)
+							const FlowVec_t& all_flows, WED_ResourceMgr * res_mgr, const vector<WED_RampPosition*>& ramps,
+							const vector<WED_RoadEdge*>& roads)
 {
 	Bbox2 box;
 	apt.GetBounds(gis_Geo, box);
@@ -1079,7 +1098,7 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs, cons
 
 	all_taxiroutes_info.reserve(all_taxiroutes_plain.size());
 
-	for(auto& itr : all_taxiroutes_plain)
+	for(auto itr : all_taxiroutes_plain)
 	{
 		TaxiRouteInfo tr_info(itr,translator);
 		all_taxiroutes_info.push_back(tr_info);
@@ -1096,7 +1115,7 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs, cons
 	TwyNameCheck(all_taxiroutes_info, msgs, &apt);
 
 	RunwayInfoVec_t all_runways_info;
-	for(auto& itr : all_runways)
+	for(auto itr : all_runways)
 		all_runways_info.push_back(RunwayInfo(itr,translator));
 
 	if(!all_aircraftroutes.empty())
@@ -1149,7 +1168,7 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs, cons
 			}
 	#endif
 			AssignRunwayUse(runway_info_itr, all_use_rules);
-			bool passes_hotzone_checks = DoHotZoneChecks(runway_info_itr, all_taxiroutes_info, ramps, msgs, &apt);
+			bool passes_hotzone_checks = DoHotZoneChecks(runway_info_itr, all_aircraftroutes, ramps, msgs, &apt);
 			//Nothing to do here yet until we have more checks after this
 		}
 	}
@@ -1167,7 +1186,7 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs, cons
 	if(!all_truckroutes.empty())
 	{
 		for(auto runway_info_itr : all_runways_info)
-			AnyTruckRouteNearRunway(runway_info_itr, all_truckroutes, msgs, &apt);
+			AnyTruckRouteNearRunway(runway_info_itr, all_truckroutes, roads, msgs, &apt);
 	}
 
 }

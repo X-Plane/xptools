@@ -41,6 +41,7 @@ enum {
 	prop_String,
 	prop_FilePath,		// Returns as string
 	prop_TaxiSign,		// Returns as string
+	prop_RoadType,		// Returns as int, only assigned in WED_RoadEdge
 	prop_Bool,			// Returns as int
 	prop_Enum,			// Returns as int
 	prop_EnumSet

@@ -112,7 +112,7 @@ struct REN_facade_wall_filters_t {
 	vector<REN_facade_wall_filter_t>	filters;
 	bool	is_ok(xflt len, xflt rel_hdg) const;
 };
-	
+
 struct REN_facade_template_t {
 	struct obj {
 		xint		idx;
@@ -122,13 +122,15 @@ struct REN_facade_template_t {
 	struct mesh {
 		vector<xflt> 	xyz;
 		vector<xflt>	nml;
-		vector<xflt> 	uv;      // 5 floats per vertex, skipping normals
+		vector<xflt> 	uv;
 		vector<xint>	idx;
+		int				idx_start, idx_cnt;
+		int				mesh_start;
 	};
 
 	vector<obj>			objs;
 	vector<mesh>		meshes;		// Each mesh within this template.
-	xflt					bounds[3];
+	xflt				bounds[3];
 };
 
 

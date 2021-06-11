@@ -94,37 +94,32 @@ void	WED_ToolInfoAdapter::GetCellContent(
 		case prop_FilePath:	the_content.content_type = gui_Cell_FileText;		the_content.text_val = val.string_val;		break;
 		case prop_TaxiSign:	the_content.content_type = gui_Cell_TaxiText;		the_content.text_val = val.string_val;		break;
 		case prop_Bool:		the_content.content_type = gui_Cell_CheckBox;		the_content.int_val = val.int_val;			break;
-		case prop_Enum:		the_content.content_type = gui_Cell_Enum;			the_content.int_val = val.int_val;			break;
-		case prop_EnumSet:	the_content.content_type = gui_Cell_EnumSet;		the_content.int_set_val = val.set_val;		break;
+		case prop_RoadType: the_content.content_type = gui_Cell_RoadType;		the_content.int_val = val.int_val;
+							mTool->GetNthPropertyDictItem(cell_x / 2, val.int_val,the_content.text_val);					break;
+		case prop_Enum:		the_content.content_type = gui_Cell_Enum;			the_content.int_val = val.int_val;
+							mTool->GetNthPropertyDictItem(cell_x / 2, val.int_val,the_content.text_val);					break;
+		case prop_EnumSet:														the_content.int_set_val = val.set_val;
+				the_content.content_type = (inf.domain == LinearFeature ? gui_Cell_LineEnumSet : gui_Cell_EnumSet);
+				the_content.text_val.clear();
+				for(set<int>::iterator iter=val.set_val.begin();iter != val.set_val.end(); ++iter)
+				{
+					if (iter!=val.set_val.begin()) the_content.text_val += ",";
+					string label;
+					mTool->GetNthPropertyDictItem(cell_x / 2,*iter,label);
+	#if 0			// for now print the full style name, not the icon - as the icons don't allow to distinguish some wide lines from regular ones
+					if (ENUM_Domain(*iter) == LinearFeature)
+					{
+						label = ENUM_Name(*iter);
+						label += ".png";
+						the_content.string_is_resource = 1;
+					}
+	#endif
+					the_content.text_val += label;
+				}
+				if (the_content.text_val.empty())	the_content.text_val="None";
+				if (inf.exclusive && the_content.int_set_val.empty()) the_content.int_set_val.insert(0);                     break;
 		}
 		the_content.can_edit = inf.can_edit;
-
-		if (inf.prop_kind == prop_Enum)
-			mTool->GetNthPropertyDictItem(cell_x / 2, val.int_val,the_content.text_val);
-
-		if (inf.prop_kind == prop_EnumSet)
-		{
-			the_content.content_type = (inf.domain == LinearFeature ? gui_Cell_LineEnumSet : gui_Cell_EnumSet);
-			the_content.text_val.clear();
-			for(set<int>::iterator iter=val.set_val.begin();iter != val.set_val.end(); ++iter)
-			{
-				if (iter!=val.set_val.begin()) the_content.text_val += ",";
-				string label;
-				mTool->GetNthPropertyDictItem(cell_x / 2,*iter,label);
-#if 0			// for now print the full style name, not the icon - as the icons don't allow to distinguish some wide lines from regular ones
-				if (ENUM_Domain(*iter) == LinearFeature)
-				{
-					label = ENUM_Name(*iter);
-					label += ".png";
-					the_content.string_is_resource = 1;
-				}
-#endif
-				the_content.text_val += label;
-			}
-			if (the_content.text_val.empty())	the_content.text_val="None";
-			if(inf.exclusive && the_content.int_set_val.empty()) the_content.int_set_val.insert(0);
-		}
-
 	}
 	else
 	{
@@ -166,7 +161,10 @@ void	WED_ToolInfoAdapter::AcceptEdit(
 	mTool->GetNthPropertyInfo(cell_x / 2,inf);
 	switch(inf.prop_kind) {
 	case prop_Int:
-		val.prop_kind = prop_Int;
+	case prop_Bool:
+	case prop_Enum:
+	case prop_RoadType:
+		val.prop_kind = inf.prop_kind;
 		val.int_val = the_content.int_val;
 		break;
 	case prop_Double:
@@ -174,24 +172,10 @@ void	WED_ToolInfoAdapter::AcceptEdit(
 		val.double_val = the_content.double_val;
 		break;
 	case prop_String:
-		val.prop_kind = prop_String;
-		val.string_val = the_content.text_val;
-		break;
 	case prop_TaxiSign:
-		val.prop_kind = prop_TaxiSign;
-		val.string_val = the_content.text_val;
-		break;
 	case prop_FilePath:
-		val.prop_kind = prop_FilePath;
+		val.prop_kind = inf.prop_kind;
 		val.string_val = the_content.text_val;
-		break;
-	case prop_Bool:
-		val.prop_kind = prop_Bool;
-		val.int_val = the_content.int_val;
-		break;
-	case prop_Enum:
-		val.prop_kind = prop_Enum;
-		val.int_val = the_content.int_val;
 		break;
 	case prop_EnumSet:
 		val.prop_kind = prop_EnumSet;
@@ -327,11 +311,12 @@ int			WED_ToolInfoAdapter::GetCellWidth(int n)
 	// Check runway-creation tool if you retune these...it is the most space constrained up top!
 	case prop_Int:
 	case prop_Double:		return inf.digits * GUI_MeasureRange(OUR_FONT, zero,zero+1) + 10;
+	case prop_RoadType:
 	case prop_String:		return 200;
 	case prop_FilePath:		return 200;
 	case prop_Bool:			return 25;
 	case prop_Enum:
-	case prop_EnumSet:		
+	case prop_EnumSet:
 							switch (inf.domain)
 							{
 								case ATCVehicleClass:
@@ -345,7 +330,7 @@ int			WED_ToolInfoAdapter::GetCellWidth(int n)
 								case LinearFeature: return 150;
 								case ATCIcaoWidth:
 								case Edge_Lights:   return 50;
-								
+
 								default:            return 75;
 							}
 	case prop_TaxiSign:		return 150;

@@ -42,7 +42,8 @@ public:
 	void		SetRecentName(const string& name);
 
 	int			CountCustomPackages(void) const;
-	
+	pair<int, int>	GlobalPackages(void) const;
+
 	int			CountPackages(void) const;
 	void		GetNthPackageName(int n, string& package) const;
 	/*Get the a package's path by passing in a number and the name of said package,

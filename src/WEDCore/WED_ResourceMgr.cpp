@@ -945,7 +945,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 				}
 				else if(tpl && MFS_string_match(&s,"IDX", false))
 				{
-					while(MFS_has_word(&s))
+					while (MFS_has_word(&s))
 						tpl->meshes.back().idx.push_back(MFS_int(&s));
 				}
 				else if(tpl && (MFS_string_match(&s,"ATTACH_DRAPED", false) || MFS_string_match(&s,"ATTACH_GRADED", false)))
@@ -968,6 +968,11 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 					while(MFS_has_word(&s))
 						fac->floors.back().roofs.push_back(REN_facade_roof_t(MFS_double(&s)));
 					fac->has_roof = true;
+				}
+				else if (MFS_string_match(&s, "TWO_SIDED_ROOF", true))
+				{
+					if (!fac->floors.back().roofs.empty())
+						fac->floors.back().roofs.back().two_sided = true;
 				}
 				else if(MFS_string_match(&s,"ROOF_SCALE", false))
 				{
@@ -1042,10 +1047,9 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 					t.bounds[1] = xyz_max[0];               // to ID walls that protrude outwards from roofs
 					t.bounds[2] = xyz_max[2] - xyz_min[2];  // used all thoughout to scale segment widths
 
-					// normalize z-direction coordinates
 					for(auto& m : t.meshes)
-						for(int i = 0; i < m.xyz.size(); i +=3 )
-							m.xyz[i+2] = interp(xyz_min[2], 0.0, xyz_max[2], 1.0, m.xyz[i+2])-1;
+						for(int i = 0; i < m.xyz.size(); i += 3)
+							m.xyz[i + 2] -= xyz_max[2];    // right-adjust all wall segments to go from -xx to 0
 				}
 
 				for(auto& w : f.walls)
@@ -1704,49 +1708,379 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 }
 
 #if ROAD_EDITING
-bool	WED_ResourceMgr::GetRoad(const string& path, road_info_t& out_info)
+bool	WED_ResourceMgr::GetRoad(const string& path, const road_info_t *& out_info)
 {
 	auto i = mRoad.find(path);
 	if(i != mRoad.end())
 	{
-		out_info = i->second;
+		out_info = &i->second;
 		return true;
 	}
 
+	out_info = nullptr;
 	string p = mLibrary->GetResourcePath(path);
-	MFMemFile * road = MemFile_Open(p.c_str());
-	if(!road) return false;
+	MFMemFile * mf = MemFile_Open(p.c_str());
+	if(!mf) return false;
 
 	MFScanner	s;
-	MFS_init(&s, road);
+	MFS_init(&s, mf);
 
 	int versions[] = { 800, 0 };
 	int v;
 	if((v=MFS_xplane_header(&s,versions,"ROADS",NULL)) == 0)
 	{
-		MemFile_Close(road);
+		MemFile_Close(mf);
 		return false;
 	}
 
-	string last_name;
+	road_info_t * rd = &mRoad[path];
+	out_info = rd;
+
+	road_info_t::vroad_t vroad;
+	int last_vroad = 0;
+
+	road_info_t::road_t road;
+	int last_road = 0;
+
+	double max_lod = 0.0;
+	double last_scale = 0.0;
+	double last_center = 0.0;
+
+	double leftmost_lane = 999;
+	double rightmost_lane = -999;
+	int	lane_direction = -1;
+//	string last_name;
 
 	while(!MFS_done(&s))
 	{
-		if(MFS_string_match(&s,"#VROAD",false))
+		if(MFS_string_match(&s,"#VROAD", false))
 		{
-			MFS_string(&s,&last_name);
+//			if (last_vroad)
+//				printf("vroad %d %s referencing road %d %s\n", last_vroad, vroad.description.c_str(), vroad.rd_type, out_info.road_types.count(last_vroad) ? "(ok)" : "(unk)");
+
+			MFS_string(&s,&vroad.description); // vroad type display name
 		}
-		if(MFS_string_match(&s, "ROAD_DRAPED", 0))
+		else if(MFS_string_match(&s, "ROAD_DRAPED", false))
 		{
-			MFS_int(&s);		// draping mode
-			int id = MFS_int(&s);
-			out_info.vroad_types[id] = last_name;
+			MFS_int(&s);
+			last_vroad = MFS_int(&s);		// vroad type number
+			vroad.rd_type = 0;
+			MFS_double(&s);
+			MFS_double(&s);
+
+			rd->vroad_types[last_vroad] = vroad;
+		}
+		else if(MFS_string_match(&s, "ROAD_DRAPE_CHOICE", false))
+		{
+			MFS_double(&s);
+			vroad.rd_type = MFS_int(&s);
+
+			if (last_vroad && vroad.rd_type)
+//				rd->vroad_types[last_vroad] = vroad;  // if we take the last road choice for previews, thats usually the bridges.
+                                                      // we can assume the first segment is just the pavement and minimal sidewalks,
+													  // which is OK for a 'simple' preview using only a SINGLE degment
+			{
+				rd->vroad_types[last_vroad] = vroad;  // the first road choice is usually the non-wet/non-graded one, with full sidewalks etc
+				                                      // but often built from multiple segements - so we need to show them all to be meaningfull
+				last_vroad = 0;
+			}
+		}
+		else if(MFS_string_match(&s, "TEXTURE", false))
+		{
+			MFS_int(&s);       	 	     // z-index, we dont care
+			string tex_name;
+			MFS_string(&s,&tex_name);    // texture name
+			rd->textures.push_back(tex_name);
+		}
+		else if(MFS_string_match(&s, "ROAD_TYPE", false))
+		{
+			last_road    = MFS_int(&s);   	        // road type number
+			road.width   = MFS_double(&s);          // nominal width of pavement in mtr
+			road.length  = MFS_double(&s);			// length for repeating texture in mtr
+			road.tex_idx = MFS_int(&s);       	 	// texture index
+			road.traffic_width = 0.0;
+			road.oneway = true;
+			// ignore the rgb definitions for map display colors, for now
+			rd->road_types[last_road] = road;
+			max_lod = 0.0;
+			leftmost_lane = 999;
+			rightmost_lane = -999;
+			lane_direction = -1;
+
+//			printf("road %d w=%.1f\n",last_road, road.width);
+		}
+		else if(MFS_string_match(&s, "ROAD_CENTER", false))
+		{
+			last_center  = MFS_double(&s);         // define lateral offset relative to vector, added to everything
+		}
+		else if(MFS_string_match(&s, "SCALE", false))
+		{
+			last_scale = MFS_double(&s);
+		}
+		else if(MFS_string_match(&s, "SEGMENT_DRAPED", false))
+		{
+			auto& r = rd->road_types[last_road];
+
+			int tex_idx = MFS_int(&s);
+			MFS_double(&s);						// min lod
+			double lod = MFS_double(&s);		// max lod
+		//	if (max_lod <= lod)
+			{
+				r.tex_idx = tex_idx;
+		//		if(max_lod < lod) r.segs.clear();
+				max_lod = lod;
+				r.segs.push_back(road_info_t::road_t::seg_t());
+
+				MFS_double(&s);
+
+				r.segs.back().left   = MFS_double(&s) - last_center;
+				r.segs.back().s_left = MFS_double(&s) / last_scale;
+				r.segs.back().right   = MFS_double(&s) - last_center;
+				r.segs.back().s_right = MFS_double(&s) / last_scale;
+			}
+
+//			printf("road %d w=%.1f\n",last_road, road.width);
+		}
+		else if(MFS_string_match(&s, "SEGMENT_GRADED", false))
+		{
+			auto& r = rd->road_types[last_road];
+
+			int tex_idx = MFS_int(&s);
+			MFS_double(&s);						// min lod
+			double lod = MFS_double(&s);		// max lod
+		//	if (max_lod <= lod)
+			{
+		//		if(max_lod < lod) r.segs.clear();
+				max_lod = lod;
+				r.segs.push_back(road_info_t::road_t::seg_t());
+
+				MFS_double(&s);
+
+				r.segs.back().left   = MFS_double(&s) - last_center;
+				double h_left =        MFS_double(&s);
+				r.segs.back().s_left = MFS_double(&s) / last_scale;
+				r.segs.back().right   = MFS_double(&s) - last_center;
+				double h_right =        MFS_double(&s);
+				r.segs.back().s_right = MFS_double(&s) / last_scale;
+
+				if(h_left != 0.0 || h_right != 0.0)
+					r.segs.pop_back();                  // ignore the elevated/sloped sections for our previews
+				else
+					r.tex_idx = tex_idx;
+
+			}
+//			printf("road %d w=%.1f\n",last_road, road.width);
+		}
+		else if(MFS_string_match(&s, "OBJECT", false))
+		{
+			string obj_path;   MFS_string(&s, &obj_path);
+			double lat_offs  = (MFS_double(&s) - 0.5) * rd->road_types[last_road].width;
+			double rotation  = MFS_double(&s);
+			                   MFS_int(&s);        // on ground/elevated
+			double frequency = MFS_double(&s);
+			double strt_offs = MFS_double(&s);
+
+			if(frequency == 0.0)
+			{
+				rd->road_types[last_road].vert_objs.push_back(road_info_t::road_t::obj_t());
+				auto& o = rd->road_types[last_road].vert_objs.back();
+				o.path     = obj_path;
+				o.lat_offs = lat_offs - last_center;
+				o.rotation = rotation;
+			}
+		}
+		else if(MFS_string_match(&s, "WIRE", false))
+		{
+			rd->road_types[last_road].wires.push_back(road_info_t::road_t::wire_t());
+			auto& w = rd->road_types[last_road].wires.back();
+
+			               MFS_double(&s);     // min lod
+			               MFS_double(&s);     // max lod
+			w.lat_offs =  (MFS_double(&s) -0.5) * rd->road_types[last_road].width;  // convert to absolute offset
+			w.end_height = MFS_double(&s);
+			w.droop =      MFS_double(&s);	   // 0 no droop, 1 touches ground in middle
+
+			if(leftmost_lane > w.lat_offs)  leftmost_lane = w.lat_offs;
+			if(rightmost_lane < w.lat_offs) rightmost_lane = w.lat_offs;
+			double traffic_width = rightmost_lane - leftmost_lane + 4.0;
+			if(traffic_width > rd->road_types[last_road].traffic_width)
+				rd->road_types[last_road].traffic_width = traffic_width;
+			rd->road_types[last_road].oneway = false;
+		}
+		else if(MFS_string_match(&s, "OBJECT_DRAPED", false))
+		{
+			string type;       MFS_string(&s, &type);
+			if(type == "DIST")                       // there are also BEGIN and END types - placed where vectors dead-end
+			{
+				rd->road_types[last_road].dist_objs.push_back(road_info_t::road_t::obj_t());
+				auto& o = rd->road_types[last_road].dist_objs.back();
+
+							  MFS_string(&s, &o.path);
+				o.lat_offs  = MFS_double(&s) - last_center;   // min offset
+				              MFS_double(&s);   // max offset, if not same, random variation
+				o.rotation  = MFS_double(&s);   // min rotation
+				              MFS_double(&s);   // max rotation
+				              MFS_double(&s);   // usually int, but sometimes float representing almost whole numbers plus tiny (1e-6) offsets
+				              MFS_double(&s);   // same as above
+				              MFS_string(&s, &type); // two floats in x.x/y.y format or one int
+				              MFS_string(&s, &type); // two floats in x.x/y.y format or one int
+				              MFS_int(&s);
+				              MFS_int(&s);
+			}
+		}
+		else if(MFS_string_match(&s, "OBJECT_GRADED", false))
+		{
+			string type;       MFS_string(&s, &type);
+			if(type == "DIST")                      // placed by distance along vector
+			{
+				rd->road_types[last_road].dist_objs.push_back(road_info_t::road_t::obj_t());
+				auto& o = rd->road_types[last_road].dist_objs.back();
+
+							  MFS_string(&s, &o.path);
+				o.lat_offs  = MFS_double(&s) - last_center;   // min offset
+				              MFS_double(&s);   // max offset, if not same, random variation
+				o.rotation  = MFS_double(&s);   // min rotation
+				              MFS_double(&s);   // max rotation
+				              MFS_double(&s);   // usually int, but sometimes float representing almost whole numbers plus tiny (1e-6) offsets
+				              MFS_double(&s);   // same as above
+				              MFS_string(&s, &type); // two floats in x.x/y.y format or one int
+				              MFS_string(&s, &type); // same as above
+				              MFS_int(&s);
+				              MFS_int(&s);
+			}
+			else if(type == "VERT")                 // placed only at vertices, e.g. powerlines
+			{
+				rd->road_types[last_road].vert_objs.push_back(road_info_t::road_t::obj_t());
+				auto& o = rd->road_types[last_road].vert_objs.back();
+
+				              MFS_string(&s, &o.path);
+				o.lat_offs  = MFS_double(&s) - last_center;   // min offset
+				              MFS_double(&s);   // max offset, if not same, random variation
+				o.rotation  = MFS_double(&s);   // min rotation
+				              MFS_double(&s);   // max rotation
+				              MFS_double(&s);   // usually int, but sometimes float representing almost whole numbers plus tiny (1e-6) offsets
+				              MFS_double(&s);   // same as above
+							  MFS_string(&s, &type); // two floats in x.x/y.y format usually all zero
+				              MFS_string(&s, &type); // same as above
+			}
+		}
+		else if(MFS_string_match(&s, "OBJECT_FREQ", false))
+		{
+			                   MFS_double(&s);       // first paird efinex a subrange of 0.0 to 1.0, like 0.0 1.0 or 0.3 0.7
+			                   MFS_double(&s);
+
+			                   MFS_double(&s);       // a set of two to four pairs of numbers. First in each pair is usually a power-of-2 or large whole number
+			                   MFS_double(&s);       // second half of each pair is the associated probability (1 > x > 0)
+
+			                   MFS_double(&s);       // subsequent values may be zero, but if nonzero always a dual fraction of previous value
+			                   MFS_double(&s);       // all probabilites always add up to 1.0
+
+			                   MFS_double(&s);
+			                   MFS_double(&s);
+
+			                   MFS_double(&s);
+			                   MFS_double(&s);
+		}
+		else if(MFS_string_match(&s, "OBJECT_ALT", false))
+		{
+			string obj_path;   MFS_string(&s, &obj_path);
+		}
+		else if(MFS_string_match(&s, "CAR_DRAPED", false) || MFS_string_match(&s, "CAR_GRADED", false))
+		{
+			int    dir = MFS_int(&s);         // traffic direction
+			double lat = MFS_double(&s);	  // traffic lateral offset
+
+			// the width parameter for roads is pretty misleading - its the maximum width with all possible sidewalks etc.
+			// we want the traffic lanes only
+
+			if(leftmost_lane > lat)  leftmost_lane = lat;
+			if(rightmost_lane < lat) rightmost_lane = lat;
+
+			double traffic_width = rightmost_lane - leftmost_lane + 4.0;
+
+			if(lane_direction < 0) lane_direction = dir;
+			else if(lane_direction != dir) rd->road_types[last_road].oneway = false;
+
+			if(traffic_width > rd->road_types[last_road].traffic_width)
+				rd->road_types[last_road].traffic_width = traffic_width;
+		}
+		else if(MFS_string_match(&s, "TRAIN", true))
+		{
+			rd->road_types[last_road].traffic_width = 4.0;
 		}
 		MFS_string_eol(&s, NULL);
 	}
 
-	MemFile_Close(road);
-	mRoad[path] = out_info;
+	MemFile_Close(mf);
+
+#if 0
+	const char * dir = "/home/xplane/XP11/Custom Scenery/lin_roads/";
+	bool euro = path.find("_EU") != string::npos;
+
+	if(euro) FILE_make_dir_exist((string(dir) + "roads_EU").c_str());
+	else     FILE_make_dir_exist((string(dir) + "roads").c_str());
+
+	char buf[256];
+	snprintf(buf,sizeof(buf), "%slibrary.txt", dir);
+	FILE * lib_fp = fopen(buf, "a");
+//	fprintf(lib_fp,"I\n800\nLIBRARY\n\n");
+//	fprintf(lib_fp,"PUBLIC\n");
+
+	for(auto r : rd->vroad_types)
+	{
+		auto& rr = rd->road_types.at(r.second.rd_type);
+
+		string nam(r.second.description);
+		if(nam.substr(0,4) == "rail" || nam.substr(0,5) == "power") continue;
+
+		for(int i = 0; i<nam.size(); i++)
+			if(nam[i] == '/') nam[i] = '_';
+		snprintf(buf,sizeof(buf), "%s%s/%d-%s.lin",dir, euro ? "roads_EU" : "roads", r.first, nam.c_str());
+
+		FILE * fp = fopen(buf, "w"); if(!fp) continue;
+
+		fprintf(fp,"I\n850\nLINE_PAINT\n\n");
+		string tex(rd->textures[rr.tex_idx]);
+		fprintf(fp,"TEXTURE ../%s\n", tex.c_str());
+		if(tex.find("CoresResidentialDry") != string::npos)
+		{
+			fprintf(fp,"TEXTURE_NORMAL 1.0 ../%s\n", (tex.substr(0,tex.size() - 4) + "_NML.png").c_str());
+		}
+
+		double w = 0, x_scale; 		// get scale from widest segment - narrow segments are inaccurate due to integer pixel resolution of st coords
+		for(auto s : rr.segs)
+			if ( s.s_right - s.s_left > w)
+			{
+				w = s.s_right - s.s_left;
+				x_scale = (s.left - s.right) / (s.s_left - s.s_right);
+			}
+		printf("%d %.2lf\n",r.first,x_scale);
+		fprintf(fp,"LOD 10000\nTEX_WIDTH 2048\nSCALE %.1lf %.1lf\n", x_scale, rr.length);
+		int x=0;
+		for(auto s = rr.segs.rbegin(); s != rr.segs.rend(); s++)
+		{
+			double   center = (s->left+s->right)/2.0;           // this is where it needs to be placed, lateral offset in meters
+			double s_center = (s->s_left+s->s_right)/2.0;       // this is where the center of the st coords for this segment actually are
+			fprintf(fp, "S_OFFSET %d %d %d %d\n", x, intround(s->s_left*2048), intround((s_center - center / x_scale)*2048) + (center > 3.0 ? 1 : 0), intround(s->s_right*2048));
+			x++;
+		}
+		fprintf(fp, "MIRROR\n");
+		fprintf(fp, "LAYER_GROUP roads -1\n");
+		if(nam.find("hwy") != string::npos)
+			fprintf(fp, "DECAL_LIB lib/g10/decals/road_hwy.dcl\n");
+		else
+			fprintf(fp, "DECAL_LIB lib/g10/decals/road%s_dry.dcl\n", euro ? "_EU" : "_res" );
+		fclose(fp);
+
+//		fprintf(lib_fp,"EXPORT lib/g10/%s/roads/%d-%s.lin\t\t\troads%s/%d-%s.lin\n", euro ? "EU" : "US", r.first, nam.c_str(),
+//		                                                                             euro ? "_EU" : "",  r.first, nam.c_str());
+	}
+	fclose(lib_fp);
+#endif
+
+	for(auto& t : rd->textures)
+		process_texture_path(p, t);
+
 	return true;
 }
 #endif
