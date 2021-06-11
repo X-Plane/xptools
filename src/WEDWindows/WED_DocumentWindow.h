@@ -34,6 +34,8 @@
 
 
 class	WED_MapPane;
+class	WED_MapPreviewPane;
+class	WED_MapPreviewWindow;
 class	WED_TCEPane;
 class	WED_Document;
 class	WED_PropertyPane;
@@ -66,6 +68,8 @@ private:
 
 	WED_Document *				mDocument;
 	WED_MapPane *				mMapPane;
+	WED_MapPreviewPane *		mMapPreviewPane;
+	WED_MapPreviewWindow *		mMapPreviewWindow;
 	WED_PropertyPane *			mPropPane;
 	WED_TCEPane *				mTCEPane;
 

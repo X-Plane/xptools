@@ -31,13 +31,13 @@
 #define	WED_VERSION				2.4.0git_xp12_jetways
 #define	WED_VERSION_STRING		"2.4.0git_xp12_jetways"
 #define	WED_VERSION_STRING_SHORT	"2.4.0"			// omit beta/release number
-#define	WED_VERSION_RES			WED_VERSION_STRING
-#define	WED_VERSION_BIN			2,4,0,0
 
+#define	WED_VERSION_RES			WED_VERSION_STRING
+#define	WED_VERSION_BIN			2,4,0,2
 
 // This numeric is used by the gateway to understand if our WED is up-to-date.
 // Format 1 digit major + 2 digit middle + 1 digit minor version + last digit
 // last digit is 0 for all beta versions or matches release version
-#define WED_VERSION_NUMERIC		20400
+#define WED_VERSION_NUMERIC		20402
 
 #endif /* WED_Version_H */

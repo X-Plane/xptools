@@ -25,6 +25,7 @@
 #include "WED_Persistent.h"
 #include "WED_Buffer.h"
 #include "WED_Archive.h"
+#include "WED_Messages.h"
 #include "AssertUtils.h"
 #include "WED_FastBuffer.h"
 // NOTE: we could store no turd for created objs
@@ -95,6 +96,7 @@ void	WED_UndoLayer::ObjectChanged(WED_Persistent * inObject, int change_kind)
 		info.buffer->WriteInt(inObject->GetDirty());
 		mObjects.insert(ObjInfoMap::value_type(inObject->GetID(), info));
 	}
+	mArchive->BroadcastMessage(msg_ArchiveChangedEphemerally, GetChangeMask());
 }
 
 void	WED_UndoLayer::ObjectDestroyed(WED_Persistent * inObject)

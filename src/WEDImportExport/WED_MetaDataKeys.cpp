@@ -10,7 +10,6 @@
 const MetaDataKey known_keys[] = {
 // wed_AddMetaDataBegin
 {	"City|Locality",   "city"        },         // wed_AddMetaDataCity
-{	"Airport Closed",  "closed"      },         // wed_AddMetaDataClosed
 {	"Country",         "country"     },         // wed_AddMetaDataCountry
 {	"Datum Latitude",  "datum_lat"   },         // wed_AddMetaDataDatumLat
 {	"Datum Longitude", "datum_lon"   },         // wed_AddMetaDataDatumLon

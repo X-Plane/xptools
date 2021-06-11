@@ -95,6 +95,14 @@ float		GUI_Pane::GetTimeNow(void)
 	return (float) clock() / (float) CLOCKS_PER_SEC;
 }
 
+bool		GUI_Pane::IsKeyPressedNow(int virtualKey)
+{
+	if (mParent)
+		return mParent->IsKeyPressedNow(virtualKey);
+	else
+		return false;
+}
+
 void		GUI_Pane::TrapFocus(void)
 {
 	GUI_Pane * root = this;

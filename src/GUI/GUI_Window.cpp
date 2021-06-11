@@ -37,9 +37,11 @@
 #if APL
 #define __DEBUGGING__
 #include <Carbon/Carbon.h>		// we use this for vkeys/low mem accessors to keyboard
+#include <CoreGraphics/CoreGraphics.h>
 #endif
 
 #if LIN
+#include <FL/Fl.H>
 #include <FL/Fl_Tooltip.H>
 #endif
 
@@ -663,6 +665,33 @@ GUI_Window::~GUI_Window()
 	sWindows.erase(this);
 }
 
+void			GUI_Window::SetBoundsSafe(int x1, int y1, int x2, int y2)
+{
+	// This is a safety-hack.  The user's prefs may specify the window at a location that
+	// is off screen, either because the prefs are borked or because the doc came from
+	// a machine with a much larger desktop. So...
+	//
+	// If our current location does not allow for at least one 100x100 pixel corner to be
+	// inside the current Desktop (which is the bounding box around ALL monitors) - then
+	// ignore the values passed in and keep the window at its current position.
+
+	int safe_rect[4] = { x1, y1, x2, y2 };
+	XWin::GetDesktop(safe_rect);
+	LOG_MSG("I/Win desktop rect xy1 %d %d xy2 %d %d\n", safe_rect[0], safe_rect[1], safe_rect[2], safe_rect[3]);
+	LOG_FLUSH();
+
+	if (x1 < safe_rect[2] - 100 && y1 < safe_rect[3] - 100 &&
+		x2 >= safe_rect[0] + 100 && y2 >= safe_rect[1] + 100)
+	{
+		SetBounds(x1, y1, x2, y2);
+	}
+	else
+	{
+		LOG_MSG("W/Win SafeBounds triggerd, requested win pos NOT applied\n");
+		LOG_FLUSH();
+	}
+}
+
 void			GUI_Window::ClickDown(int inX, int inY, int inButton)
 {
 	DebugAssert(mMouseFocusPane[inButton] == NULL);
@@ -1124,8 +1153,12 @@ int			GUI_Window::KeyPressed(uint32_t inKey, long inMsg, long inParam1, long inP
 		case FL_Page_Down:		virtualCode = GUI_VK_NEXT;	break;
 		case FL_End:			virtualCode = GUI_VK_END;	break;
 		case FL_Home:			virtualCode = GUI_VK_HOME;	break;
-		case FL_Left :			virtualCode = GUI_VK_LEFT;	break;
+		case FL_Left:			virtualCode = GUI_VK_LEFT;	break;
+		case FL_Up:			virtualCode = GUI_VK_UP;	break;
 		case FL_Right:			virtualCode = GUI_VK_RIGHT;	break;
+		case FL_Down:			virtualCode = GUI_VK_DOWN;	break;
+		case ',':			virtualCode = GUI_VK_COMMA;	break;
+		case '.':			virtualCode = GUI_VK_PERIOD;	break;
 		default: virtualCode = 0;
 	  }
 	}
@@ -1177,6 +1210,61 @@ void		GUI_Window::GetMouseLocNow(int * out_x, int * out_y)
 	XWinGL::GetMouseLoc(&x, &y);
 	if (out_x) *out_x = Client2OGL_X(x, mWindow);
 	if (out_y) *out_y = Client2OGL_Y(y, mWindow);;
+}
+
+static int PlatformVkFromPortableVk(int virtualKey)
+{
+#if LIN
+	if (0x2F < virtualKey && virtualKey < 0x5b)
+		return virtualKey;
+	else
+	{
+		switch(virtualKey)
+	  	{
+			case GUI_VK_RETURN:	return FL_Enter;
+			case GUI_VK_ESCAPE:	return FL_Escape;
+			case GUI_VK_TAB:	return FL_Tab;
+			case GUI_VK_PRIOR:	return FL_Page_Up;
+			case GUI_VK_NEXT:	return FL_Page_Down;
+			case GUI_VK_END:	return FL_End;
+			case GUI_VK_HOME:	return FL_Home;
+			case GUI_VK_LEFT:	return FL_Left;
+			case GUI_VK_UP:		return FL_Up;
+			case GUI_VK_RIGHT:	return FL_Right;
+			case GUI_VK_DOWN:	return FL_Down;
+			case GUI_VK_COMMA:	return ',';
+			case GUI_VK_PERIOD:	return '.';
+			default:		return 0;
+		}
+	}
+#else
+	static std::unordered_map<int, int> platformFromPortable = []()
+	{
+		std::unordered_map<int, int> rval;
+		for (int i = 0; i < 256; ++i)
+			rval[gui_Key_Map[i]] = i;
+		return rval;
+	}();
+	auto iter = platformFromPortable.find(virtualKey);
+	if (iter == platformFromPortable.end())
+		return 0;
+	else
+		return iter->second;
+#endif
+}
+
+bool		GUI_Window::IsKeyPressedNow(int virtualKey)
+{
+	int platformVk = PlatformVkFromPortableVk(virtualKey);
+	if (platformVk == 0)
+		return false;
+#if APL
+	return CGEventSourceKeyState(kCGEventSourceStateCombinedSessionState, platformVk);
+#elif IBM
+	return (::GetKeyState(platformVk) & ~1) != 0;
+#else
+	return Fl::get_key(platformVk) != 0;
+#endif
 }
 
 void		GUI_Window::PopupMenu(GUI_Menu menu, int x, int y, int button)

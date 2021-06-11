@@ -30,6 +30,7 @@
 
 class	IGISEntity;
 class	IGISPoint;
+class	IGISPoint_Bezier;
 class	ISelection;
 
 class	WED_VertexTool : public WED_HandleToolBase, public virtual IControlHandles {
@@ -119,6 +120,8 @@ private:
 		mutable long long								mSnapCacheKeyArchive;
 		mutable long long								mSnapCacheKeyZoomer;
 
+		mutable IGISEntity *	last_en;     
+		mutable intptr_t		last_ptr; // cache for dynamic_cast<>(en) in GetNthHandle(), as its called repeatedly for the same entities
 };
 
 

@@ -867,6 +867,18 @@
     <ClCompile Include="..\..\src\WEDEntities\WED_AutogenPlacement.cpp">
       <Filter>WEDEntities</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\WEDMap\WED_MapPreviewPane.cpp">
+      <Filter>WEDMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\WEDMap\WED_MapPreviewWindow.cpp">
+      <Filter>WEDMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\WEDMap\WED_PerspectiveCamera.cpp">
+      <Filter>WEDMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\WEDWindows\WED_Road_Selector.cpp">
+      <Filter>WEDWindows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\WEDCore\WED_Application.h">
@@ -1702,6 +1714,21 @@
     </ClInclude>
     <ClInclude Include="..\..\src\WEDEntities\WED_AutogenPlacement.h">
       <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDMap\WED_MapPreviewPane.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDMap\WED_MapPreviewWindow.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDMap\WED_Camera.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDMap\WED_PerspectiveCamera.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDWindows\WED_Road_Selector.h">
+      <Filter>WEDWindows</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

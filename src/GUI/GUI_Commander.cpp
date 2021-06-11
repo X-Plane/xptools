@@ -183,18 +183,19 @@ int				GUI_Commander::DispatchKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags in
 	GUI_Commander * who = this->GetFocusForCommander();
 	GUI_Commander * root = this->GetRootForCommander();
 	
-	if(root->mDeferLevel > 0)
-	{
-		root->mDeferredActions.push_back(deferred_cmd_or_key(inKey, inVK, inFlags));
-		return 0;
-	}	
-	
-	
 	while (who != NULL)
 	{
+		if(root->mDeferLevel > 0 && who->ShouldDeferKeypress())
+		{
+			root->mDeferredActions.push_back(deferred_cmd_or_key(inKey, inVK, inFlags));
+			return 0;
+		}
+
 		if (who->HandleKeyPress(inKey, inVK, inFlags)) return 1;
 		who = who->mCmdParent;
 	}
+	if(root->mDeferLevel > 0)
+		root->mDeferredActions.push_back(deferred_cmd_or_key(inKey, inVK, inFlags));
 	return 0;
 }
 

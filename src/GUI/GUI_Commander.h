@@ -112,6 +112,9 @@ protected:
 	virtual int				AcceptLoseFocus(int inForce) 								{ return 1; }
 	virtual	int				AcceptFocusChain(void)										{ return 1; }
 
+	// Should keypress events be deferred when a mouse button is down?
+	virtual bool			ShouldDeferKeypress(void)									{ return true; }
+
 private:
 
 			struct	deferred_cmd_or_key {

@@ -25,6 +25,7 @@
 #include "GUI_GraphState.h"
 #include "TexUtils.h"
 #include "GUI_Resources.h"
+#include <math.h>
 #if APL
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glu.h>
@@ -260,9 +261,9 @@ void	GUI_PlotIconBulk(
 				GUI_GraphState *			state,
 				const char *				in_resource,
 				int							count,
-				int *						x,
-				int	*						y,
-				float *						c,
+				short *						x_y,
+				float *						dir_x_y,
+				unsigned *					colors,
 				float						scale)
 {
 	GUI_TexPosition_t metrics;
@@ -280,17 +281,44 @@ void	GUI_PlotIconBulk(
 	state->SetState(0, 1, 0, 1, 1, 0, 0);
 	state->BindTex(tex_id, 0);
 
+	unsigned * c = colors;
+	float * d = dir_x_y;
+
 	glBegin(GL_QUADS);
 	while(count--)
 	{
-		int xx = *x++;
-		int yy = *y++;
-		glColor4fv(c);
-		c += 4;
-		glTexCoord2f(0.0f			  ,0.0f				);				glVertex2i(xx - width1, yy - height1);
-		glTexCoord2f(0.0f			  ,metrics.t_rescale);				glVertex2i(xx - width1, yy + height2);
-		glTexCoord2f(metrics.s_rescale,metrics.t_rescale);				glVertex2i(xx + width2, yy + height2);
-		glTexCoord2f(metrics.s_rescale,0.0f				);				glVertex2i(xx + width2, yy - height1);
+		if (c) 	glColor4ubv((GLubyte *) (colors++));
+
+		float xx = *x_y++;
+		float yy = *x_y++;
+		float x1, x2, x3, x4, y1, y2, y3, y4;
+		if (d)
+		{
+			float right = *dir_x_y++;
+			float up    = *dir_x_y++;
+			float len = 1.0f/sqrtf(up*up + right*right);
+			up *= len; right *= len;
+
+			x1 = xx - up * width1 - right * height1;
+			x2 = xx - up * width1 + right * height2;
+			x3 = xx + up * width2 + right * height2;
+			x4 = xx + up * width2 - right * height1;
+			y1 = yy - up * height1 + right * width2;
+			y2 = yy + up * height2 + right * width2;
+			y3 = yy + up * height2 - right * width1;
+			y4 = yy - up * height1 - right * width1;
+		}
+		else
+		{
+			x1 = x2 = xx - width1;
+			x3 = x4 = xx + width2;
+			y1 = y4 = yy - height1;
+			y2 = y3 = yy + height2;
+		}
+		glTexCoord2f(0.0f, 0.0f);                           glVertex2f(x1, y1);
+		glTexCoord2f(0.0f, metrics.t_rescale);              glVertex2f(x2, y2);
+		glTexCoord2f(metrics.s_rescale, metrics.t_rescale); glVertex2f(x3, y3);
+		glTexCoord2f(metrics.s_rescale, 0.0f);              glVertex2f(x4, y4);
 	}
 	glEnd();
 }

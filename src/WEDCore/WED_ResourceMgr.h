@@ -75,9 +75,8 @@ struct	pol_info_t {
 
 struct fac_info_t : public REN_FacadeLOD_t {
 
-	fac_info_t() { is_new = false ; is_ring = true; doubled = two_sided = false;  min_floors = 1; max_floors  = 999; has_roof = false;
-	noroofmesh = nowallmesh = false; style_code = -1;
-	}
+	fac_info_t() : idx_vbo(0), vert_vbo(0) { is_new = false ; is_ring = true; doubled = two_sided = false;  
+						min_floors = 1; max_floors  = 999; has_roof = false; noroofmesh = nowallmesh = false;  style_code = -1; }
 
 	bool			is_new;       // set if version 1000, aka type 2
 	string		wall_tex;
@@ -116,6 +115,9 @@ struct fac_info_t : public REN_FacadeLOD_t {
 	vector<tunnel_t>	tunnels;
 	int					cabin_idx;
 	int					style_code;
+
+	unsigned int		vert_vbo;
+	unsigned int		idx_vbo;
 };
 
 struct	lin_info_t {
@@ -142,7 +144,39 @@ struct	str_info_t {
 };
 
 struct	road_info_t {
-	map<int, string>	vroad_types;
+	struct vroad_t {
+		string 	description;    // text to display in menu's
+		int		rd_type;		// index into road_types
+	};
+	struct road_t {
+		struct obj_t {
+			string  path;
+			float lat_offs;
+			float rotation;
+		};
+		struct wire_t {
+			float lat_offs;
+			float end_height;
+			float droop;
+		};
+		struct seg_t {
+			float 	left, right;	    // lateral position in meters
+			float 	s_left, s_right;	// lateral s coordinates on texture (t is always 0 to 1)
+		};
+		int		tex_idx;			// index into textures[]
+		float	width, length;      // texture scaling
+		float	traffic_width;      // inferred from CAR lanes
+		bool	oneway;
+		vector<seg_t>  segs;
+//		float 	s_left, s_right;	// st coordinates on texture (t is always 0 to 1)
+		vector<obj_t>  vert_objs;
+		vector<obj_t>  dist_objs;
+		vector<wire_t> wires;
+	};
+
+	map<int, vroad_t>	vroad_types;
+	map<int, road_t>	road_types;
+	vector<string>		textures;
 };
 
 struct agp_t {
@@ -203,7 +237,7 @@ public:
 			bool	GetObj(const string& path, XObj8 const *& obj, int variant = 0);
 			bool	GetObjRelative(const string& obj_path, const string& parent_path, XObj8 const *& obj);
 			bool	GetAGP(const string& path, agp_t const *& info);
-			bool	GetRoad(const string& path, road_info_t& out_info);
+			bool	GetRoad(const string& path, const road_info_t *& out_info);
 
 	virtual	void	ReceiveMessage(
 							GUI_Broadcaster *		inSrc,

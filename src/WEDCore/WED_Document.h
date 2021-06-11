@@ -92,12 +92,12 @@ public:
 	virtual	IBase *		Resolver_Find(const char * path);
 	virtual void		LookupPath(string& io_path);		// Input: a relative or library path
 	virtual void		ReducePath(string& io_path);		// Output: actual disk location
-	virtual	int			ReadIntPref(const char * in_key, int in_default);
-	virtual	void		WriteIntPref(const char * in_key, int in_value);
-	virtual	double		ReadDoublePref(const char * in_key, double in_default);
-	virtual	void		WriteDoublePref(const char * in_key, double in_value);
-	virtual	string		ReadStringPref(const char * in_key, const string& in_default);
-	virtual	void		WriteStringPref(const char * in_key, const string& in_value);
+	virtual	int			ReadIntPref(const char * in_key, int in_default, unsigned type = pref_type_doc | pref_type_global);
+	virtual	void		WriteIntPref(const char * in_key, int in_value, unsigned type = pref_type_doc | pref_type_global);
+	virtual	double		ReadDoublePref(const char * in_key, double in_default, unsigned type = pref_type_doc | pref_type_global);
+	virtual	void		WriteDoublePref(const char * in_key, double in_value, unsigned type = pref_type_doc | pref_type_global);
+	virtual	string		ReadStringPref(const char * in_key, const string& in_default, unsigned type = pref_type_doc | pref_type_global);
+	virtual	void		WriteStringPref(const char * in_key, const string& in_value, unsigned type = pref_type_doc | pref_type_global);
 	virtual	void		ReadIntSetPref(const char * in_key, set<int>& out_value);
 	virtual	void		WriteIntSetPref(const char * in_key, const set<int>& in_value);
 
@@ -133,6 +133,8 @@ public:
 	static	bool	TryCloseAll(void);
 
 private:
+	bool				ReadPrefInternal(const char * in_key, unsigned type, string &out_value) const;
+
 	void				WriteXML(FILE * fi);
 
 	//Member Variables

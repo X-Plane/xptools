@@ -152,6 +152,12 @@ int			WED_PackageMgr::CountPackages(void) const
 		   default_packages.size();
 }
 
+pair<int, int>	WED_PackageMgr::GlobalPackages(void) const
+{
+	return make_pair(custom_packages.size(), custom_packages.size() + global_packages.size() - 1);
+}
+
+
 void		WED_PackageMgr::GetNthPackageName(int n, string& package) const
 {
 	if (n < custom_packages.size())	{ package = custom_packages[n].name; return; }
