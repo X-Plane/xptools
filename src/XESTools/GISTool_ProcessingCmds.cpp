@@ -554,11 +554,10 @@ static int DoBuildDSF(const vector<const char *>& args)
 
 	std::vector<DSFRasterInfo> rasters;
 	{
-		const auto& it = gDem.find(dem_UrbanDensity);
+		const auto& it = gDem.find(dem_Soundscape);
 		if (it != gDem.end())
 		{
-			// Store 0-1 level into bytes
-			rasters.push_back({dem_UrbanDensity, (1.0f / 255.f), (1.0f / 255.f), it->second });
+			rasters.push_back({dem_Soundscape, 1.0f, 1.0f, it->second });
 		}
 	}
 

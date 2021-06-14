@@ -81,6 +81,8 @@
 	TOKEN(dem_WinterStart)
 	TOKEN(dem_WinterEnd)
 
+	TOKEN(dem_Soundscape)			// Sound type enum
+
 	/* These are enum DEMs. */
 //	TOKEN(dem_OrigLandUse)			//	Standard land use codes, USGS or XP6/7
 	TOKEN(dem_LandUse)				//	Standard land use codes, USGS or XP6/7

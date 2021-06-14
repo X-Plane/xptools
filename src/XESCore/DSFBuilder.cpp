@@ -947,6 +947,7 @@ static const char* label_for_dem_type(int dem_type)
 		case dem_FallEnd:     return "fal2";
 		case dem_WinterStart: return "win1";
 		case dem_WinterEnd:   return "win2";
+		case dem_Soundscape:  return "soundscape";
 		default: abort();
 	}
 }

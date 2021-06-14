@@ -157,6 +157,7 @@ static DEMViewInfo_t	kDEMs[] = {
 {		dem_FallEnd,		"Fall End"					,	dem_Strata,			true,	false,	"Fall End=%.0f/183"	},
 {		dem_WinterStart,		"Winter Start"					,	dem_Strata,			true,	false,	"Winter Start=%.0f/183"	},
 {		dem_WinterEnd,		"Winter End"					,	dem_Strata,			true,	false,	"Winter End=%.0f/183"	},
+{		dem_Soundscape,		"Soundscape"					,	dem_Strata,			true,	true,	"Soundscape=%.0f"	},
 //{		dem_UrbanPropertyValue,	"Property Values"				,	dem_UrbanPropertyValue,		true,	false,	"$$=%f "		},
 {		dem_UrbanRadial,		"Urban Radial"					,	dem_UrbanRadial,			true,	false,	"Urban Rad=%f "	},
 {		dem_UrbanTransport,		"Urban Transport"				,	dem_UrbanTransport,			true,	false,	"Urban Trns=%f "},
