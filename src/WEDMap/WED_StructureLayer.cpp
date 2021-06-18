@@ -377,29 +377,30 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 					const lin_info_t * linfo;
 					lin->GetResource(vpath);
 					if (rmgr->GetLin(vpath,linfo))
-					{
-						int locked = 0;
-						WED_Entity * thing = dynamic_cast<WED_Entity *>(lin);
-						while(thing)
+						if(!(linfo->rgb[0] == 0.0 && linfo->rgb[1] == 0.0 && linfo->rgb[2] == 0.0))
 						{
-							if(thing->GetLocked())	{ locked=1; break; }
-							thing = dynamic_cast<WED_Entity *>(thing->GetParent());
-						}
-						if (locked)
-							glColor3fv(linfo->rgb);
-						else                           // do some color correction to account for the green vs grey line
-							glColor3f(min(1.0,linfo->rgb[0]+0.2),max(0.0,linfo->rgb[1]-0.0),min(1.0,linfo->rgb[2]+0.2));
+							int locked = 0;
+							WED_Entity * thing = dynamic_cast<WED_Entity *>(lin);
+							while(thing)
+							{
+								if(thing->GetLocked())	{ locked=1; break; }
+								thing = dynamic_cast<WED_Entity *>(thing->GetParent());
+							}
+							if (locked)
+								glColor3fv(linfo->rgb);
+							else                           // do some color correction to account for the green vs grey line
+								glColor3f(min(1.0,linfo->rgb[0]+0.2),max(0.0,linfo->rgb[1]-0.0),min(1.0,linfo->rgb[2]+0.2));
 
-						for(int i = 0; i < lin->GetNumSides(); ++i)
-						{
-							vector<Point2>	pts;
-							SideToPoints(ps,i,GetZoomer(), pts);
-							glLineWidth(3);
-							glShape2v(GL_LINES, &*pts.begin(), pts.size());
-							glLineWidth(1);
+							for(int i = 0; i < lin->GetNumSides(); ++i)
+							{
+								vector<Point2>	pts;
+								SideToPoints(ps,i,GetZoomer(), pts);
+								glLineWidth(3);
+								glShape2v(GL_LINES, &*pts.begin(), pts.size());
+								glLineWidth(1);
+							}
+							glColor4fv(WED_Color_RGBA(struct_color));
 						}
-					}
-					glColor4fv(WED_Color_RGBA(struct_color));
 				}
 
 				for (i = 0; i < n; ++i)

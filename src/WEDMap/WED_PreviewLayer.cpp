@@ -1923,9 +1923,21 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		WED_LinePlacement * line = SAFE_CAST(WED_LinePlacement, entity);
 		if(line)
 		{
+			string vpath;
+			const lin_info_t* lin_info;
+			int lg = group_Markings;
+			double lwidth = 0.4;
+			WED_ResourceMgr* rmgr = WED_GetResourceMgr(GetResolver());
+
+			line->GetResource(vpath);
+			if (!vpath.empty() && rmgr->GetLin(vpath, lin_info))
+			{
+				lg = layer_group_for_string(lin_info->group.c_str(), lin_info->group_offset, lg);
+				lwidth = max(0.4, lin_info->eff_width * 0.5);
+			}
 			// criteria matches where mRealLines disappear in StructureLayer
-			if(PixelSize(line, 0.4, GetZoomer()) > mOptions.minLineThicknessPixels)
-				mPreviewItems.push_back(new preview_line(line, group_Markings, GetResolver()));
+			if(PixelSize(line, lwidth, GetZoomer()) > mOptions.minLineThicknessPixels)
+				mPreviewItems.push_back(new preview_line(line, lg, GetResolver()));
 		}
 	}
 	else if(sub_class == WED_AirportChain::sClass)

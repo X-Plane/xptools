@@ -121,6 +121,8 @@ struct	lin_info_t {
 	vector<caps>	start_caps, end_caps;
 	int			align;
 	bool		hasDecal;
+	string		group;
+	int			group_offset;
 	string		description;
 };
 

@@ -304,9 +304,7 @@ bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t const *& info)
 	out_info->s1.clear();
 	out_info->sm.clear();
 	out_info->s2.clear();
-	out_info->rgb[0] = 0.75;   // taxi line yellow
-	out_info->rgb[1] = 0.6;
-	out_info->rgb[2] = 0.15;
+	out_info->rgb[0] = out_info->rgb[1] = out_info->rgb[2] = 0.0;
 	out_info->start_caps.clear();
 	out_info->end_caps.clear();
 	out_info->align = 0;
@@ -377,6 +375,13 @@ bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t const *& info)
 		else if (MFS_string_match(&s,"DECAL_LIB", true))
 		{
 			out_info->hasDecal=true;
+		}
+		else if (MFS_string_match(&s, "LAYER_GROUP", false))
+		{
+			MFS_string(&s, &out_info->group);
+			out_info->group_offset = MFS_int(&s);
+			if (abs(out_info->group_offset) > 5)
+				LOG_MSG("E/Lin offset for LAYER_GROUP out of bounds in %s\n", p.c_str());
 		}
 
 		if (MFS_string_match(&s,"#wed_text", false))
