@@ -222,7 +222,7 @@ void		WED_FacadePlacement::ExportJetway(Jetway_t& jetway)
 			jetway.parked_tunnel_length = LonLatDistMeters(loc, cabin_loc);
 			jetway.parked_tunnel_angle = 0.0;
 
-			tunnel->GetLocation(gis_Geo, type);
+			tunnel->GetLocation(gis_Param, type);
 			for (auto t : f->tunnels)
 			{
 				if (type.x() == t.idx)

@@ -1552,8 +1552,8 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 			if(version >= 1200)
 				for (auto const& jetway : apt->jetways)
 				{
-					fprintf(fi, "%2d % 3.8lf % 3.8lf % 4.2f %d %d % 4.2f % 4.2f % 4.2f" CRLF,
-						apt_jetway, jetway.location.x(), jetway.location.y(), jetway.install_heading,
+					fprintf(fi, "%d" LLFMT " %4.1f %d %d %.1f %4.2f %.1f" CRLF,
+						apt_jetway, jetway.location.y(), jetway.location.x(), jetway.install_heading,
 						jetway.style_code, jetway.size_code, jetway.parked_tunnel_angle,
 						jetway.parked_tunnel_length, jetway.parked_cab_angle);
 				}
