@@ -802,12 +802,18 @@ bool Enforce_MetaDataGuiLabel(WED_Airport * apt)
 	string name;
 	apt->GetName(name);
 	bool changed_meta = false;
+	string old_meta;
 
 	if (!apt->ContainsMetaDataKey(wed_AddMetaDataLGuiLabel))
-	{
-		apt->AddMetaDataKey(META_KeyName(wed_AddMetaDataLGuiLabel), has3D);
 		changed_meta = true;
-	}
+	else
+		old_meta = apt->GetMetaDataValue(wed_AddMetaDataLGuiLabel);
+
+	apt->AddMetaDataKey(META_KeyName(wed_AddMetaDataLGuiLabel), has3D);
+
+	if(old_meta != apt->GetMetaDataValue(wed_AddMetaDataLGuiLabel))
+		changed_meta = true;
+
 	return changed_meta;
 }
 
