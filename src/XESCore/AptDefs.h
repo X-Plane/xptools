@@ -619,11 +619,8 @@ struct AptInfo_t {
 
 	AptTruckParkingVector		truck_parking;
 	AptTruckDestinationVector	truck_destinations;
-<<<<<<< HEAD
-=======
 	JetwayVector				jetways;
 
->>>>>>> wed_xp12_jetways
 	AptTowerPt_t		tower;
 	AptBeacon_t			beacon;
 	AptWindsockVector	windsocks;
