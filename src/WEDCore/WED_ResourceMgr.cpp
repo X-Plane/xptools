@@ -1020,6 +1020,18 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 					else
 						fac->floors.back().roofs.back().roof_objs.push_back(o);
 				}
+				else if (MFS_string_match(&s, "#cabin", false))
+				{
+					fac->cabin_idx = fac->wallName.size() - 1;
+					fac->style_code = MFS_int(&s);
+				}
+				else if (MFS_string_match(&s, "#tunnel", false))
+				{
+					fac->tunnels.push_back(fac_info_t::tunnel_t());
+					fac->tunnels.back().idx = fac->wallName.size() - 1;
+					MFS_string(&s, &(fac->tunnels.back().obj));
+					fac->tunnels.back().size_code = MFS_int(&s);
+				}
 			}
 			MFS_string_eol(&s,NULL);
 		}
@@ -1083,6 +1095,20 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 				else
 					LOG_MSG("E/Fac can not load object %s in %s\n", obj_nam.c_str(), p.c_str());
 
+			}
+			if (fac->tunnels.size())
+			{
+				if (fac->style_code < 0)
+				{
+					fac->tunnels.clear();
+					LOG_MSG("E/Fac %s does not have a valid #cabin tag, ignoring all #tunnel tags\n", p.c_str());
+				}
+				else
+					for (auto& t : fac->tunnels)
+					{
+						if(!GetObjRelative(t.obj, vpath, t.o))
+							LOG_MSG("E/Fac can not load jetway %s in %s\n", t.obj.c_str(), p.c_str());
+					}
 			}
 		}
 		process_texture_path(p,fac->wall_tex);

@@ -102,6 +102,8 @@ enum {
 	apt_truck_parking	= 1400,			// 1400 lat lon heading type cars name
 	apt_truck_destination = 1401,		// 1401 lat lon heading type|type|type... name
 
+	apt_jetway = 1500,					// 1500 lat lon install_heading style_code size_code parked_tunnel_heading parked_tunnel_length parked_cab_heading
+
 	// Surface codes
 	apt_surf_none		= 0,
 	apt_surf_asphalt,
@@ -583,6 +585,17 @@ struct AptTruckDestination_t {
 };
 typedef vector<AptTruckDestination_t> AptTruckDestinationVector;
 
+struct Jetway_t {
+	Point2						location;
+	float						install_heading;
+	int							style_code;	// enum
+	int							size_code;	// enum
+	float						parked_tunnel_angle;
+	float						parked_tunnel_length;
+	float						parked_cab_angle;
+};
+typedef vector<Jetway_t> JetwayVector;
+
 struct AptInfo_t {
 	int					kind_code;				// Enum
 	string				icao;
@@ -606,6 +619,11 @@ struct AptInfo_t {
 
 	AptTruckParkingVector		truck_parking;
 	AptTruckDestinationVector	truck_destinations;
+<<<<<<< HEAD
+=======
+	JetwayVector				jetways;
+
+>>>>>>> wed_xp12_jetways
 	AptTowerPt_t		tower;
 	AptBeacon_t			beacon;
 	AptWindsockVector	windsocks;

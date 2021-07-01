@@ -529,7 +529,7 @@ void WED_GatewayExportDialog::Submit()
 		}
 
 		string apt_path = targ_folder + icao + ".dat";
-		WED_AptExport(apt, apt_path.c_str());
+		WED_AptExport(apt, apt_path.c_str(), false);
 
 		string preview_folder = targ_folder + icao + "_Scenery_Pack" + DIR_STR;
 		string preview_zip = targ_folder + icao + "_Scenery_Pack.zip";

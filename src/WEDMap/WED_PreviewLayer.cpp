@@ -315,9 +315,14 @@ void Obj_SetNoDraped(void * ref)
 
 static ObjDrawFuncs10_t kFuncs  = { Obj_SetupPoly, Obj_SetupLine, Obj_SetupLight, Obj_SetupMovie, Obj_SetupPanel, Obj_TexCoord, Obj_TexCoordPointer, Obj_GetAnimParam, Obj_SetDraped, Obj_SetNoDraped };
 
-void draw_obj_at_ll(ITexMgr * tman, const XObj8 * o, const Point2& loc, float agl, float r, GUI_GraphState * g, WED_MapZoomerNew * zoomer)
+void draw_obj_at_ll(ITexMgr * tman, const XObj8 * o, const Point2& loc, float agl, float r, GUI_GraphState * g, WED_MapZoomerNew * zoomer, 
+					float(*anim_cb)(const char * string, float v1, float v2, void * ref) = Obj_GetAnimParam)
 {
 	if (!o) return;
+
+	ObjDrawFuncs10_t draw_funcs = { Obj_SetupPoly, Obj_SetupLine, Obj_SetupLight, Obj_SetupMovie, Obj_SetupPanel, Obj_TexCoord,
+								Obj_TexCoordPointer, anim_cb, Obj_SetDraped, Obj_SetNoDraped };
+
 	TexRef	ref = tman->LookupTexture(o->texture.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);
 	TexRef	ref2 = o->texture_draped.empty() ? ref : tman->LookupTexture(o->texture_draped.c_str() ,true, tex_Wrap|tex_Compress_Ok|tex_Always_Pad);
 	int id1 = ref  ? tman->GetTexID(ref ) : 0;
@@ -334,6 +339,8 @@ void draw_obj_at_ll(ITexMgr * tman, const XObj8 * o, const Point2& loc, float ag
 	zoomer->Rotatef(90, 1,0,0);
 	zoomer->Rotatef(r, 0,-1,0);
 	Obj_DrawStruct ds = { g, id1, id2 };
+	ObjDraw8(*o, 0, &draw_funcs, &ds);
+	glPopMatrix();
 	ObjDraw8(*o, 0, &kFuncs, &ds);
 	zoomer->PopMatrix();
 }
@@ -1197,8 +1204,11 @@ struct	preview_facade : public preview_polygon {
 		IGISPointSequence * ps = fac->GetOuterRing();
 		glColor4f(1,1,1,1);
 
+		g->SetState(false, 0, false, true, true, true, true);
+
 		if(1) // fac->HasCustomWalls())
 		{
+			WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 			ITexMgr * tman = WED_GetTexMgr(resolver);
 			Polygon2 pts;
 			vector<int> choices;
@@ -1210,10 +1220,85 @@ struct	preview_facade : public preview_polygon {
 			Point2 ref_pt;
 			ps->GetNthPoint(0)->GetLocation(gis_Geo, ref_pt);
 
+			string vpath;
+			fac->GetResource(vpath);
+			const fac_info_t * info;
+
+			if (rmgr->GetFac(vpath, info))
 			for(int i = 0; i < n; ++i)
 			{
-				Bezier2		b;
-				ps->GetSide(gis_Geo,i,b);
+				static Bezier2		b;
+				ps->GetSide(gis_Geo, i, b);
+
+				if (i == n-2 && fac->HasDockingCabin())
+				{
+					auto my_tun = info->tunnels[0];
+					Bezier2 bp;
+					ps->GetSide(gis_Param, i, bp);
+
+					for(auto t : info->tunnels)
+						if (t.idx == bp.p1.x())
+						{
+							my_tun = t;
+							break;
+						}
+
+					static Point2 pt;
+					ps->GetNthPoint(i + 2)->GetLocation(gis_Geo, pt);
+
+					static float extension_min, extension_max;
+					auto cbk = [](const char* dref, float v1, float v2, void* ref) -> float
+					{
+						float retval;
+						if (strcmp(dref, "sim/graphics/animation/jetways/jw_tunnel_extension") == 0)
+						{
+							retval = LonLatDistMeters(b.p1, b.p2);
+							extension_min = v1;
+							extension_max = v2;
+						}
+						else if (strcmp(dref, "sim/graphics/animation/jetways/jw_cabin_rotation") == 0)
+							retval = -VectorDegs2NorthHeading(b.p1, b.p1, Vector2(b.p1, b.p2)) + VectorDegs2NorthHeading(b.p2, b.p2, Vector2(b.p2, pt));
+						else // if (strcmp(dref, "sim/graphics/animation/jetways/jw_base_rotation") == 0)
+							retval = 0.0;
+
+						return fltlim(retval, v1, v2);
+					};
+
+					if (my_tun.o)
+						draw_obj_at_ll(tman, my_tun.o, b.p1, 0, VectorDegs2NorthHeading(b.p1, b.p1, Vector2(b.p1, b.p2)), g, zoomer, cbk);
+
+					g->SetState(false, 0, false, true, true, false, false);
+					glColor4f(1, 0, 0, 0.2);
+
+					Point2	b1 = zoomer->LLToPixel(b.p1);
+					Point2  b2 = zoomer->LLToPixel(b.p2);
+					Vector2 dir(b1, b2);
+					dir.normalize();
+					dir *= zoomer->GetPPM();
+					b1 += dir.perpendicular_ccw() * 2.5;         // place the 'serviced area' indication about at the cabin baffle location
+
+					glBegin(GL_TRIANGLE_FAN);
+						glVertex2(b1 + dir * extension_max);
+						glVertex2(b1 + dir * extension_min);
+						const int stepsize = 5;
+						const int arc_angle = 30;
+						for (int i = 0; i < arc_angle; i += stepsize)
+						{
+							dir.rotate_by_degrees(stepsize);
+							glVertex2(b1 + dir * extension_min);
+						}
+						glVertex2(b1 + dir * extension_max);
+						for (int i = 0; i < arc_angle; i += stepsize)
+						{
+							dir.rotate_by_degrees(-stepsize);
+							glVertex2(b1 + dir * extension_max);
+						}
+					glEnd();
+					g->EnableDepth(true, true);
+
+				}
+				if (i > n-2 && fac->HasDockingCabin())
+					continue;
 
 				Vector2 v(VectorLLToMeters(ref_pt, Vector2(ref_pt,b.p1)));
 				// The facade preview code uses -Z / north facing coordinates, same a the OBJ8's.
@@ -1239,11 +1324,6 @@ struct	preview_facade : public preview_polygon {
 				if(i == n-1 && !ps->IsClosed())
 					choices.push_back(0);
 			}
-
-			string vpath;
-			fac->GetResource(vpath);
-			const fac_info_t * info;
-			WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 
 			Bbox2 bb_geo;
 			fac->GetBounds(gis_Geo, bb_geo);

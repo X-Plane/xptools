@@ -399,11 +399,17 @@ static void ValidateOneFacadePlacement(WED_Thing* who, validation_error_vector& 
 			IGISPoint * igp = ips->GetNthPoint(i);
 			igp->GetLocation(gis_Param, pt);
 
-			if(pt.x() >= maxWalls)
+			if(pt.x() >= maxWalls && (ips->IsClosed() || i < nn - 1 ))
 			{
 				msgs.push_back(validation_error_t("Facade node specifies wall not defined in facade resource.", err_facade_illegal_wall, dynamic_cast<WED_Thing *>(igp), apt));
 			}
 		}
+	}
+
+	if(gExportTarget >= wet_xplane_1200 && fac->HasDockingCabin())
+	{
+		if(!apt)
+			msgs.push_back(validation_error_t("Facades with Docking Jetways must be inside an airport hierachy", err_facade_illegal_wall, who, apt));
 	}
 }
 
