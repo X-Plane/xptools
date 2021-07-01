@@ -220,7 +220,7 @@ void		WED_FacadePlacement::ExportJetway(Jetway_t& jetway)
 			cabin->GetLocation(gis_Geo, cabin_loc);
 			jetway.install_heading = VectorDegs2NorthHeading(loc, loc, Vector2(loc, cabin_loc));
 			jetway.parked_tunnel_length = LonLatDistMeters(loc, cabin_loc);
-			jetway.parked_tunnel_angle = 0.0;
+			jetway.parked_tunnel_angle = jetway.install_heading;
 
 			tunnel->GetLocation(gis_Param, type);
 			for (auto t : f->tunnels)
@@ -233,7 +233,8 @@ void		WED_FacadePlacement::ExportJetway(Jetway_t& jetway)
 			}
 
 			c_dir->GetLocation(gis_Geo, loc);
-			jetway.parked_cab_angle = jetway.install_heading - VectorDegs2NorthHeading(cabin_loc, cabin_loc, Vector2(cabin_loc, loc));
+//			jetway.parked_cab_angle = jetway.install_heading - VectorDegs2NorthHeading(cabin_loc, cabin_loc, Vector2(cabin_loc, loc));
+			jetway.parked_cab_angle = VectorDegs2NorthHeading(cabin_loc, cabin_loc, Vector2(cabin_loc, loc));
 
 			jetway.style_code = f->style_code;
 		}
