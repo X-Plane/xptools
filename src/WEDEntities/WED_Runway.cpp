@@ -497,8 +497,10 @@ void		WED_Runway::Export(		 AptRunway_t& x) const
 	x.surf_code				 = ENUM_Export(surface.value   );
 	x.shoulder_code			 = ENUM_Export(shoulder.value  ) + 100 * max(0,intround(shoulder_width.value));
 	x.roughness_ratio		 = fltlim     (roughness,0.0f,1.0f);
-	x.has_centerline		 =			   center_lites       + 10 * line_size.value;
-	x.edge_light_code		 = ENUM_Export(edge_lites.value)  + 10 * line_size.value;
+//	x.has_centerline		 =			   center_lites       + 10 * line_size.value;            not yet sanctioned with Ben
+	x.has_centerline		 =			   center_lites;
+	//	x.edge_light_code		 = ENUM_Export(edge_lites.value)  + 10 * line_size.value;        not yet sanctioned with Ben
+	x.edge_light_code		 = ENUM_Export(edge_lites.value);
 	x.has_distance_remaining =			   remaining_signs	;
 
 	string	full;
