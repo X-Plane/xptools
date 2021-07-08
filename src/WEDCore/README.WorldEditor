@@ -18,6 +18,7 @@ WED 2.4.1 rc 1
    - WED-1413 ATC route validation escape for runways NOT starting with a leading zero
    - fix .agp scraper display mismatch for some heights
    - WED-1390 fix crash in preview window for .net definitions that reference no textures at all
+   - fix gridded preview for 3D objects only showing partially on OSX w/AMD graphics
 
 WED 2.4.0rc2 5/29/21
    Features:
