@@ -464,6 +464,7 @@ void	WED_LibraryPreviewPane::end3d(const int *b)
 	glPopMatrix();
 
 #if USE_2X2MSAA
+	glPopAttrib();
 	if(mMSAA)
 	{
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);      CHECK_GL_ERR
@@ -478,7 +479,6 @@ void	WED_LibraryPreviewPane::end3d(const int *b)
 		glDeleteRenderbuffers(1, &mDepthBuf);
 	}
 	glDisable(GL_LIGHTING);
-	glPopAttrib();
 #endif
 
 }

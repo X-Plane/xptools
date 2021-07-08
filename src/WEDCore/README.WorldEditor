@@ -13,6 +13,8 @@ menu to view it online.
 
 CHANGE HISTORY
 
+   - fix gridded preview for 3D objects only showing partially on OSX w/AMD graphics
+
 WED 2.4.0rc2 5/29/21
    Features:
    - Undo WED-192 remove meta tag "Closed", validate correctly formed [X] in apt name
