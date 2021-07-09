@@ -585,79 +585,86 @@ void WED_LibraryMgr::RescanLines()
 
 void WED_LibraryMgr::RescanSurfaces()
 {
+	// since we don't have (yet) an agree'd about list of taxiway texture enums vs vpaths,
+	// we simply take ALL vpaths matching the right prefix, in alphabetical order from the LR default sceneries instead
+
 	default_surfaces.clear();
-	unordered_map<string, string> types_rpaths;
+	int asphalt_enums(surf_Asphalt_1);
+	int concrete_enums(surf_Concrete_1);
 
-	auto m = res_table.begin();
-	while (m != res_table.end() && m->first.find("lib/airport/default_runways/", 0) == string::npos)
-		++m;
+	for (auto& rt : res_table)
+		if (rt.second.is_default && rt.second.res_type == res_Polygon && rt.first.compare(0, strlen("lib/airport/default_runways/"), "lib/airport/default_runways/") == 0)
+			if (rt.first.find("taxiway", rt.first.find_last_of('/')) != string::npos)
+			{
+				if (rt.first.find("asphalt_L") != string::npos)
+					default_surfaces[asphalt_enums++] = rt.first;
+				else if (rt.first.find("concrete_L") != string::npos)
+					default_surfaces[concrete_enums++] = rt.first;
+			}
 
-	if(m != res_table.end())
+	for (auto& rt : res_table)
+		if (rt.second.is_default && rt.second.res_type == res_Polygon && rt.first.compare(0, strlen("lib/airport/default_runways/"), "lib/airport/default_runways/") == 0)
+			if (rt.first.find("taxiway", rt.first.find_last_of('/')) != string::npos)
+			{
+				if (rt.first.find("asphalt/") != string::npos)
+					default_surfaces[asphalt_enums++] = rt.first;
+				else if (rt.first.find("concrete/") != string::npos)
+					default_surfaces[concrete_enums++] = rt.first;
+			}
+
+	for (auto& rt : res_table)
+		if (rt.second.is_default && rt.second.res_type == res_Polygon && rt.first.compare(0, strlen("lib/airport/default_runways/"), "lib/airport/default_runways/") == 0)
+			if (rt.first.find("taxiway", rt.first.find_last_of('/')) != string::npos)
+			{
+				if (rt.first.find("asphalt_D") != string::npos)
+					default_surfaces[asphalt_enums++] = rt.first;
+				else if (rt.first.find("concrete_D") != string::npos)
+					default_surfaces[concrete_enums++] = rt.first;
+				else if (rt.first.find("grass") != string::npos)
+					default_surfaces[surf_Grass] = rt.first;
+				else if (rt.first.find("gravel") != string::npos)
+					default_surfaces[surf_Gravel] = rt.first;
+				else if (rt.first.find("dirt") != string::npos)
+					default_surfaces[surf_Dirt] = rt.first;
+				else if (rt.first.find("lakebed") != string::npos)
+					default_surfaces[surf_Lake] = rt.first;
+				else if (rt.first.find("snow") != string::npos)
+					default_surfaces[surf_Snow] = rt.first;
+			}
+
+	// get all rpaths for the default vpaths we have
+	unordered_map<int, string> all_rpaths;
+	for (auto& vp : default_surfaces)
+		all_rpaths[vp.first] = res_table[vp.second].real_paths.back();
+
+	// now go though all default lib polygons that do NOT match the default_runway prefix
+	// and see which ones match the rpath of the ones we use for the default textures.
+	// Then we switch the vpaths out for those. 
+	// Why ?
+	// We use the default_surfaces table for two purposes: depiction in WED & knowing which vpath to substitute when 
+	// converting taxiways into polygons and vice versa.
+
+	for (auto& rt : res_table)
 	{
-		while (m != res_table.end() && m->first.find("lib/airport/default_runways/", 0) != string::npos)
-		{
-			if (m->second.res_type != res_Directory)
+		if (rt.second.is_default && rt.second.res_type == res_Polygon && rt.first.compare(0, strlen("lib/airport/default_runways/"), "lib/airport/default_runways/") != 0)
+			if (rt.second.status >= status_Public && rt.second.real_paths.size() > 0)
 			{
-				string nam(m->first);
-				nam.erase(0, strlen("lib/airport/default_runways/"));
-				if (nam.find("/taxiway.pol") != string::npos)
+				auto rp = all_rpaths.begin();
+				while (rp != all_rpaths.end())
 				{
-					nam.erase(nam.find_first_of('/'));
-					if (m->second.real_paths.size())
-						types_rpaths[nam] = m->second.real_paths.front();
-				}
-			}
-			++m;
-		}
-		for (auto r : res_table)
-		{
-			if (r.second.is_default && r.second.res_type == res_Polygon && r.second.status >= status_Public && r.second.real_paths.size())
-			{
-				auto it = types_rpaths.begin();
-				while (it != types_rpaths.end())
-				{
-					if (it->second == r.second.real_paths.front())
+					if (rp->second == rt.second.real_paths.back())
 					{
-						if (it->first == "dirt")
-							default_surfaces[surf_Dirt] = r.first;
-						else if (it->first == "grass")
-								default_surfaces[surf_Grass] = r.first;
-						else if (it->first == "gravel")
-							default_surfaces[surf_Gravel] = r.first;
-						else if (it->first == "lakebed")
-							default_surfaces[surf_Lake] = r.first;
-						else if (it->first == "snow")
-							default_surfaces[surf_Snow] = r.first;
-						else
-						{
-							if (it->first.find("asphalt") != string::npos)
-							{
-								int n;
-								if (sscanf(it->first.c_str(), "asphalt_%d", &n) == 1 && n > 0 && n <= 5)
-									default_surfaces[surf_Asphalt_1 + n -1] = r.first;
-								else
-									default_surfaces[surf_Asphalt] = r.first;
-							}
-							else if (it->first.find("concrete") != string::npos)
-							{
-								int n;
-								if (sscanf(it->first.c_str(), "concrete_%d", &n) == 1 && n > 0 && n <= 3)
-									default_surfaces[surf_Concrete_1 + n - 1] = r.first;
-								else
-									default_surfaces[surf_Concrete] = r.first;
-
-							}
-						}
-						it = types_rpaths.erase(it);
+						default_surfaces[rp->first] = rt.first;
+						break;
 					}
-					else
-						it++;
+					rp++;
 				}
 			}
-		}
-		printf("found %d matching\n", default_surfaces.size());
 	}
 
+	// if that failed - we keep the, almost certainly non-public, vpath of the taxiway. Sigh.
+
+	// this should only occurr with XP11 or older
 	if(default_surfaces.size() == 0)
 	{
 		default_surfaces[surf_Asphalt] = "lib/airport/pavement/asphalt_3D.pol";

@@ -98,7 +98,9 @@ private:
 	WED_PropBoolText		center_lites;
 	WED_PropIntEnum			edge_lites;
 	WED_PropBoolText		remaining_signs;
+	WED_PropBoolText		line_color;
 	WED_PropIntEnum			line_size;
+	WED_PropDoubleTextMeters	number_size;
 
 	WED_PropDoubleTextMeters	disp1;
 	WED_PropDoubleTextMeters	blas1;

@@ -556,7 +556,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				&outApts.back().runways.back().reil_code[1]) != 26)
 			ok = "Illegal new runway";
 			outApts.back().runways.back().ends = SEGMENT2(POINT2(p1x, p1y), POINT2(p2x, p2y));
-			outApts.back().runways.back().has_skids = false;
+			outApts.back().runways.back().has_105 = false;
 			break;
 		case apt_rwy_skids:
 			if (vers < 1200) ok = "Error: runway skids marks not allowed before 1200";
@@ -567,7 +567,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				&outApts.back().runways.back().skid_len[0],
 				&outApts.back().runways.back().skids[1],
 				&outApts.back().runways.back().skid_len[1]) == 5)
-			outApts.back().runways.back().has_skids = true;
+			outApts.back().runways.back().has_105 = true;
 			break;
 		case apt_sea_new:
 			if (vers < 850) ok = "Error: new sealanes not allowed before 850";
@@ -1265,14 +1265,15 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 						version >= 1200 ? rwy->shoulder_code : XP11_pave_type(rwy->shoulder_code), rwy->roughness_ratio,
 						rwy->has_centerline, rwy->edge_light_code, rwy->has_distance_remaining,
 						rwy->id[0].c_str(),CGAL2DOUBLE(rwy->ends.source().y()),CGAL2DOUBLE(rwy->ends.source().x()), rwy->disp_mtr[0], rwy->blas_mtr[0],
-						version >= 1200 ? rwy->marking_code[0] : rwy->marking_code[0] % 10, rwy->app_light_code[0], rwy->has_tdzl[0],
+						rwy->marking_code[0], rwy->app_light_code[0], rwy->has_tdzl[0],
 						(version < 1200 && rwy->reil_code[0] <= 2) ? rwy->reil_code[0] : 0,
 						rwy->id[1].c_str(),CGAL2DOUBLE(rwy->ends.target().y()),CGAL2DOUBLE(rwy->ends.target().x()), rwy->disp_mtr[1], rwy->blas_mtr[1],
-						version >= 1200 ? rwy->marking_code[1] : rwy->marking_code[1] % 10, rwy->app_light_code[1], rwy->has_tdzl[1],
+						rwy->marking_code[1], rwy->app_light_code[1], rwy->has_tdzl[1],
 						(version < 1200 && rwy->reil_code[1] <= 2) ? rwy->reil_code[1] : 0);
 
-			if(version >= 1200 && rwy->has_skids)
-				fprintf(fi,"%d %4.2f %4.2f %4.2f %4.2f" CRLF, apt_rwy_skids,
+			if(version >= 1200 && rwy->has_105)
+				fprintf(fi,"%d %d %d %.1f %4.2f %4.2f %4.2f %4.2f" CRLF, apt_rwy_skids,
+						rwy->mark_color, rwy->mark_size, rwy->number_size,
 						rwy->skids[0], rwy->skid_len[0], rwy->skids[1], rwy->skid_len[1]);
 		}
 

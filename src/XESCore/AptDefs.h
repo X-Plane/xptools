@@ -119,14 +119,33 @@ enum {
 	apt_surf_water,
 	apt_surf_ice,					// 850 only
 	apt_surf_transparent,
-	apt_surf_asphalt_1   = 20,
+	apt_surf_asphalt_1   = 20,      // 1200 and later
 	apt_surf_asphalt_2,
 	apt_surf_asphalt_3,
 	apt_surf_asphalt_4,
 	apt_surf_asphalt_5,
-	apt_surf_concrete_1  = 30,
+	apt_surf_asphalt_6,
+	apt_surf_asphalt_7,
+	apt_surf_asphalt_8,
+	apt_surf_asphalt_9,
+	apt_surf_asphalt_10,
+	apt_surf_asphalt_11,
+	apt_surf_asphalt_12,
+	apt_surf_asphalt_13,
+	apt_surf_asphalt_14,
+	apt_surf_asphalt_15,
+	apt_surf_asphalt_16,
+	apt_surf_asphalt_17,
+	apt_surf_asphalt_18,
+	apt_surf_asphalt_19,
+	apt_surf_concrete_1  = 50,
 	apt_surf_concrete_2,
 	apt_surf_concrete_3,
+	apt_surf_concrete_4,
+	apt_surf_concrete_5,
+	apt_surf_concrete_6,
+	apt_surf_concrete_7,
+	apt_surf_concrete_8,
 
 	// Light Fixture Codes (850)
 	apt_gls_vasi			= 1,
@@ -194,9 +213,28 @@ enum {
 	apt_shoulder_asphalt_3,
 	apt_shoulder_asphalt_4,
 	apt_shoulder_asphalt_5,
-	apt_shoulder_concrete_1 = 30,
+	apt_shoulder_asphalt_6,
+	apt_shoulder_asphalt_7,
+	apt_shoulder_asphalt_8,
+	apt_shoulder_asphalt_9,
+	apt_shoulder_asphalt_10,
+	apt_shoulder_asphalt_11,
+	apt_shoulder_asphalt_12,
+	apt_shoulder_asphalt_13,
+	apt_shoulder_asphalt_14,
+	apt_shoulder_asphalt_15,
+	apt_shoulder_asphalt_16,
+	apt_shoulder_asphalt_17,
+	apt_shoulder_asphalt_18,
+	apt_shoulder_asphalt_19,
+	apt_shoulder_concrete_1 = 50,
 	apt_shoulder_concrete_2,
 	apt_shoulder_concrete_3,
+	apt_shoulder_concrete_4,
+	apt_shoulder_concrete_5,
+	apt_shoulder_concrete_6,
+	apt_shoulder_concrete_7,
+	apt_shoulder_concrete_8,
 
 	// Runway markings
 	apt_mark_none = 0,
@@ -206,17 +244,14 @@ enum {
 	apt_mark_non_precision_UK,	// 850 only
 	apt_mark_precision_UK,
 	apt_mark_precision_EASA,    // 1200 only
-	apt_mark_visualY = 11,
-	apt_mark_non_precisionY,
-	apt_mark_precisionY,
 	// Helipad Markings
 	apt_mark_heli_default = 0,	// 850 only
 
 	// Rwy Marking sizes (new in 1200)
-	apt_mark_auto = 0,
-	apt_mark_small,
+	apt_mark_auto = 99,
+	apt_mark_narrow = 0,
 	apt_mark_medium,
-	apt_mark_large,
+	apt_mark_wide,
 
 	// Airport beacons
 	apt_beacon_none = 0,
@@ -345,7 +380,10 @@ struct	AptRunway_t {
 	int			reil_code[2];
 
 	// rowcode 105 data
-	bool		has_skids;
+	bool		has_105;
+	int			mark_color;
+	int			mark_size;
+	float		number_size;
 	float		skids[2];
 	float		skid_len[2];
 };

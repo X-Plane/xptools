@@ -72,7 +72,7 @@ class	WED_XMLElement;
    Set below to 0 to disable this 2nd level of trickery.
 */
 
-#define PROP_PTR_OPT 29
+#define PROP_PTR_OPT 32
 
 class	WED_PropertyItem {
 public:
