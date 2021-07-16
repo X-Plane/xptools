@@ -53,7 +53,9 @@ WED_Runway::WED_Runway(WED_Archive * a, int i) : WED_GISLine_Width(a,i),
 	center_lites	(this,PROP_Name("Centerline Lights",	XML_Name("runway","center_lites")),	1),
 	edge_lites		(this,PROP_Name("Edge Lights",			XML_Name("runway","edge_lites")),	Edge_Lights,	edge_MIRL),
 	remaining_signs	(this,PROP_Name("Distance Signs",		XML_Name("runway","distance_signs")),1),
-	line_size		(this,PROP_Name("Line Size",			XML_Name("runway","line_size")),	Marking_Size,	mark_Auto),
+	line_color		(this,PROP_Name("Yellow Markings",		XML_Name("runway","line_color")),	false),
+	line_size		(this,PROP_Name("Line Size",			XML_Name("runway","line_size")),	Marking_Size, mark_Auto),
+	number_size		(this,PROP_Name("Number Size",			XML_Name("runway","number_size")),	0.0, 4, 1),
 
 	disp1			(this,PROP_Name("Displaced Threshold 1",XML_Name("runway","displaced1")),	0,6,1),
 	blas1			(this,PROP_Name("Blastpad 1",			XML_Name("runway","blastpad1")),	0,6,1),
@@ -411,9 +413,8 @@ void		WED_Runway::Import(const AptRunway_t& x, void (* print_func)(void *, const
 	shoulder		= ENUM_Import(Shoulder_Type,	x.shoulder_code % 100	);
 	shoulder_width	= 								x.shoulder_code / 100	;
 	roughness		= fltlim(						x.roughness_ratio,0.0f,1.0f);
-	center_lites	=								x.has_centerline % 10	;
-	edge_lites		= ENUM_Import(Edge_Lights,		x.edge_light_code % 10	);
-	line_size		=								x.edge_light_code / 10	;
+	center_lites	=								x.has_centerline;
+	edge_lites		= ENUM_Import(Edge_Lights,		x.edge_light_code);
 	remaining_signs =								x.has_distance_remaining ;
 
 	if (surface == -1)
@@ -479,8 +480,11 @@ void		WED_Runway::Import(const AptRunway_t& x, void (* print_func)(void *, const
 		print_func(ref,"Error importing runway: high-end reil code %d is illegal (not a member of type %s).\n", x.reil_code[1], DOMAIN_Desc(reil2.domain));
 		reil2 = reil_None;
 	}
-	if(x.has_skids)
+	if(x.has_105)
 	{
+		line_color = x.mark_color;
+		line_size = ENUM_Import(Marking_Size, x.mark_size);
+		number_size = x.number_size;
 		skids1 = x.skids[0];
 		skid_len1 = x.skid_len[0];
 		skids2 = x.skids[1];
@@ -497,9 +501,7 @@ void		WED_Runway::Export(		 AptRunway_t& x) const
 	x.surf_code				 = ENUM_Export(surface.value   );
 	x.shoulder_code			 = ENUM_Export(shoulder.value  ) + 100 * max(0,intround(shoulder_width.value));
 	x.roughness_ratio		 = fltlim     (roughness,0.0f,1.0f);
-//	x.has_centerline		 =			   center_lites       + 10 * line_size.value;            not yet sanctioned with Ben
 	x.has_centerline		 =			   center_lites;
-	//	x.edge_light_code		 = ENUM_Export(edge_lites.value)  + 10 * line_size.value;        not yet sanctioned with Ben
 	x.edge_light_code		 = ENUM_Export(edge_lites.value);
 	x.has_distance_remaining =			   remaining_signs	;
 
@@ -531,7 +533,19 @@ void		WED_Runway::Export(		 AptRunway_t& x) const
 	x.has_tdzl		[1] =			  tdzl2		  ;
 	x.reil_code		[1] = ENUM_Export(reil2.value);
 
-	x.has_skids = skid_len1 != SKID_LEN_DEFAULT || skid_len2 != SKID_LEN_DEFAULT || skids1 != SKIDS_DEFAULT || skids2 != SKIDS_DEFAULT;
+	x.has_105 = skid_len1 != SKID_LEN_DEFAULT || skid_len2 != SKID_LEN_DEFAULT || skids1 != SKIDS_DEFAULT || skids2 != SKIDS_DEFAULT
+							|| x.mark_color != 0 || x.mark_size != mark_Auto || x.number_size > 0.0;
+
+	x.mark_color  = 0;
+	if (line_size.value != mark_Auto)
+		x.mark_size = ENUM_Export(line_size.value);
+	else
+	{
+		if (x.width_mtr > 40)      x.mark_size = ENUM_Export(apt_mark_wide);
+		else if (x.width_mtr > 20) x.mark_size = ENUM_Export(apt_mark_medium);
+		else                       x.mark_size = ENUM_Export(apt_mark_narrow);
+	}
+	x.number_size = number_size.value;
 
 	x.skids			[0] = 			skids1;
 	x.skid_len		[0] = 			skid_len1;

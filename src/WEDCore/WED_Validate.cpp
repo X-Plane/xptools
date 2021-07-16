@@ -1345,6 +1345,8 @@ static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& 
 		rwy->Export(r);
 		if(!all_in_range(r.skids, 0.0f, 1.0f))
 			msgs.push_back(validation_error_t("Runway skid mark density and length properties must all be in the range 0 to 1.", err_rwy_dirt_prop_illegal, who, apt));
+		if (r.number_size != 0.0 && ( r.number_size < 2.0 || r.number_size > 18.0))
+			msgs.push_back(validation_error_t("The size of the runway numbers must be zero (automatic) or between 2 and 18 meters.", err_rwy_number_size_illegal, who, apt));
 	}
 }
 

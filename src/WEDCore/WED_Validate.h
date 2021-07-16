@@ -137,6 +137,7 @@ enum validate_error_t
 	err_rwy_name_reversed_runway_numbers_low_snd,
 	err_rwy_name_suffix_only_on_one_end,
 	err_rwy_name_suffixes_match,
+	err_rwy_number_size_illegal,
 	err_rwy_overlapping_displaced_thresholds,
 	err_rwy_surface_illegal_roughness,
 	err_rwy_surface_water_not_valid,
