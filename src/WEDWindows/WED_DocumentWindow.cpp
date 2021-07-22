@@ -439,6 +439,10 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_AddATCTimeRule: WED_DoMakeNewATCTimeRule(mDocument); return 1;
 	case wed_AddATCWindRule: WED_DoMakeNewATCWindRule(mDocument); return 1;
 	case wed_UpgradeRamps:	WED_UpgradeRampStarts(mDocument);	return 1;
+	case wed_UpgradeJetways: WED_UpgradeJetways(mDocument);	return 1;
+	case wed_AgePavement: WED_AgePavement(mDocument);	return 1;
+	// wed_EdgePavement,
+	// wed_MowGrass,
 	case wed_AlignApt:	WED_AlignAirports(mDocument);	return 1;
 	case wed_CreateApt:	WED_DoMakeNewAirport(mDocument); return 1;
 	case wed_EditApt:	WED_DoSetCurrentAirport(mDocument); return 1;
@@ -562,8 +566,12 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_AddATCRunwayUse:return WED_CanMakeNewATCRunwayUse(mDocument);
 	case wed_AddATCTimeRule: return WED_CanMakeNewATCTimeRule(mDocument);
 	case wed_AddATCWindRule: return WED_CanMakeNewATCWindRule(mDocument);
-	case wed_UpgradeRamps:   return 1;
-	case wed_AlignApt:      return 1;
+	case wed_UpgradeRamps:	return 1;
+	case wed_UpgradeJetways: return 1;
+	case wed_AgePavement:	return 0; //  gExportTarget >= wet_xplane_1200;
+	case wed_EdgePavement:
+	case wed_MowGrass: return 0;    //  still Todo !!!!
+
 
 	case wed_CreateApt:	return WED_CanMakeNewAirport(mDocument);
 	case wed_EditApt:	return WED_CanSetCurrentAirport(mDocument, ioName);

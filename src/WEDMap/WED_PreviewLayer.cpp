@@ -1257,10 +1257,12 @@ struct	preview_facade : public preview_polygon {
 							extension_max = v2;
 						}
 						else if (strcmp(dref, "sim/graphics/animation/jetways/jw_cabin_rotation") == 0)
+						{
 							retval = -VectorDegs2NorthHeading(b.p1, b.p1, Vector2(b.p1, b.p2)) + VectorDegs2NorthHeading(b.p2, b.p2, Vector2(b.p2, pt));
+							retval = fltwrap(retval, -180, 180);
+						}
 						else // if (strcmp(dref, "sim/graphics/animation/jetways/jw_base_rotation") == 0)
 							retval = 0.0;
-
 						return fltlim(retval, v1, v2);
 					};
 

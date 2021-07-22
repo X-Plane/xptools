@@ -230,8 +230,12 @@ static const GUI_MenuItem_t kAirportMenu[] = {
 {	"No Airport Selected",		'E',	gui_ControlFlag+gui_ShiftFlag,			0, wed_EditApt	},
 {	"-",						0,		0,									0,	0			},
 {	"Upgrade Ramps",			0,		0,									0,	wed_UpgradeRamps},
+{	"Upgrade Jetways",			0,		0,									0,	wed_UpgradeJetways},
+{	"Age Pavement",				0,		0,									0,	wed_AgePavement},
+{	"Add Pavement Edges",		0,		0,									0,	wed_EdgePavement},
+{	"Mow Grass",				0,		0,									0,	wed_MowGrass},
 {	"Align Airports",			0,		0,									0,	wed_AlignApt},
-{	"Replace Vehicle Objects",	0,		0,								0,  wed_ReplaceVehicleObj	},
+{	"Replace Vehicle Objects",	0,		0,									0,  wed_ReplaceVehicleObj	},
 {	NULL,						0,		0,										0, 0,				}
 };
 

@@ -50,6 +50,8 @@
 #include "WED_AirportNode.h"
 #include "WED_DrapedOrthophoto.h"
 #include "WED_FacadePlacement.h"
+#include "WED_FacadeRing.h"
+#include "WED_FacadeNode.h"
 #include "WED_Group.h"
 #include "WED_LinePlacement.h"
 #include "WED_ObjPlacement.h"
@@ -5286,4 +5288,152 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 	WED_RecursiveDelete(to_delete);
 
 	op->CommitOperation();
+}
+
+int WED_DoConvertToJW(WED_Airport * apt)
+{
+	vector<WED_RampPosition*> ramps;
+	vector< WED_ObjPlacement*> all_objects, jw_tun, jw_ext;
+
+	CollectRecursive(apt, back_inserter(ramps));
+	CollectRecursive(apt, back_inserter(all_objects));
+
+	for (auto o : all_objects)
+	{
+		string res;
+		o->GetResource(res);
+		if (res.compare(0, strlen("lib/airport/Ramp_Equipment/Jetway_"), "lib/airport/Ramp_Equipment/Jetway_") == 0)
+			jw_tun.push_back(o);
+		else if (res.compare(0, strlen("lib/airport/Ramp_Equipment/JetWayEx"), "lib/airport/Ramp_Equipment/JetWayEx") == 0)
+			jw_ext.push_back(o);
+	}
+
+	// determine the position in fron of the cab where the A/C is expected to be parked and the nearest ramp start to each.
+	// then find all extensions leading up to them
+	if(ramps.size() > 0 && jw_tun.size() > 0)
+	{
+		int n_jw = 0;
+		for (auto c : jw_tun)
+		{
+			Point2 acf_pos, tun_pos, jw_pos;
+			Vector2 tun_dir;
+			c->GetLocation(gis_Geo, jw_pos);
+			string res;
+			c->GetResource(res);
+			double tun_len = res[strlen("lib/airport/Ramp_Equipment/Jetway_")] == '5' ? 20 : 15;
+			double tun_hdg = c->GetHeading();
+			NorthHeading2VectorDegs(tun_pos, tun_pos, tun_hdg, tun_dir);
+			tun_pos = jw_pos + tun_dir * 2.7 * MTR_TO_DEG_LAT;
+
+			NorthHeading2VectorDegs(tun_pos, tun_pos, tun_hdg - 30.0, tun_dir);  // hdg to place in front of cabin where the acf would be
+			tun_dir *= (tun_len + 2.0) * MTR_TO_DEG_LAT;
+			acf_pos = tun_pos + tun_dir;
+
+			double min_dist = 99999.0;
+			WED_RampPosition* closest_ramp = nullptr;
+			for(auto r : ramps)
+			{
+				Point2 pt;
+				r->GetLocation(gis_Geo, pt);
+				double d = LonLatDistMeters(pt, acf_pos);
+				if (d < min_dist)
+				{
+					min_dist = d;
+					closest_ramp = r;
+				}
+			}
+			if (min_dist < 10.0)
+			{
+				auto fac = WED_FacadePlacement::CreateTyped(apt->GetArchive());
+				fac->SetParent(c->GetParent(), c->GetMyPosition());
+				string nam;
+				c->GetName(nam);
+				fac->SetName(nam + "(conv)");
+
+				Jetway_t jw_info;
+				jw_info.size_code = tun_len < 20.0 ? 1 : 2;
+				jw_info.style_code = 1;
+				jw_info.location = tun_pos;
+				jw_info.parked_tunnel_length = tun_len;
+				jw_info.parked_tunnel_angle = fltwrap(tun_hdg - 21.0, 0, 360);  // exact tunnel heading plus pulled back a bit to ensure cabin clearance
+				jw_info.parked_cab_angle = 60.0;
+				fac->WED_FacadePlacement::ImportJetway(jw_info, [](void* ref, const char* fmt, ...) { return; }, nullptr);
+				auto rng = fac->GetNthChild(0);
+
+				c->SetParent(NULL, 0);
+				c->Delete();
+
+				bool is_extended = false;
+				for (auto e : jw_ext)
+				{
+					// those extension can be placed either way around, so check both ends for proximity to our jetway base
+					Point2 p1, p2;
+					e->GetLocation(gis_Geo, p1);
+					double hdg = e->GetHeading();
+					string ext_nam;
+					e->GetResource(ext_nam);
+					double len;
+					int pos = strlen("lib/airport/Ramp_Equipment/JetWayEx");
+					if(ext_nam[pos] == 't') pos++;
+					sscanf(ext_nam.c_str() + pos + 1, "%lf", &len);
+					Vector2 ext_dir;
+					NorthHeading2VectorDegs(p1, p1, hdg, ext_dir);
+					p2 = p1 + ext_dir * (len + 2.0) * MTR_TO_DEG_LAT;
+					double d1 = LonLatDistMeters(p1, tun_pos);
+					double d2 = LonLatDistMeters(p2, tun_pos);
+					if (d1 < d2)
+					{
+						p1 = p2;
+						d2 = d1;
+					}
+					if (d2 < 3.0)
+					{
+						auto p = WED_FacadeNode::CreateTyped(apt->GetArchive());
+						p->SetParent(rng, 0);
+						p->SetLocation(gis_Geo, p1);
+
+						e->SetParent(NULL, 0);
+						e->Delete();
+						is_extended = true;
+					}
+				}
+				if (!is_extended)
+				{
+					auto p = WED_FacadeNode::CreateTyped(apt->GetArchive());
+					p->SetParent(rng, 0);
+					p->SetLocation(gis_Geo, jw_pos);
+				}
+				n_jw++;
+			}
+		}
+		return n_jw;
+	}
+	return 0;
+}
+
+
+void WED_UpgradeJetways(IResolver* resolver)
+{
+	WED_Thing* wrl = WED_GetWorld(resolver);
+	vector<WED_Airport *> all_apts;
+	int count = 0;
+
+	CollectRecursiveNoNesting(wrl, back_inserter(all_apts), WED_Airport::sClass);
+
+	wrl->StartOperation("Upgrade Jetways");
+	for (auto a : all_apts)
+		count += WED_DoConvertToJW(a);
+	if (count > 0)
+	{
+		wrl->CommitOperation();
+		string msg("Created ");
+		msg += count + " jetway facades from objects";
+		DoUserAlert(msg.c_str());
+	}
+	else
+		wrl->AbortOperation();
+}
+
+void WED_AgePavement(IResolver*  mDocument)
+{
 }

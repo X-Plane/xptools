@@ -148,6 +148,10 @@ enum {
 	wed_AddATCTimeRule,
 	wed_AddATCWindRule,
 	wed_UpgradeRamps,
+	wed_UpgradeJetways,
+	wed_AgePavement,
+	wed_EdgePavement,
+	wed_MowGrass,
 	wed_AlignApt,
 	//-- Add Metadata Keys Menu--
 	//Organized by alphabetical order
