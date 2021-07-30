@@ -14,6 +14,7 @@ menu to view it online.
 CHANGE HISTORY
 
    - fix gridded preview for 3D objects only showing partially on OSX w/AMD graphics
+   - WED-1390 fix crash in preview window for .net definitions that reference no textures at all
 
 WED 2.4.0rc2 5/29/21
    Features:

@@ -753,7 +753,8 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, const int 
 				begin3d(b, length);
 				g->SetState(false, 1, false, true, true, true, true);
 				glClear(GL_DEPTH_BUFFER_BIT);
-				if(auto tref = mTexMgr->LookupTexture(rd->textures[t.tex_idx].c_str(),true, tex_Wrap+tex_Mipmap+tex_Linear))
+				if(rd->textures.size() > t.tex_idx)
+				if(auto tref = mTexMgr->LookupTexture(rd->textures[t.tex_idx].c_str(), true, tex_Wrap+tex_Mipmap+tex_Linear))
 				{
 					if(auto tex_id = mTexMgr->GetTexID(tref))
 					{
