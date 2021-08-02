@@ -1639,6 +1639,7 @@ struct	preview_road : WED_PreviewItem {
 		if(roads_i == rds->road_types.end()) return;
 		auto& rd = roads_i->second;
 		ITexMgr *	tman = WED_GetTexMgr(resolver);
+		if (rd.tex_idx >= rds->textures.size()) return;
 		TexRef tref = tman->LookupTexture(rds->textures[rd.tex_idx].c_str(),true,tex_Wrap+tex_Mipmap+tex_Linear);
 
 		int tex_id = 0;
