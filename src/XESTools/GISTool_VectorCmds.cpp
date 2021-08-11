@@ -938,6 +938,24 @@ int DoRasterDEM(const vector<const char *>& args)
 	return 0;
 }
 
+#define HELP_VECTOR_QC \
+"-vector_qc\n" \
+"Checks for issues:\n" \
+" - The entire region is only water."
+int DoVectorQC(const vector<const char*>& args)
+{
+	const bool is_only_water = !any_of(gMap.faces_begin(), gMap.faces_end(), [](Pmwx::Face& f) {
+		return !f.is_unbounded() && f.data().mTerrainType != terrain_Water;
+	});
+
+	if (is_only_water)
+	{
+		printf("vector_qc: vector data contains only water.\n");
+	}
+
+	return is_only_water ? 1 : 0;
+}
+
 static	GISTool_RegCmd_t		sVectorCmds[] = {
 //{ "-sdts", 			1, 1, 	DoSDTSImport, 			"Import SDTS VTP vector map.", "" },
 //{ "-tigermakeidx",	1, -1,	DoMakeTigerIndex,		"Make index line for files", "" },
@@ -964,6 +982,7 @@ static	GISTool_RegCmd_t		sVectorCmds[] = {
 { "-check_roads",	0, 0, DoCheckRoads,				"Check roads for errors.", "" },
 { "-fix_roads",	0, 0, DoFixRoads,				"Fix road errors.", "" },
 { "-raster_dem",	1, 1, DoRasterDEM,				"Map Color.", "" },
+{ "-vector_qc",	0, 0, DoVectorQC,				"Validate vector data.", HELP_VECTOR_QC },
 //{ "-wetmask",		2, 2,	DoWetMask,				"Make wet mask for file", "" },
 { 0, 0, 0, 0, 0, 0 }
 };
