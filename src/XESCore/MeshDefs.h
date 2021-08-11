@@ -80,25 +80,12 @@ typedef multimap<float, void *, greater<float> >			FaceQueue;	// YUCK - hard cas
 typedef multimap<double, void *>							VertexQueue;
 
 struct	MeshVertexInfo {
-	MeshVertexInfo() : height(0.0), wave_height(1.0) { }
-	MeshVertexInfo(const MeshVertexInfo& rhs) :
-								height(rhs.height),
-								border_blend(rhs.border_blend) {
-								normal[0] = rhs.normal[0];
-								normal[1] = rhs.normal[1];
-								normal[2] = rhs.normal[2]; }
-	MeshVertexInfo& operator=(const MeshVertexInfo& rhs) {
-								height = rhs.height;
-								normal[0] = rhs.normal[0];
-								normal[1] = rhs.normal[1];
-								normal[2] = rhs.normal[2];
-								orig_vertex = rhs.orig_vertex;
-								border_blend = rhs.border_blend; return *this; }
 
-	double					height;					// Height of mesh at this vertex.
-	double					wave_height;			// ratio of vegetation to terrain at this vertex.
-	float					normal[3];				// Normal - X,Y,Z in OGL coords(!)
+	double					height{};				// Height of mesh at this vertex.
+	double					wave_height{1.0};		// ratio of vegetation to terrain at this vertex.
+	float					normal[3]{};			// Normal - X,Y,Z in OGL coords(!)
 	hash_map<int, float>	border_blend;			// blend level for a border of this layer at this triangle!
+	bool					edge_of_the_world{};	// Vertex touches the outside of the degree
 	
 	Vertex_handle			orig_vertex;			// Original vertex in the Pmwx.
 	VertexQueue::iterator	self;

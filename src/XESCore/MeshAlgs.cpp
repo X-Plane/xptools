@@ -1034,8 +1034,8 @@ void	AddConstraintPoints(
 		Pmwx::Face_const_handle	f2 = he->twin()->face();
 		if (must_burn_he(he))
 		{
-			DebugAssert(!f1->is_unbounded());
-			DebugAssert(!f2->is_unbounded());
+			// At least one side of the edge should be inside the degree
+			DebugAssert(!f1->is_unbounded() || !f2->is_unbounded());
 
 			// If the Vertex has elevation data, use that instead
 			const auto& source_elevation = he->source()->data().mElevation;
@@ -1045,6 +1045,7 @@ void	AddConstraintPoints(
 			v2 = InsertAnyPoint(master, outMesh, he->target()->point(), locale, target_elevation);
 			v1->info().orig_vertex = he->source();
 			v2->info().orig_vertex = he->target();
+			v1->info().edge_of_the_world = v2->info().edge_of_the_world = f1->is_unbounded() || f2->is_unbounded();
 
 			// Ben says: constrain now!  This will force near-edge triangles to flip to the way they 
 			// will have to be, which will then help the greedy mesh understand where the worst errors are.
@@ -1064,10 +1065,16 @@ void	AddConstraintPoints(
 void SubdivideConstraints(CDT& io_mesh, const DEMGeo& master, const DEMGeo& ideal_density)
 {
 	list<pair<CDT::Vertex_handle,CDT::Vertex_handle> >		edges;
-	for(CDT::Finite_edges_iterator eit = io_mesh.finite_edges_begin(); eit != io_mesh.finite_edges_end(); ++eit)
-	if(io_mesh.is_constrained(*eit))
+	for (CDT::Finite_edges_iterator eit = io_mesh.finite_edges_begin(); eit != io_mesh.finite_edges_end(); ++eit)
 	{
-		edges.push_back(pair<CDT::Vertex_handle,CDT::Vertex_handle>(CDT_he_source(*eit),CDT_he_target(*eit)));
+		if (!io_mesh.is_constrained(*eit))
+			continue;
+
+		auto source = CDT_he_source(*eit);
+		if (source->info().edge_of_the_world)
+			continue;
+
+		edges.emplace_back(source, CDT_he_target(*eit));
 	}
 
 	CDT::Face_handle	locale = CDT::Face_handle();	// For cache coherency
@@ -1076,7 +1083,7 @@ void SubdivideConstraints(CDT& io_mesh, const DEMGeo& master, const DEMGeo& idea
 	{
 		vector<CDT::Vertex_handle>	pts;
 		pts.push_back(e->first);
-		
+
 		Vector_2	vec(e->first->point(),e->second->point());
 
 		const bool has_shp_elevation = e->first->info().orig_vertex->data().mElevation &&
@@ -1088,7 +1095,7 @@ void SubdivideConstraints(CDT& io_mesh, const DEMGeo& master, const DEMGeo& idea
 									ideal_density.lat_to_y(CGAL::to_double(e->first->point().y())),
 									ideal_density.lon_to_x(CGAL::to_double(e->second->point().x())),
 									ideal_density.lat_to_y(CGAL::to_double(e->second->point().y())),4) / REDUCE_SUBDIVIDE;
-		
+
 		for(int n = 0; n < num_verts; ++n)
 		{
 			float r = ((float) (n+1)) / (float) (num_verts+1);

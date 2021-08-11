@@ -2709,36 +2709,40 @@ Pmwx::Face_handle containing_face(Pmwx::Ccb_halfedge_circulator circ)
 	return ret;
 }
 
-int RemoveIslands(Pmwx& io_map, double max_area)
+tuple<int, int> RemoveIslands(Pmwx& io_map, double max_area)
 {
-	int k = 0;
-	for(Pmwx::Face_iterator f = io_map.faces_begin(); f != io_map.faces_end(); ++f)
-	if(!f->is_unbounded())
-	if(f->holes_begin() == f->holes_end())
+	int islands_removed = 0, islands = 0;
+	for (auto f = io_map.faces_begin(); f != io_map.faces_end(); ++f)
 	{
+		if (f->is_unbounded())
+			continue;
+		if (f->holes_begin() != f->holes_end())
+			continue;
+
 		Pmwx::Face_handle holds_me = containing_face(f->outer_ccb());
-		if(holds_me != Pmwx::Face_handle() && !holds_me->is_unbounded())
+		if (holds_me != Pmwx::Face_handle() && !holds_me->is_unbounded())
 		{
 			double a = GetMapFaceAreaMeters(f);
 			if (a < max_area)
 			{
 				f->set_data(holds_me->data());
-				#if SHOW_ISLAND_REMOVAL
+#if SHOW_ISLAND_REMOVAL
 				Pmwx::Ccb_halfedge_circulator circ, stop;
 				circ = stop = f->outer_ccb();
 				do
 				{
 					debug_mesh_line(cgal2ben(circ->source()->point()),
 									cgal2ben(circ->target()->point()),
-									1,0,0,1,0,0);
-									
-				} while(++circ != stop);
-				#endif
-				++k;
+									1, 0, 0, 1, 0, 0);
+
+				} while (++circ != stop);
+#endif
+				++islands_removed;
 			}
+			++islands;
 		}
 	}
-	return k;
+	return {islands_removed, islands};
 }
 
 int KillWetAntennaRoads(Pmwx& io_map)

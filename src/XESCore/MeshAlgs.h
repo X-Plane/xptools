@@ -77,7 +77,14 @@ inline bool must_burn_he(Halfedge_handle he)
 	Face_handle f1 = he->face();
 	Face_handle f2 = tw->face();
 
-	if(f1->is_unbounded() || f2->is_unbounded()) 
+	// This is a (literal) edge case:
+	// If there is a single face in the vector map, we don't have any other edges to burn
+	if ((f2->is_unbounded() && !f1->is_unbounded()) && f1->data().mTerrainType == terrain_Water)
+		return true;
+	if ((f1->is_unbounded() && !f2->is_unbounded()) && f2->data().mTerrainType == terrain_Water)
+		return true;
+
+	if(f1->is_unbounded() || f2->is_unbounded())
 		return false;
 
 //	if (f1->data().GetParam(af_Variant,0) != 

@@ -856,9 +856,9 @@ int DoRemoveOutsets(const vector<const char *>& args)
 int DoRemoveIslands(const vector<const char *>& args)
 {
 	double area = atof(args[0]);
-	int k = RemoveIslands(gMap, area);
+	auto removal_info = RemoveIslands(gMap, area);
 	if (gVerbose)
-		printf("Removed %d islands\n",k);
+		printf("Removed %d of %d islands\n", get<0>(removal_info), get<1>(removal_info));
 	return 0;
 }
 
