@@ -5427,13 +5427,97 @@ void WED_UpgradeJetways(IResolver* resolver)
 	{
 		wrl->CommitOperation();
 		string msg("Created ");
-		msg += count + " jetway facades from objects";
+		msg += to_string(count) + " jetway facades from objects";
 		DoUserAlert(msg.c_str());
 	}
 	else
 		wrl->AbortOperation();
 }
 
-void WED_AgePavement(IResolver*  mDocument)
+static int get_aged_surf(int surf, int age)
 {
+	if (surf == surf_Concrete)
+		return age == 1 ? surf_Concrete_8 : surf_Concrete_1;
+	else
+		return age == 1 ? surf_Asphalt_4 : surf_Asphalt_12;
+}
+
+int WED_DoAgePavement(WED_Airport* apt, int age)  // age 1 = older
+{
+	vector<WED_Runway*> rwys;
+	vector<WED_Taxiway*> twys;
+	vector<WED_PolygonPlacement*> pols;
+
+	int changes = 0;
+
+	CollectRecursive(apt, back_inserter(rwys));
+	CollectRecursive(apt, back_inserter(twys));
+	CollectRecursive(apt, back_inserter(pols));
+
+	for (auto r : rwys)
+	{
+		int surf = r->GetSurface();
+		if (surf == surf_Asphalt || surf == surf_Concrete)
+		{
+			r->SetSurface(get_aged_surf(surf, age));
+			changes++;
+		}
+
+		surf = r->GetShoulder();
+		if (surf == surf_Asphalt || surf == surf_Concrete)
+		{
+			r->SetShoulder(get_aged_surf(surf, age));
+			changes++;
+		}
+	}
+
+	for (auto t : twys)
+	{
+		int surf = t->GetSurface();
+		if (surf == surf_Asphalt || surf == surf_Concrete)
+		{
+			t->SetSurface(get_aged_surf(surf, age));
+			changes++;
+		}
+	}
+
+	for (auto p : pols) // thats a pretty basic upgrade, any lighter/darker than default pavements are NOT converted
+	{
+		string res;
+		p->GetResource(res);
+		if (res == "lib/airport/pavement/asphalt_3D.pol" || "lib/airport/pavements/Concrete_1D.pol")
+		{
+			int surf = surf_Asphalt;
+			if (res.find("Concrete)") != string::npos) surf = surf_Concrete;
+			surf = get_aged_surf(surf, age);
+			WED_GetLibraryMgr(p->GetArchive()->GetResolver())->GetSurfVpath(surf, res);
+			p->SetResource(res);
+			changes++;
+		}
+	}
+	return changes;
+}
+
+void WED_AgePavement(IResolver* resolver)
+{
+	WED_Thing* wrl = WED_GetWorld(resolver);
+	vector<WED_Airport*> all_apts;
+	int count = 0;
+
+	int age = ConfirmMessage("Change all XP11 default Pavement to Xp12 old/worn ? Otherwise change is to newer looking pavem.", "Yes", "No");
+
+	CollectRecursiveNoNesting(wrl, back_inserter(all_apts), WED_Airport::sClass);
+
+	wrl->StartOperation("Age Pavement");
+	for (auto a : all_apts)
+		count += WED_DoAgePavement(a, age);
+	if (count > 0)
+	{
+		wrl->CommitOperation();
+		string msg("Converted ");
+		msg += to_string(count) + " items changed";
+		DoUserAlert(msg.c_str());
+	}
+	else
+		wrl->AbortOperation();
 }

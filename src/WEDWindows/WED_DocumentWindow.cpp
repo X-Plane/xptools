@@ -568,7 +568,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_AddATCWindRule: return WED_CanMakeNewATCWindRule(mDocument);
 	case wed_UpgradeRamps:	return 1;
 	case wed_UpgradeJetways: return 1;
-	case wed_AgePavement:	return 0; //  gExportTarget >= wet_xplane_1200;
+	case wed_AgePavement:	return 1;
 	case wed_EdgePavement:
 	case wed_MowGrass: return 0;    //  still Todo !!!!
 
