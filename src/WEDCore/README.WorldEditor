@@ -14,9 +14,14 @@ menu to view it online.
 CHANGE HISTORY
 
 WED 2.5  alpha 1
-   Features:
-  - support XP12 moving jetways (requires propper jetways .fac w/metadata)
-  - support XP12 runway & taxiways surface styles and markings
+   Support new XP12 features:
+   - moving jetways (requires propper jetways .fac w/metadata)
+   - runway & taxiways surface styles and markings
+   - seasonal objects, showing summer version only
+   - identify 3D forests (but only 2D tree's shown for now)
+   XP12 art asset conversion features:
+   - jetway objects to jetway facades
+   - X11 default pavment to XP12 aged pavement
 
 WED 2.4.0rc2 5/29/21
    Features:

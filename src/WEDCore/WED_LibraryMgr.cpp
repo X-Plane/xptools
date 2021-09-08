@@ -322,12 +322,24 @@ void		WED_LibraryMgr::Rescan()
 			{
 				string vpath, rpath;
 				bool is_export_backup = false;
+				bool is_season = false;
 
 				if( MFS_string_match(&s,"EXPORT",false) ||
 				    MFS_string_match(&s,"EXPORT_EXTEND",false) ||
 				    MFS_string_match(&s,"EXPORT_EXCLUDE",false) ||
+					(is_season = ( MFS_string_match(&s, "EXPORT_SEASON", false) || MFS_string_match(&s, "EXPORT_EXCLUDE_SEASON", false))) ||
 					(is_export_backup  = MFS_string_match(&s,"EXPORT_BACKUP",false)))
 				{
+					if (is_season)
+					{
+						string season;
+						MFS_string(&s, &season);
+						if (season.find("sum") == string::npos)
+						{
+							MFS_string_eol(&s, NULL);
+							continue;
+						}
+					}
 					MFS_string(&s,&vpath);
 					MFS_string_eol(&s,&rpath);
 					WED_clean_vpath(vpath);

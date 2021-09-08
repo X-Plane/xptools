@@ -107,11 +107,19 @@ void	WED_ResourceMgr::Purge(void)
 	for(auto& i : mObj)
 		for(auto j : i.second)
 			delete j;
+	mObj.clear();
 
 	mPol.clear();
 	mLin.clear();
-	mObj.clear();
+
+	for (auto& i : mFor)
+	{
+		if(i.second.preview) delete i.second.preview;
+		for (auto& t : i.second.trees)
+			if(t.obj_3D) delete t.obj_3D;
+	}
 	mFor.clear();
+
 	mFac.clear();
 	mStr.clear();
 	mAGP.clear();
@@ -1136,26 +1144,16 @@ inline void	do_rotate(int n, float& io_x, float& io_y)
 	io_y = v.dy;
 }
 
-#define TPR 6           // # of trees shown in a row
-
-struct tree_t {
-	float s,t,w,y; 		// texture coordinates of tree
-	float o;            // offset of tree center line (where the quads inersect)
-	float pct;          // relative occurence percentage for this tree
-	float hmin,hmax;    // height range for this tree in meters
-	int q;				// number of quads the tree is constructed of
-};
-
-bool	WED_ResourceMgr::GetFor(const string& path, XObj8 const *& obj)
+bool	WED_ResourceMgr::GetFor(const string& path, for_info_t const *& info)
 {
 	auto i = mFor.find(path);
 	if(i != mFor.end())
 	{
-		obj = &i->second;
+		info = &i->second;
 		return true;
 	}
 
-	obj = nullptr;
+	info = nullptr;
 	string p = mLibrary->GetResourcePath(path);
 
 	MFMemFile * fi = MemFile_Open(p.c_str());
@@ -1171,130 +1169,127 @@ bool	WED_ResourceMgr::GetFor(const string& path, XObj8 const *& obj)
 		return false;
 	}
 
-	vector <tree_t> tree;
+	for_info_t * fst = &mFor[path];
+	info = fst;
+
+	fst->has_3D = false;
 	float scale_x=256, scale_y=256, space_x=30, space_y=30, rand_x=0, rand_y=0;
 	string tex;
-	string desc;
+	bool shader_2d = true;
+	double max_height = 0.0;
 
 	while(!MFS_done(&s))
 	{
-		if(MFS_string_match(&s,"TEXTURE",false))
+		if (MFS_string_match(&s, "TEXTURE", false))
 		{
-			MFS_string(&s,&tex);
+			if (shader_2d)
+				MFS_string(&s, &tex);
 		}
-		else if (MFS_string_match(&s,"SCALE_X", false))
+		else if (MFS_string_match(&s, "SCALE_X", false))
 		{
 			scale_x = MFS_double(&s);
 		}
-		else if (MFS_string_match(&s,"SCALE_Y", false))
+		else if (MFS_string_match(&s, "SCALE_Y", false))
 		{
 			scale_y = MFS_double(&s);
 		}
-		else if (MFS_string_match(&s,"SPACING", false))
+		else if (MFS_string_match(&s, "SPACING", false))
 		{
 			space_x = MFS_double(&s);
 			space_y = MFS_double(&s);
 		}
-		else if (MFS_string_match(&s,"RANDOM", false))
+		else if (MFS_string_match(&s, "RANDOM", false))
 		{
 			rand_x = MFS_double(&s);
 			rand_y = MFS_double(&s);
 		}
-		else if (MFS_string_match(&s,"TREE", false))
+		else if (MFS_string_match(&s, "TREE", false))
 		{
-			tree_t t;
-			t.s    = MFS_double(&s);
-			t.t    = MFS_double(&s);
-			t.w    = MFS_double(&s);
-			t.y    = MFS_double(&s);
-			t.o    = MFS_double(&s);
-			t.pct  = MFS_double(&s);
+			for_info_t::tree_t t;
+			t.s = MFS_double(&s);
+			t.t = MFS_double(&s);
+			t.w = MFS_double(&s);
+			t.y = MFS_double(&s);
+			t.o = MFS_double(&s);
+			t.pct = MFS_double(&s);
 			t.hmin = MFS_double(&s);
 			t.hmax = MFS_double(&s);
-			t.q    = MFS_int(&s);
+			if (max_height < t.hmax) max_height = t.hmax;
+			t.q = MFS_int(&s);
 
-			if (fabs(t.w) > 0.001 && t.y > 0.001 )   // there are some .for with zero size tree's in XP10 and OpensceneryX uses negative widths ...
-				tree.push_back(t);
+			if (fabs(t.w) > 0.001 && t.y > 0.001)   // there are some .for with zero size tree's in XP10 and OpensceneryX uses negative widths ...
+				fst->trees.push_back(t);
 		}
+		else if (MFS_string_match(&s, "MESH_3D", false))
+		{
+			fst->has_3D = true;
+		}
+		else if (MFS_string_match(&s, "SHADER_2D", true))
+			shader_2d = true;
+		else if (MFS_string_match(&s, "SHADER_3D", true))
+			shader_2d = false;
 
 		if (MFS_string_match(&s,"#wed_text", false))
-			MFS_string_eol(&s, &desc);
+			MFS_string_eol(&s, &fst->description);
 		else
 			MFS_string_eol(&s, NULL);
 	}
 	MemFile_Close(fi);
 
+	int quads = 0;
+
 	// now we have one of each tree. Like on the ark. Or maybe half that :)
 	// expand that to full forest of TPS * TPS trees, populated with all the varieties there are
-	int varieties =  tree.size();
-	vector <tree_t> treev = tree;
-	tree.clear();
-
+	int varieties = fst->trees.size();
 	if (varieties < 1) return false;
 
-#if 0		// truely random tree choice, taken into account each tree's relative percentage
-			// it works, but not so perfect for a forest with a relatively small number of tree's
-			// e.g. a 36 tree forest with one tree ocurring at 3.5% may have either 0, 1 or 2 of that kind
+	int TPR = 6;           // # of trees shown in a row
+	vector<int> species(TPR * TPR);
 
-	for (int i=0; i<TPR*TPR; ++i)
-	{
-		int species = 0;
-		float prob = (100.0*rand())/RAND_MAX;
-		for (species=varieties-1; species>0; --species)
-			if (prob < treev[species].pct)
-				break;
-			else
-				prob-=treev[species].pct;
-		// if the pct for all tree's don't add up too 100% - species #0 will make up for it.
-		// XP seems to do the same.
+	if (varieties < 4) TPR = 3;
 
-		tree.push_back(treev[species]);
-	}
-#else
-	int species[TPR*TPR] = {};
+	fst->description += to_string(varieties) + string(" different trees, ");
+	fst->description += string("max h=") + to_string(intround(max_height / (gIsFeet ? 1.0 : 0.3048))) + string(gIsFeet ? "m" : "ft");
 
-	for (int i=varieties-1; i>0; --i)
-		for (int j=0; j<round(treev[i].pct/100.0*TPR*TPR); ++j)
+
+	for (int i = varieties - 1; i > 0; --i)
+		for (int j = 0; j < round(fst->trees[i].pct / 100.0 * TPR * TPR); ++j)
 		{
-			int cnt=10;     // needed in case the tree percentages add up to more than 100%
+			int cnt = 10;     // needed in case the tree percentages add up to more than 100%
 			do
 			{
-				int where = ((float) TPR*TPR*rand())/RAND_MAX;
-				if(where >= 0 && where < TPR*TPR && !species[where])
+				int where = ((float)TPR * TPR * rand()) / RAND_MAX;
+				if (where >= 0 && where < TPR * TPR && !species[where])
 				{
 					species[where] = i;
 					break;
 				}
 			} while (--cnt);
 		}
-	for (int i=0; i<TPR*TPR; ++i)
-		tree.push_back(treev[species[i]]);
-#endif
 
-	// fills a XObj8-structure for library preview
-	XObj8 * new_obj = &mFor[path];
+	// fill a XObj8-structure for library preview
+	XObj8* new_obj = new XObj8;
 	XObjCmd8 cmd;
 
 	new_obj->texture = tex;
 	process_texture_path(p, new_obj->texture);
 
-	int quads=0;
-
 	// "VT "
-	for (int i = 0; i < tree.size(); ++i)
+	for (int i = 0; i <TPR*TPR; ++i)
 	{
-		float t_h = tree[i].hmin + ((float) rand())/RAND_MAX * (tree[i].hmax-tree[i].hmin);
-		float t_w = t_h * tree[i].w/tree[i].y;                                 // full width of tree
+		for_info_t::tree_t * tree = &fst->trees[species[i]];
+		
+		float t_h = tree->hmin + ((float) rand())/RAND_MAX * (tree->hmax - tree->hmin);
+		float t_w = t_h * tree->w / tree->y;                                 // full width of tree
 		float t_x = (i % TPR) * space_x + rand_x*((2.0*rand())/RAND_MAX-1.0);  // tree position
 		float t_y = (i / TPR) * space_y + rand_y*((2.0*rand())/RAND_MAX-1.0);
 		float rot_r = ((float) rand())/RAND_MAX;
 
-		for (int j=0; j<tree[i].q; ++j)
+		for (int j=0; j < tree->q; ++j)
 		{
-			float rot = M_PI*(rot_r+j/(float) tree[i].q);        // tree rotation
+			float rot = M_PI*(rot_r+j/(float)tree->q);        // tree rotation
 			float x = t_w * sin(rot);
 			float z = t_w * cos(rot);
-
 			quads++;
 
 			float pt[8];
@@ -1302,26 +1297,27 @@ bool	WED_ResourceMgr::GetFor(const string& path, XObj8 const *& obj)
 			pt[4] = 1.0;
 			pt[5] = 0.0;
 
-			pt[0] = t_x - x*(tree[i].o/tree[i].w);
+			pt[0] = t_x - x*(tree->o/tree->w);
 			pt[1] = 0.0;
-			pt[2] = t_y - z*(tree[i].o/tree[i].w);
-			pt[6] = tree[i].s/scale_x;
-			pt[7] = tree[i].t/scale_y;
+			pt[2] = t_y - z*(tree->o/tree->w);
+			pt[6] = tree->s/scale_x;
+			pt[7] = tree->t/scale_y;
 
 			new_obj->geo_tri.append(pt);
-			pt[0] = t_x + x*(1.0-tree[i].o/tree[i].w);
-			pt[2] = t_y + z*(1.0-tree[i].o/tree[i].w);
-			pt[6] = (tree[i].s+tree[i].w)/scale_x;
+			pt[0] = t_x + x*(1.0-tree->o/tree->w);
+			pt[2] = t_y + z*(1.0-tree->o/tree->w);
+			pt[6] = (tree->s+tree->w)/scale_x;
 			new_obj->geo_tri.append(pt);
 			pt[1] = t_h;
-			pt[7] = (tree[i].t+tree[i].y)/scale_y;
+			pt[7] = (tree->t+tree->y)/scale_y;
 			new_obj->geo_tri.append(pt);
-			pt[0] = t_x - x*(tree[i].o/tree[i].w);
-			pt[2] = t_y - z*(tree[i].o/tree[i].w);
-			pt[6] = tree[i].s/scale_x;
+			pt[0] = t_x - x*(tree->o/tree->w);
+			pt[2] = t_y - z*(tree->o/tree->w);
+			pt[6] = tree->s/scale_x;
 			new_obj->geo_tri.append(pt);
 		}
 	}
+
 	// set dimension
 	new_obj->geo_tri.get_minmax(new_obj->xyz_min,new_obj->xyz_max);
 
@@ -1344,7 +1340,8 @@ bool	WED_ResourceMgr::GetFor(const string& path, XObj8 const *& obj)
 	cmd.idx_offset = 0;
 	cmd.idx_count  = 6*quads;
 	new_obj->lods.back().cmds.push_back(cmd);
-	new_obj->description = desc;
+
+	fst->preview = new_obj;
 	return true;
 }
 

@@ -601,10 +601,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 
 	outObj.lods.push_back(XObjLOD8());
 	outObj.lods.back().lod_near = outObj.lods.back().lod_far = 0;
-#if XOBJ8_USE_VBO
-	outObj.geo_VBO = 0;
-	outObj.idx_VBO = 0;
-#endif
+
 	while (!stop && TXT_MAP_continue(cur_ptr, end_ptr))
 	{
 		bool ate_eoln = false;

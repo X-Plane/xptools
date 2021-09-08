@@ -565,6 +565,7 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, int b[4], 
 	const pol_info_t * pol = nullptr;
 	const lin_info_t * lin = nullptr;
 	const fac_info_t * fac = nullptr;
+	const for_info_t * fst = nullptr;
 	const str_info_t * str = nullptr;
 	const road_info_t * rd = nullptr;
 	map<int,road_info_t::vroad_t>::const_iterator vr_it;
@@ -730,8 +731,10 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, int b[4], 
 			}
 			break;
 		case res_Forest:
-			if(!mResMgr->GetFor(res,o))
+			if (!mResMgr->GetFor(res, fst))
 				break;
+			else
+				o = fst->preview;
 		case res_String:
 			if(!o)
 			{
@@ -902,7 +905,6 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, int b[4], 
 				break;
 			case res_Autogen:
 			case res_Object:
-			case res_Forest:
 			case res_String:
 				if (o)
 				{
@@ -942,6 +944,13 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, int b[4], 
 				}
 				else if (str)
 					snprintf(buf1, sizeof(buf1), "%s", str->description.c_str());
+				break;
+			case res_Forest:
+				{
+					snprintf(buf1, sizeof(buf1), "%s", fst->description.c_str());
+					if(fst->has_3D)
+						sprintf(buf2, "includes annimated 3D trees (not shown)");
+				}
 				break;
 			case res_Road:
 				if(rd)

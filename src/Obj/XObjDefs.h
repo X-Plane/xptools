@@ -312,6 +312,7 @@ struct	XObj8 {
 #if XOBJ8_USE_VBO
 	unsigned int			geo_VBO;
 	unsigned int			idx_VBO;
+	XObj8(void) : geo_VBO(0), idx_VBO(0) {};
 #endif
 	ObjPointPool			geo_lines;
 	ObjPointPool			geo_lights;

@@ -217,6 +217,25 @@ struct agp_t {
 	agp_t(void) : has_scp(false) { }
 };
 
+struct for_info_t {
+	struct tree_t {
+		float s, t, w, y; 		// texture coordinates of tree
+		float o;            // offset of tree center line (where the quads inersect)
+		float pct;          // relative occurence percentage for this tree
+		float hmin, hmax;    // height range for this tree in meters
+		int q;				// number of quads the tree is constructed of
+		const XObj8* obj_3D;
+		tree_t(void) : obj_3D(nullptr) {}
+	};
+
+	const XObj8* preview;   // all-panel preview - to be obsoleted ?
+	string description;
+
+	bool has_3D;
+	vector<tree_t> trees;
+	for_info_t(void) : preview(nullptr) {}
+};
+
 
 class WED_ResourceMgr : public GUI_Broadcaster, public GUI_Listener, public virtual IBase {
 public:
@@ -231,7 +250,7 @@ public:
 			bool 	SetPolUV(const string& path, Bbox2 box);
 			bool	GetLin(const string& path, lin_info_t const *& info);
 			bool	GetStr(const string& path, str_info_t const *& info);
-			bool	GetFor(const string& path, XObj8 const *& obj);
+			bool	GetFor(const string& path, for_info_t const *& info);
 			int		GetNumVariants(const string& path);
 			bool	GetSimilar(const string& r, vector<pair<string, int> >& vpaths);
 
@@ -255,7 +274,7 @@ private:
 	unordered_map<string,pol_info_t>		mPol;
 	unordered_map<string,lin_info_t>		mLin;
 	unordered_map<string,str_info_t>		mStr;
-	unordered_map<string,XObj8>				mFor;
+	unordered_map<string,for_info_t>		mFor;
 	unordered_map<string,vector<const XObj8 *> > mObj;
 	unordered_map<string,agp_t>				mAGP;
 #if ROAD_EDITING
