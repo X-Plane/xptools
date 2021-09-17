@@ -567,6 +567,7 @@ static int DoTigerBounds(const vector<const char *>& args)
 "c - crop to current map bounds on import.  This can be faster than a separate cropping stage.\n" \
 "o - overlay on existing map.  This can be slower than cleaning the vector space first.\n" \
 "e - check for overlapping polygon errors.  Abort the import silently if we hit this case.\n" \
+"a - Import vertex altitude from shapefile Z coordinate, if present.\n" \
 "<err> is the max error in meters to be allowed when simplifying imported roads.  Pass zero to\n"\
 "import the data with no change.\n"
 static int DoShapeImport(const vector<const char *>& args)
