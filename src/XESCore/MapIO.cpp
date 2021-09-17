@@ -328,7 +328,7 @@ void ReadPoint(IOReader& inReader, Point_2& p)
 
 #define VERSION_VERTEX 2
 #define VERSION_HALFEDGE 1
-#define VERSION_FACE 1
+#define VERSION_FACE 2
 
 class PmwxFmt { 
 public:
@@ -432,6 +432,8 @@ public:
 		WriteAreaFeature(*writer, f->data().mAreaFeature);
 		WriteVector(*writer, f->data().mObjs, WriteObjPlacement);
 		WriteVector(*writer,f->data().mPolyObjs,WritePolyObjPlacement);
+		// Version 2
+		writer->WriteInt(f->data().mHasElevation ? 1 : 0);
 	}
 
 	void write_halfedge_index (int idx)
@@ -556,6 +558,12 @@ public:
 			ReadAreaFeature(*reader, f->data().mAreaFeature, *token_map);
 			ReadVector(*reader, f->data().mObjs, ReadObjPlacement, *token_map);
 			ReadVector(*reader,f->data().mPolyObjs,ReadPolyObjPlacement, *token_map);
+		}
+		if(vers >= 2)
+		{
+			int has_elevation;
+			reader->ReadInt(has_elevation);
+			f->data().mHasElevation = has_elevation != 0;
 		}
 	}
 
