@@ -326,7 +326,7 @@ void ReadPoint(IOReader& inReader, Point_2& p)
 
 #pragma mark -
 
-#define VERSION_VERTEX 1
+#define VERSION_VERTEX 2
 #define VERSION_HALFEDGE 1
 #define VERSION_FACE 1
 
@@ -392,6 +392,9 @@ public:
 		writer->WriteInt(VERSION_VERTEX);
 		// Version 1
 		writer->WriteInt(v->data().mTunnelPortal ? 1 : 0);
+		// Version 2
+		writer->WriteInt(v->data().mElevation.has_value() ? 1 : 0);
+		writer->WriteDouble(v->data().mElevation.has_value() ? v->data().mElevation.value() : 0.0);
 	}
 
 	void write_vertex_index (int idx)
@@ -483,6 +486,15 @@ public:
 			reader->ReadInt(i);
 			v->data().mTunnelPortal = i != 0;
 			
+		}
+		if (vers >= 2)
+		{
+			int has_elevation;
+			double elevation;
+			reader->ReadInt(has_elevation);
+			reader->ReadDouble(elevation);
+			if (has_elevation)
+				v->data().mElevation = elevation;
 		}
 	}
 
