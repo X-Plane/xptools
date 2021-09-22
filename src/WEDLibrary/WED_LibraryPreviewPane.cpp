@@ -930,7 +930,7 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, int b[4], 
 					n += sprintf(buf2 + n, "max h=%.1f%s", length_with_units(agp->tiles[tile_idx].xyz_max[1]));
 					if(agp->has_scp)
 					{
-						double min_scp(999), max_scp(0);
+						double min_scp(999), max_scp(0), step_scp(0);
 						for (auto& t : agp->tiles)
 							if(t.has_scp)
 								for (auto& a : t.objs)
@@ -938,8 +938,11 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, int b[4], 
 									{
 										if(a.scp_min < min_scp) min_scp = a.scp_min;
 										if(a.scp_max > max_scp) max_scp = a.scp_max;
+										step_scp = a.scp_step;        // only meaningfull if either only one scraper or all have same step size
 									}
-						sprintf(buf2 + n, ", varies for heights %.1f - %.1f%s", min_scp / (gIsFeet ? 0.3048 : 1.0), length_with_units(max_scp));
+						n += sprintf(buf2 + n, ", varies for set_AGL %.1f - %.1f%s", min_scp / (gIsFeet ? 0.3048 : 1.0), length_with_units(max_scp));
+						n += sprintf(buf2 + n, " in %.1f%s steps", length_with_units(step_scp));
+						n += sprintf(buf2 + n, " @ %.1f%s", length_with_units(mHgt));
 					}
 				}
 				else if (str)

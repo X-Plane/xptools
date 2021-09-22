@@ -392,8 +392,8 @@ void draw_agp_at_xyz(ITexMgr * tman, const agp_t * agp, double x, double y, doub
 	for (auto& o : ti.objs)
 		if (o.scp_step > 0.0)
 		{
-			if (height >= o.scp_min)
-				height = min(o.scp_max - o.scp_min, roundf(height / o.scp_step) * o.scp_step - o.scp_min);
+			if (height > o.scp_min)
+				height = min(o.scp_max - o.scp_min, floor((height - o.scp_min) / o.scp_step) * o.scp_step);
 			else
 				height = 0.0;
 			draw_obj_at_xyz(tman, o.obj, o.x, height, -o.y, o.r, g);
@@ -443,8 +443,8 @@ void draw_agp_at_ll(ITexMgr * tman, const agp_t * agp, const Point2& loc, float 
 		{
 			if (o.scp_step > 0.0)
 			{
-				if (height >= o.scp_min && height <= o.scp_max)
-					height = roundf(height / o.scp_step) * o.scp_step;
+				if (height > o.scp_min)
+					height = min(o.scp_max - o.scp_min, floor((height - o.scp_min) / o.scp_step) * o.scp_step);
 				else
 					height = 0.0;
 				draw_obj_at_xyz(tman, o.obj, o.x, height, -o.y, o.r, g);
