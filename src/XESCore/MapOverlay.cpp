@@ -250,6 +250,7 @@ struct Overlay_terrain
 	{
 		GIS_face_data r;
 		merge_params(r.mParams,a.mParams,b.mParams);
+		r.mHasElevation = a.mHasElevation || b.mHasElevation;
 		// Our overlay comes from the RHS, but it might be a hole (in which case mTerrainType will be 0)
 		if (b.mTerrainType != 0 ) {
 			r.mTerrainType = b.mTerrainType;
@@ -263,7 +264,6 @@ struct Overlay_terrain
 			r.mAreaFeature = b.mAreaFeature;
 		else
 			r.mAreaFeature = a.mAreaFeature;
-		r.mHasElevation = a.mHasElevation || b.mHasElevation;
 		return r;
 	}
 };
