@@ -475,25 +475,15 @@ Point2 WED_MapPreviewPane::CameraPositionLL() const
 
 void WED_MapPreviewPane::FromPrefs(IDocPrefs * prefs)
 {
-	const double qnan = std::numeric_limits<double>::quiet_NaN();
+	//const double qnan = std::numeric_limits<double>::quiet_NaN();
 
-	double camera_lon = prefs->ReadDoublePref("map_preview_window/camera_lon", qnan, IDocPrefs::pref_type_doc);
-	double camera_lat = prefs->ReadDoublePref("map_preview_window/camera_lat", qnan, IDocPrefs::pref_type_doc);
-	double camera_agl = prefs->ReadDoublePref("map_preview_window/camera_agl", qnan, IDocPrefs::pref_type_doc);
-	double camera_yaw = prefs->ReadDoublePref("map_preview_window/camera_yaw", qnan, IDocPrefs::pref_type_doc);
-	double camera_pitch = prefs->ReadDoublePref("map_preview_window/camera_pitch", qnan, IDocPrefs::pref_type_doc);
+	double camera_lon = prefs->ReadDoublePref("map_preview_window/camera_lon", 999, IDocPrefs::pref_type_doc);
+	double camera_lat = prefs->ReadDoublePref("map_preview_window/camera_lat", 999, IDocPrefs::pref_type_doc);
+	double camera_agl = prefs->ReadDoublePref("map_preview_window/camera_agl", 0.0, IDocPrefs::pref_type_doc);
+	double camera_yaw = prefs->ReadDoublePref("map_preview_window/camera_yaw", 0.0, IDocPrefs::pref_type_doc);
+	double camera_pitch = prefs->ReadDoublePref("map_preview_window/camera_pitch", -15.0, IDocPrefs::pref_type_doc);
 
-	if (!std::isnan(camera_lon) && !std::isnan(camera_lat) && !std::isnan(camera_agl) && !std::isnan(camera_yaw) && !std::isnan(camera_pitch))
-	{
-		this->SetMapLogicalBounds(camera_lon, camera_lat, camera_lon, camera_lat);
-
-		mCamera.MoveTo(Point3(0, 0, camera_agl));
-
-		mYaw = camera_yaw;
-		mPitch = camera_pitch;
-		SetForwardVector();
-	}
-	else
+	if ( camera_lat < -90 || camera_lat > 90  || camera_lon < -180 || camera_lon > 180 )
 	{
 		WED_Thing * wrl = WED_GetWorld(mDocument);
 		IGISEntity * ent = dynamic_cast<IGISEntity *>(wrl);
@@ -507,6 +497,16 @@ void WED_MapPreviewPane::FromPrefs(IDocPrefs * prefs)
 		box.p2.y_ = prefs->ReadDoublePref("map/north", box.p2.y_);
 
 		DisplayExtent(box, 0.5);
+	}
+	else
+	{
+		this->SetMapLogicalBounds(camera_lon, camera_lat, camera_lon, camera_lat);
+
+		mCamera.MoveTo(Point3(0, 0, camera_agl));
+
+		mYaw = camera_yaw;
+		mPitch = camera_pitch;
+		SetForwardVector();
 	}
 }
 
