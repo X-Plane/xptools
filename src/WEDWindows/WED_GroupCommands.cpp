@@ -5290,6 +5290,8 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 	op->CommitOperation();
 }
 
+static void dummy_func(void* ref, const char* fmt, ...) { return; }
+
 int WED_DoConvertToJW(WED_Airport * apt)
 {
 	vector<WED_RampPosition*> ramps;
@@ -5357,7 +5359,9 @@ int WED_DoConvertToJW(WED_Airport * apt)
 				jw_info.parked_tunnel_length = tun_len;
 				jw_info.parked_tunnel_angle = fltwrap(tun_hdg - 21.0, 0, 360);  // exact tunnel heading plus pulled back a bit to ensure cabin clearance
 				jw_info.parked_cab_angle = 60.0;
-				fac->WED_FacadePlacement::ImportJetway(jw_info, [](void* ref, const char* fmt, ...) { return; }, nullptr);
+//				fac->WED_FacadePlacement::ImportJetway(jw_info, [](void* ref, const char* fmt, ...) { return; }, nullptr);
+				fac->WED_FacadePlacement::ImportJetway(jw_info, dummy_func, nullptr);
+				
 				auto rng = fac->GetNthChild(0);
 
 				c->SetParent(NULL, 0);
