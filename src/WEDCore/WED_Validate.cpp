@@ -50,6 +50,7 @@
 #include "WED_TaxiRoute.h"
 #include "WED_TruckDestination.h"
 #include "WED_TruckParkingLocation.h"
+#include "WED_TowerViewpoint.h"
 #include "WED_ATCFlow.h"
 #include "WED_ATCFrequency.h"
 #include "WED_ATCRunwayUse.h"
@@ -2293,6 +2294,52 @@ static void ValidateRoads(const vector<WED_RoadEdge *> roads, validation_error_v
 	}
 }
 
+void ValidateOneViewpoint(WED_TowerViewpoint* v, const vector<WED_ObjPlacement*>objs, validation_error_vector& msgs, WED_Airport* apt)
+{
+	AptTowerPt_t info;
+	v->Export(info);
+
+	double closest_dist(99999);
+	WED_ObjPlacement* closest_obj = nullptr;
+for (auto o : objs)
+		if (o->GetTowerViewHgt() >= 0.0)
+		{
+			Point2 obj_loc;
+			o->GetLocation(gis_Geo, obj_loc);
+			double dist = LonLatDistMeters(info.location, obj_loc);
+			if (dist < closest_dist)
+			{
+				closest_dist = dist;
+				closest_obj = o;
+			}
+		}
+
+	if (closest_obj == nullptr) return;
+
+	if (closest_dist < 10.0)
+	{
+		if (fabs(closest_obj->GetTowerViewHgt() - info.height_ft * FT_TO_MTR) > 0.3)
+		{
+			char c[100];
+			double x = closest_obj->GetTowerViewHgt();
+			snprintf(c, sizeof(c), "Tower Viewpoint height does not mtach nearby tower object cabin height of %.1lf%s",
+				x * (gIsFeet ? MTR_TO_FT : 1.0), gIsFeet ? "ft" : "m");
+			vector<WED_Thing*> parts;
+			parts.push_back(v);
+			parts.push_back(closest_obj);
+			msgs.push_back(validation_error_t(c, warn_viewpoint_mislocated, parts, apt));
+		}
+	}
+	else
+	{
+		vector<WED_Thing*> parts;
+		parts.push_back(v);
+		parts.push_back(closest_obj);
+		msgs.push_back(validation_error_t("Tower Viewpoint not near tower object", warn_viewpoint_mislocated, parts, apt));
+	}
+
+}
+
 //------------------------------------------------------------------------------------------------------------------------------------
 #pragma mark -
 //------------------------------------------------------------------------------------------------------------------------------------
@@ -2311,6 +2358,8 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	vector<WED_AirportBoundary *>	boundaries;
 	vector<WED_ATCFlow *>			flows;
 	vector<WED_ATCFrequency*>		freqs;
+	vector<WED_TowerViewpoint*>		viewpts;
+	vector<WED_ObjPlacement*>		objects;
 	vector<WED_RoadEdge*>			roads;
 
 	vector<WED_DrapedOrthophoto *>	orthos;
@@ -2337,6 +2386,8 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		else COLLECT(WED_Taxiway,      taxiways)
 		else COLLECT(WED_RampPosition, ramps)
 		else COLLECT(WED_AirportBoundary,      boundaries)
+		else COLLECT(WED_TowerViewpoint,       viewpts)
+		else COLLECT(WED_ObjPlacement,         objects)
 		else COLLECT(WED_TruckDestination,     truck_destinations)
 		else COLLECT(WED_TruckParkingLocation, truck_parking_locs)
 		else COLLECT(WED_TaxiRoute,            taxiroutes)
@@ -2418,6 +2469,9 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 
 	for(auto s : signs)
 		ValidateOneTaxiSign(s, msgs, apt);
+
+	for (auto v : viewpts)
+		ValidateOneViewpoint(v, objects, msgs, apt);
 
 	for(auto t : taxiways)
 		ValidateOneTaxiway(t, msgs, apt);
