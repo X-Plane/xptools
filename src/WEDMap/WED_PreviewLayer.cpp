@@ -668,10 +668,10 @@ struct	preview_helipad : public WED_PreviewItem {
 			Point2 corners[4];
 			heli->GetCorners(gis_Geo, corners);
 			zoomer->LLToPixelv(corners, corners, 4);
-
-			setup_taxi_texture(heli->GetSurface(),heli->GetHeading(), corners[0], g, zoomer, mPavementAlpha, res);
-
+			setup_taxi_texture(heli->GetSurface(), heli->GetHeading(), corners[0], g, zoomer, mPavementAlpha, res);
 			glShape2v(GL_QUADS, corners, 4);
+			kill_transform();
+
 		}
 	}
 };

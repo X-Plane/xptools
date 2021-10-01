@@ -940,8 +940,8 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, int b[4], 
 										if(a.scp_max > max_scp) max_scp = a.scp_max;
 										step_scp = a.scp_step;        // only meaningfull if either only one scraper or all have same step size
 									}
-						n += sprintf(buf2 + n, ", varies for set_AGL %.1f - %.1f%s", min_scp / (gIsFeet ? 0.3048 : 1.0), length_with_units(max_scp));
-						n += sprintf(buf2 + n, " in %.1f%s steps", length_with_units(step_scp));
+						n += sprintf(buf2 + n, ", set_AGL %.1f - %.1f%s", min_scp / (gIsFeet ? 0.3048 : 1.0), length_with_units(max_scp));
+						n += sprintf(buf2 + n, " in %d x %.1f%s steps", step_scp > 0.1 ? intround((max_scp - min_scp)/step_scp) : 0, length_with_units(step_scp));
 						n += sprintf(buf2 + n, " @ %.1f%s", length_with_units(mHgt));
 					}
 				}

@@ -125,7 +125,7 @@ double WED_ObjPlacement::GetTowerViewHgt(void)
 				if (hgt >= 0.0)
 				{
 					if (ob.scp_step > 0.0 && HasCustomMSL() == 2 && GetCustomMSL() > ob.scp_min)
-						hgt += floor((min(GetCustomMSL(), ob.scp_max) - ob.scp_min) / ob.scp_step) * ob.scp_step;
+						hgt += floor((min(GetCustomMSL(), (double) ob.scp_max) - ob.scp_min) / ob.scp_step) * ob.scp_step;
 					else
 						hgt += ob.z;
 					return hgt;

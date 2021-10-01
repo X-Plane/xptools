@@ -2322,7 +2322,7 @@ for (auto o : objs)
 		{
 			char c[100];
 			double x = closest_obj->GetTowerViewHgt();
-			snprintf(c, sizeof(c), "Tower Viewpoint height does not mtach nearby tower object cabin height of %.1lf%s",
+			snprintf(c, sizeof(c), "Tower Viewpoint height does not match nearby tower object cabin height of %.1lf%s",
 				x * (gIsFeet ? MTR_TO_FT : 1.0), gIsFeet ? "ft" : "m");
 			vector<WED_Thing*> parts;
 			parts.push_back(v);
