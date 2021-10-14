@@ -173,6 +173,7 @@ ENUM_DOMAIN(Runway_Markings,"Runway Markings")
 	ENUM(mark_Precis,			"Precision (US)",			apt_mark_precision)
 	ENUM(mark_NonPrecisUK,		"Non-Precision (UK)",		apt_mark_non_precision_UK)
 	ENUM(mark_PrecisUK,			"Precision (UK)",			apt_mark_precision_UK)
+	ENUM(mark_NonPrecisEASA,	"Non-Precision (EASA)",		apt_mark_non_precision_EASA)
 	ENUM(mark_PrecisEASA,		"Precision (EASA)",			apt_mark_precision_EASA)
 
 ENUM_DOMAIN(Marking_Size,"Rwy Marking Sizes")

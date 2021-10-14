@@ -245,7 +245,8 @@ enum {
 	apt_mark_precision,
 	apt_mark_non_precision_UK,	// 850 only
 	apt_mark_precision_UK,
-	apt_mark_precision_EASA,    // 1200 only
+	apt_mark_non_precision_EASA,// 1200 only
+	apt_mark_precision_EASA,
 	// Helipad Markings
 	apt_mark_heli_default = 0,	// 850 only
 
