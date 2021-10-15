@@ -674,13 +674,13 @@ void WED_LibraryMgr::RescanSurfaces()
 			}
 	}
 
-	// if that failed - we keep the, almost certainly non-public, vpath of the taxiway. Sigh.
-
-	// this should only occurr with XP11 or older
+	// this should only occurr with XP11 or older, XP11 user can at least get nice pavement and the "convert To" uses this info, too.
 	if(default_surfaces.size() == 0)
 	{
-		default_surfaces[surf_Asphalt] = "lib/airport/pavement/asphalt_3D.pol";
-		default_surfaces[surf_Concrete] = "lib/airport/pavement/concrete_1D.pol";
+		if(res_table.count("lib/airport/pavement/asphalt_3D.pol") > 0)
+			default_surfaces[surf_Asphalt] = "lib/airport/pavement/asphalt_3D.pol";
+		if (res_table.count("lib/airport/pavement/concrete_1D.pol") > 0)
+			default_surfaces[surf_Concrete] = "lib/airport/pavement/concrete_1D.pol";
 	}
 }
 

@@ -5159,7 +5159,7 @@ static void set_surface(WED_Thing * t, int surface, WED_LibraryMgr * lmgr)
 	{
 		string resource;
 		if (!WED_GetLibraryMgr(t->GetArchive()->GetResolver())->GetSurfVpath(surface, resource))
-			resource = "lib/airport/pavement/asphalt_1D.pol";
+			resource = "lib/airport/pavement/asphalt_3D.pol";              // default to default asphalt
 		polygon->SetResource(resource);
 	}
 	if(auto line = dynamic_cast<WED_LinePlacement*>(t))

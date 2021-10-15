@@ -193,31 +193,32 @@ static bool setup_pol_texture(ITexMgr * tman, const pol_info_t& pol, double head
 static bool setup_taxi_texture(int surface_code, double heading, const Point2& centroid, GUI_GraphState * g, WED_MapZoomerNew * z, float alpha,
 		IResolver * resolver)
 {
+	if (surface_code >= shoulder_Asphalt_1 && surface_code <= shoulder_Concrete_8)
+		surface_code -= shoulder_Asphalt_1 - surf_Asphalt_1;
 
-	int surface_num = ENUM_Export(surface_code);
-	if(surface_num >= apt_surf_asphalt_1)
+	if(surface_code != surf_Trans && surface_code != shoulder_None)
 	{
-		char buf[64];
-		sprintf(buf, "lib/airport/default_runways/%s_%d/runway.pol", surface_num < apt_surf_concrete_1 ? "asphalt" : "concrete", (surface_num % 10) + 1);
+		WED_LibraryMgr * lmgr = WED_GetLibraryMgr(resolver);
+		string resource;
+		if (lmgr->GetSurfVpath(surface_code, resource))
+		{
+			WED_ResourceMgr* rmgr = WED_GetResourceMgr(resolver);
+				ITexMgr* tman = WED_GetTexMgr(resolver);
+				const pol_info_t* pol_info;
 
-		WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
-		ITexMgr *	tman = WED_GetTexMgr(resolver);
-		const pol_info_t * pol_info;
-
-		if(rmgr->GetPol(buf, pol_info))
-			if(setup_pol_texture(tman, *pol_info, heading, false, centroid, g, z, alpha))
-				return true;
-
-		surface_code = surface_num < apt_surf_concrete_1 ? surf_Asphalt : surf_Concrete;
+				if (rmgr->GetPol(resource, pol_info))
+					if (setup_pol_texture(tman, *pol_info, heading, false, centroid, g, z, alpha))
+						return true;
+		}
 	}
 
+	if (surface_code < surf_Concrete_1) surface_code = surf_Asphalt;
+	else if (surface_code < surf_Grass) surface_code = surf_Concrete;
 	int tex_id = 0;
 
 	switch(surface_code)
 	{
-		case shoulder_Asphalt:
 		case surf_Asphalt:	tex_id = GUI_GetTextureResource("asphalt.png",tex_Wrap+tex_Linear+tex_Mipmap,NULL);	break;
-		case shoulder_Concrete:
 		case surf_Concrete:	tex_id = GUI_GetTextureResource("concrete.png",tex_Wrap+tex_Linear+tex_Mipmap,NULL);break;
 		case surf_Grass:	tex_id = GUI_GetTextureResource("grass.png",tex_Wrap+tex_Linear+tex_Mipmap,NULL);	break;
 		case surf_Dirt:		tex_id = GUI_GetTextureResource("dirt.png",tex_Wrap+tex_Linear+tex_Mipmap,NULL);	break;
@@ -226,7 +227,6 @@ static bool setup_taxi_texture(int surface_code, double heading, const Point2& c
 		case surf_Water:	tex_id = GUI_GetTextureResource("water.png",tex_Wrap+tex_Linear+tex_Mipmap,NULL);	break;
 		case surf_Snow:		tex_id = GUI_GetTextureResource("snow.png",tex_Wrap+tex_Linear+tex_Mipmap,NULL);	break;
 		case surf_Trans:
-		case shoulder_None:
 		default: return false;
 	}
 	if (!tex_id)

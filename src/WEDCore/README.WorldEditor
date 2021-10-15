@@ -26,6 +26,7 @@ WED 2.5  alpha 1
    - X11 default pavment to XP12 aged pavement
    Features:
    - validation warning on TOWER_VIEWPOINT height not matching objects with #viewpoint_height tags
+   - use actual XP textures for run/taxiway and helipd previews in map, if available
 
 WED 2.4.0rc2 5/29/21
    Features:
