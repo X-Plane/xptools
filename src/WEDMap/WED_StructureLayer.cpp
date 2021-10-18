@@ -198,23 +198,32 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 				else
 					Th2 = Midpoint2(corners[1],corners[2]);
 
-				pair<int,int> e = rwy->GetRunwayEnumsOneway();
 				float hdg = rwy->GetHeading();
+				string nam, nam_1, nam_2;
+				rwy->GetName(nam);
+				auto pos = nam.find('/');
+				if (pos != string::npos)
+				{
+					nam_1 = nam.substr(0, pos);
+					nam_2 = nam.substr(pos + 1, string::npos);
+				}
+				else
+					nam_1 = nam;
 
-				if(e.first != atc_Runway_None)
+				if(!nam_1.empty())
 				{
 					glPushMatrix();                  // rotate the numbers properly
 					glTranslatef(Th1.x(), Th1.y(), 0);
-					glRotatef(-hdg,0,0,1);
-					GUI_FontDraw(g, font_UI_Basic, white, 0, 10, ENUM_Desc(e.first), align_Center);
+					glRotatef(-hdg, 0, 0, 1);
+					GUI_FontDraw(g, font_UI_Basic, white, 0, 10, nam_1.c_str(), align_Center);
 					glPopMatrix();
 				}
-				if(e.second != atc_Runway_None)
+				if (!nam_2.empty())
 				{
 					glPushMatrix();
 					glTranslatef(Th2.x(), Th2.y(), 0);
-					glRotatef(180-hdg,0,0,1);
-					GUI_FontDraw(g, font_UI_Basic, white, 0, 10, ENUM_Desc(e.second), align_Center);
+					glRotatef(180 - hdg, 0, 0, 1);
+					GUI_FontDraw(g, font_UI_Basic, white, 0, 10, nam_2.c_str(), align_Center);
 					glPopMatrix();
 				}
 				g->SetTexUnits(0);
