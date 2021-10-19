@@ -579,6 +579,13 @@ static int DoBuildDSF(const vector<const char *>& args)
 	return 0;
 }
 
+static int DoMapStats(const vector<const char*>& args)
+{
+	DumpMapStats(gMap);
+
+	return 0;
+}
+
 static	GISTool_RegCmd_t		sProcessCmds[] = {
 //{ "-roads",			0, 0, DoRoads,			"Generate Fake Roads.",				  "" },
 { "-spreadsheet",	1, 2, DoSpreadsheet,	"Set the spreadsheet file.",		  "" },
@@ -597,6 +604,7 @@ static	GISTool_RegCmd_t		sProcessCmds[] = {
 { "-buildroads", 	0, 0, DoBuildRoads, 	"Pick Road Types.", 	  			"" },
 { "-assignterrain", 1, 1, DoAssignLandUse, 	"Assign Terrain to Mesh.", 	 		 "" },
 { "-exportdsf", 	2, 2, DoBuildDSF, 		"Build DSF file.", 					  "" },
+{ "-mapstats", 	0, 0, DoMapStats, 	"Dump Map statistics.", 				  "" },
 
 
 

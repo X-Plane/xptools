@@ -285,6 +285,12 @@ bool	ClipDEMToFaceSet(const set<Face_handle>& inFaces, const DEMGeo& inSrcDEM, D
 int		SetupRasterizerForDEM(const Face_handle f, const DEMGeo& dem, PolyRasterizer<double>& rasterizer);
 int		SetupRasterizerForDEM(const set<Halfedge_handle>& inEdges, const DEMGeo& dem, PolyRasterizer<double>& rasterizer);
 
+/*
+ * DumpMapStats
+ *
+ * Prints statistics about the map geometry
+ */
+void DumpMapStats(const Pmwx& ioMap);
 /************************************************************************************************
  * POLYGON TRUNCATING AND EDITING
  ************************************************************************************************/

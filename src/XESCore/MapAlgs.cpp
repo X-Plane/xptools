@@ -1927,6 +1927,36 @@ int		SetupRasterizerForDEM(const set<Halfedge_handle>& inEdges, const DEMGeo& de
 	return floor(rasterizer.masters.front().y1);
 }
 
+void DumpMapStats(const Pmwx& ioMap)
+{
+	printf("Map has %zd faces / %zd edges / %zd vertices\n",
+		   ioMap.number_of_faces(), ioMap.number_of_edges(), ioMap.number_of_vertices());
+
+	map<size_t, size_t> edge_histogram;
+
+	for (auto itFace = ioMap.faces_begin(); itFace != ioMap.faces_end(); itFace++)
+	{
+		if (itFace->is_unbounded()) continue;
+
+		size_t outer_edges = 0;
+
+		auto ccb = itFace->outer_ccb();
+		auto stop = ccb;
+		do
+		{
+			outer_edges++;
+		} while (++ccb != stop);
+
+		edge_histogram[outer_edges] += 1;
+	}
+
+	printf("edges, count\n");
+	for (auto& kv : edge_histogram) {
+		printf("%zd, %zd\n", kv.first, kv.second);
+	}
+}
+
+
 /************************************************************************************************************************************************************************************************
  *
  ************************************************************************************************************************************************************************************************/
