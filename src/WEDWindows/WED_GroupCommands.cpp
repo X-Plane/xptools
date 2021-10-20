@@ -5214,11 +5214,11 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 		sel->GetSelectionVector(selected);
 		for (size_t i = 0; i < selected.size(); ++i)
 		{
-			if (WED_GetParentAirport(dynamic_cast<WED_Thing*>(selected[i])) == NULL)
-			{
-				DoUserAlert("All objects to convert must be in an airport in the hierarchy");
-				return;
-			}
+		if (WED_GetParentAirport(dynamic_cast<WED_Thing*>(selected[i])) == NULL)
+		{
+			DoUserAlert("All objects to convert must be in an airport in the hierarchy");
+			return;
+		}
 		}
 	}
 
@@ -5230,7 +5230,7 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 	sel->GetSelectionVector(selected);
 	for (size_t i = 0; i < selected.size(); ++i)
 	{
-		WED_Thing * src = dynamic_cast<WED_Thing*>(selected[i]);
+		WED_Thing* src = dynamic_cast<WED_Thing*>(selected[i]);
 		vector<WED_GISChain*> chains;
 		get_chains(src, chains);
 		if (chains.empty())
@@ -5242,7 +5242,7 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 
 		if (dst_is_polygon)
 		{
-			WED_Thing * dst = create(wrl->GetArchive());
+			WED_Thing* dst = create(wrl->GetArchive());
 
 			add_chains(dst, chains);
 
@@ -5261,7 +5261,7 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 		{
 			for (int i = 0; i < chains.size(); ++i)
 			{
-				WED_Thing * dst = create(wrl->GetArchive());
+				WED_Thing* dst = create(wrl->GetArchive());
 
 				string name;
 				src->GetName(name);
@@ -5271,7 +5271,7 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 
 				move_points(chains[i], dst);
 
-				set_surface(dst, get_surface(src),WED_GetLibraryMgr(resolver));
+				set_surface(dst, get_surface(src), WED_GetLibraryMgr(resolver));
 
 				sel->Insert(dst);
 				dst->SetParent(src->GetParent(), src->GetMyPosition() + 1 + i);
@@ -5292,7 +5292,7 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 
 static void dummy_func(void* ref, const char* fmt, ...) { return; }
 
-int WED_DoConvertToJW(WED_Airport * apt)
+int WED_DoConvertToJW(WED_Airport* apt)
 {
 	vector<WED_RampPosition*> ramps;
 	vector< WED_ObjPlacement*> all_objects, jw_tun, jw_ext;
@@ -5308,9 +5308,34 @@ int WED_DoConvertToJW(WED_Airport * apt)
 			jw_tun.push_back(o);
 		else if (res.compare(0, strlen("lib/airport/Ramp_Equipment/JetWayEx"), "lib/airport/Ramp_Equipment/JetWayEx") == 0)
 			jw_ext.push_back(o);
+		else if (res == "lib/airport/Ramp_Equipment/250cm_Jetway_Group.agp" ||
+				 res == "lib/airport/Ramp_Equipment/400cm_Jetway_2.agp" ||
+				 res == "lib/airport/Ramp_Equipment/400cm_Jetway_3.agp" ||
+				 res == "lib/airport/Ramp_Equipment/400cm_Jetway_Group.agp" ||
+				 res == "lib/airport/Ramp_Equipment/500cm_Jetway_Group.agp")
+		{
+			vector<WED_ObjPlacement*> added_objs;
+			WED_ResourceMgr* rmgr = WED_GetResourceMgr(apt->GetArchive()->GetResolver());
+			const agp_t* agp_info;
+			if (rmgr->GetAGP(res, agp_info))
+			{
+				replace_all_obj_in_agp(o, agp_info, apt->GetArchive(), added_objs);
+				o->SetParent(NULL, 0);
+				o->Delete();
+			}
+			for (auto ao : added_objs)
+			{
+				ao->GetResource(res);
+				if (res.compare(0, strlen("lib/airport/Ramp_Equipment/Jetway_"), "lib/airport/Ramp_Equipment/Jetway_") == 0)
+				{
+					jw_tun.push_back(ao);
+					break;
+				}
+			}
+		}
 	}
 
-	// determine the position in fron of the cab where the A/C is expected to be parked and the nearest ramp start to each.
+	// determine the position in front of the cab where the A/C is expected to be parked and the nearest ramp start to each.
 	// then find all extensions leading up to them
 	if(ramps.size() > 0 && jw_tun.size() > 0)
 	{

@@ -159,10 +159,11 @@ void	WED_DoBreakApartAgps(IResolver* resolver);
 int		WED_CanReplaceVehicleObj(WED_Airport* apt);
 void	WED_DoReplaceVehicleObj(IResolver* resolver, WED_Airport* apt = NULL);
 
+int		wed_upgrade_one_airport(WED_Thing* who, WED_ResourceMgr* rmgr, ISelection* sel);
+void	WED_UpgradeRampStarts(IResolver * resolver);
+void	WED_UpgradeJetways(IResolver* resolver);
+int		WED_DoConvertToJW(WED_Airport* apt);
 
-int wed_upgrade_one_airport(WED_Thing* who, WED_ResourceMgr* rmgr, ISelection* sel);
-void WED_UpgradeRampStarts(IResolver * resolver);
-void WED_UpgradeJetways(IResolver* resolver);
 void WED_AgePavement(IResolver* mDocument);
 void WED_AlignAirports(IResolver * resolver);
 

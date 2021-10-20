@@ -112,7 +112,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				wrl->CommitCommand();
 		}
 
-		//--Ramp Positions-----------------------------------------------------------
+		//--upgrade Ramp Positions with XP10.45 data----------------------------------
 		vector<WED_RampPosition*> ramp_positions;
 		CollectRecursive(*apt_itr, back_inserter(ramp_positions),WED_RampPosition::sClass);
 
@@ -192,9 +192,16 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				WED_DoReplaceVehicleObj(resolver,*apt_itr);
 			}
 		}
+		//--Break up jetway AGP's, convert jetway objects into facades for XP12 moving jetways-----------------------
+		wrl->StartCommand("Upgrade Jetways");
+		if(WED_DoConvertToJW(*apt_itr))
+			wrl->CommitCommand();
+		else
+			wrl->AbortCommand();
 
 		double percent_done = (double)distance(apts.begin(), apt_itr) / apts.size() * 100;
 		printf("%0.0f%% through heuristic\n", percent_done);
+
 	}
 	printf("Deleted %d illicit ICAO meta tags\n", deleted_illicit_icao);
 }
