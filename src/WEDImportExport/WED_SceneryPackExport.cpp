@@ -69,6 +69,7 @@ int		WED_CanExportPack(IResolver * resolver)
 #include "WED_Airport.h"
 #include "WED_EnumSystem.h"
 #include "WED_RampPosition.h"
+#include "WED_Runway.h"
 #include "WED_TruckDestination.h"
 #include "WED_TruckParkingLocation.h"
 #include "WED_ObjPlacement.h"
@@ -84,15 +85,21 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 	WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 	ISelection * sel = WED_GetSelect(resolver);
 	
+//	const bdy[] = {-130,49, -40,49, -80,24, -97,25, -107,31, -111,31, -115,33, -140,32};
+//	Polygon2 FAA_bounds;
+//	for (int i = 0; i < 16; i += 2)
+//		FAA_bounds.push_back(Point2(bdy[i], bdy[i + 1]);
+
 	int deleted_illicit_icao = 0;
 
 	for (auto apt_itr = apts.begin(); apt_itr != apts.end(); ++apt_itr)
 	{
+		string ICAO_code;
 
-		//--Erase implausible ICAO and undesired closed tags--------------------------
+		//-- Erase implausible ICAO and now undesired closed tags (the [X] in the name is now official) ----
 		if ((*apt_itr)->ContainsMetaDataKey(wed_AddMetaDataICAO))
 		{
-			string ICAO_code = (*apt_itr)->GetMetaDataValue(wed_AddMetaDataICAO);
+			ICAO_code = (*apt_itr)->GetMetaDataValue(wed_AddMetaDataICAO);
 
 			bool illicit = ICAO_code.size() != 4 || toupper(ICAO_code[0]) < 'A' || toupper(ICAO_code[0]) >= 'Z';
 			for (int i = 1; i < 4; i++)
@@ -112,7 +119,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				wrl->CommitCommand();
 		}
 
-		//--upgrade Ramp Positions with XP10.45 data----------------------------------
+		//-- upgrade Ramp Positions with XP10.45 data to get parked A/C -------------
 		vector<WED_RampPosition*> ramp_positions;
 		CollectRecursive(*apt_itr, back_inserter(ramp_positions),WED_RampPosition::sClass);
 
@@ -121,14 +128,10 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		for (vector<WED_RampPosition*>::iterator ramp_itr = ramp_positions.begin(); ramp_itr != ramp_positions.end(); ++ramp_itr)
 		{
 			if ((*ramp_itr)->GetAirlines() != "")
-			{
 				++non_empty_airlines_strs;
-			}
 
 			if ((*ramp_itr)->GetRampOperationType() != ramp_operation_None)
-			{
 				++non_op_none_ramp_starts;
-			}
 		}
 
 		if (non_empty_airlines_strs == 0 || non_op_none_ramp_starts == 0)
@@ -137,17 +140,12 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			std::cout << "Upgrading Ramp Positions" << endl;
 			int did_work = wed_upgrade_one_airport(*apt_itr, rmgr, sel);
 			if (did_work == 0)
-			{
 				wrl->AbortCommand();
-			}
 			else
-			{
 				wrl->CommitCommand();
-			}
 		}
-		//---------------------------------------------------------------------------
 
-		//--Agp and obj upgrades-----------------------------------------------------
+		//-- Agp and obj upgrades to create more ground traffic --------------------------------
 		vector<WED_TruckParkingLocation*> parking_locations;
 		CollectRecursive(*apt_itr, back_inserter(parking_locations),WED_TruckParkingLocation::sClass);
 
@@ -169,9 +167,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				string agp_resource;
 				(*obj_itr)->GetResource(agp_resource);
 				if (FILE_get_file_extension(agp_resource) == ".agp")
-				{
 					agp_placements.push_back(*obj_itr);
-				}
 			}
 
 			vector<WED_ObjPlacement*> out_added_objs;
@@ -182,26 +178,50 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			else
 				wrl->CommitCommand();
 
-			//Easy out
-			if (num_replaced > 0 || out_added_objs.size() > 0)
-			{
+			if (num_replaced > 0 || out_added_objs.size() > 0 || WED_CanReplaceVehicleObj(*apt_itr))
 				WED_DoReplaceVehicleObj(resolver,*apt_itr);
-			}
-			else if (WED_CanReplaceVehicleObj(*apt_itr))
-			{
-				WED_DoReplaceVehicleObj(resolver,*apt_itr);
-			}
 		}
-		//--Break up jetway AGP's, convert jetway objects into facades for XP12 moving jetways-----------------------
+
+		//-- Break up jetway AGP's, convert jetway objects into facades for XP12 moving jetways -------------
 		wrl->StartCommand("Upgrade Jetways");
 		if(WED_DoConvertToJW(*apt_itr))
 			wrl->CommitCommand();
 		else
 			wrl->AbortCommand();
 
+		//-- Remove leading zero's from runways within the FAA's jurisdiction (except for some mil bases) -------
+		if ((*apt_itr)->GetAirportType() == 1)
+		{
+			string ICAO_region;
+			if ((*apt_itr)->ContainsMetaDataKey(wed_AddMetaDataRegionCode))
+				ICAO_region = (*apt_itr)->GetMetaDataValue(wed_AddMetaDataRegionCode);
+
+			Bbox2 apt_box;
+			(*apt_itr)->GetBounds(gis_Geo, apt_box);
+			//			if (FAA_bounds.inside(apt_box.p1()))
+			if ((apt_box.p1.x() <  -67.0 && apt_box.p1.y() > 24.5 && apt_box.p1.y() < 49.0) ||
+				(apt_box.p1.x() < -131.4 && apt_box.p1.y() > 16.0))
+			if(ICAO_region != "CY" && ICAO_region != "MM")
+			if(ICAO_code != "KEDW" && ICAO_code != "9L2" && ICAO_code != "KFFO" && ICAO_code != "KSSC" && ICAO_code != "KCHS")
+			{
+				vector<WED_Runway*> rwys;
+				CollectRecursive(*apt_itr, back_inserter(rwys));
+				for (auto r : rwys)
+					if(r->GetSurface() < surf_Grass)
+					{
+						string r_nam;
+						r->GetName(r_nam);
+						if (r_nam[0] == '0')
+						{
+							wrl->StartCommand("Remove runway zeros");
+							r->SetName(r_nam.substr(1));
+							wrl->CommitCommand();
+						}
+					}
+			}
+		}
 		double percent_done = (double)distance(apts.begin(), apt_itr) / apts.size() * 100;
 		printf("%0.0f%% through heuristic\n", percent_done);
-
 	}
 	printf("Deleted %d illicit ICAO meta tags\n", deleted_illicit_icao);
 }
