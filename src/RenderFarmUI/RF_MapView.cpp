@@ -246,10 +246,13 @@ void	RF_MapView::MakeMenus(void)
 
 	gApplication->CreateMenu("DEM Choice", &*dem_menus.begin(),view_menu, 0);
 
-	for(int n = 0; n < DEMChoiceCount; ++n)
-		dem_menus[n].cmd = viewCmd_DEMDataChoice_Start + n;
-
-	gApplication->CreateMenu("DEM Data Choice", &*dem_menus.begin(),view_menu, 2);
+	for(int n = 1; n < DEMChoiceCount; ++n)
+	{
+		dem_menus[n].cmd = viewCmd_DEMDataChoice_Start + n - 1;
+		dem_menus[n].key = 0;
+		dem_menus[n].flags = 0;
+	}
+	gApplication->CreateMenu("DEM Data Choice", &*dem_menus.begin()+1,view_menu, 2);
 
 }
 
@@ -323,8 +326,8 @@ int		RF_MapView::CanHandleCommand(int command, string& ioName, int& ioCheck)
 	if(command >= viewCmd_DEMDataChoice_Start && command < viewCmd_DEMDataChoice_Stop)
 	{
 		int n = command - viewCmd_DEMDataChoice_Start;
-		ioCheck =sShowDEMData[n-1];
-		return gDem.find(kDEMs[n].dem) != gDem.end();
+		ioCheck =sShowDEMData[n];
+		return gDem.find(kDEMs[n+1].dem) != gDem.end();
 	}
 	return 0;
 }
@@ -347,7 +350,7 @@ int		RF_MapView::HandleCommand(int command)
 	if(command >= viewCmd_DEMDataChoice_Start && command < viewCmd_DEMDataChoice_Stop)
 	{
 		int n = command - viewCmd_DEMDataChoice_Start;
-		sShowDEMData[n-1] = 1 - sShowDEMData[n-1];
+		sShowDEMData[n] = 1 - sShowDEMData[n];
 		return 1;
 	}
 	int i;
@@ -1357,7 +1360,7 @@ put in  color enums?
 				FontDrawDarkBox(state, font_UI_Basic, white, l + 5, k, 9999, buf);
 				k -= (h+1);
 			}
-			else if (sShowDEMData[n-1] || n == sDEMType)
+			else if ((n > 0 && sShowDEMData[n-1]) || n == sDEMType)		// N INCLUDES 0 = none so deal with off-by-one in sShowDEMData.
 			{
 				if (gDem.count(	kDEMs[n].dem ))
 				{

@@ -57,7 +57,7 @@ enum {
 
 /* RF Commands */
 
-const int num_dem_cmds = dem_Wizard - dem_Elevation + 2;
+const int num_dem_cmds = dem_Wizard6 - dem_Elevation + 2;
 
 enum {
 
@@ -96,7 +96,7 @@ enum {
 	viewCmd_DEMChoice_Stop = viewCmd_DEMChoice_Start + num_dem_cmds,
 	
 	viewCmd_DEMDataChoice_Start,
-	viewCmd_DEMDataChoice_Stop = viewCmd_DEMDataChoice_Start + num_dem_cmds, 
+	viewCmd_DEMDataChoice_Stop = viewCmd_DEMDataChoice_Start + num_dem_cmds - 1,
 	
 	specCmd_Screenshot,
 	specCmd_CreateTerrainPackage,
