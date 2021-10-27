@@ -334,7 +334,7 @@ void	GreedyMeshBuild(CDT& inCDT, const DEMGeo& inAvail, DEMMask& ioUsed, const P
 //	fprintf(stderr,"Building Mesh err=%lf size=%lf max=%d\n", err_lim, size_lim, max_num);
 	PROGRESS_START(func, 0, 1, "Building Mesh")
 	InitMesh(inCDT, inAvail, ioUsed, err_lim, size_lim);
-	Locator pl {inMap};
+	Dumb_locator pl {inMap};
 
 	if (max_num == 0) max_num = INT_MAX;
 	int cnt_insert = 0, cnt_new = 0, cnt_recalc = 0;
