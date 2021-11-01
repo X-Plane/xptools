@@ -1946,12 +1946,38 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 				splits_needed.insert(c);
 //				debug_mesh_point(cgal2ben(c),1,1,0);
 			}
+
+			// Prevent "bridging" between coastal points across waterways that should have depth
+			if (c0 == 0 && c1 == 0)
+			{
+				auto nf = f->neighbor(2);
+				if (!outMesh.is_infinite(nf) && nf->info().terrain == terrain_Water)
+				{
+					splits_needed.insert(CGAL::midpoint(f->vertex(0)->point(), f->vertex(1)->point()));
+				}
+			}
+			if (c0 == 0 && c2 == 0)
+			{
+				auto nf = f->neighbor(1);
+				if (!outMesh.is_infinite(nf) && nf->info().terrain == terrain_Water)
+				{
+					splits_needed.insert(CGAL::midpoint(f->vertex(0)->point(), f->vertex(2)->point()));
+				}
+			}
+			if (c1 == 0 && c2 == 0)
+			{
+				auto nf = f->neighbor(0);
+				if (!outMesh.is_infinite(nf) && nf->info().terrain == terrain_Water)
+				{
+					splits_needed.insert(CGAL::midpoint(f->vertex(1)->point(), f->vertex(2)->point()));
+				}
+			}
 		}
 	}
 
 	PROGRESS_DONE(prog,1,3,"Calculating Wet Areas");
 
-	printf("Need %zd splits for beaches.\n", splits_needed.size());
+	printf("Need %zd splits for beaches and waterways.\n", splits_needed.size());
 	hint = CDT::Face_handle();
 	set<CDT::Face_handle>	who;
 	for(set<Point_2>::iterator n = splits_needed.begin(); n != splits_needed.end(); ++n)
