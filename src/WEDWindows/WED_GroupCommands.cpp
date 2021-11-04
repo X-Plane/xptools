@@ -4347,7 +4347,7 @@ static map<string,vehicle_replacement_info> build_replacement_table()
 	table.insert(make_pair("lib/airport/Common_Elements/vehicles/Small_Fuel_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Jet,0)));
 	table.insert(make_pair("lib/airport/Common_Elements/vehicles/Large_Fuel_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Prop,0)));
 	table.insert(make_pair("lib/airport/vehicles/baggage_handling/tractor.obj", vehicle_replacement_info(atc_ServiceTruck_Ground_Power_Unit,0)));
-	table.insert(make_pair("ib/airport/Ramp_Equipment/GPU_1.obj", vehicle_replacement_info(atc_ServiceTruck_Ground_Power_Unit,0)));
+	table.insert(make_pair("lib/airport/Ramp_Equipment/GPU_1.obj", vehicle_replacement_info(atc_ServiceTruck_Ground_Power_Unit,0)));
 	table.insert(make_pair("lib/airport/Ramp_Equipment/Tow_Tractor_1.obj", vehicle_replacement_info(atc_ServiceTruck_Pushback,0)));
 	table.insert(make_pair("lib/airport/Ramp_Equipment/Tow_Tractor_2.obj", vehicle_replacement_info(atc_ServiceTruck_Pushback,0)));
 
@@ -5292,14 +5292,24 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 
 static void dummy_func(void* ref, const char* fmt, ...) { return; }
 
-int WED_DoConvertToJW(WED_Airport* apt)
+int WED_DoConvertToJW(WED_Airport* apt, int statistics[4])
 {
 	vector<WED_RampPosition*> ramps;
-	vector< WED_ObjPlacement*> all_objects, jw_tun, jw_ext;
+	vector<WED_ObjPlacement*> all_objects, jw_tun, jw_ext;
+	vector<WED_FacadePlacement*> jw_facs;
+	WED_ResourceMgr* rmgr = WED_GetResourceMgr(apt->GetArchive()->GetResolver());
 
 	CollectRecursive(apt, back_inserter(ramps));
 	CollectRecursive(apt, back_inserter(all_objects));
+	CollectRecursive(apt, back_inserter(jw_facs), ThingNotHidden, [&](WED_Thing* v)
+		{
+			if (auto f = dynamic_cast<WED_FacadePlacement*>(v))
+				return f->IsJetway();
+			else
+				return false;
+		});
 
+	int obj2JW_count = 0;
 	for (auto o : all_objects)
 	{
 		string res;
@@ -5315,7 +5325,6 @@ int WED_DoConvertToJW(WED_Airport* apt)
 				 res == "lib/airport/Ramp_Equipment/500cm_Jetway_Group.agp")
 		{
 			vector<WED_ObjPlacement*> added_objs;
-			WED_ResourceMgr* rmgr = WED_GetResourceMgr(apt->GetArchive()->GetResolver());
 			const agp_t* agp_info;
 			if (rmgr->GetAGP(res, agp_info))
 			{
@@ -5339,7 +5348,6 @@ int WED_DoConvertToJW(WED_Airport* apt)
 	// then find all extensions leading up to them
 	if(ramps.size() > 0 && jw_tun.size() > 0)
 	{
-		int n_jw = 0;
 		for (auto c : jw_tun)
 		{
 			Point2 acf_pos, tun_pos, jw_pos;
@@ -5369,7 +5377,7 @@ int WED_DoConvertToJW(WED_Airport* apt)
 					closest_ramp = r;
 				}
 			}
-			if (min_dist < 10.0)
+			if (min_dist < 15.0)  // only convert jetway objects into facades that are somewhat close to an actual ramp start
 			{
 				auto fac = WED_FacadePlacement::CreateTyped(apt->GetArchive());
 				fac->SetParent(c->GetParent(), c->GetMyPosition());
@@ -5384,7 +5392,6 @@ int WED_DoConvertToJW(WED_Airport* apt)
 				jw_info.parked_tunnel_length = tun_len;
 				jw_info.parked_tunnel_angle = fltwrap(tun_hdg - 21.0, 0, 360);  // exact tunnel heading plus pulled back a bit to ensure cabin clearance
 				jw_info.parked_cab_angle = 60.0;
-//				fac->WED_FacadePlacement::ImportJetway(jw_info, [](void* ref, const char* fmt, ...) { return; }, nullptr);
 				fac->WED_FacadePlacement::ImportJetway(jw_info, dummy_func, nullptr);
 				
 				auto rng = fac->GetNthChild(0);
@@ -5432,12 +5439,144 @@ int WED_DoConvertToJW(WED_Airport* apt)
 					p->SetParent(rng, 0);
 					p->SetLocation(gis_Geo, jw_pos);
 				}
-				n_jw++;
+				jw_facs.push_back(fac);
+				obj2JW_count++;
 			}
 		}
-		return n_jw;
 	}
-	return 0;
+
+	int JW_longer = 0, JW_shorter = 0, JW_inactive = 0;
+	for(auto r : ramps)
+	{
+		Point2 ramp_loc;
+		struct jw_info {
+			WED_FacadePlacement* f;
+			Point2 cabin_loc, tunnel_orig;
+			double cabin_dist;
+			IGISPointSequence* ps;
+			int last_pt;
+		};
+		vector<struct jw_info> jw_serving_us;
+
+		r->GetLocation(gis_Geo, ramp_loc);
+		for (auto f : jw_facs)
+		{
+			// find ALL close jw that face us, i.e. are intended to serve this ramp.
+			if (f->HasDockingCabin())
+			{
+				jw_info jw;
+				jw.f = f;
+				jw.ps = jw.f->GetOuterRing();
+				jw.last_pt = jw.ps->GetNumPoints() - 1;
+				jw.ps->GetNthPoint(jw.last_pt - 1)->GetLocation(gis_Geo, jw.cabin_loc);
+				jw.ps->GetNthPoint(jw.last_pt - 2)->GetLocation(gis_Geo, jw.tunnel_orig);
+				jw.cabin_dist = LonLatDistMeters(jw.cabin_loc, ramp_loc);
+				if (jw.cabin_dist <= 25.0)
+				{
+					double door_hdg = VectorDegs2NorthHeading(jw.tunnel_orig, jw.tunnel_orig, Vector2(jw.tunnel_orig, ramp_loc));
+					double tun_hdg = VectorDegs2NorthHeading(jw.tunnel_orig, jw.tunnel_orig, Vector2(jw.tunnel_orig, jw.cabin_loc));
+					double rel_angle = dobwrap(tun_hdg - door_hdg, 0, 360);
+					if (rel_angle < 90.0 || rel_angle > 340.0)
+						jw_serving_us.push_back(jw);
+				}
+			}
+		}
+
+		if (jw_serving_us.size() > 1)
+		{
+			// figure which one can most freely reach ramp, make all others non-docking
+			double closest_cabin_dist = 999;
+			jw_info closest_jw;
+			for(auto jw : jw_serving_us)
+			{
+				if (jw.cabin_dist < closest_cabin_dist)
+				{
+					closest_cabin_dist = jw.cabin_dist;
+					closest_jw = jw;
+				}
+			}
+			if (closest_cabin_dist < 100)
+			{
+				for (auto jw : jw_serving_us)
+				{
+					if (jw.f != closest_jw.f)
+					{
+						auto last_node = dynamic_cast<WED_FacadeNode*>(jw.ps->GetNthPoint(jw.last_pt));
+						last_node->SetWallType(39);
+						JW_inactive++;
+					}
+				}
+				jw_serving_us.clear();
+				jw_serving_us.push_back(closest_jw);
+			}
+		}
+
+		if(jw_serving_us.size() > 0)
+		{
+			// check if tunnel length is suitable to reach ramp with some margin for actual door locations
+			string res;
+			const fac_info_t* info;
+			jw_serving_us[0].f->GetResource(res);
+			if (rmgr->GetFac(res, info))
+			{
+				auto tun_node = dynamic_cast<WED_FacadeNode*>(jw_serving_us[0].ps->GetNthPoint(jw_serving_us[0].last_pt - 2));
+				double tun_dist = LonLatDistMeters(jw_serving_us[0].tunnel_orig, ramp_loc);
+				int wall;
+				wall = tun_node->GetWallType();
+
+				bool tunnel_is_short = false;
+				bool tunnel_is_long = false;
+				for (auto t : info->tunnels)
+					if (wall == t.idx)
+					{
+						double tun_len = LonLatDistMeters(jw_serving_us[0].cabin_loc, jw_serving_us[0].tunnel_orig);
+						switch (t.size_code)        // deliberately test for shorter range - allows some margin for actual cabin door locations
+						{
+						case 1:	tunnel_is_short = tun_dist > 21.0; 
+								break;
+						case 2:	tunnel_is_short = tun_dist > 26.0; 
+								tunnel_is_long = tun_len < 14.0 || tun_dist < 19.0;
+								break;
+						case 3:	tunnel_is_short = tun_dist > 36.0; 
+								tunnel_is_long = tun_len < 17.0 || tun_dist < 22.0;
+								break;
+						case 4:	// tunnel_is_short = tun_dist > 40.0; break; // would have to move the tunnel base !! to make it reach further.
+								tunnel_is_long = tun_len < 20.0 || tun_dist < 25.0;
+								break;
+						}
+						if (tunnel_is_short)
+							for (auto t_longer : info->tunnels)
+							{
+								if (t_longer.size_code == t.size_code + 1)
+								{
+									tun_node->SetWallType(t_longer.idx);
+									JW_longer++;
+									break;
+								}
+							}
+						else if (tunnel_is_long)
+							for (auto t_shorter : info->tunnels)
+							{
+								if (t_shorter.size_code == t.size_code - 1)
+								{
+									tun_node->SetWallType(t_shorter.idx);
+									JW_shorter++;
+									break;
+								}
+							}
+						break;
+					}
+			}
+		}
+	}
+	if (statistics)
+	{
+		*statistics++ += obj2JW_count;
+		*statistics++ += JW_longer;
+		*statistics++ += JW_shorter;
+		*statistics++ += JW_inactive;
+	}
+	return obj2JW_count + JW_longer + JW_shorter + JW_inactive;
 }
 
 
@@ -5445,18 +5584,22 @@ void WED_UpgradeJetways(IResolver* resolver)
 {
 	WED_Thing* wrl = WED_GetWorld(resolver);
 	vector<WED_Airport *> all_apts;
-	int count = 0;
+	int changes = 0, statistics[4] = { 0 };
 
 	CollectRecursiveNoNesting(wrl, back_inserter(all_apts), WED_Airport::sClass);
 
 	wrl->StartOperation("Upgrade Jetways");
 	for (auto a : all_apts)
-		count += WED_DoConvertToJW(a);
-	if (count > 0)
+		changes += WED_DoConvertToJW(a, statistics);
+
+	if (changes > 0)
 	{
 		wrl->CommitOperation();
 		string msg("Created ");
-		msg += to_string(count) + " jetway facades from objects";
+		msg += to_string(statistics[0]) + " JW facades from JW objects\n";
+		msg += to_string(statistics[1]) + " tunnels made longer to reach A/C\n";
+		msg += to_string(statistics[2]) + " tunnels made shorter to reach A/C\n";
+		msg += to_string(statistics[3]) + " set non-docking to avoid conflicts at ramps reached by multiple JW";
 		DoUserAlert(msg.c_str());
 	}
 	else

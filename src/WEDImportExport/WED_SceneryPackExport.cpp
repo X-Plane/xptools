@@ -73,16 +73,19 @@ int		WED_CanExportPack(IResolver * resolver)
 #include "WED_TruckDestination.h"
 #include "WED_TruckParkingLocation.h"
 #include "WED_ObjPlacement.h"
+#include "WED_PolygonPlacement.h"
 #include "WED_MetaDataKeys.h"
 #include "WED_Menus.h"
+#include <GISUtils.h>
 
 static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 {
+	LOG_MSG("## Tyler mode ## Starting upgrade heuristics\n");
 	WED_Thing * wrl = WED_GetWorld(resolver);
 	vector<WED_Airport*> apts;
-	CollectRecursiveNoNesting(wrl, back_inserter(apts),WED_Airport::sClass);
-
-	WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
+	CollectRecursiveNoNesting(wrl, back_inserter(apts),WED_Airport::sClass);    // ATTENTION: all code here assumes 'normal' hierachies and no hidden items,
+																				//	i.e. apts 1 level down, groups next, then items in them at 2 levels down.
+	WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);                      // Speeds up recursive collecting, avoids recursing too deep.
 	ISelection * sel = WED_GetSelect(resolver);
 	
 //	const bdy[] = {-130,49, -40,49, -80,24, -97,25, -107,31, -111,31, -115,33, -140,32};
@@ -112,16 +115,10 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				deleted_illicit_icao++;
 			}
 		}
-		if ((*apt_itr)->ContainsMetaDataKey("closed"))
-		{
-				wrl->StartCommand("Delete closed tag");
-				(*apt_itr)->EditMetaDataKey("closed","");
-				wrl->CommitCommand();
-		}
 
 		//-- upgrade Ramp Positions with XP10.45 data to get parked A/C -------------
 		vector<WED_RampPosition*> ramp_positions;
-		CollectRecursive(*apt_itr, back_inserter(ramp_positions),WED_RampPosition::sClass);
+		CollectRecursive(*apt_itr, back_inserter(ramp_positions), IgnoreVisiblity, TakeAlways, WED_RampPosition::sClass, 2);
 
 		int non_empty_airlines_strs = 0;
 		int non_op_none_ramp_starts = 0;
@@ -137,20 +134,18 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		if (non_empty_airlines_strs == 0 || non_op_none_ramp_starts == 0)
 		{
 			wrl->StartCommand("Upgrade Ramp Positions");
-			std::cout << "Upgrading Ramp Positions" << endl;
-			int did_work = wed_upgrade_one_airport(*apt_itr, rmgr, sel);
-			if (did_work == 0)
-				wrl->AbortCommand();
-			else
+			if (wed_upgrade_one_airport(*apt_itr, rmgr, sel))
 				wrl->CommitCommand();
+			else
+				wrl->AbortCommand();
 		}
-
+#if 0
 		//-- Agp and obj upgrades to create more ground traffic --------------------------------
 		vector<WED_TruckParkingLocation*> parking_locations;
-		CollectRecursive(*apt_itr, back_inserter(parking_locations),WED_TruckParkingLocation::sClass);
+		CollectRecursive(*apt_itr, back_inserter(parking_locations),WED_TruckParkingLocation::sClass, 2);
 
 		vector<WED_TruckDestination*>     truck_destinations;
-		CollectRecursive(*apt_itr, back_inserter(truck_destinations),WED_TruckDestination::sClass);
+		CollectRecursive(*apt_itr, back_inserter(truck_destinations),WED_TruckDestination::sClass, 2);
 
 		bool found_truck_evidence = false;
 		found_truck_evidence |= !parking_locations.empty();
@@ -160,7 +155,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		{
 			vector<WED_ObjPlacement*> all_objs;
 			vector<WED_AgpPlacement*> agp_placements;
-			CollectRecursive(*apt_itr, back_inserter(all_objs),WED_ObjPlacement::sClass);
+			CollectRecursive(*apt_itr, back_inserter(all_objs),WED_ObjPlacement::sClass, 2);
 
 			for (vector<WED_AgpPlacement*>::iterator obj_itr = all_objs.begin(); obj_itr != all_objs.end(); ++obj_itr)
 			{
@@ -176,36 +171,43 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			if (num_replaced == 0)
 				wrl->AbortCommand();
 			else
+			{
 				wrl->CommitCommand();
+				LOG_MSG("Broke apart %d agp at %s\n", num_replaced, ICAO_code.c_str());
+			}
 
 			if (num_replaced > 0 || out_added_objs.size() > 0 || WED_CanReplaceVehicleObj(*apt_itr))
 				WED_DoReplaceVehicleObj(resolver,*apt_itr);
 		}
-
+#endif
 		//-- Break up jetway AGP's, convert jetway objects into facades for XP12 moving jetways -------------
 		wrl->StartCommand("Upgrade Jetways");
-		if(WED_DoConvertToJW(*apt_itr))
+		if (int count = WED_DoConvertToJW(*apt_itr))
+		{
 			wrl->CommitCommand();
+			LOG_MSG("Upgraded %d JW at %s\n", count, ICAO_code.c_str());
+		}
 		else
 			wrl->AbortCommand();
 
-		//-- Remove leading zero's from runways within the FAA's jurisdiction (except for some mil bases) -------
+		//-- Remove leading zero's from runways within the FAA's jurisdiction, except some mil bases ------
+		Bbox2 apt_box;
+		(*apt_itr)->GetBounds(gis_Geo, apt_box);
+
 		if ((*apt_itr)->GetAirportType() == 1)
 		{
 			string ICAO_region;
 			if ((*apt_itr)->ContainsMetaDataKey(wed_AddMetaDataRegionCode))
 				ICAO_region = (*apt_itr)->GetMetaDataValue(wed_AddMetaDataRegionCode);
 
-			Bbox2 apt_box;
-			(*apt_itr)->GetBounds(gis_Geo, apt_box);
-			//			if (FAA_bounds.inside(apt_box.p1()))
+			//	if (FAA_bounds.inside(apt_box.p1()))
 			if ((apt_box.p1.x() <  -67.0 && apt_box.p1.y() > 24.5 && apt_box.p1.y() < 49.0) ||
 				(apt_box.p1.x() < -131.4 && apt_box.p1.y() > 16.0))
 			if(ICAO_region != "CY" && ICAO_region != "MM")
 			if(ICAO_code != "KEDW" && ICAO_code != "9L2" && ICAO_code != "KFFO" && ICAO_code != "KSSC" && ICAO_code != "KCHS")
 			{
 				vector<WED_Runway*> rwys;
-				CollectRecursive(*apt_itr, back_inserter(rwys));
+				CollectRecursive(*apt_itr, back_inserter(rwys), IgnoreVisiblity, TakeAlways, WED_Runway::sClass, 2);
 				for (auto r : rwys)
 					if(r->GetSurface() < surf_Grass)
 					{
@@ -220,10 +222,38 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 					}
 			}
 		}
+		// nuke all large terrain polygons at mid-lattitudes
+		if(apt_box.p1.y() < 73.0 && apt_box.p1.y() > -60.0)
+		{
+			vector<WED_PolygonPlacement*> terrain_polys;
+			CollectRecursive(*apt_itr, back_inserter(terrain_polys), IgnoreVisiblity, [](WED_Thing* poly)->bool {
+				string res;
+				static_cast<WED_PolygonPlacement*>(poly)->GetResource(res);
+				return res.compare(0, strlen("lib/g10/terrain10/"), "lib/g10/terrain10/") == 0;
+				},
+				WED_PolygonPlacement::sClass, 2);
+			if (terrain_polys.size())
+			{
+				set<WED_Thing*> things;
+				for (auto p : terrain_polys)
+				{
+					Bbox2 bounds;
+					p->GetBounds(gis_Geo, bounds);
+					if(LonLatDistMeters(bounds.bottom_left(), bounds.top_right()) > 20.0)      // passes at least 10m lettering drawn with snow texture
+						CollectRecursive(p, inserter(things, things.end()), IgnoreVisiblity, TakeAlways);
+				}
+				wrl->StartCommand("Delete Terrain Polys");
+				WED_RecursiveDelete(things);
+				wrl->CommitCommand();
+				LOG_MSG("Deleted %d terrain polys at %s\n", terrain_polys.size(), ICAO_code.c_str());
+			}
+		}
+
 		double percent_done = (double)distance(apts.begin(), apt_itr) / apts.size() * 100;
 		printf("%0.0f%% through heuristic\n", percent_done);
 	}
-	printf("Deleted %d illicit ICAO meta tags\n", deleted_illicit_icao);
+	LOG_MSG("Deleted %d illicit ICAO meta tags\n", deleted_illicit_icao);
+	LOG_MSG("## Tyler mode ## Done with upgrade heuristics\n");
 }
 #endif
 
