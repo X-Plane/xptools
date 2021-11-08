@@ -146,7 +146,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			}
 		}
 		//---------------------------------------------------------------------------
-
+#if 0
 		//--Agp and obj upgrades-----------------------------------------------------
 		vector<WED_TruckParkingLocation*> parking_locations;
 		CollectRecursive(*apt_itr, back_inserter(parking_locations),WED_TruckParkingLocation::sClass);
@@ -192,7 +192,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				WED_DoReplaceVehicleObj(resolver,*apt_itr);
 			}
 		}
-
+#endif
 		double percent_done = (double)distance(apts.begin(), apt_itr) / apts.size() * 100;
 		printf("%0.0f%% through heuristic\n", percent_done);
 	}
