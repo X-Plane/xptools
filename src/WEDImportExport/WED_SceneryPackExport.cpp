@@ -77,6 +77,7 @@ int		WED_CanExportPack(IResolver * resolver)
 #include "WED_MetaDataKeys.h"
 #include "WED_Menus.h"
 #include <GISUtils.h>
+#include <chrono>
 
 static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 {
@@ -95,6 +96,8 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 
 	int deleted_illicit_icao = 0;
 
+	auto t0 = chrono::high_resolution_clock::now();
+	
 	for (auto apt_itr = apts.begin(); apt_itr != apts.end(); ++apt_itr)
 	{
 		string ICAO_code;
@@ -120,7 +123,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 
 		//-- upgrade Ramp Positions with XP10.45 data to get parked A/C -------------
 		vector<WED_RampPosition*> ramp_positions;
-		CollectRecursive(*apt_itr, back_inserter(ramp_positions));
+		CollectRecursive(*apt_itr, back_inserter(ramp_positions), IgnoreVisiblity, TakeAlways, WED_RampPosition::sClass, 2);
 
 		int non_empty_airlines_strs = 0;
 		int non_op_none_ramp_starts = 0;
@@ -252,7 +255,14 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				LOG_MSG("Deleted %d terrain polys at %s\n", terrain_polys.size(), ICAO_code.c_str());
 			}
 		}
-
+/*		if(distance(apts.begin(), apt_itr) == 15)
+		{
+			auto t1 = chrono::high_resolution_clock::now();
+			chrono::duration<double> elapsed = t1-t0;
+			printf("0 to 1 time: %lf\n", elapsed.count());
+			break;
+		}
+*/
 		double percent_done = (double)distance(apts.begin(), apt_itr) / apts.size() * 100;
 		printf("%0.0f%% through heuristic at %s\n", percent_done, ICAO_code.c_str());
 	}

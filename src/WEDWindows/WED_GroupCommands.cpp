@@ -5299,15 +5299,15 @@ int WED_DoConvertToJW(WED_Airport* apt, int statistics[4])
 	vector<WED_FacadePlacement*> jw_facs;
 	WED_ResourceMgr* rmgr = WED_GetResourceMgr(apt->GetArchive()->GetResolver());
 
-	CollectRecursive(apt, back_inserter(ramps));
-	CollectRecursive(apt, back_inserter(all_objects));
+	CollectRecursive(apt, back_inserter(ramps), ThingNotHidden, TakeAlways, WED_RampPosition::sClass);
+	CollectRecursive(apt, back_inserter(all_objects), ThingNotHidden, TakeAlways, WED_ObjPlacement::sClass);
 	CollectRecursive(apt, back_inserter(jw_facs), ThingNotHidden, [&](WED_Thing* v)
 		{
 			if (auto f = dynamic_cast<WED_FacadePlacement*>(v))
 				return f->IsJetway();
 			else
 				return false;
-		});
+		}, WED_FacadePlacement::sClass);
 
 	int obj2JW_count = 0;
 	for (auto o : all_objects)
