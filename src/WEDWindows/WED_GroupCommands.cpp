@@ -5400,14 +5400,14 @@ int WED_DoConvertToJW(WED_Airport* apt, int statistics[4])
 				c->Delete();
 
 				bool is_extended = false;
-				for (auto e : jw_ext)
+				for (auto e = jw_ext.begin(); e != jw_ext.end(); e++)
 				{
 					// those extension can be placed either way around, so check both ends for proximity to our jetway base
 					Point2 p1, p2;
-					e->GetLocation(gis_Geo, p1);
-					double hdg = e->GetHeading();
+					(*e)->GetLocation(gis_Geo, p1);
+					double hdg = (*e)->GetHeading();
 					string ext_nam;
-					e->GetResource(ext_nam);
+					(*e)->GetResource(ext_nam);
 					double len;
 					int pos = strlen("lib/airport/Ramp_Equipment/JetWayEx");
 					if(ext_nam[pos] == 't') pos++;
@@ -5428,9 +5428,11 @@ int WED_DoConvertToJW(WED_Airport* apt, int statistics[4])
 						p->SetParent(rng, 0);
 						p->SetLocation(gis_Geo, p1);
 
-						e->SetParent(NULL, 0);
-						e->Delete();
+						(*e)->SetParent(NULL, 0);
+						(*e)->Delete();
 						is_extended = true;
+						jw_ext.erase(e);
+						break;
 					}
 				}
 				if (!is_extended)

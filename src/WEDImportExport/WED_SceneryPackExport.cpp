@@ -116,9 +116,11 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			}
 		}
 
+		(*apt_itr)->GetName(ICAO_code);
+
 		//-- upgrade Ramp Positions with XP10.45 data to get parked A/C -------------
 		vector<WED_RampPosition*> ramp_positions;
-		CollectRecursive(*apt_itr, back_inserter(ramp_positions), IgnoreVisiblity, TakeAlways, WED_RampPosition::sClass, 2);
+		CollectRecursive(*apt_itr, back_inserter(ramp_positions));
 
 		int non_empty_airlines_strs = 0;
 		int non_op_none_ramp_starts = 0;
@@ -139,13 +141,14 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			else
 				wrl->AbortCommand();
 		}
+
 #if 0
 		//-- Agp and obj upgrades to create more ground traffic --------------------------------
 		vector<WED_TruckParkingLocation*> parking_locations;
-		CollectRecursive(*apt_itr, back_inserter(parking_locations),WED_TruckParkingLocation::sClass, 2);
+		CollectRecursive(*apt_itr, back_inserter(parking_locations));
 
 		vector<WED_TruckDestination*>     truck_destinations;
-		CollectRecursive(*apt_itr, back_inserter(truck_destinations),WED_TruckDestination::sClass, 2);
+		CollectRecursive(*apt_itr, back_inserter(truck_destinations));
 
 		bool found_truck_evidence = false;
 		found_truck_evidence |= !parking_locations.empty();
@@ -155,7 +158,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		{
 			vector<WED_ObjPlacement*> all_objs;
 			vector<WED_AgpPlacement*> agp_placements;
-			CollectRecursive(*apt_itr, back_inserter(all_objs),WED_ObjPlacement::sClass, 2);
+			CollectRecursive(*apt_itr, back_inserter(all_objs));
 
 			for (vector<WED_AgpPlacement*>::iterator obj_itr = all_objs.begin(); obj_itr != all_objs.end(); ++obj_itr)
 			{
@@ -207,7 +210,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			if(ICAO_code != "KEDW" && ICAO_code != "9L2" && ICAO_code != "KFFO" && ICAO_code != "KSSC" && ICAO_code != "KCHS")
 			{
 				vector<WED_Runway*> rwys;
-				CollectRecursive(*apt_itr, back_inserter(rwys), IgnoreVisiblity, TakeAlways, WED_Runway::sClass, 2);
+				CollectRecursive(*apt_itr, back_inserter(rwys));
 				for (auto r : rwys)
 					if(r->GetSurface() < surf_Grass)
 					{
@@ -222,6 +225,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 					}
 			}
 		}
+
 		// nuke all large terrain polygons at mid-lattitudes
 		if(apt_box.p1.y() < 73.0 && apt_box.p1.y() > -60.0)
 		{
@@ -250,7 +254,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		}
 
 		double percent_done = (double)distance(apts.begin(), apt_itr) / apts.size() * 100;
-		printf("%0.0f%% through heuristic\n", percent_done);
+		printf("%0.0f%% through heuristic at %s\n", percent_done, ICAO_code.c_str());
 	}
 	LOG_MSG("Deleted %d illicit ICAO meta tags\n", deleted_illicit_icao);
 	LOG_MSG("## Tyler mode ## Done with upgrade heuristics\n");
