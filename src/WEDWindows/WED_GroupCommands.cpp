@@ -50,6 +50,8 @@
 #include "WED_AirportNode.h"
 #include "WED_DrapedOrthophoto.h"
 #include "WED_FacadePlacement.h"
+#include "WED_FacadeRing.h"
+#include "WED_FacadeNode.h"
 #include "WED_Group.h"
 #include "WED_LinePlacement.h"
 #include "WED_ObjPlacement.h"
@@ -4345,7 +4347,7 @@ static map<string,vehicle_replacement_info> build_replacement_table()
 	table.insert(make_pair("lib/airport/Common_Elements/vehicles/Small_Fuel_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Jet,0)));
 	table.insert(make_pair("lib/airport/Common_Elements/vehicles/Large_Fuel_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Prop,0)));
 	table.insert(make_pair("lib/airport/vehicles/baggage_handling/tractor.obj", vehicle_replacement_info(atc_ServiceTruck_Ground_Power_Unit,0)));
-	table.insert(make_pair("ib/airport/Ramp_Equipment/GPU_1.obj", vehicle_replacement_info(atc_ServiceTruck_Ground_Power_Unit,0)));
+	table.insert(make_pair("lib/airport/Ramp_Equipment/GPU_1.obj", vehicle_replacement_info(atc_ServiceTruck_Ground_Power_Unit,0)));
 	table.insert(make_pair("lib/airport/Ramp_Equipment/Tow_Tractor_1.obj", vehicle_replacement_info(atc_ServiceTruck_Pushback,0)));
 	table.insert(make_pair("lib/airport/Ramp_Equipment/Tow_Tractor_2.obj", vehicle_replacement_info(atc_ServiceTruck_Pushback,0)));
 
@@ -4640,7 +4642,7 @@ static bool IsRwyMatching(const WED_Runway * rwy, const struct changelist_t * en
     Point2 rwy_loc0, rwy_loc1;
 	Point2 corners[4];
 
-	if (rwy->GetSurface() != surf_Asphalt && rwy->GetSurface() != surf_Concrete ) return 0;      // if its not solid data - we're not moving the airport because of it
+	if (rwy->GetSurface() >= surf_Grass) return 0;      // if its not solid data - we're not moving the airport because of it
 
 	rwy->GetTarget()->GetLocation(gis_Geo, rwy_loc1);
 	if (rwy->GetCornersDisp2(corners))
@@ -5105,21 +5107,24 @@ static void copy_heading(WED_Thing * src, WED_Thing * dst)
 
 static int get_surface(WED_Thing * t)
 {
-	WED_Taxiway * taxiway = dynamic_cast<WED_Taxiway*>(t);
-	if (taxiway)
+	if(auto taxiway = dynamic_cast<WED_Taxiway*>(t))
 		return taxiway->GetSurface();
-	WED_PolygonPlacement * polygon = dynamic_cast<WED_PolygonPlacement*>(t);
-	if (polygon)
+	if(auto polygon = dynamic_cast<WED_PolygonPlacement*>(t))
 	{
 		string resource;
 		polygon->GetResource(resource);
-		if (resource.find("concrete") != string::npos)
-			return surf_Concrete;
-		else
-			return surf_Asphalt;
+
+		int enu = WED_GetLibraryMgr(t->GetArchive()->GetResolver())->GetSurfEnum(resource);
+		if (enu < 0)
+		{
+			if (resource.find("concrete") != string::npos)
+				enu = surf_Concrete;
+			else
+				enu = surf_Asphalt;
+		}
+		return enu;
 	}
-	WED_LinePlacement * line = dynamic_cast<WED_LinePlacement*>(t);
-	if (line)
+	if(auto line = dynamic_cast<WED_LinePlacement*>(t))
 	{
 		string resource;
 		line->GetResource(resource);
@@ -5128,52 +5133,43 @@ static int get_surface(WED_Thing * t)
 			resource.erase(0,strlen("lib/airport/lines/"));
 			int linetype;
 			if(sscanf(resource.c_str(),"%d",&linetype) == 1)
-			{
-				int enu = ENUM_Import(LinearFeature,linetype);
-				return enu;
+				return ENUM_Import(LinearFeature,linetype);
 			}
-		}
 	}
-	WED_AirportChain * chain = dynamic_cast<WED_AirportChain*>(t);
-	if(chain)
+	if(auto chain = dynamic_cast<WED_AirportChain*>(t))
 	{
 		// return value only if whl chain same style ... need to break up multi-linestyle chains beforehand
 		string resource;
 		chain->GetResource(resource);
-		int enu = ENUM_LookupDesc(LinearFeature, resource.c_str());
-		return enu;
+		return ENUM_LookupDesc(LinearFeature, resource.c_str());
 	}
 	return surf_Asphalt;
 }
 
 static void set_surface(WED_Thing * t, int surface, WED_LibraryMgr * lmgr)
 {
-	WED_Taxiway * taxiway = dynamic_cast<WED_Taxiway*>(t);
-	if (taxiway)
+	if(auto taxiway = dynamic_cast<WED_Taxiway*>(t))
 	{
-		taxiway->SetSurface(surface);
-		return;
-	}
-	WED_PolygonPlacement * polygon = dynamic_cast<WED_PolygonPlacement*>(t);
-	if (polygon)
-	{
-		if (surface == surf_Asphalt)
-			polygon->SetResource("lib/airport/pavement/asphalt_3D.pol");
+		if(ENUM_Domain(surface) == Surface_Type)
+			taxiway->SetSurface(surface);
 		else
-			polygon->SetResource("lib/airport/pavement/concrete_1D.pol");
-		return;
+			taxiway->SetSurface(surf_Asphalt);
 	}
-	WED_LinePlacement * line = dynamic_cast<WED_LinePlacement*>(t);
-	if (line)
+	if (auto polygon = dynamic_cast<WED_PolygonPlacement*>(t))
+	{
+		string resource;
+		if (!WED_GetLibraryMgr(t->GetArchive()->GetResolver())->GetSurfVpath(surface, resource))
+			resource = "lib/airport/pavement/asphalt_3D.pol";              // default to default asphalt
+		polygon->SetResource(resource);
+	}
+	if(auto line = dynamic_cast<WED_LinePlacement*>(t))
 	{
 		string(vpath);
 		if (lmgr->GetLineVpath(ENUM_Export(surface), vpath))
-		{
 			line->SetResource(vpath);
-		}
 	}
-	WED_AirportChain * chain = dynamic_cast<WED_AirportChain*>(t);
-	if(chain)
+	if(auto chain = dynamic_cast<WED_AirportChain*>(t))
+	if(ENUM_Domain(surface) == LinearFeature)
 	{
 		set<int> attr;
 		attr.insert(surface);
@@ -5181,8 +5177,7 @@ static void set_surface(WED_Thing * t, int surface, WED_LibraryMgr * lmgr)
 		int num_ent = chain->GetNumEntities();
 		for(int i = 0; i < num_ent; i++)
 		{
-			WED_AirportNode * node = dynamic_cast<WED_AirportNode*>(chain->GetNthEntity(i));
-			if(node)
+			if(auto node = dynamic_cast<WED_AirportNode*>(chain->GetNthEntity(i)))
 				node->SetAttributes(attr);
 		}
 	}
@@ -5190,15 +5185,10 @@ static void set_surface(WED_Thing * t, int surface, WED_LibraryMgr * lmgr)
 
 static void set_closed(WED_Thing * t, bool closed)
 {
-	WED_AirportChain * ac = dynamic_cast<WED_AirportChain*>(t);
-	if (ac)
-	{
-		ac->SetClosed(closed ? 1 : 0);
-		return;
-	}
-	WED_LinePlacement * lp = dynamic_cast<WED_LinePlacement*>(t);
-	if (lp)
-		lp->SetClosed(closed ? 1 : 0);
+	if(auto ac = dynamic_cast<WED_AirportChain*>(t))
+		ac->SetClosed(closed);
+	else if(auto lp = dynamic_cast<WED_LinePlacement*>(t))
+		lp->SetClosed(closed);
 }
 
 void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
@@ -5224,11 +5214,11 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 		sel->GetSelectionVector(selected);
 		for (size_t i = 0; i < selected.size(); ++i)
 		{
-			if (WED_GetParentAirport(dynamic_cast<WED_Thing*>(selected[i])) == NULL)
-			{
-				DoUserAlert("All objects to convert must be in an airport in the hierarchy");
-				return;
-			}
+		if (WED_GetParentAirport(dynamic_cast<WED_Thing*>(selected[i])) == NULL)
+		{
+			DoUserAlert("All objects to convert must be in an airport in the hierarchy");
+			return;
+		}
 		}
 	}
 
@@ -5240,7 +5230,7 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 	sel->GetSelectionVector(selected);
 	for (size_t i = 0; i < selected.size(); ++i)
 	{
-		WED_Thing * src = dynamic_cast<WED_Thing*>(selected[i]);
+		WED_Thing* src = dynamic_cast<WED_Thing*>(selected[i]);
 		vector<WED_GISChain*> chains;
 		get_chains(src, chains);
 		if (chains.empty())
@@ -5252,7 +5242,7 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 
 		if (dst_is_polygon)
 		{
-			WED_Thing * dst = create(wrl->GetArchive());
+			WED_Thing* dst = create(wrl->GetArchive());
 
 			add_chains(dst, chains);
 
@@ -5271,7 +5261,7 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 		{
 			for (int i = 0; i < chains.size(); ++i)
 			{
-				WED_Thing * dst = create(wrl->GetArchive());
+				WED_Thing* dst = create(wrl->GetArchive());
 
 				string name;
 				src->GetName(name);
@@ -5281,7 +5271,7 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 
 				move_points(chains[i], dst);
 
-				set_surface(dst, get_surface(src),WED_GetLibraryMgr(resolver));
+				set_surface(dst, get_surface(src), WED_GetLibraryMgr(resolver));
 
 				sel->Insert(dst);
 				dst->SetParent(src->GetParent(), src->GetMyPosition() + 1 + i);
@@ -5298,4 +5288,410 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 	WED_RecursiveDelete(to_delete);
 
 	op->CommitOperation();
+}
+
+static void dummy_func(void* ref, const char* fmt, ...) { return; }
+
+int WED_DoConvertToJW(WED_Airport* apt, int statistics[4])
+{
+	vector<WED_RampPosition*> ramps;
+	vector<WED_ObjPlacement*> all_objects, jw_tun, jw_ext;
+	vector<WED_FacadePlacement*> jw_facs;
+	WED_ResourceMgr* rmgr = WED_GetResourceMgr(apt->GetArchive()->GetResolver());
+
+	CollectRecursive(apt, back_inserter(ramps), ThingNotHidden, TakeAlways, WED_RampPosition::sClass);
+	CollectRecursive(apt, back_inserter(all_objects), ThingNotHidden, TakeAlways, WED_ObjPlacement::sClass);
+	CollectRecursive(apt, back_inserter(jw_facs), ThingNotHidden, [&](WED_Thing* v)
+		{
+			if (auto f = dynamic_cast<WED_FacadePlacement*>(v))
+				return f->IsJetway();
+			else
+				return false;
+		}, WED_FacadePlacement::sClass);
+
+	int obj2JW_count = 0;
+	for (auto o : all_objects)
+	{
+		string res;
+		o->GetResource(res);
+		if (res.compare(0, strlen("lib/airport/Ramp_Equipment/Jetway_"), "lib/airport/Ramp_Equipment/Jetway_") == 0)
+			jw_tun.push_back(o);
+		else if (res.compare(0, strlen("lib/airport/Ramp_Equipment/JetWayEx"), "lib/airport/Ramp_Equipment/JetWayEx") == 0)
+			jw_ext.push_back(o);
+		else if (res == "lib/airport/Ramp_Equipment/250cm_Jetway_Group.agp" ||
+				 res == "lib/airport/Ramp_Equipment/400cm_Jetway_2.agp" ||
+				 res == "lib/airport/Ramp_Equipment/400cm_Jetway_3.agp" ||
+				 res == "lib/airport/Ramp_Equipment/400cm_Jetway_Group.agp" ||
+				 res == "lib/airport/Ramp_Equipment/500cm_Jetway_Group.agp")
+		{
+			vector<WED_ObjPlacement*> added_objs;
+			const agp_t* agp_info;
+			if (rmgr->GetAGP(res, agp_info))
+			{
+				replace_all_obj_in_agp(o, agp_info, apt->GetArchive(), added_objs);
+				o->SetParent(NULL, 0);
+				o->Delete();
+			}
+			for (auto ao : added_objs)
+			{
+				ao->GetResource(res);
+				if (res.compare(0, strlen("lib/airport/Ramp_Equipment/Jetway_"), "lib/airport/Ramp_Equipment/Jetway_") == 0)
+				{
+					jw_tun.push_back(ao);
+					break;
+				}
+			}
+		}
+	}
+
+	// determine the position in front of the cab where the A/C is expected to be parked and the nearest ramp start to each.
+	// then find all extensions leading up to them
+	if(ramps.size() > 0 && jw_tun.size() > 0)
+	{
+		for (auto c : jw_tun)
+		{
+			Point2 acf_pos, tun_pos, jw_pos;
+			Vector2 tun_dir;
+			c->GetLocation(gis_Geo, jw_pos);
+			string res;
+			c->GetResource(res);
+			double tun_len = res[strlen("lib/airport/Ramp_Equipment/Jetway_")] == '5' ? 20 : 15;
+			double tun_hdg = c->GetHeading();
+			NorthHeading2VectorDegs(tun_pos, tun_pos, tun_hdg, tun_dir);
+			tun_pos = jw_pos + tun_dir * 2.7 * MTR_TO_DEG_LAT;
+
+			NorthHeading2VectorDegs(tun_pos, tun_pos, tun_hdg - 30.0, tun_dir);  // hdg to place in front of cabin where the acf would be
+			tun_dir *= (tun_len + 2.0) * MTR_TO_DEG_LAT;
+			acf_pos = tun_pos + tun_dir;
+
+			double min_dist = 99999.0;
+			WED_RampPosition* closest_ramp = nullptr;
+			for(auto r : ramps)
+			{
+				Point2 pt;
+				r->GetLocation(gis_Geo, pt);
+				double d = LonLatDistMeters(pt, acf_pos);
+				if (d < min_dist)
+				{
+					min_dist = d;
+					closest_ramp = r;
+				}
+			}
+			if (min_dist < 15.0)  // only convert jetway objects into facades that are somewhat close to an actual ramp start
+			{
+				auto fac = WED_FacadePlacement::CreateTyped(apt->GetArchive());
+				fac->SetParent(c->GetParent(), c->GetMyPosition());
+				string nam;
+				c->GetName(nam);
+				fac->SetName(nam + "(conv)");
+
+				Jetway_t jw_info;
+				jw_info.size_code = tun_len < 20.0 ? 1 : 2;
+				jw_info.style_code = 1;
+				jw_info.location = tun_pos;
+				jw_info.parked_tunnel_length = tun_len;
+				jw_info.parked_tunnel_angle = fltwrap(tun_hdg - 21.0, 0, 360);  // exact tunnel heading plus pulled back a bit to ensure cabin clearance
+				jw_info.parked_cab_angle = 60.0;
+				fac->WED_FacadePlacement::ImportJetway(jw_info, dummy_func, nullptr);
+				
+				auto rng = fac->GetNthChild(0);
+
+				c->SetParent(NULL, 0);
+				c->Delete();
+
+				bool is_extended = false;
+				for (auto e = jw_ext.begin(); e != jw_ext.end(); e++)
+				{
+					// those extension can be placed either way around, so check both ends for proximity to our jetway base
+					Point2 p1, p2;
+					(*e)->GetLocation(gis_Geo, p1);
+					double hdg = (*e)->GetHeading();
+					string ext_nam;
+					(*e)->GetResource(ext_nam);
+					double len;
+					int pos = strlen("lib/airport/Ramp_Equipment/JetWayEx");
+					if(ext_nam[pos] == 't') pos++;
+					sscanf(ext_nam.c_str() + pos + 1, "%lf", &len);
+					Vector2 ext_dir;
+					NorthHeading2VectorDegs(p1, p1, hdg, ext_dir);
+					p2 = p1 + ext_dir * (len + 2.0) * MTR_TO_DEG_LAT;
+					double d1 = LonLatDistMeters(p1, tun_pos);
+					double d2 = LonLatDistMeters(p2, tun_pos);
+					if (d1 < d2)
+					{
+						p1 = p2;
+						d2 = d1;
+					}
+					if (d2 < 3.0)
+					{
+						auto p = WED_FacadeNode::CreateTyped(apt->GetArchive());
+						p->SetParent(rng, 0);
+						p->SetLocation(gis_Geo, p1);
+
+						(*e)->SetParent(NULL, 0);
+						(*e)->Delete();
+						is_extended = true;
+						jw_ext.erase(e);
+						break;
+					}
+				}
+				if (!is_extended)
+				{
+					auto p = WED_FacadeNode::CreateTyped(apt->GetArchive());
+					p->SetParent(rng, 0);
+					p->SetLocation(gis_Geo, jw_pos);
+				}
+				jw_facs.push_back(fac);
+				obj2JW_count++;
+			}
+		}
+	}
+
+	int JW_longer = 0, JW_shorter = 0, JW_inactive = 0;
+	for(auto r : ramps)
+	{
+		Point2 ramp_loc;
+		struct jw_info {
+			WED_FacadePlacement* f;
+			Point2 cabin_loc, tunnel_orig;
+			double cabin_dist;
+			IGISPointSequence* ps;
+			int last_pt;
+		};
+		vector<struct jw_info> jw_serving_us;
+
+		r->GetLocation(gis_Geo, ramp_loc);
+		for (auto f : jw_facs)
+		{
+			// find ALL close jw that face us, i.e. are intended to serve this ramp.
+			if (f->HasDockingCabin())
+			{
+				jw_info jw;
+				jw.f = f;
+				jw.ps = jw.f->GetOuterRing();
+				jw.last_pt = jw.ps->GetNumPoints() - 1;
+				jw.ps->GetNthPoint(jw.last_pt - 1)->GetLocation(gis_Geo, jw.cabin_loc);
+				jw.ps->GetNthPoint(jw.last_pt - 2)->GetLocation(gis_Geo, jw.tunnel_orig);
+				jw.cabin_dist = LonLatDistMeters(jw.cabin_loc, ramp_loc);
+				if (jw.cabin_dist <= 25.0)
+				{
+					double door_hdg = VectorDegs2NorthHeading(jw.tunnel_orig, jw.tunnel_orig, Vector2(jw.tunnel_orig, ramp_loc));
+					double tun_hdg = VectorDegs2NorthHeading(jw.tunnel_orig, jw.tunnel_orig, Vector2(jw.tunnel_orig, jw.cabin_loc));
+					double rel_angle = dobwrap(tun_hdg - door_hdg, 0, 360);
+					if (rel_angle < 90.0 || rel_angle > 340.0)
+						jw_serving_us.push_back(jw);
+				}
+			}
+		}
+
+		if (jw_serving_us.size() > 1)
+		{
+			// figure which one can most freely reach ramp, make all others non-docking
+			double closest_cabin_dist = 999;
+			jw_info closest_jw;
+			for(auto jw : jw_serving_us)
+			{
+				if (jw.cabin_dist < closest_cabin_dist)
+				{
+					closest_cabin_dist = jw.cabin_dist;
+					closest_jw = jw;
+				}
+			}
+			if (closest_cabin_dist < 100)
+			{
+				for (auto jw : jw_serving_us)
+				{
+					if (jw.f != closest_jw.f)
+					{
+						auto last_node = dynamic_cast<WED_FacadeNode*>(jw.ps->GetNthPoint(jw.last_pt));
+						last_node->SetWallType(39);
+						JW_inactive++;
+					}
+				}
+				jw_serving_us.clear();
+				jw_serving_us.push_back(closest_jw);
+			}
+		}
+
+		if(jw_serving_us.size() > 0)
+		{
+			// check if tunnel length is suitable to reach ramp with some margin for actual door locations
+			string res;
+			const fac_info_t* info;
+			jw_serving_us[0].f->GetResource(res);
+			if (rmgr->GetFac(res, info))
+			{
+				auto tun_node = dynamic_cast<WED_FacadeNode*>(jw_serving_us[0].ps->GetNthPoint(jw_serving_us[0].last_pt - 2));
+				double tun_dist = LonLatDistMeters(jw_serving_us[0].tunnel_orig, ramp_loc);
+				int wall;
+				wall = tun_node->GetWallType();
+
+				bool tunnel_is_short = false;
+				bool tunnel_is_long = false;
+				for (auto t : info->tunnels)
+					if (wall == t.idx)
+					{
+						double tun_len = LonLatDistMeters(jw_serving_us[0].cabin_loc, jw_serving_us[0].tunnel_orig);
+						switch (t.size_code)        // deliberately test for shorter range - allows some margin for actual cabin door locations
+						{
+						case 1:	tunnel_is_short = tun_dist > 21.0; 
+								break;
+						case 2:	tunnel_is_short = tun_dist > 26.0; 
+								tunnel_is_long = tun_len < 14.0 || tun_dist < 19.0;
+								break;
+						case 3:	tunnel_is_short = tun_dist > 36.0; 
+								tunnel_is_long = tun_len < 17.0 || tun_dist < 22.0;
+								break;
+						case 4:	// tunnel_is_short = tun_dist > 40.0; break; // would have to move the tunnel base !! to make it reach further.
+								tunnel_is_long = tun_len < 20.0 || tun_dist < 25.0;
+								break;
+						}
+						if (tunnel_is_short)
+							for (auto t_longer : info->tunnels)
+							{
+								if (t_longer.size_code == t.size_code + 1)
+								{
+									tun_node->SetWallType(t_longer.idx);
+									JW_longer++;
+									break;
+								}
+							}
+						else if (tunnel_is_long)
+							for (auto t_shorter : info->tunnels)
+							{
+								if (t_shorter.size_code == t.size_code - 1)
+								{
+									tun_node->SetWallType(t_shorter.idx);
+									JW_shorter++;
+									break;
+								}
+							}
+						break;
+					}
+			}
+		}
+	}
+	if (statistics)
+	{
+		*statistics++ += obj2JW_count;
+		*statistics++ += JW_longer;
+		*statistics++ += JW_shorter;
+		*statistics++ += JW_inactive;
+	}
+	return obj2JW_count + JW_longer + JW_shorter + JW_inactive;
+}
+
+
+void WED_UpgradeJetways(IResolver* resolver)
+{
+	WED_Thing* wrl = WED_GetWorld(resolver);
+	vector<WED_Airport *> all_apts;
+	int changes = 0, statistics[4] = { 0 };
+
+	CollectRecursiveNoNesting(wrl, back_inserter(all_apts), WED_Airport::sClass);
+
+	wrl->StartOperation("Upgrade Jetways");
+	for (auto a : all_apts)
+		changes += WED_DoConvertToJW(a, statistics);
+
+	if (changes > 0)
+	{
+		wrl->CommitOperation();
+		string msg("Created ");
+		msg += to_string(statistics[0]) + " JW facades from JW objects\n";
+		msg += to_string(statistics[1]) + " tunnels made longer to reach A/C\n";
+		msg += to_string(statistics[2]) + " tunnels made shorter to reach A/C\n";
+		msg += to_string(statistics[3]) + " set non-docking to avoid conflicts at ramps reached by multiple JW";
+		DoUserAlert(msg.c_str());
+	}
+	else
+		wrl->AbortOperation();
+}
+
+static int get_aged_surf(int surf, int age)
+{
+	if (surf == surf_Concrete)
+		return age == 1 ? surf_Concrete_8 : surf_Concrete_1;
+	else
+		return age == 1 ? surf_Asphalt_4 : surf_Asphalt_12;
+}
+
+int WED_DoAgePavement(WED_Airport* apt, int age)  // age 1 = older
+{
+	vector<WED_Runway*> rwys;
+	vector<WED_Taxiway*> twys;
+	vector<WED_PolygonPlacement*> pols;
+
+	int changes = 0;
+
+	CollectRecursive(apt, back_inserter(rwys));
+	CollectRecursive(apt, back_inserter(twys));
+	CollectRecursive(apt, back_inserter(pols));
+
+	for (auto r : rwys)
+	{
+		int surf = r->GetSurface();
+		if (surf == surf_Asphalt || surf == surf_Concrete)
+		{
+			r->SetSurface(get_aged_surf(surf, age));
+			changes++;
+		}
+
+		surf = r->GetShoulder();
+		if (surf == surf_Asphalt || surf == surf_Concrete)
+		{
+			r->SetShoulder(get_aged_surf(surf, age));
+			changes++;
+		}
+	}
+
+	for (auto t : twys)
+	{
+		int surf = t->GetSurface();
+		if (surf == surf_Asphalt || surf == surf_Concrete)
+		{
+			t->SetSurface(get_aged_surf(surf, age));
+			changes++;
+		}
+	}
+
+	for (auto p : pols) // thats a pretty basic upgrade, any lighter/darker than default pavements are NOT converted
+	{
+		string res;
+		p->GetResource(res);
+		if (res == "lib/airport/pavement/asphalt_3D.pol" || "lib/airport/pavements/Concrete_1D.pol")
+		{
+			int surf = surf_Asphalt;
+			if (res.find("Concrete)") != string::npos) surf = surf_Concrete;
+			surf = get_aged_surf(surf, age);
+			WED_GetLibraryMgr(p->GetArchive()->GetResolver())->GetSurfVpath(surf, res);
+			p->SetResource(res);
+			changes++;
+		}
+	}
+	return changes;
+}
+
+void WED_AgePavement(IResolver* resolver)
+{
+	WED_Thing* wrl = WED_GetWorld(resolver);
+	vector<WED_Airport*> all_apts;
+	int count = 0;
+
+	int age = ConfirmMessage("Change all XP11 default Pavement to Xp12 old/worn ? Otherwise change is to newer looking pavem.", "Yes", "No");
+
+	CollectRecursiveNoNesting(wrl, back_inserter(all_apts), WED_Airport::sClass);
+
+	wrl->StartOperation("Age Pavement");
+	for (auto a : all_apts)
+		count += WED_DoAgePavement(a, age);
+	if (count > 0)
+	{
+		wrl->CommitOperation();
+		string msg("Converted ");
+		msg += to_string(count) + " items changed";
+		DoUserAlert(msg.c_str());
+	}
+	else
+		wrl->AbortOperation();
 }

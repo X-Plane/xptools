@@ -50,6 +50,7 @@
 #include "WED_TaxiRoute.h"
 #include "WED_TruckDestination.h"
 #include "WED_TruckParkingLocation.h"
+#include "WED_TowerViewpoint.h"
 #include "WED_ATCFlow.h"
 #include "WED_ATCFrequency.h"
 #include "WED_ATCRunwayUse.h"
@@ -199,6 +200,15 @@ static bool CheckDuplicateNames(const T& container, validation_error_vector& msg
 	}
 
 	return ret;
+}
+
+template <typename T>
+bool all_in_range(const T* values, T lower_limit, T upper_limit)
+{
+	for(int i = 0; i < sizeof(T); ++i)
+		if(values[i] < lower_limit || values[i] > upper_limit)
+			return false;
+	return true;
 }
 
 static void ValidateOnePointSequence(WED_Thing* who, validation_error_vector& msgs, IGISPointSequence* ps, WED_Airport * apt)
@@ -390,11 +400,17 @@ static void ValidateOneFacadePlacement(WED_Thing* who, validation_error_vector& 
 			IGISPoint * igp = ips->GetNthPoint(i);
 			igp->GetLocation(gis_Param, pt);
 
-			if(pt.x() >= maxWalls)
+			if(pt.x() >= maxWalls && (ips->IsClosed() || i < nn - 1 ))
 			{
 				msgs.push_back(validation_error_t("Facade node specifies wall not defined in facade resource.", err_facade_illegal_wall, dynamic_cast<WED_Thing *>(igp), apt));
 			}
 		}
+	}
+
+	if(gExportTarget >= wet_xplane_1200 && fac->HasDockingCabin())
+	{
+		if(!apt)
+			msgs.push_back(validation_error_t("Facades with Docking Jetways must be inside an airport hierachy", err_facade_illegal_wall, who, apt));
 	}
 }
 
@@ -1326,6 +1342,12 @@ static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& 
 		if (rwy->GetRoughness() < 0.0 || rwy->GetRoughness() > 1.0)
 			msgs.push_back(validation_error_t(string("The runway '") + name + "' has an illegal surface roughness. It should be in the range 0 to 1.", err_rwy_surface_illegal_roughness, who, apt));
 
+		AptRunway_t r;
+		rwy->Export(r);
+		if(!all_in_range(r.skids, 0.0f, 1.0f))
+			msgs.push_back(validation_error_t("Runway skid mark density and length properties must all be in the range 0 to 1.", err_rwy_dirt_prop_illegal, who, apt));
+		if (r.number_size != 0.0 && ( r.number_size < 2.0 || r.number_size > 18.0))
+			msgs.push_back(validation_error_t("The size of the runway numbers must be zero (automatic) or between 2 and 18 meters.", err_rwy_number_size_illegal, who, apt));
 	}
 }
 
@@ -1998,7 +2020,7 @@ static void ValidateCIFP(const vector<WED_Runway *>& runways, const vector<WED_S
 
 			float CIFP_LOCATION_ERROR = 10.0;
 
-			if(r->GetSurface() != surf_Asphalt && r->GetSurface() != surf_Concrete)   // for unpaved runways ...
+			if(r->GetSurface() >= surf_Grass)   // for unpaved runways ...
 			{
 				float r_wid = r->GetWidth() / 2.0;
 				CIFP_LOCATION_ERROR =  fltlim(r_wid, CIFP_LOCATION_ERROR, 50.0);   // allow the error circle to be as wide as a unpaved runway, within reason
@@ -2272,6 +2294,52 @@ static void ValidateRoads(const vector<WED_RoadEdge *> roads, validation_error_v
 	}
 }
 
+void ValidateOneViewpoint(WED_TowerViewpoint* v, const vector<WED_ObjPlacement*>objs, validation_error_vector& msgs, WED_Airport* apt)
+{
+	AptTowerPt_t info;
+	v->Export(info);
+
+	double closest_dist(99999);
+	WED_ObjPlacement* closest_obj = nullptr;
+for (auto o : objs)
+		if (o->GetTowerViewHgt() >= 0.0)
+		{
+			Point2 obj_loc;
+			o->GetLocation(gis_Geo, obj_loc);
+			double dist = LonLatDistMeters(info.location, obj_loc);
+			if (dist < closest_dist)
+			{
+				closest_dist = dist;
+				closest_obj = o;
+			}
+		}
+
+	if (closest_obj == nullptr) return;
+
+	if (closest_dist < 10.0)
+	{
+		if (fabs(closest_obj->GetTowerViewHgt() - info.height_ft * FT_TO_MTR) > 0.3)
+		{
+			char c[100];
+			double x = closest_obj->GetTowerViewHgt();
+			snprintf(c, sizeof(c), "Tower Viewpoint height does not match nearby tower object cabin height of %.1lf%s",
+				x * (gIsFeet ? MTR_TO_FT : 1.0), gIsFeet ? "ft" : "m");
+			vector<WED_Thing*> parts;
+			parts.push_back(v);
+			parts.push_back(closest_obj);
+			msgs.push_back(validation_error_t(c, warn_viewpoint_mislocated, parts, apt));
+		}
+	}
+	else
+	{
+		vector<WED_Thing*> parts;
+		parts.push_back(v);
+		parts.push_back(closest_obj);
+		msgs.push_back(validation_error_t("Tower Viewpoint not near tower object", warn_viewpoint_mislocated, parts, apt));
+	}
+
+}
+
 //------------------------------------------------------------------------------------------------------------------------------------
 #pragma mark -
 //------------------------------------------------------------------------------------------------------------------------------------
@@ -2290,6 +2358,8 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	vector<WED_AirportBoundary *>	boundaries;
 	vector<WED_ATCFlow *>			flows;
 	vector<WED_ATCFrequency*>		freqs;
+	vector<WED_TowerViewpoint*>		viewpts;
+	vector<WED_ObjPlacement*>		objects;
 	vector<WED_RoadEdge*>			roads;
 
 	vector<WED_DrapedOrthophoto *>	orthos;
@@ -2316,6 +2386,8 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		else COLLECT(WED_Taxiway,      taxiways)
 		else COLLECT(WED_RampPosition, ramps)
 		else COLLECT(WED_AirportBoundary,      boundaries)
+		else COLLECT(WED_TowerViewpoint,       viewpts)
+		else COLLECT(WED_ObjPlacement,         objects)
 		else COLLECT(WED_TruckDestination,     truck_destinations)
 		else COLLECT(WED_TruckParkingLocation, truck_parking_locs)
 		else COLLECT(WED_TaxiRoute,            taxiroutes)
@@ -2397,6 +2469,9 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 
 	for(auto s : signs)
 		ValidateOneTaxiSign(s, msgs, apt);
+
+	for (auto v : viewpts)
+		ValidateOneViewpoint(v, objects, msgs, apt);
 
 	for(auto t : taxiways)
 		ValidateOneTaxiway(t, msgs, apt);

@@ -99,8 +99,11 @@ public:
 	bool		DoesPackHaveLibraryItems(int package_number);
 				// indicates if art asset exported by multiple exports, i.e. has randomized appearance
 	int			GetNumVariants(const string& r);
-				// gets all known apt.dat taxiline line type #.
+				// gets the vpath of the resource used to dar apt.dat liner markings
 	bool		GetLineVpath(int lt, string& vpath);
+				// look up apt.dat surface types and matching public .pol vpaths
+	bool		GetSurfVpath(int surf, string& vpath);
+	int			GetSurfEnum(const string& vpath);
 				// gets all vpaths witin same vdir
 	bool		GetSameDir(const string& r, vector<pair<string, int> >& vpaths);
 
@@ -109,6 +112,7 @@ private:
 
 	void			Rescan();
 	void			RescanLines();
+	void			RescanSurfaces();
 	void			AccumResource(const string& path, int package, const string& real_path, bool is_backup, bool is_default, int status);
 	static	bool	AccumLocalFile(const char * fileName, bool isDir, void * ref);
 
@@ -162,7 +166,8 @@ private:
 	res_map_t			res_table;
 
 	string				local_package;
-	map<int, string>	default_lines;  // list of art assets for sim default lines
+	map<int, string>	default_lines;        // list of art assets for sim default lines
+	map<int, string>	default_surfaces;
 };
 
 #endif /* WED_LibraryMgr_H */

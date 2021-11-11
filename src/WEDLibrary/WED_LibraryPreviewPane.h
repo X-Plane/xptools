@@ -58,7 +58,7 @@ public:
 	GUI_DragOperation   Drop        (int x, int y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended) override;
 
 private:
-	void				DrawOneItem(int type, const string& res, const int b[4], GUI_GraphState * g, const char * label = nullptr);
+	void				DrawOneItem(int type, const string& res, int b[4], GUI_GraphState * g, const char * label = nullptr);
 	void 				UpdateFacadePreview(void);
 	void 				begin3d(const int *b, double radius_m);
 	void				end3d(const int *b);
@@ -83,7 +83,8 @@ private:
 	unsigned int		mFBO;			// for MSAA in preview window
 	unsigned int		mColBuf, mDepthBuf;
 
+	bool				mLightBackground;
 	vector<pair<string, int> > mRess;
-	};
+};
 
 #endif

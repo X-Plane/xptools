@@ -964,7 +964,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 		}
 	}
 	else // type 2 facades
-	{
+	{	CHECK_GL_ERR
 		roof_height =  -9.9e9;
 		for(auto& f : info.floors)
 		{
@@ -1006,13 +1006,13 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 					}
 				}
 			GLuint vbo[2];
-			glGenBuffers(2, vbo);
-			glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1]);
+			glGenBuffers(2, vbo);                           CHECK_GL_ERR
+			glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);          CHECK_GL_ERR
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1]);  CHECK_GL_ERR
 			glBufferData(GL_ARRAY_BUFFER, vert.size() * sizeof(GLfloat), vert.data(), GL_STATIC_DRAW); CHECK_GL_ERR
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER, idx.size() * sizeof(GLushort), idx.data(), GL_STATIC_DRAW); CHECK_GL_ERR
-			glBindBuffer(GL_ARRAY_BUFFER, 0);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);               CHECK_GL_ERR
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);       CHECK_GL_ERR
 			const_cast<unsigned int&>(info.vert_vbo) = vbo[0];
 			const_cast<unsigned int&>(info.idx_vbo) = vbo[1];
 		}
@@ -1024,13 +1024,13 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 		if (pingpong < 0)
 		{
 			vbuf.assign(8*2560, 0.0f);   // todo: error check - could there be larger meshes for any one wall segment ? Update: Yes there is - Mod_Garage_2.fac
-			glGenBuffers(NUM_VBO, sbo);
+			glGenBuffers(NUM_VBO, sbo);  CHECK_GL_ERR
 			for(int i = 0; i < NUM_VBO; ++i)
 			{
-				glBindBuffer(GL_ARRAY_BUFFER, sbo[i]);
+				glBindBuffer(GL_ARRAY_BUFFER, sbo[i]);  CHECK_GL_ERR
 				glBufferData(GL_ARRAY_BUFFER, vbuf.size() * sizeof(GLfloat), vbuf.data(), GL_DYNAMIC_DRAW); CHECK_GL_ERR
 			}
-			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);  CHECK_GL_ERR
 			pingpong = 0;
 		}
 		glEnableClientState(GL_VERTEX_ARRAY);			CHECK_GL_ERR

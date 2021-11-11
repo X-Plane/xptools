@@ -59,8 +59,9 @@ enum WED_Export_Target {
 		wet_xplane_1050,	// Adds next-gen apt.dat stuff
 		wet_xplane_1100,	// Adds ground vehicles stuff
 		wet_xplane_1130,	// Adds 8.33kHz raster frequencies
+		wet_xplane_1200,	// Adds moving jetway cabins
 		wet_gateway = 99,	// Latest format but with strict checking for gateway.
-		wet_latest_xplane = wet_xplane_1130,	// meta-token for whatever the very newest x-plane export is
+		wet_latest_xplane = wet_xplane_1200,	// meta-token for whatever the very newest x-plane export is
 };
 
 /* What target output format does WED want? */

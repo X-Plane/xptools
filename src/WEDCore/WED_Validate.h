@@ -118,6 +118,7 @@ enum validate_error_t
 	err_resource_cannot_be_found,
 	err_resource_does_not_have_correct_file_type,
 	err_runway_matching_cifp_mislocated,
+	err_rwy_dirt_prop_illegal,
 	err_rwy_end_outside_of_map,
 	err_rwy_end_not_matching_cifp,
 	err_rwy_misaligned_with_name,
@@ -136,6 +137,7 @@ enum validate_error_t
 	err_rwy_name_reversed_runway_numbers_low_snd,
 	err_rwy_name_suffix_only_on_one_end,
 	err_rwy_name_suffixes_match,
+	err_rwy_number_size_illegal,
 	err_rwy_overlapping_displaced_thresholds,
 	err_rwy_surface_illegal_roughness,
 	err_rwy_surface_water_not_valid,
@@ -177,6 +179,7 @@ enum validate_error_t
 	warn_truckroutes_but_no_starts,
 	warn_ramp_start_size_implausible,
 	warn_runway_matching_cifp_mislocated,
+	warn_viewpoint_mislocated,
 };
 
 // The validation error record stores a single validation problem for reporting.

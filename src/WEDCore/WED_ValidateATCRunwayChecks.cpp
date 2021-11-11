@@ -675,7 +675,7 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info, // The relevan
 	{
 		return Polygon2(0);
 	}
-	bool paved = runway_info.runway_ptr->GetSurface() == surf_Asphalt || runway_info.runway_ptr->GetSurface() == surf_Concrete;
+	bool paved = runway_info.runway_ptr->GetSurface() < surf_Grass;
 
 	//Unfortunatly due to the messy real world we must have unrealistically low thresholds to avoid edge case after edge case for very airport
 	//that doesn't play by the rules, was grandfathered in, or was built on Mt. Doom and needs to avoid the volcanic dust clouds. You know, the usual.

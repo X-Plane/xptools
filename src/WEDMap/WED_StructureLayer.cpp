@@ -198,23 +198,32 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 				else
 					Th2 = Midpoint2(corners[1],corners[2]);
 
-				pair<int,int> e = rwy->GetRunwayEnumsOneway();
 				float hdg = rwy->GetHeading();
+				string nam, nam_1, nam_2;
+				rwy->GetName(nam);
+				auto pos = nam.find('/');
+				if (pos != string::npos)
+				{
+					nam_1 = nam.substr(0, pos);
+					nam_2 = nam.substr(pos + 1, string::npos);
+				}
+				else
+					nam_1 = nam;
 
-				if(e.first != atc_Runway_None)
+				if(!nam_1.empty())
 				{
 					glPushMatrix();                  // rotate the numbers properly
 					glTranslatef(Th1.x(), Th1.y(), 0);
-					glRotatef(-hdg,0,0,1);
-					GUI_FontDraw(g, font_UI_Basic, white, 0, 10, ENUM_Desc(e.first), align_Center);
+					glRotatef(-hdg, 0, 0, 1);
+					GUI_FontDraw(g, font_UI_Basic, white, 0, 10, nam_1.c_str(), align_Center);
 					glPopMatrix();
 				}
-				if(e.second != atc_Runway_None)
+				if (!nam_2.empty())
 				{
 					glPushMatrix();
 					glTranslatef(Th2.x(), Th2.y(), 0);
-					glRotatef(180-hdg,0,0,1);
-					GUI_FontDraw(g, font_UI_Basic, white, 0, 10, ENUM_Desc(e.second), align_Center);
+					glRotatef(180 - hdg, 0, 0, 1);
+					GUI_FontDraw(g, font_UI_Basic, white, 0, 10, nam_2.c_str(), align_Center);
 					glPopMatrix();
 				}
 				g->SetTexUnits(0);
@@ -377,29 +386,30 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 					const lin_info_t * linfo;
 					lin->GetResource(vpath);
 					if (rmgr->GetLin(vpath,linfo))
-					{
-						int locked = 0;
-						WED_Entity * thing = dynamic_cast<WED_Entity *>(lin);
-						while(thing)
+						if(!(linfo->rgb[0] == 0.0 && linfo->rgb[1] == 0.0 && linfo->rgb[2] == 0.0))
 						{
-							if(thing->GetLocked())	{ locked=1; break; }
-							thing = dynamic_cast<WED_Entity *>(thing->GetParent());
-						}
-						if (locked)
-							glColor3fv(linfo->rgb);
-						else                           // do some color correction to account for the green vs grey line
-							glColor3f(min(1.0,linfo->rgb[0]+0.2),max(0.0,linfo->rgb[1]-0.0),min(1.0,linfo->rgb[2]+0.2));
+							int locked = 0;
+							WED_Entity * thing = dynamic_cast<WED_Entity *>(lin);
+							while(thing)
+							{
+								if(thing->GetLocked())	{ locked=1; break; }
+								thing = dynamic_cast<WED_Entity *>(thing->GetParent());
+							}
+							if (locked)
+								glColor3fv(linfo->rgb);
+							else                           // do some color correction to account for the green vs grey line
+								glColor3f(min(1.0,linfo->rgb[0]+0.2),max(0.0,linfo->rgb[1]-0.0),min(1.0,linfo->rgb[2]+0.2));
 
-						for(int i = 0; i < lin->GetNumSides(); ++i)
-						{
-							vector<Point2>	pts;
-							SideToPoints(ps,i,GetZoomer(), pts);
-							glLineWidth(3);
-							glShape2v(GL_LINES, &*pts.begin(), pts.size());
-							glLineWidth(1);
+							for(int i = 0; i < lin->GetNumSides(); ++i)
+							{
+								vector<Point2>	pts;
+								SideToPoints(ps,i,GetZoomer(), pts);
+								glLineWidth(3);
+								glShape2v(GL_LINES, &*pts.begin(), pts.size());
+								glLineWidth(1);
+							}
+							glColor4fv(WED_Color_RGBA(struct_color));
 						}
-					}
-					glColor4fv(WED_Color_RGBA(struct_color));
 				}
 
 				for (i = 0; i < n; ++i)
