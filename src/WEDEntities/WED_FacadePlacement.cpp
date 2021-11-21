@@ -152,7 +152,7 @@ bool		WED_FacadePlacement::HasCustomWalls(void) const
 bool		WED_FacadePlacement::IsJetway(int * cabin, int * tunnel) const
 {
 	const fac_info_t * f = GetFacInfo();
-	if (f->tunnels.size())
+	if (f && f->tunnels.size())
 	{
 		if (cabin) *cabin = f->cabin_idx;
 		if (tunnel) *tunnel = f->tunnels.front().idx;
@@ -168,7 +168,7 @@ bool		WED_FacadePlacement::HasDockingCabin(void) const
 	if (gExportTarget < wet_xplane_1200) return false;
 
 	const fac_info_t * f = GetFacInfo();
-	if (f->tunnels.empty()) return false;
+	if (!f || f->tunnels.empty()) return false;
 
 	auto ps = GetOuterRing();
 	int n_pts = ps->GetNumPoints();
@@ -211,7 +211,7 @@ void		WED_FacadePlacement::ExportJetway(Jetway_t& jetway)
 		auto c_dir = ps->GetNthPoint(n_pts - 1);
 
 		const fac_info_t * f = GetFacInfo();
-		if (f->tunnels.size())
+		if (f && f->tunnels.size())
 		{
 			Point2 loc, cabin_loc, type;
 			tunnel->GetLocation(gis_Geo, loc);
