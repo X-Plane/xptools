@@ -24,7 +24,7 @@
    As that would possibly result in two batches both including the same DSF tile. And the simple shellscript
    can not merge those DSF.
 
-   So we choose the geographic dividing lines carefully, though areas with low airport densities. And this
+   So we choose the geographic dividing lines carefully, through areas with low airport densities. And this
    code here also warns if an airport is close to the boundaries. Which itself isn't nessesarily a problem,
    but it helps in finding good dividing lines to cut batches.
 
@@ -41,7 +41,7 @@
 
 // split north vs. south america - not a good split wrt data amounts. So add AK and the west coast to SA.
 #define latNA_SA   24.0
-#define lonPNW   -106.0
+#define lonPNW   -103.0
 // split europe from asia - a fair 60/40 split in terms of data amounts
 #define lonEU_AS   34.0
 
