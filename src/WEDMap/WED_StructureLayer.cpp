@@ -567,27 +567,26 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 				Point2	pts[2];
 				box->GetMin()->GetLocation(gis_Geo,pts[0]);
 				box->GetMax()->GetLocation(gis_Geo,pts[1]);
-				GetZoomer()->LLToPixelv(pts,pts,2);
 				if(locked || selected)
 					glColor4fv(WED_Color_RGBA_Alpha(struct_color, 1.0/*mPavementAlpha*/, storage));
 				else
 					glColor4fv(WED_Color_RGBA_Alpha(wed_Link, 1.0/*mPavementAlpha*/, storage));
+
+				vector<Point2> pix;
+				BoxToPoints(pts[0], pts[1], GetZoomer(), pix);
+
 				glBegin(GL_LINE_LOOP);
-				glVertex2f(pts[0].x(), pts[0].y());
-				glVertex2f(pts[0].x(), pts[1].y());
-				glVertex2f(pts[1].x(), pts[1].y());
-				glVertex2f(pts[1].x(), pts[0].y());
+				glVertex2v(pix.data(), pix.size());
 				glEnd();
 
 				if(selected)
 				{
 					glColor4fv(WED_Color_RGBA_Alpha(struct_color, HILIGHT_ALPHA, storage));
-					glBegin(GL_QUADS);
-					glVertex2f(pts[0].x(), pts[0].y());
-					glVertex2f(pts[0].x(), pts[1].y());
-					glVertex2f(pts[1].x(), pts[1].y());
-					glVertex2f(pts[1].x(), pts[0].y());
+					glDisable(GL_CULL_FACE);
+					glBegin(GL_POLYGON);
+					glVertex2v(pix.data(), pix.size());
 					glEnd();
+					glEnable(GL_CULL_FACE);
 				}
 			}
 		}

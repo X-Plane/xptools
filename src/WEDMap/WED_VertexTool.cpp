@@ -43,6 +43,7 @@
 #include "MathUtils.h"
 #include "XESConstants.h"
 #include "GUI_GraphState.h"
+#include "WED_DrawUtils.h"
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -1502,8 +1503,8 @@ void		WED_VertexTool::DrawSelected			(bool inCurrent, GUI_GraphState * g)
 		g->SetState(false,false, false, true, true, false, false);
 		glColor4f(1,1,1,0.5);
 		glBegin(GL_LINES);
-		glVertex2f(GetZoomer()->LonToXPixel(mRotateCtr.x()),GetZoomer()->LatToYPixel(mRotateCtr.y()));
-		glVertex2f(GetZoomer()->LonToXPixel(mTaxiDest.x()),GetZoomer()->LatToYPixel(mTaxiDest.y()));
+		glVertex2(GetZoomer()->LLToPixel(mRotateCtr));
+		glVertex2(GetZoomer()->LLToPixel(mTaxiDest));
 		glEnd();
 	}
 }
