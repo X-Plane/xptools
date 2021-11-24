@@ -27,6 +27,7 @@ WED 2.5  alpha 1
    - jetway objects to jetway facades
    - X11 default pavment to XP12 aged pavement
    Features:
+   - use full projection for map display to improve location accuracy of linear features
    - validation warning on TOWER_VIEWPOINT height not matching objects with #viewpoint_height tags
    - use actual XP textures for run/taxiway and helipd previews in map, if available
    - apply jetway upgrades, remove large terrain polygons at export (tyler_mode only)
