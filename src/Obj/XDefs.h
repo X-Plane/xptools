@@ -115,7 +115,7 @@
 
 // Set this to 1 to crank up the mesh to ludicrous speed...
 #define HD_MESH 0
-#define UHD_MESH 1
+#define UHD_MESH 0
 
 #if WANT_NED_MALLOC
 	#include "MemUtils.h"
