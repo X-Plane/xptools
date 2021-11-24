@@ -162,6 +162,7 @@ private:
 	double	mLatCenterCOS, mLatCenterSIN;
 	double  mCenterCOS;
 	long long mCacheKey;
+	double  mMapSize;
 
 	class mapScale {
 	public:
