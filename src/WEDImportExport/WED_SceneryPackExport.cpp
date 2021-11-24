@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2014, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -36,17 +36,10 @@
 #include "WED_DSFImport.h"
 #include "WED_Document.h"
 #include "WED_GatewayExport.h"
+#include "WED_Group.h"
 #include "WED_GroupCommands.h"
 #include "WED_UIDefs.h"
 #include "WED_Validate.h"
-
-#include "WED_Airport.h"
-#include "WED_EnumSystem.h"
-#include "WED_Group.h"
-#include "WED_RampPosition.h"
-#include "WED_TruckDestination.h"
-#include "WED_TruckParkingLocation.h"
-#include "WED_ObjPlacement.h"
 
 #include <iostream>
 
@@ -72,6 +65,16 @@ int		WED_CanExportPack(IResolver * resolver)
 }
 
 #if TYLER_MODE
+
+#include "WED_Airport.h"
+#include "WED_EnumSystem.h"
+#include "WED_RampPosition.h"
+#include "WED_TruckDestination.h"
+#include "WED_TruckParkingLocation.h"
+#include "WED_ObjPlacement.h"
+#include "WED_MetaDataKeys.h"
+#include "WED_Menus.h"
+
 static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 {
 	WED_Thing * wrl = WED_GetWorld(resolver);
@@ -80,9 +83,35 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 
 	WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 	ISelection * sel = WED_GetSelect(resolver);
+	
+	int deleted_illicit_icao = 0;
 
-	for (vector<WED_Airport*>::iterator apt_itr = apts.begin(); apt_itr != apts.end(); ++apt_itr)
+	for (auto apt_itr = apts.begin(); apt_itr != apts.end(); ++apt_itr)
 	{
+
+		//--Erase implausible ICAO and undesired closed tags--------------------------
+		if ((*apt_itr)->ContainsMetaDataKey(wed_AddMetaDataICAO))
+		{
+			string ICAO_code = (*apt_itr)->GetMetaDataValue(wed_AddMetaDataICAO);
+
+			bool illicit = ICAO_code.size() != 4 || toupper(ICAO_code[0]) < 'A' || toupper(ICAO_code[0]) >= 'Z';
+			for (int i = 1; i < 4; i++)
+				illicit |= toupper(ICAO_code[i]) < 'A' || toupper(ICAO_code[i]) > 'Z';
+			if(illicit)
+			{
+				wrl->StartCommand("Delete bad icao");
+				(*apt_itr)->EditMetaDataKey(META_KeyName(wed_AddMetaDataICAO),"");
+				wrl->CommitCommand();
+				deleted_illicit_icao++;
+			}
+		}
+		if ((*apt_itr)->ContainsMetaDataKey("closed"))
+		{
+				wrl->StartCommand("Delete closed tag");
+				(*apt_itr)->EditMetaDataKey("closed","");
+				wrl->CommitCommand();
+		}
+
 		//--Ramp Positions-----------------------------------------------------------
 		vector<WED_RampPosition*> ramp_positions;
 		CollectRecursive(*apt_itr, back_inserter(ramp_positions),WED_RampPosition::sClass);
@@ -117,7 +146,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			}
 		}
 		//---------------------------------------------------------------------------
-
+#if 0
 		//--Agp and obj upgrades-----------------------------------------------------
 		vector<WED_TruckParkingLocation*> parking_locations;
 		CollectRecursive(*apt_itr, back_inserter(parking_locations),WED_TruckParkingLocation::sClass);
@@ -128,7 +157,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		bool found_truck_evidence = false;
 		found_truck_evidence |= !parking_locations.empty();
 		found_truck_evidence |= !truck_destinations.empty();
-		
+
 		if (found_truck_evidence == false)
 		{
 			vector<WED_ObjPlacement*> all_objs;
@@ -163,10 +192,11 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				WED_DoReplaceVehicleObj(resolver,*apt_itr);
 			}
 		}
-
+#endif
 		double percent_done = (double)distance(apts.begin(), apt_itr) / apts.size() * 100;
 		printf("%0.0f%% through heuristic\n", percent_done);
 	}
+	printf("Deleted %d illicit ICAO meta tags\n", deleted_illicit_icao);
 }
 #endif
 
@@ -210,46 +240,6 @@ void	WED_DoExportPack(WED_Document * resolver, WED_MapPane * pane)
 		sel->Clear();
 		for(set<WED_Thing*>::iterator p = problem_children.begin(); p != problem_children.end(); ++p)
 			sel->Insert(*p);
-		(*problem_children.begin())->CommitOperation();		
+		(*problem_children.begin())->CommitOperation();
 	}
 }
-
-int		WED_CanImportDSF(IResolver * resolver)
-{
-	return 1;
-}
-
-void	WED_DoImportDSF(IResolver * resolver)
-{
-	WED_Thing * wrl = WED_GetWorld(resolver);
-
-	char * path = GetMultiFilePathFromUser("Import DSF file...", "Import", FILE_DIALOG_IMPORT_DSF);
-	if(path)
-	{
-		char * free_me = path;
-
-		wrl->StartOperation("Import DSF");
-
-		while(*path)
-		{
-			WED_Group * g = WED_Group::CreateTyped(wrl->GetArchive());
-			g->SetName(path);
-			g->SetParent(wrl,wrl->CountChildren());
-			int result = DSF_Import(path,g);
-			if(result != dsf_ErrOK)
-			{
-				string msg = string("The file '") + path + string("' could not be imported as a DSF:\n")
-							+ dsfErrorMessages[result];
-				DoUserAlert(msg.c_str());
-				wrl->AbortOperation();
-				free(free_me);
-				return;
-			}
-
-			path = path + strlen(path) + 1;
-		}
-		wrl->CommitOperation();
-		free(free_me);
-	}
-}
-

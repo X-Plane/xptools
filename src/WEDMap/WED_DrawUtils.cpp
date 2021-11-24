@@ -88,8 +88,8 @@ void PointSequenceToVector(
 
 			int point_count = BezierPtsCount(b,z);
 
-			pts.reserve(pts.capacity() + point_count * (get_uv ? 2 : 1));
-			contours.reserve(contours.capacity() + point_count);
+			pts.reserve(pts.size() + point_count * (get_uv ? 2 : 1));
+			contours.reserve(contours.size() + point_count);
 			for (int k = 0; k < point_count; ++k)
 			{
 							pts.push_back(b.midpoint((float) k / (float) point_count));

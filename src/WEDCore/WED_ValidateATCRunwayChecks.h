@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- */ 
+ */
 
 #ifndef WED_VALIDATEATCRUNWAYCHECKS_H
 #define WED_VALIDATEATCRUNWAYCHECKS_H
@@ -31,6 +31,7 @@ class WED_Airport;
 class WED_ATCFlow;
 class WED_ResourceMgr;
 class WED_RampPosition;
+class WED_RoadEdge;
 
 #include "AptDefs.h"
 #include "WED_Runway.h"
@@ -75,7 +76,7 @@ struct RunwayInfo
 		centerline_m = Segment2(translator.Forward(ends[0]), translator.Forward(ends[1]));
 		dir_1m = Vector2(centerline_m.p1, centerline_m.p2);
 		dir_1m.normalize();
-		
+
 		dir_vec_1m   = Vector2(bounds[0], bounds[1]) / LonLatDistMeters(bounds[0],bounds[1]);
 		width_vec_1m = Vector2(bounds[1], bounds[2]) / LonLatDistMeters(bounds[1],bounds[2]);
 	}
@@ -85,15 +86,15 @@ struct RunwayInfo
 
 	// [0] is north end, [1] south end information
 	int runway_numbers[2];          // enum from ATCRunwayOneway
-	int runway_ops[2];              // operations type as per flow_info, 1 = arrival, 2 = departure, 3 = both 
-	
+	int runway_ops[2];              // operations type as per flow_info, 1 = arrival, 2 = departure, 3 = both
+
 	Polygon2 corners_geo;    // corners in lat/lon
 //	Polygon2 corners_m;      // corners in meters
 	Segment2 centerline_geo; // center line in lat/lon. p1 is source, p2 is target
 	Segment2 centerline_m;   // center line in meters.  p1 is source, p2 is target
-	
+
 	Vector2 dir_1m;		 	 // vector of 1m length, in runway direction
-	
+
 	Vector2 dir_vec_1m;      // vector of 1m length, in runway length direction
 	Vector2 width_vec_1m;    // vector of 1m length, in runway width direction
 
@@ -142,7 +143,7 @@ struct TaxiRouteInfo
 		DebugAssert(nodes.size() >= 2);
 		Bezier2 b;
 		taxiroute->GetSide(gis_Geo, 0, b);
-		segment_geo=b.as_segment(); 
+		segment_geo=b.as_segment();
 		segment_m = Segment2(translator.Forward(segment_geo.p1),translator.Forward(segment_geo.p2));
 	}
 
@@ -160,7 +161,7 @@ struct TaxiRouteInfo
 };
 
 void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs, const TaxiRouteVec_t& all_taxiroutes_plain,
-	const RunwayVec_t& all_runways, const set<int>& legal_rwy_oneway, const set<int>& legal_rwy_twoway, const FlowVec_t& all_flows,  WED_ResourceMgr * res_mgr,
-	const vector<WED_RampPosition*>& ramps);
+	const RunwayVec_t& all_runways, const set<int>& legal_rwy_oneway, const set<int>& legal_rwy_twoway, const FlowVec_t& all_flows,
+	WED_ResourceMgr* res_mgr,const vector<WED_RampPosition*>& ramps, const vector<WED_RoadEdge*>& roads);
 
 #endif

@@ -30,12 +30,10 @@
 #include "GUI_Listener.h"
 #include "GUI_Pane.h"
 #include "WED_MapZoomerNew.h"
-
-#include <memory>
+#include "WED_PerspectiveCamera.h"
 
 class IDocPrefs;
 class WED_Document;
-class WED_PerspectiveCamera;
 class WED_PreviewLayer;
 
 class WED_MapPreviewPane : public GUI_Pane, public WED_MapZoomerNew, public GUI_Listener, public GUI_Commander {
@@ -52,6 +50,8 @@ public:
 
 	int					MouseDown(int x, int y, int button) override;
 	void				MouseDrag(int x, int y, int button) override;
+	void				MouseUp(int x, int y, int button) override;
+	int					ScrollWheel(int x, int y, int dist, int axis) override;
 
 	int					HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags) override;
 	int					HandleCommand(int command) override;
@@ -69,17 +69,25 @@ private:
 	void				HandleKeyMove();
 	void				MoveCameraToXYZ(const Point3& xyz);
 	void				SetForwardVector();
+	void				UpdateMapVisibleArea();
 	void				InitGL(int *b);
 	void				FinishGL();
 
 	WED_Document * mDocument;
-	WED_PerspectiveCamera * mCamera;
 	WED_PreviewLayer *	mPreviewLayer;
+	WED_PerspectiveCamera mCamera;
 	float mYaw, mPitch;
 	float mX, mY;
 
+
 	int mCameraLeftVk, mCameraRightVk, mCameraUpVk, mCameraDownVk, mCameraForwardVk, mCameraBackVk;
 	GUI_KeyFlags mCameraFastModifier, mCameraSlowModifier;
+
+	// When did the last drag event happen?
+	float mTimeLastDrag;
+
+	// Velocity with which we're dragging, in world coordinates.
+	Vector3 mDragVelocity;
 
 	// Is the camera moving?
 	bool mMoving = false;

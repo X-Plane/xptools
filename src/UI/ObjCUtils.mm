@@ -215,6 +215,11 @@ int get_ns_window_height(void * window)
 	return r.size.height;
 }
 
+float get_retina_backing(void)
+{
+	return [[NSScreen screens] objectAtIndex:0].backingScaleFactor;
+}
+
 void register_drag_types_for_window(void * window, int count, const char * types[])
 {
 	NSMutableArray * a = [NSMutableArray arrayWithCapacity:count];

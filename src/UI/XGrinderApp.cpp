@@ -123,7 +123,8 @@ void XGrinderWin::Update(XWin::XContext ctx)
 	bounds.bottom = h;
 	FillRect(ctx, &bounds, (HBRUSH) (COLOR_WINDOW+1));
 	if (gCurMessage[0] != 0)
-		TextOut(ctx, 0, 0, gCurMessage, strlen(gCurMessage));
+		//		TextOut(ctx, 0, 0, gCurMessage, strlen(gCurMessage));
+		DrawText(ctx, gCurMessage, -1, &bounds, DT_LEFT | DT_WORD_ELLIPSIS);
 #endif
 #endif // LIN
 }

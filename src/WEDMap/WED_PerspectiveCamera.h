@@ -57,6 +57,9 @@ public:
 	// is called before calling this method.
 	void ApplyModelViewMatrix();
 
+	// For a given point on the viewport, returns the corresponding view ray in world coordinates.
+	Vector3 Unproject(const Point2& point);
+
 	// Returns the corners of the view frustum.
 	std::vector<Point3> FrustumCorners() const;
 
@@ -81,8 +84,6 @@ public:
 	}
 
 	// WED_Camera overrides.
-	bool PointVisible(const Point3& point) const override;
-	bool BboxVisible(const Bbox3& bbox) const override;
 	double PointDistance(const Point3& point) const override;
 	double PixelSize(double zCamera, double featureSize) const override;
 	double PixelSize(const Bbox3& bbox) const override;
@@ -95,7 +96,6 @@ public:
 	void Rotate(double deg, const Vector3& axis) override;
 
 private:
-	void UpdateFrustumPlanes() const;
 	bool ModelViewMatrixConsistent();
 
 	// Current model-view transformation. This is equivalent to the following matrix:
@@ -122,9 +122,6 @@ private:
 	double mViewportWidth, mViewportHeight;
 	Transformation mXform;
 	std::vector<Transformation> mXformStack;
-
-	mutable bool mFrustumPlanesDirty;
-	mutable Plane3 mFrustumPlanes[kNumFrustumPlanes];
 };
 
 #endif

@@ -870,6 +870,7 @@ void		WED_HandleToolBase::GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& care
 void		WED_HandleToolBase::DrawStructure			(bool inCurrent, GUI_GraphState * g)
 {
 	if (!inCurrent && !mDrawAlways) return;
+
 	if (mHandles != NULL)
 	{
 		int ei_count = mHandles->CountEntities();
@@ -958,11 +959,19 @@ void		WED_HandleToolBase::DrawStructure			(bool inCurrent, GUI_GraphState * g)
 				case handle_ArrowHead:
 				case handle_Arrow:			GUI_PlotIcon(g,"handle_arrowhead.png", scrpt.x(),scrpt.y(),atan2(orient.dx,orient.dy) * RAD_TO_DEG,1.0);	break;
 				case handle_RotateHead:
-				case handle_Rotate:			GUI_PlotIcon(g,"handle_rotatehead.png", scrpt.x(),scrpt.y(),atan2(orient.dx,orient.dy) * RAD_TO_DEG,1.0);	break;
+				case handle_Rotate:			//GUI_PlotIcon(g,"handle_rotatehead.png", scrpt.x(),scrpt.y(),atan2(orient.dx,orient.dy) * RAD_TO_DEG,1.0);	break;
+											rotateHeadXY.push_back(scrpt.x()); rotateHeadXY.push_back(scrpt.y());
+											rotateHeadDirXY.push_back(orient.x()); rotateHeadDirXY.push_back(orient.y()); break;
 				}
 			}
 		}
+		if (rotateHeadXY.size())
+		{
+			GUI_PlotIconBulk(g, "handle_rotatehead.png", rotateHeadXY.size()/2, rotateHeadXY.data(), rotateHeadDirXY.data(), nullptr, 1.0);
+			rotateHeadXY.clear(); rotateHeadDirXY.clear();
+		}
 	}
+
 	if (mDragType == drag_Sel)
 	{
 		g->SetState(false,false,false, false,false, false,false);

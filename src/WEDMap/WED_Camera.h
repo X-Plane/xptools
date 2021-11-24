@@ -38,10 +38,6 @@
 
 class WED_Camera {
 public:
-	// Returns whether a point or bounding box (in XYZ coordinates) is (partially) visible.
-	virtual bool PointVisible(const Point3& point) const = 0;
-	virtual bool BboxVisible(const Bbox3& bbox) const = 0;
-
 	// Returns the distance of the point from the camera's center of projection (if the camera uses a
 	// perspective projection) or 0.0 if the camera uses an orthogonal projection.
 	virtual double PointDistance(const Point3& point) const = 0;

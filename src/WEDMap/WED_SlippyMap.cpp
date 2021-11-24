@@ -54,7 +54,7 @@
 
 #define SHOW_DEBUG_INFO 0
 
-#define MIN_ZOOM  12        // stop displaying slippys at all below this level
+#define MIN_ZOOM  11        // stop displaying slippys at all below this level
 #define MAX_ZOOM  17        // for custom mode maps (predefined maps have their own limits below)
 
 #define TILE_FACTOR 0.8     // save tiles by zooming in a bit later than at 1:1 pixel ratio.

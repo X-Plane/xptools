@@ -54,76 +54,24 @@
 // display Frames Per Second. Will peg CPU/GPU load at 100%, only useable for diaganostic purposes.
 #define SHOW_FPS 0
 
-static constexpr double DRAW_DISTANCE = 50e3;
+static constexpr double DRAW_DISTANCE = 50e3; // m
+static constexpr double MIN_EYE_HEIGHT = 1.5; // m
 
 struct DrawVisStats
 {
 	int numCullTests = 0;
 	int numCulled = 0;
-	int numSizeTests = 0;
-	int numTooSmall = 0;
 	int numSizeTestsComposite = 0;
 	int numTooSmallComposite = 0;
 };
 
-static void DrawVisFor(WED_MapLayer * layer, const Bbox2& bounds, const WED_MapZoomerNew& zoomer, const WED_Camera& camera, IGISEntity * what, GUI_GraphState * g, int depth, DrawVisStats * stats)
+static void DrawVisFor(WED_MapLayer * layer, const Bbox2& bounds, const WED_MapZoomerNew& zoomer, IGISEntity * what, GUI_GraphState * g, int depth, DrawVisStats * stats)
 {
 	const float TOO_SMALL_TO_GO_IN = 20.0;
 	const float MIN_PIXELS_TO_DRAW = 5.0;
 
-#if 0
 	if (!layer->IsVisibleNow(what))	return;
 
-	Bbox3 bboxLL = what->GetVisibleBounds();
-	Point2 p1 = projection.LLToXY(Point2(bboxLL.xmin(), bboxLL.ymin()));
-	Point2 p2 = projection.LLToXY(Point2(bboxLL.xmax(), bboxLL.ymax()));
-	Bbox3 bboxXY(p1.x(), p1.y(), bboxLL.zmin(), p2.x(), p2.y(), bboxLL.zmax());
-
-#if DEV
-	++stats->numCullTests;
-#endif
-	if (!camera.BboxVisible(bboxXY))
-	{
-#if DEV
-		++stats->numCulled;
-#endif
-		return;
-	}
-
-	// TODO: Clean up
-#if DEV
-	++stats->numSizeTests;
-#endif
-	if (camera.PixelSize(bboxXY) < MIN_PIXELS_TO_DRAW)
-	{
-#if DEV
-		++stats->numTooSmall;
-#endif
-		return;
-	}
-
-	IGISComposite * c;
-
-	if (layer->DrawEntityVisualization(false, what, g, false))
-		if (what->GetGISClass() == gis_Composite && (c = SAFE_CAST(IGISComposite, what)) != NULL)
-		{
-#if DEV
-			++stats->numSizeTestsComposite;
-#endif
-			if (camera.PixelSize(bboxXY) > TOO_SMALL_TO_GO_IN || (p1 == p2) || depth == 0)	// Why p1 == p2?  If the composite contains ONLY ONE POINT it is zero-size.  We'd LOD out.  But if
-			{																				// it contains one thing then we might as well ALWAYS draw it - it's relatively cheap!
-				int t = c->GetNumEntities();												// Depth == 0 means we draw ALL top level objects -- good for airports.
-				for (int n = t - 1; n >= 0; --n)
-					DrawVisFor(layer, projection, camera, c->GetNthEntity(n), g, depth + 1, stats);
-			}
-			else
-			{
-#if DEV
-				++stats->numTooSmallComposite;
-#endif
-			}
-		}
-#else
 #if DEV
 	++stats->numCullTests;
 #endif
@@ -140,15 +88,26 @@ static void DrawVisFor(WED_MapLayer * layer, const Bbox2& bounds, const WED_MapZ
 	if (layer->DrawEntityVisualization(false, what, g, false))
 		if (what->GetGISClass() == gis_Composite && (c = SAFE_CAST(IGISComposite, what)) != NULL)
 		{
-			if (1) // camera.PixelSize(bboxXY) > TOO_SMALL_TO_GO_IN || (p1 == p2) || depth == 0)	// Why p1 == p2?  If the composite contains ONLY ONE POINT it is zero-size.  We'd LOD out.  But if
+#if DEV
+			++stats->numSizeTestsComposite;
+#endif
+			Bbox2 bboxLL;
+			what->GetBounds(gis_Geo, bboxLL);
+			Point2 p1 = zoomer.LLToPixel(bboxLL.p1);
+			Point2 p2 = zoomer.LLToPixel(bboxLL.p2);
+			if (zoomer.PixelSize(bboxLL) > TOO_SMALL_TO_GO_IN || (p1 == p2) || depth == 0)	// Why p1 == p2?  If the composite contains ONLY ONE POINT it is zero-size.  We'd LOD out.  But if
 			{																				// it contains one thing then we might as well ALWAYS draw it - it's relatively cheap!
 				int t = c->GetNumEntities();												// Depth == 0 means we draw ALL top level objects -- good for airports.
 				for (int n = t - 1; n >= 0; --n)
-					DrawVisFor(layer, bounds, zoomer, camera, c->GetNthEntity(n), g, depth + 1, stats);
+					DrawVisFor(layer, bounds, zoomer, c->GetNthEntity(n), g, depth + 1, stats);
+			}
+			else
+			{
+#if DEV
+				++stats->numTooSmallComposite;
+#endif
 			}
 		}
-#endif
-
 }
 
 static int GetVkPref(const char * key, int defaultVk)
@@ -175,17 +134,16 @@ static GUI_KeyFlags GetModifierPref(const char * key, GUI_KeyFlags defaultModifi
 WED_MapPreviewPane::WED_MapPreviewPane(GUI_Commander * cmdr, WED_Document * document)
 	: GUI_Commander(cmdr),
 	  mDocument(document),
-//	  mCamera(std::make_unique<WED_PerspectiveCamera>(0.5, DRAW_DISTANCE)),
+	  mCamera(0.5, DRAW_DISTANCE),
 	  mYaw(0.f),
 	  mPitch(-10.f)
 {
-// ToDo: Setup MapZoomerNew propperly so projected items get drawn,
+	// We set up the WED_MapZoomerNew as follows:
+	// - The "ppm" value is set to 1, so "pixels" correspond to meters.
+	// - The "pixel center" position is always at 0, 0. This implies that the
+	//   "lat/lon center" position always maps to OpenGL coordinates of 0, 0.
 
-// Much later - re-think culling strategy so it can rely only on MapZoomerNew info the usual way.
-// We can not afford to nuke all the early culling in PreviewLayer based on GetPPM().
-
-	mCamera = new WED_PerspectiveCamera(0.5, DRAW_DISTANCE);
-	this->cam = mCamera;
+	this->cam = &mCamera;
 
 	mPreviewLayer = new WED_PreviewLayer(this, this, document);
 
@@ -194,14 +152,10 @@ WED_MapPreviewPane::WED_MapPreviewPane(GUI_Commander * cmdr, WED_Document * docu
 
 	mDocument->GetArchive()->AddListener(this);
 
-#if 0
 	WED_PreviewLayer::Options options;
-	options.clearDepthBuffer = false;
-	options.drawFacadeWalls = true;
-	options.drawFacadeOutline = false;
-	options.drawSkeletonIfLineTooThin = false;
+	options.minLineThicknessPixels = 1;
 	mPreviewLayer->SetOptions(options);
-#endif
+
 	SetForwardVector();
 
 	Bbox2 box;
@@ -212,17 +166,7 @@ WED_MapPreviewPane::WED_MapPreviewPane(GUI_Commander * cmdr, WED_Document * docu
 
 	DisplayExtent(box, 0.5);
 
-{
-	Point3  p = mCamera->Position();
-	Vector3 d = mCamera->Forward();
-
-    printf("Cam pos %11.5lf %.5lf %.5lf dir %.5lf %.5lf %.5lf\n", p.x, p.y, p.z, d.dx, d.dy, d.dz);
-
 	this->SetPixelBounds(-1,-1,1,1);
-    printf("Zoom PPM %11.5lf Orig %11.5lf %11.5lf Unit %11.5lf %11.5lf\n", this->GetPPM(),
-                    this->LonToXPixel(0), this->LatToYPixel(0),
-                    this->LonToXPixel(1), this->LatToYPixel(1));
-}
 
 	mCameraLeftVk = GetVkPref("CameraLeftVk", GUI_VK_LEFT);
 	mCameraRightVk = GetVkPref("CameraRightVk", GUI_VK_RIGHT);
@@ -245,7 +189,7 @@ void WED_MapPreviewPane::SetBounds(int inBounds[4])
 	if (inBounds[0] == inBounds[2] || inBounds[1] == inBounds[3])
 		return;
 
-	mCamera->SetFOV(45.0, inBounds[2] - inBounds[0], inBounds[3] - inBounds[1]);
+	mCamera.SetFOV(45.0, inBounds[2] - inBounds[0], inBounds[3] - inBounds[1]);
 }
 
 void WED_MapPreviewPane::Draw(GUI_GraphState * state)
@@ -261,57 +205,42 @@ void WED_MapPreviewPane::Draw(GUI_GraphState * state)
 
 	InitGL(b);
 
-	// Compute lat/lon bounding box by projecting camera frustum onto ground
-	// plane and converting to lat/lon.
 	Bbox2 b_geo;
-	for (const auto& corner : mCamera->FrustumCorners())
-		b_geo += this->PixelToLL({corner.x, corner.y});
+	this->GetMapVisibleBounds(b_geo.p1.x_, b_geo.p1.y_, b_geo.p2.x_, b_geo.p2.y_);
 
 	DrawVisStats stats;
-	DrawVisFor(mPreviewLayer, b_geo, *this, *mCamera, base, state, 0, &stats);
+	DrawVisFor(mPreviewLayer, b_geo, *this, base, state, 0, &stats);
 
-#if 1
-{
-	Point3  p = mCamera->Position();
-	Vector3 d = mCamera->Forward();
-
-    printf("Cam pos %11.5lf %.5lf %.5lf dir %.5lf %.5lf %.5lf\n", p.x, p.y, p.z, d.dx, d.dy, d.dz);
-
-    printf("Zoom PPM %11.5lf Orig %11.5lf %11.5lf Unit %11.5lf %11.5lf\n", this->GetPPM(),
-                    this->LonToXPixel(0), this->LatToYPixel(0),
-                    this->LonToXPixel(1), this->LatToYPixel(1));
-
-}
-#if DEV
-	printf("%d / %d culled, %d / %d too small, %d / %d too small (composite)\n",
-		stats.numCulled, stats.numCullTests, stats.numTooSmall, stats.numSizeTests,
-		stats.numTooSmallComposite, stats.numSizeTestsComposite);
-#endif
+#if DEV && 0
+	printf("%d / %d culled, %d / %d too small (composite)\n",
+		stats.numCulled, stats.numCullTests, stats.numTooSmallComposite, stats.numSizeTestsComposite);
 #endif
 
 	// Draw the sky.
 	glClearColor(0.6, 0.6, 0.9, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	state->EnableDepth(true, true);         // turn on z-buffering - otherwise we can't clear the z-buffer
+	state->SetState(false, 0, false, false, true, true, true);
 	glClear(GL_DEPTH_BUFFER_BIT);
 
-	// Draw a ground plane.
-	state->SetState(false, 0, false, false, true, true, true);
+	// Draw a ground plane. This also initializes the z-buffer to cut off underground parts of 3D objects.
+	//
+	// We use glPolygonOffset() to push the ground plane slightly back in z. This avoids z-fighting with
+	// draped ground polygons in .obj/.agp which are (incorrectly) drawn in the same drawing phase as the
+	// objects themselves and therefore have to be drawn with the z-buffer on.
+	// This will not avoid z-fighting of multiple draped polygons that overlap with each other, but this
+	// is fine; In X-Plane, there is no guarantee on the draw order for these either, so the visibility
+	// in the sim is actually undefined (although constant after loading the scenery, so it won't flicker).
 	glEnable(GL_POLYGON_OFFSET_FILL);
-	glPolygonOffset(1.f, 1.f);
+	glPolygonOffset(5.f, 1.f);
 	glColor4f(0.2, 0.4, 0.2, 1.0);
-	// We don't strictly need this, as we always keep the camera at the origin,
-	// but we'll do it anyway in case we ever decide to break that invariant.
-	Point3 position = mCamera->Position();
-	glFrontFace(GL_CCW);
-	glBegin(GL_QUADS);
-	glVertex2f(position.x - DRAW_DISTANCE, position.y - DRAW_DISTANCE);
-	glVertex2f(position.x + DRAW_DISTANCE, position.y - DRAW_DISTANCE);
-	glVertex2f(position.x + DRAW_DISTANCE, position.y + DRAW_DISTANCE);
+	Point3 position = mCamera.Position();
+	glBegin(GL_TRIANGLE_FAN);
 	glVertex2f(position.x - DRAW_DISTANCE, position.y + DRAW_DISTANCE);
+	glVertex2f(position.x + DRAW_DISTANCE, position.y + DRAW_DISTANCE);
+	glVertex2f(position.x + DRAW_DISTANCE, position.y - DRAW_DISTANCE);
+	glVertex2f(position.x - DRAW_DISTANCE, position.y - DRAW_DISTANCE);
 	glEnd();
-	glFrontFace(GL_CW);
 	glDisable(GL_POLYGON_OFFSET_FILL);
 
 	mPreviewLayer->DrawVisualization(false, state);
@@ -336,16 +265,6 @@ void WED_MapPreviewPane::Draw(GUI_GraphState * state)
 	glEnd();
 	GUI_FontDraw(state, font_UI_Basic, white, 0, 12, "N", align_Center);
 	glPopMatrix();
-
-#if 0
-#if DEV
-	const FacadeStats& facade_stats = GetFacadeStats();
-	printf("%d / %d walls big enough, %d / %d LODs drawn\n",
-		facade_stats.numWallsBigEnough, facade_stats.numWallsTested,
-		facade_stats.numLODsDrawn, facade_stats.numLODsTested);
-	ResetFacadeStats();
-#endif
-#endif
 
 #if SHOW_FPS
 	static clock_t  last_time = 0;
@@ -380,18 +299,62 @@ int	WED_MapPreviewPane::MouseDown(int x, int y, int button)
 
 	mX = x;
 	mY = y;
+	mTimeLastDrag = GetTimeNow();
+	mDragVelocity = Vector3();
 
 	return 1;
 }
 
+static bool IntersectGroundPlane(const Point3& origin, const Vector3& dir, Point3 * intersection)
+{
+	// There's obviously no intersection if the direction vector points away from the ground.
+	// However, we also refuse to produce an intersection if the direction vector points towards
+	// the ground at a very shallow angle, as this will produce an intersection far away from the
+	// camera, which produces larger movements than the user likely expects.
+	if (dir.dz > -0.05)
+		return false;
+
+	*intersection = Point3(origin.x - origin.z / dir.dz * dir.dx, origin.y - origin.z / dir.dz * dir.dy, 0);
+	return true;
+}
+
+static Vector3 ForwardVector(double yaw, double pitch)
+{
+	return { sin(yaw * DEG_TO_RAD) * cos(pitch * DEG_TO_RAD),
+			 cos(yaw * DEG_TO_RAD) * cos(pitch * DEG_TO_RAD),
+			 sin(pitch * DEG_TO_RAD) };
+}
+
 void WED_MapPreviewPane::MouseDrag(int x, int y, int button)
 {
-	if (button == 1)
+	if (button == 0 && GetModifiersNow() == 0)
+	{
+		Vector3 vecFrom = mCamera.Unproject(Point2(mX, mY));
+		Vector3 vecTo = mCamera.Unproject(Point2(x, y));
+
+		Point3 from, to;
+		if (IntersectGroundPlane(mCamera.Position(), vecFrom, &from) && IntersectGroundPlane(mCamera.Position(), vecTo, &to))
+		{
+			MoveCameraToXYZ(mCamera.Position() - (to - from));
+			double elapsedTime = GetTimeNow() - mTimeLastDrag;
+			if (elapsedTime > 0)
+			{
+				Vector3 xyzVelocity = (from - to) / elapsedTime;
+				constexpr double integrationTime = 0.05; // s
+				double newFactor = min(elapsedTime / integrationTime, 1.0);
+				mDragVelocity = xyzVelocity * newFactor + mDragVelocity * (1 - newFactor);
+			}
+			Refresh();
+		}
+	}
+
+	if ((button == 0 && GetModifiersNow() == gui_ControlFlag) || button == 1)
 	{
 		float dx = x - mX;
 		float dy = y - mY;
-		mX = x;
-		mY = y;
+
+		double oldYaw = mYaw;
+		double oldPitch = mPitch;
 		mYaw += dx * 0.2;
 		mPitch += dy * 0.2;
 
@@ -399,8 +362,55 @@ void WED_MapPreviewPane::MouseDrag(int x, int y, int button)
 		mYaw = fltwrap(mYaw, -180, 180);
 
 		SetForwardVector();
+
+		if (button == 0 && GetModifiersNow() == gui_ControlFlag)
+		{
+			Vector3 forward = ForwardVector(oldYaw, oldPitch);
+			Point3 orbitCenter;
+			if (IntersectGroundPlane(mCamera.Position(), forward, &orbitCenter))
+			{
+				double dist = sqrt((mCamera.Position() - orbitCenter).squared_length());
+				MoveCameraToXYZ(orbitCenter - mCamera.Forward() * dist);
+			}
+		}
+
 		Refresh();
 	}
+
+	mX = x;
+	mY = y;
+	mTimeLastDrag = GetTimeNow();
+}
+
+void WED_MapPreviewPane::MouseUp(int x, int y, int button)
+{
+	if (button == 0 && GetModifiersNow() == 0)
+	{
+		mVelocity.dx = mCamera.Right().dot(mDragVelocity);
+		mVelocity.dy = mCamera.Forward().dot(mDragVelocity);
+		mVelocity.dz = mCamera.Up().dot(mDragVelocity);
+
+		StartMoving();
+	}
+}
+
+int WED_MapPreviewPane::ScrollWheel(int x, int y, int dist, int axis)
+{
+	Vector3 dir = mCamera.Unproject(Point2(x, y));
+
+	Point3 intersection;
+	if (IntersectGroundPlane(mCamera.Position(), dir, &intersection))
+	{
+		double distance = sqrt((intersection - mCamera.Position()).squared_length());
+		double minDistance = MIN_EYE_HEIGHT / mCamera.Position().z * distance;
+		distance *= pow(0.9, dist);
+		if (distance < minDistance)
+			distance = minDistance;
+		MoveCameraToXYZ(intersection - dir * distance);
+		Refresh();
+	}
+
+	return 1;
 }
 
 int WED_MapPreviewPane::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)
@@ -443,7 +453,7 @@ void WED_MapPreviewPane::DisplayExtent(const Bbox2& extent, double relativeDista
 	Point2 p1XY = this->LLToPixel(extent.p1);
 	Point2 p2XY = this->LLToPixel(extent.p2);
 
-	Vector3 forwardWithoutZ = mCamera->Forward();
+	Vector3 forwardWithoutZ = mCamera.Forward();
 	forwardWithoutZ.dz = 0;
 	forwardWithoutZ.normalize();
 
@@ -459,7 +469,7 @@ void WED_MapPreviewPane::DisplayExtent(const Bbox2& extent, double relativeDista
 
 Point2 WED_MapPreviewPane::CameraPositionLL() const
 {
-	Point3 position = mCamera->Position();
+	Point3 position = mCamera.Position();
 	return this->PixelToLL(Point2(position.x, position.y));
 }
 
@@ -467,17 +477,17 @@ void WED_MapPreviewPane::FromPrefs(IDocPrefs * prefs)
 {
 	const double qnan = std::numeric_limits<double>::quiet_NaN();
 
-	double camera_lon = prefs->ReadDoublePref("map_preview_window/camera_lon", qnan);
-	double camera_lat = prefs->ReadDoublePref("map_preview_window/camera_lat", qnan);
-	double camera_agl = prefs->ReadDoublePref("map_preview_window/camera_agl", qnan);
-	double camera_yaw = prefs->ReadDoublePref("map_preview_window/camera_yaw", qnan);
-	double camera_pitch = prefs->ReadDoublePref("map_preview_window/camera_pitch", qnan);
+	double camera_lon = prefs->ReadDoublePref("map_preview_window/camera_lon", qnan, IDocPrefs::pref_type_doc);
+	double camera_lat = prefs->ReadDoublePref("map_preview_window/camera_lat", qnan, IDocPrefs::pref_type_doc);
+	double camera_agl = prefs->ReadDoublePref("map_preview_window/camera_agl", qnan, IDocPrefs::pref_type_doc);
+	double camera_yaw = prefs->ReadDoublePref("map_preview_window/camera_yaw", qnan, IDocPrefs::pref_type_doc);
+	double camera_pitch = prefs->ReadDoublePref("map_preview_window/camera_pitch", qnan, IDocPrefs::pref_type_doc);
 
 	if (!std::isnan(camera_lon) && !std::isnan(camera_lat) && !std::isnan(camera_agl) && !std::isnan(camera_yaw) && !std::isnan(camera_pitch))
 	{
 		this->SetMapLogicalBounds(camera_lon, camera_lat, camera_lon, camera_lat);
 
-		mCamera->MoveTo(Point3(0, 0, camera_agl));
+		mCamera.MoveTo(Point3(0, 0, camera_agl));
 
 		mYaw = camera_yaw;
 		mPitch = camera_pitch;
@@ -502,13 +512,13 @@ void WED_MapPreviewPane::FromPrefs(IDocPrefs * prefs)
 
 void WED_MapPreviewPane::ToPrefs(IDocPrefs * prefs)
 {
-	Point3 position = mCamera->Position();
+	Point3 position = mCamera.Position();
 	Point2 positionLL = this->PixelToLL(Point2(position.x, position.y));
-	prefs->WriteDoublePref("map_preview_window/camera_lon", positionLL.x());
-	prefs->WriteDoublePref("map_preview_window/camera_lat", positionLL.y());
-	prefs->WriteDoublePref("map_preview_window/camera_agl", position.z);
-	prefs->WriteDoublePref("map_preview_window/camera_yaw", mYaw);
-	prefs->WriteDoublePref("map_preview_window/camera_pitch", mPitch);
+	prefs->WriteDoublePref("map_preview_window/camera_lon", positionLL.x(), IDocPrefs::pref_type_doc);
+	prefs->WriteDoublePref("map_preview_window/camera_lat", positionLL.y(), IDocPrefs::pref_type_doc);
+	prefs->WriteDoublePref("map_preview_window/camera_agl", position.z, IDocPrefs::pref_type_doc);
+	prefs->WriteDoublePref("map_preview_window/camera_yaw", mYaw, IDocPrefs::pref_type_doc);
+	prefs->WriteDoublePref("map_preview_window/camera_pitch", mPitch, IDocPrefs::pref_type_doc);
 }
 
 void WED_MapPreviewPane::StartMoving()
@@ -555,16 +565,16 @@ void WED_MapPreviewPane::HandleKeyMove()
 
 	// Velocity in XYZ space.
 	Vector3 xyzVelocity =
-		mCamera->Right() * mVelocity.dx +
-		mCamera->Forward() * mVelocity.dy +
-		mCamera->Up() * mVelocity.dz;
+		mCamera.Right() * mVelocity.dx +
+		mCamera.Forward() * mVelocity.dy +
+		mCamera.Up() * mVelocity.dz;
 
 	// Limit the elapsed time so that we don't get any unexpectedly big jumps in position
 	// when there is a big pause (maybe due to resource loading) that prevents refreshes
 	// from happening regularly.
-	Point3 position = mCamera->Position() + xyzVelocity * min(elapsedTime, 0.2);
-	if (position.z < 1.5)
-		position.z = 1.5;
+	Point3 position = mCamera.Position() + xyzVelocity * min(elapsedTime, 0.2);
+	if (position.z < MIN_EYE_HEIGHT)
+		position.z = MIN_EYE_HEIGHT;
 	MoveCameraToXYZ(position);
 
 	constexpr double minVelocity = 0.5; // m/s
@@ -579,17 +589,28 @@ void WED_MapPreviewPane::HandleKeyMove()
 
 void WED_MapPreviewPane::MoveCameraToXYZ(const Point3& xyz)
 {
-	Point2 ll = this->PixelToLL({ xyz.x, xyz.y });
+	mCamera.MoveTo(xyz);
 
-	this->SetMapLogicalBounds(ll.x(), ll.y(), ll.x(), ll.y());
-
-	mCamera->MoveTo({ 0, 0, xyz.z });
+	UpdateMapVisibleArea();
 }
 
 void WED_MapPreviewPane::SetForwardVector()
 {
-	Vector3 forward(sin(mYaw * DEG_TO_RAD) * cos(mPitch * DEG_TO_RAD), cos(mYaw * DEG_TO_RAD) * cos(mPitch * DEG_TO_RAD), sin(mPitch * DEG_TO_RAD));
-	mCamera->SetForward(forward);
+	mCamera.SetForward(ForwardVector(mYaw, mPitch));
+	UpdateMapVisibleArea();
+}
+
+void WED_MapPreviewPane::UpdateMapVisibleArea()
+{
+	// Project view frustum to the ground plane and find a bounding box around it.
+	Bbox2 visArea;
+	for (const auto& corner : mCamera.FrustumCorners())
+		visArea += Point2(corner.x, corner.y);
+
+	this->SetPixelBounds(visArea.xmin(), visArea.ymin(), visArea.xmax(), visArea.ymax());
+
+	// SetPixelBounds() changes the "pixel center" position, so reset it to (0, 0).
+	this->SetPixelCenter(0.0, 0.0);
 }
 
 void WED_MapPreviewPane::InitGL(int *b)
@@ -605,11 +626,11 @@ void WED_MapPreviewPane::InitGL(int *b)
 
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
-	mCamera->ApplyProjectionMatrix();
+	mCamera.ApplyProjectionMatrix();
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
-	mCamera->ApplyModelViewMatrix();
+	mCamera.ApplyModelViewMatrix();
 }
 
 void WED_MapPreviewPane::FinishGL()

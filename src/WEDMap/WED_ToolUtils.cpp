@@ -48,6 +48,7 @@
 #include "WED_ATCRunwayUse.h"
 #include "WED_ATCTimeRule.h"
 #include "WED_ATCWindRule.h"
+#include "WED_AutogenNode.h"
 #include "WED_Group.h"
 #include "WED_Helipad.h"
 #include "WED_LightFixture.h"
@@ -293,13 +294,13 @@ WED_Thing *		WED_GetContainerForHost(IResolver * resolver, WED_Thing * host, boo
 	if(host->GetClass() == WED_Airport::sClass)	return host;
 	WED_Thing * wrl = WED_GetWorld(resolver);
 	if(!require_airport && host == wrl)	return host;
-	
+
 	idx = 0;
-	
+
 	WED_Airport * apt = WED_GetParentAirport(host);
 	if(apt != NULL)
 		return apt;
-	
+
 	if(require_airport)
 		return WED_GetCurrentAirport(resolver);
 	else
@@ -380,16 +381,16 @@ WED_Thing *		WED_HasSingleSelectionOfType(IResolver * resolver, const char * in_
 	return who[0];
 }
 
-// A given entity class is allowe to require a parent - the parent can be _any_ parent 
-// in the hierarchy, not just its immediate parent.  
+// A given entity class is allowe to require a parent - the parent can be _any_ parent
+// in the hierarchy, not just its immediate parent.
 //
-// We use this to enforce certain hierarchy semantic relationships like: no runway 
+// We use this to enforce certain hierarchy semantic relationships like: no runway
 // outside of an airport, no atc time rule outside of an ATC flow, etc.
 //
 // TODO: there is some relatively weird stuff going on.  Arguably the parent class for
 // specialized nodes should be their parent geometry.  The main reason this doens't
-// blow up is that the hieararchy also tries to disallow the reorganization of 
-// non-folders - in other words, you can't move a runway node ANYWHERE as a user 
+// blow up is that the hieararchy also tries to disallow the reorganization of
+// non-folders - in other words, you can't move a runway node ANYWHERE as a user
 // because you don't know it exists.
 const char *	WED_GetParentForClass(const char * in_class)
 {
@@ -680,7 +681,7 @@ int Iterate_CollectRequiredParents(ISelectable * what, void * ref)
 	{
 		const char * p = WED_GetParentForClass(w->GetClass());
 		if(p) classes->insert(p);
-		
+
 		// This is slightly tricky - if our chilren have picky needs, we must cater
 		// to them.  So if I am a group and my kid is a wind rule, I need to be in a flow!
 		// Buuuut if I _already_ meet my kids needs (e.g I am a flow and my wind-rule child needs
@@ -691,17 +692,17 @@ int Iterate_CollectRequiredParents(ISelectable * what, void * ref)
 		for(int n = 0; n < w->CountChildren(); ++n)
 			Iterate_CollectRequiredParents(w->GetNthChild(n), &child_reqs);
 
-		// And filter out the one that I need first.		
+		// And filter out the one that I need first.
 		child_reqs.erase(w->GetClass());
-		
+
 		// Pass on the rest.
 		for(set<string>::iterator i = child_reqs.begin(); i != child_reqs.end(); ++i)
 			classes->insert(*i);
-			
+
 		// Since this is recursive, the only required parents that 'flow out' are the ones not met
 		// WITHIN the sub-tree of this item.
-		
-			
+
+
 	}
 	return 0;
 }
@@ -725,7 +726,7 @@ GUI_DragOperation	WED_DoDragSelection(
 								int						where[4])
 {
 	if(sSelectionType == gui_ClipType_Invalid) WED_RegisterDND();
-	
+
 	void * dummy = NULL;
 	const void *	ptrs[1] = { &dummy };
 	int		sizes[1] = { sizeof(dummy) };
@@ -759,7 +760,8 @@ bool			WED_IsIconic(IGISEntity * what)
 			what->GetGISSubtype() != WED_SimpleBoundaryNode::sClass &&	// This is for non-bezier scenery non-UV mapped stuff.
 			what->GetGISSubtype() != WED_TaxiRouteNode::sClass
 #if ROAD_EDITING
-			&&  what->GetGISSubtype() != WED_RoadNode::sClass
+			&& what->GetGISSubtype() != WED_RoadNode::sClass &&
+			   what->GetGISSubtype() != WED_AutogenNode::sClass
 #endif
 			;
 	default:

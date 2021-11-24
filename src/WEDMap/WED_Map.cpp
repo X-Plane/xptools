@@ -148,6 +148,10 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	float xTilt = 0.6 * (mTiltButton[3]->GetValue() - mTiltButton[0]->GetValue());
 	float yTilt = 0.6 * (mTiltButton[2]->GetValue() - mTiltButton[1]->GetValue());
 
+	state->EnableDepth(true,true);         // turn on z-buffering - otherwise we can't clear the z-buffer
+	glClear(GL_DEPTH_BUFFER_BIT);
+	state->EnableDepth(false,false);
+
 	vector<WED_MapLayer *>::iterator l;
 	for (l = mLayers.begin(); l != mLayers.end(); ++l)
 	if((*l)->IsVisible())

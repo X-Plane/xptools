@@ -45,24 +45,21 @@ static const GUI_MenuItem_t	kFileMenu[] = {
 {	"&Save",				'S',	gui_ControlFlag,				0,	gui_Save			},
 {	"&Revert To Saved",		0,		0,								0,	gui_Revert			},
 {	"-",					0,  	0,								0,	0					},
-{	"&Validate",			'V',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_Validate		},
+{	"&Validate",			'V',	gui_ControlFlag + gui_ShiftFlag,	0,	wed_Validate		},
 {	"Target X-Plane Version",0,		0,								0,	0					},
 {	"-",					0,		0,								0,	0					},
-{	"&Import apt.dat...",	'I',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_ImportApt		},
-{	"Import DS&F...",		0,		0,								0,	wed_ImportDSF		},
-{	"Import Ortho&photo...", 0,		0,								0,	wed_ImportOrtho		},
 #if HAS_GATEWAY
-{	"Import from Airport Scenery Gateway...",0,0,				0,	wed_ImportGateway	},
+{	"Import from Airport Scenery Gateway...",0,0,					0,	wed_ImportGateway	},
 #endif
-#if GATEWAY_IMPORT_FEATURES
-{	"Import Scenery Gateway Extracts...",0,0,						0,	wed_ImportGatewayExtract },
+#if ROAD_EDITING
+{	"Import Roads (+AutoGen)",0,	0,								0,	wed_ImportRoads		},
 #endif
-{	"-",					0,		0,								0,	0					},
-{	"&Export apt.dat...",	'S',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_ExportApt		},
+{	"Import Ortho&photo...", 0,		0,								0,	wed_ImportOrtho		},
 {	"Export Scenery Pac&k",	'B',	gui_ControlFlag,				0,	wed_ExportPack		},
 #if HAS_GATEWAY
-{	"Export to Airport Scenery Gateway...",0,	0,							0,	wed_ExportToGateway	},
+{	"Export to Airport Scenery Gateway...",0,	0,					0,	wed_ExportToGateway	},
 #endif
+{	"Advanced ...",			0,		0,								0,	0					},
 #if IBM || LIN
 {	"-",					0,		0,								0,	0					},
 {	"&Preferences...",		0,		0,								0,	gui_Prefs			},
@@ -83,6 +80,15 @@ static const GUI_MenuItem_t kExportTargetMenu[] = {
 {	NULL,					0,		0,								0,	0					}
 };
 
+static const GUI_MenuItem_t kAdvancedMenu[] = {
+{	"&Import apt.dat...",	'I',	gui_ControlFlag + gui_ShiftFlag,0,	wed_ImportApt		},
+{	"Import DS&F...",		0,		0,								0,	wed_ImportDSF		},
+#if GATEWAY_IMPORT_FEATURES
+{	"Import Scenery Gateway Extracts...",0,0,						0,	wed_ImportGatewayExtract },
+#endif
+{	"&Export apt.dat...",	'S',	gui_ControlFlag + gui_ShiftFlag,0,	wed_ExportApt		},
+{	NULL,					0,		0,								0,	0					},
+};
 
 static const GUI_MenuItem_t	kEditMenu[] = {
 {	"&Undo",				'Z',	gui_ControlFlag,				0,	gui_Undo		},
@@ -135,9 +141,6 @@ static const GUI_MenuItem_t kViewMenu[] = {
 {	"&Zoom Package",			'/',gui_ControlFlag+gui_OptionAltFlag,		0,	wed_ZoomAll			},
 {	"Zoom &Selection",			'/',gui_ControlFlag,						0,	wed_ZoomSelection	},	// simple cmd-slash for MOST imoprtant zoom command!
 {	"-",						0,	0,										0,	0					},
-//{	"&Feet",					0,	0,										0,	wed_UnitFeet		},
-//{	"&Meters",					0,	0,										0,	wed_UnitMeters		},
-//{	"-",						0,	0,										0,	0					},
 {	"Show &Line Markings",		0,	0,										0,	wed_ToggleLines		},
 {	"Show &Vertices",			0,	0,										0,	wed_ToggleVertices	},
 {	"Pavement Transparenc&y",	0,	0,										0,	0					},
@@ -285,6 +288,9 @@ void WED_MakeMenus(GUI_Application * inApp)
 
 	GUI_Menu export_target_menu = inApp->CreateMenu(
 		"Target X-Plane Version", kExportTargetMenu, file_menu, 9);
+
+	GUI_Menu advanced_menu = inApp->CreateMenu(
+		"Advanced ...", kAdvancedMenu, file_menu, 13 + 2 * HAS_GATEWAY + ROAD_EDITING );
 
 	GUI_Menu edit_menu = inApp->CreateMenu(
 		"&Edit", kEditMenu, inApp->GetMenuBar(), 0);

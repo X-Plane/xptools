@@ -36,8 +36,8 @@ public:
 			double		GetHeading(void) const;
 			void		SetHeading(double h);
 
-	virtual void		GetResource(	  string& r) const;
-	virtual void		SetResource(const string& r);
+void		GetResource(	  string& r) const override;
+void		SetResource(const string& r) override;
 
 int			CountProperties(void) const override;
 int			FindProperty(const char * in_prop) const override;
@@ -48,11 +48,11 @@ void		GetNthProperty(int n, PropertyVal_t& val) const override;
 void		SetNthProperty(int n, const PropertyVal_t& val) override;
 
 
-	virtual const char *	HumanReadableType(void) const { return "Draped Polygon"; }
+const char *	HumanReadableType(void) const override { return "Draped Polygon"; }
 
 protected:
 
-	virtual	bool		IsInteriorFilled(void) const { return true; }
+bool		IsInteriorFilled(void) const override { return true; }
 
 private:
 

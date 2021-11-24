@@ -36,7 +36,6 @@ endif #PLAT_MINGW
 
 ifdef PLAT_DARWIN
 LDFLAGS		+= -framework Carbon -framework OpenGL -framework AppKit
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libboost_thread.a
 endif #PLAT_DARWIN
 
 LIBS		+= -lcurl
@@ -249,6 +248,7 @@ SOURCES += ./src/WEDWindows/WED_PackageListAdapter.cpp
 SOURCES += ./src/WEDWindows/WED_StartWindow.cpp
 SOURCES += ./src/WEDWindows/WED_Sign_Editor.cpp
 SOURCES += ./src/WEDWindows/WED_Line_Selector.cpp
+SOURCES += ./src/WEDWindows/WED_Road_Selector.cpp
 SOURCES += ./src/GUI/GUI_Broadcaster.cpp
 SOURCES += ./src/GUI/GUI_Button.cpp
 SOURCES += ./src/GUI/GUI_ChangeView.cpp
@@ -493,4 +493,5 @@ RESOURCES += ./src/WEDResources/parking_spots/ClassE.png
 RESOURCES += ./src/WEDResources/parking_spots/ClassF.png
 RESOURCES += ./src/WEDResources/icons/navmap_airport.png
 RESOURCES += ./src/WEDResources/icons/navmap_seaport.png
-
+RESOURCES += ./src/WEDResources/ArrowHeadRoadS.png
+RESOURCES += ./src/WEDResources/ArrowHeadRoadE.png
