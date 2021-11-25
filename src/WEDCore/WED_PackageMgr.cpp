@@ -182,7 +182,7 @@ void		WED_PackageMgr::GetNthPackagePath(int n, string& package) const
 
 bool		WED_PackageMgr::IsPackageDefault(int n) const
 {
-	return n >= (custom_packages.size() + global_packages.size());
+	return n >= custom_packages.size();
 }
 
 bool		WED_PackageMgr::HasXML(int n) const

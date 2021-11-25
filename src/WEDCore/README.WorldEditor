@@ -31,6 +31,7 @@ WED 2.5  alpha 1
    - validation warning on TOWER_VIEWPOINT height not matching objects with #viewpoint_height tags
    - use actual XP textures for run/taxiway and helipd previews in map, if available
    - apply jetway upgrades, remove large terrain polygons at export (tyler_mode only)
+   - validation exeption to make KSEA, LOWI gateway legal
 
 WED 2.4.0rc2 5/29/21
    Features:
