@@ -231,7 +231,7 @@ static void ValidateOnePointSequence(WED_Thing* who, validation_error_vector& ms
 	if ((parent) &&
 	    (parent->GetClass() == WED_DrapedOrthophoto::sClass ||
 	     parent->GetClass() == WED_PolygonPlacement::sClass ||
-	     // parent->GetClass() == WED_Taxiway::sClass ||          // we also test those elsewhere, but not for zero length segments
+	     parent->GetClass() == WED_Taxiway::sClass ||          // we also test those elsewhere, but not for zero length segments
 	     parent->GetClass() == WED_ForestPlacement::sClass ||
 	     parent->GetClass() == WED_FacadePlacement::sClass ))
 	{
