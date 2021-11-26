@@ -50,6 +50,7 @@
 HANDLE stdout_read, stdout_write;
 HANDLE stderr_read, stderr_write;
 HANDLE stdin_read, stdin_write;
+HANDLE pipe_process;
 
 int spawn_process(char* cmdline)
 {
@@ -64,6 +65,8 @@ int spawn_process(char* cmdline)
 	si.dwFlags = STARTF_USESTDHANDLES;
 
 	CreateProcess(0, cmdline, 0, 0, 1, DETACHED_PROCESS, 0, 0, &si, &pi);
+	pipe_process = pi.hProcess;
+
 	return e;
 }
 
@@ -104,6 +107,7 @@ FILE* xpt_popen(const char *command, const char *mode)
 
 int xpt_pclose(FILE *stream)
 {
+
 	fclose(stream);		// This closes stdout_read FOR US.
 
 	// When we close our connection to the child process, we close the other halves of the pipes - OUR halves that
@@ -112,7 +116,10 @@ int xpt_pclose(FILE *stream)
 	// We didn't ever wrap stdin or stderr (our side) so we close those directly.
 	CloseHandle(stdin_write);
 	CloseHandle(stderr_read);
-	return 0;
+
+	DWORD pipe_exit_code;
+	GetExitCodeProcess(pipe_process, &pipe_exit_code);
+	return pipe_exit_code;
 }
 
 #endif
@@ -439,7 +446,7 @@ void	XGrindInit(string& t)
 	string base_path(start, last_sep);
 
 	/* search binaries under ./tools */
-	#if (!LIN && DEV) || (DEV && PHONE)
+	#if 0 // (!LIN && DEV) || (DEV && PHONE)
 		// Ben says: fuuuugly special case.  If we are a developer build on Mac, just use OUR dir as the tools dir.  Makes it possible
 		// to grind using the x-code build dir.  Of course, in release build we do NOT ship like this.  Same deal with phone.
 	#else

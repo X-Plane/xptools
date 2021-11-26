@@ -40,6 +40,9 @@ enum {
 	wed_ExportToGateway,
 #endif
 	wed_ImportDSF,
+#if ROAD_EDITING
+	wed_ImportRoads,
+#endif
 	wed_ImportOrtho,
 #if HAS_GATEWAY
 	wed_ImportGateway,
@@ -54,6 +57,7 @@ enum {
 	wed_Export1050,
 	wed_Export1100,
 	wed_Export1130,
+	wed_Export1200,
 	wed_ExportGateway,
 	// Edit Menu,
 	wed_Group,
@@ -117,6 +121,9 @@ enum {
 	wed_ToggleLiveView,
 #endif
 	wed_TogglePreview,
+	wed_TogglePreviewWindow,
+	wed_ShowMapAreaInPreviewWindow,
+	wed_CenterMapOnPreviewCamera,
 	wed_RestorePanes,
 	// Select Menu
 	wed_SelectParent,
@@ -141,12 +148,15 @@ enum {
 	wed_AddATCTimeRule,
 	wed_AddATCWindRule,
 	wed_UpgradeRamps,
+	wed_UpgradeJetways,
+	wed_AgePavement,
+	wed_EdgePavement,
+	wed_MowGrass,
 	wed_AlignApt,
 	//-- Add Metadata Keys Menu--
 	//Organized by alphabetical order
 	wed_AddMetaDataBegin,//WARNING: DO NOT USE!
 	wed_AddMetaDataCity,// or Locality
-	wed_AddMetaDataClosed,
 	wed_AddMetaDataCountry,
 	wed_AddMetaDataDatumLat,
 	wed_AddMetaDataDatumLon,

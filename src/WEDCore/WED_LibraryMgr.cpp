@@ -179,7 +179,7 @@ int			WED_LibraryMgr::GetResourceType(const string& r)
 string		WED_LibraryMgr::GetResourcePath(const string& r, int variant)
 {
 	res_map_t::iterator me = res_table.find(r);
-	if (me==res_table.end() || r != me->first)  // this prevents the case-insensitive compare (needed for desired sort order in libmgr list) 
+	if (me==res_table.end() || r != me->first)  // this prevents the case-insensitive compare (needed for desired sort order in libmgr list)
 		return string();                        // to deliver a match if the cases mis-match - which is X-Plane behavior
 	DebugAssert(variant < me->second.real_paths.size());
 	return me->second.real_paths[variant];
@@ -210,7 +210,7 @@ bool	WED_LibraryMgr::IsResourceDeprecatedOrPrivate(const string& r)
 {
 	res_map_t::const_iterator me = res_table.find(r);
 	if (me==res_table.end()) return false;
-	return me->second.status < status_Yellow;                  // status "Yellow' is still deemed public wrt validation, i.e. allowed on the gateway
+	return me->second.status < status_SemiDeprecated;                  // status "Yellow' is still deemed public wrt validation, i.e. allowed on the gateway
 }
 
 bool	WED_LibraryMgr::DoesPackHaveLibraryItems(int package)
@@ -237,6 +237,31 @@ int		WED_LibraryMgr::GetNumVariants(const string& r)
 	res_map_t::const_iterator me = res_table.find(r);
 	if (me==res_table.end()) return 1;
 	return me->second.real_paths.size();
+}
+
+bool	WED_LibraryMgr::GetSameDir(const string& r, vector<pair<string, int> >& vpaths)
+{
+	auto it = res_table.find(r);
+
+	string vpath(r);
+	if(it->second.res_type != res_Directory)
+	{
+		vpath.erase(vpath.find_last_of('/'));
+		res_table.find(vpath);
+	}
+	if(it == res_table.end()) return false;
+	it++;
+
+	while(it != res_table.end() && strncmp(it->first.c_str(), vpath.c_str(), vpath.size()) == 0)
+	{
+		auto pos = it->first.size();
+		if(it->second.res_type != res_Directory)
+			pos = it->first.find_last_of('/');
+		if(it->second.status >= status_Public && strncmp(it->first.c_str(), vpath.c_str(), pos) == 0)
+			vpaths.push_back(make_pair(it->first, it->second.res_type));
+		it++;
+	}
+	return vpaths.size();
 }
 
 
@@ -297,12 +322,24 @@ void		WED_LibraryMgr::Rescan()
 			{
 				string vpath, rpath;
 				bool is_export_backup = false;
-				
+				bool is_season = false;
+
 				if( MFS_string_match(&s,"EXPORT",false) ||
 				    MFS_string_match(&s,"EXPORT_EXTEND",false) ||
 				    MFS_string_match(&s,"EXPORT_EXCLUDE",false) ||
+					(is_season = ( MFS_string_match(&s, "EXPORT_SEASON", false) || MFS_string_match(&s, "EXPORT_EXCLUDE_SEASON", false))) ||
 					(is_export_backup  = MFS_string_match(&s,"EXPORT_BACKUP",false)))
 				{
+					if (is_season)
+					{
+						string season;
+						MFS_string(&s, &season);
+						if (season.find("sum") == string::npos)
+						{
+							MFS_string_eol(&s, NULL);
+							continue;
+						}
+					}
 					MFS_string(&s,&vpath);
 					MFS_string_eol(&s,&rpath);
 					WED_clean_vpath(vpath);
@@ -355,7 +392,7 @@ void		WED_LibraryMgr::Rescan()
 					else if(MFS_string_match(&s,"DEPRECATED",true))
 						cur_status = status_Deprecated;
 					else if(MFS_string_match(&s,"SEMI_DEPRECATED",true))
-						cur_status = status_Yellow;
+						cur_status = status_SemiDeprecated;
 
 					MFS_string_eol(&s,NULL);
 				}
@@ -364,6 +401,7 @@ void		WED_LibraryMgr::Rescan()
 		}
 	}
 	RescanLines();
+	RescanSurfaces();
 
 	string package_base;
 	package_base=gPackageMgr->ComputePath(local_package,"");
@@ -557,6 +595,118 @@ void WED_LibraryMgr::RescanLines()
 	}
 }
 
+void WED_LibraryMgr::RescanSurfaces()
+{
+	// since we don't have (yet) an agree'd about list of taxiway texture enums vs vpaths,
+	// we simply take ALL vpaths matching the right prefix, in alphabetical order from the LR default sceneries instead
+
+	default_surfaces.clear();
+	int asphalt_enums(surf_Asphalt_1);
+	int concrete_enums(surf_Concrete_1);
+
+	for (auto& rt : res_table)
+		if (rt.second.is_default && rt.second.res_type == res_Polygon && rt.first.compare(0, strlen("lib/airport/default_runways/"), "lib/airport/default_runways/") == 0)
+			if (rt.first.find("taxiway", rt.first.find_last_of('/')) != string::npos)
+			{
+				if (rt.first.find("asphalt_L") != string::npos)
+					default_surfaces[asphalt_enums++] = rt.first;
+				else if (rt.first.find("concrete_L") != string::npos)
+					default_surfaces[concrete_enums++] = rt.first;
+			}
+
+	for (auto& rt : res_table)
+		if (rt.second.is_default && rt.second.res_type == res_Polygon && rt.first.compare(0, strlen("lib/airport/default_runways/"), "lib/airport/default_runways/") == 0)
+			if (rt.first.find("taxiway", rt.first.find_last_of('/')) != string::npos)
+			{
+				if (rt.first.find("asphalt/") != string::npos)
+					default_surfaces[asphalt_enums++] = rt.first;
+				else if (rt.first.find("concrete/") != string::npos)
+					default_surfaces[concrete_enums++] = rt.first;
+			}
+
+	for (auto& rt : res_table)
+		if (rt.second.is_default && rt.second.res_type == res_Polygon && rt.first.compare(0, strlen("lib/airport/default_runways/"), "lib/airport/default_runways/") == 0)
+			if (rt.first.find("taxiway", rt.first.find_last_of('/')) != string::npos)
+			{
+				if (rt.first.find("asphalt_D") != string::npos)
+					default_surfaces[asphalt_enums++] = rt.first;
+				else if (rt.first.find("concrete_D") != string::npos)
+					default_surfaces[concrete_enums++] = rt.first;
+				else if (rt.first.find("grass") != string::npos)
+					default_surfaces[surf_Grass] = rt.first;
+				else if (rt.first.find("gravel") != string::npos)
+					default_surfaces[surf_Gravel] = rt.first;
+				else if (rt.first.find("dirt") != string::npos)
+					default_surfaces[surf_Dirt] = rt.first;
+				else if (rt.first.find("lakebed") != string::npos)
+					default_surfaces[surf_Lake] = rt.first;
+				else if (rt.first.find("snow") != string::npos)
+					default_surfaces[surf_Snow] = rt.first;
+			}
+
+	// get all rpaths for the default vpaths we have
+	unordered_map<int, string> all_rpaths;
+	for (auto& vp : default_surfaces)
+		all_rpaths[vp.first] = res_table[vp.second].real_paths.back();
+
+	// now go though all default lib polygons that do NOT match the default_runway prefix
+	// and see which ones match the rpath of the ones we use for the default textures.
+	// Then we switch the vpaths out for those. 
+	// Why ?
+	// We use the default_surfaces table for two purposes: depiction in WED & knowing which vpath to substitute when 
+	// converting taxiways into polygons and vice versa.
+
+	for (auto& rt : res_table)
+	{
+		if (rt.second.is_default && rt.second.res_type == res_Polygon && rt.first.compare(0, strlen("lib/airport/default_runways/"), "lib/airport/default_runways/") != 0)
+			if (rt.second.status >= status_Public && rt.second.real_paths.size() > 0)
+			{
+				auto rp = all_rpaths.begin();
+				while (rp != all_rpaths.end())
+				{
+					if (rp->second == rt.second.real_paths.back())
+					{
+						default_surfaces[rp->first] = rt.first;
+						break;
+					}
+					rp++;
+				}
+			}
+	}
+
+	// this should only occurr with XP11 or older, XP11 user can at least get nice pavement and the "convert To" uses this info, too.
+	if(default_surfaces.size() == 0)
+	{
+		if(res_table.count("lib/airport/pavement/asphalt_3D.pol") > 0)
+			default_surfaces[surf_Asphalt] = "lib/airport/pavement/asphalt_3D.pol";
+		if (res_table.count("lib/airport/pavement/concrete_1D.pol") > 0)
+			default_surfaces[surf_Concrete] = "lib/airport/pavement/concrete_1D.pol";
+	}
+}
+
+bool WED_LibraryMgr::GetSurfVpath(int surf, string &res)
+{
+	auto it = default_surfaces.find(surf);
+	if (it != default_surfaces.end())
+	{
+		res = it->second;
+		return true;
+	}
+	else
+		return false;
+}
+
+int WED_LibraryMgr::GetSurfEnum(const string &res)
+{
+	for(auto v : default_surfaces)
+	{
+		if(v.second == res)
+			return v.first;
+	}
+	return -1;
+}
+
+
 void WED_LibraryMgr::AccumResource(const string& path, int package, const string& rpath, bool is_backup, bool is_default, int status)
 {
 
@@ -575,10 +725,8 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 	else if(suffix == "str") rt = res_String;
 	else if(suffix == "lin") rt = res_Line;
 	else if(suffix == "pol") rt = res_Polygon;
-// not sure we want to even list these ?
-// per Ben's explanation of May 2nd 2018 - we don't, until we support all parameters for these.
-//	else if(suffix == "ags") rt = res_Polygon;
-//	else if(suffix == "agb") rt = res_Polygon;
+	else if(suffix == "ags") rt = res_Autogen;
+	else if(suffix == "agb") rt = res_Autogen;
 #if ROAD_EDITING
 	else if(suffix == "net") rt = res_Road;
 #endif
@@ -593,7 +741,7 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 		if(i == res_table.end())
 		{
 			res_info_t new_info;
-			new_info.status = status;
+			new_info.status = rt == res_Autogen ? status_Public : status;    // XXX temporary for alpha testing - so we can drool about at all that stuff
 			new_info.res_type = rt;
 			new_info.packages.insert(package);
 			if(rt > res_Directory)                      // speedup/memory saver: no need to store this for directories

@@ -29,6 +29,7 @@ class	IResolver;
 class	ISelection;
 
 struct	Point2;
+class	Bbox2;
 
 class	WED_Archive;
 class	WED_MapZoomerNew;
@@ -94,7 +95,7 @@ typedef map<WED_Thing*, vector<WED_Thing*> > edge_to_child_edges_map_t;
 
 //Given a vector of splittable objects and splittable edges, preform the actual math
 //It returns a vector of the new pieces
-edge_to_child_edges_map_t run_split_on_edges(vector<split_edge_info_t>& edges);
+edge_to_child_edges_map_t run_split_on_edges(vector<split_edge_info_t>& edges,bool no_uncrossed = false);
 void	WED_DoSplit(IResolver * resolver);
 int		WED_CanAlign(IResolver * resolver);
 void	WED_DoAlign(IResolver * resolver);
@@ -135,7 +136,7 @@ set<WED_Thing*> WED_select_doubles(WED_Thing * t);
 bool	WED_DoSelectDoubles(IResolver * resolver, WED_Thing * sub_tree=NULL);				// They do not show any UI but they do select the failures.
 
 set<WED_GISEdge*> WED_do_select_crossing(WED_Thing * t);
-set<WED_GISEdge*> WED_do_select_crossing(const vector<WED_GISEdge*> edges);
+set<WED_GISEdge*> WED_do_select_crossing(const vector<WED_GISEdge*>& edges, Bbox2& cull_bounds);
 bool	WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree=NULL);
 
 void	WED_DoSelectMissingObjects(IResolver * resolver);
@@ -158,9 +159,12 @@ void	WED_DoBreakApartAgps(IResolver* resolver);
 int		WED_CanReplaceVehicleObj(WED_Airport* apt);
 void	WED_DoReplaceVehicleObj(IResolver* resolver, WED_Airport* apt = NULL);
 
+int		wed_upgrade_one_airport(WED_Thing* who, WED_ResourceMgr* rmgr, ISelection* sel);
+void	WED_UpgradeRampStarts(IResolver * resolver);
+void	WED_UpgradeJetways(IResolver* resolver);
+int		WED_DoConvertToJW(WED_Airport* apt, int statistics[4] = nullptr);
 
-int wed_upgrade_one_airport(WED_Thing* who, WED_ResourceMgr* rmgr, ISelection* sel);
-void WED_UpgradeRampStarts(IResolver * resolver);
+void WED_AgePavement(IResolver* mDocument);
 void WED_AlignAirports(IResolver * resolver);
 
 // Tests if 'thing' is of a specific type.
@@ -175,5 +179,7 @@ typedef WED_Thing * (*CreateThingFunc)(WED_Archive * parent);
 
 // Converts the selected objects to the type produced by 'create'.
 void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create);
+
+void WED_RecursiveDelete(set<WED_Thing *>& who);
 
 #endif /* WED_GroupCommands_H */

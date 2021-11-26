@@ -50,15 +50,16 @@ void WED_Thing::CopyFrom(const WED_Thing * rhs)
 		WED_Thing * new_child = dynamic_cast<WED_Thing *>(child->Clone());
 		new_child->SetParent(this, n);
 	}
-	
+
 	viewer_id.clear();		// I am a clone.  No one is REALLY watching me.
-	
+
 	source_id = rhs->source_id;
 	nn = CountSources();						// But I am YET ANOTHER observer of my sources...
 	for(int n = 0; n < nn; ++n)						// go register with my parent now!
 	{
 		WED_Thing * the_src = GetNthSource(n);
-		the_src->AddViewer(GetID());
+		if(the_src->viewer_id.count(GetID())==0)
+			the_src->AddViewer(GetID());
 	}
 
 	int pc = rhs->CountProperties();
@@ -131,11 +132,11 @@ void 			WED_Thing::WriteTo(IOWriter * writer)
 void			WED_Thing::ToXML(WED_XMLElement * parent)
 {
 	WED_XMLElement * obj = parent->add_sub_element("object");
-	
+
 	obj->add_attr_c_str("class",this->GetClass());
 	obj->add_attr_int("id",GetID());
 	obj->add_attr_int("parent_id",parent_id);
-	
+
 	if(source_id.size())
 	{
 		WED_XMLElement * src = obj->add_sub_element("sources");
@@ -189,14 +190,14 @@ void		WED_Thing::StartElement(
 		if(!id)
 			reader->FailWithError("no id");
 		viewer_id.insert(atoi(id));
-	} 
+	}
 	else if(strcmp(name,"source")==0)
 	{
 		const char * id = get_att("id",atts);
 		if(!id)
 			reader->FailWithError("no id");
 		source_id.push_back(atoi(id));
-	} 
+	}
 	else if(strcmp(name,"child") == 0)
 	{
 		const char * id = get_att("id",atts);
@@ -334,7 +335,7 @@ void	WED_Thing::ReplaceSource(WED_Thing * old, WED_Thing * rep)
 	int new_id = rep->GetID();
 	DebugAssert(old->viewer_id.count(GetID()) > 0);
 	old->RemoveViewer(GetID());
-	
+
 	StateChanged();
 	int subs =0;
 	for(vector<int>::iterator s = source_id.begin(); s != source_id.end(); ++s)
@@ -381,7 +382,7 @@ void		WED_Thing::AddViewer(int id)
 	DebugAssert(viewer_id.count(id) == 0);
 	viewer_id.insert(id);
 }
-	
+
 void		WED_Thing::RemoveViewer(int id)
 {
 	StateChanged(wed_Change_Topology);
@@ -447,21 +448,21 @@ void	WED_Thing::Validate(void)
 		vector<int>::iterator me = find(p->child_id.begin(),p->child_id.end(), GetID());
 		DebugAssert(me != p->child_id.end());
 	}
-	
+
 	for(vector<int>::iterator c = child_id.begin(); c != child_id.end(); ++c)
 	{
 		WED_Thing * cc = SAFE_CAST(WED_Thing,FetchPeer(*c));
 		DebugAssert(cc);
 		DebugAssert(cc->parent_id == GetID());
 	}
-	
+
 	for(vector<int>::iterator s = source_id.begin(); s != source_id.end(); ++s)
 	{
 		WED_Thing * ss = SAFE_CAST(WED_Thing,FetchPeer(*s));
 		DebugAssert(ss);
 		DebugAssert(ss->viewer_id.count(GetID()) > 0);
 	}
-	
+
 	for(set<int>::iterator v = viewer_id.begin(); v != viewer_id.end(); ++v)
 	{
 		WED_Thing * vv = SAFE_CAST(WED_Thing,FetchPeer(*v));

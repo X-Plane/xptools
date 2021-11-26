@@ -29,6 +29,7 @@
 #include "WED_MapZoomerNew.h"
 #include "WED_Url.h"
 #include "WED_Globals.h"
+#include "WED_DrawUtils.h"
 #include "MathUtils.h"
 #include "BitmapUtils.h"
 #include "PlatformUtils.h"
@@ -53,7 +54,7 @@
 
 #define SHOW_DEBUG_INFO 0
 
-#define MIN_ZOOM  13        // stop displaying slippys at all below this level
+#define MIN_ZOOM  11        // stop displaying slippys at all below this level
 #define MAX_ZOOM  17        // for custom mode maps (predefined maps have their own limits below)
 
 #define TILE_FACTOR 0.8     // save tiles by zooming in a bit later than at 1:1 pixel ratio.
@@ -81,7 +82,7 @@ static string ESRI_attributions(float lon, float lat, int z)
 {
 	// get_JSON_string (once per session)
 	// get all relevant data (zl 17-13) Vector<attribution,Vector<{zl_min, zl_max, score, BBox2}> >
-   
+
 	string attrib;
 	int score = 0;
 	for(auto& s : slippyAttrib)
@@ -214,14 +215,13 @@ void	WED_SlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 		{
 			++want;
 			double tbounds[4];
-			double pbounds[4];
+			Point2 pbounds[4];
 			get_ll_box_for_tile(z, x, y, tbounds);
 
-			pbounds[0] = zoomer->LonToXPixel(tbounds[0]);
-			pbounds[2] = zoomer->LonToXPixel(tbounds[2]);
-
-			pbounds[1] = zoomer->LatToYPixel(tbounds[1]);
-			pbounds[3] = zoomer->LatToYPixel(tbounds[3]);
+			pbounds[0] = zoomer->LLToPixel(Point2(tbounds[0], tbounds[3]));
+			pbounds[1] = zoomer->LLToPixel(Point2(tbounds[0], tbounds[1]));
+			pbounds[2] = zoomer->LLToPixel(Point2(tbounds[2], tbounds[3]));
+			pbounds[3] = zoomer->LLToPixel(Point2(tbounds[2], tbounds[1]));
 
 #if DEV && SHOW_DEBUG_INFO
 			//Draw border around tile
@@ -233,10 +233,7 @@ void	WED_SlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 			glGetFloatv(GL_LINE_WIDTH, &prev_line_width);
 			glLineWidth(3.0f);
 			glBegin(GL_LINE_LOOP);
-			glVertex2f(pbounds[0], pbounds[1]);
-			glVertex2f(pbounds[0], pbounds[3]);
-			glVertex2f(pbounds[2], pbounds[3]);
-			glVertex2f(pbounds[2], pbounds[1]);
+			glVertex2p(pbounds, 4);
 			glEnd();
 			glLineWidth(prev_line_width);
 			{
@@ -274,23 +271,17 @@ void	WED_SlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 					g->SetState(0, 1, 0, 0, 0, 0, 0);
 					glColor4f(1,1,1,1);
 					g->BindTex(id, 0);
-					glBegin(GL_QUADS);
-						glTexCoord2f(1,1);
-						glVertex2f(pbounds[2],pbounds[1]);
-
-						glTexCoord2f(1,0);
-						glVertex2f(pbounds[2],pbounds[3]);
-						glTexCoord2f(0,0);
-						glVertex2f(pbounds[0],pbounds[3]);
-
-						glTexCoord2f(0,1);
-						glVertex2f(pbounds[0],pbounds[1]);
+					glBegin(GL_TRIANGLE_STRIP);
+						glTexCoord2f(0, 0); glVertex2(pbounds[0]);
+						glTexCoord2f(0, 1); glVertex2(pbounds[1]);
+						glTexCoord2f(1, 0); glVertex2(pbounds[2]);
+						glTexCoord2f(1, 1); glVertex2(pbounds[3]);
 					glEnd();
 
 #if DEV && SHOW_DEBUG_INFO
 						stringstream ss;
 						ss << potential_path.substr(28) << " Id: " << id;
-						GUI_FontDraw(g, font_UI_Basic, black, pbounds[0] + 5, pbounds[1] - 15, ss.str().c_str()+20);
+						GUI_FontDraw(g, font_UI_Basic, black, pbounds[1].x() + 5, pbounds[1].y() - 15, ss.str().c_str()+20);
 #endif
 				}
 				else
@@ -433,7 +424,7 @@ void	WED_SlippyMap::SetMode(int mode)
 		url_printf_fmt = tile_url[mode-1];
 	else
 		url_printf_fmt = gCustomSlippyMap;
-		
+
 	y_coordinate_math = yNone;
 	if     (replace_token(url_printf_fmt, "${y}",  "%2$d")) 	y_coordinate_math = yNormal;
 	else if(replace_token(url_printf_fmt, "${!y}", "%2$d")) 	y_coordinate_math = yYahoo;

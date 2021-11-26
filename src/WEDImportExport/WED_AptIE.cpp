@@ -52,6 +52,7 @@
 #include "WED_Validate.h"
 #include "WED_TruckParkingLocation.h"
 #include "WED_TruckDestination.h"
+#include "WED_FacadePlacement.h"
 
 #include "AptIO.h"
 
@@ -97,6 +98,9 @@ static int get_apt_export_version()
 		break;
 	case wet_xplane_1130:
 		version = 1130;
+		break;
+	case wet_xplane_1200:
+		version = 1200;
 		break;
 	default:
 		DebugAssert(!"You forgot to add a case!");
@@ -254,7 +258,7 @@ static void MakeEdgeRouting(const vector<WED_TaxiRoute *>& edges, AptNetwork_t& 
 	}
 }
 
-void	AptExportRecursive(WED_Thing * what, AptVector& apts, vector<WED_TaxiRoute *>& edges)
+void	AptExportRecursive(WED_Thing * what, AptVector& apts, vector<WED_TaxiRoute *>& edges, bool Dockingjetways)
 {
 	int holes, h;
 
@@ -415,10 +419,19 @@ void	AptExportRecursive(WED_Thing * what, AptVector& apts, vector<WED_TaxiRoute 
 		apts.back().truck_destinations.push_back(AptTruckDestination_t());
 		dst->Export(apts.back().truck_destinations.back());
 	}
+	else if (cls == WED_FacadePlacement::sClass && Dockingjetways)
+	{
+		auto dst = static_cast<WED_FacadePlacement*>(what);
+		if (dst->HasDockingCabin())
+		{
+			apts.back().jetways.push_back(Jetway_t());
+			dst->ExportJetway(apts.back().jetways.back());
+		}
+	}
 
 	int cc = what->CountChildren();
 	for (int i = 0; i < cc; ++i)
-		AptExportRecursive(what->GetNthChild(i), apts, edges);
+		AptExportRecursive(what->GetNthChild(i), apts, edges, Dockingjetways);
 
 	if (cls == WED_Airport::sClass)
 	{
@@ -447,13 +460,11 @@ void	AptExportRecursive(WED_Thing * what, AptVector& apts, vector<WED_TaxiRoute 
 	}
 }
 
-void	WED_AptExport(
-				WED_Thing *		container,
-				const char *	file_path)
+void	WED_AptExport(WED_Thing * container, const char * file_path, bool DockingJetways)
 {
 	AptVector	apts;
 	vector<WED_TaxiRoute *> edges;
-	AptExportRecursive(container, apts, edges);
+	AptExportRecursive(container, apts, edges, DockingJetways);
 	WriteAptFile(file_path,apts, get_apt_export_version());
 }
 
@@ -464,7 +475,7 @@ void	WED_AptExport(
 {
 	AptVector	apts;
 	vector<WED_TaxiRoute *> edges;
-	AptExportRecursive(container, apts, edges);
+	AptExportRecursive(container, apts, edges, true);
 	WriteAptFileProcs(print_func, ref, apts, get_apt_export_version());
 }
 
@@ -600,8 +611,8 @@ static hierarchy_order_set build_order_set()
 	//"/" is like a dir seperator
 	h_set.insert("/ATC");
 	h_set.insert("/Ground Vehicles");
-	h_set.insert("/Ground Vehicles/Dynamic");
-	h_set.insert("/Ground Vehicles/Static");
+//	h_set.insert("/Ground Vehicles/Dynamic");
+//	h_set.insert("/Ground Vehicles/Static");
 	h_set.insert("/Lights");
 	h_set.insert("/Markings");
 	h_set.insert("/Ramp Starts");
@@ -612,16 +623,7 @@ static hierarchy_order_set build_order_set()
 	h_set.insert("/Taxiways");
 	h_set.insert("/Tower, Beacon and Boundaries");
 	h_set.insert("/Windsocks");
-	h_set.insert("/Exclusion Zones");
-	h_set.insert("/Objects");
-	h_set.insert("/Objects/Buildings");
-	h_set.insert("/Objects/Vehicles");
-	h_set.insert("/Objects/Trees");
-	h_set.insert("/Objects/Other");
 	h_set.insert("/Facades");
-	h_set.insert("/Forests");
-	h_set.insert("/Lines");
-	h_set.insert("/Draped Polygons");
 	return h_set;
 }
 
@@ -717,6 +719,7 @@ void	WED_AptImport(
 		create_buckets(new_apt, "ATC",                          buckets);
 		create_buckets(new_apt, "Ground Vehicles",              buckets);
 		create_buckets(new_apt, "Lights",                       buckets);
+		create_buckets(new_apt, "Jetways",                      buckets);
 		create_buckets(new_apt, "Markings",                     buckets);
 		create_buckets(new_apt, "Ramp Starts",                  buckets);
 		create_buckets(new_apt, "Runways",                      buckets);
@@ -887,7 +890,14 @@ void	WED_AptImport(
 				new_tim->Import(*tim, LazyPrintf, &log);
 			}
 		}
-		
+
+		for (auto dst : apt->jetways)
+		{
+			auto new_fac = WED_FacadePlacement::CreateTyped(archive);
+			new_fac->ImportJetway(dst, LazyPrintf, &log);
+			add_to_bucket(new_fac, new_apt, "Jetways", buckets);
+		}
+
 		if(apt_ok)
 		{
 			if ( (apt->taxi_route.edges.size() > 0 || apt->taxi_route.service_roads.size() > 0) 

@@ -37,9 +37,11 @@
 #if APL
 #define __DEBUGGING__
 #include <Carbon/Carbon.h>		// we use this for vkeys/low mem accessors to keyboard
+#include <CoreGraphics/CoreGraphics.h>
 #endif
 
 #if LIN
+#include <FL/Fl.H>
 #include <FL/Fl_Tooltip.H>
 #endif
 
@@ -63,7 +65,6 @@ inline int OGL2Client_Y(int y, HWND w) { RECT c; GetClientRect(w,&c); return c.b
 #if LIN
 #define mWindow 0
 #define DEBUG_DND 0
-#define DEBUG_MENUS 0
 
 inline int GUI_Window::Client2OGL_X(int x, void* w) { return x; }
 inline int GUI_Window::Client2OGL_Y(int y, void* w) { return (this->h() - y ); }
@@ -77,29 +78,21 @@ inline int GUI_Window::OGL2Client_Y(int y, void* w) { return (this->h() - y ); }
 
 int GUI_Window::handle(int e )
 {
-	/*Copy&Paste Shortcut events */
-	if(e == FL_SHORTCUT)
+	/* handles shortcut events when the does not have a menubar */
+	if(e == FL_SHORTCUT && !mMenuBar && gApplication )
 	{
-		//This is to get shortcut functionality for Copy/Paste even windows have no menu bar.
-		//TODO:mroe hardcoded ; we should  probably revamp this to enable customisation from the app .
-		if(!mMenuBar)
+		const Fl_Menu_Item * menu = (const Fl_Menu_Item *)gApplication->GetMenu();
+		if(menu)
 		{
-			unsigned int cmd = 0;
-
-			if      (Fl::test_shortcut(FL_CTRL+'x')) cmd = gui_Cut  ;
-			else if (Fl::test_shortcut(FL_CTRL+'c')) cmd = gui_Copy ;
-			else if (Fl::test_shortcut(FL_CTRL+'v')) cmd = gui_Paste;
-
-			if(cmd)
+			GUI_Application::update_menus(menu);
+			const Fl_Menu_Item * item = menu->test_shortcut();
+			if(item)
 			{
-				int ioCheck = 0;
-				string ioName;
-				if(this->DispatchCanHandleCommand(cmd,ioName,ioCheck))
+				xmenu_cmd * data = (xmenu_cmd *) item->user_data();
+				if(data)
 				{
-					#if DEV && DEBUG_MENUS
-					printf("GUI_Window::handle FL_SHORTCUT cmd:%d\n",cmd);
-					#endif // DEV && DEBUG_MENUS
-					return this->DispatchHandleCommand(cmd);
+					unsigned int cmd = data->cmd;
+					if(cmd) return this->DispatchHandleCommand(cmd);
 				}
 			}
 		}
@@ -214,7 +207,6 @@ int GUI_Window::handle(int e )
 			}
 		}
 		return 1;
-
 	}
 
 	return XWin::handle(e);
@@ -604,26 +596,25 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBound
 		SendMessage(mToolTip, TTM_ADDTOOL, 0, (LPARAM) &ti);
 	#endif
 	#if LIN
-		this->labelsize((int)GUI_GetFontSize(0));
-		Fl_Tooltip::size((int)GUI_GetFontSize(1));
+		this->labelsize((int)GUI_GetFontSize(font_UI_Basic));
+		Fl_Tooltip::size((int)GUI_GetFontSize(font_UI_Small));
 		mTipBounds[0] = mTipBounds[1] = mTipBounds[2] = mTipBounds[3] = 0 ;
 		mTipIsActive=false;
 
 		if( !(inAttributes & xwin_style_popup) && !(inAttributes & xwin_style_modal))
 		{
 			GetMenuBar(); // create one
-			if(mMenuBar)
+			if(mMenuBar && gApplication)
 			{
 				if(sWindows.size() > 0)
 				{
-					//mMenuBar->menu(gApplication->mMenu);
-					mMenuBar->copy((*sWindows.begin())->GetMenuBar());
+					XWin::ClearMenus();
+					mMenuBar->copy((const Fl_Menu_Item *) gApplication->GetMenuBar());
 				}
 
-				if(gApplication) mMenuBar->callback(gApplication->update_menus_cb);
+				mMenuBar->callback(GUI_Application::update_menus_cb);
 			}
 		}
-
 	#endif
 	mBounds[0] = 0;
 	mBounds[1] = 0;
@@ -672,6 +663,33 @@ GUI_Window::~GUI_Window()
 		mDND->Release();
 	#endif
 	sWindows.erase(this);
+}
+
+void			GUI_Window::SetBoundsSafe(int x1, int y1, int x2, int y2)
+{
+	// This is a safety-hack.  The user's prefs may specify the window at a location that
+	// is off screen, either because the prefs are borked or because the doc came from
+	// a machine with a much larger desktop. So...
+	//
+	// If our current location does not allow for at least one 100x100 pixel corner to be
+	// inside the current Desktop (which is the bounding box around ALL monitors) - then
+	// ignore the values passed in and keep the window at its current position.
+
+	int safe_rect[4] = { x1, y1, x2, y2 };
+	XWin::GetDesktop(safe_rect);
+	LOG_MSG("I/Win desktop rect xy1 %d %d xy2 %d %d\n", safe_rect[0], safe_rect[1], safe_rect[2], safe_rect[3]);
+	LOG_FLUSH();
+
+	if (x1 < safe_rect[2] - 100 && y1 < safe_rect[3] - 100 &&
+		x2 >= safe_rect[0] + 100 && y2 >= safe_rect[1] + 100)
+	{
+		SetBounds(x1, y1, x2, y2);
+	}
+	else
+	{
+		LOG_MSG("W/Win SafeBounds triggerd, requested win pos NOT applied\n");
+		LOG_FLUSH();
+	}
 }
 
 void			GUI_Window::ClickDown(int inX, int inY, int inButton)
@@ -1135,8 +1153,12 @@ int			GUI_Window::KeyPressed(uint32_t inKey, long inMsg, long inParam1, long inP
 		case FL_Page_Down:		virtualCode = GUI_VK_NEXT;	break;
 		case FL_End:			virtualCode = GUI_VK_END;	break;
 		case FL_Home:			virtualCode = GUI_VK_HOME;	break;
-		case FL_Left :			virtualCode = GUI_VK_LEFT;	break;
+		case FL_Left:			virtualCode = GUI_VK_LEFT;	break;
+		case FL_Up:			virtualCode = GUI_VK_UP;	break;
 		case FL_Right:			virtualCode = GUI_VK_RIGHT;	break;
+		case FL_Down:			virtualCode = GUI_VK_DOWN;	break;
+		case ',':			virtualCode = GUI_VK_COMMA;	break;
+		case '.':			virtualCode = GUI_VK_PERIOD;	break;
 		default: virtualCode = 0;
 	  }
 	}
@@ -1188,6 +1210,61 @@ void		GUI_Window::GetMouseLocNow(int * out_x, int * out_y)
 	XWinGL::GetMouseLoc(&x, &y);
 	if (out_x) *out_x = Client2OGL_X(x, mWindow);
 	if (out_y) *out_y = Client2OGL_Y(y, mWindow);;
+}
+
+static int PlatformVkFromPortableVk(int virtualKey)
+{
+#if LIN
+	if (0x2F < virtualKey && virtualKey < 0x5b)
+		return virtualKey;
+	else
+	{
+		switch(virtualKey)
+	  	{
+			case GUI_VK_RETURN:	return FL_Enter;
+			case GUI_VK_ESCAPE:	return FL_Escape;
+			case GUI_VK_TAB:	return FL_Tab;
+			case GUI_VK_PRIOR:	return FL_Page_Up;
+			case GUI_VK_NEXT:	return FL_Page_Down;
+			case GUI_VK_END:	return FL_End;
+			case GUI_VK_HOME:	return FL_Home;
+			case GUI_VK_LEFT:	return FL_Left;
+			case GUI_VK_UP:		return FL_Up;
+			case GUI_VK_RIGHT:	return FL_Right;
+			case GUI_VK_DOWN:	return FL_Down;
+			case GUI_VK_COMMA:	return ',';
+			case GUI_VK_PERIOD:	return '.';
+			default:		return 0;
+		}
+	}
+#else
+	static std::unordered_map<int, int> platformFromPortable = []()
+	{
+		std::unordered_map<int, int> rval;
+		for (int i = 0; i < 256; ++i)
+			rval[gui_Key_Map[i]] = i;
+		return rval;
+	}();
+	auto iter = platformFromPortable.find(virtualKey);
+	if (iter == platformFromPortable.end())
+		return 0;
+	else
+		return iter->second;
+#endif
+}
+
+bool		GUI_Window::IsKeyPressedNow(int virtualKey)
+{
+	int platformVk = PlatformVkFromPortableVk(virtualKey);
+	if (platformVk == 0)
+		return false;
+#if APL
+	return CGEventSourceKeyState(kCGEventSourceStateCombinedSessionState, platformVk);
+#elif IBM
+	return (::GetKeyState(platformVk) & ~1) != 0;
+#else
+	return Fl::get_key(platformVk) != 0;
+#endif
 }
 
 void		GUI_Window::PopupMenu(GUI_Menu menu, int x, int y, int button)
@@ -1326,6 +1403,24 @@ GUI_Window *  GUI_Window::AnyXWND(void)
 {
 	if (sWindows.empty()) return NULL;
 	return *sWindows.begin();
+}
+
+#include "BitmapUtils.h"
+#include "GUI_Resources.h"
+
+static void SetIcon_f(GUI_Window * window,const char* path , bool default_icon)
+{
+	ImageInfo info;
+	if(GUI_GetImageResource(path,&info) == -1) return;
+	FlipImageY(info);
+	Fl_RGB_Image icon_image(info.data, info.width, info.height,info.channels,info.pad);
+	default_icon ? window->default_icon(&icon_image) : window->icon(&icon_image);
+	DestroyBitmap(&info);
+}
+
+void  GUI_Window::SetIcon(const char* path , bool default_icon)
+{
+	SetIcon_f(this,path,default_icon);
 }
 #endif
 

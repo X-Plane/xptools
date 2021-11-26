@@ -36,6 +36,7 @@ public:
 
 		void		SetStyle(int style);
 		void		SetHeight(int height);
+		int			GetHeight(void) const;
 
 		void		Import(const AptSign_t& x, void (* print_func)(void *, const char *, ...), void * ref);
 		void		Export(		 AptSign_t& x) const;

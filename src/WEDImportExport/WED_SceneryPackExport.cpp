@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2014, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -36,17 +36,10 @@
 #include "WED_DSFImport.h"
 #include "WED_Document.h"
 #include "WED_GatewayExport.h"
+#include "WED_Group.h"
 #include "WED_GroupCommands.h"
 #include "WED_UIDefs.h"
 #include "WED_Validate.h"
-
-#include "WED_Airport.h"
-#include "WED_EnumSystem.h"
-#include "WED_Group.h"
-#include "WED_RampPosition.h"
-#include "WED_TruckDestination.h"
-#include "WED_TruckParkingLocation.h"
-#include "WED_ObjPlacement.h"
 
 #include <iostream>
 
@@ -72,77 +65,109 @@ int		WED_CanExportPack(IResolver * resolver)
 }
 
 #if TYLER_MODE
+
+#include "WED_Airport.h"
+#include "WED_EnumSystem.h"
+#include "WED_RampPosition.h"
+#include "WED_Runway.h"
+#include "WED_TruckDestination.h"
+#include "WED_TruckParkingLocation.h"
+#include "WED_ObjPlacement.h"
+#include "WED_PolygonPlacement.h"
+#include "WED_MetaDataKeys.h"
+#include "WED_Menus.h"
+#include <GISUtils.h>
+#include <chrono>
+
 static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 {
+	LOG_MSG("## Tyler mode ## Starting upgrade heuristics\n");
 	WED_Thing * wrl = WED_GetWorld(resolver);
 	vector<WED_Airport*> apts;
-	CollectRecursiveNoNesting(wrl, back_inserter(apts),WED_Airport::sClass);
-
-	WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
+	CollectRecursiveNoNesting(wrl, back_inserter(apts),WED_Airport::sClass);    // ATTENTION: all code here assumes 'normal' hierachies and no hidden items,
+																				//	i.e. apts 1 level down, groups next, then items in them at 2 levels down.
+	WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);                      // Speeds up recursive collecting, avoids recursing too deep.
 	ISelection * sel = WED_GetSelect(resolver);
+	
+//	const bdy[] = {-130,49, -40,49, -80,24, -97,25, -107,31, -111,31, -115,33, -140,32};
+//	Polygon2 FAA_bounds;
+//	for (int i = 0; i < 16; i += 2)
+//		FAA_bounds.push_back(Point2(bdy[i], bdy[i + 1]);
 
-	for (vector<WED_Airport*>::iterator apt_itr = apts.begin(); apt_itr != apts.end(); ++apt_itr)
+	int deleted_illicit_icao = 0;
+
+	auto t0 = chrono::high_resolution_clock::now();
+	
+	for (auto apt_itr = apts.begin(); apt_itr != apts.end(); ++apt_itr)
 	{
-		//--Ramp Positions-----------------------------------------------------------
+		string ICAO_code;
+
+		//-- Erase implausible ICAO and now undesired closed tags (the [X] in the name is now official) ----
+		if ((*apt_itr)->ContainsMetaDataKey(wed_AddMetaDataICAO))
+		{
+			ICAO_code = (*apt_itr)->GetMetaDataValue(wed_AddMetaDataICAO);
+
+			bool illicit = ICAO_code.size() != 4 || toupper(ICAO_code[0]) < 'A' || toupper(ICAO_code[0]) >= 'Z';
+			for (int i = 1; i < 4; i++)
+				illicit |= toupper(ICAO_code[i]) < 'A' || toupper(ICAO_code[i]) > 'Z';
+			if(illicit)
+			{
+				wrl->StartCommand("Delete bad icao");
+				(*apt_itr)->EditMetaDataKey(META_KeyName(wed_AddMetaDataICAO),"");
+				wrl->CommitCommand();
+				deleted_illicit_icao++;
+			}
+		}
+
+		(*apt_itr)->GetName(ICAO_code);
+
+		//-- upgrade Ramp Positions with XP10.45 data to get parked A/C -------------
 		vector<WED_RampPosition*> ramp_positions;
-		CollectRecursive(*apt_itr, back_inserter(ramp_positions),WED_RampPosition::sClass);
+		CollectRecursive(*apt_itr, back_inserter(ramp_positions), IgnoreVisiblity, TakeAlways, WED_RampPosition::sClass, 2);
 
 		int non_empty_airlines_strs = 0;
 		int non_op_none_ramp_starts = 0;
 		for (vector<WED_RampPosition*>::iterator ramp_itr = ramp_positions.begin(); ramp_itr != ramp_positions.end(); ++ramp_itr)
 		{
 			if ((*ramp_itr)->GetAirlines() != "")
-			{
 				++non_empty_airlines_strs;
-			}
 
 			if ((*ramp_itr)->GetRampOperationType() != ramp_operation_None)
-			{
 				++non_op_none_ramp_starts;
-			}
 		}
 
 		if (non_empty_airlines_strs == 0 || non_op_none_ramp_starts == 0)
 		{
 			wrl->StartCommand("Upgrade Ramp Positions");
-			std::cout << "Upgrading Ramp Positions" << endl;
-			int did_work = wed_upgrade_one_airport(*apt_itr, rmgr, sel);
-			if (did_work == 0)
-			{
-				wrl->AbortCommand();
-			}
-			else
-			{
+			if (wed_upgrade_one_airport(*apt_itr, rmgr, sel))
 				wrl->CommitCommand();
-			}
+			else
+				wrl->AbortCommand();
 		}
-		//---------------------------------------------------------------------------
-
-		//--Agp and obj upgrades-----------------------------------------------------
+#if 0
+		//-- Agp and obj upgrades to create more ground traffic --------------------------------
 		vector<WED_TruckParkingLocation*> parking_locations;
-		CollectRecursive(*apt_itr, back_inserter(parking_locations),WED_TruckParkingLocation::sClass);
+		CollectRecursive(*apt_itr, back_inserter(parking_locations));
 
 		vector<WED_TruckDestination*>     truck_destinations;
-		CollectRecursive(*apt_itr, back_inserter(truck_destinations),WED_TruckDestination::sClass);
+		CollectRecursive(*apt_itr, back_inserter(truck_destinations));
 
 		bool found_truck_evidence = false;
 		found_truck_evidence |= !parking_locations.empty();
 		found_truck_evidence |= !truck_destinations.empty();
-		
+
 		if (found_truck_evidence == false)
 		{
 			vector<WED_ObjPlacement*> all_objs;
 			vector<WED_AgpPlacement*> agp_placements;
-			CollectRecursive(*apt_itr, back_inserter(all_objs),WED_ObjPlacement::sClass);
+			CollectRecursive(*apt_itr, back_inserter(all_objs));
 
 			for (vector<WED_AgpPlacement*>::iterator obj_itr = all_objs.begin(); obj_itr != all_objs.end(); ++obj_itr)
 			{
 				string agp_resource;
 				(*obj_itr)->GetResource(agp_resource);
 				if (FILE_get_file_extension(agp_resource) == ".agp")
-				{
 					agp_placements.push_back(*obj_itr);
-				}
 			}
 
 			vector<WED_ObjPlacement*> out_added_objs;
@@ -151,22 +176,97 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			if (num_replaced == 0)
 				wrl->AbortCommand();
 			else
+			{
 				wrl->CommitCommand();
-
-			//Easy out
-			if (num_replaced > 0 || out_added_objs.size() > 0)
-			{
-				WED_DoReplaceVehicleObj(resolver,*apt_itr);
+				LOG_MSG("Broke apart %d agp at %s\n", num_replaced, ICAO_code.c_str());
 			}
-			else if (WED_CanReplaceVehicleObj(*apt_itr))
-			{
+
+			if (num_replaced > 0 || out_added_objs.size() > 0 || WED_CanReplaceVehicleObj(*apt_itr))
 				WED_DoReplaceVehicleObj(resolver,*apt_itr);
+		}
+#endif
+		//-- Break up jetway AGP's, convert jetway objects into facades for XP12 moving jetways -------------
+		wrl->StartCommand("Upgrade Jetways");
+		if (int count = WED_DoConvertToJW(*apt_itr))
+		{
+			wrl->CommitCommand();
+			LOG_MSG("Upgraded %d JW at %s\n", count, ICAO_code.c_str());
+		}
+		else
+			wrl->AbortCommand();
+
+		//-- Remove leading zero's from runways within the FAA's jurisdiction, except some mil bases ------
+		Bbox2 apt_box;
+		(*apt_itr)->GetBounds(gis_Geo, apt_box);
+
+		if ((*apt_itr)->GetAirportType() == 1)
+		{
+			string ICAO_region;
+			if ((*apt_itr)->ContainsMetaDataKey(wed_AddMetaDataRegionCode))
+				ICAO_region = (*apt_itr)->GetMetaDataValue(wed_AddMetaDataRegionCode);
+
+			//	if (FAA_bounds.inside(apt_box.p1()))
+			if ((apt_box.p1.x() <  -67.0 && apt_box.p1.y() > 24.5 && apt_box.p1.y() < 49.0) ||
+				(apt_box.p1.x() < -131.4 && apt_box.p1.y() > 16.0))
+			if(ICAO_region != "CY" && ICAO_region != "MM")
+			if(ICAO_code != "KEDW" && ICAO_code != "9L2" && ICAO_code != "KFFO" && ICAO_code != "KSSC" && ICAO_code != "KCHS")
+			{
+				vector<WED_Runway*> rwys;
+				CollectRecursive(*apt_itr, back_inserter(rwys));
+				for (auto r : rwys)
+					if(r->GetSurface() < surf_Grass)
+					{
+						string r_nam;
+						r->GetName(r_nam);
+						if (r_nam[0] == '0')
+						{
+							wrl->StartCommand("Remove runway zeros");
+							r->SetName(r_nam.substr(1));
+							wrl->CommitCommand();
+						}
+					}
 			}
 		}
 
+		// nuke all large terrain polygons at mid-lattitudes
+		if(apt_box.p1.y() < 73.0 && apt_box.p1.y() > -60.0)
+		{
+			vector<WED_PolygonPlacement*> terrain_polys;
+			CollectRecursive(*apt_itr, back_inserter(terrain_polys), IgnoreVisiblity, [](WED_Thing* poly)->bool {
+				string res;
+				static_cast<WED_PolygonPlacement*>(poly)->GetResource(res);
+				return res.compare(0, strlen("lib/g10/terrain10/"), "lib/g10/terrain10/") == 0;
+				},
+				WED_PolygonPlacement::sClass, 2);
+			if (terrain_polys.size())
+			{
+				set<WED_Thing*> things;
+				for (auto p : terrain_polys)
+				{
+					Bbox2 bounds;
+					p->GetBounds(gis_Geo, bounds);
+					if(LonLatDistMeters(bounds.bottom_left(), bounds.top_right()) > 20.0)      // passes at least 10m lettering drawn with snow texture
+						CollectRecursive(p, inserter(things, things.end()), IgnoreVisiblity, TakeAlways);
+				}
+				wrl->StartCommand("Delete Terrain Polys");
+				WED_RecursiveDelete(things);
+				wrl->CommitCommand();
+				LOG_MSG("Deleted %d terrain polys at %s\n", terrain_polys.size(), ICAO_code.c_str());
+			}
+		}
+/*		if(distance(apts.begin(), apt_itr) == 15)
+		{
+			auto t1 = chrono::high_resolution_clock::now();
+			chrono::duration<double> elapsed = t1-t0;
+			printf("0 to 1 time: %lf\n", elapsed.count());
+			break;
+		}
+*/
 		double percent_done = (double)distance(apts.begin(), apt_itr) / apts.size() * 100;
-		printf("%0.0f%% through heuristic\n", percent_done);
+		printf("%0.0f%% through heuristic at %s\n", percent_done, ICAO_code.c_str());
 	}
+	LOG_MSG("Deleted %d illicit ICAO meta tags\n", deleted_illicit_icao);
+	LOG_MSG("## Tyler mode ## Done with upgrade heuristics\n");
 }
 #endif
 
@@ -210,46 +310,6 @@ void	WED_DoExportPack(WED_Document * resolver, WED_MapPane * pane)
 		sel->Clear();
 		for(set<WED_Thing*>::iterator p = problem_children.begin(); p != problem_children.end(); ++p)
 			sel->Insert(*p);
-		(*problem_children.begin())->CommitOperation();		
+		(*problem_children.begin())->CommitOperation();
 	}
 }
-
-int		WED_CanImportDSF(IResolver * resolver)
-{
-	return 1;
-}
-
-void	WED_DoImportDSF(IResolver * resolver)
-{
-	WED_Thing * wrl = WED_GetWorld(resolver);
-
-	char * path = GetMultiFilePathFromUser("Import DSF file...", "Import", FILE_DIALOG_IMPORT_DSF);
-	if(path)
-	{
-		char * free_me = path;
-
-		wrl->StartOperation("Import DSF");
-
-		while(*path)
-		{
-			WED_Group * g = WED_Group::CreateTyped(wrl->GetArchive());
-			g->SetName(path);
-			g->SetParent(wrl,wrl->CountChildren());
-			int result = DSF_Import(path,g);
-			if(result != dsf_ErrOK)
-			{
-				string msg = string("The file '") + path + string("' could not be imported as a DSF:\n")
-							+ dsfErrorMessages[result];
-				DoUserAlert(msg.c_str());
-				wrl->AbortOperation();
-				free(free_me);
-				return;
-			}
-
-			path = path + strlen(path) + 1;
-		}
-		wrl->CommitOperation();
-		free(free_me);
-	}
-}
-

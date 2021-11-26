@@ -25,7 +25,7 @@
 #define GUI_APPLICATION_H
 
 #if LIN
-#define POPUP_ARRAY_SIZE 20
+#define POPUP_ARRAY_SIZE 80
 #include <FL/Fl_Menu.H>
 #include <FL/Fl_Menu_Bar.H>
 #endif
@@ -87,8 +87,11 @@ public:
 #endif
 
 #if LIN
-    const Fl_Menu_Item *  mMenu;
-    void static update_menus_cb(Fl_Widget* w,void * data);
+	const Fl_Menu_Item * GetMenu(){return mMenu;}
+
+	static void update_menus(const Fl_Menu_Item * menu);
+	static void update_menus_cb(Fl_Widget* w,void * data);
+	static int  event_dispatch_cb(int e, Fl_Window *w);
 #endif
 
     const CmdLine args;
@@ -99,7 +102,8 @@ private:
     set<GUI_Menu>           mMenus;
 
 #if LIN
-    const Fl_Menu_Item *    mPopup;
+    const Fl_Menu_Item *	mMenu;
+    const Fl_Menu_Item *	mPopup;
 #endif
 };
 

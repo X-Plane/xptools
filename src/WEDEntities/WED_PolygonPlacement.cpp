@@ -22,6 +22,9 @@
  */
 
 #include "WED_PolygonPlacement.h"
+#include "WED_EnumSystem.h"
+#include "WED_ToolUtils.h"
+#include "WED_LibraryMgr.h"
 
 DEFINE_PERSISTENT(WED_PolygonPlacement)
 TRIVIAL_COPY(WED_PolygonPlacement,WED_GISPolygon)
@@ -56,3 +59,92 @@ void		WED_PolygonPlacement::SetResource(const string& r)
 	resource = r;
 }
 
+// --------- senak in extra property that allows to detect and change to known taxi surface styles ------------
+
+int			WED_PolygonPlacement::CountProperties(void) const
+{
+	return WED_GISPolygon::CountProperties() + 1;
+}
+
+int			WED_PolygonPlacement::FindProperty(const char * in_prop) const
+{
+	if(string(in_prop) ==  "= Taxi Surface")
+		return CountProperties();
+	else
+		return WED_GISPolygon::FindProperty(in_prop);
+}
+
+void		WED_PolygonPlacement::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
+{
+	if (n >= WED_GISPolygon::CountProperties())
+	{
+		info.can_delete = 0;
+		info.can_edit  = 1;
+		info.prop_kind = prop_Enum;
+		info.prop_name = "= Taxi Surface";
+		info.synthetic = 1;
+		info.domain    = Surface_Type;
+		info.exclusive = 1;
+	}
+	else
+		WED_GISPolygon::GetNthPropertyInfo(n, info);
+}
+
+void		WED_PolygonPlacement::GetNthPropertyDict(int n, PropertyDict_t& dict) const
+{
+	if (n >= WED_GISPolygon::CountProperties())
+	{
+		map<int, string>		dm;
+
+		DOMAIN_Members(Surface_Type,dm);
+
+		string dummy;
+		for(map<int, string>::iterator i = dm.begin(); i != dm.end(); ++i)
+		{
+			bool surfAvail = WED_GetLibraryMgr(GetArchive()->GetResolver())->GetSurfVpath(i->first, dummy);
+			dict.insert(PropertyDict_t::value_type(i->first, make_pair(i->second, surfAvail)));
+		}
+	}
+	else
+		WED_GISPolygon::GetNthPropertyDict(n, dict);
+}
+
+void		WED_PolygonPlacement::GetNthPropertyDictItem(int n, int e, string& item) const
+{
+	if (n >= WED_GISPolygon::CountProperties())
+	{
+		if (e>0)
+			item = ENUM_Desc(e);
+		else
+			item = " ";  // show a blank selection (rather than 'None' when the resource matches no known surface type
+	}
+	else
+		WED_GISPolygon::GetNthPropertyDictItem(n, e, item);
+}
+
+void		WED_PolygonPlacement::GetNthProperty(int n, PropertyVal_t& val) const
+{
+	if (n >= WED_GISPolygon::CountProperties())
+	{
+			val.prop_kind = prop_Enum;
+			val.int_val = WED_GetLibraryMgr(GetArchive()->GetResolver())->GetSurfEnum(resource.value);
+	}
+	else
+		WED_GISPolygon::GetNthProperty(n, val);
+}
+
+void		WED_PolygonPlacement::SetNthProperty(int n, const PropertyVal_t& val)
+{
+	if (n >= WED_GISPolygon::CountProperties())
+	{
+//		int surftype = ENUM_Export(*(val.int_val));
+//		printf("SET int_val %d set_val.begin %d (%ld) linetype %d\n",val.int_val, *(val.set_val.cbegin()), val.set_val.size(), linetype);
+#if WED
+		string vpath;
+		if(WED_GetLibraryMgr(GetArchive()->GetResolver())->GetSurfVpath(val.int_val, vpath))
+			resource = vpath;
+#endif
+	}
+	else
+		WED_GISPolygon::SetNthProperty(n, val);
+}

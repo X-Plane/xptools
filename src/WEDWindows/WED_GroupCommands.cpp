@@ -27,8 +27,8 @@
 
 #include "AssertUtils.h"
 #include "BitmapUtils.h"
-#include "CompGeomUtils.h"
 #include "CompGeomDefs2.h"
+#include "CompGeomUtils.h"
 #include "GISUtils.h"
 #include "FileUtils.h"
 #include "MathUtils.h"
@@ -38,6 +38,7 @@
 #include "AptDefs.h"
 #include "XObjDefs.h"
 #include "XESConstants.h"
+#include "XObjDefs.h"
 
 #include "WED_AirportChain.h"
 #include "WED_Airport.h"
@@ -48,9 +49,10 @@
 #include "WED_ATCWindRule.h"
 #include "WED_AirportNode.h"
 #include "WED_DrapedOrthophoto.h"
-#include "WED_Group.h"
-#include "WED_GISEdge.h"
 #include "WED_FacadePlacement.h"
+#include "WED_FacadeRing.h"
+#include "WED_FacadeNode.h"
+#include "WED_Group.h"
 #include "WED_LinePlacement.h"
 #include "WED_ObjPlacement.h"
 #include "WED_Orthophoto.h"
@@ -58,6 +60,7 @@
 #include "WED_PolygonPlacement.h"
 #include "WED_RampPosition.h"
 #include "WED_Ring.h"
+#include "WED_RoadEdge.h"
 #include "WED_RoadNode.h"
 #include "WED_Runway.h"
 #include "WED_SimpleBezierBoundaryNode.h"
@@ -87,6 +90,8 @@
 #endif
 
 #define DOUBLE_PT_DIST (1.0 * MTR_TO_DEG_LAT)
+
+#define DEBUG_EDGE_CROSSING 0
 
 namespace std
 {
@@ -485,7 +490,7 @@ static bool WED_NoLongerViable(WED_Thing * t, bool strict)
 		return true;
 #if ROAD_EDITING
 	if (t->GetClass() == WED_RoadNode::sClass &&
-		SAFE_CAST(IGISComposite,t->GetParent()) &&
+		/*SAFE_CAST(IGISComposite,t->GetParent()) &&*/		// orphaned road nodes have no parent
 		t->CountViewers() == 0)
 		return true;
 #endif
@@ -510,7 +515,7 @@ static void WED_AddChildrenRecursive(set<WED_Thing *>& who)
 // Deletes everything in 'who', along with any parents, sources and viewers that the deletion
 // makes unviable.
 // Requirement: For every object in 'who', all of its children must also be be in 'who'.
-static void WED_RecursiveDelete(set<WED_Thing *>& who)
+void WED_RecursiveDelete(set<WED_Thing *>& who)
 {
 	// This is sort of a scary mess.  We are going to delete everyone in 'who'.  But this might have
 	// some reprecussions on other objects.
@@ -585,12 +590,51 @@ void	WED_DoClear(IResolver * resolver)
 	sel->Clear();
 
 	set<WED_AirportNode *>	common_nodes;
-	for (set<WED_Thing *>::iterator i = who.begin(); i != who.end(); ++i)
+	set<WED_Thing *>	shape_points;
+
+	for (auto i : who)
 	{
-		WED_AirportNode * n = dynamic_cast<WED_AirportNode*>(*i);
+		auto n = dynamic_cast<WED_AirportNode *>(i);
 		if(n && n->CountViewers() == 2)
 			common_nodes.insert(n);
+
+		auto r = dynamic_cast<WED_RoadNode *>(i);
+		if(r)
+		{
+			set<WED_Thing *> viewers;
+			r->GetAllViewers(viewers);
+			for(auto v : viewers)
+			{
+				auto e = dynamic_cast<WED_GISEdge *>(v);
+				if(e && e->GetNumSides() > 1)
+				{
+					DebugAssert(e->GetNthSource(0) == i || e->GetNthSource(1) == i);
+
+					WED_RoadNode * rn = dynamic_cast<WED_RoadNode *>(r->Clone());
+					rn->SetParent(e->GetParent(),e->GetMyPosition()+1);
+
+					Bezier2 b;
+					if(e->GetNthSource(0) == i)
+					{
+						e->GetSide(gis_Geo, 1, b);
+						e->ReplaceSource(r,rn);
+						e->SetSideBezier(gis_Geo, b, 0);
+						shape_points.insert(e->GetNthChild(0));
+					}
+					else
+					{
+						e->GetSide(gis_Geo, e->GetNumSides()-2, b);
+						e->ReplaceSource(r,rn);
+						e->SetSideBezier(gis_Geo, b, e->GetNumSides()-1);
+						shape_points.insert(e->GetNthChild(e->CountChildren()-1));
+					}
+				}
+			}
+		}
 	}
+	for(auto s : shape_points)
+		who.insert(s);
+
 	for(set<WED_AirportNode *>::iterator n = common_nodes.begin(); n != common_nodes.end(); ++n)
 	{
 		set<WED_Thing *> viewers;
@@ -1104,6 +1148,12 @@ set<WED_Thing *> WED_select_doubles(WED_Thing * t)
 			DebugAssert(ii);
 			DebugAssert(jj);
 
+//			if(!(ii->GetGISSubtype() == jj->GetGISSubtype())) continue;
+
+//			Point2 p1, p2;
+//			ii->GetLocation(gis_Geo, p1);
+//			jj->GetLocation(gis_Geo, p2);
+
 			if(p1.squared_distance(p2) < (DOUBLE_PT_DIST*DOUBLE_PT_DIST))
 			{
 				doubles.insert(pts[i]);
@@ -1142,53 +1192,85 @@ set<WED_GISEdge *> WED_do_select_crossing(WED_Thing * t)
 {
 	vector<WED_GISEdge *> edges;
 	CollectRecursive(t, back_inserter(edges), ThingNotHidden, IsGraphEdge);
-
-	return WED_do_select_crossing(edges);
+	Bbox2 emptybox(0,0,0,0);
+	return WED_do_select_crossing(edges,emptybox);
 }
 
-set<WED_GISEdge *> WED_do_select_crossing(const vector<WED_GISEdge *> edges)
+set<WED_GISEdge *> WED_do_select_crossing(const vector<WED_GISEdge *>& edges , Bbox2& cull_bounds)
 {
+	#if DEV && DEBUG_EDGE_CROSSING
+	printf("select crossing on %ld edges\n",edges.size());
+	#endif
 	set<WED_GISEdge*> crossed_edges;
+	Bbox2 edge_bounds;
 	// Ben says: yes this totally sucks - replace it someday?
 	for (int i = 0; i < edges.size(); ++i)
 	{
-		IGISEdge * ii = edges[i];
 		Bezier2 b1, b2;
-		bool isb1, isb2;
-		isb1 = ii->GetSide(gis_Geo, 0, b1);
+		IGISEdge * ii = edges[i];
+		DebugAssert(ii);
+		ii->GetBounds(gis_Geo,edge_bounds);
+		if(!cull_bounds.is_empty() && !cull_bounds.overlap(edge_bounds))
+		{
+			#if DEV && DEBUG_EDGE_CROSSING
+			printf("edge %d outside cull_bounds\n",i);
+			#endif
+			continue;
+		}
+
+		bool isb1 = ii->GetSide(gis_Geo, 0, b1);
 
 		for (int j = i + 1; j < edges.size(); ++j)
 		{
 			IGISEdge * jj = edges[j];
-			DebugAssert(ii != jj);
-			DebugAssert(ii);
 			DebugAssert(jj);
+			DebugAssert(ii != jj);
 
-			isb2 = jj->GetSide(gis_Geo, 0, b2);
-
-			if (isb1 || isb2)
-			{   // should never get here, as edges (used for ATC routes only) are not supposed to have bezier segments
-				if (b1.intersect(b2, 10))
-				{
-					crossed_edges.insert(edges[i]);
-					crossed_edges.insert(edges[j]);
-				}
-			}
-			else
+			jj->GetBounds(gis_Geo,edge_bounds);
+			if(!cull_bounds.is_empty() && !cull_bounds.overlap(edge_bounds))
 			{
-				Point2 x;
-				if (b1.p1 != b2.p1 &&
-					b1.p2 != b2.p2 &&
-					b1.p1 != b2.p2 &&
-					b1.p2 != b2.p1)
+				#if DEV && DEBUG_EDGE_CROSSING
+				printf("edges %d %d bounds dont overlap\n",i,j);
+				#endif
+				continue;
+			}
+
+			if(ii->GetGISSubtype() != jj->GetGISSubtype()) continue;
+			#if DEV && DEBUG_EDGE_CROSSING
+			printf("edges %d %d bounds do overlap !!\n",i,j);
+			#endif
+			for(int si = 0; si < ii->GetNumSides(); si++)
+				for(int sj = 0; sj < jj->GetNumSides(); sj++)
 				{
-					if (b1.as_segment().intersect(b2.as_segment(), x))
+					Bezier2 b1, b2;
+
+					bool isb1 = ii->GetSide(gis_Geo, si, b1);
+					bool isb2 = jj->GetSide(gis_Geo, sj, b2);
+
+					if (isb1 || isb2)
 					{
-						crossed_edges.insert(edges[i]);
-						crossed_edges.insert(edges[j]);
+						if (b1.intersect(b2, 10))
+						{
+							crossed_edges.insert(edges[i]);
+							crossed_edges.insert(edges[j]);
+						}
+					}
+					else
+					{
+						Point2 x;
+						if (b1.p1 != b2.p1 &&
+							b1.p2 != b2.p2 &&
+							b1.p1 != b2.p2 &&
+							b1.p2 != b2.p1)
+						{
+							if (b1.as_segment().intersect(b2.as_segment(), x))
+							{
+								crossed_edges.insert(edges[i]);
+								crossed_edges.insert(edges[j]);
+							}
+						}
 					}
 				}
-			}
 		}
 	}
 
@@ -1377,12 +1459,8 @@ static int	unsplittable(ISelectable * base, void * ref)
 	WED_Thing * t = dynamic_cast<WED_Thing *>(base);
 	if (!t) return 1;
 
-	// Network edges are always splittable
-	if(dynamic_cast<IGISEdge *>(base))
-		return 0;
+	if(dynamic_cast<IGISEdge *>(base)) return t->CountChildren() != 0; // multi-segmented edges can't be split from the menu - down-click on a segment instead
 
-	IGISPoint * p = dynamic_cast<IGISPoint *>(base);
-	if (!p) return 1;
 //	WED_AirportNode * a = dynamic_cast<WED_AirportNode *>(base);
 //	if (!a) return 1;
 
@@ -1391,6 +1469,8 @@ static int	unsplittable(ISelectable * base, void * ref)
 
 	IGISPointSequence * s = dynamic_cast<IGISPointSequence*>(parent);
 	if (!s) return 1;
+
+	if(s->GetGISClass() == gis_Edge) return 0;
 
 	if (s->GetGISClass() != gis_Ring && s->GetGISClass() != gis_Chain) return 1;
 
@@ -1487,6 +1567,7 @@ namespace
 {
 struct chain_split_info_t {
 	WED_GISChain * c;
+	WED_GISEdge *  e;
 	WED_GISPoint * p;
 };
 
@@ -1505,14 +1586,14 @@ static bool is_chain_split(ISelection * sel, chain_split_info_t * info)
 	if(sel->GetSelectionCount() != 1)
 		return false;
 	WED_GISPoint * p = dynamic_cast<WED_GISPoint*>(sel->GetNthSelection(0));
-	if(!p)
-		return false;
+	if(!p) return false;
 
 	// The point must have a WED_GISChain parent
-	WED_GISChain * c = dynamic_cast<WED_GISChain*>(p->GetParent());
-	if(!c)
-		return false;
+	WED_GISChain * c = dynamic_cast<WED_GISChain *>(p->GetParent());
+	WED_GISEdge * e = dynamic_cast<WED_GISEdge *>(p->GetParent());
+	if(!c && !e) return false;
 
+	if(c)
 	if(c->IsClosed())
 	{
 		// If the chain is closed, it must be a WED_AirportChain, and its parent must not be a WED_GISPolygon.
@@ -1527,9 +1608,17 @@ static bool is_chain_split(ISelection * sel, chain_split_info_t * info)
 			return false;
 	}
 
+	if(e)
+	{
+			// If its an edge, the point must not be one of the sources
+			WED_Thing * t = p;
+			if(e->GetNthSource(0) == t || e->GetNthSource(1) ==  t)
+				return false;
+	}
 	if(info)
 	{
 		info->c = c;
+		info->e = e;
 		info->p = p;
 	}
 
@@ -1605,7 +1694,18 @@ static void do_chain_split(ISelection * sel, const chain_split_info_t & info)
 
 	int pos = info.p->GetMyPosition();
 
-	if (info.c->IsClosed())
+	if(info.e)
+	{
+		Point2 pt;
+		info.p->GetLocation(gis_Geo, pt);
+		IGISPoint * gp =  info.e->SplitEdge(pt, 0.0);
+		if(gp)
+		{
+			sel->Clear();
+			sel->Insert(gp);
+		}
+	}
+	else if (info.c->IsClosed())
 	{
 		WED_AirportChain * ac = dynamic_cast<WED_AirportChain *>(info.c);
 		if (!ac)
@@ -1811,7 +1911,7 @@ static void do_ring_split(ISelection * sel, const ring_split_info_t & info)
 	op->CommitOperation();
 }
 
-map<WED_Thing*,vector<WED_Thing*> > run_split_on_edges(vector<split_edge_info_t>& edges)
+map<WED_Thing*,vector<WED_Thing*> > run_split_on_edges(vector<split_edge_info_t>& edges ,bool no_uncrossed)
 {
 	map<WED_Thing*, vector<WED_Thing*> > new_pieces;
 	//
@@ -1822,31 +1922,47 @@ map<WED_Thing*,vector<WED_Thing*> > run_split_on_edges(vector<split_edge_info_t>
 	// segments...if the intersection is in the interior, we accumulate it on
 	// the edge.  This is O(N^2) - a sweep line would be better if we ever have
 	// data sets big enough to need it.
-	for (int i = 0; i < edges.size(); ++i)
-	{
-		Segment2 is;
-
-		edges[i].edge->GetNthPoint(0)->GetLocation(gis_Geo, is.p1);
-		edges[i].edge->GetNthPoint(1)->GetLocation(gis_Geo, is.p2);
-		for (int j = 0; j < i; ++j)
-		if(edges[i].active || edges[j].active)								// At least one edge MUST be active or we do not split.
+	for (int i = 0; i < edges.size(); ++i)                        // MM: It would likely be more efficient to keep track of the particular segment(s) of overlap
+	{                                                             // within each edge. And factor out a generic IGIS PointSequnce intersect algorithm.
+		Bezier2 ib;                                               // Its done during validation for self-insersecting polygons as well.
+		for(int ii = 0; ii < edges[i].edge->GetNumSides(); ii++)
 		{
-			Segment2 js;
-			edges[j].edge->GetNthPoint(0)->GetLocation(gis_Geo, js.p1);
-			edges[j].edge->GetNthPoint(1)->GetLocation(gis_Geo, js.p2);
+			bool ibIsBez = edges[i].edge->GetSide(gis_Geo,ii,ib);
 
-			if (is.p1 != is.p2 &&
-				js.p1 != js.p2 &&
-				is.p1 != js.p1 &&
-				is.p2 != js.p2 &&
-				is.p1 != js.p2 &&
-				is.p2 != js.p1)
+			for (int j = 0; j < i; ++j)
+			if(edges[i].active || edges[j].active)								// At least one edge MUST be active or we do not split.
 			{
-				Point2 x;
-				if (is.intersect(js, x))
+				Bezier2 jb;
+				for(int jj = 0; jj < edges[j].edge->GetNumSides(); jj++)
 				{
-					edges[i].splits.push_back(x);
-					edges[j].splits.push_back(x);
+					bool jbIsBez = edges[j].edge->GetSide(gis_Geo,jj, jb);
+
+					if (ib.p1 != ib.p2 &&    // MM: do we really need2test for zero-length/degenerated edges intersecting ?
+						jb.p1 != jb.p2 &&    // same here
+						ib.p1 != jb.p1 &&
+						ib.p2 != jb.p2 &&
+						ib.p1 != jb.p2 &&
+						ib.p2 != jb.p1)
+					{
+						Point2 x;
+						if( ibIsBez || jbIsBez )
+						{
+							//ToDo:mroe check precision and calculation time
+							if (ib.intersect(jb,10,x))
+							{
+								edges[i].splits.push_back(x);
+								edges[j].splits.push_back(x);
+							}
+						}
+						else
+						{
+							if (ib.as_segment().intersect(jb.as_segment(), x))
+							{
+								edges[i].splits.push_back(x);
+								edges[j].splits.push_back(x);
+							}
+						}
+					}
 				}
 			}
 		}
@@ -1864,12 +1980,17 @@ map<WED_Thing*,vector<WED_Thing*> > run_split_on_edges(vector<split_edge_info_t>
 		edges[i].sort_along_edge();
 
 		// If the edge is uncrossed the user is just subdividing it - split it at the midpoint.
-		if (edges[i].splits.empty())
+		if (!no_uncrossed && edges[i].splits.empty())
 		{
-			Segment2 s;
-			edges[i].edge->GetNthPoint(0)->GetLocation(gis_Geo, s.p1);
-			edges[i].edge->GetNthPoint(1)->GetLocation(gis_Geo, s.p2);
-			edges[i].splits.push_back(s.midpoint());
+			Bezier2 b;
+			if(edges[i].edge->GetSide(gis_Geo,-1,b))
+			{
+				edges[i].splits.push_back(b.midpoint(0.5));
+			}
+			else
+			{
+				edges[i].splits.push_back(b.as_segment().midpoint());
+			}
 		}
 
 		// Now we go BACKWARD from high to low - we do this because the GIS Edge's split makes the clone
@@ -1878,7 +1999,7 @@ map<WED_Thing*,vector<WED_Thing*> > run_split_on_edges(vector<split_edge_info_t>
 		for (vector<Point2>::reverse_iterator r = edges[i].splits.rbegin(); r != edges[i].splits.rend(); ++r)
 		{
 			// If we had a 'T' then in theory SplitSide could return NULL?
-			IGISPoint * split = edges[i].edge->SplitSide(*r, 0.0);
+			IGISPoint * split = edges[i].edge->SplitEdge(*r, 0.0);
 			if (split)
 			{
 				// Bucket our new node for merging later
@@ -1920,15 +2041,11 @@ void do_edge_split(ISelection * sel)
 	hack_t	info;
 	info.first = sel;
 	info.second = &who;
-
 	sel->IterateSelectionOr(collect_splits, &info);
 
 	vector<split_edge_info_t> edges;
-
 	sel->IterateSelectionOr(collect_edges, &edges);
-
 	if (who.empty() && edges.empty()) return;
-
 	op->StartOperation("Split Segments.");
 
 	//
@@ -2604,6 +2721,39 @@ static void DoMakeRegularPoly(IGISPointSequence * seq )
 	//initial heading of first segment
 	double a1 = VectorDegs2NorthHeading(ctr,ctr,Vector2(pol.at(0),pol.at(1)));
 
+	//edges are special , start and end bez ctr are owned by the edge
+	if( seq->GetGISClass() == gis_Edge)
+	{
+		IGISEdge * ge = dynamic_cast< IGISEdge *>(seq);
+		if(ge != nullptr)
+		{
+			Bezier2 b;
+			if(ge->GetSide(gis_Geo,-1,b))
+			{
+				Point2 p;
+				Vector2	v;
+				v.dx = 0.0;
+				v.dy = ru;
+				p = ctr + VectorMetersToLL(ctr,v);
+				v = v.perpendicular_ccw();
+				v.normalize();
+				v *= c;
+				b.c1 = b.p1 != b.c1  ? p - VectorMetersToLL(ctr, v) : p;
+				b.p1 = p;
+
+				v.dx = ru*sin((n-1) * w);
+				v.dy = ru*cos((n-1) * w);
+				p = ctr + VectorMetersToLL(ctr,v);
+				v = v.perpendicular_ccw();
+				v.normalize();
+				v *= c;
+				b.c2 = b.p2 != b.c2  ? p + VectorMetersToLL(ctr, v) : p;
+				b.p2 = p;
+				ge->SetSideBezier(gis_Geo,b,-1);
+			}
+		}
+	}
+
 	for( int i = 0 ; i < n ; ++i)
 	{
 		double h = i*w;
@@ -2615,6 +2765,7 @@ static void DoMakeRegularPoly(IGISPointSequence * seq )
 
 		BezierPoint2 bp;
 		IGISPoint_Bezier * bez;
+
 		if(seq->GetNthPoint(i)->GetGISClass() == gis_Point_Bezier)
 		{
 			if((bez = dynamic_cast<IGISPoint_Bezier *>(seq->GetNthPoint(i))) != NULL)
@@ -2696,15 +2847,14 @@ static bool lesser_y_then_x_merge_class_map(const pair<Point2, pair<const char *
 	return (lhs.first.y() == rhs.first.y()) ? (lhs.first.x() < rhs.first.x()) : (lhs.first.y() < rhs.first.y());
 }
 
-static bool is_within_snapping_distance(const merge_class_map::iterator& first_thing, const merge_class_map::iterator& second_thing, const CoordTranslator2& translator)
+static bool is_within_snapping_distance(const merge_class_map::iterator& first_thing, const merge_class_map::iterator& second_thing)
 {
-	const float MAX_DIST_M_SQ = 1.0;
+	// since we're not using the coordTranslator any more, we have no way to cache the cos(lattitude) to calculate distances quick.
+	// so we shortcut the more complex calculation by testing for lattitude first
 
-	Point2 first_pos_m  = translator.Forward(first_thing->first);
-	Point2 second_pos_m = translator.Forward(second_thing->first);
+	if (fabs(first_thing->first.y() - second_thing->first.y()) > MTR_TO_DEG_LAT) return 0;
 
-	bool is_snappable =  first_pos_m.squared_distance(second_pos_m) < MAX_DIST_M_SQ;
-	return is_snappable;
+	return LonLatDistMeters(first_thing->first, second_thing->first) < 1.0;
 }
 
 static const char * get_merge_tag_for_thing(IGISPoint * ething)
@@ -2712,7 +2862,7 @@ static const char * get_merge_tag_for_thing(IGISPoint * ething)
 	// In order to merge, we haveto at least be a thing AND a point,
 	// and have a parent that is a thing and an entity.  (If that's
 	// not true, @#$ knows what is selected.)
-	
+
 	WED_Thing * thing = SAFE_CAST(WED_Thing, ething);
 	if(thing == NULL)
 		return NULL;
@@ -3115,9 +3265,55 @@ static bool is_node_merge(IResolver * resolver)
 	//   0.016719 seconds.
 	//StElapsedTime can_merge_timer("WED_CanMerge");
 	ISelection * sel = WED_GetSelect(resolver);
+#if ROAD_EDITING
+	if(sel->GetSelectionCount() == 1) // this means merge two edges here into one
+	{
+		WED_Thing * thing = dynamic_cast<WED_Thing *>(sel->GetNthSelection(0));
+		if( thing == nullptr ||
+			thing->GetClass() != WED_RoadNode::sClass ||
+			thing->CountViewers() != 2) return false;
+
+		set<WED_Thing *> viewers;
+		thing->GetAllViewers(viewers);
+
+		if( (*viewers.begin())->GetClass()     != WED_RoadEdge::sClass) return false;
+		if( (*(++viewers.begin()))->GetClass() != WED_RoadEdge::sClass) return false;
+
+		WED_RoadEdge * road_edge_1 = static_cast<WED_RoadEdge *>(*viewers.begin());
+		WED_RoadEdge * road_edge_2 = static_cast<WED_RoadEdge *>(*(++viewers.begin()));
+
+		// check for road subtype
+		if(road_edge_1->GetSubtype() != road_edge_2->GetSubtype()) return false;
+
+		Bezier2 b1,b2;
+		road_edge_1->GetSide(gis_Geo,-1,b1);
+		road_edge_2->GetSide(gis_Geo,-1,b2);
+		// check for direction
+		if(b1.p2 != b2.p1 && b1.p1 != b2.p2) return false;
+		// check resource match
+		string resource_1,resource_2;
+		road_edge_1->GetResource(resource_1);
+		road_edge_2->GetResource(resource_2);
+		if(resource_1 != resource_2) return false;
+
+		// check if one edge erroneous is a ring or would be closed ( start = end node)
+		WED_Thing * edge1_src0 = road_edge_1->GetNthSource(0);
+		WED_Thing * edge1_src1 = road_edge_1->GetNthSource(1);
+		if( edge1_src0 == edge1_src1 ) return false;
+		WED_Thing * edge2_src0 = road_edge_2->GetNthSource(0);
+		WED_Thing * edge2_src1 = road_edge_2->GetNthSource(1);
+		if( edge2_src0 == edge2_src1 ) return false;
+
+		bool add_edge_end = edge1_src0 == thing;
+		if( add_edge_end && edge1_src1 == edge2_src0 ) return false;
+		if(!add_edge_end && edge1_src0 == edge2_src1 ) return false;
+
+		return true;
+	}
+#endif
 
 	if(sel->GetSelectionCount() < 2)
-		return false;		// can't merge 1 thing!
+		return false;		// can't merging 1 thing mean merge two endges into one
 
 	//1. Ensure all of the selection is mergeable, collect
 	merge_class_map sinkmap;
@@ -3130,13 +3326,6 @@ static bool is_node_merge(IResolver * resolver)
 	//2. Sort by location, a small optimization
 	sort(sinkmap.begin(), sinkmap.end(), lesser_y_then_x_merge_class_map);
 
-	//Find the bounds for the current airport
-	WED_Airport* apt = WED_GetCurrentAirport(resolver);
-	Bbox2 bb;
-	CoordTranslator2 translator;
-	apt->GetBounds(gis_Geo, bb);
-	CreateTranslatorForBounds(bb, translator);
-
 	//Keeps track of which objects we've discovered we can snap (hopefully all)
 	set<merge_class_map::iterator> can_snap_objects;
 
@@ -3146,8 +3335,33 @@ static bool is_node_merge(IResolver * resolver)
 		//For each item after that
 		for (merge_class_map::iterator merge_pair_itr = thing_1_itr + 1; merge_pair_itr != sinkmap.end(); ++merge_pair_itr)
 		{
+#if ROAD_EDITING
+			//do not merge road nodes from same edge or with different resource
+			if( thing_1_itr->second.first == WED_RoadNode::sClass
+			 && merge_pair_itr->second.first == WED_RoadNode::sClass)
+			{
+				set<WED_Thing *> viewers1,viewers2;
+				thing_1_itr->second.second->GetAllViewers(viewers1);
+				merge_pair_itr->second.second->GetAllViewers(viewers2);
+
+				for(auto v1 : viewers1)
+					for(auto v2 : viewers2)
+					{
+						if(v1 == v2) return false;  // same edge , do not merge
+						WED_RoadEdge * road_edge_1 = dynamic_cast<WED_RoadEdge *>(v1);
+						WED_RoadEdge * road_edge_2 = dynamic_cast<WED_RoadEdge *>(v2);
+
+						if(road_edge_1 == nullptr || road_edge_2 == nullptr) return false;
+
+						string res1,res2;
+						road_edge_1->GetResource(res1);
+						road_edge_2->GetResource(res2);
+						if(res1 != res2) return false;
+					}
+			}
+#endif
 			//If the two things are within snapping distance of each other, record so
-			if (is_within_snapping_distance(thing_1_itr, merge_pair_itr, translator))
+			if (is_within_snapping_distance(thing_1_itr, merge_pair_itr))
 			{
 				can_snap_objects.insert(thing_1_itr);
 				can_snap_objects.insert(merge_pair_itr);
@@ -3374,7 +3588,7 @@ static void do_node_merge(IResolver * resolver)
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	op->StartOperation("Merge Nodes");
 
-	DebugAssert(sel->GetSelectionCount() >= 2);
+	DebugAssert(sel->GetSelectionCount() >= 1);
 
 	//Validate and collect from selection
 	merge_class_map sinkmap;
@@ -3389,21 +3603,89 @@ static void do_node_merge(IResolver * resolver)
 	if (sinkmap.size() > 10000)
 	{
 		DoUserAlert("You have too many things selected to merge them, deselect some of them first");
+		op->AbortOperation();
 		return;
 	}
-	else if (sinkmap.size() < 2)
+	else if (sinkmap.size() == 1)  // merge two RoadEdges connected to a RoadNode
 	{
+		WED_Thing * thing = dynamic_cast<WED_Thing *>(sel->GetNthSelection(0));
+		if(thing)
+		{
+			sel->Clear();
+			set<WED_Thing *> viewers;
+			thing->GetAllViewers(viewers);
+			WED_Thing * edge = *viewers.begin();
+			WED_Thing * obsolete_edge = *(++viewers.begin());
+
+			bool add_edge_end = edge->GetNthSource(0) == thing;
+
+			if( ( add_edge_end && edge->GetNthSource(1) == obsolete_edge->GetNthSource(0)) ||
+			    (!add_edge_end && edge->GetNthSource(0) == obsolete_edge->GetNthSource(1)) )    // this would endup in closed edge ( start = end node)
+			{
+				op->AbortOperation();
+				return;
+			}
+
+			WED_GISEdge * ge_1 = dynamic_cast<WED_GISEdge *>(edge);
+			WED_GISEdge * ge_2 = dynamic_cast<WED_GISEdge *>(obsolete_edge);
+
+			if(ge_1 && ge_2)
+			{
+				auto node = WED_SimpleBezierBoundaryNode::CreateTyped(thing->GetArchive());
+				node->SetName("Shape Point");
+
+				Bezier2 b1,b2;
+				bool is_bez_1 = ge_1->GetSide(gis_Geo,-1,b1);
+				bool is_bez_2 = ge_2->GetSide(gis_Geo,-1,b2);
+
+				int nc = obsolete_edge->CountChildren();
+
+				if(is_bez_1 || is_bez_2) node->SetSplit(true);
+				if(add_edge_end == false)
+				{
+					DebugAssert(b1.p2 == b2.p1);
+					node->SetParent(edge, edge->CountChildren());
+					node->SetLocation(gis_Geo,b1.p2);
+
+					if(is_bez_1 && (b1.p2 != b1.c2)) node->SetControlHandleLo(gis_Geo, b1.c2);
+					if(is_bez_2 && (b2.p1 != b2.c1)) node->SetControlHandleHi(gis_Geo, b2.c1);
+
+					for(int i = 0; i < nc; i++)
+							obsolete_edge->GetNthChild(i)->SetParent(edge,edge->CountChildren());
+
+					edge->ReplaceSource(thing, obsolete_edge->GetNthSource(1));
+					//TODO:mroe: no clue why we must do it afterwards
+					if(is_bez_2 && (b2.p2 != b2.c2)) ge_1->SetSideBezier(gis_Geo,Bezier2(b1.p1,b1.c1,b2.c2,b2.p2),-1);
+				}
+				else
+				{
+					DebugAssert(b2.p2 == b1.p1);
+					node->SetParent(edge, 0);
+					node->SetLocation(gis_Geo,b2.p2);
+					if(is_bez_1 && (b1.p1 != b1.c1)) node->SetControlHandleHi(gis_Geo, b1.c1);
+					if(is_bez_2 && (b2.p2 != b2.c2)) node->SetControlHandleLo(gis_Geo, b2.c2);
+
+					for(int i = nc - 1; i >= 0; i--)
+						obsolete_edge->GetNthChild(i)->SetParent(edge,0);
+
+					edge->ReplaceSource(thing, obsolete_edge->GetNthSource(0));
+					//TODO:mroe: no clue why we must do it afterwards
+					if(is_bez_2 && (b2.p1 != b2.c1)) ge_1->SetSideBezier(gis_Geo,Bezier2(b2.p1,b2.c1,b1.c2,b1.p2),-1);
+				}
+
+				sel->Insert(node);
+				viewers.clear();
+				viewers.insert(thing);
+				WED_RecursiveDelete(viewers);	// this makes obsolete_edge unviable and thus removed it as well
+			}
+		}
+
+		op->CommitOperation();
 		return;
 	}
 
 	//2. Sort by location, a small optimization
 	sort(sinkmap.begin(), sinkmap.end(), lesser_y_then_x_merge_class_map);
-
-	WED_Airport* apt = WED_GetCurrentAirport(resolver);
-	Bbox2 bb;
-	CoordTranslator2 translator;
-	apt->GetBounds(gis_Geo, bb);
-	CreateTranslatorForBounds(bb, translator);
 
 	//All the nodes that will end up snapped
 	set<WED_Thing*> snapped_nodes;
@@ -3418,8 +3700,46 @@ static void do_node_merge(IResolver * resolver)
 			{
 				const char * tag_1 = start_thing->second.first;
 				const char * tag_2 = merge_pair->second.first;
+				bool can_be_merged = tag_1 == tag_2 ;
+#if ROAD_EDITING
+				//do not merge road nodes from same edge or with different resource
+				if(can_be_merged && tag_1 == WED_RoadNode::sClass )
+				{
+					set<WED_Thing *> viewers1,viewers2;
+					start_thing->second.second->GetAllViewers(viewers1);
+					merge_pair->second.second->GetAllViewers(viewers2);
 
-				if (is_within_snapping_distance(start_thing, merge_pair, translator) && tag_1 == tag_2)
+					for(auto v1 : viewers1)
+					{
+						for(auto v2 : viewers2)
+						{
+							if(v1 == v2)					//do not merge start and end node of same edge
+							{
+								can_be_merged = false;
+								break;
+							}
+
+							WED_RoadEdge * road_edge_1 = dynamic_cast<WED_RoadEdge *>(v1);
+							WED_RoadEdge * road_edge_2 = dynamic_cast<WED_RoadEdge *>(v2);
+
+							if(road_edge_1 != nullptr && road_edge_2 != nullptr)
+							{
+								string res1,res2;
+								road_edge_1->GetResource(res1);
+								road_edge_2->GetResource(res2);
+								if(res1 != res2)
+								{
+									can_be_merged = false;
+									break;
+								}
+							}
+						}
+
+						if(!can_be_merged) break;
+					}
+				}
+#endif
+				if (can_be_merged && is_within_snapping_distance(start_thing, merge_pair))
 				{
 					vector<WED_Thing*> sub_list = vector<WED_Thing*>();
 					sub_list.push_back(start_thing->second.second);
@@ -3805,17 +4125,17 @@ static set<string> build_agp_list()
 int		WED_CanBreakApartAgps(IResolver* resolver)
 {
 	//Returns true if the selection contains only .agp objects
-	
+
 	vector<ISelectable*> selected;
 	WED_GetSelect(resolver)->GetSelectionVector(selected);
 
 	if (selected.empty()) return false;
-	
+
 	for (auto itr : selected)
 	{
 		WED_AgpPlacement* agp = dynamic_cast<WED_AgpPlacement*>(itr);
 		if (!agp) return false;
-		
+
 		string agp_resource;
 		agp->GetResource(agp_resource);
 		if(FILE_get_file_extension(agp_resource) != "agp") return false;
@@ -3828,14 +4148,15 @@ static void replace_all_obj_in_agp(WED_AgpPlacement* agp, const agp_t * agp_data
 	Point2 agp_origin_geo;
 	agp->GetLocation(gis_Geo, agp_origin_geo);
 
-	for (auto& agp_obj : agp_data->objs)
+	auto ti = agp_data->tiles.front();
+	for (auto& agp_obj : ti.objs)
 	{
 		Vector2 torotate(agp_obj.x, agp_obj.y);
 
 		//Note!! WED has clockwise heading, C's cos and sin functions are ccw in radians. We reverse directions and negate again
 		torotate.rotate_by_degrees(agp->GetHeading()*-1);
 		torotate *= -1;
-		
+
 		Point2 new_point_geo = agp_origin_geo -VectorMetersToLL(agp_origin_geo, torotate);
 
 		WED_ObjPlacement* new_obj = WED_ObjPlacement::CreateTyped(archive);
@@ -3861,7 +4182,7 @@ int wed_break_apart_special_agps(const vector<WED_AgpPlacement*>& agp_placements
 	for (auto agp : agp_placements)
 	{
 		string agp_resource;
-		
+
 		agp->GetResource(agp_resource);
 		//Is the agp found in the special agp list?
 		if (agp_list.find(agp_resource) != agp_list.end())
@@ -3891,7 +4212,7 @@ void	WED_DoBreakApartAgps(IResolver* resolver)
 	WED_ResourceMgr * rmgr	= WED_GetResourceMgr(resolver);
 	WED_LibraryMgr * lmgr	= WED_GetLibraryMgr(resolver);
 	ISelection * sel 		= WED_GetSelect(resolver);
-	
+
 	vector<ISelectable*> selected;
 	sel->GetSelectionVector(selected);
 
@@ -3904,20 +4225,20 @@ void	WED_DoBreakApartAgps(IResolver* resolver)
 	}
 
 	root->StartOperation("Break Apart Agps");
-	
+
 	vector<WED_AgpPlacement*> replaced_agps;
 	vector<WED_ObjPlacement*> added_objs;
-	
+
 	for(auto agp : agp_placements)
 	{
 		string agp_resource;
 		const agp_t * agp_data;
-		
+
 		agp->GetResource(agp_resource);
 		if(rmgr->GetAGP(agp_resource, agp_data))
 		{
 			bool all_obj_public = true;
-			for (auto& agp_obj : agp_data->objs)
+			for (auto& agp_obj : agp_data->tiles.front().objs)
 			{
 				if(lmgr->IsResourceDeprecatedOrPrivate(agp_obj.name))
 				{
@@ -4026,7 +4347,7 @@ static map<string,vehicle_replacement_info> build_replacement_table()
 	table.insert(make_pair("lib/airport/Common_Elements/vehicles/Small_Fuel_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Jet,0)));
 	table.insert(make_pair("lib/airport/Common_Elements/vehicles/Large_Fuel_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Prop,0)));
 	table.insert(make_pair("lib/airport/vehicles/baggage_handling/tractor.obj", vehicle_replacement_info(atc_ServiceTruck_Ground_Power_Unit,0)));
-	table.insert(make_pair("ib/airport/Ramp_Equipment/GPU_1.obj", vehicle_replacement_info(atc_ServiceTruck_Ground_Power_Unit,0)));
+	table.insert(make_pair("lib/airport/Ramp_Equipment/GPU_1.obj", vehicle_replacement_info(atc_ServiceTruck_Ground_Power_Unit,0)));
 	table.insert(make_pair("lib/airport/Ramp_Equipment/Tow_Tractor_1.obj", vehicle_replacement_info(atc_ServiceTruck_Pushback,0)));
 	table.insert(make_pair("lib/airport/Ramp_Equipment/Tow_Tractor_2.obj", vehicle_replacement_info(atc_ServiceTruck_Pushback,0)));
 
@@ -4037,7 +4358,7 @@ void	WED_DoReplaceVehicleObj(IResolver* resolver, WED_Airport* apt)
 {
 	WED_Thing * root = WED_GetWorld(resolver);
 	vector<WED_ObjPlacement*> obj_placements;
-	
+
 	WED_Thing* collection_start = apt == NULL ? root : apt;
 	CollectRecursive(collection_start, back_inserter(obj_placements), WED_ObjPlacement::sClass);
 
@@ -4046,7 +4367,7 @@ void	WED_DoReplaceVehicleObj(IResolver* resolver, WED_Airport* apt)
 		int replace_count = 0;
 		root->StartOperation("Replace Objects");
 		map<string,vehicle_replacement_info> table = build_replacement_table();
-		
+
 #if !TYLER_MODE
 		ISelection * sel = WED_GetSelect(resolver);
 		sel->Clear();
@@ -4321,7 +4642,7 @@ static bool IsRwyMatching(const WED_Runway * rwy, const struct changelist_t * en
     Point2 rwy_loc0, rwy_loc1;
 	Point2 corners[4];
 
-	if (rwy->GetSurface() != surf_Asphalt && rwy->GetSurface() != surf_Concrete ) return 0;      // if its not solid data - we're not moving the airport because of it
+	if (rwy->GetSurface() >= surf_Grass) return 0;      // if its not solid data - we're not moving the airport because of it
 
 	rwy->GetTarget()->GetLocation(gis_Geo, rwy_loc1);
 	if (rwy->GetCornersDisp2(corners))
@@ -4786,21 +5107,24 @@ static void copy_heading(WED_Thing * src, WED_Thing * dst)
 
 static int get_surface(WED_Thing * t)
 {
-	WED_Taxiway * taxiway = dynamic_cast<WED_Taxiway*>(t);
-	if (taxiway)
+	if(auto taxiway = dynamic_cast<WED_Taxiway*>(t))
 		return taxiway->GetSurface();
-	WED_PolygonPlacement * polygon = dynamic_cast<WED_PolygonPlacement*>(t);
-	if (polygon)
+	if(auto polygon = dynamic_cast<WED_PolygonPlacement*>(t))
 	{
 		string resource;
 		polygon->GetResource(resource);
-		if (resource.find("concrete") != string::npos)
-			return surf_Concrete;
-		else
-			return surf_Asphalt;
+
+		int enu = WED_GetLibraryMgr(t->GetArchive()->GetResolver())->GetSurfEnum(resource);
+		if (enu < 0)
+		{
+			if (resource.find("concrete") != string::npos)
+				enu = surf_Concrete;
+			else
+				enu = surf_Asphalt;
+		}
+		return enu;
 	}
-	WED_LinePlacement * line = dynamic_cast<WED_LinePlacement*>(t);
-	if (line)
+	if(auto line = dynamic_cast<WED_LinePlacement*>(t))
 	{
 		string resource;
 		line->GetResource(resource);
@@ -4809,61 +5133,51 @@ static int get_surface(WED_Thing * t)
 			resource.erase(0,strlen("lib/airport/lines/"));
 			int linetype;
 			if(sscanf(resource.c_str(),"%d",&linetype) == 1)
-			{
-				int enu = ENUM_Import(LinearFeature,linetype);
-				return enu;
+				return ENUM_Import(LinearFeature,linetype);
 			}
-		}
 	}
-	WED_AirportChain * chain = dynamic_cast<WED_AirportChain*>(t);
-	if(chain)
+	if(auto chain = dynamic_cast<WED_AirportChain*>(t))
 	{
 		// return value only if whl chain same style ... need to break up multi-linestyle chains beforehand
 		string resource;
 		chain->GetResource(resource);
-		int enu = ENUM_LookupDesc(LinearFeature, resource.c_str());
-		return enu;
+		return ENUM_LookupDesc(LinearFeature, resource.c_str());
 	}
 	return surf_Asphalt;
 }
 
 static void set_surface(WED_Thing * t, int surface, WED_LibraryMgr * lmgr)
 {
-	WED_Taxiway * taxiway = dynamic_cast<WED_Taxiway*>(t);
-	if (taxiway)
+	if(auto taxiway = dynamic_cast<WED_Taxiway*>(t))
 	{
-		taxiway->SetSurface(surface);
-		return;
-	}
-	WED_PolygonPlacement * polygon = dynamic_cast<WED_PolygonPlacement*>(t);
-	if (polygon)
-	{
-		if (surface == surf_Asphalt)
-			polygon->SetResource("lib/airport/pavement/asphalt_1D.pol");
+		if(ENUM_Domain(surface) == Surface_Type)
+			taxiway->SetSurface(surface);
 		else
-			polygon->SetResource("lib/airport/pavement/concrete_1D.pol");
-		return;
+			taxiway->SetSurface(surf_Asphalt);
 	}
-	WED_LinePlacement * line = dynamic_cast<WED_LinePlacement*>(t);
-	if (line)
+	if (auto polygon = dynamic_cast<WED_PolygonPlacement*>(t))
+	{
+		string resource;
+		if (!WED_GetLibraryMgr(t->GetArchive()->GetResolver())->GetSurfVpath(surface, resource))
+			resource = "lib/airport/pavement/asphalt_3D.pol";              // default to default asphalt
+		polygon->SetResource(resource);
+	}
+	if(auto line = dynamic_cast<WED_LinePlacement*>(t))
 	{
 		string(vpath);
 		if (lmgr->GetLineVpath(ENUM_Export(surface), vpath))
-		{
 			line->SetResource(vpath);
-		}
 	}
-	WED_AirportChain * chain = dynamic_cast<WED_AirportChain*>(t);
-	if(chain)
+	if(auto chain = dynamic_cast<WED_AirportChain*>(t))
+	if(ENUM_Domain(surface) == LinearFeature)
 	{
 		set<int> attr;
 		attr.insert(surface);
-		
+
 		int num_ent = chain->GetNumEntities();
 		for(int i = 0; i < num_ent; i++)
 		{
-			WED_AirportNode * node = dynamic_cast<WED_AirportNode*>(chain->GetNthEntity(i));
-			if(node)
+			if(auto node = dynamic_cast<WED_AirportNode*>(chain->GetNthEntity(i)))
 				node->SetAttributes(attr);
 		}
 	}
@@ -4871,15 +5185,10 @@ static void set_surface(WED_Thing * t, int surface, WED_LibraryMgr * lmgr)
 
 static void set_closed(WED_Thing * t, bool closed)
 {
-	WED_AirportChain * ac = dynamic_cast<WED_AirportChain*>(t);
-	if (ac)
-	{
-		ac->SetClosed(closed ? 1 : 0);
-		return;
-	}
-	WED_LinePlacement * lp = dynamic_cast<WED_LinePlacement*>(t);
-	if (lp)
-		lp->SetClosed(closed ? 1 : 0);
+	if(auto ac = dynamic_cast<WED_AirportChain*>(t))
+		ac->SetClosed(closed);
+	else if(auto lp = dynamic_cast<WED_LinePlacement*>(t))
+		lp->SetClosed(closed);
 }
 
 void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
@@ -4905,11 +5214,11 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 		sel->GetSelectionVector(selected);
 		for (size_t i = 0; i < selected.size(); ++i)
 		{
-			if (WED_GetParentAirport(dynamic_cast<WED_Thing*>(selected[i])) == NULL)
-			{
-				DoUserAlert("All objects to convert must be in an airport in the hierarchy");
-				return;
-			}
+		if (WED_GetParentAirport(dynamic_cast<WED_Thing*>(selected[i])) == NULL)
+		{
+			DoUserAlert("All objects to convert must be in an airport in the hierarchy");
+			return;
+		}
 		}
 	}
 
@@ -4921,7 +5230,7 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 	sel->GetSelectionVector(selected);
 	for (size_t i = 0; i < selected.size(); ++i)
 	{
-		WED_Thing * src = dynamic_cast<WED_Thing*>(selected[i]);
+		WED_Thing* src = dynamic_cast<WED_Thing*>(selected[i]);
 		vector<WED_GISChain*> chains;
 		get_chains(src, chains);
 		if (chains.empty())
@@ -4933,7 +5242,7 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 
 		if (dst_is_polygon)
 		{
-			WED_Thing * dst = create(wrl->GetArchive());
+			WED_Thing* dst = create(wrl->GetArchive());
 
 			add_chains(dst, chains);
 
@@ -4952,7 +5261,7 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 		{
 			for (int i = 0; i < chains.size(); ++i)
 			{
-				WED_Thing * dst = create(wrl->GetArchive());
+				WED_Thing* dst = create(wrl->GetArchive());
 
 				string name;
 				src->GetName(name);
@@ -4961,8 +5270,8 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 				set_closed(dst, chains[i]->IsClosed());
 
 				move_points(chains[i], dst);
-				
-				set_surface(dst, get_surface(src),WED_GetLibraryMgr(resolver));
+
+				set_surface(dst, get_surface(src), WED_GetLibraryMgr(resolver));
 
 				sel->Insert(dst);
 				dst->SetParent(src->GetParent(), src->GetMyPosition() + 1 + i);
@@ -4979,4 +5288,410 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 	WED_RecursiveDelete(to_delete);
 
 	op->CommitOperation();
+}
+
+static void dummy_func(void* ref, const char* fmt, ...) { return; }
+
+int WED_DoConvertToJW(WED_Airport* apt, int statistics[4])
+{
+	vector<WED_RampPosition*> ramps;
+	vector<WED_ObjPlacement*> all_objects, jw_tun, jw_ext;
+	vector<WED_FacadePlacement*> jw_facs;
+	WED_ResourceMgr* rmgr = WED_GetResourceMgr(apt->GetArchive()->GetResolver());
+
+	CollectRecursive(apt, back_inserter(ramps), ThingNotHidden, TakeAlways, WED_RampPosition::sClass);
+	CollectRecursive(apt, back_inserter(all_objects), ThingNotHidden, TakeAlways, WED_ObjPlacement::sClass);
+	CollectRecursive(apt, back_inserter(jw_facs), ThingNotHidden, [&](WED_Thing* v)
+		{
+			if (auto f = dynamic_cast<WED_FacadePlacement*>(v))
+				return f->IsJetway();
+			else
+				return false;
+		}, WED_FacadePlacement::sClass);
+
+	int obj2JW_count = 0;
+	for (auto o : all_objects)
+	{
+		string res;
+		o->GetResource(res);
+		if (res.compare(0, strlen("lib/airport/Ramp_Equipment/Jetway_"), "lib/airport/Ramp_Equipment/Jetway_") == 0)
+			jw_tun.push_back(o);
+		else if (res.compare(0, strlen("lib/airport/Ramp_Equipment/JetWayEx"), "lib/airport/Ramp_Equipment/JetWayEx") == 0)
+			jw_ext.push_back(o);
+		else if (res == "lib/airport/Ramp_Equipment/250cm_Jetway_Group.agp" ||
+				 res == "lib/airport/Ramp_Equipment/400cm_Jetway_2.agp" ||
+				 res == "lib/airport/Ramp_Equipment/400cm_Jetway_3.agp" ||
+				 res == "lib/airport/Ramp_Equipment/400cm_Jetway_Group.agp" ||
+				 res == "lib/airport/Ramp_Equipment/500cm_Jetway_Group.agp")
+		{
+			vector<WED_ObjPlacement*> added_objs;
+			const agp_t* agp_info;
+			if (rmgr->GetAGP(res, agp_info))
+			{
+				replace_all_obj_in_agp(o, agp_info, apt->GetArchive(), added_objs);
+				o->SetParent(NULL, 0);
+				o->Delete();
+			}
+			for (auto ao : added_objs)
+			{
+				ao->GetResource(res);
+				if (res.compare(0, strlen("lib/airport/Ramp_Equipment/Jetway_"), "lib/airport/Ramp_Equipment/Jetway_") == 0)
+				{
+					jw_tun.push_back(ao);
+					break;
+				}
+			}
+		}
+	}
+
+	// determine the position in front of the cab where the A/C is expected to be parked and the nearest ramp start to each.
+	// then find all extensions leading up to them
+	if(ramps.size() > 0 && jw_tun.size() > 0)
+	{
+		for (auto c : jw_tun)
+		{
+			Point2 acf_pos, tun_pos, jw_pos;
+			Vector2 tun_dir;
+			c->GetLocation(gis_Geo, jw_pos);
+			string res;
+			c->GetResource(res);
+			double tun_len = res[strlen("lib/airport/Ramp_Equipment/Jetway_")] == '5' ? 20 : 15;
+			double tun_hdg = c->GetHeading();
+			NorthHeading2VectorDegs(tun_pos, tun_pos, tun_hdg, tun_dir);
+			tun_pos = jw_pos + tun_dir * 2.7 * MTR_TO_DEG_LAT;
+
+			NorthHeading2VectorDegs(tun_pos, tun_pos, tun_hdg - 30.0, tun_dir);  // hdg to place in front of cabin where the acf would be
+			tun_dir *= (tun_len + 2.0) * MTR_TO_DEG_LAT;
+			acf_pos = tun_pos + tun_dir;
+
+			double min_dist = 99999.0;
+			WED_RampPosition* closest_ramp = nullptr;
+			for(auto r : ramps)
+			{
+				Point2 pt;
+				r->GetLocation(gis_Geo, pt);
+				double d = LonLatDistMeters(pt, acf_pos);
+				if (d < min_dist)
+				{
+					min_dist = d;
+					closest_ramp = r;
+				}
+			}
+			if (min_dist < 15.0)  // only convert jetway objects into facades that are somewhat close to an actual ramp start
+			{
+				auto fac = WED_FacadePlacement::CreateTyped(apt->GetArchive());
+				fac->SetParent(c->GetParent(), c->GetMyPosition());
+				string nam;
+				c->GetName(nam);
+				fac->SetName(nam + "(conv)");
+
+				Jetway_t jw_info;
+				jw_info.size_code = tun_len < 20.0 ? 1 : 2;
+				jw_info.style_code = 1;
+				jw_info.location = tun_pos;
+				jw_info.parked_tunnel_length = tun_len;
+				jw_info.parked_tunnel_angle = fltwrap(tun_hdg - 21.0, 0, 360);  // exact tunnel heading plus pulled back a bit to ensure cabin clearance
+				jw_info.parked_cab_angle = 60.0;
+				fac->WED_FacadePlacement::ImportJetway(jw_info, dummy_func, nullptr);
+				
+				auto rng = fac->GetNthChild(0);
+
+				c->SetParent(NULL, 0);
+				c->Delete();
+
+				bool is_extended = false;
+				for (auto e = jw_ext.begin(); e != jw_ext.end(); e++)
+				{
+					// those extension can be placed either way around, so check both ends for proximity to our jetway base
+					Point2 p1, p2;
+					(*e)->GetLocation(gis_Geo, p1);
+					double hdg = (*e)->GetHeading();
+					string ext_nam;
+					(*e)->GetResource(ext_nam);
+					double len;
+					int pos = strlen("lib/airport/Ramp_Equipment/JetWayEx");
+					if(ext_nam[pos] == 't') pos++;
+					sscanf(ext_nam.c_str() + pos + 1, "%lf", &len);
+					Vector2 ext_dir;
+					NorthHeading2VectorDegs(p1, p1, hdg, ext_dir);
+					p2 = p1 + ext_dir * (len + 2.0) * MTR_TO_DEG_LAT;
+					double d1 = LonLatDistMeters(p1, tun_pos);
+					double d2 = LonLatDistMeters(p2, tun_pos);
+					if (d1 < d2)
+					{
+						p1 = p2;
+						d2 = d1;
+					}
+					if (d2 < 3.0)
+					{
+						auto p = WED_FacadeNode::CreateTyped(apt->GetArchive());
+						p->SetParent(rng, 0);
+						p->SetLocation(gis_Geo, p1);
+
+						(*e)->SetParent(NULL, 0);
+						(*e)->Delete();
+						is_extended = true;
+						jw_ext.erase(e);
+						break;
+					}
+				}
+				if (!is_extended)
+				{
+					auto p = WED_FacadeNode::CreateTyped(apt->GetArchive());
+					p->SetParent(rng, 0);
+					p->SetLocation(gis_Geo, jw_pos);
+				}
+				jw_facs.push_back(fac);
+				obj2JW_count++;
+			}
+		}
+	}
+
+	int JW_longer = 0, JW_shorter = 0, JW_inactive = 0;
+	for(auto r : ramps)
+	{
+		Point2 ramp_loc;
+		struct jw_info {
+			WED_FacadePlacement* f;
+			Point2 cabin_loc, tunnel_orig;
+			double cabin_dist;
+			IGISPointSequence* ps;
+			int last_pt;
+		};
+		vector<struct jw_info> jw_serving_us;
+
+		r->GetLocation(gis_Geo, ramp_loc);
+		for (auto f : jw_facs)
+		{
+			// find ALL close jw that face us, i.e. are intended to serve this ramp.
+			if (f->HasDockingCabin())
+			{
+				jw_info jw;
+				jw.f = f;
+				jw.ps = jw.f->GetOuterRing();
+				jw.last_pt = jw.ps->GetNumPoints() - 1;
+				jw.ps->GetNthPoint(jw.last_pt - 1)->GetLocation(gis_Geo, jw.cabin_loc);
+				jw.ps->GetNthPoint(jw.last_pt - 2)->GetLocation(gis_Geo, jw.tunnel_orig);
+				jw.cabin_dist = LonLatDistMeters(jw.cabin_loc, ramp_loc);
+				if (jw.cabin_dist <= 25.0)
+				{
+					double door_hdg = VectorDegs2NorthHeading(jw.tunnel_orig, jw.tunnel_orig, Vector2(jw.tunnel_orig, ramp_loc));
+					double tun_hdg = VectorDegs2NorthHeading(jw.tunnel_orig, jw.tunnel_orig, Vector2(jw.tunnel_orig, jw.cabin_loc));
+					double rel_angle = dobwrap(tun_hdg - door_hdg, 0, 360);
+					if (rel_angle < 90.0 || rel_angle > 340.0)
+						jw_serving_us.push_back(jw);
+				}
+			}
+		}
+
+		if (jw_serving_us.size() > 1)
+		{
+			// figure which one can most freely reach ramp, make all others non-docking
+			double closest_cabin_dist = 999;
+			jw_info closest_jw;
+			for(auto jw : jw_serving_us)
+			{
+				if (jw.cabin_dist < closest_cabin_dist)
+				{
+					closest_cabin_dist = jw.cabin_dist;
+					closest_jw = jw;
+				}
+			}
+			if (closest_cabin_dist < 100)
+			{
+				for (auto jw : jw_serving_us)
+				{
+					if (jw.f != closest_jw.f)
+					{
+						auto last_node = dynamic_cast<WED_FacadeNode*>(jw.ps->GetNthPoint(jw.last_pt));
+						last_node->SetWallType(39);
+						JW_inactive++;
+					}
+				}
+				jw_serving_us.clear();
+				jw_serving_us.push_back(closest_jw);
+			}
+		}
+
+		if(jw_serving_us.size() > 0)
+		{
+			// check if tunnel length is suitable to reach ramp with some margin for actual door locations
+			string res;
+			const fac_info_t* info;
+			jw_serving_us[0].f->GetResource(res);
+			if (rmgr->GetFac(res, info))
+			{
+				auto tun_node = dynamic_cast<WED_FacadeNode*>(jw_serving_us[0].ps->GetNthPoint(jw_serving_us[0].last_pt - 2));
+				double tun_dist = LonLatDistMeters(jw_serving_us[0].tunnel_orig, ramp_loc);
+				int wall;
+				wall = tun_node->GetWallType();
+
+				bool tunnel_is_short = false;
+				bool tunnel_is_long = false;
+				for (auto t : info->tunnels)
+					if (wall == t.idx)
+					{
+						double tun_len = LonLatDistMeters(jw_serving_us[0].cabin_loc, jw_serving_us[0].tunnel_orig);
+						switch (t.size_code)        // deliberately test for shorter range - allows some margin for actual cabin door locations
+						{
+						case 1:	tunnel_is_short = tun_dist > 21.0; 
+								break;
+						case 2:	tunnel_is_short = tun_dist > 26.0; 
+								tunnel_is_long = tun_len < 14.0 || tun_dist < 19.0;
+								break;
+						case 3:	tunnel_is_short = tun_dist > 36.0; 
+								tunnel_is_long = tun_len < 17.0 || tun_dist < 22.0;
+								break;
+						case 4:	// tunnel_is_short = tun_dist > 40.0; break; // would have to move the tunnel base !! to make it reach further.
+								tunnel_is_long = tun_len < 20.0 || tun_dist < 25.0;
+								break;
+						}
+						if (tunnel_is_short)
+							for (auto t_longer : info->tunnels)
+							{
+								if (t_longer.size_code == t.size_code + 1)
+								{
+									tun_node->SetWallType(t_longer.idx);
+									JW_longer++;
+									break;
+								}
+							}
+						else if (tunnel_is_long)
+							for (auto t_shorter : info->tunnels)
+							{
+								if (t_shorter.size_code == t.size_code - 1)
+								{
+									tun_node->SetWallType(t_shorter.idx);
+									JW_shorter++;
+									break;
+								}
+							}
+						break;
+					}
+			}
+		}
+	}
+	if (statistics)
+	{
+		*statistics++ += obj2JW_count;
+		*statistics++ += JW_longer;
+		*statistics++ += JW_shorter;
+		*statistics++ += JW_inactive;
+	}
+	return obj2JW_count + JW_longer + JW_shorter + JW_inactive;
+}
+
+
+void WED_UpgradeJetways(IResolver* resolver)
+{
+	WED_Thing* wrl = WED_GetWorld(resolver);
+	vector<WED_Airport *> all_apts;
+	int changes = 0, statistics[4] = { 0 };
+
+	CollectRecursiveNoNesting(wrl, back_inserter(all_apts), WED_Airport::sClass);
+
+	wrl->StartOperation("Upgrade Jetways");
+	for (auto a : all_apts)
+		changes += WED_DoConvertToJW(a, statistics);
+
+	if (changes > 0)
+	{
+		wrl->CommitOperation();
+		string msg("Created ");
+		msg += to_string(statistics[0]) + " JW facades from JW objects\n";
+		msg += to_string(statistics[1]) + " tunnels made longer to reach A/C\n";
+		msg += to_string(statistics[2]) + " tunnels made shorter to reach A/C\n";
+		msg += to_string(statistics[3]) + " set non-docking to avoid conflicts at ramps reached by multiple JW";
+		DoUserAlert(msg.c_str());
+	}
+	else
+		wrl->AbortOperation();
+}
+
+static int get_aged_surf(int surf, int age)
+{
+	if (surf == surf_Concrete)
+		return age == 1 ? surf_Concrete_8 : surf_Concrete_1;
+	else
+		return age == 1 ? surf_Asphalt_4 : surf_Asphalt_12;
+}
+
+int WED_DoAgePavement(WED_Airport* apt, int age)  // age 1 = older
+{
+	vector<WED_Runway*> rwys;
+	vector<WED_Taxiway*> twys;
+	vector<WED_PolygonPlacement*> pols;
+
+	int changes = 0;
+
+	CollectRecursive(apt, back_inserter(rwys));
+	CollectRecursive(apt, back_inserter(twys));
+	CollectRecursive(apt, back_inserter(pols));
+
+	for (auto r : rwys)
+	{
+		int surf = r->GetSurface();
+		if (surf == surf_Asphalt || surf == surf_Concrete)
+		{
+			r->SetSurface(get_aged_surf(surf, age));
+			changes++;
+		}
+
+		surf = r->GetShoulder();
+		if (surf == surf_Asphalt || surf == surf_Concrete)
+		{
+			r->SetShoulder(get_aged_surf(surf, age));
+			changes++;
+		}
+	}
+
+	for (auto t : twys)
+	{
+		int surf = t->GetSurface();
+		if (surf == surf_Asphalt || surf == surf_Concrete)
+		{
+			t->SetSurface(get_aged_surf(surf, age));
+			changes++;
+		}
+	}
+
+	for (auto p : pols) // thats a pretty basic upgrade, any lighter/darker than default pavements are NOT converted
+	{
+		string res;
+		p->GetResource(res);
+		if (res == "lib/airport/pavement/asphalt_3D.pol" || "lib/airport/pavements/Concrete_1D.pol")
+		{
+			int surf = surf_Asphalt;
+			if (res.find("Concrete)") != string::npos) surf = surf_Concrete;
+			surf = get_aged_surf(surf, age);
+			WED_GetLibraryMgr(p->GetArchive()->GetResolver())->GetSurfVpath(surf, res);
+			p->SetResource(res);
+			changes++;
+		}
+	}
+	return changes;
+}
+
+void WED_AgePavement(IResolver* resolver)
+{
+	WED_Thing* wrl = WED_GetWorld(resolver);
+	vector<WED_Airport*> all_apts;
+	int count = 0;
+
+	int age = ConfirmMessage("Change all XP11 default Pavement to Xp12 old/worn ? Otherwise change is to newer looking pavem.", "Yes", "No");
+
+	CollectRecursiveNoNesting(wrl, back_inserter(all_apts), WED_Airport::sClass);
+
+	wrl->StartOperation("Age Pavement");
+	for (auto a : all_apts)
+		count += WED_DoAgePavement(a, age);
+	if (count > 0)
+	{
+		wrl->CommitOperation();
+		string msg("Converted ");
+		msg += to_string(count) + " items changed";
+		DoUserAlert(msg.c_str());
+	}
+	else
+		wrl->AbortOperation();
 }

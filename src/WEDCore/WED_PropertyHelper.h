@@ -56,23 +56,23 @@ class	WED_XMLElement;
 
    Every WED_Thing has on average 10 WED_Properties and a pair of pointers to/from each property.
    The Global Airports have as of mid 2019 ~14 million WED_Things, so this adds up to over 2GB.
-   
+
    And the STL container vector<WED_PropertyItem *> is responsible for a good chunk of all that pain,
    as the pointer array is on the heap, requireing a second memory access to resolve. With large
    data structures, pretty much every memory access is a cache miss.
-   
+
    Since the WED_PropertyItems are part of the same class - they are all within 2kB in memory from
-   the WED__PropertyHelper class. Due to alignof(class) == 8 that relative distance can be encoded 
-   with just 1 byte. The vector<class *> is reduces to a memory-local char[] - saving overall 
+   the WED__PropertyHelper class. Due to alignof(class) == 8 that relative distance can be encoded
+   with just 1 byte. The vector<class *> is reduces to a memory-local char[] - saving overall
    another 24% of total memory and 5% CPU time on load, save and export.
-   
-   The maximum number of properties for any WEDEntity is 22 right now (Runways), so we define the
-   byte array to have 23 entries (plus one byte for the array size parameter).
+
+   The maximum number of properties for any WEDEntity is 28 right now (Runways), so we define the
+   byte array to have 29 entries (plus one byte for the array size parameter).
 
    Set below to 0 to disable this 2nd level of trickery.
-*/   
+*/
 
-#define PROP_PTR_OPT 23
+#define PROP_PTR_OPT 32
 
 class	WED_PropertyItem {
 public:
@@ -99,11 +99,11 @@ private:
 #if PROP_PTR_OPT
 	#define PTR_CLR(x)  (x & (1ULL << 45) - 1ULL)
 	/*
-	Unfortunately we need 2 more bits as we have 'unused' bits in the 47 bit pointers. So we clear two more bits, but need 
+	Unfortunately we need 2 more bits as we have 'unused' bits in the 47 bit pointers. So we clear two more bits, but need
 	to put them back later to restore the exact pointer.
 	Under Linux and OSX - that's easy: All constants are at the bottom of the 47bit virtual address space - so UNLESS the
 	pointer is refering to the heap - those other more significant bits are all zero.
-	But under windows - the constants are mapped at the very top, i.e. right below 0x7FFFFFFFFFFF. So we look at the 
+	But under windows - the constants are mapped at the very top, i.e. right below 0x7FFFFFFFFFFF. So we look at the
 	45th bit - the highest one we didn't clobber and copy that to the 46 and 47th bits. This restores the exact pointer
 	if pointimng to either in the top 32TB OR bottom 32TB of the 128TB / 47 bit virtual address space.
 	*/
@@ -111,11 +111,11 @@ private:
 	uintptr_t				mTitle;      // this now holds THREE tightly packed offsets in its 19 MSBits to save even more memory
 	WED_PropertyHelper *	mParent;
 #else
-	/* 
-	So called "64bit" processors actually only have 48bit virtual address space - a concession to the structures and speed of the 
+	/*
+	So called "64bit" processors actually only have 48bit virtual address space - a concession to the structures and speed of the
 	virtual memory mapping hardware. So for the next decade or so, the top 17 bits of all pointers to anywhere in the userspace of
-	any x86-64 application are zero. 17 bits ? Yep - all existing OS use the MSB to distinguish between kernel and user address 
-	space - so no legal pointer can ever have the MSB be 1. And due to the way the 47 bits are required to be sign-extended, the 
+	any x86-64 application are zero. 17 bits ? Yep - all existing OS use the MSB to distinguish between kernel and user address
+	space - so no legal pointer can ever have the MSB be 1. And due to the way the 47 bits are required to be sign-extended, the
 	effective user space goes from 0x0000 0000 0000 0000 to 0x0000 7FFF FFFF FFFF. So that is why we can safely abuse the top
 	17bit to store other information, as long as we zero those bits out before the pointer is actually used.
 	*/
@@ -171,7 +171,7 @@ public:
 
 	// This is virtual so remappers like WED_Runway can "fix" the results
 	virtual	int		PropertyItemNumber(const WED_PropertyItem * item) const;
-	
+
 #if PROP_PTR_OPT
 	relPtr				mItems;
 #else
@@ -378,14 +378,14 @@ public:
 						operator set<int>&() { return value; }
 						operator set<int>() const { return value; }
 	WED_PropIntEnumSet& operator=(const set<int>& v);
-	
-	WED_PropIntEnumSet& operator+=(const int v) 
-	{ if(value.count(v) == 0) 
-		{ if (GetParent()) GetParent()->PropEditCallback(1); 
-			value.insert(v); 
+
+	WED_PropIntEnumSet& operator+=(const int v)
+	{ if(value.count(v) == 0)
+		{ if (GetParent()) GetParent()->PropEditCallback(1);
+			value.insert(v);
 			if (GetParent()) GetParent()->PropEditCallback(0);
-		} 
-		return *this; 
+		}
+		return *this;
 	}
 	WED_PropIntEnumSet(WED_PropertyHelper * parent, const char * title, int offset, int idomain, int iexclusive) :
 		WED_PropertyItem(parent, title, offset), domain(idomain), exclusive(iexclusive) { }

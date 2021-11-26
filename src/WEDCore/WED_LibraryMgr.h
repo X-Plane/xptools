@@ -36,10 +36,11 @@ enum {
 	res_Forest,
 	res_String,
 	res_Line,
+	res_Autogen,
 	res_Polygon
 #if ROAD_EDITING
 	,res_Road
-#endif	
+#endif
 };
 
 // "Virtual" package numbers...package mgr IDs packages as 0-based index.  These meta-constants are used for filtering in special ways.
@@ -55,9 +56,9 @@ enum {
 enum {
 	status_Private		= 0,		// Intentionally SORTED so that the most EXPOSED status is the HIGHEST number!
 	status_Deprecated	= 1,		// fully deprecated - invisible in hierarchy and validation failure for gateway.
-	// Order matters - everything LESS than yellow is going to fail validation
-	status_Yellow		= 2,		// half-deprecated items, visibility of deprecated, validates as public
-	// Order matters - everything GEQUAL to public is going to be public
+	// Order matters - everything < semi-deprecated is going to fail validation
+	status_SemiDeprecated		= 2,		// half-deprecated items, visibility of deprecated, validates as public
+	// Order matters - everything >= public is going to be public
 	status_Public		= 3,
 	status_New			= 4
 };
@@ -71,7 +72,7 @@ public:
 				 WED_LibraryMgr(const string& local_package);
 				~WED_LibraryMgr();
 
-				
+
 	//Returns "My Package" of .../Custom Scenery/My Package
 	//Combine with WED_PackageMgr::ComputePath to save a file in the package dir
 	string		GetLocalPackage() const;
@@ -80,13 +81,13 @@ public:
 	void		GetResourceChildren(const string& r, int filter_package, vector<string>& children);	// Pass empty resource to get roots
 	int			GetResourceType(const string& r);
 	string		GetResourcePath(const string& r, int variant = 0);
-	
+
 				// This returns true if the resource whose virtual path is "r" comes from the default library that x-plane ships with.
 	bool		IsResourceDefault(const string& r);
 	bool		IsResourceLocal(const string& r);
 	bool		IsResourceLibrary(const string& r);
 	bool		IsResourceDeprecatedOrPrivate(const string& r);
-		
+
 	string		CreateLocalResourcePath(const string& r);
 
 	virtual	void	ReceiveMessage(
@@ -98,13 +99,20 @@ public:
 	bool		DoesPackHaveLibraryItems(int package_number);
 				// indicates if art asset exported by multiple exports, i.e. has randomized appearance
 	int			GetNumVariants(const string& r);
-				// get vpath for a apt.dat taxiline line type #.
+				// gets the vpath of the resource used to dar apt.dat liner markings
 	bool		GetLineVpath(int lt, string& vpath);
+				// look up apt.dat surface types and matching public .pol vpaths
+	bool		GetSurfVpath(int surf, string& vpath);
+	int			GetSurfEnum(const string& vpath);
+				// gets all vpaths witin same vdir
+	bool		GetSameDir(const string& r, vector<pair<string, int> >& vpaths);
+
 
 private:
 
 	void			Rescan();
 	void			RescanLines();
+	void			RescanSurfaces();
 	void			AccumResource(const string& path, int package, const string& real_path, bool is_backup, bool is_default, int status);
 	static	bool	AccumLocalFile(const char * fileName, bool isDir, void * ref);
 
@@ -158,7 +166,8 @@ private:
 	res_map_t			res_table;
 
 	string				local_package;
-	map<int, string>	default_lines;  // list of art assets for sim default lines
+	map<int, string>	default_lines;        // list of art assets for sim default lines
+	map<int, string>	default_surfaces;
 };
 
 #endif /* WED_LibraryMgr_H */

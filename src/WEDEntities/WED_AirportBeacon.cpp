@@ -43,6 +43,11 @@ void		WED_AirportBeacon::SetKind(int k)
 	kind = k;
 }
 
+int 		WED_AirportBeacon::GetKind(void) const
+{
+	return kind.value;
+}
+
 void	WED_AirportBeacon::Import(const AptBeacon_t& x, void (* print_func)(void *, const char *, ...), void * ref)
 {
 	SetLocation(gis_Geo, x.location);

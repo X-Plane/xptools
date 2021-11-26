@@ -40,20 +40,15 @@ GUI_Broadcaster::~GUI_Broadcaster()
 
 void	GUI_Broadcaster::BroadcastMessage(intptr_t inMsg, intptr_t inParam)
 {
-	// BEN SEZ: for now - just make sure that a suicidal listener doesn't
-	// @#$#@ us up by editing the list while we're on it!
-	// (A suicidal listener is one that destroys itself from the
-	// receive-message callback.  The result is that our set has
-	// an item removed.  Our "who" ptr is thus possibly invalid.  But
-	// other pointers in the set are (I hope) stable, so we should
-	// be okay.
-	for (set<GUI_Listener*>::iterator next, who = mListeners.begin();
-		who != mListeners.end(); )
+	// We need to be careful because a listener may respond to a message by
+	// destroying itself and/or other listeners. So create a copy of the
+	// listener set that is guaranteed not to change while we're iterating, and
+	// check that a listener still exists before sending a message to it.
+	set<GUI_Listener*> listeners = mListeners;
+	for (GUI_Listener* who : listeners)
 	{
-		next = who;
-		++next;
-		(*who)->ReceiveMessage(this, inMsg, inParam);
-		who = next;
+		if (mListeners.count(who))
+			who->ReceiveMessage(this, inMsg, inParam);
 	}
 }
 

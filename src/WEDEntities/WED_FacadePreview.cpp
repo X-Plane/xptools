@@ -21,6 +21,12 @@
  *
  */
 
+#if APL
+	#include <OpenGL/gl.h>
+#else
+	#include "glew.h"
+#endif
+
 #include "XObjReadWrite.h"
 #include "ObjConvert.h"
 #include "CompGeomDefs2.h"
@@ -31,12 +37,13 @@
 #include "ITexMgr.h"
 #include "TexUtils.h"
 #include "GUI_GraphState.h"
+#include "GUI_DrawUtils.h"
+#include "WED_DebugLayer.h"
 #include "WED_DrawUtils.h"
 
 #include "WED_ResourceMgr.h"
 #include "WED_FacadePreview.h"
 #include "WED_PreviewLayer.h"
-
 
 static bool cull_obj(const XObj8 * o, double ppm)                   // cut off if laterally smaller than 5 pixels
 {
@@ -796,9 +803,6 @@ struct obj {
 	float	x,y,z,r;
 };
 
-#include "GUI_DrawUtils.h"
-#include "WED_DebugLayer.h"
-
 void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, const fac_info_t& info, const Polygon2& footprint, const vector<int>& choices,
 	double fac_height, GUI_GraphState * g, bool want_thinWalls, double ppm_for_culling)
 {
@@ -960,10 +964,8 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 		}
 	}
 	else // type 2 facades
-	{
-		Vector2 miter;
+	{	CHECK_GL_ERR
 		roof_height =  -9.9e9;
-
 		for(auto& f : info.floors)
 		{
 			double h = f.max_roof_height();
@@ -974,7 +976,69 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 			}
 		}
 		if(!bestFloor || bestFloor->walls.empty()) return;
-		
+
+		if (info.idx_vbo == 0)
+		{
+			vector<GLushort> idx;
+			vector<GLfloat> vert;
+			for (auto& f : info.floors)
+				for (auto& t : f.templates)
+				{
+					for (auto& m : t.meshes)
+					{
+						const_cast<int&>(m.idx_start) = idx.size();
+						const_cast<int&>(m.idx_cnt) = m.idx.size();
+						for (auto i : m.idx)
+							idx.push_back(i);
+						const_cast<int&>(m.mesh_start) = vert.size();
+						int ni = m.xyz.size() / 3;
+						for (int ind = 0; ind < ni; ++ind)
+						{
+							vert.push_back(m.xyz[3 * ind]);
+							vert.push_back(m.xyz[3 * ind + 1]);
+							vert.push_back(m.xyz[3 * ind + 2]);
+							vert.push_back(m.nml[3 * ind]);
+							vert.push_back(m.nml[3 * ind] + 1);
+							vert.push_back(m.nml[3 * ind] + 2);
+							vert.push_back(m.uv[2 * ind]);
+							vert.push_back(m.uv[2 * ind + 1]);
+						}
+					}
+				}
+			GLuint vbo[2];
+			glGenBuffers(2, vbo);                           CHECK_GL_ERR
+			glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);          CHECK_GL_ERR
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1]);  CHECK_GL_ERR
+			glBufferData(GL_ARRAY_BUFFER, vert.size() * sizeof(GLfloat), vert.data(), GL_STATIC_DRAW); CHECK_GL_ERR
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, idx.size() * sizeof(GLushort), idx.data(), GL_STATIC_DRAW); CHECK_GL_ERR
+			glBindBuffer(GL_ARRAY_BUFFER, 0);               CHECK_GL_ERR
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);       CHECK_GL_ERR
+			const_cast<unsigned int&>(info.vert_vbo) = vbo[0];
+			const_cast<unsigned int&>(info.idx_vbo) = vbo[1];
+		}
+
+		static vector<GLfloat> vbuf; // for speed - so its not re-allocated for each facade draw
+#define NUM_VBO 2
+		static GLuint sbo[NUM_VBO];
+		static int pingpong(-1);
+		if (pingpong < 0)
+		{
+			vbuf.assign(8*2560, 0.0f);   // todo: error check - could there be larger meshes for any one wall segment ? Update: Yes there is - Mod_Garage_2.fac
+			glGenBuffers(NUM_VBO, sbo);  CHECK_GL_ERR
+			for(int i = 0; i < NUM_VBO; ++i)
+			{
+				glBindBuffer(GL_ARRAY_BUFFER, sbo[i]);  CHECK_GL_ERR
+				glBufferData(GL_ARRAY_BUFFER, vbuf.size() * sizeof(GLfloat), vbuf.data(), GL_DYNAMIC_DRAW); CHECK_GL_ERR
+			}
+			glBindBuffer(GL_ARRAY_BUFFER, 0);  CHECK_GL_ERR
+			pingpong = 0;
+		}
+		glEnableClientState(GL_VERTEX_ARRAY);			CHECK_GL_ERR
+		glEnableClientState(GL_NORMAL_ARRAY);			CHECK_GL_ERR
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);	CHECK_GL_ERR
+		glDisableClientState(GL_COLOR_ARRAY);			CHECK_GL_ERR
+
+		Vector2 miter;
 		for(int w = 0; w < n_wall; ++w)
 		{
 			Segment2 inBase(footprint.side(w));
@@ -1023,29 +1087,36 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 				else
 					mi_last = 0.0;
 			}
+			glPushMatrix();
+			glTranslatef(thisPt.x(), 0, thisPt.y());
+			float angle = atan2(perpDir.y(), -perpDir.x()) * RAD_TO_DEG;
+			glRotatef(angle, 0, 1, 0);
+			glScalef(1.0, 1.0, seg_length);
 
 			int first = 1;
 			for(auto ch : our_choice.indices)
 			{
 				const REN_facade_template_t& t = bestFloor->templates[ch];
 				double segMult = seg_length * t.bounds[2];
-				
-				glPushMatrix();
-				glTranslatef(thisPt.x(), 0, thisPt.y());
-				float angle = atan2(perpDir.y(), -perpDir.x()) * RAD_TO_DEG;
-				glRotatef(angle, 0, 1, 0);
-				
-				for(auto o: t.objs)
+
+				if(t.objs.size())
 				{
-					const XObj8 * oo(info.xobjs[o.idx]);
-					if(oo && !cull_obj(oo, ppm_for_culling))
+					glPushMatrix();
+					glScalef(1.0, 1.0, 1.0/seg_length);              // so we're not drawing objects at a (slightly) wrong scale
+					for(auto o: t.objs)
 					{
-						draw_obj_at_xyz(tman, oo, o.xyzr[0], o.xyzr[1], o.xyzr[2] * seg_length, o.xyzr[3], g);
-					} 
+						const XObj8 * oo(info.xobjs[o.idx]);
+						if(oo && !cull_obj(oo, ppm_for_culling))
+						{
+							draw_obj_at_xyz(tman, oo, o.xyzr[0], o.xyzr[1], o.xyzr[2] * seg_length, o.xyzr[3], g);
+						} 
+					}
+					glPopMatrix();
+					g->BindTex(tRef ? tman->GetTexID(tRef) : 0, 0);
+					glEnableClientState(GL_VERTEX_ARRAY);
+					glEnableClientState(GL_NORMAL_ARRAY);
+					glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 				}
-				g->BindTex(tRef  ? tman->GetTexID(tRef) : 0, 0);
-				
-				glScalef(1.0, 1.0, segMult);
 #if 0
 				// There's gotta be some way to abuse some perspective transform to do the chamfering at the ends of a wall.
 				// If so, indexed drawing could be used again, vertex+attribute data drawn from a VBO - bingo !
@@ -1060,41 +1131,66 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 					glMultMatrixf(mat);
 				}
 #endif
-				glBegin(GL_TRIANGLES);
-
-				if(!info.nowallmesh && (want_thinWalls || (info.has_roof && t.bounds[1] > 0.5) || (!info.is_ring && t.bounds[0] > 0.5)))
-				
-				for(auto& m : t.meshes) // all meshes == maximum LOD detail, all the time. 
+				if (!info.nowallmesh && (want_thinWalls || (info.has_roof && t.bounds[1] > 0.5) || (!info.is_ring && t.bounds[0] > 0.5)))
 				{
-					for(auto ind : m.idx)
+					for (auto& m : t.meshes) // all meshes == maximum LOD detail, all the time.
 					{
-						glTexCoord2fv(&m.uv[2*ind]);
-						glNormal3fv(&m.nml[3*ind]);
-#if 0
-						glVertex3fv(&m.xyz[3*ind]);
-#else
-						float y = m.xyz[3*ind+2];
-						float x = m.xyz[3*ind];
-						if(first == 1)
-							y +=  mi_first/segMult * x * (1.0+y);
-						if(first == our_choice.indices.size())
-							y +=  mi_last/segMult * x * m.xyz[3*ind+2];
-						glVertex3f(m.xyz[3*ind], m.xyz[3*ind+1], y);
-#endif						
+						const GLfloat * vert_ptr = nullptr;
+						if ((first == 1 || first == our_choice.indices.size()) && ppm_for_culling * t.bounds[0] > 5.0)
+						{
+							vbuf.clear();
+							int ni = m.xyz.size() / 3;
+							for (int ind = 0; ind < ni; ++ind)
+							{
+								float y = m.xyz[3 * ind + 2];
+								float x = m.xyz[3 * ind];
+								if (first == 1)
+									y += mi_first * x * (1.0 + y / t.bounds[2]);
+								if (first == our_choice.indices.size())
+									y += mi_last * x * y / t.bounds[2];
+								vbuf.push_back(x);
+								vbuf.push_back(m.xyz[3 * ind + 1]);
+								vbuf.push_back(y);
+								vbuf.push_back(m.nml[3 * ind]);
+								vbuf.push_back(m.nml[3 * ind] + 1);
+								vbuf.push_back(m.nml[3 * ind] + 2);
+								vbuf.push_back(m.uv[2 * ind]);
+								vbuf.push_back(m.uv[2 * ind + 1]);
+							}
+							++pingpong;
+							if (pingpong >= NUM_VBO) pingpong = 0;
+
+							glBindBuffer(GL_ARRAY_BUFFER, sbo[pingpong]);
+							glBufferSubData(GL_ARRAY_BUFFER, 0, vbuf.size() * sizeof(GLfloat), vbuf.data());
+						}
+						else
+						{
+							glBindBuffer(GL_ARRAY_BUFFER, info.vert_vbo);
+							vert_ptr = ((GLfloat *) 0) + m.mesh_start;
+						}
+						glVertexPointer(  3, GL_FLOAT, 8 * sizeof(GLfloat), vert_ptr);		CHECK_GL_ERR
+						glNormalPointer(     GL_FLOAT, 8 * sizeof(GLfloat), vert_ptr + 3);	CHECK_GL_ERR
+						glTexCoordPointer(2, GL_FLOAT, 8 * sizeof(GLfloat), vert_ptr + 6);	CHECK_GL_ERR
+						glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, info.idx_vbo);
+						glDrawElements(GL_TRIANGLES, m.idx_cnt, GL_UNSIGNED_SHORT, ((GLushort *)0) + m.idx_start); CHECK_GL_ERR
 					}
 				}
-				glEnd();
-				glPopMatrix();
 				first++;
-				thisPt += segDir * segMult;
+				glTranslatef(0, 0, -t.bounds[2]);
 			}
-			mi_first = mi_last;
+			glPopMatrix();
 		}
+		glDisableClientState(GL_VERTEX_ARRAY);			CHECK_GL_ERR
+		glDisableClientState(GL_NORMAL_ARRAY);			CHECK_GL_ERR
+		glDisableClientState(GL_TEXTURE_COORD_ARRAY);	CHECK_GL_ERR
+		glBindBuffer(GL_ARRAY_BUFFER, 0);				CHECK_GL_ERR
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);		CHECK_GL_ERR
+
 		if(info.has_roof && !info.is_ring)
 			roof_pts.push_back(footprint.back());    // we didn't process the last wall - but still need a complete roof. E.g. Fenced Parking Facades.
 	}
 
-	if (info.has_roof) // && want_roof
+	if (info.has_roof && roof_pts.size() > 2) // && want_roof
 	{
 		tRef = tman->LookupTexture(info.roof_tex.c_str() ,true, tex_Wrap | tex_Compress_Ok | tex_Mipmap);
 		g->BindTex(tRef ? tman->GetTexID(tRef) : 0, 0);
@@ -1234,6 +1330,10 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 						new_pts.push_back(Point2( (dirVec.dot(Vector2(p))   + dirDot)  / info.roof_scale_s,
 						                           (perpVec.dot(Vector2(p)) + perpDot) / info.roof_scale_t));
 					}
+					if (bestFloor->roofs[xtra_roofs].two_sided)
+						glDisable(GL_CULL_FACE);
+					else
+						glEnable(GL_CULL_FACE);
 					glPolygon2(new_pts.data(), true, nullptr, roof_pts.size(), roof_height);
 					
 					xtra_roofs--;

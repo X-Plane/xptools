@@ -50,6 +50,7 @@
 #include "WED_TruckDestination.h"
 #include "WED_Airport.h"
 #include "WED_RampPosition.h"
+#include "WED_FacadePlacement.h"
 #include "WED_FacadeRing.h"
 #include "WED_Windsock.h"
 #include "WED_AirportBeacon.h"
@@ -57,9 +58,12 @@
 #include "WED_DrawUtils.h"
 #include "GUI_DrawUtils.h"
 #include "WED_TaxiRoute.h"
+#include "WED_RoadEdge.h"
 #include "WED_RoadNode.h"
 #include "WED_AirportBoundary.h"
 #include "WED_ATCLayer.h"
+#include "WED_LinePlacement.h"
+#include "WED_ResourceMgr.h"
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -94,7 +98,9 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 	int locked = IsLockedNow(entity);
 	WED_Color struct_color = selected ? (locked ? wed_StructureLockedSelected : wed_StructureSelected) :
 										(locked ? wed_StructureLocked		 : wed_Structure);
-	glColor4fv(WED_Color_RGBA(struct_color));
+	
+	float * colorf = WED_Color_RGBA(struct_color);
+	glColor4fv(colorf);
 
 	GISClass_t 		kind		= entity->GetGISClass();
 	const char *	sub_class	= entity->GetGISSubtype();
@@ -112,13 +118,14 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 			bounds.p2 = GetZoomer()->LLToPixel(bounds.p2);
 			if (bounds.xspan() < GetAirportTransWidth() && bounds.yspan() < GetAirportTransWidth())
 			{
-				float * f1 = WED_Color_RGBA(struct_color);
-				float * f2 = f1 + 4;
 				Point2 loc = Segment2(bounds.p1,bounds.p2).midpoint();
+				union { unsigned u; unsigned char c[4]; } colorb;
+				for (int i = 0; i < 4; ++i)
+					colorb.c[i] = intlim(colorf[i]*255, 0, 255);
 				switch(airport->GetAirportType()) {
-				case type_Airport:		mAirportIconsX.push_back(loc.x());	mAirportIconsY.push_back(loc.y());	mAirportIconsC.insert(mAirportIconsC.end(),f1,f2);		break;
-				case type_Seaport:		mSeaportIconsX.push_back(loc.x());	mSeaportIconsY.push_back(loc.y());	mSeaportIconsC.insert(mSeaportIconsC.end(),f1,f2);		break;
-				case type_Heliport:		mHeliportIconsX.push_back(loc.x());	mHeliportIconsY.push_back(loc.y());	mHeliportIconsC.insert(mHeliportIconsC.end(),f1,f2);	break;
+				case type_Airport:		mAirportIconsXY.push_back(loc.x());	mAirportIconsXY.push_back(loc.y());	mAirportIconsC.push_back(colorb.u);	break;
+				case type_Seaport:		mSeaportIconsXY.push_back(loc.x());	mSeaportIconsXY.push_back(loc.y());	mSeaportIconsC.push_back(colorb.u);	break;
+				case type_Heliport:		mHeliportIconsXY.push_back(loc.x());mHeliportIconsXY.push_back(loc.y());mHeliportIconsC.push_back(colorb.u);	break;
 				}
 				return false;
 			}
@@ -173,7 +180,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 			if (has_blas2)				glShape2v(GL_LINE_LOOP, blas2, 4);
 
 			float * white = locked ? WED_Color_RGBA(wed_StructureLocked) : WED_Color_RGBA(wed_pure_white);
-			
+
 			if (mRealLines) glColor4fv(white);
 			if (has_disp1)				glShape2v(GL_LINE_LOOP, disp1,4);
 			if (has_disp2)				glShape2v(GL_LINE_LOOP, disp2,4);
@@ -191,23 +198,32 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 				else
 					Th2 = Midpoint2(corners[1],corners[2]);
 
-				pair<int,int> e = rwy->GetRunwayEnumsOneway();
 				float hdg = rwy->GetHeading();
-				
-				if(e.first != atc_Runway_None)
+				string nam, nam_1, nam_2;
+				rwy->GetName(nam);
+				auto pos = nam.find('/');
+				if (pos != string::npos)
+				{
+					nam_1 = nam.substr(0, pos);
+					nam_2 = nam.substr(pos + 1, string::npos);
+				}
+				else
+					nam_1 = nam;
+
+				if(!nam_1.empty())
 				{
 					glPushMatrix();                  // rotate the numbers properly
 					glTranslatef(Th1.x(), Th1.y(), 0);
-					glRotatef(-hdg,0,0,1);
-					GUI_FontDraw(g, font_UI_Basic, white, 0, 10, ENUM_Desc(e.first), align_Center);
+					glRotatef(-hdg, 0, 0, 1);
+					GUI_FontDraw(g, font_UI_Basic, white, 0, 10, nam_1.c_str(), align_Center);
 					glPopMatrix();
 				}
-				if(e.second != atc_Runway_None) 
+				if (!nam_2.empty())
 				{
 					glPushMatrix();
 					glTranslatef(Th2.x(), Th2.y(), 0);
-					glRotatef(180-hdg,0,0,1);
-					GUI_FontDraw(g, font_UI_Basic, white, 0, 10, ENUM_Desc(e.second), align_Center);
+					glRotatef(180 - hdg, 0, 0, 1);
+					GUI_FontDraw(g, font_UI_Basic, white, 0, 10, nam_2.c_str(), align_Center);
 					glPopMatrix();
 				}
 				g->SetTexUnits(0);
@@ -226,7 +242,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 			WED_AirportBeacon *		beacon;
 			IGISPoint *				pt = NULL;
 			const char *			icon = NULL;
-			
+
 				 if (sub_class == WED_TowerViewpoint::sClass&& (tower  = SAFE_CAST(WED_TowerViewpoint, entity)) != NULL) pt = tower , icon = "map_towerview.png";
 			else if (sub_class == WED_Windsock::sClass		&& (sock   = SAFE_CAST(WED_Windsock		 , entity)) != NULL) pt = sock  , icon = "map_windsock.png" ;
 			else if (sub_class == WED_AirportBeacon::sClass && (beacon = SAFE_CAST(WED_AirportBeacon , entity)) != NULL) pt = beacon, icon = "map_beacon.png"   ;
@@ -234,10 +250,10 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 //			else pt = SAFE_CAST(IGISPoint,entity);
 			if (pt)
 			{
-				if (icon) 
+				if (icon)
 				{
 					// Pretty much all non-heading single point entities should have SOME kind of icon!!
-					// Off-hand I think windsocks, tower viewpoints and airport-beacons are the only ones 
+					// Off-hand I think windsocks, tower viewpoints and airport-beacons are the only ones
 					// we have right now.
 					Point2			l;
 					pt->GetLocation(gis_Geo,l);
@@ -361,6 +377,41 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 
 				bool showRealLines = mRealLines && z->GetPPM() * 0.4 <= MIN_PIXELS_PREVIEW;
 
+				if(sub_class == WED_LinePlacement::sClass && showRealLines)
+				{
+					auto lin = dynamic_cast<WED_LinePlacement*>(entity);
+
+					WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetResolver());
+					string vpath;
+					const lin_info_t * linfo;
+					lin->GetResource(vpath);
+					if (rmgr->GetLin(vpath,linfo))
+						if(!(linfo->rgb[0] == 0.0 && linfo->rgb[1] == 0.0 && linfo->rgb[2] == 0.0))
+						{
+							int locked = 0;
+							WED_Entity * thing = dynamic_cast<WED_Entity *>(lin);
+							while(thing)
+							{
+								if(thing->GetLocked())	{ locked=1; break; }
+								thing = dynamic_cast<WED_Entity *>(thing->GetParent());
+							}
+							if (locked)
+								glColor3fv(linfo->rgb);
+							else                           // do some color correction to account for the green vs grey line
+								glColor3f(min(1.0,linfo->rgb[0]+0.2),max(0.0,linfo->rgb[1]-0.0),min(1.0,linfo->rgb[2]+0.2));
+
+							for(int i = 0; i < lin->GetNumSides(); ++i)
+							{
+								vector<Point2>	pts;
+								SideToPoints(ps,i,GetZoomer(), pts);
+								glLineWidth(3);
+								glShape2v(GL_LINES, &*pts.begin(), pts.size());
+								glLineWidth(1);
+							}
+							glColor4fv(WED_Color_RGBA(struct_color));
+						}
+				}
+
 				for (i = 0; i < n; ++i)
 				{
 					set<int>		attrs;
@@ -398,7 +449,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 						pts.push_back(b.p1);
 						pts.push_back(b.p2);
 						if (i == 0 && sub_class == WED_FacadeRing::sClass)
-						{    
+						{
 							mp = b.p1 + Vector2(b.p1, b.p2) * 0.5;  // facade ground contact / 1st segment marker
 						}
 					}
@@ -409,17 +460,52 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 						g->SetTexUnits(0);
 						glColor4fv(WED_Color_RGBA(struct_color));
 					}
-					
+					if(sub_class == WED_FacadeRing::sClass)
+					{
+						const float colors[18] = { 1, 0, 0,	 1, 1, 0,  0, 1, 0,    // red, yellow, green
+												   0, 1, 1,  0, 0, 1,  1, 0, 1,};  // aqua, blue, cyan
+						int param = 0;
+						auto fac = dynamic_cast<WED_FacadePlacement*>(dynamic_cast<WED_Thing*>(entity)->GetParent());
+						if(fac && fac->HasCustomWalls())
+						{
+							Bezier2		bp;
+							ps->GetSide(gis_Param,i,b);
+							param = b.p1.x();
+						}
+						glColor3fv(colors + (param % 6) * 3);
+						glShapeOffset2v(GL_LINE_STRIP, &*pts.begin(), pts.size(), -2);
+						glColor4fv(WED_Color_RGBA(struct_color));
+					}
+
 					DrawLineAttrs(&*pts.begin(), pts.size(), attrs);
 					if(!attrs.empty()) glColor4fv(WED_Color_RGBA(struct_color));
-					
+
 					if(kind == gis_Edge && pts.size() >= 2)
 					{
+
 						IGISEdge * gisedge = SAFE_CAST(IGISEdge, ps);
-						if(gisedge->IsOneway())
+						WED_RoadEdge * re = dynamic_cast<WED_RoadEdge *>(entity);
+						if(gisedge->IsOneway() || re != nullptr)
 						{
-							Vector2 orient(pts[pts.size()-2],pts[pts.size()-1]);
-							GUI_PlotIcon(g,"handle_arrowhead.png", pts.back().x(), pts.back().y(),atan2(orient.dx,orient.dy) * RAD_TO_DEG, 1.0);
+							Vector2 orient1(pts[0],pts[1]);
+							Vector2 orient2(pts[pts.size()-2],pts[pts.size()-1]);
+							double sq_len = Vector2(b.p1,b.p2).squared_length();
+
+							if( mVertices && re && (sq_len > 25*25) )
+							{
+								if( i == 0 )
+								{
+									GUI_PlotIcon(g,"ArrowHeadRoadS.png", pts.front().x(), pts.front().y(),atan2(orient1.dx,orient1.dy) * RAD_TO_DEG,1);
+								}
+								if(i == n-1)
+								{
+									GUI_PlotIcon(g,"ArrowHeadRoadE.png", pts.back().x() , pts.back().y() ,atan2(orient2.dx,orient2.dy) * RAD_TO_DEG,1);
+								}
+							}
+
+							if(!re)
+								GUI_PlotIcon(g,"handle_arrowhead.png", pts.back().x(), pts.back().y(),atan2(orient2.dx,orient2.dy) * RAD_TO_DEG, 1);
+
 							g->SetTexUnits(0);
 						}
 					}
@@ -481,34 +567,33 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 				Point2	pts[2];
 				box->GetMin()->GetLocation(gis_Geo,pts[0]);
 				box->GetMax()->GetLocation(gis_Geo,pts[1]);
-				GetZoomer()->LLToPixelv(pts,pts,2);
 				if(locked || selected)
 					glColor4fv(WED_Color_RGBA_Alpha(struct_color, 1.0/*mPavementAlpha*/, storage));
 				else
 					glColor4fv(WED_Color_RGBA_Alpha(wed_Link, 1.0/*mPavementAlpha*/, storage));
+
+				vector<Point2> pix;
+				BoxToPoints(pts[0], pts[1], GetZoomer(), pix);
+
 				glBegin(GL_LINE_LOOP);
-				glVertex2f(pts[0].x(), pts[0].y());
-				glVertex2f(pts[0].x(), pts[1].y());
-				glVertex2f(pts[1].x(), pts[1].y());
-				glVertex2f(pts[1].x(), pts[0].y());
+				glVertex2v(pix.data(), pix.size());
 				glEnd();
 
 				if(selected)
 				{
 					glColor4fv(WED_Color_RGBA_Alpha(struct_color, HILIGHT_ALPHA, storage));
-					glBegin(GL_QUADS);
-					glVertex2f(pts[0].x(), pts[0].y());
-					glVertex2f(pts[0].x(), pts[1].y());
-					glVertex2f(pts[1].x(), pts[1].y());
-					glVertex2f(pts[1].x(), pts[0].y());
+					glDisable(GL_CULL_FACE);
+					glBegin(GL_POLYGON);
+					glVertex2v(pix.data(), pix.size());
 					glEnd();
+					glEnable(GL_CULL_FACE);
 				}
 			}
 		}
 		break;
 
 	case gis_Composite:
-		if(sub_class != WED_AirportBoundary::sClass)      // boundaries are not down-clickable in the interior, but still get a highlighted interior 
+		if(sub_class != WED_AirportBoundary::sClass)      // boundaries are not down-clickable in the interior, but still get a highlighted interior
 			break;
 	case gis_Polygon:
 		/******************************************************************************************************************************************************
@@ -583,9 +668,9 @@ bool		WED_StructureLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity *
 					ITexMgr * mgr = WED_GetTexMgr(GetResolver());
 					TexRef ref = mgr->LookupTexture(img_file.c_str(),false,tex_Compress_Ok);
 					g->SetState(0,ref ? 1 : 0,0, 1, 1, 0, 0);
-					
-					if (ref) 
-					{ 
+
+					if (ref)
+					{
 						g->BindTex(mgr->GetTexID(ref),0);
 						int vis_x, vis_y, tot_x, tot_y;
 						mgr->GetTexInfo(ref,&vis_x,&vis_y,&tot_x,&tot_y, NULL, NULL);
@@ -634,7 +719,7 @@ bool		WED_StructureLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity *
 		}
 		break;
 	}
-	// This one is important - we want a clean state for the per-entity structure drawing. 
+	// This one is important - we want a clean state for the per-entity structure drawing.
 	// This code is executed ONCE prior to all pre-entity drawing, so even the first entity is visible.
 	g->SetState(false,0,false,false,true,false,false);
 	return true;
@@ -684,25 +769,22 @@ void		WED_StructureLayer::DrawStructure(bool inCurrent, GUI_GraphState * g)
 	// is not dealloated, so this works up a high-water-mark of icons.  This is good, as it means
 	// that in the long term our memory usage will stabilize.
 	float scale = GetAirportIconScale();
-	if (!mAirportIconsX.empty())
+	if (!mAirportIconsXY.empty())
 	{
-		GUI_PlotIconBulk(g,"map_airport.png", mAirportIconsX.size(), &*mAirportIconsX.begin(), &*mAirportIconsY.begin(), &*mAirportIconsC.begin(), scale);
-		mAirportIconsX.clear();
-		mAirportIconsY.clear();
+		GUI_PlotIconBulk(g,"map_airport.png", mAirportIconsXY.size()/2, mAirportIconsXY.data(), nullptr, mAirportIconsC.data(), scale);
+		mAirportIconsXY.clear();
 		mAirportIconsC.clear();
 	}
-	if (!mSeaportIconsX.empty())
+	if (!mSeaportIconsXY.empty())
 	{
-		GUI_PlotIconBulk(g,"map_seaport.png", mSeaportIconsX.size(), &*mSeaportIconsX.begin(), &*mSeaportIconsY.begin(), &*mSeaportIconsC.begin(), scale);
-		mSeaportIconsX.clear();
-		mSeaportIconsY.clear();
+		GUI_PlotIconBulk(g,"map_seaport.png", mSeaportIconsXY.size()/2, mSeaportIconsXY.data(), nullptr, mSeaportIconsC.data(), scale);
+		mSeaportIconsXY.clear();
 		mSeaportIconsC.clear();
 	}
-	if (!mHeliportIconsX.empty())
+	if (!mHeliportIconsXY.empty())
 	{
-		GUI_PlotIconBulk(g,"map_heliport.png", mHeliportIconsX.size(), &*mHeliportIconsX.begin(), &*mHeliportIconsY.begin(), &*mHeliportIconsC.begin(), scale);
-		mHeliportIconsX.clear();
-		mHeliportIconsY.clear();
+		GUI_PlotIconBulk(g,"map_heliport.png", mHeliportIconsXY.size()/2, mHeliportIconsXY.data(), nullptr, mHeliportIconsC.data(), scale);
+		mHeliportIconsXY.clear();
 		mHeliportIconsC.clear();
 	}
 }

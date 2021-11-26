@@ -33,7 +33,7 @@
 DEFINE_PERSISTENT(WED_ObjPlacement)
 TRIVIAL_COPY(WED_ObjPlacement,WED_GISPoint_Heading)
 
-WED_ObjPlacement::WED_ObjPlacement(WED_Archive * a, int i) : 
+WED_ObjPlacement::WED_ObjPlacement(WED_Archive * a, int i) :
 	WED_GISPoint_Heading(a,i),
 	has_msl(this,PROP_Name("Elevation Mode", XML_Name("obj_placement","custom_msl")), ObjElevationType, obj_setToGround),
 	msl    (this,PROP_Name("Elevation",     XML_Name("obj_placement","msl")), 0, 5, 3),
@@ -102,21 +102,53 @@ void	WED_ObjPlacement::Rotate(GISLayer_t l,const Point2& center, double angle)
 	WED_GISPoint_Heading::Rotate(l,center,angle);
 }
 
-double 	WED_ObjPlacement::GetVisibleDeg(void) const
+double WED_ObjPlacement::GetTowerViewHgt(void)
 {
-	return visibleWithinDeg; // one note - 
+#if WED
+	WED_ResourceMgr* rmgr = WED_GetResourceMgr(GetArchive()->GetResolver());
+	if (rmgr)
+	{
+		const XObj8* o;
+		const agp_t* a;
+		if (rmgr->GetObj(resource.value, o))
+		{
+			if (o->viewpoint_height >= 0.0)
+			{
+				return (HasCustomMSL() == 2) * GetCustomMSL() + o->viewpoint_height;
+			}
+		}
+		else if (rmgr->GetAGP(resource.value, a))      // find the first object with a viewpoint nad shift it up per scraper or delta from the .agp
+		{
+			for (auto ob : a->tiles.front().objs)
+			{
+				double hgt = ob.obj->viewpoint_height;
+				if (hgt >= 0.0)
+				{
+					if (ob.scp_step > 0.0 && HasCustomMSL() == 2 && GetCustomMSL() > ob.scp_min)
+						hgt += floor((min(GetCustomMSL(), (double) ob.scp_max) - ob.scp_min) / ob.scp_step) * ob.scp_step;
+					else
+						hgt += ob.z;
+					return hgt;
+				}
+			}
+		}
+	}
+	return -1.0;
+
+#endif
 }
 
-bool		WED_ObjPlacement::Cull(const Bbox2& b) const
-{
 
+
+double 	WED_ObjPlacement::GetVisibleDeg(void) const
+{
 	// caching the objects dimension here for off-display culling in the map view. Its disregarding object rotation
 	// and any lattitude dependency in the conversion, so the value will be choosen sufficiently pessimistic.
 #if WED
 	if(visibleWithinDeg < 0.0)                            // so we only do this once for each object, ever
 	{
-		float * f = (float *) &visibleWithinDeg;          // tricking the compiler, breaking all rules. But Cull() must be const ...
-		*f = GLOBAL_WED_ART_ASSET_FUDGE_FACTOR;           // the old, brain-dead visibility rule of thumb
+		visibleWithinDeg = GLOBAL_WED_ART_ASSET_FUDGE_FACTOR;           // the old, brain-dead visibility rule of thumb
+		visibleWithinMeters = 10.0;                       // just a wild guess
 		WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetArchive()->GetResolver());
 		if(rmgr)
 		{
@@ -129,20 +161,45 @@ bool		WED_ObjPlacement::Cull(const Bbox2& b) const
 //			int n = GetNumVariants(resource.value);   // no need to cycle through these - only the first variant is used for preview
 			if (rmgr->GetObj(resource.value, o))
 			{
-				*f = pythag(max(fabs(o->xyz_max[0]), fabs(o->xyz_min[0])), max(fabs(o->xyz_max[2]), fabs(o->xyz_min[2]))) * 1.2 * mtr_to_lon;
+				visibleWithinDeg = pythag(max(fabs(o->xyz_max[0]), fabs(o->xyz_min[0])), max(fabs(o->xyz_max[2]), fabs(o->xyz_min[2]))) * 1.2 * mtr_to_lon;
+				visibleWithinMeters = pythag(
+					max(fabs(o->xyz_max[0]), fabs(o->xyz_min[0])),
+					max(fabs(o->xyz_max[1]), fabs(o->xyz_min[1])),
+					max(fabs(o->xyz_max[2]), fabs(o->xyz_min[2])));
 			}
 			else if(rmgr->GetAGP(resource.value,agp))
 			{
-				*f = pythag(max(fabs(agp->xyz_max[0]), fabs(agp->xyz_min[0])), max(fabs(agp->xyz_max[2]), fabs(agp->xyz_min[2]))) * 1.2 * mtr_to_lon;
+				auto ti = agp->tiles.front();
+				visibleWithinDeg = pythag(max(fabs(ti.xyz_max[0]), fabs(ti.xyz_min[0])), max(fabs(ti.xyz_max[2]), fabs(ti.xyz_min[2]))) * 1.2 * mtr_to_lon;
+				visibleWithinMeters = pythag(
+					max(fabs(ti.xyz_max[0]), fabs(ti.xyz_min[0])),
+					max(fabs(ti.xyz_max[1]), fabs(ti.xyz_min[1])),
+					max(fabs(ti.xyz_max[2]), fabs(ti.xyz_min[2])));
 			}
 		}
 	}
 #endif
+
+	return visibleWithinDeg; // one note -
+}
+
+double 	WED_ObjPlacement::GetVisibleMeters(void) const
+{
+	GetVisibleDeg();
+
+	return visibleWithinMeters;
+}
+
+bool		WED_ObjPlacement::Cull(const Bbox2& b) const
+{
+	// Make sure visibleWithinDeg has been updated.
+	GetVisibleDeg();
+
 // This adds a radical approach to culling - drop ALL visible part, like preview/structure/handles/highlight if its too small.
 // Thois will make items completely invisible, but keeps thm selectable. Very similar as the "too small to go in" apprach where whole
 // groups or airport drop out of view.
 // Results in only a verw cases in users surprises - as large group of isolated items (like forests drawn as individual tree objects).
-// This practive of drawing trees comoes a popular "bad paractive" for gateway airports now - which result in sceneries that do not scale 
+// This practive of drawing trees comoes a popular "bad paractive" for gateway airports now - which result in sceneries that do not scale
 // very well with rendering settings.
 // This concept could be enhanced by passing an additional parameter into the Cull() function to allow items to cull themselves differently
 // based on structure/preview or even tool views.

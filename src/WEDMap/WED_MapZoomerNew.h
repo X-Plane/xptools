@@ -45,28 +45,29 @@
 
 */
 
+#include "WED_Camera.h"
+
 class	WED_MapZoomerNew : public GUI_ScrollerPaneContent {
 public:
-
-					 WED_MapZoomerNew();
+					 WED_MapZoomerNew(WED_Camera * c = nullptr);
 	virtual			~WED_MapZoomerNew();
 	// The map zoomer converts lat/lon coordinates to pixel coordinates.
 	// This API is called by just about anything that needs to do coordinate
 	// conversion.
 
-			double	XPixelToLon(double);
-			double	YPixelToLat(double);
-			double	LonToXPixel(double);
-			double	LatToYPixel(double);
+			double	XPixelToLon(double) const;  // Warning: With Map projection - these fonversions only work for points near the center of the map.
+			double	YPixelToLat(double) const;  // Use PixelToLL / LLToPixel whenever possible, as only these include GeographicProjection
+			double	LonToXPixel(double) const;
+			double	LatToYPixel(double) const;
 
-			Point2	PixelToLL(const Point2& p);
-			Point2	LLToPixel(const Point2& p);
+			Point2	PixelToLL(const Point2& p) const;
+			Point2	LLToPixel(const Point2& p) const;
 
-			void	PixelToLLv(Point2 * dst, const Point2 * src, int n);
-			void	LLToPixelv(Point2 * dst, const Point2 * src, int n);
+			void	PixelToLLv(Point2 * dst, const Point2 * src, int n) const;
+			void	LLToPixelv(Point2 * dst, const Point2 * src, int n) const;
 
-			double	GetPPM(void);
-			double	GetClickRadius(double pixels);
+			double	GetPPM(void) const;
+			double	GetClickRadius(double pixels) const;
 			long long	CacheKey(void) { return mCacheKey; }
 
 	// This API is called by the map class to set up and modify the zoomer
@@ -126,27 +127,65 @@ public:
 	virtual	void	ScrollH(float xOffset);
 	virtual	void	ScrollV(float yOffset);
 
+			// Note that unlike the corresponding WED_Camera methods, these take lat/lon coordinates.
+			double	PixelSize(const Bbox2& bboxLL) const;
+			double	PixelSize(const Bbox2& bboxLL, double featureSize) const;
+			double	PixelSize(const Point2& positionLL, double diameter) const;
+
+			void	PushMatrix(void);
+			void	Rotatef(float r, float x, float y, float z);
+			void	Translatef(float x, float y, float z);
+			void	Scalef(float x, float y, float z);
+			void	PopMatrix(void);
+
 protected:
+			void	SetPPM(double ppm);
+	WED_Camera * 	cam;
+
 			void	SetPixelBounds(					// Set the area on the screen the user
 							double 	inLeft,			// can see.
 							double	inBottom,
 							double	inRight,
 							double	inTop);
-
+			void	SetPixelCenter(					// Set the position in pixel coordinates
+							double x,				// that corresponds to the lat/lon center position.
+							double y);
 
 private:
 
 			void	RecalcAspectRatio(void);
+			double	wagner_proj_mult(double lat) const;
+			double	gnomonic_proj_cos(double lat) const;
+
+
+			double  LLToXPixel_gnomonic(const Point2& pt) const;
+			double  LLToYPixel_gnomonic(const Point2& pt) const;
 
 	double	mPixels[4];
 	double	mLogicalBounds[4];
 	double	mLatCenter;
 	double	mLonCenter;
-	double	mLonCenterCOS;
+	double	mCenterX;
+	double	mCenterY;
+	double	mLatCenterCOS, mLatCenterSIN;
+	double  mCenterCOS;
 	long long mCacheKey;
-protected:
-	double	mPixel2DegLat;
+	double  mMapSize;
 
+	class mapScale {
+	public:
+		mapScale(void) : mDegLat2Pixel(1.0), mPixel2DegLat(1.0), mPPM(1.0) {}
+
+		void   operator= (double Pixel2DegLat);
+		double operator()(void) const { return mPixel2DegLat; }
+		double inv(void) const { return mDegLat2Pixel; }
+		double ppm(void) const { return mPPM; }
+	private:
+		double	mPixel2DegLat;
+		double	mDegLat2Pixel;
+		double	mPPM;
+	};
+	mapScale	mPixel2DegLat;
 };
 
 #endif

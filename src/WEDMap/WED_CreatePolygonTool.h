@@ -34,13 +34,13 @@ enum CreateTool_t {
 	create_Boundary,
 	create_Marks,
 	create_Hole,
-
 	create_Facade,
+
 	create_Forest,
 	create_String,
 	create_Line,
+	create_Autogen,
 	create_Polygon
-
 };
 
 class	WED_CreatePolygonTool : public WED_CreateToolBase {
@@ -60,7 +60,7 @@ public:
 	// WED_MapToolNew
 	virtual	const char *		GetStatusText(void);
 
-	virtual	void		GetNthPropertyDict(int n, PropertyDict_t& dict) const;	
+	virtual	void		GetNthPropertyDict(int n, PropertyDict_t& dict) const;
 
 protected:
 
@@ -72,10 +72,12 @@ protected:
 		WED_PropIntEnumSetFilterVal		mMarkingsLights;
 
 		WED_PropStringText				mResource;
-		WED_PropDoubleText				mHeight;
+		WED_PropDoubleTextMeters		mHeight;
 		WED_PropDoubleText				mDensity;
-		WED_PropDoubleText				mSpacing;
-		
+
+		WED_PropDoubleTextMeters		mSpacing;
+		WED_PropDoubleTextMeters		mAgsHght;
+
 		WED_PropBoolText				mUVMap;
 		WED_PropBoolText				mPickWalls;
 

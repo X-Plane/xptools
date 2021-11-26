@@ -78,9 +78,9 @@ void	GUI_PlotIconBulk(
 				GUI_GraphState *			state,
 				const char *				in_resource,
 				int							count,
-				int *						x,
-				int	*						y,
-				float *						c,	//	4 floats RGBA per icon
+				short *						x_y,
+				float * 					dir_x_y, // normalized direction vector for icon heading, maybe nullptr
+				unsigned * 					colors,  // color vector in RGBA bytes, maybe nullptr
 				float						scale);
 
 

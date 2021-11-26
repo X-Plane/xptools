@@ -52,6 +52,8 @@ extern "C" {
 
 	// Returns the height of teh content area of an NSWindow *
 	int get_ns_window_height(void * window);
+
+	float get_retina_backing(void);
 	
 	// Given a list of C-string pasteboard types, registers the window to DND them
 	void register_drag_types_for_window(void * window, int count, const char * types[]);

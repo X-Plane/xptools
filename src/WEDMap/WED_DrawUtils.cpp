@@ -74,7 +74,7 @@ void PointSequenceToVector(
 			bool					dupFirst)
 {
 	int n = ps->GetNumSides();
-	
+
 	for (int i = 0; i < n; ++i)
 	{
 		Bezier2		b, buv;
@@ -88,8 +88,8 @@ void PointSequenceToVector(
 
 			int point_count = BezierPtsCount(b,z);
 
-			pts.reserve(pts.capacity() + point_count * (get_uv ? 2 : 1));
-			contours.reserve(contours.capacity() + point_count);
+			pts.reserve(pts.size() + point_count * (get_uv ? 2 : 1));
+			contours.reserve(contours.size() + point_count);
 			for (int k = 0; k < point_count; ++k)
 			{
 							pts.push_back(b.midpoint((float) k / (float) point_count));
@@ -131,13 +131,13 @@ static void CALLBACK TessVertex(const Point2 * p)
 }
 static void CALLBACK TessVertexUV(const Point2 * p)
 {
-	const Point2 * uv = p; ++uv; 
+	const Point2 * uv = p; ++uv;
 	glTexCoord2f(uv->x(), uv->y());
 	glVertex2d(p->x(),p->y());
 }
 static void CALLBACK TessVertexUVh(const Point2 * p, float * h)
 {
-	const Point2 * uv = p; ++uv; 
+	const Point2 * uv = p; ++uv;
 	glTexCoord2f(uv->x(), uv->y());
 	glVertex3d(p->x(), *h, p->y());
 }
@@ -145,12 +145,13 @@ static void CALLBACK TessVertexUVh(const Point2 * p, float * h)
 
 void glPolygon2(const Point2 * pts, bool has_uv, const int * contours, int n, float height)
 {
-#if LIBTESS
+#if 1 // LIBTESS
 	TESStesselator * tess = tessNewTess(NULL);
 	const Point2 * pts_p(pts);
 	vector<GLfloat>	raw_pts;
 	raw_pts.reserve(n * 2);
-
+	int n_holes = 0;
+	
 	for(int i = 0; i < n; ++i)
 	{
 		if(contours && contours[i])
@@ -158,6 +159,7 @@ void glPolygon2(const Point2 * pts, bool has_uv, const int * contours, int n, fl
 			if(!raw_pts.empty())
 			{
 				tessAddContour(tess, 2, &raw_pts[0], 2 * sizeof(GLfloat), raw_pts.size() / 2);
+				n_holes++;
 				raw_pts.clear();
 			}
 		}
@@ -169,62 +171,66 @@ void glPolygon2(const Point2 * pts, bool has_uv, const int * contours, int n, fl
 	if(!raw_pts.empty())
 		tessAddContour(tess, 2, &raw_pts[0], 2 * sizeof(GLfloat), raw_pts.size() / 2);
 
-	if(tessTesselate(tess, TESS_WINDING_NONZERO, TESS_POLYGONS, 3, 2, 0))
-	if(tessGetVertexCount(tess) == n) // don't be better than gluTess (used in XP) and show textureing with self-intersecting contours
+	if(tessTesselate(tess, TESS_WINDING_POSITIVE, TESS_POLYGONS, 3, 2, 0))
 	{
-		const TESSindex* vert_idx = tessGetElements(tess);
+		int vert_count = tessGetVertexCount(tess);
 		int tri_count = tessGetElementCount(tess);
-		const TESSreal * verts = tessGetVertices(tess);
 
-		if(has_uv)
+//		printf("n %d vertCnt %d triCnt %d holes %d  f %d %s\n", n, vert_count, tri_count, n_holes, tri_count-2*n_holes+2, tri_count-2*n_holes+2 == n ? "y" : "n");
+		if(tri_count-2*n_holes+2 == n)  // don't be better than gluTess (used in XP) and show textureing with self-intersecting contours
 		{
-			const TESSindex * vidx = tessGetVertexIndices(tess);
-			glBegin(GL_TRIANGLES);
-			if (height == -1.0f)
-				while (tri_count--)
-					for (int i = 0; i < 3; i++)
-					{
-						if (*vert_idx == TESS_UNDEF) break;
-						glTexCoord2(pts[1 + 2 * vidx[*vert_idx]]); glVertex2fv(&verts[2 * (*vert_idx)]);
-						vert_idx++;
-					}
+			const TESSindex* vert_idx = tessGetElements(tess);
+			const TESSreal * verts = tessGetVertices(tess);
+
+			if(has_uv)
+			{
+				const TESSindex * vidx = tessGetVertexIndices(tess);
+				glBegin(GL_TRIANGLES);
+				if (height == -1.0f)
+					while (tri_count--)
+						for (int i = 0; i < 3; i++)
+						{
+							glTexCoord2(pts[1 + 2 * vidx[*vert_idx]]); glVertex2fv(&verts[2 * (*vert_idx)]);
+							vert_idx++;
+						}
+				else
+					while(tri_count--)
+						for (int i = 0 ; i < 3; i++)
+						{
+							glTexCoord2(pts[1 + 2 * vidx[*vert_idx]]); glVertex3f(verts[2 * (*vert_idx)], height, verts[2 * (*vert_idx) + 1]);
+							vert_idx++;
+						}
+				glEnd();
+			}
 			else
-				while(tri_count--)
-					for (int i = 0 ; i < 3; i++)
-					{
-						if(*vert_idx == TESS_UNDEF) break;
-						glTexCoord2(pts[1 + 2 * vidx[*vert_idx]]); glVertex3f(verts[2 * (*vert_idx)], height, verts[2 * (*vert_idx) + 1]);
-						vert_idx++;
-					}
-			glEnd();
-		}
-		else
-		{
-	#if 1
-			glBegin(GL_TRIANGLES);
-			if (height == -1.0f)
-				while (tri_count--)
-					for (int i = 0; i < 3; i++)
-						glVertex2fv(&verts[2 * (*vert_idx++)]);
-			else
-				while(tri_count--)
-					for (int i = 0 ; i < 3; i++)
-					{
-						glVertex3f(verts[2 * (*vert_idx)], height, verts[2 * (*vert_idx) + 1]);
-						vert_idx++;
-					}
-			glEnd();
-	#else  // not any faster, cuz of too many state changes -> cache those ?
-			glVertexPointer(2, GL_FLOAT, 2 * sizeof(TESSreal), verts);
-			glEnableClientState(GL_VERTEX_ARRAY);
-			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-			glDisableClientState(GL_NORMAL_ARRAY);
-			glDrawElements(GL_TRIANGLES, 3 * tri_count, GL_INT, vert_idx);
-			glDisableClientState(GL_VERTEX_ARRAY);
-	#endif
+			{
+		#if 1
+				glBegin(GL_TRIANGLES);
+				if (height == -1.0f)
+					while (tri_count--)
+						for (int i = 0; i < 3; i++)
+							glVertex2fv(&verts[2 * (*vert_idx++)]);
+				else
+					while(tri_count--)
+						for (int i = 0 ; i < 3; i++)
+						{
+							glVertex3f(verts[2 * (*vert_idx)], height, verts[2 * (*vert_idx) + 1]);
+							vert_idx++;
+						}
+				glEnd();
+		#else  // not any faster, cuz of too many state changes -> cache those ?
+				glVertexPointer(2, GL_FLOAT, 2 * sizeof(TESSreal), verts);
+				glEnableClientState(GL_VERTEX_ARRAY);
+				glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+				glDisableClientState(GL_NORMAL_ARRAY);
+				glDrawElements(GL_TRIANGLES, 3 * tri_count, GL_INT, vert_idx);
+				glDisableClientState(GL_VERTEX_ARRAY);
+		#endif
+			}
 		}
 	}
 	tessDeleteTess(tess);
+
 #else // not LIBTESS
 	GLUtesselator * tess = gluNewTess();
 
@@ -239,7 +245,7 @@ void glPolygon2(const Point2 * pts, bool has_uv, const int * contours, int n, fl
 	}
 	else
 		gluTessCallback(tess, GLU_TESS_VERTEX,	(void (CALLBACK *)(void))TessVertex);
-		
+
 	gluTessBeginPolygon(tess,(void *) &height);
 	while(n--)
 	{
@@ -271,7 +277,7 @@ void DrawLineAttrs(const Point2 * pts, int cnt, const set<int>& attrs)
 		return;
 	}
 	else
-	{ 
+	{
 		for(set<int>::const_iterator a = attrs.begin(); a != attrs.end(); ++a)  // first layer: draw only line styles
 		{
 			int b = *a;
@@ -293,7 +299,7 @@ void DrawLineAttrs(const Point2 * pts, int cnt, const set<int>& attrs)
 				else if(e == 71) b = line_BChequered;
 				else if(e == 72) b = line_BBrokenWhite;
 			}
-			
+
 			switch(b) {
 			// ------------ STANDARD TAXIWAY LINES ------------
 			case line_BSolidYellow:
@@ -527,7 +533,7 @@ void DrawLineAttrs(const Point2 * pts, int cnt, const set<int>& attrs)
 				}
 			}
 		}
-		for(set<int>::const_iterator a = attrs.begin(); a != attrs.end(); ++a)  // second layer: do only draw lights, so they end up ontop of line styles 
+		for(set<int>::const_iterator a = attrs.begin(); a != attrs.end(); ++a)  // second layer: do only draw lights, so they end up ontop of line styles
 		{
 			int b = *a;
 			// do *some* guessing on closest aproximation for XP11.25 added light types. Don't want to put too much effort into this.
@@ -591,7 +597,7 @@ void DrawLineAttrs(const Point2 * pts, int cnt, const set<int>& attrs)
 			default:
 				break; // for unknown stuff, we draw nothing in this layer
 			}
-		}		
+		}
 	}
 	glLineWidth(1);
 	glDisable(GL_LINE_STIPPLE);
@@ -620,3 +626,20 @@ void SideToPoints(IGISPointSequence * ps, int i, WED_MapZoomerNew * z,  vector<P
 		pts.push_back(z->LLToPixel(b.p2));
 	}
 }
+
+void BoxToPoints(const Point2& p1, const Point2& p2, WED_MapZoomerNew * z, vector<Point2>& pts)
+{
+		Vector2 dLat(0.0, p1.y() - p2.y());
+		Vector2 dLon(p1.x() - p2.x(), 0.0);
+
+		pts.reserve(8);
+		pts.push_back(z->LLToPixel(p1));
+		pts.push_back(z->LLToPixel(p1 - dLat * 0.5 ));
+		pts.push_back(z->LLToPixel(p1 - dLat ));
+		pts.push_back(z->LLToPixel(p2 + dLon * 0.5 ));
+		pts.push_back(z->LLToPixel(p2));
+		pts.push_back(z->LLToPixel(p2 + dLat * 0.5 ));
+		pts.push_back(z->LLToPixel(p2 + dLat ));
+		pts.push_back(z->LLToPixel(p1 - dLon * 0.5 ));
+}
+
