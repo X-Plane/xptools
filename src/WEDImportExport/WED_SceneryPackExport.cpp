@@ -64,7 +64,7 @@ int		WED_CanExportPack(IResolver * resolver)
 	return 1;
 }
 
-#if TYLER_MODE
+#if 1 // TYLER_MODE
 
 #include "WED_Airport.h"
 #include "WED_EnumSystem.h"
@@ -95,6 +95,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 //		FAA_bounds.push_back(Point2(bdy[i], bdy[i + 1]);
 
 	int deleted_illicit_icao = 0;
+	int added_local_code = 0;
 
 	auto t0 = chrono::high_resolution_clock::now();
 	
@@ -116,8 +117,39 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				(*apt_itr)->EditMetaDataKey(META_KeyName(wed_AddMetaDataICAO),"");
 				wrl->CommitCommand();
 				deleted_illicit_icao++;
+				ICAO_code = "";
 			}
 		}
+		
+		// Per Philipp's email of 11/22/2021
+		// In case the airport_ID is the ONLY meta data for the airports code - this is taken by X-plane as 
+		// the ICAO code. So if that the casse and the airport_ID is not a legal ICAO, add a local code entry to 
+		// prevent this 'inheriting' of the illegal ICAO code, causing name collisions with other airports.
+		if (ICAO_code.empty())
+		{
+			string local_code, faa_code;
+			if((*apt_itr)->ContainsMetaDataKey(wed_AddMetaDataFAA))
+				faa_code = (*apt_itr)->GetMetaDataValue(wed_AddMetaDataFAA);
+			if((*apt_itr)->ContainsMetaDataKey(wed_AddMetaDataLocal))
+				local_code = (*apt_itr)->GetMetaDataValue(wed_AddMetaDataLocal);
+			
+			if(local_code.empty() && faa_code.empty())
+			{
+				string apt_ID;
+				(*apt_itr)->GetICAO(apt_ID);
+				bool illicit = apt_ID.size() != 4 || toupper(apt_ID[0]) < 'A' || toupper(apt_ID[0]) >= 'Z';
+				for (int i = 1; i < 4; i++)
+					illicit |= toupper(apt_ID[i]) < 'A' || toupper(apt_ID[i]) > 'Z';
+				if(illicit)
+				{
+					wrl->StartCommand("Add local code");
+					(*apt_itr)->AddMetaDataKey(META_KeyName(wed_AddMetaDataLocal),apt_ID);
+					wrl->CommitCommand();
+					added_local_code++;
+				}
+			}
+		}
+		
 
 		(*apt_itr)->GetName(ICAO_code);
 
@@ -266,6 +298,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		printf("%0.0f%% through heuristic at %s\n", percent_done, ICAO_code.c_str());
 	}
 	LOG_MSG("Deleted %d illicit ICAO meta tags\n", deleted_illicit_icao);
+	LOG_MSG("Added %d local code metas to prevent Airport_ID getting taken for ICAO\n", added_local_code);
 	LOG_MSG("## Tyler mode ## Done with upgrade heuristics\n");
 }
 #endif
