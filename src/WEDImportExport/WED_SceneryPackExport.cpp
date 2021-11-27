@@ -64,7 +64,7 @@ int		WED_CanExportPack(IResolver * resolver)
 	return 1;
 }
 
-#if 1 // TYLER_MODE
+#if TYLER_MODE
 
 #include "WED_Airport.h"
 #include "WED_EnumSystem.h"
