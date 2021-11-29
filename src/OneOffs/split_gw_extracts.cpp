@@ -146,8 +146,8 @@ int main(int argc, char *argv[])
     if(it.find(".dat") != string::npos)
     {
       auto w = where_in_world(dir + it);
-      if(w)
-        {
+      if(w && it != "TEST.dat" && it != "LEGO.dat")
+      {
         string ndir = dir + w + DIR_STR;
         printf("Rename %s to %s\n", (dir + it).c_str(), (ndir + it).c_str());
         FILE_rename_file((dir + it).c_str(), (ndir + it).c_str());
