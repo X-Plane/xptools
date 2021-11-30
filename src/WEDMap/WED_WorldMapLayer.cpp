@@ -79,7 +79,7 @@ void		WED_WorldMapLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 		for (int y = b; y < t; y += 10)
 		{
 			glBegin(GL_TRIANGLE_STRIP);
-			for (int x = l; x <= r; x += 10)
+			for (int x = l; x <= r; x += 5)
 			{
 				glTexCoord2f((x+180)/360.0, (y+90)/180.0);	glVertex2( GetZoomer()->LLToPixel(Point2(x,y)) );
 				glTexCoord2f((x+180)/360.0, (y+100)/180.0);	glVertex2( GetZoomer()->LLToPixel(Point2(x,y+10)) );
@@ -105,12 +105,11 @@ void		WED_WorldMapLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 					{
 						g->BindTex(tex_id, 0);
 						glBegin(GL_TRIANGLE_STRIP);
-						glTexCoord2f(0.0, 0.0);	glVertex2(GetZoomer()->LLToPixel(Point2(x,    y   )));
-						glTexCoord2f(0.0, 1.0);	glVertex2(GetZoomer()->LLToPixel(Point2(x,    y+10)));
-						glTexCoord2f(0.5, 0.0);	glVertex2(GetZoomer()->LLToPixel(Point2(x+ 5, y   )));
-						glTexCoord2f(0.5, 1.0);	glVertex2(GetZoomer()->LLToPixel(Point2(x+ 5, y+10)));
-						glTexCoord2f(1.0, 0.0);	glVertex2(GetZoomer()->LLToPixel(Point2(x+10, y   )));
-						glTexCoord2f(1.0, 1.0);	glVertex2(GetZoomer()->LLToPixel(Point2(x+10, y+10)));
+						for (int xx = 0; xx <= 10; xx++)
+						{
+							glTexCoord2f(0.1 * xx, 0.0);	glVertex2(GetZoomer()->LLToPixel(Point2(x + xx, y)));
+							glTexCoord2f(0.1 * xx, 1.0);	glVertex2(GetZoomer()->LLToPixel(Point2(x + xx, y + 10)));
+						}
 						glEnd();
 					}
 				}
