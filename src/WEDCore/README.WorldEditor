@@ -18,6 +18,7 @@ WED 2.5  alpha 1
    - fix .agp scraper display mismatch for some heights
    - fix gridded preview for 3D objects only showing partially on OSX w/AMD graphics
    - WED-1390 fix crash in preview window for .net definitions that reference no textures at all
+   - improve GW export heuristics to prevent non-ICAO code airport ID's to be taken as ICAO
    XP12 features:
    - moving jetways (requires propper jetways .fac w/metadata)
    - runway & taxiways surface styles and markings
@@ -27,9 +28,12 @@ WED 2.5  alpha 1
    - jetway objects to jetway facades
    - X11 default pavment to XP12 aged pavement
    Features:
+   - use full projection for map display to improve location accuracy of linear features
    - validation warning on TOWER_VIEWPOINT height not matching objects with #viewpoint_height tags
    - use actual XP textures for run/taxiway and helipd previews in map, if available
    - apply jetway upgrades, remove large terrain polygons at export (tyler_mode only)
+   - validation exeption to make KSEA, LOWI gateway legal
+   - validate taxiways for zero-length segments
 
 WED 2.4.0rc2 5/29/21
    Features:

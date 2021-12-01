@@ -611,8 +611,8 @@ static hierarchy_order_set build_order_set()
 	//"/" is like a dir seperator
 	h_set.insert("/ATC");
 	h_set.insert("/Ground Vehicles");
-	h_set.insert("/Ground Vehicles/Dynamic");
-	h_set.insert("/Ground Vehicles/Static");
+//	h_set.insert("/Ground Vehicles/Dynamic");
+//	h_set.insert("/Ground Vehicles/Static");
 	h_set.insert("/Lights");
 	h_set.insert("/Markings");
 	h_set.insert("/Ramp Starts");
@@ -623,16 +623,7 @@ static hierarchy_order_set build_order_set()
 	h_set.insert("/Taxiways");
 	h_set.insert("/Tower, Beacon and Boundaries");
 	h_set.insert("/Windsocks");
-	h_set.insert("/Exclusion Zones");
-	h_set.insert("/Objects");
-	h_set.insert("/Objects/Buildings");
-	h_set.insert("/Objects/Vehicles");
-	h_set.insert("/Objects/Trees");
-	h_set.insert("/Objects/Other");
 	h_set.insert("/Facades");
-	h_set.insert("/Forests");
-	h_set.insert("/Lines");
-	h_set.insert("/Draped Polygons");
 	return h_set;
 }
 

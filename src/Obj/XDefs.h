@@ -66,7 +66,7 @@
 // #ifs out code that depends on the module.
 #define	CGAL_BETA_SIMPLIFIER 0
 
-// Road-grid editor - NOT even remotely done yet, leave this off, dude.
+// Road-grid editor - this if good for editing XP11 style road networks with vroads, only
 #define ROAD_EDITING 1
 
 // mroe : -- really early stage of dev , do not change.

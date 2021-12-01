@@ -340,8 +340,6 @@ void draw_obj_at_ll(ITexMgr * tman, const XObj8 * o, const Point2& loc, float ag
 	zoomer->Rotatef(r, 0,-1,0);
 	Obj_DrawStruct ds = { g, id1, id2 };
 	ObjDraw8(*o, 0, &draw_funcs, &ds);
-	glPopMatrix();
-	ObjDraw8(*o, 0, &kFuncs, &ds);
 	zoomer->PopMatrix();
 }
 

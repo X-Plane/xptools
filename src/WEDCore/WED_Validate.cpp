@@ -231,7 +231,7 @@ static void ValidateOnePointSequence(WED_Thing* who, validation_error_vector& ms
 	if ((parent) &&
 	    (parent->GetClass() == WED_DrapedOrthophoto::sClass ||
 	     parent->GetClass() == WED_PolygonPlacement::sClass ||
-	     // parent->GetClass() == WED_Taxiway::sClass ||          // we also test those elsewhere, but not for zero length segments
+	     parent->GetClass() == WED_Taxiway::sClass ||          // we also test those elsewhere, but not for zero length segments
 	     parent->GetClass() == WED_ForestPlacement::sClass ||
 	     parent->GetClass() == WED_FacadePlacement::sClass ))
 	{
@@ -2504,7 +2504,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	err_type = gExportTarget == wet_gateway ? err_airport_impossible_size : warn_airport_impossible_size;
 	Bbox2 bounds;
 	apt->GetBounds(gis_Geo, bounds);
-	int lg_apt_mult = ( icao == "KEDW" ? 3.0 : 1.0);  // because this one has the runways on all surrounding salt flats included
+	int lg_apt_mult = ((icao == "KEDW" || icao == "KSEA") ? 3.0 : 1.0);  // runways on all surrounding salt flats included or space needle
 	if(bounds.xspan() > lg_apt_mult * MAX_SPAN_GATEWAY_NM / 60.0 / cos(bounds.centroid().y() * DEG_TO_RAD) ||     // correction for higher lattitudes
 			bounds.yspan() > lg_apt_mult* MAX_SPAN_GATEWAY_NM / 60.0)
 	{

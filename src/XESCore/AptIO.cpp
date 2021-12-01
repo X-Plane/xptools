@@ -1109,8 +1109,8 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				Jetway_t j;
 				if (TextScanner_FormatScan(s, "iddfiifff|",
 					&rec_code,
-					&j.location.x_,      // this is LON LAT - different that usual
 					&j.location.y_,
+					&j.location.x_,
 					&j.install_heading,
 					&j.style_code,
 					&j.size_code,

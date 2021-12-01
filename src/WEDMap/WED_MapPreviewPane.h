@@ -79,10 +79,6 @@ private:
 	float mYaw, mPitch;
 	float mX, mY;
 
-
-	int mCameraLeftVk, mCameraRightVk, mCameraUpVk, mCameraDownVk, mCameraForwardVk, mCameraBackVk;
-	GUI_KeyFlags mCameraFastModifier, mCameraSlowModifier;
-
 	// When did the last drag event happen?
 	float mTimeLastDrag;
 

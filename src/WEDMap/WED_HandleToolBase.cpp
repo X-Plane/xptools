@@ -87,10 +87,8 @@ static bool	ControlLinkToCurve(
 
 		if (z)
 		{
-		s.p1.x_ = z->LonToXPixel(s.p1.x());
-		s.p2.x_ = z->LonToXPixel(s.p2.x());
-		s.p1.y_ = z->LatToYPixel(s.p1.y());
-		s.p2.y_ = z->LatToYPixel(s.p2.y());
+			s.p1 = z->LLToPixel(s.p1);
+			s.p2 = z->LLToPixel(s.p2);
 		}
 		return false;
 	}
@@ -104,14 +102,10 @@ static bool	ControlLinkToCurve(
 		h->GetNthControlHandle(ei,tc,NULL,NULL,&b.c2, NULL, NULL);
 
 		if (z) {
-		b.p1.x_ = z->LonToXPixel(b.p1.x());
-		b.c1.x_ = z->LonToXPixel(b.c1.x());
-		b.p2.x_ = z->LonToXPixel(b.p2.x());
-		b.c2.x_ = z->LonToXPixel(b.c2.x());
-		b.p1.y_ = z->LatToYPixel(b.p1.y());
-		b.c1.y_ = z->LatToYPixel(b.c1.y());
-		b.p2.y_ = z->LatToYPixel(b.p2.y());
-		b.c2.y_ = z->LatToYPixel(b.c2.y());
+			b.p1 = z->LLToPixel(b.p1);
+			b.c1 = z->LLToPixel(b.c1);
+			b.p2 = z->LLToPixel(b.p2);
+			b.c2 = z->LLToPixel(b.c2);
 		}
 		return true;
 	}
@@ -175,7 +169,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 	mSelX = inX;
 	mSelY = inY;
 
-	Point2	click_pt(inX, inY);	//GetZoomer()->XPixelToLon(inX),GetZoomer()->YPixelToLat(inY));
+	Point2	click_pt(inX, inY);
 
 	int ei_count = mHandles ? mHandles->CountEntities() : 0;
 
@@ -388,16 +382,14 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 		ISelection * sel = SAFE_CAST(ISelection, WED_GetSelect(GetResolver()));
 		IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));
 
-		SetAnchor1(Point2(GetZoomer()->XPixelToLon(mDragX),GetZoomer()->YPixelToLat(mDragY)));
+		SetAnchor1(GetZoomer()->PixelToLL(Point2(mDragX, mDragY)));
 
 		if (sel && ent_base)
 		{
 			set<IGISEntity *>	sel_set;
 			Bbox2	bounds(
-							GetZoomer()->XPixelToLon(mDragX),
-							GetZoomer()->YPixelToLat(mDragY),
-							GetZoomer()->XPixelToLon(inX),
-							GetZoomer()->YPixelToLat(inY));
+							GetZoomer()->PixelToLL(Point2(mDragX, mDragY)),
+							GetZoomer()->PixelToLL(Point2(inX, inY)));
 
 			ProcessSelection(ent_base, bounds, sel_set);
 			if(op) op->StartOperation("Change Selection");
@@ -434,13 +426,13 @@ This seems to be the point where a selections starts. Its goes down recursively 
 is within reach. If so, its added to "result" returns 1 to indicate something was found.
 
 The selection has 2 different modes of operation: For selection boxes that are a point (i.e. a single click) it selectes anything
-i.e. bounding box around and objects or line/point/node hit dead on (some slop is actually always added), but it aborts upon the very 
+i.e. bounding box around and objects or line/point/node hit dead on (some slop is actually always added), but it aborts upon the very
 first hit.
 
 If the bounds are an area, i.e. a drag-click or marquee selection, it ignores all area-style objects that only overlap the selection,
 but takes all point objects, plus all area objects that are completely enclosed in the bounds.
 
-To add type-based selection, the search now never stops upon a first find. But rather adds a layer ontop, that in case of 
+To add type-based selection, the search now never stops upon a first find. But rather adds a layer ontop, that in case of
 single-point searches filter the result and only keeps a single find - according to the a certain "selection priority list".
 
 As this select function is also used to add/extend existing selections, this also requires the initail selection set to be saved
@@ -461,7 +453,7 @@ void WED_HandleToolBase::ProcessSelection(
 	double	icon_dist_h = fabs(GetZoomer()->XPixelToLon(0)-GetZoomer()->XPixelToLon(SELECTION_BOX_SIZE));
 	double	icon_dist_v = fabs(GetZoomer()->YPixelToLat(0)-GetZoomer()->YPixelToLat(SELECTION_BOX_SIZE));
 	if(pt_sel) bounds.expand(icon_dist_h,icon_dist_v); // select things even a bit further away
-	
+
 //	set<IGISEntity *> result_old;
 //	if(pt_sel) { result_old = result; result.clear(); } // start from scratch, so can filter only the new selections later
 #if DEBUG_PRINTF_N_LINES
@@ -470,7 +462,7 @@ void WED_HandleToolBase::ProcessSelection(
 	#define printf(x)
 #endif
 	ProcessSelectionRecursive(entity, bounds, pt_sel, icon_dist_h, icon_dist_v, result);
-	
+
 	if(pt_sel)             // filter list, keep only 1 result, selected by a special priority list
 	{
 		IGISEntity * keeper = NULL;
@@ -517,7 +509,7 @@ void WED_HandleToolBase::ProcessSelection(
 		if(!keeper)
 			for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)     // then any kind of line-type objects
 			{
-				if( (*i)->GetGISClass() ==  gis_Line || 
+				if( (*i)->GetGISClass() ==  gis_Line ||
 					(*i)->GetGISClass() ==  gis_Edge ||
 					(*i)->GetGISClass() ==  gis_Ring ||                                      // APT Boundaries, but only the ring part, not the inner area
 					(*i)->GetGISClass() ==  gis_Chain   ) { printf("Line\n");  keeper = *i;  break; }
@@ -547,12 +539,12 @@ void WED_HandleToolBase::ProcessSelection(
 			}
 
 		//	gis_PointSequence,  gis_Composite - not expected to ever come up.
-		
+
 #undef printf
 #if DEBUG_PRINTF_N_LINES
 		for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)
 			printf("Total selected GISClass #%d Subtype %s\n", (*i)->GetGISClass()-gis_Point, (*i)->GetGISSubtype());
-#endif		
+#endif
 		if(keeper) { result.clear(); result.insert(keeper); }    // ok found something from our priority list, only keep that one
 #if DEBUG_PRINTF_N_LINES
 		else
@@ -560,7 +552,7 @@ void WED_HandleToolBase::ProcessSelection(
 			if (result.empty())
 				printf("FYI, nothing to select here.\n");
 			else
-			{	
+			{
 				printf("duh - this should only happen if a mLockedItems list is active. Multiple items are selected,\nbut none of them are in the priority list for object selection:\n");
 				for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)
 					printf("Selected are GISClass #%d Subtype %s\n", (*i)->GetGISClass()-gis_Point, (*i)->GetGISSubtype());
@@ -570,7 +562,7 @@ void WED_HandleToolBase::ProcessSelection(
 #else
 		else
 			result.clear();
-#endif		
+#endif
 //	result.insert(result_old.begin(), result_old.end());   // merge back in what we took out initially
 	}
 }
@@ -607,7 +599,7 @@ void WED_HandleToolBase::ProcessSelectionRecursive(
 	if(IsLockedNow(entity))		return;
 
 	// if(is_root && pt_sel) bounds.expand(icon_dist_h,icon_dist_v); // select things even a bit further away
-		
+
 	EntityHandling_t choice = TraverseEntity(entity,pt_sel);
 	IGISComposite *     com = SAFE_CAST(IGISComposite, entity);
 	IGISPointSequence * seq = SAFE_CAST(IGISPointSequence, entity);
@@ -647,7 +639,7 @@ void WED_HandleToolBase::ProcessSelectionRecursive(
 		break;
 	case ent_AtomicOrContainer:
 		if ( !pt_sel &&  entity->WithinBox(gis_Geo,bounds) ) // select the container, if possible instead of its innards
-			result.insert(entity); 
+			result.insert(entity);
 		else if (com)
 		{
 			int count = com->GetNumEntities();
@@ -696,8 +688,8 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 	case drag_Links:
 	case drag_Ent:
 		{
-			Point2	op(GetZoomer()->XPixelToLon(mDragX),GetZoomer()->YPixelToLat(mDragY));
-			Point2	np(GetZoomer()->XPixelToLon(   inX),GetZoomer()->YPixelToLat(   inY));
+			Point2	op(GetZoomer()->PixelToLL(Point2(mDragX, mDragY)));
+			Point2	np(GetZoomer()->PixelToLL(Point2(   inX, inY   )));
 			Vector2 delta(op,np);
 			mDragX = inX; mDragY = inY;
 			switch(mDragType) {
@@ -763,10 +755,8 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 			{
 				set<IGISEntity *>	sel_set;
 				Bbox2	bounds(
-								GetZoomer()->XPixelToLon(mDragX),
-								GetZoomer()->YPixelToLat(mDragY),
-								GetZoomer()->XPixelToLon(inX),
-								GetZoomer()->YPixelToLat(inY));
+								GetZoomer()->PixelToLL(Point2(mDragX, mDragY)),
+								GetZoomer()->PixelToLL(Point2(inX, inY)));
 
 				ProcessSelection(ent_base, bounds, sel_set);
 
@@ -817,7 +807,7 @@ void		WED_HandleToolBase::HandleClickUp			(int inX, int inY, int inButton, GUI_K
 		IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));
 		if(op) op->AbortOperation();
 		mSelManip.clear();
-	} 
+	}
 	else if (mDragType == drag_Sel)
 	{
 		ClearAnchor1();
@@ -930,11 +920,11 @@ void		WED_HandleToolBase::DrawStructure			(bool inCurrent, GUI_GraphState * g)
 				}
 			}
 			glEnd();
-			
+
 			if(inCurrent) glColor4fv(WED_Color_RGBA(wed_ControlHandle));
 
 			if(inCurrent)
-			for (int cp = 0; cp < ch_count; ++cp)   // this loop is causing a lot of state switching for icon and line plotting. 
+			for (int cp = 0; cp < ch_count; ++cp)   // this loop is causing a lot of state switching for icon and line plotting.
 			{										// Cuts draw speed in half when selecting with VertexTool all of KSEA
 				Vector2		dir;
 				Point2	cpt, scrpt;
@@ -986,11 +976,12 @@ void		WED_HandleToolBase::DrawStructure			(bool inCurrent, GUI_GraphState * g)
 	{
 		g->SetState(false,false,false, false,false, false,false);
 		glColor4fv(WED_Color_RGBA(wed_Marquee));
+
+		vector<Point2> pts;
+		BoxToPoints(GetZoomer()->PixelToLL(Point2(mDragX, mDragY)), GetZoomer()->PixelToLL(Point2(mSelX, mSelY)), GetZoomer(), pts);
+
 		glBegin(GL_LINE_LOOP);
-		glVertex2i(min(mDragX, mSelX),min(mDragY,mSelY));
-		glVertex2i(min(mDragX, mSelX),max(mDragY,mSelY));
-		glVertex2i(max(mDragX, mSelX),max(mDragY,mSelY));
-		glVertex2i(max(mDragX, mSelX),min(mDragY,mSelY));
+		glVertex2v(pts.data(), pts.size());
 		glEnd();
 	}
 }

@@ -110,27 +110,6 @@ static void DrawVisFor(WED_MapLayer * layer, const Bbox2& bounds, const WED_MapZ
 		}
 }
 
-static int GetVkPref(const char * key, int defaultVk)
-{
-	int vk = atoi(GUI_GetPrefString("preferences", key, ""));
-	if (vk == 0)
-		return defaultVk;
-	else
-		return vk;
-}
-
-static GUI_KeyFlags GetModifierPref(const char * key, GUI_KeyFlags defaultModifier)
-{
-	string val = GUI_GetPrefString("preferences", key, "");
-	if (val == "Shift")
-		return gui_ShiftFlag;
-	if (val == "Control")
-		return gui_ControlFlag;
-	if (val == "OptionAlt")
-		return gui_OptionAltFlag;
-	return defaultModifier;
-}
-
 WED_MapPreviewPane::WED_MapPreviewPane(GUI_Commander * cmdr, WED_Document * document)
 	: GUI_Commander(cmdr),
 	  mDocument(document),
@@ -167,15 +146,6 @@ WED_MapPreviewPane::WED_MapPreviewPane(GUI_Commander * cmdr, WED_Document * docu
 	DisplayExtent(box, 0.5);
 
 	this->SetPixelBounds(-1,-1,1,1);
-
-	mCameraLeftVk = GetVkPref("CameraLeftVk", GUI_VK_LEFT);
-	mCameraRightVk = GetVkPref("CameraRightVk", GUI_VK_RIGHT);
-	mCameraUpVk = GetVkPref("CameraUpVk", GUI_VK_UP);
-	mCameraDownVk = GetVkPref("CameraDownVk", GUI_VK_DOWN);
-	mCameraForwardVk = GetVkPref("CameraForwardVk", GUI_VK_PERIOD);
-	mCameraBackVk = GetVkPref("CameraBackVk", GUI_VK_COMMA);
-	mCameraFastModifier = GetModifierPref("CameraFastModifier", gui_ShiftFlag);
-	mCameraSlowModifier = GetModifierPref("CameraSlowModifier", gui_ControlFlag);
 }
 
 WED_MapPreviewPane::~WED_MapPreviewPane()
@@ -415,13 +385,12 @@ int WED_MapPreviewPane::ScrollWheel(int x, int y, int dist, int axis)
 
 int WED_MapPreviewPane::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)
 {
-	if (inVK == mCameraLeftVk || inVK == mCameraRightVk || inVK == mCameraUpVk || inVK == mCameraDownVk ||
-		inVK == mCameraForwardVk || inVK == mCameraBackVk)
+	if (inVK == GUI_VK_LEFT || inVK == GUI_VK_RIGHT || inVK == GUI_VK_UP || inVK == GUI_VK_DOWN ||
+		inVK ==  GUI_VK_PERIOD || inVK ==  GUI_VK_COMMA)
 	{
 		StartMoving();
 		return 1;
 	}
-
 	return 0;
 }
 
@@ -429,12 +398,12 @@ int WED_MapPreviewPane::HandleCommand(int command)
 {
 	// Some commands have shortcuts that conflict with default movement commands (e.g. Ctrl+Up
 	// for "move upwards slowly"), so check whether one of the movement keys is pressed.
-	if (IsKeyPressedNow(mCameraLeftVk) |
-		IsKeyPressedNow(mCameraRightVk) |
-		IsKeyPressedNow(mCameraUpVk) |
-		IsKeyPressedNow(mCameraDownVk) |
-		IsKeyPressedNow(mCameraForwardVk) |
-		IsKeyPressedNow(mCameraBackVk))
+	if (IsKeyPressedNow(GUI_VK_LEFT) |
+		IsKeyPressedNow(GUI_VK_RIGHT) |
+		IsKeyPressedNow(GUI_VK_UP) |
+		IsKeyPressedNow(GUI_VK_DOWN) |
+		IsKeyPressedNow(GUI_VK_PERIOD) |
+		IsKeyPressedNow(GUI_VK_COMMA))
 	{
 		StartMoving();
 		return 1;
@@ -537,23 +506,23 @@ void WED_MapPreviewPane::HandleKeyMove()
 
 	GUI_KeyFlags flags = GetModifiersNow();
 	double speed = 50.0; // m/s
-	if (flags & mCameraFastModifier)
+	if (flags & gui_ShiftFlag)
 		speed *= 10.0;
-	else if (flags & mCameraSlowModifier)
+	else if (flags & gui_ControlFlag)
 		speed *= 0.1;
 
 	Vector3 desiredVelocity;
-	if (IsKeyPressedNow(mCameraLeftVk))
+	if (IsKeyPressedNow(GUI_VK_LEFT))
 		desiredVelocity.dx -= speed;
-	if (IsKeyPressedNow(mCameraRightVk))
+	if (IsKeyPressedNow(GUI_VK_RIGHT))
 		desiredVelocity.dx += speed;
-	if (IsKeyPressedNow(mCameraUpVk))
+	if (IsKeyPressedNow(GUI_VK_UP))
 		desiredVelocity.dz += speed;
-	if (IsKeyPressedNow(mCameraDownVk))
+	if (IsKeyPressedNow(GUI_VK_DOWN))
 		desiredVelocity.dz -= speed;
-	if (IsKeyPressedNow(mCameraForwardVk))
+	if (IsKeyPressedNow(GUI_VK_PERIOD))
 		desiredVelocity.dy += speed;
-	if (IsKeyPressedNow(mCameraBackVk))
+	if (IsKeyPressedNow(GUI_VK_COMMA))
 		desiredVelocity.dy -= speed;
 
 	float mTime = GetTimeNow();
