@@ -286,20 +286,32 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				LOG_MSG("Deleted %d terrain polys at %s\n", terrain_polys.size(), ICAO_code.c_str());
 			}
 		}
-/*		if(distance(apts.begin(), apt_itr) == 15)
+		// nuke all "runge" raped objects
+		vector<WED_ObjPlacement*> grunge_objs;
+		CollectRecursive(*apt_itr, back_inserter(grunge_objs), IgnoreVisiblity, [](WED_Thing* objs)->bool {
+			string res;
+			static_cast<WED_ObjPlacement*>(objs)->GetResource(res);
+			return res.compare(0, strlen("lib/airport/Common_Elements/Parking/Grunge"), "lib/airport/Common_Elements/Parking/Grunge") == 0;
+			},
+			WED_ObjPlacement::sClass, 2);
+		if (grunge_objs.size())
 		{
-			auto t1 = chrono::high_resolution_clock::now();
-			chrono::duration<double> elapsed = t1-t0;
-			printf("0 to 1 time: %lf\n", elapsed.count());
-			break;
+			wrl->StartCommand("Delete Grunge Objects");
+			WED_RecursiveDelete(set<WED_Thing*>(grunge_objs.begin(), grunge_objs.end()));
+			wrl->CommitCommand();
+			LOG_MSG("Deleted %d Grunges at %s\n", grunge_objs.size(), ICAO_code.c_str());
 		}
-*/
+
 		double percent_done = (double)distance(apts.begin(), apt_itr) / apts.size() * 100;
 		printf("%0.0f%% through heuristic at %s\n", percent_done, ICAO_code.c_str());
+//		if(distance(apts.begin(), apt_itr) == 15) break;
 	}
 	LOG_MSG("Deleted %d illicit ICAO meta tags\n", deleted_illicit_icao);
 	LOG_MSG("Added %d local code metas to prevent Airport_ID getting taken for ICAO\n", added_local_code);
-	LOG_MSG("## Tyler mode ## Done with upgrade heuristics\n");
+
+	auto t1 = chrono::high_resolution_clock::now();
+	chrono::duration<double> elapsed = t1 - t0;
+	LOG_MSG("## Tyler mode ## Done with upgrade heuristics, took %lf sec\n", elapsed.count());
 }
 #endif
 
