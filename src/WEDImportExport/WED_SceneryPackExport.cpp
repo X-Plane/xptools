@@ -96,6 +96,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 
 	int deleted_illicit_icao = 0;
 	int added_local_code = 0;
+	int grass_statistics[4] = { 0 };
 
 	auto t0 = chrono::high_resolution_clock::now();
 	
@@ -259,15 +260,37 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 					}
 			}
 		}
+		
+		// mov the grass
+		vector<WED_Group*> grps;
+		CollectRecursive(*apt_itr, back_inserter(grps), IgnoreVisiblity, [](WED_Thing* t)->bool 
+			{
+				string res;
+				t->GetName(res);
+				return res == "Terrain FX";
+			},
+			WED_Group::sClass, 1);
+		if(grps.empty())
+		{
+			wrl->StartOperation("Mow Grass");
+			if(WED_DoMowGrass(*apt_itr, grass_statistics))
+			{
+				LOG_MSG("Mowed grass at %s\n", ICAO_code.c_str());
+				wrl->CommitOperation();
+			}
+			else
+				wrl->AbortOperation();
+		}
 
 		// nuke all large terrain polygons at mid-lattitudes
 		if(apt_box.p1.y() < 73.0 && apt_box.p1.y() > -60.0)
 		{
 			vector<WED_PolygonPlacement*> terrain_polys;
-			CollectRecursive(*apt_itr, back_inserter(terrain_polys), IgnoreVisiblity, [](WED_Thing* poly)->bool {
-				string res;
-				static_cast<WED_PolygonPlacement*>(poly)->GetResource(res);
-				return res.compare(0, strlen("lib/g10/terrain10/"), "lib/g10/terrain10/") == 0;
+			CollectRecursive(*apt_itr, back_inserter(terrain_polys), IgnoreVisiblity, [](WED_Thing* t)->bool 
+				{
+					string res;
+					static_cast<WED_PolygonPlacement*>(t)->GetResource(res);
+					return res.compare(0, strlen("lib/g10/terrain10/"), "lib/g10/terrain10/") == 0;
 				},
 				WED_PolygonPlacement::sClass, 2);
 			if (terrain_polys.size())
@@ -283,7 +306,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				wrl->StartCommand("Delete Terrain Polys");
 				WED_RecursiveDelete(things);
 				wrl->CommitCommand();
-				LOG_MSG("Deleted %d terrain polys at %s\n", terrain_polys.size(), ICAO_code.c_str());
+				LOG_MSG("Deleted %ld terrain polys at %s\n", terrain_polys.size(), ICAO_code.c_str());
 			}
 		}
 /*		if(distance(apts.begin(), apt_itr) == 15)

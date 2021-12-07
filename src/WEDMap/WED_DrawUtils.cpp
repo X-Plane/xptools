@@ -148,7 +148,7 @@ void glPolygon2(const Point2 * pts, bool has_uv, const int * contours, int n, fl
 #if 1 // LIBTESS
 	TESStesselator * tess = tessNewTess(NULL);
 	const Point2 * pts_p(pts);
-	vector<GLfloat>	raw_pts;
+	vector<TESSreal>	raw_pts;
 	raw_pts.reserve(n * 2);
 	int n_holes = 0;
 	
@@ -158,7 +158,7 @@ void glPolygon2(const Point2 * pts, bool has_uv, const int * contours, int n, fl
 		{
 			if(!raw_pts.empty())
 			{
-				tessAddContour(tess, 2, &raw_pts[0], 2 * sizeof(GLfloat), raw_pts.size() / 2);
+				tessAddContour(tess, 2, &raw_pts[0], 2 * sizeof(TESSreal), raw_pts.size() / 2);
 				n_holes++;
 				raw_pts.clear();
 			}
@@ -169,7 +169,7 @@ void glPolygon2(const Point2 * pts, bool has_uv, const int * contours, int n, fl
 		if(has_uv)	pts_p++;
 	}
 	if(!raw_pts.empty())
-		tessAddContour(tess, 2, &raw_pts[0], 2 * sizeof(GLfloat), raw_pts.size() / 2);
+		tessAddContour(tess, 2, &raw_pts[0], 2 * sizeof(TESSreal), raw_pts.size() / 2);
 
 	if(tessTesselate(tess, TESS_WINDING_POSITIVE, TESS_POLYGONS, 3, 2, 0))
 	{
@@ -190,14 +190,14 @@ void glPolygon2(const Point2 * pts, bool has_uv, const int * contours, int n, fl
 					while (tri_count--)
 						for (int i = 0; i < 3; i++)
 						{
-							glTexCoord2(pts[1 + 2 * vidx[*vert_idx]]); glVertex2fv(&verts[2 * (*vert_idx)]);
+							glTexCoord2(pts[1 + 2 * vidx[*vert_idx]]); glVertex2dv(&verts[2 * (*vert_idx)]);
 							vert_idx++;
 						}
 				else
 					while(tri_count--)
 						for (int i = 0 ; i < 3; i++)
 						{
-							glTexCoord2(pts[1 + 2 * vidx[*vert_idx]]); glVertex3f(verts[2 * (*vert_idx)], height, verts[2 * (*vert_idx) + 1]);
+							glTexCoord2(pts[1 + 2 * vidx[*vert_idx]]); glVertex3d(verts[2 * (*vert_idx)], height, verts[2 * (*vert_idx) + 1]);
 							vert_idx++;
 						}
 				glEnd();
@@ -209,12 +209,12 @@ void glPolygon2(const Point2 * pts, bool has_uv, const int * contours, int n, fl
 				if (height == -1.0f)
 					while (tri_count--)
 						for (int i = 0; i < 3; i++)
-							glVertex2fv(&verts[2 * (*vert_idx++)]);
+							glVertex2dv(&verts[2 * (*vert_idx++)]);
 				else
 					while(tri_count--)
 						for (int i = 0 ; i < 3; i++)
 						{
-							glVertex3f(verts[2 * (*vert_idx)], height, verts[2 * (*vert_idx) + 1]);
+							glVertex3d(verts[2 * (*vert_idx)], height, verts[2 * (*vert_idx) + 1]);
 							vert_idx++;
 						}
 				glEnd();

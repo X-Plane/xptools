@@ -22,14 +22,10 @@
  */
 #include "CompGeomUtils.h"
 #include "CompGeomDefs2.h"
-//#include "GISTool_Globals.h"
-//#include "MapDefs.h"
 #include "AssertUtils.h"
 #include "STLUtils.h"
 #include "XESConstants.h"
-#if DEV
-#  include <stdio.h>
-#endif
+#include "tesselator.h"
 #include <algorithm>
 
 using namespace std;
@@ -1345,4 +1341,130 @@ Point2	CoordTranslator2::Reverse(const Point2& input) const
 				  mSrcMin.y() + (input.y() - mDstMin.y()) * (mSrcMax.y() - mSrcMin.y()) / (mDstMax.y() - mDstMin.y()));
 }
 
+
+// polygon subtraction often result in the countour still having zero-width "excursions" or the contour "backtracking on itself", i.e. three subsequent points having
+// the third exactly on the line from the first to the second. Clean those out by skipping the 2nd point.
+
+bool Polygon2cleaner(Polygon2& poly) // this needs to be ideally done in meterspace
+{
+	for(int n = 0; n < poly.size(); n++)
+	{
+//		printf("%lf %lf  %lf %lf  %lf %lf\n",poly.at(n).x(), poly.at(n).y(), poly.at(n+1).x(), poly.at(n+1).y(), poly[n+2].x(), poly[n+2].y());
+//		printf("%2d (%8.3lf) dist to %2d %8.3lf\n", n, 1.0e5*sqrt(poly.side(n).squared_length()),  (n+2) % poly.size(), 1.0e5*sqrt(poly.side(n).squared_distance(poly[(n+2) % poly.size()])));
+//		printf("%2d            dist to %2d %8.3lf\n", n, (n+3) % poly.size(), 1.0e5*sqrt(poly.side(n).squared_distance(poly[(n+3) % poly.size()])));
+		if(poly.side(n).squared_distance(poly[(n+2) % poly.size()]) < 1e-12) // if its degree's - amounts to about 0.1 meter
+		{
+			for(int m = n + 1; m < poly.size() - 1; m++)
+				poly[m] = poly[m+1];
+			poly.pop_back();
+			n--;  // do it over - but now we're effectively testing against the next point after
+		}
+	}
+}
+
+vector<Polygon2> PolygonIntersect(const vector<Polygon2>& mpolyA, const vector<Polygon2>& mpolyB)
+{
+//printf("intersect A %d B %d\n", mpolyA.size()	,mpolyB.size());
+	vector<Polygon2> mpoly;
+	TESStesselator * tess = tessNewTess(NULL);
+
+	for(auto poly : mpolyA)
+		tessAddContour(tess, 2, poly.data(), 2 * sizeof(TESSreal), poly.size());
+
+	for(auto poly : mpolyB)
+		tessAddContour(tess, 2, poly.data(), 2 * sizeof(TESSreal), poly.size());
+
+	if(tessTesselate(tess, TESS_WINDING_ABS_GEQ_TWO, TESS_BOUNDARY_CONTOURS, 3, 2, 0))
+	{
+		int contours = tessGetElementCount(tess);
+		const TESSindex* elems = tessGetElements(tess);
+		const TESSreal * verts = tessGetVertices(tess);
+
+		for(int c = 0; c < contours; c++)
+		{
+			mpoly.push_back(Polygon2());
+			int start = elems[c * 2];
+			int last  = start + elems[c * 2 + 1];
+			mpoly.back().reserve(last - start);
+			for (int i = start; i < last; i++)
+				mpoly.back().push_back(Point2(verts[i * 2], verts[i * 2 + 1]));
+			Polygon2cleaner(mpoly.back());
+		}
+	}
+	tessDeleteTess(tess);
+	return mpoly;
+}
+
+
+vector<Polygon2> PolygonUnion(const vector<Polygon2>& mpolyA, const vector<Polygon2>& mpolyB)
+{
+	vector<Polygon2> mpoly;
+	TESStesselator * tess = tessNewTess(NULL);
+	
+	for(auto poly : mpolyA)
+		tessAddContour(tess, 2, poly.data(), 2 * sizeof(TESSreal), poly.size());
+
+	for(auto poly : mpolyB)
+		tessAddContour(tess, 2, poly.data(), 2 * sizeof(TESSreal), poly.size());
+
+	if(tessTesselate(tess, TESS_WINDING_POSITIVE, TESS_BOUNDARY_CONTOURS, 3, 2, 0))
+	{
+		int contours = tessGetElementCount(tess);
+		const TESSindex* elems = tessGetElements(tess);
+		const TESSreal * verts = tessGetVertices(tess);
+
+		for(int c = 0; c < contours; c++)
+		{
+			mpoly.push_back(Polygon2());
+			int start = elems[c * 2];
+			int last  = start + elems[c * 2 + 1];
+			mpoly.back().reserve(last - start);
+			for (int i = start; i < last; i++)
+				mpoly.back().push_back(Point2(verts[i * 2], verts[i * 2 + 1]));
+		}
+	}
+	tessDeleteTess(tess);
+	return mpoly;
+}
+
+vector<Polygon2> PolygonCut(const vector<Polygon2>& mpolyA, const vector<Polygon2>& mpolyB)
+{
+	vector<Polygon2> mpoly;
+	TESStesselator * tess = tessNewTess(NULL);
+//printf("cut A %d B %d\n", mpolyA.size()	,mpolyB.size());
+	for(auto poly : mpolyA)
+		tessAddContour(tess, 2, poly.data(), 2 * sizeof(TESSreal), poly.size());
+
+	for(auto poly : mpolyB)
+	{
+		vector<Point2>inv_pts;
+		inv_pts.reserve(poly.size());
+//if(poly.is_ccw()) printf("B CCW %d\n",poly.size()); else printf("B CW %d\n",poly.size());
+		for(auto p = poly.rbegin(); p != poly.rend(); p++)
+			inv_pts.push_back(*p);
+		if(!inv_pts.empty())
+			tessAddContour(tess, 2, inv_pts.data(), 2 * sizeof(TESSreal), poly.size());
+	}
+
+	if(tessTesselate(tess, TESS_WINDING_POSITIVE, TESS_BOUNDARY_CONTOURS, 3, 2, 0))
+	{
+		int contours = tessGetElementCount(tess);
+		const TESSindex* elems = tessGetElements(tess);
+		const TESSreal * verts = tessGetVertices(tess);
+
+		for(int c = 0; c < contours; c++)
+		{
+			mpoly.push_back(Polygon2());
+			int start = elems[c * 2];
+			int last  = start + elems[c * 2 + 1];
+			mpoly.back().reserve(last - start);
+			for (int i = start; i < last; i++)
+				mpoly.back().push_back(Point2(verts[i * 2], verts[i * 2 + 1]));
+//if(mpoly.back().is_ccw()) printf("O CCW %d\n",mpoly.back().size()); else printf("O CW %d\n",mpoly.back().size());
+			Polygon2cleaner(mpoly.back());
+		}
+	}
+	tessDeleteTess(tess);
+	return mpoly;
+}
 

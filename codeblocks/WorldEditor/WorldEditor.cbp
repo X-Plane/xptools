@@ -695,6 +695,7 @@
 		<Unit filename="../../src/XESCore/AptIO.cpp" />
 		<Unit filename="../../src/XESCore/AptIO.h" />
 		<Unit filename="../../src/XESCore/XESConstants.h" />
+		<Unit filename="../../src/libtess2/Include/tesselator.h" />
 		<Unit filename="../../src/libtess2/Source/bucketalloc.c">
 			<Option compilerVar="CC" />
 		</Unit>

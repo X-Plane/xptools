@@ -40,6 +40,7 @@
 #include "XESConstants.h"
 #include "XObjDefs.h"
 
+#include "WED_AirportBoundary.h"
 #include "WED_AirportChain.h"
 #include "WED_Airport.h"
 #include "WED_ATCFrequency.h"
@@ -71,6 +72,7 @@
 #include "WED_TruckParkingLocation.h"
 
 #include "WED_EnumSystem.h"
+#include "WED_Globals.h"
 #include "WED_GISUtils.h"
 #include "WED_HierarchyUtils.h"
 #include "WED_LibraryMgr.h"
@@ -5696,30 +5698,125 @@ void WED_AgePavement(IResolver* resolver)
 		wrl->AbortOperation();
 }
 
-static WED_PolygonPlacement * Polygon2WEDPolygon(WED_Thing * parent, const Polygon2& poly)
+static vector<WED_PolygonPlacement *> PolygonsForWED_Polygon(WED_Thing * parent, const vector<Polygon2>& poly)
 {
+	vector<WED_PolygonPlacement *> mpol;
 	WED_Archive * arch = parent->GetArchive();
-	auto p = WED_PolygonPlacement::CreateTyped(arch);
-	p->SetParent(parent, 0);
-	auto r = WED_Ring::CreateTyped(arch);
-	r->SetParent(p, 0);
 	
-	for(int i = 0; i < poly.size(); i++)
+//	printf("conv size %d\n", poly.size());
+	
+	for(auto p : poly)
 	{
-		auto n = WED_SimpleBezierBoundaryNode::CreateTyped(arch);
-		n->SetParent(r, 0);
-		n->SetLocation(gis_Geo, poly[i]);
+		if(p.is_ccw())
+		{
+			mpol.push_back(WED_PolygonPlacement::CreateTyped(arch));
+			mpol.back()->SetParent(parent, 0);
+/*			printf("CCW %d\n", p.size());
+			for(int i = 0; i < p.size(); i++)
+				debug_mesh_segment(p.side(i), 1,0,0, 1,0,0);
+		}
+		else
+		{
+			printf("CW %d\n", p.size());
+			for(int i = 0; i < p.size(); i++)
+				debug_mesh_segment(p.side(i), 0,0,1, 0,0,1);
+*/		}
+		if(mpol.size() == 0) 
+			continue;
+
+		DebugAssert(mpol.size() > 0);
+		auto ring = WED_Ring::CreateTyped(arch);
+		ring->SetParent(mpol.back(), mpol.back()->CountChildren());
+		
+		for(int i = 0; i < p.size(); i++)
+		{
+			auto n = WED_SimpleBezierBoundaryNode::CreateTyped(arch);
+			n->SetParent(ring, i);
+			n->SetLocation(gis_Geo, p[i]);
+			n->SetName(string("Node ") + to_string(i));
+		}
 	}
+	return mpol;
 }
 
-int WED_DoMowGrass(WED_Airport* apt, int statistics[4])
+bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 {
+//	gMeshLines.clear();
+	
 	vector<WED_Runway*> rwys;
 	vector<WED_Taxiway*> twys;
 	vector<WED_PolygonPlacement*> polys;
+	vector<WED_AirportBoundary*> bdys;
+	vector<Polygon2> rwy_corners, apt_boundary, grass_poly;
+	
 	WED_LibraryMgr* lmgr = WED_GetLibraryMgr(apt->GetArchive()->GetResolver());
+	WED_Group * art_grp = nullptr;
+	
+	CollectRecursive(apt, back_inserter(bdys), WED_AirportBoundary::sClass);
+	if (bdys.empty()) return 0;
 
 	CollectRecursive(apt, back_inserter(rwys), WED_Runway::sClass);
+	
+	for(auto b : bdys)
+	{
+		apt_boundary.push_back(Polygon2());
+		auto ps = b->GetOuterRing();
+		WED_PolygonForPointSequence(ps, apt_boundary.back(), COUNTERCLOCKWISE);
+	}
+	
+    // move largest runway first - so most of the moved area is aligned with this one
+    std::sort(rwys.begin(), rwys.end(), [&](WED_Runway* a, WED_Runway* b)
+		{
+			return a->GetWidth() * a->GetLength() > b->GetWidth() * b->GetLength();
+		});
+
+	for(auto r: rwys)
+	{
+		if (r->GetSurface() > surf_Grass) continue;
+
+		Point2 	tmp[4];
+		r->GetCorners(gis_Geo, tmp);
+
+		Vector2 len_vec_1m = Vector2(tmp[0], tmp[1]) / LonLatDistMeters(tmp[0], tmp[1]);
+		Vector2 len_ext  = len_vec_1m * 400.0;
+		Vector2 wid_vec_1m = Vector2(tmp[1], tmp[2]) / LonLatDistMeters(tmp[1], tmp[2]);
+		Vector2 side_ext = wid_vec_1m * r->GetWidth() * (r->GetSurface() == surf_Grass ? 1.0 : 4.0);
+		tmp[0] -= len_ext + side_ext;
+		tmp[1] += len_ext - side_ext;
+		tmp[2] += len_ext + side_ext;
+		tmp[3] -= len_ext - side_ext;
+
+		rwy_corners.clear();
+		rwy_corners.push_back(Polygon2());
+		for(int i = 3; i >= 0; i--)
+			rwy_corners.back().push_back(tmp[i]);
+
+		vector<Polygon2> tmp_poly;
+		tmp_poly = PolygonCut(apt_boundary, grass_poly);
+		rwy_corners = PolygonIntersect(rwy_corners, tmp_poly);
+
+		if(!art_grp)
+		{
+			art_grp = WED_Group::CreateTyped(apt->GetArchive());
+			art_grp->SetParent(apt, 0);
+			art_grp->SetName("Terrain FX");
+		}
+		auto new_p = PolygonsForWED_Polygon(art_grp, rwy_corners);
+		if(statistics) statistics[0] += new_p.size();
+		
+		string nam;
+		r->GetName(nam);
+		nam = string("Mowing along ") + nam;
+		for(auto p: new_p)
+		{
+			p->SetName(nam);
+			p->SetHeading(r->GetHeading());
+			p->SetResource("lib/airport/ground/terrain_FX/lawn_tracks/area_3.pol");
+		}
+		grass_poly = PolygonUnion(grass_poly, rwy_corners);
+	}
+	
+	// now get all pavement, then add lines or turning circles
 	CollectRecursive(apt, back_inserter(twys), WED_Taxiway::sClass);
 	CollectRecursive(apt, back_inserter(polys), ThingNotHidden, [&](WED_Thing* v)
 		{
@@ -5735,52 +5832,31 @@ int WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 			else
 				return false;
 		}, WED_PolygonPlacement::sClass);
-	
-	if(statistics)
-	{
-		statistics[0] = rwys.size();
-		statistics[1] = twys.size() + polys.size();
-	}
-	// create new group
-	auto art_grp = WED_Group::CreateTyped(apt->GetArchive());
-	art_grp->SetParent(apt, 0);
-	art_grp->SetName("Grass Art");
-	// create oversized runway polygons
-	// sort by longest/parallel runways first
-	for(auto r: rwys)
-	{
-		Point2 corners[4];
-		r->GetCorners(gis_Geo, corners);
-		Polygon2 cnr_poly;
-		for(int i = 0; i < 4; i++)
-			cnr_poly.push_back(corners[i]);
-		// to prevent overlap - substract all polygons we had mowed before
-		auto new_p = Polygon2WEDPolygon(art_grp, cnr_poly);
-		new_p->SetHeading(r->GetHeading());
-	}
-	// limit to boundary
-	// make new polygon from it
-	// make "big pavement" polygon.
+
+	return grass_poly.size() > 0;
 }
 
 void WED_MowGrass(IResolver* resolver)
 {
 	WED_Thing* wrl = WED_GetWorld(resolver);
 	vector<WED_Airport *> all_apts;
-	int changes = 0, statistics[4] = { 0 };
+	int changed_apts = 0, statistics[4] = { 0 };
 
 	CollectRecursiveNoNesting(wrl, back_inserter(all_apts), WED_Airport::sClass);
 
 	wrl->StartOperation("Mow Grass");
 	for (auto a : all_apts)
-		changes += WED_DoMowGrass(a, statistics);
+		changed_apts += WED_DoMowGrass(a, statistics);
 
-	if (changes > 0)
+	if (changed_apts > 0)
 	{
 		wrl->CommitOperation();
-		string msg("Created ");
+		string msg("Created at ");
+		msg += to_string(changed_apts) + " Airport(s)\n\n";
 		msg += to_string(statistics[0]) + " Polygons\n";
-		msg += to_string(statistics[1]) + " Lines\n";
+		msg += to_string(statistics[1]) + " Objects\n";
+		msg += to_string(statistics[2]) + " Lines\n";
+		
 		DoUserAlert(msg.c_str());
 	}
 	else

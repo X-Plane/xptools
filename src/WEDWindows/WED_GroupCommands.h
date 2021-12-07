@@ -165,7 +165,7 @@ void	WED_UpgradeJetways(IResolver* resolver);
 int		WED_DoConvertToJW(WED_Airport* apt, int statistics[4] = nullptr);
 
 void	WED_MowGrass(IResolver* resolver);
-int		WED_DoMowGrass(WED_Airport* apt, int statistics[4] = nullptr);
+bool	WED_DoMowGrass(WED_Airport* apt, int statistics[4] = nullptr);
 
 void WED_AgePavement(IResolver* mDocument);
 void WED_AlignAirports(IResolver * resolver);
