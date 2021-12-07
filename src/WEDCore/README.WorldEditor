@@ -27,6 +27,11 @@ WED 2.5  alpha 1
    XP12 art asset conversion features:
    - jetway objects to jetway facades
    - X11 default pavment to XP12 aged pavement
+   XP12 global airports heuristics:
+   - convert jetway objects to jetway facades
+   - limit to ONE active jetways per ramp start
+   - nuke most terrain polygons
+   - nuke all grunge objects
    Features:
    - use full projection for map display to improve location accuracy of linear features
    - validation warning on TOWER_VIEWPOINT height not matching objects with #viewpoint_height tags
