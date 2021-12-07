@@ -27,8 +27,10 @@ WED 2.5  alpha 1
    XP12 art asset conversion features:
    - jetway objects to jetway facades
    - X11 default pavment to XP12 aged pavement
+   - add mowed grass FX based on runways
    XP12 global airports heuristics:
    - convert jetway objects to jetway facades
+   - mow grass if no Terrain FX at airport
    - limit to ONE active jetways per ramp start
    - nuke most terrain polygons
    - nuke all grunge objects

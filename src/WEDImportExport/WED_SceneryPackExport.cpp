@@ -309,7 +309,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				LOG_MSG("Deleted %ld terrain polys at %s\n", terrain_polys.size(), ICAO_code.c_str());
 			}
 		}
-		// nuke all "runge" raped objects
+		// nuke all "Grunge" draped objects
 		vector<WED_ObjPlacement*> grunge_objs;
 		CollectRecursive(*apt_itr, back_inserter(grunge_objs), IgnoreVisiblity, [](WED_Thing* objs)->bool {
 			string res;
@@ -320,7 +320,8 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		if (grunge_objs.size())
 		{
 			wrl->StartCommand("Delete Grunge Objects");
-			WED_RecursiveDelete(set<WED_Thing*>(grunge_objs.begin(), grunge_objs.end()));
+			set<WED_Thing*> things(grunge_objs.begin(), grunge_objs.end());
+			WED_RecursiveDelete(things);
 			wrl->CommitCommand();
 			LOG_MSG("Deleted %d Grunges at %s\n", grunge_objs.size(), ICAO_code.c_str());
 		}
