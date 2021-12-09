@@ -302,7 +302,9 @@ WED_DocumentWindow::WED_DocumentWindow(
 	mMapPreviewPane->FromPrefs(inDocument);
 	mPropPane->FromPrefs(inDocument,0);
 	// doc/use_feet and doc/InfoDMS are global only preferences now, not read from each document any more
-#if TYLER_MODE
+#if TYLER_MODE == 11
+	gExportTarget = wet_xplane_1130;
+#elif TYLER_MODE
 	gExportTarget = wet_latest_xplane;
 #else
 	gExportTarget = (WED_Export_Target) inDocument->ReadIntPref("doc/export_target",gExportTarget);
@@ -696,7 +698,9 @@ void	WED_DocumentWindow::ReceiveMessage(
 		mPropPane->FromPrefs(prefs,0);
 
 		// doc/use_feet and doc/InfoDMS are global only preferences now, not read from each document any more
-	#if TYLER_MODE
+	#if TYLER_MODE == 11
+		gExportTarget = wet_xplane_1130;
+	#elif TYLER_MODE
 		gExportTarget = wet_latest_xplane;
 	#else
 		gExportTarget = (WED_Export_Target) mDocument->ReadIntPref("doc/export_target",gExportTarget);

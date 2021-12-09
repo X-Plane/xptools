@@ -76,7 +76,10 @@
 // from the gateway.  You don't need this. Be aware that temp files after gateway import will NOT be removed if activated.
 #define GATEWAY_IMPORT_FEATURES 0
 
-// no validation upon export, but special heuristics for agp expansion before export. Only makes sense if GATEWAY_IMPORT_FEATURES is set.
+// no validation upon export, but special heuristics for agp expansion before export. Also seyt GATEWAY_IMPORT_FEATURES to
+// be able to get the gateway extracts INTO WED.
+// Any non-zero value will do - but 11 (eleven) will enable some "backwards compatibility" transformations and deletions
+// to make XP11 compatible Global Airports from a database that already includes xp12 art
 #define TYLER_MODE 0
 
 // After running ATC Runway Validation, show the hitboxes used for hot zone tests

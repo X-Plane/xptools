@@ -18,10 +18,10 @@ echo duplicated tile check:
 ls -- "${to}"*/*~
 read -rsp $'if any files ending in ~ got listed above we have a BIG problem !!!\n' -n1 key
 
-#echo Combining the apt.dat found in all source directories ...
-#head -n -1 "${from1}apt.dat" >"${to}apt.dat"
-#tail -n +2 "${from2}apt.dat" >>"${to}apt.dat"
-#rm "${to}apt.dat~"
+echo Combining the apt.dat found in all source directories ...
+head -n -1 "${from1}apt.dat" >"${to}apt.dat"
+tail -n +3 "${from2}apt.dat" >>"${to}apt.dat"
+rm "${to}apt.dat~"
 
 # someday, WED might compress at export. It already reads compressed dsf's ...
 echo Compressing DSFs ...

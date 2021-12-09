@@ -70,7 +70,7 @@
 #include "WED_Colors.h"
 
 #define ALLOW_MULTI_IMPORT 1                       // set this if you want to allow to import multiple airports at a time
-#define MULTI_MAX_FILES TYLER_MODE ? 50000 : 500   // Prevent too many files to be downloaded in one swoop - its REALLY slow
+#define MULTI_MAX_FILES TYLER_MODE ? 50000 : 300   // Prevent too many files to be downloaded in one swoop - its REALLY slow
 
 #if ALLOW_MULTI_IMPORT
 	#include "WED_AptTable.h"

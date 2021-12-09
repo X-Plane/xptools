@@ -64,7 +64,7 @@ int		WED_CanExportPack(IResolver * resolver)
 	return 1;
 }
 
-#if TYLER_MODE
+#if 1 // TYLER_MODE
 
 #include "WED_Airport.h"
 #include "WED_EnumSystem.h"
@@ -260,7 +260,54 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 					}
 			}
 		}
-		
+#if TYLER_MODE == 11
+		// translate new pavement polygons into XP11 equivalents (run/taxiways have that done in aptio.cpp)
+		// these "back-translations" of new art assets will some day get out of hand and backporting to XP11 will end ...
+		#define XP12PATH  "lib/airport/ground/"
+		#define XP12N  strlen(XP12PATH)
+		vector<IHasResource*> xp12_art, xp12_delete;
+		CollectRecursive(*apt_itr, back_inserter(xp12_art), IgnoreVisiblity, [](WED_Thing* t)->bool 
+			{
+				if(auto r = dynamic_cast<IHasResource*>(t))
+				{
+					string res;
+					r->GetResource(res);
+					return res.compare(0, XP12N, XP12PATH) == 0 || 
+						   res.compare(0, strlen("lib/vehicles/"), "lib/vehicles/") == 0;
+				}
+				return false;
+			}, "", 2);
+
+		if (xp12_art.size())
+		{
+			wrl->StartCommand("Translate XP12 art");
+			for (auto p : xp12_art)
+			{
+				string res;
+				p->GetResource(res);
+				if      (res.compare(XP12N, strlen("pavement/asphalt_L"), "pavement/asphalt_L") == 0)
+					res = "lib/airport/pavement/asphalt_1L.pol";
+				else if (res.compare(XP12N, strlen("pavement/asphalt_D"), "pavement/asphalt_D") == 0)
+					res = "lib/airport/pavement/asphalt_1D.pol";
+				else if (res.compare(XP12N, strlen("pavement/asphalt"), "pavement/asphalt") == 0)
+					res = "lib/airport/pavement/asphalt_3D.pol";
+				else if (res.compare(XP12N, strlen("pavement/concrete_L"), "pavement/concrete_L") == 0)
+					res = "lib/airport/pavement/concrete_1L.pol";
+				else if (res.compare(XP12N, strlen("pavement/concrete"), "pavement/concrete") == 0)
+					res = "lib/airport/pavement/concrete_1D.pol";
+				else if (res.compare(0, strlen("lib/vehicles/static/trucks/"), "lib/vehicles/static/trucks/") == 0)
+					res = "lib/airport/Common_Elements/Vehicles/Cargo_Trailer.obj";
+				else 
+					continue;
+				p->SetResource(res);
+			}
+			wrl->CommitCommand();
+		}
+		// Remove all remaining new XP12 stuff - so this needs to be run in an XP11 installation. 
+		// Or items be copied to be local items in the Global Airports Scenery.
+		WED_DoSelectMissingObjects(resolver);
+		WED_DoClear(resolver);
+#else
 		// mov the grass
 		vector<WED_Group*> grps;
 		CollectRecursive(*apt_itr, back_inserter(grps), IgnoreVisiblity, [](WED_Thing* t)->bool 
@@ -281,7 +328,6 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			else
 				wrl->AbortOperation();
 		}
-
 		// nuke all large terrain polygons at mid-lattitudes
 		if(apt_box.p1.y() < 73.0 && apt_box.p1.y() > -60.0)
 		{
@@ -325,7 +371,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			wrl->CommitCommand();
 			LOG_MSG("Deleted %d Grunges at %s\n", grunge_objs.size(), ICAO_code.c_str());
 		}
-
+#endif
 		double percent_done = (double)distance(apts.begin(), apt_itr) / apts.size() * 100;
 		printf("%0.0f%% through heuristic at %s\n", percent_done, ICAO_code.c_str());
 //		if(distance(apts.begin(), apt_itr) == 15) break;
