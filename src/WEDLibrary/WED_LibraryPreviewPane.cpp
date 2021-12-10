@@ -222,7 +222,7 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 						}
 					}
 				luminance /= n;
-				printf("lum = %.1lf, n=%d\n", luminance, n);
+//				printf("lum = %.1lf, n=%d\n", luminance, n);
 				DestroyBitmap(&info);
 
 				mLightBackground = luminance < 50.0;

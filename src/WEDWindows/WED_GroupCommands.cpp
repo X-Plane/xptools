@@ -4274,9 +4274,9 @@ void	WED_DoBreakApartAgps(IResolver* resolver)
 		root->CommitOperation();
 
 		stringstream ss;
-		ss << "Replaced " << replaced_agps.size() << " Agp's by " << sel->GetSelectionCount() << " individual Objects.";
+		ss << "Replaced " << replaced_agps.size() << " agp's by " << sel->GetSelectionCount() << " individual objects.";
 		if (replaced_agps.size() < agp_placements.size())
-			ss << "\nSome .Ap referenced non-public objects and were not broken up.";
+			ss << "\nSome agp referenced non-public objects and were not broken up.";
 		DoUserAlert(ss.str().c_str());
 	}
 }
