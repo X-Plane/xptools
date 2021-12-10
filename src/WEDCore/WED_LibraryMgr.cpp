@@ -209,8 +209,8 @@ bool	WED_LibraryMgr::IsResourceLibrary(const string& r)
 bool	WED_LibraryMgr::IsResourceDeprecatedOrPrivate(const string& r)
 {
 	res_map_t::const_iterator me = res_table.find(r);
-	if (me==res_table.end()) return false;
-	return me->second.status < status_SemiDeprecated;                  // status "Yellow' is still deemed public wrt validation, i.e. allowed on the gateway
+	if (me==res_table.end()) return true;              // library list == never public exported = not public !
+	return me->second.status < status_SemiDeprecated;  // status "Yellow' is still deemed public wrt validation, i.e. allowed on the gateway
 }
 
 bool	WED_LibraryMgr::DoesPackHaveLibraryItems(int package)

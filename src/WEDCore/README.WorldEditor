@@ -19,6 +19,7 @@ WED 2.5  alpha 1
    - fix gridded preview for 3D objects only showing partially on OSX w/AMD graphics
    - WED-1390 fix crash in preview window for .net definitions that reference no textures at all
    - improve GW export heuristics to prevent non-ICAO code airport ID's to be taken as ICAO
+   - don't break apart AGP's referencing objects by relative path - those are not public
    XP12 features:
    - moving jetways (requires propper jetways .fac w/metadata)
    - runway & taxiways surface styles and markings
