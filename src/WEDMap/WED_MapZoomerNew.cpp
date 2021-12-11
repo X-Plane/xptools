@@ -141,7 +141,7 @@ double	WED_MapZoomerNew::gnomonic_proj_cos(double lat) const
 Point2	WED_MapZoomerNew::PixelToLL(const Point2& p) const
 {
 #if USE_GNOMONIC
-	if (mPixel2DegLat() < THR_GNOMONIC)
+	if (!cam && mPixel2DegLat() < THR_GNOMONIC)
 	{
 		Point2 pt((p.x() - mCenterX) * mPixel2DegLat(), (p.y() - mCenterY) * mPixel2DegLat());
 		// https://mathworld.wolfram.com/GnomonicProjection.html
@@ -184,7 +184,7 @@ Point2	WED_MapZoomerNew::PixelToLL(const Point2& p) const
 Point2	WED_MapZoomerNew::LLToPixel(const Point2& p) const
 {
 #if USE_GNOMONIC
-	if (mPixel2DegLat() < THR_GNOMONIC)
+	if (!cam && mPixel2DegLat() < THR_GNOMONIC)
 	{
 		Point2 pt(p);
 		pt.x_ = min(max(mLogicalBounds[0], pt.x()), mLogicalBounds[2]);
