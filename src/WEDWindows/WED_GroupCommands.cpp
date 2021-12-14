@@ -4476,13 +4476,11 @@ static void collect_ramps_recursive(WED_Thing * who, vector<WED_RampPosition *>&
 {
 	if(who->GetClass() == WED_RampPosition::sClass)
 	{
-		WED_RampPosition * ramp = dynamic_cast<WED_RampPosition *>(who);
-		DebugAssert(ramp);
-		out_ramps.push_back(ramp);
+		out_ramps.push_back(static_cast<WED_RampPosition *>(who));
 	}
-	if(who->GetClass() == WED_ObjPlacement::sClass)
+	else if(who->GetClass() == WED_ObjPlacement::sClass)
 	{
-		WED_ObjPlacement * obj = dynamic_cast<WED_ObjPlacement *>(who);
+		WED_ObjPlacement * obj = static_cast<WED_ObjPlacement *>(who);
 		DebugAssert(obj);
 		obj_conflict_info r;
 		string vpath;
@@ -4516,74 +4514,221 @@ static void collect_ramps_recursive(WED_Thing * who, vector<WED_RampPosition *>&
 			out_conflicting_objs.push_back(r);
 		}
 	}
+	else if(who->GetClass() == WED_Group::sClass || who->GetClass() == WED_Airport::sClass)
+	{
+		int nn = who->CountChildren();
+		for(int n = 0; n < nn; ++n)
+			collect_ramps_recursive(who->GetNthChild(n), out_ramps, out_conflicting_objs, rmgr);
+	}
+}
 
-	int nn = who->CountChildren();
-	for(int n = 0; n < nn; ++n)
-		collect_ramps_recursive(who->GetNthChild(n), out_ramps, out_conflicting_objs, rmgr);
+static const vector<Point2> canada {{-135,50}, {-123.3,48.2}, {-123.2,49}, {-94.5,49}, {-83.1,46}, {-81.8,43.6}, {-83.14,42.13}, {-82,41.7}, {-74.8,45},
+									{-72,45}, {-68,47}, {-67,45}, {-66,42}, {-40,50}, {-73,77}, {-50,84}, {-141,84}, {-141,60}, {-135,60}, {-130,56}};
+
+static string get_regional_codes(const Point2& loc, int ac_size, int ops_type)
+{
+	string code;
+	
+	if(ops_type == ramp_operation_Cargo)   // cargo isn't regionalized for now
+	{
+		return "";      // dont add FDX UPS etc - as it would prevent any 3rd party other csargo airlines to show up
+	}
+	
+	if (loc.x() < -32.0)
+	{
+		code = "aal ual dal ";
+		if(loc.x() < -150.0 && loc.y() > 10.0 && loc.y() < 40.0) // hawaii
+		{
+			if(ac_size > width_B) code += "hal swa ";
+			else                  code += "hal fdy wlc ";
+		}
+		else if(loc.y() < 13.0)
+		{
+			if (loc.x() > -120.0)                   // south america
+				code += "tam lan glo azu ava arg ame ";
+			else                                    // south pacific
+				code += "";
+		}
+		else if(inside_polygon_pt(canada.rbegin(), canada.rend(), loc))  // canada
+			code += "aca wja ";
+		else
+		{
+			if(ac_size < width_D)
+			{
+				if(loc.x() < - 103.0)            // USA west
+					code += "swa asa qxe ";
+				else	                         // USA east
+					code += "swa jbu nks ";
+			}
+		}
+	}
+	else if(loc.x() < 60.0)
+	{
+		code = "baw afr klm dlh ";
+		if(loc.x() > 37.0 && loc.y() > 12.0 && loc.y() < 34.0)    // near east
+			code += "uae etd qtr ";
+		else if(loc.y() > 34.0)                   // europe
+		{
+			code += "sas aza ibe sva ";
+			if(ac_size <= width_C) 
+			{
+				code += "ber ryr ";
+				if(LonLatDistMeters(loc, Point2(11,47)) < 300e3) code += "wlc tyr lpv aua "; // within 300 km of LOWI
+			}
+		}
+		else                                       // africa
+			code += "eth saa msr ram ";
+	}
+	else
+	{
+		if(loc.y() < -10.5)                        // australia, nz
+			code = "qfa anz qlk ";
+		else
+		{
+			if(loc.x() < 86.0)                     // india
+				code = "aic igo ";
+			else if(loc.x() < 124.0 && loc.y() > 20.0)  // china
+				code = "csn ces cca chh ";
+			else                                        // far east asia
+				code = "lni sia cpa ana jal kal gia ";
+		}
+	}
+
+	return code;
+}
+
+static string get_xplane_codes(int width_enum, const set<int>& eq, int ops_type, WED_LibraryMgr* lmgr)
+{
+	const char *ops_str = ops_type == ramp_operation_Airline ? "lib/airport/aircraft/airliners" : "lib/airport/aircraft/cargo";
+	vector<pair<string, int> > static_ac_vpaths;
+	lmgr->GetSameDir(ops_str, static_ac_vpaths);
+	set<string>	codes_matching_start;
+	
+	char width_char = width_enum - width_A + 'a';
+	char width_char2 = max((char) (width_char - 1), 'a');
+	
+	for(auto v : static_ac_vpaths)
+	{
+		string s = v.first.substr(strlen(ops_str) + 1);
+		if(eq.count(atc_Turbos) && s.find("turboprop_") == 0)
+			if((s[10] == width_char || s[10] == width_char2 )&& s[11] != '.')
+				codes_matching_start.insert(s.substr(12,3));
+				
+		if(eq.count(atc_Jets) && s.find("jet_") == 0)
+			if((s[4] == width_char || s[4] == width_char2 )&& s[5] != '.')
+				codes_matching_start.insert(s.substr(6,3));
+				
+		if(eq.count(atc_Heavies) && s.find("heavy_") == 0)
+			if((s[6] == width_char || s[6] == width_char2) && s[7] != '.')
+				codes_matching_start.insert(s.substr(8,3));
+	}
+
+	string out;
+	for(auto c : codes_matching_start)
+		out += c + " ";
+
+	// printf("%s for size %c: %s\n", ops_str, width_char, out.c_str());
+	return out;
 }
 
 int wed_upgrade_one_airport(WED_Thing* who, WED_ResourceMgr* rmgr, ISelection* sel)
 {
+gMeshLines.clear();
+for(int i = 0; i < canada.size(); i++)
+	debug_mesh_line(canada[i], canada[(i+1) % canada.size()], 1,0,0,1,0,0);
+
 	int did_work = 0;
 	vector<WED_RampPosition *> ramps;
 	vector<obj_conflict_info> objs;
 	collect_ramps_recursive(who, ramps, objs, rmgr);
 
-	for (vector<WED_RampPosition *>::iterator r = ramps.begin(); r != ramps.end(); ++r)
+	auto lmgr = WED_GetLibraryMgr(who->GetArchive()->GetResolver());
+	
+	Point2 apt_loc;
+	if(auto apt = dynamic_cast<WED_Airport*>(who))
 	{
-		vector<WED_RampPosition *> ramps;
-		vector<obj_conflict_info> objs;
-		collect_ramps_recursive(who, ramps,objs,rmgr);
+		Bbox2 bounds;
+		apt->GetBounds(gis_Geo, bounds);
+		apt_loc = bounds.centroid();
+	}
+	else return 0;
 
-		for(vector<WED_RampPosition *>::iterator r = ramps.begin(); r != ramps.end(); ++r)
+	srand( 100 * (apt_loc.x()+180) + 36000 * (apt_loc.y()+90) ); // for repeatable patterns per airport
+
+	for (auto r : ramps)
+	{
+		if (r->GetRampOperationType() == ramp_operation_None)
 		{
-			if ((*r)->GetRampOperationType() == ramp_operation_none)
+			// fill in ops types
+			switch(r->GetType())
 			{
-				int rt = (*r)->GetType();
-				if(rt == atc_Ramp_Gate)
-				{
-					(*r)->SetRampOperationType(ramp_operation_Airline);
+				case atc_Ramp_Gate:
+					r->SetRampOperationType(ramp_operation_Airline);
 					did_work = 1;
-				}
-				if(rt == atc_Ramp_TieDown)
+					break;			
+				case atc_Ramp_TieDown:
 				{
-					did_work = 1;
-
 					set<int> eq;
-					(*r)->GetEquipment(eq);
+					r->GetEquipment(eq);
 
 					if(eq.count(atc_Heavies))
-						(*r)->SetRampOperationType(ramp_operation_Airline);
+						r->SetRampOperationType(ramp_operation_Airline);
 					else
-						(*r)->SetRampOperationType(ramp_operation_GeneralAviation);
-				}
-			}
-		}
-
-		for(vector<obj_conflict_info>::iterator o = objs.begin(); o != objs.end(); ++o)
-		{
-			bool alive = true;
-			for(vector<WED_RampPosition *>::iterator r = ramps.begin(); r != ramps.end(); ++r)
-			{
-
-				Point2 rp; double rs;
-				center_and_radius_for_ramp_start(*r, rp, rs);
-
-				double d = LonLatDistMeters(rp, o->loc_ll);
-
-				if(d < (o->approx_radius_m + rs))
-				{
-					//debug_mesh_line(rp, o->loc_ll, 1,0,0,1,0,0);
-					alive = false;
+						r->SetRampOperationType(ramp_operation_GeneralAviation);
+					did_work = 1;
 					break;
 				}
 			}
-			if(!alive)
+		}
+		// fill in airline types
+		if (r->GetRampOperationType() == ramp_operation_Airline || r->GetRampOperationType() == ramp_operation_Cargo)
+		{
+			string old_codes =  WED_RampPosition::CorrectAirlinesString(r->GetAirlines());
+			string new_codes;
+			if(r->GetWidth() < width_D || rand() & 1)     // regionalize only half the large ones, as large birds roam the whole world
 			{
-				sel->Erase(o->obj);
-				o->obj->SetParent(NULL, 0);
-				o->obj->Delete();
+				set<int> eq;
+				r->GetEquipment(eq);
+				string available_codes = get_xplane_codes(r->GetWidth(), eq, r->GetRampOperationType(), lmgr);
+				string regional_codes = get_regional_codes(apt_loc,r->GetWidth(), r->GetRampOperationType());
+
+				bool old_codes_good_enough = false;
+				while (old_codes.size() >= 3)
+				{
+					if(available_codes.find(old_codes.substr(0,3)) != string::npos)
+					{
+						new_codes = old_codes;
+						old_codes_good_enough = true;
+						break;
+					}
+					new_codes += old_codes.substr(0, 3) + " ";
+					old_codes.erase(0, intmin2(old_codes.size(), 4));
+				}
+				
+				if(new_codes.empty() || !old_codes_good_enough)
+					new_codes += regional_codes;
+			}
+			std::transform(new_codes.begin(), new_codes.end(), new_codes.begin(), [](unsigned char c) {return toupper(c);} );
+			r->SetAirlines(new_codes);
+			did_work = 1;
+		}
+	}
+	// nuke static aircraft objects near ramps
+	for(auto o : objs)
+	{
+		for(auto r : ramps)
+		{
+			Point2 rp; double rs;
+			center_and_radius_for_ramp_start(r, rp, rs);
+
+			if(LonLatDistMeters(rp, o.loc_ll) < (o.approx_radius_m + rs))
+			{
+				//debug_mesh_line(rp, o.loc_ll, 1,0,0,1,0,0);
+				sel->Erase(o.obj);
+				o.obj->SetParent(NULL, 0);
+				o.obj->Delete();
 				did_work = 1;
+				break;
 			}
 		}
 	}
