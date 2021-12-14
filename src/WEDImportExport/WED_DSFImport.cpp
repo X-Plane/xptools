@@ -1198,21 +1198,20 @@ void	WED_DoImportRoads(IResolver * resolver)
 	sel->IterateSelectionOr(Iterate_CollectThings, &things);
 
 	vector<Bbox2> excl_bounds;
-	bool do_import_autogen = false;
+	int dsf_filters = 0;
 	for(auto t : things)
 	{
 		WED_ExclusionZone * excl = dynamic_cast<WED_ExclusionZone *>(t);
 		if(excl == nullptr) return;
 		set<int> excl_types;
 		excl->GetExclusions(excl_types);
-		if(excl_types.find(exclude_Net) == excl_types.end()) continue;
-		if(excl_types.find(exclude_Str) != excl_types.end()) do_import_autogen = true ;
+		if(excl_types.count(exclude_Net)) dsf_filters |= dsf_filter_roads;
+		if(excl_types.count(exclude_Obj)) dsf_filters |= dsf_filter_autogen;
+//		if(excl_types.count(exclude_For)) dsf_filters |= dsf_filter_forests;   // general polygon import does not (yet) support partial import
 		Bbox2 b;
 		excl->GetBounds(gis_Geo,b);
 		excl_bounds.push_back(b);
 	}
-
-	int dsf_filters = do_import_autogen ? dsf_filter_roads|dsf_filter_autogen : dsf_filter_roads ;
 
 	set<string> matching_dsf;
 	pair<int, int> glob_scn = gPackageMgr->GlobalPackages();
@@ -1225,13 +1224,17 @@ void	WED_DoImportRoads(IResolver * resolver)
 				{
 					string path;
 					gPackageMgr->GetNthPackagePath(pkg, path);
-					char buf[256];
-					snprintf(buf, sizeof(buf), "%s" DIR_STR "Earth nav data" DIR_STR "%+03d%+04d" DIR_STR "%+03d%+04d.dsf", path.c_str(),
-						lat > 0 ? (lat / 10) * 10 : ((-lat + 9) / 10) * -10, lon > 0 ? (lon / 10) * 10 : ((-lon + 9) / 10) * -10, lat, lon);
-					if (FILE_exists(buf))
+					string dirname(FILE_get_file_name(path));
+					if (dirname.find("Demo Area") != string::npos || dirname.find("Global Scenery") != string::npos)
 					{
-						matching_dsf.insert(buf);
-						break;
+						char buf[256];
+						snprintf(buf, sizeof(buf), "%s" DIR_STR "Earth nav data" DIR_STR "%+03d%+04d" DIR_STR "%+03d%+04d.dsf", path.c_str(),
+							lat > 0 ? (lat / 10) * 10 : ((-lat + 9) / 10) * -10, lon > 0 ? (lon / 10) * 10 : ((-lon + 9) / 10) * -10, lat, lon);
+						if (FILE_exists(buf))
+						{
+							matching_dsf.insert(buf);
+							break;
+						}
 					}
 				}
 	}

@@ -417,11 +417,14 @@ void WED_NavaidLayer::LoadNavaids()
 
 	// deliberately ignoring any Custom Data/earth_424.dat or Custom Data/earth_nav.dat files that a user may have ... to avoid confusion
 	string defaultNavaids  = resourcePath + DIR_STR "Resources" DIR_STR "default data" DIR_STR "earth_nav.dat";
-	string globalNavaids = resourcePath + DIR_STR "Custom Scenery" DIR_STR "Global Airports" DIR_STR "Earth nav data" DIR_STR "earth_nav.dat";
+	string globalNavaids = DIR_STR "Global Airports" DIR_STR "Earth nav data" DIR_STR "earth_nav.dat";
 	
 	MFMemFile * str = MemFile_Open(defaultNavaids.c_str());
 	if(str) parse_nav_dat(str, mNavaids, false);
-	str = MemFile_Open(globalNavaids.c_str());
+
+	str = MemFile_Open((resourcePath + DIR_STR "Global Scenery" + globalNavaids).c_str());
+	if (!str)
+		str = MemFile_Open((resourcePath + DIR_STR "Custom Scenery" + globalNavaids).c_str());
 	if(str)	parse_nav_dat(str, mNavaids, true);
 	
 	string defaultATC = resourcePath + DIR_STR "Resources" DIR_STR "default scenery" DIR_STR "default atc dat" DIR_STR "Earth nav data" DIR_STR "atc.dat";
@@ -442,11 +445,13 @@ void WED_NavaidLayer::LoadNavaids()
 #if SHOW_APTS_FROM_APTDAT
 	map<string,navaid_t> tAirports;
 	string defaultApts = resourcePath + DIR_STR "Resources" DIR_STR "default scenery" DIR_STR "default apt dat" DIR_STR "Earth nav data" DIR_STR "apt.dat";
-	string globalApts  = resourcePath + DIR_STR "Custom Scenery" DIR_STR "Global Airports" DIR_STR "Earth nav data" DIR_STR "apt.dat";
+	string globalApts  = DIR_STR "Global Airports" DIR_STR "Earth nav data" DIR_STR "apt.dat";
 
 	str = MemFile_Open(defaultApts.c_str());
 	if(str) parse_apt_dat(str, tAirports, "");
-	str = MemFile_Open(globalApts.c_str());
+	str = MemFile_Open((resourcePath + DIR_STR "Global Scenery" + globalApts).c_str());
+	if(!str)
+		str = MemFile_Open((resourcePath + DIR_STR "Custom Scenery" + globalApts).c_str());
 	if(str) parse_apt_dat(str, tAirports, " (GW)");
 
 #if COMPARE_GW_TO_APTDAT
