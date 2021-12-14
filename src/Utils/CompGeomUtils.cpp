@@ -1345,7 +1345,7 @@ Point2	CoordTranslator2::Reverse(const Point2& input) const
 // polygon subtraction often result in the countour still having zero-width "excursions" or the contour "backtracking on itself", i.e. three subsequent points having
 // the third exactly on the line from the first to the second. Clean those out by skipping the 2nd point.
 
-bool Polygon2cleaner(Polygon2& poly) // this needs to be ideally done in meterspace
+static void Polygon2cleaner(Polygon2& poly) // this needs to be ideally done in meterspace
 {
 	for(int n = 0; n < poly.size(); n++)
 	{
