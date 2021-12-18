@@ -629,9 +629,9 @@ struct Jetway_t {
 	float						install_heading;
 	int							style_code;	// enum
 	int							size_code;	// enum
-	float						parked_tunnel_angle;
+	float						parked_tunnel_heading;
 	float						parked_tunnel_length;
-	float						parked_cab_angle;
+	float						parked_cab_heading;
 };
 typedef vector<Jetway_t> JetwayVector;
 

@@ -220,7 +220,7 @@ void		WED_FacadePlacement::ExportJetway(Jetway_t& jetway)
 			cabin->GetLocation(gis_Geo, cabin_loc);
 			jetway.install_heading = VectorDegs2NorthHeading(loc, loc, Vector2(loc, cabin_loc));
 			jetway.parked_tunnel_length = LonLatDistMeters(loc, cabin_loc);
-			jetway.parked_tunnel_angle = jetway.install_heading;
+			jetway.parked_tunnel_heading= jetway.install_heading;
 
 			tunnel->GetLocation(gis_Param, type);
 			for (auto t : f->tunnels)
@@ -231,11 +231,8 @@ void		WED_FacadePlacement::ExportJetway(Jetway_t& jetway)
 					break;
 				}
 			}
-
 			c_dir->GetLocation(gis_Geo, loc);
-//			jetway.parked_cab_angle = jetway.install_heading - VectorDegs2NorthHeading(cabin_loc, cabin_loc, Vector2(cabin_loc, loc));
-			jetway.parked_cab_angle = VectorDegs2NorthHeading(cabin_loc, cabin_loc, Vector2(cabin_loc, loc));
-
+			jetway.parked_cab_heading = VectorDegs2NorthHeading(cabin_loc, cabin_loc, Vector2(cabin_loc, loc));
 			jetway.style_code = f->style_code;
 		}
 	}
@@ -290,7 +287,7 @@ void		WED_FacadePlacement::ImportJetway(const Jetway_t& apt_data, void(*print_fu
 	else
 		p_cabin->SetWallType(3);                      // best guess - thats what the initial facades used
 	Vector2 dir;
-	NorthHeading2VectorDegs(apt_data.location, apt_data.location, apt_data.install_heading + apt_data.parked_tunnel_angle, dir);
+	NorthHeading2VectorDegs(apt_data.location, apt_data.location, apt_data.parked_tunnel_heading, dir);
 	Point2 pt(apt_data.location);
 	pt += dir * apt_data.parked_tunnel_length * MTR_TO_DEG_LAT;
 	p_cabin->SetLocation(gis_Geo, pt);
@@ -299,7 +296,7 @@ void		WED_FacadePlacement::ImportJetway(const Jetway_t& apt_data, void(*print_fu
 	p_end->SetParent(ring, p_cabin->GetMyPosition() + 1);
 	p_end->SetName("End Node");
 	p_end->SetWallType(0);
-	NorthHeading2VectorDegs(apt_data.location, apt_data.location, apt_data.install_heading + apt_data.parked_tunnel_angle - apt_data.parked_cab_angle, dir);
-	pt += dir * 10.0 * MTR_TO_DEG_LAT;
+	NorthHeading2VectorDegs(apt_data.location, apt_data.location, apt_data.parked_cab_heading, dir);
+	pt += dir * 5.0 * MTR_TO_DEG_LAT;
 	p_end->SetLocation(gis_Geo, pt);
 }

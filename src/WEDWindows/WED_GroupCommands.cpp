@@ -5535,15 +5535,15 @@ int WED_DoConvertToJW(WED_Airport* apt, int statistics[4])
 				fac->SetParent(c->GetParent(), c->GetMyPosition());
 				string nam;
 				c->GetName(nam);
-				fac->SetName(nam + "(conv)");
+				fac->SetName(nam + " (conv)");
 
 				Jetway_t jw_info;
 				jw_info.size_code = tun_len < 20.0 ? 1 : 2;
 				jw_info.style_code = 1;
 				jw_info.location = tun_pos;
 				jw_info.parked_tunnel_length = tun_len;
-				jw_info.parked_tunnel_angle = fltwrap(tun_hdg - 21.0, 0, 360);  // exact tunnel heading plus pulled back a bit to ensure cabin clearance
-				jw_info.parked_cab_angle = 60.0;
+				jw_info.parked_tunnel_heading = tun_hdg - 21.0;           // exact tunnel heading plus pulled back a bit to ensure cabin clearance
+				jw_info.parked_cab_heading = jw_info.parked_tunnel_heading - 65.0;
 				fac->WED_FacadePlacement::ImportJetway(jw_info, dummy_func, nullptr);
 				
 				auto rng = fac->GetNthChild(0);
@@ -5915,7 +5915,7 @@ static void make_ter_FX_exist(WED_Group** grp, WED_Thing* parent)
 
 bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 {
-	gMeshLines.clear();
+	// gMeshLines.clear();
 
 	Bbox2 bounds;
 	apt->GetBounds(gis_Geo, bounds);
@@ -6018,9 +6018,7 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 			{
 				string res;
 				p->GetName(res);
-	printf("Poly %s",res.c_str());
 				p->GetResource(res);
-	printf("Res %s\n",res.c_str());
 				if(res.compare(0, strlen("lib/airport/pavement/"),"lib/airport/pavement/") == 0) 
 					return true;
 				auto surf = lmgr->GetSurfEnum(res);
@@ -6031,7 +6029,6 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 		}, WED_PolygonPlacement::sClass);
 
 	vector<Polygon2> tmp_poly;
-printf("%ld twys\n", twys.size());
 	for(auto t : twys)
 	{
 		WED_BezierPolygonWithHolesForPolygon(t, tmp_poly);
@@ -6039,18 +6036,14 @@ printf("%ld twys\n", twys.size());
 			pave_poly.push_back(tmp);
 	}
 	
-printf("%ld polys\n", polys.size());
 	for(auto p : polys)
 	{
 		WED_BezierPolygonWithHolesForPolygon(p, tmp_poly);
-printf("tmp: ");
 		for(auto tmp : tmp_poly)
 		{
-printf("p %ld %s ", tmp.size(), tmp.is_ccw() ? "ccw" : "cw");
 			pave_poly.push_back(tmp);
 		}
 	}	
-printf("\n");
 	
 	pave_poly = PolygonUnion(pave_poly, vector<Polygon2>());
 	// from here only we can assume 'flat' topology: No overlapping windings, no nested holes.
@@ -6095,6 +6088,7 @@ printf("\n");
 					else              res += "6.6m.obj";
 			}
 			obj->SetResource(res);
+			obj->SetName("Sign Base");
 			obj->SetHeading(s->GetHeading() + 90.0);
 			if(statistics) statistics[3]++;
 		
@@ -6114,6 +6108,7 @@ printf("\n");
 				obj->SetParent(art_grp, 0);
 				obj->SetLocation(gis_Geo, pt);
 				obj->SetResource("lib/airport/ground/terrain_FX/lawn_tracks/spot_1.obj");
+				obj->SetName("Sign Swirl");
 				obj->SetHeading(hdg + 90.0 + 180.0 * (rand() & 1));
 				if(statistics) statistics[2]++;
 			}
@@ -6136,6 +6131,7 @@ printf("\n");
 			obj->SetParent(art_grp, 0);
 			obj->SetLocation(gis_Geo, pt);
 			obj->SetResource("lib/airport/ground/terrain_FX/lawn_tracks/spot_2.obj");
+			obj->SetName("Windsock Swirl");
 			obj->SetHeading(90.0 * (rand() & 3));
 			if(statistics) statistics[2]++;
 		}
@@ -6144,9 +6140,9 @@ printf("\n");
 	// refactor this to be able to re-use pavement (and grass) for adding pavement art
 	// convert everything into meterspace w/propper projection for that as well
 	
-	for(auto p : pave_poly)
-		for(int i = 0; i < p.size(); i++)
-			debug_mesh_segment(p.side(i), 1,0,0, 1,0,0);
+//	for(auto p : pave_poly)
+//		for(int i = 0; i < p.size(); i++)
+//			debug_mesh_segment(p.side(i), 1,0,0, 1,0,0);
 				
 	return grass_poly.size() > 0;
 }

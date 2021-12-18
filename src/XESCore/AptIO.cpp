@@ -1114,9 +1114,9 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 					&j.install_heading,
 					&j.style_code,
 					&j.size_code,
-					&j.parked_tunnel_angle,  // always zero
+					&j.parked_tunnel_heading,
 					&j.parked_tunnel_length,
-					&j.parked_cab_angle) < 8)
+					&j.parked_cab_heading) < 9)
 				{
 					ok = "Error: Illegal jetway";
 				}
@@ -1592,8 +1592,8 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 				{
 					fprintf(fi, "%d" LLFMT " %4.1f %d %d %.1f %4.2f %.1f" CRLF,
 						apt_jetway, jetway.location.y(), jetway.location.x(), jetway.install_heading,
-						jetway.style_code, jetway.size_code, jetway.parked_tunnel_angle,
-						jetway.parked_tunnel_length, jetway.parked_cab_angle);
+						jetway.style_code, jetway.size_code, jetway.parked_tunnel_heading,
+						jetway.parked_tunnel_length, jetway.parked_cab_heading);
 				}
 		}
 	}
