@@ -371,6 +371,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			wrl->CommitCommand();
 			LOG_MSG("Deleted %d Grunges at %s\n", grunge_objs.size(), ICAO_code.c_str());
 		}
+		// nuke all "Grunge" draped objects
 #endif
 		double percent_done = (double)distance(apts.begin(), apt_itr) / apts.size() * 100;
 		printf("%0.0f%% through heuristic at %s\n", percent_done, ICAO_code.c_str());
@@ -378,6 +379,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 	}
 	LOG_MSG("Deleted %d illicit ICAO meta tags\n", deleted_illicit_icao);
 	LOG_MSG("Added %d local code metas to prevent Airport_ID getting taken for ICAO\n", added_local_code);
+	LOG_MSG("Mowed %d polys %d lines %d spots %d patches\n", grass_statistics[0], grass_statistics[1],grass_statistics[2],grass_statistics[3]);
 
 	auto t1 = chrono::high_resolution_clock::now();
 	chrono::duration<double> elapsed = t1 - t0;
