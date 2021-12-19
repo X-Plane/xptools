@@ -31,7 +31,7 @@ cat << EOF > "$script"
 #!/bin/sh
 touch -t 202101010000.00 -- \$1
 echo compressing -- \$1
-7z a -- \$1.7z \$1 >/dev/null
+7z a -m0=lzma -- \$1.7z \$1 >/dev/null
 mv -f -- \$1.7z \$1
 EOF
 

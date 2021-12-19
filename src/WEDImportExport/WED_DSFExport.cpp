@@ -1893,7 +1893,7 @@ static int	DSF_ExportTileRecursive(
 				for(vector<vector<BezierPolygon2> >::iterator i = pol_cuts.begin(); i != pol_cuts.end(); ++i)
 				{
 					++real_thingies;
-					cbs->BeginPolygon_f(idx,pol->GetHeading(),bez ? 4 : 2,writer);
+					cbs->BeginPolygon_f(idx,intround(pol->GetHeading()),bez ? 4 : 2,writer);
 					DSF_AccumPolygonWithHolesBezier(*i, safe_bounds, cbs, writer);
 					cbs->EndPolygon_f(writer);
 				}
@@ -1914,7 +1914,7 @@ static int	DSF_ExportTileRecursive(
 				for(vector<vector<Polygon2> >::iterator i = pol_cuts.begin(); i != pol_cuts.end(); ++i)
 				{
 					++real_thingies;
-					cbs->BeginPolygon_f(idx,pol->GetHeading(),bez ? 4 : 2,writer);
+					cbs->BeginPolygon_f(idx,intround(pol->GetHeading()),bez ? 4 : 2,writer);
 					DSF_AccumPolygonWithHoles(*i, safe_bounds, cbs, writer);
 					cbs->EndPolygon_f(writer);
 				}

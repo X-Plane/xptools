@@ -20,6 +20,7 @@ WED 2.5  alpha 1
    - WED-1390 fix crash in preview window for .net definitions that reference no textures at all
    - improve GW export heuristics to prevent non-ICAO code airport ID's to be taken as ICAO
    - don't break apart AGP's referencing objects by relative path - those are not public
+   - reduce residual heading error for draped polygons by rounding, not truncating at DSF export
    XP12 features:
    - moving jetways (requires propper jetways .fac w/metadata)
    - runway & taxiways surface styles and markings
