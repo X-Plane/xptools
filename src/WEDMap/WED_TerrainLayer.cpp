@@ -32,9 +32,10 @@
 #include "WED_Globals.h"
 #include "WED_MapZoomerNew.h"
 #include "WED_DSFImport.h"
-#include "DSFlib.h"
+#include "DSFLib.h"
 #include "PlatformUtils.h"
 #include "GISUtils.h"
+#include "XESConstants.h"
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -178,24 +179,26 @@ void		WED_TerrainLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 
 	const float terrain_color[4] = { 1.0, 0.3, 0.3, 1.0 };
 	
-	if (PPM > 1.0)          // stop displaying terrain when zoomed out - gets too crowded
+	if (PPM > 0.5)
 	{
 		LoadTerrain(map_viewport);
 		for (auto ter : mTerrains)
 			if (ter.second.bounds.overlap(map_viewport))
 			{
 				auto t = &ter.second;
-				g->SetState(false, 0, false, false, true, false, false);
-				glColor4fv(terrain_color);
-
 				double x_step = t->bounds.xspan() / (t->width - 1);
 				double y_step = t->bounds.yspan() / (t->height - 1);
+				
+				if(x_step * DEG_TO_MTR_LAT * cosf(t->bounds.ymin() * DEG_TO_RAD) * PPM < 60) continue;
 
 				vl = x_step * floor(max(map_viewport.xmin(), t->bounds.xmin()) / x_step);
 				vr = x_step * ceil(min(map_viewport.xmax(), t->bounds.xmax()) / x_step);
 				vb = y_step * floor(max(map_viewport.ymin(), t->bounds.ymin()) / y_step);
 				vt = y_step * ceil(min(map_viewport.ymax(), t->bounds.ymax()) / y_step);
 
+				g->SetState(false, 0, false, false, true, false, false);
+				glColor4fv(terrain_color);
+				
 				for (double lon = vl; lon < vr; lon += x_step)
 				{
 					int x = round((lon - t->bounds.xmin()) / x_step);
@@ -209,7 +212,10 @@ void		WED_TerrainLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 							if (gIsFeet)
 								snprintf(c, sizeof(c), "%.0f%c", t->dem[x + y * t->width] / 0.3048, '\'');
 							else
-								snprintf(c, sizeof(c), "%.1f%c", t->dem[x + y * t->width], 'm');
+							{
+								float hgt = t->dem[x + y * t->width];
+									snprintf(c, sizeof(c), hgt < 200.0 ? "%.1f%c" : "%.0f%c", hgt, 'm');
+							}
 							Point2 pt(GetZoomer()->LLToPixel({ lon, lat }));
 							GUI_FontDraw(g, font_UI_Basic, terrain_color, pt.x() + 2, pt.y() + 4, c);
 							g->SetState(false, 0, false, false, true, false, false);
