@@ -250,6 +250,7 @@
     <ClCompile Include="..\..\src\WEDMap\WED_PreviewLayer.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_SlippyMap.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_StructureLayer.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_TerrainLayer.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_ToolInfoAdapter.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_ToolUtils.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_UIMeasurements.cpp" />
@@ -533,6 +534,7 @@
     <ClInclude Include="..\..\src\WEDMap\WED_PreviewLayer.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_SlippyMap.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_StructureLayer.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_TerrainLayer.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_ToolInfoAdapter.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_ToolUtils.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_UIMeasurements.h" />
