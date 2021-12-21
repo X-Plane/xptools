@@ -6009,8 +6009,7 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 				if(p->GetSurface() <  surf_Grass)
 					return true;
 			}
-			else
-				return false;
+			return false;
 		}, WED_Taxiway::sClass);
 	CollectRecursive(apt, back_inserter(polys), ThingNotHidden, [&](WED_Thing* v)
 		{
