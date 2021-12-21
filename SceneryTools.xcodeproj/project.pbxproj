@@ -163,6 +163,7 @@
 		02D8242C239EF3BF0008DBF2 /* Alloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823E1239EF2310008DBF2 /* Alloc.c */; };
 		02D8242D239EF3BF0008DBF2 /* Alloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823E1239EF2310008DBF2 /* Alloc.c */; };
 		02D82431239EF4800008DBF2 /* 7zStream.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D8242E239EF47A0008DBF2 /* 7zStream.c */; };
+		02DCBD932771B9680056A3BD /* WED_TerrainLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02DCBD902771B83B0056A3BD /* WED_TerrainLayer.cpp */; };
 		02DE8EE8241FC37E003E72C5 /* 7zStream.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D8242E239EF47A0008DBF2 /* 7zStream.c */; };
 		02DE8EFF241FC456003E72C5 /* tess.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EF6241FC439003E72C5 /* tess.c */; };
 		02DE8F00241FC45F003E72C5 /* sweep.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EF4241FC439003E72C5 /* sweep.c */; };
@@ -1203,6 +1204,8 @@
 		02D823F4239EF2310008DBF2 /* LzmaDec.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = LzmaDec.c; path = lzma19/C/LzmaDec.c; sourceTree = "<group>"; };
 		02D823F5239EF2310008DBF2 /* LzmaDec.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LzmaDec.h; path = lzma19/C/LzmaDec.h; sourceTree = "<group>"; };
 		02D8242E239EF47A0008DBF2 /* 7zStream.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = 7zStream.c; path = lzma19/C/7zStream.c; sourceTree = "<group>"; };
+		02DCBD902771B83B0056A3BD /* WED_TerrainLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TerrainLayer.cpp; sourceTree = "<group>"; };
+		02DCBD912771B83B0056A3BD /* WED_TerrainLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_TerrainLayer.h; sourceTree = "<group>"; };
 		02DE8EE9241FC3AC003E72C5 /* tesselator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = tesselator.h; path = libtess2/Include/tesselator.h; sourceTree = "<group>"; };
 		02DE8EEA241FC439003E72C5 /* bucketalloc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = bucketalloc.c; path = libtess2/Source/bucketalloc.c; sourceTree = "<group>"; };
 		02DE8EEB241FC439003E72C5 /* bucketalloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bucketalloc.h; path = libtess2/Source/bucketalloc.h; sourceTree = "<group>"; };
@@ -3340,6 +3343,8 @@
 		D6BC37E10AB22C85003949C5 /* WEDMap */ = {
 			isa = PBXGroup;
 			children = (
+				02DCBD902771B83B0056A3BD /* WED_TerrainLayer.cpp */,
+				02DCBD912771B83B0056A3BD /* WED_TerrainLayer.h */,
 				020F9381260D96040077222C /* WED_MapPreviewPane.cpp */,
 				020F9382260D96040077222C /* WED_MapPreviewPane.h */,
 				020F9383260D96040077222C /* WED_MapPreviewWindow.cpp */,
@@ -5099,6 +5104,7 @@
 				D6AC154D0F12866E0006E096 /* WED_DrawUtils.cpp in Sources */,
 				D6BF8B3D0F13FA84002AC0BE /* ObjDraw.cpp in Sources */,
 				D68ABC730F1E51A9002892AD /* WED_TCEToolAdapter.cpp in Sources */,
+				02DCBD932771B9680056A3BD /* WED_TerrainLayer.cpp in Sources */,
 				D68ABC840F1E5B5F002892AD /* WED_TCEVertexTool.cpp in Sources */,
 				D6FD4D7A0F1EC297005D8C93 /* WED_DSFImport.cpp in Sources */,
 				D678ADF40F7952B700F72139 /* tri_stripper.cpp in Sources */,
