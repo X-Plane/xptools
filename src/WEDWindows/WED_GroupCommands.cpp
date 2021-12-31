@@ -5894,6 +5894,7 @@ static bool inside_pt(const vector<Polygon2>& vec_poly, const Point2 pt)
 	int inside = 0;
 	for(auto p : vec_poly)
 	{
+		if(p.size())
 		if(p.inside(pt))
 			if(p.is_ccw())
 				inside++;
@@ -5913,9 +5914,34 @@ static void make_ter_FX_exist(WED_Group** grp, WED_Thing* parent)
 	}
 }
 
+class coord_translator {
+public:
+	coord_translator(double ref_lat, double heading)
+	{
+		cos_lat = cos(ref_lat * DEG_TO_RAD);
+		cos_hdg = cos(heading * DEG_TO_RAD);
+		sin_hdg = sin(heading * DEG_TO_RAD);
+	}
+	Point2 to_uv(Point2 ll) const
+	{
+		double lon = ll.x() * cos_lat;
+		double lat = ll.y();
+		return { lon * cos_hdg - lat * sin_hdg , lon* sin_hdg + lat * cos_hdg };
+	}
+	Point2 to_ll(Point2 uv) const
+	{
+		double u =  uv.x() * cos_hdg + uv.y() * sin_hdg;
+		double v = -uv.x() * sin_hdg + uv.y() * cos_hdg;
+		return { u / cos_lat, v };
+	}
+
+private:
+	double cos_hdg, sin_hdg, cos_lat;
+};
+
 bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 {
-	// gMeshLines.clear();
+	gMeshLines.clear();
 
 	Bbox2 bounds;
 	apt->GetBounds(gis_Geo, bounds);
@@ -5926,7 +5952,11 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 	vector<WED_Taxiway*> twys;
 	vector<WED_PolygonPlacement*> polys;
 	vector<WED_AirportBoundary*> bdys;
-	vector<Polygon2> rwy_corners, apt_boundary, grass_poly;
+
+	typedef vector<Polygon2> vPoly2;
+	vPoly2 apt_boundary, all_grass_poly, all_pave_poly;
+
+	vector<pair<vPoly2, double> > grass;
 	
 	WED_LibraryMgr* lmgr = WED_GetLibraryMgr(apt->GetArchive()->GetResolver());
 	WED_Group * art_grp = nullptr;
@@ -5949,8 +5979,6 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 			return a->GetWidth() * a->GetLength() > b->GetWidth() * b->GetLength();
 		});
 
-	vector<Polygon2> pave_poly;
-	
 	for(auto r: rwys)
 	{
 		if (r->GetSurface() > surf_Grass) continue;
@@ -5962,9 +5990,9 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 
 		if (r->GetSurface() < surf_Grass)
 		{
-			pave_poly.push_back(Polygon2());
+			all_pave_poly.push_back(Polygon2());
 			for(int i = 3; i >= 0; i--)
-				pave_poly.back().push_back(tmp[i]);
+				all_pave_poly.back().push_back(tmp[i]);
 		}
 
 		Vector2 len_vec_1m = Vector2(tmp[0], tmp[1]) / LonLatDistMeters(tmp[0], tmp[1]);
@@ -5976,17 +6004,18 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 		tmp[2] += len_ext + side_ext;
 		tmp[3] -= len_ext - side_ext;
 
-		rwy_corners.clear();
-		rwy_corners.push_back(Polygon2());
-		for(int i = 3; i >= 0; i--)
-			rwy_corners.back().push_back(tmp[i]);
+		grass.push_back(make_pair(vPoly2(), r->GetHeading()));
+		vPoly2 * this_grass = &grass.back().first;
 
-		vector<Polygon2> tmp_poly;
-		tmp_poly = PolygonCut(apt_boundary, grass_poly);
-		rwy_corners = PolygonIntersect(rwy_corners, tmp_poly);
+		this_grass->push_back(Polygon2());
+		for(int i = 3; i >= 0; i--)
+			this_grass->back().push_back(tmp[i]);
+
+		vector<Polygon2> tmp_poly = PolygonCut(apt_boundary, all_grass_poly);
+		*this_grass = PolygonIntersect(*this_grass, tmp_poly);
 
 		make_ter_FX_exist(&art_grp, apt);
-		auto new_p = PolygonsForWED_Polygon(art_grp, rwy_corners);
+		auto new_p = PolygonsForWED_Polygon(art_grp, *this_grass);
 		if(statistics) statistics[0] += new_p.size();
 		
 		string nam;
@@ -5998,7 +6027,7 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 			p->SetHeading(r->GetHeading());
 			p->SetResource("lib/airport/ground/terrain_FX/lawn_tracks/area_3.pol");
 		}
-		grass_poly = PolygonUnion(grass_poly, rwy_corners);
+		all_grass_poly = PolygonUnion(all_grass_poly, *this_grass);
 	}
 	
 	// get all pavement
@@ -6032,7 +6061,7 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 	{
 		WED_BezierPolygonWithHolesForPolygon(t, tmp_poly);
 		for(auto tmp : tmp_poly)
-			pave_poly.push_back(tmp);
+			all_pave_poly.push_back(tmp);
 	}
 	
 	for(auto p : polys)
@@ -6040,12 +6069,133 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 		WED_BezierPolygonWithHolesForPolygon(p, tmp_poly);
 		for(auto tmp : tmp_poly)
 		{
-			pave_poly.push_back(tmp);
+			all_pave_poly.push_back(tmp);
 		}
 	}	
 	
-	pave_poly = PolygonUnion(pave_poly, vector<Polygon2>());
+	all_pave_poly = PolygonUnion(all_pave_poly, vector<Polygon2>());
 	// from here only we can assume 'flat' topology: No overlapping windings, no nested holes.
+
+	// turning circles where mowing lines hit pavement
+	for (auto& g : grass)
+	{
+		coord_translator tr(apt_loc.y(), g.second);
+		Bbox2 bb;
+		for (auto pol : g.first)
+			for (auto pt : pol)
+				bb += tr.to_uv(pt);
+
+		//debug_mesh_segment({tr.to_ll(bb.top_left()), tr.to_ll(bb.top_right())}, 1, 0, 0, 1, 0, 0);
+		//debug_mesh_segment({tr.to_ll(bb.bottom_left()), tr.to_ll(bb.bottom_right())}, 1, 0, 0, 1, 0, 0);
+
+		// the algo is stupid - so we have to speed up the polygon testing a bit by clipping the pavement to the area that might matter for us
+		vPoly2 clip;
+		clip.push_back(Polygon2());
+		clip.back().push_back(tr.to_ll(bb.bottom_left()));
+		clip.back().push_back(tr.to_ll(bb.bottom_right()));
+		clip.back().push_back(tr.to_ll(bb.top_right()));
+		clip.back().push_back(tr.to_ll(bb.top_left()));
+		auto ap_poly = PolygonIntersect(all_pave_poly, clip);
+		for (auto p : ap_poly)
+		for(int i = 0; i < p.size(); i++)
+			debug_mesh_segment(p.side(i), 0,0,1, 0,0,1);
+
+		Point2 start_mow(tr.to_ll(bb.bottom_left()));
+		Vector2 this_row_dir(start_mow, tr.to_ll(bb.top_left()));
+		double mowing_length = LonLatDistMeters(start_mow, tr.to_ll(bb.top_left()));
+		this_row_dir /= mowing_length;
+
+		Vector2 next_row_dir(start_mow, tr.to_ll(bb.bottom_right()));
+		double next_row_length = LonLatDistMeters(start_mow, tr.to_ll(bb.bottom_right()));
+		next_row_dir /= next_row_length;
+
+		const double mow_steps = 4.0;
+		const double row_spacing = 16.0;
+		const double test_radius = 8.0;
+
+		Point2 pt(start_mow);
+		int fwd_mow(1);
+		bool on_pave(false);
+		bool on_grass(false);
+		for (int v = next_row_length / row_spacing; v > 0; v--)
+		{
+			Vector2 mowing_dir = this_row_dir * fwd_mow;
+			for (int u = mowing_length / mow_steps; u > 0; u--)
+			{
+				bool test_fwd = !on_pave;
+				auto test_dir = test_fwd ? mowing_dir : -mowing_dir;
+				bool near_pave = inside_pt(ap_poly, pt + test_dir * test_radius);
+				if (!near_pave) near_pave = inside_pt(ap_poly, pt + (test_dir + next_row_dir) * test_radius * 0.707);
+				if (!near_pave) near_pave = inside_pt(ap_poly, pt + (test_dir - next_row_dir) * test_radius * 0.707);
+				bool closing_on_pave = false;
+				if (!near_pave)       closing_on_pave = inside_pt(ap_poly, pt + next_row_dir * test_radius);
+				if (!closing_on_pave) closing_on_pave = inside_pt(ap_poly, pt - next_row_dir * test_radius);
+				near_pave |= closing_on_pave;
+
+				bool now_on_grass = inside_pt(g.first, pt);
+				bool grass_bdy = now_on_grass != on_grass;
+				if (grass_bdy) on_grass = !on_grass;
+
+				if (now_on_grass || grass_bdy)
+				{
+					debug_mesh_segment({ pt, pt + next_row_dir * 4 - mowing_dir * 4 }, 1, 1, 0, 1, 1, 0);
+					debug_mesh_segment({ pt, pt - next_row_dir * 4 - mowing_dir * 4 }, 1, 1, 0, 1, 1, 0);
+					if ((near_pave != on_pave && !closing_on_pave) || (grass_bdy && !near_pave))
+					{
+						Point2 turn_loc = (on_pave || (grass_bdy ^ fwd_mow == 1)) ? pt : pt - mowing_dir * mow_steps;
+
+						// it just looks more 'right' if we try to avoid placing turn circles off an pavement corner
+						auto test_right = next_row_dir * (test_fwd ? -fwd_mow : fwd_mow);
+						auto test_fwd = test_dir * (1.0 + mow_steps / test_radius);
+
+						bool pave_fwd_left = inside_pt(ap_poly, turn_loc + (test_fwd - test_right * 0.5) * test_radius) ||
+							inside_pt(ap_poly, turn_loc + (test_fwd - test_right) * test_radius);
+						bool pave_fwd_right = inside_pt(ap_poly, turn_loc + (test_fwd + test_right * 0.5) * test_radius) ||
+							inside_pt(ap_poly, turn_loc + (test_fwd + test_right) * test_radius);
+						bool pave_left = inside_pt(ap_poly, turn_loc - test_right * test_radius * 1.2);
+						bool pave_right = inside_pt(ap_poly, turn_loc + test_right * test_radius * 1.2);
+
+						//debug_mesh_segment({ turn_loc + (test_fwd + test_right * 0.5 ) * test_radius, turn_loc + (test_fwd + test_right) * test_radius}, 0, 1, 0, 0, 1, 0);
+						//debug_mesh_segment({ turn_loc + (test_fwd - test_right * 0.5) * test_radius, turn_loc + (test_fwd - test_right) * test_radius}, 1, 0, 0, 1, 0, 0);
+
+						double offset = 0.0;
+						if (pave_fwd_right == pave_fwd_left && !pave_left && !pave_right) offset = rand() % 6 - 2;
+						else if (pave_fwd_right && !pave_right) offset =   rand() & 1 + 2;
+						else if (pave_fwd_left && !pave_left)  offset =  -(rand() & 1 + 2);
+
+						// if (pave_right != pave_left)
+						{
+							auto obj = WED_ObjPlacement::CreateTyped(apt->GetArchive());
+							obj->SetParent(art_grp, 0);
+							if (rand() & 3 > 0)
+							{
+								turn_loc -= test_dir * 2;
+								obj->SetResource("lib/airport/ground/terrain_FX/lawn_tracks/single_6.obj");
+							}
+							else
+							{
+								turn_loc += test_dir;
+								obj->SetResource("lib/airport/ground/terrain_FX/lawn_tracks/single_4.obj");
+							}
+							obj->SetName("Turn");
+							obj->SetLocation(gis_Geo, turn_loc + test_right * offset);
+							bool rev_hdg = (fwd_mow == 1) ^ (grass_bdy ? !now_on_grass : near_pave);
+							obj->SetHeading(g.second + (rev_hdg ? 180.0 : 0.0) + (rand() % 31 - 15));
+							if (statistics) statistics[2]++;
+						}
+					}
+					if (near_pave != on_pave)
+					{
+						on_pave = !on_pave;
+						pt += mowing_dir * test_radius * 1.2;
+					}
+				}
+				pt += mowing_dir * mow_steps;
+			}
+			pt += next_row_dir * row_spacing;
+			fwd_mow = -fwd_mow;
+		}
+	}
 
 	// paved pads underneath all signs
 	vector<WED_AirportSign *> signs;
@@ -6055,7 +6205,7 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 	{
 		Point2 pt;
 		s->GetLocation(gis_Geo, pt);
-		bool on_pavement = inside_pt(pave_poly, pt);
+		bool on_pavement = inside_pt(all_pave_poly, pt);
 		
 		if(!on_pavement)
 		{
@@ -6095,11 +6245,11 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 		
 			double hdg = s->GetHeading();
 			Vector2 test_dir(0,MTR_TO_DEG_LAT * 4.0);
-			bool near_pavement = inside_pt(pave_poly, pt + test_dir);
+			bool near_pavement = inside_pt(all_pave_poly, pt + test_dir);
 			for(int i = 0; i < 3 && !near_pavement; i++)
 			{
 				test_dir = test_dir.perpendicular_cw();
-				near_pavement = inside_pt(pave_poly, pt + test_dir);
+				near_pavement = inside_pt(all_pave_poly, pt + test_dir);
 			}
 			if(!near_pavement)
 			{
@@ -6121,7 +6271,7 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 	{
 		Point2 pt;
 		s->GetLocation(gis_Geo, pt);
-		bool on_pavement = inside_pt(pave_poly, pt);
+		bool on_pavement = inside_pt(all_pave_poly, pt);
 		
 		if(!on_pavement)
 		{
@@ -6139,11 +6289,11 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 	// refactor this to be able to re-use pavement (and grass) for adding pavement art
 	// convert everything into meterspace w/propper projection for that as well
 	
-//	for(auto p : pave_poly)
-//		for(int i = 0; i < p.size(); i++)
-//			debug_mesh_segment(p.side(i), 1,0,0, 1,0,0);
-				
-	return grass_poly.size() > 0;
+/*	for (auto p : all_pave_poly)
+		for(int i = 0; i < p.size(); i++)
+			debug_mesh_segment(p.side(i), 1,0,0, 1,0,0);
+*/				
+	return all_grass_poly.size() > 0;
 }
 
 void WED_MowGrass(IResolver* resolver)
