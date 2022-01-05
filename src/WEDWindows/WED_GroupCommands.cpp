@@ -5941,7 +5941,7 @@ private:
 
 bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 {
-	gMeshLines.clear();
+	// gMeshLines.clear();
 
 	Bbox2 bounds;
 	apt->GetBounds(gis_Geo, bounds);
@@ -5962,23 +5962,18 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 	WED_Group * art_grp = nullptr;
 	
 	CollectRecursive(apt, back_inserter(bdys), WED_AirportBoundary::sClass);
-	if (bdys.empty()) return 0;
-
-	CollectRecursive(apt, back_inserter(rwys), WED_Runway::sClass);
-	
 	for(auto b : bdys)
-	{
-		apt_boundary.push_back(Polygon2());
-		auto ps = b->GetOuterRing();
-		WED_PolygonForPointSequence(ps, apt_boundary.back(), COUNTERCLOCKWISE);
-	}
+		WED_BezierPolygonWithHolesForPolygon(b, apt_boundary);
+	if(apt_boundary.size() == 0) return 0;
 	
-    // move largest runway first - so most of the moved area is aligned with this one
-    std::sort(rwys.begin(), rwys.end(), [&](WED_Runway* a, WED_Runway* b)
+	CollectRecursive(apt, back_inserter(rwys), WED_Runway::sClass);
+    std::sort(rwys.begin(), rwys.end(), [&](WED_Runway* a, WED_Runway* b)   // mow largest runway first, so most of the moving is aligned with this one
+
 		{
 			return a->GetWidth() * a->GetLength() > b->GetWidth() * b->GetLength();
 		});
 
+	// create grass patches aligned with airports
 	for(auto r: rwys)
 	{
 		if (r->GetSurface() > surf_Grass) continue;
@@ -6013,6 +6008,11 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 
 		vector<Polygon2> tmp_poly = PolygonCut(apt_boundary, all_grass_poly);
 		*this_grass = PolygonIntersect(*this_grass, tmp_poly);
+		if(this_grass->empty())
+		{
+			grass.pop_back();
+			continue;
+		}
 
 		make_ter_FX_exist(&art_grp, apt);
 		auto new_p = PolygonsForWED_Polygon(art_grp, *this_grass);
@@ -6025,7 +6025,7 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 		{
 			p->SetName(nam);
 			p->SetHeading(r->GetHeading());
-			p->SetResource("lib/airport/ground/terrain_FX/lawn_tracks/area_3.pol");
+			p->SetResource("lib/airport/ground/terrain_FX/lawn_tracks/area_2.pol");
 		}
 		all_grass_poly = PolygonUnion(all_grass_poly, *this_grass);
 	}
@@ -6056,22 +6056,10 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 				return false;
 		}, WED_PolygonPlacement::sClass);
 
-	vector<Polygon2> tmp_poly;
 	for(auto t : twys)
-	{
-		WED_BezierPolygonWithHolesForPolygon(t, tmp_poly);
-		for(auto tmp : tmp_poly)
-			all_pave_poly.push_back(tmp);
-	}
-	
+		WED_BezierPolygonWithHolesForPolygon(t, all_pave_poly);
 	for(auto p : polys)
-	{
-		WED_BezierPolygonWithHolesForPolygon(p, tmp_poly);
-		for(auto tmp : tmp_poly)
-		{
-			all_pave_poly.push_back(tmp);
-		}
-	}	
+		WED_BezierPolygonWithHolesForPolygon(p, all_pave_poly);
 	
 	all_pave_poly = PolygonUnion(all_pave_poly, vector<Polygon2>());
 	// from here only we can assume 'flat' topology: No overlapping windings, no nested holes.
@@ -6096,10 +6084,11 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 		clip.back().push_back(tr.to_ll(bb.top_right()));
 		clip.back().push_back(tr.to_ll(bb.top_left()));
 		auto ap_poly = PolygonIntersect(all_pave_poly, clip);
-		for (auto p : ap_poly)
+		
+/*		for (auto p : ap_poly)
 		for(int i = 0; i < p.size(); i++)
 			debug_mesh_segment(p.side(i), 0,0,1, 0,0,1);
-
+*/
 		Point2 start_mow(tr.to_ll(bb.bottom_left()));
 		Vector2 this_row_dir(start_mow, tr.to_ll(bb.top_left()));
 		double mowing_length = LonLatDistMeters(start_mow, tr.to_ll(bb.top_left()));
@@ -6113,13 +6102,12 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 		const double row_spacing = 16.0;
 		const double test_radius = 8.0;
 
-		Point2 pt(start_mow);
-		int fwd_mow(1);
 		bool on_pave(false);
 		bool on_grass(false);
-		for (int v = next_row_length / row_spacing; v > 0; v--)
+		for (int v = next_row_length / row_spacing - 1; v >= 0; v--)
 		{
-			Vector2 mowing_dir = this_row_dir * fwd_mow;
+			Vector2 mowing_dir = this_row_dir;
+			Point2 pt(start_mow + next_row_dir * row_spacing * (0.5 + v));
 			for (int u = mowing_length / mow_steps; u > 0; u--)
 			{
 				bool test_fwd = !on_pave;
@@ -6138,14 +6126,15 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 
 				if (now_on_grass || grass_bdy)
 				{
-					debug_mesh_segment({ pt, pt + next_row_dir * 4 - mowing_dir * 4 }, 1, 1, 0, 1, 1, 0);
-					debug_mesh_segment({ pt, pt - next_row_dir * 4 - mowing_dir * 4 }, 1, 1, 0, 1, 1, 0);
+					//debug_mesh_segment({ pt, pt + next_row_dir * 4 - mowing_dir * 4 }, 1, 1, 0, 1, 1, 0);
+					//debug_mesh_segment({ pt, pt - next_row_dir * 4 - mowing_dir * 4 }, 1, 1, 0, 1, 1, 0);
 					if ((near_pave != on_pave && !closing_on_pave) || (grass_bdy && !near_pave))
 					{
-						Point2 turn_loc = (on_pave || (grass_bdy ^ fwd_mow == 1)) ? pt : pt - mowing_dir * mow_steps;
+//						Point2 turn_loc = (on_pave || grass_bdy) ? pt : pt - mowing_dir * mow_steps;
+						Point2 turn_loc = grass_bdy ? pt  - mowing_dir * mow_steps * 0.5 : on_pave ? pt : pt - mowing_dir * mow_steps;
 
 						// it just looks more 'right' if we try to avoid placing turn circles off an pavement corner
-						auto test_right = next_row_dir * (test_fwd ? -fwd_mow : fwd_mow);
+						auto test_right = test_fwd ? -next_row_dir : next_row_dir;
 						auto test_fwd = test_dir * (1.0 + mow_steps / test_radius);
 
 						bool pave_fwd_left = inside_pt(ap_poly, turn_loc + (test_fwd - test_right * 0.5) * test_radius) ||
@@ -6168,18 +6157,15 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 							auto obj = WED_ObjPlacement::CreateTyped(apt->GetArchive());
 							obj->SetParent(art_grp, 0);
 							if (rand() & 3 > 0)
-							{
-								turn_loc -= test_dir * 2;
 								obj->SetResource("lib/airport/ground/terrain_FX/lawn_tracks/single_6.obj");
-							}
 							else
 							{
-								turn_loc += test_dir;
+								turn_loc += test_dir * 2;
 								obj->SetResource("lib/airport/ground/terrain_FX/lawn_tracks/single_4.obj");
 							}
 							obj->SetName("Turn");
 							obj->SetLocation(gis_Geo, turn_loc + test_right * offset);
-							bool rev_hdg = (fwd_mow == 1) ^ (grass_bdy ? !now_on_grass : near_pave);
+							bool rev_hdg = !(grass_bdy ? !now_on_grass : near_pave);
 							obj->SetHeading(g.second + (rev_hdg ? 180.0 : 0.0) + (rand() % 31 - 15));
 							if (statistics) statistics[2]++;
 						}
@@ -6192,12 +6178,10 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 				}
 				pt += mowing_dir * mow_steps;
 			}
-			pt += next_row_dir * row_spacing;
-			fwd_mow = -fwd_mow;
 		}
 	}
 
-	// paved pads underneath all signs
+	// paved pads and mowing swirls underneath signs and some lights
 	vector<WED_AirportSign *> signs;
 	CollectRecursive(apt, back_inserter(signs), WED_AirportSign::sClass);
 	
@@ -6264,7 +6248,7 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 		}
 	}
 	
-	// mow around all winsocks - also eccentuates their visibility
+	// mow around all winsocks - also enhances their visibility
 	vector<WED_Windsock *> socks;
 	CollectRecursive(apt, back_inserter(socks), WED_Windsock::sClass);
 	for(auto s : socks)
