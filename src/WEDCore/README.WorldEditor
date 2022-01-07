@@ -22,6 +22,7 @@ WED 2.5  beta 1
    - don't break apart AGP's referencing objects by relative path - those are not public
    - reduce residual heading error for draped polygons by rounding, not truncating at DSF export
    - WED-1413 ATC route validation escape for runways NOT starting with a leading zero
+   - WED-1412 fix horizontal distortion caused by map projection in 3D preview
    XP12 features:
    - moving jetways (requires propper jetways .fac w/metadata)
    - runway & taxiways surface styles and markings

@@ -145,7 +145,7 @@ static void CALLBACK TessVertexUVh(const Point2 * p, float * h)
 
 void glPolygon2(const Point2 * pts, bool has_uv, const int * contours, int n, float height)
 {
-#if 1 // LIBTESS
+#if LIBTESS
 	TESStesselator * tess = tessNewTess(NULL);
 	const Point2 * pts_p(pts);
 	vector<TESSreal>	raw_pts;
