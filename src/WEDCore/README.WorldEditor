@@ -13,6 +13,10 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 2.4.1 rc 1
+   Bug Fix:
+   - WED-1413 ATC route validation escape for runways NOT starting with a leading zero
+
 WED 2.4.0rc2 5/29/21
    Features:
    - Undo WED-192 remove meta tag "Closed", validate correctly formed [X] in apt name

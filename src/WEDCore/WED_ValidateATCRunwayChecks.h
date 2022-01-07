@@ -51,12 +51,15 @@ struct RunwayInfo
 	RunwayInfo(WED_Runway * runway, CoordTranslator2 translator) : runway_ptr(runway)
 	{
 		runway->GetName(name);
+		if (name[0] != '0' && (name[1] < '0' || name[1] > '9'))
+			name.insert(0, "0");
 
 		AptRunway_t apt_runway;
 		runway_ptr->Export(apt_runway);
 
 		runway_numbers[0] = runway_ptr->GetRunwayEnumsOneway().first;
 		runway_numbers[1] = runway_ptr->GetRunwayEnumsOneway().second;
+
 
 		runway_ops[0] = 0;
         runway_ops[1] = 0; // nneds to be set externally, e.g. by evaluation flows
