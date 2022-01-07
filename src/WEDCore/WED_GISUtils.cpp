@@ -494,8 +494,7 @@ static void PointSequenceToPolygon2(IGISPointSequence * ps, Polygon2& pol, doubl
 void	WED_BezierPolygonWithHolesForPolygon(IGISPolygon * in_poly, vector<Polygon2>& out_pol)
 {
 	int nn = in_poly->GetNumHoles();
-	out_pol.clear();
-	out_pol.reserve(nn+1);
+//	out_pol.clear();
 	out_pol.push_back(Polygon2());
 	
 // break up any bezier segments into plain vertices, allow certain max error only

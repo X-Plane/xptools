@@ -185,9 +185,9 @@ static void	print_apt_poly(int (*fprintf)(void * fi, const char * fmt, ...), voi
 static int XP11_pave_type(int xp12_type)
 {
 	xp12_type = xp12_type % 100;
-	if (xp12_type >= 20 && xp12_type <= 29)
+	if (xp12_type >= 20 && xp12_type <= 39)
 		return 1;
-	else if (xp12_type >= 30 && xp12_type <= 39)
+	else if (xp12_type >= 50 && xp12_type <= 59)
 		return 2;
 	else
 		return xp12_type;
