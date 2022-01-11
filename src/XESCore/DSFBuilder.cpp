@@ -99,9 +99,7 @@ DSFBuildPrefs_t	gDSFBuildPrefs = { 1 };
 #define USE_DEM_N(x)		0.0f
 
 static bool write_vertex_elevation(const CDT& inMesh, const CDT::Vertex_handle& v) {
-	// TODO (devans): Only write out elevation if required to avoid DEM samples:
-	// return (v->info().orig_vertex->data().mElevation) || (CategorizeVertex(inMesh,v,terrain_Water) <= 0);
-	return true;
+	return v->info().explicit_height || CategorizeVertex(inMesh,v,terrain_Water) <= 0;
 }
 
 #if 0

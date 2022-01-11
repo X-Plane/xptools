@@ -850,6 +850,7 @@ CDT::Vertex_handle InsertAnyPoint(
 	CDT::Vertex_handle v = io_mesh.insert(p, hint);
 	hint = v->face();
 	v->info().height = e;
+	v->info().explicit_height = ext_e.has_value();
 	
 	return v;
 }

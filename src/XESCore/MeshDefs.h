@@ -86,6 +86,7 @@ struct	MeshVertexInfo {
 	float					normal[3]{};			// Normal - X,Y,Z in OGL coords(!)
 	hash_map<int, float>	border_blend;			// blend level for a border of this layer at this triangle!
 	bool					edge_of_the_world{};	// Vertex touches the outside of the degree
+	bool					explicit_height{};		// Vertex has non DEM elevation source.
 	
 	Vertex_handle			orig_vertex;			// Original vertex in the Pmwx.
 	VertexQueue::iterator	self;
