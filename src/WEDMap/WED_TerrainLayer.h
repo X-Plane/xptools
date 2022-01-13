@@ -26,6 +26,7 @@
 
 #include "WED_MapLayer.h"
 #include "CompGeomDefs2.h"
+#include "CompGeomDefs3.h"
 
 struct terrain_t {
 	int		index;
@@ -33,6 +34,13 @@ struct terrain_t {
 	int		width;
 	int		height;
 	vector<float> dem;
+	bool	water;
+	struct patch_t {
+		int type;
+		bool water;
+		vector<Point3> verts;
+	};
+	vector<patch_t> patches;
 };
 
 class WED_TerrainLayer : public WED_MapLayer {
