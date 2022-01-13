@@ -278,36 +278,15 @@ bool		WED_Runway::GetCornersDisp2(Point2 corners[4]) const
 
 bool		WED_Runway::GetCornersShoulders(Point2 corners[8]) const
 {
-	GetCorners(gis_Geo,corners);
-	GetCorners(gis_Geo,corners+4);
+	Point2	tmp[4];
+	GetCornersBlas1(tmp);
+	corners[0] = corners[3] = tmp[0];
+	corners[4] = corners[7] = tmp[3];
+	GetCornersBlas2(tmp);
+	corners[1] = corners[2] = tmp[1];
+	corners[5] = corners[6] = tmp[2];
+
 	if (shoulder.value == shoulder_None) return false;
-	Point2	bounds[4];
-	GetCorners(gis_Geo,bounds);
-
-	Point2	p1, p2;
-	GetSource()->GetLocation(gis_Geo,p1);
-	GetTarget()->GetLocation(gis_Geo,p2);
-
-	double my_len = LonLatDistMeters(p1,p2);
-	if (my_len == 0.0) return false;
-
-	if (blas1.value != 0.0)
-	{
-		double frac = blas1.value / my_len;
-		corners[0] = Segment2(bounds[0],bounds[1]).midpoint(-frac);
-		corners[3] = Segment2(bounds[3],bounds[2]).midpoint(-frac);
-	}
-	if (blas2.value != 0.0)
-	{
-		double frac = blas2.value / my_len;
-		corners[1] = Segment2(bounds[0],bounds[1]).midpoint(1.0 + frac);
-		corners[2] = Segment2(bounds[3],bounds[2]).midpoint(1.0 + frac);
-	}
-
-	bounds[0] = corners[0];
-	bounds[1] = corners[1];
-	bounds[2] = corners[2];
-	bounds[3] = corners[3];
 
 	double shoulder_frac = 0.25;
 	if(gExportTarget >= wet_xplane_1200)
@@ -315,17 +294,13 @@ bool		WED_Runway::GetCornersShoulders(Point2 corners[8]) const
 		double w = GetWidth();
 		if (w > 0.5 && shoulder_width.value > 0.5) shoulder_frac = round(shoulder_width.value) / w;
 	}
-	Vector2 shoulder_vec(bounds[0],bounds[3]);
+	Vector2 shoulder_vec(corners[0],corners[7]);
 	shoulder_vec *= shoulder_frac;
 
-	corners[0] = bounds[0] - shoulder_vec;
-	corners[1] = bounds[1] - shoulder_vec;
-	corners[2] = bounds[1];
-	corners[3] = bounds[0];
-	corners[4] = bounds[3];
-	corners[5] = bounds[2];
-	corners[6] = bounds[2] + shoulder_vec;
-	corners[7] = bounds[3] + shoulder_vec;
+	corners[0] -= shoulder_vec;
+	corners[1] -= shoulder_vec;
+	corners[6] += shoulder_vec;
+	corners[7] += shoulder_vec;
 
 	return true;
 }

@@ -102,6 +102,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 	
 	for (auto apt_itr = apts.begin(); apt_itr != apts.end(); ++apt_itr)
 	{
+		auto t2 = chrono::high_resolution_clock::now();
 		string ICAO_code;
 
 		//-- Erase implausible ICAO and now undesired closed tags (the [X] in the name is now official) ----
@@ -262,10 +263,11 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		}
 #if TYLER_MODE == 11
 		// translate new pavement polygons into XP11 equivalents (run/taxiways have that done in aptio.cpp)
-		// these "back-translations" of new art assets will some day get out of hand and backporting to XP11 will end ...
+		// as well as a few essential and well known new XP12 objects. These "back-translations" 
+		// of new art assets will some day get out of hand and backporting to XP11 will end ...
 		#define XP12PATH  "lib/airport/ground/"
 		#define XP12N  strlen(XP12PATH)
-		vector<IHasResource*> xp12_art, xp12_delete;
+		vector<IHasResource*> xp12_art;
 		CollectRecursive(*apt_itr, back_inserter(xp12_art), IgnoreVisiblity, [](WED_Thing* t)->bool 
 			{
 				if(auto r = dynamic_cast<IHasResource*>(t))
@@ -273,7 +275,8 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 					string res;
 					r->GetResource(res);
 					return res.compare(0, XP12N, XP12PATH) == 0 || 
-						   res.compare(0, strlen("lib/vehicles/"), "lib/vehicles/") == 0;
+						   res.compare(0, strlen("lib/vehicles/"), "lib/vehicles/") == 0 ||
+						   res.compare(0, strlen("lib/airport/control_towers/"), "lib/airport/control_towers/") == 0;
 				}
 				return false;
 			}, "", 2);
@@ -297,18 +300,16 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 					res = "lib/airport/pavement/concrete_1D.pol";
 				else if (res.compare(0, strlen("lib/vehicles/static/trucks/"), "lib/vehicles/static/trucks/") == 0)
 					res = "lib/airport/Common_Elements/Vehicles/Cargo_Trailer.obj";
+				else if (res.compare(0, strlen("lib/airport/control_towers/"), "lib/airport/control_towers/") == 0)
+					res = "lib/airport/Modern_Airports/Control_Towers/Modern_Tower_1.agp";
 				else 
 					continue;
 				p->SetResource(res);
 			}
 			wrl->CommitCommand();
 		}
-		// Remove all remaining new XP12 stuff - so this needs to be run in an XP11 installation. 
-		// Or items be copied to be local items in the Global Airports Scenery.
-		WED_DoSelectMissingObjects(resolver);
-		WED_DoClear(resolver);
 #else
-		// mov the grass
+		// mow the grass
 		vector<WED_Group*> grps;
 		CollectRecursive(*apt_itr, back_inserter(grps), IgnoreVisiblity, [](WED_Thing* t)->bool 
 			{
@@ -375,8 +376,18 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 #endif
 		double percent_done = (double)distance(apts.begin(), apt_itr) / apts.size() * 100;
 		printf("%0.0f%% through heuristic at %s\n", percent_done, ICAO_code.c_str());
+		auto t1 = chrono::high_resolution_clock::now();
+		chrono::duration<double> elapsed = t1 - t2;
+		LOG_MSG("Update %s took %lf sec\n", ICAO_code.c_str(), elapsed.count());
+		t2 = t1;
 //		if(distance(apts.begin(), apt_itr) == 15) break;
 	}
+#if TYLER_MODE == 11
+	// Remove all remaining new XP12 stuff - so this needs to be run in an XP11 installation. 
+	// Or items be copied to be local items in the Global Airports Scenery.
+	WED_DoSelectMissingObjects(resolver);
+	WED_DoClear(resolver);
+#endif		
 	LOG_MSG("Deleted %d illicit ICAO meta tags\n", deleted_illicit_icao);
 	LOG_MSG("Added %d local code metas to prevent Airport_ID getting taken for ICAO\n", added_local_code);
 	LOG_MSG("Mowed %d polys %d lines %d spots %d patches\n", grass_statistics[0], grass_statistics[1],grass_statistics[2],grass_statistics[3]);

@@ -238,17 +238,11 @@ void	WED_MapZoomerNew::LLToPixelv(Point2 * dst, const Point2 * src, int n) const
 
 double	WED_MapZoomerNew::GetPPM(void) const
 {
-	#if BENTODO
-	can we do better?
-	// return fabs(LatToYPixel(MTR_TO_DEG_LAT) - LatToYPixel(0.0));
-	#endif
-	// return MTR_TO_DEG_LAT / mPixel2DegLat;
 	return mPixel2DegLat.ppm();
 }
 
 double WED_MapZoomerNew::GetClickRadius(double p) const
 {
-	// return p *  mPixel2DegLat;
 	return p * mPixel2DegLat();
 }
 
@@ -293,6 +287,7 @@ void	WED_MapZoomerNew::SetMapLogicalBounds(
 	mLatCenter = 0.5 * (inNorth + inSouth);
 	mLatCenterCOS = cos(mLatCenter * DEG_TO_RAD);
 	mLatCenterSIN = sin(mLatCenter * DEG_TO_RAD);
+	mCenterCOS = mLatCenterCOS;
 
 	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 }
@@ -316,7 +311,6 @@ void	WED_MapZoomerNew::GetMapVisibleBounds(
 					double&	outEast,
 					double&	outNorth)
 {
-
 	Point2 coords[8];
 	coords[0] = PixelToLL(Point2(mPixels[0], mPixels[1]));
 	coords[1] = PixelToLL(Point2(mPixels[0], (mPixels[1] + mPixels[3]) * 0.5));
@@ -331,11 +325,6 @@ void	WED_MapZoomerNew::GetMapVisibleBounds(
 	outSouth = fltmin3(coords[6].y(), coords[7].y(), coords[0].y());
 	outEast = fltmax3(coords[4].x(), coords[5].x(), coords[6].x());
 	outNorth = fltmax3(coords[2].y(), coords[3].y(), coords[4].y());
-/*
-	outWest = XPixelToLon	(mPixels[0]);
-	outSouth = YPixelToLat	(mPixels[1]);
-	outEast = XPixelToLon	(mPixels[2]);
-	outNorth = YPixelToLat	(mPixels[3]); */
 }
 
 void	WED_MapZoomerNew::GetMapLogicalBounds(
@@ -349,12 +338,6 @@ void	WED_MapZoomerNew::GetMapLogicalBounds(
 	outEast	=	mLogicalBounds[2];
 	outNorth=	mLogicalBounds[3];
 }
-
-
-//void	WED_MapZoomerNew::SetAspectRatio(double a)
-//{
-//	mAspectRatio = a;
-//}
 
 void	WED_MapZoomerNew::ZoomShowAll(void)
 {
@@ -491,7 +474,7 @@ void WED_MapZoomerNew::mapScale::operator=(double Pixel2DegLat)
 {
 	mPixel2DegLat = Pixel2DegLat;
 	mDegLat2Pixel = 1.0 / mPixel2DegLat;
-	mPPM = MTR_TO_DEG_LAT / mPixel2DegLat;
+	mPPM = MTR_TO_DEG_LAT * mDegLat2Pixel;
 }
 
 /********** new funcs for 3D preview / prespective projection *********/

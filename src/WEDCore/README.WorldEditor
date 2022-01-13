@@ -13,7 +13,7 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 2.5  alpha 1
+WED 2.5  beta 1
    Bug Fix:
    - fix .agp scraper display mismatch for some heights
    - fix gridded preview for 3D objects only showing partially on OSX w/AMD graphics
@@ -21,6 +21,8 @@ WED 2.5  alpha 1
    - improve GW export heuristics to prevent non-ICAO code airport ID's to be taken as ICAO
    - don't break apart AGP's referencing objects by relative path - those are not public
    - reduce residual heading error for draped polygons by rounding, not truncating at DSF export
+   - WED-1413 ATC route validation escape for runways NOT starting with a leading zero
+   - WED-1412 fix horizontal distortion caused by map projection in 3D preview
    XP12 features:
    - moving jetways (requires propper jetways .fac w/metadata)
    - runway & taxiways surface styles and markings
