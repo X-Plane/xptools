@@ -46,6 +46,7 @@ WED 2.5  beta 1
    - apply jetway upgrades, remove large terrain polygons at export (tyler_mode only)
    - validation exeption to make KSEA, LOWI gateway legal
    - validate taxiways for zero-length segments
+   - new map layer "Terrain" to visualize terrain mesh structure, elevation DEM and explicit height vertices
 
 WED 2.4.0rc2 5/29/21
    Features:
