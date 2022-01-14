@@ -107,38 +107,46 @@ static void AddRasterData(DSFRasterHeader_t* header, void* data, void* inRef)
 			if (header->bytes_per_pixel == 1)
 			{
 				auto raw_array = (int8_t*)data;
-				for (int i = 0; i < header->width * header->height; i++)
-				{
-					if ((header->flags & 3) == 2)
-						tile->dem.push_back((*raw_array) * header->scale + header->offset);
-					else
+				if ((header->flags & 3) == 2)
+					for (int i = header->width * header->height; i > 0; i--)
+					{
 						tile->dem.push_back(((uint8_t)*raw_array) * header->scale + header->offset);
-					raw_array++;
-				}
+						raw_array++;
+					}
+				else
+					for (int i = header->width * header->height; i > 0; i--)
+					{
+						tile->dem.push_back((*raw_array) * header->scale + header->offset);
+						raw_array++;
+					}
 			}
 			else if (header->bytes_per_pixel == 2)
 			{
-				auto raw_array = (uint16_t*)data;
-				for (int i = 0; i < header->width * header->height; i++)
-				{
-					if ((header->flags & 3) == 2)
-						tile->dem.push_back((*raw_array) * header->scale + header->offset);
-					else
+				auto raw_array = (int16_t*)data;
+				if ((header->flags & 3) == 2)
+					for (int i = header->width * header->height; i > 0; i--)
+					{
 						tile->dem.push_back(((uint16_t)*raw_array) * header->scale + header->offset);
-					raw_array++;
-				}
+						raw_array++;
+					}
+				else
+					for (int i = header->width * header->height; i > 0; i--)
+					{
+						tile->dem.push_back((*raw_array) * header->scale + header->offset);
+						raw_array++;
+					}
 			}
 			else if (header->bytes_per_pixel == 4 && ((header->flags & 3) == 0))
 			{
 				auto raw_array = (float*)data;
-				for (int i = 0; i < header->width * header->height; i++)
+				for (int i = header->width * header->height; i > 0; i--)
 				{
 					tile->dem.push_back((*raw_array) * header->scale + header->offset);
 					raw_array++;
 				}
 			}
 			else
-				printf("bad bytecount or format\n");
+				printf("DSF raster has bad bytecount or format\n");    // yeah - NOT doing the 4bpp int's that the spec talks about.
 		}
 	}
 }
@@ -159,6 +167,25 @@ static int AcceptRasterDef(const char* inPath, void* inRef)
 void WED_TerrainLayer::LoadTerrain(Bbox2& bounds)
 {
 	// ToDo: move this into PackageMgr, so its updated when XPlaneFolder changes and re-used when another scenery is opened
+
+	if (mTerrains.size() > 8) // honestly, only at VERY high lattitudes more than 4 tiles could ever be in active use. 
+	{	                      // As we don't display nor load terrain if zoomed out far enough.
+		double far_dist = 0.0;
+		string far_tile;
+		auto here = bounds.centroid();
+		for (auto t : mTerrains)
+		{
+			double dist = LonLatDistMeters(here, t.second.bounds.centroid());
+			if (dist > far_dist)
+			{
+				far_dist = dist;
+				far_tile = t.first;
+			}
+		}
+		mTerrains.erase(far_tile);
+		//printf("%ld mTerrains, nuked %s\n", mTerrains.size(), far_tile.c_str());
+	}
+
 	set<string> vpaths;
 	add_all_global_DSF(bounds, vpaths);
 
@@ -178,8 +205,6 @@ void WED_TerrainLayer::LoadTerrain(Bbox2& bounds)
 				tile.bounds = { {(double) lon, (double) lat}, {(double) lon + 1, (double) lat + 1} };
 		}
 	}
-	// printf("%ld mTerrains\n", mTerrains.size());
-	// consider removing the most distant tile when more than xx tiles are loaded
 }
 
 void		WED_TerrainLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
@@ -196,7 +221,7 @@ void		WED_TerrainLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 	const float land_color[4]  = { 0.8, 0.5, 0.0, 1.0 };
 	const float water_color[4] = { 0.2, 0.2, 1.0, 1.0 };
 
-	if (PPM > 0.2)
+	if (PPM > 0.1)
 	{
 		LoadTerrain(map_viewport);
 		for (auto ter : mTerrains)
