@@ -252,11 +252,11 @@ void		WED_TerrainLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 								char c[16];
 								//							snprintf(c, sizeof(c), "%d %d %.1f", x, y, t->dem[x + y * r->width]);
 								if (gIsFeet)
-									snprintf(c, sizeof(c), "%.0f%c", t->dem[x + y * t->width] / 0.3048, '\'');
+									snprintf(c, sizeof(c), "%.0f%c", t->dem[x + y * t->width] * MTR_TO_FT, '\'');
 								else
 								{
 									float hgt = t->dem[x + y * t->width];
-									snprintf(c, sizeof(c), hgt < 200.0 ? "%.1f%c" : "%.0f%c", hgt, 'm');
+									snprintf(c, sizeof(c), (hgt < 200.0 && hgt != roundf(hgt)) ? "%.1f%c" : "%.0f%c", hgt, 'm');
 								}
 								Point2 pt(GetZoomer()->LLToPixel({ lon, lat }));
 								GUI_FontDraw(g, font_UI_Basic, dem_color, pt.x() + 5, pt.y() + 4, c);
@@ -337,16 +337,15 @@ void		WED_TerrainLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 					if (PPM > 1.0)
 					{
 						for(auto v : p.verts)
-							if (v.z != -32768)
+							if (v.z != -32768 && map_viewport.contains(reinterpret_cast<Point2&>(v)))
 							{
 								char c[16];
 								//							snprintf(c, sizeof(c), "%d %d %.1f", x, y, t->dem[x + y * r->width]);
 								if (gIsFeet)
-									snprintf(c, sizeof(c), "%.0f%c", v.z / 0.3048, '\'');
+									snprintf(c, sizeof(c), "%.0lf%c", v.z * MTR_TO_FT, '\'');
 								else
 								{
-									float hgt = v.z;
-									snprintf(c, sizeof(c), hgt < 200.0 ? "%.1f%c" : "%.0f%c", hgt, 'm');
+									snprintf(c, sizeof(c), (v.z < 200.0 && v.z != round(v.z)) ? "%.1lf%c" : "%.0lf%c", v.z, 'm');
 								}
 								Point2 pt = P2PIX(v);
 								GUI_FontDraw(g, font_UI_Basic, p.water ? water_color : land_color, pt.x() + 7, pt.y() - 9, c);
