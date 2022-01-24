@@ -1090,7 +1090,7 @@ static int ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vect
             vector<WED_Runway *>::const_iterator r(runways.begin());
             while(r != runways.end())
             {
-                if(((*r)->GetSurface() <= surf_Concrete || (*r)->GetSurface() == surf_Trans || unpaved_OK)
+                if(((*r)->GetSurface() < surf_Grass || (*r)->GetSurface() == surf_Trans || unpaved_OK)
 					&& (*r)->GetLength() >= req_rwy_len && (*r)->GetWidth() >= req_rwy_wid)
                         break;
                 ++r;
