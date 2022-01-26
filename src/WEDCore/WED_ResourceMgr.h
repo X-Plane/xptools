@@ -219,21 +219,20 @@ struct agp_t {
 
 struct for_info_t {
 	struct tree_t {
-		float s, t, w, y; 		// texture coordinates of tree
-		float o;            // offset of tree center line (where the quads inersect)
-		float pct;          // relative occurence percentage for this tree
+		float s, t, w, h;    // origin, width & height on texture
+		float o;             // offset of tree center line (where the quads inersect)
+		float pct;           // relative occurence percentage for this tree
 		float hmin, hmax;    // height range for this tree in meters
-		int q;				// number of quads the tree is constructed of
-		const XObj8* obj_3D;
-		tree_t(void) : obj_3D(nullptr) {}
+		int quads;			 // number of quads the tree is constructed of
+		string mesh_3d;
 	};
 
-	const XObj8* preview;   // all-panel preview - to be obsoleted ?
+	const XObj8 *preview, *preview_3d;
 	string description;
 
 	bool has_3D;
 	vector<tree_t> trees;
-	for_info_t(void) : preview(nullptr) {}
+	for_info_t(void) : preview(nullptr), preview_3d(nullptr) {}
 };
 
 

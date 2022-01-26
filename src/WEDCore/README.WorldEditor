@@ -27,7 +27,7 @@ WED 2.5  beta 1
    - moving jetways (requires propper jetways .fac w/metadata)
    - runway & taxiways surface styles and markings
    - seasonal objects, showing summer version only
-   - identify 3D forests (but only 2D tree's shown for now)
+   - identify and show 3D forests
    XP12 art asset conversion features:
    - jetway objects to jetway facades
    - X11 default pavment to XP12 aged pavement

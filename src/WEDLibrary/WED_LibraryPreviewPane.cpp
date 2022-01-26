@@ -134,7 +134,11 @@ void		WED_LibraryPreviewPane::ReceiveMessage(GUI_Broadcaster * inSrc, intptr_t i
 		else
 			mVariant = 0;
 
-		char s[16]; sprintf(s,"%d/%d",mVariant+1,mNumVariants);
+		char s[16]; 
+		if(mType == res_Forest)
+			sprintf(s, "%dD", mVariant + 2);
+		else
+			sprintf(s,"%d/%d",mVariant + 1, mNumVariants);
 		mNextButton->SetDescriptor(s);
 	}
 }
@@ -144,7 +148,7 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 	mRes = r;
 	mType = res_type;
 	mVariant = 0;
-//	mHgt = 0.0;
+	//	mHgt = 0.0;
 
 	if(res_type == res_Object || res_type == res_Facade)
 	{
@@ -175,6 +179,22 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 			const agp_t * agp;
 			if (mResMgr->GetAGP(mRes, agp))
 				mHgt = 0.0;
+		}
+	}
+	else if(res_type == res_Forest)
+	{
+		const for_info_t* fst;
+		if (mResMgr->GetFor(mRes, fst) && fst->has_3D)
+		{ 
+			mNextButton->SetDescriptor("3D");
+			mVariant = 1;
+			mNumVariants = 2;
+			mNextButton->Show();
+		}
+		else
+		{
+			mNumVariants = 1;
+			mNextButton->Hide();
 		}
 	}
 	else
@@ -734,7 +754,12 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, int b[4], 
 			if (!mResMgr->GetFor(res, fst))
 				break;
 			else
-				o = fst->preview;
+			{
+				if(fst->has_3D && mVariant == 1)
+					o = fst->preview_3d;
+				else
+					o = fst->preview;
+			}
 		case res_String:
 			if(!o)
 			{
@@ -952,8 +977,6 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, int b[4], 
 			case res_Forest:
 				{
 					snprintf(buf1, sizeof(buf1), "%s", fst->description.c_str());
-					if(fst->has_3D)
-						sprintf(buf2, "includes annimated 3D trees (not shown)");
 				}
 				break;
 			case res_Road:
