@@ -75,7 +75,8 @@ bool	ReadShapeFile(
 bool	WriteShapefile(
 			const char *			in_file,
 			Pmwx&					in_map,
-			int						terrain_type,
+			int						terrain_type,				// -1 for no matchign
+			bool					write_terrain_types,
 			ProgressFunc			inFunc);
 
 #endif /* ShapeIO_H */

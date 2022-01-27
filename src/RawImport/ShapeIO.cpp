@@ -1408,11 +1408,25 @@ bool	WriteShapefile(
 			const char *			in_file,
 			Pmwx&					in_map,
 			int						terrain_type,
+			bool					write_terrain_types,
 			ProgressFunc			inFunc)
 {
 	SHPHandle file = SHPCreate(in_file, SHPT_POLYGON);
 	if(!file)
 		return false;
+	DBFHandle dfile = write_terrain_types ? DBFCreate(in_file) : nullptr;
+	if(write_terrain_types && !dfile)
+	{
+		SHPClose(file);
+		return false;
+	}
+	
+	int field_id = -1;
+	
+	if(dfile)
+	{
+      field_id = DBFAddField(dfile, "terrain_type", FTString, 64, 0);
+	}
 
 	PROGRESS_START(inFunc, 0, 1, "Writing shape file...")
 
@@ -1427,7 +1441,7 @@ bool	WriteShapefile(
 		PROGRESS_CHECK(inFunc, 0, 1, "Writing shape file...", n, entity_count, step)
 
 		if(!f->is_unbounded())
-		if(f->data().mTerrainType == terrain_type)
+		if((terrain_type == -1 && f->data().mTerrainType != NO_VALUE) || f->data().mTerrainType == terrain_type)
 		{
 			vector<double>	v_x, v_y;
 			vector<int>		offsets;
@@ -1449,8 +1463,11 @@ bool	WriteShapefile(
 						NULL,
 						v_x.size(), &v_x[0], &v_y[0], NULL, NULL);
 
-			SHPWriteObject(file,-1,sobj);
+			int shape_idx = SHPWriteObject(file,-1,sobj);
 			SHPDestroyObject(sobj);
+			
+			if(dfile)
+				DBFWriteStringAttribute(dfile, shape_idx, field_id, FetchTokenString(f->data().mTerrainType));
 		}
 	}
 	
@@ -1458,5 +1475,7 @@ bool	WriteShapefile(
 	
 
 	SHPClose(file);
+	if(dfile)
+	DBFClose(dfile);
 	return true;
 }
