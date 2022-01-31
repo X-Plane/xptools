@@ -223,7 +223,7 @@ struct for_info_t {
 		float o;             // offset of tree center line (where the quads inersect)
 		float pct;           // relative occurence percentage for this tree
 		float hmin, hmax;    // height range for this tree in meters
-		int quads;			 // number of quads the tree is constructed of
+		int	quads;			 // number of quads the tree is constructed of
 		string mesh_3d;
 	};
 
@@ -231,7 +231,7 @@ struct for_info_t {
 	string description;
 
 	bool has_3D;
-	vector<tree_t> trees;
+	map<int, vector<tree_t> > trees;
 	for_info_t(void) : preview(nullptr), preview_3d(nullptr) {}
 };
 
