@@ -13,7 +13,11 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 2.5  beta 1
+Planned functionality for WED 2.5 not yet included in the alpha versions
+   - automatic creation of edge outlines for paved surfaces
+   - on-map preview of .agb definitions
+
+WED 2.5.0 alpha
    Bug Fix:
    - fix .agp scraper display mismatch for some heights
    - fix gridded preview for 3D objects only showing partially on OSX w/AMD graphics
@@ -46,6 +50,7 @@ WED 2.5  beta 1
    - apply jetway upgrades, remove large terrain polygons at export (tyler_mode only)
    - validation exeption to make KSEA, LOWI gateway legal
    - validate taxiways for zero-length segments
+   - show multi-layered forests correctly in the preview window
 
 WED 2.4.0rc2 5/29/21
    Features:

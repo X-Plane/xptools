@@ -317,7 +317,9 @@ void		WED_LibraryMgr::Rescan()
 			int lib_version[] = { 800, 1200, 0 };
 
 			if (MFS_xplane_header(&s, lib_version, "LIBRARY", NULL) == 0)
+			{
 				LOG_MSG("E/LIB unsupported version or header data in %s\n", pack_base.c_str());
+			}
 			else
 				while (!MFS_done(&s))
 				{

@@ -1638,6 +1638,10 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 			tex_x = MFS_double(&s);
 			tex_y = tex_x * tex_s / tex_t;
 		}
+		else if (MFS_string_match(&s, "TEXTURE_HEIGHT", false))
+		{
+			tex_y = MFS_double(&s);
+		}
 		else if(MFS_string_match(&s,"OBJECT",false))
 		{
 			string p;
