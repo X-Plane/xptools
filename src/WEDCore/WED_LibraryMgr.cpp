@@ -305,7 +305,6 @@ void		WED_LibraryMgr::Rescan()
 
 		bool is_default_pack = gPackageMgr->IsPackageDefault(p);
 
-		//Connects the physical Library.txt to the virual Memory File system? (95% sure) -Ted
 		MFMemFile * lib = MemFile_Open(pack_base.c_str());
 
 		if(lib)
@@ -315,88 +314,90 @@ void		WED_LibraryMgr::Rescan()
 			MFS_init(&s, lib);
 
 			int cur_status = status_Public;
-			int lib_version[] = { 800, 0 };
+			int lib_version[] = { 800, 1200, 0 };
 
-			if(MFS_xplane_header(&s,lib_version,"LIBRARY",NULL))
-			while(!MFS_done(&s))
-			{
-				string vpath, rpath;
-				bool is_export_backup = false;
-				bool is_season = false;
-
-				if( MFS_string_match(&s,"EXPORT",false) ||
-				    MFS_string_match(&s,"EXPORT_EXTEND",false) ||
-				    MFS_string_match(&s,"EXPORT_EXCLUDE",false) ||
-					(is_season = ( MFS_string_match(&s, "EXPORT_SEASON", false) || MFS_string_match(&s, "EXPORT_EXCLUDE_SEASON", false))) ||
-					(is_export_backup  = MFS_string_match(&s,"EXPORT_BACKUP",false)))
+			if (MFS_xplane_header(&s, lib_version, "LIBRARY", NULL) == 0)
+				LOG_MSG("E/LIB unsupported version or header data in %s\n", pack_base.c_str());
+			else
+				while (!MFS_done(&s))
 				{
-					if (is_season)
+					string vpath, rpath;
+					bool is_export_backup = false;
+					bool is_season = false;
+
+					if (MFS_string_match(&s, "EXPORT", false) ||
+						MFS_string_match(&s, "EXPORT_EXTEND", false) ||
+						MFS_string_match(&s, "EXPORT_EXCLUDE", false) ||
+						(is_season = (MFS_string_match(&s, "EXPORT_SEASON", false) || MFS_string_match(&s, "EXPORT_EXCLUDE_SEASON", false))) ||
+						(is_export_backup = MFS_string_match(&s, "EXPORT_BACKUP", false)))
 					{
-						string season;
-						MFS_string(&s, &season);
-						if (season.find("sum") == string::npos)
+						if (is_season)
 						{
-							MFS_string_eol(&s, NULL);
-							continue;
-						}
-					}
-					MFS_string(&s,&vpath);
-					MFS_string_eol(&s,&rpath);
-					WED_clean_vpath(vpath);
-					WED_clean_rpath(rpath);
-
-					if (is_no_true_subdir_path(rpath)) break; // ignore paths that lead outside current scenery directory
-					rpath=pack_base+DIR_STR+rpath;
-					FILE_case_correct( (char *) rpath.c_str());  /* yeah - I know I'm overriding the 'const' protection of the c_str() here.
-					   But I know this operation is never going to change the strings length, so thats OK to do.
-					   And I have to case-correct the path right here, as this path later is not only used by the case insensitive MF_open()
-					   but also to derive the paths to the textures referenced in those assets. And those textures are loaded with case-sensitive fopen.
-					   */
-					AccumResource(vpath, p, rpath, is_export_backup, is_default_pack, cur_status);
-				}
-				else if(MFS_string_match(&s,"EXPORT_RATIO",false))
-				{
-				    double x = MFS_double(&s);
-					MFS_string(&s,&vpath);
-					MFS_string_eol(&s,&rpath);
-					WED_clean_vpath(vpath);
-					WED_clean_rpath(rpath);
-					if (is_no_true_subdir_path(rpath)) break; // ignore paths that lead outside current scenery directory
-					rpath=pack_base+DIR_STR+rpath;
-					FILE_case_correct( (char *) rpath.c_str());  // yeah - I know I'm overriding the 'const' protection of the c_str() here.
-					AccumResource(vpath, p, rpath,false,is_default_pack, cur_status);
-				}
-				else
-				{
-					if(MFS_string_match(&s,"PUBLIC",true))
-					{
-						cur_status = status_Public;
-
-						int new_until = 0;
-						new_until = MFS_int(&s);
-						if (new_until > 20170101)
-						{
-							time_t rawtime;
-							struct tm * timeinfo;
-							time (&rawtime);
-							timeinfo = localtime (&rawtime);
-							int now = 10000 * (timeinfo->tm_year+1900) +100*timeinfo->tm_mon + timeinfo->tm_mday;
-							if (new_until >= now)
+							string season;
+							MFS_string(&s, &season);
+							if (season.find("sum") == string::npos)
 							{
-								cur_status = status_New;
+								MFS_string_eol(&s, NULL);
+								continue;
 							}
 						}
-					}
-					else if(MFS_string_match(&s,"PRIVATE",true))
-						cur_status = status_Private;
-					else if(MFS_string_match(&s,"DEPRECATED",true))
-						cur_status = status_Deprecated;
-					else if(MFS_string_match(&s,"SEMI_DEPRECATED",true))
-						cur_status = status_SemiDeprecated;
+						MFS_string(&s, &vpath);
+						MFS_string_eol(&s, &rpath);
+						WED_clean_vpath(vpath);
+						WED_clean_rpath(rpath);
 
-					MFS_string_eol(&s,NULL);
+						if (is_no_true_subdir_path(rpath)) break; // ignore paths that lead outside current scenery directory
+						rpath = pack_base + DIR_STR + rpath;
+						FILE_case_correct((char*)rpath.c_str());  /* yeah - I know I'm overriding the 'const' protection of the c_str() here.
+						   But I know this operation is never going to change the strings length, so thats OK to do.
+						   And I have to case-correct the path right here, as this path later is not only used by the case insensitive MF_open()
+						   but also to derive the paths to the textures referenced in those assets. And those textures are loaded with case-sensitive fopen.
+						   */
+						AccumResource(vpath, p, rpath, is_export_backup, is_default_pack, cur_status);
+					}
+					else if (MFS_string_match(&s, "EXPORT_RATIO", false))
+					{
+						double x = MFS_double(&s);
+						MFS_string(&s, &vpath);
+						MFS_string_eol(&s, &rpath);
+						WED_clean_vpath(vpath);
+						WED_clean_rpath(rpath);
+						if (is_no_true_subdir_path(rpath)) break; // ignore paths that lead outside current scenery directory
+						rpath = pack_base + DIR_STR + rpath;
+						FILE_case_correct((char*)rpath.c_str());  // yeah - I know I'm overriding the 'const' protection of the c_str() here.
+						AccumResource(vpath, p, rpath, false, is_default_pack, cur_status);
+					}
+					else
+					{
+						if (MFS_string_match(&s, "PUBLIC", true))
+						{
+							cur_status = status_Public;
+
+							int new_until = 0;
+							new_until = MFS_int(&s);
+							if (new_until > 20170101)
+							{
+								time_t rawtime;
+								struct tm* timeinfo;
+								time(&rawtime);
+								timeinfo = localtime(&rawtime);
+								int now = 10000 * (timeinfo->tm_year + 1900) + 100 * timeinfo->tm_mon + timeinfo->tm_mday;
+								if (new_until >= now)
+								{
+									cur_status = status_New;
+								}
+							}
+						}
+						else if (MFS_string_match(&s, "PRIVATE", true))
+							cur_status = status_Private;
+						else if (MFS_string_match(&s, "DEPRECATED", true))
+							cur_status = status_Deprecated;
+						else if (MFS_string_match(&s, "SEMI_DEPRECATED", true))
+							cur_status = status_SemiDeprecated;
+
+						MFS_string_eol(&s, NULL);
+					}
 				}
-			}
 			MemFile_Close(lib);
 		}
 	}

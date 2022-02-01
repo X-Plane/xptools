@@ -296,6 +296,7 @@ bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t const *& info)
 
 	if(!MFS_xplane_header(&s,versions,"LINE_PAINT",NULL))
 	{
+		LOG_MSG("E/RES unsupported version or header in %s\n", p.c_str());
 		MemFile_Close(lin);
 		return false;
 	}
@@ -428,6 +429,7 @@ bool	WED_ResourceMgr::GetStr(const string& path, str_info_t const *& info)
 
 	if(!MFS_xplane_header(&s,versions,"OBJECT_STRING",NULL))
 	{
+		LOG_MSG("E/RES unsupported version or header in %s\n", p.c_str());
 		MemFile_Close(str);
 		return false;
 	}
@@ -485,6 +487,7 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t const*& info)
 
 	if(!MFS_xplane_header(&s,versions,"DRAPED_POLYGON",NULL))
 	{
+		LOG_MSG("E/RES unsupported version or header in %s\n", p.c_str());
 		MemFile_Close(file);
 		return false;
 	}
@@ -625,6 +628,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 		int vers, versions[] = { 800, 1000, 0 };
 		if((vers = MFS_xplane_header(&s,versions,"FACADE",NULL)) == 0)
 		{
+			LOG_MSG("E/RES unsupported version or header in %s\n", p.c_str());
 			MemFile_Close(file);
 			return false;
 		}
@@ -1161,9 +1165,10 @@ bool	WED_ResourceMgr::GetFor(const string& path, for_info_t const *& info)
 	MFScanner	s;
 	MFS_init(&s, fi);
 
-	int versions[] = { 800,900,1000, 0 };
+	int versions[] = { 800, 1000, 1200, 0 };
 	if((MFS_xplane_header(&s,versions,"FOREST",NULL)) == 0)
 	{
+		LOG_MSG("E/RES unsupported version or header in %s\n", p.c_str());
 		MemFile_Close(fi);
 		return false;
 	}
@@ -1184,6 +1189,7 @@ bool	WED_ResourceMgr::GetFor(const string& path, for_info_t const *& info)
 	};
 	tree_mesh* this_tree_3d = nullptr;
 	map<string, tree_mesh> trees_3d;
+	bool is_tree2 = false;
 
 	while(!MFS_done(&s))
 	{
@@ -1233,7 +1239,7 @@ bool	WED_ResourceMgr::GetFor(const string& path, for_info_t const *& info)
 			rand_x = MFS_double(&s);
 			rand_y = MFS_double(&s);
 		}
-		else if (MFS_string_match(&s, "TREE", false))
+		else if ((is_tree2 = MFS_string_match(&s, "TREE2", false)) || MFS_string_match(&s, "TREE", false))
 		{
 			for_info_t::tree_t t;
 			t.s = MFS_double(&s);
@@ -1245,12 +1251,12 @@ bool	WED_ResourceMgr::GetFor(const string& path, for_info_t const *& info)
 			t.hmin = MFS_double(&s);
 			t.hmax = MFS_double(&s);
 			if (max_height < t.hmax) max_height = t.hmax;
-/*			if (t2)                                // new optional format in XP12, per Sidney
+			if (is_tree2)                                // new optional format in XP12, per Sidney
 			{
 				MFS_double(&s);
 				MFS_double(&s);
 			}
-*/			t.quads = MFS_int(&s);
+			t.quads = MFS_int(&s);
 			layer = MFS_int(&s);
 
 			if (fabs(t.w) > 0.001 && t.h > 0.001)   // there are some .for with zero size tree's in XP10 and OpensceneryX uses negative widths ...
@@ -1289,7 +1295,7 @@ bool	WED_ResourceMgr::GetFor(const string& path, for_info_t const *& info)
 	// now we have one of each tree. Like on the ark. Or maybe half that :)
 	// expand that to full forest of TPS * TPS trees, populated with all the varieties there are
 
-	#define TREES_PER_ROW  7
+	#define TREES_PER_ROW  6
 
 	// fill a XObj8-structure for library preview
 
@@ -1587,6 +1593,7 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 	string l3; MFS_string_eol(&s, &l3);
 	if((l1 != "I" && l1 != "A") || v != 1000 || (l3 != "AG_POINT" && l3 == "AG_STRING" && l3 == "AG_BLOCK"))
 	{
+		LOG_MSG("E/RES unsupported version or header in %s\n", p.c_str());
 		MemFile_Close(file);
 		return false;
 	}
@@ -1866,6 +1873,7 @@ bool	WED_ResourceMgr::GetRoad(const string& path, const road_info_t *& out_info)
 	int v;
 	if((v=MFS_xplane_header(&s,versions,"ROADS",NULL)) == 0)
 	{
+		LOG_MSG("E/RES unsupported version or header in %s\n", p.c_str());
 		MemFile_Close(mf);
 		return false;
 	}

@@ -141,7 +141,7 @@ static void parse_apt_dat(MFMemFile * str, map<string, navaid_t>& tAirports, con
 {
 	MFScanner	s;
 	MFS_init(&s, str);
-	int versions[] = { 1000, 1021, 1050, 1100, 1150, 1200, 0 };
+	int versions[] = { 1000, 1021, 1050, 1100, 1130, 1200, 0 };
 		
 	if(MFS_xplane_header(&s,versions,NULL,NULL))
 	{
@@ -428,19 +428,23 @@ void WED_NavaidLayer::LoadNavaids()
 	if(str)	parse_nav_dat(str, mNavaids, true);
 	
 	string defaultATC = resourcePath + DIR_STR "Resources" DIR_STR "default scenery" DIR_STR "default atc dat" DIR_STR "Earth nav data" DIR_STR "atc.dat";
-	string seattleATC  = resourcePath + DIR_STR "Custom Scenery" DIR_STR "KSEA Demo Area" DIR_STR "Earth nav data" DIR_STR "atc.dat";
-
 	str = MemFile_Open(defaultATC.c_str());
-
-	// on the linux and OSX platforms this path was different before XP11.30 for some unknown reasons. So try that.
+	// on the linux and OSX platforms this path was different before XP11.30 for some unknown reasons. So try that, too.
 	if(!str)
 	{
 		defaultATC = resourcePath + DIR_STR "Resources" DIR_STR "default scenery" DIR_STR "default atc" DIR_STR "Earth nav data" DIR_STR "atc.dat";
 		str = MemFile_Open(defaultATC.c_str());
 	}
+	// in XP12 the file again changed to a different location
+	if (!str)
+	{
+		defaultATC = resourcePath + DIR_STR "Resources" DIR_STR "default scenery" DIR_STR "1200 atc data" DIR_STR "Earth nav data" DIR_STR "atc.dat";
+		str = MemFile_Open(defaultATC.c_str());
+	}
 	if(str)	parse_atc_dat(str, mNavaids);
-	str = MemFile_Open(seattleATC.c_str());
-	if(str)	parse_atc_dat(str, mNavaids);
+
+//	str = MemFile_Open(seattleATC.c_str());  // don't take local local ATC data any more
+//	if(str)	parse_atc_dat(str, mNavaids);
 	
 #if SHOW_APTS_FROM_APTDAT
 	map<string,navaid_t> tAirports;
@@ -592,14 +596,17 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 #if SHOW_TOWERS
 				if((i->type == 9998 && PPM  > 0.01) || i->type == 9999)
 #else
-				if(i->type == 9999)
+				if(i->type == 9999) // Airspce labels/frequencies
 #endif					
 				{
-					const float * color = vfr_blue;
-					GUI_FontDraw(g, font_UI_Basic, color, pt.x()+8.0,pt.y()-15.0, i->name.c_str());
-					GUI_FontDraw(g, font_UI_Basic, color, pt.x()+8.0,pt.y()-30.0, i->rwy.c_str());
+					if (PPM > 0.01)
+					{
+						const float* color = vfr_blue;
+						GUI_FontDraw(g, font_UI_Basic, color, pt.x() + 8.0, pt.y() - 15.0, i->name.c_str());
+						GUI_FontDraw(g, font_UI_Basic, color, pt.x() + 8.0, pt.y() - 30.0, i->rwy.c_str());
+					}
 				}
-				else if (PPM  > 0.05)
+				else if (PPM > 0.05)// Navaid labels
 				{
 					if(i->type > 10000)
 					{
