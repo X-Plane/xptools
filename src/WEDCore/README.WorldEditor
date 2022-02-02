@@ -16,6 +16,7 @@ CHANGE HISTORY
 Planned functionality for WED 2.5 not yet included in the alpha versions
    - automatic creation of edge outlines for paved surfaces
    - on-map preview of .agb definitions
+   - show trees part of any autogen definition
 
 WED 2.5.0 alpha
    Bug Fix:
