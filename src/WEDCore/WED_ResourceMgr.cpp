@@ -1591,7 +1591,7 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 	string l1; MFS_string_eol(&s, &l1);
 	v = MFS_int(&s); MFS_string_eol(&s,NULL);
 	string l3; MFS_string_eol(&s, &l3);
-	if((l1 != "I" && l1 != "A") || v != 1000 || (l3 != "AG_POINT" && l3 == "AG_STRING" && l3 == "AG_BLOCK"))
+	if((l1 != "I" && l1 != "A") || v != 1000 || (l3 != "AG_STRING" && l3 != "AG_POINT" && l3 != "AG_BLOCK"))
 	{
 		LOG_MSG("E/RES unsupported version or header in %s\n", p.c_str());
 		MemFile_Close(file);
@@ -1603,6 +1603,8 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 
 	double tex_s = 1.0, tex_t = 1.0;		// these scale from pixels to UV coords
 	double tex_x = 1.0, tex_y = 1.0;		// meters for tex, x & y
+
+	double flip_y = l3 == "AG_STRING" ? -1.0 : 1.0;
 	int	 rotation = 0;
 	int	 last_id = -1;
 	agp->hide_tiles = 0;
@@ -1702,7 +1704,41 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 		{
 			agp->tiles.push_back(agp_t::tile_t());
 			ti = &agp->tiles.back();
-			agp->hide_tiles = true;
+		}
+		else if (MFS_string_match(&s, "CUT_H", false))
+		{
+			if (ti)
+				ti->cut_h.push_back(MFS_double(&s) * tex_s);
+		}
+		else if (MFS_string_match(&s, "CUT_V", false))
+		{
+			if (ti)
+				ti->cut_v.push_back(MFS_double(&s) * tex_t);
+		}
+		else if (MFS_string_match(&s, "END_CUTS", true))
+		{
+			if (ti)
+			{
+				double s1 = ti->cut_h.front();
+				double t1 = ti->cut_v.front();
+				double s2 = ti->cut_h.back();
+				double t2 = ti->cut_v.back();
+				double x1 = tex_x * s1;
+				double x2 = tex_x * s2;
+				double y1 = tex_y * t1;
+				double y2 = tex_y * t2;
+
+				ti->tile.resize(16);
+				ti->tile[0] = x1;	ti->tile[1] = y1;
+				ti->tile[2] = s1;	ti->tile[3] = t1;
+				ti->tile[4] = x2;	ti->tile[5] = y1;
+				ti->tile[6] = s2;	ti->tile[7] = t1;
+
+				ti->tile[8] = x2; ti->tile[9] = y2;
+				ti->tile[10] = s2; ti->tile[11] = t2;
+				ti->tile[12] = x1; ti->tile[13] = y2;
+				ti->tile[14] = s1; ti->tile[15] = t2;
+			}
 		}
 		else if(MFS_string_match(&s,"ROTATION",false))
 		{
@@ -1796,7 +1832,7 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 				{
 					Point2 p;
 					p.x_ = MFS_double(&s) * tex_s * tex_x;
-					p.y_ = MFS_double(&s) * tex_t * tex_y;
+					p.y_ = MFS_double(&s) * tex_t * tex_y * flip_y;
 					ti->facs.back().locs.push_back(p);
 					ti->facs.back().walls.push_back(0);
 				}
@@ -1819,7 +1855,7 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 				{
 					Point2 p;
 					p.x_ = MFS_double(&s) * tex_s * tex_x;
-					p.y_ = MFS_double(&s) * tex_t * tex_y;
+					p.y_ = MFS_double(&s) * tex_t * tex_y * flip_y;
 					ti->facs.back().locs.push_back(p);
 					ti->facs.back().walls.push_back(MFS_int(&s));
 				}
@@ -1849,7 +1885,8 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t const *& info)
 		else
 			MFS_string_eol(&s,NULL);
 	}
-	if(ti) setup_tile(ti, rotation, path);
+	for(auto& t : agp->tiles)
+		setup_tile(&t, rotation, path);
 
 	MemFile_Close(file);
 	return true;

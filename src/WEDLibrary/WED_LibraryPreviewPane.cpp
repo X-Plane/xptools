@@ -792,17 +792,20 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, int b[4], 
 									agp->tiles[0].xyz_max[0] - agp->tiles[0].xyz_min[0],
 									agp->tiles[0].xyz_max[1] - agp->tiles[0].xyz_min[1],
 									agp->tiles[0].xyz_max[2] - agp->tiles[0].xyz_min[2]);
-				double xyz_off[3];
+				double xyz_off[3] = {};
 				xyz_off[1] = -(agp->tiles[0].xyz_max[1] + agp->tiles[0].xyz_min[1]) * 0.5;
 
-				for(int i = 0; i < intmin2(5, agp->tiles.size()); i++)
+				int n_tiles = agp->tiles[0].cut_h.empty() ? intmin2(5, agp->tiles.size()) : 1;
+
+				double row_offs = 0;
+				for(int i = 0; i < n_tiles; i++)
 				{
 					int tile_idx = intlim(i + mWid * 0.2, 0, agp->tiles.size()-1);
 					auto ti = agp->tiles[tile_idx];
 					xyz_off[0] = -(ti.xyz_max[0] + ti.xyz_min[0]) * 0.5;
-				//	xyz_off[1] = -(ti.xyz_max[1] + ti.xyz_min[1]) * 0.5;
+//					xyz_off[1] = -(ti.xyz_max[1] + ti.xyz_min[1]) * 0.5; // for .ags we want them all aligned the same way vertically
 					xyz_off[2] =  (ti.xyz_max[2] + ti.xyz_min[2]) * 0.5;
-					double row_offs = agp->tiles.size() > 1 ? (ti.xyz_max[0] - ti.xyz_min[0]) * (i-0.8) : 0.0;
+					double row_offs = (n_tiles > 1) ? (ti.xyz_max[0] - ti.xyz_min[0]) * (i - 0.8) : 0.0;
 
 					begin3d(b, real_radius);
 					draw_agp_at_xyz(mTexMgr, agp, xyz_off[0] + row_offs, xyz_off[1], xyz_off[2], mHgt, 0, g, tile_idx);
@@ -945,10 +948,15 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, int b[4], 
 					int tile_idx = intlim(mWid * 0.2, 0, agp->tiles.size()-1);
 					if(agp->tiles.size() > 1)
 					{
-						if(agp->tiles[tile_idx].id >= 0)
-							n = sprintf(buf1, "TILE_ID \'%d\' ", agp->tiles[tile_idx].id);
-						sprintf(buf1 + n, "%sshowing tiles #%d+ @ h=%dm", agp->tiles[tile_idx].has_scp ? "has scrapers, " : "", tile_idx, mHgt);
-						n = sprintf(buf2, "%d tiles, ", (int) agp->tiles.size());
+						if (agp->tiles[0].cut_h.empty())
+						{
+							if (agp->tiles[tile_idx].id >= 0)
+								n = sprintf(buf1, "TILE_ID \'%d\' ", agp->tiles[tile_idx].id);
+							sprintf(buf1 + n, "%sshowing tiles #%d+ @ h=%dm", agp->tiles[tile_idx].has_scp ? "has scrapers, " : "", tile_idx, mHgt);
+						}
+						else
+							sprintf(buf1 + n, "%sshowing tile #%d @ h=%dm", agp->tiles[tile_idx].has_scp ? "has scrapers, " : "", tile_idx, mHgt);
+						n = sprintf(buf2, "%d different tiles, ", (int) agp->tiles.size());
 					}
 					else
 						snprintf(buf1, sizeof(buf1), "%s", agp->description.c_str());

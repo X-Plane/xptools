@@ -201,6 +201,7 @@ struct agp_t {
 		vector<float>	tile;	// the base tile in x,y,s,t quads.
 		vector<obj_t>	objs;
 		vector<fac_t>	facs;
+		vector<float>	cut_h, cut_v;
 		float			xyz_min[3];
 		float			xyz_max[3];
 		float 			anchor_x, anchor_y;
@@ -214,7 +215,7 @@ struct agp_t {
 	vector<tile_t>	tiles;
 	string			description;
 	bool			has_scp;
-	agp_t(void) : has_scp(false) { }
+	agp_t(void) : has_scp(false), hide_tiles(false){ }
 };
 
 struct for_info_t {
