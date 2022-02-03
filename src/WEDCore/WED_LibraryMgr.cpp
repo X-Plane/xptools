@@ -744,7 +744,7 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 		if(i == res_table.end())
 		{
 			res_info_t new_info;
-			new_info.status = rt == res_Autogen ? status_Public : status;    // XXX temporary for alpha testing - so we can drool about at all that stuff
+			new_info.status = status;
 			new_info.res_type = rt;
 			new_info.packages.insert(package);
 			if(rt > res_Directory)                      // speedup/memory saver: no need to store this for directories
