@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, Laminar Research.
+ * Copyright (c) 2018, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -56,7 +56,7 @@ printf("1 to 2 time: %lf\n", elapsed.count());
 	#include <GL/gl.h>
 #endif
 
-#define SHOW_TOWERS 0
+#define SHOW_TOWERS 1
 #define SHOW_APTS_FROM_APTDAT 1
 #define COMPARE_GW_TO_APTDAT 0
 
@@ -227,7 +227,7 @@ static void parse_nav_dat(MFMemFile * str, vector<navaid_t>& mNavaids, bool merg
 {
 	MFScanner	s;
 	MFS_init(&s, str);
-	int versions[] = { 1000, 1021, 1050, 1100, 1150, 1200, 0 };
+	int versions[] = { 810, 1050, 1100, 1150, 1200, 0 };
 		
 	if(MFS_xplane_header(&s,versions,NULL,NULL))
 	{
@@ -313,11 +313,11 @@ static void parse_atc_dat(MFMemFile * str, vector<navaid_t>& mNavaids)
 	MFScanner	s;
 	MFS_init(&s, str);
 	int versions[] = { 1000, 1100, 0 };
+	bool take_airspace = false;
 		
 	if(MFS_xplane_header(&s,versions,"ATCFILE",NULL))
 	{
 		navaid_t n;
-		int num_rings;
 		while(!MFS_done(&s))
 		{
 			if(MFS_string_match(&s, "CONTROLLER", 1))
@@ -326,7 +326,6 @@ static void parse_atc_dat(MFMemFile * str, vector<navaid_t>& mNavaids)
 				n.shape.clear();
 				n.lonlat = Point2(180.0,0.0);
 				n.rwy.clear();
-				num_rings = 0;
 			}
 			if(MFS_string_match(&s, "ROLE", 0))
 			{
@@ -334,7 +333,7 @@ static void parse_atc_dat(MFMemFile * str, vector<navaid_t>& mNavaids)
 				MFS_string(&s, &role);
 				n.type = role == "tracon" ? 9999 : 0; // navaid pseudo code for TRACON areas
 #if SHOW_TOWERS
-				if(role == "twr") n.type = 9998;
+				if(role == "twr") n.type = 9998;      // navaid pseudo code for TOWER areas
 #endif
 			}
 			else if(MFS_string_match(&s, "NAME", 0))
@@ -363,28 +362,46 @@ static void parse_atc_dat(MFMemFile * str, vector<navaid_t>& mNavaids)
 			{
 				if(MFS_string_match(&s, "POINT", 0))
 				{
-					double lat = MFS_double(&s);
-					double lon = MFS_double(&s);
-					n.shape.push_back(Point2(lon,lat));
-					if( lon < n.lonlat.x())
-						n.lonlat = Point2(lon,lat);  // get the left side of the area
+					if(take_airspace && n.shape.size())
+					{
+						double lat = MFS_double(&s);
+						double lon = MFS_double(&s);
+						n.shape.back().push_back(Point2(lon, lat));
+						if (lon < n.lonlat.x())
+							n.lonlat = Point2(lon, lat);  // get the left side of the area
+					}
 				}
 				else if(MFS_string_match(&s, "AIRSPACE_POLYGON_BEGIN", 1))
 				{
-					num_rings++;
-				}
-				else if(MFS_string_match(&s, "AIRSPACE_POLYGON_END", 1))
-				{
-//					printf("Adding new %d %s %s %d\n", n.type, n.name.c_str(), n.icao.c_str(), (int) n.shape.size());
-					if (num_rings == 1)
+					int bottom = round(MFS_double(&s) / 100.0);
+					take_airspace = bottom <= 10;        // declutter display by skipping all upper level airspaces
+					if (take_airspace)
 					{
+						if (n.shape.empty())
+						{
 #if SHOW_TOWERS
-						if (n.type == 9998)
-							n.name += " TOWER";
-						else
+							if (n.type == 9998)
+								n.name += " TOWER";
+							else
 #endif					
-						n.name += " APPROACH";
-						n.rwy += " MHz";
+								n.name += " APPROACH";
+							n.rwy += " MHz";
+						}
+						n.shape.push_back(vector<Point2>());
+						string tmp(to_string(bottom) + "-" + to_string((int) (round(MFS_double(&s) / 100.0))));
+						if (n.name.find(tmp) == string::npos)
+							n.name += string("  ") + tmp;
+					}
+				}
+				else if(MFS_string_match(&s, "CONTROLLER_END", 1) && n.type)
+				{
+					for (auto& nav : mNavaids)
+					{
+						if (LonLatDistMeters(nav.lonlat, n.lonlat) < 5000.0)
+						{
+							n.lonlat.y_ += 0.01;     // avoid two labels right ontop of each other
+							break;
+						}
 					}
 					mNavaids.push_back(n);
 				}
@@ -563,19 +580,28 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 					GUI_PlotIcon(g,"nav_mark.png", pt.x(), pt.y(), i->heading, scale);
 				else if(i->type <= 9999)
 				{
-					glColor4fv(vfr_blue);
+					if (i->bottom == 0.0)
+					{
 #if SHOW_TOWERS
-					if (i->type == 9998)
-						glEnable(GL_LINE_STIPPLE);
+						if (i->type == 9998)
+							glEnable(GL_LINE_STIPPLE);
 #endif					
-					int pts = i->shape.size();
-					vector<Point2> c(pts);
-					GetZoomer()->LLToPixelv(&(c[0]),&(i->shape[0]),pts);
-					g->SetState(0, 0, 0, 0, 1, 0, 0);
-					glShape2v(GL_LINE_LOOP, &(c[0]), pts);
+						g->SetState(0, 0, 0, 0, 1, 0, 0);
+						for (auto& p : i->shape)
+						{
+							if (i->bottom != 0.0)
+								glColor4fv(vfr_purple);
+							else
+								glColor4fv(vfr_blue);
+							int pts = p.size();
+							vector<Point2> c(pts);
+							GetZoomer()->LLToPixelv(&(c[0]), p.data(), pts);
+							glShape2v(GL_LINE_LOOP, &(c[0]), pts);
+						}
 #if SHOW_TOWERS
-					glDisable(GL_LINE_STIPPLE);
+						glDisable(GL_LINE_STIPPLE);
 #endif					
+					}
 				}
 				else
 				{
@@ -596,10 +622,10 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 #if SHOW_TOWERS
 				if((i->type == 9998 && PPM  > 0.01) || i->type == 9999)
 #else
-				if(i->type == 9999) // Airspce labels/frequencies
+				if(i->type == 9999) // Airspace labels/frequencies
 #endif					
 				{
-					if (PPM > 0.01)
+					if (PPM > 0.01 && i->bottom == 0.0)
 					{
 						const float* color = vfr_blue;
 						GUI_FontDraw(g, font_UI_Basic, color, pt.x() + 8.0, pt.y() - 15.0, i->name.c_str());
