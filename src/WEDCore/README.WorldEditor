@@ -52,6 +52,7 @@ WED 2.5.0 alpha
    - validation exeption to make KSEA, LOWI gateway legal
    - validate taxiways for zero-length segments
    - show multi-layered forests correctly in the preview window
+   - show ATC tower airspaces in Navaid layer
 
 WED 2.4.0rc2 5/29/21
    Features:

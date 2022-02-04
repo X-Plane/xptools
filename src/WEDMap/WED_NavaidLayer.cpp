@@ -36,29 +36,17 @@
 #include "PlatformUtils.h"
 #include "GISUtils.h"
 
-#if 0
-#include <chrono>
-auto t0 = std::chrono::high_resolution_clock::now();
-auto t1 = std::chrono::high_resolution_clock::now();
-auto t2 = chrono::high_resolution_clock::now();
-
-
-chrono::duration<double> elapsed = t1-t0;
-printf("0 to 1 time: %lf\n", elapsed.count());
-
-elapsed = t2-t1;
-printf("1 to 2 time: %lf\n", elapsed.count());
-#endif
-
 #if APL
 	#include <OpenGL/gl.h>
 #else
 	#include <GL/gl.h>
 #endif
 
-#define SHOW_TOWERS 1
+#define SHOW_BELOW           25       // bottom of airspace must be below xx hundred feet to show
+#define SHOW_TOWERS           1
 #define SHOW_APTS_FROM_APTDAT 1
-#define COMPARE_GW_TO_APTDAT 0
+
+#define COMPARE_GW_TO_APTDAT  0       // loads list of all airports from gateway and comares it to local apt.dat data
 
 #define NAVAID_EXTRA_RANGE  GLOBAL_WED_ART_ASSET_FUDGE_FACTOR  // degree's lon/lat, allows ILS beams to show even if the ILS is outside of the map window
 
@@ -162,8 +150,9 @@ static void parse_apt_dat(MFMemFile * str, map<string, navaid_t>& tAirports, con
 				apt_type = rowcode;
 				apt_bounds = Bbox2();
 				n.type = 10000 + rowcode;
-				MFS_int(&s);			 // skip elevation
-				n.heading = MFS_int(&s); // has ATC tower
+				n.heading = 0;  // going to store ATC tower frequency presence here.
+				MFS_int(&s);	// skip elevation
+				MFS_int(&s);
 				MFS_int(&s);
 
 				MFS_string(&s,&n.icao);
@@ -215,6 +204,10 @@ static void parse_apt_dat(MFMemFile * str, map<string, navaid_t>& tAirports, con
 					double lat = MFS_double(&s);
 					double lon = MFS_double(&s);
 					apt_bounds += Point2(lon,lat);
+				}
+				else if (rowcode == 54 || rowcode == 1054) // ATC frequency
+				{
+					n.heading = 1;  // ATC tower frequency presennce
 				}
 			}
 			MFS_string_eol(&s,NULL);
@@ -371,10 +364,10 @@ static void parse_atc_dat(MFMemFile * str, vector<navaid_t>& mNavaids)
 							n.lonlat = Point2(lon, lat);  // get the left side of the area
 					}
 				}
-				else if(MFS_string_match(&s, "AIRSPACE_POLYGON_BEGIN", 1))
+				else if(MFS_string_match(&s, "AIRSPACE_POLYGON_BEGIN", 0))
 				{
 					int bottom = round(MFS_double(&s) / 100.0);
-					take_airspace = bottom <= 10;        // declutter display by skipping all upper level airspaces
+					take_airspace = bottom <= SHOW_BELOW;       // declutter display by skipping upper level airspaces
 					if (take_airspace)
 					{
 						if (n.shape.empty())
@@ -387,7 +380,7 @@ static void parse_atc_dat(MFMemFile * str, vector<navaid_t>& mNavaids)
 								n.name += " APPROACH";
 							n.rwy += " MHz";
 						}
-						n.shape.push_back(vector<Point2>());
+						n.shape.push_back(Polygon2());
 						string tmp(to_string(bottom) + "-" + to_string((int) (round(MFS_double(&s) / 100.0))));
 						if (n.name.find(tmp) == string::npos)
 							n.name += string("  ") + tmp;
@@ -397,9 +390,9 @@ static void parse_atc_dat(MFMemFile * str, vector<navaid_t>& mNavaids)
 				{
 					for (auto& nav : mNavaids)
 					{
-						if (LonLatDistMeters(nav.lonlat, n.lonlat) < 5000.0)
+						if (LonLatDistMeters(nav.lonlat, n.lonlat) < 2000.0)
 						{
-							n.lonlat.y_ += 0.01;     // avoid two labels right ontop of each other
+							n.lonlat.y_ += 0.02;     // avoid two labels right ontop of each other
 							break;
 						}
 					}
@@ -473,7 +466,7 @@ void WED_NavaidLayer::LoadNavaids()
 	str = MemFile_Open((resourcePath + DIR_STR "Global Scenery" + globalApts).c_str());
 	if(!str)
 		str = MemFile_Open((resourcePath + DIR_STR "Custom Scenery" + globalApts).c_str());
-	if(str) parse_apt_dat(str, tAirports, " (GW)");
+	if(str) parse_apt_dat(str, tAirports, "");
 
 #if COMPARE_GW_TO_APTDAT
 	map<string,navaid_t> tAirp;
@@ -564,13 +557,7 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 						glVertex2(pt);
 						glVertex2(pt + beam_dir);
 					glEnd();
-/*					glColor4f(1.0, 0.0, 0.0, 0.3);
-					glBegin(GL_POLYGON);
-						glVertex2(pt);
-						glVertex2(pt + beam_dir*1.1 - beam_perp);
-						glVertex2(pt + beam_dir);
-					glEnd();
-*/				}
+				}
 				else if(i->type == 6)
 				{
 					if(PPM > 0.1)
@@ -580,30 +567,24 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 					GUI_PlotIcon(g,"nav_mark.png", pt.x(), pt.y(), i->heading, scale);
 				else if(i->type <= 9999)
 				{
-					if (i->bottom == 0.0)
+#if SHOW_TOWERS
+					if (i->type == 9998)
+						glEnable(GL_LINE_STIPPLE);
+#endif					
+					g->SetState(0, 0, 0, 0, 1, 0, 0);
+					for (auto& p : i->shape)
 					{
-#if SHOW_TOWERS
-						if (i->type == 9998)
-							glEnable(GL_LINE_STIPPLE);
-#endif					
-						g->SetState(0, 0, 0, 0, 1, 0, 0);
-						for (auto& p : i->shape)
-						{
-							if (i->bottom != 0.0)
-								glColor4fv(vfr_purple);
-							else
-								glColor4fv(vfr_blue);
-							int pts = p.size();
-							vector<Point2> c(pts);
-							GetZoomer()->LLToPixelv(&(c[0]), p.data(), pts);
-							glShape2v(GL_LINE_LOOP, &(c[0]), pts);
-						}
-#if SHOW_TOWERS
-						glDisable(GL_LINE_STIPPLE);
-#endif					
+						glColor4fv(vfr_blue);
+						int pts = p.size();
+						vector<Point2> c(pts);
+						GetZoomer()->LLToPixelv(&(c[0]), p.data(), pts);
+						glShape2v(GL_LINE_LOOP, &(c[0]), pts);
 					}
+#if SHOW_TOWERS
+					glDisable(GL_LINE_STIPPLE);
+#endif					
 				}
-				else
+				else     // some airport
 				{
 					if(PPM > 0.002)
 					{
@@ -625,7 +606,7 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 				if(i->type == 9999) // Airspace labels/frequencies
 #endif					
 				{
-					if (PPM > 0.01 && i->bottom == 0.0)
+					if (PPM > 0.01)
 					{
 						const float* color = vfr_blue;
 						GUI_FontDraw(g, font_UI_Basic, color, pt.x() + 8.0, pt.y() - 15.0, i->name.c_str());
