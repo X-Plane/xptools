@@ -578,6 +578,15 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 					msgs.push_back(validation_error_t(ss.str(), warn_object_custom_elev, who, parent_apt));
 				}
 			}
+#if 1   // temporary thing to force late XP11 GW submissions to better fit XP12 needs
+			string res;
+			obj->GetResource(res);
+			if (res.find("Tree.obj") != string::npos || res.find("autogen_tree") != string::npos)
+			{
+				const char *c = "Depictig tree's with .obj is now undesired on the GW. Use .for based trees for XP12 compatibility.";
+				msgs.push_back(validation_error_t(c, warn_object_tree, who, parent_apt));
+			}
+#endif
 		}
 	}
 

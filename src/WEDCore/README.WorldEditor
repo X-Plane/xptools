@@ -13,6 +13,10 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 2.4.1 rc 2 2/4/22
+   Features:
+   - Add validation warning (GW only) to use .for rather than .obj trees in support of XP12
+
 WED 2.4.1 rc 1 1/10/22
    Bug Fix:
    - WED-1413 ATC route validation escape for runways NOT starting with a leading zero

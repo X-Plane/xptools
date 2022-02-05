@@ -173,6 +173,7 @@ enum validate_error_t
 	warn_net_level_mismatch,
 	warn_net_hard_turn,
 	warn_object_custom_elev,
+	warn_object_tree,
 	warn_taxi_route_name_unusual,
 	warn_truckroutes_but_no_starts,
 	warn_ramp_start_size_implausible,
