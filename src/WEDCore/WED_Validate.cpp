@@ -584,7 +584,7 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 			if (res.find("Tree.obj") != string::npos || res.find("autogen_tree") != string::npos)
 			{
 				const char *c = "Depictig tree's with .obj is now undesired on the GW. Use .for based trees for XP12 compatibility.";
-				msgs.push_back(validation_error_t(c, warn_object_tree, who, parent_apt));
+				msgs.push_back(validation_error_t(c, err_object_tree, who, parent_apt));
 			}
 #endif
 		}
