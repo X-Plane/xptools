@@ -493,6 +493,7 @@ int layer_group_for_string(const char * s, int o, int def)
 
 struct sort_item_by_layer {	bool operator()(WED_PreviewItem * lhs, WED_PreviewItem * rhs) const { return lhs->get_layer() < rhs->get_layer(); } };
 
+
 static double PixelSize(const WED_GISPolygon * poly, double featureSizeMeters, const WED_MapZoomerNew * zoomer)
 {
 	Bbox2 bb;
@@ -1485,9 +1486,7 @@ struct	preview_object : public WED_PreviewItem {
 		if(rmgr->GetObj(vpath, o))
 			draw_obj_at_ll(tman,   o, loc, agl, obj->GetHeading(), g, zoomer);
 		else if (rmgr->GetAGP(vpath, agp))
-		{
 			draw_agp_at_ll(tman, agp, loc, agl, obj->GetHeading(), g, zoomer, preview_level);
-		}
 		else
 		{
 			loc = zoomer->LLToPixel(loc);
@@ -1959,51 +1958,62 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 
 	else if (sub_class == WED_PolygonPlacement::sClass)
 	{
-		WED_PolygonPlacement * pol = SAFE_CAST(WED_PolygonPlacement, entity);
-		if(pol)
+		if(auto pol = dynamic_cast<WED_PolygonPlacement*>(entity))
 		{
-			string vpath;
-			const pol_info_t * pol_info;
-			int lg = group_TaxiwaysBegin;
-			WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetResolver());
-
-			pol->GetResource(vpath);
-			if(!vpath.empty() && rmgr->GetPol(vpath,pol_info) && !pol_info->group.empty())
-				lg = layer_group_for_string(pol_info->group.c_str(),pol_info->group_offset, lg);
-			mPreviewItems.push_back(new preview_pol(pol,lg, GetResolver()));
+			Bbox2 b;
+			pol->GetBounds(gis_Geo, b);
+			if (GetZoomer()->PixelSize(b) > MIN_PIXELS_PREVIEW)
+			{
+				string vpath;
+				const pol_info_t* pol_info;
+				int lg = group_TaxiwaysBegin;
+				WED_ResourceMgr* rmgr = WED_GetResourceMgr(GetResolver());
+				pol->GetResource(vpath);
+				if (!vpath.empty() && rmgr->GetPol(vpath, pol_info) && !pol_info->group.empty())
+					lg = layer_group_for_string(pol_info->group.c_str(), pol_info->group_offset, lg);
+				mPreviewItems.push_back(new preview_pol(pol, lg, GetResolver()));
+			}
 		}
 	}
 	else if (sub_class == WED_DrapedOrthophoto::sClass)
 	{
-		WED_DrapedOrthophoto * orth = SAFE_CAST(WED_DrapedOrthophoto, entity);
-		if (orth)
+		if(auto orth = dynamic_cast<WED_DrapedOrthophoto*>(entity))
 		{
-			string vpath;
-			const pol_info_t * pol_info;
-			int lg = group_TaxiwaysBegin;
-			WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetResolver());
+			Bbox2 b;
+			orth->GetBounds(gis_Geo, b);
+			if (GetZoomer()->PixelSize(b) > MIN_PIXELS_PREVIEW)
+			{
+				string vpath;
+					const pol_info_t* pol_info;
+					int lg = group_TaxiwaysBegin;
+					WED_ResourceMgr* rmgr = WED_GetResourceMgr(GetResolver());
 
-			orth->GetResource(vpath);
-			if(!vpath.empty() && rmgr->GetPol(vpath,pol_info) && !pol_info->group.empty())
-				lg = layer_group_for_string(pol_info->group.c_str(),pol_info->group_offset, lg);
-			mPreviewItems.push_back(new preview_ortho(orth,lg, GetResolver()));
+					orth->GetResource(vpath);
+				if (!vpath.empty() && rmgr->GetPol(vpath, pol_info) && !pol_info->group.empty())
+					lg = layer_group_for_string(pol_info->group.c_str(), pol_info->group_offset, lg);
+				mPreviewItems.push_back(new preview_ortho(orth, lg, GetResolver()));
+			}
 		}
 	}
 	else if (sub_class == WED_FacadePlacement::sClass)
 	{
-		WED_FacadePlacement * fac = SAFE_CAST(WED_FacadePlacement, entity);
+		auto fac = dynamic_cast<WED_FacadePlacement*>(entity);
 		if(fac && fac->GetShowLevel() <= mObjDensity)
 			mPreviewItems.push_back(new preview_facade(fac,group_Objects, GetResolver()));
 	}
 	else if (sub_class == WED_ForestPlacement::sClass)
 	{
-		WED_ForestPlacement * forst = SAFE_CAST(WED_ForestPlacement, entity);
-		if(forst) mPreviewItems.push_back(new preview_forest(forst, group_Footprints));
+		if (auto forst = dynamic_cast<WED_ForestPlacement*>(entity))
+		{
+			Bbox2 b;
+			forst->GetBounds(gis_Geo, b);
+			if (GetZoomer()->PixelSize(b) > MIN_PIXELS_PREVIEW)
+				mPreviewItems.push_back(new preview_forest(forst, group_Footprints));
+		}
 	}
 	else if(sub_class == WED_LinePlacement::sClass)
 	{
-		WED_LinePlacement * line = SAFE_CAST(WED_LinePlacement, entity);
-		if(line)
+		if(auto line = dynamic_cast<WED_LinePlacement*>(entity))
 		{
 			string vpath;
 			const lin_info_t* lin_info;
@@ -2024,28 +2034,33 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	}
 	else if(sub_class == WED_AirportChain::sClass)
 	{
-		WED_AirportChain * chn = SAFE_CAST(WED_AirportChain, entity);
-		if(chn)
-		{
+		if(auto chn = dynamic_cast<WED_AirportChain*>(entity))
 			// criteria matches where mRealLines disappear in StructureLayer
 			if(PixelSize(chn, 0.4, GetZoomer()) > mOptions.minLineThicknessPixels)
 			{
 				mPreviewItems.push_back(new preview_airportlines(chn, group_Markings, GetResolver()));
 				mPreviewItems.push_back(new preview_airportlights(chn, group_Objects, GetResolver()));
 			}
-		}
 	}
 	else if(sub_class == WED_StringPlacement::sClass)
 	{
-		WED_StringPlacement * str = SAFE_CAST(WED_StringPlacement, entity);
-		if(str)
+		if(auto str = dynamic_cast<WED_StringPlacement*>(entity))
 			mPreviewItems.push_back(new preview_string(str, group_Objects, GetResolver()));
 	}
 	else if (sub_class == WED_AutogenPlacement::sClass)
 	{
-		WED_AutogenPlacement * ags = SAFE_CAST(WED_AutogenPlacement, entity);
-		if(ags)
-			mPreviewItems.push_back(new preview_autogen(ags, group_Objects, GetResolver()));
+		if (auto ags = dynamic_cast<WED_AutogenPlacement*>(entity))
+		{
+			Bbox2 b;
+			ags->GetBounds(gis_Geo, b);
+			if (GetZoomer()->PixelSize(b) > MIN_PIXELS_PREVIEW)
+				mPreviewItems.push_back(new preview_autogen(ags, group_Objects, GetResolver()));
+		}
+	}
+	else if (sub_class == WED_RoadEdge::sClass)
+	{
+	if (auto rd = dynamic_cast<WED_RoadEdge*>(entity))
+		mPreviewItems.push_back(new preview_road(rd, group_Roads, GetResolver()));
 	}
 
 	/******************************************************************************************************************************
@@ -2054,57 +2069,38 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 
 	else if (sub_class == WED_ObjPlacement::sClass)
 	{
-		WED_ObjPlacement * obj = SAFE_CAST(WED_ObjPlacement, entity);
-		if(obj)
+		if(auto obj = dynamic_cast<WED_ObjPlacement*>(entity))
 			if(obj->GetShowLevel() <= mObjDensity)
-			{
 				if (PixelSize(obj, 2 * obj->GetVisibleMeters(), GetZoomer()) > MIN_PIXELS_PREVIEW)
 					mPreviewItems.push_back(new preview_object(obj,group_Objects, mObjDensity, GetResolver()));
-			}
 	}
 	else if (sub_class == WED_TruckParkingLocation::sClass)
 	{
-		WED_TruckParkingLocation * trk = SAFE_CAST(WED_TruckParkingLocation, entity);
-		if (trk)
-		{
+		if(auto trk = dynamic_cast<WED_TruckParkingLocation*>(entity))
 			if (PixelSize(trk, 5.0, GetZoomer()) > MIN_PIXELS_PREVIEW)
 				mPreviewItems.push_back(new preview_truck(trk, group_Objects, GetResolver()));
-		}
 	}
 	else if (sub_class == WED_LightFixture::sClass)
 	{
-		WED_LightFixture * lgt = SAFE_CAST(WED_LightFixture, entity);
-		if (lgt)
-		{
+		if(auto lgt = dynamic_cast<WED_LightFixture*>(entity))
 			if (PixelSize(lgt, 1.0, GetZoomer()) > MIN_PIXELS_PREVIEW)
 				mPreviewItems.push_back(new preview_light(lgt, group_Objects, GetResolver()));
-		}
 	}
 	else if (sub_class == WED_Windsock::sClass)
 	{
-		// there typically aren't many, no point in culling for size
-		if (auto ws = SAFE_CAST(WED_Windsock, entity))
+		if (auto ws = dynamic_cast<WED_Windsock*>(entity))
 			mPreviewItems.push_back(new preview_windsock(ws, group_Objects, GetResolver()));
 	}
 	else if (sub_class == WED_AirportBeacon::sClass)
 	{
-		// there typically aren't many, no point in culling for size
-		if (auto bcn = SAFE_CAST(WED_AirportBeacon, entity))
+		if (auto bcn = dynamic_cast<WED_AirportBeacon*>(entity))
 			mPreviewItems.push_back(new preview_beacon(bcn, group_Objects, GetResolver()));
 	}
 	else if (sub_class == WED_AirportSign::sClass)
 	{
-		if (auto tsign = SAFE_CAST(WED_AirportSign, entity))
-		{
+		if (auto tsign = dynamic_cast<WED_AirportSign*>(entity))
 			if (PixelSize(tsign, 1.0, GetZoomer()) > MIN_PIXELS_PREVIEW)
 				mPreviewItems.push_back(new preview_taxisign(tsign, group_Objects, GetResolver()));
-		}
-	}
-	else if (sub_class == WED_RoadEdge::sClass)
-	{
-		//	size-dependent culling is done within draw function
-		if (auto rd = SAFE_CAST(WED_RoadEdge, entity))
-			mPreviewItems.push_back(new preview_road(rd, group_Roads, GetResolver()));
 	}
 	return true;
 }
