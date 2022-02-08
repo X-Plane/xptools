@@ -313,20 +313,23 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	static float	fps = 0.0f;
 	static int		cycle = 0;
 	++cycle;
-	if (cycle > 20)
+	if (cycle == 3 || cycle == 8 || cycle > 20)
 	{
-#if APL
-		// not sure there is something like this
-#else
-		// get available high speed = VRAM for textures
-		glGetIntegerv(GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, vram_info);
-		glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, vram_info);
-		glGetError();
-#endif
 		clock_t now = clock();
-		fps = (20.0 * CLOCKS_PER_SEC) / ((float) (now - last_time));
-		last_time = now;
-		cycle = 0;
+		if (now - last_time > CLOCKS_PER_SEC)
+		{
+#if APL
+			// not sure there is something like this
+#else
+			// get available high speed = VRAM for textures
+			glGetIntegerv(GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, vram_info);
+			glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, vram_info);
+			glGetError();
+#endif
+			fps = (cycle * CLOCKS_PER_SEC) / ((float)(now - last_time));
+			last_time = now;
+			cycle = 0;
+		}
 	}
 	p += sprintf(p, "%6d MB %6.1f FPS ", vram_info[0]/1024, fps);
 
@@ -382,6 +385,7 @@ void		WED_Map::DrawVisFor(WED_MapLayer * layer, int current, const Bbox2& bounds
 		Point2 p1 = this->LLToPixel(on_screen.p1);
 		Point2 p2 = this->LLToPixel(on_screen.p2);
 		Vector2 span(p1,p2);
+
 		if(max(span.dx, span.dy) > TOO_SMALL_TO_GO_IN || (p1 == p2) || depth == 0)		// Why p1 == p2?  If the composite contains ONLY ONE POINT it is zero-size.  We'd LOD out.  But if
 		{																				// it contains one thing then we might as well ALWAYS draw it - it's relatively cheap!
 			int t = c->GetNumEntities();												// Depth == 0 means we draw ALL top level objects -- good for airports.

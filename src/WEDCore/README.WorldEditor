@@ -13,7 +13,12 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 2.5  beta 1
+Planned functionality for WED 2.5 not yet included in the alpha versions
+   - automatic creation of edge outlines for paved surfaces
+   - on-map preview of .agb definitions
+   - show trees part of any autogen definition
+
+WED 2.5.0 alpha
    Bug Fix:
    - fix .agp scraper display mismatch for some heights
    - fix gridded preview for 3D objects only showing partially on OSX w/AMD graphics
@@ -27,7 +32,7 @@ WED 2.5  beta 1
    - moving jetways (requires propper jetways .fac w/metadata)
    - runway & taxiways surface styles and markings
    - seasonal objects, showing summer version only
-   - identify 3D forests (but only 2D tree's shown for now)
+   - identify and show 3D forests
    XP12 art asset conversion features:
    - jetway objects to jetway facades
    - X11 default pavment to XP12 aged pavement
@@ -46,9 +51,10 @@ WED 2.5  beta 1
    - apply jetway upgrades, remove large terrain polygons at export (tyler_mode only)
    - validation exeption to make KSEA, LOWI gateway legal
    - validate taxiways for zero-length segments
-   - new map layer "Terrain" to visualize terrain mesh structure, elevation DEM and explicit height vertices
+   - show multi-layered forests correctly in the preview window
+   - show ATC tower airspaces in Navaid layer
 
-   - add terrain layer to depict base mesh terrain vertex data and elevation DEM
+   - new map layer "Terrain" to visualize terrain mesh structure, elevation DEM and explicit height vertices
 
 WED 2.4.0rc2 5/29/21
    Features:

@@ -201,6 +201,7 @@ struct agp_t {
 		vector<float>	tile;	// the base tile in x,y,s,t quads.
 		vector<obj_t>	objs;
 		vector<fac_t>	facs;
+		vector<float>	cut_h, cut_v;
 		float			xyz_min[3];
 		float			xyz_max[3];
 		float 			anchor_x, anchor_y;
@@ -214,26 +215,25 @@ struct agp_t {
 	vector<tile_t>	tiles;
 	string			description;
 	bool			has_scp;
-	agp_t(void) : has_scp(false) { }
+	agp_t(void) : has_scp(false), hide_tiles(false){ }
 };
 
 struct for_info_t {
 	struct tree_t {
-		float s, t, w, y; 		// texture coordinates of tree
-		float o;            // offset of tree center line (where the quads inersect)
-		float pct;          // relative occurence percentage for this tree
+		float s, t, w, h;    // origin, width & height on texture
+		float o;             // offset of tree center line (where the quads inersect)
+		float pct;           // relative occurence percentage for this tree
 		float hmin, hmax;    // height range for this tree in meters
-		int q;				// number of quads the tree is constructed of
-		const XObj8* obj_3D;
-		tree_t(void) : obj_3D(nullptr) {}
+		int	quads;			 // number of quads the tree is constructed of
+		string mesh_3d;
 	};
 
-	const XObj8* preview;   // all-panel preview - to be obsoleted ?
+	const XObj8 *preview, *preview_3d;
 	string description;
 
 	bool has_3D;
-	vector<tree_t> trees;
-	for_info_t(void) : preview(nullptr) {}
+	map<int, vector<tree_t> > trees;
+	for_info_t(void) : preview(nullptr), preview_3d(nullptr) {}
 };
 
 

@@ -561,8 +561,11 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 		case apt_rwy_skids:
 			if (vers < 1200) ok = "Error: runway skids marks not allowed before 1200";
 			if (outApts.back().kind_code == apt_airport)
-			if (!hit_prob)
-			if (TextScanner_FormatScan(s, "iffff",&rec_code,
+			if (!hit_prob && outApts.back().runways.size() > 0)
+			if (TextScanner_FormatScan(s, "iiifffff",&rec_code,
+				&outApts.back().runways.back().mark_color,
+				&outApts.back().runways.back().mark_size,
+				&outApts.back().runways.back().number_size,
 				&outApts.back().runways.back().skids[0],
 				&outApts.back().runways.back().skid_len[0],
 				&outApts.back().runways.back().skids[1],

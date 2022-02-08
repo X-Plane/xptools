@@ -134,7 +134,11 @@ void		WED_LibraryPreviewPane::ReceiveMessage(GUI_Broadcaster * inSrc, intptr_t i
 		else
 			mVariant = 0;
 
-		char s[16]; sprintf(s,"%d/%d",mVariant+1,mNumVariants);
+		char s[16]; 
+		if(mType == res_Forest)
+			sprintf(s, "%dD", mVariant + 2);
+		else
+			sprintf(s,"%d/%d",mVariant + 1, mNumVariants);
 		mNextButton->SetDescriptor(s);
 	}
 }
@@ -144,7 +148,7 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 	mRes = r;
 	mType = res_type;
 	mVariant = 0;
-//	mHgt = 0.0;
+	//	mHgt = 0.0;
 
 	if(res_type == res_Object || res_type == res_Facade)
 	{
@@ -175,6 +179,22 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 			const agp_t * agp;
 			if (mResMgr->GetAGP(mRes, agp))
 				mHgt = 0.0;
+		}
+	}
+	else if(res_type == res_Forest)
+	{
+		const for_info_t* fst;
+		if (mResMgr->GetFor(mRes, fst) && fst->has_3D)
+		{ 
+			mNextButton->SetDescriptor("3D");
+			mVariant = 1;
+			mNumVariants = 2;
+			mNextButton->Show();
+		}
+		else
+		{
+			mNumVariants = 1;
+			mNextButton->Hide();
 		}
 	}
 	else
@@ -734,7 +754,12 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, int b[4], 
 			if (!mResMgr->GetFor(res, fst))
 				break;
 			else
-				o = fst->preview;
+			{
+				if(fst->has_3D && mVariant == 1)
+					o = fst->preview_3d;
+				else
+					o = fst->preview;
+			}
 		case res_String:
 			if(!o)
 			{
@@ -763,26 +788,29 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, int b[4], 
 			}
 			else if (mResMgr->GetAGP(res,agp))
 			{
-				double real_radius=pythag(                 // not ideal - only scaling from first tile, Tiles down throw might be much larger
+				double real_radius=pythag(                 // not ideal - only scaling from first tile, Tiles down the row might be much larger
 									agp->tiles[0].xyz_max[0] - agp->tiles[0].xyz_min[0],
 									agp->tiles[0].xyz_max[1] - agp->tiles[0].xyz_min[1],
 									agp->tiles[0].xyz_max[2] - agp->tiles[0].xyz_min[2]);
-				double xyz_off[3];
+				begin3d(b, real_radius);
+
+				double xyz_off[3] = {};
 				xyz_off[1] = -(agp->tiles[0].xyz_max[1] + agp->tiles[0].xyz_min[1]) * 0.5;
 
-				for(int i = 0; i < intmin2(5, agp->tiles.size()); i++)
+				int n_tiles = agp->tiles[0].cut_h.empty() ? intmin2(5, agp->tiles.size()) : 1;
+
+				double row_offs = 0.0;
+				for(int i = 0; i < n_tiles; i++)
 				{
-					int tile_idx = intlim(i + mWid * 0.2, 0, agp->tiles.size()-1);
+					int tile_idx = (int)(i + mWid * 0.2) % agp->tiles.size();
 					auto ti = agp->tiles[tile_idx];
 					xyz_off[0] = -(ti.xyz_max[0] + ti.xyz_min[0]) * 0.5;
-				//	xyz_off[1] = -(ti.xyz_max[1] + ti.xyz_min[1]) * 0.5;
+//					xyz_off[1] = -(ti.xyz_max[1] + ti.xyz_min[1]) * 0.5; // align them vertically all the same
 					xyz_off[2] =  (ti.xyz_max[2] + ti.xyz_min[2]) * 0.5;
-					double row_offs = agp->tiles.size() > 1 ? (ti.xyz_max[0] - ti.xyz_min[0]) * (i-0.8) : 0.0;
-
-					begin3d(b, real_radius);
+					row_offs += (ti.xyz_max[0] - ti.xyz_min[0]) * (i == 0 ? i - ((int)mWid % 5) * 0.2 : 1.1);
 					draw_agp_at_xyz(mTexMgr, agp, xyz_off[0] + row_offs, xyz_off[1], xyz_off[2], mHgt, 0, g, tile_idx);
-					end3d(b);
 				}
+				end3d(b);
 			}
 			break;
 
@@ -920,10 +948,15 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, int b[4], 
 					int tile_idx = intlim(mWid * 0.2, 0, agp->tiles.size()-1);
 					if(agp->tiles.size() > 1)
 					{
-						if(agp->tiles[tile_idx].id >= 0)
-							n = sprintf(buf1, "TILE_ID \'%d\' ", agp->tiles[tile_idx].id);
-						sprintf(buf1 + n, "%sshowing tiles #%d+ @ h=%dm", agp->tiles[tile_idx].has_scp ? "has scrapers, " : "", tile_idx, mHgt);
-						n = sprintf(buf2, "%d tiles, ", (int) agp->tiles.size());
+						if (agp->tiles[0].cut_h.empty())
+						{
+							if (agp->tiles[tile_idx].id >= 0)
+								n = sprintf(buf1, "TILE_ID \'%d\' ", agp->tiles[tile_idx].id);
+							sprintf(buf1 + n, "%sshowing tiles #%d+ @ h=%dm", agp->tiles[tile_idx].has_scp ? "has scrapers, " : "", tile_idx, mHgt);
+						}
+						else
+							sprintf(buf1 + n, "%sshowing tile #%d @ h=%dm", agp->tiles[tile_idx].has_scp ? "has scrapers, " : "", tile_idx, mHgt);
+						n = sprintf(buf2, "%d different tiles, ", (int) agp->tiles.size());
 					}
 					else
 						snprintf(buf1, sizeof(buf1), "%s", agp->description.c_str());
@@ -952,8 +985,6 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, int b[4], 
 			case res_Forest:
 				{
 					snprintf(buf1, sizeof(buf1), "%s", fst->description.c_str());
-					if(fst->has_3D)
-						sprintf(buf2, "includes annimated 3D trees (not shown)");
 				}
 				break;
 			case res_Road:

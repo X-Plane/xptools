@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, Laminar Research.
+ * Copyright (c) 2018, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -36,29 +36,17 @@
 #include "PlatformUtils.h"
 #include "GISUtils.h"
 
-#if 0
-#include <chrono>
-auto t0 = std::chrono::high_resolution_clock::now();
-auto t1 = std::chrono::high_resolution_clock::now();
-auto t2 = chrono::high_resolution_clock::now();
-
-
-chrono::duration<double> elapsed = t1-t0;
-printf("0 to 1 time: %lf\n", elapsed.count());
-
-elapsed = t2-t1;
-printf("1 to 2 time: %lf\n", elapsed.count());
-#endif
-
 #if APL
 	#include <OpenGL/gl.h>
 #else
 	#include <GL/gl.h>
 #endif
 
-#define SHOW_TOWERS 0
+#define SHOW_BELOW           25       // bottom of airspace must be below xx hundred feet to show
+#define SHOW_TOWERS           1
 #define SHOW_APTS_FROM_APTDAT 1
-#define COMPARE_GW_TO_APTDAT 0
+
+#define COMPARE_GW_TO_APTDAT  0       // loads list of all airports from gateway and comares it to local apt.dat data
 
 #define NAVAID_EXTRA_RANGE  GLOBAL_WED_ART_ASSET_FUDGE_FACTOR  // degree's lon/lat, allows ILS beams to show even if the ILS is outside of the map window
 
@@ -141,7 +129,7 @@ static void parse_apt_dat(MFMemFile * str, map<string, navaid_t>& tAirports, con
 {
 	MFScanner	s;
 	MFS_init(&s, str);
-	int versions[] = { 1000, 1021, 1050, 1100, 1150, 1200, 0 };
+	int versions[] = { 1000, 1021, 1050, 1100, 1130, 1200, 0 };
 		
 	if(MFS_xplane_header(&s,versions,NULL,NULL))
 	{
@@ -162,8 +150,9 @@ static void parse_apt_dat(MFMemFile * str, map<string, navaid_t>& tAirports, con
 				apt_type = rowcode;
 				apt_bounds = Bbox2();
 				n.type = 10000 + rowcode;
-				MFS_int(&s);			 // skip elevation
-				n.heading = MFS_int(&s); // has ATC tower
+				n.heading = 0;  // going to store ATC tower frequency presence here.
+				MFS_int(&s);	// skip elevation
+				MFS_int(&s);
 				MFS_int(&s);
 
 				MFS_string(&s,&n.icao);
@@ -216,6 +205,10 @@ static void parse_apt_dat(MFMemFile * str, map<string, navaid_t>& tAirports, con
 					double lon = MFS_double(&s);
 					apt_bounds += Point2(lon,lat);
 				}
+				else if (rowcode == 54 || rowcode == 1054) // ATC frequency
+				{
+					n.heading = 1;  // ATC tower frequency presennce
+				}
 			}
 			MFS_string_eol(&s,NULL);
 		}
@@ -227,7 +220,7 @@ static void parse_nav_dat(MFMemFile * str, vector<navaid_t>& mNavaids, bool merg
 {
 	MFScanner	s;
 	MFS_init(&s, str);
-	int versions[] = { 1000, 1021, 1050, 1100, 1150, 1200, 0 };
+	int versions[] = { 810, 1050, 1100, 1150, 1200, 0 };
 		
 	if(MFS_xplane_header(&s,versions,NULL,NULL))
 	{
@@ -313,11 +306,11 @@ static void parse_atc_dat(MFMemFile * str, vector<navaid_t>& mNavaids)
 	MFScanner	s;
 	MFS_init(&s, str);
 	int versions[] = { 1000, 1100, 0 };
+	bool take_airspace = false;
 		
 	if(MFS_xplane_header(&s,versions,"ATCFILE",NULL))
 	{
 		navaid_t n;
-		int num_rings;
 		while(!MFS_done(&s))
 		{
 			if(MFS_string_match(&s, "CONTROLLER", 1))
@@ -326,7 +319,6 @@ static void parse_atc_dat(MFMemFile * str, vector<navaid_t>& mNavaids)
 				n.shape.clear();
 				n.lonlat = Point2(180.0,0.0);
 				n.rwy.clear();
-				num_rings = 0;
 			}
 			if(MFS_string_match(&s, "ROLE", 0))
 			{
@@ -334,7 +326,7 @@ static void parse_atc_dat(MFMemFile * str, vector<navaid_t>& mNavaids)
 				MFS_string(&s, &role);
 				n.type = role == "tracon" ? 9999 : 0; // navaid pseudo code for TRACON areas
 #if SHOW_TOWERS
-				if(role == "twr") n.type = 9998;
+				if(role == "twr") n.type = 9998;      // navaid pseudo code for TOWER areas
 #endif
 			}
 			else if(MFS_string_match(&s, "NAME", 0))
@@ -363,28 +355,46 @@ static void parse_atc_dat(MFMemFile * str, vector<navaid_t>& mNavaids)
 			{
 				if(MFS_string_match(&s, "POINT", 0))
 				{
-					double lat = MFS_double(&s);
-					double lon = MFS_double(&s);
-					n.shape.push_back(Point2(lon,lat));
-					if( lon < n.lonlat.x())
-						n.lonlat = Point2(lon,lat);  // get the left side of the area
-				}
-				else if(MFS_string_match(&s, "AIRSPACE_POLYGON_BEGIN", 1))
-				{
-					num_rings++;
-				}
-				else if(MFS_string_match(&s, "AIRSPACE_POLYGON_END", 1))
-				{
-//					printf("Adding new %d %s %s %d\n", n.type, n.name.c_str(), n.icao.c_str(), (int) n.shape.size());
-					if (num_rings == 1)
+					if(take_airspace && n.shape.size())
 					{
+						double lat = MFS_double(&s);
+						double lon = MFS_double(&s);
+						n.shape.back().push_back(Point2(lon, lat));
+						if (lon < n.lonlat.x())
+							n.lonlat = Point2(lon, lat);  // get the left side of the area
+					}
+				}
+				else if(MFS_string_match(&s, "AIRSPACE_POLYGON_BEGIN", 0))
+				{
+					int bottom = round(MFS_double(&s) / 100.0);
+					take_airspace = bottom <= SHOW_BELOW;       // declutter display by skipping upper level airspaces
+					if (take_airspace)
+					{
+						if (n.shape.empty())
+						{
 #if SHOW_TOWERS
-						if (n.type == 9998)
-							n.name += " TOWER";
-						else
+							if (n.type == 9998)
+								n.name += " TOWER";
+							else
 #endif					
-						n.name += " APPROACH";
-						n.rwy += " MHz";
+								n.name += " APPROACH";
+							n.rwy += " MHz";
+						}
+						n.shape.push_back(Polygon2());
+						string tmp(to_string(bottom) + "-" + to_string((int) (round(MFS_double(&s) / 100.0))));
+						if (n.name.find(tmp) == string::npos)
+							n.name += string("  ") + tmp;
+					}
+				}
+				else if(MFS_string_match(&s, "CONTROLLER_END", 1) && n.type)
+				{
+					for (auto& nav : mNavaids)
+					{
+						if (LonLatDistMeters(nav.lonlat, n.lonlat) < 2000.0)
+						{
+							n.lonlat.y_ += 0.02;     // avoid two labels right ontop of each other
+							break;
+						}
 					}
 					mNavaids.push_back(n);
 				}
@@ -428,19 +438,23 @@ void WED_NavaidLayer::LoadNavaids()
 	if(str)	parse_nav_dat(str, mNavaids, true);
 	
 	string defaultATC = resourcePath + DIR_STR "Resources" DIR_STR "default scenery" DIR_STR "default atc dat" DIR_STR "Earth nav data" DIR_STR "atc.dat";
-	string seattleATC  = resourcePath + DIR_STR "Custom Scenery" DIR_STR "KSEA Demo Area" DIR_STR "Earth nav data" DIR_STR "atc.dat";
-
 	str = MemFile_Open(defaultATC.c_str());
-
-	// on the linux and OSX platforms this path was different before XP11.30 for some unknown reasons. So try that.
+	// on the linux and OSX platforms this path was different before XP11.30 for some unknown reasons. So try that, too.
 	if(!str)
 	{
 		defaultATC = resourcePath + DIR_STR "Resources" DIR_STR "default scenery" DIR_STR "default atc" DIR_STR "Earth nav data" DIR_STR "atc.dat";
 		str = MemFile_Open(defaultATC.c_str());
 	}
+	// in XP12 the file again changed to a different location
+	if (!str)
+	{
+		defaultATC = resourcePath + DIR_STR "Resources" DIR_STR "default scenery" DIR_STR "1200 atc data" DIR_STR "Earth nav data" DIR_STR "atc.dat";
+		str = MemFile_Open(defaultATC.c_str());
+	}
 	if(str)	parse_atc_dat(str, mNavaids);
-	str = MemFile_Open(seattleATC.c_str());
-	if(str)	parse_atc_dat(str, mNavaids);
+
+//	str = MemFile_Open(seattleATC.c_str());  // don't take local local ATC data any more
+//	if(str)	parse_atc_dat(str, mNavaids);
 	
 #if SHOW_APTS_FROM_APTDAT
 	map<string,navaid_t> tAirports;
@@ -452,7 +466,7 @@ void WED_NavaidLayer::LoadNavaids()
 	str = MemFile_Open((resourcePath + DIR_STR "Global Scenery" + globalApts).c_str());
 	if(!str)
 		str = MemFile_Open((resourcePath + DIR_STR "Custom Scenery" + globalApts).c_str());
-	if(str) parse_apt_dat(str, tAirports, " (GW)");
+	if(str) parse_apt_dat(str, tAirports, "");
 
 #if COMPARE_GW_TO_APTDAT
 	map<string,navaid_t> tAirp;
@@ -543,13 +557,7 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 						glVertex2(pt);
 						glVertex2(pt + beam_dir);
 					glEnd();
-/*					glColor4f(1.0, 0.0, 0.0, 0.3);
-					glBegin(GL_POLYGON);
-						glVertex2(pt);
-						glVertex2(pt + beam_dir*1.1 - beam_perp);
-						glVertex2(pt + beam_dir);
-					glEnd();
-*/				}
+				}
 				else if(i->type == 6)
 				{
 					if(PPM > 0.1)
@@ -559,21 +567,24 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 					GUI_PlotIcon(g,"nav_mark.png", pt.x(), pt.y(), i->heading, scale);
 				else if(i->type <= 9999)
 				{
-					glColor4fv(vfr_blue);
 #if SHOW_TOWERS
 					if (i->type == 9998)
 						glEnable(GL_LINE_STIPPLE);
 #endif					
-					int pts = i->shape.size();
-					vector<Point2> c(pts);
-					GetZoomer()->LLToPixelv(&(c[0]),&(i->shape[0]),pts);
 					g->SetState(0, 0, 0, 0, 1, 0, 0);
-					glShape2v(GL_LINE_LOOP, &(c[0]), pts);
+					for (auto& p : i->shape)
+					{
+						glColor4fv(vfr_blue);
+						int pts = p.size();
+						vector<Point2> c(pts);
+						GetZoomer()->LLToPixelv(&(c[0]), p.data(), pts);
+						glShape2v(GL_LINE_LOOP, &(c[0]), pts);
+					}
 #if SHOW_TOWERS
 					glDisable(GL_LINE_STIPPLE);
 #endif					
 				}
-				else
+				else     // some airport
 				{
 					if(PPM > 0.002)
 					{
@@ -592,14 +603,17 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 #if SHOW_TOWERS
 				if((i->type == 9998 && PPM  > 0.01) || i->type == 9999)
 #else
-				if(i->type == 9999)
+				if(i->type == 9999) // Airspace labels/frequencies
 #endif					
 				{
-					const float * color = vfr_blue;
-					GUI_FontDraw(g, font_UI_Basic, color, pt.x()+8.0,pt.y()-15.0, i->name.c_str());
-					GUI_FontDraw(g, font_UI_Basic, color, pt.x()+8.0,pt.y()-30.0, i->rwy.c_str());
+					if (PPM > 0.01)
+					{
+						const float* color = vfr_blue;
+						GUI_FontDraw(g, font_UI_Basic, color, pt.x() + 8.0, pt.y() - 15.0, i->name.c_str());
+						GUI_FontDraw(g, font_UI_Basic, color, pt.x() + 8.0, pt.y() - 30.0, i->rwy.c_str());
+					}
 				}
-				else if (PPM  > 0.05)
+				else if (PPM > 0.05)// Navaid labels
 				{
 					if(i->type > 10000)
 					{
