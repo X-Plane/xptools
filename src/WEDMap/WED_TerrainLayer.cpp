@@ -77,7 +77,7 @@ static void	BeginPrimitive(	int		inType,	void* inRef)
 static void	AddPatchVertex(	double	inCoordinates[], void* inRef) 
 {
 	auto tile = (terrain_t*)inRef;
-	tile->patches.back().verts.push_back({inCoordinates[0], inCoordinates[1], inCoordinates[2]});
+	tile->patches.back().verts.push_back(inCoordinates);
 }
 static void	EndPrimitive( void* inRef) {}
 static void	EndPatch(	void* inRef) {}
@@ -219,7 +219,7 @@ void		WED_TerrainLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 
 	const float dem_color[4]   = { 1.0, 0.3, 0.3, 1.0 };
 	const float land_color[4]  = { 0.8, 0.5, 0.0, 1.0 };
-	const float water_color[4] = { 0.2, 0.2, 1.0, 1.0 };
+	const float water_color[4] = { 0.3, 0.3, 1.0, 1.0 };
 
 	if (PPM > 0.1)
 	{
@@ -274,7 +274,7 @@ void		WED_TerrainLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 //				glLineStipple(1, 0x0F0F);
 //				glEnable(GL_LINE_STIPPLE);
 
-#define P2PIX(v) GetZoomer()->LLToPixel(reinterpret_cast<Point2&>(v))      // would be so much nicer and safer if Point3 would be dereived from Point2 ...
+#define P2PIX(v) GetZoomer()->LLToPixel((v).LonLat)
 
 				for (auto p : t->patches) // todo: cull (per patch ?) for visibility
 				{
@@ -337,23 +337,25 @@ void		WED_TerrainLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 					if (PPM > 1.0)
 					{
 						for(auto v : p.verts)
-							if (v.z != -32768 && map_viewport.contains(reinterpret_cast<Point2&>(v)))
+							if (v.height != -32768 && map_viewport.contains(reinterpret_cast<Point2&>(v)))
 							{
-								char c[16];
+								Point2 pt = P2PIX(v);
+									char c[32];
 								//							snprintf(c, sizeof(c), "%d %d %.1f", x, y, t->dem[x + y * r->width]);
 								if (gIsFeet)
-									snprintf(c, sizeof(c), "%.0lf%c", v.z * MTR_TO_FT, '\'');
+									snprintf(c, sizeof(c), "%.0lf%c", v.height * MTR_TO_FT, '\'');
 								else
 								{
-									snprintf(c, sizeof(c), (v.z < 200.0 && v.z != round(v.z)) ? "%.1lf%c" : "%.0lf%c", v.z, 'm');
+									snprintf(c, sizeof(c), (v.height < 200.0 && v.height != round(v.height)) ? "%.1lf%c" : "%.0lf%c", v.height, 'm');
 								}
-								Point2 pt = P2PIX(v);
-								GUI_FontDraw(g, font_UI_Basic, p.water ? water_color : land_color, pt.x() + 7, pt.y() - 9, c);
+								if (p.water)
+									snprintf(c+strlen(c), sizeof(c)-strlen(c), ",%.0f,%.0f", v.para1, v.para2);
+								GUI_FontDraw(g, font_UI_Basic, p.water ? water_color : land_color, pt.x() + 7, pt.y() + (p.water ? -9 : +2), c);
 /*								g->SetState(false, 0, false, false, true, false, false);
 								glBegin(GL_LINE_LOOP);
-								glVertex2f(pt.x() - 5, pt.y() - 3);
-								glVertex2f(pt.x() + 5, pt.y() - 3);
-								glVertex2f(pt.x(), pt.y() + 5);
+								glVertex2f(v.LonLat.x() - 5, v.LonLat.y() - 3);
+								glVertex2f(v.LonLat.x() + 5, v.LonLat.y() - 3);
+								glVertex2f(v.LonLat.x(), v.LonLat.y() + 5);
 */								glEnd();
 
 							}

@@ -48,6 +48,8 @@ WED 2.5  beta 1
    - validate taxiways for zero-length segments
    - new map layer "Terrain" to visualize terrain mesh structure, elevation DEM and explicit height vertices
 
+   - add terrain layer to depict base mesh terrain vertex data and elevation DEM
+
 WED 2.4.0rc2 5/29/21
    Features:
    - Undo WED-192 remove meta tag "Closed", validate correctly formed [X] in apt name

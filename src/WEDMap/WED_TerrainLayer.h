@@ -35,10 +35,18 @@ struct terrain_t {
 	int		height;
 	vector<float> dem;
 	bool	water;
+	struct vert_data_t {
+		Point2	LonLat;
+		float	height;
+		float	para1;
+		float	para2;
+		vert_data_t(double *p) : LonLat({p[0], p[1]}), height(p[2]), para1(p[5]), para2(p[6]) {};
+	};
+
 	struct patch_t {
 		int type;
 		bool water;
-		vector<Point3> verts;
+		vector<vert_data_t> verts;
 	};
 	vector<patch_t> patches;
 };
