@@ -64,7 +64,7 @@ inline bool AnyLocked(WED_Thing * t)
 	if (t == NULL) return false;
 	WED_Entity * e = dynamic_cast<WED_Entity *>(t);
 	if (e == NULL) return false;
-	if (e->GetLocked()) return true;
+	if (e->GetLocked2()) return true;
 	return AnyLocked(t->GetParent());
 }
 

@@ -481,15 +481,14 @@ void WED_MapZoomerNew::mapScale::operator=(double Pixel2DegLat)
 
 double	WED_MapZoomerNew::PixelSize(const Bbox2& bboxLL) const
 {
-	Point2 p1 = LLToPixel(bboxLL.p1);
-	Point2 p2 = LLToPixel(bboxLL.p2);
-
 	if (cam)
+	{
+		Point2 p1 = LLToPixel(bboxLL.p1);
+		Point2 p2 = LLToPixel(bboxLL.p2);
 		return cam->PixelSize(Bbox3(p1.x(), p1.y(), 0.0, p2.x(), p2.y(), 0.0));
+	}
 	else
 		return max(bboxLL.xspan() * mCenterCOS, bboxLL.yspan()) * mPixel2DegLat.inv();
-		//return max(p2.x() - p1.x(), p2.y() - p1.y());
-
 }
 
 double	WED_MapZoomerNew::PixelSize(const Bbox2& bboxLL, double featureSize) const

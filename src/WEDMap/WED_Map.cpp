@@ -189,7 +189,7 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	if((*l)->IsVisible())
 	{
 		(*l)->GetCaps(draw_ent_v, draw_ent_s, wants_sel, wants_clicks);
-		if (base && draw_ent_s) DrawStrFor(*l, cur == *l, b_geo, base, state, wants_sel ? sel : NULL, 0);
+		if (base && draw_ent_s) DrawStrFor(*l, cur == *l, b_geo, base, false, state, wants_sel ? sel : NULL, 0);
 		(*l)->DrawStructure(cur == *l, state);
 	}
 
@@ -395,28 +395,26 @@ void		WED_Map::DrawVisFor(WED_MapLayer * layer, int current, const Bbox2& bounds
 	}
 }
 
-void		WED_Map::DrawStrFor(WED_MapLayer * layer, int current, const Bbox2& bounds, IGISEntity * what, GUI_GraphState * g, ISelection * sel, int depth)
+void		WED_Map::DrawStrFor(WED_MapLayer * layer, int current, const Bbox2& bounds, IGISEntity * what, bool what_locked, GUI_GraphState * g, ISelection * sel, int depth)
 {
 	if(!what->Cull(bounds))	return;
 	IGISComposite * c;
 
 	if(!layer->IsVisibleNow(what))	return;
 
-	if (layer->DrawEntityStructure(current, what, g, sel && sel->IsSelected(what)))
+	if (layer->DrawEntityStructure(current, what, g, sel && sel->IsSelected(what), what_locked))
 	if (what->GetGISClass() == gis_Composite && (c = SAFE_CAST(IGISComposite, what)) != NULL)
 	{
 		Bbox2	on_screen;
 		what->GetBounds(gis_Geo, on_screen);
 //		on_screen.expand(GLOBAL_WED_ART_ASSET_FUDGE_FACTOR);
 
-		Point2 p1 = this->LLToPixel(on_screen.p1);
-		Point2 p2 = this->LLToPixel(on_screen.p2);
-		Vector2 span(p1,p2);
-		if(max(span.dx, span.dy) > TOO_SMALL_TO_GO_IN || (p1 == p2) || depth == 0)
+		if(PixelSize(on_screen) > TOO_SMALL_TO_GO_IN || on_screen.is_point() || depth == 0)
 		{
+			what_locked |= (bool) dynamic_cast<WED_Entity*>(what)->GetLocked2();
 			int t = c->GetNumEntities();
 			for (int n = t-1; n >= 0; --n)
-				DrawStrFor(layer, current, bounds, c->GetNthEntity(n), g, sel, depth+1);
+				DrawStrFor(layer, current, bounds, c->GetNthEntity(n), what_locked, g, sel, depth+1);
 		}
 	}
 }

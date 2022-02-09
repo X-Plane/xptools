@@ -151,6 +151,19 @@ bool	WED_MapLayer::IsLockedNow(IGISEntity * ent) const
 	return e->GetLocked();
 }
 
+bool	WED_MapLayer::IsLockedNow2(IGISEntity* ent) const
+{
+	WED_Entity* e = dynamic_cast<WED_Entity*>(ent);
+	if (!e)
+		return false;
+	if (mLockFilter)
+	{
+		if (matches_filter(e, mLockFilter))
+			return true;
+	}
+	return e->GetLocked2();
+}
+
 bool	WED_MapLayer::IsVisibleNow(WED_Thing * ent) const
 {
 	if(mHideFilter)

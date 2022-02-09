@@ -89,13 +89,17 @@ WED_StructureLayer::~WED_StructureLayer()
 }
 
 
-bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected)
+bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity,  GUI_GraphState * g, int selected, bool locked)
 {
 	//	g->SetState(false,0,false,   false,true,false,false);
 	//  very carefully check that ALL operations that change the state to textured its re-set again,
 	//  so we don't have to reset state for *evrvy* entity.
 
-	int locked = IsLockedNow(entity);
+//	int old_locked = IsLockedNow(entity);
+	locked |= (bool) IsLockedNow2(entity);
+
+//	DebugAssert((bool) locked == old_locked);
+
 	WED_Color struct_color = selected ? (locked ? wed_StructureLockedSelected : wed_StructureSelected) :
 										(locked ? wed_StructureLocked		 : wed_Structure);
 	
@@ -388,13 +392,6 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 					if (rmgr->GetLin(vpath,linfo))
 						if(!(linfo->rgb[0] == 0.0 && linfo->rgb[1] == 0.0 && linfo->rgb[2] == 0.0))
 						{
-							int locked = 0;
-							WED_Entity * thing = dynamic_cast<WED_Entity *>(lin);
-							while(thing)
-							{
-								if(thing->GetLocked())	{ locked=1; break; }
-								thing = dynamic_cast<WED_Entity *>(thing->GetParent());
-							}
 							if (locked)
 								glColor3fv(linfo->rgb);
 							else                           // do some color correction to account for the green vs grey line
@@ -603,10 +600,10 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 			IGISPolygon * poly = SAFE_CAST(IGISPolygon,entity);
 			if (poly)
 			{
-				this->DrawEntityStructure(inCurrent,poly->GetOuterRing(),g,selected);
+				this->DrawEntityStructure(inCurrent, poly->GetOuterRing(), g, selected, locked);
 				int n = poly->GetNumHoles();
 				for (int c = 0; c < n; ++c)
-					this->DrawEntityStructure(inCurrent,poly->GetNthHole(c),g,selected);
+					this->DrawEntityStructure(inCurrent, poly->GetNthHole(c), g, selected, locked);
 
 				if(selected)
 				{
