@@ -18,7 +18,10 @@ Planned functionality for WED 2.5 not yet included in the alpha versions
    - on-map preview of .agb definitions
    - show trees part of any autogen definition
 
-WED 2.5.0 alpha
+WED functionality not yet supportted by XP12 alphas
+    - rowcode 105 skidmark and line color/width customizations for runways
+
+WED 2.5.0 beta 2
    Bug Fix:
    - fix .agp scraper display mismatch for some heights
    - fix gridded preview for 3D objects only showing partially on OSX w/AMD graphics
