@@ -675,7 +675,7 @@ double edge_angle(const CDT::Edge& e1, const CDT::Edge& e2)
 }
 
 
-int	has_beach(const CDT::Edge& inEdge, const CDT& inMesh, int& kind)
+int	has_beach(const CDT::Edge& inEdge, const CDT& inMesh, int& kind, const DEMGeo& lu_dem)
 {
 #if PHONE
 	return false;
@@ -696,6 +696,10 @@ int	has_beach(const CDT::Edge& inEdge, const CDT& inMesh, int& kind)
 
 	CDT::Vertex_handle v_s = inEdge.first->vertex(CDT::ccw(inEdge.second));
 	CDT::Vertex_handle v_t = inEdge.first->vertex(CDT::cw(inEdge.second));
+
+	Point2 sample_pt = Segment2(cgal2ben(v_s->point()),cgal2ben(v_t->point())).midpoint();
+
+	int landuse = lu_dem.get_radial(lu_dem.lon_to_x(sample_pt.x()),lu_dem.lat_to_y(sample_pt.y()), 4, lu_globcover_WATER);
 
 	const Face_handle orig_face = inEdge.first->info().orig_face;
 	//Assert(orig_face != NULL);
@@ -733,6 +737,7 @@ int	has_beach(const CDT::Edge& inEdge, const CDT& inMesh, int& kind)
 	for (i = 0; i < gBeachInfoTable.size(); ++i)
 	{
 		if (is_apt == gBeachInfoTable[i].require_airport &&
+			(gBeachInfoTable[i].require_landuse.empty() || gBeachInfoTable[i].require_landuse.count(landuse)) &&
 			slope >= gBeachInfoTable[i].min_slope &&
 			slope <= gBeachInfoTable[i].max_slope &&
 			gBeachInfoTable[i].min_sea <= wave &&
@@ -955,6 +960,7 @@ void	BuildDSF(
 			const char *	inFileName2,
 			const DEMGeo&	inElevation,
 			const DEMGeo&	inBathymetry,
+			const DEMGeo&	inLanduse,
 			const std::vector<DSFRasterInfo>& inRasters,
 //			const DEMGeo&	inVegeDem,
 			CDT&			inHiresMesh,
@@ -1573,7 +1579,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			CDT::Edge edge;
 			edge.first = fi;
 			edge.second = v;
-			if (has_beach(edge, inHiresMesh, beachKind))
+			if (has_beach(edge, inHiresMesh, beachKind, inLanduse))
 			{
 				all[edge] = beachKind;
 				starts.insert(edge);
@@ -1581,7 +1587,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				// We're searching for the next beach seg but skipping bogus in-water stuff like brides.
 				for (CDT::Edge iter = edge_next(edge); iter != edge_twin(edge); iter = edge_twin_next(iter))
 				{
-					if (has_beach(iter, inHiresMesh, beachKind))
+					if (has_beach(iter, inHiresMesh, beachKind, inLanduse))
 					{
 	//					DebugAssert(iter->twin() != he);
 						DebugAssert(linkNext.count(edge) == 0);

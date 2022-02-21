@@ -574,6 +574,7 @@ static int DoBuildDSF(const vector<const char *>& args)
 	BuildDSF(b1, b2,
 			 gDem[dem_Elevation],
 			 gDem[dem_Bathymetry],
+			 gDem[dem_LandUse],
 			 rasters,
 			 gTriangulationHi, /*gTriangulationLo,*/ gMap, gRegion, gProgress);
 	return 0;

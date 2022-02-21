@@ -266,6 +266,7 @@ struct BeachInfo_t {
 	int			require_open;
 	float		min_area;
 	int			require_airport;
+	set<int>	require_landuse;
 	int			x_beach_type;
 	int			x_backup;
 };

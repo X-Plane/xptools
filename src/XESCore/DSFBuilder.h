@@ -46,6 +46,7 @@ void	BuildDSF(
 			const char *	inFileName2,
 			const DEMGeo&	inElevation,
 			const DEMGeo&	inBathymetry,
+			const DEMGeo&	inLanduse,
 			const std::vector<DSFRasterInfo>& inRasters,
 //			const DEMGeo&	inVege,
 			CDT&			inHiresMesh,
