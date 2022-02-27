@@ -45,10 +45,10 @@
 
 void	WED_ExportPackToPath(WED_Thing * root, IResolver * resolver, const string& in_path, set<WED_Thing *>& problem_children)
 {
-	int result = DSF_Export(root, resolver, in_path,problem_children);
-	if (result == -1)
+//	int result = DSF_Export(root, resolver, in_path,problem_children);
+//	if (result == -1)
 	{
-		return;
+//		return;
 	}
 
 	string	apt = in_path + "Earth nav data" DIR_STR "apt.dat";
@@ -75,9 +75,80 @@ int		WED_CanExportPack(IResolver * resolver)
 #include "WED_ObjPlacement.h"
 #include "WED_PolygonPlacement.h"
 #include "WED_MetaDataKeys.h"
+#include "WED_MetaDataDefaults.h"
 #include "WED_Menus.h"
-#include <GISUtils.h>
+#include "GISUtils.h"
 #include <chrono>
+
+vector<vector<string> > translations = {
+{"ABW",  "ARUBA",},			{"AFG",  "AFGHANISTAN",},	{"AGO",  "ANGOLA",},		{"AIA",  "ANGUILLA",},
+{"ALA",  "ÅLAND",},			{"ALB",  "ALBANIA",},		{"AND",  "ANDORRA",},		{"ARE",  "EMIRATES",},
+{"ARG",  "ARGENTINA",},		{"ARM",  "ARMENIA",},		{"ASM",  "SAMOA",},			{"ATA",  "ANTARCTIC",},
+{"ATF",  "FRENCH SOUTHERN",},			{"ATG",  "ANTIGUA", "BARBUDA",},			{"AUS",  "AUSTRALIA",},
+{"AUT",  "AUSTRIA",},		{"AZE",  "AZERBAIJAN",},	{"BDI",  "BURUNDI",},		{"BEL",  "BELGIUM",},
+{"BEN",  "BENIN",},			{"BES",  "BONAIRE", "SABA",},							{"BFA",  "BURKINA",},
+{"BGD",  "BANGLADESH",},	{"BGR",  "BULGARIA",},		{"BHR",  "BAHRAIN",},		{"BHS",  "BAHAMAS",},
+{"BIH",  "BOSNIA",},		{"BLM",  "BARTHéLEMY", "BARTHéLEMY",},					{"BLR",  "BELARUS",},
+{"BLZ",  "BELIZE",},		{"BMU",  "BERMUDA",},		{"BOL",  "BOLIVIA",},		{"BRA",  "BRAZIL",},
+{"BRB",  "BARBADOS",},		{"BRN",  "BRUNEI",},		{"BTN",  "BHUTAN",},		{"BVT",  "BOUVET",},
+{"BWA",  "BOTSWANA",},		{"CAF",  "CENTRAL AFRICAN",},							{"CAN",  "CANADA",},
+{"CCK",  "COCOS",},			{"CHE",  "SWITZERLAND", "SWISS",},						{"CHL",  "CHILE",},
+{"CHN",  "CHINA",},			{"CIV",  "IVOIRE", "IVORY"},{"CMR",  "CAMEROON",},		{"COD",  "CONGO DEMO",},
+{"COG",  "CONGO",},			{"COK",  "COOK",},			{"COL",  "COLOMBIA",},		{"COM",  "COMOROS",},
+{"CPV",  "CABO VERDE",},	{"CRI",  "COSTA RICA",},	{"CUB",  "CUBA",},			{"CUW",  "CURAçAO",	"CURACAO"},
+{"CXR",  "CHRISTMAS",},		{"CYM",  "CAYMAN",},		{"CYP",  "CYPRUS",},		{"CZE",  "CZECHIA",},
+{"DEU",  "GERMANY",},		{"DJI",  "DJIBOUTI",},		{"DMA",  "DOMINICA ",},		{"DNK",  "DENMARK",},
+{"DOM",  "DOMINICAN R",},								{"DZA",  "ALGERIA",},		{"ECU",  "ECUADOR",},
+{"EGY",  "EGYPT",},			{"ERI",  "ERITREA",},		{"ESH",  "SAHARA",},		{"ESP",  "SPAIN",},
+{"EST",  "ESTONIA",},		{"ETH",  "ETHIOPIA",},		{"FIN",  "FINLAND",},		{"FJI",  "FIJI",},
+{"FLK",  "FALKLAND",},		{"FRA",  "FRANCE",},		{"FRO",  "FAROE",},			{"FSM",  "MICRONESIA",},
+{"GAB",  "GABON",},			{"GBR",  "UNITED KINGDOM", "BRITAIN",},					{"GEO",  "GEORGIA",},
+{"GGY",  "GUERNSEY",},		{"GHA",  "GHANA",},			{"GIB",  "GIBRALTAR",},		{"GIN",  "GUINEA",},
+{"GLP",  "GUADELOUPE",},	{"GMB",  "GAMBIA",},		{"GNB",  "GUINEA-BISSAU",},	{"GNQ",  "EQUATORIAL GUINEA",},
+{"GRC",  "GREECE",},		{"GRD",  "GRENADA",},		{"GRL",  "GREENLAND",},		{"GTM",  "GUATEMALA",},
+{"GUF",  "FRENCH GUIANA",},	{"GUM",  "GUAM",},			{"GUY",  "GUYANA",},		{"HKG",  "HONG KONG", "HONGKONG",},
+{"HMD",  "HEARD ISLAND",},	{"HND",  "HONDURAS",},		{"HRV",  "CROATIA",},		{"HTI",  "HAITI",},
+{"HUN",  "HUNGARY",},		{"IDN",  "INDONESIA",},		{"IMN",  "ISLE OF MAN",},	{"IND",  "INDIA",},
+{"IOT",  "BRITISH INDIAN",},{"IRL",  "IRELAND",},		{"IRN",  "IRAN",},			{"IRQ",  "IRAQ",},
+{"ISL",  "ICELAND",},		{"ISR",  "ISRAEL",},		{"ITA",  "ITALY",},			{"JAM",  "JAMAICA",},
+{"JEY",  "JERSEY",},		{"JOR",  "JORDAN",},		{"JPN",  "JAPAN",},			{"KAZ",  "KAZAKHSTAN",},
+{"KEN",  "KENYA",},			{"KGZ",  "KYRGYZSTAN",},	{"KHM",  "CAMBODIA",},		{"KIR",  "KIRIBATI",},
+{"KNA",  "KITTS",},			{"KOR",  "SOUTH KOREA",},	{"KWT",  "KUWAIT",},		{"LAO",  "LAO",},
+{"LBN",  "LEBANON",},		{"LBR",  "LIBERIA",},		{"LBY",  "LIBYA",},			{"LCA",  "LUCIA",},
+{"LIE",  "LIECHTENSTEIN",},	{"LKA",  "LANKA",},			{"LSO",  "LESOTHO",},		{"LTU",  "LITHUANIA",},
+{"LUX",  "LUXEMBOURG",},	{"LVA",  "LATVIA",},		{"MAC",  "MACAO",},			{"MAF",  "MARTIN",},
+{"MAR",  "MOROCCO",},		{"MCO",  "MONACO",},		{"MDA",  "MOLDOVA",},		{"MDG",  "MADAGASCAR",},
+{"MDV",  "MALDIVES",},		{"MEX",  "MEXICO",},		{"MHL",  "MARSHALL",},		{"MKD",  "MACEDONIA",},
+{"MLI",  "MALI",},			{"MLT",  "MALTA",},			{"MMR",  "MYANMAR",},		{"MNE",  "MONTENEGRO",},
+{"MNG",  "MONGOLIA",},		{"MNP",  "MARIANA",},		{"MOZ",  "MOZAMBIQUE",},	{"MRT",  "MAURITANIA",},
+{"MSR",  "MONTSERRAT",},	{"MTQ",  "MARTINIQUE",},	{"MUS",  "MAURITIUS",},		{"MWI",  "MALAWI",},
+{"MYS",  "MALAYSIA",},		{"MYT",  "MAYOTTE",},		{"NAM",  "NAMIBIA",},		{"NCL",  "CALEDONIA",},
+{"NER",  "NIGER",},			{"NFK",  "NORFOLK",},		{"NGA",  "NIGERIA",},		{"NIC",  "NICARAGUA",},
+{"NIU",  "NIUE",},			{"NLD",  "NETHERLANDS",},	{"NOR",  "NORWAY",},		{"NPL",  "NEPAL",},
+{"NRU",  "NAURU",},			{"NZL",  "ZEALAND",},		{"OMN",  "OMAN ",},			{"PAK",  "PAKISTAN",},
+{"PAN",  "PANAMA",},		{"PCN",  "PITCAIRN",},		{"PER",  "PERU",},			{"PHL",  "PHILIPPINES",},
+{"PLW",  "PALAU",},			{"PNG",  "PAPUA", "NEW GUINEA",},						{"POL",  "POLAND",},
+{"PRI",  "PUERTO RICO",},	{"PRK",  "NORTH KOREA",},	{"PRT",  "PORTUGAL",},		{"PRY",  "PARAGUAY",},
+{"PSE",  "PALESTINE",},		{"PYF",  "POLYNESIA",},		{"QAT",  "QATAR",},			{"REU",  "RéUNION",},
+{"ROU",  "ROMANIA",},		{"RUS",  "RUSSIA",},		{"RWA",  "RWANDA",},
+{"SAU",  "SAUDI ARABIA",},	{"SDN",  "SUDAN",},			{"SEN",  "SENEGAL",},		{"SGP",  "SINGAPORE",},
+{"SGS",  "H GEORGIA", "SANDWICH",},						{"SHN",  "HELENA", "ASCENSION", "TRISTAN",},
+{"SJM",  "SVALBARD",},		{"SLB",  "SOLOMON",},		{"SLE",  "SIERRA LEONE",},	{"SLV",  "SALVADOR",},
+{"SMR",  "SAN MARINO",},	{"SOM",  "SOMALIA",},		{"SPM",  "PIERRE", "MIQUELON",},
+{"SRB",  "SERBIA",},		{"SSD",  "SUDAN",},			{"STP",  "TOME", "PRINCIPE",},
+{"SUR",  "SURINAME",},		{"SVK",  "SLOVAKIA",},		{"SVN",  "SLOVENIA",},		{"SWE",  "SWEDEN",},
+{"SWZ",  "ESWATINI",},		{"SXM",  "MAARTEN",},		{"SYC",  "SEYCHELLES",},	{"SYR",  "SYRIA",},
+{"TCA",  "TURKS", "CAICOS",},							{"TCD",  "CHAD",},			{"TGO",  "TOGO",},
+{"THA",  "THAILAND",},		{"TJK",  "TAJIKISTAN",},	{"TKL",  "TOKELAU",},		{"TKM",  "TURKMENISTAN",},
+{"TLS",  "TIMOR",},			{"TON",  "TONGA",},			{"TTO",  "TRINIDAD", "TOBAGO",},
+{"TUN",  "TUNISIA",},		{"TUR",  "TURKEY",},		{"TUV",  "TUVALU",},		{"TWN",  "TAIWAN",},
+{"TZA",  "TANZANIA",},		{"UGA",  "UGANDA",},		{"UKR",  "UKRAINE",},		{"UMI",  "UNITED STATES MINOR",},
+{"URY",  "URUGUAY",},		{"USA",  "UNITED STATES", "U.S.A.",},
+{"UZB",  "UZBEKISTAN",},	{"VAT",  "HOLY SEE",},				{"VCT",  "VINCENT", "GRENADINES",},
+{"VEN",  "VENEZUELA",},		{"VGB",  "VIRGIN ISLANDS (B",},		{"VIR",  "VIRGIN ISLANDS (U",},
+{"VNM",  "VIETNAM", "VIET NAM",},						{"VUT",  "VANUATU",},		{"WLF",  "WALLIS", "FUTUNA",},
+{"WSM",  "SAMOA",},			{"YEM",  "YEMEN",},			{"ZAF",  "SOUTH AFRICA", "SOUTH-AFRICA",},
+{"ZMB",  "ZAMBIA",},		{"ZWE",  "ZIMBABWE",}, };
 
 static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 {
@@ -151,10 +222,124 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				}
 			}
 		}
-		
+
+		//-- upgrade Country Metadata -------------
+		string country;
+		bool has_iso(false);
+
+		if ((*apt_itr)->ContainsMetaDataKey(wed_AddMetaDataCountry))
+		{
+			country = (*apt_itr)->GetMetaDataValue(wed_AddMetaDataCountry);
+
+			bool has_iso = country.size() >= 3;
+			for (int i = 0; i < 3 && has_iso; i++)
+				has_iso &= (bool)isalpha(country[i]);
+			if (country.size() > 3)
+				has_iso &= country[3] == ' ';
+
+			if (has_iso)
+			{
+				has_iso = false;
+				for (auto& iso : iso3166_codes)
+					if (strncmp(iso.front(), country.c_str(), 3) == 0)
+					{
+						has_iso = true;
+						break;
+					}
+			}
+		}
+		if (!has_iso)
+		{
+			if (country == "US") country = "United States";
+			else if (country == "CA") country = "Canada";
+			else if (country == "FR") country = "France";
+			else if (country == "DE") country = "Germany";
+			else if (country == "RK") country = "South Korea";
+
+			int matches = 0;
+			string code3;
+			if(country.size())
+			{
+				string country_l(country);
+				std::transform(country_l.begin(), country_l.end(), country_l.begin(), [](unsigned char c) { return std::toupper(c); });
+				country_l += " ";
+
+				for (auto& list : translations)
+					for (auto cty = list.begin() + 1; cty < list.end(); cty++)
+						if (country_l.find(*cty) != string::npos)
+						{
+							code3 = list.front() + " ";
+							matches++;
+							break;
+						}
+			}
+			if (matches == 0)
+			{
+				if (!ICAO_code.size())        // trust LR assigned airport ID's to have meaninful region prefix
+				{
+					string s;
+					(*apt_itr)->GetName(s);
+					if (s[0] == 'X' && s.size() > 4)
+						ICAO_code = s.substr(1);
+				}
+				if (ICAO_code.size())         // trust explicit set and plausibility checked ICAO meta adata
+				{
+					ICAO_code = ICAO_code.substr(0, 2);
+					if (ICAO_code[0] == 'K')			code3 = "USA ";
+					else if (ICAO_code[0] == 'C')		code3 = "CAN ";
+					else if (ICAO_code[0] == 'E')
+					{
+						if (ICAO_code[1] == 'D')		code3 = "DEU ";
+						else if (ICAO_code[1] == 'G')	code3 = "GBR ";
+						else if (ICAO_code[1] == 'S')	code3 = "SWE ";
+						else if (ICAO_code[1] == 'N')	code3 = "NOR ";
+						else if (ICAO_code[1] == 'K')	code3 = "DAN ";
+						else if (ICAO_code[1] == 'P')	code3 = "POL ";
+					}
+					else if (ICAO_code[0] == 'L')
+					{
+						if (ICAO_code[1] == 'F')		code3 = "FRA ";
+						else if (ICAO_code[1] == 'E')	code3 = "ESP ";
+						else if (ICAO_code[1] == 'O')	code3 = "AUT ";
+						else if (ICAO_code[1] == 'I')	code3 = "ITA ";
+						else if (ICAO_code[1] == 'S')	code3 = "CHE ";
+						else if (ICAO_code[1] == 'K')	code3 = "SWI ";
+						else if (ICAO_code[1] == 'C')	code3 = "CYP ";
+						else if (ICAO_code[1] == 'P')	code3 = "PRT ";
+						else if (ICAO_code[1] == 'T')	code3 = "TUR ";
+					}
+					else if (ICAO_code[0] == 'Y')		code3 = "AUS ";
+					else if (ICAO_code[0] == 'Z' && ICAO_code[1] != 'K' && ICAO_code[1] != 'M')
+					{
+														code3 = "CHN ";
+						if (country.empty()) country = "China";
+					}
+					else if (ICAO_code == "FA")			code3 = "ZAF ";
+					else if (ICAO_code == "GV")			code3 = "CPV ";
+					else if (ICAO_code == "MG")			code3 = "GTM ";
+					else if (ICAO_code == "SA")			code3 = "ARG ";
+					else if (ICAO_code == "SB" || ICAO_code == "SD" || ICAO_code == "SI" || ICAO_code == "SJ" || ICAO_code == "SN"
+						  || ICAO_code == "SW")			code3 = "BRA ";
+					else if (ICAO_code == "SP")			code3 = "PER ";
+					else if (ICAO_code == "VY")			code3 = "MMR ";
+					else if (ICAO_code[0] == 'U' && ICAO_code[1] > 'D'	&& ICAO_code[1] != 'G' && ICAO_code[1] != 'K' && ICAO_code[1] != 'M'
+						  && ICAO_code[1] != 'T')		code3 = "RUS ";
+					else if (ICAO_code == "WA" || ICAO_code == "WI" || ICAO_code == "WQ" || ICAO_code == "WR") code3 = "IDN ";
+
+					if(code3.empty())
+						LOG_MSG("'%s' failed to resolve by ICAO\n", ICAO_code.c_str());
+				}
+			}
+			if (matches > 1)
+				LOG_MSG("'%s' matches %dx using %s\n", country.c_str(), matches, code3.c_str());
+
+			wrl->StartCommand("Add country code");
+			(*apt_itr)->AddMetaDataKey(META_KeyName(wed_AddMetaDataCountry), code3 + country);
+			wrl->CommitCommand();
+		}
 
 		(*apt_itr)->GetName(ICAO_code);
-
+#if 0
 		//-- upgrade Ramp Positions with XP10.45 data to get parked A/C -------------
 		vector<WED_RampPosition*> ramp_positions;
 		CollectRecursive(*apt_itr, back_inserter(ramp_positions), IgnoreVisiblity, TakeAlways, WED_RampPosition::sClass, 2);
@@ -178,7 +363,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			else
 				wrl->AbortCommand();
 		}
-#if 0
+#if 0  // this was good in 10.45, but not needed any for gateway airports as of 2022
 		//-- Agp and obj upgrades to create more ground traffic --------------------------------
 		vector<WED_TruckParkingLocation*> parking_locations;
 		CollectRecursive(*apt_itr, back_inserter(parking_locations));
@@ -219,16 +404,6 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				WED_DoReplaceVehicleObj(resolver,*apt_itr);
 		}
 #endif
-		//-- Break up jetway AGP's, convert jetway objects into facades for XP12 moving jetways -------------
-		wrl->StartCommand("Upgrade Jetways");
-		if (int count = WED_DoConvertToJW(*apt_itr))
-		{
-			wrl->CommitCommand();
-			LOG_MSG("Upgraded %d JW at %s\n", count, ICAO_code.c_str());
-		}
-		else
-			wrl->AbortCommand();
-
 		//-- Remove leading zero's from runways within the FAA's jurisdiction, except some mil bases ------
 		Bbox2 apt_box;
 		(*apt_itr)->GetBounds(gis_Geo, apt_box);
@@ -261,6 +436,17 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 					}
 			}
 		}
+
+		//-- Break up jetway AGP's, convert jetway objects into facades for XP12 moving jetways -------------
+		wrl->StartCommand("Upgrade Jetways");
+		if (int count = WED_DoConvertToJW(*apt_itr))
+		{
+			wrl->CommitCommand();
+			LOG_MSG("Upgraded %d JW at %s\n", count, ICAO_code.c_str());
+		}
+		else
+			wrl->AbortCommand();
+
 #if TYLER_MODE == 11
 		// translate new pavement polygons into XP11 equivalents (run/taxiways have that done in aptio.cpp)
 		// as well as a few essential and well known new XP12 objects. These "back-translations" 
@@ -376,6 +562,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 #endif
 		double percent_done = (double)distance(apts.begin(), apt_itr) / apts.size() * 100;
 		printf("%0.0f%% through heuristic at %s\n", percent_done, ICAO_code.c_str());
+#endif
 		auto t1 = chrono::high_resolution_clock::now();
 		chrono::duration<double> elapsed = t1 - t2;
 		LOG_MSG("Update %s took %lf sec\n", ICAO_code.c_str(), elapsed.count());
@@ -395,6 +582,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 	auto t1 = chrono::high_resolution_clock::now();
 	chrono::duration<double> elapsed = t1 - t0;
 	LOG_MSG("## Tyler mode ## Done with upgrade heuristics, took %lf sec\n", elapsed.count());
+	LOG_FLUSH();
 }
 #endif
 

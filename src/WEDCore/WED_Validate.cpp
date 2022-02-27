@@ -68,6 +68,7 @@
 #include "WED_GatewayExport.h"
 #include "WED_GroupCommands.h"
 #include "WED_MetaDataKeys.h"
+#include "WED_MetaDataDefaults.h"
 
 #include "IResolver.h"
 #include "ILibrarian.h"
@@ -1525,22 +1526,49 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 	if(who->ContainsMetaDataKey(wed_AddMetaDataCountry))
 	{
 		string country = who->GetMetaDataValue(wed_AddMetaDataCountry);
-		if (country.empty() == false)
+
+		if (country.size())
 		{
 			string error_content;
-			if (is_a_number(country) == true)
-			{
-				error_content = "Country cannot be a number";
-			}
-			else if (isdigit(country[0]))
-			{
-				error_content = "Country cannot start with a number";
-			}
 
-			if (error_content.empty() == false)
+			bool has_iso_code = country.size() >= 3;
+			for (int i = 0; i < 3 && has_iso_code; i++)
+				has_iso_code &= (bool) isalpha(country[i]);
+			if (country.size() > 3)
+				has_iso_code &= country[3] == ' ';
+
+			if (has_iso_code)
+			{
+				string c = country.substr(0, 3);
+				country.erase(0, 3);
+				while(country[0] == ' ') country.erase(0, 1);
+
+				has_iso_code = false;
+				for(auto &iso : iso3166_codes)
+					if (c == iso.front())
+					{
+						has_iso_code = true;
+						break;
+					}
+				if(!has_iso_code)
+					error_content = string("First 3 letters '") + c + "' are not a valid, upper case iso3166 country code";
+			}
+			else
+				error_content = "First 3 letters must be 3-letter iso3166 country code, followed by an optional name";
+
+			if (error_content.size())
 			{
 				add_formated_metadata_error(error_template, wed_AddMetaDataCountry, error_content, who, msgs, apt);
+				error_content.clear();
 			}
+
+			if (is_a_number(country))
+				error_content = "Country name cannot be a number";
+			else if (isdigit(country[0]))
+				error_content = "Country name cannot start with a number";
+
+			if (error_content.size())
+				add_formated_metadata_error(error_template, wed_AddMetaDataCountry, error_content, who, msgs, apt);
 		}
 		all_keys.push_back(country);
 	}
@@ -1716,6 +1744,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 			add_formated_metadata_error(error_template, wed_AddMetaDataRegionCode, "Unknown Region code", who, msgs, apt);
 		}
 	}
+
 
 	if (who->ContainsMetaDataKey(wed_AddMetaDataState))
 	{
