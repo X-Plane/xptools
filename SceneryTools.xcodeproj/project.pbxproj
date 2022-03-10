@@ -171,6 +171,10 @@
 		02DE8F03241FC471003E72C5 /* geom.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EEE241FC439003E72C5 /* geom.c */; };
 		02DE8F04241FC475003E72C5 /* dict.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EEC241FC439003E72C5 /* dict.c */; };
 		02DE8F05241FC479003E72C5 /* bucketalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EEA241FC439003E72C5 /* bucketalloc.c */; };
+		02EB22B427D9BA9A006A853A /* variants.png in Resources */ = {isa = PBXBuildFile; fileRef = 02EB22B227D9BA51006A853A /* variants.png */; };
+		02EB22B527D9BAA0006A853A /* regions.png in Resources */ = {isa = PBXBuildFile; fileRef = 02EB22AE27D9BA46006A853A /* regions.png */; };
+		02EB22B627D9BAA7006A853A /* seasons.png in Resources */ = {isa = PBXBuildFile; fileRef = 02EB22AF27D9BA46006A853A /* seasons.png */; };
+		02EB22B927D9BB12006A853A /* gradient_light.png in Resources */ = {isa = PBXBuildFile; fileRef = 02EB22B727D9BB0D006A853A /* gradient_light.png */; };
 		02F4A70C204E6F4700E241B3 /* worldmap.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 02F4A70A204E6F1700E241B3 /* worldmap.jpg */; };
 		2F1515C61D0BA700002224B1 /* WED_MetaDataKeys.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F1515C41D0BA700002224B1 /* WED_MetaDataKeys.cpp */; };
 		2F2135C92593A53700762DB7 /* libcurl.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 2F2135C82593A53600762DB7 /* libcurl.tbd */; };
@@ -1218,6 +1222,10 @@
 		02DE8EF5241FC439003E72C5 /* sweep.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sweep.h; path = libtess2/Source/sweep.h; sourceTree = "<group>"; };
 		02DE8EF6241FC439003E72C5 /* tess.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = tess.c; path = libtess2/Source/tess.c; sourceTree = "<group>"; };
 		02DE8EF7241FC439003E72C5 /* tess.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = tess.h; path = libtess2/Source/tess.h; sourceTree = "<group>"; };
+		02EB22AE27D9BA46006A853A /* regions.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = regions.png; sourceTree = "<group>"; };
+		02EB22AF27D9BA46006A853A /* seasons.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = seasons.png; sourceTree = "<group>"; };
+		02EB22B227D9BA51006A853A /* variants.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = variants.png; sourceTree = "<group>"; };
+		02EB22B727D9BB0D006A853A /* gradient_light.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = gradient_light.png; sourceTree = "<group>"; };
 		02F4A70A204E6F1700E241B3 /* worldmap.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = worldmap.jpg; sourceTree = "<group>"; };
 		20286C33FDCF999611CA2CEA /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
 		2F1515C41D0BA700002224B1 /* WED_MetaDataKeys.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_MetaDataKeys.cpp; sourceTree = "<group>"; };
@@ -2494,6 +2502,10 @@
 		D607B7950C0B831400992876 /* tables */ = {
 			isa = PBXGroup;
 			children = (
+				02EB22B727D9BB0D006A853A /* gradient_light.png */,
+				02EB22B227D9BA51006A853A /* variants.png */,
+				02EB22AE27D9BA46006A853A /* regions.png */,
+				02EB22AF27D9BA46006A853A /* seasons.png */,
 				D6D0F77D1CB336A20051AABC /* delete.png */,
 				D682E9790C17124A00BBE1A0 /* sider.png */,
 				D682E4830C162C9100BBE1A0 /* arrows.png */,
@@ -4207,6 +4219,7 @@
 				D60BFCE00C03664F00AD5EB7 /* handle_square.png in Resources */,
 				D60BFCE10C03664F00AD5EB7 /* handle_vertexround.png in Resources */,
 				02B03C3B20C72109000F81F0 /* line_ILSCriticalCenterW.png in Resources */,
+				02EB22B527D9BAA0006A853A /* regions.png in Resources */,
 				D60BFCE20C03664F00AD5EB7 /* handle_vertexsharp.png in Resources */,
 				D6B69CEA1C582B6A005C78C5 /* ClassF.png in Resources */,
 				D607AC890C0385AA00992876 /* scroll_btn_h.png in Resources */,
@@ -4225,6 +4238,7 @@
 				D607B6F10C0A439900992876 /* about.png in Resources */,
 				D607B7980C0B831400992876 /* eye.png in Resources */,
 				D607B7990C0B831400992876 /* lock.png in Resources */,
+				02EB22B927D9BB12006A853A /* gradient_light.png in Resources */,
 				D607B7A10C0B847C00992876 /* check.png in Resources */,
 				D6B69CE81C582B6A005C78C5 /* ClassD.png in Resources */,
 				02B03C3520C720E2000F81F0 /* line_BSolidBlue.png in Resources */,
@@ -4235,6 +4249,7 @@
 				D682DE5E0C10985100BBE1A0 /* startup_bkgnd.png in Resources */,
 				02BFA21321C1B5970090D527 /* navmap_seaport.png in Resources */,
 				D682DE5F0C10985100BBE1A0 /* startup_btns.png in Resources */,
+				02EB22B627D9BAA7006A853A /* seasons.png in Resources */,
 				02B03C3C20C72110000F81F0 /* line_SolidBlue.png in Resources */,
 				D682E1060C10E23C00BBE1A0 /* scrollbar_corner.png in Resources */,
 				0236B9732034264A0046900C /* check_buttons.png in Resources */,
@@ -4249,6 +4264,7 @@
 				D682E97A0C17124A00BBE1A0 /* sider.png in Resources */,
 				D6B69CE91C582B6A005C78C5 /* ClassE.png in Resources */,
 				D6DB37700C452B0400DE04F0 /* handle_rotatehead.png in Resources */,
+				02EB22B427D9BA9A006A853A /* variants.png in Resources */,
 				D67B21480C5536A300A21ABC /* asphalt.png in Resources */,
 				D67B21490C5536A300A21ABC /* concrete.png in Resources */,
 				D67B214A0C5536A300A21ABC /* dirt.png in Resources */,

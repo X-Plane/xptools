@@ -640,7 +640,7 @@ void WED_LibraryMgr::RescanLines()
 		}
 		m++;
 	}
-	LOG_MSG("I/Lib found %d XP1130 line types\n", default_lines.size());
+	LOG_MSG("I/Lib found %d XP1130 line types\n", (int) default_lines.size());
 }
 
 void WED_LibraryMgr::RescanSurfaces()
@@ -731,7 +731,7 @@ void WED_LibraryMgr::RescanSurfaces()
 			default_surfaces[surf_Concrete] = "lib/airport/pavement/concrete_1D.pol";
 	}
 	else
-		LOG_MSG("I/Lib found %d XP12 style surface types\n", default_surfaces.size());
+		LOG_MSG("I/Lib found %d XP12 style surface types\n", (int) default_surfaces.size());
 }
 
 bool WED_LibraryMgr::GetSurfVpath(int surf, string &res)
@@ -822,7 +822,7 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 				i->second.is_default = true;             // But they can still elevate any prior LR lib's visiblity, as some do
 			}
 			else
-				i->second.status = max(i->second.status, status);	// upgrade status if we just found a public version!
+				i->second.status = max((int) i->second.status, (int) status);	// upgrade status if we just found a public version!
 			// add only unique paths, but need to preserve first path added as first element, so deliberately not using a set<string> !
 			if(rt > res_Directory)                      // speedup/memory saver: no need to store this for directories
 			if(std::find(i->second.real_paths.begin(), i->second.real_paths.end(), rpath) == i->second.real_paths.end())
