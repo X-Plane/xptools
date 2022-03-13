@@ -97,6 +97,7 @@ static void	AddPatchVertex(	double	inCoordinates[], void* inRef)
 {
 	auto tile = (terrain_t*)inRef;
 	tile->patches.back().verts.push_back(inCoordinates);
+	tile->patches.back().bounds += tile->patches.back().verts.back().LonLat;
 }
 static void	EndPrimitive( void* inRef) {}
 static void	EndPatch(	void* inRef) {}
@@ -187,7 +188,7 @@ void WED_TerrainLayer::LoadTerrain(Bbox2& bounds)
 {
 	// ToDo: move this into PackageMgr, so its updated when XPlaneFolder changes and re-used when another scenery is opened
 
-	if (mTerrains.size() > 8) // honestly, only at VERY high lattitudes more than 4 tiles could ever be in active use. 
+	if (mTerrains.size() > 6) // honestly, only at VERY high lattitudes more than 4 tiles could ever be in active use. 
 	{	                      // As we don't display nor load terrain if zoomed out far enough.
 		double far_dist = 0.0;
 		string far_tile;
@@ -237,17 +238,19 @@ void		WED_TerrainLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 	Bbox2 map_viewport({max(vl, ll), max(vb, lb)}, {min(vr, lr), min(vt, lt)});
 	double PPM = GetZoomer()->GetPPM();
 
-	const float dem_color[4]   = { 1.0, 0.3, 0.3, 1.0 };
-	const float ter_color[3][4] = { { 0.6, 0.4, 0.3, 1.0 },
-									{ 0.3, 0.6, 0.5, 1.0 },
-									{ 0.3, 0.3, 0.7, 1.0 } };
-	if (PPM > 0.1)
+	const float dem_color[4]   =    { 1.0, 0.3, 0.3, 1.0 };
+	const float ter_color[3][4] = {	{ 0.4, 0.4, 0.9, 1.0 }, 
+									{ 0.4, 0.7, 0.6, 1.0 },
+									{ 0.8, 0.6, 0.4, 1.0 }, };
+	if (PPM > 0.1) 	// caveat: dont make terrain mesh visibility to exceed 6 tiles total - it causes cache trashing in LoadTerrain()
 	{
 		LoadTerrain(map_viewport);
-		for (auto ter : mTerrains)
+		for (const auto& ter : mTerrains)
 			if (ter.second.bounds.overlap(map_viewport))
 			{
 				auto t = &ter.second;
+
+				// raster data annotations
 				double x_step = t->bounds.xspan() / (t->width - 1);
 				double y_step = t->bounds.yspan() / (t->height - 1);
 
@@ -296,8 +299,11 @@ void		WED_TerrainLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 
 #define P2PIX(v) GetZoomer()->LLToPixel((v).LonLat)
 
-				for (auto p : t->patches) // todo: cull (per patch ?) for visibility
+				// mesh visualization
+				for (const auto& p : t->patches)
+				if(p.bounds.overlap(map_viewport))
 				{
+
 					glColor4fv(ter_color[p.color]);
 					auto v = p.verts.begin();
 					switch(p.topology)
@@ -356,8 +362,8 @@ void		WED_TerrainLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 					}
 					if (PPM > 1.0)
 					{
-						for(auto v : p.verts)
-							if (v.height != -32768 && map_viewport.contains(reinterpret_cast<Point2&>(v)))
+						for(const auto& v : p.verts)
+							if (v.height != -32768 && map_viewport.contains(v.LonLat))
 							{
 								Point2 pt = P2PIX(v);
 									char c[32];

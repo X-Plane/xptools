@@ -49,6 +49,7 @@ struct terrain_t {
 	struct patch_t {
 		int topology;
 		int color;
+		Bbox2 bounds;
 		vector<vert_data_t> verts;
 	};
 	vector<patch_t> patches;
