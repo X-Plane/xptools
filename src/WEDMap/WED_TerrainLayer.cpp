@@ -55,7 +55,16 @@ WED_TerrainLayer::~WED_TerrainLayer()
 }
 
 static bool NextPass(int finished_pass_index, void* inRef) { return true; }
-static int	AcceptTerrainDef(const char* inPartialPath, void* inRef) { return 1; }
+static int	AcceptTerrainDef(const char* inPartialPath, void* inRef) 
+{ 
+	auto tile = (terrain_t*)inRef;
+	if (strcmp(inPartialPath, "terrain_Water") == 0)
+		tile->water_idx = tile->current_color;
+	else if (strncmp("lib/g10/terrain10/apt_", inPartialPath, strlen("lib/g10/terrain10/apt_")) == 0)
+		tile->apt_idx.push_back(tile->current_color);
+	tile->current_color++;
+	return 1; 
+}
 static int	AcceptObjectDef(const char* inPartialPath, void* inRef) { return 1; }
 static int	AcceptPolygonDef(const char* inPartialPath, void* inRef) { return 1; }
 static int	AcceptNetworkDef(const char* inPartialPath, void* inRef) { return 1; }
@@ -64,17 +73,27 @@ static void	BeginPatch(unsigned int	inTerrainType, double inNearLOD, double inFa
 						unsigned char inFlags, int inCoordDepth, void* inRef) 
 {
 	auto tile = (terrain_t*)inRef;
-	tile->water = inTerrainType == 0; // we imply index 0 is water, but would really have to check the terrain defs
-	                                  // once thats done, also make any apt_* terrains green
+	if (inTerrainType == tile->water_idx)
+		tile->current_color = color_water;
+	else
+	{
+		tile->current_color = color_land;
+		for (auto i : tile->apt_idx)
+			if (inTerrainType == i)
+			{
+				tile->current_color = color_airport;
+				break;
+			}
+	}
 }
-static void	BeginPrimitive(	int		inType,	void* inRef) 
+static void	BeginPrimitive(	int		inType,	void* inRef)
 {
 	auto tile = (terrain_t*)inRef;
 	tile->patches.push_back(terrain_t::patch_t());
-	tile->patches.back().type = inType;
-	tile->patches.back().water = tile->water;
+	tile->patches.back().topology = inType;
+	tile->patches.back().color = tile->current_color;
 }
-static void	AddPatchVertex(	double	inCoordinates[], void* inRef) 
+static void	AddPatchVertex(	double	inCoordinates[], void* inRef)
 {
 	auto tile = (terrain_t*)inRef;
 	tile->patches.back().verts.push_back(inCoordinates);
@@ -198,6 +217,7 @@ void WED_TerrainLayer::LoadTerrain(Bbox2& bounds)
 	{
 		if (mTerrains.find(v) != mTerrains.end()) continue;
 		terrain_t& tile = mTerrains[v];
+		tile.current_color = 0;                      // initially abuse this for keeping track of terrain_def indices
 		if (DSFReadFile(v.c_str(), malloc, free, &cb, NULL, &tile) == dsf_ErrOK)
 		{
 			int lon, lat;
@@ -218,9 +238,9 @@ void		WED_TerrainLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 	double PPM = GetZoomer()->GetPPM();
 
 	const float dem_color[4]   = { 1.0, 0.3, 0.3, 1.0 };
-	const float land_color[4]  = { 0.8, 0.5, 0.0, 1.0 };
-	const float water_color[4] = { 0.3, 0.3, 1.0, 1.0 };
-
+	const float ter_color[3][4] = { { 0.6, 0.4, 0.3, 1.0 },
+									{ 0.3, 0.6, 0.5, 1.0 },
+									{ 0.3, 0.3, 0.7, 1.0 } };
 	if (PPM > 0.1)
 	{
 		LoadTerrain(map_viewport);
@@ -278,9 +298,9 @@ void		WED_TerrainLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 
 				for (auto p : t->patches) // todo: cull (per patch ?) for visibility
 				{
-					glColor4fv(p.water ? water_color : land_color);
+					glColor4fv(ter_color[p.color]);
 					auto v = p.verts.begin();
-					switch(p.type)
+					switch(p.topology)
 					{ 
 						case 0:
 							while (v != p.verts.end())
@@ -348,9 +368,9 @@ void		WED_TerrainLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 								{
 									snprintf(c, sizeof(c), (v.height < 200.0 && v.height != round(v.height)) ? "%.1lf%c" : "%.0lf%c", v.height, 'm');
 								}
-								if (p.water)
+								if (p.color == color_water)
 									snprintf(c+strlen(c), sizeof(c)-strlen(c), ",%.0f,%.0f", v.para1, v.para2);
-								GUI_FontDraw(g, font_UI_Basic, p.water ? water_color : land_color, pt.x() + 7, pt.y() + (p.water ? -9 : +2), c);
+								GUI_FontDraw(g, font_UI_Basic, ter_color[p.color], pt.x() + 7, pt.y() + (p.color == color_water ? -9 : +2), c);
 /*								g->SetState(false, 0, false, false, true, false, false);
 								glBegin(GL_LINE_LOOP);
 								glVertex2f(v.LonLat.x() - 5, v.LonLat.y() - 3);

@@ -34,7 +34,10 @@ struct terrain_t {
 	int		width;
 	int		height;
 	vector<float> dem;
-	bool	water;
+	int		water_idx;
+	vector<int> apt_idx;
+	int		current_color;
+
 	struct vert_data_t {
 		Point2	LonLat;
 		float	height;
@@ -44,11 +47,17 @@ struct terrain_t {
 	};
 
 	struct patch_t {
-		int type;
-		bool water;
+		int topology;
+		int color;
 		vector<vert_data_t> verts;
 	};
 	vector<patch_t> patches;
+};
+
+enum {
+	color_water,
+	color_airport,
+	color_land
 };
 
 class WED_TerrainLayer : public WED_MapLayer {
