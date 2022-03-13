@@ -71,7 +71,7 @@ public:
 private:
 
 			void		DrawVisFor(WED_MapLayer * layer, int current, const Bbox2& bounds, IGISEntity * what, GUI_GraphState * g, ISelection * sel, int depth);
-			void		DrawStrFor(WED_MapLayer * layer, int current, const Bbox2& bounds, IGISEntity * what, GUI_GraphState * g, ISelection * sel, int depth);
+			void		DrawStrFor(WED_MapLayer * layer, int current, const Bbox2& bounds, IGISEntity * what, bool what_locked, GUI_GraphState * g, ISelection * sel, int depth);
 
 		IGISEntity *	GetGISBase();
 		ISelection *	GetSel();

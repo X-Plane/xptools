@@ -34,6 +34,7 @@
 #include "WED_EnumSystem.h"
 #include "WED_MapZoomerNew.h"
 #include "WED_AirportNode.h"
+#include "WED_AirportChain.h"
 #include "XESConstants.h"
 #include "MathUtils.h"
 #include "GUI_Resources.h"
@@ -89,13 +90,17 @@ WED_StructureLayer::~WED_StructureLayer()
 }
 
 
-bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected)
+bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity,  GUI_GraphState * g, int selected, bool locked)
 {
 	//	g->SetState(false,0,false,   false,true,false,false);
 	//  very carefully check that ALL operations that change the state to textured its re-set again,
 	//  so we don't have to reset state for *evrvy* entity.
 
-	int locked = IsLockedNow(entity);
+//	int old_locked = IsLockedNow(entity);
+	locked |= (bool) IsLockedNow2(entity);
+
+//	DebugAssert((bool) locked == old_locked);
+
 	WED_Color struct_color = selected ? (locked ? wed_StructureLockedSelected : wed_StructureSelected) :
 										(locked ? wed_StructureLocked		 : wed_Structure);
 	
@@ -352,8 +357,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 	case gis_Chain:
 	case gis_Edge:
 		{
-			IGISPointSequence *				ps;
-			if ((ps = SAFE_CAST(IGISPointSequence,entity)) != NULL)
+			if (auto ps = dynamic_cast<IGISPointSequence *>(entity))
 			{
 				if (kind == gis_Edge)
 				{
@@ -372,9 +376,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 					}
 				}
 
-				int i, n = ps->GetNumSides();
-				WED_MapZoomerNew * z = GetZoomer();
-
+				WED_MapZoomerNew* z = GetZoomer();
 				bool showRealLines = mRealLines && z->GetPPM() * 0.4 <= MIN_PIXELS_PREVIEW;
 
 				if(sub_class == WED_LinePlacement::sClass && showRealLines)
@@ -388,13 +390,6 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 					if (rmgr->GetLin(vpath,linfo))
 						if(!(linfo->rgb[0] == 0.0 && linfo->rgb[1] == 0.0 && linfo->rgb[2] == 0.0))
 						{
-							int locked = 0;
-							WED_Entity * thing = dynamic_cast<WED_Entity *>(lin);
-							while(thing)
-							{
-								if(thing->GetLocked())	{ locked=1; break; }
-								thing = dynamic_cast<WED_Entity *>(thing->GetParent());
-							}
 							if (locked)
 								glColor3fv(linfo->rgb);
 							else                           // do some color correction to account for the green vs grey line
@@ -412,15 +407,14 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 						}
 				}
 
-				for (i = 0; i < n; ++i)
+				set<int>		attrs;
+				vector<Point2> pts;
+				int n = ps->GetNumSides();
+				glPointSize(5);
+
+				for (int i = 0; i < n; ++i)
 				{
-					set<int>		attrs;
-					if (showRealLines)
-					{
-						WED_AirportNode * apt_node = dynamic_cast<WED_AirportNode*>(ps->GetNthPoint(i));
-						if (apt_node) apt_node->GetAttributes(attrs);
-					}
-					vector<Point2> pts;
+					pts.clear();
 
 					Bezier2		b;
 					Point2 		mp(0,0);
@@ -477,12 +471,16 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 						glColor4fv(WED_Color_RGBA(struct_color));
 					}
 
+					if (sub_class == WED_AirportChain::sClass && showRealLines)
+					{
+						if (auto apt_node = dynamic_cast<WED_AirportNode*>(ps->GetNthPoint(i)))
+							apt_node->GetAttributes(attrs);
+					}
 					DrawLineAttrs(&*pts.begin(), pts.size(), attrs);
 					if(!attrs.empty()) glColor4fv(WED_Color_RGBA(struct_color));
 
 					if(kind == gis_Edge && pts.size() >= 2)
 					{
-
 						IGISEdge * gisedge = SAFE_CAST(IGISEdge, ps);
 						WED_RoadEdge * re = dynamic_cast<WED_RoadEdge *>(entity);
 						if(gisedge->IsOneway() || re != nullptr)
@@ -494,13 +492,9 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 							if( mVertices && re && (sq_len > 25*25) )
 							{
 								if( i == 0 )
-								{
 									GUI_PlotIcon(g,"ArrowHeadRoadS.png", pts.front().x(), pts.front().y(),atan2(orient1.dx,orient1.dy) * RAD_TO_DEG,1);
-								}
 								if(i == n-1)
-								{
 									GUI_PlotIcon(g,"ArrowHeadRoadE.png", pts.back().x() , pts.back().y() ,atan2(orient2.dx,orient2.dy) * RAD_TO_DEG,1);
-								}
 							}
 
 							if(!re)
@@ -509,29 +503,18 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 							g->SetTexUnits(0);
 						}
 					}
-				}
-
-//				if (mVertices && kind != gis_Edge)	  // Gis EDGE points will be picked up separately!  That way we can get their hilite right.
-				if (mVertices )
-				{
-//					glColor4fv(WED_Color_RGBA(struct_color));  // Do this if green EdgeNdodes when unselected are desired
-					n = ps->GetNumPoints();
-					glPointSize(5);
-					glBegin(GL_POINTS);
-					for (i = 0; i < n; ++i)
+					// if (mVertices && kind != gis_Edge)	  // Gis EDGE points will be picked up separately!  That way we can get their hilite right.
+					if (mVertices)
 					{
-						IGISPoint * pt = ps->GetNthPoint(i);
-//						WED_Entity * e = dynamic_cast<WED_Entity *>(pt);   // How could a non-entity ever get into a polygon ring ??
-//						if(!e || !e->GetHidden())
-						{
-							Point2 p;
-							pt->GetLocation(gis_Geo,p);
-							glVertex2(GetZoomer()->LLToPixel(p));
-						}
+						//	glColor4fv(WED_Color_RGBA(struct_color));  // Do this if green EdgeNdodes when unselected are desired
+						glBegin(GL_POINTS);
+						glVertex2(b.p1);
+						if(i == n - 1)
+							glVertex2(b.p2);
+						glEnd();
 					}
-					glEnd();
-					glPointSize(1);
 				}
+				glPointSize(1);
 			}
 		}
 		break;
@@ -560,9 +543,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 
 	case gis_BoundingBox:
 		{
-			IGISBoundingBox *				box;
-			box = SAFE_CAST(IGISBoundingBox, entity);
-			if(box)
+			if(auto box = dynamic_cast<IGISBoundingBox*>(entity))
 			{
 				Point2	pts[2];
 				box->GetMin()->GetLocation(gis_Geo,pts[0]);
@@ -600,13 +581,12 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 		 * POLYGONS (TAXIWAYAS, ETC.)
 		 ******************************************************************************************************************************************************/
 		{
-			IGISPolygon * poly = SAFE_CAST(IGISPolygon,entity);
-			if (poly)
+			if(auto poly = dynamic_cast<IGISPolygon*>(entity))
 			{
-				this->DrawEntityStructure(inCurrent,poly->GetOuterRing(),g,selected);
+				this->DrawEntityStructure(inCurrent, poly->GetOuterRing(), g, selected, locked);
 				int n = poly->GetNumHoles();
 				for (int c = 0; c < n; ++c)
-					this->DrawEntityStructure(inCurrent,poly->GetNthHole(c),g,selected);
+					this->DrawEntityStructure(inCurrent, poly->GetNthHole(c), g, selected, locked);
 
 				if(selected)
 				{

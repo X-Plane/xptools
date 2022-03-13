@@ -77,6 +77,8 @@ protected:
 		WED_PropBoolText		windsock_lit;
 		WED_PropStringText		resource;
 		WED_PropIntEnum			show_level;
+		WED_PropDoubleText		min_hdg;
+		WED_PropDoubleText		max_hdg;
 		WED_PropIntEnum			ramp_type;
 		WED_PropIntEnumBitfield	equip_type;
 		WED_PropIntEnum			width;

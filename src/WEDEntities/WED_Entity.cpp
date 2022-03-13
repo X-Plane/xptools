@@ -55,6 +55,12 @@ int		WED_Entity::GetLocked(void) const
 		return 0;
 }
 
+int		WED_Entity::GetLocked2(void) const
+{
+	return locked.value;
+}
+
+
 int		WED_Entity::GetHidden(void) const
 {
 	return hidden.value;

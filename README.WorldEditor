@@ -18,29 +18,29 @@ Planned functionality for WED 2.5 not yet included in the alpha versions
    - on-map preview of .agb definitions
    - show trees part of any autogen definition
 
-WED functionality not yet supportted by XP12 alphas
-    - rowcode 105 skidmark and line color/width customizations for runways
+WED functionality not yet supported by X-Plane 12 alphas
+    - rowcode 105 skidmark and line color/width customization for runways
 
-WED 2.5.0 beta 3
+WED 2.5.0 beta 2
    Bug Fix:
    - fix .agp scraper display mismatch for some heights
-   - fix gridded preview for 3D objects only showing partially on OSX w/AMD graphics
+   - fix grid preview for 3D objects only showing partially on OSX w/AMD graphics
    - WED-1390 fix crash in preview window for .net definitions that reference no textures at all
    - improve GW export heuristics to prevent non-ICAO code airport ID's to be taken as ICAO
    - don't break apart AGP's referencing objects by relative path - those are not public
    - reduce residual heading error for draped polygons by rounding, not truncating at DSF export
    - WED-1413 ATC route validation escape for runways NOT starting with a leading zero
    - WED-1412 fix horizontal distortion caused by map projection in 3D preview
-   XP12 features:
-   - moving jetways (requires propper jetways .fac w/metadata)
+   X-Plane 12 features:
+   - moving jetways (requires proper jetways .fac w/metadata)
    - runway & taxiways surface styles and markings
    - seasonal objects, showing summer version only
    - identify and show 3D forests
-   XP12 art asset conversion features:
+   X-Plane 12 art asset conversion features:
    - jetway objects to jetway facades
-   - X11 default pavment to XP12 aged pavement
+   - X-Plane 11 default pavement to X-Plane 12 aged pavement
    - add mowed grass FX based on runways
-   XP12 global airports heuristics:
+   X-Plane 12 global airports heuristics:
    - convert jetway objects to jetway facades
    - mow grass if no Terrain FX at airport
    - limit to ONE active jetways per ramp start
@@ -50,16 +50,12 @@ WED 2.5.0 beta 3
    Features:
    - use full projection for map display to improve location accuracy of linear features
    - validation warning on TOWER_VIEWPOINT height not matching objects with #viewpoint_height tags
-   - use actual XP textures for run/taxiway and helipd previews in map, if available
+   - use actual XP textures for run/taxiway and helipad previews in map, if available
    - apply jetway upgrades, remove large terrain polygons at export (tyler_mode only)
-   - validation exeption to make KSEA, LOWI gateway legal
+   - validation exception to make KSEA, LOWI gateway legal
    - validate taxiways for zero-length segments
    - show multi-layered forests correctly in the preview window
    - show ATC tower airspaces in Navaid layer
-   - LibraryList has icons indication seasonal/regional variants exist
-   - WED-1161 (limited) ability to collapse search results in LibrayPane
-
-   - new map layer "Terrain" to visualize terrain mesh structure, elevation DEM and explicit height vertices
 
 WED 2.4.0rc2 5/29/21
    Features:
@@ -88,7 +84,7 @@ WED 2.4.0b1 3/25/21
    - edit autogen .agb/.ags (but no on-map previews)
    - gridded previews for library pane directories
    - support choosing taxiway equivalent styles for draped polygons
-   - preselect last opened scenery at startup
+   - pre-select last opened scenery at startup
    - show on-map 3D previews for beacons, windsocks, 3D taxi signs
    - use native secure internet connectivity on all operating systems
    - WED-1359: change OOW mouse click for LineEditor from accept to cancel edit
@@ -104,23 +100,23 @@ WED 2.4.0b1 3/25/21
    - validate ICAO_Code meta tag to meet ICAO nomenclature
    - fix preview for .lin commands with offset layers in preview pane
    - fix endcap not showing for lines with two vertices only
-   - refine tesselation to show fill for polygons with colocated nodes
+   - refine tessellation to show fill for polygons with colocated nodes
    - XSG-11489: Fix gateway flags for airports with odd ATC taxi/ground_service routes
 
 WED 2.3.1r1 12/22/20
    Features:
     - reload Orthophoto at export when image has changed and new DDS were created
     Bug Fix:
-    - WED-1341 fix (linux only) uncommanded exclusion zone changes when canceling edits
+    - WED-1341 fix (linux only) un-commanded exclusion zone changes when canceling edits
 
 WED 2.3.1b1  12/12/20
    Features:
-    - support metadata tag 'closed', dereive from [X] in airport name at GW im/export
+    - support metadata tag 'closed', derived from [X] in airport name at GW im/export
     Bug Fix:
     - improve Log.txt completeness when crashing
-    - WED-1332 fix (linux only) selection of ATC taxiroute runway tags
+    - WED-1332 fix (Linux only) selection of ATC taxiroute runway tags
     - WED-1333 fix library preview visibility when AA settings overridden by video drivers
-    - WED-1335 fix orthophoto's from some DSF using inorrect vpath separator in OSX/Linux
+    - WED-1335 fix orthophotos from some DSF using incorrect vpath separator in OSX/Linux
     - WED-1340 fix validation not recognizing all boundaries of an airport
     - fix false alarms in ramp start validation for export targets older than XP10.45
 
@@ -177,7 +173,7 @@ WED 2.3.0b1 8/24/20
    - validate all scenery within airport boundary bounds + 0.5 nm (GW only)
    - validate to prevent set_MSL and warn about set_AGL objects (GW only)
    - warn if taxi route name is unusual
-   - show aproximate ground truck + AI A/C routes near ramp starts in ATC layer
+   - show approximate ground truck + AI A/C routes near ramp starts in ATC layer
    - XPD-9302,9240,9243 support "set_AGL" for objects available with XP11.50b1+
    - recognize keyword '#wed_text' to display text in preview window
    - speedup facade object drawing, same way as done for .agp
@@ -537,8 +533,7 @@ WED 1.6.0a1 12/02/16
 	- WED-297,364,491: Preview line definitions in LinraryPreviewPane
 	- WED-285: Add search bar for items in the right side hierarchy pane
 	- WED-42, WED-183: Preview forest definitions in LibraryPreviewPane
-	- XSG-2043, XSG-1964: Display 'hitbox" ATC Runway validation error
-	- objects placed with a point-click have headings per tool presets, optionaly randomized
+	- XSG-2043, XSG-1964: Display 'hitbox" ATC Runway validation error.
 
 WED 1.5.1r1 10/11/16
 	Bug fixes:

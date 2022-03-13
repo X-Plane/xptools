@@ -63,7 +63,7 @@ static bool IsWEDLocked(IGISEntity * g)
 {
 	WED_Entity * e = dynamic_cast<WED_Entity *>(g);
 	if(!e) return false;
-	return e->GetLocked() || e->GetHidden();
+	return e->GetLocked2() || e->GetHidden();
 }
 
 bool			WED_GISComposite::IntersectsBox	(GISLayer_t l, const Bbox2&  bounds) const

@@ -669,8 +669,9 @@ void	WED_DocumentWindow::ReceiveMessage(
 		//  8.33k freqs added in 2.0 are fine back to at least 1.5, saved with 3 decimal places ever since
 		//  WED 1.7 added new airport line marking styles
 		//  WED 2.3 added set_AGL commands
+		//  WED 2.5 added new export version, new runway/taxiway properties and enums
 //		if(docHas_SetAGL())
-			prefs->WriteIntPref("doc/xml_compatibility",204);
+			prefs->WriteIntPref("doc/xml_compatibility",205);
 //		else
 //			prefs->WriteIntPref("doc/xml_compatibility",107);
 		prefs->WriteIntPref("window/main_split",mMainSplitter->GetSplitPoint());
