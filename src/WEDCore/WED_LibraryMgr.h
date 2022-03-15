@@ -28,7 +28,7 @@
 #include "GUI_Listener.h"
 #include "IBase.h"
 
-enum {
+enum res_type {
 	res_None,
 	res_Directory,
 	res_Object,
@@ -53,7 +53,7 @@ enum {
 	pack_New		= -5
 	};
 
-enum {
+enum res_status {
 	status_Private		= 0,		// Intentionally SORTED so that the most EXPOSED status is the HIGHEST number!
 	status_Deprecated	= 1,		// fully deprecated - invisible in hierarchy and validation failure for gateway.
 	// Order matters - everything < semi-deprecated is going to fail validation
@@ -78,15 +78,17 @@ public:
 	string		GetLocalPackage() const;
 
 	string		GetResourceParent(const string& r);
-	void		GetResourceChildren(const string& r, int filter_package, vector<string>& children);	// Pass empty resource to get roots
-	int			GetResourceType(const string& r);
+	void		GetResourceChildren(const string& r, int filter_package, vector<string>& children, bool no_dirs = false);	// Pass empty resource to get roots
+	res_type	GetResourceType(const string& r) const;
 	string		GetResourcePath(const string& r, int variant = 0);
 
 				// This returns true if the resource whose virtual path is "r" comes from the default library that x-plane ships with.
-	bool		IsResourceDefault(const string& r);
-	bool		IsResourceLocal(const string& r);
-	bool		IsResourceLibrary(const string& r);
-	bool		IsResourceDeprecatedOrPrivate(const string& r);
+	bool		IsResourceDefault(const string& r) const;
+	bool		IsResourceLocal(const string& r) const;
+	bool		IsResourceLibrary(const string& r) const;
+	bool		IsResourceDeprecatedOrPrivate(const string& r) const;
+	bool		IsSeasonal(const string& r) const;
+	bool		IsRegional(const string& r) const;
 
 	string		CreateLocalResourcePath(const string& r);
 
@@ -96,73 +98,32 @@ public:
 							intptr_t				inParam);
 
 				// This returns true if the package number 'package_number' adds at least one item to the library.
-	bool		DoesPackHaveLibraryItems(int package_number);
+	bool		DoesPackHaveLibraryItems(int package_number) const;
 				// indicates if art asset exported by multiple exports, i.e. has randomized appearance
-	int			GetNumVariants(const string& r);
+	int			GetNumVariants(const string& r) const;
 				// gets the vpath of the resource used to dar apt.dat liner markings
 	bool		GetLineVpath(int lt, string& vpath);
 				// look up apt.dat surface types and matching public .pol vpaths
 	bool		GetSurfVpath(int surf, string& vpath);
 	int			GetSurfEnum(const string& vpath);
-				// gets all vpaths witin same vdir
-	bool		GetSameDir(const string& r, vector<pair<string, int> >& vpaths);
-
 
 private:
 
 	void			Rescan();
 	void			RescanLines();
 	void			RescanSurfaces();
-	void			AccumResource(const string& path, int package, const string& real_path, bool is_backup, bool is_default, int status);
+	void			AccumResource(const string& path, int package, const string& real_path, bool is_default,
+						res_status status, bool is_backup = false, bool is_seasonal = false, bool is_regional = false);
 	static	bool	AccumLocalFile(const char * fileName, bool isDir, void * ref);
 
 	struct	res_info_t {
-		int			res_type;
 		set<int>	packages;       // points out if same items is exported by multiple libraries
 		vector<string> real_paths;  // holds all the variants causeed by multiple EXPORTS commands
-		bool		is_backup;
-		bool		is_default;
-		int			status;
+		unsigned    res_type : 4, status : 4, is_backup : 1, is_default : 1, has_seasons : 1, has_regions : 1;
 	};
 
-	// Not only case-insensitive, but also sort of leading zero (number) insensitive for the basename part:
-	// all leading digits are treated as a number - so 3a.lin is listed after 20a.lin, aka numeric order.
-	// If two start with the same number (e.g. 01, 001 and 1) - its normal lexicographic order again.
-	// e.g.  0  00  01aa  1aa  009x 10aa 10bb  aa  bb
-
-	struct compare_str_no_case {
-		bool operator()(const string& lhs, const string& rhs) const {
-			string::size_type pl = lhs.find_last_of('/') ;
-			string::size_type pr = rhs.find_last_of('/') ;
-
-			if(pl == pr && pl < lhs.length()-2 && pr < rhs.length()-2)
-			{
-				if(pl == string::npos)
-					pl = 0;
-				else
-				{
-					int path_cmp = strncasecmp(lhs.c_str(),rhs.c_str(),pl);
-					if(path_cmp != 0) return path_cmp < 0;
-					pl += 1;
-				}
-				const char * l = lhs.c_str() + pl;
-				const char * r = rhs.c_str() + pl;
-
-				if((*l >= '0' && *l <= '9') || (*r >= '0' && *r <= '9'))
-				{
-					int int_l, int_r;
-					if(sscanf(l,"%d",&int_l) > 0)
-						if(sscanf(r,"%d",&int_r) > 0)
-							if(int_l != int_r)
-								return int_l < int_r;
-				}
-				return strcasecmp(l,r) < 0;
-			}
-			return strcasecmp(lhs.c_str(),rhs.c_str()) < 0;
-		}
-	};
-
-	typedef map<string,res_info_t,compare_str_no_case>	res_map_t;
+	typedef map<string,res_info_t>	res_map_t;
+//	typedef unordered_map<string,res_info_t>	res_map_t;   // 1% faster for KATL full map display, but breaks library list
 	res_map_t			res_table;
 
 	string				local_package;

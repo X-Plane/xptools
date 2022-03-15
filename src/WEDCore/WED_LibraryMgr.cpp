@@ -133,7 +133,39 @@ string		WED_LibraryMgr::GetResourceParent(const string& r)
 	return p;
 }
 
-void		WED_LibraryMgr::GetResourceChildren(const string& r, int filter_package, vector<string>& children)
+struct  {
+	bool operator()(const string& lhs, const string& rhs) const {
+		string::size_type pl = lhs.find_last_of('/');
+		string::size_type pr = rhs.find_last_of('/');
+
+		if (pl == pr && pl < lhs.length() - 2 && pr < rhs.length() - 2)
+		{
+			if (pl == string::npos)
+				pl = 0;
+			else
+			{
+				int path_cmp = strncasecmp(lhs.c_str(), rhs.c_str(), pl);
+				if (path_cmp != 0) return path_cmp < 0;
+				pl += 1;
+			}
+			const char* l = lhs.c_str() + pl;
+			const char* r = rhs.c_str() + pl;
+
+			if ((*l >= '0' && *l <= '9') || (*r >= '0' && *r <= '9'))
+			{
+				int int_l, int_r;
+				if (sscanf(l, "%d", &int_l) > 0)
+					if (sscanf(r, "%d", &int_r) > 0)
+						if (int_l != int_r)
+							return int_l < int_r;
+			}
+			return strcasecmp(l, r) < 0;
+		}
+		return strcasecmp(lhs.c_str(), rhs.c_str()) < 0;
+	}
+} special_compare;
+
+void		WED_LibraryMgr::GetResourceChildren(const string& r, int filter_package, vector<string>& children, bool no_dirs)
 {
 	children.clear();
 	res_map_t::iterator me = r.empty() ? res_table.begin() : res_table.find(r);
@@ -145,6 +177,7 @@ void		WED_LibraryMgr::GetResourceChildren(const string& r, int filter_package, v
 
 	while(me != res_table.end())
 	{
+		if(no_dirs && me->second.res_type == res_Directory)			break;
 		if(me->first.size() < r.size())								break;
 		if(strncasecmp(me->first.c_str(),r.c_str(),r.size()) != 0)	break;
 		// Ben says: even in WED 1.6 we still don't show private or deprecated stuff
@@ -152,118 +185,107 @@ void		WED_LibraryMgr::GetResourceChildren(const string& r, int filter_package, v
 		if(is_direct_parent(r,me->first))
 		{
 			bool want_it = true;
-			switch(filter_package) {
-			case pack_Library:		want_it = me->second.packages.size() > 1 || !me->second.packages.count(pack_Local);	// Lib if we are in two packs or we are NOT in local.  (We are always SOMEWHERE)
-			case pack_All:			break;
-			case pack_Default:		want_it = me->second.is_default;	break;
-			case pack_New:			want_it = me->second.status == status_New; break;
-			case pack_Local:		// Since "local" is a virtal index, the search for Nth pack works for local too.
-			default:				want_it = me->second.packages.count(filter_package);
+			switch(filter_package) 
+			{
+				case pack_Library:		want_it = me->second.packages.size() > 1 || !me->second.packages.count(pack_Local);	// Lib if we are in two packs or we are NOT in local.  (We are always SOMEWHERE)
+				case pack_All:			break;
+				case pack_Default:		want_it = me->second.is_default;	break;
+				case pack_New:			want_it = me->second.status == status_New; break;
+				case pack_Local:		// Since "local" is a virtal index, the search for Nth pack works for local too.
+				default:				want_it = me->second.packages.count(filter_package);
 			}
 			if(want_it)
-			{
 				children.push_back(me->first);
-			}
 		}
 		++me;
 	}
+	std:sort(children.begin(), children.end(), special_compare);
 }
 
-int			WED_LibraryMgr::GetResourceType(const string& r)
+res_type	WED_LibraryMgr::GetResourceType(const string& r) const
 {
-	res_map_t::iterator me = res_table.find(r);
+	auto me = res_table.find(r);
 	if (me==res_table.end()) return res_None;
-	return me->second.res_type;
+	return (res_type) me->second.res_type;
 }
 
 string		WED_LibraryMgr::GetResourcePath(const string& r, int variant)
 {
-	res_map_t::iterator me = res_table.find(r);
+	auto me = res_table.find(r);
 	if (me==res_table.end() || r != me->first)  // this prevents the case-insensitive compare (needed for desired sort order in libmgr list)
 		return string();                        // to deliver a match if the cases mis-match - which is X-Plane behavior
 	DebugAssert(variant < me->second.real_paths.size());
 	return me->second.real_paths[variant];
 }
 
-bool	WED_LibraryMgr::IsResourceDefault(const string& r)
+bool	WED_LibraryMgr::IsResourceDefault(const string& r) const
 {
-	res_map_t::const_iterator me = res_table.find(r);
+	auto me = res_table.find(r);
 	if (me==res_table.end()) return false;
 	return me->second.is_default;
 }
 
-bool	WED_LibraryMgr::IsResourceLocal(const string& r)
+bool	WED_LibraryMgr::IsResourceLocal(const string& r) const
 {
-	res_map_t::const_iterator me = res_table.find(r);
+	auto me = res_table.find(r);
 	if (me==res_table.end()) return false;
 	return me->second.packages.count(pack_Local) && me->second.packages.size() == 1;
 }
 
-bool	WED_LibraryMgr::IsResourceLibrary(const string& r)
+bool	WED_LibraryMgr::IsResourceLibrary(const string& r) const
 {
-	res_map_t::const_iterator me = res_table.find(r);
+	auto me = res_table.find(r);
 	if (me==res_table.end()) return false;
 	return !me->second.packages.count(pack_Local) || me->second.packages.size() > 1;
 }
 
-bool	WED_LibraryMgr::IsResourceDeprecatedOrPrivate(const string& r)
+bool	WED_LibraryMgr::IsResourceDeprecatedOrPrivate(const string& r) const
 {
-	res_map_t::const_iterator me = res_table.find(r);
+	auto me = res_table.find(r);
 	if (me==res_table.end()) return true;              // library list == never public exported = not public !
 	return me->second.status < status_SemiDeprecated;  // status "Yellow' is still deemed public wrt validation, i.e. allowed on the gateway
 }
 
-bool	WED_LibraryMgr::DoesPackHaveLibraryItems(int package)
+bool	WED_LibraryMgr::IsSeasonal(const string& r) const
 {
-	for(res_map_t::iterator i = res_table.begin(); i != res_table.end(); ++i)
-		if(i->second.packages.count(package))
+	auto me = res_table.find(r);
+	if (me == res_table.end() || me->second.res_type == res_Directory) return false;
+	return me->second.has_seasons;
+}
+
+bool	WED_LibraryMgr::IsRegional(const string& r) const
+{
+	auto me = res_table.find(r);
+	if (me == res_table.end() || me->second.res_type == res_Directory) return false;
+	return me->second.has_regions;
+}
+
+
+bool	WED_LibraryMgr::DoesPackHaveLibraryItems(int package) const
+{
+	for(auto& i : res_table)
+		if(i.second.packages.count(package))
 		{
 //	The problem here is that a resource can be defined in multiple libraries,
 //  some of those definitions may be deprecated or private, but others not.
 //  If there is at least one public definition, the resource has status >= status_Public.
 //  So its impossible to find out this way if a given library has no public items ...
 
-// if  (i->second.status > status_Public)
-//			printf("Pack %d '%s' status = %d\n",package,i->second.real_path.c_str(),i->second.status);
-//			if ( i->second.status >= status_Public)
+// if  (i.second.status > status_Public)
+//			printf("Pack %d '%s' status = %d\n",package,i.second.real_path.c_str(),i.second.status);
+//			if ( i.second.status >= status_Public)
 
 			return true;
 		}
 	return false;
 }
 
-int		WED_LibraryMgr::GetNumVariants(const string& r)
+int		WED_LibraryMgr::GetNumVariants(const string& r) const
 {
 	res_map_t::const_iterator me = res_table.find(r);
 	if (me==res_table.end()) return 1;
 	return me->second.real_paths.size();
 }
-
-bool	WED_LibraryMgr::GetSameDir(const string& r, vector<pair<string, int> >& vpaths)
-{
-	auto it = res_table.find(r);
-
-	string vpath(r);
-	if(it->second.res_type != res_Directory)
-	{
-		vpath.erase(vpath.find_last_of('/'));
-		res_table.find(vpath);
-	}
-	if(it == res_table.end()) return false;
-	it++;
-
-	while(it != res_table.end() && strncmp(it->first.c_str(), vpath.c_str(), vpath.size()) == 0)
-	{
-		auto pos = it->first.size();
-		if(it->second.res_type != res_Directory)
-			pos = it->first.find_last_of('/');
-		if(it->second.status >= status_Public && strncmp(it->first.c_str(), vpath.c_str(), pos) == 0)
-			vpaths.push_back(make_pair(it->first, it->second.res_type));
-		it++;
-	}
-	return vpaths.size();
-}
-
 
 string		WED_LibraryMgr::CreateLocalResourcePath(const string& r)
 {
@@ -304,6 +326,8 @@ void		WED_LibraryMgr::Rescan()
 		pack_base += DIR_STR "library.txt";
 
 		bool is_default_pack = gPackageMgr->IsPackageDefault(p);
+		bool in_region = false;
+		string all_region, current_region;
 
 		MFMemFile * lib = MemFile_Open(pack_base.c_str());
 
@@ -313,7 +337,7 @@ void		WED_LibraryMgr::Rescan()
 			MFScanner	s;
 			MFS_init(&s, lib);
 
-			int cur_status = status_Public;
+			res_status cur_status = status_Public;
 			int lib_version[] = { 800, 1200, 0 };
 
 			if (MFS_xplane_header(&s, lib_version, "LIBRARY", NULL) == 0)
@@ -327,10 +351,10 @@ void		WED_LibraryMgr::Rescan()
 					bool is_export_backup = false;
 					bool is_season = false;
 
-					if (MFS_string_match(&s, "EXPORT", false) ||
-						MFS_string_match(&s, "EXPORT_EXTEND", false) ||
-						MFS_string_match(&s, "EXPORT_EXCLUDE", false) ||
-						(is_season = (MFS_string_match(&s, "EXPORT_SEASON", false) || MFS_string_match(&s, "EXPORT_EXCLUDE_SEASON", false))) ||
+					if (MFS_string_match(&s, "EXPORT", false) || 	MFS_string_match(&s, "EXPORT_EXTEND", false) ||
+							MFS_string_match(&s, "EXPORT_EXCLUDE", false) ||
+						(is_season = (MFS_string_match(&s, "EXPORT_SEASON", false) || MFS_string_match(&s, "EXPORT_EXTEND_SEASON", false) ||
+							MFS_string_match(&s, "EXPORT_EXCLUDE_SEASON", false))) ||
 						(is_export_backup = MFS_string_match(&s, "EXPORT_BACKUP", false)))
 					{
 						if (is_season)
@@ -355,7 +379,7 @@ void		WED_LibraryMgr::Rescan()
 						   And I have to case-correct the path right here, as this path later is not only used by the case insensitive MF_open()
 						   but also to derive the paths to the textures referenced in those assets. And those textures are loaded with case-sensitive fopen.
 						   */
-						AccumResource(vpath, p, rpath, is_export_backup, is_default_pack, cur_status);
+						AccumResource(vpath, p, rpath, is_default_pack, cur_status, is_export_backup, is_season, in_region);
 					}
 					else if (MFS_string_match(&s, "EXPORT_RATIO", false))
 					{
@@ -367,7 +391,7 @@ void		WED_LibraryMgr::Rescan()
 						if (is_no_true_subdir_path(rpath)) break; // ignore paths that lead outside current scenery directory
 						rpath = pack_base + DIR_STR + rpath;
 						FILE_case_correct((char*)rpath.c_str());  // yeah - I know I'm overriding the 'const' protection of the c_str() here.
-						AccumResource(vpath, p, rpath, false, is_default_pack, cur_status);
+						AccumResource(vpath, p, rpath, is_default_pack, cur_status);
 					}
 					else
 					{
@@ -396,6 +420,26 @@ void		WED_LibraryMgr::Rescan()
 							cur_status = status_Deprecated;
 						else if (MFS_string_match(&s, "SEMI_DEPRECATED", true))
 							cur_status = status_SemiDeprecated;
+						else if (MFS_string_match(&s, "REGION_DEFINE", false))
+							MFS_string(&s, &current_region);
+						else if (MFS_string_match(&s, "REGION_RECT", false))
+						{
+							int west = MFS_int(&s);
+							int south = MFS_int(&s);
+							int east = MFS_int(&s);
+							int north = MFS_int(&s);
+							if (west == -180 && east == 179 && south == -90 && north == 89)
+							{
+								all_region = current_region;
+								LOG_MSG("I/Lib %s has global region '%s'\n", pack_base.c_str(), all_region.c_str());
+							}
+						}
+						else if (MFS_string_match(&s, "REGION", false))
+						{
+							string r;
+							MFS_string(&s, &r);
+							in_region = r != all_region;
+						}
 
 						MFS_string_eol(&s, NULL);
 					}
@@ -417,8 +461,8 @@ void		WED_LibraryMgr::Rescan()
 		info.full = package_base;
 		MF_IterateDirectory(package_base.c_str(), AccumLocalFile, reinterpret_cast<void*>(&info));
 	}
-
 	BroadcastMessage(msg_LibraryChanged,0);
+	LOG_MSG("I/Lib scan finished, %d vpaths\n", (int) res_table.size());
 }
 
 
@@ -596,6 +640,7 @@ void WED_LibraryMgr::RescanLines()
 		}
 		m++;
 	}
+	LOG_MSG("I/Lib found %d XP1130 line types\n", default_lines.size());
 }
 
 void WED_LibraryMgr::RescanSurfaces()
@@ -685,6 +730,8 @@ void WED_LibraryMgr::RescanSurfaces()
 		if (res_table.count("lib/airport/pavement/concrete_1D.pol") > 0)
 			default_surfaces[surf_Concrete] = "lib/airport/pavement/concrete_1D.pol";
 	}
+	else
+		LOG_MSG("I/Lib found %d XP12 style surface types\n", default_surfaces.size());
 }
 
 bool WED_LibraryMgr::GetSurfVpath(int surf, string &res)
@@ -710,7 +757,8 @@ int WED_LibraryMgr::GetSurfEnum(const string &res)
 }
 
 
-void WED_LibraryMgr::AccumResource(const string& path, int package, const string& rpath, bool is_backup, bool is_default, int status)
+void WED_LibraryMgr::AccumResource(const string& path, int package, const string& rpath, bool is_default, 
+			res_status status, bool is_backup, bool is_seasonal, bool is_regional)
 {
 
     // surprise: This function is called 60,300 time upon loading any scenery. Yep, XP11 has that many items in the libraries.
@@ -719,7 +767,7 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 	string suffix;
 	suffix = FILE_get_file_extension(path);
 
-	int	rt;
+	res_type	rt;
 
 	if     (suffix == "obj") rt = res_Object;
 	else if(suffix == "agp") rt = res_Object;
@@ -751,6 +799,8 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 				new_info.real_paths.push_back(rpath);
 			new_info.is_backup = is_backup;
 			new_info.is_default = is_default;
+			new_info.has_seasons = is_seasonal;
+			new_info.has_regions = is_regional;
 			res_table.insert(res_map_t::value_type(p,new_info));
 		}
 		else
@@ -777,6 +827,8 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 			if(rt > res_Directory)                      // speedup/memory saver: no need to store this for directories
 			if(std::find(i->second.real_paths.begin(), i->second.real_paths.end(), rpath) == i->second.real_paths.end())
 				i->second.real_paths.push_back(rpath);
+			i->second.has_seasons |= is_seasonal;
+			i->second.has_regions |= is_regional;
 		}
 
 		string par, f;
@@ -806,7 +858,7 @@ bool WED_LibraryMgr::AccumLocalFile(const char * filename, bool is_dir, void * r
 		string r = info->partial + "/" + filename;
 		string f = info->full + DIR_STR + filename;
 		r.erase(0,1);
-		info->who->AccumResource(r, pack_Local, f,false,false, status_Public);
+		info->who->AccumResource(r, pack_Local, f,false, status_Public);
 	}
 	return false;
 }
