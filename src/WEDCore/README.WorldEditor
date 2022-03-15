@@ -60,6 +60,8 @@ WED 2.5.0 beta 3
    - LibraryList has icons indication seasonal/regional variants exist
    - WED-1161 (limited) ability to collapse search results in LibrayPane
 
+   - new map layer "Terrain" to visualize terrain mesh structure, elevation DEM and explicit height vertices
+
 WED 2.4.0rc2 5/29/21
    Features:
    - Undo WED-192 remove meta tag "Closed", validate correctly formed [X] in apt name

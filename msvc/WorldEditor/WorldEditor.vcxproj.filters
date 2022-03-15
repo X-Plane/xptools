@@ -879,6 +879,9 @@
     <ClCompile Include="..\..\src\WEDWindows\WED_Road_Selector.cpp">
       <Filter>WEDWindows</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\WEDMap\WED_TerrainLayer.cpp">
+      <Filter>WEDMap</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\WEDCore\WED_Application.h">
@@ -1729,6 +1732,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\WEDWindows\WED_Road_Selector.h">
       <Filter>WEDWindows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDMap\WED_TerrainLayer.h">
+      <Filter>WEDMap</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

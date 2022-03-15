@@ -1189,6 +1189,31 @@ int		WED_CanImportRoads(IResolver * resolver)
 	return 0;
 }
 
+void add_all_global_DSF(const Bbox2& bb, set<string>& matching_dsf)
+{
+	pair<int, int> glob_scn = gPackageMgr->GlobalPackages();
+
+	for (int lon = floor(bb.xmin()); lon < ceil(bb.xmax()); lon++)
+		for (int lat = floor(bb.ymin()); lat < ceil(bb.ymax()); lat++)
+			for (int pkg = glob_scn.first; pkg <= glob_scn.second; pkg++)
+			{
+				string path;
+				gPackageMgr->GetNthPackagePath(pkg, path);
+				string dirname(FILE_get_file_name(path));
+				if (dirname.find("Demo Area") != string::npos || dirname.find("Global Scenery") != string::npos)
+				{
+					char buf[256];
+					snprintf(buf, sizeof(buf), "%s" DIR_STR "Earth nav data" DIR_STR "%+03d%+04d" DIR_STR "%+03d%+04d.dsf", path.c_str(),
+						lat > 0 ? (lat / 10) * 10 : ((-lat + 9) / 10) * -10, lon > 0 ? (lon / 10) * 10 : ((-lon + 9) / 10) * -10, lat, lon);
+					if (FILE_exists(buf))
+					{
+						matching_dsf.insert(buf);
+						break;
+					}
+				}
+			}
+}
+
 void	WED_DoImportRoads(IResolver * resolver)
 {
 	ISelection * sel = WED_GetSelect(resolver);
@@ -1214,30 +1239,9 @@ void	WED_DoImportRoads(IResolver * resolver)
 	}
 
 	set<string> matching_dsf;
-	pair<int, int> glob_scn = gPackageMgr->GlobalPackages();
 
-	for(auto bb : excl_bounds )
-	{
-		for(int lon = floor(bb.xmin()); lon < ceil(bb.xmax()); lon++)
-			for (int lat = floor(bb.ymin()); lat < ceil(bb.ymax()); lat++)
-				for (int pkg = glob_scn.first; pkg <= glob_scn.second; pkg++)
-				{
-					string path;
-					gPackageMgr->GetNthPackagePath(pkg, path);
-					string dirname(FILE_get_file_name(path));
-					if (dirname.find("Demo Area") != string::npos || dirname.find("Global Scenery") != string::npos)
-					{
-						char buf[256];
-						snprintf(buf, sizeof(buf), "%s" DIR_STR "Earth nav data" DIR_STR "%+03d%+04d" DIR_STR "%+03d%+04d.dsf", path.c_str(),
-							lat > 0 ? (lat / 10) * 10 : ((-lat + 9) / 10) * -10, lon > 0 ? (lon / 10) * 10 : ((-lon + 9) / 10) * -10, lat, lon);
-						if (FILE_exists(buf))
-						{
-							matching_dsf.insert(buf);
-							break;
-						}
-					}
-				}
-	}
+	for (auto bb : excl_bounds)
+		add_all_global_DSF(bb, matching_dsf);
 
 	if(matching_dsf.size())
 	{

@@ -113,6 +113,7 @@ enum {
 //	wed_ToggleOverlay,
 	wed_ToggleWorldMap,
 	wed_ToggleNavaidMap,
+	wed_ToggleTerrainMap,
 	wed_SlippyMapNone,
 	wed_SlippyMapOSM,
 	wed_SlippyMapESRI,

@@ -629,7 +629,7 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 				}
 			}
 		}
-
+		glLineWidth(1.0);
 }
 
 void		WED_NavaidLayer::GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks)

@@ -220,6 +220,7 @@ SOURCES += ./src/WEDMap/WED_UIMeasurements.cpp
 SOURCES += ./src/WEDMap/WED_VertexTool.cpp
 SOURCES += ./src/WEDMap/WED_WorldMapLayer.cpp
 SOURCES += ./src/WEDMap/WED_NavaidLayer.cpp
+SOURCES += ./src/WEDMap/WED_TerrainLayer.cpp
 SOURCES += ./src/WEDMap/WED_DrawUtils.cpp
 SOURCES += ./src/WEDMap/WED_PreviewLayer.cpp
 SOURCES += ./src/WEDMap/WED_ATCLayer.cpp
