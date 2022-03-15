@@ -174,7 +174,127 @@ extern vector<vector<const char*> > iso3166_codes = {
 {"ZMB",  "ZAMBIA",},		{"ZWE",  "ZIMBABWE",}, };
 
 
-bool add_iso3166_country_metadata(WED_Airport& airport)
+bool add_iso3166_country_metadata(WED_Airport & apt)
 {
-	return true;
+	//-- upgrade Country Metadata -------------
+	string country;
+	bool has_iso = false;
+
+	if (apt.ContainsMetaDataKey(wed_AddMetaDataCountry))
+	{
+		country = apt.GetMetaDataValue(wed_AddMetaDataCountry);
+
+		bool has_iso = country.size() >= 3;
+		for (int i = 0; i < 3 && has_iso; i++)
+			has_iso &= (bool)isalpha(country[i]);
+		if (country.size() > 3)
+			has_iso &= country[3] == ' ';
+
+		if (has_iso)
+		{
+			has_iso = false;
+			for (const auto& iso : iso3166_codes)
+				if (strncmp(iso.front(), country.c_str(), 3) == 0)
+				{
+					has_iso = true;
+					break;
+				}
+		}
+	}
+	if (!has_iso)
+	{
+		if (country == "US") country = "United States";
+		else if (country == "CA") country = "Canada";
+		else if (country == "FR") country = "France";
+		else if (country == "DE") country = "Germany";
+		else if (country == "RK") country = "South Korea";
+
+		int matches = 0;
+		string code3;
+		if (country.size())
+		{
+			string country_l(country);
+			std::transform(country_l.begin(), country_l.end(), country_l.begin(), [](unsigned char c) { return std::toupper(c); });
+			country_l += " ";
+
+			for (const auto& list : iso3166_codes)
+				for (auto cty = list.begin() + 1; cty < list.end(); cty++)
+					if (country_l.find(*cty) != string::npos)
+					{
+						code3 = list.front();
+						code3 += " ";
+						matches++;
+						break;
+					}
+		}
+		if (matches == 0)
+		{
+			string ICAO_code;
+			if (apt.ContainsMetaDataKey(wed_AddMetaDataICAO))
+				ICAO_code = apt.GetMetaDataValue(wed_AddMetaDataICAO);
+			else                          // trust LR assigned airport ID's to have meaninful region prefix
+			{
+				string s;
+				apt.GetName(s);
+				if (s[0] == 'X' && s.size() > 4)
+					ICAO_code = s.substr(1);
+			}
+			if (ICAO_code.size())         // trust explicit set and plausibility checked ICAO meta adata
+			{
+				ICAO_code = ICAO_code.substr(0, 2);
+				if (ICAO_code[0] == 'K')			code3 = "USA ";
+				else if (ICAO_code[0] == 'C')		code3 = "CAN ";
+				else if (ICAO_code[0] == 'E')
+				{
+					if (ICAO_code[1] == 'D')		code3 = "DEU ";
+					else if (ICAO_code[1] == 'G')	code3 = "GBR ";
+					else if (ICAO_code[1] == 'S')	code3 = "SWE ";
+					else if (ICAO_code[1] == 'N')	code3 = "NOR ";
+					else if (ICAO_code[1] == 'K')	code3 = "DAN ";
+					else if (ICAO_code[1] == 'P')	code3 = "POL ";
+				}
+				else if (ICAO_code[0] == 'L')
+				{
+					if (ICAO_code[1] == 'F')		code3 = "FRA ";
+					else if (ICAO_code[1] == 'E')	code3 = "ESP ";
+					else if (ICAO_code[1] == 'O')	code3 = "AUT ";
+					else if (ICAO_code[1] == 'I')	code3 = "ITA ";
+					else if (ICAO_code[1] == 'S')	code3 = "CHE ";
+					else if (ICAO_code[1] == 'K')	code3 = "SWI ";
+					else if (ICAO_code[1] == 'C')	code3 = "CYP ";
+					else if (ICAO_code[1] == 'P')	code3 = "PRT ";
+					else if (ICAO_code[1] == 'T')	code3 = "TUR ";
+				}
+				else if (ICAO_code[0] == 'Y')		code3 = "AUS ";
+				else if (ICAO_code[0] == 'Z' && ICAO_code[1] != 'K' && ICAO_code[1] != 'M')
+				{
+					code3 = "CHN ";
+					if (country.empty()) country = "China";
+				}
+				else if (ICAO_code == "FA")			code3 = "ZAF ";
+				else if (ICAO_code == "GV")			code3 = "CPV ";
+				else if (ICAO_code == "MG")			code3 = "GTM ";
+				else if (ICAO_code == "SA")			code3 = "ARG ";
+				else if (ICAO_code == "SB" || ICAO_code == "SD" || ICAO_code == "SI" || ICAO_code == "SJ" || ICAO_code == "SN"
+					|| ICAO_code == "SW")			code3 = "BRA ";
+				else if (ICAO_code == "SP")			code3 = "PER ";
+				else if (ICAO_code == "VY")			code3 = "MMR ";
+				else if (ICAO_code[0] == 'U' && ICAO_code[1] > 'D' && ICAO_code[1] != 'G' && ICAO_code[1] != 'K' && ICAO_code[1] != 'M'
+					&& ICAO_code[1] != 'T')		code3 = "RUS ";
+				else if (ICAO_code == "WA" || ICAO_code == "WI" || ICAO_code == "WQ" || ICAO_code == "WR") code3 = "IDN ";
+
+				if (code3.empty())
+					LOG_MSG("'%s' failed to resolve by ICAO\n", ICAO_code.c_str());
+			}
+		}
+		if (matches > 1)
+			LOG_MSG("'%s' matches %dx using %s\n", country.c_str(), matches, code3.c_str());
+
+		apt.StartCommand("Add country code");
+		apt.AddMetaDataKey(META_KeyName(wed_AddMetaDataCountry), code3 + country);
+		apt.CommitCommand();
+		return true;
+	}
+
+	return false;
 }
