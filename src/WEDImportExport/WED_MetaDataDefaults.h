@@ -37,4 +37,14 @@ bool fill_in_airport_metadata_defaults(WED_Airport & airport, const string& file
 // you may want to read the CSV yourself, once, and never again have to hit the disk.
 bool fill_in_airport_metadata_defaults(WED_Airport & airport, const CSVParser::CSVTable &table);
 
+// prefixed any existing country meta data with a iso 3166 country code
+// tries to dereive the name from the country code meta data by matching against a list of partical strings,
+// if that fails tries to dereive country from region code in either ICAO code or ICAO region meta data
+// if country meta  is empty or non-existent but a clear ICAO region match exists, country meta data is added
+// returns if meta dat was changed
+
+bool add_iso3166_country_metadata(WED_Airport & airport);
+
+extern vector<vector<const char*> > iso3166_codes;
+
 #endif

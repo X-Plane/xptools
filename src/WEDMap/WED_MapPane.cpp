@@ -42,6 +42,7 @@
 #include "WED_ATCLayer.h"
 #include "WED_WorldMapLayer.h"
 #include "WED_NavaidLayer.h"
+#include "WED_TerrainLayer.h"
 #include "WED_PreviewLayer.h"
 #include "WED_DebugLayer.h"
 #include "WED_VertexTool.h"
@@ -160,7 +161,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	mLayers.push_back(mATCLayer =		new WED_ATCLayer(mMap, mMap, resolver));
 	mLayers.push_back(mPreview =		new WED_PreviewLayer(mMap, mMap, resolver));
 	mLayers.push_back(mNavaidMap =		new WED_NavaidLayer(mMap, mMap, resolver));
-//	mLayers.push_back(mTileserver =		new WED_TileServerLayer(mMap, mMap, resolver));
+	mLayers.push_back(mTerrainMap =		new WED_TerrainLayer(mMap, mMap, resolver));
 	mLayers.push_back(					new WED_DebugLayer(mMap, mMap, resolver));
 #if WITHNWLINK
 	WED_NWLinkAdapter * nwlink = (dynamic_cast<WED_Document *>(resolver))->GetNWLink();
@@ -417,6 +418,7 @@ int		WED_MapPane::Map_HandleCommand(int command)
 	case wed_PickOverlay:	WED_DoMakeNewOverlay(mResolver, mMap); return 1;
 	case wed_ToggleWorldMap:mWorldMap->ToggleVisible(); return 1;
 	case wed_ToggleNavaidMap:mNavaidMap->ToggleVisible(); return 1;
+	case wed_ToggleTerrainMap:mTerrainMap->ToggleVisible(); return 1;
 	case wed_TogglePreview:	mPreview->ToggleVisible(); 			return 1;
 	case wed_SlippyMapNone:	mSlippyMap->SetMode(0);	 		return 1;
 	case wed_SlippyMapOSM:	mSlippyMap->SetMode(1);	 		return 1;
@@ -456,9 +458,10 @@ int		WED_MapPane::Map_CanHandleCommand(int command, string& ioName, int& ioCheck
 	Bbox2	box;
 
 	switch(command) {
-	case wed_PickOverlay:															return 1;
-	case wed_ToggleWorldMap:ioCheck = mWorldMap->IsVisible();								return 1;
-	case wed_ToggleNavaidMap:ioCheck = mNavaidMap->IsVisible();								return 1;
+	case wed_PickOverlay:														return 1;
+	case wed_ToggleWorldMap:ioCheck = mWorldMap->IsVisible();					return 1;
+	case wed_ToggleNavaidMap:ioCheck = mNavaidMap->IsVisible();					return 1;
+	case wed_ToggleTerrainMap:ioCheck = mTerrainMap->IsVisible();				return 1;
 	case wed_SlippyMapNone: ioCheck = mSlippyMap->GetMode() == 0;				return 1;
 	case wed_SlippyMapOSM:  ioCheck = mSlippyMap->GetMode() == 1;				return 1;
 	case wed_SlippyMapESRI: ioCheck = mSlippyMap->GetMode() == 2;				return 1;

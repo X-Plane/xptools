@@ -150,6 +150,7 @@ static const GUI_MenuItem_t kViewMenu[] = {
 {	"&Pick Overlay Image...",	0,	0,										0,	wed_PickOverlay		},
 {	"Toggle &World Map",		0,	0,										0,	wed_ToggleWorldMap	},
 {	"Toggle &Navaids",			0,	0,										0,	wed_ToggleNavaidMap	},
+{	"Toggle Terrain",			0,	0,										0,	wed_ToggleTerrainMap},
 {	"S&lippy Map",				0,	0,										0,	0                   },
 {	"To&ggle Preview",			0,	0,										0,	wed_TogglePreview	},
 #if WITHNWLINK
@@ -316,12 +317,12 @@ void WED_MakeMenus(GUI_Application * inApp)
 		"&Object Density", kObjDensityMenu, view_menu, 7);
 
 	GUI_Menu	slippy_menu = inApp->CreateMenu(
-		"S&lippy Map",	kSlippyMapMenu, view_menu, 12);
+		"S&lippy Map",	kSlippyMapMenu, view_menu, 13);
 
 #if WITHNWLINK
-	const int preview_window_parent = 16;
+	const int preview_window_parent = 17;
 #else
-	const int preview_window_parent = 15;
+	const int preview_window_parent = 16;
 #endif
 	GUI_Menu	preview_window_menu = inApp->CreateMenu(
 		"3D Preview &Window", k3DPreviewMenu, view_menu, preview_window_parent);

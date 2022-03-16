@@ -18,10 +18,10 @@ Planned functionality for WED 2.5 not yet included in the alpha versions
    - on-map preview of .agb definitions
    - show trees part of any autogen definition
 
-WED functionality not yet supportted by XP12 alphas
+WED functionality not yet supported by XP12 alpha's
     - rowcode 105 skidmark and line color/width customizations for runways
 
-WED 2.5.0 beta 3
+WED 2.5.0b2 3/15/21
    Bug Fix:
    - fix .agp scraper display mismatch for some heights
    - fix gridded preview for 3D objects only showing partially on OSX w/AMD graphics
@@ -52,12 +52,14 @@ WED 2.5.0 beta 3
    - validation warning on TOWER_VIEWPOINT height not matching objects with #viewpoint_height tags
    - use actual XP textures for run/taxiway and helipd previews in map, if available
    - apply jetway upgrades, remove large terrain polygons at export (tyler_mode only)
+   - add 3-letter iso3166 country prefixes to airport meta data (tyler_mode only)
    - validation exeption to make KSEA, LOWI gateway legal
    - validate taxiways for zero-length segments
    - show multi-layered forests correctly in the preview window
    - show ATC tower airspaces in Navaid layer
    - LibraryList has icons indication seasonal/regional variants exist
    - WED-1161 (limited) ability to collapse search results in LibrayPane
+   - new map layer "Terrain" visualizing terrain mesh structure, DEM and explicit height vertices
 
 WED 2.4.0rc2 5/29/21
    Features:

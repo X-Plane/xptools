@@ -47,9 +47,7 @@ void	WED_ExportPackToPath(WED_Thing * root, IResolver * resolver, const string& 
 {
 	int result = DSF_Export(root, resolver, in_path,problem_children);
 	if (result == -1)
-	{
 		return;
-	}
 
 	string	apt = in_path + "Earth nav data" DIR_STR "apt.dat";
 	string	apt_dir = in_path + "Earth nav data";
@@ -75,8 +73,9 @@ int		WED_CanExportPack(IResolver * resolver)
 #include "WED_ObjPlacement.h"
 #include "WED_PolygonPlacement.h"
 #include "WED_MetaDataKeys.h"
+#include "WED_MetaDataDefaults.h"
 #include "WED_Menus.h"
-#include <GISUtils.h>
+#include "GISUtils.h"
 #include <chrono>
 
 static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
@@ -95,7 +94,8 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 //		FAA_bounds.push_back(Point2(bdy[i], bdy[i + 1]);
 
 	int deleted_illicit_icao = 0;
-	int added_local_code = 0;
+	int added_local_codes = 0;
+	int added_country_codes = 0;
 	int grass_statistics[4] = { 0 };
 
 	auto t0 = chrono::high_resolution_clock::now();
@@ -147,11 +147,13 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 					wrl->StartCommand("Add local code");
 					(*apt_itr)->AddMetaDataKey(META_KeyName(wed_AddMetaDataLocal),apt_ID);
 					wrl->CommitCommand();
-					added_local_code++;
+					added_local_codes++;
 				}
 			}
 		}
-		
+
+		//-- upgrade Country Metadata -------------
+		added_country_codes += add_iso3166_country_metadata(**apt_itr);
 
 		(*apt_itr)->GetName(ICAO_code);
 
@@ -178,7 +180,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			else
 				wrl->AbortCommand();
 		}
-#if 0
+#if 0  // this was good in 10.45, but not needed any for gateway airports as of 2022
 		//-- Agp and obj upgrades to create more ground traffic --------------------------------
 		vector<WED_TruckParkingLocation*> parking_locations;
 		CollectRecursive(*apt_itr, back_inserter(parking_locations));
@@ -219,16 +221,6 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				WED_DoReplaceVehicleObj(resolver,*apt_itr);
 		}
 #endif
-		//-- Break up jetway AGP's, convert jetway objects into facades for XP12 moving jetways -------------
-		wrl->StartCommand("Upgrade Jetways");
-		if (int count = WED_DoConvertToJW(*apt_itr))
-		{
-			wrl->CommitCommand();
-			LOG_MSG("Upgraded %d JW at %s\n", count, ICAO_code.c_str());
-		}
-		else
-			wrl->AbortCommand();
-
 		//-- Remove leading zero's from runways within the FAA's jurisdiction, except some mil bases ------
 		Bbox2 apt_box;
 		(*apt_itr)->GetBounds(gis_Geo, apt_box);
@@ -261,6 +253,17 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 					}
 			}
 		}
+
+		//-- Break up jetway AGP's, convert jetway objects into facades for XP12 moving jetways -------------
+		wrl->StartCommand("Upgrade Jetways");
+		if (int count = WED_DoConvertToJW(*apt_itr))
+		{
+			wrl->CommitCommand();
+			LOG_MSG("Upgraded %d JW at %s\n", count, ICAO_code.c_str());
+		}
+		else
+			wrl->AbortCommand();
+
 #if TYLER_MODE == 11
 		// translate new pavement polygons into XP11 equivalents (run/taxiways have that done in aptio.cpp)
 		// as well as a few essential and well known new XP12 objects. These "back-translations" 
@@ -376,6 +379,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 #endif
 		double percent_done = (double)distance(apts.begin(), apt_itr) / apts.size() * 100;
 		printf("%0.0f%% through heuristic at %s\n", percent_done, ICAO_code.c_str());
+
 		auto t1 = chrono::high_resolution_clock::now();
 		chrono::duration<double> elapsed = t1 - t2;
 		LOG_MSG("Update %s took %lf sec\n", ICAO_code.c_str(), elapsed.count());
@@ -389,12 +393,14 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 	WED_DoClear(resolver);
 #endif		
 	LOG_MSG("Deleted %d illicit ICAO meta tags\n", deleted_illicit_icao);
-	LOG_MSG("Added %d local code metas to prevent Airport_ID getting taken for ICAO\n", added_local_code);
+	LOG_MSG("Added %d local code metas to prevent Airport_ID getting taken for ICAO\n", added_local_codes);
+	LOG_MSG("Prefixed %d country meta data with iso3166 codes\n", added_country_codes);
 	LOG_MSG("Mowed %d polys %d lines %d spots %d patches\n", grass_statistics[0], grass_statistics[1],grass_statistics[2],grass_statistics[3]);
 
 	auto t1 = chrono::high_resolution_clock::now();
 	chrono::duration<double> elapsed = t1 - t0;
 	LOG_MSG("## Tyler mode ## Done with upgrade heuristics, took %lf sec\n", elapsed.count());
+	LOG_FLUSH();
 }
 #endif
 
