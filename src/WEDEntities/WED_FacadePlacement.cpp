@@ -25,10 +25,13 @@
 #include "WED_FacadeRing.h"
 #include "WED_FacadeNode.h"
 #include "WED_ResourceMgr.h"
+#include "WED_LibraryMgr.h"
 #include "WED_EnumSystem.h"
 #include "WED_ToolUtils.h"
 #include "AptDefs.h"
 #include "GISUtils.h"
+#include "FileUtils.h"
+#include "PlatformUtils.h"
 #include "XESConstants.h"
 
 DEFINE_PERSISTENT(WED_FacadePlacement)
@@ -188,7 +191,7 @@ bool		WED_FacadePlacement::HasDockingCabin(void) const
 						if (auto tunnel = ps->GetNthPoint(n_pts - 3))
 						{
 							tunnel->GetLocation(gis_Param, pt);
-							for(auto t : f->tunnels)
+							for(auto& t : f->tunnels)
 								if (pt.x() == t.idx)
 									return true;
 						}
@@ -214,6 +217,7 @@ void		WED_FacadePlacement::ExportJetway(Jetway_t& jetway)
 		if (f && f->tunnels.size())
 		{
 			Point2 loc, cabin_loc, type;
+			string tun_path;
 			tunnel->GetLocation(gis_Geo, loc);
 			jetway.location = loc;
 
@@ -223,17 +227,44 @@ void		WED_FacadePlacement::ExportJetway(Jetway_t& jetway)
 			jetway.parked_tunnel_heading= jetway.install_heading;
 
 			tunnel->GetLocation(gis_Param, type);
-			for (auto t : f->tunnels)
+			for (auto& t : f->tunnels)
 			{
 				if (type.x() == t.idx)
 				{
 					jetway.size_code = t.size_code;
+					tun_path = t.obj;
 					break;
 				}
 			}
 			c_dir->GetLocation(gis_Geo, loc);
 			jetway.parked_cab_heading = VectorDegs2NorthHeading(cabin_loc, cabin_loc, Vector2(cabin_loc, loc));
 			jetway.style_code = f->style_code;
+
+			if (auto lmgr = WED_GetLibraryMgr(GetArchive()->GetResolver()))
+				if (!lmgr->IsResourceDefault(resource.value))
+				{
+					/* This is used to resolve objects referenced .fac
+					   These can be either vpaths or paths relative to the art assets location.
+					   If it a vpath - its got to be known to the library manager.
+					*/
+					if (lmgr->GetResourcePath(tun_path).size())
+					{
+						jetway.vpath += tun_path;
+					}
+					else /* Then it must be a physical path relative to the .fac definition */
+					{
+						if (lmgr->IsResourceLocal(resource.value))
+						{
+							tun_path = FILE_get_dir_name(resource.value) + tun_path;
+							for (auto& c : tun_path)
+								if (c == '\\') c = '/';
+							jetway.vpath += tun_path;
+						}
+						else
+							LOG_MSG("E/Export custom jetway facade %s is in a library but uses a relative path for %s\n",
+								resource.value.c_str(), tun_path.c_str());
+					}
+				}
 		}
 	}
 }
@@ -247,13 +278,19 @@ void		WED_FacadePlacement::ImportJetway(const Jetway_t& apt_data, void(*print_fu
 		SetHeight(1);
 		SetShowLevel(1);
 
-		switch (apt_data.style_code)
+		if(apt_data.vpath.empty())
+			switch (apt_data.style_code)
+			{
+				case 0: SetResource("lib/airport/Ramp_Equipment/Jetways/Jetway_1_glass.fac"); break;
+				case 1: SetResource("lib/airport/Ramp_Equipment/Jetways/Jetway_1_solid.fac"); break;
+				case 2: SetResource("lib/airport/Ramp_Equipment/Jetways/Jetway_2_glass.fac"); break;
+				case 3: SetResource("lib/airport/Ramp_Equipment/Jetways/Jetway_1_solid.fac"); break;
+			}
+		else
 		{
-			case 0: SetResource("lib/airport/Ramp_Equipment/Jetways/Jetway_1_glass.fac"); break;
-			case 1: SetResource("lib/airport/Ramp_Equipment/Jetways/Jetway_1_solid.fac"); break;
-			case 2: SetResource("lib/airport/Ramp_Equipment/Jetways/Jetway_2_glass.fac"); break;
-			case 3: SetResource("lib/airport/Ramp_Equipment/Jetways/Jetway_1_solid.fac"); break;
+			SetResource("Finding the .fac providing a given custom jetway object isn't implemented, yet");
 		}
+
 		ring = WED_FacadeRing::CreateTyped(GetArchive());
 		ring->SetParent(this, 0);
 		ring->SetName("Ring");

@@ -102,6 +102,15 @@ int zip_printf(void * fi, const char * fmt, ...)
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 
+static unsigned int encode_heading(double h)
+{
+	double          wrapped = dobwrap(h, 0.0, 360.0);
+	unsigned int  whole_deg = wrapped;
+	double         frac_deg = wrapped - whole_deg;
+
+	return whole_deg + 360u * (unsigned int)(128.0 * frac_deg);
+}
+
 // stolen from GISUtils - I got annoyed with having to grab all of CGAL for a modulo function.
 /*inline int	latlon_bucket(int p)
 {
@@ -1893,7 +1902,7 @@ static int	DSF_ExportTileRecursive(
 				for(vector<vector<BezierPolygon2> >::iterator i = pol_cuts.begin(); i != pol_cuts.end(); ++i)
 				{
 					++real_thingies;
-					cbs->BeginPolygon_f(idx,intround(pol->GetHeading()),bez ? 4 : 2,writer);
+					cbs->BeginPolygon_f(idx, encode_heading(pol->GetHeading()),bez ? 4 : 2,writer);
 					DSF_AccumPolygonWithHolesBezier(*i, safe_bounds, cbs, writer);
 					cbs->EndPolygon_f(writer);
 				}
@@ -1914,7 +1923,7 @@ static int	DSF_ExportTileRecursive(
 				for(vector<vector<Polygon2> >::iterator i = pol_cuts.begin(); i != pol_cuts.end(); ++i)
 				{
 					++real_thingies;
-					cbs->BeginPolygon_f(idx,intround(pol->GetHeading()),bez ? 4 : 2,writer);
+					cbs->BeginPolygon_f(idx, encode_heading(pol->GetHeading()),bez ? 4 : 2,writer);
 					DSF_AccumPolygonWithHoles(*i, safe_bounds, cbs, writer);
 					cbs->EndPolygon_f(writer);
 				}

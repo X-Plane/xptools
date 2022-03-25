@@ -1105,7 +1105,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 			}
 			break;
 		case apt_jetway:
-			if (vers < 1200) ok = "Error: no jetways in older apt.dat files.";
+			if (vers < 1200) ok = "Error: no jetways in pre 1200 apt.dat files.";
 			else if (outApts.empty()) ok = "Error: jetway outside an airport.";
 			else
 			{
@@ -1125,6 +1125,21 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				}
 
 				outApts.back().jetways.push_back(j);
+			}
+			break;
+		case apt_jetway_custom:
+			if (vers < 1200) ok = "Error: no jetways in pre 1200 apt.dat files.";
+			else if (outApts.empty()) ok = "Error: jetway outside an airport.";
+			else if (outApts.back().jetways.empty()) ok = "Error: custom jetway without preceeding jetway";
+			else
+			{
+				Jetway_t j;
+				if (TextScanner_FormatScan(s, "iT|",
+					&rec_code,
+					&outApts.back().jetways.back().vpath) < 2)
+				{
+					ok = "Error: Illegal custom jetway";
+				}
 			}
 			break;
 		case apt_done:
@@ -1597,6 +1612,9 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 						apt_jetway, jetway.location.y(), jetway.location.x(), jetway.install_heading,
 						jetway.style_code, jetway.size_code, jetway.parked_tunnel_heading,
 						jetway.parked_tunnel_length, jetway.parked_cab_heading);
+					if (!jetway.vpath.empty())
+						fprintf(fi, "%d %s" CRLF,
+							apt_jetway_custom, jetway.vpath.c_str());
 				}
 		}
 	}

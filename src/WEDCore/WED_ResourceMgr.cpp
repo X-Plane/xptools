@@ -1098,8 +1098,8 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 			}
 			if(fac->noroofmesh) fac->has_roof = false;
 
-			for(auto& obj_nam : fac->objs)
-			{
+			for(auto& obj_nam : fac->objs)                // move this back into faacade preview code, since it costs too much time.
+			{                                             // We do at times load EVERY facade just to find out which are custom jetways
 				const XObj8 * o;
 				fac->xobjs.push_back(nullptr);
 				if(GetObjRelative(obj_nam, vpath, o))

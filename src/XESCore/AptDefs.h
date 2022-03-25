@@ -103,6 +103,7 @@ enum {
 	apt_truck_destination = 1401,		// 1401 lat lon heading type|type|type... name
 
 	apt_jetway = 1500,					// 1500 lat lon install_heading style_code size_code parked_tunnel_heading parked_tunnel_length parked_cab_heading
+	apt_jetway_custom = 1501,			// specifies custom path/vpath to be used for last preceeding 1500 jetway
 
 	// Surface codes
 	apt_surf_none		= 0,
@@ -632,6 +633,7 @@ struct Jetway_t {
 	float						parked_tunnel_heading;
 	float						parked_tunnel_length;
 	float						parked_cab_heading;
+	string						vpath;          // optional
 };
 typedef vector<Jetway_t> JetwayVector;
 

@@ -715,7 +715,7 @@ public:
 			{
 				WED_PolygonPlacement * pol = WED_PolygonPlacement::CreateTyped(me->archive);
 				me->poly = pol;
-				pol->SetHeading(inParam);
+				pol->SetHeading( 1.0/128.0 * (int) (inParam / 360) + inParam % 360 );
 				pol->SetResource(r);
 				cat = dsf_cat_draped_poly;
 			}

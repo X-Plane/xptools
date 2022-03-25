@@ -1235,7 +1235,7 @@ struct	preview_facade : public preview_polygon {
 					Bezier2 bp;
 					ps->GetSide(gis_Param, i, bp);
 
-					for(auto t : info->tunnels)
+					for(auto& t : info->tunnels)
 						if (t.idx == bp.p1.x())
 						{
 							my_tun = t;
