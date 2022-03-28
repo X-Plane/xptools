@@ -30,7 +30,7 @@ DEFINE_PERSISTENT(WED_PolygonPlacement)
 TRIVIAL_COPY(WED_PolygonPlacement,WED_GISPolygon)
 
 WED_PolygonPlacement::WED_PolygonPlacement(WED_Archive * a, int i) : WED_GISPolygon(a,i),
-	heading (this,PROP_Name("Heading", XML_Name("polygon_placement","heading")),10.0,3,1),
+	heading (this,PROP_Name("Heading", XML_Name("polygon_placement","heading")),0.0,6,2),
 	resource(this,PROP_Name("Resource",XML_Name("polygon_placement","resource")),"")
 {
 }
