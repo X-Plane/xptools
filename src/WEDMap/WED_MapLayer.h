@@ -32,7 +32,7 @@
 class	WED_MapZoomerNew;
 class	GUI_GraphState;
 class	IGISEntity;
-class	WED_Thing;
+class	WED_Entity;
 class	IResolver;
 class	GUI_Pane;
 
@@ -69,7 +69,7 @@ public:
 
 	// These draw specific entities.  Use these to draw pieces of the data model.  Only visible entities will be passed in!
 	virtual	bool		DrawEntityVisualization	(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected) { return false; }
-	virtual	bool		DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected, bool locked) { return false; }
+	virtual	bool		DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, bool selected, bool locked) { return false; }
 
 			bool		IsVisible(void) const;
 			void		SetVisible(bool visibility);
@@ -84,7 +84,7 @@ public:
 	virtual	void		GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks)=0;
 
 			bool				IsVisibleNow(IGISEntity * ent) const;
-			bool				IsVisibleNow(WED_Thing * ent) const;
+			bool				IsVisibleNow(WED_Entity* ent) const;
 
 protected:
 
@@ -93,8 +93,8 @@ protected:
 	inline	GUI_Pane *			GetHost(void) const { return mHost; }
 	
 			bool				IsLockedNow(IGISEntity * ent) const;
-			bool				IsLockedNow2(IGISEntity* ent) const;
-			bool				IsLockedNow(WED_Thing * ent) const;
+			bool				IsLockedNow(WED_Entity* ent) const;
+			bool				IsLocked(WED_Entity* ent) const;
 
 	// WED defines two types of icons: furniture icons for all the stuff in an airport (VASI/PAPI, signs, windsocks) and airport
 	// icons for the iconic representation of an entire airport at far view.  In both cases we have two vars:

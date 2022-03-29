@@ -260,7 +260,7 @@ static void	Quad_2to4pix(const Point2 ends[2], double width_pix, Point2 corners[
 }
 
 
-bool	WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected)
+bool	WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, bool selected, bool locked)
 {
 	if(entity->GetGISSubtype() == WED_RampPosition::sClass)
 	{

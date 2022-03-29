@@ -307,8 +307,8 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 				mSelManip.push_back(e);
 				if (!has_click)
 				{
-					if(!IsLockedNow(t))
-					if(IsVisibleNow(t))
+					if(!IsLockedNow(e))
+					if(IsVisibleNow(e))
 					{
 						double	frame_dist = fabs(GetZoomer()->YPixelToLat(0)-GetZoomer()->YPixelToLat(3));
 						double	icon_dist_v = fabs(GetZoomer()->YPixelToLat(0)-GetZoomer()->YPixelToLat(GetFurnitureIconRadius()));

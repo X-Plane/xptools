@@ -90,16 +90,11 @@ WED_StructureLayer::~WED_StructureLayer()
 }
 
 
-bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity,  GUI_GraphState * g, int selected, bool locked)
+bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity,  GUI_GraphState * g, bool selected, bool locked)
 {
 	//	g->SetState(false,0,false,   false,true,false,false);
 	//  very carefully check that ALL operations that change the state to textured its re-set again,
 	//  so we don't have to reset state for *evrvy* entity.
-
-//	int old_locked = IsLockedNow(entity);
-	locked |= (bool) IsLockedNow2(entity);
-
-//	DebugAssert((bool) locked == old_locked);
 
 	WED_Color struct_color = selected ? (locked ? wed_StructureLockedSelected : wed_StructureSelected) :
 										(locked ? wed_StructureLocked		 : wed_Structure);
@@ -398,7 +393,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 							for(int i = 0; i < lin->GetNumSides(); ++i)
 							{
 								vector<Point2>	pts;
-								SideToPoints(ps,i,GetZoomer(), pts);
+								SideToPoints(ps, i, z, pts);
 								glLineWidth(3);
 								glShape2v(GL_LINES, &*pts.begin(), pts.size());
 								glLineWidth(1);
@@ -612,25 +607,11 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 
 bool		WED_StructureLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected)
 {
-//	g->SetState(false,0,false,   false,true,false,false);
-
-//	int locked = IsLockedNow(entity);
-//	WED_Color struct_color = selected ? (locked ? wed_StructureLockedSelected : wed_StructureSelected) :
-//										(locked ? wed_StructureLocked		 : wed_Structure);
-
-	GISClass_t 		kind		= entity->GetGISClass();
-//	const char *	sub_class	= entity->GetGISSubtype();
-//	IGISPolygon *					poly;
-
-	WED_OverlayImage *				overlay;
-
-//	glColor4fv(WED_Color_RGBA(struct_color));
-
-	switch(kind) {
+	switch(entity->GetGISClass()) {
 	case gis_Polygon:
 		if(entity->GetGISSubtype() == WED_OverlayImage::sClass)
 		{
-			if((overlay = dynamic_cast<WED_OverlayImage *> (entity)) != NULL)
+			if(auto overlay = dynamic_cast<WED_OverlayImage *> (entity))
 			{
 				IGISPointSequence * oring = overlay->GetOuterRing();
 				if(oring->GetNumPoints() > 3)

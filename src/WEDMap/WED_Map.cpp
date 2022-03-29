@@ -60,7 +60,6 @@
 // display Frames Per Second. Will peg CPU/GPU load at 100%, only useable for diaganostic purposes.
 #define SHOW_FPS 0
 
-
 WED_Map::WED_Map(IResolver * in_resolver, GUI_Commander * cmdr) : GUI_Commander(cmdr), mResolver(in_resolver), mTool(NULL), mClickLayer(NULL),
 					mIsDownCount(0), mIsDownExtraCount(0)
 {
@@ -374,7 +373,8 @@ void		WED_Map::DrawVisFor(WED_MapLayer * layer, int current, const Bbox2& bounds
 	if(!what->Cull(bounds))	return;
 	IGISComposite * c;
 
-	if(!layer->IsVisibleNow(what))	return;
+	auto what_ent = dynamic_cast<WED_Entity*>(what);
+	if(!what_ent || !layer->IsVisibleNow(what_ent))	return;
 
 	if (layer->DrawEntityVisualization(current, what, g, sel && sel->IsSelected(what)))
 	if (what->GetGISClass() == gis_Composite && (c = SAFE_CAST(IGISComposite, what)) != NULL)
@@ -400,7 +400,9 @@ void		WED_Map::DrawStrFor(WED_MapLayer * layer, int current, const Bbox2& bounds
 	if(!what->Cull(bounds))	return;
 	IGISComposite * c;
 
-	if(!layer->IsVisibleNow(what))	return;
+	auto what_ent = dynamic_cast<WED_Entity*>(what);
+	if(!what_ent || !layer->IsVisibleNow(what_ent))	return;
+	what_locked |= layer->IsLocked(what_ent);
 
 	if (layer->DrawEntityStructure(current, what, g, sel && sel->IsSelected(what), what_locked))
 	if (what->GetGISClass() == gis_Composite && (c = SAFE_CAST(IGISComposite, what)) != NULL)
@@ -411,7 +413,6 @@ void		WED_Map::DrawStrFor(WED_MapLayer * layer, int current, const Bbox2& bounds
 
 		if(PixelSize(on_screen) > TOO_SMALL_TO_GO_IN || on_screen.is_point() || depth == 0)
 		{
-			what_locked |= (bool) dynamic_cast<WED_Entity*>(what)->GetLocked2();
 			int t = c->GetNumEntities();
 			for (int n = t-1; n >= 0; --n)
 				DrawStrFor(layer, current, bounds, c->GetNthEntity(n), what_locked, g, sel, depth+1);

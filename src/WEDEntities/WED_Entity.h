@@ -110,8 +110,8 @@ DECLARE_INTERMEDIATE(WED_Entity)
 
 public:
 
-			int		GetLocked(void) const;            // recursive, covers any parents being locked
-			int		GetLocked2(void) const;           // non-recursive
+			int		GetLockedRecursive(void) const;  // covers any parents being locked
+			int		GetLocked(void) const;           // non-recursive
 			int		GetHidden(void) const;
 
 	virtual	bool 	ReadFrom(IOReader * reader);
