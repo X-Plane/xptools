@@ -1368,10 +1368,10 @@ vector<Polygon2> PolygonIntersect(const vector<Polygon2>& mpolyA, const vector<P
 	vector<Polygon2> mpoly;
 	TESStesselator * tess = tessNewTess(NULL);
 
-	for(auto poly : mpolyA)
+	for(auto& poly : mpolyA)
 		tessAddContour(tess, 2, poly.data(), 2 * sizeof(TESSreal), poly.size());
 
-	for(auto poly : mpolyB)
+	for(auto& poly : mpolyB)
 		tessAddContour(tess, 2, poly.data(), 2 * sizeof(TESSreal), poly.size());
 
 	if(tessTesselate(tess, TESS_WINDING_ABS_GEQ_TWO, TESS_BOUNDARY_CONTOURS, 3, 2, 0))
@@ -1401,10 +1401,10 @@ vector<Polygon2> PolygonUnion(const vector<Polygon2>& mpolyA, const vector<Polyg
 	vector<Polygon2> mpoly;
 	TESStesselator * tess = tessNewTess(NULL);
 	
-	for(auto poly : mpolyA)
+	for(auto& poly : mpolyA)
 		tessAddContour(tess, 2, poly.data(), 2 * sizeof(TESSreal), poly.size());
 
-	for(auto poly : mpolyB)
+	for(auto& poly : mpolyB)
 		tessAddContour(tess, 2, poly.data(), 2 * sizeof(TESSreal), poly.size());
 
 	if(tessTesselate(tess, TESS_WINDING_POSITIVE, TESS_BOUNDARY_CONTOURS, 3, 2, 0))
@@ -1432,10 +1432,10 @@ vector<Polygon2> PolygonCut(const vector<Polygon2>& mpolyA, const vector<Polygon
 	vector<Polygon2> mpoly;
 	TESStesselator * tess = tessNewTess(NULL);
 //printf("cut A %d B %d\n", mpolyA.size()	,mpolyB.size());
-	for(auto poly : mpolyA)
+	for(auto& poly : mpolyA)
 		tessAddContour(tess, 2, poly.data(), 2 * sizeof(TESSreal), poly.size());
 
-	for(auto poly : mpolyB)
+	for(auto& poly : mpolyB)
 	{
 		vector<Point2>inv_pts;
 		inv_pts.reserve(poly.size());

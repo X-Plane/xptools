@@ -5892,7 +5892,7 @@ static vector<WED_PolygonPlacement *> PolygonsForWED_Polygon(WED_Thing * parent,
 static bool inside_pt(const vector<Polygon2>& vec_poly, const Point2 pt)
 {
 	int inside = 0;
-	for(auto p : vec_poly)
+	for(const auto& p : vec_poly)
 	{
 		if(p.size())
 		if(p.inside(pt))
