@@ -705,6 +705,8 @@ void	WED_DocumentWindow::ReceiveMessage(
 		gExportTarget = wet_latest_xplane;
 	#else
 		gExportTarget = (WED_Export_Target) mDocument->ReadIntPref("doc/export_target",gExportTarget);
+		if (gExportTarget > wet_latest_xplane && gExportTarget != wet_gateway)
+			gExportTarget = wet_latest_xplane;
 	#endif
 		XWin::SetFilePath(NULL,mDocument->IsDirty());
 	}

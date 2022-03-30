@@ -21,7 +21,7 @@ Planned functionality for WED 2.5 not yet included in the alpha versions
 WED functionality not yet supported by XP12 alpha's
     - rowcode 105 skidmark and line color/width customizations for runways
 
-WED 2.5.0b2 3/25/21
+WED 2.5.0b2 3/30/22
    Bug Fix:
    - fix .agp scraper display mismatch for some heights
    - fix gridded preview for 3D objects only showing partially on OSX w/AMD graphics
@@ -31,6 +31,7 @@ WED 2.5.0b2 3/25/21
    - reduce residual heading error for draped polygons by rounding, not truncating at DSF export
    - WED-1413 ATC route validation escape for runways NOT starting with a leading zero
    - WED-1412 fix horizontal distortion caused by map projection in 3D preview
+   - validate zero-length segments to 0.1m (apt boundaries to 30m), rather than exact colocation
    X-Plane 12 features:
    - moving default and custom jetways (requires propper jetways .fac w/metadata)
    - runway & taxiways surface styles and markings
@@ -52,7 +53,7 @@ WED 2.5.0b2 3/25/21
    - add iso3166 country codes to 1302 country meta data
    Features for all X-Plane versions:
    - use full projection for map display to improve location accuracy of linear features
-   - validation warning on TOWER_VIEWPOINT height not matching objects with #viewpoint_height tags
+   - validation warning on TOWER_VIEWPOINT height not matching with #viewpoint_height tags
    - use actual XP textures for run/taxiway and helipd previews in map, if available
    - apply jetway upgrades, remove large terrain polygons at export (tyler_mode only)
    - add 3-letter iso3166 country prefixes to airport meta data (tyler_mode only)
@@ -62,7 +63,7 @@ WED 2.5.0b2 3/25/21
    - show ATC tower airspaces in Navaid layer
    - LibraryList has icons indication seasonal/regional variants exist
    - WED-1161 (limited) ability to collapse search results in LibrayPane
-   - new map layer "Terrain" visualizing terrain mesh structure, DEM and explicit height vertices
+   - new map layer "Terrain" visualizes terrain mesh structure, DEM and explicit height vertices
 
 WED 2.4.0rc2 5/29/21
    Features:

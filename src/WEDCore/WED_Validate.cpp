@@ -234,6 +234,7 @@ static void ValidateOnePointSequence(WED_Thing* who, validation_error_vector& ms
 	     parent->GetClass() == WED_PolygonPlacement::sClass ||
 	     parent->GetClass() == WED_Taxiway::sClass ||          // we also test those elsewhere, but not for zero length segments
 	     parent->GetClass() == WED_ForestPlacement::sClass ||
+	     parent->GetClass() == WED_AirportBoundary::sClass ||
 	     parent->GetClass() == WED_FacadePlacement::sClass ))
 	{
 		bool is_area = true;
@@ -254,7 +255,7 @@ static void ValidateOnePointSequence(WED_Thing* who, validation_error_vector& ms
 		return;         // don't check anything else like lines/strings/etc. Comment this out to enable checks.
 	}
 
-	vector<WED_Thing*> problem_children;
+	set<WED_Thing*> problem_children;
 
 	if ((parent) && parent->GetClass() == WED_DrapedOrthophoto::sClass)
     {
@@ -270,7 +271,7 @@ static void ValidateOnePointSequence(WED_Thing* who, validation_error_vector& ms
 				p.y() < -65535.0 || p.y() > 65535.0)
             {
                 // add first node of each zero length segment to list
-                problem_children.push_back(dynamic_cast<WED_Thing *>(ps->GetNthPoint(n)));
+                problem_children.insert(dynamic_cast<WED_Thing *>(ps->GetNthPoint(n)));
             }
         }
 
@@ -298,7 +299,7 @@ static void ValidateOnePointSequence(WED_Thing* who, validation_error_vector& ms
                 if(p1.squared_distance(p2) < 1E-10)   // that is less than 1/25 of a pixel even on a 4k texture
                 {
                     // add first node of each zero length segment to list
-                    problem_children.push_back(dynamic_cast<WED_Thing *>(ps->GetNthPoint(n)));
+                    problem_children.insert(dynamic_cast<WED_Thing *>(ps->GetNthPoint(n)));
                 }
             }
 
@@ -312,22 +313,43 @@ static void ValidateOnePointSequence(WED_Thing* who, validation_error_vector& ms
     }
 
 #if CHECK_ZERO_LENGTH
-    problem_children.clear();
+	double min_seg_len   = 0.1;
+	if (gExportTarget == wet_gateway)
+	{
+		if (parent->GetClass() == WED_AirportBoundary::sClass)
+			min_seg_len = 30.0;
+//		else if (parent->GetClass() == WED_ForestPlacement::sClass)
+//			min_seg_len = 10.0;
+	}
+
+	double min_len_sq = dob_sqr(min_seg_len * MTR_TO_DEG_LAT);
+	Point2 pt;
+	ps->GetNthPoint(0)->GetLocation(gis_Geo, pt);
+	double inv_cos_lat_sq = dob_sqr(1.0 / cos(pt.y() * DEG_TO_RAD));
+
+	problem_children.clear();
 	nn = ps->GetNumSides();
+
 	for(int n = 0; n < nn; ++n)
 	{
 		Bezier2 b;
 		bool bez = ps->GetSide(gis_Geo,n,b);
 
-		if(b.p1 == b.p2)
+		// if(b.p1 == b.p2)
+		if(dob_sqr(b.p1.x() - b.p2.x()) + inv_cos_lat_sq * dob_sqr(b.p1.y() - b.p2.y()) < min_len_sq)
 		{
 			// add first node of each zero length segment to list
-			problem_children.push_back(dynamic_cast<WED_Thing *>(ps->GetNthPoint(n)));
+			problem_children.insert(dynamic_cast<WED_Thing *>(ps->GetNthPoint(n)));
 		}
 	}
 	if (problem_children.size() > 0)
 	{
-		string msg = string(parent->HumanReadableType()) + string(" has overlapping duplicate vertices. Delete the selected vertices to fix this.");
+		char c[24];
+		if (min_seg_len > 0.5) 
+			snprintf(c, sizeof(c), "too close (<%d%c)", intround(gIsFeet ? min_seg_len * MTR_TO_FT : min_seg_len), gIsFeet ? '\'' : 'm');
+		else 
+			snprintf(c, sizeof(c), "duplicate");
+		string msg = string(parent->HumanReadableType()) + " has " + c + " vertices. Delete selected vertices to fix this.";
 		msgs.push_back(validation_error_t(msg, err_gis_poly_zero_length_side, problem_children, apt));
 	}
 #endif
