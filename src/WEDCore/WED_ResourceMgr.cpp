@@ -2270,4 +2270,47 @@ bool	WED_ResourceMgr::GetRoad(const string& path, const road_info_t *& out_info)
 
 	return true;
 }
+
+void WED_JWFacades::load(WED_LibraryMgr* lmgr, WED_ResourceMgr* rmgr)
+{
+	for (auto& r : lmgr->res_table)
+	{
+		if (r.second.res_type == res_Facade)
+		{
+			const fac_info_t* fac;
+			if (r.second.packages.count(pack_Local))
+			{
+				if (rmgr->GetFac(r.first, fac))
+					for (auto& t : fac->tunnels)
+						mJWFacades[FILE_get_dir_name(r.first) + t.obj] = r.first; // local facades always need to point to local objects
+			}
+			else if (!r.second.is_default && (r.first.find("jetway") != string::npos || r.first.find("Jetway") != string::npos))
+			{
+				if (rmgr->GetFac(r.first, fac))
+					for (auto& t : fac->tunnels)
+						mJWFacades[t.obj] = r.first; // library JW facades always need to point to vpaths. can not resolve a relative rpath in an external library
+			}
+		}
+	}
+}
+
+string WED_JWFacades::find(WED_LibraryMgr* lmgr, WED_ResourceMgr* rmgr, const string& tunnel_vpath)
+{
+	if (!mInitialized)
+	{
+		load(lmgr, rmgr);
+		mInitialized = true;
+	}
+	auto tun = mJWFacades.find(tunnel_vpath);
+	if (tun == mJWFacades.end())
+		return "can not find suitable jetway facade";
+	else
+		return tun->second;
+}
+
+string	WED_ResourceMgr::GetJetwayVpath(const string& tunnel_vpath)
+{
+	return mJetways.find(mLibrary, this, tunnel_vpath);
+}
+
 #endif

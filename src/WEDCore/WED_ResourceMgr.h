@@ -236,6 +236,16 @@ struct for_info_t {
 	for_info_t(void) : preview(nullptr), preview_3d(nullptr) {}
 };
 
+class WED_JWFacades
+{
+	private:
+		unordered_map<string, string> mJWFacades;
+		bool	mInitialized;
+		void	load(WED_LibraryMgr* lmgr, WED_ResourceMgr* rmgr);
+	public:
+		WED_JWFacades(void) : mInitialized(false) {}
+		string	find(WED_LibraryMgr* lmgr, WED_ResourceMgr* rmgr, const string& tunnel_vpath);
+};
 
 class WED_ResourceMgr : public GUI_Broadcaster, public GUI_Listener, public virtual IBase {
 public:
@@ -264,6 +274,7 @@ public:
 							intptr_t				inMsg,
 							intptr_t				inParam);
 
+			string	GetJetwayVpath(const string& tunnel_vpath);
 private:
 
 			XObj8 * LoadObj(const string& abspath);
@@ -280,6 +291,7 @@ private:
 	unordered_map<string,road_info_t>		mRoad;
 #endif
 	WED_LibraryMgr *				mLibrary;
+	WED_JWFacades					mJetways;
 };
 
 #endif /* WED_ResourceMgr_H */

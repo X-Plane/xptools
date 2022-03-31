@@ -288,7 +288,8 @@ void		WED_FacadePlacement::ImportJetway(const Jetway_t& apt_data, void(*print_fu
 			}
 		else
 		{
-			SetResource("Finding the .fac providing a given custom jetway object isn't implemented, yet");
+			auto rmgr = WED_GetResourceMgr(GetArchive()->GetResolver());
+			SetResource(rmgr->GetJetwayVpath(apt_data.vpath));
 		}
 
 		ring = WED_FacadeRing::CreateTyped(GetArchive());

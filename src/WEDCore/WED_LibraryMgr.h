@@ -129,6 +129,8 @@ private:
 	string				local_package;
 	map<int, string>	default_lines;        // list of art assets for sim default lines
 	map<int, string>	default_surfaces;
+
+	friend class WED_JWFacades;
 };
 
 #endif /* WED_LibraryMgr_H */
