@@ -1831,7 +1831,7 @@ struct	preview_road : WED_PreviewItem {
 				g->BindTex(tex_id,0);
 				glColor3f(1,1,1);
 				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-				for (auto s : rd.segs)
+				for (const auto& s : rd.segs)
 				{
 					vector<Point2>	pts;
 					vector<int> cont;

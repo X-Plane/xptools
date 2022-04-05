@@ -151,10 +151,10 @@ XObj8 * WED_ResourceMgr::LoadObj(const string& abspath)
 			return nullptr;
 		}
 	}
-	for (auto& l : new_obj->lods)
+	for (auto& l : new_obj->lods)  // balance begin/end_annimation in broken assets to fix display artefacts due to imbalanced glPush/PopMatrix()
 	{
 		int num_anims = 0;
-		for (auto c : l.cmds)
+		for (const auto& c : l.cmds)
 		{
 			if (c.cmd == anim_Begin) num_anims++;
 			else if (c.cmd == anim_End) num_anims--;
@@ -1098,7 +1098,7 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 			}
 			if(fac->noroofmesh) fac->has_roof = false;
 
-			for(auto& obj_nam : fac->objs)                // move this back into faacade preview code, since it costs too much time.
+			for(const auto& obj_nam : fac->objs)                // move this back into faacade preview code, since it costs too much time.
 			{                                             // We do at times load EVERY facade just to find out which are custom jetways
 				const XObj8 * o;
 				fac->xobjs.push_back(nullptr);
@@ -1301,7 +1301,7 @@ bool	WED_ResourceMgr::GetFor(const string& path, for_info_t const *& info)
 	// fill a XObj8-structure for library preview
 
 	int tot_varieties = 0;
-	for (auto t_vec : fst->trees)
+	for (const auto& t_vec : fst->trees)
 		tot_varieties += t_vec.second.size();
 	if (tot_varieties == 0) return false;
 
@@ -1332,7 +1332,7 @@ bool	WED_ResourceMgr::GetFor(const string& path, for_info_t const *& info)
 		} tree_array[TREES_PER_ROW * TREES_PER_ROW];
 
 		float total_pct = 0;
-		for (auto t : t_vec.second)
+		for (const auto& t : t_vec.second)
 			total_pct += t.pct;
 
 		for (int i = t_vec.second.size() - 1; i > 0; i--)
@@ -2213,7 +2213,7 @@ bool	WED_ResourceMgr::GetRoad(const string& path, const road_info_t *& out_info)
 //	fprintf(lib_fp,"I\n800\nLIBRARY\n\n");
 //	fprintf(lib_fp,"PUBLIC\n");
 
-	for(auto r : rd->vroad_types)
+	for(auto& r : rd->vroad_types)
 	{
 		auto& rr = rd->road_types.at(r.second.rd_type);
 

@@ -190,7 +190,7 @@ public:
 
 	bool isInBounds(const Segment2& in_seg)
 	{
-		for(auto b : cull_bounds )
+		for(const auto& b : cull_bounds )
 		{
 			if(b.contains(in_seg.p1) || b.contains(in_seg.p2)) return true;
 		}
@@ -199,7 +199,7 @@ public:
 
 	bool isInBounds(const Point2& in_pnt)
 	{
-		for(auto b : cull_bounds )
+		for(const auto& b : cull_bounds )
 		{
 			if(b.contains(in_pnt)) return true;
 		}
@@ -277,7 +277,7 @@ public:
 		Bbox2 b;
 		if(sscanf(ex,"%lf/%lf/%lf/%lf",&b.p1.x_, &b.p1.y_, &b.p2.x_, &b.p2.y_) == 4)
 		{
-			for(auto z : accum_exclusions)
+			for(const auto& z : accum_exclusions)
 			{
 				Bbox2 b_new;
 				z->GetMin()->GetLocation(gis_Geo, b_new.p1);
@@ -1240,7 +1240,7 @@ void	WED_DoImportRoads(IResolver * resolver)
 
 	set<string> matching_dsf;
 
-	for (auto bb : excl_bounds)
+	for (const auto& bb : excl_bounds)
 		add_all_global_DSF(bb, matching_dsf);
 
 	if(matching_dsf.size())

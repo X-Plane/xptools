@@ -611,7 +611,7 @@ void height_desc_for_facade(const fac_info_t& info, string& h_decription)
 	if(info.is_new)
 	{
 		vector<int> heights;
-		for(auto& f : info.floors)
+		for(const auto& f : info.floors)
 			if(f.roofs.size())
 			{
 				heights.push_back(f.roofs.back().roof_height);
@@ -807,7 +807,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 	double fac_height, GUI_GraphState * g, bool want_thinWalls, double ppm_for_culling)
 {
 	if(rman)
-	for(auto& f : info.scrapers)
+	for(const auto& f : info.scrapers)
 	{
 		// determine center of first segment
 		Point2 facOrig = footprint.side(0).midpoint();
@@ -819,7 +819,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 			int scp_levels = (fac_height - f.min_agl) / f.step_agl;
 			double scpAGL = scp_levels * f.step_agl;
 			fac_height = f.floors;
-			for(auto& s : f.choices)
+			for(const auto& s : f.choices)
 			{
 				bool pinsInside(true);
 				for(int i = 0; i < s.pins.size(); i+=2)
@@ -966,7 +966,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 	else // type 2 facades
 	{	CHECK_GL_ERR
 		roof_height =  -9.9e9;
-		for(auto& f : info.floors)
+		for(const auto& f : info.floors)
 		{
 			double h = f.max_roof_height();
 			if(closer_to(roof_height, h, fac_height))
@@ -981,10 +981,10 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 		{
 			vector<GLushort> idx;
 			vector<GLfloat> vert;
-			for (auto& f : info.floors)
-				for (auto& t : f.templates)
+			for (const auto& f : info.floors)
+				for (const auto& t : f.templates)
 				{
-					for (auto& m : t.meshes)
+					for (const auto& m : t.meshes)
 					{
 						const_cast<int&>(m.idx_start) = idx.size();
 						const_cast<int&>(m.idx_cnt) = m.idx.size();
@@ -1133,7 +1133,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 #endif
 				if (!info.nowallmesh && (want_thinWalls || (info.has_roof && t.bounds[1] > 0.5) || (!info.is_ring && t.bounds[0] > 0.5)))
 				{
-					for (auto& m : t.meshes) // all meshes == maximum LOD detail, all the time.
+					for (const auto& m : t.meshes) // all meshes == maximum LOD detail, all the time.
 					{
 						const GLfloat * vert_ptr = nullptr;
 						if ((first == 1 || first == our_choice.indices.size()) && ppm_for_culling * t.bounds[0] > 5.0)
@@ -1282,8 +1282,9 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 				dev_assert(x <= ab_use[3]);	
 //				dev_assert(ab.ymax() <= ab_use[3]);	
 
-				vector<Point2> new_pts; new_pts.reserve(roof_pts.size()*2);
-				for(auto p : roof_pts)
+				vector<Point2> new_pts;
+				new_pts.reserve(roof_pts.size()*2);
+				for(const auto& p : roof_pts)
 				{
 					new_pts.push_back(p);
 					new_pts.push_back(Point2(interp(ab_use[0], info.roof_st[0], ab_use[2], info.roof_st[2], dirVec.dot(Vector2(p))  + dirDot ),
@@ -1295,7 +1296,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 			{
 				if(want_thinWalls && roof_pts.size() <= 5) // add roof objects, but only for preview pane. Its slow when taking the exact shape of the roof into account.
 				{
-					for(auto ro : bestFloor->roofs.back().roof_objs)
+					for(const auto& ro : bestFloor->roofs.back().roof_objs)
 					{
 						Point2 loc0 = footprint.side(0).midpoint();
 						Point2 loc_uv = loc0 + dirVec * ro.str[0] * info.roof_scale_s + perpVec * ro.str[1] * info.roof_scale_t;

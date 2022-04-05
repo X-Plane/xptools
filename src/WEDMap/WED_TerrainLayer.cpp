@@ -193,7 +193,7 @@ void WED_TerrainLayer::LoadTerrain(Bbox2& bounds)
 		double far_dist = 0.0;
 		string far_tile;
 		auto here = bounds.centroid();
-		for (auto t : mTerrains)
+		for (const auto& t : mTerrains)
 		{
 			double dist = LonLatDistMeters(here, t.second.bounds.centroid());
 			if (dist > far_dist)
@@ -214,7 +214,7 @@ void WED_TerrainLayer::LoadTerrain(Bbox2& bounds)
 					AddObjectWithMode, BeginSegment, AddSegmentShapePoint, EndSegment,
 					BeginPolygon, BeginPolygonWinding, AddPolygonPoint,EndPolygonWinding, EndPolygon, AddRasterData, SetFilter_ };
 
-	for (auto v : vpaths)
+	for (const auto& v : vpaths)
 	{
 		if (mTerrains.find(v) != mTerrains.end()) continue;
 		terrain_t& tile = mTerrains[v];

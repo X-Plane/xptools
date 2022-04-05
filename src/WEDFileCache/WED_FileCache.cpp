@@ -200,7 +200,7 @@ void WED_FileCache::init(void)
 		
 		// now find empty directories and delete those, too
 		
-		for(auto d : dirs)
+		for(const auto& d : dirs)
 		{
 			vector<string> files_dummy, dirs_dummy;
 			int num_files = FILE_get_directory_recursive(d, files_dummy, dirs_dummy);

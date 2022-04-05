@@ -119,7 +119,7 @@ double WED_ObjPlacement::GetTowerViewHgt(void)
 		}
 		else if (rmgr->GetAGP(resource.value, a))      // find the first object with a viewpoint nad shift it up per scraper or delta from the .agp
 		{
-			for (auto ob : a->tiles.front().objs)
+			for (const auto& ob : a->tiles.front().objs)
 			{
 				double hgt = ob.obj->viewpoint_height;
 				if (hgt >= 0.0)

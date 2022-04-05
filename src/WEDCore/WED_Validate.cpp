@@ -597,7 +597,7 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 					WED_ResourceMgr * rmgr = WED_GetResourceMgr(who->GetArchive()->GetResolver());
 					obj->GetResource(vpath);
 					if (rmgr && rmgr->GetAGP(vpath, agp))
-						for (auto& o :agp->tiles.front().objs)
+						for (const auto& o :agp->tiles.front().objs)
 							if (o.scp_step > 0.0)
 							{
 								t = 0;
@@ -696,7 +696,7 @@ static bool ValidateAirportFrequencies(const vector<WED_ATCFrequency*> frequenci
 {
 	// Collection of all freq by ATC type, regardless of frequency
 	map<int, vector<WED_ATCFrequency*> > any_by_type;
-	for (auto freq_itr : frequencies)
+	for (const auto& freq_itr : frequencies)
 	{
 		AptATCFreq_t freq_info;
 		freq_itr->Export(freq_info);
@@ -710,7 +710,7 @@ static bool ValidateAirportFrequencies(const vector<WED_ATCFrequency*> frequenci
 	map<int, vector<WED_ATCFrequency*> > airband_by_freq;
 
 	//For all groups see if each group has atleast one valid member (especially for Delivery, Ground, and Tower)
-	for(auto atc_type : any_by_type)
+	for(const auto& atc_type : any_by_type)
 	{
 		bool found_one_valid = false;
 		bool found_one_oob = false;		// found an out-of-band frequency for our use
@@ -720,7 +720,7 @@ static bool ValidateAirportFrequencies(const vector<WED_ATCFrequency*> frequenci
 
 		DebugAssert(!atc_type.second.empty());
 
-		for(auto freq : atc_type.second)
+		for(const auto& freq : atc_type.second)
 		{
 			freq->Export(freq_info);
 			string freq_str = format_freq(freq_info.freq);
@@ -795,7 +795,7 @@ static bool ValidateAirportFrequencies(const vector<WED_ATCFrequency*> frequenci
 		}
 	}
 
-	for (auto freq : airband_by_freq)
+	for (const auto& freq : airband_by_freq)
 	{
 		vector<WED_ATCFrequency *> services_on_same_freq;
 		copy_if(freq.second.begin(), freq.second.end(), back_inserter(services_on_same_freq), [](WED_ATCFrequency * itr)
@@ -1566,7 +1566,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 				while(country[0] == ' ') country.erase(0, 1);
 
 				has_iso_code = false;
-				for(auto &iso : iso3166_codes)
+				for(const auto& iso : iso3166_codes)
 					if (c == iso.front())
 					{
 						has_iso_code = true;
@@ -2786,7 +2786,7 @@ validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane,
 	FILE * fi = fopen(logfile.c_str(), "w");
 
 	bool warnings_only = true;
-	for(auto& v : msgs)
+	for(const auto& v : msgs)
 	{
 		const char * warn = "";
 		string aname;

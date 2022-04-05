@@ -838,7 +838,7 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, int b[4], 
 						g->BindTex(tex_id,0);
 						glDisable(GL_CULL_FACE);
 						float v = 4.0 * length / t.length;
-						for(auto s : t.segs)
+						for(const auto& s : t.segs)
 						{
 							glBegin(GL_POLYGON);
 								glTexCoord2f(s.s_left,  0); glVertex3f(s.left,  0,  length * 2.0f);
@@ -859,7 +859,7 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, int b[4], 
 						draw_obj_at_xyz(mTexMgr, o, t.vert_objs.back().lat_offs, 0, front_twr, t.vert_objs.back().rotation, g);
 						draw_obj_at_xyz(mTexMgr, o, t.vert_objs.back().lat_offs, 0, back_twr,  t.vert_objs.back().rotation, g);
 					}
-					for(auto w : t.wires)
+					for(const auto& w : t.wires)
 					{
 						g->SetState(false,0,false,true,true,false,false);
 						glColor3f(0.1,0.1,0.1);
@@ -880,7 +880,7 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, int b[4], 
 				if(t.dist_objs.size())
 				{
 					float long_pos = length * 0.7;   // there isn't much info on the spacing and frequency parameters for newer commands.
-					for(auto d : t.dist_objs)        // so we print each object once with uniform spacing.
+					for(const auto& d : t.dist_objs)        // so we print each object once with uniform spacing.
 					{
 						if(mResMgr->GetObjRelative(d.path, res, o))
 						{
@@ -965,9 +965,9 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, int b[4], 
 					if(agp->has_scp)
 					{
 						double min_scp(999), max_scp(0), step_scp(0);
-						for (auto& t : agp->tiles)
+						for (const auto& t : agp->tiles)
 							if(t.has_scp)
-								for (auto& a : t.objs)
+								for (const auto& a : t.objs)
 									if(a.scp_step > 0.0)
 									{
 										if(a.scp_min < min_scp) min_scp = a.scp_min;

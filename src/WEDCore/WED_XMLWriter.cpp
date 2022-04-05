@@ -151,7 +151,7 @@ WED_XMLElement::~WED_XMLElement()
 		fi_indent(indent, file);
 		fputc('<',file); fputs(name,file);
 
-		for(auto a : attrs)
+		for(const auto& a : attrs)
 		{
 			fputc(' ',file); fputs(a.first,file); fputs("=\"",file);
 //			fputs(a.second.c_str(), file);
@@ -193,7 +193,7 @@ void WED_XMLElement::flush_from(WED_XMLElement * who)
 		fi_indent(indent, file);
 		fputc('<',file); fputs(name,file);
 
-		for(auto a : attrs)
+		for(const auto& a : attrs)
 		{
 			fputc(' ',file); fputs(a.first,file); fputs("=\"",file);
 //			fputs(a.second.c_str(), file);

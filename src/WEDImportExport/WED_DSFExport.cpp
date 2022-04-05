@@ -1721,7 +1721,7 @@ static int	DSF_ExportTileRecursive(
 				pol_cuts.clear();
 			}
 
-			for(auto cuts : pol_cuts)
+			for(const auto& cuts : pol_cuts)
 			{
 				bool last_pt_spawn = true;
 				vector<Polygon2> 	pol_area;
@@ -1765,7 +1765,7 @@ static int	DSF_ExportTileRecursive(
 					pol_nonspawning.back().push_back(cuts.front().front().p1);
 
 				// append non-spawning vectors at the end
-				for(auto ns : pol_nonspawning)
+				for(const auto& ns : pol_nonspawning)
 					pol_area.push_back(ns);
 
 				// all other contours are holes, so add append at end

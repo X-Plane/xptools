@@ -82,9 +82,9 @@ static RunwayInfoVec_t CollectPotentiallyActiveRunways( const TaxiRouteInfoVec_t
 					else
 					{
 						// check that there is at least one taxi route associated with it
-						for(vector<TaxiRouteInfo>::const_iterator taxiroute_itr = all_taxiroutes.begin(); taxiroute_itr != all_taxiroutes.end(); ++taxiroute_itr)
+						for(const auto& taxiroute : all_taxiroutes)
 						{
-							string taxiroute_name = ENUM_Desc((taxiroute_itr)->ptr->GetRunway());
+							string taxiroute_name = ENUM_Desc(taxiroute.ptr->GetRunway());
 
 							if(runway_itr.name == taxiroute_name || ( taxiroute_name[0] = '0' && runway_itr.name == taxiroute_name.substr(1) ))
 							{
@@ -1098,14 +1098,14 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs, cons
 
 	all_taxiroutes_info.reserve(all_taxiroutes_plain.size());
 
-	for(auto itr : all_taxiroutes_plain)
+	for(const auto& taxi : all_taxiroutes_plain)
 	{
-		TaxiRouteInfo tr_info(itr,translator);
+		TaxiRouteInfo tr_info(taxi,translator);
 		all_taxiroutes_info.push_back(tr_info);
 		if(tr_info.is_aircraft_route)
 		{
 			all_aircraftroutes.push_back(tr_info);
-			all_aircraftroutes_plain.push_back(itr);
+			all_aircraftroutes_plain.push_back(taxi);
 		}
 		else
 			all_truckroutes.push_back(tr_info);
@@ -1115,8 +1115,8 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs, cons
 	TwyNameCheck(all_taxiroutes_info, msgs, &apt);
 
 	RunwayInfoVec_t all_runways_info;
-	for(auto itr : all_runways)
-		all_runways_info.push_back(RunwayInfo(itr,translator));
+	for(const auto& rwy : all_runways)
+		all_runways_info.push_back(RunwayInfo(rwy,translator));
 
 	if(!all_aircraftroutes.empty())
 	{
@@ -1134,22 +1134,22 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs, cons
 
 		TestInvalidHotZOneTags(all_aircraftroutes, legal_rwy_oneway, legal_rwy_twoway, msgs, &apt);
 
-		for(auto runway_info_itr : potentially_active_runways)
+		for(auto& runway_info : potentially_active_runways)
 		{
 			int original_num_errors = msgs.size();
-			TaxiRouteInfoVec_t matching_taxiroutes = FilterMatchingRunways(runway_info_itr, all_aircraftroutes);
+			TaxiRouteInfoVec_t matching_taxiroutes = FilterMatchingRunways(runway_info, all_aircraftroutes);
 
 			if (!matching_taxiroutes.empty())
 			{
-				if (AllTaxiRouteNodesInRunway(runway_info_itr, matching_taxiroutes, msgs, &apt))
+				if (AllTaxiRouteNodesInRunway(runway_info, matching_taxiroutes, msgs, &apt))
 				{
-					if (TaxiRouteParallelCheck(runway_info_itr, matching_taxiroutes, msgs, &apt))
+					if (TaxiRouteParallelCheck(runway_info, matching_taxiroutes, msgs, &apt))
 					{
-						if (TaxiRouteCenterlineCheck(runway_info_itr, matching_taxiroutes, msgs, &apt))
+						if (TaxiRouteCenterlineCheck(runway_info, matching_taxiroutes, msgs, &apt))
 						{
-							if (DoTaxiRouteConnectivityChecks(runway_info_itr, all_aircraftroutes, matching_taxiroutes, translator, msgs, &apt))
+							if (DoTaxiRouteConnectivityChecks(runway_info, all_aircraftroutes, matching_taxiroutes, translator, msgs, &apt))
 							{
-								if (RunwayHasCorrectCoverage(runway_info_itr, matching_taxiroutes, msgs, &apt))
+								if (RunwayHasCorrectCoverage(runway_info, matching_taxiroutes, msgs, &apt))
 								{
 									//Add additional checks as needed here
 								}
@@ -1163,12 +1163,12 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs, cons
 			if (msgs.size() - original_num_errors != 0)
 	#endif
 			{
-				debug_mesh_polygon((runway_info_itr).corners_geo,1,0,1);
-				debug_mesh_segment((runway_info_itr).centerline_geo,DBG_LIN_COLOR);
+				debug_mesh_polygon(runway_info.corners_geo, 1, 0, 1);
+				debug_mesh_segment(runway_info.centerline_geo, DBG_LIN_COLOR);
 			}
 	#endif
-			AssignRunwayUse(runway_info_itr, all_use_rules);
-			bool passes_hotzone_checks = DoHotZoneChecks(runway_info_itr, all_aircraftroutes, ramps, msgs, &apt);
+			AssignRunwayUse(runway_info, all_use_rules);
+			bool passes_hotzone_checks = DoHotZoneChecks(runway_info, all_aircraftroutes, ramps, msgs, &apt);
 			//Nothing to do here yet until we have more checks after this
 		}
 	}
@@ -1179,14 +1179,14 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs, cons
 
 	if(!all_polys.empty())
 	{
-		for(auto runway_info_itr : all_runways_info)
-			AnyPolgonsOnRunway(runway_info_itr, all_polys, msgs, &apt, res_mgr);
+		for(const auto& runway_info : all_runways_info)
+			AnyPolgonsOnRunway(runway_info, all_polys, msgs, &apt, res_mgr);
 	}
 
 	if(!all_truckroutes.empty())
 	{
-		for(auto runway_info_itr : all_runways_info)
-			AnyTruckRouteNearRunway(runway_info_itr, all_truckroutes, roads, msgs, &apt);
+		for(const auto& runway_info : all_runways_info)
+			AnyTruckRouteNearRunway(runway_info, all_truckroutes, roads, msgs, &apt);
 	}
 
 }

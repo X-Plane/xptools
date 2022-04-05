@@ -891,7 +891,7 @@ void	WED_AptImport(
 			}
 		}
 
-		for (auto dst : apt->jetways)
+		for (auto& dst : apt->jetways)
 		{
 			auto new_fac = WED_FacadePlacement::CreateTyped(archive);
 			new_fac->ImportJetway(dst, LazyPrintf, &log);

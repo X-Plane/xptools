@@ -62,11 +62,11 @@ static void lines_to_nearest(const vector<Segment2>& starts, const vector<Segmen
 {
 	if (starts.size() * edges.size() > 10000) return;        // skip drawing too complex scenarios - takes too long
 
-	for (auto pix : starts)
+	for (const auto& pix : starts)
 	{
 		double nearest_dist(1e8), next_dist(1e8);
 		Point2 nearest_pix, next_pix;
-		for (auto pix_seg : edges)
+		for (const auto& pix_seg : edges)
 		{
 			double dist;
 			if (pix_seg.collinear_has_on(pix.p1))
