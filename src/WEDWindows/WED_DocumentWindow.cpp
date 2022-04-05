@@ -23,42 +23,43 @@
 
 #include "WED_DocumentWindow.h"
 #include "WED_Document.h"
+
 #include "AptIO.h"
 #include "WED_Messages.h"
-#include "GUI_Menus.h"
 #include "WED_UndoMgr.h"
 #include "WED_AptIE.h"
 #include "WED_MapPane.h"
 #include "WED_TCEPane.h"
-#include "WED_PropertyPane.h"
-#include "WED_AptIE.h"
-#include "GUI_TabPane.h"
-#include "WED_Thing.h"
-#include "WED_Menus.h"
-#include "WED_Select.h"
-#include "WED_Colors.h"
-#include "GUI_Splitter.h"
-#include "WED_GroupCommands.h"
-#include "WED_SceneryPackExport.h"
-#include "WED_Version.h"
-
-#include "WED_MetadataUpdate.h"
-#include "WED_GatewayExport.h"
-#include "WED_GatewayImport.h"
-
-#include "WED_AirportChain.h"
-#include "WED_DSFImport.h"
-#include "WED_PropertyHelper.h"
 #include "WED_LibraryPane.h"
 #include "WED_LibraryPreviewPane.h"
-#include "WED_LinePlacement.h"
 #include "WED_MapPreviewPane.h"
 #include "WED_MapPreviewWindow.h"
-#include "WED_PolygonPlacement.h"
-#include "WED_Routing.h"
-#include "WED_Taxiway.h"
+#include "WED_PropertyHelper.h"
+#include "WED_PropertyPane.h"
+#include "WED_Menus.h"
+#include "WED_Colors.h"
+#include "WED_Version.h"
 #include "WED_ToolUtils.h"
+#include "GUI_Splitter.h"
+#include "GUI_Menus.h"
+#include "GUI_TabPane.h"
+
+#include "WED_ConvertCommands.h"
+#include "WED_DSFImport.h"
+#include "WED_GroupCommands.h"
+#include "WED_GatewayExport.h"
+#include "WED_GatewayImport.h"
+#include "WED_MetadataUpdate.h"
+#include "WED_SceneryPackExport.h"
 #include "WED_Validate.h"
+
+#include "WED_AirportChain.h"
+#include "WED_ForestPlacement.h"
+#include "WED_LinePlacement.h"
+#include "WED_PolygonPlacement.h"
+#include "WED_StringPlacement.h"
+#include "WED_Taxiway.h"
+#include "WED_Thing.h"
 
 #if WITHNWLINK
 #include "WED_Server.h"
@@ -68,17 +69,11 @@
 
 namespace
 {
-template<class T>
-WED_Thing * CreateThing(WED_Archive * parent)
-{
-	return T::CreateTyped(parent);
-}
-
-template<class T>
-bool IsType(WED_Thing * thing)
-{
-	return dynamic_cast<T*>(thing) != NULL;
-}
+	template<class T>
+	WED_Thing * CreateThing(WED_Archive * parent)
+	{
+		return T::CreateTyped(parent);
+	}
 }
 
 int kDefaultDocSize[4] = { 0, 0, 1024, 768 };
@@ -429,6 +424,9 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_ConvertToTaxiway:	WED_DoConvertTo(mDocument, &CreateThing<WED_Taxiway>);	return 1;
 	case wed_ConvertToTaxiline:	WED_DoConvertTo(mDocument, &CreateThing<WED_AirportChain>);	return 1;
 	case wed_ConvertToLine:		WED_DoConvertTo(mDocument, &CreateThing<WED_LinePlacement>);	return 1;
+	case wed_ConvertToString:	WED_DoConvertTo(mDocument, &CreateThing<WED_StringPlacement>);	return 1;
+	case wed_ConvertToForest:	WED_DoConvertToForest(mDocument); return 1;
+
 	case wed_MoveFirst:	WED_DoReorder(mDocument,-1,1);	return 1;
 	case wed_MovePrev:	WED_DoReorder(mDocument,-1,0);	return 1;
 	case wed_MoveNext:	WED_DoReorder(mDocument, 1,0);	return 1;
@@ -555,10 +553,12 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case gui_Duplicate:	return WED_CanDuplicate(mDocument);
 	case wed_Group:		return WED_CanGroup(mDocument);
 	case wed_Ungroup:	return WED_CanUngroup(mDocument);
-	case wed_ConvertToPolygon:	return WED_CanConvertTo(mDocument, &IsType<WED_PolygonPlacement>, true);
-	case wed_ConvertToTaxiway:	return WED_CanConvertTo(mDocument, &IsType<WED_Taxiway>, true);
-	case wed_ConvertToTaxiline:	return WED_CanConvertTo(mDocument, &IsType<WED_AirportChain>, false);
-	case wed_ConvertToLine:		return WED_CanConvertTo(mDocument, &IsType<WED_LinePlacement>, false);
+	case wed_ConvertToPolygon:	return WED_CanConvertTo(mDocument, WED_PolygonPlacement::sClass);
+	case wed_ConvertToTaxiway:	return WED_CanConvertTo(mDocument, WED_Taxiway::sClass);
+	case wed_ConvertToTaxiline:	return WED_CanConvertTo(mDocument, WED_AirportChain::sClass);
+	case wed_ConvertToLine:		return WED_CanConvertTo(mDocument, WED_LinePlacement::sClass);
+	case wed_ConvertToString:	return WED_CanConvertTo(mDocument, WED_StringPlacement::sClass);
+	case wed_ConvertToForest:	return WED_CanConvertTo(mDocument, WED_ForestPlacement::sClass);
 
 	case wed_TogglePreviewWindow:	ioCheck = mMapPreviewWindow->IsVisible(); return 1;
 	case wed_ShowMapAreaInPreviewWindow:	return 1;

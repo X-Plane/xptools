@@ -267,6 +267,7 @@
     <ClCompile Include="..\..\src\WEDTCE\WED_TCEToolNew.cpp" />
     <ClCompile Include="..\..\src\WEDTCE\WED_TCEVertexTool.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_AboutBox.cpp" />
+    <ClCompile Include="..\..\src\WEDWindows\WED_ConvertCommands.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_DocumentWindow.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_GroupCommands.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_LibraryFilterBar.cpp" />
@@ -551,6 +552,7 @@
     <ClInclude Include="..\..\src\WEDTCE\WED_TCEToolNew.h" />
     <ClInclude Include="..\..\src\WEDTCE\WED_TCEVertexTool.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_AboutBox.h" />
+    <ClInclude Include="..\..\src\WEDWindows\WED_ConvertCommands.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_DocumentWindow.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_GroupCommands.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_LibraryFilterBar.h" />

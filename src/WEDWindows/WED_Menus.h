@@ -83,6 +83,8 @@ enum {
 	wed_ConvertToTaxiway,
 	wed_ConvertToTaxiline,
 	wed_ConvertToLine,
+	wed_ConvertToString,
+	wed_ConvertToForest,
 	// Pavement menu
 	wed_Pavement0,
 	wed_Pavement25,
