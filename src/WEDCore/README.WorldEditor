@@ -64,6 +64,7 @@ WED 2.5.0b2 3/30/22
    - LibraryList has icons indication seasonal/regional variants exist
    - WED-1161 (limited) ability to collapse search results in LibrayPane
    - new map layer "Terrain" visualizes terrain mesh structure, DEM and explicit height vertices
+   - menu function 'convert to' now covers object strings and forests'
 
 WED 2.4.0rc2 5/29/21
    Features:

@@ -126,6 +126,7 @@
 		02C7507823A05407008475A1 /* Lzma86Dec.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823F2239EF2310008DBF2 /* Lzma86Dec.c */; };
 		02C7507A23A05411008475A1 /* LzmaDec.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823F4239EF2310008DBF2 /* LzmaDec.c */; };
 		02C7507B23A05412008475A1 /* LzmaDec.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823F4239EF2310008DBF2 /* LzmaDec.c */; };
+		02D36BC827FCD54C00723A26 /* WED_ConvertCommands.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02D36BC527FCD51700723A26 /* WED_ConvertCommands.cpp */; };
 		02D8240A239EF2410008DBF2 /* 7zAlloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823D4239EF2310008DBF2 /* 7zAlloc.c */; };
 		02D8240B239EF2460008DBF2 /* 7zArcIn.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823D6239EF2310008DBF2 /* 7zArcIn.c */; };
 		02D8240C239EF2470008DBF2 /* 7zArcIn.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D823D6239EF2310008DBF2 /* 7zArcIn.c */; };
@@ -1172,6 +1173,8 @@
 		02BDCCFD23A97E0400208CD2 /* tilt_tool.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tilt_tool.png; sourceTree = "<group>"; };
 		02BFA20F21C1B58D0090D527 /* navmap_airport.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = navmap_airport.png; sourceTree = "<group>"; };
 		02BFA21021C1B58D0090D527 /* navmap_seaport.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = navmap_seaport.png; sourceTree = "<group>"; };
+		02D36BC527FCD51700723A26 /* WED_ConvertCommands.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ConvertCommands.cpp; sourceTree = "<group>"; };
+		02D36BC627FCD51700723A26 /* WED_ConvertCommands.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ConvertCommands.h; sourceTree = "<group>"; };
 		02D823D3239EF2310008DBF2 /* 7z.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = 7z.h; path = lzma19/C/7z.h; sourceTree = "<group>"; };
 		02D823D4239EF2310008DBF2 /* 7zAlloc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = 7zAlloc.c; path = lzma19/C/7zAlloc.c; sourceTree = "<group>"; };
 		02D823D5239EF2310008DBF2 /* 7zAlloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = 7zAlloc.h; path = lzma19/C/7zAlloc.h; sourceTree = "<group>"; };
@@ -3425,6 +3428,8 @@
 		D6BC37E70AB22C85003949C5 /* WEDWindows */ = {
 			isa = PBXGroup;
 			children = (
+				02D36BC527FCD51700723A26 /* WED_ConvertCommands.cpp */,
+				02D36BC627FCD51700723A26 /* WED_ConvertCommands.h */,
 				02B0D4B325D47C7F0076F8C6 /* WED_Road_Selector.cpp */,
 				02B0D4B425D47C7F0076F8C6 /* WED_Road_Selector.h */,
 				02B03C0D20C71DE5000F81F0 /* WED_Line_Selector.cpp */,
@@ -4991,6 +4996,7 @@
 				D6FF274E0B6E38D100960D5E /* WED_ObjPlacement.cpp in Sources */,
 				D6FF28620B6E4A3600960D5E /* WED_PropertyHelper.cpp in Sources */,
 				02D82414239EF2680008DBF2 /* 7zCrcOpt.c in Sources */,
+				02D36BC827FCD54C00723A26 /* WED_ConvertCommands.cpp in Sources */,
 				D6FF2AFA0B6E908600960D5E /* WED_Thing.cpp in Sources */,
 				D6FF2B8A0B6E985200960D5E /* WED_Group.cpp in Sources */,
 				D6FF2CAC0B6F7D6B00960D5E /* GUI_SimpleTableGeometry.cpp in Sources */,
