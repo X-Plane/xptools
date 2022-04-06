@@ -5744,7 +5744,7 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 		next_row_dir /= next_row_length;
 
 		const double mow_steps = 4.0;
-		const double row_spacing = 16.0;
+		const double row_spacing = 12.0;
 		const double test_radius = 8.0;
 
 		bool on_pave(false);

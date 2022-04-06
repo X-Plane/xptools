@@ -62,10 +62,11 @@ int		WED_CanExportPack(IResolver * resolver)
 	return 1;
 }
 
-#if TYLER_MODE
+#if 1 //TYLER_MODE
 
 #include "WED_Airport.h"
 #include "WED_EnumSystem.h"
+#include "WED_ExclusionZone.h"
 #include "WED_RampPosition.h"
 #include "WED_Runway.h"
 #include "WED_TruckDestination.h"
@@ -77,6 +78,7 @@ int		WED_CanExportPack(IResolver * resolver)
 #include "WED_Menus.h"
 #include "GISUtils.h"
 #include <chrono>
+#include "WED_ConvertCommands.h"
 
 static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 {
@@ -332,7 +334,25 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			else
 				wrl->AbortOperation();
 		}
-		// nuke all large terrain polygons at mid-lattitudes
+		// convert tree objects into a forest
+		vector<WED_ObjPlacement*> tree_objs;
+		CollectRecursive(*apt_itr, back_inserter(tree_objs), IgnoreVisiblity, [](WED_Thing* objs)->bool {
+			string res;
+			static_cast<WED_ObjPlacement*>(objs)->GetResource(res);
+			return res.compare(0, strlen("lib/g10/forests/autogen"), "lib/g10/forests/autogen") == 0 ||
+				   res.compare(0, strlen("lib/airport/Common_Elements/Miscellaneous/Tree"), "lib/airport/Common_Elements/Miscellaneous/Tree") == 0;
+			},
+			WED_ObjPlacement::sClass, 2);
+		if (tree_objs.size() >= 3)
+		{
+			wrl->StartCommand("Select");
+			sel->Clear();
+			sel->Insert(vector<ISelectable*>(tree_objs.begin(), tree_objs.end()));
+			wrl->CommitCommand();
+			WED_DoConvertToForest(resolver);
+			LOG_MSG("Converted Trees into Forests at %s\n", ICAO_code.c_str());
+		}
+		// nuke all large terrain polygons unless at high lattitudes (cuz there is no gobal scenery there ...)
 		if(apt_box.p1.y() < 73.0 && apt_box.p1.y() > -60.0)
 		{
 			vector<WED_PolygonPlacement*> terrain_polys;
@@ -373,10 +393,43 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			set<WED_Thing*> things(grunge_objs.begin(), grunge_objs.end());
 			WED_RecursiveDelete(things);
 			wrl->CommitCommand();
-			LOG_MSG("Deleted %d Grunges at %s\n", grunge_objs.size(), ICAO_code.c_str());
+			LOG_MSG("Deleted %ld Grunges at %s\n", grunge_objs.size(), ICAO_code.c_str());
 		}
-		// nuke all "Grunge" draped objects
 #endif
+#if 0
+		// nuke all Exclusions for Beaches, Polygons, Lines
+		vector<WED_ExclusionZone*> exclusions;
+		CollectRecursive(*apt_itr, back_inserter(exclusions), IgnoreVisiblity, [](WED_Thing* excl)->bool {
+			set<int> ex;
+			static_cast<WED_ExclusionZone*>(excl)->GetExclusions(ex);
+			return ex.count(exclude_Pol) || ex.count(exclude_Lin) || ex.count(exclude_Bch);
+			},
+			WED_ExclusionZone::sClass, 2);
+		if (exclusions.size())
+		{
+			wrl->StartCommand("Clean up Exclusions");
+			set<int> ex;
+			for(auto e : exclusions)
+			{
+				e->GetExclusions(ex);
+				ex.erase(exclude_Pol);
+				ex.erase(exclude_Lin);
+				ex.erase(exclude_Bch);
+				e->SetExclusions(ex);
+			}
+#else
+		// nuke *ALL* Exclusions
+		set<WED_Thing*> exclusions;
+		CollectRecursive(*apt_itr, inserter(exclusions, exclusions.end()), IgnoreVisiblity, TakeAlways, WED_ExclusionZone::sClass, 2);
+		if (exclusions.size())
+		{
+			wrl->StartCommand("Clean up Exclusions");
+			WED_RecursiveDelete(exclusions);
+#endif
+			wrl->CommitCommand();
+			LOG_MSG("Deleted %ld Exclusions %s\n", exclusions.size(), ICAO_code.c_str());
+		}
+		
 		double percent_done = (double)distance(apts.begin(), apt_itr) / apts.size() * 100;
 		printf("%0.0f%% through heuristic at %s\n", percent_done, ICAO_code.c_str());
 
