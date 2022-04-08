@@ -61,9 +61,9 @@
 #define FIX_EMPTY 0
 #define FAST_SPRINTF_REPLACEMENTS 1
 
-inline void fi_indent(int n, FILE * fi) { const char * spaces = "          "; fwrite(spaces, min(n, 10), 1, fi); }
+static void fput_indented_lt(int n, FILE * fi, bool add_slash = false) { const char * spaces = "          </"; fwrite(spaces + 10 - n, min(n, 10) + 1 + add_slash, 1, fi); }
 
-inline string str_escape(const string& str)
+static string str_escape(const string& str)
 {
 	string result;
 
@@ -148,8 +148,8 @@ WED_XMLElement::~WED_XMLElement()
 {
 	if(!flushed)
 	{
-		fi_indent(indent, file);
-		fputc('<',file); fputs(name,file);
+		fput_indented_lt(indent, file);
+		fputs(name, file);
 
 		for(const auto& a : attrs)
 		{
@@ -170,8 +170,8 @@ WED_XMLElement::~WED_XMLElement()
 
 	if(!children.empty() || flushed)
 	{
-		fi_indent(indent,file);
-		fputs("</",file); fputs(name,file); fputs(">\n",file);
+		fput_indented_lt(indent, file, true);
+		fputs(name, file); fputs(">\n", file);
 	}
 }
 
@@ -190,8 +190,8 @@ void WED_XMLElement::flush_from(WED_XMLElement * who)
 
 	if(!flushed)
 	{
-		fi_indent(indent, file);
-		fputc('<',file); fputs(name,file);
+		fput_indented_lt(indent, file);
+		fputs(name, file);
 
 		for(const auto& a : attrs)
 		{
@@ -373,5 +373,4 @@ WED_XMLElement *		WED_XMLElement::add_or_find_sub_element(const char * name)
 	children.push_back(child);
 	child->parent = this;
 	return child;
-	
 }

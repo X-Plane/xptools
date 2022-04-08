@@ -44,32 +44,45 @@ class	IOWriter;
 class	IOReader;
 class	WED_XMLElement;
 
-/* These macros create a *single* string containing a properties WED name and XML names,
-   saving 2 pointers in each property item, after the sqlite removal already removed 2 pointers.
-   This reduces the WED memory size with large sceneries (like importing the global apt.dat) by 30%
+/* memory size optimization for LARGE datasets, e.g. all 38,000+ Global Airports:
+
+   These macros create a *single* string containing the properties WED name and both XML names,
+   saving 2 pointers in each property item.
+   Every WED_Thing has on average 10 WED_Properties, the Global Airports have as of mid 2019 ~14 million WED_Things,
+   so this adds up to over 2 GB of memory for just these two extra pointers saved, some 30% of total memory.
+
+   There is no compile time switch to turn this trickery off and return to using full pointers again.
 */
 
 #define XML_Name(x,y) x "\0" y
 #define PROP_Name(wed_name, xml_name) wed_name "\0" xml_name, sizeof(wed_name) + 256 * (strlen(xml_name)+1+sizeof(wed_name))
 
-/* more memory size and access time optimization for LARGE datasets, like the Global Airports:
-
-   Every WED_Thing has on average 10 WED_Properties and a pair of pointers to/from each property.
-   The Global Airports have as of mid 2019 ~14 million WED_Things, so this adds up to over 2GB.
+/* more memory size and access time optimization for LARGE datasets, e.g. all 38,000+ Global Airports:
 
    And the STL container vector<WED_PropertyItem *> is responsible for a good chunk of all that pain,
    as the pointer array is on the heap, requireing a second memory access to resolve. With large
-   data structures, pretty much every memory access is a cache miss.
+   data structures, pretty much every memory access is a cache miss. So making this a memory-local
+   fixed array gains speed in every read/write to any property.
 
-   Since the WED_PropertyItems are part of the same class - they are all within 2kB in memory from
-   the WED__PropertyHelper class. Due to alignof(class) == 8 that relative distance can be encoded
-   with just 1 byte. The vector<class *> is reduces to a memory-local char[] - saving overall
-   another 24% of total memory and 5% CPU time on load, save and export.
+   All WED_PropertyItems are part of the same class, max WED_PropertyHelper memory size is ~2kb
+   Due to alignof(class) == 8 that relative distance can be encoded with just 1 byte.
 
-   The maximum number of properties for any WEDEntity is 28 right now (Runways), so we define the
-   byte array to have 29 entries (plus one byte for the array size parameter).
+   So the vector<class *> is reduced a memory-local char[]
 
-   Set below to 0 to disable this 2nd level of trickery.
+   This saves another 24% of total memory and 5% CPU time on load, save and export.
+
+   The maximum number of properties for any WEDEntity is 31 right now (Runways), so we define the
+   byte array to have a rounded up 32 entrie
+
+   Set below to 0 to disable this trickery and use a plain vector<void *> again and also make mParent
+   pointing from each property back to the WED_Thing a full pointer and not just an 8 bit relative pointer.
+
+   Using some more clever vector like LLVM's SmallVector or boosts small_vector would eliminate the
+   need for a fixed array here. In that case - an inline size of 16 elements would suffice to hold 
+   the relaive offsets for all entities except runways - only those have more properties. So that saves 
+   even more memory and reduced any need in the future to re-adjust this fixed array for increased couunts !
+   There are a LOT less runways than vertices and other entities - so loosing some optimizations for that
+   entity type is not causing any notable drawbacks.
 */
 
 #define PROP_PTR_OPT 32
@@ -108,8 +121,10 @@ private:
 	if pointimng to either in the top 32TB OR bottom 32TB of the 128TB / 47 bit virtual address space.
 	*/
 	#define PTR_FIX(x)  (PTR_CLR(x) | (x & (1ULL << 44)) << 1 | (x & (1ULL << 44)) << 2)
-	uintptr_t				mTitle;      // this now holds THREE tightly packed offsets in its 19 MSBits to save even more memory
-	WED_PropertyHelper *	mParent;
+	uintptr_t			mTitle;      // this now holds THREE tightly packed offsets in its 19 MSBits to save even more memory
+  #if DEV
+	WED_PropertyHelper*	mParent;     // only to verify the relative pointer calculated from the 8 bits is identical to the real pointer
+  #endif
 #else
 	/*
 	So called "64bit" processors actually only have 48bit virtual address space - a concession to the structures and speed of the
@@ -120,8 +135,8 @@ private:
 	17bit to store other information, as long as we zero those bits out before the pointer is actually used.
 	*/
 	#define PTR_CLR(x) (x & ((1ULL << 47) - 1ULL))
-	uintptr_t				mTitle;      // the two MSBytes hold offsets to make the const char * point to the 2nd and 3rd word in the string
-	WED_PropertyHelper *	mParent;
+	uintptr_t			mTitle;      // the two MSBytes hold offsets to make the const char * point to the 2nd and 3rd word in the string
+	WED_PropertyHelper* mParent;
 #endif
 };
 

@@ -106,13 +106,14 @@ void relPtr::push_back(WED_PropertyItem * ptr)
 	DebugAssert( offs % 8 == 0 );
 	offs >>= 3;
 
-	DebugAssert(mItemsCount < PROP_PTR_OPT);
+	DebugAssert(mItemsCount < PROP_PTR_OPT);   // more pointers than fixed size array can hold => increase #define for PROP_PTR_OPT
+	DebugAssert(offs <= 255);                  // relative offset won't fit into byte => change mItemsOff[] to hold uint_16_t
 
 	mItemsOffs[mItemsCount] = (unsigned char) offs;
 	++mItemsCount;
 }
 
-WED_PropertyHelper * WED_PropertyItem::GetParent(void) const { 
+WED_PropertyHelper * WED_PropertyItem::GetParent(void) const {
 	DebugAssert(reinterpret_cast<WED_PropertyHelper *>((char *)this - (mTitle >> 45 - 3 & 0xFF << 3)) == mParent);
 	     return reinterpret_cast<WED_PropertyHelper *>((char *)this - (mTitle >> 45 - 3 & 0xFF << 3)); }
 const char *	WED_PropertyItem::GetWedName(void)     const { return reinterpret_cast<const char *>(PTR_FIX(mTitle)); }
@@ -140,7 +141,9 @@ WED_PropertyItem::WED_PropertyItem(WED_PropertyHelper * pops, const char * title
 		DebugAssert(offs > 0);
 		DebugAssert(offs %8 == 0);
 		mTitle = ((offset >> 8) & 0x3FULL) << 58 | (offset & 0x1FULL) << 53 | offs << 45-3 | PTR_CLR(reinterpret_cast<uintptr_t>(title));
+	#if DEV
 		mParent = pops;
+	#endif
 #else
 		mParent = pops;
 		mTitle = reinterpret_cast<uintptr_t>(title) | ((uintptr_t) offset) << 48;
