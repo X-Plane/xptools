@@ -468,11 +468,14 @@ static bool WED_NoLongerViable(WED_Thing * t, bool strict)
 		{
 			int min_children = 2;
 			WED_Thing * parent = t->GetParent();
-			WED_FacadePlacement * facade;
 			if (parent && parent->GetClass() == WED_OverlayImage::sClass)
 				min_children = 4;
-			else if (parent && parent->GetClass() == WED_FacadePlacement::sClass)
-				min_children = dynamic_cast<WED_FacadePlacement *>(parent)->GetTopoMode() == WED_FacadePlacement::topo_Chain ? 2 : 3;  // allow some 2-node facades. No strict check, as facades can not have holes
+			else if (t->GetClass() == WED_FacadeRing::sClass)                           // avoid having to load the facade as much as possible
+			{
+				min_children = 3;
+				if (t->CountChildren() < 3 && !static_cast<WED_FacadeRing*>(t)->IsClosed())
+					min_children = 2;
+			}
 			else if (parent && strict && dynamic_cast<WED_GISPolygon *>(parent))		// Strict rules for delete key require 3 points to a polygon - prevents degenerate holes.
 				min_children = 3;
 			if (t->CountSources() == 2 && t->GetNthSource(0) == NULL) return true;
