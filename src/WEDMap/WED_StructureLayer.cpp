@@ -354,21 +354,18 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 		{
 			if (auto ps = dynamic_cast<IGISPointSequence *>(entity))
 			{
-				if (kind == gis_Edge)
+				if (sub_class == WED_TaxiRoute::sClass && !locked)
 				{
-					WED_TaxiRoute * tr = SAFE_CAST(WED_TaxiRoute, entity);
-					if(tr && !locked)
-					{
-						bool hot = tr->HasHotDepart() || tr->HasHotArrival();
-						bool rwy = tr->IsRunway();
-						bool ils = tr->HasHotILS();
+					auto tr = dynamic_cast<WED_TaxiRoute*>(entity);
+					bool hot = tr->HasHotDepart() || tr->HasHotArrival();
+					bool rwy = tr->IsRunway();
+					bool ils = tr->HasHotILS();
 
-						if (hot)                struct_color = selected ? wed_Hotzone_Selected : wed_Hotzone;
-						else if (ils)           struct_color = selected ? wed_ILSzone_Selected : wed_ILSzone;
-						else if (rwy)           struct_color = selected ? wed_Runway_Selected : wed_Runway;
+					if (hot)                struct_color = selected ? wed_Hotzone_Selected : wed_Hotzone;
+					else if (ils)           struct_color = selected ? wed_ILSzone_Selected : wed_ILSzone;
+					else if (rwy)           struct_color = selected ? wed_Runway_Selected : wed_Runway;
 
-						glColor4fv(WED_Color_RGBA(struct_color));
-					}
+					glColor4fv(WED_Color_RGBA(struct_color));
 				}
 
 				WED_MapZoomerNew* z = GetZoomer();
@@ -476,9 +473,8 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 
 					if(kind == gis_Edge && pts.size() >= 2)
 					{
-						IGISEdge * gisedge = SAFE_CAST(IGISEdge, ps);
-						WED_RoadEdge * re = dynamic_cast<WED_RoadEdge *>(entity);
-						if(gisedge->IsOneway() || re != nullptr)
+						bool re = sub_class == WED_RoadEdge::sClass;
+						if(re || dynamic_cast<IGISEdge*>(ps)->IsOneway())
 						{
 							Vector2 orient1(pts[0],pts[1]);
 							Vector2 orient2(pts[pts.size()-2],pts[pts.size()-1]);

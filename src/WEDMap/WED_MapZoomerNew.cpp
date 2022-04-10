@@ -83,8 +83,8 @@
 #include "MathUtils.h"
 #include "glew.h"
 
-#define sinr(x) sin((x) * DEG_TO_RAD)
-#define cosr(x) cos((x) * DEG_TO_RAD)
+#define sinr(x) sinf((x) * DEG_TO_RAD)
+#define cosr(x) cosf((x) * DEG_TO_RAD)
 
 inline	double	rescale(double s1, double s2, double d1, double d2, double v)
 {
@@ -195,13 +195,13 @@ Point2	WED_MapZoomerNew::LLToPixel(const Point2& p) const
 		double x = mCenterX + (cosr(pt.y()) * sinr((pt.x() - mLonCenter)) / c) * RAD_TO_DEG * mPixel2DegLat.inv();
 		double y = mCenterY + ((cosr(mLatCenter) * sinr(pt.y()) - sinr(mLatCenter) * cosr(pt.y()) * cosr(pt.x() - mLonCenter)) / c) * RAD_TO_DEG * mPixel2DegLat.inv();
 #else
-		double as = sinr(pt.y());               // gcc gets this and uses optimized sincos() function. Yay !
-		double ac = cosr(pt.y());
-		double bs = sinr(pt.x() - mLonCenter);
-		double bc = cosr(pt.x() - mLonCenter);
-		double ci = (mLatCenterSIN * as + mLatCenterCOS * ac * bc);
-		double x = mCenterX + (ac * bs / ci) * RAD_TO_DEG * mPixel2DegLat.inv();
-		double y = mCenterY + ((mLatCenterCOS * as - mLatCenterSIN * ac * bc) / ci) * RAD_TO_DEG * mPixel2DegLat.inv();
+		auto as = sinr(pt.y());               // gcc gets this and uses optimized sincos() function. Yay !
+		auto ac = cosr(pt.y());
+		auto bs = sinr(pt.x() - mLonCenter);
+		auto bc = cosr(pt.x() - mLonCenter);
+		double ci = 1.0 / (mLatCenterSIN * as + mLatCenterCOS * ac * bc);
+		double x = mCenterX + (ac * bs * ci) * RAD_TO_DEG * mPixel2DegLat.inv();
+		double y = mCenterY + ((mLatCenterCOS * as - mLatCenterSIN * ac * bc) * ci) * RAD_TO_DEG * mPixel2DegLat.inv();
 #endif
 		if (mPixel2DegLat() > THR_GNOMONIC * 0.3)
 		{
