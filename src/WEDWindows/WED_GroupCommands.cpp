@@ -5478,7 +5478,7 @@ void WED_AgePavement(IResolver* resolver)
 	vector<WED_Airport*> all_apts;
 	int count = 0;
 
-	int age = ConfirmMessage("Change all XP11 default Pavement to Xp12 old/worn ? Otherwise change is to newer looking pavem.", "Yes", "No");
+	int age = ConfirmMessage("Change all X-Plane 11 default Pavement to X-Plane 12 old/worn ? Otherwise change is to newer looking pavement.", "Yes", "No");
 
 	CollectRecursiveNoNesting(wrl, back_inserter(all_apts), WED_Airport::sClass);
 
@@ -5503,7 +5503,7 @@ static vector<WED_PolygonPlacement *> PolygonsForWED_Polygon(WED_Thing * parent,
 	
 //	printf("conv size %d\n", poly.size());
 	
-	for(auto p : poly)
+	for(const auto& p : poly)
 	{
 		if(p.is_ccw())
 		{
