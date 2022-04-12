@@ -83,8 +83,8 @@
 #include "MathUtils.h"
 #include "glew.h"
 
-#define sinr(x) sinf((x) * DEG_TO_RAD)
-#define cosr(x) cosf((x) * DEG_TO_RAD)
+#define sinr(x) sin((x) * DEG_TO_RAD)
+#define cosr(x) cos((x) * DEG_TO_RAD)
 
 inline	double	rescale(double s1, double s2, double d1, double d2, double v)
 {

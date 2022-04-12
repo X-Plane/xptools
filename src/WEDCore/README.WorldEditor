@@ -66,6 +66,7 @@ WED 2.5.0b2 4/13/22
    - new map layer "Terrain" visualizes terrain mesh structure, DEM and explicit height vertices
    - menu function 'convert to' now covers object strings and forests'
    - speed up road display to handle full DSF tiles of roads by adding a caching layer
+   - menu function "split"" can now cut into holes in polygons
 
 WED 2.4.0rc2 5/29/21
    Features:

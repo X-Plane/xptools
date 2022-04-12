@@ -1574,11 +1574,13 @@ struct chain_split_info_t {
 };
 
 struct ring_split_info_t {
-	WED_GISChain * c;
+	WED_GISChain * chain;
 	WED_GISPoint * p0;
 	WED_GISPoint * p1;
 	int pos_0;
 	int pos_1;
+	bool cut_to_hole;
+	WED_GISChain* hole;
 };
 }
 
@@ -1629,38 +1631,59 @@ static bool is_chain_split(ISelection * sel, chain_split_info_t * info)
 
 static bool is_ring_split(ISelection * sel, ring_split_info_t * info)
 {
-	vector<ISelectable*> selected;
-	sel->GetSelectionVector(selected);
-
-	// Must have exactly two points selected
-	if(selected.size() != 2)
+	if (sel->GetSelectionCount() != 2) 
 		return false;
-	WED_GISPoint * p0 = dynamic_cast<WED_GISPoint*>(selected[0]);
-	WED_GISPoint * p1 = dynamic_cast<WED_GISPoint *>(selected[1]);
+
+	int pos_0 = 0, pos_1 = 0;
+
+	auto p0 = dynamic_cast<WED_GISPoint*>(sel->GetNthSelection(0));
+	auto p1 = dynamic_cast<WED_GISPoint*>(sel->GetNthSelection(1));
 	if(!p0 || !p1)
 		return false;
 
-	// The points must have the same WED_GISChain parent
-	WED_GISChain * c = dynamic_cast<WED_GISChain*>(p0->GetParent());
-	if(!c || c != p1->GetParent())
+	auto c0 = dynamic_cast<WED_GISChain*>(p0->GetParent());
+	auto c1 = dynamic_cast<WED_GISChain*>(p1->GetParent());
+	if(!c0 || !c1)
 		return false;
 
-	// The chain must be closed (i.e. it must be a ring).
-	if(!c->IsClosed())
+	if (!c0->IsClosed() || !c1->IsClosed())
 		return false;
-
-	// The points must not be adjacent
-	int pos_0 = p0->GetMyPosition();
-	int pos_1 = p1->GetMyPosition();
-	if(pos_0 > pos_1)
+	
+	if (c0 != c1) // points on separate chains must be of same entity (e.g. outer rinsg vs hole0
 	{
-		std::swap(pos_0, pos_1);
-		std::swap(p0, p1);
+		auto gp = dynamic_cast<WED_GISPolygon*>(c0->GetParent());
+		if (!gp || gp != dynamic_cast<WED_GISPolygon*>(c1->GetParent()))
+			return false;
+
+		// the current also is limited to cuts from the outer ring to a hole
+		auto or = gp->GetOuterRing();
+		if (or != dynamic_cast<IGISPointSequence*>(c0))
+		{
+			if (or != dynamic_cast<IGISPointSequence*>(c1))
+				return false;
+			else
+			{
+				swap(p0, p1);
+				swap(c0, c1);
+			}
+		}
+		pos_0 = p0->GetMyPosition();
+		pos_1 = p1->GetMyPosition();
 	}
-	if(pos_1 == pos_0 + 1)
-		return false;
-	if(pos_0 == 0 && pos_1 == c->CountChildren()-1)
-		return false;
+	else 	// both points on same WED_GISChain must not be adjacent in that chain
+	{
+		pos_0 = p0->GetMyPosition();
+		pos_1 = p1->GetMyPosition();
+		if (pos_0 > pos_1)
+		{
+			std::swap(pos_0, pos_1);
+			std::swap(p0, p1);
+		}
+		if (pos_1 == pos_0 + 1)
+			return false;
+		if (pos_0 == 0 && pos_1 == c0->CountChildren() - 1)
+			return false;
+	}
 
 	if(info)
 	{
@@ -1668,7 +1691,9 @@ static bool is_ring_split(ISelection * sel, ring_split_info_t * info)
 		info->p1 = p1;
 		info->pos_0 = pos_0;
 		info->pos_1 = pos_1;
-		info->c = c;
+		info->chain = c0;
+		info->cut_to_hole = c0 != c1;
+		info->hole = c1;
 	}
 
 	return true;
@@ -1686,7 +1711,7 @@ static bool is_edge_split(ISelection * sel)
 int		WED_CanSplit(IResolver * resolver)
 {
 	ISelection * sel = WED_GetSelect(resolver);
-	return is_chain_split(sel, NULL) || is_ring_split(sel, NULL) || is_edge_split(sel)? 1 : 0;
+	return is_chain_split(sel, NULL) || is_ring_split(sel, NULL) || is_edge_split(sel);
 }
 
 static void do_chain_split(ISelection * sel, const chain_split_info_t & info)
@@ -1829,82 +1854,134 @@ static void delete_bezier_handle(IGISPoint * p, int handle) {
 		bezier->DeleteHandleHi();
 }
 
-static void do_ring_split(ISelection * sel, const ring_split_info_t & info)
+static void do_ring_split(ISelection* sel, const ring_split_info_t& info)
 {
-	WED_Thing * parent = info.c->GetParent();
+	auto parent = dynamic_cast<WED_Thing*>(info.chain->GetParent());
 	if (!parent)
 		return;
 
-	WED_GISPolygon * polygon = dynamic_cast<WED_GISPolygon*>(info.c->GetParent());
-	vector<int> hole_sides;
-	if (polygon && info.c == polygon->GetOuterRing())
+	auto polygon = dynamic_cast<WED_GISPolygon*>(info.chain->GetParent());
+
+	IOperation* op = dynamic_cast<IOperation*>(sel);
+	set<WED_Thing*> to_delete;
+
+	if(!info.cut_to_hole)
 	{
-		// For each hole, check which side of the split it is on.
-		hole_sides.resize(polygon->GetNumHoles());
-		for (int i = 0; i < polygon->GetNumHoles(); ++i)
+		vector<int> hole_sides;
+		if (polygon && info.chain == polygon->GetOuterRing())
 		{
-			IGISPointSequence * hole = polygon->GetNthHole(i);
-			hole_sides[i] = hole_side(hole, info.p0, info.p1);
-			if (hole_sides[i] == COLLINEAR)
+			// For each hole, check which side of the split it is on.
+			hole_sides.resize(polygon->GetNumHoles());
+			for (int i = 0; i < polygon->GetNumHoles(); ++i)
 			{
-				// We could theoretically do this check already in
-				// is_ring_split(), but it would be too hard for the user to
-				// understand why the Split function is sometimes available
-				// and sometimes greyed out. Instead, we do the check here so
-				// we can display a meaningful message.
-				DoUserAlert("Cannot split across holes");
-				return;
+				IGISPointSequence* hole = polygon->GetNthHole(i);
+				hole_sides[i] = hole_side(hole, info.p0, info.p1);
+				if (hole_sides[i] == COLLINEAR)
+				{
+					// We could theoretically do this check already in
+					// is_ring_split(), but it would be too hard for the user to
+					// understand why the Split function is sometimes available
+					// and sometimes greyed out. Instead, we do the check here so
+					// we can display a meaningful message.
+					DoUserAlert("Cannot split through holes");
+					return;
+				}
 			}
 		}
-	}
 
-	IOperation * op = dynamic_cast<IOperation *>(sel);
-	op->StartOperation("Split ring");
+		op->StartOperation("Split ring");
 
-	set<WED_Thing*> to_delete;
-	WED_GISChain * chain_clone = NULL;
+		WED_GISChain* chain_clone = NULL;
 
-	// Is the ring the outer ring of a polygon?
-	if (polygon && info.c == polygon->GetOuterRing())
-	{
-		// Clone the entire polygon
-		WED_GISPolygon * polygon_clone = dynamic_cast<WED_GISPolygon*>(polygon->Clone());
-		polygon_clone->SetParent(polygon->GetParent(), polygon->GetMyPosition()+1);
-		chain_clone = dynamic_cast<WED_GISChain*>(polygon_clone->GetOuterRing());
-
-		// Distribute the holes between the original polygon and the clone
-		for (int i = 0; i < polygon->GetNumHoles(); ++i)
+		// Is the ring the outer ring of a polygon?
+		if (polygon && info.chain == polygon->GetOuterRing())
 		{
-			if (hole_sides[i] == RIGHT_TURN)
-				to_delete.insert(dynamic_cast<WED_Thing*>(polygon->GetNthHole(i)));
-			else
-				to_delete.insert(dynamic_cast<WED_Thing*>(polygon_clone->GetNthHole(i)));
+			// Clone the entire polygon
+			auto polygon_clone = dynamic_cast<WED_GISPolygon*>(polygon->Clone());
+			polygon_clone->SetParent(polygon->GetParent(), polygon->GetMyPosition() + 1);
+			chain_clone = dynamic_cast<WED_GISChain*>(polygon_clone->GetOuterRing());
+
+			// Distribute the holes between the original polygon and the clone
+			for (int i = 0; i < polygon->GetNumHoles(); ++i)
+			{
+				if (hole_sides[i] == RIGHT_TURN)
+					to_delete.insert(dynamic_cast<WED_Thing*>(polygon->GetNthHole(i)));
+				else
+					to_delete.insert(dynamic_cast<WED_Thing*>(polygon_clone->GetNthHole(i)));
+			}
+		}
+		else
+		{
+			// Clone just the chain
+			chain_clone = dynamic_cast<WED_GISChain*>(info.chain->Clone());
+			chain_clone->SetParent(info.chain->GetParent(), info.chain->GetMyPosition() + 1);
+		}
+
+		sel->Insert(chain_clone->GetNthChild(info.pos_0));
+		sel->Insert(chain_clone->GetNthChild(info.pos_1));
+
+		// On the two shared points, delete the Bezier handles that face the other
+		// polygon to make the two halves fit together exactly
+		delete_bezier_handle(info.chain->GetNthPoint(info.pos_0), 1);
+		delete_bezier_handle(info.chain->GetNthPoint(info.pos_1), 0);
+		delete_bezier_handle(chain_clone->GetNthPoint(info.pos_0), 0);
+		delete_bezier_handle(chain_clone->GetNthPoint(info.pos_1), 1);
+
+		// Distribute the points among the the original and the clone
+		for (int i = 0; i < info.chain->CountChildren(); ++i)
+		{
+			if (i > info.pos_0 && i < info.pos_1)
+				to_delete.insert(info.chain->GetNthChild(i));
+			if (i < info.pos_0 || i > info.pos_1)
+				to_delete.insert(chain_clone->GetNthChild(i));
 		}
 	}
-	else
+	else // cut from outer ring into hole
 	{
-		// Clone just the chain
-		chain_clone = dynamic_cast<WED_GISChain*>(info.c->Clone());
-		chain_clone->SetParent(info.c->GetParent(), info.c->GetMyPosition()+1);
-	}
+		// check the cut does not cut through any unrelated hole
+		
+		Segment2 cut;
+		info.p0->GetLocation(gis_Geo, cut.p1);
+		info.p1->GetLocation(gis_Geo, cut.p2);
+		for (int i = 0; i < polygon->GetNumHoles(); ++i)
+		{
+			auto hole = dynamic_cast<WED_GISChain*>(polygon->GetNthHole(i));
+			for (int i = 0; i < hole->GetNumSides(); i++)
+			{
+				Bezier2 bez;
+				Point2 pt;
+				if (hole->GetSide(gis_Geo, i, bez) ? bez.intersect(cut, 10) : bez.as_segment().intersect(cut, pt))
+					if(pt != cut.p1 && pt != cut.p2)
+					{
+						DoUserAlert("Cannot split through holes");
+						return;
+					}
+			}
+		}
 
-	sel->Insert(chain_clone->GetNthChild(info.pos_0));
-	sel->Insert(chain_clone->GetNthChild(info.pos_1));
+		op->StartOperation("Split ring + merge hole");
 
-	// On the two shared points, delete the Bezier handles that face the other
-	// polygon to make the two halves fit together exactly
-	delete_bezier_handle(info.c->GetNthPoint(info.pos_0), 1);
-	delete_bezier_handle(info.c->GetNthPoint(info.pos_1), 0);
-	delete_bezier_handle(chain_clone->GetNthPoint(info.pos_0), 0);
-	delete_bezier_handle(chain_clone->GetNthPoint(info.pos_1), 1);
+		// duplicate the node in outer ring node AND the hole node;
+		auto orng_clone = dynamic_cast<WED_Thing*>(info.p0->Clone());
+		orng_clone->SetParent(info.chain, info.pos_0 + 1);
+		auto hole_clone = dynamic_cast<WED_Thing*>(info.p1->Clone());
+		hole_clone->SetParent(info.hole, info.pos_1 + 1);
 
-	// Distribute the points among the the original and the clone
-	for (int i = 0; i < info.c->CountChildren(); ++i)
-	{
-		if (i > info.pos_0 && i < info.pos_1)
-			to_delete.insert(info.c->GetNthChild(i));
-		if (i < info.pos_0 || i > info.pos_1)
-			to_delete.insert(chain_clone->GetNthChild(i));
+		delete_bezier_handle(info.chain->GetNthPoint(info.pos_0), 1);
+		delete_bezier_handle(info.chain->GetNthPoint(info.pos_0 + 1), 0);
+		delete_bezier_handle(info.hole->GetNthPoint(info.pos_1), 1);
+		delete_bezier_handle(info.hole->GetNthPoint(info.pos_1 + 1), 0);
+
+		// Move all hole vertices in reverse order to fall in between the outer ring duplicate nodes
+		int hole_vert_to_move = info.hole->GetNumPoints();
+		for (int i = 0; i < hole_vert_to_move; i++)
+		{
+			int move_pos = (info.pos_1 + 1) >= info.hole->GetNumPoints() ? 0 : info.pos_1 + 1;
+			dynamic_cast<WED_Thing*>(info.hole->GetNthPoint(move_pos))->SetParent(info.chain,info.pos_0 + i + 1);
+		}
+
+		// delete the hole chain - as the hole is gone now
+		to_delete.insert(info.hole);
 	}
 
 	WED_AddChildrenRecursive(to_delete);
