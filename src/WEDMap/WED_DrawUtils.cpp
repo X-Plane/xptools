@@ -216,7 +216,7 @@ void glPolygon2(const vector<Point2>& pts, bool has_uv, const vector<int>& extra
 			}
 			else
 			{
-		#if 0
+		#if  1
 				glBegin(GL_TRIANGLES);
 				if (height == -1.0f)
 					while (tri_count--)
