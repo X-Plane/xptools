@@ -703,17 +703,19 @@ struct	preview_polygon : public WED_PreviewItem {
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
 	{
 		vector<Point2>	pts;
-		vector<int>		is_hole_start;
+		vector<int>		hole_starts;
 
-		PointSequenceToVector(pol->GetOuterRing(), zoomer, pts, has_uv, is_hole_start, 0);
+		PointSequenceToVector(pol->GetOuterRing(), zoomer, pts, has_uv);
 		int n = pol->GetNumHoles();
 		for (int i = 0; i < n; ++i)
-			PointSequenceToVector(pol->GetNthHole(i), zoomer, pts, has_uv, is_hole_start, 1);
-
+		{
+			hole_starts.push_back(pts.size());
+			PointSequenceToVector(pol->GetNthHole(i), zoomer, pts, has_uv);
+		}
 		if (!pts.empty())
 		{
 			glFrontFace(GL_CCW);
-			glPolygon2(&*pts.begin(), has_uv, &*is_hole_start.begin(), pts.size() / (has_uv ? 2 : 1));
+			glPolygon2(pts, has_uv, hole_starts, false);
 			glFrontFace(GL_CW);
 		}
 	}
@@ -923,8 +925,7 @@ struct	preview_line : WED_PreviewItem {
 			for (int l = 0; l < linfo->s1.size(); ++l)
 			{
 				vector<Point2>	pts;
-				vector<int> cont;
-				PointSequenceToVector(ps,zoomer,pts,false,cont,0,true);
+				PointSequenceToVector(ps, zoomer, pts, false, true);
 				draw_line_preview(pts, *linfo, l, zoomer->GetPPM());
 			}
 			glFrontFace(GL_CW);
@@ -1834,8 +1835,7 @@ struct	preview_road : WED_PreviewItem {
 				for (const auto& s : rd.segs)
 				{
 					vector<Point2>	pts;
-					vector<int> cont;
-					PointSequenceToVector(ps,zoomer,pts,false,cont,0,true);
+					PointSequenceToVector(ps, zoomer, pts, false, true);
 
 					double left  = s.left  * PPM;
 					double right = s.right * PPM;

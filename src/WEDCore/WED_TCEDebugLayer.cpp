@@ -70,7 +70,7 @@ void	WED_TCEDebugLayer::DrawStructure			(bool inCurrent, GUI_GraphState * g)
 		for(int n = 0; n < gMeshPolygons.size(); ++n)
 		{
 			glColor4f(gMeshPolygons[n].second.x,gMeshPolygons[n].second.y,gMeshPolygons[n].second.z, 0.3);			
-			glPolygon2(&*gMeshPolygons[n].first.begin(), false, NULL, gMeshPolygons[n].first.size());
+			glPolygon2(gMeshPolygons[n].first, false, vector<int>(), false);
 		}
 		
 

@@ -69,8 +69,6 @@ void PointSequenceToVector(
 			WED_MapZoomerNew *		z,
 			vector<Point2>&			pts,
 			bool					get_uv,
-			vector<int>&			contours,
-			int						is_hole,
 			bool					dupFirst)
 {
 	int n = ps->GetNumSides();
@@ -89,31 +87,26 @@ void PointSequenceToVector(
 			int point_count = BezierPtsCount(b,z);
 
 			pts.reserve(pts.size() + point_count * (get_uv ? 2 : 1));
-			contours.reserve(contours.size() + point_count);
 			for (int k = 0; k < point_count; ++k)
 			{
 							pts.push_back(b.midpoint((float) k / (float) point_count));
 				if(get_uv)	pts.push_back(buv.midpoint((float) k / (float) point_count));
-				contours.push_back((k == 0 && i == 0) ? is_hole : 0);
 			}
 
 			if (i == n-1 && (!ps->IsClosed() || dupFirst))
 			{
 							pts.push_back(b.p2);
 				if(get_uv)	pts.push_back(buv.p2);
-				contours.push_back(0);
 			}
 		}
 		else
 		{
 							pts.push_back(z->LLToPixel(b.p1));
 			if(get_uv)		pts.push_back(buv.p1);
-			contours.push_back(i == 0 ? is_hole : 0);
 			if (i == n-1 && (!ps->IsClosed() || dupFirst))
 			{
 							pts.push_back(z->LLToPixel(b.p2));
 				if(get_uv)	pts.push_back(buv.p2);
-				contours.push_back(0);
 			}
 		}
 	}
@@ -143,19 +136,37 @@ static void CALLBACK TessVertexUVh(const Point2 * p, float * h)
 }
 #endif
 
-void glPolygon2(const Point2 * pts, bool has_uv, const int * contours, int n, float height)
+void glPolygon2(const vector<Point2>& pts, bool has_uv, const vector<int>& extra_contours, bool show_all, float height)
 {
 #if LIBTESS
 	TESStesselator * tess = tessNewTess(NULL);
-	const Point2 * pts_p(pts);
-	vector<TESSreal>	raw_pts;
-	raw_pts.reserve(n * 2);
 	int n_holes = 0;
-	
-	for(int i = 0; i < n; ++i)
+#if 1 //  2 * sizeof(TESSReal) == sizeof(Point2)
+	const Point2* pts_p(pts.data());
+	if (extra_contours.size())
 	{
-		if(contours && contours[i])
+		for (auto l : extra_contours)
+			if (l)
+			{
+				int n_do = (l - (pts_p - pts.data())) / (has_uv ? 2 : 1);
+				tessAddContour(tess, 2, pts_p, (has_uv ? 4 : 2) * sizeof(TESSreal), n_do);
+				n_holes++;
+				pts_p = pts.data() + l;
+			}
+	}
+	int n_todo = (pts.size() - (pts_p - pts.data())) / (has_uv ? 2 : 1);
+	tessAddContour(tess, 2, pts_p, (has_uv ? 4 : 2) * sizeof(TESSreal), n_todo);
+#else
+	const Point2* pts_p(pts.data());
+	vector<TESSreal>	raw_pts;
+	raw_pts.reserve(pts.size() * 2);
+	auto next_cont = extra_contours.begin();
+	
+	for(int i = 0; i < pts.size(); i += has_uv ? 2 : 1)
+	{
+		if(next_cont != extra_contours.end() && i == *next_cont)
 		{
+			next_cont++;
 			if(!raw_pts.empty())
 			{
 				tessAddContour(tess, 2, &raw_pts[0], 2 * sizeof(TESSreal), raw_pts.size() / 2);
@@ -170,6 +181,7 @@ void glPolygon2(const Point2 * pts, bool has_uv, const int * contours, int n, fl
 	}
 	if(!raw_pts.empty())
 		tessAddContour(tess, 2, &raw_pts[0], 2 * sizeof(TESSreal), raw_pts.size() / 2);
+#endif
 
 	if(tessTesselate(tess, TESS_WINDING_POSITIVE, TESS_POLYGONS, 3, 2, 0))
 	{
@@ -177,7 +189,7 @@ void glPolygon2(const Point2 * pts, bool has_uv, const int * contours, int n, fl
 		int tri_count = tessGetElementCount(tess);
 
 //		printf("n %d vertCnt %d triCnt %d holes %d  f %d %s\n", n, vert_count, tri_count, n_holes, tri_count-2*n_holes+2, tri_count-2*n_holes+2 == n ? "y" : "n");
-		if(tri_count-2*n_holes+2 == n)  // don't be better than gluTess (used in XP) and show textureing with self-intersecting contours
+		if(show_all || tri_count-2*n_holes+2 == (pts.size() / (has_uv ? 2 : 1)))  // don't be better than gluTess (used in XP) and show textureing with self-intersecting contours
 		{
 			const TESSindex* vert_idx = tessGetElements(tess);
 			const TESSreal * verts = tessGetVertices(tess);
@@ -204,7 +216,7 @@ void glPolygon2(const Point2 * pts, bool has_uv, const int * contours, int n, fl
 			}
 			else
 			{
-		#if 1
+		#if 0
 				glBegin(GL_TRIANGLES);
 				if (height == -1.0f)
 					while (tri_count--)

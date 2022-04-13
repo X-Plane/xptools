@@ -582,16 +582,19 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 				if(selected)
 				{
 					vector<Point2>	pts;
-					vector<int>		is_hole_start;
+					vector<int>		hole_starts;
 
-					PointSequenceToVector(poly->GetOuterRing(), GetZoomer(), pts, false, is_hole_start, 0);
+					PointSequenceToVector(poly->GetOuterRing(), GetZoomer(), pts, false);
 					int n = poly->GetNumHoles();
 					for (int i = 0; i < n; ++i)
-						PointSequenceToVector(poly->GetNthHole(i), GetZoomer(), pts, false, is_hole_start, 1);
+					{
+						hole_starts.push_back(pts.size());
+						PointSequenceToVector(poly->GetNthHole(i), GetZoomer(), pts, false);
+					}
 
 					glColor4fv(WED_Color_RGBA_Alpha(struct_color, HILIGHT_ALPHA, storage));
 					glFrontFace(GL_CCW);
-					glPolygon2(&*pts.begin(), false, &*is_hole_start.begin(), pts.size());
+					glPolygon2(pts, false, hole_starts, false);
 					glFrontFace(GL_CW);
 				}
 			}
