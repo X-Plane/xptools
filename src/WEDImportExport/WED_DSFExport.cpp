@@ -2388,11 +2388,7 @@ int DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, se
 	for (int y = tile_south; y < tile_north; ++y)
 	{
 #if TYLER_MODE
-		if(y % 5 == 0)
-		{
-			LOG_MSG("Exporting DSF's at lattitudes %d to %d\n", y, y + 4);
-			LOG_FLUSH();
-		}
+		printf("Exporting DSF's at lattitude %d\n", y);
 #endif
 		for (int x = tile_west; x < tile_east; ++x)
 		{

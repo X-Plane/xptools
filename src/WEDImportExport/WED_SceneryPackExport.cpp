@@ -62,7 +62,7 @@ int		WED_CanExportPack(IResolver * resolver)
 	return 1;
 }
 
-#if 1 //TYLER_MODE
+#if TYLER_MODE
 
 #include "WED_Airport.h"
 #include "WED_EnumSystem.h"
@@ -423,7 +423,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		CollectRecursive(*apt_itr, inserter(exclusions, exclusions.end()), IgnoreVisiblity, TakeAlways, WED_ExclusionZone::sClass, 2);
 		if (exclusions.size())
 		{
-			wrl->StartCommand("Clean up Exclusions");
+			wrl->StartCommand("Nuke all Exclusions");
 			WED_RecursiveDelete(exclusions);
 #endif
 			wrl->CommitCommand();

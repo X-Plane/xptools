@@ -1656,10 +1656,10 @@ static bool is_ring_split(ISelection * sel, ring_split_info_t * info)
 			return false;
 
 		// the current also is limited to cuts from the outer ring to a hole
-		auto or = gp->GetOuterRing();
-		if (or != dynamic_cast<IGISPointSequence*>(c0))
+		auto o = gp->GetOuterRing();
+		if (o != dynamic_cast<IGISPointSequence*>(c0))
 		{
-			if (or != dynamic_cast<IGISPointSequence*>(c1))
+			if (o != dynamic_cast<IGISPointSequence*>(c1))
 				return false;
 			else
 			{
@@ -4616,8 +4616,8 @@ static string get_regional_codes(const Point2& loc, int ac_size, int ops_type)
 		code = "aal ual dal ";
 		if(loc.x() < -150.0 && loc.y() > 10.0 && loc.y() < 40.0) // hawaii
 		{
-			if(ac_size > width_B) code += "hal swa ";
-			else                  code += "hal fdy wlc ";
+			if(ac_size > width_B) code += "hal swa asa ";
+			else                  code += "hal fdy ";
 		}
 		else if(loc.y() < 13.0)
 		{
@@ -4635,13 +4635,13 @@ static string get_regional_codes(const Point2& loc, int ac_size, int ops_type)
 				if(loc.x() < - 103.0)            // USA west
 					code += "swa asa qxe ";
 				else	                         // USA east
-					code += "swa jbu nks ";
+					code += "swa jbu nks ezy egf ";
 			}
 		}
 	}
 	else if(loc.x() < 60.0)
 	{
-		code = "baw afr klm dlh ";
+		code = "baw afr klm dlh vir ";
 		if(loc.x() > 37.0 && loc.y() > 12.0 && loc.y() < 34.0)    // near east
 			code += "uae etd qtr ";
 		else if(loc.y() > 34.0)                   // europe
@@ -4649,7 +4649,7 @@ static string get_regional_codes(const Point2& loc, int ac_size, int ops_type)
 			code += "sas aza ibe sva ";
 			if(ac_size <= width_C) 
 			{
-				code += "ber ryr ";
+				code += "ber ryr vlg ";
 				if(LonLatDistMeters(loc, Point2(11,47)) < 300e3) code += "wlc tyr lpv aua "; // within 300 km of LOWI
 			}
 		}
@@ -4665,9 +4665,9 @@ static string get_regional_codes(const Point2& loc, int ac_size, int ops_type)
 			if(loc.x() < 86.0)                     // india
 				code = "aic igo ";
 			else if(loc.x() < 124.0 && loc.y() > 20.0)  // china
-				code = "csn ces cca chh ";
+				code = "csn ces cca chh cxa ";
 			else                                        // far east asia
-				code = "lni sia cpa ana jal kal gia ";
+				code = "lni tlm sia cpa ana jal kal gia ";
 		}
 	}
 

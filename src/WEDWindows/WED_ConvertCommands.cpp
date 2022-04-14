@@ -433,7 +433,7 @@ void	WED_DoConvertToForest(IResolver* resolver)
 	auto fst = WED_ForestPlacement::CreateTyped(wrl->GetArchive());
 	fst->SetParent(where->GetParent(), where->GetMyPosition());
 	fst->SetDensity(1.0);
-	fst->SetResource("lib/vegetation/trees/decidious/maple_medium.for");
+	fst->SetResource("lib/vegetation/trees/deciduous/maple_medium.for");
 	fst->SetName("maple_medium.for");
 	fst->SetFillMode(dsf_fill_points);
 

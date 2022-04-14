@@ -672,6 +672,8 @@
 		<Unit filename="../../src/WEDTCE/WED_TCEVertexTool.h" />
 		<Unit filename="../../src/WEDWindows/WED_AboutBox.cpp" />
 		<Unit filename="../../src/WEDWindows/WED_AboutBox.h" />
+		<Unit filename="../../src/WEDWindows/WED_ConvertCommands.cpp" />
+		<Unit filename="../../src/WEDWindows/WED_ConvertCommands.h" />
 		<Unit filename="../../src/WEDWindows/WED_DocumentWindow.cpp" />
 		<Unit filename="../../src/WEDWindows/WED_DocumentWindow.h" />
 		<Unit filename="../../src/WEDWindows/WED_GroupCommands.cpp" />
