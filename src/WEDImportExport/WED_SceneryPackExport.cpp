@@ -90,11 +90,6 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 	WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);                      // Speeds up recursive collecting, avoids recursing too deep.
 	ISelection * sel = WED_GetSelect(resolver);
 	
-//	const bdy[] = {-130,49, -40,49, -80,24, -97,25, -107,31, -111,31, -115,33, -140,32};
-//	Polygon2 FAA_bounds;
-//	for (int i = 0; i < 16; i += 2)
-//		FAA_bounds.push_back(Point2(bdy[i], bdy[i + 1]);
-
 	int deleted_illicit_icao = 0;
 	int added_local_codes = 0;
 	int added_country_codes = 0;
@@ -160,28 +155,12 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		(*apt_itr)->GetName(ICAO_code);
 
 		//-- upgrade Ramp Positions with XP10.45 data to get parked A/C -------------
-		vector<WED_RampPosition*> ramp_positions;
-		CollectRecursive(*apt_itr, back_inserter(ramp_positions), IgnoreVisiblity, TakeAlways, WED_RampPosition::sClass, 2);
+		wrl->StartCommand("Upgrade Ramp Positions");
+		if (wed_upgrade_ramps(*apt_itr))
+			wrl->CommitCommand();
+		else
+			wrl->AbortCommand();
 
-		int non_empty_airlines_strs = 0;
-		int non_op_none_ramp_starts = 0;
-		for (vector<WED_RampPosition*>::iterator ramp_itr = ramp_positions.begin(); ramp_itr != ramp_positions.end(); ++ramp_itr)
-		{
-			if ((*ramp_itr)->GetAirlines() != "")
-				++non_empty_airlines_strs;
-
-			if ((*ramp_itr)->GetRampOperationType() != ramp_operation_None)
-				++non_op_none_ramp_starts;
-		}
-
-		if (non_empty_airlines_strs == 0 || non_op_none_ramp_starts == 0)
-		{
-			wrl->StartCommand("Upgrade Ramp Positions");
-			if (wed_upgrade_one_airport(*apt_itr, rmgr, sel))
-				wrl->CommitCommand();
-			else
-				wrl->AbortCommand();
-		}
 #if 0  // this was good in 10.45, but not needed any for gateway airports as of 2022
 		//-- Agp and obj upgrades to create more ground traffic --------------------------------
 		vector<WED_TruckParkingLocation*> parking_locations;
@@ -396,7 +375,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			LOG_MSG("Deleted %ld Grunges at %s\n", grunge_objs.size(), ICAO_code.c_str());
 		}
 #endif
-#if 0
+#if 1
 		// nuke all Exclusions for Beaches, Polygons, Lines
 		vector<WED_ExclusionZone*> exclusions;
 		CollectRecursive(*apt_itr, back_inserter(exclusions), IgnoreVisiblity, [](WED_Thing* excl)->bool {

@@ -4708,19 +4708,17 @@ static string get_xplane_codes(int width_enum, const set<int>& eq, int ops_type,
 	return out;
 }
 
-int wed_upgrade_one_airport(WED_Thing* who, WED_ResourceMgr* rmgr, ISelection* sel)
+int wed_upgrade_ramps(WED_Thing* who)
 {
-// gMeshLines.clear();
-// for(int i = 0; i < canada.size(); i++)
-//		debug_mesh_line(canada[i], canada[(i+1) % canada.size()], 1,0,0,1,0,0);
+	auto rmgr = WED_GetResourceMgr(who->GetArchive()->GetResolver());
+	auto lmgr = WED_GetLibraryMgr(who->GetArchive()->GetResolver());
+	auto sel  = WED_GetSelect(who->GetArchive()->GetResolver());
 
 	int did_work = 0;
 	vector<WED_RampPosition *> ramps;
 	vector<obj_conflict_info> objs;
 	collect_ramps_recursive(who, ramps, objs, rmgr);
 
-	auto lmgr = WED_GetLibraryMgr(who->GetArchive()->GetResolver());
-	
 	Point2 apt_loc;
 	if(auto apt = dynamic_cast<WED_Airport*>(who))
 	{
@@ -4757,7 +4755,20 @@ int wed_upgrade_one_airport(WED_Thing* who, WED_ResourceMgr* rmgr, ISelection* s
 				}
 			}
 		}
-		// fill in airline types
+		// determine "clusters"
+/*		auto ramps_by_dist(ramps);
+		ramps_by_dist.erase(std::find(ramps_by_dist.begin(), ramps_by_dist.end(), r));
+		Point2 my_loc;
+		r->GetLocation(gis_Geo, my_loc);
+		std::sort(ramps_by_dist.begin(), ramps_by_dist.end(),[&](WED_RampPosition* a, WED_RampPosition* b)
+		{
+			Point2 loc_a, loc_b;
+			a->GetLocation(gis_Geo, loc_a);
+			b->GetLocation(gis_Geo, loc_b);
+			return LonLatDistMeters(my_loc, loc_a) > LonLatDistMeters(my_loc, loc_b);
+		});
+*/	
+		// fill in regio apropriate airline names
 		if (r->GetRampOperationType() == ramp_operation_Airline || r->GetRampOperationType() == ramp_operation_Cargo)
 		{
 			string old_codes =  WED_RampPosition::CorrectAirlinesString(r->GetAirlines());
@@ -4791,7 +4802,7 @@ int wed_upgrade_one_airport(WED_Thing* who, WED_ResourceMgr* rmgr, ISelection* s
 		}
 	}
 	// nuke static aircraft objects near ramps
-	for(auto o : objs)
+	for(auto& o : objs)
 	{
 		for(auto r : ramps)
 		{
@@ -4817,7 +4828,7 @@ static int wed_upgrade_airports_recursive(WED_Thing * who, WED_ResourceMgr * rmg
 	int did_work = 0;
 	if(who->GetClass() == WED_Airport::sClass)
 	{
-		did_work = wed_upgrade_one_airport(who, rmgr, sel);
+		did_work = wed_upgrade_ramps(who);
 	}
 	int nn = who->CountChildren();
 	for(int n = 0; n < nn; ++n)
