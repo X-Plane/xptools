@@ -1742,6 +1742,9 @@
     <ClInclude Include="..\..\src\WEDWindows\WED_ConvertCommands.h">
       <Filter>WEDWindows</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\Utils\tsl\hopscotch_map.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\src\WEDResources\about.png">

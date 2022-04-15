@@ -47,9 +47,9 @@ WED_Archive::~WED_Archive()
 
 	mDying = true; // flag to self to realize that we don't care about dead objs.
 
-	for (ObjectMap::iterator i = mObjects.begin(); i != mObjects.end(); ++i)
-	if (i->second)
-		i->second->Delete();
+	for (auto& ob : mObjects)
+		if(ob.second != NULL)
+			ob.second->Delete();
 }
 
 void WED_Archive::SetUndo(WED_UndoLayer * inUndo)
@@ -60,7 +60,7 @@ void WED_Archive::SetUndo(WED_UndoLayer * inUndo)
 
 WED_Persistent *	WED_Archive::Fetch(int id) const
 {
-	ObjectMap::const_iterator iter = mObjects.find(id);
+	auto iter = mObjects.find(id);
 	if (iter == mObjects.end()) return NULL;
 	return iter->second;
 }
@@ -82,11 +82,7 @@ void		WED_Archive::AddObject(WED_Persistent * inObject)
 	if (mDying) return;
 	++mCacheKey;
 	mID = max(mID,inObject->GetID()+1);
-	ObjectMap::iterator iter = mObjects.find(inObject->GetID());
-	DebugAssert(iter == mObjects.end() || iter->second == NULL);
-
-	if (iter == mObjects.end())			mObjects.insert(ObjectMap::value_type(inObject->GetID(), inObject));
-	else								iter->second = inObject;
+	mObjects[inObject->GetID()] = inObject;
 #if WITHNWLINK
 	if (mNWAdapter) mNWAdapter->ObjectCreated(inObject);
 #endif
@@ -100,9 +96,7 @@ void		WED_Archive::RemoveObject(WED_Persistent * inObject)
 {
 	if (mDying) return;
 	++mCacheKey;
-	ObjectMap::iterator iter = mObjects.find(inObject->GetID());
-	Assert(iter != mObjects.end());
-	iter->second = NULL;
+	mObjects.erase(inObject->GetID());
 #if WITHNWLINK
 	if (mNWAdapter) mNWAdapter->ObjectDestroyed(inObject);
 #endif
@@ -114,10 +108,11 @@ void		WED_Archive::RemoveObject(WED_Persistent * inObject)
 void	WED_Archive::ClearAll(void)
 {
 	++mCacheKey;
+	for (auto& ob : mObjects)
+		if(ob.second != NULL)
+			ob.second->Delete();
 
-	for (ObjectMap::iterator ob = mObjects.begin(); ob != mObjects.end(); ++ob)
-	if (ob->second != NULL)
-		ob->second->Delete();
+	mObjects.clear();
 }
 
 void			WED_Archive::SaveToXML(WED_XMLElement * parent)
@@ -125,12 +120,12 @@ void			WED_Archive::SaveToXML(WED_XMLElement * parent)
 	// old code bumps cache key on save...wHY?!
 	//++mCacheKey;
 	WED_XMLElement * obj = parent->add_sub_element("objects");
-	for (ObjectMap::iterator ob = mObjects.begin(); ob != mObjects.end(); ++ob)
-	if(ob->second != NULL)
-	{
-		ob->second->ToXML(obj);
-		obj->flush();
-	}
+	for (auto& ob : mObjects)
+		if (ob.second != NULL)
+		{
+			ob.second->ToXML(obj);
+			obj->flush();
+		}
 
 	mOpCount = 0;
 }
@@ -157,7 +152,6 @@ void			WED_Archive::CommitCommand(void)
 	// Inc this first, so that anyone listening (via the undo mgr) sees we are dirty!
 	++mOpCount;
 	mUndoMgr->CommitCommand();
-
 
 #if DEV
 	this->Validate();
@@ -189,9 +183,8 @@ int		WED_Archive::IsDirty(void)
 
 void	WED_Archive::Validate(void)
 {
-	for (ObjectMap::iterator ob = mObjects.begin(); ob != mObjects.end(); ++ob)
-	if (ob->second != NULL)
-		ob->second->Validate();
+	for (auto& ob : mObjects)
+		ob.second->Validate();
 }
 
 
