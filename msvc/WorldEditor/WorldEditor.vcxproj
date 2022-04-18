@@ -86,7 +86,6 @@
     <ClCompile Include="..\..\src\Network\curl_http.cpp" />
     <ClCompile Include="..\..\src\Network\PCSBSocket.win.cpp" />
     <ClCompile Include="..\..\src\Network\PCSBSocketUDP.win.cpp" />
-    <ClCompile Include="..\..\src\Obj\ObjConvert.cpp" />
     <ClCompile Include="..\..\src\Obj\ObjDraw.cpp" />
     <ClCompile Include="..\..\src\Obj\ObjPointPool.cpp" />
     <ClCompile Include="..\..\src\Obj\XObjDefs.cpp" />
@@ -367,7 +366,6 @@
     <ClInclude Include="..\..\src\Network\curl_http.h" />
     <ClInclude Include="..\..\src\Network\PCSBSocket.h" />
     <ClInclude Include="..\..\src\Network\PCSBSocketUDP.h" />
-    <ClInclude Include="..\..\src\Obj\ObjConvert.h" />
     <ClInclude Include="..\..\src\Obj\ObjDraw.h" />
     <ClInclude Include="..\..\src\Obj\ObjPointPool.h" />
     <ClInclude Include="..\..\src\Obj\XDefs.h" />

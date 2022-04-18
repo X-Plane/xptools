@@ -1165,46 +1165,46 @@ int		MFS_string_match_no_case(MFScanner * s, const char * input, int eol_ok)
 
 int		MFS_int(MFScanner * s)
 {
-	while(s->cur<s->end && isspace(*s->cur) && !iseoln(*s->cur))s->cur++;
+	while(s->cur<s->end && isspace(*s->cur) && !iseoln(*s->cur))
+		s->cur++;
+	int sign_mult = 1;
+	int ret_val   = 0;
 
-	int sign_mult=1;
-	if(s->cur<s->end && *s->cur=='-'){sign_mult=-1;	s->cur++;}
-	if(s->cur<s->end && *s->cur=='+'){sign_mult= 1;	s->cur++;}
+	if (s->cur >= s->end) return ret_val;
+		 if (*s->cur == '-') { sign_mult = -1; s->cur++; }
+	else if (*s->cur == '+') { s->cur++; }
 
-	int retval=0;
-	while(s->cur<s->end && !isspace(*s->cur) && !iseoln(*s->cur)){
-		retval=(10*retval)+(*s->cur)-'0';
-		s->cur++;}
-
-	return sign_mult * retval;
+	while(s->cur<s->end && *s->cur >= '0' && *s->cur <= '9')
+	{
+		ret_val = (10 * ret_val) + (*s->cur) - '0';
+		s->cur++;
+	}
+	return sign_mult * ret_val;
 }
 
 double	MFS_double(MFScanner * s)
 {
-	while(s->cur<s->end && isspace(*s->cur) && !iseoln(*s->cur))s->cur++;
-
-	double	sign_mult	=1;
-	double	ret_val		=0;
-#if 1                            // this version reduces CPU time reading 200MB apt.dat by 0.32 sec on 3.6 GHz CPU !!!!
-	double	decimals = 0.0;
-
-	if(s->cur >= s->end) return 0.0;
-	
-		 if(*s->cur=='-') { sign_mult =-1.0; s->cur++; }
-	else if(*s->cur=='+') { s->cur++; }
+	while(s->cur<s->end && isspace(*s->cur) && !iseoln(*s->cur))
+		s->cur++;
+	double sign_mult = 1.0;
+	double ret_val   = 0.0;
+#if 1                            // much (8-10x) faster, in part due to not using log()
+	if(s->cur >= s->end) return ret_val;
+		 if (*s->cur=='-') { sign_mult =-1.0; s->cur++; }
+	else if (*s->cur=='+') { s->cur++; }
 		
-	while(s->cur < s->end && !isspace(*s->cur) && !iseoln(*s->cur))
+	while (s->cur < s->end && *s->cur >= '0' && *s->cur <= '9')
 	{
-		if(decimals != 0.0)
-		{
-			ret_val += ((*s->cur)-'0') * decimals;
-			decimals *= 0.1;
-		}
-		else if(*s->cur == '.')
-			decimals = 0.1;
-		else
-			ret_val = (10.0 * ret_val) + (*s->cur)-'0';
-
+		ret_val = (10.0 * ret_val) + (*s->cur) - '0';
+		s->cur++;
+	}
+	if(s->cur < s->end && *s->cur == '.')
+		 s->cur++;
+	double decimals = 0.1;
+	while (s->cur < s->end && *s->cur >= '0' && *s->cur <= '9')
+	{
+		ret_val += ((*s->cur) - '0') * decimals;
+		decimals *= 0.1;
 		s->cur++;
 	}
 	return ret_val * sign_mult;

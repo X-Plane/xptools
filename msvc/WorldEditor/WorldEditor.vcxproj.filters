@@ -774,9 +774,6 @@
     <ClCompile Include="..\..\src\WEDMap\WED_SlippyMap.cpp">
       <Filter>WEDMap</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Obj\ObjConvert.cpp">
-      <Filter>Obj</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Utils\glew.c">
       <Filter>Utils</Filter>
     </ClCompile>
@@ -1633,9 +1630,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\WEDMap\WED_SlippyMap.h">
       <Filter>WEDMap</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Obj\ObjConvert.h">
-      <Filter>Obj</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Utils\glew.h">
       <Filter>Utils</Filter>

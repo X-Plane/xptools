@@ -28,7 +28,6 @@
 #endif
 
 #include "XObjReadWrite.h"
-#include "ObjConvert.h"
 #include "CompGeomDefs2.h"
 #include "CompGeomDefs3.h"
 #include "XESConstants.h"

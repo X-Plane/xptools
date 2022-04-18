@@ -23,9 +23,6 @@
 
 #include "XObjDefs.h"
 
-#include <string.h>
-
-
 cmd_info	gCmds[] = {
 
 {	obj_End,			type_None,		"end",				0, 1, 0 },
@@ -154,4 +151,53 @@ int	FindIndexForCmd(int inCmd)
 		++n;
 	}
 	return sizeof(gCmds) / sizeof(gCmds[0]);
+}
+
+void ObjDataVec::clear(int depth)
+{
+	mData.clear();
+	mDepth = depth;
+}
+
+void ObjDataVec::resize(int pts)
+{
+	mData.resize(pts * mDepth);
+}
+
+int ObjDataVec::append(const float pt[])
+{
+	int ret = mData.size() / mDepth;
+	mData.insert(mData.end(), pt, pt + mDepth);
+	return ret;
+}
+
+void ObjDataVec::set(int n, const float pt[])
+{
+	memcpy(&mData[n * mDepth], pt, mDepth * sizeof(float));
+}
+
+int ObjDataVec::count(void) const
+{
+	return mData.size() / mDepth;
+}
+
+const float* ObjDataVec::get(int index) const
+{
+	return &mData[index * mDepth];
+}
+
+void ObjDataVec::get_minmax(float minCoords[3], float maxCoords[3]) const
+{
+	if (mData.empty()) return;
+
+	minCoords[0] = maxCoords[0] = mData[0];
+	minCoords[1] = maxCoords[1] = mData[1];
+	minCoords[2] = maxCoords[2] = mData[2];
+
+	for (int n = mDepth; n < mData.size(); n += mDepth)
+	{
+		maxCoords[0] = max(maxCoords[0], mData[n + 0]);	minCoords[0] = min(minCoords[0], mData[n + 0]);
+		maxCoords[1] = max(maxCoords[1], mData[n + 1]);	minCoords[1] = min(minCoords[1], mData[n + 1]);
+		maxCoords[2] = max(maxCoords[2], mData[n + 2]);	minCoords[2] = min(minCoords[2], mData[n + 2]);
+	}
 }
