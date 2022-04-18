@@ -19,6 +19,9 @@
     <Filter Include="GUI">
       <UniqueIdentifier>{2ab68e50-8738-4e16-b99e-f33e3c3cbd88}</UniqueIdentifier>
     </Filter>
+    <Filter Include="libtess2">
+      <UniqueIdentifier>{966b932e-5c96-4326-a8d4-a3181bf5e979}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Obj\ObjDraw.cpp">
@@ -105,6 +108,27 @@
     <ClCompile Include="..\..\src\Utils\glew.c">
       <Filter>Utils</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\libtess2\Source\bucketalloc.c">
+      <Filter>libtess2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtess2\Source\dict.c">
+      <Filter>libtess2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtess2\Source\geom.c">
+      <Filter>libtess2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtess2\Source\mesh.c">
+      <Filter>libtess2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtess2\Source\priorityq.c">
+      <Filter>libtess2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtess2\Source\sweep.c">
+      <Filter>libtess2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtess2\Source\tess.c">
+      <Filter>libtess2</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\Obj\ObjDraw.h">
@@ -187,6 +211,33 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Utils\wglew.h">
       <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libtess2\Include\tesselator.h">
+      <Filter>libtess2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libtess2\Source\bucketalloc.h">
+      <Filter>libtess2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\CmdLine.h">
+      <Filter>libtess2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libtess2\Source\dict.h">
+      <Filter>libtess2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libtess2\Source\geom.h">
+      <Filter>libtess2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libtess2\Source\mesh.h">
+      <Filter>libtess2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libtess2\Source\priorityq.h">
+      <Filter>libtess2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libtess2\Source\sweep.h">
+      <Filter>libtess2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libtess2\Source\tess.h">
+      <Filter>libtess2</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
