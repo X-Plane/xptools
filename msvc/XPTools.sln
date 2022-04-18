@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2010
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32228.343
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WorldEditor", "WorldEditor\WorldEditor.vcxproj", "{59A94211-31F6-4A03-9E1D-CCA5B1EF8DAA}"
 EndProject
@@ -14,8 +14,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DSFTool", "DSFTool\DSFTool.vcxproj", "{508A48EB-4E1E-4667-939A-7496F8848F0C}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ObjView", "ObjView\ObjView.vcxproj", "{899D8E57-07F9-4656-A5DD-3F6A1718CD54}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AC3Dplugin", "AC3Dplugin\AC3Dplugin.vcxproj", "{A23070DD-2C26-48CC-B062-65B3B7293766}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,8 +45,6 @@ Global
 		{899D8E57-07F9-4656-A5DD-3F6A1718CD54}.Debug|x64.Build.0 = Debug|x64
 		{899D8E57-07F9-4656-A5DD-3F6A1718CD54}.Release|x64.ActiveCfg = Release|x64
 		{899D8E57-07F9-4656-A5DD-3F6A1718CD54}.Release|x64.Build.0 = Release|x64
-		{A23070DD-2C26-48CC-B062-65B3B7293766}.Debug|x64.ActiveCfg = Debug|Win32
-		{A23070DD-2C26-48CC-B062-65B3B7293766}.Release|x64.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
