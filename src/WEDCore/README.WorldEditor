@@ -15,13 +15,11 @@ CHANGE HISTORY
 
 Planned functionality for WED 2.5 not yet included in the alpha versions
    - automatic creation of edge outlines for paved surfaces
-   - on-map preview of .agb definitions
-   - show trees part of any autogen definition
 
 WED functionality not yet supported by XP12 alpha's
     - rowcode 105 skidmark and line color/width customizations for runways
 
-WED 2.5.0b2 4/13/22
+WED 2.5.0b2 4/19/22
    Bug Fix:
    - fix .agp scraper display mismatch for some heights
    - fix gridded preview for 3D objects only showing partially on OSX w/AMD graphics
