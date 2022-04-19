@@ -1289,7 +1289,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 					new_pts.push_back(Point2(interp(ab_use[0], info.roof_st[0], ab_use[2], info.roof_st[2], dirVec.dot(Vector2(p))  + dirDot ),
 					                         interp(ab_use[1], info.roof_st[1], ab_use[3], info.roof_st[3], perpVec.dot(Vector2(p)) + perpDot)));
 				}
-				glPolygon2(new_pts, true, vector<int>(), roof_height);
+				glPolygon2(new_pts, true, vector<int>(), true, roof_height);
 			}
 			else if(!info.noroofmesh)  // type 2 facades
 			{
@@ -1324,7 +1324,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 				do
 				{
 					vector<Point2> new_pts; new_pts.reserve(roof_pts.size()*2);
-					for(auto p: roof_pts)
+					for(const auto& p: roof_pts)
 					{
 						new_pts.push_back(p);
 						new_pts.push_back(Point2( (dirVec.dot(Vector2(p))   + dirDot)  / info.roof_scale_s,
@@ -1334,7 +1334,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 						glDisable(GL_CULL_FACE);
 					else
 						glEnable(GL_CULL_FACE);
-					glPolygon2(new_pts, true, vector<int>(), roof_height);
+					glPolygon2(new_pts, true, vector<int>(), true, roof_height);
 					
 					xtra_roofs--;
 					if(xtra_roofs >= 0)

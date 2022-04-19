@@ -246,6 +246,7 @@ void WED_GISEdge::Reverse(GISLayer_t l)
 		p1->SetControlHandleHi(gis_Geo, c11);
 		if(b1s) p1->SetControlHandleLo(gis_Geo, c12);
 	}
+	CacheInval(cache_Topological);
 }
 
 void WED_GISEdge::Shuffle(GISLayer_t l)
@@ -469,11 +470,18 @@ IGISPoint *	WED_GISEdge::SplitEdge(const Point2& p, double dist)  // MM: add arg
 
 void		WED_GISEdge::SetSide(GISLayer_t layer, const Segment2& s, int n)
 {
-	DebugAssert(n < GetNumSides());
+	DebugAssert(n < (CountChildren() + 2));
 
 	StateChanged();
-	GetNthPoint(max(0,n))->SetLocation(gis_Geo,s.p1);
-	GetNthPoint(n == -1 ? CountChildren() + 1 : n + 1)->SetLocation(gis_Geo,s.p2);
+	if(n <= 0)
+		dynamic_cast<IGISPoint*>(GetNthSource(0))->SetLocation(gis_Geo,s.p1);
+	else
+		dynamic_cast<IGISPoint*>(GetNthChild(n-1))->SetLocation(gis_Geo, s.p1);
+	if( n < 0 || n >= CountChildren())
+		dynamic_cast<IGISPoint*>(GetNthSource(1))->SetLocation(gis_Geo, s.p2);
+	else
+		dynamic_cast<IGISPoint*>(GetNthChild(n))->SetLocation(gis_Geo, s.p2);
+
 	if(n <= 0)
 	{
 		ctrl_lat_lo = 0.0;
@@ -484,6 +492,7 @@ void		WED_GISEdge::SetSide(GISLayer_t layer, const Segment2& s, int n)
 		ctrl_lat_hi = 0.0;
 		ctrl_lon_hi = 0.0;
 	}
+	CacheInval(cache_Topological);
 }
 
 void		WED_GISEdge::SetSideBezier(GISLayer_t layer, const Bezier2& b, int n)
@@ -491,10 +500,9 @@ void		WED_GISEdge::SetSideBezier(GISLayer_t layer, const Bezier2& b, int n)
 	DebugAssert(n < GetNumSides());
 
 	StateChanged();
-	GetNthPoint(max(0,n))->SetLocation(gis_Geo,b.p1);
-	GetNthPoint(n == -1 ? CountChildren() + 1 : n + 1)->SetLocation(gis_Geo,b.p2);
 	if(n <= 0)
 	{
+		dynamic_cast<IGISPoint*>(GetNthSource(0))->SetLocation(gis_Geo, b.p1);
 		ctrl_lat_lo = b.c1.y() - b.p1.y();
 		ctrl_lon_lo = b.c1.x() - b.p1.x();
 	}
@@ -504,6 +512,7 @@ void		WED_GISEdge::SetSideBezier(GISLayer_t layer, const Bezier2& b, int n)
 		DebugAssert(bp != nullptr);
 		if(bp)
 		{
+			bp->SetLocation(gis_Geo, b.p1);
 			bp->SetSplit(true);
 			bp->SetControlHandleHi(gis_Geo, b.c1);
 		}
@@ -511,6 +520,7 @@ void		WED_GISEdge::SetSideBezier(GISLayer_t layer, const Bezier2& b, int n)
 
 	if(n < 0 || n >= CountChildren())
 	{
+		dynamic_cast<IGISPoint*>(GetNthSource(1))->SetLocation(gis_Geo, b.p2);
 		ctrl_lat_hi = b.c2.y() - b.p2.y();
 		ctrl_lon_hi = b.c2.x() - b.p2.x();
 	}
@@ -520,10 +530,12 @@ void		WED_GISEdge::SetSideBezier(GISLayer_t layer, const Bezier2& b, int n)
 		DebugAssert(bp != nullptr);
 		if(bp)
 		{
+			bp->SetLocation(gis_Geo, b.p2);
 			bp->SetSplit(true);
 			bp->SetControlHandleLo(gis_Geo, b.c2);
 		}
 	}
+	CacheInval(cache_Topological);
 }
 
 void		WED_GISEdge::Validate(void)
