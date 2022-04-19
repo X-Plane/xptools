@@ -156,6 +156,7 @@ int	FindIndexForCmd(int inCmd)
 void ObjDataVec::clear(int depth)
 {
 	mData.clear();
+	mData.shrink_to_fit();
 	mDepth = depth;
 }
 
