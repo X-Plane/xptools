@@ -239,10 +239,10 @@ void		WED_TerrainLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 	double PPM = GetZoomer()->GetPPM();
 
 	const float dem_color[4]   =    { 1.0, 0.3, 0.3, 1.0 };
-	const float ter_color[3][4] = {	{ 0.4, 0.4, 0.9, 1.0 }, 
-									{ 0.4, 0.7, 0.6, 1.0 },
-									{ 0.8, 0.6, 0.4, 1.0 }, };
-	if (PPM > 0.1) 	// caveat: dont make terrain mesh visibility to exceed 6 tiles total - it causes cache trashing in LoadTerrain()
+	const float ter_color[3][4] = {	{ 0.4, 0.4, 0.9, 1.0 },         // water
+									{ 0.4, 0.7, 0.5, 1.0 },         // apts
+									{ 0.8, 0.6, 0.4, 1.0 }, };      // everything else
+	if (PPM > 0.05) 	// caveat: dont make terrain mesh visibility to exceed 6 tiles total - it causes cache trashing in LoadTerrain()
 	{
 		LoadTerrain(map_viewport);
 		for (const auto& ter : mTerrains)

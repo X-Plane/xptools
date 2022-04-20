@@ -159,7 +159,7 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 
 		#define VBO_VEC_FMT  GL_SHORT
 		#if VBO_10b_NRML
-			glEnable(GL_RESCALE_NORMAL);
+//			glEnable(GL_RESCALE_NORMAL);
 			glEnable(GL_NORMALIZE);
 		#endif
 		#define VBO_ST_FMT   GL_HALF_FLOAT
@@ -171,7 +171,6 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 		glScalef(1.0 / scale, 1.0 / scale, 1.0 / scale);
 	#else
 		#define VBO_VEC_FMT  GL_FLOAT
-		#define VBO_NML_FMT  GL_FLOAT
 		#define VBO_ST_FMT   GL_FLOAT
 		#define VBO_VEC_T    GLfloat
 	#endif
@@ -250,7 +249,7 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 								tmp.back().u[3] = half(*f++);
 								tmp.back().u[4] = half(*f++);
 								tmp.back().u[5] = half(*f++);
-#endif
+					#endif
 								tmp.back().u[6] = half(*f++);
 								tmp.back().u[7] = half(*f++);
 //                              This requires using VertexAttributePointers & shaders, as OGL < 2 has no way to enable normalized ints
@@ -260,7 +259,7 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 							glBufferData(GL_ARRAY_BUFFER, obj.geo_tri.count()*VBO_STRIDE, tmp.data(), GL_STATIC_DRAW); CHECK_GL_ERR
 						}
 			#else
-						glBufferData(GL_ARRAY_BUFFER, obj.geo_tri.count()*sizeof(GLfloat)*8, obj.geo_tri.get(0), GL_STATIC_DRAW); CHECK_GL_ERR
+						glBufferData(GL_ARRAY_BUFFER, obj.geo_tri.count()*VBO_STRIDE, obj.geo_tri.get(0), GL_STATIC_DRAW); CHECK_GL_ERR
 			#endif
 
 			#if SHORT_IDX
@@ -311,6 +310,9 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 #endif
 				break;
 			case obj8_Lines:
+#if HALF_SIZE_VBO
+				glPopMatrix();
+#endif
 				if (drawMode_Lin != drawMode) {
 					funcs->SetupLine_f(ref);	CHECK_GL_ERR
 					drawMode = drawMode_Lin;
@@ -335,6 +337,10 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 #else
 				glDrawElements(GL_LINES, cmd->idx_count, GL_UNSIGNED_INT, &obj.indices[cmd->idx_offset]);	CHECK_GL_ERR
 #endif
+#if HALF_SIZE_VBO
+				glPushMatrix();
+				glScalef(1.0 / scale, 1.0 / scale, 1.0 / scale);
+#endif
 				break;
 			case obj8_Lights:
 				if (drawMode_Lgt != drawMode) {
@@ -356,13 +362,12 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 				glDisableClientState(GL_TEXTURE_COORD_ARRAY);		CHECK_GL_ERR
 				glEnableClientState(GL_COLOR_ARRAY);				CHECK_GL_ERR
 #if XOBJ8_USE_VBO
-					glDrawElements(GL_POINTS, cmd->idx_count, obj.short_idx ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT,
+				glDrawElements(GL_POINTS, cmd->idx_count, obj.short_idx ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT,
 						(void*)((obj.short_idx ? sizeof(GLushort) : sizeof(GLuint))* cmd->idx_offset));   CHECK_GL_ERR
 #else
-					glDrawElements(GL_POINTS, cmd->idx_count, GL_UNSIGNED_INT, &obj.indices[cmd->idx_offset]);	CHECK_GL_ERR
+				glDrawElements(GL_POINTS, cmd->idx_count, GL_UNSIGNED_INT, &obj.indices[cmd->idx_offset]);	CHECK_GL_ERR
 #endif
-					break;
-
+				break;
 			case attr_Tex_Normal:	tex_is_cockpit = false;	drawMode = drawMode_Non;  break;
 			case attr_Tex_Cockpit:	tex_is_cockpit = true;	break;
 			case attr_No_Blend:	glDisable(GL_BLEND); CHECK_GL_ERR break;

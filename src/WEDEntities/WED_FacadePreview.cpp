@@ -989,6 +989,8 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 						const_cast<int&>(m.idx_cnt) = m.idx.size();
 						for (auto i : m.idx)
 							idx.push_back(i);
+						const_cast<vector<int>&>(m.idx).clear();          // release RAM since its now in VRAM
+						const_cast<vector<int>&>(m.idx).shrink_to_fit();
 						const_cast<int&>(m.mesh_start) = vert.size();
 						int ni = m.xyz.size() / 3;
 						for (int ind = 0; ind < ni; ++ind)
