@@ -48,14 +48,16 @@
 
 int		WED_CanConvertTo(IResolver * resolver, const char* DstClass)
 {
-	ISelection * sel = WED_GetSelect(resolver);
-	if (sel->GetSelectionCount() == 0)
-		return 0;
+	auto sel = WED_GetSelect(resolver);
+	if (sel->GetSelectionCount() == 0) return 0;
 
-	for (size_t i = 0; i < sel->GetSelectionCount(); ++i)
+	vector<ISelectable*> sources;
+	sel->GetSelectionVector(sources);
+
+	for (auto src_sel : sources)
 	{
-		auto t = dynamic_cast<WED_Thing*>(sel->GetNthSelection(i));
-		const char* SrcClass = t->GetClass();
+		auto src = dynamic_cast<WED_Thing*>(src_sel);
+		const char* SrcClass = src->GetClass();
 
 		if (SrcClass == DstClass)	return 0;
 
@@ -65,18 +67,26 @@ int		WED_CanConvertTo(IResolver * resolver, const char* DstClass)
 			SrcClass != WED_AirportChain::sClass &&
 			SrcClass != WED_LinePlacement::sClass &&
 			SrcClass != WED_StringPlacement::sClass &&
-			!(SrcClass == WED_ObjPlacement::sClass && DstClass == WED_ForestPlacement::sClass && sel->GetSelectionCount() >= 3)) return 0;
+			SrcClass != WED_ObjPlacement::sClass) return 0;
 
-//		if (DstClass == WED_StringPlacement::sClass && SrcClass != WED_AirportChain::sClass) return 0;
+		if (DstClass == WED_ForestPlacement::sClass)
+		{
+			if (SrcClass != WED_ObjPlacement::sClass || sel->GetSelectionCount() < 3)
+				return 0;
+		}
+		else
+			if (SrcClass == WED_ObjPlacement::sClass)
+				return 0;
 
 		// Parent must not be a WED_GISPolygon (which can happen if it's a WED_AirportChain)
-		if (dynamic_cast<WED_GISPolygon*>(t->GetParent()))	return 0;
+		if (dynamic_cast<WED_GISPolygon*>(src->GetParent()))	return 0;
 
 		bool dstIsPolygon = DstClass == WED_PolygonPlacement::sClass || DstClass == WED_Taxiway::sClass;
-		auto chain = dynamic_cast<WED_GISChain*>(t);
+		auto chain = dynamic_cast<WED_GISChain*>(src);
 		if (chain  && dstIsPolygon)
 			if (!chain->IsClosed() || chain->GetNumPoints() < 3) return 0;
 	}
+
 	return 1;
 }
 
@@ -306,14 +316,14 @@ static void set_style(WED_Thing * t, style_t style, WED_LibraryMgr * lmgr)
 	{
 		set<int> attr;
 		for (auto a : style.second)
+			if(auto style = ENUM_Import(LinearFeature, a) > 0)
+				attr.insert(style);
+		if(!attr.empty())
 		{
-				attr.insert(ENUM_Import(LinearFeature, a));
-		}
-		auto chain = static_cast<WED_AirportChain*>(t);
-		for (int i = 0; i < chain->GetNumEntities(); i++)
-		{
-			if (auto node = dynamic_cast<WED_AirportNode*>(chain->GetNthEntity(i)))
-				node->SetAttributes(attr);
+			auto chain = static_cast<WED_AirportChain*>(t);
+			for (int i = 0; i < chain->GetNumEntities(); i++)
+				if (auto node = dynamic_cast<WED_AirportNode*>(chain->GetNthEntity(i)))
+					node->SetAttributes(attr);
 		}
 	}
 	if (t->GetClass() == WED_StringPlacement::sClass)
@@ -344,19 +354,105 @@ static bool needs_apt(WED_Thing* t)
 		return 0;
 }
 
+static void split_chains_by_attribute(vector<WED_GISChain*>& chains, set<WED_Thing*>& to_delete, WED_Thing* src, WED_Thing* dst)
+{
+	for (int c = 0; c < chains.size(); ++c)
+	{
+		auto chain = chains[c];
+		set<int> last_attrs;
+		int num_vert = chain->CountChildren();
+		for (int vert = 0; vert < num_vert; vert++)
+		{
+			if (auto node = dynamic_cast<WED_AirportNode*>(chain->GetNthChild(vert)))
+			{
+				set<int> attrs;
+				node->GetAttributes(attrs);
+				if (dst->GetClass() == WED_LinePlacement::sClass)
+				{
+					set<int> tmp;
+					for (auto a : attrs)
+						if (ENUM_Export(a) < 100)
+							tmp.insert(a);
+					swap(attrs, tmp);
+				}
+				else if (dst->GetClass() == WED_StringPlacement::sClass)
+				{
+					set<int> tmp;
+					for (auto a : attrs)
+						if (ENUM_Export(a) >= 100)
+							tmp.insert(a);
+					swap(attrs, tmp);
+				}
+
+				if (attrs.empty() && last_attrs.empty())
+				{
+					if (vert == 0 && chain->IsClosed())
+					{
+						static_cast<WED_AirportChain*>(chain)->SetClosed(false);
+						node->SetParent(chain, chain->CountChildren() - 1);
+						vert--;
+					}
+					else
+					{
+						node->SetParent(NULL, 0);
+						to_delete.insert(node);
+						num_vert--;
+						vert--;
+					}
+					continue;
+				}
+
+				bool attr_changed = vert > 0 && attrs != last_attrs;
+				if (attr_changed)
+				{
+					if (chain->IsClosed())
+					{
+						static_cast<WED_AirportChain*>(chain)->SetClosed(false);
+						auto new_last_node = dynamic_cast<WED_Thing*>(chain->GetNthChild(0)->Clone());
+						new_last_node->SetParent(chain, chain->CountChildren());
+						num_vert++;
+					}
+					auto new_chain = WED_AirportChain::CreateTyped(src->GetArchive());
+					string name;
+					src->GetName(name);
+					new_chain->SetName(name);
+					chains.push_back(new_chain);
+					new_chain->SetParent(src->GetParent(), src->GetMyPosition());
+
+					auto new_node = dynamic_cast<WED_AirportNode*>(node->Clone());
+					new_node->SetParent(new_chain, 0);
+					node->SetAttributes(last_attrs);
+
+					++vert;
+					for (int v = vert; v < num_vert; ++v)
+					{
+						auto vert_to_move = chain->GetNthChild(vert);
+						vert_to_move->SetParent(new_chain, new_chain->CountChildren());
+					}
+					break;
+				}
+				swap(last_attrs, attrs);
+			}
+		}
+	}
+}
+
 void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 {
-	auto wrl  = WED_GetWorld(resolver);
-	auto sel  = WED_GetSelect(resolver);
 	auto lmgr = WED_GetLibraryMgr(resolver);
-	IOperation* op = dynamic_cast<IOperation*>(sel);
-	op->StartOperation((string("Convert to ") /* + dst->HumanReadableType() */ ).c_str());
+	auto sel = WED_GetSelect(resolver);
+	vector<ISelectable*> to_convert;
+	sel->GetSelectionVector(to_convert);
 
 	set<WED_Thing*> to_delete;
 
-	for (size_t i = 0; i < sel->GetSelectionCount(); ++i)
+	IOperation* op = dynamic_cast<IOperation*>(sel);
+	op->StartOperation((string("Convert to ") /* + dst->HumanReadableType() */).c_str());
+
+	for (const auto tc : to_convert)
 	{
-		WED_Thing* src = dynamic_cast<WED_Thing*>(sel->GetNthSelection(i));
+		auto src = dynamic_cast<WED_Thing*>(tc);
+
 		vector<WED_GISChain*> chains;
 		get_chains(src, chains);
 		if (chains.empty())
@@ -366,8 +462,7 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 			return;
 		}
 
-
-		WED_Thing* dst = create(wrl->GetArchive());
+		WED_Thing* dst = create(src->GetArchive());
 		bool dst_is_polygon = dynamic_cast<WED_GISPolygon*>(dst) != NULL;
 
 		if (dst_is_polygon)
@@ -379,7 +474,6 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 			dst->SetName(name);
 
 			copy_heading(src, dst);
-
 			set_style(dst, get_style(src), lmgr);
 
 			sel->Insert(dst);
@@ -387,19 +481,24 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 		}
 		else
 		{
+			if (dynamic_cast<IHasAttr*>(src) && dynamic_cast<IHasAttr*>(dst) == nullptr)
+				split_chains_by_attribute(chains, to_delete, src, dst);
+
 			for (int i = 0; i < chains.size(); ++i)
 			{
-				if(i > 0) dst = create(wrl->GetArchive());
+				if (chains[i]->GetNumPoints() < 2)
+					continue;
+
+				if (i > 0) dst = create(src->GetArchive());
 
 				string name;
 				src->GetName(name);
 				dst->SetName(name);
 
 				set_closed(dst, chains[i]->IsClosed());
-
 				move_points(chains[i], dst);
-
-				set_style(dst, get_style(src), lmgr);
+				auto style = get_style(dynamic_cast<WED_Thing*>(chains[i]));
+				set_style(dst, style, lmgr);
 
 				sel->Insert(dst);
 				dst->SetParent(src->GetParent(), src->GetMyPosition() + 1 + i);
@@ -408,21 +507,17 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 
 		sel->Erase(src);
 		src->SetParent(NULL, 0);
-
 		to_delete.insert(src);
 	}
 
-	WED_AddChildrenRecursive(to_delete);
 	WED_RecursiveDelete(to_delete);
-
 	op->CommitOperation();
 }
 
 void	WED_DoConvertToForest(IResolver* resolver)
 {
-	auto wrl = WED_GetWorld(resolver);
 	auto sel = WED_GetSelect(resolver);
-	IOperation* op = dynamic_cast<IOperation*>(sel);
+	auto op = dynamic_cast<IOperation*>(sel);
 	set<WED_Thing*> to_delete;
 
 	auto where = dynamic_cast<WED_Thing*>(sel->GetNthSelection(0));
@@ -430,14 +525,14 @@ void	WED_DoConvertToForest(IResolver* resolver)
 		return;
 
 	op->StartOperation("Convert to Forest Points");
-	auto fst = WED_ForestPlacement::CreateTyped(wrl->GetArchive());
+	auto fst = WED_ForestPlacement::CreateTyped(where->GetArchive());
 	fst->SetParent(where->GetParent(), where->GetMyPosition());
 	fst->SetDensity(1.0);
 	fst->SetResource("lib/vegetation/trees/deciduous/maple_medium.for");
 	fst->SetName("maple_medium.for");
 	fst->SetFillMode(dsf_fill_points);
 
-	auto rng = WED_ForestRing::CreateTyped(wrl->GetArchive());
+	auto rng = WED_ForestRing::CreateTyped(where->GetArchive());
 	rng->SetParent(fst, 0);
 	rng->SetName("Forest Boundary");
 
@@ -445,7 +540,7 @@ void	WED_DoConvertToForest(IResolver* resolver)
 	{
 		if (auto src = dynamic_cast<WED_ObjPlacement*>(sel->GetNthSelection(i)))
 		{
-			auto dst = WED_SimpleBoundaryNode::CreateTyped(wrl->GetArchive());
+			auto dst = WED_SimpleBoundaryNode::CreateTyped(where->GetArchive());
 			dst->SetParent(rng, i);
 			Point2 pt;
 			src->GetLocation(gis_Geo, pt);
