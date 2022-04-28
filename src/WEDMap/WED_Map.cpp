@@ -282,8 +282,8 @@ void		WED_Map::Draw(GUI_GraphState * state)
 										GET_EW(anchor1.x()),GET_DEGS(anchor1.x()),GET_MINS(anchor1.x()),GET_SECS(anchor1.x()));
 		if (has_a1 && has_a2)	p += sprintf(p, " -> ");
 		if (has_a2)	            p += sprintf(p, "%c%02d %02d %03.1lf %c%03d %02d %03.1lf",
-										GET_NS(anchor1.y()),GET_DEGS(anchor1.y()),GET_MINS(anchor1.y()),GET_SECS(anchor1.y()),
-										GET_EW(anchor1.x()),GET_DEGS(anchor1.x()),GET_MINS(anchor1.x()),GET_SECS(anchor1.x()));
+										GET_NS(anchor2.y()),GET_DEGS(anchor2.y()),GET_MINS(anchor2.y()),GET_SECS(anchor2.y()),
+										GET_EW(anchor2.x()),GET_DEGS(anchor2.x()),GET_MINS(anchor2.x()),GET_SECS(anchor2.x()));
     }
     else
 	{

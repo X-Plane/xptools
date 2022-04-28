@@ -701,13 +701,13 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 		break;
 	case drag_Create:
 		this->CreationDrag(
-					GetZoomer()->PixelToLL(Point2(mDragX, mDragY)),
-					GetZoomer()->PixelToLL(Point2(inX, inY)));
+			GetZoomer()->PixelToLL(Point2(mDragX, mDragY)),
+			GetZoomer()->PixelToLL(Point2(inX, inY)) );
 		break;
 	case drag_Move:
 		{
-			Point2	op(GetZoomer()->XPixelToLon(mDragX),GetZoomer()->YPixelToLat(mDragY));
-			Point2	np(GetZoomer()->XPixelToLon(   inX),GetZoomer()->YPixelToLat(   inY));
+			Point2	op(GetZoomer()->PixelToLL(Point2(mDragX, mDragY)));
+			Point2	np(GetZoomer()->PixelToLL(Point2(   inX,   inY )));
 			Vector2 delta(op,np);
 			mDragX = inX; mDragY = inY;
 			Bbox2 old_b;
@@ -724,7 +724,7 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 	case drag_PreMove:
 		{
 			Point2 mSel(mSelX, mSelY);
-			double drag_dist = mSel.squared_distance(Point2(inX,inY));
+			double drag_dist = mSel.squared_distance(Point2(inX, inY));
 
 			if (drag_dist >	DRAG_START_DIST * DRAG_START_DIST)	// see if we drag'd far enough to "break loose" and actually move the object
 			{
@@ -748,7 +748,7 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 		{
 			mSelX = inX;
 			mSelY = inY;
-			SetAnchor2(Point2(GetZoomer()->XPixelToLon(inX),GetZoomer()->YPixelToLat(inY)));
+			SetAnchor2(GetZoomer()->PixelToLL(Point2(inX, inY)));
 			IGISEntity * ent_base = SAFE_CAST(IGISEntity, WED_GetWorld(GetResolver()));
 			ISelection * sel = SAFE_CAST(ISelection, WED_GetSelect(GetResolver()));
 			if (sel && ent_base)
