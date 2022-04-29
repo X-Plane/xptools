@@ -26,6 +26,7 @@ To build on macOS, you’ll need at least macOS 10.11 (El Capitan) and Xcode 8.3
 
 You also need a command-line version of [CMake](http://www.cmake.org/) installed. Beside downloading a binary from the cmake website, it can also be installed via [Homebrew](https://brew.sh): `$ brew install cmake`
 
+
 ### Windows
 
 Building on Windows requires [Visual Studio](https://visualstudio.microsoft.com/vs/features/cplusplus/) 2017 or later (the free Community edition is fine).
@@ -73,6 +74,8 @@ The first time you want to compile, you need to first download and compile your 
     make -j
 
 The libraries can take 5-10 minutes to compile!
+
+Note: macOS 12.3 no longer ships with `python2`, which is officially end of life. `libgeotiff` target will fail with `env: python2: No such file or directory` If you have `python2`, make sure it's exported to your `PATH` or use the [installer](https://www.python.org/downloads/release/python-2718/)
 
 ### Getting the Libraries (Windows only)
 
