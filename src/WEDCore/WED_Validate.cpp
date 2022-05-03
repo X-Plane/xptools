@@ -415,19 +415,20 @@ static void ValidateOneFacadePlacement(WED_Thing* who, validation_error_vector& 
 	if(fac->HasLayer(gis_Param))
 	{
 		int maxWalls = fac->GetNumWallChoices();
-		IGISPointSequence * ips = fac->GetOuterRing();
+		auto ips = fac->GetOuterRing();
 		int nn = ips->GetNumPoints();
+		set<WED_Thing*> bad_walls;
 		for(int i = 0; i < nn; ++i)
 		{
 			Point2 pt;
-			IGISPoint * igp = ips->GetNthPoint(i);
+			auto igp = ips->GetNthPoint(i);
 			igp->GetLocation(gis_Param, pt);
 
 			if(pt.x() >= maxWalls && (ips->IsClosed() || i < nn - 1 ))
-			{
-				msgs.push_back(validation_error_t("Facade node specifies wall not defined in facade resource.", err_facade_illegal_wall, dynamic_cast<WED_Thing *>(igp), apt));
-			}
+				bad_walls.insert(dynamic_cast<WED_Thing *>(igp));
 		}
+		if (!bad_walls.empty())
+			msgs.push_back(validation_error_t("Facade node specifies wall not defined in facade resource.", err_facade_illegal_wall, bad_walls, apt));
 	}
 
 	if(gExportTarget >= wet_xplane_1200 && fac->HasDockingCabin())
@@ -1933,7 +1934,7 @@ static void ValidateOneTruckDestination(WED_TruckDestination* destination,valida
 	}
 }
 
-static void ValidateOneTruckParking(WED_TruckParkingLocation* truck_parking,validation_error_vector& msgs, WED_Airport* apt)
+static void ValidateOneTruckParking(WED_TruckParkingLocation* truck_parking, WED_LibraryMgr* lib_mgr, validation_error_vector& msgs, WED_Airport* apt)
 {
 	string name;
 	truck_parking->GetName(name);
@@ -1946,6 +1947,24 @@ static void ValidateOneTruckParking(WED_TruckParkingLocation* truck_parking,vali
 		string ss("Truck parking location ") ;
 		ss += name +" must have a car count between 0 and " + to_string(MAX_CARS);
 		msgs.push_back(validation_error_t(ss, err_truck_parking_car_count, truck_parking, apt));
+	}
+	AptTruckParking_t park;
+	truck_parking->Export(park);
+	if (gExportTarget >= wet_gateway)
+	{
+		if(park.vpath1.size() || park.vpath2.size())
+			msgs.push_back(validation_error_t("Custom Trucks are not allowed on the gateway", err_truck_custom, truck_parking, apt));
+	}
+	else
+	{
+		if (park.vpath1.empty() && park.vpath2.size())
+			msgs.push_back(validation_error_t("Custom Trucks must specify a vehicle before a driver object can be specified", err_truck_custom, truck_parking, apt));
+		if (!park.vpath1.empty())
+			if (!lib_mgr->IsResourceLocal(park.vpath1) && !lib_mgr->IsResourceLibrary(park.vpath1))
+				msgs.push_back(validation_error_t("Custom Vehicle object can not be found", err_truck_custom, truck_parking, apt));
+		if (!park.vpath2.empty())
+			if (!lib_mgr->IsResourceLocal(park.vpath2) && !lib_mgr->IsResourceLibrary(park.vpath2))
+				msgs.push_back(validation_error_t("Custom Driver object can not be found", err_truck_custom, truck_parking, apt));
 	}
 }
 
@@ -2531,7 +2550,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		ValidateOneTruckDestination(t_dest, msgs, apt);
 
 	for(auto t_park : truck_parking_locs)
-		ValidateOneTruckParking(t_park, msgs ,apt);
+		ValidateOneTruckParking(t_park, lib_mgr, msgs ,apt);
 
 	for(auto r : runway_or_sealane)
 		ValidateOneRunwayOrSealane(r, msgs, apt);

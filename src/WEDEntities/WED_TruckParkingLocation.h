@@ -36,6 +36,8 @@ private:
 
 	WED_PropIntEnum			truck_type;
 	WED_PropIntText			number_of_cars;
+	WED_PropStringText		custom_vehicle;
+	WED_PropStringText		custom_driver;
 
 };
 

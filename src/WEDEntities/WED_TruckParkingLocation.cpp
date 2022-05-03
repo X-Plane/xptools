@@ -17,7 +17,9 @@ TRIVIAL_COPY(WED_TruckParkingLocation, WED_GISPoint_Heading)
 
 WED_TruckParkingLocation::WED_TruckParkingLocation(WED_Archive * a, int i) : WED_GISPoint_Heading(a,i),
 	truck_type    (this,PROP_Name("Truck Type",             XML_Name("truck_parking_spot","type"   )),    ATCServiceTruckType, apt_truck_fuel_prop),
-	number_of_cars(this,PROP_Name("Number of Baggage Cars", XML_Name("truck_parking_spot","number_of_cars")), 3, 1)
+	number_of_cars(this,PROP_Name("Number of Baggage Cars", XML_Name("truck_parking_spot","number_of_cars")), 3, 1),
+	custom_vehicle(this, PROP_Name("Custom Vehicle",		XML_Name("truck_parking_spot", "custom_veh")), ""),
+	custom_driver(this, PROP_Name("Custom Driver",          XML_Name("truck_parking_spot", "custom_driver")), "")
 {
 }
 
@@ -45,7 +47,8 @@ void	WED_TruckParkingLocation::Import(const AptTruckParking_t& x, void (* print_
 	else
 		truck_type = tt;
 	number_of_cars = x.train_car_count;
-	
+	custom_vehicle = x.vpath1;
+	custom_driver  = x.vpath2;
 }
 
 void	WED_TruckParkingLocation::Export(		 AptTruckParking_t& x) const
@@ -53,11 +56,10 @@ void	WED_TruckParkingLocation::Export(		 AptTruckParking_t& x) const
 	GetName(x.name);
 	GetLocation(gis_Geo,x.location);
 	x.heading = GetHeading();
-	
 	x.train_car_count = number_of_cars.value;
-	
 	x.parking_type = ENUM_Export(truck_type.value);
-	
+	x.vpath1 = custom_vehicle.value;
+	x.vpath2 = custom_driver.value;
 }
 
 

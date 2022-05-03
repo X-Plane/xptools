@@ -1055,6 +1055,23 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				}
 			}
 			break;
+		case apt_truck_custom:
+			if (vers < 1200) ok = "Error: no custom trucks in pre 1200 apt.dat files.";
+			else if (outApts.empty()) ok = "Error: truck outside an airport.";
+			else if (outApts.back().truck_parking.empty()) ok = "Error: custom truck without preceeding truck parking";
+			else
+			{
+				Jetway_t j;
+				if (TextScanner_FormatScan(s, "iTT|",
+					&rec_code,
+					&outApts.back().truck_parking.back().vpath1, 
+					&outApts.back().truck_parking.back().vpath2) < 3)
+				{
+					ok = "Error: Illegal custom truck";
+				}
+			}
+			break;
+
 		case apt_truck_destination:
 			// 1401 lat lon heading type|type|type... name
 			if (vers < ATC_VERS3) ok = "Error: no ATC truck destinations in older apt.dat files.";
@@ -1577,7 +1594,7 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 			{
 				if (has_atc3)
 				{
-					for (AptTruckParkingVector::const_iterator trk = apt->truck_parking.begin(); trk != apt->truck_parking.end(); ++trk)
+					for (auto trk = apt->truck_parking.cbegin(); trk != apt->truck_parking.cend(); ++trk )
 					{
 						//Don't export car count unless our type is baggage_train
 						int car_count = trk->parking_type == apt_truck_baggage_train ? trk->train_car_count : 0;
@@ -1585,6 +1602,9 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 						fprintf(fi, "%d" LLFMT2 " %.1f %s %d" NFMT CRLF,
 							apt_truck_parking, trk->location.y_, trk->location.x_, trk->heading,
 							truck_type_strings[trk->parking_type], car_count N(trk));
+						if(version >= 1200 && !trk->vpath1.empty())
+							fprintf(fi, "%d %s %s" CRLF,
+								apt_truck_custom, trk->vpath1.c_str(), trk->vpath2.empty() ? "None" : trk->vpath2.c_str());
 					}
 				}
 

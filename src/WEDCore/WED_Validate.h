@@ -158,6 +158,7 @@ enum validate_error_t
 	err_truck_dest_must_have_at_least_one_truck_type_selected,
 	err_truck_parking_car_count,
 	err_truck_parking_no_ground_taxi_routes,
+	err_truck_custom,
 	warnings_start_here,
 	warn_airport_impossible_size,
 	warn_airport_metadata_invalid,
