@@ -262,10 +262,8 @@ void 		WED_PropIntText::WriteTo(IOWriter * writer)
 
 void		WED_PropIntText::ToXML(WED_XMLElement * parent)
 {
-	const char *p = GetXmlName();
-	WED_XMLElement * xml = parent->add_or_find_sub_element(p);
-	p += strlen(p)+1;
-	xml->add_attr_int(p,value);
+	WED_XMLElement * xml = parent->add_or_find_sub_element(GetXmlName());
+	xml->add_attr_int(GetXmlAttrName(),value);
 }
 
 bool		WED_PropIntText::WantsAttribute(const char * ele, const char * att_name, const char * att_value)
@@ -329,7 +327,6 @@ void 		WED_PropBoolText::WriteTo(IOWriter * writer)
 
 void		WED_PropBoolText::ToXML(WED_XMLElement * parent)
 {
-	const char *p = GetXmlName();
 	WED_XMLElement * xml = parent->add_or_find_sub_element(GetXmlName());
 	xml->add_attr_int(GetXmlAttrName(),value);
 }
@@ -781,9 +778,8 @@ void 		WED_PropIntEnumSet::WriteTo(IOWriter * writer)
 
 void		WED_PropIntEnumSet::ToXML(WED_XMLElement * parent)
 {
-	const char *p = GetXmlName();
-	WED_XMLElement * xml = parent->add_or_find_sub_element(p);
-	p += strlen(p)+1;
+	WED_XMLElement * xml = parent->add_or_find_sub_element(GetXmlName());
+	auto p = GetXmlAttrName();
 	for(set<int>::iterator i = value.begin(); i != value.end(); ++i)
 	{
 		WED_XMLElement * ele = xml->add_sub_element(p);
@@ -798,8 +794,7 @@ bool		WED_PropIntEnumSet::WantsAttribute(const char * ele, const char * att_name
 
 bool		WED_PropIntEnumSet::WantsElement(WED_XMLReader * reader, const char * name)
 {
-	const char *p = GetXmlName();
-	if(strcmp(p,name)==0)
+	if(strcmp(GetXmlName(),name)==0)
 	{
 		reader->PushHandler(this);
 		value.clear();

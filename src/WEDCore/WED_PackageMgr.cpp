@@ -154,7 +154,7 @@ int			WED_PackageMgr::CountPackages(void) const
 
 pair<int, int>	WED_PackageMgr::GlobalPackages(void) const
 {
-	return make_pair(custom_packages.size(), custom_packages.size() + global_packages.size() - 1);
+	return make_pair((int) custom_packages.size(), (int) custom_packages.size() + (int) global_packages.size() - 1);
 }
 
 

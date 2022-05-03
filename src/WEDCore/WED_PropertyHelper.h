@@ -99,15 +99,14 @@ public:
 	virtual	void 		ReadFrom(IOReader * reader)=0;
 	virtual	void 		WriteTo(IOWriter * writer)=0;
 	virtual	void		ToXML(WED_XMLElement * parent)=0;
-
 	virtual	bool		WantsElement(WED_XMLReader * reader, const char * name) { return false; }
 	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value)=0;
 
-	WED_PropertyHelper * GetParent(void) const;
 	const char *		GetWedName(void) const;
+protected:
+	WED_PropertyHelper* GetParent(void) const;
 	const char *		GetXmlName(void) const;
 	const char *		GetXmlAttrName(void) const;
-
 private:
 #if PROP_PTR_OPT
 	#define PTR_CLR(x)  (x & (1ULL << 45) - 1ULL)
