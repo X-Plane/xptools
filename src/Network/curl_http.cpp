@@ -249,6 +249,7 @@ curl_http_get_file::thread_proc(void * param)
 
 	curl_easy_setopt(curl, CURLOPT_URL, me->m_url.c_str());
 	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, true);	// Required because we do a redirect to protect against URL/Server changes breaking URLs
+	curl_easy_setopt(curl, CURLOPT_REFERER, "https://developer.x-plane.com/tools/worldeditor/");
 
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_cb);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, param);
@@ -288,13 +289,12 @@ curl_http_get_file::thread_proc(void * param)
 	CURLcode res = curl_easy_perform(curl);
 
 #if WED
-	LOG_MSG("I/CURL perform() done\n");
+	LOG_MSG("I/CURL perform() done, CURLcode %d\n", CURLcode);
 	fflush(gLogFile);
 #endif
 	
 	// A note on thread safety: we need to ensure that writes to memory of our error code or data go out BEFORE
 	// we flip the bit to say we are done.  So we use
-		
 	// A bit of a hack: if the callback kills us, just call it a time-out - it either means the host thread lost 
 	// patience or we timed out.
 	if(res == CURLE_ABORTED_BY_CALLBACK)
