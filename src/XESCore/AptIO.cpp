@@ -1064,8 +1064,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				Jetway_t j;
 				if (TextScanner_FormatScan(s, "iTT|",
 					&rec_code,
-					&outApts.back().truck_parking.back().vpath1, 
-					&outApts.back().truck_parking.back().vpath2) < 3)
+					&outApts.back().truck_parking.back().vpath) < 2)
 				{
 					ok = "Error: Illegal custom truck";
 				}
@@ -1602,9 +1601,9 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 						fprintf(fi, "%d" LLFMT2 " %.1f %s %d" NFMT CRLF,
 							apt_truck_parking, trk->location.y_, trk->location.x_, trk->heading,
 							truck_type_strings[trk->parking_type], car_count N(trk));
-						if(version >= 1200 && !trk->vpath1.empty())
-							fprintf(fi, "%d %s %s" CRLF,
-								apt_truck_custom, trk->vpath1.c_str(), trk->vpath2.empty() ? "None" : trk->vpath2.c_str());
+						if(version >= 1200 && !trk->vpath.empty())
+							fprintf(fi, "%d %s" CRLF,
+								apt_truck_custom, trk->vpath.c_str());
 					}
 				}
 

@@ -1484,8 +1484,17 @@ struct	preview_object : public WED_PreviewItem {
 
 		float agl = obj->HasCustomMSL() > 1 ? obj->GetCustomMSL() : 0.0;
 
-		if(rmgr->GetObj(vpath, o))
-			draw_obj_at_ll(tman,   o, loc, agl, obj->GetHeading(), g, zoomer);
+		if (rmgr->GetObj(vpath, o))
+		{
+/*			Point2 pix1(zoomer->LLToPixel(loc));
+			Point2 loc2(loc);
+			loc2.y_ += 1e-4; // about 10m
+			Point2 pix2(zoomer->LLToPixel(loc2));
+			double delta = atan2(pix2.x() - pix1.x(), pix2.y() - pix1.y()) * RAD_TO_DEG;
+*/
+			double delta = zoomer->GetRotation(loc);
+			draw_obj_at_ll(tman, o, loc, agl, obj->GetHeading() + delta, g, zoomer);
+		}
 		else if (rmgr->GetAGP(vpath, agp))
 			draw_agp_at_ll(tman, agp, loc, agl, obj->GetHeading(), g, zoomer, preview_level);
 		else
@@ -1644,24 +1653,26 @@ struct	preview_truck : public WED_PreviewItem {
 		ILibrarian * lmgr = WED_GetLibrarian(resolver);
 		string vpath1, vpath2;
 
-		switch(trk->GetTruckType()) {
-		case atc_ServiceTruck_Baggage_Loader:		vpath1 = "lib/airport/vehicles/baggage_handling/belt_loader.obj";break;
-		case atc_ServiceTruck_Baggage_Train:		vpath1 = "lib/airport/vehicles/baggage_handling/tractor.obj";
-													vpath2 = "lib/airport/vehicles/baggage_handling/bag_cart.obj";	break;
-		case atc_ServiceTruck_Crew_Limo:
-		case atc_ServiceTruck_Crew_Car:				vpath1 = "lib/airport/vehicles/servicing/crew_car.obj";			break;
-		case atc_ServiceTruck_Crew_Ferrari:			vpath1 = "lib/airport/vehicles/servicing/crew_ferrari.obj";		break;
-		case atc_ServiceTruck_Food:					vpath1 = "lib/airport/vehicles/servicing/catering_truck.obj";	break;
-		case atc_ServiceTruck_FuelTruck_Jet:		vpath1 = "lib/airport/vehicles/servicing/fuel_truck_large.obj";	break;
-		case atc_ServiceTruck_FuelTruck_Liner:		vpath1 = "lib/airport/vehicles/fuel/hyd_disp_truck.obj";		break;
-		case atc_ServiceTruck_FuelTruck_Prop:		vpath1 = "lib/airport/vehicles/servicing/fuel_truck_small.obj";	break;
-		case atc_ServiceTruck_Ground_Power_Unit:	vpath1 = "lib/airport/vehicles/baggage_handling/tractor.obj";
-													vpath2 = "lib/airport/vehicles/servicing/GPU.obj";				break;
-		case atc_ServiceTruck_Pushback:				vpath1 = "lib/airport/vehicles/pushback/tug.obj";				break;
-		}
+		vpath1 = trk->GetTruckCustom();
+		if(vpath1.empty())
+			switch(trk->GetTruckType()) 
+			{
+			case atc_ServiceTruck_Baggage_Loader:		vpath1 = "lib/airport/vehicles/baggage_handling/belt_loader.obj";break;
+			case atc_ServiceTruck_Baggage_Train:		vpath1 = "lib/airport/vehicles/baggage_handling/tractor.obj";
+														vpath2 = "lib/airport/vehicles/baggage_handling/bag_cart.obj";	break;
+			case atc_ServiceTruck_Crew_Limo:
+			case atc_ServiceTruck_Crew_Car:				vpath1 = "lib/airport/vehicles/servicing/crew_car.obj";			break;
+			case atc_ServiceTruck_Crew_Ferrari:			vpath1 = "lib/airport/vehicles/servicing/crew_ferrari.obj";		break;
+			case atc_ServiceTruck_Food:					vpath1 = "lib/airport/vehicles/servicing/catering_truck.obj";	break;
+			case atc_ServiceTruck_FuelTruck_Jet:		vpath1 = "lib/airport/vehicles/servicing/fuel_truck_large.obj";	break;
+			case atc_ServiceTruck_FuelTruck_Liner:		vpath1 = "lib/airport/vehicles/fuel/hyd_disp_truck.obj";		break;
+			case atc_ServiceTruck_FuelTruck_Prop:		vpath1 = "lib/airport/vehicles/servicing/fuel_truck_small.obj";	break;
+			case atc_ServiceTruck_Ground_Power_Unit:	vpath1 = "lib/airport/vehicles/baggage_handling/tractor.obj";
+														vpath2 = "lib/airport/vehicles/servicing/GPU.obj";				break;
+			case atc_ServiceTruck_Pushback:				vpath1 = "lib/airport/vehicles/pushback/tug.obj";				break;
+			}
 
 		const XObj8 * o1 = NULL, * o2 = NULL;
-		agp_t agp;
 		if(!vpath1.empty() && rmgr->GetObj(vpath1,o1))
 		{
 			g->SetState(false,1,false,true,true,true,true);

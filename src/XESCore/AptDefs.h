@@ -615,7 +615,7 @@ struct AptTruckParking_t {
 	float						heading;
 	int							parking_type;
 	int							train_car_count;
-	string						vpath1, vpath2;         // optional
+	string						vpath;         // optional
 };
 typedef vector<AptTruckParking_t> AptTruckParkingVector;
 

@@ -1952,19 +1952,8 @@ static void ValidateOneTruckParking(WED_TruckParkingLocation* truck_parking, WED
 	truck_parking->Export(park);
 	if (gExportTarget >= wet_gateway)
 	{
-		if(park.vpath1.size() || park.vpath2.size())
+		if(park.vpath.size())
 			msgs.push_back(validation_error_t("Custom Trucks are not allowed on the gateway", err_truck_custom, truck_parking, apt));
-	}
-	else
-	{
-		if (park.vpath1.empty() && park.vpath2.size())
-			msgs.push_back(validation_error_t("Custom Trucks must specify a vehicle before a driver object can be specified", err_truck_custom, truck_parking, apt));
-		if (!park.vpath1.empty())
-			if (!lib_mgr->IsResourceLocal(park.vpath1) && !lib_mgr->IsResourceLibrary(park.vpath1))
-				msgs.push_back(validation_error_t("Custom Vehicle object can not be found", err_truck_custom, truck_parking, apt));
-		if (!park.vpath2.empty())
-			if (!lib_mgr->IsResourceLocal(park.vpath2) && !lib_mgr->IsResourceLibrary(park.vpath2))
-				msgs.push_back(validation_error_t("Custom Driver object can not be found", err_truck_custom, truck_parking, apt));
 	}
 }
 
