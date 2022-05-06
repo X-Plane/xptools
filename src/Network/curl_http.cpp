@@ -289,7 +289,7 @@ curl_http_get_file::thread_proc(void * param)
 	CURLcode res = curl_easy_perform(curl);
 
 #if WED
-	LOG_MSG("I/CURL perform() done, CURLcode %d\n", CURLcode);
+	LOG_MSG("I/CURL perform() done, CURLcode %d\n", res);
 	fflush(gLogFile);
 #endif
 	

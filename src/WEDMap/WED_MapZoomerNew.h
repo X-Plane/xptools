@@ -62,11 +62,14 @@ public:
 
 			Point2	PixelToLL(const Point2& p) const;
 			Point2	LLToPixel(const Point2& p) const;
+			pair<Point2, double> LLToPixelr(const Point2& p) const;
 
 			void	PixelToLLv(Point2 * dst, const Point2 * src, int n) const;
 			void	LLToPixelv(Point2 * dst, const Point2 * src, int n) const;
 
 			double	GetPPM(void) const;
+			double	GetRotation(const Point2& p) const;
+
 			double	GetClickRadius(double pixels) const;
 			long long	CacheKey(void) { return mCacheKey; }
 

@@ -1486,14 +1486,8 @@ struct	preview_object : public WED_PreviewItem {
 
 		if (rmgr->GetObj(vpath, o))
 		{
-/*			Point2 pix1(zoomer->LLToPixel(loc));
-			Point2 loc2(loc);
-			loc2.y_ += 1e-4; // about 10m
-			Point2 pix2(zoomer->LLToPixel(loc2));
-			double delta = atan2(pix2.x() - pix1.x(), pix2.y() - pix1.y()) * RAD_TO_DEG;
-*/
-			double delta = zoomer->GetRotation(loc);
-			draw_obj_at_ll(tman, o, loc, agl, obj->GetHeading() + delta, g, zoomer);
+			draw_obj_at_ll(tman, o, loc, agl, obj->GetHeading() + zoomer->GetRotation(loc), g, zoomer);
+//			draw_obj_at_ll(tman, o, loc, agl, obj->GetHeading(), g, zoomer);
 		}
 		else if (rmgr->GetAGP(vpath, agp))
 			draw_agp_at_ll(tman, agp, loc, agl, obj->GetHeading(), g, zoomer, preview_level);
