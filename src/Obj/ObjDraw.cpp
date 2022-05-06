@@ -380,15 +380,26 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 				anim = &obj.animation[cmd->idx_offset];
 				v = funcs->GetAnimParam(anim->dataref.c_str(), anim->keyframes.front().key, anim->keyframes.back().key, ref);
 				v = key_extrap(v, anim->keyframes, 0);
+#if HALF_SIZE_VBO
+				glRotatef(v, anim->axis[0] * scale, anim->axis[1] * scale, anim->axis[2] * scale);
+#else
 				glRotatef(v, anim->axis[0], anim->axis[1], anim->axis[2]);
+#endif
 				break;
 			case anim_Translate:
 				anim = &obj.animation[cmd->idx_offset];
 				v = funcs->GetAnimParam(anim->dataref.c_str(), anim->keyframes.front().key, anim->keyframes.back().key, ref);
+#if HALF_SIZE_VBO
+				glTranslatef(
+					key_extrap(v, anim->keyframes, 0) * scale,
+					key_extrap(v, anim->keyframes, 1) * scale,
+					key_extrap(v, anim->keyframes, 2) * scale);
+#else
 				glTranslatef(
 					key_extrap(v, anim->keyframes, 0),
 					key_extrap(v, anim->keyframes, 1),
 					key_extrap(v, anim->keyframes, 2));
+#endif
 				break;
 
 			case attr_Shade_Flat:	glShadeModel(GL_FLAT); 	 CHECK_GL_ERR break;
