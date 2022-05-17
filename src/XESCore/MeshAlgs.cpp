@@ -2802,6 +2802,81 @@ void SetupWaterRasterizer(const Pmwx& map, const DEMGeo& orig, PolyRasterizer<do
 	rasterizer.SortMasters();
 }
 
+void	CreateWaterSDF(const Pmwx& inMap, DEMGeo& ioDem)
+{
+	ioDem = 0.0;
+	PolyRasterizer<double>	rasterizer;
+	SetupWaterRasterizer(inMap, ioDem, rasterizer, terrain_Water);
+
+	int y = 0;
+	rasterizer.StartScanline(y);
+	while (!rasterizer.DoneScan())
+	{
+		int x1, x2;
+		while (rasterizer.GetRange(x1, x2))
+		{
+			for(int x = x1; x < x2; ++x)
+			{
+				ioDem.set(x,y,FLT_MAX);
+			}
+		}
+		// Yeah we could be more clever about modulus in the Y axis, but..the rasterizer might
+		// be unhappy skipping scanlines with "events" on them.
+		++y;
+		if (y >= ioDem.mHeight)
+			break;
+		rasterizer.AdvanceScanline(y);
+	}
+
+	//https://mshgrid.com/2021/02/04/the-fast-sweeping-algorithm/
+	int width = ioDem.mWidth;
+	int height = ioDem.mHeight;
+
+	const int NSweeps = 4;
+    // sweep directions { start, end, step }
+    const int dirX[NSweeps][3] = { {0, width - 1, 1} , {width - 1, 0, -1}, {width - 1, 0, -1}, {0, width - 1, 1} };
+    const int dirY[NSweeps][3] = { {0, height - 1, 1}, {0, height - 1, 1}, {height - 1, 0, -1}, {height - 1, 0, -1} };
+
+	float aa[2];
+    double d_new, a, b;
+    int s, ix, iy;
+    const double h = 1.0, f = 1.0;
+	
+    for (int s = 0; s < NSweeps; s++)
+    {
+        for (int iy = dirY[s][0]; dirY[s][2] * iy <= dirY[s][1]; iy += dirY[s][2])
+        {
+            for (int ix = dirX[s][0]; dirX[s][2] * ix <= dirX[s][1]; ix += dirX[s][2])
+            {
+				float v = ioDem.get(ix, iy);
+				if(v > 0.0)
+				{
+					if (iy == 0)
+						aa[1] = min(v,ioDem.get(ix,iy+1));
+					else if (iy == (height - 1))
+						aa[1] = min(v, ioDem.get(ix,iy-1));
+					else
+						aa[1] = min(ioDem.get(ix,iy-1),ioDem.get(ix,iy+1));
+				 
+					if (ix == 0)
+						aa[0] = min(v,ioDem.get(ix+1,iy));
+					else if (ix == (width - 1))
+						aa[0] = min(v,ioDem.get(ix-1,iy));
+					else
+						aa[0] = min(ioDem.get(ix-1,iy), ioDem.get(ix+1,iy));
+ 
+					a = aa[0]; b = aa[1];
+					d_new = (fabs(a - b) < f * h ? (a + b + sqrt(2.0 * f * f * h * h - (a - b) * (a - b))) * 0.5 : std::fminf(a, b) + f * h);
+
+					if(d_new < v)
+						ioDem.set(ix,iy,d_new);
+                }
+            }
+        }
+    }
+}
+
+
 void	Calc2ndDerivative(DEMGeo& deriv)
 {
 	int x, y;

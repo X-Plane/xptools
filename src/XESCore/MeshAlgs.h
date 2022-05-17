@@ -59,6 +59,9 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDems,
 								ProgressFunc inProg);
 
 void 	SetupWaterRasterizer(const Pmwx& inMap, const DEMGeo& inDEM, PolyRasterizer<double>& outRasterizer, int terrain_wanted);
+
+void	CreateWaterSDF(const Pmwx& inMap, DEMGeo& ioDem);
+
 double	HeightWithinTri(CDT& inMesh, CDT::Face_handle tri, CDT::Point in);
 double	MeshHeightAtPoint(CDT& inMesh, double inLon, double inLat, int hint_id);
 void	Calc2ndDerivative(DEMGeo& ioDEM);
