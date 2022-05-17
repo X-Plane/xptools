@@ -112,6 +112,41 @@ void		Net_JunctionInfo_t::SetLayerForChain(Net_ChainInfo_t * me, int l)
 	else	Assert(!"Not found");
 }
 
+Net_ChainInfo_t *		Net_JunctionInfo_t::GetNeighborLimit(Net_ChainInfo_t * me, bool is_ccw_limit)
+{
+	DebugAssert(chains.count(me) > 0);
+	int layer = this->GetLayerForChain(me);
+	
+	Vector2	my_dir = me->dir_out_of_junc(this);
+	my_dir.normalize();
+	
+	Net_ChainInfo_t * best = nullptr;
+	double best_dot = 0.0f;
+	
+	for(Net_ChainInfoSet::iterator c = chains.begin(); c != chains.end(); ++c)
+	if((*c != me))
+	if(this->GetLayerForChain(*c) == layer)
+	{
+		Vector2 c_dir = (*c)->dir_out_of_junc(this);
+		if(c_dir.dot(my_dir) > 0.0)
+		{
+			if((is_ccw_limit && !my_dir.right_turn(c_dir)) ||
+				(!is_ccw_limit && !my_dir.left_turn(c_dir)))
+			{
+				c_dir.normalize();
+				double c_dot = c_dir.dot(my_dir);
+				if(c_dot > best_dot)
+				{
+					best = *c;
+					best_dot = c_dot;
+				}
+			}
+		}
+	}
+	return best;
+}
+
+
 void	Net_ChainInfo_t::reverse(void)
 {
 	swap(start_junction, end_junction);
@@ -171,6 +206,20 @@ Net_JunctionInfo_t *	Net_ChainInfo_t::other_junc(Net_JunctionInfo_t * junc)
 {
 	return (junc == start_junction) ? end_junction : start_junction;
 }
+
+Vector2		Net_ChainInfo_t::dir_out_of_junc(Net_JunctionInfo_t * junc)
+{
+	if(junc == start_junction)
+	{
+		return Vector2(start_junction->location, shape.empty() ? end_junction->location : shape.front());
+	}
+	else
+	{
+		return Vector2(end_junction->location, shape.empty() ? start_junction->location : shape.back());
+	}
+}
+
+
 
 //double		Net_ChainInfo_t::meter_length(int pt_start, int pt_stop)
 //{
@@ -1380,6 +1429,38 @@ static void from_metric(
 	pt.x_ += anchor.x();
 	pt.y_ += anchor.y();
 }
+
+void fix_control_point(const Point2c& origin, Point2c& control_pt, const Vector2& limit_vec)
+{
+	Point2 lim_ptr = origin + limit_vec;
+
+	double scale = cos(origin.y() * DEG_TO_RAD);
+	to_metric(origin,scale,control_pt);
+	to_metric(origin,scale,lim_ptr);
+	
+	Vector2 dir_limit = Vector2(Point2(0.0,0.0), lim_ptr);
+	dir_limit.normalize();
+	dir_limit *= 1.0;
+	Vector2 cross = dir_limit.perpendicular_cw();
+	
+	Vector2 fixed = dir_limit.projection(Vector2(control_pt));
+	Point2 new_pt;
+	new_pt += fixed;
+	Vector2 moved = Vector2(control_pt, new_pt);
+	if(moved.dot(cross) < 0.0)
+		cross = -cross;
+		
+	new_pt += cross;
+	
+	from_metric(origin,scale,new_pt);
+	from_metric(origin,scale,control_pt);
+
+//	debug_mesh_line(control_pt,new_pt, 0.5,0,0,  1,0,0);
+
+	control_pt = new_pt;
+}
+
+
 
 //void categorize_turn(
 //				const Point2&	a,

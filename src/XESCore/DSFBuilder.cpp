@@ -102,6 +102,35 @@ static bool write_vertex_elevation(const CDT& inMesh, const CDT::Vertex_handle& 
 	return v->info().explicit_height || CategorizeVertex(inMesh,v,terrain_Water) <= 0;
 }
 
+Vector2 start_dir(const list<Point2c>& p)
+{
+	DebugAssert(p.size() >= 2);
+	list<Point2c>::const_iterator i = p.begin();
+	Point2 p0 = *i;
+	++i;
+	Point2 p1 = *i;
+	return Vector2(p0,p1);
+}
+
+Vector2 end_dir(const list<Point2c>& p)
+{
+	DebugAssert(p.size() >= 2);
+	list<Point2c>::const_iterator i = p.end();
+	--i;
+	Point2 p0 = *i;
+	--i;
+	Point2 p1 = *i;
+	return Vector2(p0,p1);
+}
+
+void LOG_POINT_FAIL(const Point2& p)
+{
+	printf("BAD BEZIER FIX AT %.9lf %.9lf\n", p.x(),p.y());
+#if OPENGL_MAP && DEV
+	debug_mesh_point(p,1,1,1);
+#endif
+}
+
 #if 0
 static void sub_heights(CDT& mesh, const DEMGeo& sl)
 {
@@ -1996,6 +2025,74 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				}
 				#endif
 				DebugAssert(pts.size() >= 2);
+				
+				Net_ChainInfo_t * start_ccw = (*ci)->start_junction->GetNeighborLimit(*ci, true);
+				Net_ChainInfo_t * start_cw = (*ci)->start_junction->GetNeighborLimit(*ci, false);
+
+				Net_ChainInfo_t * end_ccw = (*ci)->end_junction->GetNeighborLimit(*ci, true);
+				Net_ChainInfo_t * end_cw = (*ci)->end_junction->GetNeighborLimit(*ci, false);
+
+				int fix_start = 0, fix_end = 0;
+
+				if(start_ccw)
+				{
+					Vector2	start_ccw_dir = start_ccw->dir_out_of_junc((*ci)->start_junction);
+					Vector2 my_dir = start_dir(pts);
+					if(start_ccw_dir.left_turn(my_dir))
+					{
+						++fix_start;
+						//debug_mesh_point(*nth_from(pts.begin(),1), 1, 0, 0);
+						fix_control_point(*nth_from(pts.begin(),0), *nth_from(pts.begin(),1),start_ccw_dir);
+					}
+				}
+
+				if(start_cw)
+				{
+					Vector2	start_cw_dir = start_cw->dir_out_of_junc((*ci)->start_junction);
+					Vector2 my_dir = start_dir(pts);
+					if(start_cw_dir.right_turn(my_dir))
+					{
+						++fix_start;
+						//debug_mesh_point(*nth_from(pts.begin(),1), 1, 0, 0);
+						fix_control_point(*nth_from(pts.begin(),0), *nth_from(pts.begin(),1),start_cw_dir);
+					}
+				}
+//				DebugAssert(fix_start < 2);
+				if(fix_start >= 2)
+				{
+					LOG_POINT_FAIL(*nth_from(pts.begin(),1));
+				}
+
+				if(end_ccw)
+				{
+					Vector2	end_ccw_dir = end_ccw->dir_out_of_junc((*ci)->end_junction);
+					Vector2 my_dir = end_dir(pts);
+					if(end_ccw_dir.left_turn(my_dir))
+					{
+						//debug_mesh_point(*nth_from(pts.rbegin(),1), 1, 0, 0);
+						fix_control_point(*nth_from(pts.rbegin(),0), *nth_from(pts.rbegin(),1),end_ccw_dir);
+						++fix_end;
+					}
+				}
+
+				if(end_cw)
+				{
+					Vector2	end_cw_dir = end_cw->dir_out_of_junc((*ci)->end_junction);
+					Vector2 my_dir = end_dir(pts);
+					if(end_cw_dir.right_turn(my_dir))
+					{
+						//debug_mesh_point(*nth_from(pts.rbegin(),1), 1, 0, 0);
+						fix_control_point(*nth_from(pts.rbegin(),0), *nth_from(pts.rbegin(),1),end_cw_dir);
+						++fix_end;
+					}
+				}
+//				DebugAssert(fix_end < 2);
+				if(fix_end >= 2)
+				{
+					LOG_POINT_FAIL(*nth_from(pts.rbegin(),1));
+				}
+			
+				
 				pts.pop_back();
 				pts.pop_front();
 				for(list<Point2c>::iterator p = pts.begin(); p != pts.end(); ++p)
