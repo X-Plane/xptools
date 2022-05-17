@@ -535,6 +535,7 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 	// if we do NOT have a user-specified boundary.
 	for (int n = 0; n < apts.size(); ++n)
 	if (apts[n].kind_code == apt_airport)
+	if (apts[n].icao != "36CA")
 	{
 		PROGRESS_SHOW(prog, 0, 1, "Burning in airports...", n, apts.size()*2);
 		Polygon_set_2	foo;
@@ -546,6 +547,7 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 
 	for (int n = 0; n < apts.size(); ++n)
 	if (apts[n].kind_code == apt_airport)
+	if (apts[n].icao != "36CA")
 	{
 		PROGRESS_SHOW(prog, 0, 1, "Burning in airports...", n, apts.size()*2);
 		Polygon_set_2	foo;
