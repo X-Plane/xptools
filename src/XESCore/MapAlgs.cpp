@@ -48,7 +48,7 @@
 
 #define SHOW_ISLAND_REMOVAL 0
 
-#define DEBUG_OUTSET_REMOVER 1
+#define DEBUG_OUTSET_REMOVER 0
 
 // NOTE: by convention all of the static helper routines and structs have the __ prefix..this is intended
 // for the sole purpose of making it easy to read the function list popup in the IDE...
@@ -2363,15 +2363,16 @@ int MapDesliver(Pmwx& pmwx, double metric, ProgressFunc func)
 	for(Pmwx::Face_iterator f = pmwx.faces_begin(); f != pmwx.faces_end(); ++f, ++ctr)
 	if(!f->is_unbounded())
 	#if OPENGL_MAP
-	if(gFaceSelection.empty() || gFaceSelection.count(f))
+//	if(gFaceSelection.empty() || gFaceSelection.count(f))
 	#endif
-//	if(ctr >= 40259 )
 	{
 		PROGRESS_CHECK(func, 0, 1, "Deslivering...", ctr, tot,chk);
 		Polygon_with_holes_2 pwh;
 		Bbox_2 bbox;
 		bool maybe_sliver = !IsFaceNotSliverFast(f, metric * 3.0);
 		bool is_sliver = false;
+		
+		int my_lu = f->data().mTerrainType;
 		
 		if(maybe_sliver)
 		{
@@ -2390,37 +2391,56 @@ int MapDesliver(Pmwx& pmwx, double metric, ProgressFunc func)
 //				CGAL::to_double(f->outer_ccb()->target()->point().y()));
 //		}
 		
-		is_sliver = false;
+//		is_sliver = false;
 		if(is_sliver)
 		{
 			set<Pmwx::Halfedge_handle>	my_edges;
 			FindEdgesForFace<Pmwx>(f,my_edges);
 			map<int,int>	road_lu_count;
 			map<int,int>	other_lu_count;
+			bool matches_something = false;
 			for(set<Pmwx::Halfedge_handle>::iterator e = my_edges.begin(); e != my_edges.end(); ++e)
 			if(!(*e)->twin()->face()->is_unbounded())
+			if((*e)->twin()->face() != (*e)->face())
 			{
+				int other_lu = (*e)->twin()->face()->data().mTerrainType;
+				if(other_lu == my_lu)
+				{
+					matches_something = true;
+					break;
+				}
+				
 				if(!(*e)->data().mSegments.empty() ||
 				   !(*e)->twin()->data().mSegments.empty())
 				{
-					road_lu_count[(*e)->twin()->face()->data().mTerrainType]++;
+					road_lu_count[other_lu]++;
 				}
 				else
 				{
 //					DebugAssert((*e)->twin()->face()->data().mTerrainType != f->data().mTerrainType);
-					other_lu_count[(*e)->twin()->face()->data().mTerrainType]++;
+					other_lu_count[other_lu]++;
 				}
 			}
 			
-			if (!other_lu_count.empty())
+			if(!matches_something)
 			{
-				++ret;
-				f->data().mTerrainType = highest_key<int,int>(other_lu_count);
-			}
-			else if(!road_lu_count.empty())
-			{
-				++ret;
-				f->data().mTerrainType = highest_key<int,int>(road_lu_count);
+				if (!other_lu_count.empty())
+				{
+					++ret;
+					f->data().mTerrainType = highest_key<int,int>(other_lu_count);
+//					#if OPENGL_MAP
+//						gFaceSelection.insert(f);
+//					#endif
+					
+				}
+				else if(!road_lu_count.empty())
+				{
+					++ret;
+					f->data().mTerrainType = highest_key<int,int>(road_lu_count);
+//					#if OPENGL_MAP
+//						gFaceSelection.insert(f);
+//					#endif
+				}
 			}
 		}
 	}
