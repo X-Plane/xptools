@@ -1631,6 +1631,9 @@ void			FaceGraph_t::merge(FaceNode_t * f1, FaceNode_t * f2, list<EdgeNode_t *>& 
 //			DebugAssert(!(oe->must_merge && oe->must_lock));
 			if(oe->must_lock)
 				oe->must_merge = false;
+
+			DebugAssert(!(oe->must_merge && oe->must_lock));
+
 //			#if !DEV
 //				#error temp hack
 //			#endif
@@ -1856,6 +1859,13 @@ void	ColorFaces(set<Face_handle>&	io_faces)
 						en->must_lock = false;
 					}
 				}
+
+				// If when EVERYTHING is said and done, we have a conflict, err on lock over merge status.
+				// This hapepns when a power line is part of the separation of two border faces that have different
+				// zoning in their import files.  Just honor the import - for now.
+
+				if(en->must_merge && en->must_lock)
+					en->must_merge = false;
 
 //				for(set<Halfedge_handle>::iterator i = edges.begin(); i != edges.end(); ++i)
 //				if((*i)->twin()->face() == *ff)
