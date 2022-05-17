@@ -765,8 +765,8 @@ int	has_beach(const CDT::Edge& inEdge, const CDT& inMesh, int& kind, const DEMGe
 
 	for (i = 0; i < gBeachInfoTable.size(); ++i)
 	{
-		if (is_apt == gBeachInfoTable[i].require_airport &&
-			(gBeachInfoTable[i].require_landuse.empty() || gBeachInfoTable[i].require_landuse.count(landuse)) &&
+		if ((is_apt == gBeachInfoTable[i].require_airport ||
+			gBeachInfoTable[i].require_landuse.empty() || gBeachInfoTable[i].require_landuse.count(landuse)) &&
 			slope >= gBeachInfoTable[i].min_slope &&
 			slope <= gBeachInfoTable[i].max_slope &&
 			gBeachInfoTable[i].min_sea <= wave &&
@@ -793,6 +793,7 @@ int	has_beach(const CDT::Edge& inEdge, const CDT& inMesh, int& kind, const DEMGe
 	{
 		return false;
 	}
+	
 	return true;
 }
 
@@ -834,13 +835,14 @@ void FixBeachContinuity(
 				} while (discon != CDT::Edge() && discon != stop && typedata[discon] == typedata[circ]);
 
 				// If we failed - go back and retry, otherwise advance forward and break out
-				if (len < req_len && gBeachIndex[typedata[circ]] < lim)
+				int new_type = gBeachInfoTable[gBeachIndex[typedata[circ]]].x_backup;
+				if (len < req_len && new_type != 0)
 				{
 					retry = true;
-					int new_type = gBeachInfoTable[gBeachIndex[typedata[circ]]].x_backup;
 					iter = circ;
 					do {
 						typedata[iter] = new_type;
+						
 						iter = (linkNext.count(iter) == 0) ? CDT::Edge() : linkNext[iter];
 					} while (iter != discon);
 
@@ -1425,8 +1427,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					coords8[4] =USE_DEM_N(-(*vert)->info().normal[1]);
 					if (is_water)
 					{
-						coords8[5] = GetWaterBlend((*vert), inElevation, inBathymetry);
-						coords8[6] = CategorizeVertex(inHiresMesh,*vert,terrain_Water) >= 0 ? 0.0 : 1.0;
+						coords8[5] = GetWaterBlend((*vert), inElevation, inBathymetry);						// Fetch
+						coords8[6] = CategorizeVertex(inHiresMesh,*vert,terrain_Water) >= 0 ? 0.0 : 1.0;	// Depth categorize
 						DebugAssert(coords8[5] >= 0.0);
 						DebugAssert(coords8[5] <= 1.0);
 					}
@@ -1704,7 +1706,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			cbs.EndPolygon_f(writer1);
 
 		}
-		cbs.AcceptPolygonDef_f("lib/g8/beaches.bch", writer1);
+		cbs.AcceptPolygonDef_f("lib/g12/beaches.bch", writer1);
 	}
 #endif
 	/****************************************************************
