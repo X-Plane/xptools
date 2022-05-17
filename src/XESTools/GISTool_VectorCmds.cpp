@@ -712,9 +712,13 @@ int DoWetMask(const vector<const char *>& args)
 */
 
 struct debug_lock_traits {
-	bool is_locked(Pmwx::Vertex_handle v) const { 
+	bool is_locked(Pmwx::Vertex_handle v) const {
+	
+		DebugAssert(v->degree() == 2);
+	
 		Pmwx::Halfedge_handle h1(v->incident_halfedges());
 		Pmwx::Halfedge_handle h2(h1->next());
+
 //		if(h1->face()->data().IsWater() == h1->twin()->face()->data().IsWater())
 //		{
 //			debug_mesh_point(cgal2ben(v->point()),1,1,1);
@@ -725,6 +729,19 @@ struct debug_lock_traits {
 		Point2 p3(cgal2ben(h2->target()->point()));
 		Vector2 v1(p1,p2);
 		Vector2 v2(p2,p3);
+
+		bool h1g = h1->data().HasGroundRoads() || h1->twin()->data().HasGroundRoads();
+		bool h2g = h2->data().HasGroundRoads() || h2->twin()->data().HasGroundRoads();
+
+		bool h1b = h1->data().HasBridgeRoads()|| h1->twin()->data().HasBridgeRoads();
+		bool h2b = h2->data().HasBridgeRoads()|| h2->twin()->data().HasBridgeRoads();
+
+		if (h1b != h2b || h1g != h2g)
+		{
+//			debug_mesh_point(p2,1,0,0);
+			return true;
+		}
+
 //		if (v1.dot(v2) < 0.0)
 //		{
 //			debug_mesh_point(p2,1,0,0);
