@@ -723,10 +723,13 @@ static EdgeRule_t * edge_for_road(const pair<int,bool>& road_type, int zoning, i
 	return NULL;
 }
 
-static bool against_road(Block_2::Halfedge_const_handle h)
+static bool against_road(Block_2::Halfedge_const_handle h, bool rail_ok)
 {
-	return h->twin()->face()->data().usage == usage_Road &&
-		   gNetReps[h->twin()->face()->data().feature].use_mode == use_Street;
+	if(h->twin()->face()->data().usage != usage_Road)
+		return false;
+	
+	int road_use_mode = gNetReps[h->twin()->face()->data().feature].use_mode;
+	return road_use_mode == use_Street || (rail_ok && road_use_mode == use_Rail);
 }
 
 int find_most_locked_pt(vector<block_pt>& pts, bool skip_first)
@@ -3493,13 +3496,13 @@ public:
 
 };
 
-bool is_road_adjacent(Block_2::Face_handle f)
+static bool is_road_adjacent(Block_2::Face_handle f, bool rail_ok)
 {
 	Block_2::Ccb_halfedge_circulator circ, stop;
 	circ = stop = f->outer_ccb();
 	do
 	{
-		if(against_road(circ))
+		if(against_road(circ, rail_ok))
 			return true;
 	} while(++circ != stop);
 	for(Block_2::Hole_iterator h = f->holes_begin(); h != f->holes_end(); ++h)
@@ -3507,7 +3510,7 @@ bool is_road_adjacent(Block_2::Face_handle f)
 		circ = stop = *h;
 		do
 		{
-			if(against_road(circ))
+			if(against_road(circ, rail_ok))
 				return true;
 		} while(++circ != stop);
 	}
@@ -3525,6 +3528,8 @@ bool	apply_fill_rules(
 	if(orig_face->data().GetParam(af_Median,0) == 0.0)
 	if(gZoningInfo[zoning].fill_area)
 	{
+		bool fill_rail = gZoningInfo[zoning].fill_rail != 0;
+	
 		FillRule_t * r = GetFillRuleForBlock(orig_face);
 		bool has_backup = r && (r->fac_id != NO_VALUE || r->ags_id != NO_VALUE);
 		
@@ -3533,7 +3538,7 @@ bool	apply_fill_rules(
 		for(Block_2::Face_iterator f = block.faces_begin(); f != block.faces_end(); ++f)		// we have NO AGB rule (in which case a backup was mandatory back when we made this thing)
 		if(!f->is_unbounded())
 		if(f->data().usage == usage_Empty)
-		if(is_road_adjacent(f))
+		if(is_road_adjacent(f,fill_rail))
 		{
 			
 			f->data().usage = usage_Polygonal_Feature;
@@ -3638,7 +3643,7 @@ Block_2::Halfedge_handle best_side_for_facade(Block_2::Ccb_halfedge_circulator c
 	
 	Block_2::Ccb_halfedge_circulator stop(circ);
 	do {
-		if(against_road(circ))
+		if(against_road(circ, false))
 		{
 			if(good == Block_2::Halfedge_handle() || 
 				CGAL::squared_distance(circ->source()->point(),circ->target()->point()) > 
@@ -3672,7 +3677,7 @@ Block_2::Halfedge_handle best_side_for_agb(Block_2::Ccb_halfedge_circulator circ
 	double best_dot = 0.0f;
 	Vector2	best_vec;
 	do {
-		if(against_road(circ))
+		if(against_road(circ, false))
 		{
 			Vector2	this_side(cgal2ben(circ->source()->point()),cgal2ben(circ->target()->point()));
 			this_side.normalize();
@@ -3695,7 +3700,7 @@ Block_2::Halfedge_handle best_side_for_agb(Block_2::Ccb_halfedge_circulator circ
 	
 	do {
 		if(circ != best)
-		if(against_road(circ))
+		if(against_road(circ, false))
 		{
 			Vector2	this_side(cgal2ben(circ->source()->point()),cgal2ben(circ->target()->point()));
 			this_side.normalize();
@@ -3770,7 +3775,7 @@ void	PolygonFromBlock(Block_2::Face_const_handle in_face, Block_2::Halfedge_cons
 	}
 }
 
-void	StringFromCCB(Block_2::Ccb_halfedge_const_circulator ccb, vector<Polygon2>& ps_use, vector<Polygon2>& ps_bad, CoordTranslator2& translator)
+static void	StringFromCCB(Block_2::Ccb_halfedge_const_circulator ccb, vector<Polygon2>& ps_use, vector<Polygon2>& ps_bad, CoordTranslator2& translator, bool rail_ok)
 {
 	Block_2::Ccb_halfedge_const_circulator circ, stop, prev;
 	vector<Polygon2> * targ;
@@ -3779,7 +3784,7 @@ void	StringFromCCB(Block_2::Ccb_halfedge_const_circulator ccb, vector<Polygon2>&
 	do {
 		prev = circ;
 		--prev;
-		if(against_road(circ) != against_road(prev))
+		if(against_road(circ, rail_ok) != against_road(prev, rail_ok))
 		{
 			has_gap = true;
 			break;
@@ -3795,8 +3800,8 @@ void	StringFromCCB(Block_2::Ccb_halfedge_const_circulator ccb, vector<Polygon2>&
 			prev = circ;
 			--prev;
 			
-			bool rc = against_road(circ);
-			bool rp = against_road(prev);
+			bool rc = against_road(circ, rail_ok);
+			bool rp = against_road(prev, rail_ok);
 			bool want_first = rc != rp;
 
 			targ = rc ? &ps_use : &ps_bad;
@@ -3813,7 +3818,7 @@ void	StringFromCCB(Block_2::Ccb_halfedge_const_circulator ccb, vector<Polygon2>&
 	else
 	{	
 		// This is the case where the whole ring is the same...figure out which one it is, push the whole ring, and dupe the end to form a 'string'.
-		targ = against_road(circ) ? &ps_use : &ps_bad;
+		targ = against_road(circ, rail_ok) ? &ps_use : &ps_bad;
 		targ->push_back(Polygon2());
 		do {
 			targ->back().push_back(translator.Reverse(cgal2ben(circ->source()->point())));			
@@ -3825,15 +3830,15 @@ void	StringFromCCB(Block_2::Ccb_halfedge_const_circulator ccb, vector<Polygon2>&
 }
 
 
-int	StringFromBlock(Block_2::Face_const_handle in_face, vector<Polygon2>& out_ps, CoordTranslator2& translator)
+int	StringFromBlock(Block_2::Face_const_handle in_face, vector<Polygon2>& out_ps, CoordTranslator2& translator, bool rail_ok)
 {
 	DebugAssert(!in_face->is_unbounded());
 
 	vector<Polygon2>	ps_use, ps_bad;
 
-	StringFromCCB(in_face->outer_ccb(), ps_use,ps_bad, translator);
+	StringFromCCB(in_face->outer_ccb(), ps_use,ps_bad, translator, rail_ok);
 	for(Block_2::Hole_const_iterator h = in_face->holes_begin(); h != in_face->holes_end(); ++h)
-		StringFromCCB(*h, ps_use,ps_bad, translator);
+		StringFromCCB(*h, ps_use,ps_bad, translator, rail_ok);
 	out_ps.clear();
 	out_ps.reserve(ps_use.size() + ps_bad.size());
 
@@ -3953,6 +3958,10 @@ void	extract_features(
 {
 	double	block_height = dest_face->data().GetParam(af_HeightObjs,8.0);
 
+	int zoning = dest_face->data().GetZoning();
+	bool fill_rail = gZoningInfo[zoning].fill_rail != 0;
+
+
 	bool did_split = false;
 #if DEV && OPENGL_MAP
 	try
@@ -3976,7 +3985,7 @@ void	extract_features(
 				// line mess that is an AGS.
 				if(strstr(FetchTokenString(o.mRepType),".ags"))
 				{
-					o.mParam = StringFromBlock(f,o.mShape,translator);
+					o.mParam = StringFromBlock(f,o.mShape,translator, fill_rail);
 					encode_ag_height(o.mParam,block_height);					
 					DebugAssert(o.mShape.size() <= 255);
 					dest_face->data().mPolyObjs.push_back(o);				
