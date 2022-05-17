@@ -44,7 +44,8 @@
 #include "Zoning.h"
 
 // Minimum bathymetric depth from water surface at any point!
-#define	MIN_DEPTH 10.0f
+#define	MIN_DEPTH 1.0f
+#define	MAX_DEPTH 50.0f
 
 #define WATER_SURF_DIM 256
 
@@ -1664,7 +1665,10 @@ else														e = DEM_NO_DATA;
 	for(y = 0; y < bath_new.mHeight; ++y)
 	for(x = 0; x < bath_new.mWidth ; ++x)
 	{
-		bath_new(x,y) = min(bath_new(x,y) - MIN_DEPTH, bath_old.value_linear(bath_new.x_to_lon(x),bath_new.y_to_lat(y)));		
+		float surf = bath_new(x,y);
+		float bath = bath_old.value_linear(bath_new.x_to_lon(x),bath_new.y_to_lat(y));		
+		float bath_constrained = fltlim(bath, surf - MAX_DEPTH, surf - MIN_DEPTH);
+		bath_new(x,y) = bath_constrained;
 	}
 	
 	bath_old.swap(bath_new);
