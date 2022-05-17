@@ -65,6 +65,7 @@
 #include "WED_RoadEdge.h"
 #include "WED_RoadNode.h"
 #include "WED_Runway.h"
+#include "WED_Sealane.h"
 #include "WED_SimpleBezierBoundaryNode.h"
 #include "WED_TextureNode.h"
 #include "WED_TaxiRouteNode.h"
@@ -5701,7 +5702,32 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 	for(auto b : bdys)
 		WED_BezierPolygonWithHolesForPolygon(b, apt_boundary);
 	if(apt_boundary.size() == 0) return 0;
-	
+
+	// prevent mowing the water e.g. at Juneau
+	vector<WED_Sealane*> sealn;
+	CollectRecursive(apt, back_inserter(sealn), WED_Sealane::sClass);
+	for (auto s : sealn)
+	{
+		Point2 	tmp[4];
+		s->GetCorners(gis_Geo, tmp);
+
+		Vector2 len_vec_1m = Vector2(tmp[0], tmp[1]) / LonLatDistMeters(tmp[0], tmp[1]);
+		Vector2 len_ext = len_vec_1m * 400.0;
+		Vector2 wid_vec_1m = Vector2(tmp[1], tmp[2]) / LonLatDistMeters(tmp[1], tmp[2]);
+		Vector2 side_ext = wid_vec_1m * 40.0;
+		tmp[0] -= len_ext + side_ext;
+		tmp[1] += len_ext - side_ext;
+		tmp[2] += len_ext + side_ext;
+		tmp[3] -= len_ext - side_ext;
+
+		vPoly2 water;
+		water.push_back(Polygon2());
+		for (int i = 3; i >= 0; i--)
+			water.back().push_back(tmp[i]);
+
+		apt_boundary = PolygonCut(apt_boundary, water);
+	}
+
 	CollectRecursive(apt, back_inserter(rwys), WED_Runway::sClass);
     std::sort(rwys.begin(), rwys.end(), [&](WED_Runway* a, WED_Runway* b)   // mow largest runway first, so most of the moving is aligned with this one
 
@@ -5765,7 +5791,7 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 		}
 		all_grass_poly = PolygonUnion(all_grass_poly, *this_grass);
 	}
-	
+
 	// get all pavement
 	CollectRecursive(apt, back_inserter(twys), ThingNotHidden, [&](WED_Thing* v)
 		{
