@@ -69,6 +69,7 @@ int		WED_CanExportPack(IResolver * resolver)
 #include "WED_ExclusionZone.h"
 #include "WED_RampPosition.h"
 #include "WED_Runway.h"
+#include "WED_Sealane.h"
 #include "WED_TruckDestination.h"
 #include "WED_TruckParkingLocation.h"
 #include "WED_ObjPlacement.h"
@@ -355,7 +356,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				wrl->StartCommand("Delete Terrain Polys");
 				WED_RecursiveDelete(things);
 				wrl->CommitCommand();
-				LOG_MSG("Deleted %ld terrain polys at %s\n", terrain_polys.size(), ICAO_code.c_str());
+				LOG_MSG("Deleted %zd terrain polys at %s\n", terrain_polys.size(), ICAO_code.c_str());
 			}
 		}
 		// nuke all "Grunge" draped objects
@@ -372,45 +373,49 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			set<WED_Thing*> things(grunge_objs.begin(), grunge_objs.end());
 			WED_RecursiveDelete(things);
 			wrl->CommitCommand();
-			LOG_MSG("Deleted %ld Grunges at %s\n", grunge_objs.size(), ICAO_code.c_str());
+			LOG_MSG("Deleted %zd Grunges at %s\n", grunge_objs.size(), ICAO_code.c_str());
 		}
-#endif
-#if 1
-		// nuke all Exclusions for Beaches, Polygons, Lines
-		vector<WED_ExclusionZone*> exclusions;
-		CollectRecursive(*apt_itr, back_inserter(exclusions), IgnoreVisiblity, [](WED_Thing* excl)->bool {
-			set<int> ex;
-			static_cast<WED_ExclusionZone*>(excl)->GetExclusions(ex);
-			return ex.count(exclude_Pol) || ex.count(exclude_Lin) || ex.count(exclude_Bch);
-			},
-			WED_ExclusionZone::sClass, 2);
-		if (exclusions.size())
+		// The "big xp12 gateway reset" - remove certain features unless the submission is "recent" , measure by the scenery ID
+		// nuke exclusions for Beaches, Polygons, Lines
+		if ((*apt_itr)->GetSceneryID() > 91000)
 		{
-			wrl->StartCommand("Clean up Exclusions");
-			set<int> ex;
-			for(auto e : exclusions)
+			vector<WED_ExclusionZone*> exclusions;
+			CollectRecursive(*apt_itr, back_inserter(exclusions), IgnoreVisiblity, [](WED_Thing* excl)->bool {
+				set<int> ex;
+				static_cast<WED_ExclusionZone*>(excl)->GetExclusions(ex);
+				return ex.count(exclude_Pol) || ex.count(exclude_Lin) || ex.count(exclude_Bch);
+				},
+				WED_ExclusionZone::sClass, 2);
+			if (exclusions.size())
 			{
-				e->GetExclusions(ex);
-				ex.erase(exclude_Pol);
-				ex.erase(exclude_Lin);
-				ex.erase(exclude_Bch);
-				e->SetExclusions(ex);
+				wrl->StartCommand("Remove XP11 aera exclusions");
+				set<int> ex;
+				for (auto e : exclusions)
+				{
+					e->GetExclusions(ex);
+					ex.erase(exclude_Pol);
+					ex.erase(exclude_Lin);
+					ex.erase(exclude_Bch);
+					e->SetExclusions(ex);
+				}
+				wrl->CommitCommand();
+				LOG_MSG("I/XP12 Deleted %zd Exclusions at %s\n", exclusions.size(), ICAO_code.c_str());
 			}
-#else
-		// nuke *ALL* Exclusions
-		set<WED_Thing*> exclusions;
-		CollectRecursive(*apt_itr, inserter(exclusions, exclusions.end()), IgnoreVisiblity, TakeAlways, WED_ExclusionZone::sClass, 2);
-		if (exclusions.size())
-		{
-			wrl->StartCommand("Nuke all Exclusions");
-			WED_RecursiveDelete(exclusions);
-#endif
-			wrl->CommitCommand();
-			LOG_MSG("Deleted %ld Exclusions %s\n", exclusions.size(), ICAO_code.c_str());
+			vector<WED_Sealane*> sealn;
+			CollectRecursive(*apt_itr, back_inserter(sealn), IgnoreVisiblity, TakeAlways, WED_Sealane::sClass, 2);
+			for(auto s : sealn)
+				if(s->GetBuoys())
+				{
+					wrl->StartCommand("Remove XP11 aera byoys");
+					s->SetBuoys(0);
+					wrl->CommitCommand();
+					LOG_MSG("I/XP12 Deleted %zd sealane buoys at %s\n", exclusions.size(), ICAO_code.c_str());
+				}
 		}
-		
+
+#endif
 		double percent_done = (double)distance(apts.begin(), apt_itr) / apts.size() * 100;
-		printf("%0.0f%% through heuristic at %s\n", percent_done, ICAO_code.c_str());
+		printf("%0.0lf%% through heuristic at %s\n", percent_done, ICAO_code.c_str());
 
 		auto t1 = chrono::high_resolution_clock::now();
 		chrono::duration<double> elapsed = t1 - t2;

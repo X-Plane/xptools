@@ -139,4 +139,8 @@ void	Quad_MoveSide2(Point2 ends[2], double& width_mtr, int side, const Vector2& 
 void	Quad_ResizeSide4(Point2 corners[4], int side, const Vector2& move, bool symetric);
 void	Quad_ResizeCorner1(Point2& ctr, double heading, double& l, double& w, int corner, const Vector2& move, bool symetric);
 
+// buffer/extend rectangular quad
+// length is point 0-1 direction, width point 1-2 direction
+void	Quad_Resize(Point2 corners[4], double width_m, double end0_m, double end1_m);
+
 #endif

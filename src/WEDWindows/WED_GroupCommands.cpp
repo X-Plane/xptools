@@ -5710,15 +5710,7 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 	{
 		Point2 	tmp[4];
 		s->GetCorners(gis_Geo, tmp);
-
-		Vector2 len_vec_1m = Vector2(tmp[0], tmp[1]) / LonLatDistMeters(tmp[0], tmp[1]);
-		Vector2 len_ext = len_vec_1m * 400.0;
-		Vector2 wid_vec_1m = Vector2(tmp[1], tmp[2]) / LonLatDistMeters(tmp[1], tmp[2]);
-		Vector2 side_ext = wid_vec_1m * 40.0;
-		tmp[0] -= len_ext + side_ext;
-		tmp[1] += len_ext - side_ext;
-		tmp[2] += len_ext + side_ext;
-		tmp[3] -= len_ext - side_ext;
+		Quad_Resize(tmp, 40.0, 400.0, 400.0);
 
 		vPoly2 water;
 		water.push_back(Polygon2());
@@ -5752,14 +5744,7 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 				all_pave_poly.back().push_back(tmp[i]);
 		}
 
-		Vector2 len_vec_1m = Vector2(tmp[0], tmp[1]) / LonLatDistMeters(tmp[0], tmp[1]);
-		Vector2 len_ext  = len_vec_1m * 400.0;
-		Vector2 wid_vec_1m = Vector2(tmp[1], tmp[2]) / LonLatDistMeters(tmp[1], tmp[2]);
-		Vector2 side_ext = wid_vec_1m * r->GetWidth() * (r->GetSurface() == surf_Grass ? 1.0 : 4.0);
-		tmp[0] -= len_ext + side_ext;
-		tmp[1] += len_ext - side_ext;
-		tmp[2] += len_ext + side_ext;
-		tmp[3] -= len_ext - side_ext;
+		Quad_Resize(tmp, r->GetWidth() * (r->GetSurface() == surf_Grass ? 1.0 : 4.0), 400.0, 400.0);
 
 		grass.push_back(make_pair(vPoly2(), r->GetHeading()));
 		vPoly2 * this_grass = &grass.back().first;
@@ -6031,9 +6016,6 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 			if(statistics) statistics[2]++;
 		}
 	}
-	
-	// refactor this to be able to re-use pavement (and grass) for adding pavement art
-	// convert everything into meterspace w/propper projection for that as well
 	
 /*	for (auto p : all_pave_poly)
 		for(int i = 0; i < p.size(); i++)
