@@ -949,6 +949,84 @@ double CopyWetPoints(
 	return (double) wet / (double) total;
 }
 
+void CopyBathymetryToPlate(DEMGeo& ioPlate, const DEMGeo& inBathy, const Pmwx& map, int terrain_type_mask)
+{
+	PolyRasterizer<double>	rasterizer;
+	SetupWaterRasterizer(map, ioPlate, rasterizer, terrain_type_mask);
+
+	int y = 0;
+	rasterizer.StartScanline(y);
+	while (!rasterizer.DoneScan())
+	{
+		int x1, x2;
+		while (rasterizer.GetRange(x1, x2))
+		{
+			for(int x = x1; x < x2; ++x)
+			{
+				ioPlate.set(x,y,inBathy.value_linear(ioPlate.x_to_lon(x), ioPlate.y_to_lat(y)));
+			}
+		}
+		++y;
+		if (y >= ioPlate.mHeight)
+			break;
+		rasterizer.AdvanceScanline(y);
+	}
+}
+
+double CopyWetPointsWithSDF(
+				const DEMGeo&			in_orig,
+					  DEMMask&			io_used,
+					  CDT&				io_mesh,
+				const DEMGeo&			in_sdf,
+					  int				in_terrain,
+					  int				in_skip,
+				const Pmwx& 			map)		// The map we get the water bodies from
+{
+	// BEN NOTE ON CLAMPING: I think we do NOT care if an edge is microscopically outside the DEM
+	// in this case...xy_nearest could care less...and the polygon rasterizer doesn't care much
+	// either.  We do not generate any coastline edges here.
+
+	PolyRasterizer<double>	rasterizer;
+	SetupWaterRasterizer(map, in_orig, rasterizer, in_terrain);
+
+	CDT::Face_handle	hint;
+
+	int total = in_orig.mWidth * in_orig.mHeight;
+	int wet = 0;
+
+	int y = 0;
+	rasterizer.StartScanline(y);
+	while (!rasterizer.DoneScan())
+	{
+		int x1, x2;
+		while (rasterizer.GetRange(x1, x2))
+		{
+			for(int x = x1; x < x2; ++x)
+			{
+				int sdf_x = in_sdf.lon_to_x(in_orig.x_to_lon(x));
+				int sdf_y = in_sdf.lat_to_y(in_orig.y_to_lat(y));
+				
+				float dist =  in_sdf.get(sdf_x,sdf_y);
+				
+				int skip = 2.0;
+				while(skip < dist)
+					skip *= 2;
+				skip = min(in_skip, skip);
+				if((x % skip == 0) && (y % skip == 0))
+					InsertDEMPoint(in_orig, io_used,io_mesh,x,y,hint);
+				++wet;
+			}
+		}
+		// Yeah we could be more clever about modulus in the Y axis, but..the rasterizer might
+		// be unhappy skipping scanlines with "events" on them.
+		++y;
+		if (y >= in_orig.mHeight) break;
+		rasterizer.AdvanceScanline(y);
+	}
+	
+	return (double) wet / (double) total;
+}
+
 /*
  * AddEdgePoints
  *
@@ -1619,12 +1697,19 @@ double dist_from_line(const Point_2& p, const Point_2& q, const Point_2& r)
 
 void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * mesh_folder, ProgressFunc prog)
 {
+	DEMGeo& sdf = inDEMs[dem_Wizard];
+	sdf.resize(1200,1200);
+	sdf.copy_geo_from(inDEMs[dem_Elevation]);
+	sdf.mPost=0;
+	CreateWaterSDF(inMap, sdf);
+
 	TIMER(Total)
 	outMesh.clear();
 
 	int		x, y;
 	DEMGeo&	orig(inDEMs[dem_Elevation]);
-//	const DEMGeo& inWaterSurface(inDEMs[dem_WaterSurface]);
+	DEMGeo plate = orig;
+	DEMGeo& bathy(inDEMs[dem_Bathymetry]);
 
 	Assert(orig.get(0			 ,0				) != DEM_NO_DATA);
 	Assert(orig.get(orig.mWidth-1,orig.mHeight-1) != DEM_NO_DATA);
@@ -1771,7 +1856,18 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	
 	/* TRIANGULATE WATER INTERIOR */
 	
-	double wet_ratio = CopyWetPoints(orig, deriv, outMesh, LOW_RES_WATER_INTERVAL, terrain_Water, inMap);
+	CopyBathymetryToPlate(plate, bathy, inMap, terrain_Water);
+//	bathy = sdf;
+//	bathy *= -4.0;
+//	for(DEMGeo::iterator it = bathy.begin(); it != bathy.end(); ++it)
+//	{
+//		*it = max(*it,-50.0f);
+//		pair<int,int> xy = bathy.to_coordinates(it);
+//		*it = *it + orig.value_linear(
+//					bathy.x_to_lon(xy.first),
+//					bathy.y_to_lat(xy.second));
+//	}
+	double wet_ratio = CopyWetPointsWithSDF(orig, deriv, outMesh, sdf, terrain_Water, LOW_RES_WATER_INTERVAL, inMap);
 					   CopyWetPoints(orig, deriv, outMesh,APT_INTERVAL, terrain_Airport, inMap);
 	double dry_ratio = 1.0 - wet_ratio;
 
@@ -1826,6 +1922,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 			}
 			return { point, { elevation } };
 		};
+#endif
 
 		map<Point_2, boost::optional<double>> splits_needed;
 		for (CDT::Finite_faces_iterator f = outMesh.finite_faces_begin(); f != outMesh.finite_faces_end(); ++f)
