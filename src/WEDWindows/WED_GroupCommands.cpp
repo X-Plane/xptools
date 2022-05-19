@@ -2790,7 +2790,7 @@ static void DoMakeRegularPoly(IGISPointSequence * seq )
 	//TODO: mroe : cannot find a good centerpoint , take this for now
 	Point2 ctr = pol.centroid();
 	//centri angle
-	double w = (2.0*PI) / n ;
+	double w = (2.0*M_PI) / n ;
 	//outer radius
 	double ru = (l/2.0) / sin(w/2.0);
 	if (pol.is_ccw()) w = -w;

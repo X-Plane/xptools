@@ -560,7 +560,7 @@ static double GetTightnessBlend(CDT& inMesh, CDT::Face_handle f_han, CDT::Vertex
 
 	} while (stop != circ);
 	smallest_dot = max( 0.0, smallest_dot);				// must be non-negative!
-	smallest_dot = acos(smallest_dot) / (PI / 2.0);
+	smallest_dot = acos(smallest_dot) / (M_PI / 2.0);
 	return smallest_dot;
 }
 
