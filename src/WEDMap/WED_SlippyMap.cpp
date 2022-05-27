@@ -111,7 +111,7 @@ WED_URL_ESRI_TILES "${z}/${y}/${x}.jpg" };
 
 static const int max_zoom[PREDEFINED_MAPS] = {
 16,        // OSM tiles below this zoom are not cached, but on-demand generated. Openstreetmap foundation asks to limit their use.
-17 };      // ESRI maps are available down to this level in general
+18 };      // ESRI maps are available down to ZL17 in general, but since 2021 below 60 deg also in ZL18
 
 
 static inline int long2tilex(double lon, int z)
@@ -141,6 +141,8 @@ int WED_SlippyMap::get_zl_for_map(double in_ppm, double lattitude)
 	double zl_mpp = 156543.03 * TILE_FACTOR / 1.4 * cos(lattitude * 3.14/180.0);
 	int zl = 0;
 	int max_zl = mMapMode <= PREDEFINED_MAPS ? max_zoom[mMapMode-1] : MAX_ZOOM;
+	if (lattitude > 60.0 || lattitude < -60.0) max_zl--;
+	if (lattitude > 75.0 || lattitude < -75.0) max_zl--;
 
 	while(zl < max_zl && zl_mpp > mpp)
 	{

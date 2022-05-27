@@ -19,7 +19,7 @@ Planned functionality for WED 2.5 not yet included in the alpha versions
 WED functionality not yet supported by XP12 alpha's
     - rowcode 105 skidmark and line color/width customizations for runways
 
-WED 2.5.0b2 5/1/22
+WED 2.5.0b2 5/30/22
    Bug Fix:
    - fix .agp scraper display mismatch for some heights
    - fix gridded preview for 3D objects only showing partially on OSX w/AMD graphics
@@ -52,6 +52,7 @@ WED 2.5.0b2 5/1/22
    - add iso3166 country codes to 1302 country meta data
    Features for all X-Plane versions:
    - use full projection for map display to improve location accuracy of linear features
+   - bump resolution for ESRI slippy maps below 60 deg lattitude by one ZL
    - validation warning on TOWER_VIEWPOINT height not matching with #viewpoint_height tags
    - use actual XP textures for run/taxiway and helipd previews in map, if available
    - apply jetway upgrades, remove large terrain polygons at export (tyler_mode only)
