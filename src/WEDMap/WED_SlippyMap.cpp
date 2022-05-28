@@ -307,16 +307,13 @@ void	WED_SlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 		this->Stop();
 	}
 
-	stringstream zoom_msg;
-	zoom_msg << "ZL" << z_max << ": "
-			 << got << " of " << want
-			 << " (" << (float)got * 100.0f / (float)want << "% done, " << bad << " errors). "
-			 << (int)m_cache.size() << " tiles cached (" << (int)m_cache.size() / 4 << " MB)";
+	char str[30];
+	snprintf(str, sizeof(str), "%d/%d Tiles %d errs" , got, want, bad);
 
 	int bnds[4];
 	GetHost()->GetBounds(bnds);
 	GLfloat white[4] = { 1, 1, 1, 1 };
-	GUI_FontDraw(g, font_UI_Basic, white, bnds[0] + 10, bnds[1] + 40, zoom_msg.str().c_str());
+	GUI_FontDraw(g, font_UI_Basic, white, bnds[0] + 10, bnds[1] + 40, str);
 
 	if(mMapMode <= PREDEFINED_MAPS)
 	{
@@ -372,13 +369,13 @@ void	WED_SlippyMap::finish_loading_tile()
 				}
 				else
 				{
-					printf("Failed texture load from image.\n");
+					LOG_MSG("E/Sli bad png or JPG in %s\n", res.out_path.c_str());
 					m_cache[res.out_path] = 0;
 				}
 			}
 			else
 			{
-				printf("Can not read image tile - bad PNG or JPG data.\n");
+				LOG_MSG("E/Sli bad png or JPG in %s\n", res.out_path.c_str());
 				m_cache[res.out_path] = 0;
 			}
 			DestroyBitmap(&info);
@@ -389,7 +386,7 @@ void	WED_SlippyMap::finish_loading_tile()
 		{
 			int code = res.out_error_type;
 
-			printf("%s: %d\n%s\n", res.out_path.c_str(), code, res.out_error_human.c_str());
+			LOG_MSG("E/Sli cache error %s: %d\n%s\n", res.out_path.c_str(), code, res.out_error_human.c_str());
 
 			m_cache[res.out_path] = 0;
 
@@ -447,7 +444,7 @@ void	WED_SlippyMap::SetMode(int mode)
 	{
 		mMapMode = 0;
 		SetVisible(0);
-		printf("Illegal URL string for SlippyMap\n");
+		LOG_MSG("E/Sli Illegal URL string %s for SlippyMap\n", url_printf_fmt.c_str());
 	}
 }
 
