@@ -2129,8 +2129,8 @@ static int	DSF_ExportTileRecursive(
 						{
 							if(DDSInfo.channels == 3)
 								ConvertBitmapToAlpha(&DDSInfo,false);
-							int DXTMethod = hasPartialTransparency(&DDSInfo) ? 5 : 1;
-							WriteBitmapToDDS_MT(DDSInfo, DXTMethod, absPathDDS.c_str());
+							int BCMethod = hasPartialTransparency(&DDSInfo) ? 5 : 1;
+							WriteBitmapToDDS_MT(DDSInfo, BCMethod, absPathDDS.c_str(), mip_filter_box);
 						}
 						else
 							WriteBitmapToPNG(&DDSInfo, absPathDDS.c_str(), NULL, 0, 2.2);

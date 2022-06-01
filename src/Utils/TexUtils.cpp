@@ -932,10 +932,10 @@ bool	LoadTextureFromDDS(
 
 	if (strncmp(desc->dwMagic, "DDS ", 4) != 0) return false;
 	if((SWAP32(desc->dwSize)) != (sizeof(*desc) - sizeof(desc->dwMagic))) return false;
+	char* data = mem_start + sizeof(TEX_dds_desc);
 
 	GLenum glformat;
 	int dds_blocksize;
-	char * data = mem_start + sizeof(TEX_dds_desc);
 
 	if (gl_info.has_tex_compression && strncmp(desc->ddpfPixelFormat.dwFourCC, "DXT", 3) == 0)
 		switch (desc->ddpfPixelFormat.dwFourCC[3])
@@ -948,24 +948,39 @@ bool	LoadTextureFromDDS(
 	else if (gl_info.has_rgtc && strncmp(desc->ddpfPixelFormat.dwFourCC, "ATI", 3) == 0)    // This format is NOT understood by X-Plane for now !!!
 		switch (desc->ddpfPixelFormat.dwFourCC[3])
 		{
-		case '1':	dds_blocksize =  8; glformat = GL_COMPRESSED_RED_RGTC1;		       break; // BC4 decoded to red channel only
-//		case '1':	dds_blocksize =  8; glformat = GL_COMPRESSED_LUMINANCE_LATC1_EXT;  break; // BC4 decoded to rgb greyscale, e.g. crunch -DXT5A or BC4 in Gimp
+		case '1':	dds_blocksize =  8; glformat = GL_COMPRESSED_LUMINANCE_LATC1_EXT;  break; // BC4 decoded to rgb greyscale, e.g. crunch -DXT5A or BC4 in Gimp
 		case '2':	dds_blocksize = 16; glformat = GL_COMPRESSED_RG_RGTC2;             break; // BC5 two uncorrelated channels (normals !), crunch -DXN
 		default:	return false;
 		}
+	else if (gl_info.has_rgtc && strncmp(desc->ddpfPixelFormat.dwFourCC, "BC", 2) == 0)     // This format is NOT understood by X-Plane for now !!!
+		switch (desc->ddpfPixelFormat.dwFourCC[2])
+		{
+		case '4':	dds_blocksize =  8; glformat = GL_COMPRESSED_LUMINANCE_LATC1_EXT;  break; // BC4, don't care if signed or unsigned
+		case '5':	dds_blocksize = 16; glformat = GL_COMPRESSED_RG_RGTC2;             break; // BC5, don't care if signed or unsigned
+		default:	return false;
+		}
 	else  if (gl_info.has_bptc && strncmp(desc->ddpfPixelFormat.dwFourCC, "DX10", 4) == 0)  // This format is NOT understood by X-Plane for now !!!
-		{                                                                                   // Y-flipping partially implemented (modes 1,5,6 only), yet
+		{
 			const TEX_dds_dx10 * dx10hdr = (const TEX_dds_dx10 *) (mem_start + sizeof(*desc));
 			data += sizeof(TEX_dds_dx10);
 			
+			dds_blocksize = 16;
 			switch(dx10hdr->dxgiFormat)
 			{
-//				case 0x5F:   glformat = GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_EXT; break; // BC6  DXGI_FORMAT_BC6H_UF16
-//				case 0x60:   glformat = GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_EXT;   break; // BC6  DXGI_FORMAT_BC6H_SF16
-				case 0x62:   glformat = GL_COMPRESSED_RGBA_BPTC_UNORM_EXT;         break; // BC7  DXGI_FORMAT_BC7_UNORM
-				default: return false;													  // Deliberately don't read other DDS formats
+//				case DXGI_FORMAT_BC1_UNORM:
+//				case DXGI_FORMAT_BC1_UNORM_SRGB: glformat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;  dds_blocksize = 8; break;
+//				case DXGI_FORMAT_BC2_UNORM:
+//				case DXGI_FORMAT_BC2_UNORM_SRGB: glformat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;  break;
+//				case DXGI_FORMAT_BC3_UNORM:
+//				case DXGI_FORMAT_BC3_UNORM_SRGB: glformat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;  break;
+//				case DXGI_FORMAT_BC4_UNORM:      glformat = GL_COMPRESSED_LUMINANCE_LATC1_EXT; dds_blocksize = 8; break;  // gloss/metalness maps
+//				case  DXGI_FORMAT_BC5_SNORM:     glformat = GL_COMPRESSED_RG_RGTC2;            break;                     // normals
+//				case FORMAT_BC6H_UF16:           glformat = GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_EXT; break; 
+//				case ORMAT_BC6H_SF16:            glformat = GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_EXT;   break; 
+				case DXGI_FORMAT_BC7_UNORM:
+				case DXGI_FORMAT_BC7_UNORM_SRGB: glformat = GL_COMPRESSED_RGBA_BPTC_UNORM_EXT; break;
+				default: return false;													                // Deliberately don't read other DX10 DDS formats
 			}
-			dds_blocksize = 16;
 		}
 	else
 		return false;
