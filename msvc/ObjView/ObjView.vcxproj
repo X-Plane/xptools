@@ -12,6 +12,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\GUI\GUI_Unicode.cpp" />
+    <ClCompile Include="..\..\src\libtess2\Source\bucketalloc.c" />
+    <ClCompile Include="..\..\src\libtess2\Source\dict.c" />
+    <ClCompile Include="..\..\src\libtess2\Source\geom.c" />
+    <ClCompile Include="..\..\src\libtess2\Source\mesh.c" />
+    <ClCompile Include="..\..\src\libtess2\Source\priorityq.c" />
+    <ClCompile Include="..\..\src\libtess2\Source\sweep.c" />
+    <ClCompile Include="..\..\src\libtess2\Source\tess.c" />
     <ClCompile Include="..\..\src\ObjEdit\OE_Zoomer3d.cpp" />
     <ClCompile Include="..\..\src\Obj\ObjDraw.cpp" />
     <ClCompile Include="..\..\src\Obj\ObjPointPool.cpp" />
@@ -42,6 +49,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\GUI\GUI_Unicode.h" />
+    <ClInclude Include="..\..\src\libtess2\Include\tesselator.h" />
+    <ClInclude Include="..\..\src\libtess2\Source\bucketalloc.h" />
+    <ClInclude Include="..\..\src\libtess2\Source\dict.h" />
+    <ClInclude Include="..\..\src\libtess2\Source\geom.h" />
+    <ClInclude Include="..\..\src\libtess2\Source\mesh.h" />
+    <ClInclude Include="..\..\src\libtess2\Source\priorityq.h" />
+    <ClInclude Include="..\..\src\libtess2\Source\sweep.h" />
+    <ClInclude Include="..\..\src\libtess2\Source\tess.h" />
     <ClInclude Include="..\..\src\ObjEdit\OE_Zoomer3d.h" />
     <ClInclude Include="..\..\src\Obj\ObjDraw.h" />
     <ClInclude Include="..\..\src\Obj\ObjPointPool.h" />
@@ -53,6 +68,7 @@
     <ClInclude Include="..\..\src\UI\XWin32DND.h" />
     <ClInclude Include="..\..\src\UI\XWinGL.h" />
     <ClInclude Include="..\..\src\Utils\AssertUtils.h" />
+    <ClInclude Include="..\..\src\Utils\CmdLine.h" />
     <ClInclude Include="..\..\src\Utils\CompGeomUtils.h" />
     <ClInclude Include="..\..\src\Utils\EndianUtils.h" />
     <ClInclude Include="..\..\src\Utils\FileUtils.h" />
@@ -79,21 +95,21 @@
     <ProjectGuid>{899D8E57-07F9-4656-A5DD-3F6A1718CD54}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>ObjView</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>false</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -121,7 +137,7 @@
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
       <PreprocessorDefinitions>OBJVIEW;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\src\ObjEdit;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src\ObjEdit;..\..\src\libtess2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -138,7 +154,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>OBJVIEW;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
-      <AdditionalIncludeDirectories>..\..\src\ObjEdit;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src\ObjEdit;..\..\src\libtess2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
     </ClCompile>
     <Link>

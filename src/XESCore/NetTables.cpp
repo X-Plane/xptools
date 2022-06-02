@@ -80,7 +80,7 @@ bool	ReadRoadSpecificProps(const vector<string>& tokens, void * ref)
 	info.semi_r = edge_r+core_r;
 	
 	info.crease_angle_cos=cos(crease * DEG_TO_RAD);
-	info.min_defl_deg_mtr = max_rad > 0.0 ? (360.0 / (2 * PI * max_rad)) : 0.0f;
+	info.min_defl_deg_mtr = max_rad > 0.0f ? (RAD_TO_DEG / max_rad) : 0.0f;
 	
 	if (gNetReps.count(rep_type) > 0)
 		printf("WARNING: duplicate token %s\n", FetchTokenString(rep_type));

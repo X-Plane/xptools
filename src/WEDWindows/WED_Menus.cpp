@@ -76,6 +76,7 @@ static const GUI_MenuItem_t kExportTargetMenu[] = {
 {	"X-Plane 10.50",		0,		0,								0,	wed_Export1050,		},
 {	"X-Plane 11.00",		0,		0,								0,	wed_Export1100,		},
 {	"X-Plane 11.30",		0,		0,								0,	wed_Export1130,		},
+{	"X-Plane 12.00",		0,		0,								0,	wed_Export1200,		},
 {	"Airport Scenery Gateway",0,	0,								0,	wed_ExportGateway	},
 {	NULL,					0,		0,								0,	0					}
 };
@@ -87,6 +88,7 @@ static const GUI_MenuItem_t kAdvancedMenu[] = {
 {	"Import Scenery Gateway Extracts...",0,0,						0,	wed_ImportGatewayExtract },
 #endif
 {	"&Export apt.dat...",	'S',	gui_ControlFlag + gui_ShiftFlag,0,	wed_ExportApt		},
+{	NULL,					0,		0,								0,	0					},
 };
 
 static const GUI_MenuItem_t	kEditMenu[] = {
@@ -132,6 +134,8 @@ static const GUI_MenuItem_t kConvertToMenu[] = {
 {	"&Taxiway",					0,	0,							0,	wed_ConvertToTaxiway	},
 {	"&Airport Line Marking",	0,	0,							0,	wed_ConvertToTaxiline	},
 {	"&Line",					0,	0,							0,	wed_ConvertToLine		},
+{	"&Object String",			0,	0,							0,	wed_ConvertToString		},
+{	"&Forest Points",			0,	0,							0,	wed_ConvertToForest		},
 {	NULL,						0,	0,							0,	0						}
 };
 
@@ -148,6 +152,7 @@ static const GUI_MenuItem_t kViewMenu[] = {
 {	"&Pick Overlay Image...",	0,	0,										0,	wed_PickOverlay		},
 {	"Toggle &World Map",		0,	0,										0,	wed_ToggleWorldMap	},
 {	"Toggle &Navaids",			0,	0,										0,	wed_ToggleNavaidMap	},
+{	"Toggle Terrain",			0,	0,										0,	wed_ToggleTerrainMap},
 {	"S&lippy Map",				0,	0,										0,	0                   },
 {	"To&ggle Preview",			0,	0,										0,	wed_TogglePreview	},
 #if WITHNWLINK
@@ -228,8 +233,12 @@ static const GUI_MenuItem_t kAirportMenu[] = {
 {	"No Airport Selected",		'E',	gui_ControlFlag+gui_ShiftFlag,			0, wed_EditApt	},
 {	"-",						0,		0,									0,	0			},
 {	"Upgrade Ramps",			0,		0,									0,	wed_UpgradeRamps},
+{	"Upgrade Jetways",			0,		0,									0,	wed_UpgradeJetways},
+{	"Age Pavement",				0,		0,									0,	wed_AgePavement},
+{	"Add Pavement Edges",		0,		0,									0,	wed_EdgePavement},
+{	"Mow Grass",				0,		0,									0,	wed_MowGrass},
 {	"Align Airports",			0,		0,									0,	wed_AlignApt},
-{	"Replace Vehicle Objects",	0,		0,								0,  wed_ReplaceVehicleObj	},
+{	"Replace Vehicle Objects",	0,		0,									0,  wed_ReplaceVehicleObj	},
 {	NULL,						0,		0,										0, 0,				}
 };
 
@@ -289,7 +298,7 @@ void WED_MakeMenus(GUI_Application * inApp)
 		"Target X-Plane Version", kExportTargetMenu, file_menu, 9);
 
 	GUI_Menu advanced_menu = inApp->CreateMenu(
-		"Advanced ...", kAdvancedMenu, file_menu, 13 + 2 * HAS_GATEWAY + ROAD_EDITING);
+		"Advanced ...", kAdvancedMenu, file_menu, 13 + 2 * HAS_GATEWAY + ROAD_EDITING );
 
 	GUI_Menu edit_menu = inApp->CreateMenu(
 		"&Edit", kEditMenu, inApp->GetMenuBar(), 0);
@@ -310,12 +319,12 @@ void WED_MakeMenus(GUI_Application * inApp)
 		"&Object Density", kObjDensityMenu, view_menu, 7);
 
 	GUI_Menu	slippy_menu = inApp->CreateMenu(
-		"S&lippy Map",	kSlippyMapMenu, view_menu, 12);
+		"S&lippy Map",	kSlippyMapMenu, view_menu, 13);
 
 #if WITHNWLINK
-	const int preview_window_parent = 16;
+	const int preview_window_parent = 17;
 #else
-	const int preview_window_parent = 15;
+	const int preview_window_parent = 16;
 #endif
 	GUI_Menu	preview_window_menu = inApp->CreateMenu(
 		"3D Preview &Window", k3DPreviewMenu, view_menu, preview_window_parent);

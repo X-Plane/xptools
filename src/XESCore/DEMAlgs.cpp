@@ -1977,7 +1977,7 @@ static void make_gaussian_kernel(float k[], int width, double sigma)
 	for(int w = -width; w <= width; ++w)
 	{
 		double x = w;
-		double f = (1.0 / sqrt(2.0 * PI * sigma * sigma)) * exp(-(x * x) / (2.0 * sigma * sigma));
+		double f = (1.0 / sqrt(2.0 * M_PI * sigma * sigma)) * exp(-(x * x) / (2.0 * sigma * sigma));
 		*k++ = f;
 	}
 }

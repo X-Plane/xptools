@@ -452,3 +452,59 @@ void	WED_BezierPolygonWithHolesForPolygon(IGISPolygon * in_poly, vector<BezierPo
 	}
 }
 
+
+static void PointSequenceToPolygon2(IGISPointSequence * ps, Polygon2& pol, double max_err)
+{
+	int n = ps->GetNumSides();
+	
+	for (int i = 0; i < n; ++i)
+	{
+		Bezier2		b;
+		if (ps->GetSide(gis_Geo,i,b))
+		{
+#if 1
+			double size_approx = sqrt(Vector2(b.p1,b.c1).squared_length()) +
+							  sqrt(Vector2(b.c1,b.c2).squared_length()) +
+							  sqrt(Vector2(b.c2,b.p2).squared_length());
+			int point_count = min(max((int) (size_approx / max_err), 3), 30);
+			
+			pol.reserve(pol.size() + point_count);
+			
+			for (int k = 0; k < point_count; ++k)
+				pol.push_back(b.midpoint((float) k / (float) point_count));
+#else
+//			https://raphlinus.github.io/graphics/curves/2019/12/23/flatten-quadbez.html
+
+			for (int k = 0; k < point_count; ++k)
+				pol.push_back(b.midpoint((float) k / (float) point_count));
+#endif
+			if (i == n-1 && !ps->IsClosed())
+				pol.push_back(b.p2);
+		}
+		else
+		{
+			pol.push_back(b.p1);
+			if (i == n-1 && !ps->IsClosed())
+				pol.push_back(b.p2);
+		}
+	}
+}
+
+
+void	WED_BezierPolygonWithHolesForPolygon(IGISPolygon * in_poly, vector<Polygon2>& out_pol)
+{
+	int nn = in_poly->GetNumHoles();
+//	out_pol.clear();
+	out_pol.push_back(Polygon2());
+	
+// break up any bezier segments into plain vertices, allow certain max error only
+//	WED_BezierPolygonForPointSequence(in_poly->GetOuterRing(),out_pol.back(), COUNTERCLOCKWISE);
+	PointSequenceToPolygon2(in_poly->GetOuterRing(), out_pol.back(), 3e-4);
+
+	for(int n = 0; n < nn; ++n)
+	{
+		out_pol.push_back(Polygon2());
+//		WED_BezierPolygonForPointSequence(in_poly->GetNthHole(n),out_pol.back(), CLOCKWISE);
+		PointSequenceToPolygon2(in_poly->GetNthHole(n), out_pol.back(), 3e-4);
+	}
+}

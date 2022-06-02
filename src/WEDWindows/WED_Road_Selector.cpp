@@ -48,7 +48,7 @@ WED_Road_Selector::WED_Road_Selector(GUI_Commander * parent, const GUI_EnumDicti
 	GUI_EditorInsert(parent)
 {
 	set<string> pfx,sfx;
-	for(auto d : dict)
+	for(const auto& d : dict)
 	{
 		string name = d.second.first;
 		auto p = name.find('/');
@@ -66,7 +66,7 @@ WED_Road_Selector::WED_Road_Selector(GUI_Commander * parent, const GUI_EnumDicti
 	}
 
 	mColWidth[1] = 0;
-	for(auto s : sfx)
+	for(const auto& s : sfx)
 	{
 		auto col_width = GUI_MeasureRange(font_UI_Basic, s.c_str(), s.c_str()+s.size()) + ICON + MARG;
 		if(col_width > mColWidth[1])
@@ -78,14 +78,14 @@ WED_Road_Selector::WED_Road_Selector(GUI_Commander * parent, const GUI_EnumDicti
 	mRd_suffix.push_back("");
 
 	mColWidth[0] = 0;
-	for(auto s : pfx)
+	for(const auto& s : pfx)
 	{
 		auto col_width = GUI_MeasureRange(font_UI_Basic, s.c_str(), s.c_str()+s.size()) + ICON + MARG;
 		if(col_width > mColWidth[0])
 			mColWidth[0] = col_width;
 	}
 
-	for(auto d : dict)
+	for(const auto& d : dict)
 	{
 		string name = d.second.first;
 		auto p = name.find('/');
@@ -201,7 +201,7 @@ void	WED_Road_Selector::Draw(GUI_GraphState * g)
 			glEnd();
 		}
 		WED_Color tcolor = wed_pure_white;
-		for(auto c : mRd_prefix[mPfx].combis)
+		for(const auto& c : mRd_prefix[mPfx].combis)
 		{
 		if(c.idx == i)
 			{
@@ -248,7 +248,7 @@ int		WED_Road_Selector::MouseDown(int x, int y, int button)
 	else
 	{
 		mSfx = mR;
-		for(auto d : mRd_prefix[mPfx].combis)
+		for(const auto& d : mRd_prefix[mPfx].combis)
 		{
 			if(d.idx == mR)
 			{

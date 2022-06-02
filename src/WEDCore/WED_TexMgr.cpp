@@ -150,7 +150,7 @@ WED_TexMgr::TexInfo *	WED_TexMgr::LoadTexture(const char * path, bool is_absolut
 				}
 				delete [] buffer;
 			}
-			fclose(file);
+		fclose(file);
 	}
 	if(inf) return inf;
 

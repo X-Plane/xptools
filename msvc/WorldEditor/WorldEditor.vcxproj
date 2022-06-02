@@ -11,6 +11,62 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\SDK\basisu_transcoder\basisu_transcoder.cpp" />
+    <ClCompile Include="..\..\SDK\libtess2\Source\bucketalloc.c" />
+    <ClCompile Include="..\..\SDK\libtess2\Source\dict.c" />
+    <ClCompile Include="..\..\SDK\libtess2\Source\geom.c" />
+    <ClCompile Include="..\..\SDK\libtess2\Source\mesh.c" />
+    <ClCompile Include="..\..\SDK\libtess2\Source\priorityq.c" />
+    <ClCompile Include="..\..\SDK\libtess2\Source\sweep.c" />
+    <ClCompile Include="..\..\SDK\libtess2\Source\tess.c" />
+    <ClCompile Include="..\..\SDK\lib_json\src\lib_json\json_reader.cpp" />
+    <ClCompile Include="..\..\SDK\lib_json\src\lib_json\json_value.cpp" />
+    <ClCompile Include="..\..\SDK\lib_json\src\lib_json\json_writer.cpp" />
+    <ClCompile Include="..\..\SDK\lzma19\C\7zAlloc.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\7zArcIn.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\7zBuf.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\7zBuf2.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\7zCrc.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\7zCrcOpt.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\7zDec.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\7zFile.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\7zStream.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\Aes.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\AesOpt.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\Alloc.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\Bcj2.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\Bcj2Enc.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\Bra.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\Bra86.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\BraIA64.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\CpuArch.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\Delta.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\DllSecur.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\LzFind.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\LzFindMt.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\Lzma2Dec.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\Lzma2DecMt.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\Lzma2Enc.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\Lzma86Dec.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\Lzma86Enc.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\LzmaDec.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\LzmaEnc.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\LzmaLib.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\MtCoder.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\MtDec.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\Ppmd7.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\Ppmd7Dec.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\Ppmd7Enc.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\Sha256.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\Sort.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\Threads.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\Xz.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\XzCrc64.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\XzCrc64Opt.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\XzDec.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\XzEnc.c" />
+    <ClCompile Include="..\..\SDK\lzma19\C\XzIn.c" />
+    <ClCompile Include="..\..\SDK\zstd\zstd.c" />
     <ClCompile Include="..\..\src\DSFTools\DSF2Text.cpp" />
     <ClCompile Include="..\..\src\DSF\DSFLib.cpp" />
     <ClCompile Include="..\..\src\DSF\DSFLibWrite.cpp" />
@@ -52,41 +108,10 @@
     <ClCompile Include="..\..\src\GUI\GUI_ToolBar.cpp" />
     <ClCompile Include="..\..\src\GUI\GUI_Unicode.cpp" />
     <ClCompile Include="..\..\src\GUI\GUI_Window.cpp" />
-    <ClCompile Include="..\..\src\libtess2\Source\bucketalloc.c" />
-    <ClCompile Include="..\..\src\libtess2\Source\dict.c" />
-    <ClCompile Include="..\..\src\libtess2\Source\geom.c" />
-    <ClCompile Include="..\..\src\libtess2\Source\mesh.c" />
-    <ClCompile Include="..\..\src\libtess2\Source\priorityq.c" />
-    <ClCompile Include="..\..\src\libtess2\Source\sweep.c" />
-    <ClCompile Include="..\..\src\libtess2\Source\tess.c" />
-    <ClCompile Include="..\..\src\lib_json\src\lib_json\json_reader.cpp" />
-    <ClCompile Include="..\..\src\lib_json\src\lib_json\json_value.cpp" />
-    <ClCompile Include="..\..\src\lib_json\src\lib_json\json_writer.cpp" />
-    <ClCompile Include="..\..\src\lzma19\C\7zAlloc.c" />
-    <ClCompile Include="..\..\src\lzma19\C\7zArcIn.c" />
-    <ClCompile Include="..\..\src\lzma19\C\7zBuf.c" />
-    <ClCompile Include="..\..\src\lzma19\C\7zBuf2.c" />
-    <ClCompile Include="..\..\src\lzma19\C\7zCrc.c" />
-    <ClCompile Include="..\..\src\lzma19\C\7zCrcOpt.c" />
-    <ClCompile Include="..\..\src\lzma19\C\7zDec.c" />
-    <ClCompile Include="..\..\src\lzma19\C\7zFile.c" />
-    <ClCompile Include="..\..\src\lzma19\C\7zStream.c" />
-    <ClCompile Include="..\..\src\lzma19\C\Alloc.c" />
-    <ClCompile Include="..\..\src\lzma19\C\Bcj2.c" />
-    <ClCompile Include="..\..\src\lzma19\C\Bcj2Enc.c" />
-    <ClCompile Include="..\..\src\lzma19\C\Bra.c" />
-    <ClCompile Include="..\..\src\lzma19\C\Bra86.c" />
-    <ClCompile Include="..\..\src\lzma19\C\BraIA64.c" />
-    <ClCompile Include="..\..\src\lzma19\C\CpuArch.c" />
-    <ClCompile Include="..\..\src\lzma19\C\Delta.c" />
-    <ClCompile Include="..\..\src\lzma19\C\Lzma2Dec.c" />
-    <ClCompile Include="..\..\src\lzma19\C\Lzma86Dec.c" />
-    <ClCompile Include="..\..\src\lzma19\C\LzmaDec.c" />
     <ClCompile Include="..\..\src\Network\b64.c" />
     <ClCompile Include="..\..\src\Network\curl_http.cpp" />
     <ClCompile Include="..\..\src\Network\PCSBSocket.win.cpp" />
     <ClCompile Include="..\..\src\Network\PCSBSocketUDP.win.cpp" />
-    <ClCompile Include="..\..\src\Obj\ObjConvert.cpp" />
     <ClCompile Include="..\..\src\Obj\ObjDraw.cpp" />
     <ClCompile Include="..\..\src\Obj\ObjPointPool.cpp" />
     <ClCompile Include="..\..\src\Obj\XObjDefs.cpp" />
@@ -250,6 +275,7 @@
     <ClCompile Include="..\..\src\WEDMap\WED_PreviewLayer.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_SlippyMap.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_StructureLayer.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_TerrainLayer.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_ToolInfoAdapter.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_ToolUtils.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_UIMeasurements.cpp" />
@@ -266,6 +292,7 @@
     <ClCompile Include="..\..\src\WEDTCE\WED_TCEToolNew.cpp" />
     <ClCompile Include="..\..\src\WEDTCE\WED_TCEVertexTool.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_AboutBox.cpp" />
+    <ClCompile Include="..\..\src\WEDWindows\WED_ConvertCommands.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_DocumentWindow.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_GroupCommands.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_LibraryFilterBar.cpp" />
@@ -278,6 +305,58 @@
     <ClCompile Include="..\..\src\XESCore\AptIO.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\SDK\basisu_transcoder\basisu.h" />
+    <ClInclude Include="..\..\SDK\basisu_transcoder\basisu_transcoder.h" />
+    <ClInclude Include="..\..\SDK\libtess2\Include\tesselator.h" />
+    <ClInclude Include="..\..\SDK\libtess2\Source\bucketalloc.h" />
+    <ClInclude Include="..\..\SDK\libtess2\Source\dict.h" />
+    <ClInclude Include="..\..\SDK\libtess2\Source\geom.h" />
+    <ClInclude Include="..\..\SDK\libtess2\Source\mesh.h" />
+    <ClInclude Include="..\..\SDK\libtess2\Source\priorityq.h" />
+    <ClInclude Include="..\..\SDK\libtess2\Source\sweep.h" />
+    <ClInclude Include="..\..\SDK\libtess2\Source\tess.h" />
+    <ClInclude Include="..\..\SDK\lib_json\include\json\reader.h" />
+    <ClInclude Include="..\..\SDK\lib_json\include\json\value.h" />
+    <ClInclude Include="..\..\SDK\lib_json\include\json\writer.h" />
+    <ClInclude Include="..\..\SDK\lib_json\src\lib_json\json_tool.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\7z.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\7zAlloc.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\7zBuf.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\7zCrc.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\7zFile.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\7zTypes.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\7zVersion.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\Aes.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\Alloc.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\Bcj2.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\Bra.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\Compiler.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\CpuArch.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\Delta.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\DllSecur.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\LzFind.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\LzFindMt.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\LzHash.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\Lzma2Dec.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\Lzma2DecMt.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\Lzma2Enc.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\Lzma86.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\LzmaDec.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\LzmaEnc.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\LzmaLib.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\MtCoder.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\MtDec.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\Ppmd.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\Ppmd7.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\Precomp.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\RotateDefs.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\Sha256.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\Sort.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\Threads.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\Xz.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\XzCrc64.h" />
+    <ClInclude Include="..\..\SDK\lzma19\C\XzEnc.h" />
+    <ClInclude Include="..\..\SDK\zstd\zstd.h" />
     <ClInclude Include="..\..\src\DSFTools\DSF2Text.h" />
     <ClInclude Include="..\..\src\DSFTools\DSFToolsPrefix.h" />
     <ClInclude Include="..\..\src\DSF\DSFDefs.h" />
@@ -340,32 +419,9 @@
     <ClInclude Include="..\..\src\Interfaces\IResolver.h" />
     <ClInclude Include="..\..\src\Interfaces\ISelection.h" />
     <ClInclude Include="..\..\src\Interfaces\ITexMgr.h" />
-    <ClInclude Include="..\..\src\libtess2\Source\bucketalloc.h" />
-    <ClInclude Include="..\..\src\libtess2\Source\dict.h" />
-    <ClInclude Include="..\..\src\libtess2\Source\geom.h" />
-    <ClInclude Include="..\..\src\libtess2\Source\mesh.h" />
-    <ClInclude Include="..\..\src\libtess2\Source\priorityq.h" />
-    <ClInclude Include="..\..\src\libtess2\Source\sweep.h" />
-    <ClInclude Include="..\..\src\libtess2\Source\tess.h" />
-    <ClInclude Include="..\..\src\lzma19\C\7z.h" />
-    <ClInclude Include="..\..\src\lzma19\C\7zAlloc.h" />
-    <ClInclude Include="..\..\src\lzma19\C\7zBuf.h" />
-    <ClInclude Include="..\..\src\lzma19\C\7zCrc.h" />
-    <ClInclude Include="..\..\src\lzma19\C\7zFile.h" />
-    <ClInclude Include="..\..\src\lzma19\C\7zTypes.h" />
-    <ClInclude Include="..\..\src\lzma19\C\Alloc.h" />
-    <ClInclude Include="..\..\src\lzma19\C\Bcj2.h" />
-    <ClInclude Include="..\..\src\lzma19\C\Bra.h" />
-    <ClInclude Include="..\..\src\lzma19\C\Compiler.h" />
-    <ClInclude Include="..\..\src\lzma19\C\CpuArch.h" />
-    <ClInclude Include="..\..\src\lzma19\C\Delta.h" />
-    <ClInclude Include="..\..\src\lzma19\C\Lzma2Dec.h" />
-    <ClInclude Include="..\..\src\lzma19\C\Lzma86.h" />
-    <ClInclude Include="..\..\src\lzma19\C\LzmaDec.h" />
     <ClInclude Include="..\..\src\Network\curl_http.h" />
     <ClInclude Include="..\..\src\Network\PCSBSocket.h" />
     <ClInclude Include="..\..\src\Network\PCSBSocketUDP.h" />
-    <ClInclude Include="..\..\src\Obj\ObjConvert.h" />
     <ClInclude Include="..\..\src\Obj\ObjDraw.h" />
     <ClInclude Include="..\..\src\Obj\ObjPointPool.h" />
     <ClInclude Include="..\..\src\Obj\XDefs.h" />
@@ -533,6 +589,7 @@
     <ClInclude Include="..\..\src\WEDMap\WED_PreviewLayer.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_SlippyMap.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_StructureLayer.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_TerrainLayer.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_ToolInfoAdapter.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_ToolUtils.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_UIMeasurements.h" />
@@ -549,6 +606,7 @@
     <ClInclude Include="..\..\src\WEDTCE\WED_TCEToolNew.h" />
     <ClInclude Include="..\..\src\WEDTCE\WED_TCEVertexTool.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_AboutBox.h" />
+    <ClInclude Include="..\..\src\WEDWindows\WED_ConvertCommands.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_DocumentWindow.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_GroupCommands.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_LibraryFilterBar.h" />
@@ -580,6 +638,9 @@
     <Image Include="..\..\src\WEDResources\startup_bar.png" />
     <Image Include="..\..\src\WEDResources\startup_bkgnd.png" />
     <Image Include="..\..\src\WEDResources\startup_btns.png" />
+    <Image Include="..\..\src\WEDResources\tables\regions.png" />
+    <Image Include="..\..\src\WEDResources\tables\seasons.png" />
+    <Image Include="..\..\src\WEDResources\tables\variants.png" />
     <Image Include="..\..\src\WEDResources\tabs.png" />
     <Image Include="..\..\src\WEDResources\tce_tools.png" />
     <Image Include="..\..\src\WEDResources\tce_tools_blank.png" />
@@ -588,6 +649,11 @@
     <Image Include="..\..\src\WEDResources\WED.ico" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\SDK\lzma19\Asm\x86\7zAsm.asm" />
+    <None Include="..\..\SDK\lzma19\Asm\x86\7zCrcOpt.asm" />
+    <None Include="..\..\SDK\lzma19\Asm\x86\AesOpt.asm" />
+    <None Include="..\..\SDK\lzma19\Asm\x86\LzmaDecOpt.asm" />
+    <None Include="..\..\SDK\lzma19\Asm\x86\XzCrc64Opt.asm" />
     <None Include="..\..\src\WEDCore\README.WorldEditor" />
     <None Include="..\..\src\WEDResources\icons\map_airport.png" />
     <None Include="..\..\src\WEDResources\icons\map_beacon.png" />
@@ -623,6 +689,7 @@
     <None Include="..\..\src\WEDResources\worldmap.jpg" />
   </ItemGroup>
   <ItemGroup>
+    <ResourceCompile Include="..\..\SDK\lzma19\C\7zVersion.rc" />
     <ResourceCompile Include="..\..\src\WEDResources\WED.rc" />
   </ItemGroup>
   <ItemGroup>
@@ -632,21 +699,21 @@
     <ProjectGuid>{59A94211-31F6-4A03-9E1D-CCA5B1EF8DAA}</ProjectGuid>
     <RootNamespace>xtools_wed</RootNamespace>
     <ProjectName>WorldEditor</ProjectName>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -668,7 +735,7 @@
       <DisableSpecificWarnings>4018;4244;4068;4800;4305;4355;4200;4250;4482;</DisableSpecificWarnings>
       <MinimalRebuild>false</MinimalRebuild>
       <PreprocessorDefinitions>WED=1;_LIB;NO_CGAL=1;CURL_STATICLIB;USE_JPEG=1;USE_TIF=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\src\WEDCore;..\..\src\WEDEntities;..\..\src\WEDFileCache;..\..\src\WEDImportExport;..\..\src\WEDLibrary;..\..\src\WEDMap;..\..\src\WEDNetwork;..\..\src\WEDProperties;..\..\src\WEDTCE;..\..\src\WEDWindows;..\..\src\lzma19\C;..\..\src\libtess2\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src\WEDCore;..\..\src\WEDEntities;..\..\src\WEDFileCache;..\..\src\WEDImportExport;..\..\src\WEDLibrary;..\..\src\WEDMap;..\..\src\WEDNetwork;..\..\src\WEDProperties;..\..\src\WEDTCE;..\..\src\WEDWindows;..\..\SDK\lzma19\C;..\..\SDK\libtess2\Include;..\..\SDK\lib_json\include;..\..\SDK\basisu_transcoder;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -686,7 +753,7 @@
       </SDLCheck>
       <DisableSpecificWarnings>4018;4244;4068;4800;4305;4355;4200;4250;</DisableSpecificWarnings>
       <PreprocessorDefinitions>WED=1;_LIB;NO_CGAL=1;CURL_STATICLIB;USE_JPEG=1;USE_TIF=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\src\WEDCore;..\..\src\WEDEntities;..\..\src\WEDFileCache;..\..\src\WEDImportExport;..\..\src\WEDLibrary;..\..\src\WEDMap;..\..\src\WEDNetwork;..\..\src\WEDProperties;..\..\src\WEDTCE;..\..\src\WEDWindows;..\..\src\lzma19\C;..\..\src\libtess2\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src\WEDCore;..\..\src\WEDEntities;..\..\src\WEDFileCache;..\..\src\WEDImportExport;..\..\src\WEDLibrary;..\..\src\WEDMap;..\..\src\WEDNetwork;..\..\src\WEDProperties;..\..\src\WEDTCE;..\..\src\WEDWindows;..\..\SDK\lzma19\C;..\..\SDK\libtess2\Include;..\..\SDK\lib_json\include;..\..\SDK\basisu_transcoder;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>

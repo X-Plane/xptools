@@ -306,4 +306,13 @@ void	MakePolygonConvex(Polygon2& ioPolygon);
 
 
 
+// union (A OR B) of two multi winding polygons. Outer contours clockwise, holes counter-clockwise
+vector<Polygon2> PolygonUnion(const vector<Polygon2>& mpolyA, const vector<Polygon2>& mpolyB);
+
+// intersection (A AND B)
+vector<Polygon2> PolygonIntersect(const vector<Polygon2>& mpolyA, const vector<Polygon2>& mpolyB);
+
+// cut away B from A (A not B)
+vector<Polygon2> PolygonCut(const vector<Polygon2>& mpolyA, const vector<Polygon2>& mpolyB);
+
 #endif

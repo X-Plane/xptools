@@ -628,6 +628,8 @@
 		<Unit filename="../../src/WEDEntities/WED_Group.h" />
 		<Unit filename="../../src/WEDEntities/WED_Helipad.cpp" />
 		<Unit filename="../../src/WEDEntities/WED_Helipad.h" />
+		<Unit filename="../../src/WEDEntities/WED_Jetway.cpp" />
+		<Unit filename="../../src/WEDEntities/WED_Jetway.h" />
 		<Unit filename="../../src/WEDEntities/WED_KeyObjects.cpp" />
 		<Unit filename="../../src/WEDEntities/WED_KeyObjects.h" />
 		<Unit filename="../../src/WEDEntities/WED_LightFixture.cpp" />
@@ -852,6 +854,14 @@
 		<Unit filename="../../src/WEDResources/map_tools.png" />
 		<Unit filename="../../src/WEDResources/map_tools2_blank.png" />
 		<Unit filename="../../src/WEDResources/map_tools_blank.png" />
+		<Unit filename="../../src/WEDResources/pavement/asphalt.png" />
+		<Unit filename="../../src/WEDResources/pavement/concrete.png" />
+		<Unit filename="../../src/WEDResources/pavement/dirt.png" />
+		<Unit filename="../../src/WEDResources/pavement/grass.png" />
+		<Unit filename="../../src/WEDResources/pavement/gravel.png" />
+		<Unit filename="../../src/WEDResources/pavement/lake.png" />
+		<Unit filename="../../src/WEDResources/pavement/snow.png" />
+		<Unit filename="../../src/WEDResources/pavement/water.png" />
 		<Unit filename="../../src/WEDResources/push_buttons.png" />
 		<Unit filename="../../src/WEDResources/pushbutton.png" />
 		<Unit filename="../../src/WEDResources/radiobutton.png" />
@@ -897,6 +907,8 @@
 		<Unit filename="../../src/WEDTCE/WED_TCEVertexTool.h" />
 		<Unit filename="../../src/WEDWindows/WED_AboutBox.cpp" />
 		<Unit filename="../../src/WEDWindows/WED_AboutBox.h" />
+		<Unit filename="../../src/WEDWindows/WED_ConvertCommands.cpp" />
+		<Unit filename="../../src/WEDWindows/WED_ConvertCommands.h" />
 		<Unit filename="../../src/WEDWindows/WED_DocumentWindow.cpp" />
 		<Unit filename="../../src/WEDWindows/WED_DocumentWindow.h" />
 		<Unit filename="../../src/WEDWindows/WED_GroupCommands.cpp" />
@@ -920,6 +932,35 @@
 		<Unit filename="../../src/XESCore/AptIO.cpp" />
 		<Unit filename="../../src/XESCore/AptIO.h" />
 		<Unit filename="../../src/XESCore/XESConstants.h" />
+		<Unit filename="../../src/libtess2/Include/tesselator.h" />
+		<Unit filename="../../src/libtess2/Source/bucketalloc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/libtess2/Source/bucketalloc.h" />
+		<Unit filename="../../src/libtess2/Source/dict.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/libtess2/Source/dict.h" />
+		<Unit filename="../../src/libtess2/Source/geom.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/libtess2/Source/geom.h" />
+		<Unit filename="../../src/libtess2/Source/mesh.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/libtess2/Source/mesh.h" />
+		<Unit filename="../../src/libtess2/Source/priorityq.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/libtess2/Source/priorityq.h" />
+		<Unit filename="../../src/libtess2/Source/sweep.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/libtess2/Source/sweep.h" />
+		<Unit filename="../../src/libtess2/Source/tess.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/libtess2/Source/tess.h" />
 		<Unit filename="../../src/linuxinit/initializer.cpp" />
 		<Unit filename="../../src/linuxinit/initializer.h" />
 		<Extensions>

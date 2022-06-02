@@ -84,7 +84,7 @@ struct	BMPImageDesc {
 #pragma pack(pop)
 #endif
 
-TEX_dds_desc::TEX_dds_desc(int width, int height, int mips, int dxt)
+TEX_dds_desc::TEX_dds_desc(int width, int height, int mips, int BCtype)
 {
 	dwMagic[0] = 'D';
 	dwMagic[1] = 'D';
@@ -94,19 +94,31 @@ TEX_dds_desc::TEX_dds_desc(int width, int height, int mips, int dxt)
 	dwFlags = SWAP32(DDSD_CAPS|DDSD_HEIGHT|DDSD_WIDTH|DDSD_PIXELFORMAT|DDSD_MIPMAPCOUNT|DDSD_LINEARSIZE);
 	dwHeight = SWAP32(height);
 	dwWidth = SWAP32(width);
-	dwLinearSize=SWAP32(squish::GetStorageRequirements(width, height, dxt == 1 ? squish::kDxt1 : squish::kDxt3));
+	dwLinearSize=SWAP32(squish::GetStorageRequirements(width, height, (BCtype == 1 || BCtype  == 4) ? squish::kDxt1 : squish::kDxt5));
 	dwDepth = 0;
 	dwMipMapCount=SWAP32(mips);
 	for(int i = 0; i < 11; dwReserved1[i++] = 0);
 	ddpfPixelFormat = { 0 };
 	ddpfPixelFormat.dwSize=SWAP32(sizeof(ddpfPixelFormat));
-	if(dxt > 0)
+	ddpfPixelFormat.dwFlags = SWAP32(DDPF_FOURCC);
+	switch (BCtype)
 	{
-		ddpfPixelFormat.dwFlags=SWAP32(DDPF_FOURCC);
-		ddpfPixelFormat.dwFourCC[0]='D';
-		ddpfPixelFormat.dwFourCC[1]='X';
-		ddpfPixelFormat.dwFourCC[2]='T';
-		ddpfPixelFormat.dwFourCC[3]='0' + dxt;
+		case 1:	case 2:	case 3:
+			strncpy(ddpfPixelFormat.dwFourCC, "DXT1", 4);
+			if (BCtype == 2)
+				ddpfPixelFormat.dwFourCC[3] = '3';
+			if (BCtype == 3)
+				ddpfPixelFormat.dwFourCC[3] = '5';
+			break;
+		case 4:                                                // todo: figure out what XP12 wants ... 
+//			strncpy(ddpfPixelFormat.dwFourCC, "ATI1", 4);      // legacy ATI extension format, written by many tools
+			strncpy(ddpfPixelFormat.dwFourCC, "BC4U", 4);      // DX 10 fourcc
+			break;
+		case 5:
+//			strncpy(ddpfPixelFormat.dwFourCC, "ATI2", 4);
+			strncpy(ddpfPixelFormat.dwFourCC, "BC5S", 4);      // we assume its normal, ie. signed data
+			break;
+
 	}
 	ddsCaps = { 0 };
 	ddsCaps.dwCaps=SWAP32(DDSCAPS_TEXTURE|DDSCAPS_MIPMAP);
@@ -1538,7 +1550,7 @@ static void	in_place_scaleY(int x, int y, unsigned char * src, unsigned char * d
 		inline float from_srgb(int p) { return p * p; }
 	#endif
 	
-	unsigned char average_with_gamma(unsigned char src[], int cnt, int chan, int level)
+	unsigned char mip_filter_box_with_gamma(unsigned char src[], int cnt, int chan, int level)
 	{
 		if(chan < 3)
 		{
@@ -1561,6 +1573,17 @@ static void	in_place_scaleY(int x, int y, unsigned char * src, unsigned char * d
 			}
 		}
 	}
+
+	unsigned char mip_filter_box(unsigned char src[], int cnt, int chan, int level)
+	{
+		switch (cnt)
+		{
+		case 2: return ((int)src[0] + (int)src[1]) >> 1;
+		case 4: return ((int)src[0] + (int)src[1] + (int)src[2] + (int)src[3]) >> 2;
+		default:	return src[0];
+		}
+	}
+
 #else  // SSE gamma = 2.0 version: 8 msec !!!
 	#include <smmintrin.h>
 	#define SCALE_SSE 1
@@ -1619,7 +1642,7 @@ static void	copy_mip_SSE(int x, int y, unsigned char * __restrict src, unsigned 
 }
 #endif
 
-static void copy_mip_with_filter(const ImageInfo& src, ImageInfo& dst,int level, unsigned char (* filter)(unsigned char src[], int count, int channel, int level))
+static void copy_mip_with_filter(const ImageInfo& src, ImageInfo& dst,int level, mip_func_t filter)
 {
 	unsigned char temp_buf[4];	        // Enough storage for RGBA 2x2
 	int xr = src.width == dst.width ? 1 : 2;
@@ -1794,7 +1817,54 @@ struct CompressImageData
 	int dst_size;
 };
 
-int	WriteBitmapToDDS_MT(struct ImageInfo& ioImage, int dxt, const char * file_name)
+namespace squish {
+
+	// Let call a non public function out of libsquish :) Cuz libsquish is stable (stale ???) for nearly two decades now.
+	// Its so old, they even forgot to declare their internals "static" to prevent us from doing this.
+	void CompressAlphaDxt5(u8 const* rgba, int mask, void * alphaBock);
+
+	static 	void CompressImageBC45(u8 const* rgba, int width, int height, void* blocks, bool BC5)
+	{
+		u8* targetBlock = reinterpret_cast<u8*>(blocks);
+
+		for (int y = 0; y < height; y += 4)
+		{
+			for (int x = 0; x < width; x += 4)
+			{
+				// build the 4x4 block of pixels
+				u8 sourceRgba[16 * 4];
+				int mask = 0;
+				for (int py = 0; py < 4; ++py)
+				{
+					for (int px = 0; px < 4; ++px)
+					{
+						int sx = x + px;
+						int sy = y + py;
+
+						// enable if we're in the image
+						if (sx < width && sy < height)
+						{
+							// copy the rgba value
+							*((uint32_t*) &sourceRgba[4 * ( 4 * py + px)]) = *((uint32_t*) &rgba[4 * (width * sy + sx)]);
+
+							// enable this pixel
+							mask |= (1 << (4 * py + px));
+						}
+					}
+				}
+				CompressAlphaDxt5(sourceRgba - 3, mask, targetBlock);
+				if (BC5)
+				{
+					targetBlock += 8;
+					CompressAlphaDxt5(sourceRgba - 2, mask, targetBlock);
+				}
+				targetBlock += 8;
+			}
+		}
+	}
+}
+
+int	WriteBitmapToDDS_MT(struct ImageInfo& ioImage, int BCtype, const char * file_name, mip_func_t filter)
 {
 	Assert(ioImage.channels == 4);    // this only accepts BGRA bitmaps
 	swap_bgra_y(ioImage);             // do this early - so we won't have to do it for all the mipmaps again
@@ -1813,7 +1883,7 @@ int	WriteBitmapToDDS_MT(struct ImageInfo& ioImage, int dxt, const char * file_na
 	/* don't waste thread startup time parallelizing so much for small textures, libsquish runs at 1+ Mpixels/sec */
 	int num_threads = (ioImage.height * ioImage.width >= 256 * 256) ? MAX_WORKER_THREADS : 1;
 
-	int flags = (dxt == 1 ? squish::kDxt1 : (dxt == 3 ? squish::kDxt3 : squish::kDxt5)) | squish::kColourIterativeClusterFit;
+	int flags = ((BCtype == 1 || BCtype == 4) ? squish::kDxt1 : (BCtype == 2 ? squish::kDxt3 : squish::kDxt5)) | squish::kColourIterativeClusterFit;
 	int start_line = 0;
 	for (int i = 0; i < num_threads; i++)
 	{
@@ -1823,12 +1893,17 @@ int	WriteBitmapToDDS_MT(struct ImageInfo& ioImage, int dxt, const char * file_na
 		args[i].dst_size = squish::GetStorageRequirements(args[i].img.width, args[i].img.height, flags);
 		args[i].dst_mem = malloc(args[i].dst_size);
 		
-		threads[i] = thread(squish::CompressImage, args[i].img.data, args[i].img.width, args[i].img.height, args[i].dst_mem, flags);
-//		squish::CompressImage(args[i].img.data, args[i].img.width, args[i].img.height, args[i].dst_mem, flags);
+		if(BCtype < 4)
+		//	threads[i] = thread(squish::CompressImage, args[i].img.data, args[i].img.width, args[i].img.height, args[i].dst_mem, flags);
+			squish::CompressImage(args[i].img.data, args[i].img.width, args[i].img.height, args[i].dst_mem, flags);
+		else
+		//	threads[i] = thread(squish::CompressImageBC45, args[i].img.data, args[i].img.width, args[i].img.height, args[i].dst_mem, BCtype == 5);
+			squish::CompressImageBC45(args[i].img.data, args[i].img.width, args[i].img.height, args[i].dst_mem, BCtype ==5);
+
 		start_line += args[i].img.height;
 	}
 	
-	// scale down the mipmaps using sRGB gamma and sharpen the result a bit. Create the next map starting from the sharpened map.
+	// scale down the mipmaps using sRGB gamma and optionally sharpen the result a bit. Creates the next map starting from the sharpened map.
 	
 	ImageInfo ioMips(ioImage);
 	ioMips.data = (unsigned char *) malloc(ioImage.width * ioImage.height  * 2);
@@ -1850,12 +1925,12 @@ int	WriteBitmapToDDS_MT(struct ImageInfo& ioImage, int dxt, const char * file_na
 #if SCALE_SSE
 		copy_mip_SSE(src.width, src.height ,src.data, dst.data);
 #else
-		copy_mip_with_filter(src, dst, mips, average_with_gamma);
+		copy_mip_with_filter(src, dst, mips, filter);
 #endif
 		src = dst;
 
 #if SHARPEN_MIPS
-		if(src.width > 4 && src.height > 4)                             // don't sharpen the last few mipmaps, as its mostly border pixels that won't sharpen that well
+		if(src.width > 4 && src.height > 4 && BCtype < 4)                // don't sharpen the last few mipmaps, as its mostly border pixels that won't sharpen that well
 			copy_sharpen(src.width, src.height, src.data, mip_ptr);
 		else
 #endif
@@ -1872,19 +1947,22 @@ int	WriteBitmapToDDS_MT(struct ImageInfo& ioImage, int dxt, const char * file_na
 
 	do
 	{
-		squish::CompressImage(ioMips.data, ioMips.width, ioMips.height, mip_ptr, flags);
+		if (BCtype < 4)
+			squish::CompressImage(ioMips.data, ioMips.width, ioMips.height, mip_ptr, flags);
+		else
+			squish::CompressImageBC45(ioMips.data, ioMips.width, ioMips.height, mip_ptr, BCtype == 5);
 		mip_ptr += squish::GetStorageRequirements(ioMips.width, ioMips.height, flags);
 	} 
 	while (AdvanceMipmapStack(&ioMips));
 	
 	free(src_ptr);
 
-	TEX_dds_desc header(ioImage.width, ioImage.height, mips, dxt);
+	TEX_dds_desc header(ioImage.width, ioImage.height, mips, BCtype);
 	fwrite(&header,sizeof(header), 1, fi);
 	
 	for (int i = 0; i < num_threads; i++)
 	{
-		threads[i].join();
+//		threads[i].join();
 		fwrite(args[i].dst_mem, args[i].dst_size, 1, fi);
 		free(args[i].dst_mem);
 	}

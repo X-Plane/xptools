@@ -28,6 +28,7 @@
 #include "IHasResource.h"
 
 struct fac_info_t;
+struct Jetway_t;
 
 class	WED_FacadePlacement : public WED_GISPolygon, public IHasResource {
 
@@ -51,13 +52,18 @@ public:
 
 			TopoMode	GetTopoMode(void) const;
 
-			int		GetNumWallChoices(void) const;
-			int		GetType(void) const;
+			int			GetNumWallChoices(void) const;
+			int			GetType(void) const;
 			bool		HasCustomWalls(void) const;
 			void		SetCustomWalls(bool has);
 
 			void		SetShowLevel(int show_level);
 			int			GetShowLevel(void) const;
+
+			bool		IsJetway(int * cabin = nullptr, int * tunnel = nullptr) const;
+			bool		HasDockingCabin(void) const;
+			void		ExportJetway(Jetway_t& apt_data);
+			void		ImportJetway(const Jetway_t& apt_data, void(*print_func)(void *, const char *, ...), void * ref);
 
 	virtual const char *	HumanReadableType(void) const { return "Facade"; }
 

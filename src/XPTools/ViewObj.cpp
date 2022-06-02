@@ -456,18 +456,6 @@ void			XObjWin::ReceiveFiles(const vector<string>& files, int, int)
 				if (mMeasureOnOpen)
 					KeyPressed('m', 0,0,0);
 			}
-			else if (XObjRead(i->c_str(), mObj))
-			{
-				mIsObj8 = false;
-				string foo(*i);
-				StripPath(foo);
-				ScaleToObj();
-				SetTitle(foo.c_str());
-				ForceRefresh();
-
-				if (mMeasureOnOpen)
-					KeyPressed('m', 0,0,0);
-			}
 		} else if (HasExtNoCase(*i, ".bmp") || HasExtNoCase(*i, ".png") || HasExtNoCase(*i, ".tif") || HasExtNoCase(*i,".dds"))
 		{
 			SetGLContext();

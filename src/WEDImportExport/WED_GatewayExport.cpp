@@ -529,7 +529,7 @@ void WED_GatewayExportDialog::Submit()
 		}
 
 		string apt_path = targ_folder + icao + ".dat";
-		WED_AptExport(apt, apt_path.c_str());
+		WED_AptExport(apt, apt_path.c_str(), false);
 
 		string preview_folder = targ_folder + icao + "_Scenery_Pack" + DIR_STR;
 		string preview_zip = targ_folder + icao + "_Scenery_Pack.zip";
@@ -801,19 +801,19 @@ bool Enforce_MetaDataGuiLabel(WED_Airport * apt)
 	string has3D(GatewayExport_has_3d(apt) ? "3D" : "2D");
 	string name;
 	apt->GetName(name);
-	bool isClosed = name.c_str()[0] == '[' && tolower(name.c_str()[1]) == 'x' && name.c_str()[2] == ']';
 	bool changed_meta = false;
+	string old_meta;
 
 	if (!apt->ContainsMetaDataKey(wed_AddMetaDataLGuiLabel))
-	{
-		apt->AddMetaDataKey(META_KeyName(wed_AddMetaDataLGuiLabel), has3D);
 		changed_meta = true;
-	}
-	if(isClosed && !apt->ContainsMetaDataKey(wed_AddMetaDataClosed))
-	{
-		apt->AddMetaDataKey(META_KeyName(wed_AddMetaDataClosed), "1");
+	else
+		old_meta = apt->GetMetaDataValue(wed_AddMetaDataLGuiLabel);
+
+	apt->AddMetaDataKey(META_KeyName(wed_AddMetaDataLGuiLabel), has3D);
+
+	if(old_meta != apt->GetMetaDataValue(wed_AddMetaDataLGuiLabel))
 		changed_meta = true;
-	}
+
 	return changed_meta;
 }
 

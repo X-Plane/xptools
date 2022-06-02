@@ -54,31 +54,18 @@ const char *	WED_GISEdge::GetGISSubtype	(void				 ) const
 bool			WED_GISEdge::HasLayer			(GISLayer_t l) const
 {
 	return l == gis_Geo;
-//	return GetNthPoint(0)->HasLayer(l) &&
-//		   GetNthPoint(1)->HasLayer(l);
 }
 
 void			WED_GISEdge::GetBounds		(GISLayer_t l, Bbox2&  bounds) const
 {
-	CacheBuild(cache_Spatial);
-
-	bounds = Bbox2();                         // todo: cache this
-	int n = GetNumSides();
-	for(int i = 0; i < n; ++i)
-	{
-		Bezier2		bez;
-		GetSide(l,i,bez);
-		Bbox2 bds;
-		bez.bounds(bds);
-		bounds += bds;
-	}
+	RebuildCache(CacheBuild(cache_Spatial));
+	bounds = mCacheBounds;
 }
 
 bool			WED_GISEdge::IntersectsBox	(GISLayer_t l,const Bbox2&  bounds) const
 {
-	Bbox2	me;
-	GetBounds(l,me);
-	if (!bounds.overlap(me)) return false;
+	RebuildCache(CacheBuild(cache_Spatial));
+	if (!bounds.overlap(mCacheBounds)) return false;
 
 	#if BENTODO
 		this is not good enough
@@ -88,9 +75,8 @@ bool			WED_GISEdge::IntersectsBox	(GISLayer_t l,const Bbox2&  bounds) const
 
 bool			WED_GISEdge::WithinBox		(GISLayer_t l,const Bbox2&  bounds) const
 {
-	Bbox2	me;
-	GetBounds(l,me);
-	if (bounds.contains(me)) return true;
+	RebuildCache(CacheBuild(cache_Spatial));
+	if (bounds.contains(mCacheBounds)) return true;
 
 	int n = GetNumSides();
 	for (int i = 0; i < n; ++i)
@@ -116,8 +102,7 @@ bool			WED_GISEdge::PtOnFrame		(GISLayer_t l,const Point2& p, double d) const
 {
 	Bbox2	me;
 	GetBounds(l,me);
-	me.p1 -= Vector2(d,d);
-	me.p2 += Vector2(d,d);
+	me.expand(d,d);
 	if (!me.contains(p)) return false;
 
 	int c = GetNumSides();
@@ -136,35 +121,19 @@ bool			WED_GISEdge::PtOnFrame		(GISLayer_t l,const Point2& p, double d) const
 
 bool WED_GISEdge::Cull(const Bbox2& b) const
 {
-	Bbox2	me;
-	GetBounds(gis_Geo, me);
-	return b.overlap(me);
+	RebuildCache(CacheBuild(cache_Spatial));
+	return b.overlap(mCacheBounds);
 }
 
 void			WED_GISEdge::Rescale			(GISLayer_t l,const Bbox2& old_bounds,const Bbox2& new_bounds)
 {
+	StateChanged();
 	int t = GetNumPoints();
 	for (int n = 0; n <  t; ++n)
 	{
 		IGISPoint * p = GetNthPoint(n);
 		p->Rescale(l,old_bounds,new_bounds);
 	}
-//	StateChanged();
-//	if(l == gis_Geo)
-//	{
-//		ctrl_lon_lo.value = old_bounds.rescale_to_xv(new_bounds,ctrl_lon_lo.value );
-//		ctrl_lat_lo.value = old_bounds.rescale_to_yv(new_bounds,ctrl_lat_lo.value );
-//		ctrl_lon_hi.value = old_bounds.rescale_to_xv(new_bounds,ctrl_lon_hi.value );
-//		ctrl_lat_hi.value = old_bounds.rescale_to_yv(new_bounds,ctrl_lat_hi.value );
-//	}
-/*	if(l == gis_UV)
-	{
-		mScL.value = old_bounds.rescale_to_xv(new_bounds,mScL.value);
-		mTcL.value = old_bounds.rescale_to_yv(new_bounds,mTcL.value );
-		mScH.value = old_bounds.rescale_to_xv(new_bounds,mScH.value);
-		mTcH.value = old_bounds.rescale_to_yv(new_bounds,mTcH.value );
-	}*/
-
 }
 
 void			WED_GISEdge::Rotate(GISLayer_t l,const Point2& ctr, double a)
@@ -181,44 +150,41 @@ void			WED_GISEdge::Rotate(GISLayer_t l,const Point2& ctr, double a)
 
 int					WED_GISEdge::GetNumPoints(void ) const
 {
-	return 2 + CountChildren();
+	RebuildCache(CacheBuild(cache_Topological));
+	return mCachePts.size();
 }
 
 IGISPoint *	WED_GISEdge::GetNthPoint (int n) const
 {
-	// todo: cache this ?
-	if(n == 0)
-		return dynamic_cast<IGISPoint *>(GetNthSource(0));
-	else if(n > this->CountChildren())
-		return dynamic_cast<IGISPoint *>(GetNthSource(1));
-	else
-		return dynamic_cast<IGISPoint *>(GetNthChild(n-1));
-
+	RebuildCache(CacheBuild(cache_Topological));
+	return mCachePts[n];
 }
 
 int					WED_GISEdge::GetNumSides(void) const
 {
-	return 1 + CountChildren();
+	RebuildCache(CacheBuild(cache_Topological));
+	return mCachePts.size() - 1;
 }
 
 bool				WED_GISEdge::GetSide  (GISLayer_t l,int n, Bezier2& b) const
 {
+	RebuildCache(CacheBuild(cache_Topological));
+
 	// n=-1 is a pseudo-side - it treats the whole edge as a single side
+	int n1 = n == -1 ? 0 : n;
+	int n2 = n == -1 ? GetNumPoints() - 1 : n + 1;
 
-	int n1 = max(0,n);
-	int n2 = n == -1 ? CountChildren() + 1 : n + 1;
-
-	GetNthPoint(n1)->GetLocation(l,b.p1);
-	if(n <= 0)
-		b.c1 = b.p1 + Vector2(ctrl_lon_lo.value,ctrl_lat_lo.value);
+	mCachePts[n1]->GetLocation(l, b.p1);
+	if (n1 == 0)
+		b.c1 = b.p1 + Vector2(ctrl_lon_lo.value, ctrl_lat_lo.value);
 	else
-		dynamic_cast<IGISPoint_Bezier *>(GetNthChild(n1-1))->GetControlHandleHi(l, b.c1);
+		mCachePtsBezier[n1]->GetControlHandleHi(l, b.c1);
 
-	GetNthPoint(n2)->GetLocation(l,b.p2);
-	if(n < 0 || n >= CountChildren())
-		b.c2 = b.p2 + Vector2(ctrl_lon_hi.value,ctrl_lat_hi.value);
+	mCachePts[n2]->GetLocation(l, b.p2);
+	if (n2 == GetNumPoints() - 1)
+		b.c2 = b.p2 + Vector2(ctrl_lon_hi.value, ctrl_lat_hi.value);
 	else
-		dynamic_cast<IGISPoint_Bezier *>(GetNthChild(n2-1))->GetControlHandleLo(l, b.c2);
+		mCachePtsBezier[n2]->GetControlHandleLo(l, b.c2);
 
 	return (b.p1 != b.c1 || b.p2 != b.c2);
 }
@@ -280,6 +246,7 @@ void WED_GISEdge::Reverse(GISLayer_t l)
 		p1->SetControlHandleHi(gis_Geo, c11);
 		if(b1s) p1->SetControlHandleLo(gis_Geo, c12);
 	}
+	CacheInval(cache_Topological);
 }
 
 void WED_GISEdge::Shuffle(GISLayer_t l)
@@ -406,8 +373,6 @@ IGISPoint *	WED_GISEdge::SplitEdge(const Point2& p, double dist)  // MM: add arg
 		int src = min(hit_point,1);
 		WED_Thing * np = dynamic_cast<WED_Thing *>(GetNthSource(src)->Clone());
 
-		printf("v %d c %d\n", num_view, np->CountViewers());
-
 		return dynamic_cast<IGISPoint *>(np);
 	}
 
@@ -457,7 +422,7 @@ IGISPoint *	WED_GISEdge::SplitEdge(const Point2& p, double dist)  // MM: add arg
 		}
 
 		WED_RecursiveDelete(obsolete_nodes);
-		CacheBuild(cache_Spatial);
+		RebuildCache(CacheBuild(cache_Spatial));
 	}
 
 	if(nearest_is_b)
@@ -505,11 +470,18 @@ IGISPoint *	WED_GISEdge::SplitEdge(const Point2& p, double dist)  // MM: add arg
 
 void		WED_GISEdge::SetSide(GISLayer_t layer, const Segment2& s, int n)
 {
-	DebugAssert(n < GetNumSides());
+	DebugAssert(n < (CountChildren() + 2));
 
 	StateChanged();
-	GetNthPoint(max(0,n))->SetLocation(gis_Geo,s.p1);
-	GetNthPoint(n == -1 ? CountChildren() + 1 : n + 1)->SetLocation(gis_Geo,s.p2);
+	if(n <= 0)
+		dynamic_cast<IGISPoint*>(GetNthSource(0))->SetLocation(gis_Geo,s.p1);
+	else
+		dynamic_cast<IGISPoint*>(GetNthChild(n-1))->SetLocation(gis_Geo, s.p1);
+	if( n < 0 || n >= CountChildren())
+		dynamic_cast<IGISPoint*>(GetNthSource(1))->SetLocation(gis_Geo, s.p2);
+	else
+		dynamic_cast<IGISPoint*>(GetNthChild(n))->SetLocation(gis_Geo, s.p2);
+
 	if(n <= 0)
 	{
 		ctrl_lat_lo = 0.0;
@@ -520,6 +492,7 @@ void		WED_GISEdge::SetSide(GISLayer_t layer, const Segment2& s, int n)
 		ctrl_lat_hi = 0.0;
 		ctrl_lon_hi = 0.0;
 	}
+	CacheInval(cache_Topological);
 }
 
 void		WED_GISEdge::SetSideBezier(GISLayer_t layer, const Bezier2& b, int n)
@@ -527,10 +500,9 @@ void		WED_GISEdge::SetSideBezier(GISLayer_t layer, const Bezier2& b, int n)
 	DebugAssert(n < GetNumSides());
 
 	StateChanged();
-	GetNthPoint(max(0,n))->SetLocation(gis_Geo,b.p1);
-	GetNthPoint(n == -1 ? CountChildren() + 1 : n + 1)->SetLocation(gis_Geo,b.p2);
 	if(n <= 0)
 	{
+		dynamic_cast<IGISPoint*>(GetNthSource(0))->SetLocation(gis_Geo, b.p1);
 		ctrl_lat_lo = b.c1.y() - b.p1.y();
 		ctrl_lon_lo = b.c1.x() - b.p1.x();
 	}
@@ -540,6 +512,7 @@ void		WED_GISEdge::SetSideBezier(GISLayer_t layer, const Bezier2& b, int n)
 		DebugAssert(bp != nullptr);
 		if(bp)
 		{
+			bp->SetLocation(gis_Geo, b.p1);
 			bp->SetSplit(true);
 			bp->SetControlHandleHi(gis_Geo, b.c1);
 		}
@@ -547,6 +520,7 @@ void		WED_GISEdge::SetSideBezier(GISLayer_t layer, const Bezier2& b, int n)
 
 	if(n < 0 || n >= CountChildren())
 	{
+		dynamic_cast<IGISPoint*>(GetNthSource(1))->SetLocation(gis_Geo, b.p2);
 		ctrl_lat_hi = b.c2.y() - b.p2.y();
 		ctrl_lon_hi = b.c2.x() - b.p2.x();
 	}
@@ -556,12 +530,13 @@ void		WED_GISEdge::SetSideBezier(GISLayer_t layer, const Bezier2& b, int n)
 		DebugAssert(bp != nullptr);
 		if(bp)
 		{
+			bp->SetLocation(gis_Geo, b.p2);
 			bp->SetSplit(true);
 			bp->SetControlHandleLo(gis_Geo, b.c2);
 		}
 	}
+	CacheInval(cache_Topological);
 }
-
 
 void		WED_GISEdge::Validate(void)
 {
@@ -590,5 +565,62 @@ void		WED_GISEdge::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 		info.prop_name = ".";
 		info.can_edit = 0;
 		info.can_delete = 0;
+	}
+}
+
+void	 WED_GISEdge::RebuildCache(int flags) const
+{
+	if (flags & cache_Topological)
+	{
+		mCachePts.clear();
+		mCachePtsBezier.clear();
+		int nc = CountChildren() + 2;
+		mCachePts.reserve(nc);
+		mCachePtsBezier.reserve(nc);
+
+		for (int n = 0; n < nc; ++n)
+		{
+			WED_Thing* c;
+			if (n == 0)
+				c = GetNthSource(0);
+			else if (n > this->CountChildren())
+				c = GetNthSource(1);
+			else
+				c = GetNthChild(n - 1);
+
+			IGISPoint* p = nullptr;
+			IGISPoint_Bezier* b = dynamic_cast<IGISPoint_Bezier*>(c);
+			if (b) p = b; else p = dynamic_cast<IGISPoint*>(c);
+			if (p)
+			{
+				mCachePts.push_back(p);
+				mCachePtsBezier.push_back(b);
+			}
+		}
+	}
+
+	if (flags & cache_Spatial)
+	{
+		int m = GetNumPoints();
+		for (int mm = 0; mm < m; ++mm)
+		{
+			Bbox2 temp;
+			WED_Thing* c = GetNthChild(mm);
+			IGISEntity* p = dynamic_cast<IGISEntity*>(c);
+			if (p)
+				p->GetBounds(gis_Geo, temp);
+		}
+
+		int n = GetNumSides();			// We MUST ensure that this only builds topo cache or we are dead dead dead!!
+		mCacheBounds = Bbox2();
+
+		for (int i = 0; i < n; ++i)
+		{
+			Bezier2 b;
+			GetSide(gis_Geo, i, b);
+			Bbox2	bb;
+			b.bounds(bb);
+			mCacheBounds += bb;
+		}
 	}
 }

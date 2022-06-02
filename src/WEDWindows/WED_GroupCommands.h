@@ -159,24 +159,18 @@ void	WED_DoBreakApartAgps(IResolver* resolver);
 int		WED_CanReplaceVehicleObj(WED_Airport* apt);
 void	WED_DoReplaceVehicleObj(IResolver* resolver, WED_Airport* apt = NULL);
 
+int		wed_upgrade_ramps(WED_Thing* who);
+void	WED_UpgradeRampStarts(IResolver * resolver);
+void	WED_UpgradeJetways(IResolver* resolver);
+int		WED_DoConvertToJW(WED_Airport* apt, int statistics[4] = nullptr);
 
-int wed_upgrade_one_airport(WED_Thing* who, WED_ResourceMgr* rmgr, ISelection* sel);
-void WED_UpgradeRampStarts(IResolver * resolver);
+void	WED_MowGrass(IResolver* resolver);
+bool	WED_DoMowGrass(WED_Airport* apt, int statistics[4] = nullptr);
+
+void WED_AgePavement(IResolver* mDocument);
 void WED_AlignAirports(IResolver * resolver);
 
-// Tests if 'thing' is of a specific type.
-typedef bool (*IsTypeFunc)(WED_Thing * thing);
-
-// Checks whether the selected objects can be converted to the type checked for by 'isDstType'.
-// 'dstIsPolygon' specifies whether the destination type is a subclass of WED_GISPolygon.
-int		WED_CanConvertTo(IResolver * resolver, IsTypeFunc isDstType, bool dstIsPolygon);
-
-// Factory function for a certain subclass of WED_Thing.
-typedef WED_Thing * (*CreateThingFunc)(WED_Archive * parent);
-
-// Converts the selected objects to the type produced by 'create'.
-void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create);
-
+void WED_AddChildrenRecursive(set<WED_Thing*>& who);
 void WED_RecursiveDelete(set<WED_Thing *>& who);
 
 #endif /* WED_GroupCommands_H */

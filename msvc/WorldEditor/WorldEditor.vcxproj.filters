@@ -67,20 +67,35 @@
     <Filter Include="WEDResources\table">
       <UniqueIdentifier>{4d190b19-e577-4964-bfd6-ea721e11ad27}</UniqueIdentifier>
     </Filter>
-    <Filter Include="lib_json">
-      <UniqueIdentifier>{d1214a20-9fae-4363-adf6-03121d30a6e6}</UniqueIdentifier>
-    </Filter>
     <Filter Include="WEDFileCache">
       <UniqueIdentifier>{402bfda5-9fe6-4337-960e-11e7be115962}</UniqueIdentifier>
     </Filter>
     <Filter Include="WEDResources\icons">
       <UniqueIdentifier>{da9ae7de-498c-4715-984a-0fdb557b8cc4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="lzma19">
-      <UniqueIdentifier>{ddd8e1b9-0a14-45bd-82c9-e8fb4e55c4e8}</UniqueIdentifier>
+    <Filter Include="SDK">
+      <UniqueIdentifier>{a36300d4-a063-4f7d-a781-33b7ba303e94}</UniqueIdentifier>
     </Filter>
-    <Filter Include="libtess2">
-      <UniqueIdentifier>{3a62d668-2a00-485f-8f9c-ee0f41543d09}</UniqueIdentifier>
+    <Filter Include="SDK\lzma19">
+      <UniqueIdentifier>{434d2ca4-9d6f-4d8a-97ff-4f76ab4d8a4c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDK\lzma19\C">
+      <UniqueIdentifier>{d18dfb2e-b4ae-4692-aa4e-712e86b91442}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDK\lzma19\ASM">
+      <UniqueIdentifier>{8728938d-3658-44b0-80ff-8ad3eab49df2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDK\libtess">
+      <UniqueIdentifier>{2ea39453-2710-4d27-afdb-8441073f2cca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDK\lib_json">
+      <UniqueIdentifier>{d1214a20-9fae-4363-adf6-03121d30a6e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDK\zstd">
+      <UniqueIdentifier>{7b041b60-babd-4112-ada4-d7a42e8cbc16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDK\basisu_transcoder">
+      <UniqueIdentifier>{28a6208e-b4bb-4b20-9e33-7464e8bb709e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -684,15 +699,6 @@
     <ClCompile Include="..\..\src\WEDImportExport\WED_SceneryPackExport.cpp">
       <Filter>WEDImportExport</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lib_json\src\lib_json\json_reader.cpp">
-      <Filter>lib_json</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\lib_json\src\lib_json\json_value.cpp">
-      <Filter>lib_json</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\lib_json\src\lib_json\json_writer.cpp">
-      <Filter>lib_json</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\WEDCore\WED_Sign_Parser.cpp">
       <Filter>WEDCore</Filter>
     </ClCompile>
@@ -774,92 +780,8 @@
     <ClCompile Include="..\..\src\WEDMap\WED_SlippyMap.cpp">
       <Filter>WEDMap</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Obj\ObjConvert.cpp">
-      <Filter>Obj</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Utils\glew.c">
       <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SDK\lzma19\C\7zAlloc.c">
-      <Filter>lzma19</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SDK\lzma19\C\7zArcIn.c">
-      <Filter>lzma19</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SDK\lzma19\C\7zBuf.c">
-      <Filter>lzma19</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SDK\lzma19\C\7zBuf2.c">
-      <Filter>lzma19</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SDK\lzma19\C\7zCrc.c">
-      <Filter>lzma19</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SDK\lzma19\C\7zCrcOpt.c">
-      <Filter>lzma19</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SDK\lzma19\C\7zDec.c">
-      <Filter>lzma19</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SDK\lzma19\C\7zFile.c">
-      <Filter>lzma19</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SDK\lzma19\C\7zStream.c">
-      <Filter>lzma19</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SDK\lzma19\C\Alloc.c">
-      <Filter>lzma19</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SDK\lzma19\C\Bcj2.c">
-      <Filter>lzma19</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SDK\lzma19\C\Bcj2Enc.c">
-      <Filter>lzma19</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SDK\lzma19\C\Bra.c">
-      <Filter>lzma19</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SDK\lzma19\C\Bra86.c">
-      <Filter>lzma19</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SDK\lzma19\C\BraIA64.c">
-      <Filter>lzma19</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SDK\lzma19\C\CpuArch.c">
-      <Filter>lzma19</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SDK\lzma19\C\Delta.c">
-      <Filter>lzma19</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SDK\lzma19\C\Lzma2Dec.c">
-      <Filter>lzma19</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SDK\lzma19\C\Lzma86Dec.c">
-      <Filter>lzma19</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SDK\lzma19\C\LzmaDec.c">
-      <Filter>lzma19</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SDK\libtess2\Source\bucketalloc.c">
-      <Filter>libtess2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SDK\libtess2\Source\dict.c">
-      <Filter>libtess2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SDK\libtess2\Source\geom.c">
-      <Filter>libtess2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SDK\libtess2\Source\mesh.c">
-      <Filter>libtess2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SDK\libtess2\Source\priorityq.c">
-      <Filter>libtess2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SDK\libtess2\Source\sweep.c">
-      <Filter>libtess2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SDK\libtess2\Source\tess.c">
-      <Filter>libtess2</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\WEDEntities\WED_AutogenNode.cpp">
       <Filter>WEDEntities</Filter>
@@ -878,6 +800,180 @@
     </ClCompile>
     <ClCompile Include="..\..\src\WEDWindows\WED_Road_Selector.cpp">
       <Filter>WEDWindows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\WEDMap\WED_TerrainLayer.cpp">
+      <Filter>WEDMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\WEDWindows\WED_ConvertCommands.cpp">
+      <Filter>WEDWindows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\7zAlloc.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\7zArcIn.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\7zBuf.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\7zBuf2.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\7zCrc.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\7zCrcOpt.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\7zDec.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\7zFile.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\7zStream.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\Aes.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\AesOpt.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\Alloc.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\Bcj2.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\Bcj2Enc.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\Bra.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\Bra86.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\BraIA64.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\CpuArch.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\Delta.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\DllSecur.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\LzFind.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\LzFindMt.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\Lzma2Dec.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\Lzma2DecMt.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\Lzma2Enc.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\Lzma86Dec.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\Lzma86Enc.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\LzmaDec.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\LzmaEnc.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\LzmaLib.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\MtCoder.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\MtDec.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\Ppmd7.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\Ppmd7Dec.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\Ppmd7Enc.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\Sha256.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\Sort.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\Threads.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\Xz.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\XzCrc64.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\XzCrc64Opt.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\XzDec.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\XzEnc.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lzma19\C\XzIn.c">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lib_json\src\lib_json\json_reader.cpp">
+      <Filter>SDK\lib_json</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lib_json\src\lib_json\json_value.cpp">
+      <Filter>SDK\lib_json</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\lib_json\src\lib_json\json_writer.cpp">
+      <Filter>SDK\lib_json</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\zstd\zstd.c">
+      <Filter>SDK\zstd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\libtess2\Source\bucketalloc.c">
+      <Filter>SDK\libtess</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\libtess2\Source\dict.c">
+      <Filter>SDK\libtess</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\libtess2\Source\geom.c">
+      <Filter>SDK\libtess</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\libtess2\Source\mesh.c">
+      <Filter>SDK\libtess</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\libtess2\Source\priorityq.c">
+      <Filter>SDK\libtess</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\libtess2\Source\sweep.c">
+      <Filter>SDK\libtess</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\libtess2\Source\tess.c">
+      <Filter>SDK\libtess</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\basisu_transcoder\basisu_transcoder.cpp">
+      <Filter>SDK\basisu_transcoder</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1628,83 +1724,11 @@
     <ClInclude Include="..\..\src\WEDMap\WED_SlippyMap.h">
       <Filter>WEDMap</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Obj\ObjConvert.h">
-      <Filter>Obj</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\Utils\glew.h">
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Utils\wglew.h">
       <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SDK\lzma19\C\7z.h">
-      <Filter>lzma19</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SDK\lzma19\C\7zAlloc.h">
-      <Filter>lzma19</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SDK\lzma19\C\7zBuf.h">
-      <Filter>lzma19</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SDK\lzma19\C\7zCrc.h">
-      <Filter>lzma19</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SDK\lzma19\C\7zFile.h">
-      <Filter>lzma19</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SDK\lzma19\C\7zTypes.h">
-      <Filter>lzma19</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SDK\lzma19\C\Alloc.h">
-      <Filter>lzma19</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SDK\lzma19\C\Bcj2.h">
-      <Filter>lzma19</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SDK\lzma19\C\Bra.h">
-      <Filter>lzma19</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SDK\lzma19\C\Compiler.h">
-      <Filter>lzma19</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SDK\lzma19\C\CpuArch.h">
-      <Filter>lzma19</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SDK\lzma19\C\Delta.h">
-      <Filter>lzma19</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SDK\lzma19\C\Lzma2Dec.h">
-      <Filter>lzma19</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SDK\lzma19\C\Lzma86.h">
-      <Filter>lzma19</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SDK\lzma19\C\LzmaDec.h">
-      <Filter>lzma19</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SDK\libtess2\Source\bucketalloc.h">
-      <Filter>libtess2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Utils\CmdLine.h">
-      <Filter>libtess2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SDK\libtess2\Source\dict.h">
-      <Filter>libtess2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SDK\libtess2\Source\geom.h">
-      <Filter>libtess2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SDK\libtess2\Source\mesh.h">
-      <Filter>libtess2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SDK\libtess2\Source\priorityq.h">
-      <Filter>libtess2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SDK\libtess2\Source\sweep.h">
-      <Filter>libtess2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SDK\libtess2\Source\tess.h">
-      <Filter>libtess2</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Utils\BitmapUtils.h">
       <Filter>Utils</Filter>
@@ -1729,6 +1753,171 @@
     </ClInclude>
     <ClInclude Include="..\..\src\WEDWindows\WED_Road_Selector.h">
       <Filter>WEDWindows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDMap\WED_TerrainLayer.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDWindows\WED_ConvertCommands.h">
+      <Filter>WEDWindows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\CmdLine.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\7z.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\7zAlloc.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\7zBuf.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\7zCrc.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\7zFile.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\7zTypes.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\7zVersion.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\Aes.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\Alloc.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\Bcj2.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\Bra.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\Compiler.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\CpuArch.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\Delta.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\DllSecur.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\LzFind.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\LzFindMt.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\LzHash.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\Lzma2Dec.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\Lzma2DecMt.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\Lzma2Enc.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\Lzma86.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\LzmaDec.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\LzmaEnc.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\LzmaLib.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\MtCoder.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\MtDec.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\Ppmd.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\Ppmd7.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\Precomp.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\RotateDefs.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\Sha256.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\Sort.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\Threads.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\Xz.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\XzCrc64.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lzma19\C\XzEnc.h">
+      <Filter>SDK\lzma19\C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lib_json\src\lib_json\json_tool.h">
+      <Filter>SDK\lib_json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lib_json\include\json\reader.h">
+      <Filter>SDK\lib_json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lib_json\include\json\value.h">
+      <Filter>SDK\lib_json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\lib_json\include\json\writer.h">
+      <Filter>SDK\lib_json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\zstd\zstd.h">
+      <Filter>SDK\zstd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\libtess2\Source\bucketalloc.h">
+      <Filter>SDK\libtess</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\libtess2\Source\dict.h">
+      <Filter>SDK\libtess</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\libtess2\Source\geom.h">
+      <Filter>SDK\libtess</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\libtess2\Source\mesh.h">
+      <Filter>SDK\libtess</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\libtess2\Source\priorityq.h">
+      <Filter>SDK\libtess</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\libtess2\Source\sweep.h">
+      <Filter>SDK\libtess</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\libtess2\Source\tess.h">
+      <Filter>SDK\libtess</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\libtess2\Include\tesselator.h">
+      <Filter>SDK\libtess</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\basisu_transcoder\basisu.h">
+      <Filter>SDK\basisu_transcoder</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\basisu_transcoder\basisu_transcoder.h">
+      <Filter>SDK\basisu_transcoder</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1800,6 +1989,15 @@
     </Image>
     <Image Include="..\..\src\WEDResources\tilt_tool.png">
       <Filter>WEDResources</Filter>
+    </Image>
+    <Image Include="..\..\src\WEDResources\tables\regions.png">
+      <Filter>WEDResources\table</Filter>
+    </Image>
+    <Image Include="..\..\src\WEDResources\tables\seasons.png">
+      <Filter>WEDResources\table</Filter>
+    </Image>
+    <Image Include="..\..\src\WEDResources\tables\variants.png">
+      <Filter>WEDResources\table</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>
@@ -1902,10 +2100,28 @@
     <None Include="..\..\src\WEDCore\README.WorldEditor">
       <Filter>WEDCore</Filter>
     </None>
+    <None Include="..\..\SDK\lzma19\Asm\x86\7zAsm.asm">
+      <Filter>SDK\lzma19\ASM</Filter>
+    </None>
+    <None Include="..\..\SDK\lzma19\Asm\x86\7zCrcOpt.asm">
+      <Filter>SDK\lzma19\ASM</Filter>
+    </None>
+    <None Include="..\..\SDK\lzma19\Asm\x86\AesOpt.asm">
+      <Filter>SDK\lzma19\ASM</Filter>
+    </None>
+    <None Include="..\..\SDK\lzma19\Asm\x86\LzmaDecOpt.asm">
+      <Filter>SDK\lzma19\ASM</Filter>
+    </None>
+    <None Include="..\..\SDK\lzma19\Asm\x86\XzCrc64Opt.asm">
+      <Filter>SDK\lzma19\ASM</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\WEDResources\WED.rc">
       <Filter>WEDResources</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="..\..\SDK\lzma19\C\7zVersion.rc">
+      <Filter>SDK\lzma19\C</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>

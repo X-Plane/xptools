@@ -114,7 +114,7 @@ enum TessElementType
 	TESS_BOUNDARY_CONTOURS,
 };
 
-typedef float TESSreal;
+typedef double TESSreal;
 typedef int TESSindex;
 typedef struct TESStesselator TESStesselator;
 typedef struct TESSalloc TESSalloc;
