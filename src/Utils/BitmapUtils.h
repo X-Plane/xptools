@@ -72,6 +72,7 @@ struct	ImageInfo {
 #define DDPF_ALPHAPIXELS        0x00000001l		// has alpha in addition to RGB
 #define DDPF_FOURCC             0x00000004l		// Is 4cc compressed
 #define DDPF_RGB				0x00000040l		// Is RGB (may have alpha)
+#define DDPF_LUMINANCE			0x00020000l     // Greyscale, like BC4 or BC5
 
 // DD surface caps
 #define DDSCAPS_TEXTURE			0x00001000l
@@ -216,13 +217,13 @@ int		WriteBitmapToPNG(const struct ImageInfo * inImage, const char * inFilePath,
  * pass the data DIRECTLY to OpenGL. */
 int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name, int use_win_gamma);
 
-// same, but multi-threaded compression and gamma corrected mipmap generation is done within
+/* similar, but capable of multi-threaded compression and BC1-BC5 formats. Gamma corrected mipmap generation done within, if filter given */
 typedef unsigned char (*mip_func_t) (unsigned char src[], int count, int channel, int level);
 		unsigned char mip_filter_box(unsigned char src[], int count, int chan, int level);
 		unsigned char mip_filter_box_with_gamma(unsigned char src[], int count, int chan, int level);
-		int	WriteBitmapToDDS_MT(struct ImageInfo& ioImage, int BC_type, const char* file_name, mip_func_t filter);
+		int	WriteBitmapToDDS_MT(struct ImageInfo& ioImage, int BC_type, const char* file_name, mip_func_t filter = nullptr);
 
-/* This routine writes a 3 or 4 channel bitmap as a mip-mapped DXT1 or DXT3 image. */
+/* This routine writes a 1 to 4 channel bitmap as a mip-mapped, uncompressed L, LA, RGB or RGBA image. */
 int	WriteUncompressedToDDS(struct ImageInfo& ioImage, const char * file_name, int use_win_gamma);
 
 /* This routine deallocates a bitmap that was created with CreateBitmapFromFile or

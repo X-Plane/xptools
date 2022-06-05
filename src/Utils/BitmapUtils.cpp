@@ -762,34 +762,51 @@ int	ConvertBitmapToAlpha(
 	dstPixel = newData;
 	count = ioImage->width * ioImage->height;
 	for (y = 0; y < ioImage->height; ++y)
-	for (x = 0; x < ioImage->width; ++x)
-	{
-		/* For each pixel, if it is pure magenta, it becomes pure black transparent.  Otherwise it is
-		 * opaque and retains its color.  NOTE: one of the problems with the magenta=alpha strategy is
-		 * that we don't know what color was 'under' the transparency, so if we stretch or skew this bitmap
-		 * we can't really do a good job of interpolating. */
-		if (doMagentaAlpha &&
-			(srcPixel[0] == 0xFF) &&
-			(srcPixel[1] == 0x00) &&
-			(srcPixel[2] == 0xFF))
+		for (x = 0; x < ioImage->width; ++x)
 		{
-			dstPixel[0] = 0;
-			dstPixel[1] = 0;
-			dstPixel[2] = 0;
-			dstPixel[3] = 0;
-		} else {
-			dstPixel[0] = srcPixel[0];
-			dstPixel[1] = srcPixel[1];
-			dstPixel[2] = srcPixel[2];
-			dstPixel[3] = 0xFF;
+			switch (ioImage->channels)
+			{
+			case 1:
+				dstPixel[0] = srcPixel[0];
+				dstPixel[1] = srcPixel[0];
+				dstPixel[2] = srcPixel[0];
+				dstPixel[3] = 1;
+				break;
+			case 2:
+				dstPixel[0] = srcPixel[0];
+				dstPixel[1] = srcPixel[1];
+				dstPixel[2] = 0;
+				dstPixel[3] = 1;
+				break;
+			case 3:
+				/* For each pixel, if it is pure magenta, it becomes pure black transparent.  Otherwise it is
+				 * opaque and retains its color.  NOTE: one of the problems with the magenta=alpha strategy is
+				 * that we don't know what color was 'under' the transparency, so if we stretch or skew this bitmap
+				 * we can't really do a good job of interpolating. */
+				if (doMagentaAlpha &&
+					(srcPixel[0] == 0xFF) &&
+					(srcPixel[1] == 0x00) &&
+					(srcPixel[2] == 0xFF))
+				{
+					dstPixel[0] = 0;
+					dstPixel[1] = 0;
+					dstPixel[2] = 0;
+					dstPixel[3] = 0;
+				}
+				else {
+					dstPixel[0] = srcPixel[0];
+					dstPixel[1] = srcPixel[1];
+					dstPixel[2] = srcPixel[2];
+					dstPixel[3] = 0xFF;
+				}
+			}
+
+			srcPixel += ioImage->channels;
+			dstPixel += 4;
+
+			if (x == (ioImage->width - 1))
+				srcPixel += ioImage->pad;
 		}
-
-		srcPixel += 3;
-		dstPixel += 4;
-
-		if (x == (ioImage->width - 1))
-			srcPixel += ioImage->pad;
-	}
 
 	ioImage->data = newData;
 	ioImage->pad = 0;
@@ -1922,20 +1939,22 @@ int	WriteBitmapToDDS_MT(struct ImageInfo& ioImage, int BCtype, const char * file
 		if(dst.width > 1) dst.width >>= 1;
 		if(dst.height > 1) dst.height >>= 1;
 		
+		if (filter) 
+		{
 #if SCALE_SSE
-		copy_mip_SSE(src.width, src.height ,src.data, dst.data);
+			copy_mip_SSE(src.width, src.height, src.data, dst.data);
 #else
-		copy_mip_with_filter(src, dst, mips, filter);
+			copy_mip_with_filter(src, dst, mips, filter);
 #endif
-		src = dst;
+			src = dst;
 
 #if SHARPEN_MIPS
-		if(src.width > 4 && src.height > 4 && BCtype < 4)                // don't sharpen the last few mipmaps, as its mostly border pixels that won't sharpen that well
-			copy_sharpen(src.width, src.height, src.data, mip_ptr);
-		else
+			if (src.width > 4 && src.height > 4 && BCtype < 4)                // don't sharpen the last few mipmaps, as its mostly border pixels that won't sharpen that well
+				copy_sharpen(src.width, src.height, src.data, mip_ptr);
+			else
 #endif
-			memcpy(mip_ptr, src.data, src.width * src.height * 4);        // nothing gets sharpened, still need to move the data to the location its expected to be
-				
+				memcpy(mip_ptr, src.data, src.width * src.height * 4);        // nothing gets sharpened, still need to move the data to the location its expected to be
+		}
 		src.data = mip_ptr;
 		mip_ptr += src.width * src.height * 4;
 		++mips;
@@ -1973,7 +1992,7 @@ int	WriteBitmapToDDS_MT(struct ImageInfo& ioImage, int BCtype, const char * file
 	return 0;
 }
 
-// Uncomp: write BGR or BGRA, origin depends on phone or desktop - see below.
+// Uncomp: write L, LA, BGR or BGRA, origin depends on phone or desktop - see below.
 int	WriteUncompressedToDDS(struct ImageInfo& ioImage, const char * file_name, int use_win_gamma)
 {
 	FILE * fi = fopen(file_name,"wb");
@@ -1991,26 +2010,21 @@ int	WriteUncompressedToDDS(struct ImageInfo& ioImage, const char * file_name, in
 
 	TEX_dds_desc header(ioImage.width, ioImage.height, mips, 0);
 	header.dwFlags = SWAP32(DDSD_CAPS|DDSD_HEIGHT|DDSD_WIDTH|DDSD_PIXELFORMAT|DDSD_MIPMAPCOUNT|DDSD_PITCH);
-	header.dwLinearSize = SWAP32(ioImage.width * ioImage.channels);
+	header.dwLinearSize = SWAP32(ioImage.width* ioImage.channels);
 	
-	if(ioImage.channels == 1)
+	switch (ioImage.channels)
 	{
-		header.ddpfPixelFormat.dwFlags=SWAP32(DDPF_ALPHAPIXELS);
-		header.ddpfPixelFormat.dwRGBBitCount=SWAP32(8);
-		header.ddpfPixelFormat.dwRBitMask=SWAP32(0x0);
-		header.ddpfPixelFormat.dwGBitMask=SWAP32(0x0);
-		header.ddpfPixelFormat.dwBBitMask=SWAP32(0x0);
-		header.ddpfPixelFormat.dwRGBAlphaBitMask=SWAP32(0xFF);
+		case 1:	header.ddpfPixelFormat.dwFlags = SWAP32(DDPF_LUMINANCE); break;
+		case 2:	header.ddpfPixelFormat.dwFlags = SWAP32(DDPF_LUMINANCE|DDPF_ALPHAPIXELS); break;
+		case 3:	header.ddpfPixelFormat.dwFlags = SWAP32(DDPF_RGB); break;
+		case 4:	header.ddpfPixelFormat.dwFlags = SWAP32(DDPF_RGB|DDPF_ALPHAPIXELS); break;
 	}
-	else
-	{
-		header.ddpfPixelFormat.dwFlags=SWAP32((ioImage.channels==3 ? DDPF_RGB : (DDPF_RGB|DDPF_ALPHAPIXELS)));
-		header.ddpfPixelFormat.dwRGBBitCount=SWAP32(ioImage.channels==3 ? 24 : 32);
-		header.ddpfPixelFormat.dwRBitMask=SWAP32(0x00FF0000);
-		header.ddpfPixelFormat.dwGBitMask=SWAP32(0x0000FF00);
-		header.ddpfPixelFormat.dwBBitMask=SWAP32(0x000000FF);		// Little endian: B is first, FF is first byte.
-		header.ddpfPixelFormat.dwRGBAlphaBitMask=SWAP32(0xFF000000);
-	}
+	header.ddpfPixelFormat.dwRGBBitCount=SWAP32(ioImage.channels * 8);
+	header.ddpfPixelFormat.dwRBitMask=SWAP32(0x00FF0000);
+	header.ddpfPixelFormat.dwGBitMask=SWAP32(0x0000FF00);
+	header.ddpfPixelFormat.dwBBitMask=SWAP32(0x000000FF);		// Little endian: B is first, FF is first byte.
+	header.ddpfPixelFormat.dwRGBAlphaBitMask=SWAP32(0xFF000000);
+
 	if(!use_win_gamma) header.ddsCaps.dwCaps=SWAP32(DDSCAPS_TEXTURE|DDSCAPS_MIPMAP|DDSCAPS_COMPLEX);
 
 	fwrite(&header,sizeof(header),1,fi);
