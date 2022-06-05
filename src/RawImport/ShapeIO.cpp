@@ -518,17 +518,17 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 	if(sProj) reproj(bounds_lo);
 	if(sProj) reproj(bounds_hi);
 
-	if(flags & shp_Use_Crop)
-	{
-		if(bounds_lo[0] > bounds[2] ||
-		   bounds_hi[0] < bounds[0] ||
-		   bounds_lo[1] > bounds[3] ||
-		   bounds_hi[1] < bounds[1])
-		{
-			SHPClose(file);
-			return true;
-		}
-	}
+//	if(flags & shp_Use_Crop)
+//	{
+//		if(bounds_lo[0] > bounds[2] ||
+//		   bounds_hi[0] < bounds[0] ||
+//		   bounds_lo[1] > bounds[3] ||
+//		   bounds_hi[1] < bounds[1])
+//		{
+//			SHPClose(file);
+//			return true;
+//		}
+//	}
 
 	if((flags & shp_Overlay) == 0)	// If we are not overlaying or err checking, nuke the map now.  In _some_ modes (road curve insert,
 		io_map.clear();								// one-by-one burn in) we are going to work on the final map, so this is needed.
@@ -1319,6 +1319,9 @@ bool	ReadShapeFile(
 			{
 				Face_handle f = io_map.non_const_handle(ff);
 				f->data().mObjs.push_back(no);
+	#if DEV
+				debug_mesh_point(no.mLocation,0,1,0);
+	#endif
 			}
 			else
 			{
@@ -1358,6 +1361,16 @@ bool	ReadShapeFile(
 			{
 				Face_handle f = io_map.non_const_handle(ff);
 				f->data().mPolyObjs.push_back(np);
+	#if DEV
+				for(vector<Polygon2>::iterator p = np.mShape.begin(); p != np.mShape.end(); ++p)
+				{
+					for(Polygon2::const_side_iterator pp = p->sides_begin(); pp != p->sides_end(); ++pp)
+					{
+						debug_mesh_line((*pp).p1,(*pp).p2,0,1,0,0,1,0);
+					}
+				}
+	#endif
+
 			}
 			else
 			{
