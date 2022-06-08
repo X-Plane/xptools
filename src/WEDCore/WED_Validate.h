@@ -180,6 +180,7 @@ enum validate_error_t
 	warn_truckroutes_but_no_starts,
 	warn_ramp_start_size_implausible,
 	warn_runway_matching_cifp_mislocated,
+	warn_rwy_edge_light_not_matching_center_lights,
 	warn_viewpoint_mislocated,
 };
 

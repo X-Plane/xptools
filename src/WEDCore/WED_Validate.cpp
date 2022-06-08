@@ -1372,6 +1372,8 @@ static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& 
 			msgs.push_back(validation_error_t("Runway skid mark density and length properties must all be in the range 0 to 1.", err_rwy_dirt_prop_illegal, who, apt));
 		if (r.number_size != 0.0 && ( r.number_size < 2.0 || r.number_size > 18.0))
 			msgs.push_back(validation_error_t("The size of the runway numbers must be zero (automatic) or between 2 and 18 meters.", err_rwy_number_size_illegal, who, apt));
+		if (gExportTarget >= wet_xplane_1200 && r.has_centerline > 0 && r.edge_light_code == apt_edge_LIRL)
+			msgs.push_back(validation_error_t("Edge Light intensity will be increased to MIRL by X-Plane 12 due to centerline light presence", warn_rwy_edge_light_not_matching_center_lights, who, apt));
 	}
 }
 
