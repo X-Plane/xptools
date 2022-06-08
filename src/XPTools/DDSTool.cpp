@@ -652,7 +652,7 @@ int main(int argc, char * argv[])
 		if (strcmp(argv[arg_base], "--gamma_22") == 0)  ++arg_base;
 
 		if (strcmp(argv[arg_base], "--scale_none") == 0) ++arg_base;
-		bool scale_up = strcmp(argv[arg_base], "--scale_up") == 0;
+		bool scale_up   = strcmp(argv[arg_base], "--scale_up") == 0;
 		bool scale_down = strcmp(argv[arg_base], "--scale_down") == 0;
 		bool scale_half = strcmp(argv[arg_base], "--scale_half") == 0;
 		if(scale_up || scale_down || scale_half)		++arg_base;
@@ -714,7 +714,7 @@ int main(int argc, char * argv[])
 			return 0;
 		}
 
-		if (bc_type = 0)
+		if (bc_type == 0)
 		{
 			     if (info.channels == 1) bc_type = 4;
 			else if (info.channels == 2) bc_type = 5;
