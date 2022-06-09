@@ -1774,18 +1774,18 @@ namespace squish {
 
 	// Let call a non public function out of libsquish :) Cuz libsquish is stable (stale ???) for nearly two decades now.
 	// Its so old, they even forgot to declare their internals "static" to prevent us from doing this.
-	void CompressAlphaDxt5(u8 const* rgba, int mask, void * alphaBock);
-
-	static 	void CompressImageBC45(u8 const* rgba, int width, int height, void* blocks, bool BC5)
+	void CompressAlphaDxt5(u8 const* rgba, int mask, void * alphaBlock);
+}
+static void CompressImageBC45(squish::u8 const* rgba, int width, int height, void* blocks, bool BC5)
 	{
-		u8* targetBlock = reinterpret_cast<u8*>(blocks);
+		auto targetBlock = reinterpret_cast<squish::u8*>(blocks);
 
 		for (int y = 0; y < height; y += 4)
 		{
 			for (int x = 0; x < width; x += 4)
 			{
 				// build the 4x4 block of pixels
-				u8 sourceRgba[16 * 4];
+				squish::u8 sourceRgba[16 * 4];
 				int mask = 0;
 				for (int py = 0; py < 4; ++py)
 				{
@@ -1805,18 +1805,16 @@ namespace squish {
 						}
 					}
 				}
-				CompressAlphaDxt5(sourceRgba - 3, mask, targetBlock);
+				squish::CompressAlphaDxt5(sourceRgba - 3, mask, targetBlock);
 				if (BC5)
 				{
 					targetBlock += 8;
-					CompressAlphaDxt5(sourceRgba - 2, mask, targetBlock);
+					squish::CompressAlphaDxt5(sourceRgba - 2, mask, targetBlock);
 				}
 				targetBlock += 8;
 			}
 		}
 	}
-}
-
 
 int	WriteBitmapToDDS_MT(struct ImageInfo& ioImage, int BCtype, const char * file_name, mip_func_t mip_filter)
 {
@@ -1849,7 +1847,7 @@ int	WriteBitmapToDDS_MT(struct ImageInfo& ioImage, int BCtype, const char * file
 		if(BCtype < 4)
 			threads[i] = thread(squish::CompressImage, data, ioImage.width, height, dst_ptr, flags);
 		else
-			threads[i] = thread(squish::CompressImageBC45, data, ioImage.width, height, dst_ptr, BCtype == 5);
+			threads[i] = thread(CompressImageBC45, data, ioImage.width, height, dst_ptr, BCtype == 5);
 
 		start_line += height;
 		dst_ptr += squish::GetStorageRequirements(ioImage.width, height, flags);
@@ -1871,7 +1869,7 @@ int	WriteBitmapToDDS_MT(struct ImageInfo& ioImage, int BCtype, const char * file
 		if (BCtype < 4)
 			squish::CompressImage(ioMips.data, ioMips.width, ioMips.height, dst_ptr, flags);
 		else
-			squish::CompressImageBC45(ioMips.data, ioMips.width, ioMips.height, dst_ptr, BCtype == 5);
+			CompressImageBC45(ioMips.data, ioMips.width, ioMips.height, dst_ptr, BCtype == 5);
 		src = ioMips;
 		dst_ptr += squish::GetStorageRequirements(ioMips.width, ioMips.height, flags);
 		++mips;
