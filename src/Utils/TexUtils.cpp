@@ -30,6 +30,9 @@
 	#ifndef GL_COMPRESSED_RGBA_BPTC_UNORM_EXT
 		#define GL_COMPRESSED_RGBA_BPTC_UNORM_EXT 0x8E8C
 	#endif
+	#ifndef GL_COMPRESSED_LUMINANCE_LATC1_EXT
+		#define GL_COMPRESSED_LUMINANCE_LATC1_EXT 0x8C70
+	#endif
 #else
 	#include "glew.h"
 	#include <GL/glu.h>

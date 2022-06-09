@@ -112,8 +112,8 @@ ifdef PLAT_LINUX
 endif
 ifdef PLAT_DARWIN
 	DEFINES		:= -DLIN=0 -DIBM=0 -DAPL=1
-	CXXFLAGS	:= $(M32_SWITCH) -mmacosx-version-min=10.11 -std=c++14 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -fvisibility=hidden
-	CFLAGS		:= $(M32_SWITCH) -mmacosx-version-min=10.11 -Wno-deprecated-declarations -Wno-multichar -fvisibility=hidden
+	CXXFLAGS	:= $(M32_SWITCH) -mmacosx-version-min=10.11 -std=c++14 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -arch x86_64
+	CFLAGS		:= $(M32_SWITCH) -mmacosx-version-min=10.11 -Wno-deprecated-declarations -Wno-multichar -arch x86_64
 	LDFLAGS		:= $(M32_SWITCH) -mmacosx-version-min=10.11
 	STRIPFLAGS	:= -x
 endif
