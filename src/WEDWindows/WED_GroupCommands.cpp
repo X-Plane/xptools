@@ -4636,7 +4636,7 @@ static string get_regional_codes(const Point2& loc, int ac_size, int ops_type)
 				if(loc.x() < - 103.0)            // USA west
 					code += "swa asa qxe ";
 				else	                         // USA east
-					code += "swa jbu nks ezy egf ";
+					code += "swa jbu nks egf ";
 			}
 		}
 	}
@@ -4650,7 +4650,7 @@ static string get_regional_codes(const Point2& loc, int ac_size, int ops_type)
 			code += "sas aza ibe sva ";
 			if(ac_size <= width_C) 
 			{
-				code += "ber ryr vlg ";
+				code += "ber ryr vlg ezy ";
 				if(LonLatDistMeters(loc, Point2(11,47)) < 300e3) code += "wlc tyr lpv aua "; // within 300 km of LOWI
 			}
 		}
