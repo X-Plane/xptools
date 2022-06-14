@@ -69,6 +69,9 @@
 // Road-grid editor - this if good for editing XP11 style road networks with vroads, only
 #define ROAD_EDITING 1
 
+// Ashow user menu setting for rowcode 105, i.e. extended runway properties. Enable only when XP is ready to read them.
+#define ROWCODE_105 0
+
 // mroe : -- really early stage of dev , do not change.
 #define WITHNWLINK 0
 
