@@ -1009,7 +1009,7 @@ double CopyWetPointsWithSDF(
 				float dist =  in_sdf.get(sdf_x,sdf_y);
 				
 				int skip = 2.0;
-				while(skip < dist)
+				while(skip < dist && skip < in_skip)
 					skip *= 2;
 				skip = min(in_skip, skip);
 				if((x % skip == 0) && (y % skip == 0))
