@@ -693,14 +693,25 @@ int main(int argc, char * argv[])
 			++arg_base;
 		}
 
-		float gamma = (strcmp(argv[arg_base], "--gamma_22") == 0) ? 2.2f : 1.8f;
-		arg_base +=1;
+		float gamma = 1.8f;
+		if (strcmp(argv[arg_base], "--gamma_22") == 0) {
+			gamma = 2.2f;
+			++arg_base;
+		}
 
-
-		bool scale_up = strcmp(argv[arg_base], "--scale_up") == 0;
-		bool scale_down = strcmp(argv[arg_base], "--scale_down") == 0;
-		bool scale_half = strcmp(argv[arg_base], "--scale_half") == 0;
-		arg_base +=1;
+		bool scale_up = false, scale_down = false, scale_half = false;
+		if (strcmp(argv[arg_base], "--scale_up") == 0) {
+			scale_up = true;
+			++arg_base;
+		}
+		if (strcmp(argv[arg_base], "--scale_down") == 0) {
+			scale_down = true;
+			++arg_base;
+		}
+		if (strcmp(argv[arg_base], "--scale_half") == 0) {
+			scale_half = true;
+			++arg_base;
+		}
 
 		ImageInfo	info;
 		if (CreateBitmapFromPNG(argv[arg_base], &info, false, gamma)!=0)
