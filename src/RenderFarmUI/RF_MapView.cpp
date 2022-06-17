@@ -100,7 +100,7 @@
 #define DEBUG_PRINT_CORNERS 1
 
 // Print water params of tri under mouse
-#define DEBUG_PRINT_WAVES 0
+#define DEBUG_PRINT_WAVES 1
 
 // Print input parameters used to pick LU rule for tri under mouse
 #define DEBUG_PRINT_TRI_PARAMS 0
@@ -133,7 +133,7 @@ static DEMViewInfo_t	kDEMs[] = {
 {		NO_VALUE,				"None"							,	0,							false,	false,	" "				},
 {		dem_Elevation,			"Elevation"						,	dem_Elevation,				false,	false,	"MSL=%fm "		},
 {		dem_Bathymetry,			"Bathymetry"					,	dem_Elevation,				false,	false,	"Bath=%fm "		},
-//{		dem_WaterSurface,		"Water Surface"					,	dem_Elevation,				false,	false,	"Water=%fm "	},
+{		dem_Water_Surface,		"Water Surface"					,	dem_Elevation,				false,	false,	"Water=%fm "	},
 {		dem_ElevationOverlay,	"Elevation Overlay"				,	dem_Elevation,				false,	false,	"MSL=%fm "		},
 //{		dem_OrigLandUse,		"Land Use (Old)"				,	dem_Enum,					false,	true,	"Old LU=%s "	},
 {		dem_LandUse,			"Land Use"						,	dem_Enum,					false,	true,	"LU=%s "		},
@@ -174,7 +174,7 @@ static DEMViewInfo_t	kDEMs[] = {
 {		dem_NormalY,			"Normals: Y"					,	dem_Strata,					false, false,	"dy=%f "		},
 {		dem_NormalZ,			"Normals: Z"					,	dem_Strata,					false, false,	"dz=%f "		},
 
-{		dem_Wizard,				"Spreadsheet Wizard"			,	dem_Strata,					false,	false,	"%fm "			},
+{		dem_Wizard,				"Spreadsheet Wizard"			,	dem_Elevation,				false,	false,	"%fm "			},
 
 {		dem_Wizard1,			"Spreadsheet Wizard 1"			,	dem_Strata,					false,	false,	"%fm "			},
 {		dem_Wizard2,			"Spreadsheet Wizard 2"			,	dem_Strata,					false,	false,	"%fm "			},
@@ -758,7 +758,6 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 							col[2] *= TRI_DARKEN;
 							col[3] = 1.0;
 						} else {
-
 							RGBColor_t&	rgbc = gEnumColors[fit->info().terrain];
 							col[0] = rgbc.rgb[0];
 							col[1] = rgbc.rgb[1];
@@ -814,6 +813,9 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 								col_tri[i][1] = col[1];
 								col_tri[i][2] = col[2];
 								col_tri[i][3] = col[3];
+									
+								if (fit->info().terrain == terrain_Water)
+									col_tri[i][2] *= (0.5 + 0.5 * fit->vertex(2-i)->info().wave_height);
 							}
 						}
 
@@ -1712,7 +1714,7 @@ bool	RF_MapView::RecalcDEM(bool do_relief)
 		mDEMBounds[2] = master->x_to_lon_double((double) master->mWidth - 0.5);
 		mDEMBounds[3] = master->y_to_lat_double((double) master->mHeight - 0.5);
 
-		if (LoadTextureFromImage(image, mTexID, tex_Mipmap + (nearest ? 0 : tex_Linear), NULL, NULL, &mTexS, &mTexT))
+		if (LoadTextureFromImage(image, mTexID, /*tex_Mipmap +*/ (nearest ? 0 : tex_Linear), NULL, NULL, &mTexS, &mTexT))
 		{
 			mHasTex = true;
 		}
@@ -1722,7 +1724,7 @@ bool	RF_MapView::RecalcDEM(bool do_relief)
 		{
 			if (DEMToBitmap(*master, image, dem_Normals) == 0)
 			{
-				if (LoadTextureFromImage(image, mReliefID, tex_Mipmap + (tex_Linear), NULL, NULL, &mReliefS, &mReliefT))
+				if (LoadTextureFromImage(image, mReliefID, /*tex_Mipmap + */(tex_Linear), NULL, NULL, &mReliefS, &mReliefT))
 				{
 					mHasRelief = true;
 				}
@@ -1835,7 +1837,7 @@ char * RF_MapView::MonitorCaption(void)
 #endif
 
 #if DEBUG_PRINT_WAVES
-	n += sprintf(buf+n,"Wave:%0.f,%0.f,%0.f ",
+	n += sprintf(buf+n,"Wave:%0.1f,%0.1f,%0.1f ",
 						recent->vertex(0)->info().wave_height,
 						recent->vertex(1)->info().wave_height,
 						recent->vertex(2)->info().wave_height);
