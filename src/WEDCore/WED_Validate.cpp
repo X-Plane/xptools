@@ -1365,15 +1365,22 @@ static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& 
 			msgs.push_back(validation_error_t(string("The runway '") + name + "' has overlapping displaced thresholds.", err_rwy_overlapping_displaced_thresholds, who, apt));
 		if (rwy->GetRoughness() < 0.0 || rwy->GetRoughness() > 1.0)
 			msgs.push_back(validation_error_t(string("The runway '") + name + "' has an illegal surface roughness. It should be in the range 0 to 1.", err_rwy_surface_illegal_roughness, who, apt));
-#if ROWCODE_105
 		AptRunway_t r;
 		rwy->Export(r);
+		if (gExportTarget >= wet_xplane_1200)
+		{
+			if (r.has_centerline > 0 && r.edge_light_code == apt_edge_LIRL)
+				msgs.push_back(validation_error_t("Edge Light intensity will be increased to MIRL by X-Plane 12 due to centerline light presence", warn_rwy_edge_light_not_matching_center_lights, who, apt));
+			if (r.has_tdzl > 0 && r.edge_light_code <= apt_edge_MIRL)
+				msgs.push_back(validation_error_t("Edge Light intensity will be increased to HIRL by X-Plane 12 due to touchdown light presence", warn_rwy_edge_light_not_matching_center_lights, who, apt));
+			if ((r.app_light_code[0] > 0 || r.app_light_code[1] > 0) && r.edge_light_code <= apt_edge_MIRL)
+				msgs.push_back(validation_error_t("Edge Light intensity will be increased to HIRL by X-Plane 12 due to approach light presence", warn_rwy_edge_light_not_matching_center_lights, who, apt));
+		}
+#if ROWCODE_105
 		if(!all_in_range(r.skids, 0.0f, 1.0f))
 			msgs.push_back(validation_error_t("Runway skid mark density and length properties must all be in the range 0 to 1.", err_rwy_dirt_prop_illegal, who, apt));
 		if (r.number_size != 0.0 && ( r.number_size < 2.0 || r.number_size > 18.0))
 			msgs.push_back(validation_error_t("The size of the runway numbers must be zero (automatic) or between 2 and 18 meters.", err_rwy_number_size_illegal, who, apt));
-		if (gExportTarget >= wet_xplane_1200 && r.has_centerline > 0 && r.edge_light_code == apt_edge_LIRL)
-			msgs.push_back(validation_error_t("Edge Light intensity will be increased to MIRL by X-Plane 12 due to centerline light presence", warn_rwy_edge_light_not_matching_center_lights, who, apt));
 #endif
 	}
 }
