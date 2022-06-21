@@ -70,7 +70,7 @@
 // - (better) preserve distances from map center for objects at moderate distances from map center
 // https://en.wikipedia.org/wiki/Gnomonic_projection
 
-#define USE_GNOMONIC   1
+#define USE_GNOMONIC   0
 #define FULL_EQUATIONS 0
 #define THR_GNOMONIC   0.02
 
@@ -108,22 +108,22 @@ WED_MapZoomerNew::~WED_MapZoomerNew()
 
 double	WED_MapZoomerNew::XPixelToLon(double x) const
 {
-	return mLonCenter + (x - mCenterX) * mPixel2DegLat() / mCenterCOS;
+	return mLonCenter + (x - mCenterX) * mPixel2DegLat() / mCenterCOS * DEG_TO_MTR_LAT / DEG_LON_TO_MTR(mLatCenter);
 }
 
 double	WED_MapZoomerNew::YPixelToLat(double y) const
 {
-	return mLatCenter + (y - mCenterY) * mPixel2DegLat();
+	return mLatCenter + (y - mCenterY) * mPixel2DegLat() * DEG_TO_MTR_LAT / DEG_LAT_TO_MTR(mLatCenter);
 }
 
 double	WED_MapZoomerNew::LonToXPixel(double lon) const
 {
-	return mCenterX + (lon - mLonCenter) * mCenterCOS * mPixel2DegLat.inv();
+	return mCenterX + (lon - mLonCenter) * mCenterCOS * mPixel2DegLat.inv() * DEG_LON_TO_MTR(mLatCenter) / DEG_TO_MTR_LAT;
 }
 
 double	WED_MapZoomerNew::LatToYPixel(double lat) const
 {
-	return mCenterY + (lat - mLatCenter) * mPixel2DegLat.inv();
+	return mCenterY + (lat - mLatCenter) * mPixel2DegLat.inv() * DEG_LAT_TO_MTR(mLatCenter) / DEG_TO_MTR_LAT;
 }
 
 double	WED_MapZoomerNew::wagner_proj_mult(double lat) const

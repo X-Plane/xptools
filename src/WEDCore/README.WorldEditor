@@ -19,6 +19,11 @@ Planned functionality for WED 2.5 not yet included in the alpha versions
 WED functionality not yet supported by XP12 alpha's
     - rowcode 105 skidmark and line color/width customizations for runways
 
+WED 2.5.0b3 6/23/22
+
+   X-Plane 12 features:
+   - Object scaling and map projection using WGS84 ellipsoid vs spherical globe
+
 WED 2.5.0b2 5/30/22
    Bug Fix:
    - fix .agp scraper display mismatch for some heights
