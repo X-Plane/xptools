@@ -33,6 +33,9 @@
 #include "MapHelpers.h"
 #include "PolyRasterUtils.h"
 
+// This will cause us to debug-show red/green outlines of the .shp data to see what we imported and what we had to drop.
+#define SHOW_FEATURE_IMPORT		0
+
 //#include <CGAL/Snap_rounding_2.h>
 //#include <CGAL/Snap_rounding_traits_2.h>
 #if !defined(__i386__) && defined(IBM)
@@ -1319,15 +1322,16 @@ bool	ReadShapeFile(
 			{
 				Face_handle f = io_map.non_const_handle(ff);
 				f->data().mObjs.push_back(no);
-	#if DEV
+#if SHOW_FEATURE_IMPORT
 				debug_mesh_point(no.mLocation,0,1,0);
-	#endif
+#endif
+
 			}
 			else
 			{
-	#if DEV
+#if SHOW_FEATURE_IMPORT
 				debug_mesh_point(no.mLocation,1,0,0);
-	#endif
+#endif
 				fprintf(stderr,"WARNING: point %d could not be placed.\n", n);
 			}
 		}
@@ -1366,7 +1370,9 @@ bool	ReadShapeFile(
 				{
 					for(Polygon2::const_side_iterator pp = p->sides_begin(); pp != p->sides_end(); ++pp)
 					{
+#if SHOW_FEATURE_IMPORT
 						debug_mesh_line((*pp).p1,(*pp).p2,0,1,0,0,1,0);
+#endif
 					}
 				}
 	#endif
@@ -1379,7 +1385,9 @@ bool	ReadShapeFile(
 				{
 					for(Polygon2::const_side_iterator pp = p->sides_begin(); pp != p->sides_end(); ++pp)
 					{
+#if SHOW_FEATURE_IMPORT
 						debug_mesh_line((*pp).p1,(*pp).p2,1,0,0,1,0,0);
+#endif
 					}
 				}
 	#endif

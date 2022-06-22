@@ -713,11 +713,14 @@ int	has_beach(const CDT::Edge& inEdge, const CDT& inMesh, int& kind, const DEMGe
 
 	CDT::Face_handle tri = inEdge.first;
 
+#if HEAVY_BEACH_DEBUGGING
+	tri->info().bch.choice[inEdge.second] = -1;
+#endif
 	DebugAssert(tri->info().terrain == terrain_Water);
-	if (tri->info().terrain == terrain_Water)
-		tri = inEdge.first->neighbor(inEdge.second);
+	CDT::Face_handle land_tri = tri->neighbor(inEdge.second);
+	CDT::Face_handle water_tri = tri;
 
-	int lterrain = tri->info().terrain;
+	int lterrain = land_tri->info().terrain;
 	int is_apt = IsAirportTerrain(lterrain);
 	int i;
 
@@ -726,7 +729,8 @@ int	has_beach(const CDT::Edge& inEdge, const CDT& inMesh, int& kind, const DEMGe
 	CDT::Vertex_handle v_s = inEdge.first->vertex(CDT::ccw(inEdge.second));
 	CDT::Vertex_handle v_t = inEdge.first->vertex(CDT::cw(inEdge.second));
 
-	Point2 sample_pt = Segment2(cgal2ben(v_s->point()),cgal2ben(v_t->point())).midpoint();
+	Segment2 beach_seg = Segment2(cgal2ben(v_s->point()),cgal2ben(v_t->point()));
+	Point2 sample_pt = beach_seg.midpoint();
 
 	int landuse = lu_dem.get_radial(lu_dem.lon_to_x(sample_pt.x()),lu_dem.lat_to_y(sample_pt.y()), 4, lu_globcover_WATER);
 
@@ -761,7 +765,27 @@ int	has_beach(const CDT::Edge& inEdge, const CDT& inMesh, int& kind, const DEMGe
 	double		len = LonLatDistMeters(CGAL::to_double(v_s->point().x()),CGAL::to_double(v_s->point().y()),
 									   CGAL::to_double(v_t->point().x()),CGAL::to_double(v_t->point().y())) + prev_len + next_len;
 
-	double slope = tri->info().normal[2];
+	double slope = land_tri->info().normal[2];
+	float approx_lat = fabs(CGAL::to_double(land_tri->vertex(0)->point().y()));
+	float water_area = GetParamConst(orig_face, af_WaterArea);
+	float water_open = GetParamConst(orig_face,af_WaterOpen);
+	const float * rgb = NULL;
+
+	#if HEAVY_BEACH_DEBUGGING
+		tri->info().bch.apt[inEdge.second]			= is_apt;
+		tri->info().bch.landuse[inEdge.second]		= landuse;
+		tri->info().bch.slope[inEdge.second]		= slope;
+		tri->info().bch.wave[inEdge.second]			= wave;
+		tri->info().bch.prev_ang[inEdge.second]		= prev_ang;
+		tri->info().bch.next_ang[inEdge.second]		= next_ang;
+		tri->info().bch.lat[inEdge.second]			= approx_lat;
+		tri->info().bch.len[inEdge.second]			= len;
+		tri->info().bch.area[inEdge.second]			= water_area;
+		tri->info().bch.open[inEdge.second]			= water_open;
+	
+	#endif
+
+
 
 	for (i = 0; i < gBeachInfoTable.size(); ++i)
 	{
@@ -773,18 +797,23 @@ int	has_beach(const CDT::Edge& inEdge, const CDT& inMesh, int& kind, const DEMGe
 			wave <= gBeachInfoTable[i].max_sea &&
 			prev_ang >= (prev_convex ? gBeachInfoTable[i].max_turn_convex : gBeachInfoTable[i].max_turn_concave) &&
 			next_ang >= (next_convex ? gBeachInfoTable[i].max_turn_convex : gBeachInfoTable[i].max_turn_concave) &&
-			fabs(CGAL::to_double(tri->vertex(0)->point().y())) >= gBeachInfoTable[i].min_lat &&
-			fabs(CGAL::to_double(tri->vertex(0)->point().y())) <= gBeachInfoTable[i].max_lat &&
-			tri->info().mesh_temp >= gBeachInfoTable[i].min_temp &&
-			tri->info().mesh_temp <= gBeachInfoTable[i].max_temp &&
-			tri->info().mesh_rain >= gBeachInfoTable[i].min_rain &&
-			tri->info().mesh_rain <= gBeachInfoTable[i].max_rain &&
+			approx_lat >= gBeachInfoTable[i].min_lat &&
+			approx_lat <= gBeachInfoTable[i].max_lat &&
+			land_tri->info().mesh_temp >= gBeachInfoTable[i].min_temp &&
+			land_tri->info().mesh_temp <= gBeachInfoTable[i].max_temp &&
+			land_tri->info().mesh_rain >= gBeachInfoTable[i].min_rain &&
+			land_tri->info().mesh_rain <= gBeachInfoTable[i].max_rain &&
 //			len >= gBeachInfoTable[i].min_len &&
-			gBeachInfoTable[i].min_area < GetParamConst(orig_face, af_WaterArea) &&
-			(gBeachInfoTable[i].require_open == 0 || GetParamConst(orig_face,af_WaterOpen) != 0.0))
+			gBeachInfoTable[i].min_area < water_area &&
+			(gBeachInfoTable[i].require_open == 0 || water_open != 0.0))
 
 		{
 			kind = gBeachInfoTable[i].x_beach_type;
+			rgb = gBeachInfoTable[i].debug_color.rgb;
+#if HEAVY_BEACH_DEBUGGING
+			tri->info().bch.choice[inEdge.second] = kind;
+			tri->info().bch.final[inEdge.second] = kind;
+#endif
 			break;
 		}
 	}
@@ -793,7 +822,18 @@ int	has_beach(const CDT::Edge& inEdge, const CDT& inMesh, int& kind, const DEMGe
 	{
 		return false;
 	}
-	
+
+#if HEAVY_BEACH_DEBUGGING && OPENGL_MAP
+	if(rgb)
+			debug_mesh_line(beach_seg.p1,beach_seg.p2,
+				rgb[0],
+				rgb[1],
+				rgb[2],
+				rgb[0],
+				rgb[1],
+				rgb[2]);
+#endif
+
 	return true;
 }
 
@@ -842,6 +882,9 @@ void FixBeachContinuity(
 					iter = circ;
 					do {
 						typedata[iter] = new_type;
+#if HEAVY_BEACH_DEBUGGING
+						iter.first->info().bch.final[iter.second] = new_type;
+#endif
 						
 						iter = (linkNext.count(iter) == 0) ? CDT::Edge() : linkNext[iter];
 					} while (iter != discon);

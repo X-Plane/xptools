@@ -269,6 +269,7 @@ struct BeachInfo_t {
 	set<int>	require_landuse;
 	int			x_beach_type;
 	int			x_backup;
+	RGBColor_t	debug_color;
 };
 typedef vector<BeachInfo_t>		BeachInfoTable;
 extern BeachInfoTable			gBeachInfoTable;

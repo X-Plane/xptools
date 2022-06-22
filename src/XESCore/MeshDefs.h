@@ -75,6 +75,7 @@
 
  */
 
+#define HEAVY_BEACH_DEBUGGING 	DEV && OPENGL_MAP
 
 typedef multimap<float, void *, greater<float> >			FaceQueue;	// YUCK - hard cast to avoid snarky problems with forward decls
 typedef multimap<double, void *>							VertexQueue;
@@ -98,7 +99,12 @@ struct	MeshFaceInfo {
 		flag_Feature = 1
 	};
 	
-	MeshFaceInfo() : terrain(DEM_NO_DATA),feature(NO_VALUE),flag(0), orig_face(NULL) { edge_flags[0] = edge_flags[1] = edge_flags[2] = 0; }
+	MeshFaceInfo() : terrain(DEM_NO_DATA),feature(NO_VALUE),flag(0), orig_face(NULL) {
+		edge_flags[0] = edge_flags[1] = edge_flags[2] = 0;
+		#if HEAVY_BEACH_DEBUGGING0
+			memset(&bch,0,sizeof(bch));
+		#endif
+	}
 	MeshFaceInfo(const MeshFaceInfo& rhs) :
 								terrain(rhs.terrain),
 								feature(rhs.feature),
@@ -110,7 +116,11 @@ struct	MeshFaceInfo {
 								edge_flags[0] = rhs.edge_flags[0];
 								edge_flags[1] = rhs.edge_flags[1];
 								edge_flags[2] = rhs.edge_flags[2];
-								orig_face = rhs.orig_face; }
+								orig_face = rhs.orig_face;
+#if HEAVY_BEACH_DEBUGGING
+								memcpy(&bch,&rhs.bch,sizeof(bch));
+#endif
+								}
 
 
 	MeshFaceInfo& operator=(const MeshFaceInfo& rhs) {
@@ -125,6 +135,9 @@ struct	MeshFaceInfo {
 								edge_flags[0] = rhs.edge_flags[0];
 								edge_flags[1] = rhs.edge_flags[1];
 								edge_flags[2] = rhs.edge_flags[2];
+#if HEAVY_BEACH_DEBUGGING
+								memcpy(&bch,&rhs.bch,sizeof(bch));
+#endif
 								return *this; }
 
 	inline	bool get_edge_feature(int e) const { return edge_flags[e] & flag_Feature; }
@@ -150,6 +163,23 @@ struct	MeshFaceInfo {
 
 	float			mesh_temp;				// These are not debug - beach code uses this.
 	float			mesh_rain;
+	
+#if HEAVY_BEACH_DEBUGGING
+	struct {
+		int				apt[3];
+		int				landuse[3];
+		float			slope[3];
+		float			wave[3];
+		float			prev_ang[3];
+		float			next_ang[3];
+		float			lat[3];
+		float			len[3];
+		float			area[3];
+		float			open[3];
+		int				choice[3];
+		int				final[3];
+	} bch;
+#endif
 
 #if OPENGL_MAP
 	int				debug_terrain_orig;

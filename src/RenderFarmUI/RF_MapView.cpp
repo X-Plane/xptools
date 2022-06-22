@@ -91,16 +91,19 @@
 #define SHADE_TRIS 0
 
 // Print out each border layer on top of a tri stack under mouse
-#define DEBUG_PRINT_LAYERS 1
+#define DEBUG_PRINT_LAYERS 0
 
 // Print the normal for the tri under the mouse
-#define DEBUG_PRINT_NORMALS 1
+#define DEBUG_PRINT_NORMALS 0
 
 // Print height at all 3 corners of tri under mouse
-#define DEBUG_PRINT_CORNERS 1
+#define DEBUG_PRINT_CORNERS 0
 
 // Print water params of tri under mouse
-#define DEBUG_PRINT_WAVES 1
+#define DEBUG_PRINT_WAVES 0
+
+// Print beach params
+#define DEBUG_PRINT_BEACH_INFO 1
 
 // Print input parameters used to pick LU rule for tri under mouse
 #define DEBUG_PRINT_TRI_PARAMS 0
@@ -1129,6 +1132,66 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 		{
 			glCallList(mDLMeshLine + n);
 		}
+		
+		{
+
+			CDT::Face_handle	recent;
+			int	x, y;
+			GetMouseLocNow(&x, &y);
+			double	lat, lon;
+			lat = mZoomer->YPixelToLat(y);
+			lon = mZoomer->XPixelToLon(x);
+
+			static int hint_id = CDT::gen_cache_key();
+			int i;
+			CDT::Locate_type lt;
+			CDT::Point mouse = CDT::Point(lon,lat);
+			recent = gTriangulationHi.locate_cache(mouse, lt, i, hint_id);
+			if (lt == CDT::FACE)
+			{
+				Triangle2 tri(
+						cgal2ben(recent->vertex(0)->point()),
+						cgal2ben(recent->vertex(1)->point()),
+						cgal2ben(recent->vertex(2)->point()));
+						
+				double v0,v1,v2;
+				tri.bathymetric_interp(cgal2ben(mouse),v0,v1,v2);
+				int near_side = 0;
+				if(v1 < v2)
+				{
+					if(v1 < v0)
+						near_side = 1;
+				}
+				else
+				{
+					if(v2 < v0)
+						near_side = 2;
+				}
+				
+				glLineWidth(2);
+				glColor3f(1,1,1);
+				glBegin(GL_LINES);
+				switch(near_side) {
+				case 0:
+					glVertex2d(tri.p2.x(),tri.p2.y());
+					glVertex2d(tri.p3.x(),tri.p3.y());
+					break;
+				case 1:
+					glVertex2d(tri.p1.x(),tri.p1.y());
+					glVertex2d(tri.p3.x(),tri.p3.y());
+					break;
+				case 2:
+					glVertex2d(tri.p1.x(),tri.p1.y());
+					glVertex2d(tri.p2.x(),tri.p2.y());
+					break;
+				}
+				glEnd();
+				
+			}
+		}
+
+		
+		
 	}
 
 
@@ -1789,9 +1852,49 @@ char * RF_MapView::MonitorCaption(void)
 	static int hint_id = CDT::gen_cache_key();
 	int i;
 	CDT::Locate_type lt;
-	recent = gTriangulationHi.locate_cache(CDT::Point(lon,lat), lt, i, hint_id);
+	CDT::Point mouse = CDT::Point(lon,lat);
+	recent = gTriangulationHi.locate_cache(mouse, lt, i, hint_id);
 	if (lt == CDT::FACE)
 	{
+		Triangle2 tri(
+				cgal2ben(recent->vertex(0)->point()),
+				cgal2ben(recent->vertex(1)->point()),
+				cgal2ben(recent->vertex(2)->point()));
+				
+		double v0,v1,v2;
+		tri.bathymetric_interp(cgal2ben(mouse),v0,v1,v2);
+		int near_side = 0;
+		if(v1 < v2)
+		{
+			if(v1 < v0)
+				near_side = 1;
+		}
+		else
+		{
+			if(v2 < v0)
+				near_side = 2;
+		}
+		
+#if DEBUG_PRINT_BEACH_INFO
+		if(recent->info().terrain == terrain_Water &&
+			recent->neighbor(near_side)->info().terrain != terrain_Water)
+		{
+			n += sprintf(buf+n, "apt=%d landuse=%s slope=%.1f wave=%.1f prev_ang=%.0f next_ang=%.0f lat=%.0f len=%.0f area=%.0f open=%.1f bch=%d/%d",
+				recent->info().bch.apt[near_side],
+				FetchTokenString(recent->info().bch.landuse[near_side]),
+				acosf(recent->info().bch.slope[near_side]) * RAD_TO_DEG,
+				recent->info().bch.wave[near_side],
+				acosf(recent->info().bch.prev_ang[near_side]) * RAD_TO_DEG,
+				acosf(recent->info().bch.next_ang[near_side]) * RAD_TO_DEG,
+				recent->info().bch.lat[near_side],
+				recent->info().bch.len[near_side],
+				recent->info().bch.area[near_side] / 1000000.0f,
+				recent->info().bch.open[near_side],
+				recent->info().bch.choice[near_side],
+				recent->info().bch.final[near_side]);
+		}
+#endif
+	
 		int ts = recent->info().terrain;
 		n += sprintf(buf+n, "Tri:%s ", FetchTokenString(ts));
 

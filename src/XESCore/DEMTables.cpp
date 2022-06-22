@@ -161,7 +161,7 @@ bool	ReadBeachInfo(const vector<string>& tokens, void * ref)
 {
 	BeachInfo_t	info;
 
-	if (TokenizeLine(tokens, " fffffffffffffifiSii",
+	if (TokenizeLine(tokens, " fffffffffffffifiSiifffe",
 				&info.min_rain,
 				&info.max_rain,
 				&info.min_temp,
@@ -180,7 +180,14 @@ bool	ReadBeachInfo(const vector<string>& tokens, void * ref)
 				&info.require_airport,
 				&info.require_landuse,
 				&info.x_beach_type,
-				&info.x_backup) != 20) return false;
+				&info.x_backup,
+				&info.debug_color.rgb[0],
+				&info.debug_color.rgb[1],
+				&info.debug_color.rgb[2]) != 23) return false;
+
+	info.debug_color.rgb[0] /= 255.0;
+	info.debug_color.rgb[1] /= 255.0;
+	info.debug_color.rgb[2] /= 255.0;
 
 	info.max_turn_convex = cosdeg(info.max_turn_convex);
 	info.max_turn_concave = cosdeg(info.max_turn_concave);
