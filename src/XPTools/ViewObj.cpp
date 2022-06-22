@@ -106,7 +106,6 @@ float	gCamDist = 200;
 map<string, pair<string, GLenum> >		gDayTextures;
 //map<string, pair<string, GLenum> >		gNightTextures;
 
-static	void		PlotOneObj(const XObj& inObj, int inShowCulled, bool inLit, bool inLighting, bool inSolid, bool inAnimate, float dist);
 static	void		PlotOneObj8(const XObj8& inObj, int inShowCulled, bool inLit, bool inLighting, bool inSolid, bool inAnimate, float dist);
 static	GLenum		FindTexture(const string& inName, bool inNight);
 static	void		AccumTexture(const string& inFileName);
@@ -155,7 +154,6 @@ private:
 	map<string, XObj>	mObjDB;
 	vector<ObjPlacement_t>	mObjInst;
 
-	XObj			mObj;
 	XObj8			mObj8;
 //	Prototype_t		mPrototype;
 	Polygon2 		mPts;
@@ -304,20 +302,7 @@ void			XObjWin::GLDraw(void)
 
 	glScalef(mScale, mScale, mScale);
 */
-	if (mIsObj8)	PlotOneObj8(mObj8, mShowCulled, mLit, mLighting, mSolid, mAnimate, DistForLOD8(mObj8,mLOD));
-	else			PlotOneObj(mObj, mShowCulled, mLit, mLighting, mSolid, mAnimate, 0.0);
-
-
-	for (vector<ObjPlacement_t>::iterator p = mObjInst.begin(); p != mObjInst.end(); ++p)
-	{
-		glMatrixMode(GL_MODELVIEW);
-		glPushMatrix();
-		glTranslatef(p->x, p->y, p->z);
-		glRotatef(-p->r, 0.0, 1.0, 0.0);
-		if (mObjDB.find(p->obj) != mObjDB.end())
-			PlotOneObj(mObjDB[p->obj], mShowCulled, mLit, mLighting, mSolid, mAnimate, 0.0f);
-		glPopMatrix();
-	}
+	PlotOneObj8(mObj8, mShowCulled, mLit, mLighting, mSolid, mAnimate, DistForLOD8(mObj8,mLOD));
 
 /*	if (mShowBounds)
 	{
@@ -477,10 +462,7 @@ int			XObjWin::KeyPressed(unsigned int inKey, long, long, long)
 		{
 			float	mins[3];
 			float	maxs[3];
-			if (mIsObj8)
 			GetObjDimensions8(mObj8, mins, maxs);
-			else
-			GetObjDimensions(mObj, mins, maxs);
 			char	buf[1024];
 			sprintf(buf, "%f (x) x %f (y) x %f (z) meters", maxs[0] - mins[0], maxs[1] - mins[1], maxs[2] - mins[2]);
 			DoUserAlert(buf);
@@ -556,13 +538,10 @@ void		XObjWin::ScaleToObj(void)
 {
 	mZoomer.ResetToIdentity();
 //	xflt	s[4];
-//	if (mIsObj8)
-//		GetObjBoundingSphere8(mObj8, s);
-//	else
-//		GetObjBoundingSphere(mObj, s);
+//	GetObjBoundingSphere8(mObj8, s);
 //	mBounds.c = Point3(s[0], s[1], s[2]);
 //	mBounds.radius_squared = s[3];
-	double	rad = mIsObj8 ? GetObjRadius8(mObj8) : GetObjRadius(mObj);
+	double	rad = GetObjRadius8(mObj8);
 	if (rad > 0.0)
 	{
 		mZoomer.SetScale(50.0 / rad);
@@ -935,38 +914,6 @@ static void setup_textures(const string& in_tex, const string& in_lit, const str
 	glColorMaterial(GL_FRONT,GL_AMBIENT_AND_DIFFUSE);
 
 	glEnable(GL_NORMALIZE);
-}
-
-void	PlotOneObj(const XObj& inObj, int inShowCulled, bool inLit, bool inLighting, bool inSolid, bool inAnimate, float dist)
-{
-	inLighting = false;	// NEVER light these - it don't work yet!
-	ObjViewInfo_t info = { inLit, inSolid, (inShowCulled != 0), inAnimate, 0, 0, 0, 0, 0 };
-
-	string lit_tex = inObj.texture;
-	if (!lit_tex.empty()) lit_tex += "_LIT";
-
-	setup_textures(inObj.texture, lit_tex, "", inLit, inSolid, info);
-
-	if (inShowCulled)
-	{
-		setup_lights(inLighting, inLit, inShowCulled);
-		setup_baseline_ogl(true);
-		info.backside = true;
-		CHECK_ERR();
-		ObjDraw(inObj, dist, &sCallbacks, &info);
-		CHECK_ERR();
-	}
-
-
-	setup_lights(inLighting, inLit, false);
-	setup_baseline_ogl(false);
-	info.backside = false;
-	CHECK_ERR();
-	ObjDraw(inObj, dist, &sCallbacks, &info);
-	CHECK_ERR();
-
-	glPointSize(1);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 
