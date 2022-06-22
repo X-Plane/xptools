@@ -154,10 +154,20 @@ int					WED_GISEdge::GetNumPoints(void ) const
 	return mCachePts.size();
 }
 
+// Todo: figure out how to make cache update if a source is changed. During merge() and other it operating directly on the sources, bypassing
+// out needs to update the cache
+
 IGISPoint *	WED_GISEdge::GetNthPoint (int n) const
 {
-	RebuildCache(CacheBuild(cache_Topological));
-	return mCachePts[n];
+	if (n == 0)
+		return dynamic_cast<IGISPoint*>(GetNthSource(0));
+	else if (n == GetNumPoints() - 1)
+		return dynamic_cast<IGISPoint*>(GetNthSource(1));
+	else
+	{
+		RebuildCache(CacheBuild(cache_Topological));
+		return mCachePts[n];
+	}
 }
 
 int					WED_GISEdge::GetNumSides(void) const
@@ -174,13 +184,20 @@ bool				WED_GISEdge::GetSide  (GISLayer_t l,int n, Bezier2& b) const
 	int n1 = n == -1 ? 0 : n;
 	int n2 = n == -1 ? GetNumPoints() - 1 : n + 1;
 
-	mCachePts[n1]->GetLocation(l, b.p1);
+	if(n1 == 0)
+		dynamic_cast<IGISPoint*>(GetNthSource(0))->GetLocation(l, b.p1);
+	else
+		mCachePts[n1]->GetLocation(l, b.p1);
+//	mCachePts[n1]->GetLocation(l, b.p1);
 	if (n1 == 0)
 		b.c1 = b.p1 + Vector2(ctrl_lon_lo.value, ctrl_lat_lo.value);
 	else
 		mCachePtsBezier[n1]->GetControlHandleHi(l, b.c1);
 
-	mCachePts[n2]->GetLocation(l, b.p2);
+	if (n2 == GetNumPoints() - 1)
+		dynamic_cast<IGISPoint*>(GetNthSource(1))->GetLocation(l, b.p2);
+	else
+		mCachePts[n2]->GetLocation(l, b.p2);
 	if (n2 == GetNumPoints() - 1)
 		b.c2 = b.p2 + Vector2(ctrl_lon_hi.value, ctrl_lat_hi.value);
 	else
