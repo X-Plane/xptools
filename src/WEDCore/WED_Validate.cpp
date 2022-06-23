@@ -333,7 +333,7 @@ static void ValidateOnePointSequence(WED_Thing* who, validation_error_vector& ms
 	for(int n = 0; n < nn; ++n)
 	{
 		Bezier2 b;
-		bool bez = ps->GetSide(gis_Geo,n,b);
+		ps->GetSide(gis_Geo,n,b);
 
 		// if(b.p1 == b.p2)
 		if(dob_sqr(b.p1.x() - b.p2.x()) + inv_cos_lat_sq * dob_sqr(b.p1.y() - b.p2.y()) < min_len_sq)
@@ -1371,7 +1371,7 @@ static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& 
 		{
 			if (r.has_centerline > 0 && r.edge_light_code == apt_edge_LIRL)
 				msgs.push_back(validation_error_t("Edge Light intensity will be increased to MIRL by X-Plane 12 due to centerline light presence", warn_rwy_edge_light_not_matching_center_lights, who, apt));
-			if (r.has_tdzl > 0 && r.edge_light_code <= apt_edge_MIRL)
+			if ((r.has_tdzl[0] > 0 || r.has_tdzl[1] > 0) && r.edge_light_code <= apt_edge_MIRL)
 				msgs.push_back(validation_error_t("Edge Light intensity will be increased to HIRL by X-Plane 12 due to touchdown light presence", warn_rwy_edge_light_not_matching_center_lights, who, apt));
 			if ((r.app_light_code[0] > 0 || r.app_light_code[1] > 0) && r.edge_light_code <= apt_edge_MIRL)
 				msgs.push_back(validation_error_t("Edge Light intensity will be increased to HIRL by X-Plane 12 due to approach light presence", warn_rwy_edge_light_not_matching_center_lights, who, apt));
