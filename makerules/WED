@@ -47,8 +47,7 @@ LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libfreetype.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
-
+LIBS		+= -lz
 
 ##
 # sources

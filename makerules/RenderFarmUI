@@ -38,7 +38,7 @@ LIBS		+= ./libs/local/lib/libjpeg.a
 LIBS		+= ./libs/local/lib/libpng.a
 LIBS		+= ./libs/local/lib/libfreetype.a
 LIBS		+= ./libs/local/lib/libexpat.a
-LIBS		+= ./libs/local/lib/libz.a
+LIBS		+= -lz
 
 
 ##
