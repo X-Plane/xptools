@@ -22,9 +22,9 @@ The X-Plane scenery tools code (XPTools) can be compiled for Mac, Windows, or Li
 
 ### macOS
 
-To build on macOS, you’ll need at least macOS 10.11 (El Capitan) and Xcode 8.3 or higher ([free in the Mac App Store](https://apps.apple.com/us/app/xcode/id497799835?mt=12)).
+To build on macOS, you’ll need at least Xcode 12.2 (i.e. OSX Catalina) ([free in the Mac App Store](https://apps.apple.com/us/app/xcode/id497799835?mt=12)).
 
-You also need a command-line version of [CMake](http://www.cmake.org/) installed. Beside downloading a binary from the cmake website, it can also be installed via [Homebrew](https://brew.sh): `$ brew install cmake`
+The build will create 'fat' libraries and binaries containg code for both x86_64 and arm64 architectures.
 
 ### Windows
 
@@ -36,13 +36,13 @@ Very old (WED 1.3 and earlier) versions were built using MingW - but this toolch
 
 ### Linux
 
-You will need the gcc compiler, version 5.4 or newer, which should be installed by default on pretty much any system. In addition you will need cmake version 3.0+ and developer files for a few libraries installed:
+You will need the gcc compiler, version 7 or newer, which should be installed by default on pretty much any system.
 
 * libc and make tools, package gcc-?-dev (the ? denotes the gcc version you want to use)
 
 * X11 and openGL. When the binary AMD or Nvida video drivers are installed - these all come with a full set of developer bindings. When using MESA drivers, package libglu-mesa and its dependencies will provide all these.
 
-* FTTK toolkit version 1.3, package libfltk1.3-dev
+* FLTK toolkit version 1.3, package libfltk1.3-dev
 * cURL, package libcurl4-openssl-dev
 
 When compiling WED 2.2 and earlier or XPTools version 15-3 and earlier - the Qt4 toolkit, package Qt4-dev is required instead of the FLTK toolkit.
@@ -61,7 +61,7 @@ If you don’t want a complete clone of the code, you can of course use GitHub t
 
 The scenery tools source code depends on a large number of third party libraries; to make cross-platform development easier, they live in a Git sub-module (`libs` for Mac, Linux and MinGW, `msvc_libs` for Visual Studio on Windows).
 
-### Building Libraries (Mac, Linux and MinGW only)
+### Building Libraries (Mac, Linux only)
 
 (This step is not necessary on Windows using MSVC)
 
@@ -70,11 +70,13 @@ The first time you want to compile, you need to first download and compile your 
     git submodule init
     git submodule update libs
     cd libs
-    make -j
+    make
 
-The libraries can take 5-10 minutes to compile!
+The libraries can take 5+ minutes to compile. Parallel builds using the make option -j is highly recommended.
+By default make builds the libraries needed for WED, Xgrinder, DDSTool, DSFTool and ObjView only.
 
-### Getting the Libraries (Windows only)
+If intending to build the less frequntly used tools like MeshTool or any component of RenderFarm, a number of more complex libraries like Boost, CGAL and dependencies is required. This is NOT included in the default make or make all_wed.
+Bulding the remaining libraries requires a working install of cmake 3.0 (On OSX the stand alone pack from cmake.org is fine, otherwise use brew ...) and then run 'make all'. It will download Boost and CGAL and build all the rest.
 
 (This step is not necessary on macOS or Linux)
 
@@ -87,11 +89,11 @@ Note that WED versions 1.X and xptools before version 19-4 are using 32bit tools
 
 ### Building the Applications from the command line on Linux or macOS
 
-Go to the Scenery Tools root directory (same dir as where these instructions can be found) and just do a 
+Go to the Scenery Tools root directory (same dir as where these instructions can be found) and just do 
 
-    make -j
+    make 
 
-This will build the tool using default options for debugging. After awhile, the output can be found under
+This will build WED and the frequently used xptools. Using low optimization levels and all debugging options. After a while, the output can be found under
 
     [xptools dir]/build/[platform]/[configuration]
 
@@ -121,15 +123,17 @@ You can also build a single tool or a set of tools like this:
 
 Available tools are:
 
-* `ac3d`
 * `DDSTool`
 * `DSFTool`
-* `MeshTool`
-* `ObjView`
-* `RenderFarm`
-* `RenderFarmUI`
 * `WED`
 * `XGrinder`
+* `ObjView`
+
+* `MeshTool`
+* `RenderFarm`
+* `RenderFarmUI`
+
+The first group is what make without options builds by default - use 'make all' for including the last group. Make all also require the libraries having been build with 'make all' - see above chapter about building the libraries.
 
 ### Building on Windows Using Visual Studio
 
@@ -138,6 +142,7 @@ The MSVC solution file (`.sln`) can be found in `msvc/XPTools.sln`, and it conta
 ### Building on macOS Using XCode
 
 The XCode project is in the root of the repo, `SceneryTools.xcodeproj`. There is one target for each of the scenery tools—simply pick a configuration, target, and build.
+The speed of the build process can be nearly doubled by not building 'fat' binaries, but rather only for the architecture being etting for the whole Project (or any individual Product) Architectures -> Build Active Architecture Only = yes.
 
 ### Building on Linux Using Code::Blocks
 

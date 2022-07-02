@@ -1,12 +1,10 @@
-PLATFORM	:= $(shell uname)
+XP_TARGETS :=	WED ObjView DSFTool DDSTool XGrinder
+TARGETS    :=	$(XP_TARGETS) MeshTool RenderFarm RenderFarmUI
 
-ifneq (, $(findstring MINGW, $(PLATFORM)))
-TARGETS :=	WED MeshTool ObjView DSFTool DDSTool XGrinder
-else
-TARGETS :=	WED MeshTool ObjView DSFTool DDSTool RenderFarm XGrinder RenderFarmUI
-endif
+.PHONY: $(TARGETS) all clean libs release
 
-.PHONY: $(TARGETS) all clean libs release release-test
+default: $(XP_TARGETS)
+
 all: $(TARGETS)
 
 debug:
@@ -20,9 +18,6 @@ release:
 
 release-opt:
 	@$(MAKE) -s -C . conf=release_opt all
-
-release-test:
-	@$(MAKE) -s -C . conf=release_test all
 
 libs:
 	@$(MAKE) -s -C "./libs" all
