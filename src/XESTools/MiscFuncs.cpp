@@ -24,7 +24,6 @@
 #include "ObjTables.h"
 #include <stdio.h>
 #include "EnumSystem.h"
-#include "ObjConvert.h"
 #include "XObjDefs.h"
 #include "ObjUtils.h"
 #include "XObjReadWrite.h"
@@ -46,7 +45,7 @@ void	BuildOneFakeObject(const char * dir, const char * fname, double width, doub
 	char path[1024];
 	strcpy(path, dir);
 	strcat(path, fname);
-	XObj	obj;
+/*	XObj	obj;
 	obj.texture = "buildings";
 	XObjCmd lod;
 	lod.cmdType = type_Attr;
@@ -97,10 +96,10 @@ void	BuildOneFakeObject(const char * dir, const char * fname, double width, doub
 	cmd.st[3].v[0] =  w;	cmd.st[3].v[1] = h; cmd.st[3].v[2] =  d;
 	if (faketype != fake_tree)
 		obj.cmds.push_back(cmd);
-
+*/
 	XObj8	obj8;
 	
-	Obj7ToObj8(obj,obj8);
+//	Obj7ToObj8(obj,obj8);
 	XObj8Write(path, obj8);
 }
 
@@ -243,7 +242,7 @@ void	CheckLib(const char * inDir)
 				lib[t] = r;
 		}
 	}
-	for (map<string, string>::iterator i = lib.begin(); i != lib.end(); ++i)
+/*	for (map<string, string>::iterator i = lib.begin(); i != lib.end(); ++i)
 	{
 		XObj	foo;
 		strcpy(buf, inDir);
@@ -260,7 +259,7 @@ void	CheckLib(const char * inDir)
 		offx [i->second] = (maxs[0] + mins[0]) * 0.5;
 		offz [i->second] = (maxs[2] + mins[2]) * 0.5;
 	}
-
+*/
 	for (int n = 0; n < gRepTable.size(); ++n)
 	{
 //		if (!gRepTable[n].obj_name.empty())

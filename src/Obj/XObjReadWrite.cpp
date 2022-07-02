@@ -1006,8 +1006,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 	return true;
 }
 
-#if 0 // this hasnt been updated since X-Plane 10.00 - missing all and any extension added since !!!!
-
+// this hasnt been updated since X-Plane 10.00 - missing all and any extension added since !!!!
 
 /****************************************************************************************
  * OBJ 8 WRITE
@@ -1508,5 +1507,3 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 	fclose(fi);
 	return true;
 }
-
-#endif

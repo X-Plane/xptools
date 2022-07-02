@@ -41,7 +41,7 @@ LIBS		+= -lz
 SOURCES += ./src/MeshTool/MeshTool.cpp
 SOURCES += ./src/MeshTool/MeshTool_Create.cpp
 SOURCES += ./src/Obj/ObjPointPool.cpp
-SOURCES += ./src/Obj/XObjBuilder.cpp
+#SOURCES += ./src/Obj/XObjBuilder.cpp
 SOURCES += ./src/Obj/XObjDefs.cpp
 SOURCES += ./src/Obj/XObjReadWrite.cpp
 SOURCES += ./src/DSF/DSFLib.cpp
@@ -129,3 +129,12 @@ SOURCES += ./src/lzma19/C/CpuArch.c
 SOURCES += ./src/lzma19/C/Delta.c
 SOURCES += ./src/lzma19/C/LzmaDec.c
 SOURCES += ./src/lzma19/C/Lzma2Dec.c
+
+SOURCES += ./src/libtess2/Source/tess.c
+SOURCES += ./src/libtess2/Source/bucketalloc.c
+SOURCES += ./src/libtess2/Source/dict.c
+SOURCES += ./src/libtess2/Source/mesh.c
+SOURCES += ./src/libtess2/Source/priorityq.c
+SOURCES += ./src/libtess2/Source/sweep.c
+SOURCES += ./src/libtess2/Source/geom.c
+

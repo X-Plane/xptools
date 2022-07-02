@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D6ED369A0B67964D00D5484E"
-               BuildableName = "WED.app"
-               BlueprintName = "WED"
+               BlueprintIdentifier = "8D0C4E890486CD37000505A6"
+               BuildableName = "ObjView.app"
+               BlueprintName = "ObjView"
                ReferencedContainer = "container:SceneryTools.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -44,9 +44,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D6ED369A0B67964D00D5484E"
-            BuildableName = "WED.app"
-            BlueprintName = "WED"
+            BlueprintIdentifier = "8D0C4E890486CD37000505A6"
+            BuildableName = "ObjView.app"
+            BlueprintName = "ObjView"
             ReferencedContainer = "container:SceneryTools.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -61,9 +61,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D6ED369A0B67964D00D5484E"
-            BuildableName = "WED.app"
-            BlueprintName = "WED"
+            BlueprintIdentifier = "8D0C4E890486CD37000505A6"
+            BuildableName = "ObjView.app"
+            BlueprintName = "ObjView"
             ReferencedContainer = "container:SceneryTools.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

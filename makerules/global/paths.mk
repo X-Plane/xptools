@@ -38,7 +38,6 @@ INCLUDEPATHS += -I./src/DSF/tri_stripper_101
 INCLUDEPATHS += -I./src/RawImport
 INCLUDEPATHS += -I./src/Tiger
 INCLUDEPATHS += -I./src/SDTS
-INCLUDEPATHS += -I./SDK/ac3d
 
 ifdef PLAT_LINUX
 INCLUDEPATHS += -I./src/linuxinit

@@ -107,7 +107,6 @@ SOURCES += ./src/GUI/GUI_TabControl.cpp
 SOURCES += ./src/GUI/GUI_Table.cpp
 SOURCES += ./src/GUI/GUI_TabPane.cpp
 SOURCES += ./src/GUI/GUI_TextField.cpp
-SOURCES += ./src/GUI/GUI_TextTable.cpp
 SOURCES += ./src/GUI/GUI_Timer.cpp
 SOURCES += ./src/GUI/GUI_ToolBar.cpp
 SOURCES += ./src/GUI/GUI_Window.cpp
@@ -117,10 +116,8 @@ SOURCES += ./src/GUI/GUI_Clipboard.cpp
 SOURCES += ./src/GUI/GUI_Unicode.cpp
 SOURCES += ./src/GUI/GUI_Application.cpp
 SOURCES += ./src/Obj/ObjPointPool.cpp
-SOURCES += ./src/Obj/XObjBuilder.cpp
 SOURCES += ./src/Obj/XObjDefs.cpp
 SOURCES += ./src/Obj/XObjReadWrite.cpp
-SOURCES += ./src/Obj/ObjConvert.cpp
 SOURCES += ./src/DSF/DSFLib.cpp
 SOURCES += ./src/DSF/DSFLibWrite.cpp
 SOURCES += ./src/DSF/DSFPointPool.cpp
@@ -215,8 +212,6 @@ SOURCES += ./src/XESTools/MiscFuncs.cpp
 SOURCES += ./src/XESTools/SelfTest.cpp
 SOURCES += ./src/DSF/tri_stripper_101/tri_stripper.cpp
 SOURCES += ./src/OGLE/ogle.cpp
-SOURCES += ./src/WEDWindows/WED_Sign_Editor.cpp
-SOURCES += ./src/WEDCore/WED_Sign_Parser.cpp
 
 SOURCES += ./src/lzma19/C/7zArcIn.c
 SOURCES += ./src/lzma19/C/7zAlloc.c
@@ -234,6 +229,14 @@ SOURCES += ./src/lzma19/C/CpuArch.c
 SOURCES += ./src/lzma19/C/Delta.c
 SOURCES += ./src/lzma19/C/LzmaDec.c
 SOURCES += ./src/lzma19/C/Lzma2Dec.c
+
+SOURCES += ./src/libtess2/Source/tess.c
+SOURCES += ./src/libtess2/Source/bucketalloc.c
+SOURCES += ./src/libtess2/Source/dict.c
+SOURCES += ./src/libtess2/Source/mesh.c
+SOURCES += ./src/libtess2/Source/priorityq.c
+SOURCES += ./src/libtess2/Source/sweep.c
+SOURCES += ./src/libtess2/Source/geom.c
 
 ##
 # resources

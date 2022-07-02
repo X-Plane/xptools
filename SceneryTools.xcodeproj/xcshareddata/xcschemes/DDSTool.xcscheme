@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D6ED369A0B67964D00D5484E"
-               BuildableName = "WED.app"
-               BlueprintName = "WED"
+               BlueprintIdentifier = "D6C579BC0C7E3C7B00FCB4C1"
+               BuildableName = "DDSTool"
+               BlueprintName = "DDSTool"
                ReferencedContainer = "container:SceneryTools.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -44,12 +44,21 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D6ED369A0B67964D00D5484E"
-            BuildableName = "WED.app"
-            BlueprintName = "WED"
+            BlueprintIdentifier = "D67EF4EE0B5CF9F400D9190C"
+            BuildableName = "XGrinder.app"
+            BlueprintName = "XGrinder"
             ReferencedContainer = "container:SceneryTools.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "D6C579BC0C7E3C7B00FCB4C1"
+            BuildableName = "DDSTool"
+            BlueprintName = "DDSTool"
+            ReferencedContainer = "container:SceneryTools.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -61,9 +70,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D6ED369A0B67964D00D5484E"
-            BuildableName = "WED.app"
-            BlueprintName = "WED"
+            BlueprintIdentifier = "D6C579BC0C7E3C7B00FCB4C1"
+            BuildableName = "DDSTool"
+            BlueprintName = "DDSTool"
             ReferencedContainer = "container:SceneryTools.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

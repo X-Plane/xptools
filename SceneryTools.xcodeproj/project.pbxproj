@@ -13,12 +13,10 @@
 			buildPhases = (
 			);
 			dependencies = (
-				D60734330D197A2300E08F61 /* PBXTargetDependency */,
 				D61C26EF0B6155A10092E098 /* PBXTargetDependency */,
 				D61C26ED0B61559E0092E098 /* PBXTargetDependency */,
 				D61C26EB0B61559C0092E098 /* PBXTargetDependency */,
 				D66FD87A0C933D39004AD565 /* PBXTargetDependency */,
-				D6C68DDC0BEFB3A400C9F880 /* PBXTargetDependency */,
 			);
 			name = "Build Tools";
 			productName = Untitled;
@@ -63,6 +61,27 @@
 		024A328E2864D797000CEF68 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 024A32562864D4CF000CEF68 /* libz.tbd */; };
 		024A32992864D7A2000CEF68 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 024A32562864D4CF000CEF68 /* libz.tbd */; };
 		024A32A42864D7AC000CEF68 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 024A32562864D4CF000CEF68 /* libz.tbd */; };
+		025E445C286E837A00D85484 /* bucketalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EEA241FC439003E72C5 /* bucketalloc.c */; };
+		025E4467286E838100D85484 /* dict.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EEC241FC439003E72C5 /* dict.c */; };
+		025E4472286E838500D85484 /* geom.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EEE241FC439003E72C5 /* geom.c */; };
+		025E447D286E838900D85484 /* mesh.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EF0241FC439003E72C5 /* mesh.c */; };
+		025E4488286E838D00D85484 /* priorityq.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EF2241FC439003E72C5 /* priorityq.c */; };
+		025E4493286E839100D85484 /* sweep.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EF4241FC439003E72C5 /* sweep.c */; };
+		025E449E286E839500D85484 /* tess.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EF6241FC439003E72C5 /* tess.c */; };
+		025E44A9286E867B00D85484 /* bucketalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EEA241FC439003E72C5 /* bucketalloc.c */; };
+		025E44B4286E867E00D85484 /* dict.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EEC241FC439003E72C5 /* dict.c */; };
+		025E44BF286E868200D85484 /* geom.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EEE241FC439003E72C5 /* geom.c */; };
+		025E44CA286E868600D85484 /* mesh.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EF0241FC439003E72C5 /* mesh.c */; };
+		025E44D5286E868A00D85484 /* priorityq.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EF2241FC439003E72C5 /* priorityq.c */; };
+		025E44E0286E868E00D85484 /* sweep.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EF4241FC439003E72C5 /* sweep.c */; };
+		025E44EB286E869100D85484 /* tess.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EF6241FC439003E72C5 /* tess.c */; };
+		025E44F6286E8E9E00D85484 /* bucketalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EEA241FC439003E72C5 /* bucketalloc.c */; };
+		025E4501286E8EA200D85484 /* dict.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EEC241FC439003E72C5 /* dict.c */; };
+		025E450C286E8EA600D85484 /* geom.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EEE241FC439003E72C5 /* geom.c */; };
+		025E4517286E8EAA00D85484 /* mesh.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EF0241FC439003E72C5 /* mesh.c */; };
+		025E4522286E8EAE00D85484 /* priorityq.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EF2241FC439003E72C5 /* priorityq.c */; };
+		025E452D286E8EB200D85484 /* sweep.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EF4241FC439003E72C5 /* sweep.c */; };
+		025E4538286E8EB600D85484 /* tess.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EF6241FC439003E72C5 /* tess.c */; };
 		0269A8551FF5F8F00085A37C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
 		0269A8561FF5F8F10085A37C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
 		028A6FE725F897C90002FDF5 /* ArrowHeadRoadE.png in Resources */ = {isa = PBXBuildFile; fileRef = 028A6FE325F897C30002FDF5 /* ArrowHeadRoadE.png */; };
@@ -926,13 +945,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		D60734320D197A2300E08F61 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D60734100D197A1100E08F61;
-			remoteInfo = MeshTool;
-		};
 		D60734340D197A2700E08F61 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
@@ -967,13 +979,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = D6C579BC0C7E3C7B00FCB4C1;
 			remoteInfo = DDSTool;
-		};
-		D6C68DDB0BEFB3A400C9F880 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D6ED369A0B67964D00D5484E;
-			remoteInfo = WED;
 		};
 		D6C68DE00BEFB3BE00C9F880 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -4227,8 +4232,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				D60734150D197A1100E08F61 /* DSFLib.cpp in Sources */,
+				025E4522286E8EAE00D85484 /* priorityq.c in Sources */,
 				D60734160D197A1100E08F61 /* DSFLib_Print.cpp in Sources */,
 				D60734170D197A1100E08F61 /* DSFPointPool.cpp in Sources */,
+				025E452D286E8EB200D85484 /* sweep.c in Sources */,
+				025E4501286E8EA200D85484 /* dict.c in Sources */,
+				025E44F6286E8E9E00D85484 /* bucketalloc.c in Sources */,
 				D60734180D197A1100E08F61 /* DSFLibWrite.cpp in Sources */,
 				D607341C0D197A1100E08F61 /* XChunkyFileUtils.cpp in Sources */,
 				D607341D0D197A1100E08F61 /* AssertUtils.cpp in Sources */,
@@ -4243,12 +4252,15 @@
 				D60734800D197BD700E08F61 /* AptIO.cpp in Sources */,
 				D60734810D197BD800E08F61 /* Beaches.cpp in Sources */,
 				D60734830D197BDE00E08F61 /* ConfigSystem.cpp in Sources */,
+				025E450C286E8EA600D85484 /* geom.c in Sources */,
 				D60734840D197BE000E08F61 /* DEMAlgs.cpp in Sources */,
 				D60734850D197BE100E08F61 /* DEMDefs.cpp in Sources */,
 				D60734860D197BE200E08F61 /* DEMIO.cpp in Sources */,
 				D60734870D197BE300E08F61 /* DEMTables.cpp in Sources */,
 				D60734880D197BE400E08F61 /* DEMToVector.cpp in Sources */,
 				D60734890D197BE600E08F61 /* DSFBuilder.cpp in Sources */,
+				025E4538286E8EB600D85484 /* tess.c in Sources */,
+				025E4517286E8EAA00D85484 /* mesh.c in Sources */,
 				D607348A0D197BEC00E08F61 /* EnumSystem.cpp in Sources */,
 				D607348C0D197BF300E08F61 /* GreedyMesh.cpp in Sources */,
 				D60734900D197C0800E08F61 /* MapIO.cpp in Sources */,
@@ -4312,6 +4324,7 @@
 				D62435340AE401EF004F00E3 /* PlatformUtils.mac.mm in Sources */,
 				D62435350AE401EF004F00E3 /* TexUtils.cpp in Sources */,
 				D62435370AE401EF004F00E3 /* ObjUtils.cpp in Sources */,
+				025E4493286E839100D85484 /* sweep.c in Sources */,
 				D62435380AE401EF004F00E3 /* XUtils.cpp in Sources */,
 				D62435390AE401EF004F00E3 /* trackball.c in Sources */,
 				D624353A0AE401EF004F00E3 /* GeoUtils.cpp in Sources */,
@@ -4334,6 +4347,7 @@
 				D62435F30AE403F4004F00E3 /* DEMIO.cpp in Sources */,
 				D62435F40AE403F4004F00E3 /* DEMTables.cpp in Sources */,
 				D62435F50AE403F4004F00E3 /* DEMToVector.cpp in Sources */,
+				025E445C286E837A00D85484 /* bucketalloc.c in Sources */,
 				D62435F60AE403F4004F00E3 /* DSFBuilder.cpp in Sources */,
 				D62435F70AE403F4004F00E3 /* EnumSystem.cpp in Sources */,
 				D62435FA0AE403F4004F00E3 /* GreedyMesh.cpp in Sources */,
@@ -4364,6 +4378,7 @@
 				D656B1C40B517EC6003FF84F /* MapAlgs.cpp in Sources */,
 				D656B1E00B517FB0003FF84F /* BWImage.cpp in Sources */,
 				02C7505E23A053B5008475A1 /* 7zCrc.c in Sources */,
+				025E4467286E838100D85484 /* dict.c in Sources */,
 				D656B1E60B517FB8003FF84F /* GISUtils.cpp in Sources */,
 				D656B1E80B517FC8003FF84F /* ProgressUtils.cpp in Sources */,
 				02C7506F23A053EE008475A1 /* BraIA64.c in Sources */,
@@ -4372,6 +4387,7 @@
 				D656B2220B518132003FF84F /* XObjReadWrite.cpp in Sources */,
 				02C7505B23A053AC008475A1 /* 7zBuf.c in Sources */,
 				D656B2320B5181C8003FF84F /* perlin.cpp in Sources */,
+				025E447D286E838900D85484 /* mesh.c in Sources */,
 				02C7505523A0539A008475A1 /* 7zStream.c in Sources */,
 				D69FD7490B6CF765008E3AEC /* unzip.c in Sources */,
 				D69FD74A0B6CF765008E3AEC /* zip.c in Sources */,
@@ -4417,6 +4433,7 @@
 				D6956F210F82E96900F6718E /* RF_MapTool.cpp in Sources */,
 				D6956F220F82E96900F6718E /* RF_MapView.cpp in Sources */,
 				D6956F230F82E96900F6718E /* RF_MapZoomer.cpp in Sources */,
+				025E449E286E839500D85484 /* tess.c in Sources */,
 				D6956F250F82E96900F6718E /* RF_Notify.cpp in Sources */,
 				D6956F290F82E96900F6718E /* RF_Selection.cpp in Sources */,
 				D6956F2A0F82E96900F6718E /* RF_SelectionTool.cpp in Sources */,
@@ -4427,6 +4444,7 @@
 				D6151E8D0FB46BA6008A355F /* GUI_Application.cpp in Sources */,
 				D6151E8E0FB46BA6008A355F /* GUI_Broadcaster.cpp in Sources */,
 				D6151E8F0FB46BA6008A355F /* GUI_Button.cpp in Sources */,
+				025E4488286E838D00D85484 /* priorityq.c in Sources */,
 				D6151E900FB46BA7008A355F /* GUI_ChangeView.cpp in Sources */,
 				D6151E910FB46BA7008A355F /* GUI_Clipboard.cpp in Sources */,
 				02C7505923A053A6008475A1 /* 7zArcIn.c in Sources */,
@@ -4470,6 +4488,7 @@
 				D63F72751180917800AB7C1F /* BlockFill.cpp in Sources */,
 				D6A88BE711820B05000EBFBF /* MemUtils.cpp in Sources */,
 				D63B0C481189FC06002F58BB /* RF_SpecialCommands.cpp in Sources */,
+				025E4472286E838500D85484 /* geom.c in Sources */,
 				D64A08AA127AFDC1000D58A7 /* NetAlgs.cpp in Sources */,
 				D64A08B0127AFDEA000D58A7 /* NetHelpers.cpp in Sources */,
 				D63390B21358D71300C524FD /* DEMGrid.cpp in Sources */,
@@ -4535,15 +4554,18 @@
 				D65E4BAD0B65455B004D7887 /* EnumSystem.cpp in Sources */,
 				02C7506123A053BC008475A1 /* 7zCrcOpt.c in Sources */,
 				02C7506523A053C7008475A1 /* 7zFile.c in Sources */,
+				025E44A9286E867B00D85484 /* bucketalloc.c in Sources */,
 				02C7507423A053FA008475A1 /* Delta.c in Sources */,
 				D65E4BAE0B65455C004D7887 /* DSFBuilder.cpp in Sources */,
 				D65E4BAF0B65455E004D7887 /* DEMToVector.cpp in Sources */,
 				D65E4BB00B654560004D7887 /* DEMTables.cpp in Sources */,
 				02C7506323A053C2008475A1 /* 7zDec.c in Sources */,
+				025E44EB286E869100D85484 /* tess.c in Sources */,
 				D65E4BB10B654562004D7887 /* DEMIO.cpp in Sources */,
 				D65E4BB20B654563004D7887 /* DEMDefs.cpp in Sources */,
 				D65E4BB30B654565004D7887 /* DEMAlgs.cpp in Sources */,
 				D65E4BB40B654567004D7887 /* ConfigSystem.cpp in Sources */,
+				025E44BF286E868200D85484 /* geom.c in Sources */,
 				02C7506C23A053E5008475A1 /* Bra.c in Sources */,
 				D65E4BB60B654570004D7887 /* Beaches.cpp in Sources */,
 				D65E4BB70B654572004D7887 /* AptIO.cpp in Sources */,
@@ -4567,6 +4589,8 @@
 				D65E4C2C0B6548D6004D7887 /* BitmapUtils.cpp in Sources */,
 				D65E4C370B6548FD004D7887 /* ObjUtils.cpp in Sources */,
 				D65E4C380B654901004D7887 /* perlin.cpp in Sources */,
+				025E44CA286E868600D85484 /* mesh.c in Sources */,
+				025E44D5286E868A00D85484 /* priorityq.c in Sources */,
 				D69FD74D0B6CF765008E3AEC /* unzip.c in Sources */,
 				D69FD74E0B6CF765008E3AEC /* zip.c in Sources */,
 				D67682B80CC669830032B90C /* TensorUtils.cpp in Sources */,
@@ -4581,6 +4605,7 @@
 				D68E28840EBF5D3A0015648F /* ShapeIO.cpp in Sources */,
 				D6BB22910EC13287006499D7 /* MapTopology.cpp in Sources */,
 				D6BB23AF0EC1EBE1006499D7 /* CompGeomUtils.cpp in Sources */,
+				025E44E0286E868E00D85484 /* sweep.c in Sources */,
 				D670D3131DD7D92000827DEA /* GISTool_ImageCmds.cpp in Sources */,
 				D678ADF60F7952B700F72139 /* tri_stripper.cpp in Sources */,
 				D6956ECC0F82DBF800F6718E /* MapHelpers.cpp in Sources */,
@@ -4595,6 +4620,7 @@
 				02C7505A23A053AA008475A1 /* 7zBuf.c in Sources */,
 				D64A08AF127AFDEA000D58A7 /* NetHelpers.cpp in Sources */,
 				D63390B31358D71300C524FD /* DEMGrid.cpp in Sources */,
+				025E44B4286E867E00D85484 /* dict.c in Sources */,
 				D62F3A57138D4E8900F2C120 /* MeshSimplify.cpp in Sources */,
 				D6D408291406C6A20061EBF9 /* BezierApprox.cpp in Sources */,
 				D6C46B7E14376BD30067B004 /* XUtils.cpp in Sources */,
@@ -4967,11 +4993,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		D60734330D197A2300E08F61 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D60734100D197A1100E08F61 /* MeshTool */;
-			targetProxy = D60734320D197A2300E08F61 /* PBXContainerItemProxy */;
-		};
 		D60734350D197A2700E08F61 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = D60734100D197A1100E08F61 /* MeshTool */;
@@ -4996,11 +5017,6 @@
 			isa = PBXTargetDependency;
 			target = D6C579BC0C7E3C7B00FCB4C1 /* DDSTool */;
 			targetProxy = D66FD8790C933D39004AD565 /* PBXContainerItemProxy */;
-		};
-		D6C68DDC0BEFB3A400C9F880 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D6ED369A0B67964D00D5484E /* WED */;
-			targetProxy = D6C68DDB0BEFB3A400C9F880 /* PBXContainerItemProxy */;
 		};
 		D6C68DE10BEFB3BE00C9F880 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -5046,6 +5062,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 399;
 				INFOPLIST_FILE = src/XPTools/ObjView.plist;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libpng.a,
@@ -5061,6 +5078,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 399;
 				INFOPLIST_FILE = src/XPTools/ObjView.plist;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libpng.a,
@@ -5073,7 +5091,7 @@
 		C0E91ACA08A95435008D54AB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = x86_64;
+				ARCHS = "$(ARCHS_STANDARD)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_CXX_LIBRARY = "compiler-default";
 				CLANG_WARN_ASSIGN_ENUM = YES;
@@ -5100,7 +5118,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				EXCLUDED_ARCHS = arm64;
+				EXCLUDED_ARCHS = "";
 				GCC_C_LANGUAGE_STANDARD = "compiler-default";
 				GCC_FAST_MATH = YES;
 				GCC_INPUT_FILETYPE = automatic;
@@ -5146,7 +5164,7 @@
 		C0E91ACB08A95435008D54AB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = x86_64;
+				ARCHS = "$(ARCHS_STANDARD)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_CXX_LIBRARY = "compiler-default";
 				CLANG_WARN_ASSIGN_ENUM = YES;
@@ -5172,7 +5190,7 @@
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				EXCLUDED_ARCHS = arm64;
+				EXCLUDED_ARCHS = "";
 				GCC_C_LANGUAGE_STANDARD = "compiler-default";
 				GCC_FAST_MATH = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
@@ -5300,7 +5318,7 @@
 		D60E98EE0EDDDEEA0096DE0E /* Phone */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = x86_64;
+				ARCHS = "$(ARCHS_STANDARD)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_CXX_LIBRARY = "compiler-default";
 				CLANG_WARN_ASSIGN_ENUM = YES;
@@ -5326,7 +5344,7 @@
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				EXCLUDED_ARCHS = arm64;
+				EXCLUDED_ARCHS = "";
 				GCC_C_LANGUAGE_STANDARD = "compiler-default";
 				GCC_FAST_MATH = YES;
 				GCC_INPUT_FILETYPE = automatic;
@@ -5376,6 +5394,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 399;
 				INFOPLIST_FILE = src/XPTools/ObjView.plist;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libpng.a,
@@ -5390,6 +5409,7 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
+				EXCLUDED_ARCHS = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"USE_JPEG=1",
@@ -5403,6 +5423,7 @@
 					src/lib_json/include,
 					"$(inherited)",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
@@ -5437,13 +5458,13 @@
 		D60E98F30EDDDEEA0096DE0E /* Phone */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 399;
 				DEPLOYMENT_LOCATION = NO;
-				EXCLUDED_ARCHS = arm64;
+				EXCLUDED_ARCHS = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"USE_JPEG=1",
@@ -5496,6 +5517,7 @@
 					"WANT_NED_MALLOC=1",
 					"$(inherited)",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
@@ -5611,6 +5633,7 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
+				EXCLUDED_ARCHS = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"USE_JPEG=1",
@@ -5624,6 +5647,7 @@
 					src/lib_json/include,
 					"$(inherited)",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
@@ -5649,6 +5673,7 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
+				EXCLUDED_ARCHS = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"USE_JPEG=1",
@@ -5662,6 +5687,7 @@
 					src/lib_json/include,
 					"$(inherited)",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
@@ -5692,6 +5718,7 @@
 					"WANT_NED_MALLOC=1",
 					"$(inherited)",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
@@ -5722,6 +5749,7 @@
 					"WANT_NED_MALLOC=1",
 					"$(inherited)",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
@@ -5834,13 +5862,13 @@
 		D6ED37470B67964D00D5484E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 399;
 				DEPLOYMENT_LOCATION = NO;
-				EXCLUDED_ARCHS = arm64;
+				EXCLUDED_ARCHS = "";
 				GCC_DEBUGGING_SYMBOLS = full;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
@@ -5879,13 +5907,13 @@
 		D6ED37480B67964D00D5484E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 399;
 				DEPLOYMENT_LOCATION = NO;
-				EXCLUDED_ARCHS = arm64;
+				EXCLUDED_ARCHS = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"USE_JPEG=1",
@@ -5926,6 +5954,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 399;
 				INFOPLIST_FILE = src/XPTools/ObjView.plist;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libpng.a,
@@ -5940,6 +5969,7 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
+				EXCLUDED_ARCHS = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"USE_JPEG=1",
@@ -5953,6 +5983,7 @@
 					src/lib_json/include,
 					"$(inherited)",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
@@ -6008,13 +6039,13 @@
 		D6F01D770CDABA8D00A3F1B0 /* DebugOpt */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 399;
 				DEPLOYMENT_LOCATION = NO;
-				EXCLUDED_ARCHS = arm64;
+				EXCLUDED_ARCHS = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"USE_JPEG=1",
@@ -6059,6 +6090,7 @@
 					"WANT_NED_MALLOC=1",
 					"$(inherited)",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
@@ -6108,7 +6140,7 @@
 		D6F01D7B0CDABA8D00A3F1B0 /* DebugOpt */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = x86_64;
+				ARCHS = "$(ARCHS_STANDARD)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_CXX_LIBRARY = "compiler-default";
 				CLANG_WARN_ASSIGN_ENUM = YES;
@@ -6135,7 +6167,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				EXCLUDED_ARCHS = arm64;
+				EXCLUDED_ARCHS = "";
 				GCC_C_LANGUAGE_STANDARD = "compiler-default";
 				GCC_FAST_MATH = YES;
 				GCC_INPUT_FILETYPE = automatic;
