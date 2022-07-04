@@ -943,25 +943,32 @@ static void TJunctionCrossingTest(const TaxiRouteInfoVec_t& all_taxiroutes, vali
 	#define TJUNCTION_THRESHOLD_TRUCKS  5.0
 	#define TJUNCTION_THRESHOLD_AC_REL  0.6
 
-	#define SHORT_THRESHOLD_TRUCKS  10.0
+	#define SHORT_THRESHOLD_TRUCKS   7.0
+	#define SHORT_THRESHOLD_AC_SM	 7.0
 	#define SHORT_THRESHOLD_AC		10.0
 	#define SHORT_THRESHOLD_AC_LG	20.0
 	#define STR(s) #s
 	
-	set<WED_TaxiRoute *> crossing_edges, short_edgesAB, short_edgesC, short_edgesT;
+	set<WED_TaxiRoute *> crossing_edges, short_edgesAB, short_edgesC, short_edgesDEF, short_edgesT;
 	for (auto tr_a = all_taxiroutes.cbegin(); tr_a != all_taxiroutes.cend(); ++tr_a)
 	{
 		Segment2 edge_a = tr_a->segment_m;
 		double length_sq = edge_a.squared_length();
 		if (tr_a->is_aircraft_route)
 		{
-			if (tr_a->ptr->GetWidth() <= width_C)
+			switch (tr_a->ptr->GetWidth())
 			{
-				if (length_sq < SHORT_THRESHOLD_AC * SHORT_THRESHOLD_AC)
-					short_edgesAB.insert(tr_a->ptr);
+				case width_A:
+				case width_B:
+					if (length_sq < SHORT_THRESHOLD_AC_SM * SHORT_THRESHOLD_AC_SM)
+						short_edgesAB.insert(tr_a->ptr);
+				case width_C:
+					if (length_sq < SHORT_THRESHOLD_AC * SHORT_THRESHOLD_AC)
+						short_edgesC.insert(tr_a->ptr);
+				default:
+					if (length_sq < SHORT_THRESHOLD_AC_LG * SHORT_THRESHOLD_AC_LG)
+						short_edgesDEF.insert(tr_a->ptr);
 			}
-			else if (length_sq < SHORT_THRESHOLD_AC_LG * SHORT_THRESHOLD_AC_LG)
-					short_edgesC.insert(tr_a->ptr);
 		}
 		else if (length_sq < SHORT_THRESHOLD_TRUCKS * SHORT_THRESHOLD_TRUCKS)
 					short_edgesT.insert(tr_a->ptr);
@@ -1052,12 +1059,15 @@ static void TJunctionCrossingTest(const TaxiRouteInfoVec_t& all_taxiroutes, vali
 	if(!crossing_edges.empty())
 		msgs.push_back(validation_error_t("Airport contains crossing ATC routing lines with no node at the crossing point."
 										  " Split the lines and join the nodes.", err_airport_ATC_network, crossing_edges, apt));
-	if(!short_edgesAB.empty())
+	if (!short_edgesAB.empty())
+		msgs.push_back(validation_error_t(string("Airport contains short (<") + to_string((int)SHORT_THRESHOLD_AC_SM) + "m) Taxi route segment(s).",
+			err_taxi_route_zero_length, short_edgesAB, apt));
+	if(!short_edgesC.empty())
 		msgs.push_back(validation_error_t(string("Airport contains short (<") + to_string((int) SHORT_THRESHOLD_AC) + "m) Taxi route segment(s).",
-		   err_taxi_route_zero_length, short_edgesAB, apt));
-	if (!short_edgesC.empty())
+		   err_taxi_route_zero_length, short_edgesC, apt));
+	if (!short_edgesDEF.empty())
 		msgs.push_back(validation_error_t(string("Airport contains short (<") + to_string((int) SHORT_THRESHOLD_AC_LG) + "m) Taxi route segment(s).",
-			err_taxi_route_zero_length, short_edgesC, apt));
+			err_taxi_route_zero_length, short_edgesDEF, apt));
 	if (!short_edgesT.empty())
 		msgs.push_back(validation_error_t(string("Airport contains short (<") + to_string((int) SHORT_THRESHOLD_TRUCKS) + "m) Truck route segment(s).",
 			err_taxi_route_zero_length, short_edgesT, apt));
