@@ -354,7 +354,7 @@ int XWin::handle(int e)
 		//TODO: can carry a list of filenames , can become much more
 		char c[2048];
 		strncpy(c, Fl::event_text(), sizeof(c));
-		#if FL_PATCH_VERSION < 1
+		#if FL_API_VERSION < 10301
 		#error FLTK 1.3.0 is not supported , no fl_decode_uri
 		#else
 		fl_decode_uri(c);

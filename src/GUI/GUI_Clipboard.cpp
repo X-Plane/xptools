@@ -41,7 +41,7 @@
 #endif
 
 #if LIN
-#if FL_PATCH_VERSION > 3
+#if FL_API_VERSION > 10303
 #define mTOTAL_FLTK_CLIPFORMATS 2
 #else
 #define mTOTAL_FLTK_CLIPFORMATS 1
@@ -50,7 +50,7 @@ static const char * const m_fl_clipboard_plain_text = "text/plain";
 
 static string get_nth_clipboard_format(int n)
 {
-	#if FL_PATCH_VERSION > 3
+	#if FL_API_VERSION > 10303
 	if( n == 0 ) return Fl::clipboard_plain_text;
 	if( n == 1 ) return Fl::clipboard_image;
 	#else
@@ -109,7 +109,7 @@ void GUI_InitClipboard(void)
 	#elif IBM
 		sCITs.push_back(CF_UNICODETEXT);
 	#elif LIN
-		#if FL_PATCH_VERSION > 3
+		#if FL_API_VERSION > 10303
 		sCITs.push_back(Fl::clipboard_plain_text);
 		#else
 		sCITs.push_back(m_fl_clipboard_plain_text);
@@ -247,7 +247,7 @@ int GUI_Clipboard_GetSize(GUI_ClipType inType)
 
 	#elif LIN
 		//printf("start paste typ: %s wnd: %p\n",sCITs[inType].c_str(),Fl::focus());
-		#if FL_PATCH_VERSION > 3
+		#if FL_API_VERSION > 10303
 		if(strcmp(sCITs[inType].c_str(),Fl::clipboard_plain_text) != 0) return 0;
 		#else
 		if(strcmp(sCITs[inType].c_str(),m_fl_clipboard_plain_text) != 0) return 0;
@@ -341,7 +341,7 @@ bool GUI_Clipboard_SetData(int type_count, GUI_ClipType inTypes[], int sizes[], 
 	#elif LIN
 		for (int n = 0; n < type_count; ++n)
 		{
-			#if FL_PATCH_VERSION > 3
+			#if FL_API_VERSION > 10303
 			Fl::copy((const char *) ptrs[n],sizes[n],1,sCITs[inTypes[n]].c_str());
 			#else
 			Fl::copy((const char *) ptrs[n],sizes[n],1);

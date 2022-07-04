@@ -169,7 +169,7 @@ int main(int argc, char * argv[])
 		LOG_MSG("WED started on %s\n", now_s);
 
 #if LIN
-#if FL_PATCH_VERSION < 4
+#if FL_API_VERSION < 10304
 		LOG_MSG("FLTK compiletime API %d\n", FL_MAJOR_VERSION*10000 + FL_MINOR_VERSION*100 + FL_PATCH_VERSION);
 #else
 		LOG_MSG("FLTK runtime API %d compiletime API %d\n", Fl::api_version(), FL_API_VERSION);
@@ -255,6 +255,6 @@ int main(int argc, char * argv[])
 
 	LOG_MSG("----- WED has shut down -----\n");
 	if(gLogFile) fclose(gLogFile);
-	
+
 	return 0;
 }
