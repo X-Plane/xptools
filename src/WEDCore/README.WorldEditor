@@ -51,6 +51,7 @@ WED 2.5.0b2 5/30/22
    - nuke all grunge objects
    - add regional presets for ramp starts without assignments
    - add iso3166 country codes to 1302 country meta data
+   - fix XPD-12676 several chinese airport ICAO codes missing in Global Airports
    Features for all X-Plane versions:
    - use full projection for map display to improve location accuracy of linear features
    - bump resolution for ESRI slippy maps below 60 deg lattitude by one ZL

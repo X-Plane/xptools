@@ -108,7 +108,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		{
 			ICAO_code = (*apt_itr)->GetMetaDataValue(wed_AddMetaDataICAO);
 
-			bool illicit = ICAO_code.size() != 4 || toupper(ICAO_code[0]) < 'A' || toupper(ICAO_code[0]) >= 'Z';
+			bool illicit = ICAO_code.size() != 4 || toupper(ICAO_code[0]) < 'A' || toupper(ICAO_code[0]) > 'Z';
 			for (int i = 1; i < 4; i++)
 				illicit |= toupper(ICAO_code[i]) < 'A' || toupper(ICAO_code[i]) > 'Z';
 			if(illicit)
