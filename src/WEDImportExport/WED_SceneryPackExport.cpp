@@ -340,7 +340,8 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				{
 					string res;
 					static_cast<WED_PolygonPlacement*>(t)->GetResource(res);
-					return res.compare(0, strlen("lib/g10/terrain10/"), "lib/g10/terrain10/") == 0;
+					return res.compare(0, strlen("lib/g10/terrain10/"), "lib/g10/terrain10/") == 0 ||
+						   res.compare(0, strlen("lib/g8/pol/"), "lib/g8/pol/") == 0;
 				},
 				WED_PolygonPlacement::sClass, 2);
 			if (terrain_polys.size())
@@ -377,7 +378,8 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		}
 		// The "big xp12 gateway reset" - remove certain features unless the submission is "recent" , measure by the scenery ID
 		// nuke exclusions for Beaches, Polygons, Lines
-		if ((*apt_itr)->GetSceneryID() > 91000)
+		// nuke all per-airport flatten
+		if ((*apt_itr)->GetSceneryID() < 95000)
 		{
 			vector<WED_ExclusionZone*> exclusions;
 			CollectRecursive(*apt_itr, back_inserter(exclusions), IgnoreVisiblity, [](WED_Thing* excl)->bool {
@@ -388,7 +390,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				WED_ExclusionZone::sClass, 2);
 			if (exclusions.size())
 			{
-				wrl->StartCommand("Remove XP11 aera exclusions");
+				wrl->StartCommand("Remove XP11 era exclusions");
 				set<int> ex;
 				for (auto e : exclusions)
 				{
@@ -401,7 +403,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				wrl->CommitCommand();
 				LOG_MSG("I/XP12 Deleted %zd Exclusions at %s\n", exclusions.size(), ICAO_code.c_str());
 			}
-			vector<WED_Sealane*> sealn;
+/*			vector<WED_Sealane*> sealn;
 			CollectRecursive(*apt_itr, back_inserter(sealn), IgnoreVisiblity, TakeAlways, WED_Sealane::sClass, 2);
 			for(auto s : sealn)
 				if(s->GetBuoys())
@@ -411,6 +413,17 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 					wrl->CommitCommand();
 					LOG_MSG("I/XP12 Deleted %zd sealane buoys at %s\n", exclusions.size(), ICAO_code.c_str());
 				}
+*/			AptInfo_t apt_info;
+			(*apt_itr)->Export(apt_info);
+			auto it = std::find(apt_info.meta_data.begin(), apt_info.meta_data.end(), make_pair(string("flatten"), string("1")));
+			if (it != apt_info.meta_data.end())
+			{
+				wrl->StartCommand("Remove XP11 era flatten");
+				apt_info.meta_data.erase(it);
+				(*apt_itr)->Import(apt_info, [](void* ref, const char* fmt, ...) {}, nullptr);
+				wrl->CommitCommand();
+				LOG_MSG("I/XP12 Deleted Always Flatten at %s\n", ICAO_code.c_str());
+			}
 		}
 
 #endif
