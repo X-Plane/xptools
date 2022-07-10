@@ -81,6 +81,8 @@ int		WED_CanExportPack(IResolver * resolver)
 #include <chrono>
 #include "WED_ConvertCommands.h"
 
+void dummyPrintf(void * ref, const char * fmt, ...) { return; }
+
 static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 {
 	LOG_MSG("## Tyler mode ## Starting upgrade heuristics\n");
@@ -392,16 +394,20 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			{
 				wrl->StartCommand("Remove XP11 era exclusions");
 				set<int> ex;
+				int deleted = 0;
 				for (auto e : exclusions)
 				{
 					e->GetExclusions(ex);
-					ex.erase(exclude_Pol);
-					ex.erase(exclude_Lin);
+					deleted += ex.size();
+					ex.erase(exclude_For);
 					ex.erase(exclude_Bch);
+					ex.erase(exclude_Net);
+					ex.erase(exclude_Obj);
+					deleted -= ex.size();
 					e->SetExclusions(ex);
 				}
 				wrl->CommitCommand();
-				LOG_MSG("I/XP12 Deleted %zd Exclusions at %s\n", exclusions.size(), ICAO_code.c_str());
+				LOG_MSG("I/XP12 Deleted %d Exclusions at %s\n", deleted, ICAO_code.c_str());
 			}
 /*			vector<WED_Sealane*> sealn;
 			CollectRecursive(*apt_itr, back_inserter(sealn), IgnoreVisiblity, TakeAlways, WED_Sealane::sClass, 2);
@@ -420,7 +426,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			{
 				wrl->StartCommand("Remove XP11 era flatten");
 				apt_info.meta_data.erase(it);
-				(*apt_itr)->Import(apt_info, [](void* ref, const char* fmt, ...) {}, nullptr);
+				(*apt_itr)->Import(apt_info, dummyPrintf, nullptr);
 				wrl->CommitCommand();
 				LOG_MSG("I/XP12 Deleted Always Flatten at %s\n", ICAO_code.c_str());
 			}

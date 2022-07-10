@@ -962,12 +962,15 @@ static void TJunctionCrossingTest(const TaxiRouteInfoVec_t& all_taxiroutes, vali
 				case width_B:
 					if (length_sq < SHORT_THRESHOLD_AC_SM * SHORT_THRESHOLD_AC_SM)
 						short_edgesAB.insert(tr_a->ptr);
+					break;
 				case width_C:
 					if (length_sq < SHORT_THRESHOLD_AC * SHORT_THRESHOLD_AC)
 						short_edgesC.insert(tr_a->ptr);
+					break;
 				default:
 					if (length_sq < SHORT_THRESHOLD_AC_LG * SHORT_THRESHOLD_AC_LG)
 						short_edgesDEF.insert(tr_a->ptr);
+					break;
 			}
 		}
 		else if (length_sq < SHORT_THRESHOLD_TRUCKS * SHORT_THRESHOLD_TRUCKS)
