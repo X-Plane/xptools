@@ -88,6 +88,7 @@ void	WED_LibraryListAdapter::GetCellContent(
 	RebuildCache();
 	if (cell_y >= mCache.size())
 	{
+		LOG_MSG("LLA:Get %d > %d return null\n", cell_y, (int) mCache.size());
 		c.content_type = gui_Cell_None;
 		return;
 	}
@@ -140,6 +141,7 @@ void	WED_LibraryListAdapter::GetCellContent(
 			c.text_val = mCache[cell_y].vpath.substr(mCache[cell_y].vpath.find_last_of('/') + 1);
 		}
 	}
+	LOG_MSG("LLA:Get %d %d '%s'\n", cell_x, cell_y, c.text_val.c_str());
 }
 
 void	WED_LibraryListAdapter::GetEnumDictionary(
@@ -390,6 +392,8 @@ void	WED_LibraryListAdapter::RebuildCache()
 	swap(newCache, mCache);
 	FilterCache();
 	mCacheValid = true;
+
+	LOG_MSG("LLA:Built Cache, size = %d\n", (int) mCache.size());
 }
 
 void	WED_LibraryListAdapter::RebuildCacheRecursive(const string& vpath, int packType, const string& prefix)

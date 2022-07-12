@@ -211,6 +211,8 @@ void		GUI_TextTable::SetProvider(GUI_TextTableProvider * content)
 
 void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_GraphState * inState			  )
 {
+	LOG_MSG("GTT::CellDraw %d %d err=%d\n", cell_x, cell_y, glGetError());
+
 	//--This section draws?
 	if (mImage.empty())
 	{
@@ -265,8 +267,11 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 	}
 
 	//If there is no longer content, exit
-	if (!mContent) return;
-
+	if (!mContent)
+	{
+		LOG_MSG("GTT::CellDraw no Content\n");
+		return;
+	}
 	//--Draw "selected" highlights
 	if (c.is_selected)
 	{
@@ -330,6 +335,7 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 
 		glColor3f(1,1,1);
 		GUI_DrawCentered(inState, "disclose.png", cell_bounds, -1, 0, tile, NULL, NULL);
+		LOG_MSG("  GTT::CellDraw disclosed err=%d\n", glGetError());
 
 		cell_bounds[0] += mDiscloseIndent;
 	}
@@ -361,6 +367,8 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 				glColor3f(1,1,1);
 				GUI_DrawCentered(inState, res.c_str(), cell_bounds, -1, 0, tile, NULL, NULL);
 
+				LOG_MSG("  GTT::CellDraw resource err=%d\n", glGetError());
+
 				cell_bounds[0] += 20;
 
 				if (e == c.text_val.npos)
@@ -385,6 +393,8 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 				GUI_FontDraw(inState, mFont,
 					(c.is_selected||cell_type) ? mColorTextSelect : mColorText,
 					cell_bounds[0]+CELL_MARGIN, (float) cell_bounds[1] + cell2line(cell_bounds[3] - cell_bounds[1], mFont), c.text_val.c_str());
+
+				LOG_MSG("  GTT::CellDraw truncated err=%d\n", glGetError());
 			}
 		}
 	}
