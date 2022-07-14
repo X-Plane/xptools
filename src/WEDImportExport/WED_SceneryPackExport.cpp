@@ -72,6 +72,7 @@ int		WED_CanExportPack(IResolver * resolver)
 #include "WED_Sealane.h"
 #include "WED_TruckDestination.h"
 #include "WED_TruckParkingLocation.h"
+#include "WED_ForestPlacement.h"
 #include "WED_ObjPlacement.h"
 #include "WED_PolygonPlacement.h"
 #include "WED_MetaDataKeys.h"
@@ -333,6 +334,22 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			wrl->CommitCommand();
 			WED_DoConvertToForest(resolver);
 			LOG_MSG("Converted Trees into Forests at %s\n", ICAO_code.c_str());
+		}
+		// convert long deprecated 2D only forests into contemporary 3D forests.
+		vector<WED_ForestPlacement*> forests;
+		CollectRecursive(*apt_itr, back_inserter(forests), IgnoreVisiblity, [](WED_Thing* thing)->bool {
+			string res;
+			static_cast<WED_ForestPlacement*>(thing)->GetResource(res);
+			return res.compare(0, strlen("lib/g10/forests/AG_"), "lib/g10/forests/AG_") == 0;
+			},
+			WED_ForestPlacement::sClass, 2);
+		if (!forests.empty())
+		{
+			wrl->StartCommand("Convert deprecated 2D forests");
+			for(auto fst : forests)
+				fst->SetResource("lib/vegetation/trees/deciduous/maple_medium.for");
+			wrl->CommitCommand();
+			LOG_MSG("Converted AG_* forests to 3D at %s\n", ICAO_code.c_str());
 		}
 		// nuke all large terrain polygons unless at high lattitudes (cuz there is no gobal scenery there ...)
 		if(apt_box.p1.y() < 73.0 && apt_box.p1.y() > -60.0)
