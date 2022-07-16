@@ -66,7 +66,7 @@
 "Layer is the string name of the layer to import.  Usuallye one of: dem_Elevation, dem_LandUse\n"\
 "If <translation> is provided it is the name of a translation file name (no path) in the config folder.\n"
 static int DoRasterImport(const vector<const char *>& args)
-{
+	{
 	bool did_skip = false;
 	int mode = dem_want_Post;
 	
@@ -670,6 +670,50 @@ int DoRasterMerge(const vector<const char *>& args)
 	return 0;
 }
 
+#define DoRasterClear_HELP \
+"Usage: -raster_clear <west> <south> <east> <north> <value> <layer>\n"\
+"Clear a section of DEM to an initial value"
+static int DoRasterClear(const vector<const char *>& args)
+{
+	int layer = LookupToken(args[5]);
+	if(layer == -1)
+	{
+		fprintf(stderr,"Unknown DEM layer %s\n", args[5]);
+		return 1;
+	}
+	if(gDem.count(layer) == 0)
+	{
+		fprintf(stderr,"DEM layer %s does not exist.\n", args[5]);
+		return 1;
+	}
+	
+	float west  = atof(args[0]);
+	float south = atof(args[1]);
+	float east  = atof(args[2]);
+	float north = atof(args[3]);
+	
+	DEMGeo& d = gDem[layer];
+	
+	if(west < d.mWest || south < d.mSouth || east > d.mEast || north > d.mNorth)
+	{
+		fprintf(stderr,"Clear region is not entirely within the DEM.");
+		return 1;
+	}
+	
+	float value = atof(args[4]);
+		
+	int x1 = d.lon_to_x(west);
+	int x2 = d.lon_to_x(east) + d.mPost;
+	int y1 = d.lat_to_y(south);
+	int y2 = d.lat_to_y(north) + d.mPost;
+	
+	for(int y = y1; y < y2; ++y)
+	for(int x = x1; x < x2; ++x)
+		d.set(x,y,value);
+	
+	return 0;
+}
+
 #define DoRasterWatershed_HELP \
 "Usage: -raster_watershed <layer> <radius> <mmu_size>"
 static int DoRasterWatershed(const vector<const char *>& args)
@@ -701,8 +745,15 @@ static int DoRasterWatershed(const vector<const char *>& args)
 
 }
 
-
-
+#define CalcWaterSurface_HELP \
+"Usage: -calc_water_surface\n" \
+"Calculates the smooth water surface within the exfent from the raw water surface"
+static int CalcWaterSurface(const vector<const char *>& args)
+{
+	CalcWaterSurface(gDem, gMapWest, gMapSouth, gMapEast, gMapNorth);
+	CalcWaterBathymetry(gDem);
+	return 0;
+}
 
 
 static int DoAnyImport(const vector<const char *>& args,
@@ -997,7 +1048,9 @@ static	GISTool_RegCmd_t		sDemCmds[] = {
 { "-raster_resample_median",4, 4, DoRasterResampleMedian,	"Resample raster layer with median.", DoRasterResampleMedian_HELP },
 { "-raster_adjust", 4, 4, DoRasterAdjust,		"Adjust levels of raster layers to match.", DoRasterAdjust_HELP },
 { "-raster_merge", 4, 4, DoRasterMerge,			"Merge two raster layers.", DoRasterMerge_HELP },
+{ "-raster_clear", 6, 6, DoRasterClear,			"Clear a section of a raster layer", DoRasterClear_HELP },
 { "-raster_watershed", 3, 3, DoRasterWatershed,	"Calculate watersheds from one layer, dump in another", DoRasterWatershed_HELP },
+{ "-calc_water_surface", 0, 0, CalcWaterSurface, "Calculate water surface from raw DEM cutout of water", CalcWaterSurface_HELP },
 { "-save_normals", 1, 1, DoSaveNormals, "", "" },
 { "-applyoverlay",	0, 0, DoApply	,			"Use overlay.", "" },
 { 0, 0, 0, 0, 0, 0 }

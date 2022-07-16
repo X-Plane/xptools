@@ -1379,8 +1379,21 @@ struct sort_cdt_face_by_lowest_height {
 #define NEW_ALG 1
 // this is faster - by going in order from bottom to top we avoid a crapload of retries on neighboring verts.
 // going by MESH FACE is not so good - mesh face is at THREE alts at once..in theory at least.  or something.
-void FlattenWater(CDT& ioMesh)
+void FlattenWater(CDT& ioMesh, const DEMGeo& water_surface)
 {
+	for(CDT::Finite_vertices_iterator v = ioMesh.finite_vertices_begin(); v != ioMesh.finite_vertices_end(); ++v)
+	{
+		if(CategorizeVertex(ioMesh, v,terrain_Water) <= 0)
+		if(!IsNoFlattenVertex(ioMesh,v))
+		{
+			Point2 p = cgal2ben(v->point());
+			v->info().height = water_surface.search_nearest(p.x(),p.y());
+		}
+	}
+	
+	return;
+	
+
 #if NEW_ALG
 	set<CDT::Vertex_handle, sort_cdt_face_by_lowest_height>		to_do;
 	
@@ -2080,7 +2093,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 
 #endif
 
-	FlattenWater(outMesh);
+	FlattenWater(outMesh, inDEMs[dem_Water_Surface]);
 
 	/*********************************************************************************************************************
 	 * CLEANUP - CALC MESH NORMALS

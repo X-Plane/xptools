@@ -1104,6 +1104,13 @@ bool	RasterShapeFile(
 		}
 	}
 
+	DEMGeo orig;
+	if(flags & shp_Overlay)
+	{
+		orig = dem;
+		dem = DEM_NO_DATA;
+	}
+
 	map<int, PolyRasterizer<double> >	rasterizers;
 
 	int feat = NO_VALUE;
@@ -1234,9 +1241,19 @@ bool	RasterShapeFile(
 				x1 = max(x1,0);
 				x2 = min(x2,dem.mWidth);
 
-				for (x = x1; x < x2; ++x)
+				if(flags & shp_Overlay)
 				{
-					dem(x,y) = r->first;
+					for (x = x1; x < x2; ++x)
+					{
+						dem(x,y) = orig(x,y);
+					}
+				}
+				else
+				{
+					for (x = x1; x < x2; ++x)
+					{
+						dem(x,y) = r->first;
+					}
 				}
 			}
 			++y;

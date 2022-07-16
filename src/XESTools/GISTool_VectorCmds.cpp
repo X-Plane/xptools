@@ -684,6 +684,7 @@ static int DoShapeRaster(const vector<const char *>& inArgs)
 	shp_Flags flags = shp_None;
 	if(strstr(inArgs[0], "s"))	flags |= shp_Mode_Simple;
 	if(strstr(inArgs[0], "m"))	flags |= shp_Mode_Map;
+	if(strstr(inArgs[0], "o"))	flags |= shp_Overlay;
 	
 	if(!RasterShapeFile(
 				inArgs[2],
