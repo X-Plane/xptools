@@ -683,9 +683,17 @@ int XWin::AppendMenuItem(xmenu menu, const char * inTitle)
 {
 	if(!menu || menu->size() > MENU_ARRAY_SIZE-1) return -1;
 	xmenu_cmd * cmd = new xmenu_cmd();
-
 	Fl_Menu_Item * m = (Fl_Menu_Item *) menu;
-	int idx = m->add(inTitle,0,menu_cb,cmd);
+
+	//mroe:This is to deal with menu names containing slashes . FLTK would creates a submenu after a slash .
+	//To workaround this , we using a placeholder string with same length and rename it after the menu item is added.
+	string itemname(inTitle);
+	string tempname;
+	tempname.resize(itemname.size(),'?');
+
+	int idx = m->add(tempname.c_str(),0,menu_cb,cmd);
+	Fl_Menu_Item * new_m = m + idx;
+	strcpy((char*) new_m->text,itemname.c_str());
 
 	cmd->data = m;
 	cmd->cmd  = idx;
