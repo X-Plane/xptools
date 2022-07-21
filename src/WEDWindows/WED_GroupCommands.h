@@ -167,7 +167,9 @@ int		WED_DoConvertToJW(WED_Airport* apt, int statistics[4] = nullptr);
 void	WED_MowGrass(IResolver* resolver);
 bool	WED_DoMowGrass(WED_Airport* apt, int statistics[4] = nullptr);
 
-void WED_AgePavement(IResolver* mDocument);
+void WED_AgePavement(IResolver* resolver);
+void WED_EdgePavement(IResolver* resolver);
+
 void WED_AlignAirports(IResolver * resolver);
 
 void WED_AddChildrenRecursive(set<WED_Thing*>& who);
