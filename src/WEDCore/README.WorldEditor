@@ -38,6 +38,7 @@ WED 2.5.0b2 5/30/22
    - increased precision for draped polygon headings
    - custom airport service trucks
    - validation warning on runway lighting combinations not supported by XP12
+   - allow road ntworks near airport boundaries on the GW
    X-Plane 12 art asset conversion features:
    - jetway objects to jetway facades
    - X11 default pavment to XP12 aged pavement

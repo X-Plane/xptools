@@ -943,7 +943,7 @@ static void TJunctionCrossingTest(const TaxiRouteInfoVec_t& all_taxiroutes, vali
 	#define TJUNCTION_THRESHOLD_TRUCKS  5.0
 	#define TJUNCTION_THRESHOLD_AC_REL  0.6
 
-	#define SHORT_THRESHOLD_TRUCKS   7.0
+	#define SHORT_THRESHOLD_TRUCKS   5.0
 	#define SHORT_THRESHOLD_AC_SM	 7.0
 	#define SHORT_THRESHOLD_AC		10.0
 	#define SHORT_THRESHOLD_AC_LG	20.0
@@ -1059,21 +1059,21 @@ static void TJunctionCrossingTest(const TaxiRouteInfoVec_t& all_taxiroutes, vali
 			}
 		}
 	}
-	if(!crossing_edges.empty())
+	for(auto e : crossing_edges)
 		msgs.push_back(validation_error_t("Airport contains crossing ATC routing lines with no node at the crossing point."
-										  " Split the lines and join the nodes.", err_airport_ATC_network, crossing_edges, apt));
-	if (!short_edgesAB.empty())
+										  " Split the lines and join the nodes.", err_airport_ATC_network, e, apt));
+	for (auto e : short_edgesAB)
 		msgs.push_back(validation_error_t(string("Airport contains short (<") + to_string((int)SHORT_THRESHOLD_AC_SM) + "m) Taxi route segment(s).",
-			err_taxi_route_zero_length, short_edgesAB, apt));
-	if(!short_edgesC.empty())
-		msgs.push_back(validation_error_t(string("Airport contains short (<") + to_string((int) SHORT_THRESHOLD_AC) + "m) Taxi route segment(s).",
-		   err_taxi_route_zero_length, short_edgesC, apt));
-	if (!short_edgesDEF.empty())
+			err_taxi_route_zero_length, e, apt));
+	for (auto e : short_edgesC)
+			msgs.push_back(validation_error_t(string("Airport contains short (<") + to_string((int) SHORT_THRESHOLD_AC) + "m) Taxi route segment(s).",
+				err_taxi_route_zero_length, e, apt));
+	for (auto e : short_edgesDEF)
 		msgs.push_back(validation_error_t(string("Airport contains short (<") + to_string((int) SHORT_THRESHOLD_AC_LG) + "m) Taxi route segment(s).",
-			err_taxi_route_zero_length, short_edgesDEF, apt));
-	if (!short_edgesT.empty())
+			err_taxi_route_zero_length, e, apt));
+	for (auto e : short_edgesT)
 		msgs.push_back(validation_error_t(string("Airport contains short (<") + to_string((int) SHORT_THRESHOLD_TRUCKS) + "m) Truck route segment(s).",
-			err_taxi_route_zero_length, short_edgesT, apt));
+			err_taxi_route_zero_length, e, apt));
 }
 
 static void TestInvalidHotZOneTags(const TaxiRouteInfoVec_t& taxi_routes, const set<int>& legal_rwy_oneway, const set<int>& legal_rwy_twoway,

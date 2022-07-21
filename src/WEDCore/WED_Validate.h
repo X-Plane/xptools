@@ -100,6 +100,7 @@ enum validate_error_t
 	err_net_crosses_tile_bdy,
 	err_net_resource,
 	err_net_undefined_type,
+	err_net_outside_apt,
 	err_net_zero_length,
 	err_net_unmerged,
 	err_net_edge_loop,

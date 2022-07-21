@@ -608,7 +608,7 @@ void	 WED_GISEdge::RebuildCache(int flags) const
 			IGISPoint* p = nullptr;
 			IGISPoint_Bezier* b = dynamic_cast<IGISPoint_Bezier*>(c);
 			if (b) p = b; else p = dynamic_cast<IGISPoint*>(c);
-			if (p)
+//			if (p)
 			{
 				mCachePts.push_back(p);
 				mCachePtsBezier.push_back(b);
