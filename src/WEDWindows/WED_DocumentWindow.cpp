@@ -441,6 +441,8 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_UpgradeRamps:	WED_UpgradeRampStarts(mDocument);	return 1;
 	case wed_UpgradeJetways: WED_UpgradeJetways(mDocument);	return 1;
 	case wed_AgePavement: WED_AgePavement(mDocument);	return 1;
+	case wed_EdgePavement:  WED_EdgePavement(mDocument);  return 1;
+
 	case wed_MowGrass:	WED_MowGrass(mDocument);	return 1;
 	// wed_EdgePavement,
 	// wed_MowGrass,
@@ -572,7 +574,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_UpgradeRamps:	 return 1;
 	case wed_UpgradeJetways: return 1;
 	case wed_AgePavement:	 return 1;
-	case wed_EdgePavement:   return 0;    //  still Todo !!!!
+	case wed_EdgePavement:   return 1;
 	case wed_MowGrass:       return 1;
 
 

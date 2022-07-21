@@ -5585,6 +5585,7 @@ void WED_AgePavement(IResolver* resolver)
 		wrl->AbortOperation();
 }
 
+
 static vector<WED_PolygonPlacement *> PolygonsForWED_Polygon(WED_Thing * parent, const vector<Polygon2>& poly)
 {
 	vector<WED_PolygonPlacement *> mpol;
@@ -5624,6 +5625,94 @@ static vector<WED_PolygonPlacement *> PolygonsForWED_Polygon(WED_Thing * parent,
 		}
 	}
 	return mpol;
+}
+
+vector<WED_GISPolygon*> CollectPavement(WED_Thing* apt)
+{
+	vector<WED_GISPolygon*> out_polys;
+
+	vector<WED_Runway*> rwys;
+	vector<WED_Taxiway*> twys;
+	vector<WED_PolygonPlacement*> pols;
+
+	CollectRecursive(apt, back_inserter(rwys));
+	CollectRecursive(apt, back_inserter(twys));
+	CollectRecursive(apt, back_inserter(pols));
+
+	for (auto r : rwys)
+	{
+		//      r->GetCorners()
+		// 		Polygon2 rectangle;
+		//		out_polys.push_back(rectangle);
+	}
+	for (auto t : twys)
+	{
+		//      auto ps = dunamic_cast<IGPPointSequence>(t);
+		// 		Polygon2 poly = Vector(gis_Geo, ps);
+		//		out_polys.push_back(poly);
+	}
+	for (auto p : pols)
+	{
+		//      auto ps = dunamic_cast<IGPPointSequence>(p);
+		// 		Polygon2 poly = Vector(gis_Geo, ps);
+		//		out_polys.push_back(poly);
+	}
+	return out_polys;
+}
+
+vector<WED_GISPolygon*> MatchVertices(const vector<Polygon2>& pave_poly, vector<WED_GISPolygon*>& pave_src)
+{
+	return vector<WED_GISPolygon*>();
+}
+
+vector<Polygon2> MakeOnePoly(const vector<WED_GISPolygon*>& pave_src)
+{
+	// convert to plain point sequences, expand beziers
+	// apply union operator to delete inner edges/redudant polygons
+	return vector<Polygon2>();
+}
+
+vector<WED_LinePlacement*> MakeEdgesFromPoly(WED_Thing* parent, const vector<Polygon2>& pavement, vector<WED_GISPolygon*> pave_src)
+{
+	// match each point in the polygon to a WED_Polygon and vertex in it
+	// for any point where this fails, the point was either created by bezier expansion
+	// or due to intersecting polygons, i.e. at the intersection point.
+	// In the first case - the new point is exactly located on ONE bezier segemnt of the source
+	// so we just drop it. So first find ALL such points.
+	// 
+	// In the second case the point is located on two or more segments. In this case we need to split each
+	// source segment at that location just like in a "split" operation and keep that point
+	// As this also modifies the bezier handles of the involved segment - re-adjust those as well.
+	//
+	// special case is intersection with runways. Runways are NOT edged (they have soft edges already)
+	// 
+	// finish by converting polygons to lines
+	auto polys = PolygonsForWED_Polygon(parent, pavement);
+
+	vector<WED_LinePlacement*> lines;
+	return lines;
+}
+
+void WED_DoEdgePavement(WED_Airport* apt)
+{
+	auto pave_src = CollectPavement(apt);
+	auto pave_poly = MakeOnePoly(pave_src);
+	// find or make DrapedPolygon Group;
+	WED_Group* poly_grp = nullptr;
+	auto pave_line = MakeEdgesFromPoly(poly_grp, pave_poly, pave_src);
+}
+
+
+void WED_EdgePavement(IResolver* resolver)
+{
+	WED_Thing* wrl = WED_GetWorld(resolver);
+	vector<WED_Airport*> all_apts;
+	CollectRecursiveNoNesting(wrl, back_inserter(all_apts), WED_Airport::sClass);
+
+	wrl->StartOperation("Edge Pavement");
+	for (auto a : all_apts)
+		WED_DoEdgePavement(a);
+	wrl->CommitOperation();
 }
 
 static bool inside_pt(const vector<Polygon2>& vec_poly, const Point2 pt)
