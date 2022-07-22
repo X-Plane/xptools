@@ -396,35 +396,45 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			LOG_MSG("Deleted %zd Grunges at %s\n", grunge_objs.size(), ICAO_code.c_str());
 		}
 		// The "big xp12 gateway reset" - remove certain features unless the submission is "recent" , measure by the scenery ID
-		// nuke exclusions for Beaches, Polygons, Lines
+		// nuke ALL exclusions at airports, but only for 2D stuff like Beaches, Roads, Polygons, Lines at Sea/Heliports
 		// nuke all per-airport flatten
 		if ((*apt_itr)->GetSceneryID() < 95000)
 		{
 			vector<WED_ExclusionZone*> exclusions;
-			CollectRecursive(*apt_itr, back_inserter(exclusions), IgnoreVisiblity, [](WED_Thing* excl)->bool {
-				set<int> ex;
-				static_cast<WED_ExclusionZone*>(excl)->GetExclusions(ex);
-				return ex.count(exclude_Pol) || ex.count(exclude_Lin) || ex.count(exclude_Bch);
-				},
+			CollectRecursive(*apt_itr, back_inserter(exclusions), IgnoreVisiblity, TakeAlways,
 				WED_ExclusionZone::sClass, 2);
 			if (exclusions.size())
 			{
 				wrl->StartCommand("Remove XP11 era exclusions");
-				set<int> ex;
-				int deleted = 0;
-				for (auto e : exclusions)
+				set<WED_Thing*> ex_set;
+				int reduced_ex = 0;
+				if((*apt_itr)->GetAirportType() == type_Airport)
 				{
-					e->GetExclusions(ex);
-					deleted += ex.size();
-					ex.erase(exclude_For);
-					ex.erase(exclude_Bch);
-					ex.erase(exclude_Net);
-					ex.erase(exclude_Obj);
-					deleted -= ex.size();
-					e->SetExclusions(ex);
+					for(auto e : exclusions)
+						ex_set.insert(e);
 				}
+				else
+				{
+					for (auto e : exclusions)
+					{
+						set<int> ex;
+						e->GetExclusions(ex);
+						ex.erase(exclude_Bch);
+						ex.erase(exclude_Net);
+						ex.erase(exclude_Pol);
+						ex.erase(exclude_Lin);
+						if(ex.size())
+						{
+							e->SetExclusions(ex);
+							reduced_ex++;
+						}
+						else
+							ex_set.insert(e);
+					}
+				}
+				WED_RecursiveDelete(ex_set);
 				wrl->CommitCommand();
-				LOG_MSG("I/XP12 Deleted %d Exclusions at %s\n", deleted, ICAO_code.c_str());
+				LOG_MSG("I/XP12 Deleted %d Exclusions at %s\n", (int) exclusions.size() + reduced_ex, ICAO_code.c_str());
 			}
 /*			vector<WED_Sealane*> sealn;
 			CollectRecursive(*apt_itr, back_inserter(sealn), IgnoreVisiblity, TakeAlways, WED_Sealane::sClass, 2);

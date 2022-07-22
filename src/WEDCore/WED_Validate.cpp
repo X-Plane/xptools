@@ -645,7 +645,7 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 		else
 			path = lib_mgr->GetResourcePath(res);
 
-		if(!(FILE_exists(path.c_str()) || res == "::FLATTEN::.pol"))
+		if(!(FILE_exists(path.c_str()) || ( gExportTarget < wet_gateway && res == "::FLATTEN::.pol")))
 				msgs.push_back(validation_error_t(string(who->HumanReadableType()) + "'s resource " + res + " cannot be found.", err_resource_cannot_be_found, who, parent_apt));
 
 		//3. What happen if the user free types a real resource of the wrong type into the box?
