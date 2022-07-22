@@ -81,8 +81,11 @@
 
 #include "CompGeomDefs3.h"
 #include "MathUtils.h"
-#include "glew.h"
-
+#if APL
+  #include <OpenGL/gl.h>
+#else
+  #include "glew.h"
+#endif
 #define sinr(x) sin((x) * DEG_TO_RAD)
 #define cosr(x) cos((x) * DEG_TO_RAD)
 

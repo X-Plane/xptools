@@ -174,11 +174,15 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 		#define VBO_ST_FMT   GL_FLOAT
 		#define VBO_VEC_T    GLfloat
 	#endif
+#else
+	#define VBO_VEC_FMT  GL_FLOAT
+	#define VBO_ST_FMT   GL_FLOAT
+	#define VBO_VEC_T    GLfloat
 #endif
     #define VBO_OFFS1    (3*sizeof(VBO_VEC_T))
     #define VBO_OFFS2    (VBO_OFFS1 + 3*sizeof(VBO_VEC_T))
     #define VBO_STRIDE   (VBO_OFFS2 + 2*sizeof(VBO_VEC_T))
-
+	
 	for (vector<XObjLOD8>::const_iterator lod = obj.lods.begin(); lod != obj.lods.end(); ++lod)
 	if ((lod->lod_near <= dist && dist < lod->lod_far) || obj.lods.size() == 1)	// lods = 1 - maybe no lod directive, lod dist could be 0,0.
 	{
@@ -282,7 +286,7 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 					}
 					const char * vert_ptr = nullptr;                        // offset into VBO
 #else  // XOBJ8_USE_VBO
-					const char * vert_ptr = obj.geo_tri.get(0);             // position in RAM
+					const char * vert_ptr = (const char *) obj.geo_tri.get(0);             // position in RAM
 #endif
 					glVertexPointer			(3, VBO_VEC_FMT,           VBO_STRIDE, vert_ptr                 );	CHECK_GL_ERR
 			#if VBO_10b_NRML

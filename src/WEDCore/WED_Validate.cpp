@@ -2225,7 +2225,7 @@ static bool near_but_not_on_boundary(Point2& p)
 	return  dlon < 3 * MTR_TO_DEG_LAT || dlat <  2 * MTR_TO_DEG_LAT;    // not precise - fast, but good enough. There are no roads at high lattitudes :)
 }
 
-static void ValidateRoads(const vector<WED_RoadEdge *> roads, validation_error_vector& msgs, WED_Airport* apt, Bbox2& roads_bbox)
+static void ValidateRoads(const vector<WED_RoadEdge *> roads, validation_error_vector& msgs, WED_Airport* apt, const Bbox2& roads_bbox)
 {
 	// Hard problems
 	// referencing unknown (v)road-type (e.g. after changing the resource property)
