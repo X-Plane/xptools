@@ -38,7 +38,7 @@ public:
 	WED_LibraryPreviewPane(GUI_Commander *cmdr, WED_ResourceMgr * res_mgr, ITexMgr * tex_mgr);
 
 	void				Draw(GUI_GraphState * state) override;
-	void				SetResource(const string& r, int res_type, int variants);
+	void				SetResource(const string& r, int res_type);
 	void				ClearResource(void);
 
 	void				ReceiveMessage(GUI_Broadcaster * inSrc, intptr_t inMsg, intptr_t inParam) override;
@@ -77,7 +77,7 @@ private:
 	int					mType;
 	int					mNumVariants;  // number of variants provided by object
 	int					mVariant;      // variant we want to show
-	GUI_Button *		mInfoButton;   // Button to advance to next Variant, 2D/3D etc
+	GUI_Button *		mNextButton;   // Button to advance to next Variant
 
 	int					mMSAA;
 	unsigned int		mFBO;			// for MSAA in preview window

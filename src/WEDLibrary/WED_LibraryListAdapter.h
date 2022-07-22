@@ -159,6 +159,9 @@ public:
 							intptr_t				inMsg,
 							intptr_t				inParam);
 	
+	//Runs the filter based on a number of parameters
+	void			DoFilter(/*vector<strings> sources, vector<strings> types, string with, string without*/);
+
 private:
 		/* What is a prefix and how do I use it? A guide about how to use
 		* mCache and mOpen with all their related methods with the new prefix system.
@@ -200,27 +203,32 @@ private:
 		* Assume mLocalStr and mLibraryStr are equal to "Local/" and "Library/"
 		* 
 		*String| Local/ or Library/    | Local or Library   | Buildings/FoodStands/RustBurger.obj | Local/Buildings/FoodStands/RustBurger.obj|
-		* Use  | mCache,mSel           | Drawing            | Library Manager, reasource lookup   | Drawing, mCache, mSel                    |
+		* Use  | mOpen,mCache,mSel     | Drawing            | Library Manager, reasource lookup   | Drawing, mOpen, mCache, mSel             |
 		* Get  | mCatLocInd, mCatLibInd| GetNth(index, true)| GetNth(index, true)                 | GetNth(index, false)                     |
 		* Set  | RebuildCache()        | Constructor        | LibraryManager(from your HDD)       | Manually change string (Danger)          |
 		*
 		* Common trouble shooting tip: If something is not working it means you have added/not added the prefix propperly, 
 		* forgot it, or forgot to reset it.
 		*/
+		int		IsOpen(const string& r);
+		void	SetOpen(const string& r, int open);
 		void	RebuildCache();
-		void	RebuildCacheRecursive(const string& vdir, int packType, const string& prefix);
-		void	FilterCache();
 
+		/*Recusively builds the cache,
+		*pass in a file path and a catagory string and packType (enum),
+		*and a prefix
+		*/
+		void	RebuildCacheRecursive(const string& r, int packType, const string& prefix);
 		void	SetSel(const string& s, const string& noPrefix);
 		string GetNthCacheIndex (int index, bool noPrefix);
 
-		struct cache_t {
-			string vpath;
-			unsigned isDir : 1, isOpen : 1, hasSeasons : 1, hasRegions : 1, variants : 1;
-			cache_t(string s) : vpath(s), isDir(0), isOpen(0), hasSeasons(0), hasRegions(0), variants(0) {};
-		};
-		vector<cache_t>		mCache, newCache;
+		//A hash map of open folders in the heirarchy,
+		//Uses the prefix system!
+		hash_map<string,int>	mOpen;
 
+		//A cache of all paths to be shown.
+		vector<string>			mCache;
+		
 		bool					mCacheValid;
 		
 		int						mCurPakVal;
@@ -236,7 +244,6 @@ private:
 
 		//A collection of strings for the filter to be checked against
 		vector<string>			mFilter;
-		bool					mFilterChanged;
 
 		string					mCurkPak;
 		

@@ -255,13 +255,14 @@ public:
 
 			void	Purge(void);
 
-			bool	GetFac(const string& vpath, fac_info_t const *& info, int variant =0);
+			bool	GetFac(const string& path, fac_info_t const *& info, int variant =0);
 			bool	GetPol(const string& path, pol_info_t const *& info);
 			bool 	SetPolUV(const string& path, Bbox2 box);
 			bool	GetLin(const string& path, lin_info_t const *& info);
 			bool	GetStr(const string& path, str_info_t const *& info);
 			bool	GetFor(const string& path, for_info_t const *& info);
-			bool	GetAllInDir(const string& vdir, vector<pair<string, int> >& vpaths);
+			int		GetNumVariants(const string& path);
+			bool	GetSimilar(const string& r, vector<pair<string, int> >& vpaths);
 
 			void	WritePol(const string& abspath, const pol_info_t& out_info); // side note: shouldn't this be in_info?
 			bool	GetObj(const string& path, XObj8 const *& obj, int variant = 0);

@@ -89,14 +89,14 @@ WED_LibraryPreviewPane::WED_LibraryPreviewPane(GUI_Commander * cmdr, WED_Resourc
 
 //		int b[4]; GetBounds(b);  // No good, bounds not established at this point
 
-		mInfoButton = new GUI_Button("push_buttons.png",btn_Push,k_reg, k_hil,k_reg,k_hil);
-		mInfoButton->SetBounds(5,45,55,45+GUI_GetImageResourceHeight("push_buttons.png") / 3);
-//		mInfoButton->SetBounds(b[2]-55,b[3]-5-GUI_GetImageResourceHeight("push_buttons.png") / 3,b[2]-5,b[4]-5);
-		mInfoButton->SetSticky(1,1,0,0); // follow left bottom corner
-		mInfoButton->SetParent(this);
-		mInfoButton->SetMsg(next_variant,0);
-		mInfoButton->AddListener(this);
-		mInfoButton->Hide();
+		mNextButton = new GUI_Button("push_buttons.png",btn_Push,k_reg, k_hil,k_reg,k_hil);
+		mNextButton->SetBounds(5,45,55,45+GUI_GetImageResourceHeight("push_buttons.png") / 3);
+//		mNextButton->SetBounds(b[2]-55,b[3]-5-GUI_GetImageResourceHeight("push_buttons.png") / 3,b[2]-5,b[4]-5);
+		mNextButton->SetSticky(1,1,0,0); // follow left bottom corner
+		mNextButton->SetParent(this);
+		mNextButton->SetMsg(next_variant,0);
+		mNextButton->AddListener(this);
+		mNextButton->Hide();
 
 		mMSAA = 1;
 		GLint tmp;
@@ -139,28 +139,28 @@ void		WED_LibraryPreviewPane::ReceiveMessage(GUI_Broadcaster * inSrc, intptr_t i
 			sprintf(s, "%dD", mVariant + 2);
 		else
 			sprintf(s,"%d/%d",mVariant + 1, mNumVariants);
-		mInfoButton->SetDescriptor(s);
+		mNextButton->SetDescriptor(s);
 	}
 }
 
-void WED_LibraryPreviewPane::SetResource(const string& r, int res_type, int variants)
+void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 {
 	mRes = r;
 	mType = res_type;
 	mVariant = 0;
-	mNumVariants = variants;
 	//	mHgt = 0.0;
 
 	if(res_type == res_Object || res_type == res_Facade)
 	{
-		if(mNumVariants > 1)
+		mNumVariants = mResMgr->GetNumVariants(r);
+		if(mNumVariants >1)
 		{
 			char s[16]; sprintf(s,"%d/%d",mVariant+1,mNumVariants);
-			mInfoButton->SetDescriptor(s);
-			mInfoButton->Show();
+			mNextButton->SetDescriptor(s);
+			mNextButton->Show();
 		}
 		else
-			mInfoButton->Hide();
+			mNextButton->Hide();
 
 		if(res_type == res_Facade)
 		{
@@ -186,26 +186,26 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type, int vari
 		const for_info_t* fst;
 		if (mResMgr->GetFor(mRes, fst) && fst->has_3D)
 		{ 
-			mInfoButton->SetDescriptor("3D");
+			mNextButton->SetDescriptor("3D");
 			mVariant = 1;
 			mNumVariants = 2;
-			mInfoButton->Show();
+			mNextButton->Show();
 		}
 		else
 		{
 			mNumVariants = 1;
-			mInfoButton->Hide();
+			mNextButton->Hide();
 		}
 	}
 	else
 	{
 		mNumVariants = 1;     // we haven't yet implemented variant display for anything else
-		mInfoButton->Hide();
+		mNextButton->Hide();
 		if(res_type == res_Directory)
 		{
 			mWalls = 1;
 			mRess.clear();
-			mResMgr->GetAllInDir(mRes, mRess);
+			mResMgr->GetSimilar(mRes, mRess);
 		}
 		else if(res_type == res_Autogen)
 			mWid = 0.0;

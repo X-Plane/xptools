@@ -4678,8 +4678,8 @@ static string get_regional_codes(const Point2& loc, int ac_size, int ops_type)
 static string get_xplane_codes(int width_enum, const set<int>& eq, int ops_type, WED_LibraryMgr* lmgr)
 {
 	const char *ops_str = ops_type == ramp_operation_Airline ? "lib/airport/aircraft/airliners" : "lib/airport/aircraft/cargo";
-	vector<string> static_ac_vpaths;
-	lmgr->GetResourceChildren(ops_str, pack_Default, static_ac_vpaths, true);
+	vector<pair<string, int> > static_ac_vpaths;
+	lmgr->GetSameDir(ops_str, static_ac_vpaths);
 	set<string>	codes_matching_start;
 	
 	char width_char = width_enum - width_A + 'a';
@@ -4687,7 +4687,7 @@ static string get_xplane_codes(int width_enum, const set<int>& eq, int ops_type,
 	
 	for(auto v : static_ac_vpaths)
 	{
-		string s = v.substr(strlen(ops_str) + 1);
+		string s = v.first.substr(strlen(ops_str) + 1);
 		if(eq.count(atc_Turbos) && s.find("turboprop_") == 0)
 			if((s[10] == width_char || s[10] == width_char2 )&& s[11] != '.')
 				codes_matching_start.insert(s.substr(12,3));

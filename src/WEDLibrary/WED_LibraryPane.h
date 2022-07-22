@@ -47,10 +47,6 @@ public:
 							intptr_t    			inMsg,
 							intptr_t				inParam);
 
-	virtual void	SetBounds(int x1, int y1, int x2, int y2);
-	virtual void	SetBounds(int inBounds[4]);
-
-
 private:
 
 	GUI_ScrollerPane *		mScroller;

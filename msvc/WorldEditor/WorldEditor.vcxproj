@@ -582,9 +582,6 @@
     <Image Include="..\..\src\WEDResources\startup_bar.png" />
     <Image Include="..\..\src\WEDResources\startup_bkgnd.png" />
     <Image Include="..\..\src\WEDResources\startup_btns.png" />
-    <Image Include="..\..\src\WEDResources\tables\regions.png" />
-    <Image Include="..\..\src\WEDResources\tables\seasons.png" />
-    <Image Include="..\..\src\WEDResources\tables\variants.png" />
     <Image Include="..\..\src\WEDResources\tabs.png" />
     <Image Include="..\..\src\WEDResources\tce_tools.png" />
     <Image Include="..\..\src\WEDResources\tce_tools_blank.png" />

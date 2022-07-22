@@ -124,15 +124,14 @@ void	WED_ResourceMgr::Purge(void)
 	mAGP.clear();
 }
 
-bool	WED_ResourceMgr::GetAllInDir(const string& vdir, vector<pair<string, int> >& vpaths)
+int		WED_ResourceMgr::GetNumVariants(const string& path)
 {
-	vector<string> names;
-	mLibrary->GetResourceChildren(vdir, pack_All, names, true);
+	return mLibrary->GetNumVariants(path);
+}
 
-	for (auto& n : names)
-		vpaths.push_back(make_pair(n, mLibrary->GetResourceType(n)));
-
-	return names.size();
+bool	WED_ResourceMgr::GetSimilar(const string& r, vector<pair<string, int> >& vpaths)
+{
+	return mLibrary->GetSameDir(r, vpaths);
 }
 
 XObj8 * WED_ResourceMgr::LoadObj(const string& abspath)

@@ -31,10 +31,10 @@
 
 WED_LibraryPane::WED_LibraryPane(GUI_Commander * commander, WED_LibraryMgr * mgr) :
 	GUI_Commander(commander),
-	mTextTable(this,12,0),
+	mTextTable(this,15,0),
 	mLibraryList(mgr)
 {
-//	int bounds[4] = { 0, 0, 100, 100 };
+	int bounds[4] = { 0, 0, 100, 100 };
 //	SetBounds(bounds);
 	mScroller = new GUI_ScrollerPane(1,1);
 
@@ -107,20 +107,4 @@ void	WED_LibraryPane::ReceiveMessage(
 {
 	if(inMsg == GUI_FILTER_FIELD_CHANGED)
 		mLibraryList.SetFilter(mFilter->GetText(),mFilter->GetEnumValue());
-}
-
-void		WED_LibraryPane::SetBounds(int x1, int y1, int x2, int y2)
-{
-	GUI_Packer::SetBounds(x1, y1, x2, y2);
-	int w = x2 - x1;
-	if (w > 220)
-		mLibraryList.SetCellWidth(0, max(220, w - 70));
-}
-
-void		WED_LibraryPane::SetBounds(int inBounds[4])
-{
-	GUI_Packer::SetBounds(inBounds);
-	int w = inBounds[2] - inBounds[0];
-	if (w > 220)
-		mLibraryList.SetCellWidth(0, max(220, w - 70));
 }
