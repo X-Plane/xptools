@@ -90,6 +90,9 @@
 		02B0D4B125D476C60076F8C6 /* WED_AutogenNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02B0D4AB25D476990076F8C6 /* WED_AutogenNode.cpp */; };
 		02B0D4B225D476D60076F8C6 /* WED_AutogenPlacement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02B0D4AD25D476990076F8C6 /* WED_AutogenPlacement.cpp */; };
 		02B0D4B625D47C850076F8C6 /* WED_Road_Selector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02B0D4B325D47C7F0076F8C6 /* WED_Road_Selector.cpp */; };
+		02BC5BC1288A5E5100D838D2 /* ObjDraw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E30AB22C84003949C5 /* ObjDraw.cpp */; };
+		02BC5BCC288A5E5600D838D2 /* ObjDraw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E30AB22C84003949C5 /* ObjDraw.cpp */; };
+		02BC5BE2288A5E5F00D838D2 /* ObjDraw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E30AB22C84003949C5 /* ObjDraw.cpp */; };
 		02BDCCFF23A97E2700208CD2 /* tilt_tool.png in Resources */ = {isa = PBXBuildFile; fileRef = 02BDCCFD23A97E0400208CD2 /* tilt_tool.png */; };
 		02BFA21321C1B5970090D527 /* navmap_seaport.png in Resources */ = {isa = PBXBuildFile; fileRef = 02BFA21021C1B58D0090D527 /* navmap_seaport.png */; };
 		02BFA21421C1B59C0090D527 /* navmap_airport.png in Resources */ = {isa = PBXBuildFile; fileRef = 02BFA20F21C1B58D0090D527 /* navmap_airport.png */; };
@@ -4172,6 +4175,7 @@
 				D6BC3AF30AB2316A003949C5 /* ObjPointPool.cpp in Sources */,
 				02CD8040280E73CD0061C55E /* sweep.c in Sources */,
 				D6BC3AF50AB23171003949C5 /* XObjDefs.cpp in Sources */,
+				02BC5BC1288A5E5100D838D2 /* ObjDraw.cpp in Sources */,
 				D6BC3AF60AB23171003949C5 /* XObjReadWrite.cpp in Sources */,
 				D6BC3B0B0AB231A1003949C5 /* AssertUtils.cpp in Sources */,
 				D6BC3B0C0AB231A2003949C5 /* BitmapUtils.cpp in Sources */,
@@ -4327,6 +4331,7 @@
 				D624360F0AE403F4004F00E3 /* XESIO.cpp in Sources */,
 				D62436100AE403F4004F00E3 /* Zoning.cpp in Sources */,
 				D656B0DA0B51754E003FF84F /* ObjPointPool.cpp in Sources */,
+				02BC5BE2288A5E5F00D838D2 /* ObjDraw.cpp in Sources */,
 				D656B0DB0B517552003FF84F /* XObjDefs.cpp in Sources */,
 				D656B0DD0B517570003FF84F /* XChunkyFileUtils.cpp in Sources */,
 				02C7506823A053D4008475A1 /* Bcj2.c in Sources */,
@@ -4765,6 +4770,7 @@
 				D636819A0B8AC9C200091AFC /* WED_GISChain.cpp in Sources */,
 				D636819F0B8ACA1500091AFC /* WED_GISPolygon.cpp in Sources */,
 				D60075381C56A30E0096D4D9 /* WED_ATCLayer.cpp in Sources */,
+				02BC5BCC288A5E5600D838D2 /* ObjDraw.cpp in Sources */,
 				0224ED2A20048CA0004729CD /* WED_ValidateList.cpp in Sources */,
 				D63681A20B8ACA2600091AFC /* WED_GISComposite.cpp in Sources */,
 				D629FA830B95CB5600A2FB57 /* WED_MapLayer.cpp in Sources */,
