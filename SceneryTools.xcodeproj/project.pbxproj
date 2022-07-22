@@ -185,9 +185,6 @@
 		02DE8F03241FC471003E72C5 /* geom.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EEE241FC439003E72C5 /* geom.c */; };
 		02DE8F04241FC475003E72C5 /* dict.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EEC241FC439003E72C5 /* dict.c */; };
 		02DE8F05241FC479003E72C5 /* bucketalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 02DE8EEA241FC439003E72C5 /* bucketalloc.c */; };
-		02EB22B427D9BA9A006A853A /* variants.png in Resources */ = {isa = PBXBuildFile; fileRef = 02EB22B227D9BA51006A853A /* variants.png */; };
-		02EB22B527D9BAA0006A853A /* regions.png in Resources */ = {isa = PBXBuildFile; fileRef = 02EB22AE27D9BA46006A853A /* regions.png */; };
-		02EB22B627D9BAA7006A853A /* seasons.png in Resources */ = {isa = PBXBuildFile; fileRef = 02EB22AF27D9BA46006A853A /* seasons.png */; };
 		02EB22B927D9BB12006A853A /* gradient_light.png in Resources */ = {isa = PBXBuildFile; fileRef = 02EB22B727D9BB0D006A853A /* gradient_light.png */; };
 		02F4A70C204E6F4700E241B3 /* worldmap.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 02F4A70A204E6F1700E241B3 /* worldmap.jpg */; };
 		2F1515C61D0BA700002224B1 /* WED_MetaDataKeys.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F1515C41D0BA700002224B1 /* WED_MetaDataKeys.cpp */; };
@@ -757,7 +754,6 @@
 		D6BC3AAC0AB2303C003949C5 /* XGUIApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC375C0AB22C85003949C5 /* XGUIApp.cpp */; };
 		D6BC3AAF0AB2303F003949C5 /* XWin.mac.mm in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37630AB22C85003949C5 /* XWin.mac.mm */; };
 		D6BC3AB00AB23044003949C5 /* XWinGL.mac.mm in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37680AB22C85003949C5 /* XWinGL.mac.mm */; };
-		D6BC3AF20AB23169003949C5 /* ObjDraw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E30AB22C84003949C5 /* ObjDraw.cpp */; };
 		D6BC3AF30AB2316A003949C5 /* ObjPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E50AB22C84003949C5 /* ObjPointPool.cpp */; };
 		D6BC3AF50AB23171003949C5 /* XObjDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36EE0AB22C84003949C5 /* XObjDefs.cpp */; };
 		D6BC3AF60AB23171003949C5 /* XObjReadWrite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36F00AB22C84003949C5 /* XObjReadWrite.cpp */; };
@@ -767,7 +763,6 @@
 		D6BC3B0E0AB231AE003949C5 /* MatrixUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37860AB22C85003949C5 /* MatrixUtils.cpp */; };
 		D6BC3B100AB231B8003949C5 /* TexUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37A10AB22C85003949C5 /* TexUtils.cpp */; };
 		D6BC3B110AB231C8003949C5 /* OE_Zoomer3d.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37230AB22C84003949C5 /* OE_Zoomer3d.cpp */; };
-		D6BF8B3D0F13FA84002AC0BE /* ObjDraw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E30AB22C84003949C5 /* ObjDraw.cpp */; };
 		D6C21A3C1C41A5DB00EE5FB3 /* taxi_sign.png in Resources */ = {isa = PBXBuildFile; fileRef = D6C21A3B1C41A5DB00EE5FB3 /* taxi_sign.png */; };
 		D6C37B180C27920D0023B35C /* GUI_Help.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C37B170C27920D0023B35C /* GUI_Help.cpp */; };
 		D6C38FDD0FA0D6E500EFA56C /* GUI_Unicode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C38FDC0FA0D6E500EFA56C /* GUI_Unicode.cpp */; };
@@ -1133,9 +1128,6 @@
 		02DE8EF5241FC439003E72C5 /* sweep.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sweep.h; path = libtess2/Source/sweep.h; sourceTree = "<group>"; };
 		02DE8EF6241FC439003E72C5 /* tess.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = tess.c; path = libtess2/Source/tess.c; sourceTree = "<group>"; };
 		02DE8EF7241FC439003E72C5 /* tess.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = tess.h; path = libtess2/Source/tess.h; sourceTree = "<group>"; };
-		02EB22AE27D9BA46006A853A /* regions.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = regions.png; sourceTree = "<group>"; };
-		02EB22AF27D9BA46006A853A /* seasons.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = seasons.png; sourceTree = "<group>"; };
-		02EB22B227D9BA51006A853A /* variants.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = variants.png; sourceTree = "<group>"; };
 		02EB22B727D9BB0D006A853A /* gradient_light.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = gradient_light.png; sourceTree = "<group>"; };
 		02F4A70A204E6F1700E241B3 /* worldmap.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = worldmap.jpg; sourceTree = "<group>"; };
 		20286C33FDCF999611CA2CEA /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
@@ -2387,9 +2379,6 @@
 			isa = PBXGroup;
 			children = (
 				02EB22B727D9BB0D006A853A /* gradient_light.png */,
-				02EB22B227D9BA51006A853A /* variants.png */,
-				02EB22AE27D9BA46006A853A /* regions.png */,
-				02EB22AF27D9BA46006A853A /* seasons.png */,
 				D6D0F77D1CB336A20051AABC /* delete.png */,
 				D682E9790C17124A00BBE1A0 /* sider.png */,
 				D682E4830C162C9100BBE1A0 /* arrows.png */,
@@ -4060,7 +4049,6 @@
 				D60BFCE00C03664F00AD5EB7 /* handle_square.png in Resources */,
 				D60BFCE10C03664F00AD5EB7 /* handle_vertexround.png in Resources */,
 				02B03C3B20C72109000F81F0 /* line_ILSCriticalCenterW.png in Resources */,
-				02EB22B527D9BAA0006A853A /* regions.png in Resources */,
 				D60BFCE20C03664F00AD5EB7 /* handle_vertexsharp.png in Resources */,
 				D6B69CEA1C582B6A005C78C5 /* ClassF.png in Resources */,
 				D607AC890C0385AA00992876 /* scroll_btn_h.png in Resources */,
@@ -4090,7 +4078,6 @@
 				D682DE5E0C10985100BBE1A0 /* startup_bkgnd.png in Resources */,
 				02BFA21321C1B5970090D527 /* navmap_seaport.png in Resources */,
 				D682DE5F0C10985100BBE1A0 /* startup_btns.png in Resources */,
-				02EB22B627D9BAA7006A853A /* seasons.png in Resources */,
 				02B03C3C20C72110000F81F0 /* line_SolidBlue.png in Resources */,
 				D682E1060C10E23C00BBE1A0 /* scrollbar_corner.png in Resources */,
 				0236B9732034264A0046900C /* check_buttons.png in Resources */,
@@ -4105,7 +4092,6 @@
 				D682E97A0C17124A00BBE1A0 /* sider.png in Resources */,
 				D6B69CE91C582B6A005C78C5 /* ClassE.png in Resources */,
 				D6DB37700C452B0400DE04F0 /* handle_rotatehead.png in Resources */,
-				02EB22B427D9BA9A006A853A /* variants.png in Resources */,
 				D67B21480C5536A300A21ABC /* asphalt.png in Resources */,
 				D67B21490C5536A300A21ABC /* concrete.png in Resources */,
 				D67B214A0C5536A300A21ABC /* dirt.png in Resources */,
@@ -4183,7 +4169,6 @@
 				02CD803B280E73BC0061C55E /* bucketalloc.c in Sources */,
 				D6BC3AB00AB23044003949C5 /* XWinGL.mac.mm in Sources */,
 				02CD803D280E73C30061C55E /* geom.c in Sources */,
-				D6BC3AF20AB23169003949C5 /* ObjDraw.cpp in Sources */,
 				D6BC3AF30AB2316A003949C5 /* ObjPointPool.cpp in Sources */,
 				02CD8040280E73CD0061C55E /* sweep.c in Sources */,
 				D6BC3AF50AB23171003949C5 /* XObjDefs.cpp in Sources */,
@@ -4891,7 +4876,6 @@
 				D6AC14D70F1279EB0006E096 /* WED_PreviewLayer.cpp in Sources */,
 				D6AC14E90F127AFE0006E096 /* WED_ResourceMgr.cpp in Sources */,
 				D6AC154D0F12866E0006E096 /* WED_DrawUtils.cpp in Sources */,
-				D6BF8B3D0F13FA84002AC0BE /* ObjDraw.cpp in Sources */,
 				D68ABC730F1E51A9002892AD /* WED_TCEToolAdapter.cpp in Sources */,
 				02DCBD932771B9680056A3BD /* WED_TerrainLayer.cpp in Sources */,
 				D68ABC840F1E5B5F002892AD /* WED_TCEVertexTool.cpp in Sources */,
