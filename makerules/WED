@@ -329,7 +329,6 @@ SOURCES += ./src/XESCore/AptIO.cpp
 #SOURCES += ./src/XESCore/MapBuffer.cpp
 #SOURCES += ./src/XESCore/MapPolygon.cpp
 #SOURCES += ./src/XESCore/Bezier.cpp
-SOURCES += ./src/Obj/ObjConvert.cpp
 SOURCES += ./src/lib_json/src/lib_json/json_writer.cpp
 SOURCES += ./src/lib_json/src/lib_json/json_reader.cpp
 SOURCES += ./src/lib_json/src/lib_json/json_value.cpp
