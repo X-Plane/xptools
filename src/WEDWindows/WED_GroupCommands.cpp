@@ -21,6 +21,7 @@
  *
  */
 #include "WED_GroupCommands.h"
+#include "WED_ConvertCommands.h"
 
 #include "ISelection.h"
 #include "ILibrarian.h"
@@ -5565,6 +5566,8 @@ int WED_DoAgePavement(WED_Airport* apt, int age)  // age 1 = older
 	vector<WED_Taxiway*> twys;
 	vector<WED_PolygonPlacement*> pols;
 
+	int changes = 0;
+
 	CollectRecursive(apt, back_inserter(rwys));
 	CollectRecursive(apt, back_inserter(twys));
 	CollectRecursive(apt, back_inserter(pols));
@@ -5643,6 +5646,7 @@ void WED_AgePavement(IResolver* resolver)
 {
 	WED_Thing* wrl = WED_GetWorld(resolver);
 	vector<WED_Airport*> all_apts;
+	int count = 0;
 
 	int ans = ConfirmMessage("Change pavement apperance ?\n"
 		"Old = worn/cracked, lighter asphalt, darker concrete\n"
@@ -5711,37 +5715,38 @@ static vector<WED_PolygonPlacement *> PolygonsForWED_Polygon(WED_Thing * parent,
 	return mpol;
 }
 
-vector<WED_GISPolygon*> CollectPavement(WED_Thing* apt)
+vector<WED_Thing*> CollectPavement(WED_Thing* apt)
 {
-	vector<WED_GISPolygon*> out_polys;
+	vector<WED_Thing*> all_pavemnt;
+	WED_LibraryMgr* lmgr = WED_GetLibraryMgr(apt->GetArchive()->GetResolver());
 
-	vector<WED_Runway*> rwys;
-	vector<WED_Taxiway*> twys;
-	vector<WED_PolygonPlacement*> pols;
+	CollectRecursive(apt, back_inserter(all_pavemnt), ThingNotHidden, [&](WED_Thing* v)
+		{
+			if (auto p = dynamic_cast<WED_Taxiway*>(v))
+			{
+				if (p->GetSurface() < surf_Grass)
+					return true;
+			}
+			return false;
+		}, WED_Taxiway::sClass);
 
-	CollectRecursive(apt, back_inserter(rwys));
-	CollectRecursive(apt, back_inserter(twys));
-	CollectRecursive(apt, back_inserter(pols));
+	CollectRecursive(apt, back_inserter(all_pavemnt), ThingNotHidden, [&](WED_Thing* v)
+		{
+			if (auto p = dynamic_cast<WED_PolygonPlacement*>(v))
+			{
+				string res;
+				p->GetName(res);
+				p->GetResource(res);
+				if (res.compare(0, strlen("lib/airport/pavement/"), "lib/airport/pavement/") == 0)
+					return true;
+				auto surf = lmgr->GetSurfEnum(res);
+				return surf > 0;
+			}
+			else
+				return false;
+		}, WED_PolygonPlacement::sClass);
 
-	for (auto r : rwys)
-	{
-		//      r->GetCorners()
-		// 		Polygon2 rectangle;
-		//		out_polys.push_back(rectangle);
-	}
-	for (auto t : twys)
-	{
-		//      auto ps = dunamic_cast<IGPPointSequence>(t);
-		// 		Polygon2 poly = Vector(gis_Geo, ps);
-		//		out_polys.push_back(poly);
-	}
-	for (auto p : pols)
-	{
-		//      auto ps = dunamic_cast<IGPPointSequence>(p);
-		// 		Polygon2 poly = Vector(gis_Geo, ps);
-		//		out_polys.push_back(poly);
-	}
-	return out_polys;
+	return all_pavemnt;
 }
 
 vector<WED_GISPolygon*> MatchVertices(const vector<Polygon2>& pave_poly, vector<WED_GISPolygon*>& pave_src)
@@ -5749,14 +5754,37 @@ vector<WED_GISPolygon*> MatchVertices(const vector<Polygon2>& pave_poly, vector<
 	return vector<WED_GISPolygon*>();
 }
 
-vector<Polygon2> MakeOnePoly(const vector<WED_GISPolygon*>& pave_src)
+vector<Polygon2> MakeOneVPoly2(const vector<WED_Thing*>& pave_src)
 {
 	// convert to plain point sequences, expand beziers
 	// apply union operator to delete inner edges/redudant polygons
-	return vector<Polygon2>();
+
+	vector<Polygon2> out_vpoly2;
+
+	for (auto t : pave_src)
+	{
+		if (t->GetClass() == WED_Taxiway::sClass ||
+			t->GetClass() == WED_PolygonPlacement::sClass)
+			WED_BezierPolygonWithHolesForPolygon(dynamic_cast<IGISPolygon*>(t), out_vpoly2);
+		else if (t->GetClass() == WED_Runway::sClass)
+			continue;
+	}
+
+	out_vpoly2 = PolygonUnion(out_vpoly2, vector<Polygon2>());
+
+	return out_vpoly2;
 }
 
-vector<WED_LinePlacement*> MakeEdgesFromPoly(WED_Thing* parent, const vector<Polygon2>& pavement, vector<WED_GISPolygon*> pave_src)
+namespace
+{
+	template<class T>
+	WED_Thing* CreateThing(WED_Archive* parent)
+	{
+		return T::CreateTyped(parent);
+	}
+}
+
+vector<WED_LinePlacement*> MakeEdgesFromVPoly2(WED_Thing* parent, const vector<Polygon2>& pavement, vector<WED_Thing*> pave_src, IResolver * resolver)
 {
 	// match each point in the polygon to a WED_Polygon and vertex in it
 	// for any point where this fails, the point was either created by bezier expansion
@@ -5773,21 +5801,43 @@ vector<WED_LinePlacement*> MakeEdgesFromPoly(WED_Thing* parent, const vector<Pol
 	// finish by converting polygons to lines
 	auto polys = PolygonsForWED_Polygon(parent, pavement);
 
+	ISelection * sel = WED_GetSelect(resolver);
+	sel->Clear();
+	for (auto p : polys)
+		sel->Insert(p);
+
+	WED_ConvertTo(WED_GetLibraryMgr(resolver), sel, &CreateThing<WED_LinePlacement>);
+
 	vector<WED_LinePlacement*> lines;
+	int n_sel = sel->GetSelectionCount();
+	for (int i = 0; i < n_sel; i++)
+	{
+		auto l = dynamic_cast<WED_LinePlacement*>(sel->GetNthSelection(i));
+		if(l) lines.push_back(l);
+	}
 	return lines;
 }
 
-void WED_DoEdgePavement(WED_Airport* apt)
+void WED_EdgePavement(WED_Airport* apt, IResolver * resolver)
 {
 	auto pave_src = CollectPavement(apt);
-	auto pave_poly = MakeOnePoly(pave_src);
-	// find or make DrapedPolygon Group;
-	WED_Group* poly_grp = nullptr;
-	auto pave_line = MakeEdgesFromPoly(poly_grp, pave_poly, pave_src);
+	auto pave_poly = MakeOneVPoly2(pave_src);
+
+	// show bezier expalded outline of all pavement detected
+//	for (auto p : pave_poly) debug_mesh_polygon(p, 1, 0, 1);
+//	return;
+
+	auto grp = WED_Group::CreateTyped(apt->GetArchive());
+	grp->SetParent(apt, 0);
+	grp->SetName("Pavement Edge FX");
+
+	auto pave_line = MakeEdgesFromVPoly2(grp, pave_poly, pave_src, resolver);
+	for (auto l : pave_line)
+		l->SetResource("lib/airport/ground/pavement_FX/edge_D/cracked.lin");
 }
 
 
-void WED_EdgePavement(IResolver* resolver)
+void WED_DoEdgePavement(IResolver* resolver)
 {
 	WED_Thing* wrl = WED_GetWorld(resolver);
 	vector<WED_Airport*> all_apts;
@@ -5795,7 +5845,7 @@ void WED_EdgePavement(IResolver* resolver)
 
 	wrl->StartOperation("Edge Pavement");
 	for (auto a : all_apts)
-		WED_DoEdgePavement(a);
+		WED_EdgePavement(a, resolver);
 	wrl->CommitOperation();
 }
 
@@ -5862,6 +5912,7 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 	vector<WED_AirportSign *> signs;
 	vector<WED_Windsock *> socks;
 	vector<WED_PolygonPlacement*> polys;
+	vector<WED_AirportBoundary*> bdys;
 
 	typedef vector<Polygon2> vPoly2;
 	vPoly2 apt_boundary, all_grass_poly, all_pave_poly;
@@ -5927,7 +5978,7 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 			{
 				string res;
 				p->GetResource(res);
-				if(res.compare(0, strlen("lib/airport/pavement/"),"lib/airport/pavement/") == 0) 
+				if(res.compare(0, strlen("lib/airport/pavement/"),"lib/airport/pavement/") == 0)
 					return true;
 				auto surf = lmgr->GetSurfEnum(res);
 				return surf > 0;
@@ -5941,6 +5992,8 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 	if(apt_boundary.size() == 0) return 0;
 
 	// prevent mowing the water e.g. at Juneau
+	vector<WED_Sealane*> sealn;
+	CollectRecursive(apt, back_inserter(sealn), WED_Sealane::sClass);
 	for (auto s : sealn)
 	{
 		Point2 	tmp[4];
@@ -5955,7 +6008,9 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 		apt_boundary = PolygonCut(apt_boundary, water);
 	}
 
+	CollectRecursive(apt, back_inserter(rwys), WED_Runway::sClass);
     std::sort(rwys.begin(), rwys.end(), [&](WED_Runway* a, WED_Runway* b)   // mow largest runway first, so most of the moving is aligned with this one
+
 		{
 			return a->GetWidth() * a->GetLength() > b->GetWidth() * b->GetLength();
 		});
@@ -6011,14 +6066,16 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 		all_grass_poly = PolygonUnion(all_grass_poly, *this_grass);
 	}
 
+	// get all other pavement added
+	all_pave_poly = PolygonUnion(all_pave_poly, MakeOneVPoly2(CollectPavement(apt)));
 	// get total pavement
 	for(auto t : twys)
 		if(t->GetSurface() <  surf_Grass)
 			WED_BezierPolygonWithHolesForPolygon(t, all_pave_poly);
-	
+
 	for(auto p : polys)
 		WED_BezierPolygonWithHolesForPolygon(p, all_pave_poly);
-	
+
 	all_pave_poly = PolygonUnion(all_pave_poly, vector<Polygon2>());
 	// from here only we can assume 'flat' topology: No overlapping windings, no nested holes.
 
@@ -6158,6 +6215,8 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 	}
 
 	// paved pads and mowing swirls underneath signs and some lights
+	vector<WED_AirportSign *> signs;
+	CollectRecursive(apt, back_inserter(signs), WED_AirportSign::sClass);
 	
 	for(auto s : signs)
 	{
@@ -6223,6 +6282,8 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 	}
 	
 	// mow around all winsocks - also enhances their visibility
+	vector<WED_Windsock *> socks;
+	CollectRecursive(apt, back_inserter(socks), WED_Windsock::sClass);
 	for(auto s : socks)
 	{
 		Point2 pt;
