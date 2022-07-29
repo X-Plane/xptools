@@ -437,17 +437,12 @@ static void split_chains_by_attribute(vector<WED_GISChain*>& chains, set<WED_Thi
 	}
 }
 
-void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
+bool WED_ConvertTo(WED_LibraryMgr * lmgr, ISelection * sel, CreateThingFunc create)
 {
-	auto lmgr = WED_GetLibraryMgr(resolver);
-	auto sel = WED_GetSelect(resolver);
 	vector<ISelectable*> to_convert;
 	sel->GetSelectionVector(to_convert);
 
 	set<WED_Thing*> to_delete;
-
-	IOperation* op = dynamic_cast<IOperation*>(sel);
-	op->StartOperation((string("Convert to ") /* + dst->HumanReadableType() */).c_str());
 
 	for (const auto tc : to_convert)
 	{
@@ -458,8 +453,7 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 		if (chains.empty())
 		{
 			DoUserAlert("No chains");
-			op->AbortOperation();
-			return;
+			return false;
 		}
 
 		WED_Thing* dst = create(src->GetArchive());
@@ -511,7 +505,21 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 	}
 
 	WED_RecursiveDelete(to_delete);
-	op->CommitOperation();
+	return true;
+}
+
+void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
+{
+	auto lmgr = WED_GetLibraryMgr(resolver);
+	auto sel = WED_GetSelect(resolver);
+	IOperation* op = dynamic_cast<IOperation*>(sel);
+
+	op->StartOperation((string("Convert to ") /* + dst->HumanReadableType() */).c_str());
+
+	if (WED_ConvertTo(lmgr, sel, create))
+		op->CommitOperation();
+	else
+		op->AbortOperation();
 }
 
 void	WED_DoConvertToForest(IResolver* resolver)

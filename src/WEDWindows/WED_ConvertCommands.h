@@ -25,6 +25,8 @@
 #define WED_ConvertCommands_H
 
 class	IResolver;
+class	ISelection;
+class	WED_LibraryMgr;
 class	WED_Archive;
 class	WED_Thing;
 
@@ -41,6 +43,7 @@ int		WED_CanConvertTo(IResolver * resolver, const char* DstType);
 
 // Converts the selected objects to the type produced by 'create'.
 void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create);
+bool	WED_ConvertTo(WED_LibraryMgr* lmgr, ISelection* sel, CreateThingFunc create);
 
 void	WED_DoConvertToForest(IResolver* resolver);
 
