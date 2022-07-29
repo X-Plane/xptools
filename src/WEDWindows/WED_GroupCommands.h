@@ -168,7 +168,7 @@ void	WED_MowGrass(IResolver* resolver);
 bool	WED_DoMowGrass(WED_Airport* apt, int statistics[4] = nullptr);
 
 void WED_AgePavement(IResolver* resolver);
-void WED_EdgePavement(IResolver* resolver);
+void WED_DoEdgePavement(IResolver* resolver);
 
 void WED_AlignAirports(IResolver * resolver);
 

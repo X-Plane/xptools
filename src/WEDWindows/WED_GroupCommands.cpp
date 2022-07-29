@@ -21,6 +21,7 @@
  *
  */
 #include "WED_GroupCommands.h"
+#include "WED_ConvertCommands.h"
 
 #include "ISelection.h"
 #include "ILibrarian.h"
@@ -238,7 +239,7 @@ void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 
 		while(*path)
 		{
-			WED_Ring * rng = WED_RingfromImage(path, arch, zoomer, &CreateThing<WED_TextureNode>);
+			WED_Ring * rng = WED_RingfromImage(path, arch, zoomer, false);
 			if (rng)
 			{
 				WED_OverlayImage * img = WED_OverlayImage::CreateTyped(arch);
@@ -1324,8 +1325,7 @@ bool HasMissingResource(WED_Thing * t)
 	string r;
 	if(!get_any_resource_for_thing(t,r))
 		return false;
-	if (r == "::FLATTEN::.pol")
-		return false;
+
 	return mgr->GetResourceType(r) == res_None;
 }
 
@@ -4170,11 +4170,6 @@ int		WED_Repair(IResolver * resolver)
 		{
 			parent->GetName(nam);
 			LOG_MSG(" from parent %s '%s'", parent->HumanReadableType(), nam.c_str());
-			if (auto apt = WED_GetParentAirport(parent))
-			{
-				apt->GetICAO(nam);
-				LOG_MSG(" at %s", nam.c_str());
-			}
 		}
 		LOG_MSG("\n");
 	}
@@ -4642,7 +4637,7 @@ static string get_regional_codes(const Point2& loc, int ac_size, int ops_type)
 				if(loc.x() < - 103.0)            // USA west
 					code += "swa asa qxe ";
 				else	                         // USA east
-					code += "swa jbu nks egf ";
+					code += "swa jbu nks ezy egf ";
 			}
 		}
 	}
@@ -4656,7 +4651,7 @@ static string get_regional_codes(const Point2& loc, int ac_size, int ops_type)
 			code += "sas aza ibe sva ";
 			if(ac_size <= width_C) 
 			{
-				code += "ber ryr vlg ezy ";
+				code += "ber ryr vlg ";
 				if(LonLatDistMeters(loc, Point2(11,47)) < 300e3) code += "wlc tyr lpv aua "; // within 300 km of LOWI
 			}
 		}
@@ -5237,10 +5232,6 @@ int WED_DoConvertToJW(WED_Airport* apt, int statistics[4])
 				}
 			}
 		}
-		else if (res.compare(0, strlen("lib/airport/Ramp_Equipment/Uni_Jetway_"), "lib/airport/Ramp_Equipment/Uni_Jetway_") == 0)
-			jw_tun.push_back(o);
-		else if (res == "lib/airport/Ramp_Equipment/JetWayWallBase.obj")
-			jw_ext.push_back(o);
 	}
 
 	// determine the position in front of the cab where the A/C is expected to be parked and the nearest ramp start to each.
@@ -5254,23 +5245,13 @@ int WED_DoConvertToJW(WED_Airport* apt, int statistics[4])
 			c->GetLocation(gis_Geo, jw_pos);
 			string res;
 			c->GetResource(res);
-			double tun_len = ( res[strlen("lib/airport/Ramp_Equipment/Jetway_")] == '5' ||
-							   res[strlen("lib/airport/Ramp_Equipment/Uni_Jetway_")] == '5' ) ? 20 : 15;
+			double tun_len = res[strlen("lib/airport/Ramp_Equipment/Jetway_")] == '5' ? 20 : 15;
 			double tun_hdg = c->GetHeading();
-			if(res.compare(0, strlen("lib/airport/Ramp_Equipment/Uni_"), "lib/airport/Ramp_Equipment/Uni_") == 0)
-			{
-				NorthHeading2VectorDegs(tun_pos, tun_pos, tun_hdg, tun_dir);
-				tun_pos = jw_pos + tun_dir * 0.5 * MTR_TO_DEG_LAT;
-				NorthHeading2VectorDegs(tun_pos, tun_pos, tun_hdg - 30.0, tun_dir);  // hdg to place in front of cabin where the acf would be
-				tun_dir *= (tun_len + 2.0) * MTR_TO_DEG_LAT;
-			}
-			else
-			{
-				NorthHeading2VectorDegs(tun_pos, tun_pos, tun_hdg, tun_dir);
-				tun_pos = jw_pos + tun_dir * 2.7 * MTR_TO_DEG_LAT;
-				NorthHeading2VectorDegs(tun_pos, tun_pos, tun_hdg - 30.0, tun_dir);  // hdg to place in front of cabin where the acf would be
-				tun_dir *= (tun_len + 2.0) * MTR_TO_DEG_LAT;
-			}
+			NorthHeading2VectorDegs(tun_pos, tun_pos, tun_hdg, tun_dir);
+			tun_pos = jw_pos + tun_dir * 2.7 * MTR_TO_DEG_LAT;
+
+			NorthHeading2VectorDegs(tun_pos, tun_pos, tun_hdg - 30.0, tun_dir);  // hdg to place in front of cabin where the acf would be
+			tun_dir *= (tun_len + 2.0) * MTR_TO_DEG_LAT;
 			acf_pos = tun_pos + tun_dir;
 
 			double min_dist = 99999.0;
@@ -5318,16 +5299,9 @@ int WED_DoConvertToJW(WED_Airport* apt, int statistics[4])
 					string ext_nam;
 					(*e)->GetResource(ext_nam);
 					double len;
-					if (ext_nam == "lib/airport/Ramp_Equipment/JetWayWallBase.obj")
-					{
-						len = 3.0;
-					}
-					else
-					{
-						int pos = strlen("lib/airport/Ramp_Equipment/JetWayEx");
-						if (ext_nam[pos] == 't') pos++;
-						sscanf(ext_nam.c_str() + pos + 1, "%lf", &len);
-					}
+					int pos = strlen("lib/airport/Ramp_Equipment/JetWayEx");
+					if(ext_nam[pos] == 't') pos++;
+					sscanf(ext_nam.c_str() + pos + 1, "%lf", &len);
 					Vector2 ext_dir;
 					NorthHeading2VectorDegs(p1, p1, hdg, ext_dir);
 					p2 = p1 + ext_dir * (len + 2.0) * MTR_TO_DEG_LAT;
@@ -5377,26 +5351,10 @@ int WED_DoConvertToJW(WED_Airport* apt, int statistics[4])
 		vector<struct jw_info> jw_serving_us;
 
 		r->GetLocation(gis_Geo, ramp_loc);
-		Vector2 dir_vec;
-		NorthHeading2VectorDegs(ramp_loc, ramp_loc, r->GetHeading() - 90.0, dir_vec);  // correct for door location
-		switch(r->GetWidth())
-		{
-			case width_F:
-			case width_E:
-				dir_vec *= 3.0 * MTR_TO_DEG_LAT;
-				break;
-			case width_D:
-				dir_vec *= 2.5 * MTR_TO_DEG_LAT;
-				break;
-			default:
-				dir_vec *= 2.0 * MTR_TO_DEG_LAT;
-		}
-		ramp_loc += dir_vec;
-
 		for (auto f : jw_facs)
 		{
 			// find ALL close jw that face us, i.e. are intended to serve this ramp.
-			if (f->HasDockingCabin() == 1)   // ignore the door2 serving jw - don't disable those !!!!
+			if (f->HasDockingCabin())
 			{
 				jw_info jw;
 				jw.f = f;
@@ -5429,17 +5387,20 @@ int WED_DoConvertToJW(WED_Airport* apt, int statistics[4])
 					closest_jw = jw;
 				}
 			}
-			for (auto& jw : jw_serving_us)
+			if (closest_cabin_dist < 100)
 			{
-				if (jw.f != closest_jw.f)
+				for (auto jw : jw_serving_us)
 				{
-					auto last_node = dynamic_cast<WED_FacadeNode*>(jw.ps->GetNthPoint(jw.last_pt));
-					last_node->SetWallType(39);             // leave JW other than dock_1st_door alone
-					JW_inactive++;
+					if (jw.f != closest_jw.f)
+					{
+						auto last_node = dynamic_cast<WED_FacadeNode*>(jw.ps->GetNthPoint(jw.last_pt));
+						last_node->SetWallType(39);
+						JW_inactive++;
+					}
 				}
+				jw_serving_us.clear();
+				jw_serving_us.push_back(closest_jw);
 			}
-			jw_serving_us.clear();
-			jw_serving_us.push_back(closest_jw);
 		}
 
 		if(jw_serving_us.size() > 0)
@@ -5463,16 +5424,16 @@ int WED_DoConvertToJW(WED_Airport* apt, int statistics[4])
 						double tun_len = LonLatDistMeters(jw_serving_us[0].cabin_loc, jw_serving_us[0].tunnel_orig);
 						switch (t.size_code)        // deliberately test for shorter range - allows some margin for actual cabin door locations
 						{
-						case 0:	tunnel_is_short = tun_dist > 25.0;
+						case 1:	tunnel_is_short = tun_dist > 21.0; 
 								break;
-						case 1:	tunnel_is_short = tun_dist > 30.0;
-								tunnel_is_long = tun_len < 13.0 || tun_dist < 16.0;
+						case 2:	tunnel_is_short = tun_dist > 26.0; 
+								tunnel_is_long = tun_len < 14.0 || tun_dist < 19.0;
 								break;
-						case 2:	tunnel_is_short = tun_dist > 38.0;
-								tunnel_is_long = tun_len < 16.0 || tun_dist < 19.0;
+						case 3:	tunnel_is_short = tun_dist > 36.0; 
+								tunnel_is_long = tun_len < 17.0 || tun_dist < 22.0;
 								break;
-						case 3:	// tunnel_is_short = tun_dist > 40.0; break; // would have to move the tunnel base !! to make it reach further.
-								tunnel_is_long = tun_len < 19.0 || tun_dist < 22.0;
+						case 4:	// tunnel_is_short = tun_dist > 40.0; break; // would have to move the tunnel base !! to make it reach further.
+								tunnel_is_long = tun_len < 20.0 || tun_dist < 25.0;
 								break;
 						}
 						if (tunnel_is_short)
@@ -5539,24 +5500,10 @@ void WED_UpgradeJetways(IResolver* resolver)
 
 static int get_aged_surf(int surf, int age)
 {
-	if (surf <= surf_Asphalt_4)
-		return age == 1 ? surf_Asphalt_4 : surf_Asphalt;
-	else if (surf <= surf_Asphalt_7)
-		return age == 1 ? surf_Asphalt_4 : surf_Asphalt_8;
-	else if (surf <= surf_Asphalt_11)
-		return age == 1 ? surf_Asphalt_7 : surf_Asphalt_12;
-	else if (surf <= surf_Asphalt_15)
-		return age == 1 ? surf_Asphalt_11 : surf_Asphalt_16;
-	else if (surf <= surf_Asphalt_19)
-		return age == 1 ? surf_Asphalt_15 : surf_Asphalt_16;
-	else if (surf <= surf_Concrete_3)
-		return age == 1 ? surf_Concrete_5 : surf_Concrete_1;
-	else if (surf <= surf_Concrete_5)
+	if (surf == surf_Concrete)
 		return age == 1 ? surf_Concrete_8 : surf_Concrete_1;
-	else if (surf <= surf_Concrete_8)
-		return age == 1 ? surf_Concrete_8 : surf_Concrete;
-
-	return surf;
+	else
+		return age == 1 ? surf_Asphalt_4 : surf_Asphalt_12;
 }
 
 int WED_DoAgePavement(WED_Airport* apt, int age)  // age 1 = older
@@ -5565,73 +5512,49 @@ int WED_DoAgePavement(WED_Airport* apt, int age)  // age 1 = older
 	vector<WED_Taxiway*> twys;
 	vector<WED_PolygonPlacement*> pols;
 
+	int changes = 0;
+
 	CollectRecursive(apt, back_inserter(rwys));
 	CollectRecursive(apt, back_inserter(twys));
 	CollectRecursive(apt, back_inserter(pols));
 
-	int changes = 0;
-
 	for (auto r : rwys)
 	{
-		auto surf = r->GetSurface();
-		auto new_surf = get_aged_surf(surf, age);
-		if (new_surf != surf)
+		int surf = r->GetSurface();
+		if (surf == surf_Asphalt || surf == surf_Concrete)
 		{
-			r->SetSurface(new_surf);
+			r->SetSurface(get_aged_surf(surf, age));
 			changes++;
 		}
 
 		surf = r->GetShoulder();
-		new_surf = get_aged_surf(surf, age);
-		if (new_surf != surf)
+		if (surf == surf_Asphalt || surf == surf_Concrete)
 		{
-			r->SetShoulder(new_surf);
+			r->SetShoulder(get_aged_surf(surf, age));
 			changes++;
 		}
 	}
 
 	for (auto t : twys)
 	{
-		auto surf = t->GetSurface();
-		auto new_surf = get_aged_surf(surf, age);
-		if (new_surf != surf)
+		int surf = t->GetSurface();
+		if (surf == surf_Asphalt || surf == surf_Concrete)
 		{
-			t->SetSurface(new_surf);
+			t->SetSurface(get_aged_surf(surf, age));
 			changes++;
 		}
 	}
 
-	for (auto p : pols)
+	for (auto p : pols) // thats a pretty basic upgrade, any lighter/darker than default pavements are NOT converted
 	{
 		string res;
 		p->GetResource(res);
-
-		int surf = 0;
-		if (res.compare(0, strlen("lib/airport/pavement/"), "lib/airport/pavement/") == 0)
+		if (res == "lib/airport/pavement/asphalt_3D.pol" || "lib/airport/pavements/Concrete_1D.pol")
 		{
-			string t  = res.substr(res.length() - 8, 4);
-
-			if (t == "t_1D")                                    surf = surf_Asphalt_16;
-			else if (t == "t_2D" || t == "t_3D" || t == "t_4D") surf = surf_Asphalt_12;
-			else if (t == "t_5D" || t == "t_6D" || t == "t_1L") surf = surf_Asphalt_8;
-			else if (t == "t_2L" || t == "t_3L" || t == "t_4L") surf = surf_Asphalt;
-			else if (t == "t_5L" || t == "t_6L")                surf = surf_Asphalt_1;
-			else if (t[0] == 'e' && t[1] == '_')
-			{
-					 if (t[3] == 'D')                           surf = surf_Concrete_6;
-				else if (t[2] <= '3' && t[3] == 'L')            surf = surf_Concrete;
-				else if (t[2] <= '6' && t[3] == 'L')            surf = surf_Concrete_1;
-			}
-		}
-		else if (res.compare(0, strlen("lib/airport/ground/pavement/"), "lib/airport/ground/pavement/") == 0)
-		{
-			surf = WED_GetLibraryMgr(p->GetArchive()->GetResolver())->GetSurfEnum(res);
-		}
-
-		auto new_surf = get_aged_surf(surf, age);
-		if (surf > 0 && new_surf != surf)
-		{
-			WED_GetLibraryMgr(p->GetArchive()->GetResolver())->GetSurfVpath(new_surf, res);
+			int surf = surf_Asphalt;
+			if (res.find("Concrete)") != string::npos) surf = surf_Concrete;
+			surf = get_aged_surf(surf, age);
+			WED_GetLibraryMgr(p->GetArchive()->GetResolver())->GetSurfVpath(surf, res);
 			p->SetResource(res);
 			changes++;
 		}
@@ -5643,26 +5566,20 @@ void WED_AgePavement(IResolver* resolver)
 {
 	WED_Thing* wrl = WED_GetWorld(resolver);
 	vector<WED_Airport*> all_apts;
+	int count = 0;
 
-	int ans = ConfirmMessage("Change pavement apperance ?\n"
-		"Old = worn/cracked, lighter asphalt, darker concrete\n"
-		"New = smooth, darker asphalt, lighter concrete", "Old", "Cancel", "New");
-
-	if (ans == 0) return;
-	int age = ans == 1 ? 1 : 0;
+	int age = ConfirmMessage("Change all X-Plane 11 default Pavement to X-Plane 12 old/worn ? Otherwise change is to newer looking pavement.", "Yes", "No");
 
 	CollectRecursiveNoNesting(wrl, back_inserter(all_apts), WED_Airport::sClass);
 
 	wrl->StartOperation("Age Pavement");
-
-	int count = 0;
 	for (auto a : all_apts)
 		count += WED_DoAgePavement(a, age);
 	if (count > 0)
 	{
 		wrl->CommitOperation();
 		string msg("Converted ");
-		msg += to_string(count) + " items";
+		msg += to_string(count) + " items changed";
 		DoUserAlert(msg.c_str());
 	}
 	else
@@ -5711,37 +5628,38 @@ static vector<WED_PolygonPlacement *> PolygonsForWED_Polygon(WED_Thing * parent,
 	return mpol;
 }
 
-vector<WED_GISPolygon*> CollectPavement(WED_Thing* apt)
+vector<WED_Thing*> CollectPavement(WED_Thing* apt)
 {
-	vector<WED_GISPolygon*> out_polys;
+	vector<WED_Thing*> all_pavemnt;
+	WED_LibraryMgr* lmgr = WED_GetLibraryMgr(apt->GetArchive()->GetResolver());
 
-	vector<WED_Runway*> rwys;
-	vector<WED_Taxiway*> twys;
-	vector<WED_PolygonPlacement*> pols;
+	CollectRecursive(apt, back_inserter(all_pavemnt), ThingNotHidden, [&](WED_Thing* v)
+		{
+			if (auto p = dynamic_cast<WED_Taxiway*>(v))
+			{
+				if (p->GetSurface() < surf_Grass)
+					return true;
+			}
+			return false;
+		}, WED_Taxiway::sClass);
 
-	CollectRecursive(apt, back_inserter(rwys));
-	CollectRecursive(apt, back_inserter(twys));
-	CollectRecursive(apt, back_inserter(pols));
+	CollectRecursive(apt, back_inserter(all_pavemnt), ThingNotHidden, [&](WED_Thing* v)
+		{
+			if (auto p = dynamic_cast<WED_PolygonPlacement*>(v))
+			{
+				string res;
+				p->GetName(res);
+				p->GetResource(res);
+				if (res.compare(0, strlen("lib/airport/pavement/"), "lib/airport/pavement/") == 0)
+					return true;
+				auto surf = lmgr->GetSurfEnum(res);
+				return surf > 0;
+			}
+			else
+				return false;
+		}, WED_PolygonPlacement::sClass);
 
-	for (auto r : rwys)
-	{
-		//      r->GetCorners()
-		// 		Polygon2 rectangle;
-		//		out_polys.push_back(rectangle);
-	}
-	for (auto t : twys)
-	{
-		//      auto ps = dunamic_cast<IGPPointSequence>(t);
-		// 		Polygon2 poly = Vector(gis_Geo, ps);
-		//		out_polys.push_back(poly);
-	}
-	for (auto p : pols)
-	{
-		//      auto ps = dunamic_cast<IGPPointSequence>(p);
-		// 		Polygon2 poly = Vector(gis_Geo, ps);
-		//		out_polys.push_back(poly);
-	}
-	return out_polys;
+	return all_pavemnt;
 }
 
 vector<WED_GISPolygon*> MatchVertices(const vector<Polygon2>& pave_poly, vector<WED_GISPolygon*>& pave_src)
@@ -5749,14 +5667,37 @@ vector<WED_GISPolygon*> MatchVertices(const vector<Polygon2>& pave_poly, vector<
 	return vector<WED_GISPolygon*>();
 }
 
-vector<Polygon2> MakeOnePoly(const vector<WED_GISPolygon*>& pave_src)
+vector<Polygon2> MakeOneVPoly2(const vector<WED_Thing*>& pave_src)
 {
 	// convert to plain point sequences, expand beziers
 	// apply union operator to delete inner edges/redudant polygons
-	return vector<Polygon2>();
+
+	vector<Polygon2> out_vpoly2;
+
+	for (auto t : pave_src)
+	{
+		if (t->GetClass() == WED_Taxiway::sClass ||
+			t->GetClass() == WED_PolygonPlacement::sClass)
+			WED_BezierPolygonWithHolesForPolygon(dynamic_cast<IGISPolygon*>(t), out_vpoly2);
+		else if (t->GetClass() == WED_Runway::sClass)
+			continue;
+	}
+
+	out_vpoly2 = PolygonUnion(out_vpoly2, vector<Polygon2>());
+
+	return out_vpoly2;
 }
 
-vector<WED_LinePlacement*> MakeEdgesFromPoly(WED_Thing* parent, const vector<Polygon2>& pavement, vector<WED_GISPolygon*> pave_src)
+namespace
+{
+	template<class T>
+	WED_Thing* CreateThing(WED_Archive* parent)
+	{
+		return T::CreateTyped(parent);
+	}
+}
+
+vector<WED_LinePlacement*> MakeEdgesFromVPoly2(WED_Thing* parent, const vector<Polygon2>& pavement, vector<WED_Thing*> pave_src, IResolver * resolver)
 {
 	// match each point in the polygon to a WED_Polygon and vertex in it
 	// for any point where this fails, the point was either created by bezier expansion
@@ -5773,21 +5714,43 @@ vector<WED_LinePlacement*> MakeEdgesFromPoly(WED_Thing* parent, const vector<Pol
 	// finish by converting polygons to lines
 	auto polys = PolygonsForWED_Polygon(parent, pavement);
 
+	ISelection * sel = WED_GetSelect(resolver);
+	sel->Clear();
+	for (auto p : polys)
+		sel->Insert(p);
+
+	WED_ConvertTo(WED_GetLibraryMgr(resolver), sel, &CreateThing<WED_LinePlacement>);
+
 	vector<WED_LinePlacement*> lines;
+	int n_sel = sel->GetSelectionCount();
+	for (int i = 0; i < n_sel; i++)
+	{
+		auto l = dynamic_cast<WED_LinePlacement*>(sel->GetNthSelection(i));
+		if(l) lines.push_back(l);
+	}
 	return lines;
 }
 
-void WED_DoEdgePavement(WED_Airport* apt)
+void WED_EdgePavement(WED_Airport* apt, IResolver * resolver)
 {
 	auto pave_src = CollectPavement(apt);
-	auto pave_poly = MakeOnePoly(pave_src);
-	// find or make DrapedPolygon Group;
-	WED_Group* poly_grp = nullptr;
-	auto pave_line = MakeEdgesFromPoly(poly_grp, pave_poly, pave_src);
+	auto pave_poly = MakeOneVPoly2(pave_src);
+
+	// show bezier expalded outline of all pavement detected
+//	for (auto p : pave_poly) debug_mesh_polygon(p, 1, 0, 1); 
+//	return;
+
+	auto grp = WED_Group::CreateTyped(apt->GetArchive());
+	grp->SetParent(apt, 0);
+	grp->SetName("Pavement Edge FX");
+
+	auto pave_line = MakeEdgesFromVPoly2(grp, pave_poly, pave_src, resolver);
+	for (auto l : pave_line)
+		l->SetResource("lib/airport/ground/pavement_FX/edge_D/cracked.lin");
 }
 
 
-void WED_EdgePavement(IResolver* resolver)
+void WED_DoEdgePavement(IResolver* resolver)
 {
 	WED_Thing* wrl = WED_GetWorld(resolver);
 	vector<WED_Airport*> all_apts;
@@ -5795,7 +5758,7 @@ void WED_EdgePavement(IResolver* resolver)
 
 	wrl->StartOperation("Edge Pavement");
 	for (auto a : all_apts)
-		WED_DoEdgePavement(a);
+		WED_EdgePavement(a, resolver);
 	wrl->CommitOperation();
 }
 
@@ -5806,9 +5769,12 @@ static bool inside_pt(const vector<Polygon2>& vec_poly, const Point2 pt)
 	{
 		if(p.size())
 		if(p.inside(pt))
-			inside++;
+			if(p.is_ccw())
+				inside++;
+			else
+				inside--;
 	}
-	return inside & 1;
+	return inside > 0;
 }
 
 static void make_ter_FX_exist(WED_Group** grp, WED_Thing* parent)
@@ -5855,13 +5821,10 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 	Point2 apt_loc = bounds.centroid();
 	srand( 100 * (apt_loc.x()+180) + 36000 * (apt_loc.y()+90) ); // for repeatable patterns per airport
 
-	vector<WED_AirportBoundary*> bdys;
 	vector<WED_Runway*> rwys;
-	vector<WED_Sealane*> sealn;
 	vector<WED_Taxiway*> twys;
-	vector<WED_AirportSign *> signs;
-	vector<WED_Windsock *> socks;
 	vector<WED_PolygonPlacement*> polys;
+	vector<WED_AirportBoundary*> bdys;
 
 	typedef vector<Polygon2> vPoly2;
 	vPoly2 apt_boundary, all_grass_poly, all_pave_poly;
@@ -5870,77 +5833,15 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 	
 	WED_LibraryMgr* lmgr = WED_GetLibraryMgr(apt->GetArchive()->GetResolver());
 	WED_Group * art_grp = nullptr;
-#if 1    // much faster as it only traverses hierachy once
-	std::function<void(WED_Thing*)> CollectEntitiesRecursive = [&](WED_Thing* thing)
-	{
-		const auto c = thing->GetClass();
-#define COLLECT(type, vector) \
-		if(c == type::sClass) { \
-			auto p = static_cast<type *>(thing); \
-			if(!p->GetHidden())	vector.push_back(p); \
-			return; \
-		}
-		COLLECT(WED_Runway, rwys)
-		else COLLECT(WED_Sealane, sealn)
-		else COLLECT(WED_AirportSign, signs)
-		else COLLECT(WED_Taxiway, twys)
-		else COLLECT(WED_AirportBoundary, bdys)
-		else COLLECT(WED_Windsock, socks)
-		else COLLECT(WED_AirportSign, signs)
-#undef COLLECT
-		else if (c == WED_PolygonPlacement::sClass) {
-			auto p = static_cast<WED_PolygonPlacement*>(thing);
-			if (p->GetHidden()) return;
-			string res;
-			p->GetResource(res);
-			if (res.compare(0, strlen("lib/airport/pavement/"), "lib/airport/pavement/") == 0)
-			{
-				polys.push_back(p);
-				return;
-			}
-			auto surf = lmgr->GetSurfEnum(res);
-			if (surf > 0)
-				polys.push_back(p);
-			return;
-		}
-		else
-		{
-			if (c != WED_Group::sClass && c != WED_Airport::sClass) return;  // don't recurse into anything else
-			auto p = static_cast<WED_Entity*>(thing);
-			if (p->GetHidden()) return;
-		}
-		int nc = thing->CountChildren();
-		for (int n = 0; n < nc; ++n)
-			CollectEntitiesRecursive(thing->GetNthChild(n));
-	};
-	CollectEntitiesRecursive(apt);
-#else
+	
 	CollectRecursive(apt, back_inserter(bdys), WED_AirportBoundary::sClass);
-	CollectRecursive(apt, back_inserter(rwys), WED_Runway::sClass);
-	CollectRecursive(apt, back_inserter(sealn),WED_Sealane::sClass);
-	CollectRecursive(apt, back_inserter(twys), WED_Taxiway::sClass);
-	CollectRecursive(apt, back_inserter(signs),WED_AirportSign::sClass);
-	CollectRecursive(apt, back_inserter(socks),WED_Windsock::sClass);
-	CollectRecursive(apt, back_inserter(polys), ThingNotHidden, [&](WED_Thing* v)
-		{
-			if (auto p = dynamic_cast<WED_PolygonPlacement*>(v))
-			{
-				string res;
-				p->GetResource(res);
-				if(res.compare(0, strlen("lib/airport/pavement/"),"lib/airport/pavement/") == 0) 
-					return true;
-				auto surf = lmgr->GetSurfEnum(res);
-				return surf > 0;
-			}
-			else
-				return false;
-		}, WED_PolygonPlacement::sClass);
-#endif
 	for(auto b : bdys)
 		WED_BezierPolygonWithHolesForPolygon(b, apt_boundary);
 	if(apt_boundary.size() == 0) return 0;
 
 	// prevent mowing the water e.g. at Juneau
+	vector<WED_Sealane*> sealn;
+	CollectRecursive(apt, back_inserter(sealn), WED_Sealane::sClass);
 	for (auto s : sealn)
 	{
 		Point2 	tmp[4];
@@ -5955,7 +5856,9 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 		apt_boundary = PolygonCut(apt_boundary, water);
 	}
 
+	CollectRecursive(apt, back_inserter(rwys), WED_Runway::sClass);
     std::sort(rwys.begin(), rwys.end(), [&](WED_Runway* a, WED_Runway* b)   // mow largest runway first, so most of the moving is aligned with this one
+
 		{
 			return a->GetWidth() * a->GetLength() > b->GetWidth() * b->GetLength();
 		});
@@ -5986,9 +5889,8 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 		for(int i = 3; i >= 0; i--)
 			this_grass->back().push_back(tmp[i]);
 
-		vector<Polygon2> still_unmowed_apt = PolygonCut(apt_boundary, all_grass_poly);
-		*this_grass = PolygonIntersect(*this_grass, still_unmowed_apt);
-
+		vector<Polygon2> tmp_poly = PolygonCut(apt_boundary, all_grass_poly);
+		*this_grass = PolygonIntersect(*this_grass, tmp_poly);
 		if(this_grass->empty())
 		{
 			grass.pop_back();
@@ -6011,42 +5913,17 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 		all_grass_poly = PolygonUnion(all_grass_poly, *this_grass);
 	}
 
-	// get total pavement
-	for(auto t : twys)
-		if(t->GetSurface() <  surf_Grass)
-			WED_BezierPolygonWithHolesForPolygon(t, all_pave_poly);
-	
-	for(auto p : polys)
-		WED_BezierPolygonWithHolesForPolygon(p, all_pave_poly);
-	
-	all_pave_poly = PolygonUnion(all_pave_poly, vector<Polygon2>());
+	// get all other pavement added
+	all_pave_poly = PolygonUnion(all_pave_poly, MakeOneVPoly2(CollectPavement(apt)));
 	// from here only we can assume 'flat' topology: No overlapping windings, no nested holes.
 
-	// nuke most artefacts left over by PolyUnion, reduce polygon size, improve speed
-	for(auto it = all_pave_poly.begin(); it != all_pave_poly.end();)
-	{
-		SimplifyPolygonMaxMove(*it, 1.8e-5, true, true); // about 1.5 meter
-		if((*it).size() == 3)
-		{
-			Segment2 seg((*it)[0], (*it)[1]);
-			double h = Line2(seg).squared_distance((*it)[2]);
-			double b = seg.squared_length();
-			double a = 0.5 * sqrt(h * b);
-			if( a < 1.4e-9)  // about 10 sq meter
-				it = all_pave_poly.erase(it);
-			else
-				it++;
-		}
-		else
-			it++;
-	}
 	// turning circles where mowing lines hit pavement
 	for (auto& g : grass)
 	{
 		coord_translator tr(apt_loc.y(), g.second);
 		Bbox2 bb;
-		for (auto& pol : g.first)
-			for (auto& pt : pol)
+		for (auto pol : g.first)
+			for (auto pt : pol)
 				bb += tr.to_uv(pt);
 
 		//debug_mesh_segment({tr.to_ll(bb.top_left()), tr.to_ll(bb.top_right())}, 1, 0, 0, 1, 0, 0);
@@ -6158,6 +6035,8 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 	}
 
 	// paved pads and mowing swirls underneath signs and some lights
+	vector<WED_AirportSign *> signs;
+	CollectRecursive(apt, back_inserter(signs), WED_AirportSign::sClass);
 	
 	for(auto s : signs)
 	{
@@ -6223,6 +6102,8 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 	}
 	
 	// mow around all winsocks - also enhances their visibility
+	vector<WED_Windsock *> socks;
+	CollectRecursive(apt, back_inserter(socks), WED_Windsock::sClass);
 	for(auto s : socks)
 	{
 		Point2 pt;
