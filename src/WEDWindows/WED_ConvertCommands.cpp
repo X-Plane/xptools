@@ -31,6 +31,7 @@
 #include "WED_LibraryMgr.h"
 #include "WED_ToolUtils.h"
 
+#include "WED_AirportBoundary.h"
 #include "WED_AirportChain.h"
 #include "WED_AirportNode.h"
 #include "WED_ForestPlacement.h"
@@ -67,6 +68,7 @@ int		WED_CanConvertTo(IResolver * resolver, const char* DstClass)
 			SrcClass != WED_AirportChain::sClass &&
 			SrcClass != WED_LinePlacement::sClass &&
 			SrcClass != WED_StringPlacement::sClass &&
+			SrcClass != WED_AirportBoundary::sClass &&
 			SrcClass != WED_ObjPlacement::sClass) return 0;
 
 		if (DstClass == WED_ForestPlacement::sClass)
@@ -437,7 +439,7 @@ static void split_chains_by_attribute(vector<WED_GISChain*>& chains, set<WED_Thi
 	}
 }
 
-void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
+void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create, bool in_cmd)
 {
 	auto lmgr = WED_GetLibraryMgr(resolver);
 	auto sel = WED_GetSelect(resolver);
@@ -447,7 +449,7 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 	set<WED_Thing*> to_delete;
 
 	IOperation* op = dynamic_cast<IOperation*>(sel);
-	op->StartOperation((string("Convert to ") /* + dst->HumanReadableType() */).c_str());
+	if(in_cmd) op->StartOperation((string("Convert to ") /* + dst->HumanReadableType() */).c_str());
 
 	for (const auto tc : to_convert)
 	{
@@ -458,7 +460,7 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 		if (chains.empty())
 		{
 			DoUserAlert("No chains");
-			op->AbortOperation();
+			if (in_cmd) op->AbortOperation();
 			return;
 		}
 
@@ -511,7 +513,7 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 	}
 
 	WED_RecursiveDelete(to_delete);
-	op->CommitOperation();
+	if (in_cmd) op->CommitOperation();
 }
 
 void	WED_DoConvertToForest(IResolver* resolver)

@@ -65,6 +65,8 @@ int		WED_CanExportPack(IResolver * resolver)
 #if TYLER_MODE
 
 #include "WED_Airport.h"
+#include "WED_AirportBoundary.h"
+#include "WED_LinePlacement.h"
 #include "WED_EnumSystem.h"
 #include "WED_ExclusionZone.h"
 #include "WED_RampPosition.h"
@@ -81,6 +83,15 @@ int		WED_CanExportPack(IResolver * resolver)
 #include "GISUtils.h"
 #include <chrono>
 #include "WED_ConvertCommands.h"
+
+namespace
+{
+	template<class T>
+	WED_Thing* CreateThing(WED_Archive* parent)
+	{
+		return T::CreateTyped(parent);
+	}
+}
 
 void dummyPrintf(void * ref, const char * fmt, ...) { return; }
 
@@ -210,7 +221,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		Bbox2 apt_box;
 		(*apt_itr)->GetBounds(gis_Geo, apt_box);
 
-		if ((*apt_itr)->GetAirportType() == 1)
+		if ((*apt_itr)->GetAirportType() == type_Airport)
 		{
 			string ICAO_region;
 			if ((*apt_itr)->ContainsMetaDataKey(wed_AddMetaDataRegionCode))
@@ -458,7 +469,36 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				LOG_MSG("I/XP12 Deleted Always Flatten at %s\n", ICAO_code.c_str());
 			}
 		}
-
+		// add soft edges for airport grass
+		vector<WED_AirportBoundary*> bdy;
+		CollectRecursive(*apt_itr, back_inserter(bdy), IgnoreVisiblity, TakeAlways, WED_AirportBoundary::sClass, 2);
+		if (bdy.size() && (*apt_itr)->GetAirportType() == type_Airport)
+		{
+			vector<WED_LinePlacement*> grass_lines;
+			CollectRecursive(*apt_itr, back_inserter(grass_lines), IgnoreVisiblity, [](WED_Thing* lin)->bool {
+				string res;
+				static_cast<WED_LinePlacement*>(lin)->GetResource(res);
+				return res.compare(0, strlen("lib/g10/terrain10/apt_border_"), "lib/g10/terrain10/apt_border_") == 0;
+				},
+				WED_LinePlacement::sClass, 2);
+			if (grass_lines.empty())
+			{
+				wrl->StartCommand("Create AptGrass Soft Edges");
+				sel->Clear();
+				sel->Insert(vector<ISelectable*>(bdy.begin(), bdy.end()));
+				WED_DoDuplicate(resolver, false);
+				WED_DoConvertTo(resolver, &CreateThing<WED_LinePlacement>, false);
+				// change to particular line type
+				int n_sel = sel->GetSelectionCount();
+				for (int i = 0; i < n_sel; i++)
+				{
+					if (auto t = dynamic_cast<IHasResource*>(sel->GetNthSelection(i)))
+						t->SetResource("lib/g10/terrain10/apt_border_tmp_wet.lin");         // ToDo: Set climate zone correct Edge per cheatSheet from Ben. Or look into base mesh DSF ?
+				}
+				wrl->CommitCommand();
+				LOG_MSG("Added AptGrass Edges at %s\n", ICAO_code.c_str());
+			}
+		}
 #endif
 		double percent_done = (double)distance(apts.begin(), apt_itr) / apts.size() * 100;
 		printf("%0.0lf%% through heuristic at %s\n", percent_done, ICAO_code.c_str());
