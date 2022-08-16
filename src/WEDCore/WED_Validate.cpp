@@ -100,7 +100,7 @@
 #define MAX_SPAN_GATEWAY_NM 7
 
 // maximum distance for any scenery from the airport boundary, gateway only
-#define APT_OVERSIZE_NM  0.5
+#define APT_OVERSIZE_NM  0.6
 
 // ATC flow tailwind components and wind rule coverage tested up to this windspeed
 #define ATC_FLOW_MAX_WIND 35
