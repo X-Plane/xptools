@@ -309,15 +309,15 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		}
 #else
 		// mow the grass
-		vector<WED_Group*> grps;
-		CollectRecursive(*apt_itr, back_inserter(grps), IgnoreVisiblity, [](WED_Thing* t)->bool 
+		vector<WED_Group*> terFX;
+		CollectRecursive(*apt_itr, back_inserter(terFX), IgnoreVisiblity, [](WED_Thing* t)->bool 
 			{
 				string res;
 				t->GetName(res);
 				return res == "Terrain FX";
 			},
 			WED_Group::sClass, 1);
-		if(grps.empty())
+		if(terFX.empty())
 		{
 			wrl->StartOperation("Mow Grass");
 			if(WED_DoMowGrass(*apt_itr, grass_statistics))
@@ -406,10 +406,30 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			wrl->CommitCommand();
 			LOG_MSG("Deleted %zd Grunges at %s\n", grunge_objs.size(), ICAO_code.c_str());
 		}
+		// add soft edges to all pavement
+		vector<WED_Group*> pavFX;
+		CollectRecursive(*apt_itr, back_inserter(pavFX), IgnoreVisiblity, [](WED_Thing* t)->bool
+			{
+				string res;
+				t->GetName(res);
+				return res == "Pavement FX";
+			},
+			WED_Group::sClass, 1);
+		if (pavFX.empty())
+		{
+			wrl->StartOperation("SoftEdge all pavement");
+			if (false) // ToDo !!!!
+			{
+				LOG_MSG("SoftEdged pavemnts  at %s\n", ICAO_code.c_str());
+				wrl->CommitOperation();
+			}
+			else
+				wrl->AbortOperation();
+		}
 		// The "big xp12 gateway reset" - remove certain features unless the submission is "recent" , measure by the scenery ID
 		// nuke ALL exclusions at airports, but only for 2D stuff like Beaches, Roads, Polygons, Lines at Sea/Heliports
 		// nuke all per-airport flatten
-		if ((*apt_itr)->GetSceneryID() < 95000)
+		if ((*apt_itr)->GetSceneryID() < 99000 && terFX.empty() && pavFX.empty())
 		{
 			vector<WED_ExclusionZone*> exclusions;
 			CollectRecursive(*apt_itr, back_inserter(exclusions), IgnoreVisiblity, TakeAlways,
@@ -447,17 +467,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				wrl->CommitCommand();
 				LOG_MSG("I/XP12 Deleted %d Exclusions at %s\n", (int) exclusions.size() + reduced_ex, ICAO_code.c_str());
 			}
-/*			vector<WED_Sealane*> sealn;
-			CollectRecursive(*apt_itr, back_inserter(sealn), IgnoreVisiblity, TakeAlways, WED_Sealane::sClass, 2);
-			for(auto s : sealn)
-				if(s->GetBuoys())
-				{
-					wrl->StartCommand("Remove XP11 aera byoys");
-					s->SetBuoys(0);
-					wrl->CommitCommand();
-					LOG_MSG("I/XP12 Deleted %zd sealane buoys at %s\n", exclusions.size(), ICAO_code.c_str());
-				}
-*/			AptInfo_t apt_info;
+			AptInfo_t apt_info;
 			(*apt_itr)->Export(apt_info);
 			auto it = std::find(apt_info.meta_data.begin(), apt_info.meta_data.end(), make_pair(string("flatten"), string("1")));
 			if (it != apt_info.meta_data.end())
