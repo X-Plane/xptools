@@ -83,6 +83,7 @@ int		WED_CanExportPack(IResolver * resolver)
 #include "GISUtils.h"
 #include <chrono>
 #include "WED_ConvertCommands.h"
+#include "WED_PackageMgr.h"
 
 namespace
 {
@@ -94,6 +95,30 @@ namespace
 }
 
 void dummyPrintf(void * ref, const char * fmt, ...) { return; }
+
+static unordered_map <string, string> LoadAirportClimates()
+{
+	unordered_map <string, string> climates;
+	string climate_file;
+	gPackageMgr->GetXPlaneFolder(climate_file);
+	climate_file += "/Global Scenery/airport_climates.txt";
+	if (auto fi = fopen(climate_file.c_str(), "r"))
+	{
+		char line[100];
+		while (!feof(fi))
+		{
+			fgets(line, sizeof(line), fi);
+			char icao[10], climate[100];
+			if (sscanf(line, "%9s %99s", icao, climate) == 2)
+				climates[icao] = climate;
+		}
+		fclose(fi);
+	}
+	else
+		AssertPrintf("Cant open airport climate maps at % s\n", climate_file.c_str());
+//		LOG_MSG("E/GW cant open airport climate maps at %s\n", climate_file.c_str());
+	return climates;
+}
 
 static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 {
@@ -110,8 +135,10 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 	int added_country_codes = 0;
 	int grass_statistics[4] = { 0 };
 
+	auto climate_map = LoadAirportClimates();
+
 	auto t0 = chrono::high_resolution_clock::now();
-	
+
 	for (auto apt_itr = apts.begin(); apt_itr != apts.end(); ++apt_itr)
 	{
 		auto t2 = chrono::high_resolution_clock::now();
@@ -166,8 +193,6 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 
 		//-- upgrade Country Metadata -------------
 		added_country_codes += add_iso3166_country_metadata(**apt_itr);
-
-		(*apt_itr)->GetName(ICAO_code);
 
 		//-- upgrade Ramp Positions with XP10.45 data to get parked A/C -------------
 		wrl->StartCommand("Upgrade Ramp Positions");
@@ -362,50 +387,6 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			wrl->CommitCommand();
 			LOG_MSG("Converted AG_* forests to 3D at %s\n", ICAO_code.c_str());
 		}
-		// nuke all large terrain polygons unless at high lattitudes (cuz there is no gobal scenery there ...)
-		if(apt_box.p1.y() < 73.0 && apt_box.p1.y() > -60.0)
-		{
-			vector<WED_PolygonPlacement*> terrain_polys;
-			CollectRecursive(*apt_itr, back_inserter(terrain_polys), IgnoreVisiblity, [](WED_Thing* t)->bool 
-				{
-					string res;
-					static_cast<WED_PolygonPlacement*>(t)->GetResource(res);
-					return res.compare(0, strlen("lib/g10/terrain10/"), "lib/g10/terrain10/") == 0 ||
-						   res.compare(0, strlen("lib/g8/pol/"), "lib/g8/pol/") == 0;
-				},
-				WED_PolygonPlacement::sClass, 2);
-			if (terrain_polys.size())
-			{
-				set<WED_Thing*> things;
-				for (auto p : terrain_polys)
-				{
-					Bbox2 bounds;
-					p->GetBounds(gis_Geo, bounds);
-					if(LonLatDistMeters(bounds.bottom_left(), bounds.top_right()) > 20.0)      // passes at least 10m lettering drawn with snow texture
-						CollectRecursive(p, inserter(things, things.end()), IgnoreVisiblity, TakeAlways);
-				}
-				wrl->StartCommand("Delete Terrain Polys");
-				WED_RecursiveDelete(things);
-				wrl->CommitCommand();
-				LOG_MSG("Deleted %zd terrain polys at %s\n", terrain_polys.size(), ICAO_code.c_str());
-			}
-		}
-		// nuke all "Grunge" draped objects
-		vector<WED_ObjPlacement*> grunge_objs;
-		CollectRecursive(*apt_itr, back_inserter(grunge_objs), IgnoreVisiblity, [](WED_Thing* objs)->bool {
-			string res;
-			static_cast<WED_ObjPlacement*>(objs)->GetResource(res);
-			return res.compare(0, strlen("lib/airport/Common_Elements/Parking/Grunge"), "lib/airport/Common_Elements/Parking/Grunge") == 0;
-			},
-			WED_ObjPlacement::sClass, 2);
-		if (grunge_objs.size())
-		{
-			wrl->StartCommand("Delete Grunge Objects");
-			set<WED_Thing*> things(grunge_objs.begin(), grunge_objs.end());
-			WED_RecursiveDelete(things);
-			wrl->CommitCommand();
-			LOG_MSG("Deleted %zd Grunges at %s\n", grunge_objs.size(), ICAO_code.c_str());
-		}
 		// add soft edges to all pavement
 		vector<WED_Group*> pavFX;
 		CollectRecursive(*apt_itr, back_inserter(pavFX), IgnoreVisiblity, [](WED_Thing* t)->bool
@@ -426,11 +407,91 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			else
 				wrl->AbortOperation();
 		}
-		// The "big xp12 gateway reset" - remove certain features unless the submission is "recent" , measure by the scenery ID
-		// nuke ALL exclusions at airports, but only for 2D stuff like Beaches, Roads, Polygons, Lines at Sea/Heliports
-		// nuke all per-airport flatten
+		// add soft edges for airport grass (hopefully  we dont need to do it any more, some day ...)
+		vector<WED_AirportBoundary*> bdy;
+		CollectRecursive(*apt_itr, back_inserter(bdy), IgnoreVisiblity, TakeAlways, WED_AirportBoundary::sClass, 2);
+		if (bdy.size() && (*apt_itr)->GetAirportType() == type_Airport)
+		{
+			vector<WED_LinePlacement*> grass_lines;
+			CollectRecursive(*apt_itr, back_inserter(grass_lines), IgnoreVisiblity, [](WED_Thing* lin)->bool {
+				string res;
+				static_cast<WED_LinePlacement*>(lin)->GetResource(res);
+				return res.compare(0, strlen("lib/g10/terrain10/apt_border_"), "lib/g10/terrain10/apt_border_") == 0;
+				},
+				WED_LinePlacement::sClass, 2);
+			if (grass_lines.empty() && climate_map.count(ICAO_code))
+			{
+				wrl->StartCommand("Create AptGrass Soft Edges");
+				sel->Clear();
+				sel->Insert(vector<ISelectable*>(bdy.begin(), bdy.end()));
+				WED_DoDuplicate(resolver, false);
+				WED_DoConvertTo(resolver, &CreateThing<WED_LinePlacement>, false);
+				// change to particular line type
+				string grass_line_res = string("lib/g10/terrain10/apt_border_") + climate_map[ICAO_code] + ".lin";
+				int n_sel = sel->GetSelectionCount();
+				for (int i = 0; i < n_sel; i++)
+				{
+					if (auto t = dynamic_cast<IHasResource*>(sel->GetNthSelection(i)))
+						t->SetResource(grass_line_res);
+				}
+				wrl->CommitCommand();
+				LOG_MSG("Added AptGrass Edges at %s\n", ICAO_code.c_str());
+			}
+		}
+		//
+		// The "big xp12 gateway reset" - remove certain features unless the submission is "recent" as
+		//  measureds by the scenery ID (i.e. a cutoff point in time after which ONLY Xp12 ready sceneries were accepted) 
+		// or presence of certain, XP12 only art assets
+		//
 		if ((*apt_itr)->GetSceneryID() < 99000 && terFX.empty() && pavFX.empty())
 		{
+			// nuke all large terrain polygons unless at high lattitudes (cuz there is no gobal scenery there ...)
+			if (apt_box.p1.y() < 73.0 && apt_box.p1.y() > -60.0)
+			{
+				vector<WED_PolygonPlacement*> terrain_polys;
+				CollectRecursive(*apt_itr, back_inserter(terrain_polys), IgnoreVisiblity, [](WED_Thing* t)->bool
+					{
+						string res;
+						static_cast<WED_PolygonPlacement*>(t)->GetResource(res);
+						return res.compare(0, strlen("lib/g10/terrain10/"), "lib/g10/terrain10/") == 0 ||
+							res.compare(0, strlen("lib/g8/pol/"), "lib/g8/pol/") == 0;
+					},
+					WED_PolygonPlacement::sClass, 2);
+				if (terrain_polys.size())
+				{
+					set<WED_Thing*> things;
+					for (auto p : terrain_polys)
+					{
+						Bbox2 bounds;
+						p->GetBounds(gis_Geo, bounds);
+						if (LonLatDistMeters(bounds.bottom_left(), bounds.top_right()) > 20.0)      // passes at least 10m lettering drawn with snow texture
+							CollectRecursive(p, inserter(things, things.end()), IgnoreVisiblity, TakeAlways);
+					}
+					wrl->StartCommand("Delete Terrain Polys");
+					WED_RecursiveDelete(things);
+					wrl->CommitCommand();
+					LOG_MSG("Deleted %zd terrain polys at %s\n", terrain_polys.size(), ICAO_code.c_str());
+				}
+			}
+
+			// nuke all "Grunge" draped objects
+			vector<WED_ObjPlacement*> grunge_objs;
+			CollectRecursive(*apt_itr, back_inserter(grunge_objs), IgnoreVisiblity, [](WED_Thing* objs)->bool {
+				string res;
+				static_cast<WED_ObjPlacement*>(objs)->GetResource(res);
+				return res.compare(0, strlen("lib/airport/Common_Elements/Parking/Grunge"), "lib/airport/Common_Elements/Parking/Grunge") == 0;
+				},
+				WED_ObjPlacement::sClass, 2);
+			if (grunge_objs.size())
+			{
+				wrl->StartCommand("Delete Grunge Objects");
+				set<WED_Thing*> things(grunge_objs.begin(), grunge_objs.end());
+				WED_RecursiveDelete(things);
+				wrl->CommitCommand();
+				LOG_MSG("Deleted %zd Grunges at %s\n", grunge_objs.size(), ICAO_code.c_str());
+			}
+
+			// nuke ALL exclusions at airports, but only for 2D stuff like Beaches, Roads, Polygons, Lines at Sea/Heliports
 			vector<WED_ExclusionZone*> exclusions;
 			CollectRecursive(*apt_itr, back_inserter(exclusions), IgnoreVisiblity, TakeAlways,
 				WED_ExclusionZone::sClass, 2);
@@ -467,6 +528,8 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				wrl->CommitCommand();
 				LOG_MSG("I/XP12 Deleted %d Exclusions at %s\n", (int) exclusions.size() + reduced_ex, ICAO_code.c_str());
 			}
+
+			// nuke all per-airport flatten
 			AptInfo_t apt_info;
 			(*apt_itr)->Export(apt_info);
 			auto it = std::find(apt_info.meta_data.begin(), apt_info.meta_data.end(), make_pair(string("flatten"), string("1")));
@@ -479,36 +542,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				LOG_MSG("I/XP12 Deleted Always Flatten at %s\n", ICAO_code.c_str());
 			}
 		}
-		// add soft edges for airport grass
-		vector<WED_AirportBoundary*> bdy;
-		CollectRecursive(*apt_itr, back_inserter(bdy), IgnoreVisiblity, TakeAlways, WED_AirportBoundary::sClass, 2);
-		if (bdy.size() && (*apt_itr)->GetAirportType() == type_Airport)
-		{
-			vector<WED_LinePlacement*> grass_lines;
-			CollectRecursive(*apt_itr, back_inserter(grass_lines), IgnoreVisiblity, [](WED_Thing* lin)->bool {
-				string res;
-				static_cast<WED_LinePlacement*>(lin)->GetResource(res);
-				return res.compare(0, strlen("lib/g10/terrain10/apt_border_"), "lib/g10/terrain10/apt_border_") == 0;
-				},
-				WED_LinePlacement::sClass, 2);
-			if (grass_lines.empty())
-			{
-				wrl->StartCommand("Create AptGrass Soft Edges");
-				sel->Clear();
-				sel->Insert(vector<ISelectable*>(bdy.begin(), bdy.end()));
-				WED_DoDuplicate(resolver, false);
-				WED_DoConvertTo(resolver, &CreateThing<WED_LinePlacement>, false);
-				// change to particular line type
-				int n_sel = sel->GetSelectionCount();
-				for (int i = 0; i < n_sel; i++)
-				{
-					if (auto t = dynamic_cast<IHasResource*>(sel->GetNthSelection(i)))
-						t->SetResource("lib/g10/terrain10/apt_border_tmp_wet.lin");         // ToDo: Set climate zone correct Edge per cheatSheet from Ben. Or look into base mesh DSF ?
-				}
-				wrl->CommitCommand();
-				LOG_MSG("Added AptGrass Edges at %s\n", ICAO_code.c_str());
-			}
-		}
+
 #endif
 		double percent_done = (double)distance(apts.begin(), apt_itr) / apts.size() * 100;
 		printf("%0.0lf%% through heuristic at %s\n", percent_done, ICAO_code.c_str());
