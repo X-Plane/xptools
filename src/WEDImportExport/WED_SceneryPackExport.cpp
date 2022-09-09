@@ -135,7 +135,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 	int added_country_codes = 0;
 	int grass_statistics[4] = { 0 };
 
-	auto climate_map = LoadAirportClimates();
+//	auto climate_map = LoadAirportClimates();
 
 	auto t0 = chrono::high_resolution_clock::now();
 
@@ -407,7 +407,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			else
 				wrl->AbortOperation();
 		}
-		// add soft edges for airport grass (hopefully  we dont need to do it any more, some day ...)
+/*		// add soft edges for airport grass
 		vector<WED_AirportBoundary*> bdy;
 		CollectRecursive(*apt_itr, back_inserter(bdy), IgnoreVisiblity, TakeAlways, WED_AirportBoundary::sClass, 2);
 		if (bdy.size() && (*apt_itr)->GetAirportType() == type_Airport)
@@ -438,7 +438,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				LOG_MSG("Added AptGrass Edges at %s\n", ICAO_code.c_str());
 			}
 		}
-		//
+*/		//
 		// The "big xp12 gateway reset" - remove certain features unless the submission is "recent" as
 		//  measureds by the scenery ID (i.e. a cutoff point in time after which ONLY Xp12 ready sceneries were accepted) 
 		// or presence of certain, XP12 only art assets
