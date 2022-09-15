@@ -41,6 +41,7 @@ enum {
 		shp_Overlay			= 64,			// Do not clear previous data.
 		shp_ErrCheck		= 128,			// Check for overlapping line segments, and fail if we find any.
 		shp_Altitude		= 256,			// Import elevation from polygon vertex Z values.
+		shp_Outline			= 512,			// Rasterizing: ink in outline to guarantee coverage
 };
 typedef unsigned int shp_Flags;
 

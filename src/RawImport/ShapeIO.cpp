@@ -208,6 +208,9 @@ static int want_this_thing(DBFHandle db, int shape_id, const shape_pattern_vecto
 
 		if(rule_ok)
 		{
+			if(rule.feature == NO_VALUE)
+				return 0;
+		
 			if(value) *value = rule.feature;
 			return 1;
 		}
@@ -1112,6 +1115,7 @@ bool	RasterShapeFile(
 	}
 
 	map<int, PolyRasterizer<double> >	rasterizers;
+	map<int, vector<Segment2> >			edges;
 
 	int feat = NO_VALUE;
 	if(flags & shp_Mode_Simple)
@@ -1190,12 +1194,24 @@ bool	RasterShapeFile(
 						p.erase(p.end()-1);
 
 					PolyRasterizer<double>& rasterizer(rasterizers[feat]);
+					vector<Segment2>& edge_list(edges[feat]);
 
 					if(p.size() > 2)
 					{
 						for(int s = 0; s < p.size(); ++s)
 						{
 							Segment2 si(p.side(s));
+
+							if(flags & shp_Outline)
+							edge_list.push_back(Segment2(
+													Point2(
+														dem.lon_to_x(si.p1.x()),
+														dem.lat_to_y(si.p1.y())),
+													Point2(
+														dem.lon_to_x(si.p2.x()),
+														dem.lat_to_y(si.p2.y()))));
+			
+//							debug_mesh_line(si.p1,si.p2,9,0,1,0,0,1);
 							rasterizer.AddEdge(	dem.lon_to_x(si.p1.x()),
 												dem.lat_to_y(si.p1.y()),
 												dem.lon_to_x(si.p2.x()),
@@ -1223,6 +1239,30 @@ bool	RasterShapeFile(
 	 ************************************************************************************************************************************/
 	SHPClose(file);
 	if(db)	DBFClose(db);
+
+	for(map<int, vector<Segment2> >::iterator edge_list = edges.begin(); edge_list != edges.end(); ++edge_list)
+	{
+		for(vector<Segment2>::iterator e = edge_list->second.begin(); e != edge_list->second.end(); ++e)
+		{
+			double count = ceil(sqrt(e->squared_length())) * 4.0;
+			
+			for(double c = 0; c <= count; ++c)
+			{
+				double x = interp(0,e->p1.x(),count,e->p2.x(),c);
+				double y = interp(0,e->p1.y(),count,e->p2.y(),c);
+				int xx = round(x);
+				int yy = round(y);
+				if(flags & shp_Overlay)
+				{
+					dem(xx,yy) = orig(xx,yy);
+				}
+				else
+				{
+					dem(xx,yy) = edge_list->first;
+				}
+			}
+		}
+	}
 
 	for(map<int, PolyRasterizer<double> >::iterator r = rasterizers.begin(); r != rasterizers.end(); ++r)
 	{
