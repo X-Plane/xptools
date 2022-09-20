@@ -28,10 +28,13 @@
 
 glWidget::glWidget(XWinGL* xwin,int w,int h,Fl_Gl_Window* share) : Fl_Gl_Window(w,h)
 {
-	//TODO: mroe: 
+	//TODO: mroe:
 	//Probably we make a own context here for new windows not sharing context.
 	//Having one before a window is shown  would also avoid all the deferred gl init.
-	if(share) this->context(share->context(),0);
+	if(share)
+		mSharedContext = share->context();
+	else
+		mSharedContext = nullptr;
 
 	mXWinGL = xwin;
 	set_visible();
@@ -44,20 +47,38 @@ void glWidget::draw()
 {
     if (!this->context_valid())
 	{
-		mXWinGL->mCtxValid = false;
-		glPixelStorei	(GL_UNPACK_ALIGNMENT,1);
-		glPixelStorei	(GL_PACK_ALIGNMENT  ,1);
+        if(mSharedContext != nullptr)
+        {
+            //mroe: fltk destroys the context after hidden and would get a new one due make_current() later.
+            //thats why,if the context was shared we restore it here.
+            this->context(mSharedContext,0);
+            mXWinGL->mCtxValid = true;
+        }
+        else
+        {
+            mXWinGL->mCtxValid = false;
+            glPixelStorei	(GL_UNPACK_ALIGNMENT,1);
+            glPixelStorei	(GL_PACK_ALIGNMENT  ,1);
 
-		if(!mXWinGL->mGLInited)
-		{
-			if(GLint err = glewInit())
-				LOG_MSG("I/WGL glewInit failed\n");
-			else
-				LOG_MSG("I/WGL glewInit OK\n");
-
-			mXWinGL->mGLInited = true;
-		}
-	}
+            if(!mXWinGL->mGLInited)
+            {
+                GLenum err = glewInit();
+                #ifdef FLTK_USE_WAYLAND
+                    if (err == GLEW_ERROR_NO_GLX_DISPLAY) err = GLEW_OK;
+                #endif
+                if(err)
+                {
+                    LOG_MSG("I/WGL glewInit failed\n"); LOG_FLUSH();
+                    throw runtime_error("can't init glew");
+                }
+                else
+                {
+                    mXWinGL->mGLInited = true;
+                    LOG_MSG("I/WGL glewInit OK\n");
+                }
+            }
+        }
+    }
 	else
 	{
 		mXWinGL->mCtxValid = true;

@@ -63,6 +63,10 @@
 #include <FL/Fl_Menu_Bar.H>
 #include <FL/Fl_Menu_.H>
 
+#if FL_API_VERSION >= 10400
+#include <FL/platform.H>
+#endif
+
 #define MENU_ARRAY_SIZE 20
 #define xmenu const Fl_Menu_Item *
 

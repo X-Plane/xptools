@@ -131,8 +131,12 @@ HINSTANCE gInstance = NULL;
 #if LIN
   #include "initializer.h"
   #include <FL/Fl.H>
+#if FL_API_VERSION < 10400
   #include <FL/x.H>
+#else
+  #include <FL/platform.H>
 #endif
+#endif // if LIN
 
 FILE * gLogFile;
 

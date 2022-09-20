@@ -48,11 +48,11 @@ public:
 	void draw();
 
 protected:
-
     void resize(int X,int Y,int W,int H);
 
 private:
-	XWinGL* mXWinGL;
+	XWinGL*   mXWinGL;
+	GLContext mSharedContext;
 };
 
 #endif
@@ -106,7 +106,6 @@ private:
 public:
 	bool			mGLInited;
 	bool			mCtxValid;
-	//GLContext		mContext;
 #endif
 
 };
