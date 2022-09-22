@@ -64,7 +64,7 @@ void glWidget::draw()
             {
                 GLenum err = glewInit();
                 #ifdef FLTK_USE_WAYLAND
-                    if (err == GLEW_ERROR_NO_GLX_DISPLAY) err = GLEW_OK;
+                    if (fl_wl_display() && err == GLEW_ERROR_NO_GLX_DISPLAY) err = GLEW_OK;
                 #endif
                 if(err)
                 {
@@ -93,7 +93,7 @@ void glWidget::resize(int X,int Y,int W,int H)
     mXWinGL->GLReshaped(w(),h());
 }
 
-XWinGL::XWinGL(int default_dnd, XWinGL* inShare) : XWin(default_dnd), mGLInited(false)
+XWinGL::XWinGL(int default_dnd, XWinGL* inShare) : XWin(default_dnd), mGLInited(false), mCtxValid(false)
 {
 	mGlWidget = new glWidget(this, 100,100,inShare?inShare->mGlWidget:0);
 	add_resizable(*mGlWidget);
