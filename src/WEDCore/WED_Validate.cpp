@@ -414,7 +414,7 @@ static void ValidateOneFacadePlacement(WED_Thing* who, validation_error_vector& 
 
 	if(fac->HasLayer(gis_Param))
 	{
-		int maxWalls = fac->GetNumWallChoices();
+		auto maxWalls = fac->GetNumWallChoices();
 		auto ips = fac->GetOuterRing();
 		int nn = ips->GetNumPoints();
 		set<WED_Thing*> bad_walls;
@@ -431,6 +431,31 @@ static void ValidateOneFacadePlacement(WED_Thing* who, validation_error_vector& 
 			msgs.push_back(validation_error_t("Facade node specifies wall not defined in facade resource.", err_facade_illegal_wall, bad_walls, apt));
 	}
 
+	auto allHeights = fac->GetHeightChoices();
+	float next_h_up = 9999;
+	float next_h_down = 0;
+	for (auto h : allHeights)
+	{
+		if (h >= fac->GetHeight())
+		{
+			if (h < next_h_up) next_h_up = h;
+		}
+		else
+		{
+			if (h > next_h_down) next_h_down = h;
+		}
+	}
+	auto dist_up = next_h_up - fac->GetHeight();
+	auto dist_dn = fac->GetHeight() - next_h_down;
+	if (dist_up > 1.0f && dist_dn > 1.0f)
+	{
+		char c[128];
+		if (allHeights.size() > 1 && next_h_up < 9999 && next_h_down > 0.0 && fltrange(dist_up / dist_dn, 0.5, 2.0))
+			sprintf(c, "Facade height not close to actual supported heights. Closest supported are %.0f, %.0f", next_h_down, next_h_up);
+		else
+			sprintf(c, "Facade height not close to actual supported heights. Closest supported is %.0f", dist_up < dist_dn ? next_h_up : next_h_down);
+		msgs.push_back(validation_error_t(c , gExportTarget == wet_gateway ? err_facade_height : warn_facade_height, who, apt));
+	}
 	if(gExportTarget >= wet_xplane_1200 && fac->HasDockingCabin())
 	{
 		if(!apt)
