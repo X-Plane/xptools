@@ -388,8 +388,8 @@ int main(int argc, char * argv[])
 		printf("RADIO DDS_MODE 0 --png2dxt1 BC1/DXT1 Compression (1-bit alpha)\n");
 		printf("RADIO DDS_MODE 0 --png2dxt3 BC2/DXT3 Compression (high-freq alpha)\n");
 		printf("RADIO DDS_MODE 0 --png2dxt5 BC3/DXT5 Compression (smooth alpha)\n");
-		printf("RADIO DDS_MODE 0 --png2bc4 BC4 Compression (metalness or reflectivity)\n");
-		printf("RADIO DDS_MODE 0 --png2bc5 BC5 Compression (normals)\n");
+//		printf("RADIO DDS_MODE 0 --png2bc4 BC4 Compression (metalness or reflectivity)\n");
+//		printf("RADIO DDS_MODE 0 --png2bc5 BC5 Compression (normals)\n");
 		printf("RADIO DDS_MODE 0 --png2rgb No Compression\n");
 		printf("DIV\n");
 		printf("RADIO HAS_MIPS 1 --std_mips Generate Mip-Maps (sRGB gamma)\n");
@@ -430,8 +430,10 @@ int main(int argc, char * argv[])
 	if (argc < 4) {
 		printf("Usage: %s <method> [options] <input_file> <output_file>|-\n",argv[0]);
 		printf("          compression method being one of\n");
-		printf("          --png2dxt1, --png2dxt3, --png2dxt5, --png2bc4, --png2bc5\n");
-		printf("          --png2dxt    Auto select BC1/dxt1, BC3/dxt5, BC4 or BC5 compression\n");
+//		printf("          --png2dxt1, --png2dxt3, --png2dxt5, --png2bc4, --png2bc5\n");
+//		printf("          --png2dxt    Auto select BC1/dxt1, BC3/dxt5, BC4 or BC5 compression\n");
+		printf("          --png2dxt1, --png2dxt3, --png2dxt5\n");
+		printf("          --png2dxt    Auto select BC1/dxt1 or BC3/dxt5 compression\n");
 		printf("          --png2rgb    Uncompressed 8b/pixel\n");
 		printf("          recognized options are\n");
 		printf("          --pre_mips   Source image includes Mip-Map Tree\n");
@@ -442,7 +444,8 @@ int main(int argc, char * argv[])
 		printf("          --scale_down Scale down to nearest power of 2\n\n");
 		printf("          --scale_half Scale down to half size\n");
 		printf("\n");
-		printf("          --gamma_22   Ignored. BC1-3 use sRGB/gamma=2.2, BC4-5 linear gamma\n");
+//		printf("          --gamma_22   Ignored. BC1-3 use sRGB/gamma=2.2, BC4-5 linear gamma\n");
+		printf("          --gamma_22   This version of DDSTool always uses sRGB/gamma=2.2\n");
 		printf("\n");
 		printf("Usage: %s --quilt <input_file> <width> <height> <patch size> <overlap> <trials> <output_files>\n",argv[0]);
 		printf("       %s --version\n",argv[0]);
@@ -636,8 +639,8 @@ int main(int argc, char * argv[])
 			strcmp(argv[1], "--png2dxt1") == 0 ||
 			strcmp(argv[1], "--png2dxt3") == 0 ||
 			strcmp(argv[1], "--png2dxt5") == 0 || 
-			strcmp(argv[1], "--png2bc4") == 0 ||
-			strcmp(argv[1], "--png2bc5") == 0 ||
+//			strcmp(argv[1], "--png2bc4") == 0 ||
+//			strcmp(argv[1], "--png2bc5") == 0 ||
 			strcmp(argv[1], "--png2rgb") == 0)
 	{
 		int arg_base = 2;

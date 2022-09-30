@@ -150,21 +150,19 @@ void	GUI_DrawStretched(
 				int							tile_sel[4])
 {
 	GUI_TexPosition_t metrics;
-
+	CHECK_GL_ERR
 	int tex_id = GUI_GetTextureResource(in_resource, UI_TEX_FLAGS, &metrics);
 
-	state->SetState(0, 1, 0, 1, 1, 0, 0);
-	state->BindTex(tex_id, 0);
+	state->SetState(0, 1, 0, 1, 1, 0, 0); CHECK_GL_ERR
+	state->BindTex(tex_id, 0); CHECK_GL_ERR
 
 	float	sts[4] = { 0.0, 0.0, metrics.s_rescale, metrics.t_rescale };
 	if (tile_sel) GUI_TileToST(tile_sel, sts, &metrics);
 
-	glBegin(GL_QUADS);
-
+	glBegin(GL_QUADS);	CHECK_GL_ERR
 	gl_quad(bounds[0],bounds[1],bounds[2],bounds[3],
 					sts[0],sts[1],sts[2],sts[3]);
-	glEnd();
-
+	glEnd(); CHECK_GL_ERR
 }
 
 void	GUI_DrawHorizontalStretch(

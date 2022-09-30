@@ -40,7 +40,7 @@ typedef WED_Thing* (*CreateThingFunc)(WED_Archive* parent);
 int		WED_CanConvertTo(IResolver * resolver, const char* DstType);
 
 // Converts the selected objects to the type produced by 'create'.
-void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create);
+void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create, bool in_cmd = true);
 
 void	WED_DoConvertToForest(IResolver* resolver);
 

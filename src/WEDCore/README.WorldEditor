@@ -38,6 +38,7 @@ WED 2.5.0b2 5/30/22
    - increased precision for draped polygon headings
    - custom airport service trucks
    - validation warning on runway lighting combinations not supported by XP12
+   - allow road ntworks near airport boundaries on the GW
    X-Plane 12 art asset conversion features:
    - jetway objects to jetway facades
    - X11 default pavment to XP12 aged pavement
@@ -51,6 +52,9 @@ WED 2.5.0b2 5/30/22
    - nuke all grunge objects
    - add regional presets for ramp starts without assignments
    - add iso3166 country codes to 1302 country meta data
+   - fix XPD-12676 several chinese airport ICAO codes missing in Global Airports
+   - remove road, beach, line exclusions, grunge objects, flatten meta for GW airports < 95000
+   - convert 2D only deprecated AG_*.for to current non-deprecated/3D forests.
    Features for all X-Plane versions:
    - use full projection for map display to improve location accuracy of linear features
    - bump resolution for ESRI slippy maps below 60 deg lattitude by one ZL

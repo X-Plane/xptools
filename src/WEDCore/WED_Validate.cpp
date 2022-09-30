@@ -100,7 +100,7 @@
 #define MAX_SPAN_GATEWAY_NM 7
 
 // maximum distance for any scenery from the airport boundary, gateway only
-#define APT_OVERSIZE_NM  0.5
+#define APT_OVERSIZE_NM  0.6
 
 // ATC flow tailwind components and wind rule coverage tested up to this windspeed
 #define ATC_FLOW_MAX_WIND 35
@@ -414,7 +414,7 @@ static void ValidateOneFacadePlacement(WED_Thing* who, validation_error_vector& 
 
 	if(fac->HasLayer(gis_Param))
 	{
-		int maxWalls = fac->GetNumWallChoices();
+		auto maxWalls = fac->GetNumWallChoices();
 		auto ips = fac->GetOuterRing();
 		int nn = ips->GetNumPoints();
 		set<WED_Thing*> bad_walls;
@@ -431,6 +431,31 @@ static void ValidateOneFacadePlacement(WED_Thing* who, validation_error_vector& 
 			msgs.push_back(validation_error_t("Facade node specifies wall not defined in facade resource.", err_facade_illegal_wall, bad_walls, apt));
 	}
 
+	auto allHeights = fac->GetHeightChoices();
+	float next_h_up = 9999;
+	float next_h_down = 0;
+	for (auto h : allHeights)
+	{
+		if (h >= fac->GetHeight())
+		{
+			if (h < next_h_up) next_h_up = h;
+		}
+		else
+		{
+			if (h > next_h_down) next_h_down = h;
+		}
+	}
+	auto dist_up = next_h_up - fac->GetHeight();
+	auto dist_dn = fac->GetHeight() - next_h_down;
+	if (dist_up > 1.0f && dist_dn > 1.0f)
+	{
+		char c[128];
+		if (allHeights.size() > 1 && next_h_up < 9999 && next_h_down > 0.0 && fltrange(dist_up / dist_dn, 0.5, 2.0))
+			sprintf(c, "Facade height not close to actual supported heights. Closest supported are %.0f, %.0f", next_h_down, next_h_up);
+		else
+			sprintf(c, "Facade height not close to actual supported heights. Closest supported is %.0f", dist_up < dist_dn ? next_h_up : next_h_down);
+		msgs.push_back(validation_error_t(c , gExportTarget == wet_gateway ? err_facade_height : warn_facade_height, who, apt));
+	}
 	if(gExportTarget >= wet_xplane_1200 && fac->HasDockingCabin())
 	{
 		if(!apt)
@@ -645,7 +670,7 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 		else
 			path = lib_mgr->GetResourcePath(res);
 
-		if(!(FILE_exists(path.c_str()) || res == "::FLATTEN::.pol"))
+		if(!(FILE_exists(path.c_str()) || ( gExportTarget < wet_gateway && res == "::FLATTEN::.pol")))
 				msgs.push_back(validation_error_t(string(who->HumanReadableType()) + "'s resource " + res + " cannot be found.", err_resource_cannot_be_found, who, parent_apt));
 
 		//3. What happen if the user free types a real resource of the wrong type into the box?
@@ -2225,7 +2250,7 @@ static bool near_but_not_on_boundary(Point2& p)
 	return  dlon < 3 * MTR_TO_DEG_LAT || dlat <  2 * MTR_TO_DEG_LAT;    // not precise - fast, but good enough. There are no roads at high lattitudes :)
 }
 
-static void ValidateRoads(const vector<WED_RoadEdge *> roads, validation_error_vector& msgs, WED_Airport* apt)
+static void ValidateRoads(const vector<WED_RoadEdge *> roads, validation_error_vector& msgs, WED_Airport* apt, const Bbox2& roads_bbox)
 {
 	// Hard problems
 	// referencing unknown (v)road-type (e.g. after changing the resource property)
@@ -2235,7 +2260,6 @@ static void ValidateRoads(const vector<WED_RoadEdge *> roads, validation_error_v
 	// disconnected vertices
 	// T-junctions                                                     not yet done
 	// colocated segments (sharing both ends with another segment)
-	// connected dissimilar elements (road-railroad-powerline)         not yet done
 
 	// Style issues - Gateway no-no's
 	// resource not right
@@ -2243,17 +2267,19 @@ static void ValidateRoads(const vector<WED_RoadEdge *> roads, validation_error_v
 	unordered_map<WED_Thing *, Point2> nodes;
 	nodes.reserve(roads.size());
 
+	set<WED_RoadEdge*> roads_outside, roads_bad_resource;
+
 	for(auto r : roads)
 	{
-//		if(r->GetStartLayer() < 0 || r->GetStartLayer() > 5 ||
-//			 r->GetEndLayer() < 0 || r->GetEndLayer() > 5)
-//			msgs.push_back(validation_error_t(string("All road layers must be in the range of 0 to 5"), err_net_resource, r, apt));
+		if(r->GetStartLayer() < 0 || r->GetStartLayer() > 5 ||
+			 r->GetEndLayer() < 0 || r->GetEndLayer() > 5)
+			msgs.push_back(validation_error_t(string("All road layers must be in the range of 0 to 5"), err_net_resource, r, apt));
 
 		if(r->GetNthSource(0) == r->GetNthSource(1))
 			msgs.push_back(validation_error_t("Road edge erroneous. Loop to itself.", err_net_edge_loop, r, apt));
 
 		Bezier2 s;
-		int ns = r->GetNumSides();     // we have plans to allow multi-segment roads ...
+		int ns = r->GetNumSides();
 		for(int i = 0; i < ns; i++)
 		{
 			r->GetSide(gis_Geo, i, s);
@@ -2270,21 +2296,35 @@ static void ValidateRoads(const vector<WED_RoadEdge *> roads, validation_error_v
 			nodes[dynamic_cast<WED_Thing *>(r->GetNthPoint(i+1))] = s.p2;
 			if(near_but_not_on_boundary(s.p2))
 				msgs.push_back(validation_error_t("Road nodes must be either exactly on or a few meters away from DSF tile boundaries.", err_net_crosses_tile_bdy, r, apt));
+
+			if (gExportTarget >= wet_gateway)
+				if (!roads_bbox.contains(s.as_segment()))
+					roads_outside.insert(r);
 		}
 
 		if(gExportTarget >= wet_gateway)
 		{
-#if 1
+#if 0
 			msgs.push_back(validation_error_t("Roads networks are not (yet) allowed on the gateway", err_net_resource, roads, apt));
 			return;
 #else
 			string res;
 			r->GetResource(res);
-			if(res != "lib/g10/roads.net" && res != "lib/g10/roads_EU.net")
-				msgs.push_back(validation_error_t("Only roads from lib/g10/roads.net or lib/g10/roads_EU.net are allowed on the gateway", err_net_resource, r, apt));
+			if (res != "lib/g10/roads.net" && res != "lib/g10/roads_EU.net")
+				roads_bad_resource.insert(r);
 #endif
 		}
 	}
+	if (roads_outside.size())
+	{
+		msgs.push_back(validation_error_t("Road network stretches too far away from airport", err_net_outside_apt, roads_outside, apt));
+		debug_mesh_segment(roads_bbox.left_side(), DBG_LIN_COLOR);
+		debug_mesh_segment(roads_bbox.right_side(), DBG_LIN_COLOR);
+		debug_mesh_segment(roads_bbox.top_side(), DBG_LIN_COLOR);
+		debug_mesh_segment(roads_bbox.bottom_side(), DBG_LIN_COLOR);
+	}
+	if (roads_bad_resource.size())
+		msgs.push_back(validation_error_t("Only roads from lib/g10/roads.net or lib/g10/roads_EU.net are allowed on the gateway", err_net_resource, roads_bad_resource, apt));
 
 	// any nodes too close to each other and not connected
 	for(auto x = nodes.begin(); x != nodes.end(); ++x)
@@ -2329,7 +2369,7 @@ static void ValidateRoads(const vector<WED_RoadEdge *> roads, validation_error_v
 					{
 						if(xi == yi)
 						{
-							msgs.push_back(validation_error_t("Road has one or more short segments", err_net_zero_length, xi, apt));
+							msgs.push_back(validation_error_t("Road has one or more short (<3m) segments", err_net_zero_length, xi, apt));
 							isShort = true;
 							break;
 						}
@@ -2561,7 +2601,6 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	for(auto r : ramps)
 		ai_useable_ramps += ValidateOneRampPosition(r, msgs, apt, runways);
 
-	ValidateRoads(roads, msgs, apt);
 
 	if(gExportTarget >= wet_xplane_1050)
 	{
@@ -2721,7 +2760,14 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 						err_gateway_orthophoto_cannot_be_exported, orthos_illegal, apt));
 		if(mf)
 			ValidateCIFP(runways, sealanes, legal_rwy_oneway, mf, msgs, apt);
+
+		if (!roads.empty())
+			ValidateRoads(roads, msgs, apt, apt_bounds);
 	}
+	else
+		if (!roads.empty())
+			ValidateRoads(roads, msgs, apt, Bbox2());
+
 
 	ValidatePointSequencesRecursive(apt, msgs,apt);
 	ValidateDSFRecursive(apt, lib_mgr, msgs, apt);
@@ -2782,7 +2828,7 @@ validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane,
 	};
 
 	CollectEntitiesRecursiveNoApts(wrl);
-	ValidateRoads(off_airport_roads, msgs, nullptr);
+	ValidateRoads(off_airport_roads, msgs, nullptr, Bbox2());
 
 	// These are programmed to NOT iterate up INTO airports.  But you can START them at an airport.
 	// So...IF wrl (which MIGHT be the world or MIGHt be a selection or might be an airport) turns out to

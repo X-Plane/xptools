@@ -1049,9 +1049,6 @@
 		025E09DF20D2F11200DD8856 /* line_BSolidWhite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = line_BSolidWhite.png; sourceTree = "<group>"; };
 		028A6FE325F897C30002FDF5 /* ArrowHeadRoadE.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ArrowHeadRoadE.png; sourceTree = "<group>"; };
 		028A6FE425F897C30002FDF5 /* ArrowHeadRoadS.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ArrowHeadRoadS.png; sourceTree = "<group>"; };
-		028B41E824F1829A00018953 /* glew.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = glew.c; sourceTree = "<group>"; };
-		028B41E924F1829A00018953 /* glew.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = glew.h; sourceTree = "<group>"; };
-		028B41EA24F1829A00018953 /* glxew.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = glxew.h; sourceTree = "<group>"; };
 		029EC5B7239B094B00A7C5E1 /* exclaim.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = exclaim.png; sourceTree = "<group>"; };
 		02B03C0D20C71DE5000F81F0 /* WED_Line_Selector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Line_Selector.cpp; sourceTree = "<group>"; };
 		02B03C0E20C71DE5000F81F0 /* WED_Line_Selector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Line_Selector.h; sourceTree = "<group>"; };
@@ -1805,12 +1802,10 @@
 		D6BC37610AB22C85003949C5 /* XWidgetApp.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = XWidgetApp.h; sourceTree = "<group>"; };
 		D6BC37620AB22C85003949C5 /* XWin.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = XWin.h; sourceTree = "<group>"; };
 		D6BC37630AB22C85003949C5 /* XWin.mac.mm */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.objcpp; path = XWin.mac.mm; sourceTree = "<group>"; };
-		D6BC37640AB22C85003949C5 /* XWin.win.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = XWin.win.cpp; sourceTree = "<group>"; };
 		D6BC37650AB22C85003949C5 /* XWin32DND.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = XWin32DND.cpp; sourceTree = "<group>"; };
 		D6BC37660AB22C85003949C5 /* XWin32DND.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = XWin32DND.h; sourceTree = "<group>"; };
 		D6BC37670AB22C85003949C5 /* XWinGL.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = XWinGL.h; sourceTree = "<group>"; };
 		D6BC37680AB22C85003949C5 /* XWinGL.mac.mm */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.objcpp; path = XWinGL.mac.mm; sourceTree = "<group>"; };
-		D6BC37690AB22C85003949C5 /* XWinGL.win.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = XWinGL.win.cpp; sourceTree = "<group>"; };
 		D6BC376B0AB22C85003949C5 /* AssertUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = AssertUtils.cpp; sourceTree = "<group>"; };
 		D6BC376C0AB22C85003949C5 /* AssertUtils.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = AssertUtils.h; sourceTree = "<group>"; };
 		D6BC376D0AB22C85003949C5 /* BitmapUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = BitmapUtils.cpp; sourceTree = "<group>"; };
@@ -3036,12 +3031,10 @@
 				D6BC37610AB22C85003949C5 /* XWidgetApp.h */,
 				D6BC37620AB22C85003949C5 /* XWin.h */,
 				D6BC37630AB22C85003949C5 /* XWin.mac.mm */,
-				D6BC37640AB22C85003949C5 /* XWin.win.cpp */,
 				D6BC37650AB22C85003949C5 /* XWin32DND.cpp */,
 				D6BC37660AB22C85003949C5 /* XWin32DND.h */,
 				D6BC37670AB22C85003949C5 /* XWinGL.h */,
 				D6BC37680AB22C85003949C5 /* XWinGL.mac.mm */,
-				D6BC37690AB22C85003949C5 /* XWinGL.win.cpp */,
 				D604AEA41C0E0355006DC1F0 /* ObjCUtils.mm */,
 				D604AEA51C0E0355006DC1F0 /* ObjCUtils.h */,
 			);
@@ -3051,9 +3044,6 @@
 		D6BC376A0AB22C85003949C5 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
-				028B41E824F1829A00018953 /* glew.c */,
-				028B41E924F1829A00018953 /* glew.h */,
-				028B41EA24F1829A00018953 /* glxew.h */,
 				D612485821E5B39300FA030C /* UTL_interval.h */,
 				D612485721E5B35300FA030C /* RTree2.h */,
 				D6F3F0891D072BE800188B28 /* CSVParser.cpp */,
@@ -5073,7 +5063,7 @@
 		C0E91ACA08A95435008D54AB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = x86_64;
+				ARCHS = "$(ARCHS_STANDARD)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_CXX_LIBRARY = "compiler-default";
 				CLANG_WARN_ASSIGN_ENUM = YES;
@@ -5100,7 +5090,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				EXCLUDED_ARCHS = arm64;
+				EXCLUDED_ARCHS = "";
 				GCC_C_LANGUAGE_STANDARD = "compiler-default";
 				GCC_FAST_MATH = YES;
 				GCC_INPUT_FILETYPE = automatic;
@@ -5146,7 +5136,7 @@
 		C0E91ACB08A95435008D54AB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = x86_64;
+				ARCHS = "$(ARCHS_STANDARD)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_CXX_LIBRARY = "compiler-default";
 				CLANG_WARN_ASSIGN_ENUM = YES;
@@ -5172,7 +5162,7 @@
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				EXCLUDED_ARCHS = arm64;
+				EXCLUDED_ARCHS = "";
 				GCC_C_LANGUAGE_STANDARD = "compiler-default";
 				GCC_FAST_MATH = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
@@ -5300,7 +5290,7 @@
 		D60E98EE0EDDDEEA0096DE0E /* Phone */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = x86_64;
+				ARCHS = "$(ARCHS_STANDARD)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_CXX_LIBRARY = "compiler-default";
 				CLANG_WARN_ASSIGN_ENUM = YES;
@@ -5326,7 +5316,7 @@
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				EXCLUDED_ARCHS = arm64;
+				EXCLUDED_ARCHS = "";
 				GCC_C_LANGUAGE_STANDARD = "compiler-default";
 				GCC_FAST_MATH = YES;
 				GCC_INPUT_FILETYPE = automatic;
@@ -5403,6 +5393,7 @@
 					src/lib_json/include,
 					"$(inherited)",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
@@ -5443,7 +5434,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEPLOYMENT_LOCATION = NO;
-				EXCLUDED_ARCHS = arm64;
+				EXCLUDED_ARCHS = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"USE_JPEG=1",
@@ -5463,6 +5454,7 @@
 				INFOPLIST_PREFIX_HEADER = src/WEDCore/WED_Version.h;
 				INFOPLIST_PREPROCESS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libexpat.a,
 					libs/local/lib/libpng.a,
@@ -5496,6 +5488,7 @@
 					"WANT_NED_MALLOC=1",
 					"$(inherited)",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
@@ -5624,6 +5617,7 @@
 					src/lib_json/include,
 					"$(inherited)",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
@@ -5662,6 +5656,7 @@
 					src/lib_json/include,
 					"$(inherited)",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
@@ -5692,6 +5687,7 @@
 					"WANT_NED_MALLOC=1",
 					"$(inherited)",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
@@ -5722,6 +5718,7 @@
 					"WANT_NED_MALLOC=1",
 					"$(inherited)",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
@@ -5840,7 +5837,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEPLOYMENT_LOCATION = NO;
-				EXCLUDED_ARCHS = arm64;
+				EXCLUDED_ARCHS = "";
 				GCC_DEBUGGING_SYMBOLS = full;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
@@ -5861,6 +5858,7 @@
 				INFOPLIST_PREFIX_HEADER = src/WEDCore/WED_Version.h;
 				INFOPLIST_PREPROCESS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libexpat.a,
 					libs/local/lib/libpng.a,
@@ -5885,7 +5883,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEPLOYMENT_LOCATION = NO;
-				EXCLUDED_ARCHS = arm64;
+				EXCLUDED_ARCHS = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"USE_JPEG=1",
@@ -5905,6 +5903,7 @@
 				INFOPLIST_PREFIX_HEADER = src/WEDCore/WED_Version.h;
 				INFOPLIST_PREPROCESS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libexpat.a,
 					libs/local/lib/libpng.a,
@@ -5953,6 +5952,7 @@
 					src/lib_json/include,
 					"$(inherited)",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
@@ -6014,7 +6014,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEPLOYMENT_LOCATION = NO;
-				EXCLUDED_ARCHS = arm64;
+				EXCLUDED_ARCHS = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"USE_JPEG=1",
@@ -6034,6 +6034,7 @@
 				INFOPLIST_PREFIX_HEADER = src/WEDCore/WED_Version.h;
 				INFOPLIST_PREPROCESS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libexpat.a,
 					libs/local/lib/libpng.a,
@@ -6059,6 +6060,7 @@
 					"WANT_NED_MALLOC=1",
 					"$(inherited)",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
@@ -6108,7 +6110,7 @@
 		D6F01D7B0CDABA8D00A3F1B0 /* DebugOpt */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = x86_64;
+				ARCHS = "$(ARCHS_STANDARD)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_CXX_LIBRARY = "compiler-default";
 				CLANG_WARN_ASSIGN_ENUM = YES;
@@ -6135,7 +6137,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				EXCLUDED_ARCHS = arm64;
+				EXCLUDED_ARCHS = "";
 				GCC_C_LANGUAGE_STANDARD = "compiler-default";
 				GCC_FAST_MATH = YES;
 				GCC_INPUT_FILETYPE = automatic;
