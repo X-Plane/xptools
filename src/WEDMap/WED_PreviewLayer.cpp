@@ -1280,11 +1280,11 @@ struct	preview_facade : public preview_polygon {
 					b1 += dir.perpendicular_ccw() * 2.5;         // place the 'serviced area' indication about at the cabin baffle location
 
 					glBegin(GL_TRIANGLE_FAN);
-						dir.rotate_by_degrees(-10);
+						dir.rotate_by_degrees(-15);
 						glVertex2(b1 + dir * extension_max);
 						glVertex2(b1 + dir * extension_min);
-						const int stepsize = 5;
-						const int arc_angle = 40 + 10;
+						const int stepsize = 10;
+						const int arc_angle = 45 + 15;
 						for (int i = 0; i < arc_angle; i += stepsize)
 						{
 							dir.rotate_by_degrees(stepsize);
