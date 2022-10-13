@@ -234,6 +234,7 @@ static const GUI_MenuItem_t kAirportMenu[] = {
 {	"-",						0,		0,									0,	0			},
 {	"Upgrade Ramps",			0,		0,									0,	wed_UpgradeRamps},
 {	"Upgrade Jetways",			0,		0,									0,	wed_UpgradeJetways},
+{	"Upgrade Art",				0,		0,									0,	wed_UpgradeArt},
 {	"Age Pavement",				0,		0,									0,	wed_AgePavement},
 {	"Add Pavement Edges",		0,		0,									0,	wed_EdgePavement},
 {	"Mow Grass",				0,		0,									0,	wed_MowGrass},
