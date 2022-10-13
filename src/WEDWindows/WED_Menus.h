@@ -152,6 +152,7 @@ enum {
 	wed_AddATCWindRule,
 	wed_UpgradeRamps,
 	wed_UpgradeJetways,
+	wed_UpgradeArt,
 	wed_AgePavement,
 	wed_EdgePavement,
 	wed_MowGrass,
@@ -160,6 +161,7 @@ enum {
 	//Organized by alphabetical order
 	wed_AddMetaDataBegin,//WARNING: DO NOT USE!
 	wed_AddMetaDataCity,// or Locality
+	wed_AddMetaDataCircuits, // new in 1200
 	wed_AddMetaDataCountry,
 	wed_AddMetaDataDatumLat,
 	wed_AddMetaDataDatumLon,
@@ -171,6 +173,7 @@ enum {
 	wed_AddMetaDataLocAuth,
 	wed_AddMetaDataRegionCode,
 	wed_AddMetaDataState,// or Province
+	wed_AddMetaDataTowerCaps, // new in 1200
 	wed_AddMetaDataTransitionAlt,//Altitude
 	wed_AddMetaDataTransitionLevel,
 	wed_AddMetaDataEnd,//WARNING: DO NOT USE!

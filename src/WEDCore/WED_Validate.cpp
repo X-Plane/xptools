@@ -432,8 +432,8 @@ static void ValidateOneFacadePlacement(WED_Thing* who, validation_error_vector& 
 	}
 
 	auto allHeights = fac->GetHeightChoices();
-	float next_h_up = 9999;
-	float next_h_down = 0;
+	float next_h_up = 9999.0f;
+	float next_h_down = 0.0f;
 	for (auto h : allHeights)
 	{
 		if (h >= fac->GetHeight())
@@ -450,7 +450,7 @@ static void ValidateOneFacadePlacement(WED_Thing* who, validation_error_vector& 
 	if (dist_up > 1.0f && dist_dn > 1.0f)
 	{
 		char c[128];
-		if (allHeights.size() > 1 && next_h_up < 9999 && next_h_down > 0.0 && fltrange(dist_up / dist_dn, 0.5, 2.0))
+		if (allHeights.size() > 1.0f && next_h_up < 9999.0f && next_h_down > 0.0f && fltrange(dist_up / dist_dn, 0.5, 2.0))
 			sprintf(c, "Facade height not close to actual supported heights. Closest supported are %.0f, %.0f", next_h_down, next_h_up);
 		else
 			sprintf(c, "Facade height not close to actual supported heights. Closest supported is %.0f", dist_up < dist_dn ? next_h_up : next_h_down);
@@ -1871,6 +1871,20 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 		string metaValue = who->GetMetaDataValue(wed_AddMetaDataLGuiLabel);
 		if(metaValue != "2D" && metaValue != "3D")
 				msgs.push_back(validation_error_t(txt + " must be either '2D' or '3D'", err_airport_metadata_invalid, who, apt));
+	}
+
+	if (who->ContainsMetaDataKey(wed_AddMetaDataCircuits))
+	{
+		string metaValue = who->GetMetaDataValue(wed_AddMetaDataCircuits);
+		if (metaValue != "0" && metaValue != "1")
+			msgs.push_back(validation_error_t(txt + " must be either 0 or 1", err_airport_metadata_invalid, who, apt));
+	}
+
+	if (who->ContainsMetaDataKey(wed_AddMetaDataTowerCaps))
+	{
+		string metaValue = who->GetMetaDataValue(wed_AddMetaDataTowerCaps);
+		if (metaValue != "atc" && metaValue != "fiso")
+			msgs.push_back(validation_error_t(txt + " must be either 'atc' or 'fiso'", err_airport_metadata_invalid, who, apt));
 	}
 
 	if(gExportTarget >= wet_xplane_1130 && gExportTarget != wet_gateway)   // For the gateway target - the gui_label tags are forced prior to export, anyways.
