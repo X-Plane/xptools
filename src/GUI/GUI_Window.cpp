@@ -154,7 +154,7 @@ int GUI_Window::handle(int e )
 			return 1;
 		}
 		case FL_DND_DRAG :{
-
+			Fl::belowmouse(this); // mroe: needed for wayland
 			GUI_DragData_Adapter  adapter(NULL);
 			GUI_DragOperation allowed;
 			allowed = (this->InternalDragOver(x,y,&adapter,OP_LIN2GUI(1),OP_LIN2GUI(1)));
@@ -169,7 +169,7 @@ int GUI_Window::handle(int e )
 			#endif // DEV && DEBUG_DND
 			this->InternalDragLeave();
 			this->mInDrag = 0;
-			Fl::pushed(0); // this kills the DnD
+			Fl::pushed(0); // this kills the DnD for x11 , FIXME:mroe does not work for wayland
 		}
 		return 1;
 		case FL_DND_RELEASE:{
@@ -188,9 +188,9 @@ int GUI_Window::handle(int e )
 
 			if(mInDrag)	//paste comes from Drag
 			{
-				#if DEV && DEBUG_DND			
+				#if DEV && DEBUG_DND
 				printf("FL_PASTE drag type: %s ,txt: %s\n",Fl::event_clipboard_type(),Fl::event_text());
-				#endif // DEV && DEBUG_DND			
+				#endif // DEV && DEBUG_DND
 				this->mInDrag = 0;
 				GUI_DragData_Adapter adapter((void*) Fl::event_text());
 				GUI_DragOperation allowed = (this->InternalDrop(x,y,&adapter,OP_LIN2GUI(1),OP_LIN2GUI(1)));
@@ -200,9 +200,9 @@ int GUI_Window::handle(int e )
 			{
 				#if DEV && DEBUG_DND
 				printf("FL_PASTE clip  txt: %s  wnd: %p\n",Fl::event_text(),Fl::focus());
-				#endif // DEV && DEBUG_DND	
+				#endif // DEV && DEBUG_DND
 
-				//TODO:mroe check for content and type and such		
+				//TODO:mroe check for content and type and such
 				Set_ClipboardRecieved(true);
 			}
 		}
@@ -637,7 +637,7 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBound
 	mClearDepth = false;
 	mClearColor = true;
 	mDesc = inTitle;
-#if !LIN // with FLTK we have to do this after window construction (first GL_Draw call) 
+#if !LIN // with FLTK we have to do this after window construction (first GL_Draw call)
 	mState.Init();
 #endif
 	// BEN SEZ: this is probably a bad idea...
