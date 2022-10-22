@@ -144,14 +144,13 @@ int GUI_Window::handle(int e )
 			printf(" GUI_Window::FL_DND_ENTER \n");
 			#endif // DEV && DEBUG_DND
 			GUI_DragData_Adapter  adapter(NULL);
-			GUI_DragOperation allowed;
+			GUI_DragOperation allowed = gui_Drag_None;
 			allowed = (this->InternalDragEnter(x,y,&adapter,OP_LIN2GUI(1),OP_LIN2GUI(1)));
 			this->InternalDragScroll(x,y);
-			this->mInDrag = 1;
-			if (allowed == gui_Drag_None) return 0;
+			mInDrag = 1;
 			//FIXME:mroe:if we comein from outside , drop is not allowed from pane
 			//untill the targetrect riched , anyhow we must allow the drag here .
-			return 1;
+			return allowed != gui_Drag_None;
 		}
 		case FL_DND_DRAG :{
 			Fl::belowmouse(this); // mroe: needed for wayland
@@ -159,19 +158,17 @@ int GUI_Window::handle(int e )
 			GUI_DragOperation allowed;
 			allowed = (this->InternalDragOver(x,y,&adapter,OP_LIN2GUI(1),OP_LIN2GUI(1)));
 			this->InternalDragScroll(x,y);
-
-			if (allowed == gui_Drag_None) return 0;
+			return allowed != gui_Drag_None;
 		}
-		return 1;
 		case FL_DND_LEAVE:{
 			#if DEV && DEBUG_DND
 			printf(" GUI_Window::FL_DND_LEAVE \n");
 			#endif // DEV && DEBUG_DND
 			this->InternalDragLeave();
-			this->mInDrag = 0;
+			mInDrag = 0;
 			Fl::pushed(0); // this kills the DnD for x11 , FIXME:mroe does not work for wayland
+			return 1;
 		}
-		return 1;
 		case FL_DND_RELEASE:{
 			#if DEV && DEBUG_DND
 			printf(" GUI_Window:: FL_DND_RELEASE type:%p ,content: %s  \n", Fl::event_clipboard(),Fl::event_text());
@@ -179,10 +176,8 @@ int GUI_Window::handle(int e )
 			GUI_DragData_Adapter  adapter(NULL);
 			GUI_DragOperation allowed;
 			allowed = (this->InternalDragOver(x,y,&adapter,OP_LIN2GUI(1),OP_LIN2GUI(1)));
-			if (allowed == gui_Drag_None) return 0;
+			return allowed != gui_Drag_None;
 		}
-		return 1;
-
 		/*CLIPBOARD events , also called when FL_DND_RELEASE result is 1 after a drag*/
 		case FL_PASTE:{
 
@@ -191,7 +186,7 @@ int GUI_Window::handle(int e )
 				#if DEV && DEBUG_DND
 				printf("FL_PASTE drag type: %s ,txt: %s\n",Fl::event_clipboard_type(),Fl::event_text());
 				#endif // DEV && DEBUG_DND
-				this->mInDrag = 0;
+				mInDrag = 0;
 				GUI_DragData_Adapter adapter((void*) Fl::event_text());
 				GUI_DragOperation allowed = (this->InternalDrop(x,y,&adapter,OP_LIN2GUI(1),OP_LIN2GUI(1)));
 				this->InternalDragLeave();
@@ -205,8 +200,9 @@ int GUI_Window::handle(int e )
 				//TODO:mroe check for content and type and such
 				Set_ClipboardRecieved(true);
 			}
+
+			return 1;
 		}
-		return 1;
 	}
 
 	return XWin::handle(e);
