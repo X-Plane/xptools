@@ -100,7 +100,7 @@
 #define MAX_SPAN_GATEWAY_NM 7
 
 // maximum distance for any scenery from the airport boundary, gateway only
-#define APT_OVERSIZE_NM  0.5
+#define APT_OVERSIZE_NM  0.6
 
 // ATC flow tailwind components and wind rule coverage tested up to this windspeed
 #define ATC_FLOW_MAX_WIND 35
@@ -414,7 +414,7 @@ static void ValidateOneFacadePlacement(WED_Thing* who, validation_error_vector& 
 
 	if(fac->HasLayer(gis_Param))
 	{
-		int maxWalls = fac->GetNumWallChoices();
+		auto maxWalls = fac->GetNumWallChoices();
 		auto ips = fac->GetOuterRing();
 		int nn = ips->GetNumPoints();
 		set<WED_Thing*> bad_walls;
@@ -431,6 +431,31 @@ static void ValidateOneFacadePlacement(WED_Thing* who, validation_error_vector& 
 			msgs.push_back(validation_error_t("Facade node specifies wall not defined in facade resource.", err_facade_illegal_wall, bad_walls, apt));
 	}
 
+	auto allHeights = fac->GetHeightChoices();
+	float next_h_up = 9999.0f;
+	float next_h_down = 0.0f;
+	for (auto h : allHeights)
+	{
+		if (h >= fac->GetHeight())
+		{
+			if (h < next_h_up) next_h_up = h;
+		}
+		else
+		{
+			if (h > next_h_down) next_h_down = h;
+		}
+	}
+	auto dist_up = next_h_up - fac->GetHeight();
+	auto dist_dn = fac->GetHeight() - next_h_down;
+	if (dist_up > 1.0f && dist_dn > 1.0f)
+	{
+		char c[128];
+		if (allHeights.size() > 1.0f && next_h_up < 9999.0f && next_h_down > 0.0f && fltrange(dist_up / dist_dn, 0.5, 2.0))
+			sprintf(c, "Facade height not close to actual supported heights. Closest supported are %.0f, %.0f", next_h_down, next_h_up);
+		else
+			sprintf(c, "Facade height not close to actual supported heights. Closest supported is %.0f", dist_up < dist_dn ? next_h_up : next_h_down);
+		msgs.push_back(validation_error_t(c , gExportTarget == wet_gateway ? err_facade_height : warn_facade_height, who, apt));
+	}
 	if(gExportTarget >= wet_xplane_1200 && fac->HasDockingCabin())
 	{
 		if(!apt)
@@ -1846,6 +1871,20 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 		string metaValue = who->GetMetaDataValue(wed_AddMetaDataLGuiLabel);
 		if(metaValue != "2D" && metaValue != "3D")
 				msgs.push_back(validation_error_t(txt + " must be either '2D' or '3D'", err_airport_metadata_invalid, who, apt));
+	}
+
+	if (who->ContainsMetaDataKey(wed_AddMetaDataCircuits))
+	{
+		string metaValue = who->GetMetaDataValue(wed_AddMetaDataCircuits);
+		if (metaValue != "0" && metaValue != "1")
+			msgs.push_back(validation_error_t(txt + " must be either 0 or 1", err_airport_metadata_invalid, who, apt));
+	}
+
+	if (who->ContainsMetaDataKey(wed_AddMetaDataTowerCaps))
+	{
+		string metaValue = who->GetMetaDataValue(wed_AddMetaDataTowerCaps);
+		if (metaValue != "atc" && metaValue != "fiso")
+			msgs.push_back(validation_error_t(txt + " must be either 'atc' or 'fiso'", err_airport_metadata_invalid, who, apt));
 	}
 
 	if(gExportTarget >= wet_xplane_1130 && gExportTarget != wet_gateway)   // For the gateway target - the gui_label tags are forced prior to export, anyways.

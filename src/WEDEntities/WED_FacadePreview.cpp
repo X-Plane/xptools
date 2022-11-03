@@ -613,7 +613,7 @@ void height_desc_for_facade(const fac_info_t& info, string& h_decription)
 		for(const auto& f : info.floors)
 			if(f.roofs.size())
 			{
-				heights.push_back(f.roofs.back().roof_height);
+				heights.push_back(roundf(f.roofs.back().roof_height));
 			}
 
 		if(heights.size()  > 1)

@@ -5231,6 +5231,10 @@ int WED_DoConvertToJW(WED_Airport* apt, int statistics[4])
 				}
 			}
 		}
+		else if (res.compare(0, strlen("lib/airport/Ramp_Equipment/Uni_Jetway_"), "lib/airport/Ramp_Equipment/Uni_Jetway_") == 0)
+			jw_tun.push_back(o);
+		else if (res == "lib/airport/Ramp_Equipment/JetWayWallBase.obj")
+			jw_ext.push_back(o);
 	}
 
 	// determine the position in front of the cab where the A/C is expected to be parked and the nearest ramp start to each.
@@ -5244,13 +5248,23 @@ int WED_DoConvertToJW(WED_Airport* apt, int statistics[4])
 			c->GetLocation(gis_Geo, jw_pos);
 			string res;
 			c->GetResource(res);
-			double tun_len = res[strlen("lib/airport/Ramp_Equipment/Jetway_")] == '5' ? 20 : 15;
+			double tun_len = ( res[strlen("lib/airport/Ramp_Equipment/Jetway_")] == '5' ||
+							   res[strlen("lib/airport/Ramp_Equipment/Uni_Jetway_")] == '5' ) ? 20 : 15;
 			double tun_hdg = c->GetHeading();
-			NorthHeading2VectorDegs(tun_pos, tun_pos, tun_hdg, tun_dir);
-			tun_pos = jw_pos + tun_dir * 2.7 * MTR_TO_DEG_LAT;
-
-			NorthHeading2VectorDegs(tun_pos, tun_pos, tun_hdg - 30.0, tun_dir);  // hdg to place in front of cabin where the acf would be
-			tun_dir *= (tun_len + 2.0) * MTR_TO_DEG_LAT;
+			if(res.compare(0, strlen("lib/airport/Ramp_Equipment/Uni_"), "lib/airport/Ramp_Equipment/Uni_") == 0)
+			{
+				NorthHeading2VectorDegs(tun_pos, tun_pos, tun_hdg, tun_dir);
+				tun_pos = jw_pos + tun_dir * 0.5 * MTR_TO_DEG_LAT;
+				NorthHeading2VectorDegs(tun_pos, tun_pos, tun_hdg - 30.0, tun_dir);  // hdg to place in front of cabin where the acf would be
+				tun_dir *= (tun_len + 2.0) * MTR_TO_DEG_LAT;
+			}
+			else
+			{
+				NorthHeading2VectorDegs(tun_pos, tun_pos, tun_hdg, tun_dir);
+				tun_pos = jw_pos + tun_dir * 2.7 * MTR_TO_DEG_LAT;
+				NorthHeading2VectorDegs(tun_pos, tun_pos, tun_hdg - 30.0, tun_dir);  // hdg to place in front of cabin where the acf would be
+				tun_dir *= (tun_len + 2.0) * MTR_TO_DEG_LAT;
+			}
 			acf_pos = tun_pos + tun_dir;
 
 			double min_dist = 99999.0;
@@ -5298,9 +5312,16 @@ int WED_DoConvertToJW(WED_Airport* apt, int statistics[4])
 					string ext_nam;
 					(*e)->GetResource(ext_nam);
 					double len;
-					int pos = strlen("lib/airport/Ramp_Equipment/JetWayEx");
-					if(ext_nam[pos] == 't') pos++;
-					sscanf(ext_nam.c_str() + pos + 1, "%lf", &len);
+					if (ext_nam == "lib/airport/Ramp_Equipment/JetWayWallBase.obj")
+					{
+						len = 3.0;
+					}
+					else
+					{
+						int pos = strlen("lib/airport/Ramp_Equipment/JetWayEx");
+						if (ext_nam[pos] == 't') pos++;
+						sscanf(ext_nam.c_str() + pos + 1, "%lf", &len);
+					}
 					Vector2 ext_dir;
 					NorthHeading2VectorDegs(p1, p1, hdg, ext_dir);
 					p2 = p1 + ext_dir * (len + 2.0) * MTR_TO_DEG_LAT;
@@ -5423,7 +5444,7 @@ int WED_DoConvertToJW(WED_Airport* apt, int statistics[4])
 						double tun_len = LonLatDistMeters(jw_serving_us[0].cabin_loc, jw_serving_us[0].tunnel_orig);
 						switch (t.size_code)        // deliberately test for shorter range - allows some margin for actual cabin door locations
 						{
-						case 1:	tunnel_is_short = tun_dist > 21.0; 
+						case 1:	tunnel_is_short = tun_dist > 20.0; 
 								break;
 						case 2:	tunnel_is_short = tun_dist > 26.0; 
 								tunnel_is_long = tun_len < 14.0 || tun_dist < 19.0;
