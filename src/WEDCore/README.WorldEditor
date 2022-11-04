@@ -19,6 +19,14 @@ Planned functionality for WED 2.5 not yet included in the alpha versions
 WED functionality not yet supported by XP12 alpha's
     - rowcode 105 skidmark and line color/width customizations for runways
 
+WED 2.5.0b3 9/3/22
+   X-Plane 12 features:
+   - add meta tags for ATC fisa and closed circuit ops
+   Bug fix:
+   - some moving jetway objects not upgraded by GW heuristics 
+   Features for all X-Plane versions:
+   - auto-upgrade country meta tags ISO3366 code upon import from gateway
+
 WED 2.5.0b2 5/30/22
    Bug Fix:
    - fix .agp scraper display mismatch for some heights
@@ -38,7 +46,7 @@ WED 2.5.0b2 5/30/22
    - increased precision for draped polygon headings
    - custom airport service trucks
    - validation warning on runway lighting combinations not supported by XP12
-   - allow road ntworks near airport boundaries on the GW
+   - allow road networks near airport boundaries on the GW
    X-Plane 12 art asset conversion features:
    - jetway objects to jetway facades
    - X11 default pavment to XP12 aged pavement
