@@ -61,7 +61,7 @@
 #include "WED_DSFImport.h"
 #include "WED_Group.h"
 #include "WED_MetadataUpdate.h"
-#include <WED_MetaDataDefaults.h>
+#include "WED_MetaDataDefaults.h"
 #include "WED_UIDefs.h"
 //---------------
 
