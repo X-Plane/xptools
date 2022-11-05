@@ -640,6 +640,17 @@ CDT::Edge edge_twin(const CDT::Edge& e)
 	return new_e;
 }
 
+CDT::Vertex_handle edge_source(const CDT::Edge& e)
+{
+	return e.first->vertex(CDT::ccw(e.second));
+}
+
+CDT::Vertex_handle edge_target(const CDT::Edge& e)
+{
+	return e.first->vertex(CDT::cw(e.second));
+}
+
+
 int is_coast(const CDT::Edge& inEdge, const CDT& inMesh)
 {
 	if (inMesh.is_infinite(inEdge.first)) return false;
@@ -701,6 +712,43 @@ double edge_angle(const CDT::Edge& e1, const CDT::Edge& e2)
 	v2.normalize();
 
 	return v1.dot(v2);
+}
+
+bool edges_match_type(const CDT::Edge& e1, const CDT::Edge& e2)
+{
+	return e1.first->info().terrain == e2.first->info().terrain;
+}
+
+CDT::Edge next_edge_of_type(const CDT::Edge& e)
+{
+	CDT::Edge best;
+	CDT::Edge iter = edge_next_twin(e);
+//	printf("Doing next edge check.\n");
+//	printf("Our LU is: %s, neighibor is %s\n",
+//		FetchTokenString(e.first->info().terrain),
+//		FetchTokenString(edge_twin(e).first->info().terrain));
+//	printf("Edge: %p/%d\n", &*e.first,e.second);
+	
+	Assert(iter != e);
+	do
+	{
+//		printf(" ITER: %p/%d, LU=%s/%s\n ", &*iter.first, iter.second,
+//				FetchTokenString(iter.first->info().terrain),
+//				FetchTokenString(edge_twin(iter).first->info().terrain));
+				
+		CDT::Edge candidate = edge_twin(iter);
+		if(edges_match_type(e, candidate))
+		{
+//			printf(" MATCH");
+			best = candidate;
+		}
+		printf("\n");
+		iter = edge_next_twin(iter);
+	} while(iter != e);
+//	printf("Done.\n");
+	Assert(best != e);
+	Assert(best != CDT::Edge());
+	return best;
 }
 
 
@@ -981,6 +1029,190 @@ void 	CHECK_TRI(CDT::Vertex_handle a, CDT::Vertex_handle b, CDT::Vertex_handle c
 	}
 }
 
+bool is_airport_edge(const CDT::Edge& e, int& apt_type)
+{
+	int my_lu = e.first->info().terrain;
+	int other_lu = edge_twin(e).first->info().terrain;
+	if(my_lu == other_lu) return false;
+	
+	if(IsAirportTerrain(my_lu))
+	{
+		if(!IsAirportTerrain(other_lu))
+		{
+			apt_type = GetAirportTerrainBorder(my_lu);
+			return true;
+		}
+		else
+		{
+#if DEV && OPENGL_MAP
+			auto debug_tri = [](CDT::Face_handle f, float r, float g, float b){
+				for(int i = 0; i < 3; ++i)
+					debug_mesh_line(
+						cgal2ben(f->vertex(i)->point()),
+						cgal2ben(f->vertex((i+3)%3)->point()),
+						r,g,b,
+						r,g,b);
+			};
+			
+			debug_tri(e.first, 0,1,0);
+			debug_tri(edge_twin(e).first,1,0,0);
+#endif
+		
+			Assert(!"Mismatched airport terrain.\n");
+		}
+	}
+	return false;
+}
+
+struct dsf_airport_edge_info_t {
+	int				line_def;
+	int				closed;
+	vector<Point2>	path;
+};
+
+class edge_path_builder {
+public:
+	edge_path_builder(vector<dsf_airport_edge_info_t>& ring_container) :
+		m_rings(ring_container),
+		m_cur_color(k_colors),
+		m_stop_color(k_colors) { }
+
+	void add_link(const Point2& start, const Point2& end, int def)
+	{
+		if(m_current)
+		{
+			DebugAssert(!m_current->path.empty());
+			
+			if(def == m_current->line_def && m_current->path.back() == start)
+			{
+				if(m_current->path.front() == end)
+				{
+					m_current->closed = 1;
+					m_current = nullptr;
+				}
+				else
+				{
+					m_current->path.push_back(end);
+				}
+				//debug_mesh_line(start,end,0.5 * m_cur_color[0], 0.5 * m_cur_color[1], 0.5 * m_cur_color[2], m_cur_color[0], m_cur_color[1], m_cur_color[2]);
+				return;
+			}
+		}
+
+		m_cur_color += 3;
+		if(m_cur_color == m_stop_color) m_cur_color = k_colors;
+
+		//debug_mesh_line(start,end,0.5 * m_cur_color[0], 0.5 * m_cur_color[1], 0.5 * m_cur_color[2], m_cur_color[0], m_cur_color[1], m_cur_color[2]);
+
+		// If we got here, we "fell out" of accumulating the current contour.  EITHER
+		// 1. There IS NO contour. We're first.  OR
+		// 2. We have CHANGED TYPES.  We're gonna let that one dead end and start a brand new contour.
+		// 3. We have a discontinuity.  Let that end and we have a brand new contour.
+
+		m_rings.push_back(dsf_airport_edge_info_t());
+		m_current = &m_rings.back();
+		m_current->line_def = def;
+		m_current->closed = 0;
+		m_current->path.push_back(start);
+		m_current->path.push_back(end);
+	}
+	
+private:
+
+	static const float k_colors[];
+		
+		
+	const float * m_cur_color;
+	const float * m_stop_color;
+
+	dsf_airport_edge_info_t *			m_current = nullptr;
+	vector<dsf_airport_edge_info_t>&	m_rings;
+
+};
+
+const float edge_path_builder::k_colors[] = {
+		1,0,0,
+		1,1,0,
+		0,1,0,
+		0,1,1,
+		0,0,1 };
+
+void make_airport_rings(CDT& mesh,vector<dsf_airport_edge_info_t>& out_rings)
+{
+	struct apt_ring_info {
+		CDT::Edge	next;
+		int			type;
+		bool		dsf_edge;
+	};
+	hash_map<CDT::Edge, apt_ring_info, hash_edge>	links;
+	set<CDT::Edge>									border_links;
+
+	for (auto fi = mesh.finite_faces_begin(); fi != mesh.finite_faces_end(); ++fi)
+	for (int v = 0; v < 3; ++v)
+	{
+		CDT::Edge edge;
+		edge.first = fi;
+		edge.second = v;
+
+		apt_ring_info ri;
+		if(is_airport_edge(edge, ri.type))
+		{
+			ri.next = next_edge_of_type(edge);
+			ri.dsf_edge = mesh.is_infinite(edge.first->neighbor(edge.second)) || edge.first->neighbor(edge.second)->info().terrain == terrain_Water;
+			Assert(links.count(edge) == 0);
+			links[edge] = ri;
+			if(ri.dsf_edge)
+				border_links.insert(edge);
+		}
+	}
+	
+	edge_path_builder bldr(out_rings);
+	
+	while(!links.empty())
+	{
+		auto me_link = links.begin();
+		set<CDT::Edge>::iterator me_border = border_links.end();
+
+		if(!border_links.empty())
+		{
+			me_border = border_links.begin();
+			me_link = links.find(*me_border);
+			Assert(me_link != links.end());
+		}
+	
+		int my_type = me_link->second.type;
+		CDT::Edge me = me_link->first;
+		
+		CDT::Edge stop = me;
+		do {
+			auto p1 = cgal2ben(edge_source(me)->point());
+			auto p2 = cgal2ben(edge_target(me)->point());
+
+			auto iter = links.find(me);
+			if(iter == links.end())
+			{
+				//debug_mesh_line(p1, p2, 1,0,1, 1,0,1);
+			}
+			Assert(iter != links.end());
+			if(links[me].dsf_edge)
+			{
+				//debug_mesh_line(p1, p2, 1,0,1, 1,0.5,1);
+			}
+			else
+			{
+				bldr.add_link(p1, p2, iter->second.type);
+			}
+		
+			Assert(iter->second.type == my_type);
+			me = iter->second.next;
+			links.erase(iter);
+			border_links.erase(iter->first);
+		} while(stop != me);
+	}
+}
+
+
+
 struct	ObjPrio {
 
 	bool operator()(const int& lhs, const int& rhs) const
@@ -1028,6 +1260,89 @@ static const char* label_for_dem_type(int dem_type)
 		default: abort();
 	}
 }
+
+struct beach_splitter {
+
+	beach_splitter(DSFCallbacks_t * cbs, void * ref, int poly_type, int is_closed) :
+		m_cbs(cbs), m_ref(ref), m_type(poly_type), m_closed(is_closed)
+	{
+	}
+	
+	~beach_splitter()
+	{
+		if(m_needs_origin)
+		{
+			DebugAssert(!m_path.empty());
+			DebugAssert(m_has_origin);
+			m_path.push_back(m_origin_pt);
+		}
+			drain_path_internal();
+	}
+	
+	void add_pt(const double pt[3])
+	{
+		Point2 l(pt[0],pt[1]);
+		double st(pt[2]);
+
+		if(!m_has_origin)
+		{
+			m_origin_pt = make_pair(l,st);
+			m_has_origin = true;
+		}
+		const double TOO_BIG_BEACH = 1.0 / 16.0;
+		if(!m_bounds.is_null() &&
+			(m_bounds.xspan() > TOO_BIG_BEACH ||
+			 m_bounds.yspan() > TOO_BIG_BEACH))
+		{
+			Assert(m_path.size() > 1);
+			// We have to flush our path to split the beach.
+			if(m_closed)
+			{
+				DebugAssert(m_has_origin);
+				m_needs_origin = true;
+				m_closed = false;
+			}
+			drain_path_internal();
+			
+			m_path.erase(m_path.begin(),m_path.end()-1);
+			DebugAssert(m_path.size() == 1);
+			
+			m_bounds = Bbox2();
+		}
+
+		m_bounds += l;
+		m_path.push_back(make_pair(l,st));
+
+	}
+
+	void drain_path_internal()
+	{
+		m_cbs->BeginPolygon_f(m_type, m_closed, 3, m_ref);
+		m_cbs->BeginPolygonWinding_f(m_ref);
+		
+		for(auto& p : m_path)
+		{
+			double c[3] = { p.first.x(), p.first.y(), p.second };
+			m_cbs->AddPolygonPoint_f(c, m_ref);
+		}
+		
+		m_cbs->EndPolygonWinding_f(m_ref);
+		m_cbs->EndPolygon_f(m_ref);
+	}
+
+		Bbox2					m_bounds;
+		vector<pair<Point2,double>>m_path;
+	
+		pair<Point2,double>		m_origin_pt;
+		bool					m_has_origin = false;
+		bool					m_needs_origin = false;
+		int						m_closed;
+		int						m_type;
+		DSFCallbacks_t *		m_cbs;
+		void *					m_ref;
+
+};
+
 
 void	BuildDSF(
 			const char *	inFileName1,
@@ -1690,8 +2005,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		{
 			FixBeachContinuity(linkNext, *a_start, all);
 
-			cbs.BeginPolygon_f(0, 0, 3, writer1);
-			cbs.BeginPolygonWinding_f(writer1);
+			beach_splitter bs(&cbs, writer1, 0,0);
 
 			for (beach = *a_start; beach != CDT::Edge(); beach = ((linkNext.count(beach)) ? (linkNext[beach]) : CDT::Edge()))
 			{
@@ -1702,7 +2016,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				BeachPtGrab(beach, false, inHiresMesh, coords3, beachKind);
 				coords3[0] = doblim(coords3[0],inElevation.mWest,  inElevation.mEast);
 				coords3[1] = doblim(coords3[1],inElevation.mSouth, inElevation.mNorth);
-				cbs.AddPolygonPoint_f(coords3, writer1);
+				bs.add_pt(coords3);
 				all.erase(beach);
 			}
 			DebugAssert(all.count(*a_start) == 0);
@@ -1710,10 +2024,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			BeachPtGrab(last_beach, true, inHiresMesh, coords3, beachKind);
 			coords3[0] = doblim(coords3[0],inElevation.mWest,  inElevation.mEast);
 			coords3[1] = doblim(coords3[1],inElevation.mSouth, inElevation.mNorth);
-			cbs.AddPolygonPoint_f(coords3, writer1);
+			bs.add_pt(coords3);
 
-			cbs.EndPolygonWinding_f(writer1);
-			cbs.EndPolygon_f(writer1);
 			//printf("end non-circular.\n");
 		}
 
@@ -1729,8 +2041,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		{
 			CDT::Edge this_start = all.begin()->first;
 			FixBeachContinuity(linkNext, this_start, all);
-			cbs.BeginPolygon_f(0, 1, 3, writer1);
-			cbs.BeginPolygonWinding_f(writer1);
+			
+			beach_splitter bs(&cbs, writer1, 0,1);
 
 			beach = this_start;
 			do {
@@ -1741,17 +2053,23 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				BeachPtGrab(beach, false, inHiresMesh, coords3, beachKind);
 				coords3[0] = doblim(coords3[0],inElevation.mWest,  inElevation.mEast);
 				coords3[1] = doblim(coords3[1],inElevation.mSouth, inElevation.mNorth);
-				cbs.AddPolygonPoint_f(coords3, writer1);
+				bs.add_pt(coords3);
 				all.erase(beach);
 				beach = linkNext[beach];
 			} while (beach != this_start);
-			cbs.EndPolygonWinding_f(writer1);
-			cbs.EndPolygon_f(writer1);
 
 		}
 		cbs.AcceptPolygonDef_f("lib/g12/beaches.bch", writer1);
 	}
 #endif
+
+	/****************************************************************
+	 * AIRPORT BORDER LINES
+	 ****************************************************************/
+
+	vector<dsf_airport_edge_info_t> apt_edges;
+	make_airport_rings(inHiresMesh, apt_edges);
+
 	/****************************************************************
 	 * OBJECT EXPORT/FACADE/FOREST WRITEOUT
 	 ****************************************************************/
@@ -1769,6 +2087,10 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			objects.insert(map<int, int, ObjPrio>::value_type(pointObj->mRepType, 0));
 		for (polyObj = pf->data().mPolyObjs.begin(); polyObj != pf->data().mPolyObjs.end(); ++polyObj)
 			facades.insert(map<int, int>::value_type(polyObj->mRepType, 0));
+		for (auto& e : apt_edges)
+		{
+			facades.insert(make_pair(e.line_def,0));
+		}
 	}
 
 	int lowest_required = objects.size();
@@ -1859,6 +2181,24 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			}
 			cbs.EndPolygon_f(writer2);
 			++total_polys;
+		}
+	}
+	
+	if(writer2)
+	{
+		for(auto& apt : apt_edges)
+		{
+			DebugAssert(facades.count(apt.line_def));
+			cbs.BeginPolygon_f(facades[apt.line_def], apt.closed, 2, writer2);
+			cbs.BeginPolygonWinding_f(writer2);
+			for(auto& p : apt.path)
+			{
+				coords2[0] = p.x();
+				coords2[1] = p.y();
+				cbs.AddPolygonPoint_f(coords2, writer2);
+			}
+			cbs.EndPolygonWinding_f(writer2);
+			cbs.EndPolygon_f(writer2);
 		}
 	}
 

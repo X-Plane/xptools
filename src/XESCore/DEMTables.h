@@ -298,6 +298,7 @@ inline bool	LowerPriorityNaturalTerrain(int lhs, int rhs);			// Returns true if 
 //void			GetForestTypes(set<int>& forests);
 
 bool	IsAirportTerrain(int t);
+int		GetAirportTerrainBorder(int t);
 
 
 extern	string	gNaturalTerrainFile;

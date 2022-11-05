@@ -2421,6 +2421,108 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 
 		}
 	}
+	
+	/***********************************************************************************************
+	 * ASSIGN BASIC LAND USES TO MESH
+	 ***********************************************************************************************/
+
+	if (inProg) inProg(0, 1, "Fixing Airports", 0.2);
+	{
+//		float colors[] = {	1,0,0,
+//							1,1,0,
+//							0,1,0,
+//							0,1,1,
+//							0,0,1,
+//							1,0,1 };
+//		
+//		auto tcentroid = [=](CDT::Face_handle f) -> Point_2 {
+//					return CGAL::centroid(ioMesh.triangle(f));
+//				};
+//
+//		auto mark_tri = [=](float r, float g, float b, CDT::Face_handle f){
+//			Point2 p0 = cgal2ben(f->vertex(0)->point());
+//			Point2 p1 = cgal2ben(f->vertex(1)->point());
+//			Point2 p2 = cgal2ben(f->vertex(2)->point());
+//			Point2 pc = cgal2ben(tcentroid(f));
+//
+//			debug_mesh_line(p0,p1,r,g,b,r,g,b);
+//			debug_mesh_line(p1,p2,r,g,b,r,g,b);
+//			debug_mesh_line(p2,p0,r,g,b,r,g,b);
+//			debug_mesh_line(p0,pc,r,g,b,r,g,b);
+//			debug_mesh_line(p1,pc,r,g,b,r,g,b);
+//			debug_mesh_line(p2,pc,r,g,b,r,g,b);
+//
+//		};
+//
+//		float * c = colors;
+//		float * colors_stop = colors + 18;
+
+		for (tri = ioMesh.finite_faces_begin(); tri != ioMesh.finite_faces_end(); ++tri)
+			tri->info().flag = false;
+
+		for (tri = ioMesh.finite_faces_begin(); tri != ioMesh.finite_faces_end(); ++tri)
+		if(tri->info().flag == false)
+		{
+			int lu = tri->info().terrain;
+			if(IsAirportTerrain(lu))
+			{
+				set<CDT::Face_handle> tris;
+				map<int, double>	area_to_lu;
+				double best_a = -1.0f;
+				int best_lu = NO_VALUE;
+	
+				vector<CDT::Face_handle>	todo;
+				todo.reserve(10000);
+				
+				todo.push_back(tri);
+				tri->info().flag = true;
+				
+				while(!todo.empty())
+				{
+					CDT::Face_handle p = todo.front();
+					todo.erase(todo.begin());
+					tris.insert(p);
+					for(int i = 0; i < 3; ++i)
+					{
+						CDT::Face_handle n = p->neighbor(i);
+						if(n->info().flag == false)
+						if(IsAirportTerrain(n->info().terrain))
+						{
+							n->info().flag = true;
+							todo.push_back(n);
+						}
+					}
+				}
+				
+				for(auto& t : tris)
+				{
+					auto nt = ioMesh.triangle(t);
+					auto n_area = nt.area();
+					double aa = CGAL::to_double(n_area);
+					
+					int alu = t->info().terrain;
+					double new_max = area_to_lu[alu] += aa;
+					if(new_max > best_a)
+					{
+						best_a = new_max;
+						best_lu = alu;
+					}
+				}
+				//DebugAssert(best_lu != NO_VALUE);
+				for(auto& t : tris)
+				{
+					DebugAssert(!ioMesh.is_infinite(t));
+					t->info().terrain = best_lu;
+					//mark_tri(c[0],c[1],c[2],t);
+				}
+			
+				//c += 3;
+				//if(c == colors_stop) c = colors;
+			}
+		}
+		Assert(!IsAirportTerrain(ioMesh.infinite_face()->info().terrain));
+			
+	}
 
 	/***********************************************************************************************
 	 * TRY TO CONSOLIDATE BLOBS

@@ -75,7 +75,7 @@
 
  */
 
-#define HEAVY_BEACH_DEBUGGING 	DEV && OPENGL_MAP
+#define HEAVY_BEACH_DEBUGGING 	DEV && OPENGL_MAP && 0
 
 typedef multimap<float, void *, greater<float> >			FaceQueue;	// YUCK - hard cast to avoid snarky problems with forward decls
 typedef multimap<double, void *>							VertexQueue;
