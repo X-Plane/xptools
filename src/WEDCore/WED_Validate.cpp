@@ -431,31 +431,37 @@ static void ValidateOneFacadePlacement(WED_Thing* who, validation_error_vector& 
 			msgs.push_back(validation_error_t("Facade node specifies wall not defined in facade resource.", err_facade_illegal_wall, bad_walls, apt));
 	}
 
+	// In case facades gain new height capabilities we want the existing ones to be reasonably close to an actually supported height going forward
 	auto allHeights = fac->GetHeightChoices();
-	float next_h_up = 9999.0f;
-	float next_h_down = 0.0f;
-	for (auto h : allHeights)
+	if (allHeights.size() > 1 || (allHeights.size() == 1 && allHeights.front() > 2.5f))   // don't be to nitpicky about really low stuff like fences etc
 	{
-		if (h >= fac->GetHeight())
+		float next_h_up = 9999.0f;
+		float next_h_down = 0.0f;
+		for (auto h : allHeights)
 		{
-			if (h < next_h_up) next_h_up = h;
+			if (h >= fac->GetHeight())
+			{
+				if (h < next_h_up) next_h_up = h;
+			}
+			else
+			{
+				if (h > next_h_down) next_h_down = h;
+			}
 		}
-		else
+		auto dist_up = next_h_up - fac->GetHeight();
+		auto dist_dn = fac->GetHeight() - next_h_down;
+		if (dist_up > 1.0f && dist_dn > 1.0f)
 		{
-			if (h > next_h_down) next_h_down = h;
+			char c[128];
+			if (allHeights.size() > 1.0f && next_h_up < 9999.0f && next_h_down > 0.0f && fltrange(dist_up / dist_dn, 0.5, 2.0))
+				sprintf(c, "Facade height not close to actual supported heights. Closest supported are %.0f, %.0f", next_h_down, next_h_up);
+			else
+				sprintf(c, "Facade height not close to actual supported heights. Closest supported is %.0f", dist_up < dist_dn ? next_h_up : next_h_down);
+			msgs.push_back(validation_error_t(c, gExportTarget == wet_gateway ? warn_facade_height : warn_facade_height, who, apt));  // only warn for now
 		}
 	}
-	auto dist_up = next_h_up - fac->GetHeight();
-	auto dist_dn = fac->GetHeight() - next_h_down;
-	if (dist_up > 1.0f && dist_dn > 1.0f)
-	{
-		char c[128];
-		if (allHeights.size() > 1.0f && next_h_up < 9999.0f && next_h_down > 0.0f && fltrange(dist_up / dist_dn, 0.5, 2.0))
-			sprintf(c, "Facade height not close to actual supported heights. Closest supported are %.0f, %.0f", next_h_down, next_h_up);
-		else
-			sprintf(c, "Facade height not close to actual supported heights. Closest supported is %.0f", dist_up < dist_dn ? next_h_up : next_h_down);
-		msgs.push_back(validation_error_t(c , gExportTarget == wet_gateway ? err_facade_height : warn_facade_height, who, apt));
-	}
+
+	// JW facades are a hybrid apt.dat/DSF things. So the usual protection for apt.dat items getting dragged outside an airport hierachy won't work
 	if(gExportTarget >= wet_xplane_1200 && fac->HasDockingCabin())
 	{
 		if(!apt)
@@ -1864,27 +1870,33 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 		}
 	}
 
-	string txt = "Metadata key '" + META_KeyDisplayText(wed_AddMetaDataLGuiLabel) + "'";
-
-	if(who->ContainsMetaDataKey(wed_AddMetaDataLGuiLabel))
-	{
-		string metaValue = who->GetMetaDataValue(wed_AddMetaDataLGuiLabel);
-		if(metaValue != "2D" && metaValue != "3D")
-				msgs.push_back(validation_error_t(txt + " must be either '2D' or '3D'", err_airport_metadata_invalid, who, apt));
-	}
-
 	if (who->ContainsMetaDataKey(wed_AddMetaDataCircuits))
 	{
 		string metaValue = who->GetMetaDataValue(wed_AddMetaDataCircuits);
 		if (metaValue != "0" && metaValue != "1")
+		{
+			string txt = "Metadata key '" + META_KeyDisplayText(wed_AddMetaDataCircuits) + "'";
 			msgs.push_back(validation_error_t(txt + " must be either 0 or 1", err_airport_metadata_invalid, who, apt));
+		}
 	}
 
 	if (who->ContainsMetaDataKey(wed_AddMetaDataTowerCaps))
 	{
 		string metaValue = who->GetMetaDataValue(wed_AddMetaDataTowerCaps);
 		if (metaValue != "atc" && metaValue != "fiso")
+		{
+			string txt = "Metadata key '" + META_KeyDisplayText(wed_AddMetaDataTowerCaps) + "'";
 			msgs.push_back(validation_error_t(txt + " must be either 'atc' or 'fiso'", err_airport_metadata_invalid, who, apt));
+		}
+	}
+
+	string txt = "Metadata key '" + META_KeyDisplayText(wed_AddMetaDataLGuiLabel) + "'";
+
+	if (who->ContainsMetaDataKey(wed_AddMetaDataLGuiLabel))
+	{
+		string metaValue = who->GetMetaDataValue(wed_AddMetaDataLGuiLabel);
+		if (metaValue != "2D" && metaValue != "3D")
+			msgs.push_back(validation_error_t(txt + " must be either '2D' or '3D'", err_airport_metadata_invalid, who, apt));
 	}
 
 	if(gExportTarget >= wet_xplane_1130 && gExportTarget != wet_gateway)   // For the gateway target - the gui_label tags are forced prior to export, anyways.

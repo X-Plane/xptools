@@ -743,6 +743,7 @@ void		GUI_Window::ClickMove(int inX, int inY)
 	#endif
 	#if LIN
 		static Fl_Cursor curr_cursor = FL_CURSOR_DEFAULT;
+
 		int cursor = this->InternalGetCursor(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow));
 		if( cursor == curr_cursor ) return;
 

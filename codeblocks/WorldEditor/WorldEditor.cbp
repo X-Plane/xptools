@@ -647,6 +647,7 @@
 		<Unit filename="../../src/WEDResources/tables/disclose.png" />
 		<Unit filename="../../src/WEDResources/tables/eye.png" />
 		<Unit filename="../../src/WEDResources/tables/gradient.png" />
+		<Unit filename="../../src/WEDResources/tables/gradient_light.png" />
 		<Unit filename="../../src/WEDResources/tables/header.png" />
 		<Unit filename="../../src/WEDResources/tables/lock.png" />
 		<Unit filename="../../src/WEDResources/tables/property_bar.png" />
