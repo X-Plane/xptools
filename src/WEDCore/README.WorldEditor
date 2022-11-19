@@ -22,6 +22,7 @@ WED functionality not yet supported by XP12 alpha's
 WED 2.5.0b4
    Bug fix:
    - some meta data validation messages spelling out wrong names
+   - add missing texture for light colored gradients to linux binary
    Features for all X-Plane versions:
    - walk back new facade validation to warnings only for the GW target 
    - let facade height validation pass single-height and low absolute height items, e.g. fences
