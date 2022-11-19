@@ -145,6 +145,10 @@ const vector<float>	WED_FacadePlacement::GetHeightChoices(void) const
 			{
 				heights.push_back(f.roofs.back().roof_height);
 			}
+			else
+			{
+				heights.push_back(0.0f);
+			}
 	}
 
 	return heights;
