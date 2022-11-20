@@ -26,6 +26,7 @@ WED 2.5.0b4
    Features for all X-Plane versions:
    - walk back new facade validation to warnings only for the GW target 
    - let facade height validation pass single-height and low absolute height items, e.g. fences
+   - add green groundplane for preview of adjustable height .agp
 
 WED 2.5.0b3 9/3/22
    X-Plane 12 features:
