@@ -424,6 +424,7 @@ RESOURCES += ./src/WEDResources/tables/eye.png
 RESOURCES += ./src/WEDResources/tables/lock.png
 RESOURCES += ./src/WEDResources/tables/check.png
 RESOURCES += ./src/WEDResources/tables/gradient.png
+RESOURCES += ./src/WEDResources/tables/gradient_light.png
 RESOURCES += ./src/WEDResources/tables/disclose.png
 RESOURCES += ./src/WEDResources/tables/header.png
 RESOURCES += ./src/WEDResources/tables/sider.png

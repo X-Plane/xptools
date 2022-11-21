@@ -19,6 +19,18 @@ Planned functionality for WED 2.5 not yet included in the alpha versions
 WED functionality not yet supported by XP12 alpha's
     - rowcode 105 skidmark and line color/width customizations for runways
 
+=======
+WED 2.5.0b4
+   Bug fix:
+   - some meta data validation messages spelling out wrong names
+   - add missing texture for light colored gradients to linux binary
+   Features for all X-Plane versions:
+   - walk back new facade validation to warnings only for the GW target 
+   - let facade height validation pass single-height and low absolute height items, e.g. fences
+   - add green groundplane for preview of adjustable height .agp
+   X-Plane 12 features:
+   - Object scaling in map using WGS84 ellipsoid for improved large object location accuracy
+
 WED 2.5.0b3 9/3/22
    X-Plane 12 features:
    - add meta tags for ATC fisa and closed circuit ops

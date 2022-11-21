@@ -48,11 +48,11 @@ const float 	kStdLapseRate = -2.0 / 304.8;
 // to/from lattitude: prime vertical radius N, some 6378 to 6400 km
 // to/from longitude: meridional radius M (use *cos(lat) as usual) 6335 to 6400 km
 //
-// to avoid trigonometric calculations, these two conversions can be aproximated to
-// witin 0.06% error (to 60 deg lat) by linear interpolation
+// to avoid the speed hit with trigonometric calculations, the radii are aproximated to
+// witin 1.4km / 0.02% error (up to 75 deg lat) by piece wise linear interpolation
 
-#define DEG_LAT_TO_MTR(lat) (6388000.0 + (lat-45.0)/45.0 * 11000.0)
-#define DEG_LON_TO_MTR(lat) (6367000.0 + (lat-45.0)/45.0 * 35000.0)
+#define DEG_LAT_TO_MTR(lat) ((6342000.0 + (fabs(lat)-20.0) * (fabs(lat) < 20.0 ? 380.0 : 1000.0)) * M_PI / 180.0)
+#define DEG_LON_TO_MTR(lat) ((6389000.0 + (fabs(lat)-45.0) * 275.0) * M_PI / 180.0)
 
 enum rf_region {
 	rf_usa = 0,
