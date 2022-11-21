@@ -43,7 +43,7 @@ bool fill_in_airport_metadata_defaults(WED_Airport & airport, const CSVParser::C
 // if country meta  is empty or non-existent but a clear ICAO region match exists, country meta data is added
 // returns if meta dat was changed
 
-bool add_iso3166_country_metadata(WED_Airport & airport);
+bool add_iso3166_country_metadata(WED_Airport & airport, bool inProgress = false);
 
 extern vector<vector<const char*> > iso3166_codes;
 

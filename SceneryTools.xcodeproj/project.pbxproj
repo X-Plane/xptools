@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 48;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXAggregateTarget section */
@@ -55,6 +55,14 @@
 		02198CC121A275FC008FDB0C /* nav_vor.png in Resources */ = {isa = PBXBuildFile; fileRef = 02198CB921A2759F008FDB0C /* nav_vor.png */; };
 		0224ED2A20048CA0004729CD /* WED_ValidateList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0224ED2720048B7F004729CD /* WED_ValidateList.cpp */; };
 		0236B9732034264A0046900C /* check_buttons.png in Resources */ = {isa = PBXBuildFile; fileRef = 0236B971203425CE0046900C /* check_buttons.png */; };
+		024A32572864D4CF000CEF68 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 024A32562864D4CF000CEF68 /* libz.tbd */; };
+		024A32622864D765000CEF68 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 024A32562864D4CF000CEF68 /* libz.tbd */; };
+		024A326D2864D772000CEF68 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 024A32562864D4CF000CEF68 /* libz.tbd */; };
+		024A32782864D780000CEF68 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 024A32562864D4CF000CEF68 /* libz.tbd */; };
+		024A32832864D78C000CEF68 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 024A32562864D4CF000CEF68 /* libz.tbd */; };
+		024A328E2864D797000CEF68 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 024A32562864D4CF000CEF68 /* libz.tbd */; };
+		024A32992864D7A2000CEF68 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 024A32562864D4CF000CEF68 /* libz.tbd */; };
+		024A32A42864D7AC000CEF68 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 024A32562864D4CF000CEF68 /* libz.tbd */; };
 		0269A8551FF5F8F00085A37C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
 		0269A8561FF5F8F10085A37C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
 		028A6FE725F897C90002FDF5 /* ArrowHeadRoadE.png in Resources */ = {isa = PBXBuildFile; fileRef = 028A6FE325F897C30002FDF5 /* ArrowHeadRoadE.png */; };
@@ -218,7 +226,6 @@
 		D60734230D197A1100E08F61 /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7450B6CF765008E3AEC /* zip.c */; };
 		D60734240D197A1100E08F61 /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */; };
 		D60734260D197A1100E08F61 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
-		D60734270D197A1100E08F61 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
 		D60734520D197B1100E08F61 /* MeshTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60734510D197B1100E08F61 /* MeshTool.cpp */; };
 		D60734700D197BA200E08F61 /* XESInit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38780AB22C85003949C5 /* XESInit.cpp */; };
 		D60734800D197BD700E08F61 /* AptIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38330AB22C85003949C5 /* AptIO.cpp */; };
@@ -338,7 +345,6 @@
 		D6151ED80FB47A4D008A355F /* sans.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D6C390010FA0D93400EFA56C /* sans.ttf */; };
 		D6183B991D7CA28200E606E9 /* WED_TruckParkingLocation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6183B971D7CA28200E606E9 /* WED_TruckParkingLocation.cpp */; };
 		D6183B9C1D7CAD8900E606E9 /* WED_TruckDestination.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6183B9B1D7CAD8900E606E9 /* WED_TruckDestination.cpp */; };
-		D61C275E0B615CD60092E098 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
 		D61ECAE30C96DF0B00159B39 /* XGrinder_icons.icns in Resources */ = {isa = PBXBuildFile; fileRef = D61ECAE10C96DF0B00159B39 /* XGrinder_icons.icns */; };
 		D61ECAE40C96DF1600159B39 /* ObjView_icons.icns in Resources */ = {isa = PBXBuildFile; fileRef = D61ECAE00C96DF0B00159B39 /* ObjView_icons.icns */; };
 		D6226E3A0E4B7F32005BD1D7 /* WED_FacadePlacement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6226E390E4B7F32005BD1D7 /* WED_FacadePlacement.cpp */; };
@@ -489,7 +495,6 @@
 		D656B21D0B518111003FF84F /* Skeleton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC379F0AB22C85003949C5 /* Skeleton.cpp */; };
 		D656B2220B518132003FF84F /* XObjReadWrite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36F00AB22C84003949C5 /* XObjReadWrite.cpp */; };
 		D656B2320B5181C8003FF84F /* perlin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37920AB22C85003949C5 /* perlin.cpp */; };
-		D656B2790B51883C003FF84F /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
 		D659755F0BEA6D18001FC7C3 /* GUI_ChangeView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D659755E0BEA6D18001FC7C3 /* GUI_ChangeView.cpp */; };
 		D659758F0BEA6F2A001FC7C3 /* GUI_TabPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D659758E0BEA6F2A001FC7C3 /* GUI_TabPane.cpp */; };
 		D65E4B250B65427C004D7887 /* DSFLib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36460AB22C84003949C5 /* DSFLib.cpp */; };
@@ -502,7 +507,6 @@
 		D65E4B2F0B65427C004D7887 /* md5.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37880AB22C85003949C5 /* md5.c */; };
 		D65E4B330B65427C004D7887 /* EndianUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC377A0AB22C85003949C5 /* EndianUtils.c */; };
 		D65E4B350B65427C004D7887 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
-		D65E4B360B65427C004D7887 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
 		D65E4B460B65430B004D7887 /* GISTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38810AB22C85003949C5 /* GISTool.cpp */; };
 		D65E4B470B65430C004D7887 /* GISTool_CoreCmds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38820AB22C85003949C5 /* GISTool_CoreCmds.cpp */; };
 		D65E4B480B65430D004D7887 /* GISTool_DumpCmds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38860AB22C85003949C5 /* GISTool_DumpCmds.cpp */; };
@@ -647,7 +651,6 @@
 		D67EF86D0B5E5E9A00D9190C /* MemFileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378A0AB22C85003949C5 /* MemFileUtils.cpp */; };
 		D67EF86E0B5E5E9D00D9190C /* md5.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37880AB22C85003949C5 /* md5.c */; };
 		D67EF8710B5E5EB800D9190C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
-		D67EF8730B5E5EBF00D9190C /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
 		D67EF8770B5E5ED600D9190C /* EndianUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC377A0AB22C85003949C5 /* EndianUtils.c */; };
 		D680AA1E0FCD85B400712B5B /* WED_GISUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D680AA1D0FCD85B400712B5B /* WED_GISUtils.cpp */; };
 		D682DDEE0C10939C00BBE1A0 /* WED_StartWindow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D682DDED0C10939C00BBE1A0 /* WED_StartWindow.cpp */; };
@@ -771,14 +774,12 @@
 		D6C390020FA0D93400EFA56C /* sans.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D6C390010FA0D93400EFA56C /* sans.ttf */; };
 		D6C46B7E14376BD30067B004 /* XUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37B00AB22C85003949C5 /* XUtils.cpp */; };
 		D6C579D10C7E3C7B00FCB4C1 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
-		D6C579D20C7E3C7B00FCB4C1 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
 		D6C57A120C7E3E1600FCB4C1 /* DDSTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C579EB0C7E3D1800FCB4C1 /* DDSTool.cpp */; };
 		D6C57A190C7E3E2500FCB4C1 /* BitmapUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376D0AB22C85003949C5 /* BitmapUtils.cpp */; };
 		D6C57F300C831B4A00FCB4C1 /* MemFileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378A0AB22C85003949C5 /* MemFileUtils.cpp */; };
 		D6C57F420C831B7F00FCB4C1 /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7450B6CF765008E3AEC /* zip.c */; };
 		D6C57F430C831B8400FCB4C1 /* ZLIBUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37B20AB22C85003949C5 /* ZLIBUtils.cpp */; };
 		D6C57F440C831B8600FCB4C1 /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7430B6CF765008E3AEC /* unzip.c */; };
-		D6C68E230BEFB6E700C9F880 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
 		D6C690380BF0B91100C9F880 /* WED_GroupCommands.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C690370BF0B91100C9F880 /* WED_GroupCommands.cpp */; };
 		D6C95C7D0E1ABFB1001EB14A /* MapAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38550AB22C85003949C5 /* MapAlgs.cpp */; };
 		D6CB545F0CEC9CAF000E4393 /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */; };
@@ -876,7 +877,6 @@
 		D6ED37370B67964D00D5484E /* GUI_Clipboard.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6EDAFC20B52A01900754E77 /* GUI_Clipboard.cpp */; };
 		D6ED37380B67964D00D5484E /* WED_MapZoomerNew.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D65E498C0B65117D004D7887 /* WED_MapZoomerNew.cpp */; };
 		D6ED373D0B67964D00D5484E /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6BC3A710AB22E67003949C5 /* OpenGL.framework */; };
-		D6ED37400B67964D00D5484E /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
 		D6ED39B20B67D08F00D5484E /* WED_AppMain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED39B10B67D08F00D5484E /* WED_AppMain.cpp */; };
 		D6ED3AFD0B67F0B000D5484E /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */; };
 		D6ED3E050B6A61A700D5484E /* GUI_Resources.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3E030B6A61A700D5484E /* GUI_Resources.cpp */; };
@@ -1045,12 +1045,10 @@
 		0224ED2720048B7F004729CD /* WED_ValidateList.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ValidateList.cpp; sourceTree = "<group>"; };
 		0224ED2820048B7F004729CD /* WED_ValidateList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ValidateList.h; sourceTree = "<group>"; };
 		0236B971203425CE0046900C /* check_buttons.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = check_buttons.png; sourceTree = "<group>"; };
+		024A32562864D4CF000CEF68 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		025E09DF20D2F11200DD8856 /* line_BSolidWhite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = line_BSolidWhite.png; sourceTree = "<group>"; };
 		028A6FE325F897C30002FDF5 /* ArrowHeadRoadE.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ArrowHeadRoadE.png; sourceTree = "<group>"; };
 		028A6FE425F897C30002FDF5 /* ArrowHeadRoadS.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ArrowHeadRoadS.png; sourceTree = "<group>"; };
-		028B41E824F1829A00018953 /* glew.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = glew.c; sourceTree = "<group>"; };
-		028B41E924F1829A00018953 /* glew.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = glew.h; sourceTree = "<group>"; };
-		028B41EA24F1829A00018953 /* glxew.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = glxew.h; sourceTree = "<group>"; };
 		029EC5B7239B094B00A7C5E1 /* exclaim.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = exclaim.png; sourceTree = "<group>"; };
 		02B03C0D20C71DE5000F81F0 /* WED_Line_Selector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Line_Selector.cpp; sourceTree = "<group>"; };
 		02B03C0E20C71DE5000F81F0 /* WED_Line_Selector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Line_Selector.h; sourceTree = "<group>"; };
@@ -1389,7 +1387,6 @@
 		D653D6D21054552100A502FF /* WED_DebugLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_DebugLayer.h; sourceTree = "<group>"; };
 		D653D6D31054552100A502FF /* WED_DebugLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_DebugLayer.cpp; sourceTree = "<group>"; };
 		D653F6EB1D74702E00E11EF6 /* IHasResource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IHasResource.h; sourceTree = "<group>"; };
-		D656B2780B51883C003FF84F /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = ../../usr/lib/libz.dylib; sourceTree = "<group>"; };
 		D659755D0BEA6D18001FC7C3 /* GUI_ChangeView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_ChangeView.h; sourceTree = "<group>"; };
 		D659755E0BEA6D18001FC7C3 /* GUI_ChangeView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_ChangeView.cpp; sourceTree = "<group>"; };
 		D659758D0BEA6F2A001FC7C3 /* GUI_TabPane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_TabPane.h; sourceTree = "<group>"; };
@@ -1805,12 +1802,10 @@
 		D6BC37610AB22C85003949C5 /* XWidgetApp.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = XWidgetApp.h; sourceTree = "<group>"; };
 		D6BC37620AB22C85003949C5 /* XWin.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = XWin.h; sourceTree = "<group>"; };
 		D6BC37630AB22C85003949C5 /* XWin.mac.mm */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.objcpp; path = XWin.mac.mm; sourceTree = "<group>"; };
-		D6BC37640AB22C85003949C5 /* XWin.win.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = XWin.win.cpp; sourceTree = "<group>"; };
 		D6BC37650AB22C85003949C5 /* XWin32DND.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = XWin32DND.cpp; sourceTree = "<group>"; };
 		D6BC37660AB22C85003949C5 /* XWin32DND.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = XWin32DND.h; sourceTree = "<group>"; };
 		D6BC37670AB22C85003949C5 /* XWinGL.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = XWinGL.h; sourceTree = "<group>"; };
 		D6BC37680AB22C85003949C5 /* XWinGL.mac.mm */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.objcpp; path = XWinGL.mac.mm; sourceTree = "<group>"; };
-		D6BC37690AB22C85003949C5 /* XWinGL.win.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = XWinGL.win.cpp; sourceTree = "<group>"; };
 		D6BC376B0AB22C85003949C5 /* AssertUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = AssertUtils.cpp; sourceTree = "<group>"; };
 		D6BC376C0AB22C85003949C5 /* AssertUtils.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = AssertUtils.h; sourceTree = "<group>"; };
 		D6BC376D0AB22C85003949C5 /* BitmapUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = BitmapUtils.cpp; sourceTree = "<group>"; };
@@ -2188,9 +2183,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				024A32622864D765000CEF68 /* libz.tbd in Frameworks */,
 				D604AEA31C0DF420006DC1F0 /* AppKit.framework in Frameworks */,
 				D6BC3A720AB22E67003949C5 /* OpenGL.framework in Frameworks */,
-				D6C68E230BEFB6E700C9F880 /* libz.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2198,8 +2193,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				024A32A42864D7AC000CEF68 /* libz.tbd in Frameworks */,
 				D60734260D197A1100E08F61 /* Carbon.framework in Frameworks */,
-				D60734270D197A1100E08F61 /* libz.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2207,10 +2202,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				024A326D2864D772000CEF68 /* libz.tbd in Frameworks */,
 				D604AEAA1C0E1D6F006DC1F0 /* AppKit.framework in Frameworks */,
 				D624353E0AE401EF004F00E3 /* OpenGL.framework in Frameworks */,
 				0269A8551FF5F8F00085A37C /* Carbon.framework in Frameworks */,
-				D656B2790B51883C003FF84F /* libz.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2218,8 +2213,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				024A328E2864D797000CEF68 /* libz.tbd in Frameworks */,
 				D65E4B350B65427C004D7887 /* Carbon.framework in Frameworks */,
-				D65E4B360B65427C004D7887 /* libz.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2227,8 +2222,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				024A32782864D780000CEF68 /* libz.tbd in Frameworks */,
 				D604AE9E1C0D5D8F006DC1F0 /* AppKit.framework in Frameworks */,
-				D61C275E0B615CD60092E098 /* libz.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2236,8 +2231,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				024A32832864D78C000CEF68 /* libz.tbd in Frameworks */,
 				D67EF8710B5E5EB800D9190C /* Carbon.framework in Frameworks */,
-				D67EF8730B5E5EBF00D9190C /* libz.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2245,8 +2240,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				024A32992864D7A2000CEF68 /* libz.tbd in Frameworks */,
 				D6C579D10C7E3C7B00FCB4C1 /* Carbon.framework in Frameworks */,
-				D6C579D20C7E3C7B00FCB4C1 /* libz.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2254,11 +2249,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				024A32572864D4CF000CEF68 /* libz.tbd in Frameworks */,
 				2F2135C92593A53700762DB7 /* libcurl.tbd in Frameworks */,
 				D604AEB01C0E364E006DC1F0 /* AppKit.framework in Frameworks */,
 				D6ED373D0B67964D00D5484E /* OpenGL.framework in Frameworks */,
 				0269A8561FF5F8F10085A37C /* Carbon.framework in Frameworks */,
-				D6ED37400B67964D00D5484E /* libz.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2356,11 +2351,11 @@
 			);
 			name = SceneryTools;
 			sourceTree = "<group>";
+			usesTabs = 1;
 		};
 		20286C32FDCF999611CA2CEA /* External Frameworks and Libraries */ = {
 			isa = PBXGroup;
 			children = (
-				D656B2780B51883C003FF84F /* libz.dylib */,
 				D6BC3A710AB22E67003949C5 /* OpenGL.framework */,
 				D604AE9C1C0D5D58006DC1F0 /* AppKit.framework */,
 				20286C33FDCF999611CA2CEA /* Carbon.framework */,
@@ -2371,6 +2366,7 @@
 		2F2135C72593A53600762DB7 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				024A32562864D4CF000CEF68 /* libz.tbd */,
 				2F2135C82593A53600762DB7 /* libcurl.tbd */,
 			);
 			name = Frameworks;
@@ -3035,12 +3031,10 @@
 				D6BC37610AB22C85003949C5 /* XWidgetApp.h */,
 				D6BC37620AB22C85003949C5 /* XWin.h */,
 				D6BC37630AB22C85003949C5 /* XWin.mac.mm */,
-				D6BC37640AB22C85003949C5 /* XWin.win.cpp */,
 				D6BC37650AB22C85003949C5 /* XWin32DND.cpp */,
 				D6BC37660AB22C85003949C5 /* XWin32DND.h */,
 				D6BC37670AB22C85003949C5 /* XWinGL.h */,
 				D6BC37680AB22C85003949C5 /* XWinGL.mac.mm */,
-				D6BC37690AB22C85003949C5 /* XWinGL.win.cpp */,
 				D604AEA41C0E0355006DC1F0 /* ObjCUtils.mm */,
 				D604AEA51C0E0355006DC1F0 /* ObjCUtils.h */,
 			);
@@ -3050,9 +3044,6 @@
 		D6BC376A0AB22C85003949C5 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
-				028B41E824F1829A00018953 /* glew.c */,
-				028B41E924F1829A00018953 /* glew.h */,
-				028B41EA24F1829A00018953 /* glxew.h */,
 				D612485821E5B39300FA030C /* UTL_interval.h */,
 				D612485721E5B35300FA030C /* RTree2.h */,
 				D6F3F0891D072BE800188B28 /* CSVParser.cpp */,
@@ -3982,7 +3973,7 @@
 		20286C28FDCF999611CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0710;
+				LastUpgradeCheck = 1240;
 				TargetAttributes = {
 					D6C579BC0C7E3C7B00FCB4C1 = {
 						ProvisioningStyle = Automatic;
@@ -3994,14 +3985,11 @@
 				};
 			};
 			buildConfigurationList = C0E91AC908A95435008D54AB /* Build configuration list for PBXProject "SceneryTools" */;
-			compatibilityVersion = "Xcode 8.0";
-			developmentRegion = English;
+			compatibilityVersion = "Xcode 12.0";
+			developmentRegion = en;
 			hasScannedForEncodings = 1;
 			knownRegions = (
-				English,
-				Japanese,
-				French,
-				German,
+				en,
 			);
 			mainGroup = 20286C29FDCF999611CA2CEA /* SceneryTools */;
 			projectDirPath = "";
@@ -5045,6 +5033,8 @@
 		C0E91AC608A95435008D54AB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = src/XPTools/ObjView.plist;
 				OTHER_LDFLAGS = (
@@ -5058,6 +5048,8 @@
 		C0E91AC708A95435008D54AB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = src/XPTools/ObjView.plist;
 				OTHER_LDFLAGS = (
@@ -5071,17 +5063,38 @@
 		C0E91ACA08A95435008D54AB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = x86_64;
+				ARCHS = "$(ARCHS_STANDARD)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_CXX_LIBRARY = "compiler-default";
 				CLANG_WARN_ASSIGN_ENUM = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = NO;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = NO;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				EXCLUDED_ARCHS = "";
 				GCC_C_LANGUAGE_STANDARD = "compiler-default";
 				GCC_FAST_MATH = YES;
 				GCC_INPUT_FILETYPE = automatic;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = src/Obj/XDefs.h;
@@ -5089,10 +5102,14 @@
 					"DEV=1",
 					"APL=1",
 				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = NO;
 				GCC_WARN_MISSING_PARENTHESES = NO;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = NO;
+				GCC_WARN_UNUSED_VARIABLE = NO;
 				HEADER_SEARCH_PATHS = (
 					libs/local/include,
 					"$(inherited)",
@@ -5102,10 +5119,11 @@
 					"$(inherited)",
 				);
 				LLVM_LTO = NO;
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
-				ONLY_ACTIVE_ARCH = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = macosx;
+				TARGETED_DEVICE_FAMILY = "";
 				WARNING_CFLAGS = (
 					"-Werror=return-type",
 					"-Werror=format",
@@ -5118,17 +5136,38 @@
 		C0E91ACB08A95435008D54AB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = x86_64;
+				ARCHS = "$(ARCHS_STANDARD)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_CXX_LIBRARY = "compiler-default";
 				CLANG_WARN_ASSIGN_ENUM = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = NO;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = NO;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				EXCLUDED_ARCHS = "";
 				GCC_C_LANGUAGE_STANDARD = "compiler-default";
 				GCC_FAST_MATH = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_INPUT_FILETYPE = automatic;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = fast;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = src/Obj/XDefs.h;
@@ -5139,10 +5178,14 @@
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_UNROLL_LOOPS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = NO;
 				GCC_WARN_MISSING_PARENTHESES = NO;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = NO;
+				GCC_WARN_UNUSED_VARIABLE = NO;
 				HEADER_SEARCH_PATHS = (
 					libs/local/include,
 					"$(inherited)",
@@ -5152,9 +5195,11 @@
 					"$(inherited)",
 				);
 				LLVM_LTO = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = macosx;
+				TARGETED_DEVICE_FAMILY = "";
 				WARNING_CFLAGS = (
 					"-Werror=return-type",
 					"-Werror=format",
@@ -5167,6 +5212,8 @@
 		D60734290D197A1100E08F61 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "-";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"USE_TIF=1",
@@ -5191,6 +5238,8 @@
 		D607342A0D197A1100E08F61 /* DebugOpt */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "-";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"USE_TIF=1",
@@ -5215,6 +5264,8 @@
 		D607342B0D197A1100E08F61 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "-";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"USE_TIF=1",
@@ -5239,16 +5290,37 @@
 		D60E98EE0EDDDEEA0096DE0E /* Phone */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = x86_64;
+				ARCHS = "$(ARCHS_STANDARD)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_CXX_LIBRARY = "compiler-default";
 				CLANG_WARN_ASSIGN_ENUM = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = NO;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = NO;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				EXCLUDED_ARCHS = "";
 				GCC_C_LANGUAGE_STANDARD = "compiler-default";
 				GCC_FAST_MATH = YES;
 				GCC_INPUT_FILETYPE = automatic;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = src/Obj/XDefs.h;
@@ -5257,10 +5329,14 @@
 					"APL=1",
 					"PHONE=1",
 				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = NO;
 				GCC_WARN_MISSING_PARENTHESES = NO;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = NO;
+				GCC_WARN_UNUSED_VARIABLE = NO;
 				HEADER_SEARCH_PATHS = (
 					libs/local/include,
 					"$(inherited)",
@@ -5270,9 +5346,11 @@
 					"$(inherited)",
 				);
 				LLVM_LTO = NO;
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = macosx;
+				TARGETED_DEVICE_FAMILY = "";
 				WARNING_CFLAGS = (
 					"-Werror=return-type",
 					"-Werror=format",
@@ -5285,6 +5363,8 @@
 		D60E98EF0EDDDEEA0096DE0E /* Phone */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = src/XPTools/ObjView.plist;
 				OTHER_LDFLAGS = (
@@ -5298,6 +5378,7 @@
 		D60E98F10EDDDEEA0096DE0E /* Phone */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
@@ -5312,6 +5393,7 @@
 					src/lib_json/include,
 					"$(inherited)",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
@@ -5335,6 +5417,8 @@
 		D60E98F20EDDDEEA0096DE0E /* Phone */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = src/XPTools/XGrinder.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.laminar_research.XGrinder;
@@ -5344,10 +5428,13 @@
 		D60E98F30EDDDEEA0096DE0E /* Phone */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
-				CODE_SIGN_IDENTITY = "";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEPLOYMENT_LOCATION = NO;
+				EXCLUDED_ARCHS = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"USE_JPEG=1",
@@ -5366,7 +5453,8 @@
 				INFOPLIST_FILE = Src/WEDResources/WED_Info.plist;
 				INFOPLIST_PREFIX_HEADER = src/WEDCore/WED_Version.h;
 				INFOPLIST_PREPROCESS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libexpat.a,
 					libs/local/lib/libpng.a,
@@ -5385,17 +5473,22 @@
 		D60E98F40EDDDEEA0096DE0E /* Phone */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "-";
 			};
 			name = Phone;
 		};
 		D60E98F50EDDDEEA0096DE0E /* Phone */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "-";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"WANT_NED_MALLOC=1",
 					"$(inherited)",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
@@ -5419,7 +5512,8 @@
 		D60E98F70EDDDEEA0096DE0E /* Phone */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "-";
 				DEVELOPMENT_TEAM = "";
 				OTHER_LDFLAGS = (
 					libs/local/lib/libsquish.a,
@@ -5431,6 +5525,8 @@
 		D60E98F80EDDDEEA0096DE0E /* Phone */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "-";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"USE_TIF=1",
@@ -5455,6 +5551,7 @@
 		D60E98F90EDDDEEA0096DE0E /* Phone */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
@@ -5467,6 +5564,7 @@
 		D60E98FA0EDDDEEA0096DE0E /* Phone */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
@@ -5479,6 +5577,7 @@
 		D61C26F60B6155B70092E098 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
@@ -5491,8 +5590,8 @@
 		D61C26F70B6155B70092E098 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				COPY_PHASE_STRIP = YES;
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				PRODUCT_NAME = Untitled;
@@ -5503,6 +5602,7 @@
 		D62435420AE401EF004F00E3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
@@ -5517,6 +5617,7 @@
 					src/lib_json/include,
 					"$(inherited)",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
@@ -5540,6 +5641,7 @@
 		D62435430AE401EF004F00E3 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
@@ -5554,6 +5656,7 @@
 					src/lib_json/include,
 					"$(inherited)",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
@@ -5577,11 +5680,14 @@
 		D65E4B380B65427C004D7887 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "-";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"WANT_NED_MALLOC=1",
 					"$(inherited)",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
@@ -5605,11 +5711,14 @@
 		D65E4B390B65427C004D7887 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "-";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"WANT_NED_MALLOC=1",
 					"$(inherited)",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
@@ -5633,6 +5742,8 @@
 		D67EF5080B5CF9F400D9190C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = src/XPTools/XGrinder.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.laminar_research.XGrinder;
@@ -5642,6 +5753,8 @@
 		D67EF5090B5CF9F400D9190C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = src/XPTools/XGrinder.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.laminar_research.XGrinder;
@@ -5651,19 +5764,24 @@
 		D67EF84E0B5E5CA800D9190C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "-";
 			};
 			name = Debug;
 		};
 		D67EF84F0B5E5CA800D9190C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "-";
 			};
 			name = Release;
 		};
 		D6C579D40C7E3C7B00FCB4C1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "-";
 				DEVELOPMENT_TEAM = "";
 				OTHER_LDFLAGS = (
 					libs/local/lib/libsquish.a,
@@ -5675,7 +5793,8 @@
 		D6C579D50C7E3C7B00FCB4C1 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "-";
 				DEVELOPMENT_TEAM = "";
 				OTHER_LDFLAGS = (
 					libs/local/lib/libsquish.a,
@@ -5687,6 +5806,7 @@
 		D6C68DF00BEFB3DB00C9F880 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
@@ -5699,8 +5819,8 @@
 		D6C68DF10BEFB3DB00C9F880 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				COPY_PHASE_STRIP = YES;
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				PRODUCT_NAME = "Build All";
@@ -5711,10 +5831,13 @@
 		D6ED37470B67964D00D5484E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
-				CODE_SIGN_IDENTITY = "";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEPLOYMENT_LOCATION = NO;
+				EXCLUDED_ARCHS = "";
 				GCC_DEBUGGING_SYMBOLS = full;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
@@ -5734,7 +5857,8 @@
 				INFOPLIST_FILE = src/WEDResources/WED_Info.plist;
 				INFOPLIST_PREFIX_HEADER = src/WEDCore/WED_Version.h;
 				INFOPLIST_PREPROCESS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libexpat.a,
 					libs/local/lib/libpng.a,
@@ -5753,10 +5877,13 @@
 		D6ED37480B67964D00D5484E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
-				CODE_SIGN_IDENTITY = "";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEPLOYMENT_LOCATION = NO;
+				EXCLUDED_ARCHS = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"USE_JPEG=1",
@@ -5775,7 +5902,8 @@
 				INFOPLIST_FILE = Src/WEDResources/WED_Info.plist;
 				INFOPLIST_PREFIX_HEADER = src/WEDCore/WED_Version.h;
 				INFOPLIST_PREPROCESS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libexpat.a,
 					libs/local/lib/libpng.a,
@@ -5794,6 +5922,8 @@
 		D6F01D700CDABA8D00A3F1B0 /* DebugOpt */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = src/XPTools/ObjView.plist;
 				OTHER_LDFLAGS = (
@@ -5807,6 +5937,7 @@
 		D6F01D720CDABA8D00A3F1B0 /* DebugOpt */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
@@ -5821,6 +5952,7 @@
 					src/lib_json/include,
 					"$(inherited)",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
@@ -5844,13 +5976,16 @@
 		D6F01D730CDABA8D00A3F1B0 /* DebugOpt */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "-";
 			};
 			name = DebugOpt;
 		};
 		D6F01D740CDABA8D00A3F1B0 /* DebugOpt */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "-";
 				DEVELOPMENT_TEAM = "";
 				OTHER_LDFLAGS = (
 					libs/local/lib/libsquish.a,
@@ -5862,6 +5997,8 @@
 		D6F01D760CDABA8D00A3F1B0 /* DebugOpt */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = src/XPTools/XGrinder.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.laminar_research.XGrinder;
@@ -5871,10 +6008,13 @@
 		D6F01D770CDABA8D00A3F1B0 /* DebugOpt */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
-				CODE_SIGN_IDENTITY = "";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEPLOYMENT_LOCATION = NO;
+				EXCLUDED_ARCHS = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"USE_JPEG=1",
@@ -5893,7 +6033,8 @@
 				INFOPLIST_FILE = Src/WEDResources/WED_Info.plist;
 				INFOPLIST_PREFIX_HEADER = src/WEDCore/WED_Version.h;
 				INFOPLIST_PREPROCESS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libexpat.a,
 					libs/local/lib/libpng.a,
@@ -5912,11 +6053,14 @@
 		D6F01D780CDABA8D00A3F1B0 /* DebugOpt */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "-";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"WANT_NED_MALLOC=1",
 					"$(inherited)",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
@@ -5940,6 +6084,7 @@
 		D6F01D790CDABA8D00A3F1B0 /* DebugOpt */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
@@ -5952,6 +6097,7 @@
 		D6F01D7A0CDABA8D00A3F1B0 /* DebugOpt */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
@@ -5964,17 +6110,38 @@
 		D6F01D7B0CDABA8D00A3F1B0 /* DebugOpt */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = x86_64;
+				ARCHS = "$(ARCHS_STANDARD)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_CXX_LIBRARY = "compiler-default";
 				CLANG_WARN_ASSIGN_ENUM = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = NO;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = NO;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				EXCLUDED_ARCHS = "";
 				GCC_C_LANGUAGE_STANDARD = "compiler-default";
 				GCC_FAST_MATH = YES;
 				GCC_INPUT_FILETYPE = automatic;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 1;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = src/Obj/XDefs.h;
@@ -5982,10 +6149,14 @@
 					"DEV=1",
 					"APL=1",
 				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = NO;
 				GCC_WARN_MISSING_PARENTHESES = NO;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = NO;
+				GCC_WARN_UNUSED_VARIABLE = NO;
 				HEADER_SEARCH_PATHS = (
 					libs/local/include,
 					"$(inherited)",
@@ -5995,10 +6166,11 @@
 					"$(inherited)",
 				);
 				LLVM_LTO = NO;
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
-				ONLY_ACTIVE_ARCH = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = macosx;
+				TARGETED_DEVICE_FAMILY = "";
 				WARNING_CFLAGS = (
 					"-Werror=return-type",
 					"-Werror=format",

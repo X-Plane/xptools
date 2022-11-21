@@ -313,14 +313,10 @@ bool	WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GU
 		aim2dest.p2 = GetZoomer()->LLToPixel(aim2dest.p2);
 		mServices.push_back(aim2dest);
 	}
-	else if(entity->GetGISSubtype() == WED_TaxiRoute::sClass)
+	else if (entity->GetGISSubtype() == WED_TaxiRoute::sClass)
 	{
-		WED_TaxiRoute * seg = dynamic_cast<WED_TaxiRoute *>(entity);
+		WED_TaxiRoute* seg = dynamic_cast<WED_TaxiRoute*>(entity);
 		DebugAssert(seg);
-
-		Point2 ends[2];
-		seg->GetNthPoint(0)->GetLocation(gis_Geo, ends[0]);
-		seg->GetNthPoint(1)->GetLocation(gis_Geo, ends[1]);
 
 		int icao_width = seg->GetWidth();
 		bool hot = seg->HasHotArrival() || seg->HasHotDepart();
@@ -329,11 +325,11 @@ bool	WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GU
 		bool road = seg->AllowTrucks() && !seg->AllowAircraft();
 		bool one_way = seg->IsOneway();
 
-		int mtr1,mtr2;
-		if(road)
+		int mtr1, mtr2;
+		if (road)
 			mtr1 = mtr2 = one_way ? 4.0 : 8.0;
 		else
-			switch(icao_width)
+			switch (icao_width)
 			{
 			default:
 			case width_A:	mtr1 = 4.5;		mtr2 = 15.0;	break;
@@ -344,11 +340,121 @@ bool	WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GU
 			case width_F:	mtr1 = 16.0;	mtr2 = 80.0;	break;
 			}
 
+		mtr1 *= GetZoomer()->GetPPM();
+		mtr2 *= GetZoomer()->GetPPM();
+
+		if (rwy && hot)
+			glColor4f(0.9, 0.1, 0.7, 0.5);  // purple
+		else if (hot)
+			glColor4f(1, 0, 0, 0.5);        // red
+		else if (ils)
+			glColor4f(0.8, 0.5, 0, 0.5);    // orange
+		else if (road) //Warning! Because a ground route can also have IsRunway() == true, this check must come first
+			glColor4f(1, 1, 1, 0.4);        // white
+		else if (rwy)
+			glColor4f(0.0, 0.2, 0.6, 0.4);  // blue
+		else
+			glColor4f(1, 1, 0, 0.6);        // yellow
+
+#if HAS_CURVED_ATC_ROUTE
+
+		IGISPointSequence* ps = SAFE_CAST(IGISPointSequence, seg);
+		vector<Point2>	pts, d;
+		PointSequenceToVector(ps, GetZoomer(), pts, false, true);
+
+		Vector2	dir(pts[1], pts[0]);               // direction of this segment
+		double len = dir.normalize();
+		Vector2 perp = dir.perpendicular_ccw();   // direction perpendicular
+
+		glBegin(GL_TRIANGLE_STRIP);
+		glVertex2(pts[0] + perp * 0.5 * mtr1);
+		glVertex2(pts[0] - perp * 0.5 * mtr1);
+
+		d.reserve(2 * pts.size() + 1);
+		d.push_back(pts[0] + perp * 0.5 * mtr2);
+		d.push_back(pts[0] - perp * 0.5 * mtr2);
+
+		bool arrow = false;
+		for (int j = 1; j < pts.size(); ++j)
+		{
+			Vector2 dir_next;
+			if (j < pts.size() - 1)
+			{
+				dir_next = Vector2(pts[j + 1], pts[j]);
+				len = dir_next.normalize();
+				perp = (dir + dir_next) / (1.0 + dir.dot(dir_next));
+			}
+			else
+				perp = dir;
+			perp = perp.perpendicular_ccw();
+
+			if(one_way)
+			{
+				if (pts.size() == 2)
+				{
+					glVertex2(pts[j] + perp * 0.5 * mtr1 + dir * 0.5 * mtr1);
+					glVertex2(pts[j] - perp * 0.5 * mtr1 + dir * 0.5 * mtr1);
+					d.push_back(pts[j] + perp * 0.5 * mtr2 + dir * 0.5 * mtr2);
+					d.push_back(pts[j] - perp * 0.5 * mtr2 + dir * 0.5 * mtr2);
+					glVertex2(pts.back());
+					d.push_back(pts.back());
+					break;
+				}
+				else
+				{
+					if(pts[j].squared_distance(pts.back()) > sqr(0.5 * mtr2))
+					{
+						glVertex2(pts[j] + perp * 0.5 * mtr1);
+						glVertex2(pts[j] - perp * 0.5 * mtr1);
+						d.push_back(pts[j] + perp * 0.5 * mtr2);
+						d.push_back(pts[j] - perp * 0.5 * mtr2);
+					}
+					else if (pts[j].squared_distance(pts.back()) > sqr(0.5 * mtr1))
+					{
+						glVertex2(pts[j] + perp * 0.5 * mtr1);
+						glVertex2(pts[j] - perp * 0.5 * mtr1);
+					}
+					else
+					{
+						glVertex2(pts.back());
+						d.push_back(pts.back());
+						break;
+					}
+				}
+			}
+			else
+			{
+				glVertex2(pts[j] + perp * 0.5 * mtr1);
+				glVertex2(pts[j] - perp * 0.5 * mtr1);
+				d.push_back(pts[j] + perp * 0.5 * mtr2);
+				d.push_back(pts[j] - perp * 0.5 * mtr2);
+			}
+			dir = dir_next;
+		}
+		glEnd();
+
+		if (!road) // draw the less opaque wingspan indication
+		{
+			GLfloat currentColor[4];
+			glGetFloatv(GL_CURRENT_COLOR, currentColor);
+			currentColor[3] = 0.25;
+			glColor4fv(currentColor);
+			glBegin(GL_TRIANGLE_STRIP);
+			glVertex2v(d.data(), d.size());
+			glEnd();
+		}
+
+		Point2 ends[2] = { pts.front(), pts.back() };
+		Point2 label_xy = (pts.size() & 1) ? pts[pts.size() / 2] : Midpoint2(pts[pts.size() / 2 - 1], pts[pts.size() / 2]);
+		Vector2 label_dir = Vector2(pts[pts.size() / 2 - 1], pts[pts.size() / 2]);
+#else
+		Point2 ends[2];
+		seg->GetNthPoint(0)->GetLocation(gis_Geo, ends[0]);
+		seg->GetNthPoint(1)->GetLocation(gis_Geo, ends[1]);
+
 		Point2	c[5], d[5];
 
 		GetZoomer()->LLToPixelv(ends, ends, 2);
-		mtr1 *= GetZoomer()->GetPPM();
-		mtr2 *= GetZoomer()->GetPPM();
 		Quad_2to4pix(ends, mtr1, c);
 		Quad_2to4pix(ends, mtr2, d);
 
@@ -374,23 +480,11 @@ bool	WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GU
 			c[2] -= dir;
 			c[3] += dir;
 		}
-		if (rwy && hot)
-			glColor4f(0.9, 0.1, 0.7, 0.5);  // purple
-		else if (hot)
-			glColor4f(1, 0, 0, 0.5);        // red
-		else if (ils)
-			glColor4f(0.8, 0.5, 0, 0.5);    // orange
-		else if (road) //Warning! Because a ground route can also have IsRunway() == true, this check must come first
-			glColor4f(1, 1, 1, 0.4);        // white
-		else if (rwy)
-			glColor4f(0.0, 0.2, 0.6, 0.4);  // blue
-		else
-			glColor4f(1, 1, 0, 0.6);        // yellow
 		glBegin(GL_TRIANGLE_FAN);
 		glVertex2v(c,np);
 		glEnd();
 
-		if (!road)
+		if (!road) // draw the less opaque wingspan indication
 		{
 			GLfloat currentColor[4];
 			glGetFloatv(GL_CURRENT_COLOR, currentColor);
@@ -400,6 +494,10 @@ bool	WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GU
 			glVertex2v(d, np);
 			glEnd();
 		}
+		Point2 label_xy = Midpoint2(ends[0], ends[1]);
+		Vector2 label_dir(ends[1], ends[0]);
+#endif
+
 		if (seg->AllowAircraft())              // display name of taxi route
 		{
 			string nam;
@@ -410,14 +508,12 @@ bool	WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GU
 
 			if(!nam.empty())
 			{
-				if (d[1].squared_distance(d[2]) > 20*20 &&         // draw labels only if segment wide enough
-					d[0].squared_distance(d[1]) > sqr(20+6.0*nam.size()) )      // and long enough
+				if (mtr1 > 20 &&
+					 ends[0].squared_distance(ends[1]) > sqr(20+6.0*nam.size()))      // draw labels only if segment long enough
 				{
 					glPushMatrix();
-					Point2 label_xy = Midpoint2(ends[0],ends[1]);
 					glTranslatef(label_xy.x(), label_xy.y(), 0);
-					Vector2 dir(ends[1], ends[0]);
-					float hdg = fltwrap(atan2f(dir.dy, dir.dx) * RAD_TO_DEG, -90, 90);
+					float hdg = fltwrap(atan2f(label_dir.dy, label_dir.dx) * RAD_TO_DEG, -90, 90);
 					glRotatef(hdg,0,0,1);
 					const float white[4] = { 1, 1, 1, 1 };
 					GUI_FontDraw(g, font_UI_Basic, white, 0, -4, nam.c_str(), align_Center);
@@ -430,7 +526,7 @@ bool	WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GU
 		else // gotta be truck route then
 			mGTEdges.push_back(Segment2(ends[0], ends[1]));
 	}
-#if 1 // ROAD_EDITING
+#if ROAD_EDITING
 	else if(entity->GetGISSubtype() == WED_RoadEdge::sClass)
 	{
 		WED_RoadEdge * seg = dynamic_cast<WED_RoadEdge *>(entity);

@@ -70,7 +70,7 @@
 // - (better) preserve distances from map center for objects at moderate distances from map center
 // https://en.wikipedia.org/wiki/Gnomonic_projection
 
-#define USE_GNOMONIC   0
+#define USE_GNOMONIC   1
 #define FULL_EQUATIONS 0
 #define THR_GNOMONIC   0.02
 
@@ -81,8 +81,11 @@
 
 #include "CompGeomDefs3.h"
 #include "MathUtils.h"
-#include "glew.h"
-
+#if APL
+  #include <OpenGL/gl.h>
+#else
+  #include "glew.h"
+#endif
 #define sinr(x) sin((x) * DEG_TO_RAD)
 #define cosr(x) cos((x) * DEG_TO_RAD)
 
@@ -145,6 +148,8 @@ Point2	WED_MapZoomerNew::PixelToLL(const Point2& p) const
 	{
 		Point2 pt((p.x() - mCenterX) * mPixel2DegLat(), (p.y() - mCenterY) * mPixel2DegLat());
 		// https://mathworld.wolfram.com/GnomonicProjection.html
+		pt.x_ *= DEG_TO_MTR_LAT / DEG_LON_TO_MTR(mLatCenter);
+		pt.y_ *= DEG_TO_MTR_LAT / DEG_LAT_TO_MTR(mLatCenter);
 		pt.x_ *= DEG_TO_RAD;
 		pt.y_ *= DEG_TO_RAD;
 #if FULL_EQUATIONS
@@ -155,7 +160,7 @@ Point2	WED_MapZoomerNew::PixelToLL(const Point2& p) const
 #else
 		double rho2 = pt.x() * pt.x() + pt.y() * pt.y();
 		double ct = 1.0 / sqrt(1.0 + rho2);
-		double lat = RAD_TO_DEG * asin(ct * (mLatCenterSIN + pt.y() * mLatCenterCOS));
+		double lat = RAD_TO_DEG * asin(ct * (mLatCenterSIN + pt.y() * mLatCenterCOS)) ;
 		double lon = mLonCenter + RAD_TO_DEG * atan2(pt.x(), mLatCenterCOS - pt.y() * mLatCenterSIN);
 #endif
 		if (mPixel2DegLat() > THR_GNOMONIC * 0.3)
@@ -200,8 +205,8 @@ Point2	WED_MapZoomerNew::LLToPixel(const Point2& p) const
 		auto bs = sinr(pt.x() - mLonCenter);
 		auto bc = cosr(pt.x() - mLonCenter);
 		double ci = 1.0 / (mLatCenterSIN * as + mLatCenterCOS * ac * bc);
-		double x = mCenterX + (ac * bs * ci) * RAD_TO_DEG * mPixel2DegLat.inv();
-		double y = mCenterY + ((mLatCenterCOS * as - mLatCenterSIN * ac * bc) * ci) * RAD_TO_DEG * mPixel2DegLat.inv();
+		double x = mCenterX + (ac * bs * ci) * RAD_TO_DEG * mPixel2DegLat.inv() * DEG_LON_TO_MTR(mLatCenter) / DEG_TO_MTR_LAT;
+		double y = mCenterY + ((mLatCenterCOS * as - mLatCenterSIN * ac * bc) * ci) * RAD_TO_DEG * mPixel2DegLat.inv() * DEG_LAT_TO_MTR(mLatCenter) / DEG_TO_MTR_LAT;
 #endif
 		if (mPixel2DegLat() > THR_GNOMONIC * 0.3)
 		{
