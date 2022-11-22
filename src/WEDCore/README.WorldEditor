@@ -20,7 +20,11 @@ WED functionality not yet supported by XP12 alpha's
     - rowcode 105 skidmark and line color/width customizations for runways
 
 =======
-WED 2.5.0b4
+WED 2.5.0b5
+   Bug fix:
+   - rendering objects with LINES followd by TRIS in the same LOD caused artefacts
+
+WED 2.5.0b4 9/21/22
    Bug fix:
    - some meta data validation messages spelling out wrong names
    - add missing texture for light colored gradients to linux binary
