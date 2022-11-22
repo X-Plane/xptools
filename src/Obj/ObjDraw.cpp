@@ -20,6 +20,7 @@
  * THE SOFTWARE.
  *
  */
+
 #include "ObjDraw.h"
 #include "XObjDefs.h"
 #if APL
@@ -282,7 +283,7 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 
 					const_cast<XObj8&>(obj).geo_tri.clear(8);           // now that its all in VRAM - free the RAM !
 																	 
-					// const_cast<vector<int>&>(obj.indices).clear();   // dont free idx, yet. line drawing code still need these in RAM
+					// const_cast<vector<int>&>(obj.indices).clear();   // dont free idx, yet. line drawing code still needs these in RAM
 					// const_cast<vector<int>&>(obj.indices).shrink_to_fit();
 					}
 					const char * vert_ptr = nullptr;                        // offset into VBO
@@ -319,47 +320,36 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 					funcs->SetupLine_f(ref);	CHECK_GL_ERR
 					drawMode = drawMode_Lin;
 				}
-#if HALF_SIZE_VBO
-				if (obj.geo_VBO == 0)
+#if XOBJ8_USE_VBO
+	#if HALF_SIZE_VBO
+				if (obj.geo_VBO != 0)
 					glPopMatrix();
+	#endif
+				glBindBuffer(GL_ARRAY_BUFFER, 0);				CHECK_GL_ERR
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);		CHECK_GL_ERR
 #endif
-				if (arrayMode_Lin != arrayMode)
+					if (arrayMode_Lin != arrayMode)
 				{
 					arrayMode = arrayMode_Lin;
-#if 0 // XOBJ8_USE_VBO
-					glBindBuffer(GL_ARRAY_BUFFER, obj.geo_VBO);			CHECK_GL_ERR
-					if (obj.geo_VBO)
-					{
-						const char* vert_ptr = nullptr;
-						glVertexPointer(3, VBO_VEC_FMT, VBO_STRIDE, vert_ptr);			    CHECK_GL_ERR
-						glColorPointer(3, HALF_SIZE_VBO ? GL_HALF_FLOAT : GL_FLOAT, VBO_STRIDE, vert_ptr + VBO_OFFS1); CHECK_GL_ERR
-					}
-					else
-#endif
-					{
-						const char* vert_ptr = (const char *) obj.geo_lines.get(0);
-						glVertexPointer(3, GL_FLOAT, 6*sizeof(float), vert_ptr);	  	          CHECK_GL_ERR
-						glColorPointer(3, GL_FLOAT, 6*sizeof(float), vert_ptr + 3*sizeof(float)); CHECK_GL_ERR
-					}
+					const char* vert_ptr = (const char *) obj.geo_lines.get(0);
+					glVertexPointer(3, GL_FLOAT, 6*sizeof(float), vert_ptr);	  	          CHECK_GL_ERR
+					glColorPointer(3, GL_FLOAT, 6*sizeof(float), vert_ptr + 3*sizeof(float)); CHECK_GL_ERR
 				}
 				glEnableClientState(GL_VERTEX_ARRAY);			CHECK_GL_ERR
 				glDisableClientState(GL_NORMAL_ARRAY);			CHECK_GL_ERR
 				glDisableClientState(GL_TEXTURE_COORD_ARRAY);	CHECK_GL_ERR
 				glEnableClientState(GL_COLOR_ARRAY);			CHECK_GL_ERR
-#if 0 // XOBJ8_USE_VBO
-				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, obj.idx_VBO); CHECK_GL_ERR
-				if(obj.idx_VBO)
-					glDrawElements(GL_LINES, cmd->idx_count, obj.short_idx ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT,
-								(void*)((obj.short_idx ? sizeof(GLushort) : sizeof(GLuint))* cmd->idx_offset));   CHECK_GL_ERR
-				else
-#else
 				glDrawElements(GL_LINES, cmd->idx_count, GL_UNSIGNED_INT, &obj.indices[cmd->idx_offset]);	CHECK_GL_ERR
-#endif
-#if HALF_SIZE_VBO
-				if (obj.geo_VBO == 0)
+
+#if XOBJ8_USE_VBO
+				if (obj.geo_VBO != 0)
 				{
+	#if HALF_SIZE_VBO
 					glPushMatrix();
 					glScalef(1.0 / scale, 1.0 / scale, 1.0 / scale);
+	#endif
+					glBindBuffer(GL_ARRAY_BUFFER, obj.geo_VBO);				CHECK_GL_ERR
+					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, obj.idx_VBO);		CHECK_GL_ERR
 				}
 #endif
 				break;

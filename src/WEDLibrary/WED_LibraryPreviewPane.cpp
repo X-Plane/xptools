@@ -802,13 +802,31 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, int b[4], 
 				double row_offs = 0.0;
 				for(int i = 0; i < n_tiles; i++)
 				{
-					int tile_idx = (int)(i + mWid * 0.2) % agp->tiles.size();
+					int tile_idx = intlim(i + mWid * 0.2, 0, agp->tiles.size() - 1);
 					auto ti = agp->tiles[tile_idx];
 					xyz_off[0] = -(ti.xyz_max[0] + ti.xyz_min[0]) * 0.5;
 //					xyz_off[1] = -(ti.xyz_max[1] + ti.xyz_min[1]) * 0.5; // align them vertically all the same
 					xyz_off[2] =  (ti.xyz_max[2] + ti.xyz_min[2]) * 0.5;
-					row_offs += (ti.xyz_max[0] - ti.xyz_min[0]) * (i == 0 ? i - ((int)mWid % 5) * 0.2 : 1.1);
+//					row_offs += (ti.xyz_max[0] - ti.xyz_min[0]) * (i == 0 ? i - ((int)mWid % 5) * 0.2 : 1.1);
+					row_offs += n_tiles > 1 ? (ti.xyz_max[0] - ti.xyz_min[0]) * (i - 0.8) : 0.0;
 					draw_agp_at_xyz(mTexMgr, agp, xyz_off[0] + row_offs, xyz_off[1], xyz_off[2], mHgt, 0, g, tile_idx);
+				}
+				if (agp->has_scp)
+				{
+					// draw "ground" plane
+					g->SetTexUnits(0);
+					glColor4f(0.2, 0.4, 0.2, 0.7);   // green lawn, almost opaque
+					g->EnableLighting(false);
+					g->EnableAlpha(true, true);
+					glDisable(GL_CULL_FACE);
+					glBegin(GL_POLYGON);
+						auto wl = real_radius * 0.3;
+						glVertex3f(-wl, xyz_off[1], -wl);
+						glVertex3f(-wl, xyz_off[1], +wl);
+						glVertex3f(+wl, xyz_off[1], +wl);
+						glVertex3f(+wl, xyz_off[1], -wl);
+					glEnd();
+					glColor4f(1, 1, 1, 1);
 				}
 				end3d(b);
 			}

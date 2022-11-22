@@ -111,22 +111,22 @@ WED_MapZoomerNew::~WED_MapZoomerNew()
 
 double	WED_MapZoomerNew::XPixelToLon(double x) const
 {
-	return mLonCenter + (x - mCenterX) * mPixel2DegLat() / mCenterCOS;
+	return mLonCenter + (x - mCenterX) * mPixel2DegLat() / mCenterCOS * DEG_TO_MTR_LAT / DEG_LON_TO_MTR(mLatCenter);
 }
 
 double	WED_MapZoomerNew::YPixelToLat(double y) const
 {
-	return mLatCenter + (y - mCenterY) * mPixel2DegLat();
+	return mLatCenter + (y - mCenterY) * mPixel2DegLat() * DEG_TO_MTR_LAT / DEG_LAT_TO_MTR(mLatCenter);
 }
 
 double	WED_MapZoomerNew::LonToXPixel(double lon) const
 {
-	return mCenterX + (lon - mLonCenter) * mCenterCOS * mPixel2DegLat.inv();
+	return mCenterX + (lon - mLonCenter) * mCenterCOS * mPixel2DegLat.inv() * DEG_LON_TO_MTR(mLatCenter) / DEG_TO_MTR_LAT;
 }
 
 double	WED_MapZoomerNew::LatToYPixel(double lat) const
 {
-	return mCenterY + (lat - mLatCenter) * mPixel2DegLat.inv();
+	return mCenterY + (lat - mLatCenter) * mPixel2DegLat.inv() * DEG_LAT_TO_MTR(mLatCenter) / DEG_TO_MTR_LAT;
 }
 
 double	WED_MapZoomerNew::wagner_proj_mult(double lat) const
@@ -148,6 +148,8 @@ Point2	WED_MapZoomerNew::PixelToLL(const Point2& p) const
 	{
 		Point2 pt((p.x() - mCenterX) * mPixel2DegLat(), (p.y() - mCenterY) * mPixel2DegLat());
 		// https://mathworld.wolfram.com/GnomonicProjection.html
+		pt.x_ *= DEG_TO_MTR_LAT / DEG_LON_TO_MTR(mLatCenter);
+		pt.y_ *= DEG_TO_MTR_LAT / DEG_LAT_TO_MTR(mLatCenter);
 		pt.x_ *= DEG_TO_RAD;
 		pt.y_ *= DEG_TO_RAD;
 #if FULL_EQUATIONS
@@ -158,7 +160,7 @@ Point2	WED_MapZoomerNew::PixelToLL(const Point2& p) const
 #else
 		double rho2 = pt.x() * pt.x() + pt.y() * pt.y();
 		double ct = 1.0 / sqrt(1.0 + rho2);
-		double lat = RAD_TO_DEG * asin(ct * (mLatCenterSIN + pt.y() * mLatCenterCOS));
+		double lat = RAD_TO_DEG * asin(ct * (mLatCenterSIN + pt.y() * mLatCenterCOS)) ;
 		double lon = mLonCenter + RAD_TO_DEG * atan2(pt.x(), mLatCenterCOS - pt.y() * mLatCenterSIN);
 #endif
 		if (mPixel2DegLat() > THR_GNOMONIC * 0.3)
@@ -203,8 +205,8 @@ Point2	WED_MapZoomerNew::LLToPixel(const Point2& p) const
 		auto bs = sinr(pt.x() - mLonCenter);
 		auto bc = cosr(pt.x() - mLonCenter);
 		double ci = 1.0 / (mLatCenterSIN * as + mLatCenterCOS * ac * bc);
-		double x = mCenterX + (ac * bs * ci) * RAD_TO_DEG * mPixel2DegLat.inv();
-		double y = mCenterY + ((mLatCenterCOS * as - mLatCenterSIN * ac * bc) * ci) * RAD_TO_DEG * mPixel2DegLat.inv();
+		double x = mCenterX + (ac * bs * ci) * RAD_TO_DEG * mPixel2DegLat.inv() * DEG_LON_TO_MTR(mLatCenter) / DEG_TO_MTR_LAT;
+		double y = mCenterY + ((mLatCenterCOS * as - mLatCenterSIN * ac * bc) * ci) * RAD_TO_DEG * mPixel2DegLat.inv() * DEG_LAT_TO_MTR(mLatCenter) / DEG_TO_MTR_LAT;
 #endif
 		if (mPixel2DegLat() > THR_GNOMONIC * 0.3)
 		{

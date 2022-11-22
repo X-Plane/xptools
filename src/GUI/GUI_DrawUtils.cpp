@@ -137,7 +137,7 @@ void	GUI_DrawCentered(
 	glBegin(GL_QUADS);
 	gl_quad(image_size[0],image_size[1],image_size[2],image_size[3],
 					sts[0],sts[1],sts[2],sts[3]);
-	glEnd();
+	glEnd(); CHECK_GL_ERR
 
 	if (out_width)	*out_width = metrics.real_width / tile_sel[2];
 	if (out_height)	*out_height = metrics.real_height / tile_sel[3];
@@ -159,7 +159,7 @@ void	GUI_DrawStretched(
 	float	sts[4] = { 0.0, 0.0, metrics.s_rescale, metrics.t_rescale };
 	if (tile_sel) GUI_TileToST(tile_sel, sts, &metrics);
 
-	glBegin(GL_QUADS);	CHECK_GL_ERR
+	glBegin(GL_QUADS);
 	gl_quad(bounds[0],bounds[1],bounds[2],bounds[3],
 					sts[0],sts[1],sts[2],sts[3]);
 	glEnd(); CHECK_GL_ERR
