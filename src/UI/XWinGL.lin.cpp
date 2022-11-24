@@ -87,12 +87,6 @@ void glWidget::draw()
 	mXWinGL->GLDraw();
 }
 
-void glWidget::resize(int X,int Y,int W,int H)
-{
-    Fl_Gl_Window::resize(X,Y,W,H);
-    mXWinGL->GLReshaped(w(),h());
-}
-
 XWinGL::XWinGL(int default_dnd, XWinGL* inShare) : XWin(default_dnd), mGLInited(false), mCtxValid(false)
 {
 	mGlWidget = new glWidget(this, 100,100,inShare?inShare->mGlWidget:0);
@@ -118,6 +112,7 @@ XWinGL::~XWinGL()
 
 void XWinGL::Resized(int w, int h)
 {
+	GLReshaped(w,h);
 }
 
 void XWinGL::SetGLContext(void)

@@ -368,15 +368,10 @@ void XWin::resize(int x,int y,int w,int h)
 	bool not_moved = ( x == this->x() && y == this->y() );
 	if( no_resize & not_moved ) return;
 
-	int  mbar_h = mMenuBar ? mMenuBar->h() : 0;
 	Fl_Window::resize(x,y,w,h);
 
 	if(no_resize) return;
-	if(mMenuBar && this->resizable() == this)
-	{
-	   mMenuBar->size(w,mbar_h);
-	}
-	Resized(w,h);
+	Resized(w,h-GetMenuBarHeight());
 }
 
 /*FLTK  menu callback*/
