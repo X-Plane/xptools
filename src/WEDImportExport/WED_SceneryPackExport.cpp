@@ -38,6 +38,7 @@
 #include "WED_GatewayExport.h"
 #include "WED_Group.h"
 #include "WED_GroupCommands.h"
+#include "WED_Menus.h"
 #include "WED_UIDefs.h"
 #include "WED_Validate.h"
 
@@ -61,8 +62,6 @@ int		WED_CanExportPack(IResolver * resolver)
 {
 	return 1;
 }
-
-#if TYLER_MODE
 
 #include "WED_Airport.h"
 #include "WED_AirportBoundary.h"
@@ -96,33 +95,9 @@ namespace
 
 void dummyPrintf(void * ref, const char * fmt, ...) { return; }
 
-static unordered_map <string, string> LoadAirportClimates()
-{
-	unordered_map <string, string> climates;
-	string climate_file;
-	gPackageMgr->GetXPlaneFolder(climate_file);
-	climate_file += "/Global Scenery/airport_climates.txt";
-	if (auto fi = fopen(climate_file.c_str(), "r"))
-	{
-		char line[100];
-		while (!feof(fi))
-		{
-			fgets(line, sizeof(line), fi);
-			char icao[10], climate[100];
-			if (sscanf(line, "%9s %99s", icao, climate) == 2)
-				climates[icao] = climate;
-		}
-		fclose(fi);
-	}
-	else
-		AssertPrintf("Cant open airport climate maps at % s\n", climate_file.c_str());
-//		LOG_MSG("E/GW cant open airport climate maps at %s\n", climate_file.c_str());
-	return climates;
-}
-
 static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 {
-	LOG_MSG("## Tyler mode ## Starting upgrade heuristics\n");
+	LOG_MSG("I/exp Starting upgrade heuristics\n");
 	WED_Thing * wrl = WED_GetWorld(resolver);
 	vector<WED_Airport*> apts;
 	CollectRecursiveNoNesting(wrl, back_inserter(apts),WED_Airport::sClass);    // ATTENTION: all code here assumes 'normal' hierachies and no hidden items,
@@ -544,6 +519,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		}
 
 #endif
+#if TYLER_MODE
 		double percent_done = (double)distance(apts.begin(), apt_itr) / apts.size() * 100;
 		printf("%0.0lf%% through heuristic at %s\n", percent_done, ICAO_code.c_str());
 
@@ -552,6 +528,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		LOG_MSG("Update %s took %lf sec\n", ICAO_code.c_str(), elapsed.count());
 		t2 = t1;
 //		if(distance(apts.begin(), apt_itr) == 15) break;
+#endif
 	}
 #if TYLER_MODE == 11
 	// Remove all remaining new XP12 stuff - so this needs to be run in an XP11 installation. 
@@ -566,10 +543,19 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 
 	auto t1 = chrono::high_resolution_clock::now();
 	chrono::duration<double> elapsed = t1 - t0;
-	LOG_MSG("## Tyler mode ## Done with upgrade heuristics, took %lf sec\n", elapsed.count());
+	LOG_MSG("I/exp Done with upgrade heuristics, took %lf sec\n", elapsed.count());
 	LOG_FLUSH();
 }
-#endif
+
+int		WED_CanExportPack(IResolver* resolver, string& ioname)
+{
+	int target_idx = gExportTarget - wet_xplane_900;
+	if (target_idx > wet_latest_xplane)
+		ioname = "Export to Scenery (w/Scenery Gateway heuristics)";
+	else
+		 ioname = string("Export to Scenery for ") + WED_GetTargetMenuName(target_idx);
+	return 1;
+}
 
 void	WED_DoExportPack(WED_Document * resolver, WED_MapPane * pane)
 {
@@ -582,6 +568,14 @@ void	WED_DoExportPack(WED_Document * resolver, WED_MapPane * pane)
 	// ... and if the export blows up or something, it's Tyler's fault :(
 	if(!WED_ValidateApt(resolver, pane))
 		return;
+	if (gExportTarget == wet_gateway)
+	{
+		auto uMgr = resolver->GetUndoMgr();
+		uMgr->MarkUndo();
+		DoHueristicAnalysisAndAutoUpgrade(resolver);
+		if (uMgr->UndoToMark())
+			DoUserAlert("Some of the upgrade heuristics applied during export could not be undone. Scenery was permanently altered by export.");
+	}
 #endif
 	ILibrarian * l = WED_GetLibrarian(resolver);
 	WED_Thing * w = WED_GetWorld(resolver);

@@ -606,7 +606,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_SelectMissingObjects:	return 1;
 
 	case wed_ExportApt:		return WED_CanExportApt(mDocument);
-	case wed_ExportPack:	return WED_CanExportPack(mDocument);
+	case wed_ExportPack:	return WED_CanExportPack(mDocument, ioName);
 #if HAS_GATEWAY
 	case wed_ExportToGateway:	return WED_CanExportToGateway(mDocument);
 #endif

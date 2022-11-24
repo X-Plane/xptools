@@ -34,6 +34,7 @@ WED 2.5.0b4 9/21/22
    - add green groundplane for preview of adjustable height .agp
    X-Plane 12 features:
    - Object scaling in map using WGS84 ellipsoid for improved large object location accuracy
+   - apply all gateway upgrade heuristics upon exporting to scenery with gateway target
 
 WED 2.5.0b3 9/3/22
    X-Plane 12 features:
