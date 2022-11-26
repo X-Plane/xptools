@@ -24,6 +24,7 @@ WED 2.5.0b5
    Bug fix:
    - rendering objects with LINES followd by TRIS in the same LOD caused artefacts
    - fix library list non-expandable items, missing 2nd column on OSX
+   - fix shading in library preview pane
 
 WED 2.5.0b4 9/21/22
    Bug fix:
