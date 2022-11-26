@@ -34,7 +34,7 @@
 static int kDefCols[] = { 220, 20 };
 
 WED_LibraryListAdapter::WED_LibraryListAdapter(WED_LibraryMgr* who) :
-	GUI_SimpleTableGeometry(1, kDefCols),
+	GUI_SimpleTableGeometry(GetColCount(), kDefCols),
 	mCacheValid(false), mLibrary(who),
 	mFilterChanged(false),
 	mMap(NULL),

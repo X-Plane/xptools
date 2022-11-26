@@ -1,4 +1,4 @@
-﻿-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
                          WorldEditor Release Notes
 -------------------------------------------------------------------------------
 
@@ -23,6 +23,7 @@ WED functionality not yet supported by XP12 alpha's
 WED 2.5.0b5
    Bug fix:
    - rendering objects with LINES followd by TRIS in the same LOD caused artefacts
+   - fix library list non-expandable items, missing 2nd column on OSX
 
 WED 2.5.0b4 9/21/22
    Bug fix:
