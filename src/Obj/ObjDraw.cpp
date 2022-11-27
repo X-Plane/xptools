@@ -294,7 +294,7 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 			#if VBO_10b_NRML
 					glNormalPointer			(	GL_INT_2_10_10_10_REV, VBO_STRIDE, vert_ptr + VBO_OFFS1 + 2 );	CHECK_GL_ERR
 			#else		                                               // yes - we're leaving 2 bytes unused and go for aligned loads instead
-					glNormalPointer			(	GL_HALF_FLOAT,         VBO_STRIDE, vert_ptr + VBO_OFFS1     );	CHECK_GL_ERR
+					glNormalPointer			(	VBO_VEC_FMT,           VBO_STRIDE, vert_ptr + VBO_OFFS1     );	CHECK_GL_ERR
 			#endif
 					funcs->TexCoordPointer_f(2, VBO_ST_FMT,			   VBO_STRIDE, vert_ptr + VBO_OFFS2, ref);	CHECK_GL_ERR
 

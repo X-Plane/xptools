@@ -57,7 +57,7 @@ static const GUI_MenuItem_t	kFileMenu[] = {
 {	"Import Ortho&photo...", 0,		0,								0,	wed_ImportOrtho		},
 {	"Export Scenery Pac&k",	'B',	gui_ControlFlag,				0,	wed_ExportPack		},
 #if HAS_GATEWAY
-{	"Export to Airport Scenery Gateway...",0,	0,					0,	wed_ExportToGateway	},
+{	"Submit to Airport Scenery Gateway...",0,	0,					0,	wed_ExportToGateway	},
 #endif
 {	"Advanced ...",			0,		0,								0,	0					},
 #if IBM || LIN
@@ -81,13 +81,21 @@ static const GUI_MenuItem_t kExportTargetMenu[] = {
 {	NULL,					0,		0,								0,	0					}
 };
 
+string WED_GetTargetMenuName(int target)
+{
+	if (target <= wed_ExportGateway - wed_Export900)
+		return kExportTargetMenu[target].name;
+	else
+		return string();
+}
+
 static const GUI_MenuItem_t kAdvancedMenu[] = {
-{	"&Import apt.dat...",	'I',	gui_ControlFlag + gui_ShiftFlag,0,	wed_ImportApt		},
+{	"&Import apt.dat...",	0,		0,								0,	wed_ImportApt		},
 {	"Import DS&F...",		0,		0,								0,	wed_ImportDSF		},
 #if GATEWAY_IMPORT_FEATURES
 {	"Import Scenery Gateway Extracts...",0,0,						0,	wed_ImportGatewayExtract },
 #endif
-{	"&Export apt.dat...",	'S',	gui_ControlFlag + gui_ShiftFlag,0,	wed_ExportApt		},
+{	"&Export apt.dat...",	0,		0,								0,	wed_ExportApt		},
 {	NULL,					0,		0,								0,	0					},
 };
 
