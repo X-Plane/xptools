@@ -17,12 +17,14 @@ Planned functionality for WED 2.5 not yet included in the alpha versions
    - automatic creation of edge outlines for paved surfaces
 
 =======
-WED 2.5.0b5
+WED 2.5.0b5 11/27/22
    Bug fix:
    - rendering objects with LINES followd by TRIS in the same LOD caused artefacts
    - fix library list non-expandable items, missing 2nd column on macOS
    - fix white-out in preferences window on macOS
    - fix shading in library preview pane
+   X-Plane 12 features:
+   - apply the scenery gateway upgrade heuristics when exporting to scenery for the gateway target
 
 WED 2.5.0b4 9/21/22
    Bug fix:
