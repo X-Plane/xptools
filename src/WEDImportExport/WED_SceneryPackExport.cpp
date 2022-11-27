@@ -110,8 +110,6 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 	int added_country_codes = 0;
 	int grass_statistics[4] = { 0 };
 
-//	auto climate_map = LoadAirportClimates();
-
 	auto t0 = chrono::high_resolution_clock::now();
 
 	for (auto apt_itr = apts.begin(); apt_itr != apts.end(); ++apt_itr)
@@ -418,7 +416,12 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		//  measureds by the scenery ID (i.e. a cutoff point in time after which ONLY Xp12 ready sceneries were accepted) 
 		// or presence of certain, XP12 only art assets
 		//
+#if TYLER_MODE
 		if ((*apt_itr)->GetSceneryID() < 99000 && terFX.empty() && pavFX.empty())
+#else   // artists exporting to GW target at home. They want to see what happens AFTER their scenery is submitted., i.e. when its a "X-Plane 12 submission".
+		// we likely want to do these deletions when IMPORTING from the GW or even on the GW itself - so this GUNK doesn't get reintroduced by ignorant artists
+		if (false)
+#endif
 		{
 			// nuke all large terrain polygons unless at high lattitudes (cuz there is no gobal scenery there ...)
 			if (apt_box.p1.y() < 73.0 && apt_box.p1.y() > -60.0)
@@ -503,7 +506,6 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				wrl->CommitCommand();
 				LOG_MSG("I/XP12 Deleted %d Exclusions at %s\n", (int) exclusions.size() + reduced_ex, ICAO_code.c_str());
 			}
-
 			// nuke all per-airport flatten
 			AptInfo_t apt_info;
 			(*apt_itr)->Export(apt_info);
@@ -517,7 +519,6 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				LOG_MSG("I/XP12 Deleted Always Flatten at %s\n", ICAO_code.c_str());
 			}
 		}
-
 #endif
 #if TYLER_MODE
 		double percent_done = (double)distance(apts.begin(), apt_itr) / apts.size() * 100;
