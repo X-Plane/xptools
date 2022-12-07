@@ -98,8 +98,11 @@
 // This enables curved ATC taxiways - feature is NOT done yet or offical so, like, don't use it.
 #define HAS_CURVED_ATC_ROUTE 0
 
-// Load DDS textures directly into GPU w/o de- & re-compressing
+// Load BC1-BC5 textures in DDS format directly into GPU w/o de- & re-compressing
 #define LOAD_DDS_DIRECT 1
+
+// Load BC1-BC5 textures in KTX2 format directly into GPU
+#define LOAD_KTX2_DIRECT 1
 
 // This enables direct import of 7z compressed dsf's.
 #define USE_7Z 1

@@ -87,11 +87,13 @@ struct	ImageInfo {
 	#if APL
 		#include <libkern/OSByteOrder.h>
 		#define SWAP32(x) (OSSwapConstInt32(x))
-	#else
+		#define SWAP64(x) (OSSwapConstInt64(x))
+#else
 		#error we do not have big endian support on non-Mac platforms
 	#endif
 #elif LIL
 	#define SWAP32(x) (x)
+	#define SWAP64(x) (x)
 #else
 	#error BIG or LIL are not defined - what endian are we?
 #endif

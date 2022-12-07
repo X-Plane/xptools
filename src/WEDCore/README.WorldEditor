@@ -17,6 +17,11 @@ Planned functionality for WED 2.5 not yet included in the alpha versions
    - automatic creation of edge outlines for paved surfaces
 
 =======
+WED 2.5.0r1 12/01/22
+   Bug fix:
+   - fix Linux w/Mesa driver not showing Library previews
+   - enable KTX2 loader
+
 WED 2.5.0b5 11/27/22
    Bug fix:
    - rendering objects with LINES followd by TRIS in the same LOD caused artefacts
