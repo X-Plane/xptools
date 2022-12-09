@@ -461,6 +461,7 @@ void draw_agp_at_ll(ITexMgr * tman, const agp_t * agp, const Point2& loc, float 
 const struct { const char * name; int group_lo;  int group_hi; }	kGroupNames[] = {
 	"terrain",		group_Terrain,			group_Terrain,
 	"beaches",		group_Beaches,			group_Beaches,
+	"unpaved_runways",		group_UnpavedRunwaysBegin,		group_UnpavedRunwaysEnd,
 	"shoulders",	group_ShouldersBegin,	group_ShouldersEnd,
 	"taxiways",		group_TaxiwaysBegin,	group_TaxiwaysEnd,
 	"runways",		group_RunwaysBegin,		group_RunwaysEnd,
@@ -1918,8 +1919,12 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		WED_Runway * rwy = SAFE_CAST(WED_Runway,entity);
 		if(rwy)
 		{
-			mPreviewItems.push_back(new preview_runway(rwy,mRunwayLayer++,0,GetResolver()));
-			mPreviewItems.push_back(new preview_runway(rwy,mShoulderLayer++,1,GetResolver()));
+			if(rwy->GetSurface() >= surf_Grass)
+				mPreviewItems.push_back(new preview_runway(rwy, (mRunwayLayer++) - group_RunwaysBegin + group_UnpavedRunwaysBegin , 0, GetResolver()));
+			else
+				mPreviewItems.push_back(new preview_runway(rwy, mRunwayLayer++, 0, GetResolver()));
+
+			mPreviewItems.push_back(new preview_runway(rwy, mShoulderLayer++, 1, GetResolver()));
 		}
 	}
 	else if (sub_class == WED_Helipad::sClass)
