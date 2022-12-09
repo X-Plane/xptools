@@ -54,6 +54,7 @@ public:
 
 			int			GetNumWallChoices(void) const;
 			int			GetType(void) const;
+	const vector<float>	GetHeightChoices(void) const;
 			bool		HasCustomWalls(void) const;
 			void		SetCustomWalls(bool has);
 

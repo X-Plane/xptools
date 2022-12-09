@@ -61,6 +61,7 @@
 #include "WED_DSFImport.h"
 #include "WED_Group.h"
 #include "WED_MetadataUpdate.h"
+#include "WED_MetaDataDefaults.h"
 #include "WED_UIDefs.h"
 //---------------
 
@@ -606,7 +607,6 @@ void WED_GatewayImportDialog::TimerFired()
 						for (int i = 0; i < mSpecificBufs.size(); i++)
 						{
 							last_imported = ImportSpecificVersion(mSpecificBufs[i]);
-
 							//We completely abort if _anything_ goes wrong
 							if(last_imported == NULL)
 							{
@@ -614,6 +614,7 @@ void WED_GatewayImportDialog::TimerFired()
 								this->AsyncDestroy();//All done!
 								return;
 							}
+							add_iso3166_country_metadata(*last_imported, true);
 						}
 
 						//Set the current airport in the sense of "WED's current airport"
@@ -623,11 +624,9 @@ void WED_GatewayImportDialog::TimerFired()
 						ISelection * sel = WED_GetSelect(mResolver);
 						sel->Clear();
 						sel->Insert(last_imported);
-
-						//Zoom to the airport
 						mMapPane->ZoomShowSel();
-
 						wrl->CommitOperation();
+
 						this->AsyncDestroy();//All done!
 						return;
 					}

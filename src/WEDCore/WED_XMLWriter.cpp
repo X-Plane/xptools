@@ -366,7 +366,7 @@ WED_XMLElement *		WED_XMLElement::add_or_find_sub_element(const char * name)
 	DebugAssert(!flushed);
 	string n(name);
 	for(int i = 0; i < children.size(); ++i)
-	if(children[i]->name == n)
+	if(n == children[i]->name)
 		return children[i];
 		
 	WED_XMLElement * child = new WED_XMLElement(name, indent + 2, file);

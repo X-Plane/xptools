@@ -7,7 +7,7 @@ CFLAGS		+= -include ./src/Obj/XDefs.h
 CXXFLAGS	+= -include ./src/Obj/XDefs.h
 #FORCEREBUILD_SUFFIX := _xg
 
-LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
+LIBS		:= -lz
 
 ifdef PLAT_LINUX
 #LDFLAGS	+= -nodefaultlibs
@@ -61,5 +61,4 @@ SOURCES += ./src/Utils/FileUtils.cpp
 SOURCES += ./src/GUI/GUI_Unicode.cpp
 SOURCES += ./src/Utils/unzip.c
 SOURCES += ./src/XPTools/XGrinderShell.cpp
-
 

@@ -33,25 +33,34 @@ class	ITexMgr;
 // We need int values for layer groups - these weird numbers actually came out of X-Plane's internal engine...who knew.
 // The important thing is that the spacing is enough to ensure separation even when we have lots of runways or taxiways.
 enum {
-	group_Terrain	= 5,
-	group_Beaches	= 25,
+	group_Terrain        = 1,        // no negative terrain offsets, positive up to + 9
+	group_Beaches        = 20,       // good for +/- 9 offset
 
-	group_AirportsBegin	= 60,
-		group_ShouldersBegin = 70,
-		group_ShouldersEnd = 90,
-		group_TaxiwaysBegin = 100,
-		group_TaxiwaysEnd = 1000,
-		group_RunwaysBegin = 1100,
-		group_RunwaysEnd = 1900,
+	group_AirportsBegin	 = 40,       // only negative offsets here
 
-		group_Markings = 1920,
+//	group_UnpavedTaxiwaysBegin = 50,
+//	group_UnpavedTaxiwaysEnd = 70,
 
-	group_AirportsEnd = 1930,
+	group_UnpavedRunwaysBegin = 80,
+	group_UnpavedRunwaysEnd = 100,
 
-	group_Footprints	= 1940,
-	group_Roads			= 1950,
-	group_Objects		= 1960,
-	group_LightObjects	= 1965,
+	group_ShouldersBegin = 120,
+	group_ShouldersEnd   = 140,
+	
+	group_TaxiwaysBegin  = 160,      // max 1000 taxiways PLUS +/- 9 offset
+	group_TaxiwaysEnd    = 1160,
+	
+	group_RunwaysBegin   = 1180,     // max 20 runways PLUS +/- 9 offset
+	group_RunwaysEnd     = 1200,
+
+	group_Markings       = 1220,     // good for +/- 9 offset
+
+	group_AirportsEnd    = 1230,     // only positive offsets here
+
+	group_Footprints	 = 1250,
+	group_Roads          = 1270,
+	group_Objects        = 1290,
+	group_LightObjects   = 1310,
 };
 
 // To draw the preview in X-Plane draw order, we build a draw-obj functor for each item, sort them, then draw.

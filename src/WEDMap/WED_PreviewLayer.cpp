@@ -461,6 +461,7 @@ void draw_agp_at_ll(ITexMgr * tman, const agp_t * agp, const Point2& loc, float 
 const struct { const char * name; int group_lo;  int group_hi; }	kGroupNames[] = {
 	"terrain",		group_Terrain,			group_Terrain,
 	"beaches",		group_Beaches,			group_Beaches,
+	"unpaved_runways",		group_UnpavedRunwaysBegin,		group_UnpavedRunwaysEnd,
 	"shoulders",	group_ShouldersBegin,	group_ShouldersEnd,
 	"taxiways",		group_TaxiwaysBegin,	group_TaxiwaysEnd,
 	"runways",		group_RunwaysBegin,		group_RunwaysEnd,
@@ -1280,11 +1281,11 @@ struct	preview_facade : public preview_polygon {
 					b1 += dir.perpendicular_ccw() * 2.5;         // place the 'serviced area' indication about at the cabin baffle location
 
 					glBegin(GL_TRIANGLE_FAN);
-						dir.rotate_by_degrees(-10);
+						dir.rotate_by_degrees(-15);
 						glVertex2(b1 + dir * extension_max);
 						glVertex2(b1 + dir * extension_min);
-						const int stepsize = 5;
-						const int arc_angle = 40 + 10;
+						const int stepsize = 10;
+						const int arc_angle = 45 + 15;
 						for (int i = 0; i < arc_angle; i += stepsize)
 						{
 							dir.rotate_by_degrees(stepsize);
@@ -1484,8 +1485,11 @@ struct	preview_object : public WED_PreviewItem {
 
 		float agl = obj->HasCustomMSL() > 1 ? obj->GetCustomMSL() : 0.0;
 
-		if(rmgr->GetObj(vpath, o))
-			draw_obj_at_ll(tman,   o, loc, agl, obj->GetHeading(), g, zoomer);
+		if (rmgr->GetObj(vpath, o))
+		{
+			draw_obj_at_ll(tman, o, loc, agl, obj->GetHeading() + zoomer->GetRotation(loc), g, zoomer);
+//			draw_obj_at_ll(tman, o, loc, agl, obj->GetHeading(), g, zoomer);
+		}
 		else if (rmgr->GetAGP(vpath, agp))
 			draw_agp_at_ll(tman, agp, loc, agl, obj->GetHeading(), g, zoomer, preview_level);
 		else
@@ -1644,24 +1648,26 @@ struct	preview_truck : public WED_PreviewItem {
 		ILibrarian * lmgr = WED_GetLibrarian(resolver);
 		string vpath1, vpath2;
 
-		switch(trk->GetTruckType()) {
-		case atc_ServiceTruck_Baggage_Loader:		vpath1 = "lib/airport/vehicles/baggage_handling/belt_loader.obj";break;
-		case atc_ServiceTruck_Baggage_Train:		vpath1 = "lib/airport/vehicles/baggage_handling/tractor.obj";
-													vpath2 = "lib/airport/vehicles/baggage_handling/bag_cart.obj";	break;
-		case atc_ServiceTruck_Crew_Limo:
-		case atc_ServiceTruck_Crew_Car:				vpath1 = "lib/airport/vehicles/servicing/crew_car.obj";			break;
-		case atc_ServiceTruck_Crew_Ferrari:			vpath1 = "lib/airport/vehicles/servicing/crew_ferrari.obj";		break;
-		case atc_ServiceTruck_Food:					vpath1 = "lib/airport/vehicles/servicing/catering_truck.obj";	break;
-		case atc_ServiceTruck_FuelTruck_Jet:		vpath1 = "lib/airport/vehicles/servicing/fuel_truck_large.obj";	break;
-		case atc_ServiceTruck_FuelTruck_Liner:		vpath1 = "lib/airport/vehicles/fuel/hyd_disp_truck.obj";		break;
-		case atc_ServiceTruck_FuelTruck_Prop:		vpath1 = "lib/airport/vehicles/servicing/fuel_truck_small.obj";	break;
-		case atc_ServiceTruck_Ground_Power_Unit:	vpath1 = "lib/airport/vehicles/baggage_handling/tractor.obj";
-													vpath2 = "lib/airport/vehicles/servicing/GPU.obj";				break;
-		case atc_ServiceTruck_Pushback:				vpath1 = "lib/airport/vehicles/pushback/tug.obj";				break;
-		}
+		vpath1 = trk->GetTruckCustom();
+		if(vpath1.empty())
+			switch(trk->GetTruckType()) 
+			{
+			case atc_ServiceTruck_Baggage_Loader:		vpath1 = "lib/airport/vehicles/baggage_handling/belt_loader.obj";break;
+			case atc_ServiceTruck_Baggage_Train:		vpath1 = "lib/airport/vehicles/baggage_handling/tractor.obj";
+														vpath2 = "lib/airport/vehicles/baggage_handling/bag_cart.obj";	break;
+			case atc_ServiceTruck_Crew_Limo:
+			case atc_ServiceTruck_Crew_Car:				vpath1 = "lib/airport/vehicles/servicing/crew_car.obj";			break;
+			case atc_ServiceTruck_Crew_Ferrari:			vpath1 = "lib/airport/vehicles/servicing/crew_ferrari.obj";		break;
+			case atc_ServiceTruck_Food:					vpath1 = "lib/airport/vehicles/servicing/catering_truck.obj";	break;
+			case atc_ServiceTruck_FuelTruck_Jet:		vpath1 = "lib/airport/vehicles/servicing/fuel_truck_large.obj";	break;
+			case atc_ServiceTruck_FuelTruck_Liner:		vpath1 = "lib/airport/vehicles/fuel/hyd_disp_truck.obj";		break;
+			case atc_ServiceTruck_FuelTruck_Prop:		vpath1 = "lib/airport/vehicles/servicing/fuel_truck_small.obj";	break;
+			case atc_ServiceTruck_Ground_Power_Unit:	vpath1 = "lib/airport/vehicles/baggage_handling/tractor.obj";
+														vpath2 = "lib/airport/vehicles/servicing/GPU.obj";				break;
+			case atc_ServiceTruck_Pushback:				vpath1 = "lib/airport/vehicles/pushback/tug.obj";				break;
+			}
 
 		const XObj8 * o1 = NULL, * o2 = NULL;
-		agp_t agp;
 		if(!vpath1.empty() && rmgr->GetObj(vpath1,o1))
 		{
 			g->SetState(false,1,false,true,true,true,true);
@@ -1913,8 +1919,12 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		WED_Runway * rwy = SAFE_CAST(WED_Runway,entity);
 		if(rwy)
 		{
-			mPreviewItems.push_back(new preview_runway(rwy,mRunwayLayer++,0,GetResolver()));
-			mPreviewItems.push_back(new preview_runway(rwy,mShoulderLayer++,1,GetResolver()));
+			if(rwy->GetSurface() >= surf_Grass)
+				mPreviewItems.push_back(new preview_runway(rwy, (mRunwayLayer++) - group_RunwaysBegin + group_UnpavedRunwaysBegin , 0, GetResolver()));
+			else
+				mPreviewItems.push_back(new preview_runway(rwy, mRunwayLayer++, 0, GetResolver()));
+
+			mPreviewItems.push_back(new preview_runway(rwy, mShoulderLayer++, 1, GetResolver()));
 		}
 	}
 	else if (sub_class == WED_Helipad::sClass)

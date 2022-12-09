@@ -28,7 +28,6 @@
 #endif
 
 #include "XObjReadWrite.h"
-#include "ObjConvert.h"
 #include "CompGeomDefs2.h"
 #include "CompGeomDefs3.h"
 #include "XESConstants.h"
@@ -614,7 +613,7 @@ void height_desc_for_facade(const fac_info_t& info, string& h_decription)
 		for(const auto& f : info.floors)
 			if(f.roofs.size())
 			{
-				heights.push_back(f.roofs.back().roof_height);
+				heights.push_back(roundf(f.roofs.back().roof_height));
 			}
 
 		if(heights.size()  > 1)
@@ -990,6 +989,8 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 						const_cast<int&>(m.idx_cnt) = m.idx.size();
 						for (auto i : m.idx)
 							idx.push_back(i);
+						const_cast<vector<int>&>(m.idx).clear();          // release RAM since its now in VRAM
+						const_cast<vector<int>&>(m.idx).shrink_to_fit();
 						const_cast<int&>(m.mesh_start) = vert.size();
 						int ni = m.xyz.size() / 3;
 						for (int ind = 0; ind < ni; ++ind)
@@ -1290,7 +1291,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 					new_pts.push_back(Point2(interp(ab_use[0], info.roof_st[0], ab_use[2], info.roof_st[2], dirVec.dot(Vector2(p))  + dirDot ),
 					                         interp(ab_use[1], info.roof_st[1], ab_use[3], info.roof_st[3], perpVec.dot(Vector2(p)) + perpDot)));
 				}
-				glPolygon2(new_pts, true, vector<int>(), roof_height);
+				glPolygon2(new_pts, true, vector<int>(), true, roof_height);
 			}
 			else if(!info.noroofmesh)  // type 2 facades
 			{
@@ -1325,7 +1326,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 				do
 				{
 					vector<Point2> new_pts; new_pts.reserve(roof_pts.size()*2);
-					for(auto p: roof_pts)
+					for(const auto& p: roof_pts)
 					{
 						new_pts.push_back(p);
 						new_pts.push_back(Point2( (dirVec.dot(Vector2(p))   + dirDot)  / info.roof_scale_s,
@@ -1335,7 +1336,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 						glDisable(GL_CULL_FACE);
 					else
 						glEnable(GL_CULL_FACE);
-					glPolygon2(new_pts, true, vector<int>(), roof_height);
+					glPolygon2(new_pts, true, vector<int>(), true, roof_height);
 					
 					xtra_roofs--;
 					if(xtra_roofs >= 0)

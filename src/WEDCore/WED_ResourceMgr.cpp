@@ -31,7 +31,7 @@
 
 #include "MemFileUtils.h"
 #include "XObjReadWrite.h"
-#include "ObjConvert.h"
+//#include "ObjConvert.h"
 #include "FileUtils.h"
 #include "WED_PackageMgr.h"
 #include "CompGeomDefs2.h"
@@ -140,16 +140,8 @@ XObj8 * WED_ResourceMgr::LoadObj(const string& abspath)
 	XObj8 * new_obj = new XObj8;
 	if(!XObj8Read(abspath.c_str(),*new_obj))
 	{
-		XObj obj7;
-		if(XObjRead(abspath.c_str(),obj7))
-		{
-			Obj7ToObj8(obj7,*new_obj);
-		}
-		else
-		{
-			delete new_obj;
-			return nullptr;
-		}
+		delete new_obj;
+		return nullptr;
 	}
 	for (auto& l : new_obj->lods)  // balance begin/end_annimation in broken assets to fix display artefacts due to imbalanced glPush/PopMatrix()
 	{

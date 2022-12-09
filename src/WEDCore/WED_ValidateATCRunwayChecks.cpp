@@ -940,15 +940,41 @@ static void TJunctionCrossingTest(const TaxiRouteInfoVec_t& all_taxiroutes, vali
 					if the distance between A and the end node you are testing is < M meters
 						validation failure - that node is too close to a taxiway route but isn't joined.
 	*/
-	const double TJUNCTION_THRESHOLD = 1.00;
-	const double ZERO_LENGTH_THRESHOLD = 1.00;
+	#define TJUNCTION_THRESHOLD_TRUCKS  5.0
+	#define TJUNCTION_THRESHOLD_AC_REL  0.6
 
-	set<WED_TaxiRoute *> crossing_edges, short_edges;
+	#define SHORT_THRESHOLD_TRUCKS   5.0
+	#define SHORT_THRESHOLD_AC_SM	 7.0
+	#define SHORT_THRESHOLD_AC		10.0
+	#define SHORT_THRESHOLD_AC_LG	20.0
+	#define STR(s) #s
+	
+	set<WED_TaxiRoute *> crossing_edges, short_edgesAB, short_edgesC, short_edgesDEF, short_edgesT;
 	for (auto tr_a = all_taxiroutes.cbegin(); tr_a != all_taxiroutes.cend(); ++tr_a)
 	{
 		Segment2 edge_a = tr_a->segment_m;
-		if (Vector2(edge_a.p1, edge_a.p2).squared_length() < ZERO_LENGTH_THRESHOLD * ZERO_LENGTH_THRESHOLD)
-			short_edges.insert(tr_a->ptr);
+		double length_sq = edge_a.squared_length();
+		if (tr_a->is_aircraft_route)
+		{
+			switch (tr_a->ptr->GetWidth())
+			{
+				case width_A:
+				case width_B:
+					if (length_sq < SHORT_THRESHOLD_AC_SM * SHORT_THRESHOLD_AC_SM)
+						short_edgesAB.insert(tr_a->ptr);
+					break;
+				case width_C:
+					if (length_sq < SHORT_THRESHOLD_AC * SHORT_THRESHOLD_AC)
+						short_edgesC.insert(tr_a->ptr);
+					break;
+				default:
+					if (length_sq < SHORT_THRESHOLD_AC_LG * SHORT_THRESHOLD_AC_LG)
+						short_edgesDEF.insert(tr_a->ptr);
+					break;
+			}
+		}
+		else if (length_sq < SHORT_THRESHOLD_TRUCKS * SHORT_THRESHOLD_TRUCKS)
+					short_edgesT.insert(tr_a->ptr);
 
 		for (auto tr_b = tr_a + 1; tr_b != all_taxiroutes.end(); ++tr_b)
 		{
@@ -971,7 +997,22 @@ static void TJunctionCrossingTest(const TaxiRouteInfoVec_t& all_taxiroutes, vali
 			{
 				// its also worth changing this to Bezier2.is_near() to prepare for future curved edges
 				double dist_b_node_to_a_edge = i ? edge_a.squared_distance(edge_b.p2) : edge_a.squared_distance(edge_b.p1);
-				if (dist_b_node_to_a_edge < TJUNCTION_THRESHOLD * TJUNCTION_THRESHOLD)
+				double dist_min;
+				if (tr_a->is_aircraft_route)
+				{
+					switch (tr_a->ptr->GetWidth())
+					{
+					case width_A: dist_min = 4.5 * TJUNCTION_THRESHOLD_AC_REL; break;
+					case width_B: dist_min = 6.0 * TJUNCTION_THRESHOLD_AC_REL; break;
+					case width_C: dist_min = 9.0 * TJUNCTION_THRESHOLD_AC_REL; break;
+					case width_D: dist_min = 14.0 * TJUNCTION_THRESHOLD_AC_REL; break;
+					case width_E: dist_min = 14.0 * TJUNCTION_THRESHOLD_AC_REL; break;
+					case width_F: dist_min = 16.0 * TJUNCTION_THRESHOLD_AC_REL; break;
+					}
+				}
+				else              dist_min = TJUNCTION_THRESHOLD_TRUCKS;
+
+				if (dist_b_node_to_a_edge < dist_min * dist_min)
 				{
 					set<WED_Thing*> node_viewers;
 					tr_b->nodes[i]->GetAllViewers(node_viewers);
@@ -982,12 +1023,25 @@ static void TJunctionCrossingTest(const TaxiRouteInfoVec_t& all_taxiroutes, vali
 						problem_children.push_back(tr_a->ptr);
 						problem_children.push_back(tr_b->nodes[i]);
 
-						msgs.push_back(validation_error_t("Taxi route " + tr_a->name + " is not joined to a destination route.",
-												err_taxi_route_not_joined_to_dest_route, problem_children, apt));
+						msgs.push_back(validation_error_t("Taxi route " + tr_a->name + " is not joined to destination route.",
+								err_taxi_route_not_joined_to_dest_route, problem_children, apt));
 					}
 				}
 				double dist_a_node_to_b_edge = i ? edge_b.squared_distance(edge_a.p2) : edge_b.squared_distance(edge_a.p1);
-				if (dist_a_node_to_b_edge < TJUNCTION_THRESHOLD * TJUNCTION_THRESHOLD)
+				if (tr_b->is_aircraft_route)
+				{
+					switch (tr_b->ptr->GetWidth())
+					{
+					case width_A: dist_min = 4.5 * TJUNCTION_THRESHOLD_AC_REL; break;
+					case width_B: dist_min = 6.0 * TJUNCTION_THRESHOLD_AC_REL; break;
+					case width_C: dist_min = 9.0 * TJUNCTION_THRESHOLD_AC_REL; break;
+					case width_D: dist_min = 14.0 * TJUNCTION_THRESHOLD_AC_REL; break;
+					case width_E: dist_min = 14.0 * TJUNCTION_THRESHOLD_AC_REL; break;
+					case width_F: dist_min = 16.0 * TJUNCTION_THRESHOLD_AC_REL; break;
+					}
+				}
+				else              dist_min = TJUNCTION_THRESHOLD_TRUCKS;
+				if (dist_a_node_to_b_edge < dist_min * dist_min)
 				{
 					set<WED_Thing*> node_viewers;
 					tr_a->nodes[i]->GetAllViewers(node_viewers);
@@ -999,18 +1053,27 @@ static void TJunctionCrossingTest(const TaxiRouteInfoVec_t& all_taxiroutes, vali
 						problem_children.push_back(tr_a->nodes[i]);
 
 						msgs.push_back(validation_error_t("Taxi route " + tr_b->name + " is not joined to a destination route.",
-							err_taxi_route_not_joined_to_dest_route, problem_children, apt));
+								err_taxi_route_not_joined_to_dest_route, problem_children, apt));
 					}
 				}
 			}
 		}
 	}
-	if(!crossing_edges.empty())
+	for(auto e : crossing_edges)
 		msgs.push_back(validation_error_t("Airport contains crossing ATC routing lines with no node at the crossing point."
-										  " Split the lines and join the nodes.", err_airport_ATC_network, crossing_edges, apt));
-	if(!short_edges.empty())
-		msgs.push_back(validation_error_t("Airport contains zero-length ATC routing lines. xx These should be deleted.",
-										   err_taxi_route_zero_length, short_edges, apt));
+										  " Split the lines and join the nodes.", err_airport_ATC_network, e, apt));
+	for (auto e : short_edgesAB)
+		msgs.push_back(validation_error_t(string("Airport contains short (<") + to_string((int)SHORT_THRESHOLD_AC_SM) + "m) Taxi route segment(s).",
+			err_taxi_route_zero_length, e, apt));
+	for (auto e : short_edgesC)
+			msgs.push_back(validation_error_t(string("Airport contains short (<") + to_string((int) SHORT_THRESHOLD_AC) + "m) Taxi route segment(s).",
+				err_taxi_route_zero_length, e, apt));
+	for (auto e : short_edgesDEF)
+		msgs.push_back(validation_error_t(string("Airport contains short (<") + to_string((int) SHORT_THRESHOLD_AC_LG) + "m) Taxi route segment(s).",
+			err_taxi_route_zero_length, e, apt));
+	for (auto e : short_edgesT)
+		msgs.push_back(validation_error_t(string("Airport contains short (<") + to_string((int) SHORT_THRESHOLD_TRUCKS) + "m) Truck route segment(s).",
+			err_taxi_route_zero_length, e, apt));
 }
 
 static void TestInvalidHotZOneTags(const TaxiRouteInfoVec_t& taxi_routes, const set<int>& legal_rwy_oneway, const set<int>& legal_rwy_twoway,

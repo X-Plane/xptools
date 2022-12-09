@@ -78,7 +78,7 @@ void CollectRecursive(WED_Thing * thing, OutputIterator oi, VisibilityPred visib
 
 	if (visibility_pred(thing))
 	{
-		if (sClass == "" || sClass == thing->GetClass())
+		if (*sClass == '\0' || sClass == thing->GetClass())
 		{
 			if (take_pred(thing) == true )
 			{

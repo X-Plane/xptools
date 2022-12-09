@@ -328,21 +328,21 @@ void dsf_road_grid_helper::add_segment(WED_RoadEdge * e, const Bbox2& cull_bound
 				if(si == m_node_index.end())
 				{
 					new_edge.start_node = m_nodes.size();
-					si = m_node_index.insert(make_pair(gp_start, m_nodes.size())).first;
+					si = m_node_index.insert(make_pair(gp_start, (int) m_nodes.size())).first;
 					m_nodes.push_back(node());
 				}
 				else
 				{
 					new_edge.start_node = si->second;
 				}
-				m_nodes[si->second].edges.push_back(m_edges.size());
+				m_nodes[si->second].edges.push_back((int) m_edges.size());
 			}
 			else											//start point is new after culling , creating new own node
 			{
 				new_edge.start_level = e->GetEndLayer();    // ToDo: mroe: revisit , using original endlayer for every newly split node
 				new_edge.start_node = m_nodes.size();
 				m_nodes.push_back(node());
-				m_nodes[m_nodes.size()-1].edges.push_back(m_edges.size());
+				m_nodes[m_nodes.size()-1].edges.push_back((int) m_edges.size());
 			}
 
 			if( new_edge.path.back().p2 == ep)							//end point is unchanged , not cutted
@@ -352,21 +352,21 @@ void dsf_road_grid_helper::add_segment(WED_RoadEdge * e, const Bbox2& cull_bound
 				if(ei == m_node_index.end())
 				{
 					new_edge.end_node = m_nodes.size();
-					ei = m_node_index.insert(make_pair(gp_end, m_nodes.size())).first;
+					ei = m_node_index.insert(make_pair(gp_end, (int) m_nodes.size())).first;
 					m_nodes.push_back(node());
 				}
 				else
 				{
 					new_edge.end_node = ei->second;
 				}
-				m_nodes[ei->second].edges.push_back(m_edges.size());
+				m_nodes[ei->second].edges.push_back((int) m_edges.size());
 			}
 			else											//end point is new after culling , creating new own node
 			{
 				new_edge.end_level = e->GetEndLayer();
 				new_edge.end_node = m_nodes.size();
 				m_nodes.push_back(node());
-				m_nodes[m_nodes.size()-1].edges.push_back(m_edges.size());
+				m_nodes[m_nodes.size()-1].edges.push_back((int) m_edges.size());
 			}
 
 			m_edges.push_back(new_edge);
@@ -594,7 +594,7 @@ struct	DSF_ResourceTable {
 			}
 			if(i == net_defs_idx.end())
 			{
-				net_defs_idx[make_pair(f, idx)] = make_pair(net_defs.size(), dsf_road_grid_helper());
+				net_defs_idx[make_pair(f, idx)] = make_pair((int) net_defs.size(), dsf_road_grid_helper());
 				net_defs.push_back(f);
 			}
 			else
@@ -2129,8 +2129,8 @@ static int	DSF_ExportTileRecursive(
 						{
 							if(DDSInfo.channels == 3)
 								ConvertBitmapToAlpha(&DDSInfo,false);
-							int DXTMethod = hasPartialTransparency(&DDSInfo) ? 5 : 1;
-							WriteBitmapToDDS_MT(DDSInfo, DXTMethod, absPathDDS.c_str());
+							int BCMethod = hasPartialTransparency(&DDSInfo) ? 3 : 1;
+							WriteBitmapToDDS_MT(DDSInfo, BCMethod, absPathDDS.c_str(), mip_filter_box);
 						}
 						else
 							WriteBitmapToPNG(&DDSInfo, absPathDDS.c_str(), NULL, 0, 2.2);
@@ -2388,11 +2388,7 @@ int DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, se
 	for (int y = tile_south; y < tile_north; ++y)
 	{
 #if TYLER_MODE
-		if(y % 5 == 0)
-		{
-			LOG_MSG("Exporting DSF's at lattitudes %d to %d\n", y, y + 4);
-			LOG_FLUSH();
-		}
+		printf("Exporting DSF's at lattitude %d\n", y);
 #endif
 		for (int x = tile_west; x < tile_east; ++x)
 		{

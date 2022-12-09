@@ -38,7 +38,8 @@
                               // tested a large scenery (900 apts on US east coast, 1.2 Million items, 1 GB memory usage) and moved 
 										// the whole thing 10x - that is barely 200MB of undo buffer. No need to keep track of its size for now.
 
-WED_UndoMgr::WED_UndoMgr(WED_Archive * inArchive, WED_UndoFatalErrorHandler * panic_handler) : mCommand(NULL), mArchive(inArchive), mPanicHandler(panic_handler)
+WED_UndoMgr::WED_UndoMgr(WED_Archive * inArchive, WED_UndoFatalErrorHandler * panic_handler) 
+	: mCommand(NULL), mArchive(inArchive), mPanicHandler(panic_handler), mUndoSinceMark(-1)
 {
 }
 
@@ -106,6 +107,7 @@ void	WED_UndoMgr::CommitCommand(void)
 	int change_mask = mCommand->GetChangeMask();
 	mCommand = NULL;
 	mArchive->BroadcastMessage(msg_ArchiveChanged,change_mask);
+	if (mUndoSinceMark >= 0)  mUndoSinceMark++;
 }
 
 void	WED_UndoMgr::AbortCommand(void)
@@ -122,6 +124,33 @@ void	WED_UndoMgr::AbortCommand(void)
 bool	WED_UndoMgr::HasUndo(void) const
 {
 	return !mUndo.empty();
+}
+
+void	WED_UndoMgr::MarkUndo(void)
+{
+	mUndoSinceMark = 0;
+}
+
+bool	WED_UndoMgr::UndoToMark(void)
+{
+	if (mUndoSinceMark < 0)
+	{
+		LOG_MSG("I/Undo UndoToMark fail for no mark set");
+		return true;
+	}
+
+	while (mUndoSinceMark > 0)
+	{
+		Undo();
+
+		if (mUndoSinceMark && mUndo.empty())
+		{
+			LOG_MSG("I/Undo hit end of buffer before hitting mark, %d ops not undone", mUndoSinceMark);
+			mUndoSinceMark = -1;
+			return true;
+		}
+	}
+	return false;
 }
 
 bool	WED_UndoMgr::HasRedo(void) const
@@ -156,6 +185,7 @@ void	WED_UndoMgr::Undo(void)
 	mArchive->mOpCount--;
 	mArchive->mCacheKey++;
 	mArchive->BroadcastMessage(msg_ArchiveChanged,change_mask);
+	if (mUndoSinceMark >= 0)  mUndoSinceMark--;
 }
 
 void	WED_UndoMgr::Redo(void)
@@ -173,6 +203,7 @@ void	WED_UndoMgr::Redo(void)
 	mArchive->mOpCount++;
 	mArchive->mCacheKey++;
 	mArchive->BroadcastMessage(msg_ArchiveChanged,change_mask);
+	if (mUndoSinceMark >= 0)  mUndoSinceMark++;
 }
 
 void	WED_UndoMgr::PurgeUndo(void)
@@ -180,6 +211,7 @@ void	WED_UndoMgr::PurgeUndo(void)
 	for (LayerList::iterator l = mUndo.begin(); l != mUndo.end(); ++l)
 		delete *l;
 	mUndo.clear();
+	mUndoSinceMark = -1;
 }
 
 void	WED_UndoMgr::PurgeRedo(void)
@@ -191,6 +223,7 @@ void	WED_UndoMgr::PurgeRedo(void)
 
 bool	WED_UndoMgr::ReleaseMemory(void)
 {
+	mUndoSinceMark = -1;
 	if (mUndo.empty() && mRedo.empty()) return false;
 	if (mUndo.size() > WARN_IF_LESS_LEVEL)
 	{

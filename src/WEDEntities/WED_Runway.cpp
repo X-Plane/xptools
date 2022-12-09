@@ -53,10 +53,11 @@ WED_Runway::WED_Runway(WED_Archive * a, int i) : WED_GISLine_Width(a,i),
 	center_lites	(this,PROP_Name("Centerline Lights",	XML_Name("runway","center_lites")),	1),
 	edge_lites		(this,PROP_Name("Edge Lights",			XML_Name("runway","edge_lites")),	Edge_Lights,	edge_MIRL),
 	remaining_signs	(this,PROP_Name("Distance Signs",		XML_Name("runway","distance_signs")),1),
+#if ROWCODE_105
 	line_color		(this,PROP_Name("Yellow Markings",		XML_Name("runway","line_color")),	false),
 	line_size		(this,PROP_Name("Line Size",			XML_Name("runway","line_size")),	Marking_Size, mark_Auto),
 	number_size		(this,PROP_Name("Number Size",			XML_Name("runway","number_size")),	0.0, 4, 1),
-
+#endif
 	disp1			(this,PROP_Name("Displaced Threshold 1",XML_Name("runway","displaced1")),	0,6,1),
 	blas1			(this,PROP_Name("Blastpad 1",			XML_Name("runway","blastpad1")),	0,6,1),
 	mark1			(this,PROP_Name("Markings 1",			XML_Name("runway","markings1")),	Runway_Markings,mark_NonPrecis),
@@ -69,11 +70,14 @@ WED_Runway::WED_Runway(WED_Archive * a, int i) : WED_GISLine_Width(a,i),
 	mark2			(this,PROP_Name("Markings 2",			XML_Name("runway","markings2")),	Runway_Markings,mark_NonPrecis),
 	appl2			(this,PROP_Name("Approach Lights 2",	XML_Name("runway","app_lites2")),	Light_App,		app_MALSF),
 	tdzl2			(this,PROP_Name("TDZ Lights 2",			XML_Name("runway","TDZL2")),		1),
-	reil2			(this,PROP_Name("REIL strobes 2",		XML_Name("runway","REIL2")),		REIL_Lights,	reil_None),
+	reil2			(this,PROP_Name("REIL strobes 2",		XML_Name("runway","REIL2")),		REIL_Lights,	reil_None)
+#if ROWCODE_105
+	,
 	skids1			(this,PROP_Name("Skids Dens. 1",		XML_Name("runway","skids1")),		SKIDS_DEFAULT,4,2),
 	skid_len1		(this,PROP_Name("Skids Length 1",		XML_Name("runway","skid_len1")),	SKID_LEN_DEFAULT,4,2),
 	skids2			(this,PROP_Name("Skids Dens. 2",		XML_Name("runway","skids2")),		SKIDS_DEFAULT,4,2),
 	skid_len2		(this,PROP_Name("Skids Length 2",		XML_Name("runway","skid_len2")),	SKID_LEN_DEFAULT,4,2)
+#endif
 {
 }
 
@@ -353,12 +357,16 @@ double		WED_Runway::GetRoughness(void) const { return roughness.value; }
 
 bool		WED_Runway::GetMarkings(double skids[2]) const
 {
+#if ROWCODE_105
 	if((skids1 <= 0.0 || skid_len1 <= 0.0) && (skids2 <= 0.0 || skid_len2 <= 0.0))
 		return false;
 
 	skids[0] = skids1;
 	skids[1] = skids2;
 	return true;
+#else
+	return false;
+#endif
 }
 
 
@@ -455,6 +463,7 @@ void		WED_Runway::Import(const AptRunway_t& x, void (* print_func)(void *, const
 		print_func(ref,"Error importing runway: high-end reil code %d is illegal (not a member of type %s).\n", x.reil_code[1], DOMAIN_Desc(reil2.domain));
 		reil2 = reil_None;
 	}
+#if ROWCODE_105
 	if(x.has_105)
 	{
 		line_color = x.mark_color;
@@ -465,6 +474,7 @@ void		WED_Runway::Import(const AptRunway_t& x, void (* print_func)(void *, const
 		skids2 = x.skids[1];
 		skid_len2 = x.skid_len[1];
 	}
+#endif
 }
 
 void		WED_Runway::Export(		 AptRunway_t& x) const
@@ -507,10 +517,9 @@ void		WED_Runway::Export(		 AptRunway_t& x) const
 	x.app_light_code[1] = ENUM_Export(appl2.value);
 	x.has_tdzl		[1] =			  tdzl2		  ;
 	x.reil_code		[1] = ENUM_Export(reil2.value);
-
+#if ROWCODE_105
 	x.has_105 = skid_len1 != SKID_LEN_DEFAULT || skid_len2 != SKID_LEN_DEFAULT || skids1 != SKIDS_DEFAULT || skids2 != SKIDS_DEFAULT
 							|| x.mark_color != 0 || x.mark_size != mark_Auto || x.number_size > 0.0;
-
 	x.mark_color  = 0;
 	if (line_size.value != mark_Auto)
 		x.mark_size = ENUM_Export(line_size.value);
@@ -526,6 +535,9 @@ void		WED_Runway::Export(		 AptRunway_t& x) const
 	x.skid_len		[0] = 			skid_len1;
 	x.skids			[1] = 			skids2;
 	x.skid_len		[1] = 			skid_len2;
+#else
+	x.has_105 = false;
+#endif
 }
 
 

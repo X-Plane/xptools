@@ -65,6 +65,7 @@
 #include "WED_RoadEdge.h"
 #include "WED_RoadNode.h"
 #include "WED_Runway.h"
+#include "WED_Sealane.h"
 #include "WED_SimpleBezierBoundaryNode.h"
 #include "WED_TextureNode.h"
 #include "WED_TaxiRouteNode.h"
@@ -1656,10 +1657,10 @@ static bool is_ring_split(ISelection * sel, ring_split_info_t * info)
 			return false;
 
 		// the current also is limited to cuts from the outer ring to a hole
-		auto or = gp->GetOuterRing();
-		if (or != dynamic_cast<IGISPointSequence*>(c0))
+		auto o = gp->GetOuterRing();
+		if (o != dynamic_cast<IGISPointSequence*>(c0))
 		{
-			if (or != dynamic_cast<IGISPointSequence*>(c1))
+			if (o != dynamic_cast<IGISPointSequence*>(c1))
 				return false;
 			else
 			{
@@ -2789,7 +2790,7 @@ static void DoMakeRegularPoly(IGISPointSequence * seq )
 	//TODO: mroe : cannot find a good centerpoint , take this for now
 	Point2 ctr = pol.centroid();
 	//centri angle
-	double w = (2.0*PI) / n ;
+	double w = (2.0*M_PI) / n ;
 	//outer radius
 	double ru = (l/2.0) / sin(w/2.0);
 	if (pol.is_ccw()) w = -w;
@@ -4616,8 +4617,8 @@ static string get_regional_codes(const Point2& loc, int ac_size, int ops_type)
 		code = "aal ual dal ";
 		if(loc.x() < -150.0 && loc.y() > 10.0 && loc.y() < 40.0) // hawaii
 		{
-			if(ac_size > width_B) code += "hal swa ";
-			else                  code += "hal fdy wlc ";
+			if(ac_size > width_B) code += "hal swa asa ";
+			else                  code += "hal fdy ";
 		}
 		else if(loc.y() < 13.0)
 		{
@@ -4635,13 +4636,13 @@ static string get_regional_codes(const Point2& loc, int ac_size, int ops_type)
 				if(loc.x() < - 103.0)            // USA west
 					code += "swa asa qxe ";
 				else	                         // USA east
-					code += "swa jbu nks ";
+					code += "swa jbu nks egf ";
 			}
 		}
 	}
 	else if(loc.x() < 60.0)
 	{
-		code = "baw afr klm dlh ";
+		code = "baw afr klm dlh vir ";
 		if(loc.x() > 37.0 && loc.y() > 12.0 && loc.y() < 34.0)    // near east
 			code += "uae etd qtr ";
 		else if(loc.y() > 34.0)                   // europe
@@ -4649,7 +4650,7 @@ static string get_regional_codes(const Point2& loc, int ac_size, int ops_type)
 			code += "sas aza ibe sva ";
 			if(ac_size <= width_C) 
 			{
-				code += "ber ryr ";
+				code += "ber ryr vlg ezy ";
 				if(LonLatDistMeters(loc, Point2(11,47)) < 300e3) code += "wlc tyr lpv aua "; // within 300 km of LOWI
 			}
 		}
@@ -4665,9 +4666,9 @@ static string get_regional_codes(const Point2& loc, int ac_size, int ops_type)
 			if(loc.x() < 86.0)                     // india
 				code = "aic igo ";
 			else if(loc.x() < 124.0 && loc.y() > 20.0)  // china
-				code = "csn ces cca chh ";
+				code = "csn ces cca chh cxa ";
 			else                                        // far east asia
-				code = "lni sia cpa ana jal kal gia ";
+				code = "lni tlm sia cpa ana jal kal gia ";
 		}
 	}
 
@@ -4708,19 +4709,17 @@ static string get_xplane_codes(int width_enum, const set<int>& eq, int ops_type,
 	return out;
 }
 
-int wed_upgrade_one_airport(WED_Thing* who, WED_ResourceMgr* rmgr, ISelection* sel)
+int wed_upgrade_ramps(WED_Thing* who)
 {
-// gMeshLines.clear();
-// for(int i = 0; i < canada.size(); i++)
-//		debug_mesh_line(canada[i], canada[(i+1) % canada.size()], 1,0,0,1,0,0);
+	auto rmgr = WED_GetResourceMgr(who->GetArchive()->GetResolver());
+	auto lmgr = WED_GetLibraryMgr(who->GetArchive()->GetResolver());
+	auto sel  = WED_GetSelect(who->GetArchive()->GetResolver());
 
 	int did_work = 0;
 	vector<WED_RampPosition *> ramps;
 	vector<obj_conflict_info> objs;
 	collect_ramps_recursive(who, ramps, objs, rmgr);
 
-	auto lmgr = WED_GetLibraryMgr(who->GetArchive()->GetResolver());
-	
 	Point2 apt_loc;
 	if(auto apt = dynamic_cast<WED_Airport*>(who))
 	{
@@ -4757,7 +4756,20 @@ int wed_upgrade_one_airport(WED_Thing* who, WED_ResourceMgr* rmgr, ISelection* s
 				}
 			}
 		}
-		// fill in airline types
+		// determine "clusters"
+/*		auto ramps_by_dist(ramps);
+		ramps_by_dist.erase(std::find(ramps_by_dist.begin(), ramps_by_dist.end(), r));
+		Point2 my_loc;
+		r->GetLocation(gis_Geo, my_loc);
+		std::sort(ramps_by_dist.begin(), ramps_by_dist.end(),[&](WED_RampPosition* a, WED_RampPosition* b)
+		{
+			Point2 loc_a, loc_b;
+			a->GetLocation(gis_Geo, loc_a);
+			b->GetLocation(gis_Geo, loc_b);
+			return LonLatDistMeters(my_loc, loc_a) > LonLatDistMeters(my_loc, loc_b);
+		});
+*/	
+		// fill in regio apropriate airline names
 		if (r->GetRampOperationType() == ramp_operation_Airline || r->GetRampOperationType() == ramp_operation_Cargo)
 		{
 			string old_codes =  WED_RampPosition::CorrectAirlinesString(r->GetAirlines());
@@ -4791,7 +4803,7 @@ int wed_upgrade_one_airport(WED_Thing* who, WED_ResourceMgr* rmgr, ISelection* s
 		}
 	}
 	// nuke static aircraft objects near ramps
-	for(auto o : objs)
+	for(auto& o : objs)
 	{
 		for(auto r : ramps)
 		{
@@ -4817,7 +4829,7 @@ static int wed_upgrade_airports_recursive(WED_Thing * who, WED_ResourceMgr * rmg
 	int did_work = 0;
 	if(who->GetClass() == WED_Airport::sClass)
 	{
-		did_work = wed_upgrade_one_airport(who, rmgr, sel);
+		did_work = wed_upgrade_ramps(who);
 	}
 	int nn = who->CountChildren();
 	for(int n = 0; n < nn; ++n)
@@ -5219,6 +5231,10 @@ int WED_DoConvertToJW(WED_Airport* apt, int statistics[4])
 				}
 			}
 		}
+		else if (res.compare(0, strlen("lib/airport/Ramp_Equipment/Uni_Jetway_"), "lib/airport/Ramp_Equipment/Uni_Jetway_") == 0)
+			jw_tun.push_back(o);
+		else if (res == "lib/airport/Ramp_Equipment/JetWayWallBase.obj")
+			jw_ext.push_back(o);
 	}
 
 	// determine the position in front of the cab where the A/C is expected to be parked and the nearest ramp start to each.
@@ -5232,13 +5248,23 @@ int WED_DoConvertToJW(WED_Airport* apt, int statistics[4])
 			c->GetLocation(gis_Geo, jw_pos);
 			string res;
 			c->GetResource(res);
-			double tun_len = res[strlen("lib/airport/Ramp_Equipment/Jetway_")] == '5' ? 20 : 15;
+			double tun_len = ( res[strlen("lib/airport/Ramp_Equipment/Jetway_")] == '5' ||
+							   res[strlen("lib/airport/Ramp_Equipment/Uni_Jetway_")] == '5' ) ? 20 : 15;
 			double tun_hdg = c->GetHeading();
-			NorthHeading2VectorDegs(tun_pos, tun_pos, tun_hdg, tun_dir);
-			tun_pos = jw_pos + tun_dir * 2.7 * MTR_TO_DEG_LAT;
-
-			NorthHeading2VectorDegs(tun_pos, tun_pos, tun_hdg - 30.0, tun_dir);  // hdg to place in front of cabin where the acf would be
-			tun_dir *= (tun_len + 2.0) * MTR_TO_DEG_LAT;
+			if(res.compare(0, strlen("lib/airport/Ramp_Equipment/Uni_"), "lib/airport/Ramp_Equipment/Uni_") == 0)
+			{
+				NorthHeading2VectorDegs(tun_pos, tun_pos, tun_hdg, tun_dir);
+				tun_pos = jw_pos + tun_dir * 0.5 * MTR_TO_DEG_LAT;
+				NorthHeading2VectorDegs(tun_pos, tun_pos, tun_hdg - 30.0, tun_dir);  // hdg to place in front of cabin where the acf would be
+				tun_dir *= (tun_len + 2.0) * MTR_TO_DEG_LAT;
+			}
+			else
+			{
+				NorthHeading2VectorDegs(tun_pos, tun_pos, tun_hdg, tun_dir);
+				tun_pos = jw_pos + tun_dir * 2.7 * MTR_TO_DEG_LAT;
+				NorthHeading2VectorDegs(tun_pos, tun_pos, tun_hdg - 30.0, tun_dir);  // hdg to place in front of cabin where the acf would be
+				tun_dir *= (tun_len + 2.0) * MTR_TO_DEG_LAT;
+			}
 			acf_pos = tun_pos + tun_dir;
 
 			double min_dist = 99999.0;
@@ -5286,9 +5312,16 @@ int WED_DoConvertToJW(WED_Airport* apt, int statistics[4])
 					string ext_nam;
 					(*e)->GetResource(ext_nam);
 					double len;
-					int pos = strlen("lib/airport/Ramp_Equipment/JetWayEx");
-					if(ext_nam[pos] == 't') pos++;
-					sscanf(ext_nam.c_str() + pos + 1, "%lf", &len);
+					if (ext_nam == "lib/airport/Ramp_Equipment/JetWayWallBase.obj")
+					{
+						len = 3.0;
+					}
+					else
+					{
+						int pos = strlen("lib/airport/Ramp_Equipment/JetWayEx");
+						if (ext_nam[pos] == 't') pos++;
+						sscanf(ext_nam.c_str() + pos + 1, "%lf", &len);
+					}
 					Vector2 ext_dir;
 					NorthHeading2VectorDegs(p1, p1, hdg, ext_dir);
 					p2 = p1 + ext_dir * (len + 2.0) * MTR_TO_DEG_LAT;
@@ -5411,7 +5444,7 @@ int WED_DoConvertToJW(WED_Airport* apt, int statistics[4])
 						double tun_len = LonLatDistMeters(jw_serving_us[0].cabin_loc, jw_serving_us[0].tunnel_orig);
 						switch (t.size_code)        // deliberately test for shorter range - allows some margin for actual cabin door locations
 						{
-						case 1:	tunnel_is_short = tun_dist > 21.0; 
+						case 1:	tunnel_is_short = tun_dist > 20.0; 
 								break;
 						case 2:	tunnel_is_short = tun_dist > 26.0; 
 								tunnel_is_long = tun_len < 14.0 || tun_dist < 19.0;
@@ -5690,7 +5723,24 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 	for(auto b : bdys)
 		WED_BezierPolygonWithHolesForPolygon(b, apt_boundary);
 	if(apt_boundary.size() == 0) return 0;
-	
+
+	// prevent mowing the water e.g. at Juneau
+	vector<WED_Sealane*> sealn;
+	CollectRecursive(apt, back_inserter(sealn), WED_Sealane::sClass);
+	for (auto s : sealn)
+	{
+		Point2 	tmp[4];
+		s->GetCorners(gis_Geo, tmp);
+		Quad_Resize(tmp, 40.0, 400.0, 400.0);
+
+		vPoly2 water;
+		water.push_back(Polygon2());
+		for (int i = 3; i >= 0; i--)
+			water.back().push_back(tmp[i]);
+
+		apt_boundary = PolygonCut(apt_boundary, water);
+	}
+
 	CollectRecursive(apt, back_inserter(rwys), WED_Runway::sClass);
     std::sort(rwys.begin(), rwys.end(), [&](WED_Runway* a, WED_Runway* b)   // mow largest runway first, so most of the moving is aligned with this one
 
@@ -5715,14 +5765,7 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 				all_pave_poly.back().push_back(tmp[i]);
 		}
 
-		Vector2 len_vec_1m = Vector2(tmp[0], tmp[1]) / LonLatDistMeters(tmp[0], tmp[1]);
-		Vector2 len_ext  = len_vec_1m * 400.0;
-		Vector2 wid_vec_1m = Vector2(tmp[1], tmp[2]) / LonLatDistMeters(tmp[1], tmp[2]);
-		Vector2 side_ext = wid_vec_1m * r->GetWidth() * (r->GetSurface() == surf_Grass ? 1.0 : 4.0);
-		tmp[0] -= len_ext + side_ext;
-		tmp[1] += len_ext - side_ext;
-		tmp[2] += len_ext + side_ext;
-		tmp[3] -= len_ext - side_ext;
+		Quad_Resize(tmp, r->GetWidth() * (r->GetSurface() == surf_Grass ? 1.0 : 4.0), 400.0, 400.0);
 
 		grass.push_back(make_pair(vPoly2(), r->GetHeading()));
 		vPoly2 * this_grass = &grass.back().first;
@@ -5754,7 +5797,7 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 		}
 		all_grass_poly = PolygonUnion(all_grass_poly, *this_grass);
 	}
-	
+
 	// get all pavement
 	CollectRecursive(apt, back_inserter(twys), ThingNotHidden, [&](WED_Thing* v)
 		{
@@ -5994,9 +6037,6 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 			if(statistics) statistics[2]++;
 		}
 	}
-	
-	// refactor this to be able to re-use pavement (and grass) for adding pavement art
-	// convert everything into meterspace w/propper projection for that as well
 	
 /*	for (auto p : all_pave_poly)
 		for(int i = 0; i < p.size(); i++)

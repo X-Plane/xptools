@@ -43,28 +43,6 @@ inline bool	within_dist(const Point2& p1, const Point2& p2, WED_MapZoomerNew * z
 	return Segment2(z->LLToPixel(p1),z->LLToPixel(p2)).squared_length() < (dist * dist);
 }
 
-static void ogl_bezier(const Bezier2& b, WED_MapZoomerNew * z)
-{
-	if (b.p1 == b.c1 && b.p2 == b.c2)
-	{
-		glBegin(GL_LINE_STRIP);
-		glVertex2(z->LLToPixel(b.p1));
-		glVertex2(z->LLToPixel(b.p2));
-		glEnd();
-	}
-	else
-	{
-		glBegin(GL_LINE_STRIP);
-		for (int t = 0; t <= BEZ_STEPS; ++t)
-		{
-			float r = (float) t / (float) BEZ_STEPS;
-			Point2 m = b.midpoint(r);
-			glVertex2(z->LLToPixel(m));
-		}
-		glEnd();
-	}
-}
-
 WED_CreateToolBase::WED_CreateToolBase(
 									const char *		tool_name,
 									GUI_Pane *			host,

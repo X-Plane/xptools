@@ -30,6 +30,9 @@
 	#ifndef GL_COMPRESSED_RGBA_BPTC_UNORM_EXT
 		#define GL_COMPRESSED_RGBA_BPTC_UNORM_EXT 0x8E8C
 	#endif
+	#ifndef GL_COMPRESSED_LUMINANCE_LATC1_EXT
+		#define GL_COMPRESSED_LUMINANCE_LATC1_EXT 0x8C70
+	#endif
 #else
 	#include "glew.h"
 	#include <GL/glu.h>
@@ -276,7 +279,7 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 	return true;
 }
 
-#if LOAD_DDS_DIRECT
+#if LOAD_DDS_DIRECT || LOAD_KTX2_DIRECT
 
 struct DXT1Block {
     uint16_t colors[2];
@@ -932,10 +935,10 @@ bool	LoadTextureFromDDS(
 
 	if (strncmp(desc->dwMagic, "DDS ", 4) != 0) return false;
 	if((SWAP32(desc->dwSize)) != (sizeof(*desc) - sizeof(desc->dwMagic))) return false;
+	char* data = mem_start + sizeof(TEX_dds_desc);
 
 	GLenum glformat;
 	int dds_blocksize;
-	char * data = mem_start + sizeof(TEX_dds_desc);
 
 	if (gl_info.has_tex_compression && strncmp(desc->ddpfPixelFormat.dwFourCC, "DXT", 3) == 0)
 		switch (desc->ddpfPixelFormat.dwFourCC[3])
@@ -948,24 +951,39 @@ bool	LoadTextureFromDDS(
 	else if (gl_info.has_rgtc && strncmp(desc->ddpfPixelFormat.dwFourCC, "ATI", 3) == 0)    // This format is NOT understood by X-Plane for now !!!
 		switch (desc->ddpfPixelFormat.dwFourCC[3])
 		{
-		case '1':	dds_blocksize =  8; glformat = GL_COMPRESSED_RED_RGTC1;		       break; // BC4 decoded to red channel only
-//		case '1':	dds_blocksize =  8; glformat = GL_COMPRESSED_LUMINANCE_LATC1_EXT;  break; // BC4 decoded to rgb greyscale, e.g. crunch -DXT5A or BC4 in Gimp
+		case '1':	dds_blocksize =  8; glformat = GL_COMPRESSED_LUMINANCE_LATC1_EXT;  break; // BC4 decoded to rgb greyscale, e.g. crunch -DXT5A or BC4 in Gimp
 		case '2':	dds_blocksize = 16; glformat = GL_COMPRESSED_RG_RGTC2;             break; // BC5 two uncorrelated channels (normals !), crunch -DXN
 		default:	return false;
 		}
+	else if (gl_info.has_rgtc && strncmp(desc->ddpfPixelFormat.dwFourCC, "BC", 2) == 0)     // This format is NOT understood by X-Plane for now !!!
+		switch (desc->ddpfPixelFormat.dwFourCC[2])
+		{
+		case '4':	dds_blocksize =  8; glformat = GL_COMPRESSED_LUMINANCE_LATC1_EXT;  break; // BC4, don't care if signed or unsigned
+		case '5':	dds_blocksize = 16; glformat = GL_COMPRESSED_RG_RGTC2;             break; // BC5, don't care if signed or unsigned
+		default:	return false;
+		}
 	else  if (gl_info.has_bptc && strncmp(desc->ddpfPixelFormat.dwFourCC, "DX10", 4) == 0)  // This format is NOT understood by X-Plane for now !!!
-		{                                                                                   // Y-flipping partially implemented (modes 1,5,6 only), yet
+		{
 			const TEX_dds_dx10 * dx10hdr = (const TEX_dds_dx10 *) (mem_start + sizeof(*desc));
 			data += sizeof(TEX_dds_dx10);
 			
+			dds_blocksize = 16;
 			switch(dx10hdr->dxgiFormat)
 			{
-//				case 0x5F:   glformat = GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_EXT; break; // BC6  DXGI_FORMAT_BC6H_UF16
-//				case 0x60:   glformat = GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_EXT;   break; // BC6  DXGI_FORMAT_BC6H_SF16
-				case 0x62:   glformat = GL_COMPRESSED_RGBA_BPTC_UNORM_EXT;         break; // BC7  DXGI_FORMAT_BC7_UNORM
-				default: return false;													  // Deliberately don't read other DDS formats
+//				case DXGI_FORMAT_BC1_UNORM:
+//				case DXGI_FORMAT_BC1_UNORM_SRGB: glformat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;  dds_blocksize = 8; break;
+//				case DXGI_FORMAT_BC2_UNORM:
+//				case DXGI_FORMAT_BC2_UNORM_SRGB: glformat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;  break;
+//				case DXGI_FORMAT_BC3_UNORM:
+//				case DXGI_FORMAT_BC3_UNORM_SRGB: glformat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;  break;
+//				case DXGI_FORMAT_BC4_UNORM:      glformat = GL_COMPRESSED_LUMINANCE_LATC1_EXT; dds_blocksize = 8; break;  // gloss/metalness maps
+//				case  DXGI_FORMAT_BC5_SNORM:     glformat = GL_COMPRESSED_RG_RGTC2;            break;                     // normals
+//				case FORMAT_BC6H_UF16:           glformat = GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_EXT; break; 
+//				case ORMAT_BC6H_SF16:            glformat = GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_EXT;   break; 
+				case DXGI_FORMAT_BC7_UNORM:
+				case DXGI_FORMAT_BC7_UNORM_SRGB: glformat = GL_COMPRESSED_RGBA_BPTC_UNORM_EXT; break;
+				default: return false;													                // Deliberately don't read other DX10 DDS formats
 			}
-			dds_blocksize = 16;
 		}
 	else
 		return false;
@@ -1020,4 +1038,191 @@ bool	LoadTextureFromDDS(
 	}
 	return true;
 }
+
+#if LOAD_KTX2_DIRECT
+
+struct TEX_ktx2_desc {
+	char     dwMagic[12];
+	int32_t	 vkFormat;
+	uint32_t typeSize;
+	uint32_t pixelWidth;
+	uint32_t pixelHeight;
+	uint32_t pixelDepth;
+	uint32_t layerCount;
+	uint32_t faceCount;
+	uint32_t levelCount;
+	uint32_t supercompressionScheme;
+
+	uint32_t dfdByteOffset;
+	uint32_t dfdByteLength;
+	uint32_t kvdByteOffset;
+	uint32_t kvdByteLength;
+	uint64_t sgdByteOffset;
+	uint64_t sgdByteLength;
+
+	uint64_t level1_byteOffset;
+	uint64_t level1_byteLength;
+	uint64_t level1_uncompressedByteLength;
+};
+
+#define VK_FORMAT_BC1_RGB_UNORM_BLOCK  131
+#define VK_FORMAT_BC1_RGB_SRGB_BLOCK   132
+#define VK_FORMAT_BC1_RGBA_UNORM_BLOCK 133
+#define VK_FORMAT_BC1_RGBA_SRGB_BLOCK  134
+#define VK_FORMAT_BC2_UNORM_BLOCK      135
+#define VK_FORMAT_BC2_SRGB_BLOCK       136
+#define VK_FORMAT_BC3_UNORM_BLOCK      137
+#define VK_FORMAT_BC3_SRGB_BLOCK       138
+#define VK_FORMAT_BC4_UNORM_BLOCK      139
+#define VK_FORMAT_BC4_SNORM_BLOCK      140
+#define VK_FORMAT_BC5_UNORM_BLOCK      141
+#define VK_FORMAT_BC5_SNORM_BLOCK      142
+#define VK_FORMAT_BC7_UNORM_BLOCK      145
+#define VK_FORMAT_BC7_SRGB_BLOCK       146
+
+bool	LoadTextureFromKTX2(
+	char*	mem_start,
+	char*	mem_end,
+	int		in_tex_num,
+	int		inFlags,
+	int*	outWidth,
+	int*	outHeight)
+{
+	INIT_GL_INFO
+
+	if ((mem_end - mem_start) < sizeof(TEX_ktx2_desc)) return false;
+	const TEX_ktx2_desc* desc = (const TEX_ktx2_desc*) mem_start;
+
+	if (strncmp(desc->dwMagic, "«KTX 20»", 8) != 0) return false;
+	if (desc->layerCount != 0 || SWAP32(desc->faceCount) != 1 || desc->supercompressionScheme != 0) return false;
+	
+	GLenum glformat;
+	int dds_blocksize = 0;
+
+	switch (SWAP32(desc->vkFormat))
+	{
+	case VK_FORMAT_BC1_RGB_UNORM_BLOCK:
+	case VK_FORMAT_BC1_RGB_SRGB_BLOCK:
+	case VK_FORMAT_BC1_RGBA_UNORM_BLOCK:
+	case VK_FORMAT_BC1_RGBA_SRGB_BLOCK:
+		if (gl_info.has_tex_compression)
+		{
+			dds_blocksize = 8; glformat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+		}
+		break;
+	case VK_FORMAT_BC2_UNORM_BLOCK:
+	case VK_FORMAT_BC2_SRGB_BLOCK:
+		if (gl_info.has_tex_compression)
+		{
+			dds_blocksize = 16; glformat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+		}
+		break;
+	case VK_FORMAT_BC3_UNORM_BLOCK:
+	case VK_FORMAT_BC3_SRGB_BLOCK:
+		if (gl_info.has_tex_compression)
+		{
+			dds_blocksize = 16; glformat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+		}
+		break;
+	case VK_FORMAT_BC4_UNORM_BLOCK:
+	case VK_FORMAT_BC4_SNORM_BLOCK:
+		if (gl_info.has_rgtc)
+		{
+			dds_blocksize = 8; glformat = GL_COMPRESSED_LUMINANCE_LATC1_EXT; // BC4 decoded to rgb greyscale, e.g. crunch -DXT5A or BC4 in Gimp
+		}
+		break;
+	case VK_FORMAT_BC5_UNORM_BLOCK:
+	case VK_FORMAT_BC5_SNORM_BLOCK:
+		if (gl_info.has_rgtc)
+		{
+			dds_blocksize = 16; glformat = GL_COMPRESSED_RG_RGTC2;           // BC5 two uncorrelated channels (normals !), crunch -DXN
+		}
+		break;
+	case VK_FORMAT_BC7_UNORM_BLOCK:
+	case VK_FORMAT_BC7_SRGB_BLOCK:
+		if (gl_info.has_bptc)                                                // This format is NOT understood by X-Plane for now !!!
+		{
+			dds_blocksize = 16;	glformat = GL_COMPRESSED_RGBA_BPTC_UNORM_EXT;
+		}
+		break;
+	default:	return false;
+	}
+	if(dds_blocksize == 0) return false;
+
+	int mips = 1;
+	if (inFlags & tex_Mipmap)
+		mips = SWAP32(desc->levelCount);
+
+	int x = SWAP32(desc->pixelWidth);
+	int y = SWAP32(desc->pixelHeight);
+	if (outWidth) *outWidth = x;
+	if (outHeight) *outHeight = y;
+
+	char* data = mem_start + SWAP64(desc->level1_byteOffset);
+
+	bool flip_y = true;
+	char* kvd = mem_start + SWAP32(desc->kvdByteOffset);
+	char* kvd_end = kvd + SWAP32(desc->kvdByteLength);
+
+	while(kvd < kvd_end)
+	{
+		char* tag_name = kvd + 4;
+		char* tag_value = tag_name + strlen(tag_name) + 1;
+
+		if (strcmp("KTXorientation", tag_name) == 0)
+		{
+			if (strcmp("ru", tag_value) == 0)
+				flip_y = false;
+			break;
+		}
+		kvd += *(unsigned int*) kvd;
+	}
+
+	if (flip_y) 
+		if ((mips > 1 && y != NextPowerOf2(y)) || y % 8 != 0)
+			return false;  // flipping code can only handle certain heights
+
+	glBindTexture(GL_TEXTURE_2D, in_tex_num);
+
+	for (int level = 0; level < mips; ++level)
+	{
+		// lossless flip image in Y-direction to match orientation of all other textures in XPtools/X-plane
+		// to match old MSFT DIB convention (0,0) == left bottom, but DDS / DXT starts at left top.
+		if (flip_y)
+			BCx_y_flip(glformat, dds_blocksize, data, x, y);
+
+		int data_len = max(1, (x * y) / 16) * dds_blocksize;
+		glCompressedTexImage2D(GL_TEXTURE_2D, level, glformat, x, y, 0, data_len, data); CHECK_GL_ERR
+
+		x = max(1, x >> 1);
+		y = max(1, y >> 1);
+		data += data_len;
+	}
+
+	if (inFlags & tex_Linear)
+	{
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (inFlags & tex_Mipmap) ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR);
+	}
+	else
+	{
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (inFlags & tex_Mipmap) ? GL_NEAREST_MIPMAP_NEAREST : GL_LINEAR);
+	}
+
+	if (inFlags & tex_Wrap)
+	{
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	}
+	else
+	{
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	}
+	return true;
+}
+
+#endif
+
 #endif

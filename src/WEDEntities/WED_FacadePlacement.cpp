@@ -135,6 +135,24 @@ int		WED_FacadePlacement::GetType(void) const
 	return 0;
 }
 
+const vector<float>	WED_FacadePlacement::GetHeightChoices(void) const
+{
+	vector<float> heights;
+	if(auto info = GetFacInfo())
+	{
+		for (const auto& f : info->floors)
+			if (f.roofs.size())
+			{
+				heights.push_back(f.roofs.back().roof_height);
+			}
+			else
+			{
+				heights.push_back(0.0f);
+			}
+	}
+
+	return heights;
+}
 
 bool		WED_FacadePlacement::HasLayer		(GISLayer_t layer							  ) const
 {

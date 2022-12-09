@@ -450,15 +450,13 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 					{
 						const float colors[18] = { 1, 0, 0,	 1, 1, 0,  0, 1, 0,    // red, yellow, green
 												   0, 1, 1,  0, 0, 1,  1, 0, 1,};  // aqua, blue, cyan
-						int param = 0;
+						Point2		tmp;
 						auto fac = dynamic_cast<WED_FacadePlacement*>(dynamic_cast<WED_Thing*>(entity)->GetParent());
 						if(fac && fac->HasCustomWalls())
 						{
-							Bezier2		bp;
-							ps->GetSide(gis_Param,i,b);
-							param = b.p1.x();
+							ps->GetNthPoint(i)->GetLocation(gis_Param,tmp);
 						}
-						glColor3fv(colors + (param % 6) * 3);
+						glColor3fv(colors + (((int) tmp.x()) % 6) * 3);
 						glShapeOffset2v(GL_LINE_STRIP, &*pts.begin(), pts.size(), -2);
 						glColor4fv(WED_Color_RGBA(struct_color));
 					}

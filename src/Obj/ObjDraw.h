@@ -23,16 +23,10 @@
 #ifndef OBJDRAW_H
 #define OBJDRAW_H
 
-// OBJ7:
-// These APIs will handle merged tris/quads/lines for an OBJ7, but will
-// not attempt to consolidate begin/end statements or other unnecessary state.
-// This routine will attempt to change textures only when needed.
-
 // OBJ8:
 // OBJ8 drawing will not eliminate unneeded state changes or consolidate
 // draws, but for well-formed OBJ8s, the TRIs command should produce long runs.
 
-struct XObj;
 struct XObj8;
 
 struct	ObjDrawFuncs10_t {
@@ -51,7 +45,6 @@ struct	ObjDrawFuncs10_t {
 	void (* SetupNoDraped_f)(void * ref);
 };
 
-void	ObjDraw(const XObj& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref);
 void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref);
 
 #endif

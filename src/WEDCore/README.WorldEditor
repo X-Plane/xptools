@@ -1,4 +1,4 @@
-﻿-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
                          WorldEditor Release Notes
 -------------------------------------------------------------------------------
 
@@ -15,13 +15,44 @@ CHANGE HISTORY
 
 Planned functionality for WED 2.5 not yet included in the alpha versions
    - automatic creation of edge outlines for paved surfaces
-   - on-map preview of .agb definitions
-   - show trees part of any autogen definition
 
-WED functionality not yet supported by XP12 alpha's
-    - rowcode 105 skidmark and line color/width customizations for runways
+=======
+WED 2.5.0r1 12/01/22
+   Bug fix:
+   - fix Linux w/Mesa driver not showing Library previews
+   - enable KTX2 loader
+   - fix ATTR_layer_group ordering for offsets of +5 and larger
 
-WED 2.5.0b2 4/13/22
+WED 2.5.0b5 11/27/22
+   Bug fix:
+   - rendering objects with LINES followd by TRIS in the same LOD caused artefacts
+   - fix library list non-expandable items, missing 2nd column on macOS
+   - fix white-out in preferences window on macOS
+   - fix shading in library preview pane
+   X-Plane 12 features:
+   - apply the scenery gateway upgrade heuristics when exporting to scenery for the gateway target
+
+WED 2.5.0b4 9/21/22
+   Bug fix:
+   - some meta data validation messages spelling out wrong names
+   - add missing texture for light colored gradients to linux binary
+   Features for all X-Plane versions:
+   - walk back new facade validation to warnings only for the GW target 
+   - let facade height validation pass single-height and low absolute height items, e.g. fences
+   - add green groundplane for preview of adjustable height .agp
+   X-Plane 12 features:
+   - Object scaling in map using WGS84 ellipsoid for improved large object location accuracy
+   - apply all gateway upgrade heuristics upon exporting to scenery with gateway target
+
+WED 2.5.0b3 9/3/22
+   X-Plane 12 features:
+   - add meta tags for ATC fisa and closed circuit ops
+   Bug fix:
+   - some moving jetway objects not upgraded by GW heuristics 
+   Features for all X-Plane versions:
+   - auto-upgrade country meta tags ISO3366 code upon import from gateway
+
+WED 2.5.0b2 5/30/22
    Bug Fix:
    - fix .agp scraper display mismatch for some heights
    - fix gridded preview for 3D objects only showing partially on OSX w/AMD graphics
@@ -38,6 +69,9 @@ WED 2.5.0b2 4/13/22
    - seasonal objects, showing summer version only
    - preview 3D forests
    - increased precision for draped polygon headings
+   - custom airport service trucks
+   - validation warning on runway lighting combinations not supported by XP12
+   - allow road networks near airport boundaries on the GW
    X-Plane 12 art asset conversion features:
    - jetway objects to jetway facades
    - X11 default pavment to XP12 aged pavement
@@ -51,8 +85,12 @@ WED 2.5.0b2 4/13/22
    - nuke all grunge objects
    - add regional presets for ramp starts without assignments
    - add iso3166 country codes to 1302 country meta data
+   - fix XPD-12676 several chinese airport ICAO codes missing in Global Airports
+   - remove road, beach, line exclusions, grunge objects, flatten meta for GW airports < 95000
+   - convert 2D only deprecated AG_*.for to current non-deprecated/3D forests.
    Features for all X-Plane versions:
    - use full projection for map display to improve location accuracy of linear features
+   - bump resolution for ESRI slippy maps below 60 deg lattitude by one ZL
    - validation warning on TOWER_VIEWPOINT height not matching with #viewpoint_height tags
    - use actual XP textures for run/taxiway and helipd previews in map, if available
    - apply jetway upgrades, remove large terrain polygons at export (tyler_mode only)
@@ -65,6 +103,7 @@ WED 2.5.0b2 4/13/22
    - WED-1161 (limited) ability to collapse search results in LibrayPane
    - new map layer "Terrain" visualizes terrain mesh structure, DEM and explicit height vertices
    - menu function 'convert to' now covers object strings and forests'
+   - menu function 'convert to' can convert airport lines with multiple, differing markings
    - speed up road display to handle full DSF tiles of roads by adding a caching layer
    - menu function "split"" can now cut into holes in polygons
 

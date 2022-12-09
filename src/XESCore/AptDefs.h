@@ -101,6 +101,7 @@ enum {
 
 	apt_truck_parking	= 1400,			// 1400 lat lon heading type cars name
 	apt_truck_destination = 1401,		// 1401 lat lon heading type|type|type... name
+	apt_truck_custom = 1402,			// 1402 vpath_vehicle vpath_driver
 
 	apt_jetway = 1500,					// 1500 lat lon install_heading style_code size_code parked_tunnel_heading parked_tunnel_length parked_cab_heading
 	apt_jetway_custom = 1501,			// specifies custom path/vpath to be used for last preceeding 1500 jetway
@@ -614,6 +615,7 @@ struct AptTruckParking_t {
 	float						heading;
 	int							parking_type;
 	int							train_car_count;
+	string						vpath;         // optional
 };
 typedef vector<AptTruckParking_t> AptTruckParkingVector;
 

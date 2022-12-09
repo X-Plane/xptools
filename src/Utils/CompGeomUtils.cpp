@@ -62,8 +62,8 @@ static	double	CCW_Angle(const Point2& p1, const Point2& p2, const Point2& p3)
 
 	double a_turn = PI - (a2 - a1);
 
-	if (a_turn > PI)
-		a_turn -= PI2;
+	if (a_turn > M_PI)
+		a_turn -= M_PI * 2.0;
 
 	return a_turn;
 }
@@ -899,9 +899,9 @@ bool	Is_CCW_Between(const Vector2& v1, const Vector2& v2, const Vector2& v3)
 	}
 
 	// Normalize all angles to be from 0 to 360.
-	if (angle1 <= -PI)	angle1 += PI2;
-	if (angle2 <= -PI)	angle2 += PI2;
-	if (angle3 <= -PI)	angle3 += PI2;
+	if (angle1 <= -M_PI)	angle1 += M_PI * 2.0;
+	if (angle2 <= -M_PI)	angle2 += M_PI * 2.0;
+	if (angle3 <= -M_PI)	angle3 += M_PI * 2.0;
 
 	// Special case - if we have to increase BOTH angle 2 and 3,
 	// we know that (1) angle 1 will be smaller than angle 2 after the increase AND
@@ -915,8 +915,8 @@ bool	Is_CCW_Between(const Vector2& v1, const Vector2& v2, const Vector2& v3)
 
 	// Normalize angles 2 and 3 to be at least as big as angle 1 (represents counterclockwise rotation
 	// from angle 1), even if exceeds 360.
-	if (angle2 < angle1)	angle2 += PI2;
-	if (angle3 < angle1)	angle3 += PI2;
+	if (angle2 < angle1)	angle2 += M_PI * 2.0;
+	if (angle3 < angle1)	angle3 += M_PI * 2.0;
 
 	// Now if the headings go 1 2 3 we're CCW.
 	return (angle1 < angle2 && angle2 < angle3);

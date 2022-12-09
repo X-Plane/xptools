@@ -38,6 +38,7 @@
 #include "WED_GatewayExport.h"
 #include "WED_Group.h"
 #include "WED_GroupCommands.h"
+#include "WED_Menus.h"
 #include "WED_UIDefs.h"
 #include "WED_Validate.h"
 
@@ -62,15 +63,17 @@ int		WED_CanExportPack(IResolver * resolver)
 	return 1;
 }
 
-#if 1 //TYLER_MODE
-
 #include "WED_Airport.h"
+#include "WED_AirportBoundary.h"
+#include "WED_LinePlacement.h"
 #include "WED_EnumSystem.h"
 #include "WED_ExclusionZone.h"
 #include "WED_RampPosition.h"
 #include "WED_Runway.h"
+#include "WED_Sealane.h"
 #include "WED_TruckDestination.h"
 #include "WED_TruckParkingLocation.h"
+#include "WED_ForestPlacement.h"
 #include "WED_ObjPlacement.h"
 #include "WED_PolygonPlacement.h"
 #include "WED_MetaDataKeys.h"
@@ -79,10 +82,22 @@ int		WED_CanExportPack(IResolver * resolver)
 #include "GISUtils.h"
 #include <chrono>
 #include "WED_ConvertCommands.h"
+#include "WED_PackageMgr.h"
+
+namespace
+{
+	template<class T>
+	WED_Thing* CreateThing(WED_Archive* parent)
+	{
+		return T::CreateTyped(parent);
+	}
+}
+
+void dummyPrintf(void * ref, const char * fmt, ...) { return; }
 
 static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 {
-	LOG_MSG("## Tyler mode ## Starting upgrade heuristics\n");
+	LOG_MSG("I/exp Starting upgrade heuristics\n");
 	WED_Thing * wrl = WED_GetWorld(resolver);
 	vector<WED_Airport*> apts;
 	CollectRecursiveNoNesting(wrl, back_inserter(apts),WED_Airport::sClass);    // ATTENTION: all code here assumes 'normal' hierachies and no hidden items,
@@ -90,18 +105,13 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 	WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);                      // Speeds up recursive collecting, avoids recursing too deep.
 	ISelection * sel = WED_GetSelect(resolver);
 	
-//	const bdy[] = {-130,49, -40,49, -80,24, -97,25, -107,31, -111,31, -115,33, -140,32};
-//	Polygon2 FAA_bounds;
-//	for (int i = 0; i < 16; i += 2)
-//		FAA_bounds.push_back(Point2(bdy[i], bdy[i + 1]);
-
 	int deleted_illicit_icao = 0;
 	int added_local_codes = 0;
 	int added_country_codes = 0;
 	int grass_statistics[4] = { 0 };
 
 	auto t0 = chrono::high_resolution_clock::now();
-	
+
 	for (auto apt_itr = apts.begin(); apt_itr != apts.end(); ++apt_itr)
 	{
 		auto t2 = chrono::high_resolution_clock::now();
@@ -112,7 +122,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		{
 			ICAO_code = (*apt_itr)->GetMetaDataValue(wed_AddMetaDataICAO);
 
-			bool illicit = ICAO_code.size() != 4 || toupper(ICAO_code[0]) < 'A' || toupper(ICAO_code[0]) >= 'Z';
+			bool illicit = ICAO_code.size() != 4 || toupper(ICAO_code[0]) < 'A' || toupper(ICAO_code[0]) > 'Z';
 			for (int i = 1; i < 4; i++)
 				illicit |= toupper(ICAO_code[i]) < 'A' || toupper(ICAO_code[i]) > 'Z';
 			if(illicit)
@@ -157,31 +167,13 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		//-- upgrade Country Metadata -------------
 		added_country_codes += add_iso3166_country_metadata(**apt_itr);
 
-		(*apt_itr)->GetName(ICAO_code);
-
 		//-- upgrade Ramp Positions with XP10.45 data to get parked A/C -------------
-		vector<WED_RampPosition*> ramp_positions;
-		CollectRecursive(*apt_itr, back_inserter(ramp_positions), IgnoreVisiblity, TakeAlways, WED_RampPosition::sClass, 2);
+		wrl->StartCommand("Upgrade Ramp Positions");
+		if (wed_upgrade_ramps(*apt_itr))
+			wrl->CommitCommand();
+		else
+			wrl->AbortCommand();
 
-		int non_empty_airlines_strs = 0;
-		int non_op_none_ramp_starts = 0;
-		for (vector<WED_RampPosition*>::iterator ramp_itr = ramp_positions.begin(); ramp_itr != ramp_positions.end(); ++ramp_itr)
-		{
-			if ((*ramp_itr)->GetAirlines() != "")
-				++non_empty_airlines_strs;
-
-			if ((*ramp_itr)->GetRampOperationType() != ramp_operation_None)
-				++non_op_none_ramp_starts;
-		}
-
-		if (non_empty_airlines_strs == 0 || non_op_none_ramp_starts == 0)
-		{
-			wrl->StartCommand("Upgrade Ramp Positions");
-			if (wed_upgrade_one_airport(*apt_itr, rmgr, sel))
-				wrl->CommitCommand();
-			else
-				wrl->AbortCommand();
-		}
 #if 0  // this was good in 10.45, but not needed any for gateway airports as of 2022
 		//-- Agp and obj upgrades to create more ground traffic --------------------------------
 		vector<WED_TruckParkingLocation*> parking_locations;
@@ -227,7 +219,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		Bbox2 apt_box;
 		(*apt_itr)->GetBounds(gis_Geo, apt_box);
 
-		if ((*apt_itr)->GetAirportType() == 1)
+		if ((*apt_itr)->GetAirportType() == type_Airport)
 		{
 			string ICAO_region;
 			if ((*apt_itr)->ContainsMetaDataKey(wed_AddMetaDataRegionCode))
@@ -315,15 +307,15 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		}
 #else
 		// mow the grass
-		vector<WED_Group*> grps;
-		CollectRecursive(*apt_itr, back_inserter(grps), IgnoreVisiblity, [](WED_Thing* t)->bool 
+		vector<WED_Group*> terFX;
+		CollectRecursive(*apt_itr, back_inserter(terFX), IgnoreVisiblity, [](WED_Thing* t)->bool 
 			{
 				string res;
 				t->GetName(res);
 				return res == "Terrain FX";
 			},
 			WED_Group::sClass, 1);
-		if(grps.empty())
+		if(terFX.empty())
 		{
 			wrl->StartOperation("Mow Grass");
 			if(WED_DoMowGrass(*apt_itr, grass_statistics))
@@ -352,92 +344,192 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			WED_DoConvertToForest(resolver);
 			LOG_MSG("Converted Trees into Forests at %s\n", ICAO_code.c_str());
 		}
-		// nuke all large terrain polygons unless at high lattitudes (cuz there is no gobal scenery there ...)
-		if(apt_box.p1.y() < 73.0 && apt_box.p1.y() > -60.0)
+		// convert long deprecated 2D only forests into contemporary 3D forests.
+		vector<WED_ForestPlacement*> forests;
+		CollectRecursive(*apt_itr, back_inserter(forests), IgnoreVisiblity, [](WED_Thing* thing)->bool {
+			string res;
+			static_cast<WED_ForestPlacement*>(thing)->GetResource(res);
+			return res.compare(0, strlen("lib/g10/forests/AG_"), "lib/g10/forests/AG_") == 0;
+			},
+			WED_ForestPlacement::sClass, 2);
+		if (!forests.empty())
 		{
-			vector<WED_PolygonPlacement*> terrain_polys;
-			CollectRecursive(*apt_itr, back_inserter(terrain_polys), IgnoreVisiblity, [](WED_Thing* t)->bool 
-				{
-					string res;
-					static_cast<WED_PolygonPlacement*>(t)->GetResource(res);
-					return res.compare(0, strlen("lib/g10/terrain10/"), "lib/g10/terrain10/") == 0;
-				},
-				WED_PolygonPlacement::sClass, 2);
-			if (terrain_polys.size())
+			wrl->StartCommand("Convert deprecated 2D forests");
+			for(auto fst : forests)
+				fst->SetResource("lib/vegetation/trees/deciduous/maple_medium.for");
+			wrl->CommitCommand();
+			LOG_MSG("Converted AG_* forests to 3D at %s\n", ICAO_code.c_str());
+		}
+		// add soft edges to all pavement
+		vector<WED_Group*> pavFX;
+		CollectRecursive(*apt_itr, back_inserter(pavFX), IgnoreVisiblity, [](WED_Thing* t)->bool
 			{
-				set<WED_Thing*> things;
-				for (auto p : terrain_polys)
+				string res;
+				t->GetName(res);
+				return res == "Pavement FX";
+			},
+			WED_Group::sClass, 1);
+		if (pavFX.empty())
+		{
+			wrl->StartOperation("SoftEdge all pavement");
+			if (false) // ToDo !!!!
+			{
+				LOG_MSG("SoftEdged pavemnts  at %s\n", ICAO_code.c_str());
+				wrl->CommitOperation();
+			}
+			else
+				wrl->AbortOperation();
+		}
+/*		// add soft edges for airport grass
+		vector<WED_AirportBoundary*> bdy;
+		CollectRecursive(*apt_itr, back_inserter(bdy), IgnoreVisiblity, TakeAlways, WED_AirportBoundary::sClass, 2);
+		if (bdy.size() && (*apt_itr)->GetAirportType() == type_Airport)
+		{
+			vector<WED_LinePlacement*> grass_lines;
+			CollectRecursive(*apt_itr, back_inserter(grass_lines), IgnoreVisiblity, [](WED_Thing* lin)->bool {
+				string res;
+				static_cast<WED_LinePlacement*>(lin)->GetResource(res);
+				return res.compare(0, strlen("lib/g10/terrain10/apt_border_"), "lib/g10/terrain10/apt_border_") == 0;
+				},
+				WED_LinePlacement::sClass, 2);
+			if (grass_lines.empty() && climate_map.count(ICAO_code))
+			{
+				wrl->StartCommand("Create AptGrass Soft Edges");
+				sel->Clear();
+				sel->Insert(vector<ISelectable*>(bdy.begin(), bdy.end()));
+				WED_DoDuplicate(resolver, false);
+				WED_DoConvertTo(resolver, &CreateThing<WED_LinePlacement>, false);
+				// change to particular line type
+				string grass_line_res = string("lib/g10/terrain10/apt_border_") + climate_map[ICAO_code] + ".lin";
+				int n_sel = sel->GetSelectionCount();
+				for (int i = 0; i < n_sel; i++)
 				{
-					Bbox2 bounds;
-					p->GetBounds(gis_Geo, bounds);
-					if(LonLatDistMeters(bounds.bottom_left(), bounds.top_right()) > 20.0)      // passes at least 10m lettering drawn with snow texture
-						CollectRecursive(p, inserter(things, things.end()), IgnoreVisiblity, TakeAlways);
+					if (auto t = dynamic_cast<IHasResource*>(sel->GetNthSelection(i)))
+						t->SetResource(grass_line_res);
 				}
-				wrl->StartCommand("Delete Terrain Polys");
+				wrl->CommitCommand();
+				LOG_MSG("Added AptGrass Edges at %s\n", ICAO_code.c_str());
+			}
+		}
+*/		//
+		// The "big xp12 gateway reset" - remove certain features unless the submission is "recent" as
+		//  measureds by the scenery ID (i.e. a cutoff point in time after which ONLY Xp12 ready sceneries were accepted) 
+		// or presence of certain, XP12 only art assets
+		//
+#if TYLER_MODE
+		if ((*apt_itr)->GetSceneryID() < 99000 && terFX.empty() && pavFX.empty())
+#else   // artists exporting to GW target at home. They want to see what happens AFTER their scenery is submitted., i.e. when its a "X-Plane 12 submission".
+		// we likely want to do these deletions when IMPORTING from the GW or even on the GW itself - so this GUNK doesn't get reintroduced by ignorant artists
+		if (false)
+#endif
+		{
+			// nuke all large terrain polygons unless at high lattitudes (cuz there is no gobal scenery there ...)
+			if (apt_box.p1.y() < 73.0 && apt_box.p1.y() > -60.0)
+			{
+				vector<WED_PolygonPlacement*> terrain_polys;
+				CollectRecursive(*apt_itr, back_inserter(terrain_polys), IgnoreVisiblity, [](WED_Thing* t)->bool
+					{
+						string res;
+						static_cast<WED_PolygonPlacement*>(t)->GetResource(res);
+						return res.compare(0, strlen("lib/g10/terrain10/"), "lib/g10/terrain10/") == 0 ||
+							res.compare(0, strlen("lib/g8/pol/"), "lib/g8/pol/") == 0;
+					},
+					WED_PolygonPlacement::sClass, 2);
+				if (terrain_polys.size())
+				{
+					set<WED_Thing*> things;
+					for (auto p : terrain_polys)
+					{
+						Bbox2 bounds;
+						p->GetBounds(gis_Geo, bounds);
+						if (LonLatDistMeters(bounds.bottom_left(), bounds.top_right()) > 20.0)      // passes at least 10m lettering drawn with snow texture
+							CollectRecursive(p, inserter(things, things.end()), IgnoreVisiblity, TakeAlways);
+					}
+					wrl->StartCommand("Delete Terrain Polys");
+					WED_RecursiveDelete(things);
+					wrl->CommitCommand();
+					LOG_MSG("Deleted %zd terrain polys at %s\n", terrain_polys.size(), ICAO_code.c_str());
+				}
+			}
+
+			// nuke all "Grunge" draped objects
+			vector<WED_ObjPlacement*> grunge_objs;
+			CollectRecursive(*apt_itr, back_inserter(grunge_objs), IgnoreVisiblity, [](WED_Thing* objs)->bool {
+				string res;
+				static_cast<WED_ObjPlacement*>(objs)->GetResource(res);
+				return res.compare(0, strlen("lib/airport/Common_Elements/Parking/Grunge"), "lib/airport/Common_Elements/Parking/Grunge") == 0;
+				},
+				WED_ObjPlacement::sClass, 2);
+			if (grunge_objs.size())
+			{
+				wrl->StartCommand("Delete Grunge Objects");
+				set<WED_Thing*> things(grunge_objs.begin(), grunge_objs.end());
 				WED_RecursiveDelete(things);
 				wrl->CommitCommand();
-				LOG_MSG("Deleted %ld terrain polys at %s\n", terrain_polys.size(), ICAO_code.c_str());
+				LOG_MSG("Deleted %zd Grunges at %s\n", grunge_objs.size(), ICAO_code.c_str());
 			}
-		}
-		// nuke all "Grunge" draped objects
-		vector<WED_ObjPlacement*> grunge_objs;
-		CollectRecursive(*apt_itr, back_inserter(grunge_objs), IgnoreVisiblity, [](WED_Thing* objs)->bool {
-			string res;
-			static_cast<WED_ObjPlacement*>(objs)->GetResource(res);
-			return res.compare(0, strlen("lib/airport/Common_Elements/Parking/Grunge"), "lib/airport/Common_Elements/Parking/Grunge") == 0;
-			},
-			WED_ObjPlacement::sClass, 2);
-		if (grunge_objs.size())
-		{
-			wrl->StartCommand("Delete Grunge Objects");
-			set<WED_Thing*> things(grunge_objs.begin(), grunge_objs.end());
-			WED_RecursiveDelete(things);
-			wrl->CommitCommand();
-			LOG_MSG("Deleted %ld Grunges at %s\n", grunge_objs.size(), ICAO_code.c_str());
-		}
-#endif
-#if 0
-		// nuke all Exclusions for Beaches, Polygons, Lines
-		vector<WED_ExclusionZone*> exclusions;
-		CollectRecursive(*apt_itr, back_inserter(exclusions), IgnoreVisiblity, [](WED_Thing* excl)->bool {
-			set<int> ex;
-			static_cast<WED_ExclusionZone*>(excl)->GetExclusions(ex);
-			return ex.count(exclude_Pol) || ex.count(exclude_Lin) || ex.count(exclude_Bch);
-			},
-			WED_ExclusionZone::sClass, 2);
-		if (exclusions.size())
-		{
-			wrl->StartCommand("Clean up Exclusions");
-			set<int> ex;
-			for(auto e : exclusions)
+
+			// nuke ALL exclusions at airports, but only for 2D stuff like Beaches, Roads, Polygons, Lines at Sea/Heliports
+			vector<WED_ExclusionZone*> exclusions;
+			CollectRecursive(*apt_itr, back_inserter(exclusions), IgnoreVisiblity, TakeAlways,
+				WED_ExclusionZone::sClass, 2);
+			if (exclusions.size())
 			{
-				e->GetExclusions(ex);
-				ex.erase(exclude_Pol);
-				ex.erase(exclude_Lin);
-				ex.erase(exclude_Bch);
-				e->SetExclusions(ex);
+				wrl->StartCommand("Remove XP11 era exclusions");
+				set<WED_Thing*> ex_set;
+				int reduced_ex = 0;
+				if((*apt_itr)->GetAirportType() == type_Airport)
+				{
+					for(auto e : exclusions)
+						ex_set.insert(e);
+				}
+				else
+				{
+					for (auto e : exclusions)
+					{
+						set<int> ex;
+						e->GetExclusions(ex);
+						ex.erase(exclude_Bch);
+						ex.erase(exclude_Net);
+						ex.erase(exclude_Pol);
+						ex.erase(exclude_Lin);
+						if(ex.size())
+						{
+							e->SetExclusions(ex);
+							reduced_ex++;
+						}
+						else
+							ex_set.insert(e);
+					}
+				}
+				WED_RecursiveDelete(ex_set);
+				wrl->CommitCommand();
+				LOG_MSG("I/XP12 Deleted %d Exclusions at %s\n", (int) exclusions.size() + reduced_ex, ICAO_code.c_str());
 			}
-#else
-		// nuke *ALL* Exclusions
-		set<WED_Thing*> exclusions;
-		CollectRecursive(*apt_itr, inserter(exclusions, exclusions.end()), IgnoreVisiblity, TakeAlways, WED_ExclusionZone::sClass, 2);
-		if (exclusions.size())
-		{
-			wrl->StartCommand("Clean up Exclusions");
-			WED_RecursiveDelete(exclusions);
-#endif
-			wrl->CommitCommand();
-			LOG_MSG("Deleted %ld Exclusions %s\n", exclusions.size(), ICAO_code.c_str());
+			// nuke all per-airport flatten
+			AptInfo_t apt_info;
+			(*apt_itr)->Export(apt_info);
+			auto it = std::find(apt_info.meta_data.begin(), apt_info.meta_data.end(), make_pair(string("flatten"), string("1")));
+			if (it != apt_info.meta_data.end())
+			{
+				wrl->StartCommand("Remove XP11 era flatten");
+				apt_info.meta_data.erase(it);
+				(*apt_itr)->Import(apt_info, dummyPrintf, nullptr);
+				wrl->CommitCommand();
+				LOG_MSG("I/XP12 Deleted Always Flatten at %s\n", ICAO_code.c_str());
+			}
 		}
-		
+#endif
+#if TYLER_MODE
 		double percent_done = (double)distance(apts.begin(), apt_itr) / apts.size() * 100;
-		printf("%0.0f%% through heuristic at %s\n", percent_done, ICAO_code.c_str());
+		printf("%0.0lf%% through heuristic at %s\n", percent_done, ICAO_code.c_str());
 
 		auto t1 = chrono::high_resolution_clock::now();
 		chrono::duration<double> elapsed = t1 - t2;
 		LOG_MSG("Update %s took %lf sec\n", ICAO_code.c_str(), elapsed.count());
 		t2 = t1;
 //		if(distance(apts.begin(), apt_itr) == 15) break;
+#endif
 	}
 #if TYLER_MODE == 11
 	// Remove all remaining new XP12 stuff - so this needs to be run in an XP11 installation. 
@@ -452,10 +544,19 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 
 	auto t1 = chrono::high_resolution_clock::now();
 	chrono::duration<double> elapsed = t1 - t0;
-	LOG_MSG("## Tyler mode ## Done with upgrade heuristics, took %lf sec\n", elapsed.count());
+	LOG_MSG("I/exp Done with upgrade heuristics, took %lf sec\n", elapsed.count());
 	LOG_FLUSH();
 }
-#endif
+
+int		WED_CanExportPack(IResolver* resolver, string& ioname)
+{
+	int target_idx = gExportTarget - wet_xplane_900;
+	if (target_idx > wet_latest_xplane)
+		ioname = "Export to Scenery (w/Scenery Gateway heuristics)";
+	else
+		 ioname = string("Export to Scenery for ") + WED_GetTargetMenuName(target_idx);
+	return 1;
+}
 
 void	WED_DoExportPack(WED_Document * resolver, WED_MapPane * pane)
 {
@@ -468,6 +569,14 @@ void	WED_DoExportPack(WED_Document * resolver, WED_MapPane * pane)
 	// ... and if the export blows up or something, it's Tyler's fault :(
 	if(!WED_ValidateApt(resolver, pane))
 		return;
+	if (gExportTarget == wet_gateway)
+	{
+		auto uMgr = resolver->GetUndoMgr();
+		uMgr->MarkUndo();
+		DoHueristicAnalysisAndAutoUpgrade(resolver);
+		if (uMgr->UndoToMark())
+			DoUserAlert("Some of the upgrade heuristics applied during export could not be undone. Scenery was permanently altered by export.");
+	}
 #endif
 	ILibrarian * l = WED_GetLibrarian(resolver);
 	WED_Thing * w = WED_GetWorld(resolver);
