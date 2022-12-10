@@ -55,8 +55,10 @@ struct	NetRepInfo {
 //	int			export_type_normal;
 //	int			export_type_overpass;
 	int			export_type_draped;
-	float		crease_angle_cos;
-	float		min_defl_deg_mtr;
+	float		crease_angle_cos;				// Cosine of the angle, where for any sharper turn, we have a sharp cut and not a bezier curve
+	float		min_defl_deg_mtr;				// Minimum turn (in degrees) for each meter of road before we say "this is straight".
+												// So a 1 degree per meter turn in a highway could be a long arcing turn but a 1 deg/mtr
+												// turn in a city street is probably a "notch"
 	float		max_err;
 };
 typedef hash_map<int, NetRepInfo>				NetRepInfoTable;

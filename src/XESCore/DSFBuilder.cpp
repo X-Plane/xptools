@@ -304,24 +304,26 @@ struct	road_coords_checker {
 //	#define epsi 0.00001
 	#define epsi 0.0000001
 
-	void check(double c[3], char m) {
+	bool check(double c[3], char m) {
 
 		if(fabs(c[0] - last[0]) < epsi &&
 		   fabs(c[1] - last[1]) < epsi &&
-		   (
-			(lm == 'B' && c[2] == 0.0) ||
-			(m == 'E' && last[2] == 0.0) ||
-			(lm == 'B' && m == 'E') ||
-			(c[2] == 0.0 && last[2] == 0.0)
+		   (true
+//			(lm == 'B' && c[2] == 0.0) ||
+//			(m == 'E' && last[2] == 0.0) ||
+//			(lm == 'B' && m == 'E') ||
+//			(c[2] == 0.0 && last[2] == 0.0)
 		   )
 		)
 		{
 //			debug_mesh_point(Point2(c[0],c[1]),1,1,1);
 //			debug_mesh_point(Point2(last[0],last[1]),1,0,0);
 			printf("ERROR: double point: %c %lf, %lf (%lf) to %c %lf, %lf (%lf) (%p)\n", lm, last[0],last[1], last[2], m, c[0], c[1], c[2], ptr);
-			exit(1);
+			exit(0);
+			return true;
 		}
 		last[0] = c[0]; last[1] = c[1];
+		return false;
 	}
 };
 
@@ -2317,8 +2319,33 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			for (ji = junctions.begin(); ji != junctions.end(); ++ji)
 				(*ji)->index = cur_id++;
 
+			auto print = [](Point2 a, Point2 b){
+
+				printf("\t%lf,%lf -> %lf,%lf: (%lf, %lf) %lf mtrs\n", a.x(),a.y(),b.x(),b.y(),
+					b.x()-a.x(),b.y()-a.y(),
+					LonLatDistMeters(a,b));
+
+			};
+
 			for (ci = chains.begin(); ci != chains.end(); ++ci)
 			{
+				Point2 s = (*ci)->start_junction->location;
+				Point2 e = (*ci)->end_junction->location;
+//				printf("%zd shape points between ",(*ci)->shape.size());
+//					print(s,e);
+//
+//				Point2 l = s;
+//				for(int i = 0; i < (*ci)->shape.size(); ++i)
+//				{
+//					printf("%d ", i);
+//					Point2 ll = ((*ci)->shape[i]);
+//					print(l, ll);
+//					l = ll;
+//				}
+//				print(l, e);
+				
+			
+			
 				coords4[0] = (*ci)->start_junction->location.x();
 				coords4[1] = (*ci)->start_junction->location.y();
 				coords4[2] = (*ci)->start_junction->GetLayerForChain(*ci);
@@ -2491,7 +2518,22 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 						printf("WARNING: coordinate out of range.\n");
 	//					debug_mesh_point(Point2(coords3[0],coords3[1]),1,0,coords3[2]);
 					}
-					checker.check(coords3,'S');
+					if(checker.check(coords3,'S'))
+					{
+#if OPENGL_MAP && DEV
+						debug_mesh_point(s, 1, 0, 0	);
+						for(auto& pp : pts)
+						{
+							debug_mesh_point(pp, 1, 0, 1);
+						}
+						for(auto& pp : (*ci)->shape)
+						{
+//							debug_mesh_point(pp, 0, 1, 1);
+						}
+						debug_mesh_point(e, 0, 1, 0	);
+#endif
+						break;
+					}
 					//printf("Shp: %lf, %lf, %lf\n", coords3[0],coords3[1],coords3[2]);
 					cbs.AddSegmentShapePoint_f(coords3, false, writer2);
 					++total_shapes;

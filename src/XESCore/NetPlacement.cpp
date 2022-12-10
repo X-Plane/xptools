@@ -41,7 +41,8 @@
 
 #define DEBUG_BEZIERS 0
 
-#define MIN_ANGLE_FOR_CURVE 0.0
+#define MIN_ANGLE_FOR_CURVE 1.0
+#define MIN_PULLBACK 5.0
 
 #if 0
 bool	HalfedgeIsSeparated(Pmwx::Halfedge_handle he)
@@ -1484,7 +1485,8 @@ void fix_control_point(const Point2c& origin, Point2c& control_pt, const Vector2
 //	straight_ab = (angle / len_ab) > min_deflection;
 //	straight_bc = (angle / len_bc) > min_deflection;	
 //}
-				
+
+// Given a point B that is in the middle of a road (Between A and C), insert
 void generate_bezier(
 				const Point2&	a,
 				const Point2&	b,
@@ -1528,10 +1530,15 @@ void generate_bezier(
 		double angle = acos(doblim(ab.dot(bc),-1.0,1.0)) * RAD_TO_DEG;
 		
 		double near_angle = max(MIN_ANGLE_FOR_CURVE, 2.0 * min_deflection_deg_mtr);
+		double pull_back = (angle * 0.5) / min_deflection_deg_mtr;
 		
-		if(angle < near_angle)
+		if(angle < near_angle || pull_back < MIN_PULLBACK)
 		{
-			// This is the "barely turned" case - if the turn is really really tiny, 
+			#if DEBUG_BEZIERS
+			debug_mesh_point(b, angle < near_angle ? 1.0 : 0.0, 0.0, pull_back < MIN_PULLBACK ? 1.0 : 0.0);
+			#endif
+	
+			// This is the "barely turned" case - if the turn is really really tiny,
 			// just put one point down and hope the user can't "see" the sharp turn.
 			// This is for a, like, one-degee turn.  This also protects us from having the 
 			// pull-back case with TINY turns.
@@ -1560,7 +1567,6 @@ void generate_bezier(
 					// AB and BC are both straight, but come together at a non-crease angle.  We need to 'pull back' AB and BC
 					// to make an artificial turn.
 					// The back-pull distance is half the distance to make the turn.
-					double pull_back = (angle * 0.5) / min_deflection_deg_mtr;
 					DebugAssert(pull_back > 1.0);
 					Point2 b1 = mb - (ab * pull_back);
 					Point2 b2 = mb + (bc * pull_back);
