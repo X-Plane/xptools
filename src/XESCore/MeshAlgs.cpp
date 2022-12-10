@@ -2979,10 +2979,28 @@ void SetupWaterRasterizer(const Pmwx& map, const DEMGeo& orig, PolyRasterizer<do
 
 		if (iWet != oWet)
 		{
-			double x1 = orig.lon_to_x(CGAL::to_double(i->source()->point().x()));
-			double y1 = orig.lat_to_y(CGAL::to_double(i->source()->point().y()));
-			double x2 = orig.lon_to_x(CGAL::to_double(i->target()->point().x()));
-			double y2 = orig.lat_to_y(CGAL::to_double(i->target()->point().y()));
+			double xx1 = CGAL::to_double(i->source()->point().x());
+			double yy1 = CGAL::to_double(i->source()->point().y());
+			double xx2 = CGAL::to_double(i->target()->point().x());
+			double yy2 = CGAL::to_double(i->target()->point().y());
+
+			// This is a kludgy-AF bug fix: for some @#$@ reason, if we have an airport that ends on the north border,
+			// CGAL _nails_ the horizontal line and we don't get rasterization on that top edge, which results in missing
+			// nodes compared to the airport on the tile above us.
+			//
+			// So.... cheat and push the f---ing line 1 CM out of bounds.  The distortion to the line won't be
+			// enough to care.
+			//
+			// Weirdly KPHX doesn't seem to show this bug on the east edge?  Otherwise we could push XX1 and XX2.
+			if (yy1 == orig.mNorth)
+				yy1 += 0.0000001;
+			if (yy2 == orig.mNorth)
+				yy2 += 0.0000001;
+
+			double x1 = orig.lon_to_x(xx1);
+			double y1 = orig.lat_to_y(yy1);
+			double x2 = orig.lon_to_x(xx2);
+			double y2 = orig.lat_to_y(yy2);
 
 //				gMeshLines.push_back(i->source()->point());
 //				gMeshLines.push_back(i->target()->point());
