@@ -22,6 +22,7 @@ WED 2.5.0r1 12/01/22
    - fix Linux w/Mesa driver not showing Library previews
    - enable KTX2 loader
    - fix ATTR_layer_group ordering for offsets of +5 and larger
+   - add one digit precision to tower viewpoint height selection
 
 WED 2.5.0b5 11/27/22
    Bug fix:
