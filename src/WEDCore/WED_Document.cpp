@@ -51,6 +51,7 @@
 #include "GUI_Fonts.h"
 #include "GUI_Resources.h"
 #include "GUI_Prefs.h"
+#include "PerfUtils.h"
 
 #if IBM
 #include "GUI_Unicode.h"
@@ -241,6 +242,7 @@ void	WED_Document::Save(void)
 		//If everything else has worked
 	if(ferrorErr == 0)
 	{
+		StElapsedTime	etime("Save time");
 		WriteXML(xml_file);
 	}
 	int fcloseErr = fclose(xml_file);
@@ -312,6 +314,7 @@ void	WED_Document::Revert(void)
 		bool xml_exists;
 		LOG_MSG("I/Doc reading XML from %s\n", fname.c_str());
 
+		StElapsedTime	etime("Load time");
 		string result = reader.ReadFile(fname.c_str(),&xml_exists);
 
 		for (auto sp : mDocPrefs)

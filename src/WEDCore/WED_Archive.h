@@ -59,7 +59,8 @@ class	WED_NWLinkAdapter;
 
 #undef max
 #undef min
-#include "tsl/hopscotch_map.h"
+//#include "tsl/hopscotch_map.h"
+#include "tsl/robin_map.h"
 
 enum {
 	wed_Change_Any			 = -1,
@@ -115,8 +116,9 @@ private:
 
 	friend class	WED_Persistent;
 	friend	class	WED_UndoMgr;
-//	typedef unordered_map<int, WED_Persistent *>	ObjectMap;
-	typedef tsl::hopscotch_map<int, WED_Persistent *>	ObjectMap;
+	typedef unordered_map<int, WED_Persistent *>	ObjectMap;
+//	typedef tsl::hopscotch_map<int, WED_Persistent *>	ObjectMap;
+//	typedef tsl::robin_map<int, WED_Persistent *>	ObjectMap;
 
 	ObjectMap		mObjects;		// Our objects!
 	bool			mDying;			// Flag to self - WE are killing ourselves - ignore objects.
