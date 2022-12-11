@@ -36,31 +36,31 @@ enum {
 	group_Terrain        = 1,        // no negative terrain offsets, positive up to + 9
 	group_Beaches        = 20,       // good for +/- 9 offset
 
-	group_AirportsBegin	 = 40,       // only negative offsets here
+	group_AirportsBegin	 = 40,       // only negative offsets added to this
 
-//	group_UnpavedTaxiwaysBegin = 50,
-//	group_UnpavedTaxiwaysEnd = 70,
+	group_UnpavedTaxiwaysBegin = 50,
+	group_UnpavedTaxiwaysEnd = 1050,
 
-	group_UnpavedRunwaysBegin = 80,
-	group_UnpavedRunwaysEnd = 100,
+	group_UnpavedRunwaysBegin =1070,
+	group_UnpavedRunwaysEnd = 1090,
 
-	group_ShouldersBegin = 120,
-	group_ShouldersEnd   = 140,
+	group_ShouldersBegin = 1110,
+	group_ShouldersEnd   = 1130,
 	
-	group_TaxiwaysBegin  = 160,      // max 1000 taxiways PLUS +/- 9 offset
-	group_TaxiwaysEnd    = 1160,
+	group_TaxiwaysBegin  = 1150,      // max 1000 taxiways PLUS +/- 9 offset
+	group_TaxiwaysEnd    = 2150,
 	
-	group_RunwaysBegin   = 1180,     // max 20 runways PLUS +/- 9 offset
-	group_RunwaysEnd     = 1200,
+	group_RunwaysBegin   = 2170,     // max 20 runways PLUS +/- 9 offset
+	group_RunwaysEnd     = 2190,
 
-	group_Markings       = 1220,     // good for +/- 9 offset
+	group_Markings       = 2200,     // good for +/- 9 offset
 
-	group_AirportsEnd    = 1230,     // only positive offsets here
+	group_AirportsEnd    = 2210,     // only positive offsets added to this
 
-	group_Footprints	 = 1250,
-	group_Roads          = 1270,
-	group_Objects        = 1290,
-	group_LightObjects   = 1310,
+	group_Footprints	 = 2230,
+	group_Roads          = 2250,
+	group_Objects        = 2270,
+	group_LightObjects   = 2290,
 };
 
 // To draw the preview in X-Plane draw order, we build a draw-obj functor for each item, sort them, then draw.
