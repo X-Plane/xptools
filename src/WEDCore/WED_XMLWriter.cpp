@@ -59,12 +59,11 @@
 */
 
 #define FIX_EMPTY 0
-#define FAST_SPRINTF_REPLACEMENTS 1
-#define FAST_IO_REPLACEMENTS 1
+#define FAST_PRINTF_REPLACEMENTS 1
 
 static void fput_indented_name(int n, FILE* fi, const char *name, bool add_slash = false) 
 {
-#if FAST_IO_REPLACEMENTS
+#if FAST_PRINTF_REPLACEMENTS
 	char c[64];
 	auto p = c;
 	while (n--)
@@ -73,6 +72,7 @@ static void fput_indented_name(int n, FILE* fi, const char *name, bool add_slash
 	if (add_slash)
 		*p++ = '/';
 	auto l = strlen(name);
+	DebugAssert(l < sizeof(c) - (p - c));
 	memcpy(p, name, l);
 	p += l;
 	fwrite(c, p - c, 1, fi);
@@ -173,18 +173,20 @@ WED_XMLElement::~WED_XMLElement()
 	{
 		fput_indented_name(indent, file, name);
 
-		char c[128];
+		char c[256];
 		c[0] = ' ';
 
 		for(const auto& a : attrs)
 		{
-#if FAST_IO_REPLACEMENTS
+#if FAST_PRINTF_REPLACEMENTS
 			auto l = strlen(a.first);
 			memcpy(c + 1, a.first, l);
 			auto p = c + 1 + l;
 			*p++ = '=';	*p++ = '"';
-			memcpy(p, a.second.c_str(), a.second.size());
-			p += a.second.size();
+			DebugAssert(a.second.size() < sizeof(c) - (p-c));
+			l = min (a.second.size(), sizeof(c) - l - 2);      // this clips property values to ~230 chars
+			memcpy(p, a.second.c_str(), l);
+			p += l;
 			*p++ = '"';
 			fwrite(c, p - c, 1, file);
 #else
