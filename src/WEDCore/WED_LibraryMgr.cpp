@@ -177,7 +177,7 @@ void		WED_LibraryMgr::GetResourceChildren(const string& r, int filter_package, v
 
 	while(me != res_table.end())
 	{
-		if(no_dirs && me->second.res_type == res_Directory)			break;
+		if (no_dirs && me->second.res_type == res_Directory) { ++me; continue; }
 		if(me->first.size() < r.size())								break;
 		if(strncasecmp(me->first.c_str(),r.c_str(),r.size()) != 0)	break;
 		// Ben says: even in WED 1.6 we still don't show private or deprecated stuff
