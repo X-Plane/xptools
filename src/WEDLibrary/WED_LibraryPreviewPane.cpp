@@ -134,7 +134,7 @@ void		WED_LibraryPreviewPane::ReceiveMessage(GUI_Broadcaster * inSrc, intptr_t i
 		else
 			mVariant = 0;
 
-		char s[16]; 
+		char s[16];
 		if(mType == res_Forest)
 			sprintf(s, "%dD", mVariant + 2);
 		else
@@ -185,7 +185,7 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type, int vari
 	{
 		const for_info_t* fst;
 		if (mResMgr->GetFor(mRes, fst) && fst->has_3D)
-		{ 
+		{
 			mInfoButton->SetDescriptor("3D");
 			mVariant = 1;
 			mNumVariants = 2;
@@ -474,19 +474,33 @@ void	WED_LibraryPreviewPane::begin3d(const int *b, double radius_m)
 		glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH_COMPONENT, dx, dy); CHECK_GL_ERR
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, mDepthBuf); CHECK_GL_ERR
 
+		bool disable_MSAA = false;
 		if(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
 		{
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mFBO); CHECK_GL_ERR // copy the background - since we dont use any
-	                                                                   // blend mode when Bliting buffer back at the end
+			                                                           // blend mode when Bliting buffer back at the end
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-			glBlitFramebuffer(b[0], b[1], b[2], b[3], 0, 0, dx, dy, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT, GL_NEAREST); CHECK_GL_ERR
-			glBindFramebuffer(GL_FRAMEBUFFER, mFBO);      CHECK_GL_ERR
-			glViewport(0, 0, dx, dy);                     CHECK_GL_ERR
-
+			glBlitFramebuffer(b[0], b[1], b[2], b[3], 0, 0, dx, dy, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+			int glerr = glGetError();
+			if(glerr != GL_NONE)//TODO:mroe: seen GL_INVALID_OPERATION Error due format mismatch of GL_DEPTH_BUFFER_BIT size , cancel MSAA at this point for now
+			{
+				LOG_MSG("E/Lpp BlitFramebuffer failed %d %d %s\n", mColBuf, mDepthBuf, gluErrorString(glerr));
+				disable_MSAA = true;
+			}
+			else
+			{
+				glBindFramebuffer(GL_FRAMEBUFFER, mFBO);      CHECK_GL_ERR
+				glViewport(0, 0, dx, dy);                     CHECK_GL_ERR
+			}
 		}
 		else
 		{
 			LOG_MSG("E/Lpp FBO incomplete %d %d %s %s\n", mColBuf, mDepthBuf, gluErrorString(glGetError()), gluErrorString(glGetError()));
+			disable_MSAA = true;
+		}
+
+		if(disable_MSAA)
+		{
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			glDeleteFramebuffers(1, &mFBO);
 			glDeleteRenderbuffers(1, &mColBuf);
@@ -494,10 +508,10 @@ void	WED_LibraryPreviewPane::begin3d(const int *b, double radius_m)
 			mMSAA = 0;
 			glViewport(b[0], b[1], dx, dy);
 		}
-	}
-	else
+    }
+    else
 #endif
-	glViewport(b[0], b[1], dx, dy);
+        glViewport(b[0], b[1], dx, dy);
 
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
@@ -524,8 +538,8 @@ void	WED_LibraryPreviewPane::end3d(const int *b)
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 
-#if USE_2X2MSAA
 	glPopAttrib();
+#if USE_2X2MSAA
 	if(mMSAA)
 	{
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);      CHECK_GL_ERR
@@ -539,9 +553,8 @@ void	WED_LibraryPreviewPane::end3d(const int *b)
 		glDeleteRenderbuffers(1, &mColBuf);
 		glDeleteRenderbuffers(1, &mDepthBuf);
 	}
-	glDisable(GL_LIGHTING);
 #endif
-
+	glDisable(GL_LIGHTING);
 }
 
 void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)

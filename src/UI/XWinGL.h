@@ -47,10 +47,6 @@ public:
 	virtual ~glWidget(void);
 	void draw();
 
-protected:
-
-    void resize(int X,int Y,int W,int H);
-
 private:
 	XWinGL*   mXWinGL;
 	GLContext mSharedContext;
