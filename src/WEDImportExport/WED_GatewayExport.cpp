@@ -71,6 +71,7 @@
 #include "WED_PolygonPlacement.h"
 #include "WED_DrapedOrthophoto.h"
 #include "WED_ExclusionZone.h"
+#include "WED_RoadEdge.h"
 #include "WED_StringPlacement.h"
 #include "GUI_Timer.h"
 #include "GUI_Resources.h"
@@ -97,6 +98,7 @@
 #define ATC_FLOW_TAG       1
 #define ATC_TAXI_ROUTE_TAG 2
 #define ATC_GROUND_ROUTES_TAG 8
+#define ROADS_TAG 86
 
 static string saved_uname;
 static string saved_passwd;
@@ -154,6 +156,15 @@ static bool has_routes(WED_Airport* who, route_types type)
 		CollectRecursive(who, back_inserter(routes), ThingNotHidden, [](WED_Thing* route)->bool { return static_cast<WED_TaxiRoute*>(route)->AllowAircraft(); }, WED_TaxiRoute::sClass);
 
 	return routes.size() > 0;
+}
+
+static bool has_roads(WED_Airport* who)
+{
+	vector<WED_RoadEdge*> roads;
+
+	CollectRecursive(who, back_inserter(roads), ThingNotHidden, TakeAlways);
+
+	return roads.size() > 0;
 }
 
 // We are intentionally IGNORING lin/pol/str and exclusion zones...this is 3-d in the 'user' sense
@@ -622,6 +633,8 @@ void WED_GatewayExportDialog::Submit()
 			features += "," + to_string(ATC_TAXI_ROUTE_TAG);
 		if (has_routes(apt, truck_route))
 			features += "," + to_string(ATC_GROUND_ROUTES_TAG);
+		if (has_roads(apt))
+			features += "," + to_string(ROADS_TAG);
 
 		if(!features.empty())                        // remove leading ","
 			features.erase(features.begin());

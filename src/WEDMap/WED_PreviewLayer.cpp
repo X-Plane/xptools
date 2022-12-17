@@ -461,6 +461,8 @@ void draw_agp_at_ll(ITexMgr * tman, const agp_t * agp, const Point2& loc, float 
 const struct { const char * name; int group_lo;  int group_hi; }	kGroupNames[] = {
 	"terrain",		group_Terrain,			group_Terrain,
 	"beaches",		group_Beaches,			group_Beaches,
+	"unpaved_taxiways",	group_UnpavedTaxiwaysBegin,		group_UnpavedTaxiwaysEnd,
+	"unpaved_runways",	group_UnpavedTaxiwaysBegin,		group_UnpavedTaxiwaysEnd,
 	"shoulders",	group_ShouldersBegin,	group_ShouldersEnd,
 	"taxiways",		group_TaxiwaysBegin,	group_TaxiwaysEnd,
 	"runways",		group_RunwaysBegin,		group_RunwaysEnd,
@@ -1918,8 +1920,10 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		WED_Runway * rwy = SAFE_CAST(WED_Runway,entity);
 		if(rwy)
 		{
-			mPreviewItems.push_back(new preview_runway(rwy,mRunwayLayer++,0,GetResolver()));
-			mPreviewItems.push_back(new preview_runway(rwy,mShoulderLayer++,1,GetResolver()));
+			mPreviewItems.push_back(new preview_runway(rwy, mRunwayLayer++ - (rwy->GetSurface() >= surf_Grass ?
+				 group_RunwaysBegin - group_UnpavedRunwaysBegin : 0), 0, GetResolver()));
+
+			mPreviewItems.push_back(new preview_runway(rwy, mShoulderLayer++, 1, GetResolver()));
 		}
 	}
 	else if (sub_class == WED_Helipad::sClass)
@@ -1937,7 +1941,8 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		WED_Taxiway * taxi = SAFE_CAST(WED_Taxiway,entity);
 		if(taxi)
 		{
-			mPreviewItems.push_back(new preview_taxiway(taxi,mTaxiLayer++,GetResolver()));
+			mPreviewItems.push_back(new preview_taxiway(taxi,mTaxiLayer++ - (taxi->GetSurface() >= surf_Grass ?
+				group_TaxiwaysBegin - group_UnpavedTaxiwaysBegin : 0) ,GetResolver()));
 
 // f'd up - its culling by taxiway polygon size and not by gis chain line width. And thats after all the dynamic casting, boundig box pulling and all ...oh my.
 

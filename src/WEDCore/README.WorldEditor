@@ -17,6 +17,16 @@ Planned functionality for WED 2.5 not yet included in the alpha versions
    - automatic creation of edge outlines for paved surfaces
 
 =======
+WED 2.5.0r1 12/01/22
+   Bug fix:
+   - fix Linux w/Mesa driver not showing Library previews
+   - enable KTX2 loader
+   - fix ATTR_layer_group ordering for offsets of +5 and larger
+   - add one digit precision to tower viewpoint height selection
+   - fix regression in gridded preview not always showing all entries
+   X-Plane 12 features:
+   - submit roads tag to gateway to support special moderation
+
 WED 2.5.0b5 11/27/22
    Bug fix:
    - rendering objects with LINES followd by TRIS in the same LOD caused artefacts

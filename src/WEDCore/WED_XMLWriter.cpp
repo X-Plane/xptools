@@ -59,9 +59,32 @@
 */
 
 #define FIX_EMPTY 0
-#define FAST_SPRINTF_REPLACEMENTS 1
+#define FAST_PRINTF_REPLACEMENTS 1
 
-static void fput_indented_lt(int n, FILE * fi, bool add_slash = false) { const char * spaces = "          </"; fwrite(spaces + 10 - n, min(n, 10) + 1 + add_slash, 1, fi); }
+static void fput_indented_name(int n, FILE* fi, const char *name, bool add_slash = false) 
+{
+#if FAST_PRINTF_REPLACEMENTS
+	char c[64];
+	auto p = c;
+	while (n--)
+		*p++ = ' ';
+	*p++ = '<';
+	if (add_slash)
+		*p++ = '/';
+	auto l = strlen(name);
+	DebugAssert(l < sizeof(c) - (p - c));
+	memcpy(p, name, l);
+	p += l;
+	fwrite(c, p - c, 1, fi);
+#else
+	while (n--)
+		fputc(' ', file);
+	fputc('<');
+	if(add_slash);
+		fputc('/');
+	fputs(name, fi);
+#endif
+}
 
 static string str_escape(const string& str)
 {
@@ -148,17 +171,30 @@ WED_XMLElement::~WED_XMLElement()
 {
 	if(!flushed)
 	{
-		fput_indented_lt(indent, file);
-		fputs(name, file);
+		fput_indented_name(indent, file, name);
+
+		char c[256];
+		c[0] = ' ';
 
 		for(const auto& a : attrs)
 		{
+#if FAST_PRINTF_REPLACEMENTS
+			auto l = strlen(a.first);
+			memcpy(c + 1, a.first, l);
+			auto p = c + 1 + l;
+			*p++ = '=';	*p++ = '"';
+			DebugAssert(a.second.size() < sizeof(c) - (p-c));
+			l = min (a.second.size(), sizeof(c) - l - 2);      // this clips property values to ~230 chars
+			memcpy(p, a.second.c_str(), l);
+			p += l;
+			*p++ = '"';
+			fwrite(c, p - c, 1, file);
+#else
 			fputc(' ',file); fputs(a.first,file); fputs("=\"",file);
-//			fputs(a.second.c_str(), file);
-			fwrite(a.second.c_str(), a.second.size(), 1, file);  // faster, no strlen() needed
+			fputs(a.second.c_str(), file);
 			fputc('"',file);
+#endif
 		}
-
 		if(children.empty())
 			fputs("/>\n",file);
 		else
@@ -170,8 +206,8 @@ WED_XMLElement::~WED_XMLElement()
 
 	if(!children.empty() || flushed)
 	{
-		fput_indented_lt(indent, file, true);
-		fputs(name, file); fputs(">\n", file);
+		fput_indented_name(indent, file, name, true);
+		fputs(">\n", file);
 	}
 }
 
@@ -190,14 +226,12 @@ void WED_XMLElement::flush_from(WED_XMLElement * who)
 
 	if(!flushed)
 	{
-		fput_indented_lt(indent, file);
-		fputs(name, file);
+		fput_indented_name(indent, file, name);
 
 		for(const auto& a : attrs)
 		{
 			fputc(' ',file); fputs(a.first,file); fputs("=\"",file);
-//			fputs(a.second.c_str(), file);
-			fwrite(a.second.c_str(), a.second.size(), 1, file);  // faster, no strlen() needed
+			fputs(a.second.c_str(), file);
 			fputc('"',file);
 		}
 		fputs(">\n",file);
