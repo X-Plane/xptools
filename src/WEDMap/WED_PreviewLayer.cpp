@@ -25,6 +25,7 @@
 
 #include "ILibrarian.h"
 #include "AptDefs.h"
+#include "CompGeomUtils.h"
 #include "GISUtils.h"
 #include "MathUtils.h"
 #include "MatrixUtils.h"
@@ -1219,8 +1220,10 @@ struct	preview_facade : public preview_polygon {
 			pts.reserve(n);
 			choices.reserve(n);
 
-			Point2 ref_pt;
-			ps->GetNthPoint(0)->GetLocation(gis_Geo, ref_pt);
+			Bbox2 bounds;
+			fac->GetBounds(gis_Geo, bounds);
+			CoordTranslator2 tr;
+			CreateTranslatorForBounds(bounds, tr);
 
 			string vpath;
 			fac->GetResource(vpath);
@@ -1305,17 +1308,19 @@ struct	preview_facade : public preview_polygon {
 				if (i > n-2 && fac->HasDockingCabin())
 					continue;
 
-				Vector2 v(VectorLLToMeters(ref_pt, Vector2(ref_pt,b.p1)));
+//				Vector2 v(VectorLLToMeters(ref_pt, Vector2(ref_pt,b.p1)));
+				Point2 v = tr.Forward(b.p1);
 				// The facade preview code uses -Z / north facing coordinates, same a the OBJ8's.
 				// So we invert the y coordinates here, which will in 3D space be the Z coordinates.
 
-				pts.push_back(Point2(v.dx, -v.dy));
+				pts.push_back(Point2(v.x(), -v.y()));
 
 				if(i == n-1 && !ps->IsClosed())
 				{
 					// we count on LTO to optimize this seriously, to remove all those redundant cos(ref_pt.y) calculations.
-					v = VectorLLToMeters(ref_pt, Vector2(ref_pt,b.p2));
-					pts.push_back(Point2(v.dx, -v.dy));
+//					v = VectorLLToMeters(ref_pt, Vector2(ref_pt,b.p2));
+					v = tr.Forward(b.p2);
+					pts.push_back(Point2(v.x(), -v.y()));
 				}
 
 				if(fac->HasCustomWalls())
@@ -1337,7 +1342,7 @@ struct	preview_facade : public preview_polygon {
 
 			glMatrixMode(GL_MODELVIEW);
 			zoomer->PushMatrix();
-			Point2 l = zoomer->LLToPixel(ref_pt);
+			Point2 l = zoomer->LLToPixel(bounds.p1);
 			zoomer->Translatef(l.x(),l.y(),0.0);
 			float ppm = zoomer->GetPPM();
 			zoomer->Scalef(ppm,ppm,ppm);
