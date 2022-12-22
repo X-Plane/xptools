@@ -17,6 +17,10 @@ Planned functionality for WED 2.5 not yet included in the alpha versions
    - automatic creation of edge outlines for paved surfaces
 
 =======
+WED 2.5.0r2 12/22/22
+   Bug fix:
+   - validate meta tag "Country" to be free of extraneous prefixes created by earlier betas.
+
 WED 2.5.0r1 12/21/22
    Bug fix:
    - fix Linux w/Mesa driver not showing Library previews
