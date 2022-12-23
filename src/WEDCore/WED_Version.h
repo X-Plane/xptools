@@ -28,16 +28,16 @@
 // so you can't go using const int and other fancy-pants C++ stuff!
 
 // These versions are used in about boxes, resources, info boxes, etc.
-#define	WED_VERSION				2.5.0r2
-#define	WED_VERSION_STRING		"2.5.0r2"
+#define	WED_VERSION				2.5.0r1
+#define	WED_VERSION_STRING		"2.5.0r1"
 #define	WED_VERSION_STRING_SHORT	"2.5.0"			// omit beta/release number
 
 #define	WED_VERSION_RES			WED_VERSION_STRING
-#define	WED_VERSION_BIN			2,5,0,2
+#define	WED_VERSION_BIN			2,5,0,1
 
 // This numeric is used by the gateway to understand if our WED is up-to-date.
 // Format 1 digit major + 2 digit middle + 1 digit minor version + last digit
 // last digit is 0 for all beta versions or matches release version
-#define WED_VERSION_NUMERIC		20502
+#define WED_VERSION_NUMERIC		20501
 
 #endif /* WED_Version_H */
