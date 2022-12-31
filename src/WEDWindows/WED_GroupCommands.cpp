@@ -1324,7 +1324,8 @@ bool HasMissingResource(WED_Thing * t)
 	string r;
 	if(!get_any_resource_for_thing(t,r))
 		return false;
-
+	if (r == "::FLATTEN::.pol")
+		return false;
 	return mgr->GetResourceType(r) == res_None;
 }
 

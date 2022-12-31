@@ -17,9 +17,10 @@ Planned functionality for WED 2.5 not yet included in the alpha versions
    - automatic creation of edge outlines for paved surfaces
 
 =======
-WED 2.5.0r2 12/22/22
+WED 2.5.0r2 12/30/22
    Bug fix:
-   - validate meta tag "Country" to be free of extraneous prefixes created by earlier betas.
+   - validate meta tag "Country" to be free of extraneous prefixes created by earlier betas
+   - validate & fix buffer overflow with excessive long airline strings at ramp starts
 
 WED 2.5.0r1 12/21/22
    Bug fix:

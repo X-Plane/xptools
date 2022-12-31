@@ -1179,6 +1179,11 @@ static int ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vect
 				msgs.push_back(validation_error_t(string("Ramp start airlines string '") + orig_airlines_str + "' is not in groups of three letters.", err_ramp_airlines_is_not_in_groups_of_three, ramp, apt));
 				return is_ai_capable;
 			}
+			if (gExportTarget == wet_gateway && airlines_str.size() > 100)
+			{
+				msgs.push_back(validation_error_t(string("Ramp start airlines string '") + orig_airlines_str + "' is too long.", err_ramp_airlines_too_long, ramp, apt));
+				return is_ai_capable;
+			}
 
 			for(int i = airlines_str.length() - 1; i > 0; i -= 4)
 			{

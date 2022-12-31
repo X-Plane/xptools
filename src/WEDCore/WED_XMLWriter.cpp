@@ -64,7 +64,7 @@
 static void fput_indented_name(int n, FILE* fi, const char *name, bool add_slash = false) 
 {
 #if FAST_PRINTF_REPLACEMENTS
-	char c[64];
+	char c[32];
 	auto p = c;
 	while (n--)
 		*p++ = ' ';
@@ -78,10 +78,10 @@ static void fput_indented_name(int n, FILE* fi, const char *name, bool add_slash
 	fwrite(c, p - c, 1, fi);
 #else
 	while (n--)
-		fputc(' ', file);
-	fputc('<');
-	if(add_slash);
-		fputc('/');
+		fputc(' ', fi);
+	fputc('<', fi);
+	if(add_slash)
+		fputc('/', fi);
 	fputs(name, fi);
 #endif
 }
@@ -173,7 +173,7 @@ WED_XMLElement::~WED_XMLElement()
 	{
 		fput_indented_name(indent, file, name);
 
-		char c[256];
+		char c[500];
 		c[0] = ' ';
 
 		for(const auto& a : attrs)
@@ -183,8 +183,8 @@ WED_XMLElement::~WED_XMLElement()
 			memcpy(c + 1, a.first, l);
 			auto p = c + 1 + l;
 			*p++ = '=';	*p++ = '"';
-			DebugAssert(a.second.size() < sizeof(c) - (p-c));
-			l = min (a.second.size(), sizeof(c) - l - 2);      // this clips property values to ~230 chars
+			Assert(a.second.size() < sizeof(c) - (p-c));
+			l = min (a.second.size(), sizeof(c) - l - 3);      // this clips property values to ~480 chars
 			memcpy(p, a.second.c_str(), l);
 			p += l;
 			*p++ = '"';
@@ -264,7 +264,7 @@ void					WED_XMLElement::add_attr_int(const char * name, int value)
 		attrs.push_back(make_pair(name, string("0")));
 	else
 	{
-		char c[12];             // suffcient digits to hold even -2^31
+		char c[32];             // suffcient digits to hold even -2^31
 		char *p = c+sizeof(c);
 		bool negative =  value < 0;
 		if(negative) value = -value;
@@ -297,7 +297,7 @@ void					WED_XMLElement::add_attr_double(const char * name, double value, int de
 		attrs.push_back(make_pair(name, string("0.0")));
 	else
 	{
-		char c[20];
+		char c[32];
 #if FAST_SPRINTF_REPLACEMENTS
 		char *p = c+sizeof(c)-dec-1;
 		bool negative =  value < 0;
@@ -346,7 +346,7 @@ void					WED_XMLElement::add_attr_double(const char * name, double value, int de
 
 		attrs.push_back(make_pair(name, string(p, c+sizeof(c)-p)));
 #else
-		snprintf(c, 20, "%.*lf",dec, value);
+		snprintf(c, 31, "%.*lf",dec, value);
 		attrs.push_back(make_pair(name, string(c)));
 #endif
 	}
