@@ -51,11 +51,18 @@
 	
 	2020 update:
 	
-	The half the putc() and all of the sprintf() are gone now, down to 60sec for the 5.5GB XML file now.
+	Half the putc() and all of the sprintf() are gone now, down to 60sec for the 5.5GB XML file now.
 	The STL memory allocation for STL strings aren't much of an issue - as all but long text parameters 
 	all fit into the intrinsic space inside the string objects itself. Together with reserve(7) for the
 	attributes, which are now a vector - that means a single malloc for most WED_XMLElements.
 
+	2022 update:
+
+	Undder windows, all I/O library calls suck. Saving .xml is half as fast as under either OSX or Linux.
+	So the number of I/O calls is reduced greatly by pre-assembling full lines and fwrite() once per line 
+	in most cases for a few percent speedup on Linux, but double the speed on Windows.
+	
+	Throughput is now on all OS around 50 sec for a 5.5GB xml file.
 */
 
 #define FIX_EMPTY 0
@@ -72,9 +79,14 @@ static void fput_indented_name(int n, FILE* fi, const char *name, bool add_slash
 	if (add_slash)
 		*p++ = '/';
 	auto l = strlen(name);
-	DebugAssert(l < sizeof(c) - (p - c));
+	DebugAssert(p - c + l + 3 < sizeof(c));
 	memcpy(p, name, l);
 	p += l;
+	if (add_slash)
+	{
+		strcpy(p, ">\n");
+		p += strlen(">\n");
+	}
 	fwrite(c, p - c, 1, fi);
 #else
 	while (n--)
@@ -83,6 +95,8 @@ static void fput_indented_name(int n, FILE* fi, const char *name, bool add_slash
 	if(add_slash)
 		fputc('/', fi);
 	fputs(name, fi);
+	if (add_slash)
+		fputs(">\n", file);
 #endif
 }
 
@@ -169,46 +183,64 @@ WED_XMLElement::WED_XMLElement(
 
 WED_XMLElement::~WED_XMLElement()
 {
-	if(!flushed)
+	if (!flushed)
 	{
 		fput_indented_name(indent, file, name);
 
-		char c[500];
-		c[0] = ' ';
+// fprintf() is REALLY slow
+// unformatted putc(), puts() speed up xml file writing by 2x
+// but, especially under windows, any file I/O is SLOW
+// so we pre-assemble essentially the whole line and frwite() once per line.
+// this further reduces xml save time by 30%
 
-		for(const auto& a : attrs)
-		{
+// saving xml not ony sucks when dealing with the global airports (some 10 GB), but we like to do foreground
+//  auto-save some day, so saving should really be fast
+
 #if FAST_PRINTF_REPLACEMENTS
+		char c[256];
+		auto p = c;
+		for (const auto& a : attrs)
+		{
+			*p++ = ' ';
 			auto l = strlen(a.first);
-			memcpy(c + 1, a.first, l);
-			auto p = c + 1 + l;
+			if (p - c + l + 7 > sizeof(c)) goto long_string;
+			memcpy(p, a.first, l);
+			p += l;
+
 			*p++ = '=';	*p++ = '"';
-			Assert(a.second.size() < sizeof(c) - (p-c));
-			l = min (a.second.size(), sizeof(c) - l - 3);      // this clips property values to ~480 chars
+			l = a.second.size();
+			if (p - c + l + 7 > sizeof(c)) goto long_string;
 			memcpy(p, a.second.c_str(), l);
 			p += l;
 			*p++ = '"';
-			fwrite(c, p - c, 1, file);
-#else
-			fputc(' ',file); fputs(a.first,file); fputs("=\"",file);
-			fputs(a.second.c_str(), file);
-			fputc('"',file);
-#endif
 		}
-		if(children.empty())
-			fputs("/>\n",file);
-		else
-			fputs(">\n",file);
-	}
 
+		if (children.empty())
+			*p++ = '/';
+		strcpy(p, ">\n");
+		p += strlen(">\n");
+
+		fwrite(c, p - c, 1, file);
+		goto done;
+long_string:
+#endif
+		for (const auto& a : attrs)
+		{
+			fputc(' ', file); fputs(a.first, file); fputs("=\"", file);
+			fputs(a.second.c_str(), file);
+			fputc('"', file);
+		}
+		if (children.empty())
+			fputs("/>\n", file);
+		else
+			fputs(">\n", file);
+	}
+done:
 	for(vector<WED_XMLElement *>::iterator c = children.begin(); c != children.end(); ++c)
 		delete *c;
 
 	if(!children.empty() || flushed)
-	{
 		fput_indented_name(indent, file, name, true);
-		fputs(">\n", file);
-	}
 }
 
 void WED_XMLElement::flush()
@@ -259,7 +291,7 @@ void					WED_XMLElement::add_attr_int(const char * name, int value)
 #endif
 	DebugAssert(!flushed);
 //	attrs[name] = to_string(value); // using a map or to_string() is friggin slow - wanna spend 10% of the _whole_ time to save in his _one_ line ???
-#if FAST_SPRINTF_REPLACEMENTS
+#if FAST_PRINTF_REPLACEMENTS
 	if(value == 0)
 		attrs.push_back(make_pair(name, string("0")));
 	else
@@ -298,7 +330,7 @@ void					WED_XMLElement::add_attr_double(const char * name, double value, int de
 	else
 	{
 		char c[32];
-#if FAST_SPRINTF_REPLACEMENTS
+#if FAST_PRINTF_REPLACEMENTS
 		char *p = c+sizeof(c)-dec-1;
 		bool negative =  value < 0;
 		if(negative) value = -value;
