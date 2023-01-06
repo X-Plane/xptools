@@ -141,15 +141,15 @@ bool	WED_UndoMgr::UndoToMark(void)
 
 	while (mUndoSinceMark > 0)
 	{
-		Undo();
-
-		if (mUndoSinceMark && mUndo.empty())
+		if (mUndo.empty())
 		{
 			LOG_MSG("I/Undo hit end of buffer before hitting mark, %d ops not undone", mUndoSinceMark);
 			mUndoSinceMark = -1;
 			return true;
 		}
+		Undo();
 	}
+	mUndoSinceMark = -1;
 	return false;
 }
 

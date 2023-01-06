@@ -96,13 +96,14 @@ static void fput_indented_name(int n, FILE* fi, const char *name, bool add_slash
 		fputc('/', fi);
 	fputs(name, fi);
 	if (add_slash)
-		fputs(">\n", file);
+		fputs(">\n", fi);
 #endif
 }
 
 static string str_escape(const string& str)
 {
 	string result;
+	result.reserve(str.size());
 
 	UTF8 * b = (UTF8 *) str.c_str();
 	UTF8 * e = b + str.length();

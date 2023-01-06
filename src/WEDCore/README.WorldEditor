@@ -17,10 +17,14 @@ Planned functionality for WED 2.5 not yet included in the alpha versions
    - automatic creation of edge outlines for paved surfaces
 
 =======
-WED 2.5.0r2 12/30/22
-   Bug fix:
+WED 2.5.0r3 1/6/23
+   Features for all X-Plane versions:
    - validate meta tag "Country" to be free of extraneous prefixes created by earlier betas
-   - validate & fix buffer overflow with excessive long airline strings at ramp starts
+   Bug fix:
+   - fix heuristics for gateway export to reliably detect presence of terrain_FX items in scenery
+
+WED 2.5.0r2 12/21/22
+   LR internal use only
 
 WED 2.5.0r1 12/21/22
    Bug fix:
@@ -30,6 +34,7 @@ WED 2.5.0r1 12/21/22
    - add one digit precision to tower viewpoint height selection
    - fix regression in gridded preview not always showing all entries
    - WED-1444 improve facade preview offsets from exact locations as shown by structure lines
+   - validate & fix buffer overflow with excessive long airline strings at ramp starts
    X-Plane 12 features:
    - submit roads tag to gateway to support special moderation
 
