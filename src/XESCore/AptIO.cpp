@@ -1323,10 +1323,10 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 						rwy->has_centerline, rwy->edge_light_code, rwy->has_distance_remaining,
 						rwy->id[0].c_str(),CGAL2DOUBLE(rwy->ends.source().y()),CGAL2DOUBLE(rwy->ends.source().x()), rwy->disp_mtr[0], rwy->blas_mtr[0],
 						rwy->marking_code[0], rwy->app_light_code[0], rwy->has_tdzl[0],
-						(version < 1200 && rwy->reil_code[0] <= 2) ? rwy->reil_code[0] : 0,
+						(version >= 1200 || rwy->reil_code[0] <= 2) ? rwy->reil_code[0] : 0,
 						rwy->id[1].c_str(),CGAL2DOUBLE(rwy->ends.target().y()),CGAL2DOUBLE(rwy->ends.target().x()), rwy->disp_mtr[1], rwy->blas_mtr[1],
 						rwy->marking_code[1], rwy->app_light_code[1], rwy->has_tdzl[1],
-						(version < 1200 && rwy->reil_code[1] <= 2) ? rwy->reil_code[1] : 0);
+						(version >= 1200 || rwy->reil_code[1] <= 2) ? rwy->reil_code[1] : 0);
 
 			if(version >= 1200 && rwy->has_105)
 				fprintf(fi,"%d %d %d %.1f %4.2f %4.2f %4.2f %4.2f" CRLF, apt_rwy_skids,
