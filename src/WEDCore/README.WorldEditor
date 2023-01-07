@@ -17,11 +17,12 @@ Planned functionality for WED 2.5 not yet included in the alpha versions
    - automatic creation of edge outlines for paved surfaces
 
 =======
-WED 2.5.0r3 1/6/23
+WED 2.5.0r3 1/7/23
    Features for all X-Plane versions:
    - validate meta tag "Country" to be free of extraneous prefixes created by earlier betas
    Bug fix:
    - fix heuristics for gateway export to reliably detect presence of terrain_FX items in scenery
+   - change run/taxiway textures to hardcoded map to isolate against X-Plane library changes
 
 WED 2.5.0r2 12/21/22
    LR internal use only

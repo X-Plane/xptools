@@ -116,7 +116,7 @@ string WED_LibraryMgr::GetLocalPackage() const
 
 bool WED_LibraryMgr::GetLineVpath(int lt, string& vpath)
 {
-	map<int,string>::iterator l = default_lines.find(lt);
+	auto l = default_lines.find(lt);
 	if(l == default_lines.end())
 		return false;
 	else
@@ -645,90 +645,69 @@ void WED_LibraryMgr::RescanLines()
 
 void WED_LibraryMgr::RescanSurfaces()
 {
-	// since we don't have (yet) an agree'd about list of taxiway texture enums vs vpaths,
-	// we simply take ALL vpaths matching the right prefix, in alphabetical order from the LR default sceneries instead
+	const map<int, pair<string, string> > xp12_surfaces = {
+		{ 20, {"asphalt_L/taxiway.pol",			"asphalt_L/strips.pol" }},
+		{ 21, {"asphalt_L/taxiway_patch.pol",	"asphalt_L/patched.pol" }},
+		{ 22, {"asphalt_L/taxiway_plain.pol",	"asphalt_L/plain.pol" }},
+		{ 23, {"asphalt_L/taxiway_worn.pol",	"asphalt_L/worn.pol" }},
+		{  1, {"asphalt/taxiway.pol",			"asphalt/strips.pol" }},
+		{ 24, {"asphalt/taxiway_patch.pol",		"asphalt/patched.pol" }},
+		{ 25, {"asphalt/taxiway_plain.pol",		"asphalt/plain.pol" }},
+		{ 26, {"asphalt/taxiway_worn.pol",		"asphalt/worn.pol" }},
+		{ 27, {"asphalt_D/taxiway.pol",			"asphalt_D/strips.pol"  }},
+		{ 28, {"asphalt_D/taxiway_patch.pol",	"asphalt_D/patched.pol" }},
+		{ 29, {"asphalt_D/taxiway_plain.pol",	"asphalt_D/plain.pol" }},
+		{ 30, {"asphalt_D/taxiway_worn.pol",	"asphalt_D/worn.pol" }},
+		{ 31, {"asphalt_D2/taxiway.pol",		"asphalt_D2/strips.pol" }},
+		{ 32, {"asphalt_D2/taxiway_patch.pol",	"asphalt_D2/patched.pol" }},
+		{ 33, {"asphalt_D2/taxiway_plain.pol",	"asphalt_D2/plain.pol" }},
+		{ 34, {"asphalt_D2/taxiway_worn.pol",	"asphalt_D2/worn.pol" }},
+		{ 35, {"asphalt_D3/taxiway.pol",		"asphalt_D3/strips.pol" }},
+		{ 36, {"asphalt_D3/taxiway_patch.pol",	"asphalt_D3/patched.pol" }},
+		{ 37, {"asphalt_D3/taxiway_plain.pol",	"asphalt_D3/plain.pol" }},
+		{ 38, {"asphalt_D3/taxiway_worn.pol",	"asphalt_D3/worn.pol" }},
+		{ 50, {"concrete_L/taxiway.pol",		"concrete_L/new.pol"  }},
+		{ 51, {"concrete_L/taxiway_dirty.pol",	"concrete_L/dirty.pol" }},
+		{ 52, {"concrete_L/taxiway_worn.pol",	"concrete_L/worn.pol"  }},
+		{  2, {"concrete/taxiway.pol",			"concrete/new.pol" }},
+		{ 53, {"concrete/taxiway_dirty.pol",	"concrete/dirty.pol" }},
+		{ 54, {"concrete/taxiway_worn.pol",		"concrete/worn.pol" }},
+		{ 55, {"concrete_D/taxiway.pol",		"concrete_D/new.pol" }},
+		{ 56, {"concrete_D/taxiway_dirty.pol",	"concrete_D/dirty.pol" }},
+		{ 57, {"concrete_D/taxiway_worn.pol",	"concrete_D/worn.pol" }},
+		{  3, {"grass/taxiway.pol",				"" }},
+		{  4, {"dirt/taxiway.pol",				"" }},
+		{  5, {"gravel/taxiway.pol",			"" }},
+		{ 12, {"lakebed/taxiway.pol",			"" }},
+		{ 14, {"snow/taxiway.pol",				"" }} };
+
+	const char* surf_pfx = "lib/airport/default_runways/";
+	const char* dpol_pfx = "lib/airport/ground/pavement/";
 
 	default_surfaces.clear();
-	int asphalt_enums(surf_Asphalt_1);
-	int concrete_enums(surf_Concrete_1);
 
-	for (auto& rt : res_table)
-		if (rt.second.is_default && rt.second.res_type == res_Polygon && rt.first.compare(0, strlen("lib/airport/default_runways/"), "lib/airport/default_runways/") == 0)
-			if (rt.first.find("taxiway", rt.first.find_last_of('/')) != string::npos)
-			{
-				if (rt.first.find("asphalt_L") != string::npos)
-					default_surfaces[asphalt_enums++] = rt.first;
-				else if (rt.first.find("concrete_L") != string::npos)
-					default_surfaces[concrete_enums++] = rt.first;
-			}
-
-	for (auto& rt : res_table)
-		if (rt.second.is_default && rt.second.res_type == res_Polygon && rt.first.compare(0, strlen("lib/airport/default_runways/"), "lib/airport/default_runways/") == 0)
-			if (rt.first.find("taxiway", rt.first.find_last_of('/')) != string::npos)
-			{
-				if (rt.first.find("asphalt/") != string::npos)
-					default_surfaces[asphalt_enums++] = rt.first;
-				else if (rt.first.find("concrete/") != string::npos)
-					default_surfaces[concrete_enums++] = rt.first;
-			}
-
-	for (auto& rt : res_table)
-		if (rt.second.is_default && rt.second.res_type == res_Polygon && rt.first.compare(0, strlen("lib/airport/default_runways/"), "lib/airport/default_runways/") == 0)
-			if (rt.first.find("taxiway", rt.first.find_last_of('/')) != string::npos)
-			{
-				if (rt.first.find("asphalt_D") != string::npos)
-					default_surfaces[asphalt_enums++] = rt.first;
-				else if (rt.first.find("concrete_D") != string::npos)
-					default_surfaces[concrete_enums++] = rt.first;
-				else if (rt.first.find("grass") != string::npos)
-					default_surfaces[surf_Grass] = rt.first;
-				else if (rt.first.find("gravel") != string::npos)
-					default_surfaces[surf_Gravel] = rt.first;
-				else if (rt.first.find("dirt") != string::npos)
-					default_surfaces[surf_Dirt] = rt.first;
-				else if (rt.first.find("lakebed") != string::npos)
-					default_surfaces[surf_Lake] = rt.first;
-				else if (rt.first.find("snow") != string::npos)
-					default_surfaces[surf_Snow] = rt.first;
-			}
-
-	// get all rpaths for the default vpaths we have
-	unordered_map<int, string> all_rpaths;
-	for (auto& vp : default_surfaces)
-		all_rpaths[vp.first] = res_table[vp.second].real_paths.back();
-
-	// now go though all default lib polygons that do NOT match the default_runway prefix
-	// and see which ones match the rpath of the ones we use for the default textures.
-	// Then we switch the vpaths out for those. 
-	// Why ?
-	// We use the default_surfaces table for two purposes: depiction in WED & knowing which vpath to substitute when 
-	// converting taxiways into polygons and vice versa.
-
-	for (auto& rt : res_table)
+	for (auto& surf : xp12_surfaces)
 	{
-		if (rt.second.is_default && rt.second.res_type == res_Polygon && rt.first.compare(0, strlen("lib/airport/default_runways/"), "lib/airport/default_runways/") != 0)
-			if (rt.second.status >= status_Public && rt.second.real_paths.size() > 0)
-			{
-				auto rp = all_rpaths.begin();
-				while (rp != all_rpaths.end())
-				{
-					if (rp->second == rt.second.real_paths.back())
-					{
-						default_surfaces[rp->first] = rt.first;
-						break;
-					}
-					rp++;
-				}
-			}
+		string surf_vpath = string(surf_pfx) + surf.second.first;
+		auto rt = res_table.find(surf_vpath);
+		if (rt != res_table.end() && rt->second.is_default)
+		{
+			string dpol_vpath = string(dpol_pfx) + surf.second.second;
+			auto rt_dpol = res_table.find(dpol_vpath);
+			if (rt_dpol != res_table.end() && rt_dpol->second.is_default && rt_dpol->second.status >= status_Public)
+				default_surfaces[ENUM_Import(Surface_Type, surf.first)] = make_pair(dpol_vpath, true);
+			else
+				default_surfaces[ENUM_Import(Surface_Type, surf.first)] = make_pair(surf_vpath, false);         // no public .pol equivalent
+		}
 	}
 
 	// this should only occurr with XP11 or older, XP11 user can at least get nice pavement and the "convert To" uses this info, too.
 	if(default_surfaces.size() == 0)
 	{
 		if(res_table.count("lib/airport/pavement/asphalt_3D.pol") > 0)
-			default_surfaces[surf_Asphalt] = "lib/airport/pavement/asphalt_3D.pol";
+			default_surfaces[surf_Asphalt] = make_pair("lib/airport/pavement/asphalt_3D.pol", true);
 		if (res_table.count("lib/airport/pavement/concrete_1D.pol") > 0)
-			default_surfaces[surf_Concrete] = "lib/airport/pavement/concrete_1D.pol";
+			default_surfaces[surf_Concrete] = make_pair("lib/airport/pavement/concrete_1D.pol", true);
 	}
 	else
 		LOG_MSG("I/Lib found %d XP12 style surface types\n", (int) default_surfaces.size());
@@ -739,18 +718,21 @@ bool WED_LibraryMgr::GetSurfVpath(int surf, string &res)
 	auto it = default_surfaces.find(surf);
 	if (it != default_surfaces.end())
 	{
-		res = it->second;
-		return true;
+		res = it->second.first;
+		return it->second.second;
 	}
 	else
+	{
+		res.clear();
 		return false;
+	}
 }
 
 int WED_LibraryMgr::GetSurfEnum(const string &res)
 {
-	for(auto v : default_surfaces)
+	for(auto& v : default_surfaces)
 	{
-		if(v.second == res)
+		if(v.second.first == res)
 			return v.first;
 	}
 	return -1;

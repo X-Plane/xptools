@@ -72,11 +72,11 @@ ENUM_DOMAIN(Surface_Type,"Surface Type")
 	ENUM(surf_Asphalt_11, "Asphalt D Worn",		apt_surf_asphalt_11)
 
 	ENUM(surf_Asphalt_12, "Asphalt D2",			apt_surf_asphalt_12)
-	ENUM(surf_Asphalt_13, "Asphalt D2 Patched",	apt_surf_asphalt_14)
+	ENUM(surf_Asphalt_13, "Asphalt D2 Patched",	apt_surf_asphalt_13)
 	ENUM(surf_Asphalt_14, "Asphalt D2 Plain",	apt_surf_asphalt_14)
 	ENUM(surf_Asphalt_15, "Asphalt D2 Worn",	apt_surf_asphalt_15)
 
-	ENUM(surf_Asphalt_16, "Asphalt D3",			apt_surf_asphalt_15)
+	ENUM(surf_Asphalt_16, "Asphalt D3",			apt_surf_asphalt_16)
 	ENUM(surf_Asphalt_17, "Asphalt D3 Patched",	apt_surf_asphalt_17)
 	ENUM(surf_Asphalt_18, "Asphalt D3 Plain",	apt_surf_asphalt_18)
 	ENUM(surf_Asphalt_19, "Asphalt D3 Worn",	apt_surf_asphalt_19)
@@ -178,7 +178,7 @@ ENUM_DOMAIN(Runway_Markings,"Runway Markings")
 
 ENUM_DOMAIN(Marking_Size,"Rwy Marking Sizes")
 	ENUM(mark_Auto,				"Automatic", 				apt_mark_auto)
-	ENUM(mark_Narrow,			"Narrom (0.3 m)",			apt_mark_narrow)
+	ENUM(mark_Narrow,			"Narrow (0.3 m)",			apt_mark_narrow)
 	ENUM(mark_Medium,			"Medium (0.45 m)", 			apt_mark_medium)
 	ENUM(mark_Wide,				"Wide (0.9 m)", 			apt_mark_wide)
 
