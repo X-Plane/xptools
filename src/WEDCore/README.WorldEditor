@@ -23,6 +23,7 @@ WED 2.5.0r3 1/7/23
    Bug fix:
    - fix heuristics for gateway export to reliably detect presence of terrain_FX items in scenery
    - change run/taxiway textures to hardcoded map to isolate against X-Plane library changes
+   - prevent conversion to taxiways/airport lines for entities outside airport hierachy's
 
 WED 2.5.0r2 12/21/22
    LR internal use only
