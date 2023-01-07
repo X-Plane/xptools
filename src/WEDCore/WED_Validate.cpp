@@ -1179,6 +1179,11 @@ static int ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vect
 				msgs.push_back(validation_error_t(string("Ramp start airlines string '") + orig_airlines_str + "' is not in groups of three letters.", err_ramp_airlines_is_not_in_groups_of_three, ramp, apt));
 				return is_ai_capable;
 			}
+			if (gExportTarget == wet_gateway && airlines_str.size() > 100)
+			{
+				msgs.push_back(validation_error_t(string("Ramp start airlines string '") + orig_airlines_str + "' is too long.", err_ramp_airlines_too_long, ramp, apt));
+				return is_ai_capable;
+			}
 
 			for(int i = airlines_str.length() - 1; i > 0; i -= 4)
 			{
@@ -1616,6 +1621,19 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 					}
 				if(!has_iso_code)
 					error_content = string("First 3 letters '") + c + "' are not a valid, upper case iso3166 country code";
+				else if (country[3] == ' ')
+				{
+					bool multi_prefix = false;
+					string d = country.substr(0, 3);
+						for (const auto& iso : iso3166_codes)
+							if (c == iso.front())
+							{
+								multi_prefix = true;
+								break;
+							}
+					if (multi_prefix)
+						error_content = string("Country name has multiple prefixes '") + c + "' and '" + d + "'.Delete all extraneous prefixes but one.";
+				}
 			}
 			else
 				error_content = "First 3 letters must be 3-letter iso3166 country code, followed by an optional name";

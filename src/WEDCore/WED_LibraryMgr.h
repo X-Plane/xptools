@@ -104,6 +104,8 @@ public:
 				// gets the vpath of the resource used to dar apt.dat liner markings
 	bool		GetLineVpath(int lt, string& vpath);
 				// look up apt.dat surface types and matching public .pol vpaths
+				// returns if there is a public polygon equivalent or not.
+	            // even if there isnt - may still return a vpath if there is at least a public surface
 	bool		GetSurfVpath(int surf, string& vpath);
 	int			GetSurfEnum(const string& vpath);
 
@@ -128,7 +130,7 @@ private:
 
 	string				local_package;
 	map<int, string>	default_lines;        // list of art assets for sim default lines
-	map<int, string>	default_surfaces;
+	map<int, pair<string, bool> >	default_surfaces;
 
 	friend class WED_JWFacades;
 };

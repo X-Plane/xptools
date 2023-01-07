@@ -80,6 +80,7 @@ int		WED_CanExportPack(IResolver * resolver)
 #include "WED_MetaDataDefaults.h"
 #include "WED_Menus.h"
 #include "GISUtils.h"
+#include "IHasResource.h"
 #include <chrono>
 #include "WED_ConvertCommands.h"
 #include "WED_PackageMgr.h"
@@ -307,14 +308,25 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		}
 #else
 		// mow the grass
-		vector<WED_Group*> terFX;
+		vector<WED_Thing*> terFX;
 		CollectRecursive(*apt_itr, back_inserter(terFX), IgnoreVisiblity, [](WED_Thing* t)->bool 
 			{
 				string res;
+#if TYLER_MODE
 				t->GetName(res);
 				return res == "Terrain FX";
 			},
 			WED_Group::sClass, 1);
+#else
+				if (auto tr = dynamic_cast<IHasResource*>(t))  // thats pretty slow - the reason why in TYLER_MODE we go for the group only
+				{                                              // but for user exports we can't rely on that group to already exist.
+					tr->GetResource(res);
+					return res.find("terrain_FX") != string::npos;
+				}
+				return false;
+			}
+		);
+#endif
 		if(terFX.empty())
 		{
 			wrl->StartOperation("Mow Grass");
@@ -518,6 +530,17 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				wrl->CommitCommand();
 				LOG_MSG("I/XP12 Deleted Always Flatten at %s\n", ICAO_code.c_str());
 			}
+			// get the 3D meta tag right
+			if (gExportTarget == wet_gateway || TYLER_MODE)
+			{
+				wrl->StartOperation("Force GUI/closed Metatags");
+				if (Enforce_MetaDataGuiLabel(*apt_itr))
+					wrl->CommitOperation();
+				else
+					wrl->AbortOperation();
+			}
+
+
 		}
 #endif
 #if TYLER_MODE
@@ -569,13 +592,12 @@ void	WED_DoExportPack(WED_Document * resolver, WED_MapPane * pane)
 	// ... and if the export blows up or something, it's Tyler's fault :(
 	if(!WED_ValidateApt(resolver, pane))
 		return;
+
+	auto uMgr = resolver->GetUndoMgr();
 	if (gExportTarget == wet_gateway)
 	{
-		auto uMgr = resolver->GetUndoMgr();
 		uMgr->MarkUndo();
 		DoHueristicAnalysisAndAutoUpgrade(resolver);
-		if (uMgr->UndoToMark())
-			DoUserAlert("Some of the upgrade heuristics applied during export could not be undone. Scenery was permanently altered by export.");
 	}
 #endif
 	ILibrarian * l = WED_GetLibrarian(resolver);
@@ -587,18 +609,16 @@ void	WED_DoExportPack(WED_Document * resolver, WED_MapPane * pane)
 	string pack_base;
 	l->LookupPath(pack_base);
 
-	if(gExportTarget >= wet_xplane_1130 || TYLER_MODE)
-	{
-		w->StartOperation("Force GUI/closed Metatags");
-		if(EnforceRecursive_MetaDataGuiLabel(w))
-			w->CommitOperation();
-		else
-			w->AbortOperation();
-	}
-
 	WED_ExportPackToPath(g, resolver, pack_base, problem_children);
 
-	if(!problem_children.empty())
+#if !TYLER_MODE
+	if (gExportTarget == wet_gateway)
+	{
+		if (uMgr->UndoToMark())
+			DoUserAlert("Some of the upgrade heuristics applied during export could not be undone. Scenery was permanently altered by export.");
+	}
+#endif
+		if(!problem_children.empty())
 	{
 		DoUserAlert("One or more objects could not be exported - check for self intersecting polygons and closed-ring facades crossing DFS boundaries.");
 		ISelection * sel = WED_GetSelect(resolver);

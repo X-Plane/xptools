@@ -256,26 +256,18 @@ double	LonLatDistMetersWithScale(double lon1, double lat1, double lon2, double l
 
 }
 
-
 void	CreateTranslatorForPolygon(
 					const Polygon2&		poly,
 					CoordTranslator2&	trans)
 {
 	if (poly.empty()) return;
-	trans.mSrcMin = poly[0];
-	trans.mSrcMax = poly[0];
-	for (int n = 1; n < poly.size(); ++n)
-	{
-		trans.mSrcMin.x_ = min(trans.mSrcMin.x(), poly[n].x());
-		trans.mSrcMin.y_ = min(trans.mSrcMin.y(), poly[n].y());
-		trans.mSrcMax.x_ = max(trans.mSrcMax.x(), poly[n].x());
-		trans.mSrcMax.y_ = max(trans.mSrcMax.y(), poly[n].y());
-	}
 
-	trans.mDstMin.x_ = 0.0;
-	trans.mDstMax.y_ = 0.0;
-	trans.mDstMax.x_ = (trans.mSrcMax.x() - trans.mSrcMin.x()) * DEG_TO_MTR_LAT * cos((trans.mSrcMin.y() + trans.mSrcMax.y()) * 0.5 * DEG_TO_RAD);
-	trans.mDstMax.y_ = (trans.mSrcMax.y() - trans.mSrcMin.y()) * DEG_TO_MTR_LAT;
+	Bbox2 bounds;
+	for (int n = 0; n < poly.size(); ++n)
+	{
+		bounds += poly[n];
+	}
+	CreateTranslatorForBounds(bounds, trans);
 }
 
 #if !NO_CGAL
@@ -284,27 +276,54 @@ void	CreateTranslatorForBounds(
 					const Point_2&		inSrcMax,
 					CoordTranslator_2&	trans)
 {
-	trans.mSrcMin = inSrcMin;
-	trans.mSrcMax = inSrcMax;
-
-	trans.mDstMin = Point_2(0,0);
-	trans.mDstMax = Point_2(
-					(trans.mSrcMax.x() - trans.mSrcMin.x()) * DEG_TO_MTR_LAT * cos(to_double((trans.mSrcMin.y() + trans.mSrcMax.y())) * 0.5 * DEG_TO_RAD),
-					(trans.mSrcMax.y() - trans.mSrcMin.y()) * DEG_TO_MTR_LAT);
+	Bbox2 bounds(inSrcMin, inSrcMax);
+	CreateTranslatorForBounds(bounds, trans);
 }
 #endif
+
+struct deg2mtr {
+	double lon;
+	double lat;
+	deg2mtr(double latitude) {
+
+		// https://en.wikipedia.org/wiki/Earth_radius#Principal_radii_of_curvature
+
+		const double a = 6378137.0;
+		const double b = 6356752.3;
+		const double eps_sqr = 1.0 - (b * b) / (a * a);
+
+		double phi = latitude * DEG_TO_RAD;
+		double sin_phi = sin(phi);
+		double cos_phi = cos(phi);
+
+		double N = a / sqrt(1.0 - eps_sqr * sin_phi * sin_phi);
+		double M = (1.0 - eps_sqr) / (a * a) * N * N * N;
+
+		lon = N * 2.0 * M_PI / 360.0 * cos_phi;
+		lat = M * 2.0 * M_PI / 360.0;
+	}
+};
 
 void	CreateTranslatorForBounds(
 					const Bbox2&		inBounds,
 					CoordTranslator2&	trans)
 {
+	// This accounts for the unequal lon/latitude scales due to a ellipsoid earth model first used in X-Plane 12.
+	struct deg2mtr scale(inBounds.centroid().y());
+
+	// But this still does not bring the coord translator to the same level of accuracy as the rest of WED's map:
+	// Earth curvature also means scale varies with lattitude and y-meters vary with longitudinal difference 
+	// from the reference point. Basically a gnomometric-like projection would be required to at least keep errors 
+	// for relatively small objects at bay.
+	// Improving on this would require using better than linear interpolation in CompGeomUtils.cpp
+
 	trans.mSrcMin = inBounds.p1;
 	trans.mSrcMax = inBounds.p2;
 
 	trans.mDstMin = Point2(0,0);
 	trans.mDstMax = Point2(
-					(trans.mSrcMax.x() - trans.mSrcMin.x()) * DEG_TO_MTR_LAT * cos(((trans.mSrcMin.y() + trans.mSrcMax.y())) * 0.5 * DEG_TO_RAD),
-					(trans.mSrcMax.y() - trans.mSrcMin.y()) * DEG_TO_MTR_LAT);
+					(trans.mSrcMax.x() - trans.mSrcMin.x()) * scale.lon,
+					(trans.mSrcMax.y() - trans.mSrcMin.y()) * scale.lat);
 }
 
 

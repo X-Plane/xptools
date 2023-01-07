@@ -87,6 +87,9 @@ int		WED_CanConvertTo(IResolver * resolver, const char* DstClass)
 		auto chain = dynamic_cast<WED_GISChain*>(src);
 		if (chain  && dstIsPolygon)
 			if (!chain->IsClosed() || chain->GetNumPoints() < 3) return 0;
+
+		if (DstClass == WED_Taxiway::sClass || DstClass == WED_AirportChain::sClass)
+			if (WED_GetParentAirport(src) == nullptr) return 0;
 	}
 
 	return 1;

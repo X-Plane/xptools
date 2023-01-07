@@ -110,7 +110,7 @@ enum validate_error_t
 	err_ramp_airlines_contains_non_lowercase_letters,
 	err_ramp_airlines_is_not_in_groups_of_three,
 	err_ramp_airlines_is_not_spaced_correctly,
-	err_ramp_airlines_not_group_of_three_letters,
+	err_ramp_airlines_too_long,
 	err_ramp_airlines_no_valid_airline_codes,
 	err_ramp_need_starts_suitable_for_ai_ops,
 	err_ramp_only_misc_starts_in_hotzones,
