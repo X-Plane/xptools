@@ -17,6 +17,10 @@ Planned functionality for WED 2.5 not yet included in the alpha versions
    - automatic creation of edge outlines for paved surfaces
 
 =======
+WED 2.5.1 b1
+   Bug fix:
+   - WED-1454 fix slight shift in world map layer at high zoom levels
+
 WED 2.5.0r3 1/7/23
    Features for all X-Plane versions:
    - validate meta tag "Country" to be free of extraneous prefixes created by earlier betas
