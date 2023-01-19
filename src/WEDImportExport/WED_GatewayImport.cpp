@@ -1390,49 +1390,7 @@ void WED_DoImportFromGateway(WED_Document * resolver, WED_MapPane * pane)
 
 #if GATEWAY_IMPORT_FEATURES
 
-static WED_Thing * find_airport_by_icao_recursive(const string& icao, WED_Thing * who)
-{
-	if(WED_Airport::sClass == who->GetClass())
-	{
-		WED_Airport * apt = dynamic_cast<WED_Airport *>(who);
-		DebugAssert(apt);
-		string aicao;
-		apt->GetICAO(aicao);
-		
-		if(aicao == icao)
-			return apt;
-		else
-			return NULL;
-	}
-	else
-	{
-		int n, nn = who->CountChildren();
-		for(n = 0; n < nn; ++n)
-		{
-			WED_Thing * found_it = find_airport_by_icao_recursive(icao, who->GetNthChild(n));
-			if(found_it) return found_it;
-		}
-	}
-	return NULL;
-}
-
-static const string get_airport_id_from_gateway_file_path(const char * file_path)
-{
-	string tname(file_path);
-	string::size_type p = tname.find_last_of("\\/");
-	if(p != tname.npos)
-		tname = tname.substr(p+1);
-	p = tname.find_last_of(".");
-	if(p != tname.npos)
-		tname = tname.substr(0,p);
-	return tname;
-}
-
-WED_Thing * get_airport_from_gateway_file_path(const char * file_path, WED_Thing * wrl)
-{
-	return find_airport_by_icao_recursive(get_airport_id_from_gateway_file_path(file_path), wrl);
-}
-
+#include <chrono>
 //This is from an older method of importing things which involved manually getting the files from the hard drive
 void	WED_DoImportDSFText(IResolver * resolver)
 {
@@ -1444,36 +1402,36 @@ void	WED_DoImportDSFText(IResolver * resolver)
 	if(success)
 	{
 		wrl->StartOperation("Import DSF");
-		
+		auto t0 = std::chrono::high_resolution_clock::now();
+
 		vector<string> all_files;
 		FILE_get_directory(dir, &all_files, NULL);
 		
-		for(auto& it : all_files)                  // first pass is all XXXX.dat files, i.e. the apt.dat's
+		for(const auto& nam_apt : all_files)
 		{
-			if(it.find(".dat") != string::npos)
+			if(nam_apt.compare(nam_apt.length() - 4, 4, ".dat") == 0)
 			{
-				const string path = dir + it;
-				WED_ImportOneAptFile(path, wrl, NULL);
-				WED_DoInvisibleUpdateMetadata(SAFE_CAST(WED_Airport, get_airport_from_gateway_file_path(path.c_str(), wrl)));
-			}
-		}
-		
-		for(auto& it : all_files)                 // seconds pass is all other XXX.* files, thats presumed the DSF's, in text format
-		{
-			if(it.find(".dat") == string::npos)
-			{
-				const string path = dir + it;
-				WED_Thing * g = get_airport_from_gateway_file_path(path.c_str(), wrl);
-				if(g == NULL)
+				vector<WED_Airport*> this_apt;
+				WED_ImportOneAptFile(dir + nam_apt, wrl, &this_apt);
+				Assert(this_apt.size() == 1);
+				WED_DoInvisibleUpdateMetadata(this_apt.front());
+
+				for (const auto& nam_dsf : all_files)
 				{
-					g = WED_Group::CreateTyped(wrl->GetArchive());
-					g->SetName(path);
-					g->SetParent(wrl,wrl->CountChildren());
+					if (nam_dsf.compare(nam_dsf.length() - 4, 4, ".txt") == 0 &&
+						nam_dsf.compare(0, nam_dsf.length() - 4, nam_apt, 0, nam_apt.length() - 4) == 0)
+						{
+							WED_ImportText((dir + nam_dsf).c_str(), this_apt.front());
+							break;
+						}
 				}
-				WED_ImportText(path.c_str(), g);
 			}
 		}
-		
+
+		auto t1 = std::chrono::high_resolution_clock::now();
+		chrono::duration<double> elapsed = t1 - t0;
+		LOG_MSG("Extract import time was %.3lf s.", elapsed.count());
+
 		wrl->CommitOperation();
 	}
 }
