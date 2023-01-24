@@ -169,7 +169,6 @@ static void ExpandRunway(
 	pts[0] = rwy->location - delta + cross;
 }
 
-
 // Calculate the quad polygonal bounds of a runway, padded by a certain number of meters.
 static void ExpandRunway(
 				const AptPavement_t * 	rwy,
@@ -222,7 +221,7 @@ void BurnInAirport(
 	outArea.clear();
 
 	if (!inAirport->boundaries.empty() && 
-#if WANT_NEW_BORDER_RULES 	
+#if WANT_NEW_BORDER_RULES
 		inFillWater != fill_nukeroads
 #else
 		inFillWater == fill_dirt2apt
@@ -361,7 +360,8 @@ void BurnInAirport(
 		// distinct rings and the user provides only one.  If the airport isn't water-bounded, this gets
 		// optimized away.
 		Polygon_set_2 orig(outArea);
-		BufferPolygonSet(orig, 5.0 * MTR_TO_DEG_LAT, outArea);
+		BufferPolygonSet(orig, 15.0 * MTR_TO_DEG_LAT, outArea);
+		BufferPolygonSet(orig, -20.0 * MTR_TO_DEG_LAT, outArea);
 	}
 	
 	if (!inAirport->boundaries.empty() && inFillWater == fill_nukeroads)
@@ -863,4 +863,233 @@ void	BezierToSegments(
 //		SimplifyPolygonMaxMove(outWinding, inSimplify / (DEG_TO_NM_LAT * NM_TO_MTR), true, true);
 }
 
+#pragma mark -
 
+static void get_apt_light_box(float semi_width, float length, vector<float>& out_box)
+{
+	out_box.clear();
+	out_box.reserve(8);
+	out_box.push_back(-semi_width);
+	out_box.push_back(0.0);
+	out_box.push_back( -semi_width);
+	out_box.push_back(-length);
+	out_box.push_back( semi_width);
+	out_box.push_back(-length);
+	out_box.push_back( semi_width);
+	out_box.push_back(0);
+}
+
+static void get_apt_ligh_poly(int light_type, vector<float>& out_box)
+{
+	const float k_pad = 100.0;
+	switch(light_type) {
+	case apt_app_ALSFI:
+		// ALFSI: narrow long run to 2400 feet with a 15 foot cross-bar at 1000
+		get_apt_light_box(15.0, 2400+k_pad, out_box);
+		break;
+	case apt_app_ALSFII:
+		// ALFSII: red box up to 1000 cross-bar, then long narrow to 2400
+		get_apt_light_box(15.0, 2400+k_pad, out_box);
+		break;
+	case apt_app_CALVERTI:
+		// CalvertI - long thing to 3000 with a bunch of corss bars - the one at
+		// 2500 feet is quite wide, so widen our box a bit.
+		get_apt_light_box(25.0, 3000+k_pad, out_box);
+		break;
+	case apt_app_CALVERTII:
+		// CalvertII - like Calvert 1 but with a big red box below 1000.
+		get_apt_light_box(25.0, 3000+k_pad, out_box);
+		break;
+	case apt_app_SALS:
+		// SALS - I...don'dt know where this comes from?  IT's a long thin T but the
+		// 1000 point is wider than FAA and it goes to ... 1500.
+		get_apt_light_box(17.0, 1500+k_pad, out_box);
+		break;
+	case apt_app_MALSF:
+	case apt_app_SSALF:
+	case apt_app_MALS:
+		// If we had SSALS it'd be here  The "F" version has a rabit _on_ the T.
+		// 1400, cross bar at 1000, 2 feet wide,
+		get_apt_light_box(15.0, 1400+k_pad, out_box);
+		break;
+	case apt_app_MALSR:
+	case apt_app_SSALR:
+		// These have the rabbit before the T, making them longer.
+		get_apt_light_box(15.0, 2400+k_pad, out_box);
+		break;
+		// These are threshold lights - assume the apt.dat stuff takes care of this.
+	case apt_app_ODALS:
+	case apt_app_RAIL:
+	default:
+		out_box.clear();
+		break;
+	}
+}
+
+
+static void build_runway_relative_polygon(const Segment2& rwy, double displace_mtr, int num_pts, const float raw_shape[], vector<Point2>& out_poly)
+{
+	double	aspect = cos(rwy.midpoint().y() * DEG_TO_RAD);
+	double MTR_TO_DEG_LON = MTR_TO_DEG_LAT / aspect;
+	double DEG_TO_MTR_LON = DEG_TO_MTR_LAT * aspect;
+
+	Vector2	rwy_dir(rwy.p1,  rwy.p2);
+	rwy_dir.dx *= DEG_TO_MTR_LON;
+	rwy_dir.dy *= DEG_TO_MTR_LAT;
+	
+	rwy_dir.normalize();
+
+	Vector2	rwy_right = rwy_dir.perpendicular_cw();
+
+	rwy_right.dx *= MTR_TO_DEG_LON;
+	rwy_right.dy *= MTR_TO_DEG_LAT;
+	rwy_dir.dx *= MTR_TO_DEG_LON;
+	rwy_dir.dy *= MTR_TO_DEG_LAT;
+
+	Point2 origin = rwy.p1;
+	origin += rwy_dir * displace_mtr;
+	
+	out_poly.resize(num_pts);
+	for(int p = 0; p < num_pts; ++p)
+	{
+		out_poly[p] = origin + (rwy_right * raw_shape[2*p]) + (rwy_dir * raw_shape[2*p+1]);
+	}
+}
+
+static void protect_one_approach(Point2 apt_end, Point2 dep_end, double disp_thresh, int app_light_code,
+								float rwy_width_mtr, vector<pair<Bbox_2,GISPolygonFeature_t>>& io_protections)
+{
+	auto make_shape = [&](auto& shape){
+		vector<Point2> bounds;
+		build_runway_relative_polygon(Segment2(apt_end,dep_end), disp_thresh, shape.size() / 2, shape.data(), bounds);
+		
+		vector<Point_2> bbounds(bounds.size());
+		transform(bounds.begin(), bounds.end(), bbounds.begin(), ben2cgal<Point_2>);
+		
+		GISPolygonFeature_t feat;
+		feat.mFeatType = NO_VALUE;
+		feat.mShape = Polygon_with_holes_2(Polygon_2(bbounds.begin(),bbounds.end()));
+		io_protections.push_back(make_pair(feat.mShape.bbox(), feat));
+	};
+
+
+	vector<float> shape;
+	get_apt_ligh_poly(app_light_code,shape);
+	if(!shape.empty())
+	{
+		for_each(shape.begin(),shape.end(),[](float& f){f *= FT_TO_MTR; });
+		make_shape(shape);
+	}
+	
+
+	get_apt_light_box(rwy_width_mtr * 0.5 + 5.0, 21.0 * 19.0, shape);
+	make_shape(shape);
+}
+
+static bool runway_needs_protection(const AptRunway_t& r)
+{
+	// Any major lights _will_ get put down by X-Plane.  If these are incorrectly set on,
+	// this is an authoring error and we expect people to see it and fix it. So honor
+	// these.
+	if(r.app_light_code[0] != apt_app_none || r.app_light_code[1] != apt_app_none)
+		return true;
+	if(r.edge_light_code != apt_edge_none || r.has_centerline)
+		return true;
+	if(r.has_tdzl[0] || r.has_tdzl[1])
+		return true;
+
+	// Markings are ignored for non-paved runways, so there are lots of wrongly "non-precision
+	// marked" grass runways.  I don't trust REILs to be caught either, so now eliminate by surface.
+	
+	if (r.surf_code == apt_surf_grass ||
+		r.surf_code == apt_surf_dirt ||
+		r.surf_code == apt_surf_gravel ||
+		r.surf_code == apt_surf_dry_lake ||
+		r.surf_code == apt_surf_water ||
+		r.surf_code == apt_surf_ice)
+	{
+		return false;
+	}
+
+	if(r.marking_code[0] != apt_mark_none || r.marking_code[1] != apt_mark_none)
+		return true;
+
+	if(r.reil_code[0] != apt_reil_none || r.reil_code[1] != apt_reil_none)
+		return true;
+
+	
+	return false;
+}
+
+static void protect_one_airport(const AptInfo_t& apt, vector<pair<Bbox_2,GISPolygonFeature_t>>& io_protections)
+{
+	if(apt.kind_code != apt_airport)
+		return;
+	
+	for(auto& r : apt.runways)
+	if(runway_needs_protection(r))
+	{
+		protect_one_approach(r.ends.p1,r.ends.p2, r.disp_mtr[0], r.app_light_code[0], r.width_mtr, io_protections);
+		protect_one_approach(r.ends.p2,r.ends.p1, r.disp_mtr[1], r.app_light_code[1], r.width_mtr, io_protections);
+	}
+}
+
+void	ApplyApproachProtections(
+				const AptVector& 	inAirports,
+				Pmwx& 				ioMap,
+				ProgressFunc		inProgress)
+{
+
+
+	vector<pair<Bbox_2,GISPolygonFeature_t>> protections;
+
+	PROGRESS_START(inProgress, 0, 1, "Protecting Approaches")
+
+	int i = 0;
+	auto s = inAirports.size();
+
+	for(auto& a : inAirports)
+	{
+		PROGRESS_SHOW(inProgress, 0, 1, "Protecting Approaches", i++,s);
+	
+		protect_one_airport(a, protections);
+	}
+
+	PROGRESS_DONE(inProgress, 0, 1, "Protecting Approaches")
+
+	for(auto& p : protections)
+	{
+		auto& ob = p.second.mShape.outer_boundary();
+		auto sc = ob.size();
+		for(int s = 0; s < sc; ++s)
+		{
+			auto edge = ob.edge(s);
+			
+//			debug_mesh_line(cgal2ben(edge.source()), cgal2ben(edge.target()), 1, 1, 1, 1, 1, 1);			
+		}
+	}
+	
+	int insctr = 0;
+	for(Pmwx::Face_iterator f = ioMap.faces_begin(); f != ioMap.faces_end(); ++f)
+	if(!f->is_unbounded())
+	if(!f->data().IsWater())
+	if(f->data().mTerrainType != terrain_Airport)
+	{
+		Pmwx::Ccb_halfedge_const_circulator stop, circ;
+		stop = circ = f->outer_ccb();
+		Bbox_2 bbox = circ->source()->point().bbox();;
+		do {
+			bbox += circ->source()->point().bbox();
+		} while (stop != ++circ);
+
+		for(auto& p : protections)
+		{
+			if(CGAL::do_overlap(bbox, p.first))
+			{
+				f->data().mPolygonFeatures.push_back(p.second);
+				++insctr;
+			}
+		}
+	}
+	printf("Inserted %d protections, %zd unique made.\n", insctr, protections.size());
+}

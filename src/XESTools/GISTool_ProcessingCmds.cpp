@@ -285,6 +285,13 @@ static int DoBurnAirports(const vector<const char *>& args)
 	return 0;
 }
 
+static int DoProtectApts(const vector<const char *>& args)
+{
+	if (gVerbose)	printf("Burning airports into vector map...\n");
+	ApplyApproachProtections(gApts, gMap, gProgress);
+	return 0;
+}
+
 static int DoZoning(const vector<const char *>& args)
 {
 	if (gVerbose)	printf("Calculating zoning info...\n");
@@ -595,6 +602,7 @@ static	GISTool_RegCmd_t		sProcessCmds[] = {
 { "-calcslope", 	0, 1, DoCalcSlope, 		"Calculate slope derivatives.", 	  "" },
 { "-calcmesh", 		1, 1, DoCalcMesh, 		"Calculate Terrain Mesh.", 	 		  "" },
 { "-burnapts", 		0, 0, DoBurnAirports, 	"Burn Airports into vectors.", 		  "" },
+{ "-protectapts",	0, 0, DoProtectApts,	"Protect approach paths for airports", "" },
 { "-zoning",	 	0, 0, DoZoning, 		"Calculate Zoning info.", 			  "" },
 //{ "-hydro",	 		1, 2, DoHydroReconstruct,"Rebuild coastlines from hydro model.",  "" },
 //{ "-hydrosimplify", 0, 0, DoHydroSimplify, 	"Simplify Coastlines.", 			  "" },

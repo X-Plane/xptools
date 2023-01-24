@@ -1642,7 +1642,10 @@ static void CalcPavementOGL(
 					float			blas1_mtr,
 					float			blas2_mtr,
 					float			disp1_mtr,
-					float			disp2_mtr)
+					float			disp2_mtr,
+					float			r,
+					float			g,
+					float			b)
 {
 	double	aspect = cos(ends.midpoint().y() * DEG_TO_RAD);
 	double MTR_TO_DEG_LON = MTR_TO_DEG_LAT / aspect;
@@ -1672,9 +1675,7 @@ static void CalcPavementOGL(
 	pts[2] = ends.p2 + rwy_right;
 	pts[3] = ends.p1 + rwy_right;
 
-		 if (io_airport->kind_code == apt_seaport) 	OGL_push_quad(io_airport, 0.0,0.0,0.6, pts);
-	else if (io_airport->kind_code == apt_heliport)	OGL_push_quad(io_airport, 0.6,0.0,0.3, pts);
-	else											OGL_push_quad(io_airport, 0.6,0.6,0.6, pts);
+	OGL_push_quad(io_airport, r,g,b,pts);
 
 	if (blas1_mtr != 0.0)
 	{
@@ -1714,8 +1715,72 @@ static void CalcPavementHelipad(AptInfo_t * io_airport, const POINT2& c, float h
 {
 	SEGMENT2	e;
 	CenterToEnds(c,h,rwy_len,e);
-	CalcPavementOGL(io_airport,e,w,0,0,0,0);
+	CalcPavementOGL(io_airport,e,w,0,0,0,0,0.5,0.5,0);
 }
+
+enum {
+	col_water,
+	col_grass,
+	col_unpaved,
+	col_paved,
+	col_marked,
+	col_lit,
+	col_heli
+};
+float cols[] = {
+	0,0,1,
+	0,1,0,
+	0.3,0.3,0.3,
+	0.6,0.6,0.6,
+	1.0,1.0,1.0,
+	1.0,1.0,0.4,
+	0.5, 0.5, 0
+};
+
+static int runway_color_code(int apt_kind, const AptRunway_t& r)
+{
+	if(apt_kind == apt_seaport)	return col_water;
+	if(apt_kind == apt_heliport) return col_heli;
+
+	// Any major lights _will_ get put down by X-Plane.  If these are incorrectly set on,
+	// this is an authoring error and we expect people to see it and fix it. So honor
+	// these.
+	if(r.app_light_code[0] != apt_app_none || r.app_light_code[1] != apt_app_none)
+		return col_lit;
+	if(r.edge_light_code != apt_edge_none || r.has_centerline)
+		return col_lit;
+	if(r.has_tdzl[0] || r.has_tdzl[1])
+		return col_lit;
+
+	// Markings are ignored for non-paved runways, so there are lots of wrongly "non-precision
+	// marked" grass runways.  I don't trust REILs to be caught either, so now eliminate by surface.
+	
+	if (r.surf_code == apt_surf_grass)
+		return col_grass;
+
+	if(r.surf_code == apt_surf_water)
+		return col_water;
+		
+	if(r.surf_code == apt_surf_dirt ||
+		r.surf_code == apt_surf_gravel ||
+		r.surf_code == apt_surf_dry_lake ||
+		r.surf_code == apt_surf_ice)
+	{
+		return col_unpaved;
+	}
+
+	if(r.marking_code[0] != apt_mark_none || r.marking_code[1] != apt_mark_none)
+		return col_marked;
+
+	if(r.reil_code[0] != apt_reil_none || r.reil_code[1] != apt_reil_none)
+		return col_marked;
+
+	
+	return col_paved;
+}
+
+
+
 
 
 void	GenerateOGL(AptInfo_t * a)
@@ -1728,24 +1793,27 @@ void	GenerateOGL(AptInfo_t * a)
 		CalcPavementBezier(&*a, &b->area,1.0,0.5,0.5,0.0);
 
 	for(AptRunwayVector::iterator r = a->runways.begin(); r != a->runways.end(); ++r)
+	{
+		int cc = runway_color_code(a->kind_code, *r);
 		CalcPavementOGL(a, r->ends,
 							r->width_mtr,
 							r->blas_mtr[0],
 							r->blas_mtr[1],
 							r->disp_mtr[0],
-							r->disp_mtr[1]);
-
+							r->disp_mtr[1],
+							cols[cc*3],cols[cc*3+1],cols[cc*3+2]);
+	}
 	for (AptPavementVector::iterator p = a->pavements.begin(); p != a->pavements.end(); ++p)
 		CalcPavementOGL(a, p->ends,
 							p->width_ft * FT_TO_MTR,
 							p->blast1_ft * FT_TO_MTR,
 							p->blast2_ft * FT_TO_MTR,
 							p->disp1_ft * FT_TO_MTR,
-							p->disp2_ft * FT_TO_MTR);
+							p->disp2_ft * FT_TO_MTR,0.3,0.3,0.3);
 
 	for(AptSealaneVector::iterator s = a->sealanes.begin(); s != a->sealanes.end(); ++s)
 		CalcPavementOGL(a, s->ends,
-								s->width_mtr,0,0,0,0);
+								s->width_mtr,0,0,0,0,0,0,1);
 
 	for(AptHelipadVector::iterator h = a->helipads.begin(); h != a->helipads.end(); ++h)
 			CalcPavementHelipad(a,h->location,

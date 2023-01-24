@@ -84,7 +84,7 @@ typedef UTL_interval<double>	time_region;
 
 #define DEBUG_BLOCK_CREATE_LINES 0
 
-#include <CGAL/Arr_overlay_2.h>
+//#include <CGAL/Arr_overlay_2.h>
 
 #if HD_MESH || UHD_MESH
 	#define TOO_SMALL_TO_CARE			0
@@ -3064,6 +3064,46 @@ static void	init_point_features(const GISPointFeatureVector& feats,
 }
 
 
+static void	init_polygon_features(const GISPolygonFeatureVector& feats,
+							vector<Block_2::X_monotone_curve_2>& curves,
+							vector<BLOCK_face_data>& parts,
+							vector<block_pt>&	pts,
+							CoordTranslator2&	trans,
+							int offset, int zoning,
+							bool	want_feature)
+{
+	PointRule_t * rule;
+
+	int idx = 0;
+	for(GISPolygonFeatureVector::const_iterator f = feats.begin(); f != feats.end(); ++f, ++idx)
+//	if((rule = GetPointRuleForFeature(zoning, *f)) != NULL)
+	{
+		auto push_contour = [&](const Polygon_2& p)
+		{
+			for(int s = 0; s < p.size(); ++s)
+			{
+				auto e = p.edge(s);
+				Point2 p1(trans.Forward(cgal2ben(e.source())));
+				Point2 p2(trans.Forward(cgal2ben(e.target())));
+				push_block_curve(curves, p1, p2, offset + idx);
+				
+				//debug_mesh_line(cgal2ben(e.source()),cgal2ben(e.target()),1,1,1, 1,1,1);
+			}
+		};
+
+		push_contour(f->mShape.outer_boundary());
+		for(auto h = f->mShape.holes_begin(); h != f->mShape.holes_end(); ++h)
+			push_contour(*h);
+
+		parts[offset + idx].usage = usage_OOB;
+		parts[offset + idx].feature = NO_VALUE;
+		parts[offset + idx].height = 0.0f;
+		parts[offset + idx].simplify_id = offset + idx;
+	}
+}
+
+
+
 
 static void	init_mesh(CDT& mesh, CoordTranslator2& translator, vector<Block_2::X_monotone_curve_2>& curves, int cat_table[cat_DIM],float max_slope, int need_lu)
 {
@@ -3319,7 +3359,7 @@ bool	init_block(
 		int num_extras = 1;
 	
 		if(info->fill_points)
-		num_extras += face->data().mPointFeatures.size() * 2;
+		num_extras += face->data().mPointFeatures.size() * 2 + face->data().mPolygonFeatures.size();
 	
 		DebugAssert(parts.size() == block_feature_count);
 		parts.resize(block_feature_count + num_extras + 2 * num_he + cat_DIM, BLOCK_face_data(usage_Empty, NO_VALUE));
@@ -3348,6 +3388,11 @@ bool	init_block(
 			// Second pass: the point features themselves.
 			init_point_features(face->data().mPointFeatures, curves, parts, outer_ccb_pts, translator, num_he + 1 + face->data().mPointFeatures.size(), zoning, true);
 		}
+		if(!face->data().mPolygonFeatures.empty() && !median)
+		{
+			init_polygon_features(face->data().mPolygonFeatures, curves, parts, outer_ccb_pts, translator, num_he + 1 + 2 * face->data().mPointFeatures.size(), zoning, true);
+		}
+		
 		int base_offset = block_feature_count;
 		{
 			init_road_ccb(zoning, variant, height, face->outer_ccb(), translator, parts, curves, outer_ccb_pts, base_offset, num_he+num_extras, cat_base + cat_oob, info && info->fill_edge && !median, ag_ok_approx_dem);

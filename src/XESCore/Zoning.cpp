@@ -827,7 +827,7 @@ static void ZoneOneFace(
 	int num_sides = 0;
 	float min_angle = 0.0;
 	float max_angle = 0.0;
-	bool has_holes = face->number_of_holes() > 0;
+	bool has_holes = face->number_of_holes() > 0 || !face->data().mPolygonFeatures.empty();
 	double max_err = 0.0;
 	double short_side = 0.0;
 	double long_side = 0.0;
