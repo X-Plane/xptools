@@ -132,8 +132,6 @@ void		WED_MapBkgnd::DrawStructure(bool inCurrent, GUI_GraphState * g)
 	int divisions = 1;
 	if (lat_span > 12)	divisions = 10;
 	if (lat_span > 50)	divisions = 30;
-//	if (GetZoomer()->GetPPM() < 8e-4)	divisions = 10;
-//	if (GetZoomer()->GetPPM() < 1.5e-4)	divisions = 30;
 
 	int cl = floor(vl / divisions) * divisions;
 	int cb = floor(vb / divisions) * divisions;
@@ -166,10 +164,20 @@ void		WED_MapBkgnd::DrawStructure(bool inCurrent, GUI_GraphState * g)
 			for(int lat = cb; lat < ct; lat += divisions)
 			{
 				char tilename[16];
-				snprintf(tilename,16,"%+03d%+0d.dsf",lat,lon);
+				snprintf(tilename,16,"%+03d%+04d.dsf",lat,lon);
 				Point2 pt(lon, lat);
 				pt = GetZoomer()->LLToPixel(pt);
 				GUI_FontDraw(g,font_UI_Basic,WED_Color_RGBA(wed_StructureLocked),pt.x()+2,pt.y()+5,tilename, align_Left);
+			}
+	else if (lat_span > 15 && lat_span < 50 && lon_span < 100)
+		for (int lon = cl; lon < cr; lon += divisions)
+			for (int lat = cb; lat < ct; lat += divisions)
+			{
+				char tilename[16];
+				snprintf(tilename, 16, "%+03d%+04d/", lat, lon);
+				Point2 pt(lon, lat);
+				pt = GetZoomer()->LLToPixel(pt);
+				GUI_FontDraw(g, font_UI_Basic, WED_Color_RGBA(wed_StructureLocked), pt.x() + 2, pt.y() + 5, tilename, align_Left);
 			}
 }
 

@@ -20,6 +20,8 @@ Planned functionality for WED 2.5 not yet included in the alpha versions
 WED 2.5.1 b1
    Bug fix:
    - WED-1454 fix slight shift in world map layer at high zoom levels
+   Features:
+   - show 10x10 DSF directory names at intermediate zoomlevels
 
 WED 2.5.0r3 1/7/23
    Features for all X-Plane versions:
