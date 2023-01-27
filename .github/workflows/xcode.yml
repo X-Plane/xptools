@@ -19,6 +19,8 @@ jobs:
           p12-password: ${{ secrets.APPLE_DEV_CERTIFICATE_PASSWORD }}
       - name: Build Libs
         run: |
+          git submodule init
+          git submodule update libs
           cd libs
           make -j
       - name: Build
