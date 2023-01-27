@@ -30,3 +30,10 @@ jobs:
           config: "Release"
         run: |
           xcodebuild -scheme "$scheme" -config "$config" -project SceneryTools.xcodeproj -archivePath WED.xcarchive CODE_SIGN_STYLE="Manual" CODE_SIGN_IDENTITY="Developer ID Application: Laminar Research (LPH4NFE92D)" archive | xcpretty && exit ${PIPESTATUS[0]}
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist-without-markdown
+          path: |
+            WED.xcarchive/Products/Applications/
+            src\WEDCore\README.WorldEditor
