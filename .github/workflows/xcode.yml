@@ -12,6 +12,11 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: yes
+      - name: Setup Credentials
+        uses: apple-actions/import-codesign-certs@v1
+        with: 
+          p12-file-base64: ${{ secrets.APPLE_DEV_CERTIFICATE }}
+          p12-password: ${{ secrets.APPLE_DEV_CERTIFICATE_PASSWORD }}
       - name: Build
         env:
           scheme: "WED"
