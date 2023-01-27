@@ -22,9 +22,8 @@ jobs:
           git submodule init
           git submodule update libs
           cd libs
-          rm -rf local
           make clean
-          make -j
+          make
       - name: Build
         env:
           scheme: "WED"
