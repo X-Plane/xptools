@@ -17,6 +17,10 @@ jobs:
         with: 
           p12-file-base64: ${{ secrets.APPLE_DEV_CERTIFICATE }}
           p12-password: ${{ secrets.APPLE_DEV_CERTIFICATE_PASSWORD }}
+      - name: Build Libs
+        run: |
+          cd libs
+          make -j
       - name: Build
         env:
           scheme: "WED"
