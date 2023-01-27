@@ -22,6 +22,8 @@ jobs:
           git submodule init
           git submodule update libs
           cd libs
+          rm -rf libs/local
+          make clean
           make -j
       - name: Build
         env:
