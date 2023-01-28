@@ -18,6 +18,7 @@ jobs:
 
       - name: Build Libs
         run: |
+          git config --global --add safe.directory /__w/xptools/xptools
           git submodule init
           git submodule update libs
           cd libs
