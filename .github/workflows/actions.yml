@@ -1,6 +1,13 @@
-name: MSBuild
+name: WED Build
 
-on: [push]
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      version_string:
+        description: 'Enter the version string e.g. 250r3'
+        required: false 
+        type: string
 
 env:
   # Path to the solution file relative to the root of the project.
