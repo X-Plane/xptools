@@ -1,0 +1,109 @@
+name: MSBuild
+
+on: [push]
+
+env:
+  # Path to the solution file relative to the root of the project.
+  SOLUTION_FILE_PATH: msvc\XPTools.sln
+
+  # Configuration type to build.
+  # You can convert this to a build matrix if you need coverage of multiple configuration types.
+  # https://docs.github.com/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+  BUILD_CONFIGURATION: Release
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    runs-on: windows-2022
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: true
+
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    - name: Build
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      # Add additional options to the MSBuild command line here (like platform or verbosity level).
+      # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference 
+      run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform="x64" /t:WorldEditor ${{env.SOLUTION_FILE_PATH}}
+      
+    - name: Archive production artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: dist-without-markdown
+        path: |
+          msvc\WorldEditor\Release\WorldEditor.exe
+          src\WEDCore\README.WorldEditor
+          
+  build-mac:
+    name: Build WorldEditor
+    runs-on: macos-11
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: yes
+      - name: Setup Credentials
+        uses: apple-actions/import-codesign-certs@v1
+        with: 
+          p12-file-base64: ${{ secrets.APPLE_DEV_CERTIFICATE }}
+          p12-password: ${{ secrets.APPLE_DEV_CERTIFICATE_PASSWORD }}
+      - name: Build Libs
+        run: |
+          git submodule init
+          git submodule update libs
+          cd libs
+          make clean
+          make
+      - name: Build
+        env:
+          scheme: "WED"
+          config: "Release"
+        run: |
+          xcodebuild -scheme "$scheme" -config "$config" -project SceneryTools.xcodeproj -archivePath WED.xcarchive CODE_SIGN_STYLE="Manual" CODE_SIGN_IDENTITY="Developer ID Application: Laminar Research (LPH4NFE92D)" archive | xcpretty && exit ${PIPESTATUS[0]}
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: wed_mac_
+          path: |
+            WED.xcarchive/Products/Applications
+            src/WEDCore/README.WorldEditor
+          if-no-files-found: error
+          
+  build-linux:
+    runs-on: ubuntu-latest
+    container:
+        image: ghcr.io/x-plane/xptools_builder:latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: Build Libs
+        run: |
+          git config --global --add safe.directory /__w/xptools/xptools
+          git submodule init
+          git submodule update libs
+          cd libs
+          CC=gcc-7 CXX=g++-7 make
+      - name: Build
+        env:
+          scheme: "WED"
+          config: "Release"
+        run: |
+          CC=gcc-7 CXX=g++-7 make -s -C . conf=release_opt -j$(nproc) WED
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: wed_linux_
+          path: |
+            build/Linux/release_opt/WED
+            src/WEDCore/README.WorldEditor
+          if-no-files-found: error
