@@ -78,7 +78,7 @@ jobs:
           xcodebuild -scheme "$scheme" -config "$config" -project SceneryTools.xcodeproj -archivePath WED.xcarchive CODE_SIGN_STYLE="Manual" CODE_SIGN_IDENTITY="Developer ID Application: Laminar Research (LPH4NFE92D)" archive | xcpretty && exit ${PIPESTATUS[0]}
       - name: Notarize App
         run: |
-          ./build-tools/mac/notarization.sh WED.zip WED.xcarchive/Products/Applications/WED staple
+          ./build-tools/mac/notarization.sh WED.zip WED.xcarchive/Products/Applications/WED.app staple
       - name: Archive production artifacts
         uses: actions/upload-artifact@v3
         with:
