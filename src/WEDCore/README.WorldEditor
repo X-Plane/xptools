@@ -22,6 +22,7 @@ WED 2.5.1 b1
    - WED-1454 fix slight shift in world map layer at high zoom levels
    Features:
    - show 10x10 DSF directory names at intermediate zoomlevels
+   - support for APAPI (2-light PAPI)
 
 WED 2.5.0r3 1/7/23
    Features for all X-Plane versions:

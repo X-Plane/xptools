@@ -1744,6 +1744,8 @@ struct	preview_light : public WED_PreviewItem {
 		{
 			case apt_gls_vasi:          vpath = "lib/airport/lights/slow/VASI.obj";break;
 			case apt_gls_vasi_tricolor: vpath = "lib/airport/lights/slow/VASI3.obj";break;
+			case apt_gls_apapi_left:
+			case apt_gls_apapi_right:
 			case apt_gls_papi_left:
 			case apt_gls_papi_right:
 			case apt_gls_papi_20:  vpath = "lib/airport/lights/slow/PAPI.obj";	break;
@@ -1756,6 +1758,7 @@ struct	preview_light : public WED_PreviewItem {
 			g->SetState(false,1,false,true,true,true,true);
 			glColor3f(1,1,1);
 
+			bool is_apapi = false;
 			switch(light.light_code)
 			{
 				case apt_gls_vasi:
@@ -1770,6 +1773,9 @@ struct	preview_light : public WED_PreviewItem {
 					draw_obj_at_ll(tman, o, light.location, 0.0, light.heading, g, zoomer);
 					break;
 				}
+				case apt_gls_apapi_left:
+				case apt_gls_apapi_right:
+					is_apapi = true;
 				case apt_gls_papi_left:
 				case apt_gls_papi_right:
 				case apt_gls_papi_20:
@@ -1778,8 +1784,8 @@ struct	preview_light : public WED_PreviewItem {
 					dirv.rotate_by_degrees(-light.heading);
 					dirv = VectorMetersToLL(light.location,dirv);
 
-					light.location -= dirv * 1.5;
-					for(int n = 0; n < 4; n++)
+					light.location -= dirv * (is_apapi ? 0.5 : 1.5);
+					for(int n = 0; n < (is_apapi ? 2 : 4); n++)
 					{
 						draw_obj_at_ll(tman, o, light.location, 0.0, light.heading, g, zoomer);
 						light.location += dirv;
