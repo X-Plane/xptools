@@ -20,6 +20,7 @@ Planned functionality for WED 2.5 not yet included in the alpha versions
 WED 2.5.1 b1
    Bug fix:
    - WED-1454 fix slight shift in world map layer at high zoom levels
+   - skip placeholder images ESRI is sending for unavailable slippy maps
    Features:
    - show 10x10 DSF directory names at intermediate zoomlevels
 
