@@ -158,6 +158,8 @@ enum {
 	apt_gls_papi_20,
 	apt_gls_vasi_tricolor,
 	apt_gls_wigwag,
+	apt_gls_apapi_left,
+	apt_gls_apapi_right,
 	// VASI codes (810)
 	apt_gls_none_810 = 1,
 	apt_gls_vasi_810,
