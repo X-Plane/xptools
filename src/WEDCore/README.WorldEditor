@@ -23,7 +23,8 @@ WED 2.5.1 b1
    - skip placeholder images ESRI is sending for unavailable slippy maps
    Features:
    - show 10x10 DSF directory names at intermediate zoomlevels
-   - support for APAPI (2-light PAPI)
+   - WED-1179 support for APAPI (2-light PAPI) starting with X-Plane 12.04
+   - XPD-13789 new meta tag is_oilrig, created automatically during GW export heuristics
 
 WED 2.5.0r3 1/7/23
    Features for all X-Plane versions:
