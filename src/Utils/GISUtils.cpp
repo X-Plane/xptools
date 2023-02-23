@@ -41,9 +41,24 @@
 	#include "GUI_Unicode.h"
 #endif
 
-void	make_cache_file_path(const char * cache_base, int west, int south, const char * cache_name, char path[1024])
+int	latlon_bucket(int p)
 {
-	sprintf(path, "%s%s%+03d%+04d%s%+03d%+04d.%s.txt", cache_base, DIR_STR, latlon_bucket (south), latlon_bucket (west), DIR_STR, (int) south, (int) west, cache_name);
+	if (p > 0) return (p / 10) * 10;
+	else return ((-p + 9) / 10) * -10;
+}
+
+double round_by_parts(double c, int parts)
+{
+	double fparts = parts;
+	return round(c * fparts) / fparts;
+}
+
+double round_by_parts_guess(double c, int parts)
+{
+	if (parts % 2)
+		return round_by_parts(c, parts - 1);
+	else
+		return round_by_parts(c, parts);
 }
 
 #if USE_TIF
