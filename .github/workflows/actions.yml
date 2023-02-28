@@ -37,15 +37,17 @@ jobs:
       working-directory: ${{env.GITHUB_WORKSPACE}}
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference 
-      run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform="x64" /t:WorldEditor ${{env.SOLUTION_FILE_PATH}}
-      
+      run: |
+        msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform="x64" /t:WorldEditor ${{env.SOLUTION_FILE_PATH}}
+        copy msvc\WorldEditor\Release\WorldEditor.exe .\WED.exe
+        copy src\WEDCore\README.WorldEditor .
     - name: Archive production artifacts
       uses: actions/upload-artifact@v3
       with:
         name: wed_win_
         path: |
-          msvc\WorldEditor\Release\WorldEditor.exe
-          src\WEDCore\README.WorldEditor
+          WED.exe
+          README.WorldEditor
           
   build-mac:
     runs-on: macos-11
@@ -79,13 +81,15 @@ jobs:
       - name: Notarize App
         run: |
           ./build-tools/mac/notarization.sh WED.zip WED.xcarchive/Products/Applications/WED.app staple
+          cp -r WED.xcarchive/Procuts/Applications/WED.app .
+          cp  src/WEDCore/README.WorldEditor .
       - name: Archive production artifacts
         uses: actions/upload-artifact@v3
         with:
           name: wed_mac_
           path: |
-            WED.xcarchive/Products/Applications
-            src/WEDCore/README.WorldEditor
+            WED.app
+            README.WorldEditor
           if-no-files-found: error
           
   build-linux:
@@ -112,9 +116,8 @@ jobs:
           config: "Release"
         run: |
           make -s -C . conf=release_opt -j$(nproc) WED
-          mv build/Linux/release_opt/WED .
-          chmod a+x ./WED
-          mv src/WEDCore/README.WorldEditor .
+          cp build/Linux/release_opt/WED .
+          cp src/WEDCore/README.WorldEditor .
       - name: Archive production artifacts
         uses: actions/upload-artifact@v3
         with:
