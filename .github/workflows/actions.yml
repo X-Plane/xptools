@@ -104,18 +104,22 @@ jobs:
           git submodule init
           git submodule update libs
           cd libs
-          CC=gcc-7 CXX=g++-7 make
+          make clean
+          make
       - name: Build
         env:
           scheme: "WED"
           config: "Release"
         run: |
-          CC=gcc-7 CXX=g++-7 make -s -C . conf=release_opt -j$(nproc) WED
+          make -s -C . conf=release_opt -j$(nproc) WED
+          mv build/Linux/release_opt/WED .
+          chmod a+x ./WED
+          mv src/WEDCore/README.WorldEditor .
       - name: Archive production artifacts
         uses: actions/upload-artifact@v3
         with:
           name: wed_linux_
           path: |
-            build/Linux/release_opt/WED
-            src/WEDCore/README.WorldEditor
+            WED
+            README.WorldEditor
           if-no-files-found: error
