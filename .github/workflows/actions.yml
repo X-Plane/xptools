@@ -81,7 +81,7 @@ jobs:
       - name: Notarize App
         run: |
           ./build-tools/mac/notarization.sh WED.zip WED.xcarchive/Products/Applications/WED.app staple
-          cp -r WED.xcarchive/Procuts/Applications/WED.app .
+          cp -r WED.xcarchive/Products/Applications/WED.app .
           cp  src/WEDCore/README.WorldEditor .
       - name: Archive production artifacts
         uses: actions/upload-artifact@v3
