@@ -39,15 +39,13 @@ jobs:
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference 
       run: |
         msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform="x64" /t:WorldEditor ${{env.SOLUTION_FILE_PATH}}
-        copy msvc\WorldEditor\Release\WorldEditor.exe .\WED.exe
-        copy src\WEDCore\README.WorldEditor .
     - name: Archive production artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: wed_win_
+        name: wed_release_build
         path: |
-          WED.exe
-          README.WorldEditor
+          msvc\WorldEditor\Release\WorldEditor.exe
+          src\WEDCore\README.WorldEditor
           
   build-mac:
     runs-on: macos-11
@@ -81,16 +79,13 @@ jobs:
       - name: Notarize App
         run: |
           ./build-tools/mac/notarization.sh WED.zip WED.xcarchive/Products/Applications/WED.app staple
-          cp -r WED.xcarchive/Products/Applications/WED.app .
-          cp  src/WEDCore/README.WorldEditor .
       - name: Archive production artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: wed_mac_
+          name: wed_release_build
           path: |
-            WED.app
-            README.WorldEditor
-          if-no-files-found: error
+            WED.xcarchive/Products/Applications/WED.app
+            src\WEDCore\README.WorldEditor
           
   build-linux:
     runs-on: ubuntu-latest
@@ -116,13 +111,10 @@ jobs:
           config: "Release"
         run: |
           make -s -C . conf=release_opt -j$(nproc) WED
-          cp build/Linux/release_opt/WED .
-          cp src/WEDCore/README.WorldEditor .
       - name: Archive production artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: wed_linux_
+          name: wed_release_build
           path: |
-            WED
-            README.WorldEditor
-          if-no-files-found: error
+            build/Linux/release_opt/WED
+            src\WEDCore\README.WorldEditor
