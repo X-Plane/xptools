@@ -85,7 +85,7 @@ jobs:
           name: wed_release_build
           path: |
             WED.xcarchive/Products/Applications/WED.app
-            src\WEDCore\README.WorldEditor
+            src/WEDCore/README.WorldEditor
           
   build-linux:
     runs-on: ubuntu-latest
@@ -117,4 +117,4 @@ jobs:
           name: wed_release_build
           path: |
             build/Linux/release_opt/WED
-            src\WEDCore\README.WorldEditor
+            src/WEDCore/README.WorldEditor
