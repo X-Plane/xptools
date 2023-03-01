@@ -258,7 +258,7 @@
 			};
 		#endif
 	#endif
-#elif LIN
+#else // both LIN and APL now do case desense
 	// This is to put an case-insensitive fopen in place, see in FileUtils.cpp
 	#ifdef __cplusplus
 		extern "C" FILE* x_fopen(const char * _Filename, const char * _Mode);
@@ -266,9 +266,10 @@
 		extern FILE* x_fopen(const char * _Filename, const char * _Mode);
 	#endif
 	#define fopen(_Filename,_Mode) x_fopen(_Filename, _Mode)
-#elif APL
+  #if APL
 	//no fopen magic of any kind needed
 	#define __ASSERTMACROS__
+  #endif
 #endif // OS specific file handling hacks
 
 /****************************************************************************************************************************************************************

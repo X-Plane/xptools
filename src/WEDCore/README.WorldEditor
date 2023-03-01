@@ -13,11 +13,8 @@ menu to view it online.
 
 CHANGE HISTORY
 
-Planned functionality for WED 2.5 not yet included in the alpha versions
-   - automatic creation of edge outlines for paved surfaces
-
 =======
-WED 2.5.1 b1
+WED 2.5.1 b1 1/3/2023
    Bug fix:
    - WED-1454 fix slight shift in world map layer at high zoom levels
    - skip placeholder images ESRI is sending for unavailable slippy maps
@@ -27,6 +24,7 @@ WED 2.5.1 b1
    - show 10x10 DSF directory names at intermediate zoomlevels
    - WED-1179 support for APAPI (2-light PAPI) starting with X-Plane 12.04
    - XPD-13789 new meta tag is_oilrig, created automatically during GW export heuristics
+   - WED-1455 enable case-desensitation code on macOS to support case-sensitive filesystems
 
 WED 2.5.0r3 1/7/23
    Features for all X-Plane versions:

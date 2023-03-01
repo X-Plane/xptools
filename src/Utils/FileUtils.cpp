@@ -85,14 +85,14 @@ void x_ofstream::close()
 }
 #endif
 
-#if LIN
+#if LIN || APL
 FILE * x_fopen(const char * _Filename, const char * _Mode)
 {
 	FILE_case_correct_path Filename(_Filename);
 	return (fopen)(Filename, _Mode);       // the brackets are to prevent macro expansion of this fopen
 }
 
-#define LOG_CASE_DESENS 0
+#define LOG_CASE_DESENS 1
 
 #if !LOG_CASE_DESENS
 	#undef  LOG_MSG
@@ -117,7 +117,7 @@ static int desens_partial(DIR * dir, char * io_file)
 
 int FILE_case_correct(char * buf)
 {
-	#if LIN
+	#if LIN || APL
 	LOG_MSG("Case desens for: '%s'\n", buf);
 
 	// Fast match?  Try that first - MOST content in x-plane is case-correct, and any file path derived from dir scanning will be.
@@ -125,7 +125,7 @@ int FILE_case_correct(char * buf)
 	struct stat sta;
 	if (stat(buf, &sta) == 0) 
 	{
-		LOG_MSG("  Fast match.  Done.\n",0);
+		LOG_MSG("  Fast match.  Done.\n");
 		return 1;
 	}
 	
@@ -137,19 +137,19 @@ int FILE_case_correct(char * buf)
 		if (*p == '/')
 		{
 			dir = opendir("/");
-			LOG_MSG("  Open-dir '%s': 0x%08x\n","/",dir);
+			LOG_MSG("  Open-dir '%s': 0x%16p\n","/", dir);
 			++p;
 		}
 		else if (p == buf)
 		{
 			dir = opendir(".");
-			LOG_MSG("  Open-dir '%s': 0x%08x\n",".",dir);
+			LOG_MSG("  Open-dir '%s': 0x%16p\n",".", dir);
 		}
 		else
 		{
 			*(p-1) = 0;
 			dir = opendir(buf);
-			LOG_MSG("  Open-dir '%s': 0x%08x\n",buf,dir);
+			LOG_MSG("  Open-dir '%s': 0x%16p\n", buf, dir);
 			*(p-1) = '/';
 		}
 		if (dir == NULL)
