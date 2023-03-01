@@ -1,0 +1,35 @@
+name: scp WED build to dev.x-plane
+
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+	description: 'Release name, must be exactly 3 digits + letter + digit'
+	default: '250b0'
+	required: true
+
+jobs:
+
+  build:
+    name: scp WED files to dev.x-plane.com
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: wed_release_build
+      - name: Show them
+        run: |
+          echo "Releasing ${{ github.event.inputs.name }}"
+          ls -lR build msvc src
+      - name: Build zip files
+        run: |
+          chmod -Rc a+x build
+          zip -jr wed_lin_${{ github.event.inputs.name }} src build/Linux
+          zip -jr wed_mac_${{ github.event.inputs.name }} src build/Products
+          zip -jr wed_win_${{ github.event.inputs.name }} src msvc
+      - name: Upload zipfiles
+        uses: actions/upload-artifact@v3
+        with:
+          name: wed_zipfiles
+          path: ./*.zip
