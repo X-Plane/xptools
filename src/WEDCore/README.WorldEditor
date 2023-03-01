@@ -25,6 +25,7 @@ WED 2.5.1 b1 1/3/2023
    - WED-1179 support for APAPI (2-light PAPI) starting with X-Plane 12.04
    - XPD-13789 new meta tag is_oilrig, created automatically during GW export heuristics
    - WED-1455 enable case-desensitation code on macOS to support case-sensitive filesystems
+   - use libcurl.so.4 rather than libcurl.so on linux
 
 WED 2.5.0r3 1/7/23
    Features for all X-Plane versions:

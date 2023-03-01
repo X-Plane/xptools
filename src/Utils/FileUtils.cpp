@@ -92,7 +92,7 @@ FILE * x_fopen(const char * _Filename, const char * _Mode)
 	return (fopen)(Filename, _Mode);       // the brackets are to prevent macro expansion of this fopen
 }
 
-#define LOG_CASE_DESENS 1
+#define LOG_CASE_DESENS 0
 
 #if !LOG_CASE_DESENS
 	#undef  LOG_MSG
