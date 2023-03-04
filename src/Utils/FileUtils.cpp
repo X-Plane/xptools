@@ -310,7 +310,7 @@ int FILE_read_file_to_string(FILE* file, string& content)
 		fseek(file, 0, SEEK_END);
 		content.resize(ftell(file));
 		rewind(file);
-		fread(&content[0], sizeof(char), content.size(), file);
+		if( !fread(&content[0], sizeof(char), content.size(), file)) content = "";
 	}
 #if LIN ||APL
 	return errno;

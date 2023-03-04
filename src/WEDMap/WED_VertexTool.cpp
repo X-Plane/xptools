@@ -86,7 +86,7 @@ WED_VertexTool::WED_VertexTool(
 		mIsScale(0),
 		mRotateIndex(-1),
 		last_en(nullptr),
-		last_ptr(NULL),
+		last_ptr((intptr_t) nullptr),
 		mSnapToGrid(this,PROP_Name("Snap To Vertices", XML_Name("","")), 0)
 {
 	SetControlProvider(this);
@@ -175,11 +175,11 @@ int		WED_VertexTool::CountControlHandles(intptr_t id) const
 void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, HandleType_t * con_type, Point2 * p, Vector2 * dir, float * radius) const
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
-	if (en != last_en) { last_ptr = NULL; last_en = en; }
+	if (en != last_en) { last_ptr = (intptr_t) nullptr; last_en = en; }
 
-	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
+	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : nullptr;
 	IGISQuad * quad = (en->GetGISSubtype() == WED_ExclusionZone::sClass || en->GetGISSubtype() == WED_OverlayImage::sClass || 
-		               en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? SAFE_CAST(IGISQuad, en) : NULL;
+		               en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? SAFE_CAST(IGISQuad, en) : nullptr;
 
 	if (active) *active=1;
 	if (con_type) *con_type = handle_Square;

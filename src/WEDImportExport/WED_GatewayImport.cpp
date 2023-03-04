@@ -862,9 +862,8 @@ void WED_GatewayImportDialog::SelectWithFile()
 
 		mICAO_AptProvider.SelectionStart(1);
 		mICAO_AptProvider.SelectGetLimits(low_x, low_y, high_x, high_y);
-		while (!feof(fn))
+		while (!fgets(c, sizeof(c), fn))
 		{
-			fgets(c, sizeof(c), fn);
 			icao = c;
 			for(int i = 0; i < sizeof(c)-12; ++i)
 				if (c[i] == ' ') ++icao;
