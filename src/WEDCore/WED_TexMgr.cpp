@@ -133,7 +133,7 @@ WED_TexMgr::TexInfo *	WED_TexMgr::LoadTexture(const char * path, bool is_absolut
 			}
 		}
 #if LOAD_KTX2_DIRECT
-		else if (strncmp(c, "«KTX 20»", 8) == 0)
+		else if (strncmp(c, "\253KTX 20\273", 8) == 0)
 		{
 			fseek(file, 0, SEEK_END);
 			int fileLength = ftell(file);

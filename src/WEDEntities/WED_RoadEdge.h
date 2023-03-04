@@ -47,23 +47,23 @@ public:
 	bool			HasWires(void) const;
 	pair<double, double> GetWidth(void) const;
 
-	void			GetResource(string& r) const override { r = resource.value; }
-	void			SetResource(const string& r) override { resource = r; }
+	void			GetResource(string& r) const { r = resource.value; }
+	void			SetResource(const string& r) { resource = r; }
 
-	bool			IsOneway(void) const override;
+	bool			IsOneway(void) const;
 
-	const char *	HumanReadableType(void) const override { return "Road"; }
+	const char *	HumanReadableType(void) const { return "Road"; }
 
-	void			GetNthProperty(int n, PropertyVal_t& val) const override;
-	void			SetNthProperty(int n, const PropertyVal_t& val) override;
-	void			GetNthPropertyDict(int n, PropertyDict_t& dict) const override;
-	void			GetNthPropertyDictItem(int n, int e, string& item) const override;
-	void			GetNthPropertyInfo(int n, PropertyInfo_t& info) const override;
+	void			GetNthProperty(int n, PropertyVal_t& val) const;
+	void			SetNthProperty(int n, const PropertyVal_t& val);
+	void			GetNthPropertyDict(int n, PropertyDict_t& dict) const;
+	void			GetNthPropertyDictItem(int n, int e, string& item) const;
+	void			GetNthPropertyInfo(int n, PropertyInfo_t& info) const;
 
 
 protected:
 
-	bool			CanBeCurved() const override { return true; }
+	bool			CanBeCurved() const { return true; }
 
 private:
 

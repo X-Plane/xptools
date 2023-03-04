@@ -36,23 +36,23 @@ public:
 			double		GetHeading(void) const;
 			void		SetHeading(double h);
 
-void		GetResource(	  string& r) const override;
-void		SetResource(const string& r) override;
+void		GetResource(	  string& r) const;
+void		SetResource(const string& r);
 
-int			CountProperties(void) const override;
-int			FindProperty(const char * in_prop) const override;
-void		GetNthPropertyInfo(int n, PropertyInfo_t& info) const override;
-void		GetNthPropertyDict(int n, PropertyDict_t& dict) const override;
-void		GetNthPropertyDictItem(int n, int e, string& item) const override;
-void		GetNthProperty(int n, PropertyVal_t& val) const override;
-void		SetNthProperty(int n, const PropertyVal_t& val) override;
+int			CountProperties(void) const;
+int			FindProperty(const char * in_prop) const;
+void		GetNthPropertyInfo(int n, PropertyInfo_t& info) const;
+void		GetNthPropertyDict(int n, PropertyDict_t& dict) const;
+void		GetNthPropertyDictItem(int n, int e, string& item) const;
+void		GetNthProperty(int n, PropertyVal_t& val) const;
+void		SetNthProperty(int n, const PropertyVal_t& val);
 
 
-const char *	HumanReadableType(void) const override { return "Draped Polygon"; }
+const char *	HumanReadableType(void) const { return "Draped Polygon"; }
 
 protected:
 
-bool		IsInteriorFilled(void) const override { return true; }
+bool		IsInteriorFilled(void) const { return true; }
 
 private:
 
