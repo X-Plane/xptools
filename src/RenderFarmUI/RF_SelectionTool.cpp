@@ -162,7 +162,7 @@ const char * card_dir_str(Pmwx::Halfedge_handle e)
 	Point2 t (cgal2ben(e->target()->point()));
 	Vector2 v(s,t);
 	v.normalize();
-	double d = atan2(v.dx,v.dy) * 180.0 / PI;
+	double d = atan2(v.dx,v.dy) * 180.0 / M_PI;
 	static char buf[100];
 	sprintf(buf,"%d", (int) d);
 	return buf;
