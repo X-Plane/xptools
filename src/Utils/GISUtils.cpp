@@ -276,31 +276,6 @@ double	LonLatDistMetersWithScale(double lon1, double lat1, double lon2, double l
 
 }
 
-void	CreateTranslatorForPolygon(
-					const Polygon2&		poly,
-					CoordTranslator2&	trans)
-{
-	if (poly.empty()) return;
-
-	Bbox2 bounds;
-	for (int n = 0; n < poly.size(); ++n)
-	{
-		bounds += poly[n];
-	}
-	CreateTranslatorForBounds(bounds, trans);
-}
-
-#if !NO_CGAL
-void	CreateTranslatorForBounds(
-					const Point_2&		inSrcMin,
-					const Point_2&		inSrcMax,
-					CoordTranslator_2&	trans)
-{
-	Bbox2 bounds(inSrcMin, inSrcMax);
-	CreateTranslatorForBounds(bounds, trans);
-}
-#endif
-
 struct deg2mtr {
 	double lon;
 	double lat;
@@ -323,6 +298,38 @@ struct deg2mtr {
 		lat = M * 2.0 * M_PI / 360.0;
 	}
 };
+
+void	CreateTranslatorForPolygon(
+					const Polygon2&		poly,
+					CoordTranslator2&	trans)
+{
+	if (poly.empty()) return;
+
+	Bbox2 bounds;
+	for (int n = 0; n < poly.size(); ++n)
+	{
+		bounds += poly[n];
+	}
+	CreateTranslatorForBounds(bounds, trans);
+}
+
+#if !NO_CGAL
+void	CreateTranslatorForBounds(
+					const Point_2&		inSrcMin,
+					const Point_2&		inSrcMax,
+					CoordTranslator_2&	trans)
+{
+	struct deg2mtr scale(0.5 * CGAL_NTS to_double(inSrcMin.y() +inSrcMax.y()));
+
+	trans.mSrcMin = inSrcMin;
+	trans.mSrcMax = inSrcMax;
+
+	trans.mDstMin = Point_2(0,0);
+	trans.mDstMax = Point_2(
+				(trans.mSrcMax.x() - trans.mSrcMin.x()) * scale.lon,
+				(trans.mSrcMax.y() - trans.mSrcMin.y()) * scale.lat);
+}
+#endif
 
 void	CreateTranslatorForBounds(
 					const Bbox2&		inBounds,
