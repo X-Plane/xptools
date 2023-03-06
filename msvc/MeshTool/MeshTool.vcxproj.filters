@@ -286,6 +286,27 @@
     <ClCompile Include="..\..\src\lzma19\C\LzmaDec.c">
       <Filter>lzma19</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\SDK\libtess2\Source\bucketalloc.c">
+      <Filter>libtess2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\libtess2\Source\dict.c">
+      <Filter>libtess2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\libtess2\Source\geom.c">
+      <Filter>libtess2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\libtess2\Source\mesh.c">
+      <Filter>libtess2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\libtess2\Source\priorityq.c">
+      <Filter>libtess2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\libtess2\Source\sweep.c">
+      <Filter>libtess2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SDK\libtess2\Source\tess.c">
+      <Filter>libtess2</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="MeshTool">
@@ -317,6 +338,9 @@
     </Filter>
     <Filter Include="lzma19">
       <UniqueIdentifier>{2c1a77f0-27e6-45ef-8350-0a11ea1eaca6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libtess2">
+      <UniqueIdentifier>{1d48ff87-12e7-4b0f-9166-ca2b90a12884}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -595,6 +619,27 @@
     </ClInclude>
     <ClInclude Include="..\..\src\lzma19\C\LzmaDec.h">
       <Filter>lzma19</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\libtess2\Source\bucketalloc.h">
+      <Filter>libtess2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\libtess2\Source\dict.h">
+      <Filter>libtess2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\libtess2\Source\geom.h">
+      <Filter>libtess2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\libtess2\Source\mesh.h">
+      <Filter>libtess2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\libtess2\Source\priorityq.h">
+      <Filter>libtess2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\libtess2\Source\sweep.h">
+      <Filter>libtess2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDK\libtess2\Source\tess.h">
+      <Filter>libtess2</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
