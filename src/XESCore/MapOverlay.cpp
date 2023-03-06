@@ -152,12 +152,12 @@ public:
 
 	vector<Halfedge_handle_R> *		dead;
 
-	virtual void create_vertex (Vertex_handle_A v1, Vertex_handle_B v2, Vertex_handle_R v) const
+	void create_vertex (Vertex_handle_A v1, Vertex_handle_B v2, Vertex_handle_R v) const override
 	{
 		v->set_data(v2->data());		// Co-located vertices - top layer wins.
 	}
 	
-	virtual void create_vertex (Vertex_handle_A v1, Halfedge_handle_B e2, Vertex_handle_R v) const
+	void create_vertex (Vertex_handle_A v1, Halfedge_handle_B e2, Vertex_handle_R v) const override
 	{
 		if (!e2->face()->contained() ||
 			!e2->twin()->face()->contained())
@@ -166,33 +166,33 @@ public:
 		}
 	}
 	
-	virtual void create_vertex (Vertex_handle_A v1, Face_handle_B f2, Vertex_handle_R v) const
+	void create_vertex (Vertex_handle_A v1, Face_handle_B f2, Vertex_handle_R v) const override
 	{
 		if(!f2->contained())
 			v->set_data(v1->data());
 	}
 	
-	virtual void create_vertex (Halfedge_handle_A e1, Vertex_handle_B v2, Vertex_handle_R v) const
+	void create_vertex (Halfedge_handle_A e1, Vertex_handle_B v2, Vertex_handle_R v) const override
+	{
+		v->set_data(v2->data());
+	}
+
+	void create_vertex (Face_handle_A f1, Vertex_handle_B v2, Vertex_handle_R v) const override
 	{
 		v->set_data(v2->data());
 	}
 	
-	virtual void create_vertex (Face_handle_A f1, Vertex_handle_B v2, Vertex_handle_R v) const
-	{
-		v->set_data(v2->data());
-	}
-	
-	virtual void create_vertex (Halfedge_handle_A e1, Halfedge_handle_B e2, Vertex_handle_R v) const
+	void create_vertex (Halfedge_handle_A e1, Halfedge_handle_B e2, Vertex_handle_R v) const override
 	{
 	}
 
-	virtual void create_edge (Halfedge_handle_A e1, Halfedge_handle_B e2, Halfedge_handle_R e) const
+	void create_edge (Halfedge_handle_A e1, Halfedge_handle_B e2, Halfedge_handle_R e) const override
 	{
 		e->		   set_data (e2->data());
 		e->twin()->set_data (e2->twin()->data());
 	}
 	
-	virtual void create_edge (Halfedge_handle_A e1, Face_handle_B f2, Halfedge_handle_R e) const
+	void create_edge (Halfedge_handle_A e1, Face_handle_B f2, Halfedge_handle_R e) const override
 	{
 		if(!f2->contained())
 		{
@@ -202,13 +202,13 @@ public:
 			dead->push_back(e);
 	}
 	
-	virtual void create_edge (Face_handle_A f1, Halfedge_handle_B e2, Halfedge_handle_R e) const
+	void create_edge (Face_handle_A f1, Halfedge_handle_B e2, Halfedge_handle_R e) const override
 	{
 		e->set_data (e2->data());
 		e->twin()->set_data (e2->twin()->data());
 	}
 
-	virtual void create_face (Face_handle_A f1, Face_handle_B f2, Face_handle_R f) const
+	void create_face (Face_handle_A f1, Face_handle_B f2, Face_handle_R f) const override
 	{
 		f->set_contained(f2->contained());															// overlay face drives containment after merge - that is, we copy the overlay pattern.  If we wanted
 		f->set_data(f2->contained() ? f2->data() : f1->data());										// the whole surface area, we could just set contained = ! unbounded.
@@ -234,6 +234,12 @@ struct Overlay_vertex
 	{
 		GIS_vertex_data r;
 		r.mTunnelPortal = a.mTunnelPortal || b.mTunnelPortal;
+		if (a.mElevation && b.mElevation)
+			r.mElevation = (*a.mElevation + *b.mElevation) * 0.5;
+		else if (a.mElevation)
+			r.mElevation = a.mElevation;
+		else if (b.mElevation)
+			r.mElevation = b.mElevation;
 		return r;
 	}
 };
@@ -244,6 +250,7 @@ struct Overlay_terrain
 	{
 		GIS_face_data r;
 		merge_params(r.mParams,a.mParams,b.mParams);
+		r.mHasElevation = a.mHasElevation || b.mHasElevation;
 		// Our overlay comes from the RHS, but it might be a hole (in which case mTerrainType will be 0)
 		if (b.mTerrainType != 0 ) {
 			r.mTerrainType = b.mTerrainType;

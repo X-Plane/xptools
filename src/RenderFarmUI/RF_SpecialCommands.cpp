@@ -51,6 +51,12 @@
 #define	kMaxDegChangePerSample	0.125
 
 
+GUI_MenuItem_t	kEditItems[] = {
+{	"Select Vertices",							0,		0,					0,		editCmd_SelectVertex},
+{	"Select Edges",								0,		0,					0,		editCmd_SelectEdge},
+{	"Select Faces",								0,		0,					0,		editCmd_SelectFace},
+{	"Select Points",								0,		0,					0,		editCmd_SelectPoints},
+{	nullptr,										0,		0,					0,		0 } };
 
 GUI_MenuItem_t	kSpecialItems[] = {
 {	"Take Screenshot...",										'.',	gui_ControlFlag,	0,		specCmd_Screenshot				},
@@ -91,6 +97,7 @@ struct FeatureHasNoHeight {
 
 void	RegisterSpecialCommands(void)
 {
+	GUI_Menu edit_menu = gApplication->CreateMenu("Edit", kEditItems,gApplication->GetMenuBar(), 0);
 	GUI_Menu special_menu = gApplication->CreateMenu("Special", kSpecialItems,gApplication->GetMenuBar(), 0);
 }
 
@@ -114,6 +121,11 @@ void	HandleSpecialCommand(int cmd)
 {
 	try {
 		switch(cmd) {
+		case editCmd_SelectVertex:	RF_SetSelectionMode(rf_Select_Vertex); break;
+		case editCmd_SelectEdge:	RF_SetSelectionMode(rf_Select_Edge); break;
+		case editCmd_SelectFace:	RF_SetSelectionMode(rf_Select_Face); break;
+		case editCmd_SelectPoints:	RF_SetSelectionMode(rf_Select_PointFeatures); break;
+
 		case specCmd_Screenshot:
 			{
 				DoScreenshot();

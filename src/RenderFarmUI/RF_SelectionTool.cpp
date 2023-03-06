@@ -598,7 +598,13 @@ char *	RF_SelectionTool::GetStatusText(int x, int y)
 		double d2 = CGAL::to_double((*(gVertexSelection.begin()))->point().y());
 		n += sprintf(buf+n, "%lf,%lf %.16llX, %.16llX ",
 			d1, d2,	*(unsigned long long*)&d1,*(unsigned long long*)&d2);
-			
+
+		const auto& elevation = (*gVertexSelection.begin())->data().mElevation;
+		if (elevation)
+		{
+			n += sprintf(buf+n, "%.2lf m ", *elevation);
+		}
+
 		int score = score_for_junction(*gVertexSelection.begin());
 		n += sprintf(buf+n, "score=%d ",score);
 	}

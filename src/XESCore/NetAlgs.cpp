@@ -911,9 +911,10 @@ void repair_network(Pmwx& io_map, bool verbose)
 		io_map.remove_edge(*kts,true,true);
 	}
 	
-	for(Pmwx::Edge_iterator e = io_map.edges_begin(); e != io_map.edges_end(); ++e)
+	for(Pmwx::Edge_iterator e = io_map.edges_begin(); e != io_map.edges_end(); /* intentional */)
 	if(e->data().mMark)
 	{
+		bool did_kill_e = false;
 		Pmwx::Halfedge_handle i(e);
 		int d = i->target()->degree();
 		while(d == 2 && i->next()->data().mMark && i->next() != e)
@@ -954,6 +955,11 @@ void repair_network(Pmwx& io_map, bool verbose)
 					Point2 p2(cgal2ben((*k)->target()->point()));
 					debug_mesh_line(p1,p2,0.5,0,0,1,0,0);
 				#endif
+					if(Pmwx::Halfedge_handle(e) == *k || e->twin() == *k)
+					{
+						did_kill_e = true;
+						++e;
+					}
 					io_map.remove_edge(*k, true, true);
 					++kill_discon;
 				}
@@ -981,7 +987,11 @@ void repair_network(Pmwx& io_map, bool verbose)
 				i = i->next();
 			}
 		}
+		if(!did_kill_e)
+			++e;
 	}
+	else
+		++e;
 	
 	if(verbose)
 		printf("Removed %d tiny antenna roads, %d disconnected roads.\n",

@@ -61,5 +61,9 @@ void	BezierToSegments(
 				Polygon_2&					outWinding,
 				float						inSimplify);
 
+void	ApplyApproachProtections(
+				const AptVector& 	inAirports,
+				Pmwx& 				ioMap,
+				ProgressFunc		inProgress);
 
 #endif /* AIRPORTS_H */
