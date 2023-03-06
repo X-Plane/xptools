@@ -40,11 +40,9 @@ WED_FacadeRing::~WED_FacadeRing()
 
 bool	 WED_FacadeRing::IsClosed	(void	) const
 {
-	WED_FacadePlacement * fst = SAFE_CAST(WED_FacadePlacement,GetParent());
-	if(fst) 
-	{
-		return fst->GetTopoMode() < 2;
-	}
+	if (auto p = GetParent())
+		if (p->GetClass() == WED_FacadePlacement::sClass)
+			return static_cast<WED_FacadePlacement*>(p)->GetTopoMode() < 2;
 	return true;
 }
 

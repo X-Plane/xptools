@@ -57,7 +57,7 @@ void	GenerateOGL(AptInfo_t * a);
 const char * ramp_type_strings[] = { "misc", "gate", "tie_down","hangar", NULL };
 
 #define NUM_RAMP_OP_TYPES 6
-//The human readable types that will get saved 
+//The human readable types that will get saved
 const char * ramp_operation_type_strings[] = { "none", "general_aviation", "airline", "cargo", "military", NULL };
 
 const char * pattern_strings[] = { "left", "right", NULL };
@@ -88,10 +88,10 @@ int scan_bitfields(const char * str, const char * bits[], int all_value, char se
 	std::string string_version(str);
 	std::vector<std::string> tokenized;
 	tokenize_string(string_version.begin(), string_version.end(), back_inserter(tokenized), separator);
-	
+
 	if(all_value && strcmp(str,"all") == 0)
 		return all_value;
-		
+
 	int r = 0;
 	int n = 0;
 	int b = 1;
@@ -180,6 +180,17 @@ static void	print_apt_poly(int (*fprintf)(void * fi, const char * fmt, ...), voi
 			}
 		fputs(CRLF, (FILE *) fi);
 	}
+}
+
+static int XP11_pave_type(int xp12_type)
+{
+	xp12_type = xp12_type % 100;
+	if (xp12_type >= 20 && xp12_type <= 39)
+		return 1;
+	else if (xp12_type >= 50 && xp12_type <= 59)
+		return 2;
+	else
+		return xp12_type;
 }
 
 static void CenterToEnds(POINT2 location, double heading, double len, SEGMENT2& ends)
@@ -289,12 +300,13 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 	if (ok.empty())
 	{
 		if (TextScanner_FormatScan(s, "i", &vers) != 1) ok = "Invalid version";
-		if (vers != 703 && vers != 715 && vers != 810 && vers != 850 && vers != 1000 && vers != 1050 && vers != 1100 && vers != 1130)
+		if (vers != 703 && vers != 715 && vers != 810 && vers != 850 && vers != 1000 && vers != 1050 &&
+		    vers != 1100 && vers != 1130 && vers != 1200)
 		{
-		  if (vers > 1130)
+		  if (vers > LATEST_APT_VERSION)
 			ok = "Format is newer than supported by this version of WED";
 		  else
-			ok = "Illegal version";
+			ok = "Unsupported version";
 		}
 		TextScanner_Next(s);
 		++ln;
@@ -306,9 +318,9 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 	bool			hit_prob = false;
 	AptPolygon_t *	open_poly = NULL;
 	Point2			pt,ctrl;
-	
+
 	AptEdgeBase_t *	last_edge = NULL;
-	
+
 	bool forceDone = false;
 	while (ok.empty() && !TextScanner_IsDone(s) && !forceDone)
 	{
@@ -544,6 +556,21 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				&outApts.back().runways.back().reil_code[1]) != 26)
 			ok = "Illegal new runway";
 			outApts.back().runways.back().ends = SEGMENT2(POINT2(p1x, p1y), POINT2(p2x, p2y));
+			outApts.back().runways.back().has_105 = false;
+			break;
+		case apt_rwy_skids:
+			if (vers < 1200) ok = "Error: runway skids marks not allowed before 1200";
+			if (outApts.back().kind_code == apt_airport)
+			if (!hit_prob && outApts.back().runways.size() > 0)
+			if (TextScanner_FormatScan(s, "iiifffff",&rec_code,
+				&outApts.back().runways.back().mark_color,
+				&outApts.back().runways.back().mark_size,
+				&outApts.back().runways.back().number_size,
+				&outApts.back().runways.back().skids[0],
+				&outApts.back().runways.back().skid_len[0],
+				&outApts.back().runways.back().skids[1],
+				&outApts.back().runways.back().skid_len[1]) == 5)
+			outApts.back().runways.back().has_105 = true;
 			break;
 		case apt_sea_new:
 			if (vers < 850) ok = "Error: new sealanes not allowed before 850";
@@ -674,8 +701,8 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 					&equip,
 					&gate.name) < 6)
 					ok = "Illegal startup loc";
-				else		
-				{			
+				else
+				{
 					gate.type = scan_enum(ramp_type.c_str(), ramp_type_strings);
 					if(gate.type == -1)
 					{
@@ -684,14 +711,14 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 
 					gate.equipment = scan_bitfields(equip.c_str(), equip_strings, atc_traffic_all);
 					gate.location = POINT2(p1x, p1y);
-					gate.ramp_op_type = ramp_operation_none;					
-					gate.width = atc_width_B;					
+					gate.ramp_op_type = ramp_operation_none;
+					gate.width = atc_width_B;
 					if(gate.equipment & atc_traffic_turbos)
-						gate.width = atc_width_C;					
+						gate.width = atc_width_C;
 					if(gate.equipment & atc_traffic_jets)
-						gate.width = atc_width_C;					
+						gate.width = atc_width_C;
 					if(gate.equipment & atc_traffic_heavies)
-						gate.width = atc_width_E;					
+						gate.width = atc_width_E;
 					outApts.back().gates.push_back(gate);
 				}
 			}
@@ -707,7 +734,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 						AptGate_t & tmp_gate = outApts.back().gates.back();
 						string size_char = "\0";
 						string ramp_op_type_human_string;
-						
+
 						//Attempt to scan 1301 size [A-F] ramp_ai_operation_type airport strings
 						if(TextScanner_FormatScan(s,"iTTT|",
 							&rec_code,
@@ -720,12 +747,12 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 
 						//Break out your ASCII mindset
 						tmp_gate.width = static_cast<int>(size_char[0] - 'A');
-						
+
 						if(tmp_gate.width < 0 || tmp_gate.width > 5)
 						{
 							ok = string("Error: ") + size_char[0] + " is not a valid gate size";
 						}
-						
+
 						//Loop through every string in ramp_air_operation_type
 						//including the end of the array (a null terminator)
 						for (int i = 0; i < NUM_RAMP_OP_TYPES && ok == ""; i++)
@@ -737,7 +764,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 								ok = string("Error: ") + ramp_op_type_human_string + "is not a real Ramp Operation Type";
 								break;
 							}
-							
+
 							//If the human readable matches what we pulled from
 							//the apt.dat, we've found our ramp_op_type
 							if(ramp_operation_type_strings[i] == ramp_op_type_human_string)
@@ -793,7 +820,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				AptWindRule_t	wr;
 				if(TextScanner_FormatScan(s,"iTiii",&rec_code,&wr.icao,&wr.dir_lo_degs_mag, &wr.dir_hi_degs_mag,&wr.max_speed_knots) != 5)
 					ok = "ERROR: bad wind rule record.";
-				else				
+				else
 					outApts.back().flows.back().wind_rules.push_back(wr);
 			}
 			break;
@@ -803,7 +830,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 			else if (outApts.empty()) ok = "Error: ceiling rule outside of an airport";
 			else if(outApts.back().flows.empty()) ok = "Error: ceiling rule outside of flow.";
 			else
-			{				
+			{
 				if(TextScanner_FormatScan(s,"iTi",&rec_code,&outApts.back().flows.back().icao,&outApts.back().flows.back().ceiling_ft) != 3)
 					ok = "ERROR: ceiling wind rule record.";
 			}
@@ -828,7 +855,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				AptTimeRule_t	tr;
 				if(TextScanner_FormatScan(s,"iii",&rec_code,&tr.start_zulu,&tr.end_zulu) != 3)
 					ok = "ERROR: bad time rule record.";
-				else				
+				else
 					outApts.back().flows.back().time_rules.push_back(tr);
 			}
 			break;
@@ -854,7 +881,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				outApts.back().flows.back().runway_rules.push_back(AptRunwayRule_t());
 				AptRunwayRule_t * this_rule = &outApts.back().flows.back().runway_rules.back();
 				string op, equip;
-				
+
 				if(TextScanner_FormatScan(s,"iTiTTiiT|", &rec_code,
 					&this_rule->runway,
 					&this_rule->dep_freq,
@@ -1028,6 +1055,22 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				}
 			}
 			break;
+		case apt_truck_custom:
+			if (vers < 1200) ok = "Error: no custom trucks in pre 1200 apt.dat files.";
+			else if (outApts.empty()) ok = "Error: truck outside an airport.";
+			else if (outApts.back().truck_parking.empty()) ok = "Error: custom truck without preceeding truck parking";
+			else
+			{
+				Jetway_t j;
+				if (TextScanner_FormatScan(s, "iTT|",
+					&rec_code,
+					&outApts.back().truck_parking.back().vpath) < 2)
+				{
+					ok = "Error: Illegal custom truck";
+				}
+			}
+			break;
+
 		case apt_truck_destination:
 			// 1401 lat lon heading type|type|type... name
 			if (vers < ATC_VERS3) ok = "Error: no ATC truck destinations in older apt.dat files.";
@@ -1044,10 +1087,10 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 											&heading,
 											&truck_types_for_dest,
 											&name) < 5)
-				{ 
+				{
 					ok = "Error: Illegal truck destination";
 				}
-				
+
 				AptTruckDestination_t truck_dest;
 				truck_dest.location = Point2(lon, lat);
 				truck_dest.heading = heading;
@@ -1075,6 +1118,44 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				}
 
 				outApts.back().truck_destinations.push_back(truck_dest);
+			}
+			break;
+		case apt_jetway:
+			if (vers < 1200) ok = "Error: no jetways in pre 1200 apt.dat files.";
+			else if (outApts.empty()) ok = "Error: jetway outside an airport.";
+			else
+			{
+				Jetway_t j;
+				if (TextScanner_FormatScan(s, "iddfiifff|",
+					&rec_code,
+					&j.location.y_,
+					&j.location.x_,
+					&j.install_heading,
+					&j.style_code,
+					&j.size_code,
+					&j.parked_tunnel_heading,
+					&j.parked_tunnel_length,
+					&j.parked_cab_heading) < 9)
+				{
+					ok = "Error: Illegal jetway";
+				}
+
+				outApts.back().jetways.push_back(j);
+			}
+			break;
+		case apt_jetway_custom:
+			if (vers < 1200) ok = "Error: no jetways in pre 1200 apt.dat files.";
+			else if (outApts.empty()) ok = "Error: jetway outside an airport.";
+			else if (outApts.back().jetways.empty()) ok = "Error: custom jetway without preceeding jetway";
+			else
+			{
+				Jetway_t j;
+				if (TextScanner_FormatScan(s, "iT|",
+					&rec_code,
+					&outApts.back().jetways.back().vpath) < 2)
+				{
+					ok = "Error: Illegal custom jetway";
+				}
 			}
 			break;
 		case apt_done:
@@ -1192,7 +1273,7 @@ bool	WriteAptFileOpen(FILE * fi, const AptVector& inApts, int version)
 
 bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void * fi, const AptVector& inApts, int version)
 {
-	DebugAssert(version == 850 || version == 1000 || version == 1050 || version == 1100 || version == 1130);
+	DebugAssert(version == 850 || version == 1000 || version == 1050 || version == 1100 || version == 1130 || version == 1200);
 	fprintf(fi, "%c" CRLF, APL ? 'A' : 'I');
 #if TYLER_MODE
 	fprintf(fi, "%d Generated by WorldEditor %s / TY mode" CRLF, version, WED_VERSION_STRING);
@@ -1210,7 +1291,7 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 		fprintf(fi, "%d %6d %d %d %s %s" CRLF, apt->kind_code, apt->elevation_ft,
 				version < 1000 ? apt->has_atc_twr : 0, apt->default_buildings,
 				apt->icao.c_str(), apt->name.c_str());
-		
+
 		for(int i = 0; i < apt->meta_data.size(); ++i)
 		{
 #if TYLER_MODE
@@ -1218,7 +1299,7 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 #endif
 			string key = apt->meta_data.at(i).first;
 			string value = apt->meta_data.at(i).second;
-			
+
 			if (key == "faa_code"  ||
 				key == "iata_code" ||
 				key == "icao_code" ||
@@ -1227,7 +1308,7 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 				//Convert each to
 				::transform(value.begin(), value.end(), value.begin(), ::toupper);
 			}
-			
+
 			fprintf(fi, "%d %s %s" CRLF, apt_meta_data, key.c_str(), value.c_str());
 		}
 
@@ -1236,9 +1317,21 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 			fprintf(fi,"%d %4.2f %d %d %.2f %d %d %d "
 						"%3s" LLFMT " %.0f %.0f %d %d %d %d "
 						"%s" LLFMT " %.0f %.0f %d %d %d %d" CRLF,
-						apt_rwy_new, rwy->width_mtr, rwy->surf_code, rwy->shoulder_code, rwy->roughness_ratio, rwy->has_centerline, rwy->edge_light_code, rwy->has_distance_remaining,
-						rwy->id[0].c_str(),CGAL2DOUBLE(rwy->ends.source().y()),CGAL2DOUBLE(rwy->ends.source().x()), rwy->disp_mtr[0],rwy->blas_mtr[0], rwy->marking_code[0],rwy->app_light_code[0], rwy->has_tdzl[0], rwy->reil_code[0],
-						rwy->id[1].c_str(),CGAL2DOUBLE(rwy->ends.target().y()),CGAL2DOUBLE(rwy->ends.target().x()), rwy->disp_mtr[1],rwy->blas_mtr[1], rwy->marking_code[1],rwy->app_light_code[1], rwy->has_tdzl[1], rwy->reil_code[1]);
+						apt_rwy_new, rwy->width_mtr,
+						version >= 1200 ? rwy->surf_code : XP11_pave_type(rwy->surf_code),
+						version >= 1200 ? rwy->shoulder_code : XP11_pave_type(rwy->shoulder_code), rwy->roughness_ratio,
+						rwy->has_centerline, rwy->edge_light_code, rwy->has_distance_remaining,
+						rwy->id[0].c_str(),CGAL2DOUBLE(rwy->ends.source().y()),CGAL2DOUBLE(rwy->ends.source().x()), rwy->disp_mtr[0], rwy->blas_mtr[0],
+						rwy->marking_code[0], rwy->app_light_code[0], rwy->has_tdzl[0],
+						(version >= 1200 || rwy->reil_code[0] <= 2) ? rwy->reil_code[0] : 0,
+						rwy->id[1].c_str(),CGAL2DOUBLE(rwy->ends.target().y()),CGAL2DOUBLE(rwy->ends.target().x()), rwy->disp_mtr[1], rwy->blas_mtr[1],
+						rwy->marking_code[1], rwy->app_light_code[1], rwy->has_tdzl[1],
+						(version >= 1200 || rwy->reil_code[1] <= 2) ? rwy->reil_code[1] : 0);
+
+			if(version >= 1200 && rwy->has_105)
+				fprintf(fi,"%d %d %d %.1f %4.2f %4.2f %4.2f %4.2f" CRLF, apt_rwy_skids,
+						rwy->mark_color, rwy->mark_size, rwy->number_size,
+						rwy->skids[0], rwy->skid_len[0], rwy->skids[1], rwy->skid_len[1]);
 		}
 
 		for(AptSealaneVector::const_iterator sea = apt->sealanes.begin(); sea != apt->sealanes.end(); ++sea)
@@ -1275,12 +1368,14 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 		{
 			fprintf(fi,"%d %s" LLFMT " %.1lf %.2f %.2f %d %d %d %.2f %d" CRLF,
 				apt_heli_new, heli->id.c_str(), CGAL2DOUBLE(heli->location.y()), CGAL2DOUBLE(heli->location.x()), heli->heading, heli->length_mtr, heli->width_mtr,
-						heli->surface_code,heli->marking_code,heli->shoulder_code,heli->roughness_ratio,heli->edge_light_code);
+						version >= 1200 ? heli->surface_code : XP11_pave_type(heli->surface_code), heli->marking_code,
+						version >= 1200 ? heli->shoulder_code : XP11_pave_type(heli->shoulder_code), heli->roughness_ratio, heli->edge_light_code);
 		}
 
 		for (AptTaxiwayVector::const_iterator taxi = apt->taxiways.begin(); taxi != apt->taxiways.end(); ++taxi)
 		{
-			fprintf(fi, "%d %d %.2f %.1f" NFMT CRLF, apt_taxi_new, taxi->surface_code, taxi->roughness_ratio, taxi->heading N(taxi));
+			fprintf(fi, "%d %d %.2f %.1f" NFMT CRLF, apt_taxi_new, 
+			version >= 1200 ? taxi->surface_code : XP11_pave_type(taxi->surface_code), taxi->roughness_ratio, taxi->heading N(taxi));
 			print_apt_poly(fprintf,fi,taxi->area, version);
 		}
 
@@ -1375,7 +1470,7 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 				fprintf(fi, "%2d %5d %s" CRLF, atc->atc_type, atc->freq / 10, atc->name.c_str());
 			else
 				fprintf(fi, "%2d %6d %s" CRLF, atc->atc_type + (apt_freq_awos_1k-apt_freq_awos), atc->freq, atc->name.c_str());
-			
+
 		}
 
 		if(has_atc)
@@ -1383,14 +1478,14 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 			for(AptFlowVector::const_iterator flow = apt->flows.begin(); flow != apt->flows.end(); ++flow)
 			{
 				fprintf(fi,"%2d %s" CRLF, apt_flow_def, flow->name.c_str());
-				
+
 				for(AptWindRuleVector::const_iterator wind = flow->wind_rules.begin(); wind != flow->wind_rules.end(); ++wind)
 					fprintf(fi,"%2d %s %03d %03d %d" CRLF, apt_flow_wind, wind->icao.c_str(), wind->dir_lo_degs_mag, wind->dir_hi_degs_mag, wind->max_speed_knots);
-				
+
 				fprintf(fi,"%2d %s %d" CRLF, apt_flow_ceil, flow->icao.c_str(), flow->ceiling_ft);
-				
+
 				fprintf(fi,"%2d %s %.1f" CRLF, apt_flow_vis, flow->icao.c_str(), flow->visibility_sm);
-				
+
 				for(AptTimeRuleVector::const_iterator time = flow->time_rules.begin(); time != flow->time_rules.end(); ++time)
 					fprintf(fi,"%2d %04d %04d" CRLF, apt_flow_time, time->start_zulu, time->end_zulu);
 
@@ -1475,7 +1570,7 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 					}
 				}
 			}
-			
+
 			//If we have any, write all service roads
 			if (has_atc3)
 			{
@@ -1498,7 +1593,7 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 			{
 				if (has_atc3)
 				{
-					for (AptTruckParkingVector::const_iterator trk = apt->truck_parking.begin(); trk != apt->truck_parking.end(); ++trk)
+					for (auto trk = apt->truck_parking.cbegin(); trk != apt->truck_parking.cend(); ++trk )
 					{
 						//Don't export car count unless our type is baggage_train
 						int car_count = trk->parking_type == apt_truck_baggage_train ? trk->train_car_count : 0;
@@ -1506,9 +1601,12 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 						fprintf(fi, "%d" LLFMT2 " %.1f %s %d" NFMT CRLF,
 							apt_truck_parking, trk->location.y_, trk->location.x_, trk->heading,
 							truck_type_strings[trk->parking_type], car_count N(trk));
+						if(version >= 1200 && !trk->vpath.empty())
+							fprintf(fi, "%d %s" CRLF,
+								apt_truck_custom, trk->vpath.c_str());
 					}
 				}
-				
+
 				if (has_atc3)
 				{
 					for (AptTruckDestinationVector::const_iterator dst = apt->truck_destinations.begin(); dst != apt->truck_destinations.end(); ++dst)
@@ -1525,6 +1623,18 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 					}
 				}
 			}
+
+			if(version >= 1200)
+				for (auto const& jetway : apt->jetways)
+				{
+					fprintf(fi, "%d" LLFMT " %4.1f %d %d %.1f %4.2f %.1f" CRLF,
+						apt_jetway, jetway.location.y(), jetway.location.x(), jetway.install_heading,
+						jetway.style_code, jetway.size_code, jetway.parked_tunnel_heading,
+						jetway.parked_tunnel_length, jetway.parked_cab_heading);
+					if (!jetway.vpath.empty())
+						fprintf(fi, "%d %s" CRLF,
+							apt_jetway_custom, jetway.vpath.c_str());
+				}
 		}
 	}
 	fprintf(fi, "%d" CRLF, apt_done);
@@ -1845,7 +1955,7 @@ bool	CheckATCRouting(const AptInfo_t& io_apt)
 			return false;		// dupe ID
 		valid_ids.insert(n->id);
 	}
-	
+
 	for(vector<AptRouteEdge_t>::const_iterator e = io_apt.taxi_route.edges.begin(); e != io_apt.taxi_route.edges.end(); ++e)
 	{
 		if(valid_ids.count(e->src) == 0)			// Invalid node IDs
@@ -1853,6 +1963,6 @@ bool	CheckATCRouting(const AptInfo_t& io_apt)
 		if(valid_ids.count(e->dst) == 0)
 			return false;
 	}
-	
+
 	return true;
 }

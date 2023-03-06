@@ -124,7 +124,8 @@ WED_PropertyPane::WED_PropertyPane(
 				WED_Color_RGBA(wed_Header_Text));
 
 		mSide = new GUI_Side;
-		bounds[2] = GUI_MeasureRange(font_UI_Basic,"Left Hand Driving", "Left Hand Driving"+strlen("Left Hand Driving"))+6;  // first column can be narrow, as full content can be seen by clicking on it
+		const char *str ="Left Hand Driving";
+		bounds[2] = GUI_MeasureRange(font_UI_Basic, str, str + strlen(str)) + 6;  // first column can be narrow, as full content can be seen by clicking on it
 		mSide->SetBounds(bounds);
 		mSide->SetGeometry(&mPropertyTable);
 		mSide->SetSide(&mTextTableSide);

@@ -61,8 +61,14 @@ void	WED_FacadeNode::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 			if (mgr->GetFac(res,info))
 			if(!info->wallName.empty())
 			{
-				for (int n = 0; n < info->wallName.size(); ++n)
-					dict[n + facade_Wall0] = make_pair(info->wallName[n],true);
+				if (info->tunnels.size() && parent->CountChildren() - 1 == GetMyPosition())
+				{
+					dict[facade_Wall0] = make_pair("Auto Docking", true);
+					dict[facade_Wall39] = make_pair("Disable Docking", true);
+				}
+				else
+					for (int n = 0; n < info->wallName.size(); ++n)
+						dict[n + facade_Wall0] = make_pair(info->wallName[n],true);
 				return;
 			}
 		}
@@ -90,11 +96,18 @@ void		WED_FacadeNode::GetNthPropertyDictItem(int n, int e, string& item) const
 		if((mgr = WED_GetResourceMgr(resolver)) != NULL)
 		{
 			fac->GetResource(res);
-			if (mgr->GetFac(res,info))
-			if(info->wallName.size() > idx)
+			if(mgr->GetFac(res, info))
 			{
-				item = info->wallName[idx];
-				return;
+				if(info->tunnels.size() && parent->CountChildren() - 1 == GetMyPosition())
+				{
+					item = idx < 39 ? "Auto Docking" : "Disable Docking";
+					return;
+				}
+				else if(info->wallName.size() > idx)
+				{
+					item = info->wallName[idx];
+					return;
+				}
 			}
 		}
 	}

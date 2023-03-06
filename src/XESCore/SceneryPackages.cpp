@@ -438,6 +438,9 @@ void	CreatePackageForDSF(const char * inPackage, int lon, int lat, char * outDSF
 
 bool	SpreadsheetForObject(const char * inObjFile, FILE * outDstLine)
 {
+#if 1
+	return false;
+#else
 	XObj	obj;
 	if (!XObjRead(inObjFile, obj)) return false;
 
@@ -474,4 +477,5 @@ bool	SpreadsheetForObject(const char * inObjFile, FILE * outDstLine)
 		rawName.c_str(), maxp[0] - minp[0], maxp[2] - minp[2]);
 
 	return true;
+#endif
 }

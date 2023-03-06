@@ -1539,7 +1539,7 @@ void	RF_MapView::HandleNotification(int catagory, int message, void * param)
 								(full.p1.y()),
 								(full.p2.x()),
 								(full.p2.y()));
-					mZoomer->SetAspectRatio(1.0 / cos((CGAL::to_double(full.p1.y()) + CGAL::to_double(full.p2.y())) * 0.5 * PI / 180.0));
+					mZoomer->SetAspectRatio(1.0 / cos((CGAL::to_double(full.p1.y()) + CGAL::to_double(full.p2.y())) * 0.5 * M_PI / 180.0));
 				} else {
 					int e = gDem.begin()->first;
 					mZoomer->SetMapLogicalBounds(
@@ -1547,7 +1547,7 @@ void	RF_MapView::HandleNotification(int catagory, int message, void * param)
 								gDem[e].mSouth,
 								gDem[e].mEast,
 								gDem[e].mNorth);
-					mZoomer->SetAspectRatio(1.0 / cos((gDem[e].mSouth + gDem[e].mNorth) * 0.5 * PI / 180.0));
+					mZoomer->SetAspectRatio(1.0 / cos((gDem[e].mSouth + gDem[e].mNorth) * 0.5 * M_PI / 180.0));
 					full = Bbox2(gDem[e].mWest, gDem[e].mSouth, gDem[e].mEast, gDem[e].mNorth);
 				}
 				if(sZoomLoad)

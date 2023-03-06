@@ -59,7 +59,7 @@
 
 inline int count_strs(const char ** p) { if (!p) return 0; int n = 0; while(*p) ++p, ++n; return n; }
 
-inline bool AnyLocked(WED_Thing * t)
+static bool AnyLocked(WED_Thing * t)
 {
 	if (t == NULL) return false;
 	WED_Entity * e = dynamic_cast<WED_Entity *>(t);
@@ -68,7 +68,7 @@ inline bool AnyLocked(WED_Thing * t)
 	return AnyLocked(t->GetParent());
 }
 
-inline bool AnyHidden(WED_Thing * t)
+static bool AnyHidden(WED_Thing * t)
 {
 	if (t == NULL) return false;
 	WED_Entity * e = dynamic_cast<WED_Entity *>(t);

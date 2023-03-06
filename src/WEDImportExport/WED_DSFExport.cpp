@@ -79,7 +79,9 @@ struct DSF_export_info_t
 	ImageInfo	orthoImg;      // in case an orthoimage is to be converted/exported, store its info, so it does not need to be loaded it repeatedly
 	string		orthoFile;     // path to last orthoImage - so we know if there is a 2nd one to deal with - in which case we drop the first
 
-	DSF_export_info_t() { orthoImg.data = NULL; }
+	bool		DockingJetways;
+
+	DSF_export_info_t() : DockingJetways(true) { orthoImg.data = NULL; }
 };
 
 extern int gOrthoExport;
@@ -99,6 +101,15 @@ int zip_printf(void * fi, const char * fmt, ...)
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
+
+static unsigned int encode_heading(double h)
+{
+	double          wrapped = dobwrap(h, 0.0, 360.0);
+	unsigned int  whole_deg = wrapped;
+	double         frac_deg = wrapped - whole_deg;
+
+	return whole_deg + 360u * (unsigned int)(128.0 * frac_deg);
+}
 
 // stolen from GISUtils - I got annoyed with having to grab all of CGAL for a modulo function.
 /*inline int	latlon_bucket(int p)
@@ -317,21 +328,21 @@ void dsf_road_grid_helper::add_segment(WED_RoadEdge * e, const Bbox2& cull_bound
 				if(si == m_node_index.end())
 				{
 					new_edge.start_node = m_nodes.size();
-					si = m_node_index.insert(make_pair(gp_start, m_nodes.size())).first;
+					si = m_node_index.insert(make_pair(gp_start, (int) m_nodes.size())).first;
 					m_nodes.push_back(node());
 				}
 				else
 				{
 					new_edge.start_node = si->second;
 				}
-				m_nodes[si->second].edges.push_back(m_edges.size());
+				m_nodes[si->second].edges.push_back((int) m_edges.size());
 			}
 			else											//start point is new after culling , creating new own node
 			{
 				new_edge.start_level = e->GetEndLayer();    // ToDo: mroe: revisit , using original endlayer for every newly split node
 				new_edge.start_node = m_nodes.size();
 				m_nodes.push_back(node());
-				m_nodes[m_nodes.size()-1].edges.push_back(m_edges.size());
+				m_nodes[m_nodes.size()-1].edges.push_back((int) m_edges.size());
 			}
 
 			if( new_edge.path.back().p2 == ep)							//end point is unchanged , not cutted
@@ -341,21 +352,21 @@ void dsf_road_grid_helper::add_segment(WED_RoadEdge * e, const Bbox2& cull_bound
 				if(ei == m_node_index.end())
 				{
 					new_edge.end_node = m_nodes.size();
-					ei = m_node_index.insert(make_pair(gp_end, m_nodes.size())).first;
+					ei = m_node_index.insert(make_pair(gp_end, (int) m_nodes.size())).first;
 					m_nodes.push_back(node());
 				}
 				else
 				{
 					new_edge.end_node = ei->second;
 				}
-				m_nodes[ei->second].edges.push_back(m_edges.size());
+				m_nodes[ei->second].edges.push_back((int) m_edges.size());
 			}
 			else											//end point is new after culling , creating new own node
 			{
 				new_edge.end_level = e->GetEndLayer();
 				new_edge.end_node = m_nodes.size();
 				m_nodes.push_back(node());
-				m_nodes[m_nodes.size()-1].edges.push_back(m_edges.size());
+				m_nodes[m_nodes.size()-1].edges.push_back((int) m_edges.size());
 			}
 
 			m_edges.push_back(new_edge);
@@ -583,7 +594,7 @@ struct	DSF_ResourceTable {
 			}
 			if(i == net_defs_idx.end())
 			{
-				net_defs_idx[make_pair(f, idx)] = make_pair(net_defs.size(), dsf_road_grid_helper());
+				net_defs_idx[make_pair(f, idx)] = make_pair((int) net_defs.size(), dsf_road_grid_helper());
 				net_defs.push_back(f);
 			}
 			else
@@ -774,7 +785,8 @@ static void	DSF_AccumChainBezier(
 						void *									writer,
 						int										idx,
 						int										param,
-						int										auto_closed)
+						int										auto_closed,
+						double									lastPt_param)
 {
 	vector<Bezier2p>::const_iterator n = start;
 
@@ -800,6 +812,10 @@ static void	DSF_AccumChainBezier(
 						bounds);
 				if(!auto_closed || i != (pts_triple.size()-1))
 				{
+					if(e == end && i == (pts_triple.size() - 1))
+						c[2] = lastPt_param;
+					if (e == end && i == (pts_triple.size() - 2) && pts_triple[i].pt == pts_triple[i+1].pt)
+						c[2] = lastPt_param;
 					cbs->AddPolygonPoint_f(c,writer);
 				}
 			}
@@ -872,7 +888,8 @@ static void	DSF_AccumChain(
 						void *								writer,
 						int									idx,
 						int									param,
-						int									auto_closed)
+						int									auto_closed,
+						double								lastPt_param)
 {
 	vector<Segment2p>::const_iterator next;
 	for(vector<Segment2p>::const_iterator i = start; i != end; ++i)
@@ -904,7 +921,7 @@ static void	DSF_AccumChain(
 		else if(next == end && (i->target() != start->source() || !auto_closed))
 		{
 			assemble_dsf_pt(c, i->target(), NULL, bounds);
-			c[2] = i->param;
+			c[2] = lastPt_param;
 			cbs->AddPolygonPoint_f(c,writer);
 		}
 
@@ -1405,13 +1422,23 @@ static int	DSF_ExportTileRecursive(
 						else if(centroid_ob)
 							chain.clear();
 
+						if (!chain.empty() && export_info->DockingJetways && fac->HasDockingCabin())
+						{
+							chain.pop_back();
+							chain.pop_back();
+						}
+
 						if(!chain.empty())
 						{
 							++real_thingies;
 							if(fac_is_auto_closed && bad_match(chain.front(),chain.back()))
 								problem_children.insert(what);
 							else
-								DSF_AccumChainBezier(chain.cbegin(),chain.cend(), safe_bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
+							{
+								Point2 pt;
+								seq->GetNthPoint(seq->GetNumPoints() - 1)->GetLocation(gis_Param, pt);
+								DSF_AccumChainBezier(chain.cbegin(), chain.cend(), safe_bounds, cbs, writer, idx, fac->GetHeight(), fac_is_auto_closed, pt.x());
+							}
 						}
 					}
 					else
@@ -1426,13 +1453,23 @@ static int	DSF_ExportTileRecursive(
 						else if(centroid_ob)
 							chain.clear();
 
+						if (!chain.empty() && export_info->DockingJetways && fac->HasDockingCabin())
+						{
+							chain.pop_back();
+							chain.pop_back();
+						}
+
 						if(!chain.empty())
 						{
 							++real_thingies;
 							if(fac_is_auto_closed && bad_match(chain.front(),chain.back()))
 								problem_children.insert(what);
 							else
-								DSF_AccumChain(chain.cbegin(),chain.cend(), safe_bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
+							{
+								Point2 pt;
+								seq->GetNthPoint(seq->GetNumPoints() - 1)->GetLocation(gis_Param, pt);
+								DSF_AccumChain(chain.cbegin(), chain.cend(), safe_bounds, cbs, writer, idx, fac->GetHeight(), fac_is_auto_closed, pt.x());
+							}
 						}
 					}
 				}
@@ -1684,7 +1721,7 @@ static int	DSF_ExportTileRecursive(
 				pol_cuts.clear();
 			}
 
-			for(auto cuts : pol_cuts)
+			for(const auto& cuts : pol_cuts)
 			{
 				bool last_pt_spawn = true;
 				vector<Polygon2> 	pol_area;
@@ -1728,7 +1765,7 @@ static int	DSF_ExportTileRecursive(
 					pol_nonspawning.back().push_back(cuts.front().front().p1);
 
 				// append non-spawning vectors at the end
-				for(auto ns : pol_nonspawning)
+				for(const auto& ns : pol_nonspawning)
 					pol_area.push_back(ns);
 
 				// all other contours are holes, so add append at end
@@ -1865,7 +1902,7 @@ static int	DSF_ExportTileRecursive(
 				for(vector<vector<BezierPolygon2> >::iterator i = pol_cuts.begin(); i != pol_cuts.end(); ++i)
 				{
 					++real_thingies;
-					cbs->BeginPolygon_f(idx,pol->GetHeading(),bez ? 4 : 2,writer);
+					cbs->BeginPolygon_f(idx, encode_heading(pol->GetHeading()),bez ? 4 : 2,writer);
 					DSF_AccumPolygonWithHolesBezier(*i, safe_bounds, cbs, writer);
 					cbs->EndPolygon_f(writer);
 				}
@@ -1886,7 +1923,7 @@ static int	DSF_ExportTileRecursive(
 				for(vector<vector<Polygon2> >::iterator i = pol_cuts.begin(); i != pol_cuts.end(); ++i)
 				{
 					++real_thingies;
-					cbs->BeginPolygon_f(idx,pol->GetHeading(),bez ? 4 : 2,writer);
+					cbs->BeginPolygon_f(idx, encode_heading(pol->GetHeading()),bez ? 4 : 2,writer);
 					DSF_AccumPolygonWithHoles(*i, safe_bounds, cbs, writer);
 					cbs->EndPolygon_f(writer);
 				}
@@ -2092,8 +2129,8 @@ static int	DSF_ExportTileRecursive(
 						{
 							if(DDSInfo.channels == 3)
 								ConvertBitmapToAlpha(&DDSInfo,false);
-							int DXTMethod = hasPartialTransparency(&DDSInfo) ? 5 : 1;
-							WriteBitmapToDDS_MT(DDSInfo, DXTMethod, absPathDDS.c_str());
+							int BCMethod = hasPartialTransparency(&DDSInfo) ? 3 : 1;
+							WriteBitmapToDDS_MT(DDSInfo, BCMethod, absPathDDS.c_str(), mip_filter_box);
 						}
 						else
 							WriteBitmapToPNG(&DDSInfo, absPathDDS.c_str(), NULL, 0, 2.2);
@@ -2345,10 +2382,14 @@ int DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, se
 
 	int DSF_export_tile_res = 0;
 
-	DSF_export_info_t DSF_export_info;   // Keeping the last loaded orthoimage open, so it does not have to be loaded repeatedly.
-	                                     // This gates parallel DSF exports, though.
+	DSF_export_info_t DSF_export_info;   // We kept the last loaded orthoimage open, so it does not have to be loaded repeatedly. This gates parallel DSF exports.
+	DSF_export_info.DockingJetways = gExportTarget >= wet_xplane_1200;
+
 	for (int y = tile_south; y < tile_north; ++y)
 	{
+#if TYLER_MODE
+		printf("Exporting DSF's at lattitude %d\n", y);
+#endif
 		for (int x = tile_west; x < tile_east; ++x)
 		{
 			DSF_export_tile_res = DSF_ExportTile(base, resolver, package, x, y, problem_children, &DSF_export_info);
@@ -2407,6 +2448,7 @@ int DSF_ExportAirportOverlay(IResolver * resolver, WED_Airport  * apt, const str
 
 		DSF_ResourceTable	rsrc;
 		DSF_export_info_t DSF_export_info;
+		DSF_export_info.DockingJetways = false; // keep jetways as facades. Then no need to mtach up apt.dat jetways and DSF facades at import from GW
 
 		int entities = 0;
 		for(int show_level = 6; show_level >= 1; --show_level)

@@ -46,7 +46,7 @@ public:
 	typedef std::pair<string,string> meta_data_entry;
 
 	//--Meta Data API-------------------------------
-	//Adds a Meta Data Key. Collision is a no-op
+	//Adds a Meta Data Key. Collision is a replace value
 	void		AddMetaDataKey(const string& key, const string& value);
 	
 	//Edits a given Meta Data key's value. Non-existant keys are ignored

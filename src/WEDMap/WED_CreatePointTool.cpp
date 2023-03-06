@@ -87,6 +87,8 @@ WED_CreatePointTool::WED_CreatePointTool(
 		windsock_lit	(tool==create_Windsock		?this:NULL,PROP_Name("Lit",			XML_Name("","")),0),
 		resource		(tool==create_Object		?this:NULL,PROP_Name("Object",		XML_Name("","")),""),
 		show_level		(tool==create_Object		?this:NULL,PROP_Name("Show with",	XML_Name("","")),ShowLevel,show_Level1),
+		min_hdg			(tool == create_Object		?this:NULL, PROP_Name("min Heading", XML_Name("", "")), 0.0, 3, 0),
+		max_hdg			(tool == create_Object		?this:NULL, PROP_Name("max Heading", XML_Name("", "")), 0.0, 3, 0),
 		ramp_type		(tool==create_RampStart		?this:NULL,PROP_Name("Ramp Start Type",XML_Name("","")),ATCRampType, atc_Ramp_Misc),
 		equip_type		(tool==create_RampStart		?this:NULL,PROP_Name("Equipment Type",XML_Name("","")), ATCTrafficType, 0),
 		width			(tool==create_RampStart		?this:NULL,PROP_Name("Size",	    XML_Name("","")),   ATCIcaoWidth, width_E),
@@ -205,8 +207,15 @@ void	WED_CreatePointTool::AcceptPath(
 	DebugAssert((kIsToolDirectional[mType] && new_pt_h != NULL) || (!kIsToolDirectional[mType] && new_pt_h == NULL));
 
 	new_pt_obj->SetLocation(gis_Geo,pts[0]);
-	if (new_pt_h) new_pt_h->SetHeading(VectorDegs2NorthHeading(pts[0],pts[0],Vector2(pts[0],dirs_hi[0])));
-
+	if (new_pt_h)
+	{
+		double hdg;
+		if (mType == create_Object && pts[0] == dirs_hi[0])
+			hdg = min_hdg.value + (max_hdg.value - min_hdg.value) * rand() / RAND_MAX;
+		else
+			hdg = VectorDegs2NorthHeading(pts[0], pts[0], Vector2(pts[0], dirs_hi[0]));
+		new_pt_h->SetHeading(hdg);
+	}
 	static int n = 0;
 	new_pt_obj->SetParent(host, idx);
 	if (mType == create_Helipad)

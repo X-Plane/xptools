@@ -57,6 +57,7 @@ enum {
 	wed_Export1050,
 	wed_Export1100,
 	wed_Export1130,
+	wed_Export1200,
 	wed_ExportGateway,
 	// Edit Menu,
 	wed_Group,
@@ -82,6 +83,8 @@ enum {
 	wed_ConvertToTaxiway,
 	wed_ConvertToTaxiline,
 	wed_ConvertToLine,
+	wed_ConvertToString,
+	wed_ConvertToForest,
 	// Pavement menu
 	wed_Pavement0,
 	wed_Pavement25,
@@ -112,6 +115,7 @@ enum {
 //	wed_ToggleOverlay,
 	wed_ToggleWorldMap,
 	wed_ToggleNavaidMap,
+	wed_ToggleTerrainMap,
 	wed_SlippyMapNone,
 	wed_SlippyMapOSM,
 	wed_SlippyMapESRI,
@@ -147,11 +151,17 @@ enum {
 	wed_AddATCTimeRule,
 	wed_AddATCWindRule,
 	wed_UpgradeRamps,
+	wed_UpgradeJetways,
+	wed_UpgradeArt,
+	wed_AgePavement,
+	wed_EdgePavement,
+	wed_MowGrass,
 	wed_AlignApt,
 	//-- Add Metadata Keys Menu--
 	//Organized by alphabetical order
 	wed_AddMetaDataBegin,//WARNING: DO NOT USE!
 	wed_AddMetaDataCity,// or Locality
+	wed_AddMetaDataCircuits, // new in 1200
 	wed_AddMetaDataCountry,
 	wed_AddMetaDataDatumLat,
 	wed_AddMetaDataDatumLon,
@@ -161,8 +171,10 @@ enum {
 	wed_AddMetaDataICAO,
 	wed_AddMetaDataLocal,
 	wed_AddMetaDataLocAuth,
+	wed_AddMetaDataOilrig,   // new in 1204
 	wed_AddMetaDataRegionCode,
 	wed_AddMetaDataState,// or Province
+	wed_AddMetaDataTowerCaps, // new in 1200
 	wed_AddMetaDataTransitionAlt,//Altitude
 	wed_AddMetaDataTransitionLevel,
 	wed_AddMetaDataEnd,//WARNING: DO NOT USE!
@@ -181,5 +193,7 @@ enum {
 class	GUI_Application;
 
 void WED_MakeMenus(GUI_Application * inApp);
+
+string WED_GetTargetMenuName(int target);
 
 #endif

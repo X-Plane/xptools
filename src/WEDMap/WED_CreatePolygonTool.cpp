@@ -168,6 +168,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 	if (mType == create_Hole) is_ccw = !is_ccw;
 
 	WED_DrapedOrthophoto * dpol = NULL;
+	WED_FacadePlacement * fac = NULL;
 
 	switch(mType) {
 	case create_Taxi:
@@ -225,7 +226,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 		break;
 	case create_Facade:
 		{
-			WED_FacadePlacement * fac = WED_FacadePlacement::CreateTyped(GetArchive());
+			fac = WED_FacadePlacement::CreateTyped(GetArchive());
 			outer_ring->SetParent(fac,0);
 			fac->SetParent(host,idx);
 			fac->SetName(stripped_resource(mResource.value));
@@ -362,6 +363,15 @@ void	WED_CreatePolygonTool::AcceptPath(
 			anode->SetAttributes(mMarkings.value);
 		sprintf(buf,"Node %d",n+1);
 		node->SetName(buf);
+
+		if (is_facade)
+		{
+			int xx;
+			if (n == pts.size() -2 && fac->IsJetway(&xx))
+				dynamic_cast<WED_FacadeNode *>(node)->SetWallType(xx);
+			else if(n == pts.size() - 3 && fac->IsJetway(nullptr, &xx))
+				dynamic_cast<WED_FacadeNode *>(node)->SetWallType(xx);
+		}
 	}
 
 	if (mType == create_Polygon && is_texed) 	// orthophoto's need the UV map set up

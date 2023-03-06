@@ -12,12 +12,65 @@
 
 #include "WED_GISEdge.h"
 #include "WED_Thing.h"
+#include "MathUtils.h"
 
 #if APL
 #include <OpenGL/glu.h>
 #else
 #include <GL/glu.h>
 #endif
+
+#define N_LAT 9
+#define N_LON 18
+
+static int8_t deviation_table[N_LON + 1][N_LAT] = {
+	{ -4,  0,  1,  4,  8, 10, 13, 23, 48},   // deviations at longitude -180 from north to south
+	{  6, 10, 11, 10,  9,  9, 14, 23, 45},
+	{ 12, 19, 18, 14, 10,  9, 14, 23, 42},
+	{  4, 10, 11, 13,  9,  8, 12, 22, 39},
+	{-27,  0,  5,  5,  4,  6, 11, 21, 33},
+	{-44,-26,-16, -9, -6, -3,  2, 12, 23},
+	{-40,-31,-23,-16,-15,-16,-15, -5, 10},
+	{-29,-24,-19,-12,-14,-20,-24,-17, -1},
+	{-15,-13,-10, -5, -6,-12,-23,-21,-10},
+	{  0, -1,  0,  1,  0, -4,-15,-22,-20},
+	{ 15, 11,  8,  5,  3,  1, -9,-31,-35},
+	{ 30, 22, 15,  6,  3,  0,-15,-42,-50},
+	{ 42, 28, 18,  6,  1, -4,-18,-46,-63},
+	{ 48, 25, 13,  4,  0, -3,-12,-39,-72},
+	{ 35,  4, -1, -2, -1,  0, -3,-21,-76},
+	{ -9,-16,-14, -8, -4,  0,  1, -3,-62},
+	{-20,-18,-15, -9, -3,  2,  6, 10, 28},
+	{-15,-10, -8, -3,  3,  7, 11, 19, 48},
+	{ 80, 70, 60, 40, 20,  0,-20,-40,-60},   // NOT the data for +180, but rather the lattitudes
+};
+
+float MagneticDeviation(float lon, float lat)
+{
+	if ((lat < deviation_table[N_LON][0]) && lat > deviation_table[N_LON][N_LAT - 1])
+		for (int x = 1; x < N_LAT; x++)
+			if (lat > deviation_table[N_LON][x])
+			{
+				const float lon_step = 360.0f / N_LON;
+
+				int	y0 = (lon + 180.0f) / lon_step;
+				int	y1 = y0 + 1;
+				if (y1 >= N_LON)	y1 = 0;
+
+				auto west = -180.0f + y0 * lon_step;
+				auto east = west + lon_step;
+
+				auto north_dev = interp(west, deviation_table[y0][x - 1],
+					east, deviation_table[y1][x - 1], lon);
+				auto south_dev = interp(west, deviation_table[y0][x],
+					east, deviation_table[y1][x], lon);
+
+				return interp(deviation_table[N_LON][x - 1], north_dev,
+					deviation_table[N_LON][x], south_dev, lat);
+			}
+
+	return 0.0;
+}
 
 void	BezierToBezierPointStart (const Bezier2& next,BezierPoint2& out_pt)
 {
@@ -452,3 +505,59 @@ void	WED_BezierPolygonWithHolesForPolygon(IGISPolygon * in_poly, vector<BezierPo
 	}
 }
 
+
+static void PointSequenceToPolygon2(IGISPointSequence * ps, Polygon2& pol, double max_err)
+{
+	int n = ps->GetNumSides();
+	
+	for (int i = 0; i < n; ++i)
+	{
+		Bezier2		b;
+		if (ps->GetSide(gis_Geo,i,b))
+		{
+#if 1
+			double size_approx = sqrt(Vector2(b.p1,b.c1).squared_length()) +
+							  sqrt(Vector2(b.c1,b.c2).squared_length()) +
+							  sqrt(Vector2(b.c2,b.p2).squared_length());
+			int point_count = min(max((int) (size_approx / max_err), 3), 30);
+			
+			pol.reserve(pol.size() + point_count);
+			
+			for (int k = 0; k < point_count; ++k)
+				pol.push_back(b.midpoint((float) k / (float) point_count));
+#else
+//			https://raphlinus.github.io/graphics/curves/2019/12/23/flatten-quadbez.html
+
+			for (int k = 0; k < point_count; ++k)
+				pol.push_back(b.midpoint((float) k / (float) point_count));
+#endif
+			if (i == n-1 && !ps->IsClosed())
+				pol.push_back(b.p2);
+		}
+		else
+		{
+			pol.push_back(b.p1);
+			if (i == n-1 && !ps->IsClosed())
+				pol.push_back(b.p2);
+		}
+	}
+}
+
+
+void	WED_BezierPolygonWithHolesForPolygon(IGISPolygon * in_poly, vector<Polygon2>& out_pol)
+{
+	int nn = in_poly->GetNumHoles();
+//	out_pol.clear();
+	out_pol.push_back(Polygon2());
+	
+// break up any bezier segments into plain vertices, allow certain max error only
+//	WED_BezierPolygonForPointSequence(in_poly->GetOuterRing(),out_pol.back(), COUNTERCLOCKWISE);
+	PointSequenceToPolygon2(in_poly->GetOuterRing(), out_pol.back(), 3e-4);
+
+	for(int n = 0; n < nn; ++n)
+	{
+		out_pol.push_back(Polygon2());
+//		WED_BezierPolygonForPointSequence(in_poly->GetNthHole(n),out_pol.back(), CLOCKWISE);
+		PointSequenceToPolygon2(in_poly->GetNthHole(n), out_pol.back(), 3e-4);
+	}
+}

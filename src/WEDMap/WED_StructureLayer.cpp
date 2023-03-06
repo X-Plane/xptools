@@ -34,6 +34,7 @@
 #include "WED_EnumSystem.h"
 #include "WED_MapZoomerNew.h"
 #include "WED_AirportNode.h"
+#include "WED_AirportChain.h"
 #include "XESConstants.h"
 #include "MathUtils.h"
 #include "GUI_Resources.h"
@@ -89,13 +90,12 @@ WED_StructureLayer::~WED_StructureLayer()
 }
 
 
-bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected)
+bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity,  GUI_GraphState * g, bool selected, bool locked)
 {
 	//	g->SetState(false,0,false,   false,true,false,false);
 	//  very carefully check that ALL operations that change the state to textured its re-set again,
 	//  so we don't have to reset state for *evrvy* entity.
 
-	int locked = IsLockedNow(entity);
 	WED_Color struct_color = selected ? (locked ? wed_StructureLockedSelected : wed_StructureSelected) :
 										(locked ? wed_StructureLocked		 : wed_Structure);
 	
@@ -198,23 +198,32 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 				else
 					Th2 = Midpoint2(corners[1],corners[2]);
 
-				pair<int,int> e = rwy->GetRunwayEnumsOneway();
 				float hdg = rwy->GetHeading();
+				string nam, nam_1, nam_2;
+				rwy->GetName(nam);
+				auto pos = nam.find('/');
+				if (pos != string::npos)
+				{
+					nam_1 = nam.substr(0, pos);
+					nam_2 = nam.substr(pos + 1, string::npos);
+				}
+				else
+					nam_1 = nam;
 
-				if(e.first != atc_Runway_None)
+				if(!nam_1.empty())
 				{
 					glPushMatrix();                  // rotate the numbers properly
 					glTranslatef(Th1.x(), Th1.y(), 0);
-					glRotatef(-hdg,0,0,1);
-					GUI_FontDraw(g, font_UI_Basic, white, 0, 10, ENUM_Desc(e.first), align_Center);
+					glRotatef(-hdg, 0, 0, 1);
+					GUI_FontDraw(g, font_UI_Basic, white, 0, 10, nam_1.c_str(), align_Center);
 					glPopMatrix();
 				}
-				if(e.second != atc_Runway_None)
+				if (!nam_2.empty())
 				{
 					glPushMatrix();
 					glTranslatef(Th2.x(), Th2.y(), 0);
-					glRotatef(180-hdg,0,0,1);
-					GUI_FontDraw(g, font_UI_Basic, white, 0, 10, ENUM_Desc(e.second), align_Center);
+					glRotatef(180 - hdg, 0, 0, 1);
+					GUI_FontDraw(g, font_UI_Basic, white, 0, 10, nam_2.c_str(), align_Center);
 					glPopMatrix();
 				}
 				g->SetTexUnits(0);
@@ -343,29 +352,23 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 	case gis_Chain:
 	case gis_Edge:
 		{
-			IGISPointSequence *				ps;
-			if ((ps = SAFE_CAST(IGISPointSequence,entity)) != NULL)
+			if (auto ps = dynamic_cast<IGISPointSequence *>(entity))
 			{
-				if (kind == gis_Edge)
+				if (sub_class == WED_TaxiRoute::sClass && !locked)
 				{
-					WED_TaxiRoute * tr = SAFE_CAST(WED_TaxiRoute, entity);
-					if(tr && !locked)
-					{
-						bool hot = tr->HasHotDepart() || tr->HasHotArrival();
-						bool rwy = tr->IsRunway();
-						bool ils = tr->HasHotILS();
+					auto tr = dynamic_cast<WED_TaxiRoute*>(entity);
+					bool hot = tr->HasHotDepart() || tr->HasHotArrival();
+					bool rwy = tr->IsRunway();
+					bool ils = tr->HasHotILS();
 
-						if (hot)                struct_color = selected ? wed_Hotzone_Selected : wed_Hotzone;
-						else if (ils)           struct_color = selected ? wed_ILSzone_Selected : wed_ILSzone;
-						else if (rwy)           struct_color = selected ? wed_Runway_Selected : wed_Runway;
+					if (hot)                struct_color = selected ? wed_Hotzone_Selected : wed_Hotzone;
+					else if (ils)           struct_color = selected ? wed_ILSzone_Selected : wed_ILSzone;
+					else if (rwy)           struct_color = selected ? wed_Runway_Selected : wed_Runway;
 
-						glColor4fv(WED_Color_RGBA(struct_color));
-					}
+					glColor4fv(WED_Color_RGBA(struct_color));
 				}
 
-				int i, n = ps->GetNumSides();
-				WED_MapZoomerNew * z = GetZoomer();
-
+				WED_MapZoomerNew* z = GetZoomer();
 				bool showRealLines = mRealLines && z->GetPPM() * 0.4 <= MIN_PIXELS_PREVIEW;
 
 				if(sub_class == WED_LinePlacement::sClass && showRealLines)
@@ -377,40 +380,33 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 					const lin_info_t * linfo;
 					lin->GetResource(vpath);
 					if (rmgr->GetLin(vpath,linfo))
-					{
-						int locked = 0;
-						WED_Entity * thing = dynamic_cast<WED_Entity *>(lin);
-						while(thing)
+						if(!(linfo->rgb[0] == 0.0 && linfo->rgb[1] == 0.0 && linfo->rgb[2] == 0.0))
 						{
-							if(thing->GetLocked())	{ locked=1; break; }
-							thing = dynamic_cast<WED_Entity *>(thing->GetParent());
-						}
-						if (locked)
-							glColor3fv(linfo->rgb);
-						else                           // do some color correction to account for the green vs grey line
-							glColor3f(min(1.0,linfo->rgb[0]+0.2),max(0.0,linfo->rgb[1]-0.0),min(1.0,linfo->rgb[2]+0.2));
+							if (locked)
+								glColor3fv(linfo->rgb);
+							else                           // do some color correction to account for the green vs grey line
+								glColor3f(min(1.0,linfo->rgb[0]+0.2),max(0.0,linfo->rgb[1]-0.0),min(1.0,linfo->rgb[2]+0.2));
 
-						for(int i = 0; i < lin->GetNumSides(); ++i)
-						{
-							vector<Point2>	pts;
-							SideToPoints(ps,i,GetZoomer(), pts);
-							glLineWidth(3);
-							glShape2v(GL_LINES, &*pts.begin(), pts.size());
-							glLineWidth(1);
+							for(int i = 0; i < lin->GetNumSides(); ++i)
+							{
+								vector<Point2>	pts;
+								SideToPoints(ps, i, z, pts);
+								glLineWidth(3);
+								glShape2v(GL_LINES, &*pts.begin(), pts.size());
+								glLineWidth(1);
+							}
+							glColor4fv(WED_Color_RGBA(struct_color));
 						}
-					}
-					glColor4fv(WED_Color_RGBA(struct_color));
 				}
 
-				for (i = 0; i < n; ++i)
+				set<int>		attrs;
+				vector<Point2> pts;
+				int n = ps->GetNumSides();
+				glPointSize(5);
+
+				for (int i = 0; i < n; ++i)
 				{
-					set<int>		attrs;
-					if (showRealLines)
-					{
-						WED_AirportNode * apt_node = dynamic_cast<WED_AirportNode*>(ps->GetNthPoint(i));
-						if (apt_node) apt_node->GetAttributes(attrs);
-					}
-					vector<Point2> pts;
+					pts.clear();
 
 					Bezier2		b;
 					Point2 		mp(0,0);
@@ -454,28 +450,29 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 					{
 						const float colors[18] = { 1, 0, 0,	 1, 1, 0,  0, 1, 0,    // red, yellow, green
 												   0, 1, 1,  0, 0, 1,  1, 0, 1,};  // aqua, blue, cyan
-						int param = 0;
+						Point2		tmp;
 						auto fac = dynamic_cast<WED_FacadePlacement*>(dynamic_cast<WED_Thing*>(entity)->GetParent());
 						if(fac && fac->HasCustomWalls())
 						{
-							Bezier2		bp;
-							ps->GetSide(gis_Param,i,b);
-							param = b.p1.x();
+							ps->GetNthPoint(i)->GetLocation(gis_Param,tmp);
 						}
-						glColor3fv(colors + (param % 6) * 3);
+						glColor3fv(colors + (((int) tmp.x()) % 6) * 3);
 						glShapeOffset2v(GL_LINE_STRIP, &*pts.begin(), pts.size(), -2);
 						glColor4fv(WED_Color_RGBA(struct_color));
 					}
 
+					if (sub_class == WED_AirportChain::sClass && showRealLines)
+					{
+						if (auto apt_node = dynamic_cast<WED_AirportNode*>(ps->GetNthPoint(i)))
+							apt_node->GetAttributes(attrs);
+					}
 					DrawLineAttrs(&*pts.begin(), pts.size(), attrs);
 					if(!attrs.empty()) glColor4fv(WED_Color_RGBA(struct_color));
 
 					if(kind == gis_Edge && pts.size() >= 2)
 					{
-
-						IGISEdge * gisedge = SAFE_CAST(IGISEdge, ps);
-						WED_RoadEdge * re = dynamic_cast<WED_RoadEdge *>(entity);
-						if(gisedge->IsOneway() || re != nullptr)
+						bool re = sub_class == WED_RoadEdge::sClass;
+						if(re || dynamic_cast<IGISEdge*>(ps)->IsOneway())
 						{
 							Vector2 orient1(pts[0],pts[1]);
 							Vector2 orient2(pts[pts.size()-2],pts[pts.size()-1]);
@@ -484,13 +481,9 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 							if( mVertices && re && (sq_len > 25*25) )
 							{
 								if( i == 0 )
-								{
 									GUI_PlotIcon(g,"ArrowHeadRoadS.png", pts.front().x(), pts.front().y(),atan2(orient1.dx,orient1.dy) * RAD_TO_DEG,1);
-								}
 								if(i == n-1)
-								{
 									GUI_PlotIcon(g,"ArrowHeadRoadE.png", pts.back().x() , pts.back().y() ,atan2(orient2.dx,orient2.dy) * RAD_TO_DEG,1);
-								}
 							}
 
 							if(!re)
@@ -499,29 +492,18 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 							g->SetTexUnits(0);
 						}
 					}
-				}
-
-//				if (mVertices && kind != gis_Edge)	  // Gis EDGE points will be picked up separately!  That way we can get their hilite right.
-				if (mVertices )
-				{
-//					glColor4fv(WED_Color_RGBA(struct_color));  // Do this if green EdgeNdodes when unselected are desired
-					n = ps->GetNumPoints();
-					glPointSize(5);
-					glBegin(GL_POINTS);
-					for (i = 0; i < n; ++i)
+					// if (mVertices && kind != gis_Edge)	  // Gis EDGE points will be picked up separately!  That way we can get their hilite right.
+					if (mVertices)
 					{
-						IGISPoint * pt = ps->GetNthPoint(i);
-//						WED_Entity * e = dynamic_cast<WED_Entity *>(pt);   // How could a non-entity ever get into a polygon ring ??
-//						if(!e || !e->GetHidden())
-						{
-							Point2 p;
-							pt->GetLocation(gis_Geo,p);
-							glVertex2(GetZoomer()->LLToPixel(p));
-						}
+						//	glColor4fv(WED_Color_RGBA(struct_color));  // Do this if green EdgeNdodes when unselected are desired
+						glBegin(GL_POINTS);
+						glVertex2(b.p1);
+						if(i == n - 1)
+							glVertex2(b.p2);
+						glEnd();
 					}
-					glEnd();
-					glPointSize(1);
 				}
+				glPointSize(1);
 			}
 		}
 		break;
@@ -550,34 +532,31 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 
 	case gis_BoundingBox:
 		{
-			IGISBoundingBox *				box;
-			box = SAFE_CAST(IGISBoundingBox, entity);
-			if(box)
+			if(auto box = dynamic_cast<IGISBoundingBox*>(entity))
 			{
 				Point2	pts[2];
 				box->GetMin()->GetLocation(gis_Geo,pts[0]);
 				box->GetMax()->GetLocation(gis_Geo,pts[1]);
-				GetZoomer()->LLToPixelv(pts,pts,2);
 				if(locked || selected)
 					glColor4fv(WED_Color_RGBA_Alpha(struct_color, 1.0/*mPavementAlpha*/, storage));
 				else
 					glColor4fv(WED_Color_RGBA_Alpha(wed_Link, 1.0/*mPavementAlpha*/, storage));
+
+				vector<Point2> pix;
+				BoxToPoints(pts[0], pts[1], GetZoomer(), pix);
+
 				glBegin(GL_LINE_LOOP);
-				glVertex2f(pts[0].x(), pts[0].y());
-				glVertex2f(pts[0].x(), pts[1].y());
-				glVertex2f(pts[1].x(), pts[1].y());
-				glVertex2f(pts[1].x(), pts[0].y());
+				glVertex2v(pix.data(), pix.size());
 				glEnd();
 
 				if(selected)
 				{
 					glColor4fv(WED_Color_RGBA_Alpha(struct_color, HILIGHT_ALPHA, storage));
-					glBegin(GL_QUADS);
-					glVertex2f(pts[0].x(), pts[0].y());
-					glVertex2f(pts[0].x(), pts[1].y());
-					glVertex2f(pts[1].x(), pts[1].y());
-					glVertex2f(pts[1].x(), pts[0].y());
+					glDisable(GL_CULL_FACE);
+					glBegin(GL_POLYGON);
+					glVertex2v(pix.data(), pix.size());
 					glEnd();
+					glEnable(GL_CULL_FACE);
 				}
 			}
 		}
@@ -591,27 +570,29 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 		 * POLYGONS (TAXIWAYAS, ETC.)
 		 ******************************************************************************************************************************************************/
 		{
-			IGISPolygon * poly = SAFE_CAST(IGISPolygon,entity);
-			if (poly)
+			if(auto poly = dynamic_cast<IGISPolygon*>(entity))
 			{
-				this->DrawEntityStructure(inCurrent,poly->GetOuterRing(),g,selected);
+				this->DrawEntityStructure(inCurrent, poly->GetOuterRing(), g, selected, locked);
 				int n = poly->GetNumHoles();
 				for (int c = 0; c < n; ++c)
-					this->DrawEntityStructure(inCurrent,poly->GetNthHole(c),g,selected);
+					this->DrawEntityStructure(inCurrent, poly->GetNthHole(c), g, selected, locked);
 
 				if(selected)
 				{
 					vector<Point2>	pts;
-					vector<int>		is_hole_start;
+					vector<int>		hole_starts;
 
-					PointSequenceToVector(poly->GetOuterRing(), GetZoomer(), pts, false, is_hole_start, 0);
+					PointSequenceToVector(poly->GetOuterRing(), GetZoomer(), pts, false);
 					int n = poly->GetNumHoles();
 					for (int i = 0; i < n; ++i)
-						PointSequenceToVector(poly->GetNthHole(i), GetZoomer(), pts, false, is_hole_start, 1);
+					{
+						hole_starts.push_back(pts.size());
+						PointSequenceToVector(poly->GetNthHole(i), GetZoomer(), pts, false);
+					}
 
 					glColor4fv(WED_Color_RGBA_Alpha(struct_color, HILIGHT_ALPHA, storage));
 					glFrontFace(GL_CCW);
-					glPolygon2(&*pts.begin(), false, &*is_hole_start.begin(), pts.size());
+					glPolygon2(pts, false, hole_starts, false);
 					glFrontFace(GL_CW);
 				}
 			}
@@ -623,25 +604,11 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 
 bool		WED_StructureLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected)
 {
-//	g->SetState(false,0,false,   false,true,false,false);
-
-//	int locked = IsLockedNow(entity);
-//	WED_Color struct_color = selected ? (locked ? wed_StructureLockedSelected : wed_StructureSelected) :
-//										(locked ? wed_StructureLocked		 : wed_Structure);
-
-	GISClass_t 		kind		= entity->GetGISClass();
-//	const char *	sub_class	= entity->GetGISSubtype();
-//	IGISPolygon *					poly;
-
-	WED_OverlayImage *				overlay;
-
-//	glColor4fv(WED_Color_RGBA(struct_color));
-
-	switch(kind) {
+	switch(entity->GetGISClass()) {
 	case gis_Polygon:
 		if(entity->GetGISSubtype() == WED_OverlayImage::sClass)
 		{
-			if((overlay = dynamic_cast<WED_OverlayImage *> (entity)) != NULL)
+			if(auto overlay = dynamic_cast<WED_OverlayImage *> (entity))
 			{
 				IGISPointSequence * oring = overlay->GetOuterRing();
 				if(oring->GetNumPoints() > 3)

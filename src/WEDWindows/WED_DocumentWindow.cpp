@@ -23,42 +23,43 @@
 
 #include "WED_DocumentWindow.h"
 #include "WED_Document.h"
+
 #include "AptIO.h"
 #include "WED_Messages.h"
-#include "GUI_Menus.h"
 #include "WED_UndoMgr.h"
 #include "WED_AptIE.h"
 #include "WED_MapPane.h"
 #include "WED_TCEPane.h"
-#include "WED_PropertyPane.h"
-#include "WED_AptIE.h"
-#include "GUI_TabPane.h"
-#include "WED_Thing.h"
-#include "WED_Menus.h"
-#include "WED_Select.h"
-#include "WED_Colors.h"
-#include "GUI_Splitter.h"
-#include "WED_GroupCommands.h"
-#include "WED_SceneryPackExport.h"
-#include "WED_Version.h"
-
-#include "WED_MetadataUpdate.h"
-#include "WED_GatewayExport.h"
-#include "WED_GatewayImport.h"
-
-#include "WED_AirportChain.h"
-#include "WED_DSFImport.h"
-#include "WED_PropertyHelper.h"
 #include "WED_LibraryPane.h"
 #include "WED_LibraryPreviewPane.h"
-#include "WED_LinePlacement.h"
 #include "WED_MapPreviewPane.h"
 #include "WED_MapPreviewWindow.h"
-#include "WED_PolygonPlacement.h"
-#include "WED_Routing.h"
-#include "WED_Taxiway.h"
+#include "WED_PropertyHelper.h"
+#include "WED_PropertyPane.h"
+#include "WED_Menus.h"
+#include "WED_Colors.h"
+#include "WED_Version.h"
 #include "WED_ToolUtils.h"
+#include "GUI_Splitter.h"
+#include "GUI_Menus.h"
+#include "GUI_TabPane.h"
+
+#include "WED_ConvertCommands.h"
+#include "WED_DSFImport.h"
+#include "WED_GroupCommands.h"
+#include "WED_GatewayExport.h"
+#include "WED_GatewayImport.h"
+#include "WED_MetadataUpdate.h"
+#include "WED_SceneryPackExport.h"
 #include "WED_Validate.h"
+
+#include "WED_AirportChain.h"
+#include "WED_ForestPlacement.h"
+#include "WED_LinePlacement.h"
+#include "WED_PolygonPlacement.h"
+#include "WED_StringPlacement.h"
+#include "WED_Taxiway.h"
+#include "WED_Thing.h"
 
 #if WITHNWLINK
 #include "WED_Server.h"
@@ -68,17 +69,11 @@
 
 namespace
 {
-template<class T>
-WED_Thing * CreateThing(WED_Archive * parent)
-{
-	return T::CreateTyped(parent);
-}
-
-template<class T>
-bool IsType(WED_Thing * thing)
-{
-	return dynamic_cast<T*>(thing) != NULL;
-}
+	template<class T>
+	WED_Thing * CreateThing(WED_Archive * parent)
+	{
+		return T::CreateTyped(parent);
+	}
 }
 
 int kDefaultDocSize[4] = { 0, 0, 1024, 768 };
@@ -302,7 +297,9 @@ WED_DocumentWindow::WED_DocumentWindow(
 	mMapPreviewPane->FromPrefs(inDocument);
 	mPropPane->FromPrefs(inDocument,0);
 	// doc/use_feet and doc/InfoDMS are global only preferences now, not read from each document any more
-#if TYLER_MODE
+#if TYLER_MODE == 11
+	gExportTarget = wet_xplane_1130;
+#elif TYLER_MODE
 	gExportTarget = wet_latest_xplane;
 #else
 	gExportTarget = (WED_Export_Target) inDocument->ReadIntPref("doc/export_target",gExportTarget);
@@ -427,6 +424,9 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_ConvertToTaxiway:	WED_DoConvertTo(mDocument, &CreateThing<WED_Taxiway>);	return 1;
 	case wed_ConvertToTaxiline:	WED_DoConvertTo(mDocument, &CreateThing<WED_AirportChain>);	return 1;
 	case wed_ConvertToLine:		WED_DoConvertTo(mDocument, &CreateThing<WED_LinePlacement>);	return 1;
+	case wed_ConvertToString:	WED_DoConvertTo(mDocument, &CreateThing<WED_StringPlacement>);	return 1;
+	case wed_ConvertToForest:	WED_DoConvertToForest(mDocument); return 1;
+
 	case wed_MoveFirst:	WED_DoReorder(mDocument,-1,1);	return 1;
 	case wed_MovePrev:	WED_DoReorder(mDocument,-1,0);	return 1;
 	case wed_MoveNext:	WED_DoReorder(mDocument, 1,0);	return 1;
@@ -439,6 +439,11 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_AddATCTimeRule: WED_DoMakeNewATCTimeRule(mDocument); return 1;
 	case wed_AddATCWindRule: WED_DoMakeNewATCWindRule(mDocument); return 1;
 	case wed_UpgradeRamps:	WED_UpgradeRampStarts(mDocument);	return 1;
+	case wed_UpgradeJetways: WED_UpgradeJetways(mDocument);	return 1;
+	case wed_AgePavement: WED_AgePavement(mDocument);	return 1;
+	case wed_MowGrass:	WED_MowGrass(mDocument);	return 1;
+	// wed_EdgePavement,
+	// wed_MowGrass,
 	case wed_AlignApt:	WED_AlignAirports(mDocument);	return 1;
 	case wed_CreateApt:	WED_DoMakeNewAirport(mDocument); return 1;
 	case wed_EditApt:	WED_DoSetCurrentAirport(mDocument); return 1;
@@ -493,6 +498,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_Export1050: if (gExportTarget != wet_xplane_1050) { gExportTarget = wet_xplane_1050; mDocument->SetDirty(); Refresh(); } return 1;
 	case wed_Export1100: if (gExportTarget != wet_xplane_1100) { gExportTarget = wet_xplane_1100; mDocument->SetDirty(); Refresh(); } return 1;
 	case wed_Export1130: if (gExportTarget != wet_xplane_1130) { gExportTarget = wet_xplane_1130; mDocument->SetDirty(); Refresh(); } return 1;
+	case wed_Export1200: if (gExportTarget != wet_xplane_1200) { gExportTarget = wet_xplane_1200; mDocument->SetDirty(); Refresh(); } return 1;
 	case wed_ExportGateway:if (gExportTarget != wet_gateway) { gExportTarget = wet_gateway; mDocument->SetDirty(); Refresh(); } return 1;
 
 #if WITHNWLINK
@@ -547,10 +553,12 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case gui_Duplicate:	return WED_CanDuplicate(mDocument);
 	case wed_Group:		return WED_CanGroup(mDocument);
 	case wed_Ungroup:	return WED_CanUngroup(mDocument);
-	case wed_ConvertToPolygon:	return WED_CanConvertTo(mDocument, &IsType<WED_PolygonPlacement>, true);
-	case wed_ConvertToTaxiway:	return WED_CanConvertTo(mDocument, &IsType<WED_Taxiway>, true);
-	case wed_ConvertToTaxiline:	return WED_CanConvertTo(mDocument, &IsType<WED_AirportChain>, false);
-	case wed_ConvertToLine:		return WED_CanConvertTo(mDocument, &IsType<WED_LinePlacement>, false);
+	case wed_ConvertToPolygon:	return WED_CanConvertTo(mDocument, WED_PolygonPlacement::sClass);
+	case wed_ConvertToTaxiway:	return WED_CanConvertTo(mDocument, WED_Taxiway::sClass);
+	case wed_ConvertToTaxiline:	return WED_CanConvertTo(mDocument, WED_AirportChain::sClass);
+	case wed_ConvertToLine:		return WED_CanConvertTo(mDocument, WED_LinePlacement::sClass);
+	case wed_ConvertToString:	return WED_CanConvertTo(mDocument, WED_StringPlacement::sClass);
+	case wed_ConvertToForest:	return WED_CanConvertTo(mDocument, WED_ForestPlacement::sClass);
 
 	case wed_TogglePreviewWindow:	ioCheck = mMapPreviewWindow->IsVisible(); return 1;
 	case wed_ShowMapAreaInPreviewWindow:	return 1;
@@ -561,8 +569,12 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_AddATCRunwayUse:return WED_CanMakeNewATCRunwayUse(mDocument);
 	case wed_AddATCTimeRule: return WED_CanMakeNewATCTimeRule(mDocument);
 	case wed_AddATCWindRule: return WED_CanMakeNewATCWindRule(mDocument);
-	case wed_UpgradeRamps:   return 1;
-	case wed_AlignApt:      return 1;
+	case wed_UpgradeRamps:	 return 1;
+	case wed_UpgradeJetways: return 1;
+	case wed_AgePavement:	 return 1;
+	case wed_EdgePavement:   return 0;    //  still Todo !!!!
+	case wed_MowGrass:       return 1;
+
 
 	case wed_CreateApt:	return WED_CanMakeNewAirport(mDocument);
 	case wed_EditApt:	return WED_CanSetCurrentAirport(mDocument, ioName);
@@ -594,7 +606,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_SelectMissingObjects:	return 1;
 
 	case wed_ExportApt:		return WED_CanExportApt(mDocument);
-	case wed_ExportPack:	return WED_CanExportPack(mDocument);
+	case wed_ExportPack:	return WED_CanExportPack(mDocument, ioName);
 #if HAS_GATEWAY
 	case wed_ExportToGateway:	return WED_CanExportToGateway(mDocument);
 #endif
@@ -618,6 +630,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_Export1050:ioCheck = gExportTarget == wet_xplane_1050;	return 1;
 	case wed_Export1100:ioCheck = gExportTarget == wet_xplane_1100;	return 1;
 	case wed_Export1130:ioCheck = gExportTarget == wet_xplane_1130;	return 1;
+	case wed_Export1200:ioCheck = gExportTarget == wet_xplane_1200;	return 1;
 
 	case wed_ExportGateway:ioCheck = gExportTarget == wet_gateway;	return 1;
 
@@ -656,8 +669,9 @@ void	WED_DocumentWindow::ReceiveMessage(
 		//  8.33k freqs added in 2.0 are fine back to at least 1.5, saved with 3 decimal places ever since
 		//  WED 1.7 added new airport line marking styles
 		//  WED 2.3 added set_AGL commands
+		//  WED 2.5 added new export version, new runway/taxiway properties and enums
 //		if(docHas_SetAGL())
-			prefs->WriteIntPref("doc/xml_compatibility",204);
+			prefs->WriteIntPref("doc/xml_compatibility",205);
 //		else
 //			prefs->WriteIntPref("doc/xml_compatibility",107);
 		prefs->WriteIntPref("window/main_split",mMainSplitter->GetSplitPoint());
@@ -685,10 +699,14 @@ void	WED_DocumentWindow::ReceiveMessage(
 		mPropPane->FromPrefs(prefs,0);
 
 		// doc/use_feet and doc/InfoDMS are global only preferences now, not read from each document any more
-	#if TYLER_MODE
+	#if TYLER_MODE == 11
+		gExportTarget = wet_xplane_1130;
+	#elif TYLER_MODE
 		gExportTarget = wet_latest_xplane;
 	#else
 		gExportTarget = (WED_Export_Target) mDocument->ReadIntPref("doc/export_target",gExportTarget);
+		if (gExportTarget > wet_latest_xplane && gExportTarget != wet_gateway)
+			gExportTarget = wet_latest_xplane;
 	#endif
 		XWin::SetFilePath(NULL,mDocument->IsDirty());
 	}

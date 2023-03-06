@@ -3,7 +3,7 @@
  *  SceneryTools
  *
  *  Created by bsupnik on 5/27/09.
- *  Copyright 2009 __MyCompanyName__. All rights reserved.
+ *  Copyright 2009 Laminar Research. All rights reserved.
  *
  */
 
@@ -182,6 +182,8 @@ void	WED_BezierPolygonWithHolesForPolygon(IGISPolygon * in_poly, vector<BezierPo
 void	WED_BezierPolygonWithHolesForPolygon(IGISPolygon * in_poly, vector<BezierPolygon2p>& out_pol);
 void	WED_BezierPolygonWithHolesForPolygon(IGISPolygon * in_poly, vector<BezierPolygon2uv>& out_pol);
 
+void	WED_BezierPolygonWithHolesForPolygon(IGISPolygon * in_poly, vector<Polygon2>& out_pol);
+
 template<typename __BezierSeqIter, class __NodeType>
 void	WED_SetSequenceForIterator(__BezierSeqIter start, __BezierSeqIter end, WED_Thing * parent, bool is_ring);
 
@@ -336,7 +338,6 @@ void BezierPointSeqFromTriple(InputIterator s, InputIterator e, OutputIterator o
 		*o = p;
 }
 
-
-
+float MagneticDeviation(float lon, float lat);
 
 #endif

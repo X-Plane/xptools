@@ -74,7 +74,7 @@ void		WED_TCEToolAdapter::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 	bool v,s,w,c;
 	brains->GetCaps(v,s,w,c);
 	if(w)
-		brains->DrawEntityStructure(inCurrent, entity, g, true);
+		brains->DrawEntityStructure(inCurrent, entity, g, true, false);
 }
 
 void		WED_TCEToolAdapter::GetCaps(bool& draw_ent_v, bool& draw_ent_s)

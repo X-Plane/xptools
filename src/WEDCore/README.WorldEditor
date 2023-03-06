@@ -1,4 +1,4 @@
-﻿-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
                          WorldEditor Release Notes
 -------------------------------------------------------------------------------
 
@@ -13,8 +13,130 @@ menu to view it online.
 
 CHANGE HISTORY
 
+=======
+WED 2.5.1 r1
+   Bug fix:
+   - WED-1461 fix align function
+
+WED 2.5.1 b1 2/3/2023
+   Bug fix:
+   - WED-1454 fix slight shift in world map layer at high zoom levels
+   - skip placeholder images ESRI is sending for unavailable slippy maps
+   - fix crash with some line type facades that go exactly E-W or N-S
+   - WED-1459 fix false positives in runway name validation
+   - WED-1455 enable case-desensitation code on macOS to support case-sensitive filesystems
+   - use libcurl.so.4 rather than libcurl.so on linux
+   Features:
+   - show 10x10 DSF directory names at intermediate zoomlevels
+   - WED-1179 support for APAPI (2-light PAPI) starting with X-Plane 12.04
+   - XPD-13789 new meta tag is_oilrig, created automatically during GW export heuristics
+
+WED 2.5.0r3 1/7/23
+   Features for all X-Plane versions:
+   - validate meta tag "Country" to be free of extraneous prefixes created by earlier betas
+   Bug fix:
+   - fix heuristics for gateway export to reliably detect presence of terrain_FX items in scenery
+   - change run/taxiway textures to hardcoded map to isolate against X-Plane library changes
+   - prevent conversion to taxiways/airport lines for entities outside airport hierachy's
+
+WED 2.5.0r2 12/21/22
+   LR internal use only
+
+WED 2.5.0r1 12/21/22
+   Bug fix:
+   - fix Linux w/Mesa driver not showing Library previews
+   - enable KTX2 loader
+   - fix ATTR_layer_group ordering for offsets of +5 and larger
+   - add one digit precision to tower viewpoint height selection
+   - fix regression in gridded preview not always showing all entries
+   - WED-1444 improve facade preview offsets from exact locations as shown by structure lines
+   - validate & fix buffer overflow with excessive long airline strings at ramp starts
+   X-Plane 12 features:
+   - submit roads tag to gateway to support special moderation
+
+WED 2.5.0b5 11/27/22
+   Bug fix:
+   - rendering objects with LINES followd by TRIS in the same LOD caused artefacts
+   - fix library list non-expandable items, missing 2nd column on macOS
+   - fix white-out in preferences window on macOS
+   - fix shading in library preview pane
+   X-Plane 12 features:
+   - apply the scenery gateway upgrade heuristics when exporting to scenery for the gateway target
+
+WED 2.5.0b4 9/21/22
+   Bug fix:
+   - some meta data validation messages spelling out wrong names
+   - add missing texture for light colored gradients to linux binary
+   Features for all X-Plane versions:
+   - walk back new facade validation to warnings only for the GW target 
+   - let facade height validation pass single-height and low absolute height items, e.g. fences
+   - add green groundplane for preview of adjustable height .agp
+   X-Plane 12 features:
+   - Object scaling in map using WGS84 ellipsoid for improved large object location accuracy
+   - apply all gateway upgrade heuristics upon exporting to scenery with gateway target
+
+WED 2.5.0b3 9/3/22
+   X-Plane 12 features:
+   - add meta tags for ATC fisa and closed circuit ops
+   Bug fix:
+   - some moving jetway objects not upgraded by GW heuristics 
+   Features for all X-Plane versions:
+   - auto-upgrade country meta tags ISO3366 code upon import from gateway
+
+WED 2.5.0b2 5/30/22
+   Bug Fix:
+   - fix .agp scraper display mismatch for some heights
    - fix gridded preview for 3D objects only showing partially on OSX w/AMD graphics
    - WED-1390 fix crash in preview window for .net definitions that reference no textures at all
+   - improve GW export heuristics to prevent non-ICAO code airport ID's to be taken as ICAO
+   - don't break apart AGP's referencing objects by relative path - those are not public
+   - reduce residual heading error for draped polygons by rounding, not truncating at DSF export
+   - WED-1413 ATC route validation escape for runways NOT starting with a leading zero
+   - WED-1412 fix horizontal distortion caused by map projection in 3D preview
+   - validate zero-length segments to 0.1m (apt boundaries to 30m), rather than exact colocation
+   X-Plane 12 features:
+   - moving default and custom jetways (requires propper jetways .fac w/metadata)
+   - runway & taxiways surface styles and markings
+   - seasonal objects, showing summer version only
+   - preview 3D forests
+   - increased precision for draped polygon headings
+   - custom airport service trucks
+   - validation warning on runway lighting combinations not supported by XP12
+   - allow road networks near airport boundaries on the GW
+   X-Plane 12 art asset conversion features:
+   - jetway objects to jetway facades
+   - X11 default pavment to XP12 aged pavement
+   - add mowed grass FX based on airport boundaries, runways and pavement
+   - add concrete patches under taxi signs
+   X-Plane 12 global airports heuristics:
+   - convert jetway objects to jetway facades
+   - mow grass if no Terrain FX at airport
+   - limit to ONE active jetways per ramp start
+   - nuke most terrain polygons
+   - nuke all grunge objects
+   - add regional presets for ramp starts without assignments
+   - add iso3166 country codes to 1302 country meta data
+   - fix XPD-12676 several chinese airport ICAO codes missing in Global Airports
+   - remove road, beach, line exclusions, grunge objects, flatten meta for GW airports < 95000
+   - convert 2D only deprecated AG_*.for to current non-deprecated/3D forests.
+   Features for all X-Plane versions:
+   - use full projection for map display to improve location accuracy of linear features
+   - bump resolution for ESRI slippy maps below 60 deg lattitude by one ZL
+   - validation warning on TOWER_VIEWPOINT height not matching with #viewpoint_height tags
+   - use actual XP textures for run/taxiway and helipd previews in map, if available
+   - apply jetway upgrades, remove large terrain polygons at export (tyler_mode only)
+   - add 3-letter iso3166 country prefixes to airport meta data (tyler_mode only)
+   - validation exeption to make KSEA, LOWI gateway legal
+   - validate taxiways for zero-length segments
+   - show multi-layered forests correctly in the preview window
+   - show ATC tower airspaces in Navaid layer
+   - LibraryList has icons indication seasonal/regional variants exist
+   - WED-1161 (limited) ability to collapse search results in LibrayPane
+   - new map layer "Terrain" visualizes terrain mesh structure, DEM and explicit height vertices
+   - menu function 'convert to' now covers object strings and forests'
+   - menu function 'convert to' can convert airport lines with multiple, differing markings
+   - speed up road display to handle full DSF tiles of roads by adding a caching layer
+   - menu function "split"" can now cut into holes in polygons
 
 WED 2.4.0rc2 5/29/21
    Features:
@@ -492,7 +614,8 @@ WED 1.6.0a1 12/02/16
 	- WED-297,364,491: Preview line definitions in LinraryPreviewPane
 	- WED-285: Add search bar for items in the right side hierarchy pane
 	- WED-42, WED-183: Preview forest definitions in LibraryPreviewPane
-	- XSG-2043, XSG-1964: Display 'hitbox" ATC Runway validation error.
+	- XSG-2043, XSG-1964: Display 'hitbox" ATC Runway validation error
+	- objects placed with a point-click have headings per tool presets, optionaly randomized
 
 WED 1.5.1r1 10/11/16
 	Bug fixes:

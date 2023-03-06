@@ -38,7 +38,7 @@ LIBS		+= ./libs/local/lib/libjpeg.a
 LIBS		+= ./libs/local/lib/libpng.a
 LIBS		+= ./libs/local/lib/libfreetype.a
 LIBS		+= ./libs/local/lib/libexpat.a
-LIBS		+= ./libs/local/lib/libz.a
+LIBS		+= -lz
 
 
 ##
@@ -216,7 +216,17 @@ SOURCES += ./src/XESTools/SelfTest.cpp
 SOURCES += ./src/DSF/tri_stripper_101/tri_stripper.cpp
 SOURCES += ./src/OGLE/ogle.cpp
 SOURCES += ./src/WEDWindows/WED_Sign_Editor.cpp
+SOURCES += ./src/WEDWindows/WED_Road_Selector.cpp
+SOURCES += ./src/WEDMap/WED_Colors.cpp
 SOURCES += ./src/WEDCore/WED_Sign_Parser.cpp
+
+SOURCES += ./SDK/libtess2/Source/tess.c
+SOURCES += ./SDK/libtess2/Source/bucketalloc.c
+SOURCES += ./SDK/libtess2/Source/dict.c
+SOURCES += ./SDK/libtess2/Source/mesh.c
+SOURCES += ./SDK/libtess2/Source/priorityq.c
+SOURCES += ./SDK/libtess2/Source/sweep.c
+SOURCES += ./SDK/libtess2/Source/geom.c
 
 SOURCES += ./src/lzma19/C/7zArcIn.c
 SOURCES += ./src/lzma19/C/7zAlloc.c
@@ -240,4 +250,6 @@ SOURCES += ./src/lzma19/C/Lzma2Dec.c
 ###########
 
 RESOURCES := ./src/WEDResources/sans.ttf
+RESOURCES += ./src/WEDResources/colors.png
 XIB_RESOURCE := ./src/XESTools/RFMainMenu.xib
+

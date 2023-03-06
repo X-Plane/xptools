@@ -35,6 +35,7 @@
 #include "ITexMgr.h"
 #include "TexUtils.h"
 #include "MathUtils.h"
+#include "BitmapUtils.h"
 
 #include "GUI_DrawUtils.h"
 #include "GUI_Broadcaster.h"
@@ -88,14 +89,14 @@ WED_LibraryPreviewPane::WED_LibraryPreviewPane(GUI_Commander * cmdr, WED_Resourc
 
 //		int b[4]; GetBounds(b);  // No good, bounds not established at this point
 
-		mNextButton = new GUI_Button("push_buttons.png",btn_Push,k_reg, k_hil,k_reg,k_hil);
-		mNextButton->SetBounds(5,45,55,45+GUI_GetImageResourceHeight("push_buttons.png") / 3);
-//		mNextButton->SetBounds(b[2]-55,b[3]-5-GUI_GetImageResourceHeight("push_buttons.png") / 3,b[2]-5,b[4]-5);
-		mNextButton->SetSticky(1,1,0,0); // follow left bottom corner
-		mNextButton->SetParent(this);
-		mNextButton->SetMsg(next_variant,0);
-		mNextButton->AddListener(this);
-		mNextButton->Hide();
+		mInfoButton = new GUI_Button("push_buttons.png",btn_Push,k_reg, k_hil,k_reg,k_hil);
+		mInfoButton->SetBounds(5,45,55,45+GUI_GetImageResourceHeight("push_buttons.png") / 3);
+//		mInfoButton->SetBounds(b[2]-55,b[3]-5-GUI_GetImageResourceHeight("push_buttons.png") / 3,b[2]-5,b[4]-5);
+		mInfoButton->SetSticky(1,1,0,0); // follow left bottom corner
+		mInfoButton->SetParent(this);
+		mInfoButton->SetMsg(next_variant,0);
+		mInfoButton->AddListener(this);
+		mInfoButton->Hide();
 
 		mMSAA = 1;
 		GLint tmp;
@@ -120,6 +121,7 @@ WED_LibraryPreviewPane::WED_LibraryPreviewPane(GUI_Commander * cmdr, WED_Resourc
 			LOG_MSG("I/Lpp backingScaleFactor %.3f - MSAA disabled\n", f);
 		}
 #endif
+		mLightBackground = false;
 		LOG_FLUSH();
 }
 
@@ -132,29 +134,33 @@ void		WED_LibraryPreviewPane::ReceiveMessage(GUI_Broadcaster * inSrc, intptr_t i
 		else
 			mVariant = 0;
 
-		char s[16]; sprintf(s,"%d/%d",mVariant+1,mNumVariants);
-		mNextButton->SetDescriptor(s);
+		char s[16];
+		if(mType == res_Forest)
+			sprintf(s, "%dD", mVariant + 2);
+		else
+			sprintf(s,"%d/%d",mVariant + 1, mNumVariants);
+		mInfoButton->SetDescriptor(s);
 	}
 }
 
-void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
+void WED_LibraryPreviewPane::SetResource(const string& r, int res_type, int variants)
 {
 	mRes = r;
 	mType = res_type;
 	mVariant = 0;
-//	mHgt = 0.0;
+	mNumVariants = variants;
+	//	mHgt = 0.0;
 
 	if(res_type == res_Object || res_type == res_Facade)
 	{
-		mNumVariants = mResMgr->GetNumVariants(r);
-		if(mNumVariants >1)
+		if(mNumVariants > 1)
 		{
 			char s[16]; sprintf(s,"%d/%d",mVariant+1,mNumVariants);
-			mNextButton->SetDescriptor(s);
-			mNextButton->Show();
+			mInfoButton->SetDescriptor(s);
+			mInfoButton->Show();
 		}
 		else
-			mNextButton->Hide();
+			mInfoButton->Hide();
 
 		if(res_type == res_Facade)
 		{
@@ -175,18 +181,73 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 				mHgt = 0.0;
 		}
 	}
+	else if(res_type == res_Forest)
+	{
+		const for_info_t* fst;
+		if (mResMgr->GetFor(mRes, fst) && fst->has_3D)
+		{
+			mInfoButton->SetDescriptor("3D");
+			mVariant = 1;
+			mNumVariants = 2;
+			mInfoButton->Show();
+		}
+		else
+		{
+			mNumVariants = 1;
+			mInfoButton->Hide();
+		}
+	}
 	else
 	{
 		mNumVariants = 1;     // we haven't yet implemented variant display for anything else
-		mNextButton->Hide();
+		mInfoButton->Hide();
 		if(res_type == res_Directory)
 		{
 			mWalls = 1;
 			mRess.clear();
-			mResMgr->GetSimilar(mRes, mRess);
+			mResMgr->GetAllInDir(mRes, mRess);
 		}
 		else if(res_type == res_Autogen)
 			mWid = 0.0;
+	}
+
+	if (res_type == res_Line)
+	{
+		const lin_info_t * lin;
+		if (mResMgr->GetLin(mRes, lin))
+		{
+			ImageInfo info;
+			if (!LoadBitmapFromAnyFile(lin->base_tex.c_str(), &info))
+			{
+				double luminance = 0.0;
+				int n = 0;
+				for (int y = 0; y < info.height; y++)
+					for (int i = 0; i < lin->s1.size(); i++)
+					{
+						for (int x = lin->s1[i] * info.width; x <= intround(lin->s2[i] * info.width); x++)
+						{
+							unsigned char * pix = info.data + (y * info.width + x) * info.channels;
+
+							if (info.channels == 3 ||
+								(info.channels == 4 && pix[3] > 30))
+							{
+								luminance += 0.2 * pix[0] + 0.5 * pix[1] + 0.3 * pix[2];
+								n++;
+							}
+							else
+							{
+								luminance += *pix;
+								n++;
+							}
+						}
+					}
+				luminance /= n;
+//				printf("lum = %.1lf, n=%d\n", luminance, n);
+				DestroyBitmap(&info);
+
+				mLightBackground = luminance < 50.0;
+			}
+		}
 	}
 }
 
@@ -413,19 +474,33 @@ void	WED_LibraryPreviewPane::begin3d(const int *b, double radius_m)
 		glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH_COMPONENT, dx, dy); CHECK_GL_ERR
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, mDepthBuf); CHECK_GL_ERR
 
+		bool disable_MSAA = false;
 		if(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
 		{
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mFBO); CHECK_GL_ERR // copy the background - since we dont use any
-	                                                                   // blend mode when Bliting buffer back at the end
+			                                                           // blend mode when Bliting buffer back at the end
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-			glBlitFramebuffer(b[0], b[1], b[2], b[3], 0, 0, dx, dy, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT, GL_NEAREST); CHECK_GL_ERR
-			glBindFramebuffer(GL_FRAMEBUFFER, mFBO);      CHECK_GL_ERR
-			glViewport(0, 0, dx, dy);                     CHECK_GL_ERR
-
+			glBlitFramebuffer(b[0], b[1], b[2], b[3], 0, 0, dx, dy, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+			int glerr = glGetError();
+			if(glerr != GL_NONE)//TODO:mroe: seen GL_INVALID_OPERATION Error due format mismatch of GL_DEPTH_BUFFER_BIT size , cancel MSAA at this point for now
+			{
+				LOG_MSG("E/Lpp BlitFramebuffer failed %d %d %s\n", mColBuf, mDepthBuf, gluErrorString(glerr));
+				disable_MSAA = true;
+			}
+			else
+			{
+				glBindFramebuffer(GL_FRAMEBUFFER, mFBO);      CHECK_GL_ERR
+				glViewport(0, 0, dx, dy);                     CHECK_GL_ERR
+			}
 		}
 		else
 		{
 			LOG_MSG("E/Lpp FBO incomplete %d %d %s %s\n", mColBuf, mDepthBuf, gluErrorString(glGetError()), gluErrorString(glGetError()));
+			disable_MSAA = true;
+		}
+
+		if(disable_MSAA)
+		{
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			glDeleteFramebuffers(1, &mFBO);
 			glDeleteRenderbuffers(1, &mColBuf);
@@ -433,10 +508,10 @@ void	WED_LibraryPreviewPane::begin3d(const int *b, double radius_m)
 			mMSAA = 0;
 			glViewport(b[0], b[1], dx, dy);
 		}
-	}
-	else
+    }
+    else
 #endif
-	glViewport(b[0], b[1], dx, dy);
+        glViewport(b[0], b[1], dx, dy);
 
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
@@ -463,8 +538,8 @@ void	WED_LibraryPreviewPane::end3d(const int *b)
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 
-#if USE_2X2MSAA
 	glPopAttrib();
+#if USE_2X2MSAA
 	if(mMSAA)
 	{
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);      CHECK_GL_ERR
@@ -478,9 +553,8 @@ void	WED_LibraryPreviewPane::end3d(const int *b)
 		glDeleteRenderbuffers(1, &mColBuf);
 		glDeleteRenderbuffers(1, &mDepthBuf);
 	}
-	glDisable(GL_LIGHTING);
 #endif
-
+	glDisable(GL_LIGHTING);
 }
 
 void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
@@ -517,13 +591,14 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 			DrawOneItem(mType, mRes, b, g);
 }
 
-void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, const int b[4], GUI_GraphState * g, const char * label)
+void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, int b[4], GUI_GraphState * g, const char * label)
 {
 	const XObj8 * o = nullptr;
 	const agp_t * agp = nullptr;
 	const pol_info_t * pol = nullptr;
 	const lin_info_t * lin = nullptr;
 	const fac_info_t * fac = nullptr;
+	const for_info_t * fst = nullptr;
 	const str_info_t * str = nullptr;
 	const road_info_t * rd = nullptr;
 	map<int,road_info_t::vroad_t>::const_iterator vr_it;
@@ -602,6 +677,11 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, const int 
 					int tex_id = mTexMgr->GetTexID(tref);
 					if (tex_id != 0)
 					{
+						if (mLightBackground)
+						{
+							int kTileAll[4] = { 0,0,1,1 };
+							GUI_DrawStretched(g, "gradient_light.png", b, kTileAll);
+						}
 						g->SetState(false,1,false,true,true,false,false);
 						g->BindTex(tex_id,0);
 
@@ -684,8 +764,15 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, const int 
 			}
 			break;
 		case res_Forest:
-			if(!mResMgr->GetFor(res,o))
+			if (!mResMgr->GetFor(res, fst))
 				break;
+			else
+			{
+				if(fst->has_3D && mVariant == 1)
+					o = fst->preview_3d;
+				else
+					o = fst->preview;
+			}
 		case res_String:
 			if(!o)
 			{
@@ -714,26 +801,47 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, const int 
 			}
 			else if (mResMgr->GetAGP(res,agp))
 			{
-				double real_radius=pythag(                 // not ideal - only scaling from first tile, Tiles down throw might be much larger
+				double real_radius=pythag(                 // not ideal - only scaling from first tile, Tiles down the row might be much larger
 									agp->tiles[0].xyz_max[0] - agp->tiles[0].xyz_min[0],
 									agp->tiles[0].xyz_max[1] - agp->tiles[0].xyz_min[1],
 									agp->tiles[0].xyz_max[2] - agp->tiles[0].xyz_min[2]);
-				double xyz_off[3];
+				begin3d(b, real_radius);
+
+				double xyz_off[3] = {};
 				xyz_off[1] = -(agp->tiles[0].xyz_max[1] + agp->tiles[0].xyz_min[1]) * 0.5;
 
-				for(int i = 0; i < intmin2(5, agp->tiles.size()); i++)
+				int n_tiles = agp->tiles[0].cut_h.empty() ? intmin2(5, agp->tiles.size()) : 1;
+
+				double row_offs = 0.0;
+				for(int i = 0; i < n_tiles; i++)
 				{
-					int tile_idx = intlim(i + mWid * 0.2, 0, agp->tiles.size()-1);
+					int tile_idx = intlim(i + mWid * 0.2, 0, agp->tiles.size() - 1);
 					auto ti = agp->tiles[tile_idx];
 					xyz_off[0] = -(ti.xyz_max[0] + ti.xyz_min[0]) * 0.5;
-				//	xyz_off[1] = -(ti.xyz_max[1] + ti.xyz_min[1]) * 0.5;
+//					xyz_off[1] = -(ti.xyz_max[1] + ti.xyz_min[1]) * 0.5; // align them vertically all the same
 					xyz_off[2] =  (ti.xyz_max[2] + ti.xyz_min[2]) * 0.5;
-					double row_offs = agp->tiles.size() > 1 ? (ti.xyz_max[0] - ti.xyz_min[0]) * (i-0.8) : 0.0;
-
-					begin3d(b, real_radius);
+//					row_offs += (ti.xyz_max[0] - ti.xyz_min[0]) * (i == 0 ? i - ((int)mWid % 5) * 0.2 : 1.1);
+					row_offs += n_tiles > 1 ? (ti.xyz_max[0] - ti.xyz_min[0]) * (i - 0.8) : 0.0;
 					draw_agp_at_xyz(mTexMgr, agp, xyz_off[0] + row_offs, xyz_off[1], xyz_off[2], mHgt, 0, g, tile_idx);
-					end3d(b);
 				}
+				if (agp->has_scp)
+				{
+					// draw "ground" plane
+					g->SetTexUnits(0);
+					glColor4f(0.2, 0.4, 0.2, 0.7);   // green lawn, almost opaque
+					g->EnableLighting(false);
+					g->EnableAlpha(true, true);
+					glDisable(GL_CULL_FACE);
+					glBegin(GL_POLYGON);
+						auto wl = real_radius * 0.3;
+						glVertex3f(-wl, xyz_off[1], -wl);
+						glVertex3f(-wl, xyz_off[1], +wl);
+						glVertex3f(+wl, xyz_off[1], +wl);
+						glVertex3f(+wl, xyz_off[1], -wl);
+					glEnd();
+					glColor4f(1, 1, 1, 1);
+				}
+				end3d(b);
 			}
 			break;
 
@@ -761,7 +869,7 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, const int 
 						g->BindTex(tex_id,0);
 						glDisable(GL_CULL_FACE);
 						float v = 4.0 * length / t.length;
-						for(auto s : t.segs)
+						for(const auto& s : t.segs)
 						{
 							glBegin(GL_POLYGON);
 								glTexCoord2f(s.s_left,  0); glVertex3f(s.left,  0,  length * 2.0f);
@@ -782,7 +890,7 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, const int 
 						draw_obj_at_xyz(mTexMgr, o, t.vert_objs.back().lat_offs, 0, front_twr, t.vert_objs.back().rotation, g);
 						draw_obj_at_xyz(mTexMgr, o, t.vert_objs.back().lat_offs, 0, back_twr,  t.vert_objs.back().rotation, g);
 					}
-					for(auto w : t.wires)
+					for(const auto& w : t.wires)
 					{
 						g->SetState(false,0,false,true,true,false,false);
 						glColor3f(0.1,0.1,0.1);
@@ -803,7 +911,7 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, const int 
 				if(t.dist_objs.size())
 				{
 					float long_pos = length * 0.7;   // there isn't much info on the spacing and frequency parameters for newer commands.
-					for(auto d : t.dist_objs)        // so we print each object once with uniform spacing.
+					for(const auto& d : t.dist_objs)        // so we print each object once with uniform spacing.
 					{
 						if(mResMgr->GetObjRelative(d.path, res, o))
 						{
@@ -849,12 +957,14 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, const int 
 			case res_Line:
 				if(lin)
 					snprintf(buf1, sizeof(buf1), "%s %s", lin->description.c_str(), lin->hasDecal ? "(decal not shown)" : "");
-				if (lin && lin->s1.size() && lin->s2.size())
-					snprintf(buf2, sizeof(buf2), "w~%.0f%s",lin->eff_width * (gIsFeet ? 100.0/2.54 : 100.0), gIsFeet ? "in" : "cm" );
+				if (lin && lin->s1.size())
+					if(lin->eff_width < 1.5)
+						snprintf(buf2, sizeof(buf2), "w~%.0f%s",lin->eff_width * (gIsFeet ? 100.0/2.54 : 100.0), gIsFeet ? "in" : "cm" );
+					else
+						snprintf(buf2, sizeof(buf2), "w~%.1f%s", lin->eff_width / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "ft" : "m");
 				break;
 			case res_Autogen:
 			case res_Object:
-			case res_Forest:
 			case res_String:
 				if (o)
 				{
@@ -869,10 +979,15 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, const int 
 					int tile_idx = intlim(mWid * 0.2, 0, agp->tiles.size()-1);
 					if(agp->tiles.size() > 1)
 					{
-						if(agp->tiles[tile_idx].id >= 0)
-							n = sprintf(buf1, "TILE_ID \'%d\' ", agp->tiles[tile_idx].id);
-						sprintf(buf1 + n, "%sshowing tiles #%d+ @ h=%dm", agp->tiles[tile_idx].has_scp ? "has scrapers, " : "", tile_idx, mHgt);
-						n = sprintf(buf2, "%d tiles, ", (int) agp->tiles.size());
+						if (agp->tiles[0].cut_h.empty())
+						{
+							if (agp->tiles[tile_idx].id >= 0)
+								n = sprintf(buf1, "TILE_ID \'%d\' ", agp->tiles[tile_idx].id);
+							sprintf(buf1 + n, "%sshowing tiles #%d+ @ h=%dm", agp->tiles[tile_idx].has_scp ? "has scrapers, " : "", tile_idx, mHgt);
+						}
+						else
+							sprintf(buf1 + n, "%sshowing tile #%d @ h=%dm", agp->tiles[tile_idx].has_scp ? "has scrapers, " : "", tile_idx, mHgt);
+						n = sprintf(buf2, "%d different tiles, ", (int) agp->tiles.size());
 					}
 					else
 						snprintf(buf1, sizeof(buf1), "%s", agp->description.c_str());
@@ -880,20 +995,28 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, const int 
 					n += sprintf(buf2 + n, "max h=%.1f%s", length_with_units(agp->tiles[tile_idx].xyz_max[1]));
 					if(agp->has_scp)
 					{
-						double min_scp(999), max_scp(0);
-						for (auto& t : agp->tiles)
+						double min_scp(999), max_scp(0), step_scp(0);
+						for (const auto& t : agp->tiles)
 							if(t.has_scp)
-								for (auto& a : t.objs)
+								for (const auto& a : t.objs)
 									if(a.scp_step > 0.0)
 									{
 										if(a.scp_min < min_scp) min_scp = a.scp_min;
 										if(a.scp_max > max_scp) max_scp = a.scp_max;
+										step_scp = a.scp_step;        // only meaningfull if either only one scraper or all have same step size
 									}
-						sprintf(buf2 + n, ", varies for heights %.1f - %.1f%s", min_scp / (gIsFeet ? 0.3048 : 1.0), length_with_units(max_scp));
+						n += sprintf(buf2 + n, ", set_AGL %.1f - %.1f%s", min_scp / (gIsFeet ? 0.3048 : 1.0), length_with_units(max_scp));
+						n += sprintf(buf2 + n, " in %d x %.1f%s steps", step_scp > 0.1 ? intround((max_scp - min_scp)/step_scp) : 0, length_with_units(step_scp));
+						n += sprintf(buf2 + n, " @ %.1f%s", length_with_units(mHgt));
 					}
 				}
 				else if (str)
 					snprintf(buf1, sizeof(buf1), "%s", str->description.c_str());
+				break;
+			case res_Forest:
+				{
+					snprintf(buf1, sizeof(buf1), "%s", fst->description.c_str());
+				}
 				break;
 			case res_Road:
 				if(rd)

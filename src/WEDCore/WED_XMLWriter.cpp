@@ -51,21 +51,59 @@
 	
 	2020 update:
 	
-	The half the putc() and all of the sprintf() are gone now, down to 60sec for the 5.5GB XML file now.
+	Half the putc() and all of the sprintf() are gone now, down to 60sec for the 5.5GB XML file now.
 	The STL memory allocation for STL strings aren't much of an issue - as all but long text parameters 
 	all fit into the intrinsic space inside the string objects itself. Together with reserve(7) for the
 	attributes, which are now a vector - that means a single malloc for most WED_XMLElements.
 
+	2022 update:
+
+	Undder windows, all I/O library calls suck. Saving .xml is half as fast as under either OSX or Linux.
+	So the number of I/O calls is reduced greatly by pre-assembling full lines and fwrite() once per line 
+	in most cases for a few percent speedup on Linux, but double the speed on Windows.
+	
+	Throughput is now on all OS around 50 sec for a 5.5GB xml file.
 */
 
 #define FIX_EMPTY 0
-#define FAST_SPRINTF_REPLACEMENTS 1
+#define FAST_PRINTF_REPLACEMENTS 1
 
-inline void fi_indent(int n, FILE * fi) { const char * spaces = "          "; fwrite(spaces, min(n, 10), 1, fi); }
+static void fput_indented_name(int n, FILE* fi, const char *name, bool add_slash = false) 
+{
+#if FAST_PRINTF_REPLACEMENTS
+	char c[32];
+	auto p = c;
+	while (n--)
+		*p++ = ' ';
+	*p++ = '<';
+	if (add_slash)
+		*p++ = '/';
+	auto l = strlen(name);
+	DebugAssert(p - c + l + 3 < sizeof(c));
+	memcpy(p, name, l);
+	p += l;
+	if (add_slash)
+	{
+		strcpy(p, ">\n");
+		p += strlen(">\n");
+	}
+	fwrite(c, p - c, 1, fi);
+#else
+	while (n--)
+		fputc(' ', fi);
+	fputc('<', fi);
+	if(add_slash)
+		fputc('/', fi);
+	fputs(name, fi);
+	if (add_slash)
+		fputs(">\n", fi);
+#endif
+}
 
-inline string str_escape(const string& str)
+static string str_escape(const string& str)
 {
 	string result;
+	result.reserve(str.size());
 
 	UTF8 * b = (UTF8 *) str.c_str();
 	UTF8 * e = b + str.length();
@@ -146,33 +184,64 @@ WED_XMLElement::WED_XMLElement(
 
 WED_XMLElement::~WED_XMLElement()
 {
-	if(!flushed)
+	if (!flushed)
 	{
-		fi_indent(indent, file);
-		fputc('<',file); fputs(name,file);
+		fput_indented_name(indent, file, name);
 
-		for(auto a : attrs)
+// fprintf() is REALLY slow
+// unformatted putc(), puts() speed up xml file writing by 2x
+// but, especially under windows, any file I/O is SLOW
+// so we pre-assemble essentially the whole line and frwite() once per line.
+// this further reduces xml save time by 30%
+
+// saving xml not ony sucks when dealing with the global airports (some 10 GB), but we like to do foreground
+//  auto-save some day, so saving should really be fast
+
+#if FAST_PRINTF_REPLACEMENTS
+		char c[256];
+		auto p = c;
+		for (const auto& a : attrs)
 		{
-			fputc(' ',file); fputs(a.first,file); fputs("=\"",file);
-//			fputs(a.second.c_str(), file);
-			fwrite(a.second.c_str(), a.second.size(), 1, file);  // faster, no strlen() needed
-			fputc('"',file);
+			*p++ = ' ';
+			auto l = strlen(a.first);
+			if (p - c + l + 7 > sizeof(c)) goto long_string;
+			memcpy(p, a.first, l);
+			p += l;
+
+			*p++ = '=';	*p++ = '"';
+			l = a.second.size();
+			if (p - c + l + 7 > sizeof(c)) goto long_string;
+			memcpy(p, a.second.c_str(), l);
+			p += l;
+			*p++ = '"';
 		}
 
-		if(children.empty())
-			fputs("/>\n",file);
-		else
-			fputs(">\n",file);
-	}
+		if (children.empty())
+			*p++ = '/';
+		strcpy(p, ">\n");
+		p += strlen(">\n");
 
+		fwrite(c, p - c, 1, file);
+		goto done;
+long_string:
+#endif
+		for (const auto& a : attrs)
+		{
+			fputc(' ', file); fputs(a.first, file); fputs("=\"", file);
+			fputs(a.second.c_str(), file);
+			fputc('"', file);
+		}
+		if (children.empty())
+			fputs("/>\n", file);
+		else
+			fputs(">\n", file);
+	}
+done:
 	for(vector<WED_XMLElement *>::iterator c = children.begin(); c != children.end(); ++c)
 		delete *c;
 
 	if(!children.empty() || flushed)
-	{
-		fi_indent(indent,file);
-		fputs("</",file); fputs(name,file); fputs(">\n",file);
-	}
+		fput_indented_name(indent, file, name, true);
 }
 
 void WED_XMLElement::flush()
@@ -190,14 +259,12 @@ void WED_XMLElement::flush_from(WED_XMLElement * who)
 
 	if(!flushed)
 	{
-		fi_indent(indent, file);
-		fputc('<',file); fputs(name,file);
+		fput_indented_name(indent, file, name);
 
-		for(auto a : attrs)
+		for(const auto& a : attrs)
 		{
 			fputc(' ',file); fputs(a.first,file); fputs("=\"",file);
-//			fputs(a.second.c_str(), file);
-			fwrite(a.second.c_str(), a.second.size(), 1, file);  // faster, no strlen() needed
+			fputs(a.second.c_str(), file);
 			fputc('"',file);
 		}
 		fputs(">\n",file);
@@ -225,12 +292,12 @@ void					WED_XMLElement::add_attr_int(const char * name, int value)
 #endif
 	DebugAssert(!flushed);
 //	attrs[name] = to_string(value); // using a map or to_string() is friggin slow - wanna spend 10% of the _whole_ time to save in his _one_ line ???
-#if FAST_SPRINTF_REPLACEMENTS
+#if FAST_PRINTF_REPLACEMENTS
 	if(value == 0)
 		attrs.push_back(make_pair(name, string("0")));
 	else
 	{
-		char c[12];             // suffcient digits to hold even -2^31
+		char c[32];             // suffcient digits to hold even -2^31
 		char *p = c+sizeof(c);
 		bool negative =  value < 0;
 		if(negative) value = -value;
@@ -263,8 +330,8 @@ void					WED_XMLElement::add_attr_double(const char * name, double value, int de
 		attrs.push_back(make_pair(name, string("0.0")));
 	else
 	{
-		char c[20];
-#if FAST_SPRINTF_REPLACEMENTS
+		char c[32];
+#if FAST_PRINTF_REPLACEMENTS
 		char *p = c+sizeof(c)-dec-1;
 		bool negative =  value < 0;
 		if(negative) value = -value;
@@ -312,7 +379,7 @@ void					WED_XMLElement::add_attr_double(const char * name, double value, int de
 
 		attrs.push_back(make_pair(name, string(p, c+sizeof(c)-p)));
 #else
-		snprintf(c, 20, "%.*lf",dec, value);
+		snprintf(c, 31, "%.*lf",dec, value);
 		attrs.push_back(make_pair(name, string(c)));
 #endif
 	}
@@ -366,12 +433,11 @@ WED_XMLElement *		WED_XMLElement::add_or_find_sub_element(const char * name)
 	DebugAssert(!flushed);
 	string n(name);
 	for(int i = 0; i < children.size(); ++i)
-	if(children[i]->name == n)
+	if(n == children[i]->name)
 		return children[i];
 		
 	WED_XMLElement * child = new WED_XMLElement(name, indent + 2, file);
 	children.push_back(child);
 	child->parent = this;
 	return child;
-	
 }

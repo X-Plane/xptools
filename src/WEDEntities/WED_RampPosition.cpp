@@ -115,13 +115,9 @@ static bool two_adjacent_spaces(char lhs, char rhs)
 
 string	WED_RampPosition::CorrectAirlinesString(const string &a)
 {
-	string cleaned_airlines_str = "";
-	for(string::const_iterator itr = a.begin(); itr != a.end(); ++itr)
-	{
-		//Make lowercase
-		cleaned_airlines_str += static_cast<char>(tolower(static_cast<unsigned char>(*itr)));
-	}
-
+	string cleaned_airlines_str;
+	std::transform(a.begin(), a.end(), back_inserter(cleaned_airlines_str), [](unsigned char c) {return tolower(c);} );
+	
 	//Thanks Plamen for this concise trim http://stackoverflow.com/a/22711818
 	//Ben says: except - the stack overflow answer is WRONG - missing a check for
 	//the empty string case.

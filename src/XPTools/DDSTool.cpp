@@ -321,52 +321,6 @@ static bool HandleScale(ImageInfo& info, bool up, bool down, bool half, bool squ
 }
 
 
-inline float to_srgb(float p)
-{
-	if(p <= 0.0031308f)
-		return 12.92f * p;
-	return 1.055f * pow(p,0.41666f) - 0.055f;
-}
-
-inline float from_srgb(float p)
-{
-	if(p <= 0.04045f)
-		return p / 12.92f;
-	else
-		return powf(p * (1.0/1.055f) + (0.055f/1.055f),2.4f);
-}
-
-unsigned char srgb_filter(unsigned char src[], int count, int channel, int level)
-{
-	if(channel == 3)	// alpha is not corrected
-	{
-		int total = 0;
-		for(int i = 0; i < count; ++i)
-			total += (int) src[i];
-		return min(255,total / count);
-	}
-	
-	float total = 0.f;
-	for(int i = 0; i < count; ++i)
-	{
-		float p = src[i];
-		p /= 255.0f;
-		p = from_srgb(p);
-		total += p;
-	}
-	
-	total /= ((float) count);
-	
-	total = to_srgb(total);
-	
-	total *= 255.0f;
-	
-	if(total <= 0.0f) return 0;
-	if (total >= 255.0f) return 255;
-
-	return round(total);   // msvc2010 has no roundf
-}
-
 unsigned char night_filter(unsigned char src[], int count, int channel, int level)
 {
 	int total = 0;
@@ -428,23 +382,21 @@ int main(int argc, char * argv[])
 	}
 	if (argc == 2 && strcmp(argv[1],"--auto_config")==0)
 	{
-		printf("CMD .png .dds \"%s\" DDS_MODE HAS_MIPS GAMMA_MODE PVR_SCALE \"INFILE\" \"OUTFILE\"\n",argv[0]);
+		printf("CMD .png .dds \"%s\" DDS_MODE HAS_MIPS PVR_SCALE \"INFILE\" \"OUTFILE\"\n",argv[0]);
 		printf("OPTIONS DDSTool\n");
 		printf("RADIO DDS_MODE 1 --png2dxt Auto-pick compression\n");
-		printf("RADIO DDS_MODE 0 --png2dxt1 Use DXT1 Compression (1-bit alpha)\n");
-		printf("RADIO DDS_MODE 0 --png2dxt3 Use DXT3 Compression (high-freq alpha)\n");
-		printf("RADIO DDS_MODE 0 --png2dxt5 Use DXT5 Compression (smooth alpha)\n");
+		printf("RADIO DDS_MODE 0 --png2dxt1 BC1/DXT1 Compression (1-bit alpha)\n");
+		printf("RADIO DDS_MODE 0 --png2dxt3 BC2/DXT3 Compression (high-freq alpha)\n");
+		printf("RADIO DDS_MODE 0 --png2dxt5 BC3/DXT5 Compression (smooth alpha)\n");
+//		printf("RADIO DDS_MODE 0 --png2bc4 BC4 Compression (metalness or reflectivity)\n");
+//		printf("RADIO DDS_MODE 0 --png2bc5 BC5 Compression (normals)\n");
 		printf("RADIO DDS_MODE 0 --png2rgb No Compression\n");
 		printf("DIV\n");
-		printf("RADIO HAS_MIPS 1 --std_mips Generate Mip-Maps\n");
+		printf("RADIO HAS_MIPS 1 --std_mips Generate Mip-Maps (sRGB gamma)\n");
 		printf("RADIO HAS_MIPS 0 --pre_mips Image Is a Mip-Map Tree\n");
 		printf("RADIO HAS_MIPS 0 --night_mips Generate Night-Style Mip-Map\n");
 		printf("RADIO HAS_MIPS 0 --fade_mips Generate Fading Mip-Map\n");
-		printf("RADIO HAS_MIPS 0 --ctl_mips Generate Fading CTL Mip-Map\n");
-		printf("DIV\n");
-		printf("RADIO GAMMA_MODE 1 --gamma_22 Use X-Plane 10 Gamma\n");
-		printf("RADIO GAMMA_MODE 0 --gamma_18 Use X-Plane 9 Gamma\n");
-
+		printf("RADIO HAS_MIPS 0 --ctl_mips Generate Fading CTL Mip-Map\n"); 
 #if WANT_ATI
 		printf("CMD .png .atc \"%s\" ATC_MODE MIPS PVR_SCALE \"INFILE\" \"OUTFILE\"\n",argv[0]);
 		printf("DIV\n");
@@ -476,9 +428,34 @@ int main(int argc, char * argv[])
 	}
 
 	if (argc < 4) {
-		printf("Usage: %s <convert mode> <options> <input_file> <output_file>|-\n",argv[0]);
+		printf("Usage: %s <method> [options] <input_file> <output_file>|-\n",argv[0]);
+		printf("          compression method being one of\n");
+//		printf("          --png2dxt1, --png2dxt3, --png2dxt5, --png2bc4, --png2bc5\n");
+//		printf("          --png2dxt    Auto select BC1/dxt1, BC3/dxt5, BC4 or BC5 compression\n");
+		printf("          --png2dxt1, --png2dxt3, --png2dxt5\n");
+		printf("          --png2dxt    Auto select BC1/dxt1 or BC3/dxt5 compression\n");
+		printf("          --png2rgb    Uncompressed 8b/pixel\n");
+		printf("          recognized options are\n");
+		printf("          --pre_mips   Source image includes Mip-Map Tree\n");
+		printf("          --night_mips Generate nXP10 Night-style mimaps that get brighter\n");
+		printf("          --fade_mips  Generate Mimaps fading to transparent\n");
+		printf("          --ctl_mips   Generate Mimaps fading all channels to zero\n");
+		printf("          --scale_up   Scale up to nearest power of 2\n");
+		printf("          --scale_down Scale down to nearest power of 2\n\n");
+		printf("          --scale_half Scale down to half size\n");
+		printf("\n");
+//		printf("          --gamma_22   Ignored. BC1-3 use sRGB/gamma=2.2, BC4-5 linear gamma\n");
+		printf("          --gamma_22   This version of DDSTool always uses sRGB/gamma=2.2\n");
+		printf("\n");
 		printf("Usage: %s --quilt <input_file> <width> <height> <patch size> <overlap> <trials> <output_files>\n",argv[0]);
 		printf("       %s --version\n",argv[0]);
+#if WANT_ATI
+		printf("       Compiled with WANT_ATI, supports --png2atc4, --png2atc_raw16, --png2atc_raw24\n");
+#endif
+#if PHONE
+		printf("       Compiled with PHONE, supports --png2pvrtc2, --png2pvrtc4, --png2pvr_raw16, --png2pvr_raw24,\n");
+		printf("                                      --make_mips, and --make_preview\n");
+#endif
 		exit(1);
 	}
 
@@ -521,7 +498,7 @@ int main(int argc, char * argv[])
 		}
 
 	}
-
+#if PHONE
 	else if(strcmp(argv[1],"--png2pvrtc2")==0 ||
 	   strcmp(argv[1],"--png2pvrtc4")==0)
 	{
@@ -601,7 +578,6 @@ int main(int argc, char * argv[])
 
 		return 1;
 	}
-#if PHONE
 	else if(strcmp(argv[1],"--png2pvr_raw16")==0 ||
 			strcmp(argv[1],"--png2pvr_raw24")==0)
 	{
@@ -659,51 +635,52 @@ int main(int argc, char * argv[])
 		return 0;
 	}
 #endif
-	else if(strcmp(argv[1],"--png2dxt")==0 ||
-	   strcmp(argv[1],"--png2dxt1")==0 ||
-	   strcmp(argv[1],"--png2dxt3")==0 ||
-	   strcmp(argv[1],"--png2dxt5")==0)
+	else if(strcmp(argv[1], "--png2dxt") == 0 ||
+			strcmp(argv[1], "--png2dxt1") == 0 ||
+			strcmp(argv[1], "--png2dxt3") == 0 ||
+			strcmp(argv[1], "--png2dxt5") == 0 || 
+//			strcmp(argv[1], "--png2bc4") == 0 ||
+//			strcmp(argv[1], "--png2bc5") == 0 ||
+			strcmp(argv[1], "--png2rgb") == 0)
 	{
 		int arg_base = 2;
-		int has_mips = 0;
+		mip_func_t  mip_filter  = mip_filter_box_with_gamma;
 
-		if(strcmp(argv[arg_base], "--std_mips") == 0)
-		{
-			has_mips = 0;
-			++arg_base;
-		}
-		else if(strcmp(argv[arg_base], "--pre_mips") == 0)
-		{
-			has_mips = 1;
-			++arg_base;
-		}
-		else if(strcmp(argv[arg_base], "--night_mips") == 0)
-		{
-			has_mips = 2;
-			++arg_base;
-		}
-		else if(strcmp(argv[arg_base], "--fade_mips") == 0)
-		{
-			has_mips = 3;
-			++arg_base;
-		}
-		else if(strcmp(argv[arg_base], "--ctl_mips") == 0)
-		{
-			has_mips = 4;
-			++arg_base;
-		}
+		if(strcmp(argv[arg_base], "--std_mips") == 0)   ++arg_base;
+		if(strcmp(argv[arg_base], "--pre_mips") == 0) { ++arg_base; mip_filter = nullptr;	}
+		if (strcmp(argv[2], "--night_mips") == 0)     { ++arg_base; mip_filter = night_filter; }
+		if (strcmp(argv[2], "--fade_mips") == 0)      { ++arg_base; mip_filter = fade_filter;	}
+		if (strcmp(argv[2], "--ctl_mips") == 0)       { ++arg_base; mip_filter = fade_2_black_filter; }
 
-		float gamma = (strcmp(argv[arg_base], "--gamma_22") == 0) ? 2.2f : 1.8f;
-		arg_base +=1;
+		if (strcmp(argv[arg_base], "--gamma_22") == 0)  ++arg_base;
 
-
-		bool scale_up = strcmp(argv[arg_base], "--scale_up") == 0;
+		if (strcmp(argv[arg_base], "--scale_none") == 0) ++arg_base;
+		bool scale_up   = strcmp(argv[arg_base], "--scale_up") == 0;
 		bool scale_down = strcmp(argv[arg_base], "--scale_down") == 0;
 		bool scale_half = strcmp(argv[arg_base], "--scale_half") == 0;
-		arg_base +=1;
+		if(scale_up || scale_down || scale_half)		++arg_base;
+
+		int bc_type = 0;
+		if (argv[1][6] == 'd')
+		{
+			if (argv[1][9] == '1') bc_type = 1;
+			else if (argv[1][9] == '3') bc_type = 2;
+			else if (argv[1][9] == '5') bc_type = 3;
+		}
+		else if (argv[1][6] == 'b')
+		{
+			if (argv[1][8] == '4') bc_type = 4;
+			else                   bc_type = 5;
+		}
+
+		if (arg_base + 1 >= argc)
+		{
+			printf("Not enough arguments for input/output file names\n");
+			return 1;
+		}
 
 		ImageInfo	info;
-		if (CreateBitmapFromPNG(argv[arg_base], &info, false, gamma)!=0)
+		if (CreateBitmapFromPNG(argv[arg_base], &info, bc_type == 0, GAMMA_SRGB))
 		{
 			printf("Unable to open png file %s\n", argv[arg_base]);
 			return 1;
@@ -711,139 +688,74 @@ int main(int argc, char * argv[])
 
 		if (!HandleScale(info, scale_up, scale_down, scale_half, false))
 		{
-			// Image does NOT meet our power of 2 needs.
 			if(!scale_up && !scale_down && !scale_half)
 			{
-				printf("The imager is not a power of 2.  It is: %ld by %ld\n", info.width, info.height);
+				printf("The image is not a power of 2.  It is: %ld by %ld\n", info.width, info.height);
 				return 1;
 			}
 		}
 
-		char buf[1024];
-		const char * outf = argv[arg_base+1];
-		if(strcmp(outf,"-")==0)
+		string outf(argv[arg_base+1]);
+		if(outf == "-")
 		{
-			strcpy(buf,argv[arg_base]);
-			buf[strlen(buf)-4]=0;
-			strcat(buf,".dds");
-			outf=buf;
+			outf = argv[arg_base];
+			outf = outf.substr(0, outf.length() - 4) + ".dds";
 		}
 
-		if(info.channels == 1)
+		if(strcmp(argv[1], "--png2rgb") == 0)
 		{
-			printf("Unable to write DDS file from alpha-only PNG %s\n", argv[arg_base+1]);
+			if (mip_filter)
+				MakeMipmapStackWithFilter(&info, mip_filter);
+			else
+				MakeMipmapStackFromImage(&info);
+
+			if (WriteUncompressedToDDS(info, outf.c_str(), 0))
+			{
+				printf("Unable to write DDS file %s\n", argv[arg_base + 1]);
+				return 1;
+			}
+			return 0;
 		}
-		int dxt_type = argv[1][9]-'0';
-		if(argv[1][9]==0)
+
+		if (bc_type == 0)
 		{
-			if(info.channels == 3)  dxt_type=1;
-			else					dxt_type=5;
+			     if (info.channels == 1) bc_type = 4;
+			else if (info.channels == 2) bc_type = 5;
+			else
+			{
+				int semiTransPixels = 0;
+				if (info.channels == 4)
+				{
+					unsigned char* src = info.data + 3;
+					for (int y = info.height; y > 0; y--)
+					{
+						for (int x = info.width; x > 0; x--)
+						{
+							if (*src < 250 && *src > 0) semiTransPixels++; // deliberately ignore almost opaque pixels. Some tools create such
+							src += 4;
+						}
+						src += 4 * info.pad;
+					}
+				}
+				// heuristics to detect 3/4 channel _NML files and create all BC4/BC5 outputs as needed ??
+				if (semiTransPixels) bc_type = 3;
+				else bc_type = 1;
+			}
 		}
 
 		ConvertBitmapToAlpha(&info,false);
-		switch(has_mips) {
-//		case 0:			MakeMipmapStack(&info);							break;
-		case 0:			MakeMipmapStackWithFilter(&info,srgb_filter);	break;
-		case 1:			MakeMipmapStackFromImage(&info);				break;
-		case 2:			MakeMipmapStackWithFilter(&info,night_filter);	break;
-		case 3:			MakeMipmapStackWithFilter(&info,fade_filter);	break;
-		case 4:			MakeMipmapStackWithFilter(&info,fade_2_black_filter);	break;
-		}
 
-		if (WriteBitmapToDDS(info, dxt_type, outf, gamma == GAMMA_SRGB)!=0)
+		if (WriteBitmapToDDS_MT(info, bc_type, outf.c_str(), mip_filter ? (bc_type > 3  ? mip_filter_box : mip_filter) : nullptr))
 		{
 			printf("Unable to write DDS file %s\n", argv[arg_base+1]);
 			return 1;
 		}
 		return 0;
-	}
-	else if(strcmp(argv[1],"--png2rgb")==0)
-	{
-		int arg_base = 2;
-		int has_mips = 0;
-		if(strcmp(argv[2], "--std_mips") == 0)
-		{
-			has_mips = 0;
-			++arg_base;
-		}
-		else if(strcmp(argv[2], "--pre_mips") == 0)
-		{
-			has_mips = 1;
-			++arg_base;
-		}
-		else if(strcmp(argv[2], "--night_mips") == 0)
-		{
-			has_mips = 2;
-			++arg_base;
-		}
-		else if(strcmp(argv[2], "--fade_mips") == 0)
-		{
-			has_mips = 3;
-			++arg_base;
-		}
-		else if(strcmp(argv[2], "--ctl_mips") == 0)
-		{
-			has_mips = 4;
-			++arg_base;
-		}
-
-		float gamma = (strcmp(argv[arg_base], "--gamma_22") == 0) ? 2.2f : 1.8f;
-		arg_base +=1;
-
-
-		bool scale_up = strcmp(argv[arg_base], "--scale_up") == 0;
-		bool scale_down = strcmp(argv[arg_base], "--scale_down") == 0;
-		bool scale_half = strcmp(argv[arg_base], "--scale_half") == 0;
-		arg_base +=1;
-
-		ImageInfo	info;
-		if (CreateBitmapFromPNG(argv[arg_base], &info, true, gamma)!=0)
-		{
-			printf("Unable to open png file %s\n", argv[arg_base]);
-			return 1;
-		}
-
-		if (!HandleScale(info, scale_up, scale_down, scale_half, false))
-		{
-			// Image does NOT meet our power of 2 needs.
-			if(!scale_up && !scale_down && !scale_half)
-			{
-				printf("The imager is not a power of 2.  It is: %ld by %ld\n", info.width, info.height);
-				return 1;
-			}
-		}
-
-		char buf[1024];
-		const char * outf = argv[arg_base+1];
-		if(strcmp(outf,"-")==0)
-		{
-			strcpy(buf,argv[arg_base]);
-			buf[strlen(buf)-4]=0;
-			strcat(buf,".raw");
-			outf=buf;
-		}
-
-		switch(has_mips) {
-		case 0:			MakeMipmapStack(&info);							break;
-		case 1:			MakeMipmapStackFromImage(&info);				break;
-		case 2:			MakeMipmapStackWithFilter(&info,night_filter);	break;
-		case 3:			MakeMipmapStackWithFilter(&info,fade_filter);	break;
-		case 4:			MakeMipmapStackWithFilter(&info,fade_2_black_filter);	break;
-		}
-
-
-		if (WriteUncompressedToDDS(info, outf, gamma == GAMMA_SRGB)!=0)
-		{
-			printf("Unable to write DDS file %s\n", argv[arg_base+1]);
-			return 1;
-		}
-		return 0;
-		// Quilt src w h splat over trials dest
 	}
 	else if (strcmp(argv[1],"--quilt")==0)
 	{
 		ImageInfo src, dst;
-		if(CreateBitmapFromPNG(argv[2], &src, false, 2.2f) != 0)
+		if(CreateBitmapFromPNG(argv[2], &src, false, GAMMA_SRGB) != 0)
 			return 1;
 
 		int dst_w = atoi(argv[3]);
@@ -859,7 +771,7 @@ int main(int argc, char * argv[])
 
 		make_texture(src, dst, splat, overlap, trials);
 
-		WriteBitmapToPNG(&dst, argv[8], NULL, 0, 2.2f);
+		WriteBitmapToPNG(&dst, argv[8], NULL, 0, GAMMA_SRGB);
 
 	}
 #if PHONE && WANT_ATI
@@ -871,7 +783,7 @@ int main(int argc, char * argv[])
 		int n = 3;
 
 		ImageInfo	info;
-		if(CreateBitmapFromPNG(argv[n], &info, true, 2.2f))
+		if(CreateBitmapFromPNG(argv[n], &info, true, GAMMA_SRGB))
 		{
 			printf("Unable to open png file %s\n", argv[n]);
 			return 1;

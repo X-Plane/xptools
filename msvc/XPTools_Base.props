@@ -7,7 +7,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>..\..\src\DSF;..\..\src\DSF\tri_stripper_101;..\..\src\DSFTools;..\..\src\GUI;..\..\src\Interfaces;..\..\src\lib_json\include;..\..\src\Network;..\..\src\Obj;..\..\src\OGLE;..\..\src\RawImport;..\..\src\Utils;..\..\src\XESCore;..\..\src\XESTools;..\..\src\UI;..\..\msvc_libs\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src\DSF;..\..\src\DSF\tri_stripper_101;..\..\src\DSFTools;..\..\src\GUI;..\..\src\Interfaces;..\..\SDK\lib_json\include;..\..\src\Network;..\..\src\Obj;..\..\src\OGLE;..\..\src\RawImport;..\..\src\Utils;..\..\src\XESCore;..\..\src\XESTools;..\..\src\UI;..\..\msvc_libs\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup>

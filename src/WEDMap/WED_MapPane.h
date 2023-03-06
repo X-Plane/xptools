@@ -46,7 +46,7 @@ class	WED_ATCLayer;
 class	WED_PreviewLayer;
 class	WED_WorldMapLayer;
 class	WED_NavaidLayer;
-//class	WED_TileServerLayer;
+class	WED_TerrainLayer;
 
 class	WED_CreatePointTool;
 class	WED_CreatePolygonTool;
@@ -113,6 +113,7 @@ private:
 	WED_PreviewLayer *		mPreview;
 	WED_WorldMapLayer *		mWorldMap;
 	WED_NavaidLayer *		mNavaidMap;
+	WED_TerrainLayer*		mTerrainMap;
 #if WITHNWLINK
 	WED_NWInfoLayer *		mNWInfoLayer;
 #endif

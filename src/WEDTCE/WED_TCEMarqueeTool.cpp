@@ -167,7 +167,9 @@ void	WED_TCEMarqueeTool::GetNthControlHandle(intptr_t id, int n, bool * active, 
 			if (p)
 			{
 				if (!GetTotalBounds())
+				{
 					*p = Point2(); return;
+				}
 
 				p->x_ = mCacheBounds.p1.x() * kControlsX1[8] + mCacheBounds.p2.x() * kControlsX2[8];
 				p->y_ = mCacheBounds.p1.y() * kControlsY1[8] + mCacheBounds.p2.y() * kControlsY2[8];

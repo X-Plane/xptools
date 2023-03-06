@@ -52,16 +52,16 @@
     <ClCompile Include="..\..\src\GUI\GUI_ToolBar.cpp" />
     <ClCompile Include="..\..\src\GUI\GUI_Unicode.cpp" />
     <ClCompile Include="..\..\src\GUI\GUI_Window.cpp" />
-    <ClCompile Include="..\..\src\libtess2\Source\bucketalloc.c" />
-    <ClCompile Include="..\..\src\libtess2\Source\dict.c" />
-    <ClCompile Include="..\..\src\libtess2\Source\geom.c" />
-    <ClCompile Include="..\..\src\libtess2\Source\mesh.c" />
-    <ClCompile Include="..\..\src\libtess2\Source\priorityq.c" />
-    <ClCompile Include="..\..\src\libtess2\Source\sweep.c" />
-    <ClCompile Include="..\..\src\libtess2\Source\tess.c" />
-    <ClCompile Include="..\..\src\lib_json\src\lib_json\json_reader.cpp" />
-    <ClCompile Include="..\..\src\lib_json\src\lib_json\json_value.cpp" />
-    <ClCompile Include="..\..\src\lib_json\src\lib_json\json_writer.cpp" />
+    <ClCompile Include="..\..\SDK\libtess2\Source\bucketalloc.c" />
+    <ClCompile Include="..\..\SDK\libtess2\Source\dict.c" />
+    <ClCompile Include="..\..\SDK\libtess2\Source\geom.c" />
+    <ClCompile Include="..\..\SDK\libtess2\Source\mesh.c" />
+    <ClCompile Include="..\..\SDK\libtess2\Source\priorityq.c" />
+    <ClCompile Include="..\..\SDK\libtess2\Source\sweep.c" />
+    <ClCompile Include="..\..\SDK\libtess2\Source\tess.c" />
+    <ClCompile Include="..\..\SDK\lib_json\src\lib_json\json_reader.cpp" />
+    <ClCompile Include="..\..\SDK\lib_json\src\lib_json\json_value.cpp" />
+    <ClCompile Include="..\..\SDK\lib_json\src\lib_json\json_writer.cpp" />
     <ClCompile Include="..\..\src\lzma19\C\7zAlloc.c" />
     <ClCompile Include="..\..\src\lzma19\C\7zArcIn.c" />
     <ClCompile Include="..\..\src\lzma19\C\7zBuf.c" />
@@ -86,7 +86,6 @@
     <ClCompile Include="..\..\src\Network\curl_http.cpp" />
     <ClCompile Include="..\..\src\Network\PCSBSocket.win.cpp" />
     <ClCompile Include="..\..\src\Network\PCSBSocketUDP.win.cpp" />
-    <ClCompile Include="..\..\src\Obj\ObjConvert.cpp" />
     <ClCompile Include="..\..\src\Obj\ObjDraw.cpp" />
     <ClCompile Include="..\..\src\Obj\ObjPointPool.cpp" />
     <ClCompile Include="..\..\src\Obj\XObjDefs.cpp" />
@@ -250,6 +249,7 @@
     <ClCompile Include="..\..\src\WEDMap\WED_PreviewLayer.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_SlippyMap.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_StructureLayer.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_TerrainLayer.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_ToolInfoAdapter.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_ToolUtils.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_UIMeasurements.cpp" />
@@ -266,6 +266,7 @@
     <ClCompile Include="..\..\src\WEDTCE\WED_TCEToolNew.cpp" />
     <ClCompile Include="..\..\src\WEDTCE\WED_TCEVertexTool.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_AboutBox.cpp" />
+    <ClCompile Include="..\..\src\WEDWindows\WED_ConvertCommands.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_DocumentWindow.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_GroupCommands.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_LibraryFilterBar.cpp" />
@@ -340,13 +341,13 @@
     <ClInclude Include="..\..\src\Interfaces\IResolver.h" />
     <ClInclude Include="..\..\src\Interfaces\ISelection.h" />
     <ClInclude Include="..\..\src\Interfaces\ITexMgr.h" />
-    <ClInclude Include="..\..\src\libtess2\Source\bucketalloc.h" />
-    <ClInclude Include="..\..\src\libtess2\Source\dict.h" />
-    <ClInclude Include="..\..\src\libtess2\Source\geom.h" />
-    <ClInclude Include="..\..\src\libtess2\Source\mesh.h" />
-    <ClInclude Include="..\..\src\libtess2\Source\priorityq.h" />
-    <ClInclude Include="..\..\src\libtess2\Source\sweep.h" />
-    <ClInclude Include="..\..\src\libtess2\Source\tess.h" />
+    <ClInclude Include="..\..\SDK\libtess2\Source\bucketalloc.h" />
+    <ClInclude Include="..\..\SDK\libtess2\Source\dict.h" />
+    <ClInclude Include="..\..\SDK\libtess2\Source\geom.h" />
+    <ClInclude Include="..\..\SDK\libtess2\Source\mesh.h" />
+    <ClInclude Include="..\..\SDK\libtess2\Source\priorityq.h" />
+    <ClInclude Include="..\..\SDK\libtess2\Source\sweep.h" />
+    <ClInclude Include="..\..\SDK\libtess2\Source\tess.h" />
     <ClInclude Include="..\..\src\lzma19\C\7z.h" />
     <ClInclude Include="..\..\src\lzma19\C\7zAlloc.h" />
     <ClInclude Include="..\..\src\lzma19\C\7zBuf.h" />
@@ -365,7 +366,6 @@
     <ClInclude Include="..\..\src\Network\curl_http.h" />
     <ClInclude Include="..\..\src\Network\PCSBSocket.h" />
     <ClInclude Include="..\..\src\Network\PCSBSocketUDP.h" />
-    <ClInclude Include="..\..\src\Obj\ObjConvert.h" />
     <ClInclude Include="..\..\src\Obj\ObjDraw.h" />
     <ClInclude Include="..\..\src\Obj\ObjPointPool.h" />
     <ClInclude Include="..\..\src\Obj\XDefs.h" />
@@ -533,6 +533,7 @@
     <ClInclude Include="..\..\src\WEDMap\WED_PreviewLayer.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_SlippyMap.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_StructureLayer.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_TerrainLayer.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_ToolInfoAdapter.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_ToolUtils.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_UIMeasurements.h" />
@@ -549,6 +550,7 @@
     <ClInclude Include="..\..\src\WEDTCE\WED_TCEToolNew.h" />
     <ClInclude Include="..\..\src\WEDTCE\WED_TCEVertexTool.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_AboutBox.h" />
+    <ClInclude Include="..\..\src\WEDWindows\WED_ConvertCommands.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_DocumentWindow.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_GroupCommands.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_LibraryFilterBar.h" />
@@ -580,6 +582,9 @@
     <Image Include="..\..\src\WEDResources\startup_bar.png" />
     <Image Include="..\..\src\WEDResources\startup_bkgnd.png" />
     <Image Include="..\..\src\WEDResources\startup_btns.png" />
+    <Image Include="..\..\src\WEDResources\tables\regions.png" />
+    <Image Include="..\..\src\WEDResources\tables\seasons.png" />
+    <Image Include="..\..\src\WEDResources\tables\variants.png" />
     <Image Include="..\..\src\WEDResources\tabs.png" />
     <Image Include="..\..\src\WEDResources\tce_tools.png" />
     <Image Include="..\..\src\WEDResources\tce_tools_blank.png" />
@@ -668,7 +673,7 @@
       <DisableSpecificWarnings>4018;4244;4068;4800;4305;4355;4200;4250;4482;</DisableSpecificWarnings>
       <MinimalRebuild>false</MinimalRebuild>
       <PreprocessorDefinitions>WED=1;_LIB;NO_CGAL=1;CURL_STATICLIB;USE_JPEG=1;USE_TIF=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\src\WEDCore;..\..\src\WEDEntities;..\..\src\WEDFileCache;..\..\src\WEDImportExport;..\..\src\WEDLibrary;..\..\src\WEDMap;..\..\src\WEDNetwork;..\..\src\WEDProperties;..\..\src\WEDTCE;..\..\src\WEDWindows;..\..\src\lzma19\C;..\..\src\libtess2\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src\WEDCore;..\..\src\WEDEntities;..\..\src\WEDFileCache;..\..\src\WEDImportExport;..\..\src\WEDLibrary;..\..\src\WEDMap;..\..\src\WEDNetwork;..\..\src\WEDProperties;..\..\src\WEDTCE;..\..\src\WEDWindows;..\..\src\lzma19\C;..\..\SDK\libtess2\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -686,7 +691,7 @@
       </SDLCheck>
       <DisableSpecificWarnings>4018;4244;4068;4800;4305;4355;4200;4250;</DisableSpecificWarnings>
       <PreprocessorDefinitions>WED=1;_LIB;NO_CGAL=1;CURL_STATICLIB;USE_JPEG=1;USE_TIF=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\src\WEDCore;..\..\src\WEDEntities;..\..\src\WEDFileCache;..\..\src\WEDImportExport;..\..\src\WEDLibrary;..\..\src\WEDMap;..\..\src\WEDNetwork;..\..\src\WEDProperties;..\..\src\WEDTCE;..\..\src\WEDWindows;..\..\src\lzma19\C;..\..\src\libtess2\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src\WEDCore;..\..\src\WEDEntities;..\..\src\WEDFileCache;..\..\src\WEDImportExport;..\..\src\WEDLibrary;..\..\src\WEDMap;..\..\src\WEDNetwork;..\..\src\WEDProperties;..\..\src\WEDTCE;..\..\src\WEDWindows;..\..\src\lzma19\C;..\..\SDK\libtess2\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>

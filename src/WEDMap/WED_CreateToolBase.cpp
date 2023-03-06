@@ -25,6 +25,7 @@
 #include "WED_MapZoomerNew.h"
 #include "GUI_GraphState.h"
 #include "WED_ToolUtils.h"
+#include "WED_DrawUtils.h"
 #include "GISUtils.h"
 #if APL
 	#include <OpenGL/gl.h>
@@ -40,28 +41,6 @@ const int BEZ_STEPS = 50;
 inline bool	within_dist(const Point2& p1, const Point2& p2, WED_MapZoomerNew * z, float dist)
 {
 	return Segment2(z->LLToPixel(p1),z->LLToPixel(p2)).squared_length() < (dist * dist);
-}
-
-static void ogl_bezier(const Bezier2& b, WED_MapZoomerNew * z)
-{
-	if (b.p1 == b.c1 && b.p2 == b.c2)
-	{
-		glBegin(GL_LINE_STRIP);
-		glVertex2f(z->LonToXPixel(b.p1.x()),z->LatToYPixel(b.p1.y()));
-		glVertex2f(z->LonToXPixel(b.p2.x()),z->LatToYPixel(b.p2.y()));
-		glEnd();
-	}
-	else
-	{
-		glBegin(GL_LINE_STRIP);
-		for (int t = 0; t <= BEZ_STEPS; ++t)
-		{
-			float r = (float) t / (float) BEZ_STEPS;
-			Point2 m = b.midpoint(r);
-			glVertex2f(z->LonToXPixel(m.x()),z->LatToYPixel(m.y()));
-		}
-		glEnd();
-	}
 }
 
 WED_CreateToolBase::WED_CreateToolBase(
@@ -388,7 +367,7 @@ void		WED_CreateToolBase::DoEmit(int do_close)
 void			WED_CreateToolBase::KillOperation(bool mouse_is_down)
 {
 	WED_HandleToolBase::KillOperation(mouse_is_down);
-	
+
 	if (mPts.size() >= mMinPts)
 	{
 		DoEmit(0);

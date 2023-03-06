@@ -102,6 +102,44 @@ void	WED_ObjPlacement::Rotate(GISLayer_t l,const Point2& center, double angle)
 	WED_GISPoint_Heading::Rotate(l,center,angle);
 }
 
+double WED_ObjPlacement::GetTowerViewHgt(void)
+{
+#if WED
+	WED_ResourceMgr* rmgr = WED_GetResourceMgr(GetArchive()->GetResolver());
+	if (rmgr)
+	{
+		const XObj8* o;
+		const agp_t* a;
+		if (rmgr->GetObj(resource.value, o))
+		{
+			if (o->viewpoint_height >= 0.0)
+			{
+				return (HasCustomMSL() == 2) * GetCustomMSL() + o->viewpoint_height;
+			}
+		}
+		else if (rmgr->GetAGP(resource.value, a))      // find the first object with a viewpoint nad shift it up per scraper or delta from the .agp
+		{
+			for (const auto& ob : a->tiles.front().objs)
+			{
+				double hgt = ob.obj->viewpoint_height;
+				if (hgt >= 0.0)
+				{
+					if (ob.scp_step > 0.0 && HasCustomMSL() == 2 && GetCustomMSL() > ob.scp_min)
+						hgt += floor((min(GetCustomMSL(), (double) ob.scp_max) - ob.scp_min) / ob.scp_step) * ob.scp_step;
+					else
+						hgt += ob.z;
+					return hgt;
+				}
+			}
+		}
+	}
+	return -1.0;
+
+#endif
+}
+
+
+
 double 	WED_ObjPlacement::GetVisibleDeg(void) const
 {
 	// caching the objects dimension here for off-display culling in the map view. Its disregarding object rotation

@@ -103,12 +103,12 @@ WED_TexMgr::TexInfo *	WED_TexMgr::LoadTexture(const char * path, bool is_absolut
 
 	GLuint tn;
 	glGenTextures(1,&tn);
-#if LOAD_DDS_DIRECT
+#if LOAD_DDS_DIRECT || LOAD_KTX2_DIRECT
 	FILE * file = fopen(fpath.c_str(), "rb");
-	if (file)
+	char c[8];
+	if (file && fread(c, 1, 8, file) == 8)
 	{
-		char c[4];
-		if (fread(c, 1, 4, file) == 4 && strncmp(c, "DDS ",4) == 0) // cut it short, if no joy
+		if (strncmp(c, "DDS ",4) == 0)
 		{
 			fseek(file, 0, SEEK_END);
 			int fileLength = ftell(file);
@@ -131,8 +131,34 @@ WED_TexMgr::TexInfo *	WED_TexMgr::LoadTexture(const char * path, bool is_absolut
 				}
 				delete [] buffer;
 			}
-			fclose(file);
 		}
+#if LOAD_KTX2_DIRECT
+		else if (strncmp(c, "\253KTX 20\273", 8) == 0)
+		{
+			fseek(file, 0, SEEK_END);
+			int fileLength = ftell(file);
+			fseek(file, 0, SEEK_SET);
+			char* buffer = new char[fileLength];
+			if (buffer)
+			{
+				if (fread(buffer, 1, fileLength, file) == fileLength)
+				{
+					int siz_x, siz_y;
+					if (LoadTextureFromKTX2(buffer, buffer + fileLength, tn, flags, &siz_x, &siz_y))
+					{
+						//						printf("Direct loading KTX2 %s\n", fpath.c_str());
+						inf = new TexInfo;
+						inf->tex_id = tn;
+						inf->org_x = inf->vis_x = inf->act_x = siz_x;
+						inf->org_y = inf->vis_y = inf->act_y = siz_y;
+						mTexes[path] = inf;
+					}
+				}
+				delete[] buffer;
+			}
+		}
+#endif
+		fclose(file);
 	}
 	if(inf) return inf;
 

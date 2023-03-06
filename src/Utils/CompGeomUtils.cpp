@@ -22,14 +22,10 @@
  */
 #include "CompGeomUtils.h"
 #include "CompGeomDefs2.h"
-//#include "GISTool_Globals.h"
-//#include "MapDefs.h"
 #include "AssertUtils.h"
 #include "STLUtils.h"
 #include "XESConstants.h"
-#if DEV
-#  include <stdio.h>
-#endif
+#include "tesselator.h"
 #include <algorithm>
 
 using namespace std;
@@ -66,8 +62,8 @@ static	double	CCW_Angle(const Point2& p1, const Point2& p2, const Point2& p3)
 
 	double a_turn = PI - (a2 - a1);
 
-	if (a_turn > PI)
-		a_turn -= PI2;
+	if (a_turn > M_PI)
+		a_turn -= M_PI * 2.0;
 
 	return a_turn;
 }
@@ -903,9 +899,9 @@ bool	Is_CCW_Between(const Vector2& v1, const Vector2& v2, const Vector2& v3)
 	}
 
 	// Normalize all angles to be from 0 to 360.
-	if (angle1 <= -PI)	angle1 += PI2;
-	if (angle2 <= -PI)	angle2 += PI2;
-	if (angle3 <= -PI)	angle3 += PI2;
+	if (angle1 <= -M_PI)	angle1 += M_PI * 2.0;
+	if (angle2 <= -M_PI)	angle2 += M_PI * 2.0;
+	if (angle3 <= -M_PI)	angle3 += M_PI * 2.0;
 
 	// Special case - if we have to increase BOTH angle 2 and 3,
 	// we know that (1) angle 1 will be smaller than angle 2 after the increase AND
@@ -919,8 +915,8 @@ bool	Is_CCW_Between(const Vector2& v1, const Vector2& v2, const Vector2& v3)
 
 	// Normalize angles 2 and 3 to be at least as big as angle 1 (represents counterclockwise rotation
 	// from angle 1), even if exceeds 360.
-	if (angle2 < angle1)	angle2 += PI2;
-	if (angle3 < angle1)	angle3 += PI2;
+	if (angle2 < angle1)	angle2 += M_PI * 2.0;
+	if (angle3 < angle1)	angle3 += M_PI * 2.0;
 
 	// Now if the headings go 1 2 3 we're CCW.
 	return (angle1 < angle2 && angle2 < angle3);
@@ -1334,15 +1330,153 @@ static void PmwxToPoly(const Pmwx& inMap, Polygon2& outPoly)
 
 Point2	CoordTranslator2::Forward(const Point2& input) const
 {
-	return Point2(
-				  mDstMin.x() + (input.x() - mSrcMin.x()) * (mDstMax.x() - mDstMin.x()) / (mSrcMax.x() - mSrcMin.x()),
-				  mDstMin.y() + (input.y() - mSrcMin.y()) * (mDstMax.y() - mDstMin.y()) / (mSrcMax.y() - mSrcMin.y()));
+	double x = mDstMin.x();
+	if (mSrcMax.x() != mSrcMin.x())
+		x += (input.x() - mSrcMin.x()) * (mDstMax.x() - mDstMin.x()) / (mSrcMax.x() - mSrcMin.x());
+
+	double y = mDstMin.y();
+	if (mSrcMax.y() != mSrcMin.y())
+		y += (input.y() - mSrcMin.y()) * (mDstMax.y() - mDstMin.y()) / (mSrcMax.y() - mSrcMin.y());
+
+	return Point2(x, y);
 }
 Point2	CoordTranslator2::Reverse(const Point2& input) const
 {
-	return Point2(
-				  mSrcMin.x() + (input.x() - mDstMin.x()) * (mSrcMax.x() - mSrcMin.x()) / (mDstMax.x() - mDstMin.x()),
-				  mSrcMin.y() + (input.y() - mDstMin.y()) * (mSrcMax.y() - mSrcMin.y()) / (mDstMax.y() - mDstMin.y()));
+	double x = mSrcMin.x();
+	if (mDstMax.x() != mDstMin.x())
+		x += (input.x() - mDstMin.x()) * (mSrcMax.x() - mSrcMin.x()) / (mDstMax.x() - mDstMin.x());
+
+	double y = mSrcMin.y();
+	if (mDstMax.y() != mDstMin.y())
+		y += (input.y() - mDstMin.y()) * (mSrcMax.y() - mSrcMin.y()) / (mDstMax.y() - mDstMin.y());
+
+	return Point2(x, y);
 }
 
+
+// polygon subtraction often result in the countour still having zero-width "excursions" or the contour "backtracking on itself", i.e. three subsequent points having
+// the third exactly on the line from the first to the second. Clean those out by skipping the 2nd point.
+
+static void Polygon2cleaner(Polygon2& poly) // this needs to be ideally done in meterspace
+{
+	for(int n = 0; n < poly.size(); n++)
+	{
+//		printf("%lf %lf  %lf %lf  %lf %lf\n",poly.at(n).x(), poly.at(n).y(), poly.at(n+1).x(), poly.at(n+1).y(), poly[n+2].x(), poly[n+2].y());
+//		printf("%2d (%8.3lf) dist to %2d %8.3lf\n", n, 1.0e5*sqrt(poly.side(n).squared_length()),  (n+2) % poly.size(), 1.0e5*sqrt(poly.side(n).squared_distance(poly[(n+2) % poly.size()])));
+//		printf("%2d            dist to %2d %8.3lf\n", n, (n+3) % poly.size(), 1.0e5*sqrt(poly.side(n).squared_distance(poly[(n+3) % poly.size()])));
+		if(poly.side(n).squared_distance(poly[(n+2) % poly.size()]) < 1e-12) // if its degree's - amounts to about 0.1 meter
+		{
+			for(int m = n + 1; m < poly.size() - 1; m++)
+				poly[m] = poly[m+1];
+			poly.pop_back();
+			n--;  // do it over - but now we're effectively testing against the next point after
+		}
+	}
+}
+
+vector<Polygon2> PolygonIntersect(const vector<Polygon2>& mpolyA, const vector<Polygon2>& mpolyB)
+{
+//printf("intersect A %d B %d\n", mpolyA.size()	,mpolyB.size());
+	vector<Polygon2> mpoly;
+	TESStesselator * tess = tessNewTess(NULL);
+
+	for(auto& poly : mpolyA)
+		tessAddContour(tess, 2, poly.data(), 2 * sizeof(TESSreal), poly.size());
+
+	for(auto& poly : mpolyB)
+		tessAddContour(tess, 2, poly.data(), 2 * sizeof(TESSreal), poly.size());
+
+	if(tessTesselate(tess, TESS_WINDING_ABS_GEQ_TWO, TESS_BOUNDARY_CONTOURS, 3, 2, 0))
+	{
+		int contours = tessGetElementCount(tess);
+		const TESSindex* elems = tessGetElements(tess);
+		const TESSreal * verts = tessGetVertices(tess);
+
+		for(int c = 0; c < contours; c++)
+		{
+			mpoly.push_back(Polygon2());
+			int start = elems[c * 2];
+			int last  = start + elems[c * 2 + 1];
+			mpoly.back().reserve(last - start);
+			for (int i = start; i < last; i++)
+				mpoly.back().push_back(Point2(verts[i * 2], verts[i * 2 + 1]));
+			Polygon2cleaner(mpoly.back());
+		}
+	}
+	tessDeleteTess(tess);
+	return mpoly;
+}
+
+
+vector<Polygon2> PolygonUnion(const vector<Polygon2>& mpolyA, const vector<Polygon2>& mpolyB)
+{
+	vector<Polygon2> mpoly;
+	TESStesselator * tess = tessNewTess(NULL);
+	
+	for(auto& poly : mpolyA)
+		tessAddContour(tess, 2, poly.data(), 2 * sizeof(TESSreal), poly.size());
+
+	for(auto& poly : mpolyB)
+		tessAddContour(tess, 2, poly.data(), 2 * sizeof(TESSreal), poly.size());
+
+	if(tessTesselate(tess, TESS_WINDING_POSITIVE, TESS_BOUNDARY_CONTOURS, 3, 2, 0))
+	{
+		int contours = tessGetElementCount(tess);
+		const TESSindex* elems = tessGetElements(tess);
+		const TESSreal * verts = tessGetVertices(tess);
+
+		for(int c = 0; c < contours; c++)
+		{
+			mpoly.push_back(Polygon2());
+			int start = elems[c * 2];
+			int last  = start + elems[c * 2 + 1];
+			mpoly.back().reserve(last - start);
+			for (int i = start; i < last; i++)
+				mpoly.back().push_back(Point2(verts[i * 2], verts[i * 2 + 1]));
+		}
+	}
+	tessDeleteTess(tess);
+	return mpoly;
+}
+
+vector<Polygon2> PolygonCut(const vector<Polygon2>& mpolyA, const vector<Polygon2>& mpolyB)
+{
+	vector<Polygon2> mpoly;
+	TESStesselator * tess = tessNewTess(NULL);
+//printf("cut A %d B %d\n", mpolyA.size()	,mpolyB.size());
+	for(auto& poly : mpolyA)
+		tessAddContour(tess, 2, poly.data(), 2 * sizeof(TESSreal), poly.size());
+
+	for(auto& poly : mpolyB)
+	{
+		vector<Point2>inv_pts;
+		inv_pts.reserve(poly.size());
+//if(poly.is_ccw()) printf("B CCW %d\n",poly.size()); else printf("B CW %d\n",poly.size());
+		for(auto p = poly.rbegin(); p != poly.rend(); p++)
+			inv_pts.push_back(*p);
+		if(!inv_pts.empty())
+			tessAddContour(tess, 2, inv_pts.data(), 2 * sizeof(TESSreal), poly.size());
+	}
+
+	if(tessTesselate(tess, TESS_WINDING_POSITIVE, TESS_BOUNDARY_CONTOURS, 3, 2, 0))
+	{
+		int contours = tessGetElementCount(tess);
+		const TESSindex* elems = tessGetElements(tess);
+		const TESSreal * verts = tessGetVertices(tess);
+
+		for(int c = 0; c < contours; c++)
+		{
+			mpoly.push_back(Polygon2());
+			int start = elems[c * 2];
+			int last  = start + elems[c * 2 + 1];
+			mpoly.back().reserve(last - start);
+			for (int i = start; i < last; i++)
+				mpoly.back().push_back(Point2(verts[i * 2], verts[i * 2 + 1]));
+//if(mpoly.back().is_ccw()) printf("O CCW %d\n",mpoly.back().size()); else printf("O CW %d\n",mpoly.back().size());
+			Polygon2cleaner(mpoly.back());
+		}
+	}
+	tessDeleteTess(tess);
+	return mpoly;
+}
 

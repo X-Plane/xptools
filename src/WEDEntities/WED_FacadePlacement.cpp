@@ -22,10 +22,17 @@
  */
 
 #include "WED_FacadePlacement.h"
+#include "WED_FacadeRing.h"
+#include "WED_FacadeNode.h"
 #include "WED_ResourceMgr.h"
+#include "WED_LibraryMgr.h"
 #include "WED_EnumSystem.h"
 #include "WED_ToolUtils.h"
-#include "WED_FacadeNode.h"
+#include "AptDefs.h"
+#include "GISUtils.h"
+#include "FileUtils.h"
+#include "PlatformUtils.h"
+#include "XESConstants.h"
 
 DEFINE_PERSISTENT(WED_FacadePlacement)
 TRIVIAL_COPY(WED_FacadePlacement,WED_GISPolygon)
@@ -128,6 +135,24 @@ int		WED_FacadePlacement::GetType(void) const
 	return 0;
 }
 
+const vector<float>	WED_FacadePlacement::GetHeightChoices(void) const
+{
+	vector<float> heights;
+	if(auto info = GetFacInfo())
+	{
+		for (const auto& f : info->floors)
+			if (f.roofs.size())
+			{
+				heights.push_back(f.roofs.back().roof_height);
+			}
+			else
+			{
+				heights.push_back(0.0f);
+			}
+	}
+
+	return heights;
+}
 
 bool		WED_FacadePlacement::HasLayer		(GISLayer_t layer							  ) const
 {
@@ -143,4 +168,191 @@ void		WED_FacadePlacement::SetCustomWalls(bool has)
 bool		WED_FacadePlacement::HasCustomWalls(void) const 
 {
 		return pick_walls.value; 
+}
+
+bool		WED_FacadePlacement::IsJetway(int * cabin, int * tunnel) const
+{
+	const fac_info_t * f = GetFacInfo();
+	if (f && f->tunnels.size())
+	{
+		if (cabin) *cabin = f->cabin_idx;
+		if (tunnel) *tunnel = f->tunnels.front().idx;
+		return true;
+	}
+	else
+		return false;
+}
+
+
+bool		WED_FacadePlacement::HasDockingCabin(void) const
+{
+	if (gExportTarget < wet_xplane_1200) return false;
+
+	const fac_info_t * f = GetFacInfo();
+	if (!f || f->tunnels.empty()) return false;
+
+	auto ps = GetOuterRing();
+	int n_pts = ps->GetNumPoints();
+	if (n_pts >= 3)
+	{
+		Point2 pt;
+		if (auto end = ps->GetNthPoint(n_pts - 1))
+		{
+			end->GetLocation(gis_Param, pt);
+			if (pt.x() < 39.0)          // WED 2.0-2.4 define enums for walls 0-39
+			{
+				if (auto cabin = ps->GetNthPoint(n_pts - 2))
+				{
+					cabin->GetLocation(gis_Param, pt);
+					if (pt.x() == f->cabin_idx)
+					{
+						if (auto tunnel = ps->GetNthPoint(n_pts - 3))
+						{
+							tunnel->GetLocation(gis_Param, pt);
+							for(auto& t : f->tunnels)
+								if (pt.x() == t.idx)
+									return true;
+						}
+					}
+				}
+			}
+		}
+	}
+	return false;
+}
+
+void		WED_FacadePlacement::ExportJetway(Jetway_t& jetway)
+{
+	auto ps = GetOuterRing();
+	int n_pts = ps->GetNumPoints();
+	if (n_pts >= 3)
+	{
+		auto tunnel = ps->GetNthPoint(n_pts - 3);
+		auto cabin = ps->GetNthPoint(n_pts - 2);
+		auto c_dir = ps->GetNthPoint(n_pts - 1);
+
+		const fac_info_t * f = GetFacInfo();
+		if (f && f->tunnels.size())
+		{
+			Point2 loc, cabin_loc, type;
+			string tun_path;
+			tunnel->GetLocation(gis_Geo, loc);
+			jetway.location = loc;
+
+			cabin->GetLocation(gis_Geo, cabin_loc);
+			jetway.install_heading = VectorDegs2NorthHeading(loc, loc, Vector2(loc, cabin_loc));
+			jetway.parked_tunnel_length = LonLatDistMeters(loc, cabin_loc);
+			jetway.parked_tunnel_heading= jetway.install_heading;
+
+			tunnel->GetLocation(gis_Param, type);
+			for (auto& t : f->tunnels)
+			{
+				if (type.x() == t.idx)
+				{
+					jetway.size_code = t.size_code;
+					tun_path = t.obj;
+					break;
+				}
+			}
+			c_dir->GetLocation(gis_Geo, loc);
+			jetway.parked_cab_heading = VectorDegs2NorthHeading(cabin_loc, cabin_loc, Vector2(cabin_loc, loc));
+			jetway.style_code = f->style_code;
+
+			if (auto lmgr = WED_GetLibraryMgr(GetArchive()->GetResolver()))
+				if (!lmgr->IsResourceDefault(resource.value))
+				{
+					/* This is used to resolve objects referenced .fac
+					   These can be either vpaths or paths relative to the art assets location.
+					   If it a vpath - its got to be known to the library manager.
+					*/
+					if (lmgr->GetResourcePath(tun_path).size())
+					{
+						jetway.vpath += tun_path;
+					}
+					else /* Then it must be a physical path relative to the .fac definition */
+					{
+						if (lmgr->IsResourceLocal(resource.value))
+						{
+							tun_path = FILE_get_dir_name(resource.value) + tun_path;
+							for (auto& c : tun_path)
+								if (c == '\\') c = '/';
+							jetway.vpath += tun_path;
+						}
+						else
+							LOG_MSG("E/Export custom jetway facade %s is in a library but uses a relative path for %s\n",
+								resource.value.c_str(), tun_path.c_str());
+					}
+				}
+		}
+	}
+}
+
+void		WED_FacadePlacement::ImportJetway(const Jetway_t& apt_data, void(*print_func)(void *, const char *, ...), void * ref)
+{
+	WED_FacadeRing * ring;
+	if (GetNumEntities() == 0)         // in case this is already a complete facade - switch to appending only three new nodes
+	{
+		SetCustomWalls(1);
+		SetHeight(1);
+		SetShowLevel(1);
+
+		if(apt_data.vpath.empty())
+			switch (apt_data.style_code)
+			{
+				case 0: SetResource("lib/airport/Ramp_Equipment/Jetways/Jetway_1_glass.fac"); break;
+				case 1: SetResource("lib/airport/Ramp_Equipment/Jetways/Jetway_1_solid.fac"); break;
+				case 2: SetResource("lib/airport/Ramp_Equipment/Jetways/Jetway_2_glass.fac"); break;
+				case 3: SetResource("lib/airport/Ramp_Equipment/Jetways/Jetway_1_solid.fac"); break;
+			}
+		else
+		{
+			auto rmgr = WED_GetResourceMgr(GetArchive()->GetResolver());
+			SetResource(rmgr->GetJetwayVpath(apt_data.vpath));
+		}
+
+		ring = WED_FacadeRing::CreateTyped(GetArchive());
+		ring->SetParent(this, 0);
+		ring->SetName("Ring");
+	}
+	else
+		ring = dynamic_cast<WED_FacadeRing *>(GetNthEntity(0));
+
+	const fac_info_t * f = GetFacInfo();
+
+	WED_FacadeNode * p_tunnel;
+	if (ring->GetNumEntities() == 0)
+	{
+		p_tunnel = WED_FacadeNode::CreateTyped(GetArchive());
+		p_tunnel->SetParent(ring, 0);
+		p_tunnel->SetName("Tunnel Node");
+	}
+	else
+		p_tunnel = dynamic_cast<WED_FacadeNode *>(GetNthEntity(0));
+	if(f && f->tunnels.size())
+		p_tunnel->SetWallType(f->tunnels[apt_data.size_code].idx);
+	else
+		p_tunnel->SetWallType(4 + apt_data.size_code); // best guess - thats what the initial facades used
+	p_tunnel->SetLocation(gis_Geo, apt_data.location); // in case we append to a facade - this forces the existing last node to be exactly where the
+	                                                   // jetway starts. Maybe check if that is at least somewhere "close" and abort if not ?
+
+	auto p_cabin = WED_FacadeNode::CreateTyped(GetArchive());
+	p_cabin->SetParent(ring, p_tunnel->GetMyPosition() + 1);
+	p_cabin->SetName("Cabin Node");
+	if(f && f->tunnels.size())
+		p_cabin->SetWallType(f->cabin_idx);
+	else
+		p_cabin->SetWallType(3);                      // best guess - thats what the initial facades used
+	Vector2 dir;
+	NorthHeading2VectorDegs(apt_data.location, apt_data.location, apt_data.parked_tunnel_heading, dir);
+	Point2 pt(apt_data.location);
+	pt += dir * apt_data.parked_tunnel_length * MTR_TO_DEG_LAT;
+	p_cabin->SetLocation(gis_Geo, pt);
+
+	auto p_end = WED_FacadeNode::CreateTyped(GetArchive());
+	p_end->SetParent(ring, p_cabin->GetMyPosition() + 1);
+	p_end->SetName("End Node");
+	p_end->SetWallType(0);
+	NorthHeading2VectorDegs(apt_data.location, apt_data.location, apt_data.parked_cab_heading, dir);
+	pt += dir * 5.0 * MTR_TO_DEG_LAT;
+	p_end->SetLocation(gis_Geo, pt);
 }

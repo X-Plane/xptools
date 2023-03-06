@@ -379,15 +379,10 @@ void XWin::resize(int x,int y,int w,int h)
 	bool not_moved = ( x == this->x() && y == this->y() );
 	if( no_resize & not_moved ) return;
 
-	int  mbar_h = mMenuBar ? mMenuBar->h() : 0;
 	Fl_Window::resize(x,y,w,h);
 
 	if(no_resize) return;
-	if(mMenuBar && this->resizable() == this)
-	{
-	   mMenuBar->size(w,mbar_h);
-	}
-	Resized(w,h);
+	Resized(w,h-GetMenuBarHeight());
 }
 
 /*FLTK  menu callback*/
@@ -683,9 +678,17 @@ int XWin::AppendMenuItem(xmenu menu, const char * inTitle)
 {
 	if(!menu || menu->size() > MENU_ARRAY_SIZE-1) return -1;
 	xmenu_cmd * cmd = new xmenu_cmd();
-
 	Fl_Menu_Item * m = (Fl_Menu_Item *) menu;
-	int idx = m->add(inTitle,0,menu_cb,cmd);
+
+	//mroe:This is to deal with menu names containing slashes . FLTK would creates a submenu after a slash .
+	//To workaround this , we using a placeholder string with same length and rename it after the menu item is added.
+	string itemname(inTitle);
+	string tempname;
+	tempname.resize(itemname.size(),'?');
+
+	int idx = m->add(tempname.c_str(),0,menu_cb,cmd);
+	Fl_Menu_Item * new_m = m + idx;
+	strcpy((char*) new_m->text,itemname.c_str());
 
 	cmd->data = m;
 	cmd->cmd  = idx;

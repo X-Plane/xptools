@@ -72,6 +72,7 @@ struct	ImageInfo {
 #define DDPF_ALPHAPIXELS        0x00000001l		// has alpha in addition to RGB
 #define DDPF_FOURCC             0x00000004l		// Is 4cc compressed
 #define DDPF_RGB				0x00000040l		// Is RGB (may have alpha)
+#define DDPF_LUMINANCE			0x00020000l     // Greyscale, like BC4 or BC5
 
 // DD surface caps
 #define DDSCAPS_TEXTURE			0x00001000l
@@ -86,11 +87,13 @@ struct	ImageInfo {
 	#if APL
 		#include <libkern/OSByteOrder.h>
 		#define SWAP32(x) (OSSwapConstInt32(x))
-	#else
+		#define SWAP64(x) (OSSwapConstInt64(x))
+#else
 		#error we do not have big endian support on non-Mac platforms
 	#endif
 #elif LIL
 	#define SWAP32(x) (x)
+	#define SWAP64(x) (x)
 #else
 	#error BIG or LIL are not defined - what endian are we?
 #endif
@@ -128,7 +131,7 @@ struct TEX_dds_desc {
 	TEX_dds_caps2       ddsCaps;                // direct draw surface capabilities			DDSCAPS_TEXTURE, DDSCAPS_MIPMAP, DDSCAPS_COMPLEX		TEXTURE, LINEARSIZE, COMPLEX, MIPMAP, FOURCC)
 	uint32_t            dwReserved2;			//
 
-	TEX_dds_desc(int width, int height, int mips, int dxt);
+	TEX_dds_desc(int width, int height, int mips, int BCtype);
 };
 
 struct TEX_dds_dx10 {
@@ -138,6 +141,31 @@ struct TEX_dds_dx10 {
     uint32_t      arraySize;
     uint32_t      reserved;
 };
+
+enum DXGI_FORMAT {
+	DXGI_FORMAT_BC1_TYPELESS = 70,
+	DXGI_FORMAT_BC1_UNORM = 71,
+	DXGI_FORMAT_BC1_UNORM_SRGB = 72,
+	DXGI_FORMAT_BC2_TYPELESS = 73,
+	DXGI_FORMAT_BC2_UNORM = 74,
+	DXGI_FORMAT_BC2_UNORM_SRGB = 75,
+	DXGI_FORMAT_BC3_TYPELESS = 76,
+	DXGI_FORMAT_BC3_UNORM = 77,
+	DXGI_FORMAT_BC3_UNORM_SRGB = 78,
+	DXGI_FORMAT_BC4_TYPELESS = 79,
+	DXGI_FORMAT_BC4_UNORM = 80,
+	DXGI_FORMAT_BC4_SNORM = 81,
+	DXGI_FORMAT_BC5_TYPELESS = 82,
+	DXGI_FORMAT_BC5_UNORM = 83,
+	DXGI_FORMAT_BC5_SNORM = 84,
+	DXGI_FORMAT_BC6H_UF16 = 95,
+	DXGI_FORMAT_BC6H_SF16 = 96,
+	DXGI_FORMAT_BC7_TYPELESS = 97,
+	DXGI_FORMAT_BC7_UNORM = 98,
+	DXGI_FORMAT_BC7_UNORM_SRGB = 99
+};
+
+// DD surface caps
 
 /* STANDARDS FOR CreateNewBitmapFromX: Returns 0 for all good, else each has its
  * own error codes we all wish were documented and standardized*/
@@ -191,12 +219,14 @@ int		WriteBitmapToPNG(const struct ImageInfo * inImage, const char * inFilePath,
  * pass the data DIRECTLY to OpenGL. */
 int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name, int use_win_gamma);
 
-// same, but multi-threaded compression and gamma corrected mipmap generation is done within
-int	WriteBitmapToDDS_MT(struct ImageInfo& ioImage, int dxt, const char * file_name);
+/* similar, but capable of multi-threaded compression and BC1-BC5 formats. Gamma corrected mipmap generation done within, if filter given */
+typedef unsigned char (*mip_func_t) (unsigned char src[], int count, int channel, int level);
+		unsigned char mip_filter_box(unsigned char src[], int count, int chan, int level);
+		unsigned char mip_filter_box_with_gamma(unsigned char src[], int count, int chan, int level);
+		int	WriteBitmapToDDS_MT(struct ImageInfo& ioImage, int BC_type, const char* file_name, mip_func_t filter = nullptr);
 
-/* This routine writes a 3 or 4 channel bitmap as a mip-mapped DXT1 or DXT3 image. */
+/* This routine writes a 1 to 4 channel bitmap as a mip-mapped, uncompressed L, LA, RGB or RGBA image. */
 int	WriteUncompressedToDDS(struct ImageInfo& ioImage, const char * file_name, int use_win_gamma);
-
 
 /* This routine deallocates a bitmap that was created with CreateBitmapFromFile or
  * CreateNewBitmap. */
