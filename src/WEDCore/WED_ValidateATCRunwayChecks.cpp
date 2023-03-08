@@ -950,6 +950,8 @@ static void TJunctionCrossingTest(const TaxiRouteInfoVec_t& all_taxiroutes, vali
 	#define STR(s) #s
 	
 	set<WED_TaxiRoute *> crossing_edges, short_edgesAB, short_edgesC, short_edgesDEF, short_edgesT;
+	auto grievance = gExportTarget == wet_gateway ? err_atc_taxi_short : warn_atc_taxi_short;
+
 	for (auto tr_a = all_taxiroutes.cbegin(); tr_a != all_taxiroutes.cend(); ++tr_a)
 	{
 		Segment2 edge_a = tr_a->segment_m;
@@ -1064,16 +1066,16 @@ static void TJunctionCrossingTest(const TaxiRouteInfoVec_t& all_taxiroutes, vali
 										  " Split the lines and join the nodes.", err_airport_ATC_network, e, apt));
 	for (auto e : short_edgesAB)
 		msgs.push_back(validation_error_t(string("Airport contains short (<") + to_string((int)SHORT_THRESHOLD_AC_SM) + "m) Taxi route segment(s).",
-			err_taxi_route_zero_length, e, apt));
+			grievance, e, apt));
 	for (auto e : short_edgesC)
 			msgs.push_back(validation_error_t(string("Airport contains short (<") + to_string((int) SHORT_THRESHOLD_AC) + "m) Taxi route segment(s).",
-				err_taxi_route_zero_length, e, apt));
+			grievance, e, apt));
 	for (auto e : short_edgesDEF)
 		msgs.push_back(validation_error_t(string("Airport contains short (<") + to_string((int) SHORT_THRESHOLD_AC_LG) + "m) Taxi route segment(s).",
-			err_taxi_route_zero_length, e, apt));
+			grievance, e, apt));
 	for (auto e : short_edgesT)
 		msgs.push_back(validation_error_t(string("Airport contains short (<") + to_string((int) SHORT_THRESHOLD_TRUCKS) + "m) Truck route segment(s).",
-			err_taxi_route_zero_length, e, apt));
+			grievance, e, apt));
 }
 
 static void TestInvalidHotZOneTags(const TaxiRouteInfoVec_t& taxi_routes, const set<int>& legal_rwy_oneway, const set<int>& legal_rwy_twoway,

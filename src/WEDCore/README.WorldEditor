@@ -17,6 +17,7 @@ CHANGE HISTORY
 WED 2.5.1 r1
    Bug fix:
    - WED-1461 fix align function
+   - relax most network validations to warning only for non-gateway use
 
 WED 2.5.1 b1 2/3/2023
    Bug fix:
