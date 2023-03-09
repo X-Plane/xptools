@@ -5521,10 +5521,24 @@ void WED_UpgradeJetways(IResolver* resolver)
 
 static int get_aged_surf(int surf, int age)
 {
-	if (surf == surf_Concrete)
-		return age == 1 ? surf_Concrete_8 : surf_Concrete_1;
-	else
-		return age == 1 ? surf_Asphalt_4 : surf_Asphalt_12;
+	if (surf <= surf_Asphalt_4)
+		return age == 1 ? surf_Asphalt_2 : surf_Asphalt;        // older = brighter, new = darker
+	else if (surf <= surf_Asphalt_7)
+		return age == 1 ? surf_Asphalt_2 : surf_Asphalt_8;
+	else if (surf <= surf_Asphalt_11)
+		return age == 1 ? surf_Asphalt_5 : surf_Asphalt_12;
+	else if (surf <= surf_Asphalt_15)
+		return age == 1 ? surf_Asphalt_9 : surf_Asphalt_16;
+	else if (surf <= surf_Asphalt_19)
+		return age == 1 ? surf_Asphalt_13 : surf_Asphalt_16;
+	else if (surf == surf_Concrete_3)
+		return age == 1 ? surf_Concrete_3 : surf_Concrete_1;    // stays same brighness
+	else if (surf == surf_Concrete_5)
+		return age == 1 ? surf_Concrete_5 : surf_Concrete;
+	else if (surf == surf_Concrete_8)
+		return age == 1 ? surf_Concrete_8 : surf_Concrete_6;
+
+	return surf;
 }
 
 int WED_DoAgePavement(WED_Airport* apt, int age)  // age 1 = older
@@ -5539,43 +5553,74 @@ int WED_DoAgePavement(WED_Airport* apt, int age)  // age 1 = older
 	CollectRecursive(apt, back_inserter(twys));
 	CollectRecursive(apt, back_inserter(pols));
 
+//	CollectRecursive(apt, back_inserter(pols), EntityNotHidden, [](WED_Thing* pol)->bool {
+//		string res;
+//		static_cast<WED_PolygonPlacement*>(pol)->GetResource(res);
+//		return res.compare(0, strlen("lib/airport/ground/pavement"), "lib/airport/ground/pavement") == 0 ||
+//			   res.compare(0, strlen("lib/airport/pavement"), "lib/airport/pavement") == 0;
+//		},
+//		WED_PolygonPlacement::sClass, 99);
+
+
 	for (auto r : rwys)
 	{
-		int surf = r->GetSurface();
-		if (surf == surf_Asphalt || surf == surf_Concrete)
+		auto surf = r->GetSurface();
+		auto new_surf = get_aged_surf(surf, age);
+		if (new_surf != surf)
 		{
-			r->SetSurface(get_aged_surf(surf, age));
+			r->SetSurface(new_surf);
 			changes++;
 		}
 
 		surf = r->GetShoulder();
-		if (surf == surf_Asphalt || surf == surf_Concrete)
+		new_surf = get_aged_surf(surf, age);
+		if (new_surf != surf)
 		{
-			r->SetShoulder(get_aged_surf(surf, age));
+			r->SetShoulder(new_surf);
 			changes++;
 		}
 	}
 
 	for (auto t : twys)
 	{
-		int surf = t->GetSurface();
-		if (surf == surf_Asphalt || surf == surf_Concrete)
+		auto surf = t->GetSurface();
+		auto new_surf = get_aged_surf(surf, age);
+		if (new_surf != surf)
 		{
-			t->SetSurface(get_aged_surf(surf, age));
+			t->SetSurface(new_surf);
 			changes++;
 		}
 	}
 
-	for (auto p : pols) // thats a pretty basic upgrade, any lighter/darker than default pavements are NOT converted
+	for (auto p : pols)
 	{
 		string res;
 		p->GetResource(res);
-		if (res == "lib/airport/pavement/asphalt_3D.pol" || "lib/airport/pavements/Concrete_1D.pol")
+		int surf = 0;
+
+		if (res.compare(0, strlen("lib/airport/pavement"), "lib/airport/pavement") == 0)
 		{
-			int surf = surf_Asphalt;
-			if (res.find("Concrete)") != string::npos) surf = surf_Concrete;
-			surf = get_aged_surf(surf, age);
-			WED_GetLibraryMgr(p->GetArchive()->GetResolver())->GetSurfVpath(surf, res);
+			string t = res.substr(res.length() - 8, 4);
+			if (t == "t_1D")								     surf = surf_Asphalt_16;
+			else if (t == "t_2D" || t == "t_3D" || t == "t_4D")  surf = surf_Asphalt_12;
+			else if (t == "t_5D" || t == "t_6D" || t == "t_1L")  surf = surf_Asphalt_8;
+			else if (t == "t_2L" || t == "t_3L" || t == "t_4L")  surf = surf_Asphalt;
+			else if (t == "t_5L" || t == "t_6L")                 surf = surf_Asphalt_1;
+			else if (t[3] == 'D')                                surf = surf_Concrete_6;
+			else if (t[3] == 'L' && t[2] < '3')                  surf = surf_Concrete;
+			else if (t[3] == 'L' && t[2] > '2')                  surf = surf_Concrete_1;
+		}
+		else if (res.compare(0, strlen("lib/airport/ground/pavement"), "lib/airport/ground/pavement") == 0)
+		{
+			surf = WED_GetLibraryMgr(p->GetArchive()->GetResolver())->GetSurfEnum(res);
+		}
+		else
+			continue;
+
+		auto new_surf = get_aged_surf(surf, age);
+		if (surf > 0 && new_surf != surf)
+		{
+			WED_GetLibraryMgr(p->GetArchive()->GetResolver())->GetSurfVpath(new_surf, res);
 			p->SetResource(res);
 			changes++;
 		}
@@ -5587,13 +5632,20 @@ void WED_AgePavement(IResolver* resolver)
 {
 	WED_Thing* wrl = WED_GetWorld(resolver);
 	vector<WED_Airport*> all_apts;
-	int count = 0;
 
-	int age = ConfirmMessage("Change all X-Plane 11 default Pavement to X-Plane 12 old/worn ? Otherwise change is to newer looking pavement.", "Yes", "No");
+	auto ans = DoSaveDiscardDialog("Change all Pavement to look older or newer ?\n",
+		                     "Yes = cracked/worn, lighter asphalt, darker concrete\n"
+		                     "No = smooth, darker asphalt, lighter concrete");
+
+	if (ans != close_Save && ans != close_Discard)
+		return;
+	int age = ans == close_Save ? 1 : 0;
 
 	CollectRecursiveNoNesting(wrl, back_inserter(all_apts), WED_Airport::sClass);
 
 	wrl->StartOperation("Age Pavement");
+
+	int count = 0;
 	for (auto a : all_apts)
 		count += WED_DoAgePavement(a, age);
 	if (count > 0)
