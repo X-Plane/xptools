@@ -33,6 +33,7 @@
 #include "WED_OverlayImage.h"
 #include "WED_TextureNode.h"
 #include "WED_ExclusionZone.h"
+#include "WED_ExclusionPoly.h"
 #include "WED_Taxiway.h"
 #include "WED_PolygonPlacement.h"
 #include "WED_DrapedOrthophoto.h"

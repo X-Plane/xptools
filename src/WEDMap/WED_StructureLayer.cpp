@@ -51,6 +51,7 @@
 #include "WED_TruckDestination.h"
 #include "WED_Airport.h"
 #include "WED_RampPosition.h"
+#include "WED_ExclusionPoly.h"
 #include "WED_FacadePlacement.h"
 #include "WED_FacadeRing.h"
 #include "WED_Windsock.h"
@@ -367,7 +368,12 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 
 					glColor4fv(WED_Color_RGBA(struct_color));
 				}
-
+				else if (kind = gis_Ring)
+				{
+					auto parent = dynamic_cast<WED_Thing*>(entity)->GetParent();
+					if(parent->GetClass() == WED_ExclusionPoly::sClass)
+						glColor4fv(WED_Color_RGBA_Alpha(wed_Link, 1.0, storage));
+				}
 				WED_MapZoomerNew* z = GetZoomer();
 				bool showRealLines = mRealLines && z->GetPPM() * 0.4 <= MIN_PIXELS_PREVIEW;
 
@@ -563,7 +569,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 		break;
 
 	case gis_Composite:
-		if(sub_class != WED_AirportBoundary::sClass)      // boundaries are not down-clickable in the interior, but still get a highlighted interior
+		if(sub_class != WED_AirportBoundary::sClass && sub_class != WED_ExclusionPoly::sClass)    // not down-clickable in interior, but still highlighted interior
 			break;
 	case gis_Polygon:
 		/******************************************************************************************************************************************************
@@ -589,7 +595,6 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 						hole_starts.push_back(pts.size());
 						PointSequenceToVector(poly->GetNthHole(i), GetZoomer(), pts, false);
 					}
-
 					glColor4fv(WED_Color_RGBA_Alpha(struct_color, HILIGHT_ALPHA, storage));
 					glFrontFace(GL_CCW);
 					glPolygon2(pts, false, hole_starts, false);

@@ -41,6 +41,7 @@
 #include "WED_PolygonPlacement.h"
 #include "WED_DrapedOrthophoto.h"
 #include "WED_ExclusionZone.h"
+#include "WED_ExclusionPoly.h"
 #include "WED_EnumSystem.h"
 #include "WED_Airport.h"
 #include "WED_GISUtils.h"
@@ -1218,6 +1219,24 @@ static int	DSF_HeightRangeRecursive(WED_Thing * what, double& out_msl_min, doubl
 	return found ? 1 : (any_inside ? 0 : -1);
 }
 
+static const char * get_exclusion_text(int i)
+{
+	switch (i) {
+	case exclude_Obj:	return "sim/exclude_obj";
+	case exclude_Fac:	return "sim/exclude_fac";
+	case exclude_For:	return "sim/exclude_for";
+	case exclude_Bch:	return "sim/exclude_bch";
+	case exclude_Net:	return "sim/exclude_net";
+
+	case exclude_Lin:	return "sim/exclude_lin";
+	case exclude_Pol:	return "sim/exclude_pol";
+	case exclude_Str:	return "sim/exclude_str";
+	default: return nullptr;
+	}
+
+}
+
+
 //Returns -1 for abort, or n where n > 0 for the number of
 static int	DSF_ExportTileRecursive(
 						WED_Thing *					what,
@@ -1543,26 +1562,55 @@ static int	DSF_ExportTileRecursive(
 			if(minp.x_ > maxp.x_)	swap(minp.x_, maxp.x_);
 			if(minp.y_ > maxp.y_)	swap(minp.y_, maxp.y_);
 
-			for(set<int>::iterator xt = xtypes.begin(); xt != xtypes.end(); ++xt)
+			for(auto xt : xtypes)
 			{
-				const char * pname = NULL;
-				switch(*xt) {
-				case exclude_Obj:	pname = "sim/exclude_obj";	break;
-				case exclude_Fac:	pname = "sim/exclude_fac";	break;
-				case exclude_For:	pname = "sim/exclude_for";	break;
-				case exclude_Bch:	pname = "sim/exclude_bch";	break;
-				case exclude_Net:	pname = "sim/exclude_net";	break;
-
-				case exclude_Lin:	pname = "sim/exclude_lin";	break;
-				case exclude_Pol:	pname = "sim/exclude_pol";	break;
-				case exclude_Str:	pname = "sim/exclude_str";	break;
-				}
-				if(pname)
+				if(auto pname = get_exclusion_text(xt))
 				{
-					char valbuf[512];
+					char valbuf[64];
 					sprintf(valbuf,"%.6lf/%.6lf/%.6lf/%.6lf",minp.x(),minp.y(),maxp.x(),maxp.y());
 					++real_thingies;
 					io_table.accum_exclusion(pname, valbuf);
+				}
+			}
+			return real_thingies;
+		}
+
+		else if (c == WED_ExclusionPoly::sClass)
+		{
+			auto xcl = static_cast<WED_ExclusionPoly*>(what);
+			set<int> xtypes;
+			xcl->GetExclusions(xtypes);
+			Bbox2 bounds;
+			xcl->GetBounds(gis_Geo, bounds);
+
+			for (auto xt : xtypes)
+			{
+				if (auto pname = get_exclusion_text(xt))
+				{
+					char valbuf[64];
+					sprintf(valbuf, "%.6lf/%.6lf/%.6lf/%.6lf;", bounds.p1.x(), bounds.p1.y(), bounds.p2.x(), bounds.p2.y());
+					++real_thingies;
+					string excbuf(valbuf);
+
+					vector<Polygon2>	xcl_area;
+					Assert(WED_PolygonWithHolesForPolygon(xcl, xcl_area));
+
+					vector<vector<Polygon2> >	xcl_clipped;
+					if (!clip_polygon(xcl_area, xcl_clipped, cull_bounds))
+					{
+						xcl_clipped.clear();
+						problem_children.insert(what);
+					}
+					for (const auto& pol_vec : xcl_clipped)
+						for (const auto& pol : pol_vec)
+							for (const auto& pt : pol)
+							{
+								sprintf(valbuf, "%.6lf/%.6lf,", pt.x(), pt.y());
+								excbuf += valbuf;
+							}
+					if (excbuf.back() == ',')
+						excbuf.pop_back();
+					io_table.accum_exclusion(pname, excbuf);
 				}
 			}
 			return real_thingies;
@@ -1572,7 +1620,7 @@ static int	DSF_ExportTileRecursive(
 		// FOREST EXPORTER
 		//------------------------------------------------------------------------------------------------------------
 
-		if(c == WED_ForestPlacement::sClass)
+		else if(c == WED_ForestPlacement::sClass)
 		{
 			auto fst = static_cast<WED_ForestPlacement *>(what);
 			fst->GetResource(r);
@@ -1656,7 +1704,7 @@ static int	DSF_ExportTileRecursive(
 		// OBJ STRING EXPORTER
 		//------------------------------------------------------------------------------------------------------------
 
-		if(c == WED_StringPlacement::sClass)
+		else if(c == WED_StringPlacement::sClass)
 		{
 			auto str = static_cast<WED_StringPlacement *>(what);
 			str->GetResource(r);
@@ -1696,7 +1744,7 @@ static int	DSF_ExportTileRecursive(
 		// AUTOGEN STRING EXPORTER
 		//------------------------------------------------------------------------------------------------------------
 
-		if(c == WED_AutogenPlacement::sClass)
+		else if(c == WED_AutogenPlacement::sClass)
 		{
 			auto ags = static_cast<WED_AutogenPlacement *>(what);
 			ags->GetResource(r);
@@ -1795,7 +1843,7 @@ static int	DSF_ExportTileRecursive(
 		// OBJ LINE EXPORTER
 		//------------------------------------------------------------------------------------------------------------
 
-		if(c == WED_LinePlacement::sClass)
+		else if(c == WED_LinePlacement::sClass)
 		{
 			auto lin = static_cast<WED_LinePlacement *>(what);
 			lin->GetResource(r);
@@ -1879,7 +1927,7 @@ static int	DSF_ExportTileRecursive(
 		// DRAPED POLYGON
 		//------------------------------------------------------------------------------------------------------------
 
-		if(c == WED_PolygonPlacement::sClass)
+		else if(c == WED_PolygonPlacement::sClass)
 		{
 			auto pol = static_cast<WED_PolygonPlacement *>(what);
 			pol->GetResource(r);
@@ -1935,7 +1983,7 @@ static int	DSF_ExportTileRecursive(
 		// UV-MAPPED DRAPED POLYGON
 		//------------------------------------------------------------------------------------------------------------
 
-		if(c == WED_DrapedOrthophoto::sClass)
+		else if(c == WED_DrapedOrthophoto::sClass)
 		{
 			auto orth = static_cast<WED_DrapedOrthophoto *>(what);
 			orth->GetResource(r);
@@ -2226,7 +2274,7 @@ static int	DSF_ExportTileRecursive(
 		// ROAD EXPORTER
 		//------------------------------------------------------------------------------------------------------------
 
-		if (c == WED_RoadEdge::sClass)
+		else if (c == WED_RoadEdge::sClass)
 		{
 			auto roa = static_cast<WED_RoadEdge*>(what);
 			string asset;

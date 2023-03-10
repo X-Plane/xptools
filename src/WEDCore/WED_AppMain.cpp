@@ -83,6 +83,7 @@
 	_R(WED_PolygonPlacement) \
 	_R(WED_DrapedOrthophoto) \
 	_R(WED_ExclusionZone) \
+	_R(WED_ExclusionPoly) \
 	_R(WED_ForestRing) \
 	_R(WED_FacadeRing) \
 	_R(WED_FacadeNode)

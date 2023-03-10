@@ -13,6 +13,10 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 2.6.0 b1
+   Features:
+   - polygonal exclusion zones for XP 12.xx    Todo: dsf import, UI refinement, some validation
+
 =======
 WED 2.5.1r1 3/10/23
    Bug fix:

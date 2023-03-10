@@ -34,8 +34,9 @@ enum CreateTool_t {
 	create_Boundary,
 	create_Marks,
 	create_Hole,
-	create_Facade,
+	create_ExcludePol,
 
+	create_Facade,
 	create_Forest,
 	create_String,
 	create_Line,
@@ -77,6 +78,7 @@ protected:
 
 		WED_PropDoubleTextMeters		mSpacing;
 		WED_PropDoubleTextMeters		mAgsHght;
+		WED_PropIntEnumSet				mExclude;
 
 		WED_PropBoolText				mUVMap;
 		WED_PropBoolText				mPickWalls;

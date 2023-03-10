@@ -158,6 +158,7 @@
     <ClCompile Include="..\..\src\WEDEntities\WED_DrapedOrthophoto.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_Entity.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_ExclusionZone.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_ExclusionPoly.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_FacadeNode.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_FacadePlacement.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_FacadePreview.cpp" />
@@ -442,6 +443,7 @@
     <ClInclude Include="..\..\src\WEDEntities\WED_DrapedOrthophoto.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_Entity.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_ExclusionZone.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_ExclusionPoly.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_FacadeNode.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_FacadePlacement.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_FacadeRing.h" />
