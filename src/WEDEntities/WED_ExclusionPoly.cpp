@@ -28,7 +28,7 @@ DEFINE_PERSISTENT(WED_ExclusionPoly)
 TRIVIAL_COPY(WED_ExclusionPoly, WED_GISPolygon)
 
 WED_ExclusionPoly::WED_ExclusionPoly(WED_Archive * a, int i) : WED_GISPolygon(a,i),
-	exclusions(this,PROP_Name("ExclusionPolys", XML_Name("excluzions","exclusion")),ExclusionTypes, 0)
+	exclusions(this,PROP_Name("ExclusionPolys", XML_Name("exclusions","exclusion")),ExclusionTypes, 0)
 {
 }
 

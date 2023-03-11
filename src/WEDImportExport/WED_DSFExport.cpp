@@ -1608,6 +1608,7 @@ static int	DSF_ExportTileRecursive(
 								sprintf(valbuf, "%.6lf/%.6lf,", pt.x(), pt.y());
 								excbuf += valbuf;
 							}
+
 					if (excbuf.back() == ',')
 						excbuf.pop_back();
 					io_table.accum_exclusion(pname, excbuf);

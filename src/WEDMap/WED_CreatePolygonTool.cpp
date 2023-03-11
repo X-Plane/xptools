@@ -131,7 +131,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 
 	ISelection *	sel = WED_GetSelect(GetResolver());
 	if (mType != create_Hole)
-	sel->Clear();
+		sel->Clear();
 
 	int is_bezier = mType != create_Forest && mType != create_Boundary;
 	int is_apt = mType <= create_Hole;
@@ -416,7 +416,7 @@ const char *	WED_CreatePolygonTool::GetStatusText(void)
 	if (GetHost(n) == NULL)
 	{
 		if (mType == create_Hole)
-			sprintf(buf,"You must select a polygon before you can insert a hole into it.  Facades cannot have interior holes.");
+			sprintf(buf,"Facades and Exclusion Poly's cannot have interior holes.");
 		else
 			sprintf(buf,"You must create an airport before you can add a %s.",kCreateCmds[mType]);
 		return buf;
@@ -435,12 +435,14 @@ WED_Thing *		WED_CreatePolygonTool::GetHost(int& idx)
 	if (mType == create_Hole)
 	{
 		ISelection * sel = WED_GetSelect(GetResolver());
-		if (sel->GetSelectionCount() != 1) return NULL;
+		if (sel->GetSelectionCount() != 1) 
+			return NULL;
 		WED_GISPolygon * igp = dynamic_cast<WED_GISPolygon *>(sel->GetNthSelection(0));
 		if(!igp)
 			return NULL;
-		// A few polygons do NOT get holes: facades, um...that's it for now.
-		if(igp->GetClass() == WED_FacadePlacement::sClass)
+		// A few polygons are not allowed to have holes:
+		if(igp->GetClass() == WED_FacadePlacement::sClass ||
+		   igp->GetClass() == WED_ExclusionPoly::sClass)
 			return NULL;
 		if(igp->GetClass() == WED_AutogenPlacement::sClass)
 		{
