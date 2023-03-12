@@ -104,6 +104,8 @@ enum dsf_import_category {
 	dsf_cat_draped_poly,
 	dsf_cat_roads,
 	dsf_cat_terrain,
+	dsf_cat_terrain_fx,
+	dsf_cat_pavement_fx,
 	dsf_cat_DIM
 };
 
@@ -118,7 +120,9 @@ static const char * k_dsf_cat_names[dsf_cat_DIM] = {
 	"Orthophotos",
 	"Draped Polygons",
 	"Roads",
-	"Terrain"
+	"Terrain",
+	"Terrain FX",
+	"Pavement FX"
 };
 
 //ToDo:mroe: partial DSF import implemented . By bound and category , checking the bounds for roadnets only yet
@@ -137,10 +141,29 @@ public:
 	int					req_level_agp[7];
 	int					req_level_fac[7];
 
-	vector<string>		obj_table;
-	vector<string>		obj_table_names;  // basename of items only
-	vector<string>		pol_table;
-	vector<string>		pol_table_names;  // basename of items only
+	struct	tbl_entry {
+		string				vpath;
+		string				name;
+		dsf_import_category	cat;
+
+		tbl_entry(const char * c) : vpath(c)
+		{
+			size_t pos = vpath.find_last_of('/');
+			if(pos == string::npos)
+				name = vpath;
+			else
+				name = c + pos + 1;
+
+			cat = dsf_cat_objects;
+			if(vpath.find("/terrain_FX/") != string::npos)
+				cat = dsf_cat_terrain_fx;
+			else if(vpath.find("/pavement_FX/") != string::npos)
+				cat = dsf_cat_pavement_fx;
+		};
+	};
+
+	vector<tbl_entry>	obj_table;
+	vector<tbl_entry>	pol_table;
 	vector<string>		net_table;
 
 	WED_Thing *			master_parent;
@@ -167,7 +190,7 @@ public:
 
 	bool isInBounds(const Segment2& in_seg)
 	{
-		for(auto b : cull_bounds )
+		for(const auto& b : cull_bounds )
 		{
 			if(b.contains(in_seg.p1) || b.contains(in_seg.p2)) return true;
 		}
@@ -176,7 +199,7 @@ public:
 
 	bool isInBounds(const Point2& in_pnt)
 	{
-		for(auto b : cull_bounds )
+		for(const auto& b : cull_bounds )
 		{
 			if(b.contains(in_pnt)) return true;
 		}
@@ -254,7 +277,7 @@ public:
 		Bbox2 b;
 		if(sscanf(ex,"%lf/%lf/%lf/%lf",&b.p1.x_, &b.p1.y_, &b.p2.x_, &b.p2.y_) == 4)
 		{
-			for(auto z : accum_exclusions)
+			for(const auto& z : accum_exclusions)
 			{
 				Bbox2 b_new;
 				z->GetMin()->GetLocation(gis_Geo, b_new.p1);
@@ -303,12 +326,6 @@ public:
 	{
 		DSF_Importer * me = (DSF_Importer *) inRef;
 		me->obj_table.push_back(inPartialPath);
-		size_t pos = me->obj_table.back().find_last_of('/');
-		if(pos == string::npos)
-			pos = 0;
-		else
-			pos += 1;
-		me->obj_table_names.push_back(inPartialPath+pos);
 		return 1;
 	}
 
@@ -316,14 +333,6 @@ public:
 	{
 		DSF_Importer * me = (DSF_Importer *) inRef;
 		me->pol_table.push_back(inPartialPath);
-
-		size_t pos = me->pol_table.back().find_last_of('/');
-		if(pos == string::npos)
-			pos = 0;
-		else
-			pos += 1;
-		me->pol_table_names.push_back(inPartialPath+pos);
-
 		return 1;
 	}
 
@@ -410,7 +419,7 @@ public:
 		if(me->dsf_cat_filter & dsf_filter_objects)
 		{
 			WED_ObjPlacement * obj = WED_ObjPlacement::CreateTyped(me->archive);
-			obj->SetResource(me->obj_table[inObjectType]);
+			obj->SetResource(me->obj_table[inObjectType].vpath);
 			obj->SetLocation(gis_Geo,Point2(inCoordinates[0],inCoordinates[1]));
 			if (inMode == obj_ModeDraped)
 				obj->SetDefaultMSL();
@@ -418,8 +427,9 @@ public:
 				obj->SetCustomMSL(inCoordinates[3], inMode == obj_ModeAGL);
 //			static_cast<WED_GISPoint_Heading*>(obj)->WED_GISPoint_Heading::SetHeading(inCoordinates[2]); // avoid loading .obj definition to check for fixed heading flag
 			obj->WED_GISPoint_Heading::SetHeading(inCoordinates[2]); // avoid loading .obj definition to check for fixed heading flag
-			obj->SetName(me->obj_table_names[inObjectType]);
-			obj->SetParent(me->get_cat_parent(dsf_cat_objects),me->get_cat_parent(dsf_cat_objects)->CountChildren());
+			obj->SetName(me->obj_table[inObjectType].name);
+			dsf_import_category cat = me->obj_table[inObjectType].cat;
+			obj->SetParent(me->get_cat_parent(cat),me->get_cat_parent(cat)->CountChildren());
 			obj->SetShowLevel(me->GetShowForObjID(inObjectType));
 		}
 #endif
@@ -598,7 +608,7 @@ public:
 					void *			inRef)
 	{
 		DSF_Importer * me = (DSF_Importer *) inRef;
-		string r  = me->pol_table[inPolygonType];
+		string r  = me->pol_table[inPolygonType].vpath;
 
 		me->poly = NULL;
 		me->ring = NULL;
@@ -665,7 +675,6 @@ public:
 			str->SetSpacing(inParam);
 			str->SetResource(r);
 			cat = dsf_cat_strings;
-
 		}
 #endif
 
@@ -706,23 +715,25 @@ public:
 			{
 				WED_PolygonPlacement * pol = WED_PolygonPlacement::CreateTyped(me->archive);
 				me->poly = pol;
-				pol->SetHeading(inParam);
+				pol->SetHeading( 1.0/128.0 * (int) (inParam / 360) + inParam % 360 );
 				pol->SetResource(r);
 				cat = dsf_cat_draped_poly;
 			}
 			me->ring = NULL;
 		}
 #endif
+		if(me->pol_table[inPolygonType].cat != dsf_cat_objects)
+			cat = me->pol_table[inPolygonType].cat;
 
 		if(me->poly)
 		{
 			me->poly->SetParent(me->get_cat_parent(cat),me->get_cat_parent(cat)->CountChildren());
-			me->poly->SetName(me->pol_table_names[inPolygonType]);
+			me->poly->SetName(me->pol_table[inPolygonType].name);
 		}
 		if(me->ring)
 		{
 			me->ring->SetParent(me->get_cat_parent(cat),me->get_cat_parent(cat)->CountChildren());
-			me->ring->SetName(me->pol_table_names[inPolygonType]);
+			me->ring->SetName(me->pol_table[inPolygonType].name);
 		}
 	}
 
@@ -1178,42 +1189,19 @@ int		WED_CanImportRoads(IResolver * resolver)
 	return 0;
 }
 
-void	WED_DoImportRoads(IResolver * resolver)
+void add_all_global_DSF(const Bbox2& bb, set<string>& matching_dsf)
 {
-	ISelection * sel = WED_GetSelect(resolver);
-	if(!sel->IterateSelectionAnd(Iterate_IsClass,(void*) WED_ExclusionZone::sClass)) return ;
-
-	vector<WED_Thing *> things;
-	sel->IterateSelectionOr(Iterate_CollectThings, &things);
-
-	vector<Bbox2> excl_bounds;
-	bool do_import_autogen = false;
-	for(auto t : things)
-	{
-		WED_ExclusionZone * excl = dynamic_cast<WED_ExclusionZone *>(t);
-		if(excl == nullptr) return;
-		set<int> excl_types;
-		excl->GetExclusions(excl_types);
-		if(excl_types.find(exclude_Net) == excl_types.end()) continue;
-		if(excl_types.find(exclude_Str) != excl_types.end()) do_import_autogen = true ;
-		Bbox2 b;
-		excl->GetBounds(gis_Geo,b);
-		excl_bounds.push_back(b);
-	}
-
-	int dsf_filters = do_import_autogen ? dsf_filter_roads|dsf_filter_autogen : dsf_filter_roads ;
-
-	set<string> matching_dsf;
 	pair<int, int> glob_scn = gPackageMgr->GlobalPackages();
 
-	for(auto bb : excl_bounds )
-	{
-		for(int lon = floor(bb.xmin()); lon < ceil(bb.xmax()); lon++)
-			for (int lat = floor(bb.ymin()); lat < ceil(bb.ymax()); lat++)
-				for (int pkg = glob_scn.first; pkg <= glob_scn.second; pkg++)
+	for (int lon = floor(bb.xmin()); lon < ceil(bb.xmax()); lon++)
+		for (int lat = floor(bb.ymin()); lat < ceil(bb.ymax()); lat++)
+			for (int pkg = glob_scn.first; pkg <= glob_scn.second; pkg++)
+			{
+				string path;
+				gPackageMgr->GetNthPackagePath(pkg, path);
+				string dirname(FILE_get_file_name(path));
+				if (dirname.find("Demo Area") != string::npos || dirname.find("Global Scenery") != string::npos)
 				{
-					string path;
-					gPackageMgr->GetNthPackagePath(pkg, path);
 					char buf[256];
 					snprintf(buf, sizeof(buf), "%s" DIR_STR "Earth nav data" DIR_STR "%+03d%+04d" DIR_STR "%+03d%+04d.dsf", path.c_str(),
 						lat > 0 ? (lat / 10) * 10 : ((-lat + 9) / 10) * -10, lon > 0 ? (lon / 10) * 10 : ((-lon + 9) / 10) * -10, lat, lon);
@@ -1223,7 +1211,37 @@ void	WED_DoImportRoads(IResolver * resolver)
 						break;
 					}
 				}
+			}
+}
+
+void	WED_DoImportRoads(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	if(!sel->IterateSelectionAnd(Iterate_IsClass,(void*) WED_ExclusionZone::sClass)) return ;
+
+	vector<WED_Thing *> things;
+	sel->IterateSelectionOr(Iterate_CollectThings, &things);
+
+	vector<Bbox2> excl_bounds;
+	int dsf_filters = 0;
+	for(auto t : things)
+	{
+		WED_ExclusionZone * excl = dynamic_cast<WED_ExclusionZone *>(t);
+		if(excl == nullptr) return;
+		set<int> excl_types;
+		excl->GetExclusions(excl_types);
+		if(excl_types.count(exclude_Net)) dsf_filters |= dsf_filter_roads;
+		if(excl_types.count(exclude_Obj)) dsf_filters |= dsf_filter_autogen;
+//		if(excl_types.count(exclude_For)) dsf_filters |= dsf_filter_forests;   // general polygon import does not (yet) support partial import
+		Bbox2 b;
+		excl->GetBounds(gis_Geo,b);
+		excl_bounds.push_back(b);
 	}
+
+	set<string> matching_dsf;
+
+	for (const auto& bb : excl_bounds)
+		add_all_global_DSF(bb, matching_dsf);
 
 	if(matching_dsf.size())
 	{

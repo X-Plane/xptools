@@ -245,16 +245,16 @@ void	CheckLib(const char * inDir)
 	}
 	for (map<string, string>::iterator i = lib.begin(); i != lib.end(); ++i)
 	{
-		XObj	foo;
+		XObj8	foo;
 		strcpy(buf, inDir);
 		strcat(buf, i->second.c_str());
 		for (char * p = buf; *p; ++p)
 			if (*p == ':') *p = '/';
 
-		if (!XObjRead(buf, foo)) {
+		if (!XObj8Read(buf, foo)) {
 			printf("Could not open %s\n", buf); return; }
 		float mins[3], maxs[3];
-		GetObjDimensions(foo, mins, maxs);
+		GetObjDimensions8(foo, mins, maxs);
 		width[i->second] = maxs[0] - mins[0];
 		depth[i->second] = maxs[2] - mins[2];
 		offx [i->second] = (maxs[0] + mins[0]) * 0.5;

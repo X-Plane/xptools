@@ -61,9 +61,8 @@ void			WED_GISChain::GetBounds		(GISLayer_t l, Bbox2&  bounds) const
 
 bool				WED_GISChain::IntersectsBox	(GISLayer_t l,const Bbox2&  bounds) const
 {
-	Bbox2	me;
-	GetBounds(l,me);
-	if (!bounds.overlap(me)) return false;
+	RebuildCache(CacheBuild(cache_Spatial));
+	if (!bounds.overlap(mCacheBounds)) return false;
 
 	#if BENTODO
 		this is not good enough
@@ -73,9 +72,8 @@ bool				WED_GISChain::IntersectsBox	(GISLayer_t l,const Bbox2&  bounds) const
 
 bool			WED_GISChain::WithinBox		(GISLayer_t l,const Bbox2&  bounds) const
 {
-	Bbox2	me;
-	GetBounds(l,me);
-	if (bounds.contains(me)) return true;
+	RebuildCache(CacheBuild(cache_Spatial));
+	if (bounds.contains(mCacheBounds)) return true;
 
 	int n = GetNumSides();
 	for (int i = 0; i < n; ++i)
@@ -107,8 +105,7 @@ bool			WED_GISChain::PtOnFrame		(GISLayer_t l,const Point2& p, double d	 ) const
 {
 	Bbox2	me;
 	GetBounds(l,me);
-	me.p1 -= Vector2(d,d);
-	me.p2 += Vector2(d,d);
+	me.expand(d,d);
 	if (!me.contains(p)) return false;
 
 	int c = GetNumSides();
@@ -127,9 +124,8 @@ bool			WED_GISChain::PtOnFrame		(GISLayer_t l,const Point2& p, double d	 ) const
 
 bool	WED_GISChain::Cull(const Bbox2& bounds) const
 {
-	Bbox2	me;
-	GetBounds(gis_Geo, me);
-	return bounds.overlap(me);
+	RebuildCache(CacheBuild(cache_Spatial));
+	return bounds.overlap(mCacheBounds);
 }
 
 

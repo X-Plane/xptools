@@ -115,6 +115,14 @@ SOURCES += ./src/Utils/ProgressUtils.cpp
 SOURCES += ./src/RawImport/ShapeIO.cpp
 SOURCES += ./src/DSF/tri_stripper_101/tri_stripper.cpp
 
+SOURCES += ./SDK/libtess2/Source/tess.c
+SOURCES += ./SDK/libtess2/Source/bucketalloc.c
+SOURCES += ./SDK/libtess2/Source/dict.c
+SOURCES += ./SDK/libtess2/Source/mesh.c
+SOURCES += ./SDK/libtess2/Source/priorityq.c
+SOURCES += ./SDK/libtess2/Source/sweep.c
+SOURCES += ./SDK/libtess2/Source/geom.c
+
 SOURCES += ./src/lzma19/C/7zArcIn.c
 SOURCES += ./src/lzma19/C/7zAlloc.c
 SOURCES += ./src/lzma19/C/7zBuf.c

@@ -161,8 +161,19 @@ int main(int argc, char * argv[])
 #else
 		struct utsname uts;
 		uname(&uts);
-		LOG_MSG("log.txt for WordEditor " WED_VERSION_STRING " ( %s %s )\n", uts.sysname, uts.release);
-		LOG_MSG(" compiled on " __DATE__ " " __TIME__ " with " __VERSION__ "\n");
+		LOG_MSG("log.txt for WordEditor " WED_VERSION_STRING " ( %s %s %s )\n", uts.sysname, uts.release, uts.machine);
+		LOG_MSG(" compiled on " __DATE__ " " __TIME__ " with "
+#if defined(__GNUC__) && !defined(__clang__)
+			"gcc "
+#endif
+			__VERSION__
+#if __x86_64__
+			" for x86_64\n");
+#elif __aarch64__
+			" for arm64\n");
+#else
+			"\n");
+#endif
 #endif
 		time_t now = time(0);
 		char * now_s = ctime(&now);

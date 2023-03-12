@@ -6,9 +6,9 @@ LIBPATHS += -L./libs/local$(MULTI_SUFFIX)/lib
 
 INCLUDEPATHS += -I./libs/local$(MULTI_SUFFIX)/include
 INCLUDEPATHS += -I./libs/local$(MULTI_SUFFIX)/include/freetype2
-INCLUDEPATHS += -I./src/lib_json/include
+INCLUDEPATHS += -I./SDK/lib_json/include
 INCLUDEPATHS += -I./src/lzma19/C
-INCLUDEPATHS += -I./src/libtess2/Include
+INCLUDEPATHS += -I./SDK/libtess2/Include
 INCLUDEPATHS += -I./src/WEDTCE
 INCLUDEPATHS += -I./src/DSF
 INCLUDEPATHS += -I./src/DSFTools
@@ -38,7 +38,6 @@ INCLUDEPATHS += -I./src/DSF/tri_stripper_101
 INCLUDEPATHS += -I./src/RawImport
 INCLUDEPATHS += -I./src/Tiger
 INCLUDEPATHS += -I./src/SDTS
-INCLUDEPATHS += -I./SDK/ac3d
 
 ifdef PLAT_LINUX
 INCLUDEPATHS += -I./src/linuxinit

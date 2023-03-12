@@ -66,8 +66,11 @@
 // #ifs out code that depends on the module.
 #define	CGAL_BETA_SIMPLIFIER 0
 
-// Road-grid editor - NOT even remotely done yet, leave this off, dude.
+// Road-grid editor - this if good for editing XP11 style road networks with vroads, only
 #define ROAD_EDITING 1
+
+// Ashow user menu setting for rowcode 105, i.e. extended runway properties. Enable only when XP is ready to read them.
+#define ROWCODE_105 0
 
 // mroe : -- really early stage of dev , do not change.
 #define WITHNWLINK 0
@@ -76,7 +79,10 @@
 // from the gateway.  You don't need this. Be aware that temp files after gateway import will NOT be removed if activated.
 #define GATEWAY_IMPORT_FEATURES 0
 
-// no validation upon export, but special heuristics for agp expansion before export. Only makes sense if GATEWAY_IMPORT_FEATURES is set.
+// no validation upon export, but special heuristics for agp expansion before export. Also seyt GATEWAY_IMPORT_FEATURES to
+// be able to get the gateway extracts INTO WED.
+// Any non-zero value will do - but 11 (eleven) will enable some "backwards compatibility" transformations and deletions
+// to make XP11 compatible Global Airports from a database that already includes xp12 art
 #define TYLER_MODE 0
 
 // After running ATC Runway Validation, show the hitboxes used for hot zone tests
@@ -92,8 +98,11 @@
 // This enables curved ATC taxiways - feature is NOT done yet or offical so, like, don't use it.
 #define HAS_CURVED_ATC_ROUTE 0
 
-// Load DDS textures directly into GPU w/o de- & re-compressing
+// Load BC1-BC5 textures in DDS format directly into GPU w/o de- & re-compressing
 #define LOAD_DDS_DIRECT 1
+
+// Load BC1-BC5 textures in KTX2 format directly into GPU
+#define LOAD_KTX2_DIRECT 1
 
 // This enables direct import of 7z compressed dsf's.
 #define USE_7Z 1
@@ -115,7 +124,7 @@
 
 // Set this to 1 to crank up the mesh to ludicrous speed...
 #define HD_MESH 0
-#define UHD_MESH 1
+#define UHD_MESH 0
 
 #if WANT_NED_MALLOC
 	#include "MemUtils.h"
@@ -249,7 +258,7 @@
 			};
 		#endif
 	#endif
-#elif LIN
+#else // both LIN and APL now do case desense
 	// This is to put an case-insensitive fopen in place, see in FileUtils.cpp
 	#ifdef __cplusplus
 		extern "C" FILE* x_fopen(const char * _Filename, const char * _Mode);
@@ -257,9 +266,10 @@
 		extern FILE* x_fopen(const char * _Filename, const char * _Mode);
 	#endif
 	#define fopen(_Filename,_Mode) x_fopen(_Filename, _Mode)
-#elif APL
+  #if APL
 	//no fopen magic of any kind needed
 	#define __ASSERTMACROS__
+  #endif
 #endif // OS specific file handling hacks
 
 /****************************************************************************************************************************************************************

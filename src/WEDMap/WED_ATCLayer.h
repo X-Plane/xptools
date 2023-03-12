@@ -20,7 +20,7 @@ public:
 						 WED_ATCLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver);
 	virtual				~WED_ATCLayer();
 
-	virtual	bool		DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected);
+	virtual	bool		DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, bool selected, bool locked);
 	virtual	void		GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks);
 
 	virtual	void		DrawVisualization(bool inCurrent, GUI_GraphState * g);              // for clearing rubberband data

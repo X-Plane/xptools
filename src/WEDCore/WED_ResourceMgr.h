@@ -75,8 +75,8 @@ struct	pol_info_t {
 
 struct fac_info_t : public REN_FacadeLOD_t {
 
-	fac_info_t() : idx_vbo(0), vert_vbo(0) { is_new = false ; is_ring = true; doubled = two_sided = false;  min_floors = 1; max_floors  = 999; has_roof = false;
-						noroofmesh = nowallmesh = false; }
+	fac_info_t() : idx_vbo(0), vert_vbo(0) { is_new = false ; is_ring = true; doubled = two_sided = false;  
+						min_floors = 1; max_floors  = 999; has_roof = false; noroofmesh = nowallmesh = false;  style_code = -1; }
 
 	bool			is_new;       // set if version 1000, aka type 2
 	string		wall_tex;
@@ -104,8 +104,20 @@ struct fac_info_t : public REN_FacadeLOD_t {
 	vector<string>	wallName;      // wall names, for property window etc
 	vector<string>	wallUse;       // official width range supported by this wall
 	string			h_range;       // official heights (or height range) of the facade
-	unsigned int	vert_vbo;
-	unsigned int	idx_vbo;
+
+	// jetway facade stuff
+	struct tunnel_t {
+		int idx;
+		string obj;
+		const XObj8 * o;
+		int size_code;
+	};
+	vector<tunnel_t>	tunnels;
+	int					cabin_idx;
+	int					style_code;
+
+	unsigned int		vert_vbo;
+	unsigned int		idx_vbo;
 };
 
 struct	lin_info_t {
@@ -121,6 +133,8 @@ struct	lin_info_t {
 	vector<caps>	start_caps, end_caps;
 	int			align;
 	bool		hasDecal;
+	string		group;
+	int			group_offset;
 	string		description;
 };
 
@@ -187,6 +201,7 @@ struct agp_t {
 		vector<float>	tile;	// the base tile in x,y,s,t quads.
 		vector<obj_t>	objs;
 		vector<fac_t>	facs;
+		vector<float>	cut_h, cut_v;
 		float			xyz_min[3];
 		float			xyz_max[3];
 		float 			anchor_x, anchor_y;
@@ -200,9 +215,37 @@ struct agp_t {
 	vector<tile_t>	tiles;
 	string			description;
 	bool			has_scp;
-	agp_t(void) : has_scp(false) { }
+	agp_t(void) : has_scp(false), hide_tiles(false){ }
 };
 
+struct for_info_t {
+	struct tree_t {
+		float s, t, w, h;    // origin, width & height on texture
+		float o;             // offset of tree center line (where the quads inersect)
+		float pct;           // relative occurence percentage for this tree
+		float hmin, hmax;    // height range for this tree in meters
+		int	quads;			 // number of quads the tree is constructed of
+		string mesh_3d;
+	};
+
+	const XObj8 *preview, *preview_3d;
+	string description;
+
+	bool has_3D;
+	map<int, vector<tree_t> > trees;
+	for_info_t(void) : preview(nullptr), preview_3d(nullptr) {}
+};
+
+class WED_JWFacades
+{
+	private:
+		unordered_map<string, string> mJWFacades;
+		bool	mInitialized;
+		void	load(WED_LibraryMgr* lmgr, WED_ResourceMgr* rmgr);
+	public:
+		WED_JWFacades(void) : mInitialized(false) {}
+		string	find(WED_LibraryMgr* lmgr, WED_ResourceMgr* rmgr, const string& tunnel_vpath);
+};
 
 class WED_ResourceMgr : public GUI_Broadcaster, public GUI_Listener, public virtual IBase {
 public:
@@ -212,14 +255,13 @@ public:
 
 			void	Purge(void);
 
-			bool	GetFac(const string& path, fac_info_t const *& info, int variant =0);
+			bool	GetFac(const string& vpath, fac_info_t const *& info, int variant =0);
 			bool	GetPol(const string& path, pol_info_t const *& info);
 			bool 	SetPolUV(const string& path, Bbox2 box);
 			bool	GetLin(const string& path, lin_info_t const *& info);
 			bool	GetStr(const string& path, str_info_t const *& info);
-			bool	GetFor(const string& path, XObj8 const *& obj);
-			int		GetNumVariants(const string& path);
-			bool	GetSimilar(const string& r, vector<pair<string, int> >& vpaths);
+			bool	GetFor(const string& path, for_info_t const *& info);
+			bool	GetAllInDir(const string& vdir, vector<pair<string, int> >& vpaths);
 
 			void	WritePol(const string& abspath, const pol_info_t& out_info); // side note: shouldn't this be in_info?
 			bool	GetObj(const string& path, XObj8 const *& obj, int variant = 0);
@@ -232,6 +274,7 @@ public:
 							intptr_t				inMsg,
 							intptr_t				inParam);
 
+			string	GetJetwayVpath(const string& tunnel_vpath);
 private:
 
 			XObj8 * LoadObj(const string& abspath);
@@ -241,13 +284,14 @@ private:
 	unordered_map<string,pol_info_t>		mPol;
 	unordered_map<string,lin_info_t>		mLin;
 	unordered_map<string,str_info_t>		mStr;
-	unordered_map<string,XObj8>				mFor;
+	unordered_map<string,for_info_t>		mFor;
 	unordered_map<string,vector<const XObj8 *> > mObj;
 	unordered_map<string,agp_t>				mAGP;
 #if ROAD_EDITING
 	unordered_map<string,road_info_t>		mRoad;
 #endif
 	WED_LibraryMgr *				mLibrary;
+	WED_JWFacades					mJetways;
 };
 
 #endif /* WED_ResourceMgr_H */

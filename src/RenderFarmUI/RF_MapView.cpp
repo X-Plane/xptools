@@ -91,16 +91,19 @@
 #define SHADE_TRIS 0
 
 // Print out each border layer on top of a tri stack under mouse
-#define DEBUG_PRINT_LAYERS 1
+#define DEBUG_PRINT_LAYERS 0
 
 // Print the normal for the tri under the mouse
-#define DEBUG_PRINT_NORMALS 1
+#define DEBUG_PRINT_NORMALS 0
 
 // Print height at all 3 corners of tri under mouse
-#define DEBUG_PRINT_CORNERS 1
+#define DEBUG_PRINT_CORNERS 0
 
 // Print water params of tri under mouse
 #define DEBUG_PRINT_WAVES 0
+
+// Print beach params
+#define DEBUG_PRINT_BEACH_INFO 1
 
 // Print input parameters used to pick LU rule for tri under mouse
 #define DEBUG_PRINT_TRI_PARAMS 0
@@ -133,7 +136,7 @@ static DEMViewInfo_t	kDEMs[] = {
 {		NO_VALUE,				"None"							,	0,							false,	false,	" "				},
 {		dem_Elevation,			"Elevation"						,	dem_Elevation,				false,	false,	"MSL=%fm "		},
 {		dem_Bathymetry,			"Bathymetry"					,	dem_Elevation,				false,	false,	"Bath=%fm "		},
-//{		dem_WaterSurface,		"Water Surface"					,	dem_Elevation,				false,	false,	"Water=%fm "	},
+{		dem_Water_Surface,		"Water Surface"					,	dem_Elevation,				false,	false,	"Water=%fm "	},
 {		dem_ElevationOverlay,	"Elevation Overlay"				,	dem_Elevation,				false,	false,	"MSL=%fm "		},
 //{		dem_OrigLandUse,		"Land Use (Old)"				,	dem_Enum,					false,	true,	"Old LU=%s "	},
 {		dem_LandUse,			"Land Use"						,	dem_Enum,					false,	true,	"LU=%s "		},
@@ -149,6 +152,15 @@ static DEMViewInfo_t	kDEMs[] = {
 {		dem_TemperatureSeaLevel,"Sea Level Temperature"			,	dem_TemperatureSeaLevel,	true,	false,	"SL Temp=%fC "	},
 {		dem_TemperatureRange,	"Temperature Range"				,	dem_TemperatureRange,		true,	false,	"TempR=%fC "	},
 {		dem_UrbanDensity,		"Urban Density"					,	dem_UrbanDensity,			true,	false,	"Density=%f "	},
+{		dem_SpringStart,		"Spring Start"					,	dem_Strata,			true,	false,	"Spring Start=%.0f/183"	},
+{		dem_SpringEnd,		"Spring End"					,	dem_Strata,			true,	false,	"Spring End=%.0f/183"	},
+{		dem_SummerStart,		"Summer Start"					,	dem_Strata,			true,	false,	"Summer Start=%.0f/183"	},
+{		dem_SummerEnd,		"Summer End"					,	dem_Strata,			true,	false,	"Summer End=%.0f/183"	},
+{		dem_FallStart,		"Fall Start"					,	dem_Strata,			true,	false,	"Fall Start=%.0f/183"	},
+{		dem_FallEnd,		"Fall End"					,	dem_Strata,			true,	false,	"Fall End=%.0f/183"	},
+{		dem_WinterStart,		"Winter Start"					,	dem_Strata,			true,	false,	"Winter Start=%.0f/183"	},
+{		dem_WinterEnd,		"Winter End"					,	dem_Strata,			true,	false,	"Winter End=%.0f/183"	},
+{		dem_Soundscape,		"Soundscape"					,	dem_Strata,			true,	false,	"Soundscape=%.0f"	},
 //{		dem_UrbanPropertyValue,	"Property Values"				,	dem_UrbanPropertyValue,		true,	false,	"$$=%f "		},
 {		dem_UrbanRadial,		"Urban Radial"					,	dem_UrbanRadial,			true,	false,	"Urban Rad=%f "	},
 {		dem_UrbanTransport,		"Urban Transport"				,	dem_UrbanTransport,			true,	false,	"Urban Trns=%f "},
@@ -165,7 +177,7 @@ static DEMViewInfo_t	kDEMs[] = {
 {		dem_NormalY,			"Normals: Y"					,	dem_Strata,					false, false,	"dy=%f "		},
 {		dem_NormalZ,			"Normals: Z"					,	dem_Strata,					false, false,	"dz=%f "		},
 
-{		dem_Wizard,				"Spreadsheet Wizard"			,	dem_Strata,					false,	false,	"%fm "			},
+{		dem_Wizard,				"Spreadsheet Wizard"			,	dem_Elevation,				false,	false,	"%fm "			},
 
 {		dem_Wizard1,			"Spreadsheet Wizard 1"			,	dem_Strata,					false,	false,	"%fm "			},
 {		dem_Wizard2,			"Spreadsheet Wizard 2"			,	dem_Strata,					false,	false,	"%fm "			},
@@ -194,6 +206,7 @@ GUI_MenuItem_t	kViewItems[] = {
 {	"Show Extent",							'E',			gui_ControlFlag,						0,	viewCmd_ShowExtent		},
 {	"Show Shading on Raster Layer",			'S',			gui_ControlFlag,						0,	viewCmd_ShowShading		},
 {	"Shade Map Faces With Superblock Color",'S',			gui_ControlFlag + gui_ShiftFlag,		0,	viewCmd_ShowSuper		},
+{	"Show Mesh Elevation",				0,				0,										0,	viewCmd_ShowMeshHeight},
 {	"-",									0,				0,										0,	0						},
 {	"Recalculate Raster Data Preview",		'R',			gui_ControlFlag,						0,	viewCmd_RecalcDEM		},
 {	"Previous Raster",						GUI_KEY_UP,		gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_PrevDEM			},
@@ -236,10 +249,13 @@ void	RF_MapView::MakeMenus(void)
 
 	gApplication->CreateMenu("DEM Choice", &*dem_menus.begin(),view_menu, 0);
 
-	for(int n = 0; n < DEMChoiceCount; ++n)
-		dem_menus[n].cmd = viewCmd_DEMDataChoice_Start + n;
-
-	gApplication->CreateMenu("DEM Data Choice", &*dem_menus.begin(),view_menu, 2);
+	for(int n = 1; n < DEMChoiceCount; ++n)
+	{
+		dem_menus[n].cmd = viewCmd_DEMDataChoice_Start + n - 1;
+		dem_menus[n].key = 0;
+		dem_menus[n].flags = 0;
+	}
+	gApplication->CreateMenu("DEM Data Choice", &*dem_menus.begin()+1,view_menu, 2);
 
 }
 
@@ -256,6 +272,7 @@ int			sShowAirports =1;
 int			sShowShading = 1;
 int			sShowGrids = 0;
 int			sShowTensors = 1;
+bool		sShowMeshHeight = false;
 float		sShadingAzi = 315;
 float		sShadingDecl = 45;
 
@@ -295,6 +312,11 @@ int		RF_MapView::CanHandleCommand(int command, string& ioName, int& ioCheck)
 	case viewCmd_MeshLines:		ioCheck = sShowMeshLines;		return 1;
 	case viewCmd_MeshTrisHi:	ioCheck = sShowMeshTrisHi;		return 1;
 	case viewCmd_MeshTerrains:	ioCheck = sShowMeshAlphas;		return 1;
+	case editCmd_SelectVertex:	ioCheck = (gSelectionMode == rf_Select_Vertex);			return 1;
+	case editCmd_SelectEdge:	ioCheck = (gSelectionMode == rf_Select_Edge);			return 1;
+	case editCmd_SelectFace:	ioCheck = (gSelectionMode == rf_Select_Face);			return 1;
+	case editCmd_SelectPoints:	ioCheck = (gSelectionMode == rf_Select_PointFeatures);	return 1;
+	case viewCmd_ShowMeshHeight:ioCheck = sShowMeshHeight;		return 1;
 	}
 
 	if(command >= viewCmd_DEMChoice_Start && command < viewCmd_DEMChoice_Stop)
@@ -307,8 +329,8 @@ int		RF_MapView::CanHandleCommand(int command, string& ioName, int& ioCheck)
 	if(command >= viewCmd_DEMDataChoice_Start && command < viewCmd_DEMDataChoice_Stop)
 	{
 		int n = command - viewCmd_DEMDataChoice_Start;
-		ioCheck =sShowDEMData[n-1];
-		return gDem.find(kDEMs[n].dem) != gDem.end();
+		ioCheck =sShowDEMData[n];
+		return gDem.find(kDEMs[n+1].dem) != gDem.end();
 	}
 	return 0;
 }
@@ -318,6 +340,7 @@ int		RF_MapView::CanHandleCommand(int command, string& ioName, int& ioCheck)
 int		RF_MapView::HandleCommand(int command)
 {
 	if(command >= specCmd_Screenshot && command <= specCmd_CheckEnums) { HandleSpecialCommand(command); return 1; }
+	if(command >= editCmd_SelectVertex && command <= editCmd_SelectPoints) { HandleSpecialCommand(command); return 1; }
 
 	if(command >= viewCmd_DEMChoice_Start && command < viewCmd_DEMChoice_Stop)
 	{
@@ -330,7 +353,7 @@ int		RF_MapView::HandleCommand(int command)
 	if(command >= viewCmd_DEMDataChoice_Start && command < viewCmd_DEMDataChoice_Stop)
 	{
 		int n = command - viewCmd_DEMDataChoice_Start;
-		sShowDEMData[n-1] = 1 - sShowDEMData[n-1];
+		sShowDEMData[n] = 1 - sShowDEMData[n];
 		return 1;
 	}
 	int i;
@@ -363,6 +386,7 @@ int		RF_MapView::HandleCommand(int command)
 	case viewCmd_Airports:		sShowAirports = !sShowAirports;		return 1;
 	case viewCmd_ShowShading:	sShowShading = !sShowShading;		return 1;
 	case viewCmd_ShowSuper:		g_color_face_use_supr_tint = !g_color_face_use_supr_tint;		mNeedRecalcMapMeta = 1;	return 1;
+	case viewCmd_ShowMeshHeight: sShowMeshHeight = !sShowMeshHeight; mNeedRecalcMeshHiAlpha = true; return 1;
 
 	case viewCmd_ColorMapTerr:
 	case viewCmd_ColorMapZone:
@@ -689,6 +713,19 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 		{
 			RF_ProgressFunc(0, 1, "Updating graphics for terrain mesh colored preview...", 0.0);
 
+			double height_min = std::numeric_limits<double>::max();
+			double height_max = std::numeric_limits<double>::lowest();
+			if (sShowMeshHeight)
+			for (CDT::Finite_faces_iterator fit = gTriangulationHi.finite_faces_begin(); fit != gTriangulationHi.finite_faces_end(); ++fit)
+			{
+				for (int i = 0; i < 3; ++i)
+				{
+					height_min = std::min(height_min, fit->vertex(i)->info().height);
+					height_max = std::max(height_max, fit->vertex(i)->info().height);
+				}
+			}
+			double height_range = height_max - height_min;
+
 			if (mDLMeshFill != 0)	glDeleteLists(mDLMeshFill, MESH_BUCKET_SIZE * MESH_BUCKET_SIZE + 1);
 			mDLMeshFill = glGenLists(MESH_BUCKET_SIZE * MESH_BUCKET_SIZE + 1);
 
@@ -724,7 +761,6 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 							col[2] *= TRI_DARKEN;
 							col[3] = 1.0;
 						} else {
-
 							RGBColor_t&	rgbc = gEnumColors[fit->info().terrain];
 							col[0] = rgbc.rgb[0];
 							col[1] = rgbc.rgb[1];
@@ -753,13 +789,45 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 							col[2] *= scale;
 						}
 						#endif
-						
 
-						glColor4fv(col);					glVertex2f(CGAL::to_double(p1.x()), CGAL::to_double(p1.y()));
-						glColor4fv(col);					glVertex2f(CGAL::to_double(p2.x()), CGAL::to_double(p2.y()));
-						glColor4fv(col);					glVertex2f(CGAL::to_double(p3.x()), CGAL::to_double(p3.y()));
+						float col_tri[3][4];
+						if (sShowMeshHeight)
+						{
+							col_tri[0][0] =
+							col_tri[0][1] =
+							col_tri[0][2] = (a->info().height - height_min) / height_range;
+							col_tri[0][3] = 1.0;
+
+							col_tri[1][0] =
+							col_tri[1][1] =
+							col_tri[1][2] = (b->info().height - height_min) / height_range;
+							col_tri[1][3] = 1.0;
+
+							col_tri[2][0] =
+							col_tri[2][1] =
+							col_tri[2][2] = (c->info().height - height_min) / height_range;
+							col_tri[2][3] = 1.0;
+						}
+						else
+						{
+							for (int i = 0; i < 3; ++i)
+							{
+								col_tri[i][0] = col[0];
+								col_tri[i][1] = col[1];
+								col_tri[i][2] = col[2];
+								col_tri[i][3] = col[3];
+									
+								if (fit->info().terrain == terrain_Water)
+									col_tri[i][2] *= (0.5 + 0.5 * fit->vertex(2-i)->info().wave_height);
+							}
+						}
+
+						glColor4fv(col_tri[0]);				glVertex2f(CGAL::to_double(p1.x()), CGAL::to_double(p1.y()));
+						glColor4fv(col_tri[1]);				glVertex2f(CGAL::to_double(p2.x()), CGAL::to_double(p2.y()));
+						glColor4fv(col_tri[2]);				glVertex2f(CGAL::to_double(p3.x()), CGAL::to_double(p3.y()));
 
 #if DRAW_MESH_BORDERS
+						if (!sShowMeshHeight)
 						for (set<int>::iterator i = fit->info().terrain_border.begin(); i != fit->info().terrain_border.end(); ++i)
 						{
 							GetNaturalTerrainColor(*i, col);
@@ -1064,6 +1132,66 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 		{
 			glCallList(mDLMeshLine + n);
 		}
+		
+		{
+
+			CDT::Face_handle	recent;
+			int	x, y;
+			GetMouseLocNow(&x, &y);
+			double	lat, lon;
+			lat = mZoomer->YPixelToLat(y);
+			lon = mZoomer->XPixelToLon(x);
+
+			static int hint_id = CDT::gen_cache_key();
+			int i;
+			CDT::Locate_type lt;
+			CDT::Point mouse = CDT::Point(lon,lat);
+			recent = gTriangulationHi.locate_cache(mouse, lt, i, hint_id);
+			if (lt == CDT::FACE)
+			{
+				Triangle2 tri(
+						cgal2ben(recent->vertex(0)->point()),
+						cgal2ben(recent->vertex(1)->point()),
+						cgal2ben(recent->vertex(2)->point()));
+						
+				double v0,v1,v2;
+				tri.bathymetric_interp(cgal2ben(mouse),v0,v1,v2);
+				int near_side = 0;
+				if(v1 < v2)
+				{
+					if(v1 < v0)
+						near_side = 1;
+				}
+				else
+				{
+					if(v2 < v0)
+						near_side = 2;
+				}
+				
+				glLineWidth(2);
+				glColor3f(1,1,1);
+				glBegin(GL_LINES);
+				switch(near_side) {
+				case 0:
+					glVertex2d(tri.p2.x(),tri.p2.y());
+					glVertex2d(tri.p3.x(),tri.p3.y());
+					break;
+				case 1:
+					glVertex2d(tri.p1.x(),tri.p1.y());
+					glVertex2d(tri.p3.x(),tri.p3.y());
+					break;
+				case 2:
+					glVertex2d(tri.p1.x(),tri.p1.y());
+					glVertex2d(tri.p2.x(),tri.p2.y());
+					break;
+				}
+				glEnd();
+				
+			}
+		}
+
+		
+		
 	}
 
 
@@ -1297,7 +1425,7 @@ put in  color enums?
 				FontDrawDarkBox(state, font_UI_Basic, white, l + 5, k, 9999, buf);
 				k -= (h+1);
 			}
-			else if (sShowDEMData[n-1] || n == sDEMType)
+			else if ((n > 0 && sShowDEMData[n-1]) || n == sDEMType)		// N INCLUDES 0 = none so deal with off-by-one in sShowDEMData.
 			{
 				if (gDem.count(	kDEMs[n].dem ))
 				{
@@ -1354,7 +1482,14 @@ put in  color enums?
 				k -= (h+1);
 
 			}
-			
+
+			if (f->data().mHasElevation)
+			{
+				sprintf(buf,"%s","Z");
+				FontDrawDarkBox(state, font_UI_Basic, white, l+5,k,9999, buf);
+				k -= (h+1);
+			}
+
 			vector<string>	poly_list;
 
 			for(GISObjPlacementVector::iterator i = f->data().mObjs.begin(); i != f->data().mObjs.end(); ++i)
@@ -1539,7 +1674,7 @@ void	RF_MapView::HandleNotification(int catagory, int message, void * param)
 								(full.p1.y()),
 								(full.p2.x()),
 								(full.p2.y()));
-					mZoomer->SetAspectRatio(1.0 / cos((CGAL::to_double(full.p1.y()) + CGAL::to_double(full.p2.y())) * 0.5 * PI / 180.0));
+					mZoomer->SetAspectRatio(1.0 / cos((CGAL::to_double(full.p1.y()) + CGAL::to_double(full.p2.y())) * 0.5 * M_PI / 180.0));
 				} else {
 					int e = gDem.begin()->first;
 					mZoomer->SetMapLogicalBounds(
@@ -1547,7 +1682,7 @@ void	RF_MapView::HandleNotification(int catagory, int message, void * param)
 								gDem[e].mSouth,
 								gDem[e].mEast,
 								gDem[e].mNorth);
-					mZoomer->SetAspectRatio(1.0 / cos((gDem[e].mSouth + gDem[e].mNorth) * 0.5 * PI / 180.0));
+					mZoomer->SetAspectRatio(1.0 / cos((gDem[e].mSouth + gDem[e].mNorth) * 0.5 * M_PI / 180.0));
 					full = Bbox2(gDem[e].mWest, gDem[e].mSouth, gDem[e].mEast, gDem[e].mNorth);
 				}
 				if(sZoomLoad)
@@ -1642,7 +1777,7 @@ bool	RF_MapView::RecalcDEM(bool do_relief)
 		mDEMBounds[2] = master->x_to_lon_double((double) master->mWidth - 0.5);
 		mDEMBounds[3] = master->y_to_lat_double((double) master->mHeight - 0.5);
 
-		if (LoadTextureFromImage(image, mTexID, tex_Mipmap + (nearest ? 0 : tex_Linear), NULL, NULL, &mTexS, &mTexT))
+		if (LoadTextureFromImage(image, mTexID, /*tex_Mipmap +*/ (nearest ? 0 : tex_Linear), NULL, NULL, &mTexS, &mTexT))
 		{
 			mHasTex = true;
 		}
@@ -1652,7 +1787,7 @@ bool	RF_MapView::RecalcDEM(bool do_relief)
 		{
 			if (DEMToBitmap(*master, image, dem_Normals) == 0)
 			{
-				if (LoadTextureFromImage(image, mReliefID, tex_Mipmap + (tex_Linear), NULL, NULL, &mReliefS, &mReliefT))
+				if (LoadTextureFromImage(image, mReliefID, /*tex_Mipmap + */(tex_Linear), NULL, NULL, &mReliefS, &mReliefT))
 				{
 					mHasRelief = true;
 				}
@@ -1717,9 +1852,49 @@ char * RF_MapView::MonitorCaption(void)
 	static int hint_id = CDT::gen_cache_key();
 	int i;
 	CDT::Locate_type lt;
-	recent = gTriangulationHi.locate_cache(CDT::Point(lon,lat), lt, i, hint_id);
+	CDT::Point mouse = CDT::Point(lon,lat);
+	recent = gTriangulationHi.locate_cache(mouse, lt, i, hint_id);
 	if (lt == CDT::FACE)
 	{
+		Triangle2 tri(
+				cgal2ben(recent->vertex(0)->point()),
+				cgal2ben(recent->vertex(1)->point()),
+				cgal2ben(recent->vertex(2)->point()));
+				
+		double v0,v1,v2;
+		tri.bathymetric_interp(cgal2ben(mouse),v0,v1,v2);
+		int near_side = 0;
+		if(v1 < v2)
+		{
+			if(v1 < v0)
+				near_side = 1;
+		}
+		else
+		{
+			if(v2 < v0)
+				near_side = 2;
+		}
+		
+#if DEBUG_PRINT_BEACH_INFO
+		if(recent->info().terrain == terrain_Water &&
+			recent->neighbor(near_side)->info().terrain != terrain_Water)
+		{
+			n += sprintf(buf+n, "apt=%d landuse=%s slope=%.1f wave=%.1f prev_ang=%.0f next_ang=%.0f lat=%.0f len=%.0f area=%.0f open=%.1f bch=%d/%d",
+				recent->info().bch.apt[near_side],
+				FetchTokenString(recent->info().bch.landuse[near_side]),
+				acosf(recent->info().bch.slope[near_side]) * RAD_TO_DEG,
+				recent->info().bch.wave[near_side],
+				acosf(recent->info().bch.prev_ang[near_side]) * RAD_TO_DEG,
+				acosf(recent->info().bch.next_ang[near_side]) * RAD_TO_DEG,
+				recent->info().bch.lat[near_side],
+				recent->info().bch.len[near_side],
+				recent->info().bch.area[near_side] / 1000000.0f,
+				recent->info().bch.open[near_side],
+				recent->info().bch.choice[near_side],
+				recent->info().bch.final[near_side]);
+		}
+#endif
+	
 		int ts = recent->info().terrain;
 		n += sprintf(buf+n, "Tri:%s ", FetchTokenString(ts));
 
@@ -1765,7 +1940,7 @@ char * RF_MapView::MonitorCaption(void)
 #endif
 
 #if DEBUG_PRINT_WAVES
-	n += sprintf(buf+n,"Wave:%0.f,%0.f,%0.f ",
+	n += sprintf(buf+n,"Wave:%0.1f,%0.1f,%0.1f ",
 						recent->vertex(0)->info().wave_height,
 						recent->vertex(1)->info().wave_height,
 						recent->vertex(2)->info().wave_height);

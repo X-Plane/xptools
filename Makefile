@@ -1,16 +1,12 @@
 PLATFORM	:= $(shell uname)
 
 ifneq (, $(findstring MINGW, $(PLATFORM)))
-TARGETS :=	WED MeshTool ObjView DSFTool DDSTool ObjConverter \
-		ac3d XGrinder
+TARGETS :=	WED MeshTool ObjView DSFTool DDSTool XGrinder
 else
-TARGETS :=	WED MeshTool ObjView DSFTool DDSTool ObjConverter RenderFarm \
-		ac3d XGrinder RenderFarmUI
+TARGETS :=	WED MeshTool ObjView DSFTool DDSTool RenderFarm XGrinder RenderFarmUI
 endif
 
-.PHONY: $(TARGETS) all clean distclean libs release linkclean release-test \
-srpm-head
-
+.PHONY: $(TARGETS) all clean libs release release-test
 all: $(TARGETS)
 
 debug:
@@ -34,23 +30,8 @@ libs:
 clean:
 	@$(MAKE) -s -f ./makerules/global/toplevel.mk clean
 
-linkclean:
-	@$(MAKE) -s -f ./makerules/global/toplevel.mk TARGET=$(target) linkclean
-
-distclean: clean
-	@$(MAKE) -s -C "./libs" clean
-
-srpm-head:
-	git archive --format=tar --prefix=xptools/ HEAD^{tree} | bzip2 > xptools.tar.bz2
-	rpmbuild -ts xptools.tar.bz2
-	rm -rf xptools.tar.bz2
-
-ifndef rpmbuild
-#$(TARGETS): libs
 $(TARGETS):
-else
-$(TARGETS):
-endif
 	@export LD_RUN_PATH='$${ORIGIN}/slib' && \
 	$(MAKE) -s -f ./makerules/global/toplevel.mk TARGET=$(@) all
 
+:

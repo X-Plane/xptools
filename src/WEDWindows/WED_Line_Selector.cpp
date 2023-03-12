@@ -224,6 +224,9 @@ bool WED_Line_Selector::SetData(const GUI_CellContent& c)
 	bool found(false);
 	for(auto s : c.int_set_val)
 	{
+		if (s == -1)
+			found = true;
+		else
 		for(int i = 0; i < mRows; ++i)
 			for(int j = 0; j < mCols; ++j)
 			{

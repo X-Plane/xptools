@@ -62,4 +62,3 @@ SOURCES += ./src/GUI/GUI_Unicode.cpp
 SOURCES += ./src/Utils/unzip.c
 SOURCES += ./src/XPTools/XGrinderShell.cpp
 
-

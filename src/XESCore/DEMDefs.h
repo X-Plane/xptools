@@ -175,6 +175,10 @@ struct	DEMGeo {
 	neighbor_iterator<__dim> neighbor_begin(address a);
 	template<int __dim>
 	neighbor_iterator<__dim> neighbor_end(address a);
+	
+	// Get 8 neighbors including diagonal -returns number of actual neighbors, clamping to DEM edge
+	inline int		get_neighbors8(address where, address neighbors[8]) const;
+	inline int		get_neighbors4(address where, address neighbors[4]) const;
 
 	bool			valid(address a) const;
 	bool			valid(iterator i) const;
@@ -1420,6 +1424,63 @@ template<int __dim>
 inline DEMGeo::neighbor_iterator<__dim> DEMGeo::neighbor_end(address i)
 {
 	return DEMGeo::neighbor_iterator<__dim>();
+}
+
+	// Get 8 neighbors including diagonal -returns number of actual neighbors, clamping to DEM edge
+inline int	DEMGeo::get_neighbors8(address where, address neighbors[8]) const
+{
+	coordinates p = to_coordinates(where);
+	int r = 0;
+
+	int last_x = mWidth-1;
+	int last_y = mHeight-1;
+
+	if(p.first > 0 && p.second > 0)
+		neighbors[r++] = to_address(coordinates(p.first - 1, p.second - 1));
+	if(p.second > 0)
+		neighbors[r++] = to_address(coordinates(p.first, p.second - 1));
+	if(p.first < last_x && p.second > 0)
+		neighbors[r++] = to_address(coordinates(p.first + 1, p.second - 1));
+
+
+	if(p.first > 0)
+		neighbors[r++] = to_address(coordinates(p.first - 1, p.second));
+	if(p.first < last_x)
+		neighbors[r++] = to_address(coordinates(p.first + 1, p.second));
+
+
+	if(p.first > 0 && p.second < last_y)
+		neighbors[r++] = to_address(coordinates(p.first - 1, p.second + 1));
+	if(p.second < last_y)
+		neighbors[r++] = to_address(coordinates(p.first, p.second + 1));
+	if(p.first < last_x && p.second < last_y)
+		neighbors[r++] = to_address(coordinates(p.first + 1, p.second + 1));
+
+	return r;
+}
+
+
+inline int	DEMGeo::get_neighbors4(address where, address neighbors[4]) const
+{
+	coordinates p = to_coordinates(where);
+	int r = 0;
+
+	int last_x = mWidth-1;
+	int last_y = mHeight-1;
+
+	if(p.second > 0)
+		neighbors[r++] = to_address(coordinates(p.first, p.second - 1));
+
+	if(p.first > 0)
+		neighbors[r++] = to_address(coordinates(p.first - 1, p.second));
+
+	if(p.first < last_x)
+		neighbors[r++] = to_address(coordinates(p.first + 1, p.second));
+
+	if(p.second < last_y)
+		neighbors[r++] = to_address(coordinates(p.first, p.second + 1));
+
+	return r;
 }
 
 

@@ -684,13 +684,13 @@
     <ClCompile Include="..\..\src\WEDImportExport\WED_SceneryPackExport.cpp">
       <Filter>WEDImportExport</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lib_json\src\lib_json\json_reader.cpp">
+    <ClCompile Include="..\..\SDK\lib_json\src\lib_json\json_reader.cpp">
       <Filter>lib_json</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lib_json\src\lib_json\json_value.cpp">
+    <ClCompile Include="..\..\SDK\lib_json\src\lib_json\json_value.cpp">
       <Filter>lib_json</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lib_json\src\lib_json\json_writer.cpp">
+    <ClCompile Include="..\..\SDK\lib_json\src\lib_json\json_writer.cpp">
       <Filter>lib_json</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\WEDCore\WED_Sign_Parser.cpp">
@@ -774,9 +774,6 @@
     <ClCompile Include="..\..\src\WEDMap\WED_SlippyMap.cpp">
       <Filter>WEDMap</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Obj\ObjConvert.cpp">
-      <Filter>Obj</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Utils\glew.c">
       <Filter>Utils</Filter>
     </ClCompile>
@@ -840,25 +837,25 @@
     <ClCompile Include="..\..\src\lzma19\C\LzmaDec.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtess2\Source\bucketalloc.c">
+    <ClCompile Include="..\..\SDK\libtess2\Source\bucketalloc.c">
       <Filter>libtess2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtess2\Source\dict.c">
+    <ClCompile Include="..\..\SDK\libtess2\Source\dict.c">
       <Filter>libtess2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtess2\Source\geom.c">
+    <ClCompile Include="..\..\SDK\libtess2\Source\geom.c">
       <Filter>libtess2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtess2\Source\mesh.c">
+    <ClCompile Include="..\..\SDK\libtess2\Source\mesh.c">
       <Filter>libtess2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtess2\Source\priorityq.c">
+    <ClCompile Include="..\..\SDK\libtess2\Source\priorityq.c">
       <Filter>libtess2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtess2\Source\sweep.c">
+    <ClCompile Include="..\..\SDK\libtess2\Source\sweep.c">
       <Filter>libtess2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtess2\Source\tess.c">
+    <ClCompile Include="..\..\SDK\libtess2\Source\tess.c">
       <Filter>libtess2</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\WEDEntities\WED_AutogenNode.cpp">
@@ -877,6 +874,12 @@
       <Filter>WEDMap</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\WEDWindows\WED_Road_Selector.cpp">
+      <Filter>WEDWindows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\WEDMap\WED_TerrainLayer.cpp">
+      <Filter>WEDMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\WEDWindows\WED_ConvertCommands.cpp">
       <Filter>WEDWindows</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1628,9 +1631,6 @@
     <ClInclude Include="..\..\src\WEDMap\WED_SlippyMap.h">
       <Filter>WEDMap</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Obj\ObjConvert.h">
-      <Filter>Obj</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\Utils\glew.h">
       <Filter>Utils</Filter>
     </ClInclude>
@@ -1682,28 +1682,28 @@
     <ClInclude Include="..\..\src\lzma19\C\LzmaDec.h">
       <Filter>lzma19</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtess2\Source\bucketalloc.h">
+    <ClInclude Include="..\..\SDK\libtess2\Source\bucketalloc.h">
       <Filter>libtess2</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Utils\CmdLine.h">
       <Filter>libtess2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtess2\Source\dict.h">
+    <ClInclude Include="..\..\SDK\libtess2\Source\dict.h">
       <Filter>libtess2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtess2\Source\geom.h">
+    <ClInclude Include="..\..\SDK\libtess2\Source\geom.h">
       <Filter>libtess2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtess2\Source\mesh.h">
+    <ClInclude Include="..\..\SDK\libtess2\Source\mesh.h">
       <Filter>libtess2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtess2\Source\priorityq.h">
+    <ClInclude Include="..\..\SDK\libtess2\Source\priorityq.h">
       <Filter>libtess2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtess2\Source\sweep.h">
+    <ClInclude Include="..\..\SDK\libtess2\Source\sweep.h">
       <Filter>libtess2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtess2\Source\tess.h">
+    <ClInclude Include="..\..\SDK\libtess2\Source\tess.h">
       <Filter>libtess2</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Utils\BitmapUtils.h">
@@ -1728,6 +1728,12 @@
       <Filter>WEDMap</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDWindows\WED_Road_Selector.h">
+      <Filter>WEDWindows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDMap\WED_TerrainLayer.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDWindows\WED_ConvertCommands.h">
       <Filter>WEDWindows</Filter>
     </ClInclude>
   </ItemGroup>
@@ -1800,6 +1806,15 @@
     </Image>
     <Image Include="..\..\src\WEDResources\tilt_tool.png">
       <Filter>WEDResources</Filter>
+    </Image>
+    <Image Include="..\..\src\WEDResources\tables\regions.png">
+      <Filter>WEDResources\table</Filter>
+    </Image>
+    <Image Include="..\..\src\WEDResources\tables\seasons.png">
+      <Filter>WEDResources\table</Filter>
+    </Image>
+    <Image Include="..\..\src\WEDResources\tables\variants.png">
+      <Filter>WEDResources\table</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>

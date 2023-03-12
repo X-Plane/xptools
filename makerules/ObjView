@@ -32,7 +32,6 @@ ifdef PLAT_DARWIN
 LDFLAGS		+= -framework Carbon -framework OpenGL -framework AppKit
 endif #PLAT_DARWIN
 
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
@@ -64,21 +63,32 @@ SOURCES += ./src/UI/XWinGL.mac.cpp
 SOURCES += ./src/UI/ObjCUtils.cpp
 endif #PLAT_DARWIN
 
-SOURCES += ./src/Obj/ObjPointPool.cpp
 SOURCES += ./src/Obj/XObjDefs.cpp
 SOURCES += ./src/Obj/XObjReadWrite.cpp
 SOURCES += ./src/Obj/ObjDraw.cpp
+SOURCES += ./src/Obj/ObjPointPool.cpp
 SOURCES += ./src/ObjEdit/OE_Zoomer3d.cpp
 SOURCES += ./src/Utils/ObjUtils.cpp
+SOURCES += ./src/Utils/AssertUtils.cpp
 SOURCES += ./src/Utils/BitmapUtils.cpp
+SOURCES += ./src/Utils/EndianUtils.c
 SOURCES += ./src/Utils/FileUtils.cpp
-SOURCES += ./src/Utils/zip.c
-SOURCES += ./src/Utils/TexUtils.cpp
-SOURCES += ./src/Utils/trackball.c
-SOURCES += ./src/Utils/XUtils.cpp
 SOURCES += ./src/Utils/GeoUtils.cpp
 SOURCES += ./src/Utils/MatrixUtils.cpp
-SOURCES += ./src/Utils/EndianUtils.c
+SOURCES += ./src/Utils/MemFileUtils.cpp
+SOURCES += ./src/Utils/trackball.c
+SOURCES += ./src/Utils/TexUtils.cpp
+SOURCES += ./src/Utils/XUtils.cpp
+SOURCES += ./src/Utils/unzip.c
+SOURCES += ./src/Utils/zip.c
 SOURCES += ./src/UI/XGUIApp.cpp
 SOURCES += ./src/XPTools/ViewObj.cpp
-SOURCES += ./src/Utils/AssertUtils.cpp
+
+SOURCES += ./SDK/libtess2/Source/tess.c
+SOURCES += ./SDK/libtess2/Source/bucketalloc.c
+SOURCES += ./SDK/libtess2/Source/dict.c
+SOURCES += ./SDK/libtess2/Source/mesh.c
+SOURCES += ./SDK/libtess2/Source/priorityq.c
+SOURCES += ./SDK/libtess2/Source/sweep.c
+SOURCES += ./SDK/libtess2/Source/geom.c
+

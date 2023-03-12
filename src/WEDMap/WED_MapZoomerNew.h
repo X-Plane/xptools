@@ -49,25 +49,27 @@
 
 class	WED_MapZoomerNew : public GUI_ScrollerPaneContent {
 public:
-
 					 WED_MapZoomerNew(WED_Camera * c = nullptr);
 	virtual			~WED_MapZoomerNew();
 	// The map zoomer converts lat/lon coordinates to pixel coordinates.
 	// This API is called by just about anything that needs to do coordinate
 	// conversion.
 
-			double	XPixelToLon(double) const;
-			double	YPixelToLat(double) const;
+			double	XPixelToLon(double) const;  // Warning: With Map projection - these fonversions only work for points near the center of the map.
+			double	YPixelToLat(double) const;  // Use PixelToLL / LLToPixel whenever possible, as only these include GeographicProjection
 			double	LonToXPixel(double) const;
 			double	LatToYPixel(double) const;
 
 			Point2	PixelToLL(const Point2& p) const;
 			Point2	LLToPixel(const Point2& p) const;
+			pair<Point2, double> LLToPixelr(const Point2& p) const;
 
 			void	PixelToLLv(Point2 * dst, const Point2 * src, int n) const;
 			void	LLToPixelv(Point2 * dst, const Point2 * src, int n) const;
 
 			double	GetPPM(void) const;
+			double	GetRotation(const Point2& p) const;
+
 			double	GetClickRadius(double pixels) const;
 			long long	CacheKey(void) { return mCacheKey; }
 
@@ -155,6 +157,12 @@ protected:
 private:
 
 			void	RecalcAspectRatio(void);
+			double	wagner_proj_mult(double lat) const;
+			double	gnomonic_proj_cos(double lat) const;
+
+
+			double  LLToXPixel_gnomonic(const Point2& pt) const;
+			double  LLToYPixel_gnomonic(const Point2& pt) const;
 
 	double	mPixels[4];
 	double	mLogicalBounds[4];
@@ -162,12 +170,25 @@ private:
 	double	mLonCenter;
 	double	mCenterX;
 	double	mCenterY;
-	double	mLonCenterCOS;
+	double	mLatCenterCOS, mLatCenterSIN;
+	double  mCenterCOS;
 	long long mCacheKey;
+	double  mMapSize;
 
-protected:
-	double	mPixel2DegLat;
+	class mapScale {
+	public:
+		mapScale(void) : mDegLat2Pixel(1.0), mPixel2DegLat(1.0), mPPM(1.0) {}
 
+		void   operator= (double Pixel2DegLat);
+		double operator()(void) const { return mPixel2DegLat; }
+		double inv(void) const { return mDegLat2Pixel; }
+		double ppm(void) const { return mPPM; }
+	private:
+		double	mPixel2DegLat;
+		double	mDegLat2Pixel;
+		double	mPPM;
+	};
+	mapScale	mPixel2DegLat;
 };
 
 #endif

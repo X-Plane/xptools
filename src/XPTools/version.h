@@ -5,9 +5,9 @@
 #include <string.h>
 #include <stdint.h>
 
-#define XPT_PACKAGE_VER		"20-9"
+#define XPT_PACKAGE_VER		"22-6"
 
-#define DDSTOOL_VER		10400
+#define DDSTOOL_VER		20000
 #define DDSTOOL_EXTRAVER	"-b1"
 
 #define DSFTOOL_VER		20200

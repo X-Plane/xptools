@@ -49,7 +49,6 @@ LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
 LIBS		+= -lz
 
-
 ##
 # sources
 #########
@@ -220,6 +219,7 @@ SOURCES += ./src/WEDMap/WED_UIMeasurements.cpp
 SOURCES += ./src/WEDMap/WED_VertexTool.cpp
 SOURCES += ./src/WEDMap/WED_WorldMapLayer.cpp
 SOURCES += ./src/WEDMap/WED_NavaidLayer.cpp
+SOURCES += ./src/WEDMap/WED_TerrainLayer.cpp
 SOURCES += ./src/WEDMap/WED_DrawUtils.cpp
 SOURCES += ./src/WEDMap/WED_PreviewLayer.cpp
 SOURCES += ./src/WEDMap/WED_ATCLayer.cpp
@@ -242,6 +242,7 @@ SOURCES += ./src/WEDProperties/WED_PropertyTable.cpp
 SOURCES += ./src/WEDWindows/WED_AboutBox.cpp
 SOURCES += ./src/WEDWindows/WED_DocumentWindow.cpp
 SOURCES += ./src/WEDWindows/WED_LibraryFilterBar.cpp
+SOURCES += ./src/WEDWindows/WED_ConvertCommands.cpp
 SOURCES += ./src/WEDWindows/WED_GroupCommands.cpp
 SOURCES += ./src/WEDWindows/WED_Menus.cpp
 SOURCES += ./src/WEDWindows/WED_PackageListAdapter.cpp
@@ -299,11 +300,8 @@ SOURCES += ./src/Utils/CompGeomUtils.cpp
 #SOURCES += ./src/Utils/PolyRasterUtils.cpp
 SOURCES += ./src/Utils/zip.c
 SOURCES += ./src/Utils/unzip.c
-#SOURCES += ./src/Utils/XUtils.cpp
 SOURCES += ./src/Utils/BWImage.cpp
 SOURCES += ./src/Utils/ObjUtils.cpp
-#SOURCES += ./src/Utils/Skeleton.cpp
-#SOURCES += ./src/Utils/perlin.cpp
 SOURCES += ./src/Utils/MatrixUtils.cpp
 SOURCES += ./src/Utils/CSVParser.cpp
 SOURCES += ./src/Utils/STLUtils.cpp
@@ -322,17 +320,11 @@ SOURCES += ./src/DSF/DSFPointPool.cpp
 SOURCES += ./src/DSF/tri_stripper_101/tri_stripper.cpp
 SOURCES += ./src/DSFTools/DSF2Text.cpp
 SOURCES += ./src/OGLE/ogle.cpp
-#SOURCES += ./src/XESCore/AptAlgs.cpp
 SOURCES += ./src/XESCore/AptIO.cpp
-#SOURCES += ./src/XESCore/CGALAlgs.cpp
-#SOURCES += ./src/XESCore/MapBuffer.cpp
-#SOURCES += ./src/XESCore/MapPolygon.cpp
-#SOURCES += ./src/XESCore/Bezier.cpp
-SOURCES += ./src/Obj/ObjConvert.cpp
 
-SOURCES += ./src/lib_json/src/lib_json/json_writer.cpp
-SOURCES += ./src/lib_json/src/lib_json/json_reader.cpp
-SOURCES += ./src/lib_json/src/lib_json/json_value.cpp
+SOURCES += ./SDK/lib_json/src/lib_json/json_writer.cpp
+SOURCES += ./SDK/lib_json/src/lib_json/json_reader.cpp
+SOURCES += ./SDK/lib_json/src/lib_json/json_value.cpp
 
 SOURCES += ./src/lzma19/C/7zArcIn.c
 SOURCES += ./src/lzma19/C/7zAlloc.c
@@ -351,13 +343,13 @@ SOURCES += ./src/lzma19/C/Delta.c
 SOURCES += ./src/lzma19/C/LzmaDec.c
 SOURCES += ./src/lzma19/C/Lzma2Dec.c
 
-SOURCES += ./src/libtess2/Source/tess.c
-SOURCES += ./src/libtess2/Source/bucketalloc.c
-SOURCES += ./src/libtess2/Source/dict.c
-SOURCES += ./src/libtess2/Source/mesh.c
-SOURCES += ./src/libtess2/Source/priorityq.c
-SOURCES += ./src/libtess2/Source/sweep.c
-SOURCES += ./src/libtess2/Source/geom.c
+SOURCES += ./SDK/libtess2/Source/tess.c
+SOURCES += ./SDK/libtess2/Source/bucketalloc.c
+SOURCES += ./SDK/libtess2/Source/dict.c
+SOURCES += ./SDK/libtess2/Source/mesh.c
+SOURCES += ./SDK/libtess2/Source/priorityq.c
+SOURCES += ./SDK/libtess2/Source/sweep.c
+SOURCES += ./SDK/libtess2/Source/geom.c
 
 ##
 # resources
@@ -425,12 +417,16 @@ RESOURCES += ./src/WEDResources/tables/eye.png
 RESOURCES += ./src/WEDResources/tables/lock.png
 RESOURCES += ./src/WEDResources/tables/check.png
 RESOURCES += ./src/WEDResources/tables/gradient.png
+RESOURCES += ./src/WEDResources/tables/gradient_light.png
 RESOURCES += ./src/WEDResources/tables/disclose.png
 RESOURCES += ./src/WEDResources/tables/header.png
 RESOURCES += ./src/WEDResources/tables/sider.png
 RESOURCES += ./src/WEDResources/tables/property_bar.png
 RESOURCES += ./src/WEDResources/tables/arrows.png
 RESOURCES += ./src/WEDResources/tables/delete.png
+RESOURCES += ./src/WEDResources/tables/seasons.png
+RESOURCES += ./src/WEDResources/tables/variants.png
+RESOURCES += ./src/WEDResources/tables/regions.png
 RESOURCES += ./src/WEDResources/worldmap.jpg
 RESOURCES += ./src/WEDResources/pavement/dirt.png
 RESOURCES += ./src/WEDResources/pavement/gravel.png

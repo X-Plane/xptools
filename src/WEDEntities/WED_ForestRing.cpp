@@ -39,15 +39,17 @@ WED_ForestRing::~WED_ForestRing()
 
 bool	 WED_ForestRing::IsClosed	(void	) const
 {
-	WED_ForestPlacement * fst = SAFE_CAST(WED_ForestPlacement,GetParent());
-	if(fst) return fst->GetFillMode() == dsf_fill_area;
+	if(auto p = GetParent())
+		if(p->GetClass() == WED_ForestPlacement::sClass)
+			return static_cast<WED_ForestPlacement*>(p)->GetFillMode() == dsf_fill_area;
 	return true;
 }
 
 bool			WED_ForestRing::IsJustPoints(void) const
 {
-	WED_ForestPlacement * fst = SAFE_CAST(WED_ForestPlacement, GetParent());
-	if(fst) return fst->GetFillMode() == dsf_fill_points;
+	if (auto p = GetParent())
+		if (p->GetClass() == WED_ForestPlacement::sClass)
+			return static_cast<WED_ForestPlacement*>(p)->GetFillMode() == dsf_fill_points;
 	return false; 
 }
 

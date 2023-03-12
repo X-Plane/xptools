@@ -92,7 +92,13 @@ void		GUI_Pane::GetMouseLocNow(int * out_x, int * out_y)
 
 float		GUI_Pane::GetTimeNow(void)
 {
+#if LIN
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    return (float)(now.tv_sec) + (float)(now.tv_nsec / 1000000000.0);
+#else
 	return (float) clock() / (float) CLOCKS_PER_SEC;
+#endif
 }
 
 bool		GUI_Pane::IsKeyPressedNow(int virtualKey)

@@ -567,6 +567,7 @@ static int DoTigerBounds(const vector<const char *>& args)
 "c - crop to current map bounds on import.  This can be faster than a separate cropping stage.\n" \
 "o - overlay on existing map.  This can be slower than cleaning the vector space first.\n" \
 "e - check for overlapping polygon errors.  Abort the import silently if we hit this case.\n" \
+"a - Import vertex altitude from shapefile Z coordinate, if present.\n" \
 "<err> is the max error in meters to be allowed when simplifying imported roads.  Pass zero to\n"\
 "import the data with no change.\n"
 static int DoShapeImport(const vector<const char *>& args)
@@ -581,7 +582,8 @@ static int DoShapeImport(const vector<const char *>& args)
 	if(strstr(args[0], "s"))	flags |= shp_Mode_Simple;
 	if(strstr(args[0], "m"))	flags |= shp_Mode_Map;
 	if(strstr(args[0], "e"))	flags |= shp_ErrCheck;
-	
+	if(strstr(args[0], "a"))	flags |= shp_Altitude;
+
 	double err_margin = atof(args[2]);
 	int grid_steps = atoi(args[3]);
 
@@ -632,21 +634,32 @@ static int DoShapeAG(const vector<const char *>& args)
 
 
 #define HELP_SHAPE_EXPORT \
-"-shapefile_write <flags> <terain_type> <filename>\n" \
+"-shapefile_write <flags> [<terain_type>] <filename>\n" \
 "Export a shape file.  Mode letters (similar to tar syntax are):\n" \
-"  l     filter by terrain type\n"
+"  l     filter by terrain type\n" \
+"  t     export terrain types\n"
 static int DoShapeExport(const vector<const char *>& args)
 {
-	int tt = LookupToken(args[1]);
-	if(tt == -1)
+	int farg = 1;
+	int tt = -1;
+	if(strstr(args[0],"l"))
 	{
-		fprintf(stderr,"Unknown token type %s\n", args[1]);
-		return 1;
+		tt = LookupToken(args[1]);
+		if(tt == -1)
+		{
+			fprintf(stderr,"Unknown token type %s\n", args[1]);
+			return 1;
+		}
+		++farg;
 	}
-	bool ok = WriteShapefile(args[2], gMap, tt, gProgress);
+	bool export_tt = false;
+	if(strstr(args[0],"t"))
+		export_tt = true;
+
+	bool ok = WriteShapefile(args[farg], gMap, tt, export_tt, gProgress);
 	if(!ok)
 	{
-		if(gVerbose) printf("Failed to save shape file %s\n", args[2]);
+		if(gVerbose) printf("Failed to save shape file %s\n", args[farg]);
 		return 1;
 	}
 	return 0;
@@ -671,6 +684,8 @@ static int DoShapeRaster(const vector<const char *>& inArgs)
 	shp_Flags flags = shp_None;
 	if(strstr(inArgs[0], "s"))	flags |= shp_Mode_Simple;
 	if(strstr(inArgs[0], "m"))	flags |= shp_Mode_Map;
+	if(strstr(inArgs[0], "o"))	flags |= shp_Overlay;
+	if(strstr(inArgs[0], "l"))	flags |= shp_Outline;
 	
 	if(!RasterShapeFile(
 				inArgs[2],
@@ -699,9 +714,13 @@ int DoWetMask(const vector<const char *>& args)
 */
 
 struct debug_lock_traits {
-	bool is_locked(Pmwx::Vertex_handle v) const { 
+	bool is_locked(Pmwx::Vertex_handle v) const {
+	
+		DebugAssert(v->degree() == 2);
+	
 		Pmwx::Halfedge_handle h1(v->incident_halfedges());
 		Pmwx::Halfedge_handle h2(h1->next());
+
 //		if(h1->face()->data().IsWater() == h1->twin()->face()->data().IsWater())
 //		{
 //			debug_mesh_point(cgal2ben(v->point()),1,1,1);
@@ -712,6 +731,19 @@ struct debug_lock_traits {
 		Point2 p3(cgal2ben(h2->target()->point()));
 		Vector2 v1(p1,p2);
 		Vector2 v2(p2,p3);
+
+		bool h1g = h1->data().HasGroundRoads() || h1->twin()->data().HasGroundRoads();
+		bool h2g = h2->data().HasGroundRoads() || h2->twin()->data().HasGroundRoads();
+
+		bool h1b = h1->data().HasBridgeRoads()|| h1->twin()->data().HasBridgeRoads();
+		bool h2b = h2->data().HasBridgeRoads()|| h2->twin()->data().HasBridgeRoads();
+
+		if (h1b != h2b || h1g != h2g)
+		{
+//			debug_mesh_point(p2,1,0,0);
+			return true;
+		}
+
 //		if (v1.dot(v2) < 0.0)
 //		{
 //			debug_mesh_point(p2,1,0,0);
@@ -855,9 +887,9 @@ int DoRemoveOutsets(const vector<const char *>& args)
 int DoRemoveIslands(const vector<const char *>& args)
 {
 	double area = atof(args[0]);
-	int k = RemoveIslands(gMap, area);
+	auto removal_info = RemoveIslands(gMap, area);
 	if (gVerbose)
-		printf("Removed %d islands\n",k);
+		printf("Removed %d of %d islands\n", get<0>(removal_info), get<1>(removal_info));
 	return 0;
 }
 
@@ -937,6 +969,24 @@ int DoRasterDEM(const vector<const char *>& args)
 	return 0;
 }
 
+#define HELP_VECTOR_QC \
+"-vector_qc\n" \
+"Checks for issues:\n" \
+" - The entire region is only water."
+int DoVectorQC(const vector<const char*>& args)
+{
+	const bool is_only_water = !any_of(gMap.faces_begin(), gMap.faces_end(), [](Pmwx::Face& f) {
+		return !f.is_unbounded() && f.data().mTerrainType != terrain_Water;
+	});
+
+	if (is_only_water)
+	{
+		printf("vector_qc: vector data contains only water.\n");
+	}
+
+	return is_only_water ? 1 : 0;
+}
+
 static	GISTool_RegCmd_t		sVectorCmds[] = {
 //{ "-sdts", 			1, 1, 	DoSDTSImport, 			"Import SDTS VTP vector map.", "" },
 //{ "-tigermakeidx",	1, -1,	DoMakeTigerIndex,		"Make index line for files", "" },
@@ -946,7 +996,7 @@ static	GISTool_RegCmd_t		sVectorCmds[] = {
 //{ "-vpf", 			4, 6, 	DoVPFImport, 			"Import VPF coverage <path> <coverages> <lon> <lat> [<sublon> <sublat>]", "" },
 { "-gshhs", 		1, 1, 	DoGSHHSImport, 			"Import GSHHS shorelines.", "" },
 { "-shapefile", 	5, -1, 	DoShapeImport, 			"Import ESRI Shape File.", HELP_SHAPE_IMPORT },
-{ "-shapefile_write", 3, 3, 	DoShapeExport, 		"Export ESRI Shape File.", HELP_SHAPE_EXPORT },
+{ "-shapefile_write", 2, 3, 	DoShapeExport, 		"Export ESRI Shape File.", HELP_SHAPE_EXPORT },
 { "-shape_ag", 1, -1, 			DoShapeAG,			"Import ESRI Shape Fil as AG", HELP_SHAPE_AG },
 { "-shapefile_raster", 4, 4, DoShapeRaster,			"Raster shapefile.", "" },
 { "-reduce_vectors", 1, 1,	DoReduceVectors,		"Simplify vector map by a certain error distance.", HELP_REDUCE_VECTORS },
@@ -963,6 +1013,7 @@ static	GISTool_RegCmd_t		sVectorCmds[] = {
 { "-check_roads",	0, 0, DoCheckRoads,				"Check roads for errors.", "" },
 { "-fix_roads",	0, 0, DoFixRoads,				"Fix road errors.", "" },
 { "-raster_dem",	1, 1, DoRasterDEM,				"Map Color.", "" },
+{ "-vector_qc",	0, 0, DoVectorQC,				"Validate vector data.", HELP_VECTOR_QC },
 //{ "-wetmask",		2, 2,	DoWetMask,				"Make wet mask for file", "" },
 { 0, 0, 0, 0, 0, 0 }
 };

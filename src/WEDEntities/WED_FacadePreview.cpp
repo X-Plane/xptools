@@ -28,7 +28,6 @@
 #endif
 
 #include "XObjReadWrite.h"
-#include "ObjConvert.h"
 #include "CompGeomDefs2.h"
 #include "CompGeomDefs3.h"
 #include "XESConstants.h"
@@ -611,10 +610,10 @@ void height_desc_for_facade(const fac_info_t& info, string& h_decription)
 	if(info.is_new)
 	{
 		vector<int> heights;
-		for(auto& f : info.floors)
+		for(const auto& f : info.floors)
 			if(f.roofs.size())
 			{
-				heights.push_back(f.roofs.back().roof_height);
+				heights.push_back(roundf(f.roofs.back().roof_height));
 			}
 
 		if(heights.size()  > 1)
@@ -807,7 +806,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 	double fac_height, GUI_GraphState * g, bool want_thinWalls, double ppm_for_culling)
 {
 	if(rman)
-	for(auto& f : info.scrapers)
+	for(const auto& f : info.scrapers)
 	{
 		// determine center of first segment
 		Point2 facOrig = footprint.side(0).midpoint();
@@ -819,7 +818,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 			int scp_levels = (fac_height - f.min_agl) / f.step_agl;
 			double scpAGL = scp_levels * f.step_agl;
 			fac_height = f.floors;
-			for(auto& s : f.choices)
+			for(const auto& s : f.choices)
 			{
 				bool pinsInside(true);
 				for(int i = 0; i < s.pins.size(); i+=2)
@@ -964,9 +963,9 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 		}
 	}
 	else // type 2 facades
-	{
+	{	CHECK_GL_ERR
 		roof_height =  -9.9e9;
-		for(auto& f : info.floors)
+		for(const auto& f : info.floors)
 		{
 			double h = f.max_roof_height();
 			if(closer_to(roof_height, h, fac_height))
@@ -981,15 +980,17 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 		{
 			vector<GLushort> idx;
 			vector<GLfloat> vert;
-			for (auto& f : info.floors)
-				for (auto& t : f.templates)
+			for (const auto& f : info.floors)
+				for (const auto& t : f.templates)
 				{
-					for (auto& m : t.meshes)
+					for (const auto& m : t.meshes)
 					{
 						const_cast<int&>(m.idx_start) = idx.size();
 						const_cast<int&>(m.idx_cnt) = m.idx.size();
 						for (auto i : m.idx)
 							idx.push_back(i);
+						const_cast<vector<int>&>(m.idx).clear();          // release RAM since its now in VRAM
+						const_cast<vector<int>&>(m.idx).shrink_to_fit();
 						const_cast<int&>(m.mesh_start) = vert.size();
 						int ni = m.xyz.size() / 3;
 						for (int ind = 0; ind < ni; ++ind)
@@ -1006,13 +1007,13 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 					}
 				}
 			GLuint vbo[2];
-			glGenBuffers(2, vbo);
-			glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1]);
+			glGenBuffers(2, vbo);                           CHECK_GL_ERR
+			glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);          CHECK_GL_ERR
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1]);  CHECK_GL_ERR
 			glBufferData(GL_ARRAY_BUFFER, vert.size() * sizeof(GLfloat), vert.data(), GL_STATIC_DRAW); CHECK_GL_ERR
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER, idx.size() * sizeof(GLushort), idx.data(), GL_STATIC_DRAW); CHECK_GL_ERR
-			glBindBuffer(GL_ARRAY_BUFFER, 0);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);               CHECK_GL_ERR
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);       CHECK_GL_ERR
 			const_cast<unsigned int&>(info.vert_vbo) = vbo[0];
 			const_cast<unsigned int&>(info.idx_vbo) = vbo[1];
 		}
@@ -1024,13 +1025,13 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 		if (pingpong < 0)
 		{
 			vbuf.assign(8*2560, 0.0f);   // todo: error check - could there be larger meshes for any one wall segment ? Update: Yes there is - Mod_Garage_2.fac
-			glGenBuffers(NUM_VBO, sbo);
+			glGenBuffers(NUM_VBO, sbo);  CHECK_GL_ERR
 			for(int i = 0; i < NUM_VBO; ++i)
 			{
-				glBindBuffer(GL_ARRAY_BUFFER, sbo[i]);
+				glBindBuffer(GL_ARRAY_BUFFER, sbo[i]);  CHECK_GL_ERR
 				glBufferData(GL_ARRAY_BUFFER, vbuf.size() * sizeof(GLfloat), vbuf.data(), GL_DYNAMIC_DRAW); CHECK_GL_ERR
 			}
-			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);  CHECK_GL_ERR
 			pingpong = 0;
 		}
 		glEnableClientState(GL_VERTEX_ARRAY);			CHECK_GL_ERR
@@ -1133,7 +1134,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 #endif
 				if (!info.nowallmesh && (want_thinWalls || (info.has_roof && t.bounds[1] > 0.5) || (!info.is_ring && t.bounds[0] > 0.5)))
 				{
-					for (auto& m : t.meshes) // all meshes == maximum LOD detail, all the time.
+					for (const auto& m : t.meshes) // all meshes == maximum LOD detail, all the time.
 					{
 						const GLfloat * vert_ptr = nullptr;
 						if ((first == 1 || first == our_choice.indices.size()) && ppm_for_culling * t.bounds[0] > 5.0)
@@ -1282,20 +1283,21 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 				dev_assert(x <= ab_use[3]);	
 //				dev_assert(ab.ymax() <= ab_use[3]);	
 
-				vector<Point2> new_pts; new_pts.reserve(roof_pts.size()*2);
-				for(auto p : roof_pts)
+				vector<Point2> new_pts;
+				new_pts.reserve(roof_pts.size()*2);
+				for(const auto& p : roof_pts)
 				{
 					new_pts.push_back(p);
 					new_pts.push_back(Point2(interp(ab_use[0], info.roof_st[0], ab_use[2], info.roof_st[2], dirVec.dot(Vector2(p))  + dirDot ),
 					                         interp(ab_use[1], info.roof_st[1], ab_use[3], info.roof_st[3], perpVec.dot(Vector2(p)) + perpDot)));
 				}
-				glPolygon2(new_pts.data(), true, nullptr, roof_pts.size(), roof_height);
+				glPolygon2(new_pts, true, vector<int>(), true, roof_height);
 			}
 			else if(!info.noroofmesh)  // type 2 facades
 			{
 				if(want_thinWalls && roof_pts.size() <= 5) // add roof objects, but only for preview pane. Its slow when taking the exact shape of the roof into account.
 				{
-					for(auto ro : bestFloor->roofs.back().roof_objs)
+					for(const auto& ro : bestFloor->roofs.back().roof_objs)
 					{
 						Point2 loc0 = footprint.side(0).midpoint();
 						Point2 loc_uv = loc0 + dirVec * ro.str[0] * info.roof_scale_s + perpVec * ro.str[1] * info.roof_scale_t;
@@ -1324,7 +1326,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 				do
 				{
 					vector<Point2> new_pts; new_pts.reserve(roof_pts.size()*2);
-					for(auto p: roof_pts)
+					for(const auto& p: roof_pts)
 					{
 						new_pts.push_back(p);
 						new_pts.push_back(Point2( (dirVec.dot(Vector2(p))   + dirDot)  / info.roof_scale_s,
@@ -1334,7 +1336,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 						glDisable(GL_CULL_FACE);
 					else
 						glEnable(GL_CULL_FACE);
-					glPolygon2(new_pts.data(), true, nullptr, roof_pts.size(), roof_height);
+					glPolygon2(new_pts, true, vector<int>(), true, roof_height);
 					
 					xtra_roofs--;
 					if(xtra_roofs >= 0)

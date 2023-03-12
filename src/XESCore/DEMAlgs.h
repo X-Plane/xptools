@@ -80,6 +80,9 @@ void	CalcSlopeParams(DEMGeoMap& ioDEMs, bool force, ProgressFunc inProg);
 void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg);
 void	DeriveDEMs(Pmwx& inMap, DEMGeoMap& ioDEMs, AptVector& ioApts, AptIndex& ioAptIndex, int do_translate, ProgressFunc inProg);
 
+void	CalcWaterSurface(DEMGeoMap& ioDEMs, double west, double south, double east, double north);
+void	CalcWaterBathymetry(DEMGeoMap& ioDEMs);
+
 void	MakeTiles(const DEMGeo& inDEM, list<DEMGeo>& outTiles);
 
 

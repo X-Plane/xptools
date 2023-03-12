@@ -20,6 +20,7 @@
  * THE SOFTWARE.
  *
  */
+
 #include "ObjDraw.h"
 #include "XObjDefs.h"
 #if APL
@@ -28,8 +29,8 @@
 	#include "glew.h"
 #endif
 #include <math.h>
-#include <stdio.h>
 #include <algorithm>
+#include "MathUtils.h"
 
 #ifndef CHECK_GL_ERR
 	#define	CHECK_GL_ERR
@@ -78,7 +79,7 @@ static void	Default_SetNoDraped(void * ref) { }
 
 static	ObjDrawFuncs10_t sDefault = {
 	Default_SetupPoly, Default_SetupLine, Default_SetupLight,
-	Default_SetupMovie, Default_SetupPanel, Default_TexCoord, Default_TexCoordPointer, Default_GetAnimParam, 
+	Default_SetupMovie, Default_SetupPanel, Default_TexCoord, Default_TexCoordPointer, Default_GetAnimParam,
 	Default_SetDraped, Default_SetNoDraped
 };
 
@@ -98,136 +99,11 @@ enum {
 	arrayMode_Lgt
 };
 
-void	ObjDraw(const XObj& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref)
-{
-	if (funcs == NULL) funcs = &sDefault;
-	int 	drawMode = drawMode_Non;
-	bool	do_draw = true;
-	float	mat_col[3] = { 1.0, 1.0, 1.0 };
-
-	for (vector<XObjCmd>::const_iterator cmd = obj.cmds.begin(); cmd != obj.cmds.end(); ++cmd)
-	{
-		int	want_mode = drawMode_Non;
-
-		if (cmd->cmdID == attr_LOD)
-			do_draw = dist >= cmd->attributes[0] && dist <= cmd->attributes[1];
-
-		if (do_draw)
-		{
-			switch(cmd->cmdID) {
-			case obj_Light:				want_mode = drawMode_Lgt;	break;
-			case obj_Line:				want_mode = drawMode_Lin;	break;
-			case obj_Tri:
-			case obj_Quad:
-			case obj_Quad_Hard:
-			case obj_Polygon:
-			case obj_Quad_Strip:
-			case obj_Tri_Strip:
-			case obj_Tri_Fan:			want_mode = drawMode_Tri;	break;
-			case obj_Quad_Cockpit:		want_mode = drawMode_Pan;	break;
-			case obj_Movie:				want_mode = drawMode_Mov;	break;
-			}
-			if (want_mode != drawMode_Non)
-			{
-				if (want_mode != drawMode)
-				{
-					switch(want_mode) {
-					case drawMode_Tri:		funcs->SetupPoly_f(ref);	break;
-					case drawMode_Lin:		funcs->SetupLine_f(ref);	break;
-					case drawMode_Lgt:		funcs->SetupLight_f(ref);	break;
-					case drawMode_Pan:		funcs->SetupPanel_f(ref);	break;
-					case drawMode_Mov:		funcs->SetupMovie_f(ref);	break;
-					}
-				}
-				drawMode = want_mode;
-			}
-
-			switch(cmd->cmdType) {
-			case type_Poly:
-				glColor3fv(mat_col);
-				switch(cmd->cmdID) {
-				case obj_Tri:				glBegin(GL_TRIANGLES);	break;
-				case obj_Quad:
-				case obj_Quad_Hard:
-				case obj_Quad_Cockpit:
-				case obj_Movie:				glBegin(GL_QUADS);	break;
-				case obj_Polygon:			glBegin(GL_POLYGON);	break;
-				case obj_Quad_Strip:		glBegin(GL_QUAD_STRIP);	break;
-				case obj_Tri_Strip:			glBegin(GL_TRIANGLE_STRIP);	break;
-				case obj_Tri_Fan:			glBegin(GL_TRIANGLE_FAN);	break;
-				default:					glBegin(GL_TRIANGLES);	break;
-				}
-				for (vector<vec_tex>::const_iterator st = cmd->st.begin(); st != cmd->st.end(); ++st)
-				{
-					funcs->TexCoord_f(st->st,ref);
-					glVertex3fv(st->v);
-				}
-				glEnd();
-				break;
-			case type_PtLine:
-				switch(cmd->cmdID) {
-				case obj_Line:				glBegin(GL_LINES);	break;
-				case obj_Light:
-				default:					glBegin(GL_POINTS);	break;
-				}
-				for (vector<vec_rgb>::const_iterator rgb = cmd->rgb.begin(); rgb != cmd->rgb.end(); ++rgb)
-				{
-					glColor3f(fabs(rgb->rgb[0]) * 0.1, fabs(rgb->rgb[1]) * 0.1, fabs(rgb->rgb[2]) * 0.1);
-					glVertex3fv(rgb->v);
-				}
-				glEnd();
-				break;
-			case type_Attr:
-				switch(cmd->cmdID) {
-				case attr_Shade_Flat:	glShadeModel(GL_FLAT); break;
-				case attr_Shade_Smooth: glShadeModel(GL_SMOOTH); break;
-//				case attr_Ambient_RGB: { float rgba[4] = { cmd->attributes[0],cmd->attributes[1],cmd->attributes[2],1.0 }; glMaterialfv(GL_FRONT,GL_AMBIENT ,rgba);	} break;
-				case attr_Diffuse_RGB:  mat_col[0] = cmd->attributes[0]; mat_col[1] = cmd->attributes[1]; mat_col[2] = cmd->attributes[2]; glColor3fv(mat_col);	 break;
-				case attr_Emission_RGB:{ float rgba[4] = { cmd->attributes[0],cmd->attributes[1],cmd->attributes[2],1.0 }; glMaterialfv(GL_FRONT,GL_EMISSION,rgba);	} break;
-//				case attr_Specular_RGB:{ float rgba[4] = { cmd->attributes[0],cmd->attributes[1],cmd->attributes[2],1.0 }; glMaterialfv(GL_FRONT,GL_SPECULAR,rgba);	} break;
-				case attr_Shiny_Rat:	{ float rgba[4] = { cmd->attributes[0], cmd->attributes[0], cmd->attributes[0], 1.0 };
-											glLightfv	(GL_LIGHT0,GL_SPECULAR ,rgba);
-											glMaterialfv (GL_FRONT, GL_SPECULAR, rgba);
-											glMateriali (GL_FRONT,GL_SHININESS,128); } break;
-				case attr_No_Depth:		glDisable(GL_DEPTH_TEST);
-				case attr_Depth:		glEnable(GL_DEPTH_TEST);
-				case attr_Reset: { float amb[4] = { 0.2, 0.2, 0.2, 1.0 }, zero[4] = { 0.0, 0.0, 0.0, 1.0 }; mat_col[0] = mat_col[1] = mat_col[2] = 1.0;
-//									glMaterialfv(GL_FRONT, GL_AMBIENT, amb);
-//									glMaterialfv(GL_FRONT, GL_DIFFUSE, diff);
-									glMaterialfv(GL_FRONT, GL_SPECULAR, zero);
-									glMaterialfv(GL_FRONT, GL_EMISSION, zero);
-									glColor3fv(mat_col);
-									glMateriali (GL_FRONT,GL_SHININESS,0); } break;
-				case attr_Cull:		glEnable(GL_CULL_FACE);		break;
-				case attr_NoCull:	glDisable(GL_CULL_FACE);	break;
-				case attr_Offset:	if (cmd->attributes[0] != 0)
-					{	glEnable(GL_POLYGON_OFFSET_FILL);glPolygonOffset(-5.0*cmd->attributes[0],-1.0);glDepthMask(GL_FALSE);	} else
-					{	glDisable(GL_POLYGON_OFFSET_FILL);glPolygonOffset(0.0, 0.0);glDepthMask(GL_TRUE);	}
-					break;
-				}
-				break;
-			} // Case for type of cmd
-		} // Drwaing enabled
-	} // While loop on cmds
-}
-
-//inline float rescale_float(float x1, float x2, float y1, float y2, float x)
-//{
-//	if (x1 == x2) return y1;
-//	return y1 + ((y2 - y1) * (x - x1) / (x2 - x1));
-//}
-
 struct compare_key {
 	bool operator()(const XObjKey& lhs, float rhs) const {
 		return lhs.key < rhs;
 	}
 };
-
-inline float	extrap(float x1, float y1, float x2, float y2, float x)
-{
-	if (x1 == x2) return (y1 + y2) * 0.5;
-	return (x-x1) * (y2 - y1) / (x2 - x1) + y1;
-}
 
 inline float	key_extrap(float input, const vector<XObjKey>& table, int n)
 {
@@ -246,6 +122,22 @@ inline float	key_extrap(float input, const vector<XObjKey>& table, int n)
 	return extrap(p1->key,p1->v[n],p2->key,p2->v[n], input);
 }
 
+// very simple conversion to 16 bit floating point, its not handling NAN, infinity, nor will it create subnormals
+
+static uint16_t half(float f)
+{
+	if (-6E-5f < f && f < 6E-5f )
+		return 0x0000;
+	else if (f > 65504.0f)
+		f = 65504.0f;
+	else if (f < -65504.0f)
+		f = -65504.0f;
+
+	int x = *(int *) &f;
+	return    ((x >> 16) & 0x8000)                               // mantissa sign
+		  | ((((x & 0x7f800000) - 0x38000000) >> 13 ) & 0x7C00)  // exponent
+		  |   ((x >> 13) & 0x03ff);                              // mantissa
+}
 
 void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref)
 {
@@ -256,9 +148,42 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 	bool	tex_is_cockpit = false;
 	int 	want_draw;
 	const XObjAnim8 * anim;
-
 	float v;
 
+#if XOBJ8_USE_VBO
+
+	#define SHORT_IDX 1
+	#define HALF_SIZE_VBO 0
+
+	#if HALF_SIZE_VBO
+		#define VBO_10b_NRML 0
+
+		#define VBO_VEC_FMT  GL_SHORT
+		#if VBO_10b_NRML
+//			glEnable(GL_RESCALE_NORMAL);
+			glEnable(GL_NORMALIZE);
+		#endif
+		#define VBO_ST_FMT   GL_HALF_FLOAT
+		#define VBO_VEC_T    GLhalf
+
+		glPushMatrix();
+		#define MAX_SCALE 32766.9
+		double scale = MAX_SCALE / fltmax6(-obj.xyz_min[0], obj.xyz_max[0], -obj.xyz_min[1], obj.xyz_max[1], -obj.xyz_min[2], obj.xyz_max[2]);
+		glScalef(1.0 / scale, 1.0 / scale, 1.0 / scale);
+	#else
+		#define VBO_VEC_FMT  GL_FLOAT
+		#define VBO_ST_FMT   GL_FLOAT
+		#define VBO_VEC_T    GLfloat
+	#endif
+#else
+	#define VBO_VEC_FMT  GL_FLOAT
+	#define VBO_ST_FMT   GL_FLOAT
+	#define VBO_VEC_T    GLfloat
+#endif
+    #define VBO_OFFS1    (3*sizeof(VBO_VEC_T))
+    #define VBO_OFFS2    (VBO_OFFS1 + 3*sizeof(VBO_VEC_T))
+    #define VBO_STRIDE   (VBO_OFFS2 + 2*sizeof(VBO_VEC_T))
+	
 	for (vector<XObjLOD8>::const_iterator lod = obj.lods.begin(); lod != obj.lods.end(); ++lod)
 	if ((lod->lod_near <= dist && dist < lod->lod_far) || obj.lods.size() == 1)	// lods = 1 - maybe no lod directive, lod dist could be 0,0.
 	{
@@ -293,22 +218,90 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 
 						glBindBuffer(GL_ARRAY_BUFFER, obj.geo_VBO);          CHECK_GL_ERR
 						glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, obj.idx_VBO);  CHECK_GL_ERR
+			#if SHORT_IDX
+						*(const_cast<bool*>(&obj.short_idx)) = obj.geo_tri.count() < 65536;
+			#endif
 
-						// todo: reduce VBO size by storing normals as GL_INT_2_10_10_10_REV, uv's as GL_UNSIGNED_SHORT
-						// or go all out and normalize vertices to GL_SHORT, then glScale/glRotate based on xyz_min[]/max[] data
-						glBufferData(GL_ARRAY_BUFFER, obj.geo_tri.count()*sizeof(GLfloat)*8, obj.geo_tri.get(0), GL_STATIC_DRAW); CHECK_GL_ERR
-						// todo: use GL_UNSIGNED_SHORT indices for objects under 64k indices (as most ? frequently used objects are small)
+			#if HALF_SIZE_VBO
+						{
+							union ogl_vert { GLfloat f[4]; GLint i[4]; GLshort s[8]; GLushort u[8]; GLbyte b[16]; };
+							vector<ogl_vert> tmp;
+							int n = obj.geo_tri.count();
+							tmp.reserve(n);
+							const float * f = obj.geo_tri.get(0);
+							for(int i = 0; i < n; ++i)
+							{
+								tmp.push_back(ogl_vert());
+//                              Using integers & scale with model projection has 5 bits more resolution than halfs
+//								tmp.back().u[0] = half(*f++);
+//								tmp.back().u[1] = half(*f++);
+//								tmp.back().u[2] = half(*f++);
+								tmp.back().s[0] = *f++ * scale;
+								tmp.back().s[1] = *f++ * scale;
+								tmp.back().s[2] = *f++ * scale;
+					#if VBO_10b_NRML
+//								Free two bytes (and two bits) for future use ...
+								tmp.back().i[2] = (max(-512, min((int) (*f++ * 511), 511)) & 0x3FF)
+												| ((max(-512, min((int) (*f++ * 511), 511)) & 0x3FF) << 10)
+												| ((max(-512, min((int) (*f++ * 511), 511)) & 0x3FF) << 20);
+//								Or squeeze another byte - but its no good for colors (unsigned !) if this vert happens to be
+//                              used for line or light drawing, as the normals are colors then. And by just looking at the
+//                              vertex data one can't say - only by going though all LINE and LIGHT commands one could find out
+//								tmp.back().b[8]  = max(-128, min(*f++ * 127, 127));
+//								tmp.back().b[9]  = max(-128, min(*f++ * 127, 127));
+//								tmp.back().b[10] = max(-128, min(*f++ * 127, 127));
+					#else
+								tmp.back().u[3] = half(*f++);
+								tmp.back().u[4] = half(*f++);
+								tmp.back().u[5] = half(*f++);
+					#endif
+								tmp.back().u[6] = half(*f++);
+								tmp.back().u[7] = half(*f++);
+//                              This requires using VertexAttributePointers & shaders, as OGL < 2 has no way to enable normalized ints
+//								tmp.back().s[6] = max(INT_MIN_LL, min((long long) (*f++ * INT_MAX_LL), INT_MAX_LL));
+//								tmp.back().s[7] = max(INT_MIN_LL, min((long long) (*f++ * INT_MAX_LL), INT_MAX_LL));
+							}
+							glBufferData(GL_ARRAY_BUFFER, obj.geo_tri.count()*VBO_STRIDE, tmp.data(), GL_STATIC_DRAW); CHECK_GL_ERR
+						}
+			#else
+						glBufferData(GL_ARRAY_BUFFER, obj.geo_tri.count()*VBO_STRIDE, obj.geo_tri.get(0), GL_STATIC_DRAW); CHECK_GL_ERR
+			#endif
+
+			#if SHORT_IDX
+						if(obj.short_idx)
+						{
+							vector<GLushort> tmp;
+							tmp.reserve(obj.indices.size());
+							for(auto i : obj.indices)
+								tmp.push_back(i);
+
+							glBufferData(GL_ELEMENT_ARRAY_BUFFER, obj.indices.size()*sizeof(GLushort), tmp.data(), GL_STATIC_DRAW); CHECK_GL_ERR
+						}
+						else
+			#endif
 						glBufferData(GL_ELEMENT_ARRAY_BUFFER, obj.indices.size()*sizeof(GLuint), &obj.indices[0], GL_STATIC_DRAW); CHECK_GL_ERR
 
-						// obj.geo_tri.delete();       // todo: free that now unused memory
+					const_cast<XObj8&>(obj).geo_tri.clear(8);           // now that its all in VRAM - free the RAM !
+																	 
+					// const_cast<vector<int>&>(obj.indices).clear();   // dont free idx, yet. line drawing code still needs these in RAM
+					// const_cast<vector<int>&>(obj.indices).shrink_to_fit();
 					}
-					const GLfloat * vert_ptr = nullptr;
-#else
-					const GLfloat * vert_ptr = obj.geo_tri.get(0);
+					const char * vert_ptr = nullptr;                        // offset into VBO
+#else  // XOBJ8_USE_VBO
+					const char * vert_ptr = (const char *) obj.geo_tri.get(0);             // position in RAM
 #endif
-					glVertexPointer			(3, GL_FLOAT, 8*sizeof(GLfloat), vert_ptr         );	CHECK_GL_ERR
-					glNormalPointer			(	GL_FLOAT, 8*sizeof(GLfloat), vert_ptr + 3	  );	CHECK_GL_ERR
-					funcs->TexCoordPointer_f(2, GL_FLOAT, 8*sizeof(GLfloat), vert_ptr + 6, ref);	CHECK_GL_ERR
+					glVertexPointer			(3, VBO_VEC_FMT,           VBO_STRIDE, vert_ptr                 );	CHECK_GL_ERR
+			#if VBO_10b_NRML
+					glNormalPointer			(	GL_INT_2_10_10_10_REV, VBO_STRIDE, vert_ptr + VBO_OFFS1 + 2 );	CHECK_GL_ERR
+			#else		                                               // yes - we're leaving 2 bytes unused and go for aligned loads instead
+					glNormalPointer			(	VBO_VEC_FMT,           VBO_STRIDE, vert_ptr + VBO_OFFS1     );	CHECK_GL_ERR
+			#endif
+					funcs->TexCoordPointer_f(2, VBO_ST_FMT,			   VBO_STRIDE, vert_ptr + VBO_OFFS2, ref);	CHECK_GL_ERR
+
+//                  thats how it can be done with normalized ints for the st coordinates, but needs writing & loading shaders
+//					glVertexAttribPointer(0, 2, GL_SHORT,              GL_FALSE, VBO_STRIDE, vert_ptr             );
+//					glVertexAttribPointer(1, 1, GL_INT_2_10_10_10_REV, GL_TRUE,  VBO_STRIDE, vert_ptr + VBO_OFFS1 );
+//					glVertexAttribPointer(2, 2, GL_SHORT,              GL_TRUE,  VBO_STRIDE, vert_ptr + VBO_OFFS2 );
 				}
 				glEnableClientState(GL_VERTEX_ARRAY);				CHECK_GL_ERR
 				glEnableClientState(GL_NORMAL_ARRAY);				CHECK_GL_ERR
@@ -316,31 +309,49 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 				glDisableClientState(GL_COLOR_ARRAY);				CHECK_GL_ERR
 				glColor3fv(mat_col);								CHECK_GL_ERR
 #if XOBJ8_USE_VBO
-				glDrawElements(GL_TRIANGLES, cmd->idx_count, GL_UNSIGNED_INT, (void *) (sizeof(GLuint) * cmd->idx_offset)); CHECK_GL_ERR
+				glDrawElements(GL_TRIANGLES, cmd->idx_count, obj.short_idx ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT,
+								(void *) ((obj.short_idx ? sizeof(GLushort) : sizeof(GLuint)) * cmd->idx_offset));   CHECK_GL_ERR
 #else
 				glDrawElements(GL_TRIANGLES, cmd->idx_count, GL_UNSIGNED_INT, &obj.indices[cmd->idx_offset]); CHECK_GL_ERR
 #endif
 				break;
-			case obj8_Lines:
+			case obj8_Lines:            // todo: dmove line geometry into VBO, draw from VBO, free RAM holding idx and trgometry buffers
 				if (drawMode_Lin != drawMode) {
 					funcs->SetupLine_f(ref);	CHECK_GL_ERR
 					drawMode = drawMode_Lin;
 				}
-				if (arrayMode_Lin != arrayMode)
+#if XOBJ8_USE_VBO
+	#if HALF_SIZE_VBO
+				if (obj.geo_VBO != 0)
+					glPopMatrix();
+	#endif
+				glBindBuffer(GL_ARRAY_BUFFER, 0);				CHECK_GL_ERR
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);		CHECK_GL_ERR
+#endif
+					if (arrayMode_Lin != arrayMode)
 				{
 					arrayMode = arrayMode_Lin;
-#if XOBJ8_USE_VBO
-					glBindBuffer(GL_ARRAY_BUFFER, 0);				CHECK_GL_ERR
-					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);		CHECK_GL_ERR
-#endif
-					glVertexPointer(3, GL_FLOAT, 24, obj.geo_lines.get(0));								CHECK_GL_ERR
-					glColorPointer(3, GL_FLOAT, 24, ((const char *) obj.geo_lines.get(0)) + 12);		CHECK_GL_ERR
+					const char* vert_ptr = (const char *) obj.geo_lines.get(0);
+					glVertexPointer(3, GL_FLOAT, 6*sizeof(float), vert_ptr);	  	          CHECK_GL_ERR
+					glColorPointer(3, GL_FLOAT, 6*sizeof(float), vert_ptr + 3*sizeof(float)); CHECK_GL_ERR
 				}
 				glEnableClientState(GL_VERTEX_ARRAY);			CHECK_GL_ERR
 				glDisableClientState(GL_NORMAL_ARRAY);			CHECK_GL_ERR
 				glDisableClientState(GL_TEXTURE_COORD_ARRAY);	CHECK_GL_ERR
 				glEnableClientState(GL_COLOR_ARRAY);			CHECK_GL_ERR
 				glDrawElements(GL_LINES, cmd->idx_count, GL_UNSIGNED_INT, &obj.indices[cmd->idx_offset]);	CHECK_GL_ERR
+
+#if XOBJ8_USE_VBO
+				if (obj.geo_VBO != 0)
+				{
+	#if HALF_SIZE_VBO
+					glPushMatrix();
+					glScalef(1.0 / scale, 1.0 / scale, 1.0 / scale);
+	#endif
+					glBindBuffer(GL_ARRAY_BUFFER, obj.geo_VBO);				CHECK_GL_ERR
+					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, obj.idx_VBO);		CHECK_GL_ERR
+				}
+#endif
 				break;
 			case obj8_Lights:
 				if (drawMode_Lgt != drawMode) {
@@ -352,18 +363,24 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 					arrayMode = arrayMode_Lgt;
 #if XOBJ8_USE_VBO
 					glBindBuffer(GL_ARRAY_BUFFER, 0);				CHECK_GL_ERR
-					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);		CHECK_GL_ERR
 #endif
-					glVertexPointer(3, GL_FLOAT, 24, obj.geo_lights.get(0));							CHECK_GL_ERR
-					glColorPointer(3, GL_FLOAT, 24, ((const char *) obj.geo_lights.get(0)) + 12);		CHECK_GL_ERR
+					glVertexPointer(3, GL_FLOAT, 6*sizeof(float), obj.geo_lights.get(0));							CHECK_GL_ERR
+					glColorPointer(3, GL_FLOAT, 6*sizeof(float), ((const char *) obj.geo_lights.get(0)) + 3*sizeof(float));	CHECK_GL_ERR
 				}
 				glEnableClientState(GL_VERTEX_ARRAY);				CHECK_GL_ERR
 				glDisableClientState(GL_NORMAL_ARRAY);				CHECK_GL_ERR
 				glDisableClientState(GL_TEXTURE_COORD_ARRAY);		CHECK_GL_ERR
 				glEnableClientState(GL_COLOR_ARRAY);				CHECK_GL_ERR
-				glDrawArrays(GL_POINTS, cmd->idx_offset, cmd->idx_count);		CHECK_GL_ERR
+#if XOBJ8_USE_VBO
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, obj.idx_VBO); CHECK_GL_ERR
+				if (obj.idx_VBO)
+					glDrawElements(GL_POINTS, cmd->idx_count, obj.short_idx ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT,
+						(void*)((obj.short_idx ? sizeof(GLushort) : sizeof(GLuint))* cmd->idx_offset));   CHECK_GL_ERR
+				else
+#else
+				glDrawElements(GL_POINTS, cmd->idx_count, GL_UNSIGNED_INT, &obj.indices[cmd->idx_offset]);	CHECK_GL_ERR
+#endif
 				break;
-
 			case attr_Tex_Normal:	tex_is_cockpit = false;	drawMode = drawMode_Non;  break;
 			case attr_Tex_Cockpit:	tex_is_cockpit = true;	break;
 			case attr_No_Blend:	glDisable(GL_BLEND); CHECK_GL_ERR break;
@@ -376,15 +393,26 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 				anim = &obj.animation[cmd->idx_offset];
 				v = funcs->GetAnimParam(anim->dataref.c_str(), anim->keyframes.front().key, anim->keyframes.back().key, ref);
 				v = key_extrap(v, anim->keyframes, 0);
+#if HALF_SIZE_VBO
+				glRotatef(v, anim->axis[0] * scale, anim->axis[1] * scale, anim->axis[2] * scale);
+#else
 				glRotatef(v, anim->axis[0], anim->axis[1], anim->axis[2]);
+#endif
 				break;
 			case anim_Translate:
 				anim = &obj.animation[cmd->idx_offset];
 				v = funcs->GetAnimParam(anim->dataref.c_str(), anim->keyframes.front().key, anim->keyframes.back().key, ref);
+#if HALF_SIZE_VBO
+				glTranslatef(
+					key_extrap(v, anim->keyframes, 0) * scale,
+					key_extrap(v, anim->keyframes, 1) * scale,
+					key_extrap(v, anim->keyframes, 2) * scale);
+#else
 				glTranslatef(
 					key_extrap(v, anim->keyframes, 0),
 					key_extrap(v, anim->keyframes, 1),
 					key_extrap(v, anim->keyframes, 2));
+#endif
 				break;
 
 			case attr_Shade_Flat:	glShadeModel(GL_FLAT); 	 CHECK_GL_ERR break;
@@ -420,7 +448,7 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 			} // Case
 
 		} // cmd loop
-		
+
 		funcs->SetupNoDraped_f(ref);
 		{ float amb[4] = { 0.2, 0.2, 0.2, 1.0 }, diff[4] = { 0.8, 0.8, 0.8, 1.0 }, zero[4] = { 0.0, 0.0, 0.0, 1.0 };
 			glMaterialfv(GL_FRONT, GL_AMBIENT, amb);
@@ -429,14 +457,15 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 			glMaterialfv(GL_FRONT, GL_EMISSION, zero);
 			glColor3f(1.0, 1.0, 1.0);
 			mat_col[0] = mat_col[1] = mat_col[2] = 1.0;
-			glMateriali (GL_FRONT,GL_SHININESS,0); 
+			glMateriali (GL_FRONT,GL_SHININESS,0);
 		}
-		
+
 	} // our LOD
 #if XOBJ8_USE_VBO
 	glBindBuffer(GL_ARRAY_BUFFER, 0);				CHECK_GL_ERR
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);		CHECK_GL_ERR
+	#if HALF_SIZE_VBO
+	glPopMatrix();
+	#endif
 #endif
 }
-
-

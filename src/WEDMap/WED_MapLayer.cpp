@@ -130,12 +130,18 @@ bool	WED_MapLayer::IsVisibleNow(IGISEntity * ent) const
 	WED_Entity * e = dynamic_cast<WED_Entity *>(ent);
 	if (!e)
 		return false;
-	if(mHideFilter)
+	else
+		return IsVisibleNow(e);
+}
+
+bool	WED_MapLayer::IsVisibleNow(WED_Entity* ent) const
+{
+	if (mHideFilter)
 	{
-		if( matches_filter(e, mHideFilter ))
+		if (matches_filter(ent, mHideFilter))
 			return false;
 	}
-	return !e->GetHidden();
+	return !ent->GetHidden();
 }
 
 bool	WED_MapLayer::IsLockedNow(IGISEntity * ent) const
@@ -148,37 +154,25 @@ bool	WED_MapLayer::IsLockedNow(IGISEntity * ent) const
 		if( matches_filter(e, mLockFilter ))
 			return true;
 	}
-	return e->GetLocked();
+	return IsLockedNow(e);
 }
 
-bool	WED_MapLayer::IsVisibleNow(WED_Thing * ent) const
-{
-	if(mHideFilter)
-	{
-		if( matches_filter(ent, mHideFilter ))
-			return false;
-	}
-
-	WED_Entity * e = dynamic_cast<WED_Entity *>(ent);
-	if(!e)
-	{
-		return false;
-	}
-	return !e->GetHidden();
-}
-
-bool	WED_MapLayer::IsLockedNow(WED_Thing * ent) const
+bool	WED_MapLayer::IsLockedNow(WED_Entity* ent) const
 {
 	if(mLockFilter)
 	{
 		if( matches_filter(ent, mLockFilter ))
 			return true;
 	}
+	return ent->GetLockedRecursive();
+}
 
-	WED_Entity * e = dynamic_cast<WED_Entity *>(ent);
-	if(!e)
+bool	WED_MapLayer::IsLocked(WED_Entity* ent) const
+{
+	if (mLockFilter)
 	{
-		return false;
+		if (matches_filter(ent, mLockFilter))
+			return true;
 	}
-	return e->GetLocked();
+	return ent->GetLocked();
 }

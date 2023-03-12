@@ -44,7 +44,8 @@
 #include "Zoning.h"
 
 // Minimum bathymetric depth from water surface at any point!
-#define	MIN_DEPTH 10.0f
+#define	MIN_DEPTH 1.0f
+#define	MAX_DEPTH 50.0f
 
 #define WATER_SURF_DIM 256
 
@@ -1658,19 +1659,220 @@ else														e = DEM_NO_DATA;
 	}
 	
 	water_surface.fill_nearest();
-	DEMGeo& bath_old(ioDEMs[dem_Bathymetry]);
+//	DEMGeo& bath_old(ioDEMs[dem_Bathymetry]);
+//
+//	DEMGeo	bath_new(water_surface);
+//	for(y = 0; y < bath_new.mHeight; ++y)
+//	for(x = 0; x < bath_new.mWidth ; ++x)
+//	{
+//		float surf = bath_new(x,y);
+//		float bath = bath_old.value_linear(bath_new.x_to_lon(x),bath_new.y_to_lat(y));
+//		float bath_constrained = fltlim(bath, surf - MAX_DEPTH, surf - MIN_DEPTH);
+//		bath_new(x,y) = bath_constrained;
+//	}
+//
+//	bath_old.swap(bath_new);
 	
-	DEMGeo	bath_new(water_surface);
-	for(y = 0; y < bath_new.mHeight; ++y)
-	for(x = 0; x < bath_new.mWidth ; ++x)
-	{
-		bath_new(x,y) = min(bath_new(x,y) - MIN_DEPTH, bath_old.value_linear(bath_new.x_to_lon(x),bath_new.y_to_lat(y)));		
-	}
-	
-	bath_old.swap(bath_new);
-	
+	ioDEMs[dem_Bathymetry].fill_nearest();
 
 }
+
+void	CalcWaterSurface(DEMGeoMap& ioDEMs, double west, double south, double east, double north)
+{
+	const DEMGeo& raw = ioDEMs[dem_Elevation];
+	DEMGeo& surf = ioDEMs[dem_Water_Surface];
+	
+	Assert(raw.mPost != 0);
+
+	int x1 = raw.lon_to_x(west);
+	int y1 = raw.lat_to_y(south);
+	int x2 = raw.lon_to_x(east);
+	int y2 = raw.lat_to_y(north);
+	
+	surf.resize(x2 - x1 + 1, y2 - y1 + 1);
+	surf = DEM_NO_DATA;
+	surf.mNorth = north;
+	surf.mSouth = south;
+	surf.mWest = west;
+	surf.mEast = east;
+	surf.mPost = 1;
+	
+	for(int y = y1; y <= y2; ++y)
+	for(int x = x1; x <= x2; ++x)
+	{
+		int count = 0;
+		const int rad = 2;
+		const int max_samples = (rad*2+1)*(rad*2+1);
+		float hbuf[max_samples];
+		for(int dy = -rad; dy <= rad; ++dy)
+		for(int dx = -rad; dx <= rad; ++dx)
+		{
+			float h = raw.get(x+dx,y+dy);
+			if(h != DEM_NO_DATA)
+			{
+				hbuf[count++] = h;
+			}
+		}
+		DebugAssert(count <= max_samples);
+		
+		if(count > 0)
+		{
+			sort(hbuf,hbuf+count);
+		
+			int cut_front = count / 8;
+			int cut_back = count / 3;
+			int stop = count - cut_back;
+			float h_total = 0.0f;
+			
+			DebugAssert((count - cut_front - cut_back) > 0);
+			for(int c = cut_front; c < stop; ++c)
+			{
+				h_total += hbuf[c];
+			}
+			surf.set(x - x1, y - y1, h_total / ((float) (count - cut_front - cut_back)));
+		}
+	}
+}
+
+void CalcWaterBathymetry(DEMGeoMap& ioDEMs)
+{
+	const DEMGeo& elev(ioDEMs[dem_Elevation]);
+	const DEMGeo& surf(ioDEMs[dem_Water_Surface]);
+		  DEMGeo& bath(ioDEMs[dem_Bathymetry]);
+		  
+	bath.resize(elev.mWidth,elev.mHeight);
+	bath.copy_geo_from(elev);
+	bath = 0;
+	
+	for(DEMGeo::address a = elev.address_begin(); a != elev.address_end(); ++a)
+		if(elev[a] != DEM_NO_DATA)
+			bath[a] = FLT_MAX;
+
+	//https://mshgrid.com/2021/02/04/the-fast-sweeping-algorithm/
+	int width = bath.mWidth;
+	int height = bath.mHeight;
+
+	const int NSweeps = 4;
+    // sweep directions { start, end, step }
+    const int dirX[NSweeps][3] = { {0, width - 1, 1} , {width - 1, 0, -1}, {width - 1, 0, -1}, {0, width - 1, 1} };
+    const int dirY[NSweeps][3] = { {0, height - 1, 1}, {0, height - 1, 1}, {height - 1, 0, -1}, {height - 1, 0, -1} };
+
+	float aa[2];
+    double d_new, a, b;
+    int s, ix, iy;
+    const double h = 1.0, f = 1.0;
+	
+    for (int s = 0; s < NSweeps; s++)
+    {
+        for (int iy = dirY[s][0]; dirY[s][2] * iy <= dirY[s][1]; iy += dirY[s][2])
+        {
+            for (int ix = dirX[s][0]; dirX[s][2] * ix <= dirX[s][1]; ix += dirX[s][2])
+            {
+				float v = bath.get(ix, iy);
+				if(v > 0.0)
+				{
+					if (iy == 0)
+						aa[1] = min(v,bath.get(ix,iy+1));
+					else if (iy == (height - 1))
+						aa[1] = min(v, bath.get(ix,iy-1));
+					else
+						aa[1] = min(bath.get(ix,iy-1),bath.get(ix,iy+1));
+				 
+					if (ix == 0)
+						aa[0] = min(v,bath.get(ix+1,iy));
+					else if (ix == (width - 1))
+						aa[0] = min(v,bath.get(ix-1,iy));
+					else
+						aa[0] = min(bath.get(ix-1,iy), bath.get(ix+1,iy));
+ 
+					a = aa[0]; b = aa[1];
+					d_new = (fabs(a - b) < f * h ? (a + b + sqrt(2.0 * f * f * h * h - (a - b) * (a - b))) * 0.5 : std::fminf(a, b) + f * h);
+
+					if(d_new < v)
+						bath.set(ix,iy,d_new);
+                }
+            }
+        }
+    }
+    
+	for(DEMGeo::address a = elev.address_begin(); a != elev.address_end(); ++a)
+	{
+		if(elev[a] != DEM_NO_DATA)
+		{
+			float d = bath[a];
+			bath[a] = surf[a] - min(50.0f,(1.0f + 4.0f * max(0.0f,(d - 1.0f))));
+		}
+		else
+		{
+			bath[a] = DEM_NO_DATA;
+		}		
+	}
+}
+
+
+/*
+void CalcWaterBathymetry(DEMGeoMap& ioDEMs)
+{
+	const DEMGeo& elev(ioDEMs[dem_Elevation]);
+	const DEMGeo& surf(ioDEMs[dem_Water_Surface]);
+		  DEMGeo& bath(ioDEMs[dem_Bathymetry]);
+		  
+	bath.resize(elev.mWidth,elev.mHeight);
+	bath.copy_geo_from(elev);
+	bath = DEM_NO_DATA;
+		  
+		address_fifo wet_pixels(bath.mWidth * bath.mHeight);
+		
+	for(DEMGeo::address any = elev.address_begin(); any != elev.address_end(); ++any)
+	if(elev[any] == DEM_NO_DATA)
+	{
+		DEMGeo::address n[8];
+		int nc = elev.get_neighbors8(any,n);
+		for(int i = 0; i < nc; ++i)
+		{
+			if(elev[n[i]] != DEM_NO_DATA)
+				wet_pixels.push(n[i]);
+		}
+	}
+	
+	while(!wet_pixels.empty())
+	{
+		DEMGeo::address w = wet_pixels.pop();
+		
+		if(bath[w] != DEM_NO_DATA)
+			continue;
+		
+		DEMGeo::address n[8];
+		int nc = elev.get_neighbors8(w, n);
+		
+		float dmax = 1.0;
+		for(int i = 0; i < nc; ++i)
+		{
+			DEMGeo::address p = n[i];
+			
+			if(elev[p] != DEM_NO_DATA)
+			{
+				float d = bath[p];
+				if(d == DEM_NO_DATA)
+				{
+//					wet_pixels.push(p);
+				}
+				else
+					dmax = max(dmax,d+1.0f);
+			}
+		}
+		bath[w] = dmax;
+	}
+
+	for(DEMGeo::address b = bath.address_begin(); b != bath.address_end(); ++b)
+	{
+		float h = bath[b];
+		if(h != DEM_NO_DATA)
+			bath[b] = surf[b] - h;
+	}
+}
+*/
+
 
 void	CalcSlopeParams(DEMGeoMap& ioDEMs, bool force, ProgressFunc inProg)
 {
@@ -1977,7 +2179,7 @@ static void make_gaussian_kernel(float k[], int width, double sigma)
 	for(int w = -width; w <= width; ++w)
 	{
 		double x = w;
-		double f = (1.0 / sqrt(2.0 * PI * sigma * sigma)) * exp(-(x * x) / (2.0 * sigma * sigma));
+		double f = (1.0 / sqrt(2.0 * M_PI * sigma * sigma)) * exp(-(x * x) / (2.0 * sigma * sigma));
 		*k++ = f;
 	}
 }

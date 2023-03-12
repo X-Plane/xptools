@@ -600,7 +600,7 @@ int main(int argc, char * argv[])
 	t->Start(0.1);
 
 	int bounds[4] = { 0, 20, 1280, 1004 };
-	GUI_Window * main_window = new GUI_Window("RenderFarm", xwin_style_visible, bounds, &app);
+	GUI_Window * main_window = new GUI_Window("RenderFarm", xwin_style_movable|xwin_style_resizable|xwin_style_visible, bounds, &app);
 #if LIN
 	main_window->xclass("RenderFarm");
 	main_window->show(argc,argv);

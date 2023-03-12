@@ -23,8 +23,8 @@ public:
 	virtual const char *	HumanReadableType(void) const { return "Road Network Node"; }
 
 	// from WED_GISPoint
-	virtual	void			Rescale(GISLayer_t l,const Bbox2& old_bounds, const Bbox2& new_bounds) override;
-	virtual	void			Rotate(GISLayer_t l,const Point2& center, double angle) override;
+	virtual	void			Rescale(GISLayer_t l,const Bbox2& old_bounds, const Bbox2& new_bounds);
+	virtual	void			Rotate(GISLayer_t l,const Point2& center, double angle);
 
 };
 #endif

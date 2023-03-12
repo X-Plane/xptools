@@ -372,8 +372,7 @@ bool	ReadDegFile(const char * inFile)
 		{
 			FAAObs_t	obs;
 			char	buf[256];
-			if (sscanf(l, "%lf %lf %f %f %s",
-				&obs.lon, &obs.lat, &obs.msl, &obs.agl, buf) == 5)
+			if(TextScanner_FormatScan(s,"ddfft",&obs.lon, &obs.lat, &obs.msl, &obs.agl, buf) == 5)
 			{
 //				printf("Got: %lf %lf %f %f %s\n",
 //					obs.lon, obs.lat, obs.msl, obs.agl, buf);

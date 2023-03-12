@@ -63,6 +63,8 @@
 #include <CGAL/Arr_extended_dcel.h> // we need data extensions for everything
 #include <CGAL/Arr_consolidated_curve_data_traits_2.h>
 #include <CGAL/Arr_landmarks_point_location.h>
+#include <CGAL/Arr_walk_along_line_point_location.h>
+#include <CGAL/Arr_trapezoid_ric_point_location.h>
 //#include <CGAL/Arr_overlay.h>
 #include <CGAL/Arr_default_overlay_traits.h>
 #include <CGAL/Boolean_set_operations_2/Gps_default_dcel.h>
@@ -249,6 +251,7 @@ struct GIS_vertex_data {
 	bool mTunnelPortal;
 	bool mNeighborBurned;
 	bool mNeighborNotBurned;
+	boost::optional<double> mElevation;
 	inline void trim(void) { }
 #if OPENGL_MAP
 	float						mGL[2];				// Pre-expanded line!
@@ -307,6 +310,8 @@ public:
 	GISPolyObjPlacementVector	mPolyObjs;
 	int							mTemp1;							// Per face temp value
 	int							mTemp2;							// Per face temp value
+	//! If true, the DEM is not used inside the face
+	bool						mHasElevation = false;
 
 	bool		IsWater(void) const  { return (mTerrainType == terrain_Water); }
 	bool		HasParam(int p) const { return mParams.count(p) > 0; }
@@ -334,6 +339,7 @@ public:
 		mPolyObjs = x.mPolyObjs;
 		mTemp1 = x.mTemp1;
 		mTemp2 = x.mTemp2;
+		mHasElevation = x.mHasElevation;
 	}
 #if OPENGL_MAP
 	vector<const float *>		mGLTris;						// Pre-expanded triangle indices
@@ -417,6 +423,9 @@ typedef  Arr_accessor::Dcel_isolated_vertex     DIso_vert;
 // Landmark point location is pretty fast to construct, even on a complex map, and has good lookup time.  I tried the RIC
 // locator, but instantiation time is significantly longer.
 typedef CGAL::Arr_landmarks_point_location<Arrangement_2>  Locator;
+
+//typedef CGAL::Arr_walk_along_line_point_location<Arrangement_2>  Dumb_locator;
+typedef CGAL::Arr_trapezoid_ric_point_location<Arrangement_2>	Dumb_locator;
 
 typedef Arrangement_2		Pmwx;
 

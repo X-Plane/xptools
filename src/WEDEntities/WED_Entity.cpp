@@ -43,17 +43,23 @@ void WED_Entity::CopyFrom(const WED_Entity * rhs)
 	cache_valid_ &= ~cache_All;
 }
 
-int		WED_Entity::GetLocked(void) const
+int		WED_Entity::GetLockedRecursive(void) const
 {
 	if (locked.value)
 		return 1;
 	
 	WED_Entity * e = SAFE_CAST(WED_Entity,this->GetParent());
 	if (e)
-		return e->GetLocked();
+		return e->GetLockedRecursive();
 	else
 		return 0;
 }
+
+int		WED_Entity::GetLocked(void) const
+{
+	return locked.value;
+}
+
 
 int		WED_Entity::GetHidden(void) const
 {

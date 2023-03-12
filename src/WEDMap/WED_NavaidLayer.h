@@ -35,7 +35,7 @@ struct navaid_t {
 	string	icao;
 	int     freq;     // ATC tower freq for airports, in kHz
 	string	rwy;      // Or some other informative text
-	vector<Point2> shape;
+	vector<Polygon2> shape; // airspaces only
 };
 
 class WED_NavaidLayer : public WED_MapLayer {

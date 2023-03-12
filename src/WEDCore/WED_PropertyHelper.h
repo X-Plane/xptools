@@ -44,35 +44,48 @@ class	IOWriter;
 class	IOReader;
 class	WED_XMLElement;
 
-/* These macros create a *single* string containing a properties WED name and XML names,
-   saving 2 pointers in each property item, after the sqlite removal already removed 2 pointers.
-   This reduces the WED memory size with large sceneries (like importing the global apt.dat) by 30%
+/* memory size optimization for LARGE datasets, e.g. all 38,000+ Global Airports:
+
+   These macros create a *single* string containing the properties WED name and both XML names,
+   saving 2 pointers in each property item.
+   Every WED_Thing has on average 10 WED_Properties, the Global Airports have as of mid 2019 ~14 million WED_Things,
+   so this adds up to over 2 GB of memory for just these two extra pointers saved, some 30% of total memory.
+
+   There is no compile time switch to turn this trickery off and return to using full pointers again.
 */
 
 #define XML_Name(x,y) x "\0" y
 #define PROP_Name(wed_name, xml_name) wed_name "\0" xml_name, sizeof(wed_name) + 256 * (strlen(xml_name)+1+sizeof(wed_name))
 
-/* more memory size and access time optimization for LARGE datasets, like the Global Airports:
+/* more memory size and access time optimization for LARGE datasets, e.g. all 38,000+ Global Airports:
 
-   Every WED_Thing has on average 10 WED_Properties and a pair of pointers to/from each property.
-   The Global Airports have as of mid 2019 ~14 million WED_Things, so this adds up to over 2GB.
-   
    And the STL container vector<WED_PropertyItem *> is responsible for a good chunk of all that pain,
    as the pointer array is on the heap, requireing a second memory access to resolve. With large
-   data structures, pretty much every memory access is a cache miss.
-   
-   Since the WED_PropertyItems are part of the same class - they are all within 2kB in memory from
-   the WED__PropertyHelper class. Due to alignof(class) == 8 that relative distance can be encoded 
-   with just 1 byte. The vector<class *> is reduces to a memory-local char[] - saving overall 
-   another 24% of total memory and 5% CPU time on load, save and export.
-   
-   The maximum number of properties for any WEDEntity is 22 right now (Runways), so we define the
-   byte array to have 23 entries (plus one byte for the array size parameter).
+   data structures, pretty much every memory access is a cache miss. So making this a memory-local
+   fixed array gains speed in every read/write to any property.
 
-   Set below to 0 to disable this 2nd level of trickery.
-*/   
+   All WED_PropertyItems are part of the same class, max WED_PropertyHelper memory size is ~2kb
+   Due to alignof(class) == 8 that relative distance can be encoded with just 1 byte.
 
-#define PROP_PTR_OPT 23
+   So the vector<class *> is reduced a memory-local char[]
+
+   This saves another 24% of total memory and 5% CPU time on load, save and export.
+
+   The maximum number of properties for any WEDEntity is 31 right now (Runways), so we define the
+   byte array to have a rounded up 32 entrie
+
+   Set below to 0 to disable this trickery and use a plain vector<void *> again and also make mParent
+   pointing from each property back to the WED_Thing a full pointer and not just an 8 bit relative pointer.
+
+   Using some more clever vector like LLVM's SmallVector or boosts small_vector would eliminate the
+   need for a fixed array here. In that case - an inline size of 16 elements would suffice to hold 
+   the relaive offsets for all entities except runways - only those have more properties. So that saves 
+   even more memory and reduced any need in the future to re-adjust this fixed array for increased couunts !
+   There are a LOT less runways than vertices and other entities - so loosing some optimizations for that
+   entity type is not causing any notable drawbacks.
+*/
+
+#define PROP_PTR_OPT 32
 
 class	WED_PropertyItem {
 public:
@@ -86,42 +99,43 @@ public:
 	virtual	void 		ReadFrom(IOReader * reader)=0;
 	virtual	void 		WriteTo(IOWriter * writer)=0;
 	virtual	void		ToXML(WED_XMLElement * parent)=0;
-
 	virtual	bool		WantsElement(WED_XMLReader * reader, const char * name) { return false; }
 	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value)=0;
 
-	WED_PropertyHelper * GetParent(void) const;
 	const char *		GetWedName(void) const;
+protected:
+	WED_PropertyHelper* GetParent(void) const;
 	const char *		GetXmlName(void) const;
 	const char *		GetXmlAttrName(void) const;
-
 private:
 #if PROP_PTR_OPT
 	#define PTR_CLR(x)  (x & (1ULL << 45) - 1ULL)
 	/*
-	Unfortunately we need 2 more bits as we have 'unused' bits in the 47 bit pointers. So we clear two more bits, but need 
+	Unfortunately we need 2 more bits as we have 'unused' bits in the 47 bit pointers. So we clear two more bits, but need
 	to put them back later to restore the exact pointer.
 	Under Linux and OSX - that's easy: All constants are at the bottom of the 47bit virtual address space - so UNLESS the
 	pointer is refering to the heap - those other more significant bits are all zero.
-	But under windows - the constants are mapped at the very top, i.e. right below 0x7FFFFFFFFFFF. So we look at the 
+	But under windows - the constants are mapped at the very top, i.e. right below 0x7FFFFFFFFFFF. So we look at the
 	45th bit - the highest one we didn't clobber and copy that to the 46 and 47th bits. This restores the exact pointer
 	if pointimng to either in the top 32TB OR bottom 32TB of the 128TB / 47 bit virtual address space.
 	*/
 	#define PTR_FIX(x)  (PTR_CLR(x) | (x & (1ULL << 44)) << 1 | (x & (1ULL << 44)) << 2)
-	uintptr_t				mTitle;      // this now holds THREE tightly packed offsets in its 19 MSBits to save even more memory
-	WED_PropertyHelper *	mParent;
+	uintptr_t			mTitle;      // this now holds THREE tightly packed offsets in its 19 MSBits to save even more memory
+  #if DEV
+	WED_PropertyHelper*	mParent;     // only to verify the relative pointer calculated from the 8 bits is identical to the real pointer
+  #endif
 #else
-	/* 
-	So called "64bit" processors actually only have 48bit virtual address space - a concession to the structures and speed of the 
+	/*
+	So called "64bit" processors actually only have 48bit virtual address space - a concession to the structures and speed of the
 	virtual memory mapping hardware. So for the next decade or so, the top 17 bits of all pointers to anywhere in the userspace of
-	any x86-64 application are zero. 17 bits ? Yep - all existing OS use the MSB to distinguish between kernel and user address 
-	space - so no legal pointer can ever have the MSB be 1. And due to the way the 47 bits are required to be sign-extended, the 
+	any x86-64 application are zero. 17 bits ? Yep - all existing OS use the MSB to distinguish between kernel and user address
+	space - so no legal pointer can ever have the MSB be 1. And due to the way the 47 bits are required to be sign-extended, the
 	effective user space goes from 0x0000 0000 0000 0000 to 0x0000 7FFF FFFF FFFF. So that is why we can safely abuse the top
 	17bit to store other information, as long as we zero those bits out before the pointer is actually used.
 	*/
 	#define PTR_CLR(x) (x & ((1ULL << 47) - 1ULL))
-	uintptr_t				mTitle;      // the two MSBytes hold offsets to make the const char * point to the 2nd and 3rd word in the string
-	WED_PropertyHelper *	mParent;
+	uintptr_t			mTitle;      // the two MSBytes hold offsets to make the const char * point to the 2nd and 3rd word in the string
+	WED_PropertyHelper* mParent;
 #endif
 };
 
@@ -171,7 +185,7 @@ public:
 
 	// This is virtual so remappers like WED_Runway can "fix" the results
 	virtual	int		PropertyItemNumber(const WED_PropertyItem * item) const;
-	
+
 #if PROP_PTR_OPT
 	relPtr				mItems;
 #else
@@ -378,14 +392,14 @@ public:
 						operator set<int>&() { return value; }
 						operator set<int>() const { return value; }
 	WED_PropIntEnumSet& operator=(const set<int>& v);
-	
-	WED_PropIntEnumSet& operator+=(const int v) 
-	{ if(value.count(v) == 0) 
-		{ if (GetParent()) GetParent()->PropEditCallback(1); 
-			value.insert(v); 
+
+	WED_PropIntEnumSet& operator+=(const int v)
+	{ if(value.count(v) == 0)
+		{ if (GetParent()) GetParent()->PropEditCallback(1);
+			value.insert(v);
 			if (GetParent()) GetParent()->PropEditCallback(0);
-		} 
-		return *this; 
+		}
+		return *this;
 	}
 	WED_PropIntEnumSet(WED_PropertyHelper * parent, const char * title, int offset, int idomain, int iexclusive) :
 		WED_PropertyItem(parent, title, offset), domain(idomain), exclusive(iexclusive) { }

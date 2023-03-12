@@ -285,6 +285,13 @@ static int DoBurnAirports(const vector<const char *>& args)
 	return 0;
 }
 
+static int DoProtectApts(const vector<const char *>& args)
+{
+	if (gVerbose)	printf("Burning airports into vector map...\n");
+	ApplyApproachProtections(gApts, gMap, gProgress);
+	return 0;
+}
+
 static int DoZoning(const vector<const char *>& args)
 {
 	if (gVerbose)	printf("Calculating zoning info...\n");
@@ -551,12 +558,39 @@ static int DoBuildDSF(const vector<const char *>& args)
 
 	if(strcmp(args[0],"-") == 0) b1 = NULL; else CreatePackageForDSF(args[0], (int) gDem[dem_LandUse].mWest,(int) gDem[dem_LandUse].mSouth, buf1);
 	if(strcmp(args[1],"-") == 0) b2 = NULL; else CreatePackageForDSF(args[1], (int) gDem[dem_LandUse].mWest,(int) gDem[dem_LandUse].mSouth, buf2);
-	BuildDSF(b1,b2, 
-		gDem[dem_Elevation],
-//		gDem[dem_WaterSurface],
-		gDem[dem_Bathymetry],
-		gDem[dem_UrbanDensity],
-		gTriangulationHi, /*gTriangulationLo,*/ gMap, gRegion, gProgress);
+
+	std::vector<DSFRasterInfo> rasters;
+	{
+		const auto& it = gDem.find(dem_Soundscape);
+		if (it != gDem.end())
+		{
+			rasters.push_back({dem_Soundscape, 1.0f, 1.0f, it->second });
+		}
+	}
+
+	for (int i = dem_SpringStart; i <= dem_WinterEnd; ++i)
+	{
+		auto it = gDem.find(i);
+		if (it != gDem.end())
+		{
+			// Change the scale so [0-183] becomes [0-365]
+			rasters.push_back({i, 1.0f, (365.f / 183.f), it->second });
+		}
+	}
+
+	BuildDSF(b1, b2,
+			 gDem[dem_Elevation],
+			 gDem[dem_Bathymetry],
+			 gDem[dem_LandUse],
+			 rasters,
+			 gTriangulationHi, /*gTriangulationLo,*/ gMap, gRegion, gProgress);
+	return 0;
+}
+
+static int DoMapStats(const vector<const char*>& args)
+{
+	DumpMapStats(gMap);
+
 	return 0;
 }
 
@@ -568,6 +602,7 @@ static	GISTool_RegCmd_t		sProcessCmds[] = {
 { "-calcslope", 	0, 1, DoCalcSlope, 		"Calculate slope derivatives.", 	  "" },
 { "-calcmesh", 		1, 1, DoCalcMesh, 		"Calculate Terrain Mesh.", 	 		  "" },
 { "-burnapts", 		0, 0, DoBurnAirports, 	"Burn Airports into vectors.", 		  "" },
+{ "-protectapts",	0, 0, DoProtectApts,	"Protect approach paths for airports", "" },
 { "-zoning",	 	0, 0, DoZoning, 		"Calculate Zoning info.", 			  "" },
 //{ "-hydro",	 		1, 2, DoHydroReconstruct,"Rebuild coastlines from hydro model.",  "" },
 //{ "-hydrosimplify", 0, 0, DoHydroSimplify, 	"Simplify Coastlines.", 			  "" },
@@ -578,6 +613,7 @@ static	GISTool_RegCmd_t		sProcessCmds[] = {
 { "-buildroads", 	0, 0, DoBuildRoads, 	"Pick Road Types.", 	  			"" },
 { "-assignterrain", 1, 1, DoAssignLandUse, 	"Assign Terrain to Mesh.", 	 		 "" },
 { "-exportdsf", 	2, 2, DoBuildDSF, 		"Build DSF file.", 					  "" },
+{ "-mapstats", 	0, 0, DoMapStats, 	"Dump Map statistics.", 				  "" },
 
 
 

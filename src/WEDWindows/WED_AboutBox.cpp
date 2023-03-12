@@ -87,7 +87,11 @@ void		WED_AboutBox::Draw(GUI_GraphState * state)
 		++n;
 	}
 
-	const char * info = "WorldEditor " WED_VERSION_STRING ", compiled on " __DATE__ " " __TIME__;
+	const char * info = "WorldEditor " WED_VERSION_STRING ", compiled on " __DATE__ " " __TIME__
+#if TYLER_MODE
+	" with TYLER_MODE"
+#endif
+	;
 
 	GUI_FontDraw(state, font, color,
 		(bounds[0] + bounds[2]) * 0.5,
