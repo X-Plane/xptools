@@ -9,7 +9,9 @@ DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
 #FORCEREBUILD_SUFFIX := _mt
 
 ifdef PLAT_LINUX
-LIBS		+= -pthread
+LDFLAGS         += -rdynamic
+LDFLAGS         += -Wl,--exclude-libs,libpng
+LIBS            += -lpthread
 endif #PLAT_LINUX
 
 ifdef PLAT_MINGW
@@ -20,7 +22,7 @@ endif #PLAT_MINGW
 
 ifdef PLAT_DARWIN
 LDFLAGS		+= -framework Carbon
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libboost_thread.a
+LIBS            += -lpthread
 endif #PLAT_DARWIN
 
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a

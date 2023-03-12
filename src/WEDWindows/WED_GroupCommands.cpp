@@ -5522,21 +5522,21 @@ void WED_UpgradeJetways(IResolver* resolver)
 static int get_aged_surf(int surf, int age)
 {
 	if (surf <= surf_Asphalt_4)
-		return age == 1 ? surf_Asphalt_2 : surf_Asphalt;        // older = brighter, new = darker
+		return age == 1 ? surf_Asphalt_4 : surf_Asphalt;
 	else if (surf <= surf_Asphalt_7)
-		return age == 1 ? surf_Asphalt_2 : surf_Asphalt_8;
+		return age == 1 ? surf_Asphalt_4 : surf_Asphalt_8;
 	else if (surf <= surf_Asphalt_11)
-		return age == 1 ? surf_Asphalt_5 : surf_Asphalt_12;
+		return age == 1 ? surf_Asphalt_7 : surf_Asphalt_12;
 	else if (surf <= surf_Asphalt_15)
-		return age == 1 ? surf_Asphalt_9 : surf_Asphalt_16;
+		return age == 1 ? surf_Asphalt_11 : surf_Asphalt_16;
 	else if (surf <= surf_Asphalt_19)
-		return age == 1 ? surf_Asphalt_13 : surf_Asphalt_16;
-	else if (surf == surf_Concrete_3)
-		return age == 1 ? surf_Concrete_3 : surf_Concrete_1;    // stays same brighness
-	else if (surf == surf_Concrete_5)
-		return age == 1 ? surf_Concrete_5 : surf_Concrete;
-	else if (surf == surf_Concrete_8)
-		return age == 1 ? surf_Concrete_8 : surf_Concrete_6;
+		return age == 1 ? surf_Asphalt_15 : surf_Asphalt_16;
+	else if (surf <= surf_Concrete_3)
+		return age == 1 ? surf_Concrete_5 : surf_Concrete_1;
+	else if (surf <= surf_Concrete_5)
+		return age == 1 ? surf_Concrete_8 : surf_Concrete_1;
+	else if (surf <= surf_Concrete_8)
+		return age == 1 ? surf_Concrete_8 : surf_Concrete;
 
 	return surf;
 }
@@ -5547,20 +5547,11 @@ int WED_DoAgePavement(WED_Airport* apt, int age)  // age 1 = older
 	vector<WED_Taxiway*> twys;
 	vector<WED_PolygonPlacement*> pols;
 
-	int changes = 0;
-
 	CollectRecursive(apt, back_inserter(rwys));
 	CollectRecursive(apt, back_inserter(twys));
 	CollectRecursive(apt, back_inserter(pols));
 
-//	CollectRecursive(apt, back_inserter(pols), EntityNotHidden, [](WED_Thing* pol)->bool {
-//		string res;
-//		static_cast<WED_PolygonPlacement*>(pol)->GetResource(res);
-//		return res.compare(0, strlen("lib/airport/ground/pavement"), "lib/airport/ground/pavement") == 0 ||
-//			   res.compare(0, strlen("lib/airport/pavement"), "lib/airport/pavement") == 0;
-//		},
-//		WED_PolygonPlacement::sClass, 99);
-
+	int changes = 0;
 
 	for (auto r : rwys)
 	{
@@ -5596,26 +5587,28 @@ int WED_DoAgePavement(WED_Airport* apt, int age)  // age 1 = older
 	{
 		string res;
 		p->GetResource(res);
-		int surf = 0;
 
-		if (res.compare(0, strlen("lib/airport/pavement"), "lib/airport/pavement") == 0)
+		int surf = 0;
+		if (res == "lib/airport/pavement/" || "lib/airport/pavement/")
 		{
-			string t = res.substr(res.length() - 8, 4);
-			if (t == "t_1D")								     surf = surf_Asphalt_16;
-			else if (t == "t_2D" || t == "t_3D" || t == "t_4D")  surf = surf_Asphalt_12;
-			else if (t == "t_5D" || t == "t_6D" || t == "t_1L")  surf = surf_Asphalt_8;
-			else if (t == "t_2L" || t == "t_3L" || t == "t_4L")  surf = surf_Asphalt;
-			else if (t == "t_5L" || t == "t_6L")                 surf = surf_Asphalt_1;
-			else if (t[3] == 'D')                                surf = surf_Concrete_6;
-			else if (t[3] == 'L' && t[2] < '3')                  surf = surf_Concrete;
-			else if (t[3] == 'L' && t[2] > '2')                  surf = surf_Concrete_1;
+			string t  = res.substr(res.length() - 8, 4);
+
+			if (t == "t_1D")                                    surf = surf_Asphalt_16;
+			else if (t == "t_2D" || t == "t_3D" || t == "t_4D") surf = surf_Asphalt_12;
+			else if (t == "t_5D" || t == "t_6D" || t == "t_1L") surf = surf_Asphalt_8;
+			else if (t == "t_2L" || t == "t_3L" || t == "t_4L") surf = surf_Asphalt;
+			else if (t == "t_5L" || t == "t_6L")                surf = surf_Asphalt_1;
+			else if (t[0] == 'e' && t[1] == '_')
+			{
+					 if (t[3] == 'D')                           surf = surf_Concrete_6;
+				else if (t[2] <= '3' && t[3] == 'L')            surf = surf_Concrete;
+				else if (t[2] <= '6' && t[3] == 'L')            surf = surf_Concrete_1;
+			}
 		}
-		else if (res.compare(0, strlen("lib/airport/ground/pavement"), "lib/airport/ground/pavement") == 0)
+		else if (res == "lib/airport/ground/pavement/" || "lib/airport/ground/pavement/")
 		{
 			surf = WED_GetLibraryMgr(p->GetArchive()->GetResolver())->GetSurfEnum(res);
 		}
-		else
-			continue;
 
 		auto new_surf = get_aged_surf(surf, age);
 		if (surf > 0 && new_surf != surf)
@@ -5633,9 +5626,9 @@ void WED_AgePavement(IResolver* resolver)
 	WED_Thing* wrl = WED_GetWorld(resolver);
 	vector<WED_Airport*> all_apts;
 
-	auto ans = DoSaveDiscardDialog("Change all Pavement to look older or newer ?\n",
-		                     "Yes = cracked/worn, lighter asphalt, darker concrete\n"
-		                     "No = smooth, darker asphalt, lighter concrete");
+	int ans = DoSaveDiscardDialog("Change pavement apperance ?",
+		"Yes = worn/cracked, lighter asphalt, darker concrete\n"
+		"No  = smooth, darker asphalt, lighter concrete");
 
 	if (ans != close_Save && ans != close_Discard)
 		return;
@@ -5652,7 +5645,7 @@ void WED_AgePavement(IResolver* resolver)
 	{
 		wrl->CommitOperation();
 		string msg("Converted ");
-		msg += to_string(count) + " items changed";
+		msg += to_string(count) + " items";
 		DoUserAlert(msg.c_str());
 	}
 	else
