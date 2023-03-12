@@ -19,6 +19,7 @@ WED 2.5.1 r1
    - WED-1461 fix align function
    - relax some ATC network validations for non-gateway use
    - age pavement function now transforms all XP11+XP12 pavement types
+   - fix apt.dat import warning mesaage not showing for XP12 Global Airports
 
 WED 2.5.1b1 2/3/2023
    Bug fix:
