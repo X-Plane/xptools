@@ -1127,9 +1127,11 @@ void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane
 		string parent_dir = FILE_get_dir_name(*f);
 		parent_dir = parent_dir + ".." + DIR_STR;
 		
-		if( parent_dir.find("default apt dat") != string::npos || (FILE_exists((parent_dir + "COPYING").c_str()) && 
+		if( parent_dir.find("default apt dat") != string::npos ||            // XP11 Resources
+			parent_dir.find("Global Airports") != string::npos ||            // XP11 or XP12
+			(FILE_exists((parent_dir + "COPYING").c_str()) &&                // packs downloaded from gateway
 				(FILE_exists((parent_dir + "README.txt").c_str()) || FILE_exists((parent_dir + "README").c_str()))) )
-			if(!ConfirmMessage("Warning !\nIt is strongly discouraged to import the apt.dat for scenery gateway airports. Numerous problems can be caused by this.\n\n"
+			if(!ConfirmMessage("Warning !\nImporting from an X-Plane Global Airports or Gateway Scenery Pack apt.dat is unsuitable for scenery design.\n\n"
 			                   "Use File->Import from Scenery Gateway whenever possible.", "Proceed import of apt.dat", "Cancel"))
 				return;
 		

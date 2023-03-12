@@ -19,8 +19,9 @@ WED 2.5.1r1 3/10/23
    - WED-1461 fix align function
    - relax network validations to warning for non-gateway use
    - age pavement not converting all XP11+12 pavement polygons
+   - fix apt.dat import warning message not showing for XP12 Global Airports
 
-WED 2.5.1b1 3/2/23
+WED 2.5.1b1 2/3/2023
    Bug fix:
    - WED-1454 fix slight shift in world map layer at high zoom levels
    - skip placeholder images ESRI is sending for unavailable slippy maps
