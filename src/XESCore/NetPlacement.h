@@ -53,6 +53,15 @@ public:
 	int								GetLayerForChain(Net_ChainInfo_t * me);
 	void							SetLayerForChain(Net_ChainInfo_t * me, int l);
 	
+	// If there is a chain to our CW or CCW in our layer that might limit our curving, this finds it.  For example,
+	// in a right-off-ramp highway turn, when we ask for the CCW limit of that right off ramp, we should get back the
+	// main highway trunk continuing (that is a CCW circulation from the junctoin).
+	//
+	// In the same example if we get the CW limit we get null because the angle of the next vector to the CW direction
+	// is over 90 degrees off - that is, it's really going in the other direction entirely.
+	Net_ChainInfo_t *				GetNeighborLimit(Net_ChainInfo_t * me, bool is_ccw_limit);
+	
+	
 	#if DEV
 		Net_JunctionInfo_t() {
 			index = 0xDEADBEEF;
@@ -76,6 +85,8 @@ struct	Net_ChainInfo_t {
 
 	Net_JunctionInfo_t *			other_junc(Net_JunctionInfo_t * junc);
 	void							reverse(void);
+
+	Vector2							dir_out_of_junc(Net_JunctionInfo_t * junc);
 
 private:
 //	int								pt_count(void);				// Points and segments are identified by index numbers - 0 for the start, then increasing.
@@ -142,6 +153,8 @@ void generate_bezier(
 				double			min_deflection,
 				double			crease_angle_cos,
 				list<Point2c>&	pts);
+
+void fix_control_point(const Point2c& origin, Point2c& control_pt, const Vector2& limit_vec);
 
 #endif
 

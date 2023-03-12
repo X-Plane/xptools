@@ -75,30 +75,19 @@
 
  */
 
+#define HEAVY_BEACH_DEBUGGING 	DEV && OPENGL_MAP && 0
 
 typedef multimap<float, void *, greater<float> >			FaceQueue;	// YUCK - hard cast to avoid snarky problems with forward decls
 typedef multimap<double, void *>							VertexQueue;
 
 struct	MeshVertexInfo {
-	MeshVertexInfo() : height(0.0), wave_height(1.0) { }
-	MeshVertexInfo(const MeshVertexInfo& rhs) :
-								height(rhs.height),
-								border_blend(rhs.border_blend) {
-								normal[0] = rhs.normal[0];
-								normal[1] = rhs.normal[1];
-								normal[2] = rhs.normal[2]; }
-	MeshVertexInfo& operator=(const MeshVertexInfo& rhs) {
-								height = rhs.height;
-								normal[0] = rhs.normal[0];
-								normal[1] = rhs.normal[1];
-								normal[2] = rhs.normal[2];
-								orig_vertex = rhs.orig_vertex;
-								border_blend = rhs.border_blend; return *this; }
 
-	double					height;					// Height of mesh at this vertex.
-	double					wave_height;			// ratio of vegetation to terrain at this vertex.
-	float					normal[3];				// Normal - X,Y,Z in OGL coords(!)
+	double					height{};				// Height of mesh at this vertex.
+	double					wave_height{1.0};		// ratio of vegetation to terrain at this vertex.
+	float					normal[3]{};			// Normal - X,Y,Z in OGL coords(!)
 	hash_map<int, float>	border_blend;			// blend level for a border of this layer at this triangle!
+	bool					edge_of_the_world{};	// Vertex touches the outside of the degree
+	bool					explicit_height{};		// Vertex has non DEM elevation source.
 	
 	Vertex_handle			orig_vertex;			// Original vertex in the Pmwx.
 	VertexQueue::iterator	self;
@@ -110,7 +99,12 @@ struct	MeshFaceInfo {
 		flag_Feature = 1
 	};
 	
-	MeshFaceInfo() : terrain(DEM_NO_DATA),feature(NO_VALUE),flag(0), orig_face(NULL) { edge_flags[0] = edge_flags[1] = edge_flags[2] = 0; }
+	MeshFaceInfo() : terrain(DEM_NO_DATA),feature(NO_VALUE),flag(0), orig_face(NULL) {
+		edge_flags[0] = edge_flags[1] = edge_flags[2] = 0;
+		#if HEAVY_BEACH_DEBUGGING0
+			memset(&bch,0,sizeof(bch));
+		#endif
+	}
 	MeshFaceInfo(const MeshFaceInfo& rhs) :
 								terrain(rhs.terrain),
 								feature(rhs.feature),
@@ -122,7 +116,11 @@ struct	MeshFaceInfo {
 								edge_flags[0] = rhs.edge_flags[0];
 								edge_flags[1] = rhs.edge_flags[1];
 								edge_flags[2] = rhs.edge_flags[2];
-								orig_face = rhs.orig_face; }
+								orig_face = rhs.orig_face;
+#if HEAVY_BEACH_DEBUGGING
+								memcpy(&bch,&rhs.bch,sizeof(bch));
+#endif
+								}
 
 
 	MeshFaceInfo& operator=(const MeshFaceInfo& rhs) {
@@ -137,6 +135,9 @@ struct	MeshFaceInfo {
 								edge_flags[0] = rhs.edge_flags[0];
 								edge_flags[1] = rhs.edge_flags[1];
 								edge_flags[2] = rhs.edge_flags[2];
+#if HEAVY_BEACH_DEBUGGING
+								memcpy(&bch,&rhs.bch,sizeof(bch));
+#endif
 								return *this; }
 
 	inline	bool get_edge_feature(int e) const { return edge_flags[e] & flag_Feature; }
@@ -162,6 +163,23 @@ struct	MeshFaceInfo {
 
 	float			mesh_temp;				// These are not debug - beach code uses this.
 	float			mesh_rain;
+	
+#if HEAVY_BEACH_DEBUGGING
+	struct {
+		int				apt[3];
+		int				landuse[3];
+		float			slope[3];
+		float			wave[3];
+		float			prev_ang[3];
+		float			next_ang[3];
+		float			lat[3];
+		float			len[3];
+		float			area[3];
+		float			open[3];
+		int				choice[3];
+		int				final[3];
+	} bch;
+#endif
 
 #if OPENGL_MAP
 	int				debug_terrain_orig;

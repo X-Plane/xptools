@@ -561,7 +561,8 @@ void  WED_Runway::PropEditCallback(int before)
 	if (before)
 	{
 		StateChanged(wed_Change_Properties);
-		string(name); GetName(name);
+		string name;
+		GetName(name);
 		if(name[0] == 'u')
 			old_enum = atc_rwy_None;
 		else

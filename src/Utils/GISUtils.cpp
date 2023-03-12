@@ -41,6 +41,11 @@
 	#include "GUI_Unicode.h"
 #endif
 
+void	make_cache_file_path(const char * cache_base, int west, int south, const char * cache_name, char path[1024])
+{
+	sprintf(path, "%s%s%+03d%+04d%s%+03d%+04d.%s.txt", cache_base, DIR_STR, latlon_bucket (south), latlon_bucket (west), DIR_STR, (int) south, (int) west, cache_name);
+}
+
 int	latlon_bucket(int p)
 {
 	if (p > 0) return (p / 10) * 10;
@@ -271,31 +276,6 @@ double	LonLatDistMetersWithScale(double lon1, double lat1, double lon2, double l
 
 }
 
-void	CreateTranslatorForPolygon(
-					const Polygon2&		poly,
-					CoordTranslator2&	trans)
-{
-	if (poly.empty()) return;
-
-	Bbox2 bounds;
-	for (int n = 0; n < poly.size(); ++n)
-	{
-		bounds += poly[n];
-	}
-	CreateTranslatorForBounds(bounds, trans);
-}
-
-#if !NO_CGAL
-void	CreateTranslatorForBounds(
-					const Point_2&		inSrcMin,
-					const Point_2&		inSrcMax,
-					CoordTranslator_2&	trans)
-{
-	Bbox2 bounds(inSrcMin, inSrcMax);
-	CreateTranslatorForBounds(bounds, trans);
-}
-#endif
-
 struct deg2mtr {
 	double lon;
 	double lat;
@@ -318,6 +298,38 @@ struct deg2mtr {
 		lat = M * 2.0 * M_PI / 360.0;
 	}
 };
+
+void	CreateTranslatorForPolygon(
+					const Polygon2&		poly,
+					CoordTranslator2&	trans)
+{
+	if (poly.empty()) return;
+
+	Bbox2 bounds;
+	for (int n = 0; n < poly.size(); ++n)
+	{
+		bounds += poly[n];
+	}
+	CreateTranslatorForBounds(bounds, trans);
+}
+
+#if !NO_CGAL
+void	CreateTranslatorForBounds(
+					const Point_2&		inSrcMin,
+					const Point_2&		inSrcMax,
+					CoordTranslator_2&	trans)
+{
+	struct deg2mtr scale(0.5 * CGAL_NTS to_double(inSrcMin.y() +inSrcMax.y()));
+
+	trans.mSrcMin = inSrcMin;
+	trans.mSrcMax = inSrcMax;
+
+	trans.mDstMin = Point_2(0,0);
+	trans.mDstMax = Point_2(
+				(trans.mSrcMax.x() - trans.mSrcMin.x()) * scale.lon,
+				(trans.mSrcMax.y() - trans.mSrcMin.y()) * scale.lat);
+}
+#endif
 
 void	CreateTranslatorForBounds(
 					const Bbox2&		inBounds,

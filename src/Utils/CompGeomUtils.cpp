@@ -1343,11 +1343,11 @@ Point2	CoordTranslator2::Forward(const Point2& input) const
 Point2	CoordTranslator2::Reverse(const Point2& input) const
 {
 	double x = mSrcMin.x();
-	if (mDstMax.x() == mDstMin.x())
+	if (mDstMax.x() != mDstMin.x())
 		x += (input.x() - mDstMin.x()) * (mSrcMax.x() - mSrcMin.x()) / (mDstMax.x() - mDstMin.x());
 
 	double y = mSrcMin.y();
-	if (mDstMax.y() == mDstMin.y())
+	if (mDstMax.y() != mDstMin.y())
 		y += (input.y() - mDstMin.y()) * (mSrcMax.y() - mSrcMin.y()) / (mDstMax.y() - mDstMin.y());
 
 	return Point2(x, y);

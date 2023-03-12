@@ -66,6 +66,7 @@ endif #PLAT_DARWIN
 SOURCES += ./src/Obj/XObjDefs.cpp
 SOURCES += ./src/Obj/XObjReadWrite.cpp
 SOURCES += ./src/Obj/ObjDraw.cpp
+SOURCES += ./src/Obj/ObjPointPool.cpp
 SOURCES += ./src/ObjEdit/OE_Zoomer3d.cpp
 SOURCES += ./src/Utils/ObjUtils.cpp
 SOURCES += ./src/Utils/AssertUtils.cpp
@@ -83,11 +84,11 @@ SOURCES += ./src/Utils/zip.c
 SOURCES += ./src/UI/XGUIApp.cpp
 SOURCES += ./src/XPTools/ViewObj.cpp
 
-SOURCES += ./src/libtess2/Source/tess.c
-SOURCES += ./src/libtess2/Source/bucketalloc.c
-SOURCES += ./src/libtess2/Source/dict.c
-SOURCES += ./src/libtess2/Source/mesh.c
-SOURCES += ./src/libtess2/Source/priorityq.c
-SOURCES += ./src/libtess2/Source/sweep.c
-SOURCES += ./src/libtess2/Source/geom.c
+SOURCES += ./SDK/libtess2/Source/tess.c
+SOURCES += ./SDK/libtess2/Source/bucketalloc.c
+SOURCES += ./SDK/libtess2/Source/dict.c
+SOURCES += ./SDK/libtess2/Source/mesh.c
+SOURCES += ./SDK/libtess2/Source/priorityq.c
+SOURCES += ./SDK/libtess2/Source/sweep.c
+SOURCES += ./SDK/libtess2/Source/geom.c
 

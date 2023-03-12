@@ -477,9 +477,7 @@ static bool Text2DSFWithWriterAny(const char * inFileName, const char * inDSF, D
 		}
 
 		fseek(fi,0,SEEK_SET);
-		fgets(buf, sizeof(buf), fi);
-
-
+		if(!fgets(buf, sizeof(buf), fi)) *buf = 0;
 	}
 	
 

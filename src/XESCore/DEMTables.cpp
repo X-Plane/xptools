@@ -55,7 +55,8 @@ TexProjTable					gTexProj;
 
 //static set<int>			sForests;
 
-static set<int>			sAirports;
+// Maps airport land class to airport border line class for airport terrain
+static map<int,int>			sAirports;
 
 string	gNaturalTerrainFile;
 string	gLanduseTransFile;
@@ -161,7 +162,7 @@ bool	ReadBeachInfo(const vector<string>& tokens, void * ref)
 {
 	BeachInfo_t	info;
 
-	if (TokenizeLine(tokens, " fffffffffffffifiii",
+	if (TokenizeLine(tokens, " fffffffffffffifiSiifffe",
 				&info.min_rain,
 				&info.max_rain,
 				&info.min_temp,
@@ -178,8 +179,16 @@ bool	ReadBeachInfo(const vector<string>& tokens, void * ref)
 				&info.require_open,
 				&info.min_area,
 				&info.require_airport,
+				&info.require_landuse,
 				&info.x_beach_type,
-				&info.x_backup) != 19) return false;
+				&info.x_backup,
+				&info.debug_color.rgb[0],
+				&info.debug_color.rgb[1],
+				&info.debug_color.rgb[2]) != 23) return false;
+
+	info.debug_color.rgb[0] /= 255.0;
+	info.debug_color.rgb[1] /= 255.0;
+	info.debug_color.rgb[2] /= 255.0;
 
 	info.max_turn_convex = cosdeg(info.max_turn_convex);
 	info.max_turn_concave = cosdeg(info.max_turn_concave);
@@ -941,7 +950,22 @@ void	LoadDEMTables(void)
 	sAirports.clear();
 	for(int n = 0; n < gNaturalTerrainRules.size(); ++n)
 	if(gNaturalTerrainRules[n].terrain == terrain_Airport)
-		sAirports.insert(gNaturalTerrainRules[n].name);
+	{
+		// 	nominal terrain in RF:		terrain10/apt_vcld_dry
+		//	export path of TER in DSF:	lib/g10/terrain10/apt_border_vcld_dry.lin
+		//	nominal derived lin name:	terrain10/apt_vcld_dry.ter
+		//	export path in TER of LIN:	lib/g10/terrain10/apt_vcld_dry.ter
+		
+		string tname = FetchTokenString(gNaturalTerrainRules[n].name);
+		string prefix = "terrain10/apt_";
+		string::size_type p = tname.find(prefix);
+		Assert(p != tname.npos);
+		string lname = "lib/g10/terrain10/apt_border_";
+		lname += tname.substr(prefix.size());
+		lname += ".lin";
+		int line_type = LookupTokenCreate(lname.c_str());
+		sAirports[gNaturalTerrainRules[n].name] = line_type;
+	}
 
 	/*
 	printf("---forests---\n");
@@ -1301,6 +1325,13 @@ void	GetNaturalTerrainColor(int terrain, float rgb[3])
 bool	IsAirportTerrain(int t)
 {
 	return sAirports.count(t) != 0;
+}
+
+int		GetAirportTerrainBorder(int t)
+{
+	auto i = sAirports.find(t);
+	Assert(i != sAirports.end());
+	return i->second;
 }
 
 /*

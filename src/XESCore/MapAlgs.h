@@ -189,7 +189,7 @@ void MapSimplify(Pmwx& pmwx, double metric);
 int MapDesliver(Pmwx& pmwx, double metric, ProgressFunc func);
 
 int RemoveOutsets(Pmwx& io_map, double max_size, double max_area);
-int RemoveIslands(Pmwx& io_map, double max_area);
+tuple<int, int> RemoveIslands(Pmwx& io_map, double max_area);
 int KillWetAntennaRoads(Pmwx& io_map);
 int LandFillStrandedRoads(Pmwx& io_map, double dist_lo, double dist_hi);
 
@@ -285,6 +285,12 @@ bool	ClipDEMToFaceSet(const set<Face_handle>& inFaces, const DEMGeo& inSrcDEM, D
 int		SetupRasterizerForDEM(const Face_handle f, const DEMGeo& dem, PolyRasterizer<double>& rasterizer);
 int		SetupRasterizerForDEM(const set<Halfedge_handle>& inEdges, const DEMGeo& dem, PolyRasterizer<double>& rasterizer);
 
+/*
+ * DumpMapStats
+ *
+ * Prints statistics about the map geometry
+ */
+void DumpMapStats(const Pmwx& ioMap);
 /************************************************************************************************
  * POLYGON TRUNCATING AND EDITING
  ************************************************************************************************/

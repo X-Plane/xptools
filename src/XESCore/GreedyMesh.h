@@ -25,11 +25,12 @@
 #define GREEDYMESH_H
 
 #include "ProgressUtils.h"
+#include "MapDefs.h"
 class CDT;
 struct DEMGeo;
 struct DEMMask;
 
-void	GreedyMeshBuild(CDT& inCDT, const DEMGeo& inAvail, DEMMask& ioUsed, double err_lim, double size_lim, int max_num, ProgressFunc func);
+void	GreedyMeshBuild(CDT& inCDT, const DEMGeo& inAvail, DEMMask& ioUsed, const Pmwx& inMap, double err_lim, double size_lim, int max_num, ProgressFunc func);
 
 #endif /* GREEDYMESH_H */
 

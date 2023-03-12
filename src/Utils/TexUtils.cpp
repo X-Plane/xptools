@@ -1093,7 +1093,7 @@ bool	LoadTextureFromKTX2(
 	if ((mem_end - mem_start) < sizeof(TEX_ktx2_desc)) return false;
 	const TEX_ktx2_desc* desc = (const TEX_ktx2_desc*) mem_start;
 
-	if (strncmp(desc->dwMagic, "«KTX 20»", 8) != 0) return false;
+	if (strncmp(desc->dwMagic, "\253KTX 20\273", 8) != 0) return false;
 	if (desc->layerCount != 0 || SWAP32(desc->faceCount) != 1 || desc->supercompressionScheme != 0) return false;
 	
 	GLenum glformat;

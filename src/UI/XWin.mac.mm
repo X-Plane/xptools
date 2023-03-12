@@ -21,7 +21,6 @@
  *
  */
 #include "XWin.h"
-#include "XUtils.h"
 #include "AssertUtils.h"
 
 #pragma mark -

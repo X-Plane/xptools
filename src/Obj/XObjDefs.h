@@ -221,6 +221,9 @@ int	FindIndexForCmd(int inCmd);
  *
  */
 
+// alternate implementation of ObjPointPool, but without point merging capabilities.
+// For WED, we don't need it to optimize pools and its taking a LOT of extra time.
+
 class ObjDataVec {
 public:
 	ObjDataVec() : mDepth(8) {};
@@ -329,15 +332,21 @@ struct	XObj8 {
 	string					particle_system;
 	vector<XObjPanelRegion8>regions;
 	vector<int>				indices;
-	ObjDataVec				geo_tri;
+#if WED
+	ObjDataVec			geo_tri;
+	ObjDataVec			geo_lines;
+	ObjDataVec			geo_lights;
+#else
+	ObjPointPool			geo_tri;
+	ObjPointPool			geo_lines;
+	ObjPointPool			geo_lights;
+#endif
 #if XOBJ8_USE_VBO
 	unsigned int			geo_VBO;
 	unsigned int			idx_VBO;
 	bool					short_idx;
 	XObj8(void) : geo_VBO(0), idx_VBO(0), short_idx(false) {};
 #endif
-	ObjDataVec				geo_lines;
-	ObjDataVec				geo_lights;
 	vector<XObjAnim8>		animation;
 	vector<XObjManip8>		manips;
 	vector<XObjEmitter8>	emitters;

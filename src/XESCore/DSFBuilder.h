@@ -34,13 +34,20 @@ struct	DSFBuildPrefs_t {
 
 extern DSFBuildPrefs_t	gDSFBuildPrefs;
 
+struct DSFRasterInfo {
+	int identity;
+	float input_scale;
+	float output_scale;
+	const DEMGeo& geo;
+};
 
 void	BuildDSF(
 			const char *	inFileName1,
 			const char *	inFileName2,
 			const DEMGeo&	inElevation,
-			const DEMGeo&	inBathymetry,			
-			const DEMGeo&	inUrbanDensity,
+			const DEMGeo&	inBathymetry,
+			const DEMGeo&	inLanduse,
+			const std::vector<DSFRasterInfo>& inRasters,
 //			const DEMGeo&	inVege,
 			CDT&			inHiresMesh,
 //			CDT&			inLowresMesh,

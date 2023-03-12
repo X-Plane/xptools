@@ -11,14 +11,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\SDK\libtess2\Source\bucketalloc.c" />
+    <ClCompile Include="..\..\SDK\libtess2\Source\dict.c" />
+    <ClCompile Include="..\..\SDK\libtess2\Source\geom.c" />
+    <ClCompile Include="..\..\SDK\libtess2\Source\mesh.c" />
+    <ClCompile Include="..\..\SDK\libtess2\Source\priorityq.c" />
+    <ClCompile Include="..\..\SDK\libtess2\Source\sweep.c" />
+    <ClCompile Include="..\..\SDK\libtess2\Source\tess.c" />
     <ClCompile Include="..\..\src\GUI\GUI_Unicode.cpp" />
-    <ClCompile Include="..\..\src\libtess2\Source\bucketalloc.c" />
-    <ClCompile Include="..\..\src\libtess2\Source\dict.c" />
-    <ClCompile Include="..\..\src\libtess2\Source\geom.c" />
-    <ClCompile Include="..\..\src\libtess2\Source\mesh.c" />
-    <ClCompile Include="..\..\src\libtess2\Source\priorityq.c" />
-    <ClCompile Include="..\..\src\libtess2\Source\sweep.c" />
-    <ClCompile Include="..\..\src\libtess2\Source\tess.c" />
     <ClCompile Include="..\..\src\ObjEdit\OE_Zoomer3d.cpp" />
     <ClCompile Include="..\..\src\Obj\ObjDraw.cpp" />
     <ClCompile Include="..\..\src\Obj\ObjPointPool.cpp" />
@@ -48,15 +48,15 @@
     <ClCompile Include="..\..\src\XPTools\ViewObj.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\SDK\libtess2\Include\tesselator.h" />
+    <ClInclude Include="..\..\SDK\libtess2\Source\bucketalloc.h" />
+    <ClInclude Include="..\..\SDK\libtess2\Source\dict.h" />
+    <ClInclude Include="..\..\SDK\libtess2\Source\geom.h" />
+    <ClInclude Include="..\..\SDK\libtess2\Source\mesh.h" />
+    <ClInclude Include="..\..\SDK\libtess2\Source\priorityq.h" />
+    <ClInclude Include="..\..\SDK\libtess2\Source\sweep.h" />
+    <ClInclude Include="..\..\SDK\libtess2\Source\tess.h" />
     <ClInclude Include="..\..\src\GUI\GUI_Unicode.h" />
-    <ClInclude Include="..\..\src\libtess2\Include\tesselator.h" />
-    <ClInclude Include="..\..\src\libtess2\Source\bucketalloc.h" />
-    <ClInclude Include="..\..\src\libtess2\Source\dict.h" />
-    <ClInclude Include="..\..\src\libtess2\Source\geom.h" />
-    <ClInclude Include="..\..\src\libtess2\Source\mesh.h" />
-    <ClInclude Include="..\..\src\libtess2\Source\priorityq.h" />
-    <ClInclude Include="..\..\src\libtess2\Source\sweep.h" />
-    <ClInclude Include="..\..\src\libtess2\Source\tess.h" />
     <ClInclude Include="..\..\src\ObjEdit\OE_Zoomer3d.h" />
     <ClInclude Include="..\..\src\Obj\ObjDraw.h" />
     <ClInclude Include="..\..\src\Obj\ObjPointPool.h" />
@@ -68,7 +68,6 @@
     <ClInclude Include="..\..\src\UI\XWin32DND.h" />
     <ClInclude Include="..\..\src\UI\XWinGL.h" />
     <ClInclude Include="..\..\src\Utils\AssertUtils.h" />
-    <ClInclude Include="..\..\src\Utils\CmdLine.h" />
     <ClInclude Include="..\..\src\Utils\CompGeomUtils.h" />
     <ClInclude Include="..\..\src\Utils\EndianUtils.h" />
     <ClInclude Include="..\..\src\Utils\FileUtils.h" />
@@ -137,7 +136,7 @@
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
       <PreprocessorDefinitions>OBJVIEW;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\src\ObjEdit;..\..\src\libtess2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src\ObjEdit;..\..\SDK\libtess2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -154,7 +153,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>OBJVIEW;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
-      <AdditionalIncludeDirectories>..\..\src\ObjEdit;..\..\src\libtess2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src\ObjEdit;..\..\SDK\libtess2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
     </ClCompile>
     <Link>

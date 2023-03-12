@@ -329,11 +329,12 @@ void	DoneMesh(void)
 	sCurrentMesh = NULL;
 }
 
-void	GreedyMeshBuild(CDT& inCDT, const DEMGeo& inAvail, DEMMask& ioUsed, double err_lim, double size_lim, int max_num, ProgressFunc func)
+void	GreedyMeshBuild(CDT& inCDT, const DEMGeo& inAvail, DEMMask& ioUsed, const Pmwx& inMap, double err_lim, double size_lim, int max_num, ProgressFunc func)
 {
 //	fprintf(stderr,"Building Mesh err=%lf size=%lf max=%d\n", err_lim, size_lim, max_num);
 	PROGRESS_START(func, 0, 1, "Building Mesh")
 	InitMesh(inCDT, inAvail, ioUsed, err_lim, size_lim);
+	Dumb_locator pl {inMap};
 
 	if (max_num == 0) max_num = INT_MAX;
 	int cnt_insert = 0, cnt_new = 0, cnt_recalc = 0;
@@ -368,6 +369,11 @@ void	GreedyMeshBuild(CDT& inCDT, const DEMGeo& inAvail, DEMMask& ioUsed, double 
 //		gMeshLines.push_back(pair<Point2,Point3>(Point2(the_face->vertex(0)->point().x(),the_face->vertex(0)->point().y()), Point3(1,0,1)));
 //		gMeshPoints.push_back(pair<Point2,Point3>(Point2(p.x(), p.y()), Point3(1,1,1)));
 
+		// Check the map for elevated faces, avoid inserting any triangulation from the DEM inside
+		const auto r = pl.locate(p);
+		const auto f = boost::get<Pmwx::Face_const_handle>(&r);
+		const bool skip_insert = f && (*f)->data().mHasElevation;
+
 		double h = inAvail.get(the_face->info().insert_x, the_face->info().insert_y);
 		#if DEV
 		
@@ -385,13 +391,19 @@ void	GreedyMeshBuild(CDT& inCDT, const DEMGeo& inAvail, DEMMask& ioUsed, double 
 		ioUsed.set(the_face->info().insert_x, the_face->info().insert_y,true);
 
 		set<CDT::Face_handle>	affected;
-		CDT::Vertex_handle new_v = inCDT.insert_collect_flips(p,face_handle, affected);
-		new_v->info().height = h;
-
-		for(set<CDT::Face_handle>::iterator a = affected.begin(); a != affected.end(); ++a)
+		if (skip_insert)
 		{
-			CDT::Face_handle circ(*a);
-			
+			// Pretend this face was affected
+			affected.insert(face_handle);
+		}
+		else
+		{
+			CDT::Vertex_handle new_v = inCDT.insert_collect_flips(p, face_handle, affected);
+			new_v->info().height = h;
+		}
+
+		for (const auto& circ : affected)
+		{
 			if (InitOneTri(circ))
 			{
 				++cnt_new;
