@@ -133,7 +133,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 	if (mType != create_Hole)
 		sel->Clear();
 
-	int is_bezier = mType != create_Forest && mType != create_Boundary;
+	int is_bezier = mType != create_Forest && mType != create_Boundary && mType != create_ExcludePol;
 	int is_apt = mType <= create_Hole;
 	int is_autogen = mType == create_Autogen;
 	int is_exclusion = mType == create_ExcludePol;

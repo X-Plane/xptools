@@ -504,7 +504,9 @@ void WED_HandleToolBase::ProcessSelection(
 			{
 				if( ((*i)->GetGISClass() ==  gis_Polygon || (*i)->GetGISClass() ==  gis_Composite) && (
 					strcmp((*i)->GetGISSubtype(), "WED_ForestPlacement") == 0 ||
-					strcmp((*i)->GetGISSubtype(), "WED_FacadePlacement") == 0 ) ) { printf("Forest/Facade\n"); keeper = *i;  break; }
+					strcmp((*i)->GetGISSubtype(), "WED_ExclusionPoly") == 0 ||              // take whole exclusion rather than outer ring
+					strcmp((*i)->GetGISSubtype(), "WED_FacadePlacement") == 0 ) ) 
+				{ printf("Forest/Facade\n"); keeper = *i;  break; }
 			}
 		if(!keeper)
 			for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)     // then any kind of line-type objects
@@ -512,14 +514,16 @@ void WED_HandleToolBase::ProcessSelection(
 				if( (*i)->GetGISClass() ==  gis_Line ||
 					(*i)->GetGISClass() ==  gis_Edge ||
 					(*i)->GetGISClass() ==  gis_Ring ||                                      // APT Boundaries, but only the ring part, not the inner area
-					(*i)->GetGISClass() ==  gis_Chain   ) { printf("Line\n");  keeper = *i;  break; }
+					(*i)->GetGISClass() ==  gis_Chain   ) 				
+				{ printf("Line\n");  keeper = *i;  break; }
 			}
 		if(!keeper)
 			for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)     // now the polygons, in similar order as typical LAYER_GROUP assignments
 			{
 				if( ((*i)->GetGISClass() ==  gis_Polygon || (*i)->GetGISClass() ==  gis_Composite) && (
 					strcmp((*i)->GetGISSubtype(),"WED_PolygonPlacement") == 0 ||                           // Textured Polys
-					strcmp((*i)->GetGISSubtype(),"WED_DrapedOrthophoto") == 0 ) ) { printf("Polygon\n"); keeper = *i;  break; } // Draped Polys - also Ground Painted Signs
+					strcmp((*i)->GetGISSubtype(),"WED_DrapedOrthophoto") == 0 ) ) 
+				{ printf("Polygon\n"); keeper = *i;  break; }                                // Draped Polys - also Ground Painted Signs
 			}
 		if(!keeper)
 			for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)     // Runways
