@@ -182,7 +182,7 @@ public:
 	vector<string>		dsf_AptID_filter;     // Airport ID's
 	vector<bool>		filter_table;     	  // Airport ID IDX
 	bool				filter_on;            // global switch to filter out stuff
-	vector<Bbox2>		cull_bounds;
+	vector<Bbox2p>		cull_bounds;
 	int					is_in_bounds;
 	int					autogen_rings;
 	int					autogen_spelling;
@@ -1165,7 +1165,7 @@ int DSF_Import(const char * path, WED_Thing * base)
 	return res;
 }
 
-int DSF_Import_Partial(const char * path, WED_Thing * base, int inCatFilter, const vector<Bbox2>& inBounds, const vector<string>& inAptFilter)
+int DSF_Import_Partial(const char * path, WED_Thing * base, int inCatFilter, const vector<Bbox2p>& inBounds, const vector<string>& inAptFilter)
 {
 	DSF_Importer importer;
 
@@ -1200,18 +1200,25 @@ int WED_ImportText(const char * path, WED_Thing * base)
 int		WED_CanImportRoads(IResolver * resolver)
 {
 	ISelection * sel = WED_GetSelect(resolver);
-	if(!sel->IterateSelectionAnd(Iterate_IsClass,(void*) WED_ExclusionZone::sClass)) return 0;
 
 	vector<WED_Thing *> things;
 	sel->IterateSelectionOr(Iterate_CollectThings, &things);
 
 	for(auto t : things)
 	{
-		WED_ExclusionZone * excl = dynamic_cast<WED_ExclusionZone *>(t);
-		if(excl == nullptr) return 0;
-		set<int> excl_types;
-		excl->GetExclusions(excl_types);
-		if(excl_types.count(exclude_Net)) return 1;
+		if (auto excl = dynamic_cast<WED_ExclusionZone*>(t))
+		{
+			set<int> excl_types;
+			excl->GetExclusions(excl_types);
+			if (excl_types.count(exclude_Net)) return 1;
+		}
+		else if (auto excl = dynamic_cast<WED_ExclusionPoly*>(t))
+		{
+			set<int> excl_types;
+			excl->GetExclusions(excl_types);
+			if (excl_types.count(exclude_Net)) return 1;
+		}
+		else return 0;
 	}
 	return 0;
 }
@@ -1244,31 +1251,46 @@ void add_all_global_DSF(const Bbox2& bb, set<string>& matching_dsf)
 void	WED_DoImportRoads(IResolver * resolver)
 {
 	ISelection * sel = WED_GetSelect(resolver);
-	if(!sel->IterateSelectionAnd(Iterate_IsClass,(void*) WED_ExclusionZone::sClass)) return ;
+//	if(!sel->IterateSelectionAnd(Iterate_IsClass,(void*) WED_ExclusionZone::sClass)) return;
 
-	vector<WED_Thing *> things;
-	sel->IterateSelectionOr(Iterate_CollectThings, &things);
-
-	vector<Bbox2> excl_bounds;
+	vector<Bbox2p> excl_bounds;
 	int dsf_filters = 0;
+	vector<WED_Thing *> things;
+
+	sel->IterateSelectionOr(Iterate_CollectThings, &things);
 	for(auto t : things)
 	{
-		WED_ExclusionZone * excl = dynamic_cast<WED_ExclusionZone *>(t);
-		if(excl == nullptr) return;
-		set<int> excl_types;
-		excl->GetExclusions(excl_types);
-		if(excl_types.count(exclude_Net)) dsf_filters |= dsf_filter_roads;
-		if(excl_types.count(exclude_Obj)) dsf_filters |= dsf_filter_autogen;
-//		if(excl_types.count(exclude_For)) dsf_filters |= dsf_filter_forests;   // general polygon import does not (yet) support partial import
-		Bbox2 b;
-		excl->GetBounds(gis_Geo,b);
-		excl_bounds.push_back(b);
+		if (auto excl = dynamic_cast<WED_ExclusionZone*>(t))
+		{
+			set<int> excl_types;
+			excl->GetExclusions(excl_types);
+			if (excl_types.count(exclude_Net)) dsf_filters |= dsf_filter_roads;
+			if (excl_types.count(exclude_Obj)) dsf_filters |= dsf_filter_autogen;
+			//		if(excl_types.count(exclude_For)) dsf_filters |= dsf_filter_forests;   // general polygon import does not (yet) support partial import
+			Bbox2p b;
+			excl->GetBounds(gis_Geo, b.zone);
+			excl_bounds.push_back(b);
+		}
+		else if (auto excl = dynamic_cast<WED_ExclusionPoly*>(t))
+		{
+			set<int> excl_types;
+			excl->GetExclusions(excl_types);
+			if (excl_types.count(exclude_Net)) dsf_filters |= dsf_filter_roads;
+			if (excl_types.count(exclude_Obj)) dsf_filters |= dsf_filter_autogen;
+			//		if(excl_types.count(exclude_For)) dsf_filters |= dsf_filter_forests;   // general polygon import does not (yet) support partial import
+			Bbox2p b;
+			excl->GetBounds(gis_Geo, b.zone);
+			WED_PolygonForPointSequence(excl->GetOuterRing(), b.poly, COUNTERCLOCKWISE);
+			excl_bounds.push_back(b);
+		}
+		else
+			return;
 	}
 
 	set<string> matching_dsf;
 
 	for (const auto& bb : excl_bounds)
-		add_all_global_DSF(bb, matching_dsf);
+		add_all_global_DSF(bb.zone, matching_dsf);
 
 	if(matching_dsf.size())
 	{

@@ -355,6 +355,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 		{
 			if (auto ps = dynamic_cast<IGISPointSequence *>(entity))
 			{
+				WED_MapZoomerNew* z = GetZoomer();
 				if (sub_class == WED_TaxiRoute::sClass && !locked)
 				{
 					auto tr = dynamic_cast<WED_TaxiRoute*>(entity);
@@ -371,10 +372,24 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 				else if (kind = gis_Ring)
 				{
 					auto parent = dynamic_cast<WED_Thing*>(entity)->GetParent();
-					if(parent->GetClass() == WED_ExclusionPoly::sClass)
+					if (parent->GetClass() == WED_ExclusionPoly::sClass)
+					{
 						glColor4fv(WED_Color_RGBA_Alpha(wed_Link, 1.0, storage));
+						if (gExportTarget < wet_xplane_1200)
+						{
+							Bbox2 bnds;
+							entity->GetBounds(gis_Geo, bnds);
+							vector<Point2> pix;
+							BoxToPoints(bnds.p1, bnds.p2, z, pix);
+
+							glBegin(GL_LINE_LOOP);
+								glVertex2v(pix.data(), pix.size());
+							glEnd();
+							glLineStipple(1, 0x0f0f);
+							glEnable(GL_LINE_STIPPLE);
+						}
+					}
 				}
-				WED_MapZoomerNew* z = GetZoomer();
 				bool showRealLines = mRealLines && z->GetPPM() * 0.4 <= MIN_PIXELS_PREVIEW;
 
 				if(sub_class == WED_LinePlacement::sClass && showRealLines)
@@ -510,6 +525,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 					}
 				}
 				glPointSize(1);
+				glDisable(GL_LINE_STIPPLE);
 			}
 		}
 		break;

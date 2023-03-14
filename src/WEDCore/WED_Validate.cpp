@@ -38,6 +38,7 @@
 #include "WED_ObjPlacement.h"
 #include "WED_StringPlacement.h"
 #include "WED_AutogenPlacement.h"
+#include "WED_ExclusionPoly.h"
 #include "WED_LinePlacement.h"
 #include "WED_PolygonPlacement.h"
 #include "WED_DrapedOrthophoto.h"
@@ -610,6 +611,17 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 
 	if(who->GetClass() == WED_ForestPlacement::sClass)
 		ValidateOneForestPlacement(who, msgs, parent_apt);
+
+	if (who->GetClass() == WED_ExclusionPoly::sClass)
+	{
+		auto xcl = static_cast<WED_ExclusionPoly*>(who);
+		if (xcl->GetNumHoles() > 0)
+			msgs.push_back(validation_error_t("Exclusion Polygons may not have holes in them.", err_exclusion_polys_no_holes, who, parent_apt));
+		set<int> ex;
+		xcl->GetExclusions(ex);
+		if (ex.count(exclude_For))
+			msgs.push_back(validation_error_t("Exclusion Polygons do not (yet) supported forests in X-Plane. Use Exclusion zones instead.", err_exclusion_polys_no_forests, who, parent_apt));
+	}
 
 	if(gExportTarget == wet_gateway)
 	{

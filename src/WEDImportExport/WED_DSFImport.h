@@ -58,8 +58,25 @@ enum dsf_filter_category {
 	dsf_filter_all = 2047
 };
 
+struct Bbox2p {
+	Bbox2     zone;
+	Polygon2  poly;
+
+	bool contains(const Point2& pt) const
+	{
+		if (zone.contains(pt))
+		{
+			if (poly.empty())
+				return true;
+			else
+				return poly.inside(pt);
+		}
+		return false;
+	};
+};
+
 int		DSF_Import_Partial(const char * path, WED_Thing * base, int inCatFilter,
-							const vector<Bbox2> & inBounds = vector<Bbox2>(), const vector<string>& inAptFilter = vector<string>());
+							const vector<Bbox2p> & inBounds = vector<Bbox2p>(), const vector<string>& inAptFilter = vector<string>());
 
 void	add_all_global_DSF(const Bbox2& bb, set<string>& matching_dsf);
 
