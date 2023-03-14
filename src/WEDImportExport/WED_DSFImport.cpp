@@ -188,7 +188,6 @@ public:
 	int					autogen_spelling;
 	bool 				is_overlay;
 
-
 	bool isInBounds(const Segment2& in_seg)
 	{
 		for(const auto& b : cull_bounds )
@@ -508,13 +507,22 @@ public:
 #if !NO_NET
 		DSF_Importer * me = (DSF_Importer *) inRef;
 		if(!(me->dsf_cat_filter & dsf_filter_roads) || me->filter_on) return;
-		Segment2 segm(me->accum_road[0].first,Point2(inCoordinates[0], inCoordinates[1]));
-		if(!me->cull_bounds.empty() && !me->isInBounds(segm))
-		{
-			me->accum_road.clear();
-			return;
-		}
 
+		if (!me->cull_bounds.empty())
+		{
+			bool is_excluded = me->isInBounds(Point2(inCoordinates[0], inCoordinates[1]));
+			for (const auto& pt : me->accum_road)
+			{
+				if(is_excluded)
+					break;
+				is_excluded |= me->isInBounds(pt.first);
+			}
+			if (!is_excluded)
+			{
+				me->accum_road.clear();
+				return;
+			}
+		}
 		DebugAssert(me->accum_road.size() > 0);
 
 		unsigned int inNetworkType = me->accum_road_type.first;
