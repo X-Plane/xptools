@@ -15,15 +15,12 @@ permissions:
 jobs:
   build-windows:
     runs-on: windows-2022
-
     steps:
     - uses: actions/checkout@v3
       with:
         submodules: true
-
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
-
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
@@ -59,7 +56,7 @@ jobs:
           git submodule init
           git submodule update libs
           cd libs
-          make -j3
+          make -j$(sysctl -n hw.logicalcpu)
       - name: Build
         env:
           scheme: "WED"
@@ -86,18 +83,13 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: true
-
       - name: Build Libs
         run: |
-          git config --global --add safe.directory /__w/xptools/xptools
           git submodule init
           git submodule update libs
           cd libs
           make -j$(nproc)
       - name: Build
-        env:
-          scheme: "WED"
-          config: "Release"
         run: |
           make -s -C . conf=release_opt -j$(nproc) WED
       - name: Archive production artifacts
