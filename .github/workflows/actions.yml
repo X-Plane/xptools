@@ -20,7 +20,7 @@ jobs:
       with:
         submodules: true
     - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
+      uses: microsoft/setup-msbuild@v1.1
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
@@ -85,6 +85,7 @@ jobs:
           submodules: true
       - name: Build Libs
         run: |
+          git config --global --add safe.directory /__w/xptools/xptools
           git submodule init
           git submodule update libs
           cd libs
