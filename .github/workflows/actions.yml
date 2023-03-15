@@ -59,8 +59,7 @@ jobs:
           git submodule init
           git submodule update libs
           cd libs
-          make clean
-          make
+          make -j3
       - name: Build
         env:
           scheme: "WED"
@@ -79,8 +78,10 @@ jobs:
             src/WEDCore/README.WorldEditor
           
   build-linux:
-    runs-on: ubuntu-20.04
-
+    runs-on: ubuntu-22.04
+    # we need fltk-dev and python 2.7
+    container:
+        image: ghcr.io/x-plane/xptools_builder:latest
     steps:
       - uses: actions/checkout@v3
         with:
@@ -92,8 +93,7 @@ jobs:
           git submodule init
           git submodule update libs
           cd libs
-          make clean
-          make
+          make -j$(nproc)
       - name: Build
         env:
           scheme: "WED"
