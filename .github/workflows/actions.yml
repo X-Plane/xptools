@@ -88,9 +88,7 @@ jobs:
             src/WEDCore/README.WorldEditor
           
   build-linux:
-    runs-on: ubuntu-latest
-    container:
-        image: ghcr.io/x-plane/xptools_builder:latest
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v3
