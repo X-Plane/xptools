@@ -110,11 +110,11 @@ jobs:
     - name: zip files
       run:
           cp src/WEDCore/README.WorldEditor .
-          cp build/WED.xcarchive/Products/Applications/WED.app .
-          chmod a=x WED.app          
+          cp -r build/WED.xcarchive/Products/Applications/WED.app .
+          chmod a+x WED.app          
           zip -r wed_mac_${{ inputs.ver_string }} README.WorldEditor WED.app
           cp  build/Linux/release_opt/WED .
-          chmod a=x WED          
+          chmod a+x WED          
           zip -r wed_lin_${{ inputs.ver_string }} README.WorldEditor WED
           cp msvc/WorldEditor/Release/WorldEditor.exe .
           zip -r wed_win_${{ inputs.ver_string }} README.WorldEditor WorldEditor.exe
@@ -126,7 +126,7 @@ jobs:
 #        password: ${{ secrets.PASSWORD }}
 #        port: ${{ secrets.PORT }}
 #        source: ./wed_*.zip
-#        target: "test"
+#        target: "public/wed/"
     - name: Archive zipfiles
       uses: actions/upload-artifact@v3
       with:
