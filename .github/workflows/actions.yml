@@ -34,7 +34,6 @@ jobs:
         name: wed_release_build
         path: |
           msvc\WorldEditor\Release\WorldEditor.exe
-          src\WEDCore\README.WorldEditor
           
   build-mac:
     runs-on: macos-11
@@ -67,6 +66,9 @@ jobs:
       - name: Notarize App
         run: |
           ./build-tools/mac/notarization.sh WED.zip build/WED.xcarchive/Products/Applications/WED.app staple
+          mv build/WED.xcarchive/Products/Applications/WED.app .
+          cp src/WEDCore/README.WorldEditor .
+          zip -r wed_mac_${{ inputs.ver_string }} README.WorldEditor WED.app
       - name: Archive production artifacts
         uses: actions/upload-artifact@v3
         with:
@@ -74,6 +76,7 @@ jobs:
           path: |
             build/WED.xcarchive/Products/Applications/WED.app
             src/WEDCore/README.WorldEditor
+            wed_mac_${{ inputs.ver_string }}.zip
           
   build-linux:
     runs-on: ubuntu-22.04
@@ -94,12 +97,9 @@ jobs:
       - name: Build
         run: |
           make -s -C . conf=release_opt -j$(nproc) WED
-          zip -j wed_lin_${{ inputs.ver_string }} src/WEDCore/README.WorldEditor build/Linux/release_opt/WED
       - name: Archive production artifacts
         uses: actions/upload-artifact@v3
         with:
           name: wed_release_build
           path: |
             build/Linux/release_opt/WED
-            src/WEDCore/README.WorldEditor
-            wed_lin_${{ inputs.ver_string }}.zip
