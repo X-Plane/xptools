@@ -104,7 +104,7 @@ jobs:
       with:
         name: wed_release_build
     - name: zip files
-      run:
+      run: |
           cp src/WEDCore/README.WorldEditor .
           cp -R build/WED.xcarchive/Products/Applications/WED.app .
           chmod a+x WED.app          
