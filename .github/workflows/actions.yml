@@ -111,8 +111,6 @@ jobs:
           zip -r wed_win_${{ inputs.ver_string }} README.WorldEditor WorldEditor.exe
           chmod a+x WED
           zip -r wed_lin_${{ inputs.ver_string }} README.WorldEditor WED
-          mkdir WED.app
-          mv Contents WED.app/
           chmod a+x WED.app/Contents/MacOS/WED
           zip -r wed_mac_${{ inputs.ver_string }} README.WorldEditor WED.app
 #    - name: copy to server
