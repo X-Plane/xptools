@@ -30,7 +30,7 @@ jobs:
       with:
         name: wed_release_build
         path: |
-          msvc\WorldEditor\Release\WorldEditor.exe
+          msvc/WorldEditor/Release/WorldEditor.exe
           src/WEDCore/README.WorldEditor
           
   build-mac:
@@ -68,7 +68,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: wed_release_build
-          path: build/WED.xcarchive/Products/Applications/WED.app
+          path: build/WED.xcarchive/Products/Applications
           
   build-linux:
     runs-on: ubuntu-22.04
@@ -106,15 +106,15 @@ jobs:
     - name: zip files
       run: |
           ls -R
-          cp src/WEDCore/README.WorldEditor .
-          cp -R build/WED.xcarchive/Products/Applications/WED.app .
-          chmod a+x WED.app          
-          zip -r wed_mac_${{ inputs.ver_string }} README.WorldEditor WED.app
-          cp  build/Linux/release_opt/WED .
-          chmod a+x WED          
-          zip -r wed_lin_${{ inputs.ver_string }} README.WorldEditor WED
-          cp msvc/WorldEditor/Release/WorldEditor.exe .
+          mv src/WEDCore/README.WorldEditor .
+          mv msvc/WorldEditor/Release/WorldEditor.exe .
           zip -r wed_win_${{ inputs.ver_string }} README.WorldEditor WorldEditor.exe
+          chmod a+x WED
+          zip -r wed_lin_${{ inputs.ver_string }} README.WorldEditor WED
+          mkdir WED.app
+          mv Contents WED.app/
+          chmod a+x WED.app/Contents/MacOS/WED
+          zip -r wed_mac_${{ inputs.ver_string }} README.WorldEditor WED.app
 #    - name: copy to server
 #      uses: appleboy/scp-action@master
 #      with:
