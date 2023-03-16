@@ -99,12 +99,17 @@ jobs:
     runs-on: macos-11
     needs: [build-windows, build-mac, build-linux]
     steps:
+    - name: Get repo
+      uses: actions/checkout@v3
+    - name: list files
+      run:  ls -R
     - name: Get data
       uses: actions/download-artifact@v3
       with:
         name: wed_release_build
     - name: zip files
       run: |
+          ls -R
           cp src/WEDCore/README.WorldEditor .
           cp -R build/WED.xcarchive/Products/Applications/WED.app .
           chmod a+x WED.app          
