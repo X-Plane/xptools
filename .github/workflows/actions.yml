@@ -99,10 +99,6 @@ jobs:
     runs-on: macos-11
     needs: [build-windows, build-mac, build-linux]
     steps:
-    - name: Get repo
-      uses: actions/checkout@v3
-    - name: list files
-      run:  ls -R
     - name: Get data
       uses: actions/download-artifact@v3
       with:
