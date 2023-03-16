@@ -5,8 +5,6 @@ on:
     branches:
     - feat_workflow_meikelm
     - 'wed_2*_release'
-    tags:
-    - 'wed_2[0-9][0-9][br][0-9]'
         
 permissions:
   contents: read
@@ -31,9 +29,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: wed_release_build
-        path: |
-          msvc/WorldEditor/Release/WorldEditor.exe
-          src/WEDCore/README.WorldEditor
+        path: msvc/WorldEditor/Release/WorldEditor.exe
           
   build-mac:
     runs-on: macos-11
@@ -78,7 +74,8 @@ jobs:
     container:
         image: ghcr.io/x-plane/xptools_builder:latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repo
+        uses: actions/checkout@v3
         with:
           submodules: true
       - name: Build Libs
@@ -98,31 +95,34 @@ jobs:
           path: build/Linux/release_opt/WED
 
   make-zips:
-    runs-on: macos-11
+    runs-on: ubuntu-latest
     needs: [build-windows, build-mac, build-linux]
     steps:
-    - name: Get data
+    - name: Checkout repo
+      uses: actions/checkout@v3
+    - name: get build results
       uses: actions/download-artifact@v3
       with:
         name: wed_release_build
     - name: zip files
       run: |
+          ls -l
           version=$(awk '/WED_VERSION[\s\t]/ {gsub(/\./,""); print $3}' <src/WEDCore/WED_Version.h)
           echo $version
-          mv src/WEDCore/README.WorldEditor .
+          cp src/WEDCore/README.WorldEditor .
           mv msvc/WorldEditor/Release/WorldEditor.exe .
           zip -r wed_win_$version README.WorldEditor WorldEditor.exe
           chmod a+x WED
           zip -r wed_lin_$version README.WorldEditor WED
           chmod a+x WED.app/Contents/MacOS/WED
           zip -r wed_mac_$version README.WorldEditor WED.app
-#    - name: copy to server
+#    - name: copy to server           # run this conditional on being a "Release" or a special trigger
 #      uses: appleboy/scp-action@master
 #      with:
 #        host: files.x-plane.com
 #        username: ${{ secrets.USERNAME }}
-#        key: ${{ secrets.KEY }}           # private ssh key, public key goes on host
-#        source: wed_*.zip
+#        key: ${{ secrets.KEY }}      # private ssh key, public key goes on host
+#        source: wed_*.zip            # scp will overwrite target. find a way to check & NOT overwrite
 #        target: "public/wed/"
     - name: Archive zipfiles
       uses: actions/upload-artifact@v3
