@@ -17,23 +17,25 @@ jobs:
   build-windows:
     runs-on: windows-2022
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout repo
+      uses: actions/checkout@v3
       with:
         submodules: true
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1.1
-    - name: Build
+    - name: Build .exe
       working-directory: ${{env.GITHUB_WORKSPACE}}
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference 
       run: |
         msbuild /m /p:Configuration=Release /p:Platform="x64" /t:WorldEditor msvc\XPTools.sln
-    - name: Archive production artifacts
+    - name: Archive build result
       uses: actions/upload-artifact@v3
       with:
         name: wed_release_build
         path: |
           msvc\WorldEditor\Release\WorldEditor.exe
+          src/WEDCore/README.WorldEditor
           
   build-mac:
     runs-on: macos-11
@@ -42,7 +44,7 @@ jobs:
       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
       APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
     steps:
-      - name: Checkout
+      - name: Checkout repo
         uses: actions/checkout@v3
         with:
           submodules: yes
@@ -57,7 +59,7 @@ jobs:
           git submodule update libs
           cd libs
           make -j$(sysctl -n hw.logicalcpu)
-      - name: Build
+      - name: Build App
         env:
           scheme: "WED"
           config: "Release"
@@ -66,17 +68,11 @@ jobs:
       - name: Notarize App
         run: |
           ./build-tools/mac/notarization.sh WED.zip build/WED.xcarchive/Products/Applications/WED.app staple
-          mv build/WED.xcarchive/Products/Applications/WED.app .
-          cp src/WEDCore/README.WorldEditor .
-          zip -r wed_mac_${{ inputs.ver_string }} README.WorldEditor WED.app
-      - name: Archive production artifacts
+      - name: Archive build result
         uses: actions/upload-artifact@v3
         with:
           name: wed_release_build
-          path: |
-            build/WED.xcarchive/Products/Applications/WED.app
-            src/WEDCore/README.WorldEditor
-            wed_mac_${{ inputs.ver_string }}.zip
+          path: build/WED.xcarchive/Products/Applications/WED.app
           
   build-linux:
     runs-on: ubuntu-22.04
@@ -94,12 +90,45 @@ jobs:
           git submodule update libs
           cd libs
           make -j$(nproc)
-      - name: Build
+      - name: Build binary
         run: |
           make -s -C . conf=release_opt -j$(nproc) WED
-      - name: Archive production artifacts
+      - name: Archive build result
         uses: actions/upload-artifact@v3
         with:
           name: wed_release_build
-          path: |
-            build/Linux/release_opt/WED
+          path: build/Linux/release_opt/WED
+
+  make-zips:
+    runs-on: macos-11
+    needs: [build-windows, build-mac, build-linux]
+    steps:
+    - name: Get data
+      uses: actions/download-artifact@v3
+      with:
+        name: wed_release_build
+    - name: zip files
+      run:
+          cp src/WEDCore/README.WorldEditor .
+          cp build/WED.xcarchive/Products/Applications/WED.app .
+          chmod a=x WED.app          
+          zip -r wed_mac_${{ inputs.ver_string }} README.WorldEditor WED.app
+          cp  build/Linux/release_opt/WED .
+          chmod a=x WED          
+          zip -r wed_lin_${{ inputs.ver_string }} README.WorldEditor WED
+          cp msvc/WorldEditor/Release/WorldEditor.exe .
+          zip -r wed_win_${{ inputs.ver_string }} README.WorldEditor WorldEditor.exe
+#    - name: copy to server
+#      uses: appleboy/scp-action@master
+#      with:
+#        host: file.x-plane.com
+#        username: ${{ secrets.USERNAME }}
+#        password: ${{ secrets.PASSWORD }}
+#        port: ${{ secrets.PORT }}
+#        source: ./wed_*.zip
+#        target: "test"
+    - name: Archive zipfiles
+      uses: actions/upload-artifact@v3
+      with:
+        name: wed_release_build
+        path: ./wed_*.zip
