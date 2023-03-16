@@ -1,14 +1,10 @@
-name: build WED conf=release_opt
+name: build WED
 
 on:
   push:
-  workflow_dispatch:
-    inputs:
-      ver_string:
-        type: string
-        description: 'Release name, must be exactly 3 digits + letter + digit, e.g. 250r1'
-        default: ''
-        required: true
+    branches:
+    - feat_workflow_meikelm
+    - 'wed_2*_release'
         
 permissions:
   contents: read
@@ -110,7 +106,7 @@ jobs:
     - name: zip files
       run:
           cp src/WEDCore/README.WorldEditor .
-          cp -r build/WED.xcarchive/Products/Applications/WED.app .
+          cp -R build/WED.xcarchive/Products/Applications/WED.app .
           chmod a+x WED.app          
           zip -r wed_mac_${{ inputs.ver_string }} README.WorldEditor WED.app
           cp  build/Linux/release_opt/WED .
