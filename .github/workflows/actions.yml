@@ -110,7 +110,6 @@ jobs:
           version=$(awk '/WED_VERSION[\s\t]/ {gsub(/\./,""); print $3}' <src/WEDCore/WED_Version.h)
           echo $version
           cp src/WEDCore/README.WorldEditor .
-          mv msvc/WorldEditor/Release/WorldEditor.exe .
           zip -r wed_win_$version README.WorldEditor WorldEditor.exe
           chmod a+x WED
           zip -r wed_lin_$version README.WorldEditor WED
