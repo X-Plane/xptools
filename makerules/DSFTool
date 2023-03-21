@@ -7,7 +7,7 @@ CFLAGS		+= -include ./src/Obj/XDefs.h
 CXXFLAGS	+= -include ./src/Obj/XDefs.h
 #FORCEREBUILD_SUFFIX := _dsft
 
-LIBS		+= -lz
+LIBS		:= -lz
 
 ifdef PLAT_MINGW
 LDFLAGS		+= -static

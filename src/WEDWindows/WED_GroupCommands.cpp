@@ -5583,7 +5583,7 @@ int WED_DoAgePavement(WED_Airport* apt, int age)  // age 1 = older
 		}
 	}
 
-	for (auto p : pols) // thats a pretty basic upgrade, any lighter/darker than default pavements are NOT converted
+	for (auto p : pols)
 	{
 		string res;
 		p->GetResource(res);
@@ -5637,6 +5637,7 @@ void WED_AgePavement(IResolver* resolver)
 	CollectRecursiveNoNesting(wrl, back_inserter(all_apts), WED_Airport::sClass);
 
 	wrl->StartOperation("Age Pavement");
+
 	int count = 0;
 	for (auto a : all_apts)
 		count += WED_DoAgePavement(a, age);
