@@ -744,7 +744,7 @@ CDT::Edge next_edge_of_type(const CDT::Edge& e)
 //			printf(" MATCH");
 			best = candidate;
 		}
-		printf("\n");
+//		printf("\n");
 		iter = edge_next_twin(iter);
 	} while(iter != e);
 //	printf("Done.\n");
@@ -894,6 +894,60 @@ typedef hash_map<CDT::Edge, int>			edge_info_map;
 typedef hash_map<CDT::Edge, CDT::Edge, hash_edge> edge_hash_map;
 typedef hash_map<CDT::Edge, int, hash_edge> edge_info_map;
 #endif
+
+static void validate_edge_vertex(CDT& mesh, CDT::Vertex_handle v, double * coords)
+{
+	auto ffi = mesh.infinite_vertex();
+	
+	auto circ = v->incident_vertices();
+	auto stop = circ;
+	bool is_edge = false;
+	do {
+		if(circ == ffi)
+		{
+			is_edge = true;
+			break;
+		}
+	} while(++circ != stop);
+
+	double lat_bord = round(coords[1]);
+	double lon_bord = round(coords[0]);
+
+	if(is_edge)
+	{
+		if(coords[1] != lat_bord && coords[0] != lon_bord)
+		{
+			double lat_dif = fabs(lat_bord - coords[1]);
+			double lon_dif = fabs(lon_bord - coords[0]);
+			
+			double best_dif = min(lon_dif,lat_dif);
+			if(best_dif > 0.000005)
+			{
+				printf("ERROR: Vertex %.10lf,%.10lf is not on border.\n", coords[0],coords[1]);
+				Assert(!"Bad edge vertex.\n");
+			}
+			
+			printf("Repairing vertex: %.10lf,%.10lf\n", coords[0],coords[1]);
+			if(lon_dif < lat_dif)
+			{
+				coords[0] = lon_bord;
+			}
+			else
+			{
+				coords[1] = lat_bord;
+			}
+		}
+	}
+	else
+	{
+		if(coords[1] == lat_bord || coords[0] == lon_bord)
+		{
+			printf("ERROR: Vertex %.10lf,%.10lf is a non-border vertrex that's on the DSF edge.\n", coords[0],coords[1]);
+			Assert(!"Bad interior vertex.\n");
+		}
+	}
+}
+
 
 void FixBeachContinuity(
 						edge_hash_map&								linkNext,
@@ -1803,6 +1857,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					DebugAssert(coords8[3] <=  1.0);
 					DebugAssert(coords8[4] >= -1.0);
 					DebugAssert(coords8[4] <=  1.0);
+					validate_edge_vertex(inHiresMesh, *vert, coords8);
 					cbs.AddPatchVertex_f(coords8, writer1);
 				}
 				cbs.EndPrimitive_f(writer1);
@@ -1884,6 +1939,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 							DebugAssert(coords8[3] <=  1.0);
 							DebugAssert(coords8[4] >= -1.0);
 							DebugAssert(coords8[4] <=  1.0);
+							validate_edge_vertex(inHiresMesh, f->vertex(vi), coords8);
 							cbs.AddPatchVertex_f(coords8, writer1);
 						}
 						++total_tris;

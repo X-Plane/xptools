@@ -453,6 +453,7 @@ static bool	load_match_file(const char * path, mesh_match_t& outLeft, mesh_match
 				sscanf(buf, "VT %lf, %lf, %lf", &x, &y, &dest->vertices.back().height);
 				dest->vertices.back().loc = Point_2(x,y);
 				dest->vertices.back().buddy = CDT::Vertex_handle();
+				//debug_mesh_point(Point2(x,y),1,0,0);
 			}
 			if (MATCH(buf, "VC"))
 			{
@@ -788,6 +789,55 @@ inline double	DistPtToTri(CDT::Vertex_handle v, CDT::Face_handle f)
 
 
 #pragma mark -
+
+
+bool cdt_is_edge(CDT::Vertex_handle v, CDT& mesh)
+{
+	auto ffi = mesh.infinite_vertex();
+	auto circ = v->incident_vertices();
+	auto stop = circ;
+	do {
+		
+		if(circ == ffi)
+			return true;
+		
+	} while(++circ != stop);
+	
+	return false;
+}
+
+void validate_edge_vertex(CDT::Vertex_handle v, CDT& mesh)
+{
+	if (mesh.number_of_vertices() < 3)
+		return;
+
+	if(!cdt_is_edge(v,mesh))
+		return;
+		
+	Point_2 pp = v->point();
+	Point2 p = cgal2ben(pp);
+	
+	Point2 b(round(p.x()),round(p.y()));
+	
+	if(pp.x() == b.x() || pp.y() == b.y())
+		return;
+	
+	printf("Bad vert: %.9lf, %.9lf\n", p.x(),p.y());
+	Assert(!"Bad vertex.\n");
+	
+}
+
+void validate_whole_mesh(CDT& mesh)
+{
+	auto ffi = mesh.infinite_vertex();
+	auto circ = ffi->incident_vertices();
+	auto stop = circ;
+	do {
+		validate_edge_vertex(circ, mesh);
+		
+	} while (++circ != stop);
+}
+
 /***************************************************************************
  * ALGORITHMS TO FIND VALUABLE POINTS IN A DEM *****************************
  ***************************************************************************
@@ -821,6 +871,8 @@ CDT::Vertex_handle InsertDEMPoint(
 	hint = np->face();
 	
 	io_used.set(x,y,true);
+	
+	validate_edge_vertex(np,io_mesh);
 	
 	return np;
 }
@@ -905,6 +957,7 @@ void InsertMidPoints(const DEMGeo& in_orig, CDT& io_mesh, CDT::Vertex_handle v1,
  * to put a sparse mesh inside the water areas.
  *
  */
+ 
 double CopyWetPoints(
 				const DEMGeo&			in_orig,
 					  DEMMask&			io_used,
@@ -935,7 +988,10 @@ double CopyWetPoints(
 			for(int x = x1; x < x2; ++x)
 			{
 				if((x % in_skip == 0) && (y % in_skip == 0))
-					InsertDEMPoint(in_orig, io_used,io_mesh,x,y,hint);
+				{
+					if(io_used.get(x,y) == false)
+						InsertDEMPoint(in_orig, io_used,io_mesh,x,y,hint);
+				}
 				++wet;
 			}
 		}
@@ -1013,6 +1069,7 @@ double CopyWetPointsWithSDF(
 					skip *= 2;
 				skip = min(in_skip, skip);
 				if((x % skip == 0) && (y % skip == 0))
+				if(io_used.get(x,y) == false)
 					InsertDEMPoint(in_orig, io_used,io_mesh,x,y,hint);
 				++wet;
 			}
@@ -1156,6 +1213,11 @@ void SubdivideConstraints(CDT& io_mesh, const DEMGeo& master, const DEMGeo& idea
 		if (source->info().edge_of_the_world)
 			continue;
 
+		if(io_mesh.is_infinite(eit->first))
+			continue;
+		if(io_mesh.is_infinite(eit->first->neighbor(eit->second)))
+			continue;
+
 		edges.emplace_back(source, CDT_he_target(*eit));
 	}
 
@@ -1192,7 +1254,7 @@ void SubdivideConstraints(CDT& io_mesh, const DEMGeo& master, const DEMGeo& idea
 
 			const auto inserted = InsertAnyPoint(master, io_mesh, p, locale, el);
 			pts.push_back(inserted);
-//			debug_mesh_point(cgal2ben(p),0,1,1);
+			//debug_mesh_point(cgal2ben(p),1,1,0);
 		}
 		
 		pts.push_back(e->second);
@@ -1704,8 +1766,34 @@ double dist_from_line(const Point_2& p, const Point_2& q, const Point_2& r)
 	return CGAL::to_double(CGAL::squared_distance(l,q));
 }
 
+void	dump_shortest_edge(const char * what, const CDT& mesh)
+{
+	auto ivert = mesh.infinite_vertex();
+	auto circ = ivert->incident_faces();
+	auto stop = circ;
+	
+	double best_len = 9.9e9;
+	Segment2 best;
+	
+	do {
+		CDT::Edge e(circ,circ->index(ivert));
+		
+		Segment2 s(cgal2ben(CDT_he_source(e)->point()),
+					cgal2ben(CDT_he_target(e)->point()));
+					
+		if(s.squared_length() < best_len)
+		{
+			best_len = s.squared_length();
+			best = s;
+		}
+		
+		
+		++circ;
+	} while (stop != circ);
 
-
+	printf("%s: Shortest side: %.9f mtrs (%.9lf,%.9lf->%.9lf,%.9lf)\n",
+					what, 100000.0 * sqrt(best_len), best.p1.x(),best.p1.y(),best.p2.x(),best.p2.y());
+}
 
 
 void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * mesh_folder, ProgressFunc prog)
@@ -1825,12 +1913,17 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	InsertDEMPoint(orig, deriv, outMesh, orig.mWidth-1, orig.mHeight-1, hint);
 	InsertDEMPoint(orig, deriv, outMesh, 0, orig.mHeight-1, hint);
 
+	dump_shortest_edge("just corners",outMesh);
+
 	PAUSE_STEP("Finished corners")
 	
 	/* TRIANGULATE CONSTRAINTS */
 
 	AddConstraintPoints(inMap, orig, outMesh);
-	
+
+	dump_shortest_edge("added constraints",outMesh);
+
+
 	PAUSE_STEP("Pre-simplify")
 	
 	/* SIMPLIFY CONSTRAINTS TO CUT DOWN MESH DENSITY */
@@ -1844,12 +1937,15 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 		simplify_me.simplify(0.0001 * 0.0001);
 		printf("After simplify: %zd/%zd\n",outMesh.number_of_vertices(),outMesh.number_of_faces());
 	}
+	dump_shortest_edge("simplified constraints",outMesh);
 
 	PAUSE_STEP("Finished constraints")
 
 	/* SUBDIVIDE CONSTRAINTS TO AVOID CREASE LINES IN MESH */
 	
 	SubdivideConstraints(outMesh, orig, best_density);
+
+	dump_shortest_edge("subdivided constraints",outMesh);
 
 	PAUSE_STEP("Finished subdivide constraints")
 		
@@ -1859,11 +1955,16 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	if (!gMatchBorders[b].vertices.empty())
 		match_border(outMesh, gMatchBorders[b], b);
 
+	dump_shortest_edge("post borders",outMesh);
+
 	PAUSE_STEP("Finished borders")
 	
 	/* TRIANGULATE NON-SLAVED EDGES */
 
 	AddEdgePoints(orig, deriv, 20, 1, has_borders, outMesh);
+
+	dump_shortest_edge("post edges added",outMesh);
+
 
 	PAUSE_STEP("Finished edges")
 	
@@ -1880,9 +1981,29 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 //					bathy.x_to_lon(xy.first),
 //					bathy.y_to_lat(xy.second));
 //	}
+
+	{
+		int xx = orig.mWidth-1;
+		int yy = orig.mHeight-1;
+		if(has_borders[0])
+			for(int y = 0; y < orig.mHeight; ++y)
+				deriv.set(0,y,true);
+		if(has_borders[1])
+			for(int x = 0; x < orig.mWidth; ++x)
+				deriv.set(x,0,true);
+		if(has_borders[2])
+			for(int y = 0; y < orig.mHeight; ++y)
+				deriv.set(xx,y,true);
+		if(has_borders[3])
+			for(int x = 0; x < orig.mWidth; ++x)
+				deriv.set(x,yy,true);
+	}
+	
 	double wet_ratio = CopyWetPointsWithSDF(orig, deriv, outMesh, sdf, terrain_Water, LOW_RES_WATER_INTERVAL, inMap);
 					   CopyWetPoints(orig, deriv, outMesh,APT_INTERVAL, terrain_Airport, inMap);
 	double dry_ratio = 1.0 - wet_ratio;
+
+	dump_shortest_edge("water and airports filled",outMesh);
 
 	PAUSE_STEP("Finished water interior")
 	
@@ -1895,6 +2016,8 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	GreedyMeshBuild(outMesh, orig, deriv, inMap, /*gridlines,*/ 0.0, gMeshPrefs.max_tri_size_m * MTR_TO_NM * NM_TO_DEG_LAT, gMeshPrefs.max_points, prog);
 
 	PAUSE_STEP("Finished greedy2")
+
+	dump_shortest_edge("main mesh insert done",outMesh);
 
 #if SPLIT_CLIFFS
 
@@ -1960,7 +2083,9 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	//		debug_mesh_point(cgal2ben(*n), 1, 0, 0);
 		}
 	}
-	
+
+	dump_shortest_edge("cliffs are split",outMesh);
+
 	PAUSE_STEP("Finished Split Cliffs")
 	
 #endif
@@ -2067,6 +2192,9 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 		}
 	}
 
+	dump_shortest_edge("water subdivisions",outMesh);
+
+
 	PROGRESS_DONE(prog,1,3,"Calculating Wet Areas");
 
 	printf("Need %zd splits for beaches and waterways.\n", splits_needed.size());
@@ -2104,6 +2232,10 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	CalculateMeshNormals(outMesh);
 
 	if (prog) prog(2, 3, "Calculating Wet Areas", 1.0);
+
+	dump_shortest_edge("final result",outMesh);
+
+	validate_whole_mesh(outMesh);
 
 //	orig.swap(water);
 }
@@ -2914,6 +3046,11 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 			CDT::Face_circulator circ, circstop;
 
 			do {
+				if(gMatchBorders[b].vertices.empty())
+				{
+//					debug_mesh_point(cgal2ben(f->vertex(i)->point()),0,1,0);
+				}
+			
 				fprintf(border, "VT %.12lf, %.12lf, %lf\n",
 					CGAL::to_double(f->vertex(i)->point().x()),
 					CGAL::to_double(f->vertex(i)->point().y()),
@@ -2996,6 +3133,11 @@ void SetupWaterRasterizer(const Pmwx& map, const DEMGeo& orig, PolyRasterizer<do
 				yy1 += 0.0000001;
 			if (yy2 == orig.mNorth)
 				yy2 += 0.0000001;
+
+			if (xx1 == orig.mEast)
+				xx1 += 0.0000001;
+			if (xx2 == orig.mEast)
+				xx2 += 0.0000001;
 
 			double x1 = orig.lon_to_x(xx1);
 			double y1 = orig.lat_to_y(yy1);

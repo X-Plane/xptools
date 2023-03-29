@@ -47,10 +47,10 @@
 
 static void check_map_sanity()
 {
-	if(gVerbose)
-		printf("Checking map bounds...\n");
 	if(gMapEast - gMapWest == 1 && gMapNorth - gMapSouth == 1)
 	{
+		if(gVerbose)
+			printf("Checking map bounds...\n");
 		for(Pmwx::Vertex_const_iterator v = gMap.vertices_begin(); v != gMap.vertices_end(); ++v)
 		{
 			Point_2 p(v->point());
@@ -66,15 +66,15 @@ static void check_map_sanity()
 			Pmwx::Ccb_halfedge_circulator circ, stop;
 			circ = stop = *h;
 			
-			cerr << "Circ " << circ->source()->point() << "," << circ->target()->point() << "\n";
-			cerr << "stop " << stop->source()->point() << "," << stop->target()->point() << "\n";
+//			cerr << "Circ " << circ->source()->point() << "," << circ->target()->point() << "\n";
+//			cerr << "stop " << stop->source()->point() << "," << stop->target()->point() << "\n";
 
 			do {
 				Point_2 p = circ->target()->point();
 				bool bad_x = p.x() != gMapWest && p.x() != gMapEast;
 				bool bad_y = p.y() != gMapSouth && p.y() != gMapNorth;
-				cerr << p;
-				cerr.flush();
+//				cerr << p;
+//				cerr.flush();
 
 				if(bad_x && bad_y)
 				{
@@ -86,7 +86,37 @@ static void check_map_sanity()
 			} while(++circ != stop);
 		
 		}
+		
+		int x = 0;
+		
+		auto ffi = gTriangulationHi.infinite_vertex();
+		auto circ = ffi->incident_vertices();
+		auto stop = circ;
+		do {
+			
+			Point_2 p = circ->point();
+			
+			bool bad_x = p.x() != gMapWest && p.x() != gMapEast;
+			bool bad_y = p.y() != gMapSouth && p.y() != gMapNorth;
+//			cerr << p;
+//			cerr.flush();
+
+//			printf("%.10lf,%.10lf\n", CGAL::to_double(p.x()), CGAL::to_double(p.y()));
+			++x;
+			if(bad_x && bad_y)
+			{
+				cerr << p << "\n";
+				cerr.flush();
+				Assert(!"BAD XY");
+			}
+		
+		} while (++circ != stop);
+		
+		printf("Checked %d vertices.\n", x);
 	}
+	
+	
+	
 }
 
 
