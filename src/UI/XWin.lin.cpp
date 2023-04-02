@@ -224,7 +224,7 @@ int XWin::handle(int e)
             int btn  = fltkBtnToXBtn(Fl::event_button());
             mMouse.x = Fl::event_x();
             mMouse.y = Fl::event_y();
-            if(mBlockEvents) return 1;
+            if(mBlockEvents || mWantFakeUp) return 1;
             if(mDragging == btn)
             {
                 mDragging = -1;
