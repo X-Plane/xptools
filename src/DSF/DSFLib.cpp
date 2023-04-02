@@ -494,15 +494,66 @@ someday check footer when in sloooow mode
 					&*planeScales32[n].begin(),
 					recip_4294967295,
 					&*planeOffsets32[n].begin());
-
-
 		++n;
 	}	
 	
-	
+	if (inCallbacks->PointPoolInfo_f)
+	{
+		vector<string> pp_info;
 
-/*
+		for (int pool = 0; pool < planeSizes.size(); pool++)
+		{
+			char buf[32];
 
+			sprintf(buf, "p=%d", planeDepths[pool]);
+			pp_info.push_back(buf);
+			for (int plane = 0; plane < planeDepths[pool]; plane++)
+			{
+				sprintf(buf, "  %.6lf %.6lf", planeScales[pool][plane], planeOffsets[pool][plane]);
+				pp_info.back() += buf;
+			}
+		}
+		int divisions = 2;
+		for (int pool = 0; pool < planeSizes.size(); pool++)
+		{
+			if (1.0 / planeScales[pool][0] > 0.5 + divisions ||
+				1.0 / planeScales[pool][1] > 0.5 + divisions)
+			{
+				divisions = max(round(1.0 / planeScales[pool][0]), round(1.0 / planeScales[pool][1]));
+				if (divisions > 32) divisions = 32;
+			}
+		}
+		// height is is a bit harder. We would ideally need to ID all point pools referenced by patches
+		// but we just do a few heuristics
+		bool is_overlay = true;
+		double hgt_scale = 0.0, hgt_offs = 0.0;
+		for (auto str = propAtom.GetFirstString(); str != nullptr; str = propAtom.GetNextString(str))
+		{
+			auto str2 = propAtom.GetNextString(str);
+			if(str2 != nullptr)
+			{
+				if (strcmp(str, "sim/overlay") == 0 && atoi(str2) == 1)
+				{
+					is_overlay = false;
+					break;
+				}
+			}
+			str = str2;
+		}
+		if (is_overlay)
+		{
+			for (auto& d : planeDepths)
+				if(d == 5 || d == 7)
+				{
+					hgt_scale = planeScales[&d - &planeDepths[0]][2];
+					hgt_offs = planeOffsets[&d - &planeDepths[0]][2];
+					break;
+				}
+		}
+		inCallbacks->PointPoolInfo_f(divisions, hgt_scale, hgt_offs, pp_info, ref);
+	}
+
+	/*
 	for (n = 0; n < planarData.size(); ++n)
 	for (p = 0; p < planeDepths[n]; ++p)
 	{
@@ -562,8 +613,6 @@ someday check footer when in sloooow mode
 //	planarDataRaw.clear();
 
 
-	
-		
 	const char * str;
 	int	pass_number = 0;
 	if (inPasses == NULL)
@@ -655,9 +704,6 @@ someday check footer when in sloooow mode
 			}
 		}
 
-	
-	
-	
 
 	/* Now we're ready to do the commands. */
 
@@ -674,6 +720,23 @@ someday check footer when in sloooow mode
 		int					currentDepth = -1;
 		int					currentDepth32 = -1;
 
+		auto print_scales = [planeScales, planeOffsets, inCallbacks, ref](unsigned short pool)
+		{
+			char buf[256];
+			double scale = (planeScales[pool][2] + 1.0) / 65536.0;
+			double offset = planeOffsets[pool][2] + 32768.0;
+			sprintf(buf, "scale=%.6lf offset=%.4lf pool=%d lon_s=%.6lf lon_o=%.6lf lat_s=%.6lf lat_o=%.6lf", scale, offset, pool,
+				planeScales[pool][0], planeOffsets[pool][0], planeScales[pool][1], planeOffsets[pool][1]);
+			inCallbacks->AcceptProperty_f("dsf/heights", buf, ref);
+		};
+
+		auto print_scale = [planeScales, planeOffsets, inCallbacks, ref](unsigned short pool)
+		{
+			char buf[256];
+			sprintf(buf, "pool=%d lon_s=%.6lf lon_o=%.6lf lat_s=%.6lf lat_o=%.6lf", pool,
+				planeScales[pool][0], planeOffsets[pool][0], planeScales[pool][1], planeOffsets[pool][1]);
+			inCallbacks->AcceptProperty_f("dsf/scales", buf, ref);
+		};
 
 	cmdsAtom.Reset();
 	while (!cmdsAtom.Done())
@@ -681,8 +744,6 @@ someday check footer when in sloooow mode
 		unsigned int	commentLen;
 		unsigned int	index, index1, index2;
 		unsigned int	count, counter;
-
-//		double			objCoord3[3];
 
 		double*			segCoord;
 		bool			hasCurve;
@@ -745,9 +806,6 @@ someday check footer when in sloooow mode
 			index = cmdsAtom.ReadUInt16();
 			if (flags & dsf_CmdObjects)
 			{
-//				objCoord3[0] = DECODE_SCALED_CURRENT(index)[0];
-//				objCoord3[1] = DECODE_SCALED_CURRENT(index)[1];
-//				objCoord3[2] = DECODE_SCALED_CURRENT(index)[2];
 				inCallbacks->AddObjectWithMode_f(currentDefinition, DECODE_SCALED_CURRENT(index), planeDepths[currentPool] == 4 ? curObjMode : obj_ModeDraped, ref);
 			}
 			break;
@@ -757,9 +815,6 @@ someday check footer when in sloooow mode
 				if (flags & dsf_CmdObjects)
 			for (index = index1; index < index2; ++index)
 			{
-//				objCoord3[0] = DECODE_SCALED_CURRENT(index)[0];
-//				objCoord3[1] = DECODE_SCALED_CURRENT(index)[1];
-//				objCoord3[2] = DECODE_SCALED_CURRENT(index)[2];
 				inCallbacks->AddObjectWithMode_f(currentDefinition, DECODE_SCALED_CURRENT(index), planeDepths[currentPool] == 4 ? curObjMode : obj_ModeDraped, ref);
 			}
 			break;
@@ -833,8 +888,6 @@ someday check footer when in sloooow mode
 			break;
 
 
-
-
 		/**************************************************************************************************************
 		 * POLYGON COMMANDS
 		 **************************************************************************************************************/
@@ -843,6 +896,7 @@ someday check footer when in sloooow mode
 			count = cmdsAtom.ReadUInt8();
 			if (flags & dsf_CmdPolys)
 			{
+//				print_scale(currentPool);
 				inCallbacks->BeginPolygon_f(currentDefinition, polyParam, planeDepths[currentPool], ref);
 				inCallbacks->BeginPolygonWinding_f(ref);
 				triCoordDim = planeDepths[currentPool];
@@ -868,6 +922,7 @@ someday check footer when in sloooow mode
 			index2 = cmdsAtom.ReadUInt16();
 			if (flags & dsf_CmdPolys)
 			{
+//				print_scale(currentPool);
 				inCallbacks->BeginPolygon_f(currentDefinition, polyParam, planeDepths[currentPool], ref);
 				inCallbacks->BeginPolygonWinding_f(ref);
 				triCoordDim = planeDepths[currentPool];
@@ -884,7 +939,10 @@ someday check footer when in sloooow mode
 			polyParam = cmdsAtom.ReadUInt16();
 			count = cmdsAtom.ReadUInt8();
 			if (flags & dsf_CmdPolys)
+			{
+//				print_scale(currentPool);
 				inCallbacks->BeginPolygon_f(currentDefinition, polyParam, planeDepths[currentPool], ref);
+			}
 			triCoordDim = planeDepths[currentPool];
 			while(count--)
 			{
@@ -911,7 +969,10 @@ someday check footer when in sloooow mode
 			count = cmdsAtom.ReadUInt8();
 			index1 = cmdsAtom.ReadUInt16();
 			if (flags & dsf_CmdPolys)
+			{
+//				print_scale(currentPool);
 				inCallbacks->BeginPolygon_f(currentDefinition, polyParam, planeDepths[currentPool], ref);
+			}
 			triCoordDim = planeDepths[currentPool];
 			while(count--)
 			{
@@ -933,15 +994,15 @@ someday check footer when in sloooow mode
 			break;
 
 
-
-
 		/**************************************************************************************************************
 		 * TERRAIN COMMANDS
 		 **************************************************************************************************************/
+
 		case dsf_Cmd_TerrainPatch				:
 				if (flags & dsf_CmdPatches)
 				{
 			if (patchOpen) inCallbacks->EndPatch_f(ref);
+//			print_scales(currentPool);
 			inCallbacks->BeginPatch_f(currentDefinition, patchLODNear, patchLODFar, patchFlags, planeDepths[currentPool], ref);
 				}
 			patchOpen = true;
@@ -949,6 +1010,7 @@ someday check footer when in sloooow mode
 		case dsf_Cmd_TerrainPatchFlags			:
 				if (flags & dsf_CmdPatches)
 			if (patchOpen) inCallbacks->EndPatch_f(ref);
+//			print_scales(currentPool);
 			patchFlags = cmdsAtom.ReadUInt8();
 				if (flags & dsf_CmdPatches)
 			inCallbacks->BeginPatch_f(currentDefinition, patchLODNear, patchLODFar, patchFlags, planeDepths[currentPool], ref);
@@ -957,6 +1019,7 @@ someday check footer when in sloooow mode
 		case dsf_Cmd_TerrainPatchFlagsLOD		:
 				if (flags & dsf_CmdPatches)
 			if (patchOpen) inCallbacks->EndPatch_f(ref);
+//			print_scales(currentPool);
 			patchFlags = cmdsAtom.ReadUInt8();
 			patchLODNear = cmdsAtom.ReadFloat32();
 			patchLODFar = cmdsAtom.ReadFloat32();

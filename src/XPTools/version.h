@@ -5,12 +5,12 @@
 #include <string.h>
 #include <stdint.h>
 
-#define XPT_PACKAGE_VER		"22-6"
+#define XPT_PACKAGE_VER		"23-4"
 
 #define DDSTOOL_VER		20000
 #define DDSTOOL_EXTRAVER	"-b1"
 
-#define DSFTOOL_VER		20200
+#define DSFTOOL_VER		20300
 #define DSFTOOL_EXTRAVER	"-b1"
 
 #define OBJCONVERT_VER		30100
@@ -18,9 +18,6 @@
 
 #define MESHTOOL_VER		30000
 #define MESHTOOL_EXTRAVER	"-b1"
-
-#define AC3DPLUGIN_VER		30400
-#define AC3DPLUGIN_EXTRAVER	"b4"
 
 #define _VERBUF_SIZE		256
 static char __gverbuf[_VERBUF_SIZE];
