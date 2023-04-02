@@ -684,13 +684,13 @@
     <ClCompile Include="..\..\src\WEDImportExport\WED_SceneryPackExport.cpp">
       <Filter>WEDImportExport</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lib_json\src\lib_json\json_reader.cpp">
+    <ClCompile Include="..\..\SDK\lib_json\src\lib_json\json_reader.cpp">
       <Filter>lib_json</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lib_json\src\lib_json\json_value.cpp">
+    <ClCompile Include="..\..\SDK\lib_json\src\lib_json\json_value.cpp">
       <Filter>lib_json</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lib_json\src\lib_json\json_writer.cpp">
+    <ClCompile Include="..\..\SDK\lib_json\src\lib_json\json_writer.cpp">
       <Filter>lib_json</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\WEDCore\WED_Sign_Parser.cpp">
@@ -837,25 +837,25 @@
     <ClCompile Include="..\..\src\lzma19\C\LzmaDec.c">
       <Filter>lzma19</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtess2\Source\bucketalloc.c">
+    <ClCompile Include="..\..\SDK\libtess2\Source\bucketalloc.c">
       <Filter>libtess2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtess2\Source\dict.c">
+    <ClCompile Include="..\..\SDK\libtess2\Source\dict.c">
       <Filter>libtess2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtess2\Source\geom.c">
+    <ClCompile Include="..\..\SDK\libtess2\Source\geom.c">
       <Filter>libtess2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtess2\Source\mesh.c">
+    <ClCompile Include="..\..\SDK\libtess2\Source\mesh.c">
       <Filter>libtess2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtess2\Source\priorityq.c">
+    <ClCompile Include="..\..\SDK\libtess2\Source\priorityq.c">
       <Filter>libtess2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtess2\Source\sweep.c">
+    <ClCompile Include="..\..\SDK\libtess2\Source\sweep.c">
       <Filter>libtess2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtess2\Source\tess.c">
+    <ClCompile Include="..\..\SDK\libtess2\Source\tess.c">
       <Filter>libtess2</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\WEDEntities\WED_AutogenNode.cpp">
@@ -1682,28 +1682,28 @@
     <ClInclude Include="..\..\src\lzma19\C\LzmaDec.h">
       <Filter>lzma19</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtess2\Source\bucketalloc.h">
+    <ClInclude Include="..\..\SDK\libtess2\Source\bucketalloc.h">
       <Filter>libtess2</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Utils\CmdLine.h">
       <Filter>libtess2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtess2\Source\dict.h">
+    <ClInclude Include="..\..\SDK\libtess2\Source\dict.h">
       <Filter>libtess2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtess2\Source\geom.h">
+    <ClInclude Include="..\..\SDK\libtess2\Source\geom.h">
       <Filter>libtess2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtess2\Source\mesh.h">
+    <ClInclude Include="..\..\SDK\libtess2\Source\mesh.h">
       <Filter>libtess2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtess2\Source\priorityq.h">
+    <ClInclude Include="..\..\SDK\libtess2\Source\priorityq.h">
       <Filter>libtess2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtess2\Source\sweep.h">
+    <ClInclude Include="..\..\SDK\libtess2\Source\sweep.h">
       <Filter>libtess2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtess2\Source\tess.h">
+    <ClInclude Include="..\..\SDK\libtess2\Source\tess.h">
       <Filter>libtess2</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Utils\BitmapUtils.h">

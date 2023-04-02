@@ -171,6 +171,7 @@ enum {
 	wed_AddMetaDataICAO,
 	wed_AddMetaDataLocal,
 	wed_AddMetaDataLocAuth,
+	wed_AddMetaDataOilrig,   // new in 1204
 	wed_AddMetaDataRegionCode,
 	wed_AddMetaDataState,// or Province
 	wed_AddMetaDataTowerCaps, // new in 1200

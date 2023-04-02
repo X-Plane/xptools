@@ -164,6 +164,26 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				}
 			}
 		}
+		// -- tag heliports that are oilrigs, so the sim uses a more specific symbol in the map
+		if ((*apt_itr)->GetAirportType() == type_Heliport)
+		{
+			vector<WED_ObjPlacement*> oilrigs;
+			CollectRecursive(*apt_itr, back_inserter(oilrigs), IgnoreVisiblity, [](WED_Thing* objs)->bool {
+				string res;
+				static_cast<WED_ObjPlacement*>(objs)->GetResource(res);
+				return res.compare(0, strlen("lib/ships/OilRig"), "lib/ships/OilRig") == 0 ||
+					   res.compare(0, strlen("lib/ships/OilPlat"), "lib/ships/OilPlat") == 0;
+				},
+				WED_ObjPlacement::sClass, 2);
+			if (oilrigs.size())
+				if (!(*apt_itr)->ContainsMetaDataKey(wed_AddMetaDataOilrig) ||
+					 atoi((*apt_itr)->GetMetaDataValue(wed_AddMetaDataOilrig).c_str()) != 1)
+				{
+					wrl->StartCommand("Add oil rig meta");
+					(*apt_itr)->AddMetaDataKey(META_KeyName(wed_AddMetaDataOilrig), "1");
+					wrl->CommitCommand();
+				}
+		}
 
 		//-- upgrade Country Metadata -------------
 		added_country_codes += add_iso3166_country_metadata(**apt_itr);

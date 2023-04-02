@@ -89,9 +89,8 @@ public:
 	
 	virtual	void	adjust_properties(Block_2::Halfedge_handle edge, Prop_t& io_properties)
 	{
-		for(EdgeKey_iterator k = edge->curve().data().begin(); k != edge->curve().data().end(); ++k)
+		for (const auto& key : edge->curve().data())
 		{
-			int key = *k;
 			if(key >= 0 && key < feature_map->size())
 			{
 				if(io_properties.count(key))	io_properties.erase(key);

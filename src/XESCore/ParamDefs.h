@@ -46,7 +46,7 @@
 	/* These are continuous data DEMs. */
 	TOKEN(dem_Elevation)			//	Height above sea level, meters from a DEM (raw elevation)
 	TOKEN(dem_Bathymetry)			//	Height of water bottom, raw.
-//	TOKEN(dem_WaterSurface)			//	Height of water surface
+	TOKEN(dem_Water_Surface)		//	Height of water surface
 	TOKEN(dem_ElevationOverlay)		//	For merge operations...
 
 	TOKEN(dem_Temperature)			//	Average Temperature Data
@@ -71,6 +71,17 @@
 	TOKEN(dem_HydroDirection)		// Direction of rainfall per DEM point
 	TOKEN(dem_HydroQuantity)		// Quantity of water transit per DEM point
 	TOKEN(dem_HydroElevation)		// Water level or NO_VALUE for dry land for hydro reprocessing
+
+	TOKEN(dem_SpringStart)
+	TOKEN(dem_SpringEnd)
+	TOKEN(dem_SummerStart)
+	TOKEN(dem_SummerEnd)
+	TOKEN(dem_FallStart)
+	TOKEN(dem_FallEnd)
+	TOKEN(dem_WinterStart)
+	TOKEN(dem_WinterEnd)
+
+	TOKEN(dem_Soundscape)			// Sound type enum
 
 	/* These are enum DEMs. */
 //	TOKEN(dem_OrigLandUse)			//	Standard land use codes, USGS or XP6/7

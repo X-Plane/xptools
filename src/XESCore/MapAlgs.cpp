@@ -48,7 +48,7 @@
 
 #define SHOW_ISLAND_REMOVAL 0
 
-#define DEBUG_OUTSET_REMOVER 1
+#define DEBUG_OUTSET_REMOVER 0
 
 // NOTE: by convention all of the static helper routines and structs have the __ prefix..this is intended
 // for the sole purpose of making it easy to read the function list popup in the IDE...
@@ -1927,6 +1927,36 @@ int		SetupRasterizerForDEM(const set<Halfedge_handle>& inEdges, const DEMGeo& de
 	return floor(rasterizer.masters.front().y1);
 }
 
+void DumpMapStats(const Pmwx& ioMap)
+{
+	printf("Map has %zd faces / %zd edges / %zd vertices\n",
+		   ioMap.number_of_faces(), ioMap.number_of_edges(), ioMap.number_of_vertices());
+
+	map<size_t, size_t> edge_histogram;
+
+	for (auto itFace = ioMap.faces_begin(); itFace != ioMap.faces_end(); itFace++)
+	{
+		if (itFace->is_unbounded()) continue;
+
+		size_t outer_edges = 0;
+
+		auto ccb = itFace->outer_ccb();
+		auto stop = ccb;
+		do
+		{
+			outer_edges++;
+		} while (++ccb != stop);
+
+		edge_histogram[outer_edges] += 1;
+	}
+
+	printf("edges, count\n");
+	for (auto& kv : edge_histogram) {
+		printf("%zd, %zd\n", kv.first, kv.second);
+	}
+}
+
+
 /************************************************************************************************************************************************************************************************
  *
  ************************************************************************************************************************************************************************************************/
@@ -2333,15 +2363,16 @@ int MapDesliver(Pmwx& pmwx, double metric, ProgressFunc func)
 	for(Pmwx::Face_iterator f = pmwx.faces_begin(); f != pmwx.faces_end(); ++f, ++ctr)
 	if(!f->is_unbounded())
 	#if OPENGL_MAP
-	if(gFaceSelection.empty() || gFaceSelection.count(f))
+//	if(gFaceSelection.empty() || gFaceSelection.count(f))
 	#endif
-//	if(ctr >= 40259 )
 	{
 		PROGRESS_CHECK(func, 0, 1, "Deslivering...", ctr, tot,chk);
 		Polygon_with_holes_2 pwh;
 		Bbox_2 bbox;
 		bool maybe_sliver = !IsFaceNotSliverFast(f, metric * 3.0);
 		bool is_sliver = false;
+		
+		int my_lu = f->data().mTerrainType;
 		
 		if(maybe_sliver)
 		{
@@ -2360,37 +2391,56 @@ int MapDesliver(Pmwx& pmwx, double metric, ProgressFunc func)
 //				CGAL::to_double(f->outer_ccb()->target()->point().y()));
 //		}
 		
-		is_sliver = false;
+//		is_sliver = false;
 		if(is_sliver)
 		{
 			set<Pmwx::Halfedge_handle>	my_edges;
 			FindEdgesForFace<Pmwx>(f,my_edges);
 			map<int,int>	road_lu_count;
 			map<int,int>	other_lu_count;
+			bool matches_something = false;
 			for(set<Pmwx::Halfedge_handle>::iterator e = my_edges.begin(); e != my_edges.end(); ++e)
 			if(!(*e)->twin()->face()->is_unbounded())
+			if((*e)->twin()->face() != (*e)->face())
 			{
+				int other_lu = (*e)->twin()->face()->data().mTerrainType;
+				if(other_lu == my_lu)
+				{
+					matches_something = true;
+					break;
+				}
+				
 				if(!(*e)->data().mSegments.empty() ||
 				   !(*e)->twin()->data().mSegments.empty())
 				{
-					road_lu_count[(*e)->twin()->face()->data().mTerrainType]++;
+					road_lu_count[other_lu]++;
 				}
 				else
 				{
 //					DebugAssert((*e)->twin()->face()->data().mTerrainType != f->data().mTerrainType);
-					other_lu_count[(*e)->twin()->face()->data().mTerrainType]++;
+					other_lu_count[other_lu]++;
 				}
 			}
 			
-			if (!other_lu_count.empty())
+			if(!matches_something)
 			{
-				++ret;
-				f->data().mTerrainType = highest_key<int,int>(other_lu_count);
-			}
-			else if(!road_lu_count.empty())
-			{
-				++ret;
-				f->data().mTerrainType = highest_key<int,int>(road_lu_count);
+				if (!other_lu_count.empty())
+				{
+					++ret;
+					f->data().mTerrainType = highest_key<int,int>(other_lu_count);
+//					#if OPENGL_MAP
+//						gFaceSelection.insert(f);
+//					#endif
+					
+				}
+				else if(!road_lu_count.empty())
+				{
+					++ret;
+					f->data().mTerrainType = highest_key<int,int>(road_lu_count);
+//					#if OPENGL_MAP
+//						gFaceSelection.insert(f);
+//					#endif
+				}
 			}
 		}
 	}
@@ -2709,36 +2759,40 @@ Pmwx::Face_handle containing_face(Pmwx::Ccb_halfedge_circulator circ)
 	return ret;
 }
 
-int RemoveIslands(Pmwx& io_map, double max_area)
+tuple<int, int> RemoveIslands(Pmwx& io_map, double max_area)
 {
-	int k = 0;
-	for(Pmwx::Face_iterator f = io_map.faces_begin(); f != io_map.faces_end(); ++f)
-	if(!f->is_unbounded())
-	if(f->holes_begin() == f->holes_end())
+	int islands_removed = 0, islands = 0;
+	for (auto f = io_map.faces_begin(); f != io_map.faces_end(); ++f)
 	{
+		if (f->is_unbounded())
+			continue;
+		if (f->holes_begin() != f->holes_end())
+			continue;
+
 		Pmwx::Face_handle holds_me = containing_face(f->outer_ccb());
-		if(holds_me != Pmwx::Face_handle() && !holds_me->is_unbounded())
+		if (holds_me != Pmwx::Face_handle() && !holds_me->is_unbounded())
 		{
 			double a = GetMapFaceAreaMeters(f);
 			if (a < max_area)
 			{
 				f->set_data(holds_me->data());
-				#if SHOW_ISLAND_REMOVAL
+#if SHOW_ISLAND_REMOVAL
 				Pmwx::Ccb_halfedge_circulator circ, stop;
 				circ = stop = f->outer_ccb();
 				do
 				{
 					debug_mesh_line(cgal2ben(circ->source()->point()),
 									cgal2ben(circ->target()->point()),
-									1,0,0,1,0,0);
-									
-				} while(++circ != stop);
-				#endif
-				++k;
+									1, 0, 0, 1, 0, 0);
+
+				} while (++circ != stop);
+#endif
+				++islands_removed;
 			}
+			++islands;
 		}
 	}
-	return k;
+	return {islands_removed, islands};
 }
 
 int KillWetAntennaRoads(Pmwx& io_map)

@@ -108,6 +108,8 @@ ENUM_DOMAIN(Light_Fixt,"Light Fixtures")
 	ENUM(light_PAPI20,"PAPI (20 degrees)",apt_gls_papi_20)
 	ENUM(light_VASI_Tri,"VASI (Tri-Color)",apt_gls_vasi_tricolor)
 	ENUM(light_WigWag,"Wig-Wags",apt_gls_wigwag)
+	ENUM(light_APAPI_Left, "APAPI (Left Side)", apt_gls_apapi_left)
+	ENUM(light_APAPI_Right, "APAPI (Right Side)", apt_gls_apapi_right)
 
 ENUM_DOMAIN(Light_App,"Approach Lights")
 	ENUM(app_None,		"None",						apt_app_none)

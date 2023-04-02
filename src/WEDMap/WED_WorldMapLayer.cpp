@@ -93,6 +93,10 @@ void		WED_WorldMapLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 	if (lon_span < 30.0 && lat_span < 20.0)  // covering a 30 deg span requires up to 4 textures at 10 deg each - depending of how they are aligned
 	{
 		for (int y = b; y < t; y += 10)
+		{
+			int y_bot = max((int) floor(vb), y);
+			int y_top = min((int) ceil(vt), y + 10);
+
 			for (int x = l; x < r; x += 10)
 			{
 				char	fname[200];
@@ -107,13 +111,14 @@ void		WED_WorldMapLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 						glBegin(GL_TRIANGLE_STRIP);
 						for (int xx = 0; xx <= 10; xx++)
 						{
-							glTexCoord2f(0.1 * xx, 0.0);	glVertex2(GetZoomer()->LLToPixel(Point2(x + xx, y)));
-							glTexCoord2f(0.1 * xx, 1.0);	glVertex2(GetZoomer()->LLToPixel(Point2(x + xx, y + 10)));
+							glTexCoord2f(0.1 * xx, 0.1 * (y_bot - y));	glVertex2(GetZoomer()->LLToPixel(Point2(x + xx, y_bot)));
+							glTexCoord2f(0.1 * xx, 0.1 * (y_top - y));	glVertex2(GetZoomer()->LLToPixel(Point2(x + xx, y_top)));
 						}
 						glEnd();
 					}
 				}
 			}
+		}
 	}
 
 }

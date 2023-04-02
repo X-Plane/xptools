@@ -39,9 +39,11 @@ enum {
 		shp_Mode_Map		= 16,			// Use a map file for features.
 		shp_Use_Crop		= 32,			// Add the crop-box to the import on the fly.
 		shp_Overlay			= 64,			// Do not clear previous data.
-		shp_ErrCheck		= 128			// Check for overlapping line segments, and fail if we find any.
+		shp_ErrCheck		= 128,			// Check for overlapping line segments, and fail if we find any.
+		shp_Altitude		= 256,			// Import elevation from polygon vertex Z values.
+		shp_Outline			= 512,			// Rasterizing: ink in outline to guarantee coverage
 };
-typedef int shp_Flags;
+typedef unsigned int shp_Flags;
 
 // io_bounds - on input, this contains a bounding box that is used for cropping AND gridding.  On output, this contains the real bounds of the
 // shape file.  Note that if the shape file contains no entities inside the crop box, the crop box is returned unchanged.
@@ -74,7 +76,8 @@ bool	ReadShapeFile(
 bool	WriteShapefile(
 			const char *			in_file,
 			Pmwx&					in_map,
-			int						terrain_type,
+			int						terrain_type,				// -1 for no matchign
+			bool					write_terrain_types,
 			ProgressFunc			inFunc);
 
 #endif /* ShapeIO_H */

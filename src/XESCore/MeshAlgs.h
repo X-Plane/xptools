@@ -59,6 +59,9 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDems,
 								ProgressFunc inProg);
 
 void 	SetupWaterRasterizer(const Pmwx& inMap, const DEMGeo& inDEM, PolyRasterizer<double>& outRasterizer, int terrain_wanted);
+
+void	CreateWaterSDF(const Pmwx& inMap, DEMGeo& ioDem);
+
 double	HeightWithinTri(CDT& inMesh, CDT::Face_handle tri, CDT::Point in);
 double	MeshHeightAtPoint(CDT& inMesh, double inLon, double inLat, int hint_id);
 void	Calc2ndDerivative(DEMGeo& ioDEM);
@@ -76,8 +79,15 @@ inline bool must_burn_he(Halfedge_handle he)
 	Halfedge_handle tw = he->twin();
 	Face_handle f1 = he->face();
 	Face_handle f2 = tw->face();
-	
-	if(f1->is_unbounded() || f2->is_unbounded()) 
+
+	// This is a (literal) edge case:
+	// If there is a single face in the vector map, we don't have any other edges to burn
+	if ((f2->is_unbounded() && !f1->is_unbounded()) && f1->data().mTerrainType == terrain_Water)
+		return true;
+	if ((f1->is_unbounded() && !f2->is_unbounded()) && f2->data().mTerrainType == terrain_Water)
+		return true;
+
+	if(f1->is_unbounded() || f2->is_unbounded())
 		return false;
 
 //	if (f1->data().GetParam(af_Variant,0) != 

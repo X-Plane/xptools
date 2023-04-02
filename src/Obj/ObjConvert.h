@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Laminar Research.
+ * Copyright (c) 2005, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -20,33 +20,23 @@
  * THE SOFTWARE.
  *
  */
+#ifndef OBJCONVERT_H
+#define OBJCONVERT_H
 
-#include "TclStubs.h"
-#if APL || LIN
-#include <dlfcn.h>
-#include <stdlib.h>
-#endif
+struct XObj;
+struct XObj8;
 
-TCL_stubs tcl_stubs = { 0 };
+// OBJECT CONVERSION
+// These convert from one obj to the other.  This can take overloaded
+// tris/quads/lines in the OBJ7 but generates separate tris/quads/lines
+// on convert-back.
+void	Obj7ToObj8(const XObj& obj7, XObj8& obj8);
+void	Obj8ToObj7(const XObj8& obj8, XObj& obj7);
 
-const char * TCL_init_stubs(void)
-{
-	int lost = 0;
-#if IBM
-	HMODULE	hmod = GetModuleHandle(L"tcl86t");
-	if(hmod == NULL) return "Could not locate tcl8.6";
+// This merges consecutive index commands in an OBJ8 for you.
+void	Obj8_ConsolidateIndexCommands(XObj8& obj8);
+// This calculates OBJ8 normals frmo tris, editing the point pool.
+void	Obj8_CalcNormals(XObj8& obj8);
+bool	Obj8_Optimize(XObj8& obj8);
+
 #endif
-#if APL || LIN
-#define TCL_PROC(ret,name,args) \
-	tcl_stubs.name = (ret (*) args) dlsym(RTLD_DEFAULT,#name); \
-	if(tcl_stubs.name == NULL) ++lost;
-#else
-#define TCL_PROC(ret,name,args) \
-	tcl_stubs.name = (ret (*) args) GetProcAddress(hmod,#name); \
-	if(tcl_stubs.name == NULL) ++lost;
-#endif
-	TCL_PROCS
-#undef TCL_PROC
-	if (lost != 0) return "Could not locate all TCL functions.";
-	return NULL;
-}

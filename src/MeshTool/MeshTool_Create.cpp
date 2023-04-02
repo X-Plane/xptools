@@ -214,7 +214,7 @@ void MT_MakeDSF(rf_region region, const char * dump, const char * out_dsf)
 	#endif
 
 	// -exportDSF
-	BuildDSF(out_dsf, NULL, sDem[dem_Elevation],sDem[dem_Bathymetry],sDem[dem_UrbanDensity],sMesh, /*sTriangulationLo,*/ *the_map, region, ConsoleProgressFunc);
+	BuildDSF(out_dsf, NULL, sDem[dem_Elevation], sDem[dem_Bathymetry], {}, sMesh, /*sTriangulationLo,*/ *the_map, region, ConsoleProgressFunc);
 }
 
 void MT_Cleanup(void)

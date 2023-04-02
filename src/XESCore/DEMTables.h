@@ -266,8 +266,10 @@ struct BeachInfo_t {
 	int			require_open;
 	float		min_area;
 	int			require_airport;
+	set<int>	require_landuse;
 	int			x_beach_type;
 	int			x_backup;
+	RGBColor_t	debug_color;
 };
 typedef vector<BeachInfo_t>		BeachInfoTable;
 extern BeachInfoTable			gBeachInfoTable;
@@ -296,6 +298,7 @@ inline bool	LowerPriorityNaturalTerrain(int lhs, int rhs);			// Returns true if 
 //void			GetForestTypes(set<int>& forests);
 
 bool	IsAirportTerrain(int t);
+int		GetAirportTerrainBorder(int t);
 
 
 extern	string	gNaturalTerrainFile;

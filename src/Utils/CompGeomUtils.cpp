@@ -1330,15 +1330,27 @@ static void PmwxToPoly(const Pmwx& inMap, Polygon2& outPoly)
 
 Point2	CoordTranslator2::Forward(const Point2& input) const
 {
-	return Point2(
-				  mDstMin.x() + (input.x() - mSrcMin.x()) * (mDstMax.x() - mDstMin.x()) / (mSrcMax.x() - mSrcMin.x()),
-				  mDstMin.y() + (input.y() - mSrcMin.y()) * (mDstMax.y() - mDstMin.y()) / (mSrcMax.y() - mSrcMin.y()));
+	double x = mDstMin.x();
+	if (mSrcMax.x() != mSrcMin.x())
+		x += (input.x() - mSrcMin.x()) * (mDstMax.x() - mDstMin.x()) / (mSrcMax.x() - mSrcMin.x());
+
+	double y = mDstMin.y();
+	if (mSrcMax.y() != mSrcMin.y())
+		y += (input.y() - mSrcMin.y()) * (mDstMax.y() - mDstMin.y()) / (mSrcMax.y() - mSrcMin.y());
+
+	return Point2(x, y);
 }
 Point2	CoordTranslator2::Reverse(const Point2& input) const
 {
-	return Point2(
-				  mSrcMin.x() + (input.x() - mDstMin.x()) * (mSrcMax.x() - mSrcMin.x()) / (mDstMax.x() - mDstMin.x()),
-				  mSrcMin.y() + (input.y() - mDstMin.y()) * (mSrcMax.y() - mSrcMin.y()) / (mDstMax.y() - mDstMin.y()));
+	double x = mSrcMin.x();
+	if (mDstMax.x() != mDstMin.x())
+		x += (input.x() - mDstMin.x()) * (mSrcMax.x() - mSrcMin.x()) / (mDstMax.x() - mDstMin.x());
+
+	double y = mSrcMin.y();
+	if (mDstMax.y() != mDstMin.y())
+		y += (input.y() - mDstMin.y()) * (mSrcMax.y() - mSrcMin.y()) / (mDstMax.y() - mDstMin.y());
+
+	return Point2(x, y);
 }
 
 

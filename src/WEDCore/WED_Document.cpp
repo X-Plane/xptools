@@ -165,6 +165,9 @@ WED_NWLinkAdapter *	WED_Document::GetNWLink(void)
 	return mNWLink;
 }
 #endif
+
+#include <chrono>
+
 void	WED_Document::Save(void)
 {
 	BroadcastMessage(msg_DocWillSave, reinterpret_cast<uintptr_t>(static_cast<IDocPrefs *>(this)));
@@ -188,6 +191,9 @@ void	WED_Document::Save(void)
 	string tempBakBak = bakXML;
 	tempBakBak = tempBakBak.insert((bakXML.length()-4),".bak");
 
+	auto t0 = std::chrono::high_resolution_clock::now();
+
+#if 0
 	bool earth_wed_xml = FILE_exists(xml.c_str());
 	bool earth_wed_bak_xml = FILE_exists(bakXML.c_str());
 
@@ -206,7 +212,6 @@ void	WED_Document::Save(void)
 	{
 		stage = both;
 	}
-
 	//This is the renaming switch
 	switch(stage)
 	{
@@ -224,6 +229,13 @@ void	WED_Document::Save(void)
 		FILE_rename_file(xml.c_str(),bakXML.c_str());
 		break;
 	}
+#else
+	rename(xml.c_str(), bakXML.c_str());
+#endif
+		auto t1 = std::chrono::high_resolution_clock::now();
+	chrono::duration<double> elapsed = t1 - t0;
+	LOG_MSG("\nrename b4 save %.3lf s\n", elapsed.count());
+	t0 = t1;
 
 	//Create an xml file by opening the file located on the hard drive (windows)
 	//open a file for writing creating/nukeing if neccessary
@@ -243,10 +255,18 @@ void	WED_Document::Save(void)
 	{
 		WriteXML(xml_file);
 	}
+
 	int fcloseErr = fclose(xml_file);
+
+	t1 = std::chrono::high_resolution_clock::now();
+	elapsed = t1 - t0;
+	LOG_MSG("xml write %.3lf s\n", elapsed.count());
+	t0 = t1;
+
 	if(ferrorErr != 0 || fcloseErr != 0)
 	{
 		string msg =  "Error while writing '" + xml + "'";
+#if 0
 		switch(stage)
 		{
 			case none:
@@ -271,6 +291,9 @@ void	WED_Document::Save(void)
 				msg += " or renaming backups to '" + bakXML + "' or '" + tempBakBak;
 				break;
 		}
+#else
+		rename(bakXML.c_str(), xml.c_str());
+#endif
 		msg += "'.";
 		DoUserAlert(msg.c_str());
 	}
@@ -280,13 +303,17 @@ void	WED_Document::Save(void)
 		mOnDisk=true;
 		mPrefsChanged=false;
 	}
-
+#if 0
 	//if the second backup still exists after the error handling
 	if(FILE_exists(tempBakBak.c_str()) == true)
 	{
 		//Delete it
 		FILE_delete_file(tempBakBak.c_str(), false);
 	}
+#endif
+	t1 = std::chrono::high_resolution_clock::now();
+	elapsed = t1 - t0;
+	LOG_MSG("delete aft save %.3lf s\n", elapsed.count());
 }
 
 void	WED_Document::Revert(void)

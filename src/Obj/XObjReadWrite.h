@@ -28,6 +28,6 @@ struct	XObj8;
 bool	XObj8Read(const char * inFile, XObj8& outObj);
 
 // hasnt been updated since XP 10.00 - missing all newer OBJ commands !!!!
-// bool	XObj8Write(const char * inFile, const XObj8& outObj);
+bool	XObj8Write(const char * inFile, const XObj8& outObj);
 
 #endif

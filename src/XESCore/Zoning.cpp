@@ -232,7 +232,7 @@ static bool ReadZoningInfo(const vector<string>& tokens, void * ref)
 {
 	ZoningInfo_t	info;
 	int				zoning;
-	if(TokenizeLine(tokens," efiiiiiie", &zoning,&info.max_slope,&info.need_lu,&info.fill_edge,&info.fill_area,&info.fill_points, &info.fill_veg,&info.allow_country_roads,&info.terrain_type) != 10)
+	if(TokenizeLine(tokens," efiiiiiiie", &zoning,&info.max_slope,&info.need_lu,&info.fill_edge,&info.fill_area,&info.fill_points, &info.fill_veg,&info.allow_country_roads,&info.fill_rail, &info.terrain_type) != 11)
 		return false;
 	// optimization: if slope will never filter out AND we don't need LU, set slope to 0 to turn the mesh check off entirely!
 	if(info.max_slope == 90.0 && info.need_lu == 0)
@@ -827,7 +827,7 @@ static void ZoneOneFace(
 	int num_sides = 0;
 	float min_angle = 0.0;
 	float max_angle = 0.0;
-	bool has_holes = face->number_of_holes() > 0;
+	bool has_holes = face->number_of_holes() > 0 || !face->data().mPolygonFeatures.empty();
 	double max_err = 0.0;
 	double short_side = 0.0;
 	double long_side = 0.0;
@@ -1631,6 +1631,9 @@ void			FaceGraph_t::merge(FaceNode_t * f1, FaceNode_t * f2, list<EdgeNode_t *>& 
 //			DebugAssert(!(oe->must_merge && oe->must_lock));
 			if(oe->must_lock)
 				oe->must_merge = false;
+
+			DebugAssert(!(oe->must_merge && oe->must_lock));
+
 //			#if !DEV
 //				#error temp hack
 //			#endif
@@ -1856,6 +1859,13 @@ void	ColorFaces(set<Face_handle>&	io_faces)
 						en->must_lock = false;
 					}
 				}
+
+				// If when EVERYTHING is said and done, we have a conflict, err on lock over merge status.
+				// This hapepns when a power line is part of the separation of two border faces that have different
+				// zoning in their import files.  Just honor the import - for now.
+
+				if(en->must_merge && en->must_lock)
+					en->must_merge = false;
 
 //				for(set<Halfedge_handle>::iterator i = edges.begin(); i != edges.end(); ++i)
 //				if((*i)->twin()->face() == *ff)
