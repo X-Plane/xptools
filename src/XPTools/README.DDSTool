@@ -13,9 +13,11 @@ CHANGE HISTORY:
 1.3		3/30/15   Default gamma is now assumed to be sRGB
 1.2		2/18/10   More advanced mip-map contrl options
 1.1		1/25/10   Quilting Added
-				Mipmap support changed
-				Control over gamma
-Version 3/11/08 Initial Version
+                          Mipmap support changed
+		          Control over gamma
+1.2		1/02/23   All CLI <flags> arguments are now optional.
+		          Removed option to create non-sRGB gamma textures.
+		          Multi-threaded DDS compression using a fixed 4 threads.
 
 -------------------------------------------------------------------------------
 SYSTEM REQUIREMENTS AND INSTALLATION
@@ -99,13 +101,13 @@ Gamma control options:
 
 --gamma_22
 
-Write a DDS file with a gamma of 2.2, roughly matching sRGB.  Use this option
-when grinding files for X-Plane 10.
+Redundant. DDS files written with DDSTool 1.2 or later always encode to 
+sRGB gamma of ~2.2, as required by X-Plane 10.6 and later.
 
 --gamma_18
 
-Write a DDS file with a gamma of 1.8, roughly matching Mac gamma (pre 10.6.).
-Use this option when grinding images that must work on X-Plane 9 and 10.
+Not supported any more. For DDS files for X-Plane 9 or older, with a gamma 
+of 1.8, roughly matching Mac gamma, use DDSTool version 1.1 or older.
 
 Scaling options:
 

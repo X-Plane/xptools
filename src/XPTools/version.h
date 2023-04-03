@@ -7,7 +7,7 @@
 
 #define XPT_PACKAGE_VER		"23-4"
 
-#define DDSTOOL_VER		20000
+#define DDSTOOL_VER		10200
 #define DDSTOOL_EXTRAVER	"-b1"
 
 #define DSFTOOL_VER		20300
@@ -36,7 +36,7 @@ product_version(uint32_t ver, const char* extra_ver)
 static inline void
 print_product_version(const char* product, uint32_t ver, const char* extra_ver)
 {
-	printf("%s %s, Copyright 2020 Laminar Research.  Compiled on "
+	printf("%s %s, Copyright 2023 Laminar Research.  Compiled on "
 		__DATE__".\n", product,	product_version(ver, extra_ver));
 	printf("Part of X-Plane Scenery Tools release: %s\n", XPT_PACKAGE_VER);
 }
