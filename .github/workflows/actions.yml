@@ -29,7 +29,11 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: xpt_release_build
-        path: msvc\*\Release\*.exe
+        path: |
+          msvc/DDSTool/Release/DDSTool.exe
+          msvc\DSFTool\Release\DSFTool.exe
+          msvc/Grinder/Release/XGrinder.exe
+          msvc\ObjView\Release\ObjView.exe
           
   build-mac:
     runs-on: macos-11
