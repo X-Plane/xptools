@@ -1,0 +1,129 @@
+name: build WED
+
+on:
+  push:
+    branches:
+    - 'wed_2*_release'
+        
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    runs-on: windows-2022
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+      with:
+        submodules: true
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v1.1
+    - name: Build .exe
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      # Add additional options to the MSBuild command line here (like platform or verbosity level).
+      # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference 
+      run: |
+        msbuild /m /p:Configuration=Release /p:Platform="x64" /t:WorldEditor msvc\XPTools.sln
+    - name: Archive build result
+      uses: actions/upload-artifact@v3
+      with:
+        name: wed_release_build
+        path: msvc/WorldEditor/Release/WorldEditor.exe
+          
+  build-mac:
+    runs-on: macos-11
+    env:
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          submodules: yes
+      - name: Setup Credentials
+        uses: apple-actions/import-codesign-certs@v2
+        with: 
+          p12-file-base64: ${{ secrets.APPLE_DEV_CERTIFICATE }}
+          p12-password: ${{ secrets.APPLE_DEV_CERTIFICATE_PASSWORD }}
+      - name: Build Libs
+        run: |
+          git submodule init
+          git submodule update libs
+          cd libs
+          make -j$(sysctl -n hw.logicalcpu)
+      - name: Build App
+        env:
+          scheme: "WED"
+          config: "Release"
+        run: |
+          xcodebuild -scheme "$scheme" -config "$config" -project SceneryTools.xcodeproj -archivePath build/WED.xcarchive CODE_SIGN_STYLE="Manual" CODE_SIGN_IDENTITY="Developer ID Application: Laminar Research (LPH4NFE92D)" archive | xcpretty && exit ${PIPESTATUS[0]}
+      - name: Notarize App
+        run: |
+          ./scripts/notarization.sh WED.zip build/WED.xcarchive/Products/Applications/WED.app staple
+      - name: Archive build result
+        uses: actions/upload-artifact@v3
+        with:
+          name: wed_release_build
+          path: build/WED.xcarchive/Products/Applications
+          
+  build-linux:
+    runs-on: ubuntu-22.04
+    # we need fltk-dev and python 2.7
+    container:
+        image: ghcr.io/x-plane/xptools_builder:latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Build Libs
+        run: |
+          git config --global --add safe.directory /__w/xptools/xptools
+          git submodule init
+          git submodule update libs
+          cd libs
+          make -j$(nproc)
+      - name: Build binary
+        run: |
+          make -s -C . conf=release_opt -j$(nproc) WED
+      - name: Archive build result
+        uses: actions/upload-artifact@v3
+        with:
+          name: wed_release_build
+          path: build/Linux/release_opt/WED
+
+  make-zips:
+    runs-on: ubuntu-latest
+    needs: [build-windows, build-mac, build-linux]
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+    - name: get build results
+      uses: actions/download-artifact@v3
+      with:
+        name: wed_release_build
+    - name: zip files
+      run: |
+          ls -l
+          version=$(awk '/WED_VERSION[\s\t]/ {gsub(/\./,""); print $3}' <src/WEDCore/WED_Version.h)
+          echo $version
+          cp src/WEDCore/README.WorldEditor .
+          zip -r wed_win_$version README.WorldEditor WorldEditor.exe
+          chmod a+x WED
+          zip -r wed_lin_$version README.WorldEditor WED
+          chmod a+x WED.app/Contents/MacOS/WED
+          zip -r wed_mac_$version README.WorldEditor WED.app
+#    - name: copy to server           # run this conditional on being a "Release" or a special trigger
+#      uses: appleboy/scp-action@master
+#      with:
+#        host: files.x-plane.com
+#        username: ${{ secrets.USERNAME }}
+#        key: ${{ secrets.KEY }}      # private ssh key, public key goes on host
+#        source: wed_*.zip            # scp will overwrite target. find a way to check & NOT overwrite
+#        target: "public/wed/"
+    - name: Archive zipfiles
+      uses: actions/upload-artifact@v3
+      with:
+        name: wed_release_build
+        path: ./wed_*.zip
