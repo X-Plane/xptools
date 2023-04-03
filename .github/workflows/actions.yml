@@ -119,15 +119,15 @@ jobs:
           mv src/XPTools/README* .
           rm README.ObjConverter README.md
           mv src/DSFTools/README.* .
-          ls -ld
+          ls -l
           mkdir tools
           mv DDSTool.exe DSFTool.exe tools/
           zip -r xpt_win_$version README* XGrinder.exe tools ObjView.exe
-          rm tools/*
+          rm -f tools/*
           chmod a+x XGrinder ObjView tools/*
           mv DDSTool DSFTool tools/
           zip -r xpt_lin_$version README* XGrinder tools ObjView
-          rm tools/*
+          rm -f tools/*
           mv Applications/*.app .
           mv usr/local/bin/*Tool tools/
           chmod a+x XGrinder.app/Contents/MacOS/XGrinder
