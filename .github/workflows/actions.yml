@@ -25,11 +25,15 @@ jobs:
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference 
       run: |
         msbuild /m /p:Configuration=Release /p:Platform="x64" /t:DSFTool /t:DDSTool /t:XGrinder /t:ObjView msvc\XPTools.sln
+        move msvc\DDSTool\Release\DDSTool.exe msvc\
+        move msvc\DSFTool\Release\DSFTool.exe msvc\
+        move msvc\XGrinder\Release\XGrinder.exe msvc\
+        move msvc\ObjView\Release\Objview.exe msvc\
     - name: Archive build result
       uses: actions/upload-artifact@v3
       with:
         name: xpt_release_build
-        path: msvc/XGrinder/Release/XGrinder.exe
+        path: msvc/*.exe
           
   build-mac:
     runs-on: macos-11
@@ -114,10 +118,6 @@ jobs:
           mv src/XPTools/README* .
           rm README.ObjView
           mv src/DSFTools/README.* .
-          mv DDSTool/Release/DDSTool.exe .
-          mv DSFTool/Release/DSFTool.exe .
-          mv XGrinder/Release/XGrinder.exe .
-          mv ObjView/Release/ObjView.exe .
           ls -ld
           zip -r xpt_win_$version  README* DDSTool.exe DSFTool.exe XGrinder.exe ObjView.exe
           chmod a+x DDSTool DSFTool XGrinder ObjView
