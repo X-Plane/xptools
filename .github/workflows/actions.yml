@@ -113,7 +113,7 @@ jobs:
     - name: zip files
       run: |
           ls -lr
-          version=$(awk '/XPT_PACKAGE_VER[\s\t]/ {gsub(/\./,""); print $3}' <src/XPTools/version.h)
+          version=$(awk '/XPT_PACKAGE_VER[\s\t]/ {gsub(/"/,""); print $3}' <src/XPTools/version.h)
           echo $version
           mv src/XPTools/README* .
           rm README.ObjView
