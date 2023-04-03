@@ -1,4 +1,4 @@
-name: build XPTools
+name: experimental build XPTools
 
 on:
   push:
@@ -56,14 +56,14 @@ jobs:
           git submodule init
           git submodule update libs
           cd libs
-          make -j$(sysctl -n hw.logicalcpu) all
+          make -j$(sysctl -n hw.logicalcpu)
       - name: Build App
         run: |
           xcodebuild -scheme "Build Tools" -config Release -project SceneryTools.xcodeproj -archivePath build/XPT.xcarchive CODE_SIGN_STYLE="Manual" CODE_SIGN_IDENTITY="Developer ID Application: Laminar Research (LPH4NFE92D)" archive | xcpretty && exit ${PIPESTATUS[0]}
       - name: Notarize App
         run: |
-          ./build-tools/mac/notarization.sh XGrinder.zip build/XPT.xcarchive/Products/Applications/XGrinder.app staple
-          ./build-tools/mac/notarization.sh ObjView.zip build/XPT.xcarchive/Products/Applications/ObjView.app staple
+          ./scripts/notarization.sh XGrinder.zip build/XPT.xcarchive/Products/Applications/XGrinder.app staple
+          ./scripts/notarization.sh ObjView.zip build/XPT.xcarchive/Products/Applications/ObjView.app staple
       - name: Archive build result
         uses: actions/upload-artifact@v3
         with:
