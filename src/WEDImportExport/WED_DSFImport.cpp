@@ -1346,7 +1346,11 @@ void	WED_DoImportDSF(IResolver * resolver)
 			WED_Group * g = WED_Group::CreateTyped(wrl->GetArchive());
 			g->SetName(path);
 			g->SetParent(wrl,wrl->CountChildren());
-			int result = DSF_Import(path,g);
+			int result;
+			if(FILE_get_file_extension(path) == "txt")
+				result = WED_ImportText(path, g);
+			else
+				result = DSF_Import(path, g);
 			if(result != dsf_ErrOK)
 			{
 				string msg = string("The file '") + path + string("' could not be imported as a DSF:\n")

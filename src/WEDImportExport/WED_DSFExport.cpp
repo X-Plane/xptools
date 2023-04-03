@@ -55,6 +55,7 @@
 #include "IResolver.h"
 #include "ITexMgr.h"
 #include "WED_ResourceMgr.h"
+#include "WED_Document.h"
 #include "BitmapUtils.h"
 #include "GISUtils.h"
 #include <time.h>
@@ -75,14 +76,72 @@
 
 // various pieces of information about the currently running export
 
-struct DSF_export_info_t
+class DSF_export_info_t
 {
+public:
 	ImageInfo	orthoImg;      // in case an orthoimage is to be converted/exported, store its info, so it does not need to be loaded it repeatedly
 	string		orthoFile;     // path to last orthoImage - so we know if there is a 2nd one to deal with - in which case we drop the first
 
 	bool		DockingJetways;
+private:
+	set<string> previous_dsfs;
+	string		new_dsfs;
+	WED_Document* inDoc;
+public:
+	DSF_export_info_t(IResolver * resolver = nullptr) : DockingJetways(true)
+	{
+		orthoImg.data = NULL;
 
-	DSF_export_info_t() : DockingJetways(true) { orthoImg.data = NULL; }
+		if (resolver)
+		{
+			inDoc = dynamic_cast<WED_Document*>(resolver);
+			auto dsf = inDoc->ReadStringPref("export/last", "", IDocPrefs::pref_type_doc);
+
+			int last_pos = 0;
+			for (int pos = 0; pos < dsf.size(); pos++)
+			{
+				if (dsf[pos] == ' ' || pos == dsf.size() - 1)
+				{
+					pos++;
+					previous_dsfs.insert(dsf.substr(last_pos, pos - last_pos));
+					last_pos = pos;
+				}
+			}
+		}
+		else
+			inDoc = nullptr;
+	}
+
+	~DSF_export_info_t(void)
+	{
+		if (orthoImg.data)
+			free(orthoImg.data);
+
+		if (inDoc)
+		{
+			string path = "Earth nav data" DIR_STR;
+			inDoc->LookupPath(path);
+			for (auto& d : previous_dsfs)
+				FILE_delete_file((path + d).c_str(), false);
+
+			if (inDoc->ReadStringPref("export/last", "", IDocPrefs::pref_type_doc) != new_dsfs)
+			{
+				inDoc->WriteStringPref("export/last", new_dsfs, IDocPrefs::pref_type_doc);
+				inDoc->SetDirty();
+			}
+		}
+	}
+
+	void mark_written(const string& file)
+	{
+		previous_dsfs.erase(file);
+		if (new_dsfs.length() < 200)   // 10 dsf files max remembered. Don't let a GW export blow this up ..
+		{
+			if (!new_dsfs.empty())
+				new_dsfs += " ";
+			new_dsfs += file;
+		}
+	}
 };
 
 extern int gOrthoExport;
@@ -2392,6 +2451,9 @@ int DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& pkg, in
 
 		snprintf(buffer, 255, "%sEarth nav data" DIR_STR "%+03d%+04d" DIR_STR "%+03d%+04d.dsf", pkg.c_str(), latlon_bucket(y), latlon_bucket(x), y, x);
 		DSFWriteToFile(buffer, writer);
+
+		snprintf(buffer, 255, "%+03d%+04d" DIR_STR "%+03d%+04d.dsf", latlon_bucket(y), latlon_bucket(x), y, x);
+		export_info->mark_written(buffer);
 	}
 
 	/*
@@ -2431,7 +2493,7 @@ int DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, se
 
 	int DSF_export_tile_res = 0;
 
-	DSF_export_info_t DSF_export_info;   // We kept the last loaded orthoimage open, so it does not have to be loaded repeatedly. This gates parallel DSF exports.
+	DSF_export_info_t DSF_export_info(resolver);   // We kept the last loaded orthoimage open, so it does not have to be loaded repeatedly. This gates parallel DSF exports.
 	DSF_export_info.DockingJetways = gExportTarget >= wet_xplane_1200;
 
 	for (int y = tile_south; y < tile_north; ++y)
@@ -2445,10 +2507,6 @@ int DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, se
 			if (DSF_export_tile_res == -1) break;
 		}
 		if (DSF_export_tile_res == -1) break;
-	}
-	if (DSF_export_info.orthoImg.data)
-	{
-		free(DSF_export_info.orthoImg.data);
 	}
 	if (g_dropped_pts)
 	{

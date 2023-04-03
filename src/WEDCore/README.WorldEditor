@@ -16,6 +16,7 @@ CHANGE HISTORY
 WED 2.6.0 b1
    Features:
    - polygonal exclusion zones for XP 12.xx
+   - WED-671: delete DSF written at prior export, but now empty
 
 =======
 WED 2.5.1r1 3/20/23
