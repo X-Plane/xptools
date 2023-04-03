@@ -1,10 +1,10 @@
-name: build WED
+name: build XPTools
 
 on:
   push:
     branches:
     - feat_workflow_meikelm
-    - 'wed_2*_release'
+    - 'xpt_*_release'
         
 permissions:
   contents: read
@@ -24,12 +24,12 @@ jobs:
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference 
       run: |
-        msbuild /m /p:Configuration=Release /p:Platform="x64" /t:WorldEditor msvc\XPTools.sln
+        msbuild /m /p:Configuration=Release /p:Platform="x64" /t:DSFTool /t:DDSTool /t:XGrinder /t:ObjView msvc\XPTools.sln
     - name: Archive build result
       uses: actions/upload-artifact@v3
       with:
-        name: wed_release_build
-        path: msvc/WorldEditor/Release/WorldEditor.exe
+        name: xpt_release_build
+        path: msvc/*/Release/*.exe
           
   build-mac:
     runs-on: macos-11
@@ -52,21 +52,19 @@ jobs:
           git submodule init
           git submodule update libs
           cd libs
-          make -j$(sysctl -n hw.logicalcpu)
+          make -j$(sysctl -n hw.logicalcpu) all
       - name: Build App
-        env:
-          scheme: "WED"
-          config: "Release"
         run: |
-          xcodebuild -scheme "$scheme" -config "$config" -project SceneryTools.xcodeproj -archivePath build/WED.xcarchive CODE_SIGN_STYLE="Manual" CODE_SIGN_IDENTITY="Developer ID Application: Laminar Research (LPH4NFE92D)" archive | xcpretty && exit ${PIPESTATUS[0]}
+          xcodebuild -scheme "Build Tools" -config Release -project SceneryTools.xcodeproj -archivePath build/XPT.xcarchive CODE_SIGN_STYLE="Manual" CODE_SIGN_IDENTITY="Developer ID Application: Laminar Research (LPH4NFE92D)" archive | xcpretty && exit ${PIPESTATUS[0]}
       - name: Notarize App
         run: |
-          ./build-tools/mac/notarization.sh WED.zip build/WED.xcarchive/Products/Applications/WED.app staple
+          ./build-tools/mac/notarization.sh XGrinder.zip build/XPT.xcarchive/Products/Applications/XGrinder.app staple
+          ./build-tools/mac/notarization.sh ObjView.zip build/XPT.xcarchive/Products/Applications/ObjView.app staple
       - name: Archive build result
         uses: actions/upload-artifact@v3
         with:
-          name: wed_release_build
-          path: build/WED.xcarchive/Products/Applications
+          name: xpt_release_build
+          path: build/XPT.xcarchive/Products/Applications
           
   build-linux:
     runs-on: ubuntu-22.04
@@ -87,12 +85,16 @@ jobs:
           make -j$(nproc)
       - name: Build binary
         run: |
-          make -s -C . conf=release_opt -j$(nproc) WED
+          make -s -C . conf=release_opt -j$(nproc) DDSTool DSFTool XGrinder ObjView
       - name: Archive build result
         uses: actions/upload-artifact@v3
         with:
-          name: wed_release_build
-          path: build/Linux/release_opt/WED
+          name: xpt_release_build
+          path: |
+             build/Linux/release_opt/DDSTool
+             build/Linux/release_opt/DSFTool
+             build/Linux/release_opt/XGrinder
+             build/Linux/release_opt/ObjView
 
   make-zips:
     runs-on: ubuntu-latest
@@ -103,28 +105,32 @@ jobs:
     - name: get build results
       uses: actions/download-artifact@v3
       with:
-        name: wed_release_build
+        name: xpt_release_build
     - name: zip files
       run: |
-          ls -l
-          version=$(awk '/WED_VERSION[\s\t]/ {gsub(/\./,""); print $3}' <src/WEDCore/WED_Version.h)
+          ls -lr
+          version=$(awk '/XPT_PACKAGE_VER[\s\t]/ {gsub(/\./,""); print $3}' <src/XPTools/version.h)
           echo $version
-          cp src/WEDCore/README.WorldEditor .
-          zip -r wed_win_$version README.WorldEditor WorldEditor.exe
-          chmod a+x WED
-          zip -r wed_lin_$version README.WorldEditor WED
-          chmod a+x WED.app/Contents/MacOS/WED
-          zip -r wed_mac_$version README.WorldEditor WED.app
+          cp src/XPTools/README* .
+          rm README.ObjView
+          cp src/DSFTools/README.* .
+          ls -ld
+          zip -r xpt_win_$version  README* DDSTool.exe DSFTool.exe XGrinder.exe ObjView.exe
+          chmod a+x DDSTool DSFTool XGrinder ObjView
+          zip -r xpt_lin_$version  README* DDSTool DSFTool XGrinder ObjView
+          chmod a+x XGrinder.app/Contents/MacOS/XGrinder
+          chmod a+x ObjView.app/Contents/MacOS/ObjView
+          zip -r xpt_mac_$version  README* DDSTool DSFTool XGrinder.app ObjView.app
 #    - name: copy to server           # run this conditional on being a "Release" or a special trigger
 #      uses: appleboy/scp-action@master
 #      with:
 #        host: files.x-plane.com
 #        username: ${{ secrets.USERNAME }}
 #        key: ${{ secrets.KEY }}      # private ssh key, public key goes on host
-#        source: wed_*.zip            # scp will overwrite target. find a way to check & NOT overwrite
-#        target: "public/wed/"
+#        source: xpt_*.zip            # scp will overwrite target. find a way to check & NOT overwrite
+#        target: "public/xpt/"
     - name: Archive zipfiles
       uses: actions/upload-artifact@v3
       with:
-        name: wed_release_build
-        path: ./wed_*.zip
+        name: xpt_release_build
+        path: ./xpt_*.zip
