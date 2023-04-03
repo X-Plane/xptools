@@ -29,7 +29,11 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: xpt_release_build
-        path: msvc/*/Release/*.exe
+        path: |
+          msvc/DDSTool/Release/DDSTool.exe
+          msvc\DSFTool\Release\DSFTool.exe
+          msvc/Grinder/Release/XGrinder.exe
+          msvc\ObjView\Release\ObjView.exe
           
   build-mac:
     runs-on: macos-11
@@ -111,9 +115,13 @@ jobs:
           ls -lr
           version=$(awk '/XPT_PACKAGE_VER[\s\t]/ {gsub(/\./,""); print $3}' <src/XPTools/version.h)
           echo $version
-          cp src/XPTools/README* .
+          mv src/XPTools/README* .
           rm README.ObjView
-          cp src/DSFTools/README.* .
+          mv src/DSFTools/README.* .
+          mv DDSTool/Release/DDSTool.exe .
+          mv DSFTool/Release/DSFTool.exe .
+          mv XGrinder/Release/XGrinder.exe .
+          mv ObjView/Release/ObjView.exe .
           ls -ld
           zip -r xpt_win_$version  README* DDSTool.exe DSFTool.exe XGrinder.exe ObjView.exe
           chmod a+x DDSTool DSFTool XGrinder ObjView
