@@ -60,15 +60,15 @@ jobs:
       - name: Build App
         run: |
           xcodebuild -scheme "Build Tools" -config Release -project SceneryTools.xcodeproj -archivePath build/XPT.xcarchive CODE_SIGN_STYLE="Manual" CODE_SIGN_IDENTITY="Developer ID Application: Laminar Research (LPH4NFE92D)" archive | xcpretty && exit ${PIPESTATUS[0]}
-      - name: Notarize App
-        run: |
-          ./scripts/notarization.sh XGrinder.zip build/XPT.xcarchive/Products/Applications/XGrinder.app staple
-          ./scripts/notarization.sh ObjView.zip build/XPT.xcarchive/Products/Applications/ObjView.app staple
+#      - name: Notarize App
+#        run: |
+#          ./scripts/notarization.sh XGrinder.zip build/XPT.xcarchive/Products/Applications/XGrinder.app staple
+#          ./scripts/notarization.sh ObjView.zip build/XPT.xcarchive/Products/Applications/ObjView.app staple
       - name: Archive build result
         uses: actions/upload-artifact@v3
         with:
           name: xpt_release_build
-          path: build/XPT.xcarchive/Products/Applications
+          path: build/XPT.xcarchive/Products
           
   build-linux:
     runs-on: ubuntu-22.04
@@ -122,6 +122,8 @@ jobs:
           zip -r xpt_win_$version  README* DDSTool.exe DSFTool.exe XGrinder.exe ObjView.exe
           chmod a+x DDSTool DSFTool XGrinder ObjView
           zip -r xpt_lin_$version  README* DDSTool DSFTool XGrinder ObjView
+          mv Applications/*.app .
+          mv -f usr/local/bin/*Tool .
           chmod a+x XGrinder.app/Contents/MacOS/XGrinder
           chmod a+x ObjView.app/Contents/MacOS/ObjView
           zip -r xpt_mac_$version  README* DDSTool DSFTool XGrinder.app ObjView.app
