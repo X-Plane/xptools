@@ -64,6 +64,8 @@ jobs:
 #        run: |
 #          ./scripts/notarization.sh XGrinder.zip build/XPT.xcarchive/Products/Applications/XGrinder.app staple
 #          ./scripts/notarization.sh ObjView.zip build/XPT.xcarchive/Products/Applications/ObjView.app staple
+#          ./scripts/notarization.sh DDSTool.zip build/XPT.xcarchive/Products/usr/local/bin/DDSTool staple
+#          ./scripts/notarization.sh DSFTool.zip build/XPT.xcarchive/Products/usr/local/bin/DSFTool staple
       - name: Archive build result
         uses: actions/upload-artifact@v3
         with:
@@ -112,21 +114,26 @@ jobs:
         name: xpt_release_build
     - name: zip files
       run: |
-          ls -lr
           version=$(awk '/XPT_PACKAGE_VER[\s\t]/ {gsub(/"/,""); print $3}' <src/XPTools/version.h)
           echo $version
           mv src/XPTools/README* .
-          rm README.ObjView
+          rm README.ObjConverter README.md
           mv src/DSFTools/README.* .
           ls -ld
-          zip -r xpt_win_$version  README* DDSTool.exe DSFTool.exe XGrinder.exe ObjView.exe
-          chmod a+x DDSTool DSFTool XGrinder ObjView
-          zip -r xpt_lin_$version  README* DDSTool DSFTool XGrinder ObjView
+          mkdir tools
+          mv DDSTool.exe DSFTool.exe tools/
+          zip -r xpt_win_$version README* XGrinder.exe tools ObjView.exe
+          rm tools/*
+          chmod a+x XGrinder ObjView tools/*
+          mv DDSTool DSFTool tools/
+          zip -r xpt_lin_$version README* XGrinder tools ObjView
+          rm tools/*
           mv Applications/*.app .
-          mv -f usr/local/bin/*Tool .
+          mv usr/local/bin/*Tool tools/
           chmod a+x XGrinder.app/Contents/MacOS/XGrinder
           chmod a+x ObjView.app/Contents/MacOS/ObjView
-          zip -r xpt_mac_$version  README* DDSTool DSFTool XGrinder.app ObjView.app
+          chmod a+x tools/*
+          zip -r xpt_mac_$version README* XGrinder.app tools ObjView.app
 #    - name: copy to server           # run this conditional on being a "Release" or a special trigger
 #      uses: appleboy/scp-action@master
 #      with:
