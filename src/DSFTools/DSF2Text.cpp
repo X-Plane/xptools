@@ -302,7 +302,7 @@ void DSF2Text_PointPoolInfo(
 	if(divisions > 0)
 		p->print_func(p->ref, "DIVISIONS %d\n", divisions);
 	if (hgt_scale != 0.0)
-		p->print_func(p->ref, "HEIGHTS %.5lf %.5lf\n", hgt_scale / USHRT_MAX, hgt_offset);
+		p->print_func(p->ref, "HEIGHTS %.5lf %.5lf\n", hgt_scale / 65535.0, hgt_offset);
 }
 
 void DSF2Text_CreateWriterCallbacks(DSFCallbacks_t * cbs)
@@ -346,7 +346,7 @@ bool DSF2Text(char ** inDSF, int n, const char * inFileName)
 	
 	#if APL
 	fprintf(fi, "A"
-	#elif IBM
+	#else
 	fprintf(fi, "I"
 	#endif
 		          "\n800 written by DSFTool %s\nDSF2TEXT\n\n", product_version(DSFTOOL_VER, DSFTOOL_EXTRAVER));
@@ -477,7 +477,7 @@ static bool Text2DSFWithWriterAny(const char * inFileName, const char * inDSF, D
 	else
 	{
 		double elev_min = hgt_offs;
-		double elev_max = hgt_offs + hgt_scale * USHRT_MAX;
+		double elev_max = hgt_offs + hgt_scale * 65535.0;
 
 		writer = DSFCreateWriter(west, south, east, north, elev_min, elev_max, divisions);
 		DSFGetWriterCallbacks(&cbs);

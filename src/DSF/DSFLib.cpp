@@ -519,7 +519,7 @@ someday check footer when in sloooow mode
 			if (1.0 / planeScales[pool][0] > 0.5 + divisions ||
 				1.0 / planeScales[pool][1] > 0.5 + divisions)
 			{
-				divisions = max(round(1.0 / planeScales[pool][0]), round(1.0 / planeScales[pool][1]));
+				divisions = max(1.0 / planeScales[pool][0], 1.0 / planeScales[pool][1]) + 0.5;
 				if (divisions > 32) divisions = 32;
 			}
 		}
