@@ -122,10 +122,10 @@ jobs:
           ls -l
           mkdir tools
           mv DDSTool.exe DSFTool.exe tools/
-          zip -r xpt_win_$version README* XGrinder.exe tools ObjView.exe
+          zip -r xpt_win_$version README* XGrinder.exe tools Objview.exe
           rm -f tools/*
-          chmod a+x XGrinder ObjView tools/*
           mv DDSTool DSFTool tools/
+          chmod a+x XGrinder ObjView tools/*
           zip -r xpt_lin_$version README* XGrinder tools ObjView
           rm -f tools/*
           mv Applications/*.app .
