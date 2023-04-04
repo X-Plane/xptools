@@ -122,28 +122,28 @@ jobs:
           ls -l
           mkdir tools
           mv DDSTool.exe DSFTool.exe tools/
-          zip -r xpt_win_$version README* XGrinder.exe tools Objview.exe
+          zip -r xptools_win_$version README* XGrinder.exe tools Objview.exe
           rm -f tools/*
           mv DDSTool DSFTool tools/
           chmod a+x XGrinder ObjView tools/*
-          zip -r xpt_lin_$version README* XGrinder tools ObjView
+          zip -r xptools_lin_$version README* XGrinder tools ObjView
           rm -f tools/*
           mv Applications/*.app .
           mv usr/local/bin/*Tool tools/
           chmod a+x XGrinder.app/Contents/MacOS/XGrinder
           chmod a+x ObjView.app/Contents/MacOS/ObjView
           chmod a+x tools/*
-          zip -r xpt_mac_$version README* XGrinder.app tools ObjView.app
+          zip -r xptools_mac_$version README* XGrinder.app tools ObjView.app
 #    - name: copy to server           # run this conditional on being a "Release" or a special trigger
 #      uses: appleboy/scp-action@master
 #      with:
 #        host: files.x-plane.com
 #        username: ${{ secrets.USERNAME }}
 #        key: ${{ secrets.KEY }}      # private ssh key, public key goes on host
-#        source: xpt_*.zip            # scp will overwrite target. find a way to check & NOT overwrite
+#        source: xptools_*.zip            # scp will overwrite target. find a way to check & NOT overwrite
 #        target: "public/xpt/"
     - name: Archive zipfiles
       uses: actions/upload-artifact@v3
       with:
         name: xpt_release_build
-        path: ./xpt_*.zip
+        path: ./xptools_*.zip
