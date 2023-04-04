@@ -124,6 +124,7 @@ SOURCES += ./src/WEDEntities/WED_ATCRunwayUse.cpp
 SOURCES += ./src/WEDEntities/WED_ATCTimeRule.cpp
 SOURCES += ./src/WEDEntities/WED_ATCWindRule.cpp
 SOURCES += ./src/WEDEntities/WED_DrapedOrthophoto.cpp
+SOURCES += ./src/WEDEntities/WED_ExclusionPoly.cpp
 SOURCES += ./src/WEDEntities/WED_ExclusionZone.cpp
 SOURCES += ./src/WEDEntities/WED_TextureBezierNode.cpp
 SOURCES += ./src/WEDEntities/WED_TruckDestination.cpp
