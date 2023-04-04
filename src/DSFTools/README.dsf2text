@@ -213,6 +213,12 @@ OBJECT <type> <longitude> <latitude> <rotation>
 	This adds an object to the file of a given type.  The position is 
 	specified in degrees and the angle is in degrees as well.
 
+OBJECT_AGL <type> <longitude> <latitude> <rotation> <elevation>
+OBJECT_MSL <type> <longitude> <latitude> <rotation> <elevation>
+
+	These are extensions of the OBJECT command to specify the object
+	to be at an specific elevation rather than at the terrain ground level
+
 BEGIN_SEGMENT <type> <subtype> <node id> <longitude> <latitude> <elevation>
 BEGIN_SEGMENT_CURVED <type> <subtype> <node id> 
 	<longitude> <latitude> <elevation> <longitude> <latitude> <elevation>
@@ -264,11 +270,13 @@ RASTER_DATA version=<version> bbp=<bpp> flags=<flags> width=<wdith> height=<hegi
 	match the DSF raster layer info atom.  The filename is the name of a binary
 	file that contains the raw data to include (or is output).
 
-FILTER <AirportID>
+FILTER <index>
 
 	This sets up automatic exclusion functionality. Content after a FILTER
 	command is only displayed if the same scenery includes an active apt.dat
-	entry with a matching AirportID. MULTIPLE filter commands are allowed.
+	entry with a matching AirportID.
+	The airportID's are specified with sim/filter/aptid <AirportID>	properties,
+	the index in the FILTER command refers to the n-th property of this type.
 	If that airport is inactive due to being superceeded by another airport of 
 	the same AirportID in another airport, all content after this until the 
 	next FILTER command or end-of-file is skipped when loading the DSF.
