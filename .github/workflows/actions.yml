@@ -4,7 +4,6 @@ on:
   push:
     branches:
     - feat_workflow_meikelm
-    - 'xpt_*_release'
         
 permissions:
   contents: read
@@ -59,9 +58,11 @@ jobs:
           make -j$(sysctl -n hw.logicalcpu)
       - name: Build App
         run: |
-          xcodebuild -scheme "Build Tools" -config Release -project SceneryTools.xcodeproj -archivePath build/XPT.xcarchive CODE_SIGN_STYLE="Manual" CODE_SIGN_IDENTITY="Developer ID Application: Laminar Research (LPH4NFE92D)" archive | xcpretty && exit ${PIPESTATUS[0]}
-#      - name: Notarize App
-#        run: |
+          xcodebuild -scheme WED -config Release -project SceneryTools.xcodeproj -archivePath build/WED.xcarchive CODE_SIGN_STYLE="Manual" CODE_SIGN_IDENTITY="Developer ID Application: Laminar Research (LPH4NFE92D)" archive | xcpretty && exit ${PIPESTATUS[0]}
+#          xcodebuild -scheme "Build Tools" -config Release -project SceneryTools.xcodeproj -archivePath build/XPT.xcarchive CODE_SIGN_STYLE="Manual" CODE_SIGN_IDENTITY="Developer ID Application: Laminar Research (LPH4NFE92D)" archive | xcpretty && exit ${PIPESTATUS[0]}
+      - name: Notarize App
+        run: |
+          ./scripts/notarization.sh WED.zip build/WED.xcarchive/Products/Applications/WED.app staple
 #          ./scripts/notarization.sh XGrinder.zip build/XPT.xcarchive/Products/Applications/XGrinder.app staple
 #          ./scripts/notarization.sh ObjView.zip build/XPT.xcarchive/Products/Applications/ObjView.app staple
 #          ./scripts/notarization.sh DDSTool.zip build/XPT.xcarchive/Products/usr/local/bin/DDSTool staple
@@ -70,7 +71,8 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: xpt_release_build
-          path: build/XPT.xcarchive/Products
+          path: build/WED.xcarchive/Products
+#          path: build/XPT.xcarchive/Products
           
   build-linux:
     runs-on: ubuntu-22.04
@@ -127,13 +129,13 @@ jobs:
           mv DDSTool DSFTool tools/
           chmod a+x XGrinder ObjView tools/*
           zip -r xptools_lin_$version README* XGrinder tools ObjView
-          rm -f tools/*
-          mv Applications/*.app .
-          mv usr/local/bin/*Tool tools/
-          chmod a+x XGrinder.app/Contents/MacOS/XGrinder
-          chmod a+x ObjView.app/Contents/MacOS/ObjView
-          chmod a+x tools/*
-          zip -r xptools_mac_$version README* XGrinder.app tools ObjView.app
+#          rm -f tools/*
+#          mv Applications/*.app .
+#          mv usr/local/bin/*Tool tools/
+#          chmod a+x XGrinder.app/Contents/MacOS/XGrinder
+#          chmod a+x ObjView.app/Contents/MacOS/ObjView
+#          chmod a+x tools/*
+#          zip -r xptools_mac_$version README* XGrinder.app tools ObjView.app
 #    - name: copy to server           # run this conditional on being a "Release" or a special trigger
 #      uses: appleboy/scp-action@master
 #      with:
