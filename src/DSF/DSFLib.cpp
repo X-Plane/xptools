@@ -29,7 +29,7 @@
 
 #include "DSFLib.h"
 #include "XChunkyFileUtils.h"
-#include <stdio.h>
+#include <math.h>
 #include "md5.h"
 #include "DSFDefs.h"
 #include "DSFPointPool.h"
