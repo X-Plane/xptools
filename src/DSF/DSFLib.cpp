@@ -245,6 +245,146 @@ bail:
 	return result;
 }
 
+static void GuessGoodHeights(double min_all_pools, double max_all_pools, double min_rng_all_pools, double& hgt_scale, double& hgt_offs)
+{
+	hgt_offs = floor(min_all_pools);  // to allow for some small rounding errors - make lower end a bit conservative
+								  // also make height ranges choosen better readable for humans
+
+	double max_rng_all_pools = max_all_pools - hgt_offs;
+
+	hgt_scale = 65535.0;          // min resolution 1.0m, as there are 16bit unsigned ints in the pools
+	for (int i = 0; i < 5; i++)   // max resolution ever suggested 2^-5 = 1/32 = ~3 cm
+	{
+		if (max_rng_all_pools > hgt_scale * 0.5)
+			break;  // can't go smaller as range might not cover all pools any more, risking "can't sink vertex"
+					// would really have to analyze all actually used heights by all vertices to know better
+		if (min_rng_all_pools * 0.7 >= hgt_scale)
+			break;  // go smaller, but less than one full resolution step smaller than original height range/resolution.
+					// avoids continually increasing resolution with iterated round trips through DSFtool.
+					// having extra range left is also good if the data is modified to include new vertices
+					// outside the previous point pool ranges.
+
+		hgt_scale *= 0.5;  //     1.0      0.5      0.25  0.125  0.0625  0.03125   exact stepsizes
+	}                      // 65535.0  32767.5  16383.75  ~8192   ~4096    ~2048   total scale/range
+
+	if (max_all_pools <= hgt_scale && hgt_offs > 0.0)  // just make it 'nice for humans' if there is no need for non-zero offsets
+		hgt_offs = 0.0;
+}
+
+static set<int> GetAllTerPools(XAtomPackedData& cmdsAtom)
+{
+	unsigned short		pool, currentPool = 0xFFFF;
+	set<int> TerPools;
+
+	cmdsAtom.Reset();
+	while (!cmdsAtom.Done())
+	{
+		unsigned int	commentLen;
+		unsigned int	count, counter;
+		unsigned char	cmdID = cmdsAtom.ReadUInt8();
+		switch (cmdID)
+		{
+		case dsf_Cmd_PoolSelect:
+			currentPool = cmdsAtom.ReadUInt16();
+			break;
+		case dsf_Cmd_NetworkChainRange:
+		case dsf_Cmd_ObjectRange:
+		case dsf_Cmd_JunctionOffsetSelect:
+		case dsf_Cmd_SetDefinition32:
+			cmdsAtom.Advance(4);
+			break;
+		case dsf_Cmd_SetDefinition8:
+		case dsf_Cmd_SetRoadSubtype8:
+			cmdsAtom.Advance(1);
+			break;
+		case dsf_Cmd_SetDefinition16:
+		case dsf_Cmd_Object:
+			cmdsAtom.Advance(2);
+			break;
+		case dsf_Cmd_NetworkChain:
+			count = cmdsAtom.ReadUInt8();
+			cmdsAtom.Advance(2 * count);
+			break;
+		case dsf_Cmd_NetworkChain32:
+			count = cmdsAtom.ReadUInt8();
+			cmdsAtom.Advance(4 * count);
+			break;
+		case dsf_Cmd_Polygon:
+			cmdsAtom.ReadUInt16();
+			count = cmdsAtom.ReadUInt8();
+			cmdsAtom.Advance(2 * count);
+			break;
+		case dsf_Cmd_PolygonRange:
+			cmdsAtom.Advance(6);
+			break;
+		case dsf_Cmd_NestedPolygon:
+			cmdsAtom.ReadUInt16();
+			count = cmdsAtom.ReadUInt8();
+			while (count--)
+			{
+				counter = cmdsAtom.ReadUInt8();
+				cmdsAtom.Advance(2 * counter);
+			}
+			break;
+		case dsf_Cmd_NestedPolygonRange:
+			cmdsAtom.ReadUInt16();
+			count = cmdsAtom.ReadUInt8();
+			cmdsAtom.ReadUInt16();
+			cmdsAtom.Advance(2 * count);
+			break;
+
+			/**************************************************************************************************************
+			 * TERRAIN COMMANDS
+			 **************************************************************************************************************/
+		case dsf_Cmd_TerrainPatchFlagsLOD:
+			cmdsAtom.Advance(8);
+		case dsf_Cmd_TerrainPatchFlags:
+			cmdsAtom.Advance(1);
+		case dsf_Cmd_TerrainPatch:
+			TerPools.insert(currentPool);
+			break;
+		case dsf_Cmd_Triangle:
+		case dsf_Cmd_TriangleStrip:
+		case dsf_Cmd_TriangleFan:
+			count = cmdsAtom.ReadUInt8();
+			cmdsAtom.Advance(2 * count);
+			break;
+		case dsf_Cmd_TriangleCrossPool:
+		case dsf_Cmd_TriangleStripCrossPool:
+		case dsf_Cmd_TriangleFanCrossPool:
+			count = cmdsAtom.ReadUInt8();
+			for (counter = 0; counter < count; ++counter)
+			{
+				pool = cmdsAtom.ReadUInt16();
+				TerPools.insert(pool);
+				cmdsAtom.Advance(2);
+			}
+			break;
+		case dsf_Cmd_TriangleRange:
+		case dsf_Cmd_TriangleStripRange:
+		case dsf_Cmd_TriangleFanRange:
+			cmdsAtom.Advance(4);
+			break;
+
+		case dsf_Cmd_Comment8:
+			commentLen = cmdsAtom.ReadUInt8();
+			cmdsAtom.Advance(commentLen);
+			break;
+		case dsf_Cmd_Comment16:
+			commentLen = cmdsAtom.ReadUInt16();
+			cmdsAtom.Advance(commentLen);
+			break;
+		case dsf_Cmd_Comment32:
+			commentLen = cmdsAtom.ReadUInt32();
+			cmdsAtom.Advance(commentLen);
+			break;
+		default:
+			return TerPools;
+		}
+	}
+	return TerPools;
+}
+
 int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCallbacks, const int * inPasses, void * ref)
 {
 	/* MD5 checksum...*/
@@ -505,11 +645,12 @@ someday check footer when in sloooow mode
 		{
 			char buf[32];
 
-			sprintf(buf, "p=%d", planeDepths[pool]);
+			sprintf(buf, "p=%d s=%5d", planeDepths[pool], planeSizes[pool]);
+
 			pp_info.push_back(buf);
 			for (int plane = 0; plane < planeDepths[pool]; plane++)
 			{
-				sprintf(buf, "  %.6lf %.6lf", planeScales[pool][plane], planeOffsets[pool][plane]);
+				sprintf(buf, "  %.5lf %.5lf", planeScales[pool][plane], planeOffsets[pool][plane]);
 				pp_info.back() += buf;
 			}
 		}
@@ -523,8 +664,7 @@ someday check footer when in sloooow mode
 				if (divisions > 32) divisions = 32;
 			}
 		}
-		// height is is a bit harder. We would ideally need to ID all point pools referenced by patches
-		// but we just do a few heuristics
+
 		bool is_overlay = true;
 		double hgt_scale = 0.0, hgt_offs = 0.0;
 		for (auto str = propAtom.GetFirstString(); str != nullptr; str = propAtom.GetNextString(str))
@@ -542,13 +682,28 @@ someday check footer when in sloooow mode
 		}
 		if (is_overlay)
 		{
-			for (auto& d : planeDepths)
-				if(d == 5 || d == 7)
-				{
-					hgt_scale = planeScales[&d - &planeDepths[0]][2];
-					hgt_offs = planeOffsets[&d - &planeDepths[0]][2];
-					break;
-				}
+			double min_all_pools = 32767.0;
+			double max_all_pools = -32768.0;
+			double min_rng_all_pools = 65535.0;
+
+			auto terPools = GetAllTerPools(cmdsAtom);
+			pp_info.push_back(string("# ter_pools found: " + to_string(terPools.size())));
+
+			for(auto p : terPools)
+			{
+				double scal = planeScales[p][2];
+				double pmin = planeOffsets[p][2];
+				double pmax = pmin + scal;
+
+				if (pmin < min_all_pools) min_all_pools = pmin;
+				if (pmax > max_all_pools) max_all_pools = pmax;
+				if (scal < min_rng_all_pools) min_rng_all_pools = scal;
+			}
+
+//			pp_info.push_back(string("# pp_min=" + to_string(min_all_pools) + " pp_max" + to_string(max_all_pools)));
+//			pp_info.push_back(string("# rn_min=" + to_string(min_rng_all_pools)));
+
+			GuessGoodHeights(min_all_pools, max_all_pools, min_rng_all_pools, hgt_scale, hgt_offs);
 		}
 		inCallbacks->PointPoolInfo_f(divisions, hgt_scale, hgt_offs, pp_info, ref);
 	}
@@ -719,24 +874,6 @@ someday check footer when in sloooow mode
 		double *			currentPoolPtr32 = NULL;
 		int					currentDepth = -1;
 		int					currentDepth32 = -1;
-
-		auto print_scales = [planeScales, planeOffsets, inCallbacks, ref](unsigned short pool)
-		{
-			char buf[256];
-			double scale = (planeScales[pool][2] + 1.0) / 65536.0;
-			double offset = planeOffsets[pool][2] + 32768.0;
-			sprintf(buf, "scale=%.6lf offset=%.4lf pool=%d lon_s=%.6lf lon_o=%.6lf lat_s=%.6lf lat_o=%.6lf", scale, offset, pool,
-				planeScales[pool][0], planeOffsets[pool][0], planeScales[pool][1], planeOffsets[pool][1]);
-			inCallbacks->AcceptProperty_f("dsf/heights", buf, ref);
-		};
-
-		auto print_scale = [planeScales, planeOffsets, inCallbacks, ref](unsigned short pool)
-		{
-			char buf[256];
-			sprintf(buf, "pool=%d lon_s=%.6lf lon_o=%.6lf lat_s=%.6lf lat_o=%.6lf", pool,
-				planeScales[pool][0], planeOffsets[pool][0], planeScales[pool][1], planeOffsets[pool][1]);
-			inCallbacks->AcceptProperty_f("dsf/scales", buf, ref);
-		};
 
 	cmdsAtom.Reset();
 	while (!cmdsAtom.Done())

@@ -302,7 +302,7 @@ void DSF2Text_PointPoolInfo(
 	if(divisions > 0)
 		p->print_func(p->ref, "DIVISIONS %d\n", divisions);
 	if (hgt_scale != 0.0)
-		p->print_func(p->ref, "HEIGHTS %.5lf %.5lf\n", hgt_scale / 65535.0, hgt_offset);
+		p->print_func(p->ref, "HEIGHTS %.5lf %.1lf  # max encodeable %.5lf\n", hgt_scale / 65535.0, hgt_offset, hgt_offset + hgt_scale);
 }
 
 void DSF2Text_CreateWriterCallbacks(DSFCallbacks_t * cbs)

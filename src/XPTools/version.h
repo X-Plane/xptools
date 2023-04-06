@@ -11,7 +11,7 @@
 #define DDSTOOL_EXTRAVER	"-b1"
 
 #define DSFTOOL_VER		20300
-#define DSFTOOL_EXTRAVER	"-b1"
+#define DSFTOOL_EXTRAVER	"-b2"
 
 #define OBJCONVERT_VER		30100
 #define OBJCONVERT_EXTRAVER	"-b1"
