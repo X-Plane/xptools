@@ -409,30 +409,25 @@ int	XGrinderMenuPick(xmenu menu, int item)
 	return 0;
 }
 
+#if APL
+#include <sys/xattr.h>
+#endif
+
+
 void	XGrindInit(string& t)
 {
-/*	char base[2048];
-	char resp[2048];
-	CFURLRef	res_url = CFBundleCopyResourcesDirectoryURL(CFBundleGetMainBundle());
-	CFURLRef	main_url = CFBundleCopyBundleURL(CFBundleGetMainBundle());
-	CFStringRef	res_path = CFURLCopyFileSystemPath(res_url, kCFURLPOSIXPathStyle);
-	CFStringRef	main_path = CFURLCopyFileSystemPath(main_url, kCFURLPOSIXPathStyle);
-	CFStringGetCString(res_path,resp,sizeof(resp),kCFStringEncodingMacRoman);
-	CFStringGetCString(main_path,base,sizeof(base),kCFStringEncodingMacRoman);
-	CFRelease(res_url);
-	CFRelease(main_url);
-	CFRelease(res_path);
-	CFRelease(main_path);
-	strcat(base,"/");
-	strcat(base,resp);
-	MF_GetDirectoryBulk(base, file_cb, base);
-
-//	file_cb("DSFTool");
-//	file_cb("DDSTool");
-//	file_cb("ObjConverter");
-*/
 	string app_path = GetApplicationPath();
 
+#if APL
+	char buf[1024];
+	auto len = listxattr(app_path.c_str(), buf, sizeof(buf), 0);
+	if (len && strstr(buf, "com.apple.quarantine"))
+		DoUserAlert("MacOS has quarantined XGrinder, it can not function until this is fixed:\n"
+					"* in Finder, run 'New Terminal at Folder' on Xgrinder.app\n"
+					"* in that Terminal, run ' xattr -c . '\n"
+					"* close XGrinder and restart it\n");
+#endif
+	
 	const char * start = app_path.c_str();
 	const char * last_sep = start;
 	const char * p = start;
