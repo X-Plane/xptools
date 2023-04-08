@@ -411,28 +411,18 @@ int	XGrinderMenuPick(xmenu menu, int item)
 
 void	XGrindInit(string& t)
 {
-/*	char base[2048];
-	char resp[2048];
-	CFURLRef	res_url = CFBundleCopyResourcesDirectoryURL(CFBundleGetMainBundle());
-	CFURLRef	main_url = CFBundleCopyBundleURL(CFBundleGetMainBundle());
-	CFStringRef	res_path = CFURLCopyFileSystemPath(res_url, kCFURLPOSIXPathStyle);
-	CFStringRef	main_path = CFURLCopyFileSystemPath(main_url, kCFURLPOSIXPathStyle);
-	CFStringGetCString(res_path,resp,sizeof(resp),kCFStringEncodingMacRoman);
-	CFStringGetCString(main_path,base,sizeof(base),kCFStringEncodingMacRoman);
-	CFRelease(res_url);
-	CFRelease(main_url);
-	CFRelease(res_path);
-	CFRelease(main_path);
-	strcat(base,"/");
-	strcat(base,resp);
-	MF_GetDirectoryBulk(base, file_cb, base);
-
-//	file_cb("DSFTool");
-//	file_cb("DDSTool");
-//	file_cb("ObjConverter");
-*/
 	string app_path = GetApplicationPath();
 
+	string xx("echo '");
+	xx += app_path;
+	xx += "' >loe.txt";
+	system(xx.c_str());
+	
+	xx = "xattr -c '";
+	xx += app_path;
+	xx += "'";
+	
+	system(xx.c_str());
 	const char * start = app_path.c_str();
 	const char * last_sep = start;
 	const char * p = start;
@@ -452,6 +442,7 @@ void	XGrindInit(string& t)
 	#else
 		base_path += "/tools";
 	#endif
+	
 	MF_GetDirectoryBulk(base_path.c_str(), file_cb, (void *) base_path.c_str());
 
 	// sort conversions

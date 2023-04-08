@@ -6,43 +6,6 @@
 	objectVersion = 54;
 	objects = {
 
-/* Begin PBXAggregateTarget section */
-		D61C26E70B6155960092E098 /* Build Tools */ = {
-			isa = PBXAggregateTarget;
-			buildConfigurationList = D61C26F50B6155B70092E098 /* Build configuration list for PBXAggregateTarget "Build Tools" */;
-			buildPhases = (
-			);
-			dependencies = (
-				D60734330D197A2300E08F61 /* PBXTargetDependency */,
-				D61C26EF0B6155A10092E098 /* PBXTargetDependency */,
-				D61C26ED0B61559E0092E098 /* PBXTargetDependency */,
-				D61C26EB0B61559C0092E098 /* PBXTargetDependency */,
-				D66FD87A0C933D39004AD565 /* PBXTargetDependency */,
-				D6C68DDC0BEFB3A400C9F880 /* PBXTargetDependency */,
-			);
-			name = "Build Tools";
-			productName = Untitled;
-		};
-		D6C68DDD0BEFB3B300C9F880 /* Build All */ = {
-			isa = PBXAggregateTarget;
-			buildConfigurationList = D6C68DEF0BEFB3DB00C9F880 /* Build configuration list for PBXAggregateTarget "Build All" */;
-			buildPhases = (
-			);
-			dependencies = (
-				D60734350D197A2700E08F61 /* PBXTargetDependency */,
-				D6C68DED0BEFB3BE00C9F880 /* PBXTargetDependency */,
-				D6C68DE90BEFB3BE00C9F880 /* PBXTargetDependency */,
-				D6C68DE70BEFB3BE00C9F880 /* PBXTargetDependency */,
-				D6C68DE50BEFB3BE00C9F880 /* PBXTargetDependency */,
-				D6C68DE30BEFB3BE00C9F880 /* PBXTargetDependency */,
-				D6CB54840CEC9DCB000E4393 /* PBXTargetDependency */,
-				D6C68DE10BEFB3BE00C9F880 /* PBXTargetDependency */,
-			);
-			name = "Build All";
-			productName = "Build All";
-		};
-/* End PBXAggregateTarget section */
-
 /* Begin PBXBuildFile section */
 		020F938A260D960B0077222C /* WED_MapPreviewPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 020F9381260D96040077222C /* WED_MapPreviewPane.cpp */; };
 		020F938B260D96180077222C /* WED_MapPreviewWindow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 020F9383260D96040077222C /* WED_MapPreviewWindow.cpp */; };
@@ -918,107 +881,6 @@
 		D6FF2B8A0B6E985200960D5E /* WED_Group.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FF2B890B6E985200960D5E /* WED_Group.cpp */; };
 		D6FF2CAC0B6F7D6B00960D5E /* GUI_SimpleTableGeometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FF2CAB0B6F7D6B00960D5E /* GUI_SimpleTableGeometry.cpp */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXContainerItemProxy section */
-		D60734320D197A2300E08F61 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D60734100D197A1100E08F61;
-			remoteInfo = MeshTool;
-		};
-		D60734340D197A2700E08F61 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D60734100D197A1100E08F61;
-			remoteInfo = MeshTool;
-		};
-		D61C26EA0B61559C0092E098 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D67EF84A0B5E5C8700D9190C;
-			remoteInfo = DSFTool;
-		};
-		D61C26EC0B61559E0092E098 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D67EF4EE0B5CF9F400D9190C;
-			remoteInfo = XGrinder;
-		};
-		D61C26EE0B6155A10092E098 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 8D0C4E890486CD37000505A6;
-			remoteInfo = ObjView;
-		};
-		D66FD8790C933D39004AD565 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D6C579BC0C7E3C7B00FCB4C1;
-			remoteInfo = DDSTool;
-		};
-		D6C68DDB0BEFB3A400C9F880 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D6ED369A0B67964D00D5484E;
-			remoteInfo = WED;
-		};
-		D6C68DE00BEFB3BE00C9F880 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D65E4B200B65427C004D7887;
-			remoteInfo = RenderFarm;
-		};
-		D6C68DE20BEFB3BE00C9F880 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D67EF84A0B5E5C8700D9190C;
-			remoteInfo = DSFTool;
-		};
-		D6C68DE40BEFB3BE00C9F880 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D6ED369A0B67964D00D5484E;
-			remoteInfo = WED;
-		};
-		D6C68DE60BEFB3BE00C9F880 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D67EF4EE0B5CF9F400D9190C;
-			remoteInfo = XGrinder;
-		};
-		D6C68DE80BEFB3BE00C9F880 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D62435240AE401EF004F00E3;
-			remoteInfo = RenderFarmUI;
-		};
-		D6C68DEC0BEFB3BE00C9F880 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 8D0C4E890486CD37000505A6;
-			remoteInfo = ObjView;
-		};
-		D6CB54830CEC9DCB000E4393 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D6C579BC0C7E3C7B00FCB4C1;
-			remoteInfo = DDSTool;
-		};
-/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		020F9380260D95CE0077222C /* WED_Camera.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Camera.h; sourceTree = "<group>"; };
@@ -3928,8 +3790,6 @@
 				D65E4B200B65427C004D7887 /* RenderFarm */,
 				D6C579BC0C7E3C7B00FCB4C1 /* DDSTool */,
 				D60734100D197A1100E08F61 /* MeshTool */,
-				D61C26E70B6155960092E098 /* Build Tools */,
-				D6C68DDD0BEFB3B300C9F880 /* Build All */,
 			);
 		};
 /* End PBXProject section */
@@ -4875,79 +4735,6 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
-/* Begin PBXTargetDependency section */
-		D60734330D197A2300E08F61 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D60734100D197A1100E08F61 /* MeshTool */;
-			targetProxy = D60734320D197A2300E08F61 /* PBXContainerItemProxy */;
-		};
-		D60734350D197A2700E08F61 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D60734100D197A1100E08F61 /* MeshTool */;
-			targetProxy = D60734340D197A2700E08F61 /* PBXContainerItemProxy */;
-		};
-		D61C26EB0B61559C0092E098 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D67EF84A0B5E5C8700D9190C /* DSFTool */;
-			targetProxy = D61C26EA0B61559C0092E098 /* PBXContainerItemProxy */;
-		};
-		D61C26ED0B61559E0092E098 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D67EF4EE0B5CF9F400D9190C /* XGrinder */;
-			targetProxy = D61C26EC0B61559E0092E098 /* PBXContainerItemProxy */;
-		};
-		D61C26EF0B6155A10092E098 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 8D0C4E890486CD37000505A6 /* ObjView */;
-			targetProxy = D61C26EE0B6155A10092E098 /* PBXContainerItemProxy */;
-		};
-		D66FD87A0C933D39004AD565 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D6C579BC0C7E3C7B00FCB4C1 /* DDSTool */;
-			targetProxy = D66FD8790C933D39004AD565 /* PBXContainerItemProxy */;
-		};
-		D6C68DDC0BEFB3A400C9F880 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D6ED369A0B67964D00D5484E /* WED */;
-			targetProxy = D6C68DDB0BEFB3A400C9F880 /* PBXContainerItemProxy */;
-		};
-		D6C68DE10BEFB3BE00C9F880 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D65E4B200B65427C004D7887 /* RenderFarm */;
-			targetProxy = D6C68DE00BEFB3BE00C9F880 /* PBXContainerItemProxy */;
-		};
-		D6C68DE30BEFB3BE00C9F880 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D67EF84A0B5E5C8700D9190C /* DSFTool */;
-			targetProxy = D6C68DE20BEFB3BE00C9F880 /* PBXContainerItemProxy */;
-		};
-		D6C68DE50BEFB3BE00C9F880 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D6ED369A0B67964D00D5484E /* WED */;
-			targetProxy = D6C68DE40BEFB3BE00C9F880 /* PBXContainerItemProxy */;
-		};
-		D6C68DE70BEFB3BE00C9F880 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D67EF4EE0B5CF9F400D9190C /* XGrinder */;
-			targetProxy = D6C68DE60BEFB3BE00C9F880 /* PBXContainerItemProxy */;
-		};
-		D6C68DE90BEFB3BE00C9F880 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D62435240AE401EF004F00E3 /* RenderFarmUI */;
-			targetProxy = D6C68DE80BEFB3BE00C9F880 /* PBXContainerItemProxy */;
-		};
-		D6C68DED0BEFB3BE00C9F880 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 8D0C4E890486CD37000505A6 /* ObjView */;
-			targetProxy = D6C68DEC0BEFB3BE00C9F880 /* PBXContainerItemProxy */;
-		};
-		D6CB54840CEC9DCB000E4393 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D6C579BC0C7E3C7B00FCB4C1 /* DDSTool */;
-			targetProxy = D6CB54830CEC9DCB000E4393 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
-
 /* Begin XCBuildConfiguration section */
 		C0E91AC608A95435008D54AB /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -5467,57 +5254,6 @@
 			};
 			name = Phone;
 		};
-		D60E98F90EDDDEEA0096DE0E /* Phone */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
-				PRODUCT_NAME = Untitled;
-			};
-			name = Phone;
-		};
-		D60E98FA0EDDDEEA0096DE0E /* Phone */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
-				PRODUCT_NAME = "Build All";
-			};
-			name = Phone;
-		};
-		D61C26F60B6155B70092E098 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
-				PRODUCT_NAME = Untitled;
-			};
-			name = Debug;
-		};
-		D61C26F70B6155B70092E098 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				COPY_PHASE_STRIP = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
-				PRODUCT_NAME = Untitled;
-				ZERO_LINK = NO;
-			};
-			name = Release;
-		};
 		D62435420AE401EF004F00E3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -5673,10 +5409,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_ENTITLEMENTS = XGrinderRelease.entitlements;
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = src/XPTools/XGrinder.plist;
-				PRODUCT_BUNDLE_IDENTIFIER = com.laminar_research.XGrinder;
+				PRODUCT_BUNDLE_IDENTIFIER = com.laminarResearch.XGrinder;
 			};
 			name = Release;
 		};
@@ -5719,31 +5456,6 @@
 					libs/local/lib/libsquish.a,
 					libs/local/lib/libpng.a,
 				);
-			};
-			name = Release;
-		};
-		D6C68DF00BEFB3DB00C9F880 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
-				PRODUCT_NAME = "Build All";
-			};
-			name = Debug;
-		};
-		D6C68DF10BEFB3DB00C9F880 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				COPY_PHASE_STRIP = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
-				PRODUCT_NAME = "Build All";
-				ZERO_LINK = NO;
 			};
 			name = Release;
 		};
@@ -6001,32 +5713,6 @@
 			};
 			name = DebugOpt;
 		};
-		D6F01D790CDABA8D00A3F1B0 /* DebugOpt */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
-				PRODUCT_NAME = Untitled;
-			};
-			name = DebugOpt;
-		};
-		D6F01D7A0CDABA8D00A3F1B0 /* DebugOpt */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
-				PRODUCT_NAME = "Build All";
-			};
-			name = DebugOpt;
-		};
 		D6F01D7B0CDABA8D00A3F1B0 /* DebugOpt */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -6136,17 +5822,6 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		D61C26F50B6155B70092E098 /* Build configuration list for PBXAggregateTarget "Build Tools" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				D61C26F60B6155B70092E098 /* Debug */,
-				D60E98F90EDDDEEA0096DE0E /* Phone */,
-				D6F01D790CDABA8D00A3F1B0 /* DebugOpt */,
-				D61C26F70B6155B70092E098 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		D62435410AE401EF004F00E3 /* Build configuration list for PBXNativeTarget "RenderFarmUI" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -6198,17 +5873,6 @@
 				D60E98F70EDDDEEA0096DE0E /* Phone */,
 				D6F01D740CDABA8D00A3F1B0 /* DebugOpt */,
 				D6C579D50C7E3C7B00FCB4C1 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		D6C68DEF0BEFB3DB00C9F880 /* Build configuration list for PBXAggregateTarget "Build All" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				D6C68DF00BEFB3DB00C9F880 /* Debug */,
-				D60E98FA0EDDDEEA0096DE0E /* Phone */,
-				D6F01D7A0CDABA8D00A3F1B0 /* DebugOpt */,
-				D6C68DF10BEFB3DB00C9F880 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
