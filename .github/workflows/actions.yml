@@ -69,8 +69,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: xpt_release_build
-          path: build/WED.xcarchive/Products
-#          path: build/XPT.xcarchive/Products
+          path: build/XPT.xcarchive/Products
           
 #  build-linux:
 #    runs-on: ubuntu-22.04
