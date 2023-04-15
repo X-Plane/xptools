@@ -383,9 +383,14 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 				break;
 			case attr_Tex_Normal:	tex_is_cockpit = false;	drawMode = drawMode_Non;  break;
 			case attr_Tex_Cockpit:	tex_is_cockpit = true;	break;
-			case attr_No_Blend:	glDisable(GL_BLEND); CHECK_GL_ERR break;
-			case attr_Blend:	glEnable(GL_BLEND);	 CHECK_GL_ERR break;
-
+			case attr_No_Blend:	
+				glEnable(GL_ALPHA_TEST);
+				glAlphaFunc(GL_GEQUAL, cmd->params[0]);
+				glDisable(GL_BLEND); CHECK_GL_ERR
+				break;
+			case attr_Blend:
+				glAlphaFunc(GL_GREATER, 0);
+				glEnable(GL_BLEND);	 CHECK_GL_ERR break;
 
 			case anim_Begin:	glPushMatrix();	CHECK_GL_ERR break;
 			case anim_End:		glPopMatrix(); CHECK_GL_ERR break;
@@ -468,4 +473,5 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 	glPopMatrix();
 	#endif
 #endif
+	glAlphaFunc(GL_GREATER, 0);
 }
