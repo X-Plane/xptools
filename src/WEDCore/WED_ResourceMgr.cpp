@@ -31,11 +31,11 @@
 
 #include "MemFileUtils.h"
 #include "XObjReadWrite.h"
-//#include "ObjConvert.h"
 #include "FileUtils.h"
 #include "WED_PackageMgr.h"
 #include "CompGeomDefs2.h"
 #include "MathUtils.h"
+#include "BitmapUtils.h"
 
 #if IBM
 #define DIR_CHAR '\\'
@@ -498,6 +498,8 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t const*& info)
 	pol->kill_alpha=false;
 	pol->wrap=false;
 
+	int isTex = 0;
+
 	while(!MFS_done(&s))
 	{
 		if (MFS_string_match(&s,"TEXTURE", false))
@@ -547,6 +549,62 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t const*& info)
 			MFS_string(&s,&tmp);
 			if(tmp != "asphalt" && tmp != "concrete" && tmp != "grass" && tmp != "gravel" && tmp != "dirt" && tmp != "snow")
 				LOG_MSG("E/Pol illegal SURFACE type in %s\n", p.c_str());
+		}
+		else if ((isTex = MFS_string_match(&s, "TEXTURE_TILE", false)) || MFS_string_match(&s, "RUNWAY_TILE", false))
+		{
+			string ctrl_tex;
+			pol->tiling.tiles_x = MFS_int(&s);
+			pol->tiling.tiles_y = MFS_int(&s);
+			pol->tiling.pages_x = MFS_int(&s);
+			pol->tiling.pages_y = MFS_int(&s);
+			MFS_string(&s, &ctrl_tex);
+
+			pol->tiling.rwy = isTex == 0;
+
+			if (pol->tiling.tiles_x < 1 || pol->tiling.tiles_y < 1 || pol->tiling.pages_x < 1 || pol->tiling.pages_y < 1)
+			{
+				LOG_MSG("E/Pol impropper TEXTURE_TILE data in %s\n", p.c_str());
+				pol->tiling.tiles_x = pol->tiling.tiles_y = pol->tiling.pages_x = pol->tiling.pages_y = 1;
+			}
+			else
+			{
+	        	if (pol->tiling.pages_x > 16) pol->tiling.pages_x = 16;  // we only ever preview a 3-4 multiples of a texture
+				if (pol->tiling.pages_y > 16) pol->tiling.pages_y = 16;  // so we might well save ourselves some space
+
+				pol->tiling.idx.reserve(pol->tiling.pages_x * pol->tiling.pages_y);
+
+				if (ctrl_tex.size())
+				{
+					process_texture_path(p, ctrl_tex);
+					ImageInfo img;
+					if (LoadBitmapFromAnyFile(ctrl_tex.c_str(), &img))
+					{
+						LOG_MSG("E/Pol can't load control texture %s for %s\n", ctrl_tex.c_str(), p.c_str());
+					}
+					else
+					{
+						for (int y = 0; y < pol->tiling.pages_y; y++)
+							for (int x = 0; x < pol->tiling.pages_x; x++)
+							{
+								int pixel = img.channels * (x + img.width * y);
+								int red = *(img.data + pixel + (img.channels == 2 ? 0 : 2)); // img data is BGR
+								int green = *(img.data + pixel + 1);
+								red   *= (pol->tiling.tiles_x + 128) / 256;
+								green *= (pol->tiling.tiles_y + 128) / 256;
+								pol->tiling.idx.push_back(red);
+								pol->tiling.idx.push_back(green);
+							}
+					}
+					if (img.data) free(img.data);
+				}
+				else
+					for (int x = 0; x < pol->tiling.pages_x; x++)
+						for (int y = 0; y < pol->tiling.pages_y; y++)
+						{
+							pol->tiling.idx.push_back(pol->tiling.tiles_x * rand() / RAND_MAX);
+							pol->tiling.idx.push_back(pol->tiling.tiles_y * rand() / RAND_MAX);
+						}
+			}
 		}
 
 		if (MFS_string_match(&s,"#wed_text", false))

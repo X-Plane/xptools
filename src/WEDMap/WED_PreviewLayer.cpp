@@ -163,7 +163,7 @@ static bool setup_taxi_texture(int surface_code, double heading, const Point2& c
 static bool setup_pol_texture(ITexMgr * tman, const pol_info_t& pol, double heading, bool no_proj, const Point2& centroid, GUI_GraphState * g,
 							WED_MapZoomerNew * z, float alpha, bool isAbsPath = true)
 {
-	TexRef	ref = tman->LookupTexture(pol.base_tex.c_str(),true, pol.wrap ? (tex_Compress_Ok|tex_Wrap|tex_Always_Pad) : tex_Compress_Ok|tex_Always_Pad);
+	TexRef	ref = tman->LookupTexture(pol.base_tex.c_str(),true, tex_Compress_Ok+tex_Linear+tex_Mipmap+pol.wrap*tex_Wrap);
 	if(ref == NULL) return false;
 	int tex_id = tman->GetTexID(ref);
 
