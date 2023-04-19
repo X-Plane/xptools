@@ -190,13 +190,13 @@ void MT_MakeDSF(rf_region region, const char * dump, const char * out_dsf)
 	// -calcmesh
 	TriangulateMesh(*the_map, sMesh, sDem, dump, ConsoleProgressFunc);
 
-	WriteXESFile("temp1.xes", *the_map,sMesh,sDem,sApts,ConsoleProgressFunc);
+	// WriteXESFile("temp1.xes", *the_map,sMesh,sDem,sApts,ConsoleProgressFunc);
 
 	CalcRoadTypes(*the_map, sDem[dem_Elevation], sDem[dem_UrbanDensity],sDem[dem_Temperature], sDem[dem_Rainfall],ConsoleProgressFunc);
 
 	// -assignterrain
 	AssignLandusesToMesh(sDem,sMesh,dump,ConsoleProgressFunc);
-	WriteXESFile("temp2.xes", *the_map,sMesh,sDem,sApts,ConsoleProgressFunc);
+	// WriteXESFile("temp2.xes", *the_map,sMesh,sDem,sApts,ConsoleProgressFunc);
 
 	print_mesh_stats();
 
@@ -214,7 +214,8 @@ void MT_MakeDSF(rf_region region, const char * dump, const char * out_dsf)
 	#endif
 
 	// -exportDSF
-	BuildDSF(out_dsf, NULL, sDem[dem_Elevation], sDem[dem_Bathymetry], {}, sMesh, /*sTriangulationLo,*/ *the_map, region, ConsoleProgressFunc);
+	vector<DSFRasterInfo> rasters; // extra rasters used in XP12 to define seasons
+	BuildDSF(out_dsf, NULL, sDem[dem_Elevation], sDem[dem_Bathymetry], {}, rasters, sMesh, /*sTriangulationLo,*/ *the_map, region, ConsoleProgressFunc);
 }
 
 void MT_Cleanup(void)
