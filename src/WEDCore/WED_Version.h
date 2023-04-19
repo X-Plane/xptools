@@ -31,7 +31,9 @@
 
 #define	WED_VERSION				2.6.0b1
 #define	WED_VERSION_STRING		"2.6.0b1"
-#define	WED_VERSION_STRING_SHORT	"2.6.0"			// omit beta/release number
+#define	WED_VERSION_STRING_SHORT	"2.6"			// omit beta/release number and trailing zero's
+
+#define	WED_COPYRIGHT_STRING	"© Copyright 2007-2023, Laminar Research."
 
 #define	WED_VERSION_RES			WED_VERSION_STRING
 #define	WED_VERSION_BIN			2,6,0,0
