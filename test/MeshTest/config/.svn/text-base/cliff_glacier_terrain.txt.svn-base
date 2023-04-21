@@ -1,0 +1,168 @@
+# CLIFF AND GLACIER LANDUSE WITH HIGHER PRIORITY THAN LANDUSE_TERRAIN AND ABSOLUTE_TERRAIN																																						
+#																																						
+#======================================================================================================================================================================================================================================================================================================================================================================================																																						
+#======================================================================================================================================================================================================================================================================================================================================================================================																																						
+#   ************** CLIFF ABSOLUTE RULES PER SLOPE ***************																																						
+#======================================================================================================================================================================================================================================================================================================================================================================================																																						
+#======================================================================================================================================================================================================================================================================================================================================================================================																																						
+# cliffs will cover every terrain from 55 deg in icy temp with any rainfall, in cold temp will act at 40 deg for any rainfall,in temp-hot climate will act from 55 deg for semi-rey and wet climate  but  on dry rainfall cliff will act at 50 deg.																																						
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------																																						
+#STERRAIN	TERRAIN	LAND USE	ELEVATION		SLOPE		TEMP		  RAINFALL		WATER	SLOPE HDG		REL ELEV		ELEV RANGE		TEMP RANGE		LATITUDE		VARIANT	NAME	LAYER	TRNS	TEXTURE	RES	PROJ	BORDER TEX	3D	COLOR MAP							
+#			MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX									FOREST	R	G	B					 
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------																																						
+# cliffs for dry environment  (0-325 mm rainfall)																																						
+STERRAIN	NO_VALUE	NO_VALUE	0	0	55	90	-999	-7.5	0	155	0	45	135	0	0	0	0	0	0	0	71	0	terrain/cliff_ice_dry_EW	1	1	../textures/soil/cliff_cold_dry.png	1500	EW	../textures/border/cliff.png	NO_VALUE	76	76	76					
+STERRAIN	NO_VALUE	NO_VALUE	0	0	55	90	-999	-7.5	0	155	0	0	0	0	0	0	0	0	0	0	71	0	terrain/cliff_ice_dry_NS	1	1	../textures/soil/cliff_cold_dry.png	1500	NS	../textures/border/cliff.png	NO_VALUE	76	76	76					
+																																						
+STERRAIN	NO_VALUE	NO_VALUE	0	0	50	90	-7.5	-2.3	0	155	0	45	135	0	0	0	0	0	0	0	71	0	terrain/cliff_cold_dry_EW	1	1	../textures/soil/cliff_cold_dry.png	1500	EW	../textures/border/cliff.png	NO_VALUE	76	76	76					
+STERRAIN	NO_VALUE	NO_VALUE	0	0	50	90	-7.5	-2.3	0	155	0	0	0	0	0	0	0	0	0	0	71	0	terrain/cliff_cold_dry_NS	1	1	../textures/soil/cliff_cold_dry.png	1500	NS	../textures/border/cliff.png	NO_VALUE	76	76	76					
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	-7.5	-2.3	0	155	0	0	0	0	0	0	0	0	0	0	71	0	terrain/cliff_cold_lo_dry	3	1	../textures/soil/cliff_dry.png	1500	HDG	../textures/border/cliff.png	NO_VALUE	76	76	76					
+																																						
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	-2.3	15.5	0	155	0	45	135	0	0	0	0	0	0	0	71	0	terrain/cliff_temp_dry_EW	1	1	../textures/soil/cliff_dry.png	1500	EW	../textures/border/cliff.png	NO_VALUE	76	76	76					
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	-2.3	15.5	0	155	0	0	0	0	0	0	0	0	0	0	71	0	terrain/cliff_temp_dry_NS	1	1	../textures/soil/cliff_dry.png	1500	NS	../textures/border/cliff.png	NO_VALUE	76	76	76					
+																																						
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	15.5	19.5	0	155	0	45	135	0	0	0	0	0	0	0	71	0	terrain/cliff_warm_dry_EW	1	1	../textures/soil/cliff_hot_dry.png	1500	EW	../textures/border/cliff.png	NO_VALUE	76	76	76					
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	15.5	19.5	0	155	0	0	0	0	0	0	0	0	0	0	71	0	terrain/cliff_warm_dry_NS	1	1	../textures/soil/cliff_hot_dry.png	1500	NS	../textures/border/cliff.png	NO_VALUE	76	76	76					
+																																						
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	19.5	999	0	155	0	45	135	0	0	0	0	0	0	0	71	0	terrain/cliff_hot_dry_EW	1	1	../textures/soil/cliff_hot_dry.png	1500	EW	../textures/border/cliff.png	NO_VALUE	76	76	76					
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	19.5	999	0	155	0	0	0	0	0	0	0	0	0	0	71	0	terrain/cliff_hot_dry_NS	1	1	../textures/soil/cliff_hot_dry.png	1500	NS	../textures/border/cliff.png	NO_VALUE	76	76	76					
+																																						
+# cliffs for semi-dry environment  (325-655 mm rainfall)																																						
+STERRAIN	NO_VALUE	NO_VALUE	0	0	55	90	-999	-7.5	155	545	0	45	135	0	0	0	0	0	0	0	71	0	terrain/cliff_ice_sdry_EW	1	1	../textures/soil/cliff_cold_sdry.png	1500	EW	../textures/border/cliff.png	NO_VALUE	76	76	76					
+STERRAIN	NO_VALUE	NO_VALUE	0	0	55	90	-999	-7.5	155	545	0	0	0	0	0	0	0	0	0	0	71	0	terrain/cliff_ice_sdry_NS	1	1	../textures/soil/cliff_cold_sdry.png	1500	NS	../textures/border/cliff.png	NO_VALUE	76	76	76					
+																																						
+STERRAIN	NO_VALUE	NO_VALUE	0	0	50	90	-7.5	-2.3	155	545	0	45	135	0	0	0	0	0	0	0	71	0	terrain/cliff_cold_sdry_EW	1	1	../textures/soil/cliff_cold_sdry.png	1500	EW	../textures/border/cliff.png	NO_VALUE	76	76	76					
+STERRAIN	NO_VALUE	NO_VALUE	0	0	50	90	-7.5	-2.3	155	545	0	0	0	0	0	0	0	0	0	0	71	0	terrain/cliff_cold_sdry_NS	1	1	../textures/soil/cliff_cold_sdry.png	1500	NS	../textures/border/cliff.png	NO_VALUE	76	76	76					
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	-7.5	-2.3	155	545	0	0	0	0	0	0	0	0	0	0	71	0	terrain/cliff_cold_lo_sdry	3	1	../textures/soil/cliff_sdry.png	1500	HDG	../textures/border/cliff.png	NO_VALUE	76	76	76					
+																																						
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	-2.3	15.5	155	545	0	45	135	0	0	0	0	0	0	0	71	0	terrain/cliff_temp_sdry_EW	1	1	../textures/soil/cliff_sdry.png	1500	EW	../textures/border/cliff.png	NO_VALUE	76	76	76					
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	-2.3	15.5	155	545	0	0	0	0	0	0	0	0	0	0	71	0	terrain/cliff_temp_sdry_NS	1	1	../textures/soil/cliff_sdry.png	1500	NS	../textures/border/cliff.png	NO_VALUE	76	76	76					
+																																						
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	15.5	19.5	155	545	0	45	135	0	0	0	0	0	0	0	71	0	terrain/cliff_warm_sdry_EW	1	1	../textures/soil/cliff_hot_sdry.png	1500	EW	../textures/border/cliff.png	NO_VALUE	76	76	76					
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	15.5	19.5	155	545	0	0	0	0	0	0	0	0	0	0	71	0	terrain/cliff_warm_sdry_NS	1	1	../textures/soil/cliff_hot_sdry.png	1500	NS	../textures/border/cliff.png	NO_VALUE	76	76	76					
+																																						
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	19.5	999	155	545	0	45	135	0	0	0	0	0	0	0	71	0	terrain/cliff_hot_sdry_EW	1	1	../textures/soil/cliff_hot_sdry.png	1500	EW	../textures/border/cliff.png	NO_VALUE	76	76	76					
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	19.5	999	155	545	0	0	0	0	0	0	0	0	0	0	71	0	terrain/cliff_hot_sdry_NS	1	1	../textures/soil/cliff_hot_sdry.png	1500	NS	../textures/border/cliff.png	NO_VALUE	76	76	76					
+																																						
+# cliffs for semi-wet environments  (655-1500 mm rainfall)																																						
+STERRAIN	NO_VALUE	NO_VALUE	0	0	55	90	-999	-20	545	1500	0	0	45	0	0	0	0	0	0	0	71	0	terrain/cliff_ice_hi_N	1	1	../textures/soil/cliff_ice.png	1500	NS	../textures/border/cliff.png	NO_VALUE	76	76	76					
+STERRAIN	NO_VALUE	NO_VALUE	0	0	55	90	-999	-7.5	545	1500	0	45	135	0	0	0	0	0	0	0	71	0	terrain/cliff_ice_EW	1	1	../textures/soil/cliff_cold.png	1500	EW	../textures/border/cliff.png	NO_VALUE	76	76	76					
+STERRAIN	NO_VALUE	NO_VALUE	0	0	55	90	-999	-7.5	545	1500	0	0	0	0	0	0	0	0	0	0	71	0	terrain/cliff_ice_NS	1	1	../textures/soil/cliff_cold.png	1500	NS	../textures/border/cliff.png	NO_VALUE	76	76	76					
+																																						
+STERRAIN	NO_VALUE	NO_VALUE	0	0	50	90	-7.5	-2.3	545	1500	0	45	135	0	0	0	0	0	0	0	71	0	terrain/cliff_cold_EW	1	1	../textures/soil/cliff_cold.png	1500	EW	../textures/border/cliff.png	NO_VALUE	76	76	76					
+STERRAIN	NO_VALUE	NO_VALUE	0	0	50	90	-7.5	-2.3	545	1500	0	0	0	0	0	0	0	0	0	0	71	0	terrain/cliff_cold_NS	1	1	../textures/soil/cliff_cold.png	1500	NS	../textures/border/cliff.png	NO_VALUE	76	76	76					
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	-7.5	-2.3	545	1500	0	0	0	0	0	0	0	0	0	0	71	0	terrain/cliff_cold_lo	3	1	../textures/soil/rock.png	1500	HDG	../textures/border/cliff.png	NO_VALUE	76	76	76					
+																																						
+STERRAIN	NO_VALUE	NO_VALUE	0	0	48	90	-2.3	15.5	545	1500	0	45	135	0	0	0	0	0	0	0	71	0	terrain/cliff_temp_EW	1	1	../textures/soil/cliff.png	1500	EW	../textures/border/cliff.png	NO_VALUE	76	76	76					
+STERRAIN	NO_VALUE	NO_VALUE	0	0	48	90	-2.3	15.5	545	1500	0	0	0	0	0	0	0	0	0	0	71	0	terrain/cliff_temp_NS	1	1	../textures/soil/cliff.png	1500	NS	../textures/border/cliff.png	NO_VALUE	76	76	76					
+																																						
+STERRAIN	NO_VALUE	NO_VALUE	0	0	48	90	15.5	19.5	545	1500	0	45	135	0	0	0	0	0	0	0	71	0	terrain/cliff_warm_EW	1	1	../textures/soil/cliff_hot.png	1500	EW	../textures/border/cliff.png	NO_VALUE	76	76	76					
+STERRAIN	NO_VALUE	NO_VALUE	0	0	48	90	15.5	19.5	545	1500	0	0	0	0	0	0	0	0	0	0	71	0	terrain/cliff_warm_NS	1	1	../textures/soil/cliff_hot.png	1500	NS	../textures/border/cliff.png	NO_VALUE	76	76	76					
+																																						
+STERRAIN	NO_VALUE	NO_VALUE	0	0	48	90	19.5	999	545	1500	0	45	135	0	0	0	0	0	0	0	71	0	terrain/cliff_hot_EW	1	1	../textures/soil/cliff_hot.png	1500	EW	../textures/border/cliff.png	NO_VALUE	76	76	76					
+STERRAIN	NO_VALUE	NO_VALUE	0	0	48	90	19.5	999	545	1500	0	0	0	0	0	0	0	0	0	0	71	0	terrain/cliff_hot_NS	1	1	../textures/soil/cliff_hot.png	1500	NS	../textures/border/cliff.png	NO_VALUE	76	76	76					
+																																						
+# cliffs for wet environment  (1500-99999 mm rainfall)																																						
+STERRAIN	NO_VALUE	NO_VALUE	0	0	55	90	-999	-20	1500	99999	0	0	45	0	0	0	0	0	0	0	71	0	terrain/cliff_ice_hi_wet_N	1	1	../textures/soil/ice_steep.png	1500	NS	../textures/border/cliff.png	NO_VALUE	76	76	76					
+STERRAIN	NO_VALUE	NO_VALUE	0	0	55	90	-999	-8.2	1500	99999	0	45	135	0	0	0	0	0	0	0	71	0	terrain/cliff_ice_wet_EW	1	1	../textures/soil/cliff_cold.png	1500	EW	../textures/border/cliff.png	NO_VALUE	76	76	76					
+STERRAIN	NO_VALUE	NO_VALUE	0	0	55	90	-999	-8.2	1500	99999	0	0	0	0	0	0	0	0	0	0	71	0	terrain/cliff_ice_wet_NS	1	1	../textures/soil/cliff_cold.png	1500	NS	../textures/border/cliff.png	NO_VALUE	76	76	76					
+																																						
+STERRAIN	NO_VALUE	NO_VALUE	0	0	50	90	-8.2	-2.3	1500	99999	0	45	135	0	0	0	0	0	0	0	71	0	terrain/cliff_cold_wet_EW	1	1	../textures/soil/cliff_wet.png	1500	EW	../textures/border/cliff.png	NO_VALUE	76	76	76					
+STERRAIN	NO_VALUE	NO_VALUE	0	0	50	90	-8.2	-2.3	1500	99999	0	0	0	0	0	0	0	0	0	0	71	0	terrain/cliff_cold_wet_NS	1	1	../textures/soil/cliff_wet.png	1500	NS	../textures/border/cliff.png	NO_VALUE	76	76	76					
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	-8.2	-2.3	1500	99999	0	0	0	0	0	0	0	0	0	0	71	0	terrain/cliff_cold_lo_wet	3	1	../textures/soil/rock_wet.png	1500	HDG	../textures/border/cliff.png	NO_VALUE	76	76	76					
+																																						
+STERRAIN	NO_VALUE	NO_VALUE	0	0	50	90	-2.3	15.5	1500	99999	0	45	135	0	0	0	0	0	0	0	71	0	terrain/cliff_temp_wet_EW	1	1	../textures/soil/cliff_wet.png	1500	EW	../textures/border/cliff.png	NO_VALUE	76	76	76					
+STERRAIN	NO_VALUE	NO_VALUE	0	0	50	90	-2.3	15.5	1500	99999	0	0	0	0	0	0	0	0	0	0	71	0	terrain/cliff_temp_wet_NS	1	1	../textures/soil/cliff_wet.png	1500	NS	../textures/border/cliff.png	NO_VALUE	76	76	76					
+																																						
+STERRAIN	NO_VALUE	NO_VALUE	0	0	50	90	15.5	19.5	1500	99999	0	45	135	0	0	0	0	0	0	0	71	0	terrain/cliff_warm_wet_EW	1	1	../textures/soil/cliff_hot_wet.png	1500	EW	../textures/border/cliff.png	NO_VALUE	76	76	76					
+STERRAIN	NO_VALUE	NO_VALUE	0	0	50	90	15.5	19.5	1500	99999	0	0	0	0	0	0	0	0	0	0	71	0	terrain/cliff_warm_wet_NS	1	1	../textures/soil/cliff_hot_wet.png	1500	NS	../textures/border/cliff.png	NO_VALUE	76	76	76					
+																																						
+STERRAIN	NO_VALUE	NO_VALUE	0	0	50	90	19.5	999	1500	99999	0	45	135	0	0	0	0	0	0	0	71	0	terrain/cliff_hot_wet_EW	1	1	../textures/soil/cliff_hot_wet.png	1500	EW	../textures/border/cliff.png	NO_VALUE	76	76	76					
+STERRAIN	NO_VALUE	NO_VALUE	0	0	50	90	19.5	999	1500	99999	0	0	0	0	0	0	0	0	0	0	71	0	terrain/cliff_hot_wet_NS	1	1	../textures/soil/cliff_hot_wet.png	1500	NS	../textures/border/cliff.png	NO_VALUE	76	76	76					
+																																						
+#======================================================================================================================================================================================================================================================================================================================================================================================																																						
+#======================================================================================================================================================================================================================================================================================================================================================================================																																						
+#  ************** ABSOLUTE RULES FOR FEW TEMPERATURE BANDS **************																																						
+#======================================================================================================================================================================================================================================================================================================================================================================================																																						
+#======================================================================================================================================================================================================================================================================================================================================================================================																																						
+# GLACIER (ABSOLUTE PER TEMPERATURE)																																						
+																																						
+# Glaciers and Polar Ice are separate by latitude because the rocks in the middle of ice on polars areas are always very dark so they have proper rules to point to different textures																																						
+# Glaciers/Ice will cover any terrain with any slope if temperature is colder starting from -13 deg BUT  if the temp range is higher than 35 deg then snow appears only if temperature is colder than -20 deg																																						
+# Glacier and Ice have different rules for slope heading so that southern slope will have ice with colder temperatures only (result is less ice) and northern slopes will have ice even with warmer temperature (result is more ice)																																						
+# glacier on slopes steeper than 40 deg are projected EW ans NS																																						
+# glacier/ice becomes barren tundra or upland tundra when temperature range is above 35 deg																																						
+STERRAIN	NO_VALUE	NO_VALUE	0	0	44	90	-20	-9	0	0	0	0	0	0	0	0	0	35	999	0	71	0	terrain/barren_tundra_rock	3	1	../textures/soil/rock_dark_tan_dry.png	1500	HDG	../textures/border/rock-ice.png	NO_VALUE	99	103	72					
+STERRAIN	NO_VALUE	NO_VALUE	0	0	30	90	-20	-9	0	0	0	0	0	0	0	0	0	35	999	0	71	0	terrain/barren_tundra_steep	72	10	../textures/loveg/upland_tundra_steep.png	4000	DOWN	../textures/border/rock-ice.png	NO_VALUE	99	103	72					
+STERRAIN	NO_VALUE	NO_VALUE	0	0	15	90	-20	-9	0	0	0	0	0	0	0	0	0	35	999	0	71	0	terrain/barren_tundra_hill	72	50	../textures/loveg/upland_tundra_hill.png	3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	99	103	72					
+STERRAIN	NO_VALUE	NO_VALUE	0	0	8	90	-20	-9	0	0	0	0	0	0	0	0	0	35	999	0	71	0	terrain/barren_tundra_sflat	72	100	../textures/loveg/grass_cold.png	3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	99	103	72					
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-20	-9	0	0	0	0	0	0.0	0.2	0	200	35	999	0	71	0	terrain/barren_tundra_fl_low	72	100	../textures/loveg/sdesert_cold_sflat.png	3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	99	103	72					
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-20	-9	0	0	0	0	0	0.2	0.7	0	200	35	999	0	71	0	terrain/barren_tundra_fl_mid	72	100	../textures/loveg/upland_tundra_flat.png	3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	99	103	72					
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-20	-9	0	0	0	0	0	0.7	1.0	0	200	35	999	0	71	0	terrain/barren_tundra_fl_top	72	100	../textures/loveg/grassland_cold_sdry.png	3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	99	103	72					
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-20	-9	0	0	0	0	0	0	0	0	0	35	999	0	71	0	terrain/barren_tundra_fl	72	100	../textures/loveg/upland_tundra_flat.png	3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	99	103	72					
+																																						
+# glaciers remain perennial glaciers on polar areas when temp range is below 35 deg																																						
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	40	90	-999	-7.2	0	0	0	0	45	0	0	0	0	0	35	60	71	0	terrain/polar_ice_steep_N	81	100	../textures/soil/ice_steep.png	1500	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	40	90	-999	-8.5	0	0	0	135	180	0	0	0	0	0	35	60	71	0	terrain/polar_ice_steep_S	81	100	../textures/soil/ice_steep.png	1500	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	40	90	-999	-7.9	0	0	0	45	135	0	0	0	0	0	35	60	71	0	terrain/polar_ice_steep_EW	81	100	../textures/soil/ice_steep.png	1500	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+																																						
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	20	90	-999	-7.2	0	0	0	0	45	0	0	0	0	0	35	60	71	0	terrain/polar_ice_hill_N	82	100	../textures/soil/ice_hill.png	4000	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	20	90	-999	-8.5	0	0	0	135	180	0	0	0	0	0	35	60	71	0	terrain/polar_ice_hill_S	82	100	../textures/soil/ice_hill.png	4000	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	20	90	-999	-7.9	0	0	0	45	135	0	0	0	0	0	35	60	71	0	terrain/polar_ice_hill_EW	82	100	../textures/soil/ice_hill.png	4000	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+																																						
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	0	90	-999	-7.2	0	0	0	0	45	0	0	0	0	0	35	60	71	0	terrain/polar_ice_fl_N	83	200	../textures/soil/ice_flat.png	4000	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	0	90	-999	-8.5	0	0	0	135	180	0	0	0	0	0	35	60	71	0	terrain/polar_ice_fl_S	83	200	../textures/soil/ice_flat.png	4000	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	0	90	-999	-7.9	0	0	0	45	135	0	0	0	0	0	35	60	71	0	terrain/polar_ice_fl_EW	83	200	../textures/soil/ice_flat.png	4000	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+																																						
+# glacier for dry environment (0-325 mm rainfall) all of them are for temperature colder than -9/-11 deg																																						
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	40	90	-999	-9	0	155	0	0	45	0	0	0	0	0	0	0	71	0	terrain/glacier_steep_dry_N	81	100	../textures/soil/glacier_steep_dry.png	1500	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	40	90	-999	-11	0	155	0	135	180	0	0	0	0	0	0	0	71	0	terrain/glacier_steep_dry_S	81	100	../textures/soil/glacier_steep_dry.png	1500	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	40	90	-999	-10	0	155	0	45	135	0	0	0	0	0	0	0	71	0	terrain/glacier_steep_dry_EW	81	100	../textures/soil/glacier_steep_dry.png	1500	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+																																						
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	20	90	-999	-9	0	155	0	0	45	0	0	0	0	0	0	0	71	0	terrain/glacier_hill_dry_N	82	100	../textures/soil/glacier_hill_dry.png	3000	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	20	90	-999	-11	0	155	0	135	180	0	0	0	0	0	0	0	71	0	terrain/glacier_hill_dry_S	82	100	../textures/soil/glacier_hill_dry.png	3000	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	20	90	-999	-10	0	155	0	45	135	0	0	0	0	0	0	0	71	0	terrain/glacier_hill_dry_EW	82	100	../textures/soil/glacier_hill_dry.png	3000	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+																																						
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	0	90	-999	-9	0	155	0	0	45	0	0	0	0	0	0	0	71	0	terrain/glacier_fl_dry_N	83	200	../textures/soil/glacier_flat_dry.png	3000	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	0	90	-999	-11	0	155	0	135	180	0	0	0	0	0	0	0	71	0	terrain/glacier_fl_dry_S	83	200	../textures/soil/glacier_flat_dry.png	3000	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	0	90	-999	-10	0	155	0	45	135	0	0	0	0	0	0	0	71	0	terrain/glacier_fl_dry_EW	83	200	../textures/soil/glacier_flat_dry.png	3000	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+																																						
+# glacier for semi-dry environment (325-655 mm rainfall) all of them are for temperature colder than -8/-9.2 deg																																						
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	40	90	-999	-8	155	545	0	0	45	0	0	0	0	0	0	0	71	0	terrain/glacier_steep_sdry_N	81	50	../textures/soil/glacier_steep_sdry.png	1500	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	40	90	-999	-9.2	155	545	0	135	180	0	0	0	0	0	0	0	71	0	terrain/glacier_steep_sdry_S	81	50	../textures/soil/glacier_steep_sdry.png	1500	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	40	90	-999	-8.5	155	545	0	45	135	0	0	0	0	0	0	0	71	0	terrain/glacier_steep_sdry_EW	81	50	../textures/soil/glacier_steep_sdry.png	1500	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+																																						
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	20	90	-999	-8	155	545	0	0	45	0	0	0	0	0	0	0	71	0	terrain/glacier_hill_sdry_N	82	50	../textures/soil/glacier_hill_sdry.png	3000	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	20	90	-999	-9	155	545	0	135	180	0	0	0	0	0	0	0	71	0	terrain/glacier_hill_sdry_S	82	50	../textures/soil/glacier_hill_sdry.png	3000	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	20	90	-999	-8.5	155	545	0	45	135	0	0	0	0	0	0	0	71	0	terrain/glacier_hill_sdry_EW	82	50	../textures/soil/glacier_hill_sdry.png	3000	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+																																						
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	0	90	-999	-8	155	545	0	0	45	0	0	0	0	0	0	0	71	0	terrain/glacier_fl_sdry_N	83	50	../textures/soil/glacier_flat_dry.png	3000	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	0	90	-999	-8.2	155	545	0	135	180	0	0	0	0	0	0	0	71	0	terrain/glacier_fl_sdry_S	83	50	../textures/soil/glacier_flat_dry.png	3000	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	0	90	-999	-8.5	155	545	0	45	135	0	0	0	0	0	0	0	71	0	terrain/glacier_fl_sdry_EW	83	50	../textures/soil/glacier_flat_dry.png	3000	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+																																						
+# glacier for semi-wet environments (655 1500 mm rainfall) all of them are for temperature colder than -7.0/-8.2 deg																																						
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	40	90	-999	-7.0	545	1500	0	0	60	0	0	0	0	0	0	0	71	0	terrain/glacier_steep_N	81	50	../textures/soil/glacier_steep.png	1500	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	40	90	-999	-8.0	545	1500	0	120	180	0	0	0	0	0	0	0	71	0	terrain/glacier_steep_S	81	50	../textures/soil/glacier_steep.png	1500	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	40	90	-999	-7.5	545	1500	0	60	120	0	0	0	0	0	0	0	71	0	terrain/glacier_steep_EW	81	50	../textures/soil/glacier_steep.png	1500	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+																																						
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	20	90	-999	-7.0	545	1500	0	0	60	0	0	0	0	0	0	0	71	0	terrain/glacier_hill_N	82	50	../textures/soil/glacier_hill.png	3000	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	20	90	-999	-8.0	545	1500	0	120	180	0	0	0	0	0	0	0	71	0	terrain/glacier_hill_S	82	50	../textures/soil/glacier_hill.png	3000	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	20	90	-999	-7.5	545	1500	0	60	120	0	0	0	0	0	0	0	71	0	terrain/glacier_hill_EW	82	50	../textures/soil/glacier_hill.png	3000	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+																																						
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	0	90	-999	-7.0	545	1500	0	0	60	0	0	0	0	0	0	0	71	0	terrain/glacier_fl_N	83	50	../textures/soil/glacier_flat.png	3000	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	0	90	-999	-8.0	545	1500	0	120	180	0	0	0	0	0	0	0	71	0	terrain/glacier_fl_S	83	50	../textures/soil/glacier_flat.png	3000	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	0	90	-999	-7.5	545	1500	0	60	120	0	0	0	0	0	0	0	71	0	terrain/glacier_fl_EW	83	50	../textures/soil/glacier_flat.png	3000	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+																																						
+# glacier for wet environment (1500 99999 mm rainfall) all of them are for temperature colder than -6.6/-7.8 deg																																						
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	40	90	-999	-6.6	1500	99999	0	0	60	0	0	0	0	0	0	0	71	0	terrain/glacier_steep_wet_N	81	50	../textures/soil/glacier_steep.png	1500	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	40	90	-999	-7.8	1500	99999	0	120	180	0	0	0	0	0	0	0	71	0	terrain/glacier_steep_wet_S	81	50	../textures/soil/glacier_steep.png	1500	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	40	90	-999	-7.2	1500	99999	0	60	120	0	0	0	0	0	0	0	71	0	terrain/glacier_steep_wet_EW	81	50	../textures/soil/glacier_steep.png	1500	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+																																						
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	20	90	-999	-6.6	1500	99999	0	0	60	0	0	0	0	0	0	0	71	0	terrain/glacier_hill_wet_N	82	50	../textures/soil/glacier_hill.png	3000	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	20	90	-999	-7.8	1500	99999	0	120	180	0	0	0	0	0	0	0	71	0	terrain/glacier_hill_wet_S	82	50	../textures/soil/glacier_hill.png	3000	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	20	90	-999	-7.2	1500	99999	0	60	120	0	0	0	0	0	0	0	71	0	terrain/glacier_hill_wet_EW	82	50	../textures/soil/glacier_hill.png	3000	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+																																						
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	0	90	-999	-6.6	1500	99999	0	0	60	0	0	0	0	0	0	0	71	0	terrain/glacier_fl_wet_N	83	50	../textures/soil/ice_flat.png	3000	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	0	90	-999	-7.8	1500	99999	0	120	180	0	0	0	0	0	0	0	71	0	terrain/glacier_fl_wet_S	83	50	../textures/soil/ice_flat.png	3000	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+STERRAIN	NO_VALUE	lu_globcover_SNOW_ICE	0	0	0	90	-999	-7.2	1500	99999	0	60	120	0	0	0	0	0	0	0	71	0	terrain/glacier_fl_wet_EW	83	50	../textures/soil/ice_flat.png	3000	HDG	../textures/border/glacier.png	NO_VALUE	255	255	255					
+#======================================================================================================================================================================================================================================================================================================================================================================================																																						

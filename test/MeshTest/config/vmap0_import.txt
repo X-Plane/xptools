@@ -1,0 +1,50 @@
+
+#				COV		TOPOLOGY LEVEL
+VPF_COVERAGE	bnd		3
+VPF_COVERAGE	hydro	3
+VPF_COVERAGE	trans	2
+VPF_COVERAGE	util	2
+
+#				COV		TABLE			COLUMN		FOREIGN ID			CHARCODE	INTCODE	TERRAIN			AREA FEATURE
+VPF_FACE_RULE	bnd		oceansea.aft	f_code		oceansea.aft_id		BA040		0		terrain_Water	NO_VALUE
+VPF_FACE_RULE	hydro	inwatera.aft	f_code		inwatera.aft_id		BH000		0		terrain_Water	NO_VALUE
+VPF_FACE_RULE	hydro	inwatera.aft	hyc  		inwatera.aft_id		-			6		terrain_Natural	NO_VALUE
+
+#				COV		TABLE			COLUMN		FOREIGN ID			CHARCODE	INTCODE	EDGE PARAM		TRANS FLAGS
+#VPF_LINE_RULE	hydro	miscl.lft		f_code		miscl.lft_id		BI020		0		0				256
+#VPF_LINE_RULE	hydro	watrcrsl.lft	loc			watrcrsl.lft_id		-			4		NO_VALUE		0
+VPF_LINE_RULE	hydro	watrcrsl.lft	f_code		watrcrsl.lft_id		BH140		0		he_IsRiver		0
+VPF_LINE_RULE	hydro	watrcrsl.lft	hyc			watrcrsl.lft_id		-			6		he_IsDryRiver	0
+VPF_LINE_RULE	trans	railrdl.lft		f_code		railrdl.lft_id		AN010		0 		NO_VALUE		16
+VPF_LINE_RULE	trans	roadl.lft		f_code		roadl.lft_id		AP030		0 		NO_VALUE		1
+VPF_LINE_RULE	trans	railrdl.lft		fco			railrdl.lft_id		-			3 		NO_VALUE		32
+VPF_LINE_RULE	trans	traill.lft		f_code		traill.lft_id		AP050		0 		NO_VALUE		64
+VPF_LINE_RULE	trans	roadl.lft		med			roadl.lft_id		-			1	    NO_VALUE		2
+VPF_LINE_RULE	trans	roadl.lft		rtt			roadl.lft_id		-			14	    NO_VALUE		4
+VPF_LINE_RULE	trans	roadl.lft		rtt			roadl.lft_id		-			15	    NO_VALUE		8
+VPF_LINE_RULE	util	utill.lft		f_code		utill.lft_id		AT030		0	    NO_VALUE		128
+
+# 1 = road
+# 2 = has median
+# 4 = primary
+# 8 = secondary
+# 16 = train
+# 32 = one-way
+# 64 =trail
+# 128 = power lines
+
+#					COV	TRANS FLAGS TOTAL			TRANS FEATURE TYPE
+VPF_TRANS_FLAGS		trans	1							road_SecondUnsep
+VPF_TRANS_FLAGS		trans	3							road_SecondSep
+VPF_TRANS_FLAGS		trans	5							road_PrimaryLimUnsep
+VPF_TRANS_FLAGS		trans	7							road_PrimaryLimSep
+VPF_TRANS_FLAGS		trans	9							road_PrimaryUnsep
+VPF_TRANS_FLAGS		trans	11							road_PrimarySep
+
+VPF_TRANS_FLAGS		trans	16							train_Generic
+VPF_TRANS_FLAGS		trans	48							train_Spur
+
+VPF_TRANS_FLAGS		trans	64							walk_Trail
+VPF_TRANS_FLAGS		util	128							powerline_Generic
+
+#VPF_TRANS_FLAGS	hydro	256							dam_Generic

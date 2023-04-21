@@ -1,0 +1,339 @@
+#FOREST_RULE	LAND USE	TEMP		  RAINFALL		NAME
+#		MIN	MAX	MIN	MAX	
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------						
+# ------------------------ FRUIT TREES / ORCHARDS ------------------------						
+FOREST_RULE	lu_globcover_CROP_FRUIT	4.0	14.5	0	525	fruit_tmp_dry
+FOREST_RULE	lu_globcover_CROP_ORCHARDS	4.0	14.5	0	525	orch_tmp_dry
+FOREST_RULE	lu_globcover_CROP_FRUIT	4.0	14.5	525	795	fruit_tmp_sdry
+FOREST_RULE	lu_globcover_CROP_ORCHARDS	4.0	14.5	525	795	orch_tmp_sdry
+FOREST_RULE	lu_globcover_CROP_FRUIT	4.0	14.5	795	1300	fruit_tmp_wet
+FOREST_RULE	lu_globcover_CROP_ORCHARDS	4.0	14.5	795	1300	orch_tmp_wet
+FOREST_RULE	lu_globcover_CROP_FRUIT	4.0	14.5	1300	99999	fruit_tmp_rain
+FOREST_RULE	lu_globcover_CROP_ORCHARDS	4.0	14.5	1300	99999	orch_tmp_rain
+						
+FOREST_RULE	lu_globcover_CROP_ORCHARDS	14.5	19.5	200	925	olive_wrm_sdry
+FOREST_RULE	lu_globcover_CROP_FRUIT	14.5	19.5	0	600	fruit_wrm_dry
+FOREST_RULE	lu_globcover_CROP_ORCHARDS	14.5	19.5	0	200	orch_wrm_dry
+FOREST_RULE	lu_globcover_CROP_FRUIT	14.5	19.5	600	875	fruit_wrm_sdry
+FOREST_RULE	lu_globcover_CROP_FRUIT	14.5	19.5	875	1375	fruit_wrm_wet
+FOREST_RULE	lu_globcover_CROP_ORCHARDS	14.5	19.5	925	1375	orch_wrm_wet
+FOREST_RULE	lu_globcover_CROP_FRUIT	14.5	19.5	1375	99999	fruit_wrm_rain
+FOREST_RULE	lu_globcover_CROP_ORCHARDS	14.5	19.5	1375	99999	orch_wrm_rain
+						
+FOREST_RULE	lu_globcover_CROP_FRUIT	19.5	23.5	0	675	fruit_hot_dry
+FOREST_RULE	lu_globcover_CROP_ORCHARDS	19.5	23.5	0	675	orch_hot_dry
+FOREST_RULE	lu_globcover_CROP_FRUIT	19.5	23.5	675	980	fruit_hot_sdry
+FOREST_RULE	lu_globcover_CROP_ORCHARDS	19.5	23.5	675	980	orch_hot_sdry
+FOREST_RULE	lu_globcover_CROP_FRUIT	19.5	23.5	980	1395	fruit_hot_wet
+FOREST_RULE	lu_globcover_CROP_ORCHARDS	19.5	23.5	980	1395	orch_hot_wet
+FOREST_RULE	lu_globcover_CROP_FRUIT	19.5	23.5	1395	99999	fruit_hot_rain
+FOREST_RULE	lu_globcover_CROP_ORCHARDS	19.5	23.5	1395	99999	orch_hot_rain
+						
+FOREST_RULE	lu_globcover_CROP_FRUIT	23.5	999	0	745	fruit_vhot_dry
+FOREST_RULE	lu_globcover_CROP_ORCHARDS	23.5	999	0	745	orch_vhot_dry
+FOREST_RULE	lu_globcover_CROP_FRUIT	23.5	999	745	1055	fruit_vhot_sdry
+FOREST_RULE	lu_globcover_CROP_ORCHARDS	23.5	999	745	1055	orch_vhot_sdry
+FOREST_RULE	lu_globcover_CROP_FRUIT	23.5	999	1055	1425	fruit_vhot_wet
+FOREST_RULE	lu_globcover_CROP_ORCHARDS	23.5	999	1055	1425	orch_vhot_wet
+FOREST_RULE	lu_globcover_CROP_FRUIT	23.5	999	1425	99999	fruit_vhot_rain
+FOREST_RULE	lu_globcover_CROP_ORCHARDS	23.5	999	1425	99999	orch_vhot_rain
+#						
+# For the colder climates						
+#FOREST_RULE	LAND USE	TEMP		  RAINFALL		NAME
+#		MIN	MAX	MIN	MAX	
+#SPARSE						
+FOREST_RULE	lu_globcover_SPARSE_TREES	19.5	23.5	0	675	sparse_tr_hot_dry
+FOREST_RULE	lu_globcover_SPARSE,lu_globcover_SPARSE_SCREE	19.5	23.5	0	675	sparse_hot_dry
+						
+FOREST_RULE	lu_globcover_SPARSE_TREES	19.5	23.5	675	99999	sparse_tr_hot_sdry
+FOREST_RULE	lu_globcover_SPARSE,lu_globcover_SPARSE_SCREE	19.5	23.5	675	99999	sparse_hot_sdry
+						
+FOREST_RULE	lu_globcover_SPARSE_TREES	23.5	999	0	745	sparse_tr_vhot_dry
+FOREST_RULE	lu_globcover_SPARSE,lu_globcover_SPARSE_SCREE	23.5	999	0	745	sparse_vhot_dry
+						
+FOREST_RULE	lu_globcover_SPARSE_TREES	23.5	999	745	99999	sparse_tr_vhot_sdry
+FOREST_RULE	lu_globcover_SPARSE,lu_globcover_SPARSE_SCREE	23.5	999	745	99999	sparse_vhot_sdry
+						
+#						
+#FOREST_RULE	LAND USE	TEMP		  RAINFALL		NAME
+#		MIN	MAX	MIN	MAX	
+#WETLAND – has fallbacks in  GRASSLAND, SHRUB and BROADLEAVED_SPARSE						
+FOREST_RULE	lu_globcover_WETLAND_BROADLEAVED_OPEN	-999	-1.0	0	155	wetl_wdy_vcld_dry
+FOREST_RULE	lu_globcover_WETLAND_BROADLEAVED_OPEN	-999	-1.0	155	475	wetl_wdy_vcld_sdry
+FOREST_RULE	lu_globcover_WETLAND_BROADLEAVED_OPEN	-999	-1.0	475	1100	wetl_wdy_vcld_wet
+FOREST_RULE	lu_globcover_WETLAND_BROADLEAVED_OPEN	-999	-1.0	1100	99999	wetl_wdy_vcld_rain
+FOREST_RULE	lu_globcover_WETLAND_BROADLEAVED_OPEN	-1.0	4.0	0	405	wetl_wdy_cld_dry
+FOREST_RULE	lu_globcover_WETLAND_BROADLEAVED_OPEN	-1.0	4.0	405	675	wetl_wdy_cld_sdry
+FOREST_RULE	lu_globcover_WETLAND_BROADLEAVED_OPEN	-1.0	4.0	675	1250	wetl_wdy_cld_wet
+FOREST_RULE	lu_globcover_WETLAND_BROADLEAVED_OPEN	-1.0	4.0	1250	99999	wetl_wdy_cld_rain
+FOREST_RULE	lu_globcover_WETLAND_BROADLEAVED_OPEN	4.0	14.5	0	525	wetl_wdy_tmp_dry
+FOREST_RULE	lu_globcover_WETLAND_BROADLEAVED_OPEN	4.0	14.5	525	795	wetl_wdy_tmp_sdry
+FOREST_RULE	lu_globcover_WETLAND_BROADLEAVED_OPEN	4.0	14.5	795	1300	wetl_wdy_tmp_wet
+FOREST_RULE	lu_globcover_WETLAND_BROADLEAVED_OPEN	4.0	14.5	1300	99999	wetl_wdy_tmp_rain
+FOREST_RULE	lu_globcover_WETLAND_BROADLEAVED_OPEN	14.5	19.5	0	600	wetl_wdy_wrm_dry
+FOREST_RULE	lu_globcover_WETLAND_BROADLEAVED_OPEN	14.5	19.5	600	875	wetl_wdy_wrm_sdry
+FOREST_RULE	lu_globcover_WETLAND_BROADLEAVED_OPEN	14.5	19.5	875	1375	wetl_wdy_wrm_wet
+FOREST_RULE	lu_globcover_WETLAND_BROADLEAVED_OPEN	14.5	19.5	1375	99999	wetl_wdy_wrm_rain
+FOREST_RULE	lu_globcover_WETLAND_BROADLEAVED_OPEN	19.5	23.5	0	675	wetl_wdy_hot_dry
+FOREST_RULE	lu_globcover_WETLAND_BROADLEAVED_OPEN	19.5	23.5	675	980	wetl_wdy_hot_sdry
+FOREST_RULE	lu_globcover_WETLAND_BROADLEAVED_OPEN	19.5	23.5	980	1395	wetl_wdy_hot_wet
+FOREST_RULE	lu_globcover_WETLAND_BROADLEAVED_OPEN	19.5	23.5	1395	99999	wetl_wdy_hot_rain
+FOREST_RULE	lu_globcover_WETLAND_BROADLEAVED_OPEN	23.5	999	0	745	wetl_wdy_vhot_dry
+FOREST_RULE	lu_globcover_WETLAND_BROADLEAVED_OPEN	23.5	999	745	1055	wetl_wdy_vhot_sdry
+FOREST_RULE	lu_globcover_WETLAND_BROADLEAVED_OPEN	23.5	999	1055	1425	wetl_wdy_vhot_rain
+FOREST_RULE	lu_globcover_WETLAND_BROADLEAVED_OPEN	23.5	999	1425	99999	wetl_wdy_vhot_wet
+						
+FOREST_RULE	lu_globcover_WETLAND_SHRUB_CLOSED	-999	-1.0	0	155	wetl_shrb_vcld_dry
+FOREST_RULE	lu_globcover_WETLAND_SHRUB_CLOSED	-999	-1.0	155	475	wetl_shrb_vcld_sdry
+FOREST_RULE	lu_globcover_WETLAND_SHRUB_CLOSED	-999	-1.0	475	1100	wetl_shrb_vcld_wet
+FOREST_RULE	lu_globcover_WETLAND_SHRUB_CLOSED	-999	-1.0	1100	99999	wetl_shrb_vcld_rain
+FOREST_RULE	lu_globcover_WETLAND_SHRUB_CLOSED	-1.0	4.0	0	405	wetl_shrb_cld_dry
+FOREST_RULE	lu_globcover_WETLAND_SHRUB_CLOSED	-1.0	4.0	405	675	wetl_shrb_cld_sdry
+FOREST_RULE	lu_globcover_WETLAND_SHRUB_CLOSED	-1.0	4.0	675	1250	wetl_shrb_cld_wet
+FOREST_RULE	lu_globcover_WETLAND_SHRUB_CLOSED	-1.0	4.0	1250	99999	wetl_shrb_cld_rain
+FOREST_RULE	lu_globcover_WETLAND_SHRUB_CLOSED	4.0	14.5	0	525	wetl_shrb_tmp_dry
+FOREST_RULE	lu_globcover_WETLAND_SHRUB_CLOSED	4.0	14.5	525	795	wetl_shrb_tmp_sdry
+FOREST_RULE	lu_globcover_WETLAND_SHRUB_CLOSED	4.0	14.5	795	1300	wetl_shrb_tmp_wet
+FOREST_RULE	lu_globcover_WETLAND_SHRUB_CLOSED	4.0	14.5	1300	99999	wetl_shrb_tmp_rain
+FOREST_RULE	lu_globcover_WETLAND_SHRUB_CLOSED	14.5	19.5	0	600	wetl_shrb_wrm_dry
+FOREST_RULE	lu_globcover_WETLAND_SHRUB_CLOSED	14.5	19.5	600	875	wetl_shrb_wrm_sdry
+FOREST_RULE	lu_globcover_WETLAND_SHRUB_CLOSED	14.5	19.5	875	1375	wetl_shrb_wrm_wet
+FOREST_RULE	lu_globcover_WETLAND_SHRUB_CLOSED	14.5	19.5	1375	99999	wetl_shrb_wrm_rain
+FOREST_RULE	lu_globcover_WETLAND_SHRUB_CLOSED	19.5	23.5	0	675	wetl_shrb_hot_dry
+FOREST_RULE	lu_globcover_WETLAND_SHRUB_CLOSED	19.5	23.5	675	980	wetl_shrb_hot_sdry
+FOREST_RULE	lu_globcover_WETLAND_SHRUB_CLOSED	19.5	23.5	980	1395	wetl_shrb_hot_wet
+FOREST_RULE	lu_globcover_WETLAND_SHRUB_CLOSED	19.5	23.5	1395	99999	wetl_shrb_hot_rain
+FOREST_RULE	lu_globcover_WETLAND_SHRUB_CLOSED	23.5	999	0	745	wetl_shrb_vhot_dry
+FOREST_RULE	lu_globcover_WETLAND_SHRUB_CLOSED	23.5	999	745	1055	wetl_shrb_vhot_sdry
+FOREST_RULE	lu_globcover_WETLAND_SHRUB_CLOSED	23.5	999	1055	1425	wetl_shrb_vhot_rain
+FOREST_RULE	lu_globcover_WETLAND_SHRUB_CLOSED	23.5	999	1425	99999	wetl_shrb_vhot_wet
+# for still not assigned urban_terrain landuses we have all the fall-backs here (FRUIT and ORCHARDS are in DECIDUOUS section)						
+#FOREST_RULE	LAND USE	TEMP		  RAINFALL		NAME
+#		MIN	MAX	MIN	MAX	
+#GRASSLAND						
+FOREST_RULE	lu_globcover_GRASSLAND,lu_globcover_WETLAND_GRASSLAND,lu_globcover_PASTURES	23.5	999	2225	99999	grass_rainforest_vhot_rain
+#						
+#FOREST_RULE	LAND USE	TEMP		  RAINFALL		NAME
+#		MIN	MAX	MIN	MAX	
+#SHRUB						
+FOREST_RULE	lu_globcover_SHRUB	-999	-1.0	0	155	shrb_vcld_dry
+FOREST_RULE	lu_globcover_SHRUB	-999	-1.0	155	475	shrb_vcld_sdry
+FOREST_RULE	lu_globcover_SHRUB	-999	-1.0	475	1100	shrb_vcld_wet
+FOREST_RULE	lu_globcover_SHRUB	-999	-1.0	1100	99999	shrb_vcld_rain
+FOREST_RULE	lu_globcover_SHRUB	-1.0	4.0	0	405	shrb_cld_dry
+FOREST_RULE	lu_globcover_SHRUB	-1.0	4.0	405	675	shrb_cld_sdry
+FOREST_RULE	lu_globcover_SHRUB	-1.0	4.0	675	1250	shrb_cld_wet
+FOREST_RULE	lu_globcover_SHRUB	-1.0	4.0	1250	99999	shrb_cld_rain
+FOREST_RULE	lu_globcover_SHRUB	4.0	14.5	0	525	shrb_tmp_dry
+FOREST_RULE	lu_globcover_SHRUB	4.0	14.5	525	795	shrb_tmp_sdry
+FOREST_RULE	lu_globcover_SHRUB	4.0	14.5	795	1300	shrb_tmp_wet
+FOREST_RULE	lu_globcover_SHRUB	4.0	14.5	1300	99999	shrb_tmp_rain
+FOREST_RULE	lu_globcover_SHRUB	14.5	19.5	0	600	shrb_wrm_dry
+FOREST_RULE	lu_globcover_SHRUB	14.5	19.5	600	875	shrb_wrm_sdry
+FOREST_RULE	lu_globcover_SHRUB	14.5	19.5	875	1375	shrb_wrm_wet
+FOREST_RULE	lu_globcover_SHRUB	14.5	19.5	1375	99999	shrb_wrm_rain
+FOREST_RULE	lu_globcover_SHRUB	19.5	23.5	0	675	shrb_hot_dry
+FOREST_RULE	lu_globcover_SHRUB	19.5	23.5	675	980	shrb_hot_sdry
+FOREST_RULE	lu_globcover_SHRUB	19.5	23.5	980	1395	shrb_hot_wet
+FOREST_RULE	lu_globcover_SHRUB	19.5	23.5	1395	99999	shrb_hot_rain
+FOREST_RULE	lu_globcover_SHRUB	23.5	999	0	745	shrb_vhot_dry
+FOREST_RULE	lu_globcover_SHRUB	23.5	999	745	1055	shrb_vhot_sdry
+FOREST_RULE	lu_globcover_SHRUB	23.5	999	1055	1425	shrb_vhot_rain
+FOREST_RULE	lu_globcover_SHRUB	23.5	999	1425	99999	shrb_vhot_wet
+# for still not asigned lu_globcover_CROP_FRUIT,lu_globcover_CROP_ORCHARDS we have all the fall-backs here						
+#FOREST_RULE	LAND USE	TEMP		  RAINFALL		NAME
+#		MIN	MAX	MIN	MAX	
+#DECIDUOS_DENSE						
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_DENSE	-999	-1.0	0	155	broad_vcld_dry
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_DENSE	-999	-1.0	155	475	broad_vcld_sdry
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_DENSE	-999	-1.0	475	1100	broad_vcld_wet
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_DENSE	-999	-1.0	1100	99999	broad_vcld_rain
+						
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_SPARSE,lu_globcover_CROP_FRUIT,lu_globcover_CROP_ORCHARDS	-999	-1.0	0	155	broad_sp_vcld_dry
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_SPARSE,lu_globcover_CROP_FRUIT,lu_globcover_CROP_ORCHARDS	-999	-1.0	155	475	broad_sp_vcld_sdry
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_SPARSE,lu_globcover_CROP_FRUIT,lu_globcover_CROP_ORCHARDS	-999	-1.0	475	1100	broad_sp_vcld_wet
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_SPARSE,lu_globcover_CROP_FRUIT,lu_globcover_CROP_ORCHARDS	-999	-1.0	1100	99999	broad_sp_vcld_rain
+						
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_DENSE	-1.0	4.0	0	405	broad_cld_dry
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_DENSE	-1.0	4.0	405	675	broad_cld_sdry
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_DENSE	-1.0	4.0	675	1250	broad_cld_wet
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_DENSE	-1.0	4.0	1250	99999	broad_cld_rain
+						
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_SPARSE,lu_globcover_CROP_FRUIT,lu_globcover_CROP_ORCHARDS	-1.0	4.0	0	405	broad_sp_cld_dry
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_SPARSE,lu_globcover_CROP_FRUIT,lu_globcover_CROP_ORCHARDS	-1.0	4.0	405	675	broad_sp_cld_sdry
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_SPARSE,lu_globcover_CROP_FRUIT,lu_globcover_CROP_ORCHARDS	-1.0	4.0	675	1250	broad_sp_cld_wet
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_SPARSE,lu_globcover_CROP_FRUIT,lu_globcover_CROP_ORCHARDS	-1.0	4.0	1250	99999	broad_sp_cld_rain
+						
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_DENSE	4.0	14.5	0	525	broad_tmp_dry
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_DENSE	4.0	14.5	525	795	broad_tmp_sdry
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_DENSE	4.0	14.5	795	1300	broad_tmp_wet
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_DENSE	4.0	14.5	1300	99999	broad_tmp_rain
+						
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_SPARSE,lu_globcover_CROP_FRUIT,lu_globcover_CROP_ORCHARDS	4.0	14.5	0	525	broad_sp_tmp_dry
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_SPARSE,lu_globcover_CROP_FRUIT,lu_globcover_CROP_ORCHARDS	4.0	14.5	525	795	broad_sp_tmp_sdry
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_SPARSE,lu_globcover_CROP_FRUIT,lu_globcover_CROP_ORCHARDS	4.0	14.5	795	1300	broad_sp_tmp_wet
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_SPARSE,lu_globcover_CROP_FRUIT,lu_globcover_CROP_ORCHARDS	4.0	14.5	1300	99999	broad_sp_tmp_rain
+						
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_DENSE	14.5	19.5	0	600	broad_wrm_dry
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_DENSE	14.5	19.5	600	875	broad_wrm_sdry
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_DENSE	14.5	19.5	875	1375	broad_wrm_wet
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_DENSE	14.5	19.5	1375	99999	broad_wrm_rain
+						
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_SPARSE,lu_globcover_CROP_FRUIT,lu_globcover_CROP_ORCHARDS	14.5	19.5	0	600	broad_sp_wrm_dry
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_SPARSE,lu_globcover_CROP_FRUIT,lu_globcover_CROP_ORCHARDS	14.5	19.5	600	875	broad_sp_wrm_sdry
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_SPARSE,lu_globcover_CROP_FRUIT,lu_globcover_CROP_ORCHARDS	14.5	19.5	875	1375	broad_sp_wrm_wet
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_SPARSE,lu_globcover_CROP_FRUIT,lu_globcover_CROP_ORCHARDS	14.5	19.5	1375	99999	broad_sp_wrm_rain
+						
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_DENSE	19.5	23.5	0	675	broad_hot_dry
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_DENSE	19.5	23.5	675	980	broad_hot_sdry
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_DENSE	19.5	23.5	980	1395	broad_hot_wet
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_DENSE	19.5	23.5	1395	99999	broad_hot_rain
+						
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_SPARSE,lu_globcover_CROP_FRUIT,lu_globcover_CROP_ORCHARDS	19.5	23.5	0	675	broad_sp_hot_dry
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_SPARSE,lu_globcover_CROP_FRUIT,lu_globcover_CROP_ORCHARDS	19.5	23.5	675	980	broad_sp_hot_sdry
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_SPARSE,lu_globcover_CROP_FRUIT,lu_globcover_CROP_ORCHARDS	19.5	23.5	980	1395	broad_sp_hot_wet
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_SPARSE,lu_globcover_CROP_FRUIT,lu_globcover_CROP_ORCHARDS	19.5	23.5	1395	99999	broad_sp_hot_rain
+						
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_DENSE	23.5	999	0	745	broad_vhot_dry
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_DENSE	23.5	999	745	1055	broad_vhot_sdry
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_DENSE	23.5	999	1055	1425	broad_vhot_rain
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_DENSE	23.5	999	1425	2225	broad_vhot_wet
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_DENSE	23.5	999	2225	99999	rainforest_vhot_rain
+						
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_SPARSE,lu_globcover_CROP_FRUIT,lu_globcover_CROP_ORCHARDS	23.5	999	0	745	broad_sp_vhot_dry
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_SPARSE,lu_globcover_CROP_FRUIT,lu_globcover_CROP_ORCHARDS	23.5	999	745	1055	broad_sp_vhot_sdry
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_SPARSE,lu_globcover_CROP_FRUIT,lu_globcover_CROP_ORCHARDS	23.5	999	1055	1425	broad_sp_vhot_rain
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_SPARSE,lu_globcover_CROP_FRUIT,lu_globcover_CROP_ORCHARDS	23.5	999	1425	2225	broad_sp_vhot_wet
+FOREST_RULE	lu_globcover_FOREST_DECIDUOS_SPARSE,lu_globcover_CROP_FRUIT,lu_globcover_CROP_ORCHARDS	23.5	999	2225	99999	rainforest_sp_vhot_rain
+						
+#FOREST_RULE	LAND USE	TEMP		  RAINFALL		NAME
+#		MIN	MAX	MIN	MAX	
+#DECIDUOS_DENSE						
+FOREST_RULE	lu_globcover_FOREST_MIXED_DENSE	-999	-1.0	0	155	mixed_vcld_dry
+FOREST_RULE	lu_globcover_FOREST_MIXED_DENSE	-999	-1.0	155	475	mixed_vcld_sdry
+FOREST_RULE	lu_globcover_FOREST_MIXED_DENSE	-999	-1.0	475	1100	mixed_vcld_wet
+FOREST_RULE	lu_globcover_FOREST_MIXED_DENSE	-999	-1.0	1100	99999	mixed_vcld_rain
+						
+FOREST_RULE	lu_globcover_FOREST_MIXED_SPARSE,lu_globcover_FOREST_MOSAIC	-999	-1.0	0	155	mixed_sp_vcld_dry
+FOREST_RULE	lu_globcover_FOREST_MIXED_SPARSE,lu_globcover_FOREST_MOSAIC	-999	-1.0	155	475	mixed_sp_vcld_sdry
+FOREST_RULE	lu_globcover_FOREST_MIXED_SPARSE,lu_globcover_FOREST_MOSAIC	-999	-1.0	475	1100	mixed_sp_vcld_wet
+FOREST_RULE	lu_globcover_FOREST_MIXED_SPARSE,lu_globcover_FOREST_MOSAIC	-999	-1.0	1100	99999	mixed_sp_vcld_rain
+						
+FOREST_RULE	lu_globcover_FOREST_MIXED_DENSE	-1.0	4.0	0	405	mixed_cld_dry
+FOREST_RULE	lu_globcover_FOREST_MIXED_DENSE	-1.0	4.0	405	675	mixed_cld_sdry
+FOREST_RULE	lu_globcover_FOREST_MIXED_DENSE	-1.0	4.0	675	1250	mixed_cld_wet
+FOREST_RULE	lu_globcover_FOREST_MIXED_DENSE	-1.0	4.0	1250	99999	mixed_cld_rain
+						
+FOREST_RULE	lu_globcover_FOREST_MIXED_SPARSE,lu_globcover_FOREST_MOSAIC	-1.0	4.0	0	405	mixed_sp_cld_dry
+FOREST_RULE	lu_globcover_FOREST_MIXED_SPARSE,lu_globcover_FOREST_MOSAIC	-1.0	4.0	405	675	mixed_sp_cld_sdry
+FOREST_RULE	lu_globcover_FOREST_MIXED_SPARSE,lu_globcover_FOREST_MOSAIC	-1.0	4.0	675	1250	mixed_sp_cld_wet
+FOREST_RULE	lu_globcover_FOREST_MIXED_SPARSE,lu_globcover_FOREST_MOSAIC	-1.0	4.0	1250	99999	mixed_sp_cld_rain
+						
+FOREST_RULE	lu_globcover_FOREST_MIXED_DENSE	4.0	14.5	0	525	mixed_tmp_dry
+FOREST_RULE	lu_globcover_FOREST_MIXED_DENSE	4.0	14.5	525	795	mixed_tmp_sdry
+FOREST_RULE	lu_globcover_FOREST_MIXED_DENSE	4.0	14.5	795	1300	mixed_tmp_wet
+FOREST_RULE	lu_globcover_FOREST_MIXED_DENSE	4.0	14.5	1300	99999	mixed_tmp_rain
+						
+FOREST_RULE	lu_globcover_FOREST_MIXED_SPARSE,lu_globcover_FOREST_MOSAIC	4.0	14.5	0	525	mixed_sp_tmp_dry
+FOREST_RULE	lu_globcover_FOREST_MIXED_SPARSE,lu_globcover_FOREST_MOSAIC	4.0	14.5	525	795	mixed_sp_tmp_sdry
+FOREST_RULE	lu_globcover_FOREST_MIXED_SPARSE,lu_globcover_FOREST_MOSAIC	4.0	14.5	795	1300	mixed_sp_tmp_wet
+FOREST_RULE	lu_globcover_FOREST_MIXED_SPARSE,lu_globcover_FOREST_MOSAIC	4.0	14.5	1300	99999	mixed_sp_tmp_rain
+						
+FOREST_RULE	lu_globcover_FOREST_MIXED_DENSE	14.5	19.5	0	600	mixed_wrm_dry
+FOREST_RULE	lu_globcover_FOREST_MIXED_DENSE	14.5	19.5	600	875	mixed_wrm_sdry
+FOREST_RULE	lu_globcover_FOREST_MIXED_DENSE	14.5	19.5	875	1375	mixed_wrm_wet
+FOREST_RULE	lu_globcover_FOREST_MIXED_DENSE	14.5	19.5	1375	99999	mixed_wrm_rain
+						
+FOREST_RULE	lu_globcover_FOREST_MIXED_SPARSE,lu_globcover_FOREST_MOSAIC	14.5	19.5	0	600	mixed_sp_wrm_dry
+FOREST_RULE	lu_globcover_FOREST_MIXED_SPARSE,lu_globcover_FOREST_MOSAIC	14.5	19.5	600	875	mixed_sp_wrm_sdry
+FOREST_RULE	lu_globcover_FOREST_MIXED_SPARSE,lu_globcover_FOREST_MOSAIC	14.5	19.5	875	1375	mixed_sp_wrm_wet
+FOREST_RULE	lu_globcover_FOREST_MIXED_SPARSE,lu_globcover_FOREST_MOSAIC	14.5	19.5	1375	99999	mixed_sp_wrm_rain
+						
+FOREST_RULE	lu_globcover_FOREST_MIXED_DENSE	19.5	23.5	0	675	mixed_hot_dry
+FOREST_RULE	lu_globcover_FOREST_MIXED_DENSE	19.5	23.5	675	980	mixed_hot_sdry
+FOREST_RULE	lu_globcover_FOREST_MIXED_DENSE	19.5	23.5	980	1395	mixed_hot_wet
+FOREST_RULE	lu_globcover_FOREST_MIXED_DENSE	19.5	23.5	1395	99999	mixed_hot_rain
+						
+FOREST_RULE	lu_globcover_FOREST_MIXED_SPARSE,lu_globcover_FOREST_MOSAIC	19.5	23.5	0	675	mixed_sp_hot_dry
+FOREST_RULE	lu_globcover_FOREST_MIXED_SPARSE,lu_globcover_FOREST_MOSAIC	19.5	23.5	675	980	mixed_sp_hot_sdry
+FOREST_RULE	lu_globcover_FOREST_MIXED_SPARSE,lu_globcover_FOREST_MOSAIC	19.5	23.5	980	1395	mixed_sp_hot_wet
+FOREST_RULE	lu_globcover_FOREST_MIXED_SPARSE,lu_globcover_FOREST_MOSAIC	19.5	23.5	1395	99999	mixed_sp_hot_rain
+						
+FOREST_RULE	lu_globcover_FOREST_MIXED_DENSE	23.5	999	0	745	mixed_vhot_dry
+FOREST_RULE	lu_globcover_FOREST_MIXED_DENSE	23.5	999	745	1055	mixed_vhot_sdry
+FOREST_RULE	lu_globcover_FOREST_MIXED_DENSE	23.5	999	1055	1425	mixed_vhot_wet
+FOREST_RULE	lu_globcover_FOREST_MIXED_DENSE	23.5	999	1425	2225	mixed_vhot_rain
+FOREST_RULE	lu_globcover_FOREST_MIXED_DENSE	23.5	999	2225	99999	rainforestm_vhot_rain
+						
+FOREST_RULE	lu_globcover_FOREST_MIXED_SPARSE,lu_globcover_FOREST_MOSAIC	23.5	999	0	745	mixed_sp_vhot_dry
+FOREST_RULE	lu_globcover_FOREST_MIXED_SPARSE,lu_globcover_FOREST_MOSAIC	23.5	999	745	1055	mixed_sp_vhot_sdry
+FOREST_RULE	lu_globcover_FOREST_MIXED_SPARSE,lu_globcover_FOREST_MOSAIC	23.5	999	1055	1425	mixed_sp_vhot_wet
+FOREST_RULE	lu_globcover_FOREST_MIXED_SPARSE,lu_globcover_FOREST_MOSAIC	23.5	999	1425	2225	mixed_sp_vhot_rain
+FOREST_RULE	lu_globcover_FOREST_MIXED_SPARSE,lu_globcover_FOREST_MOSAIC	23.5	999	2225	99999	rainforestm_sp_vhot_rain
+						
+						
+						
+						
+# all conifer forests – more detailed assignemnts are done with 3D forest						
+#FOREST_RULE	LAND USE	TEMP		  RAINFALL		NAME
+#		MIN	MAX	MIN	MAX	
+# CONIFER_DENSE	 					
+FOREST_RULE	lu_globcover_FOREST_CONIFER_DENSE,lu_globcover_FOREST_BRAODLEAVED_DENSE	-999	-1.0	0	155	coni_vcld_dry
+FOREST_RULE	lu_globcover_FOREST_CONIFER_DENSE,lu_globcover_FOREST_BRAODLEAVED_DENSE	-999	-1.0	155	475	coni_vcld_sdry
+FOREST_RULE	lu_globcover_FOREST_CONIFER_DENSE,lu_globcover_FOREST_BRAODLEAVED_DENSE	-999	-1.0	475	1100	coni_vcld_wet
+FOREST_RULE	lu_globcover_FOREST_CONIFER_DENSE,lu_globcover_FOREST_BRAODLEAVED_DENSE	-999	-1.0	1100	99999	coni_vcld_rain
+						
+FOREST_RULE	lu_globcover_FOREST_CONIFER_SPARSE,lu_globcover_FOREST_BRAODLEAVED_SPARSE,lu_globcover_WETLAND_BROADLEAVED_OPEN	-999	-1.0	0	155	coni_sp_vcld_dry
+FOREST_RULE	lu_globcover_FOREST_CONIFER_SPARSE,lu_globcover_FOREST_BRAODLEAVED_SPARSE,lu_globcover_WETLAND_BROADLEAVED_OPEN	-999	-1.0	155	475	coni_sp_vcld_sdry
+FOREST_RULE	lu_globcover_FOREST_CONIFER_SPARSE,lu_globcover_FOREST_BRAODLEAVED_SPARSE,lu_globcover_WETLAND_BROADLEAVED_OPEN	-999	-1.0	475	1100	coni_sp_vcld_wet
+FOREST_RULE	lu_globcover_FOREST_CONIFER_SPARSE,lu_globcover_FOREST_BRAODLEAVED_SPARSE,lu_globcover_WETLAND_BROADLEAVED_OPEN	-999	-1.0	1100	99999	coni_sp_vcld_rain
+						
+FOREST_RULE	lu_globcover_FOREST_CONIFER_DENSE,lu_globcover_FOREST_BRAODLEAVED_DENSE	-1.0	4.0	0	405	coni_cld_dry
+FOREST_RULE	lu_globcover_FOREST_CONIFER_DENSE,lu_globcover_FOREST_BRAODLEAVED_DENSE	-1.0	4.0	405	675	coni_cld_sdry
+FOREST_RULE	lu_globcover_FOREST_CONIFER_DENSE,lu_globcover_FOREST_BRAODLEAVED_DENSE	-1.0	4.0	675	1250	coni_cld_wet
+FOREST_RULE	lu_globcover_FOREST_CONIFER_DENSE,lu_globcover_FOREST_BRAODLEAVED_DENSE	-1.0	4.0	1250	99999	coni_cld_rain
+						
+FOREST_RULE	lu_globcover_FOREST_CONIFER_SPARSE,lu_globcover_FOREST_BRAODLEAVED_SPARSE,lu_globcover_WETLAND_BROADLEAVED_OPEN	-1.0	4.0	0	405	coni_sp_cld_dry
+FOREST_RULE	lu_globcover_FOREST_CONIFER_SPARSE,lu_globcover_FOREST_BRAODLEAVED_SPARSE,lu_globcover_WETLAND_BROADLEAVED_OPEN	-1.0	4.0	405	675	coni_sp_cld_sdry
+FOREST_RULE	lu_globcover_FOREST_CONIFER_SPARSE,lu_globcover_FOREST_BRAODLEAVED_SPARSE,lu_globcover_WETLAND_BROADLEAVED_OPEN	-1.0	4.0	675	1250	coni_sp_cld_wet
+FOREST_RULE	lu_globcover_FOREST_CONIFER_SPARSE,lu_globcover_FOREST_BRAODLEAVED_SPARSE,lu_globcover_WETLAND_BROADLEAVED_OPEN	-1.0	4.0	1250	99999	coni_sp_cld_rain
+						
+FOREST_RULE	lu_globcover_FOREST_CONIFER_DENSE,lu_globcover_FOREST_BRAODLEAVED_DENSE	4.0	14.5	0	525	coni_tmp_dry
+FOREST_RULE	lu_globcover_FOREST_CONIFER_DENSE,lu_globcover_FOREST_BRAODLEAVED_DENSE	4.0	14.5	525	795	coni_tmp_sdry
+FOREST_RULE	lu_globcover_FOREST_CONIFER_DENSE,lu_globcover_FOREST_BRAODLEAVED_DENSE	4.0	14.5	795	1300	coni_tmp_wet
+FOREST_RULE	lu_globcover_FOREST_CONIFER_DENSE,lu_globcover_FOREST_BRAODLEAVED_DENSE	4.0	14.5	1300	99999	coni_tmp_rain
+						
+FOREST_RULE	lu_globcover_FOREST_CONIFER_SPARSE,lu_globcover_FOREST_BRAODLEAVED_SPARSE,lu_globcover_WETLAND_BROADLEAVED_OPEN	4.0	14.5	0	525	coni_sp_tmp_dry
+FOREST_RULE	lu_globcover_FOREST_CONIFER_SPARSE,lu_globcover_FOREST_BRAODLEAVED_SPARSE,lu_globcover_WETLAND_BROADLEAVED_OPEN	4.0	14.5	525	795	coni_sp_tmp_sdry
+FOREST_RULE	lu_globcover_FOREST_CONIFER_SPARSE,lu_globcover_FOREST_BRAODLEAVED_SPARSE,lu_globcover_WETLAND_BROADLEAVED_OPEN	4.0	14.5	795	1300	coni_sp_tmp_wet
+FOREST_RULE	lu_globcover_FOREST_CONIFER_SPARSE,lu_globcover_FOREST_BRAODLEAVED_SPARSE,lu_globcover_WETLAND_BROADLEAVED_OPEN	4.0	14.5	1300	99999	coni_sp_tmp_rain
+						
+FOREST_RULE	lu_globcover_FOREST_CONIFER_DENSE,lu_globcover_FOREST_BRAODLEAVED_DENSE	14.5	19.5	0	600	coni_wrm_dry
+FOREST_RULE	lu_globcover_FOREST_CONIFER_DENSE,lu_globcover_FOREST_BRAODLEAVED_DENSE	14.5	19.5	600	875	coni_wrm_sdry
+FOREST_RULE	lu_globcover_FOREST_CONIFER_DENSE,lu_globcover_FOREST_BRAODLEAVED_DENSE	14.5	19.5	875	1375	coni_wrm_wet
+FOREST_RULE	lu_globcover_FOREST_CONIFER_DENSE,lu_globcover_FOREST_BRAODLEAVED_DENSE	14.5	19.5	1375	99999	coni_wrm_rain
+						
+FOREST_RULE	lu_globcover_FOREST_CONIFER_SPARSE,lu_globcover_FOREST_BRAODLEAVED_SPARSE,lu_globcover_WETLAND_BROADLEAVED_OPEN	14.5	19.5	0	600	coni_sp_wrm_dry
+FOREST_RULE	lu_globcover_FOREST_CONIFER_SPARSE,lu_globcover_FOREST_BRAODLEAVED_SPARSE,lu_globcover_WETLAND_BROADLEAVED_OPEN	14.5	19.5	600	875	coni_sp_wrm_sdry
+FOREST_RULE	lu_globcover_FOREST_CONIFER_SPARSE,lu_globcover_FOREST_BRAODLEAVED_SPARSE,lu_globcover_WETLAND_BROADLEAVED_OPEN	14.5	19.5	875	1375	coni_sp_wrm_wet
+FOREST_RULE	lu_globcover_FOREST_CONIFER_SPARSE,lu_globcover_FOREST_BRAODLEAVED_SPARSE,lu_globcover_WETLAND_BROADLEAVED_OPEN	14.5	19.5	1375	99999	coni_sp_wrm_rain
+						
+FOREST_RULE	lu_globcover_FOREST_CONIFER_DENSE,lu_globcover_FOREST_BRAODLEAVED_DENSE	19.5	23.5	0	675	coni_hot_dry
+FOREST_RULE	lu_globcover_FOREST_CONIFER_DENSE,lu_globcover_FOREST_BRAODLEAVED_DENSE	19.5	23.5	675	980	coni_hot_sdry
+FOREST_RULE	lu_globcover_FOREST_CONIFER_DENSE,lu_globcover_FOREST_BRAODLEAVED_DENSE	19.5	23.5	980	1395	coni_hot_wet
+FOREST_RULE	lu_globcover_FOREST_CONIFER_DENSE,lu_globcover_FOREST_BRAODLEAVED_DENSE	19.5	23.5	1395	99999	coni_hot_rain
+						
+FOREST_RULE	lu_globcover_FOREST_CONIFER_SPARSE,lu_globcover_FOREST_BRAODLEAVED_SPARSE,lu_globcover_WETLAND_BROADLEAVED_OPEN	19.5	23.5	0	675	coni_sp_hot_dry
+FOREST_RULE	lu_globcover_FOREST_CONIFER_SPARSE,lu_globcover_FOREST_BRAODLEAVED_SPARSE,lu_globcover_WETLAND_BROADLEAVED_OPEN	19.5	23.5	675	980	coni_sp_hot_sdry
+FOREST_RULE	lu_globcover_FOREST_CONIFER_SPARSE,lu_globcover_FOREST_BRAODLEAVED_SPARSE,lu_globcover_WETLAND_BROADLEAVED_OPEN	19.5	23.5	980	1395	coni_sp_hot_wet
+FOREST_RULE	lu_globcover_FOREST_CONIFER_SPARSE,lu_globcover_FOREST_BRAODLEAVED_SPARSE,lu_globcover_WETLAND_BROADLEAVED_OPEN	19.5	23.5	1395	99999	coni_sp_hot_rain
+						
+FOREST_RULE	lu_globcover_FOREST_CONIFER_DENSE,lu_globcover_FOREST_BRAODLEAVED_DENSE	23.5	999	0	745	coni_vhot_dry
+FOREST_RULE	lu_globcover_FOREST_CONIFER_DENSE,lu_globcover_FOREST_BRAODLEAVED_DENSE	23.5	999	745	1055	coni_vhot_sdry
+FOREST_RULE	lu_globcover_FOREST_CONIFER_DENSE,lu_globcover_FOREST_BRAODLEAVED_DENSE	23.5	999	1055	1425	coni_vhot_rain
+FOREST_RULE	lu_globcover_FOREST_CONIFER_DENSE,lu_globcover_FOREST_BRAODLEAVED_DENSE	23.5	999	1425	99999	coni_vhot_wet
+						
+FOREST_RULE	lu_globcover_FOREST_CONIFER_SPARSE,lu_globcover_FOREST_BRAODLEAVED_SPARSE,lu_globcover_WETLAND_BROADLEAVED_OPEN	23.5	999	0	745	coni_sp_vhot_dry
+FOREST_RULE	lu_globcover_FOREST_CONIFER_SPARSE,lu_globcover_FOREST_BRAODLEAVED_SPARSE,lu_globcover_WETLAND_BROADLEAVED_OPEN	23.5	999	745	1055	coni_sp_vhot_sdry
+FOREST_RULE	lu_globcover_FOREST_CONIFER_SPARSE,lu_globcover_FOREST_BRAODLEAVED_SPARSE,lu_globcover_WETLAND_BROADLEAVED_OPEN	23.5	999	1055	1425	coni_sp_vhot_rain
+FOREST_RULE	lu_globcover_FOREST_CONIFER_SPARSE,lu_globcover_FOREST_BRAODLEAVED_SPARSE,lu_globcover_WETLAND_BROADLEAVED_OPEN	23.5	999	1425	99999	coni_sp_vhot_wet

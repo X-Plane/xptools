@@ -135,7 +135,7 @@ int	main(int argc, char * argv[])
 				exit(1);
 			}
 		}
-		if(strstr(argv[3],".hgt"))
+		else if(strstr(argv[3],".hgt"))
 		{
 			if (!ReadRawHGT(dem_elev, argv[3]))
 			{
@@ -151,6 +151,21 @@ int	main(int argc, char * argv[])
 				fprintf(stderr,"Could not read GeoTIFF file: %s\n", argv[3]);
 				exit(1);
 			}
+		}
+		else if(argv[3][strlen(argv[3])-2] == '.' && argv[3][strlen(argv[3])-1] >= '0' && argv[3][strlen(argv[3])-1] <= '9')
+		{
+			int	lat, lon, hgt;
+			if (sscanf(argv[3], "%d%d.%d", &lat, &lon, &hgt) != 3)
+			{
+				fprintf(stderr,"Could not determine location from filename: %s\n", argv[3]);
+				exit(1);
+			}
+			dem_elev.mWest = lon;
+			dem_elev.mSouth = lat;
+			dem_elev.mEast = lon + 1;
+			dem_elev.mNorth = lat + 1;
+			// dem_elev.mPost = 1;
+			dem_elev.resize_save(256, 256, hgt);
 		}
 		else
 		{

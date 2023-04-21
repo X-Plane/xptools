@@ -1,0 +1,538 @@
+MeshTool Instructions and Release Notes
+
+Version History
+	3/30/15 3.0 b1
+		New build supporst X-Plane 10-style DSFs with new X-Plane 10 climate/land class data files.
+	5/5/13  2.1 r1
+		Turned off snapping to fix Windows numerics.
+	3/20/13 2.1 b1
+		SHAPEFILE_CONTOUR introduced.
+		Fixed bug where shapefile masks can cause MT to fail.
+		Fixed nasty stretched textures where orthophotos sit on (but do not span) a DSF border.
+		Added tiny snapping of shapefiles to help with improperly cut shapefiles.
+	6/4/11 2.0 r6
+		Fixed TIFF loader to work with tiled TIFFs.
+		Improved error reporting when orthophoto spans a DSF boundary.
+	5/8/11 2.0 r5
+		Fixed snap rounding on GeoTIFF images
+		Fixed incorrect creation of DDS files
+	4/20/11 2.0 r4
+		Fixed failure to export with .bil files
+	3/31/11 2.0 r3
+		Fixed crash on quit in Windows
+		Fixed SHAPEFILE_MASK command.
+	9/23/10 2.0 r2
+		Fixed export with wet-dry masks
+		GEOTIFF command makes DDS using DXT5.
+	12/25/09 2.0 Beta 4
+		Natural terrain can be placed via the SHAPEFILE command and others.
+		Masks can limit where commands actuate.
+		Orthophotos can act wet or solid.
+		Meshing code doesn't add extra vertices.
+	11/8/09	2.0 Beta 3
+		Bug fixes:
+			= custom orthophotos crossing the border of the tile are not lost.
+			- fixed creases in orthophotos
+			- "wet" orthophotos act dry but have water under them
+		Mesh stats added to output.
+		Vertical accuracy improved - if your mesh has a narrow vertical span (and
+			most do) MeshTool will use more bits of vertical precision toward accuracy
+			by scaling down the DSF vertical range.  You should get about 15 bits of
+			vertical accuracy in your span, which will provide 0.25 m accuracy for
+			highly mountainous range and much higher for flat planes.
+		QMID_PATH added to make QMID texture management simpler.
+	7/17/09	  2.0 Beta 2
+		Bug fix: shape files that create rings of water will not remove the
+		orthophotos behind them "inside" the rings island land area.
+		Improved diagnostics for illegal input
+		Cleaned GeoTIFF importer
+		Improved handling of non-simple shapefile polygons.
+	4/30/08    Version 2.0 - Beta 1
+	3/11/08    Beta 1
+	12/28/07   Initial Draft
+
+Version 1.1 Changes
+	- Shapefiles
+	- New orthophoto commands
+	- Polygon cutting improvement
+	- Relaxed boundary issues
+	- Shapefile support
+	- Improved command syntax
+	- Dump directory is made automatically.
+
+-------------------------------------------------------------------------------
+USAGE
+-------------------------------------------------------------------------------
+
+MeshTool <script file> <climate file> <DEM file> <dump directory> <output file>
+
+MeshTool converts a polygon script, climate digest and DEM folder into a base
+DSF mesh.  It supports customizing coastlines via vector polygon data,
+burning in airporst, and adding custom orthophotos.
+
+IMPORTANT: MeshTool must be run with the current directory set to the directory
+that contains the project files and config folders!
+
+-------------------------------------------------------------------------------
+DEM FILE FORMAT
+-------------------------------------------------------------------------------
+
+MeshTool can accept three DEM formats:
+
+* ".hgt" format - this is the format that SRTM DEMs are published in by JPL.
+  The file contains a 1201x1201 array of 16-bit big endian elevations in
+  geographic projection.  The first sample is the north-west corner of the DEM.
+  Note: hgt is really not a file format - it is an extension indicating
+  elevation data - JPL calls this "raw" format.  But in the GIS community if
+  you see a DEM that's ".hgt" it's probably SRTM-format.
+  
+* ".bil" (band interleaved by line) - this is almost the same as .hgt except
+  that it is little endian, not big endian.
+  
+* GeoTiff - the GeoTiff must be in scanline format, not tiled.  Use the
+  command-line tool geotifcp to convert tiled images to scanline, e.g.
+  
+	geotiffcp -s old.tif new.tif
+
+ geotifcp comes as part of libgeotiff.
+
+In all cases, DEMs used for MeshTool have some requirements, no matter what
+format is used.
+
+* The DEM must be geographically projected - that is, the DEM's rows and 
+  columns must align to latitude and longitude lines.
+  
+* The DEM must exactly cover the 1x1 degree tile being created.
+
+* They must be grid-aligned (sometimes also called pixel-is-point).  In other
+  words, the DEM must cover the exact edges of the tile with samples.  If
+  you are making two adjacent tiles, the the left edge of one DEM should
+  contain a copy of the same data as the right edge of the next DEM.
+
+* There must be no voids or 'no data' points in the DEM, even for water.
+
+MeshTool will issue an error for a number of common DEM problems.  If your
+DEM is almost aligned to a tile but is slightly off, MeshTool will issue
+a warning, but not fail.  The reason is: sometimes the coordinate encoding
+for GeoTIFF files contains rounding errors.  You must ascertain whether there
+is an alignment problem.
+
+You are responsible for all flattening and conditioning.  (For example, you 
+must flatten the area over airports - MeshTool will not do this.)
+
+-------------------------------------------------------------------------------
+SCRIPT FILE FORMAT (POLYGON FILE)
+-------------------------------------------------------------------------------
+
+The MeshTool script file contains a series of instructions for defining
+landuses via vector data and overlaying orthophotos.  Land use areas are
+defined by polygon lat/lon coordinates.  
+
+X-Plane has four fundamental land-use types (defined by vectors):
+
+- Water: forms "real" X-plane water, with reflections, wet physics 
+  interactions, etc.
+- Natural Land: builds terrain using X-Plane's built-in global scenery
+  land classes; the land use is selected based on the slope of the DEM and
+  climate data from the .xes file (see below).
+- Airport: builds airport surface areas, with the grass type varying with
+  climate.  Note that the airport land use type is not flattened!
+- Orthophoto: puts in a custom-defined orthophoto, which can optionally
+  show water behind the alpha channel.
+  
+When working with terrain, you can use the names terrain_Water, 
+terrain_Natural, and terrain_Airport for water, natural, and airport
+land-use, respectively.  When using terrain_Natural and terrain_Airport,
+MeshTool will pick the appropriate actual X-Plane land classes for your
+climate, e.g. your airport will look dry in an area with low rainfall or
+lush and green in a tropical wet area.
+
+You can also use specific X-Plane default terrain.  The terrain name
+is the virtual path of the terrain without the .ter extension or
+lib/g8 prefix.  For example, to use
+
+	lib/g8/terrain/apt_ice4.ter
+
+Use the terrain
+
+	terrain/apt_ice4
+
+Note: name your terrains entirely in lower-case, regardless of 
+capitalization in the library file.  The library file in the default
+scenery pack 900 World Terrain lists all built-in terrain types.
+
+IMPORTANT: the terrains that are available are the ones defined in the
+config folder - the config folder that ships with MeshTool matches the
+default terrain that X-Plane shipped with for version 9.00.
+(That is, is is the current released global terrain config spec.)  If you
+want to use your own land classes there are two ways to do this:
+
+1. Pick an unused terrain type and, after creating the DSF, use DSF2Text
+to edit the header of the DSF, naming another .ter file.
+
+2. Use a library.txt file in your pack to redirect the .ter file to your
+resources.  You can use the "region" feature of library files to to
+assure that this only happens to your custom mesh DSFs.  See the 
+library.txt format spec and other library docs on scenery.x-plane.com for
+more info.
+
+Note: most of the subtle terrain effects in the global scenery come from
+the careful choice among terrains within the ruleset, not from the terrain
+textures themselves.  Thus if you directly specify a terrain type, you
+will not get:
+- Cliff effects.
+- Rock slides oriented toward the direction of gravity.
+- Automatic break-up of large repeating areas.
+
+Warning: when you create a terrain area with a shapefile, mesh vertices 
+are inserted to guarantee that the edge of the area precisely matches your
+shapefile, no matter how detailed.  Thus if you use a highly detailed
+shapefile, you will end up with a huge number of vertices at the border
+of the terrain, EVEN if the terrain is flat and the vertices are thus
+totally unnecessary.  It is strongly recommended that you reduce the
+vertex count of your shape files as much as possible!
+ 
+Land uses are layered - with the later land uses in the file overlapping 
+the earlier ones.  For example, you can create a single polygon covering
+the entire DSF tile with water, then a polygon representing an island, then
+another polygon representing a lake inside the island.  The layer ordering
+will correctly create the water/land/water pattern desired.  (You could also
+set the tile to water and then create the island as a land polygon with a
+hole.)
+
+Individual Polygons input to MeshTool should be simple (the mathematical
+definition of a "simple polygon") meaning the edges of the polygon
+should not overlap each other or intersect each other, except at the
+ends of adjacent edges.  For example, a bow-tie pattern is not a valid 
+polygon, whether made with 4 or 5 vertices.  (The bow-tie can be modeled 
+by two triangles meeting at a point - there is no restriction on polygons
+overlapping, intersecting, etc.)
+ 
+Individual holes must also be simple polygons, and should not overlap their
+outer boundaries.
+
+There is no restriction on the relationship of individual simple polygons
+with each other.  You can overlap, layer, or stack individual polygons against
+each other in any way.
+ 
+-------------------------------------------------------------------------------
+COMMANDS FOR SETTING LANDUSE
+-------------------------------------------------------------------------------
+
+These commands let you define the water and land areas of your DSF tile.
+Even if you are covering the entire tile with orthophotos, you may still want
+to use the water terrain type to have "real" physics where there is water.
+
+SHAPEFILE_TERRAIN <terrain> <file>
+
+Sets the area defined by the shapefile to the specified terrain.  The 
+shapefile must contain polygons.
+
+BEGIN_POLYGON <terrain>
+
+Begin specifying a polygon's outer boundary by points.
+
+POLYGON_POINT <lon> <lat>
+
+Specify one point on the polygon's outer boundary.
+
+END_POLY
+
+End specifying a polygon.  All holes must be finished before the polygon
+ends.
+
+BEGIN_HOLE
+
+Begin specifying a hole inside the current polygon.  Holes must be specified
+between a polygon begin/end.
+
+HOLE_POINT <lon> <lat>
+
+Specify a point on the hole's boundary.
+
+END_HOLE
+
+End specification of the current hole.
+
+-------------------------------------------------------------------------------
+COMMANDS FOR WORKING WITH ORTHOPHOTOS
+-------------------------------------------------------------------------------
+
+When you import an orthophoto, it covers the land uses that are already 
+specified.  You can then specify additional land-uses on top of it; 
+orthophotos can also overlap each other.
+
+Orthophotos do not have to be fully inside a mesh tile - if they are not,
+their polygon placement is cropped automatically (but the image file is not).
+The orthophoto will be stretched as needed based on the coordinates specified.
+
+Orthophotos do not have to be in geographic projection.  However if you use
+a large orthophoto that uses an alternate projection scheme, you may get
+alignment errors, because MeshTool generates texture coordinates using
+geographic projection.  The simplest solution to ailgnment problems is to
+cut the orthophoto into smaller pieces.  Usually X-Plane's 2048x2048 texture
+limit makes this necessary anyway.
+
+MeshTool can optionally convert BMPs (from the QMID command) and GeoTIFFs to
+DDS format as they are processed.  If a set of BMPs (with naming conventions
+to match the QMID for summer + blend) are found, or a TIFF is found, it is
+converted to DDS5 (QMID) or DDS1 (GeoTIFF).  For GeoTIFFs, the resolution
+is converted to the smallest power of 2 that is not smaller than the original,
+clamped at 2048x2048.
+
+If you do not want conversion, it is reocommended that the DDS files already be
+in place (next to the original images) in your project, so that the .ter files
+can be built with correct image size loading directives.  (See LOAD_CENTER
+in the .ter file spec.)  If this inforamtion is not available, MeshTool assumes
+1024x1024 for QMID and 2048x2048 for GeoTIFF; you may have to edit your .ter
+files later.
+
+When you specify an orthophoto, a "wet" flag tells how you want water to be
+handled.  The options are:
+
+0	No water.  The orthophoto must be opaque, no water is drawn under it.
+	This is the fastest potoin for frame-rate.
+1	Water, Solid.  Water is drawn under transparent parts of the orthophoto,
+	but the entire orthophoto is marked as "solid", using the surface type in
+	The .ter file.  You may see water, but a seaplane cannot land on it.
+2.	Water, Wet.  Water is drawn under the transparent parts of the orthophoto,
+	and the entire orthophoto acts "wet".  Note that even the opaque parts of
+	the orthophoto act wet.
+	
+X-Plane does not allow the 'physics' of a tile to vary with the alpha channel
+of an image; see the section on masks at the end of the "advanced" section.
+
+ORTHOPHOTO <wet> <bl> <br> <tr> <tl> <filename>
+
+This imports a single orthophoto - <filename> should be the name of the .ter
+file - if one does not exist, it is created.  The "wet" flag tells whether
+to put water under the orthophoto - if you want to use alpha as water, set
+this to 1.  The four coordinates are the lon/lat pairs of the image
+corners, starting with the lower elft corner of the image and going 
+around counter-clockwise.
+
+Example:
+
+ORTHOPHOTO 0 -72.0 42.0 -71.0 42.0 -71.0 43.0 -72.0 43.0 foo.ter
+
+Covers the entire +42-072.dsf tile with an ortho called "foo.ter", such 
+that the top of the photo is north and right side is east, and there is 
+no "water" behind it.
+
+GEOTIFF <wet> <filename>
+
+This imports a single .tif image - its location in the file is placed based on
+the coordinates inside the .tif file.  A .ter of the same name is created
+(if it doesn't exist) for your convenience.
+
+Warning: PhotoShop and some other programs will remove the location 
+inforamtion from TIF files when it saves them.  Make sure to specify a TIF
+image that has not had its coordinates stripped!
+
+GeoTIFF files used for orthophotos do not have to be geographically projected
+or cropped to the tile.  Generally the image data in a GeoTiff used for an
+orthophoto should be "pixel is area", not "pixel is point".
+
+QMID <wet> <qmid id>
+
+Note: this command is intended for MSFS scenery developers who already have
+orthophotos cut into QMID tiles.
+
+Given a QMID (quad-mesh identifier), this command places an orthophoto whose
+.ter file is <qmid>.ter at the location specified by the qmid.  If  a .ter 
+file does not exist, a .ter file is created for your convenience.
+
+QMID_PATH <path>
+
+Normally MeshTool locates files via relative paths in its working directory.
+But in the case of QMIDs, the file name is the QMID ID.  This routine
+specifies a path to prepend to QMIDs to form file names.  All QMID statements
+following a QMID_PATH are affected.  The path should end in a trailing slash.
+This directory will be used to build .ter files and locate .dds files.
+
+GENERATE_DDS <n>
+
+Controls automatic DDS generation - n=1 means generate DDS, n=0 means do not.
+The default is to not generate DDS.
+
+-------------------------------------------------------------------------------
+ADVANCED COMMANDS
+-------------------------------------------------------------------------------
+
+MESH_SPECS <point count> <error>
+
+This command controls the density and quality of the mesh that is generated.
+MeshTool builds your mesh using the following steps:
+
+1. Points are added to form the basic mesh structure, match any adjacent
+already made meshes at the edges, and represent any polygonal features
+exactly.  This step can add as many vertices as is necessary to meet these
+goals.  A rough grid is placed in open water.
+
+2. Points are added in priority order from the DEM to reduce the vertical
+error between the partly built mesh and the original DEM.  The points are added
+on a worst-case-first basis...that is, the point that is most wrong in our
+mesh compared to our DEM is added first.
+
+This process repeats until one of two conditions takes place:
+
+- We have added <point count> new points or
+- The worst error between the DEM and our mesh is less than <error>
+
+3. Additional points are added to assure that no triangle is larger than 3.5
+km on a side.
+
+The MESH_SPECS command lets you tune your mesh by adjusting the "point budget"
+and error limit.  You can think of these two numbers as "stop" conditions:
+
+- <point count> guarantees that we won't just add points forever.  When terrain
+  is very complex, point count stops us from adding all 1.5 million+ DEM points
+  into the mesh and producing an unflyably slow mesh.
+
+- <error> stops us from adding points when we reach a point where adding new
+  points isn't doing us any good.  For example, if we set our error limit to
+  1 meter and our point count to a huge number (1 billion points, for example)
+  then MeshTool will keep adding points until the worst error in the entire mesh
+  (compared to the original DME) is only 1 meter.  
+  
+The error limit can be thought of as "diminishing returns".  If you have a huge
+point budget, but boring flat land, you don't want to have a very high density
+slow mesh.  The error limit says "enough is enough".
+
+The default settings are 78000 points and 6.5 meters error.
+
+BACKGROUND terrain
+
+The background command sets the entire DSF tile to a single terrain.  This can
+be used to "start" a DSF as all land or all water.
+
+The advantage of the background command is that it takes its coordinates from
+the passed in DEM; by using the background command and a single shapefile
+(containing water for many tiles), you can use a single script to build 
+multiple DSF tiles.
+
+BEGIN_LAYER
+END_LAYER
+
+The begin/end layer properties start a group of polygons.  Inside the layer,
+only the polygon commands may be used (not shapefiles or orthophotos).  Every
+polygon inside the layer must be of the same terrain type.
+
+Unlike individual polygons, polygons inside the begin/end layer should
+not overlap in their interios (but can share edges).  If the polygons in a
+layer overlap, the resulting map may not come out the same as if the layer
+had no been used.
+
+The advantage of layers is processing speed.  If you are defining a large
+number of non-overlapping polygons of the same terrain type, using a layer
+might be significantly faster than not using one.  (A layer is no faster than
+using a single shapefile.)
+
+DEFINE_CUSTOM_TERRAIN wet name
+PROJECT_POINT lon lat s t
+
+These commands define a terrain type based on an orthophoto.  Unlike the
+orthophoto command, these commands define the terain type but don't use it;
+use POLYGON_BEGIN with the terrain name to then make several polygons that
+use the terrain type.
+
+After DEFINE_CUSTOM_TERRAIN you will need to specify four PROJECT_POINT
+lines that define the corners of th bitmap as "ST" (texture) coordinates
+and lat-lon.  The S coordinate is the horizontal position of the texture (0 is
+the left side, 1 is the right), and T is the vertical position of the
+texture (0 is the bottom, 1 is the top).
+
+Important: make sure that no polygon coordinates for the custom terrain are
+outside the bounds of the PROJECT_POINT quadrangle.
+
+SHAPPEFILE_MASK <file>
+CLEAR_MASK
+
+These commands establish (or remove) an area mask.  When a mask is in effect,
+all commands act _only_ inside the mask.  For example, a QMID or GeoTIFF square
+orthophoto can be 'clipped' to an arbitrary polygonal shape by first setting
+a mask.
+
+One thing you can do with masks is handle water differently in different parts
+of a single orthophoto.  First, include the orthophotos, with the water flag
+set to '1' (solid).  Then set a mask for the wet areas and issue the areas
+again with the water flag set to '2' (wet).  The wet areas will have their
+orthophoto replaced.  (The user will not _see_ any difference since the 
+orthophoto has not changed, but the physics will be different in the two areas.)
+
+Example:
+
+QMID 1 0103333010221
+SHAPEFILE_MASK wet_areas.shp
+QMID 2 0103333010221
+
+In this case, most of 0103333010221 is solid, but the interior of 0103333010221
+that is inside the wet_areas shape file will act wet.
+
+WARNING: masks induce vertices in your mesh, so when using a mask to make wet
+and dry areas, reduce th resolution of your mesh.  Users probably won't notice
+the lack of detail in the physics mesh, but it will save triangles.
+
+-------------------------------------------------------------------------------
+LEGACY COMMANDS
+-------------------------------------------------------------------------------
+
+LAND_POLY
+WATER_POLY
+APT_POLY
+CUSTOM_POLY terrain
+
+These commands act the same as POLYGON_BEGIN - with land/water/apt_poly, you
+don't need to specify the terrain type.
+
+-------------------------------------------------------------------------------
+EXAMPLE:
+-------------------------------------------------------------------------------
+
+BACKGROUND terrain_Natural
+
+GEOTIFF 0 my_ortho.tiff
+QMID 1 210332123
+SHAPEFILE_TERRAIN terrain_Water my_water.shp
+
+-------------------------------------------------------------------------------
+CLIMATE FILES
+-------------------------------------------------------------------------------
+
+MeshTool requires a climate/landuse digest in .xes format.  .xes is a GIS 
+container format used by Laminar Research for imported data.  You must download
+a .xes file for your DSF tile from Laminar Research and pass it as input to
+MeshTool.  
+
+Climate/landuse digest files can be fetched here:
+
+http://update.x-plane.com/MeshTool/
+
+They are stored in groups of up to 100 files, numbered by the latitude and
+longitude of the southwest corner of the 10x10 square.
+
+-------------------------------------------------------------------------------
+DUMP DIRECTORY
+-------------------------------------------------------------------------------
+
+MeshTool requires a directory that contains sub-folders (e.g. +30-120) for any
+DSF tile you generate.  MeshTool places .txt files that describe the borders
+of the DSF tile into these sub-directories.  If you don't have a dump directory
+with sub-folders, MeshTool will create one for you.
+
+MeshTool also reads the borders, so if you render two adjacent tiles, the 
+borders will be coordinated.  It does not matter what order you render your
+tiles in, as long as they are rendered one at a time.
+
+WARNING: if you make two adjacent tiles and the polygon definitions at the 
+border do not match up (e.g. the border has water on one side and land on the
+other) the results may be unpredictable.
+
+
+-------------------------------------------------------------------------------
+VERSION HISTORY
+-------------------------------------------------------------------------------
+
+BETA 2
+- Fixed: clamping of ST coordinates (caused "could not sink vertex".)
+- Fixed: multiple custom terrain types export correctly.

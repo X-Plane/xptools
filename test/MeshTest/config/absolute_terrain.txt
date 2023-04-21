@@ -1,0 +1,599 @@
+# ABSOLUTE TERRAIN RULES, these are the rules that will be positioned at the bottom of landuse rules, like town, crop-town, crop, swamp, etc etc and the high priority rules like cliff_terrain.
+# 10 oct 2005
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# ROCK-ICE/ROCK (ABSOLUTE PER TEMPERATURE)
+#
+# ROCK-ICE/ROCK are just the closest environment to glacier but warmer temp, they are mainly rocks with few ""snow tongues"".
+# ROCK-ICE/ROCK will cover any cold terrain with any slope before cliff, BUT  if the temp range is higher than 35 deg then polar desert will be replaced by tundra-grass and snow appears only if temperature is colder than -16 deg
+#
+# ROCK-ICE/ROCK have different rules for slope heading vs temperature, so that southern slope will have snow tongues with colder temperatures (less snow) and northern slopes will have snow tongues with warmer temperature (more snow)
+#
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#STERRAIN	TERRAIN		LAND USE	 ELEVATION	  SLOPE		   TEMP		  RAINFALL	WATER	SLOPE HDG	REL ELEV	ELEV RANGE	TEMP RANGE	LATITUDE	VARIANT	NAME				LAYER	TRNS	TEXTURE						RES	PROJ	BORDER TEX	   		  3D	    	    COLOR MAP
+#						MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX																	 			FOREST		R	G	B
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# polar desert become upland tundra and tundra and grassland if temp range is above 35 deg
+STERRAIN	NO_VALUE	NO_VALUE	0	0	44	90	-16	-2.5	0	0	0	0	0	0	0	0	0	35	999	0	0	0	terrain/polar_tundra_rock	3	1	../textures/soil/rock_dark_tan_dry.png		1000	HDG	../textures/border/rock-ice.png	NO_VALUE	99	103	72		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	30	90	-16	-2.5	0	0	0	0	0	0	0	0	0	35	999	0	0	0	terrain/polar_tundra_steep	72	10	../textures/loveg/upland_tundra_steep.png	4000	DOWN	../textures/border/rock-ice.png	NO_VALUE	99	103	72		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	15	90	-16	-6	0	0	0	0	0	0	0	0	0	35	999	0	0	0	terrain/polar_tundra_hill	72	50	../textures/loveg/upland_tundra_hill.png	3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	99	103	72		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	15	90	-16	-2.5	0	0	0	0	0	0	0	0	0	35	999	0	0	0	terrain/polar_tundra_lo_hill	72	50	../textures/loveg/sdesert_cold_hill.png		3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	99	103	72		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	8	90	-16	-2.5	0	0	0	0	0	0	0	0	0	35	999	0	0	0	terrain/polar_tundra_sflat	72	100	../textures/loveg/grass_cold.png		3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	99	103	72		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-16	-2.5	0	0	0	0	0	0.0	0.2	0	200	35	999	0	0	0	terrain/polar_tundra_flat_low	72	100	../textures/loveg/sdesert_cold_sflat.png	3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	99	103	72		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-16	-2.5	0	0	0	0	0	0.2	0.7	0	200	35	999	0	0	0	terrain/polar_tundra_flat_mid	72	100	../textures/loveg/upland_tundra_flat.png	3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	99	103	72		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-16	-2.5	0	0	0	0	0	0.7	1.0	0	200	35	999	0	0	0	terrain/polar_tundra_flat_top	72	100	../textures/loveg/grassland_cold_sdry.png	3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	99	103	72		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-16	-2.5	0	0	0	0	0	0	0	0	0	35	999	0	0	0	terrain/polar_tundra_flat	72	100	../textures/loveg/upland_tundra_flat.png	3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	99	103	72		
+
+# polar desert for northern environment above 55 deg of Latitude
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	-999	-6	0	0	0	0	45	0	0	0	0	0	0	55	90	0	terrain/polar_rock_ice_hill_N	73	20	../textures/soil/rock_ice_hill.png		3000	HDG	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	-999	-7.5	0	0	0	135	180	0	0	0	0	0	0	55	90	0	terrain/polar_rock_ice_hill_S	73	20	../textures/soil/rock_ice_hill.png		3000	HDG	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	-999	-7	0	0	0	45	135	0	0	0	0	0	0	55	90	0	terrain/polar_rock_ice_hill_EW	73	20	../textures/soil/rock_ice_hill.png		3000	HDG	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	-6	0	0	0	0	45	0	0	0	0	0	0	55	90	0	terrain/polar_rock_ice_flat_N	72	100	../textures/soil/rock_ice_flat.png		3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	-7.5	0	0	0	135	180	0	0	0	0	0	0	55	90	0	terrain/polar_rock_ice_flat_S	72	100	../textures/soil/rock_ice_flat.png		3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	-7	0	0	0	45	135	0	0	0	0	0	0	55	90	0	terrain/polar_rock_ice_flat_EW  72	100	../textures/soil/rock_ice_flat.png		3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	-6	-4	0	0	0	0	0	0	0	0	0	0	0	55	90	0	terrain/polar_utundra_hill	62	100	../textures/loveg/upland_tundra_hill.png	4000	HDG	../textures/border/rock-ice.png	NO_VALUE	176	176	176
+STERRAIN	NO_VALUE	NO_VALUE	0	0	8	90	-6	-4	0	0	0	0	0	0	0	0	0	0	0	55	90	0	terrain/polar_utundra_sflat	63	100	../textures/loveg/upland_tundra_flat.png	3000	HDG	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-6	-4	0	0	0	0	0	0	0	0	0	0	0	55	90	0	terrain/polar_utundra_flat	63	200	../textures/loveg/grass_cold.png		3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+
+# polar desert for dry environment  (0-325 mm rainfall)
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	-9	-8	0	325	0	0	45	0	0	0	0	0	0	0	0	0	terrain/rock_ice_hill_dry_N	73	20	../textures/soil/rock_ice_hill_dry.png		3000	HDG	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	-11	-9	0	325	0	135	180	0	0	0	0	0	0	0	0	0	terrain/rock_ice_hill_dry_S	73	20	../textures/soil/rock_ice_hill_dry.png		3000	HDG	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	-10	-8.5	0	325	0	45	135	0	0	0	0	0	0	0	0	0	terrain/rock_ice_hill_dry_EW	73	20	../textures/soil/rock_ice_hill_dry.png		3000	HDG	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	-9	-5	0	325	0	0	0	0	0	0	0	0	0	0	0	0	terrain/rock_hill_dry		62	100	../textures/soil/rock_hill_dry.png		2000	HDG	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-9	-8	0	325	0	0	45	0	0	0	0	0	0	0	0	0	terrain/rock_ice_flat_dry_N	72	100	../textures/soil/rock_ice_flat_dry.png		3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-11	-9	0	325	0	135	180	0	0	0	0	0	0	0	0	0	terrain/rock_ice_flat_dry_S	72	100	../textures/soil/rock_ice_flat_dry.png		3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-10	-8.5	0	325	0	45	135	0	0	0	0	0	0	0	0	0	terrain/rock_ice_flat_dry_EW	72	100	../textures/soil/rock_ice_flat_dry.png		3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-9	-5	0	325	0	0	0	0.0	0.3	0	400	0	0	0	0	0	terrain/rock_flat_dry_low	63	100	../textures/soil/desert_cold_flat.png		4000	HDG	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-9	-5	0	325	0	0	0	0.3	0.6	0	400	0	0	0	0	0	terrain/rock_flat_dry_mid	63	100	../textures/soil/desert_cold_sflat.png		4000	HDG	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-9	-5	0	325	0	0	0	0.6	1.0	0	400	0	0	0	0	0	terrain/rock_flat_dry_top	63	100	../textures/soil/desert_cold_hill.png		4000	HDG	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-9	-5	0	325	0	0	0	0	0	0	0	0	0	0	0	0	terrain/rock_flat_dry		63	200	../textures/soil/rock_flat_dry.png		2000	HDG	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+
+# polar desert for semi-dry environment (325-655 mm rainfall)
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	-8	-6.5	325	655	0	0	45	0	0	0	0	0	0	0	0	0	terrain/rock_ice_hill_sdry_N	73	20	../textures/soil/rock_ice_hill_sdry.png		3000	HDG	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	-9.2	-7.5	325	655	0	135	180	0	0	0	0	0	0	0	0	0	terrain/rock_ice_hill_sdry_S	73	20	../textures/soil/rock_ice_hill_sdry.png		3000	HDG	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	-8.5	-7	325	655	0	45	135	0	0	0	0	0	0	0	0	0	terrain/rock_ice_hill_sdry_EW	73	20	../textures/soil/rock_ice_hill_sdry.png		3000	HDG	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	-6.5	-5.2	325	655	0	0	45	0	0	0	0	0	0	0	0	0	terrain/rock_hill_sdry_N	62	1	../textures/soil/rock_hill_sdry.png		1500	HDG	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	-7.5	-5.8	325	655	0	135	180	0	0	0	0	0	0	0	0	0	terrain/rock_hill_sdry_S	62	1	../textures/soil/rock_hill_sdry.png		1500	HDG	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	-7	-5.5	325	655	0	45	135	0	0	0	0	0	0	0	0	0	terrain/rock_hill_sdry_EW	62	1	../textures/soil/rock_hill_sdry.png		1500	HDG	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-8	-6.5	325	655	0	0	45	0	0	0	0	0	0	0	0	1	terrain/rock_ice_flat_sdry_N	72	20	../textures/soil/rock_ice_flat_sdry.png		3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-9.2	-7.5	325	655	0	135	180	0	0	0	0	0	0	0	0	1	terrain/rock_ice_flat_sdry_S	72	20	../textures/soil/rock_ice_flat_sdry.png		3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-8.5	-7	325	655	0	45	135	0	0	0	0	0	0	0	0	1	terrain/rock_ice_flat_sdry_EW	72	20	../textures/soil/rock_ice_flat_sdry.png		3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-6.5	-5.2	325	655	0	0	45	0	0	0	0	0	0	0	0	1	terrain/rock_flat_sdry_N	63	1	../textures/soil/rock_flat_sdry.png		1500	DOWN	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-7.5	-5.8	325	655	0	135	180	0	0	0	0	0	0	0	0	1	terrain/rock_flat_sdry_S	63	1	../textures/soil/rock_flat_sdry.png		1500	DOWN	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-7	-5.5	325	655	0	45	135	0	0	0	0	0	0	0	0	1	terrain/rock_flat_sdry_EW	63	1	../textures/soil/rock_flat_sdry.png		1500	DOWN	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+
+# polar desert for semi-wet environments (655 1500 mm rainfall)
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	-7.0	-6.5	655	1500	0	0	60	0	0	0	0	0	0	0	0	0	terrain/rock_ice_hill_N		73	20	../textures/soil/rock_ice_hill.png		3000	HDG	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	-8.2	-7.5	655	1500	0	120	180	0	0	0	0	0	0	0	0	0	terrain/rock_ice_hill_S		73	20	../textures/soil/rock_ice_hill.png		3000	HDG	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	-7.6	-7.0	655	1500	0	60	120	0	0	0	0	0	0	0	0	0	terrain/rock_ice_hill_EW	73	20	../textures/soil/rock_ice_hill.png		3000	HDG	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	-6.5	-5.2	655	1500	0	0	60	0	0	0	0	0	0	0	0	0	terrain/rock_hill_N		62	1	../textures/soil/rock.png			1500	HDG	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	-7.5	-5.8	655	1500	0	120	180	0	0	0	0	0	0	0	0	0	terrain/rock_hill_S		62	1	../textures/soil/rock.png			1500	HDG	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	-7.0	-5.5	655	1500	0	60	120	0	0	0	0	0	0	0	0	0	terrain/rock_hill_EW		62	1	../textures/soil/rock.png			1500	HDG	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-7.0	-6.5	655	1500	0	0	60	0	0	0	0	0	0	0	0	1	terrain/rock_ice_flat_N		72	20	../textures/soil/rock_ice_flat.png		3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-8.2	-7.5	655	1500	0	120	180	0	0	0	0	0	0	0	0	1	terrain/rock_ice_flat_S		72	20	../textures/soil/rock_ice_flat.png		3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-7.6	-7.0	655	1500	0	60	120	0	0	0	0	0	0	0	0	1	terrain/rock_ice_flat_EW	72	20	../textures/soil/rock_ice_flat.png		3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-6.5	-5.2	655	1500	0	0	60	0	0	0	0	0	0	0	0	1	terrain/rock_flat_N		63	1	../textures/soil/rock_flat.png			1500	DOWN	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-7.5	-5.8	655	1500	0	120	180	0	0	0	0	0	0	0	0	1	terrain/rock_flat_S		63	1	../textures/soil/rock_flat.png			1500	DOWN	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-7.0	-5.5	655	1500	0	60	120	0	0	0	0	0	0	0	0	1	terrain/rock_flat_EW		63	1	../textures/soil/rock_flat.png			1500	DOWN	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+
+# polar desert for wet environment (1500 99999 mm rainfall)
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	-6.6	-6	1500	99999	0	0	60	0	0	0	0	0	0	0	0	0	terrain/rock_ice_hill_wet_N	73	20	../textures/soil/rock_ice_hill.png		3000	HDG	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	-7.8	-7	1500	99999	0	120	180	0	0	0	0	0	0	0	0	0	terrain/rock_ice_hill_wet_S	73	20	../textures/soil/rock_ice_hill.png		3000	HDG	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	-7.2	-6.5	1500	99999	0	60	120	0	0	0	0	0	0	0	0	0	terrain/rock_ice_hill_wet_EW	73	20	../textures/soil/rock_ice_hill.png		3000	HDG	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	-6	-5.2	1500	99999	0	0	60	0	0	0	0	0	0	0	0	0	terrain/rock_hill_wet_N		62	1	../textures/soil/rock_hill.png			1500	HDG	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	-7	-5.8	1500	99999	0	120	180	0	0	0	0	0	0	0	0	0	terrain/rock_hill_wet_S		62	1	../textures/soil/rock_hill.png			1500	HDG	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	-6.5	-5.5	1500	99999	0	60	120	0	0	0	0	0	0	0	0	0	terrain/rock_hill_wet_EW	62	1	../textures/soil/rock_hill.png			1500	HDG	../textures/border/rock-ice.png	NO_VALUE	176	176	176
+
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-6.6	-6	1500	99999	0	0	60	0	0	0	0	0	0	0	0	1	terrain/rock_ice_flat_wet_N	72	20	../textures/soil/rock_ice_flat.png		3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-7.8	-7	1500	99999	0	120	180	0	0	0	0	0	0	0	0	1	terrain/rock_ice_flat_wet_S	72	20	../textures/soil/rock_ice_flat.png		3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-7.2	-6.5	1500	99999	0	60	120	0	0	0	0	0	0	0	0	1	terrain/rock_ice_flat_wet_EW	72	20	../textures/soil/rock_ice_flat.png		3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-6	-5.2	1500	99999	0	0	60	0	0	0	0	0	0	0	0	1	terrain/rock_flat_wet_N		63	1	../textures/soil/rock_flat.png			1500	DOWN	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-7	-5.8	1500	99999	0	120	180	0	0	0	0	0	0	0	0	1	terrain/rock_flat_wet_S		63	1	../textures/soil/rock_flat.png			1500	DOWN	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-6.5	-5.5	1500	99999	0	60	120	0	0	0	0	0	0	0	0	1	terrain/rock_flat_wet_EW	63	1	../textures/soil/rock_flat.png			1500	DOWN	../textures/border/rock-ice.png	NO_VALUE	176	176	176		
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# HIGHLAND ROCK (ABSOLUTE PER TEMPERATURE)
+
+# highland is the closest environment with polar desert but with warmer temp, they are mainly rocks with low vegtation. Northern highland are just tundra, very-dry highland are just rocks with no veg, semi-dry and wet highland will have low veg
+
+# highland will cover any terrain with temp lower than -2,3 deg in any slopes up to 60 deg where start cliffs
+# highland have different rules for slope heading vs rainfall so that southern slope will look a bit drier, and northern slope will look a bit greener
+# highland steeper than 35/40/45 deg are rocks and screes.
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#STERRAIN	TERRAIN		LAND USE	 ELEVATION	  SLOPE		   TEMP		  RAINFALL	WATER	SLOPE HDG	REL ELEV	ELEV RANGE	TEMP RANGE	LATITUDE	VARIANT	NAME				LAYER	TRNS	TEXTURE						RES	PROJ	BORDER TEX	   		  3D	    	    COLOR MAP
+#						MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX																	 			FOREST		R	G	B
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# highland for polar latitudes AKA tundra
+STERRAIN	NO_VALUE	NO_VALUE	0	0	44	90	-999	-2.1	55	99999	0	0	0	0	0	0	0	0	0	55	90	0	terrain/hiland_polar_rock	3	1	../textures/soil/rock_dark_tan_dry.png		1500	HDG	../textures/border/hiland.png	NO_VALUE	99	103	72		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	30	90	-999	-2.1	55	99999	0	0	0	0	0	0	0	0	0	55	90	0	terrain/hiland_polar_steep	77	50	../textures/loveg/upland_tundra_steep.png	4000	DOWN	../textures/border/hiland.png	NO_VALUE	99	103	72		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	15	90	-999	-2.1	55	99999	0	0	0	0	0	0	0	0	0	55	90	0	terrain/hiland_polar_hill	76	50	../textures/loveg/tundra_hill.png		4000	DOWN	../textures/border/hiland.png	tundra		99	103	72	
+STERRAIN	NO_VALUE	NO_VALUE	0	0	8	90	-999	-2.1	55	99999	0	0	0	0	0	0	0	0	0	55	90	1	terrain/hiland_polar_shill	75	100	../textures/loveg/tundra_sflat.png		4000	DOWN	../textures/border/hiland.png	tundra		99	103	72
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	-2.1	55	99999	0	0	0	0.0	0.3	0	200	0	0	55	90	0	terrain/hiland_polar_flat_low	75	100	../textures/hiveg/conifer_hill_sdry.png		4000	DOWN	../textures/border/hiland.png	tundra		99	103	72
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	-2.1	55	99999	0	0	0	0.3	0.7	0	200	0	0	55	90	0	terrain/hiland_polar_flat_mid	75	100	../textures/loveg/tundra_sflat.png		4000	DOWN	../textures/border/hiland.png	tundra		99	103	72
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	-2.1	55	99999	0	0	0	0.7	1.0	0	200	0	0	55	90	0	terrain/hiland_polar_flat_top	75	100	../textures/loveg/swamp_cold_woody.png		4000	DOWN	../textures/border/hiland.png	taiga		99	103	72
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	-2.1	55	99999	0	0	0	0	0	0	0	0	0	55	90	1	terrain/hiland_polar_flat	75	100	../textures/loveg/tundra_flat.png		4000	DOWN	../textures/border/hiland.png	tundra		99	103	72
+
+# highland for dry environment (just rock)
+STERRAIN	NO_VALUE	NO_VALUE	0	0	35	90	-999	-2.1	0	155	0	0	0	0	0	0	0	0	0	0	0	0	terrain/scree_hiland_dry	4	1	../textures/soil/scree_dry.png			800	HDG	../textures/border/hiland.png	NO_VALUE	161	177	99		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	15	90	-999	-2.1	0	155	0	0	0	0	0	0	0	0	0	0	0	0	terrain/hiland_steep_dry	76	50	../textures/soil/desert_cold_steep.png		4000	HDG	../textures/border/hiland.png	NO_VALUE	161	177	99
+STERRAIN	NO_VALUE	NO_VALUE	0	0	8	90	-999	-2.1	0	155	0	0	0	0	0	0	0	0	0	0	0	0	terrain/hiland_hill_dry		76	50	../textures/soil/desert_cold_hill.png		4000	HDG	../textures/border/hiland.png	NO_VALUE	161	177	99
+
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	-2.1	0	155	0	0	0	0.0	0.3	0	200	0	0	0	0	1	terrain/hiland_flat_dry_low	76	50	../textures/soil/desert_cold_flat.png		4000	DOWN	../textures/border/hiland.png	NO_VALUE	161	177	99
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	-2.1	0	155	0	0	0	0.3	0.7	0	200	0	0	0	0	1	terrain/hiland_flat_dry_mid	76	50	../textures/soil/desert_cold_sflat.png		4000	DOWN	../textures/border/hiland.png	NO_VALUE	161	177	99
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	-2.1	0	155	0	0	0	0.7	1.0	0	200	0	0	0	0	1	terrain/hiland_flat_dry_top	76	50	../textures/soil/desert_cold_hill.png		4000	DOWN	../textures/border/hiland.png	NO_VALUE	161	177	99
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	-2.1	0	155	0	0	0	0	0	0	0	0	0	0	0	1	terrain/hiland_flat_dry		76	50	../textures/soil/desert_cold_flat.png		4000	DOWN	../textures/border/hiland.png	NO_VALUE	161	177	99
+
+# highland for semi-dry environment (mostly rock and pretty yellowish low veg)
+STERRAIN	NO_VALUE	NO_VALUE	0	0	36	90	-999	-2.1	155	545	0	0	0	0	0	0	0	0	0	0	0	0	terrain/scree_hiland_sdry	4	1	../textures/soil/scree_sdry.png			800	HDG	../textures/border/hiland.png	NO_VALUE	161	177	99
+STERRAIN	NO_VALUE	NO_VALUE	0	0	15	90	-999	-2.1	155	545	0	0	0	0	0	0	0	0	0	0	0	0	terrain/hiland_steep_sdry	76	50	../textures/loveg/hiland_hill_sdry.png		4000	DOWN	../textures/border/hiland.png	NO_VALUE	161	177	99
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	15	-999	-3.6	155	545	0	0	0	0	0	0	0	0	0	0	0	0	terrain/hiland_flat_sdry	77	50	../textures/loveg/hiland_flat_sdry.png		3000	DOWN	../textures/border/hiland.png	NO_VALUE	161	177	99
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	15	-3.6	-2.1	155	545	0	0	0	0	0	0	0	0	0	0	0	1	terrain/hiland_flat_lo_sdry	75	50	../textures/loveg/grassland_cold_sdry.png	3000	DOWN	../textures/border/hiland.png	NO_VALUE	161	177	99
+
+# highland for semi-wet and wet environments (grassland, rocks and screes, pino ugo and a few pines)
+STERRAIN	NO_VALUE	NO_VALUE	0	0	36	90	-999	-3.6	545	99999	0	0	0	0	0	0	0	0	0	0	0	0	terrain/scree_hiland		4	1	../textures/soil/scree.png			800	HDG	../textures/border/hiland.png	NO_VALUE	161	177	99
+STERRAIN	NO_VALUE	NO_VALUE	0	0	18	90	-999	-3.6	545	99999	0	0	0	0	0	0	0	0	0	0	0	0	terrain/hiland_hill		79	50	../textures/loveg/hiland_hill.png		3000	DOWN	../textures/border/hiland.png	NO_VALUE	161	177	99
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	-3.6	545	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/hiland_flat		78	50	../textures/loveg/hiland_flat.png		3000	DOWN	../textures/border/hiland.png	NO_VALUE	161	177	99
+
+STERRAIN	NO_VALUE	NO_VALUE	0	0	30	90	-3.6	-2.1	545	99999	0	0	0	0	0	0	0	0	0	0	0	0	terrain/hiland_steep_lo		75	50	../textures/loveg/grassland_cold_steep.png	3000	DOWN	../textures/border/hiland.png	tundra		161	177	99
+STERRAIN	NO_VALUE	NO_VALUE	0	0	18	90	-3.6	-2.1	545	99999	0	0	0	0	0	0	0	0	0	0	0	0	terrain/hiland_hill_lo		76	50	../textures/loveg/grassland_cold_hill.png	3000	DOWN	../textures/border/hiland.png	tundra		161	177	99
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-3.6	-2.1	545	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/hiland_flat_lo		77	50	../textures/loveg/grassland_cold_flat.png	3000	DOWN	../textures/border/hiland.png	NO_VALUE	161	177	99
+
+#=====================================================================================================================================================================================================================================================================================================================================================================================================
+#=====================================================================================================================================================================================================================================================================================================================================================================================================
+#  ************ ABSOLUTE RULES FOR RAINFALL BANDS **************
+#=====================================================================================================================================================================================================================================================================================================================================================================================================
+#=====================================================================================================================================================================================================================================================================================================================================================================================================
+# DESERT
+
+# desert is the driest environmet (mostrly rocks, screes, sand or stones) it occurs when the rainfall is very low BUT it depends even by temperature, with incresing of temperature the evaoration is stronger so we have desert in hot climates with higher rainlfall than colder climates.
+# On steeper slopes we have rocks only without stones or sand. On less steeped slopes there are screes due to the erosion of the rocks.
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#STERRAIN	TERRAIN		LAND USE	 ELEVATION	  SLOPE		   TEMP		  RAINFALL	WATER	SLOPE HDG	REL ELEV	ELEV RANGE	TEMP RANGE	LATITUDE	VARIANT	NAME				LAYER	TRNS	TEXTURE						RES	PROJ	BORDER TEX	   		  3D	    	    COLOR MAP
+#						MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX																	 			FOREST		R	G	B
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# cold desert, present in the continental areas of Asia, like Siberia, Tibet, Mongolia
+STERRAIN	NO_VALUE	NO_VALUE	0	0	40	90	-999	7.5	0	55	0	0	0	0	0	0	0	0	0	0	0	0	terrain/desert_cold_rock	17	1	../textures/soil/rock_sdry.png			1000	HDG	../textures/border/desert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	35	90	-999	7.5	0	55	0	0	0	0	0	0	0	0	0	0	0	0	terrain/desert_cold_scree	16	1	../textures/soil/scree_sdry.png			800	HDG	../textures/border/desert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	-999	7.5	0	55	0	0	0	0	0	0	0	0	0	0	0	0	terrain/desert_cold_steep	15	20	../textures/soil/desert_cold_steep.png		3000	HDG	../textures/border/desert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	12	90	-999	7.5	0	55	0	0	0	0	0	0	0	0	0	0	0	0	terrain/desert_cold_hill	14	100	../textures/soil/desert_cold_hill.png		3000	DOWN	../textures/border/desert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	8	90	-999	7.5	0	55	0	0	0	0	0	0	0	0	0	0	0	1	terrain/desert_cold_sflat	13	100	../textures/soil/desert_cold_sflat.png		3000	DOWN	../textures/border/desert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	7.5	0	55	0	0	0	0.0	0.3	0	200	0	0	0	0	0	terrain/desert_cold_flat_low	11	200	../textures/soil/desert_cold_sflat.png		3000	DOWN	../textures/border/desert.png	NO_VALUE
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	7.5	0	55	0	0	0	0.3	0.7	0	200	0	0	0	0	0	terrain/desert_cold_flat_mid	11	200	../textures/soil/rock_flat_dry.png		1500	DOWN	../textures/border/desert.png	NO_VALUE
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	7.5	0	55	0	0	0	0.7	1.0	0	200	0	0	0	0	0	terrain/desert_cold_flat_top	12	200	../textures/soil/desert_cold_flat.png		3000	DOWN	../textures/border/desert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	7.5	0	55	0	0	0	0	0	0	0	0	0	0	0	1	terrain/desert_cold_flat	10	200	../textures/soil/desert_cold_flat.png		3000	DOWN	../textures/border/desert.png	NO_VALUE			
+
+# temperate desert like the those on Northern China
+STERRAIN	NO_VALUE	NO_VALUE	0	0	40	90	7.5	15.5	0	95	0	0	0	0	0	0	0	0	0	0	0	0	terrain/desert_temp_rock	17	1	../textures/soil/rock_dry.png			1000	HDG	../textures/border/desert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	35	90	7.5	15.5	0	95	0	0	0	0	0	0	0	0	0	0	0	0	terrain/desert_temp_scree	16	1	../textures/soil/scree_dry.png			800	HDG	../textures/border/desert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	7.5	15.5	0	95	0	0	0	0	0	0	0	0	0	0	0	0	terrain/desert_temp_steep	15	20	../textures/soil/desert_temp_steep.png		3000	HDG	../textures/border/desert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	12	90	7.5	15.5	0	95	0	0	0	0	0	0	0	0	0	0	0	0	terrain/desert_temp_hill	14	100	../textures/soil/desert_temp_hill.png		3000	DOWN	../textures/border/desert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	8	90	7.5	15.5	0	95	0	0	0	0	0	0	0	0	0	0	0	1	terrain/desert_temp_sflat	13	100	../textures/soil/desert_temp_sflat.png		4000	DOWN	../textures/border/desert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	7.5	15.5	0	95	0	0	0	0.0	0.3	0	100	0	0	0	0	0	terrain/desert_temp_flat_low	11	200	../textures/soil/desert_temp_sflat.png		4000	DOWN	../textures/border/desert.png	NO_VALUE
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	7.5	15.5	0	95	0	0	0	0.3	0.7	0	100	0	0	0	0	0	terrain/desert_temp_flat_mid	11	200	../textures/soil/desert_temp_sflat.png		4000	DOWN	../textures/border/desert.png	NO_VALUE
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	7.5	15.5	0	95	0	0	0	0.7	1.0	0	100	0	0	0	0	0	terrain/desert_temp_flat_top	12	200	../textures/soil/desert_temp_hill.png		4000	DOWN	../textures/border/desert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	7.5	15.5	0	95	0	0	0	0	0	0	0	0	0	0	0	1	terrain/desert_temp_flat	10	200	../textures/soil/desert_temp_flat.png		4000	DOWN	../textures/border/desert.png	NO_VALUE			
+			
+# warm desert, like the one of the death valley
+STERRAIN	NO_VALUE	NO_VALUE	0	0	40	90	15.5	19.5	0	125	0	0	0	0	0	0	0	0	0	0	0	0	terrain/desert_warm_rock	17	1	../textures/soil/rock_dry.png			1000	HDG	../textures/border/desert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	35	90	15.5	19.5	0	125	0	0	0	0	0	0	0	0	0	0	0	0	terrain/desert_warm_scree	16	1	../textures/soil/scree_dry.png			800	HDG	../textures/border/desert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	15.5	19.5	0	125	0	0	0	0	0	0	0	0	0	0	0	0	terrain/desert_warm_steep	15	20	../textures/soil/desert_warm_steep.png		3000	HDG	../textures/border/desert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	12	90	15.5	19.5	0	125	0	0	0	0	0	0	0	0	0	0	0	0	terrain/desert_warm_hill	14	100	../textures/soil/desert_warm_hill.png		3000	DOWN	../textures/border/desert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	8	90	15.5	19.5	0	125	0	0	0	0	0	0	0	0	0	0	0	1	terrain/desert_warm_sflat	13	100	../textures/soil/desert_warm_sflat.png		4000	DOWN	../textures/border/desert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	15.5	19.5	0	125	0	0	0	0.0	0.3	0	100	0	0	0	0	0	terrain/desert_warm_flat_low	11	200	../textures/soil/desert_warm_sflat.png		4000	DOWN	../textures/border/desert.png	NO_VALUE
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	15.5	19.5	0	125	0	0	0	0.3	0.7	0	100	0	0	0	0	0	terrain/desert_warm_flat_mid	11	200	../textures/soil/desert_hot_sflat.png		4000	DOWN	../textures/border/desert.png	NO_VALUE
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	15.5	19.5	0	125	0	0	0	0.7	1.0	0	100	0	0	0	0	0	terrain/desert_warm_flat_top	12	200	../textures/soil/desert_warm_flat.png		4000	DOWN	../textures/border/desert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	15.5	19.5	0	125	0	0	0	0	0	0	0	0	0	0	0	1	terrain/desert_warm_flat	10	200	../textures/soil/desert_warm_flat.png		4000	DOWN	../textures/border/desert.png	NO_VALUE						
+
+# Hot desert, all the border of sahara, northern Australia, Egypt, Lybia, Pakistan
+STERRAIN	NO_VALUE	NO_VALUE	0	0	40	90	19.5	23.5	0	165	0	0	0	0	0	0	0	0	0	0	0	0	terrain/desert_hot_rock		17	1	../textures/soil/rock_dry.png			1000	HDG	../textures/border/desert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	35	90	19.5	23.5	0	165	0	0	0	0	0	0	0	0	0	0	0	0	terrain/desert_hot_scree	16	1	../textures/soil/scree_dry.png			800	HDG	../textures/border/desert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	19.5	23.5	0	165	0	0	0	0	0	0	0	0	0	0	0	0	terrain/desert_hot_steep	15	20	../textures/soil/desert_hot_steep.png		2000	HDG	../textures/border/desert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	12	90	19.5	23.5	0	165	0	0	0	0	0	0	0	0	0	0	0	0	terrain/desert_hot_hill		14	100	../textures/soil/desert_hot_hill.png		3000	DOWN	../textures/border/desert.png	NO_VALUE
+STERRAIN	NO_VALUE	NO_VALUE	0	0	8	90	19.5	23.5	0	165	0	0	0	0	0	0	0	0	0	0	0	1	terrain/desert_hot_sflat	13	100	../textures/soil/desert_hot_sflat.png		4000	DOWN	../textures/border/desert.png	NO_VALUE
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	19.5	23.5	0	165	0	0	0	0.0	0.3	0	100	0	0	0	0	0	terrain/desert_hot_flat_low	11	200	../textures/soil/desert_hot_sflat.png		4000	DOWN	../textures/border/desert.png	NO_VALUE
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	19.5	23.5	0	165	0	0	0	0.3	0.7	0	100	0	0	0	0	0	terrain/desert_hot_flat_mid	11	200	../textures/soil/desert_warm_sflat.png		4000	DOWN	../textures/border/desert.png	NO_VALUE
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	19.5	23.5	0	165	0	0	0	0.7	1.0	0	100	0	0	0	0	0	terrain/desert_hot_flat_top	12	200	../textures/soil/desert_hot_flat.png		4000	DOWN	../textures/border/desert.png	NO_VALUE
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	19.5	23.5	0	165	0	0	0	0	0	0	0	0	0	0	0	1	terrain/desert_hot_flat		10	200	../textures/soil/desert_hot_flat.png		4000	DOWN	../textures/border/desert.png	NO_VALUE			
+
+# Very Hot desert = Desert Absolute! Here we are in the middle of sahara and saudi Arabia
+STERRAIN	NO_VALUE	NO_VALUE	0	0	40	90	23.5	999	0	205	0	0	0	0	0	0	0	0	0	0	0	0	terrain/desert_vhot_rock	17	1	../textures/soil/rock_dry.png			1000	HDG	../textures/border/desert.png	NO_VALUE				
+STERRAIN	NO_VALUE	NO_VALUE	0	0	35	90	23.5	999	0	205	0	0	0	0	0	0	0	0	0	0	0	0	terrain/desert_vhot_scree	16	1	../textures/soil/scree_dry.png			800	HDG	../textures/border/desert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	23.5	999	0	205	0	0	0	0	0	0	0	0	0	0	0	0	terrain/desert_vhot_steep	15	20	../textures/soil/desert_vhot_steep.png		2000	HDG	../textures/border/desert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	12	90	23.5	999	0	205	0	0	0	0	0	0	0	0	0	0	0	0	terrain/desert_vhot_hill	14	100	../textures/soil/desert_vhot_hill.png		4000	DOWN	../textures/border/desert.png	NO_VALUE
+STERRAIN	NO_VALUE	NO_VALUE	0	0	8	90	23.5	27.5	0	205	0	0	0	0	0	0	0	0	0	0	0	1	terrain/desert_vhot_sflat	13	100	../textures/soil/desert_hot_sflat.png		4000	DOWN	../textures/border/desert.png	NO_VALUE
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	23.5	27.5	0	205	0	0	0	0.0	0.3	0	100	0	0	0	0	0	terrain/desert_vhot_flat_low	11	200	../textures/soil/desert_hot_sflat.png		4000	DOWN	../textures/border/desert.png	NO_VALUE
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	23.5	27.5	0	205	0	0	0	0.3	0.7	0	100	0	0	0	0	0	terrain/desert_vhot_flat_mid	11	200	../textures/soil/desert_warm_sflat.png		4000	DOWN	../textures/border/desert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	23.5	27.5	0	205	0	0	0	0.7	1.0	0	100	0	0	0	0	0	terrain/desert_vhot_flat_top	12	200	../textures/soil/desert_hot_flat.png		4000	DOWN	../textures/border/desert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	23.5	27.5	0	205	0	0	0	0	0	0	0	0	0	0	0	1	terrain/desert_vhot_flat	10	200	../textures/soil/desert_hot_flat.png		4000	DOWN	../textures/border/desert.png	NO_VALUE
+			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	8	90	27.5	999	0	205	0	0	0	0	0	0	0	0	0	0	0	1	terrain/desert_vvhot_sflat	13	100	../textures/soil/desert_sand_sflat.png		5000	DOWN	../textures/border/desert.png	NO_VALUE
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	27.5	999	0	205	0	0	0	0.0	0.25	0	100	0	0	0	0	0	terrain/desert_vvhot_flat_low	11	200	../textures/soil/desert_sand_sflat.png		5000	DOWN	../textures/border/desert.png	NO_VALUE
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	27.5	999	0	205	0	0	0	0.25	0.5	0	100	0	0	0	0	0	terrain/desert_vvhot_flat_mid	11	200	../textures/soil/desert_sand_flat.png		5000	DOWN	../textures/border/desert.png	NO_VALUE
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	27.5	999	0	205	0	0	0	0.5	0.75	0	100	0	0	0	0	0	terrain/desert_vvhot_flat_mid2	11	200	../textures/soil/desert_sand_sflat.png		5000	DOWN	../textures/border/desert.png	NO_VALUE
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	27.5	999	0	205	0	0	0	0.75	1.0	0	100	0	0	0	0	0	terrain/desert_vvhot_flat_top	12	200	../textures/soil/desert_sand_flat.png		5000	DOWN	../textures/border/desert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	27.5	999	0	205	0	0	0	0	0	0	0	0	0	0	0	1	terrain/desert_vvhot_flat	10	200	../textures/soil/desert_sand_flat.png		5000	DOWN	../textures/border/desert.png	NO_VALUE			
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# SEMI-DESERT
+
+# semi-desert is a very dry environmet but is has very few vegetation , like desert it occurs when the rainfall is pretty low BUT it depends even by temperature, with incresing of temperature the evaoration is stronger so we have semi-desert in hot climates with higher rainlfall than colder climates.
+# the semi-desert has different vegetation density on north slopes because less exposed to the sun, on northern slopes the evaporation is less stronger so that the terrain has somewhat more water to allow more vegetation growth
+# On steeper slopes we have rocks without vegetation because low rainfall and fast dreinage of the water. On less steeped slopes there are screes due to the erosion for the fast water dreinage of the rocks.
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#STERRAIN	TERRAIN		LAND USE	 ELEVATION	  SLOPE		   TEMP		  RAINFALL	WATER	SLOPE HDG	REL ELEV	ELEV RANGE	TEMP RANGE	LATITUDE	VARIANT	NAME				LAYER	TRNS	TEXTURE						RES	PROJ	BORDER TEX	   		  3D	    	    COLOR MAP
+#						MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX																	 			FOREST		R	G	B
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Cold semidesert, tipically this environment looks like Tibet or Mongolia
+STERRAIN	NO_VALUE	NO_VALUE	0	0	40	90	-999	4.2	55	175	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdesert_cold_rock	27	1	../textures/soil/rock_dry.png			1000	HDG	../textures/border/sdesert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	35	90	-999	4.2	55	175	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdesert_cold_scree	22	1	../textures/soil/scree_dry.png			800	HDG	../textures/border/sdesert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	-999	4.2	55	175	0	0	45	0	0	0	0	0	0	0	0	0	terrain/sdesert_cold_steep_N	25	50	../textures/loveg/shrub_cool_steep_dry.png	3000	DOWN	../textures/border/sdesert.png	taiga			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	-999	4.2	55	175	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdesert_cold_steep_EWS	24	50	../textures/loveg/sdesert_cold_steep.png	3000	DOWN	../textures/border/sdesert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	8	90	-999	4.2	55	175	0	0	45	0	0	0	0	0	0	0	0	0	terrain/sdesert_cold_hill_N	23	100	../textures/loveg/shrub_cool_hill_dry.png	4000	DOWN	../textures/border/sdesert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	8	90	-999	4.2	55	175	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdesert_cold_hill_EWS	22	100	../textures/loveg/sdesert_cold_hill.png		3000	DOWN	../textures/border/sdesert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	4	90	-999	4.2	55	175	0	0	0	0	0	0	0	0	0	0	0	1	terrain/sdesert_cold_sflat	21	200	../textures/loveg/sdesert_cold_sflat.png	3000	DOWN	../textures/border/sdesert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	4.2	55	175	0	0	0	0	0	0	0	0	0	0	0	1	terrain/sdesert_cold_flat	20	300	../textures/loveg/sdesert_cold_flat.png		4000	DOWN	../textures/border/sdesert.png	NO_VALUE			
+
+# Cold semidesert 2, tipically this environment looks like Grand Canyon and many high continental platform
+STERRAIN	NO_VALUE	NO_VALUE	0	0	40	90	-999	4.2	175	375	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdesert2_cold_rock	27	1	../textures/soil/rock_dry.png			1000	HDG	../textures/border/sdesert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	35	90	-999	4.2	175	375	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdesert2_cold_scree	22	1	../textures/soil/scree_dry.png			800	HDG	../textures/border/sdesert.png	NO_VALUE
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	-999	4.2	175	375	0	0	45	0	0	0	0	0	0	0	0	0	terrain/sdesert2_cold_steep_N	25	50	../textures/hiveg/conifer_steep_dry.png		3000	DOWN	../textures/border/sdesert.png	taiga			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	-999	4.2	175	375	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdesert2_cold_steep_EWS	24	50	../textures/loveg/shrub_cool_steep_dry.png	3000	DOWN	../textures/border/sdesert.png	tundra
+STERRAIN	NO_VALUE	NO_VALUE	0	0	8	90	-999	4.2	175	375	0	0	45	0	0	0	0	0	0	0	0	0	terrain/sdesert2_cold_hill_N	23	100	../textures/hiveg/conifer_hill_dry.png		4000	DOWN	../textures/border/sdesert.png	taiga		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	8	90	-999	4.2	175	375	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdesert2_cold_hill_EWS	22	100	../textures/loveg/shrub_cool_hill_dry.png	4000	DOWN	../textures/border/sdesert.png	tundra	
+STERRAIN	NO_VALUE	NO_VALUE	0	0	4	90	-999	4.2	175	375	0	0	0	0	0	0	0	0	0	0	0	1	terrain/sdesert2_cold_sflat	21	200	../textures/hiveg/conifer_sflat_dry.png		4000	DOWN	../textures/border/sdesert.png	taiga
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	4.2	175	375	0	0	0	0	0	0	0	0	0	0	0	1	terrain/sdesert2_cold_flat	20	300	../textures/loveg/shrub_cool_flat_dry.png	4000	DOWN	../textures/border/sdesert.png	NO_VALUE	
+
+# Cool semidesert, this environment is typical north west areas in USA like Nevada, Utah, Colorado
+STERRAIN	NO_VALUE	NO_VALUE	0	0	40	90	4.2	7.5	55	225	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdesert_cool_rock	27	1	../textures/soil/rock_red_dry.png		1000	HDG	../textures/border/sdesert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	35	90	4.2	7.5	55	225	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdesert_cool_scree	22	1	../textures/soil/scree_dry.png			800	HDG	../textures/border/sdesert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	4.2	7.5	55	225	0	0	45	0	0	0	0	0	0	0	0	0	terrain/sdesert_cool_steep_N	25	50	../textures/loveg/shrub_cool_steep_dry.png	3000	DOWN	../textures/border/sdesert.png	taiga	
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	4.2	7.5	55	225	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdesert_cool_steep_ESW	24	50	../textures/loveg/sdesert_cool_steep.png	4000	DOWN	../textures/border/sdesert.png	NO_VALUE
+STERRAIN	NO_VALUE	NO_VALUE	0	0	8	90	4.2	7.5	55	225	0	0	45	0	0	0	0	0	0	0	0	0	terrain/sdesert_cool_hill_N	23	100	../textures/loveg/shrub_cool_hill_dry.png	4000	DOWN	../textures/border/sdesert.png	taiga			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	8	90	4.2	7.5	55	225	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdesert_cool_hill_ESW	22	100	../textures/loveg/sdesert_cool_hill.png		4000	DOWN	../textures/border/sdesert.png	NO_VALUE
+STERRAIN	NO_VALUE	NO_VALUE	0	0	4	90	4.2	7.5	55	225	0	0	0	0	0	0	0	0	0	0	0	1	terrain/sdesert_cool_sflat	21	200	../textures/loveg/sdesert_cool_sflat.png	4000	DOWN	../textures/border/sdesert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	4.2	7.5	55	225	0	0	0	0	0	0	0	0	0	0	0	1	terrain/sdesert_cool_flat	20	300	../textures/loveg/sdesert_cool_flat.png		4000	DOWN	../textures/border/sdesert.png	NO_VALUE			
+
+# semi-temperate semidesert, this environment is typical of southwest in USA like southern areas in California, Nevada and Arizona
+STERRAIN	NO_VALUE	NO_VALUE	0	0	40	90	7.5	12	95	325	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdesert_rock		27	1	../textures/soil/rock_red_dry.png		1000	HDG	../textures/border/sdesert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	35	90	7.5	12	95	325	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdesert_scree		22	1	../textures/soil/scree_dry.png			800	HDG	../textures/border/sdesert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	7.5	12	95	325	0	0	45	0	0	0	0	0	0	0	0	0	terrain/sdesert_steep_N		25	50	../textures/loveg/shrub_hill_dry.png		4000	DOWN	../textures/border/sdesert.png	dry_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	7.5	12	95	325	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdesert_steep_ESW	24	50	../textures/loveg/sdesert_temp_steep.png	4000	DOWN	../textures/border/sdesert.png	sdesert_shrub	
+STERRAIN	NO_VALUE	NO_VALUE	0	0	10	90	7.5	12	95	325	0	0	45	0	0	0	0	0	0	0	0	0	terrain/sdesert_hill_N		23	100	../textures/loveg/shrub_sflat_dry.png		4000	DOWN	../textures/border/sdesert.png	dry_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	10	90	7.5	12	95	325	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdesert_hill_ESW	22	100	../textures/loveg/sdesert_temp_hill.png		4000	DOWN	../textures/border/sdesert.png	sdesert_shrub	
+STERRAIN	NO_VALUE	NO_VALUE	0	0	6	90	7.5	12	95	325	0	0	0	0	0	0	0	0	0	0	0	1	terrain/sdesert_sflat		21	200	../textures/loveg/sdesert_temp_sflat.png	4000	DOWN	../textures/border/sdesert.png	sdesert_shrub
+STERRAIN	NO_VALUE	NO_VALUE	0	0	3	90	7.5	12	95	325	0	0	0	0	0	0	0	0	0	0	0	1	terrain/sdesert_flat2		22	200	../textures/loveg/sdesert_temp_flat2.png	4000	DOWN	../textures/border/sdesert.png	sdesert_shrub
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	7.5	12	95	325	0	0	0	0	0	0	0	0	0	0	0	1	terrain/sdesert_flat		22	300	../textures/loveg/sdesert_temp_flat.png		2000	DOWN	../textures/border/sdesert.png	sdesert_shrub			
+
+# temperate semidesert, this environment is typical of southern California, Arizona, Mexico, South Africa, north Middle east, south-central Australia
+STERRAIN	NO_VALUE	NO_VALUE	0	0	40	90	12	15.5	95	375	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdesert_temp_rock	27	1	../textures/soil/rock_red_dry.png		1000	HDG	../textures/border/sdesert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	35	90	12	15.5	95	375	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdesert_temp_scree	22	1	../textures/soil/scree_dry.png			800	HDG	../textures/border/sdesert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	12	15.5	95	375	0	0	45	0	0	0	0	0	0	0	0	0	terrain/sdesert_temp_steep_N	25	50	../textures/loveg/sdesert_warm_steep.png	3000	DOWN	../textures/border/sdesert.png	dry_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	12	15.5	95	375	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdesert_temp_steep_ESW	24	50	../textures/loveg/sdesert_temp_steep.png	4000	DOWN	../textures/border/sdesert.png	sdesert_shrub	
+STERRAIN	NO_VALUE	NO_VALUE	0	0	10	90	12	15.5	95	375	0	0	45	0	0	0	0	0	0	0	0	0	terrain/sdesert_temp_hill_N	23	100	../textures/loveg/shrub_flat_dry.png		3000	DOWN	../textures/border/sdesert.png	dry_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	10	90	12	15.5	95	375	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdesert_temp_hill_ESW	22	100	../textures/loveg/sdesert_temp_hill.png		4000	DOWN	../textures/border/sdesert.png	sdesert_shrub	
+STERRAIN	NO_VALUE	NO_VALUE	0	0	4	90	12	15.5	95	375	0	0	0	0	0	0	0	0	0	0	0	1	terrain/sdesert_temp_sflat	21	200	../textures/loveg/sdesert_temp_sflat.png	4000	HDG	../textures/border/sdesert.png	sdesert_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	12	15.5	95	375	0	0	0	0	0	0	0	0	0	0	0	1	terrain/sdesert_temp_flat	20	300	../textures/loveg/sdesert_temp_flat.png		2000	DOWN	../textures/border/sdesert.png	sdesert_shrub			
+
+# warm semidesert, present in South west California, South Spain, Israel, South Turkey etc.
+STERRAIN	NO_VALUE	NO_VALUE	0	0	40	90	15.5	19.5	125	445	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdesert_warm_rock	27	1	../textures/soil/rock_red_dry.png		1000	HDG	../textures/border/sdesert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	35	90	15.5	19.5	125	445	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdesert_warm_scree	22	1	../textures/soil/scree_dry.png			800	HDG	../textures/border/sdesert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	15.5	19.5	125	445	0	0	45	0	0	0	0	0	0	0	0	0	terrain/sdesert_warm_steep_N	25	50	../textures/loveg/shrub_hill_dry.png		4000	DOWN	../textures/border/sdesert.png	dry_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	15.5	19.5	125	445	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdesert_warm_steep_ESW	24	50	../textures/loveg/sdesert_warm_steep.png	3000	DOWN	../textures/border/sdesert.png	sdesert_shrub
+STERRAIN	NO_VALUE	NO_VALUE	0	0	10	90	15.5	19.5	125	445	0	0	45	0	0	0	0	0	0	0	0	0	terrain/sdesert_warm_hill_N	23	100	../textures/loveg/shrub_warm_sflat_dry.png	3000	DOWN	../textures/border/sdesert.png	dry_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	10	90	15.5	19.5	125	445	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdesert_warm_hill_ESW	22	100	../textures/loveg/sdesert_warm_hill.png		3000	DOWN	../textures/border/sdesert.png	sdesert_shrub
+STERRAIN	NO_VALUE	NO_VALUE	0	0	4	90	15.5	19.5	125	445	0	0	0	0	0	0	0	0	0	0	0	1	terrain/sdesert_warm_sflat	21	200	../textures/loveg/sdesert_warm_sflat.png	4000	DOWN	../textures/border/sdesert.png	sdesert_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	15.5	19.5	125	445	0	0	0	0	0	0	0	0	0	0	0	1	terrain/sdesert_warm_flat	20	300	../textures/loveg/sdesert_warm_flat.png		4000	DOWN	../textures/border/sdesert.png	sdesert_shrub			
+
+# Hot semidesert, typical of sub-saharian areas, so it is mostly dry shrub and few savanna environment
+STERRAIN	NO_VALUE	NO_VALUE	0	0	40	90	19.5	23.5	165	625	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdesert_hot_rock	27	1	../textures/soil/rock_red_dry.png		1000	HDG	../textures/border/sdesert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	35	90	19.5	23.5	165	625	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdesert_hot_scree	22	1	../textures/soil/scree_dry.png			800	HDG	../textures/border/sdesert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	19.5	23.5	165	625	0	0	45	0	0	0	0	0	0	0	0	0	terrain/sdesert_hot_steep_N	25	50	../textures/loveg/savanna_steep.png		3000	DOWN	../textures/border/sdesert.png	savanna			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	19.5	23.5	165	625	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdesert_hot_steep_ESW	24	50	../textures/loveg/sdesert_warm_steep.png	3000	DOWN	../textures/border/sdesert.png	sdesert_shrub
+STERRAIN	NO_VALUE	NO_VALUE	0	0	10	90	19.5	23.5	165	625	0	0	45	0	0	0	0	0	0	0	0	0	terrain/sdesert_hot_hill_N	23	100	../textures/loveg/savanna_hill.png		3000	DOWN	../textures/border/sdesert.png	savanna			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	10	90	19.5	23.5	165	625	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdesert_hot_hill_ESW	22	100	../textures/loveg/sdesert_warm_hill.png		3000	DOWN	../textures/border/sdesert.png	sdesert_shrub
+STERRAIN	NO_VALUE	NO_VALUE	0	0	4	90	19.5	23.5	165	625	0	0	0	0	0	0	0	0	0	0	0	1	terrain/sdesert_hot_sflat	21	200	../textures/loveg/sdesert_warm_sflat.png	4000	DOWN	../textures/border/sdesert.png	sdesert_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	19.5	23.5	165	625	0	0	0	0	0	0	0	0	0	0	0	1	terrain/sdesert_hot_flat	20	300	../textures/loveg/sdesert_warm_flat.png		4000	DOWN	../textures/border/sdesert.png	sdesert_shrub			
+
+# Very Hot semidesert, typical of sub-saharian area, so it is typically savanna environment but with higher rainfall due to quick evaporation for the high temperature
+STERRAIN	NO_VALUE	NO_VALUE	0	0	40	90	23.5	999	205	775	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdesert_vhot_rock	27	1	../textures/soil/rock_red_dry.png		1000	HDG	../textures/border/sdesert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	35	90	23.5	999	205	775	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdesert_vhot_scree	22	1	../textures/soil/scree_dry.png			800	HDG	../textures/border/sdesert.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	23.5	999	205	775	0	0	45	0	0	0	0	0	0	0	0	0	terrain/sdesert_vhot_steep_N	25	50	../textures/loveg/savanna_woody_steep.png	3000	DOWN	../textures/border/sdesert.png	savanna_woody		
+STERRAIN	NO_VALUE	NO_VALUE	0	0	25	90	23.5	999	205	775	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdesert_vhot_steep_ESW	24	50	../textures/loveg/savanna_steep.png		3000	DOWN	../textures/border/sdesert.png	savanna
+STERRAIN	NO_VALUE	NO_VALUE	0	0	10	90	23.5	999	205	775	0	0	45	0	0	0	0	0	0	0	0	0	terrain/sdesert_vhot_hill_N	23	100	../textures/loveg/savanna_woody_hill.png	3000	DOWN	../textures/border/sdesert.png	savanna_woody			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	10	90	23.5	999	205	775	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdesert_vhot_hill_ESW	22	100	../textures/loveg/savanna_hill.png		3000	DOWN	../textures/border/sdesert.png	savanna
+STERRAIN	NO_VALUE	NO_VALUE	0	0	4	90	23.5	999	205	775	0	0	0	0	0	0	0	0	0	0	0	1	terrain/sdesert_vhot_sflat	21	200	../textures/loveg/savanna_sflat.png		3000	DOWN	../textures/border/sdesert.png	savanna			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	23.5	999	205	775	0	0	0	0	0	0	0	0	0	0	0	1	terrain/sdesert_vhot_flat	20	300	../textures/loveg/savanna_flat.png		3000	DOWN	../textures/border/sdesert.png	savanna_woody		
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# DRY 
+# dry environment is a bit less dry than semidesert, so we have more vegetation and shrub and in north slopes are present trees. On steeper slopes we have rocks without vegetation because low rainfall
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#STERRAIN	TERRAIN		LAND USE	 ELEVATION	  SLOPE		   TEMP		  RAINFALL	WATER	SLOPE HDG	REL ELEV	ELEV RANGE	TEMP RANGE	LATITUDE	VARIANT	NAME				LAYER	TRNS	TEXTURE						RES	PROJ	BORDER TEX	   		  3D	    	    COLOR MAP
+#						MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX																	 			FOREST		R	G	B
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Cold dry environment for boreal areas. It is typical of Alaska, north Canada, north and central russia, Siberia, because they are mostly covered by ice during 8-10 month per year then on late spring, summer and early fall the terrain is pretty humid due to the poor evatoration, despite the low rainfall we have trees and taiga
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	-999	4.2	375	425	0	0	0	0	0	0	0	0	0	50	90	0	terrain/dry_cold_bor_rock	22	1	../textures/soil/rock_dark_tan_dry.png		1000	HDG	../textures/border/dry.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	35	90	-999	4.2	375	425	0	0	0	0	0	0	0	0	0	50	90	0	terrain/dry_cold_bor_steep	25	50	../textures/hiveg/conifer_steep_sdry.png	2000	DOWN	../textures/border/dry.png	conifer_cold			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	18	90	-999	4.2	375	425	0	0	0	0	0	0	0	0	0	50	90	0	terrain/dry_cold_bor_hill	27	100	../textures/hiveg/conifer_hill_sdry.png		4000	DOWN	../textures/border/dry.png	conifer_cold			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	10	90	-999	4.2	375	425	0	0	0	0	0	0	0	0	0	50	90	1	terrain/dry_cold_bor_sflat	25	100	../textures/hiveg/conifer_sflat_sdry.png	4000	DOWN	../textures/border/dry.png	conifer_cold			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	4.2	375	425	0	0	0	0.0	0.5	0	200	0	0	50	90	0	terrain/dry_cold_bor_flat_low	26	200	../textures/hiveg/conifer_flat_sdry.png		4000	DOWN	../textures/border/dry.png	conifer_cold			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	4.2	375	425	0	0	0	0.5	1.0	0	200	0	0	50	90	0	terrain/dry_cold_bor_flat_top	27	200	../textures/hiveg/conifer_fields_flat_sdry.png	4000	DOWN	../textures/border/dry.png	conifer_cold			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	4.2	375	425	0	0	0	0	0	0	0	0	0	50	90	1	terrain/dry_cold_bor_flat	26	200	../textures/hiveg/conifer_fields_flat_sdry.png	4000	DOWN	../textures/border/dry.png	conifer_cold			
+
+# Cold dry environment typical of continental environments in USA and in Asia
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	-999	4.2	375	455	0	0	0	0	0	0	0	0	0	0	0	0	terrain/dry_cold_rock		22	1	../textures/soil/rock_dark_tan_dry.png		1000	HDG	../textures/border/dry.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	35	90	-999	4.2	375	455	0	0	45	0	0	0	0	0	0	0	0	0	terrain/dry_cold_steep_N	23	50	../textures/hiveg/conifer_steep_dry.png		2000	DOWN	../textures/border/dry.png	taiga			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	35	90	-999	4.2	375	455	0	0	0	0	0	0	0	0	0	0	0	0	terrain/dry_cold_steep_EWS	23	50	../textures/loveg/shrub_cool_steep_dry.png	2000	DOWN	../textures/border/dry.png	cool_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	-999	4.2	375	455	0	0	45	0	0	0	0	0	0	0	0	0	terrain/dry_cold_hill_N		24	100	../textures/hiveg/conifer_hill_dry.png		4000	DOWN	../textures/border/dry.png	taiga			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	-999	4.2	375	455	0	0	0	0	0	0	0	0	0	0	0	0	terrain/dry_cold_hill_ESW	24	100	../textures/hiveg/conifer_hill_dry.png		4000	DOWN	../textures/border/dry.png	taiga			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	10	90	-999	4.2	375	455	0	0	0	0	0	0	0	0	0	0	0	1	terrain/dry_cold_sflat		25	100	../textures/hiveg/conifer_sflat_dry.png		4000	DOWN	../textures/border/dry.png	taiga			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	4.2	375	455	0	0	0	0.0	0.5	0	200	0	0	0	0	0	terrain/dry_cold_flat_low	26	200	../textures/hiveg/conifer_sflat_dry.png		4000	DOWN	../textures/border/dry.png	taiga
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	4.2	375	455	0	0	0	0.5	1.0	0	200	0	0	0	0	0	terrain/dry_cold_flat_top	27	200	../textures/hiveg/conifer_flat_dry.png		4000	DOWN	../textures/border/dry.png	taiga
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	4.2	375	455	0	0	0	0	0	0	0	0	0	0	0	1	terrain/dry_cold_flat		26	200	../textures/hiveg/conifer_flat_dry.png		4000	DOWN	../textures/border/dry.png	taiga			
+
+# Cool dry environment typical of many central states of USA like Wyoming, here too we have mostly dry conifer forest but with dry terrain, conifer need less water to grow than broadleaf
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	4.2	7.5	225	425	0	0	0	0	0	0	0	0	0	0	0	0	terrain/dry_cool_rock		22	1	../textures/soil/rock_brown_dry.png		1000	HDG	../textures/border/dry.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	35	90	4.2	7.5	225	425	0	0	45	0	0	0	0	0	0	0	0	0	terrain/dry_cool_steep_N	23	50	../textures/hiveg/conifer_steep_dry.png		2000	DOWN	../textures/border/dry.png	taiga			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	35	90	4.2	7.5	225	425	0	0	0	0	0	0	0	0	0	0	0	0	terrain/dry_cool_steep_EWS	23	50	../textures/loveg/shrub_cool_steep_dry.png	2000	DOWN	../textures/border/dry.png	cool_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	4.2	7.5	225	425	0	0	45	0	0	0	0	0	0	0	0	0	terrain/dry_cool_hill_N		24	100	../textures/hiveg/conifer_hill_dry.png		4000	DOWN	../textures/border/dry.png	taiga			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	4.2	7.5	225	425	0	0	0	0	0	0	0	0	0	0	0	0	terrain/dry_cool_hill_ESW	24	100	../textures/loveg/shrub_cool_hill_dry.png	4000	DOWN	../textures/border/dry.png	cool_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	8	90	4.2	7.5	225	425	0	0	0	0	0	0	0	0	0	0	0	1	terrain/dry_cool_sflat		25	100	../textures/hiveg/conifer_sflat_dry.png		4000	DOWN	../textures/border/dry.png	taiga			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	4.2	7.5	225	425	0	0	0	0.0	0.5	0	200	0	0	0	0	0	terrain/dry_cool_flat_low	26	200	../textures/hiveg/conifer_flat_dry.png		4000	DOWN	../textures/border/dry.png	cool_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	4.2	7.5	225	425	0	0	0	0.5	1.0	0	200	0	0	0	0	0	terrain/dry_cool_flat_top	27	200	../textures/hiveg/conifer_hill_dry.png		4000	DOWN	../textures/border/dry.png	tundra			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	4.2	7.5	225	425	0	0	0	0	0	0	0	0	0	0	0	1	terrain/dry_cool_flat		26	200	../textures/hiveg/conifer_flat_dry.png		4000	DOWN	../textures/border/dry.png	cool_shrub			
+
+# semi-cool dry environment, typical in highland in Mexico, South America, Chile. Here there are mostly yellow and few green shrubs and pretty green broadleaf woods on north slopes
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	7.5	12	325	425	0	0	0	0	0	0	0	0	0	0	0	0	terrain/dry_rock		22	1	../textures/soil/rock_brown_dry.png		1000	HDG	../textures/border/dry.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	35	90	7.5	12	325	425	0	0	45	0	0	0	0	0	0	0	0	0	terrain/dry_steep_N		23	50	../textures/hiveg/broadleaf_warm_steep_dry.png	2000	DOWN	../textures/border/dry.png	dry_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	35	90	7.5	12	325	425	0	0	0	0	0	0	0	0	0	0	0	0	terrain/dry_steep_ESW		23	50	../textures/loveg/shrub_cool_steep_dry.png	2000	DOWN	../textures/border/dry.png	temp_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	7.5	12	325	425	0	0	45	0	0	0	0	0	0	0	0	0	terrain/dry_hill_N		24	100	../textures/hiveg/broadleaf_warm_hill_dry.png	4000	DOWN	../textures/border/dry.png	small_leaf			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	7.5	12	325	425	0	0	0	0	0	0	0	0	0	0	0	0	terrain/dry_hill_ESW		24	100	../textures/loveg/shrub_cool_hill_dry.png	4000	DOWN	../textures/border/dry.png	temp_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	10	90	7.5	12	325	425	0	0	0	0	0	0	0	0	0	0	0	1	terrain/dry_sflat		25	100	../textures/loveg/shrub_cool_sflat_dry.png	4000	DOWN	../textures/border/dry.png	temp_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	7.5	12	325	425	0	0	0	0.0	0.5	0	200	0	0	0	0	0	terrain/dry_flat_low		27	200	../textures/hiveg/broadleaf_warm_flat_dry.png	4000	DOWN	../textures/border/dry.png	small_leaf
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	7.5	12	325	425	0	0	0	0.5	1.0	0	200	0	0	0	0	0	terrain/dry_flat_top		26	200	../textures/loveg/shrub_cool_flat_dry.png	4000	DOWN	../textures/border/dry.png	temp_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	7.5	12	325	425	0	0	0	0	0	0	0	0	0	0	0	1	terrain/dry_flat		26	200	../textures/loveg/shrub_cool_flat_dry.png	4000	DOWN	../textures/border/dry.png	temp_shrub
+						
+
+# temperate dry environment, typical of south mediterranean area, california, South west Australia it is mostly yellowish/brownish shrubs but on north slopes we have broadleaf woods, the undergrowth is pretty dry (yellow grass)
+STERRAIN	NO_VALUE	NO_VALUE	0	0	50	90	12	15.5	375	475	0	0	0	0	0	0	0	0	0	0	0	0	terrain/dry_temp_rock		22	1	../textures/soil/rock_brown_dry.png		1000	HDG	../textures/border/dry.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	40	90	12	15.5	375	475	0	0	45	0	0	0	0	0	0	0	0	0	terrain/dry_temp_steep_N	23	50	../textures/hiveg/broadleaf_temp_hill_dry.png	2000	DOWN	../textures/border/dry.png	small_leaf			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	40	90	12	15.5	375	475	0	0	0	0	0	0	0	0	0	0	0	0	terrain/dry_temp_steep_ESW	23	50	../textures/loveg/shrub_steep_dry.png		2000	DOWN	../textures/border/dry.png	temp_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	12	15.5	375	475	0	0	45	0	0	0	0	0	0	0	0	0	terrain/dry_temp_hill_N		24	100	../textures/hiveg/broadleaf_temp_flat_dry.png	4000	DOWN	../textures/border/dry.png	small_leaf			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	12	15.5	375	475	0	0	0	0	0	0	0	0	0	0	0	0	terrain/dry_temp_hill_ESW	24	100	../textures/loveg/shrub_hill_dry.png		4000	DOWN	../textures/border/dry.png	temp_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	10	90	12	15.5	375	475	0	0	0	0	0	0	0	0	0	0	0	1	terrain/dry_temp_sflat		25	100	../textures/loveg/shrub_sflat_dry.png		4000	DOWN	../textures/border/dry.png	temp_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	12	15.5	375	475	0	0	0	0.0	0.5	0	200	0	0	0	0	0	terrain/dry_temp_flat_low	27	200	../textures/hiveg/broadleaf_warm_flat_dry.png	4000	DOWN	../textures/border/dry.png	small_leaf
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	12	15.5	375	475	0	0	0	0.5	1.0	0	200	0	0	0	0	0	terrain/dry_temp_flat_top	26	200	../textures/loveg/shrub_flat_dry.png		4000	DOWN	../textures/border/dry.png	temp_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	12	15.5	375	475	0	0	0	0	0	0	0	0	0	0	0	1	terrain/dry_temp_flat		26	200	../textures/loveg/shrub_flat_dry.png		4000	DOWN	../textures/border/dry.png	temp_shrub			
+			
+
+# warm dry environment, typical of southern california, Mexico, Greek, Sardinia Sicily, terrain is drier than the temp dry environment so it is very light almost white, on north slope there are evergreen broadlef (bluer color of leafs) but the undergrowth is almost white due to the high temperature and strong evaporation
+STERRAIN	NO_VALUE	NO_VALUE	0	0	50	90	15.5	19.5	445	675	0	0	0	0	0	0	0	0	0	0	0	0	terrain/dry_warm_rock		22	1	../textures/soil/rock_white_dry.png		1000	HDG	../textures/border/dry.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	40	90	15.5	19.5	445	675	0	0	45	0	0	0	0	0	0	0	0	0	terrain/dry_warm_steep_N	23	50	../textures/hiveg/broadleaf_warm_steep_dry.png	2000	DOWN	../textures/border/dry.png	dry_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	40	90	15.5	19.5	445	675	0	0	0	0	0	0	0	0	0	0	0	0	terrain/dry_warm_steep_ESW	23	50	../textures/loveg/shrub_warm_steep_dry.png	2000	DOWN	../textures/border/dry.png	dry_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	15.5	19.5	445	675	0	0	45	0	0	0	0	0	0	0	0	0	terrain/dry_warm_hill_N		24	100	../textures/hiveg/broadleaf_warm_hill_dry.png	4000	DOWN	../textures/border/dry.png	med_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	15.5	19.5	445	675	0	0	0	0	0	0	0	0	0	0	0	0	terrain/dry_warm_hill_ESW	24	100	../textures/loveg/shrub_warm_hill_dry.png	4000	DOWN	../textures/border/dry.png	dry_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	10	90	15.5	19.5	445	675	0	0	0	0	0	0	0	0	0	0	0	1	terrain/dry_warm_sflat		25	100	../textures/loveg/shrub_warm_sflat_dry.png	4000	DOWN	../textures/border/dry.png	dry_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	15.5	19.5	445	675	0	0	0	0.0	0.5	0	200	0	0	0	0	0	terrain/dry_warm_flat_low	27	200	../textures/hiveg/broadleaf_warm_flat_dry.png	4000	DOWN	../textures/border/dry.png	dry_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	15.5	19.5	445	675	0	0	0	0.5	1.0	0	200	0	0	0	0	0	terrain/dry_warm_flat_top	26	200	../textures/loveg/shrub_warm_flat_dry.png	4000	DOWN	../textures/border/dry.png	med_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	15.5	19.5	445	675	0	0	0	0	0	0	0	0	0	0	0	1	terrain/dry_warm_flat		26	200	../textures/loveg/shrub_warm_flat_dry.png	4000	DOWN	../textures/border/dry.png	dry_shrub			
+
+# hot dry environment typical of sub-saharian areas,central Africa, like Tanzania, Kenia, Tanganika, so it is mostly savanna with woody savanna on noth slopes
+STERRAIN	NO_VALUE	NO_VALUE	0	0	50	90	19.5	23.5	625	925	0	0	0	0	0	0	0	0	0	0	0	0	terrain/dry_hot_rock		22	1	../textures/soil/rock_dry.png			1000	HDG	../textures/border/dry.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	40	90	19.5	23.5	625	925	0	0	45	0	0	0	0	0	0	0	0	0	terrain/dry_hot_steep_N		23	50	../textures/loveg/savanna_woody_steep.png	2000	DOWN	../textures/border/dry.png	dry_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	40	90	19.5	23.5	625	925	0	0	0	0	0	0	0	0	0	0	0	0	terrain/dry_hot_steep_ESW	23	50	../textures/loveg/savanna_steep.png		2000	DOWN	../textures/border/dry.png	dry_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	19.5	23.5	625	925	0	0	45	0	0	0	0	0	0	0	0	0	terrain/dry_hot_hill_N		24	100	../textures/loveg/savanna_woody_hill.png	4000	DOWN	../textures/border/dry.png	med_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	19.5	23.5	625	925	0	0	0	0	0	0	0	0	0	0	0	0	terrain/dry_hot_hill_ESW	24	100	../textures/loveg/savanna_hill.png		4000	DOWN	../textures/border/dry.png	dry_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	10	90	19.5	23.5	625	925	0	0	0	0	0	0	0	0	0	0	0	1	terrain/dry_hot_sflat		25	100	../textures/loveg/savanna_sflat.png		4000	DOWN	../textures/border/dry.png	dry_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	19.5	23.5	625	925	0	0	0	0.0	0.5	0	200	0	0	0	0	0	terrain/dry_hot_flat_low	27	200	../textures/loveg/savanna_sflat.png		4000	DOWN	../textures/border/dry.png	palms	
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	19.5	23.5	625	925	0	0	0	0.0	0.5	0	200	0	0	0	0	0	terrain/dry_hot_flat_top	26	200	../textures/loveg/savanna_flat.png		4000	DOWN	../textures/border/dry.png	palms			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	19.5	23.5	625	925	0	0	0	0	0	0	0	0	0	0	0	1	terrain/dry_hot_flat		26	200	../textures/loveg/savanna_flat.png		4000	DOWN	../textures/border/dry.png	palms					
+
+# very hot dry environment but with higher rainfall, typical of transitions between saharian areas and rainforest areas, so it is mostly savanna with woody savanna on noth slopes
+STERRAIN	NO_VALUE	NO_VALUE	0	0	50	90	23.5	999	775	1125	0	0	0	0	0	0	0	0	0	0	0	0	terrain/dry_vhot_rock		22	1	../textures/soil/rock_dry.png			1000	HDG	../textures/border/dry.png	NO_VALUE			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	40	90	23.5	999	775	1125	0	0	45	0	0	0	0	0	0	0	0	0	terrain/dry_vhot_steep_N	23	50	../textures/loveg/savanna_woody_steep.png	2000	DOWN	../textures/border/dry.png	savanna_woody			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	40	90	23.5	999	775	1125	0	0	0	0	0	0	0	0	0	0	0	0	terrain/dry_vhot_steep_ESW	23	50	../textures/loveg/savanna_steep.png		2000	DOWN	../textures/border/dry.png	savanna			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	23.5	999	775	1125	0	0	45	0	0	0	0	0	0	0	0	0	terrain/dry_vhot_hill_N		24	100	../textures/loveg/savanna_woody_hill.png	4000	DOWN	../textures/border/dry.png	savanna_woody			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	23.5	999	775	1125	0	0	0	0	0	0	0	0	0	0	0	0	terrain/dry_vhot_hill_ESW	24	100	../textures/loveg/savanna_hill.png		4000	DOWN	../textures/border/dry.png	savanna			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	10	90	23.5	999	775	1125	0	0	0	0	0	0	0	0	0	0	0	1	terrain/dry_vhot_sflat		25	100	../textures/loveg/savanna_sflat.png		4000	DOWN	../textures/border/dry.png	savanna			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	23.5	999	775	1125	0	0	0	0.0	0.5	0	200	0	0	0	0	0	terrain/dry_vhot_flat_low	26	200	../textures/loveg/savanna_sflat.png		4000	DOWN	../textures/border/dry.png	savanna
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	23.5	999	775	1125	0	0	0	0.0	0.5	0	200	0	0	0	0	0	terrain/dry_vhot_flat_top	27	200	../textures/loveg/savanna_flat.png		4000	DOWN	../textures/border/dry.png	savanna			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	23.5	999	775	1125	0	0	0	0	0	0	0	0	0	0	0	1	terrain/dry_vhot_flat		26	200	../textures/loveg/savanna_flat.png		4000	DOWN	../textures/border/dry.png	savanna			
+			
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# SEMI-DRY
+# semi-dry or semi-wet environment, it is the environment before wet climate and it differ pretty much in according with temperature gradient, because here it play a lot the evaporation issue
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#STERRAIN	TERRAIN		LAND USE	 ELEVATION	  SLOPE		   TEMP		  RAINFALL	WATER	SLOPE HDG	REL ELEV	ELEV RANGE	TEMP RANGE	LATITUDE	VARIANT	NAME				LAYER	TRNS	TEXTURE						RES	PROJ	BORDER TEX	   		  3D	    	    COLOR MAP
+#						MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX																	 			FOREST		R	G	B
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Cold semi-dry envoronment for boreal areas
+STERRAIN	NO_VALUE	NO_VALUE	0	0	35	90	-999	7.9	425	575	0	0	0	0	0	0	0	0	0	50	90	0	terrain/sdry_cold_bor_steep	22	50	../textures/hiveg/conifer_steep_sdry.png	2000	DOWN	../textures/border/sdry.png	conifer_cold			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	-999	7.9	425	575	0	0	45	0	0	0	0	0	0	50	90	0	terrain/sdry_cold_bor_hill_N	23	100	../textures/hiveg/conifer_hill.png		4000	DOWN	../textures/border/sdry.png	conifer_cold			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	-999	7.9	425	575	0	0	0	0	0	0	0	0	0	50	90	0	terrain/sdry_cold_bor_hill_ESW	23	100	../textures/hiveg/conifer_hill_sdry.png		4000	DOWN	../textures/border/sdry.png	conifer_cold			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	10	90	-999	7.9	425	575	0	0	0	0	0	0	0	0	0	50	90	1	terrain/sdry_cold_bor_sflat	24	100	../textures/hiveg/conifer_sflat_sdry.png	4000	DOWN	../textures/border/sdry.png	boreal_forest			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	7.9	425	575	0	0	0	0.0	0.5	0	200	0	0	50	90	0	terrain/sdry_cold_bor_flat_low	25	200	../textures/hiveg/conifer_flat_sdry.png		4000	DOWN	../textures/border/sdry.png	boreal_forest			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	7.9	425	575	0	0	0	0.5	1.0	0	200	0	0	50	90	0	terrain/sdry_cold_bor_flat_top	27	200	../textures/hiveg/conifer_fields_flat_sdry.png	4000	DOWN	../textures/border/sdry.png	boreal_forest			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	7.9	425	575	0	0	0	0	0	0	0	0	0	50	90	1	terrain/sdry_cold_bor_flat	26	200	../textures/hiveg/conifer_fields_flat_sdry.png	4000	DOWN	../textures/border/sdry.png	boreal_forest			
+
+# Cold semi-dry envoronment is typical in Norway, Iceland, Canada, Russia, it is composed mainly by conifer forest and small areas with grass or rocks because cold climate
+STERRAIN	NO_VALUE	NO_VALUE	0	0	35	90	-999	4.2	455	525	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdry_cold_steep		22	50	../textures/hiveg/conifer_steep_sdry.png	2000	DOWN	../textures/border/sdry.png	conifer			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	-999	4.2	455	525	0	0	45	0	0	0	0	0	0	0	0	0	terrain/sdry_cold_hill_N	23	100	../textures/hiveg/conifer_sflat_sdry.png	4000	DOWN	../textures/border/sdry.png	conifer			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	-999	4.2	455	525	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdry_cold_hill_ESW	23	100	../textures/hiveg/conifer_hill_sdry.png		4000	DOWN	../textures/border/sdry.png	conifer			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	10	90	-999	4.2	455	525	0	0	0	0	0	0	0	0	0	0	0	1	terrain/sdry_cold_sflat		24	100	../textures/hiveg/conifer_sflat_sdry.png	4000	DOWN	../textures/border/sdry.png	conifer			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	4.2	455	525	0	0	0	0.0	0.5	0	200	0	0	0	0	0	terrain/sdry_cold_flat_low	25	200	../textures/hiveg/conifer_flat_sdry.png		4000	DOWN	../textures/border/sdry.png	conifer	
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	4.2	455	525	0	0	0	0.5	1.0	0	200	0	0	0	0	0	terrain/sdry_cold_flat_top	27	200	../textures/hiveg/conifer_fields_flat_sdry.png	4000	DOWN	../textures/border/sdry.png	conifer			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	4.2	455	525	0	0	0	0	0	0	0	0	0	0	0	1	terrain/sdry_cold_flat		26	200	../textures/hiveg/conifer_fields_flat_sdry.png	4000	DOWN	../textures/border/sdry.png	conifer			
+		
+
+# Cool semi-dry envoronment is typical in continental countries in Northern Central states in USA, eastern Europe and Russia, south-central Canada,. There are conifer forests almost everywhere
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	4.2	7.5	425	525	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdry_cool_steep		22	50	../textures/hiveg/conifer_steep_sdry.png	2000	DOWN	../textures/border/sdry.png	conifer			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	4.2	7.5	425	525	0	0	45	0	0	0	0	0	0	0	0	0	terrain/sdry_cool_hill_N	23	100	../textures/hiveg/conifer_hill_sdry.png		4000	DOWN	../textures/border/sdry.png	conifer			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	4.2	7.5	425	525	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdry_cool_hill_ESW	23	100	../textures/hiveg/conifer_hill_dry.png		4000	DOWN	../textures/border/sdry.png	conifer			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	10	90	4.2	7.5	425	525	0	0	0	0	0	0	0	0	0	0	0	1	terrain/sdry_cool_sflat		24	100	../textures/hiveg/conifer_sflat_sdry.png	4000	DOWN	../textures/border/sdry.png	conifer			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	4.2	7.5	425	525	0	0	0	0.0	0.5	0	200	0	0	0	0	0	terrain/sdry_cool_flat_low	25	200	../textures/hiveg/conifer_flat_sdry.png		4000	DOWN	../textures/border/sdry.png	conifer	
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	4.2	7.5	425	525	0	0	0	0.5	1.0	0	200	0	0	0	0	0	terrain/sdry_cool_flat_top	27	200	../textures/hiveg/conifer_fields_flat_sdry.png	4000	DOWN	../textures/border/sdry.png	conifer			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	4.2	7.5	425	525	0	0	0	0	0	0	0	0	0	0	0	1	terrain/sdry_cool_flat		26	200	../textures/hiveg/conifer_fields_flat_sdry.png	4000	DOWN	../textures/border/sdry.png	conifer			
+		
+
+# semi-cool semi-dry environment is typical of many places in middle west USA, South Russia, China, sub-hymalaian areas (nepal) the vegetation is composed by pretty green shrubs,and broadleaf forests with open grass areas.
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	7.5	13.5	425	575	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdry_steep		22	50	../textures/hiveg/broadleaf_steep_sdry.png	2000	DOWN	../textures/border/sdry.png	broadleaf			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	7.5	13.5	425	575	0	0	45	0	0	0	0	0	0	0	0	0	terrain/sdry_hill_N		23	100	../textures/hiveg/broadleaf_hill.png		4000	DOWN	../textures/border/sdry.png	broadleaf			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	7.5	13.5	425	575	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdry_hill_ESW		23	100	../textures/hiveg/broadleaf_flat_sdry.png	4000	DOWN	../textures/border/sdry.png	broadleaf			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	10	90	7.5	13.5	425	575	0	0	0	0	0	0	0	0	0	0	0	1	terrain/sdry_sflat		24	100	../textures/loveg/shrub_cool_sflat_sdry.png	4000	DOWN	../textures/border/sdry.png	broadleaf			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	7.5	13.5	425	575	0	0	0	0.0	0.5	0	200	0	0	0	0	0	terrain/sdry_flat_low		26	100	../textures/hiveg/broadleaf_sflat_sdry.png	4000	DOWN	../textures/border/sdry.png	broadleaf
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	7.5	13.5	425	575	0	0	0	0.5	1.0	0	200	0	0	0	0	0	terrain/sdry_flat_top		27	100	../textures/hiveg/broadleaf_flat_sdry.png	4000	DOWN	../textures/border/sdry.png	broadleaf			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	7.5 	13.5	425	575	0	0	0	0	0	0	0	0	0	0	0	1	terrain/sdry_flat		25	100	../textures/loveg/shrub_cool_flat_sdry.png	4000	DOWN	../textures/border/sdry.png	broadleaf			
+			
+
+# temp semi-dry environment is typical of north California, Texas, Central-South Italy, South France, Croatia, North Spain, Chile, China, South Australia etc etc. there are shrubs quite green and broadleaf forest but on slopes the broadleaf are more rade and the grass is not very green
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	13.5	15.5	475	675	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdry_temp_steep		22	50	../textures/hiveg/broadleaf_steep_sdry.png	2000	DOWN	../textures/border/sdry.png	small_leaf			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	13.5	15.5	475	675	0	0	45	0	0	0	0	0	0	0	0	0	terrain/sdry_temp_hill_N	23	100	../textures/hiveg/broadleaf_hill.png		4000	DOWN	../textures/border/sdry.png	small_leaf			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	13.5	15.5	475	675	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdry_temp_hill_ESW	23	100	../textures/hiveg/broadleaf_flat_sdry.png	4000	DOWN	../textures/border/sdry.png	small_leaf			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	10	90	13.5	15.5	475	675	0	0	0	0	0	0	0	0	0	0	0	1	terrain/sdry_temp_sflat		24	100	../textures/loveg/shrub_sflat_dry.png		4000	DOWN	../textures/border/sdry.png	small_leaf			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	13.5	15.5	475	675	0	0	0	0.0	0.5	0	200	0	0	0	0	0	terrain/sdry_temp_flat_low	26	200	../textures/hiveg/broadleaf_sflat_sdry.png	4000	DOWN	../textures/border/sdry.png	small_leaf
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	13.5	15.5	475	675	0	0	0	0.5	1.0	0	200	0	0	0	0	0	terrain/sdry_temp_flat_hi	27	200	../textures/hiveg/broadleaf_flat_sdry.png	4000	DOWN	../textures/border/sdry.png	small_leaf			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	13.5	15.5	475	675	0	0	0	0	0	0	0	0	0	0	0	1	terrain/sdry_temp_flat		25	200	../textures/loveg/shrub_flat_sdry.png		4000	DOWN	../textures/border/sdry.png	small_leaf			
+			
+# warm semi-dry environment it is like the temp semi-dry one, but need more rainfall to match almost the same environment
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	15.5	19.5	675	925	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdry_warm_steep		22	50	../textures/hiveg/broadleaf_steep_sdry.png	2000	DOWN	../textures/border/sdry.png	med_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	15.5	19.5	675	925	0	0	45	0	0	0	0	0	0	0	0	0	terrain/sdry_warm_hill_N	23	100	../textures/loveg/shrub_hill_sdry.png		4000	DOWN	../textures/border/sdry.png	med_forest			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	15.5	19.5	675	925	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdry_warm_hill_ESW	23	100	../textures/hiveg/broadleaf_hill_sdry.png	4000	DOWN	../textures/border/sdry.png	med_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	10	90	15.5	19.5	675	925	0	0	0	0	0	0	0	0	0	0	0	1	terrain/sdry_warm_sflat		24	100	../textures/loveg/shrub_sflat_sdry.png		4000	DOWN	../textures/border/sdry.png	med_shrub			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	15.5	19.5	675	925	0	0	0	0.0	0.5	0	200	0	0	0	0	0	terrain/sdry_warm_flat_low	26	200	../textures/hiveg/broadleaf_sflat_sdry.png	4000	DOWN	../textures/border/sdry.png	med_forest
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	15.5	19.5	675	925	0	0	0	0.5	1.0	0	200	0	0	0	0	0	terrain/sdry_warm_flat_top	27	200	../textures/hiveg/broadleaf_flat_sdry.png	4000	DOWN	../textures/border/sdry.png	med_forest			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	15.5	19.5	675	925	0	0	0	0	0	0	0	0	0	0	0	1	terrain/sdry_warm_flat		25	200	../textures/loveg/shrub_flat_sdry.png		4000	DOWN	../textures/border/sdry.png	med_shrub			
+			
+
+# hot semi-dry environment, it is tropical anvironment typical in the western India, South China, some areas in Indo-china  (Vietnam, Thailand, Laos etc), Africa Sub-equatorial, Sub Amazonic areas, it is composed by tropical shrubs with sparse tropical forests and fields, dense tropical forests on north slopes
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	19.5	23.5	925	1175	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdry_hot_steep		22	50	../textures/hiveg/tropical_steep_sdry.png	2000	DOWN	../textures/border/sdry.png	tropical_sdry			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	19.5	23.5	925	1175	0	0	45	0	0	0	0	0	0	0	0	0	terrain/sdry_hot_hill_N		23	100	../textures/hiveg/tropical_hill.png		4000	DOWN	../textures/border/sdry.png	tropical_sdry			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	19.5	23.5	925	1175	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdry_hot_hill_ESW	23	100	../textures/hiveg/tropical_hill_sdry.png	4000	DOWN	../textures/border/sdry.png	tropical_sdry			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	10	90	19.5	23.5	925	1175	0	0	0	0	0	0	0	0	0	0	0	1	terrain/sdry_hot_sflat		24	100	../textures/loveg/shrub_tropical_sflat_sdry.png	4000	DOWN	../textures/border/sdry.png	tropical_sdry			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	19.5	23.5	925	1175	0	0	0	0.0	0.5	0	200	0	0	0	0	0	terrain/sdry_hot_flat_low	24	200	../textures/loveg/shrub_tropical_sflat_sdry.png	4000	DOWN	../textures/border/sdry.png	palms			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	19.5	23.5	925	1175	0	0	0	0.5	1.0	0	200	0	0	0	0	0	terrain/sdry_hot_flat_top	25	200	../textures/loveg/shrub_tropical_flat_sdry.png	4000	DOWN	../textures/border/sdry.png	palms			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	19.5	23.5	925	1175	0	0	0	0	0	0	0	0	0	0	0	1	terrain/sdry_hot_flat		26	200	../textures/loveg/shrub_tropical_sflat_sdry.png	4000	DOWN	../textures/border/sdry.png	palms			
+
+# very-hot semi-dry environment it is like the hot semi-dry one, but need more rainfall to match  almost the same environment
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	23.5	999	1125	1425	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdry_vhot_steep		22	50	../textures/hiveg/tropical_steep_sdry.png	2000	DOWN	../textures/border/sdry.png	tropical_sdry			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	23.5	999	1125	1425	0	0	45	0	0	0	0	0	0	0	0	0	terrain/sdry_vhot_hill_N	23	100	../textures/hiveg/tropical_hill.png		4000	DOWN	../textures/border/sdry.png	tropical_sdry			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	23.5	999	1125	1425	0	0	0	0	0	0	0	0	0	0	0	0	terrain/sdry_vhot_hill_ESW	23	100	../textures/hiveg/tropical_hill_sdry.png	4000	DOWN	../textures/border/sdry.png	tropical_sdry			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	10	90	23.5	999	1125	1425	0	0	0	0	0	0	0	0	0	0	0	1	terrain/sdry_vhot_sflat		24	100	../textures/loveg/shrub_tropical_sflat_sdry.png	4000	DOWN	../textures/border/sdry.png	tropical_sdry			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	23.5	999	1125	1425	0	0	0	0.0	0.5	0	200	0	0	0	0	0	terrain/sdry_vhot_flat_low	24	200	../textures/loveg/shrub_tropical_sflat_sdry.png	4000	DOWN	../textures/border/sdry.png	palms	
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	23.5	999	1125	1425	0	0	0	0.5	1.0	0	200	0	0	0	0	0	terrain/sdry_vhot_flat_top	25	200	../textures/loveg/shrub_tropical_flat_sdry.png	4000	DOWN	../textures/border/sdry.png	palms			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	23.5	999	1125	1425	0	0	0	0	0	0	0	0	0	0	0	1	terrain/sdry_vhot_flat		26	200	../textures/loveg/shrub_tropical_sflat_sdry.png	4000	DOWN	../textures/border/sdry.png	palms			
+		
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# WET
+# wet environment is ""our world"" I mean where all guys of X-Plane team live. Green Forests, almost no differnces one north slopes for forest density, excluding the wind issue on mountain top ridges, but unfortunately we cannot use "wind rules" in x-plane
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#STERRAIN	TERRAIN		LAND USE	 ELEVATION	  SLOPE		   TEMP		  RAINFALL	WATER	SLOPE HDG	REL ELEV	ELEV RANGE	TEMP RANGE	LATITUDE	VARIANT	NAME				LAYER	TRNS	TEXTURE						RES	PROJ	BORDER TEX	   		  3D	    	    COLOR MAP
+#						MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX																	 			FOREST		R	G	B
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# cold wet for boreal areas with cold conifer forest and boreal forests
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	-999	2.2	500	99999	0	0	0	0	0	0	0	0	0	55	90	0	terrain/wet_cold_bor_steep	23	1	../textures/hiveg/conifer_steep.png		2000	DOWN	../textures/border/wet.png	conifer_cold			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	18	90	-999	2.2	500	99999	0	0	0	0	0	0	0	0	0	55	90	0	terrain/wet_cold_bor_hill	24	50	../textures/hiveg/conifer_hill.png		4000	DOWN	../textures/border/wet.png	conifer_cold			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	13	90	-999	2.2	500	99999	0	0	0	0	0	0	0	0	0	55	90	0	terrain/wet_cold_bor_sflat	25	100	../textures/hiveg/conifer_fields_hill.png	4000	DOWN	../textures/border/wet.png	conifer_cold			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	8	90	-999	2.2	500	99999	0	0	0	0	0	0	0	0	0	55	90	1	terrain/wet_cold_bor_flat_hi	26	100	../textures/hiveg/conifer_fields_flat.png	4000	DOWN	../textures/border/wet.png	conifer_cold
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	2.2	500	99999	0	0	0	0.0	0.3	0	200	0	0	55	90	0	terrain/wet_cold_bor_flat_low	20	100	../textures/hiveg/conifer_fields_low.png	4000	DOWN	../textures/border/wet.png	boreal_forest
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	2.2	500	99999	0	0	0	0.3	0.6	0	200	0	0	55	90	0	terrain/wet_cold_bor_flat_mid	21	100	../textures/hiveg/conifer_flat.png		4000	DOWN	../textures/border/wet.png	boreal_forest
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	2.2	500	99999	0	0	0	0.6	1.0	0	200	0	0	55	90	0	terrain/wet_cold_bor_flat_top	26	100	../textures/hiveg/conifer_fields_low.png	4000	DOWN	../textures/border/wet.png	boreal_forest			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	2.2	500	99999	0	0	0	0	0	0	0	0	0	55	90	1	terrain/wet_cold_bor_flat	26	100	../textures/hiveg/conifer_fields_flat.png	4000	DOWN	../textures/border/wet.png	conifer_cold
+
+# cool wet  for boreal areas  with boreal forests
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	2.2	6.5	500	99999	0	0	0	0	0	0	0	0	0	55	90	0	terrain/wet_cool_bor_steep	20	1	../textures/hiveg/broadleaf_steep.png		2000	DOWN	../textures/border/wet.png	boreal_forest			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	2.2	6.5	500	99999	0	0	0	0	0	0	0	0	0	55	90	0	terrain/wet_cool_bor_hill	21	50	../textures/hiveg/broadleaf_hill.png		3000	DOWN	../textures/border/wet.png	boreal_forest			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	14	90	2.2	6.5	500	99999	0	0	0	0	0	0	0	0	0	55	90	0	terrain/wet_cool_bor_sflat	22	100	../textures/hiveg/broadleaf_sflat.png		4000	DOWN	../textures/border/wet.png	boreal_forest
+STERRAIN	NO_VALUE	NO_VALUE	0	0	8	90	2.2	6.5	500	99999	0	0	0	0	0	0	0	0	0	55	90	1	terrain/wet_cool_bor_flat_hi	22	100	../textures/hiveg/broadleaf_fields_flat.png	3000	DOWN	../textures/border/wet.png	boreal_forest
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	2.2	6.5	500	99999	0	0	0	0.0	0.3	0	150	0	0	55	90	0	terrain/wet_cool_bor_flat_low	25	100	../textures/hiveg/broadleaf_fields_low.png	4000	DOWN	../textures/border/wet.png	broadleaf_cold			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	2.2	6.5	500	99999	0	0	0	0.3	0.6	0	150	0	0	55	90	0	terrain/wet_cool_bor_flat_mid	24	100	../textures/hiveg/broadleaf_sflat2.png		4000	DOWN	../textures/border/wet.png	broadleaf_cold			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	2.2	6.5	500	99999	0	0	0	0.6	1.0	0	150	0	0	55	90	0	terrain/wet_cool_bor_flat_top	23	100	../textures/hiveg/broadleaf_flat.png		4000	DOWN	../textures/border/wet.png	broadleaf_cold
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	2.2	6.5	500	99999	0	0	0	0	0	0	0	0	0	55	90	1	terrain/wet_cool_bor_flat	26	100	../textures/hiveg/broadleaf_fields_flat.png	3000	DOWN	../textures/border/wet.png	boreal_forest			
+
+# cold wet is typical in very far Northwest and NorthEast USA, West and East Canada, North Europe, North Japan etc etc.  Cold wet environment is basically conifer forests with green fields and green undergrowth.
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	-999	4.2	500	99999	0	0	0	0	0	0	0	0	0	0	0	0	terrain/wet_cold_steep		23	1	../textures/hiveg/conifer_steep.png		2000	DOWN	../textures/border/wet.png	conifer			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	18	90	-999	4.2	500	99999	0	0	0	0	0	0	0	0	0	0	0	0	terrain/wet_cold_hill		24	50	../textures/hiveg/conifer_hill.png		4000	DOWN	../textures/border/wet.png	conifer			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	13	90	-999	4.2	500	99999	0	0	0	0	0	0	0	0	0	0	0	0	terrain/wet_cold_sflat		25	100	../textures/hiveg/conifer_fields_hill.png	4000	DOWN	../textures/border/wet.png	conifer			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	8	90	-999	4.2	500	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/wet_cold_flat_hi	26	100	../textures/hiveg/conifer_fields_flat.png	4000	DOWN	../textures/border/wet.png	conifer
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	4.2	500	99999	0	0	0	0.0	0.3	0	200	0	0	0	0	0	terrain/wet_cold_flat_low	20	100	../textures/hiveg/conifer_fields_low.png	4000	DOWN	../textures/border/wet.png	conifer
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	4.2	500	99999	0	0	0	0.3	0.6	0	200	0	0	0	0	0	terrain/wet_cold_flat_mid	21	100	../textures/hiveg/conifer_flat.png		4000	DOWN	../textures/border/wet.png	conifer
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	4.2	500	99999	0	0	0	0.6	1.0	0	200	0	0	0	0	0	terrain/wet_cold_flat_top	26	100	../textures/hiveg/conifer_fields_low.png	4000	DOWN	../textures/border/wet.png	conifer			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	-999	4.2	500	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/wet_cold_flat		26	100	../textures/hiveg/conifer_fields_flat.png	4000	DOWN	../textures/border/wet.png	conifer
+
+# cool wet is typical in  and North west-East USA, most of central Europe, UK, north Italy, south-east autralia, New Zealand, Japan, Korea etc etc.  temperate wet environment is basically broadleaf forests with green fields and green undergrowth.
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	4.2	10.5	525	99999	0	0	0	0	0	0	0	0	0	0	0	0	terrain/wet_cool_steep		23	1	../textures/hiveg/broadleaf_steep.png		2000	DOWN	../textures/border/wet.png	broadleaf			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	4.2	10.5	525	99999	0	0	0	0	0	0	0	0	0	0	0	0	terrain/wet_cool_hill		24	50	../textures/hiveg/broadleaf_hill.png		3000	HDG	../textures/border/wet.png	broadleaf
+STERRAIN	NO_VALUE	NO_VALUE	0	0	14	90	4.2	10.5	525	99999	0	0	0	0	0	0	0	0	0	0	0	0	terrain/wet_cool_sflat		25	100	../textures/hiveg/broadleaf_sflat.png		4000	DOWN	../textures/border/wet.png	broadleaf
+STERRAIN	NO_VALUE	NO_VALUE	0	0	8	90	4.2	10.5	525	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/wet_cool_flat_hi	26	100	../textures/hiveg/broadleaf_sflat2.png		4000	DOWN	../textures/border/wet.png	broadleaf
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	4.2	10.5	525	99999	0	0	0	0.0	0.2	0	150	0	0	0	0	0	terrain/wet_cool_flat_low	20	100	../textures/hiveg/broadleaf_fields_low.png	4000	DOWN	../textures/border/wet.png	broadleaf			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	4.2	10.5	525	99999	0	0	0	0.2	0.6	0	150	0	0	0	0	0	terrain/wet_cool_flat_mid	21	100	../textures/hiveg/broadleaf_sflat2.png		4000	DOWN	../textures/border/wet.png	broadleaf			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	4.2	10.5	525	99999	0	0	0	0.6	1.0	0	150	0	0	0	0	0	terrain/wet_cool_flat_top	22	100	../textures/hiveg/broadleaf_flat.png		4000	DOWN	../textures/border/wet.png	broadleaf
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	4.2	10.5	525	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/wet_cool_flat		21	100	../textures/hiveg/broadleaf_fields_flat.png	3000	DOWN	../textures/border/wet.png	broadleaf			
+
+# temperate wet is typical in  and North west-East USA, most of central Europe, UK, north Italy, south-east autralia, New Zealand, Japan, Korea etc etc.  temperate wet environment is basically broadleaf forests with green fields and green undergrowth.
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	10.5	15.5	525	99999	0	0	0	0	0	0	0	0	0	0	0	0	terrain/wet_temp_steep		23	1	../textures/hiveg/broadleaf_steep.png		2000	DOWN	../textures/border/wet.png	broadleaf			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	10.5	15.5	525	99999	0	0	120	0	0	0	0	0	0	0	0	0	terrain/wet_temp_hill_N		24	50	../textures/hiveg/broadleaf_hill.png		3000	DOWN	../textures/border/wet.png	broadleaf
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	10.5	15.5	525	99999	0	120	180	0	0	0	0	0	0	0	0	0	terrain/wet_temp_hill_S		23	50	../textures/hiveg/broadleaf_hill2.png		4000	DOWN	../textures/border/wet.png	broadleaf
+STERRAIN	NO_VALUE	NO_VALUE	0	0	14	90	10.5	15.5	525	99999	0	0	0	0	0	0	0	0	0	0	0	0	terrain/wet_temp_sflat		25	100	../textures/hiveg/broadleaf_sflat.png		4000	DOWN	../textures/border/wet.png	broadleaf			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	8	90	10.5	15.5	525	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/wet_temp_flat_hi	26	100	../textures/hiveg/broadleaf_sflat2.png		4000	DOWN	../textures/border/wet.png	broadleaf			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	10.5	15.5	525	99999	0	0	0	0.0	0.2	0	150	0	0	0	0	0	terrain/wet_temp_flat_low	20	100	../textures/hiveg/broadleaf_fields_low.png	4000	DOWN	../textures/border/wet.png	broadleaf			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	10.5	15.5	525	99999	0	0	0	0.2	0.6	0	150	0	0	0	0	0	terrain/wet_temp_flat_mid	21	100	../textures/hiveg/broadleaf_sflat2.png		4000	DOWN	../textures/border/wet.png	broadleaf			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	10.5	15.5	525	99999	0	0	0	0.6	1.0	0	150	0	0	0	0	0	terrain/wet_temp_flat_top	22	100	../textures/hiveg/broadleaf_flat.png		3000	DOWN	../textures/border/wet.png	broadleaf
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	10.5	15.5	525	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/wet_temp_flat		21	100	../textures/hiveg/broadleaf_fields_flat.png	3000	DOWN	../textures/border/wet.png	broadleaf			
+
+# warm wet is typical in  and south-East USA, Balcanian Area in Europe, Caucasic areas, South China etc etc.  Cold wet environment is basically like the temp-wet one but it need more rainfall to match almost the same environment.
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	15.5	19.5	925	99999	0	0	0	0	0	0	0	0	0	0	0	0	terrain/wet_warm_steep		23	1	../textures/hiveg/broadleaf_steep.png		2000	DOWN	../textures/border/wet.png	broadleaf			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	15.5	19.5	925	99999	0	0	80	0	0	0	0	0	0	0	0	0	terrain/wet_warm_hill_N		23	50	../textures/hiveg/broadleaf_hill.png		3000	DOWN	../textures/border/wet.png	broadleaf
+STERRAIN	NO_VALUE	NO_VALUE	0	0	20	90	15.5	19.5	925	99999	0	80	180	0	0	0	0	0	0	0	0	0	terrain/wet_warm_hill_S		24	50	../textures/hiveg/broadleaf_hill2.png		4000	DOWN	../textures/border/wet.png	broadleaf
+STERRAIN	NO_VALUE	NO_VALUE	0	0	14	90	15.5	19.5	925	99999	0	0	0	0	0	0	0	0	0	0	0	0	terrain/wet_warm_sflat		25	100	../textures/hiveg/broadleaf_sflat.png		4000	DOWN	../textures/border/wet.png	broadleaf			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	8	90	15.5	19.5	925	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/wet_warm_flat_hi	26	100	../textures/hiveg/broadleaf_sflat2.png		4000	DOWN	../textures/border/wet.png	broadleaf			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	15.5	19.5	925	99999	0	0	0	0.2	0.2	0	150	0	0	0	0	0	terrain/wet_warm_flat_low	20	100	../textures/hiveg/broadleaf_fields_low.png	4000	DOWN	../textures/border/wet.png	broadleaf			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	15.5	19.5	925	99999	0	0	0	0.3	0.6	0	150	0	0	0	0	0	terrain/wet_warm_flat_mid	21	100	../textures/hiveg/broadleaf_sflat2.png		4000	DOWN	../textures/border/wet.png	broadleaf			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	15.5	19.5	925	99999	0	0	0	0.6	1.0	0	150	0	0	0	0	0	terrain/wet_warm_flat_top	22	100	../textures/hiveg/broadleaf_flat.png		3000	DOWN	../textures/border/wet.png	broadleaf
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	15.5	19.5	925	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/wet_warm_flat		21	100	../textures/hiveg/broadleaf_fields_flat.png	3000	DOWN	../textures/border/wet.png	broadleaf			
+
+# hot wet environment is typical in southern east states in USA, Hawaii, north Venezuela, Central America, Caribbean Area, India, China, Philippines etc etc.
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	19.5	23.5	1175	99999	0	0	0	0	0	0	0	0	0	0	0	0	terrain/wet_hot_steep		22	1	../textures/hiveg/tropical_steep.png		2000	DOWN	../textures/border/wet.png	tropical			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	30	90	19.5	23.5	1175	99999	0	0	0	0	0	0	0	0	0	0	0	0	terrain/wet_hot_hill		22	50	../textures/hiveg/tropical_hill.png		4000	DOWN	../textures/border/wet.png	tropical
+STERRAIN	NO_VALUE	NO_VALUE	0	0	15	90	19.5	23.5	1175	99999	0	0	0	0	0	0	0	0	0	0	0	0	terrain/wet_hot_shill		22	50	../textures/hiveg/tropical_sflat.png		4000	DOWN	../textures/border/wet.png	tropical
+STERRAIN	NO_VALUE	NO_VALUE	0	0	8	90	19.5	23.5	1175	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/wet_hot_sflat		22	100	../textures/hiveg/tropical_fields_hill.png	4000	DOWN	../textures/border/wet.png	tropical			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	19.5	23.5	1175	99999	0	0	0	0.0	0.2	0	200	0	0	0	0	0	terrain/wet_hot_flat_low	20	100	../textures/loveg/tropical_grass_wet.png	4000	DOWN	../textures/border/wet.png	tropical			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	19.5	23.5	1175	99999	0	0	0	0.2	0.6	0	200	0	0	0	0	0	terrain/wet_hot_flat_mid	22	100	../textures/hiveg/tropical_flat.png		4000	DOWN	../textures/border/wet.png	tropical			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	19.5	23.5	1175	99999	0	0	0	0.2	1.0	0	200	0	0	0	0	0	terrain/wet_hot_flat_top	22	100	../textures/hiveg/tropical_fields_flat.png	4000	DOWN	../textures/border/wet.png	tropical			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	19.5	23.5	1175	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/wet_hot_flat		22	100	../textures/hiveg/tropical_flat.png		4000	DOWN	../textures/border/wet.png	tropical			
+
+# very-hot wet environment it is like the hot wet one, but needs more rainfall to match almost the same environment
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	23.5	999	1425	2225	0	0	0	0	0	0	0	0	0	0	0	0	terrain/wet_vhot_steep		22	1	../textures/hiveg/tropical_steep.png		2000	DOWN	../textures/border/wet.png	tropical			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	30	90	23.5	999	1425	2225	0	0	0	0	0	0	0	0	0	0	0	0	terrain/wet_vhot_hill		22	50	../textures/hiveg/tropical_hill.png		4000	DOWN	../textures/border/wet.png	tropical
+STERRAIN	NO_VALUE	NO_VALUE	0	0	15	90	23.5	999	1425	2225	0	0	0	0	0	0	0	0	0	0	0	0	terrain/wet_vhot_shill		22	50	../textures/hiveg/tropical_sflat.png		4000	DOWN	../textures/border/wet.png	tropical
+STERRAIN	NO_VALUE	NO_VALUE	0	0	8	90	23.5	999	1425	2225	0	0	0	0	0	0	0	0	0	0	0	1	terrain/wet_vhot_sflat		22	100	../textures/hiveg/tropical_fields_hill.png	4000	DOWN	../textures/border/wet.png	tropical			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	23.5	999	1425	2225	0	0	0	0.0	0.2	0	200	0	0	0	0	0	terrain/wet_vhot_flat_low	20	100	../textures/loveg/tropical_hot_grass_wet.png	4000	DOWN	../textures/border/wet.png	palms			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	23.5	999	1425	2225	0	0	0	0.2	0.6	0	200	0	0	0	0	0	terrain/wet_vhot_flat_mid	22	100	../textures/hiveg/tropical_flat.png		4000	DOWN	../textures/border/wet.png	palms			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	23.5	999	1425	2225	0	0	0	0.6	1.0	0	200	0	0	0	0	0	terrain/wet_vhot_flat_top	22	100	../textures/hiveg/tropical_fields_flat.png	4000	DOWN	../textures/border/wet.png	tropical			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	23.5	999	1425	2225	0	0	0	0	0	0	0	0	0	0	0	1	terrain/wet_vhot_flat		22	100	../textures/loveg/tropical_hot_grass_wet.png	4000	DOWN	../textures/border/wet.png	tropical			
+
+# Rainforest environment present in very hot climate with rainfall above 2225 mm per year, Rainforest means the creator of most of the oxigen we breath to live, seriously, it is located in Amazon, Congo and west equatorial Africa, Malaysia, Bangladesh, India, New Guinea, Indo-China, Borneo.
+STERRAIN	NO_VALUE	NO_VALUE	0	0	45	90	23.5	999	2225	99999	0	0	0	0	0	0	0	0	0	0	0	0	terrain/rainforest_steep	22	1	../textures/hiveg/rainforest_steep.png		2000	DOWN	../textures/border/wet.png	rainforest			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	15	90	23.5	999	2225	99999	0	0	0	0	0	0	0	0	0	0	0	0	terrain/rainforest_hill		22	50	../textures/hiveg/rainforest_hill.png		4000	DOWN	../textures/border/wet.png	rainforest			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	8	90	23.5	999	2225	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/rainforest_sflat	22	100	../textures/hiveg/rainforest_sflat.png		4000	DOWN	../textures/border/wet.png	rainforest			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	23.5	999	2225	99999	0	0	0	0.0	0.2	0	200	0	0	0	0	0	terrain/rainforest_flat_low	20	100	../textures/hiveg/rainforest_flat.png		4000	DOWN	../textures/border/wet.png	rainforest			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	23.5	999	2225	99999	0	0	0	0.2	0.8	0	200	0	0	0	0	0	terrain/rainforest_flat_mid	22	100	../textures/hiveg/rainforest_hill.png		4000	DOWN	../textures/border/wet.png	rainforest			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	23.5	999	2225	99999	0	0	0	0.8	1.0	0	200	0	0	0	0	0	terrain/rainforest_flat_top	22	100	../textures/loveg/rainforest_grass.png		4000	DOWN	../textures/border/wet.png	rainforest			
+STERRAIN	NO_VALUE	NO_VALUE	0	0	0	90	23.5	999	2225	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/rainforest_flat		22	100	../textures/loveg/rainforest_grass.png		4000	DOWN	../textures/border/wet.png	rainforest			
+
+# END OF ABSOLUTE RULES=============================================================================================================================================================================================================================================================================================================================================================================
+

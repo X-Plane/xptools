@@ -1,0 +1,15 @@
+SHAPE_FEATURE		man_made		pier			NO_VALUE
+SHAPE_FEATURE		natural			land			NO_VALUE
+
+SHAPE_FEATURE		waterway		dock			terrain_Water
+SHAPE_FEATURE		waterway		mill_pond		terrain_Water
+SHAPE_FEATURE		waterway		riverbank		terrain_Water
+SHAPE_FEATURE		waterway		canal			terrain_Water
+SHAPE_FEATURE		landuse			basin			terrain_Water
+SHAPE_FEATURE		landuse			reservoir		terrain_Water
+SHAPE_FEATURE		landuse			water			terrain_Water
+SHAPE_FEATURE		landuse			water2			terrain_Water2
+SHAPE_FEATURE		natural			lake			terrain_Water
+SHAPE_FEATURE		natural			water			terrain_Water
+SHAPE_FEATURE		leisure			marina			terrain_Water
+COLUMN 			water_type 		af_FlattenMode 

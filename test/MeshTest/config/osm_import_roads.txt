@@ -1,0 +1,49 @@
+SHAPE_FEATURE		highway,oneway	motorway,yes		road_MotorwayOneway
+SHAPE_FEATURE		highway			motorway			road_MotorwayOneway
+SHAPE_FEATURE		highway			motorway_link		road_Ramp
+SHAPE_FEATURE		highway,oneway	trunk,yes			road_PrimaryOneway
+SHAPE_FEATURE		highway			trunk				road_Primary
+SHAPE_FEATURE		highway			trunk_link			road_Ramp
+SHAPE_FEATURE		highway,oneway	primary,yes			road_PrimaryOneway
+SHAPE_FEATURE		highway			primary				road_Primary
+SHAPE_FEATURE		highway			primary_link		road_PrimaryOneway
+SHAPE_FEATURE		highway,oneway	secondary,yes		road_SecondaryOneway
+SHAPE_FEATURE		highway			secondary			road_Secondary
+SHAPE_FEATURE		highway			secondary_link		road_SecondaryOneway
+SHAPE_FEATURE		highway,oneway	tertiary,yes		road_TertiaryOneway
+SHAPE_FEATURE		highway			tertiary			road_Tertiary
+SHAPE_FEATURE		highway,oneway	unclassified,yes	road_LocalOneway
+SHAPE_FEATURE		highway			unclassified		road_Local
+SHAPE_FEATURE		highway,oneway	road,yes			road_LocalOneway
+SHAPE_FEATURE		highway			road				road_Local
+SHAPE_FEATURE		highway,oneway	residential,yes		road_LocalOneway
+SHAPE_FEATURE		highway			residential			road_Local
+SHAPE_FEATURE		highway			living_street		road_Local
+SHAPE_FEATURE		highway			pedestrian		road_Local
+SHAPE_FEATURE		highway			service				 service_Road
+SHAPE_FEATURE		highway,oneway		service,yes			 service_RoadOneway
+
+#SHAPE_FEATURE		highway			track				walk_Trail
+#SHAPE_FEATURE		highway			pedestrian			road_Driveway
+#SHAPE_FEATURE		highway			bus_guideway		
+#SHAPE_FEATURE		highway			roundabout
+#SHAPE_FEATURE		highway			*					road_LocalOneway
+
+
+SHAPE_FEATURE		power			line				powerline_Generic
+
+SHAPE_FEATURE		railway			*					train_RailwayOneway
+
+SHAPE_ARC_REVERSE	oneway			-1
+SHAPE_ARC_REVERSE	oneway			reverse
+
+ROAD_LAYER_TAG		layer
+
+SHAPE_ARC_BRIDGE	bridge			no					0
+SHAPE_ARC_BRIDGE	bridge			0					1
+SHAPE_ARC_BRIDGE	bridge			*					1
+
+SHAPE_ARC_BRIDGE	tunnel			no					0
+SHAPE_ARC_BRIDGE	tunnel			0					-1
+SHAPE_ARC_BRIDGE	tunnel			*					-1
+

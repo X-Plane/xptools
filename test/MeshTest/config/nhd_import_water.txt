@@ -1,0 +1,11 @@
+SHAPE_FEATURE		FTYPE		493			terrain_Water
+SHAPE_FEATURE		FTYPE		390			terrain_Water
+SHAPE_FEATURE		FTYPE		436			terrain_Water
+
+SHAPE_FEATURE		FTYPE		312			terrain_Water
+SHAPE_FEATURE		FTYPE		336			terrain_Water
+SHAPE_FEATURE		FTYPE		445			terrain_Water
+SHAPE_FEATURE		FTYPE		460			terrain_Water
+SHAPE_FEATURE		FTYPE		485			terrain_Water
+
+#SHAPE_FEATURE		FTYPE			*			terrain_Water

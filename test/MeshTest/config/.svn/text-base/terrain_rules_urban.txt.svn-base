@@ -1,0 +1,15 @@
+# ------------------------ CITY NORTH 2 IRREGULAR FOR VERY HIGH LATITUDE ------------------------										
+#TERRAIN_INFO	NAME			LAYER	TRNS	RGB			TEXTURE									BORDER TEX					RES		LIT	MODE	MODE PARAMS
+TERRAIN_INFO	terrain_urban/ind	130		0		204,77,242	../textures_urban/ind.png				../textures/border/city.png	3000	1	NORMAL
+TERRAIN_INFO	terrain_urban/urban	120		0		204,77,242	../textures_urban/urban.png				../textures/border/city.png	3000	1	NORMAL
+
+
+#																				
+#TERRAIN_RULE	TERRAIN		ZONING			LAND USE	ELEVATION	SLOPE	TEMP			TEMP RANGE	RAINFALL	WATER	REL ELEV	ELEV RANGE	LATITUDE		NAME
+#														MIN	MAX		MIN	MAX	MIN		MAX		MIN	MAX		MIN	MAX		PROX	MIN	MAX		MIN	MAX		MIN	MAX	
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------																				
+# cliffs for dry environment  (0-325 mm rainfall)																				
+TERRAIN_RULE	NO_VALUE	ind_high		NO_VALUE	0	0		0	90	-999	999		0	0		0	9		0		0	0		0	0		0	71			terrain_urban/ind
+TERRAIN_RULE	NO_VALUE	ind_low			NO_VALUE	0	0		0	90	-999	999		0	0		0	0		0		0	0		0	0		0	71			terrain_urban/ind
+TERRAIN_RULE	NO_VALUE	urban			NO_VALUE	0	0		0	90	-999	999		0	0		0	0		0		0	0		0	0		0	71			terrain_urban/urban
+

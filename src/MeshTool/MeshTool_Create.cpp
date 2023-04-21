@@ -189,7 +189,6 @@ void MT_MakeDSF(rf_region region, const char * dump, const char * out_dsf)
 
 	// -calcmesh
 	TriangulateMesh(*the_map, sMesh, sDem, dump, ConsoleProgressFunc);
-
 	// WriteXESFile("temp1.xes", *the_map,sMesh,sDem,sApts,ConsoleProgressFunc);
 
 	CalcRoadTypes(*the_map, sDem[dem_Elevation], sDem[dem_UrbanDensity],sDem[dem_Temperature], sDem[dem_Rainfall],ConsoleProgressFunc);

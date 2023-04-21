@@ -1,0 +1,43 @@
+#		cliff ID	hill	cliff	hill	hill	cliff	cliff	hill				cliff
+#				res	res	xon	full	xon	full	tex				tex
+INCLUDE cliff_infos.txt
+
+#
+# These are the terrain definitions - each terrain is defined ONLY ONCE, so that the properties are never inconsistent!
+#
+# Name: name of .ter file without suffix.  Relative path IS needed.
+# Layer: arbitrary layer number for stacking...higher layer numbers "spread" onto lower ones for borders.  Airports should be highest!
+# Xon: the ideal transition distance on flat terrain, in meters.
+# RGB: RGB color to preview the terrain in RFUI, either in the form 255,127,255 or FF88FF (web-hex form).
+# Base texture: the DDS or PNG file for the base terrain.
+# Border texture: the border texture that defines the "ramp" of the terrain blend.
+# Res: the distance the entire texture takes in meters, e.g. 5000 = 5 km tex for the base texture.
+# Lit: 1 if there is a _LIT texture for the base, 0 if there is not.
+# Mode: the SHADER mode for this terrain.  All params after the shader depend on the TYPE of shader.
+# 	NORMAL
+#		The terrain is used as it always was in v9, with no auto-varying.  No params follow.
+#	VARY
+#		An "auto-vary" - that is, two terrains mixed together randomly to form "patches" of different texture.
+#		The second texture MUST be the first texture with the suffix "2".
+#	SLOPE
+#		Dynamic cliffs and hills.  The base texture is used in flat regions.  The mid-terrain uses the "hill" texture,
+#		which is rotated so the bottom of the texture is lowest ground. The highest slope area uses the "cliff" texture,
+#		which is projected so that the bottom of the texture is the bottom of the cliff.  Params are:
+#		hill_res cliff_res hill_angle1 hill_angle2 cliff_angle1 cliff_angle2 hill_tex cliff_tex
+#		The angle ranges define the transitional area from one terrain to the next.
+#	TILE	
+#		One or two textures are cut into tiles and the tiles are randomly reorganized to hide repeats.  Params are:
+#		Number of tiles horizontally, number of tiles vertically, whether to use the second texture (1 = yes, 0 = no).
+#		The second texture MUST be the first texture with the suffix "2", if it is used.
+#		
+#		NAME		LAYER	XON	RGB	BASE TEX				BORDER_TEX			RES	LIT	MODE	MODE PARAMS	VARY?
+INCLUDE terrain_infos.txt
+
+#
+# These are the terrain rules.  If ALL of the rules match (or are ignored) we use this terrain class, in order.
+# Changes from before: comma-separated sets are allowed for landuse (no spaces).
+#
+#		Terrain		landuse												elev		slope		temp		temp rng	rain		near	rel elev	elev rng	lat		terrain
+#				(sets allowed											min	max	min	max	min	max	min	max	min	max	water	min	max	min	max	min	max
+INCLUDE terrain_rules.txt
+

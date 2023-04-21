@@ -1,0 +1,81 @@
+#
+# Feature properties
+#
+# PROPERTY VALUE - this is how the presence of this feature affects the property value of the
+# underlying terrain.
+#
+# TERRAIN IMPLICATION - The presence of this feature implies this terrain type for the underlying
+# polygon.
+#
+#		   FEATURE TYPE							PROPERTY VALUE		TERRAIN IMPLICATION
+FEAT_PROP feat_MilitaryBase						30%					terrain_MilitaryBase
+FEAT_PROP feat_TrailerPark						30%					terrain_TrailerPark
+FEAT_PROP feat_Campground						60%					terrain_Campground
+FEAT_PROP feat_Marina							80%					terrain_Marina
+FEAT_PROP feat_GolfCourse						80%					terrain_GolfCourse
+FEAT_PROP feat_Cemetary							60%					terrain_Cemetary
+
+
+FEAT_PROP feat_MedicalCenter					60%					terrain_Urban
+FEAT_PROP feat_EducationalCenter				70%					NO_VALUE
+FEAT_PROP feat_Jail								30%					NO_VALUE
+FEAT_PROP feat_Religious						60%					NO_VALUE
+FEAT_PROP feat_PostOffice						60%					NO_VALUE
+FEAT_PROP feat_Refinery							20%					terrain_Industrial
+
+
+FEAT_PROP feat_BusTerminal						30%					NO_VALUE
+FEAT_PROP feat_TrainTerminal					30%					NO_VALUE
+FEAT_PROP feat_SeaTerminal						20%					NO_VALUE
+FEAT_PROP feat_Dam								40%					NO_VALUE
+FEAT_PROP feat_Tramway							90%					NO_VALUE
+
+
+FEAT_PROP feat_RadioTower						45%					NO_VALUE
+FEAT_PROP feat_Pole								40%					NO_VALUE
+FEAT_PROP feat_Crane							40%					NO_VALUE
+FEAT_PROP feat_Elevator							50%					NO_VALUE
+FEAT_PROP feat_Windmill							60%					NO_VALUE
+FEAT_PROP feat_Tank								30%					terrain_Industrial
+FEAT_PROP feat_Smokestack						30%					terrain_Industrial
+FEAT_PROP feat_Smokestacks						30%					terrain_Industrial
+
+
+FEAT_PROP feat_Arch								70%					NO_VALUE
+FEAT_PROP feat_CoolingTower						50%					NO_VALUE
+FEAT_PROP feat_Monument							80%					NO_VALUE
+FEAT_PROP feat_Spire							80%					NO_VALUE
+FEAT_PROP feat_Dome								70%					NO_VALUE
+FEAT_PROP feat_Sign								50%					NO_VALUE
+
+FEAT_PROP feat_AmusementCenter					70%					NO_VALUE
+
+FEAT_PROP feat_Windsock							10%					NO_VALUE
+FEAT_PROP feat_RotatingBeacon					10%					NO_VALUE
+FEAT_PROP feat_BeaconNDB						40%					NO_VALUE
+FEAT_PROP feat_BeaconVOR						50%					NO_VALUE
+FEAT_PROP feat_BeaconILS						10%					NO_VALUE
+FEAT_PROP feat_BeaconLDA						10%					NO_VALUE
+FEAT_PROP feat_BeaconGS							10%					NO_VALUE
+FEAT_PROP feat_MarkerBeacon						10%					NO_VALUE
+FEAT_PROP feat_RadarASR							30%					NO_VALUE
+FEAT_PROP feat_RadarARSR						50%					NO_VALUE
+
+FEAT_PROP feat_ResidentialLowRise				60%					terrain_Urban
+FEAT_PROP feat_ResidentialMidRise				50%					terrain_Urban
+FEAT_PROP feat_ResidentialComplex				60%					terrain_Urban
+FEAT_PROP feat_ResidentialHouse					70%					terrain_Residential
+FEAT_PROP feat_ResidentialLowValueComplex		20%					terrain_Residential
+
+FEAT_PROP feat_CommercialOffice					50%					terrain_Urban
+FEAT_PROP feat_CommercialShoppingPlaza			40%					terrain_CommercialSprawl
+FEAT_PROP feat_Government						60%					terrain_Urban
+
+FEAT_PROP feat_Industrial						20%					terrain_Industrial
+FEAT_PROP feat_Plant							20%					terrain_Industrial
+
+FEAT_PROP feat_Skyscraper						70%					terrain_Urban
+FEAT_PROP feat_Building							50%					terrain_Urban
+
+FEAT_PROP feat_Park								60%					terrain_Park
+FEAT_PROP feat_ForestPark						60%					terrain_ForestPark

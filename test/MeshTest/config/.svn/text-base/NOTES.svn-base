@@ -1,0 +1,23 @@
+9-26-05
+	Added a new spreadsheet column, "URBAN-SQUARE".
+	This requires the nearest urban to be square, irregular.  Values are:
+		0 = don't care
+		1 = reguire square
+		2 = require irregular
+	
+	This can be used to determine the city type (square vs irregular) for
+	mesh that is not over an urban land use, but near one.
+
+	A new raster layer dem_UrbanSquare holds this info.
+
+9-24-05
+	Fixed color export - it now uses enum_color.txt
+	
+	Added a preference to relate the temperature data to a certain altitude.
+	(It used to be that temperature was always tied to the 50% altitudes of a XES.)
+	
+	A new raster layer dem_TemperatureSeaLevel shows the temperature at sea level
+	for a XES, which shows climate change without mountains.
+	
+	Change to enu_colors.txt: the COLOR_ENUM_DEM command is needed to indicate
+	which raster layers are enumerated

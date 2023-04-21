@@ -1,0 +1,660 @@
+#
+# This file defines many of the colors used in WorldEditor.  Colors are either six digit
+# hex numbers (this is "web-style" oclors, e.g. 00FF55 for green with a bit of blue, or
+# three comma-separated values for 0-255 style colors, e.g. 0,255,100 for a similar color.
+#
+#
+ENUM_COLOR	NO_VALUE																000000
+
+ENUM_COLOR	lu_globcover_CROP	AAF0F0
+ENUM_COLOR	lu_globcover_CROP_IRRIGATED	AACDCD
+ENUM_COLOR	lu_globcover_CROP_FRUIT	AAF5F5
+ENUM_COLOR	lu_globcover_CROP_ORCHARDS	FFFF8C
+ENUM_COLOR	lu_globcover_CROP_MOSAIC	DCF078
+ENUM_COLOR	lu_globcover_PASTURES	E6E64D
+ENUM_COLOR	lu_globcover_FOREST_BRAODLEAVED_DENSE	006400
+ENUM_COLOR	lu_globcover_FOREST_BRAODLEAVED_SPARSE	286428
+ENUM_COLOR	lu_globcover_FOREST_DECIDUOS_DENSE	00A000
+ENUM_COLOR	lu_globcover_FOREST_DECIDUOS_SPARSE	AAC800
+ENUM_COLOR	lu_globcover_FOREST_CONIFER_DENSE	003C00
+ENUM_COLOR	lu_globcover_FOREST_CONIFER_SPARSE	286400
+ENUM_COLOR	lu_globcover_FOREST_MIXED_DENSE	788200
+ENUM_COLOR	lu_globcover_FOREST_MIXED_SPARSE	788228
+ENUM_COLOR	lu_globcover_FOREST_MOSAIC	8CA000
+ENUM_COLOR	lu_globcover_SHRUB	966400
+ENUM_COLOR	lu_globcover_GRASSLAND	FFB432
+ENUM_COLOR	lu_globcover_SPARSE	FFEBAF
+ENUM_COLOR	lu_globcover_SPARSE_TREES	FFEBA5
+ENUM_COLOR	lu_globcover_SPARSE_SCREE	E6EBAF
+ENUM_COLOR	lu_globcover_WETLAND_BROADLEAVED_OPEN	00785A
+ENUM_COLOR	lu_globcover_WETLAND_SHRUB_CLOSED	009678
+ENUM_COLOR	lu_globcover_WETLAND_GRASSLAND	00DC82
+ENUM_COLOR	lu_globcover_URBAN_HIGH	F0001C
+ENUM_COLOR	lu_globcover_URBAN_TOWN	634246
+ENUM_COLOR	lu_globcover_URBAN_LOW	8A424A
+ENUM_COLOR	lu_globcover_URBAN_MEDIUM	BD4250
+ENUM_COLOR	lu_globcover_URBAN_SQUARE_TOWN	634246
+ENUM_COLOR	lu_globcover_URBAN_SQUARE_LOW	8A424A
+ENUM_COLOR	lu_globcover_URBAN_SQUARE_MEDIUM	BD4250
+ENUM_COLOR	lu_globcover_URBAN_SQUARE_HIGH	F0001C
+ENUM_COLOR	lu_globcover_INDUSTRY	CC4DF2
+ENUM_COLOR	lu_globcover_BARE_ROCKS	FFF5D7
+ENUM_COLOR	lu_globcover_BARE_CONSOLIDATED	EBE1C3
+ENUM_COLOR	lu_globcover_BARE_SANDY	E1D7B9
+ENUM_COLOR	lu_globcover_BARE_SCREE	FFF5F5
+ENUM_COLOR	lu_globcover_BARE_RIVERBED	E1D7CD
+ENUM_COLOR	lu_globcover_MORAINE	FFF5C8
+ENUM_COLOR	lu_globcover_MINE	969696
+ENUM_COLOR	lu_globcover_SALT	FAFAFA
+ENUM_COLOR	lu_globcover_SALT_HEM	D9D9D9
+ENUM_COLOR	lu_globcover_WATER	0046C8
+ENUM_COLOR	lu_globcover_SNOW	FFFFFF
+ENUM_COLOR	lu_globcover_GLACIER	F0FFFF
+ENUM_COLOR	lu_globcover_URBAN_CROP_TOWN	C36E3C
+ENUM_COLOR	lu_globcover_URBAN_SQUARE_CROP_TOWN	C36E78
+ENUM_COLOR	lu_globcover_INDUSTRY_SQUARE	CC57FC
+ENUM_COLOR	lu_globcover_NO_DATA	000000
+
+
+ENUM_COLOR  climate_TropicalRainForest						990099
+ENUM_COLOR  climate_TropicalMonsoon							FF99FF
+ENUM_COLOR  climate_TropicalDry								FF66FF
+ENUM_COLOR  climate_DrySteppe								FF6600
+ENUM_COLOR  climate_DryDesert								FF9933
+ENUM_COLOR	climate_TemperateAny							99FF99
+ENUM_COLOR  climate_TemperateSummerDry						66CC00
+ENUM_COLOR  climate_TemperateWinterDry						006600
+ENUM_COLOR  climate_TemperateWet							003300
+ENUM_COLOR	climate_ColdAny									66CCFF
+ENUM_COLOR  climate_ColdSummerDry							3366FF
+ENUM_COLOR  climate_ColdWinterDry							000099
+ENUM_COLOR  climate_PolarTundra								9999CC
+ENUM_COLOR  climate_PolarFrozen								FFFFFF
+
+#ENUM_COLOR  phenom_Unknown									FF00FF
+#ENUM_COLOR  phenom_Water									0022FF
+#ENUM_COLOR  phenom_FreshWater								4433FF
+#ENUM_COLOR  phenom_SeaWater								0000CC
+#ENUM_COLOR  phenom_Ice										EEEEEE
+
+#ENUM_COLOR  phenom_Soil									663333
+#ENUM_COLOR  phenom_Rock									AAAAAA
+#ENUM_COLOR  phenom_Sand									886622
+
+#ENUM_COLOR  phenom_Urban									777777
+
+#ENUM_COLOR  phenom_Grass									006600
+#ENUM_COLOR  phenom_TallGrass								339933
+#ENUM_COLOR  phenom_GrassAndShrubs							55DD55
+#ENUM_COLOR  phenom_TallShrubs								77FF77
+#ENUM_COLOR  phenom_Swamp									664444
+#ENUM_COLOR  phenom_Crops									00DD00
+#ENUM_COLOR  phenom_WetCrops								00DD77
+
+#ENUM_COLOR  phenom_Forest									44DD44
+#ENUM_COLOR  phenom_DeciForest								66FF66
+#ENUM_COLOR  phenom_ConiForest								008800
+#ENUM_COLOR  phenom_MixedForest								66FF66
+#ENUM_COLOR  phenom_SwampTrees								664444
+#ENUM_COLOR  phenom_Orchard									44DD66
+#ENUM_COLOR  phenom_ConiOrchard								66FF88
+#ENUM_COLOR  phenom_DeciOrchard								008822
+
+ENUM_COLOR   terrain_Water									2222DD
+ENUM_COLOR   terrain_Water2									3333DD
+ENUM_COLOR   terrain_Natural								000000
+
+ENUM_COLOR   terrain_Marker_Artificial						FF00FF
+ENUM_COLOR   terrain_MixedFarm								004400
+ENUM_COLOR   terrain_MixedFarmHill							003300
+ENUM_COLOR   terrain_Farm									008800
+ENUM_COLOR   terrain_FarmHill								007700
+ENUM_COLOR   terrain_FarmTown								447744
+ENUM_COLOR   terrain_FarmTownHill							336633
+	
+ENUM_COLOR   terrain_OutlayResidential						444444
+ENUM_COLOR   terrain_OutlayResidentialHill					333333
+ENUM_COLOR   terrain_OutlayHighrise							006666
+ENUM_COLOR   terrain_OutlayHighriseHill						005555
+ENUM_COLOR   terrain_Residential							999900
+ENUM_COLOR   terrain_ResidentialHill						888800
+ENUM_COLOR   terrain_CommercialSprawl						008888
+ENUM_COLOR   terrain_CommercialSprawlHill					007700
+ENUM_COLOR   terrain_Urban									CC2200
+
+ENUM_COLOR   terrain_Urban1									A00000
+ENUM_COLOR   terrain_Urban2									AC0000
+ENUM_COLOR   terrain_Urban3									B40000
+ENUM_COLOR   terrain_Urban4									C00000
+
+ENUM_COLOR   terrain_Urban5									505000
+ENUM_COLOR   terrain_Urban6									5C5000
+ENUM_COLOR   terrain_Urban7									645000
+ENUM_COLOR   terrain_Urban8									705000
+
+ENUM_COLOR   terrain_UrbanHill								AAAA00
+ENUM_COLOR   terrain_Industrial								BB7700
+ENUM_COLOR   terrain_Industrial1							AA7700
+ENUM_COLOR   terrain_Industrial2							AA8800
+ENUM_COLOR   terrain_Industrial3							BB7700
+ENUM_COLOR   terrain_Industrial4							BB8800
+ENUM_COLOR   terrain_IndustrialHill							AA6600
+ENUM_COLOR   terrain_Downtown								FFFF00
+ENUM_COLOR   terrain_DowntownHill							EEEE00
+	
+ENUM_COLOR   terrain_Marker_Features						FF00FF
+ENUM_COLOR   terrain_MilitaryBase							555555
+ENUM_COLOR   terrain_TrailerPark							005500
+ENUM_COLOR   terrain_Campground								005500
+ENUM_COLOR   terrain_Marina									0000BB
+ENUM_COLOR   terrain_GolfCourse								448800
+ENUM_COLOR   terrain_Cemetary								448800
+ENUM_COLOR   terrain_Park									448800
+ENUM_COLOR   terrain_ForestPark								447700
+ENUM_COLOR   terrain_ForestPark1							447700
+ENUM_COLOR   terrain_ForestPark2							446600
+ENUM_COLOR   terrain_ForestPark3							557700
+ENUM_COLOR   terrain_ForestPark4							556600
+ENUM_COLOR   terrain_Airport								666666
+
+
+ENUM_COLOR	sink_Known										0000FF
+ENUM_COLOR	sink_Invalid									FF0000
+ENUM_COLOR	sink_Unresolved									FF00FF
+ENUM_COLOR	sink_Lake										8888FF
+ENUM_COLOR	drain_Dir0										88FF88
+ENUM_COLOR	drain_Dir1										AADD88
+ENUM_COLOR	drain_Dir2										BBCC88
+ENUM_COLOR	drain_Dir3										DDAA88
+ENUM_COLOR	drain_Dir4										FF8888
+ENUM_COLOR	drain_Dir5										DDAA88
+ENUM_COLOR	drain_Dir6										BBCC88
+ENUM_COLOR	drain_Dir7										AADD88
+
+#These are the original rainfall color bands from the people who made the koeppen data
+#COLOR_BAND	dem_Rainfall	0		25			230,230,230		190,190,190
+#COLOR_BAND	dem_Rainfall	25		75			190,190,190		150,150,150
+#COLOR_BAND	dem_Rainfall	75		125 		150,150,150		196,112,110
+#COLOR_BAND	dem_Rainfall	125 	225 		196,112,110		200,179,150
+#COLOR_BAND	dem_Rainfall	225 	275 		200,179,150		255,199,117
+#COLOR_BAND	dem_Rainfall	275 	375 		255,199,117		255,255,84
+#COLOR_BAND	dem_Rainfall	375 	475 		255,255,84		145,255,153
+#COLOR_BAND	dem_Rainfall	475 	725 		145,255,153		0,255,0
+#COLOR_BAND	dem_Rainfall	725 	975 		0,255,0			64,199,56
+#COLOR_BAND	dem_Rainfall	975 	1475		64,199,56		13,150,5
+#COLOR_BAND	dem_Rainfall	1475	2475		13,150,5		5,112,94
+#COLOR_BAND	dem_Rainfall	2475	4975		5,112,94		255,0,255
+#COLOR_BAND	dem_Rainfall	4975	7475		255,0,255		128,0,128
+#COLOR_BAND	dem_Rainfall	7475	10005		128,0,128		0,138,255
+
+#These are Sergio's replacement color bands.
+COLOR_BAND	dem_Rainfall	0		50			50,50,50		255,255,163
+COLOR_BAND	dem_Rainfall	50		250			251,175,92		255,255,0
+COLOR_BAND	dem_Rainfall	250		700			196,223,155		251,175,92		
+COLOR_BAND	dem_Rainfall	700		1200		0,89,40			196,223,155		
+COLOR_BAND	dem_Rainfall	1200	1800		170,226,255		0,89,40			
+COLOR_BAND	dem_Rainfall	1800	2800		59,124,255		170,226,255		
+COLOR_BAND	dem_Rainfall	2800	10005		29,0,125		59,124,255		
+																
+COLOR_BAND	dem_HydroQuantity	0		25			230,230,230		190,190,190
+COLOR_BAND	dem_HydroQuantity	25		75			190,190,190		150,150,150
+COLOR_BAND	dem_HydroQuantity	75		125 		150,150,150		196,112,110
+COLOR_BAND	dem_HydroQuantity	125 	225 		196,112,110		200,179,150
+COLOR_BAND	dem_HydroQuantity	225 	275 		200,179,150		255,199,117
+COLOR_BAND	dem_HydroQuantity	275 	375 		255,199,117		255,255,84
+COLOR_BAND	dem_HydroQuantity	375 	475 		255,255,84		145,255,153
+COLOR_BAND	dem_HydroQuantity	475 	725 		145,255,153		0,255,0
+COLOR_BAND	dem_HydroQuantity	725 	975 		0,255,0			64,199,56
+COLOR_BAND	dem_HydroQuantity	975 	1475		64,199,56		13,150,5
+COLOR_BAND	dem_HydroQuantity	1475	2475		13,150,5		5,112,94
+COLOR_BAND	dem_HydroQuantity	2475	4975		5,112,94		255,0,255
+COLOR_BAND	dem_HydroQuantity	4975	7475		255,0,255		128,0,128
+COLOR_BAND	dem_HydroQuantity	7475	10005		128,0,128		0,138,255
+
+COLOR_BAND	dem_Biomass			0		10			230,230,230,	160,160,160
+COLOR_BAND	dem_Biomass			10		30			160,160,160		255,230,150
+COLOR_BAND	dem_Biomass			30		50			255,230,150		255,199,117
+COLOR_BAND	dem_Biomass			50		70			255,199,117		181,112,110
+COLOR_BAND	dem_Biomass			70		110			181,112,110		158,186,90
+COLOR_BAND	dem_Biomass			110		170			158,186,90		255,255,0
+COLOR_BAND	dem_Biomass			170		310			255,255,0		160,255,0
+COLOR_BAND	dem_Biomass			310		610			160,255,0		10,230,30
+COLOR_BAND	dem_Biomass			610		1210		10,230,30		0,170,0
+COLOR_BAND	dem_Biomass			1210	2010		0,170,0			5,112,94
+COLOR_BAND	dem_Biomass			2010	2510		5,112,94		0,138,255
+COLOR_BAND	dem_Biomass			2510	3010		0,138,255		0,0,255
+
+
+#COLOR_BAND	dem_Temperature		-99	-20	164,199,208	164,199,208	# ice
+#COLOR_BAND	dem_Temperature		-20	-12	252,252,252	252,252,252	# Glacier
+#COLOR_BAND	dem_Temperature		-12	-8	150,150,150	150,150,150	# polar desert/rock
+#COLOR_BAND	dem_Temperature		-8	-6.5	170,197,159	170,197,159	# polar semidesert/rock
+#COLOR_BAND	dem_Temperature		-6.5	-5.5	156,241,119	156,241,119  	# tundra_scree
+#COLOR_BAND	dem_Temperature		-5.5	-4	179,185,83	179,185,83  	# tundra/wooded tundra
+#COLOR_BAND	dem_Temperature		-4	0	0,89,40		0,89,40		# boreal
+#COLOR_BAND	dem_Temperature		0	4	44,108,59	44,108,59	# conifer
+#COLOR_BAND	dem_Temperature		4	8	23,127,18	23,127,18	# mixed
+#COLOR_BAND	dem_Temperature		8	12.5	12,157,6	12,157,6	# cool broadleaf
+#COLOR_BAND	dem_Temperature		12.5	15.5	0,207,24	0,207,24	# temp broadleaf
+#COLOR_BAND	dem_Temperature		15.5	20	255,255,0	255,255,0	# warm broadleaf
+#COLOR_BAND	dem_Temperature		20	25	247,148,28	247,148,28	# sub-tropical
+#COLOR_BAND	dem_Temperature		25	99	237,27,35	237,27,35	# tropical
+
+COLOR_BAND	dem_Temperature		-99	-8	255,0,255	255,0,255	# vpol
+COLOR_BAND	dem_Temperature		-8	-4	2,17,229	2,17,229	# pol
+COLOR_BAND	dem_Temperature		-4	-1	7,135,255	7,135,255	# vcld
+COLOR_BAND	dem_Temperature		-1	4	0,255,119	0,255,119	# cld
+COLOR_BAND	dem_Temperature		4	14.5	255,255,0	255,255,0	# tmp
+COLOR_BAND	dem_Temperature		14.5	19.5	255,170,0	255,170,0	# wrm
+COLOR_BAND	dem_Temperature		19.5	23.5	255,85,0	255,85,0	# hot
+COLOR_BAND	dem_Temperature		23.5	27.5	255,0,0		255,0,0		# vhot
+COLOR_BAND	dem_Temperature		27.5	99	170,0,0		170,0,0		# vvhot
+
+#COLOR_BAND	dem_TemperatureSeaLevel		-99	-20	164,199,208	164,199,208	# ice
+#COLOR_BAND	dem_TemperatureSeaLevel		-20	-12	252,252,252	252,252,252	# Glacier
+#COLOR_BAND	dem_TemperatureSeaLevel		-12	-8	150,150,150	150,150,150	# polar desert/rock
+#COLOR_BAND	dem_TemperatureSeaLevel		-8	-6.5	170,197,159	170,197,159	# polar semidesert/rock
+#COLOR_BAND	dem_TemperatureSeaLevel		-6.5	-5.5	156,241,119	156,241,119  	# tundra_scree
+#COLOR_BAND	dem_TemperatureSeaLevel		-5.5	-4	179,185,83	179,185,83  	# tundra/wooded tundra
+#COLOR_BAND	dem_TemperatureSeaLevel		-4	0	0,89,40		0,89,40		# boreal
+#COLOR_BAND	dem_TemperatureSeaLevel		0	4	44,108,59	44,108,59	# conifer
+#COLOR_BAND	dem_TemperatureSeaLevel		4	8	23,127,18	23,127,18	# mixed
+#COLOR_BAND	dem_TemperatureSeaLevel		8	12.5	12,157,6	12,157,6	# cool broadleaf
+#COLOR_BAND	dem_TemperatureSeaLevel		12.5	15.5	0,207,24	0,207,24	# temp broadleaf
+#COLOR_BAND	dem_TemperatureSeaLevel		15.5	20	255,255,0	255,255,0	# warm broadleaf
+#COLOR_BAND	dem_TemperatureSeaLevel		20	25	247,148,28	247,148,28	# sub-tropical
+#COLOR_BAND	dem_TemperatureSeaLevel		25	99	237,27,35	237,27,35	# tropical
+
+COLOR_BAND	dem_TemperatureSeaLevel		-30	-10	255,255,255	0,0,255
+COLOR_BAND	dem_TemperatureSeaLevel		-10	0	  0,0,0     0,255,0
+COLOR_BAND	dem_TemperatureSeaLevel		0	10	0,255,0     255,255,0
+COLOR_BAND	dem_TemperatureSeaLevel		10	40	255,255,0   255,0,0
+
+#These are the original temperature color bands from the people who made the Koeppen data.
+#COLOR_BAND	dem_TemperatureSeaLevel		-60		-29.5		160,160,160		192,192,192
+#COLOR_BAND	dem_TemperatureSeaLevel		-29.5	-24.5		192,192,192		220,220,220
+#COLOR_BAND	dem_TemperatureSeaLevel		-24.5	-14.5		220,220,220		138,200,230
+#COLOR_BAND	dem_TemperatureSeaLevel		-14.5	-9.5		138,200,230		0,240,255
+#COLOR_BAND	dem_TemperatureSeaLevel		-9.5	-4.5		0,240,255		138,240,145
+#COLOR_BAND	dem_TemperatureSeaLevel		-4.5	0.5			138,240,145		234,255,145
+#COLOR_BAND	dem_TemperatureSeaLevel		0.5		10.5		234,255,145		181,143,0
+#COLOR_BAND	dem_TemperatureSeaLevel		10.5	15.5		181,143,0		255,143,0
+#COLOR_BAND	dem_TemperatureSeaLevel		15.5	20.5		255,143,0		255,84,0
+#COLOR_BAND	dem_TemperatureSeaLevel		20.5	30.5		255,84,0		255,0,0
+#COLOR_BAND	dem_TemperatureSeaLevel		30.5	35.5		255,0,0			194,0,0
+#COLOR_BAND	dem_TemperatureSeaLevel		35.5	40.0		194,0,0			97,0,0
+
+#These are Sergio's new temperature color bands
+
+COLOR_BAND	dem_TemperatureRange	0.0 	5.0 	255,255,141		237,237,135
+COLOR_BAND	dem_TemperatureRange	5.0 	10.0	237,237,135		219,219,85 
+COLOR_BAND	dem_TemperatureRange	10.0	15.0	219,219,85 		201,201,51 
+COLOR_BAND	dem_TemperatureRange	15.0	20.0	201,201,51 		182,182,88 
+COLOR_BAND	dem_TemperatureRange	20.0	25.0	182,182,88 		197,164,78 
+COLOR_BAND	dem_TemperatureRange	25.0	30.0	197,164,78 		246,164,78 
+COLOR_BAND	dem_TemperatureRange	30.0	35.0	246,164,78 		255,153,39 
+COLOR_BAND	dem_TemperatureRange	35.0	40.0	255,153,39 		255,145,119
+COLOR_BAND	dem_TemperatureRange	40.0	45.0	255,145,119		255,120,67 
+COLOR_BAND	dem_TemperatureRange	45.0	50.0	255,120,67 		207,135,149
+COLOR_BAND	dem_TemperatureRange	50.0	55.0	207,135,149		168,103,129
+COLOR_BAND	dem_TemperatureRange	55.0	60.0    168,103,129		150,79,90 
+COLOR_BAND	dem_TemperatureRange	60.0    65.0    150,79,90 		130,50,50 
+
+COLOR_BAND	dem_RelativeElevation	-5		0		0,60,60			0,60,60
+COLOR_BAND	dem_RelativeElevation	-5		0.1		0,60,60			155,155,0
+COLOR_BAND	dem_RelativeElevation	0.1		0.2		0,155,155			0,255,0
+COLOR_BAND	dem_RelativeElevation	0.3		0.6		0,255,0		255,255,0
+COLOR_BAND	dem_RelativeElevation	0.6		0.8		255,255,0		255,255,115
+COLOR_BAND	dem_RelativeElevation	0.8		1.0		255,255,115		127,127,127
+COLOR_BAND	dem_RelativeElevation	1.0		5.0		127,127,127		127,127,127
+
+COLOR_BAND	dem_ElevationRange		0		100		0,0,0			0,127,0
+COLOR_BAND	dem_ElevationRange		100		500		0,127,0			127,127,0
+COLOR_BAND	dem_ElevationRange		500		1000	127,127,0		127,0,0
+COLOR_BAND	dem_ElevationRange		1000	2000	127,0,0			127,0,127
+COLOR_BAND	dem_ElevationRange		2000	3000	127,0,127		0,0,127
+
+COLOR_BAND	dem_Elevation			-500	-100	0,152,234	76,193,255
+COLOR_BAND	dem_Elevation			-100	-50	76,193,255	0,255,255
+COLOR_BAND	dem_Elevation			-50	-10	0,255,255	128,255,255
+COLOR_BAND	dem_Elevation			-10	-0.1	128,255,255	128,255,224
+COLOR_BAND	dem_Elevation			-0.1	0	128,255,224	189,255,189
+COLOR_BAND	dem_Elevation			0	10	189,255,189	240,253,131
+COLOR_BAND	dem_Elevation			10	20	240,253,131	232,249,134
+COLOR_BAND	dem_Elevation			20	50	232,249,134	128,255,0
+COLOR_BAND	dem_Elevation			50	100	128,255,0	107,215,0
+COLOR_BAND	dem_Elevation			100	250	107,215,0	114,170,22
+COLOR_BAND	dem_Elevation			250	500	114,170,22	6,122,6
+COLOR_BAND	dem_Elevation			500	1000	6,122,6		119,141,36
+COLOR_BAND	dem_Elevation			1000	2000	119,141,36	125,91,29
+COLOR_BAND	dem_Elevation			2000	3000	125,91,29	179,173,163
+COLOR_BAND	dem_Elevation			3000	4000	179,173,163	197,197,197
+COLOR_BAND	dem_Elevation			4000	6000	197,197,197	242,242,242
+COLOR_BAND	dem_Elevation			6000	8000	242,242,242	255,255,255
+COLOR_BAND	dem_Elevation			8000	9000	255,255,255	255,255,255
+
+COLOR_BAND	dem_UrbanDensity		0		0.5		0,255,0			255,255,0
+COLOR_BAND	dem_UrbanDensity		0.5		1.0		255,255,0		255,0,0
+
+COLOR_BAND	dem_UrbanPropertyValue	0		0.5		0,255,0			255,255,0
+COLOR_BAND	dem_UrbanPropertyValue	0.5		1.0		255,255,0		255,0,0
+
+COLOR_BAND	dem_UrbanRadial			0		0.5		0,255,0			255,255,0
+COLOR_BAND	dem_UrbanRadial			0.5		1.0		255,255,0		255,0,0
+
+COLOR_BAND	dem_UrbanTransport		0		0.5		0,255,0			255,255,0
+COLOR_BAND	dem_UrbanTransport		0.5		1.0		255,255,0		255,0,0
+
+COLOR_BAND	dem_Slope				0		0.08		0,60,60			155,155,0
+COLOR_BAND	dem_Slope				0.08		0.14		155,155,0			0,255,0
+COLOR_BAND	dem_Slope				0.14		0.25		0,255,0			255,255,0
+COLOR_BAND	dem_Slope				0.25		1.0		255,255,0		255,0,0
+
+COLOR_BAND	dem_SlopeHeading		-1.0	0.0		0,255,0			255,255,0
+COLOR_BAND	dem_SlopeHeading		0.0		1.0		255,255,0		255,0,0
+
+COLOR_BAND	dem_Wizard				0.0		1.0		0,0,0			255,255,255
+
+COLOR_BAND	dem_UrbanSquare			1	2	0,200,0		200,0,0
+
+COLOR_ENUM_DEM	dem_HydroDirection
+COLOR_ENUM_DEM	dem_HydroElevation
+COLOR_ENUM_DEM	dem_OrigLandUse
+COLOR_ENUM_DEM	dem_LandUse
+COLOR_ENUM_DEM	dem_Climate
+
+#ENUM_COLOR		ind_high_solid		FF3388
+#ENUM_COLOR		ind_low_solid		BB2277
+#ENUM_COLOR		ind_broken		991177
+
+ENUM_COLOR		ind_high_solid		FFFF00
+ENUM_COLOR		ind_low_solid		CCCC00
+ENUM_COLOR		ind_high_broken		FF8800
+ENUM_COLOR		ind_low_broken		CC6600
+
+#ENUM_COLOR	urban_high_solid	C31400
+#ENUM_COLOR	urban_med_solid		C32850
+#ENUM_COLOR	urban_med_broken	C02850
+#ENUM_COLOR	urban_low_solid		C3503C
+#ENUM_COLOR	urban_low_broken	C0503C
+
+ENUM_COLOR	urban_com_solid	AAAAAA
+ENUM_COLOR	urban_bldg_irreg	DDDDDD
+ENUM_COLOR	urban_high_solid	FF0000
+ENUM_COLOR	urban_high_broken	FF0099
+ENUM_COLOR	urban_med_solid		AA0000
+ENUM_COLOR	urban_med_broken	AA0066
+ENUM_COLOR	urban_low_solid		880000
+ENUM_COLOR	urban_low_broken	880066
+
+ENUM_COLOR		park			55FF44
+ENUM_COLOR		mixed			4466BB
+ENUM_COLOR		natural 		006600
+ENUM_COLOR		natural2		004400
+ENUM_COLOR		natural3		002200
+
+ENUM_COLOR		SOIL_RED		FF0000
+ENUM_COLOR		CLIM_TUNDRA		335588
+ENUM_COLOR		AGRI_SQUARE		F0FB3E
+
+ENUM_COLOR	fruit_tmp_dry	AAF5F5
+ENUM_COLOR	orch_tmp_dry	FFFF8C
+ENUM_COLOR	fruit_tmp_sdry	AAF5F5
+ENUM_COLOR	orch_tmp_sdry	FFFF8C
+ENUM_COLOR	fruit_tmp_wet	AAF5F5
+ENUM_COLOR	orch_tmp_wet	FFFF8C
+ENUM_COLOR	fruit_tmp_rain	AAF5F5
+ENUM_COLOR	orch_tmp_rain	FFFF8C
+ENUM_COLOR	olive_wrm_sdry	FFFF8C
+ENUM_COLOR	fruit_wrm_dry	AAF5F5
+ENUM_COLOR	orch_wrm_dry	FFFF8C
+ENUM_COLOR	fruit_wrm_sdry	AAF5F5
+ENUM_COLOR	fruit_wrm_wet	AAF5F5
+ENUM_COLOR	orch_wrm_wet	FFFF8C
+ENUM_COLOR	fruit_wrm_rain	AAF5F5
+ENUM_COLOR	orch_wrm_rain	FFFF8C
+ENUM_COLOR	fruit_hot_dry	AAF5F5
+ENUM_COLOR	orch_hot_dry	FFFF8C
+ENUM_COLOR	fruit_hot_sdry	AAF5F5
+ENUM_COLOR	orch_hot_sdry	FFFF8C
+ENUM_COLOR	fruit_hot_wet	AAF5F5
+ENUM_COLOR	orch_hot_wet	FFFF8C
+ENUM_COLOR	fruit_hot_rain	AAF5F5
+ENUM_COLOR	orch_hot_rain	FFFF8C
+ENUM_COLOR	fruit_vhot_dry	AAF5F5
+ENUM_COLOR	orch_vhot_dry	FFFF8C
+ENUM_COLOR	fruit_vhot_sdry	AAF5F5
+ENUM_COLOR	orch_vhot_sdry	FFFF8C
+ENUM_COLOR	fruit_vhot_wet	AAF5F5
+ENUM_COLOR	orch_vhot_wet	FFFF8C
+ENUM_COLOR	fruit_vhot_rain	AAF5F5
+ENUM_COLOR	orch_vhot_rain	FFFF8C
+ENUM_COLOR	sparse_tr_hot_dry	FFEBA5
+ENUM_COLOR	sparse_hot_dry	FFEBAF
+ENUM_COLOR	sparse_tr_hot_sdry	FFEBA5
+ENUM_COLOR	sparse_hot_sdry	FFEBAF
+ENUM_COLOR	sparse_tr_vhot_dry	FFEBA5
+ENUM_COLOR	sparse_vhot_dry	FFEBAF
+ENUM_COLOR	sparse_tr_vhot_sdry	FFEBA5
+ENUM_COLOR	sparse_vhot_sdry	FFEBAF
+ENUM_COLOR	wetl_wdy_vcld_dry	00785A
+ENUM_COLOR	wetl_wdy_vcld_sdry	00785A
+ENUM_COLOR	wetl_wdy_vcld_wet	00785A
+ENUM_COLOR	wetl_wdy_vcld_rain	00785A
+ENUM_COLOR	wetl_wdy_cld_dry	00785A
+ENUM_COLOR	wetl_wdy_cld_sdry	00785A
+ENUM_COLOR	wetl_wdy_cld_wet	00785A
+ENUM_COLOR	wetl_wdy_cld_rain	00785A
+ENUM_COLOR	wetl_wdy_tmp_dry	00785A
+ENUM_COLOR	wetl_wdy_tmp_sdry	00785A
+ENUM_COLOR	wetl_wdy_tmp_wet	00785A
+ENUM_COLOR	wetl_wdy_tmp_rain	00785A
+ENUM_COLOR	wetl_wdy_wrm_dry	00785A
+ENUM_COLOR	wetl_wdy_wrm_sdry	00785A
+ENUM_COLOR	wetl_wdy_wrm_wet	00785A
+ENUM_COLOR	wetl_wdy_wrm_rain	00785A
+ENUM_COLOR	wetl_wdy_hot_dry	00785A
+ENUM_COLOR	wetl_wdy_hot_sdry	00785A
+ENUM_COLOR	wetl_wdy_hot_wet	00785A
+ENUM_COLOR	wetl_wdy_hot_rain	00785A
+ENUM_COLOR	wetl_wdy_vhot_dry	00785A
+ENUM_COLOR	wetl_wdy_vhot_sdry	00785A
+ENUM_COLOR	wetl_wdy_vhot_rain	00785A
+ENUM_COLOR	wetl_wdy_vhot_wet	00785A
+ENUM_COLOR	wetl_shrb_vcld_dry	009678
+ENUM_COLOR	wetl_shrb_vcld_sdry	009678
+ENUM_COLOR	wetl_shrb_vcld_wet	009678
+ENUM_COLOR	wetl_shrb_vcld_rain	009678
+ENUM_COLOR	wetl_shrb_cld_dry	009678
+ENUM_COLOR	wetl_shrb_cld_sdry	009678
+ENUM_COLOR	wetl_shrb_cld_wet	009678
+ENUM_COLOR	wetl_shrb_cld_rain	009678
+ENUM_COLOR	wetl_shrb_tmp_dry	009678
+ENUM_COLOR	wetl_shrb_tmp_sdry	009678
+ENUM_COLOR	wetl_shrb_tmp_wet	009678
+ENUM_COLOR	wetl_shrb_tmp_rain	009678
+ENUM_COLOR	wetl_shrb_wrm_dry	009678
+ENUM_COLOR	wetl_shrb_wrm_sdry	009678
+ENUM_COLOR	wetl_shrb_wrm_wet	009678
+ENUM_COLOR	wetl_shrb_wrm_rain	009678
+ENUM_COLOR	wetl_shrb_hot_dry	009678
+ENUM_COLOR	wetl_shrb_hot_sdry	009678
+ENUM_COLOR	wetl_shrb_hot_wet	009678
+ENUM_COLOR	wetl_shrb_hot_rain	009678
+ENUM_COLOR	wetl_shrb_vhot_dry	009678
+ENUM_COLOR	wetl_shrb_vhot_sdry	009678
+ENUM_COLOR	wetl_shrb_vhot_rain	009678
+ENUM_COLOR	wetl_shrb_vhot_wet	009678
+ENUM_COLOR	grass_rainforest_vhot_rain	FFB432
+ENUM_COLOR	shrb_vcld_dry	966400
+ENUM_COLOR	shrb_vcld_sdry	966400
+ENUM_COLOR	shrb_vcld_wet	966400
+ENUM_COLOR	shrb_vcld_rain	966400
+ENUM_COLOR	shrb_cld_dry	966400
+ENUM_COLOR	shrb_cld_sdry	966400
+ENUM_COLOR	shrb_cld_wet	966400
+ENUM_COLOR	shrb_cld_rain	966400
+ENUM_COLOR	shrb_tmp_dry	966400
+ENUM_COLOR	shrb_tmp_sdry	966400
+ENUM_COLOR	shrb_tmp_wet	966400
+ENUM_COLOR	shrb_tmp_rain	966400
+ENUM_COLOR	shrb_wrm_dry	966400
+ENUM_COLOR	shrb_wrm_sdry	966400
+ENUM_COLOR	shrb_wrm_wet	966400
+ENUM_COLOR	shrb_wrm_rain	966400
+ENUM_COLOR	shrb_hot_dry	966400
+ENUM_COLOR	shrb_hot_sdry	966400
+ENUM_COLOR	shrb_hot_wet	966400
+ENUM_COLOR	shrb_hot_rain	966400
+ENUM_COLOR	shrb_vhot_dry	966400
+ENUM_COLOR	shrb_vhot_sdry	966400
+ENUM_COLOR	shrb_vhot_rain	966400
+ENUM_COLOR	shrb_vhot_wet	966400
+ENUM_COLOR	broad_vcld_dry	00A000
+ENUM_COLOR	broad_vcld_sdry	00A000
+ENUM_COLOR	broad_vcld_wet	00A000
+ENUM_COLOR	broad_vcld_rain	00A000
+ENUM_COLOR	broad_sp_vcld_dry	AAC800
+ENUM_COLOR	broad_sp_vcld_sdry	AAC800
+ENUM_COLOR	broad_sp_vcld_wet	AAC800
+ENUM_COLOR	broad_sp_vcld_rain	AAC800
+ENUM_COLOR	broad_cld_dry	00A000
+ENUM_COLOR	broad_cld_sdry	00A000
+ENUM_COLOR	broad_cld_wet	00A000
+ENUM_COLOR	broad_cld_rain	00A000
+ENUM_COLOR	broad_sp_cld_dry	AAC800
+ENUM_COLOR	broad_sp_cld_sdry	AAC800
+ENUM_COLOR	broad_sp_cld_wet	AAC800
+ENUM_COLOR	broad_sp_cld_rain	AAC800
+ENUM_COLOR	broad_tmp_dry	00A000
+ENUM_COLOR	broad_tmp_sdry	00A000
+ENUM_COLOR	broad_tmp_wet	00A000
+ENUM_COLOR	broad_tmp_rain	00A000
+ENUM_COLOR	broad_sp_tmp_dry	AAC800
+ENUM_COLOR	broad_sp_tmp_sdry	AAC800
+ENUM_COLOR	broad_sp_tmp_wet	AAC800
+ENUM_COLOR	broad_sp_tmp_rain	AAC800
+ENUM_COLOR	broad_wrm_dry	00A000
+ENUM_COLOR	broad_wrm_sdry	00A000
+ENUM_COLOR	broad_wrm_wet	00A000
+ENUM_COLOR	broad_wrm_rain	00A000
+ENUM_COLOR	broad_sp_wrm_dry	AAC800
+ENUM_COLOR	broad_sp_wrm_sdry	AAC800
+ENUM_COLOR	broad_sp_wrm_wet	AAC800
+ENUM_COLOR	broad_sp_wrm_rain	AAC800
+ENUM_COLOR	broad_hot_dry	00A000
+ENUM_COLOR	broad_hot_sdry	00A000
+ENUM_COLOR	broad_hot_wet	00A000
+ENUM_COLOR	broad_hot_rain	00A000
+ENUM_COLOR	broad_sp_hot_dry	AAC800
+ENUM_COLOR	broad_sp_hot_sdry	AAC800
+ENUM_COLOR	broad_sp_hot_wet	AAC800
+ENUM_COLOR	broad_sp_hot_rain	AAC800
+ENUM_COLOR	broad_vhot_dry	00A000
+ENUM_COLOR	broad_vhot_sdry	00A000
+ENUM_COLOR	broad_vhot_rain	00A000
+ENUM_COLOR	broad_vhot_wet	00A000
+ENUM_COLOR	rainforest_vhot_rain	00A000
+ENUM_COLOR	broad_sp_vhot_dry	AAC800
+ENUM_COLOR	broad_sp_vhot_sdry	AAC800
+ENUM_COLOR	broad_sp_vhot_rain	AAC800
+ENUM_COLOR	broad_sp_vhot_wet	AAC800
+ENUM_COLOR	rainforest_sp_vhot_rain	AAC800
+ENUM_COLOR	mixed_vcld_dry	788200
+ENUM_COLOR	mixed_vcld_sdry	788200
+ENUM_COLOR	mixed_vcld_wet	788200
+ENUM_COLOR	mixed_vcld_rain	788200
+ENUM_COLOR	mixed_sp_vcld_dry	788228
+ENUM_COLOR	mixed_sp_vcld_sdry	788228
+ENUM_COLOR	mixed_sp_vcld_wet	788228
+ENUM_COLOR	mixed_sp_vcld_rain	788228
+ENUM_COLOR	mixed_cld_dry	788200
+ENUM_COLOR	mixed_cld_sdry	788200
+ENUM_COLOR	mixed_cld_wet	788200
+ENUM_COLOR	mixed_cld_rain	788200
+ENUM_COLOR	mixed_sp_cld_dry	788228
+ENUM_COLOR	mixed_sp_cld_sdry	788228
+ENUM_COLOR	mixed_sp_cld_wet	788228
+ENUM_COLOR	mixed_sp_cld_rain	788228
+ENUM_COLOR	mixed_tmp_dry	788200
+ENUM_COLOR	mixed_tmp_sdry	788200
+ENUM_COLOR	mixed_tmp_wet	788200
+ENUM_COLOR	mixed_tmp_rain	788200
+ENUM_COLOR	mixed_sp_tmp_dry	788228
+ENUM_COLOR	mixed_sp_tmp_sdry	788228
+ENUM_COLOR	mixed_sp_tmp_wet	788228
+ENUM_COLOR	mixed_sp_tmp_rain	788228
+ENUM_COLOR	mixed_wrm_dry	788200
+ENUM_COLOR	mixed_wrm_sdry	788200
+ENUM_COLOR	mixed_wrm_wet	788200
+ENUM_COLOR	mixed_wrm_rain	788200
+ENUM_COLOR	mixed_sp_wrm_dry	788228
+ENUM_COLOR	mixed_sp_wrm_sdry	788228
+ENUM_COLOR	mixed_sp_wrm_wet	788228
+ENUM_COLOR	mixed_sp_wrm_rain	788228
+ENUM_COLOR	mixed_hot_dry	788200
+ENUM_COLOR	mixed_hot_sdry	788200
+ENUM_COLOR	mixed_hot_wet	788200
+ENUM_COLOR	mixed_hot_rain	788200
+ENUM_COLOR	mixed_sp_hot_dry	788228
+ENUM_COLOR	mixed_sp_hot_sdry	788228
+ENUM_COLOR	mixed_sp_hot_wet	788228
+ENUM_COLOR	mixed_sp_hot_rain	788228
+ENUM_COLOR	mixed_vhot_dry	788200
+ENUM_COLOR	mixed_vhot_sdry	788200
+ENUM_COLOR	mixed_vhot_wet	788200
+ENUM_COLOR	mixed_vhot_rain	788200
+ENUM_COLOR	rainforestm_vhot_rain	788200
+ENUM_COLOR	mixed_sp_vhot_dry	788228
+ENUM_COLOR	mixed_sp_vhot_sdry	788228
+ENUM_COLOR	mixed_sp_vhot_wet	788228
+ENUM_COLOR	mixed_sp_vhot_rain	788228
+ENUM_COLOR	rainforestm_sp_vhot_rain	788228
+ENUM_COLOR	coni_vcld_dry	006400
+ENUM_COLOR	coni_vcld_sdry	006400
+ENUM_COLOR	coni_vcld_wet	006400
+ENUM_COLOR	coni_vcld_rain	006400
+ENUM_COLOR	coni_sp_vcld_dry	286428
+ENUM_COLOR	coni_sp_vcld_sdry	286428
+ENUM_COLOR	coni_sp_vcld_wet	286428
+ENUM_COLOR	coni_sp_vcld_rain	286428
+ENUM_COLOR	coni_cld_dry	006400
+ENUM_COLOR	coni_cld_sdry	006400
+ENUM_COLOR	coni_cld_wet	006400
+ENUM_COLOR	coni_cld_rain	006400
+ENUM_COLOR	coni_sp_cld_dry	286428
+ENUM_COLOR	coni_sp_cld_sdry	286428
+ENUM_COLOR	coni_sp_cld_wet	286428
+ENUM_COLOR	coni_sp_cld_rain	286428
+ENUM_COLOR	coni_tmp_dry	006400
+ENUM_COLOR	coni_tmp_sdry	006400
+ENUM_COLOR	coni_tmp_wet	006400
+ENUM_COLOR	coni_tmp_rain	006400
+ENUM_COLOR	coni_sp_tmp_dry	286428
+ENUM_COLOR	coni_sp_tmp_sdry	286428
+ENUM_COLOR	coni_sp_tmp_wet	286428
+ENUM_COLOR	coni_sp_tmp_rain	286428
+ENUM_COLOR	coni_wrm_dry	006400
+ENUM_COLOR	coni_wrm_sdry	006400
+ENUM_COLOR	coni_wrm_wet	006400
+ENUM_COLOR	coni_wrm_rain	006400
+ENUM_COLOR	coni_sp_wrm_dry	286428
+ENUM_COLOR	coni_sp_wrm_sdry	286428
+ENUM_COLOR	coni_sp_wrm_wet	286428
+ENUM_COLOR	coni_sp_wrm_rain	286428
+ENUM_COLOR	coni_hot_dry	006400
+ENUM_COLOR	coni_hot_sdry	006400
+ENUM_COLOR	coni_hot_wet	006400
+ENUM_COLOR	coni_hot_rain	006400
+ENUM_COLOR	coni_sp_hot_dry	286428
+ENUM_COLOR	coni_sp_hot_sdry	286428
+ENUM_COLOR	coni_sp_hot_wet	286428
+ENUM_COLOR	coni_sp_hot_rain	286428
+ENUM_COLOR	coni_vhot_dry	006400
+ENUM_COLOR	coni_vhot_sdry	006400
+ENUM_COLOR	coni_vhot_rain	006400
+ENUM_COLOR	coni_vhot_wet	006400
+ENUM_COLOR	coni_sp_vhot_dry	286428
+ENUM_COLOR	coni_sp_vhot_sdry	286428
+ENUM_COLOR	coni_sp_vhot_rain	286428
+ENUM_COLOR	coni_sp_vhot_wet	286428

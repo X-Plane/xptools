@@ -1,0 +1,27 @@
+#TERRAIN_INFO	NAME			LAYER	TRNS	RGB		TEXTURE					BORDER TEX			RES	LIT	MODE	MODE PARAMS
+TERRAIN_INFO	terrain_/urban_tall	1	0	76,76,76	../textures/zoning/urban_tall.png	../textures/border/any.png	1500	0	NORMAL
+TERRAIN_INFO	terrain_/urban_high	1	0	76,76,76	../textures/zoning/urban_high.png	../textures/border/any.png	1500	0	NORMAL
+TERRAIN_INFO	terrain_/urban_medium	1	0	76,76,76	../textures/zoning/urban_medium.png	../textures/border/any.png	1500	0	NORMAL
+TERRAIN_INFO	terrain_/urban_low	1	0	76,76,76	../textures/zoning/urban_low.png	../textures/border/any.png	1500	0	NORMAL
+TERRAIN_INFO	terrain_/urban_solo	1	0	76,76,76	../textures/zoning/urban_solo.png	../textures/border/any.png	1500	0	NORMAL
+TERRAIN_INFO	terrain_/complex	1	0	76,76,76	../textures/zoning/complex.png		../textures/border/any.png	1500	0	NORMAL
+TERRAIN_INFO	terrain_/res_high	1	0	76,76,76	../textures/zoning/res_high.png		../textures/border/any.png	1500	0	NORMAL
+TERRAIN_INFO	terrain_/res_med	1	0	76,76,76	../textures/zoning/res_med.png		../textures/border/any.png	1500	0	NORMAL
+TERRAIN_INFO	terrain_/res_low	1	0	76,76,76	../textures/zoning/res_low.png		../textures/border/any.png	1500	0	NORMAL
+
+
+
+#TERRAIN_RULE	TERRAIN		ZONING		LAND USE	ELEVATION	SLOPE		TEMP		TEMP RANGE	 RAINFALL	WATER	REL ELEV	ELEV RANGE	LATITUDE	NAME
+#								MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	PROX	MIN	MAX	MIN	MAX	MIN	MAX	
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------				TERRAIN_RULE	NO_VALUE	urban_tall	NO_VALUE	0	0	0	30	0	0	0	0	0	0	0	0	0	0	0	0	71	terrain_/urban_tall
+TERRAIN_RULE	NO_VALUE	urban_high	NO_VALUE	0	0	0	30	0	0	0	0	0	0	0	0	0	0	0	0	71	terrain_/urban_high
+TERRAIN_RULE	NO_VALUE	urban_medium	NO_VALUE	0	0	0	30	0	0	0	0	0	0	0	0	0	0	0	0	71	terrain_/urban_medium
+TERRAIN_RULE	NO_VALUE	urban_low	NO_VALUE	0	0	0	30	0	0	0	0	0	0	0	0	0	0	0	0	71	terrain_/urban_low
+TERRAIN_RULE	NO_VALUE	urban_solo	NO_VALUE	0	0	0	30	0	0	0	0	0	0	0	0	0	0	0	0	71	terrain_/urban_solo
+
+TERRAIN_RULE	NO_VALUE	complex		NO_VALUE	0	0	0	30	0	0	0	0	0	0	0	0	0	0	0	0	71	terrain_/complex
+
+TERRAIN_RULE	NO_VALUE	res_high	NO_VALUE	0	0	0	30	0	0	0	0	0	0	0	0	0	0	0	0	71	terrain_/res_high
+TERRAIN_RULE	NO_VALUE	res_med		NO_VALUE	0	0	0	30	0	0	0	0	0	0	0	0	0	0	0	0	71	terrain_/res_med
+TERRAIN_RULE	NO_VALUE	res_low		NO_VALUE	0	0	0	30	0	0	0	0	0	0	0	0	0	0	0	0	71	terrain_/res_low
+

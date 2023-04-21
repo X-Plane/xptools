@@ -1,0 +1,10 @@
+# This file contains the enum mapping for LU_IMPORT-type GlobCOVER world land use data.		
+# The number on the left is the value found in the DEM.  The text on the		
+# right is the official GlobCOVER land use name.		
+#		
+# (You can import any byte-based file of land uses this way by making your own		
+# file that maps keys to land use enumerations.		
+LU_IMPORT	0	NO_VALUE
+LU_IMPORT	1	REGION_USASW
+LU_IMPORT	2	REGION_AUSTRALIA
+LU_IMPORT	3	REGION_TUNDRA
