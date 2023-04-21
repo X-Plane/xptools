@@ -30,6 +30,7 @@
 #endif
 #if LIN
 #include <FL/Fl.H>
+#include <FL/Fl_Box.H>
 #include <FL/fl_draw.H>
 #include <stdarg.h>
 #endif
@@ -76,6 +77,12 @@ XGrinderWin::XGrinderWin() : XWin(1, gTitle.c_str(),
 	xwin_style_resizable  | xwin_style_centered | xwin_style_visible,
 	50, 100, 512, 100)
 {
+#if LIN
+// invisible box as the free area below the menubar.
+// that's the 'resizable' to keep e.g. menubar in its size.
+Fl_Box* mbox = new Fl_Box(0,0,w(),h());
+add_resizable(*mbox);
+#endif // LIN
 }
 
 #if LIN
