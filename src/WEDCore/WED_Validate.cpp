@@ -611,6 +611,14 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 	if(who->GetClass() == WED_ForestPlacement::sClass)
 		ValidateOneForestPlacement(who, msgs, parent_apt);
 
+	if (who->GetClass() == WED_StringPlacement::sClass)
+	{
+		auto str = static_cast<WED_StringPlacement*>(who);
+		if(str->GetSpacing() < 0.5)
+			msgs.push_back(validation_error_t("Object string spacing must be grater than zero.", err_string_zero_spaceing, who, parent_apt));
+
+	}
+
 	if(gExportTarget == wet_gateway)
 	{
 		if(who->GetClass() != WED_Group::sClass)
