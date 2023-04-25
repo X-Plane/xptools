@@ -197,7 +197,7 @@ int	main(int argc, char * argv[])
 
 		int				proj_pt = -1;
 
-
+		bool			zero_wat = false;
 		int				use_wat;
 		int				zlimit=0;
 		int				is_layer = 0;
@@ -411,13 +411,21 @@ int	main(int argc, char * argv[])
 			{
 				MT_Mask(NULL);
 			}
+			if(sscanf(buf, "UNIFORM_SEASONS %s", typ)==1)
+			{
+				MT_Seasons(typ);
+			}
+			if(strncmp(buf,"ZERO_WATER",strlen("ZERO_WATER"))==0)
+			{
+				zero_wat = true;
+			}
 
 		}
 		fclose(script);
 
 		MT_FinishCreate();
 
-		MT_MakeDSF(region, argv[4], argv[5]);
+		MT_MakeDSF(region, argv[4], argv[5], zero_wat);
 
 
 	} catch (std::exception& e) {

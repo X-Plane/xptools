@@ -32,7 +32,7 @@ typedef	void (* MT_Error_f)(const char * fmt,va_list args);
 
 void MT_StartCreate(const char * xes_path, const DEMGeo& in_dem, MT_Error_f err_handler);
 void MT_FinishCreate(void);
-void MT_MakeDSF(rf_region region, const char * dump_dir, const char * file_name);
+void MT_MakeDSF(rf_region region, const char * dump_dir, const char * file_name, bool zero_water);
 void MT_Cleanup(void);
 
 int MT_CreateCustomTerrain(
@@ -79,5 +79,7 @@ void MT_OrthoPhoto(
 void MT_GeoTiff(const char * fname, int back_with_water);
 void MT_QMID(const char * id, int back_with_water);
 void MT_QMID_Prefix(const char * prefix);
+
+void MT_Seasons(const string& type);
 
 #endif /* MeshTool_Create_H */

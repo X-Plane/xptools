@@ -97,14 +97,13 @@ void	ReadXESFile(
 	XAtom	mapAtom, demAtom, demDirAtom, aptAtom;
 	XSpan	mapAtomData, demAtomData, demDirAtomData, aptAtomData;
 
-	vector<int>	dems;
-
 	if (inMap)
 	ReadMap(container, *inMap, inFunc, kMapID, conversionMap);
 
 	if (inMesh)
 	ReadMesh(container, *inMesh, kMeshID, conversionMap, inFunc);
 
+	vector<int>	dems;
 	if (container.GetNthAtomOfID(kDemDirID, 0, demDirAtom))
 	{
 		demDirAtom.GetContents(demDirAtomData);

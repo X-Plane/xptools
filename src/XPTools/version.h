@@ -16,8 +16,8 @@
 #define OBJCONVERT_VER		30100
 #define OBJCONVERT_EXTRAVER	"-b1"
 
-#define MESHTOOL_VER		30100
-#define MESHTOOL_EXTRAVER	"-b1"
+#define MESHTOOL_VER		40000
+#define MESHTOOL_EXTRAVER	"-a1"
 
 #define _VERBUF_SIZE		256
 static char __gverbuf[_VERBUF_SIZE];

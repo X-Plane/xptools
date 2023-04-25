@@ -170,7 +170,7 @@ static void print_mesh_stats(void)
 	printf("mean=%f min=%f max=%f std dev = %f", mean, minv, maxv, devsq);
 }
 
-void MT_MakeDSF(rf_region region, const char * dump, const char * out_dsf)
+void MT_MakeDSF(rf_region region, const char * dump, const char * out_dsf, bool zero_water)
 {
 	// -simplify
 	SimplifyMap(*the_map, true, ConsoleProgressFunc);
@@ -183,10 +183,16 @@ void MT_MakeDSF(rf_region region, const char * dump, const char * out_dsf)
 
 	// -derivedems
 	DeriveDEMs(*the_map, sDem,sApts, sAptIndex, true, ConsoleProgressFunc);
-
+	
 	// -zoning
 	ZoneManMadeAreas(*the_map, sDem[dem_Elevation], sDem[dem_LandUse], sDem[dem_ForestType], sDem[dem_ParkType],  sDem[dem_Slope],sApts,Pmwx::Face_handle(),ConsoleProgressFunc);
 
+	if(zero_water)
+	{
+		sDem[dem_Water_Surface] = 0;
+//		sDem[dem_Bathymetry] = -50;
+	}
+	
 	// -calcmesh
 	TriangulateMesh(*the_map, sMesh, sDem, dump, ConsoleProgressFunc);
 	// WriteXESFile("temp1.xes", *the_map,sMesh,sDem,sApts,ConsoleProgressFunc);
@@ -213,7 +219,27 @@ void MT_MakeDSF(rf_region region, const char * dump, const char * out_dsf)
 	#endif
 
 	// -exportDSF
-	vector<DSFRasterInfo> rasters; // extra rasters used in XP12 to define seasons
+
+	printf("\n raster inventory:\n");
+	#define CHK_DEM(x) printf("%20s %d %c\n", #x, x, sDem.find(x) != sDem.end() ? 'y' : 'n')
+	CHK_DEM(dem_Elevation);
+	CHK_DEM(dem_Bathymetry);
+	CHK_DEM(dem_Water_Surface);
+	CHK_DEM(dem_ElevationOverlay);
+	CHK_DEM(dem_SpringStart);
+	CHK_DEM(dem_WinterEnd);
+	CHK_DEM(dem_Soundscape);
+	
+	vector<DSFRasterInfo> rasters;
+	for(int dem_type = dem_SpringStart; dem_type <= dem_WinterEnd; dem_type++)
+	{
+		const auto& itr = sDem.find(dem_type);
+		if(itr != sDem.end())
+			rasters.push_back({dem_type, 1.f, (365.f / 183.f), itr->second});  // dem come from 8b tif's, so scale ~2x to get up to 365 days
+	}
+	if(sDem.find(dem_Soundscape) != sDem.end())
+		rasters.push_back({dem_Soundscape, 1.f, 1.f, sDem[dem_Soundscape]});
+	
 	BuildDSF(out_dsf, NULL, sDem[dem_Elevation], sDem[dem_Bathymetry], {}, rasters, sMesh, /*sTriangulationLo,*/ *the_map, region, ConsoleProgressFunc);
 }
 
@@ -789,7 +815,32 @@ void MT_QMID(const char * id, int back_with_water)
 			fclose(fi);
 		}
 	}
+}
 
-
+void MT_Seasons(const string& type)
+{
+	for(int dem_type = dem_SpringStart; dem_type <= dem_WinterEnd; dem_type++)
+	{
+		const int season_pixels[8] = {30,75, 76,121, 122,167, 168,29};
+		int day_pixel = season_pixels[dem_type - dem_SpringStart];
+				
+		if(type == "southern") 
+			day_pixel = (day_pixel + 92) % 184;
+		else if(type == "equatorial") 
+			day_pixel = season_pixels[2 + (dem_type - dem_SpringStart) % 2]; // always summer
+		else if (type != "northern")
+			die_err("Unknown hemisphere '%s' in season command\n", type.c_str());
+			
+		auto itr = sDem.find(dem_type);
+		if(itr == sDem.end())
+		{
+			sDem[dem_type].resize_save(8, 8, day_pixel);
+			sDem[dem_type].copy_geo_from(sDem[dem_Elevation]);
+		}
+		else
+		{
+			itr->second=day_pixel;
+		}
+	}
 }
 

@@ -1,6 +1,11 @@
 MeshTool Instructions and Release Notes
 
 Version History
+	4/20/23 4.0 a1
+		Merge new XP12 terrain/3D water/seasons/environmental sound generation code.
+                MT 4 requires XP12 .xes data to create correct water.
+		New suffix for virtual all-zero height elevation DEM.
+		New script keywords for water flattening, meteorological seasons.
 	3/30/15 3.0 b1
 		New build supporst X-Plane 10-style DSFs with new X-Plane 10 climate/land class data files.
 	5/5/13  2.1 r1
@@ -51,15 +56,6 @@ Version History
 	3/11/08    Beta 1
 	12/28/07   Initial Draft
 
-Version 1.1 Changes
-	- Shapefiles
-	- New orthophoto commands
-	- Polygon cutting improvement
-	- Relaxed boundary issues
-	- Shapefile support
-	- Improved command syntax
-	- Dump directory is made automatically.
-
 -------------------------------------------------------------------------------
 USAGE
 -------------------------------------------------------------------------------
@@ -89,12 +85,15 @@ MeshTool can accept three DEM formats:
 * ".bil" (band interleaved by line) - this is almost the same as .hgt except
   that it is little endian, not big endian.
   
-* GeoTiff - the GeoTiff must be in scanline format, not tiled.  Use the
+* ".tif" GeoTiff - the GeoTiff must be in scanline format, not tiled.  Use the
   command-line tool geotifcp to convert tiled images to scanline, e.g.
   
 	geotiffcp -s old.tif new.tif
 
  geotifcp comes as part of libgeotiff.
+
+* ".0" virtual format that consists of all heights set to zero. Usefull for testing
+  without having actual elevation DEM.
 
 In all cases, DEMs used for MeshTool have some requirements, no matter what
 format is used.
@@ -253,6 +252,12 @@ Specify a point on the hole's boundary.
 END_HOLE
 
 End specification of the current hole.
+
+ZERO_WATER
+
+Similar to the ".0' elevation DEM suffix - but sets all water surface heights calculated 
+from .xes data to 0m just before mesh creation. Avoids elevated/undulated coastlines
+when actual vector coastlines do not match water elevation raster data in .xes.
 
 -------------------------------------------------------------------------------
 COMMANDS FOR WORKING WITH ORTHOPHOTOS
@@ -472,6 +477,17 @@ that is inside the wet_areas shape file will act wet.
 WARNING: masks induce vertices in your mesh, so when using a mask to make wet
 and dry areas, reduce th resolution of your mesh.  Users probably won't notice
 the lack of detail in the physics mesh, but it will save triangles.
+
+UNIFORM_SEASONS northern|southern|equatorial
+
+By default, season and envirnmental sound data is provided by .xes data.
+
+This overrides (or creates, if not present in .xes input) climate driven seasons raster
+from to use meteorological seasons. I.e. spring starts March 1st and each seasons
+lasts 3 months. 'southern' has all seasons shifted by half a year to fit the southern 
+hemisphere, 'equatorial' sets summer all year long. 
+Desirable for ortho sceneries where the terrain covering orthos are seasonal. 
+Climatological seasons from .xes data vary spatially with terrain elevation.
 
 -------------------------------------------------------------------------------
 LEGACY COMMANDS

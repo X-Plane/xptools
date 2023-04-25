@@ -50,7 +50,7 @@
 				<Option object_output="./" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="pmdy_apt_bdy.txt xes/+20-180/+28-178.xes +28-178.0 dump +28-180.dsf" />
+				<Option parameters="pmdy_apt_bdy.txt +28-178_xp10.xes +28-178.0 dump +28-178.dsf" />
 				<Compiler>
 					<Add option="-g" />
 				</Compiler>
