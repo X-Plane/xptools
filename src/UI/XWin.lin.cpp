@@ -587,14 +587,22 @@ void XWin::ReceiveFilesFromDrag(const string& inFiles)
 		if(m1 != m2)
 		{
 			string path(m1,m2);
-			size_t pos = path.find("file://");      //only filepaths
+			//TODO:Missing some check if the incoming string is a filepath when no prefix.
+			//only filepaths. x11 prepend prefix 'file://', Wayland not always
+			size_t pos = path.find("file://");
 			if(pos != std::string::npos)
 			{
 				files.push_back(path.substr(7));
-				#if DEV && DEBUG_DND
-				printf("file s %s\n",files.back().c_str());
-				#endif // DEV && DEBUG_DND
 			}
+			else
+			{
+				files.push_back(path);
+			}
+
+			#if DEV && DEBUG_DND
+			if(files.size() > 0)
+				printf("file s %s\n",files.back().c_str());
+			#endif // DEV && DEBUG_DND
 		}
 	}
 
