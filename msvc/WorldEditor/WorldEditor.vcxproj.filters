@@ -885,6 +885,12 @@
     <ClCompile Include="..\..\src\WEDEntities\WED_ExclusionPoly.cpp">
       <Filter>WEDEntities</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\WEDEntities\WED_ShapePlacement.cpp">
+      <Filter>WEDEntities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\WEDEntities\WED_ShapeNode.cpp">
+      <Filter>WEDEntities</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\WEDCore\WED_Application.h">
@@ -1740,6 +1746,12 @@
       <Filter>WEDWindows</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDEntities\WED_ExclusionPoly.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDEntities\WED_ShapePlacement.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDEntities\WED_ShapeNode.h">
       <Filter>WEDEntities</Filter>
     </ClInclude>
   </ItemGroup>

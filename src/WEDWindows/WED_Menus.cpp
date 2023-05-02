@@ -144,6 +144,7 @@ static const GUI_MenuItem_t kConvertToMenu[] = {
 {	"&Line",					0,	0,							0,	wed_ConvertToLine		},
 {	"&Object String",			0,	0,							0,	wed_ConvertToString		},
 {	"&Forest Points",			0,	0,							0,	wed_ConvertToForest		},
+{	"Shape Points",				0,	0,							0,	wed_ConvertToShape		},
 {	NULL,						0,	0,							0,	0						}
 };
 
