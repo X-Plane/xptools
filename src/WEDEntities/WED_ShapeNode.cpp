@@ -28,7 +28,7 @@ TRIVIAL_COPY(WED_ShapeNode, WED_SimpleBoundaryNode)
 
 
 WED_ShapeNode::WED_ShapeNode(WED_Archive * a, int i) : WED_SimpleBoundaryNode(a,i),
-mM(this, PROP_Name("Value", XML_Name("point", "m_value")), 1.0, 3, 1)
+mM(this, PROP_Name("Value", XML_Name("point", "m_value")), 0.0, 5, 2)
 {
 }
 

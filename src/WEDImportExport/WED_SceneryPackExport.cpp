@@ -37,12 +37,64 @@
 #include "WED_Document.h"
 #include "WED_GatewayExport.h"
 #include "WED_Group.h"
+
+#include "WED_ShapePlacement.h"
+#include "IGIS.h"
+
 #include "WED_GroupCommands.h"
 #include "WED_Menus.h"
 #include "WED_UIDefs.h"
 #include "WED_Validate.h"
 
 #include <iostream>
+
+static void WED_KmlExport(WED_Thing* root, const string& file)
+{
+	vector<WED_ShapePlacement*> shapes;
+	CollectRecursive(root, back_inserter(shapes));
+
+	if (!shapes.empty())
+	{
+		if(auto fo = fopen(file.c_str(), "w"))
+		{
+			fprintf(fo, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+			            "<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n"
+			            "<Document>\n");
+			for (auto s : shapes)
+			{
+				string name, desc;
+				s->GetName(name);
+				s->GetString(desc);
+				fprintf(fo,		"  <Placemark>\n");
+				fprintf(fo,		"    <name>%s</name>\n"
+								"    <description>%s</description>\n", name.c_str(), desc.c_str());
+				fprintf(fo,		"    <%s>\n", s->IsClosed() ? "Polygon" : "LineString");
+				if (s->IsClosed())
+					fprintf(fo, "      <outerBoundaryIs>\n"
+								"      <LinearRing>\n");
+				fprintf(fo, 	"      <coordinates>\n");
+
+				int np = s->GetNumPoints();
+				Point2 pt, val;
+				for (int n = 0; n < np + s->IsClosed(); n++)
+				{
+					s->GetNthPoint(n % np)->GetLocation(gis_Geo, pt);
+					s->GetNthPoint(n % np)->GetLocation(gis_Param, val);
+					fprintf(fo, "      %.9lf,%.9lf,%.2lf\n", pt.x(), pt.y(), val.x());
+				}
+				fprintf(fo,		"      </coordinates>\n");
+				if (s->IsClosed())
+					fprintf(fo, "      </LinearRing>\n"
+								"      </outerBoundaryIs>\n");
+				fprintf(fo,		"    </%s>\n", s->IsClosed() ? "Polygon" : "LineString");
+				fprintf(fo,		"  </Placemark>\n");
+			}
+			fprintf(fo, "</Document>\n"
+			            "</kml>\n");
+			fclose(fo);
+		}
+	}
+}
 
 void	WED_ExportPackToPath(WED_Thing * root, IResolver * resolver, const string& in_path, set<WED_Thing *>& problem_children)
 {
@@ -55,6 +107,9 @@ void	WED_ExportPackToPath(WED_Thing * root, IResolver * resolver, const string& 
 
 	FILE_make_dir_exist(apt_dir.c_str());
 	WED_AptExport(root, apt.c_str());
+
+	string kml = in_path + "doc.kml";
+	WED_KmlExport(root, kml);
 }
 
 
