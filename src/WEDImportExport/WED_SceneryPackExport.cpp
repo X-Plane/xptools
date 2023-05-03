@@ -49,6 +49,43 @@
 
 #include <iostream>
 
+
+static string escape(const string& str)
+{
+	string result;
+	result.reserve(str.size());
+
+	auto b = (unsigned char*) str.data();
+	auto e = b + str.length();
+
+	while (b < e)
+	{
+		switch (*b) 
+		{
+		case '<':	result += "&lt;";	break;
+		case '>':	result += "&gt;";	break;
+		case '&':	result += "&amp;";	break;
+//		case '\'':	result += "&apos;";	break;        // not needed as all params are either XML text context or inside double quotes
+		case '"':	result += "&quot;";	break;        // if switching to single quotes for parameters - double quotes could be passed through verbatim
+		default:
+			if (*b & 0xC0 == 0xC0) // UTF-8 multi-byte - copy verbatim
+			{
+				result += *b++;
+				if (*b & 0xC0 == 0x80) // UTF-8 3-byte
+					result += *b++;
+				if (*b & 0xC0 == 0x80) // UTF-8 4-byte
+					result += *b++;
+				result += *b;
+			}
+			else if (*b >= ' ' || *b == '\t')         // skip all control chars or CR's save for tabs
+				result += *b;
+			break;
+		}
+		b++;
+	}
+	return result;
+}
+
 static void KmlExport(WED_Thing* root, const string& file)
 {
 	vector<WED_ShapePlacement*> shapes;
@@ -68,7 +105,7 @@ static void KmlExport(WED_Thing* root, const string& file)
 				s->GetString(desc);
 				fprintf(fo,		"  <Placemark>\n");
 				fprintf(fo,		"    <name>%s</name>\n"
-								"    <description>%s</description>\n", name.c_str(), desc.c_str());
+								"    <description>%s</description>\n", escape(name).c_str(), escape(desc).c_str());
 				fprintf(fo,		"    <%s>\n", s->IsClosed() ? "Polygon" : "LineString");
 				if (s->IsClosed())
 					fprintf(fo, "      <outerBoundaryIs>\n"
@@ -130,9 +167,9 @@ static void OsmExport(WED_Thing* root, const string& file)
 					}
 					fprintf(fo,		"  <node id=\"%d\" lon=\"%.9lf\" lat=\"%.9lf\" version=\"1\">\n", id, pt.x(), pt.y());
 					fprintf(fo,		"    <tag k=\"name\" v=\"%s\"/>\n"
-									"    <tag k=\"z_value\" v=\"%.2lf\"/>\n", name.c_str(), d);
+									"    <tag k=\"z_value\" v=\"%.2lf\"/>\n", escape(name).c_str(), d);
 					if(!desc.empty())
-						fprintf(fo, "    <tag k=\"description\" v=\"%s\"/>\n", desc.c_str());
+						fprintf(fo, "    <tag k=\"description\" v=\"%s\"/>\n", escape(desc).c_str());
 					fprintf(fo,		"  </node>\n");
 					IDs.push_back(id);
 				}
@@ -144,9 +181,9 @@ static void OsmExport(WED_Thing* root, const string& file)
 				fprintf(fo,			"  <way id=\"%d\" version=\"1\">\n", shp->GetID());
 				for (auto i : IDs)
 					fprintf(fo,		"    <nd ref=\"%d\"/>\n", i);
-				fprintf(fo,			"    <tag k=\"name\" v=\"%s\"/>\n", name.c_str());
+				fprintf(fo,			"    <tag k=\"name\" v=\"%s\"/>\n", escape(name).c_str());
 				if(!desc.empty())
-					fprintf(fo,		"    <tag k=\"description\" v=\"%s\"/>\n", desc.c_str());
+					fprintf(fo,		"    <tag k=\"description\" v=\"%s\"/>\n", escape(desc).c_str());
 				fprintf(fo,			"  </way>\n");
 			}
 			fprintf(fo,				"</osm>\n");
@@ -168,11 +205,12 @@ void	WED_ExportPackToPath(WED_Thing * root, IResolver * resolver, const string& 
 	FILE_make_dir_exist(apt_dir.c_str());
 	WED_AptExport(root, apt.c_str());
 
+#if !TYLER_MODE
 	string kml = in_path + "doc.kml";
 	KmlExport(root, kml);
-
 	string osm = in_path + "doc.osm";
 	OsmExport(root, osm);
+#endif
 }
 
 
