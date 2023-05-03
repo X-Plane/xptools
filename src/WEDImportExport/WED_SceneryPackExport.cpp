@@ -39,6 +39,7 @@
 #include "WED_Group.h"
 
 #include "WED_ShapePlacement.h"
+#include "WED_ShapeNode.h"
 #include "IGIS.h"
 
 #include "WED_GroupCommands.h"
@@ -48,7 +49,7 @@
 
 #include <iostream>
 
-static void WED_KmlExport(WED_Thing* root, const string& file)
+static void KmlExport(WED_Thing* root, const string& file)
 {
 	vector<WED_ShapePlacement*> shapes;
 	CollectRecursive(root, back_inserter(shapes));
@@ -75,12 +76,14 @@ static void WED_KmlExport(WED_Thing* root, const string& file)
 				fprintf(fo, 	"      <coordinates>\n");
 
 				int np = s->GetNumPoints();
-				Point2 pt, val;
+				Point2 pt;
 				for (int n = 0; n < np + s->IsClosed(); n++)
 				{
 					s->GetNthPoint(n % np)->GetLocation(gis_Geo, pt);
-					s->GetNthPoint(n % np)->GetLocation(gis_Param, val);
-					fprintf(fo, "      %.9lf,%.9lf,%.2lf\n", pt.x(), pt.y(), val.x());
+					double d = 0;
+					if (auto p = dynamic_cast<WED_ShapeNode*>(s->GetNthChild(n % np)))
+						d = p->GetZ();
+					fprintf(fo, "      %.9lf,%.9lf,%.2lf\n", pt.x(), pt.y(), d);
 				}
 				fprintf(fo,		"      </coordinates>\n");
 				if (s->IsClosed())
@@ -96,6 +99,63 @@ static void WED_KmlExport(WED_Thing* root, const string& file)
 	}
 }
 
+static void OsmExport(WED_Thing* root, const string& file)
+{
+	vector<WED_ShapePlacement*> shapes;
+	CollectRecursive(root, back_inserter(shapes));
+
+	if (!shapes.empty())
+	{
+		if (auto fo = fopen(file.c_str(), "w"))
+		{
+			fprintf(fo,	"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+						"<osm version=\"0.6\" generator=\"WorldEditor\">\n");
+			for (auto shp : shapes)
+			{
+				vector<int> IDs;
+				int id = 0;
+				string name, desc;
+				int np = shp->GetNumPoints();
+				Point2 pt;
+				for (int n = 0; n < np; n++)
+				{
+					shp->GetNthPoint(n)->GetLocation(gis_Geo, pt);
+					double d = 0;
+					if (auto p = dynamic_cast<WED_ShapeNode*>(shp->GetNthChild(n)))
+					{
+						p->GetName(name);
+						d = p->GetZ();
+						desc = p->GetString();
+						id = p->GetID();
+					}
+					fprintf(fo,		"  <node id=\"%d\" lon=\"%.9lf\" lat=\"%.9lf\" version=\"1\">\n", id, pt.x(), pt.y());
+					fprintf(fo,		"    <tag k=\"name\" v=\"%s\"/>\n"
+									"    <tag k=\"z_value\" v=\"%.2lf\"/>\n", name.c_str(), d);
+					if(!desc.empty())
+						fprintf(fo, "    <tag k=\"description\" v=\"%s\"/>\n", desc.c_str());
+					fprintf(fo,		"  </node>\n");
+					IDs.push_back(id);
+				}
+				if(shp->IsClosed())
+					IDs.push_back(IDs[0]);
+
+				shp->GetName(name);
+				shp->GetString(desc);
+				fprintf(fo,			"  <way id=\"%d\" version=\"1\">\n", shp->GetID());
+				for (auto i : IDs)
+					fprintf(fo,		"    <nd ref=\"%d\"/>\n", i);
+				fprintf(fo,			"    <tag k=\"name\" v=\"%s\"/>\n", name.c_str());
+				if(!desc.empty())
+					fprintf(fo,		"    <tag k=\"description\" v=\"%s\"/>\n", desc.c_str());
+				fprintf(fo,			"  </way>\n");
+			}
+			fprintf(fo,				"</osm>\n");
+			fclose(fo);
+		}
+	}
+}
+
+
 void	WED_ExportPackToPath(WED_Thing * root, IResolver * resolver, const string& in_path, set<WED_Thing *>& problem_children)
 {
 	int result = DSF_Export(root, resolver, in_path,problem_children);
@@ -109,7 +169,10 @@ void	WED_ExportPackToPath(WED_Thing * root, IResolver * resolver, const string& 
 	WED_AptExport(root, apt.c_str());
 
 	string kml = in_path + "doc.kml";
-	WED_KmlExport(root, kml);
+	KmlExport(root, kml);
+
+	string osm = in_path + "doc.osm";
+	OsmExport(root, osm);
 }
 
 

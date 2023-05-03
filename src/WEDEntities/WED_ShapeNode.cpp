@@ -28,10 +28,23 @@ TRIVIAL_COPY(WED_ShapeNode, WED_SimpleBoundaryNode)
 
 
 WED_ShapeNode::WED_ShapeNode(WED_Archive * a, int i) : WED_SimpleBoundaryNode(a,i),
-mM(this, PROP_Name("Value", XML_Name("point", "m_value")), 0.0, 5, 2)
+mZ   (this, PROP_Name("Z Value",     XML_Name("point", "z_value")), 0.0, 5, 2),
+mText(this, PROP_Name("Description", XML_Name("point", "description")), "")
 {
 }
 
 WED_ShapeNode::~WED_ShapeNode()
 {
 }
+
+double 	WED_ShapeNode::GetZ() const
+{
+	return  mZ.value;
+}
+
+string 	WED_ShapeNode::GetString() const
+{
+	return mText.value;
+}
+	
+

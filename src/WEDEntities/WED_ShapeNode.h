@@ -31,12 +31,15 @@ class WED_ShapeNode : public WED_SimpleBoundaryNode {
 DECLARE_PERSISTENT(WED_ShapeNode)
 
 public:
+	double 	GetZ() const;
+	string 	GetString() const;
 
 	virtual const char *	HumanReadableType(void) const { return "Shape Node"; }
 
 private:
 
-	WED_PropDoubleText		mM;
+	WED_PropDoubleText		mZ;
+	WED_PropStringText		mText;
 };
 
 

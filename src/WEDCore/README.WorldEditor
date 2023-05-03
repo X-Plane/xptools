@@ -20,6 +20,7 @@ WED 2.6.0 b1
    - fix Obj8 drawing not recognizing ATTR_no_blend threshold values
    - polygons in Library Preview pane show tiled shader effects
    - validate ObjectString spacing parameter greater than zero
+   - dedicated shape entities for 3rd party scenery creation tools
 
 =======
 WED 2.5.1r1 3/20/23
