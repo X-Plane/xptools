@@ -85,6 +85,7 @@ enum {
 	wed_ConvertToLine,
 	wed_ConvertToString,
 	wed_ConvertToForest,
+	wed_ConvertToShape,
 	// Pavement menu
 	wed_Pavement0,
 	wed_Pavement25,

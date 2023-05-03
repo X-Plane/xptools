@@ -79,6 +79,8 @@
 	_R(WED_AutogenPlacement) \
 	_R(WED_AutogenNode) \
 	_R(WED_ForestPlacement) \
+	_R(WED_ShapePlacement) \
+	_R(WED_ShapeNode) \
 	_R(WED_FacadePlacement) \
 	_R(WED_PolygonPlacement) \
 	_R(WED_DrapedOrthophoto) \

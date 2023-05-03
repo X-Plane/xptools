@@ -173,7 +173,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 #endif
 	// TOOLS
 	mTools.push_back(					NULL);
-	mTools.push_back(					NULL);
+	mTools.push_back(					new WED_CreatePolygonTool("Shapes", mMap, mMap, resolver, archive, create_Shape));
 
 #if ROAD_EDITING
 	mTools.push_back(mNetTool = new WED_CreateEdgeTool("Roads", mMap, mMap, resolver, archive, create_Road));

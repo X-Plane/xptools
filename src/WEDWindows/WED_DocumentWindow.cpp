@@ -57,6 +57,7 @@
 #include "WED_ForestPlacement.h"
 #include "WED_LinePlacement.h"
 #include "WED_PolygonPlacement.h"
+#include "WED_ShapePlacement.h"
 #include "WED_StringPlacement.h"
 #include "WED_Taxiway.h"
 #include "WED_Thing.h"
@@ -426,6 +427,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_ConvertToLine:		WED_DoConvertTo(mDocument, &CreateThing<WED_LinePlacement>);	return 1;
 	case wed_ConvertToString:	WED_DoConvertTo(mDocument, &CreateThing<WED_StringPlacement>);	return 1;
 	case wed_ConvertToForest:	WED_DoConvertToForest(mDocument); return 1;
+	case wed_ConvertToShape:	WED_DoConvertTo(mDocument, &CreateThing<WED_ShapePlacement>); return 1;
 
 	case wed_MoveFirst:	WED_DoReorder(mDocument,-1,1);	return 1;
 	case wed_MovePrev:	WED_DoReorder(mDocument,-1,0);	return 1;
@@ -559,6 +561,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_ConvertToLine:		return WED_CanConvertTo(mDocument, WED_LinePlacement::sClass);
 	case wed_ConvertToString:	return WED_CanConvertTo(mDocument, WED_StringPlacement::sClass);
 	case wed_ConvertToForest:	return WED_CanConvertTo(mDocument, WED_ForestPlacement::sClass);
+	case wed_ConvertToShape:	return WED_CanConvertTo(mDocument, WED_ShapePlacement::sClass);
 
 	case wed_TogglePreviewWindow:	ioCheck = mMapPreviewWindow->IsVisible(); return 1;
 	case wed_ShowMapAreaInPreviewWindow:	return 1;

@@ -82,6 +82,8 @@
 		0269A8561FF5F8F10085A37C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
 		028A6FE725F897C90002FDF5 /* ArrowHeadRoadE.png in Resources */ = {isa = PBXBuildFile; fileRef = 028A6FE325F897C30002FDF5 /* ArrowHeadRoadE.png */; };
 		028A6FE825F897CC0002FDF5 /* ArrowHeadRoadS.png in Resources */ = {isa = PBXBuildFile; fileRef = 028A6FE425F897C30002FDF5 /* ArrowHeadRoadS.png */; };
+		029CA2432A01EDDB00069CFA /* WED_ShapePlacement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029CA2342A01ED6400069CFA /* WED_ShapePlacement.cpp */; };
+		029CA2442A01EDDB00069CFA /* WED_ShapeNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029CA2332A01ED6400069CFA /* WED_ShapeNode.cpp */; };
 		029EC5B9239B095300A7C5E1 /* exclaim.png in Resources */ = {isa = PBXBuildFile; fileRef = 029EC5B7239B094B00A7C5E1 /* exclaim.png */; };
 		02A30B7E20F7A80B008CC1CB /* line_BSolidWhite.png in Resources */ = {isa = PBXBuildFile; fileRef = 025E09DF20D2F11200DD8856 /* line_BSolidWhite.png */; };
 		02B03C1020C72068000F81F0 /* WED_Line_Selector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02B03C0D20C71DE5000F81F0 /* WED_Line_Selector.cpp */; };
@@ -1078,6 +1080,10 @@
 		0264F9B429DBFA7F003E983D /* WED_ExclusionPoly.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ExclusionPoly.h; sourceTree = "<group>"; };
 		028A6FE325F897C30002FDF5 /* ArrowHeadRoadE.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ArrowHeadRoadE.png; sourceTree = "<group>"; };
 		028A6FE425F897C30002FDF5 /* ArrowHeadRoadS.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ArrowHeadRoadS.png; sourceTree = "<group>"; };
+		029CA2332A01ED6400069CFA /* WED_ShapeNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ShapeNode.cpp; sourceTree = "<group>"; };
+		029CA2342A01ED6400069CFA /* WED_ShapePlacement.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ShapePlacement.cpp; sourceTree = "<group>"; };
+		029CA2352A01ED6500069CFA /* WED_ShapePlacement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ShapePlacement.h; sourceTree = "<group>"; };
+		029CA2362A01ED6500069CFA /* WED_ShapeNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ShapeNode.h; sourceTree = "<group>"; };
 		029EC5B7239B094B00A7C5E1 /* exclaim.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = exclaim.png; sourceTree = "<group>"; };
 		02B03C0D20C71DE5000F81F0 /* WED_Line_Selector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Line_Selector.cpp; sourceTree = "<group>"; };
 		02B03C0E20C71DE5000F81F0 /* WED_Line_Selector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Line_Selector.h; sourceTree = "<group>"; };
@@ -3657,6 +3663,10 @@
 				D695CE000EE09F19009C5F2E /* WED_TextureBezierNode.cpp */,
 				D6226EC00E4B981E005BD1D7 /* WED_SimpleBezierBoundaryNode.h */,
 				D6226EC10E4B981E005BD1D7 /* WED_SimpleBezierBoundaryNode.cpp */,
+				029CA2332A01ED6400069CFA /* WED_ShapeNode.cpp */,
+				029CA2362A01ED6500069CFA /* WED_ShapeNode.h */,
+				029CA2342A01ED6400069CFA /* WED_ShapePlacement.cpp */,
+				029CA2352A01ED6500069CFA /* WED_ShapePlacement.h */,
 				D63681840B8AC69200091AFC /* WED_GISPoint_Heading.h */,
 				D63681850B8AC69200091AFC /* WED_GISPoint_Heading.cpp */,
 				D62FCEE00BD51B2900ED6CF8 /* WED_RampPosition.h */,
@@ -4601,6 +4611,7 @@
 				D6ED36A00B67964D00D5484E /* BitmapUtils.cpp in Sources */,
 				D6ED36A10B67964D00D5484E /* EndianUtils.c in Sources */,
 				D6ED36A20B67964D00D5484E /* MatrixUtils.cpp in Sources */,
+				029CA2432A01EDDB00069CFA /* WED_ShapePlacement.cpp in Sources */,
 				020F938B260D96180077222C /* WED_MapPreviewWindow.cpp in Sources */,
 				02D82418239EF2790008DBF2 /* 7zFile.c in Sources */,
 				D6ED36A30B67964D00D5484E /* PlatformUtils.mac.mm in Sources */,
@@ -4728,6 +4739,7 @@
 				D6A184FD0BA833E700BBCD0C /* GUI_DrawUtils.cpp in Sources */,
 				D6AF0A521F44E7B400CC7328 /* WED_FacadePreview.cpp in Sources */,
 				02D82422239EF2A90008DBF2 /* CpuArch.c in Sources */,
+				029CA2442A01EDDB00069CFA /* WED_ShapeNode.cpp in Sources */,
 				D6A185B60BA99DAA00BBCD0C /* GUI_PopupButton.cpp in Sources */,
 				D6A186380BA9B28900BBCD0C /* GUI_TabControl.cpp in Sources */,
 				D62FC99B0BCEF3D600ED6CF8 /* WED_Map.cpp in Sources */,

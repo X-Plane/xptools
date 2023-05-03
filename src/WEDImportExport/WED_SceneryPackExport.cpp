@@ -37,12 +37,161 @@
 #include "WED_Document.h"
 #include "WED_GatewayExport.h"
 #include "WED_Group.h"
+
+#include "WED_ShapePlacement.h"
+#include "WED_ShapeNode.h"
+#include "IGIS.h"
+
 #include "WED_GroupCommands.h"
 #include "WED_Menus.h"
 #include "WED_UIDefs.h"
 #include "WED_Validate.h"
 
 #include <iostream>
+
+
+static string escape(const string& str)
+{
+	string result;
+	result.reserve(str.size());
+
+	auto b = (unsigned char*) str.data();
+	auto e = b + str.length();
+
+	while (b < e)
+	{
+		switch (*b) 
+		{
+		case '<':	result += "&lt;";	break;
+		case '>':	result += "&gt;";	break;
+		case '&':	result += "&amp;";	break;
+//		case '\'':	result += "&apos;";	break;        // not needed as all params are either XML text context or inside double quotes
+		case '"':	result += "&quot;";	break;        // if switching to single quotes for parameters - double quotes could be passed through verbatim
+		default:
+			if (*b & 0xC0 == 0xC0) // UTF-8 multi-byte - copy verbatim
+			{
+				result += *b++;
+				if (*b & 0xC0 == 0x80) // UTF-8 3-byte
+					result += *b++;
+				if (*b & 0xC0 == 0x80) // UTF-8 4-byte
+					result += *b++;
+				result += *b;
+			}
+			else if (*b >= ' ' || *b == '\t')         // skip all control chars or CR's save for tabs
+				result += *b;
+			break;
+		}
+		b++;
+	}
+	return result;
+}
+
+static void KmlExport(WED_Thing* root, const string& file)
+{
+	vector<WED_ShapePlacement*> shapes;
+	CollectRecursive(root, back_inserter(shapes));
+
+	if (!shapes.empty())
+	{
+		if(auto fo = fopen(file.c_str(), "w"))
+		{
+			fprintf(fo, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+			            "<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n"
+			            "<Document>\n");
+			for (auto s : shapes)
+			{
+				string name, desc;
+				s->GetName(name);
+				s->GetString(desc);
+				fprintf(fo,		"  <Placemark>\n");
+				fprintf(fo,		"    <name>%s</name>\n"
+								"    <description>%s</description>\n", escape(name).c_str(), escape(desc).c_str());
+				fprintf(fo,		"    <%s>\n", s->IsClosed() ? "Polygon" : "LineString");
+				if (s->IsClosed())
+					fprintf(fo, "      <outerBoundaryIs>\n"
+								"      <LinearRing>\n");
+				fprintf(fo, 	"      <coordinates>\n");
+
+				int np = s->GetNumPoints();
+				Point2 pt;
+				for (int n = 0; n < np + s->IsClosed(); n++)
+				{
+					s->GetNthPoint(n % np)->GetLocation(gis_Geo, pt);
+					double d = 0;
+					if (auto p = dynamic_cast<WED_ShapeNode*>(s->GetNthChild(n % np)))
+						d = p->GetZ();
+					fprintf(fo, "      %.9lf,%.9lf,%.2lf\n", pt.x(), pt.y(), d);
+				}
+				fprintf(fo,		"      </coordinates>\n");
+				if (s->IsClosed())
+					fprintf(fo, "      </LinearRing>\n"
+								"      </outerBoundaryIs>\n");
+				fprintf(fo,		"    </%s>\n", s->IsClosed() ? "Polygon" : "LineString");
+				fprintf(fo,		"  </Placemark>\n");
+			}
+			fprintf(fo, "</Document>\n"
+			            "</kml>\n");
+			fclose(fo);
+		}
+	}
+}
+
+static void OsmExport(WED_Thing* root, const string& file)
+{
+	vector<WED_ShapePlacement*> shapes;
+	CollectRecursive(root, back_inserter(shapes));
+
+	if (!shapes.empty())
+	{
+		if (auto fo = fopen(file.c_str(), "w"))
+		{
+			fprintf(fo,	"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+						"<osm version=\"0.6\" generator=\"WorldEditor\">\n");
+			for (auto shp : shapes)
+			{
+				vector<int> IDs;
+				int id = 0;
+				string name, desc;
+				int np = shp->GetNumPoints();
+				Point2 pt;
+				for (int n = 0; n < np; n++)
+				{
+					shp->GetNthPoint(n)->GetLocation(gis_Geo, pt);
+					double d = 0;
+					if (auto p = dynamic_cast<WED_ShapeNode*>(shp->GetNthChild(n)))
+					{
+						p->GetName(name);
+						d = p->GetZ();
+						desc = p->GetString();
+						id = p->GetID();
+					}
+					fprintf(fo,		"  <node id=\"%d\" lon=\"%.9lf\" lat=\"%.9lf\" version=\"1\">\n", id, pt.x(), pt.y());
+					fprintf(fo,		"    <tag k=\"name\" v=\"%s\"/>\n"
+									"    <tag k=\"z_value\" v=\"%.2lf\"/>\n", escape(name).c_str(), d);
+					if(!desc.empty())
+						fprintf(fo, "    <tag k=\"description\" v=\"%s\"/>\n", escape(desc).c_str());
+					fprintf(fo,		"  </node>\n");
+					IDs.push_back(id);
+				}
+				if(shp->IsClosed())
+					IDs.push_back(IDs[0]);
+
+				shp->GetName(name);
+				shp->GetString(desc);
+				fprintf(fo,			"  <way id=\"%d\" version=\"1\">\n", shp->GetID());
+				for (auto i : IDs)
+					fprintf(fo,		"    <nd ref=\"%d\"/>\n", i);
+				fprintf(fo,			"    <tag k=\"name\" v=\"%s\"/>\n", escape(name).c_str());
+				if(!desc.empty())
+					fprintf(fo,		"    <tag k=\"description\" v=\"%s\"/>\n", escape(desc).c_str());
+				fprintf(fo,			"  </way>\n");
+			}
+			fprintf(fo,				"</osm>\n");
+			fclose(fo);
+		}
+	}
+}
+
 
 void	WED_ExportPackToPath(WED_Thing * root, IResolver * resolver, const string& in_path, set<WED_Thing *>& problem_children)
 {
@@ -55,6 +204,13 @@ void	WED_ExportPackToPath(WED_Thing * root, IResolver * resolver, const string& 
 
 	FILE_make_dir_exist(apt_dir.c_str());
 	WED_AptExport(root, apt.c_str());
+
+#if !TYLER_MODE
+	string kml = in_path + "doc.kml";
+	KmlExport(root, kml);
+	string osm = in_path + "doc.osm";
+	OsmExport(root, osm);
+#endif
 }
 
 
