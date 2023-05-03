@@ -5589,7 +5589,7 @@ int WED_DoAgePavement(WED_Airport* apt, int age)  // age 1 = older
 		p->GetResource(res);
 
 		int surf = 0;
-		if (res == "lib/airport/pavement/" || "lib/airport/pavement/")
+		if (res.compare(0, strlen("lib/airport/pavement/"), "lib/airport/pavement/") == 0)
 		{
 			string t  = res.substr(res.length() - 8, 4);
 
@@ -5605,7 +5605,7 @@ int WED_DoAgePavement(WED_Airport* apt, int age)  // age 1 = older
 				else if (t[2] <= '6' && t[3] == 'L')            surf = surf_Concrete_1;
 			}
 		}
-		else if (res == "lib/airport/ground/pavement/" || "lib/airport/ground/pavement/")
+		else if (res.compare(0, strlen("lib/airport/ground/pavement/"), "lib/airport/ground/pavement/") == 0)
 		{
 			surf = WED_GetLibraryMgr(p->GetArchive()->GetResolver())->GetSurfEnum(res);
 		}
