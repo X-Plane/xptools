@@ -353,6 +353,8 @@
 		<Unit filename="../../src/WEDEntities/WED_DrapedOrthophoto.h" />
 		<Unit filename="../../src/WEDEntities/WED_Entity.cpp" />
 		<Unit filename="../../src/WEDEntities/WED_Entity.h" />
+		<Unit filename="../../src/WEDEntities/WED_ExclusionPoly.cpp" />
+		<Unit filename="../../src/WEDEntities/WED_ExclusionPoly.h" />
 		<Unit filename="../../src/WEDEntities/WED_ExclusionZone.cpp" />
 		<Unit filename="../../src/WEDEntities/WED_ExclusionZone.h" />
 		<Unit filename="../../src/WEDEntities/WED_FacadeNode.cpp" />

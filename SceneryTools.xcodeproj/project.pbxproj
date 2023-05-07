@@ -77,10 +77,13 @@
 		02635DD629B2C2AD00F5F433 /* tess.c in Sources */ = {isa = PBXBuildFile; fileRef = 02635DAE29B2C2AC00F5F433 /* tess.c */; };
 		02635DD729B2C2AD00F5F433 /* bucketalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 02635DB229B2C2AC00F5F433 /* bucketalloc.c */; };
 		02635DD829B2C2AD00F5F433 /* mesh.c in Sources */ = {isa = PBXBuildFile; fileRef = 02635DB329B2C2AC00F5F433 /* mesh.c */; };
+		0264F9B529DBFA80003E983D /* WED_ExclusionPoly.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0264F9B329DBFA7F003E983D /* WED_ExclusionPoly.cpp */; };
 		0269A8551FF5F8F00085A37C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
 		0269A8561FF5F8F10085A37C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
 		028A6FE725F897C90002FDF5 /* ArrowHeadRoadE.png in Resources */ = {isa = PBXBuildFile; fileRef = 028A6FE325F897C30002FDF5 /* ArrowHeadRoadE.png */; };
 		028A6FE825F897CC0002FDF5 /* ArrowHeadRoadS.png in Resources */ = {isa = PBXBuildFile; fileRef = 028A6FE425F897C30002FDF5 /* ArrowHeadRoadS.png */; };
+		029CA2432A01EDDB00069CFA /* WED_ShapePlacement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029CA2342A01ED6400069CFA /* WED_ShapePlacement.cpp */; };
+		029CA2442A01EDDB00069CFA /* WED_ShapeNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029CA2332A01ED6400069CFA /* WED_ShapeNode.cpp */; };
 		029EC5B9239B095300A7C5E1 /* exclaim.png in Resources */ = {isa = PBXBuildFile; fileRef = 029EC5B7239B094B00A7C5E1 /* exclaim.png */; };
 		02A30B7E20F7A80B008CC1CB /* line_BSolidWhite.png in Resources */ = {isa = PBXBuildFile; fileRef = 025E09DF20D2F11200DD8856 /* line_BSolidWhite.png */; };
 		02B03C1020C72068000F81F0 /* WED_Line_Selector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02B03C0D20C71DE5000F81F0 /* WED_Line_Selector.cpp */; };
@@ -1073,8 +1076,14 @@
 		02635DB229B2C2AC00F5F433 /* bucketalloc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = bucketalloc.c; sourceTree = "<group>"; };
 		02635DB329B2C2AC00F5F433 /* mesh.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mesh.c; sourceTree = "<group>"; };
 		02635DB429B2C2AC00F5F433 /* geom.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = geom.h; sourceTree = "<group>"; };
+		0264F9B329DBFA7F003E983D /* WED_ExclusionPoly.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ExclusionPoly.cpp; sourceTree = "<group>"; };
+		0264F9B429DBFA7F003E983D /* WED_ExclusionPoly.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ExclusionPoly.h; sourceTree = "<group>"; };
 		028A6FE325F897C30002FDF5 /* ArrowHeadRoadE.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ArrowHeadRoadE.png; sourceTree = "<group>"; };
 		028A6FE425F897C30002FDF5 /* ArrowHeadRoadS.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ArrowHeadRoadS.png; sourceTree = "<group>"; };
+		029CA2332A01ED6400069CFA /* WED_ShapeNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ShapeNode.cpp; sourceTree = "<group>"; };
+		029CA2342A01ED6400069CFA /* WED_ShapePlacement.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ShapePlacement.cpp; sourceTree = "<group>"; };
+		029CA2352A01ED6500069CFA /* WED_ShapePlacement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ShapePlacement.h; sourceTree = "<group>"; };
+		029CA2362A01ED6500069CFA /* WED_ShapeNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ShapeNode.h; sourceTree = "<group>"; };
 		029EC5B7239B094B00A7C5E1 /* exclaim.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = exclaim.png; sourceTree = "<group>"; };
 		02B03C0D20C71DE5000F81F0 /* WED_Line_Selector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Line_Selector.cpp; sourceTree = "<group>"; };
 		02B03C0E20C71DE5000F81F0 /* WED_Line_Selector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Line_Selector.h; sourceTree = "<group>"; };
@@ -3584,26 +3593,46 @@
 		D6ED413C0B6ADE0100D5484E /* WEDEntities */ = {
 			isa = PBXGroup;
 			children = (
+				D62FCF8B0BD53C7F00ED6CF8 /* WED_Airport.h */,
+				D62FCF8C0BD53C7F00ED6CF8 /* WED_Airport.cpp */,
+				D6A17F9A0BA5E2A200BBCD0C /* WED_AirportBeacon.h */,
+				D6A17F9B0BA5E2A200BBCD0C /* WED_AirportBeacon.cpp */,
+				D62FD0D70BD55AE000ED6CF8 /* WED_AirportBoundary.h */,
+				D62FD0D80BD55AE000ED6CF8 /* WED_AirportBoundary.cpp */,
+				D62FD0070BD54B9F00ED6CF8 /* WED_AirportChain.h */,
+				D62FD0080BD54B9F00ED6CF8 /* WED_AirportChain.cpp */,
+				D6F262EE0C18904E00C26DC4 /* WED_ATCFrequency.h */,
+				D6F262EF0C18904E00C26DC4 /* WED_ATCFrequency.cpp */,
+				D62FCFBA0BD541BF00ED6CF8 /* WED_AirportNode.h */,
+				D62FCFBB0BD541BF00ED6CF8 /* WED_AirportNode.cpp */,
 				02B0D4AB25D476990076F8C6 /* WED_AutogenNode.cpp */,
 				02B0D4AC25D476990076F8C6 /* WED_AutogenNode.h */,
 				02B0D4AD25D476990076F8C6 /* WED_AutogenPlacement.cpp */,
 				02B0D4AE25D476990076F8C6 /* WED_AutogenPlacement.h */,
-				D612485421E5AA5D00FA030C /* WED_ATCTimeRule.h */,
-				D612485321E5AA5D00FA030C /* WED_ATCWindRule.h */,
-				D612485521E5AA5D00FA030C /* WED_FacadePreview.h */,
-				D6AF0A511F44E7B400CC7328 /* WED_FacadePreview.cpp */,
+				D62FCEB40BD5191F00ED6CF8 /* WED_AirportSign.h */,
+				D62FCEB50BD5191F00ED6CF8 /* WED_AirportSign.cpp */,
 				D6240D6B1476EAAE00A28A6F /* WED_ATCTimeRule.cpp */,
+				D612485421E5AA5D00FA030C /* WED_ATCTimeRule.h */,
 				D6240D6C1476EAAE00A28A6F /* WED_ATCWindRule.cpp */,
+				D612485321E5AA5D00FA030C /* WED_ATCWindRule.h */,
+				D6DF67BE107E8A060004F643 /* WED_ATCFlow.cpp */,
+				D6DF67C1107E8A060004F643 /* WED_ATCFlow.h */,
+				D6DF67BF107E8A060004F643 /* WED_ATCRunwayUse.cpp */,
+				D6DF67C0107E8A060004F643 /* WED_ATCRunwayUse.h */,
+				D6226E6F0E4B8C44005BD1D7 /* WED_DrapedOrthophoto.cpp */,
+				D6226E6E0E4B8C43005BD1D7 /* WED_DrapedOrthophoto.h */,
+				0264F9B329DBFA7F003E983D /* WED_ExclusionPoly.cpp */,
+				0264F9B429DBFA7F003E983D /* WED_ExclusionPoly.h */,
+				D695CD7E0EE08808009C5F2E /* WED_ExclusionZone.cpp */,
+				D695CD7D0EE08808009C5F2E /* WED_ExclusionZone.h */,
+				D6AF0A511F44E7B400CC7328 /* WED_FacadePreview.cpp */,
+				D612485521E5AA5D00FA030C /* WED_FacadePreview.h */,
 				D63A13AC132ABBC400D36061 /* WED_FacadeNode.cpp */,
 				D63A13AD132ABBC400D36061 /* WED_FacadeNode.h */,
 				D63A13AE132ABBC400D36061 /* WED_FacadeRing.cpp */,
 				D63A13AF132ABBC400D36061 /* WED_FacadeRing.h */,
 				D63A13B0132ABBC400D36061 /* WED_ForestRing.cpp */,
 				D63A13B1132ABBC400D36061 /* WED_ForestRing.h */,
-				D6DF67BE107E8A060004F643 /* WED_ATCFlow.cpp */,
-				D6DF67BF107E8A060004F643 /* WED_ATCRunwayUse.cpp */,
-				D6DF67C0107E8A060004F643 /* WED_ATCRunwayUse.h */,
-				D6DF67C1107E8A060004F643 /* WED_ATCFlow.h */,
 				D6F8E4B50C3C861C007A2EA7 /* WED_OverlayImage.cpp */,
 				D6F8E4B60C3C861C007A2EA7 /* WED_OverlayImage.h */,
 				D6F8E4B70C3C861C007A2EA7 /* WED_TextureNode.cpp */,
@@ -3620,8 +3649,6 @@
 				D6ED413F0B6ADE6300D5484E /* WED_Entity.cpp */,
 				D636817A0B8AC62600091AFC /* WED_GISPoint.h */,
 				D636817B0B8AC62600091AFC /* WED_GISPoint.cpp */,
-				D6A17F9A0BA5E2A200BBCD0C /* WED_AirportBeacon.h */,
-				D6A17F9B0BA5E2A200BBCD0C /* WED_AirportBeacon.cpp */,
 				D62FCE620BD513C600ED6CF8 /* WED_Windsock.h */,
 				D62FCE630BD513C600ED6CF8 /* WED_Windsock.cpp */,
 				D62FCE8E0BD5177D00ED6CF8 /* WED_TowerViewpoint.h */,
@@ -3634,14 +3661,14 @@
 				D63681800B8AC67B00091AFC /* WED_GISPoint_Bezier.cpp */,
 				D695CDFF0EE09F19009C5F2E /* WED_TextureBezierNode.h */,
 				D695CE000EE09F19009C5F2E /* WED_TextureBezierNode.cpp */,
-				D62FCFBA0BD541BF00ED6CF8 /* WED_AirportNode.h */,
-				D62FCFBB0BD541BF00ED6CF8 /* WED_AirportNode.cpp */,
 				D6226EC00E4B981E005BD1D7 /* WED_SimpleBezierBoundaryNode.h */,
 				D6226EC10E4B981E005BD1D7 /* WED_SimpleBezierBoundaryNode.cpp */,
+				029CA2332A01ED6400069CFA /* WED_ShapeNode.cpp */,
+				029CA2362A01ED6500069CFA /* WED_ShapeNode.h */,
+				029CA2342A01ED6400069CFA /* WED_ShapePlacement.cpp */,
+				029CA2352A01ED6500069CFA /* WED_ShapePlacement.h */,
 				D63681840B8AC69200091AFC /* WED_GISPoint_Heading.h */,
 				D63681850B8AC69200091AFC /* WED_GISPoint_Heading.cpp */,
-				D62FCEB40BD5191F00ED6CF8 /* WED_AirportSign.h */,
-				D62FCEB50BD5191F00ED6CF8 /* WED_AirportSign.cpp */,
 				D62FCEE00BD51B2900ED6CF8 /* WED_RampPosition.h */,
 				D62FCEE10BD51B2900ED6CF8 /* WED_RampPosition.cpp */,
 				D62FCEEA0BD51BBE00ED6CF8 /* WED_LightFixture.h */,
@@ -3666,8 +3693,6 @@
 				D6DEB67A1056FF0300C378BE /* WED_TaxiRoute.cpp */,
 				D63681980B8AC9C200091AFC /* WED_GISChain.h */,
 				D63681990B8AC9C200091AFC /* WED_GISChain.cpp */,
-				D62FD0070BD54B9F00ED6CF8 /* WED_AirportChain.h */,
-				D62FD0080BD54B9F00ED6CF8 /* WED_AirportChain.cpp */,
 				D67B1BFF0C54EC4000A21ABC /* WED_Ring.h */,
 				D67B1C000C54EC4000A21ABC /* WED_Ring.cpp */,
 				D6226E570E4B81C2005BD1D7 /* WED_LinePlacement.h */,
@@ -3676,30 +3701,20 @@
 				D6226E5D0E4B826F005BD1D7 /* WED_StringPlacement.cpp */,
 				D695CD6D0EE0862E009C5F2E /* WED_GISBoundingBox.h */,
 				D695CD6E0EE0862E009C5F2E /* WED_GISBoundingBox.cpp */,
-				D695CD7D0EE08808009C5F2E /* WED_ExclusionZone.h */,
-				D695CD7E0EE08808009C5F2E /* WED_ExclusionZone.cpp */,
 				D636819D0B8ACA1500091AFC /* WED_GISPolygon.h */,
 				D636819E0B8ACA1500091AFC /* WED_GISPolygon.cpp */,
 				D62FD0B50BD555B800ED6CF8 /* WED_Taxiway.h */,
 				D62FD0B60BD555B800ED6CF8 /* WED_Taxiway.cpp */,
-				D62FD0D70BD55AE000ED6CF8 /* WED_AirportBoundary.h */,
-				D62FD0D80BD55AE000ED6CF8 /* WED_AirportBoundary.cpp */,
 				D6226E380E4B7F32005BD1D7 /* WED_FacadePlacement.h */,
 				D6226E390E4B7F32005BD1D7 /* WED_FacadePlacement.cpp */,
 				D6226E500E4B80CF005BD1D7 /* WED_ForestPlacement.h */,
 				D6226E510E4B80CF005BD1D7 /* WED_ForestPlacement.cpp */,
 				D6226E540E4B8185005BD1D7 /* WED_PolygonPlacement.h */,
 				D6226E550E4B8185005BD1D7 /* WED_PolygonPlacement.cpp */,
-				D6226E6E0E4B8C43005BD1D7 /* WED_DrapedOrthophoto.h */,
-				D6226E6F0E4B8C44005BD1D7 /* WED_DrapedOrthophoto.cpp */,
 				D63681A00B8ACA2600091AFC /* WED_GISComposite.h */,
 				D63681A10B8ACA2600091AFC /* WED_GISComposite.cpp */,
-				D62FCF8B0BD53C7F00ED6CF8 /* WED_Airport.h */,
-				D62FCF8C0BD53C7F00ED6CF8 /* WED_Airport.cpp */,
 				D6FF2B880B6E985200960D5E /* WED_Group.h */,
 				D6FF2B890B6E985200960D5E /* WED_Group.cpp */,
-				D6F262EE0C18904E00C26DC4 /* WED_ATCFrequency.h */,
-				D6F262EF0C18904E00C26DC4 /* WED_ATCFrequency.cpp */,
 				D6EAA00D11A19ECA004ADCCC /* WED_RoadEdge.h */,
 				D6EAA00E11A19ECA004ADCCC /* WED_RoadEdge.cpp */,
 				D6917EB8172578270027AFBB /* WED_TaxiRouteNode.h */,
@@ -4596,6 +4611,7 @@
 				D6ED36A00B67964D00D5484E /* BitmapUtils.cpp in Sources */,
 				D6ED36A10B67964D00D5484E /* EndianUtils.c in Sources */,
 				D6ED36A20B67964D00D5484E /* MatrixUtils.cpp in Sources */,
+				029CA2432A01EDDB00069CFA /* WED_ShapePlacement.cpp in Sources */,
 				020F938B260D96180077222C /* WED_MapPreviewWindow.cpp in Sources */,
 				02D82418239EF2790008DBF2 /* 7zFile.c in Sources */,
 				D6ED36A30B67964D00D5484E /* PlatformUtils.mac.mm in Sources */,
@@ -4723,6 +4739,7 @@
 				D6A184FD0BA833E700BBCD0C /* GUI_DrawUtils.cpp in Sources */,
 				D6AF0A521F44E7B400CC7328 /* WED_FacadePreview.cpp in Sources */,
 				02D82422239EF2A90008DBF2 /* CpuArch.c in Sources */,
+				029CA2442A01EDDB00069CFA /* WED_ShapeNode.cpp in Sources */,
 				D6A185B60BA99DAA00BBCD0C /* GUI_PopupButton.cpp in Sources */,
 				D6A186380BA9B28900BBCD0C /* GUI_TabControl.cpp in Sources */,
 				D62FC99B0BCEF3D600ED6CF8 /* WED_Map.cpp in Sources */,
@@ -4747,6 +4764,7 @@
 				D62FD0090BD54B9F00ED6CF8 /* WED_AirportChain.cpp in Sources */,
 				D62FD0B70BD555B800ED6CF8 /* WED_Taxiway.cpp in Sources */,
 				D62FD0D90BD55AE000ED6CF8 /* WED_AirportBoundary.cpp in Sources */,
+				0264F9B529DBFA80003E983D /* WED_ExclusionPoly.cpp in Sources */,
 				02B0D4B625D47C850076F8C6 /* WED_Road_Selector.cpp in Sources */,
 				D6139E200BD5793500D50803 /* WED_StructureLayer.cpp in Sources */,
 				D613A2E00BD64C1800D50803 /* WED_TerraserverLayer.cpp in Sources */,
@@ -4970,6 +4988,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = src/XPTools/ObjView.plist;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libpng.a,
@@ -5185,6 +5204,7 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "-";
+				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"USE_TIF=1",
@@ -5353,6 +5373,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEPLOYMENT_LOCATION = NO;
+				ENABLE_HARDENED_RUNTIME = NO;
 				EXCLUDED_ARCHS = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
@@ -5394,6 +5415,7 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "-";
+				ENABLE_HARDENED_RUNTIME = NO;
 			};
 			name = Phone;
 		};
@@ -5434,6 +5456,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "-";
 				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = NO;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libsquish.a,
 					libs/local/lib/libpng.a,
@@ -5511,6 +5534,7 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COPY_PHASE_STRIP = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				PRODUCT_NAME = Untitled;
@@ -5675,6 +5699,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = src/XPTools/XGrinder.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.laminar_research.XGrinder;
 			};
@@ -5685,6 +5710,7 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "-";
+				ENABLE_HARDENED_RUNTIME = NO;
 			};
 			name = Debug;
 		};
@@ -5693,6 +5719,7 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "-";
+				ENABLE_HARDENED_RUNTIME = YES;
 			};
 			name = Release;
 		};
@@ -5702,6 +5729,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "-";
 				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = NO;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libsquish.a,
 					libs/local/lib/libpng.a,
@@ -5715,6 +5743,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "-";
 				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libsquish.a,
 					libs/local/lib/libpng.a,
@@ -5756,6 +5785,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEPLOYMENT_LOCATION = NO;
+				ENABLE_HARDENED_RUNTIME = NO;
 				EXCLUDED_ARCHS = "";
 				GCC_DEBUGGING_SYMBOLS = full;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -5802,6 +5832,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEPLOYMENT_LOCATION = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
 				EXCLUDED_ARCHS = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
@@ -5897,6 +5928,7 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "-";
+				ENABLE_HARDENED_RUNTIME = NO;
 			};
 			name = DebugOpt;
 		};
@@ -5906,6 +5938,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "-";
 				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = NO;
 				OTHER_LDFLAGS = (
 					libs/local/lib/libsquish.a,
 					libs/local/lib/libpng.a,
@@ -5933,6 +5966,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEPLOYMENT_LOCATION = NO;
+				ENABLE_HARDENED_RUNTIME = NO;
 				EXCLUDED_ARCHS = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",

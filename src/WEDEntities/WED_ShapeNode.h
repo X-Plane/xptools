@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, Laminar Research.
+ * Copyright (c) 2023, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,26 +21,26 @@
  *
  */
 
-#ifndef WED_Version_H
-#define WED_Version_H
+#ifndef WED_ShapeNode_H
+#define WED_ShapeNode_H
 
-// This file must be ALL macros - it is included by the MSVC .rc compiler
-// so you can't go using const int and other fancy-pants C++ stuff!
+#include "WED_SimpleBoundaryNode.h"
 
-// These versions are used in about boxes, resources, info boxes, etc.
+class WED_ShapeNode : public WED_SimpleBoundaryNode {
 
-#define	WED_VERSION				2.6.0b1
-#define	WED_VERSION_STRING		"2.6.0b1"
-#define	WED_VERSION_STRING_SHORT	"2.6"			// omit beta/release number and trailing zero's
+DECLARE_PERSISTENT(WED_ShapeNode)
 
-#define	WED_COPYRIGHT_STRING	"© Copyright 2007-2023, Laminar Research."
+public:
+	double 	GetZ() const;
+	string 	GetString() const;
 
-#define	WED_VERSION_RES			WED_VERSION_STRING
-#define	WED_VERSION_BIN			2,6,0,0
+	virtual const char *	HumanReadableType(void) const { return "Shape Node"; }
 
-// This numeric is used by the gateway to understand if our WED is up-to-date.
-// Format 1 digit major + 2 digit middle + 1 digit minor version + last digit
-// last digit is 0 for all beta versions or matches release version
-#define WED_VERSION_NUMERIC		20600
+private:
 
-#endif /* WED_Version_H */
+	WED_PropDoubleText		mZ;
+	WED_PropStringText		mText;
+};
+
+
+#endif /* WED_ShapeNode_H */

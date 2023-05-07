@@ -61,7 +61,7 @@ void		WED_AboutBox::Draw(GUI_GraphState * state)
 
 	const char * main_text[] = {
 		"WorldEditor " WED_VERSION_STRING_SHORT,
-		"© Copyright 2007-2021, Laminar Research",
+		WED_COPYRIGHT_STRING,
 		"",
 		"This software is available under an open license,",
 		"for more info see http://developer.x-plane.com/code",

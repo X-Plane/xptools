@@ -38,6 +38,7 @@
 #include "WED_ObjPlacement.h"
 #include "WED_StringPlacement.h"
 #include "WED_AutogenPlacement.h"
+#include "WED_ExclusionPoly.h"
 #include "WED_LinePlacement.h"
 #include "WED_PolygonPlacement.h"
 #include "WED_DrapedOrthophoto.h"
@@ -610,6 +611,25 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 
 	if(who->GetClass() == WED_ForestPlacement::sClass)
 		ValidateOneForestPlacement(who, msgs, parent_apt);
+
+	if (who->GetClass() == WED_StringPlacement::sClass)
+	{
+		auto str = static_cast<WED_StringPlacement*>(who);
+		if(str->GetSpacing() < 1.0)
+			msgs.push_back(validation_error_t("Object string spacing must be grater than zero.", err_string_zero_spaceing, who, parent_apt));
+
+	}
+
+	if (who->GetClass() == WED_ExclusionPoly::sClass)
+	{
+		auto xcl = static_cast<WED_ExclusionPoly*>(who);
+		if (xcl->GetNumHoles() > 0)
+			msgs.push_back(validation_error_t("Exclusion Polygons may not have holes in them.", err_exclusion_polys_no_holes, who, parent_apt));
+		set<int> ex;
+		xcl->GetExclusions(ex);
+		if (ex.count(exclude_For))
+			msgs.push_back(validation_error_t("Exclusion Polygons do not (yet) supported forests in X-Plane. Use Exclusion zones instead.", err_exclusion_polys_no_forests, who, parent_apt));
+	}
 
 	if(gExportTarget == wet_gateway)
 	{
@@ -1711,9 +1731,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 		string error_content;
 
 		if(air_org_code_valid(3,5, true, faa_code, error_content) == false && faa_code.empty() == false)
-		{
 			add_formated_metadata_error(error_template, wed_AddMetaDataFAA, error_content, who, msgs, apt);
-		}
 		all_keys.push_back(faa_code);
 	}
 
@@ -1723,9 +1741,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 		string error_content;
 
 		if(air_org_code_valid(3,3, false, iata_code, error_content) == false && iata_code.empty() == false)
-		{
 			add_formated_metadata_error(error_template, wed_AddMetaDataIATA, error_content, who, msgs, apt);
-		}
 		all_keys.push_back(iata_code);
 	}
 
@@ -1735,9 +1751,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 		string error_content;
 
 		if (!icao_code.empty() && (air_org_code_valid(4,4, false, icao_code, error_content) == false || tolower(icao_code[0]) == 'x'))
-		{
 			add_formated_metadata_error(error_template, wed_AddMetaDataICAO, error_content, who, msgs, apt);
-		}
 		all_keys.push_back(icao_code);
 	}
 
@@ -1749,9 +1763,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 		string error_content;
 
 		if (!air_org_code_valid(3,7, true, code, error_content) && !code.empty())
-		{
 			add_formated_metadata_error(error_template, wed_AddMetaDataLocal, error_content, who, msgs, apt);
-		}
 		all_keys.push_back(code);
 	}
 
@@ -1776,9 +1788,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 		string error      = "Do only specify one of the two Meta-data tags 'FAA code' or 'Local Code' !";
 
 		if (!codeFAA.empty() && !codeLocal.empty())
-		{
 			msgs.push_back(validation_error_t(error, err_airport_metadata_invalid, who , apt));
-		}
 		all_keys.push_back(codeFAA);
 	}
 
@@ -1848,48 +1858,46 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 			}
 
 			if (error_content.empty() == false)
-			{
 				add_formated_metadata_error(error_template, wed_AddMetaDataState, error_content, who, msgs, apt);
-			}
 		}
 		all_keys.push_back(state);
 	}
 
+	int trans_alt_ft = -1;
 	if(who->ContainsMetaDataKey(wed_AddMetaDataTransitionAlt))
 	{
 		string transition_alt   = who->GetMetaDataValue(wed_AddMetaDataTransitionAlt);
 
-		if (is_a_number(transition_alt) == true)
+		if (is_a_number(transition_alt) == false)
+				add_formated_metadata_error(error_template, wed_AddMetaDataTransitionAlt, "is not a whole number", who, msgs, apt);
+		else
 		{
-			double altitiude = 0.0;
-
-			istringstream iss(transition_alt);
-			iss >> altitiude;
-
-			if (altitiude <= 200.0)
-			{
-				add_formated_metadata_error(error_template, wed_AddMetaDataTransitionAlt, transition_alt + " is too low to be a reasonable value", who, msgs, apt);
-			}
+			trans_alt_ft = atoi(transition_alt.c_str());
+			if(trans_alt_ft < 500 || trans_alt_ft > 25000)
+				add_formated_metadata_error(error_template, wed_AddMetaDataTransitionAlt, "is not between 500 and 25000 ft", who, msgs, apt);
 		}
-		all_keys.push_back(transition_alt);
 	}
 
 	if(who->ContainsMetaDataKey(wed_AddMetaDataTransitionLevel))
 	{
 		string transition_level = who->GetMetaDataValue(wed_AddMetaDataTransitionLevel);
-		//string error_content;
-
-		//No validations for transition level
-		all_keys.push_back(transition_level);
+		if (is_a_number(transition_level) == false)
+				add_formated_metadata_error(error_template, wed_AddMetaDataTransitionLevel, "is not a whole number", who, msgs, apt);
+		else
+		{
+			int trans_lvl_ft = atoi(transition_level.c_str());
+			if (trans_lvl_ft < 500 || trans_lvl_ft > 25000)
+				add_formated_metadata_error(error_template, wed_AddMetaDataTransitionLevel, "is not between 500 and 25000 ft", who, msgs, apt);
+			else if (trans_alt_ft >= 0 && abs(trans_alt_ft - trans_lvl_ft) > 2000)
+				add_formated_metadata_error(error_template, wed_AddMetaDataTransitionLevel, "Transition altitude and level must be within 2000 ft or less of each other.", who, msgs, apt);
+		}
 	}
 
 	for(vector<string>::iterator itr = all_keys.begin(); itr != all_keys.end(); ++itr)
 	{
 		::transform(itr->begin(), itr->end(), itr->begin(), ::tolower);
 		if(itr->find("http") != string::npos)
-		{
 			msgs.push_back(validation_error_t("Metadata value " + *itr + " contains 'http', is likely a URL", err_airport_metadata_invalid, who, apt));
-		}
 	}
 
 	if (who->ContainsMetaDataKey(wed_AddMetaDataCircuits))

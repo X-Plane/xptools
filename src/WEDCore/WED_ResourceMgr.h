@@ -53,16 +53,28 @@
 
 class	WED_LibraryMgr;
 
+struct tile_info {
+	int			tiles_x;
+	int			tiles_y;
+	int			pages_x;
+	int			pages_y;
+	bool		rwy;
+	vector<uint8_t> idx;
+	tile_info() { tiles_x = tiles_y = pages_x = pages_y = 1; rwy = 0; }
+};
+
 struct	pol_info_t {
 	string		base_tex; //Relative path
 	bool		hasDecal;
+	tile_info	tiling;
 	float		proj_s;
 	float		proj_t;
 	bool		kill_alpha;
 	bool		wrap;
 	string		group;
 	int			group_offset;
-	float		latitude;
+
+	float		latitude;            // only for writing polygons
 	float		longitude;
 	float		height_Meters;
 	int			ddsHeight_Pxls;

@@ -173,20 +173,20 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 #endif
 	// TOOLS
 	mTools.push_back(					NULL);
-	mTools.push_back(					NULL);
+	mTools.push_back(					new WED_CreatePolygonTool("Shapes", mMap, mMap, resolver, archive, create_Shape));
 
-	mTools.push_back(					NULL); // icon for JetWay placement
+#if ROAD_EDITING
+	mTools.push_back(mNetTool = new WED_CreateEdgeTool("Roads", mMap, mMap, resolver, archive, create_Road));
+#else
+	mTools.push_back(NULL);
+#endif
 	mTools.push_back(mAgsTool=			new WED_CreatePolygonTool("Autogen",mMap, mMap, resolver, archive, create_Autogen));
 
 	mTools.push_back(					new WED_CreatePointTool("Truck Parking", mMap, mMap, resolver, archive, create_TruckParking));
 	mTools.push_back(					new WED_CreatePointTool("Truck Destination", mMap, mMap, resolver, archive, create_TruckDestination));
 
-	mTools.push_back(					new WED_CreateBoxTool("Exclusions",mMap, mMap, resolver, archive, create_Exclusion));
-#if ROAD_EDITING
-	mTools.push_back(mNetTool=			new WED_CreateEdgeTool("Roads",mMap, mMap, resolver, archive, create_Road));
-#else
-	mTools.push_back(					NULL);
-#endif
+	mTools.push_back(					new WED_CreateBoxTool("Exclusion Zones",mMap, mMap, resolver, archive, create_Exclusion));
+	mTools.push_back(					new WED_CreatePolygonTool("Exclusion Polys",mMap, mMap, resolver, archive, create_ExcludePol));
 
 	mTools.push_back(mLinTool=			new WED_CreatePolygonTool("Lines",mMap, mMap, resolver, archive, create_Line));
 	mTools.push_back(mPolTool=			new WED_CreatePolygonTool("Polygons",mMap, mMap, resolver, archive, create_Polygon));
@@ -690,6 +690,7 @@ void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
 #include "WED_PolygonPlacement.h"
 #include "WED_DrapedOrthophoto.h"
 #include "WED_ExclusionZone.h"
+#include "WED_ExclusionPoly.h"
 #include "WED_ForestRing.h"
 #include "WED_FacadeRing.h"
 #include "WED_FacadeNode.h"
@@ -755,6 +756,7 @@ void hide_all_persistents(MapFilter_t& hide_list)
 	hide_list.push_back(WED_PolygonPlacement::sClass);
 	hide_list.push_back(WED_DrapedOrthophoto::sClass);
 	hide_list.push_back(WED_ExclusionZone::sClass);
+	hide_list.push_back(WED_ExclusionPoly::sClass);
 	//hide_list.push_back(WED_ForestRing::sClass);
 	//hide_list.push_back(WED_FacadeRing::sClass);
 	//hide_list.push_back(WED_FacadeNode::sClass);
@@ -904,6 +906,7 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 
 		unhide_persistent(hide_list, lock_list);
 		unhide_persistent(hide_list, WED_ExclusionZone::sClass);
+		unhide_persistent(hide_list, WED_ExclusionPoly::sClass);
 		unhide_persistent(hide_list, WED_AirportBoundary::sClass);
 		unhide_persistent(hide_list, k_show_boundary_chain);
 		unhide_persistent(hide_list, k_show_boundary_nodes);

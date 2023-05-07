@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, Laminar Research.
+ * Copyright (c) 2023, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,26 +21,30 @@
  *
  */
 
-#ifndef WED_Version_H
-#define WED_Version_H
+#include "WED_ShapeNode.h"
 
-// This file must be ALL macros - it is included by the MSVC .rc compiler
-// so you can't go using const int and other fancy-pants C++ stuff!
+DEFINE_PERSISTENT(WED_ShapeNode)
+TRIVIAL_COPY(WED_ShapeNode, WED_SimpleBoundaryNode)
 
-// These versions are used in about boxes, resources, info boxes, etc.
 
-#define	WED_VERSION				2.6.0b1
-#define	WED_VERSION_STRING		"2.6.0b1"
-#define	WED_VERSION_STRING_SHORT	"2.6"			// omit beta/release number and trailing zero's
+WED_ShapeNode::WED_ShapeNode(WED_Archive * a, int i) : WED_SimpleBoundaryNode(a,i),
+mZ   (this, PROP_Name("Z Value",     XML_Name("point", "z_value")), 0.0, 5, 2),
+mText(this, PROP_Name("Description", XML_Name("point", "description")), "")
+{
+}
 
-#define	WED_COPYRIGHT_STRING	"© Copyright 2007-2023, Laminar Research."
+WED_ShapeNode::~WED_ShapeNode()
+{
+}
 
-#define	WED_VERSION_RES			WED_VERSION_STRING
-#define	WED_VERSION_BIN			2,6,0,0
+double 	WED_ShapeNode::GetZ() const
+{
+	return  mZ.value;
+}
 
-// This numeric is used by the gateway to understand if our WED is up-to-date.
-// Format 1 digit major + 2 digit middle + 1 digit minor version + last digit
-// last digit is 0 for all beta versions or matches release version
-#define WED_VERSION_NUMERIC		20600
+string 	WED_ShapeNode::GetString() const
+{
+	return mText.value;
+}
+	
 
-#endif /* WED_Version_H */

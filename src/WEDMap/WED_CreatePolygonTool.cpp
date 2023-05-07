@@ -22,43 +22,47 @@
  */
 
 #include "WED_CreatePolygonTool.h"
-#include "WED_AirportChain.h"
-#include "WED_Taxiway.h"
 #include "IResolver.h"
 #include "GISUtils.h"
+#include "MathUtils.h"
 #include "WED_GISUtils.h"
 #include "ISelection.h"
 #include "WED_AirportNode.h"
-#include "WED_FacadeNode.h"
 #include "WED_ToolUtils.h"
 #include "WED_EnumSystem.h"
 #include "WED_AirportBoundary.h"
+#include "WED_AirportChain.h"
 #include "WED_Airport.h"
 #include "WED_Ring.h"
-#include "WED_FacadePlacement.h"
-#include "WED_ForestRing.h"
-#include "WED_ForestPlacement.h"
-#include "WED_FacadeRing.h"
-#include "WED_PolygonPlacement.h"
-#include "WED_DrapedOrthophoto.h"
-#include "WED_LinePlacement.h"
-#include "WED_StringPlacement.h"
 #include "WED_AutogenPlacement.h"
 #include "WED_AutogenNode.h"
+#include "WED_FacadePlacement.h"
+#include "WED_FacadeRing.h"
+#include "WED_FacadeNode.h"
+#include "WED_ForestPlacement.h"
+#include "WED_ShapePlacement.h"
+#include "WED_ShapeNode.h"
+#include "WED_ForestRing.h"
+#include "WED_PolygonPlacement.h"
+#include "WED_DrapedOrthophoto.h"
+#include "WED_ExclusionPoly.h"
+#include "WED_LinePlacement.h"
+#include "WED_StringPlacement.h"
+#include "WED_Taxiway.h"
 #include "WED_SimpleBezierBoundaryNode.h"
 #include "WED_SimpleBoundaryNode.h"
 #include "WED_TextureNode.h"
 #include "WED_TextureBezierNode.h"
 #include "WED_ResourceMgr.h"
-#include "MathUtils.h"
 
 // this must match enum CreateTool_t in WED_CreatePolygonTool.h
-static const char * kCreateCmds[] = { "Taxiway", "Boundary", "Marking", "Hole", "Facade",
-                                      "Forest", "String", "Line", "Autogen", "Polygon" };
+static const char * kCreateCmds[] = { "Taxiway", "Boundary", "Marking", "Hole",   "Shape",
+									  "Exclusion", "Facade",  "Forest", "String", "Line", 
+									  "Autogen", "Polygon" };
 
-static const int kIsAirport[] =     { 1, 1, 1, 0, 0,   0, 0, 0, 0, 0 };
-static const int kRequireClosed[] = { 1, 1, 0, 1, 1,   1, 0, 0, 1, 1 };
-static const int kAllowCurved[] =   { 1, 0, 1, 1, 1,   0, 1, 1, 0, 1 };
+static const int kIsAirport[] =     { 1, 1, 1, 0, 0,   0, 0, 0, 0, 0,   0, 0 };
+static const int kRequireClosed[] = { 1, 1, 0, 1, 0,   1, 1, 1, 0, 0,   1, 1 };
+static const int kAllowCurved[] =   { 1, 0, 1, 1, 0,   0, 1, 0, 1, 1,   0, 1 };
 
 string stripped_resource(const string& r)
 {
@@ -69,34 +73,36 @@ string stripped_resource(const string& r)
 }
 
 WED_CreatePolygonTool::WED_CreatePolygonTool(
-									const char *		tool_name,
-									GUI_Pane *			host,
-									WED_MapZoomerNew *	zoomer,
-									IResolver *			resolver,
-									WED_Archive *		archive,
-									CreateTool_t		tool) :
-	WED_CreateToolBase(tool_name,host, zoomer, resolver,archive,
-	kRequireClosed[tool] ? 3 : 2,	// min pts
-	99999999,						// max pts
-	kAllowCurved[tool],			// curve allowed
-	0,							// curve required?
-	1,							// close allowed
-	kRequireClosed[tool]),		// close required?
-	mType(tool),
-		mPavement(tool    == create_Taxi    ? this : NULL,PROP_Name("Pavement", XML_Name("","")),Surface_Type,surf_Concrete),
-		mRoughness(tool   == create_Taxi    ? this : NULL,PROP_Name("Roughness",XML_Name("","")),0.25,4,2),
-		mHeading(tool     == create_Taxi   || tool == create_Polygon ?
-		                                      this : NULL,PROP_Name("Heading",  XML_Name("","")),0,5,2),
-		mMarkings(tool    <= create_Hole    ? this : NULL,PROP_Name(".Markings",XML_Name("","")), LinearFeature, 0),
-		mMarkingsLines(tool <= create_Hole  ? this : NULL,PROP_Name("Markings", XML_Name("","")), ".Markings",   1,  99, 1),
-		mMarkingsLights(tool <= create_Hole ? this : NULL,PROP_Name("Lights",   XML_Name("","")), ".Markings", 101, 199, 1),
+		const char* tool_name,
+		GUI_Pane* host,
+		WED_MapZoomerNew* zoomer,
+		IResolver* resolver,
+		WED_Archive* archive,
+		CreateTool_t		tool) :
+		WED_CreateToolBase(tool_name, host, zoomer, resolver, archive,
+			kRequireClosed[tool] ? 3 : 2,	// min pts
+			99999999,						// max pts
+			kAllowCurved[tool],			// curve allowed
+			0,							// curve required?
+			1,							// close allowed
+			kRequireClosed[tool]),		// close required?
+		mType(tool),
+		mPavement(tool == create_Taxi ? this : NULL, PROP_Name("Pavement", XML_Name("", "")), Surface_Type, surf_Concrete),
+		mRoughness(tool == create_Taxi ? this : NULL, PROP_Name("Roughness", XML_Name("", "")), 0.25, 4, 2),
+		mHeading(tool == create_Taxi || tool == create_Polygon ?
+			this : NULL, PROP_Name("Heading", XML_Name("", "")), 0, 5, 2),
+		mMarkings(tool <= create_Hole ? this : NULL, PROP_Name(".Markings", XML_Name("", "")), LinearFeature, 0),
+		mMarkingsLines(tool <= create_Hole ? this : NULL, PROP_Name("Markings", XML_Name("", "")), ".Markings", 1, 99, 1),
+		mMarkingsLights(tool <= create_Hole ? this : NULL, PROP_Name("Lights", XML_Name("", "")), ".Markings", 101, 199, 1),
 
-		mResource(tool >  create_Hole    ? this : NULL,PROP_Name("Resource", XML_Name("","")), ""),
-		mHeight(tool   == create_Facade  ? this : NULL,PROP_Name("Height",   XML_Name("","")), 10.0, 5, 2),
-		mDensity(tool  == create_Forest  ? this : NULL,PROP_Name("Density",  XML_Name("","")), 1.0, 3, 2),
+		mShapeText(tool == create_Shape ? this : NULL, PROP_Name("Property Text", XML_Name("", "")), ""),
+		mResource(tool > create_ExcludePol ? this : NULL, PROP_Name("Resource", XML_Name("", "")), ""),
+		mHeight(tool == create_Facade ? this : NULL, PROP_Name("Height", XML_Name("", "")), 10.0, 5, 2),
+		mDensity(tool == create_Forest ? this : NULL, PROP_Name("Density", XML_Name("", "")), 1.0, 3, 2),
 
-		mSpacing(tool  == create_String  ? this : NULL,PROP_Name("Spacing",  XML_Name("","")), 5.0, 5, 1),
-		mAgsHght(tool  == create_Autogen ? this : NULL,PROP_Name("Autogen Height",   XML_Name("","")), 10.0, 6, 1),
+		mSpacing(tool == create_String ? this : NULL, PROP_Name("Spacing", XML_Name("", "")), 5.0, 5, 1),
+		mAgsHght(tool == create_Autogen ? this : NULL, PROP_Name("Autogen Height", XML_Name("", "")), 10.0, 6, 1),
+		mExclude(tool == create_ExcludePol ? this : NULL, PROP_Name("Exclusion", XML_Name("", "")), ExclusionTypes, 0),
 
 		mUVMap(tool == create_Polygon    ? this : NULL,PROP_Name("Use Texture Map - Orthophoto", XML_Name("","")), 0),
 		mPickWalls(tool == create_Facade ? this : NULL,PROP_Name("Pick Walls", XML_Name("","")), 0)
@@ -129,12 +135,13 @@ void	WED_CreatePolygonTool::AcceptPath(
 
 	ISelection *	sel = WED_GetSelect(GetResolver());
 	if (mType != create_Hole)
-	sel->Clear();
+		sel->Clear();
 
-	int is_bezier = mType != create_Forest && mType != create_Boundary;
-	int is_apt = mType <= create_Hole;
+	int is_bezier = kAllowCurved[mType];
+	int is_apt = kIsAirport[mType];
 	int is_autogen = mType == create_Autogen;
-	int is_poly = (mType != create_Hole && mType != create_String && mType != create_Line) || is_autogen;
+	int is_exclusion = mType == create_ExcludePol;
+	int is_poly = (mType != create_Hole && mType != create_String && mType != create_Line && mType != create_Shape) || is_autogen || is_exclusion;
 	int is_texed = mType == create_Polygon ? mUVMap.value : 0;
 	int is_forest = mType == create_Forest;
 	int is_facade = mType == create_Facade;
@@ -173,7 +180,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 	switch(mType) {
 	case create_Taxi:
 		{
-			WED_Taxiway *		tway = WED_Taxiway::CreateTyped(GetArchive());
+			auto * tway = WED_Taxiway::CreateTyped(GetArchive());
 			outer_ring->SetParent(tway,0);
 			tway->SetParent(host, idx);
 
@@ -191,7 +198,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 		break;
 	case create_Boundary:
 		{
-			WED_AirportBoundary *		bwy = WED_AirportBoundary::CreateTyped(GetArchive());
+			auto * bwy = WED_AirportBoundary::CreateTyped(GetArchive());
 			outer_ring->SetParent(bwy,0);
 			bwy->SetParent(host, idx);
 
@@ -240,7 +247,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 		break;
 	case create_Forest:
 		{
-			WED_ForestPlacement * fst = WED_ForestPlacement::CreateTyped(GetArchive());
+			auto * fst = WED_ForestPlacement::CreateTyped(GetArchive());
 			outer_ring->SetParent(fst,0);
 			fst->SetParent(host,idx);
 			fst->SetName(stripped_resource(mResource.value));
@@ -253,7 +260,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 		break;
 	case create_Autogen:
 		{
-			WED_AutogenPlacement * ags = WED_AutogenPlacement::CreateTyped(GetArchive());
+			auto * ags = WED_AutogenPlacement::CreateTyped(GetArchive());
 			outer_ring->SetParent(ags,0);
 			ags->SetParent(host,idx);
 			ags->SetName(stripped_resource(mResource.value));
@@ -264,9 +271,22 @@ void	WED_CreatePolygonTool::AcceptPath(
 			ags->SetHeight(mAgsHght.value);
 		}
 		break;
+	case create_ExcludePol:
+		{
+			auto  * epol = WED_ExclusionPoly::CreateTyped(GetArchive());
+			outer_ring->SetParent(epol, 0);
+			epol->SetParent(host, idx);
+			sprintf(buf, "Exclusion Poly %d", n);
+			epol->SetName(buf);
+			sprintf(buf, "Exclusion %d Outer Ring", n);
+			outer_ring->SetName(buf);
+			sel->Select(epol);
+			epol->SetExclusions(mExclude.value);
+		}
+		break;
 	case create_String:
 		{
-			WED_StringPlacement * str = WED_StringPlacement::CreateTyped(GetArchive());
+			auto * str = WED_StringPlacement::CreateTyped(GetArchive());
 			outer_ring = str;
 			str->SetParent(host,idx);
 			str->SetName(stripped_resource(mResource.value));
@@ -278,16 +298,27 @@ void	WED_CreatePolygonTool::AcceptPath(
 		break;
 	case create_Line:
 		{
-			WED_LinePlacement * lin = WED_LinePlacement::CreateTyped(GetArchive());
+			auto * lin = WED_LinePlacement::CreateTyped(GetArchive());
 			outer_ring = lin;
 			lin->SetParent(host,idx);
-			sprintf(buf,"Line %d",n);
 			lin->SetName(stripped_resource(mResource.value));
 			sel->Select(lin);
 			lin->SetClosed(closed);
 			lin->SetResource(mResource.value);
 		}
 		break;
+	case create_Shape:
+	{
+		auto* shp = WED_ShapePlacement::CreateTyped(GetArchive());
+		outer_ring = shp;
+		shp->SetParent(host, idx);
+		sprintf(buf, "New Shape %d", n);
+		shp->SetName(buf);
+		shp->SetClosed(closed);
+		shp->SetString(mShapeText.value);
+		sel->Select(shp);
+	}
+	break;
 	case create_Polygon:
 		if(is_texed)
 		{
@@ -303,7 +334,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 		}
 		else
 		{
-			WED_PolygonPlacement * pol = WED_PolygonPlacement::CreateTyped(GetArchive());
+			auto * pol = WED_PolygonPlacement::CreateTyped(GetArchive());
 			outer_ring->SetParent(pol,0);
 			pol->SetParent(host,idx);
 			pol->SetName(stripped_resource(mResource.value));
@@ -335,6 +366,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 		else if(is_bezier && is_texed)  node = bnode = tbnode = WED_TextureBezierNode::CreateTyped(GetArchive());
 		else if(is_bezier)              node = bnode = WED_SimpleBezierBoundaryNode::CreateTyped(GetArchive());
 		else if(is_texed)               node = tnode = WED_TextureNode::CreateTyped(GetArchive());
+		else if(mType == create_Shape)  node = WED_ShapeNode::CreateTyped(GetArchive());
 		else                            node = WED_SimpleBoundaryNode::CreateTyped(GetArchive());
 
 		node->SetLocation(gis_Geo,pts[idx]);
@@ -400,7 +432,7 @@ const char *	WED_CreatePolygonTool::GetStatusText(void)
 	if (GetHost(n) == NULL)
 	{
 		if (mType == create_Hole)
-			sprintf(buf,"You must select a polygon before you can insert a hole into it.  Facades cannot have interior holes.");
+			sprintf(buf,"Facades and Exclusion Poly's cannot have interior holes.");
 		else
 			sprintf(buf,"You must create an airport before you can add a %s.",kCreateCmds[mType]);
 		return buf;
@@ -419,12 +451,14 @@ WED_Thing *		WED_CreatePolygonTool::GetHost(int& idx)
 	if (mType == create_Hole)
 	{
 		ISelection * sel = WED_GetSelect(GetResolver());
-		if (sel->GetSelectionCount() != 1) return NULL;
+		if (sel->GetSelectionCount() != 1) 
+			return NULL;
 		WED_GISPolygon * igp = dynamic_cast<WED_GISPolygon *>(sel->GetNthSelection(0));
 		if(!igp)
 			return NULL;
-		// A few polygons do NOT get holes: facades, um...that's it for now.
-		if(igp->GetClass() == WED_FacadePlacement::sClass)
+		// A few polygons are not allowed to have holes:
+		if(igp->GetClass() == WED_FacadePlacement::sClass ||
+		   igp->GetClass() == WED_ExclusionPoly::sClass)
 			return NULL;
 		if(igp->GetClass() == WED_AutogenPlacement::sClass)
 		{
@@ -460,4 +494,3 @@ void	WED_CreatePolygonTool::GetNthPropertyDict(int n, PropertyDict_t& dict) cons
 		dict.erase(surf_Water);
 	}
 }
-

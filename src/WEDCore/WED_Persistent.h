@@ -246,4 +246,16 @@ private:
 
 };
 
+class WED_Thing;
+
+template <typename T>
+T* CreateEntity(WED_Archive* arch, WED_Thing* parent, int position, const char * name = nullptr)
+{
+	auto e = T::CreateTyped(arch);
+	e->SetParent(parent, position);
+	if(name)
+		e->SetName(name);
+	return e;
+}
+
 #endif /* WED_PERSISTENT */
