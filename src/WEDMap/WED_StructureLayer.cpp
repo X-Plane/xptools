@@ -66,6 +66,7 @@
 #include "WED_ATCLayer.h"
 #include "WED_LinePlacement.h"
 #include "WED_ResourceMgr.h"
+#include "WED_ShapePlacement.h"
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -416,7 +417,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 								glShape2v(GL_LINES, &*pts.begin(), pts.size());
 								glLineWidth(1);
 							}
-							glColor4fv(WED_Color_RGBA(struct_color));
+							glColor4fv(colorf);
 						}
 				}
 
@@ -519,9 +520,17 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 						//	glColor4fv(WED_Color_RGBA(struct_color));  // Do this if green EdgeNdodes when unselected are desired
 						glBegin(GL_POINTS);
 						glVertex2(b.p1);
-						if(i == n - 1)
+						if (i == n - 1)
+						{
 							glVertex2(b.p2);
+						}
 						glEnd();
+					}
+					if (sub_class == WED_ShapePlacement::sClass && i == n - 1 - ps->IsClosed())
+					{
+						Vector2 orient1(b.p1, b.p2);
+						GUI_PlotIcon(g, "ArrowHeadRoadE.png", b.p2.x(), b.p2.y(), atan2(orient1.dx, orient1.dy) * RAD_TO_DEG, 1);
+						g->SetTexUnits(0);
 					}
 				}
 				glPointSize(1);
