@@ -370,7 +370,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 
 					glColor4fv(WED_Color_RGBA(struct_color));
 				}
-				else if (kind = gis_Ring)
+				else if (kind == gis_Ring)
 				{
 					auto parent = dynamic_cast<WED_Thing*>(entity)->GetParent();
 					if (parent->GetClass() == WED_ExclusionPoly::sClass)
