@@ -892,6 +892,16 @@ someday check footer when in sloooow mode
 		unsigned short	pool;
 
 		unsigned char	cmdID = cmdsAtom.ReadUInt8();
+
+		if (patchOpen)
+			if (cmdID != dsf_Cmd_Triangle      && cmdID != dsf_Cmd_TriangleCrossPool      && cmdID != dsf_Cmd_TriangleRange &&
+				cmdID != dsf_Cmd_TriangleStrip && cmdID != dsf_Cmd_TriangleStripCrossPool && cmdID != dsf_Cmd_TriangleStripRange &&
+				cmdID != dsf_Cmd_TriangleFan   && cmdID != dsf_Cmd_TriangleFanCrossPool   && cmdID != dsf_Cmd_TriangleFanRange)
+			{
+				inCallbacks->EndPatch_f(ref);
+				patchOpen = false;
+			}
+
 		switch(cmdID) {
 
 
@@ -1138,16 +1148,12 @@ someday check footer when in sloooow mode
 		case dsf_Cmd_TerrainPatch				:
 				if (flags & dsf_CmdPatches)
 				{
-			if (patchOpen) inCallbacks->EndPatch_f(ref);
-//			print_scales(currentPool);
 			inCallbacks->BeginPatch_f(currentDefinition, patchLODNear, patchLODFar, patchFlags, planeDepths[currentPool], ref);
 				}
 			patchOpen = true;
 			break;
 		case dsf_Cmd_TerrainPatchFlags			:
 				if (flags & dsf_CmdPatches)
-			if (patchOpen) inCallbacks->EndPatch_f(ref);
-//			print_scales(currentPool);
 			patchFlags = cmdsAtom.ReadUInt8();
 				if (flags & dsf_CmdPatches)
 			inCallbacks->BeginPatch_f(currentDefinition, patchLODNear, patchLODFar, patchFlags, planeDepths[currentPool], ref);
@@ -1155,8 +1161,6 @@ someday check footer when in sloooow mode
 			break;
 		case dsf_Cmd_TerrainPatchFlagsLOD		:
 				if (flags & dsf_CmdPatches)
-			if (patchOpen) inCallbacks->EndPatch_f(ref);
-//			print_scales(currentPool);
 			patchFlags = cmdsAtom.ReadUInt8();
 			patchLODNear = cmdsAtom.ReadFloat32();
 			patchLODFar = cmdsAtom.ReadFloat32();
@@ -1174,11 +1178,9 @@ someday check footer when in sloooow mode
 			for (counter = 0; counter < count; ++counter)
 			{
 				index = cmdsAtom.ReadUInt16();
-					if (flags & dsf_CmdPatches)
-					{
+				if (flags & dsf_CmdPatches)
 					inCallbacks->AddPatchVertex_f(DECODE_SCALED_CURRENT(index), ref);
 			}
-				}
 				if (flags & dsf_CmdPatches)
 			inCallbacks->EndPrimitive_f(ref);
 			break;
@@ -1229,11 +1231,9 @@ someday check footer when in sloooow mode
 			for (counter = 0; counter < count; ++counter)
 			{
 				index = cmdsAtom.ReadUInt16();
-					if (flags & dsf_CmdPatches)
-					{
+				if (flags & dsf_CmdPatches)
 					inCallbacks->AddPatchVertex_f(DECODE_SCALED_CURRENT(index), ref);
 			}
-				}
 				if (flags & dsf_CmdPatches)
 			inCallbacks->EndPrimitive_f(ref);
 			break;
@@ -1253,11 +1253,9 @@ someday check footer when in sloooow mode
 					return dsf_ErrPoolOutOfRange;
 				}
 				index = cmdsAtom.ReadUInt16();
-					if (flags & dsf_CmdPatches)
-					{
+				if (flags & dsf_CmdPatches)
 					inCallbacks->AddPatchVertex_f(DECODE_SCALED(index, pool, planarData, planeDepths), ref);
 			}
-				}
 				if (flags & dsf_CmdPatches)
 			inCallbacks->EndPrimitive_f(ref);
 			break;
@@ -1285,11 +1283,9 @@ someday check footer when in sloooow mode
 			for (counter = 0; counter < count; ++counter)
 			{
 				index = cmdsAtom.ReadUInt16();
-					if (flags & dsf_CmdPatches)
-					{
+				if (flags & dsf_CmdPatches)
 					inCallbacks->AddPatchVertex_f(DECODE_SCALED_CURRENT(index), ref);
 			}
-				}
 				if (flags & dsf_CmdPatches)
 			inCallbacks->EndPrimitive_f(ref);
 			break;
@@ -1311,11 +1307,9 @@ someday check footer when in sloooow mode
 				}
 				index = cmdsAtom.ReadUInt16();
 
-					if (flags & dsf_CmdPatches)
-					{
+				if (flags & dsf_CmdPatches)
 					inCallbacks->AddPatchVertex_f(DECODE_SCALED(index, pool, planarData, planeDepths), ref);
 			}
-				}
 				if (flags & dsf_CmdPatches)
 			inCallbacks->EndPrimitive_f(ref);
 			

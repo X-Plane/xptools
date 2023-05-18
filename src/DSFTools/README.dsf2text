@@ -37,6 +37,7 @@ Version History
                        Capable of directly reading 7z compressed DSF files.
   4/02/23 - 2.3 b1     Auto-detection of DIVISIONS when converting to text
                        New keyword HEIGHTS to set scale/offset of terrain height point pools.
+  5/16/23 - 2.3 b3     Fixes END_PATCH misplaced when decoding base meshes
 
 -------------------------------------------------------------------------------
 OVERVIEW
