@@ -275,7 +275,7 @@ bool	Span_Horizontal_CCW(const Vector2& v1, const Vector2& v2);
 // rotated counterclockwise from 1, would you hit 2 and then 3?
 bool	Is_CCW_Between(const Vector2& v1, const Vector2& v2, const Vector2& v3);
 
-#if 0
+#if 1
 // Given a polygon, try to reduce the number of sides based on some tollerance.
 // void	ReducePolygon(Polygon_2& ioPolygon, double tolerance, double angle, double min_len, double cut_len);
 
@@ -285,7 +285,7 @@ bool	Is_CCW_Between(const Vector2& v1, const Vector2& v2, const Vector2& v3);
 //
 // WARNING: THERE ARE HACKS IN THIS FUNCTION FOR INTEGRAL POINTS!
 void	SimplifyPolygonMaxMove(Polygon2& ioPolygon, double max_err, bool allow_inset, bool allow_expand);
-
+#else
 // Simple algorithm: this algorithm simply takes the midpoints to simply a polygon.
 void	MidpointSimplifyPolygon(Polygon2& ioPolygon);
 
