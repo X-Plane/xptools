@@ -605,7 +605,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		// or presence of certain, XP12 only art assets
 		//
 #if TYLER_MODE
-		if ((*apt_itr)->GetSceneryID() < 99000 && terFX.empty() && pavFX.empty())
+		if ((*apt_itr)->GetSceneryID() < 94010 && terFX.empty() && pavFX.empty())
 #else   // artists exporting to GW target at home. They want to see what happens AFTER their scenery is submitted., i.e. when its a "X-Plane 12 submission".
 		// we likely want to do these deletions when IMPORTING from the GW or even on the GW itself - so this GUNK doesn't get reintroduced by ignorant artists
 		if (false)
@@ -715,7 +715,6 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				else
 					wrl->AbortOperation();
 			}
-
 
 		}
 #endif

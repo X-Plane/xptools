@@ -1418,6 +1418,22 @@ void	WED_DoImportDSFText(IResolver * resolver)
 		vector<string> all_files;
 		FILE_get_directory(dir, &all_files, NULL);
 		
+		unordered_map<string, int> scn_ids;
+		if(find(all_files.begin(), all_files.end(), "scenery_ids.txt") != all_files.end())
+			if (auto fi = fopen((dir + "scenery_ids.txt").c_str(), "r"))
+			{
+				char buf[32];
+				while(fgets(buf, 31, fi))
+				{
+					char buf2[16];
+					int i;
+					if (sscanf(buf,"%s %d", buf2, &i) == 2)
+						scn_ids[buf2] = i;
+				}
+				LOG_MSG("Got list of %d scenery ids\n", (int) scn_ids.size());
+				fclose(fi);
+			}
+		
 		for(const auto& nam_apt : all_files)
 		{
 			if(nam_apt.compare(nam_apt.length() - 4, 4, ".dat") == 0)
@@ -1425,6 +1441,11 @@ void	WED_DoImportDSFText(IResolver * resolver)
 				vector<WED_Airport*> this_apt;
 				WED_ImportOneAptFile(dir + nam_apt, wrl, &this_apt);
 				Assert(this_apt.size() == 1);
+				string icao;
+				this_apt.front()->GetICAO(icao);
+				if(scn_ids.count(icao))
+					this_apt.front()->SetSceneryID(scn_ids[icao]);
+				
 				WED_DoInvisibleUpdateMetadata(this_apt.front());
 
 				for (const auto& nam_dsf : all_files)

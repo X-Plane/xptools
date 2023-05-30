@@ -5752,10 +5752,13 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 	Point2 apt_loc = bounds.centroid();
 	srand( 100 * (apt_loc.x()+180) + 36000 * (apt_loc.y()+90) ); // for repeatable patterns per airport
 
-	vector<WED_Runway*> rwys;
-	vector<WED_Taxiway*> twys;
-	vector<WED_PolygonPlacement*> polys;
 	vector<WED_AirportBoundary*> bdys;
+	vector<WED_Runway*> rwys;
+	vector<WED_Sealane*> sealn;
+	vector<WED_Taxiway*> twys;
+	vector<WED_AirportSign *> signs;
+	vector<WED_Windsock *> socks;
+	vector<WED_PolygonPlacement*> polys;
 
 	typedef vector<Polygon2> vPoly2;
 	vPoly2 apt_boundary, all_grass_poly, all_pave_poly;
@@ -5766,13 +5769,32 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 	WED_Group * art_grp = nullptr;
 	
 	CollectRecursive(apt, back_inserter(bdys), WED_AirportBoundary::sClass);
+	CollectRecursive(apt, back_inserter(rwys), WED_Runway::sClass);
+	CollectRecursive(apt, back_inserter(sealn),WED_Sealane::sClass);
+	CollectRecursive(apt, back_inserter(twys), WED_Taxiway::sClass);
+	CollectRecursive(apt, back_inserter(signs),WED_AirportSign::sClass);
+	CollectRecursive(apt, back_inserter(socks),WED_Windsock::sClass);
+	CollectRecursive(apt, back_inserter(polys), ThingNotHidden, [&](WED_Thing* v)
+		{
+			if (auto p = dynamic_cast<WED_PolygonPlacement*>(v))
+			{
+				string res;
+				//p->GetName(res);
+				p->GetResource(res);
+				if(res.compare(0, strlen("lib/airport/pavement/"),"lib/airport/pavement/") == 0) 
+					return true;
+				auto surf = lmgr->GetSurfEnum(res);
+				return surf > 0;
+			}
+			else
+				return false;
+		}, WED_PolygonPlacement::sClass);
+
 	for(auto b : bdys)
 		WED_BezierPolygonWithHolesForPolygon(b, apt_boundary);
 	if(apt_boundary.size() == 0) return 0;
 
 	// prevent mowing the water e.g. at Juneau
-	vector<WED_Sealane*> sealn;
-	CollectRecursive(apt, back_inserter(sealn), WED_Sealane::sClass);
 	for (auto s : sealn)
 	{
 		Point2 	tmp[4];
@@ -5787,9 +5809,7 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 		apt_boundary = PolygonCut(apt_boundary, water);
 	}
 
-	CollectRecursive(apt, back_inserter(rwys), WED_Runway::sClass);
     std::sort(rwys.begin(), rwys.end(), [&](WED_Runway* a, WED_Runway* b)   // mow largest runway first, so most of the moving is aligned with this one
-
 		{
 			return a->GetWidth() * a->GetLength() > b->GetWidth() * b->GetLength();
 		});
@@ -5844,47 +5864,56 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 		all_grass_poly = PolygonUnion(all_grass_poly, *this_grass);
 	}
 
-	// get all pavement
-	CollectRecursive(apt, back_inserter(twys), ThingNotHidden, [&](WED_Thing* v)
-		{
-			if (auto p = dynamic_cast<WED_Taxiway*>(v))
-			{
-				if(p->GetSurface() <  surf_Grass)
-					return true;
-			}
-			return false;
-		}, WED_Taxiway::sClass);
-	CollectRecursive(apt, back_inserter(polys), ThingNotHidden, [&](WED_Thing* v)
-		{
-			if (auto p = dynamic_cast<WED_PolygonPlacement*>(v))
-			{
-				string res;
-				p->GetName(res);
-				p->GetResource(res);
-				if(res.compare(0, strlen("lib/airport/pavement/"),"lib/airport/pavement/") == 0) 
-					return true;
-				auto surf = lmgr->GetSurfEnum(res);
-				return surf > 0;
-			}
-			else
-				return false;
-		}, WED_PolygonPlacement::sClass);
-
+	// get total pavement
 	for(auto t : twys)
-		WED_BezierPolygonWithHolesForPolygon(t, all_pave_poly);
+		if(t->GetSurface() <  surf_Grass)
+			WED_BezierPolygonWithHolesForPolygon(t, all_pave_poly);
+	
 	for(auto p : polys)
 		WED_BezierPolygonWithHolesForPolygon(p, all_pave_poly);
 	
 	all_pave_poly = PolygonUnion(all_pave_poly, vector<Polygon2>());
 	// from here only we can assume 'flat' topology: No overlapping windings, no nested holes.
 
+	// nuke most artefacts left over by PolyUnion, reduce polygon size, improve speed
+	for(auto it = all_pave_poly.begin(); it != all_pave_poly.end();)
+	{
+		SimplifyPolygonMaxMove(*it, 1.8e-5, true, true); // about 1.5 meter
+		if((*it).size() == 3)
+		{
+			Segment2 seg((*it)[0], (*it)[1]);
+			double h = Line2(seg).squared_distance((*it)[2]);
+			double b = seg.squared_length();
+			double a = 0.5 * sqrt(h * b);
+			if( a < 1.4e-9)  // about 10 sq meter
+				it = all_pave_poly.erase(it);
+			else
+				it++;
+		}
+		else
+			it++;
+	}
+
+/*	int ti = 0;
+	for(auto& p : all_pave_poly)
+	{
+		int np = p.size();
+		ti += np;
+		// if( distance(p.begin(),  all_pave_poly[0].begin()) == all_pave_poly.size() - 1 )
+	//	if(np == 3)
+		for(int i = 0; i < np; i++)
+			debug_mesh_segment({p[i], (i+1) < np ? p[i+1] : p[0]}, 1, 0, 0, 1, 0, 0);
+	//	printf("poly %d\n", np);
+	}
+	printf("pavement_pts %d\n", ti);
+*/
 	// turning circles where mowing lines hit pavement
 	for (auto& g : grass)
 	{
 		coord_translator tr(apt_loc.y(), g.second);
 		Bbox2 bb;
-		for (auto pol : g.first)
-			for (auto pt : pol)
+		for (auto& pol : g.first)
+			for (auto& pt : pol)
 				bb += tr.to_uv(pt);
 
 		//debug_mesh_segment({tr.to_ll(bb.top_left()), tr.to_ll(bb.top_right())}, 1, 0, 0, 1, 0, 0);
@@ -5996,8 +6025,6 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 	}
 
 	// paved pads and mowing swirls underneath signs and some lights
-	vector<WED_AirportSign *> signs;
-	CollectRecursive(apt, back_inserter(signs), WED_AirportSign::sClass);
 	
 	for(auto s : signs)
 	{
@@ -6063,8 +6090,6 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 	}
 	
 	// mow around all winsocks - also enhances their visibility
-	vector<WED_Windsock *> socks;
-	CollectRecursive(apt, back_inserter(socks), WED_Windsock::sClass);
 	for(auto s : socks)
 	{
 		Point2 pt;
