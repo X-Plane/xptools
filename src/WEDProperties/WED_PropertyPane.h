@@ -77,6 +77,8 @@ public:
 	void		ToPrefs(IDocPrefs * prefs,int id);
 	void		FromPrefs(IDocPrefs * prefs,int id);
 
+	void		SetClosed(set<int> id);
+
 	virtual int		MouseMove(int x, int y);
 	virtual	void	ReceiveMessage(
 		GUI_Broadcaster *		inSrc,

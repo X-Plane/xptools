@@ -173,6 +173,12 @@ int		WED_PropertyPane::MouseMove(int x, int y)
 	return 1;
 }
 
+void	WED_PropertyPane::SetClosed(set<int> id)
+{
+	mPropertyTable.SetClosed(id);
+}
+
+
 void	WED_PropertyPane::FromPrefs(IDocPrefs * prefs,int id)
 {
 	char buf[256];
@@ -182,7 +188,7 @@ void	WED_PropertyPane::FromPrefs(IDocPrefs * prefs,int id)
 
 	set<int> mClosedList;
 	prefs->ReadIntSetPref(key.c_str(),mClosedList);
-	mPropertyTable.SetClosed(mClosedList);
+	SetClosed(mClosedList);
 }
 
 void	WED_PropertyPane::ToPrefs(IDocPrefs * prefs,int id)

@@ -33,11 +33,12 @@
 class	IResolver;
 class   WED_Document;
 class   WED_MapPane;
+class	WED_PropertyPane;
 
 int		WED_CanImportFromGateway(IResolver * resolver);
 void	WED_DoImportDSFText(IResolver * resolver);
 
-void	WED_DoImportFromGateway(WED_Document * resolver, WED_MapPane * pane);
+void	WED_DoImportFromGateway(WED_Document * resolver, WED_MapPane * pane, WED_PropertyPane * prop_pane);
 #endif /* HAS_GATEWAY */
 
 #endif
