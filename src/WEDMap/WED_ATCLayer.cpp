@@ -11,6 +11,7 @@
 #include "WED_RampPosition.h"
 #include "WED_RoadEdge.h"
 #include "WED_TaxiRoute.h"
+#include "WED_TruckParkingLocation.h"
 #include "WED_TruckDestination.h"
 
 #include "AssertUtils.h"
@@ -60,7 +61,7 @@ static double box_edge_distance(Point2 p, const Bbox2 b)   // returns positive i
 
 static void lines_to_nearest(const vector<Segment2>& starts, const vector<Segment2>& edges, const Bbox2& screen_bounds, double err_2nd, GUI_GraphState * g)
 {
-	if (starts.size() * edges.size() > 10000) return;        // skip drawing too complex scenarios - takes too long
+	if (starts.size() * edges.size() > 40000) return;        // skip drawing too complex scenarios - takes too long
 
 	for (const auto& pix : starts)
 	{
@@ -122,7 +123,7 @@ static void lines_to_nearest(const vector<Segment2>& starts, const vector<Segmen
 		// the alternative would be to always test against ALL edges at that airport - which takes a lot of time at large apts
 		// e.g. KATL with ~900 taxi and truck edges and 120 starts
 
-		if (nearest_dist < edge_dist * edge_dist)
+		if (nearest_dist < 1.5 * edge_dist * edge_dist)
 		{
 			glLineStipple(2, 0x24FF);
 			glBegin(GL_LINE_STRIP);
@@ -130,8 +131,11 @@ static void lines_to_nearest(const vector<Segment2>& starts, const vector<Segmen
 			glVertex2(pix.p1);
 			glVertex2(nearest_pix);
 			glEnd();
-			GUI_PlotIcon(g, "handle_closeloop.png", pix.p1.x(), pix.p1.y(), 0.0, 0.7);
-			g->SetTexUnits(0);
+			if (pix.p1 != pix.p2)
+			{
+				GUI_PlotIcon(g, "handle_closeloop.png", pix.p1.x(), pix.p1.y(), 0.0, 0.7);
+				g->SetTexUnits(0);
+			}
 			if (sqrt(next_dist) < sqrt(nearest_dist) + err_2nd)
 			if (Vector2(next_pix, nearest_pix).squared_length() > 0.1 * next_dist)  // dont draw second if its going to almost same location.
 			{
@@ -264,7 +268,7 @@ bool	WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GU
 {
 	if(entity->GetGISSubtype() == WED_RampPosition::sClass)
 	{
-		WED_RampPosition * pos = dynamic_cast<WED_RampPosition *>(entity);
+		auto pos = dynamic_cast<WED_RampPosition *>(entity);
 		DebugAssert(pos);
 		if(GetZoomer()->GetPPM() > 5)
 			glColor4f(0, 1, 0, 0.2); // avoid getting more opaque when StructureLayer preview kicks in as well
@@ -298,19 +302,18 @@ bool	WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GU
 			mServices.push_back(aim2dest);
 		}
 	}
-	else if (entity->GetGISSubtype() == WED_TruckDestination::sClass)
+	else if (entity->GetGISSubtype() == WED_TruckDestination::sClass || 
+			 entity->GetGISSubtype() == WED_TruckParkingLocation::sClass )
 	{
-		WED_TruckDestination * dest = dynamic_cast<WED_TruckDestination *>(entity);
+		auto dest = dynamic_cast<WED_GISPoint_Heading *>(entity);
 		DebugAssert(dest);
 		Point2 pos;
 		dest->GetLocation(gis_Geo, pos);
-		Vector2 dir_m;
-		NorthHeading2VectorMeters(pos, pos, dest->GetHeading(), dir_m);
+		// Vector2 dir_m;
+		// NorthHeading2VectorMeters(pos, pos, dest->GetHeading(), dir_m);
 		Segment2 aim2dest;
-		aim2dest.p1 = pos - VectorMetersToLL(pos, dir_m * 10.0);  // aiming point - relevant for network entry/exit point
-		aim2dest.p2 = pos;  // final endpoint drawn/destination of route
-		aim2dest.p1 = GetZoomer()->LLToPixel(aim2dest.p1);
-		aim2dest.p2 = GetZoomer()->LLToPixel(aim2dest.p2);
+		// aim2dest.p1 = pos - VectorMetersToLL(pos, dir_m * 10.0);         // aiming point - relevant for network entry/exit point
+		aim2dest.p1 = aim2dest.p2 = GetZoomer()->LLToPixel(pos);
 		mServices.push_back(aim2dest);
 	}
 	else if (entity->GetGISSubtype() == WED_TaxiRoute::sClass)
@@ -350,7 +353,7 @@ bool	WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GU
 		else if (ils)
 			glColor4f(0.8, 0.5, 0, 0.5);    // orange
 		else if (road) //Warning! Because a ground route can also have IsRunway() == true, this check must come first
-			glColor4f(1, 1, 1, 0.4);        // white
+			glColor4f(1, 1, 1, 0.5);        // white
 		else if (rwy)
 			glColor4f(0.0, 0.2, 0.6, 0.4);  // blue
 		else
@@ -457,11 +460,6 @@ bool	WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GU
 		GetZoomer()->LLToPixelv(ends, ends, 2);
 		Quad_2to4pix(ends, mtr1, c);
 		Quad_2to4pix(ends, mtr2, d);
-
-//		Quad_2to4(ends, mtr1, c);
-//		Quad_2to4(ends, mtr2, d);
-//		GetZoomer()->LLToPixelv(c, c, 4);
-//		GetZoomer()->LLToPixelv(d, d, 4);
 
 		int np = 4;
 		if(one_way)

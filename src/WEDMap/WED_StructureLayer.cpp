@@ -461,14 +461,14 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 							mp = b.p1 + Vector2(b.p1, b.p2) * 0.5;  // facade ground contact / 1st segment marker
 						}
 					}
-					if (i == 0 && sub_class == WED_FacadeRing::sClass && Vector2(b.p1,b.p2).squared_length() > 20 * 20)
+					if (i == 0 && !locked && sub_class == WED_FacadeRing::sClass && Vector2(b.p1,b.p2).squared_length() > 20 * 20)
 					{                                     	// facade ground contact / 1st segment marker
 						glColor4fv(WED_Color_RGBA(wed_pure_white));
 						GUI_PlotIcon(g, "handle_closeloop.png", mp.x(), mp.y(), 0.0, 0.7);
 						g->SetTexUnits(0);
 						glColor4fv(WED_Color_RGBA(struct_color));
 					}
-					if(sub_class == WED_FacadeRing::sClass)
+					if(!locked && sub_class == WED_FacadeRing::sClass)
 					{
 						const float colors[18] = { 1, 0, 0,	 1, 1, 0,  0, 1, 0,    // red, yellow, green
 												   0, 1, 1,  0, 0, 1,  1, 0, 1,};  // aqua, blue, cyan
