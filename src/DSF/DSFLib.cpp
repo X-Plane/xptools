@@ -896,7 +896,8 @@ someday check footer when in sloooow mode
 		if (patchOpen)
 			if (cmdID != dsf_Cmd_Triangle      && cmdID != dsf_Cmd_TriangleCrossPool      && cmdID != dsf_Cmd_TriangleRange &&
 				cmdID != dsf_Cmd_TriangleStrip && cmdID != dsf_Cmd_TriangleStripCrossPool && cmdID != dsf_Cmd_TriangleStripRange &&
-				cmdID != dsf_Cmd_TriangleFan   && cmdID != dsf_Cmd_TriangleFanCrossPool   && cmdID != dsf_Cmd_TriangleFanRange)
+				cmdID != dsf_Cmd_TriangleFan   && cmdID != dsf_Cmd_TriangleFanCrossPool   && cmdID != dsf_Cmd_TriangleFanRange && 
+				cmdID != dsf_Cmd_PoolSelect )
 			{
 				inCallbacks->EndPatch_f(ref);
 				patchOpen = false;
