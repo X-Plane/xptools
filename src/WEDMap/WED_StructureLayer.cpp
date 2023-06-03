@@ -66,6 +66,7 @@
 #include "WED_ATCLayer.h"
 #include "WED_LinePlacement.h"
 #include "WED_ResourceMgr.h"
+#include "WED_ShapePlacement.h"
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -369,7 +370,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 
 					glColor4fv(WED_Color_RGBA(struct_color));
 				}
-				else if (kind = gis_Ring)
+				else if (kind == gis_Ring)
 				{
 					auto parent = dynamic_cast<WED_Thing*>(entity)->GetParent();
 					if (parent->GetClass() == WED_ExclusionPoly::sClass)
@@ -416,7 +417,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 								glShape2v(GL_LINES, &*pts.begin(), pts.size());
 								glLineWidth(1);
 							}
-							glColor4fv(WED_Color_RGBA(struct_color));
+							glColor4fv(colorf);
 						}
 				}
 
@@ -460,14 +461,14 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 							mp = b.p1 + Vector2(b.p1, b.p2) * 0.5;  // facade ground contact / 1st segment marker
 						}
 					}
-					if (i == 0 && sub_class == WED_FacadeRing::sClass && Vector2(b.p1,b.p2).squared_length() > 20 * 20)
+					if (i == 0 && !locked && sub_class == WED_FacadeRing::sClass && Vector2(b.p1,b.p2).squared_length() > 20 * 20)
 					{                                     	// facade ground contact / 1st segment marker
 						glColor4fv(WED_Color_RGBA(wed_pure_white));
 						GUI_PlotIcon(g, "handle_closeloop.png", mp.x(), mp.y(), 0.0, 0.7);
 						g->SetTexUnits(0);
 						glColor4fv(WED_Color_RGBA(struct_color));
 					}
-					if(sub_class == WED_FacadeRing::sClass)
+					if(!locked && sub_class == WED_FacadeRing::sClass)
 					{
 						const float colors[18] = { 1, 0, 0,	 1, 1, 0,  0, 1, 0,    // red, yellow, green
 												   0, 1, 1,  0, 0, 1,  1, 0, 1,};  // aqua, blue, cyan
@@ -519,9 +520,17 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 						//	glColor4fv(WED_Color_RGBA(struct_color));  // Do this if green EdgeNdodes when unselected are desired
 						glBegin(GL_POINTS);
 						glVertex2(b.p1);
-						if(i == n - 1)
+						if (i == n - 1)
+						{
 							glVertex2(b.p2);
+						}
 						glEnd();
+					}
+					if (sub_class == WED_ShapePlacement::sClass && i == n - 1 - ps->IsClosed())
+					{
+						Vector2 orient1(b.p1, b.p2);
+						GUI_PlotIcon(g, "ArrowHeadRoadE.png", b.p2.x(), b.p2.y(), atan2(orient1.dx, orient1.dy) * RAD_TO_DEG, 1);
+						g->SetTexUnits(0);
 					}
 				}
 				glPointSize(1);

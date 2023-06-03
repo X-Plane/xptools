@@ -967,7 +967,7 @@ void	ReducePolygon(Polygon2& ioPolygon, double tolerance, double angle, double m
 }
 #endif
 
-#if 0
+#if 1
 
 // HACK UTILIITY: is this point an edge of a DSF
 inline bool IsIntegral(const Point2& p)
@@ -982,7 +982,7 @@ inline bool IsCorner(const Point2& p)
 	return (p.x() == (double) (int) p.x() &&
 			p.y() == (double) (int) p.y());
 }
-
+#endif
 // UTILITY: give na span of points in a polygon defined by P and deltas from
 // it, calculate the max error any point between the two edges in terms of
 // a deviation from the line from the end points.
@@ -1133,7 +1133,7 @@ void	MidpointSimplifyPolygon(Polygon2& ioPolygon)
 	}
 }
 
-
+#if 0
 // Polygon smoothing
 //
 // Basically go through and iterate across a bezier curve for any point exceeding the
@@ -1412,7 +1412,7 @@ vector<Polygon2> PolygonUnion(const vector<Polygon2>& mpolyA, const vector<Polyg
 {
 	vector<Polygon2> mpoly;
 	TESStesselator * tess = tessNewTess(NULL);
-	
+
 	for(auto& poly : mpolyA)
 		tessAddContour(tess, 2, poly.data(), 2 * sizeof(TESSreal), poly.size());
 
@@ -1433,6 +1433,7 @@ vector<Polygon2> PolygonUnion(const vector<Polygon2>& mpolyA, const vector<Polyg
 			mpoly.back().reserve(last - start);
 			for (int i = start; i < last; i++)
 				mpoly.back().push_back(Point2(verts[i * 2], verts[i * 2 + 1]));
+			Polygon2cleaner(mpoly.back());
 		}
 	}
 	tessDeleteTess(tess);

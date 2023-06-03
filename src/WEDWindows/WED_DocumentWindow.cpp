@@ -487,7 +487,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 		mMapPane->Map_HandleCommand(command);
 		return 1;
 #if HAS_GATEWAY
-	case wed_ImportGateway: WED_DoImportFromGateway(mDocument, mMapPane); return 1;
+	case wed_ImportGateway: WED_DoImportFromGateway(mDocument, mMapPane, mPropPane); return 1;
 #endif
 #if GATEWAY_IMPORT_FEATURES
 	case wed_ImportGatewayExtract:	WED_DoImportDSFText(mDocument); return 1;

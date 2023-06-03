@@ -628,7 +628,7 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 		set<int> ex;
 		xcl->GetExclusions(ex);
 		if (ex.count(exclude_For))
-			msgs.push_back(validation_error_t("Exclusion Polygons do not (yet) supported forests in X-Plane. Use Exclusion zones instead.", err_exclusion_polys_no_forests, who, parent_apt));
+			msgs.push_back(validation_error_t("Exclusion Polygons do not (yet) supported forests in X-Plane. Use Exclusion zones instead.", warn_exclusion_polys_no_forests, who, parent_apt));
 	}
 
 	if(gExportTarget == wet_gateway)
@@ -1867,7 +1867,8 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 	if(who->ContainsMetaDataKey(wed_AddMetaDataTransitionAlt))
 	{
 		string transition_alt   = who->GetMetaDataValue(wed_AddMetaDataTransitionAlt);
-
+		
+		if(!transition_alt.empty())
 		if (is_a_number(transition_alt) == false)
 				add_formated_metadata_error(error_template, wed_AddMetaDataTransitionAlt, "is not a whole number", who, msgs, apt);
 		else
@@ -1881,6 +1882,8 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 	if(who->ContainsMetaDataKey(wed_AddMetaDataTransitionLevel))
 	{
 		string transition_level = who->GetMetaDataValue(wed_AddMetaDataTransitionLevel);
+
+		if (!transition_level.empty())
 		if (is_a_number(transition_level) == false)
 				add_formated_metadata_error(error_template, wed_AddMetaDataTransitionLevel, "is not a whole number", who, msgs, apt);
 		else

@@ -63,6 +63,8 @@
 #include "WED_MetadataUpdate.h"
 #include "WED_MetaDataDefaults.h"
 #include "WED_UIDefs.h"
+#include "WED_PropertyPane.h"
+
 //---------------
 
 //--Table Code------------
@@ -197,7 +199,7 @@ typedef vector<char> JSON_BUF;
 class WED_GatewayImportDialog : public GUI_Window, public GUI_Listener, public GUI_Timer, public GUI_Destroyable
 {
 public:
-	WED_GatewayImportDialog(WED_Document * resolver, WED_MapPane * pane, GUI_Commander * cmdr);
+	WED_GatewayImportDialog(WED_Document * resolver, WED_MapPane * pane, GUI_Commander * cmdr, WED_PropertyPane* prop_pane);
 	~WED_GatewayImportDialog();
 
 private:
@@ -224,6 +226,7 @@ private:
 
 	WED_Document *		mResolver;
 	WED_MapPane *		mMapPane;
+	WED_PropertyPane *	mPropPane;
 
 	//The cache request info struct for requesting files
 	WED_file_cache_request	mCacheRequest;
@@ -317,10 +320,11 @@ int WED_GatewayImportDialog::import_bounds_default[4] = { 0, 0, 800, 500 };
 
 
 //--Implemation of WED_GateWayImportDialog class-------------------------------
-WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_MapPane * pane, GUI_Commander * cmdr) :
+WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_MapPane * pane, GUI_Commander * cmdr, WED_PropertyPane * prop_pane):
 	GUI_Window("Import from Gateway",xwin_style_visible|xwin_style_centered|xwin_style_resizable|xwin_style_modal,import_bounds_default,cmdr),
 	mResolver(resolver),
 	mMapPane(pane),
+	mPropPane(prop_pane),
 	mPhase(imp_dialog_download_airport_metadata),
 	mICAO_AptProvider(&mICAO_Apts, gModeratorMode ? "Date Accepted" : "Locked until", gModeratorMode ? "User Name": "by Artist"),
 	mICAO_TextTable(this,100,0),
@@ -1122,6 +1126,14 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(const string& json_
 		WED_ImportText(dsfTextPath.c_str(), (WED_Thing *) g);
 	}
 
+	// the auto-created groups are at this point always the children of the airport. Close them all.
+	// for(auto c_ID ; )
+	set<int> cat_list;
+	int n_child = g->CountChildren();
+	for (int c = 0; c < n_child; c++)
+		cat_list.insert(g->GetNthChild(c)->GetID());
+	mPropPane->SetClosed(cat_list);
+
 	if(!out_apt.empty())
 		WED_DoInvisibleUpdateMetadata(out_apt[0]);  // this also sets GUI 2D/3D metadata - so do it only after dsf contents has been added
 
@@ -1381,9 +1393,9 @@ int	WED_CanImportFromGateway(IResolver * resolver)
 	return 1;
 }
 
-void WED_DoImportFromGateway(WED_Document * resolver, WED_MapPane * pane)
+void WED_DoImportFromGateway(WED_Document * resolver, WED_MapPane * pane, WED_PropertyPane* prop_pane)
 {
-	new WED_GatewayImportDialog(resolver, pane,gApplication);
+	new WED_GatewayImportDialog(resolver, pane, gApplication, prop_pane);
 	return;
 }
 
@@ -1406,6 +1418,22 @@ void	WED_DoImportDSFText(IResolver * resolver)
 		vector<string> all_files;
 		FILE_get_directory(dir, &all_files, NULL);
 		
+		unordered_map<string, int> scn_ids;
+		if(find(all_files.begin(), all_files.end(), "scenery_ids.txt") != all_files.end())
+			if (auto fi = fopen((dir + "scenery_ids.txt").c_str(), "r"))
+			{
+				char buf[32];
+				while(fgets(buf, 31, fi))
+				{
+					char buf2[16];
+					int i;
+					if (sscanf(buf,"%s %d", buf2, &i) == 2)
+						scn_ids[buf2] = i;
+				}
+				LOG_MSG("Got list of %d scenery ids\n", (int) scn_ids.size());
+				fclose(fi);
+			}
+		
 		for(const auto& nam_apt : all_files)
 		{
 			if(nam_apt.compare(nam_apt.length() - 4, 4, ".dat") == 0)
@@ -1413,6 +1441,11 @@ void	WED_DoImportDSFText(IResolver * resolver)
 				vector<WED_Airport*> this_apt;
 				WED_ImportOneAptFile(dir + nam_apt, wrl, &this_apt);
 				Assert(this_apt.size() == 1);
+				string icao;
+				this_apt.front()->GetICAO(icao);
+				if(scn_ids.count(icao))
+					this_apt.front()->SetSceneryID(scn_ids[icao]);
+				
 				WED_DoInvisibleUpdateMetadata(this_apt.front());
 
 				for (const auto& nam_dsf : all_files)

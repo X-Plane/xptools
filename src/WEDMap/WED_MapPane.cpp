@@ -663,6 +663,7 @@ void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
 #include "WED_Ring.h"
 #include "WED_AirportNode.h"
 #include "WED_AirportSign.h"
+#include "WED_AutogenPlacement.h"
 #include "WED_Group.h"
 #include "WED_Helipad.h"
 #include "WED_KeyObjects.h"
@@ -731,6 +732,7 @@ void hide_all_persistents(MapFilter_t& hide_list)
 	//hide_list.push_back(WED_Ring::sClass);
 	//hide_list.push_back(WED_AirportNode::sClass);
 	hide_list.push_back(WED_Helipad::sClass);
+	hide_list.push_back(WED_AutogenPlacement::sClass);
 	hide_list.push_back(WED_KeyObjects::sClass);
 	hide_list.push_back(WED_LightFixture::sClass);
 	hide_list.push_back(WED_ObjPlacement::sClass);
@@ -847,6 +849,8 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 		lock_list.push_back(WED_Taxiway::sClass);
 		lock_list.push_back(k_show_taxiline_chain);
 		lock_list.push_back(WED_LinePlacement::sClass);
+		lock_list.push_back(WED_RoadEdge::sClass);
+		lock_list.push_back(WED_RoadNode::sClass);
 
 		mATCLayer->SetVisible(true);
 		unhide_persistent(hide_list, lock_list);
@@ -887,6 +891,7 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 		lock_list.push_back(WED_Taxiway::sClass);
 
 		unhide_persistent(hide_list, lock_list);
+		unhide_persistent(hide_list, WED_AutogenPlacement::sClass);
 		unhide_persistent(hide_list, WED_FacadePlacement::sClass);
 		unhide_persistent(hide_list, WED_ForestPlacement::sClass);
 		unhide_persistent(hide_list, WED_ObjPlacement::sClass);
