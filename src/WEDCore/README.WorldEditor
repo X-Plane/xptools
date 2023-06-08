@@ -13,13 +13,14 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 2.6 b1 5/20/23
+WED 2.6 b1
    Features:
    - polygonal exclusion zones for XP 12.05+
    - dedicated shape entities for 3rd party scenery creation tools
    - WED-671: delete DSF written at prior export, but now empty
    - polygons in Library Preview pane show tiled shader effects
    - after import from gateway, keep all groups collapsed/closed
+   - improved visualizations in Exclusion&Boundaries tab
    Bug fix:
    - fix Obj8 drawing not recognizing ATTR_no_blend threshold values
    - validate ObjectString spacing parameter to be non-zero

@@ -493,6 +493,8 @@
 		<Unit filename="../../src/WEDLibrary/WED_LibraryPreviewPane.h" />
 		<Unit filename="../../src/WEDMap/WED_ATCLayer.cpp" />
 		<Unit filename="../../src/WEDMap/WED_ATCLayer.h" />
+		<Unit filename="../../src/WEDMap/WED_BoundaryLayer.cpp" />
+		<Unit filename="../../src/WEDMap/WED_BoundaryLayer.h" />
 		<Unit filename="../../src/WEDMap/WED_Camera.h" />
 		<Unit filename="../../src/WEDMap/WED_Colors.cpp" />
 		<Unit filename="../../src/WEDMap/WED_Colors.h" />

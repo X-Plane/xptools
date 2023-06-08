@@ -891,6 +891,9 @@
     <ClCompile Include="..\..\src\WEDEntities\WED_ShapeNode.cpp">
       <Filter>WEDEntities</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\WEDMap\WED_BoundaryLayer.cpp">
+      <Filter>WEDImportExport</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\WEDCore\WED_Application.h">
@@ -1753,6 +1756,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\WEDEntities\WED_ShapeNode.h">
       <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDMap\WED_BoundaryLayer.h">
+      <Filter>WEDImportExport</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
