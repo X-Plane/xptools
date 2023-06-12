@@ -24,46 +24,47 @@
 
 #include "WED_GatewayImport.h"
 #include "WED_GatewayExport.h"
+#include "WED_DSFImport.h"
 
 #if HAS_GATEWAY
 #include "MemFileUtils.h"
 #include "FileUtils.h"
-
 #include "PlatformUtils.h"
-#include "GUI_Resources.h"
 #include "curl_http.h"
 #include <curl/curl.h>
 #include <json/json.h>
 #include "RAII_Classes.h"
 
 #include <sstream>
-#include<thread>
+#include <thread>
 
 #include "WED_Document.h"
-#include "WED_PackageMgr.h"
-#include "WED_MapPane.h"
-#include "WED_Url.h"
 #include "WED_Globals.h"
+#include "WED_GroupCommands.h"
+#include "WED_MapPane.h"
+#include "WED_PackageMgr.h"
+#include "WED_PropertyPane.h"
+#include "WED_Url.h"
+#include "WED_UIDefs.h"
 
 #include "GUI_Application.h"
-#include "GUI_Window.h"
-#include "GUI_Packer.h"
-#include "GUI_Timer.h"
-#include "GUI_Label.h"
-#include "GUI_FilterBar.h"
 #include "GUI_Button.h"
+#include "GUI_FilterBar.h"
+#include "GUI_Label.h"
+#include "GUI_Packer.h"
+#include "GUI_Resources.h"
+#include "GUI_Timer.h"
+#include "GUI_Window.h"
 
 #include "WED_Messages.h"
-//--DSF/AptImport
 #include "WED_AptIE.h"
 #include "WED_ToolUtils.h"
+#include "WED_HierarchyUtils.h"
 #include "WED_Airport.h"
-#include "WED_DSFImport.h"
+#include "WED_ExclusionZone.h"
 #include "WED_Group.h"
 #include "WED_MetadataUpdate.h"
 #include "WED_MetaDataDefaults.h"
-#include "WED_UIDefs.h"
-//---------------
 
 //--Table Code------------
 #include "GUI_Table.h"
@@ -615,6 +616,25 @@ void WED_GatewayImportDialog::TimerFired()
 								return;
 							}
 							add_iso3166_country_metadata(*last_imported, true);
+							if (last_imported->GetSceneryID() < 94010)
+							{
+								if (ConfirmMessage("Existing X-Plane 11 Exclusion Zones and Flatten properties must be removed and re-evaluated for X-Plane 12 gateway submissions", "Delete as recommended", "Keep all") == 1)
+								{
+									set<WED_Thing*> ex_set;
+									CollectRecursive(last_imported, inserter(ex_set, ex_set.begin()), IgnoreVisiblity, TakeAlways,
+										WED_ExclusionZone::sClass, 2);
+									WED_RecursiveDelete(ex_set);
+
+									AptInfo_t apt_info;
+									last_imported->Export(apt_info);
+									auto it = std::find(apt_info.meta_data.begin(), apt_info.meta_data.end(), make_pair(string("flatten"), string("1")));
+									if (it != apt_info.meta_data.end())
+									{
+										apt_info.meta_data.erase(it);
+										last_imported->Import(apt_info, [](void* ref, const char* fmt, ...) {}, nullptr);
+									}
+								}
+							}
 						}
 
 						//Set the current airport in the sense of "WED's current airport"

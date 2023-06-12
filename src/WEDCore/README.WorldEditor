@@ -13,7 +13,10 @@ menu to view it online.
 
 CHANGE HISTORY
 
-=======
+WED 2.5.2r1 6/12/23
+   Features:
+   - suggest to delete obsolte items when downloading XP11 airports from GW
+
 WED 2.5.1r1 3/20/23
    Bug fix:
    - WED-1461 fix align function
