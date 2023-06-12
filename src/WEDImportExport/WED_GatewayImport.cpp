@@ -531,6 +531,8 @@ void WED_GatewayImportDialog::Back()
 	DecorateGUIWindow();//Decorate once we're in the correct place
 }
 
+static void dummyPrintf(void* ref, const char* fmt, ...) { return; }
+
 extern "C" void decode( const char * startP, const char * endP, char * destP, char ** out);
 void WED_GatewayImportDialog::TimerFired()
 {
@@ -631,7 +633,7 @@ void WED_GatewayImportDialog::TimerFired()
 									if (it != apt_info.meta_data.end())
 									{
 										apt_info.meta_data.erase(it);
-										last_imported->Import(apt_info, [](void* ref, const char* fmt, ...) {}, nullptr);
+										last_imported->Import(apt_info, dummyPrintf, nullptr);
 									}
 								}
 							}
