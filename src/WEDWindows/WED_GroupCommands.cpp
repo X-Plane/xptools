@@ -238,7 +238,7 @@ void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 
 		while(*path)
 		{
-			WED_Ring * rng = WED_RingfromImage(path, arch, zoomer, false);
+			WED_Ring * rng = WED_RingfromImage(path, arch, zoomer, &CreateThing<WED_TextureNode>);
 			if (rng)
 			{
 				WED_OverlayImage * img = WED_OverlayImage::CreateTyped(arch);

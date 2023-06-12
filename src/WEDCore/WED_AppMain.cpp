@@ -83,6 +83,7 @@
 	_R(WED_ShapeNode) \
 	_R(WED_FacadePlacement) \
 	_R(WED_PolygonPlacement) \
+	_R(WED_DemPlacement) \
 	_R(WED_DrapedOrthophoto) \
 	_R(WED_ExclusionZone) \
 	_R(WED_ExclusionPoly) \

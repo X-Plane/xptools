@@ -266,6 +266,7 @@ public:
 					~WED_ResourceMgr();
 
 			void	Purge(void);
+			void	Purge(const string& vpath);
 
 			bool	GetFac(const string& vpath, fac_info_t const *& info, int variant =0);
 			bool	GetPol(const string& path, pol_info_t const *& info);

@@ -354,6 +354,10 @@ struct	XObj8 {
 
 	float					xyz_min[3];
 	float					xyz_max[3];
+	double					loadCenter_latlon[2];
+	int						loadCenter_texSize;
+
+	// WED only info, _NOT_ written to .obj
 	float					fixed_heading;
 	float					viewpoint_height;
 	string					description;

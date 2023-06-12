@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004, Laminar Research.
+ * Copyright (c) 2007, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -20,14 +20,38 @@
  * THE SOFTWARE.
  *
  */
-#ifndef XOBJREADWRITE_H
-#define XOBJREADWRITE_H
 
-struct	XObj8;
+#ifndef WED_OrthoExport_H
+#define WED_OrthoExport_H
 
-bool	XObj8Read(const char * inFile, XObj8& outObj);
+class	WED_DrapedOrthophoto;
+class	WED_DemPlacement;
+class	WED_Thing;
+class	IResolver;
+class 	WED_Document;
 
-// hasnt been updated since XP 10.00 - missing all newer OBJ commands !!!!
-bool	XObj8Write(const char * inFile, const XObj8& outObj, const char * comment = nullptr);
+#include "BitmapUtils.h"
 
-#endif
+class DSF_export_info_t
+{
+public:
+	ImageInfo	orthoImg;      // in case an orthoimage is to be converted/exported, store its info, so it does not need to be loaded it repeatedly
+	string		orthoFile;     // path to last orthoImage - so we know if there is a 2nd one to deal with - in which case we drop the first
+
+	bool		DockingJetways;
+	bool		resourcesAdded;
+private:
+	set<string> previous_dsfs;
+	string		new_dsfs;
+	WED_Document* inDoc;
+public:
+	DSF_export_info_t(IResolver* resolver = nullptr);
+	~DSF_export_info_t(void);
+	void mark_written(const string& file);
+};
+
+int WED_ExportOrtho(WED_DrapedOrthophoto* orth, IResolver* resolver, const string& pkg, DSF_export_info_t* export_info, string &r);
+
+int WED_ExportTerrObj(WED_DemPlacement* dem, IResolver* resolver, const string& pkg, string &resource);
+
+#endif /* WED_OrthoExport_H */

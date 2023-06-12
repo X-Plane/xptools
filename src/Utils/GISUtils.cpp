@@ -98,7 +98,7 @@ static	bool	TransformTiffCorner(GTIF * gtif, GTIFDefn * defn, double x, double y
 }
 #endif
 
-bool	FetchTIFFCorners(const char * inFileName, double corners[8], int& post_pos, vector<Point2> * gcp)
+bool	FetchTIFFCorners(const char * inFileName, double corners[8], int& post_pos, gcp_t * gcp)
 {
 	bool retVal = false;
 #if USE_TIF
@@ -125,7 +125,7 @@ static int GTIFPrintFunc(char * txt, void *a)
 	return 0;
 }
 
-bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos, vector<Point2> * gcp)
+bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos, gcp_t * gcp)
 {
 	bool retVal = false;
 #if USE_TIF
@@ -187,18 +187,24 @@ bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos,
 	        	retVal = true;
 	        }
 	        
-	        if(gcp) gcp->clear();
-			if(gcp && (xsize > 1536 || ysize > 1536)) // calculate control points for map warping/projection, if texture has high resolution
-	        {
-				const int divs = intlim(max((xsize+512) / 1024, (ysize+512) / 1024),2,10);
-				for(int y = 0; y <= divs; y++)
-					for(int x = 0; x <= divs; x++)
-					{
-						double lon, lat;
-						if (TransformTiffCorner(gtif, &defn, dx + x * xsize / divs, ysize - y * ysize / divs - dy, lon, lat))
-							gcp->push_back(Point2(lon,lat));
-					}
-	        }
+			if (gcp)
+			{
+				gcp->pts.clear();
+				gcp->size_x = 1;
+				gcp->size_y = 1;
+				if (xsize > 1536 || ysize > 1536)  // calculate control points for map warping/projection, if texture has high resolution
+				{
+					gcp->size_x = intlim(roundf((double) xsize / 1024.0), 2, 10);
+					gcp->size_y = intlim(roundf((double) ysize / 1024.0), 2, 10);
+					for (int y = 0; y < gcp->size_y; y++)
+						for (int x = 0; x < gcp->size_x; x++)
+						{
+							double lon, lat;
+							if (TransformTiffCorner(gtif, &defn, dx + x * xsize / (gcp->size_x+1), ysize - y * ysize / (gcp->size_y+1) - dy, lon, lat))
+								gcp->pts.push_back(Point2(lon, lat));
+						}
+				}
+			}
 		}
 		GTIFFree(gtif);
 	}

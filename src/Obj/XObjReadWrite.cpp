@@ -68,6 +68,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 	outObj.glass_blending = 0;
 	outObj.fixed_heading = -1.0;
 	outObj.viewpoint_height = -1.0;
+	outObj.loadCenter_texSize = -1;
 
 	auto objFile = MemFile_Open(inFile);
 	if (!objFile) return false;
@@ -951,6 +952,14 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 
 			outObj.lods.back().cmds.push_back(cmd);
 		}
+		else if (MFS_string_match(&s, "LOAD_CENTER", false))
+		{
+			outObj.loadCenter_latlon[0] = MFS_double(&s);
+			outObj.loadCenter_latlon[1] = MFS_double(&s);
+			MFS_double(&s);
+			outObj.loadCenter_texSize = MFS_double(&s);
+			outObj.fixed_heading = 0.0;
+		}
 		else if (MFS_string_match(&s, "#fixed_heading", false))
 		{
 			outObj.fixed_heading = MFS_double(&s);
@@ -1010,7 +1019,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 /****************************************************************************************
  * OBJ 8 WRITE
  ****************************************************************************************/
-bool	XObj8Write(const char * inFile, const XObj8& outObj)
+bool	XObj8Write(const char * inFile, const XObj8& outObj, const char * comment)
 {
 	int n;
 
@@ -1019,7 +1028,17 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 	const float * v;
 
 	// HEADER
-	fprintf(fi, "%c" CRLF "800" CRLF "OBJ" CRLF CRLF, APL ? 'A' : 'I');
+	fprintf(fi, "%c" CRLF "800 %s" CRLF "OBJ" CRLF CRLF, APL ? 'A' : 'I', comment ? comment : "");
+	
+	if (outObj.loadCenter_texSize)
+	{
+		fprintf(fi, "#fixed_heading 0.0" CRLF);
+		fprintf(fi, "LOAD_CENTER %.5lf %.5lf %.1lf %d" CRLF,
+			outObj.loadCenter_latlon[0],
+			outObj.loadCenter_latlon[1],
+			outObj.xyz_max[0] - outObj.xyz_min[0],
+			outObj.loadCenter_texSize);
+	}
 
 	// TEXTURES
 									fprintf(fi, "TEXTURE %s" CRLF, outObj.texture.c_str());
@@ -1030,7 +1049,6 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 		fprintf(fi,"NORMAL_METALNESS" CRLF);
 	if(outObj.glass_blending)
 		fprintf(fi,"BLEND_GLASS" CRLF);
-
 
 	if(!outObj.particle_system.empty())
 	fprintf(fi,"PARTICLE_SYSTEM %s" CRLF, outObj.particle_system.c_str());
@@ -1085,7 +1103,7 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 	{
 		if (lod->lod_far != 0.0)
 		{
-			fprintf(fi, "ATTR_LOD %f %f" CRLF, lod->lod_near, lod->lod_far);
+			fprintf(fi, "ATTR_LOD %.1f %.1f" CRLF, lod->lod_near, lod->lod_far);
 		}
 
 		for (vector<XObjCmd8>::const_iterator cmd = lod->cmds.begin(); cmd != lod->cmds.end(); ++cmd)

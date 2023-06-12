@@ -44,6 +44,7 @@ enum {
 	wed_ImportRoads,
 #endif
 	wed_ImportOrtho,
+	wed_ImportDem,
 #if HAS_GATEWAY
 	wed_ImportGateway,
 #endif

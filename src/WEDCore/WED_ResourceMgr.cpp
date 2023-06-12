@@ -124,6 +124,17 @@ void	WED_ResourceMgr::Purge(void)
 	mAGP.clear();
 }
 
+void	WED_ResourceMgr::Purge(const string& vpath)
+{
+	auto i = mObj.find(vpath);
+	if (i != mObj.end())
+	{
+		for (auto j : (*i).second)
+			delete j;
+		mObj.erase(i);
+	}
+}
+
 bool	WED_ResourceMgr::GetAllInDir(const string& vdir, vector<pair<string, int> >& vpaths)
 {
 	vector<string> names;
@@ -621,8 +632,7 @@ void WED_ResourceMgr::WritePol(const string& abspath, const pol_info_t& out_info
 {
 	FILE * fi = fopen(abspath.c_str(), "w");
 	if(!fi)	return;
-	fprintf(fi,"A\n850\nDRAPED_POLYGON\n\n");
-	fprintf(fi,"# Created by WED " WED_VERSION_STRING "\n");
+	fprintf(fi,"A\n850 Created by WED " WED_VERSION_STRING "\nDRAPED_POLYGON\n\n");
 	fprintf(fi,out_info.wrap ? "TEXTURE %s\n" : "TEXTURE_NOWRAP %s\n", out_info.base_tex.c_str());
 	fprintf(fi,"SCALE %.1lf %.1lf\n",out_info.proj_s,out_info.proj_t);
 	fprintf(fi,"LOAD_CENTER %lf %lf %.1f %d\n", out_info.latitude, out_info.longitude,out_info.height_Meters,out_info.ddsHeight_Pxls);
@@ -633,7 +643,6 @@ void WED_ResourceMgr::WritePol(const string& abspath, const pol_info_t& out_info
 //	if(has_decal)
 //		fprintf(fi,"DECAL_LIB lib/g10/decals/grass_and_stony_dirt_1.dcl");
 	fclose(fi);
-	gPackageMgr->Rescan(true);  // a full rescan of LibraryMgr can take a LOT of time on large systems. Find a way to only add/update this one polygon.
 }
 
 

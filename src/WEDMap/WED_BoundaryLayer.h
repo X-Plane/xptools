@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004, Laminar Research.
+ * Copyright (c) 2023, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -20,14 +20,21 @@
  * THE SOFTWARE.
  *
  */
-#ifndef XOBJREADWRITE_H
-#define XOBJREADWRITE_H
 
-struct	XObj8;
+#ifndef WED_BoundaryLayer_h
+#define WED_BoundaryLayer_h
 
-bool	XObj8Read(const char * inFile, XObj8& outObj);
+#include "WED_MapLayer.h"
 
-// hasnt been updated since XP 10.00 - missing all newer OBJ commands !!!!
-bool	XObj8Write(const char * inFile, const XObj8& outObj, const char * comment = nullptr);
+class	WED_BoundaryLayer : public WED_MapLayer {
+public:
 
-#endif
+						 WED_BoundaryLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver);
+	virtual				~WED_BoundaryLayer();
+
+	virtual	bool		DrawEntityStructure(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, bool selected, bool locked);
+	virtual	void		GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks);
+
+};
+
+#endif /* WED_BoundaryLayer_h */

@@ -484,6 +484,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_ImportRoads:	WED_DoImportRoads(mDocument); return 1;
 #endif
 	case wed_ImportOrtho:
+	case wed_ImportDem:
 		mMapPane->Map_HandleCommand(command);
 		return 1;
 #if HAS_GATEWAY
@@ -618,6 +619,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 #if ROAD_EDITING
 	case wed_ImportRoads:	return WED_CanImportRoads(mDocument);
 #endif
+	case wed_ImportDem:
 	case wed_ImportOrtho:	return 1;
 #if HAS_GATEWAY
 	case wed_ImportGateway:	return WED_CanImportFromGateway(mDocument);

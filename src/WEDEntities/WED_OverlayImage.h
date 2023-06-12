@@ -26,8 +26,7 @@
 
 #include "WED_GISPolygon.h"
 #include "IGIS.h"
-
-typedef vector<Point2> gcp_t;    // ground control points - for warping/projection
+#include "GISUtils.h"
 
 class WED_OverlayImage : public WED_GISPolygon, public virtual IGISQuad {
 

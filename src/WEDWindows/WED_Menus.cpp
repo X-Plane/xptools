@@ -55,6 +55,7 @@ static const GUI_MenuItem_t	kFileMenu[] = {
 {	"Import Roads (+AutoGen)",0,	0,								0,	wed_ImportRoads		},
 #endif
 {	"Import Ortho&photo...", 0,		0,								0,	wed_ImportOrtho		},
+{	"Import Digital Elevation Raster...", 0, 0,						0,	wed_ImportDem		},
 {	"Export Scenery Pac&k",	'B',	gui_ControlFlag,				0,	wed_ExportPack		},
 #if HAS_GATEWAY
 {	"Submit to Airport Scenery Gateway...",0,	0,					0,	wed_ExportToGateway	},

@@ -40,6 +40,7 @@ public:
 	virtual void		SetResource(const string& r);
 	virtual void		SetHeading(double h);
 	virtual	void		Rotate(GISLayer_t l,const Point2& center, double angle);
+	virtual void		SetLocation(GISLayer_t l, const Point2& p);
 
 			int			HasCustomMSL(void) const;
 			double		GetCustomMSL(void) const;
@@ -68,6 +69,7 @@ private:
 	WED_PropDoubleTextMeters	msl;	
 	WED_PropStringText			resource;
 	WED_PropIntEnum				show_level;
+	WED_PropBoolText			use_loadCenter;
 
 	mutable float				visibleWithinDeg;     // for culling in the map_view
 	mutable float				visibleWithinMeters;

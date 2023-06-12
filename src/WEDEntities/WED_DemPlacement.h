@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004, Laminar Research.
+ * Copyright (c) 2023, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -20,14 +20,32 @@
  * THE SOFTWARE.
  *
  */
-#ifndef XOBJREADWRITE_H
-#define XOBJREADWRITE_H
 
-struct	XObj8;
+#ifndef WED_DemPlacement_H
+#define WED_DemPlacement_H
 
-bool	XObj8Read(const char * inFile, XObj8& outObj);
+#include "IHasResource.h"
+#include "WED_GISPolygon.h"
 
-// hasnt been updated since XP 10.00 - missing all newer OBJ commands !!!!
-bool	XObj8Write(const char * inFile, const XObj8& outObj, const char * comment = nullptr);
+class	WED_DemPlacement : public WED_GISPolygon, public IHasResource {
 
-#endif
+	DECLARE_PERSISTENT(WED_DemPlacement)
+
+public:
+	virtual void		GetResource(string& r) const;
+	virtual void		SetResource(const string& r);
+	int					GetShowLevel(void) const;
+
+	virtual const char* HumanReadableType(void) const { return "Terrain Object"; }
+
+protected:
+
+	bool		IsInteriorFilled(void) const { return true; }
+
+private:
+
+	WED_PropStringText		resource;
+	WED_PropIntEnum			show_level;
+};
+
+#endif /* WED_DemPlacement_H */
