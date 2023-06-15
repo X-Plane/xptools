@@ -1032,7 +1032,6 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj, const char * comment)
 	
 	if (outObj.loadCenter_texSize)
 	{
-		fprintf(fi, "#fixed_heading 0.0" CRLF);
 		fprintf(fi, "LOAD_CENTER %.5lf %.5lf %.1lf %d" CRLF,
 			outObj.loadCenter_latlon[0],
 			outObj.loadCenter_latlon[1],

@@ -795,7 +795,7 @@ static void mesh2obj(XObj8& obj, const Polygon2& area, const CoordTranslator2& l
 			pt[5] = 0;
 			pt[6] = ll2uv.Forward(p).x();  // uv
 			pt[7] = ll2uv.Forward(p).y();
-			return obj.geo_tri.append(pt);
+			return obj.geo_tri.accumulate(pt);
 		};
 
 		if (has_next_E && has_next_N && has_next_NE)   // full quad
