@@ -21,20 +21,24 @@
  *
  */
 
-#ifndef WED_DemPlacement_H
-#define WED_DemPlacement_H
+#ifndef WED_TerPlacement_H
+#define WED_TerPlacement_H
 
 #include "IHasResource.h"
 #include "WED_GISPolygon.h"
 
-class	WED_DemPlacement : public WED_GISPolygon, public IHasResource {
+class	WED_TerPlacement : public WED_GISPolygon, public IHasResource {
 
-	DECLARE_PERSISTENT(WED_DemPlacement)
+	DECLARE_PERSISTENT(WED_TerPlacement)
 
 public:
 	virtual void		GetResource(string& r) const;
 	virtual void		SetResource(const string& r);
 	int					GetShowLevel(void) const;
+
+	int					GetMSLType(void) const;
+	double				GetCustomMSL(void) const;
+	double 				GetSamplingfactor(void) const;
 
 	virtual const char* HumanReadableType(void) const { return "Terrain Object"; }
 
@@ -44,8 +48,11 @@ protected:
 
 private:
 
-	WED_PropStringText		resource;
-	WED_PropIntEnum			show_level;
+	WED_PropStringText			resource;
+	WED_PropIntEnum				show_level;
+	WED_PropIntEnum				has_msl;
+	WED_PropDoubleTextMeters	msl;
+	WED_PropDoubleText			sample;
 };
 
-#endif /* WED_DemPlacement_H */
+#endif /* WED_TerPlacement_H */

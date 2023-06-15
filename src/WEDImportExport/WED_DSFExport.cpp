@@ -34,7 +34,7 @@
 #include "WED_AutogenPlacement.h"
 #include "WED_LinePlacement.h"
 #include "WED_PolygonPlacement.h"
-#include "WED_DemPlacement.h"
+#include "WED_TerPlacement.h"
 #include "WED_DrapedOrthophoto.h"
 #include "WED_ExclusionZone.h"
 #include "WED_ExclusionPoly.h"
@@ -1128,6 +1128,13 @@ static int	DSF_HeightRangeRecursive(WED_Thing * what, double& out_msl_min, doubl
 		}
 	}
 
+	if (c == WED_TerPlacement::sClass)
+	{
+		auto ter = static_cast<WED_TerPlacement*>(what);
+		out_msl_min = out_msl_max = ter->GetCustomMSL();
+		return 1;
+	}
+
 	int found = 0;		// true if we found at least 1 min/max
 	int any_inside = 0;	// true if we found ANYTHING inside at all?
 
@@ -1250,23 +1257,23 @@ static int	DSF_ExportTileRecursive(
 		return real_thingies;
 	}
 
-	if (c == WED_DemPlacement::sClass)
+	if (c == WED_TerPlacement::sClass)
 	{
-		auto dem = static_cast<WED_DemPlacement*>(what);
-		if (show_level == dem->GetShowLevel())
+		auto ter = static_cast<WED_TerPlacement*>(what);
+		if (show_level == ter->GetShowLevel())
 		{
 			Bbox2 b;
-			dem->GetBounds(gis_Geo, b);
+			ter->GetBounds(gis_Geo, b);
 			Point2 obj_loc = b.centroid();
 			if (cull_bounds.contains(obj_loc))
 			{
-				if (int result = WED_ExportTerrObj(dem, resolver, pkg, r) < 0)
+				if (int result = WED_ExportTerrObj(ter, resolver, pkg, r) < 0)
 					return result;
 				export_info->resourcesAdded = true;
 
 				idx = io_table.accum_obj(r, show_level);
-				double xyrz[4] = { obj_loc.x(), obj_loc.y(), 0.0, 0.0 };
-				cbs->AddObjectWithMode_f(idx, xyrz, obj_ModeDraped, writer);
+				double xyrz[4] = { obj_loc.x(), obj_loc.y(), 0.0, ter->GetCustomMSL() };
+				cbs->AddObjectWithMode_f(idx, xyrz, (obj_elev_mode) ter->GetMSLType(), writer);
 				++real_thingies;
 			}
 		}

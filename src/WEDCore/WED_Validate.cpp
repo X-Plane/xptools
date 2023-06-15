@@ -42,7 +42,7 @@
 #include "WED_LinePlacement.h"
 #include "WED_PolygonPlacement.h"
 #include "WED_DrapedOrthophoto.h"
-#include "WED_DemPlacement.h"
+#include "WED_TerPlacement.h"
 #include "WED_OverlayImage.h"
 #include "WED_FacadeNode.h"
 #include "WED_RampPosition.h"
@@ -238,7 +238,7 @@ static void ValidateOnePointSequence(WED_Thing* who, validation_error_vector& ms
 	     parent->GetClass() == WED_ForestPlacement::sClass ||
 	     parent->GetClass() == WED_AirportBoundary::sClass ||
 	     parent->GetClass() == WED_FacadePlacement::sClass ||
-		 parent->GetClass() == WED_DemPlacement::sClass ))
+		 parent->GetClass() == WED_TerPlacement::sClass ))
 	{
 		bool is_area = true;
 
@@ -716,7 +716,7 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 		matches |= EXTENSION_DOES_MATCH(WED_AutogenPlacement, "ags");
 		matches |= EXTENSION_DOES_MATCH(WED_AutogenPlacement, "agb");
 		matches |= EXTENSION_DOES_MATCH(WED_RoadEdge,         "net");
-		matches |= EXTENSION_DOES_MATCH(WED_DemPlacement,	  "tif");
+		matches |= EXTENSION_DOES_MATCH(WED_TerPlacement,	  "tif");
 
 		if(matches == false)
 		{

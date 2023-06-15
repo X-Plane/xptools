@@ -21,32 +21,53 @@
  *
  */
 
-#include "WED_DemPlacement.h"
+#include "WED_TerPlacement.h"
 #include "WED_EnumSystem.h"
 
-DEFINE_PERSISTENT(WED_DemPlacement)
-TRIVIAL_COPY(WED_DemPlacement,WED_GISPolygon)
+DEFINE_PERSISTENT(WED_TerPlacement)
+TRIVIAL_COPY(WED_TerPlacement,WED_GISPolygon)
 
-WED_DemPlacement::WED_DemPlacement(WED_Archive * a, int i) : WED_GISPolygon(a,i),
-	resource(this,   PROP_Name("Resource",  XML_Name("dem_placement", "Resource")), ""),
-	show_level(this, PROP_Name("Show with", XML_Name("dem_placement", "show_level")), ShowLevel, show_Level1)
+WED_TerPlacement::WED_TerPlacement(WED_Archive * a, int i) : WED_GISPolygon(a,i),
+	resource  (this, PROP_Name("Resource",       XML_Name("ter_placement", "Resource")), ""),
+	show_level(this, PROP_Name("Show with",      XML_Name("ter_placement", "show_level")), ShowLevel, show_Level1),
+	has_msl   (this, PROP_Name("Elevation Mode", XML_Name("ter_placement", "custom_msl")), TerElevationType, obj_setMSL),
+	msl       (this, PROP_Name("Elevation",      XML_Name("ter_placement", "msl")), 0, 5, 2),
+	sample    (this, PROP_Name("Undersample DEM",XML_Name("ter_placement", "sample_x")), 1, 3, 0, "x")
 {
 }
 
-WED_DemPlacement::~WED_DemPlacement()
+WED_TerPlacement::~WED_TerPlacement()
 {
 }
 
-void		WED_DemPlacement::GetResource(string& r) const
+void	WED_TerPlacement::GetResource(string& r) const
 {
 	r = resource.value;
 }
 
-void		WED_DemPlacement::SetResource(const string& r)
+void	WED_TerPlacement::SetResource(const string& r)
 {
 	resource = r;
 }
-int			WED_DemPlacement::GetShowLevel(void) const
+
+int		WED_TerPlacement::GetShowLevel(void) const
 {
 	return ENUM_Export(show_level.value);
 }
+
+int		WED_TerPlacement::GetMSLType(void) const
+{
+	return ENUM_Export(has_msl.value);
+}
+
+double	WED_TerPlacement::GetCustomMSL(void) const
+{
+	return msl.value;
+}
+
+double WED_TerPlacement::GetSamplingfactor(void) const
+{
+	return sample.value;
+}
+
+

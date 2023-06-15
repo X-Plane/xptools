@@ -891,11 +891,11 @@
     <ClCompile Include="..\..\src\WEDEntities\WED_ShapeNode.cpp">
       <Filter>WEDEntities</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\WEDEntities\WED_DemPlacement.cpp">
-      <Filter>WEDEntities</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\WEDImportExport\WED_OrthoExport.cpp">
       <Filter>WEDImportExport</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\WEDEntities\WED_TerPlacement.cpp">
+      <Filter>WEDEntities</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1760,11 +1760,11 @@
     <ClInclude Include="..\..\src\WEDEntities\WED_ShapeNode.h">
       <Filter>WEDEntities</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\WEDEntities\WED_DemPlacement.h">
-      <Filter>WEDEntities</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\WEDImportExport\WED_OrthoExport.h">
       <Filter>WEDImportExport</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDEntities\WED_TerPlacement.h">
+      <Filter>WEDEntities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

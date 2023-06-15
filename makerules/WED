@@ -153,6 +153,7 @@ SOURCES += ./src/WEDEntities/WED_KeyObjects.cpp
 SOURCES += ./src/WEDEntities/WED_LightFixture.cpp
 SOURCES += ./src/WEDEntities/WED_LinePlacement.cpp
 SOURCES += ./src/WEDEntities/WED_ObjPlacement.cpp
+SOURCES += ./src/WEDEntities/WED_TerPlacement.cpp
 SOURCES += ./src/WEDEntities/WED_OverlayImage.cpp
 SOURCES += ./src/WEDEntities/WED_PolygonPlacement.cpp
 SOURCES += ./src/WEDEntities/WED_RampPosition.cpp

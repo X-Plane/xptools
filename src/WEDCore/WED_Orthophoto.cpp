@@ -16,7 +16,7 @@
 #include "WED_ShapeNode.h"
 #include "WED_TextureBezierNode.h"
 #include "WED_DrapedOrthophoto.h"
-#include "WED_DemPlacement.h"
+#include "WED_TerPlacement.h"
 #include "WED_ResourceMgr.h"
 #include "PlatformUtils.h"
 #include "BitmapUtils.h"
@@ -284,7 +284,7 @@ void	WED_MakeOrthos(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 			else
 			{
 				char msg[200]; snprintf(msg,200,"Orthoimage name/path not acceptable:\n\n%s\n\n"
-					    "Spaces are not allowed and location must be inside this sceneries directory.", img_path.c_str());
+					    "Spaces are not allowed and location must be inside the scenery directory.", img_path.c_str());
 				DoUserAlert(msg);
 			}
 			path += strlen(path) + 1;
@@ -298,7 +298,7 @@ void	WED_MakeOrthos(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 	}
 }
 
-void	WED_MakeDem(IResolver* inResolver, WED_MapZoomerNew* zoomer)
+void	WED_MakeTerrain(IResolver* inResolver, WED_MapZoomerNew* zoomer)
 {
 	char* path = GetMultiFilePathFromUser("Please pick DEM file", "Open", FILE_DIALOG_PICK_IMAGE_OVERLAY);
 	if (path)
@@ -347,8 +347,9 @@ void	WED_MakeDem(IResolver* inResolver, WED_MapZoomerNew* zoomer)
 							// upper left
 							//igp->GetNthPoint(3)->SetLocation(gis_Geo, gcp.pts[gcp.size_x * gcp.size_y - 1]);
 
-							auto dpol = WED_DemPlacement::CreateTyped(arch);
+							auto dpol = WED_TerPlacement::CreateTyped(arch);
 							rng->SetParent(dpol, 0);
+							rng->SetName("Terrain Object");
 							dpol->SetParent(wrl, 0);
 							sel->Insert(dpol);
 							dpol->SetResource(img_path);
@@ -360,7 +361,7 @@ void	WED_MakeDem(IResolver* inResolver, WED_MapZoomerNew* zoomer)
 			else
 			{
 				char msg[200]; snprintf(msg, 200, "Dem name/path not acceptable:\n\n%s\n\n"
-					"Spaces are not allowed and location must be inside this sceneries directory.", img_path.c_str());
+					"Spaces are not allowed and location must be inside the scenery directory.", img_path.c_str());
 				DoUserAlert(msg);
 			}
 			path += strlen(path) + 1;

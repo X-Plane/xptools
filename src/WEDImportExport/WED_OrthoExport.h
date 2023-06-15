@@ -25,7 +25,7 @@
 #define WED_OrthoExport_H
 
 class	WED_DrapedOrthophoto;
-class	WED_DemPlacement;
+class	WED_TerPlacement;
 class	WED_Thing;
 class	IResolver;
 class 	WED_Document;
@@ -52,6 +52,6 @@ public:
 
 int WED_ExportOrtho(WED_DrapedOrthophoto* orth, IResolver* resolver, const string& pkg, DSF_export_info_t* export_info, string &r);
 
-int WED_ExportTerrObj(WED_DemPlacement* dem, IResolver* resolver, const string& pkg, string &resource);
+int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& pkg, string &resource);
 
 #endif /* WED_OrthoExport_H */

@@ -23,6 +23,17 @@
 
 #include "WED_OrthoExport.h"
 
+#include <geotiffio.h>
+#include <geo_normalize.h>
+#include <xtiffio.h>
+#define PVALUE LIBPROJ_PVALUE
+#include <proj_api.h>
+#include <cpl_serv.h>
+
+#if IBM
+#include "GUI_Unicode.h"
+#endif
+
 #include "FileUtils.h"
 #include "PlatformUtils.h"
 #include "BitmapUtils.h"
@@ -37,12 +48,13 @@
 
 #include "WED_Version.h"
 #include "WED_DrapedOrthophoto.h"
-#include "WED_DemPlacement.h"
+#include "WED_TerPlacement.h"
 #include "WED_ObjPlacement.h"
 #include "WED_GISUtils.h"
 #include "WED_ToolUtils.h"
 #include "WED_HierarchyUtils.h"
 #include "WED_ResourceMgr.h"
+#include "WED_LibraryMgr.h"
 #include "WED_PackageMgr.h"
 #include "WED_Document.h"
 
@@ -395,21 +407,455 @@ int WED_ExportOrtho(WED_DrapedOrthophoto* orth, IResolver* resolver, const strin
 	return 0;
 }
 
-static WED_DrapedOrthophoto* find_ortho(Polygon2 area, WED_Thing* base)
+static WED_DrapedOrthophoto* find_ortho(Polygon2 area, Bbox2 area_box, WED_Thing* base)
 {
+	string res;
+	auto lmgr = WED_GetLibraryMgr(base->GetArchive()->GetResolver());
 	vector<WED_DrapedOrthophoto*> orthos;
 	CollectRecursive(base, back_inserter(orthos));
 	for (auto o : orthos)
-		if (o->Overlaps(gis_Geo, area))
-			return o;                       // might need to check which one is on the top, i..e visible in scenery (layering + hierachy)
+	{
+		Bbox2 b;
+		o->GetBounds(gis_Geo, b);               // fast cull - ortho must fully enclose .ter object as drawn
+		if (b.contains(area_box))               // todo - allow go across a multiple orthos, create all .ter and merge in .agp
+		{										// do check area is truly fully enclosed by ortho ?
+			o->GetResource(res);
+			if (!lmgr->IsResourceLibrary(res))  // not a library means its gotta be local. 
+				                                // can't use IsResourceLocal() because if its a true WED orthophoto patch, its not a .pol
+				                                // but the .tif/.jpg thats is going to be used to make the .pol/.dds based on the name of the ortho
+			{
+				return o;                          
+			}
+		}
+	}
 	return nullptr;
 }
 
-static void mesh2obj(XObj8& obj, const vector<Point2>& pts, const vector<int>& extra_contours, float height)
+
+enum {
+	dem_want_Post,	// Use pixel=post sampling
+	dem_want_Area,	// Use area-pixel sampling!
+	dem_want_File	// Use whatever the file has.
+};
+
+// subset of equivalent struct in DEMDefs.h
+
+#define DEM_NO_DATA	-32768.0
+
+struct	DEMGeo {
+	double	mWest;
+	double	mSouth;
+	double	mEast;
+	double	mNorth;
+	int		mWidth;
+	int		mHeight;
+	int		mPost;       // 0 = value is area, 1 = value is post
+
+	vector<float> mData; // The first sample is the southwest corner, we then proceed east.
+
+	float& operator()(int x, int y)
+	{
+		if (x < 0 || x >= mWidth || y < 0 || y >= mHeight)
+			Assert(!"ERROR: ASSIGN OUTSIDE BOUNDS!");
+		return mData[x + y * mWidth];
+	}
+
+	float get(int x, int y) const
+	{
+		if (x < 0 || x >= mWidth || y < 0 || y >= mHeight) return DEM_NO_DATA;
+		return mData[x + y * mWidth];
+	}
+
+	float operator()(int x, int y) const { return get(x, y); }
+
+	float	value_linear(double lon, double lat) const
+	{
+		if (lon < mWest || lon > mEast || lat < mSouth || lat > mNorth) return DEM_NO_DATA;
+		double x_fract = (lon - mWest) / (mEast - mWest);
+		double y_fract = (lat - mSouth) / (mNorth - mSouth);
+
+		x_fract *= (double)(mWidth - mPost);
+		y_fract *= (double)(mHeight - mPost);
+
+		if (mPost == 0)
+		{
+			x_fract -= 0.5;
+			y_fract -= 0.5;
+		}
+
+		int x = x_fract;
+		int y = y_fract;
+		x_fract -= (double)x;
+		y_fract -= (double)y;
+
+		float v1 = get(x, y);
+		float v2 = get(x + 1, y);
+		float v3 = get(x, y + 1);
+		float v4 = get(x + 1, y + 1);
+
+		float w1 = (v1 == DEM_NO_DATA) ? 0.0 : (1.0 - x_fract) * (1.0 - y_fract);
+		float w2 = (v2 == DEM_NO_DATA) ? 0.0 : (x_fract) * (1.0 - y_fract);
+		float w3 = (v3 == DEM_NO_DATA) ? 0.0 : (1.0 - x_fract) * (y_fract);
+		float w4 = (v4 == DEM_NO_DATA) ? 0.0 : (x_fract) * (y_fract);
+
+		float w = w1 + w2 + w3 + w4;
+		if (w == 0.0) return DEM_NO_DATA;
+		return (v1 * w1 + v2 * w2 + v3 * w3 + v4 * w4) / w;
+	}
+
+	float	value_linear(Point2 lonlat) const { return value_linear(lonlat.x(), lonlat.y()); }
+
+	int x_lower(double lon) const
+	{
+		if (lon <= mWest) return 0;
+		if (lon >= mEast) return mWidth - mPost;
+
+		lon -= mWest;
+		lon *= (mWidth - mPost);
+		lon /= (mEast - mWest);
+		return floor(lon);
+	}
+
+	int x_upper(double lon) const
+	{
+		if (lon <= mWest) return 0;
+		if (lon >= mEast) return mWidth - mPost;
+
+		lon -= mWest;
+		lon *= (mWidth - mPost);
+		lon /= (mEast - mWest);
+		return ceil(lon);
+	}
+
+	int y_lower(double lat) const
+	{
+		if (lat <= mSouth) return 0;
+		if (lat >= mNorth) return mHeight - mPost;
+
+		lat -= mSouth;
+		lat *= (mHeight - mPost);
+		lat /= (mNorth - mSouth);
+		return floor(lat);
+	}
+
+	int	y_upper(double lat) const
+	{
+		if (lat <= mSouth) return 0;
+		if (lat >= mNorth) return mHeight - mPost;
+
+		lat -= mSouth;
+		lat *= (mHeight - mPost);
+		lat /= (mNorth - mSouth);
+		return ceil(lat);
+	}
+
+	double x_to_lon(int inX) const
+	{
+		return mWest + (((double)inX + (mPost ? 0.0 : 0.5)) * (mEast - mWest) / (double)(mWidth - mPost));
+	}
+
+	double y_to_lat(int inY) const
+	{
+		return mSouth + (((double)inY + (mPost ? 0.0 : 0.5)) * (mNorth - mSouth) / (double)(mHeight - mPost));
+	}
+
+	Point2 xy_to_lonlat(int x, int y) const { return Point2(x_to_lon(x), y_to_lat(y)); }
+};
+
+template<typename T>
+void copy_scanline(const T* v, int y, DEMGeo& dem)
 {
+	for (int x = 0; x < dem.mWidth; ++x, ++v)
+	{
+		float e = *v;
+		dem(x, dem.mHeight - y - 1) = e;
+	}
 }
 
+template<typename T>
+void copy_tile(const T* v, int x, int y, int w, int h, DEMGeo& dem)
+{
+	for (int cy = 0; cy < h; ++cy)
+		for (int cx = 0; cx < w; ++cx)
+		{
+			int dem_x = x + cx;
+			int dem_y = dem.mHeight - (y + cy) - 1;
+			float e = *v;
+			dem(dem_x, dem_y) = e;
+			++v;
+		}
+}
 
+// adapted version of equivalent function in DEMIO.h
+
+static bool	ExtractGeoTiff(DEMGeo& inMap, const char* inFileName, int post_style)
+{
+	TIFF * tif;
+#if SUPPORT_UNICODE
+	XTIFFInitialize();
+	tif = TIFFOpenW(convert_str_to_utf16(inFileName).c_str(), "r");
+#else
+	tif = XTIFFOpen(inFileName, "r");
+#endif
+	if (tif)
+	{
+		double	corners[8];
+		if (!FetchTIFFCornersWithTIFF(tif, corners, post_style))
+			goto bail;
+
+		// this assumes geopgrahic, not projected coordinates ...
+		inMap.mWest = corners[0];
+		inMap.mSouth = corners[1];
+		inMap.mEast = corners[6];
+		inMap.mNorth = corners[7];
+		inMap.mPost = (post_style == dem_want_Post);
+
+		uint32 w, h;
+		uint16 cc;
+		uint16 d;
+		uint16 format = SAMPLEFORMAT_UINT;	// sample format is NOT mandatory - unsigned int is the default if not present!
+
+		TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &w);
+		TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &h);
+		TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &cc);
+		TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &d);
+		TIFFGetField(tif, TIFFTAG_SAMPLEFORMAT, &format);
+//		printf("Image is: %dx%d, samples: %d, depth: %d, format: %d\n", w, h, cc, d, format);
+
+		inMap.mData.resize(w * h);
+		inMap.mWidth = w;
+		inMap.mHeight = h;
+
+		if (TIFFIsTiled(tif))
+		{
+			uint32	tw, th;
+			TIFFGetField(tif, TIFFTAG_TILEWIDTH, &tw);
+			TIFFGetField(tif, TIFFTAG_TILELENGTH, &th);
+			vector<char> buf;
+			buf.resize(TIFFTileSize(tif));
+			for (int y = 0; y < h; y += th)
+				for (int x = 0; x < w; x += tw)
+				{
+					if (TIFFReadTile(tif, buf.data(), x, y, 0, 0) == -1)
+						goto bail;
+
+					int ux = min(tw, w - x);
+					int uy = min(th, h - y);
+
+					switch (format) 
+					{
+					case SAMPLEFORMAT_UINT:
+						switch (d) 
+						{
+						case 8:  copy_tile<unsigned char >((unsigned char*)  buf.data(), x, y, ux, uy, inMap); break;
+						case 16: copy_tile<unsigned short>((unsigned short*) buf.data(), x, y, ux, uy, inMap); break;
+						case 32: copy_tile<unsigned int  >((unsigned int*)   buf.data(), x, y, ux, uy, inMap); break;
+						default: goto bail;
+						}
+						break;
+					case SAMPLEFORMAT_INT:
+						switch (d) 
+						{
+						case 8:  copy_tile<char >((char* ) buf.data(), x, y, ux, uy, inMap); break;
+						case 16: copy_tile<short>((short*) buf.data(), x, y, ux, uy, inMap); break;
+						case 32: copy_tile<int  >((int*  ) buf.data(), x, y, ux, uy, inMap); break;
+						default: goto bail;
+						}
+						break;
+					case SAMPLEFORMAT_IEEEFP:
+						switch (d) 
+						{
+						case 32: copy_tile<float >((float* ) buf.data(), x, y, ux, uy, inMap); break;
+						case 64: copy_tile<double>((double*) buf.data(), x, y, ux, uy, inMap); break;
+						default: goto bail;
+						}
+						break;
+					default: goto bail;
+					}
+				}
+			XTIFFClose(tif);
+			return true;
+		}
+		else
+		{
+			tsize_t line_size = TIFFScanlineSize(tif);
+			vector<char> aline;
+			aline.resize(line_size);
+
+			int cs = TIFFCurrentStrip(tif);
+			int nos = TIFFNumberOfStrips(tif);
+			int cr = TIFFCurrentRow(tif);
+
+			for (int y = 0; y < h; ++y)
+			{
+				if (TIFFReadScanline(tif, aline.data(), y, 0) == -1)
+					goto bail;
+
+				switch (format) 
+				{
+				case SAMPLEFORMAT_UINT:
+					switch (d) 
+					{
+					case 8:  copy_scanline<unsigned char >((unsigned char* )aline.data(), y, inMap); break;
+					case 16: copy_scanline<unsigned short>((unsigned short*)aline.data(), y, inMap); break;
+					case 32: copy_scanline<unsigned int  >((unsigned int*  )aline.data(), y, inMap); break;
+					default: goto bail;
+					}
+					break;
+				case SAMPLEFORMAT_INT:
+					switch (d) 
+					{
+					case 8:	 copy_scanline<char >((char* )aline.data(), y, inMap); break;
+					case 16: copy_scanline<short>((short*)aline.data(), y, inMap); break;
+					case 32: copy_scanline<int  >((int*  )aline.data(), y, inMap); break;
+					default: goto bail;
+					}
+					break;
+				case SAMPLEFORMAT_IEEEFP:
+					switch (d) 
+					{
+					case 32: copy_scanline<float >((float* )aline.data(), y, inMap); break;
+					case 64: copy_scanline<double>((double*)aline.data(), y, inMap); break;
+					default: goto bail;
+					}
+					break;
+				default: break;
+				}
+			}
+			XTIFFClose(tif);
+			return true;
+		}
+	bail:
+		XTIFFClose(tif);
+		LOG_MSG("E/Dem Error reading DEM %s\n", inFileName);
+	}
+	else
+		LOG_MSG("E/Dem Error opening DEM %s\n", inFileName);
+	return false;
+}
+
+static void mesh2obj(XObj8& obj, const Polygon2& area, const CoordTranslator2& ll2mtr, const CoordTranslator2& ll2uv,
+                     const DEMGeo& dem, int s_factor)
+{
+	float pt[8];
+
+	// implement trivial solution first:
+	// grid of points fitting fully inside the area
+
+	vector<pair<int, int> > mesh_pts;
+
+	const int mesh_dx = s_factor;
+	const int mesh_dy = s_factor;
+
+	Bbox2 bounds = area.bounds();
+	for (int y = dem.y_upper(bounds.ymin()); y < dem.y_upper(bounds.ymax()); y += mesh_dy)
+		for (int x = dem.x_upper(bounds.xmin()); x < dem.x_upper(bounds.xmax()); x += mesh_dx)
+		{
+			auto pt = dem.xy_to_lonlat(x, y);
+			if (area.inside(pt))
+				mesh_pts.push_back({x, y});
+		}
+	// make a quadrilateral tesselated mesh covering those
+	for (auto& mpt : mesh_pts)
+	{
+		bool has_next_E(false);
+		bool has_next_N(false);
+		bool has_next_S(false);
+		bool has_next_NE(false);
+		bool has_next_SE(false);
+
+		for (auto& mpt2 : mesh_pts)
+		{
+			if (mpt2.first == mpt.first)
+			{
+				if (mpt2.second == mpt.second + mesh_dy)
+					has_next_N = true;
+				if (mpt2.second == mpt.second - mesh_dy)
+					has_next_S = true;
+			}
+			else if (mpt2.first == mpt.first + mesh_dx)
+			{
+				if (mpt2.second == mpt.second)
+					has_next_E = true;
+				else if (mpt2.second == mpt.second + mesh_dy)
+					has_next_NE = true;
+				else if (mpt2.second == mpt.second - mesh_dy)
+					has_next_SE = true;
+			}
+		}
+
+		auto fill_pt = [&](int x, int y) -> int
+		{
+			auto p = dem.xy_to_lonlat(x, y);
+			pt[0] = ll2mtr.Forward(p).x(); // xyz
+			pt[1] = dem(x,y);
+			pt[2] = ll2mtr.Forward(p).y();
+			pt[3] = 0;                     // nml, todo: use fancy DEM calculation
+			pt[4] = 1;
+			pt[5] = 0;
+			pt[6] = ll2uv.Forward(p).x();  // uv
+			pt[7] = ll2uv.Forward(p).y();
+			return obj.geo_tri.append(pt);
+		};
+
+		if (has_next_E && has_next_N && has_next_NE)   // full quad
+		{
+			int i0 = fill_pt(mpt.first, mpt.second);
+			int i1 = fill_pt(mpt.first + mesh_dx, mpt.second);
+			int i2 = fill_pt(mpt.first, mpt.second + mesh_dy);
+			int i3 = fill_pt(mpt.first + mesh_dx, mpt.second + mesh_dy);
+			obj.indices.push_back(i0);
+			obj.indices.push_back(i2);
+			obj.indices.push_back(i1);
+			obj.indices.push_back(i1);
+			obj.indices.push_back(i2);
+			obj.indices.push_back(i3);
+		}
+		else if(has_next_E && has_next_N)
+		{
+			int i0 = fill_pt(mpt.first, mpt.second);
+			int i1 = fill_pt(mpt.first + mesh_dx, mpt.second);
+			int i2 = fill_pt(mpt.first, mpt.second + mesh_dy);
+			obj.indices.push_back(i0);
+			obj.indices.push_back(i2);
+			obj.indices.push_back(i1);
+		}
+		else if (has_next_E && has_next_NE)
+		{
+			int i0 = fill_pt(mpt.first, mpt.second);
+			int i1 = fill_pt(mpt.first + mesh_dx, mpt.second);
+			int i2 = fill_pt(mpt.first + mesh_dx, mpt.second + mesh_dy);
+			obj.indices.push_back(i0);
+			obj.indices.push_back(i2);
+			obj.indices.push_back(i1);
+		}
+		else if (has_next_N && has_next_NE)
+		{
+			int i0 = fill_pt(mpt.first, mpt.second);
+			int i1 = fill_pt(mpt.first + mesh_dx, mpt.second + mesh_dy);
+			int i2 = fill_pt(mpt.first, mpt.second + mesh_dy);
+			obj.indices.push_back(i0);
+			obj.indices.push_back(i2);
+			obj.indices.push_back(i1);
+		}
+		if (has_next_E && has_next_SE && !has_next_S)
+		{
+			int i0 = fill_pt(mpt.first, mpt.second);
+			int i1 = fill_pt(mpt.first + mesh_dx, mpt.second - mesh_dy);
+			int i2 = fill_pt(mpt.first + mesh_dx, mpt.second);
+			obj.indices.push_back(i0);
+			obj.indices.push_back(i2);
+			obj.indices.push_back(i1);
+		}
+	}
+
+	// create "skirt". Add a polygon of the outermost of these points
+	// tesselate a polygon using the area as outer ring and the above as inner ring/hole
+	// append that donut shaped mesh to the regular one
+	//
+}
+
+// Suuuper trivial 3D object for testing or debugging. Literally a MineralsPile.obj lookalike pyramid.
 static void poly2obj(XObj8& obj, const Polygon2& area, const CoordTranslator2& ll2mtr, const CoordTranslator2& ll2uv, float height)
 {
 	int i_base = obj.geo_tri.count();
@@ -427,11 +873,11 @@ static void poly2obj(XObj8& obj, const Polygon2& area, const CoordTranslator2& l
 		pt[7] = uv.y();
 	};
 
-	fill_pt({0,0}, ll2uv.Forward(ll2mtr.Reverse({0,0})));
+	fill_pt({ 0,0 }, ll2uv.Forward(ll2mtr.Reverse({ 0,0 })));
 	pt[1] = height;
 	obj.geo_tri.append(pt);
 	int n_pts = area.size();
-	fill_pt(ll2mtr.Forward(area[n_pts-1]), ll2uv.Forward(area[n_pts-1]));
+	fill_pt(ll2mtr.Forward(area[n_pts - 1]), ll2uv.Forward(area[n_pts - 1]));
 	obj.geo_tri.append(pt);
 	for (int n = 0; n < n_pts; n++)
 	{
@@ -444,17 +890,19 @@ static void poly2obj(XObj8& obj, const Polygon2& area, const CoordTranslator2& l
 	}
 }
 
-int WED_ExportTerrObj(WED_DemPlacement* dem, IResolver* resolver, const string& pkg, string& resource)
+
+int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& pkg, string& resource)
 {
 	Polygon2 area;
-	IGISPointSequence* area_ps;
-	auto dem_pol = dynamic_cast<IGISPolygon*>(dem);
-	if (dem_pol)
+	IGISPointSequence* ter_ps;
+	if(auto ter_pol = dynamic_cast<IGISPolygon*>(ter))
 	{
 		auto wrl = WED_GetWorld(resolver);
-		if (area_ps = dem_pol->GetOuterRing())
-			WED_PolygonForPointSequence(area_ps, area, COUNTERCLOCKWISE);
-		auto ortho = find_ortho(area, wrl);
+		if (ter_ps = ter_pol->GetOuterRing())
+			WED_PolygonForPointSequence(ter_ps, area, COUNTERCLOCKWISE);
+		Bbox2 ter_box;
+		ter_pol->GetBounds(gis_Geo, ter_box);
+		auto ortho = find_ortho(area, ter_box, wrl);
 		if (!ortho)
 			return -1;
 		auto ortho_pol = dynamic_cast<IGISPolygon*>(ortho);
@@ -462,28 +910,29 @@ int WED_ExportTerrObj(WED_DemPlacement* dem, IResolver* resolver, const string& 
 		// figure uv locations within ortho
 		CoordTranslator2 ll2uv;
 		{
-			Bbox2 geo_corners;
-			ortho_pol->GetBounds(gis_Geo, geo_corners);
-			Bbox2 uv_corners;
-			ortho_pol->GetBounds(gis_UV, uv_corners);  // thats relating to the source image, NOT the exported .dds
+			Bbox2 ortho_corners;
+			ortho_pol->GetBounds(gis_Geo, ortho_corners);
+			Bbox2 ortho_uv;
+			ortho_pol->GetBounds(gis_UV, ortho_uv);  // thats relating to the source image, NOT the exported .dds
 
-			ll2uv.mSrcMin = geo_corners.bottom_left();
-			ll2uv.mSrcMax = geo_corners.top_right();
-//			ll2uv.mDstMin = uv_corners.top_left();
-//			ll2uv.mDstMax = uv_corners.bottom_right();
+			ll2uv.mSrcMin = ortho_corners.bottom_left();
+			ll2uv.mSrcMax = ortho_corners.top_right();
 			ll2uv.mDstMin = { 0, 0 };                  // assumes that WED will export .pol as one texture
 			ll2uv.mDstMax = { 1, 1 };
 		}
 		// get dem heights
+		string dem_file;
+		ter->GetResource(dem_file);
+		dem_file = pkg + dem_file;
+		DEMGeo ter_dem;
+		ExtractGeoTiff(ter_dem, dem_file.c_str(), 0);
+
 		// optionally change heights to be relative to terrain height
 		// optionally change height so it fits
-		// tessealte the obj
 
-		Bbox2 dem_corners;
-		dem_pol->GetBounds(gis_Geo, dem_corners);
 		CoordTranslator2 ll2mtr;
 		{
-			CreateTranslatorForBounds(dem_corners, ll2mtr);
+			CreateTranslatorForBounds(ter_box, ll2mtr);
 			auto ctr_mtr = Vector2(ll2mtr.mDstMin, ll2mtr.mDstMax);
 			ll2mtr.mDstMin -= ctr_mtr * 0.5;
 			ll2mtr.mDstMax -= ctr_mtr * 0.5;
@@ -492,39 +941,42 @@ int WED_ExportTerrObj(WED_DemPlacement* dem, IResolver* resolver, const string& 
 
 		string orthoName;
 		ortho->GetName(orthoName);
-		string objName = FILE_get_file_name_wo_extensions(orthoName) + ".obj";
+		string objName = FILE_get_file_name_wo_extensions(orthoName) + ".obj";       // todo: how to dis-ambiguate multiple .obj in same texture ?
 		string orthoResource;
 		ortho->GetResource(orthoResource);
 		string objVPath = FILE_get_dir_name(orthoResource) + objName;
 		string objAbsPath = pkg + objVPath;
 
-		XObj8 dem_obj;
+		XObj8 ter_obj;
 		XObjCmd8 cmd;
-		dem_obj.texture =  FILE_get_file_name_wo_extensions(orthoName) + ".dds";
-		dem_obj.glass_blending = 0;
+		ter_obj.texture =  FILE_get_file_name_wo_extensions(orthoName) + ".dds";     // todo: refactor function for texture name, so its in sync with ortho creation
+		ter_obj.glass_blending = 0;
 
 		// create & add mesh
-		poly2obj(dem_obj, area, ll2mtr, ll2uv, ll2mtr.mDstMax.x_ * 0.3);
+		// the super-sily proof-of-concept function
+//		poly2obj(ter_obj, area, ll2mtr, ll2uv, ter_dem.value_linear(ter_corners.centroid())); // ll2mtr.mDstMax.x_ * 0.3);
+		mesh2obj(ter_obj, area, ll2mtr, ll2uv, ter_dem, ter->GetSamplingfactor());
+
 		// "ATTR_LOD"
-		dem_obj.lods.push_back(XObjLOD8());
-		dem_obj.lods.back().lod_near = 0;
-		dem_obj.lods.back().lod_far = 3000;
+		ter_obj.lods.push_back(XObjLOD8());
+		ter_obj.lods.back().lod_near = 0;
+		ter_obj.lods.back().lod_far = 3000;
 		// "TRIS ";
 		cmd.cmd = obj8_Tris;
 		cmd.idx_offset = 0;
-		cmd.idx_count = dem_obj.indices.size();
-		dem_obj.lods.back().cmds.push_back(cmd);
+		cmd.idx_count = ter_obj.indices.size();
+		ter_obj.lods.back().cmds.push_back(cmd);
 
-		dem_obj.xyz_min[0] = ll2mtr.mDstMin.x();
-		dem_obj.xyz_max[0] = ll2mtr.mDstMax.x();
-		dem_obj.xyz_min[2] = ll2mtr.mDstMin.y();
-		dem_obj.xyz_max[2] = ll2mtr.mDstMax.y();
-		dem_obj.loadCenter_latlon[0] = ll2mtr.Reverse({ 0,0 }).y();
-		dem_obj.loadCenter_latlon[1] = ll2mtr.Reverse({ 0,0 }).x();
-		Bbox2 uv_corners(ll2uv.Forward(dem_corners.top_left()), ll2uv.Forward(dem_corners.bottom_right()));
-		dem_obj.loadCenter_texSize = 2048 * uv_corners.xspan(); // assumes WED will create a 2k texture - may be wrong ?
+		ter_obj.xyz_min[0] = ll2mtr.mDstMin.x();
+		ter_obj.xyz_max[0] = ll2mtr.mDstMax.x();
+		ter_obj.xyz_min[2] = ll2mtr.mDstMin.y();
+		ter_obj.xyz_max[2] = ll2mtr.mDstMax.y();
+		ter_obj.loadCenter_latlon[0] = ll2mtr.Reverse({ 0,0 }).y();
+		ter_obj.loadCenter_latlon[1] = ll2mtr.Reverse({ 0,0 }).x();
+		Bbox2 uv_corners(ll2uv.Forward(ter_box.top_left()), ll2uv.Forward(ter_box.bottom_right()));
+		ter_obj.loadCenter_texSize = 2048 * uv_corners.xspan(); // assumes WED will create a 2k texture - may be wrong ?
 
-		XObj8Write(objAbsPath.c_str(), dem_obj, "Created by WED " WED_VERSION_STRING );
+		XObj8Write(objAbsPath.c_str(), ter_obj, "Created by WED " WED_VERSION_STRING );
 		resource = objVPath;
 #if IBM
 		std::replace(resource.begin(), resource.end(), '\\', '/');
