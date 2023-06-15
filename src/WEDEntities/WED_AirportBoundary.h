@@ -37,6 +37,8 @@ public:
 		void	Import(const AptBoundary_t& x, void (* print_func)(void *, const char *, ...), void * ref);
 		void	Export(		 AptBoundary_t& x) const;
 
+		set<int> GetType(void) const;
+
 	virtual const char *	HumanReadableType(void) const { return "Airport Boundary"; }
 
 protected:
@@ -47,6 +49,9 @@ private:
 
 	WED_PropIntEnumSetUnion	lines;
 	WED_PropIntEnumSetUnion	lights;
+#if HAS_BDY_TYPES
+	WED_PropIntEnumBitfield	types;
+#endif
 
 };
 

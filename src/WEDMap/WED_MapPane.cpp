@@ -40,6 +40,7 @@
 #include "WED_CreateLineTool.h"
 #include "WED_StructureLayer.h"
 #include "WED_ATCLayer.h"
+#include "WED_BoundaryLayer.h"
 #include "WED_WorldMapLayer.h"
 #include "WED_NavaidLayer.h"
 #include "WED_TerrainLayer.h"
@@ -162,6 +163,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	mLayers.push_back(mPreview =		new WED_PreviewLayer(mMap, mMap, resolver));
 	mLayers.push_back(mNavaidMap =		new WED_NavaidLayer(mMap, mMap, resolver));
 	mLayers.push_back(mTerrainMap =		new WED_TerrainLayer(mMap, mMap, resolver));
+	mLayers.push_back(mBdyLayer =		new WED_BoundaryLayer(mMap, mMap, resolver));
 	mLayers.push_back(					new WED_DebugLayer(mMap, mMap, resolver));
 #if WITHNWLINK
 	WED_NWLinkAdapter * nwlink = (dynamic_cast<WED_Document *>(resolver))->GetNWLink();
@@ -314,7 +316,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	// This is a band-aid.  We don't restore the current tab in the tab hierarchy (as of WED 1.5) so we don't get a tab changed message.  Instead we just
 	// are always in the selection tab.  So mostly that means the defaults for things like filters are fine, but for the ATC layer it needs to be off!
 	mATCLayer->ToggleVisible();
-
+	mBdyLayer->ToggleVisible();
 }
 
 GUI_Pane *	WED_MapPane::GetTopBar(void)
@@ -818,6 +820,7 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 
 	hide_all_persistents(hide_list);
 	mATCLayer->SetVisible(false);
+	mBdyLayer->SetVisible(false);
 
 	//Add to lock_list for Map Dead
 	//unhide_persistent for Map Live
@@ -910,6 +913,7 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 		lock_list.push_back(WED_Runway::sClass);
 		lock_list.push_back(WED_Taxiway::sClass);
 
+		mBdyLayer->SetVisible(true);
 		unhide_persistent(hide_list, lock_list);
 		unhide_persistent(hide_list, WED_ExclusionZone::sClass);
 		unhide_persistent(hide_list, WED_ExclusionPoly::sClass);

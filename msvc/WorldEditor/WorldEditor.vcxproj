@@ -230,6 +230,7 @@
     <ClCompile Include="..\..\src\WEDLibrary\WED_LibraryPane.cpp" />
     <ClCompile Include="..\..\src\WEDLibrary\WED_LibraryPreviewPane.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_ATCLayer.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_BoundaryLayer.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_Colors.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_CreateBoxTool.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_CreateEdgeTool.cpp" />
@@ -518,6 +519,7 @@
     <ClInclude Include="..\..\src\WEDLibrary\WED_LibraryPane.h" />
     <ClInclude Include="..\..\src\WEDLibrary\WED_LibraryPreviewPane.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_ATCLayer.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_BoundaryLayer.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_Camera.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_Colors.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_CreateBoxTool.h" />

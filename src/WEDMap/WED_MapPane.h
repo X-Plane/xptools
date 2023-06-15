@@ -43,6 +43,7 @@ class WED_ToolInfoAdapter;
 
 class	WED_StructureLayer;
 class	WED_ATCLayer;
+class	WED_BoundaryLayer;
 class	WED_PreviewLayer;
 class	WED_WorldMapLayer;
 class	WED_NavaidLayer;
@@ -110,6 +111,7 @@ private:
 	WED_SlippyMap *			mSlippyMap;
 	WED_StructureLayer *	mStructureLayer;
 	WED_ATCLayer *			mATCLayer;
+	WED_BoundaryLayer *		mBdyLayer;
 	WED_PreviewLayer *		mPreview;
 	WED_WorldMapLayer *		mWorldMap;
 	WED_NavaidLayer *		mNavaidMap;
