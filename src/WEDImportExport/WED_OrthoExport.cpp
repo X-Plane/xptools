@@ -438,41 +438,27 @@ enum {
 	dem_want_File	// Use whatever the file has.
 };
 
-// subset of equivalent struct in DEMDefs.h
 
 #define DEM_NO_DATA	-32768.0
 
-struct	DEMGeo {
-	double	mWest;
-	double	mSouth;
-	double	mEast;
-	double	mNorth;
-	int		mWidth;
-	int		mHeight;
-	int		mPost;       // 0 = value is area, 1 = value is post
-
-	vector<float> mData; // The first sample is the southwest corner, we then proceed east.
-
-	float& operator()(int x, int y)
+	float& dem_info_t::operator()(int x, int y)
 	{
 		if (x < 0 || x >= mWidth || y < 0 || y >= mHeight)
 			Assert(!"ERROR: ASSIGN OUTSIDE BOUNDS!");
 		return mData[x + y * mWidth];
 	}
 
-	float get(int x, int y) const
+	float dem_info_t::get(int x, int y) const
 	{
 		if (x < 0 || x >= mWidth || y < 0 || y >= mHeight) return DEM_NO_DATA;
 		return mData[x + y * mWidth];
 	}
 
-	float operator()(int x, int y) const { return get(x, y); }
-
-	float	value_linear(double lon, double lat) const
+	float	dem_info_t::value_linear(const Point2& ll) const
 	{
-		if (lon < mWest || lon > mEast || lat < mSouth || lat > mNorth) return DEM_NO_DATA;
-		double x_fract = (lon - mWest) / (mEast - mWest);
-		double y_fract = (lat - mSouth) / (mNorth - mSouth);
+		if (!mBounds.contains(ll)) return DEM_NO_DATA;
+		double x_fract = (ll.x() - mBounds.xmin()) / mBounds.xspan();
+		double y_fract = (ll.y() - mBounds.ymin()) / mBounds.yspan();
 
 		x_fract *= (double)(mWidth - mPost);
 		y_fract *= (double)(mHeight - mPost);
@@ -503,67 +489,54 @@ struct	DEMGeo {
 		return (v1 * w1 + v2 * w2 + v3 * w3 + v4 * w4) / w;
 	}
 
-	float	value_linear(Point2 lonlat) const { return value_linear(lonlat.x(), lonlat.y()); }
-
-	int x_lower(double lon) const
+	int dem_info_t::x_lower(double lon) const
 	{
-		if (lon <= mWest) return 0;
-		if (lon >= mEast) return mWidth - mPost;
+		if (lon <= mBounds.xmin()) return 0;
+		if (lon >= mBounds.xmax()) return mWidth - mPost;
 
-		lon -= mWest;
-		lon *= (mWidth - mPost);
-		lon /= (mEast - mWest);
+		lon = (lon - mBounds.xmin()) * (mWidth - mPost) / mBounds.xspan();
 		return floor(lon);
 	}
 
-	int x_upper(double lon) const
+	int dem_info_t::x_upper(double lon) const
 	{
-		if (lon <= mWest) return 0;
-		if (lon >= mEast) return mWidth - mPost;
+		if (lon <= mBounds.xmin()) return 0;
+		if (lon >= mBounds.xmax()) return mWidth - mPost;
 
-		lon -= mWest;
-		lon *= (mWidth - mPost);
-		lon /= (mEast - mWest);
+		lon = (lon - mBounds.xmin()) * (mWidth - mPost) / mBounds.xspan();
 		return ceil(lon);
 	}
 
-	int y_lower(double lat) const
+	int dem_info_t::y_lower(double lat) const
 	{
-		if (lat <= mSouth) return 0;
-		if (lat >= mNorth) return mHeight - mPost;
+		if (lat <= mBounds.ymin()) return 0;
+		if (lat >= mBounds.ymax()) return mHeight - mPost;
 
-		lat -= mSouth;
-		lat *= (mHeight - mPost);
-		lat /= (mNorth - mSouth);
+		lat = (lat - mBounds.ymin()) * (mHeight - mPost) / mBounds.yspan();
 		return floor(lat);
 	}
 
-	int	y_upper(double lat) const
+	int	dem_info_t::y_upper(double lat) const
 	{
-		if (lat <= mSouth) return 0;
-		if (lat >= mNorth) return mHeight - mPost;
+		if (lat <= mBounds.ymin()) return 0;
+		if (lat >= mBounds.ymax()) return mHeight - mPost;
 
-		lat -= mSouth;
-		lat *= (mHeight - mPost);
-		lat /= (mNorth - mSouth);
+		lat = (lat - mBounds.ymin()) * (mHeight - mPost) / mBounds.yspan();
 		return ceil(lat);
 	}
 
-	double x_to_lon(int inX) const
+	double dem_info_t::x_to_lon(int inX) const
 	{
-		return mWest + (((double)inX + (mPost ? 0.0 : 0.5)) * (mEast - mWest) / (double)(mWidth - mPost));
+		return mBounds.xmin() + (((double)inX + (mPost ? 0.0 : 0.5)) * mBounds.xspan() / (double)(mWidth - mPost));
 	}
 
-	double y_to_lat(int inY) const
+	double dem_info_t::y_to_lat(int inY) const
 	{
-		return mSouth + (((double)inY + (mPost ? 0.0 : 0.5)) * (mNorth - mSouth) / (double)(mHeight - mPost));
+		return mBounds.ymin() + (((double)inY + (mPost ? 0.0 : 0.5)) * mBounds.yspan() / (double)(mHeight - mPost));
 	}
-
-	Point2 xy_to_lonlat(int x, int y) const { return Point2(x_to_lon(x), y_to_lat(y)); }
-};
 
 template<typename T>
-void copy_scanline(const T* v, int y, DEMGeo& dem)
+void copy_scanline(const T* v, int y, dem_info_t& dem)
 {
 	for (int x = 0; x < dem.mWidth; ++x, ++v)
 	{
@@ -573,7 +546,7 @@ void copy_scanline(const T* v, int y, DEMGeo& dem)
 }
 
 template<typename T>
-void copy_tile(const T* v, int x, int y, int w, int h, DEMGeo& dem)
+void copy_tile(const T* v, int x, int y, int w, int h, dem_info_t& dem)
 {
 	for (int cy = 0; cy < h; ++cy)
 		for (int cx = 0; cx < w; ++cx)
@@ -588,7 +561,7 @@ void copy_tile(const T* v, int x, int y, int w, int h, DEMGeo& dem)
 
 // adapted version of equivalent function in DEMIO.h
 
-static bool	ExtractGeoTiff(DEMGeo& inMap, const char* inFileName, int post_style)
+ bool	WED_ExtractGeoTiff(dem_info_t& inMap, const char* inFileName, int post_style)
 {
 	TIFF * tif;
 #if SUPPORT_UNICODE
@@ -604,10 +577,8 @@ static bool	ExtractGeoTiff(DEMGeo& inMap, const char* inFileName, int post_style
 			goto bail;
 
 		// this assumes geopgrahic, not projected coordinates ...
-		inMap.mWest = corners[0];
-		inMap.mSouth = corners[1];
-		inMap.mEast = corners[6];
-		inMap.mNorth = corners[7];
+		inMap.mBounds += Point2(corners[0], corners[1]);
+		inMap.mBounds += Point2(corners[6], corners[7]);
 		inMap.mPost = (post_style == dem_want_Post);
 
 		uint32 w, h;
@@ -735,7 +706,7 @@ static bool	ExtractGeoTiff(DEMGeo& inMap, const char* inFileName, int post_style
 }
 
 static void mesh2obj(XObj8& obj, const Polygon2& area, const CoordTranslator2& ll2mtr, const CoordTranslator2& ll2uv,
-                     const DEMGeo& dem, int s_factor)
+                     const dem_info_t& dem, int s_factor)
 {
 	float pt[8];
 
@@ -849,7 +820,7 @@ static void mesh2obj(XObj8& obj, const Polygon2& area, const CoordTranslator2& l
 		}
 	}
 
-	// create "skirt". Add a polygon of the outermost of these points
+	// create "skirt". Make a polygon encircling the outermost of these points,
 	// tesselate a polygon using the area as outer ring and the above as inner ring/hole
 	// append that donut shaped mesh to the regular one
 	//
@@ -924,8 +895,11 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 		string dem_file;
 		ter->GetResource(dem_file);
 		dem_file = pkg + dem_file;
-		DEMGeo ter_dem;
-		ExtractGeoTiff(ter_dem, dem_file.c_str(), 0);
+		const dem_info_t* ter_dem;
+
+		if (!(WED_GetResourceMgr(ter->GetArchive()->GetResolver())->GetDem(dem_file, ter_dem)))
+			return -1;
+//		WED_ExtractGeoTiff(*ter_dem, dem_file.c_str(), 0);
 
 		// optionally change heights to be relative to terrain height
 		// optionally change height so it fits
@@ -955,7 +929,7 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 		// create & add mesh
 		// the super-sily proof-of-concept function
 //		poly2obj(ter_obj, area, ll2mtr, ll2uv, ter_dem.value_linear(ter_corners.centroid())); // ll2mtr.mDstMax.x_ * 0.3);
-		mesh2obj(ter_obj, area, ll2mtr, ll2uv, ter_dem, ter->GetSamplingfactor());
+		mesh2obj(ter_obj, area, ll2mtr, ll2uv, *ter_dem, ter->GetSamplingfactor());
 
 		// "ATTR_LOD"
 		ter_obj.lods.push_back(XObjLOD8());

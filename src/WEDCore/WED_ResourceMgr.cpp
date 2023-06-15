@@ -36,6 +36,7 @@
 #include "CompGeomDefs2.h"
 #include "MathUtils.h"
 #include "BitmapUtils.h"
+#include "WED_OrthoExport.h"
 
 #if IBM
 #define DIR_CHAR '\\'
@@ -122,6 +123,7 @@ void	WED_ResourceMgr::Purge(void)
 	mFac.clear();
 	mStr.clear();
 	mAGP.clear();
+	mDem.clear();
 }
 
 void	WED_ResourceMgr::Purge(const string& vpath)
@@ -145,6 +147,32 @@ bool	WED_ResourceMgr::GetAllInDir(const string& vdir, vector<pair<string, int> >
 
 	return names.size();
 }
+
+bool	WED_ResourceMgr::GetDem(const string& path, dem_info_t const*& info)
+{
+	auto i = mDem.find(path);
+	if (i != mDem.end())
+	{
+		info = &i->second;
+		return true;
+	}
+
+	string rpath = mLibrary->GetResourcePath(path);
+
+	dem_info_t* out_info = &mDem[path];
+
+	out_info->mWidth = 0;
+	out_info->mHeight = 0;
+
+	if (WED_ExtractGeoTiff(*out_info, rpath.c_str(), 0))
+	{
+		info = out_info;
+		return true;
+	}
+	else
+		return false;
+}
+
 
 XObj8 * WED_ResourceMgr::LoadObj(const string& abspath)
 {

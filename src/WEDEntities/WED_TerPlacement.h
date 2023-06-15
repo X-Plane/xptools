@@ -48,7 +48,7 @@ protected:
 
 private:
 
-	WED_PropStringText			resource;
+	WED_PropStringText			resource;       // really want WED_PropFileText, but something is broken with it now
 	WED_PropIntEnum				show_level;
 	WED_PropIntEnum				has_msl;
 	WED_PropDoubleTextMeters	msl;

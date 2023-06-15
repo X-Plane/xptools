@@ -29,6 +29,7 @@ class	WED_TerPlacement;
 class	WED_Thing;
 class	IResolver;
 class 	WED_Document;
+struct  dem_info_t;
 
 #include "BitmapUtils.h"
 
@@ -53,5 +54,7 @@ public:
 int WED_ExportOrtho(WED_DrapedOrthophoto* orth, IResolver* resolver, const string& pkg, DSF_export_info_t* export_info, string &r);
 
 int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& pkg, string &resource);
+
+bool WED_ExtractGeoTiff(dem_info_t& inMap, const char* inFileName, int post_style);
 
 #endif /* WED_OrthoExport_H */
