@@ -29,7 +29,7 @@ class	WED_TerPlacement;
 class	WED_Thing;
 class	IResolver;
 class 	WED_Document;
-struct  dem_info_t;
+typedef struct DEMGeo dem_info_t;
 
 #include "BitmapUtils.h"
 

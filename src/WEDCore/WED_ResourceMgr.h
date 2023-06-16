@@ -52,32 +52,7 @@
 #include <list>
 
 class	WED_LibraryMgr;
-
-// modernized subset of struct DEMgeo originally in DEMDefs.h
-
-struct	dem_info_t {
-	Bbox2	mBounds;     // geographic bounds in WGS84 geographic non-projected coordinates
-	int		mWidth;
-	int		mHeight;
-	int		mPost;       // 0 = value is area, 1 = value is post
-
-	vector<float> mData; // The first sample is the southwest corner, we then proceed east.
-
-	float& operator()(int x, int y);
-	float get(int x, int y) const;
-	float operator()(int x, int y) const { return get(x, y); }
-
-	float value_linear(const Point2& ll) const;
-
-	int x_lower(double lon) const;
-	int x_upper(double lon) const;
-	int y_lower(double lat) const;
-	int	y_upper(double lat) const;
-
-	double x_to_lon(int inX) const;
-	double y_to_lat(int inY) const;
-	Point2 xy_to_lonlat(int x, int y) const { return Point2(x_to_lon(x), y_to_lat(y)); }
-};
+typedef struct DEMGeo dem_info_t;
 
 struct tile_info {
 	int			tiles_x;

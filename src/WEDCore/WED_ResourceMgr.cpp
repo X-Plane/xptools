@@ -36,6 +36,8 @@
 #include "CompGeomDefs2.h"
 #include "MathUtils.h"
 #include "BitmapUtils.h"
+
+#include "DEMDefs.h"
 #include "WED_OrthoExport.h"
 
 #if IBM

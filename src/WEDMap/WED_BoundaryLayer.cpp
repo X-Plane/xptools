@@ -44,6 +44,7 @@
 #include "WED_ToolUtils.h"
 #include "WED_ResourceMgr.h"
 #include "WED_LibraryMgr.h"
+#include "DEMDefs.h"
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -166,8 +167,8 @@ bool	WED_BoundaryLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entit
 			Polygon2 area;
 			WED_PolygonForPointSequence(ps, area, COUNTERCLOCKWISE);
 
-			int mesh_dx = ter->GetSamplingfactor();
-			int mesh_dy = ter->GetSamplingfactor();
+			int mesh_dx = ter->GetSamplingFactor();
+			int mesh_dy = ter->GetSamplingFactor();
 
 			g->SetState(0, 0, 0, 1, 1, 0, 0);
 			glPointSize(4);
@@ -183,7 +184,7 @@ bool	WED_BoundaryLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entit
 			for (int y = ymin; y < info->y_upper(bounds.ymax()) + mesh_dy; y += mesh_dy)
 				for (int x = xmin; x < info->x_upper(bounds.xmax()) + mesh_dx; x += mesh_dx)
 				{
-					auto pt = info->xy_to_lonlat(x, y);
+					auto pt = Point2(info->x_to_lon(x), info->y_to_lat(y));
 					if(auto color = (area.inside(pt) ? color_in : color_out))
 					{
 						glColor4fv(color);

@@ -29,10 +29,11 @@ TRIVIAL_COPY(WED_TerPlacement,WED_GISPolygon)
 
 WED_TerPlacement::WED_TerPlacement(WED_Archive * a, int i) : WED_GISPolygon(a,i),
 	resource  (this, PROP_Name("Resource",       XML_Name("ter_placement", "Resource")), ""),
+	derez(this, PROP_Name("Derez Factor", XML_Name("ter_placement", "derez")), 1, 3, 0, "x"),
+	skirt(this, PROP_Name("Skirt Depth", XML_Name("ter_placement", "skirt")), 1, 3, 0),
 	show_level(this, PROP_Name("Show with",      XML_Name("ter_placement", "show_level")), ShowLevel, show_Level1),
 	has_msl   (this, PROP_Name("Elevation Mode", XML_Name("ter_placement", "custom_msl")), TerElevationType, obj_setMSL),
-	msl       (this, PROP_Name("Elevation",      XML_Name("ter_placement", "msl")), 0, 5, 2),
-	sample    (this, PROP_Name("Undersample DEM",XML_Name("ter_placement", "sample_x")), 1, 3, 0, "x")
+	msl       (this, PROP_Name("Elevation",      XML_Name("ter_placement", "msl")), 0, 5, 2)
 {
 }
 
@@ -65,9 +66,13 @@ double	WED_TerPlacement::GetCustomMSL(void) const
 	return msl.value;
 }
 
-double WED_TerPlacement::GetSamplingfactor(void) const
+double WED_TerPlacement::GetSamplingFactor(void) const
 {
-	return sample.value;
+	return derez.value;
 }
 
+double WED_TerPlacement::GetSkirtDepth(void) const
+{
+	return skirt.value;
+}
 

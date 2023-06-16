@@ -283,6 +283,7 @@
     <ClCompile Include="..\..\src\WEDWindows\WED_Sign_Editor.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_StartWindow.cpp" />
     <ClCompile Include="..\..\src\XESCore\AptIO.cpp" />
+    <ClCompile Include="..\..\src\XESCore\DEMDefs.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\DSFTools\DSF2Text.h" />
@@ -575,6 +576,7 @@
     <ClInclude Include="..\..\src\WEDWindows\WED_UIDefs.h" />
     <ClInclude Include="..\..\src\XESCore\AptDefs.h" />
     <ClInclude Include="..\..\src\XESCore\AptIO.h" />
+    <ClInclude Include="..\..\src\XESCore\DEMDefs.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\src\WEDResources\about.png" />

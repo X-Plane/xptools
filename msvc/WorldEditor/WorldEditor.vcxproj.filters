@@ -900,6 +900,9 @@
     <ClCompile Include="..\..\src\WEDMap\WED_BoundaryLayer.cpp">
       <Filter>WEDImportExport</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\XESCore\DEMDefs.cpp">
+      <Filter>XESCore</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\WEDCore\WED_Application.h">
@@ -1771,6 +1774,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\WEDMap\WED_BoundaryLayer.h">
       <Filter>WEDImportExport</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\XESCore\DEMDefs.h">
+      <Filter>XESCore</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

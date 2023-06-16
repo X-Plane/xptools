@@ -326,6 +326,7 @@ SOURCES += ./src/DSF/tri_stripper_101/tri_stripper.cpp
 SOURCES += ./src/DSFTools/DSF2Text.cpp
 SOURCES += ./src/OGLE/ogle.cpp
 SOURCES += ./src/XESCore/AptIO.cpp
+SOURCES += ./src/XESCore/DEMDefs.cpp
 
 SOURCES += ./SDK/lib_json/src/lib_json/json_writer.cpp
 SOURCES += ./SDK/lib_json/src/lib_json/json_reader.cpp

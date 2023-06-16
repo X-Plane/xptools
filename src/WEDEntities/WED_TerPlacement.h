@@ -38,7 +38,8 @@ public:
 
 	int					GetMSLType(void) const;
 	double				GetCustomMSL(void) const;
-	double 				GetSamplingfactor(void) const;
+	double 				GetSamplingFactor(void) const;
+	double 				GetSkirtDepth(void) const;
 
 	virtual const char* HumanReadableType(void) const { return "Terrain Object"; }
 
@@ -52,7 +53,8 @@ private:
 	WED_PropIntEnum				show_level;
 	WED_PropIntEnum				has_msl;
 	WED_PropDoubleTextMeters	msl;
-	WED_PropDoubleText			sample;
+	WED_PropDoubleText			derez;
+	WED_PropDoubleTextMeters	skirt;
 };
 
 #endif /* WED_TerPlacement_H */

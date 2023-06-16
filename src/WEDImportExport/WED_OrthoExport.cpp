@@ -58,6 +58,8 @@
 #include "WED_PackageMgr.h"
 #include "WED_Document.h"
 
+#include "DEMDefs.h"
+
 #include "tesselator.h"
 #include <time.h>
 
@@ -439,7 +441,7 @@ enum {
 };
 
 
-#define DEM_NO_DATA	-32768.0
+/* #define DEM_NO_DATA	-32768.0
 
 	float& dem_info_t::operator()(int x, int y)
 	{
@@ -534,6 +536,7 @@ enum {
 	{
 		return mBounds.ymin() + (((double)inY + (mPost ? 0.0 : 0.5)) * mBounds.yspan() / (double)(mHeight - mPost));
 	}
+*/
 
 template<typename T>
 void copy_scanline(const T* v, int y, dem_info_t& dem)
@@ -577,8 +580,10 @@ void copy_tile(const T* v, int x, int y, int w, int h, dem_info_t& dem)
 			goto bail;
 
 		// this assumes geopgrahic, not projected coordinates ...
-		inMap.mBounds += Point2(corners[0], corners[1]);
-		inMap.mBounds += Point2(corners[6], corners[7]);
+		inMap.mWest = corners[0];
+		inMap.mSouth = corners[1];
+		inMap.mEast = corners[6];
+		inMap.mNorth = corners[7];
 		inMap.mPost = (post_style == dem_want_Post);
 
 		uint32 w, h;
@@ -593,9 +598,7 @@ void copy_tile(const T* v, int x, int y, int w, int h, dem_info_t& dem)
 		TIFFGetField(tif, TIFFTAG_SAMPLEFORMAT, &format);
 //		printf("Image is: %dx%d, samples: %d, depth: %d, format: %d\n", w, h, cc, d, format);
 
-		inMap.mData.resize(w * h);
-		inMap.mWidth = w;
-		inMap.mHeight = h;
+		inMap.resize(w, h);
 
 		if (TIFFIsTiled(tif))
 		{
@@ -706,158 +709,128 @@ void copy_tile(const T* v, int x, int y, int w, int h, dem_info_t& dem)
 }
 
 static int mesh2obj(XObj8& obj, const Polygon2& area, const CoordTranslator2& ll2mtr, const CoordTranslator2& ll2uv,
-                     const dem_info_t& dem, int s_factor)
+                     const dem_info_t& dem, int s_factor, double skirt_depth)
 {
-	float pt[8];
-
-	// implement trivial solution first:
-	// grid of points fitting fully inside the area
-
-	vector<pair<int, int> > mesh_pts;
-
-	const int mesh_dx = s_factor;
-	const int mesh_dy = s_factor;
-
 	Bbox2 bounds = area.bounds();
-	int ymin = dem.y_lower(bounds.ymin());
-	ymin -= ymin % mesh_dy;
-	int xmin = dem.x_lower(bounds.xmin());
-	xmin -= xmin % mesh_dx;
 
-	for (int y = ymin; y < dem.y_upper(bounds.ymax()); y += mesh_dy)
-		for (int x = xmin; x < dem.x_upper(bounds.xmax()); x += mesh_dx)
+	dem_info_t ldem;
+	dem.subset(ldem, dem.x_upper(bounds.xmin()), dem.y_upper(bounds.ymin()), dem.x_lower(bounds.xmax()), dem.y_lower(bounds.ymax()));
+//	local_dem.deres_nearest() or make a derez_average() derez_cubic()
+
+	// nuke all data outside of desired object area
+	for (int y = 0; y < ldem.mHeight; y++)
+		for (int x = 0; x < ldem.mWidth; x++)
 		{
-			auto pt = dem.xy_to_lonlat(x, y);
-			if (area.inside(pt))
-				mesh_pts.push_back({x, y});
+			auto pt = Point2(ldem.x_to_lon(x), ldem.y_to_lat(y));
+			if (!area.inside(pt))
+				ldem.zap(x, y);
 		}
-	// make a quadrilateral tesselated mesh covering those
+
+	// make perimeter points droop
+	for (int y = 0; y < ldem.mHeight; y++)
+		for (int x = 0; x < ldem.mWidth; x++)
+			if (ldem.get(x, y) != DEM_NO_DATA)
+			{
+				if (ldem.get(x, y + 1) == DEM_NO_DATA || (ldem.get(x + 1, y) == DEM_NO_DATA) ||
+					ldem.get(x, y - 1) == DEM_NO_DATA || (ldem.get(x - 1, y) == DEM_NO_DATA))
+				{
+					ldem(x, y) = ldem(x, y) - skirt_depth;
+				}
+				else if (ldem.get(x + 1, y + 1) == DEM_NO_DATA || (ldem.get(x - 1, y + 1) == DEM_NO_DATA) ||
+						 ldem.get(x + 1, y - 1) == DEM_NO_DATA || (ldem.get(x - 1, y - 1) == DEM_NO_DATA))
+				{
+					ldem(x, y) = ldem(x, y) - 0.7 * skirt_depth;
+				}
+				// we could go on iteratively here to make longer slopes.
+			}
+
+	float pt[8];
 	vector<int> skirt_idx;
 
-	for (auto& mpt : mesh_pts)
-	{
-		bool has_next_E(false);
-		bool has_next_N(false);
-		bool has_next_S(false);
-		bool has_next_NE(false);
-		bool has_next_SE(false);
-
-		for (auto& mpt2 : mesh_pts)
-		{
-			if (mpt2.first == mpt.first)
+	// make a quadrilateral tesselated mesh
+	for (int y = 0; y < ldem.mHeight - 1; y++)
+		for (int x = 0; x < ldem.mWidth - 1; x++)
+			if (ldem.get(x, y) != DEM_NO_DATA)
 			{
-				if (mpt2.second == mpt.second + mesh_dy)
-					has_next_N = true;
-				if (mpt2.second == mpt.second - mesh_dy)
-					has_next_S = true;
+				auto fill_pt = [&](int x, int y) -> int
+				{
+					auto p = Point2(ldem.x_to_lon(x), ldem.y_to_lat(y));
+					pt[0] = ll2mtr.Forward(p).x(); // xyz
+					pt[1] = ldem(x,y);
+					pt[2] = ll2mtr.Forward(p).y();
+					pt[3] = 0;                     // nml, todo: use fancy DEM calculation
+					pt[4] = 1;
+					pt[5] = 0;
+					pt[6] = ll2uv.Forward(p).x();  // uv
+					pt[7] = ll2uv.Forward(p).y();
+
+					return obj.geo_tri.accumulate(pt);
+				};
+
+				auto push_idx = [&](int i)
+				{
+					if (pt[1] < -1.0f)
+						skirt_idx.push_back(i);
+					else
+						obj.indices.push_back(i);
+				};
+
+				bool has_next_E  = ldem.get(x + 1, y)     != DEM_NO_DATA;
+				bool has_next_N  = ldem.get(x, y + 1)     != DEM_NO_DATA;
+				bool has_next_NE = ldem.get(x + 1, y + 1) != DEM_NO_DATA;
+				bool has_next_S  = ldem.get(x, y - 1)     != DEM_NO_DATA;
+				bool has_next_SE = ldem.get(x + 1, y - 1) != DEM_NO_DATA;
+
+				if (has_next_E && has_next_N && has_next_NE)   // full quad
+				{
+					int i0 = fill_pt(x,y);
+					int i1 = fill_pt(x+1,y);
+					int i2 = fill_pt(x,y+1);
+					int i3 = fill_pt(x+1,y+1);
+					push_idx(i0);
+					push_idx(i2);
+					push_idx(i1);
+					push_idx(i1);
+					push_idx(i2);
+					push_idx(i3);
+				}
+				else if(has_next_E && has_next_N)
+				{
+					int i0 = fill_pt(x,y);
+					int i1 = fill_pt(x+1,y);
+					int i2 = fill_pt(x,y+1);
+					push_idx(i0);
+					push_idx(i2);
+					push_idx(i1);
+				}
+				else if (has_next_E && has_next_NE)
+				{
+					int i0 = fill_pt(x,y);
+					int i1 = fill_pt(x+1,y);
+					int i2 = fill_pt(x+1,y+1);
+					push_idx(i0);
+					push_idx(i2);
+					push_idx(i1);
+				}
+				else if (has_next_N && has_next_NE)
+				{
+					int i0 = fill_pt(x, y);
+					int i1 = fill_pt(x+1,y+1);
+					int i2 = fill_pt(x,y+1);
+					push_idx(i0);
+					push_idx(i2);
+					push_idx(i1);
+				}
+				if (has_next_E && has_next_SE && !has_next_S)
+				{
+					int i0 = fill_pt(x,y);
+					int i1 = fill_pt(x+1,y-1);
+					int i2 = fill_pt(x+1,y);
+					push_idx(i0);
+					push_idx(i2);
+					push_idx(i1);
+				}
 			}
-			else if (mpt2.first == mpt.first + mesh_dx)
-			{
-				if (mpt2.second == mpt.second)
-					has_next_E = true;
-				else if (mpt2.second == mpt.second + mesh_dy)
-					has_next_NE = true;
-				else if (mpt2.second == mpt.second - mesh_dy)
-					has_next_SE = true;
-			}
-		}
-
-		bool skirt;
-
-		auto fill_pt = [&](int x, int y) -> int
-		{
-			auto p = dem.xy_to_lonlat(x, y);
-			pt[0] = ll2mtr.Forward(p).x(); // xyz
-			pt[1] = dem(x,y);
-			pt[2] = ll2mtr.Forward(p).y();
-			pt[3] = 0;                     // nml, todo: use fancy DEM calculation
-			pt[4] = 1;
-			pt[5] = 0;
-			pt[6] = ll2uv.Forward(p).x();  // uv
-			pt[7] = ll2uv.Forward(p).y();
-			bool w = false;
-			bool e = false;
-			bool n = false;
-			bool s = false;
-
-			if (pt[1] < -1.0f)
-				skirt = true;           // disable shadowing for under water parts
-
-			for (auto& m : mesh_pts)
-			{
-				if (m.first == x && m.second == y - mesh_dy) s = true;
-				if (m.first == x && m.second == y + mesh_dy) n = true;
-				if (m.first == x - mesh_dx && m.second == y)w = true;
-				if (m.first == x + mesh_dx && m.second == y)e = true;
-				if (w + e + s + n == 4)	break;
-			}
-			if (w + e + s + n < 4)
-			{
-				pt[1] -= 5.0;
-				skirt = true;
-			}
-			return obj.geo_tri.accumulate(pt);
-		};
-
-		auto push_idx = [&](int i)
-		{
-			if (skirt)
-				skirt_idx.push_back(i);
-			else
-				obj.indices.push_back(i);
-		};
-
-		skirt = false;
-		if (has_next_E && has_next_N && has_next_NE)   // full quad
-		{
-			int i0 = fill_pt(mpt.first, mpt.second);
-			int i1 = fill_pt(mpt.first + mesh_dx, mpt.second);
-			int i2 = fill_pt(mpt.first, mpt.second + mesh_dy);
-			int i3 = fill_pt(mpt.first + mesh_dx, mpt.second + mesh_dy);
-			push_idx(i0);
-			push_idx(i2);
-			push_idx(i1);
-			push_idx(i1);
-			push_idx(i2);
-			push_idx(i3);
-		}
-		else if(has_next_E && has_next_N)
-		{
-			int i0 = fill_pt(mpt.first, mpt.second);
-			int i1 = fill_pt(mpt.first + mesh_dx, mpt.second);
-			int i2 = fill_pt(mpt.first, mpt.second + mesh_dy);
-			push_idx(i0);
-			push_idx(i2);
-			push_idx(i1);
-		}
-		else if (has_next_E && has_next_NE)
-		{
-			int i0 = fill_pt(mpt.first, mpt.second);
-			int i1 = fill_pt(mpt.first + mesh_dx, mpt.second);
-			int i2 = fill_pt(mpt.first + mesh_dx, mpt.second + mesh_dy);
-			push_idx(i0);
-			push_idx(i2);
-			push_idx(i1);
-		}
-		else if (has_next_N && has_next_NE)
-		{
-			int i0 = fill_pt(mpt.first, mpt.second);
-			int i1 = fill_pt(mpt.first + mesh_dx, mpt.second + mesh_dy);
-			int i2 = fill_pt(mpt.first, mpt.second + mesh_dy);
-			push_idx(i0);
-			push_idx(i2);
-			push_idx(i1);
-		}
-		if (has_next_E && has_next_SE && !has_next_S)
-		{
-			int i0 = fill_pt(mpt.first, mpt.second);
-			int i1 = fill_pt(mpt.first + mesh_dx, mpt.second - mesh_dy);
-			int i2 = fill_pt(mpt.first + mesh_dx, mpt.second);
-			push_idx(i0);
-			push_idx(i2);
-			push_idx(i1);
-		}
-	}
 	int skirt_start = obj.indices.size();
 	for (auto i : skirt_idx)
 		obj.indices.push_back(i);
@@ -971,8 +944,8 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 
 		// create & add mesh
 		// the super-sily proof-of-concept function
-//		poly2obj(ter_obj, area, ll2mtr, ll2uv, ter_dem.value_linear(ter_corners.centroid())); // ll2mtr.mDstMax.x_ * 0.3);
-		int skirt_idx = mesh2obj(ter_obj, area, ll2mtr, ll2uv, *ter_dem, ter->GetSamplingfactor());
+//		poly2obj(ter_obj, area, ll2mtr, ll2uv, ter_dem.value_linear(ter_corners.centroid()));
+		int skirt_idx = mesh2obj(ter_obj, area, ll2mtr, ll2uv, *ter_dem, ter->GetSamplingFactor(), ter->GetSkirtDepth());
 
 		// ATTR_LOD
 		ter_obj.lods.push_back(XObjLOD8());
