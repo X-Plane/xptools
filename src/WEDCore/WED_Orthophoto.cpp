@@ -324,38 +324,13 @@ void	WED_MakeTerrain(IResolver* inResolver, WED_MapZoomerNew* zoomer)
 				WED_Ring* rng = WED_RingfromImage(path, arch, zoomer, &CreateThing<WED_ShapeNode>, &gcp);
 				if (rng)
 				{
-				//	ITexMgr* tman = WED_GetTexMgr(inResolver);
-				//	TexRef tref = tman->LookupTexture(img_path.c_str(), false, tex_Compress_Ok | tex_Linear);
-
-				//	if (tref != NULL)
-					{
-				//		int orig_x, orig_y;
-				//		tman->GetTexInfo(tref, NULL, NULL, NULL, NULL, &orig_x, &orig_y);
-
-						//Point2 corner[4];
-						//for (int i = 0; i < 4; ++i)
-						{
-							//dynamic_cast<WED_TextureNode*>(rng->GetNthPoint(i))->GetLocation(gis_Geo, corner[i]);
-							//auto igp = dynamic_cast<IGISPointSequence*>(rng);
-
-							// lower left
-							//igp->GetNthPoint(0)->SetLocation(gis_Geo, gcp.pts[0]);
-							// lower right
-							//igp->GetNthPoint(1)->SetLocation(gis_Geo, gcp.pts[gcp.size_x]);
-							// upper right
-							//igp->GetNthPoint(2)->SetLocation(gis_Geo, gcp.pts[gcp.size_x * (gcp.size_y -1)]);
-							// upper left
-							//igp->GetNthPoint(3)->SetLocation(gis_Geo, gcp.pts[gcp.size_x * gcp.size_y - 1]);
-
-							auto dpol = WED_TerPlacement::CreateTyped(arch);
-							rng->SetParent(dpol, 0);
-							rng->SetName("Terrain Object");
-							dpol->SetParent(wrl, 0);
-							sel->Insert(dpol);
-							dpol->SetResource(img_path);
-							dpol->SetName(base_tex);
-						}
-					}
+					auto dpol = WED_TerPlacement::CreateTyped(arch);
+					rng->SetParent(dpol, 0);
+					rng->SetName("Terrain Object");
+					dpol->SetParent(wrl, 0);
+					sel->Insert(dpol);
+					dpol->SetResource(img_path);
+					dpol->SetName("Terrain_xx");
 				}
 			}
 			else

@@ -34,12 +34,12 @@ class	WED_TerPlacement : public WED_GISPolygon, public IHasResource {
 public:
 	virtual void		GetResource(string& r) const;
 	virtual void		SetResource(const string& r);
-	int					GetShowLevel(void) const;
-
-	int					GetMSLType(void) const;
-	double				GetCustomMSL(void) const;
 	double 				GetSamplingFactor(void) const;
 	double 				GetSkirtDepth(void) const;
+	// about the .obj to be generated and written to the DSF file
+	int					GetShowLevel(void) const;
+	int					GetMSLType(void) const;
+	double				GetCustomMSL(void) const;
 
 	virtual const char* HumanReadableType(void) const { return "Terrain Object"; }
 
@@ -50,11 +50,11 @@ protected:
 private:
 
 	WED_PropStringText			resource;       // really want WED_PropFileText, but something is broken with it now
-	WED_PropIntEnum				show_level;
 	WED_PropIntEnum				has_msl;
 	WED_PropDoubleTextMeters	msl;
 	WED_PropDoubleText			derez;
 	WED_PropDoubleTextMeters	skirt;
+	WED_PropIntEnum				show_level;
 };
 
 #endif /* WED_TerPlacement_H */

@@ -881,16 +881,16 @@ static void poly2obj(XObj8& obj, const Polygon2& area, const CoordTranslator2& l
 
 int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& pkg, string& resource)
 {
-	Polygon2 area;
-	IGISPointSequence* ter_ps;
 	if(auto ter_pol = dynamic_cast<IGISPolygon*>(ter))
 	{
+		Polygon2 ter_poly;
+		IGISPointSequence* ter_ps;
 		auto wrl = WED_GetWorld(resolver);
 		if (ter_ps = ter_pol->GetOuterRing())
-			WED_PolygonForPointSequence(ter_ps, area, COUNTERCLOCKWISE);
+			WED_PolygonForPointSequence(ter_ps, ter_poly, COUNTERCLOCKWISE);
 		Bbox2 ter_box;
 		ter_pol->GetBounds(gis_Geo, ter_box);
-		auto ortho = find_ortho(area, ter_box, wrl);
+		auto ortho = find_ortho(ter_poly, ter_box, wrl);
 		if (!ortho)
 			return -1;
 		auto ortho_pol = dynamic_cast<IGISPolygon*>(ortho);
@@ -931,7 +931,9 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 
 		string orthoName;
 		ortho->GetName(orthoName);
-		string objName = FILE_get_file_name_wo_extensions(orthoName) + ".obj";       // todo: how to dis-ambiguate multiple .obj in same texture ?
+		string terName;
+		ter->GetName(terName);
+		string objName = FILE_get_file_name_wo_extensions(orthoName) + "_" + FILE_get_file_name_wo_extensions(terName) + ".obj";
 		string orthoResource;
 		ortho->GetResource(orthoResource);
 		string objVPath = FILE_get_dir_name(orthoResource) + objName;
@@ -945,7 +947,7 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 		// create & add mesh
 		// the super-sily proof-of-concept function
 //		poly2obj(ter_obj, area, ll2mtr, ll2uv, ter_dem.value_linear(ter_corners.centroid()));
-		int skirt_idx = mesh2obj(ter_obj, area, ll2mtr, ll2uv, *ter_dem, ter->GetSamplingFactor(), ter->GetSkirtDepth());
+		int skirt_idx = mesh2obj(ter_obj, ter_poly, ll2mtr, ll2uv, *ter_dem, ter->GetSamplingFactor(), ter->GetSkirtDepth());
 
 		// ATTR_LOD
 		ter_obj.lods.push_back(XObjLOD8());
