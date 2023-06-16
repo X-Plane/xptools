@@ -156,14 +156,12 @@ bool	WED_ResourceMgr::GetDem(const string& path, dem_info_t const*& info)
 		info = &i->second;
 		return true;
 	}
-
-	string rpath = mLibrary->GetResourcePath(path);
-
 	dem_info_t* out_info = &mDem[path];
 
 	out_info->mWidth = 0;
 	out_info->mHeight = 0;
 
+	string rpath = mLibrary->CreateLocalResourcePath(path);
 	if (WED_ExtractGeoTiff(*out_info, rpath.c_str(), 0))
 	{
 		info = out_info;

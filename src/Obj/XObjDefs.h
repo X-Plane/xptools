@@ -138,8 +138,8 @@ enum {
 	attr_NoDraped,
 	/* LIGHT_SPILL_CUSTOM */
 	/* ATTR_shadow_blend */
-	/* ATTR_no_shadow */
-	/* ATTR_shadow */
+	attr_No_Shadow,
+	attr_Shadow,
 
 	attr_Manip_Drag_Axis_Pix,
 

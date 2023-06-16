@@ -1231,6 +1231,12 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj, const char * comment)
 				else
 					fprintf(fi,"ATTR_no_blend %f" CRLF, cmd->params[0]);
 				break;
+			case attr_Shadow:
+				fprintf(fi, "ATTR_shadow" CRLF);
+				break;
+			case attr_No_Shadow:
+					fprintf(fi, "ATTR_no_shadow" CRLF);
+				break;
 			case attr_Tex_Cockpit_Subregion:
 				fprintf(fi,"ATTR_cockpit_region %d" CRLF, (int) cmd->params[0]);
 				break;

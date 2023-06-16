@@ -705,7 +705,7 @@ void copy_tile(const T* v, int x, int y, int w, int h, dem_info_t& dem)
 	return false;
 }
 
-static void mesh2obj(XObj8& obj, const Polygon2& area, const CoordTranslator2& ll2mtr, const CoordTranslator2& ll2uv,
+static int mesh2obj(XObj8& obj, const Polygon2& area, const CoordTranslator2& ll2mtr, const CoordTranslator2& ll2uv,
                      const dem_info_t& dem, int s_factor)
 {
 	float pt[8];
@@ -719,14 +719,21 @@ static void mesh2obj(XObj8& obj, const Polygon2& area, const CoordTranslator2& l
 	const int mesh_dy = s_factor;
 
 	Bbox2 bounds = area.bounds();
-	for (int y = dem.y_upper(bounds.ymin()); y < dem.y_upper(bounds.ymax()); y += mesh_dy)
-		for (int x = dem.x_upper(bounds.xmin()); x < dem.x_upper(bounds.xmax()); x += mesh_dx)
+	int ymin = dem.y_lower(bounds.ymin());
+	ymin -= ymin % mesh_dy;
+	int xmin = dem.x_lower(bounds.xmin());
+	xmin -= xmin % mesh_dx;
+
+	for (int y = ymin; y < dem.y_upper(bounds.ymax()); y += mesh_dy)
+		for (int x = xmin; x < dem.x_upper(bounds.xmax()); x += mesh_dx)
 		{
 			auto pt = dem.xy_to_lonlat(x, y);
 			if (area.inside(pt))
 				mesh_pts.push_back({x, y});
 		}
 	// make a quadrilateral tesselated mesh covering those
+	vector<int> skirt_idx;
+
 	for (auto& mpt : mesh_pts)
 	{
 		bool has_next_E(false);
@@ -755,6 +762,8 @@ static void mesh2obj(XObj8& obj, const Polygon2& area, const CoordTranslator2& l
 			}
 		}
 
+		bool skirt;
+
 		auto fill_pt = [&](int x, int y) -> int
 		{
 			auto p = dem.xy_to_lonlat(x, y);
@@ -766,64 +775,99 @@ static void mesh2obj(XObj8& obj, const Polygon2& area, const CoordTranslator2& l
 			pt[5] = 0;
 			pt[6] = ll2uv.Forward(p).x();  // uv
 			pt[7] = ll2uv.Forward(p).y();
+			bool w = false;
+			bool e = false;
+			bool n = false;
+			bool s = false;
+
+			if (pt[1] < -1.0f)
+				skirt = true;           // disable shadowing for under water parts
+
+			for (auto& m : mesh_pts)
+			{
+				if (m.first == x && m.second == y - mesh_dy) s = true;
+				if (m.first == x && m.second == y + mesh_dy) n = true;
+				if (m.first == x - mesh_dx && m.second == y)w = true;
+				if (m.first == x + mesh_dx && m.second == y)e = true;
+				if (w + e + s + n == 4)	break;
+			}
+			if (w + e + s + n < 4)
+			{
+				pt[1] -= 5.0;
+				skirt = true;
+			}
 			return obj.geo_tri.accumulate(pt);
 		};
 
+		auto push_idx = [&](int i)
+		{
+			if (skirt)
+				skirt_idx.push_back(i);
+			else
+				obj.indices.push_back(i);
+		};
+
+		skirt = false;
 		if (has_next_E && has_next_N && has_next_NE)   // full quad
 		{
 			int i0 = fill_pt(mpt.first, mpt.second);
 			int i1 = fill_pt(mpt.first + mesh_dx, mpt.second);
 			int i2 = fill_pt(mpt.first, mpt.second + mesh_dy);
 			int i3 = fill_pt(mpt.first + mesh_dx, mpt.second + mesh_dy);
-			obj.indices.push_back(i0);
-			obj.indices.push_back(i2);
-			obj.indices.push_back(i1);
-			obj.indices.push_back(i1);
-			obj.indices.push_back(i2);
-			obj.indices.push_back(i3);
+			push_idx(i0);
+			push_idx(i2);
+			push_idx(i1);
+			push_idx(i1);
+			push_idx(i2);
+			push_idx(i3);
 		}
 		else if(has_next_E && has_next_N)
 		{
 			int i0 = fill_pt(mpt.first, mpt.second);
 			int i1 = fill_pt(mpt.first + mesh_dx, mpt.second);
 			int i2 = fill_pt(mpt.first, mpt.second + mesh_dy);
-			obj.indices.push_back(i0);
-			obj.indices.push_back(i2);
-			obj.indices.push_back(i1);
+			push_idx(i0);
+			push_idx(i2);
+			push_idx(i1);
 		}
 		else if (has_next_E && has_next_NE)
 		{
 			int i0 = fill_pt(mpt.first, mpt.second);
 			int i1 = fill_pt(mpt.first + mesh_dx, mpt.second);
 			int i2 = fill_pt(mpt.first + mesh_dx, mpt.second + mesh_dy);
-			obj.indices.push_back(i0);
-			obj.indices.push_back(i2);
-			obj.indices.push_back(i1);
+			push_idx(i0);
+			push_idx(i2);
+			push_idx(i1);
 		}
 		else if (has_next_N && has_next_NE)
 		{
 			int i0 = fill_pt(mpt.first, mpt.second);
 			int i1 = fill_pt(mpt.first + mesh_dx, mpt.second + mesh_dy);
 			int i2 = fill_pt(mpt.first, mpt.second + mesh_dy);
-			obj.indices.push_back(i0);
-			obj.indices.push_back(i2);
-			obj.indices.push_back(i1);
+			push_idx(i0);
+			push_idx(i2);
+			push_idx(i1);
 		}
 		if (has_next_E && has_next_SE && !has_next_S)
 		{
 			int i0 = fill_pt(mpt.first, mpt.second);
 			int i1 = fill_pt(mpt.first + mesh_dx, mpt.second - mesh_dy);
 			int i2 = fill_pt(mpt.first + mesh_dx, mpt.second);
-			obj.indices.push_back(i0);
-			obj.indices.push_back(i2);
-			obj.indices.push_back(i1);
+			push_idx(i0);
+			push_idx(i2);
+			push_idx(i1);
 		}
 	}
+	int skirt_start = obj.indices.size();
+	for (auto i : skirt_idx)
+		obj.indices.push_back(i);
 
 	// create "skirt". Make a polygon encircling the outermost of these points,
 	// tesselate a polygon using the area as outer ring and the above as inner ring/hole
 	// append that donut shaped mesh to the regular one
 	//
+
+	return skirt_start;
 }
 
 // Suuuper trivial 3D object for testing or debugging. Literally a MineralsPile.obj lookalike pyramid.
@@ -899,7 +943,6 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 
 		if (!(WED_GetResourceMgr(ter->GetArchive()->GetResolver())->GetDem(dem_file, ter_dem)))
 			return -1;
-//		WED_ExtractGeoTiff(*ter_dem, dem_file.c_str(), 0);
 
 		// optionally change heights to be relative to terrain height
 		// optionally change height so it fits
@@ -929,18 +972,26 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 		// create & add mesh
 		// the super-sily proof-of-concept function
 //		poly2obj(ter_obj, area, ll2mtr, ll2uv, ter_dem.value_linear(ter_corners.centroid())); // ll2mtr.mDstMax.x_ * 0.3);
-		mesh2obj(ter_obj, area, ll2mtr, ll2uv, *ter_dem, ter->GetSamplingfactor());
+		int skirt_idx = mesh2obj(ter_obj, area, ll2mtr, ll2uv, *ter_dem, ter->GetSamplingfactor());
 
-		// "ATTR_LOD"
+		// ATTR_LOD
 		ter_obj.lods.push_back(XObjLOD8());
 		ter_obj.lods.back().lod_near = 0;
 		ter_obj.lods.back().lod_far = 3000;
-		// "TRIS ";
+		// TRIS
 		cmd.cmd = obj8_Tris;
 		cmd.idx_offset = 0;
-		cmd.idx_count = ter_obj.indices.size();
+		cmd.idx_count = skirt_idx;
 		ter_obj.lods.back().cmds.push_back(cmd);
-
+		// ATTR_no_shadow;
+		cmd.cmd = attr_No_Shadow;
+		ter_obj.lods.back().cmds.push_back(cmd);
+		// TRIS
+		cmd.cmd = obj8_Tris;
+		cmd.idx_offset = skirt_idx;
+		cmd.idx_count = ter_obj.indices.size() - skirt_idx;
+		ter_obj.lods.back().cmds.push_back(cmd);
+		// LOAD_CENTER
 		ter_obj.xyz_min[0] = ll2mtr.mDstMin.x();
 		ter_obj.xyz_max[0] = ll2mtr.mDstMax.x();
 		ter_obj.xyz_min[2] = ll2mtr.mDstMin.y();

@@ -24,6 +24,7 @@
 #include "WED_BoundaryLayer.h"
 
 #include "WED_AirportBoundary.h"
+#include "WED_TerPlacement.h"
 
 #include "AssertUtils.h"
 #include "GISUtils.h"
@@ -34,10 +35,15 @@
 #include "GUI_Fonts.h"
 #include "GUI_GraphState.h"
 #include "GUI_Resources.h"
+#include "WED_GISUtils.h"
 #include "WED_DrawUtils.h"
 #include "WED_EnumSystem.h"
 #include "WED_HierarchyUtils.h"
 #include "WED_MapZoomerNew.h"
+
+#include "WED_ToolUtils.h"
+#include "WED_ResourceMgr.h"
+#include "WED_LibraryMgr.h"
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -140,13 +146,61 @@ bool	WED_BoundaryLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entit
 
 		glLineWidth(1);
 	}
+
+	if (selected && entity->GetGISSubtype() == WED_TerPlacement::sClass)
+	{
+		auto ter = dynamic_cast<WED_TerPlacement*>(entity);
+		DebugAssert(ter);
+
+		string rpath;
+		const dem_info_t* info;
+		ter->GetResource(rpath);
+		auto rmgr = WED_GetResourceMgr(GetResolver());
+		if (rmgr->GetDem(rpath, info))
+		{
+			Bbox2 bounds;
+			ter->GetBounds(gis_Geo, bounds);
+
+			auto ps = ter->GetOuterRing();
+			// get area polygon
+			Polygon2 area;
+			WED_PolygonForPointSequence(ps, area, COUNTERCLOCKWISE);
+
+			int mesh_dx = ter->GetSamplingfactor();
+			int mesh_dy = ter->GetSamplingfactor();
+
+			g->SetState(0, 0, 0, 1, 1, 0, 0);
+			glPointSize(4);
+
+			float* color_in = WED_Color_RGBA(locked ? wed_StructureLocked : wed_StructureSelected);
+			float* color_out = locked ? nullptr : WED_Color_RGBA(wed_StructureLocked);
+
+			glBegin(GL_POINTS);
+			int ymin = info->y_lower(bounds.ymin());
+			ymin -= ymin % mesh_dy;
+			int xmin = info->x_lower(bounds.xmin());
+			xmin -= xmin % mesh_dx;
+			for (int y = ymin; y < info->y_upper(bounds.ymax()) + mesh_dy; y += mesh_dy)
+				for (int x = xmin; x < info->x_upper(bounds.xmax()) + mesh_dx; x += mesh_dx)
+				{
+					auto pt = info->xy_to_lonlat(x, y);
+					if(auto color = (area.inside(pt) ? color_in : color_out))
+					{
+						glColor4fv(color);
+						glVertex2(GetZoomer()->LLToPixel(pt));
+					}
+				}
+			glEnd();
+		}
+	}
+
 	return true;
 }
 
 void		WED_BoundaryLayer::GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks)
 {
 	draw_ent_v = false;
-	cares_about_sel = false;
+	cares_about_sel = true;
 	draw_ent_s = true;
 	wants_clicks = false;
 }
