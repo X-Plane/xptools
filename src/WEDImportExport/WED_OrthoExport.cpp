@@ -433,110 +433,11 @@ static WED_DrapedOrthophoto* find_ortho(Polygon2 area, Bbox2 area_box, WED_Thing
 	return nullptr;
 }
 
-
 enum {
 	dem_want_Post,	// Use pixel=post sampling
 	dem_want_Area,	// Use area-pixel sampling!
 	dem_want_File	// Use whatever the file has.
 };
-
-
-/* #define DEM_NO_DATA	-32768.0
-
-	float& dem_info_t::operator()(int x, int y)
-	{
-		if (x < 0 || x >= mWidth || y < 0 || y >= mHeight)
-			Assert(!"ERROR: ASSIGN OUTSIDE BOUNDS!");
-		return mData[x + y * mWidth];
-	}
-
-	float dem_info_t::get(int x, int y) const
-	{
-		if (x < 0 || x >= mWidth || y < 0 || y >= mHeight) return DEM_NO_DATA;
-		return mData[x + y * mWidth];
-	}
-
-	float	dem_info_t::value_linear(const Point2& ll) const
-	{
-		if (!mBounds.contains(ll)) return DEM_NO_DATA;
-		double x_fract = (ll.x() - mBounds.xmin()) / mBounds.xspan();
-		double y_fract = (ll.y() - mBounds.ymin()) / mBounds.yspan();
-
-		x_fract *= (double)(mWidth - mPost);
-		y_fract *= (double)(mHeight - mPost);
-
-		if (mPost == 0)
-		{
-			x_fract -= 0.5;
-			y_fract -= 0.5;
-		}
-
-		int x = x_fract;
-		int y = y_fract;
-		x_fract -= (double)x;
-		y_fract -= (double)y;
-
-		float v1 = get(x, y);
-		float v2 = get(x + 1, y);
-		float v3 = get(x, y + 1);
-		float v4 = get(x + 1, y + 1);
-
-		float w1 = (v1 == DEM_NO_DATA) ? 0.0 : (1.0 - x_fract) * (1.0 - y_fract);
-		float w2 = (v2 == DEM_NO_DATA) ? 0.0 : (x_fract) * (1.0 - y_fract);
-		float w3 = (v3 == DEM_NO_DATA) ? 0.0 : (1.0 - x_fract) * (y_fract);
-		float w4 = (v4 == DEM_NO_DATA) ? 0.0 : (x_fract) * (y_fract);
-
-		float w = w1 + w2 + w3 + w4;
-		if (w == 0.0) return DEM_NO_DATA;
-		return (v1 * w1 + v2 * w2 + v3 * w3 + v4 * w4) / w;
-	}
-
-	int dem_info_t::x_lower(double lon) const
-	{
-		if (lon <= mBounds.xmin()) return 0;
-		if (lon >= mBounds.xmax()) return mWidth - mPost;
-
-		lon = (lon - mBounds.xmin()) * (mWidth - mPost) / mBounds.xspan();
-		return floor(lon);
-	}
-
-	int dem_info_t::x_upper(double lon) const
-	{
-		if (lon <= mBounds.xmin()) return 0;
-		if (lon >= mBounds.xmax()) return mWidth - mPost;
-
-		lon = (lon - mBounds.xmin()) * (mWidth - mPost) / mBounds.xspan();
-		return ceil(lon);
-	}
-
-	int dem_info_t::y_lower(double lat) const
-	{
-		if (lat <= mBounds.ymin()) return 0;
-		if (lat >= mBounds.ymax()) return mHeight - mPost;
-
-		lat = (lat - mBounds.ymin()) * (mHeight - mPost) / mBounds.yspan();
-		return floor(lat);
-	}
-
-	int	dem_info_t::y_upper(double lat) const
-	{
-		if (lat <= mBounds.ymin()) return 0;
-		if (lat >= mBounds.ymax()) return mHeight - mPost;
-
-		lat = (lat - mBounds.ymin()) * (mHeight - mPost) / mBounds.yspan();
-		return ceil(lat);
-	}
-
-	double dem_info_t::x_to_lon(int inX) const
-	{
-		return mBounds.xmin() + (((double)inX + (mPost ? 0.0 : 0.5)) * mBounds.xspan() / (double)(mWidth - mPost));
-	}
-
-	double dem_info_t::y_to_lat(int inY) const
-	{
-		return mBounds.ymin() + (((double)inY + (mPost ? 0.0 : 0.5)) * mBounds.yspan() / (double)(mHeight - mPost));
-	}
-*/
 
 template<typename T>
 void copy_scanline(const T* v, int y, dem_info_t& dem)
@@ -708,14 +609,48 @@ void copy_tile(const T* v, int x, int y, int w, int h, dem_info_t& dem)
 	return false;
 }
 
+ static float dist_to_edge(const dem_info_t& dem, int loc_x, int loc_y, int max_dist)
+ {
+     float min_dist = 99*99;
+	 for (int y = loc_y - max_dist; y <= loc_y +  max_dist; y++)
+		 for(int x = loc_x - max_dist; x <= loc_x + max_dist; x++)
+			 if (dem.get(x, y) == DEM_NO_DATA)
+			 {
+				 float dist = pythag_sqr(x - loc_x, y - loc_y);
+				 if (dist < min_dist) min_dist = dist;
+			 }
+	 return sqrtf(min_dist);
+ }
+
 static int mesh2obj(XObj8& obj, const Polygon2& area, const CoordTranslator2& ll2mtr, const CoordTranslator2& ll2uv,
-                     const dem_info_t& dem, int s_factor, double skirt_depth)
+                     const DEMGeo& dem, float deres_factor, float skirt_depth, const Polygon2& area_dem)
 {
 	Bbox2 bounds = area.bounds();
 
-	dem_info_t ldem;
+	DEMGeo ldem;
 	dem.subset(ldem, dem.x_upper(bounds.xmin()), dem.y_upper(bounds.ymin()), dem.x_lower(bounds.xmax()), dem.y_lower(bounds.ymax()));
-//	local_dem.deres_nearest() or make a derez_average() derez_cubic()
+	if (deres_factor != 1.0f)
+	{
+		DEMGeo smaller;
+		smaller.copy_geo_from(ldem);
+		smaller.resize(ldem.mPost + intround((ldem.mWidth - ldem.mPost) / deres_factor), 
+					   ldem.mPost + intround((ldem.mWidth - ldem.mPost) / deres_factor));
+
+		for (int y = 0; y < smaller.mHeight; ++y)
+			for (int x = 0; x < smaller.mWidth; ++x)
+			{
+				double lon = smaller.x_to_lon(x);
+				double lat = smaller.y_to_lat(y);
+				smaller(x, y) = ldem.value_linear(lon,lat);
+			}
+		ldem.swap(smaller);
+	}
+
+	//	local_dem.deres_nearest() or make a derez_average() derez_cubic()
+
+	// make formals before creating the skirt - so normals stay unaffected, i.e. skirt area is less notable due to shading
+	DEMGeo NX, NY, NZ;
+	ldem.calc_normal(NX, NY, NZ, nullptr);
 
 	// nuke all data outside of desired object area
 	for (int y = 0; y < ldem.mHeight; y++)
@@ -727,21 +662,41 @@ static int mesh2obj(XObj8& obj, const Polygon2& area, const CoordTranslator2& ll
 		}
 
 	// make perimeter points droop
+	DEMMask skirt(ldem);
+
 	for (int y = 0; y < ldem.mHeight; y++)
 		for (int x = 0; x < ldem.mWidth; x++)
-			if (ldem.get(x, y) != DEM_NO_DATA)
+			if (skirt.get(x, y))
 			{
-				if (ldem.get(x, y + 1) == DEM_NO_DATA || (ldem.get(x + 1, y) == DEM_NO_DATA) ||
-					ldem.get(x, y - 1) == DEM_NO_DATA || (ldem.get(x - 1, y) == DEM_NO_DATA))
+				if (ldem.get(x + 1, y) == DEM_NO_DATA || ldem.get(x - 1, y) == DEM_NO_DATA ||
+					ldem.get(x, y + 1) == DEM_NO_DATA || ldem.get(x, y - 1) == DEM_NO_DATA)
 				{
 					ldem(x, y) = ldem(x, y) - skirt_depth;
 				}
-				else if (ldem.get(x + 1, y + 1) == DEM_NO_DATA || (ldem.get(x - 1, y + 1) == DEM_NO_DATA) ||
-						 ldem.get(x + 1, y - 1) == DEM_NO_DATA || (ldem.get(x - 1, y - 1) == DEM_NO_DATA))
+				else
 				{
-					ldem(x, y) = ldem(x, y) - 0.7 * skirt_depth;
+					auto pt = Point2(ldem.x_to_lon(x), ldem.y_to_lat(y));
+					if (area_dem.empty() || area_dem.inside(pt))
+						skirt.set(x, y, false);
+					else
+					{
+						double dist_outside = 999;
+						for (int i = 0; i < area.size(); i++)
+						{
+							double d = area.side(i).squared_distance({ ldem.x_to_lon(x), ldem.y_to_lat(y) });
+							if (d < dist_outside) dist_outside = d;
+						}
+						double dist_inside = 999;
+						for (int i = 0; i < area_dem.size(); i++)
+						{
+							double d = area_dem.side(i).squared_distance({ ldem.x_to_lon(x), ldem.y_to_lat(y) });
+							if (d < dist_inside) dist_inside = d;
+						}
+						dist_inside = sqrt(dist_inside);
+						dist_outside = sqrt(dist_outside);
+						ldem(x, y) = ldem(x, y) - skirt_depth * dist_inside / (dist_inside + dist_outside);
+					}
 				}
-				// we could go on iteratively here to make longer slopes.
 			}
 
 	float pt[8];
@@ -752,27 +707,38 @@ static int mesh2obj(XObj8& obj, const Polygon2& area, const CoordTranslator2& ll
 		for (int x = 0; x < ldem.mWidth - 1; x++)
 			if (ldem.get(x, y) != DEM_NO_DATA)
 			{
+
 				auto fill_pt = [&](int x, int y) -> int
 				{
 					auto p = Point2(ldem.x_to_lon(x), ldem.y_to_lat(y));
 					pt[0] = ll2mtr.Forward(p).x(); // xyz
-					pt[1] = ldem(x,y);
+					pt[1] = ldem(x, y);
 					pt[2] = ll2mtr.Forward(p).y();
-					pt[3] = 0;                     // nml, todo: use fancy DEM calculation
-					pt[4] = 1;
-					pt[5] = 0;
+					pt[3] = NX(x,y);              // nml
+					pt[4] = NZ(x,y);
+					pt[5] = -NY(x,y);
 					pt[6] = ll2uv.Forward(p).x();  // uv
 					pt[7] = ll2uv.Forward(p).y();
 
 					return obj.geo_tri.accumulate(pt);
 				};
 
-				auto push_idx = [&](int i)
+				bool s = skirt.get(x, y) || skirt.get(x + 1, y) || skirt.get(x, y + 1) || skirt.get(x + 1, y + 1);
+
+				auto push_idx = [&](int i, int j, int k)
 				{
-					if (pt[1] < -1.0f)
+					if (s)
+					{
 						skirt_idx.push_back(i);
+						skirt_idx.push_back(j);
+						skirt_idx.push_back(k);
+					}
 					else
+					{
 						obj.indices.push_back(i);
+						obj.indices.push_back(j);
+						obj.indices.push_back(k);
+					}
 				};
 
 				bool has_next_E  = ldem.get(x + 1, y)     != DEM_NO_DATA;
@@ -787,48 +753,36 @@ static int mesh2obj(XObj8& obj, const Polygon2& area, const CoordTranslator2& ll
 					int i1 = fill_pt(x+1,y);
 					int i2 = fill_pt(x,y+1);
 					int i3 = fill_pt(x+1,y+1);
-					push_idx(i0);
-					push_idx(i2);
-					push_idx(i1);
-					push_idx(i1);
-					push_idx(i2);
-					push_idx(i3);
+					push_idx(i0, i2, i1);
+					push_idx(i1, i2, i3);
 				}
 				else if(has_next_E && has_next_N)
 				{
 					int i0 = fill_pt(x,y);
 					int i1 = fill_pt(x+1,y);
 					int i2 = fill_pt(x,y+1);
-					push_idx(i0);
-					push_idx(i2);
-					push_idx(i1);
+					push_idx(i0, i2, i1);
 				}
 				else if (has_next_E && has_next_NE)
 				{
 					int i0 = fill_pt(x,y);
 					int i1 = fill_pt(x+1,y);
 					int i2 = fill_pt(x+1,y+1);
-					push_idx(i0);
-					push_idx(i2);
-					push_idx(i1);
+					push_idx(i0, i2, i1);
 				}
 				else if (has_next_N && has_next_NE)
 				{
 					int i0 = fill_pt(x, y);
 					int i1 = fill_pt(x+1,y+1);
 					int i2 = fill_pt(x,y+1);
-					push_idx(i0);
-					push_idx(i2);
-					push_idx(i1);
+					push_idx(i0, i2, i1);
 				}
 				if (has_next_E && has_next_SE && !has_next_S)
 				{
 					int i0 = fill_pt(x,y);
 					int i1 = fill_pt(x+1,y-1);
 					int i2 = fill_pt(x+1,y);
-					push_idx(i0);
-					push_idx(i2);
-					push_idx(i1);
+					push_idx(i0, i2, i1);
 				}
 			}
 	int skirt_start = obj.indices.size();
@@ -883,11 +837,20 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 {
 	if(auto ter_pol = dynamic_cast<IGISPolygon*>(ter))
 	{
-		Polygon2 ter_poly;
+		Polygon2 ter_poly, ter_skirt;
 		IGISPointSequence* ter_ps;
 		auto wrl = WED_GetWorld(resolver);
 		if (ter_ps = ter_pol->GetOuterRing())
 			WED_PolygonForPointSequence(ter_ps, ter_poly, COUNTERCLOCKWISE);
+
+		if (ter_pol->GetNumHoles() > 0)
+		{
+			if (ter_ps = ter_pol->GetNthHole(0))
+				WED_PolygonForPointSequence(ter_ps, ter_skirt, COUNTERCLOCKWISE);
+		}
+		else
+			ter_skirt = ter_poly;   // or undersize ter_poly ???
+
 		Bbox2 ter_box;
 		ter_pol->GetBounds(gis_Geo, ter_box);
 		auto ortho = find_ortho(ter_poly, ter_box, wrl);
@@ -947,12 +910,12 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 		// create & add mesh
 		// the super-sily proof-of-concept function
 //		poly2obj(ter_obj, area, ll2mtr, ll2uv, ter_dem.value_linear(ter_corners.centroid()));
-		int skirt_idx = mesh2obj(ter_obj, ter_poly, ll2mtr, ll2uv, *ter_dem, ter->GetSamplingFactor(), ter->GetSkirtDepth());
+		int skirt_idx = mesh2obj(ter_obj, ter_poly, ll2mtr, ll2uv, *ter_dem, ter->GetSamplingFactor(), ter->GetSkirtDepth(), ter_skirt);
 
 		// ATTR_LOD
 		ter_obj.lods.push_back(XObjLOD8());
 		ter_obj.lods.back().lod_near = 0;
-		ter_obj.lods.back().lod_far = 3000;
+		ter_obj.lods.back().lod_far = 5000;
 		// TRIS
 		cmd.cmd = obj8_Tris;
 		cmd.idx_offset = 0;

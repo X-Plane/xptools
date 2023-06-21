@@ -29,7 +29,7 @@ TRIVIAL_COPY(WED_TerPlacement,WED_GISPolygon)
 
 WED_TerPlacement::WED_TerPlacement(WED_Archive * a, int i) : WED_GISPolygon(a,i),
 	resource  (this, PROP_Name("Resource",       XML_Name("ter_placement", "Resource")), ""),
-	derez(this, PROP_Name("Derez Factor", XML_Name("ter_placement", "derez")), 1, 3, 0, "x"),
+	derez(this, PROP_Name("Derez Factor", XML_Name("ter_placement", "derez")), 1, 3, 1, "x"),
 	skirt(this, PROP_Name("Skirt Depth", XML_Name("ter_placement", "skirt")), 1, 3, 0),
 	show_level(this, PROP_Name("Show with",      XML_Name("ter_placement", "show_level")), ShowLevel, show_Level1),
 	has_msl   (this, PROP_Name("Elevation Mode", XML_Name("ter_placement", "custom_msl")), TerElevationType, obj_setMSL),

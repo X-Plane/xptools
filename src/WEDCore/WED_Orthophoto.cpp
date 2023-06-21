@@ -13,8 +13,8 @@
 #include "WED_ToolUtils.h"
 #include "WED_Ring.h"
 #include "WED_TextureNode.h"
-#include "WED_ShapeNode.h"
 #include "WED_TextureBezierNode.h"
+#include "WED_SimpleBoundaryNode.h"
 #include "WED_DrapedOrthophoto.h"
 #include "WED_TerPlacement.h"
 #include "WED_ResourceMgr.h"
@@ -321,7 +321,7 @@ void	WED_MakeTerrain(IResolver* inResolver, WED_MapZoomerNew* zoomer)
 			if (base_tex.find(" ") == base_tex.npos && img_path[0] != '.' && img_path[0] != DIR_CHAR && img_path[1] != ':')
 			{
 				gcp_t gcp;
-				WED_Ring* rng = WED_RingfromImage(path, arch, zoomer, &CreateThing<WED_ShapeNode>, &gcp);
+				WED_Ring* rng = WED_RingfromImage(path, arch, zoomer, &CreateThing<WED_SimpleBoundaryNode>, &gcp);
 				if (rng)
 				{
 					auto dpol = WED_TerPlacement::CreateTyped(arch);

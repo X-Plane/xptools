@@ -167,24 +167,29 @@ bool	WED_BoundaryLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entit
 			Polygon2 area;
 			WED_PolygonForPointSequence(ps, area, COUNTERCLOCKWISE);
 
-			int mesh_dx = ter->GetSamplingFactor();
-			int mesh_dy = ter->GetSamplingFactor();
-
 			g->SetState(0, 0, 0, 1, 1, 0, 0);
 			glPointSize(4);
 
 			float* color_in = WED_Color_RGBA(locked ? wed_StructureLocked : wed_StructureSelected);
 			float* color_out = locked ? nullptr : WED_Color_RGBA(wed_StructureLocked);
 
+			double dx = ter->GetSamplingFactor() / info->x_res();
+			double dy = ter->GetSamplingFactor() / info->y_res();
+
+			double xmin = info->x_upper(bounds.xmin());
+			double xmax = info->x_lower(bounds.xmax());
+			double ymin = info->y_upper(bounds.ymin());
+			double ymax = info->y_lower(bounds.ymax());
+			xmin = info->x_to_lon(xmin) - dx;
+			xmax = info->x_to_lon(xmax) + 1.01 * dx;
+			ymin = info->y_to_lat(ymin) - dy;
+			ymax = info->y_to_lat(ymax) + 1.01 * dx;
+
 			glBegin(GL_POINTS);
-			int ymin = info->y_lower(bounds.ymin());
-			ymin -= ymin % mesh_dy;
-			int xmin = info->x_lower(bounds.xmin());
-			xmin -= xmin % mesh_dx;
-			for (int y = ymin; y < info->y_upper(bounds.ymax()) + mesh_dy; y += mesh_dy)
-				for (int x = xmin; x < info->x_upper(bounds.xmax()) + mesh_dx; x += mesh_dx)
+			for (double y = ymin; y < ymax; y += dy)
+				for (double x = xmin; x < xmax; x += dx)
 				{
-					auto pt = Point2(info->x_to_lon(x), info->y_to_lat(y));
+					auto pt = Point2(x, y);
 					if(auto color = (area.inside(pt) ? color_in : color_out))
 					{
 						glColor4fv(color);
