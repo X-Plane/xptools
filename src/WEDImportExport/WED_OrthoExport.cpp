@@ -211,7 +211,6 @@ int WED_ExportOrtho(WED_DrapedOrthophoto* orth, IResolver* resolver, const strin
 
 	Bbox2 UVbounds; orth->GetBounds(gis_UV, UVbounds);
 	Bbox2 UVbounds_used(0,0,1,1);                            // we may end up not using all of the texture
-	WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 
 	date_cmpr_result_t date_cmpr_res = FILE_date_cmpr(absPathIMG.c_str(),absPathDDS.c_str());
 	//-----------------
@@ -395,7 +394,7 @@ int WED_ExportOrtho(WED_DrapedOrthophoto* orth, IResolver* resolver, const strin
 				false, false,
 				/*LAYER_GROUP*/ "beaches", +1,
 				/*LOAD_CENTER*/ (float) center.y(), (float) center.x(), (float) LonLatDistMeters(b.p1,b.p2), intmax2(DDSInfo.height,DDSInfo.width) };
-			rmgr->WritePol(absPathPOL, out_info);
+			WED_GetResourceMgr(resolver)->WritePol(absPathPOL, out_info);
 			DestroyBitmap(&DDSInfo);
 		}
 	}
@@ -859,17 +858,29 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 		auto ortho_pol = dynamic_cast<IGISPolygon*>(ortho);
 
 		// figure uv locations within ortho
+		string orthoResource;
+		ortho->GetResource(orthoResource);
+
 		CoordTranslator2 ll2uv;
 		{
 			Bbox2 ortho_corners;
 			ortho_pol->GetBounds(gis_Geo, ortho_corners);
-			Bbox2 ortho_uv;
-			ortho_pol->GetBounds(gis_UV, ortho_uv);  // thats relating to the source image, NOT the exported .dds
+
+			if(ortho->IsNew())
+			{
+				ll2uv.mDstMin = { 0, 0 };                  // assumes that WED will export .pol as one texture
+				ll2uv.mDstMax = { 1, 1 };
+			}
+			else
+			{
+				Bbox2 ortho_uv;
+				ortho_pol->GetBounds(gis_UV, ortho_uv);
+				ll2uv.mDstMin = ortho_uv.bottom_left();
+				ll2uv.mDstMax = ortho_uv.top_right();
+			}
 
 			ll2uv.mSrcMin = ortho_corners.bottom_left();
 			ll2uv.mSrcMax = ortho_corners.top_right();
-			ll2uv.mDstMin = { 0, 0 };                  // assumes that WED will export .pol as one texture
-			ll2uv.mDstMax = { 1, 1 };
 		}
 		// get dem heights
 		string dem_file;
@@ -897,14 +908,25 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 		string terName;
 		ter->GetName(terName);
 		string objName = FILE_get_file_name_wo_extensions(orthoName) + "_" + FILE_get_file_name_wo_extensions(terName) + ".obj";
-		string orthoResource;
-		ortho->GetResource(orthoResource);
 		string objVPath = FILE_get_dir_name(orthoResource) + objName;
 		string objAbsPath = pkg + objVPath;
 
 		XObj8 ter_obj;
 		XObjCmd8 cmd;
-		ter_obj.texture =  FILE_get_file_name_wo_extensions(orthoName) + ".dds";     // todo: refactor function for texture name, so its in sync with ortho creation
+		if (ortho->IsNew())
+			ter_obj.texture = FILE_get_file_name_wo_extensions(orthoName) + (gOrthoExport ? ".dds" : ".png");
+		else
+		{
+			const pol_info_t* pol;
+			if (WED_GetResourceMgr(resolver)->GetPol(orthoResource, pol))
+			{
+				if (pol->base_tex.compare(0, pkg.length(), pkg) == 0)
+					ter_obj.texture = FILE_get_file_name(pol->base_tex);
+				else
+					DoUserAlert((string("Terrain '") + terName + "' is covered by '" + orthoResource + "' which uses a non-local texture '" 
+						          + pol->base_tex + "'\nBut objects only have access to local textures.").c_str());
+			}
+		}
 		ter_obj.glass_blending = 0;
 
 		// create & add mesh
