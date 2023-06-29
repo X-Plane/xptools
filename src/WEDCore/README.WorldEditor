@@ -13,9 +13,9 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 2.5.2r1 6/12/23
+WED 2.5.2r1 6/28/23
    Features:
-   - suggest to delete obsolte items when downloading XP11 airports from GW
+   - suggest to delete obsolete items when downloading XP11 airports from GW
    - validate ObjectString spacing parameter greater than zero
    - validate transition level & altitude meta tags more thoroughly
 

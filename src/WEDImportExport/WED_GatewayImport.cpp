@@ -465,7 +465,7 @@ void WED_GatewayImportDialog::Next()
 				}
 				if(!--max_imports) 
 				{
-					DoUserAlert("Stopped after importing 500 airports, large gateway downloads are unsupported.");
+					DoUserAlert("Stopped after importing 300 airports, large gateway downloads are unsupported.");
 					break;
 				}
 			}
@@ -620,7 +620,8 @@ void WED_GatewayImportDialog::TimerFired()
 							add_iso3166_country_metadata(*last_imported, true);
 							if (last_imported->GetSceneryID() < 94010)
 							{
-								if (ConfirmMessage("Existing X-Plane 11 Exclusion Zones and Flatten properties must be removed and re-evaluated for X-Plane 12 gateway submissions", "Delete as recommended", "Keep all") == 1)
+								if (ConfirmMessage("For new X-Plane 12 gateway submissionss, all existing X-Plane 11 exclusion zones and flatten properties "
+									               "should be removed, new ones only added as needed. Delete as recomended ?", "Yes", "No") == 1)
 								{
 									set<WED_Thing*> ex_set;
 									CollectRecursive(last_imported, inserter(ex_set, ex_set.begin()), IgnoreVisiblity, TakeAlways,
