@@ -189,7 +189,6 @@
 		02EB22B527D9BAA0006A853A /* regions.png in Resources */ = {isa = PBXBuildFile; fileRef = 02EB22AE27D9BA46006A853A /* regions.png */; };
 		02EB22B627D9BAA7006A853A /* seasons.png in Resources */ = {isa = PBXBuildFile; fileRef = 02EB22AF27D9BA46006A853A /* seasons.png */; };
 		02EB22B927D9BB12006A853A /* gradient_light.png in Resources */ = {isa = PBXBuildFile; fileRef = 02EB22B727D9BB0D006A853A /* gradient_light.png */; };
-		02F0C3E62A37F72A00138A8A /* WED_BoundaryLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F0C3E52A37F72A00138A8A /* WED_BoundaryLayer.cpp */; };
 		02F4A70C204E6F4700E241B3 /* worldmap.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 02F4A70A204E6F1700E241B3 /* worldmap.jpg */; };
 		2F1515C61D0BA700002224B1 /* WED_MetaDataKeys.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F1515C41D0BA700002224B1 /* WED_MetaDataKeys.cpp */; };
 		2F2135C92593A53700762DB7 /* libcurl.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 2F2135C82593A53600762DB7 /* libcurl.tbd */; };
@@ -1149,8 +1148,6 @@
 		02EB22AF27D9BA46006A853A /* seasons.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = seasons.png; sourceTree = "<group>"; };
 		02EB22B227D9BA51006A853A /* variants.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = variants.png; sourceTree = "<group>"; };
 		02EB22B727D9BB0D006A853A /* gradient_light.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = gradient_light.png; sourceTree = "<group>"; };
-		02F0C3E42A37F72900138A8A /* WED_BoundaryLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_BoundaryLayer.h; sourceTree = "<group>"; };
-		02F0C3E52A37F72A00138A8A /* WED_BoundaryLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_BoundaryLayer.cpp; sourceTree = "<group>"; };
 		02F4A70A204E6F1700E241B3 /* worldmap.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = worldmap.jpg; sourceTree = "<group>"; };
 		20286C33FDCF999611CA2CEA /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
 		2F1515C41D0BA700002224B1 /* WED_MetaDataKeys.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_MetaDataKeys.cpp; sourceTree = "<group>"; };
@@ -3210,8 +3207,6 @@
 		D6BC37E10AB22C85003949C5 /* WEDMap */ = {
 			isa = PBXGroup;
 			children = (
-				02F0C3E52A37F72A00138A8A /* WED_BoundaryLayer.cpp */,
-				02F0C3E42A37F72900138A8A /* WED_BoundaryLayer.h */,
 				02DCBD902771B83B0056A3BD /* WED_TerrainLayer.cpp */,
 				02DCBD912771B83B0056A3BD /* WED_TerrainLayer.h */,
 				020F9381260D96040077222C /* WED_MapPreviewPane.cpp */,
@@ -4731,7 +4726,6 @@
 				D6A185B60BA99DAA00BBCD0C /* GUI_PopupButton.cpp in Sources */,
 				D6A186380BA9B28900BBCD0C /* GUI_TabControl.cpp in Sources */,
 				D62FC99B0BCEF3D600ED6CF8 /* WED_Map.cpp in Sources */,
-				02F0C3E62A37F72A00138A8A /* WED_BoundaryLayer.cpp in Sources */,
 				D652F3E41D5B5A46008566F8 /* WED_ValidateATCRunwayChecks.cpp in Sources */,
 				D62FC99E0BCEF3E400ED6CF8 /* WED_PropertyPane.cpp in Sources */,
 				D62FCC960BD3C6C600ED6CF8 /* WED_CreateToolBase.cpp in Sources */,
