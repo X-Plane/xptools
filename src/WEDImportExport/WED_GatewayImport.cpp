@@ -621,7 +621,7 @@ void WED_GatewayImportDialog::TimerFired()
 							if (last_imported->GetSceneryID() < 94010)
 							{
 								if (ConfirmMessage("For new X-Plane 12 gateway submissionss, all existing X-Plane 11 exclusion zones and flatten properties "
-									               "should be removed, new ones only added as needed. Delete as recomended ?", "Yes", "No") == 1)
+									               "should be removed, new ones only added as needed. Delete as recommended ?", "Yes", "No") == 1)
 								{
 									set<WED_Thing*> ex_set;
 									CollectRecursive(last_imported, inserter(ex_set, ex_set.begin()), IgnoreVisiblity, TakeAlways,

@@ -1856,30 +1856,36 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 	{
 		string transition_alt   = who->GetMetaDataValue(wed_AddMetaDataTransitionAlt);
 
-		if (is_a_number(transition_alt) == false)
-				add_formated_metadata_error(error_template, wed_AddMetaDataTransitionAlt, "is not a whole number", who, msgs, apt);
-		else
+		if (!transition_alt.empty())
 		{
-			trans_alt_ft = atoi(transition_alt.c_str());
-			if(trans_alt_ft < 500 || trans_alt_ft > 25000)
-				add_formated_metadata_error(error_template, wed_AddMetaDataTransitionAlt, "is not between 500 and 25000 ft", who, msgs, apt);
+			if (!is_a_number(transition_alt))
+				add_formated_metadata_error(error_template, wed_AddMetaDataTransitionAlt, "is not a whole number", who, msgs, apt);
+			else
+			{
+				trans_alt_ft = atoi(transition_alt.c_str());
+				if (trans_alt_ft < 500 || trans_alt_ft > 25000)
+					add_formated_metadata_error(error_template, wed_AddMetaDataTransitionAlt, "is not between 500 and 25000 ft", who, msgs, apt);
+			}
 		}
 	}
 
 	if(who->ContainsMetaDataKey(wed_AddMetaDataTransitionLevel))
 	{
 		string transition_level = who->GetMetaDataValue(wed_AddMetaDataTransitionLevel);
-		if (is_a_number(transition_level) == false)
-				add_formated_metadata_error(error_template, wed_AddMetaDataTransitionLevel, "is not a whole number", who, msgs, apt);
+
+		if (!transition_level.empty() && !is_a_number(transition_level))
+			add_formated_metadata_error(error_template, wed_AddMetaDataTransitionLevel, "is not a whole number", who, msgs, apt);
 		else
 		{
 			int trans_lvl_ft = atoi(transition_level.c_str());
-			if (trans_lvl_ft < 500 || trans_lvl_ft > 25000)
+
+			if (!transition_level.empty() && (trans_lvl_ft < 500 || trans_lvl_ft > 25000))
 				add_formated_metadata_error(error_template, wed_AddMetaDataTransitionLevel, "is not between 500 and 25000 ft", who, msgs, apt);
-			else if (trans_alt_ft >= 0 && abs(trans_alt_ft - trans_lvl_ft) > 2000)
+			else if (abs(trans_alt_ft - trans_lvl_ft) > 2000)
 				add_formated_metadata_error(error_template, wed_AddMetaDataTransitionLevel, "Transition altitude and level must be within 2000 ft or less of each other.", who, msgs, apt);
 		}
 	}
+
 
 	for(vector<string>::iterator itr = all_keys.begin(); itr != all_keys.end(); ++itr)
 	{
