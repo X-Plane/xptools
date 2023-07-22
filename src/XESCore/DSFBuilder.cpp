@@ -1261,8 +1261,8 @@ void make_airport_rings(CDT& mesh,vector<dsf_airport_edge_info_t>& out_rings)
 		
 			Assert(iter->second.type == my_type);
 			me = iter->second.next;
-			links.erase(iter);
 			border_links.erase(iter->first);
+			links.erase(iter);
 		} while(stop != me);
 	}
 }
