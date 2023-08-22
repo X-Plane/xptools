@@ -156,6 +156,7 @@ int main(int argc, char * argv[])
 	GUI_MemoryHog::InstallNewHandler();
 	GUI_InitClipboard();
 #if LIN
+	setenv("LC_ALL", "C", true);
 	Initializer linit(&argc, &argv, false);
 #endif // LIN
 
@@ -229,7 +230,7 @@ int main(int argc, char * argv[])
 	WED_StartWindow * start = new WED_StartWindow(&app);
 	WED_MakeMenus(&app);
 #if LIN
-	setlocale(LC_ALL, "C");   //mroe: FLTK sets user locale upon first window creation only, does not set it not back to "C"
+	//setlocale(LC_ALL, "C");   //mroe: FLTK sets user locale upon first window creation only, does not set it not back to "C"
 	start->default_xclass("WED");
 	start->SetIcon("WED_icon.png",true);
 	start->show(1, argv);     //mroe: WED has own cmd line arguments, this prevents FLTK from parsing them
