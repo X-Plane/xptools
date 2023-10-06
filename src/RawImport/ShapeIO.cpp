@@ -353,6 +353,36 @@ public:
 	}
 };
 
+static bool desliver_border(Point2& io_pt)
+{
+	auto snap_near = [](double& v, double b) -> bool
+	{
+		const double epsi = 0.0000001;
+		if(fabs(v - b) < epsi)
+		{
+			v = b;
+			return true;
+		}
+		return false;
+	};
+	if(snap_near(io_pt.x_, s_crop[0]))
+		return true;
+	if(snap_near(io_pt.x_, s_crop[2]))
+		return true;
+	if(snap_near(io_pt.y_, s_crop[1]))
+		return true;
+	if(snap_near(io_pt.y_, s_crop[3]))
+		return true;
+	return false;
+}
+
+static void dump_desliver(const Point2& fixed, double raw_x, double raw_y)
+{
+	printf("Fixed %.10lf, %.10lf (%16llx, %16llx) -> %.10lf, %.10lf (%16llx, %16llx)", raw_x,raw_y,*((unsigned long long *) &raw_x), *((unsigned long long *) &raw_y),
+				fixed.x_, fixed.y_, *((unsigned long long *) &fixed.x_), *((unsigned long long *) &fixed.y_));
+}
+
+
 static void round_grid(Point2& io_pt, int steps)
 {
 	int x_steps = round((io_pt.x() - s_crop[0]) * (double) steps / (s_crop[2] - s_crop[0]));
@@ -635,6 +665,12 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 					for (int i = start_idx; i < stop_idx; ++i)
 					{
 						Point2 pt(obj->padfX[i],obj->padfY[i]);
+
+						if(flags & shp_Use_Crop)
+						{
+							if(desliver_border(pt))
+								dump_desliver(pt,obj->padfX[i], obj->padfY[i]);
+						}
 						if(sProj)	   reproj(pt);
 						if(grid_steps) round_grid(pt, grid_steps);
 						if(p.empty() || pt != p.back())
@@ -703,13 +739,21 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 					for (int i = start_idx; i < stop_idx; ++i)
 					{
 						Point_2 pt(obj->padfX[i],obj->padfY[i]);
+
 						boost::optional<double> pt_z;
 						if (read_z && obj->padfZ)
 							pt_z = obj->padfZ[i];
 
-						if(grid_steps || sProj)
+						if(grid_steps || sProj || flags & shp_Use_Crop)
 						{
 							Point2 raw_pt(obj->padfX[i],obj->padfY[i]);
+
+							if(flags & shp_Use_Crop)
+							{
+								if(desliver_border(raw_pt))
+									dump_desliver(raw_pt,obj->padfX[i], obj->padfY[i]);
+							}
+							
 							if(sProj) reproj(raw_pt);
 							if(grid_steps) round_grid(raw_pt, grid_steps);
 							pt = ben2cgal<Point_2>(raw_pt);
@@ -1307,6 +1351,10 @@ bool	RasterShapeFile(
 bool	ReadShapeFile(
 			const char *			in_file,
 			Pmwx&					io_map,
+			double					lim_west,
+			double					lim_south,
+			double					lim_east,
+			double					lim_north,
 			ProgressFunc			inFunc)
 {
 	SHPHandle file =  SHPOpen(in_file, "rb");
@@ -1356,6 +1404,7 @@ bool	ReadShapeFile(
 	CGAL::Arr_walk_along_line_point_location<Arrangement_2>	locator(io_map);
 
 	bool is_pts = shape_type == SHPT_POINT || shape_type == SHPT_POINTZ || shape_type == SHPT_POINTM;
+	printf("Shape point is %d, contians %d entities.\n", shape_type, entity_count);
 
 	int step = entity_count ? (entity_count / 150) : 2;
 	for(int n = 0; n < entity_count; ++n)
@@ -1370,6 +1419,10 @@ bool	ReadShapeFile(
 			no.mHeading = DBFReadIntegerAttribute(db,obj->nShapeId,dsf_param);
 
 			no.mLocation = Point2(obj->padfX[0],obj->padfY[0]);
+			Assert(no.mLocation.x() >= lim_west );
+			Assert(no.mLocation.x() <= lim_east );
+			Assert(no.mLocation.y() >= lim_south);
+			Assert(no.mLocation.y() <= lim_north);
 
 			SHPDestroyObject(obj);
 
@@ -1422,30 +1475,22 @@ bool	ReadShapeFile(
 			{
 				Face_handle f = io_map.non_const_handle(ff);
 				f->data().mPolyObjs.push_back(np);
-	#if DEV
+	#if SHOW_FEATURE_IMPORT
 				for(vector<Polygon2>::iterator p = np.mShape.begin(); p != np.mShape.end(); ++p)
 				{
-					for(Polygon2::const_side_iterator pp = p->sides_begin(); pp != p->sides_end(); ++pp)
-					{
-#if SHOW_FEATURE_IMPORT
-						debug_mesh_line((*pp).p1,(*pp).p2,0,1,0,0,1,0);
-#endif
-					}
+					for(int i = 1; i < p->size(); ++i)
+						debug_mesh_line(p->at(i-1), p->at(i),0,0.5,0,0,1,0);
 				}
 	#endif
 
 			}
 			else
 			{
-	#if DEV
+	#if SHOW_FEATURE_IMPORT
 				for(vector<Polygon2>::iterator p = np.mShape.begin(); p != np.mShape.end(); ++p)
 				{
-					for(Polygon2::const_side_iterator pp = p->sides_begin(); pp != p->sides_end(); ++pp)
-					{
-#if SHOW_FEATURE_IMPORT
-						debug_mesh_line((*pp).p1,(*pp).p2,1,0,0,1,0,0);
-#endif
-					}
+					for(int i = 1; i < p->size(); ++i)
+						debug_mesh_line(p->at(i-1), p->at(i),0.5,0,0,1,0,0);
 				}
 	#endif
 				fprintf(stderr,"WARNING: polygon %d could not be placed.\n", n);

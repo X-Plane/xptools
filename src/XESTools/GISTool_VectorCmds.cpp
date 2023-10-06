@@ -623,7 +623,7 @@ static int DoShapeAG(const vector<const char *>& args)
 {
 	for(int n = 0; n < args.size(); ++n)
 	{
-		if(!ReadShapeFile(args[n], gMap, gProgress))
+		if(!ReadShapeFile(args[n], gMap, gMapWest, gMapSouth, gMapEast, gMapNorth, gProgress))
 		{
 			if(gVerbose) printf("Failed to import %s\n", args[n]);
 			return 1;

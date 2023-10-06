@@ -71,6 +71,10 @@ bool	RasterShapeFile(
 bool	ReadShapeFile(
 			const char *			inFile,
 			Pmwx&					io_map,
+			double					lim_west,
+			double					lim_south,
+			double					lim_east,
+			double					lim_north,
 			ProgressFunc			inFunc);
 
 bool	WriteShapefile(
