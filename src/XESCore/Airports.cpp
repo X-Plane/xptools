@@ -49,8 +49,6 @@
 #define OKAY_WITH_BEZ_BORDERS true
 
 
-#define WANT_NEW_BORDER_RULES 0
-
 #define KILL_IF_APT_LEAK 1
 
 #define DEBUG_FLATTENING 0
@@ -71,7 +69,6 @@
 #define AIRPORT_INNER_FILL_AREA		(40.0 * 40.0 / (DEG_TO_NM_LAT * NM_TO_MTR * DEG_TO_NM_LAT * NM_TO_MTR))
 
 enum apt_fill_mode {
-	fill_nukeroads,		// Hard splat of roads underneath pavement...only for when user made the boundaries.
 	fill_water2apt,		// Water becomes airport - tightest radius - ensure airport under runways.
 	fill_water2dirt,	// Slightly wider...make sure we have buffer around water.  Area in this but not above becomes embankment.
 	fill_dirt2apt		// widest - if there is land, declare it part of the airport, but only if already ry.
@@ -84,12 +81,7 @@ static void GetPadWidth(
 		double&						pad_length_m,
 		apt_fill_mode				fill_water)
 {
-	if (fill_water == fill_nukeroads)
-	{
-		pad_width_m = 10.0;
-		pad_length_m = 10.0;
-	}
-	else if (fill_water == fill_dirt2apt)
+	if (fill_water == fill_dirt2apt)
 	{
 		pad_width_m = is_rwy ? 50.0 : 40.0;
 		pad_length_m = is_rwy ? 150.0 : 40.0;
@@ -221,11 +213,7 @@ void BurnInAirport(
 	outArea.clear();
 
 	if (!inAirport->boundaries.empty() && 
-#if WANT_NEW_BORDER_RULES
-		inFillWater != fill_nukeroads
-#else
 		inFillWater == fill_dirt2apt
-#endif		
 		)
 	{
 		// Precomputed boundary?  Use it!
@@ -338,7 +326,7 @@ void BurnInAirport(
 		DebugAssert(outArea.is_valid());
 	}
 
-	if(inFillWater != fill_dirt2apt && inFillWater != fill_nukeroads && inAirport->boundaries.empty())
+	if(inFillWater != fill_dirt2apt && inAirport->boundaries.empty())
 	{
 		// In water-filling mode, we also fill in holes.  IN other words, if we form a ring of taxiways into the water, we fill in the
 		// area inside the ring so that airports don't have little lakes inside them.
@@ -364,35 +352,6 @@ void BurnInAirport(
 		BufferPolygonSet(orig, -20.0 * MTR_TO_DEG_LAT, outArea);
 	}
 	
-	if (!inAirport->boundaries.empty() && inFillWater == fill_nukeroads)
-	{
-		// 'clip' to boundary.
-		Polygon_set_2	clip_area;
-
-		for (AptBoundaryVector::const_iterator b = inAirport->boundaries.begin(); b != inAirport->boundaries.end(); ++b)
-		{
-			vector<vector<Bezier2> >	bez_poly;
-			AptPolygonToBezier(b->area, bez_poly, OKAY_WITH_BEZ_BORDERS);
-			for (vector<vector<Bezier2> >::iterator w = bez_poly.begin(); w != bez_poly.end(); ++w)
-			{
-				Polygon_2	winding;
-				BezierToSegments(*w, winding,MAX_ERR_APT_BEZ_CHECK);				
-				if(w==bez_poly.begin())
-				{
-					if(!winding.is_counterclockwise_oriented())
-						winding.reverse_orientation();
-					clip_area.join(winding);
-				}
-				else
-				{
-					if(!winding.is_counterclockwise_oriented())
-						winding.reverse_orientation();
-					clip_area.difference(winding);
-				}
-			}
-		}		
-		outArea.intersection(clip_area);
-	}
 }
 
 
@@ -418,9 +377,6 @@ void	SimplifyAirportAreasAndSplat(Pmwx& inDstMap, Polygon_set_2& in_area, bool d
 		#endif
 	}
 	if (inFillWater == fill_dirt2apt 
-		#if WANT_NEW_BORDER_RULES
-		|| (inFillWater != fill_nukeroads && !do_simplify)
-		#endif
 	)
 	{
 		// Merge in airports, leaving roads, etc.
@@ -437,7 +393,7 @@ void	SimplifyAirportAreasAndSplat(Pmwx& inDstMap, Polygon_set_2& in_area, bool d
 			
 			if(!(*f)->data().IsWater() || inFillWater != fill_dirt2apt)
 			if((*f)->data().mTerrainType != terrain_Airport)
-				(*f)->data().mTerrainType = (inFillWater == fill_water2apt || inFillWater == fill_nukeroads) ?  terrain_Airport : terrain_AirportOuter;	// Airport outer - this is POSSIBLE airport terrain, unless we are under water.  We will resolve this later.
+				(*f)->data().mTerrainType = (inFillWater == fill_water2apt) ?  terrain_Airport : terrain_AirportOuter;	// Airport outer - this is POSSIBLE airport terrain, unless we are under water.  We will resolve this later.
 
 			(*f)->data().mAreaFeature.mFeatType = NO_VALUE;		//Remove area features but do not set LU yet.
 		}
@@ -456,7 +412,7 @@ void	SimplifyAirportAreasAndSplat(Pmwx& inDstMap, Polygon_set_2& in_area, bool d
 
 			if(!(*f)->data().IsWater() || inFillWater != fill_dirt2apt)
 			if((*f)->data().mTerrainType != terrain_Airport)
-				(*f)->data().mTerrainType = (inFillWater == fill_water2apt || inFillWater == fill_nukeroads) ?  terrain_Airport : terrain_AirportOuter;	// Airport outer - this is POSSIBLE airport terrain, unless we are under water.  We will resolve this later.
+				(*f)->data().mTerrainType = (inFillWater == fill_water2apt) ?  terrain_Airport : terrain_AirportOuter;	// Airport outer - this is POSSIBLE airport terrain, unless we are under water.  We will resolve this later.
 
 			(*f)->data().mAreaFeature.mFeatType = NO_VALUE;		//Remove area features but do not set LU yet.
 		}
@@ -556,20 +512,6 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 		if(!foo.is_empty())																// Check for empty airport (e.g. all sea plane lanes or somthing.)
 			SimplifyAirportAreasAndSplat(ioMap, foo, apts[n].boundaries.empty(), simple_faces, fill_water2apt, NULL);		// Simplify the airport surface area a bit.
 	}
-
-#if WANT_NEW_BORDER_RULES
-	for (int n = 0; n < apts.size(); ++n)
-	if (apts[n].kind_code == apt_airport)
-	if(!apts[n].boundaries.empty())
-	{
-		PROGRESS_SHOW(prog, 0, 1, "Burning in airports...", n, apts.size()*2);
-		Polygon_set_2	foo;
-		BurnInAirport(&apts[n], foo, fill_nukeroads);					// Produce a map that is the airport boundary.
-		DebugAssert(foo.arrangement().unbounded_face()->contained() == false);
-		if(!foo.is_empty())																// Check for empty airport (e.g. all sea plane lanes or somthing.)
-			SimplifyAirportAreasAndSplat(ioMap, foo, apts[n].boundaries.empty(), simple_faces, fill_nukeroads, NULL);		// Simplify the airport surface area a bit.
-	}
-#endif
 
 	// Pass 2 - wide boundaries, kill roads but not water, and burn DEM.
 	// BUT...if we have user-specified boundaries, this is the only pass and we do fill water.
