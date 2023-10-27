@@ -86,11 +86,11 @@ static void GetPadWidth(
 		pad_width_m = is_rwy ? 50.0 : 40.0;
 		pad_length_m = is_rwy ? 150.0 : 40.0;
 	} else if (fill_water == fill_water2apt) {
-		pad_width_m = is_rwy ? 20.0 : 15.0;
-		pad_length_m = is_rwy ? 20.0 : 15.0;
+		pad_width_m = 1.0;//is_rwy ? 20.0 : 15.0;
+		pad_length_m = 1.0;//is_rwy ? 20.0 : 15.0;
 	} else {
-		pad_width_m = is_rwy ? 30.0 : 25.0;
-		pad_length_m = is_rwy ? 30.0 : 25.0;
+		pad_width_m = 2.0;//is_rwy ? 30.0 : 25.0;
+		pad_length_m = 2.0;//is_rwy ? 30.0 : 25.0;
 	}
 }
 
@@ -270,6 +270,10 @@ void BurnInAirport(
 			double	pad_height;
 			GetPadWidth(true,pad_width, pad_height, inFillWater);
 			ExpandRunway(&inAirport->runways[rwy],pad_width, pad_height, corners);
+//			debug_mesh_line(corners[0],corners[1], 1, 1, 0, 1, 1, 1);
+//			debug_mesh_line(corners[1],corners[2], 1, 1, 0, 1, 1, 1);
+//			debug_mesh_line(corners[2],corners[3], 1, 1, 0, 1, 1, 1);
+//			debug_mesh_line(corners[3],corners[0], 1, 1, 0, 1, 1, 1);
 
 			Polygon_2	poly;
 			poly.push_back(ben2cgal<Point_2>(corners[0]));
@@ -342,14 +346,15 @@ void BurnInAirport(
 		outArea.fix_curves_direction();
 	}
 	
-	if(inFillWater == fill_water2apt && !inAirport->boundaries.empty())
+	if(inFillWater == fill_water2dirt && !inAirport->boundaries.empty())
 	{
 		// If the user provided a boundary then we have to inset slightly for the inner one because we need two
 		// distinct rings and the user provides only one.  If the airport isn't water-bounded, this gets
 		// optimized away.
 		Polygon_set_2 orig(outArea);
-		BufferPolygonSet(orig, 15.0 * MTR_TO_DEG_LAT, outArea);
 		BufferPolygonSet(orig, -20.0 * MTR_TO_DEG_LAT, outArea);
+		orig = outArea;
+		BufferPolygonSet(orig, 15.0 * MTR_TO_DEG_LAT, outArea);
 	}
 	
 }
