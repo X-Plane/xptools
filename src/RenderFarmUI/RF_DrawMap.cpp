@@ -254,6 +254,8 @@ static void	SetColorForHalfedge(Pmwx::Halfedge_const_handle i, GLubyte color[3])
 	int	border = i->face()->is_unbounded() || i->twin()->face()->is_unbounded();
 	int river = i->data().mParams.find(he_IsRiver) != i->data().mParams.end();
 	int dryriver = i->data().mParams.find(he_IsDryRiver) != i->data().mParams.end();
+	int mustburn = i->data().mParams.find(he_MustBurn) != i->data().mParams.end() ||
+					i->twin()->data().mParams.find(he_MustBurn) != i->twin()->data().mParams.end();
 
 	int	wet = i->face()->data().IsWater() || i->twin()->face()->data().IsWater();
 
@@ -312,6 +314,8 @@ static void	SetColorForHalfedge(Pmwx::Halfedge_const_handle i, GLubyte color[3])
 			SetColor(color, 0.6, 0.6, 0.3);
 		else if (border)
 			SetColor(color,1.0, 0.0, 1.0);
+		else if (mustburn)
+			SetColor(color,1.0, 1.0, 1.0);
 		else
 			SetColor(color,0.3, 0.3, 0.3);
 	}
