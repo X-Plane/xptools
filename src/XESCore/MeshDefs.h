@@ -101,7 +101,7 @@ struct	MeshFaceInfo {
 	
 	MeshFaceInfo() : terrain(DEM_NO_DATA),feature(NO_VALUE),flag(0), orig_face(NULL) {
 		edge_flags[0] = edge_flags[1] = edge_flags[2] = 0;
-		#if HEAVY_BEACH_DEBUGGING0
+		#if HEAVY_BEACH_DEBUGGING
 			memset(&bch,0,sizeof(bch));
 		#endif
 	}

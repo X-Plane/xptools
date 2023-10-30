@@ -103,7 +103,7 @@
 #define DEBUG_PRINT_WAVES 0
 
 // Print beach params
-#define DEBUG_PRINT_BEACH_INFO 1
+#define DEBUG_PRINT_BEACH_INFO 1 && HEAVY_BEACH_DEBUGGING
 
 // Print input parameters used to pick LU rule for tri under mouse
 #define DEBUG_PRINT_TRI_PARAMS 0
