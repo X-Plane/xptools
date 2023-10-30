@@ -517,7 +517,7 @@ inline void DSFTuple::insert(double * ptr, double v)
 #endif
 	int index = ptr - mData;
 	if (index < mLen)
-		memmove(ptr + sizeof(double), ptr, (mLen - index) * sizeof(double));
+		memmove(ptr + 1, ptr, (mLen - index) * sizeof(double));
 	*ptr = v;
 	++mLen;
 }
