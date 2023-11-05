@@ -663,12 +663,14 @@ void arrangement_simplifier<Arr,Traits>::queue_incident_edges_if_needed(typename
 		i1 = err_checks.insert(typename Error_map::value_type(he1, list<Point2>())).first;
 		i1->second.push_back(cgal2ben(he1->source()->point()));
 		i1->second.push_back(cgal2ben(he1->target()->point()));
+//		DebugAssert(i1->second.front() != i1->second.back());
 	}
 	if(i2 == err_checks.end())
 	{
 		i2 = err_checks.insert(typename Error_map::value_type(he2, list<Point2>())).first;
 		i2->second.push_back(cgal2ben(he2->source()->point()));
 		i2->second.push_back(cgal2ben(he2->target()->point()));
+//		DebugAssert(i2->second.front() != i2->second.back());
 	}
 }
 
@@ -725,18 +727,26 @@ void arrangement_simplifier<Arr,Traits>::simplify(Arr& io_block, double max_err,
 		typename Arr::Vertex_handle v = q.front_value();
 //		printf("Q contains %d items, trying: 0x%08x\n", q.size(), &*v);
 		q.pop_front();
-		
+
+		DebugAssert(v->degree() == 2);
+
 		typename Arr::Halfedge_handle h1 =   v->incident_halfedges();
 		typename Arr::Halfedge_handle h2 = ++v->incident_halfedges();
+		DebugAssert(h1 != h2);
 
 		typename Arr::Halfedge_handle k1 = he_get_same_direction(h1);
 		typename Arr::Halfedge_handle k2 = he_get_same_direction(h2);
+		DebugAssert(k1 != k2);
+		bool swapped1 = h1 != k1;
+		bool swapped2 = h2 != k2;
+		
 		typename Error_map::iterator i1 = err_checks.find(k1);
 		typename Error_map::iterator i2 = err_checks.find(k2);
+		
 		DebugAssert(i1 != err_checks.end());
 		DebugAssert(i2 != err_checks.end());
 		DebugAssert(i1->second.size() >= 2);
-		DebugAssert(i1->second.size() >= 2);
+		DebugAssert(i2->second.size() >= 2);
 
 		if(total_error_ok(v, h1, h2, i1->second, i2->second, max_err2))
 		{
@@ -752,31 +762,57 @@ void arrangement_simplifier<Arr,Traits>::simplify(Arr& io_block, double max_err,
 					if(!squatters_stopping_merge(io_block,h1,vertex_index))
 					{
 						list<Point2>	ml;
-						if(i1->second.front() == i2->second.front())
+						if(k1->source() == k2->source() )
 						{
+							// <--1--(V)--2-->
+							DebugAssert(swapped1);
+							DebugAssert(swapped2);
+							DebugAssert(i1->second.front() == i2->second.front());
 							ml.swap(i1->second);
 							ml.reverse();
 							ml.pop_back();
 							ml.splice(ml.end(), i2->second);
+							DebugAssert(ml.front() == cgal2ben(h1->source()->point()));
+							DebugAssert(ml.back() == cgal2ben(h2->source()->point()));
 						}
-						else if(i1->second.front() == i2->second.back())
+						else if(k1->source() == k2->target())
 						{
+							// <--1--(V)<--2--o
+							DebugAssert(swapped1);
+							DebugAssert(!swapped2);
+							DebugAssert(i1->second.front() == i2->second.back());
 							ml.swap(i2->second);
 							ml.pop_back();
 							ml.splice(ml.end(),i1->second);
+							ml.reverse();
+							DebugAssert(ml.front() == cgal2ben(h1->source()->point()));
+							DebugAssert(ml.back() == cgal2ben(h2->source()->point()));
 						}
-						else if(i1->second.back() == i2->second.front())
+						else if(k1->target() == k2->source())
 						{
+							// o--1-->(V)--2-->
+							DebugAssert(!swapped1);
+							DebugAssert(swapped2);
+							DebugAssert(i1->second.back() == i2->second.front());
+
 							ml.swap(i1->second);
 							ml.pop_back();
 							ml.splice(ml.end(),i2->second);
+							DebugAssert(ml.front() == cgal2ben(h1->source()->point()));
+							DebugAssert(ml.back() == cgal2ben(h2->source()->point()));
 						}
-						else if(i1->second.back() == i2->second.back())
+						else if(k1->target() == k2->target())
 						{
+							// o--1-->(V)<--2--
+							DebugAssert(!swapped1);
+							DebugAssert(!swapped2);
+							DebugAssert(i1->second.back() == i2->second.back());
 							ml.swap(i1->second);
 							ml.pop_back();
 							i2->second.reverse();
 							ml.splice(ml.end(), i2->second);
+							DebugAssert(ml.front() == cgal2ben(h1->source()->point()));
+							DebugAssert(ml.back() == cgal2ben(h2->source()->point()));
 						}
 						else
 						{
@@ -821,16 +857,25 @@ void arrangement_simplifier<Arr,Traits>::simplify(Arr& io_block, double max_err,
 						if(nc.is_directed_right() == (h1->direction() == CGAL::ARR_LEFT_TO_RIGHT))
 						{
 							remain = io_block.merge_edge(h1,next,nc);
+							DebugAssert(cgal2ben(remain->source()->point()) == ml.front());
+							DebugAssert(cgal2ben(remain->target()->point()) == ml.back());
 						}
 						else 
 						{
 							typename ArrTraits::Curve_2 nco(typename ArrTraits::Segment_2(next->target()->point(), h1->source()->point()));
 							DebugAssert(nco.is_directed_right() == (next->twin()->direction() == CGAL::ARR_LEFT_TO_RIGHT));
 							remain = io_block.merge_edge(next->twin(),h1->twin(),nc)->twin();
+							// Remain is the TWIN of the backward curve, so it has the same direction as we would have had if h1 was a "keeper"
+							DebugAssert(cgal2ben(remain->source()->point()) == ml.front());
+							DebugAssert(cgal2ben(remain->target()->point()) == ml.back());
 						}
-					
+
 						typename Arr::Halfedge_handle rk = he_get_same_direction(remain);
+						if (rk != remain)
+							ml.reverse();
 						DebugAssert(err_checks.count(rk) == 0);
+						DebugAssert(cgal2ben(rk->source()->point()) == ml.front());
+						DebugAssert(cgal2ben(rk->target()->point()) == ml.back());
 						err_checks.insert(typename Error_map::value_type(rk, ml));
 						
 						DebugAssert(q.count(remain->source()) == 0);
@@ -843,7 +888,7 @@ void arrangement_simplifier<Arr,Traits>::simplify(Arr& io_block, double max_err,
 							if(e <= max_err)
 							{
 								// Why would this be neeed?  Because the max vertex error may have been too great before we moved
-								// the side before but not now.  This is partly becuase simple vertex error is the wrong metric, but
+								// the side before but not now.  This is partly because simple vertex error is the wrong metric, but
 								// we can fine tune this later.
 								queue_incident_edges_if_needed(ne1,ne2,err_checks);
 								q.insert(e,remain->source());
