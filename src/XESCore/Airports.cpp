@@ -263,7 +263,7 @@ void BurnInAirport(
 			poly_vec.push_back(poly);
 		}
 		for (int rwy = 0; rwy < inAirport->runways.size(); ++rwy)
-		if (inAirport->runways[rwy].surf_code != apt_surf_water)
+		if (inAirport->runways[rwy].surf_code != apt_surf_water && inAirport->runways[rwy].surf_code != apt_surf_transparent)
 		{
 			Point2	corners[4];
 			double	pad_width;
@@ -953,7 +953,8 @@ static bool runway_needs_protection(const AptRunway_t& r)
 		r.surf_code == apt_surf_gravel ||
 		r.surf_code == apt_surf_dry_lake ||
 		r.surf_code == apt_surf_water ||
-		r.surf_code == apt_surf_ice)
+		r.surf_code == apt_surf_ice ||
+		r.surf_code == apt_surf_transparent)
 	{
 		return false;
 	}
