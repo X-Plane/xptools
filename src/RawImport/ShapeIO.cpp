@@ -36,6 +36,10 @@
 // This will cause us to debug-show red/green outlines of the .shp data to see what we imported and what we had to drop.
 #define SHOW_FEATURE_IMPORT		0
 
+#if SHOW_FEATURE_IMPORT
+#include "GISTool_Globals.h"
+#endif
+
 //#include <CGAL/Snap_rounding_2.h>
 //#include <CGAL/Snap_rounding_traits_2.h>
 #if !defined(__i386__) && defined(IBM)
@@ -1468,6 +1472,18 @@ bool	ReadShapeFile(
 
 			if(np.mShape.empty() || np.mShape[0].empty())
 				continue;
+
+			if(np.mShape.size() > 255)
+			{
+#if SHOW_FEATURE_IMPORT
+				for(vector<Polygon2>::iterator p = np.mShape.begin(); p != np.mShape.end(); ++p)
+				{
+					for(int i = 1; i < p->size(); ++i)
+						debug_mesh_line(p->at(i-1), p->at(i),1,0,0,1,0,0);
+				}
+	#endif
+				continue;
+			}
 
 			CGAL::Object lobj = locator.locate(ben2cgal<Pmwx::Point_2>(np.mShape[0][0]));
 			Face_const_handle ff;
