@@ -900,6 +900,11 @@ ENUM_DOMAIN(ObjElevationType,"Object Elevation")
 	ENUM(obj_setMSL,					"1",		obj_ModeMSL)
 	ENUM(obj_setAGL,					"set_AGL",	obj_ModeAGL)
 
+ENUM_DOMAIN(BoundaryType, "Boundary Type")
+	ENUM(bdy_flatten,					"Flatten",		1)
+	ENUM(bdy_grass,						"Grass",		2)
+	ENUM(bdy_exclude,					"Exclude",		4)
+
 ENUM_DOMAIN(ShapeType, "Shape Type")
 	ENUM(shape_Polygon,					"Polygon", 0)
 	ENUM(shape_Line,					"Line", 1)

@@ -98,6 +98,9 @@
 // This enables curved ATC taxiways - feature is NOT done yet or offical so, like, don't use it.
 #define HAS_CURVED_ATC_ROUTE 0
 
+// This enables proposed subtypes for airport boundaries. apt.dat read/write NOT yet implemented.
+#define HAS_BDY_TYPES 0
+
 // Load BC1-BC5 textures in DDS format directly into GPU w/o de- & re-compressing
 #define LOAD_DDS_DIRECT 1
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, Laminar Research.
+ * Copyright (c) 2023, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,38 +21,20 @@
  *
  */
 
-#ifndef WED_AIRPORTBOUNDARY_H
-#define WED_AIRPORTBOUNDARY_H
+#ifndef WED_BoundaryLayer_h
+#define WED_BoundaryLayer_h
 
-#include "WED_GISPolygon.h"
+#include "WED_MapLayer.h"
 
-struct	AptBoundary_t;
-
-class	WED_AirportBoundary : public WED_GISPolygon {
-
-DECLARE_PERSISTENT(WED_AirportBoundary)
-
+class	WED_BoundaryLayer : public WED_MapLayer {
 public:
 
-		void	Import(const AptBoundary_t& x, void (* print_func)(void *, const char *, ...), void * ref);
-		void	Export(		 AptBoundary_t& x) const;
+						 WED_BoundaryLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver);
+	virtual				~WED_BoundaryLayer();
 
-		set<int> GetType(void) const;
-
-	virtual const char *	HumanReadableType(void) const { return "Airport Boundary"; }
-
-protected:
-
-	virtual	bool		IsInteriorFilled(void) const { return false; }
-
-private:
-
-	WED_PropIntEnumSetUnion	lines;
-	WED_PropIntEnumSetUnion	lights;
-#if HAS_BDY_TYPES
-	WED_PropIntEnumBitfield	types;
-#endif
+	virtual	bool		DrawEntityStructure(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, bool selected, bool locked);
+	virtual	void		GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks);
 
 };
 
-#endif /* WED_AIRPORTBOUNDARY_H */
+#endif /* WED_BoundaryLayer_h */

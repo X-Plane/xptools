@@ -2150,6 +2150,12 @@ static void ValidateCIFP(const vector<WED_Runway *>& runways, const vector<WED_S
 					rwys_missing.erase(e);
 			}
 		}
+
+		if (!rwys_missing.empty())
+			for (auto r : legal_rwy_oneway)
+				if((r - atc_1T) % (atc_2T - atc_1T) == 0)                     // rwy with T suffix will still match a suffix-less CIFP runway
+					rwys_missing.erase(r - atc_1T + atc_1);
+
 		if (!rwys_missing.empty())
 		{
 			string msg = "Could not find runway(s) ";

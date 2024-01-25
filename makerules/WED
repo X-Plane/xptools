@@ -227,6 +227,7 @@ SOURCES += ./src/WEDMap/WED_TerrainLayer.cpp
 SOURCES += ./src/WEDMap/WED_DrawUtils.cpp
 SOURCES += ./src/WEDMap/WED_PreviewLayer.cpp
 SOURCES += ./src/WEDMap/WED_ATCLayer.cpp
+SOURCES += ./src/WEDMap/WED_BoundaryLayer.cpp
 SOURCES += ./src/WEDMap/WED_SlippyMap.cpp
 #SOURCES += ./src/WEDNetwork/WED_Connection.cpp
 #SOURCES += ./src/WEDNetwork/WED_NWInfoLayer.cpp
