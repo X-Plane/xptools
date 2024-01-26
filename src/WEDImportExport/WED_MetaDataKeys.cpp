@@ -10,7 +10,7 @@
 const MetaDataKey known_keys[] = {
 // wed_AddMetaDataBegin
 {	"City|Locality",   "city"        },         // wed_AddMetaDataCity
-{	"Closed Circuits", "allows_ciruits" },      // wed_AddMetaDataCircuits
+{	"Closed Circuits", "allows_circuits" },     // wed_AddMetaDataCircuits
 {	"Country",         "country"     },         // wed_AddMetaDataCountry
 {	"Datum Latitude",  "datum_lat"   },         // wed_AddMetaDataDatumLat
 {	"Datum Longitude", "datum_lon"   },         // wed_AddMetaDataDatumLon
