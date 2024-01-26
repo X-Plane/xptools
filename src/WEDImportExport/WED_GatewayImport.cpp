@@ -1424,6 +1424,8 @@ void WED_DoImportFromGateway(WED_Document * resolver, WED_MapPane * pane, WED_Pr
 #if GATEWAY_IMPORT_FEATURES
 
 #include <chrono>
+#include <iostream>
+
 //This is from an older method of importing things which involved manually getting the files from the hard drive
 void	WED_DoImportDSFText(IResolver * resolver)
 {
@@ -1440,17 +1442,20 @@ void	WED_DoImportDSFText(IResolver * resolver)
 		vector<string> all_files;
 		FILE_get_directory(dir, &all_files, NULL);
 		
-		unordered_map<string, int> scn_ids;
+		unordered_map<string, pair<int, string> > scn_ids;
 		if(find(all_files.begin(), all_files.end(), "scenery_ids.txt") != all_files.end())
 			if (auto fi = fopen((dir + "scenery_ids.txt").c_str(), "r"))
 			{
-				char buf[32];
-				while(fgets(buf, 31, fi))
+				char buf[128];
+				while(fgets(buf, 127, fi))
 				{
-					char buf2[16];
-					int i;
-					if (sscanf(buf,"%s %d", buf2, &i) == 2)
-						scn_ids[buf2] = i;
+					stringstream in(buf);
+					string tok[3];
+					for (int i = 0; i < 3; i++)
+						getline(in, tok[i], ';');
+					tok[2].erase(0, 1);
+					tok[2].pop_back();
+					scn_ids[tok[0]] = make_pair(atoi(tok[1].c_str()), tok[2]);
 				}
 				LOG_MSG("Got list of %d scenery ids\n", (int) scn_ids.size());
 				fclose(fi);
@@ -1465,8 +1470,12 @@ void	WED_DoImportDSFText(IResolver * resolver)
 				Assert(this_apt.size() == 1);
 				string icao;
 				this_apt.front()->GetICAO(icao);
-				if(scn_ids.count(icao))
-					this_apt.front()->SetSceneryID(scn_ids[icao]);
+				if (scn_ids.count(icao))
+				{
+					this_apt.front()->SetSceneryID(scn_ids[icao].first);
+					if(!scn_ids[icao].second.empty())
+						this_apt.front()->AddMetaDataKey("gw_credits", scn_ids[icao].second);
+				}
 				
 				WED_DoInvisibleUpdateMetadata(this_apt.front());
 
