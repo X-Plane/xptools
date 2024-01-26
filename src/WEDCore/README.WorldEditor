@@ -32,6 +32,7 @@ WED 2.6 b1
    - in CIFP validation, match runways with T suffix also to CIFP data without T
    - fix "select with list" gateway import
    - WED-1482 fix typo in meta tag allows-circuits, repair at file open/apt import
+   - refine validation for trans_altitudes and trans_level, allow flight levels
 
 WED 2.5.1r1 3/20/23
    Bug fix:
