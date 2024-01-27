@@ -1863,7 +1863,11 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 		all_keys.push_back(state);
 	}
 
+	// transition level and altitudes
+
 	int trans_alt_ft = -1;
+	int num_good_values = 0;
+
 	if(who->ContainsMetaDataKey(wed_AddMetaDataTransitionAlt))
 	{
 		string transition_alt   = who->GetMetaDataValue(wed_AddMetaDataTransitionAlt);
@@ -1874,8 +1878,21 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 		else
 		{
 			trans_alt_ft = atoi(transition_alt.c_str());
-			if(trans_alt_ft < 500 || trans_alt_ft > 25000)
-				add_formated_metadata_error(error_template, wed_AddMetaDataTransitionAlt, "is not between 500 and 25000 ft", who, msgs, apt);
+			if (trans_alt_ft < 1000)   // its taken as flight level
+			{
+				if(trans_alt_ft < 100 || trans_alt_ft > 300)
+					add_formated_metadata_error(error_template, wed_AddMetaDataTransitionAlt, "is not a Flighlevel between 100 and 300", who, msgs, apt);
+				else
+					num_good_values++;
+				trans_alt_ft *= 100;
+			}
+			else
+			{
+				if (trans_alt_ft > 30000)
+					add_formated_metadata_error(error_template, wed_AddMetaDataTransitionAlt, "is not a altitude below 30000 ft", who, msgs, apt);
+				else
+					num_good_values++;
+			}
 		}
 	}
 
@@ -1889,10 +1906,24 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 		else
 		{
 			int trans_lvl_ft = atoi(transition_level.c_str());
-			if (trans_lvl_ft < 500 || trans_lvl_ft > 25000)
-				add_formated_metadata_error(error_template, wed_AddMetaDataTransitionLevel, "is not between 500 and 25000 ft", who, msgs, apt);
-			else if (trans_alt_ft >= 0 && abs(trans_alt_ft - trans_lvl_ft) > 2000)
-				add_formated_metadata_error(error_template, wed_AddMetaDataTransitionLevel, "Transition altitude and level must be within 2000 ft or less of each other.", who, msgs, apt);
+			if (trans_lvl_ft < 1000)   // its taken as flight level
+			{
+				if (trans_lvl_ft < 100 || trans_lvl_ft > 300)
+					add_formated_metadata_error(error_template, wed_AddMetaDataTransitionLevel, "is not a flighlevel between 100 and 300", who, msgs, apt);
+				else
+					num_good_values++;
+				trans_lvl_ft *= 100;
+			}
+			else
+			{
+				if (trans_lvl_ft > 30000)
+					add_formated_metadata_error(error_template, wed_AddMetaDataTransitionLevel, "is not a altitude below 30000 ft", who, msgs, apt);
+				else
+					num_good_values++;
+			}
+			if (num_good_values == 2)
+				if (abs(trans_alt_ft - trans_lvl_ft) > 2000)
+					add_formated_metadata_error(error_template, wed_AddMetaDataTransitionLevel, "Transition altitude and level must be within 2000 ft or less of each other.", who, msgs, apt);
 		}
 	}
 
