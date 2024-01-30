@@ -164,6 +164,9 @@ enum {
 	wed_AddMetaDataBegin,//WARNING: DO NOT USE!
 	wed_AddMetaDataCity,// or Locality
 	wed_AddMetaDataCircuits, // new in 1200
+#if GATEWAY_IMPORT_FEATURES
+	wed_AddMetaDataCredits,
+#endif
 	wed_AddMetaDataCountry,
 	wed_AddMetaDataDatumLat,
 	wed_AddMetaDataDatumLon,

@@ -116,6 +116,9 @@
 // Use libtess2 instead of gluTess
 #define LIBTESS 1
 
+// fix up erroneous meta data tags upon import or opening of sceneries
+#define FIX_META_TAGS 1
+
 // This is a big hack that is no more used much ... 
 // WED entities are culled based on a bounding rect - and objects now know their worst case bounding box, based on their visualization, too.
 // Just in case this boundary determination fails - this is the size in dergree's thats is used as their bounding box.

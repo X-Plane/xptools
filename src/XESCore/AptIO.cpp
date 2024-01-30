@@ -182,13 +182,25 @@ static void	print_apt_poly(int (*fprintf)(void * fi, const char * fmt, ...), voi
 	}
 }
 
-static int XP11_pave_type(int xp12_type)
+static int backport_pave_type(int xp12_type, int version)
 {
+	if (version >= 1200) return  xp12_type;
+
 	xp12_type = xp12_type % 100;
-	if (xp12_type >= 20 && xp12_type <= 39)
+	if (xp12_type >= 20 && xp12_type <= 39)      // XP11 has only basic asphalt
 		return 1;
-	else if (xp12_type >= 50 && xp12_type <= 59)
+	else if (xp12_type >= 50 && xp12_type <= 59) // XP11 has only basic concrete
 		return 2;
+	else
+		return xp12_type;
+}
+
+static int backport_marking_type(int xp12_type, int version)
+{
+	if (version >= 1200) return  xp12_type;
+
+	if (xp12_type == 6 || xp12_type == 7)    // XP11 has no ESA style markings
+		return xp12_type - 4;
 	else
 		return xp12_type;
 }
@@ -792,12 +804,14 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				string key = full_entry_text.substr(0, full_entry_text.find_first_of(" "));
 				string value = full_entry_text.substr(full_entry_text.find_first_of(" ") + 1);
 
+#if FIX_META_TAGS
 				// Before the first public 10.50 beta, we were using "faa_id" as a key,
 				// but that obviously didn't fit with the "_code" suffix for the rest of the identifiers,
 				// so we changed it to match.
-				if(key == "faa_id")
-					key = "faa_code";
-
+				if (key == "faa_id")	key = "faa_code";
+				// some typo present in WED 2.5.1 and 2.5.2
+				else if (key == "allows_ciruits") key = "allows_circuits";
+#endif
 				outApts.back().meta_data.push_back(std::pair<string,string>(key,value));
 				break;
 			}
@@ -1265,7 +1279,6 @@ bool	WriteAptFile(const char * inFileName, const AptVector& inApts, int version)
 	return ok;
 }
 
-
 bool	WriteAptFileOpen(FILE * fi, const AptVector& inApts, int version)
 {
 	return WriteAptFileProcs((int (*)(void *, const char *,...))fprintf,fi,inApts,version);
@@ -1318,14 +1331,14 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 						"%3s" LLFMT " %.0f %.0f %d %d %d %d "
 						"%s" LLFMT " %.0f %.0f %d %d %d %d" CRLF,
 						apt_rwy_new, rwy->width_mtr,
-						version >= 1200 ? rwy->surf_code : XP11_pave_type(rwy->surf_code),
-						version >= 1200 ? rwy->shoulder_code : XP11_pave_type(rwy->shoulder_code), rwy->roughness_ratio,
+						backport_pave_type(rwy->surf_code, version),
+						backport_pave_type(rwy->shoulder_code, version), rwy->roughness_ratio,
 						rwy->has_centerline, rwy->edge_light_code, rwy->has_distance_remaining,
 						rwy->id[0].c_str(),CGAL2DOUBLE(rwy->ends.source().y()),CGAL2DOUBLE(rwy->ends.source().x()), rwy->disp_mtr[0], rwy->blas_mtr[0],
-						rwy->marking_code[0], rwy->app_light_code[0], rwy->has_tdzl[0],
+						backport_marking_type(rwy->marking_code[0], version), rwy->app_light_code[0], rwy->has_tdzl[0],
 						(version >= 1200 || rwy->reil_code[0] <= 2) ? rwy->reil_code[0] : 0,
 						rwy->id[1].c_str(),CGAL2DOUBLE(rwy->ends.target().y()),CGAL2DOUBLE(rwy->ends.target().x()), rwy->disp_mtr[1], rwy->blas_mtr[1],
-						rwy->marking_code[1], rwy->app_light_code[1], rwy->has_tdzl[1],
+						backport_marking_type(rwy->marking_code[1], version), rwy->app_light_code[1], rwy->has_tdzl[1],
 						(version >= 1200 || rwy->reil_code[1] <= 2) ? rwy->reil_code[1] : 0);
 
 			if(version >= 1200 && rwy->has_105)
@@ -1368,14 +1381,14 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 		{
 			fprintf(fi,"%d %s" LLFMT " %.1lf %.2f %.2f %d %d %d %.2f %d" CRLF,
 				apt_heli_new, heli->id.c_str(), CGAL2DOUBLE(heli->location.y()), CGAL2DOUBLE(heli->location.x()), heli->heading, heli->length_mtr, heli->width_mtr,
-						version >= 1200 ? heli->surface_code : XP11_pave_type(heli->surface_code), heli->marking_code,
-						version >= 1200 ? heli->shoulder_code : XP11_pave_type(heli->shoulder_code), heli->roughness_ratio, heli->edge_light_code);
+						backport_pave_type(heli->surface_code, version), heli->marking_code,
+						backport_pave_type(heli->shoulder_code, version), heli->roughness_ratio, heli->edge_light_code);
 		}
 
 		for (AptTaxiwayVector::const_iterator taxi = apt->taxiways.begin(); taxi != apt->taxiways.end(); ++taxi)
 		{
 			fprintf(fi, "%d %d %.2f %.1f" NFMT CRLF, apt_taxi_new, 
-			version >= 1200 ? taxi->surface_code : XP11_pave_type(taxi->surface_code), taxi->roughness_ratio, taxi->heading N(taxi));
+			backport_pave_type(taxi->surface_code, version), taxi->roughness_ratio, taxi->heading N(taxi));
 			print_apt_poly(fprintf,fi,taxi->area, version);
 		}
 

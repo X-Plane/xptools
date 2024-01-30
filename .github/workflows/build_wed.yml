@@ -31,7 +31,7 @@ jobs:
         path: msvc/WorldEditor/Release/WorldEditor.exe
           
   build-mac:
-    runs-on: macos-11
+    runs-on: macos-12
     env:
       APPLE_ID: ${{ secrets.APPLE_ID }}
       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
