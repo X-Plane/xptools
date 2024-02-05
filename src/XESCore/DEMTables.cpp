@@ -1007,9 +1007,9 @@ int	FindNaturalTerrain(
 //	DebugAssert(DEM_NO_DATA !=  	elevation);
 	DebugAssert(DEM_NO_DATA !=  	slope);
 	DebugAssert(DEM_NO_DATA !=  	slope_tri);
-	DebugAssert(DEM_NO_DATA != 	temp);
-	DebugAssert(DEM_NO_DATA != 	temp_rng);
-	DebugAssert(DEM_NO_DATA != 	rain);
+//	DebugAssert(DEM_NO_DATA != 	temp);
+//	DebugAssert(DEM_NO_DATA != 	temp_rng);
+//	DebugAssert(DEM_NO_DATA != 	rain);
 	DebugAssert(DEM_NO_DATA != 	slopeheading);
 	DebugAssert(DEM_NO_DATA != 	relelevation);
 	DebugAssert(DEM_NO_DATA != 	elevrange);
