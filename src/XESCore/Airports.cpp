@@ -228,6 +228,17 @@ void BurnInAirport(
 				BezierToSegments(*w, winding,MAX_ERR_APT_BEZ_CHECK);				
 				if(w==bez_poly.begin())
 				{
+					if(!CGAL::is_simple_2(winding.vertices_begin(),winding.vertices_end()))
+					{
+						fprintf(stderr,"ERROR: airport %s (%s) has a self-intersecting boundary.\n", inAirport->icao.c_str(), inAirport->name.c_str());
+						#if OPENGL_MAP && DEV
+							for(Polygon_2::Edge_const_iterator e = winding.edges_begin(); e != winding.edges_end(); ++e)
+							{
+								debug_mesh_line(cgal2ben(e->source()), cgal2ben(e->target()), 1, 0, 0, 1, 1, 0);
+							}
+						#endif
+//						Assert(0);
+					}
 					if(!winding.is_counterclockwise_oriented())
 						winding.reverse_orientation();
 					outArea.join(winding);
