@@ -895,6 +895,15 @@ typedef hash_map<CDT::Edge, CDT::Edge, hash_edge> edge_hash_map;
 typedef hash_map<CDT::Edge, int, hash_edge> edge_info_map;
 #endif
 
+template<typename O, typename I>
+O wish_i_had_bit_cast(const I& in)
+{
+	static_assert(sizeof(O) == sizeof(I), "Illegal cast");
+	O o = {};
+	memcpy(&o, &in, sizeof(O));
+	return o;
+}
+
 static void validate_edge_vertex(CDT& mesh, CDT::Vertex_handle v, double * coords)
 {
 	auto ffi = mesh.infinite_vertex();
@@ -942,7 +951,17 @@ static void validate_edge_vertex(CDT& mesh, CDT::Vertex_handle v, double * coord
 	{
 		if(coords[1] == lat_bord || coords[0] == lon_bord)
 		{
-			printf("ERROR: Vertex %.10lf,%.10lf is a non-border vertrex that's on the DSF edge.\n", coords[0],coords[1]);
+			printf("ERROR: Vertex %.10lf,%.10lf (%.16llX, %.16llX)  is a non-border vertrex that's on the DSF edge.\n", coords[0],coords[1], wish_i_had_bit_cast<uint64_t>(coords[0]),wish_i_had_bit_cast<uint64_t>(coords[1]));
+			
+			printf("CONNECTS TO:\n");
+			
+			auto circ = v->incident_vertices();
+			auto stop = circ;
+			do {
+				Point2 p = cgal2ben(circ->point());
+				printf("  %.10lf,%.10lf (%.16llx, %.16llx)\n", p.x(), p.y(), wish_i_had_bit_cast<uint64_t>(p.x()), wish_i_had_bit_cast<uint64_t>(p.y()));
+			} while(++circ != stop);
+			
 			Assert(!"Bad interior vertex.\n");
 		}
 	}
