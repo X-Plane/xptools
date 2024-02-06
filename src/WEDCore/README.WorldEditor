@@ -23,6 +23,7 @@ WED 2.6 b1
    - improved visualizations in Exclusion&Boundaries tab
    - suggest to delete obsolete items when downloading XP11 airports from GW
    - WED-1496 add gw_credits meta tag at gateway export
+   - XPD-15016 Disallow circuits at GW export for one-way airports
    Bug fix:
    - fix Obj8 drawing not recognizing ATTR_no_blend threshold values
    - validate ObjectString spacing parameter to be non-zero
