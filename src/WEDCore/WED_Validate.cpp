@@ -1922,8 +1922,8 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 					num_good_values++;
 			}
 			if (num_good_values == 2)
-				if (abs(trans_alt_ft - trans_lvl_ft) > 2000)
-					add_formated_metadata_error(error_template, wed_AddMetaDataTransitionLevel, "Transition altitude and level must be within 2000 ft or less of each other.", who, msgs, apt);
+				if (trans_lvl_ft - trans_alt_ft < 0 || trans_lvl_ft - trans_alt_ft > 3000)
+					add_formated_metadata_error(error_template, wed_AddMetaDataTransitionLevel, "Transition altitude must be 0 to 3000 ft below transition level", who, msgs, apt);
 		}
 	}
 
