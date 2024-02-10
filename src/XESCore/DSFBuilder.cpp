@@ -1336,6 +1336,55 @@ static const char* label_for_dem_type(int dem_type)
 	}
 }
 
+// We're going to try to find a scale and offset that will convert SINT16 (-32768 ... 32767) to
+// our target range.  We pick an offset and scale that are powers of 2 to preserve correct
+// transfer of integral elevations.
+static pair<float,float> scale_for_dem(const DEMGeo& dem)
+{
+	DEMGeo::const_iterator b = dem.begin(), e = dem.end();
+	if(b == e) return make_pair(1.0f,0.0f);
+	
+	float minv = *b, maxv = *b;
+	++b;
+	while(b != e)
+	{
+		float v = *b++;
+		minv = min(v, minv);
+		maxv = max(v, maxv);
+	}
+	
+	// Take integer span of values so when we snap the offset we don't go nuts.
+	minv = floorf(minv);
+	maxv = ceilf(maxv);
+	
+	float orig_minv = minv;
+	
+	if(minv < 0.0)
+	{
+		minv = -powf(2.0f, ceilf(log2f(-minv)));
+	}
+	else if (minv > 0.0f)
+	{
+		minv = powf(2.0f, floorf(log2f(minv)));
+	}
+	
+	// Assume at least 1k range, so e.g. sea level DSFs don't explode math
+	float range = fltmax2(1024.0f, maxv - minv);
+	float bucket = powf(2.0f, ceilf(log2f(range)));
+	
+	if(range > 32768.0)
+		return make_pair(1.0f,0.0f);
+		
+	float scaler = bucket / 65536.0f;
+	
+	float offset = (minv + 32768.0) * scaler;
+	
+//	printf("Minv = %f, maxv = %f, range = %f, aug_range = %f, base = %f, bucket = %f, scalr = %f, offset = %f\n",
+//		orig_minv, maxv, maxv - orig_minv, range, minv, bucket, scaler, offset);
+
+	return make_pair(scaler, offset);
+}
+
 struct beach_splitter {
 
 	beach_splitter(DSFCallbacks_t * cbs, void * ref, int poly_type, int is_closed) :
@@ -1996,11 +2045,15 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		}
 
 		DSFRasterHeader_t	header;
-		short * data = ConvertDEMTo<short>(inElevation,header, dsf_Raster_Format_Int,1.0,0.0);
+		
+		pair<float,float> elev_scale = scale_for_dem(inElevation);
+		
+		short * data = ConvertDEMTo<short>(inElevation,header, dsf_Raster_Format_Int,elev_scale.first,elev_scale.second);
 		must_dealloc.push_back(data);
 		cbs.AddRasterData_f(&header,data,writer1);
 
-		data = ConvertDEMTo<short>(inBathymetry,header, dsf_Raster_Format_Int,1.0,0.0);
+		pair<float, float> bath_scale = scale_for_dem(inBathymetry);
+		data = ConvertDEMTo<short>(inBathymetry,header, dsf_Raster_Format_Int,bath_scale.first, bath_scale.second);
 		must_dealloc.push_back(data);
 		cbs.AddRasterData_f(&header,data,writer1);
 
