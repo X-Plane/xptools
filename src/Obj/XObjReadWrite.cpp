@@ -1041,8 +1041,12 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj, const char * comment)
 
 	// TEXTURES
 	fprintf(fi, "TEXTURE %s" CRLF, outObj.texture.c_str());
-	if (!outObj.texture_lit.empty())fprintf(fi, "TEXTURE_LIT %s" CRLF, outObj.texture_lit.c_str());
-	if (!outObj.texture_normal_map.empty())fprintf(fi, "TEXTURE_NORMAL %s" CRLF, outObj.texture_normal_map.c_str());
+	if (!outObj.texture_lit.empty())
+		fprintf(fi, "TEXTURE_LIT %s" CRLF, outObj.texture_lit.c_str());
+	if (!outObj.texture_normal_map.empty())
+		fprintf(fi, "TEXTURE_NORMAL %s" CRLF, outObj.texture_normal_map.c_str());
+	if (!outObj.decal_lib.empty()) 
+		fprintf(fi, "DECAL_LIB %s" CRLF, outObj.decal_lib.c_str());
 
 	if(outObj.use_metalness)
 		fprintf(fi,"NORMAL_METALNESS" CRLF);

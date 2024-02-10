@@ -389,7 +389,7 @@ int WED_ExportOrtho(WED_DrapedOrthophoto* orth, IResolver* resolver, const strin
 			orth->GetBounds(gis_Geo, b);
 			Point2 center = b.centroid();
 			//-------------------------------------------
-			pol_info_t out_info = { FILE_get_file_name(relativePathDDS), false, tile_info(),
+			pol_info_t out_info = { FILE_get_file_name(relativePathDDS),  orth->GetDecal(), tile_info(),
 				/*SCALE*/ (float) LonLatDistMeters(b.p1,Point2(b.p2.x(), b.p1.y())), (float) LonLatDistMeters(b.p1,Point2(b.p1.x(), b.p2.y())),  // althought its irrelevant here
 				false, false,
 				/*LAYER_GROUP*/ "beaches", +1,
@@ -914,12 +914,16 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 		XObj8 ter_obj;
 		XObjCmd8 cmd;
 		if (ortho->IsNew())
+		{
 			ter_obj.texture = FILE_get_file_name_wo_extensions(orthoName) + (gOrthoExport ? ".dds" : ".png");
+			ter_obj.decal_lib = ortho->GetDecal();
+		}
 		else
 		{
 			const pol_info_t* pol;
 			if (WED_GetResourceMgr(resolver)->GetPol(orthoResource, pol))
 			{
+				ter_obj.decal_lib = pol->decal;
 				if (pol->base_tex.compare(0, pkg.length(), pkg) == 0)
 					ter_obj.texture = FILE_get_file_name(pol->base_tex);
 				else
@@ -960,6 +964,7 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 		// center of this object
 		ter_obj.loadCenter_latlon[0] = ll2mtr.Reverse({ 0,0 }).y();
 		ter_obj.loadCenter_latlon[1] = ll2mtr.Reverse({ 0,0 }).x();
+		Bbox2 uv_corners(ll2uv.Forward(ter_box.top_left()), ll2uv.Forward(ter_box.bottom_right()));
 		ter_obj.loadCenter_texSize = 2048 * uv_corners.xspan(); // assumes WED will create a 2k texture - may be wrong ?
 		ter_obj.loadCenter_size = ter_obj.xyz_max[0] - ter_obj.xyz_min[0];
 #else
@@ -969,8 +974,6 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 		ter_obj.loadCenter_texSize = 2048; // assumes WED will create a 2k texture - may be wrong ?
 		ter_obj.loadCenter_size = LonLatDistMeters(ortho_corners.p1, ortho_corners.p2);
 #endif
-		Bbox2 uv_corners(ll2uv.Forward(ter_box.top_left()), ll2uv.Forward(ter_box.bottom_right()));
-
 		XObj8Write(objAbsPath.c_str(), ter_obj, "Created by WED " WED_VERSION_STRING );
 		resource = objVPath;
 #if IBM

@@ -531,7 +531,7 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t const*& info)
 	pol->mUVBox = Bbox2();
 
 	pol->base_tex.clear();
-	pol->hasDecal=false;
+	pol->decal.clear();
 	pol->proj_s=1000;
 	pol->proj_t=1000;
 	pol->kill_alpha=false;
@@ -569,7 +569,7 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t const*& info)
 		}
 		else if (MFS_string_match(&s,"DECAL_LIB", true))
 		{
-			pol->hasDecal=true;
+			MFS_string(&s, &pol->decal);
 		}
 		else if (MFS_string_match(&s,"NO_ALPHA", true))
 		{
@@ -661,15 +661,15 @@ void WED_ResourceMgr::WritePol(const string& abspath, const pol_info_t& out_info
 	FILE * fi = fopen(abspath.c_str(), "w");
 	if(!fi)	return;
 	fprintf(fi,"A\n850 Created by WED " WED_VERSION_STRING "\nDRAPED_POLYGON\n\n");
+	fprintf(fi, "LOAD_CENTER %.5lf %.5lf %.1f %d\n", out_info.latitude, out_info.longitude, out_info.height_Meters, out_info.ddsHeight_Pxls);
 	fprintf(fi,out_info.wrap ? "TEXTURE %s\n" : "TEXTURE_NOWRAP %s\n", out_info.base_tex.c_str());
+	if (!out_info.decal.empty())
+		fprintf(fi, "DECAL_LIB %s\n", out_info.decal.c_str());
 	fprintf(fi,"SCALE %.1lf %.1lf\n",out_info.proj_s,out_info.proj_t);
-	fprintf(fi,"LOAD_CENTER %.5lf %.5lf %.1f %d\n", out_info.latitude, out_info.longitude,out_info.height_Meters,out_info.ddsHeight_Pxls);
 	if(out_info.kill_alpha)
 		fprintf(fi,"NO_ALPHA\n");
 	if(!out_info.group.empty())
 		fprintf(fi,"LAYER_GROUP %s %d\n",out_info.group.c_str(), out_info.group_offset);
-//	if(has_decal)
-//		fprintf(fi,"DECAL_LIB lib/g10/decals/grass_and_stony_dirt_1.dcl");
 	fclose(fi);
 }
 

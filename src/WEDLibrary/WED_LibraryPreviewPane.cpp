@@ -988,7 +988,7 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, int b[4], 
 				break;
 			case res_Polygon:
 				if(pol)
-					snprintf(buf1, sizeof(buf1), "%s %s", pol->description.c_str(), pol->hasDecal ? "(decal not shown)" : "");
+					snprintf(buf1, sizeof(buf1), "%s %s", pol->description.c_str(), pol->decal.empty() ? "" : "(decal not shown)");
 				if (pol && pol->mSubBoxes.size())
 					sprintf(buf2, "Select desired part of texture by clicking on it");
 				break;

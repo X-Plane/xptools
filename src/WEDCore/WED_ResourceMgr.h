@@ -66,7 +66,7 @@ struct tile_info {
 
 struct	pol_info_t {
 	string		base_tex; //Relative path
-	bool		hasDecal;
+	string		decal;
 	tile_info	tiling;
 	float		proj_s;
 	float		proj_t;

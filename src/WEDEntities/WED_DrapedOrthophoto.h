@@ -26,6 +26,7 @@
 
 #include "IHasResource.h"
 #include "WED_GISPolygon.h"
+#include "WED_PropertyHelper.h"
 
 /*
 	WED_DrapedOrthophoto - THEORY OF OPERATION
@@ -54,15 +55,17 @@ public:
 		virtual void	SetResource(const string& r);
 			//Checks if the draped orthophoto being used is the old .pol system or the new .someimagetype
 			//True if new, false if old, optional way to get the suffix
-			bool		IsNew( string* out_string=NULL);
+			bool		IsNew( string* out_string=NULL) const;
 	virtual const char *HumanReadableType(void) const { return "Draped Orthophoto"; }
 	
 			// Re-calculate UV mapping to stretch out texture over full extend of polygon
 			void 		Redrape(bool updProp = 1);
 			void		GetSubTexture(Bbox2& b);
 			void		SetSubTexture(const Bbox2& b);
+			string		GetDecal() const;
 
 		virtual void	PropEditCallback(int before);
+		virtual void	GetNthPropertyInfo(int n, PropertyInfo_t& info) const;
 
 protected:
 
@@ -72,13 +75,13 @@ private:
 
 	WED_PropDoubleText        heading;
 	WED_PropStringText        resource;
+	WED_PropStringText        decal;
 
 	// This specifies the part of a texture to be used for textureing.
 	WED_PropDoubleText        top;
 	WED_PropDoubleText        bottom;
 	WED_PropDoubleText        left;
 	WED_PropDoubleText        right;
-
 };
 
 #endif /* WED_DrapedOrthophoto_H */
