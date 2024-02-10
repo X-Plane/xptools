@@ -1029,18 +1029,18 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj, const char * comment)
 
 	// HEADER
 	fprintf(fi, "%c" CRLF "800 %s" CRLF "OBJ" CRLF CRLF, APL ? 'A' : 'I', comment ? comment : "");
-	
+
 	if (outObj.loadCenter_texSize)
 	{
 		fprintf(fi, "LOAD_CENTER %.5lf %.5lf %.1lf %d" CRLF,
 			outObj.loadCenter_latlon[0],
 			outObj.loadCenter_latlon[1],
-			outObj.xyz_max[0] - outObj.xyz_min[0],
+			outObj.loadCenter_size,
 			outObj.loadCenter_texSize);
 	}
 
 	// TEXTURES
-									fprintf(fi, "TEXTURE %s" CRLF, outObj.texture.c_str());
+	fprintf(fi, "TEXTURE %s" CRLF, outObj.texture.c_str());
 	if (!outObj.texture_lit.empty())fprintf(fi, "TEXTURE_LIT %s" CRLF, outObj.texture_lit.c_str());
 	if (!outObj.texture_normal_map.empty())fprintf(fi, "TEXTURE_NORMAL %s" CRLF, outObj.texture_normal_map.c_str());
 
@@ -1050,7 +1050,7 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj, const char * comment)
 		fprintf(fi,"BLEND_GLASS" CRLF);
 
 	if(!outObj.particle_system.empty())
-	fprintf(fi,"PARTICLE_SYSTEM %s" CRLF, outObj.particle_system.c_str());
+		fprintf(fi,"PARTICLE_SYSTEM %s" CRLF, outObj.particle_system.c_str());
 
 	// SUBREGIONS
 	for (int r = 0; r < outObj.regions.size(); ++r)
@@ -1063,25 +1063,32 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj, const char * comment)
 	}
 
 	// POINT POOLS
-
 	fprintf(fi, "POINT_COUNTS %d %d %d %llu" CRLF, outObj.geo_tri.count(), outObj.geo_lines.count(), outObj.geo_lights.count(), (unsigned long long)outObj.indices.size());
+
+	bool hi_res =
+		outObj.xyz_max[0] - outObj.xyz_min[0] < 30.0f &&
+		outObj.xyz_max[1] - outObj.xyz_min[1] < 30.0f &&
+		outObj.xyz_max[2] - outObj.xyz_min[2] < 30.0f;
 
 	for (n = 0; n < outObj.geo_tri.count(); ++n)
 	{
 		v = outObj.geo_tri.get(n);
-		fprintf(fi, "VT %f %f %f %f %f %f %f %f" CRLF, v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7]);
+		fprintf(fi, hi_res ? "VT %.3f %.3f %.3f %.4f %.4f %.4f %.4f %.4f" CRLF
+			               : "VT %.2f %.2f %.2f %.4f %.4f %.4f %.4f %.4f" CRLF, v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7]);
 	}
 
 	for (n = 0; n < outObj.geo_lines.count(); ++n)
 	{
 		v = outObj.geo_lines.get(n);
-		fprintf(fi, "VLINE %f %f %f %f %f %f" CRLF, v[0], v[1], v[2], v[3], v[4], v[5]);
-	}
+		fprintf(fi, hi_res ? "VLINE %.3f %.3f %.3f %f %f %f" CRLF
+		                   : "VLINE %.2f %.2f %.2f %f %f %f" CRLF, v[0], v[1], v[2], v[3], v[4], v[5]);
+	}	
 
 	for (n = 0; n < outObj.geo_lights.count(); ++n)
 	{
 		v = outObj.geo_lights.get(n);
-		fprintf(fi, "VLIGHT %f %f %f %f %f %f" CRLF, v[0], v[1], v[2], v[3], v[4], v[5]);
+		fprintf(fi, hi_res ? "VLIGHT %.3f %.3f %.3f %f %f %f" CRLF
+		                   : "VLIGHT %.2f %.2f %.2f %f %f %f" CRLF, v[0], v[1], v[2], v[3], v[4], v[5]);
 	}
 
 	int extra = outObj.indices.size() % 10;

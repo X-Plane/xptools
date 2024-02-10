@@ -861,11 +861,11 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 		string orthoResource;
 		ortho->GetResource(orthoResource);
 
+		Bbox2 ortho_corners;
+		ortho_pol->GetBounds(gis_Geo, ortho_corners);
+
 		CoordTranslator2 ll2uv;
 		{
-			Bbox2 ortho_corners;
-			ortho_pol->GetBounds(gis_Geo, ortho_corners);
-
 			if(ortho->IsNew())
 			{
 				ll2uv.mDstMin = { 0, 0 };                  // assumes that WED will export .pol as one texture
@@ -956,10 +956,20 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 		ter_obj.xyz_max[0] = ll2mtr.mDstMax.x();
 		ter_obj.xyz_min[2] = ll2mtr.mDstMin.y();
 		ter_obj.xyz_max[2] = ll2mtr.mDstMax.y();
+#if 0
+		// center of this object
 		ter_obj.loadCenter_latlon[0] = ll2mtr.Reverse({ 0,0 }).y();
 		ter_obj.loadCenter_latlon[1] = ll2mtr.Reverse({ 0,0 }).x();
-		Bbox2 uv_corners(ll2uv.Forward(ter_box.top_left()), ll2uv.Forward(ter_box.bottom_right()));
 		ter_obj.loadCenter_texSize = 2048 * uv_corners.xspan(); // assumes WED will create a 2k texture - may be wrong ?
+		ter_obj.loadCenter_size = ter_obj.xyz_max[0] - ter_obj.xyz_min[0];
+#else
+		// center of underlying draped polygon
+		ter_obj.loadCenter_latlon[0] = ortho_corners.centroid().y();
+		ter_obj.loadCenter_latlon[1] = ortho_corners.centroid().x();
+		ter_obj.loadCenter_texSize = 2048; // assumes WED will create a 2k texture - may be wrong ?
+		ter_obj.loadCenter_size = LonLatDistMeters(ortho_corners.p1, ortho_corners.p2);
+#endif
+		Bbox2 uv_corners(ll2uv.Forward(ter_box.top_left()), ll2uv.Forward(ter_box.bottom_right()));
 
 		XObj8Write(objAbsPath.c_str(), ter_obj, "Created by WED " WED_VERSION_STRING );
 		resource = objVPath;

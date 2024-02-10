@@ -39,7 +39,6 @@ WED_ObjPlacement::WED_ObjPlacement(WED_Archive * a, int i) :
 	msl    (this,PROP_Name("Elevation",     XML_Name("obj_placement","msl")), 0, 5, 3),
 	resource  (this,PROP_Name("Resource",  XML_Name("obj_placement","resource")),""),
 	show_level(this,PROP_Name("Show with", XML_Name("obj_placement","show_level")), ShowLevel, show_Level1),
-	use_loadCenter(this, PROP_Name("Fix Center", XML_Name("obj_placement", "load_center")), 0),
 	visibleWithinDeg(-1.0)
 {
 }
@@ -67,25 +66,6 @@ void		WED_ObjPlacement::SetResource(const string& r)
 {
 	resource = r;
 	visibleWithinDeg = -1.0; // force re-evaluation when object is changed
-}
-
-void		WED_ObjPlacement::SetLocation(GISLayer_t l, const Point2& p)
-{
-#if WED
-	Point2 p_new(p);
-	WED_ResourceMgr* rmgr = WED_GetResourceMgr(GetArchive()->GetResolver());
-	if (use_loadCenter.value && rmgr)
-	{
-		const XObj8* o;
-		if (rmgr->GetObj(resource.value, o))
-			if (o->loadCenter_texSize > 0)
-			{
-				p_new.x_ = o->loadCenter_latlon[1];
-				p_new.y_ = o->loadCenter_latlon[0];
-			}
-	}
-#endif
-	WED_GISPoint_Heading::SetLocation(l, p_new);
 }
 
 void		WED_ObjPlacement::SetHeading(double h)
@@ -157,7 +137,6 @@ double WED_ObjPlacement::GetTowerViewHgt(void)
 
 #endif
 }
-
 
 
 double 	WED_ObjPlacement::GetVisibleDeg(void) const
@@ -286,19 +265,6 @@ void	WED_ObjPlacement::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 	{
 		info.prop_name = "."; // Do not show elevation property if its not relevant
 		return;
-	}
-	if (n == PropertyItemNumber(&use_loadCenter))
-	{
-		if (auto rmgr = WED_GetResourceMgr(GetArchive()->GetResolver()))
-		{
-			const XObj8* o;
-			if (rmgr->GetObj(resource.value, o))
-				if (o->loadCenter_texSize <= 0)
-				{
-					info.prop_name = ".";
-					return;
-				}
-		}
 	}
 	WED_Thing::GetNthPropertyInfo(n, info);
 }

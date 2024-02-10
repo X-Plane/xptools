@@ -663,7 +663,7 @@ void WED_ResourceMgr::WritePol(const string& abspath, const pol_info_t& out_info
 	fprintf(fi,"A\n850 Created by WED " WED_VERSION_STRING "\nDRAPED_POLYGON\n\n");
 	fprintf(fi,out_info.wrap ? "TEXTURE %s\n" : "TEXTURE_NOWRAP %s\n", out_info.base_tex.c_str());
 	fprintf(fi,"SCALE %.1lf %.1lf\n",out_info.proj_s,out_info.proj_t);
-	fprintf(fi,"LOAD_CENTER %lf %lf %.1f %d\n", out_info.latitude, out_info.longitude,out_info.height_Meters,out_info.ddsHeight_Pxls);
+	fprintf(fi,"LOAD_CENTER %.5lf %.5lf %.1f %d\n", out_info.latitude, out_info.longitude,out_info.height_Meters,out_info.ddsHeight_Pxls);
 	if(out_info.kill_alpha)
 		fprintf(fi,"NO_ALPHA\n");
 	if(!out_info.group.empty())
