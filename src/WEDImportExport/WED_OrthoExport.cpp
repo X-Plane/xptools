@@ -188,6 +188,9 @@ int WED_ExportOrtho(WED_DrapedOrthophoto* orth, IResolver* resolver, const strin
 
 	string relativePath(FILE_get_dir_name(r) + FILE_get_file_name_wo_extensions(msg));
 
+	if (relativePath.compare(0, 3, "DEV") == 0 && (relativePath[3] == '/' || relativePath[3] == '\\') )           // source img is in DEV folder (LR convention for non-installer source art)
+		relativePath.erase(0, 4);
+
 	string relativePathDDS = relativePath + ( gOrthoExport ? ".dds" : ".png");
 	string relativePathPOL = relativePath + ".pol";
 
@@ -909,6 +912,10 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 		ter->GetName(terName);
 		string objName = FILE_get_file_name_wo_extensions(orthoName) + "_" + FILE_get_file_name_wo_extensions(terName) + ".obj";
 		string objVPath = FILE_get_dir_name(orthoResource) + objName;
+
+		if (objVPath.compare(0, 3, "DEV") == 0 && (objVPath[3] == '/' || objVPath[3] == '\\'))  // source img is in DEV folder (LR convention for non-installer source art)
+			objVPath.erase(0, 4);
+
 		string objAbsPath = pkg + objVPath;
 
 		XObj8 ter_obj;
