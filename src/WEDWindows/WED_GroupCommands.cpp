@@ -5445,15 +5445,15 @@ int WED_DoConvertToJW(WED_Airport* apt, int statistics[4])
 						double tun_len = LonLatDistMeters(jw_serving_us[0].cabin_loc, jw_serving_us[0].tunnel_orig);
 						switch (t.size_code)        // deliberately test for shorter range - allows some margin for actual cabin door locations
 						{
-						case 1:	tunnel_is_short = tun_dist > 20.0; 
+						case 0:	tunnel_is_short = tun_dist > 20.0; 
 								break;
-						case 2:	tunnel_is_short = tun_dist > 26.0; 
+						case 1:	tunnel_is_short = tun_dist > 26.0; 
 								tunnel_is_long = tun_len < 14.0 || tun_dist < 19.0;
 								break;
-						case 3:	tunnel_is_short = tun_dist > 36.0; 
+						case 2:	tunnel_is_short = tun_dist > 36.0; 
 								tunnel_is_long = tun_len < 17.0 || tun_dist < 22.0;
 								break;
-						case 4:	// tunnel_is_short = tun_dist > 40.0; break; // would have to move the tunnel base !! to make it reach further.
+						case 3:	// tunnel_is_short = tun_dist > 40.0; break; // would have to move the tunnel base !! to make it reach further.
 								tunnel_is_long = tun_len < 20.0 || tun_dist < 25.0;
 								break;
 						}
