@@ -288,9 +288,17 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			{
 				wrl->StartCommand("Delete bad icao");
 				(*apt_itr)->EditMetaDataKey(META_KeyName(wed_AddMetaDataICAO),"");
-				wrl->CommitCommand();
 				deleted_illicit_icao++;
+				// In many cases a "bad" ICAO code is rather an local code.
+				string local_code, faa_code;
+				if((*apt_itr)->ContainsMetaDataKey(wed_AddMetaDataLocal))
+					local_code = (*apt_itr)->GetMetaDataValue(wed_AddMetaDataLocal);
+				if((*apt_itr)->ContainsMetaDataKey(wed_AddMetaDataFAA))
+					faa_code = (*apt_itr)->GetMetaDataValue(wed_AddMetaDataFAA);
+				if(local_code.empty() && faa_code.empty())
+					(*apt_itr)->AddMetaDataKey(META_KeyName(wed_AddMetaDataLocal),ICAO_code);
 				ICAO_code = "";
+				wrl->CommitCommand();
 			}
 		}
 		
