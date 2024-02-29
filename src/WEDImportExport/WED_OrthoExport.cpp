@@ -918,6 +918,7 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 			objVPath.erase(0, 4);
 
 		string objAbsPath = pkg + objVPath;
+		FILE_make_dir_exist(FILE_get_dir_name(objVPath).c_str());
 
 		XObj8 ter_obj;
 		XObjCmd8 cmd;
@@ -982,7 +983,10 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 		ter_obj.loadCenter_texSize = 2048; // assumes WED will create a 2k texture - may be wrong ?
 		ter_obj.loadCenter_size = LonLatDistMeters(ortho_corners.p1, ortho_corners.p2);
 #endif
-		XObj8Write(objAbsPath.c_str(), ter_obj, "Created by WED " WED_VERSION_STRING );
+		char msg[100];
+		snprintf(msg, 99, "Created by WED " WED_VERSION_STRING " for %.8lf %.8lf", ter_box.centroid().x(), ter_box.centroid().y());
+
+		XObj8Write(objAbsPath.c_str(), ter_obj, msg);
 		resource = objVPath;
 #if IBM
 		std::replace(resource.begin(), resource.end(), '\\', '/');
