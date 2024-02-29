@@ -188,7 +188,7 @@ int WED_ExportOrtho(WED_DrapedOrthophoto* orth, IResolver* resolver, const strin
 
 	string relativePath(FILE_get_dir_name(r) + FILE_get_file_name_wo_extensions(msg));
 
-	if (relativePath.compare(0, 3, "DEV") == 0 && (relativePath[3] == '/' || relativePath[3] == '\\') )           // source img is in DEV folder (LR convention for non-installer source art)
+	if (relativePath.compare(0, 3, "DEV") == 0 && (relativePath[3] == '/' || relativePath[3] == '\\') )  // source img is in DEV folder (LR convention for non-installer source art)
 		relativePath.erase(0, 4);
 
 	string relativePathDDS = relativePath + ( gOrthoExport ? ".dds" : ".png");
@@ -205,6 +205,7 @@ int WED_ExportOrtho(WED_DrapedOrthophoto* orth, IResolver* resolver, const strin
 	string absPathIMG = pkg + r;
 	string absPathDDS = pkg + relativePathDDS;
 	string absPathPOL = pkg + relativePathPOL;
+	FILE_make_dir_exist(FILE_get_dir_name(absPathDDS).c_str()); // if using the dev folder, non-DEV equivalent folder may not yet exist
 
 	if(absPathDDS == absPathIMG)
 	{

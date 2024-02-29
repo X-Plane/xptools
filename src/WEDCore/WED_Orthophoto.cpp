@@ -88,8 +88,8 @@ WED_Ring * WED_RingfromImage(char * path, WED_Archive * arch, WED_MapZoomerNew *
 
 		coords[0] = zoomer->PixelToLL(center + Vector2(-pix_w, -pix_h));
 		coords[1] = zoomer->PixelToLL(center + Vector2(pix_w, -pix_h));
-		coords[2] = zoomer->PixelToLL(center + Vector2(pix_w, +pix_h));
-		coords[3] = zoomer->PixelToLL(center + Vector2(-pix_w, +pix_h));
+		coords[3] = zoomer->PixelToLL(center + Vector2(pix_w, +pix_h));
+		coords[2] = zoomer->PixelToLL(center + Vector2(-pix_w, +pix_h));
 	}
 
 	WED_Ring * rng = WED_Ring::CreateTyped(arch);
