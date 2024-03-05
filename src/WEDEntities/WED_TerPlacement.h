@@ -40,6 +40,8 @@ public:
 	int					GetShowLevel(void) const;
 	int					GetMSLType(void) const;
 	double				GetCustomMSL(void) const;
+	bool				IsHardSurface(void) const;
+	bool				IsClip(void) const;
 
 	virtual const char* HumanReadableType(void) const { return "Terrain Object"; }
 
@@ -49,12 +51,18 @@ protected:
 
 private:
 
-	WED_PropStringText			resource;       // really want WED_PropFileText, but something is broken with it now
+#if DEV
+	WED_PropStringText			resource;       // really want WED_PropFileText, but something is broken with it in DEV mode
+#else
+	WED_PropFileText			resource;
+#endif
 	WED_PropIntEnum				has_msl;
 	WED_PropDoubleTextMeters	msl;
 	WED_PropDoubleText			derez;
 	WED_PropDoubleTextMeters	skirt;
 	WED_PropIntEnum				show_level;
+	WED_PropBoolText			hard;
+	WED_PropBoolText			clip;
 };
 
 #endif /* WED_TerPlacement_H */

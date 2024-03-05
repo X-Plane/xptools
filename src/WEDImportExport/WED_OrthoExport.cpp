@@ -626,10 +626,9 @@ void copy_tile(const T* v, int x, int y, int w, int h, dem_info_t& dem)
  }
 
 static int mesh2obj(XObj8& obj, const Polygon2& area, const CoordTranslator2& ll2mtr, const CoordTranslator2& ll2uv,
-                     const DEMGeo& dem, float deres_factor, float skirt_depth, const Polygon2& area_dem)
+                     const DEMGeo& dem, float deres_factor, float skirt_depth, const Polygon2& area_dem, float clip_elev)
 {
 	Bbox2 bounds = area.bounds();
-
 	DEMGeo ldem;
 	dem.subset(ldem, dem.x_upper(bounds.xmin()), dem.y_upper(bounds.ymin()), dem.x_lower(bounds.xmax()), dem.y_lower(bounds.ymax()));
 	if (deres_factor != 1.0f)
@@ -644,14 +643,14 @@ static int mesh2obj(XObj8& obj, const Polygon2& area, const CoordTranslator2& ll
 			{
 				double lon = smaller.x_to_lon(x);
 				double lat = smaller.y_to_lat(y);
-				smaller(x, y) = ldem.value_linear(lon,lat);
+				smaller(x, y) = max(ldem.value_linear(lon,lat), clip_elev);
 			}
 		ldem.swap(smaller);
 	}
 
 	//	local_dem.deres_nearest() or make a derez_average() derez_cubic()
 
-	// make formals before creating the skirt - so normals stay unaffected, i.e. skirt area is less notable due to shading
+	// make normals before creating the skirt - so normals stay unaffected, i.e. skirt area is less notable due to shading
 	DEMGeo NX, NY, NZ;
 	ldem.calc_normal(NX, NY, NZ, nullptr);
 
@@ -918,7 +917,7 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 			objVPath.erase(0, 4);
 
 		string objAbsPath = pkg + objVPath;
-		FILE_make_dir_exist(FILE_get_dir_name(objVPath).c_str());
+		FILE_make_dir_exist(FILE_get_dir_name(objAbsPath).c_str());
 
 		XObj8 ter_obj;
 		XObjCmd8 cmd;
@@ -941,16 +940,25 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 			}
 		}
 		ter_obj.glass_blending = 0;
+		float clip_elev = ter->IsClip() ? -ter->GetCustomMSL() /* (ter->GetMSLType() != 0) */ : -999.0;
 
 		// create & add mesh
 		// the super-sily proof-of-concept function
 //		poly2obj(ter_obj, area, ll2mtr, ll2uv, ter_dem.value_linear(ter_corners.centroid()));
-		int skirt_idx = mesh2obj(ter_obj, ter_poly, ll2mtr, ll2uv, *ter_dem, ter->GetSamplingFactor(), ter->GetSkirtDepth(), ter_skirt);
+		int skirt_idx = mesh2obj(ter_obj, ter_poly, ll2mtr, ll2uv, *ter_dem, ter->GetSamplingFactor(), ter->GetSkirtDepth(), ter_skirt, clip_elev);
+
+		float lod_dist = 20.0 * ceil(LonLatDistMeters(ter_box.p1, ter_box.p2));
 
 		// ATTR_LOD
 		ter_obj.lods.push_back(XObjLOD8());
 		ter_obj.lods.back().lod_near = 0;
-		ter_obj.lods.back().lod_far = 5000;
+		ter_obj.lods.back().lod_far = lod_dist; // fltlim(lod_dist, 1000, 20000);
+		// ATTR_HARD
+		if (ter->IsHardSurface())
+		{
+			cmd.cmd = attr_Hard;
+			ter_obj.lods.back().cmds.push_back(cmd);
+		}
 		// TRIS
 		cmd.cmd = obj8_Tris;
 		cmd.idx_offset = 0;
@@ -965,10 +973,6 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 		cmd.idx_count = ter_obj.indices.size() - skirt_idx;
 		ter_obj.lods.back().cmds.push_back(cmd);
 		// LOAD_CENTER
-		ter_obj.xyz_min[0] = ll2mtr.mDstMin.x();
-		ter_obj.xyz_max[0] = ll2mtr.mDstMax.x();
-		ter_obj.xyz_min[2] = ll2mtr.mDstMin.y();
-		ter_obj.xyz_max[2] = ll2mtr.mDstMax.y();
 #if 0
 		// center of this object
 		ter_obj.loadCenter_latlon[0] = ll2mtr.Reverse({ 0,0 }).y();

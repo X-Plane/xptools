@@ -29,11 +29,13 @@ TRIVIAL_COPY(WED_TerPlacement,WED_GISPolygon)
 
 WED_TerPlacement::WED_TerPlacement(WED_Archive * a, int i) : WED_GISPolygon(a,i),
 	resource  (this, PROP_Name("Resource",       XML_Name("ter_placement", "Resource")), ""),
-	derez(this, PROP_Name("Derez Factor", XML_Name("ter_placement", "derez")), 1, 3, 1, "x"),
-	skirt(this, PROP_Name("Skirt Depth", XML_Name("ter_placement", "skirt")), 1, 3, 0),
+	derez     (this, PROP_Name("Derez Factor",   XML_Name("ter_placement", "derez")), 1, 3, 1, "x"),
+	skirt     (this, PROP_Name("Skirt Depth",    XML_Name("ter_placement", "skirt")), 1, 3, 0),
 	show_level(this, PROP_Name("Show with",      XML_Name("ter_placement", "show_level")), ShowLevel, show_Level1),
 	has_msl   (this, PROP_Name("Elevation Mode", XML_Name("ter_placement", "custom_msl")), TerElevationType, obj_setMSL),
-	msl       (this, PROP_Name("Elevation",      XML_Name("ter_placement", "msl")), 0, 5, 2)
+	msl       (this, PROP_Name("Elevation",      XML_Name("ter_placement", "msl")), 0, 5, 2),
+	hard	  (this, PROP_Name("Attr hard",      XML_Name("ter_placement", "hard")), 0),
+	clip      (this, PROP_Name("Clip to 0 MSL",  XML_Name("ter_placement", "clip")), 0)
 {
 }
 
@@ -76,3 +78,12 @@ double WED_TerPlacement::GetSkirtDepth(void) const
 	return skirt.value;
 }
 
+bool	WED_TerPlacement::IsHardSurface(void) const
+{
+	return hard.value;
+}
+
+bool	WED_TerPlacement::IsClip(void) const
+{
+	return clip.value;
+}
