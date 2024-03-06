@@ -671,22 +671,24 @@ bool		WED_StructureLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity *
 					glDisable(GL_CULL_FACE);
 					glColor4f(1,1,1,overlay->GetAlpha());
 					auto gcp = overlay->GetGcpMat();
-					if(gcp->size() > 3)                                  // draw a propperly projected/warped image
+					if(gcp->pts.size() > 3)                                  // draw a propperly projected/warped image
 					{
-						const int divs = intround(sqrt(gcp->size())) - 1;
-						for(int x = 0; x < divs; x++)
+						int divs_x = gcp->size_x - 1;
+						int divs_y = gcp->size_y - 1;
+
+						for(int x = 0; x < divs_x; x++)
 						{
-							const float df = 1.0f / (float) divs;
-							const float x0 = x * df;
+							const float x0 = (float) x / divs_x;
+							const float x1 = (float) (x+1) / divs_x;
 							glBegin(GL_TRIANGLE_STRIP);
-							for(int y = 0; y <= divs; y++)
+							for(int y = 0; y <= divs_y; y++)
 							{
-								int idx = x + (divs+1) * y;
-								float y0 = y * df;
+								int idx = x + gcp->size_x * y;
+								float y0 = (float) y / divs_y;
 								glTexCoord2f(x0, y0);
-								glVertex2(GetZoomer()->LLToPixel(gcp->at(idx)));
-								glTexCoord2f(x0+df, y0);
-								glVertex2(GetZoomer()->LLToPixel(gcp->at(idx+1)));
+								glVertex2(GetZoomer()->LLToPixel(gcp->pts.at(idx)));
+								glTexCoord2f(x1, y0);
+								glVertex2(GetZoomer()->LLToPixel(gcp->pts.at(idx+1)));
 							}
 							glEnd();
 						}

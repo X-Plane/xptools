@@ -48,10 +48,12 @@
 #include "GUI_Broadcaster.h"
 #include "IBase.h"
 #include "XObjDefs.h"
+#include "DEMDefs.h"
 #include "CompGeomDefs2.h"
 #include <list>
 
 class	WED_LibraryMgr;
+typedef struct DEMGeo dem_info_t;
 
 struct tile_info {
 	int			tiles_x;
@@ -65,7 +67,7 @@ struct tile_info {
 
 struct	pol_info_t {
 	string		base_tex; //Relative path
-	bool		hasDecal;
+	string		decal;
 	tile_info	tiling;
 	float		proj_s;
 	float		proj_t;
@@ -266,6 +268,7 @@ public:
 					~WED_ResourceMgr();
 
 			void	Purge(void);
+			void	Purge(const string& vpath);
 
 			bool	GetFac(const string& vpath, fac_info_t const *& info, int variant =0);
 			bool	GetPol(const string& path, pol_info_t const *& info);
@@ -280,6 +283,7 @@ public:
 			bool	GetObjRelative(const string& obj_path, const string& parent_path, XObj8 const *& obj);
 			bool	GetAGP(const string& path, agp_t const *& info);
 			bool	GetRoad(const string& path, const road_info_t *& out_info);
+			bool	GetDem(const string& path, dem_info_t const*& info);
 
 	virtual	void	ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
@@ -299,6 +303,7 @@ private:
 	unordered_map<string,for_info_t>		mFor;
 	unordered_map<string,vector<const XObj8 *> > mObj;
 	unordered_map<string,agp_t>				mAGP;
+	unordered_map<string, dem_info_t>		mDem;
 #if ROAD_EDITING
 	unordered_map<string,road_info_t>		mRoad;
 #endif

@@ -131,12 +131,18 @@ int main(int argc, char *argv[])
 
 #if split4way
   FILE_make_dir_exist((dir + "NA").c_str());
+  link((dir+"scenery_ids.txt").c_str(), (dir+"NA/").c_str());
   FILE_make_dir_exist((dir + "SA").c_str());
+  link((dir+"scenery_ids.txt").c_str(), (dir+"SA/").c_str());
   FILE_make_dir_exist((dir + "EU").c_str());
+  link((dir+"scenery_ids.txt").c_str(), (dir+"EU/").c_str());
   FILE_make_dir_exist((dir + "AS").c_str());
+  link((dir+"scenery_ids.txt").c_str(), (dir+"AS/").c_str());
 #else
   FILE_make_dir_exist((dir + "W").c_str());
+  link((dir+"scenery_ids.txt").c_str(), (dir+"W/").c_str());
   FILE_make_dir_exist((dir + "E").c_str());
+  link((dir+"scenery_ids.txt").c_str(), (dir+"E/").c_str());
 #endif
 
   vector<string> all_files;

@@ -155,6 +155,7 @@
     <ClCompile Include="..\..\src\WEDEntities\WED_ATCWindRule.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_AutogenNode.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_AutogenPlacement.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_TerPlacement.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_DrapedOrthophoto.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_Entity.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_ExclusionZone.cpp" />
@@ -222,6 +223,7 @@
     <ClCompile Include="..\..\src\WEDImportExport\WED_MetaDataDefaults.cpp" />
     <ClCompile Include="..\..\src\WEDImportExport\WED_MetaDataKeys.cpp" />
     <ClCompile Include="..\..\src\WEDImportExport\WED_MetadataUpdate.cpp" />
+    <ClCompile Include="..\..\src\WEDImportExport\WED_OrthoExport.cpp" />
     <ClCompile Include="..\..\src\WEDImportExport\WED_SceneryPackExport.cpp" />
     <ClCompile Include="..\..\src\WEDImportExport\WED_VerTable.cpp" />
     <ClCompile Include="..\..\src\WEDLibrary\WED_LibraryListAdapter.cpp" />
@@ -281,6 +283,7 @@
     <ClCompile Include="..\..\src\WEDWindows\WED_Sign_Editor.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_StartWindow.cpp" />
     <ClCompile Include="..\..\src\XESCore\AptIO.cpp" />
+    <ClCompile Include="..\..\src\XESCore\DEMDefs.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\DSFTools\DSF2Text.h" />
@@ -443,6 +446,7 @@
     <ClInclude Include="..\..\src\WEDEntities\WED_ATCWindRule.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_AutogenNode.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_AutogenPlacement.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_TerPlacement.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_DrapedOrthophoto.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_Entity.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_ExclusionZone.h" />
@@ -509,6 +513,7 @@
     <ClInclude Include="..\..\src\WEDImportExport\WED_MetaDataDefaults.h" />
     <ClInclude Include="..\..\src\WEDImportExport\WED_MetaDataKeys.h" />
     <ClInclude Include="..\..\src\WEDImportExport\WED_MetadataUpdate.h" />
+    <ClInclude Include="..\..\src\WEDImportExport\WED_OrthoExport.h" />
     <ClInclude Include="..\..\src\WEDImportExport\WED_SceneryPackExport.h" />
     <ClInclude Include="..\..\src\WEDImportExport\WED_VerTable.h" />
     <ClInclude Include="..\..\src\WEDLibrary\WED_LibraryListAdapter.h" />
@@ -571,6 +576,7 @@
     <ClInclude Include="..\..\src\WEDWindows\WED_UIDefs.h" />
     <ClInclude Include="..\..\src\XESCore\AptDefs.h" />
     <ClInclude Include="..\..\src\XESCore\AptIO.h" />
+    <ClInclude Include="..\..\src\XESCore\DEMDefs.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\src\WEDResources\about.png" />

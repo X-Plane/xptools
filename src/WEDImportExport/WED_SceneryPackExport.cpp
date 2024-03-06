@@ -221,6 +221,8 @@ int		WED_CanExportPack(IResolver * resolver)
 
 #include "WED_Airport.h"
 #include "WED_AirportBoundary.h"
+#include "WED_ATCFlow.h"
+#include "WED_ATCRunwayUse.h"
 #include "WED_LinePlacement.h"
 #include "WED_EnumSystem.h"
 #include "WED_ExclusionZone.h"
@@ -286,9 +288,17 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			{
 				wrl->StartCommand("Delete bad icao");
 				(*apt_itr)->EditMetaDataKey(META_KeyName(wed_AddMetaDataICAO),"");
-				wrl->CommitCommand();
 				deleted_illicit_icao++;
+				// In many cases a "bad" ICAO code is rather an local code.
+				string local_code, faa_code;
+				if((*apt_itr)->ContainsMetaDataKey(wed_AddMetaDataLocal))
+					local_code = (*apt_itr)->GetMetaDataValue(wed_AddMetaDataLocal);
+				if((*apt_itr)->ContainsMetaDataKey(wed_AddMetaDataFAA))
+					faa_code = (*apt_itr)->GetMetaDataValue(wed_AddMetaDataFAA);
+				if(local_code.empty() && faa_code.empty())
+					(*apt_itr)->AddMetaDataKey(META_KeyName(wed_AddMetaDataLocal),ICAO_code);
 				ICAO_code = "";
+				wrl->CommitCommand();
 			}
 		}
 		
@@ -715,7 +725,35 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				else
 					wrl->AbortOperation();
 			}
+		}
 
+		//-- If any pattern rumnways are ever using one-way only, disable pattern flying. 
+		// As current ATC WILl ignore the one-way use and send you fly real closed patterns.
+		vector<WED_ATCFlow*> flows;
+		CollectRecursive(*apt_itr, back_inserter(flows));
+		for (auto f : flows)
+		{
+			int pattern = f->GetPatternRunway();
+			vector<WED_ATCRunwayUse*> rules;
+			CollectRecursive(f, back_inserter(rules));
+			bool arrivals(false);
+			bool departures(false);
+			for (auto r : rules)
+			{
+				if (r->GetRunway() == pattern) // take ANY kind of ops in a direction as 'useable in a pinch for pattern work'
+				{
+					if (r->HasArrivals())   arrivals = true;
+					if (r->HasDepartures()) departures = true;
+				}
+			}
+			if (!arrivals || !departures)
+			{
+				wrl->StartCommand("One-way runway - disallow patterns");
+				(*apt_itr)->AddMetaDataKey(META_KeyName(wed_AddMetaDataCircuits), "0");
+				wrl->CommitCommand();
+				LOG_MSG("I/XP12 Disallowed patterns at %s\n", ICAO_code.c_str());
+			}
+			break;
 		}
 #endif
 #if TYLER_MODE
