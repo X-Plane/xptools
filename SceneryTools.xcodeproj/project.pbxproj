@@ -63,7 +63,9 @@
 		024A328E2864D797000CEF68 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 024A32562864D4CF000CEF68 /* libz.tbd */; };
 		024A32992864D7A2000CEF68 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 024A32562864D4CF000CEF68 /* libz.tbd */; };
 		024A32A42864D7AC000CEF68 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 024A32562864D4CF000CEF68 /* libz.tbd */; };
-		025D81152B9858A30005A88E /* WED_TerPlacement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 025D81142B9858A30005A88E /* WED_TerPlacement.cpp */; };
+		025D81402B9864830005A88E /* WED_TerPlacement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 025D81142B9858A30005A88E /* WED_TerPlacement.cpp */; };
+		025D81552B9864DE0005A88E /* WED_OrthoExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 025D81352B985B990005A88E /* WED_OrthoExport.cpp */; };
+		025D817F2B9869E10005A88E /* DEMDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38400AB22C85003949C5 /* DEMDefs.cpp */; };
 		02635D7429B2C25000F5F433 /* json_writer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02635D6529B2C25000F5F433 /* json_writer.cpp */; };
 		02635D7529B2C25000F5F433 /* json_internalmap.inl in Resources */ = {isa = PBXBuildFile; fileRef = 02635D6629B2C25000F5F433 /* json_internalmap.inl */; };
 		02635D7629B2C25000F5F433 /* json_reader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02635D6729B2C25000F5F433 /* json_reader.cpp */; };
@@ -1049,6 +1051,7 @@
 		025D81142B9858A30005A88E /* WED_TerPlacement.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = WED_TerPlacement.cpp; path = src/WEDEntities/WED_TerPlacement.cpp; sourceTree = SOURCE_ROOT; };
 		025D81342B985B990005A88E /* WED_OrthoExport.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = WED_OrthoExport.h; path = src/WEDImportExport/WED_OrthoExport.h; sourceTree = SOURCE_ROOT; };
 		025D81352B985B990005A88E /* WED_OrthoExport.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = WED_OrthoExport.cpp; path = src/WEDImportExport/WED_OrthoExport.cpp; sourceTree = SOURCE_ROOT; };
+		025D816A2B9867EF0005A88E /* ProgressUtils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ProgressUtils.h; sourceTree = "<group>"; };
 		025E09DF20D2F11200DD8856 /* line_BSolidWhite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = line_BSolidWhite.png; sourceTree = "<group>"; };
 		02635D5329B2C25000F5F433 /* reader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = reader.h; sourceTree = "<group>"; };
 		02635D5429B2C25000F5F433 /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
@@ -1842,7 +1845,6 @@
 		D6BC37970AB22C85003949C5 /* PolyRasterUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = PolyRasterUtils.cpp; sourceTree = "<group>"; };
 		D6BC37980AB22C85003949C5 /* PolyRasterUtils.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = PolyRasterUtils.h; sourceTree = "<group>"; };
 		D6BC37990AB22C85003949C5 /* ProgressUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = ProgressUtils.cpp; sourceTree = "<group>"; };
-		D6BC379A0AB22C85003949C5 /* ProgressUtils.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = ProgressUtils.h; sourceTree = "<group>"; };
 		D6BC379B0AB22C85003949C5 /* RLERegion.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = RLERegion.cpp; sourceTree = "<group>"; };
 		D6BC379C0AB22C85003949C5 /* RLERegion.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = RLERegion.h; sourceTree = "<group>"; };
 		D6BC379D0AB22C85003949C5 /* RoadNetUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = RoadNetUtils.cpp; sourceTree = "<group>"; };
@@ -2476,6 +2478,8 @@
 				D6FEF21918E9C4360035421F /* WED_GatewayExport.cpp */,
 				D6FEF21B18E9C4440035421F /* WED_SceneryPackExport.h */,
 				D6FEF21C18E9C4440035421F /* WED_SceneryPackExport.cpp */,
+				025D81352B985B990005A88E /* WED_OrthoExport.cpp */,
+				025D81342B985B990005A88E /* WED_OrthoExport.h */,
 				D6FEF45718EB045C0035421F /* WED_AptTable.h */,
 				D6FEF45818EB045C0035421F /* WED_AptTable.cpp */,
 			);
@@ -2985,8 +2989,6 @@
 		D6BC373B0AB22C85003949C5 /* SDTS */ = {
 			isa = PBXGroup;
 			children = (
-				025D81352B985B990005A88E /* WED_OrthoExport.cpp */,
-				025D81342B985B990005A88E /* WED_OrthoExport.h */,
 				D6BC36CC0AB22C84003949C5 /* Network */,
 				D6BC373D0AB22C85003949C5 /* SDTSRead.cpp */,
 				D6BC373E0AB22C85003949C5 /* SDTSRead.h */,
@@ -3100,7 +3102,7 @@
 				D6BC37970AB22C85003949C5 /* PolyRasterUtils.cpp */,
 				D6BC37980AB22C85003949C5 /* PolyRasterUtils.h */,
 				D6BC37990AB22C85003949C5 /* ProgressUtils.cpp */,
-				D6BC379A0AB22C85003949C5 /* ProgressUtils.h */,
+				025D816A2B9867EF0005A88E /* ProgressUtils.h */,
 				D6BC379B0AB22C85003949C5 /* RLERegion.cpp */,
 				D6BC379C0AB22C85003949C5 /* RLERegion.h */,
 				D6BC379D0AB22C85003949C5 /* RoadNetUtils.cpp */,
@@ -3544,8 +3546,6 @@
 		D6EAD1900E6DBA8900FC011A /* SDK */ = {
 			isa = PBXGroup;
 			children = (
-				025D81142B9858A30005A88E /* WED_TerPlacement.cpp */,
-				025D81132B9858A30005A88E /* WED_TerPlacement.h */,
 				02635DA329B2C2AC00F5F433 /* libtess2 */,
 				02635D4F29B2C25000F5F433 /* lib_json */,
 			);
@@ -3667,6 +3667,8 @@
 				D62FCE630BD513C600ED6CF8 /* WED_Windsock.cpp */,
 				D62FCE8E0BD5177D00ED6CF8 /* WED_TowerViewpoint.h */,
 				D62FCE8F0BD5177D00ED6CF8 /* WED_TowerViewpoint.cpp */,
+				025D81142B9858A30005A88E /* WED_TerPlacement.cpp */,
+				025D81132B9858A30005A88E /* WED_TerPlacement.h */,
 				D6226E870E4B8F6C005BD1D7 /* WED_SimpleBoundaryNode.h */,
 				D6226E880E4B8F6C005BD1D7 /* WED_SimpleBoundaryNode.cpp */,
 				D6FEC7370BE0F280006A99CC /* WED_RunwayNode.h */,
@@ -4137,7 +4139,6 @@
 				D6BC3A5C0AB22E0F003949C5 /* ViewObj.cpp in Sources */,
 				D6BC3AAC0AB2303C003949C5 /* XGUIApp.cpp in Sources */,
 				D6BC3AAF0AB2303F003949C5 /* XWin.mac.mm in Sources */,
-				025D81152B9858A30005A88E /* WED_TerPlacement.cpp in Sources */,
 				D6BC3AB00AB23044003949C5 /* XWinGL.mac.mm in Sources */,
 				D6BC3AF20AB23169003949C5 /* ObjDraw.cpp in Sources */,
 				D6BC3AF30AB2316A003949C5 /* ObjPointPool.cpp in Sources */,
@@ -4679,6 +4680,7 @@
 				D6ED370A0B67964D00D5484E /* XObjDefs.cpp in Sources */,
 				D6ED370B0B67964D00D5484E /* XChunkyFileUtils.cpp in Sources */,
 				D6ED370C0B67964D00D5484E /* md5.c in Sources */,
+				025D81552B9864DE0005A88E /* WED_OrthoExport.cpp in Sources */,
 				D6183B991D7CA28200E606E9 /* WED_TruckParkingLocation.cpp in Sources */,
 				D6ED370D0B67964D00D5484E /* ogle.cpp in Sources */,
 				02DE8EE8241FC37E003E72C5 /* 7zStream.c in Sources */,
@@ -4752,6 +4754,7 @@
 				D6A182030BA6196B00BBCD0C /* WED_Root.cpp in Sources */,
 				D6A184B30BA8311000BBCD0C /* GUI_Button.cpp in Sources */,
 				D6A184FD0BA833E700BBCD0C /* GUI_DrawUtils.cpp in Sources */,
+				025D81402B9864830005A88E /* WED_TerPlacement.cpp in Sources */,
 				D6AF0A521F44E7B400CC7328 /* WED_FacadePreview.cpp in Sources */,
 				02D82422239EF2A90008DBF2 /* CpuArch.c in Sources */,
 				029CA2442A01EDDB00069CFA /* WED_ShapeNode.cpp in Sources */,
@@ -4815,6 +4818,7 @@
 				D6F8E4BA0C3C861C007A2EA7 /* WED_TextureNode.cpp in Sources */,
 				D6536E9C0C3D7F3100005385 /* WED_TexMgr.cpp in Sources */,
 				D66864250C4F783C00DB3056 /* WED_DSFExport.cpp in Sources */,
+				025D817F2B9869E10005A88E /* DEMDefs.cpp in Sources */,
 				D67B1C010C54EC4000A21ABC /* WED_Ring.cpp in Sources */,
 				D67B28670C5647EF00A21ABC /* STLUtils.cpp in Sources */,
 				D633FA8B0E12E02000A3913F /* PCSBSocketUDP.lin.cpp in Sources */,
