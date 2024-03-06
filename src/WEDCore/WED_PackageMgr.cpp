@@ -469,6 +469,9 @@ string		WED_PackageMgr::ReducePath(const string& package, const string& full_fil
 		prefix.erase(0,chop+1);
 		partial = string("../") + partial;
 	}
+#if IBM
+	std::replace(partial.begin(), partial.end(), DIR_CHAR, '/');
+#endif
 	return partial;
 }
 
