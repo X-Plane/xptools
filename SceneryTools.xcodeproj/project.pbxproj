@@ -63,6 +63,7 @@
 		024A328E2864D797000CEF68 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 024A32562864D4CF000CEF68 /* libz.tbd */; };
 		024A32992864D7A2000CEF68 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 024A32562864D4CF000CEF68 /* libz.tbd */; };
 		024A32A42864D7AC000CEF68 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 024A32562864D4CF000CEF68 /* libz.tbd */; };
+		025D81152B9858A30005A88E /* WED_TerPlacement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 025D81142B9858A30005A88E /* WED_TerPlacement.cpp */; };
 		02635D7429B2C25000F5F433 /* json_writer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02635D6529B2C25000F5F433 /* json_writer.cpp */; };
 		02635D7529B2C25000F5F433 /* json_internalmap.inl in Resources */ = {isa = PBXBuildFile; fileRef = 02635D6629B2C25000F5F433 /* json_internalmap.inl */; };
 		02635D7629B2C25000F5F433 /* json_reader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02635D6729B2C25000F5F433 /* json_reader.cpp */; };
@@ -1044,6 +1045,8 @@
 		0224ED2820048B7F004729CD /* WED_ValidateList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ValidateList.h; sourceTree = "<group>"; };
 		0236B971203425CE0046900C /* check_buttons.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = check_buttons.png; sourceTree = "<group>"; };
 		024A32562864D4CF000CEF68 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
+		025D81132B9858A30005A88E /* WED_TerPlacement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WED_TerPlacement.h; path = src/WEDEntities/WED_TerPlacement.h; sourceTree = SOURCE_ROOT; };
+		025D81142B9858A30005A88E /* WED_TerPlacement.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = WED_TerPlacement.cpp; path = src/WEDEntities/WED_TerPlacement.cpp; sourceTree = SOURCE_ROOT; };
 		025E09DF20D2F11200DD8856 /* line_BSolidWhite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = line_BSolidWhite.png; sourceTree = "<group>"; };
 		02635D5329B2C25000F5F433 /* reader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = reader.h; sourceTree = "<group>"; };
 		02635D5429B2C25000F5F433 /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
@@ -3537,6 +3540,8 @@
 		D6EAD1900E6DBA8900FC011A /* SDK */ = {
 			isa = PBXGroup;
 			children = (
+				025D81142B9858A30005A88E /* WED_TerPlacement.cpp */,
+				025D81132B9858A30005A88E /* WED_TerPlacement.h */,
 				02635DA329B2C2AC00F5F433 /* libtess2 */,
 				02635D4F29B2C25000F5F433 /* lib_json */,
 			);
@@ -4128,6 +4133,7 @@
 				D6BC3A5C0AB22E0F003949C5 /* ViewObj.cpp in Sources */,
 				D6BC3AAC0AB2303C003949C5 /* XGUIApp.cpp in Sources */,
 				D6BC3AAF0AB2303F003949C5 /* XWin.mac.mm in Sources */,
+				025D81152B9858A30005A88E /* WED_TerPlacement.cpp in Sources */,
 				D6BC3AB00AB23044003949C5 /* XWinGL.mac.mm in Sources */,
 				D6BC3AF20AB23169003949C5 /* ObjDraw.cpp in Sources */,
 				D6BC3AF30AB2316A003949C5 /* ObjPointPool.cpp in Sources */,
