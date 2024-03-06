@@ -21,20 +21,40 @@
  *
  */
 
-#ifndef WED_DSFExport_H
-#define WED_DSFExport_H
+#ifndef WED_OrthoExport_H
+#define WED_OrthoExport_H
 
-class	IResolver;
+class	WED_DrapedOrthophoto;
+class	WED_TerPlacement;
 class	WED_Thing;
-class	WED_Airport;
-class	DSF_export_info_t;
+class	IResolver;
+class 	WED_Document;
+typedef struct DEMGeo dem_info_t;
 
-// You will need the IResolver in case you're handling a orthophoto
-int DSF_Export(WED_Thing * base, IResolver * resolver, const string& in_package, set<WED_Thing *>& problem_items);
-int DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& pkg, int x, int y, set <WED_Thing *>& problem_children, DSF_export_info_t * export_info = nullptr);
+#include "BitmapUtils.h"
 
-// 
-int DSF_ExportAirportOverlay(IResolver * resolver, WED_Airport  * who, const string& package, set<WED_Thing *>& problem_children);
+class DSF_export_info_t
+{
+public:
+	ImageInfo	orthoImg;      // in case an orthoimage is to be converted/exported, store its info, so it does not need to be loaded it repeatedly
+	string		orthoFile;     // path to last orthoImage - so we know if there is a 2nd one to deal with - in which case we drop the first
 
+	bool		DockingJetways;
+	bool		resourcesAdded;
+private:
+	set<string> previous_dsfs;
+	string		new_dsfs;
+	WED_Document* inDoc;
+public:
+	DSF_export_info_t(IResolver* resolver = nullptr);
+	~DSF_export_info_t(void);
+	void mark_written(const string& file);
+};
 
-#endif /* WED_DSFExport_H */
+int WED_ExportOrtho(WED_DrapedOrthophoto* orth, IResolver* resolver, const string& pkg, DSF_export_info_t* export_info, string &r);
+
+int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& pkg, string &resource);
+
+bool WED_ExtractGeoTiff(dem_info_t& inMap, const char* inFileName, int post_style);
+
+#endif /* WED_OrthoExport_H */

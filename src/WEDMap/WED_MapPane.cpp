@@ -417,6 +417,7 @@ int		WED_MapPane::Map_HandleCommand(int command)
 
 	switch(command) {
 	case wed_ImportOrtho:	WED_MakeOrthos(mResolver, mMap); return 1;
+	case wed_ImportDem:		WED_MakeTerrain(mResolver, mMap); return 1;
 	case wed_PickOverlay:	WED_DoMakeNewOverlay(mResolver, mMap); return 1;
 	case wed_ToggleWorldMap:mWorldMap->ToggleVisible(); return 1;
 	case wed_ToggleNavaidMap:mNavaidMap->ToggleVisible(); return 1;

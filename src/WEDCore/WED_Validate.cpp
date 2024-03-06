@@ -42,6 +42,7 @@
 #include "WED_LinePlacement.h"
 #include "WED_PolygonPlacement.h"
 #include "WED_DrapedOrthophoto.h"
+#include "WED_TerPlacement.h"
 #include "WED_OverlayImage.h"
 #include "WED_FacadeNode.h"
 #include "WED_RampPosition.h"
@@ -236,7 +237,8 @@ static void ValidateOnePointSequence(WED_Thing* who, validation_error_vector& ms
 	     parent->GetClass() == WED_Taxiway::sClass ||          // we also test those elsewhere, but not for zero length segments
 	     parent->GetClass() == WED_ForestPlacement::sClass ||
 	     parent->GetClass() == WED_AirportBoundary::sClass ||
-	     parent->GetClass() == WED_FacadePlacement::sClass ))
+	     parent->GetClass() == WED_FacadePlacement::sClass ||
+		 parent->GetClass() == WED_TerPlacement::sClass ))
 	{
 		bool is_area = true;
 
@@ -700,10 +702,10 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 				msgs.push_back(validation_error_t(string(who->HumanReadableType()) + "'s resource " + res + " cannot be found.", err_resource_cannot_be_found, who, parent_apt));
 
 		//3. What happen if the user free types a real resource of the wrong type into the box?
-		bool matches = false;
 #define EXTENSION_DOES_MATCH(CLASS,EXT) (who->GetClass() == CLASS::sClass && FILE_get_file_extension(res) == EXT) ? true : false;
-		matches |= EXTENSION_DOES_MATCH(WED_DrapedOrthophoto, "pol");
-		matches |= EXTENSION_DOES_MATCH(WED_DrapedOrthophoto, FILE_get_file_extension(path)); //This may be a tautology
+		bool matches = who->GetClass() == WED_DrapedOrthophoto::sClass;
+//		matches |= EXTENSION_DOES_MATCH(WED_DrapedOrthophoto, "pol");
+//		matches |= EXTENSION_DOES_MATCH(WED_DrapedOrthophoto, FILE_get_file_extension(path)); //This may be a tautology
 		matches |= EXTENSION_DOES_MATCH(WED_FacadePlacement,  "fac");
 		matches |= EXTENSION_DOES_MATCH(WED_ForestPlacement,  "for");
 		matches |= EXTENSION_DOES_MATCH(WED_LinePlacement,    "lin");
@@ -714,6 +716,7 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 		matches |= EXTENSION_DOES_MATCH(WED_AutogenPlacement, "ags");
 		matches |= EXTENSION_DOES_MATCH(WED_AutogenPlacement, "agb");
 		matches |= EXTENSION_DOES_MATCH(WED_RoadEdge,         "net");
+		matches |= EXTENSION_DOES_MATCH(WED_TerPlacement,	  "tif");
 
 		if(matches == false)
 		{

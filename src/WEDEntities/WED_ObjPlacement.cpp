@@ -139,7 +139,6 @@ double WED_ObjPlacement::GetTowerViewHgt(void)
 }
 
 
-
 double 	WED_ObjPlacement::GetVisibleDeg(void) const
 {
 	// caching the objects dimension here for off-display culling in the map view. Its disregarding object rotation
@@ -265,8 +264,8 @@ void	WED_ObjPlacement::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 	if (has_msl.value == obj_setToGround && n == PropertyItemNumber(&msl))
 	{
 		info.prop_name = "."; // Do not show elevation property if its not relevant
+		return;
 	}
-	else
-		WED_Thing::GetNthPropertyInfo(n, info);
+	WED_Thing::GetNthPropertyInfo(n, info);
 }
 

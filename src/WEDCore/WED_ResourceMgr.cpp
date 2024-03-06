@@ -37,6 +37,9 @@
 #include "MathUtils.h"
 #include "BitmapUtils.h"
 
+#include "DEMDefs.h"
+#include "WED_OrthoExport.h"
+
 #if IBM
 #define DIR_CHAR '\\'
 #define DIR_STR "\\"
@@ -122,6 +125,18 @@ void	WED_ResourceMgr::Purge(void)
 	mFac.clear();
 	mStr.clear();
 	mAGP.clear();
+	mDem.clear();
+}
+
+void	WED_ResourceMgr::Purge(const string& vpath)
+{
+	auto i = mObj.find(vpath);
+	if (i != mObj.end())
+	{
+		for (auto j : (*i).second)
+			delete j;
+		mObj.erase(i);
+	}
 }
 
 bool	WED_ResourceMgr::GetAllInDir(const string& vdir, vector<pair<string, int> >& vpaths)
@@ -134,6 +149,30 @@ bool	WED_ResourceMgr::GetAllInDir(const string& vdir, vector<pair<string, int> >
 
 	return names.size();
 }
+
+bool	WED_ResourceMgr::GetDem(const string& path, dem_info_t const*& info)
+{
+	auto i = mDem.find(path);
+	if (i != mDem.end())
+	{
+		info = &i->second;
+		return true;
+	}
+	dem_info_t* out_info = &mDem[path];
+
+	out_info->mWidth = 0;
+	out_info->mHeight = 0;
+
+	string rpath = mLibrary->CreateLocalResourcePath(path);
+	if (WED_ExtractGeoTiff(*out_info, rpath.c_str(), 0))
+	{
+		info = out_info;
+		return true;
+	}
+	else
+		return false;
+}
+
 
 XObj8 * WED_ResourceMgr::LoadObj(const string& abspath)
 {
@@ -492,7 +531,7 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t const*& info)
 	pol->mUVBox = Bbox2();
 
 	pol->base_tex.clear();
-	pol->hasDecal=false;
+	pol->decal.clear();
 	pol->proj_s=1000;
 	pol->proj_t=1000;
 	pol->kill_alpha=false;
@@ -530,7 +569,7 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t const*& info)
 		}
 		else if (MFS_string_match(&s,"DECAL_LIB", true))
 		{
-			pol->hasDecal=true;
+			MFS_string(&s, &pol->decal);
 		}
 		else if (MFS_string_match(&s,"NO_ALPHA", true))
 		{
@@ -621,19 +660,17 @@ void WED_ResourceMgr::WritePol(const string& abspath, const pol_info_t& out_info
 {
 	FILE * fi = fopen(abspath.c_str(), "w");
 	if(!fi)	return;
-	fprintf(fi,"A\n850\nDRAPED_POLYGON\n\n");
-	fprintf(fi,"# Created by WED " WED_VERSION_STRING "\n");
+	fprintf(fi,"A\n850 Created by WED " WED_VERSION_STRING "\nDRAPED_POLYGON\n\n");
+	fprintf(fi, "LOAD_CENTER %.5lf %.5lf %.1f %d\n", out_info.latitude, out_info.longitude, out_info.height_Meters, out_info.ddsHeight_Pxls);
 	fprintf(fi,out_info.wrap ? "TEXTURE %s\n" : "TEXTURE_NOWRAP %s\n", out_info.base_tex.c_str());
+	if (!out_info.decal.empty())
+		fprintf(fi, "DECAL_LIB %s\n", out_info.decal.c_str());
 	fprintf(fi,"SCALE %.1lf %.1lf\n",out_info.proj_s,out_info.proj_t);
-	fprintf(fi,"LOAD_CENTER %lf %lf %.1f %d\n", out_info.latitude, out_info.longitude,out_info.height_Meters,out_info.ddsHeight_Pxls);
 	if(out_info.kill_alpha)
 		fprintf(fi,"NO_ALPHA\n");
 	if(!out_info.group.empty())
 		fprintf(fi,"LAYER_GROUP %s %d\n",out_info.group.c_str(), out_info.group_offset);
-//	if(has_decal)
-//		fprintf(fi,"DECAL_LIB lib/g10/decals/grass_and_stony_dirt_1.dcl");
 	fclose(fi);
-	gPackageMgr->Rescan(true);  // a full rescan of LibraryMgr can take a LOT of time on large systems. Find a way to only add/update this one polygon.
 }
 
 

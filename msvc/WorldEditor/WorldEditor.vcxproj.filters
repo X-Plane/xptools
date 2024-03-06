@@ -891,8 +891,17 @@
     <ClCompile Include="..\..\src\WEDEntities\WED_ShapeNode.cpp">
       <Filter>WEDEntities</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\WEDMap\WED_BoundaryLayer.cpp">
+    <ClCompile Include="..\..\src\WEDImportExport\WED_OrthoExport.cpp">
       <Filter>WEDImportExport</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\WEDEntities\WED_TerPlacement.cpp">
+      <Filter>WEDEntities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\XESCore\DEMDefs.cpp">
+      <Filter>XESCore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\WEDMap\WED_BoundaryLayer.cpp">
+      <Filter>WEDMap</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1757,8 +1766,17 @@
     <ClInclude Include="..\..\src\WEDEntities\WED_ShapeNode.h">
       <Filter>WEDEntities</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\WEDMap\WED_BoundaryLayer.h">
+    <ClInclude Include="..\..\src\WEDImportExport\WED_OrthoExport.h">
       <Filter>WEDImportExport</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDEntities\WED_TerPlacement.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\XESCore\DEMDefs.h">
+      <Filter>XESCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDMap\WED_BoundaryLayer.h">
+      <Filter>WEDMap</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

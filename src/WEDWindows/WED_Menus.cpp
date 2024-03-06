@@ -55,6 +55,7 @@ static const GUI_MenuItem_t	kFileMenu[] = {
 {	"Import Roads (+AutoGen)",0,	0,								0,	wed_ImportRoads		},
 #endif
 {	"Import Ortho&photo...", 0,		0,								0,	wed_ImportOrtho		},
+{	"Import Digital Elevation Raster...", 0, 0,						0,	wed_ImportDem		},
 {	"Export Scenery Pac&k",	'B',	gui_ControlFlag,				0,	wed_ExportPack		},
 #if HAS_GATEWAY
 {	"Submit to Airport Scenery Gateway...",0,	0,					0,	wed_ExportToGateway	},
@@ -308,7 +309,7 @@ void WED_MakeMenus(GUI_Application * inApp)
 		"Target X-Plane Version", kExportTargetMenu, file_menu, 9);
 
 	GUI_Menu advanced_menu = inApp->CreateMenu(
-		"Advanced ...", kAdvancedMenu, file_menu, 13 + 2 * HAS_GATEWAY + ROAD_EDITING );
+		"Advanced ...", kAdvancedMenu, file_menu, 14 + 2 * HAS_GATEWAY + ROAD_EDITING );
 
 	GUI_Menu edit_menu = inApp->CreateMenu(
 		"&Edit", kEditMenu, inApp->GetMenuBar(), 0);

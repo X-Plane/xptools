@@ -2006,7 +2006,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 			{
 				string vpath;
 					const pol_info_t* pol_info;
-					int lg = group_TaxiwaysBegin;
+					int lg = group_Terrain;               //  will be used for non-pol orthos, i.e, "new" png/jpg/tif
 					WED_ResourceMgr* rmgr = WED_GetResourceMgr(GetResolver());
 
 					orth->GetResource(vpath);
