@@ -1047,6 +1047,8 @@
 		024A32562864D4CF000CEF68 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		025D81132B9858A30005A88E /* WED_TerPlacement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WED_TerPlacement.h; path = src/WEDEntities/WED_TerPlacement.h; sourceTree = SOURCE_ROOT; };
 		025D81142B9858A30005A88E /* WED_TerPlacement.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = WED_TerPlacement.cpp; path = src/WEDEntities/WED_TerPlacement.cpp; sourceTree = SOURCE_ROOT; };
+		025D81342B985B990005A88E /* WED_OrthoExport.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = WED_OrthoExport.h; path = src/WEDImportExport/WED_OrthoExport.h; sourceTree = SOURCE_ROOT; };
+		025D81352B985B990005A88E /* WED_OrthoExport.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = WED_OrthoExport.cpp; path = src/WEDImportExport/WED_OrthoExport.cpp; sourceTree = SOURCE_ROOT; };
 		025E09DF20D2F11200DD8856 /* line_BSolidWhite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = line_BSolidWhite.png; sourceTree = "<group>"; };
 		02635D5329B2C25000F5F433 /* reader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = reader.h; sourceTree = "<group>"; };
 		02635D5429B2C25000F5F433 /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
@@ -2983,6 +2985,8 @@
 		D6BC373B0AB22C85003949C5 /* SDTS */ = {
 			isa = PBXGroup;
 			children = (
+				025D81352B985B990005A88E /* WED_OrthoExport.cpp */,
+				025D81342B985B990005A88E /* WED_OrthoExport.h */,
 				D6BC36CC0AB22C84003949C5 /* Network */,
 				D6BC373D0AB22C85003949C5 /* SDTSRead.cpp */,
 				D6BC373E0AB22C85003949C5 /* SDTSRead.h */,
