@@ -88,8 +88,8 @@ WED_Ring * WED_RingfromImage(char * path, WED_Archive * arch, WED_MapZoomerNew *
 
 		coords[0] = zoomer->PixelToLL(center + Vector2(-pix_w, -pix_h));
 		coords[1] = zoomer->PixelToLL(center + Vector2(pix_w, -pix_h));
-		coords[3] = zoomer->PixelToLL(center + Vector2(pix_w, +pix_h));
-		coords[2] = zoomer->PixelToLL(center + Vector2(-pix_w, +pix_h));
+		coords[2] = zoomer->PixelToLL(center + Vector2(pix_w, +pix_h));
+		coords[3] = zoomer->PixelToLL(center + Vector2(-pix_w, +pix_h));
 	}
 
 	WED_Ring * rng = WED_Ring::CreateTyped(arch);
@@ -201,9 +201,11 @@ void	WED_MakeOrthos(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 						corners.pts.resize(4);
 						auto corner = corners.pts.data();
 
-						for(int i = 0; i < 4; ++i)
-							dynamic_cast<WED_TextureBezierNode *>(rng0->GetNthPoint(i))->GetLocation(gis_Geo,corners.pts[i]);
-							
+						dynamic_cast<WED_TextureBezierNode *>(rng0->GetNthPoint(0))->GetLocation(gis_Geo,corners.pts[0]);
+						dynamic_cast<WED_TextureBezierNode *>(rng0->GetNthPoint(1))->GetLocation(gis_Geo,corners.pts[1]);
+						dynamic_cast<WED_TextureBezierNode *>(rng0->GetNthPoint(3))->GetLocation(gis_Geo,corners.pts[2]);    //gcp go by rows/colums, but corners counterclockwise
+						dynamic_cast<WED_TextureBezierNode *>(rng0->GetNthPoint(2))->GetLocation(gis_Geo,corners.pts[3]);
+
 						int kopt_x = ceil(orig_x / 1600.0);    // typ 70%, min 64% of original resolution
 						int kopt_y = ceil(orig_y / 1600.0);
 						if(kopt_x < kpix_x || kopt_y < kpix_y)
@@ -263,6 +265,7 @@ void	WED_MakeOrthos(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 								rng->SetParent(dpol,0);
 								dpol->SetParent(wrl,0);
 								sel->Insert(dpol);
+
 								dpol->SetResource(img_path);
 								dpol->SetSubTexture(b);             // Turn on auto-redraping. So one can punch holes into them w/o distortion.
 
