@@ -48,6 +48,7 @@
 #include "GUI_Broadcaster.h"
 #include "IBase.h"
 #include "XObjDefs.h"
+#include "DEMDefs.h"
 #include "CompGeomDefs2.h"
 #include <list>
 

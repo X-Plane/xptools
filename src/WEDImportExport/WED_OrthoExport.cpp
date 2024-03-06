@@ -480,8 +480,8 @@ void copy_tile(const T* v, int x, int y, int w, int h, dem_info_t& dem)
 	if (tif)
 	{
 		double	corners[8];
-		if (!FetchTIFFCornersWithTIFF(tif, corners, post_style))
-			goto bail;
+		if (FetchTIFFCornersWithTIFF(tif, corners, post_style))
+	{
 
 		// this assumes geopgrahic, not projected coordinates ...
 		inMap.mWest = corners[0];
@@ -603,6 +603,8 @@ void copy_tile(const T* v, int x, int y, int w, int h, dem_info_t& dem)
 			XTIFFClose(tif);
 			return true;
 		}
+	
+	}
 	bail:
 		XTIFFClose(tif);
 		LOG_MSG("E/Dem Error reading DEM %s\n", inFileName);
