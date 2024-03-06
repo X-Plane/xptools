@@ -952,7 +952,7 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 		// ATTR_LOD
 		ter_obj.lods.push_back(XObjLOD8());
 		ter_obj.lods.back().lod_near = 0;
-		ter_obj.lods.back().lod_far = lod_dist; // fltlim(lod_dist, 1000, 20000);
+		ter_obj.lods.back().lod_far = fltlim(lod_dist, 1000, 20000);
 		// ATTR_HARD
 		if (ter->IsHardSurface())
 		{
