@@ -415,25 +415,42 @@ int WED_ExportOrtho(WED_DrapedOrthophoto* orth, IResolver* resolver, const strin
 static WED_DrapedOrthophoto* find_ortho(Polygon2 area, Bbox2 area_box, WED_Thing* base)
 {
 	string res;
+	Bbox2 bnds;
 	auto lmgr = WED_GetLibraryMgr(base->GetArchive()->GetResolver());
 	vector<WED_DrapedOrthophoto*> orthos;
-	CollectRecursive(base, back_inserter(orthos));
-	for (auto o : orthos)
+	CollectRecursive(base, back_inserter(orthos), ThingNotHidden, [&](WED_Thing* pol)->bool {
+		static_cast<WED_DrapedOrthophoto*>(pol)->GetBounds(gis_Geo, bnds);
+		return bnds.overlap(area_box);          // fast cull - ortho must at least partially overlap the .ter object as drawn
+		},
+		WED_DrapedOrthophoto::sClass);
+
+	double overlap = 0.0;
+	WED_DrapedOrthophoto* most_overlapping = nullptr;
+
+	for(auto o : orthos)
 	{
-		Bbox2 b;
-		o->GetBounds(gis_Geo, b);               // fast cull - ortho must fully enclose .ter object as drawn
-		if (b.contains(area_box))               // todo - allow go across a multiple orthos, create all .ter and merge in .agp
-		{										// do check area is truly fully enclosed by ortho ?
-			o->GetResource(res);
-			if (!lmgr->IsResourceLibrary(res))  // not a library means its gotta be local. 
-				                                // can't use IsResourceLocal() because if its a true WED orthophoto patch, its not a .pol
-				                                // but the .tif/.jpg thats is going to be used to make the .pol/.dds based on the name of the ortho
+		o->GetResource(res);
+		if (!lmgr->IsResourceLibrary(res))  // not a library means its gotta be local. 
+											// can't use IsResourceLocal() because if its a true WED orthophoto patch, its not a .pol
+											// but the .tif/.jpg going to be used to make the .pol/.dds based on the name of the ortho
+		{
+			o->GetBounds(gis_Geo, bnds);
+			if (bnds.contains(area_box))    // this assumes ortho is square, maybe not always the case? ? For now, assume it is
+			{										 
+				return o;                   // Terrain is fully within the orthos bounding box, so that is obviously the one.
+			}
+			else                            // partial overlap only, so rank them
 			{
-				return o;                          
+				double ovlp = area_box.clamp(bnds).area();
+				if (ovlp > overlap)
+				{
+					overlap = ovlp;
+					most_overlapping = o;
+				}
 			}
 		}
 	}
-	return nullptr;
+	return most_overlapping;
 }
 
 enum {
@@ -628,7 +645,7 @@ void copy_tile(const T* v, int x, int y, int w, int h, dem_info_t& dem)
  }
 
 static int mesh2obj(XObj8& obj, const Polygon2& area, const CoordTranslator2& ll2mtr, const CoordTranslator2& ll2uv,
-                     const DEMGeo& dem, float deres_factor, float skirt_depth, const Polygon2& area_dem, float clip_elev)
+                     const DEMGeo& dem, int deres_factor, float skirt_depth, const Polygon2& area_dem, float clip_elev)
 {
 	Bbox2 bounds = area.bounds();
 	DEMGeo ldem;
@@ -721,8 +738,8 @@ static int mesh2obj(XObj8& obj, const Polygon2& area, const CoordTranslator2& ll
 					pt[3] = NX(x,y);              // nml
 					pt[4] = NZ(x,y);
 					pt[5] = -NY(x,y);
-					pt[6] = ll2uv.Forward(p).x();  // uv
-					pt[7] = ll2uv.Forward(p).y();
+					pt[6] = fltlim(ll2uv.Forward(p).x(), 0, 1);  // uv
+					pt[7] = fltlim(ll2uv.Forward(p).y(), 0, 1);
 
 					return obj.geo_tri.accumulate(pt);
 				};
@@ -942,7 +959,7 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 			}
 		}
 		ter_obj.glass_blending = 0;
-		float clip_elev = ter->IsClip() ? -ter->GetCustomMSL() /* (ter->GetMSLType() != 0) */ : -999.0;
+		float clip_elev = ter->MSLClip() - ter->GetCustomMSL() * (ter->GetMSLType() != 0);
 
 		// create & add mesh
 		// the super-sily proof-of-concept function
