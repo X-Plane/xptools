@@ -16,7 +16,8 @@ CHANGE HISTORY
 WED 2.6 b1
    Features:
    - polygonal exclusion zones for XP 12.05+
-   - dedicated shape entities for 3rd party scenery creation tools
+   - new entity: shapes to support 3rd party scenery creation tools
+   - new entity: terrain_objects for DEM based, 3D ortho terrain
    - WED-671: delete DSF written at prior export, but now empty
    - polygons in Library Preview pane show tiled shader effects
    - after import from gateway, keep all groups collapsed/closed
@@ -35,6 +36,7 @@ WED 2.6 b1
    - WED-1482 fix typo in meta tag allows-circuits, repair at file open/apt import
    - refine validation for trans_altitudes and trans_level, allow flight levels
    - WED-1493 fix airport not validated upon manual trigger and not at toplevel of hierachy
+   - WED-1487 improve facades and agp objects shown function of showlevel
 
 WED 2.5.1r1 3/20/23
    Bug fix:
