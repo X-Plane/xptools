@@ -435,9 +435,11 @@ void draw_agp_at_ll(ITexMgr * tman, const agp_t * agp, const Point2& loc, float 
 		glEnd();
 		glEnable(GL_CULL_FACE);
 	}
+	srand(42);
 	for (auto& o : ti.objs)
 	{
-		if ((o.show_lo + o.show_hi) / 2 <= preview_level)
+		double probability = (1.0 + preview_level - o.show_lo) / (1.0 + o.show_hi - o.show_lo);
+		if (preview_level >= o.show_lo && probability * RAND_MAX > rand())
 		if (ppm * max(o.obj->xyz_max[0] - o.obj->xyz_min[0], o.obj->xyz_max[2] - o.obj->xyz_min[2]) > MIN_PIXELS_PREVIEW)
 		{
 			if (o.scp_step > 0.0)
@@ -1200,8 +1202,9 @@ struct	preview_airportlights : WED_PreviewItem {
 
 struct	preview_facade : public preview_polygon {
 	WED_FacadePlacement * fac;
+	int preview_level;
 	IResolver * resolver;
-	preview_facade(WED_FacadePlacement * f, int l, IResolver * r) : preview_polygon(f,l,false), fac(f), resolver(r) { }
+	preview_facade(WED_FacadePlacement * f, int l, IResolver * r, int pl) : preview_polygon(f,l,false), fac(f), resolver(r), preview_level (pl) { }
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
 	{
 		IGISPointSequence * ps = fac->GetOuterRing();
@@ -1349,7 +1352,7 @@ struct	preview_facade : public preview_polygon {
 			zoomer->Rotatef(90, 1,0,0);
 
 			if(rmgr->GetFac(vpath, info))
-				draw_facade(tman, rmgr, vpath, *info, pts, choices, fac->GetHeight(), g, true, 0.7 * zoomer->PixelSize(bb_geo, 1.0));
+				draw_facade(tman, rmgr, vpath, *info, pts, choices, fac->GetHeight(), g, true, 0.7 * zoomer->PixelSize(bb_geo, 1.0), preview_level);
 			zoomer->PopMatrix();
 		}
 
@@ -2020,7 +2023,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	{
 		auto fac = dynamic_cast<WED_FacadePlacement*>(entity);
 		if(fac && fac->GetShowLevel() <= mObjDensity)
-			mPreviewItems.push_back(new preview_facade(fac,group_Objects, GetResolver()));
+			mPreviewItems.push_back(new preview_facade(fac,group_Objects, GetResolver(), mObjDensity));
 	}
 	else if (sub_class == WED_ForestPlacement::sClass)
 	{

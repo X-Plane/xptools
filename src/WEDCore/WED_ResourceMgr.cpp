@@ -1060,6 +1060,16 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 					tpl->objs.back().xyzr[1] =MFS_double(&s);
 					tpl->objs.back().xyzr[2] =MFS_double(&s);
 					tpl->objs.back().xyzr[3] =MFS_double(&s);
+					if (MFS_has_word(&s))
+					{
+						tpl->objs.back().show[0] = MFS_int(&s);
+						tpl->objs.back().show[1] = MFS_int(&s);
+					}
+					else
+					{
+						tpl->objs.back().show[0] = 1;
+						tpl->objs.back().show[1] = 1;
+					}
 				}
 				else if(MFS_string_match(&s,"SPELLING", false))
 				{
