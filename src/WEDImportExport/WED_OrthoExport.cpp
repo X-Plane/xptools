@@ -861,6 +861,8 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 		Polygon2 ter_poly, ter_skirt;
 		IGISPointSequence* ter_ps;
 		auto wrl = WED_GetWorld(resolver);
+		auto rmgr = WED_GetResourceMgr(resolver);
+
 		if (ter_ps = ter_pol->GetOuterRing())
 			WED_PolygonForPointSequence(ter_ps, ter_poly, COUNTERCLOCKWISE);
 
@@ -907,10 +909,10 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 		// get dem heights
 		string dem_file;
 		ter->GetResource(dem_file);
-		dem_file = pkg + dem_file;
+//		dem_file = pkg + dem_file;
 		const dem_info_t* ter_dem;
 
-		if (!(WED_GetResourceMgr(ter->GetArchive()->GetResolver())->GetDem(dem_file, ter_dem)))
+		if (!(rmgr->GetDem(dem_file, ter_dem)))
 			return -1;
 
 		// optionally change heights to be relative to terrain height
@@ -948,7 +950,7 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 		else
 		{
 			const pol_info_t* pol;
-			if (WED_GetResourceMgr(resolver)->GetPol(orthoResource, pol))
+			if (rmgr->GetPol(orthoResource, pol))
 			{
 				ter_obj.decal_lib = pol->decal;
 				if (pol->base_tex.compare(0, pkg.length(), pkg) == 0)
@@ -1011,11 +1013,7 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 
 		XObj8Write(objAbsPath.c_str(), ter_obj, msg);
 		resource = objVPath;
-#if IBM
-		std::replace(resource.begin(), resource.end(), '\\', '/');
-#endif
-		if (auto resMgr = WED_GetResourceMgr(resolver))
-			resMgr->Purge(resource);
+		rmgr->Purge(resource);
 
 		return 0;
 	}
