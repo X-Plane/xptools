@@ -178,8 +178,17 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 				loc.y_ = ter_dem->mSouth + y1 * dem_dy;
 				for (int y = y1; y <= y2; y+=inc)
 				{
-					if(poly.inside(loc))
-						glVertex2(z->LLToPixel(loc));
+					if (poly.inside(loc))
+					{
+						if(ter_dem->get(x,y) < -999.0f)     // actually, no data signaling in DEM's may be almost anything ...
+						{
+							glColor3f(1,0,1);
+							glVertex2(z->LLToPixel(loc));
+							glColor3fv(colorf);
+						}
+						else
+							glVertex2(z->LLToPixel(loc));
+					}
 					loc.y_ += dem_dy * inc;
 				}
 			}
