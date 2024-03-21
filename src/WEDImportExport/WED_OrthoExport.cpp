@@ -470,9 +470,10 @@ void copy_scanline(const T* v, int y, dem_info_t& dem)
 }
 
 template<typename T>
-void copy_tile(const T* v, int x, int y, int w, int h, dem_info_t& dem)
+void copy_tile(const T* v, int x, int y, int w, int h, int pad, dem_info_t& dem)
 {
 	for (int cy = 0; cy < h; ++cy)
+	{
 		for (int cx = 0; cx < w; ++cx)
 		{
 			int dem_x = x + cx;
@@ -481,6 +482,8 @@ void copy_tile(const T* v, int x, int y, int w, int h, dem_info_t& dem)
 			dem(dem_x, dem_y) = e;
 			++v;
 		}
+		v += pad;
+	}
 }
 
 // adapted version of equivalent function in DEMIO.h
@@ -536,32 +539,33 @@ void copy_tile(const T* v, int x, int y, int w, int h, dem_info_t& dem)
 
 					int ux = min(tw, w - x);
 					int uy = min(th, h - y);
+					int pad = tw - ux;
 
 					switch (format) 
 					{
 					case SAMPLEFORMAT_UINT:
 						switch (d) 
 						{
-						case 8:  copy_tile<unsigned char >((unsigned char*)  buf.data(), x, y, ux, uy, inMap); break;
-						case 16: copy_tile<unsigned short>((unsigned short*) buf.data(), x, y, ux, uy, inMap); break;
-						case 32: copy_tile<unsigned int  >((unsigned int*)   buf.data(), x, y, ux, uy, inMap); break;
+						case 8:  copy_tile<unsigned char >((unsigned char*)  buf.data(), x, y, ux, uy, pad, inMap); break;
+						case 16: copy_tile<unsigned short>((unsigned short*) buf.data(), x, y, ux, uy, pad, inMap); break;
+						case 32: copy_tile<unsigned int  >((unsigned int*)   buf.data(), x, y, ux, uy, pad, inMap); break;
 						default: goto bail;
 						}
 						break;
 					case SAMPLEFORMAT_INT:
 						switch (d) 
 						{
-						case 8:  copy_tile<char >((char* ) buf.data(), x, y, ux, uy, inMap); break;
-						case 16: copy_tile<short>((short*) buf.data(), x, y, ux, uy, inMap); break;
-						case 32: copy_tile<int  >((int*  ) buf.data(), x, y, ux, uy, inMap); break;
+						case 8:  copy_tile<char >((char* ) buf.data(), x, y, ux, uy, pad, inMap); break;
+						case 16: copy_tile<short>((short*) buf.data(), x, y, ux, uy, pad, inMap); break;
+						case 32: copy_tile<int  >((int*  ) buf.data(), x, y, ux, uy, pad, inMap); break;
 						default: goto bail;
 						}
 						break;
 					case SAMPLEFORMAT_IEEEFP:
 						switch (d) 
 						{
-						case 32: copy_tile<float >((float* ) buf.data(), x, y, ux, uy, inMap); break;
-						case 64: copy_tile<double>((double*) buf.data(), x, y, ux, uy, inMap); break;
+						case 32: copy_tile<float >((float* ) buf.data(), x, y, ux, uy, pad, inMap); break;
+						case 64: copy_tile<double>((double*) buf.data(), x, y, ux, uy, pad, inMap); break;
 						default: goto bail;
 						}
 						break;
@@ -662,7 +666,7 @@ static int mesh2obj(XObj8& obj, const Polygon2& area, const CoordTranslator2& ll
 			{
 				double lon = smaller.x_to_lon(x);
 				double lat = smaller.y_to_lat(y);
-				smaller(x, y) = max(ldem.value_linear(lon,lat), clip_elev);
+				smaller(x, y) = ldem.value_linear(lon,lat);
 			}
 		ldem.swap(smaller);
 	}
@@ -678,7 +682,9 @@ static int mesh2obj(XObj8& obj, const Polygon2& area, const CoordTranslator2& ll
 		for (int x = 0; x < ldem.mWidth; x++)
 		{
 			auto pt = Point2(ldem.x_to_lon(x), ldem.y_to_lat(y));
-			if (!area.inside(pt))
+			if (area.inside(pt))
+				ldem(x, y) = max(ldem(x, y), clip_elev);
+			else
 				ldem.zap(x, y);
 		}
 
