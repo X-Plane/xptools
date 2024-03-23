@@ -1021,8 +1021,8 @@ struct	preview_string : WED_PreviewItem {
 					g->SetState(false, 1, false, true, true, true, true);
 					glColor3f(1,1,1);
 
-					double ds = str->GetSpacing();
-					double d0 = ds * 0.5;
+					double ds = (int) str->GetSpacing();
+					double d0 = ds * 0.33;
 
 					for(int i = 0; i < ps->GetNumSides(); ++i)
 					{

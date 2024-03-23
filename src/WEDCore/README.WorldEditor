@@ -37,6 +37,7 @@ WED 2.6 b1
    - refine validation for trans_altitudes and trans_level, allow flight levels
    - WED-1493 fix airport not validated upon manual trigger and not at toplevel of hierachy
    - WED-1487 improve facades and agp objects shown function of showlevel
+   - improve object location accuracy for previews of objwect strings
 
 WED 2.5.1r1 3/20/23
    Bug fix:
