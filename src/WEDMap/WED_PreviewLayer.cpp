@@ -1254,7 +1254,7 @@ struct	preview_facade : public preview_polygon {
 					static Point2 pt;
 					ps->GetNthPoint(i + 2)->GetLocation(gis_Geo, pt);
 
-					static float extension_min, extension_max;
+					static float extension_min, extension_max;   // tunnel length capability
 					auto cbk = [](const char* dref, float v1, float v2, void* ref) -> float
 					{
 						float retval;
@@ -1268,9 +1268,12 @@ struct	preview_facade : public preview_polygon {
 						{
 							retval = -VectorDegs2NorthHeading(b.p1, b.p1, Vector2(b.p1, b.p2)) + VectorDegs2NorthHeading(b.p2, b.p2, Vector2(b.p2, pt));
 							retval = fltwrap(retval, -180, 180);
+							return fltlim(retval, -92.5, 32.5);    /// thats a limitation choosen by the sim internal animation code.
 						}
 						else // if (strcmp(dref, "sim/graphics/animation/jetways/jw_base_rotation") == 0)
+						{
 							retval = 0.0;
+						}
 						return fltlim(retval, v1, v2);
 					};
 
@@ -1278,34 +1281,62 @@ struct	preview_facade : public preview_polygon {
 						draw_obj_at_ll(tman, my_tun.o, b.p1, 0, VectorDegs2NorthHeading(b.p1, b.p1, Vector2(b.p1, b.p2)), g, zoomer, cbk);
 
 					g->SetState(false, 0, false, true, true, false, false);
-					glColor4f(1, 0, 0, 0.2);
+					glColor4f(1, 0, 0, 0.1);
 
 					Point2	b1 = zoomer->LLToPixel(b.p1);
 					Point2  b2 = zoomer->LLToPixel(b.p2);
-					Vector2 dir(b1, b2);
-					dir.normalize();
-					dir *= zoomer->GetPPM();
-					b1 += dir.perpendicular_ccw() * 2.5;         // place the 'serviced area' indication about at the cabin baffle location
+					Vector2 dir0(b1, b2);
+					dir0.normalize();
+					dir0 *= zoomer->GetPPM();
+					b1 += dir0.perpendicular_ccw() * 2.5;         // place the 'serviced area' indication about at the cabin baffle location
 
-					glBegin(GL_TRIANGLE_FAN);
-						dir.rotate_by_degrees(-15);
+					const int stepsize = 10;
+					glBegin(GL_TRIANGLE_FAN);                      // what we want artists to use, "safe reach"
+						Vector2 dir(dir0);
+						int i(5);
+						dir.rotate_by_degrees(-i);
 						glVertex2(b1 + dir * extension_max);
+						for (; i < 15; i += stepsize)
+						{
+							dir.rotate_by_degrees(-stepsize);
+							glVertex2(b1 + dir * extension_max);
+						}
 						glVertex2(b1 + dir * extension_min);
-						const int stepsize = 10;
-						const int arc_angle = 45 + 15;
-						for (int i = 0; i < arc_angle; i += stepsize)
+						for (; i > -45; i -= stepsize)
 						{
 							dir.rotate_by_degrees(stepsize);
 							glVertex2(b1 + dir * extension_min);
 						}
 						glVertex2(b1 + dir * extension_max);
-						for (int i = 0; i < arc_angle; i += stepsize)
+						for (; i <= 0; i += stepsize)
 						{
 							dir.rotate_by_degrees(-stepsize);
 							glVertex2(b1 + dir * extension_max);
 						}
 					glEnd();
-					g->EnableDepth(true, true);
+
+					dir = dir0;
+					extension_max += 2.5;
+					glBegin(GL_TRIANGLE_FAN);                       // maximum capability of tunnel to reach
+						glVertex2(b1 + dir * extension_max);
+						for (i=0; i < 40; i += stepsize)
+						{
+							dir.rotate_by_degrees(-stepsize);
+							glVertex2(b1 + dir * extension_max);
+						}
+						for (; i > -50; i -= stepsize)
+						{
+							glVertex2(b1 + dir * (i >= 0 ? extension_min + 2.5 : extension_min));
+							dir.rotate_by_degrees(stepsize);
+						}
+						glVertex2(b1 + dir * extension_min);
+						for (; i <= 0; i += stepsize)
+						{
+							glVertex2(b1 + dir * extension_max);
+							dir.rotate_by_degrees(-stepsize);
+						}
+						glEnd();
+						g->EnableDepth(true, true);
 
 				}
 				if (i > n-2 && fac->HasDockingCabin())

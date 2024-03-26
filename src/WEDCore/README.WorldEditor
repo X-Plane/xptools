@@ -25,6 +25,7 @@ WED 2.6 b1
    - suggest to delete obsolete items when downloading XP11 airports from GW
    - WED-1496 add gw_credits meta tag at gateway export
    - XPD-15016 Disallow circuits at GW export for one-way airports
+   - refined preview of safe vs ultimate service range of jetways
    Bug fix:
    - fix Obj8 drawing not recognizing ATTR_no_blend threshold values
    - validate ObjectString spacing parameter to be non-zero
@@ -37,7 +38,7 @@ WED 2.6 b1
    - refine validation for trans_altitudes and trans_level, allow flight levels
    - WED-1493 fix airport not validated upon manual trigger and not at toplevel of hierachy
    - WED-1487 improve facades and agp objects shown function of showlevel
-   - improve object location accuracy for previews of objwect strings
+   - WED-1501 improve object location accuracy for previews of object strings
 
 WED 2.5.1r1 3/20/23
    Bug fix:
