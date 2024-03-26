@@ -119,12 +119,15 @@ DSF_export_info_t::~DSF_export_info_t(void)
 
 void DSF_export_info_t::mark_written(const string& file)
 {
-	previous_dsfs.erase(file);
+	string unix_file(file);
+	std::replace(unix_file.begin(), unix_file.end(), '\\', '/');
+
+	previous_dsfs.erase(unix_file);
 	if (new_dsfs.length() < 200)   // 10 dsf files max remembered. Don't let a GW export blow this up ..
 	{
 		if (!new_dsfs.empty())
 			new_dsfs += " ";
-		new_dsfs += file;
+		new_dsfs += unix_file;
 	}
 }
 
@@ -937,6 +940,12 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 		ortho->GetName(orthoName);
 		string terName;
 		ter->GetName(terName);
+		if (terName.find_first_of("/\\:") != string::npos)
+		{
+			DoUserAlert((string("Terrain '") + terName + "' name must not contain any of the letters /, \\ or :").c_str());
+			return -1;
+		}
+
 		string objName = FILE_get_file_name_wo_extensions(orthoName) + "_" + FILE_get_file_name_wo_extensions(terName) + ".obj";
 		string objVPath = FILE_get_dir_name(orthoResource) + objName;
 
