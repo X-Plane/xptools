@@ -184,7 +184,7 @@ bool		WED_FacadePlacement::IsJetway(int * cabin, int * tunnel) const
 }
 
 
-bool		WED_FacadePlacement::HasDockingCabin(void) const
+int   WED_FacadePlacement::HasDockingCabin(void) const
 {
 	if (gExportTarget < wet_xplane_1200) return false;
 
@@ -199,8 +199,9 @@ bool		WED_FacadePlacement::HasDockingCabin(void) const
 		if (auto end = ps->GetNthPoint(n_pts - 1))
 		{
 			end->GetLocation(gis_Param, pt);
-			if (pt.x() < 39.0)          // WED 2.0-2.4 define enums for walls 0-39
+			if (pt.x() < 39.0)          // WED 2.0-2.4 define enums for walls 0-39, #39 mean "not docking', #38 'not door 1 but door 2'
 			{
+				int door = pt.x() == 38 ? 2 : 1;
 				if (auto cabin = ps->GetNthPoint(n_pts - 2))
 				{
 					cabin->GetLocation(gis_Param, pt);
@@ -211,14 +212,14 @@ bool		WED_FacadePlacement::HasDockingCabin(void) const
 							tunnel->GetLocation(gis_Param, pt);
 							for(auto& t : f->tunnels)
 								if (pt.x() == t.idx)
-									return true;
+									return door;
 						}
 					}
 				}
 			}
 		}
 	}
-	return false;
+	return 0;
 }
 
 void		WED_FacadePlacement::ExportJetway(Jetway_t& jetway)
@@ -250,6 +251,8 @@ void		WED_FacadePlacement::ExportJetway(Jetway_t& jetway)
 				if (type.x() == t.idx)
 				{
 					jetway.size_code = t.size_code;
+					if (HasDockingCabin() == 2)
+						jetway.size_code += 10;
 					tun_path = t.obj;
 					break;
 				}
@@ -329,9 +332,9 @@ void		WED_FacadePlacement::ImportJetway(const Jetway_t& apt_data, void(*print_fu
 	else
 		p_tunnel = dynamic_cast<WED_FacadeNode *>(GetNthEntity(0));
 	if(f && f->tunnels.size())
-		p_tunnel->SetWallType(f->tunnels[apt_data.size_code].idx);
+		p_tunnel->SetWallType(f->tunnels[apt_data.size_code % 10].idx);
 	else
-		p_tunnel->SetWallType(4 + apt_data.size_code); // best guess - thats what the initial facades used
+		p_tunnel->SetWallType(4 + apt_data.size_code % 10); // best guess - thats what the initial facades used
 	p_tunnel->SetLocation(gis_Geo, apt_data.location); // in case we append to a facade - this forces the existing last node to be exactly where the
 	                                                   // jetway starts. Maybe check if that is at least somewhere "close" and abort if not ?
 
@@ -351,7 +354,10 @@ void		WED_FacadePlacement::ImportJetway(const Jetway_t& apt_data, void(*print_fu
 	auto p_end = WED_FacadeNode::CreateTyped(GetArchive());
 	p_end->SetParent(ring, p_cabin->GetMyPosition() + 1);
 	p_end->SetName("End Node");
-	p_end->SetWallType(0);
+	if (apt_data.size_code >= 10)
+		p_end->SetWallType(38);
+	else
+		p_end->SetWallType(0);
 	NorthHeading2VectorDegs(apt_data.location, apt_data.location, apt_data.parked_cab_heading, dir);
 	pt += dir * 5.0 * MTR_TO_DEG_LAT;
 	p_end->SetLocation(gis_Geo, pt);

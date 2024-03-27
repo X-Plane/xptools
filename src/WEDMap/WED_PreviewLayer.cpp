@@ -1238,7 +1238,8 @@ struct	preview_facade : public preview_polygon {
 				static Bezier2		b;
 				ps->GetSide(gis_Geo, i, b);
 
-				if (i == n-2 && fac->HasDockingCabin())
+				if (i == n-2)
+				if (int door = fac->HasDockingCabin())
 				{
 					auto my_tun = info->tunnels[0];
 					Bezier2 bp;
@@ -1281,7 +1282,10 @@ struct	preview_facade : public preview_polygon {
 						draw_obj_at_ll(tman, my_tun.o, b.p1, 0, VectorDegs2NorthHeading(b.p1, b.p1, Vector2(b.p1, b.p2)), g, zoomer, cbk);
 
 					g->SetState(false, 0, false, true, true, false, false);
-					glColor4f(1, 0, 0, 0.1);
+					if(door == 1)
+						glColor4f(1.0, 0, 0, 0.15);
+					else
+						glColor4f(0.8, 0, 0.5, 0.2);
 
 					Point2	b1 = zoomer->LLToPixel(b.p1);
 					Point2  b2 = zoomer->LLToPixel(b.p2);
@@ -1326,7 +1330,7 @@ struct	preview_facade : public preview_polygon {
 						}
 						for (; i > -50; i -= stepsize)
 						{
-							glVertex2(b1 + dir * (i >= 0 ? extension_min + 2.5 : extension_min));
+							glVertex2(b1 + dir * (i > 0 ? extension_min + 2.5 : extension_min));
 							dir.rotate_by_degrees(stepsize);
 						}
 						glVertex2(b1 + dir * extension_min);
