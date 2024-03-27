@@ -40,6 +40,7 @@
 #include "WED_AutogenPlacement.h"
 #include "WED_ExclusionPoly.h"
 #include "WED_LinePlacement.h"
+#include "WED_LightFixture.h"
 #include "WED_PolygonPlacement.h"
 #include "WED_DrapedOrthophoto.h"
 #include "WED_TerPlacement.h"
@@ -2708,6 +2709,20 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		if(has_ATC && ai_useable_ramps < 1)
 			msgs.push_back(validation_error_t("Airports with ATC towers frequencies must have at least one Ramp Start of type=gate or tiedown.", err_ramp_need_starts_suitable_for_ai_ops, apt, apt));
 	}
+
+	if (gExportTarget < wet_xplane_1200)
+	{
+		vector<WED_LightFixture*> lights;
+		CollectRecursive(apt, back_inserter(lights));
+		for (auto l : lights)
+		{
+			AptLight_t info;
+			l->Export(info);
+			if (info.light_code >= apt_gls_apapi_left)
+				msgs.push_back(validation_error_t("APAPI are only supported in X-Plane 12 and later", err_airport_apapi_only_xp12, l, apt));
+		}
+	}
+
 
 	err_type = gExportTarget == wet_gateway ? err_airport_impossible_size : warn_airport_impossible_size;
 	Bbox2 bounds;
