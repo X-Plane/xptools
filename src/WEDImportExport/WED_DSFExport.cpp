@@ -96,13 +96,28 @@ int zip_printf(void * fi, const char * fmt, ...)
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 
-static unsigned int encode_heading(double h)
+static unsigned int encode_heading(double h)     // draped polygons have 1/128th degree roation encoded in integer headings
 {
 	double          wrapped = dobwrap(h, 0.0, 360.0);
 	unsigned int  whole_deg = wrapped;
 	double         frac_deg = wrapped - whole_deg;
 
 	return whole_deg + 360u * (unsigned int)(128.0 * frac_deg);
+}
+
+static unsigned int encode_spacing(double s)     // object strings have 1/128th resolution encoded in integer spacing
+{
+	if (gExportTarget >= wet_xplane_1200 && s < 433.8)
+	{
+		unsigned int nearest = round(s);
+		double ratio = nearest == 0 ? 0.0 : s / (double) nearest;
+		if (ratio > 0.98 && ratio < 1.02)        // really close to full meters, keep using plain int, best XP11 compatibility
+			return nearest;
+		else
+			return 10000u + (unsigned int) round(128.0 * s);
+	}
+	else
+		return s;
 }
 
 // stolen from GISUtils - I got annoyed with having to grab all of CGAL for a modulo function.
@@ -1695,7 +1710,7 @@ static int	DSF_ExportTileRecursive(
 				if(!chain.empty())
 				{
 					++real_thingies;
-					DSF_AccumChainBezier(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, str->GetSpacing(), 0);
+					DSF_AccumChainBezier(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, encode_spacing(str->GetSpacing()), 0);
 				}
 			}
 			else
@@ -1709,7 +1724,7 @@ static int	DSF_ExportTileRecursive(
 				if(!chain.empty())
 				{
 					++real_thingies;
-					DSF_AccumChain(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, str->GetSpacing(), 0);
+					DSF_AccumChain(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, encode_spacing(str->GetSpacing()), 0);
 				}
 			}
 			return real_thingies;
