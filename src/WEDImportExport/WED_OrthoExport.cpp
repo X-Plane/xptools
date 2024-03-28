@@ -983,7 +983,7 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 //		poly2obj(ter_obj, area, ll2mtr, ll2uv, ter_dem.value_linear(ter_corners.centroid()));
 		int skirt_idx = mesh2obj(ter_obj, ter_poly, ll2mtr, ll2uv, *ter_dem, ter->GetSamplingFactor(), ter->GetSkirtDepth(), ter_skirt, clip_elev);
 
-		float lod_dist = 20.0 * ceil(LonLatDistMeters(ter_box.p1, ter_box.p2));
+		float lod_dist = 30.0 * ceil(LonLatDistMeters(ter_box.p1, ter_box.p2));
 
 		// ATTR_LOD
 		ter_obj.lods.push_back(XObjLOD8());
