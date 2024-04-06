@@ -2570,6 +2570,12 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	vector<WED_ObjPlacement*>		objects;
 	vector<WED_RoadEdge*>			roads;
 	vector<WED_DrapedOrthophoto *>	orthos;
+	struct jetway_info {
+		WED_FacadePlacement* fac;
+		Jetway_t			jw;
+		Point2				cabin_location;
+	};
+	vector<jetway_info>			jetways;
 
 	WED_ResourceMgr* res_mgr = WED_GetResourceMgr(apt->GetArchive()->GetResolver());
 
@@ -2611,6 +2617,20 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		else if (c == WED_ATCFrequency::sClass) {
 			auto p = static_cast<WED_ATCFrequency *>(thing);
 			if (p) freqs.push_back(p);
+			return;
+		}
+		else if (c == WED_FacadePlacement::sClass) {
+			auto f = static_cast<WED_FacadePlacement*>(thing);
+			if (f && f->HasDockingCabin() > 0)
+			{
+				jetway_info j;
+				f->ExportJetway(j.jw);
+				j.fac = f;
+				Vector2 tunnel_dir;
+				NorthHeading2VectorDegs(j.jw.location, j.jw.location, j.jw.install_heading, tunnel_dir);
+				j.cabin_location = j.jw.location + tunnel_dir * j.jw.parked_tunnel_length * MTR_TO_DEG_LAT;
+				jetways.push_back(j);
+			}
 			return;
 		}
 		else
@@ -2701,12 +2721,46 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	for(auto r : ramps)
 		ai_useable_ramps += ValidateOneRampPosition(r, msgs, apt, runways);
 
+	set<set<WED_FacadePlacement*> > double_door2_jws;
+	for (auto& j1 : jetways)
+	{
+		if (j1.jw.docking_type == Jetway_t::door2_only)
+		{
+			bool door1_nearby = false;
+			for (auto& j2 : jetways)
+			{
+				if (j1.fac == j2.fac) continue;
+
+				auto d = LonLatDistMeters(j1.cabin_location, j2.cabin_location);
+				if (d < 15.0)
+					if (j2.jw.docking_type == Jetway_t::door2_only)
+					{
+						set<WED_FacadePlacement*> jws;
+						jws.insert(j1.fac);
+						jws.insert(j2.fac);
+						double_door2_jws.insert(jws);
+					}
+					else
+						door1_nearby = true;
+			}
+			if (!door1_nearby)
+			{
+				msgs.push_back(validation_error_t("Jetways docking to door #2 only must have a jetway for door #1 nearby, serving the same ramp start.",
+					err_jetway_unmatched_door2, j1.fac, apt));
+			}
+		}
+	}
+	for(auto& j : double_door2_jws)
+		msgs.push_back(validation_error_t("There must be only one jetway docking to door #2 serving any one ramp start.",
+			err_jetway_unmatched_door2, j, apt));
+
 
 	if(gExportTarget >= wet_xplane_1050)
 	{
 		ValidateAirportMetadata(apt,msgs,apt);
 		if(has_ATC && ai_useable_ramps < 1)
-			msgs.push_back(validation_error_t("Airports with ATC towers frequencies must have at least one Ramp Start of type=gate or tiedown.", err_ramp_need_starts_suitable_for_ai_ops, apt, apt));
+			msgs.push_back(validation_error_t("Airports with ATC towers frequencies must have at least one Ramp Start of type=gate or tiedown.", 
+				err_ramp_need_starts_suitable_for_ai_ops, apt, apt));
 	}
 
 	err_type = gExportTarget == wet_gateway ? err_airport_impossible_size : warn_airport_impossible_size;

@@ -1204,7 +1204,9 @@ struct	preview_facade : public preview_polygon {
 	WED_FacadePlacement * fac;
 	int preview_level;
 	IResolver * resolver;
-	preview_facade(WED_FacadePlacement * f, int l, IResolver * r, int pl) : preview_polygon(f,l,false), fac(f), resolver(r), preview_level (pl) { }
+	bool selected;
+	preview_facade(WED_FacadePlacement * f, int l, IResolver * r, int pl, int sel) : preview_polygon(f,l,false), fac(f), resolver(r), 
+		preview_level (pl), selected(sel) { }
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
 	{
 		IGISPointSequence * ps = fac->GetOuterRing();
@@ -1282,7 +1284,13 @@ struct	preview_facade : public preview_polygon {
 						draw_obj_at_ll(tman, my_tun.o, b.p1, 0, VectorDegs2NorthHeading(b.p1, b.p1, Vector2(b.p1, b.p2)), g, zoomer, cbk);
 
 					g->SetState(false, 0, false, true, true, false, false);
-					if(door == 1)
+					if (selected)
+					{
+						float* colorf = WED_Color_RGBA(wed_StructureSelected);
+						colorf[3] = 0.2;
+						glColor4fv(colorf);
+					}
+					else if(door == 1)
 						glColor4f(1.0, 0, 0, 0.15);
 					else
 						glColor4f(0.8, 0, 0.5, 0.2);
@@ -1341,7 +1349,6 @@ struct	preview_facade : public preview_polygon {
 						}
 						glEnd();
 						g->EnableDepth(true, true);
-
 				}
 				if (i > n-2 && fac->HasDockingCabin())
 					continue;
@@ -1948,11 +1955,11 @@ WED_PreviewLayer::~WED_PreviewLayer()
 {
 }
 
-void		WED_PreviewLayer::GetCaps						(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks)
+void		WED_PreviewLayer::GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks)
 {
 	draw_ent_v = true;
 	draw_ent_s = false;
-	cares_about_sel = false;
+	cares_about_sel = true;
 	wants_clicks = false;
 }
 
@@ -2058,7 +2065,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	{
 		auto fac = dynamic_cast<WED_FacadePlacement*>(entity);
 		if(fac && fac->GetShowLevel() <= mObjDensity)
-			mPreviewItems.push_back(new preview_facade(fac,group_Objects, GetResolver(), mObjDensity));
+			mPreviewItems.push_back(new preview_facade(fac,group_Objects, GetResolver(), mObjDensity, selected));
 	}
 	else if (sub_class == WED_ForestPlacement::sClass)
 	{

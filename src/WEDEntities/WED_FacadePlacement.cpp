@@ -251,8 +251,7 @@ void		WED_FacadePlacement::ExportJetway(Jetway_t& jetway)
 				if (type.x() == t.idx)
 				{
 					jetway.size_code = t.size_code;
-					if (HasDockingCabin() == 2)
-						jetway.size_code += 10;
+					jetway.docking_type = HasDockingCabin() == 2 ? Jetway_t::door2_only : Jetway_t::door1_only;
 					tun_path = t.obj;
 					break;
 				}
@@ -354,7 +353,7 @@ void		WED_FacadePlacement::ImportJetway(const Jetway_t& apt_data, void(*print_fu
 	auto p_end = WED_FacadeNode::CreateTyped(GetArchive());
 	p_end->SetParent(ring, p_cabin->GetMyPosition() + 1);
 	p_end->SetName("End Node");
-	if (apt_data.size_code >= 10)
+	if (apt_data.docking_type == Jetway_t::door2_only)
 		p_end->SetWallType(38);
 	else
 		p_end->SetWallType(0);

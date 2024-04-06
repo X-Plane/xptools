@@ -63,8 +63,8 @@ void	WED_FacadeNode::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 			{
 				if (info->tunnels.size() && parent->CountChildren() - 1 == GetMyPosition())
 				{
-					dict[facade_Wall0] = make_pair("Auto Docking", true);
-					dict[facade_Wall38] = make_pair("Auto Docking Door #2", true);
+					dict[facade_Wall0]  = make_pair("Dock Door #1", true);
+					dict[facade_Wall38] = make_pair("Dock Door #2", true);
 					dict[facade_Wall39] = make_pair("Disable Docking", true);
 				}
 				else
@@ -104,8 +104,8 @@ void		WED_FacadeNode::GetNthPropertyDictItem(int n, int e, string& item) const
 					switch (idx)
 					{
 						case 39: item = "Disable Docking";   break;
-						case 38: item = "Auto Dock Door #2"; break;
-						default: item = "Auto Docking";
+						case 38: item = "Dock Door #2"; break;
+						default: item = "Dock Door #1";
 					}
 					return;
 				}

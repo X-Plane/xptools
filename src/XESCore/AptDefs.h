@@ -630,14 +630,17 @@ struct AptTruckDestination_t {
 typedef vector<AptTruckDestination_t> AptTruckDestinationVector;
 
 struct Jetway_t {
+
 	Point2						location;
 	float						install_heading;
 	int							style_code;	// enum
 	int							size_code;	// enum
+	enum dock_t { door1_only, door2_only }
+		 						docking_type;
 	float						parked_tunnel_heading;
 	float						parked_tunnel_length;
 	float						parked_cab_heading;
-	string						vpath;          // optional
+	string						vpath;          // optional, only for full custom jW
 };
 typedef vector<Jetway_t> JetwayVector;
 

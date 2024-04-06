@@ -100,6 +100,7 @@ enum validate_error_t
 	err_heli_name_none,
 	err_heli_not_adequetely_long,
 	err_heli_not_adequetely_wide,
+	err_jetway_unmatched_door2,
 	err_net_crosses_tile_bdy,
 	err_net_resource,
 	err_net_undefined_type,
