@@ -1021,7 +1021,7 @@ struct	preview_string : WED_PreviewItem {
 					g->SetState(false, 1, false, true, true, true, true);
 					glColor3f(1,1,1);
 
-					double ds = (int) str->GetSpacing();
+					double ds = gExportTarget < wet_xplane_1200 ? (int) str->GetSpacing() : str->GetSpacing();
 					double d0 = ds * 0.33;
 
 					for(int i = 0; i < ps->GetNumSides(); ++i)
@@ -1162,7 +1162,7 @@ struct	preview_airportlights : WED_PreviewItem {
 				double ds = 8.0;                     // default spacing, e.g. taxiline center lights
 				if(t == apt_light_taxi_edge || t == apt_light_bounary) ds = 20.0;          // twy edge lights
 				if(t == apt_light_hold_short || t == apt_light_hold_short_flash) ds = 2.0;  // hold lights
-				double d0 = ds * 0.5;
+				double d0 = ds * 0.33;
 
 				g->SetState(false,1,false,true,true,false,false);
 				glColor3f(1,1,1);

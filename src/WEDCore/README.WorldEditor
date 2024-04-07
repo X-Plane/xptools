@@ -40,6 +40,8 @@ WED 2.6 b1
    - WED-1493 fix airport not validated upon manual trigger and not at toplevel of hierachy
    - WED-1487 improve facades and agp objects shown function of showlevel
    - WED-1501 improve object location accuracy for previews of object strings
+   - improved string spacing resolution for XP 12.1.5+
+   - validate APAPI not exportable to X-Plane 11 and earlier
 
 WED 2.5.1r1 3/20/23
    Bug fix:

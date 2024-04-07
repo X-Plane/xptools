@@ -34,6 +34,7 @@ enum validate_error_t
 {
 	err_agb_poly_has_holes,
 	err_agb_poly_not_4_sided,
+	err_airport_apapi_only_xp12,
 	err_airport_elements_outside_hierarchy,
 	err_airport_impossible_size,
 	err_airport_icao,
