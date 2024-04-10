@@ -194,13 +194,13 @@ bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos,
 				gcp->size_y = 1;
 				if (xsize > 1536 || ysize > 1536)  // calculate control points for map warping/projection, if texture has high resolution
 				{
-					gcp->size_x = intlim(roundf((double) xsize / 1024.0), 2, 10);
-					gcp->size_y = intlim(roundf((double) ysize / 1024.0), 2, 10);
+					gcp->size_x = intlim(roundf((double) xsize / 1024.0), 2, 10) + 1;
+					gcp->size_y = intlim(roundf((double) ysize / 1024.0), 2, 10) + 1;
 					for (int y = 0; y < gcp->size_y; y++)
 						for (int x = 0; x < gcp->size_x; x++)
 						{
 							double lon, lat;
-							if (TransformTiffCorner(gtif, &defn, dx + x * xsize / (gcp->size_x+1), ysize - y * ysize / (gcp->size_y+1) - dy, lon, lat))
+							if (TransformTiffCorner(gtif, &defn, dx + x * xsize / (gcp->size_x - 1), ysize - y * ysize / (gcp->size_y - 1) - dy, lon, lat))
 								gcp->pts.push_back(Point2(lon, lat));
 						}
 				}
