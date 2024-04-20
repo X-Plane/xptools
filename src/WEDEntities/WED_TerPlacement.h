@@ -34,14 +34,14 @@ class	WED_TerPlacement : public WED_GISPolygon, public IHasResource {
 public:
 	virtual void		GetResource(string& r) const;
 	virtual void		SetResource(const string& r);
-	double 				GetSamplingFactor(void) const;
+	int 				GetSamplingFactor(void) const;
 	double 				GetSkirtDepth(void) const;
+	double				MSLClip(void) const;
 	// about the .obj to be generated and written to the DSF file
 	int					GetShowLevel(void) const;
 	int					GetMSLType(void) const;
 	double				GetCustomMSL(void) const;
 	bool				IsHardSurface(void) const;
-	bool				IsClip(void) const;
 
 	virtual const char* HumanReadableType(void) const { return "Terrain Object"; }
 
@@ -56,13 +56,13 @@ private:
 #else
 	WED_PropFileText			resource;
 #endif
+	WED_PropIntText				derez;
+	WED_PropDoubleTextMeters	skirt;
+	WED_PropDoubleTextMeters	clip;
 	WED_PropIntEnum				has_msl;
 	WED_PropDoubleTextMeters	msl;
-	WED_PropDoubleText			derez;
-	WED_PropDoubleTextMeters	skirt;
 	WED_PropIntEnum				show_level;
 	WED_PropBoolText			hard;
-	WED_PropBoolText			clip;
 };
 
 #endif /* WED_TerPlacement_H */

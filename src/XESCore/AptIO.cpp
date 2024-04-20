@@ -1406,8 +1406,12 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 
 		for (AptLightVector::const_iterator light = apt->lights.begin(); light != apt->lights.end(); ++light)
 		{
+			int l(light->light_code);
+			if (version < 1200 && l >= apt_gls_apapi_left)
+				l -= apt_gls_apapi_left - apt_gls_papi_left;
+
 			fprintf(fi,"%d" LLFMT " %d %.1lf %.2f" NFMT CRLF,
-					apt_papi, CGAL2DOUBLE(light->location.y()), CGAL2DOUBLE(light->location.x()), light->light_code,
+					apt_papi, CGAL2DOUBLE(light->location.y()), CGAL2DOUBLE(light->location.x()), l,
 					light->heading, light->angle N(light));
 		}
 

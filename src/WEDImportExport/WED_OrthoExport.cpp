@@ -62,6 +62,8 @@
 
 #include "tesselator.h"
 #include <time.h>
+#include <sstream>
+#include <iostream>
 
 #if DEV
 #include "PerfUtils.h"
@@ -77,18 +79,12 @@ DSF_export_info_t::DSF_export_info_t(IResolver* resolver) : DockingJetways(true)
 	if (resolver)
 	{
 		inDoc = dynamic_cast<WED_Document*>(resolver);
-		auto dsf = inDoc->ReadStringPref("export/last", "", IDocPrefs::pref_type_doc);
+		auto prev_dsf = inDoc->ReadStringPref("export/last", "", IDocPrefs::pref_type_doc);
 
-		int last_pos = 0;
-		for (int pos = 0; pos < dsf.size(); pos++)
-		{
-			if (dsf[pos] == ' ' || pos == dsf.size() - 1)
-			{
-				pos++;
-				previous_dsfs.insert(dsf.substr(last_pos, pos - last_pos));
-				last_pos = pos;
-			}
-		}
+		stringstream prev_ss(prev_dsf);
+		string tmp;
+		while(getline(prev_ss, tmp, ' '))
+			previous_dsfs.insert(tmp);
 	}
 	else
 		inDoc = nullptr;
@@ -119,12 +115,15 @@ DSF_export_info_t::~DSF_export_info_t(void)
 
 void DSF_export_info_t::mark_written(const string& file)
 {
-	previous_dsfs.erase(file);
+	string unix_file(file);
+	std::replace(unix_file.begin(), unix_file.end(), '\\', '/');
+
+	previous_dsfs.erase(unix_file);
 	if (new_dsfs.length() < 200)   // 10 dsf files max remembered. Don't let a GW export blow this up ..
 	{
 		if (!new_dsfs.empty())
 			new_dsfs += " ";
-		new_dsfs += file;
+		new_dsfs += unix_file;
 	}
 }
 
@@ -415,25 +414,42 @@ int WED_ExportOrtho(WED_DrapedOrthophoto* orth, IResolver* resolver, const strin
 static WED_DrapedOrthophoto* find_ortho(Polygon2 area, Bbox2 area_box, WED_Thing* base)
 {
 	string res;
+	Bbox2 bnds;
 	auto lmgr = WED_GetLibraryMgr(base->GetArchive()->GetResolver());
 	vector<WED_DrapedOrthophoto*> orthos;
-	CollectRecursive(base, back_inserter(orthos));
-	for (auto o : orthos)
+	CollectRecursive(base, back_inserter(orthos), ThingNotHidden, [&](WED_Thing* pol)->bool {
+		static_cast<WED_DrapedOrthophoto*>(pol)->GetBounds(gis_Geo, bnds);
+		return bnds.overlap(area_box);          // fast cull - ortho must at least partially overlap the .ter object as drawn
+		},
+		WED_DrapedOrthophoto::sClass);
+
+	double overlap = 0.0;
+	WED_DrapedOrthophoto* most_overlapping = nullptr;
+
+	for(auto o : orthos)
 	{
-		Bbox2 b;
-		o->GetBounds(gis_Geo, b);               // fast cull - ortho must fully enclose .ter object as drawn
-		if (b.contains(area_box))               // todo - allow go across a multiple orthos, create all .ter and merge in .agp
-		{										// do check area is truly fully enclosed by ortho ?
-			o->GetResource(res);
-			if (!lmgr->IsResourceLibrary(res))  // not a library means its gotta be local. 
-				                                // can't use IsResourceLocal() because if its a true WED orthophoto patch, its not a .pol
-				                                // but the .tif/.jpg thats is going to be used to make the .pol/.dds based on the name of the ortho
+		o->GetResource(res);
+		if (!lmgr->IsResourceLibrary(res))  // not a library means its gotta be local. 
+											// can't use IsResourceLocal() because if its a true WED orthophoto patch, its not a .pol
+											// but the .tif/.jpg going to be used to make the .pol/.dds based on the name of the ortho
+		{
+			o->GetBounds(gis_Geo, bnds);
+			if (bnds.contains(area_box))    // this assumes ortho is square, maybe not always the case? ? For now, assume it is
+			{										 
+				return o;                   // Terrain is fully within the orthos bounding box, so that is obviously the one.
+			}
+			else                            // partial overlap only, so rank them
 			{
-				return o;                          
+				double ovlp = area_box.clamp(bnds).area();
+				if (ovlp > overlap)
+				{
+					overlap = ovlp;
+					most_overlapping = o;
+				}
 			}
 		}
 	}
-	return nullptr;
+	return most_overlapping;
 }
 
 enum {
@@ -453,9 +469,10 @@ void copy_scanline(const T* v, int y, dem_info_t& dem)
 }
 
 template<typename T>
-void copy_tile(const T* v, int x, int y, int w, int h, dem_info_t& dem)
+void copy_tile(const T* v, int x, int y, int w, int h, int pad, dem_info_t& dem)
 {
 	for (int cy = 0; cy < h; ++cy)
+	{
 		for (int cx = 0; cx < w; ++cx)
 		{
 			int dem_x = x + cx;
@@ -464,6 +481,8 @@ void copy_tile(const T* v, int x, int y, int w, int h, dem_info_t& dem)
 			dem(dem_x, dem_y) = e;
 			++v;
 		}
+		v += pad;
+	}
 }
 
 // adapted version of equivalent function in DEMIO.h
@@ -519,32 +538,33 @@ void copy_tile(const T* v, int x, int y, int w, int h, dem_info_t& dem)
 
 					int ux = min(tw, w - x);
 					int uy = min(th, h - y);
+					int pad = tw - ux;
 
 					switch (format) 
 					{
 					case SAMPLEFORMAT_UINT:
 						switch (d) 
 						{
-						case 8:  copy_tile<unsigned char >((unsigned char*)  buf.data(), x, y, ux, uy, inMap); break;
-						case 16: copy_tile<unsigned short>((unsigned short*) buf.data(), x, y, ux, uy, inMap); break;
-						case 32: copy_tile<unsigned int  >((unsigned int*)   buf.data(), x, y, ux, uy, inMap); break;
+						case 8:  copy_tile<unsigned char >((unsigned char*)  buf.data(), x, y, ux, uy, pad, inMap); break;
+						case 16: copy_tile<unsigned short>((unsigned short*) buf.data(), x, y, ux, uy, pad, inMap); break;
+						case 32: copy_tile<unsigned int  >((unsigned int*)   buf.data(), x, y, ux, uy, pad, inMap); break;
 						default: goto bail;
 						}
 						break;
 					case SAMPLEFORMAT_INT:
 						switch (d) 
 						{
-						case 8:  copy_tile<char >((char* ) buf.data(), x, y, ux, uy, inMap); break;
-						case 16: copy_tile<short>((short*) buf.data(), x, y, ux, uy, inMap); break;
-						case 32: copy_tile<int  >((int*  ) buf.data(), x, y, ux, uy, inMap); break;
+						case 8:  copy_tile<char >((char* ) buf.data(), x, y, ux, uy, pad, inMap); break;
+						case 16: copy_tile<short>((short*) buf.data(), x, y, ux, uy, pad, inMap); break;
+						case 32: copy_tile<int  >((int*  ) buf.data(), x, y, ux, uy, pad, inMap); break;
 						default: goto bail;
 						}
 						break;
 					case SAMPLEFORMAT_IEEEFP:
 						switch (d) 
 						{
-						case 32: copy_tile<float >((float* ) buf.data(), x, y, ux, uy, inMap); break;
-						case 64: copy_tile<double>((double*) buf.data(), x, y, ux, uy, inMap); break;
+						case 32: copy_tile<float >((float* ) buf.data(), x, y, ux, uy, pad, inMap); break;
+						case 64: copy_tile<double>((double*) buf.data(), x, y, ux, uy, pad, inMap); break;
 						default: goto bail;
 						}
 						break;
@@ -628,7 +648,7 @@ void copy_tile(const T* v, int x, int y, int w, int h, dem_info_t& dem)
  }
 
 static int mesh2obj(XObj8& obj, const Polygon2& area, const CoordTranslator2& ll2mtr, const CoordTranslator2& ll2uv,
-                     const DEMGeo& dem, float deres_factor, float skirt_depth, const Polygon2& area_dem, float clip_elev)
+                     const DEMGeo& dem, int deres_factor, float skirt_depth, const Polygon2& area_dem, float clip_elev)
 {
 	Bbox2 bounds = area.bounds();
 	DEMGeo ldem;
@@ -645,7 +665,7 @@ static int mesh2obj(XObj8& obj, const Polygon2& area, const CoordTranslator2& ll
 			{
 				double lon = smaller.x_to_lon(x);
 				double lat = smaller.y_to_lat(y);
-				smaller(x, y) = max(ldem.value_linear(lon,lat), clip_elev);
+				smaller(x, y) = ldem.value_linear(lon,lat);
 			}
 		ldem.swap(smaller);
 	}
@@ -661,7 +681,9 @@ static int mesh2obj(XObj8& obj, const Polygon2& area, const CoordTranslator2& ll
 		for (int x = 0; x < ldem.mWidth; x++)
 		{
 			auto pt = Point2(ldem.x_to_lon(x), ldem.y_to_lat(y));
-			if (!area.inside(pt))
+			if (area.inside(pt))
+				ldem(x, y) = max(ldem(x, y), clip_elev);
+			else
 				ldem.zap(x, y);
 		}
 
@@ -721,8 +743,8 @@ static int mesh2obj(XObj8& obj, const Polygon2& area, const CoordTranslator2& ll
 					pt[3] = NX(x,y);              // nml
 					pt[4] = NZ(x,y);
 					pt[5] = -NY(x,y);
-					pt[6] = ll2uv.Forward(p).x();  // uv
-					pt[7] = ll2uv.Forward(p).y();
+					pt[6] = fltlim(ll2uv.Forward(p).x(), 0, 1);  // uv
+					pt[7] = fltlim(ll2uv.Forward(p).y(), 0, 1);
 
 					return obj.geo_tri.accumulate(pt);
 				};
@@ -844,6 +866,8 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 		Polygon2 ter_poly, ter_skirt;
 		IGISPointSequence* ter_ps;
 		auto wrl = WED_GetWorld(resolver);
+		auto rmgr = WED_GetResourceMgr(resolver);
+
 		if (ter_ps = ter_pol->GetOuterRing())
 			WED_PolygonForPointSequence(ter_ps, ter_poly, COUNTERCLOCKWISE);
 
@@ -890,10 +914,10 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 		// get dem heights
 		string dem_file;
 		ter->GetResource(dem_file);
-		dem_file = pkg + dem_file;
+//		dem_file = pkg + dem_file;
 		const dem_info_t* ter_dem;
 
-		if (!(WED_GetResourceMgr(ter->GetArchive()->GetResolver())->GetDem(dem_file, ter_dem)))
+		if (!(rmgr->GetDem(dem_file, ter_dem)))
 			return -1;
 
 		// optionally change heights to be relative to terrain height
@@ -912,6 +936,12 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 		ortho->GetName(orthoName);
 		string terName;
 		ter->GetName(terName);
+		if (terName.find_first_of("/\\:") != string::npos)
+		{
+			DoUserAlert((string("Terrain '") + terName + "' name must not contain any of the letters /, \\ or :").c_str());
+			return -1;
+		}
+
 		string objName = FILE_get_file_name_wo_extensions(orthoName) + "_" + FILE_get_file_name_wo_extensions(terName) + ".obj";
 		string objVPath = FILE_get_dir_name(orthoResource) + objName;
 
@@ -931,7 +961,7 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 		else
 		{
 			const pol_info_t* pol;
-			if (WED_GetResourceMgr(resolver)->GetPol(orthoResource, pol))
+			if (rmgr->GetPol(orthoResource, pol))
 			{
 				ter_obj.decal_lib = pol->decal;
 				if (pol->base_tex.compare(0, pkg.length(), pkg) == 0)
@@ -942,14 +972,14 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 			}
 		}
 		ter_obj.glass_blending = 0;
-		float clip_elev = ter->IsClip() ? -ter->GetCustomMSL() /* (ter->GetMSLType() != 0) */ : -999.0;
+		float clip_elev = ter->MSLClip() - ter->GetCustomMSL() * (ter->GetMSLType() != 0);
 
 		// create & add mesh
 		// the super-sily proof-of-concept function
 //		poly2obj(ter_obj, area, ll2mtr, ll2uv, ter_dem.value_linear(ter_corners.centroid()));
 		int skirt_idx = mesh2obj(ter_obj, ter_poly, ll2mtr, ll2uv, *ter_dem, ter->GetSamplingFactor(), ter->GetSkirtDepth(), ter_skirt, clip_elev);
 
-		float lod_dist = 20.0 * ceil(LonLatDistMeters(ter_box.p1, ter_box.p2));
+		float lod_dist = 30.0 * ceil(LonLatDistMeters(ter_box.p1, ter_box.p2));
 
 		// ATTR_LOD
 		ter_obj.lods.push_back(XObjLOD8());
@@ -994,11 +1024,7 @@ int WED_ExportTerrObj(WED_TerPlacement* ter, IResolver* resolver, const string& 
 
 		XObj8Write(objAbsPath.c_str(), ter_obj, msg);
 		resource = objVPath;
-#if IBM
-		std::replace(resource.begin(), resource.end(), '\\', '/');
-#endif
-		if (auto resMgr = WED_GetResourceMgr(resolver))
-			resMgr->Purge(resource);
+		rmgr->Purge(resource);
 
 		return 0;
 	}

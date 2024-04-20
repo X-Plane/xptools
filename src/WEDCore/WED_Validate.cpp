@@ -40,6 +40,7 @@
 #include "WED_AutogenPlacement.h"
 #include "WED_ExclusionPoly.h"
 #include "WED_LinePlacement.h"
+#include "WED_LightFixture.h"
 #include "WED_PolygonPlacement.h"
 #include "WED_DrapedOrthophoto.h"
 #include "WED_TerPlacement.h"
@@ -2552,7 +2553,7 @@ for (auto o : objs)
 #pragma mark -
 //------------------------------------------------------------------------------------------------------------------------------------
 
-static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, WED_LibraryMgr * lib_mgr, WED_ResourceMgr * res_mgr, MFMemFile * mf)
+static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, WED_LibraryMgr* lib_mgr, MFMemFile * mf)
 {
 	vector<WED_Runway *>			runways;
 	vector<WED_Helipad *>			helipads;
@@ -2569,8 +2570,9 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	vector<WED_TowerViewpoint*>		viewpts;
 	vector<WED_ObjPlacement*>		objects;
 	vector<WED_RoadEdge*>			roads;
-
 	vector<WED_DrapedOrthophoto *>	orthos;
+
+	WED_ResourceMgr* res_mgr = WED_GetResourceMgr(apt->GetArchive()->GetResolver());
 
 	// those Thing <-> Entity dynamic_cast's take forever. 50% of CPU time in validation is for casting.
 	// CollectRecursive(apt, back_inserter(runways),  WED_Runway::sClass);
@@ -2707,6 +2709,20 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		if(has_ATC && ai_useable_ramps < 1)
 			msgs.push_back(validation_error_t("Airports with ATC towers frequencies must have at least one Ramp Start of type=gate or tiedown.", err_ramp_need_starts_suitable_for_ai_ops, apt, apt));
 	}
+
+	if (gExportTarget < wet_xplane_1200)
+	{
+		vector<WED_LightFixture*> lights;
+		CollectRecursive(apt, back_inserter(lights));
+		for (auto l : lights)
+		{
+			AptLight_t info;
+			l->Export(info);
+			if (info.light_code >= apt_gls_apapi_left)
+				msgs.push_back(validation_error_t("APAPI are only supported in X-Plane 12 and later", err_airport_apapi_only_xp12, l, apt));
+		}
+	}
+
 
 	err_type = gExportTarget == wet_gateway ? err_airport_impossible_size : warn_airport_impossible_size;
 	Bbox2 bounds;
@@ -2867,7 +2883,6 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		if (!roads.empty())
 			ValidateRoads(roads, msgs, apt, Bbox2());
 
-
 	ValidatePointSequencesRecursive(apt, msgs,apt);
 	ValidateDSFRecursive(apt, lib_mgr, msgs, apt);
 }
@@ -2883,11 +2898,10 @@ validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane,
 	validation_error_vector		msgs;
 
 	if(wrl == NULL) wrl = WED_GetWorld(resolver);
-	WED_LibraryMgr * lib_mgr = 	WED_GetLibraryMgr(resolver);
-	WED_ResourceMgr * res_mgr = WED_GetResourceMgr(resolver);
+	WED_LibraryMgr* lib_mgr = WED_GetLibraryMgr(resolver);
 
 	vector<WED_Airport *> apts;
-	CollectRecursiveNoNesting(wrl, back_inserter(apts), WED_Airport::sClass); // problem: Finds Airports only 1 level deep.
+	CollectRecursive(wrl, back_inserter(apts), WED_Airport::sClass);
 
 	// get data about runways from CIFP data
 	MFMemFile * mf = nullptr;
@@ -2898,7 +2912,7 @@ validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane,
 	auto t0 = std::chrono::high_resolution_clock::now();
 #endif
 	for(auto a : apts)
-		ValidateOneAirport(a, msgs, lib_mgr, res_mgr, mf);
+		ValidateOneAirport(a, msgs, lib_mgr, mf);
 
 	vector<WED_RoadEdge*> off_airport_roads;
 

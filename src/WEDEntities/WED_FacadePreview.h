@@ -117,7 +117,7 @@ struct REN_facade_template_t {
 	struct obj {
 		xint		idx;
 		xflt		xyzr[4];
-//		asset_freq	freq;		
+		int			show[2];
 	};
 	struct mesh {
 		vector<xflt> 	xyz;
@@ -232,7 +232,7 @@ struct	REN_FacadeLOD_t {
 
 
 void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, const fac_info_t& info, const Polygon2& footprint, const vector<int>& choices, 
-	double fac_height, GUI_GraphState * g, bool want_thinWalls, double ppm_for_culling = 100);
+	double fac_height, GUI_GraphState * g, bool want_thinWalls, double ppm_for_culling = 100, int showlevel = 6);
 	
 void height_desc_for_facade(const fac_info_t& info, string& h_decription);
 

@@ -67,6 +67,7 @@
 #include "WED_LinePlacement.h"
 #include "WED_ResourceMgr.h"
 #include "WED_ShapePlacement.h"
+#include "WED_TerPlacement.h"
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -108,6 +109,92 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 	const char *	sub_class	= entity->GetGISSubtype();
 
 	float							storage[4];
+
+	if (selected && sub_class == WED_TerPlacement::sClass)
+	{
+		Bbox2	dem_bounds, map_bounds;
+		auto ter = dynamic_cast<WED_TerPlacement *>(entity);
+
+		string dem_file;
+		ter->GetResource(dem_file);
+		auto rmgr = WED_GetResourceMgr(GetResolver());
+
+		const dem_info_t* ter_dem;
+		if ((rmgr->GetDem(dem_file, ter_dem)))
+		{
+			double left, right, top, bot;
+			auto z = GetZoomer();
+			z->GetPixelBounds(left, bot, right, top);
+
+			Point2 p[4];
+			p[0] = z->LLToPixel({ ter_dem->mWest, ter_dem->mSouth });
+			p[1] = z->LLToPixel({ ter_dem->mEast, ter_dem->mSouth });
+			p[2] = z->LLToPixel({ ter_dem->mEast, ter_dem->mNorth });
+			p[3] = z->LLToPixel({ ter_dem->mWest, ter_dem->mNorth });
+
+			for (int i = 0; i < sizeof(p)/sizeof(Point2); i++)
+			{
+				if (p[i].x_ < left)  p[i].x_ = left + 1;
+				if (p[i].x_ > right) p[i].x_ = right - 1;
+				if (p[i].y_ > top)  p[i].y_ = top - 1;
+				if (p[i].y_ < bot)  p[i].y_ = bot + 1;
+			}
+
+			glLineStipple(1, 0xF0F0);
+			glEnable(GL_LINE_STIPPLE);
+			glBegin(GL_LINE_LOOP);
+				glVertex2v(p, sizeof(p)/sizeof(Point2));
+			glEnd();
+			glDisable(GL_LINE_STIPPLE);
+
+			double dem_dx = (ter_dem->mEast - ter_dem->mWest) / (ter_dem->mWidth - 1);
+			double dem_dy = (ter_dem->mNorth - ter_dem->mSouth) / (ter_dem->mHeight - 1);
+
+			IGISPointSequence * ps = ter->GetOuterRing();
+			int n = ps->GetNumSides();
+			Polygon2 poly;
+			for (int i = 0; i < n; i++)
+			{
+				Point2 pt;
+				ps->GetNthPoint(i)->GetLocation(gis_Geo, pt);
+				poly.push_back(pt);
+			}
+
+			Bbox2 bnds;
+			ter->GetBounds(gis_Geo, bnds);
+
+			int x1 = intlim((bnds.p1.x() - ter_dem->mWest)  / dem_dx,     0, ter_dem->mWidth);
+			int x2 = intlim((bnds.p2.x() - ter_dem->mWest)  / dem_dx + 1, 0, ter_dem->mWidth);
+			int y1 = intlim((bnds.p1.y() - ter_dem->mSouth) / dem_dy,     0, ter_dem->mHeight);
+			int y2 = intlim((bnds.p2.y() - ter_dem->mSouth) / dem_dy + 1, 0, ter_dem->mHeight);
+
+			glPointSize(3.0);
+			glBegin(GL_POINTS);
+			Point2 loc;
+			int inc = ter->GetSamplingFactor();
+			for (int x = x1; x < x2; x+=inc)
+			{
+				loc.x_ = ter_dem->mWest  + x * dem_dx;
+				loc.y_ = ter_dem->mSouth + y1 * dem_dy;
+				for (int y = y1; y <= y2; y+=inc)
+				{
+					if (poly.inside(loc))
+					{
+						if(ter_dem->get(x,y) < -999.0f)     // actually, no data signaling in DEM's may be almost anything ...
+						{
+							glColor3f(1,0,1);
+							glVertex2(z->LLToPixel(loc));
+							glColor3fv(colorf);
+						}
+						else
+							glVertex2(z->LLToPixel(loc));
+					}
+					loc.y_ += dem_dy * inc;
+				}
+			}
+			glEnd();
+		}
+	}
 
 	if (sub_class == WED_Airport::sClass)
 	{

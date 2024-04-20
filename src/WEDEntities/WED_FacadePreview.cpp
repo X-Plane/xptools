@@ -803,7 +803,7 @@ struct obj {
 };
 
 void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, const fac_info_t& info, const Polygon2& footprint, const vector<int>& choices,
-	double fac_height, GUI_GraphState * g, bool want_thinWalls, double ppm_for_culling)
+	double fac_height, GUI_GraphState * g, bool want_thinWalls, double ppm_for_culling, int showlevel)
 {
 	if(rman)
 	for(const auto& f : info.scrapers)
@@ -1040,6 +1040,7 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 		glDisableClientState(GL_COLOR_ARRAY);			CHECK_GL_ERR
 
 		Vector2 miter;
+		srand(42*42);
 		for(int w = 0; w < n_wall; ++w)
 		{
 			Segment2 inBase(footprint.side(w));
@@ -1106,11 +1107,15 @@ void draw_facade(ITexMgr * tman, WED_ResourceMgr * rman, const string& vpath, co
 					glScalef(1.0, 1.0, 1.0/seg_length);              // so we're not drawing objects at a (slightly) wrong scale
 					for(auto o: t.objs)
 					{
-						const XObj8 * oo(info.xobjs[o.idx]);
-						if(oo && !cull_obj(oo, ppm_for_culling))
+						double probability = (1.0 + showlevel - o.show[0]) / (1.0 + o.show[1] - o.show[0]);
+						if(showlevel >= o.show[0] && probability * RAND_MAX > rand())
 						{
-							draw_obj_at_xyz(tman, oo, o.xyzr[0], o.xyzr[1], o.xyzr[2] * seg_length, o.xyzr[3], g);
-						} 
+							const XObj8 * oo(info.xobjs[o.idx]);
+							if (oo && !cull_obj(oo, ppm_for_culling))
+							{
+								draw_obj_at_xyz(tman, oo, o.xyzr[0], o.xyzr[1], o.xyzr[2] * seg_length, o.xyzr[3], g);
+							}
+						}
 					}
 					glPopMatrix();
 					g->BindTex(tRef ? tman->GetTexID(tRef) : 0, 0);

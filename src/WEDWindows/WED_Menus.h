@@ -160,14 +160,14 @@ enum {
 	wed_MowGrass,
 	wed_AlignApt,
 	//-- Add Metadata Keys Menu--
-	//Organized by alphabetical order
+	//Organized by alphabetical order - MUST EXACTLY MATCH definition of known_keys[] in WED_MetaDataKeys.cpp
 	wed_AddMetaDataBegin,//WARNING: DO NOT USE!
 	wed_AddMetaDataCity,// or Locality
 	wed_AddMetaDataCircuits, // new in 1200
+	wed_AddMetaDataCountry,  
 #if GATEWAY_IMPORT_FEATURES
-	wed_AddMetaDataCredits,
+	wed_AddMetaDataCredits,  // new in 12.1.0
 #endif
-	wed_AddMetaDataCountry,
 	wed_AddMetaDataDatumLat,
 	wed_AddMetaDataDatumLon,
 	wed_AddMetaDataFAA,

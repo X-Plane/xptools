@@ -435,9 +435,11 @@ void draw_agp_at_ll(ITexMgr * tman, const agp_t * agp, const Point2& loc, float 
 		glEnd();
 		glEnable(GL_CULL_FACE);
 	}
+	srand(42);
 	for (auto& o : ti.objs)
 	{
-		if ((o.show_lo + o.show_hi) / 2 <= preview_level)
+		double probability = (1.0 + preview_level - o.show_lo) / (1.0 + o.show_hi - o.show_lo);
+		if (preview_level >= o.show_lo && probability * RAND_MAX > rand())
 		if (ppm * max(o.obj->xyz_max[0] - o.obj->xyz_min[0], o.obj->xyz_max[2] - o.obj->xyz_min[2]) > MIN_PIXELS_PREVIEW)
 		{
 			if (o.scp_step > 0.0)
@@ -1019,8 +1021,8 @@ struct	preview_string : WED_PreviewItem {
 					g->SetState(false, 1, false, true, true, true, true);
 					glColor3f(1,1,1);
 
-					double ds = str->GetSpacing();
-					double d0 = ds * 0.5;
+					double ds = gExportTarget < wet_xplane_1200 ? (int) str->GetSpacing() : str->GetSpacing();
+					double d0 = ds * 0.33;
 
 					for(int i = 0; i < ps->GetNumSides(); ++i)
 					{
@@ -1160,7 +1162,7 @@ struct	preview_airportlights : WED_PreviewItem {
 				double ds = 8.0;                     // default spacing, e.g. taxiline center lights
 				if(t == apt_light_taxi_edge || t == apt_light_bounary) ds = 20.0;          // twy edge lights
 				if(t == apt_light_hold_short || t == apt_light_hold_short_flash) ds = 2.0;  // hold lights
-				double d0 = ds * 0.5;
+				double d0 = ds * 0.33;
 
 				g->SetState(false,1,false,true,true,false,false);
 				glColor3f(1,1,1);
@@ -1200,8 +1202,9 @@ struct	preview_airportlights : WED_PreviewItem {
 
 struct	preview_facade : public preview_polygon {
 	WED_FacadePlacement * fac;
+	int preview_level;
 	IResolver * resolver;
-	preview_facade(WED_FacadePlacement * f, int l, IResolver * r) : preview_polygon(f,l,false), fac(f), resolver(r) { }
+	preview_facade(WED_FacadePlacement * f, int l, IResolver * r, int pl) : preview_polygon(f,l,false), fac(f), resolver(r), preview_level (pl) { }
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
 	{
 		IGISPointSequence * ps = fac->GetOuterRing();
@@ -1251,7 +1254,7 @@ struct	preview_facade : public preview_polygon {
 					static Point2 pt;
 					ps->GetNthPoint(i + 2)->GetLocation(gis_Geo, pt);
 
-					static float extension_min, extension_max;
+					static float extension_min, extension_max;   // tunnel length capability
 					auto cbk = [](const char* dref, float v1, float v2, void* ref) -> float
 					{
 						float retval;
@@ -1265,9 +1268,12 @@ struct	preview_facade : public preview_polygon {
 						{
 							retval = -VectorDegs2NorthHeading(b.p1, b.p1, Vector2(b.p1, b.p2)) + VectorDegs2NorthHeading(b.p2, b.p2, Vector2(b.p2, pt));
 							retval = fltwrap(retval, -180, 180);
+							return fltlim(retval, -92.5, 32.5);    /// thats a limitation choosen by the sim internal animation code.
 						}
 						else // if (strcmp(dref, "sim/graphics/animation/jetways/jw_base_rotation") == 0)
+						{
 							retval = 0.0;
+						}
 						return fltlim(retval, v1, v2);
 					};
 
@@ -1275,34 +1281,62 @@ struct	preview_facade : public preview_polygon {
 						draw_obj_at_ll(tman, my_tun.o, b.p1, 0, VectorDegs2NorthHeading(b.p1, b.p1, Vector2(b.p1, b.p2)), g, zoomer, cbk);
 
 					g->SetState(false, 0, false, true, true, false, false);
-					glColor4f(1, 0, 0, 0.2);
+					glColor4f(1, 0, 0, 0.1);
 
 					Point2	b1 = zoomer->LLToPixel(b.p1);
 					Point2  b2 = zoomer->LLToPixel(b.p2);
-					Vector2 dir(b1, b2);
-					dir.normalize();
-					dir *= zoomer->GetPPM();
-					b1 += dir.perpendicular_ccw() * 2.5;         // place the 'serviced area' indication about at the cabin baffle location
+					Vector2 dir0(b1, b2);
+					dir0.normalize();
+					dir0 *= zoomer->GetPPM();
+					b1 += dir0.perpendicular_ccw() * 2.5;         // place the 'serviced area' indication about at the cabin baffle location
 
-					glBegin(GL_TRIANGLE_FAN);
-						dir.rotate_by_degrees(-15);
+					const int stepsize = 10;
+					glBegin(GL_TRIANGLE_FAN);                      // what we want artists to use, "safe reach"
+						Vector2 dir(dir0);
+						int i(5);
+						dir.rotate_by_degrees(-i);
 						glVertex2(b1 + dir * extension_max);
+						for (; i < 15; i += stepsize)
+						{
+							dir.rotate_by_degrees(-stepsize);
+							glVertex2(b1 + dir * extension_max);
+						}
 						glVertex2(b1 + dir * extension_min);
-						const int stepsize = 10;
-						const int arc_angle = 45 + 15;
-						for (int i = 0; i < arc_angle; i += stepsize)
+						for (; i > -45; i -= stepsize)
 						{
 							dir.rotate_by_degrees(stepsize);
 							glVertex2(b1 + dir * extension_min);
 						}
 						glVertex2(b1 + dir * extension_max);
-						for (int i = 0; i < arc_angle; i += stepsize)
+						for (; i <= 0; i += stepsize)
 						{
 							dir.rotate_by_degrees(-stepsize);
 							glVertex2(b1 + dir * extension_max);
 						}
 					glEnd();
-					g->EnableDepth(true, true);
+
+					dir = dir0;
+					extension_max += 2.5;
+					glBegin(GL_TRIANGLE_FAN);                       // maximum capability of tunnel to reach
+						glVertex2(b1 + dir * extension_max);
+						for (i=0; i < 40; i += stepsize)
+						{
+							dir.rotate_by_degrees(-stepsize);
+							glVertex2(b1 + dir * extension_max);
+						}
+						for (; i > -50; i -= stepsize)
+						{
+							glVertex2(b1 + dir * (i >= 0 ? extension_min + 2.5 : extension_min));
+							dir.rotate_by_degrees(stepsize);
+						}
+						glVertex2(b1 + dir * extension_min);
+						for (; i <= 0; i += stepsize)
+						{
+							glVertex2(b1 + dir * extension_max);
+							dir.rotate_by_degrees(-stepsize);
+						}
+						glEnd();
+						g->EnableDepth(true, true);
 
 				}
 				if (i > n-2 && fac->HasDockingCabin())
@@ -1349,7 +1383,7 @@ struct	preview_facade : public preview_polygon {
 			zoomer->Rotatef(90, 1,0,0);
 
 			if(rmgr->GetFac(vpath, info))
-				draw_facade(tman, rmgr, vpath, *info, pts, choices, fac->GetHeight(), g, true, 0.7 * zoomer->PixelSize(bb_geo, 1.0));
+				draw_facade(tman, rmgr, vpath, *info, pts, choices, fac->GetHeight(), g, true, 0.7 * zoomer->PixelSize(bb_geo, 1.0), preview_level);
 			zoomer->PopMatrix();
 		}
 
@@ -2020,7 +2054,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	{
 		auto fac = dynamic_cast<WED_FacadePlacement*>(entity);
 		if(fac && fac->GetShowLevel() <= mObjDensity)
-			mPreviewItems.push_back(new preview_facade(fac,group_Objects, GetResolver()));
+			mPreviewItems.push_back(new preview_facade(fac,group_Objects, GetResolver(), mObjDensity));
 	}
 	else if (sub_class == WED_ForestPlacement::sClass)
 	{
