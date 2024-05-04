@@ -1433,12 +1433,44 @@ static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& 
 		rwy->Export(r);
 		if (gExportTarget >= wet_xplane_1200)
 		{
-			if (r.has_centerline > 0 && r.edge_light_code == apt_edge_LIRL)
-				msgs.push_back(validation_error_t("Edge Light intensity will be increased to MIRL by X-Plane 12 due to centerline light presence", warn_rwy_edge_light_not_matching_center_lights, who, apt));
-			if ((r.has_tdzl[0] > 0 || r.has_tdzl[1] > 0) && r.edge_light_code <= apt_edge_MIRL)
-				msgs.push_back(validation_error_t("Edge Light intensity will be increased to HIRL by X-Plane 12 due to touchdown light presence", warn_rwy_edge_light_not_matching_center_lights, who, apt));
-			if ((r.app_light_code[0] > 0 || r.app_light_code[1] > 0) && r.edge_light_code <= apt_edge_MIRL)
-				msgs.push_back(validation_error_t("Edge Light intensity will be increased to HIRL by X-Plane 12 due to approach light presence", warn_rwy_edge_light_not_matching_center_lights, who, apt));
+			if (r.edge_light_code < apt_edge_HIRL)
+			{
+				if (r.has_centerline)
+					if (r.edge_light_code == apt_edge_MIRL)
+	 					msgs.push_back(validation_error_t("MIRL will be increased to HIRL by X-Plane 12 due to centerline light presence", warn_rwy_edge_light_not_matching_center_lights, who, apt));
+					else if(r.edge_light_code == apt_edge_LIRL)
+						msgs.push_back(validation_error_t("LIRL will be increased to HIRL by X-Plane 12 due to centerline light presence", warn_rwy_edge_light_not_matching_center_lights, who, apt));
+
+				if (r.has_tdzl[0] || r.has_tdzl[1])
+					msgs.push_back(validation_error_t("Edge Light intensity will be increased to HIRL by X-Plane 12 due to touchdown light presence", warn_rwy_edge_light_not_matching_center_lights, who, apt));
+
+				if (r.app_light_code[0] || r.app_light_code[1])
+					if (r.edge_light_code == apt_edge_MIRL)
+						msgs.push_back(validation_error_t("MIRL will be increased to HIRL by X-Plane 12 due to approach light presence", warn_rwy_edge_light_not_matching_center_lights, who, apt));
+					else if (r.edge_light_code == apt_edge_LIRL)
+						msgs.push_back(validation_error_t("LIRL will be increased to HIRL by X-Plane 12 due to approach light presence", warn_rwy_edge_light_not_matching_center_lights, who, apt));
+					else
+						msgs.push_back(validation_error_t("Rwy has approach lights, but no Edge lights at all", warn_rwy_edge_light_not_matching_center_lights, who, apt));
+			}
+
+			// missing REIL warnings
+			if (r.app_light_code[0] || r.app_light_code[1])
+			{
+				// serious reasons for concern - how will you be able to tell the end of the overrun after landing ?
+				if ((r.reil_code[0] == apt_reil_none && r.disp_mtr[0] > 0.0) || (r.reil_code[1] == apt_reil_none && r.disp_mtr[1] > 0.0))
+					msgs.push_back(validation_error_t("Rwy has Approach lights, but missing REIL at displaced threshold end", warn_rwy_edge_light_not_matching_center_lights, who, apt));
+				// still good reason for concern. But THR lights might be a good enough stand-in.
+				else if ((r.reil_code[0] == apt_reil_none || r.reil_code[1] == apt_reil_none))
+					msgs.push_back(validation_error_t("Rwy has Approach lights, but missing some or all REIL", warn_rwy_edge_light_not_matching_center_lights, who, apt));
+			}
+			else if (r.edge_light_code || r.has_centerline || r.has_tdzl[0] || r.has_tdzl[1])
+			{
+				// weak areas of concern
+				if (r.reil_code[0] == apt_reil_none && r.reil_code[1] == apt_reil_none)
+						msgs.push_back(validation_error_t("Rwy has no REIL at all, but some other lights", warn_rwy_edge_light_not_matching_center_lights, who, apt));
+				else if (r.reil_code[0] == apt_reil_none || r.reil_code[1] == apt_reil_none)
+						msgs.push_back(validation_error_t("Rwy has only one REIL, but some other lights", warn_rwy_edge_light_not_matching_center_lights, who, apt));
+			}
 		}
 #if ROWCODE_105
 		if(!all_in_range(r.skids, 0.0f, 1.0f))
