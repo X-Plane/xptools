@@ -742,17 +742,17 @@ void		GUI_Window::ClickMove(int inX, int inY)
 		}
 	#endif
 	#if LIN
-		static Fl_Cursor curr_cursor = FL_CURSOR_DEFAULT;
+		static int curr_cursor = gui_Cursor_None;
 
 		int cursor = this->InternalGetCursor(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow));
 		if( cursor == curr_cursor ) return;
 
 		switch(cursor) {
-		case gui_Cursor_Resize_H: this->cursor(FL_CURSOR_WE); curr_cursor = FL_CURSOR_WE; break;
-		case gui_Cursor_Resize_V: this->cursor(FL_CURSOR_NS); curr_cursor = FL_CURSOR_NS; break;
+		case gui_Cursor_Resize_H: this->cursor(FL_CURSOR_WE);      curr_cursor = gui_Cursor_Resize_H; break;
+		case gui_Cursor_Resize_V: this->cursor(FL_CURSOR_NS);      curr_cursor = gui_Cursor_Resize_V; break;
+		case gui_Cursor_Arrow:	  this->cursor(FL_CURSOR_DEFAULT); curr_cursor = gui_Cursor_Arrow;    break;
 		case gui_Cursor_None:
-		case gui_Cursor_Arrow:
-		default:                  this->cursor(FL_CURSOR_DEFAULT); curr_cursor = FL_CURSOR_DEFAULT; break;
+		default:                  this->cursor(FL_CURSOR_DEFAULT); curr_cursor = gui_Cursor_None;     break;
 		}
 	#endif
 }
