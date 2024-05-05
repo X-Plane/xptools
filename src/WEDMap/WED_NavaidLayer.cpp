@@ -42,13 +42,16 @@
 	#include <GL/gl.h>
 #endif
 
-#define SHOW_BELOW           25       // bottom of airspace must be below xx hundred feet to show
 #define SHOW_TOWERS           1
-#define SHOW_APTS_FROM_APTDAT 1
+#define SHOW_LPV              0       // ILS-like GPS final approaches
+#define SHOW_TRACON           1
+#define MAX_ALT				 60       // ignore sectors starting above this (in x100ft)
+#define INC_ALT				 15       // ignore sectors starting more than this above the lowest sector
 
+#define SHOW_APTS_FROM_APTDAT 1
 #define COMPARE_GW_TO_APTDAT  0       // loads list of all airports from gateway and comares it to local apt.dat data
 
-#define NAVAID_EXTRA_RANGE  GLOBAL_WED_ART_ASSET_FUDGE_FACTOR  // degree's lon/lat, allows ILS beams to show even if the ILS is outside of the map window
+#define NAVAID_EXTRA_RANGE  GLOBAL_WED_ART_ASSET_FUDGE_FACTOR  // degree's lon/lat, shows ILS beams even if ILS outside of map window
 
 #if COMPARE_GW_TO_APTDAT
 
@@ -207,7 +210,7 @@ static void parse_apt_dat(MFMemFile * str, map<string, navaid_t>& tAirports, con
 				}
 				else if (rowcode == 54 || rowcode == 1054) // ATC frequency
 				{
-					n.heading = 1;  // ATC tower frequency presennce
+					n.heading = 1;  // ATC tower frequency presence
 				}
 			}
 			MFS_string_eol(&s,NULL);
@@ -228,7 +231,8 @@ void WED_NavaidLayer::parse_nav_dat(MFMemFile * str, bool merge)
 		{
 			int type = MFS_int(&s);
 			int first_type = merge ? 4 : 2;         // accept only ILS component overrides when merging
-			if (type >= first_type && type <= 9)    // NDB, VOR and ILS components
+			if ((type >= first_type && type <= 9)   // NDB, VOR and ILS components
+				|| (SHOW_LPV && (type == 14)) )     // GPS final approaches
 			{
 				navaid_t n;
 				n.type = type;
@@ -237,18 +241,18 @@ void WED_NavaidLayer::parse_nav_dat(MFMemFile * str, bool merge)
 				n.lonlat = Point2(lon,lat);
 				MFS_int(&s);   // skip elevation
 				n.freq  = MFS_int(&s);
-				MFS_int(&s);   // skip range
-				n.heading   = MFS_double(&s);
+				MFS_double(&s);                   // skip range, can be floats in XP12
+				double d = MFS_double(&s);
+				if (type == 6)
+					n.heading = fmod(d, 1000.0);  // zero out the topmost 3 digits - its the glideslope
+				else
+					n.heading = fmod(d, 360.0);   // zero out multiples of 360 - its magnetic bearing stuff
 				MFS_string(&s, &n.name);
 				MFS_string(&s, &n.icao);
 				if (type >= 4 && type <= 9)   // ILS components
 				{
 					MFS_string(&s, NULL);  // skip region
 					MFS_string(&s, &n.rwy);
-				}
-				if (type == 6)
-				{
-					n.heading -= floor(n.heading / 1000.0) * 1000.0; // zero out the lowest 3 digits
 				}
 				if(merge)
 				{
@@ -299,6 +303,9 @@ void WED_NavaidLayer::parse_nav_dat(MFMemFile * str, bool merge)
 			}
 			MFS_string_eol(&s,NULL);
 		}
+
+		auto i = mNavaids.cbegin();
+
 	}
 	MemFile_Close(str);
 }
@@ -308,8 +315,12 @@ void WED_NavaidLayer::parse_atc_dat(MFMemFile * str)
 	MFScanner	s;
 	MFS_init(&s, str);
 	int versions[] = { 1000, 1100, 0 };
-	bool take_airspace = false;
-		
+	struct airspace {
+		int bottom, top;
+		Polygon2  shape;
+	};
+	vector<airspace> all_air;
+
 	if(MFS_xplane_header(&s,versions,"ATCFILE",NULL))
 	{
 		navaid_t n;
@@ -321,12 +332,15 @@ void WED_NavaidLayer::parse_atc_dat(MFMemFile * str)
 				n.shape.clear();
 				n.lonlat = Point2(180.0,0.0);
 				n.rwy.clear();
+				all_air.clear();
 			}
-			if(MFS_string_match(&s, "ROLE", 0))
+			else if(MFS_string_match(&s, "ROLE", 0))
 			{
 				string role;
 				MFS_string(&s, &role);
-				n.type = role == "tracon" ? 9999 : 0; // navaid pseudo code for TRACON areas
+#if SHOW_TRACON
+				if(role == "tracon") n.type = 9999;   // navaid pseudo code for TRACON areas
+#endif
 #if SHOW_TOWERS
 				if(role == "twr") n.type = 9998;      // navaid pseudo code for TOWER areas
 #endif
@@ -339,66 +353,75 @@ void WED_NavaidLayer::parse_atc_dat(MFMemFile * str)
 			{
 				MFS_string(&s, &n.icao);
 			}
-			else if(MFS_string_match(&s, "FREQ", 0))
-			{
-				string tmp;
-				MFS_string(&s, &tmp);
-				if(!n.rwy.empty()) n.rwy += ", ";
-				n.rwy += tmp.substr(0,tmp.size()-2) + "." + tmp.substr(tmp.size()-2);
-			}
-			else if(MFS_string_match(&s, "CHAN", 0))
-			{
-				string tmp;
-				MFS_string(&s, &tmp);
-				if(!n.rwy.empty()) n.rwy += ", ";
-				n.rwy += tmp.substr(0,tmp.size()-3) + "." + tmp.substr(tmp.size()-3);
-			}
 			else if(n.type)
 			{
 				if(MFS_string_match(&s, "POINT", 0))
 				{
-					if(take_airspace && n.shape.size())
+					if(all_air.size())
 					{
 						double lat = MFS_double(&s);
 						double lon = MFS_double(&s);
-						n.shape.back().push_back(Point2(lon, lat));
-						if (lon < n.lonlat.x())
-							n.lonlat = Point2(lon, lat);  // get the left side of the area
+						all_air.back().shape.push_back(Point2(lon, lat));
 					}
+				}
+				else if (MFS_string_match(&s, "FREQ", 0))
+				{
+					string tmp;
+					MFS_string(&s, &tmp);
+					if (!n.rwy.empty()) n.rwy += ", ";
+					n.rwy += tmp.substr(0, tmp.size() - 2) + "." + tmp.substr(tmp.size() - 2);
+				}
+				else if (MFS_string_match(&s, "CHAN", 0))
+				{
+					string tmp;
+					MFS_string(&s, &tmp);
+					if (!n.rwy.empty()) n.rwy += ", ";
+					n.rwy += tmp.substr(0, tmp.size() - 3) + "." + tmp.substr(tmp.size() - 3);
 				}
 				else if(MFS_string_match(&s, "AIRSPACE_POLYGON_BEGIN", 0))
 				{
-					int bottom = round(MFS_double(&s) / 100.0);
-					take_airspace = bottom <= SHOW_BELOW;       // declutter display by skipping upper level airspaces
-					if (take_airspace)
-					{
-						if (n.shape.empty())
-						{
-#if SHOW_TOWERS
-							if (n.type == 9998)
-								n.name += " TOWER";
-							else
-#endif					
-								n.name += " APPROACH";
-							n.rwy += " MHz";
-						}
-						n.shape.push_back(Polygon2());
-						string tmp(to_string(bottom) + "-" + to_string((int) (round(MFS_double(&s) / 100.0))));
-						if (n.name.find(tmp) == string::npos)
-							n.name += string("  ") + tmp;
-					}
+					all_air.push_back(airspace());
+					all_air.back().bottom = round(MFS_double(&s) / 100.0);
+					all_air.back().top    = round(MFS_double(&s) / 100.0);
 				}
 				else if(MFS_string_match(&s, "CONTROLLER_END", 1) && n.type)
 				{
-					for (auto nav = mNavaids.cbegin(); nav != mNavaids.cend(); nav++)
+					if (n.type == 9998)
+						n.name += " TOWER";
+					else if (n.type == 9999)
 					{
-						if (LonLatDistMeters(nav->lonlat, n.lonlat) < 2000.0)
-						{
-							n.lonlat.y_ += 0.02;     // avoid two labels right ontop of each other
-							break;
-						}
+						if (all_air.back().shape[0].x() < -32.0)  // western hemisphere, USA
+							n.name += " APPROACH";
+						else if(n.name.find("RADAR") == string::npos)
+							n.name += " RADAR";
 					}
-					mNavaids.insert(n);
+					n.rwy += " MHz";
+
+					int lowest = 999;
+					for (auto& a : all_air)
+						if (a.bottom < lowest) lowest = a.bottom;
+
+					if (lowest <= MAX_ALT)
+					{
+						for (auto& a : all_air)
+							if (a.bottom <= lowest + INC_ALT)
+							{
+								string tmp(to_string(a.bottom) + "-" + to_string(a.top));
+								if (n.name.find(tmp) == string::npos)
+									n.name += string("  ") + tmp;
+								n.shape.push_back(a.shape);
+								for (auto& p : n.shape.back())
+									if (p.x() < n.lonlat.x())
+										n.lonlat = p;             // place label on leftmost edge of the airspace
+							}
+						for (auto nav = mNavaids.cbegin(); nav != mNavaids.cend(); nav++)
+							if (LonLatDistMeters(nav->lonlat, n.lonlat) < 2000.0)
+							{
+								n.lonlat.y_ += 0.02;     // avoid two labels right ontop of each other
+								break;
+							}
+						mNavaids.insert(n);
+					}
 				}
 			}
 			MFS_string_eol(&s,NULL);
@@ -423,6 +446,7 @@ WED_NavaidLayer::navaid_list::navaid_list() : best_begin(-1)
 { 
 	nav_list.reserve(60000); // about 6 MBytes, as of 2024 its some 59000 navaids including ATC areas
 }
+
 vector<navaid_t>::const_iterator WED_NavaidLayer::navaid_list::cbegin(double longitude)
 {
 	if (best_begin < 0)
@@ -434,12 +458,12 @@ vector<navaid_t>::const_iterator WED_NavaidLayer::navaid_list::cbegin(double lon
 
 	if (longitude > nav_list[best_begin].lonlat.x())
 	{
-		while (best_begin < nav_list.size() && longitude > nav_list[best_begin + 1].lonlat.x())
+		while (best_begin < nav_list.size()-1 && longitude > nav_list[best_begin + 1].lonlat.x())
 			best_begin++;
 	}
 	else
 	{
-		while (best_begin > 0 && longitude > nav_list[best_begin - 1].lonlat.x())
+		while (best_begin > 0 && longitude < nav_list[best_begin].lonlat.x())
 			best_begin--;
 	}
 
@@ -582,13 +606,15 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 				{
 					GUI_PlotIcon(g,"nav_vor.png", pt.x(), pt.y(), i->heading, scale);
 				}
-				else if(i->type <= 5)
+				else if(i->type <= 5 || i->type == 14)
 				{
 					Vector2 beam_dir(0.0, beam_len);
 					beam_dir.rotate_by_degrees(180.0-i->heading);
 					Vector2 beam_perp(beam_dir.perpendicular_cw()*0.1);
 
 					g->SetState(0, 0, 0, 0, 1, 0, 0);
+					if (i->type == 14)
+						glEnable(GL_LINE_STIPPLE);
 					glBegin(GL_LINE_STRIP);
 						glVertex2(pt);
 						glVertex2(pt + beam_dir*1.1 + beam_perp);
@@ -597,6 +623,7 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 						glVertex2(pt);
 						glVertex2(pt + beam_dir);
 					glEnd();
+					glDisable(GL_LINE_STIPPLE);
 				}
 				else if(i->type == 6)
 				{

@@ -30,7 +30,7 @@
 struct navaid_t {
 	int		type;
 	Point2 	lonlat;
-	double	heading;
+	float	heading;
 	string	name;
 	string	icao;
 	int     freq;     // ATC tower freq for airports, in kHz
