@@ -30,13 +30,15 @@
 struct navaid_t {
 	int		type;
 	Point2 	lonlat;
-	float	heading;
+	double	heading;
 	string	name;
 	string	icao;
 	int     freq;     // ATC tower freq for airports, in kHz
 	string	rwy;      // Or some other informative text
 	vector<Polygon2> shape; // airspaces only
 };
+
+struct MFMemFile;
 
 class WED_NavaidLayer : public WED_MapLayer {
 public:
@@ -49,8 +51,26 @@ public:
 
 private:
 
-	void				LoadNavaids();
-	vector<navaid_t>	mNavaids;
+	class navaid_list {      // helper class to enforce vector is sorted anytime iterated over using cbegin(lon)
+	public:
+					navaid_list();
+		auto		empty() const { return nav_list.empty(); }
+		auto		cbegin() const { return nav_list.cbegin(); }
+		vector<navaid_t>::const_iterator cbegin(double longitude);   // starts iterating at first navaid >= longitude
+		auto		cend() const { return nav_list.cend(); }
+		void		insert(const navaid_t& aid);
+		void		replace(vector<navaid_t>::const_iterator which, const navaid_t& aid);
+
+	private:
+		vector<navaid_t> nav_list;
+		int			best_begin;
+	};
+
+	void		LoadNavaids(void);
+	void		parse_nav_dat(MFMemFile* str, bool merge);
+	void		parse_atc_dat(MFMemFile* str);
+
+	navaid_list			mNavaids;
 };
 
 #endif /* WED_NavaidLayer_H */

@@ -216,7 +216,7 @@ static void parse_apt_dat(MFMemFile * str, map<string, navaid_t>& tAirports, con
 	}
 }
 
-static void parse_nav_dat(MFMemFile * str, vector<navaid_t>& mNavaids, bool merge)
+void WED_NavaidLayer::parse_nav_dat(MFMemFile * str, bool merge)
 {
 	MFScanner	s;
 	MFS_init(&s, str);
@@ -253,10 +253,10 @@ static void parse_nav_dat(MFMemFile * str, vector<navaid_t>& mNavaids, bool merg
 				if(merge)
 				{
 					// check for duplicates before adding this new one
+					auto i = mNavaids.cbegin();
 					float closest_d = 9999.0;
-					vector<navaid_t>::iterator closest_i;
-					vector<navaid_t>::iterator i = mNavaids.begin();
-					while(i != mNavaids.end())
+					auto closest_i = i;
+					while(i != mNavaids.cend())
 					{
 						if(n.type == i->type && n.icao == i->icao)
 						{
@@ -264,7 +264,7 @@ static void parse_nav_dat(MFMemFile * str, vector<navaid_t>& mNavaids, bool merg
 							if (n.name == i->name)
 							{
 //								printf("Replacing exact type %d, icao %s & name %s match. d=%5.1lfm\n", n.type, n.icao.c_str(), n.name.c_str(), d);
-								*i = n;
+								mNavaids.replace(i,n);
 								break;
 							}
 							if(d < closest_d)
@@ -276,24 +276,26 @@ static void parse_nav_dat(MFMemFile * str, vector<navaid_t>& mNavaids, bool merg
 						}
 						++i;
 					}
-					if (i == mNavaids.end())
+
+					if (i == mNavaids.cend())
 					{
 						if (closest_d < 20.0)
 						{
 //							printf("Replacing despite name %s,%s", closest_i->name.c_str(), n.name.c_str());
 //							if (closest_i->freq != n.freq) printf(" and frequency %d,%d", closest_i->freq, n.freq );
 //							printf(" mismatch, type %d, icao %s d=%5.1lfm\n", n.type, n.icao.c_str(), closest_d);
-							*closest_i = n;
+							mNavaids.replace(closest_i, n);
 						}
 						else
 						{
 //							printf("Adding new %d %s %s\n", n.type, n.name.c_str(), n.icao.c_str());
-							mNavaids.push_back(n);
+							mNavaids.insert(n);
 						}
 					}
+
 				}
-				else // not mergin, take them all
-					mNavaids.push_back(n);
+				else // not merging, take them all
+					mNavaids.insert(n);
 			}
 			MFS_string_eol(&s,NULL);
 		}
@@ -301,7 +303,7 @@ static void parse_nav_dat(MFMemFile * str, vector<navaid_t>& mNavaids, bool merg
 	MemFile_Close(str);
 }
 
-static void parse_atc_dat(MFMemFile * str, vector<navaid_t>& mNavaids)
+void WED_NavaidLayer::parse_atc_dat(MFMemFile * str)
 {
 	MFScanner	s;
 	MFS_init(&s, str);
@@ -388,15 +390,15 @@ static void parse_atc_dat(MFMemFile * str, vector<navaid_t>& mNavaids)
 				}
 				else if(MFS_string_match(&s, "CONTROLLER_END", 1) && n.type)
 				{
-					for (auto& nav : mNavaids)
+					for (auto nav = mNavaids.cbegin(); nav != mNavaids.cend(); nav++)
 					{
-						if (LonLatDistMeters(nav.lonlat, n.lonlat) < 2000.0)
+						if (LonLatDistMeters(nav->lonlat, n.lonlat) < 2000.0)
 						{
 							n.lonlat.y_ += 0.02;     // avoid two labels right ontop of each other
 							break;
 						}
 					}
-					mNavaids.push_back(n);
+					mNavaids.insert(n);
 				}
 			}
 			MFS_string_eol(&s,NULL);
@@ -417,25 +419,61 @@ WED_NavaidLayer::~WED_NavaidLayer()
 {
 }
 
-void WED_NavaidLayer::LoadNavaids()
+WED_NavaidLayer::navaid_list::navaid_list() : best_begin(-1)
+{ 
+	nav_list.reserve(60000); // about 6 MBytes, as of 2024 its some 59000 navaids including ATC areas
+}
+vector<navaid_t>::const_iterator WED_NavaidLayer::navaid_list::cbegin(double longitude)
+{
+	if (best_begin < 0)
+	{
+		std::sort(nav_list.begin(), nav_list.end(), [](const navaid_t& a, const navaid_t& b)
+			{ return a.lonlat.x() < b.lonlat.x(); });
+		best_begin = nav_list.size() / 2;
+	}
+
+	if (longitude > nav_list[best_begin].lonlat.x())
+	{
+		while (best_begin < nav_list.size() && longitude > nav_list[best_begin + 1].lonlat.x())
+			best_begin++;
+	}
+	else
+	{
+		while (best_begin > 0 && longitude > nav_list[best_begin - 1].lonlat.x())
+			best_begin--;
+	}
+
+	return nav_list.begin() + best_begin;
+}
+
+void WED_NavaidLayer::navaid_list::insert(const navaid_t& aid)
+{
+	nav_list.push_back(aid);
+	best_begin = -1;  // forces (re-)sort after any new insertions
+}
+
+void WED_NavaidLayer::navaid_list::replace(vector<navaid_t>::const_iterator where, const navaid_t& aid)
+{
+	const_cast<navaid_t&>(*where) = aid;
+}
+
+void WED_NavaidLayer::LoadNavaids(void)
 {
 // ToDo: move this into PackageMgr, so its updated when XPlaneFolder changes and re-used when another scenery is opened
 	string resourcePath;
 	gPackageMgr->GetXPlaneFolder(resourcePath);
-
-	mNavaids.reserve(25000);    // about 3 MBytes, as of 2018 its some 20,200 navaids
 
 	// deliberately ignoring any Custom Data/earth_424.dat or Custom Data/earth_nav.dat files that a user may have ... to avoid confusion
 	string defaultNavaids  = resourcePath + DIR_STR "Resources" DIR_STR "default data" DIR_STR "earth_nav.dat";
 	string globalNavaids = DIR_STR "Global Airports" DIR_STR "Earth nav data" DIR_STR "earth_nav.dat";
 	
 	MFMemFile * str = MemFile_Open(defaultNavaids.c_str());
-	if(str) parse_nav_dat(str, mNavaids, false);
+	if(str) parse_nav_dat(str, false);
 
 	str = MemFile_Open((resourcePath + DIR_STR "Global Scenery" + globalNavaids).c_str());
 	if (!str)
 		str = MemFile_Open((resourcePath + DIR_STR "Custom Scenery" + globalNavaids).c_str());
-	if(str)	parse_nav_dat(str, mNavaids, true);
+	if(str)	parse_nav_dat(str, true);
 	
 	string defaultATC = resourcePath + DIR_STR "Resources" DIR_STR "default scenery" DIR_STR "default atc dat" DIR_STR "Earth nav data" DIR_STR "atc.dat";
 	str = MemFile_Open(defaultATC.c_str());
@@ -451,7 +489,7 @@ void WED_NavaidLayer::LoadNavaids()
 		defaultATC = resourcePath + DIR_STR "Resources" DIR_STR "default scenery" DIR_STR "1200 atc data" DIR_STR "Earth nav data" DIR_STR "atc.dat";
 		str = MemFile_Open(defaultATC.c_str());
 	}
-	if(str)	parse_atc_dat(str, mNavaids);
+	if(str)	parse_atc_dat(str);
 
 //	str = MemFile_Open(seattleATC.c_str());  // don't take local local ATC data any more
 //	if(str)	parse_atc_dat(str, mNavaids);
@@ -490,8 +528,9 @@ void WED_NavaidLayer::LoadNavaids()
 	}
 #endif
 
-	for(map<string, navaid_t>::iterator i = tAirports.begin(); i != tAirports.end(); ++i)
-		mNavaids.push_back(i->second);
+	for(auto& i : tAirports)
+		mNavaids.insert(i.second);
+
 #endif
 
 // Todo: speedup drawing by sorting mNavaids into longitude buckets, so the preview function only have to go through a smalller part of the overall list.
@@ -527,10 +566,11 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 	glDisable(GL_LINE_STIPPLE);
 	
 	if (PPM > 0.0005)          // stop displaying navaids when zoomed out - gets too crowded
-		for(vector<navaid_t>::iterator i = mNavaids.begin(); i != mNavaids.end(); ++i)  // this is brain dead - use list sorted by longitude
+		for(auto i = mNavaids.cbegin(vl); i != mNavaids.cend(); ++i)  // vector is sorted by longitude, skip what does not need to be iterated over
 		{
-			if(i->lonlat.x() > vl && i->lonlat.x() < vr &&
-			   i->lonlat.y() > vb && i->lonlat.y() < vt)
+			if(i->lonlat.x() > vr)
+				break;
+			if(i->lonlat.y() > vb && i->lonlat.y() < vt)
 			{
 				glColor4fv(red);
 				Point2 pt = GetZoomer()->LLToPixel(i->lonlat);
