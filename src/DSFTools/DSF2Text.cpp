@@ -23,9 +23,13 @@
 #include <stdio.h>
 #include "DSF2Text.h"
 #include "DSFLib.h"
+#include "../XPTools/version.h"
+
 #include <list>
 
 using std::list;
+
+// ToDo: make this thread safe ...
 
 static int sDSF2TEXT_CoordDepth;
 
@@ -275,7 +279,6 @@ void DSF2Text_AddRaterData(
 		else
 			p->print_func(p->ref,"<write error>\n");
 	}
-		
 }
 
 void DSF2Text_EndPolygon(
@@ -283,6 +286,23 @@ void DSF2Text_EndPolygon(
 {
 	print_funcs_s * p = (print_funcs_s *) inRef;
 	p->print_func(p->ref, "END_POLYGON\n");
+}
+
+void DSF2Text_PointPoolInfo(
+	int				divisions,
+	double			hgt_scale,
+	double			hgt_offset,
+	vector<string>& info,
+	void* inRef)
+{
+	print_funcs_s* p = (print_funcs_s*)inRef;
+	for(auto& i : info)
+		p->print_func(p->ref, "# pool %2d: %s\n", &i - &info[0], i.c_str());
+	p->print_func(p->ref, "\n");
+	if(divisions > 0)
+		p->print_func(p->ref, "DIVISIONS %d\n", divisions);
+	if (hgt_scale != 0.0)
+		p->print_func(p->ref, "HEIGHTS %.5lf %.1lf  # max encodeable %.5lf\n", hgt_scale / 65535.0, hgt_offset, hgt_offset + hgt_scale);
 }
 
 void DSF2Text_CreateWriterCallbacks(DSFCallbacks_t * cbs)
@@ -310,6 +330,7 @@ void DSF2Text_CreateWriterCallbacks(DSFCallbacks_t * cbs)
 	cbs->AddRasterData_f			=DSF2Text_AddRaterData				;
 	cbs->NextPass_f					=DSF2Text_NextPass					;
 	cbs->SetFilter_f				=DSF2Text_SetFilter					;
+	cbs->PointPoolInfo_f			=DSF2Text_PointPoolInfo				;
 }
 
 
@@ -324,10 +345,11 @@ bool DSF2Text(char ** inDSF, int n, const char * inFileName)
 	dem_names.clear();
 	
 	#if APL
-	fprintf(fi, "A\n800\nDSF2TEXT\n\n");
-	#elif IBM
-	fprintf(fi, "I\n800\nDSF2TEXT\n\n");
+	fprintf(fi, "A"
+	#else
+	fprintf(fi, "I"
 	#endif
+		          "\n800 written by DSFTool %s\nDSF2TEXT\n\n", product_version(DSFTOOL_VER, DSFTOOL_EXTRAVER));
 
 	DSFCallbacks_t	cbs;
 	DSF2Text_CreateWriterCallbacks(&cbs);
@@ -343,7 +365,7 @@ bool DSF2Text(char ** inDSF, int n, const char * inFileName)
 
 		fprintf(fi, "# Result code: %d\n", result);
 		if(result == dsf_ErrNoAtoms || result == dsf_ErrBadCookie || result == dsf_ErrBadVersion)
-			fprintf(stderr,"The DFS was not readable.  Perhaps you need to unzip it with 7-zip?\n");
+			fprintf(stderr,"The DFS could not be read.\n");
 
 		printf("File %s had %d ter, %d obj, %d pol, %d net.\n", *inDSF,
 			count_ter, count_obj,count_pol,count_net);
@@ -390,6 +412,7 @@ static bool Text2DSFWithWriterAny(const char * inFileName, const char * inDSF, D
 
 	int divisions = 8;
 	float west = 999.0, south = 999.0, north = 999.0, east = 999.0;
+	double hgt_scale = 1.0, hgt_offs = 0.0;
 
 	DSFRasterHeader_t	rheader;
 
@@ -417,12 +440,15 @@ static bool Text2DSFWithWriterAny(const char * inFileName, const char * inDSF, D
 		if (sscanf(ptr, "PROPERTY sim/north %f", &north) == 1) ++props_got;
 		if (sscanf(ptr, "PROPERTY sim/south %f", &south) == 1) ++props_got;
 		sscanf(ptr, "DIVISIONS %d", &divisions);
+		sscanf(ptr, "HEIGHTS %lf %lf", &hgt_scale, &hgt_offs);
 
 		if(is_pipe)
 		if (strncmp(ptr,"DIVISIONS",9) != 0 &&
+		   strncmp(ptr,"HEIGHTS", 7) != 0 &&
+		   strncmp(ptr, "#", 1) != 0 &&
 		   strncmp(ptr,"PROPERTY",8) != 0 &&
-		   strncmp(ptr,"I",1) != 0 &&
-		   strncmp(ptr,"A",1) != 0 &&
+		   strncmp(ptr,"I",2) != 0 &&
+		   strncmp(ptr,"A",2) != 0 &&
 		   strncmp(ptr,"800",3) != 0 &&
 		   strncmp(ptr,"DSF2TEXT",8) != 0 &&
 		   ptr[0] != 0)
@@ -450,7 +476,10 @@ static bool Text2DSFWithWriterAny(const char * inFileName, const char * inDSF, D
 	}
 	else
 	{
-		writer = DSFCreateWriter(west, south, east, north, -32768.0, 32767.0, divisions);
+		double elev_min = hgt_offs;
+		double elev_max = hgt_offs + hgt_scale * 65535.0;
+
+		writer = DSFCreateWriter(west, south, east, north, elev_min, elev_max, divisions);
 		DSFGetWriterCallbacks(&cbs);
 	}
 

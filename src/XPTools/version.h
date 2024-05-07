@@ -5,22 +5,19 @@
 #include <string.h>
 #include <stdint.h>
 
-#define XPT_PACKAGE_VER		"22-6"
+#define XPT_PACKAGE_VER		"23-4"
 
-#define DDSTOOL_VER		20000
+#define DDSTOOL_VER		10200
 #define DDSTOOL_EXTRAVER	"-b1"
 
-#define DSFTOOL_VER		20200
-#define DSFTOOL_EXTRAVER	"-b1"
+#define DSFTOOL_VER		20300
+#define DSFTOOL_EXTRAVER	"-b2"
 
 #define OBJCONVERT_VER		30100
 #define OBJCONVERT_EXTRAVER	"-b1"
 
 #define MESHTOOL_VER		30000
 #define MESHTOOL_EXTRAVER	"-b1"
-
-#define AC3DPLUGIN_VER		30400
-#define AC3DPLUGIN_EXTRAVER	"b4"
 
 #define _VERBUF_SIZE		256
 static char __gverbuf[_VERBUF_SIZE];
@@ -39,7 +36,7 @@ product_version(uint32_t ver, const char* extra_ver)
 static inline void
 print_product_version(const char* product, uint32_t ver, const char* extra_ver)
 {
-	printf("%s %s, Copyright 2020 Laminar Research.  Compiled on "
+	printf("%s %s, Copyright 2023 Laminar Research.  Compiled on "
 		__DATE__".\n", product,	product_version(ver, extra_ver));
 	printf("Part of X-Plane Scenery Tools release: %s\n", XPT_PACKAGE_VER);
 }
