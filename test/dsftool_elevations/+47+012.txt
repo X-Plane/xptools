@@ -1,0 +1,23 @@
+I
+800
+DSF2TEXT
+
+# file: D:\src\xptools\test\dsftool_elevations\+47+012.dsf
+
+PROPERTY sim/west 12
+PROPERTY sim/east 13
+PROPERTY sim/north 48
+PROPERTY sim/south 47
+PROPERTY sim/planet earth
+PROPERTY sim/creation_agent WorldEditor2.5.2r1
+PROPERTY laminar/internal_revision 0
+PROPERTY sim/overlay 1
+PROPERTY sim/filter/aptid LOWS
+PROPERTY sim/require_agpoint 1/0
+PROPERTY sim/require_object 1/0
+OBJECT_DEF lib/airport/Common_Elements/Fuel_Storage/Sing_Tank_Medium.obj
+FILTER 0
+OBJECT_MSL 0 12.997257668 47.798182269 432.000000000 0.000000
+OBJECT_MSL 0 12.996989204 47.798064488 431.494163424 0.000000
+OBJECT_MSL 0 12.996698329 47.797937648 430.994277867 0.000000
+# Result code: 0

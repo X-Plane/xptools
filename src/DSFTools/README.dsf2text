@@ -37,6 +37,7 @@ Version History
                        Capable of directly reading 7z compressed DSF files.
   4/02/23 - 2.3 b1     Auto-detection of DIVISIONS when converting to text
                        New keyword HEIGHTS to set scale/offset of terrain height point pools.
+  5/07/24 - 2.4 a1     Auto-detection of HEIGHTS for overlay sceneries
 
 -------------------------------------------------------------------------------
 OVERVIEW

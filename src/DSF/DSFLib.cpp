@@ -271,10 +271,10 @@ static void GuessGoodHeights(double min_all_pools, double max_all_pools, double 
 		hgt_offs = 0.0;
 }
 
-static set<int> GetAllTerPools(XAtomPackedData& cmdsAtom)
+static set<int> GetAllPools(XAtomPackedData& cmdsAtom, bool overlay)
 {
 	unsigned short		pool, currentPool = 0xFFFF;
-	set<int> TerPools;
+	set<int> ptPools;
 
 	cmdsAtom.Reset();
 	while (!cmdsAtom.Done())
@@ -287,8 +287,9 @@ static set<int> GetAllTerPools(XAtomPackedData& cmdsAtom)
 		case dsf_Cmd_PoolSelect:
 			currentPool = cmdsAtom.ReadUInt16();
 			break;
-		case dsf_Cmd_NetworkChainRange:
 		case dsf_Cmd_ObjectRange:
+			if (!overlay) ptPools.insert(currentPool);
+		case dsf_Cmd_NetworkChainRange:
 		case dsf_Cmd_JunctionOffsetSelect:
 		case dsf_Cmd_SetDefinition32:
 			cmdsAtom.Advance(4);
@@ -300,6 +301,7 @@ static set<int> GetAllTerPools(XAtomPackedData& cmdsAtom)
 		case dsf_Cmd_SetDefinition16:
 		case dsf_Cmd_Object:
 			cmdsAtom.Advance(2);
+			if (!overlay) ptPools.insert(currentPool);
 			break;
 		case dsf_Cmd_NetworkChain:
 			count = cmdsAtom.ReadUInt8();
@@ -341,7 +343,7 @@ static set<int> GetAllTerPools(XAtomPackedData& cmdsAtom)
 		case dsf_Cmd_TerrainPatchFlags:
 			cmdsAtom.Advance(1);
 		case dsf_Cmd_TerrainPatch:
-			TerPools.insert(currentPool);
+			if(overlay) ptPools.insert(currentPool);
 			break;
 		case dsf_Cmd_Triangle:
 		case dsf_Cmd_TriangleStrip:
@@ -356,7 +358,7 @@ static set<int> GetAllTerPools(XAtomPackedData& cmdsAtom)
 			for (counter = 0; counter < count; ++counter)
 			{
 				pool = cmdsAtom.ReadUInt16();
-				TerPools.insert(pool);
+				if(overlay) ptPools.insert(pool);
 				cmdsAtom.Advance(2);
 			}
 			break;
@@ -379,10 +381,10 @@ static set<int> GetAllTerPools(XAtomPackedData& cmdsAtom)
 			cmdsAtom.Advance(commentLen);
 			break;
 		default:
-			return TerPools;
+			return ptPools;
 		}
 	}
-	return TerPools;
+	return ptPools;
 }
 
 int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCallbacks, const int * inPasses, void * ref)
@@ -666,7 +668,6 @@ someday check footer when in sloooow mode
 		}
 
 		bool is_overlay = true;
-		double hgt_scale = 0.0, hgt_offs = 0.0;
 		for (auto str = propAtom.GetFirstString(); str != nullptr; str = propAtom.GetNextString(str))
 		{
 			auto str2 = propAtom.GetNextString(str);
@@ -680,31 +681,34 @@ someday check footer when in sloooow mode
 			}
 			str = str2;
 		}
+
+		double min_all_pools = 32767.0;
+		double max_all_pools = -32768.0;
+		double min_rng_all_pools = 65535.0;
+		double hgt_scale = 0.0, hgt_offs = 0.0;
+
+		auto ptPools = GetAllPools(cmdsAtom, is_overlay);
+
 		if (is_overlay)
+			pp_info.push_back(string("# ter_pools found: " + to_string(ptPools.size())));
+		else
+			pp_info.push_back(string("# obj_pools found: " + to_string(ptPools.size())));
+
+		for (auto p : ptPools)
 		{
-			double min_all_pools = 32767.0;
-			double max_all_pools = -32768.0;
-			double min_rng_all_pools = 65535.0;
+			double scal = planeScales[p][is_overlay ? 2 : 3];
+			double pmin = planeOffsets[p][is_overlay ? 2 : 3];
+			double pmax = pmin + scal;
 
-			auto terPools = GetAllTerPools(cmdsAtom);
-			pp_info.push_back(string("# ter_pools found: " + to_string(terPools.size())));
-
-			for(auto p : terPools)
-			{
-				double scal = planeScales[p][2];
-				double pmin = planeOffsets[p][2];
-				double pmax = pmin + scal;
-
-				if (pmin < min_all_pools) min_all_pools = pmin;
-				if (pmax > max_all_pools) max_all_pools = pmax;
-				if (scal < min_rng_all_pools) min_rng_all_pools = scal;
-			}
-
-//			pp_info.push_back(string("# pp_min=" + to_string(min_all_pools) + " pp_max" + to_string(max_all_pools)));
-//			pp_info.push_back(string("# rn_min=" + to_string(min_rng_all_pools)));
-
-			GuessGoodHeights(min_all_pools, max_all_pools, min_rng_all_pools, hgt_scale, hgt_offs);
+			if (pmin < min_all_pools) min_all_pools = pmin;
+			if (pmax > max_all_pools) max_all_pools = pmax;
+			if (scal < min_rng_all_pools) min_rng_all_pools = scal;
 		}
+		//		pp_info.push_back(string("# pp_min=" + to_string(min_all_pools) + " pp_max" + to_string(max_all_pools)));
+		//		pp_info.push_back(string("# rn_min=" + to_string(min_rng_all_pools)));
+
+		GuessGoodHeights(min_all_pools, max_all_pools, min_rng_all_pools, hgt_scale, hgt_offs);
+
 		inCallbacks->PointPoolInfo_f(divisions, hgt_scale, hgt_offs, pp_info, ref);
 	}
 

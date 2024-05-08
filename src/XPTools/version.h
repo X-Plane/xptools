@@ -5,13 +5,13 @@
 #include <string.h>
 #include <stdint.h>
 
-#define XPT_PACKAGE_VER		"23-4"
+#define XPT_PACKAGE_VER		"24-5"
 
 #define DDSTOOL_VER		10200
-#define DDSTOOL_EXTRAVER	"-b1"
+#define DDSTOOL_EXTRAVER	"-11"
 
-#define DSFTOOL_VER		20300
-#define DSFTOOL_EXTRAVER	"-b2"
+#define DSFTOOL_VER		20400
+#define DSFTOOL_EXTRAVER	"-b1"
 
 #define OBJCONVERT_VER		30100
 #define OBJCONVERT_EXTRAVER	"-b1"
@@ -36,7 +36,7 @@ product_version(uint32_t ver, const char* extra_ver)
 static inline void
 print_product_version(const char* product, uint32_t ver, const char* extra_ver)
 {
-	printf("%s %s, Copyright 2023 Laminar Research.  Compiled on "
+	printf("%s %s, Copyright 2024 Laminar Research.  Compiled on "
 		__DATE__".\n", product,	product_version(ver, extra_ver));
 	printf("Part of X-Plane Scenery Tools release: %s\n", XPT_PACKAGE_VER);
 }
