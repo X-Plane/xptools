@@ -30,6 +30,7 @@
 #include "DSFLib.h"
 #include "XChunkyFileUtils.h"
 #include <stdio.h>
+#include <math.h>
 #include "md5.h"
 #include "DSFDefs.h"
 #include "DSFPointPool.h"
@@ -248,7 +249,7 @@ bail:
 static void GuessGoodHeights(double min_all_pools, double max_all_pools, double min_rng_all_pools, double& hgt_scale, double& hgt_offs)
 {
 	hgt_offs = floor(min_all_pools);  // to allow for some small rounding errors - make lower end a bit conservative
-								  // also make height ranges choosen better readable for humans
+								    // also make height ranges choosen better readable for humans
 
 	double max_rng_all_pools = max_all_pools - hgt_offs;
 
