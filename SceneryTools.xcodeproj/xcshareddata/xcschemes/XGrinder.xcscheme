@@ -9,14 +9,14 @@
          <BuildActionEntry
             buildForTesting = "YES"
             buildForRunning = "YES"
-            buildForProfiling = "NO"
+            buildForProfiling = "YES"
             buildForArchiving = "YES"
-            buildForAnalyzing = "NO">
+            buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D6ED369A0B67964D00D5484E"
-               BuildableName = "WED.app"
-               BlueprintName = "WED"
+               BlueprintIdentifier = "D67EF4EE0B5CF9F400D9190C"
+               BuildableName = "XGrinder.app"
+               BlueprintName = "XGrinder"
                ReferencedContainer = "container:SceneryTools.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -44,9 +44,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D6ED369A0B67964D00D5484E"
-            BuildableName = "WED.app"
-            BlueprintName = "WED"
+            BlueprintIdentifier = "D67EF4EE0B5CF9F400D9190C"
+            BuildableName = "XGrinder.app"
+            BlueprintName = "XGrinder"
             ReferencedContainer = "container:SceneryTools.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -57,15 +57,16 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <MacroExpansion>
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D6ED369A0B67964D00D5484E"
-            BuildableName = "WED.app"
-            BlueprintName = "WED"
+            BlueprintIdentifier = "D67EF4EE0B5CF9F400D9190C"
+            BuildableName = "XGrinder.app"
+            BlueprintName = "XGrinder"
             ReferencedContainer = "container:SceneryTools.xcodeproj">
          </BuildableReference>
-      </MacroExpansion>
+      </BuildableProductRunnable>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

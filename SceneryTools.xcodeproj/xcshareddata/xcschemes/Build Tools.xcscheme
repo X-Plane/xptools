@@ -9,14 +9,14 @@
          <BuildActionEntry
             buildForTesting = "YES"
             buildForRunning = "YES"
-            buildForProfiling = "NO"
+            buildForProfiling = "YES"
             buildForArchiving = "YES"
-            buildForAnalyzing = "NO">
+            buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D6ED369A0B67964D00D5484E"
-               BuildableName = "WED.app"
-               BlueprintName = "WED"
+               BlueprintIdentifier = "D61C26E70B6155960092E098"
+               BuildableName = "Build Tools"
+               BlueprintName = "Build Tools"
                ReferencedContainer = "container:SceneryTools.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -40,16 +40,6 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D6ED369A0B67964D00D5484E"
-            BuildableName = "WED.app"
-            BlueprintName = "WED"
-            ReferencedContainer = "container:SceneryTools.xcodeproj">
-         </BuildableReference>
-      </BuildableProductRunnable>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -60,9 +50,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D6ED369A0B67964D00D5484E"
-            BuildableName = "WED.app"
-            BlueprintName = "WED"
+            BlueprintIdentifier = "D61C26E70B6155960092E098"
+            BuildableName = "Build Tools"
+            BlueprintName = "Build Tools"
             ReferencedContainer = "container:SceneryTools.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
