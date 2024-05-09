@@ -8,16 +8,19 @@
 CHANGE HISTORY:
 -------------------------------------------------------------------------------
 
-1.4b1		3/22/19	  Mipmap generation is done in linear space for better night textures.
-                          64bit binaries on all platforms.
+1.4 	5/07/24   Input can be in any of (.png, tif, jpg, bmp) formats,
+                  on all platforms.
+		          Xgrinder will also recognize these.
+1.3b2	1/02/23   All CLI <flags> arguments are now optional.
+		          Removed option to create non-sRGB gamma textures.
+		          Multi-threaded DDS compression using 4 threads.
+1.3b1	3/22/19	  Mipmap generation is done in linear space for better night textures.
+                  64bit binaries on all platforms.
 1.3		3/30/15   Default gamma is now assumed to be sRGB
 1.2		2/18/10   More advanced mip-map contrl options
 1.1		1/25/10   Quilting Added
                           Mipmap support changed
 		          Control over gamma
-1.2		1/02/23   All CLI <flags> arguments are now optional.
-		          Removed option to create non-sRGB gamma textures.
-		          Multi-threaded DDS compression using a fixed 4 threads.
 
 -------------------------------------------------------------------------------
 SYSTEM REQUIREMENTS AND INSTALLATION
@@ -32,11 +35,12 @@ See the X-Grinder documentation for more details.
 USING DDSTool
 -------------------------------------------------------------------------------
 
-DDSTool converts PNG files to DDS files for use with X-Plane.  DDS always takes
-a PNG file and creates a DDS file of the same name but with the .dds suffix.
+DDSTool converts (png, tif, jpg or bmp) files to DDS files for use with X-Plane.
 
-To convert a PNG file using XGrinder and DDSTool, simply drag the PNG file
-into the X-Grinder window.
+To convert a image file using XGrinder and DDSTool, simply drag the image file
+into the X-Grinder window. XGrinder itself will only recognize files ending in 
+suffixes of (.png, .tif, .jpg, .bmp), while DDSTool itself will auto-detect 
+the input format independent of filename or suffix.
 
 The command-line syntax for DDSTool is:
 
@@ -49,23 +53,26 @@ details on DXT1 vs. DXT3 vs. DXT5.
 Auto-pick compression
 --png2dxt
 
-In this mode DDSTool will use DXT1 compression for PNG files with no alpha
-channel and DXT5 for PNG files with an alpha channel.
+In this mode DDSTool will use DXT1a compression for image files with either no
+alpha channel or all pixels being either fully transparent or fully opaque.
+All other inputs will compress to DXT5.
 
 Use DXT1 Compression (1-bit alpha)
 --png2dxt1
 
-In this mode, the PNG file is always compressed using DXT1.
+In this mode, the image file is always compressed using DXT1. Any alpha channel
+in the input files is rounded towards fully opaque or transparent to fit the 
+1-bit alpha in the compressed image
 
 Use DXT3 Compression (high-freq alpha)
 --png2dxt3
 
-In this mode, the PNG file is always compressed using DXT3.
+In this mode, the image file is always compressed using DXT3.
 
 Use DXT5 Compression (smooth alpha)
 --png2dxt5
 
-In this mode, the PNG file is always compressed using DXT5.
+In this mode, the image file is always compressed using DXT5.
 
 Use no compression
 --png2rgb
@@ -113,7 +120,8 @@ Scaling options:
 
 --scale_none
 
-Do not scale the image - it must already be a power of 2.
+Do not scale the image - it must already be a power of 2. Will result in an
+error message if the input file is NOT a power-of-2 in size.
 
 --scale_up
 

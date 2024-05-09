@@ -65,5 +65,9 @@
     <ClInclude Include="..\..\src\GUI\GUI_Unicode.h">
       <Filter>GUI</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\XPTools\version.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\src\XPTools\README.DDSTool" />
   </ItemGroup>
 </Project>

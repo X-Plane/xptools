@@ -118,11 +118,10 @@ void XGrinderWin::Update(XWin::XContext ctx)
 #else
 	int		w, h;
 	this->GetBounds(&w, &h);
-#if APL
+  #if APL
 	erase_a_rect(0,0,w,h);
 	draw_text(0,0,w,h,gCurMessage);
-#endif
-#if IBM
+  #else // IBM
 	RECT	bounds;
 	bounds.left = 0;
 	bounds.right = w;
@@ -132,8 +131,8 @@ void XGrinderWin::Update(XWin::XContext ctx)
 	if (gCurMessage[0] != 0)
 		//		TextOut(ctx, 0, 0, gCurMessage, strlen(gCurMessage));
 		DrawText(ctx, gCurMessage, -1, &bounds, DT_LEFT | DT_WORD_ELLIPSIS);
+  #endif
 #endif
-#endif // LIN
 }
 
 void	XGrinder_ShowMessage(const char * fmt, ...)
@@ -181,6 +180,7 @@ int main(int argc, char* argv[])
 {
 	gWin = new XGrinderWin();
 	XGrindInit(gTitle);
+
 	gWin->xclass(gTitle.c_str());
 	gWin->show(argc,argv);
 

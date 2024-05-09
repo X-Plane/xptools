@@ -7,7 +7,7 @@
 
 #define XPT_PACKAGE_VER		"24-5"
 
-#define DDSTOOL_VER		10300
+#define DDSTOOL_VER		10400
 #define DDSTOOL_EXTRAVER	"-b1"
 
 #define DSFTOOL_VER		20400
