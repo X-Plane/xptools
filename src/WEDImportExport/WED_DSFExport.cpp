@@ -1254,7 +1254,7 @@ static int	DSF_ExportTileRecursive(
 				double xyrz[4] = { p.x(), p.y(), heading, 0.0 };
 				if(obj->HasCustomMSL())
 				{
-					xyrz[3] = doblim(obj->GetCustomMSL(), -1000.0, +10000.0);   // XPD-15378 rendering engine may freak out
+					xyrz[3] = doblim(obj->GetCustomMSL(), -500.0, +10000.0);   // XPD-15378 rendering engine may freak out
 					cbs->AddObjectWithMode_f(idx, xyrz, (obj_elev_mode) obj->HasCustomMSL(), writer);
 				}
 				else
