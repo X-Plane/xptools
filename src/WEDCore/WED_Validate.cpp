@@ -611,19 +611,16 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 
 	if(who->GetClass() == WED_FacadePlacement::sClass)
 		ValidateOneFacadePlacement(who, msgs, parent_apt);
-
-	if(who->GetClass() == WED_ForestPlacement::sClass)
+	else if(who->GetClass() == WED_ForestPlacement::sClass)
 		ValidateOneForestPlacement(who, msgs, parent_apt);
-
-	if (who->GetClass() == WED_StringPlacement::sClass)
+	else if (who->GetClass() == WED_StringPlacement::sClass)
 	{
 		auto str = static_cast<WED_StringPlacement*>(who);
 		if(str->GetSpacing() < 1.0)
 			msgs.push_back(validation_error_t("Object string spacing must be grater than zero.", err_string_zero_spaceing, who, parent_apt));
 
 	}
-
-	if (who->GetClass() == WED_ExclusionPoly::sClass)
+	else if (who->GetClass() == WED_ExclusionPoly::sClass)
 	{
 		auto xcl = static_cast<WED_ExclusionPoly*>(who);
 		if (xcl->GetNumHoles() > 0)
@@ -633,46 +630,61 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 		if (ex.count(exclude_For))
 			msgs.push_back(validation_error_t("Exclusion Polygons do not (yet) supported forests in X-Plane. Use Exclusion zones instead.", warn_exclusion_polys_no_forests, who, parent_apt));
 	}
-
-	if(gExportTarget == wet_gateway)
+	else if(who->GetClass() == WED_ObjPlacement::sClass)
 	{
-		if(who->GetClass() != WED_Group::sClass)
-		if(!parent_apt)
-			msgs.push_back(validation_error_t("Elements of your project are outside the hierarchy of the airport you are trying to export.", err_airport_elements_outside_hierarchy, who,NULL));
-
-		if(who->GetClass() == WED_ObjPlacement::sClass)
+		auto obj = static_cast<WED_ObjPlacement *>(who);
+		if (int t = obj->HasCustomMSL())
 		{
-			auto obj = static_cast<WED_ObjPlacement *>(who);
-			if (int t = obj->HasCustomMSL())
+			double hgt = obj->GetCustomMSL();
+			char hgt_str[20];
+
+			if(gIsFeet)
+				snprintf(hgt_str, sizeof(hgt_str), "set_%s=%.0lfft", t == 1 ? "MSL" : "AGL", hgt * MTR_TO_FT);
+			else
+				snprintf(hgt_str, sizeof(hgt_str), "set_%s=%.1lfm", t == 1 ? "MSL" : "AGL", hgt);
+
+			if (gExportTarget == wet_gateway)
 			{
 				if (t == 2) // don't warn about set_AGL if the .agp has scrapers
 				{
-					const agp_t * agp;
+					const agp_t* agp;
 					string vpath;
-					WED_ResourceMgr * rmgr = WED_GetResourceMgr(who->GetArchive()->GetResolver());
+					WED_ResourceMgr* rmgr = WED_GetResourceMgr(who->GetArchive()->GetResolver());
 					obj->GetResource(vpath);
 					if (rmgr && rmgr->GetAGP(vpath, agp))
-						for (const auto& o :agp->tiles.front().objs)
+						for (const auto& o : agp->tiles.front().objs)
 							if (o.scp_step > 0.0)
 							{
 								t = 0;
 								break;
 							}
 				}
-				stringstream ss;
-				ss << "The use of " << (t == 1 ? "set_MSL=" : "set_AGL=") << (int)obj->GetCustomMSL() << '.' << abs((int)(obj->GetCustomMSL()*10.0)) % 10 << 'm';
 				if (t == 1)
 				{
-					ss << " is not allowed on the scenery gateway.";
-					msgs.push_back(validation_error_t(ss.str(), err_object_custom_elev, who, parent_apt));
+					msgs.push_back(validation_error_t("The use of set_MSL is not allowed on the scenery gateway.", 
+						err_object_custom_elev, who, parent_apt));
 				}
-				else if(t == 2)
+				else if (t == 2)
 				{
-					ss << " is discouraged on the scenery gateway. Use only in well justified cases.";
-					msgs.push_back(validation_error_t(ss.str(), warn_object_custom_elev, who, parent_apt));
+					msgs.push_back(validation_error_t(string("The use of ") + hgt_str + " is discouraged on the scenery gateway. Use only in well justified cases.",
+						warn_object_custom_elev, who, parent_apt));
 				}
 			}
+
+			if (t == 2 && (hgt < -100.0 || hgt > 100.0))
+				msgs.push_back(validation_error_t(string(hgt_str) + " is more than +/-100m.",
+					(gExportTarget == wet_gateway) ? err_object_custom_elev : warn_object_custom_elev, who, parent_apt));
+			else
+				if (hgt < -1000.0 || hgt > 10000.0)
+					msgs.push_back(validation_error_t(string(hgt_str) + " is outside of the -1000 to +10000m rendering engine safe range.",
+						err_object_custom_elev, who, parent_apt));
 		}
+	}
+
+	if (who->GetClass() != WED_Group::sClass && who->GetClass() != WED_OverlayImage::sClass)
+	{
+		if (gExportTarget == wet_gateway && !parent_apt)
+			msgs.push_back(validation_error_t("Elements of your project are outside the hierarchy of the airport you are trying to export.", err_airport_elements_outside_hierarchy, who, NULL));
 	}
 
 	//--Validate resources-----------------------------------------------------

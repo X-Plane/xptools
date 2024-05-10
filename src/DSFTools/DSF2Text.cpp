@@ -152,13 +152,13 @@ void DSF2Text_AddObjectWithMode(
 	print_funcs_s * p = (print_funcs_s *) inRef;
 	switch(inMode) {
 	case obj_ModeAGL:
-		p->print_func(p->ref, "OBJECT_AGL %d %.9lf %.9lf %.9lf %lf\n", inObjectType + offset_obj, inCoordinates[0], inCoordinates[1], inCoordinates[3], inCoordinates[2]);
+		p->print_func(p->ref, "OBJECT_AGL %d %.9lf %.9lf %.5lf %.3lf\n", inObjectType + offset_obj, inCoordinates[0], inCoordinates[1], inCoordinates[3], inCoordinates[2]);
 		break;
 	case obj_ModeMSL:
-		p->print_func(p->ref, "OBJECT_MSL %d %.9lf %.9lf %.9lf %lf\n", inObjectType + offset_obj, inCoordinates[0], inCoordinates[1], inCoordinates[3], inCoordinates[2]);
+		p->print_func(p->ref, "OBJECT_MSL %d %.9lf %.9lf %.5lf %.3lf\n", inObjectType + offset_obj, inCoordinates[0], inCoordinates[1], inCoordinates[3], inCoordinates[2]);
 		break;
 	case obj_ModeDraped:
-		p->print_func(p->ref, "OBJECT %d %.9lf %.9lf %lf\n", inObjectType + offset_obj, inCoordinates[0], inCoordinates[1], inCoordinates[2]);
+		p->print_func(p->ref, "OBJECT %d %.9lf %.9lf %.3lf\n", inObjectType + offset_obj, inCoordinates[0], inCoordinates[1], inCoordinates[2]);
 		break;
 	}
 }
