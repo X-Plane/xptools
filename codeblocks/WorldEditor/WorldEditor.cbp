@@ -19,12 +19,12 @@
 					<Add option="-g" />
 				</Compiler>
 				<MakeCommands>
-					<Build command="conf=release_opt $make -j4 WED" />
+					<Build command="conf=release_opt $make -j$(nproc) WED" />
 					<CompileFile command="conf=release_opt $make $file" />
 					<Clean command="$make clean" />
 					<DistClean command="$make -f $makefile distclean$target" />
 					<AskRebuildNeeded command="conf=release_opt $make -q WED" />
-					<SilentBuild command="conf=release_opt $make -j4 WED &gt; $(CMD_NULL)" />
+					<SilentBuild command="conf=release_opt $make -j$(nproc) WED &gt; $(CMD_NULL)" />
 				</MakeCommands>
 			</Target>
 			<Target title="Debug">
@@ -38,12 +38,12 @@
 					<Add option="-g" />
 				</Compiler>
 				<MakeCommands>
-					<Build command="conf=debug $make -j4 WED" />
+					<Build command="conf=debug $make -j$(nproc) WED" />
 					<CompileFile command="conf=debug $make $file" />
 					<Clean command="$make clean" />
 					<DistClean command="$make -f $makefile distclean$target" />
 					<AskRebuildNeeded command="conf=debug $make -q WED" />
-					<SilentBuild command="conf=debug $make -j4 WED &gt; $(CMD_NULL)" />
+					<SilentBuild command="conf=debug $make -j$(nproc) WED &gt; $(CMD_NULL)" />
 				</MakeCommands>
 			</Target>
 			<Target title="(default)">
@@ -57,12 +57,12 @@
 					<Add option="-g" />
 				</Compiler>
 				<MakeCommands>
-					<Build command="$make -j4 WED" />
+					<Build command="$make -j$(nproc) WED" />
 					<CompileFile command="$make $file" />
 					<Clean command="$make clean" />
 					<DistClean command="$make -f $makefile distclean$target" />
 					<AskRebuildNeeded command="$make -q WED" />
-					<SilentBuild command="$make -j4 WED &gt; $(CMD_NULL)" />
+					<SilentBuild command="$make -j$(nproc) WED &gt; $(CMD_NULL)" />
 				</MakeCommands>
 			</Target>
 		</Build>
@@ -912,7 +912,6 @@
 				<search_path add="../../libs/local/include" />
 			</code_completion>
 			<envvars set="default" />
-			<debugger />
 			<lib_finder disable_auto="1" />
 		</Extensions>
 	</Project>
