@@ -1129,7 +1129,7 @@ public:
 								BeginPatch, BeginPrimitive, AddPatchVertex, EndPrimitive, EndPatch,
 								AddObjectWithMode,
 								BeginSegment, AddSegmentShapePoint, EndSegment,
-								BeginPolygon, BeginPolygonWinding, AddPolygonPoint,EndPolygonWinding, EndPolygon, AddRasterData, SetFilter };
+								BeginPolygon, BeginPolygonWinding, AddPolygonPoint,EndPolygonWinding, EndPolygon, AddRasterData, SetFilter, nullptr };
 
 		LOG_MSG("I/DSF Importing binary DSF from %s\n",file_name);
 		int res = DSFReadFile(file_name, malloc, free, &cb, NULL, this);
@@ -1150,7 +1150,7 @@ public:
 								BeginPatch, BeginPrimitive, AddPatchVertex, EndPrimitive, EndPatch,
 								AddObjectWithMode,
 								BeginSegment, AddSegmentShapePoint, EndSegment,
-								BeginPolygon, BeginPolygonWinding, AddPolygonPoint,EndPolygonWinding, EndPolygon, AddRasterData, SetFilter };
+								BeginPolygon, BeginPolygonWinding, AddPolygonPoint,EndPolygonWinding, EndPolygon, AddRasterData, SetFilter, nullptr };
 
 		LOG_MSG("I/DSF Importing text DSF from %s\n",file_name);
 		int ok = Text2DSFWithWriter(file_name, &cb, this);

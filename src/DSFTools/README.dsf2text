@@ -2,39 +2,42 @@ DSFTool Instructions and Release Notes
 
 Version History
 
-	12/13/04 - Alpha 1		Initial release.
-	12/20/04 - Alpha 2		Fixed file-close bug.
-	 1/12/05 - Alpha 3		Fixed crash bug!
-	 1/23/05 - Alpha 4		Added pipe support.
-	12/19/05 - 1.0.1		Fixed support for global DSFs. (Change to polygon 
-						command to support arbitrary coord depth)
-						Allowed spaces in DEF filenames.
-						Mach-O native Mac Grinder
-	 1/05/06 - 1.1			Added ENV->Overlay Conversion
-						Fixed crashes and hung files on Windows
-						Fixed return codes for command-line tool
-						Changed output for clean piping
-	 7/24/06 - 1.1.1		Fixed support for bezier polygon parsing
-	 2/13/07 - 1.2			Support for bezier curves with ST coordinates.
-	 					Command line options can take one or two dashes.
-	 					Tool can show version.
-	 					Total capacity for polygons increased a lot.
-      3/11/08 - 1.3			Support for XGrinder automation.
-	 1/25/08 - 1.4			Elevation in the DSF is scaled to improve precision vertically.
-						Raw triangles will be optimized into strips - simply dump
-						an arbitrary number of raw triangles - DSF2Text will form strips
-						and break up groups of tris that are too numerous.
-						Vector roads are not reversed as part of optimization - this helps traffic flow.
-						DSF2Text will recognize the ST coordinates for draped polygons.
-						Precision increased to 9 digits.
-	 2/18/12 - 2.0		Support for raster data for X-Plane 10
-	 3/30/15 - 2.0.1	Added error message that the file might be 7-zipped.
-						Fixed decode of MSL-base objects.
-	 3/19/19 - 2.1.0b1	ENV support removed
-						Fixes handling of 7-plane vertices.
-						64 bit binaries on all platforms.
-	 9/20/20 - 2.2.0b1  Added support for AGL-base objects.
-						Capable of opening 7z compressed DSF files.
+ 12/13/04 - Alpha 1    Initial release.
+ 12/20/04 - Alpha 2    Fixed file-close bug.
+  1/12/05 - Alpha 3    Fixed crash bug!
+  1/23/05 - Alpha 4    Added pipe support.
+ 12/19/05 - 1.0.1      Fixed support for global DSFs. (Change to polygon 
+                       command to support arbitrary coord depth)
+                       Allowed spaces in DEF filenames.
+                       Mach-O native Mac Grinder
+  1/05/06 - 1.1        Added ENV->Overlay Conversion
+                       Fixed crashes and hung files on Windows
+                       Fixed return codes for command-line tool
+                       Changed output for clean piping
+  7/24/06 - 1.1.1      Fixed support for bezier polygon parsing
+  2/13/07 - 1.2        Support for bezier curves with ST coordinates.
+                       Command line options can take one or two dashes.
+                       Tool can show version.
+                       Total capacity for polygons increased a lot.
+  3/11/08 - 1.3        Support for XGrinder automation.
+  1/25/08 - 1.4        Elevation in the DSF is scaled to improve precision vertically.
+                       Raw triangles will be optimized into strips - simply dump
+                       an arbitrary number of raw triangles - DSF2Text will form strips
+                       and break up groups of tris that are too numerous.
+                       Vector roads are not reversed as part of optimization - this helps traffic flow.
+                       DSF2Text will recognize the ST coordinates for draped polygons.
+                       Precision increased to 9 digits.
+  2/18/12 - 2.0        Support for raster data for X-Plane 10
+  3/30/15 - 2.0.1      Added error message that the file might be 7-zipped.
+                       Fixed decode of MSL-base objects.
+  3/19/19 - 2.1 b1     ENV support removed
+                       Fixes handling of 7-plane vertices.
+                       64 bit binaries on all platforms.
+  9/20/20 - 2.2 b1     Added support for AGL-base objects.
+                       Capable of directly reading 7z compressed DSF files.
+  4/02/23 - 2.3 b1     Auto-detection of DIVISIONS when converting to text
+                       New keyword HEIGHTS to set scale/offset of terrain height point pools.
+  5/07/24 - 2.4 a1     Auto-detection of HEIGHTS for overlay sceneries
 
 -------------------------------------------------------------------------------
 OVERVIEW
@@ -46,16 +49,12 @@ files to a text format and back again.
 WARNING: Working with DSF files as text DSFTool is intended primarily for
 programmers who want to create DSF files.
 
-Note: Previously the UI version was called DSF2Text; now both are called
-DSFTool.
-
 -------------------------------------------------------------------------------
 SYSTEM REQUIREMENTS AND INSTALLATION
 -------------------------------------------------------------------------------
 
-DSFTool is provided for Windows and Mac OS X.  To install DSFTool, simply
-unzip the compressed archive.  To use DSFTool with XGrinder, make sure both
-executables are in the same directory.
+DSFTool is provided for Windows, Linux and MacOS. To use DSFTool with XGrinder,
+make sure it is in a subdirectory 'tools' relative to the location of XGrinder.
 
 -------------------------------------------------------------------------------
 USING DSFTool
@@ -109,8 +108,8 @@ DSFTool FILE FORMAT
 The DSFTool file format starts out with a typical X-Plane header:
 
 A
-800
-DSFTool
+800    [<arbitrary text, e.g. name and version of tool creating the file>]
+DSF2TEXT
 
 It then consists of a series of commands, each one taking up one line.  In this
 reference, properties in <inequality signs> are to be filled in with real 
@@ -127,13 +126,25 @@ WARNING: certain properties must come first - see the PROPERTY command below.
 (Hint: the easiest way to get a feel for the file format is to take a DSF file, 
 convert it to text and look through it.)  The file format is:
 
+# [<arbitrary text>]
+
+	All lines starting with unknown keywords are silently ignored. No current 
+	or future keywords will start with #, making this safe to use for comments.
+
 DIVISIONS <number>
 
 	This is a meta-command that instructs DSFTool to use a certain number of 
 	point pools to allocate points.  More pools generally means more accuracy
-	in storage, but may also increase file size if improperly used.  The 
-	default is four divisons if this command is omitted, resulting in sixteen
-	point pools.
+	in storage, but may also increase file size if improperly used. 
+	If omitted, the default is 8 divisons, resulting in sixteen
+	point pools, 2^-19 deg or ~4"/20cm lateral resolution for coordinates.
+
+HEIGHTS <scale> <minimum>
+
+	This is a meta-command that instructs DSFTool to change scales and offsets
+	assigned to height data in all PATCH_VERTEX point pools.
+	If omitted, the defaults are 1.0 -32758.0, i.e. a resolution of 1.0m and
+	a maximum encodeable height of 1.0 * 65535 + -32768.0 = +32767.0m
 
 PROPERTY <name> <value>
 
@@ -141,11 +152,11 @@ PROPERTY <name> <value>
 	that specify various header information.  See the DSF file format spec for
 	useful property values.
 	
-
 -------------------------------------------------------------------------
-IMPORTANT: the DIVISIONS and PROPERTY commands MUST come before all other
-commands!  The north/south/east/west properties must come last among
-all properties!!
+IMPORTANT: for pipelined input only, the DIVISIONS, HEIGHTS and PROPERTY
+  commands MUST come before all other commands. 
+  For all input types, the sim/[east|west|north|south] commands MUST come
+  last, after all other DIVISION, HEIGHTS and PROPERTY commands.
 -------------------------------------------------------------------------
 	
 TERRAIN_DEF <file name>
@@ -203,6 +214,12 @@ OBJECT <type> <longitude> <latitude> <rotation>
 	This adds an object to the file of a given type.  The position is 
 	specified in degrees and the angle is in degrees as well.
 
+OBJECT_AGL <type> <longitude> <latitude> <rotation> <elevation>
+OBJECT_MSL <type> <longitude> <latitude> <rotation> <elevation>
+
+	These are extensions of the OBJECT command to specify the object
+	to be at an specific elevation rather than at the terrain ground level
+
 BEGIN_SEGMENT <type> <subtype> <node id> <longitude> <latitude> <elevation>
 BEGIN_SEGMENT_CURVED <type> <subtype> <node id> 
 	<longitude> <latitude> <elevation> <longitude> <latitude> <elevation>
@@ -253,6 +270,17 @@ RASTER_DATA version=<version> bbp=<bpp> flags=<flags> width=<wdith> height=<hegi
 	This indicates a raster layer; the properties must be in this order and
 	match the DSF raster layer info atom.  The filename is the name of a binary
 	file that contains the raw data to include (or is output).
+
+FILTER <index>
+
+	This sets up automatic exclusion functionality. Content after a FILTER
+	command is only displayed if the same scenery includes an active apt.dat
+	entry with a matching AirportID.
+	The airportID's are specified with sim/filter/aptid <AirportID>	properties,
+	the index in the FILTER command refers to the n-th property of this type.
+	If that airport is inactive due to being superceeded by another airport of 
+	the same AirportID in another airport, all content after this until the 
+	next FILTER command or end-of-file is skipped when loading the DSF.
 
 -------------------------------------------------------------------------------
 MERGING TWO DSF FILES

@@ -383,6 +383,9 @@ int main(int argc, char * argv[])
 	if (argc == 2 && strcmp(argv[1],"--auto_config")==0)
 	{
 		printf("CMD .png .dds \"%s\" DDS_MODE HAS_MIPS PVR_SCALE \"INFILE\" \"OUTFILE\"\n",argv[0]);
+		printf("CMD .jpg .dds \"%s\" DDS_MODE HAS_MIPS PVR_SCALE \"INFILE\" \"OUTFILE\"\n", argv[0]);
+		printf("CMD .tif .dds \"%s\" DDS_MODE HAS_MIPS PVR_SCALE \"INFILE\" \"OUTFILE\"\n", argv[0]);
+		printf("CMD .bmp .dds \"%s\" DDS_MODE HAS_MIPS PVR_SCALE \"INFILE\" \"OUTFILE\"\n", argv[0]);
 		printf("OPTIONS DDSTool\n");
 		printf("RADIO DDS_MODE 1 --png2dxt Auto-pick compression\n");
 		printf("RADIO DDS_MODE 0 --png2dxt1 BC1/DXT1 Compression (1-bit alpha)\n");
@@ -467,7 +470,7 @@ int main(int argc, char * argv[])
 		bool one_file = false;
 
 		if(strcmp(argv[n],"--one_file")==0) { ++n; one_file = true; }
-		if(CreateBitmapFromPNG(argv[n], &info, true, GAMMA_SRGB))
+		if(LoadBitmapFromAnyFile(argv[n], &info))
 		{
 			printf("Unable to open png file %s\n", argv[n]);
 			return 1;
@@ -680,7 +683,7 @@ int main(int argc, char * argv[])
 		}
 
 		ImageInfo	info;
-		if (CreateBitmapFromPNG(argv[arg_base], &info, bc_type == 0, GAMMA_SRGB))
+		if (LoadBitmapFromAnyFile(argv[arg_base], &info))
 		{
 			printf("Unable to open png file %s\n", argv[arg_base]);
 			return 1;

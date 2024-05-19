@@ -157,7 +157,6 @@ static string g_me;
 
 static bool file_cb(const char * fileName, bool isDir, unsigned long long modTime, void * ref);
 static void	sync_menu_checks();
-static void sub_str(string& io_str, const string& key, const string& rep);
 
 static void sub_str(string& io_str, const string& key, const string& rep)
 {
@@ -167,7 +166,6 @@ static void sub_str(string& io_str, const string& key, const string& rep)
 		io_str.replace(p,key.size(),rep);
 	}
 }
-
 
 static void	sync_menu_checks()
 {
@@ -225,12 +223,11 @@ static bool file_cb(const char * fileName, bool isDir, unsigned long long modTim
 	FILE * fi = popen(pipe_buf, "r");
 	if (fi)
 	{
+		char	line[2048];
+		char	s1[512], s2[512], s3[512];
+
 		while(!feof(fi))
 		{
-			char	line[2048];
-			char	s1[512];
-			char	s2[512];
-			char	s3[512];
 			int		en;
 
 			if(!fgets(line,sizeof(line),fi)) break;
@@ -277,6 +274,45 @@ static bool file_cb(const char * fileName, bool isDir, unsigned long long modTim
 			}
 		}
 		pclose(fi);
+
+		if (fi = fopen("log.txt", "r"))
+		{
+			int item, en;
+			while (!feof(fi))
+			{
+				if (!fgets(line, sizeof(line), fi)) break;
+				if (sscanf(line, "### CMD %s %s", s1, s2) == 2)
+				{
+					for (auto c : conversions)
+						if (c->input_extension == s1)
+						{
+							selected_conversions[s1] = c;
+							break;
+						}
+				}
+				else if (sscanf(line, "### RADIO %s %d", s1, &item) == 2)
+				{
+					for(auto& m : flag_menus)
+						if (m.title == s1 && item < m.items.size() && m.items[item].radio != 0)
+						{
+							for (int i = 0; i < m.items.size(); i++)
+								if (m.items[i].token == m.items[item].token)
+									m.items[i].enabled = i == item;
+							break;
+						}
+				}
+				else if (sscanf(line, "### CHECK %s %d %d", s1, &item, &en) == 3)
+				{
+					for (auto m : flag_menus)
+						if (m.title == s1 && item < m.items.size() && m.items[item].radio == 0)
+						{
+							m.items[item].enabled = en;
+							break;
+						}
+				}
+			}
+			fclose(fi);
+		}
 	}
 	return true;
 }
@@ -287,14 +323,9 @@ static void spool_job(const char * cmd_line)
 	if(log == NULL) log = stdout;
 	fprintf(log,"%s\n",cmd_line);
 	XGrinder_ShowMessage("%s",cmd_line);
-	string quoted(cmd_line);
-#if IBM
-// not applicable with xpt_popen()
-//	quoted = "\"" + quoted + "\"";
-#endif
 	string log_txt;
 
-	FILE * pipe = popen(quoted.c_str(), "r");
+	FILE * pipe = popen(cmd_line, "r");
 	while(!feof(pipe))
 	{
 		char buf[1000];
@@ -381,6 +412,12 @@ int	XGrinderMenuPick(xmenu menu, int item)
 		{
 			selected_conversions[conversions[item]->input_extension.c_str()] = conversions[item];
 			sync_menu_checks();
+
+			if (auto fi = fopen("log.txt", "a"))
+			{
+				fprintf(fi, "### CMD %s %s\n", conversions[item]->input_extension.c_str(), conversions[item]->tool_name.c_str());
+				fclose(fi);
+			}
 			return 1;
 		}
 	} else
@@ -401,8 +438,21 @@ int	XGrinderMenuPick(xmenu menu, int item)
 				m->items[n].enabled = 0;
 			}
 			m->items[item].enabled = true;
-		} else
+			if (auto fi = fopen("log.txt", "a"))
+			{
+				fprintf(fi, "### RADIO %s %d\n", m->title.c_str(), item);
+				fclose(fi);
+			}
+		}
+		else
+		{
 			m->items[item].enabled = !m->items[item].enabled;
+			if (auto fi = fopen("log.txt", "a"))
+			{
+				fprintf(fi, "### CHECK %s %d %d\n", m->title.c_str(), item, m->items[item].enabled);
+				fclose(fi);
+			}
+		}
 		sync_menu_checks();
 		return 1;
 	}
@@ -505,5 +555,7 @@ void	XGrindInit(string& t)
 	}
 
 	sync_menu_checks();
+
+	t += " 1.3";
 }
 
