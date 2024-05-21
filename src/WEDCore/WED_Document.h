@@ -138,21 +138,16 @@ private:
 	bool				mOnDisk;
 	bool				mPrefsChanged;
 
-	//sql_db				mDB;
 	WED_Archive			mArchive;
 	WED_UndoMgr			mUndo;
 
 	WED_TexMgr *		mTexMgr;
 	WED_LibraryMgr *	mLibraryMgr;
 	WED_ResourceMgr *	mResourceMgr;
-	//WED_Properties	mProperties;
 #if WITHNWLINK
 	WED_Server *		mServer;
 	WED_NWLinkAdapter *	mNWLink;
 #endif
-	WED_Document();
-	WED_Document(const WED_Document&);
-	WED_Document& operator=(const WED_Document&);
 
 	string						mDocPrefsActName;		// Temporary for tracking the current int-set on read-i.
 	map<string,string>			mDocPrefs;				// All string, int and double (non-set) prefs

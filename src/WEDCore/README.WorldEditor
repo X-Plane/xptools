@@ -27,7 +27,8 @@ WED 2.6 b1
    - XPD-15016 Disallow circuits at GW export for one-way airports
    - refined preview of safe vs ultimate service range of jetways
    - improved runway light validation warnings
-   - new auto-import to help when scenery packages w/o .xml file
+   - auto-import when opening scenery packages w/o .xml file for 1st time
+   - option to recover from backup with broken .xml files
    Bug fix:
    - fix Obj8 drawing not recognizing ATTR_no_blend threshold values
    - validate ObjectString spacing parameter to be non-zero

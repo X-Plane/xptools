@@ -58,9 +58,6 @@
 #if IBM
 #include "GUI_Unicode.h"
 #endif
-// TODO:
-// migrate all old stuff
-// wire dirty to obj persistence
 
 #include "WED_Globals.h"
 int gIsFeet;
@@ -81,8 +78,8 @@ WED_Document::WED_Document(
 #if WITHNWLINK
 	mServer(NULL),
 	mNWLink(NULL),
-	mOnDisk(false),
 #endif
+	mOnDisk(false),
 	mPrefsChanged(false),
 	mUndo(&mArchive, this),
 	mArchive(this)
@@ -116,18 +113,30 @@ WED_Document::WED_Document(
 		}
 		if (this_pkg > 0 && gPackageMgr->HasAPT(this_pkg))
 		{
-			if (ConfirmMessage("no WED scenery, but can be imported", "Yes", "No") == 1)
+			if (ConfirmMessage("This scenery package does not include the WED design files.\n"
+				               "But it does include already exported X-Plane scenery.\n"
+				               "WED can import these, but some loss of functionality or features may inccurr.\n"
+							   "For best results, always start editing with the original WED design files\n"
+							   "\n"
+							   "YES - try recovering scenery\n"
+							   "NO  - start with new, empty scenery\n", "Yes", "No") == 1)
 			{
-				mUndo.__StartCommand("Revert from Saved.", __FILE__, __LINE__);
-				vector<WED_Airport*> apts;
+			try {
+					mUndo.__StartCommand("Revert from Saved.", __FILE__, __LINE__);
+					bool abort = true;
+					vector<WED_Airport*> apts;
 
-				auto apt_file = gPackageMgr->ComputePath(package, "Earth nav data/apt.dat");
-				WED_ImportOneAptFile(apt_file, WED_GetWorld(this), &apts);
+					auto apt_file = gPackageMgr->ComputePath(package, "Earth nav data/apt.dat");
+					WED_ImportOneAptFile(apt_file, WED_GetWorld(this), &apts);
 
-				if (apts.size())
-				{
-					string pkg_path = gPackageMgr->ComputePath(package, "Earth nav data");
-					set<string> dsf = FILE_find_dsfs(pkg_path);
+					if (apts.size() == 0 || apts.size() > 20)   // prevent folks from opening the global airports ...
+						throw;
+
+					string dsf_path = gPackageMgr->ComputePath(package, "Earth nav data");
+					set<string> dsf = FILE_find_dsfs(dsf_path);
+					if (dsf.size() > 20)                    // prevent really likey too big sceneries from getting auto-opened ...
+						throw;
+
 					for (auto& a : apts)
 					{
 						string id;
@@ -139,8 +148,11 @@ WED_Document::WED_Document(
 					}
 					for (auto& d : dsf)
 						DSF_Import_Partial(d.c_str(), WED_GetWorld(this), "");
+
+					mUndo.CommitCommand();
+				} catch(...) {
+					mUndo.AbortCommand();
 				}
-				mUndo.CommitCommand();
 			}
 		}
 	}
@@ -367,34 +379,54 @@ void	WED_Document::Revert(void)
 		if(!ConfirmMessage(msg.c_str(),"Revert","Cancel"))
 			return;
 	}
-
 	mDocPrefs.clear();
-	mUndo.__StartCommand("Revert from Saved.",__FILE__,__LINE__);
 
 	try {
+		mUndo.__StartCommand("Revert from Saved.", __FILE__, __LINE__);
+		bool xml_exists;
+
 		WED_XMLReader	reader;
 		reader.PushHandler(this);
-		string fname(mFilePath);
-		fname+=".xml";
+		string fname(mFilePath + ".xml");
 		mArchive.ClearAll();
 
-		// First: try to IO the XML file.
-		bool xml_exists;
 		LOG_MSG("I/Doc reading XML from %s\n", fname.c_str());
-
 		string result = reader.ReadFile(fname.c_str(), &xml_exists);
+
+		if(xml_exists && !result.empty())
+		{
+			LOG_MSG("E/Doc Error reading XML %s",result.c_str());
+			string msg("An error '");
+			msg += result + "'ocurred while opening the XML file.\n";
+
+			WED_XMLReader	reader_bak;
+			reader_bak.PushHandler(this);
+			mArchive.ClearAll();
+			fname = mFilePath + ".bak.xml";
+
+			LOG_MSG("I/Doc reading backup XML from %s\n", fname.c_str());
+			result = reader_bak.ReadFile(fname.c_str(), &xml_exists);
+
+			if (result.empty())
+			{
+				msg += "But a good backup file exists.\n"
+					"\n"
+					"YES - open backup file\n"
+					"NO  - abort opening file\n";
+				if (ConfirmMessage(msg.c_str(), "Yes", "No") == 0)
+					throw;
+			}
+			else
+			{
+				LOG_MSG("E/Doc Error reading backup XML %s", result.c_str());
+				WED_ThrowPrintf("%s\nAnd the backup XML resulted in error: %s", msg.c_str(), result.c_str());
+			}
+		}
 
 		for (auto sp : mDocPrefs)
 			LOG_MSG("I/Doc prefs %s = %s\n", sp.first.c_str(), sp.second.c_str());
 		LOG_FLUSH();
 
-		if(xml_exists && !result.empty())
-		{
-			LOG_MSG("E/Doc Error reading XML %s",result.c_str());
-			WED_ThrowPrintf("Unable to open XML file: %s",result.c_str());
-
-			// try recovering backup ???
-		}
 		if(xml_exists)
 		{
 			mOnDisk=true;
@@ -425,12 +457,12 @@ void	WED_Document::Revert(void)
 				wrl->SetName("world");
 				LOG_MSG("I/Doc brand new empty doc\n");
 		}
+		mUndo.CommitCommand();
 	} catch(...) {
 		// don't bail out of the load loop without aborting the command - otherwise undo mgr goes ape.
 		mUndo.AbortCommand();
 		throw;
 	}
-	mUndo.CommitCommand();
 
 	if(WED_Repair(this))
 	{
