@@ -32,9 +32,12 @@
 #include "FileUtils.h"
 #include "MathUtils.h"
 #include "PlatformUtils.h"
-#include "AptIO.h"
+#include "WED_ToolUtils.h"
+#include "WED_AptIE.h"
+#include "WED_DSFImport.h"
 #include "WED_Thing.h"
 #include "WED_Group.h"
+#include "WED_Airport.h"
 #include "WED_KeyObjects.h"
 #include "WED_Select.h"
 #include "WED_Root.h"
@@ -71,13 +74,10 @@ static set<WED_Document *> sDocuments;
 static map<string,string>	sGlobalPrefs;
 
 WED_Document::WED_Document(
-	const string& 		package,
+	const string& package,
 	double				inBounds[4]) :
-	//	mProperties(mDB.get()),
 	mPackage(package),
 	mFilePath(gPackageMgr->ComputePath(package, "earth.wed")),
-	//	mDB(mFilePath.c_str()),
-	//	mPackage(inPackage),
 #if WITHNWLINK
 	mServer(NULL),
 	mNWLink(NULL),
@@ -102,6 +102,49 @@ WED_Document::WED_Document(
 	mBounds[3] = inBounds[3];
 
 	Revert();
+
+	// Help WED novices with the frustrating "opened scenery, WED just shows empty screen" by looking for importable stuff
+	if (!mOnDisk)
+	{
+		int this_pkg;
+		for (this_pkg = gPackageMgr->CountCustomPackages(); this_pkg > 0; this_pkg--)
+		{
+			string tmp;
+			gPackageMgr->GetNthPackageName(this_pkg, tmp);
+			if (tmp == package)
+				break;
+		}
+		if (this_pkg > 0 && gPackageMgr->HasAPT(this_pkg))
+		{
+			if (ConfirmMessage("no WED scenery, but can be imported", "Yes", "No") == 1)
+			{
+				mUndo.__StartCommand("Revert from Saved.", __FILE__, __LINE__);
+				vector<WED_Airport*> apts;
+
+				auto apt_file = gPackageMgr->ComputePath(package, "Earth nav data/apt.dat");
+				WED_ImportOneAptFile(apt_file, WED_GetWorld(this), &apts);
+
+				if (apts.size())
+				{
+					string pkg_path = gPackageMgr->ComputePath(package, "Earth nav data");
+					set<string> dsf = FILE_find_dsfs(pkg_path);
+					for (auto& a : apts)
+					{
+						string id;
+						a->GetICAO(id);
+						for (int i = 0; i < id.length(); i++)
+							id[i] = toupper(id[i]);
+						for (auto& d : dsf)
+							DSF_Import_Partial(d.c_str(), a, id);
+					}
+					for (auto& d : dsf)
+						DSF_Import_Partial(d.c_str(), WED_GetWorld(this), "");
+				}
+				mUndo.CommitCommand();
+			}
+		}
+	}
+
 	mUndo.PurgeUndo();
 	mUndo.PurgeRedo();
 
@@ -339,7 +382,7 @@ void	WED_Document::Revert(void)
 		bool xml_exists;
 		LOG_MSG("I/Doc reading XML from %s\n", fname.c_str());
 
-		string result = reader.ReadFile(fname.c_str(),&xml_exists);
+		string result = reader.ReadFile(fname.c_str(), &xml_exists);
 
 		for (auto sp : mDocPrefs)
 			LOG_MSG("I/Doc prefs %s = %s\n", sp.first.c_str(), sp.second.c_str());
@@ -349,6 +392,8 @@ void	WED_Document::Revert(void)
 		{
 			LOG_MSG("E/Doc Error reading XML %s",result.c_str());
 			WED_ThrowPrintf("Unable to open XML file: %s",result.c_str());
+
+			// try recovering backup ???
 		}
 		if(xml_exists)
 		{
@@ -357,9 +402,8 @@ void	WED_Document::Revert(void)
 		}
 		else
 		{
-				/* We have a brand new blank doc.  In WED 1.0, we ran a SQL script that built the core objects,
-				 * then we IO-ed it in.  In WED 1.1 we just build the world and the few named objs immediately. */
-
+				// We have a brand new blank doc.
+				
 				// BASIC DOCUMENT STRUCTURE:
 				// The first object ever made gets ID 1 and is the "root" - the one known object.  The WED doc goes
 				// to "object 1" to get started.

@@ -179,9 +179,9 @@ public:
 	bool				want_bezier;
 	bool				want_wall;
 	int 				dsf_cat_filter;       // categories, e.g. .for, .obj
-	vector<string>		dsf_AptID_filter;     // Airport ID's
-	vector<bool>		filter_table;     	  // Airport ID IDX
-	bool				filter_on;            // global switch to filter out stuff
+	vector<string>		dsf_AptID_filter;     // Airport ID's to import. empty string is off-airport, empty list everything
+	vector<bool>		filter_table;     	  // Airport ID IDX defined in the DSF
+	bool				filter_on;            // global switch to filter out by apt
 	vector<Bbox2p>		cull_bounds;
 	int					is_in_bounds;
 	int					autogen_rings;
@@ -385,25 +385,28 @@ public:
 	{
 		DSF_Importer * me = (DSF_Importer *) inRef;
 
-		if(strcmp(inProp, "sim/require_object") == 0)	me->handle_req_obj(inValue);
-		if(strcmp(inProp, "sim/require_agpoint") == 0)	me->handle_req_agp(inValue);
-		if(strcmp(inProp, "sim/require_facade") == 0)	me->handle_req_fac(inValue);
-		if(strcmp(inProp, "sim/filter/aptid") == 0)
+		if     (strcmp(inProp, "sim/require_object") == 0)	me->handle_req_obj(inValue);
+		else if(strcmp(inProp, "sim/require_agpoint") == 0)	me->handle_req_agp(inValue);
+		else if(strcmp(inProp, "sim/require_facade") == 0)	me->handle_req_fac(inValue);
+		else if(strcmp(inProp, "sim/filter/aptid") == 0)
 		{
-			me->filter_table.push_back(false);
-			if(find(me->dsf_AptID_filter.begin(), me->dsf_AptID_filter.end(), inValue) !=  me->dsf_AptID_filter.end())
-				me->filter_table.back() = true;
+			me->filter_table.push_back(me->dsf_AptID_filter.size() > 0);
+			for (auto& f : me->dsf_AptID_filter)
+				if (f == inValue)
+				{
+					me->filter_table.back() = false;
+					break;
+				}
 		}
-
 #if !NO_EXC
-		if(strcmp(inProp, "sim/exclude_obj") == 0)	me->make_exclusion(inValue, exclude_Obj);
-		if(strcmp(inProp, "sim/exclude_fac") == 0)	me->make_exclusion(inValue, exclude_Fac);
-		if(strcmp(inProp, "sim/exclude_for") == 0)	me->make_exclusion(inValue, exclude_For);
-		if(strcmp(inProp, "sim/exclude_bch") == 0)	me->make_exclusion(inValue, exclude_Bch);
-		if(strcmp(inProp, "sim/exclude_net") == 0)	me->make_exclusion(inValue, exclude_Net);
-		if(strcmp(inProp, "sim/exclude_lin") == 0)	me->make_exclusion(inValue, exclude_Lin);
-		if(strcmp(inProp, "sim/exclude_pol") == 0)	me->make_exclusion(inValue, exclude_Pol);
-		if(strcmp(inProp, "sim/exclude_str") == 0)	me->make_exclusion(inValue, exclude_Str);
+		else if(strcmp(inProp, "sim/exclude_obj") == 0)	me->make_exclusion(inValue, exclude_Obj);
+		else if(strcmp(inProp, "sim/exclude_fac") == 0)	me->make_exclusion(inValue, exclude_Fac);
+		else if(strcmp(inProp, "sim/exclude_for") == 0)	me->make_exclusion(inValue, exclude_For);
+		else if(strcmp(inProp, "sim/exclude_bch") == 0)	me->make_exclusion(inValue, exclude_Bch);
+		else if(strcmp(inProp, "sim/exclude_net") == 0)	me->make_exclusion(inValue, exclude_Net);
+		else if(strcmp(inProp, "sim/exclude_lin") == 0)	me->make_exclusion(inValue, exclude_Lin);
+		else if(strcmp(inProp, "sim/exclude_pol") == 0)	me->make_exclusion(inValue, exclude_Pol);
+		else if(strcmp(inProp, "sim/exclude_str") == 0)	me->make_exclusion(inValue, exclude_Str);
 #endif
 		if(strcmp(inProp, "sim/overlay") == 0 && atoi(inValue) == 1)
 			me->is_overlay = true;
@@ -449,7 +452,7 @@ public:
 	{
 #if !NO_OBJ
 		DSF_Importer * me = (DSF_Importer *) inRef;
-		if(me->dsf_cat_filter & dsf_filter_objects)
+		if(me->dsf_cat_filter & dsf_filter_objects && !me->filter_on)
 		{
 			auto cat = me->obj_table[inObjectType].cat;
 			auto obj = CreateEntity<WED_ObjPlacement>(me->archive, me->get_cat_parent(cat),
@@ -657,7 +660,7 @@ public:
 		me->is_in_bounds = me->cull_bounds.empty();
 
 #if !NO_FAC
-		if( me->dsf_cat_filter & dsf_filter_facades && end_match(r,".fac" ))
+		if( me->dsf_cat_filter & dsf_filter_facades && !me->filter_on && end_match(r,".fac" ))
 		{
 			// Ben says: .fac must be 2-coord for v9.  But...maybe for v10 we allow curved facades?
 			me->want_bezier=(inCoordDepth >= 4);
@@ -674,7 +677,7 @@ public:
 #endif
 
 #if !NO_FOR
-		else if(me->dsf_cat_filter & dsf_filter_forests && end_match(r,".for"))
+		else if(me->dsf_cat_filter & dsf_filter_forests && !me->filter_on && end_match(r,".for"))
 		{
 			me->want_bezier=false;
 			WED_ForestPlacement * forst = WED_ForestPlacement::CreateTyped(me->archive);
@@ -688,7 +691,7 @@ public:
 #endif
 
 #if !NO_LIN
-		else if( me->dsf_cat_filter & dsf_filter_lines && end_match(r,".lin"))
+		else if( me->dsf_cat_filter & dsf_filter_lines && !me->filter_on && end_match(r,".lin"))
 		{
 			me->want_bezier=inCoordDepth == 4;
 			WED_LinePlacement * lin = WED_LinePlacement::CreateTyped(me->archive);
@@ -701,7 +704,7 @@ public:
 #endif
 
 #if !NO_STR
-		else if(me->dsf_cat_filter & dsf_filter_strings && end_match(r,".str"))
+		else if(me->dsf_cat_filter & dsf_filter_strings && !me->filter_on && end_match(r,".str"))
 		{
 			me->want_bezier=inCoordDepth == 4;
 			WED_StringPlacement * str = WED_StringPlacement::CreateTyped(me->archive);
@@ -734,7 +737,7 @@ public:
 #endif
 
 #if !NO_POL
-		else if(me->dsf_cat_filter & dsf_filter_draped_poly && (end_match(r,".pol") || end_match(r,".agb")))
+		else if(me->dsf_cat_filter & dsf_filter_draped_poly && !me->filter_on && (end_match(r,".pol") || end_match(r,".agb")))
 		{
 			me->want_uv=inParam == 65535;
 			me->want_bezier=me->want_uv ? (inCoordDepth == 8) : (inCoordDepth == 4);
@@ -1117,7 +1120,15 @@ public:
 		if(filterId >= 0 && filterId < me->filter_table.size())
 			me->filter_on = me->filter_table[filterId];
 		else
-			me->filter_on = false;
+		{
+			me->filter_on = me->dsf_AptID_filter.size() > 0;
+			for (auto& f : me->dsf_AptID_filter)
+				if (f.empty())
+				{
+					me->filter_on = false;
+					break;
+				}
+		}
 	}
 
 	int do_import_dsf(const char * file_name, WED_Thing * base)
@@ -1173,6 +1184,14 @@ int DSF_Import(const char * path, WED_Thing * base)
 	return res;
 }
 
+int DSF_Import_Partial(const char* path, WED_Thing* base, const string& AptID)
+{
+	vector<Bbox2p> inBounds;
+	vector<string> inAptFilter;
+	inAptFilter.push_back(AptID);
+	return DSF_Import_Partial(path, base, dsf_filter_all, inBounds, inAptFilter);
+}
+
 int DSF_Import_Partial(const char * path, WED_Thing * base, int inCatFilter, const vector<Bbox2p>& inBounds, const vector<string>& inAptFilter)
 {
 	DSF_Importer importer;
@@ -1180,6 +1199,17 @@ int DSF_Import_Partial(const char * path, WED_Thing * base, int inCatFilter, con
 	importer.cull_bounds = inBounds;
 	importer.dsf_cat_filter = inCatFilter;
 	importer.dsf_AptID_filter = inAptFilter;
+
+	if (!inAptFilter.empty())
+	{
+		importer.filter_on = true;          // off-airport stuff becomes opt-in
+		for(auto& f : inAptFilter)
+			if (f.empty())
+			{
+				importer.filter_on = false;  // so filter already effective for initial off-airport stuff before any filter atoms
+				break;
+			}
+	}
 
 	// do not warn about importing non-overlay DSF's when being this explicit about what to import.
 	// e.g. importing roads only is almost certainly always done from base mesh DSFF's.
@@ -1231,25 +1261,32 @@ int		WED_CanImportRoads(IResolver * resolver)
 	return 0;
 }
 
-void add_all_global_DSF(const Bbox2& bb, set<string>& matching_dsf)
+//void WEDfind_global_DSF(const Bbox2& bb, set<string>& matching_dsf)
+
+static void sprintf_dsf_path(char buf[], size_t buf_size, const char* path, int lon, int lat)
+{
+	snprintf(buf, buf_size, "%s" DIR_STR "Earth nav data" DIR_STR "%+03d%+04d" DIR_STR "%+03d%+04d.dsf", path,
+		lat > 0 ? (lat / 10) * 10 : ((-lat + 9) / 10) * -10, lon > 0 ? (lon / 10) * 10 : ((-lon + 9) / 10) * -10, lat, lon);
+}
+
+void DSF_find_global(const Bbox2& bb, set<string>& dsf_paths)
 {
 	pair<int, int> glob_scn = gPackageMgr->GlobalPackages();
+	string path;
+	char buf[256];
 
 	for (int lon = floor(bb.xmin()); lon < ceil(bb.xmax()); lon++)
 		for (int lat = floor(bb.ymin()); lat < ceil(bb.ymax()); lat++)
 			for (int pkg = glob_scn.first; pkg <= glob_scn.second; pkg++)
 			{
-				string path;
 				gPackageMgr->GetNthPackagePath(pkg, path);
 				string dirname(FILE_get_file_name(path));
 				if (dirname.find("Demo Area") != string::npos || dirname.find("Global Scenery") != string::npos)
 				{
-					char buf[256];
-					snprintf(buf, sizeof(buf), "%s" DIR_STR "Earth nav data" DIR_STR "%+03d%+04d" DIR_STR "%+03d%+04d.dsf", path.c_str(),
-						lat > 0 ? (lat / 10) * 10 : ((-lat + 9) / 10) * -10, lon > 0 ? (lon / 10) * 10 : ((-lon + 9) / 10) * -10, lat, lon);
+					sprintf_dsf_path(buf, sizeof(buf), path.c_str(), lon, lat);
 					if (FILE_exists(buf))
 					{
-						matching_dsf.insert(buf);
+						dsf_paths.insert(buf);
 						break;
 					}
 				}
@@ -1298,7 +1335,7 @@ void	WED_DoImportRoads(IResolver * resolver)
 	set<string> matching_dsf;
 
 	for (const auto& bb : excl_bounds)
-		add_all_global_DSF(bb.zone, matching_dsf);
+		DSF_find_global(bb.zone, matching_dsf);
 
 	if(matching_dsf.size())
 	{

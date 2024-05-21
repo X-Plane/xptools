@@ -122,14 +122,6 @@ public:
 	void				SetDirty();
 	bool				IsOnDisk(void);
 
-	// LEGACY STUFF
-
-//	Pmwx				gMap;
-//	DEMGeoMap			gDem;
-//	CDT					gTriangulationHi;
-//	AptVector			gApts;
-//	AptIndex			gAptIndex;
-
 	static	bool	TryCloseAll(void);
 
 private:
