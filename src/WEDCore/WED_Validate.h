@@ -179,6 +179,7 @@ enum validate_error_t
 	warn_atc_flow_visibility_unlikely,
 	warn_atc_taxi_short,
 	warn_atcrwy_marking,
+	warn_DEV_folder,
 	warn_exclusion_polys_no_forests,
 	warn_facades_curved_only_type2,
 	warn_facade_height,

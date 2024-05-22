@@ -51,6 +51,7 @@
 #include "WED_RoadNode.h"
 #include "WED_Taxiway.h"
 #include "WED_TaxiRoute.h"
+#include "WED_TerPlacement.h"
 #include "WED_TruckDestination.h"
 #include "WED_TruckParkingLocation.h"
 #include "WED_TowerViewpoint.h"
@@ -703,6 +704,14 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 			if(lib_mgr->IsResourceDeprecatedOrPrivate(res))
 				msgs.push_back(validation_error_t(string("The library path '") + res + "' is a deprecated or private X-Plane resource and cannot be used in global airports.",
 				err_gateway_resource_private_or_depricated,	who, parent_apt));
+		}
+		else
+		{
+			if (who->GetClass() != WED_TerPlacement::sClass &&
+			    !(who->GetClass() == WED_DrapedOrthophoto::sClass && static_cast<WED_DrapedOrthophoto*> (who)->IsNew()))
+				if (res.compare(0, 3, "DEV") == 0 && (res[3] == '/' || res[3] == '\\'))
+					msgs.push_back(validation_error_t(string("Resource '") + res + "' references DEV/ folder",
+						warn_DEV_folder, who, parent_apt));
 		}
 
 		string path;
