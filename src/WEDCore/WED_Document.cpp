@@ -376,7 +376,7 @@ void	WED_Document::Revert(void)
 	if(this->IsDirty())
 	{
 		string msg = "Are you sure you want to revert the document '" + mPackage + "' to the saved version on disk?";
-		if(!ConfirmMessage(msg.c_str(),"Revert","Cancel"))
+		if(!ConfirmMessage(msg.c_str(), "Revert", "Cancel"))
 			return;
 	}
 	mDocPrefs.clear();
@@ -409,11 +409,8 @@ void	WED_Document::Revert(void)
 
 			if (result.empty())
 			{
-				msg += "But a good backup file exists.\n"
-					"\n"
-					"YES - open backup file\n"
-					"NO  - abort opening file\n";
-				if (ConfirmMessage(msg.c_str(), "Yes", "No") == 0)
+				msg += "But a good backup file exists.\n";
+				if (ConfirmMessage(msg.c_str(), "Open backup", "Cancel") == 0)
 					throw;
 			}
 			else

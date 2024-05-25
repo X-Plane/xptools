@@ -186,21 +186,23 @@ void ShowProgressMessage(const char * inMsg, float * inProgress)
 	else			fprintf(stderr,"%s\n",inMsg);
 }
 
-int ConfirmMessage(const char * inMsg, const char * proceedBtn, const char * cancelBtn)
+int		ConfirmMessage(const char* inMsg, const char* proceedBtn, const char* cancelBtn, const char* optionBtn)
 {
-	LOG_MSG("I/Confirm %s\n",inMsg);
 	fl_message_hotspot(false);
 
-	int result = 0;
-	switch (fl_choice(inMsg,proceedBtn,cancelBtn,0))
-	{
-	  case 0: result = 1; break; // proceedBtn
-	  case 1: result = 0; break; // cancelBtn (default)
-	}
+	int result;
+	if(optionBtn) 
+		result = fl_choice(inMsg, proceedBtn, cancelBtn, 0);
+	else
+		result = fl_choice(inMsg, proceedBtn, optionBtn, cancelBtn, 0);
 
-	if(Fl::event_key(FL_Escape)) result = 0;
+	if (Fl::event_key(FL_Escape)) result = 0;
 
-	return result;
+	if (result == 0)
+		return 1;          // proceedBtn
+	if (optionBtn && result == 1)
+			return 2;      // optionBtn 
+	return 0;              // cancelBtn
 }
 
 

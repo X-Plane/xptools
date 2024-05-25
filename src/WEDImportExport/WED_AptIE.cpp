@@ -1132,7 +1132,7 @@ void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane
 			(FILE_exists((parent_dir + "COPYING").c_str()) &&                // packs downloaded from gateway
 				(FILE_exists((parent_dir + "README.txt").c_str()) || FILE_exists((parent_dir + "README").c_str()))) )
 			if(!ConfirmMessage("Warning !\nImporting from an X-Plane Global Airports or Gateway Scenery Pack apt.dat is unsuitable for scenery design.\n\n"
-			                   "Use File->Import from Scenery Gateway whenever possible.", "Proceed import of apt.dat", "Cancel"))
+			                   "Use File->Import from Scenery Gateway whenever possible.", "Proceed", "Cancel"))
 				return;
 		
 		LOG_MSG("I/Apt Importing apt.dat from %s\n",f->c_str());

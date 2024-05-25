@@ -167,17 +167,22 @@ void	DoUserAlert(const char * inMsg)
 	[alert release];
 }
 
-int		ConfirmMessage(const char * inMsg, const char * proceedBtn, const char * cancelBtn)
+int		ConfirmMessage(const char* inMsg, const char* proceedBtn, const char* cancelBtn, const char* optionBtn)
 {
-	LOG_MSG("I/Confirm %s\n",inMsg);
 	NSAlert *alert = [[NSAlert alloc] init];;
 	[alert setMessageText:[NSString stringWithUTF8String:inMsg]];
 	[alert addButtonWithTitle:[NSString stringWithUTF8String:proceedBtn]];
+	if (optionBtn)
+		[alert addButtonWithTitle:[NSString stringWithUTF8String:optionBtn]];
 	[alert addButtonWithTitle:[NSString stringWithUTF8String:cancelBtn]];
 	int r = [alert runModal];
 	[alert release];
 
-	return (r == NSAlertFirstButtonReturn);
+	if (r == NSAlertFirstButtonReturn)
+		return 1;
+	if (optionBtn && r == NSAlertSecondButtonReturn)
+		return 2;
+	return 0;
 }
 
 int DoSaveDiscardDialog(const char * inMessage1, const char * inMessage2)
@@ -187,7 +192,7 @@ int DoSaveDiscardDialog(const char * inMessage1, const char * inMessage2)
 	[alert setInformativeText:[NSString stringWithUTF8String:inMessage2]];
 	[alert addButtonWithTitle:[NSString stringWithUTF8String:"Save"]];
 	[alert addButtonWithTitle:[NSString stringWithUTF8String:"Cancel"]];
-	[alert addButtonWithTitle:[NSString stringWithUTF8String:"Don't Save"]];
+	[alert addButtonWithTitle:[NSString stringWithUTF8String:"Discard"]];
 	int r = [alert runModal];
 	[alert release];
 

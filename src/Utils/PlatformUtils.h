@@ -96,24 +96,22 @@ char *	GetMultiFilePathFromUser(
  */
 void	DoUserAlert(const char * inMsg);
 
-/*
- * ConfirmMessage puts up a dialog box with a message and two buttons.  The proceed
- * button is the default one.  Pass in the message and the text of the two buttons.
- * Returns 1 if the user clicks the proceed button, 0 if the user cancels.
- *
+/* Dialog box with a message and 2 or 3 user definable buttons. Proceed button is default.
+ * Returns 1 to proceed, 2 on the optional button and 0 if the user cancels.
  */
-int		ConfirmMessage(const char * inMsg, const char * proceedBtn, const char * cancelBtn);
+int ConfirmMessage(const char * inMsg, const char * proceedBtn, const char * cancelBtn, const char* optionBtn = nullptr);
+
+
+/* Dialog box with messages and 3 fixed buttons: Save, Discard, Cancel.
+*  Returns the enums.
+ */
 
 enum {
 	close_Save,
 	close_Discard,
 	close_Cancel
 };
-/*
- *
- *
- */
-int DoSaveDiscardDialog(const char * inMessage1, const char * inMessage2);
 
+int DoSaveDiscardDialog(const char * inMessage1, const char * inMessage2);
 
 #endif

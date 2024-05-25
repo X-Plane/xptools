@@ -5626,13 +5626,12 @@ void WED_AgePavement(IResolver* resolver)
 	WED_Thing* wrl = WED_GetWorld(resolver);
 	vector<WED_Airport*> all_apts;
 
-	int ans = DoSaveDiscardDialog("Change pavement apperance ?",
-		"Yes = worn/cracked, lighter asphalt, darker concrete\n"
-		"No  = smooth, darker asphalt, lighter concrete");
+	int ans = ConfirmMessage("Change pavement apperance ?\n"
+		"Old = worn/cracked, lighter asphalt, darker concrete\n"
+		"New = smooth, darker asphalt, lighter concrete", "Old", "Cancel", "New");
 
-	if (ans != close_Save && ans != close_Discard)
-		return;
-	int age = ans == close_Save ? 1 : 0;
+	if (ans == 0) return;
+	int age = ans == 1 ? 1 : 0;
 
 	CollectRecursiveNoNesting(wrl, back_inserter(all_apts), WED_Airport::sClass);
 

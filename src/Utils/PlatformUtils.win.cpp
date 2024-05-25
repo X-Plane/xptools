@@ -216,23 +216,51 @@ void	DoUserAlert(const char * inMsg)
 	MessageBoxW(thisWin, convert_str_to_utf16(inMsg).c_str(), L"Alert", MB_OK | MB_ICONWARNING | MB_TOPMOST |MB_TASKMODAL);
 }
 
-int		ConfirmMessage(const char * inMsg, const char * proceedBtn, const char * cancelBtn)
-{
-	LOG_MSG("I/Confirm %s\n",inMsg);
-	bool no_or_cancel = string(cancelBtn).find("Cancel") == string::npos;
+const char *yes_text, *no_text, *cancel_text;
 
-	HWND thisWin = GetForegroundWindow();
-	int result = MessageBoxW(thisWin,
+LRESULT CALLBACK ConfirmMessageProc(int message, WPARAM wParam, LPARAM lParam)
+{
+	if (message== HCBT_ACTIVATE)
+	{
+		if(yes_text)    SetDlgItemTextA((HWND) wParam, IDYES, yes_text);
+		if(no_text)     SetDlgItemTextA((HWND) wParam, IDNO, no_text);
+		if(cancel_text) SetDlgItemTextA((HWND) wParam, IDCANCEL, cancel_text);
+	}
+	return FALSE;
+}
+
+int		ConfirmMessage(const char* inMsg, const char* proceedBtn, const char* cancelBtn, const char* optionBtn)
+{
+	yes_text = proceedBtn;
+	if (optionBtn)
+	{
+		no_text = optionBtn;
+		cancel_text = cancelBtn;
+	}
+	else
+	{
+		no_text = cancelBtn;
+		cancel_text = nullptr;
+	}
+
+	HHOOK hook = SetWindowsHookEx(WH_CBT, ConfirmMessageProc, NULL, GetCurrentThreadId());
+	int result = MessageBoxW(GetForegroundWindow(),
 						convert_str_to_utf16(inMsg).c_str(),
 						L"WED",
 						MB_TASKMODAL |          // works most of the time even with no HWND
 						MB_TOPMOST |            // we really need to prevent this popup to go behind another WED window
-						(no_or_cancel ? MB_YESNO : MB_OKCANCEL) |
-//						MB_YESNO |
+						(optionBtn ? MB_YESNOCANCEL : MB_YESNO) |
 						MB_ICONQUESTION |
 						MB_DEFBUTTON1);
-	return (result == IDOK || result == IDYES) ? 1 : 0;
+	UnhookWindowsHookEx(hook);
+
+	if (result == IDYES) 
+		return 1;    // proceedBtn
+	if (optionBtn && result == IDNO)
+		return 2;    // optionBtn
+	return 0;        // cancelBtn
 }
+
 
 int DoSaveDiscardDialog(const char * inMessage1, const char * inMessage2)
 {
@@ -244,7 +272,6 @@ int DoSaveDiscardDialog(const char * inMessage1, const char * inMessage2)
 			MB_YESNOCANCEL | MB_TOPMOST | MB_TASKMODAL |
 			MB_ICONEXCLAMATION);
 	switch(result) {
-	case IDCANCEL:	return close_Cancel;
 	case IDYES:		return close_Save;
 	case IDNO:		return close_Discard;
 	default:		return close_Cancel;
