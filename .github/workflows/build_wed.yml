@@ -1,9 +1,10 @@
 name: build WED
 
-on:
+on: 
   push:
     branches:
     - 'wed_2*_release'
+  workflow_dispatch:
         
 permissions:
   contents: read
