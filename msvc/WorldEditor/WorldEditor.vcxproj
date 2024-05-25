@@ -286,6 +286,7 @@
     <ClCompile Include="..\..\src\XESCore\DEMDefs.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\SDK\hash_maps\robin_hood.h" />
     <ClInclude Include="..\..\src\DSFTools\DSF2Text.h" />
     <ClInclude Include="..\..\src\DSFTools\DSFToolsPrefix.h" />
     <ClInclude Include="..\..\src\DSF\DSFDefs.h" />
@@ -709,18 +710,18 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <EnableEnhancedInstructionSet>
-      </EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
       <LanguageStandard>stdcpp14</LanguageStandard>
       <StringPooling>true</StringPooling>
       <OmitFramePointers>false</OmitFramePointers>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
     <Link>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <LargeAddressAware>true</LargeAddressAware>
       <AdditionalDependencies>libcurl_a.lib;libexpatMT.lib;freetype.lib;jpeg.lib;libpng.lib;squish.lib;libtiff.lib;geotiff.lib;proj.lib;zlibstat.lib;comctl32.lib;glu32.lib;Opengl32.lib;ws2_32.lib;wldap32.lib;crypt32.lib;normaliz.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <GenerateMapFile>true</GenerateMapFile>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

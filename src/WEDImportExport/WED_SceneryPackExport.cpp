@@ -259,7 +259,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 	LOG_MSG("I/exp Starting upgrade heuristics\n");
 	WED_Thing * wrl = WED_GetWorld(resolver);
 	vector<WED_Airport*> apts;
-	CollectRecursiveNoNesting(wrl, back_inserter(apts),WED_Airport::sClass);    // ATTENTION: all code here assumes 'normal' hierachies and no hidden items,
+	CollectRecursiveNoNesting(wrl, back_inserter(apts), WED_Airport::sClass);   // ATTENTION: all code here assumes 'normal' hierachies and no hidden items,
 																				//	i.e. apts 1 level down, groups next, then items in them at 2 levels down.
 	WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);                      // Speeds up recursive collecting, avoids recursing too deep.
 	ISelection * sel = WED_GetSelect(resolver);
@@ -271,6 +271,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 
 	auto t0 = chrono::high_resolution_clock::now();
 
+	wrl->StartCommand("Gateway upgrade heuristics");
 	for (auto apt_itr = apts.begin(); apt_itr != apts.end(); ++apt_itr)
 	{
 		auto t2 = chrono::high_resolution_clock::now();
@@ -286,7 +287,6 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				illicit |= toupper(ICAO_code[i]) < 'A' || toupper(ICAO_code[i]) > 'Z';
 			if(illicit)
 			{
-				wrl->StartCommand("Delete bad icao");
 				(*apt_itr)->EditMetaDataKey(META_KeyName(wed_AddMetaDataICAO),"");
 				deleted_illicit_icao++;
 				// In many cases a "bad" ICAO code is rather an local code.
@@ -298,7 +298,6 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				if(local_code.empty() && faa_code.empty())
 					(*apt_itr)->AddMetaDataKey(META_KeyName(wed_AddMetaDataLocal),ICAO_code);
 				ICAO_code = "";
-				wrl->CommitCommand();
 			}
 		}
 		
@@ -323,12 +322,11 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 					illicit |= toupper(apt_ID[i]) < 'A' || toupper(apt_ID[i]) > 'Z';
 				if(illicit)
 				{
-					wrl->StartCommand("Add local code");
 					(*apt_itr)->AddMetaDataKey(META_KeyName(wed_AddMetaDataLocal),apt_ID);
-					wrl->CommitCommand();
 					added_local_codes++;
 				}
 			}
+			(*apt_itr)->GetICAO(ICAO_code); // just for subsequent LOG_MSG(), so they report something meaningful
 		}
 		// -- tag heliports that are oilrigs, so the sim uses a more specific symbol in the map
 		if ((*apt_itr)->GetAirportType() == type_Heliport)
@@ -345,9 +343,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				if (!(*apt_itr)->ContainsMetaDataKey(wed_AddMetaDataOilrig) ||
 					 atoi((*apt_itr)->GetMetaDataValue(wed_AddMetaDataOilrig).c_str()) != 1)
 				{
-					wrl->StartCommand("Add oil rig meta");
 					(*apt_itr)->AddMetaDataKey(META_KeyName(wed_AddMetaDataOilrig), "1");
-					wrl->CommitCommand();
 				}
 		}
 
@@ -355,11 +351,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		added_country_codes += add_iso3166_country_metadata(**apt_itr);
 
 		//-- upgrade Ramp Positions with XP10.45 data to get parked A/C -------------
-		wrl->StartCommand("Upgrade Ramp Positions");
-		if (wed_upgrade_ramps(*apt_itr))
-			wrl->CommitCommand();
-		else
-			wrl->AbortCommand();
+		wed_upgrade_ramps(*apt_itr);
 
 #if 0  // this was good in 10.45, but not needed any for gateway airports as of 2022
 		//-- Agp and obj upgrades to create more ground traffic --------------------------------
@@ -388,15 +380,9 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			}
 
 			vector<WED_ObjPlacement*> out_added_objs;
-			wrl->StartCommand("Break Apart Special Agps");
 			int num_replaced = wed_break_apart_special_agps(agp_placements, rmgr, out_added_objs);
-			if (num_replaced == 0)
-				wrl->AbortCommand();
-			else
-			{
-				wrl->CommitCommand();
+			if (num_replaced > 0)
 				LOG_MSG("Broke apart %d agp at %s\n", num_replaced, ICAO_code.c_str());
-			}
 
 			if (num_replaced > 0 || out_added_objs.size() > 0 || WED_CanReplaceVehicleObj(*apt_itr))
 				WED_DoReplaceVehicleObj(resolver,*apt_itr);
@@ -426,24 +412,14 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 						string r_nam;
 						r->GetName(r_nam);
 						if (r_nam[0] == '0')
-						{
-							wrl->StartCommand("Remove runway zeros");
 							r->SetName(r_nam.substr(1));
-							wrl->CommitCommand();
-						}
 					}
 			}
 		}
 
 		//-- Break up jetway AGP's, convert jetway objects into facades for XP12 moving jetways -------------
-		wrl->StartCommand("Upgrade Jetways");
 		if (int count = WED_DoConvertToJW(*apt_itr))
-		{
-			wrl->CommitCommand();
 			LOG_MSG("Upgraded %d JW at %s\n", count, ICAO_code.c_str());
-		}
-		else
-			wrl->AbortCommand();
 
 #if TYLER_MODE == 11
 		// translate new pavement polygons into XP11 equivalents (run/taxiways have that done in aptio.cpp)
@@ -467,7 +443,6 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 
 		if (xp12_art.size())
 		{
-			wrl->StartCommand("Translate XP12 art");
 			for (auto p : xp12_art)
 			{
 				string res;
@@ -490,7 +465,6 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 					continue;
 				p->SetResource(res);
 			}
-			wrl->CommitCommand();
 		}
 #else
 		// mow the grass
@@ -515,14 +489,8 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 #endif
 		if(terFX.empty())
 		{
-			wrl->StartOperation("Mow Grass");
 			if(WED_DoMowGrass(*apt_itr, grass_statistics))
-			{
 				LOG_MSG("Mowed grass at %s\n", ICAO_code.c_str());
-				wrl->CommitOperation();
-			}
-			else
-				wrl->AbortOperation();
 		}
 		// convert tree objects into a forest
 		vector<WED_ObjPlacement*> tree_objs;
@@ -535,11 +503,11 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			WED_ObjPlacement::sClass, 2);
 		if (tree_objs.size() >= 3)
 		{
-			wrl->StartCommand("Select");
 			sel->Clear();
 			sel->Insert(vector<ISelectable*>(tree_objs.begin(), tree_objs.end()));
-			wrl->CommitCommand();
-			WED_DoConvertToForest(resolver);
+//			wrl->CommitCommand();
+			WED_DoConvertToForest(resolver, false);
+//			wrl->StartCommand("Restart after Forest");
 			LOG_MSG("Converted Trees into Forests at %s\n", ICAO_code.c_str());
 		}
 		// convert long deprecated 2D only forests into contemporary 3D forests.
@@ -552,10 +520,8 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			WED_ForestPlacement::sClass, 2);
 		if (!forests.empty())
 		{
-			wrl->StartCommand("Convert deprecated 2D forests");
 			for(auto fst : forests)
 				fst->SetResource("lib/vegetation/trees/deciduous/maple_medium.for");
-			wrl->CommitCommand();
 			LOG_MSG("Converted AG_* forests to 3D at %s\n", ICAO_code.c_str());
 		}
 		// add soft edges to all pavement
@@ -569,14 +535,10 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			WED_Group::sClass, 1);
 		if (pavFX.empty())
 		{
-			wrl->StartOperation("SoftEdge all pavement");
 			if (false) // ToDo !!!!
 			{
 				LOG_MSG("SoftEdged pavemnts  at %s\n", ICAO_code.c_str());
-				wrl->CommitOperation();
 			}
-			else
-				wrl->AbortOperation();
 		}
 /*		// add soft edges for airport grass
 		vector<WED_AirportBoundary*> bdy;
@@ -592,7 +554,6 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				WED_LinePlacement::sClass, 2);
 			if (grass_lines.empty() && climate_map.count(ICAO_code))
 			{
-				wrl->StartCommand("Create AptGrass Soft Edges");
 				sel->Clear();
 				sel->Insert(vector<ISelectable*>(bdy.begin(), bdy.end()));
 				WED_DoDuplicate(resolver, false);
@@ -605,7 +566,6 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 					if (auto t = dynamic_cast<IHasResource*>(sel->GetNthSelection(i)))
 						t->SetResource(grass_line_res);
 				}
-				wrl->CommitCommand();
 				LOG_MSG("Added AptGrass Edges at %s\n", ICAO_code.c_str());
 			}
 		}
@@ -643,9 +603,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 						if (LonLatDistMeters(bounds.bottom_left(), bounds.top_right()) > 20.0)      // passes at least 10m lettering drawn with snow texture
 							CollectRecursive(p, inserter(things, things.end()), IgnoreVisiblity, TakeAlways);
 					}
-					wrl->StartCommand("Delete Terrain Polys");
 					WED_RecursiveDelete(things);
-					wrl->CommitCommand();
 					LOG_MSG("Deleted %zd terrain polys at %s\n", terrain_polys.size(), ICAO_code.c_str());
 				}
 			}
@@ -660,10 +618,8 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				WED_ObjPlacement::sClass, 2);
 			if (grunge_objs.size())
 			{
-				wrl->StartCommand("Delete Grunge Objects");
 				set<WED_Thing*> things(grunge_objs.begin(), grunge_objs.end());
 				WED_RecursiveDelete(things);
-				wrl->CommitCommand();
 				LOG_MSG("Deleted %zd Grunges at %s\n", grunge_objs.size(), ICAO_code.c_str());
 			}
 
@@ -673,7 +629,6 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				WED_ExclusionZone::sClass, 2);
 			if (exclusions.size())
 			{
-				wrl->StartCommand("Remove XP11 era exclusions");
 				set<WED_Thing*> ex_set;
 				int reduced_ex = 0;
 				if((*apt_itr)->GetAirportType() == type_Airport)
@@ -701,7 +656,6 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 					}
 				}
 				WED_RecursiveDelete(ex_set);
-				wrl->CommitCommand();
 				LOG_MSG("I/XP12 Deleted %d Exclusions at %s\n", (int) exclusions.size() + reduced_ex, ICAO_code.c_str());
 			}
 			// nuke all per-airport flatten
@@ -710,20 +664,14 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			auto it = std::find(apt_info.meta_data.begin(), apt_info.meta_data.end(), make_pair(string("flatten"), string("1")));
 			if (it != apt_info.meta_data.end())
 			{
-				wrl->StartCommand("Remove XP11 era flatten");
 				apt_info.meta_data.erase(it);
 				(*apt_itr)->Import(apt_info, dummyPrintf, nullptr);
-				wrl->CommitCommand();
 				LOG_MSG("I/XP12 Deleted Always Flatten at %s\n", ICAO_code.c_str());
 			}
 			// get the 3D meta tag right
 			if (gExportTarget == wet_gateway || TYLER_MODE)
 			{
-				wrl->StartOperation("Force GUI/closed Metatags");
-				if (Enforce_MetaDataGuiLabel(*apt_itr))
-					wrl->CommitOperation();
-				else
-					wrl->AbortOperation();
+				Enforce_MetaDataGuiLabel(*apt_itr);
 			}
 		}
 
@@ -748,9 +696,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			}
 			if (!arrivals || !departures)
 			{
-				wrl->StartCommand("One-way runway - disallow patterns");
 				(*apt_itr)->AddMetaDataKey(META_KeyName(wed_AddMetaDataCircuits), "0");
-				wrl->CommitCommand();
 				LOG_MSG("I/XP12 Disallowed patterns at %s\n", ICAO_code.c_str());
 			}
 			break;
@@ -764,9 +710,11 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		chrono::duration<double> elapsed = t1 - t2;
 		LOG_MSG("Update %s took %lf sec\n", ICAO_code.c_str(), elapsed.count());
 		t2 = t1;
-//		if(distance(apts.begin(), apt_itr) == 15) break;
+//		if(distance(apts.begin(), apt_itr) == 15) break;  // for quick testing, only upgrade a few airports
 #endif
 	}
+	wrl->CommitCommand();
+
 #if TYLER_MODE == 11
 	// Remove all remaining new XP12 stuff - so this needs to be run in an XP11 installation. 
 	// Or items be copied to be local items in the Global Airports Scenery.
@@ -780,7 +728,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 
 	auto t1 = chrono::high_resolution_clock::now();
 	chrono::duration<double> elapsed = t1 - t0;
-	LOG_MSG("I/exp Done with upgrade heuristics, took %lf sec\n", elapsed.count());
+	LOG_MSG("I/exp Done with upgrade heuristics on %d apts, took %lf sec\n", (int) apts.size(), elapsed.count());
 	LOG_FLUSH();
 }
 

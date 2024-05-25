@@ -1778,6 +1778,7 @@
     <ClInclude Include="..\..\src\WEDMap\WED_BoundaryLayer.h">
       <Filter>WEDMap</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\SDK\hash_maps\robin_hood.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\src\WEDResources\about.png">

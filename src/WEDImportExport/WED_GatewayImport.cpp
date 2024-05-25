@@ -621,7 +621,7 @@ void WED_GatewayImportDialog::TimerFired()
 								this->AsyncDestroy();//All done!
 								return;
 							}
-							add_iso3166_country_metadata(*last_imported, true);
+							add_iso3166_country_metadata(*last_imported);
 							if (last_imported->GetSceneryID() < 94010)
 							{
 								if (ConfirmMessage("Existing X-Plane 11 Exclusion Zones and Flatten properties must be removed and re-evaluated for X-Plane 12 gateway submissions", "Delete as recommended", "Keep all") == 1)

@@ -528,7 +528,7 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create, bool in_cmd)
 	if (in_cmd) op->CommitOperation();
 }
 
-void	WED_DoConvertToForest(IResolver* resolver)
+void	WED_DoConvertToForest(IResolver* resolver, bool in_cmd)
 {
 	auto sel = WED_GetSelect(resolver);
 	auto op = dynamic_cast<IOperation*>(sel);
@@ -538,7 +538,7 @@ void	WED_DoConvertToForest(IResolver* resolver)
 	if(!where)
 		return;
 
-	op->StartOperation("Convert to Forest Points");
+	if (in_cmd) op->StartOperation("Convert to Forest Points");
 	auto fst = WED_ForestPlacement::CreateTyped(where->GetArchive());
 	fst->SetParent(where->GetParent(), where->GetMyPosition());
 	fst->SetDensity(1.0);
@@ -569,8 +569,8 @@ void	WED_DoConvertToForest(IResolver* resolver)
 		WED_RecursiveDelete(to_delete);
 		sel->Clear();
 		sel->Insert(fst);
-		op->CommitOperation();
+		if (in_cmd) op->CommitOperation();
 	}
 	else
-		op->AbortOperation();
+		if (in_cmd) op->AbortOperation();
 }

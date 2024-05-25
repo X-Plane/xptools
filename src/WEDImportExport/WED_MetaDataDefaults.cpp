@@ -174,7 +174,7 @@ extern vector<vector<const char*> > iso3166_codes = {
 {"ZMB",  "ZAMBIA",},		{"ZWE",  "ZIMBABWE",}, };
 
 
-bool add_iso3166_country_metadata(WED_Airport & apt, bool inProgress)
+bool add_iso3166_country_metadata(WED_Airport & apt)
 {
 	//-- upgrade Country Metadata -------------
 	string country;
@@ -290,11 +290,7 @@ bool add_iso3166_country_metadata(WED_Airport & apt, bool inProgress)
 		if (matches > 1)
 			LOG_MSG("'%s' matches %dx using %s\n", country.c_str(), matches, code3.c_str());
 
-		if(!inProgress) 
-			apt.StartCommand("Add country code");
 		apt.AddMetaDataKey(META_KeyName(wed_AddMetaDataCountry), code3 + country);
-		if (!inProgress) 
-			apt.CommitCommand();
 		return true;
 	}
 

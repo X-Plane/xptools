@@ -5767,7 +5767,51 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 	
 	WED_LibraryMgr* lmgr = WED_GetLibraryMgr(apt->GetArchive()->GetResolver());
 	WED_Group * art_grp = nullptr;
-	
+#if 1    // much faster as it only traverses hierachy once
+	std::function<void(WED_Thing*)> CollectEntitiesRecursive = [&](WED_Thing* thing)
+	{
+		const auto c = thing->GetClass();
+#define COLLECT(type, vector) \
+		if(c == type::sClass) { \
+			auto p = static_cast<type *>(thing); \
+			if(!p->GetHidden())	vector.push_back(p); \
+			return; \
+		}
+		COLLECT(WED_Runway, rwys)
+		else COLLECT(WED_Sealane, sealn)
+		else COLLECT(WED_AirportSign, signs)
+		else COLLECT(WED_Taxiway, twys)
+		else COLLECT(WED_AirportBoundary, bdys)
+		else COLLECT(WED_Windsock, socks)
+		else COLLECT(WED_AirportSign, signs)
+#undef COLLECT
+		else if (c == WED_PolygonPlacement::sClass) {
+			auto p = static_cast<WED_PolygonPlacement*>(thing);
+			if (p->GetHidden()) return;
+			string res;
+			p->GetResource(res);
+			if (res.compare(0, strlen("lib/airport/pavement/"), "lib/airport/pavement/") == 0)
+			{
+				polys.push_back(p);
+				return;
+			}
+			auto surf = lmgr->GetSurfEnum(res);
+			if (surf > 0)
+				polys.push_back(p);
+			return;
+		}
+		else
+		{
+			if (c != WED_Group::sClass && c != WED_Airport::sClass) return;  // don't recurse into anything else
+			auto p = static_cast<WED_Entity*>(thing);
+			if (p->GetHidden()) return;
+		}
+		int nc = thing->CountChildren();
+		for (int n = 0; n < nc; ++n)
+			CollectEntitiesRecursive(thing->GetNthChild(n));
+	};
+	CollectEntitiesRecursive(apt);
+#else
 	CollectRecursive(apt, back_inserter(bdys), WED_AirportBoundary::sClass);
 	CollectRecursive(apt, back_inserter(rwys), WED_Runway::sClass);
 	CollectRecursive(apt, back_inserter(sealn),WED_Sealane::sClass);
@@ -5779,7 +5823,6 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 			if (auto p = dynamic_cast<WED_PolygonPlacement*>(v))
 			{
 				string res;
-				//p->GetName(res);
 				p->GetResource(res);
 				if(res.compare(0, strlen("lib/airport/pavement/"),"lib/airport/pavement/") == 0) 
 					return true;
@@ -5789,7 +5832,7 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 			else
 				return false;
 		}, WED_PolygonPlacement::sClass);
-
+#endif
 	for(auto b : bdys)
 		WED_BezierPolygonWithHolesForPolygon(b, apt_boundary);
 	if(apt_boundary.size() == 0) return 0;
