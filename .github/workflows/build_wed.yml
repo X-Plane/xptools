@@ -76,7 +76,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          submodules: true
+          submodules: no
       - name: Build Libs
         run: |
           git config --global --add safe.directory /__w/xptools/xptools
