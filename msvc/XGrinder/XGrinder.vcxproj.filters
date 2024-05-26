@@ -96,4 +96,7 @@
       <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\src\XPTools\README.XGrinder" />
+  </ItemGroup>
 </Project>

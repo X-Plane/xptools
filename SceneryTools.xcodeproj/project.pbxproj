@@ -13,12 +13,10 @@
 			buildPhases = (
 			);
 			dependencies = (
-				D60734330D197A2300E08F61 /* PBXTargetDependency */,
 				D61C26EF0B6155A10092E098 /* PBXTargetDependency */,
 				D61C26ED0B61559E0092E098 /* PBXTargetDependency */,
 				D61C26EB0B61559C0092E098 /* PBXTargetDependency */,
 				D66FD87A0C933D39004AD565 /* PBXTargetDependency */,
-				D6C68DDC0BEFB3A400C9F880 /* PBXTargetDependency */,
 			);
 			name = "Build Tools";
 			productName = Untitled;
@@ -927,13 +925,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		D60734320D197A2300E08F61 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D60734100D197A1100E08F61;
-			remoteInfo = MeshTool;
-		};
 		D60734340D197A2700E08F61 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
@@ -968,13 +959,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = D6C579BC0C7E3C7B00FCB4C1;
 			remoteInfo = DDSTool;
-		};
-		D6C68DDB0BEFB3A400C9F880 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D6ED369A0B67964D00D5484E;
-			remoteInfo = WED;
 		};
 		D6C68DE00BEFB3BE00C9F880 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -4914,11 +4898,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		D60734330D197A2300E08F61 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D60734100D197A1100E08F61 /* MeshTool */;
-			targetProxy = D60734320D197A2300E08F61 /* PBXContainerItemProxy */;
-		};
 		D60734350D197A2700E08F61 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = D60734100D197A1100E08F61 /* MeshTool */;
@@ -4943,11 +4922,6 @@
 			isa = PBXTargetDependency;
 			target = D6C579BC0C7E3C7B00FCB4C1 /* DDSTool */;
 			targetProxy = D66FD8790C933D39004AD565 /* PBXContainerItemProxy */;
-		};
-		D6C68DDC0BEFB3A400C9F880 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D6ED369A0B67964D00D5484E /* WED */;
-			targetProxy = D6C68DDB0BEFB3A400C9F880 /* PBXContainerItemProxy */;
 		};
 		D6C68DE10BEFB3BE00C9F880 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -5480,6 +5454,8 @@
 				OTHER_LDFLAGS = (
 					libs/local/lib/libsquish.a,
 					libs/local/lib/libpng.a,
+					libs/local/lib/libjpeg.a,
+					libs/local/lib/libtiff.a,
 				);
 			};
 			name = Phone;
@@ -5541,6 +5517,7 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COPY_PHASE_STRIP = NO;
+				ENABLE_TESTABILITY = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -5555,6 +5532,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COPY_PHASE_STRIP = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_TESTABILITY = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				PRODUCT_NAME = Untitled;
@@ -5750,9 +5728,17 @@
 				CODE_SIGN_IDENTITY = "-";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEV=1",
+					"APL=1",
+					"USE_TIF=1",
+					"USE_JPEG=1",
+				);
 				OTHER_LDFLAGS = (
 					libs/local/lib/libsquish.a,
 					libs/local/lib/libpng.a,
+					libs/local/lib/libjpeg.a,
+					libs/local/lib/libtiff.a,
 				);
 			};
 			name = Debug;
@@ -5764,9 +5750,18 @@
 				CODE_SIGN_IDENTITY = "-";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					NDEBUG,
+					"DEV=0",
+					"APL=1",
+					"USE_TIF=1",
+					"USE_JPEG=1",
+				);
 				OTHER_LDFLAGS = (
 					libs/local/lib/libsquish.a,
 					libs/local/lib/libpng.a,
+					libs/local/lib/libjpeg.a,
+					libs/local/lib/libtiff.a,
 				);
 			};
 			name = Release;
@@ -5959,9 +5954,17 @@
 				CODE_SIGN_IDENTITY = "-";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEV=1",
+					"APL=1",
+					"USE_TIF=1",
+					"USE_JPEG=1",
+				);
 				OTHER_LDFLAGS = (
 					libs/local/lib/libsquish.a,
 					libs/local/lib/libpng.a,
+					libs/local/lib/libjpeg.a,
+					libs/local/lib/libtiff.a,
 				);
 			};
 			name = DebugOpt;
@@ -6059,6 +6062,7 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COPY_PHASE_STRIP = NO;
+				ENABLE_TESTABILITY = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;

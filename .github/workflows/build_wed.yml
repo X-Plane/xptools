@@ -1,9 +1,10 @@
 name: build WED
 
-on:
+on: 
   push:
     branches:
     - 'wed_2*_release'
+  workflow_dispatch:
         
 permissions:
   contents: read
@@ -13,7 +14,7 @@ jobs:
     runs-on: windows-2022
     steps:
     - name: Checkout repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: true
     - name: Add MSBuild to PATH
@@ -38,7 +39,7 @@ jobs:
       APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: yes
       - name: Setup Credentials
@@ -48,7 +49,7 @@ jobs:
           p12-password: ${{ secrets.APPLE_DEV_CERTIFICATE_PASSWORD }}
       - name: Build Libs
         run: |
-          git submodule init
+          git submodule init libs
           git submodule update libs
           cd libs
           make -j$(sysctl -n hw.logicalcpu)
@@ -74,13 +75,13 @@ jobs:
         image: ghcr.io/x-plane/xptools_builder:latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
-          submodules: true
+          submodules: no
       - name: Build Libs
         run: |
           git config --global --add safe.directory /__w/xptools/xptools
-          git submodule init
+          git submodule init libs
           git submodule update libs
           cd libs
           make -j$(nproc)
@@ -98,7 +99,7 @@ jobs:
     needs: [build-windows, build-mac, build-linux]
     steps:
     - name: Checkout repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: get build results
       uses: actions/download-artifact@v3
       with:
