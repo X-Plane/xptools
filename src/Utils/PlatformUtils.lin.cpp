@@ -180,28 +180,22 @@ void DoUserAlert(const char * inMsg)
 	fl_alert(inMsg);
 }
 
-void ShowProgressMessage(const char * inMsg, float * inProgress)
-{
-	if(inProgress)	fprintf(stderr,"%s: %f\n",inMsg,100.0f * *inProgress);
-	else			fprintf(stderr,"%s\n",inMsg);
-}
-
 int		ConfirmMessage(const char* inMsg, const char* proceedBtn, const char* cancelBtn, const char* optionBtn)
 {
 	fl_message_hotspot(false);
 
 	int result;
-	if(optionBtn) 
-		result = fl_choice(inMsg, proceedBtn, cancelBtn, 0);
-	else
+	if(optionBtn)
 		result = fl_choice(inMsg, proceedBtn, optionBtn, cancelBtn, 0);
+	else
+		result = fl_choice(inMsg, proceedBtn, cancelBtn, 0);
 
 	if (Fl::event_key(FL_Escape)) result = 0;
 
 	if (result == 0)
 		return 1;          // proceedBtn
 	if (optionBtn && result == 1)
-			return 2;      // optionBtn 
+			return 2;      // optionBtn
 	return 0;              // cancelBtn
 }
 

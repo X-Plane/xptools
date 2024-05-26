@@ -467,7 +467,7 @@ void WED_GatewayImportDialog::Next()
 					mVersions_Vers.push_back(v);
 					mVersions_VersionsSelected.insert(mVersions_Vers.size()-1);
 				}
-				if(!--max_imports) 
+				if(!--max_imports)
 				{
 					DoUserAlert("Stopped after importing 500 airports, large gateway downloads are unsupported.");
 					break;
@@ -734,7 +734,7 @@ void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
 			}
 			cur_airport.meta_data.push_back(make_pair("IcaoFaaLocal", code));   // pseudo-tag to support selection by ANY of these 3 tags
 			cur_airport.kind_code = 0;                                          // scenery-ID of not deprecated, recommended version, if any
-			
+
 			if(gModeratorMode)
 			{
 				if (tmp["AcceptedSceneryCount"].asInt() > tmp["ApprovedSceneryCount"].asInt())
@@ -774,7 +774,7 @@ void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
 							if(curScenery["Status"].asString() == "Accepted")
 							{
 								AcceptDate = curScenery.operator[]("dateAccepted").asString();
-								if (AcceptDate == "") 
+								if (AcceptDate == "")
 									AcceptDate = "Unknown";
 								Artist = curScenery.operator[]("userName").asString();
 								cur_airport.kind_code = curScenery.operator[]("sceneryId").asInt();
@@ -894,10 +894,10 @@ void WED_GatewayImportDialog::SelectWithFile()
 			for(int i = 0; i < sizeof(c)-12; ++i)
 				if (c[i] == ' ') ++icao;
 				else break;
-				
+
 			icao[10] = 0;
 			for(int i = 0; i < 10; ++i)
-				if (icao[i] < '0' || (icao[i] > '9' && icao[i] < 'A') || icao[i] > 'Z') 
+				if (icao[i] < '0' || (icao[i] > '9' && icao[i] < 'A') || icao[i] > 'Z')
 				{
 					icao[i] = 0;
 					break;
@@ -1441,7 +1441,7 @@ void	WED_DoImportDSFText(IResolver * resolver)
 
 		vector<string> all_files;
 		FILE_get_directory(dir, &all_files, NULL);
-		
+
 		unordered_map<string, pair<int, string> > scn_ids;
 		if(find(all_files.begin(), all_files.end(), "scenery_ids.txt") != all_files.end())
 			if (auto fi = fopen((dir + "scenery_ids.txt").c_str(), "r"))
@@ -1460,7 +1460,8 @@ void	WED_DoImportDSFText(IResolver * resolver)
 				LOG_MSG("Got list of %d scenery ids\n", (int) scn_ids.size());
 				fclose(fi);
 			}
-		
+
+		int hemisphere = ConfirmMessage("Which Hemisphere to import airports for ?", "West", "All", "East");
 		for(const auto& nam_apt : all_files)
 		{
 			if(nam_apt.compare(nam_apt.length() - 4, 4, ".dat") == 0)
@@ -1468,26 +1469,37 @@ void	WED_DoImportDSFText(IResolver * resolver)
 				vector<WED_Airport*> this_apt;
 				WED_ImportOneAptFile(dir + nam_apt, wrl, &this_apt);
 				Assert(this_apt.size() == 1);
-				string icao;
-				this_apt.front()->GetICAO(icao);
-				if (scn_ids.count(icao))
+                string icao;
+				Bbox2 bnds;
+				this_apt.front()->GetBounds(gis_Geo, bnds);
+                this_apt.front()->GetICAO(icao);
+                if(icao != "TEST" && icao != "LEGO")
+				if(hemisphere == 0 ||
+				  (hemisphere == 1 && bnds.xmax() < -32.2) ||
+                  (hemisphere == 2 && bnds.xmin()  > -31.8) )
 				{
-					this_apt.front()->SetSceneryID(scn_ids[icao].first);
-					if(!scn_ids[icao].second.empty())
-						this_apt.front()->AddMetaDataKey("gw_credits", scn_ids[icao].second);
-				}
-				
-				WED_DoInvisibleUpdateMetadata(this_apt.front());
+                    if (scn_ids.count(icao))
+                    {
+                        this_apt.front()->SetSceneryID(scn_ids[icao].first);
+                        if(!scn_ids[icao].second.empty())
+                            this_apt.front()->AddMetaDataKey("gw_credits", scn_ids[icao].second);
+                    }
 
-				for (const auto& nam_dsf : all_files)
-				{
-					if (nam_dsf.compare(nam_dsf.length() - 4, 4, ".txt") == 0 &&
-						nam_dsf.compare(0, nam_dsf.length() - 4, nam_apt, 0, nam_apt.length() - 4) == 0)
-						{
-							WED_ImportText((dir + nam_dsf).c_str(), this_apt.front());
-							break;
-						}
+                    WED_DoInvisibleUpdateMetadata(this_apt.front());
+
+                    for (const auto& nam_dsf : all_files)
+                    {
+                        if (nam_dsf.compare(nam_dsf.length() - 4, 4, ".txt") == 0 &&
+                            nam_dsf.compare(0, nam_dsf.length() - 4, nam_apt, 0, nam_apt.length() - 4) == 0)
+                            {
+                                WED_ImportText((dir + nam_dsf).c_str(), this_apt.front());
+                                break;
+                            }
+                    }
 				}
+				else if((hemisphere == 1 && bnds.xmax() < -31.8) ||
+                        (hemisphere == 2 && bnds.xmin()  > -32.2) )
+                DoUserAlert((string("Airport ") + icao + " near hemisphere boundary").c_str());
 			}
 		}
 
