@@ -42,7 +42,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
-		020F23842C067E2A002D5897 /* WED_SceneryImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 020F236D2C067E03002D5897 /* WED_SceneryImport.cpp */; };
+		020F23AD2C0682D0002D5897 /* WED_SceneryImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 020F236D2C067E03002D5897 /* WED_SceneryImport.cpp */; };
 		020F938A260D960B0077222C /* WED_MapPreviewPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 020F9381260D96040077222C /* WED_MapPreviewPane.cpp */; };
 		020F938B260D96180077222C /* WED_MapPreviewWindow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 020F9383260D96040077222C /* WED_MapPreviewWindow.cpp */; };
 		020F938C260D961B0077222C /* WED_PerspectiveCamera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 020F9385260D96040077222C /* WED_PerspectiveCamera.cpp */; };
@@ -4575,7 +4575,6 @@
 				02D8240B239EF2460008DBF2 /* 7zArcIn.c in Sources */,
 				D67EF86D0B5E5E9A00D9190C /* MemFileUtils.cpp in Sources */,
 				02D8241F239EF2930008DBF2 /* Bra86.c in Sources */,
-				020F23842C067E2A002D5897 /* WED_SceneryImport.cpp in Sources */,
 				D67EF86E0B5E5E9D00D9190C /* md5.c in Sources */,
 				02D82417239EF26F0008DBF2 /* 7zDec.c in Sources */,
 				D67EF8770B5E5ED600D9190C /* EndianUtils.c in Sources */,
@@ -4828,6 +4827,7 @@
 				D6226F250E4C6A48005BD1D7 /* WED_LibraryMgr.cpp in Sources */,
 				D6226FB30E4C8884005BD1D7 /* WED_LibraryListAdapter.cpp in Sources */,
 				D6226FB90E4C889F005BD1D7 /* WED_LibraryPane.cpp in Sources */,
+				020F23AD2C0682D0002D5897 /* WED_SceneryImport.cpp in Sources */,
 				D6F3F0871D07294E00188B28 /* WED_MetaDataDefaults.cpp in Sources */,
 				D695CD6F0EE0862E009C5F2E /* WED_GISBoundingBox.cpp in Sources */,
 				D695CD7F0EE08808009C5F2E /* WED_ExclusionZone.cpp in Sources */,
