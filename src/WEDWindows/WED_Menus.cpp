@@ -201,12 +201,12 @@ static const GUI_MenuItem_t kPavementMenu[] = {
 };
 
 static const GUI_MenuItem_t kObjDensityMenu[] = {
-{	"&1 Default",				'1',	gui_ControlFlag,		0,	wed_ObjDensity1		},
-{	"&2 A Lot",					'2',	gui_ControlFlag,		0,	wed_ObjDensity2		},
-{	"&3 Tons",					'3',	gui_ControlFlag,		0,	wed_ObjDensity3		},
-{	"&4 Mega Tons",				'4',	gui_ControlFlag,		0,	wed_ObjDensity4		},
-{	"&5 Too Many",				'5',	gui_ControlFlag,		0,	wed_ObjDensity5		},
-{	"&6 Totally Insane",		'6',	gui_ControlFlag,		0,	wed_ObjDensity6		},
+{	"&1 Default/Minimum",		'1',	gui_ControlFlag,		0,	wed_ObjDensity1		},
+{	"&2",						'2',	gui_ControlFlag,		0,	wed_ObjDensity2		},
+{	"&3",						'3',	gui_ControlFlag,		0,	wed_ObjDensity3		},
+{	"&4",						'4',	gui_ControlFlag,		0,	wed_ObjDensity4		},
+{	"&5",						'5',	gui_ControlFlag,		0,	wed_ObjDensity5		},
+{	"&6 Insane/Maximum",		'6',	gui_ControlFlag,		0,	wed_ObjDensity6		},
 {	NULL,						0,		gui_ControlFlag,		0,	0					}
 };
 
