@@ -224,6 +224,7 @@
     <ClCompile Include="..\..\src\WEDImportExport\WED_MetaDataKeys.cpp" />
     <ClCompile Include="..\..\src\WEDImportExport\WED_MetadataUpdate.cpp" />
     <ClCompile Include="..\..\src\WEDImportExport\WED_OrthoExport.cpp" />
+    <ClCompile Include="..\..\src\WEDImportExport\WED_SceneryImport.cpp" />
     <ClCompile Include="..\..\src\WEDImportExport\WED_SceneryPackExport.cpp" />
     <ClCompile Include="..\..\src\WEDImportExport\WED_VerTable.cpp" />
     <ClCompile Include="..\..\src\WEDLibrary\WED_LibraryListAdapter.cpp" />
@@ -286,7 +287,6 @@
     <ClCompile Include="..\..\src\XESCore\DEMDefs.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\SDK\hash_maps\robin_hood.h" />
     <ClInclude Include="..\..\src\DSFTools\DSF2Text.h" />
     <ClInclude Include="..\..\src\DSFTools\DSFToolsPrefix.h" />
     <ClInclude Include="..\..\src\DSF\DSFDefs.h" />
@@ -515,6 +515,7 @@
     <ClInclude Include="..\..\src\WEDImportExport\WED_MetaDataKeys.h" />
     <ClInclude Include="..\..\src\WEDImportExport\WED_MetadataUpdate.h" />
     <ClInclude Include="..\..\src\WEDImportExport\WED_OrthoExport.h" />
+    <ClInclude Include="..\..\src\WEDImportExport\WED_SceneryImport.h" />
     <ClInclude Include="..\..\src\WEDImportExport\WED_SceneryPackExport.h" />
     <ClInclude Include="..\..\src\WEDImportExport\WED_VerTable.h" />
     <ClInclude Include="..\..\src\WEDLibrary\WED_LibraryListAdapter.h" />

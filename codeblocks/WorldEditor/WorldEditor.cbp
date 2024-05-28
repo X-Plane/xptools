@@ -481,6 +481,8 @@
 		<Unit filename="../../src/WEDImportExport/WED_MetaDataKeys.h" />
 		<Unit filename="../../src/WEDImportExport/WED_MetadataUpdate.cpp" />
 		<Unit filename="../../src/WEDImportExport/WED_MetadataUpdate.h" />
+		<Unit filename="../../src/WEDImportExport/WED_SceneryImport.cpp" />
+		<Unit filename="../../src/WEDImportExport/WED_SceneryImport.h" />
 		<Unit filename="../../src/WEDImportExport/WED_SceneryPackExport.cpp" />
 		<Unit filename="../../src/WEDImportExport/WED_SceneryPackExport.h" />
 		<Unit filename="../../src/WEDImportExport/WED_VerTable.cpp" />

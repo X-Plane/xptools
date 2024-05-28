@@ -40,6 +40,7 @@ enum {
 	wed_ExportToGateway,
 #endif
 	wed_ImportDSF,
+	wed_ImportScenery,
 #if ROAD_EDITING
 	wed_ImportRoads,
 #endif
@@ -164,7 +165,7 @@ enum {
 	wed_AddMetaDataBegin,//WARNING: DO NOT USE!
 	wed_AddMetaDataCity,// or Locality
 	wed_AddMetaDataCircuits, // new in 1200
-	wed_AddMetaDataCountry,  
+	wed_AddMetaDataCountry,
 #if GATEWAY_IMPORT_FEATURES
 	wed_AddMetaDataCredits,  // new in 12.1.0
 #endif

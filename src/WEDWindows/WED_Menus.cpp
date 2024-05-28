@@ -93,8 +93,9 @@ string WED_GetTargetMenuName(int target)
 static const GUI_MenuItem_t kAdvancedMenu[] = {
 {	"&Import apt.dat...",	0,		0,								0,	wed_ImportApt		},
 {	"Import DS&F...",		0,		0,								0,	wed_ImportDSF		},
+{	"Import Scenery...",	0,		0,								0,	wed_ImportScenery	},
 #if GATEWAY_IMPORT_FEATURES
-{	"Import Scenery Gateway Extracts...",0,0,						0,	wed_ImportGatewayExtract },
+{	"Import Gateway Extracts...",0, 0,      						0,	wed_ImportGatewayExtract },
 #endif
 {	"&Export apt.dat...",	0,		0,								0,	wed_ExportApt		},
 {	NULL,					0,		0,								0,	0					},

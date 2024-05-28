@@ -49,6 +49,7 @@
 #include "WED_GroupCommands.h"
 #include "WED_GatewayExport.h"
 #include "WED_GatewayImport.h"
+#include "WED_SceneryImport.h"
 #include "WED_MetadataUpdate.h"
 #include "WED_SceneryPackExport.h"
 #include "WED_Validate.h"
@@ -480,6 +481,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 #endif
 	case wed_ImportApt:		WED_DoImportApt(mDocument,mDocument->GetArchive(), mMapPane); return 1;
 	case wed_ImportDSF:		WED_DoImportDSF(mDocument); return 1;
+	case wed_ImportScenery:	WED_DoImportScenery(mDocument); return 1;
 #if ROAD_EDITING
 	case wed_ImportRoads:	WED_DoImportRoads(mDocument); return 1;
 #endif
@@ -491,7 +493,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_ImportGateway: WED_DoImportFromGateway(mDocument, mMapPane, mPropPane); return 1;
 #endif
 #if GATEWAY_IMPORT_FEATURES
-	case wed_ImportGatewayExtract:	WED_DoImportDSFText(mDocument); return 1;
+	case wed_ImportGatewayExtract:	WED_DoImportExtracts(mDocument); return 1;
 #endif
 	case wed_Validate:		if (WED_ValidateApt(mDocument, mMapPane) == validation_clean) DoUserAlert("Your layout is valid - no problems were found."); return 1;
 
@@ -616,6 +618,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 #endif
 	case wed_ImportApt:		return WED_CanImportApt(mDocument);
 	case wed_ImportDSF:		return WED_CanImportDSF(mDocument);
+	case wed_ImportScenery:	return 1;
 #if ROAD_EDITING
 	case wed_ImportRoads:	return WED_CanImportRoads(mDocument);
 #endif

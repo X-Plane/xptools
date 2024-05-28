@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Laminar Research.
+ * Copyright (c) 2024, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,22 +21,18 @@
  *
  */
 
-#ifndef WED_GatewayImport_H
-#define WED_GatewayImport_H
+#ifndef WED_SceneryImport_H
+#define WED_SceneryImport_H
 
-#if HAS_GATEWAY
-
-#if DEV
-//If you want to start testing right away, only useful for testing networking and dialog box parts
-#define TEST_AT_START 0
-#endif
 class	IResolver;
-class   WED_Document;
-class   WED_MapPane;
-class	WED_PropertyPane;
+class	WED_Thing;
 
-int		WED_CanImportFromGateway(IResolver * resolver);
-void	WED_DoImportFromGateway(WED_Document * resolver, WED_MapPane * pane, WED_PropertyPane * prop_pane);
-#endif /* HAS_GATEWAY */
+void WED_DoImportScenery(IResolver * resolver);
+
+bool WED_SceneryImport(string scn_path, WED_Thing* wrl, bool limited);
+
+#if GATEWAY_IMPORT_FEATURES
+void	WED_DoImportExtracts(IResolver * resolver);
+#endif
 
 #endif

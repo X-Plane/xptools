@@ -42,6 +42,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		020F23842C067E2A002D5897 /* WED_SceneryImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 020F236D2C067E03002D5897 /* WED_SceneryImport.cpp */; };
 		020F938A260D960B0077222C /* WED_MapPreviewPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 020F9381260D96040077222C /* WED_MapPreviewPane.cpp */; };
 		020F938B260D96180077222C /* WED_MapPreviewWindow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 020F9383260D96040077222C /* WED_MapPreviewWindow.cpp */; };
 		020F938C260D961B0077222C /* WED_PerspectiveCamera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 020F9385260D96040077222C /* WED_PerspectiveCamera.cpp */; };
@@ -1012,6 +1013,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		020F236D2C067E03002D5897 /* WED_SceneryImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_SceneryImport.cpp; sourceTree = "<group>"; };
+		020F236E2C067E04002D5897 /* WED_SceneryImport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_SceneryImport.h; sourceTree = "<group>"; };
 		020F9380260D95CE0077222C /* WED_Camera.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Camera.h; sourceTree = "<group>"; };
 		020F9381260D96040077222C /* WED_MapPreviewPane.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_MapPreviewPane.cpp; sourceTree = "<group>"; };
 		020F9382260D96040077222C /* WED_MapPreviewPane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_MapPreviewPane.h; sourceTree = "<group>"; };
@@ -2460,6 +2463,8 @@
 				D60800AA15461164001BE1A9 /* WED_AptImportDialog.cpp */,
 				D6FEF21818E9C4360035421F /* WED_GatewayExport.h */,
 				D6FEF21918E9C4360035421F /* WED_GatewayExport.cpp */,
+				020F236D2C067E03002D5897 /* WED_SceneryImport.cpp */,
+				020F236E2C067E04002D5897 /* WED_SceneryImport.h */,
 				D6FEF21B18E9C4440035421F /* WED_SceneryPackExport.h */,
 				D6FEF21C18E9C4440035421F /* WED_SceneryPackExport.cpp */,
 				025D81352B985B990005A88E /* WED_OrthoExport.cpp */,
@@ -4570,6 +4575,7 @@
 				02D8240B239EF2460008DBF2 /* 7zArcIn.c in Sources */,
 				D67EF86D0B5E5E9A00D9190C /* MemFileUtils.cpp in Sources */,
 				02D8241F239EF2930008DBF2 /* Bra86.c in Sources */,
+				020F23842C067E2A002D5897 /* WED_SceneryImport.cpp in Sources */,
 				D67EF86E0B5E5E9D00D9190C /* md5.c in Sources */,
 				02D82417239EF26F0008DBF2 /* 7zDec.c in Sources */,
 				D67EF8770B5E5ED600D9190C /* EndianUtils.c in Sources */,

@@ -33,8 +33,6 @@
 #include "MathUtils.h"
 #include "PlatformUtils.h"
 #include "WED_ToolUtils.h"
-#include "WED_AptIE.h"
-#include "WED_DSFImport.h"
 #include "WED_Thing.h"
 #include "WED_Group.h"
 #include "WED_Airport.h"
@@ -48,6 +46,7 @@
 #include "WED_TexMgr.h"
 #include "WED_LibraryMgr.h"
 #include "WED_ResourceMgr.h"
+#include "WED_SceneryImport.h"
 #include "WED_GroupCommands.h"
 #include "WED_Version.h"
 
@@ -121,38 +120,13 @@ WED_Document::WED_Document(
 							   "YES - try recovering scenery\n"
 							   "NO  - start with new, empty scenery\n", "Yes", "No") == 1)
 			{
-			try {
-					mUndo.__StartCommand("Revert from Saved.", __FILE__, __LINE__);
-					bool abort = true;
-					vector<WED_Airport*> apts;
+			string scn_path = gPackageMgr->ComputePath(package, "Earth nav data");
 
-					auto apt_file = gPackageMgr->ComputePath(package, "Earth nav data/apt.dat");
-					WED_ImportOneAptFile(apt_file, WED_GetWorld(this), &apts);
-
-					if (apts.size() == 0 || apts.size() > 20)   // prevent folks from opening the global airports ...
-						throw;
-
-					string dsf_path = gPackageMgr->ComputePath(package, "Earth nav data");
-					set<string> dsf = FILE_find_dsfs(dsf_path);
-					if (dsf.size() > 20)                    // prevent really likey too big sceneries from getting auto-opened ...
-						throw;
-
-					for (auto& a : apts)
-					{
-						string id;
-						a->GetICAO(id);
-						for (int i = 0; i < id.length(); i++)
-							id[i] = toupper(id[i]);
-						for (auto& d : dsf)
-							DSF_Import_Partial(d.c_str(), a, id);
-					}
-					for (auto& d : dsf)
-						DSF_Import_Partial(d.c_str(), WED_GetWorld(this), "");
-
-					mUndo.CommitCommand();
-				} catch(...) {
-					mUndo.AbortCommand();
-				}
+			mUndo.__StartCommand("Revert from Saved.", __FILE__, __LINE__);
+			if (WED_SceneryImport(scn_path, WED_GetWorld(this), true))
+				mUndo.CommitCommand();
+            else
+				mUndo.AbortCommand();
 			}
 		}
 	}
@@ -432,7 +406,7 @@ void	WED_Document::Revert(void)
 		else
 		{
 				// We have a brand new blank doc.
-				
+
 				// BASIC DOCUMENT STRUCTURE:
 				// The first object ever made gets ID 1 and is the "root" - the one known object.  The WED doc goes
 				// to "object 1" to get started.

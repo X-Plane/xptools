@@ -1409,7 +1409,6 @@ void WED_GatewayImportDialog::MakeVersionsTable(int bounds[4])
 }
 //-------------------------------------------------------------
 
-//----------------------------------------------------------------------
 int	WED_CanImportFromGateway(IResolver * resolver)
 {
 	return 1;
@@ -1421,95 +1420,4 @@ void WED_DoImportFromGateway(WED_Document * resolver, WED_MapPane * pane, WED_Pr
 	return;
 }
 
-#if GATEWAY_IMPORT_FEATURES
-
-#include <chrono>
-#include <iostream>
-
-//This is from an older method of importing things which involved manually getting the files from the hard drive
-void	WED_DoImportDSFText(IResolver * resolver)
-{
-	WED_Thing * wrl = WED_GetWorld(resolver);
-
-	char dir_path[200];
-	bool success = GetFilePathFromUser(getFile_PickFolder, "Import all files in directory...", "Import", FILE_DIALOG_IMPORT_DSF, dir_path, sizeof(dir_path));
-	const string dir = string(dir_path) + '/';
-	if(success)
-	{
-		wrl->StartOperation("Import DSF");
-		auto t0 = std::chrono::high_resolution_clock::now();
-
-		vector<string> all_files;
-		FILE_get_directory(dir, &all_files, NULL);
-
-		unordered_map<string, pair<int, string> > scn_ids;
-		if(find(all_files.begin(), all_files.end(), "scenery_ids.txt") != all_files.end())
-			if (auto fi = fopen((dir + "scenery_ids.txt").c_str(), "r"))
-			{
-				char buf[128];
-				while(fgets(buf, 127, fi))
-				{
-					stringstream in(buf);
-					string tok[3];
-					for (int i = 0; i < 3; i++)
-						getline(in, tok[i], ';');
-					tok[2].erase(0, 1);
-					tok[2].pop_back();
-					scn_ids[tok[0]] = make_pair(atoi(tok[1].c_str()), tok[2]);
-				}
-				LOG_MSG("Got list of %d scenery ids\n", (int) scn_ids.size());
-				fclose(fi);
-			}
-
-		int hemisphere = ConfirmMessage("Which Hemisphere to import airports for ?", "West", "All", "East");
-		for(const auto& nam_apt : all_files)
-		{
-			if(nam_apt.compare(nam_apt.length() - 4, 4, ".dat") == 0)
-			{
-				vector<WED_Airport*> this_apt;
-				WED_ImportOneAptFile(dir + nam_apt, wrl, &this_apt);
-				Assert(this_apt.size() == 1);
-                string icao;
-				Bbox2 bnds;
-				this_apt.front()->GetBounds(gis_Geo, bnds);
-                this_apt.front()->GetICAO(icao);
-                if(icao != "TEST" && icao != "LEGO")
-				if(hemisphere == 0 ||
-				  (hemisphere == 1 && bnds.xmax() < -32.2) ||
-                  (hemisphere == 2 && bnds.xmin()  > -31.8) )
-				{
-                    if (scn_ids.count(icao))
-                    {
-                        this_apt.front()->SetSceneryID(scn_ids[icao].first);
-                        if(!scn_ids[icao].second.empty())
-                            this_apt.front()->AddMetaDataKey("gw_credits", scn_ids[icao].second);
-                    }
-
-                    WED_DoInvisibleUpdateMetadata(this_apt.front());
-
-                    for (const auto& nam_dsf : all_files)
-                    {
-                        if (nam_dsf.compare(nam_dsf.length() - 4, 4, ".txt") == 0 &&
-                            nam_dsf.compare(0, nam_dsf.length() - 4, nam_apt, 0, nam_apt.length() - 4) == 0)
-                            {
-                                WED_ImportText((dir + nam_dsf).c_str(), this_apt.front());
-                                break;
-                            }
-                    }
-				}
-				else if((hemisphere == 1 && bnds.xmax() < -31.8) ||
-                        (hemisphere == 2 && bnds.xmin()  > -32.2) )
-                DoUserAlert((string("Airport ") + icao + " near hemisphere boundary").c_str());
-			}
-		}
-
-		auto t1 = std::chrono::high_resolution_clock::now();
-		chrono::duration<double> elapsed = t1 - t0;
-		LOG_MSG("Extract import time was %.3lf s.", elapsed.count());
-
-		wrl->CommitOperation();
-	}
-}
-
-#endif /* GATEWAY_IMPORT_FEATURES */
 #endif /* HAS_GATEWAY */

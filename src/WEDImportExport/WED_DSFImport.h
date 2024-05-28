@@ -75,6 +75,7 @@ struct Bbox2p {
 	};
 };
 
+/* Returns true if successful, false if not. */
 int		DSF_Import_Partial(const char* path, WED_Thing* base, const string& ICAO);
 int		DSF_Import_Partial(const char* path, WED_Thing* base, int inCatFilter,
 							const vector<Bbox2p> & inBounds = vector<Bbox2p>(), const vector<string>& inAptFilter = vector<string>());
