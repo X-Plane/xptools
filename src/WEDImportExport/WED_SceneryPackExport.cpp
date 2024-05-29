@@ -195,7 +195,7 @@ static void OsmExport(WED_Thing* root, const string& file)
 
 void	WED_ExportPackToPath(WED_Thing * root, IResolver * resolver, const string& in_path, set<WED_Thing *>& problem_children)
 {
-	int result = DSF_Export(root, resolver, in_path,problem_children);
+	int result = DSF_Export(root, resolver, in_path, problem_children);
 	if (result == -1)
 		return;
 
@@ -259,9 +259,12 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 	LOG_MSG("I/exp Starting upgrade heuristics\n");
 	WED_Thing * wrl = WED_GetWorld(resolver);
 	vector<WED_Airport*> apts;
-	CollectRecursiveNoNesting(wrl, back_inserter(apts), WED_Airport::sClass);   // ATTENTION: all code here assumes 'normal' hierachies and no hidden items,
-																				//	i.e. apts 1 level down, groups next, then items in them at 2 levels down.
-	WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);                      // Speeds up recursive collecting, avoids recursing too deep.
+	CollectRecursive(wrl, back_inserter(apts), WED_Airport::sClass);
+	
+	// All subsequent code assumes within airport the hierachy is a maximum of 2 levels deep,
+	// to avoid unneccesary recursing into the innards of entities
+	
+	WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 	ISelection * sel = WED_GetSelect(resolver);
 	
 	int deleted_illicit_icao = 0;
@@ -678,7 +681,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		//-- If any pattern rumnways are ever using one-way only, disable pattern flying. 
 		// As current ATC WILl ignore the one-way use and send you fly real closed patterns.
 		vector<WED_ATCFlow*> flows;
-		CollectRecursive(*apt_itr, back_inserter(flows));
+		CollectRecursive(*apt_itr, back_inserter(flows),IgnoreVisiblity, TakeAlways, WED_ATCFlow::sClass, 2);
 		for (auto f : flows)
 		{
 			int pattern = f->GetPatternRunway();

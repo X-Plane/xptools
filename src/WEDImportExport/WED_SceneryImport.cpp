@@ -22,7 +22,7 @@
 
 #include "WED_SceneryImport.h"
 
-
+#include "CompGeomDefs2.h"
 #include "FileUtils.h"
 #include "PlatformUtils.h"
 #include "WED_UIDefs.h"
@@ -33,8 +33,9 @@
 #include "WED_DSFImport.h"
 #include "WED_MetadataUpdate.h"
 
-#include "WED_Thing.h"
 #include "WED_Airport.h"
+#include "WED_Group.h"
+#include "WED_Thing.h"
 
 #include <sstream>
 #include <iostream>
@@ -93,6 +94,23 @@ void WED_DoImportScenery(IResolver * resolver)
 
 #if GATEWAY_IMPORT_FEATURES
 
+static Point2 apt_centroid(const AptInfo_t& apt)
+{
+    Vector2 loc;
+    for( auto& r : apt.runways)
+        loc += Vector2(r.ends.midpoint());
+    for (auto& h : apt.helipads)
+        loc += Vector2(h.location);
+    for (auto& s : apt.sealanes)
+        loc += Vector2(s.ends.midpoint());
+
+    int cnt = apt.runways.size() + apt.helipads.size() + apt.sealanes.size();
+    if (cnt)
+        loc /= cnt;
+
+    return Point2(0,0) + loc;
+}
+
 void	WED_DoImportExtracts(IResolver * resolver)
 {
 	WED_Thing * wrl = WED_GetWorld(resolver);
@@ -126,6 +144,30 @@ void	WED_DoImportExtracts(IResolver * resolver)
 				fclose(fi);
 			}
 
+        // Why adding an extra layer of hierachy ?
+        // At exoport (and many draw or select operations) the full archive is traversed hirechically and culled 
+        // by geograhic bounds.With a flat hierachy, all ~40,000 airport are tested sequentially.
+        // Exporting the global airports tiles causes repeated testing per DSF tile, 360*160*40,000 = 2G tests.
+        // This consumed originally some 80+ %of he total 25 cpu-min export time. Dividing the archive into 
+        // just a dozen moderately well balanced buckets cuts export time by 5x to under 5 min.
+        //
+        // The areas are, for now, not split by longitude. This is rather archieved by exporting the
+        // whole world in 2 separate and concurrent WED sessions for the western vs eastern hemisphere,
+        // which happens to split the overall database very evenly w/o any geographics overlap.
+			
+        vector<double> lats = {-90, -40, -20, 0, 20, 30, 35, 40, 45, 50, 60};
+        vector<WED_Thing*> lat_grp;
+
+        char tmp[16];
+        for(auto l : lats)
+        {
+            auto grp = WED_Group::CreateTyped(wrl->GetArchive());
+            sprintf(tmp, "Lat%+02d", (int) l);
+            grp->SetParent(wrl,0);
+            grp->SetName(tmp);
+            lat_grp.push_back(dynamic_cast<WED_Thing*>(grp));
+        }
+
 		int hemisphere = ConfirmMessage("Which Hemisphere to import airports for ?", "West", "All", "East");
 		for(const auto& nam_apt : all_files)
 		{
@@ -135,29 +177,24 @@ void	WED_DoImportExtracts(IResolver * resolver)
 				ReadAptFile((dir + nam_apt).c_str(), apts);
 				Assert(apts.size() == 1);
 
-//				vector<WED_Airport*> this_apt;
-//				WED_ImportOneAptFile(dir + nam_apt, wrl, &this_apt);
-//				Assert(this_apt.size() == 1);
-//              string icao;
-//				Bbox2 bnds;
-//				this_apt.front()->GetBounds(gis_Geo, bnds);
-//                this_apt.front()->GetICAO(icao);
                 string icao = apts.back().icao;
-                double lon = 0.0;
-                if(apts.back().runways.size())
-                    lon = apts.back().runways.front().ends.midpoint().x();
-                else if (apts.back().helipads.size())
-                    lon = apts.back().helipads.front().location.x();
-                else if (apts.back().sealanes.size())
-                    lon = apts.back().sealanes.front().ends.midpoint().x();
+                auto lonlat = apt_centroid(apts.back());
+
+                WED_Thing* grp = wrl;
+                for(int i = lats.size()-1; i >= 0; i--)
+                    if(lonlat.y() >= lats[i])
+                    {
+                        grp = lat_grp[i];
+                        break;
+                    }
 
                 if(icao != "TEST" && icao != "LEGO")
 				if(hemisphere == 0 ||
-				  (hemisphere == 1 && lon < -32.2) ||
-                  (hemisphere == 2 && lon > -31.8) )
+				  (hemisphere == 1 && lonlat.x() < -32.2) ||
+                  (hemisphere == 2 && lonlat.x() > -31.8) )
 				{
                     vector<WED_Airport*> this_apt;
-                    WED_AptImport(wrl->GetArchive(), wrl, nam_apt.c_str(), apts, &this_apt);
+                    WED_AptImport(wrl->GetArchive(), grp, nam_apt.c_str(), apts, &this_apt);
 
                     if (scn_ids.count(icao))
                     {
@@ -178,13 +215,26 @@ void	WED_DoImportExtracts(IResolver * resolver)
                             }
                     }
 				}
-				else if((hemisphere == 1 && lon < -31.8) ||
-                        (hemisphere == 2 && lon > -32.2) )
+				else if((hemisphere == 1 && lonlat.x() < -31.8) ||
+                        (hemisphere == 2 && lonlat.x() > -32.2) )
                 DoUserAlert((string("Airport ") + icao + " near hemisphere boundary").c_str());
 			}
 		}
 
+		int tot = 0;
+        for(auto l : lat_grp)
+            tot += l->CountChildren();
+        if(tot==0) tot=1;
+
+        for(auto l : lat_grp)
+        {
+            string nam;
+            l->GetName(nam);
+            int cnt = l->CountChildren();
+            LOG_MSG("%s %5d %5.1lf\%\n", nam.c_str(), cnt, 100.0 * cnt / tot);
+        }
 		wrl->CommitOperation();
+		gExportTarget = wet_gateway;
 	}
 }
 
