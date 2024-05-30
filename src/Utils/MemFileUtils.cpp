@@ -31,7 +31,6 @@
 
 /*
 	TODO - level two analysis
-	TODO - single file open handles zip, gz
 	TODO - caching of open files in mem for all types of archives in case they are opened repeatedly
 */
 
@@ -421,7 +420,7 @@ MFMemFile * 	MemFile_Open(const char * inPath)
 	unzFile		unz = NULL;
 	obj = new MFMemFile;
 	if (!obj) goto bail;
-
+#if !WED
 	unz = unzOpen(inPath);
 	if (unz)
 	{
@@ -453,6 +452,7 @@ MFMemFile * 	MemFile_Open(const char * inPath)
 		}
 		unzClose(unz);
 	}
+#endif
 #if APL	|| LIN
 	{
 	struct stat	ss;			// Put this here to avoid crossing

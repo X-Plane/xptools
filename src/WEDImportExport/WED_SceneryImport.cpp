@@ -25,6 +25,7 @@
 #include "CompGeomDefs2.h"
 #include "FileUtils.h"
 #include "PlatformUtils.h"
+#include "PerfUtils.h"
 #include "WED_UIDefs.h"
 #include "WED_ToolUtils.h"
 
@@ -120,6 +121,7 @@ void	WED_DoImportExtracts(IResolver * resolver)
 	const string dir = string(dir_path) + '/';
 	if(success)
 	{
+        StElapsedTime etime("Import Extracts");
 		wrl->StartOperation("Import DSF");
 
 		vector<string> all_files;
@@ -145,11 +147,11 @@ void	WED_DoImportExtracts(IResolver * resolver)
 			}
 
         // Why adding an extra layer of hierachy ?
-        // At exoport (and many draw or select operations) the full archive is traversed hirechically and culled 
-        // by geograhic bounds.With a flat hierachy, all ~40,000 airport are tested sequentially.
-        // Exporting the global airports tiles causes repeated testing per DSF tile, 360*160*40,000 = 2G tests.
-        // This consumed originally some 80+ %of he total 25 cpu-min export time. Dividing the archive into 
-        // just a dozen moderately well balanced buckets cuts export time by 5x to under 5 min.
+        // At export (and many draw or select operations) the full archive is traversed hierachically and culled 
+        // by geographic bounds. With a flat hierachy, all ~40,000 airport are tested sequentially.
+        // Exporting the global airports tiles causes per DSF tile retesting, i.e. 360*160*40,000 = 2G tests.
+        // This consumed originally some 80+% of the total 25min export time. Dividing the archive into 
+        // just a dozen moderately balanced buckets cuts export time by 5x, to under 5min.
         //
         // The areas are, for now, not split by longitude. This is rather archieved by exporting the
         // whole world in 2 separate and concurrent WED sessions for the western vs eastern hemisphere,
@@ -231,7 +233,7 @@ void	WED_DoImportExtracts(IResolver * resolver)
             string nam;
             l->GetName(nam);
             int cnt = l->CountChildren();
-            LOG_MSG("%s %5d %5.1lf\%\n", nam.c_str(), cnt, 100.0 * cnt / tot);
+            LOG_MSG("%s %5d %5.1lf%%\n", nam.c_str(), cnt, 100.0 * cnt / tot);
         }
 		wrl->CommitOperation();
 		gExportTarget = wet_gateway;

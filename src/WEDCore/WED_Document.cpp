@@ -396,7 +396,6 @@ void	WED_Document::Revert(void)
 
 		for (auto sp : mDocPrefs)
 			LOG_MSG("I/Doc prefs %s = %s\n", sp.first.c_str(), sp.second.c_str());
-		LOG_FLUSH();
 
 		if(xml_exists)
 		{
