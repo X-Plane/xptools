@@ -27,6 +27,7 @@
 #include "IResolver.h"
 #include "ILibrarian.h"
 #include "FileUtils.h"
+#include "PerfUtils.h"
 #include "PlatformUtils.h"
 #include "WED_ToolUtils.h"
 #include "WED_HierarchyUtils.h"
@@ -195,6 +196,7 @@ static void OsmExport(WED_Thing* root, const string& file)
 
 void	WED_ExportPackToPath(WED_Thing * root, IResolver * resolver, const string& in_path, set<WED_Thing *>& problem_children)
 {
+	StElapsedTime etime("Export Scenery");
 	int result = DSF_Export(root, resolver, in_path, problem_children);
 	if (result == -1)
 		return;
@@ -711,7 +713,8 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 
 		auto t1 = chrono::high_resolution_clock::now();
 		chrono::duration<double> elapsed = t1 - t2;
-		LOG_MSG("Update %s took %lf sec\n", ICAO_code.c_str(), elapsed.count());
+		if(elapsed.count() > 10.0e-3)
+			LOG_MSG("Update %s took %.0lf msec\n", ICAO_code.c_str(), 1000.0 * elapsed.count());
 		t2 = t1;
 //		if(distance(apts.begin(), apt_itr) == 15) break;  // for quick testing, only upgrade a few airports
 #endif

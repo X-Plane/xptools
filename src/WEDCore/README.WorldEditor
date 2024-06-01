@@ -13,6 +13,13 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 2.6.0r1
+   Features:
+   - full scenery import menu function
+   Bug fix:
+   - minor speed improvements for scenery load, export and upgrade heuristics
+   - remove some old XP11 wording in object density menu
+
 WED 2.6.0b1 5/20/24
    Features:
    - polygonal exclusion zones for XP 12.05+

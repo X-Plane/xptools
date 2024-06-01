@@ -5699,12 +5699,9 @@ static bool inside_pt(const vector<Polygon2>& vec_poly, const Point2 pt)
 	{
 		if(p.size())
 		if(p.inside(pt))
-			if(p.is_ccw())
-				inside++;
-			else
-				inside--;
+			inside++;
 	}
-	return inside > 0;
+	return inside & 1;
 }
 
 static void make_ter_FX_exist(WED_Group** grp, WED_Thing* parent)
@@ -5882,8 +5879,9 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 		for(int i = 3; i >= 0; i--)
 			this_grass->back().push_back(tmp[i]);
 
-		vector<Polygon2> tmp_poly = PolygonCut(apt_boundary, all_grass_poly);
-		*this_grass = PolygonIntersect(*this_grass, tmp_poly);
+		vector<Polygon2> still_unmowed_apt = PolygonCut(apt_boundary, all_grass_poly);
+		*this_grass = PolygonIntersect(*this_grass, still_unmowed_apt);
+
 		if(this_grass->empty())
 		{
 			grass.pop_back();
@@ -5935,20 +5933,6 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 		else
 			it++;
 	}
-
-/*	int ti = 0;
-	for(auto& p : all_pave_poly)
-	{
-		int np = p.size();
-		ti += np;
-		// if( distance(p.begin(),  all_pave_poly[0].begin()) == all_pave_poly.size() - 1 )
-	//	if(np == 3)
-		for(int i = 0; i < np; i++)
-			debug_mesh_segment({p[i], (i+1) < np ? p[i+1] : p[0]}, 1, 0, 0, 1, 0, 0);
-	//	printf("poly %d\n", np);
-	}
-	printf("pavement_pts %d\n", ti);
-*/
 	// turning circles where mowing lines hit pavement
 	for (auto& g : grass)
 	{
