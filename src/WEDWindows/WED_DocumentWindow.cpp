@@ -495,15 +495,20 @@ int	WED_DocumentWindow::HandleCommand(int command)
 #if GATEWAY_IMPORT_FEATURES
 	case wed_ImportGatewayExtract:	WED_DoImportExtracts(mDocument); return 1;
 #endif
-	case wed_Validate:		if (WED_ValidateApt(mDocument, mMapPane) == validation_clean) DoUserAlert("Your layout is valid - no problems were found."); return 1;
-
-	case wed_Export900:	 if (gExportTarget != wet_xplane_900) { gExportTarget = wet_xplane_900; mDocument->SetDirty(); Refresh(); } return 1;
-	case wed_Export1000: if (gExportTarget != wet_xplane_1000) { gExportTarget = wet_xplane_1000; mDocument->SetDirty(); Refresh(); } return 1;
-	case wed_Export1021: if (gExportTarget != wet_xplane_1021) { gExportTarget = wet_xplane_1021; mDocument->SetDirty(); Refresh(); } return 1;
-	case wed_Export1050: if (gExportTarget != wet_xplane_1050) { gExportTarget = wet_xplane_1050; mDocument->SetDirty(); Refresh(); } return 1;
-	case wed_Export1100: if (gExportTarget != wet_xplane_1100) { gExportTarget = wet_xplane_1100; mDocument->SetDirty(); Refresh(); } return 1;
-	case wed_Export1130: if (gExportTarget != wet_xplane_1130) { gExportTarget = wet_xplane_1130; mDocument->SetDirty(); Refresh(); } return 1;
-	case wed_Export1200: if (gExportTarget != wet_xplane_1200) { gExportTarget = wet_xplane_1200; mDocument->SetDirty(); Refresh(); } return 1;
+	case wed_Validate:	if (WED_ValidateApt(mDocument, mMapPane) == validation_clean)
+							DoUserAlert("Your layout is valid - no problems were found.");
+						return 1;
+	case wed_Export900:
+	case wed_Export1000: case wed_Export1021: case wed_Export1050:
+	case wed_Export1100: case wed_Export1130:
+	case wed_Export1200: case wed_Export1211:
+		if (gExportTarget != wet_xplane_900 + command - wed_Export900)
+		{
+			gExportTarget = (WED_Export_Target) (wet_xplane_900 + command - wed_Export900);
+			mDocument->SetDirty();
+			Refresh();
+		}
+		return 1;
 	case wed_ExportGateway:if (gExportTarget != wet_gateway) { gExportTarget = wet_gateway; mDocument->SetDirty(); Refresh(); } return 1;
 
 #if WITHNWLINK
@@ -632,14 +637,11 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 #endif
 	case wed_Validate:		return 1;
 
-	case wed_Export900:	ioCheck = gExportTarget == wet_xplane_900;	return 1;
-	case wed_Export1000:ioCheck = gExportTarget == wet_xplane_1000;	return 1;
-	case wed_Export1021:ioCheck = gExportTarget == wet_xplane_1021;	return 1;
-	case wed_Export1050:ioCheck = gExportTarget == wet_xplane_1050;	return 1;
-	case wed_Export1100:ioCheck = gExportTarget == wet_xplane_1100;	return 1;
-	case wed_Export1130:ioCheck = gExportTarget == wet_xplane_1130;	return 1;
-	case wed_Export1200:ioCheck = gExportTarget == wet_xplane_1200;	return 1;
-
+	case wed_Export900:
+	case wed_Export1000: case wed_Export1021: case wed_Export1050:
+	case wed_Export1100: case wed_Export1130:
+	case wed_Export1200: case wed_Export1211:
+		ioCheck = (command - wed_Export900) == (gExportTarget - wet_xplane_900); return 1;
 	case wed_ExportGateway:ioCheck = gExportTarget == wet_gateway;	return 1;
 
 #if WITHNWLINK

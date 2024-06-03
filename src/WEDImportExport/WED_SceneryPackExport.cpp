@@ -740,11 +740,10 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 
 int		WED_CanExportPack(IResolver* resolver, string& ioname)
 {
-	int target_idx = gExportTarget - wet_xplane_900;
-	if (target_idx > wet_latest_xplane)
+	if (gExportTarget == wet_gateway)
 		ioname = "Export to Scenery (w/Scenery Gateway heuristics)";
 	else
-		 ioname = string("Export to Scenery for ") + WED_GetTargetMenuName(target_idx);
+		 ioname = string("Export to Scenery for ") + WED_GetTargetMenuName(gExportTarget - wet_xplane_900);
 	return 1;
 }
 

@@ -13,9 +13,10 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 2.6.0r1
+WED 2.6.0b2
    Features:
    - full scenery import menu function
+   - new export target 12.1.1 to distinuish string spacing behavior
    Bug fix:
    - minor speed improvements for scenery load, export and upgrade heuristics
    - remove some old XP11 wording in object density menu
