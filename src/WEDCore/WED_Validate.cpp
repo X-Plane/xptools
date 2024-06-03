@@ -629,7 +629,8 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 		set<int> ex;
 		xcl->GetExclusions(ex);
 		if (ex.count(exclude_For))
-			msgs.push_back(validation_error_t("Exclusion Polygons do not (yet) supported forests in X-Plane. Use Exclusion zones instead.", warn_exclusion_polys_no_forests, who, parent_apt));
+			msgs.push_back(validation_error_t("Exclusion Polygons do not (yet) supported forests in X-Plane. Use Exclusion zones instead.", 
+				gExportTarget == wet_gateway ? err_exclusion_polys_no_forests : warn_exclusion_polys_no_forests, who, parent_apt));
 	}
 	else if(who->GetClass() == WED_ObjPlacement::sClass)
 	{

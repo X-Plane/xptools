@@ -67,6 +67,7 @@ enum validate_error_t
 	err_atcrwy_truck_route_too_close_to_runway,
 	err_duplicate_name,
 	err_exclusion_polys_no_holes,
+	err_exclusion_polys_no_forests,
 	err_flow_blank_ICAO_for_METAR,
 	err_flow_blank_name,
 	err_flow_flows_only_for_gte_xp10,
