@@ -261,7 +261,7 @@ void	WED_Document::Save(void)
 #else
 	rename(xml.c_str(), bakXML.c_str());
 #endif
-		auto t1 = std::chrono::high_resolution_clock::now();
+	auto t1 = std::chrono::high_resolution_clock::now();
 	chrono::duration<double> elapsed = t1 - t0;
 	LOG_MSG("\nrename b4 save %.3lf s\n", elapsed.count());
 	t0 = t1;
@@ -354,6 +354,7 @@ void	WED_Document::Revert(void)
 			return;
 	}
 	mDocPrefs.clear();
+	auto t0 = std::chrono::high_resolution_clock::now();
 
 	try {
 		mUndo.__StartCommand("Revert from Saved.", __FILE__, __LINE__);
@@ -433,6 +434,10 @@ void	WED_Document::Revert(void)
 		mUndo.AbortCommand();
 		throw;
 	}
+
+	auto t1 = std::chrono::high_resolution_clock::now();
+	chrono::duration<double> elapsed = t1 - t0;
+	LOG_MSG("XML reading %.3lf s\n", elapsed.count());
 
 	if(WED_Repair(this))
 	{
