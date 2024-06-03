@@ -49,6 +49,25 @@ public:
 	virtual	int				GetNumEntities(void ) const;
 	virtual	IGISEntity *	GetNthEntity  (int n) const;
 
+	// A optional, faster way to iterate entities, if only a limited spatial extent is desired
+	typedef vector<const vector<int>*> EntityList_t;
+	EntityList_t			GetEntities(const Bbox2& bounds) const;
+
+	// usage
+	// 
+	// auto e = c->GetEntities(bounds);
+	// if (e.size())
+	// {
+	//   for (auto& r : e)
+	//     for (auto i : *r)
+	//		 func(... , i , ...);
+	// }
+	// else
+	// {
+	//   for (int i = c->GetNumEntities()-1 ; i >= 0; i--)
+	//     func(... , i , ...);
+	// }
+
 private:
 
 			void			RebuildCache(int flags) const;
@@ -58,6 +77,11 @@ private:
 	mutable	bool					mHasUV;
 	mutable	vector<IGISEntity *>	mEntities;
 
+	struct Region_t {
+		Bbox2         Bounds;
+		vector<int>   EntityIdx;
+	};
+	mutable vector<Region_t> mCacheRegions;
 };
 
 #endif

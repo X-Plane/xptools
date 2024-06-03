@@ -1281,9 +1281,9 @@ void WED_VertexTool::GetEntityInternal(void) const
 
 void		WED_VertexTool::AddEntityRecursive(IGISEntity * e, const Bbox2& vis_area ) const
 {
+	if (!e->Cull(vis_area))	return;
 	if(!IsVisibleNow(e))	return;
 	if(IsLockedNow(e))		return;
-	if(!e->Cull(vis_area)) return;
 
 	Bbox2	ent_bounds;
 	e->GetBounds(gis_Geo,ent_bounds);
@@ -1360,12 +1360,11 @@ void		WED_VertexTool::AddEntityRecursive(IGISEntity * e, const Bbox2& vis_area )
 
 void		WED_VertexTool::AddSnapPointRecursive(IGISEntity * e, const Bbox2& vis_area, ISelection * sel ) const
 {
+	if(e->Cull(vis_area))	return;
 	if(!IsVisibleNow(e))	return;
 
 	Bbox2	ent_bounds;
 	e->GetBounds(gis_Geo,ent_bounds);
-
-	if (!ent_bounds.overlap(vis_area))	return;
 
 	ent_bounds.p1 = GetZoomer()->LLToPixel(ent_bounds.p1);
 	ent_bounds.p2 = GetZoomer()->LLToPixel(ent_bounds.p2);

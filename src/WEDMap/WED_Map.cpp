@@ -57,7 +57,7 @@
 	#include <GL/gl.h>
 #endif
 
-// display Frames Per Second. Will peg CPU/GPU load at 100%, only useable for diaganostic purposes.
+// display Frames Per Second. Will peg CPU/GPU load at 100%, only useable for diagnostic purposes.
 #define SHOW_FPS 0
 
 WED_Map::WED_Map(IResolver * in_resolver, GUI_Commander * cmdr) : GUI_Commander(cmdr), mResolver(in_resolver), mTool(NULL), mClickLayer(NULL),
@@ -371,13 +371,12 @@ void		WED_Map::Draw(GUI_GraphState * state)
 void		WED_Map::DrawVisFor(WED_MapLayer * layer, int current, const Bbox2& bounds, IGISEntity * what, GUI_GraphState * g, ISelection * sel, int depth)
 {
 	if(!what->Cull(bounds))	return;
-	IGISComposite * c;
 
 	auto what_ent = dynamic_cast<WED_Entity*>(what);
 	if(!what_ent || !layer->IsVisibleNow(what_ent))	return;
 
 	if (layer->DrawEntityVisualization(current, what, g, sel && sel->IsSelected(what)))
-	if (what->GetGISClass() == gis_Composite && (c = SAFE_CAST(IGISComposite, what)) != NULL)
+	if (what->GetGISClass() == gis_Composite)
 	{
 		Bbox2	on_screen;
 		what->GetBounds(gis_Geo, on_screen);
@@ -388,9 +387,17 @@ void		WED_Map::DrawVisFor(WED_MapLayer * layer, int current, const Bbox2& bounds
 
 		if(max(span.dx, span.dy) > TOO_SMALL_TO_GO_IN || (p1 == p2) || depth == 0)		// Why p1 == p2?  If the composite contains ONLY ONE POINT it is zero-size.  We'd LOD out.  But if
 		{																				// it contains one thing then we might as well ALWAYS draw it - it's relatively cheap!
-			int t = c->GetNumEntities();												// Depth == 0 means we draw ALL top level objects -- good for airports.
-			for (int n = t-1; n >= 0; --n)
-				DrawVisFor(layer, current, bounds, c->GetNthEntity(n), g, sel, depth+1);
+			if (auto c = dynamic_cast<WED_GISComposite*>(what))							// Depth == 0 means we draw ALL top level objects -- good for airports.
+			{
+				auto rgn = c->GetEntities(bounds);
+				if (rgn.size())							// specialized/faster iteration if group has subregions
+					for(auto r : rgn)
+						for(auto i : *r)
+							DrawVisFor(layer, current, bounds, c->GetNthEntity(i), g, sel, depth + 1);
+				else
+					for (int i = c->GetNumEntities() - 1; i >= 0; --i)
+						DrawVisFor(layer, current, bounds, c->GetNthEntity(i), g, sel, depth + 1);
+			}
 		}
 	}
 }
@@ -398,14 +405,13 @@ void		WED_Map::DrawVisFor(WED_MapLayer * layer, int current, const Bbox2& bounds
 void		WED_Map::DrawStrFor(WED_MapLayer * layer, int current, const Bbox2& bounds, IGISEntity * what, bool what_locked, GUI_GraphState * g, ISelection * sel, int depth)
 {
 	if(!what->Cull(bounds))	return;
-	IGISComposite * c;
 
 	auto what_ent = dynamic_cast<WED_Entity*>(what);
 	if(!what_ent || !layer->IsVisibleNow(what_ent))	return;
 	what_locked |= layer->IsLocked(what_ent);
 
 	if (layer->DrawEntityStructure(current, what, g, sel && sel->IsSelected(what), what_locked))
-	if (what->GetGISClass() == gis_Composite && (c = SAFE_CAST(IGISComposite, what)) != NULL)
+	if (what->GetGISClass() == gis_Composite)
 	{
 		Bbox2	on_screen;
 		what->GetBounds(gis_Geo, on_screen);
@@ -413,9 +419,17 @@ void		WED_Map::DrawStrFor(WED_MapLayer * layer, int current, const Bbox2& bounds
 
 		if(PixelSize(on_screen) > TOO_SMALL_TO_GO_IN || on_screen.is_point() || depth == 0)
 		{
-			int t = c->GetNumEntities();
-			for (int n = t-1; n >= 0; --n)
-				DrawStrFor(layer, current, bounds, c->GetNthEntity(n), what_locked, g, sel, depth+1);
+			if (auto c = dynamic_cast<WED_GISComposite*>(what))
+			{
+				auto rgn = c->GetEntities(bounds);
+				if (rgn.size())
+					for (auto r : rgn)
+						for (auto i : *r)
+							DrawStrFor(layer, current, bounds, c->GetNthEntity(i), what_locked, g, sel, depth + 1);
+				else
+					for (int i = c->GetNumEntities() - 1; i >= 0; --i)
+						DrawStrFor(layer, current, bounds, c->GetNthEntity(i), what_locked, g, sel, depth + 1);
+			}
 		}
 	}
 }

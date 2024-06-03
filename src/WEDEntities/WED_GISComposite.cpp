@@ -126,15 +126,28 @@ bool WED_GISComposite::Cull(const Bbox2& b) const
 {
 	Bbox2 me;
 	this->GetBounds(gis_Geo, me);
-	me.expand(GLOBAL_WED_ART_ASSET_FUDGE_FACTOR);
+	me.expand(0.1 * GLOBAL_WED_ART_ASSET_FUDGE_FACTOR);
 
 	if(!b.overlap(me))
 		return false;
-	
-	int n = GetNumEntities();
-	for (int i = 0; i < n; ++i)
-		if(GetNthEntity(i)->Cull(b))
-			return true;
+
+	if (mCacheRegions.size())
+	{
+		for (auto& r : mCacheRegions)
+		{
+			if (r.Bounds.overlap(b))
+				for(auto e : r.EntityIdx)
+					if (GetNthEntity(e)->Cull(b))
+						return true;
+		}
+	}
+	else
+	{
+		int n = GetNumEntities();
+		for (int i = 0; i < n; ++i)
+			if (GetNthEntity(i)->Cull(b))
+				return true;
+	}
 	return false;	
 }
 
@@ -203,6 +216,7 @@ void	WED_GISComposite::RebuildCache(int flags) const
 		mCacheBounds = Bbox2();
 		mCacheBoundsUV = Bbox2();	
 		int n = mEntities.size();
+
 		for (int i = 0; i <  n; ++i)
 		{
 			IGISEntity * ent = mEntities[i];
@@ -219,5 +233,60 @@ void	WED_GISComposite::RebuildCache(int flags) const
 					mHasUV = false;
 			}
 		}
+
+		// why split composites into multiple regions ?
+		// If a group contains a large amount of entities, culling is O(n)
+		// Subdividing the entire area covered by entities and cull entire subregions is 2*O(sqrt(n))
+		// Also ability to iterate by spatial extents
+
+		if (n > 20)
+		{
+			float parts = sqrtf(n);
+			float aspect = mCacheBounds.xspan() / mCacheBounds.yspan();
+			int n_y = sqrtf(parts / aspect);
+			n_y = max(1, n_y);
+			int n_x = parts / n_y;
+			n_x = max(1, n_x);
+			int n_parts = n_x * n_y;
+
+			mCacheRegions.resize(n_parts);
+			for (auto& r : mCacheRegions)
+			{
+				r.Bounds = Bbox2();
+				r.EntityIdx.clear();
+			}
+
+			for (auto& e : mEntities)
+				if (e)
+				{
+					Bbox2 b;
+					e->GetBounds(gis_Geo, b);
+					if (!b.is_null())
+					{
+						int i_x = (b.centroid().x() - mCacheBounds.xmin()) / mCacheBounds.xspan() * n_x;
+						int i_y = (b.centroid().y() - mCacheBounds.ymin()) / mCacheBounds.yspan() * n_y;
+						i_x = min(i_x, n_x - 1);
+						i_y = min(i_y, n_y - 1);
+						DebugAssert(i_x >= 0 && i_y >= 0);
+						int rgn = i_x + n_x * i_y;
+						mCacheRegions[rgn].EntityIdx.push_back(&e - &mEntities[0]);
+						mCacheRegions[rgn].Bounds += b;
+					}
+				}
+			for (auto& r : mCacheRegions)
+				r.Bounds.expand(0.1 * GLOBAL_WED_ART_ASSET_FUDGE_FACTOR);
+		}
 	}		
+}
+
+WED_GISComposite::EntityList_t WED_GISComposite::GetEntities(const Bbox2& bounds) const
+{
+	EntityList_t idx_in_box;
+
+	for (auto& r : mCacheRegions)
+	{
+		if (bounds.overlap(r.Bounds))
+			idx_in_box.push_back(&r.EntityIdx);
+	}
+	return idx_in_box;
 }
