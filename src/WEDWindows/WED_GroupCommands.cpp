@@ -4170,6 +4170,11 @@ int		WED_Repair(IResolver * resolver)
 		{
 			parent->GetName(nam);
 			LOG_MSG(" from parent %s '%s'", parent->HumanReadableType(), nam.c_str());
+			if (auto apt = WED_GetParentAirport(parent))
+			{
+				apt->GetICAO(nam);
+				LOG_MSG(" at %s", nam.c_str());
+			}
 		}
 		LOG_MSG("\n");
 	}
