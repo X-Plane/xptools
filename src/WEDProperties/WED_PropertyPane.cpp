@@ -24,7 +24,7 @@
 #include "WED_PropertyPane.h"
 #include "WED_Colors.h"
 #include "GUI_Resources.h"
-#include "GUI_Messages.h"
+#include "WED_Messages.h"
 #include "GUI_FilterBar.h"
 #include "GUI_Fonts.h"
 #include "WED_Menus.h"
@@ -211,5 +211,24 @@ void	WED_PropertyPane::ReceiveMessage(
 	if (inMsg == GUI_FILTER_FIELD_CHANGED)
 	{
 		mPropertyTable.SetFilter(mFilter->GetText());
+	}
+
+	if (inMsg == msg_SelectionChanged)
+	{
+		mPropertyTable.SetClosed(mAutoOpened);
+		mAutoOpened.clear();
+		mPropertyTable.SelectDisclose(1,0, &mAutoOpened);
+
+		int low_x, low_y, high_x, high_y;
+		if(mPropertyTable.SelectGetExtent(low_x, low_y, high_x, high_y));
+		{
+			int llow_x, llow_y, lhigh_x, lhigh_y;
+			mPropertyTable.SelectGetLimits(llow_x, llow_y, lhigh_x, lhigh_y);
+			if (llow_y <= low_y && low_y < lhigh_y)
+			{
+				mTable->RevealRow(low_y);
+				mTable->RevealRow(high_y);
+			}
+		}
 	}
 }

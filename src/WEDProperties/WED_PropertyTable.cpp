@@ -616,9 +616,7 @@ void	WED_PropertyTable::SelectionEnd(void)
 	}
 }
 
-int		WED_PropertyTable::SelectDisclose(
-						int							open_it,
-						int							all)
+int	WED_PropertyTable::SelectDisclose(bool open_it, bool all, set<int>* change_set)
 {
 	if (mVertical) return 0;
 	if (all)
@@ -640,9 +638,26 @@ int		WED_PropertyTable::SelectDisclose(
 		{
 			WED_Thing * t = dynamic_cast<WED_Thing *>(sv[n]);
 			if (t)
+			if (change_set)
 			{
-				SetOpen(t->GetID(), open_it);
+				if (WED_IsFolder(t))
+					t = t->GetParent();
+				while (t)
+				{
+					if (WED_IsFolder(t))
+					{
+						auto id = t->GetID();
+						if (GetOpen(id) != open_it)
+						{
+							SetOpen(id, open_it);
+							(*change_set).insert(id);
+						}
+					}
+					t = t->GetParent();
+				}
 			}
+			else
+				SetOpen(t->GetID(), open_it);
 		}
 	}
 	mCacheValid = false;
@@ -1201,7 +1216,7 @@ bool WED_PropertyTable::GetOpen(int id)
 
 void WED_PropertyTable::ToggleOpen(int id)
 {
-	if (mSearchFilter.empty() == true)
+	if (mSearchFilter.empty())
 	{
 		int old_val = GetOpen(id);
 		mOpen[id] = old_val ? 0 : 1;
@@ -1210,7 +1225,7 @@ void WED_PropertyTable::ToggleOpen(int id)
 
 void WED_PropertyTable::SetOpen(int id, int o)
 {
-	if (mSearchFilter.empty() == true)
+	if (mSearchFilter.empty())
 	{
 		mOpen[id] = o;
 	}

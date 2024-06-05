@@ -128,6 +128,10 @@ int		WED_CanSelectPolygon(IResolver * resolver);
 void	WED_DoSelectPolygon(IResolver * resolver);
 int		WED_CanSelectConnected(IResolver * resolver);
 void	WED_DoSelectConnected(IResolver * resolver);
+int		WED_CanSelectHidden(IResolver* resolver);
+void	WED_DoSelectHidden(IResolver* resolver);
+int		WED_CanSelectLocked(IResolver* resolver);
+void	WED_DoSelectLocked(IResolver* resolver);
 
 void	WED_select_zero_recursive(WED_Thing * t, set<WED_GISEdge*> *s);
 bool	WED_DoSelectZeroLength(IResolver * resolver, WED_Thing * sub_tree=NULL);			// These return true if they did an operation to change selection due to there being work to do.

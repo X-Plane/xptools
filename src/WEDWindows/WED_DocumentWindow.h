@@ -26,6 +26,7 @@
 
 #include "GUI_Window.h"
 #include "GUI_Listener.h"
+#include "GUI_Broadcaster.h"
 
 //class WED_ObjectLayers;
 //class WED_LayerGroup;
@@ -43,7 +44,7 @@ class	WED_PropertyTable;
 class	WED_PropertyTableHeader;
 class	GUI_Splitter;
 
-class	WED_DocumentWindow : public GUI_Window, public GUI_Listener {
+class	WED_DocumentWindow : public GUI_Window, public GUI_Listener, public GUI_Broadcaster {
 public:
 
 				 WED_DocumentWindow(
@@ -52,7 +53,6 @@ public:
 				 		WED_Document *	inDocument);
 	virtual		~WED_DocumentWindow();
 
-	void		SetFilter(string& filter);
 	virtual	int	HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags);
 	virtual	int	HandleCommand(int command);
 	virtual	int	CanHandleCommand(int command, string& ioName, int& ioCheck);

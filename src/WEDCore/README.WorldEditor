@@ -13,6 +13,10 @@ menu to view it online.
 
 CHANGE HISTORY
 
+   Features:
+   - Hierchy Pane scolling/disclosing in sync with (some) Select operations
+   - new SelectLocked and SelectHidden menu entries
+
 WED 2.6.0b2 6/3/24
    Features:
    - full scenery import menu function

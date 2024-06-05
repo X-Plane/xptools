@@ -249,7 +249,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	mPropPane->SetParent(mPropSplitter);
 	mPropPane->Show();
 	mPropPane->SetSticky(1,0.5,1,1);
-
+	this->AddListener(mPropPane);
 	/****************************************************************************************************************************************************************
 	 * MAP PREVIEW WINDOW
 	****************************************************************************************************************************************************************/
@@ -456,9 +456,13 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case gui_Revert:	mDocument->Revert();	return 1;
 
 	case gui_SelectAll:		WED_DoSelectAll(mDocument);		return 1;
-	case gui_SelectNone:	WED_DoSelectNone(mDocument);		return 1;
-	case wed_SelectParent:	WED_DoSelectParent(mDocument);		return 1;
-	case wed_SelectChild:	WED_DoSelectChildren(mDocument);	return 1;
+	case gui_SelectNone:	WED_DoSelectNone(mDocument);	 BroadcastMessage(msg_SelectionChanged, 0); return 1;
+	case wed_SelectParent:	WED_DoSelectParent(mDocument);	 BroadcastMessage(msg_SelectionChanged, 0); return 1;
+//	case wed_ZoomSelection:                                  BroadcastMessage(msg_SelectionChanged, 0); return 0;
+	case wed_SelectChild:	WED_DoSelectChildren(mDocument); BroadcastMessage(msg_SelectionChanged, 0);	return 1;
+	case wed_SelectHidden:	WED_DoSelectHidden(mDocument);	 BroadcastMessage(msg_SelectionChanged, 0); return 1;
+	case wed_SelectLocked:	WED_DoSelectLocked(mDocument);	 BroadcastMessage(msg_SelectionChanged, 0); return 1;
+
 	case wed_SelectVertex:	WED_DoSelectVertices(mDocument);	return 1;
 	case wed_SelectPoly:	WED_DoSelectPolygon(mDocument);	return 1;
 	case wed_SelectConnected:WED_DoSelectConnected(mDocument);	return 1;
@@ -606,6 +610,8 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_SelectVertex:	return WED_CanSelectVertices(mDocument);
 	case wed_SelectPoly:	return WED_CanSelectPolygon(mDocument);
 	case wed_SelectConnected:	return WED_CanSelectConnected(mDocument);
+	case wed_SelectHidden:	return WED_CanSelectHidden(mDocument);
+	case wed_SelectLocked:	return WED_CanSelectLocked(mDocument);
 
 	case wed_SelectZeroLength:
 	case wed_SelectDoubles:

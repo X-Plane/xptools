@@ -195,9 +195,7 @@ void	WED_ICAOTable::SelectionEnd(void)
 {
 }
 
-int		WED_ICAOTable::SelectDisclose(
-					int							open_it,
-					int							all)
+int		WED_ICAOTable::SelectDisclose(bool open_it, bool all, set<int>* did_open)
 {
 	return 0;
 }

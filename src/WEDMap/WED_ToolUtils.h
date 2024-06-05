@@ -130,6 +130,7 @@ int	Iterate_CollectThings(ISelectable * what, void * ref);				// ref is ptr to v
 int Iterate_CollectRequiredParents(ISelectable * what, void * ref);		// ref is a set of strings that are the required classes.
 int Iterate_CollectChildPointSequences(ISelectable * what, void * ref);	// ref is a ptr to a vector<IGISPointSequence *>
 int Iterate_CollectEntities  (ISelectable * what, void * ref);			// ref is a ptr to a vector<IGISEntity *>
+int Iterate_CollectIsOrChildEntities(ISelectable* what, void* ref);		// ref is a ptr to a vector<IGISEntity *>, gets also children entities
 int Iterate_CollectEntitiesUV(ISelectable * what, void * ref);			// ref is a ptr to a vector<IGISEntity *>  - only take entities with UV maps!
 
 //---------------------------------------------------------------------------------------------------------------------------------

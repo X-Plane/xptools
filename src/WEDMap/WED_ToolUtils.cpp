@@ -649,6 +649,18 @@ int Iterate_CollectChildPointSequences(ISelectable * what, void * ref)
 	return 0;
 }
 
+int Iterate_CollectIsOrChildEntities(ISelectable* what, void* ref)
+{
+	auto container = (vector<IGISEntity*> *) ref;
+
+	if (auto who = dynamic_cast<IGISEntity*>(what))
+		container->push_back(who);
+
+	if (auto c = dynamic_cast<IGISComposite*>(what))
+		for (int n = c->GetNumEntities() - 1; n >= 0; n--)
+			Iterate_CollectIsOrChildEntities(c->GetNthEntity(n), ref);
+	return 0;
+}
 
 int Iterate_CollectEntities(ISelectable * what, void * ref)
 {

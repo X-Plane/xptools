@@ -100,9 +100,7 @@ public:
 						int							end_y,
 						int							is_toggle);
 	virtual	void	SelectionEnd(void);
-	virtual	int		SelectDisclose(
-						int							open_it,
-						int							all);
+	virtual	int		SelectDisclose(bool open_it, bool all, set<int>* change_set = nullptr);
 
 	virtual	int		TabAdvance(
 						int&						io_x,
@@ -207,7 +205,7 @@ private:
 
 	IResolver *					mResolver;
 
-	hash_map<int,int>			mOpen;
+	unordered_map<int,int>		mOpen;
 
 	int							mVertical;
 	int							mDynamicCols;

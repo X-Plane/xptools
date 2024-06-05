@@ -98,6 +98,7 @@ private:
 	GUI_TextTableSide				mTextTableSide;
 
 	WED_PropertyTable				mPropertyTable;
+	set<int>						mAutoOpened;
 };
 
 #endif /* WED_PROPERTYPANE_H */

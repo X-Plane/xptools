@@ -240,9 +240,7 @@ void	WED_LibraryListAdapter::SelectionEnd(void)
 {
 }
 
-int		WED_LibraryListAdapter::SelectDisclose(
-			int							open_it,
-			int							all)
+int		WED_LibraryListAdapter::SelectDisclose(bool open_it, bool all, set<int>* did_open)
 {
 	/* Test if the current selection is not a file
 	* If it is not a file, do what it needs to do

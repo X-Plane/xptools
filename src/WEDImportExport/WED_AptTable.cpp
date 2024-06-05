@@ -213,9 +213,7 @@ void	WED_AptTable::SelectionEnd(void)
 {
 }
 
-int		WED_AptTable::SelectDisclose(
-					int							open_it,
-					int							all)
+int		WED_AptTable::SelectDisclose(bool open_it, bool all, set<int>* did_open)
 {
 	return 0;
 }

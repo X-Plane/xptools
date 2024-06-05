@@ -1033,22 +1033,33 @@ void	WED_DoSelectPolygon(IResolver * resolver)
 
 int		WED_CanSelectConnected(IResolver * resolver)
 {
-	ISelection * sel = WED_GetSelect(resolver);
-	if (sel->GetSelectionCount() == 0) return 0;
-	return 1;
+	vector<WED_Thing*>	things;
+	ISelection* sel = WED_GetSelect(resolver);
+	sel->IterateSelectionOr(Iterate_CollectThings, &things);
+
+	for (auto t : things)
+	{
+		if (t->CountSources())
+			return 1;
+		set<WED_Thing*> v;
+		t->GetAllViewers(v);
+		if (v.size())
+			return 1;
+	}
+	return 0;
 }
 
 void	WED_DoSelectConnected(IResolver * resolver)
 {
 	vector<WED_Thing *>	things;
 	ISelection * sel = WED_GetSelect(resolver);
-	IOperation * op = dynamic_cast<IOperation *>(sel);
 	sel->IterateSelectionOr(Iterate_CollectThings,&things);
 	if (things.empty()) return;
-	op->StartOperation("Select Connected");
 	set<WED_Thing *>	visited, to_visit;
 	std::copy(things.begin(),things.end(), inserter(to_visit,to_visit.end()));
 
+	IOperation* op = dynamic_cast<IOperation*>(sel);
+	op->StartOperation("Select Connected");
 	while(!to_visit.empty())
 	{
 		WED_Thing * i = *to_visit.begin();
@@ -1073,6 +1084,67 @@ void	WED_DoSelectConnected(IResolver * resolver)
 	}
 	op->CommitOperation();
 }
+
+int		WED_CanSelectHidden(IResolver* resolver)
+{
+	ISelection* sel = WED_GetSelect(resolver);
+	vector<IGISEntity*>	ige;
+	sel->IterateSelectionOr(Iterate_CollectIsOrChildEntities, &ige);
+	for (auto i : ige)
+		if (auto e = dynamic_cast<WED_Entity*>(i))
+			if(e->GetHidden())
+				return 1;
+	return 0;
+}
+
+void	WED_DoSelectHidden(IResolver* resolver)
+{
+	ISelection* sel = WED_GetSelect(resolver);
+	vector<IGISEntity*>	ige;
+	sel->IterateSelectionOr(Iterate_CollectIsOrChildEntities, &ige);
+
+	IOperation* op = dynamic_cast<IOperation*>(sel);
+	op->StartOperation("Select Hidden");
+
+	sel->Clear();
+	for (auto i : ige)
+		if (auto e = dynamic_cast<WED_Entity*>(i))
+			if (e->GetHidden())
+				sel->Insert(i);
+
+	op->CommitOperation();
+}
+
+int		WED_CanSelectLocked(IResolver* resolver)
+{
+	ISelection* sel = WED_GetSelect(resolver);
+	vector<IGISEntity*>	ige;
+	sel->IterateSelectionOr(Iterate_CollectIsOrChildEntities, &ige);
+	for (auto i : ige)
+		if (auto e = dynamic_cast<WED_Entity*>(i))
+			if (e->GetLocked())
+				return 1;
+	return 0;
+}
+
+void	WED_DoSelectLocked(IResolver* resolver)
+{
+	ISelection* sel = WED_GetSelect(resolver);
+	vector<IGISEntity*>	ige;
+	sel->IterateSelectionOr(Iterate_CollectIsOrChildEntities, &ige);
+
+	IOperation* op = dynamic_cast<IOperation*>(sel);
+	op->StartOperation("Select Locked");
+
+	sel->Clear();
+	for (auto i : ige)
+		if (auto e = dynamic_cast<WED_Entity*>(i))
+			if (e->GetLocked())
+				sel->Insert(i);
+
+	op->CommitOperation();
+}
+
 
 void WED_select_zero_recursive(WED_Thing * t, set<WED_GISEdge *> *s)
 {

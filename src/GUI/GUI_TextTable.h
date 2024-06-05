@@ -227,9 +227,7 @@ public:
 						int							end_y,
 						int							is_toggle)=0;
 	virtual	void	SelectionEnd(void)=0;
-	virtual	int		SelectDisclose(
-						int							open_it,
-						int							all)=0;		// return true if you support this op.
+	virtual	int		SelectDisclose(bool open_it, bool all, set<int>* did_open = nullptr)=0;		// return true if you support this op
 
 	virtual	int		TabAdvance(
 						int&						io_x,
