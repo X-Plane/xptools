@@ -1531,7 +1531,7 @@ struct	preview_object : public WED_PreviewItem {
 //			draw_obj_at_ll(tman, o, loc, agl, obj->GetHeading(), g, zoomer);
 		}
 		else if (rmgr->GetAGP(vpath, agp))
-			draw_agp_at_ll(tman, agp, loc, agl, obj->GetHeading(), g, zoomer, preview_level);
+			draw_agp_at_ll(tman, agp, loc, agl, obj->GetHeading() + zoomer->GetRotation(loc), g, zoomer, preview_level);
 		else
 		{
 			loc = zoomer->LLToPixel(loc);

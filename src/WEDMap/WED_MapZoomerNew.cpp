@@ -272,10 +272,10 @@ double WED_MapZoomerNew::GetRotation(const Point2& p) const
 		Point2 pt(p);
 		pt.x_ = min(max(mLogicalBounds[0], pt.x()), mLogicalBounds[2]);
 		pt.y_ = min(max(mLogicalBounds[1], pt.y()), mLogicalBounds[3]);
-
+#if FULL_EQUATIONS
 		auto as = sinr(pt.y());                       // todo: create aproximation, this really takes long.
 		auto ac = cosr(pt.y());                       // if any kind of precision is needed, zoom is high
-		auto as2 = sinr(pt.y() + 1e-3 );               // and rotation for anything visible very small, << 1deg
+		auto as2 = sinr(pt.y() + 1e-3);               // and rotation for anything visible very small, << 1deg
 		auto ac2 = cosr(pt.y() + 1e-3);
 		auto bs = sinr(pt.x() - mLonCenter);
 		auto bc = cosr(pt.x() - mLonCenter);
@@ -283,8 +283,10 @@ double WED_MapZoomerNew::GetRotation(const Point2& p) const
 		double dx = (ac2 - ac) * bs;
 		double dy = (mLatCenterCOS * (as2 -as) - mLatCenterSIN * (ac2 - ac) * bc);
 
-		double rotation = atan2f(dx, dy) * RAD_TO_DEG; // float is enough precision, atan2 takes REALLY long
-
+		double rotation = atan2(dx, dy) * RAD_TO_DEG;
+#else
+		double rotation = -(pt.x() - mLonCenter) * sinr(pt.y());
+#endif
 		if (mScale.Pix2DegLat() > THR_GNOMONIC * 0.3)
 		{
 			double blend = min(0.7, (THR_GNOMONIC - mScale.Pix2DegLat()) / THR_GNOMONIC) / 0.7;
