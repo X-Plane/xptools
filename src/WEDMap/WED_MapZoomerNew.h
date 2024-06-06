@@ -62,7 +62,6 @@ public:
 
 			Point2	PixelToLL(const Point2& p) const;
 			Point2	LLToPixel(const Point2& p) const;
-			pair<Point2, double> LLToPixelr(const Point2& p) const;
 
 			void	PixelToLLv(Point2 * dst, const Point2 * src, int n) const;
 			void	LLToPixelv(Point2 * dst, const Point2 * src, int n) const;
@@ -98,7 +97,6 @@ public:
 							double&	outSouth,
 							double&	outEast,
 							double&	outNorth);
-
 
 	// Scrolling operations
 			void	ZoomShowAll(void);				// Zoom out to reveal the whole map
@@ -172,22 +170,27 @@ private:
 	double	mLatCenterCOS, mLatCenterSIN;
 	double  mCenterCOS;
 	long long mCacheKey;
-	double  mMapSize;
+	double  mMapSize;                          // width of visible map, normalized. 1.0 = whole world
 
 	class mapScale {
 	public:
-		mapScale(void) : mDegLat2Pixel(1.0), mPixel2DegLat(1.0), mPPM(1.0) {}
+		mapScale(void) : mPixel2DegLon(1.0), mPixel2DegLat(1.0), mPPM(1.0) {}
 
-		void   operator= (double Pixel2DegLat);
-		double operator()(void) const { return mPixel2DegLat; }
-		double inv(void) const { return mDegLat2Pixel; }
+		void set(double PPM, double LatCenterDeg, double altitude_msl = 0.0);
+
+		double Pix2DegLat() const { return mPixel2DegLat; }
+		double Pix2DegLon() const { return mPixel2DegLon; }
+		double Deg2PixLat() const { return mDeg2PixelLat; }
+		double Deg2PixLon() const { return mDeg2PixelLon; }
 		double ppm(void) const { return mPPM; }
 	private:
 		double	mPixel2DegLat;
-		double	mDegLat2Pixel;
+		double	mPixel2DegLon;
+		double	mDeg2PixelLat;
+		double	mDeg2PixelLon;
 		double	mPPM;
 	};
-	mapScale	mPixel2DegLat;
+	mapScale	mScale;
 };
 
 #endif

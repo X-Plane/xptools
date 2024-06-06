@@ -13,6 +13,9 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 2.6.0b3
+   - minor accuracy improvement in map projection for very large objetcs
+
 WED 2.6.0b2 6/3/24
    Features:
    - full scenery import menu function
