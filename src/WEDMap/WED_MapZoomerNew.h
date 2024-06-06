@@ -158,14 +158,13 @@ private:
 
 			void	RecalcAspectRatio(void);
 			double	wagner_proj_mult(double lat) const;
-			double	gnomonic_proj_cos(double lat) const;
-
-
-			double  LLToXPixel_gnomonic(const Point2& pt) const;
-			double  LLToYPixel_gnomonic(const Point2& pt) const;
 
 	double	mPixels[4];
 	double	mLogicalBounds[4];
+
+	// values below are dreived from the above, to provide
+	// pre-computed values for faster pixel transformations
+
 	double	mLatCenter;
 	double	mLonCenter;
 	double	mCenterX;

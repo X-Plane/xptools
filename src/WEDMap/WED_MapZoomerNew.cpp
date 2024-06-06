@@ -89,11 +89,6 @@
 #define sinr(x) sin((x) * DEG_TO_RAD)
 #define cosr(x) cos((x) * DEG_TO_RAD)
 
-inline	double	rescale(double s1, double s2, double d1, double d2, double v)
-{
-	return ((v - s1) * (d2 - d1) / (s2 - s1)) + d1;
-}
-
 WED_MapZoomerNew::WED_MapZoomerNew(WED_Camera * c)
 	: cam(c),
 	  mCacheKey(0),
@@ -133,12 +128,6 @@ double	WED_MapZoomerNew::wagner_proj_mult(double lat) const
 {
 	float l(lat);
 	return sqrtf(1.0f-3.0f*sqr(l/180.0f));
-}
-
-double	WED_MapZoomerNew::gnomonic_proj_cos(double lat) const
-{
-	float l(lat * DEG_TO_RAD);
-	return cosf(l);
 }
 
 Point2	WED_MapZoomerNew::PixelToLL(const Point2& p) const
