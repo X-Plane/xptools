@@ -176,7 +176,12 @@ private:
 	public:
 		mapScale(void) : mPixel2DegLon(1.0), mPixel2DegLat(1.0), mPPM(1.0) {}
 
-		void set(double PPM, double LatCenterDeg, double altitude_msl = 0.0);
+		void set(double PPM, double LatCenterDeg, double altitude_msl = 300.0);
+		// why default 300m ? Well, WED doesn't let users set altitudes for now.
+		// Advertised WYSIWYG accuracy is 'around 1 in 10000' and there are in fact multiple nitty
+		// details on both sim and WED side that are in the way of reliably doing better than that.
+		// So set map scale for everybody by half that amount higher, aka 'best on average for 
+		// airports from sealevel to 2000 ft MSL'.
 
 		double Pix2DegLat() const { return mPixel2DegLat; }
 		double Pix2DegLon() const { return mPixel2DegLon; }

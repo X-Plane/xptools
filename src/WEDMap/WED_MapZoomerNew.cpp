@@ -96,7 +96,7 @@
 
 #define USE_GRS80 1
 
-// in N-S direction: prime vertical radius N, some 6378 to 6400 km
+// scale in E-W direction: prime vertical radius N, some 6378 to 6400 km
 static double term1(double lat)
 {
 	double s = sinr(lat);
@@ -106,7 +106,7 @@ static double N_GRS80(double lat)
 {
 	return EARTH_EQ_RADIUS * term1(lat);
 }
-// in E-W direction: meridional radius M, some 6335 to 6400 km, multiply by cos(lat) as usual
+// scale in N-S direction: meridional radius M, some 6335 to 6400 km, multiply by cos(lat) as usual
 static double M_GRS80(double lat)
 {
 	double t = term1(lat);
@@ -525,7 +525,7 @@ void WED_MapZoomerNew::mapScale::set(double PPM, double LatCenterDeg, double Alt
 {
 	mPPM = PPM;
 	double Pixel2DegLat = MTR_TO_DEG_LAT / PPM;
-	double altitude_correction = (AltitudeMSL + EARTH_MEAN_RADIUS) / EARTH_MEAN_RADIUS;
+	double altitude_correction = EARTH_MEAN_RADIUS / (AltitudeMSL + EARTH_MEAN_RADIUS);
 	Pixel2DegLat *= altitude_correction;
 #if USE_GRS80
 	mPixel2DegLat = Pixel2DegLat * EARTH_MEAN_RADIUS / M_GRS80(LatCenterDeg);
