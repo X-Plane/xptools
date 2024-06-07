@@ -72,53 +72,49 @@ int		GetFilePathFromUser(
 					const char *		inAction,
 					int					inID,
 					char *				outFileName,
-					int					inBufSize)
+					int					inBufSize,
+					const char*			initialPath)
 {
-	BROWSEINFOW	bif = { 0 };
 	OPENFILENAMEW	ofn = { 0 };
+	ofn.lStructSize = sizeof(ofn);
 
 	WCHAR file_name[MAX_PATH] = { 0 };
 	ofn.lpstrFile = file_name;
+	ofn.nMaxFile = MAX_PATH;
 
 	ofn.lpstrTitle = convert_str_to_utf16(inPrompt).c_str();
+
+	string_utf16 dummy_path;
+	if (initialPath) // hack to overcome windows remembering and overriding an initial path asked for previously
+	{
+		string_utf16 dummy2 = convert_str_to_utf16(initialPath).c_str();
+		if (initialPath[strlen(initialPath) - 1] != '\\')
+			dummy2 += L"\\";
+		dummy_path = dummy2;
+		dummy2 += L"select_file(s)";
+		memcpy(file_name, dummy2.c_str(), dummy2.size() * 2 + 1);
+
+		char tmp[16];
+		sprintf(tmp, "%08x", (unsigned int)time(0));  // ask for a different, non-existing file EVERY. DARN. TIME.
+		dummy_path += convert_str_to_utf16(tmp);       // this causes windows to use the 1st fallback - lpstrFile
+		ofn.lpstrInitialDir = dummy_path.c_str();
+	}
 
 	BOOL result;
 	switch(inType) {
 	case getFile_Open:
 	case getFile_Save:
 	{
-		ofn.lStructSize = sizeof(ofn);
 		ofn.lpstrFilter = L"All Files\000*.*\000";
-		ofn.nFilterIndex = 1;	// Start with .acf files
+		ofn.nFilterIndex = 1;
 		
-		
-		ofn.lpstrFile = file_name;
-		if (inType != getFile_Save)
-			outFileName[0] = 0;		// No initialization for open.
-		ofn.nMaxFile = inBufSize;		// Guess string length?
-		ofn.lpstrFileTitle = NULL;	// Don't want file name w/out path
-
 		result = (inType == getFile_Open) ? GetOpenFileNameW(&ofn) : GetSaveFileNameW(&ofn);
-		
-		strcpy(outFileName, convert_utf16_to_str(file_name).c_str());
-		return (result) ? 1 : 0;
-	}
-	case getFile_OpenImages:
-	{
-		ofn.lStructSize = sizeof(ofn);
-		ofn.lpstrFilter = L"GeoTiff (*.tif)\0*.tif\0PNG (*.png)\0*.png\0JPEG (*.jpg, *.jpeg)\0*.jpg;*.jpeg\0BMP (*.bmp)\0*.bmp\0DDS (*.dds)\0*.dds\0\0\0";
-		ofn.nFilterIndex = 1;	// Start with .acf files
-
-		if (inType != getFile_Save)
-			outFileName[0] = 0;		// No initialization for open.
-		ofn.nMaxFile = inBufSize;		// Guess string length?
-		ofn.lpstrFileTitle = NULL;	// Don't want file name w/out path
-
-		result = (inType == getFile_OpenImages) ? GetOpenFileNameW(&ofn) : GetSaveFileNameW(&ofn);
+		strncpy(outFileName, convert_utf16_to_str(file_name).c_str(), inBufSize);
 		return (result) ? 1 : 0;
 	}
 	case getFile_PickFolder:
 	{
+		BROWSEINFOW	bif = { 0 };
 		bif.hwndOwner = NULL;
 		bif.pidlRoot = NULL;
 		bif.pszDisplayName = NULL;
@@ -127,11 +123,9 @@ int		GetFilePathFromUser(
 		bif.lParam = NULL;
 		LPITEMIDLIST items = SHBrowseForFolderW(&bif);
 		if (items == NULL) return 0;
-		result = 0;
 
-		if (SHGetPathFromIDListW(items, file_name))
+		if (result = SHGetPathFromIDListW(items, file_name))
 		{
-			result = 1;
 			strcpy(outFileName, convert_utf16_to_str(file_name).c_str());
 		}
 		IMalloc * imalloc = 0;
@@ -140,7 +134,7 @@ int		GetFilePathFromUser(
 			imalloc->Free(items);
 			imalloc->Release();
 		}
-		return result ? 1 : 0;
+		return result;
 	}
 	}
 	return 0;
@@ -149,25 +143,40 @@ int		GetFilePathFromUser(
 char *	GetMultiFilePathFromUser(
 					const char * 		inPrompt,
 					const char *		inAction,
-					int					inID)
+					int					inID,
+					const char *		initialPath)
 {
 	OPENFILENAMEW	ofn = { 0 };
-	BOOL result;
-	WCHAR * buf = (WCHAR *) malloc(1024 * 1024);
-
 	ofn.lStructSize = sizeof(ofn);
-	ofn.lpstrFilter = L"All Files\000*.*\000";
-	ofn.nFilterIndex = 1;
+	WCHAR * buf = (WCHAR *) malloc(1024 * 1024);
+	buf[0] = 0;
 	ofn.lpstrFile = buf;
-	buf[0] = 0;		// No initialization for open.
-	ofn.nMaxFile = 1024 * 1024;		// Guess string length?
-	ofn.lpstrFileTitle = NULL;	// Don't want file name w/out path
-	ofn.lpstrTitle = convert_str_to_utf16(inPrompt).c_str();
-	ofn.Flags =  OFN_ALLOWMULTISELECT | OFN_EXPLORER | OFN_FILEMUSTEXIST;
-	
-	result = GetOpenFileNameW(&ofn);
+	ofn.nMaxFile = 1024 * 1024;
 
-	if(result)
+	ofn.lpstrTitle = convert_str_to_utf16(inPrompt).c_str();
+	ofn.lpstrFilter = L"All Files\0*.*\0\0\0";
+	ofn.nFilterIndex = 1;
+
+	ofn.Flags = OFN_ALLOWMULTISELECT | OFN_EXPLORER | OFN_FILEMUSTEXIST;
+	ofn.lpstrFileTitle = NULL;	// Don't want output that delivers file names w/out path
+
+	string_utf16 dummy_path;
+	if (initialPath) // hack to overcome windows remembering and overriding an initial path asked for previously
+	{
+		string_utf16 dummy2 = convert_str_to_utf16(initialPath).c_str();
+		if (initialPath[strlen(initialPath) - 1] != '\\')
+			dummy2 += L"\\";
+		dummy_path = dummy2;
+		dummy2 += L"select_file(s)";
+		memcpy(buf, dummy2.c_str(), dummy2.size() * 2 + 1);
+
+		char tmp[16];
+		sprintf(tmp, "%08x", (unsigned int) time(0));  // ask for a different, non-existing file EVERY. DARN. TIME.
+		dummy_path += convert_str_to_utf16(tmp);       // this causes windows to use the 1st fallback - lpstrFile
+		ofn.lpstrInitialDir = dummy_path.c_str();
+	}
+
+	if(GetOpenFileNameW(&ofn))
 	{
 		vector<string>	files;
 		string_utf16 path(buf);
@@ -222,7 +231,11 @@ LRESULT CALLBACK ConfirmMessageProc(int message, WPARAM wParam, LPARAM lParam)
 {
 	if (message== HCBT_ACTIVATE)
 	{
-		if(yes_text)    SetDlgItemTextA((HWND) wParam, IDYES, yes_text);
+		if (yes_text)
+		{
+			SetDlgItemTextA((HWND)wParam, IDYES, yes_text);
+			SendMessage(GetDlgItem((HWND)wParam, IDYES), TB_SETBUTTONSIZE, 0, MAKELPARAM(80, 30));
+		}
 		if(no_text)     SetDlgItemTextA((HWND) wParam, IDNO, no_text);
 		if(cancel_text) SetDlgItemTextA((HWND) wParam, IDCANCEL, cancel_text);
 	}

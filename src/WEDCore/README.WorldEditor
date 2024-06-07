@@ -15,6 +15,7 @@ CHANGE HISTORY
 
 WED 2.6.0b3
    - minor accuracy improvement in map projection for very large objetcs
+   - force default dir for most file open dialogs to be current scenery pack
 
 WED 2.6.0b2 6/3/24
    Features:

@@ -73,8 +73,7 @@ string GetTempFilesFolder();
 enum {
 	getFile_Open,
 	getFile_Save,
-	getFile_PickFolder,
-	getFile_OpenImages //Only allows supported image types to be chosen, windows only
+	getFile_PickFolder
 };
 int		GetFilePathFromUser(
 					int					inType,
@@ -82,13 +81,15 @@ int		GetFilePathFromUser(
 					const char *		inAction,
 					int					inID,
 					char *				outFileName,
-					int					inBufSize);
+					int					inBufSize,
+					const char*			initialPath = nullptr);
 
 // 0-len-terminated list of paths, you must free!
 char *	GetMultiFilePathFromUser(
 					const char * 		inPrompt,
 					const char *		inAction,
-					int					inID);
+					int					inID,
+					const char *		initialPath = nullptr);
 
 /*
  * DoUserAlert puts up an alert dialog box with the message and an OK button.

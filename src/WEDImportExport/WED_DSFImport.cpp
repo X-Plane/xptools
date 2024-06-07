@@ -28,12 +28,12 @@
 #include "PlatformUtils.h"
 #include "FileUtils.h"
 #include "STLUtils.h"
+#include "ILibrarian.h"
 
 #include "WED_AptIE.h"
 #include "WED_EnumSystem.h"
 #include "WED_GISUtils.h"
 #include "WED_MetadataUpdate.h"
-#include "WED_SimpleBoundaryNode.h"
 
 #include "WED_Airport.h"
 #include "WED_DrapedOrthophoto.h"
@@ -1370,8 +1370,11 @@ int		WED_CanImportDSF(IResolver * resolver)
 void	WED_DoImportDSF(IResolver * resolver)
 {
 	WED_Thing * wrl = WED_GetWorld(resolver);
+	ILibrarian* lib = WED_GetLibrarian(resolver);
+	string def_dir("Earth nav data");
+	lib->LookupPath(def_dir);
 
-	char * path = GetMultiFilePathFromUser("Import DSF file...", "Import", FILE_DIALOG_IMPORT_DSF);
+	char * path = GetMultiFilePathFromUser("Import DSF file...", "Import", FILE_DIALOG_IMPORT_DSF, def_dir.c_str());
 	if(path)
 	{
 		char * free_me = path;

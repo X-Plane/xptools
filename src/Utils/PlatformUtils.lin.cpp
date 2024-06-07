@@ -100,13 +100,15 @@ int		GetFilePathFromUser(
 					const char *		inAction,
 					int					inID,
 					char * 				outFileName,
-					int					inBufSize)
+					int					inBufSize,
+					const char*			initialPath)
 {
     int ret = 0;
 
     Fl_Native_File_Chooser * mFileDialog = new Fl_Native_File_Chooser();
 
     mFileDialog->title(inPrompt);
+	if (initalPath) mFileDialog->directory(initialPath);
 
 	switch(inType)
 	{
@@ -124,7 +126,6 @@ int		GetFilePathFromUser(
        ret = 1;
     }
 
-
     if(mFileDialog) delete mFileDialog;
     return ret ;
 }
@@ -132,13 +133,15 @@ int		GetFilePathFromUser(
 char *	GetMultiFilePathFromUser(
 					const char * 		inPrompt,
 					const char *		inAction,
-					int					inID)
+					int					inID,
+					const char *		initalPath)
 {
     char * ret = NULL;
     Fl_Native_File_Chooser * mFileDialog = new Fl_Native_File_Chooser();
 
     mFileDialog->title(inPrompt);
     mFileDialog->type(Fl_Native_File_Chooser::BROWSE_MULTI_FILE);
+	if (initalPath) mFileDialog->directory(initialPath);
 
     if(mFileDialog->show() == 0)
     {

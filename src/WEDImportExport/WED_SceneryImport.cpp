@@ -72,7 +72,9 @@ bool WED_SceneryImport(string scn_path, WED_Thing* wrl, bool limited)
 void WED_DoImportScenery(IResolver * resolver)
 {
 	char tmp[200];
-	bool success = GetFilePathFromUser(getFile_PickFolder, "Import all scenery files from ...", "Import", FILE_DIALOG_IMPORT_DSF, tmp, sizeof(tmp));
+    bool success = GetFilePathFromUser(getFile_PickFolder, "Import all scenery files from ...", "Import", FILE_DIALOG_IMPORT_DSF,
+        tmp, sizeof(tmp));
+
     string dir(tmp);
 
 	if (dir.find("Earth nav data") != dir.size() - sizeof("Earth nav data"))

@@ -68,7 +68,6 @@ int		GetFilePathFromUserInternal(
 					int					inMulti,
 					vector<string>&		outFiles)
 {
-    int return_val = 0;
     if(inType == getFile_Open || inType == getFile_PickFolder)
     {
         NSOpenPanel * panel = [NSOpenPanel openPanel];
@@ -85,7 +84,7 @@ int		GetFilePathFromUserInternal(
             {
                 outFiles.push_back(string([[url path] UTF8String]));
             }
-            return_val = 1;
+            return 1;
         }
     }
     else // in_type == getFile_Save
@@ -98,11 +97,11 @@ int		GetFilePathFromUserInternal(
         {
             NSURL * url = [panel URL];
             outFiles.push_back(string([[url path] UTF8String]));
-            return_val = 1;
+            return 1;
         }
     }
 
-	return return_val;
+	return 0;
 }
 
 int		GetFilePathFromUser(
@@ -111,11 +110,11 @@ int		GetFilePathFromUser(
 					const char *		inAction,
 					int					inID,
 					char * 				outFileName,
-					int					inBufSize)
+					int					inBufSize,
+					const char *		initialPath)
 {
 	vector<string> files;
-	int result = GetFilePathFromUserInternal(inType,inPrompt,inAction, outFileName, inID, 0, files);
-	if(!result)
+	if(!GetFilePathFromUserInternal(inType,inPrompt,inAction, outFileName, inID, 0, files))
 		return 0;
 	if(files.size() != 1)
 		return 0;
@@ -126,11 +125,11 @@ int		GetFilePathFromUser(
 char *	GetMultiFilePathFromUser(
 					const char * 		inPrompt,
 					const char *		inAction,
-					int					inID)
+					int					inID,
+					const char *		initialPath)
 {
 	vector<string> files;
-	int result = GetFilePathFromUserInternal(getFile_Open,inPrompt,inAction, "", inID, 1, files);
-	if(!result)
+	if(!GetFilePathFromUserInternal(getFile_Open,inPrompt,inAction, "", inID, 1, files));
 		return NULL;
 	if(files.size() < 1)
 		return NULL;
