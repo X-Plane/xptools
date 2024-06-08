@@ -108,7 +108,7 @@ int		GetFilePathFromUser(
     Fl_Native_File_Chooser * mFileDialog = new Fl_Native_File_Chooser();
 
     mFileDialog->title(inPrompt);
-	if (initalPath) mFileDialog->directory(initialPath);
+	if (initialPath) mFileDialog->directory(initialPath);
 
 	switch(inType)
 	{
