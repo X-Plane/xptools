@@ -4,7 +4,7 @@
 
 TYPE			:= EXECUTABLE
 CFLAGS			+= -include ./src/Obj/XDefs.h
-CXXFLAGS		+= -include ./src/Obj/XDefs.h
+CXXFLAGS		+= -include ./src/Obj/XDefs.h -Wno-error=format-security
 DEFINES			+= -DUSE_JPEG=1 -DUSE_TIF=1 -DWED=1 -DNO_CGAL=1
 FORCEREBUILD_SUFFIX	:= _wed
 
