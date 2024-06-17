@@ -66,7 +66,8 @@ int		GetFilePathFromUserInternal(
 					const char *		inDefaultFileName,
 					int					inID,
 					int					inMulti,
-					vector<string>&		outFiles)
+					vector<string>&		outFiles,
+					const char *		initialPath)
 {
     if(inType == getFile_Open || inType == getFile_PickFolder)
     {
@@ -77,7 +78,11 @@ int		GetFilePathFromUserInternal(
         [panel setCanCreateDirectories:(inType == getFile_PickFolder || inType == getFile_Save)];
         [panel setPrompt:[NSString stringWithUTF8String:inAction]]; // NOT A TYPO: NSOpenPanel calls the button text the "prompt" and the text on the window the "message"
         [panel setMessage:[NSString stringWithUTF8String:inPrompt]]; // NOT A TYPO: NSOpenPanel calls the button text the "prompt" and the text on the window the "message"
-        if([panel runModal] == NSFileHandlingPanelOKButton)
+		if(initialPath)
+		{
+			[panel setDirectoryURL:[NSURL fileURLWithPath:[NSString stringWithUTF8String:initialPath] isDirectory:true]];
+		}
+		if([panel runModal] == NSFileHandlingPanelOKButton)
         {
             NSArray * urls = [panel URLs];
             for(NSURL * url in urls)
@@ -114,7 +119,7 @@ int		GetFilePathFromUser(
 					const char *		initialPath)
 {
 	vector<string> files;
-	if(!GetFilePathFromUserInternal(inType,inPrompt,inAction, outFileName, inID, 0, files))
+	if(!GetFilePathFromUserInternal(inType,inPrompt,inAction, outFileName, inID, 0, files, initialPath))
 		return 0;
 	if(files.size() != 1)
 		return 0;
@@ -129,7 +134,7 @@ char *	GetMultiFilePathFromUser(
 					const char *		initialPath)
 {
 	vector<string> files;
-	if(!GetFilePathFromUserInternal(getFile_Open,inPrompt,inAction, "", inID, 1, files));
+	if(!GetFilePathFromUserInternal(getFile_Open,inPrompt,inAction, "", inID, 1, files, initialPath))
 		return NULL;
 	if(files.size() < 1)
 		return NULL;
