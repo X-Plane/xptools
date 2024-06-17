@@ -134,6 +134,7 @@ public:
 	{
 		for(int n = 0; n < 7; ++n)
 			req_level_obj[n] = req_level_agp[n] = req_level_fac[n] = -1;
+
 		for(int n = 0; n < dsf_cat_DIM; ++n)
 			bucket_parents[n] = NULL;
 	}
@@ -210,8 +211,26 @@ public:
 	{
 		if(bucket_parents[cat] == NULL)
 		{
-			bucket_parents[cat] = WED_Group::CreateTyped(archive);
-			bucket_parents[cat]->SetName(k_dsf_cat_names[cat]);
+			if (auto g = master_parent->GetNamedChild(k_dsf_cat_names[cat]))
+			{
+				bucket_parents[cat] = g;
+			}
+			else
+			{
+				bucket_parents[cat] = WED_Group::CreateTyped(archive);
+				bucket_parents[cat]->SetName(k_dsf_cat_names[cat]);
+
+				int pos = master_parent->CountChildren();
+				for (int i = cat - 1; i >= 0; i--)
+				{
+					if (auto g = master_parent->GetNamedChild(k_dsf_cat_names[i]))
+					{
+						pos = g->GetMyPosition() + 1;
+						break;
+					}
+				}
+				bucket_parents[cat]->SetParent(master_parent, pos);
+			}
 		}
 		return bucket_parents[cat];
 	}
@@ -717,7 +736,7 @@ public:
 #endif
 
 #if !NO_AG
-		else if(me->dsf_cat_filter & dsf_filter_autogen && (end_match(r, ".ags") || end_match(r, ".agb")))
+		else if(me->dsf_cat_filter & dsf_filter_autogen && !me->filter_on && (end_match(r, ".ags") || end_match(r, ".agb")))
 		{
 			me->want_bezier=false;
 			WED_AutogenPlacement * ags = WED_AutogenPlacement::CreateTyped(me->archive);
@@ -1145,10 +1164,6 @@ public:
 		LOG_MSG("I/DSF Importing binary DSF from %s\n",file_name);
 		int res = DSFReadFile(file_name, malloc, free, &cb, NULL, this);
 
-		for(int i = 0; i < dsf_cat_DIM; ++i)
-		if(bucket_parents[i])
-			bucket_parents[i]->SetParent(master_parent, master_parent->CountChildren());
-
 		return res;
 	}
 
@@ -1165,10 +1180,6 @@ public:
 
 		LOG_MSG("I/DSF Importing text DSF from %s\n",file_name);
 		int ok = Text2DSFWithWriter(file_name, &cb, this);
-
-		for(int i = 0; i < dsf_cat_DIM; ++i)
-		if(bucket_parents[i])
-			bucket_parents[i]->SetParent(master_parent, master_parent->CountChildren());
 
 		return ok != 0 ? dsf_ErrOK : dsf_ErrCouldNotReadFile;
 	}

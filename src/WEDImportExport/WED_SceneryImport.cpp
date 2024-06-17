@@ -35,6 +35,7 @@
 #include "WED_MetadataUpdate.h"
 
 #include "WED_Airport.h"
+#include "WED_ExclusionZone.h"
 #include "WED_Group.h"
 #include "WED_Thing.h"
 
@@ -60,11 +61,46 @@ bool WED_SceneryImport(string scn_path, WED_Thing* wrl, bool limited)
         a->GetICAO(id);
         for (int i = 0; i < id.length(); i++)
             id[i] = toupper(id[i]);
+
+        // Exclusion zones come before any filter tags, i.e are not associated with airports and therefore get imported 
+        // indiscriminately with EVERY airport and even at the off-airport level. So skip exclusions for now.
+        vector<Bbox2p> all_bounds;
+        vector<string> icao_list;
+        icao_list.push_back(id);
         for (auto& d : dsf)
-            DSF_Import_Partial(d.c_str(), a, id);
+            DSF_Import_Partial(d.c_str(), a, dsf_filter_all - dsf_filter_exclusion, all_bounds, icao_list);
     }
     for (auto& d : dsf)
         DSF_Import_Partial(d.c_str(), wrl, "");
+
+    // now try to match the exclusions with the (exclusion-less) airports we got, by geographic overlap.
+    // This may leave some at the world level, despite being part of a nearby airport or associate with the wrong 
+    // airport if they are close.
+    {
+        if(auto ex = wrl->GetNamedChild("Exclusion Zones"))
+        {
+            for (auto a : apts)
+            {
+                Bbox2 bounds;
+                a->GetBounds(gis_Geo, bounds);
+                for (int e = ex->CountChildren() - 1; e >= 0; e--)
+                {
+                    if(auto z = dynamic_cast<WED_ExclusionZone*>(ex->GetNthChild(e)))
+                    {
+                        Bbox2 ex_bounds;
+                        z->GetBounds(gis_Geo, ex_bounds);
+                        if (bounds.overlap(ex_bounds))
+                            z->SetParent(a, 0);
+                    }
+                }
+            }
+            if (ex->CountChildren() == 0)
+            {
+                ex->SetParent(0, 0);
+                ex->Delete();
+            }
+        }
+    }
 
     return 1;
 }
