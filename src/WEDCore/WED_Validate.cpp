@@ -2138,6 +2138,29 @@ static void ValidateOneTruckParking(WED_TruckParkingLocation* truck_parking, WED
 		if(park.vpath.size())
 			msgs.push_back(validation_error_t("Custom Trucks are not allowed on the gateway", err_truck_custom, truck_parking, apt));
 	}
+	else if(park.vpath.size())
+	{
+		auto pos = park.vpath.find_first_of(" \t");
+		string cust_truck = park.vpath.substr(0, pos);
+
+		if(!lib_mgr->IsResourceLibrary(cust_truck) && !lib_mgr->IsResourceLocal(cust_truck.c_str()))
+			msgs.push_back(validation_error_t(string("The custom truck defintion '") + cust_truck + "' can not be found.",
+				err_resource_cannot_be_found, truck_parking, apt));
+		else if (lib_mgr->IsResourceDeprecatedOrPrivate(cust_truck))
+			msgs.push_back(validation_error_t(string("The custom truck '") + cust_truck + "' is a non-public library path.",
+				warn_resource_private_or_deprecated, truck_parking, apt));
+
+		if (pos < string::npos)
+		{
+			string cust_cart = park.vpath.substr(pos + 1);
+			if (!lib_mgr->IsResourceLibrary(cust_cart) && !lib_mgr->IsResourceLocal(cust_cart.c_str()))
+				msgs.push_back(validation_error_t(string("The custom service truck cart defintion '") + cust_cart + "' can not be found.",
+					err_resource_cannot_be_found, truck_parking, apt));
+			else if (lib_mgr->IsResourceDeprecatedOrPrivate(cust_cart))
+				msgs.push_back(validation_error_t(string("The custom service truck cart '") + cust_cart + "' is a non-public library path.",
+					warn_resource_private_or_deprecated, truck_parking, apt));
+		}
+	}
 }
 
 MFMemFile * ReadCIFP()

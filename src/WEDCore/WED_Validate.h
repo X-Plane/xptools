@@ -190,6 +190,7 @@ enum validate_error_t
 	warn_taxi_route_name_unusual,
 	warn_truckroutes_but_no_starts,
 	warn_ramp_start_size_implausible,
+	warn_resource_private_or_deprecated,
 	warn_runway_matching_cifp_mislocated,
 	warn_rwy_edge_light_not_matching_center_lights,
 	warn_rwy_misaligned_with_name,

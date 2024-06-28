@@ -14,6 +14,9 @@ menu to view it online.
 CHANGE HISTORY
 
 WED 2.6.0b3
+   Feature:
+   - XPD-14117 custom carts for service trucks GPU, baggage trains
+   Bug fix:
    - minor accuracy improvement in map projection for very large objetcs
    - force default dir for most file open dialogs to be current scenery pack
    - fix duplicated exclusion zones at full scenery import
@@ -22,7 +25,7 @@ WED 2.6.0b3
 WED 2.6.0b2 6/3/24
    Features:
    - full scenery import menu function
-   - new export target 12.1.1 to distinuish string spacing behavior
+   - new export target 12.1.2+ to distinuish string spacing behavior
    Bug fix:
    - minor speed improvements for scenery load, export and upgrade heuristics
    - remove some old XP11 wording in object density menu
@@ -44,7 +47,7 @@ WED 2.6.0b1 5/20/24
    - auto-import when opening scenery packages w/o .xml file for 1st time
    - option to recover from backup with broken .xml files
    - XPD-15379 validate set_AGL, set_MSL within -1000 ... 10,000m, for GW +/-100m
-   - improved string spacing resolution for XP 12.1.5+
+   - improved string spacing resolution for XP 12.1.2+
    Bug fix:
    - fix Obj8 drawing not recognizing ATTR_no_blend threshold values
    - validate ObjectString spacing parameter to be non-zero

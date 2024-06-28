@@ -18,7 +18,8 @@ TRIVIAL_COPY(WED_TruckParkingLocation, WED_GISPoint_Heading)
 WED_TruckParkingLocation::WED_TruckParkingLocation(WED_Archive * a, int i) : WED_GISPoint_Heading(a,i),
 	truck_type    (this,PROP_Name("Truck Type",             XML_Name("truck_parking_spot","type"   )),    ATCServiceTruckType, apt_truck_fuel_prop),
 	number_of_cars(this,PROP_Name("Number of Baggage Cars", XML_Name("truck_parking_spot","number_of_cars")), 3, 1),
-	custom_vehicle(this, PROP_Name("Custom Vehicle",		XML_Name("truck_parking_spot", "custom_veh")), "")
+	custom_vehicle(this, PROP_Name("Custom Vehicle",		XML_Name("truck_parking_spot", "custom_veh")), ""),
+	custom_carts   (this, PROP_Name("Custom Cart(s)",        XML_Name("truck_parking_spot", "custom_cart")), "")
 {
 }
 
@@ -29,7 +30,7 @@ WED_TruckParkingLocation::~WED_TruckParkingLocation()
 void	WED_TruckParkingLocation::SetTruckType(int truckType) { truck_type = truckType; }
 int		WED_TruckParkingLocation::GetTruckType(void) const { return truck_type.value; }
 string	WED_TruckParkingLocation::GetTruckCustom(void) const { return custom_vehicle.value; }
-
+string	WED_TruckParkingLocation::GetTruckCustomCart(void) const { return custom_carts.value; }
 void	WED_TruckParkingLocation::SetNumberOfCars(int numberOfCars) { number_of_cars = numberOfCars; }
 int		WED_TruckParkingLocation::GetNumberOfCars(void) const { return number_of_cars.value; }
 
@@ -47,7 +48,10 @@ void	WED_TruckParkingLocation::Import(const AptTruckParking_t& x, void (* print_
 	else
 		truck_type = tt;
 	number_of_cars = x.train_car_count;
-	custom_vehicle = x.vpath;
+	auto pos = x.vpath.find_first_of(" \t");
+	custom_vehicle = x.vpath.substr(0, pos);
+	if (pos < string::npos && (truck_type.value == atc_ServiceTruck_Baggage_Train || truck_type.value == atc_ServiceTruck_Ground_Power_Unit))
+		custom_carts = x.vpath.substr(pos + 1);
 }
 
 void	WED_TruckParkingLocation::Export(		 AptTruckParking_t& x) const
@@ -58,13 +62,21 @@ void	WED_TruckParkingLocation::Export(		 AptTruckParking_t& x) const
 	x.train_car_count = number_of_cars.value;
 	x.parking_type = ENUM_Export(truck_type.value);
 	x.vpath = custom_vehicle.value;
+	if ((truck_type.value == atc_ServiceTruck_Baggage_Train || truck_type.value == atc_ServiceTruck_Ground_Power_Unit)
+		&& !custom_vehicle.value.empty())
+		x.vpath += " " + custom_carts.value;
 }
 
 void		WED_TruckParkingLocation::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 {
-	if (truck_type.value != atc_ServiceTruck_Baggage_Train && n == PropertyItemNumber(&number_of_cars))
+	if (truck_type.value != atc_ServiceTruck_Baggage_Train && (n == PropertyItemNumber(&number_of_cars)))
 	{
 		info.prop_name = "."; //Hardcoded "Do not display" name
+	}
+	else if ((n == PropertyItemNumber(&custom_carts)) && (custom_vehicle.value.empty() ||
+		(truck_type.value != atc_ServiceTruck_Baggage_Train && truck_type.value != atc_ServiceTruck_Ground_Power_Unit)))
+	{
+		info.prop_name = ".";
 	}
 	else
 	{

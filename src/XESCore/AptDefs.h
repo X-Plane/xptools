@@ -355,10 +355,6 @@ enum {
 	apt_truck_food,
 	apt_truck_gpu,
 	apt_truck_pushback,
-
-	apt_truck_destination_fuel_farm = 0,
-	apt_truck_destination_baggage_hall
-
 };
 
 inline bool apt_code_is_curve(int code) { return code == apt_lin_crv || code == apt_rng_crv || code == apt_end_crv; }
@@ -617,7 +613,7 @@ struct AptTruckParking_t {
 	float						heading;
 	int							parking_type;
 	int							train_car_count;
-	string						vpath;         // optional
+	string						vpath;         // optional custom vehicle object and carts
 };
 typedef vector<AptTruckParking_t> AptTruckParkingVector;
 

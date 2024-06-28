@@ -1685,16 +1685,16 @@ struct	preview_truck : public WED_PreviewItem {
 	{
 		WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 		ITexMgr *	tman = WED_GetTexMgr(resolver);
-		ILibrarian * lmgr = WED_GetLibrarian(resolver);
 		string vpath1, vpath2;
 
 		vpath1 = trk->GetTruckCustom();
-		if(vpath1.empty())
-			switch(trk->GetTruckType()) 
+		if (vpath1.empty())
+		{
+			switch (trk->GetTruckType())
 			{
-			case atc_ServiceTruck_Baggage_Loader:		vpath1 = "lib/airport/vehicles/baggage_handling/belt_loader.obj";break;
-			case atc_ServiceTruck_Baggage_Train:		vpath1 = "lib/airport/vehicles/baggage_handling/tractor.obj";
-														vpath2 = "lib/airport/vehicles/baggage_handling/bag_cart.obj";	break;
+			case atc_ServiceTruck_Baggage_Loader:		vpath1 = "lib/airport/vehicles/baggage_handling/belt_loader.obj"; break;
+			case atc_ServiceTruck_Baggage_Train:		vpath1 = "lib/airport/vehicles/baggage_handling/tractor.obj";	
+														vpath2 = "lib/airport/vehicles/baggage_handling/bag_cart.obj"; break;
 			case atc_ServiceTruck_Crew_Limo:
 			case atc_ServiceTruck_Crew_Car:				vpath1 = "lib/airport/vehicles/servicing/crew_car.obj";			break;
 			case atc_ServiceTruck_Crew_Ferrari:			vpath1 = "lib/airport/vehicles/servicing/crew_ferrari.obj";		break;
@@ -1706,9 +1706,23 @@ struct	preview_truck : public WED_PreviewItem {
 														vpath2 = "lib/airport/vehicles/servicing/GPU.obj";				break;
 			case atc_ServiceTruck_Pushback:				vpath1 = "lib/airport/vehicles/pushback/tug.obj";				break;
 			}
-
+		}
+		else
+		{
+			switch (trk->GetTruckType())
+			{
+			case atc_ServiceTruck_Baggage_Train:		vpath2 = trk->GetTruckCustomCart();
+														if (vpath2.empty())
+															vpath2 = "lib/airport/vehicles/baggage_handling/bag_cart.obj";
+														break;
+			case atc_ServiceTruck_Ground_Power_Unit:	vpath2 = trk->GetTruckCustomCart();		
+														if (vpath2.empty())
+															vpath2 = "lib/airport/vehicles/servicing/GPU.obj";
+														break;
+			}
+		}
 		const XObj8 * o1 = NULL, * o2 = NULL;
-		if(!vpath1.empty() && rmgr->GetObj(vpath1,o1))
+		if(rmgr->GetObj(vpath1,o1))
 		{
 			g->SetState(false,1,false,true,true,true,true);
 			glColor3f(1,1,1);
@@ -1719,14 +1733,13 @@ struct	preview_truck : public WED_PreviewItem {
 
 			if(trk->GetTruckType() == atc_ServiceTruck_Baggage_Train)
 			{
-				rmgr->GetObj(vpath2,o2);
-				if(o2)
-				{
-					double gap = 3.899;
-					Vector2 dirv(sin(trk_heading * DEG_TO_RAD),
-								 cos(trk_heading * DEG_TO_RAD));
-					Vector2 llv = VectorMetersToLL(loc, dirv);
+				double gap = 3.899;
+				Vector2 dirv(sin(trk_heading * DEG_TO_RAD),
+							 cos(trk_heading * DEG_TO_RAD));
+				Vector2 llv = VectorMetersToLL(loc, dirv);
 
+				if(rmgr->GetObj(vpath2,o2))
+				{
 					for(int c = 0; c < trk->GetNumberOfCars(); ++c)
 					{
 						loc -= (llv * gap);
@@ -1734,19 +1747,34 @@ struct	preview_truck : public WED_PreviewItem {
 						gap = 3.598;
 					}
 				}
-			}
-			if(trk->GetTruckType() == atc_ServiceTruck_Ground_Power_Unit)
-			{
-				rmgr->GetObj(vpath2,o2);
-				if(o2)
+				else
 				{
-					double gap = 4.247;
-					Vector2 dirv(sin(trk_heading * DEG_TO_RAD),
-								 cos(trk_heading * DEG_TO_RAD));
-					Vector2 llv = VectorMetersToLL(loc, dirv);
+					loc -= (llv * gap) * 0.5;
+					loc = zoomer->LLToPixel(loc);
+					glColor3f(1, 0, 0);
+					GUI_PlotIcon(g, "map_missing_obj.png", loc.x(), loc.y(), 0, 1.0);
+				}
+			}
+			else if(trk->GetTruckType() == atc_ServiceTruck_Ground_Power_Unit)
+			{
+				double gap = 4.247;
+				// gap = o1->xyz_max[2] - o2->xyz_min[2]; This wont work.
+				// Trailer tongue is animated, vertex extrema not same as bounding box.
+				Vector2 dirv(sin(trk_heading * DEG_TO_RAD),
+							 cos(trk_heading * DEG_TO_RAD));
+				Vector2 llv = VectorMetersToLL(loc, dirv);
 
+				if (rmgr->GetObj(vpath2, o2))
+				{
 					loc -= (llv * gap);
 					draw_obj_at_ll(tman, o2, loc, 0.0, trk_heading, g, zoomer);
+				}
+				else
+				{
+					loc -= (llv * gap) * 0.5;
+					loc = zoomer->LLToPixel(loc);
+					glColor3f(1, 0, 0);
+					GUI_PlotIcon(g, "map_missing_obj.png", loc.x(), loc.y(), 0, 1.0);
 				}
 			}
 		}

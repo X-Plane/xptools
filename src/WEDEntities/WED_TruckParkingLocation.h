@@ -22,6 +22,7 @@ public:
 	void	SetTruckType(int truckType);
 	int		GetTruckType(void) const;
 	string	GetTruckCustom(void) const;
+	string	GetTruckCustomCart(void) const;
 
 	void	SetNumberOfCars(int numberOfCars);
 	int		GetNumberOfCars(void) const;
@@ -38,6 +39,7 @@ private:
 	WED_PropIntEnum			truck_type;
 	WED_PropIntText			number_of_cars;
 	WED_PropStringText		custom_vehicle;
+	WED_PropStringText		custom_carts;
 };
 
 

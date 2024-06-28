@@ -1076,12 +1076,16 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 			else
 			{
 				Jetway_t j;
+				string tmp;
 				if (TextScanner_FormatScan(s, "iTT|",
 					&rec_code,
-					&outApts.back().truck_parking.back().vpath) < 2)
+					&outApts.back().truck_parking.back().vpath,
+					&tmp) < 2)
 				{
 					ok = "Error: Illegal custom truck";
 				}
+				else if (!tmp.empty())
+					outApts.back().truck_parking.back().vpath += " " + tmp;
 			}
 			break;
 
