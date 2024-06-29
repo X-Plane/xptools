@@ -89,6 +89,43 @@ WED_LibraryPane::~WED_LibraryPane()
 {
 }
 
+int	WED_LibraryTextTable::CellGetHelpTip(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, string& tip)
+{
+	if (cell_x == 0)
+	{
+		auto path = mAdap->GetNthCacheIndex(cell_y, true);
+		if (mAdap->mLibrary->GetResourceType(path) >= res_Object)
+		{
+			if (mAdap->mLibrary->IsResourceLocal(path))
+				tip = path;
+			else
+			{
+				tip = mAdap->mLibrary->GetResourcePath(path);
+				int i = tip.rfind("default scenery");
+				if (i > 0)
+					i += sizeof("default scenery");
+				else
+					i = tip.rfind("Custom Scenery") + sizeof("Custom Scenery");
+				tip.erase(0, i);
+			}
+			return 1;
+		}
+	}
+	else
+	{
+		tip.clear();
+		if (mAdap->mCache[cell_y].hasSeasons) tip = ",seaonally";
+		if (mAdap->mCache[cell_y].hasRegions) tip += ",regionally";
+		if (mAdap->mCache[cell_y].variants)   tip += ",randomly";
+		if (tip.length() > 0)
+		{
+			tip = string("Varies ") + tip.substr(1);
+			return 1;
+		}
+	}
+	return 0;
+}
+
 int		WED_LibraryPane::MouseMove(int x, int y)
 {
 	int b[4];

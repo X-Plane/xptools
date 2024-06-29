@@ -36,6 +36,9 @@ class	WED_MapPane;
 class	WED_LibraryPreviewPane;
 
 class WED_LibraryListAdapter : public GUI_TextTableProvider, public GUI_SimpleTableGeometry, public GUI_TextTableHeaderProvider, public GUI_Broadcaster, public GUI_Listener {
+
+friend class WED_LibraryTextTable;
+
 public:
 					 WED_LibraryListAdapter(WED_LibraryMgr * who);
 	virtual			~WED_LibraryListAdapter();
@@ -158,7 +161,7 @@ public:
 							GUI_Broadcaster *		inSrc,
 							intptr_t				inMsg,
 							intptr_t				inParam);
-	
+
 private:
 		/* What is a prefix and how do I use it? A guide about how to use
 		* mCache and mOpen with all their related methods with the new prefix system.

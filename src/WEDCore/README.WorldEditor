@@ -14,8 +14,11 @@ menu to view it online.
 CHANGE HISTORY
 
 WED 2.6.0b3
-   - minor accuracy improvement in map projection for very large objetcs
+   Features:
    - force default dir for most file open dialogs to be current scenery pack
+   - make ToolTips in LibraryList more meaningful
+   Bug fix:
+   - minor accuracy improvement in map projection for very large objetcs
    - fix duplicated exclusion zones at full scenery import
    - WED-1507 fix exclusion polygons still green when locked
 
