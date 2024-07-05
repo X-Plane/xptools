@@ -62,6 +62,8 @@
 
 #include "tesselator.h"
 #include <time.h>
+#include <sstream>
+#include <iostream>
 
 #if DEV
 #include "PerfUtils.h"
@@ -77,18 +79,12 @@ DSF_export_info_t::DSF_export_info_t(IResolver* resolver) : DockingJetways(true)
 	if (resolver)
 	{
 		inDoc = dynamic_cast<WED_Document*>(resolver);
-		auto dsf = inDoc->ReadStringPref("export/last", "", IDocPrefs::pref_type_doc);
+		auto prev_dsf = inDoc->ReadStringPref("export/last", "", IDocPrefs::pref_type_doc);
 
-		int last_pos = 0;
-		for (int pos = 0; pos < dsf.size(); pos++)
-		{
-			if (dsf[pos] == ' ' || pos == dsf.size() - 1)
-			{
-				pos++;
-				previous_dsfs.insert(dsf.substr(last_pos, pos - last_pos));
-				last_pos = pos;
-			}
-		}
+		stringstream prev_ss(prev_dsf);
+		string tmp;
+		while(getline(prev_ss, tmp, ' '))
+			previous_dsfs.insert(tmp);
 	}
 	else
 		inDoc = nullptr;

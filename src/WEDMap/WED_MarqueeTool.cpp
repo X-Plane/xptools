@@ -127,7 +127,7 @@ void	WED_MarqueeTool::EndEdit(void)
 
 		if (has_airport)
 		{
-			if(ConfirmMessage("Really move whole Airport ?", "Yes, move it", "No, cancel move"))
+			if(ConfirmMessage("Really move whole Airport ?", "Move it", "Cancel"))
 				op->CommitOperation();
 			else
 				op->AbortOperation();

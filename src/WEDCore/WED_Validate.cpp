@@ -51,6 +51,7 @@
 #include "WED_RoadNode.h"
 #include "WED_Taxiway.h"
 #include "WED_TaxiRoute.h"
+#include "WED_TerPlacement.h"
 #include "WED_TruckDestination.h"
 #include "WED_TruckParkingLocation.h"
 #include "WED_TowerViewpoint.h"
@@ -611,19 +612,16 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 
 	if(who->GetClass() == WED_FacadePlacement::sClass)
 		ValidateOneFacadePlacement(who, msgs, parent_apt);
-
-	if(who->GetClass() == WED_ForestPlacement::sClass)
+	else if(who->GetClass() == WED_ForestPlacement::sClass)
 		ValidateOneForestPlacement(who, msgs, parent_apt);
-
-	if (who->GetClass() == WED_StringPlacement::sClass)
+	else if (who->GetClass() == WED_StringPlacement::sClass)
 	{
 		auto str = static_cast<WED_StringPlacement*>(who);
 		if(str->GetSpacing() < 1.0)
 			msgs.push_back(validation_error_t("Object string spacing must be grater than zero.", err_string_zero_spaceing, who, parent_apt));
 
 	}
-
-	if (who->GetClass() == WED_ExclusionPoly::sClass)
+	else if (who->GetClass() == WED_ExclusionPoly::sClass)
 	{
 		auto xcl = static_cast<WED_ExclusionPoly*>(who);
 		if (xcl->GetNumHoles() > 0)
@@ -631,48 +629,64 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 		set<int> ex;
 		xcl->GetExclusions(ex);
 		if (ex.count(exclude_For))
-			msgs.push_back(validation_error_t("Exclusion Polygons do not (yet) supported forests in X-Plane. Use Exclusion zones instead.", warn_exclusion_polys_no_forests, who, parent_apt));
+			msgs.push_back(validation_error_t("Exclusion Polygons do not (yet) supported forests in X-Plane. Use Exclusion zones instead.", 
+				gExportTarget == wet_gateway ? err_exclusion_polys_no_forests : warn_exclusion_polys_no_forests, who, parent_apt));
 	}
-
-	if(gExportTarget == wet_gateway)
+	else if(who->GetClass() == WED_ObjPlacement::sClass)
 	{
-		if(who->GetClass() != WED_Group::sClass)
-		if(!parent_apt)
-			msgs.push_back(validation_error_t("Elements of your project are outside the hierarchy of the airport you are trying to export.", err_airport_elements_outside_hierarchy, who,NULL));
-
-		if(who->GetClass() == WED_ObjPlacement::sClass)
+		auto obj = static_cast<WED_ObjPlacement *>(who);
+		if (int t = obj->HasCustomMSL())
 		{
-			auto obj = static_cast<WED_ObjPlacement *>(who);
-			if (int t = obj->HasCustomMSL())
+			double hgt = obj->GetCustomMSL();
+			char hgt_str[20];
+
+			if(gIsFeet)
+				snprintf(hgt_str, sizeof(hgt_str), "set_%s=%.0lfft", t == 1 ? "MSL" : "AGL", hgt * MTR_TO_FT);
+			else
+				snprintf(hgt_str, sizeof(hgt_str), "set_%s=%.1lfm", t == 1 ? "MSL" : "AGL", hgt);
+
+			if (gExportTarget == wet_gateway)
 			{
 				if (t == 2) // don't warn about set_AGL if the .agp has scrapers
 				{
-					const agp_t * agp;
+					const agp_t* agp;
 					string vpath;
-					WED_ResourceMgr * rmgr = WED_GetResourceMgr(who->GetArchive()->GetResolver());
+					WED_ResourceMgr* rmgr = WED_GetResourceMgr(who->GetArchive()->GetResolver());
 					obj->GetResource(vpath);
 					if (rmgr && rmgr->GetAGP(vpath, agp))
-						for (const auto& o :agp->tiles.front().objs)
+						for (const auto& o : agp->tiles.front().objs)
 							if (o.scp_step > 0.0)
 							{
 								t = 0;
 								break;
 							}
 				}
-				stringstream ss;
-				ss << "The use of " << (t == 1 ? "set_MSL=" : "set_AGL=") << (int)obj->GetCustomMSL() << '.' << abs((int)(obj->GetCustomMSL()*10.0)) % 10 << 'm';
 				if (t == 1)
 				{
-					ss << " is not allowed on the scenery gateway.";
-					msgs.push_back(validation_error_t(ss.str(), err_object_custom_elev, who, parent_apt));
+					msgs.push_back(validation_error_t("The use of set_MSL is not allowed on the scenery gateway.", 
+						err_object_custom_elev, who, parent_apt));
 				}
-				else if(t == 2)
+				else if (t == 2)
 				{
-					ss << " is discouraged on the scenery gateway. Use only in well justified cases.";
-					msgs.push_back(validation_error_t(ss.str(), warn_object_custom_elev, who, parent_apt));
+					msgs.push_back(validation_error_t(string("The use of ") + hgt_str + " is discouraged on the scenery gateway. Use only in well justified cases.",
+						warn_object_custom_elev, who, parent_apt));
 				}
 			}
+
+			if (t == 2 && (hgt < -100.0 || hgt > 100.0))
+				msgs.push_back(validation_error_t(string(hgt_str) + " is more than +/-100m.",
+					(gExportTarget == wet_gateway) ? err_object_custom_elev : warn_object_custom_elev, who, parent_apt));
+			else
+				if (hgt < -1000.0 || hgt > 10000.0)
+					msgs.push_back(validation_error_t(string(hgt_str) + " is outside of the -1000 to +10000m rendering engine safe range.",
+						err_object_custom_elev, who, parent_apt));
 		}
+	}
+
+	if (who->GetClass() != WED_Group::sClass && who->GetClass() != WED_OverlayImage::sClass)
+	{
+		if (gExportTarget == wet_gateway && !parent_apt)
+			msgs.push_back(validation_error_t("Elements of your project are outside the hierarchy of the airport you are trying to export.", err_airport_elements_outside_hierarchy, who, NULL));
 	}
 
 	//--Validate resources-----------------------------------------------------
@@ -691,6 +705,14 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 			if(lib_mgr->IsResourceDeprecatedOrPrivate(res))
 				msgs.push_back(validation_error_t(string("The library path '") + res + "' is a deprecated or private X-Plane resource and cannot be used in global airports.",
 				err_gateway_resource_private_or_depricated,	who, parent_apt));
+		}
+		else
+		{
+			if (who->GetClass() != WED_TerPlacement::sClass &&
+			    !(who->GetClass() == WED_DrapedOrthophoto::sClass && static_cast<WED_DrapedOrthophoto*> (who)->IsNew()))
+				if (res.compare(0, 3, "DEV") == 0 && (res[3] == '/' || res[3] == '\\'))
+					msgs.push_back(validation_error_t(string("Resource '") + res + "' references DEV/ folder",
+						warn_DEV_folder, who, parent_apt));
 		}
 
 		string path;
@@ -1433,12 +1455,44 @@ static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& 
 		rwy->Export(r);
 		if (gExportTarget >= wet_xplane_1200)
 		{
-			if (r.has_centerline > 0 && r.edge_light_code == apt_edge_LIRL)
-				msgs.push_back(validation_error_t("Edge Light intensity will be increased to MIRL by X-Plane 12 due to centerline light presence", warn_rwy_edge_light_not_matching_center_lights, who, apt));
-			if ((r.has_tdzl[0] > 0 || r.has_tdzl[1] > 0) && r.edge_light_code <= apt_edge_MIRL)
-				msgs.push_back(validation_error_t("Edge Light intensity will be increased to HIRL by X-Plane 12 due to touchdown light presence", warn_rwy_edge_light_not_matching_center_lights, who, apt));
-			if ((r.app_light_code[0] > 0 || r.app_light_code[1] > 0) && r.edge_light_code <= apt_edge_MIRL)
-				msgs.push_back(validation_error_t("Edge Light intensity will be increased to HIRL by X-Plane 12 due to approach light presence", warn_rwy_edge_light_not_matching_center_lights, who, apt));
+			if (r.edge_light_code < apt_edge_HIRL)
+			{
+				if (r.has_centerline)
+					if (r.edge_light_code == apt_edge_MIRL)
+	 					msgs.push_back(validation_error_t("MIRL will be increased to HIRL by X-Plane 12 due to centerline light presence", warn_rwy_edge_light_not_matching_center_lights, who, apt));
+					else if(r.edge_light_code == apt_edge_LIRL)
+						msgs.push_back(validation_error_t("LIRL will be increased to HIRL by X-Plane 12 due to centerline light presence", warn_rwy_edge_light_not_matching_center_lights, who, apt));
+
+				if (r.has_tdzl[0] || r.has_tdzl[1])
+					msgs.push_back(validation_error_t("Edge Light intensity will be increased to HIRL by X-Plane 12 due to touchdown light presence", warn_rwy_edge_light_not_matching_center_lights, who, apt));
+
+				if (r.app_light_code[0] || r.app_light_code[1])
+					if (r.edge_light_code == apt_edge_MIRL)
+						msgs.push_back(validation_error_t("MIRL will be increased to HIRL by X-Plane 12 due to approach light presence", warn_rwy_edge_light_not_matching_center_lights, who, apt));
+					else if (r.edge_light_code == apt_edge_LIRL)
+						msgs.push_back(validation_error_t("LIRL will be increased to HIRL by X-Plane 12 due to approach light presence", warn_rwy_edge_light_not_matching_center_lights, who, apt));
+					else
+						msgs.push_back(validation_error_t("Rwy has approach lights, but no Edge lights at all", warn_rwy_edge_light_not_matching_center_lights, who, apt));
+			}
+
+			// missing REIL warnings
+			if (r.app_light_code[0] || r.app_light_code[1])
+			{
+				// serious reasons for concern - how will you be able to tell the end of the overrun after landing ?
+				if ((r.reil_code[0] == apt_reil_none && r.disp_mtr[0] > 0.0) || (r.reil_code[1] == apt_reil_none && r.disp_mtr[1] > 0.0))
+					msgs.push_back(validation_error_t("Rwy has Approach lights, but missing REIL at displaced threshold end", warn_rwy_edge_light_not_matching_center_lights, who, apt));
+				// still good reason for concern. But THR lights might be a good enough stand-in.
+				else if ((r.reil_code[0] == apt_reil_none || r.reil_code[1] == apt_reil_none))
+					msgs.push_back(validation_error_t("Rwy has Approach lights, but missing some or all REIL", warn_rwy_edge_light_not_matching_center_lights, who, apt));
+			}
+			else if (r.edge_light_code || r.has_centerline || r.has_tdzl[0] || r.has_tdzl[1])
+			{
+				// weak areas of concern
+				if (r.reil_code[0] == apt_reil_none && r.reil_code[1] == apt_reil_none)
+						msgs.push_back(validation_error_t("Rwy has no REIL at all, but some other lights", warn_rwy_edge_light_not_matching_center_lights, who, apt));
+				else if (r.reil_code[0] == apt_reil_none || r.reil_code[1] == apt_reil_none)
+						msgs.push_back(validation_error_t("Rwy has only one REIL, but some other lights", warn_rwy_edge_light_not_matching_center_lights, who, apt));
+			}
 		}
 #if ROWCODE_105
 		if(!all_in_range(r.skids, 0.0f, 1.0f))

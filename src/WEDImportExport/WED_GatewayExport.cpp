@@ -498,7 +498,7 @@ void WED_GatewayExportDialog::Submit()
 		validation_result_t val_res = WED_ValidateApt(mResolver, NULL, apt, true); // suppress error dialog, as OSX can't handle nested modal windows
 		if(val_res == validation_warnings_only)
 		{
-			if(ConfirmMessage("Validation warnings exist. Continue to export to gateway ?", "Proceed", "Cancel"))
+			if(ConfirmMessage("Validation warnings exist. Continue to export to gateway ?", "Export", "Cancel"))
 				val_res = validation_clean;
 		}
 		else if(val_res == validation_errors)

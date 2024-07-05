@@ -903,6 +903,9 @@
     <ClCompile Include="..\..\src\WEDMap\WED_BoundaryLayer.cpp">
       <Filter>WEDMap</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\WEDImportExport\WED_SceneryImport.cpp">
+      <Filter>WEDImportExport</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\WEDCore\WED_Application.h">
@@ -1777,6 +1780,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\WEDMap\WED_BoundaryLayer.h">
       <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDImportExport\WED_SceneryImport.h">
+      <Filter>WEDImportExport</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

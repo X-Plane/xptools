@@ -13,7 +13,25 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 2.6 b1
+WED 2.6.0b3
+   Features:
+   - force default dir for most file open dialogs to be current scenery pack
+   - make ToolTips in LibraryList more meaningful
+   - support jw docking to the 2nd door of the aircraft for XP 12.1.1+
+   Bug fix:
+   - minor accuracy improvement in map projection for very large objetcs
+   - fix duplicated exclusion zones at full scenery import
+   - WED-1507 fix exclusion polygons still green when locked
+
+WED 2.6.0b2 6/3/24
+   Features:
+   - full scenery import menu function
+   - new export target 12.1.1 to distinuish string spacing behavior
+   Bug fix:
+   - minor speed improvements for scenery load, export and upgrade heuristics
+   - remove some old XP11 wording in object density menu
+
+WED 2.6.0b1 5/20/24
    Features:
    - polygonal exclusion zones for XP 12.05+
    - new entity: shapes to support 3rd party scenery creation tools
@@ -26,7 +44,11 @@ WED 2.6 b1
    - WED-1496 add gw_credits meta tag at gateway export
    - XPD-15016 Disallow circuits at GW export for one-way airports
    - refined preview of safe vs ultimate service range of jetways
-   - support jw docking to the 2nd door of the aircraft
+   - improved runway light validation warnings
+   - auto-import when opening scenery packages w/o .xml file for 1st time
+   - option to recover from backup with broken .xml files
+   - XPD-15379 validate set_AGL, set_MSL within -1000 ... 10,000m, for GW +/-100m
+   - improved string spacing resolution for XP 12.1.5+
    Bug fix:
    - fix Obj8 drawing not recognizing ATTR_no_blend threshold values
    - validate ObjectString spacing parameter to be non-zero
@@ -40,7 +62,6 @@ WED 2.6 b1
    - WED-1493 fix airport not validated upon manual trigger and not at toplevel of hierachy
    - WED-1487 improve facades and agp objects shown function of showlevel
    - WED-1501 improve object location accuracy for previews of object strings
-   - improved string spacing resolution for XP 12.1.5+
    - validate APAPI not exportable to X-Plane 11 and earlier
 
 WED 2.5.1r1 3/20/23

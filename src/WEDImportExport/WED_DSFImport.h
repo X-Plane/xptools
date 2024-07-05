@@ -75,9 +75,11 @@ struct Bbox2p {
 	};
 };
 
-int		DSF_Import_Partial(const char * path, WED_Thing * base, int inCatFilter,
+/* Returns true if successful, false if not. */
+int		DSF_Import_Partial(const char* path, WED_Thing* base, const string& ICAO);
+int		DSF_Import_Partial(const char* path, WED_Thing* base, int inCatFilter,
 							const vector<Bbox2p> & inBounds = vector<Bbox2p>(), const vector<string>& inAptFilter = vector<string>());
 
-void	add_all_global_DSF(const Bbox2& bb, set<string>& matching_dsf);
+void	DSF_find_global(const Bbox2& bb, set<string>& dsf_paths);
 
 #endif /* WED_DSFImport_H */

@@ -62,7 +62,6 @@ public:
 
 			Point2	PixelToLL(const Point2& p) const;
 			Point2	LLToPixel(const Point2& p) const;
-			pair<Point2, double> LLToPixelr(const Point2& p) const;
 
 			void	PixelToLLv(Point2 * dst, const Point2 * src, int n) const;
 			void	LLToPixelv(Point2 * dst, const Point2 * src, int n) const;
@@ -98,7 +97,6 @@ public:
 							double&	outSouth,
 							double&	outEast,
 							double&	outNorth);
-
 
 	// Scrolling operations
 			void	ZoomShowAll(void);				// Zoom out to reveal the whole map
@@ -158,14 +156,13 @@ private:
 
 			void	RecalcAspectRatio(void);
 			double	wagner_proj_mult(double lat) const;
-			double	gnomonic_proj_cos(double lat) const;
-
-
-			double  LLToXPixel_gnomonic(const Point2& pt) const;
-			double  LLToYPixel_gnomonic(const Point2& pt) const;
 
 	double	mPixels[4];
 	double	mLogicalBounds[4];
+
+	// values below are dreived from the above, to provide
+	// pre-computed values for faster pixel transformations
+
 	double	mLatCenter;
 	double	mLonCenter;
 	double	mCenterX;
@@ -173,22 +170,32 @@ private:
 	double	mLatCenterCOS, mLatCenterSIN;
 	double  mCenterCOS;
 	long long mCacheKey;
-	double  mMapSize;
+	double  mMapSize;                          // width of visible map, normalized. 1.0 = whole world
 
 	class mapScale {
 	public:
-		mapScale(void) : mDegLat2Pixel(1.0), mPixel2DegLat(1.0), mPPM(1.0) {}
+		mapScale(void) : mPixel2DegLon(1.0), mPixel2DegLat(1.0), mPPM(1.0) {}
 
-		void   operator= (double Pixel2DegLat);
-		double operator()(void) const { return mPixel2DegLat; }
-		double inv(void) const { return mDegLat2Pixel; }
+		void set(double PPM, double LatCenterDeg, double altitude_msl = 300.0);
+		// why default 300m ? Well, WED doesn't let users set altitudes for now.
+		// Advertised WYSIWYG accuracy is 'around 1 in 10000' and there are in fact multiple nitty
+		// details on both sim and WED side that are in the way of reliably doing better than that.
+		// So set map scale for everybody by half that amount higher, aka 'best on average for 
+		// airports from sealevel to 2000 ft MSL'.
+
+		double Pix2DegLat() const { return mPixel2DegLat; }
+		double Pix2DegLon() const { return mPixel2DegLon; }
+		double Deg2PixLat() const { return mDeg2PixelLat; }
+		double Deg2PixLon() const { return mDeg2PixelLon; }
 		double ppm(void) const { return mPPM; }
 	private:
 		double	mPixel2DegLat;
-		double	mDegLat2Pixel;
+		double	mPixel2DegLon;
+		double	mDeg2PixelLat;
+		double	mDeg2PixelLon;
 		double	mPPM;
 	};
-	mapScale	mPixel2DegLat;
+	mapScale	mScale;
 };
 
 #endif

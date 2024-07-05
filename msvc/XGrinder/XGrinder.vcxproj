@@ -107,6 +107,9 @@
     <ClInclude Include="..\..\src\Utils\zip.h" />
     <ClInclude Include="..\..\src\XPTools\XGrinderShell.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\src\XPTools\README.XGrinder" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

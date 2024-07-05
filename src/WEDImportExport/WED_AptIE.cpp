@@ -22,7 +22,7 @@
  */
 
 #include "WED_AptImportDialog.h"
-#include "WED_AptIE.h"
+
 #include "WED_Airport.h"
 #include "WED_AirportBeacon.h"
 #include "WED_AirportBoundary.h"
@@ -39,7 +39,6 @@
 #include "WED_Taxiway.h"
 #include "WED_TowerViewpoint.h"
 #include "WED_Windsock.h"
-#include "WED_EnumSystem.h"
 #include "WED_OverlayImage.h"
 #include "WED_ATCFlow.h"
 #include "WED_ATCRunwayUse.h"
@@ -48,24 +47,25 @@
 #include "WED_TaxiRoute.h"
 #include "WED_TaxiRouteNode.h"
 #include "WED_Group.h"
-#include "GUI_Application.h"
 #include "WED_Validate.h"
 #include "WED_TruckParkingLocation.h"
 #include "WED_TruckDestination.h"
 #include "WED_FacadePlacement.h"
 
-#include "AptIO.h"
-
-//Utils
 #include "PlatformUtils.h"
 #include "FileUtils.h"
 #include "STLUtils.h"
 
-//WEDUtils
+#include "AptIO.h"
+#include "WED_AptIE.h"
+#include "GUI_Application.h"
+#include "WED_EnumSystem.h"
 #include "WED_HierarchyUtils.h"
+#include "WED_LibraryMgr.h"
+#include "WED_PackageMgr.h"
 #include "WED_ToolUtils.h"
-
 #include "WED_UIDefs.h"
+
 #include <stdarg.h>
 
 
@@ -100,6 +100,7 @@ static int get_apt_export_version()
 		version = 1130;
 		break;
 	case wet_xplane_1200:
+	case wet_xplane_1211:
 		version = 1200;
 		break;
 	default:
@@ -1102,7 +1103,8 @@ void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane
 {
 	vector<string>	fnames;
 		
-	char * path = GetMultiFilePathFromUser("Import apt.dat...", "Import", FILE_DIALOG_IMPORT_APTDAT);
+	char * path = GetMultiFilePathFromUser("Import apt.dat...", "Import", FILE_DIALOG_IMPORT_APTDAT,
+				gPackageMgr->ComputePath(WED_GetLibraryMgr(resolver)->GetLocalPackage(), "Earth nav data").c_str());
 	if(!path)
 		return;
 		
@@ -1132,7 +1134,7 @@ void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane
 			(FILE_exists((parent_dir + "COPYING").c_str()) &&                // packs downloaded from gateway
 				(FILE_exists((parent_dir + "README.txt").c_str()) || FILE_exists((parent_dir + "README").c_str()))) )
 			if(!ConfirmMessage("Warning !\nImporting from an X-Plane Global Airports or Gateway Scenery Pack apt.dat is unsuitable for scenery design.\n\n"
-			                   "Use File->Import from Scenery Gateway whenever possible.", "Proceed import of apt.dat", "Cancel"))
+			                   "Use File->Import from Scenery Gateway whenever possible.", "Proceed", "Cancel"))
 				return;
 		
 		LOG_MSG("I/Apt Importing apt.dat from %s\n",f->c_str());

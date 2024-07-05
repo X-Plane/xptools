@@ -160,13 +160,16 @@ static Point2 interpol_LonLat(double UV_x, double UV_y, const gcp_t& gcp)
 
 void	WED_MakeOrthos(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 {
-	char * path = GetMultiFilePathFromUser("Please pick image files", "Open", FILE_DIALOG_PICK_IMAGE_OVERLAY);
+	ILibrarian* lib = WED_GetLibrarian(inResolver);
+	string def_dir("");
+	lib->LookupPath(def_dir);
+
+	char * path = GetMultiFilePathFromUser("Please pick image files", "Open", FILE_DIALOG_PICK_ORTHO_IMAGE, def_dir.c_str());
 	if(path)
 	{
 		WED_Thing *    wrl = WED_GetWorld(inResolver);
 		WED_Archive * arch = wrl->GetArchive();
 		ISelection *   sel = WED_GetSelect(inResolver);
-		ILibrarian *   lib = WED_GetLibrarian(inResolver);
 		char * free_me = path;
 
 		wrl->StartOperation("Create Ortho Image");
@@ -303,7 +306,11 @@ void	WED_MakeOrthos(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 
 void	WED_MakeTerrain(IResolver* inResolver, WED_MapZoomerNew* zoomer)
 {
-	char* path = GetMultiFilePathFromUser("Please pick DEM file", "Open", FILE_DIALOG_PICK_IMAGE_OVERLAY);
+	ILibrarian* lib = WED_GetLibrarian(inResolver);
+	string def_dir("");
+	lib->LookupPath(def_dir);
+
+	char* path = GetMultiFilePathFromUser("Please pick DEM file", "Open", FILE_DIALOG_PICK_DEM, def_dir.c_str());
 	if (path)
 	{
 		WED_Thing* wrl = WED_GetWorld(inResolver);
