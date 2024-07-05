@@ -84,7 +84,7 @@ WED_PropertyPane::WED_PropertyPane(
 
 	if (pane_style == propPane_Hierarchy)
 	{
-		mFilter = new GUI_FilterBar(this, GUI_FILTER_FIELD_CHANGED, 0, "Search:", "", false);
+		mFilter = new GUI_FilterBar(this, GUI_FILTER_FIELD_CHANGED, 0, "Search:", "");
 		mFilter->Show();
 		mFilter->SetParent(this);
 		mFilter->AddListener(this);

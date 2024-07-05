@@ -37,14 +37,15 @@ public:
 		GUI_Commander * cmdr,
 		intptr_t in_msg,
 		intptr_t in_param,
-		const string & in_label,
-		const string & in_def,
-		bool in_have_enum_dict,
-		int default_enum_val=0);
+		const string& in_label,
+		const string& in_def,
+		const GUI_EnumDictionary& dict = {},
+		int enum_def = 0,
+		const string& enum_label = "");
 
-			string		GetText(void) { return mText; }
-			string		GetEnumText(void)  { DebugAssert(mHaveEnumDict == true); return mCurEnumTxt; }
-			int			GetEnumValue(void) { DebugAssert(mHaveEnumDict == true); return mCurEnumVal; }
+			string		GetText(void) const { return mText; }
+			int			GetEnumValue(void) { return mCurEnumVal; }
+
 	// GUI_SimpleTableGeometry
 	virtual	int			GetColCount(void);
 	virtual	int			GetRowCount(void);
@@ -57,7 +58,7 @@ public:
 	virtual	void	GetEnumDictionary(
 						int							cell_x,
 						int							cell_y,
-						GUI_EnumDictionary&			out_dictionary) { };
+						GUI_EnumDictionary&			out_dictionary) { out_dictionary = mDict; }
 	virtual	void	AcceptEdit(
 						int							cell_x,
 						int							cell_y,
@@ -150,25 +151,19 @@ public:
 											GUI_DragOperation			recommended) { return gui_Drag_None; }
 	
 	void							ClearFilter();
-protected:
-	string		GetEnumText()     const { return mCurEnumTxt; }
-	int			GetEnumValue()    const { return mCurEnumVal; }
-	bool		GetHaveEnumDict() const { return mHaveEnumDict; }
 
 private: 
 	//current pack one that is selected (used for GetCellContents)
 	//Data from AcceptEdit
-	string				mCurEnumTxt;
 	int					mCurEnumVal;
-
-	//Decides if it should have enum dictionary
-	bool				mHaveEnumDict;
 
 	//Label for the search bar
 	string				mLabel;
+	string				mEnumLabel;
 
 	//Text inside the search bar
 	string				mText;
+	GUI_EnumDictionary	mDict;
 
 	intptr_t			mMsg;
 	intptr_t			mParam;

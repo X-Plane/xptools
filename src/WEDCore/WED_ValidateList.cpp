@@ -93,7 +93,7 @@ WED_ValidateDialog::WED_ValidateDialog(WED_Document * resolver, WED_MapPane * pa
 	packer->SetBounds(bounds);
 	packer->SetBkgkndImage ("gradient.png");
 
-	mFilter = new GUI_FilterBar(this,kMsg_FilterChanged,0,"Search:","",false);
+	mFilter = new GUI_FilterBar(this,kMsg_FilterChanged,0,"Search:","");
 	mFilter->Show();
 	mFilter->SetSticky(1,0,1,1);
 	mFilter->SetParent(packer);

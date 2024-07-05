@@ -22,6 +22,7 @@
  */
 
 #include "WED_LibraryPane.h"
+#include "WED_PackageMgr.h"
 #include "GUI_ScrollerPane.h"
 #include "WED_Colors.h"
 #include "WED_LibraryFilterBar.h"
@@ -72,7 +73,22 @@ WED_LibraryPane::WED_LibraryPane(GUI_Commander * commander, WED_LibraryMgr * mgr
 	mTextTable.AddListener(mTable);				// Table listens to text table to know when content changes in a resizing way
 	mLibraryList.AddListener(mTable);			// Table listens to actual property content to know when data itself changes
 
-	mFilter = new WED_LibraryFilterBar(this, mgr);
+	GUI_EnumDictionary dict;
+	dict[pack_Default] = make_pair("Laminar Library", true); //Aka the default library aka pack_Default
+	dict[pack_Library] = make_pair("All Libraries", true);
+	dict[pack_New] = make_pair("Newly Released Items", true);
+
+	for (int i = 0; i < gPackageMgr->CountPackages(); i++)
+	{
+		string temp;
+		gPackageMgr->GetNthPackageName(i, temp);
+		if (gPackageMgr->HasPublicItems(i))
+			dict[i] = make_pair(temp, true);
+	}
+
+	mFilter = new GUI_FilterBar(this, GUI_FILTER_FIELD_CHANGED, 0, "Search:", "", dict, pack_Default, "Show only:");
+	// mFilter->SetEnumDictionary(dict, pack_Default);
+
 	mFilter->Show();
 	mFilter->SetParent(this);
 	mFilter->AddListener(this);

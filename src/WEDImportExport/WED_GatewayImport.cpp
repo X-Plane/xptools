@@ -346,7 +346,7 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_Ma
 	mPacker->SetBkgkndImage ("gradient.png");
 
 	//Filter
-	mFilter = new GUI_FilterBar(this,filter_changed,0,"Search:","",false);
+	mFilter = new GUI_FilterBar(this,filter_changed,0,"Search:","");
 	mFilter->Show();
 	mFilter->SetSticky(1,0,1,1);
 	mFilter->SetParent(mPacker);

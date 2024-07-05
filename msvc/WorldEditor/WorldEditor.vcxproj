@@ -276,7 +276,6 @@
     <ClCompile Include="..\..\src\WEDWindows\WED_ConvertCommands.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_DocumentWindow.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_GroupCommands.cpp" />
-    <ClCompile Include="..\..\src\WEDWindows\WED_LibraryFilterBar.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_Line_Selector.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_Menus.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_PackageListAdapter.cpp" />
@@ -568,7 +567,6 @@
     <ClInclude Include="..\..\src\WEDWindows\WED_ConvertCommands.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_DocumentWindow.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_GroupCommands.h" />
-    <ClInclude Include="..\..\src\WEDWindows\WED_LibraryFilterBar.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_Line_Selector.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_Menus.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_PackageListAdapter.h" />
