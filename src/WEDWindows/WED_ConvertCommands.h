@@ -42,6 +42,6 @@ int		WED_CanConvertTo(IResolver * resolver, const char* DstType);
 // Converts the selected objects to the type produced by 'create'.
 void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create, bool in_cmd = true);
 
-void	WED_DoConvertToForest(IResolver* resolver);
+void	WED_DoConvertToForest(IResolver* resolver, bool in_cmd = true);
 
 #endif /* WED_ConvertCommands_H */

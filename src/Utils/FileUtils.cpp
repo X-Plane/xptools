@@ -683,6 +683,25 @@ int FILE_compress_dir(const string& src_path, const string& dst_path, const stri
 	zipClose(archive, NULL);
 	
 	return r;
-	
 }
+
+set<string> FILE_find_dsfs(const string& path)
+{
+	set<string> dsf_paths;
+	vector<string> out_files, out_dirs;
+	FILE_get_directory_recursive(path, out_files, out_dirs);
+	for (auto& d : out_files)
+	{
+		auto f_nam = FILE_get_file_name(d);
+		if (f_nam.size() == 11)
+			if (f_nam[0] == '+' || f_nam[0] == '-')
+				if (f_nam[3] == '+' || f_nam[3] == '-')
+					if (FILE_get_file_extension(d) == "dsf")
+					{
+						dsf_paths.insert(d);
+					}
+	}
+	return dsf_paths;
+}
+
 #endif // WED

@@ -1401,6 +1401,8 @@ vector<Polygon2> PolygonIntersect(const vector<Polygon2>& mpolyA, const vector<P
 			for (int i = start; i < last; i++)
 				mpoly.back().push_back(Point2(verts[i * 2], verts[i * 2 + 1]));
 			Polygon2cleaner(mpoly.back());
+			if (mpoly.back().empty())
+				mpoly.pop_back();
 		}
 	}
 	tessDeleteTess(tess);
@@ -1434,6 +1436,8 @@ vector<Polygon2> PolygonUnion(const vector<Polygon2>& mpolyA, const vector<Polyg
 			for (int i = start; i < last; i++)
 				mpoly.back().push_back(Point2(verts[i * 2], verts[i * 2 + 1]));
 			Polygon2cleaner(mpoly.back());
+			if (mpoly.back().empty())
+				mpoly.pop_back();
 		}
 	}
 	tessDeleteTess(tess);
@@ -1475,6 +1479,8 @@ vector<Polygon2> PolygonCut(const vector<Polygon2>& mpolyA, const vector<Polygon
 				mpoly.back().push_back(Point2(verts[i * 2], verts[i * 2 + 1]));
 //if(mpoly.back().is_ccw()) printf("O CCW %d\n",mpoly.back().size()); else printf("O CW %d\n",mpoly.back().size());
 			Polygon2cleaner(mpoly.back());
+			if (mpoly.back().empty())
+				mpoly.pop_back();
 		}
 	}
 	tessDeleteTess(tess);

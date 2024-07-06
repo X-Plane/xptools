@@ -62,7 +62,7 @@ public:
 			int			GetShowLevel(void) const;
 
 			bool		IsJetway(int * cabin = nullptr, int * tunnel = nullptr) const;
-			bool		HasDockingCabin(void) const;
+			int			HasDockingCabin(void) const;     // return A/C door # the JW is intended to dock with. 0 if not auto-docking
 			void		ExportJetway(Jetway_t& apt_data);
 			void		ImportJetway(const Jetway_t& apt_data, void(*print_func)(void *, const char *, ...), void * ref);
 
@@ -78,7 +78,7 @@ private:
 
 	WED_PropDoubleText		height;
 	WED_PropStringText		resource;
-	WED_PropBoolText			pick_walls;
+	WED_PropBoolText		pick_walls;
 	WED_PropIntEnum			show_level;
 
 };

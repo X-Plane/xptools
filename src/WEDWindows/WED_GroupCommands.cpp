@@ -4170,6 +4170,11 @@ int		WED_Repair(IResolver * resolver)
 		{
 			parent->GetName(nam);
 			LOG_MSG(" from parent %s '%s'", parent->HumanReadableType(), nam.c_str());
+			if (auto apt = WED_GetParentAirport(parent))
+			{
+				apt->GetICAO(nam);
+				LOG_MSG(" at %s", nam.c_str());
+			}
 		}
 		LOG_MSG("\n");
 	}
@@ -5626,13 +5631,12 @@ void WED_AgePavement(IResolver* resolver)
 	WED_Thing* wrl = WED_GetWorld(resolver);
 	vector<WED_Airport*> all_apts;
 
-	int ans = DoSaveDiscardDialog("Change pavement apperance ?",
-		"Yes = worn/cracked, lighter asphalt, darker concrete\n"
-		"No  = smooth, darker asphalt, lighter concrete");
+	int ans = ConfirmMessage("Change pavement apperance ?\n"
+		"Old = worn/cracked, lighter asphalt, darker concrete\n"
+		"New = smooth, darker asphalt, lighter concrete", "Old", "Cancel", "New");
 
-	if (ans != close_Save && ans != close_Discard)
-		return;
-	int age = ans == close_Save ? 1 : 0;
+	if (ans == 0) return;
+	int age = ans == 1 ? 1 : 0;
 
 	CollectRecursiveNoNesting(wrl, back_inserter(all_apts), WED_Airport::sClass);
 
@@ -5700,12 +5704,9 @@ static bool inside_pt(const vector<Polygon2>& vec_poly, const Point2 pt)
 	{
 		if(p.size())
 		if(p.inside(pt))
-			if(p.is_ccw())
-				inside++;
-			else
-				inside--;
+			inside++;
 	}
-	return inside > 0;
+	return inside & 1;
 }
 
 static void make_ter_FX_exist(WED_Group** grp, WED_Thing* parent)
@@ -5767,7 +5768,51 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 	
 	WED_LibraryMgr* lmgr = WED_GetLibraryMgr(apt->GetArchive()->GetResolver());
 	WED_Group * art_grp = nullptr;
-	
+#if 1    // much faster as it only traverses hierachy once
+	std::function<void(WED_Thing*)> CollectEntitiesRecursive = [&](WED_Thing* thing)
+	{
+		const auto c = thing->GetClass();
+#define COLLECT(type, vector) \
+		if(c == type::sClass) { \
+			auto p = static_cast<type *>(thing); \
+			if(!p->GetHidden())	vector.push_back(p); \
+			return; \
+		}
+		COLLECT(WED_Runway, rwys)
+		else COLLECT(WED_Sealane, sealn)
+		else COLLECT(WED_AirportSign, signs)
+		else COLLECT(WED_Taxiway, twys)
+		else COLLECT(WED_AirportBoundary, bdys)
+		else COLLECT(WED_Windsock, socks)
+		else COLLECT(WED_AirportSign, signs)
+#undef COLLECT
+		else if (c == WED_PolygonPlacement::sClass) {
+			auto p = static_cast<WED_PolygonPlacement*>(thing);
+			if (p->GetHidden()) return;
+			string res;
+			p->GetResource(res);
+			if (res.compare(0, strlen("lib/airport/pavement/"), "lib/airport/pavement/") == 0)
+			{
+				polys.push_back(p);
+				return;
+			}
+			auto surf = lmgr->GetSurfEnum(res);
+			if (surf > 0)
+				polys.push_back(p);
+			return;
+		}
+		else
+		{
+			if (c != WED_Group::sClass && c != WED_Airport::sClass) return;  // don't recurse into anything else
+			auto p = static_cast<WED_Entity*>(thing);
+			if (p->GetHidden()) return;
+		}
+		int nc = thing->CountChildren();
+		for (int n = 0; n < nc; ++n)
+			CollectEntitiesRecursive(thing->GetNthChild(n));
+	};
+	CollectEntitiesRecursive(apt);
+#else
 	CollectRecursive(apt, back_inserter(bdys), WED_AirportBoundary::sClass);
 	CollectRecursive(apt, back_inserter(rwys), WED_Runway::sClass);
 	CollectRecursive(apt, back_inserter(sealn),WED_Sealane::sClass);
@@ -5779,7 +5824,6 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 			if (auto p = dynamic_cast<WED_PolygonPlacement*>(v))
 			{
 				string res;
-				//p->GetName(res);
 				p->GetResource(res);
 				if(res.compare(0, strlen("lib/airport/pavement/"),"lib/airport/pavement/") == 0) 
 					return true;
@@ -5789,7 +5833,7 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 			else
 				return false;
 		}, WED_PolygonPlacement::sClass);
-
+#endif
 	for(auto b : bdys)
 		WED_BezierPolygonWithHolesForPolygon(b, apt_boundary);
 	if(apt_boundary.size() == 0) return 0;
@@ -5840,8 +5884,9 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 		for(int i = 3; i >= 0; i--)
 			this_grass->back().push_back(tmp[i]);
 
-		vector<Polygon2> tmp_poly = PolygonCut(apt_boundary, all_grass_poly);
-		*this_grass = PolygonIntersect(*this_grass, tmp_poly);
+		vector<Polygon2> still_unmowed_apt = PolygonCut(apt_boundary, all_grass_poly);
+		*this_grass = PolygonIntersect(*this_grass, still_unmowed_apt);
+
 		if(this_grass->empty())
 		{
 			grass.pop_back();
@@ -5893,20 +5938,6 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 		else
 			it++;
 	}
-
-/*	int ti = 0;
-	for(auto& p : all_pave_poly)
-	{
-		int np = p.size();
-		ti += np;
-		// if( distance(p.begin(),  all_pave_poly[0].begin()) == all_pave_poly.size() - 1 )
-	//	if(np == 3)
-		for(int i = 0; i < np; i++)
-			debug_mesh_segment({p[i], (i+1) < np ? p[i+1] : p[0]}, 1, 0, 0, 1, 0, 0);
-	//	printf("poly %d\n", np);
-	}
-	printf("pavement_pts %d\n", ti);
-*/
 	// turning circles where mowing lines hit pavement
 	for (auto& g : grass)
 	{

@@ -462,7 +462,8 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 					auto parent = dynamic_cast<WED_Thing*>(entity)->GetParent();
 					if (parent->GetClass() == WED_ExclusionPoly::sClass)
 					{
-						glColor4fv(WED_Color_RGBA_Alpha(wed_Link, 1.0, storage));
+						glColor4fv(WED_Color_RGBA_Alpha((locked || selected) ? struct_color : wed_Link, 1.0, storage));
+						//glColor4fv(WED_Color_RGBA_Alpha(struct_color, 1.0, storage));
 						if (gExportTarget < wet_xplane_1200)
 						{
 							Bbox2 bnds;

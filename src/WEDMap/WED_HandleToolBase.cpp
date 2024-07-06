@@ -796,7 +796,7 @@ void		WED_HandleToolBase::HandleClickUp			(int inX, int inY, int inButton, GUI_K
 			int includes_airport = sel->IterateSelectionOr(Iterate_IsClass, (void*) WED_Airport::sClass);
 			if (includes_airport)
 			{
-				if(ConfirmMessage("This will move a whole Airport !", "Yes, move it", "No, cancel move"))
+				if(ConfirmMessage("This will move a whole Airport !", "Move it", "Cancel"))
 					op->CommitOperation();
 				else
 					op->AbortOperation();

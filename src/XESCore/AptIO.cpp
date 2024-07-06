@@ -1075,7 +1075,6 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 			else if (outApts.back().truck_parking.empty()) ok = "Error: custom truck without preceeding truck parking";
 			else
 			{
-				Jetway_t j;
 				if (TextScanner_FormatScan(s, "iTT|",
 					&rec_code,
 					&outApts.back().truck_parking.back().vpath) < 2)
@@ -1152,6 +1151,18 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 					&j.parked_cab_heading) < 9)
 				{
 					ok = "Error: Illegal jetway";
+				}
+
+				j.docking_type = Jetway_t::door1_only;
+				if (j.size_code >= 10)
+				{
+					if (j.size_code < 20)
+					{
+						j.size_code -= 10;
+						j.docking_type = Jetway_t::door2_only;
+					}
+					else
+						ok = "Error: Illegal jetway size code";
 				}
 
 				outApts.back().jetways.push_back(j);
@@ -1646,7 +1657,7 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 				{
 					fprintf(fi, "%d" LLFMT " %4.1f %d %d %.1f %4.2f %.1f" CRLF,
 						apt_jetway, jetway.location.y(), jetway.location.x(), jetway.install_heading,
-						jetway.style_code, jetway.size_code, jetway.parked_tunnel_heading,
+						jetway.style_code, jetway.size_code + (jetway.docking_type == Jetway_t::door2_only ? 10 : 0), jetway.parked_tunnel_heading,
 						jetway.parked_tunnel_length, jetway.parked_cab_heading);
 					if (!jetway.vpath.empty())
 						fprintf(fi, "%d %s" CRLF,

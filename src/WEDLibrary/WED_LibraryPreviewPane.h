@@ -59,7 +59,6 @@ public:
 
 private:
 	void				DrawOneItem(int type, const string& res, int b[4], GUI_GraphState * g, const char * label = nullptr);
-	void 				UpdateFacadePreview(void);
 	void 				begin3d(const int *b, double radius_m);
 	void				end3d(const int *b);
 

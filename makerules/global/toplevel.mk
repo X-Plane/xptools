@@ -33,22 +33,6 @@ endif
 
 ifdef PLAT_LINUX
 
-#MOCEXISTS	:= $(shell moc -E /dev/null > /dev/null 2>&1; echo $$?)
-#MOCQT4EXISTS	:= $(shell moc-qt4 -E /dev/null > /dev/null 2>&1; echo $$?)
-
-#ifneq ($(MOCEXISTS), 0)
-#ifneq ($(MOCQT4EXISTS), 0)
-#$(error neither 'moc' nor 'moc-qt4' found, install qt4-dev)
-#endif
-#endif
-
-#ifeq ($(MOCQT4EXISTS), 0)
-#MOC	:= moc-qt4
-#endif
-#ifeq ($(MOCEXISTS), 0)
-#MOC	:= moc
-#endif
-
 ifeq ($(ARCHITECTURE), x86_64)
 ifeq ($(cross), m32)
 	MULTI_SUFFIX	:= 32
@@ -112,9 +96,9 @@ ifdef PLAT_LINUX
 endif
 ifdef PLAT_DARWIN
 	DEFINES		:= -DLIN=0 -DIBM=0 -DAPL=1
-	CXXFLAGS	:= $(M32_SWITCH) -mmacosx-version-min=10.11 -std=c++14 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -arch x86_64
-	CFLAGS		:= $(M32_SWITCH) -mmacosx-version-min=10.11 -Wno-deprecated-declarations -Wno-multichar -arch x86_64
-	LDFLAGS		:= $(M32_SWITCH) -mmacosx-version-min=10.11
+	CXXFLAGS	:= $(M32_SWITCH) -mmacosx-version-min=10.12 -std=c++14 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -arch x86_64
+	CFLAGS		:= $(M32_SWITCH) -mmacosx-version-min=10.12 -Wno-deprecated-declarations -Wno-multichar -arch x86_64
+	LDFLAGS		:= $(M32_SWITCH) -mmacosx-version-min=10.12
 	STRIPFLAGS	:= -x
 endif
 ifdef PLAT_MINGW

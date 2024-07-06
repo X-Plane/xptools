@@ -152,13 +152,13 @@ void DSF2Text_AddObjectWithMode(
 	print_funcs_s * p = (print_funcs_s *) inRef;
 	switch(inMode) {
 	case obj_ModeAGL:
-		p->print_func(p->ref, "OBJECT_AGL %d %.9lf %.9lf %.9lf %lf\n", inObjectType + offset_obj, inCoordinates[0], inCoordinates[1], inCoordinates[3], inCoordinates[2]);
+		p->print_func(p->ref, "OBJECT_AGL %d %.9lf %.9lf %.5lf %.3lf\n", inObjectType + offset_obj, inCoordinates[0], inCoordinates[1], inCoordinates[3], inCoordinates[2]);
 		break;
 	case obj_ModeMSL:
-		p->print_func(p->ref, "OBJECT_MSL %d %.9lf %.9lf %.9lf %lf\n", inObjectType + offset_obj, inCoordinates[0], inCoordinates[1], inCoordinates[3], inCoordinates[2]);
+		p->print_func(p->ref, "OBJECT_MSL %d %.9lf %.9lf %.5lf %.3lf\n", inObjectType + offset_obj, inCoordinates[0], inCoordinates[1], inCoordinates[3], inCoordinates[2]);
 		break;
 	case obj_ModeDraped:
-		p->print_func(p->ref, "OBJECT %d %.9lf %.9lf %lf\n", inObjectType + offset_obj, inCoordinates[0], inCoordinates[1], inCoordinates[2]);
+		p->print_func(p->ref, "OBJECT %d %.9lf %.9lf %.3lf\n", inObjectType + offset_obj, inCoordinates[0], inCoordinates[1], inCoordinates[2]);
 		break;
 	}
 }
@@ -434,7 +434,6 @@ static bool Text2DSFWithWriterAny(const char * inFileName, const char * inDSF, D
 		char * ptr = strip_and_clean(buf);
 		if (sscanf(ptr, "PROPERTY %s %[^\r\n]", prop_id, prop_value) == 2)
 			properties.push_back(pair<string, string>(prop_id, prop_value));
-
 		if (sscanf(ptr, "PROPERTY sim/west %f", &west) == 1) ++props_got;
 		if (sscanf(ptr, "PROPERTY sim/east %f", &east) == 1) ++props_got;
 		if (sscanf(ptr, "PROPERTY sim/north %f", &north) == 1) ++props_got;
@@ -463,8 +462,6 @@ static bool Text2DSFWithWriterAny(const char * inFileName, const char * inDSF, D
 		fprintf(stdout, "ERROR: the DSF boundaries are out of range.  This can indicate a missing or corrupt sim/dimension properties.\n");
 		return false;
 	}
-
-	printf("Got dimension properties, establishing file writer...\n");
 
 	if(!is_pipe)
 		fseek(fi,0,SEEK_SET);
@@ -577,8 +574,6 @@ static bool Text2DSFWithWriterAny(const char * inFileName, const char * inDSF, D
 
 	if (!is_pipe)
 		fclose(fi);
-
-	printf("Got entire file, processing and creating DSF.\n");
 
 	if(!in_cbs)
 	{

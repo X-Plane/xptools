@@ -89,9 +89,28 @@
 #define sinr(x) sin((x) * DEG_TO_RAD)
 #define cosr(x) cos((x) * DEG_TO_RAD)
 
-inline	double	rescale(double s1, double s2, double d1, double d2, double v)
+// X-Plane 11- models a spherical world. Map scale is constant everywhere.
+// X-Plane 12+ uses a GRS80 ellipsoid, there are 2 radii relevant for map scale.
+// https://en.wikipedia.org/wiki/Geographical_distance#Ellipsoidal_Earth_projected_to_a_plane
+// https://en.wikipedia.org/wiki/Earth_radius#/media/File:EarthEllipRadii.jpg
+
+#define USE_GRS80 1
+
+// scale in E-W direction: prime vertical radius N, some 6378 to 6400 km
+static double term1(double lat)
 {
-	return ((v - s1) * (d2 - d1) / (s2 - s1)) + d1;
+	double s = sinr(lat);
+	return 	1.0 / sqrt(1.0 - EARTH_EPS2 * s * s);
+}
+static double N_GRS80(double lat)
+{
+	return EARTH_EQ_RADIUS * term1(lat);
+}
+// scale in N-S direction: meridional radius M, some 6335 to 6400 km, multiply by cos(lat) as usual
+static double M_GRS80(double lat)
+{
+	double t = term1(lat);
+	return EARTH_EQ_RADIUS * (1.0 - EARTH_EPS2) * t * t * t;
 }
 
 WED_MapZoomerNew::WED_MapZoomerNew(WED_Camera * c)
@@ -111,22 +130,22 @@ WED_MapZoomerNew::~WED_MapZoomerNew()
 
 double	WED_MapZoomerNew::XPixelToLon(double x) const
 {
-	return mLonCenter + (x - mCenterX) * mPixel2DegLat() / mCenterCOS * DEG_TO_MTR_LAT / DEG_LON_TO_MTR(mLatCenter);
+	return mLonCenter + ( x - mCenterX) * mScale.Pix2DegLon() / mCenterCOS;
 }
 
 double	WED_MapZoomerNew::YPixelToLat(double y) const
 {
-	return mLatCenter + (y - mCenterY) * mPixel2DegLat() * DEG_TO_MTR_LAT / DEG_LAT_TO_MTR(mLatCenter);
+	return mLatCenter + (y - mCenterY) * mScale.Pix2DegLat();
 }
 
 double	WED_MapZoomerNew::LonToXPixel(double lon) const
 {
-	return mCenterX + (lon - mLonCenter) * mCenterCOS * mPixel2DegLat.inv() * DEG_LON_TO_MTR(mLatCenter) / DEG_TO_MTR_LAT;
+	return mCenterX + (lon - mLonCenter) * mCenterCOS * mScale.Deg2PixLon();
 }
 
 double	WED_MapZoomerNew::LatToYPixel(double lat) const
 {
-	return mCenterY + (lat - mLatCenter) * mPixel2DegLat.inv() * DEG_LAT_TO_MTR(mLatCenter) / DEG_TO_MTR_LAT;
+	return mCenterY + (lat - mLatCenter) * mScale.Deg2PixLat();
 }
 
 double	WED_MapZoomerNew::wagner_proj_mult(double lat) const
@@ -135,21 +154,14 @@ double	WED_MapZoomerNew::wagner_proj_mult(double lat) const
 	return sqrtf(1.0f-3.0f*sqr(l/180.0f));
 }
 
-double	WED_MapZoomerNew::gnomonic_proj_cos(double lat) const
-{
-	float l(lat * DEG_TO_RAD);
-	return cosf(l);
-}
-
 Point2	WED_MapZoomerNew::PixelToLL(const Point2& p) const
 {
 #if USE_GNOMONIC
-	if (!cam && mPixel2DegLat() < THR_GNOMONIC)
+	if (!cam && mScale.Pix2DegLat() < THR_GNOMONIC)
 	{
-		Point2 pt((p.x() - mCenterX) * mPixel2DegLat(), (p.y() - mCenterY) * mPixel2DegLat());
+		Point2 pt((p.x() - mCenterX) * mScale.Pix2DegLon(),
+			      (p.y() - mCenterY) * mScale.Pix2DegLat());
 		// https://mathworld.wolfram.com/GnomonicProjection.html
-		pt.x_ *= DEG_TO_MTR_LAT / DEG_LON_TO_MTR(mLatCenter);
-		pt.y_ *= DEG_TO_MTR_LAT / DEG_LAT_TO_MTR(mLatCenter);
 		pt.x_ *= DEG_TO_RAD;
 		pt.y_ *= DEG_TO_RAD;
 #if FULL_EQUATIONS
@@ -163,9 +175,9 @@ Point2	WED_MapZoomerNew::PixelToLL(const Point2& p) const
 		double lat = RAD_TO_DEG * asin(ct * (mLatCenterSIN + pt.y() * mLatCenterCOS)) ;
 		double lon = mLonCenter + RAD_TO_DEG * atan2(pt.x(), mLatCenterCOS - pt.y() * mLatCenterSIN);
 #endif
-		if (mPixel2DegLat() > THR_GNOMONIC * 0.3)
+		if (mScale.Pix2DegLat() > THR_GNOMONIC * 0.3)
 		{
-			double blend = min(0.7, (THR_GNOMONIC - mPixel2DegLat()) / THR_GNOMONIC) / 0.7;
+			double blend = min(0.7, (THR_GNOMONIC - mScale.Pix2DegLat()) / THR_GNOMONIC) / 0.7;
 			return Point2(XPixelToLon(p.x()) * (1.0 - blend) + lon * blend,
 						  YPixelToLat(p.y()) * (1.0 - blend) + lat * blend);
 		}
@@ -189,7 +201,7 @@ Point2	WED_MapZoomerNew::PixelToLL(const Point2& p) const
 Point2	WED_MapZoomerNew::LLToPixel(const Point2& p) const
 {
 #if USE_GNOMONIC
-	if (!cam && mPixel2DegLat() < THR_GNOMONIC)
+	if (!cam && mScale.Pix2DegLat() < THR_GNOMONIC)
 	{
 		Point2 pt(p);
 		pt.x_ = min(max(mLogicalBounds[0], pt.x()), mLogicalBounds[2]);
@@ -205,12 +217,13 @@ Point2	WED_MapZoomerNew::LLToPixel(const Point2& p) const
 		auto bs = sinr(pt.x() - mLonCenter);
 		auto bc = cosr(pt.x() - mLonCenter);
 		double ci = 1.0 / (mLatCenterSIN * as + mLatCenterCOS * ac * bc);
-		double x = mCenterX + (ac * bs * ci) * RAD_TO_DEG * mPixel2DegLat.inv() * DEG_LON_TO_MTR(mLatCenter) / DEG_TO_MTR_LAT;
-		double y = mCenterY + ((mLatCenterCOS * as - mLatCenterSIN * ac * bc) * ci) * RAD_TO_DEG * mPixel2DegLat.inv() * DEG_LAT_TO_MTR(mLatCenter) / DEG_TO_MTR_LAT;
+
+		double x = mCenterX + (ac * bs * ci) * RAD_TO_DEG * mScale.Deg2PixLon();
+		double y = mCenterY + ((mLatCenterCOS * as - mLatCenterSIN * ac * bc) * ci) * RAD_TO_DEG * mScale.Deg2PixLat();
 #endif
-		if (mPixel2DegLat() > THR_GNOMONIC * 0.3)
+		if (mScale.Pix2DegLat() > THR_GNOMONIC * 0.3)
 		{
-			double blend = min(0.7, (THR_GNOMONIC - mPixel2DegLat()) / THR_GNOMONIC) / 0.7;
+			double blend = min(0.7, (THR_GNOMONIC - mScale.Pix2DegLat()) / THR_GNOMONIC) / 0.7;
 			return Point2(LonToXPixel(p.x()) * (1.0-blend) + x * blend,
 						  LatToYPixel(p.y()) * (1.0-blend) + y * blend);
 		}
@@ -243,77 +256,27 @@ void	WED_MapZoomerNew::LLToPixelv(Point2 * dst, const Point2 * src, int n) const
 
 double	WED_MapZoomerNew::GetPPM(void) const
 {
-	return mPixel2DegLat.ppm();
+	return mScale.ppm();
 }
 
 double WED_MapZoomerNew::GetClickRadius(double p) const
 {
-	return p * mPixel2DegLat();
-}
-
-pair<Point2, double> WED_MapZoomerNew::LLToPixelr(const Point2& p) const
-{
-#if USE_GNOMONIC
-	if (!cam && mPixel2DegLat() < THR_GNOMONIC)
-	{
-		Point2 pt(p);
-		pt.x_ = min(max(mLogicalBounds[0], pt.x()), mLogicalBounds[2]);
-		pt.y_ = min(max(mLogicalBounds[1], pt.y()), mLogicalBounds[3]);
-#if FULL_EQUATIONS
-		// https://mathworld.wolfram.com/GnomonicProjection.html
-		double c = sinr(mLatCenter) * sinr(pt.y()) + cosr(mLatCenter) * cosr(pt.y()) * cosr(pt.x() - mLonCenter);
-		double x = mCenterX + (cosr(pt.y()) * sinr((pt.x() - mLonCenter)) / c) * RAD_TO_DEG * mPixel2DegLat.inv();
-		double y = mCenterY + ((cosr(mLatCenter) * sinr(pt.y()) - sinr(mLatCenter) * cosr(pt.y()) * cosr(pt.x() - mLonCenter)) / c) * RAD_TO_DEG * mPixel2DegLat.inv();
-#else
-		auto as = sinr(pt.y());               // gcc gets this and uses optimized sincos() function. Yay !
-		auto ac = cosr(pt.y());
-		auto bs = sinr(pt.x() - mLonCenter);
-		auto bc = cosr(pt.x() - mLonCenter);
-		double ci = 1.0 / (mLatCenterSIN * as + mLatCenterCOS * ac * bc);
-		double x = mCenterX + (ac * bs * ci) * RAD_TO_DEG * mPixel2DegLat.inv();
-		double y = mCenterY + ((mLatCenterCOS * as - mLatCenterSIN * ac * bc) * ci) * RAD_TO_DEG * mPixel2DegLat.inv();
-#endif
-		auto as2 = sinr(pt.y() + 1e-4);
-		auto ac2 = cosr(pt.y());
-		double dx = (ac2 - ac) * bs;
-		double dy = (mLatCenterCOS * (as2 - as) - mLatCenterSIN * (ac2 - ac) * bc);
-
-		double rotation = atan2(dx, dy) * RAD_TO_DEG;
-
-		if (mPixel2DegLat() > THR_GNOMONIC * 0.3)
-		{
-			double blend = min(0.7, (THR_GNOMONIC - mPixel2DegLat()) / THR_GNOMONIC) / 0.7;
-			return { Point2(LonToXPixel(p.x()) * (1.0 - blend) + x * blend,
-				LatToYPixel(p.y()) * (1.0 - blend) + y * blend), blend * rotation };
-		}
-		else
-			return { Point2(x, y), rotation	};
-	}
-#endif
-#if USE_WAGNER
-	if (mMapSize > THR_WAGNER)
-	{
-		double blend = min(1.0, (mMapSize - THR_WAGNER) / THR_WAGNER);
-		return { Point2(LonToXPixel(p.x() * (1.0 + blend * (wagner_proj_mult(p.y()) - 1.0))),
-			LatToYPixel(p.y() * (1.0 + blend * 0))), 0.0 };
-	}
-#endif
-	return { Point2(LonToXPixel(p.x()), LatToYPixel(p.y())), 0.0 };
+	return p * mScale.Pix2DegLat();
 }
 
 double WED_MapZoomerNew::GetRotation(const Point2& p) const
 {
 #if USE_GNOMONIC
-	if (!cam && mPixel2DegLat() < THR_GNOMONIC)
+	if (!cam && mScale.Pix2DegLat() < THR_GNOMONIC)
 	{
 		Point2 pt(p);
 		pt.x_ = min(max(mLogicalBounds[0], pt.x()), mLogicalBounds[2]);
 		pt.y_ = min(max(mLogicalBounds[1], pt.y()), mLogicalBounds[3]);
-
-		auto as = sinr(pt.y());
-		auto ac = cosr(pt.y());
-		auto as2 = sinr(pt.y() + 1e-4);
-		auto ac2 = cosr(pt.y() + 1e-4);
+#if FULL_EQUATIONS
+		auto as = sinr(pt.y());                       // todo: create aproximation, this really takes long.
+		auto ac = cosr(pt.y());                       // if any kind of precision is needed, zoom is high
+		auto as2 = sinr(pt.y() + 1e-3);               // and rotation for anything visible very small, << 1deg
+		auto ac2 = cosr(pt.y() + 1e-3);
 		auto bs = sinr(pt.x() - mLonCenter);
 		auto bc = cosr(pt.x() - mLonCenter);
 
@@ -321,23 +284,20 @@ double WED_MapZoomerNew::GetRotation(const Point2& p) const
 		double dy = (mLatCenterCOS * (as2 -as) - mLatCenterSIN * (ac2 - ac) * bc);
 
 		double rotation = atan2(dx, dy) * RAD_TO_DEG;
-
-		if (mPixel2DegLat() > THR_GNOMONIC * 0.3)
+#else
+		double rotation = -(pt.x() - mLonCenter) * sinr(pt.y());
+#endif
+		if (mScale.Pix2DegLat() > THR_GNOMONIC * 0.3)
 		{
-			double blend = min(0.7, (THR_GNOMONIC - mPixel2DegLat()) / THR_GNOMONIC) / 0.7;
+			double blend = min(0.7, (THR_GNOMONIC - mScale.Pix2DegLat()) / THR_GNOMONIC) / 0.7;
 			return blend * rotation;
 		}
 		else
 			return rotation;
 	}
 #endif
-#if USE_WAGNER
-	if (mMapSize > THR_WAGNER)
-	{
-		double blend = min(1.0, (mMapSize - THR_WAGNER) / THR_WAGNER);
-		return blend * 0;
-	}
-#endif
+	// Ignore any object rotation once the maps zooms out to the near the full world.
+	// There are no meaningful X-Plane objects big enough to notice rotation that scale.
 	return 0.0;
 }
 
@@ -354,7 +314,7 @@ void	WED_MapZoomerNew::SetPixelBounds(
 	mPixels[3] = inTop;
 	mCenterX = 0.5 * (inLeft + inRight);
 	mCenterY = 0.5 * (inBottom + inTop);
-	mMapSize = (mPixels[2] - mPixels[0]) * mPixel2DegLat() / 360.0;
+	mMapSize = (mPixels[2] - mPixels[0]) * mScale.Pix2DegLat() / 360.0;
 
 	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 }
@@ -379,9 +339,11 @@ void	WED_MapZoomerNew::SetMapLogicalBounds(
 
 	mLonCenter = 0.5 * (inWest + inEast);
 	mLatCenter = 0.5 * (inNorth + inSouth);
-	mLatCenterCOS = cos(mLatCenter * DEG_TO_RAD);
-	mLatCenterSIN = sin(mLatCenter * DEG_TO_RAD);
+	mLatCenterCOS = cosr(mLatCenter);
+	mLatCenterSIN = sinr(mLatCenter);
 	mCenterCOS = mLatCenterCOS;
+
+	mScale.set(mScale.ppm(), mLatCenter);
 
 	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 }
@@ -448,22 +410,13 @@ void	WED_MapZoomerNew::ZoomShowArea(
 	mLonCenter = (inWest + inEast) * 0.5;
 	mLatCenter = (inSouth + inNorth) * 0.5;
 
-	double required_width_logical = inEast - inWest;
-	double required_height_logical = inNorth - inSouth;
-
-	if(required_width_logical == 0)
-		required_width_logical = 0.00001;
-
-	if(required_height_logical == 0)
-		required_height_logical = 0.00001;
-
+	double required_width_logical  = max(inEast - inWest, 0.00001);
+	double required_height_logical = max(inNorth - inSouth, 0.00001);
 	double pix_avail_width = mPixels[2] - mPixels[0];
 	double pix_avail_height = mPixels[3] - mPixels[1];
-
 	double scale_for_vert = required_height_logical / pix_avail_height;
-	double scale_for_horz = required_width_logical / pix_avail_width * cos(mLatCenter * DEG_TO_RAD);
-
-	mPixel2DegLat = max(scale_for_vert,scale_for_horz);
+	double scale_for_horz = required_width_logical / pix_avail_width * cosr(mLatCenter);
+	mScale.set(MTR_TO_DEG_LAT / max(scale_for_vert,scale_for_horz), mLatCenter);
 	RecalcAspectRatio();
 
 	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
@@ -486,6 +439,7 @@ void	WED_MapZoomerNew::PanPixels(
 
 	mLatCenter -= delta_lat;
 	mLonCenter -= delta_lon;
+
 	RecalcAspectRatio();
 
 	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
@@ -498,16 +452,19 @@ void	WED_MapZoomerNew::ZoomAround(
 {
 	++mCacheKey;
 
-	Point2 old_geo = PixelToLL(Point2(centerXPixel, centerYPixel));
+	if (zoomFactor <= 1.0 || mScale.Pix2DegLat() > 0.001 / DEG_TO_MTR_LAT) // limit manual zoom in to ~1 mm/pixel
+	{
+		Point2 old_pos = PixelToLL(Point2(centerXPixel, centerYPixel));
+		mScale.set(mScale.ppm() * zoomFactor, mLatCenter);
 
-	if (zoomFactor <= 1.0 || mPixel2DegLat() > 0.001 / DEG_TO_MTR_LAT) // limit manual zoom in to ~1 mm/pixel
-		mPixel2DegLat = mPixel2DegLat() / zoomFactor;
-	RecalcAspectRatio();
+		Point2 new_pos = PixelToLL(Point2(centerXPixel, centerYPixel));
+		mLonCenter -= new_pos.x() - old_pos.x();
+		mLatCenter -= new_pos.y() - old_pos.y();
 
-	Point2 new_pix = LLToPixel(old_geo);
-	PanPixels(new_pix.x(), new_pix.y(), centerXPixel, centerYPixel);
+		RecalcAspectRatio();
 
-	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
+		BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED, 0);
+	}
 }
 
 void	WED_MapZoomerNew::GetScrollBounds(float outTotalBounds[4], float outVisibleBounds[4])
@@ -549,8 +506,6 @@ void	WED_MapZoomerNew::ScrollV(float yOffset)
 
 void	WED_MapZoomerNew::RecalcAspectRatio(void)
 {
-	++mCacheKey;
-
 	double top_lat = YPixelToLat(mPixels[3]);
 	double bot_lat = YPixelToLat(mPixels[1]);
 
@@ -561,14 +516,26 @@ void	WED_MapZoomerNew::RecalcAspectRatio(void)
 
 	mLatCenterCOS = cos(mLatCenter * DEG_TO_RAD);
 	mLatCenterSIN = sin(mLatCenter * DEG_TO_RAD);
-	mMapSize = (mPixels[2] - mPixels[0]) * mPixel2DegLat() / 360.0;
+	mMapSize = (mPixels[2] - mPixels[0]) * mScale.Pix2DegLat() / 360.0;
+
+	mScale.set(mScale.ppm(), mLatCenter);
 }
 
-void WED_MapZoomerNew::mapScale::operator=(double Pixel2DegLat)
+void WED_MapZoomerNew::mapScale::set(double PPM, double LatCenterDeg, double AltitudeMSL)
 {
+	mPPM = PPM;
+	double Pixel2DegLat = MTR_TO_DEG_LAT / PPM;
+	double altitude_correction = EARTH_MEAN_RADIUS / (AltitudeMSL + EARTH_MEAN_RADIUS);
+	Pixel2DegLat *= altitude_correction;
+#if USE_GRS80
+	mPixel2DegLat = Pixel2DegLat * EARTH_MEAN_RADIUS / M_GRS80(LatCenterDeg);
+	mPixel2DegLon = Pixel2DegLat * EARTH_MEAN_RADIUS / N_GRS80(LatCenterDeg);
+#else
 	mPixel2DegLat = Pixel2DegLat;
-	mDegLat2Pixel = 1.0 / mPixel2DegLat;
-	mPPM = MTR_TO_DEG_LAT * mDegLat2Pixel;
+	mPixel2DegLon = Pixel2DegLat;
+#endif
+	mDeg2PixelLat = 1.0 / mPixel2DegLat;      // division takes a LOT longer than multiplication. So we cache these
+	mDeg2PixelLon = 1.0 / mPixel2DegLon;
 }
 
 /********** new funcs for 3D preview / prespective projection *********/
@@ -582,7 +549,7 @@ double	WED_MapZoomerNew::PixelSize(const Bbox2& bboxLL) const
 		return cam->PixelSize(Bbox3(p1.x(), p1.y(), 0.0, p2.x(), p2.y(), 0.0));
 	}
 	else
-		return max(bboxLL.xspan() * mCenterCOS, bboxLL.yspan()) * mPixel2DegLat.inv();
+		return max(bboxLL.xspan() * mCenterCOS, bboxLL.yspan()) * mScale.Deg2PixLat();
 }
 
 double	WED_MapZoomerNew::PixelSize(const Bbox2& bboxLL, double featureSize) const
@@ -652,7 +619,7 @@ void	WED_MapZoomerNew::SetPPM(double ppm)
 {
 	if (ppm > 0.0)
 	{
-		mPixel2DegLat = MTR_TO_DEG_LAT / ppm;
-		mMapSize = (mPixels[2] - mPixels[0]) * mPixel2DegLat() / 360.0;
+		mScale.set(ppm, mLatCenter);
+		mMapSize = (mPixels[2] - mPixels[0]) * mScale.Pix2DegLat() / 360.0;
 	}
 }

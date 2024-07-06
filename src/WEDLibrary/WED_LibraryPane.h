@@ -33,6 +33,23 @@ class	GUI_ScrollerPane;
 class	WED_LibraryMgr;
 class	WED_LibraryFilterBar;
 
+class WED_LibraryTextTable : public GUI_TextTable {
+public:
+				WED_LibraryTextTable(GUI_Commander* parent, int indent, int live_edit)
+									: GUI_TextTable(parent, indent, live_edit) {};
+	virtual		~WED_LibraryTextTable() {};
+
+	void		SetProvider(WED_LibraryListAdapter* adap)
+	{
+		mAdap = adap;
+		GUI_TextTable::SetProvider(adap);
+	}
+	virtual	int	CellGetHelpTip(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, string& tip);
+
+private:
+	WED_LibraryListAdapter*	mAdap;
+};
+
 class WED_LibraryPane : public GUI_Packer, public GUI_Commander, public GUI_Listener {
 public:
 
@@ -57,7 +74,7 @@ private:
 	GUI_Table *				mTable;
 	GUI_Header *			mHeader;
 
-	GUI_TextTable			mTextTable;
+	WED_LibraryTextTable	mTextTable;
 
 	WED_LibraryFilterBar *			mFilter;
 	WED_LibraryListAdapter	mLibraryList;

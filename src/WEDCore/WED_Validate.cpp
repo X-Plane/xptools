@@ -51,6 +51,7 @@
 #include "WED_RoadNode.h"
 #include "WED_Taxiway.h"
 #include "WED_TaxiRoute.h"
+#include "WED_TerPlacement.h"
 #include "WED_TruckDestination.h"
 #include "WED_TruckParkingLocation.h"
 #include "WED_TowerViewpoint.h"
@@ -611,19 +612,16 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 
 	if(who->GetClass() == WED_FacadePlacement::sClass)
 		ValidateOneFacadePlacement(who, msgs, parent_apt);
-
-	if(who->GetClass() == WED_ForestPlacement::sClass)
+	else if(who->GetClass() == WED_ForestPlacement::sClass)
 		ValidateOneForestPlacement(who, msgs, parent_apt);
-
-	if (who->GetClass() == WED_StringPlacement::sClass)
+	else if (who->GetClass() == WED_StringPlacement::sClass)
 	{
 		auto str = static_cast<WED_StringPlacement*>(who);
 		if(str->GetSpacing() < 1.0)
 			msgs.push_back(validation_error_t("Object string spacing must be grater than zero.", err_string_zero_spaceing, who, parent_apt));
 
 	}
-
-	if (who->GetClass() == WED_ExclusionPoly::sClass)
+	else if (who->GetClass() == WED_ExclusionPoly::sClass)
 	{
 		auto xcl = static_cast<WED_ExclusionPoly*>(who);
 		if (xcl->GetNumHoles() > 0)
@@ -631,48 +629,64 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 		set<int> ex;
 		xcl->GetExclusions(ex);
 		if (ex.count(exclude_For))
-			msgs.push_back(validation_error_t("Exclusion Polygons do not (yet) supported forests in X-Plane. Use Exclusion zones instead.", warn_exclusion_polys_no_forests, who, parent_apt));
+			msgs.push_back(validation_error_t("Exclusion Polygons do not (yet) supported forests in X-Plane. Use Exclusion zones instead.", 
+				gExportTarget == wet_gateway ? err_exclusion_polys_no_forests : warn_exclusion_polys_no_forests, who, parent_apt));
 	}
-
-	if(gExportTarget == wet_gateway)
+	else if(who->GetClass() == WED_ObjPlacement::sClass)
 	{
-		if(who->GetClass() != WED_Group::sClass)
-		if(!parent_apt)
-			msgs.push_back(validation_error_t("Elements of your project are outside the hierarchy of the airport you are trying to export.", err_airport_elements_outside_hierarchy, who,NULL));
-
-		if(who->GetClass() == WED_ObjPlacement::sClass)
+		auto obj = static_cast<WED_ObjPlacement *>(who);
+		if (int t = obj->HasCustomMSL())
 		{
-			auto obj = static_cast<WED_ObjPlacement *>(who);
-			if (int t = obj->HasCustomMSL())
+			double hgt = obj->GetCustomMSL();
+			char hgt_str[20];
+
+			if(gIsFeet)
+				snprintf(hgt_str, sizeof(hgt_str), "set_%s=%.0lfft", t == 1 ? "MSL" : "AGL", hgt * MTR_TO_FT);
+			else
+				snprintf(hgt_str, sizeof(hgt_str), "set_%s=%.1lfm", t == 1 ? "MSL" : "AGL", hgt);
+
+			if (gExportTarget == wet_gateway)
 			{
 				if (t == 2) // don't warn about set_AGL if the .agp has scrapers
 				{
-					const agp_t * agp;
+					const agp_t* agp;
 					string vpath;
-					WED_ResourceMgr * rmgr = WED_GetResourceMgr(who->GetArchive()->GetResolver());
+					WED_ResourceMgr* rmgr = WED_GetResourceMgr(who->GetArchive()->GetResolver());
 					obj->GetResource(vpath);
 					if (rmgr && rmgr->GetAGP(vpath, agp))
-						for (const auto& o :agp->tiles.front().objs)
+						for (const auto& o : agp->tiles.front().objs)
 							if (o.scp_step > 0.0)
 							{
 								t = 0;
 								break;
 							}
 				}
-				stringstream ss;
-				ss << "The use of " << (t == 1 ? "set_MSL=" : "set_AGL=") << (int)obj->GetCustomMSL() << '.' << abs((int)(obj->GetCustomMSL()*10.0)) % 10 << 'm';
 				if (t == 1)
 				{
-					ss << " is not allowed on the scenery gateway.";
-					msgs.push_back(validation_error_t(ss.str(), err_object_custom_elev, who, parent_apt));
+					msgs.push_back(validation_error_t("The use of set_MSL is not allowed on the scenery gateway.", 
+						err_object_custom_elev, who, parent_apt));
 				}
-				else if(t == 2)
+				else if (t == 2)
 				{
-					ss << " is discouraged on the scenery gateway. Use only in well justified cases.";
-					msgs.push_back(validation_error_t(ss.str(), warn_object_custom_elev, who, parent_apt));
+					msgs.push_back(validation_error_t(string("The use of ") + hgt_str + " is discouraged on the scenery gateway. Use only in well justified cases.",
+						warn_object_custom_elev, who, parent_apt));
 				}
 			}
+
+			if (t == 2 && (hgt < -100.0 || hgt > 100.0))
+				msgs.push_back(validation_error_t(string(hgt_str) + " is more than +/-100m.",
+					(gExportTarget == wet_gateway) ? err_object_custom_elev : warn_object_custom_elev, who, parent_apt));
+			else
+				if (hgt < -1000.0 || hgt > 10000.0)
+					msgs.push_back(validation_error_t(string(hgt_str) + " is outside of the -1000 to +10000m rendering engine safe range.",
+						err_object_custom_elev, who, parent_apt));
 		}
+	}
+
+	if (who->GetClass() != WED_Group::sClass && who->GetClass() != WED_OverlayImage::sClass)
+	{
+		if (gExportTarget == wet_gateway && !parent_apt)
+			msgs.push_back(validation_error_t("Elements of your project are outside the hierarchy of the airport you are trying to export.", err_airport_elements_outside_hierarchy, who, NULL));
 	}
 
 	//--Validate resources-----------------------------------------------------
@@ -691,6 +705,14 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 			if(lib_mgr->IsResourceDeprecatedOrPrivate(res))
 				msgs.push_back(validation_error_t(string("The library path '") + res + "' is a deprecated or private X-Plane resource and cannot be used in global airports.",
 				err_gateway_resource_private_or_depricated,	who, parent_apt));
+		}
+		else
+		{
+			if (who->GetClass() != WED_TerPlacement::sClass &&
+			    !(who->GetClass() == WED_DrapedOrthophoto::sClass && static_cast<WED_DrapedOrthophoto*> (who)->IsNew()))
+				if (res.compare(0, 3, "DEV") == 0 && (res[3] == '/' || res[3] == '\\'))
+					msgs.push_back(validation_error_t(string("Resource '") + res + "' references DEV/ folder",
+						warn_DEV_folder, who, parent_apt));
 		}
 
 		string path;
@@ -2603,6 +2625,12 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	vector<WED_ObjPlacement*>		objects;
 	vector<WED_RoadEdge*>			roads;
 	vector<WED_DrapedOrthophoto *>	orthos;
+	struct jetway_info {
+		WED_FacadePlacement* fac;
+		Jetway_t			jw;
+		Point2				cabin_location;
+	};
+	vector<jetway_info>			jetways;
 
 	WED_ResourceMgr* res_mgr = WED_GetResourceMgr(apt->GetArchive()->GetResolver());
 
@@ -2644,6 +2672,20 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		else if (c == WED_ATCFrequency::sClass) {
 			auto p = static_cast<WED_ATCFrequency *>(thing);
 			if (p) freqs.push_back(p);
+			return;
+		}
+		else if (c == WED_FacadePlacement::sClass) {
+			auto f = static_cast<WED_FacadePlacement*>(thing);
+			if (f && f->HasDockingCabin() > 0)
+			{
+				jetway_info j;
+				f->ExportJetway(j.jw);
+				j.fac = f;
+				Vector2 tunnel_dir;
+				NorthHeading2VectorDegs(j.jw.location, j.jw.location, j.jw.install_heading, tunnel_dir);
+				j.cabin_location = j.jw.location + tunnel_dir * j.jw.parked_tunnel_length * MTR_TO_DEG_LAT;
+				jetways.push_back(j);
+			}
 			return;
 		}
 		else
@@ -2734,12 +2776,46 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	for(auto r : ramps)
 		ai_useable_ramps += ValidateOneRampPosition(r, msgs, apt, runways);
 
+	set<set<WED_FacadePlacement*> > double_door2_jws;
+	for (auto& j1 : jetways)
+	{
+		if (j1.jw.docking_type == Jetway_t::door2_only)
+		{
+			bool door1_nearby = false;
+			for (auto& j2 : jetways)
+			{
+				if (j1.fac == j2.fac) continue;
+
+				auto d = LonLatDistMeters(j1.cabin_location, j2.cabin_location);
+				if (d < 15.0)
+					if (j2.jw.docking_type == Jetway_t::door2_only)
+					{
+						set<WED_FacadePlacement*> jws;
+						jws.insert(j1.fac);
+						jws.insert(j2.fac);
+						double_door2_jws.insert(jws);
+					}
+					else
+						door1_nearby = true;
+			}
+			if (!door1_nearby)
+			{
+				msgs.push_back(validation_error_t("Jetways docking to door #2 only must have a jetway for door #1 nearby, serving the same ramp start.",
+					err_jetway_unmatched_door2, j1.fac, apt));
+			}
+		}
+	}
+	for(auto& j : double_door2_jws)
+		msgs.push_back(validation_error_t("There must be only one jetway docking to door #2 serving any one ramp start.",
+			err_jetway_unmatched_door2, j, apt));
+
 
 	if(gExportTarget >= wet_xplane_1050)
 	{
 		ValidateAirportMetadata(apt,msgs,apt);
 		if(has_ATC && ai_useable_ramps < 1)
-			msgs.push_back(validation_error_t("Airports with ATC towers frequencies must have at least one Ramp Start of type=gate or tiedown.", err_ramp_need_starts_suitable_for_ai_ops, apt, apt));
+			msgs.push_back(validation_error_t("Airports with ATC towers frequencies must have at least one Ramp Start of type=gate or tiedown.", 
+				err_ramp_need_starts_suitable_for_ai_ops, apt, apt));
 	}
 
 	if (gExportTarget < wet_xplane_1200)

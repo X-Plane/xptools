@@ -32,9 +32,10 @@
 #include "FileUtils.h"
 #include "MathUtils.h"
 #include "PlatformUtils.h"
-#include "AptIO.h"
+#include "WED_ToolUtils.h"
 #include "WED_Thing.h"
 #include "WED_Group.h"
+#include "WED_Airport.h"
 #include "WED_KeyObjects.h"
 #include "WED_Select.h"
 #include "WED_Root.h"
@@ -45,6 +46,7 @@
 #include "WED_TexMgr.h"
 #include "WED_LibraryMgr.h"
 #include "WED_ResourceMgr.h"
+#include "WED_SceneryImport.h"
 #include "WED_GroupCommands.h"
 #include "WED_Version.h"
 
@@ -55,9 +57,6 @@
 #if IBM
 #include "GUI_Unicode.h"
 #endif
-// TODO:
-// migrate all old stuff
-// wire dirty to obj persistence
 
 #include "WED_Globals.h"
 int gIsFeet;
@@ -71,18 +70,15 @@ static set<WED_Document *> sDocuments;
 static map<string,string>	sGlobalPrefs;
 
 WED_Document::WED_Document(
-	const string& 		package,
+	const string& package,
 	double				inBounds[4]) :
-	//	mProperties(mDB.get()),
 	mPackage(package),
 	mFilePath(gPackageMgr->ComputePath(package, "earth.wed")),
-	//	mDB(mFilePath.c_str()),
-	//	mPackage(inPackage),
 #if WITHNWLINK
 	mServer(NULL),
 	mNWLink(NULL),
-	mOnDisk(false),
 #endif
+	mOnDisk(false),
 	mPrefsChanged(false),
 	mUndo(&mArchive, this),
 	mArchive(this)
@@ -102,6 +98,39 @@ WED_Document::WED_Document(
 	mBounds[3] = inBounds[3];
 
 	Revert();
+
+	// Help WED novices with the frustrating "opened scenery, WED just shows empty screen" by looking for importable stuff
+	if (!mOnDisk)
+	{
+		int this_pkg;
+		for (this_pkg = gPackageMgr->CountCustomPackages(); this_pkg > 0; this_pkg--)
+		{
+			string tmp;
+			gPackageMgr->GetNthPackageName(this_pkg, tmp);
+			if (tmp == package)
+				break;
+		}
+		if (this_pkg > 0 && gPackageMgr->HasAPT(this_pkg))
+		{
+			if (ConfirmMessage("This scenery package does not include the WED design files.\n"
+				               "But it does include already exported X-Plane scenery.\n"
+				               "WED can import these, but some loss of functionality or features may inccurr.\n"
+							   "For best results, always start editing with the original WED design files\n"
+							   "\n"
+							   "YES - try recovering scenery\n"
+							   "NO  - start with new, empty scenery\n", "Yes", "No") == 1)
+			{
+			string scn_path = gPackageMgr->ComputePath(package, "Earth nav data");
+
+			mUndo.__StartCommand("Revert from Saved.", __FILE__, __LINE__);
+			if (WED_SceneryImport(scn_path, WED_GetWorld(this), true))
+				mUndo.CommitCommand();
+            else
+				mUndo.AbortCommand();
+			}
+		}
+	}
+
 	mUndo.PurgeUndo();
 	mUndo.PurgeRedo();
 
@@ -232,7 +261,7 @@ void	WED_Document::Save(void)
 #else
 	rename(xml.c_str(), bakXML.c_str());
 #endif
-		auto t1 = std::chrono::high_resolution_clock::now();
+	auto t1 = std::chrono::high_resolution_clock::now();
 	chrono::duration<double> elapsed = t1 - t0;
 	LOG_MSG("\nrename b4 save %.3lf s\n", elapsed.count());
 	t0 = t1;
@@ -321,35 +350,54 @@ void	WED_Document::Revert(void)
 	if(this->IsDirty())
 	{
 		string msg = "Are you sure you want to revert the document '" + mPackage + "' to the saved version on disk?";
-		if(!ConfirmMessage(msg.c_str(),"Revert","Cancel"))
+		if(!ConfirmMessage(msg.c_str(), "Revert", "Cancel"))
 			return;
 	}
-
 	mDocPrefs.clear();
-	mUndo.__StartCommand("Revert from Saved.",__FILE__,__LINE__);
+	auto t0 = std::chrono::high_resolution_clock::now();
 
 	try {
+		mUndo.__StartCommand("Revert from Saved.", __FILE__, __LINE__);
+		bool xml_exists;
+
 		WED_XMLReader	reader;
 		reader.PushHandler(this);
-		string fname(mFilePath);
-		fname+=".xml";
+		string fname(mFilePath + ".xml");
 		mArchive.ClearAll();
 
-		// First: try to IO the XML file.
-		bool xml_exists;
 		LOG_MSG("I/Doc reading XML from %s\n", fname.c_str());
-
-		string result = reader.ReadFile(fname.c_str(),&xml_exists);
-
-		for (auto sp : mDocPrefs)
-			LOG_MSG("I/Doc prefs %s = %s\n", sp.first.c_str(), sp.second.c_str());
-		LOG_FLUSH();
+		string result = reader.ReadFile(fname.c_str(), &xml_exists);
 
 		if(xml_exists && !result.empty())
 		{
 			LOG_MSG("E/Doc Error reading XML %s",result.c_str());
-			WED_ThrowPrintf("Unable to open XML file: %s",result.c_str());
+			string msg("An error '");
+			msg += result + "'ocurred while opening the XML file.\n";
+
+			WED_XMLReader	reader_bak;
+			reader_bak.PushHandler(this);
+			mArchive.ClearAll();
+			fname = mFilePath + ".bak.xml";
+
+			LOG_MSG("I/Doc reading backup XML from %s\n", fname.c_str());
+			result = reader_bak.ReadFile(fname.c_str(), &xml_exists);
+
+			if (result.empty())
+			{
+				msg += "But a good backup file exists.\n";
+				if (ConfirmMessage(msg.c_str(), "Open backup", "Cancel") == 0)
+					throw;
+			}
+			else
+			{
+				LOG_MSG("E/Doc Error reading backup XML %s", result.c_str());
+				WED_ThrowPrintf("%s\nAnd the backup XML resulted in error: %s", msg.c_str(), result.c_str());
+			}
 		}
+
+		for (auto sp : mDocPrefs)
+			LOG_MSG("I/Doc prefs %s = %s\n", sp.first.c_str(), sp.second.c_str());
+
 		if(xml_exists)
 		{
 			mOnDisk=true;
@@ -357,8 +405,7 @@ void	WED_Document::Revert(void)
 		}
 		else
 		{
-				/* We have a brand new blank doc.  In WED 1.0, we ran a SQL script that built the core objects,
-				 * then we IO-ed it in.  In WED 1.1 we just build the world and the few named objs immediately. */
+				// We have a brand new blank doc.
 
 				// BASIC DOCUMENT STRUCTURE:
 				// The first object ever made gets ID 1 and is the "root" - the one known object.  The WED doc goes
@@ -381,12 +428,16 @@ void	WED_Document::Revert(void)
 				wrl->SetName("world");
 				LOG_MSG("I/Doc brand new empty doc\n");
 		}
+		mUndo.CommitCommand();
 	} catch(...) {
 		// don't bail out of the load loop without aborting the command - otherwise undo mgr goes ape.
 		mUndo.AbortCommand();
 		throw;
 	}
-	mUndo.CommitCommand();
+
+	auto t1 = std::chrono::high_resolution_clock::now();
+	chrono::duration<double> elapsed = t1 - t0;
+	LOG_MSG("XML reading %.3lf s\n", elapsed.count());
 
 	if(WED_Repair(this))
 	{

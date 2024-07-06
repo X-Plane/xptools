@@ -107,7 +107,7 @@ static unsigned int encode_heading(double h)     // draped polygons have 1/128th
 
 static unsigned int encode_spacing(double s)     // object strings have 1/128th resolution encoded in integer spacing
 {
-	if (gExportTarget >= wet_xplane_1200 && s < 433.8)
+	if (gExportTarget >= wet_xplane_1211 && s < 433.8)
 	{
 		unsigned int nearest = round(s);
 		double ratio = nearest == 0 ? 0.0 : s / (double) nearest;
@@ -119,14 +119,6 @@ static unsigned int encode_spacing(double s)     // object strings have 1/128th 
 	else
 		return s;
 }
-
-// stolen from GISUtils - I got annoyed with having to grab all of CGAL for a modulo function.
-/*inline int	latlon_bucket(int p)
-{
-	if (p > 0) return (p / 10) * 10;
-	else return ((-p + 9) / 10) * -10;
-}*/
-
 
 template <class __Iterator>
 __Iterator find_contiguous_beziers(__Iterator b, __Iterator e)
@@ -1262,7 +1254,7 @@ static int	DSF_ExportTileRecursive(
 				double xyrz[4] = { p.x(), p.y(), heading, 0.0 };
 				if(obj->HasCustomMSL())
 				{
-					xyrz[3] = obj->GetCustomMSL();
+					xyrz[3] = doblim(obj->GetCustomMSL(), -500.0, +10000.0);   // XPD-15378 rendering engine may freak out
 					cbs->AddObjectWithMode_f(idx, xyrz, (obj_elev_mode) obj->HasCustomMSL(), writer);
 				}
 				else
