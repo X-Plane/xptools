@@ -107,7 +107,7 @@ static unsigned int encode_heading(double h)     // draped polygons have 1/128th
 
 static unsigned int encode_spacing(double s)     // object strings have 1/128th resolution encoded in integer spacing
 {
-	if (gExportTarget >= wet_xplane_1211 && s < 433.8)
+	if (gExportTarget > wet_xplane_1200 && s < 433.8)
 	{
 		unsigned int nearest = round(s);
 		double ratio = nearest == 0 ? 0.0 : s / (double) nearest;
