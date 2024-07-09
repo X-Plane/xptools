@@ -13,7 +13,7 @@ jobs:
     runs-on: windows-2022
     steps:
     - name: Checkout repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@main
       with:
         submodules: true
     - name: Add MSBuild to PATH
@@ -29,7 +29,7 @@ jobs:
         move msvc\XGrinder\Release\XGrinder.exe msvc\
         move msvc\ObjView\Release\Objview.exe msvc\
     - name: Archive build result
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@main
       with:
         name: xpt_release_build
         path: msvc/*.exe
@@ -42,7 +42,7 @@ jobs:
       APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@main
         with:
           submodules: yes
       - name: Setup Credentials
@@ -66,7 +66,7 @@ jobs:
 #          ./scripts/notarization.sh DDSTool.zip build/XPT.xcarchive/Products/usr/local/bin/DDSTool staple
 #          ./scripts/notarization.sh DSFTool.zip build/XPT.xcarchive/Products/usr/local/bin/DSFTool staple
       - name: Archive build result
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@main
         with:
           name: xpt_release_build
           path: build/XPT.xcarchive/Products
@@ -78,7 +78,7 @@ jobs:
         image: ghcr.io/x-plane/xptools_builder:latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@main
         with:
           submodules: true
       - name: Build Libs
@@ -92,7 +92,7 @@ jobs:
         run: |
           make -s -C . conf=release_opt -j$(nproc) DDSTool DSFTool XGrinder ObjView
       - name: Archive build result
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@main
         with:
           name: xpt_release_build
           path: |
@@ -106,9 +106,9 @@ jobs:
     needs: [build-windows, build-mac, build-linux]
     steps:
     - name: Checkout repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@main
     - name: get build results
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@main
       with:
         name: xpt_release_build
     - name: zip files
@@ -142,7 +142,7 @@ jobs:
 #        source: xptools_*.zip            # scp will overwrite target. find a way to check & NOT overwrite
 #        target: "public/xptools/"
     - name: Archive zipfiles
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@main
       with:
         name: xpt_release_build
         path: ./xptools_*.zip
