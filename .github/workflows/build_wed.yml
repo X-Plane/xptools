@@ -28,7 +28,7 @@ jobs:
     - name: Archive build result
       uses: actions/upload-artifact@main
       with:
-        name: wed_release_build
+        name: artefact-win
         path: msvc/WorldEditor/Release/WorldEditor.exe
           
   build-mac:
@@ -65,7 +65,7 @@ jobs:
       - name: Archive build result
         uses: actions/upload-artifact@main
         with:
-          name: wed_release_build
+          name: artefact-osx
           path: build/WED.xcarchive/Products/Applications
           
   build-linux:
@@ -91,7 +91,7 @@ jobs:
       - name: Archive build result
         uses: actions/upload-artifact@main
         with:
-          name: wed_release_build
+          name: artefact-lin
           path: build/Linux/release_opt/WED
 
   make-zips:
@@ -102,8 +102,6 @@ jobs:
       uses: actions/checkout@main
     - name: get build results
       uses: actions/download-artifact@main
-      with:
-        name: wed_release_build
     - name: zip files
       run: |
           ls -l
