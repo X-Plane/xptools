@@ -31,7 +31,7 @@ jobs:
     - name: Archive build result
       uses: actions/upload-artifact@main
       with:
-        name: xpt_release_build
+        name: xpt_artifact-win
         path: msvc/*.exe
           
   build-mac:
@@ -44,7 +44,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@main
         with:
-          submodules: yes
+          submodules: no
       - name: Setup Credentials
         uses: apple-actions/import-codesign-certs@v2
         with: 
@@ -68,7 +68,7 @@ jobs:
       - name: Archive build result
         uses: actions/upload-artifact@main
         with:
-          name: xpt_release_build
+          name: xpt_artifact-osx
           path: build/XPT.xcarchive/Products
           
   build-linux:
@@ -80,7 +80,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@main
         with:
-          submodules: true
+          submodules: no
       - name: Build Libs
         run: |
           git config --global --add safe.directory /__w/xptools/xptools
@@ -94,7 +94,7 @@ jobs:
       - name: Archive build result
         uses: actions/upload-artifact@main
         with:
-          name: xpt_release_build
+          name: xpt_artifact-lin
           path: |
              build/Linux/release_opt/DDSTool
              build/Linux/release_opt/DSFTool
@@ -107,10 +107,13 @@ jobs:
     steps:
     - name: Checkout repo
       uses: actions/checkout@main
+      with:
+        submodules: no
     - name: get build results
       uses: actions/download-artifact@main
       with:
-        name: xpt_release_build
+        parttern: xpt_artifact-*
+        merge-multiple: true
     - name: zip files
       run: |
           version=$(awk '/XPT_PACKAGE_VER[\s\t]/ {gsub(/"/,""); print $3}' <src/XPTools/version.h)
