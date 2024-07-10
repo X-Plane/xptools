@@ -414,8 +414,10 @@ void WED_NavaidLayer::parse_atc_dat(MFMemFile * str)
 									if (p.x() < n.lonlat.x())
 										n.lonlat = p;             // place label on leftmost edge of the airspace
 							}
+						Bbox2 box(n.lonlat);
+						box.expand(0.02, 0.02 / cos(n.lonlat.y() * M_PI / 180.0));
 						for (auto nav = mNavaids.cbegin(); nav != mNavaids.cend(); nav++)
-							if (LonLatDistMeters(nav->lonlat, n.lonlat) < 2000.0)
+							if (box.contains(nav->lonlat))
 							{
 								n.lonlat.y_ += 0.02;     // avoid two labels right ontop of each other
 								break;
