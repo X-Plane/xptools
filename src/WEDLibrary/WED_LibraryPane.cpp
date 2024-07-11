@@ -120,8 +120,13 @@ int	WED_LibraryTextTable::CellGetHelpTip(int cell_bounds[4], int cell_x, int cel
 		if (tip.length() > 0)
 		{
 			tip = string("Varies ") + tip.substr(1);
-			return 1;
 		}
+		if (mAdap->mCache[cell_y].customized)
+		{
+			if(!tip.empty()) tip += " + ";
+			tip += "Modified by custom library";
+		}
+		if (!tip.empty()) return 1;
 	}
 	return 0;
 }

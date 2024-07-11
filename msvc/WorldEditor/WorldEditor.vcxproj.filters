@@ -1864,6 +1864,9 @@
     <Image Include="..\..\src\WEDResources\tables\variants.png">
       <Filter>WEDResources\table</Filter>
     </Image>
+    <Image Include="..\..\src\WEDResources\tables\customized.png">
+      <Filter>WEDResources\table</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\WEDResources\map_tools.psd">
@@ -1965,6 +1968,7 @@
     <None Include="..\..\src\WEDCore\README.WorldEditor">
       <Filter>WEDCore</Filter>
     </None>
+    <None Include="..\..\src\WEDResources\gui_res1.bin" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\WEDResources\WED.rc">

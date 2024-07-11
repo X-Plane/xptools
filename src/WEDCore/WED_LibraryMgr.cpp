@@ -260,6 +260,14 @@ bool	WED_LibraryMgr::IsRegional(const string& r) const
 	return me->second.has_regions;
 }
 
+bool	WED_LibraryMgr::IsCustomized(const string& r) const
+{
+	auto me = res_table.find(r);
+	if (me == res_table.end() || me->second.res_type == res_Directory) return false;
+	return me->second.is_default && me->second.is_customized;
+}
+
+
 
 bool	WED_LibraryMgr::DoesPackHaveLibraryItems(int package) const
 {
@@ -428,7 +436,7 @@ void		WED_LibraryMgr::Rescan()
 							int south = MFS_int(&s);
 							int east = MFS_int(&s);
 							int north = MFS_int(&s);
-							if (west == -180 && east == 179 && south == -90 && north == 89)
+							if (west <= -180 && east >= 179 && south <= -90 && north >= 89)
 							{
 								all_region = current_region;
 								LOG_MSG("I/Lib %s has global region '%s'\n", pack_base.c_str(), all_region.c_str());
@@ -783,6 +791,7 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 			new_info.is_default = is_default;
 			new_info.has_seasons = is_seasonal;
 			new_info.has_regions = is_regional;
+			new_info.is_customized = false;
 			res_table.insert(res_map_t::value_type(p,new_info));
 		}
 		else
@@ -798,10 +807,14 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 				break;                                   // avoid adding backups as variants
 
 			i->second.packages.insert(package);
+			if (is_default != i->second.is_default) 
+				i->second.is_customized = true;
+
 			if(is_default && !i->second.is_default)
 			{
 				i->second.status = status;               // LR libs will always override/downgrade Custom Libs visibility
-				i->second.is_default = true;             // But they can still elevate any prior LR lib's visiblity, as some do
+				i->second.is_default = true;
+				//i->second.is_customized = true;
 			}
 			else
 				i->second.status = max((int) i->second.status, (int) status);	// upgrade status if we just found a public version!

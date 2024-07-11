@@ -432,6 +432,7 @@ RESOURCES += ./src/WEDResources/tables/delete.png
 RESOURCES += ./src/WEDResources/tables/seasons.png
 RESOURCES += ./src/WEDResources/tables/variants.png
 RESOURCES += ./src/WEDResources/tables/regions.png
+RESOURCES += ./src/WEDResources/tables/customized.png
 RESOURCES += ./src/WEDResources/worldmap.jpg
 RESOURCES += ./src/WEDResources/pavement/dirt.png
 RESOURCES += ./src/WEDResources/pavement/gravel.png

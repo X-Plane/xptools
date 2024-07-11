@@ -598,6 +598,7 @@
     <Image Include="..\..\src\WEDResources\startup_bar.png" />
     <Image Include="..\..\src\WEDResources\startup_bkgnd.png" />
     <Image Include="..\..\src\WEDResources\startup_btns.png" />
+    <Image Include="..\..\src\WEDResources\tables\customized.png" />
     <Image Include="..\..\src\WEDResources\tables\regions.png" />
     <Image Include="..\..\src\WEDResources\tables\seasons.png" />
     <Image Include="..\..\src\WEDResources\tables\variants.png" />
@@ -610,6 +611,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\WEDCore\README.WorldEditor" />
+    <None Include="..\..\src\WEDResources\gui_res1.bin" />
     <None Include="..\..\src\WEDResources\icons\map_airport.png" />
     <None Include="..\..\src\WEDResources\icons\map_beacon.png" />
     <None Include="..\..\src\WEDResources\icons\map_helipad.png" />
