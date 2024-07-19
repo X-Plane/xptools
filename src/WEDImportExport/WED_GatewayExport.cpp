@@ -710,7 +710,6 @@ void WED_GatewayExportDialog::TimerFired()
 				WED_GatewayExportDialog::mAirportMetadataCSVPath = res.out_path;
 				mPhase = expt_dialog_upload_to_gateway;
 				this->AddLabel("Airport metadata defaults have been downloaded succesfully.");
-				}
 			}
 			else if(res.out_status == cache_status_error)
 			{
