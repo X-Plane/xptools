@@ -501,7 +501,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_Export900:
 	case wed_Export1000: case wed_Export1021: case wed_Export1050:
 	case wed_Export1100: case wed_Export1130:
-	case wed_Export1200: case wed_Export1211:
+	case wed_Export1200: case wed_Export1213:
 		if (gExportTarget != wet_xplane_900 + command - wed_Export900)
 		{
 			gExportTarget = (WED_Export_Target) (wet_xplane_900 + command - wed_Export900);
@@ -640,7 +640,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_Export900:
 	case wed_Export1000: case wed_Export1021: case wed_Export1050:
 	case wed_Export1100: case wed_Export1130:
-	case wed_Export1200: case wed_Export1211:
+	case wed_Export1200: case wed_Export1213:
 		ioCheck = (command - wed_Export900) == (gExportTarget - wet_xplane_900); return 1;
 	case wed_ExportGateway:ioCheck = gExportTarget == wet_gateway;	return 1;
 
