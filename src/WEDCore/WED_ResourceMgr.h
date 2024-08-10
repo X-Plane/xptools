@@ -244,6 +244,7 @@ struct for_info_t {
 
 	const XObj8 *preview, *preview_3d;
 	string description;
+	float max_height;
 
 	bool has_3D;
 	map<int, vector<tree_t> > trees;

@@ -42,6 +42,7 @@
 #include "WED_Airport.h"
 
 #include "IResolver.h"
+#include "WED_HierarchyUtils.h"
 #include "WED_ToolUtils.h"
 #include "WED_ResourceMgr.h"
 
@@ -58,15 +59,6 @@
 #include "zip.h"
 #include <stdarg.h>
 
-//#include "WED_ToolUtils.h"
-//#include "WED_Validate.h"
-//#include "ITexMgr.h"
-//#include "WED_ResourceMgr.h"
-//#include "WED_Document.h"
-//#include "BitmapUtils.h"
-//#include "WED_GISUtils.h"
-//#include <time.h>
-//#include "STLUtils.h"
 
 #if DEV
 #include "PerfUtils.h"
@@ -1657,24 +1649,68 @@ static int	DSF_ExportTileRecursive(
 				}
 				break;
 			case dsf_fill_points:
-				for(int h = -1; h < fst->GetNumHoles(); ++h)
 				{
-					IGISPointSequence * seq = (h == -1) ? fst->GetOuterRing() : fst->GetNthHole(h);
 					vector<Point2>	pts;
 
-					for(int p = 0; p < seq->GetNumPoints(); ++p)
+					for (int h = -1; h < fst->GetNumHoles(); ++h)             // allow holes in point mode ???
 					{
-						Point2 x;
-						seq->GetNthPoint(p)->GetLocation(gis_Geo,x);
-						if(safe_bounds.contains(x))
+						IGISPointSequence* seq = (h == -1) ? fst->GetOuterRing() : fst->GetNthHole(h);
+
+						for (int p = 0; p < seq->GetNumPoints(); ++p)
 						{
-							pts.push_back(x);
+							Point2 x;
+							seq->GetNthPoint(p)->GetLocation(gis_Geo, x);
+							if (safe_bounds.contains(x))
+							{
+								pts.push_back(x);
+							}
 						}
 					}
-					if(!pts.empty())
+
+					if (!pts.empty())
 					{
 						++real_thingies;
-						DSF_AccumPts(pts.begin(),pts.end(), safe_bounds, cbs,writer, idx, param);
+						bool elevated = false;
+						// get DEM
+						Bbox2 bnds;
+						fst->GetBounds(gis_Geo, bnds);
+						vector<WED_TerPlacement*> ters;
+						CollectRecursive(WED_GetWorld(resolver), back_inserter(ters), EntityNotHidden, TakeAlways, WED_TerPlacement::sClass);
+
+						const dem_info_t* dem_info = nullptr;
+						for(auto t : ters)
+							if (t->Cull(bnds))
+							{
+								string dem_file;
+								t->GetResource(dem_file);
+								if (!(!WED_GetResourceMgr(resolver)->GetDem(dem_file, dem_info)))
+									elevated = true;
+								break;
+							}
+						// get height ranges
+						const for_info_t * fst_info = nullptr;
+						if (!WED_GetResourceMgr(resolver)->GetFor(r, fst_info))
+							elevated = false;
+
+						if(elevated)
+						{
+							cbs->BeginPolygon_f(idx, param, 4 + 10, writer);   // really means 4 data planes, but signals PointPool scaling needs to suit forests with height, msl
+							cbs->BeginPolygonWinding_f(writer);
+							double c[4];
+							for (auto& p : pts)
+							{
+								c[0] = p.x();
+								c[1] = p.y();
+								c[2] = 0.6 * fst_info->max_height;       // random (min_height, max_height);
+								c[3] = dem_info->xy_nearest(p.x(), p.y());
+
+								cbs->AddPolygonPoint_f(c, writer);
+							}
+							cbs->EndPolygonWinding_f(writer);
+							cbs->EndPolygon_f(writer);
+						}
+						else
+							DSF_AccumPts(pts.begin(), pts.end(), safe_bounds, cbs, writer, idx, param);
 					}
 				}
 				break;

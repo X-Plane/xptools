@@ -1278,7 +1278,7 @@ bool	WED_ResourceMgr::GetFor(const string& path, for_info_t const *& info)
 	float scale_x=256, scale_y=256, space_x=30, space_y=30, rand_x=0, rand_y=0;
 	string tex, tex_3d;
 	bool shader_2d = true;
-	double max_height = 0.0;
+	fst->max_height = 0.0;
 	int layer = 0;
 
 	struct tree_mesh {
@@ -1348,7 +1348,7 @@ bool	WED_ResourceMgr::GetFor(const string& path, for_info_t const *& info)
 			t.pct = MFS_double(&s);
 			t.hmin = MFS_double(&s);
 			t.hmax = MFS_double(&s);
-			if (max_height < t.hmax) max_height = t.hmax;
+			if (fst->max_height < t.hmax) fst->max_height = t.hmax;
 			if (is_tree2)                                // new optional format in XP12, per Sidney
 			{
 				MFS_double(&s);
@@ -1405,7 +1405,7 @@ bool	WED_ResourceMgr::GetFor(const string& path, for_info_t const *& info)
 	const int TPR = fst->trees.begin()->second.size() < 4 ? 3 : TREES_PER_ROW;
 
 	fst->description += to_string(tot_varieties) + string(" different trees, ");
-	fst->description += string("max h=") + to_string(intround(max_height / (gIsFeet ? 0.3048 : 1.0))) + string(gIsFeet ? "ft" : "m");
+	fst->description += string("max h=") + to_string(intround(fst->max_height / (gIsFeet ? 0.3048 : 1.0))) + string(gIsFeet ? "ft" : "m");
 
 	XObj8 *new_obj = new XObj8, *new_obj_3d = nullptr;
 	XObjCmd8 cmd;
