@@ -13,7 +13,7 @@ jobs:
     runs-on: windows-2022
     steps:
     - name: Checkout repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@main
       with:
         submodules: true
     - name: Add MSBuild to PATH
@@ -29,9 +29,9 @@ jobs:
         move msvc\XGrinder\Release\XGrinder.exe msvc\
         move msvc\ObjView\Release\Objview.exe msvc\
     - name: Archive build result
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@main
       with:
-        name: xpt_release_build
+        name: xpt_artifact-win
         path: msvc/*.exe
           
   build-mac:
@@ -42,9 +42,9 @@ jobs:
       APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@main
         with:
-          submodules: yes
+          submodules: no
       - name: Setup Credentials
         uses: apple-actions/import-codesign-certs@v2
         with: 
@@ -66,9 +66,9 @@ jobs:
 #          ./scripts/notarization.sh DDSTool.zip build/XPT.xcarchive/Products/usr/local/bin/DDSTool staple
 #          ./scripts/notarization.sh DSFTool.zip build/XPT.xcarchive/Products/usr/local/bin/DSFTool staple
       - name: Archive build result
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@main
         with:
-          name: xpt_release_build
+          name: xpt_artifact-osx
           path: build/XPT.xcarchive/Products
           
   build-linux:
@@ -78,9 +78,9 @@ jobs:
         image: ghcr.io/x-plane/xptools_builder:latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@main
         with:
-          submodules: true
+          submodules: no
       - name: Build Libs
         run: |
           git config --global --add safe.directory /__w/xptools/xptools
@@ -92,9 +92,9 @@ jobs:
         run: |
           make -s -C . conf=release_opt -j$(nproc) DDSTool DSFTool XGrinder ObjView
       - name: Archive build result
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@main
         with:
-          name: xpt_release_build
+          name: xpt_artifact-lin
           path: |
              build/Linux/release_opt/DDSTool
              build/Linux/release_opt/DSFTool
@@ -106,11 +106,14 @@ jobs:
     needs: [build-windows, build-mac, build-linux]
     steps:
     - name: Checkout repo
-      uses: actions/checkout@v3
-    - name: get build results
-      uses: actions/download-artifact@v3
+      uses: actions/checkout@main
       with:
-        name: xpt_release_build
+        submodules: no
+    - name: get build results
+      uses: actions/download-artifact@main
+      with:
+        parttern: xpt_artifact-*
+        merge-multiple: true
     - name: zip files
       run: |
           version=$(awk '/XPT_PACKAGE_VER[\s\t]/ {gsub(/"/,""); print $3}' <src/XPTools/version.h)
@@ -142,7 +145,7 @@ jobs:
 #        source: xptools_*.zip            # scp will overwrite target. find a way to check & NOT overwrite
 #        target: "public/xptools/"
     - name: Archive zipfiles
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@main
       with:
         name: xpt_release_build
         path: ./xptools_*.zip

@@ -53,6 +53,7 @@
 		02198CC021A275F7008FDB0C /* nav_ndb.png in Resources */ = {isa = PBXBuildFile; fileRef = 02198CB821A2759F008FDB0C /* nav_ndb.png */; };
 		02198CC121A275FC008FDB0C /* nav_vor.png in Resources */ = {isa = PBXBuildFile; fileRef = 02198CB921A2759F008FDB0C /* nav_vor.png */; };
 		0224ED2A20048CA0004729CD /* WED_ValidateList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0224ED2720048B7F004729CD /* WED_ValidateList.cpp */; };
+		022679482C40A4E700E2AB5E /* customized.png in Resources */ = {isa = PBXBuildFile; fileRef = 022679472C40A4E700E2AB5E /* customized.png */; };
 		0236B9732034264A0046900C /* check_buttons.png in Resources */ = {isa = PBXBuildFile; fileRef = 0236B971203425CE0046900C /* check_buttons.png */; };
 		024A32572864D4CF000CEF68 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 024A32562864D4CF000CEF68 /* libz.tbd */; };
 		024A32622864D765000CEF68 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 024A32562864D4CF000CEF68 /* libz.tbd */; };
@@ -523,7 +524,6 @@
 		D65E4B4D0B654314004D7887 /* GISTool_ProcessingCmds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC388E0AB22C85003949C5 /* GISTool_ProcessingCmds.cpp */; };
 		D65E4B4E0B654317004D7887 /* GISTool_Utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38900AB22C85003949C5 /* GISTool_Utils.cpp */; };
 		D65E4B4F0B654319004D7887 /* GISTool_VectorCmds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38920AB22C85003949C5 /* GISTool_VectorCmds.cpp */; };
-		D65E4B930B65451F004D7887 /* CompGeomDefs2_TEST.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37730AB22C85003949C5 /* CompGeomDefs2_TEST.cpp */; };
 		D65E4B940B654529004D7887 /* XESInit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38780AB22C85003949C5 /* XESInit.cpp */; };
 		D65E4B990B65453A004D7887 /* ParamDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC386B0AB22C85003949C5 /* ParamDefs.cpp */; };
 		D65E4B9A0B65453B004D7887 /* SceneryPackages.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC386D0AB22C85003949C5 /* SceneryPackages.cpp */; };
@@ -1032,6 +1032,7 @@
 		02198CB921A2759F008FDB0C /* nav_vor.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = nav_vor.png; sourceTree = "<group>"; };
 		0224ED2720048B7F004729CD /* WED_ValidateList.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ValidateList.cpp; sourceTree = "<group>"; };
 		0224ED2820048B7F004729CD /* WED_ValidateList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ValidateList.h; sourceTree = "<group>"; };
+		022679472C40A4E700E2AB5E /* customized.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = customized.png; sourceTree = "<group>"; };
 		0236B971203425CE0046900C /* check_buttons.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = check_buttons.png; sourceTree = "<group>"; };
 		024A32562864D4CF000CEF68 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		025D81132B9858A30005A88E /* WED_TerPlacement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WED_TerPlacement.h; path = src/WEDEntities/WED_TerPlacement.h; sourceTree = SOURCE_ROOT; };
@@ -1794,7 +1795,6 @@
 		D6BC37700AB22C85003949C5 /* BWImage.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = BWImage.h; sourceTree = "<group>"; };
 		D6BC37710AB22C85003949C5 /* CarbonMemMap.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = CarbonMemMap.h; sourceTree = "<group>"; };
 		D6BC37720AB22C85003949C5 /* CompGeomDefs2.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = CompGeomDefs2.h; sourceTree = "<group>"; };
-		D6BC37730AB22C85003949C5 /* CompGeomDefs2_TEST.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = CompGeomDefs2_TEST.cpp; sourceTree = "<group>"; };
 		D6BC37740AB22C85003949C5 /* CompGeomDefs3.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = CompGeomDefs3.h; sourceTree = "<group>"; };
 		D6BC37750AB22C85003949C5 /* CompGeomUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = CompGeomUtils.cpp; sourceTree = "<group>"; };
 		D6BC37760AB22C85003949C5 /* CompGeomUtils.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = CompGeomUtils.h; sourceTree = "<group>"; };
@@ -2420,6 +2420,7 @@
 		D607B7950C0B831400992876 /* tables */ = {
 			isa = PBXGroup;
 			children = (
+				022679472C40A4E700E2AB5E /* customized.png */,
 				02EB22B727D9BB0D006A853A /* gradient_light.png */,
 				02EB22B227D9BA51006A853A /* variants.png */,
 				02EB22AE27D9BA46006A853A /* regions.png */,
@@ -3053,7 +3054,6 @@
 				D6BC37700AB22C85003949C5 /* BWImage.h */,
 				D6BC37710AB22C85003949C5 /* CarbonMemMap.h */,
 				D6BC37720AB22C85003949C5 /* CompGeomDefs2.h */,
-				D6BC37730AB22C85003949C5 /* CompGeomDefs2_TEST.cpp */,
 				D6BC37740AB22C85003949C5 /* CompGeomDefs3.h */,
 				D6BC37750AB22C85003949C5 /* CompGeomUtils.cpp */,
 				D6BC37760AB22C85003949C5 /* CompGeomUtils.h */,
@@ -4112,6 +4112,7 @@
 				02635D7729B2C25000F5F433 /* sconscript in Resources */,
 				02B03C3E20C72119000F81F0 /* line_SolidOrange.png in Resources */,
 				D6B69CE51C582B6A005C78C5 /* ClassA.png in Resources */,
+				022679482C40A4E700E2AB5E /* customized.png in Resources */,
 				D63A80201A997EB5008D218D /* COPYING in Resources */,
 				02B03C3920C720FF000F81F0 /* line_BSolidYellowW.png in Resources */,
 				02B03C3F20C7211E000F81F0 /* line_SolidRed.png in Resources */,
@@ -4442,7 +4443,6 @@
 				D65E4B4D0B654314004D7887 /* GISTool_ProcessingCmds.cpp in Sources */,
 				D65E4B4E0B654317004D7887 /* GISTool_Utils.cpp in Sources */,
 				D65E4B4F0B654319004D7887 /* GISTool_VectorCmds.cpp in Sources */,
-				D65E4B930B65451F004D7887 /* CompGeomDefs2_TEST.cpp in Sources */,
 				D65E4B940B654529004D7887 /* XESInit.cpp in Sources */,
 				D65E4B990B65453A004D7887 /* ParamDefs.cpp in Sources */,
 				D65E4B9A0B65453B004D7887 /* SceneryPackages.cpp in Sources */,

@@ -60,7 +60,7 @@ enum WED_Export_Target {
 		wet_xplane_1100,	// Adds ground vehicles stuff
 		wet_xplane_1130,	// Adds 8.33kHz raster frequencies
 		wet_xplane_1200,	// Adds moving jetwaya cabins, new surface types, new runway params, but NOT rowcode 105
-		wet_xplane_1211,	// String spacing encoding of fractional meters, no new apt.dat revision
+		wet_xplane_1213,	// String spacing encoding of fractional meters, no new apt.dat revision
 		wet_gateway = 99,	// Latest format but with strict checking for gateway.
 		wet_latest_xplane = wet_xplane_1200,	// meta-token for whatever the very newest x-plane export is
 };

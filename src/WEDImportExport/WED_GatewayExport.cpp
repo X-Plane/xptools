@@ -709,18 +709,7 @@ void WED_GatewayExportDialog::TimerFired()
 			{
 				WED_GatewayExportDialog::mAirportMetadataCSVPath = res.out_path;
 				mPhase = expt_dialog_upload_to_gateway;
-
-				string ver(gPackageMgr->GetXPversion());
-				if(ver.find('r') != ver.npos )
-					this->AddLabel("Airport metadata defaults have been downloaded succesfully.");
-				else
-				{
-					stringstream ss;
-					ss << "The selected X-Plane Folder contains an unreleased X-plane version " << ver << "\n";
-					ss << "This can cause validation to miss deprecated or unavailable items.\n \n";
-					ss << "All submissions are re-validated with the last officially released X-Plane version.";
-					this->AddLabel(ss.str().c_str());
-				}
+				this->AddLabel("Airport metadata defaults have been downloaded succesfully.");
 			}
 			else if(res.out_status == cache_status_error)
 			{

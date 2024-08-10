@@ -14,7 +14,7 @@ jobs:
     runs-on: windows-2022
     steps:
     - name: Checkout repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@main
       with:
         submodules: true
     - name: Add MSBuild to PATH
@@ -26,9 +26,9 @@ jobs:
       run: |
         msbuild /m /p:Configuration=Release /p:Platform="x64" /t:WorldEditor msvc\XPTools.sln
     - name: Archive build result
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@main
       with:
-        name: wed_release_build
+        name: artifact-win
         path: msvc/WorldEditor/Release/WorldEditor.exe
           
   build-mac:
@@ -39,9 +39,9 @@ jobs:
       APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@main
         with:
-          submodules: yes
+          submodules: no
       - name: Setup Credentials
         uses: apple-actions/import-codesign-certs@v2
         with: 
@@ -63,9 +63,9 @@ jobs:
         run: |
           ./scripts/notarization.sh WED.zip build/WED.xcarchive/Products/Applications/WED.app staple
       - name: Archive build result
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@main
         with:
-          name: wed_release_build
+          name: artifact-osx
           path: build/WED.xcarchive/Products/Applications
           
   build-linux:
@@ -75,7 +75,7 @@ jobs:
         image: ghcr.io/x-plane/xptools_builder:latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@main
         with:
           submodules: no
       - name: Build Libs
@@ -89,9 +89,9 @@ jobs:
         run: |
           make -s -C . conf=release_opt -j$(nproc) WED
       - name: Archive build result
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@main
         with:
-          name: wed_release_build
+          name: artifact-lin
           path: build/Linux/release_opt/WED
 
   make-zips:
@@ -99,11 +99,12 @@ jobs:
     needs: [build-windows, build-mac, build-linux]
     steps:
     - name: Checkout repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@main
     - name: get build results
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@main
       with:
-        name: wed_release_build
+        pattern: artifact-*
+        merge-multiple: true
     - name: zip files
       run: |
           ls -l
@@ -124,7 +125,7 @@ jobs:
 #        source: wed_*.zip            # scp will overwrite target. find a way to check & NOT overwrite
 #        target: "public/wed/"
     - name: Archive zipfiles
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@main
       with:
         name: wed_release_build
         path: ./wed_*.zip
