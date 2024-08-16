@@ -2787,7 +2787,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 				if (j1.fac == j2.fac) continue;
 
 				auto d = LonLatDistMeters(j1.cabin_location, j2.cabin_location);
-				if (d < 15.0)
+				if (d < 18.0)
 					if (j2.jw.docking_type == Jetway_t::door2_only)
 					{
 						set<WED_FacadePlacement*> jws;
