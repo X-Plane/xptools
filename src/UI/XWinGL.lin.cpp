@@ -26,6 +26,28 @@
 #include <FL/filename.H>
 #include "AssertUtils.h"
 
+//TODO: mroe: this is a workaround for a bug in KWIN wayland with DnD and subwindow
+// fltk issue #997
+//
+#ifdef FLTK_USE_WAYLAND
+#include <FL/platform.H>
+#include <wayland-client.h>
+
+void prepare_widget_for_dnd(Fl_Widget *wdgt)
+{
+  if (!fl_wl_display()) return;
+  if (!wdgt->as_window()->parent()) return;
+  struct wld_window *xid = fl_wl_xid(wdgt->as_window());
+  if (!xid) return;
+  struct wl_region *input = wl_compositor_create_region(fl_wl_compositor());
+  wl_region_add(input, 0, 0, 1000000, 1000000);
+  float s = Fl::screen_scale(wdgt->as_window()->screen_num()* fl_wl_buffer_scale(wdgt->as_window()));
+  wl_region_subtract(input, wdgt->x()*s, wdgt->y()*s, wdgt->w()*s, wdgt->h()*s);
+  wl_surface_set_input_region(fl_wl_surface(xid), input);
+  wl_region_destroy(input);
+}
+#endif
+
 glWidget::glWidget(XWinGL* xwin,int w,int h,Fl_Gl_Window* share) : Fl_Gl_Window(w,h)
 {
 	//TODO: mroe:
@@ -112,6 +134,9 @@ XWinGL::~XWinGL()
 
 void XWinGL::Resized(int w, int h)
 {
+#ifdef FLTK_USE_WAYLAND
+	prepare_widget_for_dnd(mGlWidget);
+#endif
 	GLReshaped(w,h);
 }
 

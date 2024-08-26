@@ -365,8 +365,6 @@ int XWin::handle(int e)
 void XWin::resize(int x,int y,int w,int h)
 {
 	bool no_resize = ( w == this->w() && h == this->h() );
-	bool not_moved = ( x == this->x() && y == this->y() );
-	if( no_resize & not_moved ) return;
 
 	Fl_Window::resize(x,y,w,h);
 
@@ -422,10 +420,10 @@ void XWin::timeout_cb(void * data)
 /*FLTK idle callback for calling Update()*/
 void XWin::update_cb(void * arg)
 {
-	Fl::remove_idle(update_cb, arg);
+	//Fl::remove_idle(update_cb, arg);
 	XWin * win = static_cast<XWin *>(arg);
-	win->mUpdateCallbackActive = false;
 	win->Update(0);
+	win->mUpdateCallbackActive = false;
 }
 
 /** xptool GUI   **/
@@ -464,6 +462,7 @@ void XWin::MoveTo(int inX, int inY)
 
 void XWin::Resize(int inWidth, int inHeight)
 {
+	flush(); //TODO:mroe : wayland workaround
 	this->size(inWidth,inHeight + GetMenuBarHeight());
 }
 
@@ -488,7 +487,7 @@ void XWin::ForceRefresh(void)
 	if (!mUpdateCallbackActive)
 	{
 		mUpdateCallbackActive = true;
-		Fl::add_idle(update_cb, this);
+		Fl::add_timeout(0.001f, update_cb, this);
 	}
 }
 
