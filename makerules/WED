@@ -14,10 +14,12 @@ LDFLAGS		+= -Wl,--exclude-libs,libpng
 LDFLAGS		+= -Wl,-z,noexecstack
 ifdef FLTK_STATIC
 LIBS		+= $(shell fltk-config --use-gl --ldstaticflags)
+LIBS		+= -lGLU
 else
 LIBS		+= $(shell fltk-config --use-gl --ldflags)
+LIBS		+= -lGL -lGLU -ldl -lpthread
 endif #FLTK_STATIC
-LIBS		+= -lGLU -ldl -lpthread
+
 endif #PLAT_LINUX
 
 ifdef PLAT_MINGW
