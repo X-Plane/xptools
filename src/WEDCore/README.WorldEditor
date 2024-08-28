@@ -13,6 +13,10 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 2.6.0r2
+   Bug fix:
+   - fix crash when reverting to existing scenery
+
 WED 2.6.0r1 8/16/24
    Bug fix:
    - improve GW upgrade heuristics to change less JW lengths

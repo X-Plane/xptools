@@ -29,18 +29,18 @@
 
 // These versions are used in about boxes, resources, info boxes, etc.
 
-#define	WED_VERSION				2.6.0r1
-#define	WED_VERSION_STRING		"2.6.0r1"
+#define	WED_VERSION				2.6.0r2
+#define	WED_VERSION_STRING		"2.6.0r2"
 #define	WED_VERSION_STRING_SHORT	"2.6"			// omit beta/release number and trailing zero's
 
 #define	WED_COPYRIGHT_STRING	"(C) Copyright 2007-2024, Laminar Research."
 
 #define	WED_VERSION_RES			WED_VERSION_STRING
-#define	WED_VERSION_BIN			2,6,0,1
+#define	WED_VERSION_BIN			2,6,0,2
 
 // This numeric is used by the gateway to understand if our WED is up-to-date.
 // Format 1 digit major + 2 digit middle + 1 digit minor version + last digit
 // last digit is 0 for all beta versions or matches release version
-#define WED_VERSION_NUMERIC		20601
+#define WED_VERSION_NUMERIC		20602
 
 #endif /* WED_Version_H */

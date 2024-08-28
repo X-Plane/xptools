@@ -1701,7 +1701,7 @@ static int	DSF_ExportTileRecursive(
 							{
 								c[0] = p.x();
 								c[1] = p.y();
-								c[2] = 0.6 * fst_info->max_height;       // random (min_height, max_height);
+								c[2] = 0.8 * fst_info->max_height;       // random (min_height, max_height);
 								c[3] = dem_info->xy_nearest(p.x(), p.y());
 
 								cbs->AddPolygonPoint_f(c, writer);
