@@ -10,9 +10,9 @@ to="Global Airports/Earth nav data/"
 echo Cleaning out destination DSFs
 rm -rf "${to}"*0/
 echo Copying files from $from1 ...
-cp -r "${from1}"* "$to"
+cp -r --reflink=auto "${from1}"* "$to"
 echo Copying w/backups files from $from2 ...
-cp -rb "${from2}"* "$to"
+cp -rb --reflink=auto "${from2}"* "$to"
 
 echo duplicated tile check:
 ls -- "${to}"*/*~

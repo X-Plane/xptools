@@ -1670,6 +1670,7 @@ static int	DSF_ExportTileRecursive(
 					if (!pts.empty())
 					{
 						++real_thingies;
+#if !TYLER_MODE
 						bool elevated = false;
 						// get DEM
 						Bbox2 bnds;
@@ -1691,7 +1692,6 @@ static int	DSF_ExportTileRecursive(
 						const for_info_t * fst_info = nullptr;
 						if (!WED_GetResourceMgr(resolver)->GetFor(r, fst_info))
 							elevated = false;
-
 						if(elevated)
 						{
 							cbs->BeginPolygon_f(idx, param, 4 + 10, writer);   // really means 4 data planes, but signals PointPool scaling needs to suit forests with height, msl
@@ -1701,7 +1701,7 @@ static int	DSF_ExportTileRecursive(
 							{
 								c[0] = p.x();
 								c[1] = p.y();
-								c[2] = 0.6 * fst_info->max_height;       // random (min_height, max_height);
+								c[2] = 0.8 * fst_info->max_height;       // random (min_height, max_height);
 								c[3] = dem_info->xy_nearest(p.x(), p.y());
 
 								cbs->AddPolygonPoint_f(c, writer);
@@ -1710,6 +1710,7 @@ static int	DSF_ExportTileRecursive(
 							cbs->EndPolygon_f(writer);
 						}
 						else
+#endif
 							DSF_AccumPts(pts.begin(), pts.end(), safe_bounds, cbs, writer, idx, param);
 					}
 				}

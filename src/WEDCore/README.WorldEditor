@@ -13,13 +13,20 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 2.6.0rc1
+WED 2.6.0r2
+   Bug fix:
+   - fix crash when reverting to existing scenery
+
+WED 2.6.0r1 8/16/24
+   Bug fix:
+   - improve GW upgrade heuristics to change less JW lengths
+   - chnage GW export target to be XP 12.1.2
 
 WED 2.6.0b3 7/5/24
    Features:
    - force default dir for most file open dialogs to be current scenery pack
    - make ToolTips in LibraryList more meaningful
-   - support jw docking to the 2nd door of the aircraft for XP 12.1.3+
+   - support jw docking to the 2nd door of the aircraft for XP 12.1.2+
    Bug fix:
    - minor accuracy improvement in map projection for very large objetcs
    - fix duplicated exclusion zones at full scenery import
@@ -28,7 +35,7 @@ WED 2.6.0b3 7/5/24
 WED 2.6.0b2 6/3/24
    Features:
    - full scenery import menu function
-   - new export target 12.1.1 to distinuish string spacing behavior
+   - new export target 12.1.2 to distinuish string spacing behavior
    Bug fix:
    - minor speed improvements for scenery load, export and upgrade heuristics
    - remove some old XP11 wording in object density menu
@@ -50,7 +57,7 @@ WED 2.6.0b1 5/20/24
    - auto-import when opening scenery packages w/o .xml file for 1st time
    - option to recover from backup with broken .xml files
    - XPD-15379 validate set_AGL, set_MSL within -1000 ... 10,000m, for GW +/-100m
-   - improved string spacing resolution for XP 12.1.3+
+   - improved string spacing resolution for XP 12.1.2+
    Bug fix:
    - fix Obj8 drawing not recognizing ATTR_no_blend threshold values
    - validate ObjectString spacing parameter to be non-zero
