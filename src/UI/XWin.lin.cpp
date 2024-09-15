@@ -420,7 +420,7 @@ void XWin::timeout_cb(void * data)
 /*FLTK idle callback for calling Update()*/
 void XWin::update_cb(void * arg)
 {
-	//Fl::remove_idle(update_cb, arg);
+	Fl::remove_idle(update_cb, arg);
 	XWin * win = static_cast<XWin *>(arg);
 	win->Update(0);
 	win->mUpdateCallbackActive = false;
@@ -462,7 +462,6 @@ void XWin::MoveTo(int inX, int inY)
 
 void XWin::Resize(int inWidth, int inHeight)
 {
-	flush(); //TODO:mroe : wayland workaround
 	this->size(inWidth,inHeight + GetMenuBarHeight());
 }
 
@@ -487,13 +486,13 @@ void XWin::ForceRefresh(void)
 	if (!mUpdateCallbackActive)
 	{
 		mUpdateCallbackActive = true;
-		Fl::add_timeout(0.001f, update_cb, this);
+		Fl::add_idle(update_cb, this);
 	}
 }
 
 void XWin::UpdateNow(void)
 {
-	Fl::check();
+	Fl::flush();
 }
 
 void XWin::SetVisible(bool visible)
