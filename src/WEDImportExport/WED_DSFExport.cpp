@@ -1674,6 +1674,7 @@ static int	DSF_ExportTileRecursive(
 						bool elevated = false;
 						// get DEM
 						Bbox2 bnds;
+						double ter_msl = 0;
 						fst->GetBounds(gis_Geo, bnds);
 						vector<WED_TerPlacement*> ters;
 						CollectRecursive(WED_GetWorld(resolver), back_inserter(ters), EntityNotHidden, TakeAlways, WED_TerPlacement::sClass);
@@ -1686,6 +1687,8 @@ static int	DSF_ExportTileRecursive(
 								t->GetResource(dem_file);
 								if (!(!WED_GetResourceMgr(resolver)->GetDem(dem_file, dem_info)))
 									elevated = true;
+								if (t->GetMSLType() == obj_ModeMSL)
+									ter_msl = t->GetCustomMSL();
 								break;
 							}
 						// get height ranges
@@ -1702,7 +1705,7 @@ static int	DSF_ExportTileRecursive(
 								c[0] = p.x();
 								c[1] = p.y();
 								c[2] = 0.8 * fst_info->max_height;       // random (min_height, max_height);
-								c[3] = dem_info->xy_nearest(p.x(), p.y());
+								c[3] = dem_info->xy_nearest(p.x(), p.y()) + ter_msl;
 
 								cbs->AddPolygonPoint_f(c, writer);
 							}

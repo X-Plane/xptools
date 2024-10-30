@@ -13,10 +13,11 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 2.6.0r2
+WED 2.6.0r2 10/23/24
    Bug fix:
    - fix crash when reverting to existing scenery
    - support longer X-Plane version strings
+   - WED-1524 forests on terrain models not elevated by set_MSL
 
 WED 2.6.0r1 8/16/24
    Bug fix:
