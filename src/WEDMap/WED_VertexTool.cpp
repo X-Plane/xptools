@@ -45,6 +45,7 @@
 #include "XESConstants.h"
 #include "GUI_GraphState.h"
 #include "WED_DrawUtils.h"
+#include "GUI_DrawUtils.h"
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -103,6 +104,7 @@ void	WED_VertexTool::BeginEdit(void)
 	mIsRotate = 0;
 	mIsSymetric = 0;
 	mIsScale = 0;
+	mSnapPoints.clear();
 	ISelection * sel = WED_GetSelect(GetResolver());
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	DebugAssert(sel != NULL && op != NULL);
@@ -121,6 +123,7 @@ void	WED_VertexTool::EndEdit(void)
 	mIsSymetric = 0;
 	mIsScale = 0;
 	mIsTaxiSpin = 0;
+	mSnapPoints.clear();
 }
 
 int		WED_VertexTool::CountEntities(void) const
@@ -138,8 +141,8 @@ intptr_t	WED_VertexTool::GetNthEntityID(int n) const
 int		WED_VertexTool::CountControlHandles(intptr_t id) const
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
-	bool quad = (en->GetGISSubtype() == WED_ExclusionZone::sClass || 
-		         en->GetGISSubtype() == WED_OverlayImage::sClass || 
+	bool quad = (en->GetGISSubtype() == WED_ExclusionZone::sClass ||
+		         en->GetGISSubtype() == WED_OverlayImage::sClass ||
 		         en->GetGISClass() == gis_Point_HeadingWidthLength ||
 		         en->GetGISClass() == gis_Line_Width );
 	bool rwy = (en->GetGISSubtype() == WED_Runway::sClass);
@@ -153,7 +156,7 @@ int		WED_VertexTool::CountControlHandles(intptr_t id) const
 		DebugAssert(dynamic_cast<IGISQuad *>(en));
 		return 9;
 	}
-	else switch(en->GetGISClass()) 
+	else switch(en->GetGISClass())
 	{
 	case gis_Point:         return 1;
 	case gis_Point_Bezier:  return 3;
@@ -179,7 +182,7 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 	if (en != last_en) { last_ptr = (intptr_t) nullptr; last_en = en; }
 
 	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : nullptr;
-	IGISQuad * quad = (en->GetGISSubtype() == WED_ExclusionZone::sClass || en->GetGISSubtype() == WED_OverlayImage::sClass || 
+	IGISQuad * quad = (en->GetGISSubtype() == WED_ExclusionZone::sClass || en->GetGISSubtype() == WED_OverlayImage::sClass ||
 		               en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? SAFE_CAST(IGISQuad, en) : nullptr;
 
 	if (active) *active=1;
@@ -427,7 +430,7 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 				Bezier2	b;
 				e->GetSide(gis_Geo, n/4, b);
 				GUI_KeyFlags mods = GetHost()->GetModifiersNow();
-				
+
 				switch(n % 4) {
 				case 0:
 					if(p) *p = b.p1;
@@ -539,9 +542,9 @@ void	WED_VertexTool::GetNthLinkInfo		(intptr_t id, int n, bool * active, LinkTyp
 int		WED_VertexTool::GetNthLinkSource   (intptr_t id, int n) const
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
-	bool quad = (en->GetGISSubtype() == WED_ExclusionZone::sClass || en->GetGISSubtype() == WED_OverlayImage::sClass || 
+	bool quad = (en->GetGISSubtype() == WED_ExclusionZone::sClass || en->GetGISSubtype() == WED_OverlayImage::sClass ||
 	                   en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width);
-	if (quad) 
+	if (quad)
 	{
 		DebugAssert(dynamic_cast<IGISQuad *>(en));
 		return n;
@@ -594,7 +597,7 @@ int		WED_VertexTool::GetNthLinkTarget   (intptr_t id, int n) const
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	bool quad = (en->GetGISSubtype() == WED_ExclusionZone::sClass || en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width);
 
-	if (quad) 
+	if (quad)
 	{
 		DebugAssert(dynamic_cast<IGISQuad *>(en));
 		return (n+1)%4;
@@ -795,7 +798,7 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 
 				if ((mods & gui_OptionAltFlag) && (mods & gui_ShiftFlag))
 				{
-					if (n == 1) { pt_b->SetSplit(true);	if (pt_b->GetControlHandleLo(gis_Geo,dummy)) pt_b->DeleteHandleLo(); 
+					if (n == 1) { pt_b->SetSplit(true);	if (pt_b->GetControlHandleLo(gis_Geo,dummy)) pt_b->DeleteHandleLo();
 					                                    else                                         pt_b->SetControlHandleLo(gis_Geo,p+delta); }
 					if (n == 2) { pt_b->SetSplit(true); if (pt_b->GetControlHandleHi(gis_Geo,dummy)) pt_b->DeleteHandleHi();
 					                                    else                                         pt_b->SetControlHandleHi(gis_Geo,p+delta); }
@@ -1156,7 +1159,7 @@ void	WED_VertexTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta,
 			gp1->Rescale(gis_Geo, old_b, new_b);
 			gp2->Rescale(gis_Geo, old_b, new_b);
 		}
-		else if (mods & gui_ShiftFlag)
+		else if ( mods & gui_ShiftFlag)
 		{
 			// Bail out if for some reason the number of points in mSrcBezier isn't what we expect.
 			if (mSrcBezier.size() != np)
@@ -1191,14 +1194,17 @@ void	WED_VertexTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta,
 			double dist2 = 9.9e9;
 			Point2 sp1,sp2;
 
-			if(SnapMovePoint(io_pt + mPointOffset1,sp1,gp1))
+			bool isSnaped1 = SnapMovePoint(io_pt + mPointOffset1,sp1,gp1);
+			bool isSnaped2 = SnapMovePoint(io_pt + mPointOffset2,sp2,gp2);
+
+			if(isSnaped1)
 			{
 				dist1 = Vector2(
 				GetZoomer()->LLToPixel(p1),
 				GetZoomer()->LLToPixel(sp1)).squared_length();
 			}
 
-			if(SnapMovePoint(io_pt + mPointOffset2,sp2,gp2))
+			if(isSnaped2)
 			{
 				dist2 = Vector2(
 				GetZoomer()->LLToPixel(p2),
@@ -1217,6 +1223,11 @@ void	WED_VertexTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta,
 				gp1->SetLocation(gis_Geo,p1 + Vector2(p2,sp2));
 				gp2->SetLocation(gis_Geo,sp2);
 			}
+
+			mSnapPoints.clear();
+			if(isSnaped1 && p1 == sp1) mSnapPoints.push_back(sp1);
+			if(isSnaped2 && p2 == sp2) mSnapPoints.push_back(sp2);
+
 		}
 	}
 
@@ -1455,6 +1466,7 @@ bool		WED_VertexTool::SnapMovePoint(
 	double smallest_dist=9.9e9;
 	Point2	best(modi);
 	bool IsSnap = false;
+	mSnapPoints.clear();
 
 	if (mSnapToGrid)
 	{
@@ -1491,10 +1503,10 @@ bool		WED_VertexTool::SnapMovePoint(
 		}
 	}
 
+	if(IsSnap) mSnapPoints.push_back(best);
 	io_thing_pt = best;
 	return IsSnap;
 }
-
 
 void		WED_VertexTool::DrawSelected			(bool inCurrent, GUI_GraphState * g)
 {
@@ -1507,5 +1519,25 @@ void		WED_VertexTool::DrawSelected			(bool inCurrent, GUI_GraphState * g)
 		glVertex2(GetZoomer()->LLToPixel(mRotateCtr));
 		glVertex2(GetZoomer()->LLToPixel(mTaxiDest));
 		glEnd();
+	}
+}
+
+void		WED_VertexTool::DrawStructure(bool inCurrent, GUI_GraphState * g)
+{
+	WED_HandleToolBase::DrawStructure(inCurrent, g);
+
+	WED_MapZoomerNew *	z = GetZoomer();
+	g->SetState(false,false, false, true, true, false, false);
+	float * colorf = WED_Color_RGBA(wed_StructureSelected);
+	glColor4fv(colorf);
+
+	if (inCurrent && !mSnapPoints.empty())
+	{
+		for(auto& snp : mSnapPoints)
+		{
+			Point2 pnt = z->LLToPixel(snp);
+			GUI_PlotIcon(g,"handle_closeloop.png", pnt.x(),pnt.y(),0,1.2);
+			g->SetTexUnits(0);
+		}
 	}
 }
