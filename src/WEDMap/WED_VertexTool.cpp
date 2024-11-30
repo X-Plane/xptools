@@ -46,6 +46,7 @@
 #include "GUI_GraphState.h"
 #include "WED_DrawUtils.h"
 #include "GUI_DrawUtils.h"
+#include "GUI_Fonts.h"
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -89,7 +90,8 @@ WED_VertexTool::WED_VertexTool(
 		mRotateIndex(-1),
 		last_en(nullptr),
 		last_ptr((intptr_t) nullptr),
-		mSnapToGrid(this,PROP_Name("Snap To Vertices", XML_Name("","")), 0)
+		mSnapToGrid(this,PROP_Name("Snap To Vertices", XML_Name("","")), 0),
+		mShowNodeNum(this,PROP_Name("Show Node Numbers", XML_Name("","")), 0)
 {
 	SetControlProvider(this);
 }
@@ -1538,6 +1540,51 @@ void		WED_VertexTool::DrawStructure(bool inCurrent, GUI_GraphState * g)
 			Point2 pnt = z->LLToPixel(snp);
 			GUI_PlotIcon(g,"handle_closeloop.png", pnt.x(),pnt.y(),0,1.2);
 			g->SetTexUnits(0);
+		}
+	}
+
+	if(inCurrent && mShowNodeNum)
+	{
+		float * color = WED_Color_RGBA(wed_ControlHandle);
+
+		int ce = CountEntities();
+		for(int n = 0; n < ce; ++n )
+		{
+			intptr_t eid = GetNthEntityID(n);
+			if(!eid) return;
+			IGISEntity * en = reinterpret_cast<IGISEntity *>(eid);
+
+			IGISPointSequence * ps;
+
+			GISClass_t 		kind		= en->GetGISClass();
+			const char *	sub_class	= en->GetGISSubtype();
+
+			printf("he %d %s \n",kind,sub_class);
+
+			switch(kind)
+			{
+				case gis_Ring:
+				case gis_Edge:
+				case gis_Chain:
+				{
+					if (ps = dynamic_cast<IGISPointSequence *>(en) )
+					{
+						int c = ps->GetNumPoints();
+						printf("numpnts %d \n",c);
+						for (int i = 0; i < c; ++i)
+						{
+							IGISPoint * gp = ps->GetNthPoint(i);
+							Point2 pl,pp;
+							gp->GetLocation(gis_Geo,pl);
+							string nodenumber = to_string(i);
+							pp = GetZoomer()->LLToPixel(pl);
+							GUI_FontDraw(g, font_UI_Small,*&color, pp.x()+5, pp.y()+5, nodenumber.c_str());
+							g->SetTexUnits(0);
+						}
+					}
+				}
+				break;
+			}
 		}
 	}
 }
