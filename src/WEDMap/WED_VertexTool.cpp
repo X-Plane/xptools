@@ -1530,7 +1530,7 @@ void		WED_VertexTool::DrawStructure(bool inCurrent, GUI_GraphState * g)
 
 	WED_MapZoomerNew *	z = GetZoomer();
 	g->SetState(false,false, false, true, true, false, false);
-	float * colorf = WED_Color_RGBA(wed_StructureSelected);
+	float * colorf = WED_Color_RGBA(wed_ControlHandle);
 	glColor4fv(colorf);
 
 	if (inCurrent && !mSnapPoints.empty())
@@ -1545,7 +1545,6 @@ void		WED_VertexTool::DrawStructure(bool inCurrent, GUI_GraphState * g)
 
 	if(inCurrent && mShowNodeNum)
 	{
-		float * color = WED_Color_RGBA(wed_ControlHandle);
 
 		int ce = CountEntities();
 		for(int n = 0; n < ce; ++n )
@@ -1575,7 +1574,7 @@ void		WED_VertexTool::DrawStructure(bool inCurrent, GUI_GraphState * g)
 							gp->GetLocation(gis_Geo,pl);
 							string nodenumber = to_string(i);
 							pp = GetZoomer()->LLToPixel(pl);
-							GUI_FontDraw(g, font_UI_Small,*&color, pp.x()+5, pp.y()+5, nodenumber.c_str());
+							GUI_FontDraw(g, font_UI_Small,*&colorf, pp.x()+5, pp.y()+5, nodenumber.c_str());
 							g->SetTexUnits(0);
 						}
 					}
