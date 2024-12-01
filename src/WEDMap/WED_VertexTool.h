@@ -112,6 +112,7 @@ private:
 		vector<BezierPoint2>	mSrcBezier;
 
 		WED_PropBoolText		mSnapToGrid;
+		WED_PropBoolText		mShowNodeNum;
 
 		mutable vector<IGISEntity *>	mEntityCache;
 		mutable long long				mEntityCacheKeyArchive;
