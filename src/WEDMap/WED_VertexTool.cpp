@@ -1559,8 +1559,6 @@ void		WED_VertexTool::DrawStructure(bool inCurrent, GUI_GraphState * g)
 			GISClass_t 		kind		= en->GetGISClass();
 			const char *	sub_class	= en->GetGISSubtype();
 
-			printf("he %d %s \n",kind,sub_class);
-
 			switch(kind)
 			{
 				case gis_Ring:
