@@ -1568,7 +1568,6 @@ void		WED_VertexTool::DrawStructure(bool inCurrent, GUI_GraphState * g)
 					if (ps = dynamic_cast<IGISPointSequence *>(en) )
 					{
 						int c = ps->GetNumPoints();
-						printf("numpnts %d \n",c);
 						for (int i = 0; i < c; ++i)
 						{
 							IGISPoint * gp = ps->GetNthPoint(i);
