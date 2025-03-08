@@ -1123,6 +1123,15 @@ public:
 			for(auto w : wdgs)
 				w->SetParent(me->poly,1);
 		}
+
+		WED_DrapedOrthophoto* orth = SAFE_CAST(WED_DrapedOrthophoto, me->poly);
+		if (orth)
+		{
+			Bbox2 textureBox;
+			orth->GetBounds(gis_UV, textureBox);
+			orth->SetSubTexture(textureBox);
+		}
+
 		me->poly = NULL;
 	}
 
