@@ -101,7 +101,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 
 	WED_Color struct_color = selected ? (locked ? wed_StructureLockedSelected : wed_StructureSelected) :
 										(locked ? wed_StructureLocked		 : wed_Structure);
-	
+
 	float * colorf = WED_Color_RGBA(struct_color);
 	glColor4fv(colorf);
 
@@ -682,6 +682,17 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 		break;
 
 	case gis_Composite:
+		if(sub_class == WED_FacadePlacement::sClass)
+		{
+			if(auto poly = dynamic_cast<IGISPolygon*>(entity))
+			{
+				this->DrawEntityStructure(inCurrent, poly->GetOuterRing(), g, selected, locked);
+				int n = poly->GetNumHoles();
+				for (int c = 0; c < n; ++c)
+					this->DrawEntityStructure(inCurrent, poly->GetNthHole(c), g, selected, locked);
+			}
+			return false;
+		}
 		if(sub_class != WED_AirportBoundary::sClass && sub_class != WED_ExclusionPoly::sClass)    // not down-clickable in interior, but still highlighted interior
 			break;
 	case gis_Polygon:
@@ -691,10 +702,18 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 		{
 			if(auto poly = dynamic_cast<IGISPolygon*>(entity))
 			{
-				this->DrawEntityStructure(inCurrent, poly->GetOuterRing(), g, selected, locked);
-				int n = poly->GetNumHoles();
-				for (int c = 0; c < n; ++c)
-					this->DrawEntityStructure(inCurrent, poly->GetNthHole(c), g, selected, locked);
+				if(sub_class != WED_ExclusionPoly::sClass)
+				{
+					ISelection * sel = SAFE_CAST(ISelection, WED_GetSelect(GetResolver()));
+					IGISPointSequence * ps = poly->GetOuterRing();
+					this->DrawEntityStructure(inCurrent, ps, g, selected || (sel && sel->IsSelected(ps)), locked);
+					int n = poly->GetNumHoles();
+					for (int c = 0; c < n; ++c)
+					{
+						ps = poly->GetNthHole(c);
+						this->DrawEntityStructure(inCurrent, ps, g, selected || (sel && sel->IsSelected(ps)), locked);
+					}
+				}
 
 				if(selected)
 				{
@@ -713,6 +732,9 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 					glPolygon2(pts, false, hole_starts, false);
 					glFrontFace(GL_CW);
 				}
+
+				if(sub_class == WED_AirportBoundary::sClass)
+					return false;
 			}
 		}
 		break;

@@ -416,9 +416,9 @@ static bool Text2DSFWithWriterAny(const char * inFileName, const char * inDSF, D
 
 	DSFRasterHeader_t	rheader;
 
-	char	buf[512];
-	char	prop_id[512];
-	char	prop_value[512];
+	char	buf[4096];
+	char	prop_id[4096];
+	char	prop_value[4096];
 
 	DSFCallbacks_t	cbs;
 	void * writer;
