@@ -59,9 +59,9 @@ typedef	unsigned char		UTF8;													// Definitions for chars in each of the
 #if IBM
 typedef wchar_t UTF16;
 #else
-typedef	unsigned short		UTF16;													// We will use our normal string for UTF8.  We do not make a
+typedef	char16_t		UTF16;													// We will use our normal string for UTF8.  We do not make a
 #endif
-typedef unsigned int		UTF32;													// string for UTF32 because it is only used for 1 char at a time.
+typedef char32_t		UTF32;													// string for UTF32 because it is only used for 1 char at a time.
 
 typedef basic_string<UTF16> string_utf16;
 
