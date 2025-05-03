@@ -4,7 +4,7 @@
 
 TYPE		:= EXECUTABLE
 CFLAGS		+= -include ./src/Obj/XDefs.h
-CXXFLAGS	+= -include ./src/Obj/XDefs.h
+CXXFLAGS	+= -include ./src/Obj/XDefs.h -Wno-error=format-security
 #FORCEREBUILD_SUFFIX := _xg
 
 LIBS		:= -lz
