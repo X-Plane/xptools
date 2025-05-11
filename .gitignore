@@ -16,6 +16,9 @@ callgrind.out.*
 *.moc.cpp
 *.swp
 Uninstall/
+cmake-build-*
+.idea/
+WED_Log.txt
 
 #kDiff files
 *.orig
