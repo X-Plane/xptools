@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 project(xptools)
 
-include(cmake/xib_helper.cmake)
 if (APPLE)
+    include(cmake/xib_helper.cmake)
 	include(cmake/mac.cmake)
 endif()
 
