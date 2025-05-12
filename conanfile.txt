@@ -9,6 +9,8 @@ libtiff/4.6.0
 libjpeg/9e
 zlib/1.3.1
 libpng/1.6.48
+cgal/6.0.1
+shapelib/1.6.1
 
 [generators]
 CMakeDeps
