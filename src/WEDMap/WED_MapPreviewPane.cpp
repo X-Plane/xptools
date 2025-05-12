@@ -23,7 +23,7 @@
 
 #include "WED_MapPreviewPane.h"
 
-#include <proj_api.h>
+#include <proj.h>
 #include "GUI_Fonts.h"
 #include "GUI_GraphState.h"
 #include "GUI_Prefs.h"
@@ -44,6 +44,8 @@
 #include <limits>
 #include <stdlib.h>
 #include <time.h>
+
+#include "XESConstants.h"
 
 #if APL
 #include <OpenGL/gl.h>

@@ -27,7 +27,7 @@
 #include <geo_normalize.h>
 #include <xtiffio.h>
 #define PVALUE LIBPROJ_PVALUE
-#include <proj_api.h>
+#include <proj.h>
 #include <cpl_serv.h>
 
 #if IBM

@@ -197,3 +197,5 @@ nohup.out
 *.swm
 *.swn
 *.swo
+/conan_provider.cmake
+/conandata.yml

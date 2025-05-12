@@ -31,6 +31,16 @@ if (APPLE)
 	find_library(APPKIT_FRAMEWORK AppKit REQUIRED)
 endif()
 
+find_package(expat REQUIRED)
+find_package(proj REQUIRED)
+find_package(freetype REQUIRED)
+find_package(ZLIB REQUIRED)
+find_package(PNG REQUIRED)
+find_package(TIFF REQUIRED)
+find_package(geotiff)
+find_package(JPEG REQUIRED)
+find_package(libsquish)
+
 add_xib(${CMAKE_SOURCE_DIR}/src/WEDResources/WEDMainMenu.xib)
 finalize_xibs(XIBS)
 
@@ -484,8 +494,6 @@ add_executable(WED MACOSX_BUNDLE ${WED_SOURCES})
 target_compile_definitions(WED PRIVATE -DLIN=0 -DIBM=0 -DAPL=1 -DDEV=1 -DUSE_JPEG=1 -DUSE_TIF=1 -DWED=1 -DNO_CGAL=1)
 target_compile_options(WED PRIVATE -include ${CMAKE_SOURCE_DIR}/src/Obj/XDefs.h)
 target_include_directories(WED PRIVATE
-	libs/local/include
-	libs/local/include/freetype2
 	SDK/lib_json/include
 	src/lzma19/C
 	SDK/libtess2/Include
@@ -524,16 +532,16 @@ target_link_libraries(WED PRIVATE
 	${CARBON_FRAMEWORK}
 	${OPENGL_FRAMEWORK}
 	${APPKIT_FRAMEWORK}
+	expat::expat
+	ZLIB::ZLIB
+	PNG::PNG
+	PROJ::proj
+	Freetype::Freetype
+	TIFF::TIFF
+	geotiff_library
+	JPEG::JPEG
+	libsquish::libsquish
 	curl
-	${CMAKE_SOURCE_DIR}/libs/local/lib/libexpat.a
-	${CMAKE_SOURCE_DIR}/libs/local/lib/libsquish.a
-	${CMAKE_SOURCE_DIR}/libs/local/lib/libgeotiff.a
-	${CMAKE_SOURCE_DIR}/libs/local/lib/libproj.a
-	${CMAKE_SOURCE_DIR}/libs/local/lib/libfreetype.a
-	${CMAKE_SOURCE_DIR}/libs/local/lib/libtiff.a
-	${CMAKE_SOURCE_DIR}/libs/local/lib/libjpeg.a
-	${CMAKE_SOURCE_DIR}/libs/local/lib/libpng.a
-	${CMAKE_SOURCE_DIR}/libs/local/lib/libz.a
 )
 
 mac_copy_bundle_files(WED Resources "${WED_RESOURCE_FILES}")
@@ -541,5 +549,4 @@ mac_copy_bundle_files(WED Resources "${WED_RESOURCE_FILES}")
 set_target_properties(WED PROPERTIES
 	MACOSX_BUNDLE TRUE
 	MACOSX_FRAMEWORK_IDENTIFIER org.LaminarResearch.WED
-#	RESOURCE "${WED_RESOURCE_FILES}"
 )
