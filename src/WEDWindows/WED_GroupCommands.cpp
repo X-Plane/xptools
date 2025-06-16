@@ -5899,18 +5899,21 @@ void WED_EdgePavementBen(WED_Airport* apt, IResolver * resolver)
 	auto pave_src = CollectPavement(apt);
 
 	struct one_pavement_t {
+		string						name;
 		vector<BezierPolygon2>		polygon;
 		int							surface;
 	};
 	
-	struct crossing_t {
-		float						t_me;
-		int							other_surface;
-		bool						is_closing;
-	};
-	
 	vector<one_pavement_t>		all_pavement;
-		
+
+	struct crossing_t {
+		float								t_me;
+		vector<one_pavement_t>::iterator	other;			// end() if no particular surface
+		bool								is_left;		// When viewed from _our_ direction, does the crossing line in its
+															// direction go from our right to left. If true, it means this is
+															// the ending of the crossing overlapping us.
+	};
+
 	auto grp = WED_Group::CreateTyped(apt->GetArchive());
 	grp->SetParent(apt, 0);
 	grp->SetName("Pavement Edge FX");
@@ -5922,19 +5925,24 @@ void WED_EdgePavementBen(WED_Airport* apt, IResolver * resolver)
 			auto tway = dynamic_cast<WED_Taxiway *>(t);
 			one_pavement_t p;
 			p.surface = tway->GetSurface();
+			tway->GetName(p.name);
 			WED_BezierPolygonWithHolesForPolygon(tway,p.polygon);
 			
 			all_pavement.push_back(move(p));
 		}
 	}
 
+	// LOWER number pavements are HIGHER up on the stacking hierarchy.
+
 	for(auto this_pave = all_pavement.begin(); this_pave != all_pavement.end(); ++this_pave)
 	{
+//		printf("***** %s\n", this_pave->name.c_str());
 		auto my_type = this_pave->surface;
 		for(auto my_contour = this_pave->polygon.begin(); my_contour != this_pave->polygon.end(); ++my_contour)
 		{
 			for(auto me = my_contour->begin(); me != my_contour->end(); ++me)
 			{
+//				printf("  ----\n");
 				// "me" is the edge that needs consideration.
 				vector<crossing_t>	all_crossings;
 				Bbox2 me_bounds;
@@ -5942,33 +5950,44 @@ void WED_EdgePavementBen(WED_Airport* apt, IResolver * resolver)
 				
 				Bezier2 me_bkwds(me->p2, me->c2, me->c1, me->p1);
 
-				// This will get set to true if we find at any point that this edge should _never_ generate an edge decal, e.g. it is "fully consumed".
+				// First, early exit if the contour of our polygon is exactly matched by an oppo-direction curve of the SAME polygon. This is like a
+				// letter C that is "closed" to make a letter O.  We have to treat this edge as not existing.  This happens a lot in real airports.
 				bool zap_me = false;
 				
-				// if this_pave's contours's curves EVER match me_bkgwds it means we have a "closed letter C" situation and have to abort this curve.
 				for(auto my_other_contour = this_pave->polygon.begin(); my_other_contour != this_pave->polygon.end() && !zap_me; ++my_other_contour)
 				for(auto my_other = my_other_contour->begin(); my_other != my_other_contour->end() && !zap_me; ++my_other)
 					if(*my_other == me_bkwds)
 						zap_me = true;
 
-				for(auto other_pave = all_pavement.begin(); other_pave != all_pavement.end() && !zap_me; ++other_pave)
+				if(zap_me)
+					continue;
+
+				// Now we are going to examine all other contours and both classify what our end points are inside AND find all intersections along
+				// ourselves.
+
+				vector<one_pavement_t>::iterator my_p1 = all_pavement.end(), my_p2 = all_pavement.end();
+
+				for(auto other_pave = all_pavement.begin(); other_pave != all_pavement.end(); ++other_pave)
 				if(other_pave != this_pave)
 				{
-					auto other_type = other_pave->surface;
+					bool is_fully_inside_p1 = true;			// Flag for whether at least one point in our curve is entirely inside the other pavement
+					bool is_fully_inside_p2 = true;			// Once we finish our contours we can figure out if we are "more" on top than our previous guess.
 					
-					bool is_fully_inside = true;			// Flag for whether at least one point in our curve is entirely inside the other pavement
-					bool crossed_any = false;				// Flag for whether any part of our curve crossed ANY part of any contour in The other pavement
-					
-					for(auto other_contour = other_pave->polygon.begin(); other_contour != other_pave->polygon.end() && !zap_me; ++other_contour)
+					for(auto other_contour = other_pave->polygon.begin(); other_contour != other_pave->polygon.end(); ++other_contour)
 					{
 						if(inside_polygon_bez(other_contour->begin(), other_contour->end(), me->p1) != (other_contour == other_pave->polygon.begin())) // other_contour == other_pave->polygon.begin() is a flag for "we are the outside contour"
-							is_fully_inside = false;
-					
-						for(auto other = other_contour->begin(); other != other_contour->end() && !zap_me; ++other)
+							is_fully_inside_p1 = false;
+						if(inside_polygon_bez(other_contour->begin(), other_contour->end(), me->p2) != (other_contour == other_pave->polygon.begin())) // other_contour == other_pave->polygon.begin() is a flag for "we are the outside contour"
+							is_fully_inside_p2 = false;
+
+						for(auto other = other_contour->begin(); other != other_contour->end(); ++other)
 						{
+							// If the other polygon's contour is an exact oppo of us, it means we have a nice toplogical map.  Treat our
+							// end points as "in" this pavement and abort because intersections will just produce numeric silliness.
+							// By calling us "in" our neighbor, the higher prio side of the matched edge will genearte an internal seam.
 							if(*other == me_bkwds)
 							{
-								zap_me = true;
+								my_p1 = my_p2 = other_pave;
 								continue;
 							}
 						
@@ -5982,43 +6001,87 @@ void WED_EdgePavementBen(WED_Airport* apt, IResolver * resolver)
 								{
 									crossing_t x;
 									x.t_me = ret_t[c].first;
-									x.other_surface = other_type;
-									x.is_closing = ret_t[c].second;
+									x.other = other_pave;
+									x.is_left = ret_t[c].second;
 									
 									Point2 xx;
 									xx = me->midpoint(x.t_me);
-									debug_mesh_point(xx,x.is_closing ? 1.0 : 0.0, x.is_closing ? 0.0 : 1.0, 0.0);
+//									if(this_pave < other_pave)
+//										debug_mesh_point(xx,x.is_left ? 1.0 : 0.0, x.is_left ? 0.0 : 1.0, 0.0);
 									all_crossings.push_back(x);
-									crossed_any = true;
 								}
 							}
 						}
 					}
 					
-					// If we aren't already dead AND we didn't collide with this pavement at all but our origin point IS
-					// inside it, then logically ALL of our curve is inside it, and we zap ourselves as "surrounded".
-					if(!zap_me && !crossed_any && is_fully_inside)
-						zap_me = true;
+					if(is_fully_inside_p1 && other_pave < my_p1)
+						my_p1 = other_pave;
+					if(is_fully_inside_p2 && other_pave < my_p2)
+						my_p2 = other_pave;
+					
 					
 				}
 				
-				if(!zap_me)
-				{
-					all_crossings.push_back({0.0f, -1, true});
-					all_crossings.push_back({1.0f, -1, false});
-				}
+				all_crossings.push_back({0.0f, my_p1, false});
+				all_crossings.push_back({1.0f, my_p2, true});
 				
 				sort(all_crossings.begin(), all_crossings.end(),[](const auto& lhs, const auto& rhs) -> bool { return lhs.t_me < rhs.t_me; });
+				
+				for(int i = 1; i < all_crossings.size(); ++i)
+				{
+					if(all_crossings[i-1].t_me == all_crossings[i].t_me)
+					{
+						// We have two T at the same time. We have to resolve WTF happened.
+						//
+						// We are going to get to a state where i-1 is the keeper, then blast i
+						if(all_crossings[i-1].is_left == all_crossings[i].is_left)
+						{
+							// These are topologically the same, so we have to pick
+							if(all_crossings[i].other < all_crossings[i-1].other)
+								swap(all_crossings[i-1],all_crossings[i]);
+
+							dev_assert(all_crossings[i-1].other <= all_crossings[i].other);
+						}
+						else
+						{
+							// one is a left and one is a right - we have to keep the right
+							if(all_crossings[i-1].is_left)
+								swap(all_crossings[i-1],all_crossings[i]);
+						}
+						
+						all_crossings.erase(all_crossings.begin()+i);
+						--i;
+					}
+				}
+				
 				
 				for(int i = 1; i < all_crossings.size(); ++i)
 				{
 					auto& c1 = all_crossings[i-1];
 					auto& c2 = all_crossings[i  ];
 					
-					if(!c1.is_closing || c2.is_closing)
-						continue;
+					vector<one_pavement_t>::iterator other = all_pavement.end();
 					
-					if(c1.t_me == c2.t_me)
+//					printf("      [%s: %s    %s: %s]\n",
+//									c1.is_left ? "left":"right", c1.other == all_pavement.end() ? "(null)" : c1.other->name.c_str(),
+//									c2.is_left ? "left":"right", c2.other == all_pavement.end() ? "(null)" : c2.other->name.c_str());
+					
+					if(!c1.is_left)
+					{
+						// use left's pavement, it starts
+						other = c1.other;
+					}
+					else if(c2.is_left)
+					{
+						// use right's pavement, it ends
+						other = c2.other;
+					}
+					else
+					{
+						// fall-through, this is a grass section.  c1 was the END of somebody else and c2 is the START of us.
+					}
+					
+					if(other < this_pave)
 						continue;
 					
 					Bezier2 sub;
