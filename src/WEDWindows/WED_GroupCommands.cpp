@@ -5837,6 +5837,321 @@ void WED_EdgePavement(WED_Airport* apt, IResolver * resolver)
 }
 
 
+// This function is the work-horse of a recursive sub-divide of two bezier curves.
+
+// Given two *monotone* bezier curves, this returns whether they apparently intersect. If they do, a parametric time "out_t"
+// gives a way to locate the intersection on *C1*.  If there is an intersect, is_left_turn is true if traveling along c1
+// (in the direction of rising 't') to out_t and then making a turn to travel along c2 (in the direction of rising 't') is
+// a left turn.
+//
+// We subdivide the curves up to 'depth' times, running up to 'depth' recursions and 4^depth checks.  The tree is pruned
+// where we can find the curves trivially do not intersect.
+//
+// When we run out of depth, a *linear* approximation of the subdivided curve is used to pick an intersection point.  This
+// isn't great but if the subdivision removes most of the curvature, can greatly improve accuracy.
+static bool	bezier_intersect_monotone(const Bezier2& c1, const Bezier2& c2, xint depth, double& out_t, bool& is_left_turn)
+{
+	// Since the curves are monotone, we need only the end points to find our bounding boxes; control points
+	// cannot bring the curve outside the boxes because that would make it non-monotone.
+	Bbox2 b1(c1.p1, c1.p2), b2(c2.p1,c2.p2);
+
+	if(!b1.overlap(b2))
+	{
+		// Early exit non-overlapping.  prunes a lot of intersections.
+		return false;
+	}
+
+	// If we run out of depth *or* we have two line segments, use a linear approximatoin to find the final intersection.
+	if(depth <= 0 || (c1.is_segment() && c2.is_segment()))
+	{
+		// This is the classic line-segment intersection solution - we do this by hand to get the parametric 't' for the
+		// lines, which we will want.
+		Vector2 V1(c1.p1,c1.p2);
+		Vector2 V2(c2.p1,c2.p2);
+		Point2 P1 = c1.p1;
+		Point2 P2 = c2.p1;
+
+		double denom = V2.y() * V1.x() - V2.x() * V1.y();
+		if(denom == 0.0)
+			return false;
+		
+		double num1 = ((V2.y() * P2.x() - V2.x() * P2.y()) - (V2.y() * P1.x() - V2.x() * P1.y()));
+		
+		double t1 = num1 / denom;
+		
+		if(t1 < 0.0 || t1 > 1.0)
+		{
+			// Intersection outside the range of c1.  Exit.
+			return false;
+		}
+		
+		double num2 = ((V1.y() * P1.x() - V1.x() * P1.y()) - (V1.y() * P2.x() - V1.x() * P2.y()));
+		double t2 = num2 / -denom;
+		if(t2 < 0.0 || t2 > 1.0)
+		{
+			// Intersection outside the range of 2.  Exit.
+			return false;
+		}
+		
+		// Get the derivatives to measure the directional turn of the intersection.
+		out_t = t1;
+		Vector2 v1 = c1.derivative(t1);
+		Vector2 v2 = c2.derivative(t2);
+		is_left_turn = v1.left_turn(v2);
+		
+		return true;
+	}
+	
+	// We are going to break each curve in half and try all four combinations
+	// of sub-curves, early exiting if we win.
+	Bezier2 c1a, c1b, c2a, c2b;
+	c1.partition(c1a,c1b);
+	c2.partition(c2a,c2b);
+	
+	if(bezier_intersect_monotone(c1a,c2a,depth-1,out_t,is_left_turn))
+	{
+		out_t = out_t * 0.5;		// Adjust the 't' value that is returned appropriately.
+		return true;
+	}
+	if(bezier_intersect_monotone(c1a,c2b,depth-1,out_t,is_left_turn))
+	{
+		out_t = out_t * 0.5;
+		return true;
+	}
+
+	if(bezier_intersect_monotone(c1b,c2a,depth-1,out_t,is_left_turn))
+	{
+		out_t = out_t * 0.5 + 0.5;
+		return true;
+	}
+	if(bezier_intersect_monotone(c1b,c2b,depth-1,out_t,is_left_turn))
+	{
+		out_t = out_t * 0.5 + 0.5;
+		return true;
+	}
+
+	return false;
+}
+
+// Intersect two bezier curves c1 and c2.  We can get a lot of intersections, so we return the number of
+// intersections and fill ret_t with the hits.  Each intersection is a pair of a 't' along c1 and a bool
+// indicating if it is a left-turning intersection.
+//
+// Depth limits the number of recursions we make for each monotone regoin.
+static int bezier_intersect(const Bezier2& c1, const Bezier2& c2, pair<double,bool> ret_t[25], int depth)
+{
+	double t1[6], t2[6];
+	t1[0] = 0.0;
+	t2[0] = 0.0;
+	
+	// We break up both curves based on their monotone regions.  We can have six 't' points defining
+	// the sub-curves (beginning and end plus four direction changes, one per control point crossed with
+	// two directions) and this means there are up to five sub-curves for each curve.
+	// "count" is the number of sub-curves.
+	int count1 = c1.monotone_regions(t1+1) + 1;
+	int count2 = c2.monotone_regions(t2+1) + 1;
+	t1[count1] = 1.0;
+	t2[count2] = 1.0;
+	sort(t1,t1+count1+1);
+	sort(t2,t2+count2+1);
+	
+	Bezier2 c1a[5],c2a[5];
+	for(int i = 0; i < count1; ++i)
+		c1.subcurve(c1a[i],t1[i],t1[i+1]);
+
+	for(int i = 0; i < count2; ++i)
+		c2.subcurve(c2a[i],t2[i],t2[i+1]);
+		
+	int r = 0;
+
+	// Attempt to intersect all (up to 5 x 5) monotone sub-curves with each other, storing the results.
+	// The results are *not* particularly sorted.  We have up to 25 possible hits (each monotone curve could
+	// hit each other) although in practice this never happens.
+	for(int i = 0; i < count1; ++i)
+	for(int j = 0; j < count2; ++j)
+	{
+		double t;
+		bool is_left;
+		if(bezier_intersect_monotone(c1a[i],c2a[j], depth, t, is_left))
+		{
+			ret_t[r++] = make_pair(t1[i] + t * (t1[i+1] - t1[i]),is_left);
+		}
+	}
+	return r;
+}
+
+
+void WED_EdgePavementBen(WED_Airport* apt, IResolver * resolver)
+{
+	auto pave_src = CollectPavement(apt);
+
+	struct one_pavement_t {
+		vector<BezierPolygon2>		polygon;
+		int							surface;
+	};
+	
+	struct crossing_t {
+		float						t_me;
+		int							other_surface;
+		bool						is_closing;
+	};
+	
+	vector<one_pavement_t>		all_pavement;
+		
+	auto grp = WED_Group::CreateTyped(apt->GetArchive());
+	grp->SetParent(apt, 0);
+	grp->SetName("Pavement Edge FX");
+		
+	for (auto t : pave_src)
+	{
+		if (t->GetClass() == WED_Taxiway::sClass)
+		{
+			auto tway = dynamic_cast<WED_Taxiway *>(t);
+			one_pavement_t p;
+			p.surface = tway->GetSurface();
+			WED_BezierPolygonWithHolesForPolygon(tway,p.polygon);
+			
+			all_pavement.push_back(move(p));
+		}
+	}
+
+	for(auto this_pave = all_pavement.begin(); this_pave != all_pavement.end(); ++this_pave)
+	{
+		auto my_type = this_pave->surface;
+		for(auto my_contour = this_pave->polygon.begin(); my_contour != this_pave->polygon.end(); ++my_contour)
+		{
+			for(auto me = my_contour->begin(); me != my_contour->end(); ++me)
+			{
+				// "me" is the edge that needs consideration.
+				vector<crossing_t>	all_crossings;
+				Bbox2 me_bounds;
+				me->bounds_fast(me_bounds);
+				
+				Bezier2 me_bkwds(me->p2, me->c2, me->c1, me->p1);
+
+				// This will get set to true if we find at any point that this edge should _never_ generate an edge decal, e.g. it is "fully consumed".
+				bool zap_me = false;
+				
+				// if this_pave's contours's curves EVER match me_bkgwds it means we have a "closed letter C" situation and have to abort this curve.
+				for(auto my_other_contour = this_pave->polygon.begin(); my_other_contour != this_pave->polygon.end() && !zap_me; ++my_other_contour)
+				for(auto my_other = my_other_contour->begin(); my_other != my_other_contour->end() && !zap_me; ++my_other)
+					if(*my_other == me_bkwds)
+						zap_me = true;
+
+				for(auto other_pave = all_pavement.begin(); other_pave != all_pavement.end() && !zap_me; ++other_pave)
+				if(other_pave != this_pave)
+				{
+					auto other_type = other_pave->surface;
+					
+					bool is_fully_inside = true;			// Flag for whether at least one point in our curve is entirely inside the other pavement
+					bool crossed_any = false;				// Flag for whether any part of our curve crossed ANY part of any contour in The other pavement
+					
+					for(auto other_contour = other_pave->polygon.begin(); other_contour != other_pave->polygon.end() && !zap_me; ++other_contour)
+					{
+						if(inside_polygon_bez(other_contour->begin(), other_contour->end(), me->p1) != (other_contour == other_pave->polygon.begin())) // other_contour == other_pave->polygon.begin() is a flag for "we are the outside contour"
+							is_fully_inside = false;
+					
+						for(auto other = other_contour->begin(); other != other_contour->end() && !zap_me; ++other)
+						{
+							if(*other == me_bkwds)
+							{
+								zap_me = true;
+								continue;
+							}
+						
+							Bbox2 other_bounds;
+							other->bounds_fast(other_bounds);
+							if(me_bounds.interior_overlap(other_bounds))
+							{
+								pair<double,bool> ret_t[25];
+								int count = bezier_intersect(*me, *other, ret_t, 4);
+								for(int c = 0; c < count; ++c)
+								{
+									crossing_t x;
+									x.t_me = ret_t[c].first;
+									x.other_surface = other_type;
+									x.is_closing = ret_t[c].second;
+									
+									Point2 xx;
+									xx = me->midpoint(x.t_me);
+									debug_mesh_point(xx,x.is_closing ? 1.0 : 0.0, x.is_closing ? 0.0 : 1.0, 0.0);
+									all_crossings.push_back(x);
+									crossed_any = true;
+								}
+							}
+						}
+					}
+					
+					// If we aren't already dead AND we didn't collide with this pavement at all but our origin point IS
+					// inside it, then logically ALL of our curve is inside it, and we zap ourselves as "surrounded".
+					if(!zap_me && !crossed_any && is_fully_inside)
+						zap_me = true;
+					
+				}
+				
+				if(!zap_me)
+				{
+					all_crossings.push_back({0.0f, -1, true});
+					all_crossings.push_back({1.0f, -1, false});
+				}
+				
+				sort(all_crossings.begin(), all_crossings.end(),[](const auto& lhs, const auto& rhs) -> bool { return lhs.t_me < rhs.t_me; });
+				
+				for(int i = 1; i < all_crossings.size(); ++i)
+				{
+					auto& c1 = all_crossings[i-1];
+					auto& c2 = all_crossings[i  ];
+					
+					if(!c1.is_closing || c2.is_closing)
+						continue;
+					
+					if(c1.t_me == c2.t_me)
+						continue;
+					
+					Bezier2 sub;
+					me->subcurve(sub, c1.t_me, c2.t_me);
+					
+					WED_LinePlacement * l = WED_LinePlacement::CreateTyped(grp->GetArchive());
+					l->SetName("edge");
+					l->SetResource("lib/airport/ground/pavement_FX/edge_D/cracked.lin");
+					l->SetParent(grp,0);
+					
+					WED_SimpleBezierBoundaryNode * b1 = WED_SimpleBezierBoundaryNode::CreateTyped(grp->GetArchive());
+					WED_SimpleBezierBoundaryNode * b2 = WED_SimpleBezierBoundaryNode::CreateTyped(grp->GetArchive());
+					b1->SetParent(l,0);
+					b2->SetParent(l,1);
+					b1->SetLocation(gis_Geo, sub.p1);
+					b1->SetControlHandleHi(gis_Geo,sub.c1);
+					b2->SetLocation(gis_Geo, sub.p2);
+					b2->SetControlHandleLo(gis_Geo, sub.c2);
+					
+					if(me->is_segment())
+					{
+						b1->DeleteHandleHi();
+						b2->DeleteHandleLo();
+					}
+				}
+				
+			}
+		}
+	}
+
+}
+
+
+
+
+
+//
+//
+//
+//
+//
+//	auto pave_line = MakeEdgesFromVPoly2(grp, pave_poly, pave_src, resolver);
+//	for (auto l : pave_line)
+//		l->SetResource("lib/airport/ground/pavement_FX/edge_D/cracked.lin");
+
+
 void WED_DoEdgePavement(IResolver* resolver)
 {
 	WED_Thing* wrl = WED_GetWorld(resolver);
@@ -5845,7 +6160,7 @@ void WED_DoEdgePavement(IResolver* resolver)
 
 	wrl->StartOperation("Edge Pavement");
 	for (auto a : all_apts)
-		WED_EdgePavement(a, resolver);
+		WED_EdgePavementBen(a, resolver);
 	wrl->CommitOperation();
 }
 
