@@ -5980,6 +5980,73 @@ static int bezier_intersect(const Bezier2& c1, const Bezier2& c2, pair<double,bo
 	return r;
 }
 
+struct def_pavement_info_t {
+			int					pavement_enum;
+			bool				is_concrete;
+			string				lin_rsrc;
+};
+
+static const string k_edge_prefix = "lib/airport/ground/pavement_FX/";
+
+static string get_seam(bool a_is_concrete, bool b_is_concrete)
+{
+	if(a_is_concrete || b_is_concrete)
+		return k_edge_prefix + "seams/concrete.lin";
+	else
+		return k_edge_prefix + "seams/asphalt.lin";
+}
+
+static def_pavement_info_t k_def_pavement_info[] = {
+
+	{ surf_Asphalt_1 , false, "edge_L/soft.lin" 	},	//	Asphalt L
+	{ surf_Asphalt_2 , false, "edge_L/elevated.lin" },	//	Asphalt L Patched
+	{ surf_Asphalt_3 , false, "edge_L/soft.lin" 	},	//	Asphalt L Plain
+	{ surf_Asphalt_4 , false, "edge_L/elevated.lin" },	//	Asphalt L Worn
+	{ surf_Asphalt   , false, "edge_L/soft.lin" 	},	//	Asphalt
+	{ surf_Asphalt_5 , false, "edge_L/elevated.lin" },	//	Asphalt Patched
+	{ surf_Asphalt_6 , false, "edge_L/soft.lin" 	},	//	Asphalt Plain
+	{ surf_Asphalt_7 , false, "edge_L/elevated.lin" },	//	Asphalt Worn
+	{ surf_Asphalt_8 , false, "edge_L/soft.lin" 	},	//	Asphalt D
+	{ surf_Asphalt_9 , false, "edge_L/elevated.lin" },	//	Asphalt D Patched
+	{ surf_Asphalt_10, false, "edge_L/soft.lin" 	},	//	Asphalt D Plain
+	{ surf_Asphalt_11, false, "edge_L/elevated.lin" },	//	Asphalt D Worn
+	{ surf_Asphalt_12, false, "edge_D/soft.lin" 	},	//	Asphalt D2
+	{ surf_Asphalt_14, false, "edge_D/elevated.lin" },	//	Asphalt D2 Patched
+	{ surf_Asphalt_14, false, "edge_D/soft.lin" 	},	//	Asphalt D2 Plain
+	{ surf_Asphalt_15, false, "edge_D/elevated.lin" },	//	Asphalt D2 Worn
+	{ surf_Asphalt_15, false, "edge_D/soft.lin" 	},	//	Asphalt D3
+	{ surf_Asphalt_17, false, "edge_D/elevated.lin" },	//	Asphalt D3 Patched
+	{ surf_Asphalt_18, false, "edge_D/soft.lin" 	},	//	Asphalt D3 Plain
+	{ surf_Asphalt_19, false, "edge_D/elevated.lin" },	//	Asphalt D3 Worn
+	{ surf_Concrete_1, true , "edge_L/soft.lin" 	},	//	Concrete L
+	{ surf_Concrete_2, true , "edge_L/soft.lin" 	},	//	Concrete L Dirty
+	{ surf_Concrete_3, true , "edge_L/elevated.lin" },	//	Concrete L Worn
+	{ surf_Concrete  , true , "edge_L/soft.lin" 	},	//	Concrete
+	{ surf_Concrete_4, true , "edge_L/soft.lin" 	},	//	Concrete Dirty
+	{ surf_Concrete_5, true , "edge_L/elevated.lin" },	//	Concrete Worn
+	{ surf_Concrete_6, true , "edge_L/soft.lin" 	},	//	Concrete D
+	{ surf_Concrete_7, true , "edge_L/soft.lin" 	},	//	Concrete D Dirty
+	{ surf_Concrete_8, true , "edge_L/elevated.lin" } 	//	Concrete D Worn
+	
+};
+
+static bool is_pavement_type_concrete(int pt)
+{
+	auto mypt = find_if(std::begin(k_def_pavement_info), std::end(k_def_pavement_info),[&](auto& x){ return x.pavement_enum == pt; });
+	if(mypt == std::end(k_def_pavement_info))
+		return false;
+	return mypt->is_concrete;
+}
+
+static string get_edge_for_pavement_type(int pt)
+{
+	auto mypt = find_if(std::begin(k_def_pavement_info), std::end(k_def_pavement_info),[&](auto& x){ return x.pavement_enum == pt; });
+	if(mypt == std::end(k_def_pavement_info))
+		return string();
+	return k_edge_prefix + mypt->lin_rsrc;
+}
+
+
 
 void WED_EdgePavementBen(WED_Airport* apt, IResolver * resolver)
 {
@@ -6023,10 +6090,45 @@ void WED_EdgePavementBen(WED_Airport* apt, IResolver * resolver)
 
 	for(auto this_pave = all_pavement.begin(); this_pave != all_pavement.end(); ++this_pave)
 	{
+#if 0
+		// experimental code to find self-intersecting polygon bugs.  Needs work.
+		for(auto ca = this_pave->polygon.begin(); ca != this_pave->polygon.end(); ++ca)
+		for(auto a = ca->begin(); a != ca->end(); ++a)
+		for(auto cb = this_pave->polygon.begin(); cb != this_pave->polygon.end(); ++cb)
+		for(auto b = cb->begin(); b != cb->end(); ++b)
+		if(a != b)
+		{
+			Bbox2 abox, bbox;
+			a->bounds_fast(abox);
+			b->bounds_fast(bbox);
+			if(abox.interior_overlap(bbox))
+			{
+				pair<double,bool> ret_t[25];
+				int count = bezier_intersect(*a, *b, ret_t, 4);
+				for(int c = 0; c < count; ++c)
+				if(ret_t[c].first > 0.0 && ret_t[c].first < 1.0)
+				{
+					Point2 xx;
+					xx = a->midpoint(ret_t[c].first);
+					debug_mesh_point(xx,1.0, 0.0, 0.0);
+				}
+			}
+		}
+#endif
+
+	
+	
 //		printf("***** %s\n", this_pave->name.c_str());
 		auto my_type = this_pave->surface;
+		string my_rsrc = get_edge_for_pavement_type(my_type);
+		if(my_rsrc.empty())
+		{
+			continue;
+		}
+		
 		for(auto my_contour = this_pave->polygon.begin(); my_contour != this_pave->polygon.end(); ++my_contour)
 		{
+			for(auto me = my_contour->begin(); me != my_contour->end(); ++me)
 			for(auto me = my_contour->begin(); me != my_contour->end(); ++me)
 			{
 //				printf("  ----\n");
@@ -6176,7 +6278,11 @@ void WED_EdgePavementBen(WED_Airport* apt, IResolver * resolver)
 					
 					WED_LinePlacement * l = WED_LinePlacement::CreateTyped(grp->GetArchive());
 					l->SetName("edge");
-					l->SetResource("lib/airport/ground/pavement_FX/edge_D/cracked.lin");
+					
+					if(other != all_pavement.end())
+						l->SetResource(get_seam(is_pavement_type_concrete(my_type), is_pavement_type_concrete(other->surface)));
+					else
+						l->SetResource(my_rsrc);
 					l->SetParent(grp,0);
 					
 					WED_SimpleBezierBoundaryNode * b1 = WED_SimpleBezierBoundaryNode::CreateTyped(grp->GetArchive());
