@@ -5959,7 +5959,111 @@ static string get_edge_for_pavement_type(int pt)
 	return k_edge_prefix + mypt->lin_rsrc;
 }
 
+class line_placement_factory {
+public:
 
+	WED_Thing * 					m_parent;
+	vector<pair<string, Bezier2>>	m_edges;
+
+	line_placement_factory(WED_Thing * parent) : m_parent(parent)
+	{
+	}
+
+	void add_segment(const string& rsrc, const Bezier2& curve, bool supporting_surve_is_segment)
+	{
+		dev_assert(!rsrc.empty());
+		// Sub-curve and parent curve should have same segment status, but double check to be sure!
+		dev_assert(supporting_surve_is_segment == curve.is_segment());
+
+		m_edges.emplace_back(rsrc, curve);
+		
+	}
+	~line_placement_factory()
+	{
+		if(m_edges.empty())
+			return;
+			
+		auto first_mismatched = find_if(m_edges.begin()+1,m_edges.end(),[&rsrc = m_edges.front().first](const auto& e) { return e.first != rsrc; });
+		if(first_mismatched != m_edges.end())
+			std::rotate(m_edges.begin(), first_mismatched, m_edges.end());
+	
+		auto gap = std::adjacent_find(m_edges.begin(), m_edges.end(),[](const auto& a, const auto& b){ return a.second.p2 != b.second.p1;});
+	
+		bool is_loop = first_mismatched == m_edges.end() && m_edges.front().second.p1 == m_edges.back().second.p2 && gap == m_edges.end();
+		dev_assert(!is_loop || m_edges.front().first == m_edges.back().first);
+		dev_assert(!is_loop || m_edges.size() > 1);
+
+		Bezier2 loop_curve = m_edges.back().second;
+		if(is_loop)
+			m_edges.pop_back();
+
+		WED_LinePlacement * last_line = nullptr;
+		WED_SimpleBezierBoundaryNode * last_node = nullptr;
+		WED_SimpleBezierBoundaryNode * first_node = nullptr;
+		string last_rsrc;
+		int	node_ctr = 0;
+		Point2 last_loc;
+
+		for(auto& e : m_edges)
+		{
+			auto& rsrc = e.first;
+			auto& curve = e.second;
+
+			if(rsrc != last_rsrc || last_loc != curve.p1)
+			{
+				last_line = WED_LinePlacement::CreateTyped(m_parent->GetArchive());
+				last_line->SetName("edge");
+				last_line->SetResource(rsrc);
+				last_line->SetParent(m_parent,0);
+
+				last_node = WED_SimpleBezierBoundaryNode::CreateTyped(m_parent->GetArchive());
+				last_node->SetSplit(true);
+				if(first_node == nullptr)
+					first_node = last_node;
+				last_node->SetParent(last_line,0);
+				node_ctr = 1;
+				
+				last_rsrc = rsrc;
+			}
+
+			WED_SimpleBezierBoundaryNode * b1 = last_node;
+			WED_SimpleBezierBoundaryNode * b2 = WED_SimpleBezierBoundaryNode::CreateTyped(m_parent->GetArchive());
+			b2->SetSplit(true);
+			b2->SetParent(last_line,node_ctr++);
+			b1->SetLocation(gis_Geo, curve.p1);
+			b1->SetControlHandleHi(gis_Geo,curve.c1);
+			b2->SetLocation(gis_Geo, curve.p2);
+			b2->SetControlHandleLo(gis_Geo, curve.c2);
+			
+			
+			if(curve.is_segment())
+			{
+				b1->DeleteHandleHi();
+				b2->DeleteHandleLo();
+			}
+			
+			last_node = b2;
+			last_loc = curve.p2;
+		}
+		
+		if(is_loop)
+		{
+			dev_assert(last_line);
+			last_line->SetClosed(true);
+			dev_assert(first_node);
+			dev_assert(last_node);
+			dev_assert(first_node != last_node);
+			
+			WED_SimpleBezierBoundaryNode * b1 = last_node;
+			WED_SimpleBezierBoundaryNode * b2 = first_node;
+			b1->SetLocation(gis_Geo, loop_curve.p1);
+			b1->SetControlHandleHi(gis_Geo,loop_curve.c1);
+			b2->SetLocation(gis_Geo, loop_curve.p2);
+			b2->SetControlHandleLo(gis_Geo, loop_curve.c2);
+			
+		}
+	}
+};
 
 void WED_EdgePavementBen(WED_Airport* apt, IResolver * resolver)
 {
@@ -6041,6 +6145,8 @@ void WED_EdgePavementBen(WED_Airport* apt, IResolver * resolver)
 		
 		for(auto my_contour = this_pave->polygon.begin(); my_contour != this_pave->polygon.end(); ++my_contour)
 		{
+			line_placement_factory factory(grp);
+		
 			for(auto me = my_contour->begin(); me != my_contour->end(); ++me)
 			{
 //				printf("  ----\n");
@@ -6187,30 +6293,12 @@ void WED_EdgePavementBen(WED_Airport* apt, IResolver * resolver)
 					
 					Bezier2 sub;
 					me->subcurve(sub, c1.t_me, c2.t_me);
-					
-					WED_LinePlacement * l = WED_LinePlacement::CreateTyped(grp->GetArchive());
-					l->SetName("edge");
-					
+
+					string rsrc = my_rsrc;
 					if(other != all_pavement.end())
-						l->SetResource(get_seam(is_pavement_type_concrete(my_type), is_pavement_type_concrete(other->surface)));
-					else
-						l->SetResource(my_rsrc);
-					l->SetParent(grp,0);
-					
-					WED_SimpleBezierBoundaryNode * b1 = WED_SimpleBezierBoundaryNode::CreateTyped(grp->GetArchive());
-					WED_SimpleBezierBoundaryNode * b2 = WED_SimpleBezierBoundaryNode::CreateTyped(grp->GetArchive());
-					b1->SetParent(l,0);
-					b2->SetParent(l,1);
-					b1->SetLocation(gis_Geo, sub.p1);
-					b1->SetControlHandleHi(gis_Geo,sub.c1);
-					b2->SetLocation(gis_Geo, sub.p2);
-					b2->SetControlHandleLo(gis_Geo, sub.c2);
-					
-					if(me->is_segment())
-					{
-						b1->DeleteHandleHi();
-						b2->DeleteHandleLo();
-					}
+						rsrc = get_seam(is_pavement_type_concrete(my_type), is_pavement_type_concrete(other->surface));
+						
+					factory.add_segment(rsrc, sub, me->is_segment());
 				}
 				
 			}
