@@ -6042,7 +6042,6 @@ void WED_EdgePavementBen(WED_Airport* apt, IResolver * resolver)
 		for(auto my_contour = this_pave->polygon.begin(); my_contour != this_pave->polygon.end(); ++my_contour)
 		{
 			for(auto me = my_contour->begin(); me != my_contour->end(); ++me)
-			for(auto me = my_contour->begin(); me != my_contour->end(); ++me)
 			{
 //				printf("  ----\n");
 				// "me" is the edge that needs consideration.
