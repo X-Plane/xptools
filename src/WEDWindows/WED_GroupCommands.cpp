@@ -6158,7 +6158,7 @@ void WED_EdgePavementBen(WED_Airport* apt, IResolver * resolver)
 
 	struct one_pavement_t {
 		string						name;
-		vector<BezierPolygon2>		polygon;
+		vector<BezierPolygon2p>		polygon;
 		int							surface;
 	};
 	
@@ -6236,7 +6236,11 @@ void WED_EdgePavementBen(WED_Airport* apt, IResolver * resolver)
 		
 			for(auto me = my_contour->begin(); me != my_contour->end(); ++me)
 			{
-//				printf("  ----\n");
+				// This skips edging lines that have a linear feature on them to save perf.
+				if(me->param > 0)
+					continue;
+			
+//				printf("  ---- %d\n", me->param);
 				// "me" is the edge that needs consideration.
 				vector<crossing_t>	all_crossings;
 				Bbox2 me_bounds;
@@ -6378,7 +6382,7 @@ void WED_EdgePavementBen(WED_Airport* apt, IResolver * resolver)
 					if(other < this_pave)
 						continue;
 					
-					Bezier2 sub;
+					Bezier2p sub;
 					me->subcurve(sub, c1.t_me, c2.t_me);
 
 					string rsrc = my_rsrc;

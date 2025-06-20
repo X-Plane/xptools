@@ -68,3 +68,38 @@ void		WED_AirportNode::GetAttributes(set<int>& out_attrs) const
 {
 	out_attrs = attrs.value;
 }
+
+
+
+void	WED_AirportNode::GetLocation		   (GISLayer_t l,      Point2& p) const
+{
+	if(l == gis_Param) p = Point2(GetExportedAttributeProxy(),0.0);
+	else				WED_GISPoint_Bezier::GetLocation(l, p);
+}
+
+bool	WED_AirportNode::GetControlHandleLo (GISLayer_t l,       Point2& p) const
+{
+	GISLayer_t rl = (l == gis_Param) ? gis_Geo : l;
+	if(!WED_GISPoint_Bezier::GetControlHandleLo(rl,p)) return false;
+	if (l == gis_Param) p = Point2(GetExportedAttributeProxy(),0.0);
+	return true;
+}
+
+bool	WED_AirportNode::GetControlHandleHi (GISLayer_t l,       Point2& p) const
+{
+	GISLayer_t rl = (l == gis_Param) ? gis_Geo : l;
+	if(!WED_GISPoint_Bezier::GetControlHandleHi(rl,p)) return false;
+	if (l == gis_Param) p = Point2(GetExportedAttributeProxy(),0.0);
+	return true;
+}
+
+int	WED_AirportNode::GetExportedAttributeProxy() const
+{
+	for(const auto& a : attrs.value)
+	{
+		int e = ENUM_Export(a);
+		if(e < 101)
+			return e;
+	}
+	return 0;
+}
