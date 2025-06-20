@@ -5912,19 +5912,19 @@ static string get_seam(bool a_is_concrete, bool b_is_concrete)
 static def_pavement_info_t k_def_pavement_info[] = {
 
 	{ surf_Asphalt_1 , false, "edge_L/soft.lin" 	},	//	Asphalt L
-	{ surf_Asphalt_2 , false, "edge_L/elevated.lin" },	//	Asphalt L Patched
+	{ surf_Asphalt_2 , false, "edge_L/cracked.lin"  },	//	Asphalt L Patched
 	{ surf_Asphalt_3 , false, "edge_L/soft.lin" 	},	//	Asphalt L Plain
 	{ surf_Asphalt_4 , false, "edge_L/elevated.lin" },	//	Asphalt L Worn
 	{ surf_Asphalt   , false, "edge_L/soft.lin" 	},	//	Asphalt
-	{ surf_Asphalt_5 , false, "edge_L/elevated.lin" },	//	Asphalt Patched
+	{ surf_Asphalt_5 , false, "edge_L/cracked.lin"  },	//	Asphalt Patched
 	{ surf_Asphalt_6 , false, "edge_L/soft.lin" 	},	//	Asphalt Plain
 	{ surf_Asphalt_7 , false, "edge_L/elevated.lin" },	//	Asphalt Worn
 	{ surf_Asphalt_8 , false, "edge_L/soft.lin" 	},	//	Asphalt D
-	{ surf_Asphalt_9 , false, "edge_L/elevated.lin" },	//	Asphalt D Patched
+	{ surf_Asphalt_9 , false, "edge_L/cracked.lin"  },	//	Asphalt D Patched
 	{ surf_Asphalt_10, false, "edge_L/soft.lin" 	},	//	Asphalt D Plain
 	{ surf_Asphalt_11, false, "edge_L/elevated.lin" },	//	Asphalt D Worn
 	{ surf_Asphalt_12, false, "edge_D/soft.lin" 	},	//	Asphalt D2
-	{ surf_Asphalt_14, false, "edge_D/elevated.lin" },	//	Asphalt D2 Patched
+	{ surf_Asphalt_14, false, "edge_D/cracked.lin"  },	//	Asphalt D2 Patched
 	{ surf_Asphalt_14, false, "edge_D/soft.lin" 	},	//	Asphalt D2 Plain
 	{ surf_Asphalt_15, false, "edge_D/elevated.lin" },	//	Asphalt D2 Worn
 	{ surf_Asphalt_15, false, "edge_D/soft.lin" 	},	//	Asphalt D3
