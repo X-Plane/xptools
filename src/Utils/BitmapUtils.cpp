@@ -1844,10 +1844,10 @@ int	WriteBitmapToDDS_MT(struct ImageInfo& ioImage, int BCtype, const char * file
 	for (int i = 0; i < num_threads; i++)
 	{
 		int height =  i < num_threads -1 ? ((ioImage.height / num_threads) >> 2) << 2 : ioImage.height - start_line;
-		auto data = ioImage.data + start_line * ioImage.width * 4;
+		unsigned char *data = ioImage.data + start_line * ioImage.width * 4;
 
 		if(BCtype < 4)
-			threads[i] = thread(squish::CompressImage, data, ioImage.width, height, dst_ptr, flags);
+			threads[i] = thread([data, width = ioImage.width, height, dst_ptr, flags](){ squish::CompressImage(data, width, (int)height, dst_ptr, flags); });// squish::CompressImage, data, (int)ioImage.width, (int)height, dst_ptr, flags);
 		else
 			threads[i] = thread(squish::CompressImageBC45, data, ioImage.width, height, dst_ptr, BCtype == 5);
 

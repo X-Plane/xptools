@@ -25,7 +25,7 @@
 #include <geotiffio.h>
 #include <geo_normalize.h>
 #define PVALUE LIBPROJ_PVALUE
-#include <proj_api.h>
+#include <proj.h>
 #include <cpl_serv.h>
 #include <xtiffio.h>
 #endif
@@ -213,46 +213,41 @@ bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos,
 }
 
 #if USE_TIF
-hash_map<int, projPJ>	sUTMProj;
+hash_map<int, PJ*>	sUTMProj;
 struct CTABLE *		sNADGrid = NULL;
 
 static	void	SetupUTMMap(int inZone)
 {
 	if (sUTMProj.find(inZone) != sUTMProj.end()) return;
 
-	char ** args;
 	char	argString[512];
-	projPJ	proj;
+	PJ*	proj;
 
 //	sprintf(argString,"+units=m +proj=utm +zone=%d +ellps=WGS84 ", inZone);
 	sprintf(argString,"+units=m +proj=utm +zone=%d +ellps=clrk66 ", inZone);
 
-	args = CSLTokenizeStringComplex(argString, " +", TRUE, FALSE);
-	proj = pj_init(CSLCount(args), args);
-	CSLDestroy(args);
+	proj = proj_create(PJ_DEFAULT_CTX, argString);
 	if (proj != NULL)
-		sUTMProj.insert(hash_map<int, projPJ>::value_type(inZone, proj));
+		sUTMProj.insert(hash_map<int, PJ*>::value_type(inZone, proj));
 
 //	sNADGrid = nad_init("conus.bin");
 }
 
+// WARNING: This function was updated to use proj_trans() instead of pj_inv(), but that change is completely untested.
+// As far as I can tell, this is actually dead code.
 void	UTMToLonLat(double x, double y, int zone, double * outLon, double * outLat)
 {
 	SetupUTMMap(zone);
 	if (sUTMProj.find(zone) == sUTMProj.end())
 		return;
 
-      projUV	sUV;
+	PJ_COORD coord;
+	coord.xy.x = x;
+	coord.xy.y = y;
+	coord = proj_trans(sUTMProj[zone], PJ_INV, coord);//pj_inv( sUV, sUTMProj[zone]);
 
-    sUV.u = x;
-    sUV.v = y;
-
-//    sUV = nad_cvt(sUV, false, sNADGrid);
-
-	sUV = pj_inv( sUV, sUTMProj[zone]);
-
-	if (outLon) *outLon = sUV.u * RAD_TO_DEG;
-	if (outLat) *outLat = sUV.v * RAD_TO_DEG;
+	if (outLon) *outLon = coord.uv.u * RAD_TO_DEG;
+	if (outLat) *outLat = coord.uv.v * RAD_TO_DEG;
 }
 #endif
 
