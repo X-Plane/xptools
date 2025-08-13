@@ -82,33 +82,40 @@ function New-BuildDirectory {
     }
 }
 
-# Install dependencies with Conan 2
+# Install dependencies with Conan 2 for both Debug and Release
 function Install-ConanDependencies {
-    Write-Info "Installing Conan 2 dependencies..."
+    Write-Info "Installing Conan 2 dependencies for Debug, Release, and RelWithDebInfo builds..."
 
     Push-Location $BuildDir
     try {
-        # Conan 2 install command - this will generate files in the current directory (build dir)
-        $conanArgs = @(
-            "install",
-            "..",
-            "--build=missing",
-            "--profile:build=$ConanProfile",
-            "--profile:host=$ConanProfile",
-            "-s", "build_type=$BuildType",
-            "--output-folder=."
-        )
+        # Define build types to install
+        $buildTypes = @("Debug", "Release", "RelWithDebInfo")
 
-        if ($Verbose) {
-            $conanArgs += "-v"
-        }
+        foreach ($buildType in $buildTypes) {
+            Write-Info "Installing $buildType dependencies..."
+            $conanArgs = @(
+                "install",
+                "..",
+                "--build=missing",
+                "--profile:build=$ConanProfile",
+                "--profile:host=$ConanProfile",
+                "-s", "build_type=$buildType",
+                "--output-folder=."
+            )
 
-        Write-Info "Running: conan $($conanArgs -join ' ')"
-        & conan @conanArgs
+            if ($Verbose) {
+                $conanArgs += "-v"
+            }
 
-        if ($LASTEXITCODE -ne 0) {
-            Write-Error "Conan install failed with exit code: $LASTEXITCODE"
-            exit $LASTEXITCODE
+            Write-Info "Running: conan $($conanArgs -join ' ')"
+            & conan @conanArgs
+
+            if ($LASTEXITCODE -ne 0) {
+                Write-Error "Conan install for $buildType failed with exit code: $LASTEXITCODE"
+                exit $LASTEXITCODE
+            }
+
+            Write-Info "$buildType dependencies installed successfully"
         }
 
         # Verify that the toolchain was generated in the build directory
@@ -117,7 +124,7 @@ function Install-ConanDependencies {
             exit 1
         }
 
-        Write-Info "Conan 2 dependencies installed successfully"
+        Write-Info "Conan 2 dependencies installed for Debug, Release, and RelWithDebInfo"
         Write-Info "Generated conan_toolchain.cmake in build directory"
     }
     finally {
@@ -173,18 +180,22 @@ function Show-CompletionMessage {
     Write-Host "`nNext steps:" -ForegroundColor Cyan
     Write-Host "  1. Open the generated .sln file in Visual Studio:" -ForegroundColor White
     Write-Host "     $BuildDir\*.sln" -ForegroundColor Gray
-    Write-Host "  2. Or build from command line:" -ForegroundColor White
-    Write-Host "     cmake --build $BuildDir --config $BuildType" -ForegroundColor Gray
-    Write-Host "  3. Or use MSBuild directly:" -ForegroundColor White
-    Write-Host "     msbuild $BuildDir\*.sln /p:Configuration=$BuildType" -ForegroundColor Gray
+    Write-Host "  2. Or build Debug from command line:" -ForegroundColor White
+    Write-Host "     cmake --build $BuildDir --config Debug" -ForegroundColor Gray
+    Write-Host "  3. Or build Release from command line:" -ForegroundColor White
+    Write-Host "     cmake --build $BuildDir --config Release" -ForegroundColor Gray
+    Write-Host "  4. Or use MSBuild directly:" -ForegroundColor White
+    Write-Host "     msbuild $BuildDir\*.sln /p:Configuration=Debug" -ForegroundColor Gray
+    Write-Host "     msbuild $BuildDir\*.sln /p:Configuration=Release" -ForegroundColor Gray
+    Write-Host "`nBoth Debug and Release dependencies are now available!" -ForegroundColor Green
 }
 
 # Main execution
 function Main {
     Write-Info "Starting C++ project build setup..."
-    Write-Info "Build Type: $BuildType"
     Write-Info "Conan Profile: $ConanProfile"
     Write-Info "Project Root: $ProjectRoot"
+    Write-Info "Installing dependencies for both Debug and Release configurations"
 
     try {
         Test-Prerequisites
