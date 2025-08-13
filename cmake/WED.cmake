@@ -12,6 +12,7 @@ if (APPLE)
 	)
 elseif(WIN32)
 	set(WED_PLATFORM_SOURCES
+		src/WEDResources/WED.rc
 		src/UI/XWin.win.cpp
 		src/UI/XWinGL.win.cpp
 		src/UI/XWin32DND.cpp

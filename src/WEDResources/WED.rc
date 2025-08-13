@@ -1,5 +1,5 @@
-/* exe icon */
-100 				ICON 		WED.ico
+/* exe icon. For reasons that are entirely unclear to me, this has to be called 1.ico or resource compiler will complain it can't find 1.ico */
+100  			ICON		1.ico
 
 /* core UI resources */
 sans.ttf			GUI_RES		sans.ttf
