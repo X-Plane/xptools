@@ -1,8 +1,7 @@
 if (APPLE)
-	add_xib(${CMAKE_SOURCE_DIR}/src/WEDResources/WEDMainMenu.xib)
-	finalize_xibs(XIBS)
+	find_program(IBTOOL ibtool REQUIRED)
+
 	set(WED_PLATFORM_SOURCES
-		${XIBS}
 		src/UI/XWin.mac.mm
 		src/UI/XWinGL.mac.mm
 		src/UI/ObjCUtils.mm
@@ -313,7 +312,6 @@ set (WED_SOURCES
 
 if (APPLE)
 	set(PLATFORM_RESOURCE_FILES
-		${XIBS}
 		${CMAKE_SOURCE_DIR}/src/WEDResources/WED.icns
 	)
 elseif(LINUX)
@@ -460,6 +458,12 @@ set(WED_RESOURCE_FILES
 
 if (APPLE)
 	add_executable(WED MACOSX_BUNDLE ${WED_SOURCES})
+
+	add_custom_command(
+		TARGET WED POST_BUILD
+		COMMAND ${IBTOOL} --compile "$<TARGET_BUNDLE_DIR:WED>/Contents/Resources/WEDMainMenu.nib" "${CMAKE_SOURCE_DIR}/src/WEDResources/WEDMainMenu.xib"
+		COMMENT "Compiling WEDMainMenu.xib to nib"
+	)
 elseif(WIN32)
 	add_executable(WED WIN32 ${WED_SOURCES})
 else()

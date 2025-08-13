@@ -3,7 +3,6 @@ cmake_policy(SET CMP0091 NEW) # Required by conan 2
 project(xptools)
 
 if (APPLE)
-    include(cmake/xib_helper.cmake)
 	include(cmake/mac.cmake)
 endif()
 
