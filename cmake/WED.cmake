@@ -529,10 +529,13 @@ target_link_libraries(WED PRIVATE
 	CURL::libcurl
     OpenGL::GL
     GLEW::GLEW
-    comctl32
 )
 
-if (APPLE)
+if (WIN32)
+	target_link_libraries(WED PRIVATE
+	    comctl32
+	)
+elseif (APPLE)
 	target_link_libraries(WED PRIVATE
 		${CARBON_FRAMEWORK}
 		${OPENGL_FRAMEWORK}

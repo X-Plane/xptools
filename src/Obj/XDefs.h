@@ -162,6 +162,7 @@
 	#include <unordered_map>
 	#include <thread>
 	#include <functional>
+	#include <list>
 
 	#define hash_map      unordered_map
 	#define hash_multimap unordered_multimap
@@ -230,6 +231,9 @@
 	using std::set_new_handler;
 	using std::bad_alloc;
 	using std::exception;
+	using std::max;
+	using std::min;
+	using std::endl;
 #endif
 
 #include <stdio.h>
