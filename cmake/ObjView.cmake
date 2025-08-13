@@ -35,6 +35,7 @@ if (WIN32)
         src/UI/XWin.win.cpp
         src/UI/XWin32DND.cpp
         src/UI/XWinGL.win.cpp
+        src/GUI/GUI_Unicode.cpp
     )
 elseif(LINUX)
     set(obj_view_sources ${obj_view_sources}
@@ -52,10 +53,18 @@ elseif(APPLE)
     )
 endif()
 
-add_executable(ObjView ${obj_view_sources})
-target_compile_options(ObjView PRIVATE -include ${CMAKE_SOURCE_DIR}/src/Obj/XDefs.h)
-target_compile_definitions(ObjView PRIVATE ${BASIC_PLATFORM_DEFINES} -DUSE_JPEG=1 -DUSE_TIF=1)
+if(MSVC)
+    add_executable(ObjView WIN32 ${obj_view_sources})
+	target_compile_options(ObjView PRIVATE /FI ${CMAKE_SOURCE_DIR}/src/Obj/XDefs.h)
+else()
+    add_executable(ObjView ${obj_view_sources})
+	target_compile_options(ObjView PRIVATE -include ${CMAKE_SOURCE_DIR}/src/Obj/XDefs.h)
+endif()
+
+target_compile_definitions(ObjView PRIVATE ${BASIC_PLATFORM_DEFINES} -DUSE_JPEG=1 -DUSE_TIF=1 GLEW_STATIC)
 target_link_libraries(ObjView PRIVATE
+    OpenGL::GL
+    GLEW::GLEW
     ZLIB::ZLIB
 	PNG::PNG
 	TIFF::TIFF
@@ -65,6 +74,7 @@ target_link_libraries(ObjView PRIVATE
 
 target_include_directories(ObjView PRIVATE
 	SDK/libtess2/Include
+	Src/GUI
     Src/Obj
     Src/ObjEdit
     Src/Utils

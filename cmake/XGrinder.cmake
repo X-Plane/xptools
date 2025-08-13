@@ -30,14 +30,25 @@ elseif(WIN32)
     )
 endif()
 
-add_executable(XGrinder ${XGRINDER_SOURCES})
-target_compile_options(XGrinder PRIVATE -include ${CMAKE_SOURCE_DIR}/src/Obj/XDefs.h)
+if (WIN32)
+    add_executable(XGrinder WIN32 ${XGRINDER_SOURCES})
+else()
+    add_executable(XGrinder ${XGRINDER_SOURCES})
+endif()
+
+if(MSVC)
+    target_compile_options(XGrinder PRIVATE /FI ${CMAKE_SOURCE_DIR}/src/Obj/XDefs.h)
+else()
+    target_compile_options(XGrinder PRIVATE -include ${CMAKE_SOURCE_DIR}/src/Obj/XDefs.h)
+endif()
+
 target_compile_definitions(XGrinder PRIVATE ${BASIC_PLATFORM_DEFINES})
 target_link_libraries(XGrinder PRIVATE
     ZLIB::ZLIB
 )
 
 target_include_directories(XGrinder PRIVATE
+    Src/GUI
     Src/Utils
     Src/Obj
     Src/UI

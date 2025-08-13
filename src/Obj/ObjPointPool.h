@@ -29,10 +29,9 @@
 
 using std::map;
 using std::vector;
-using std::binary_function;
 
 template <class T>
-struct lex_compare_vector : public binary_function<vector<T>, vector<T>, bool> {
+struct lex_compare_vector {
 
 	bool operator()(const vector<T>& lhs, const vector<T>& rhs) const {
 		return lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());

@@ -1,7 +1,6 @@
-add_xib(${CMAKE_SOURCE_DIR}/src/WEDResources/WEDMainMenu.xib)
-finalize_xibs(XIBS)
-
 if (APPLE)
+	add_xib(${CMAKE_SOURCE_DIR}/src/WEDResources/WEDMainMenu.xib)
+	finalize_xibs(XIBS)
 	set(WED_PLATFORM_SOURCES
 		${XIBS}
 		src/UI/XWin.mac.mm
@@ -460,6 +459,8 @@ set(WED_RESOURCE_FILES
 
 if (APPLE)
 	add_executable(WED MACOSX_BUNDLE ${WED_SOURCES})
+elseif(WIN32)
+	add_executable(WED WIN32 ${WED_SOURCES})
 else()
 	add_executable(WED ${WED_SOURCES})
 endif()
@@ -470,9 +471,15 @@ target_compile_definitions(WED PRIVATE
     USE_TIF=1
     WED=1
     NO_CGAL=1
+    GLEW_STATIC
 )
 
-target_compile_options(WED PRIVATE -include ${CMAKE_SOURCE_DIR}/src/Obj/XDefs.h)
+if(MSVC)
+	target_compile_options(WED PRIVATE /FI ${CMAKE_SOURCE_DIR}/src/Obj/XDefs.h)
+else()
+	target_compile_options(WED PRIVATE -include ${CMAKE_SOURCE_DIR}/src/Obj/XDefs.h)
+endif()
+
 target_include_directories(WED PRIVATE
 	SDK/lib_json/include
 	src/lzma19/C
@@ -518,7 +525,10 @@ target_link_libraries(WED PRIVATE
 	geotiff_library
 	JPEG::JPEG
 	libsquish::libsquish
-	curl
+	CURL::libcurl
+    OpenGL::GL
+    GLEW::GLEW
+    comctl32
 )
 
 if (APPLE)

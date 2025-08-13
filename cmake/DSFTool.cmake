@@ -32,11 +32,17 @@ add_executable(DSFTool
     src/lzma19/C/Lzma2Dec.c
 )
 
+if(MSVC)
+	target_compile_options(DSFTool PRIVATE /FI ${CMAKE_SOURCE_DIR}/src/Obj/XDefs.h)
+else()
+	target_compile_options(DSFTool PRIVATE -include ${CMAKE_SOURCE_DIR}/src/Obj/XDefs.h)
+endif()
+
 target_compile_definitions(DSFTool PRIVATE ${BASIC_PLATFORM_DEFINES})
-target_compile_options(DSFTool PRIVATE -include ${CMAKE_SOURCE_DIR}/src/Obj/XDefs.h)
 target_link_libraries(DSFTool PRIVATE ZLIB::ZLIB)
 target_include_directories(DSFTool PRIVATE
-	Src/Utils
+    Src/GUI
+    Src/Utils
 	Src/DSF
 	Src/DSF/tri_stripper_101
 	src/lzma19/C

@@ -13,6 +13,7 @@ set(dds_tool_sources
 add_executable(DDSTool ${dds_tool_sources})
 target_include_directories(DDSTool PRIVATE
 	Src/Utils
+	Src/GUI
 )
 
 target_compile_definitions(DDSTool PRIVATE
@@ -26,9 +27,15 @@ target_link_libraries(DDSTool PRIVATE
 	TIFF::TIFF
 	JPEG::JPEG
 	PNG::PNG
+	ZLIB::ZLIB
 )
 
-target_compile_options(DDSTool PRIVATE -include ${CMAKE_SOURCE_DIR}/src/Obj/XDefs.h)
+if(MSVC)
+	target_compile_options(DDSTool PRIVATE /FI ${CMAKE_SOURCE_DIR}/src/Obj/XDefs.h)
+else()
+	target_compile_options(DDSTool PRIVATE -include ${CMAKE_SOURCE_DIR}/src/Obj/XDefs.h)
+endif()
+
 if (APPLE)
 	target_link_libraries(DDSTool PRIVATE ${CARBON_FRAMEWORK})
 endif()
