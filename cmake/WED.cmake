@@ -476,7 +476,6 @@ target_compile_definitions(WED PRIVATE
     USE_TIF=1
     WED=1
     NO_CGAL=1
-    GLEW_STATIC
 )
 
 if(MSVC)
@@ -518,6 +517,7 @@ target_include_directories(WED PRIVATE
 	src/RawImport
 	src/Tiger
 	src/SDTS
+	src/linuxinit
 )
 
 target_link_libraries(WED PRIVATE
@@ -531,8 +531,8 @@ target_link_libraries(WED PRIVATE
 	JPEG::JPEG
 	libsquish::libsquish
 	CURL::libcurl
-    OpenGL::GL
-    GLEW::GLEW
+    opengl::opengl
+    GLEW::glew_s
 )
 
 if (WIN32)
@@ -551,4 +551,6 @@ elseif (APPLE)
 		MACOSX_BUNDLE TRUE
 		MACOSX_FRAMEWORK_IDENTIFIER org.LaminarResearch.WED
 	)
+elseif(LINUX)
+	target_link_libraries(WED PRIVATE fltk::fltk egl::egl)
 endif()

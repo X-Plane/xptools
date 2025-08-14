@@ -41,10 +41,10 @@ endif()
 target_compile_definitions(DSFTool PRIVATE ${BASIC_PLATFORM_DEFINES})
 target_link_libraries(DSFTool PRIVATE ZLIB::ZLIB)
 target_include_directories(DSFTool PRIVATE
-    Src/GUI
-    Src/Utils
-	Src/DSF
-	Src/DSF/tri_stripper_101
+    src/GUI
+    src/Utils
+	src/DSF
+	src/DSF/tri_stripper_101
 	src/lzma19/C
 )
 

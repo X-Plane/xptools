@@ -19,20 +19,23 @@ GENERATOR="${GENERATOR:-${1:-$DEFAULT_GENERATOR}}"
 
 echo "Using CMake generator: $GENERATOR"
 
+mkdir -p "${BUILD_DIR}"
+
 # --- Step 1: Install Conan dependencies ---
 echo "Installing Conan Debug build type dependencies..."
-conan install . \
-    --profile "${PROFILE}" \
-    --build=missing \
-    --output-folder="${BUILD_DIR}" \
-    --settings build_type="Debug"
 
-echo "Installing Conan RelWithDebInfo build type dependencies..."
-conan install . \
-    --profile "${PROFILE}" \
-    --build=missing \
-    --output-folder="${BUILD_DIR}" \
-    --settings build_type="RelWithDebInfo"
+#conan install . \
+#    --profile "${PROFILE}" \
+#    --build=missing \
+#    --output-folder="${BUILD_DIR}" \
+#    --settings build_type="Debug"
+
+#echo "Installing Conan RelWithDebInfo build type dependencies..."
+#conan install . \
+#    --profile "${PROFILE}" \
+#    --build=missing \
+#    --output-folder="${BUILD_DIR}" \
+#    --settings build_type="RelWithDebInfo"
 
 echo "Installing Conan Release build type dependencies..."
 conan install . \
@@ -41,14 +44,12 @@ conan install . \
     --output-folder="${BUILD_DIR}" \
     --settings build_type="Release"
 
-# --- Step 2: Create build directory ---
-mkdir -p "${BUILD_DIR}"
-
 # --- Step 3: Run CMake ---
 echo "Generating project with ${GENERATOR}..."
 cmake -S . -B "${BUILD_DIR}" \
     -G "${GENERATOR}" \
     -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
-    -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake
+    -DCMAKE_TOOLCHAIN_FILE=${BUILD_DIR}/${BUILD_TYPE}/generators/conan_toolchain.cmake
 
 echo "✅ Project generated in ${BUILD_DIR} using ${GENERATOR}"
+

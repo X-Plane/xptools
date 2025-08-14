@@ -12,8 +12,8 @@ set(dds_tool_sources
 
 add_executable(DDSTool ${dds_tool_sources})
 target_include_directories(DDSTool PRIVATE
-	Src/Utils
-	Src/GUI
+	src/Utils
+	src/GUI
 )
 
 target_compile_definitions(DDSTool PRIVATE

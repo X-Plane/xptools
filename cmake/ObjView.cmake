@@ -61,10 +61,10 @@ else()
 	target_compile_options(ObjView PRIVATE -include ${CMAKE_SOURCE_DIR}/src/Obj/XDefs.h)
 endif()
 
-target_compile_definitions(ObjView PRIVATE ${BASIC_PLATFORM_DEFINES} -DUSE_JPEG=1 -DUSE_TIF=1 GLEW_STATIC)
+target_compile_definitions(ObjView PRIVATE ${BASIC_PLATFORM_DEFINES} -DUSE_JPEG=1 -DUSE_TIF=1)
 target_link_libraries(ObjView PRIVATE
-    OpenGL::GL
-    GLEW::GLEW
+	opengl::opengl
+    GLEW::glew_s
     ZLIB::ZLIB
 	PNG::PNG
 	TIFF::TIFF
@@ -74,17 +74,19 @@ target_link_libraries(ObjView PRIVATE
 
 target_include_directories(ObjView PRIVATE
 	SDK/libtess2/Include
-	Src/GUI
-    Src/Obj
-    Src/ObjEdit
-    Src/Utils
-    Src/UI
+	src/GUI
+    src/Obj
+    src/ObjEdit
+    src/Utils
+    src/UI
 )
 
 if (APPLE)
 	target_link_libraries(ObjView PRIVATE
 		${CARBON_FRAMEWORK}
-		${OPENGL_FRAMEWORK}
+#		${OPENGL_FRAMEWORK}
 		${APPKIT_FRAMEWORK}
 	)
+elseif(LINUX)
+	target_link_libraries(ObjView PRIVATE fltk::fltk egl::egl)
 endif()

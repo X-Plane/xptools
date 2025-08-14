@@ -231,6 +231,7 @@
 	using std::set_new_handler;
 	using std::bad_alloc;
 	using std::exception;
+	using std::runtime_error;
 	using std::max;
 	using std::min;
 	using std::endl;
