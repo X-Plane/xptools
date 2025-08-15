@@ -542,7 +542,6 @@ if (WIN32)
 elseif (APPLE)
 	target_link_libraries(WED PRIVATE
 		${CARBON_FRAMEWORK}
-		${OPENGL_FRAMEWORK}
 		${APPKIT_FRAMEWORK}
 	)
 

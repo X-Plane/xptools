@@ -84,7 +84,6 @@ target_include_directories(ObjView PRIVATE
 if (APPLE)
 	target_link_libraries(ObjView PRIVATE
 		${CARBON_FRAMEWORK}
-		${OPENGL_FRAMEWORK}
 		${APPKIT_FRAMEWORK}
 	)
 elseif(LINUX)

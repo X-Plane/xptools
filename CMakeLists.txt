@@ -26,7 +26,6 @@ find_package(glew REQUIRED)
 
 if (APPLE)
 	find_library(CARBON_FRAMEWORK Carbon REQUIRED)
-	find_library(OPENGL_FRAMEWORK OpenGL REQUIRED)
 	find_library(APPKIT_FRAMEWORK AppKit REQUIRED)
 elseif(LINUX)
     find_package(glu REQUIRED)
