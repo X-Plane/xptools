@@ -31,7 +31,7 @@ elseif(LINUX)
     find_package(glew REQUIRED)
     find_package(opengl_system REQUIRED)
     find_package(fltk REQUIRED)
-    find_package(egl)
+    find_package(egl REQUIRED)
 endif()
 
 if(WIN32)

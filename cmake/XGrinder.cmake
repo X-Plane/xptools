@@ -48,10 +48,10 @@ target_link_libraries(XGrinder PRIVATE
 )
 
 target_include_directories(XGrinder PRIVATE
-    Src/GUI
-    Src/Utils
-    Src/Obj
-    Src/UI
+    src/GUI
+    src/Utils
+    src/Obj
+    src/UI
 )
 
 if (APPLE)
@@ -59,4 +59,6 @@ if (APPLE)
 		${CARBON_FRAMEWORK}
 		${APPKIT_FRAMEWORK}
 	)
+elseif (LINUX)
+	target_link_libraries(XGrinder PRIVATE fltk::fltk)
 endif()

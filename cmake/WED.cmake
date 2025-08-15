@@ -551,6 +551,6 @@ elseif (APPLE)
 		MACOSX_BUNDLE TRUE
 		MACOSX_FRAMEWORK_IDENTIFIER org.LaminarResearch.WED
 	)
-elseif(LINUX)
+elseif (LINUX)
 	target_link_libraries(WED PRIVATE fltk::fltk egl::egl)
 endif()
