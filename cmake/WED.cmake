@@ -531,8 +531,6 @@ target_link_libraries(WED PRIVATE
 	JPEG::JPEG
 	libsquish::libsquish
 	CURL::libcurl
-    opengl::opengl
-    GLEW::glew_s
 )
 
 if (WIN32)
@@ -552,5 +550,5 @@ elseif (APPLE)
 		MACOSX_FRAMEWORK_IDENTIFIER org.LaminarResearch.WED
 	)
 elseif (LINUX)
-	target_link_libraries(WED PRIVATE fltk::fltk egl::egl)
+	target_link_libraries(WED PRIVATE fltk::fltk egl::egl opengl::opengl GLEW::glew_s)
 endif()

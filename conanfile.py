@@ -19,9 +19,9 @@ class XPToolsRecipe(ConanFile):
         self.requires("zlib/1.3.1")
         self.requires("libpng/1.6.50")
         self.requires("shapelib/1.6.1")
-        self.requires("glew/2.2.0")
         self.requires("libcurl/8.15.0")
         if self.settings.os == "Linux":
+            self.requires("glew/2.2.0")
             self.requires("fltk/1.4.1")
             self.requires("egl/system")
 

@@ -63,8 +63,6 @@ endif()
 
 target_compile_definitions(ObjView PRIVATE ${BASIC_PLATFORM_DEFINES} -DUSE_JPEG=1 -DUSE_TIF=1)
 target_link_libraries(ObjView PRIVATE
-	opengl::opengl
-    GLEW::glew_s
     ZLIB::ZLIB
 	PNG::PNG
 	TIFF::TIFF
@@ -84,9 +82,9 @@ target_include_directories(ObjView PRIVATE
 if (APPLE)
 	target_link_libraries(ObjView PRIVATE
 		${CARBON_FRAMEWORK}
-#		${OPENGL_FRAMEWORK}
+		${OPENGL_FRAMEWORK}
 		${APPKIT_FRAMEWORK}
 	)
 elseif(LINUX)
-	target_link_libraries(ObjView PRIVATE fltk::fltk egl::egl)
+	target_link_libraries(ObjView PRIVATE fltk::fltk egl::egl opengl::opengl GLEW::glew_s)
 endif()
