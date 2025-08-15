@@ -68,6 +68,8 @@ target_link_libraries(ObjView PRIVATE
 	TIFF::TIFF
 	JPEG::JPEG
 	libsquish::libsquish
+	opengl::opengl
+	GLEW::glew_s
 )
 
 target_include_directories(ObjView PRIVATE
@@ -86,5 +88,5 @@ if (APPLE)
 		${APPKIT_FRAMEWORK}
 	)
 elseif(LINUX)
-	target_link_libraries(ObjView PRIVATE fltk::fltk egl::egl opengl::opengl GLEW::glew_s)
+	target_link_libraries(ObjView PRIVATE fltk::fltk egl::egl)
 endif()

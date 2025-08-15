@@ -20,8 +20,8 @@ class XPToolsRecipe(ConanFile):
         self.requires("libpng/1.6.50")
         self.requires("shapelib/1.6.1")
         self.requires("libcurl/8.15.0")
+        self.requires("glew/2.2.0")
         if self.settings.os == "Linux":
-            self.requires("glew/2.2.0")
             self.requires("fltk/1.4.1")
             self.requires("egl/system")
 
@@ -30,8 +30,7 @@ class XPToolsRecipe(ConanFile):
         self.options["zlib"].shared = False
         self.options["libpng"].with_zlib = True
         self.options["glew"].shared = False
-        if self.settings.os == "Linux":
-            self.options["glew"].with_glu = "system"
+        self.options["glew"].with_glu = "system"
 
     def layout(self):
         cmake_layout(self)

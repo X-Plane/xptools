@@ -163,6 +163,8 @@
 	#include <thread>
 	#include <functional>
 	#include <list>
+	#include <stdexcept>
+	#include <ostream>
 
 	#define hash_map      unordered_map
 	#define hash_multimap unordered_multimap
