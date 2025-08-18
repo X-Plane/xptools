@@ -155,9 +155,6 @@ TEX_dds_desc::TEX_dds_desc(int width, int height, int mips, int BCtype)
 	#include <windows.h>
 	#define XMD_H
 	#define HAVE_BOOLEAN
-	#if MINGW_BUILD
-	#define __INTEL__
-	#endif
 #endif
 
 // Note: the std jpeg lib does not have any #ifdef C++ name
