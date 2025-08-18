@@ -23,6 +23,7 @@ find_package(shapelib REQUIRED)
 find_package(CURL REQUIRED)
 find_package(opengl_system REQUIRED)
 find_package(glew REQUIRED)
+find_package(jsoncpp REQUIRED)
 
 if (APPLE)
 	find_library(CARBON_FRAMEWORK Carbon REQUIRED)

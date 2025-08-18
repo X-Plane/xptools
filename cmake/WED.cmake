@@ -280,10 +280,6 @@ set (WED_SOURCES
 	src/XESCore/AptIO.cpp
 	src/XESCore/DEMDefs.cpp
 
-	SDK/lib_json/src/lib_json/json_writer.cpp
-	SDK/lib_json/src/lib_json/json_reader.cpp
-	SDK/lib_json/src/lib_json/json_value.cpp
-
 	src/lzma19/C/7zArcIn.c
 	src/lzma19/C/7zAlloc.c
 	src/lzma19/C/7zBuf.c
@@ -485,7 +481,6 @@ else()
 endif()
 
 target_include_directories(WED PRIVATE
-	SDK/lib_json/include
 	src/lzma19/C
 	SDK/libtess2/Include
 	src/WEDTCE
@@ -533,6 +528,7 @@ target_link_libraries(WED PRIVATE
 	CURL::libcurl
 	opengl::opengl
 	GLEW::glew_s
+	JsonCpp::JsonCpp
 )
 
 if (WIN32)
