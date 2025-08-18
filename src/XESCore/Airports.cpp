@@ -574,17 +574,6 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 	// Pass 2 - wide boundaries, kill roads but not water, and burn DEM.
 	// BUT...if we have user-specified boundaries, this is the only pass and we do fill water.
 
-#if DEV && OPENGL_MAP	
-	gDem[dem_Wizard] = elevation;
-	gDem[dem_Wizard] = DEM_NO_DATA;
-	gDem[dem_Wizard1] = gDem[dem_Wizard];
-	gDem[dem_Wizard2] = gDem[dem_Wizard];
-	gDem[dem_Wizard3] = gDem[dem_Wizard];
-	gDem[dem_Wizard4] = gDem[dem_Wizard];
-	gDem[dem_Wizard5] = gDem[dem_Wizard];
-	gDem[dem_Wizard6] = gDem[dem_Wizard];
-#endif
-	
 	for (int n = 0; n < apts.size(); ++n)
 	if (apts[n].kind_code == apt_airport)
 	{
@@ -622,21 +611,6 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 					gDem[dem_Wizard].overlay(airport_area, x1,y1);
 					#endif
 
-#if DEV && OPENGL_MAP && 0
-					DEMGeo a(airport_area);
-					a += (-(float) apts[n].elevation_ft * FT_TO_MTR);
-					gDem[dem_Wizard].overlay(a, x1,y1);
-					float sigma[6] = { 1.0, 2.0, 3.0, 4.0, 6.0, 8.0 };
-					for(int k = 0; k < 6; ++k)					
-					{
-						DEMGeo t(airport_area);
-						GaussianBlurDEM(t,sigma[k]);
-						mask_with(t,airport_area);
-						t += (-(float) apts[n].elevation_ft * FT_TO_MTR);
-						gDem[dem_Wizard1+k].overlay(t, x1,y1);
-						
-					}
-#endif				
 					#if HD_MESH
 						GaussianBlurDEM(airport_area,4.0);
 					#elif UHD_MESH
@@ -841,11 +815,7 @@ void	BezierToSegments(
 					{
 						if(sqrt(s.squared_distance_supporting_line(bpb)) > inSimplify * MTR_TO_DEG_LAT)
 						{
-							#if OPENGL_MAP && DEV
-								debug_mesh_line(bpb,s.projection(bpb),1,0,0,1,0,0);
-							#else
 								throw "too curvy curve!";
-							#endif
 						}
 					}
 					outWinding.push_back(bp);

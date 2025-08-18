@@ -57,11 +57,6 @@ The following symbols are used that may need to be globally defined via the
 		and the others to zero.
 	DEV
 		This turns on the dev build/debugging - define to one or zero.
-	OPENGL_MAP
-		This adds OpenGL data to the XESCore map classes.  This is needed to 
-		build WorldEditor.  This is controlled by a flag because we don't want 
-		to  spend memory on this data for the console version.  Define to one
-		or zero.
 	LIL BIG
 		These flags set the endian-ness of the executable (little or big).
 	USE_TIF, USE_JPEG
