@@ -166,7 +166,7 @@ static const GUI_MenuItem_t kViewMenu[] = {
 {	"Toggle &Navaids",			0,	0,										0,	wed_ToggleNavaidMap	},
 {	"Toggle Terrain",			0,	0,										0,	wed_ToggleTerrainMap},
 {	"S&lippy Map",				0,	0,										0,	0                   },
-{	"To&ggle Preview",			0,	0,										0,	wed_TogglePreview	},
+{	"To&ggle Preview",			'P',gui_ControlFlag,						0,	wed_TogglePreview	},
 #if WITHNWLINK
 {	"Toggle LiveMode",		    0,	0,										0,	wed_ToggleLiveView },
 #endif

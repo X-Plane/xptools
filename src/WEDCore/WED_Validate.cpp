@@ -2008,7 +2008,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 		if (metaValue != "atc" && metaValue != "fiso")
 		{
 			string txt = "Metadata key '" + META_KeyDisplayText(wed_AddMetaDataTowerCaps) + "'";
-			msgs.push_back(validation_error_t(txt + " must be either 'atc' or 'fiso'", err_airport_metadata_invalid, who, apt));
+			msgs.push_back(validation_error_t(txt + " must be either 'atc' (full ATC service) or 'fiso' (Flight Information Service). Leave blank if unsure.", err_airport_metadata_invalid, who, apt));
 		}
 	}
 
