@@ -551,5 +551,32 @@ elseif (APPLE)
 		MACOSX_FRAMEWORK_IDENTIFIER org.LaminarResearch.WED
 	)
 elseif (LINUX)
+	function(embed_resource target input_file)
+		get_filename_component(fname "${input_file}" NAME)
+		get_filename_component(fdir "${input_file}" DIRECTORY)
+
+		set(obj_file "${CMAKE_CURRENT_BINARY_DIR}/${fname}.res.o")
+
+		add_custom_command(
+			OUTPUT "${obj_file}"
+			COMMAND ${CMAKE_COMMAND} -E chdir ${fdir} #${CMAKE_SOURCE_DIR}/src/WEDResources/
+					${CMAKE_OBJCOPY}
+					-I binary
+					-O "elf64-x86-64"
+					-B i386:x86-64
+					"${fname}"
+					"${obj_file}"
+			DEPENDS "${input_file}"
+			COMMENT "Embedding resource ${input_file} -> ${obj_file}"
+		)
+
+		target_sources(${target} PRIVATE "${obj_file}")
+	endfunction()
+
+	foreach(res ${WED_RESOURCE_FILES})
+		embed_resource(WED ${res})
+	endforeach()
+
 	target_link_libraries(WED PRIVATE fltk::fltk egl::egl)
+	target_link_options(WED PRIVATE -rdynamic)
 endif()

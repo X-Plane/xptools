@@ -24,18 +24,18 @@ mkdir -p "${BUILD_DIR}"
 # --- Step 1: Install Conan dependencies ---
 echo "Installing Conan Debug build type dependencies..."
 
-#conan install . \
-#    --profile "${PROFILE}" \
-#    --build=missing \
-#    --output-folder="${BUILD_DIR}" \
-#    --settings build_type="Debug"
+conan install . \
+    --profile "${PROFILE}" \
+    --build=missing \
+    --output-folder="${BUILD_DIR}" \
+    --settings build_type="Debug"
 
-#echo "Installing Conan RelWithDebInfo build type dependencies..."
-#conan install . \
-#    --profile "${PROFILE}" \
-#    --build=missing \
-#    --output-folder="${BUILD_DIR}" \
-#    --settings build_type="RelWithDebInfo"
+echo "Installing Conan RelWithDebInfo build type dependencies..."
+conan install . \
+    --profile "${PROFILE}" \
+    --build=missing \
+    --output-folder="${BUILD_DIR}" \
+    --settings build_type="RelWithDebInfo"
 
 echo "Installing Conan Release build type dependencies..."
 conan install . \

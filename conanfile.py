@@ -5,6 +5,8 @@ class XPToolsRecipe(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     generators = "CMakeDeps"
 
+    # Use force, because for some reason override causes the include directories to not be set
+    # properly on linux only.
     def requirements(self):
         self.requires("opengl/system")
         self.requires("glu/system")
@@ -12,10 +14,10 @@ class XPToolsRecipe(ConanFile):
         self.requires("expat/2.7.1")
         self.requires("libsquish/1.15")
         self.requires("libgeotiff/1.7.1")
-        self.requires("proj/9.3.1")
-        self.requires("freetype/2.13.2")
+        self.requires("proj/9.6.0", force=True)
+        self.requires("freetype/2.13.3", force=True)
         self.requires("libtiff/4.7.0", force=True)
-        self.requires("libjpeg/9f", override=True)
+        self.requires("libjpeg/9f", force=True)
         self.requires("zlib/1.3.1")
         self.requires("libpng/1.6.50")
         self.requires("shapelib/1.6.1")
