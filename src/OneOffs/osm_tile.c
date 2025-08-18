@@ -223,7 +223,7 @@ static const char * ok_types = NULL;
 // Values: -1 = completed.  0 not open. > 0 = index+1 of file handle.
 static int tile_file_status[362*180] = { 0 };
 static int free_file_ptr = 0;
-gzFile *	file_table[MAX_FILES_EVER] = { 0 };
+gzFile	file_table[MAX_FILES_EVER] = { 0 };
 static int not_enough_files = 0;
 
 int GRID_BUCKET(int v)
@@ -231,7 +231,7 @@ int GRID_BUCKET(int v)
 	return (floor((float) v / (float) grid) * grid);
 }
 
-gzFile * fopen_cached(const char * fname, int hash)
+gzFile fopen_cached(const char * fname, int hash)
 {
 	if(tile_file_status[hash] == -1) return NULL;
 	if(tile_file_status[hash] > 0) return file_table[tile_file_status[hash]-1];
@@ -240,7 +240,7 @@ gzFile * fopen_cached(const char * fname, int hash)
 	{
 		tile_file_status[hash] = free_file_ptr+1;
 		printf("     Writing %s\n",fname);
-		gzFile * fi = gzopen(fname,"wb");
+		gzFile fi = gzopen(fname,"wb");
 		gzprintf(fi,START_STRING);
 		file_table[free_file_ptr++] = fi;
 		return fi;
@@ -276,7 +276,7 @@ int hash(int x, int y) { return (x + 181) + (y + 90) * 362; }
 
 char * hash_fname(int x, int y, char * buf) { sprintf(buf,"%+03d%+04d.osm.gz",y,x); return buf; }
 
-gzFile * print_to_bucket_ok(int x, int y)
+gzFile print_to_bucket_ok(int x, int y)
 {
 	char buf[256];
 	if(x < -180) x += 360;
@@ -759,7 +759,7 @@ const char * indent_str(int n)
 	return spaces + l - n;
 }
 
-static void print_xml_encoded(gzFile * fi, const char * str)
+static void print_xml_encoded(gzFile fi, const char * str)
 {
 	const char * r = str, * e;
 	while(*r)
@@ -789,7 +789,7 @@ static void print_xml_encoded(gzFile * fi, const char * str)
 }
 
 static void print_one_tag(
-					gzFile *			fi,
+					gzFile			fi,
 					const XML_Char *	name,
 					const XML_Char **	atts,
 					int					need_close,
@@ -908,7 +908,7 @@ void EndElementHandler_Output(void *userData,
 		for(y = GRID_BUCKET(out_box[1]); y <= GRID_BUCKET(out_box[3]); y += grid)
 		for(x = GRID_BUCKET(out_box[0]); x <= GRID_BUCKET(out_box[2]); x += grid)
 		{
-			gzFile * fi = print_to_bucket_ok(x,y);
+			gzFile fi = print_to_bucket_ok(x,y);
 			if(fi)
 			{
 				if(is_leaf)
