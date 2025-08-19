@@ -13,7 +13,7 @@ class XPToolsRecipe(ConanFile):
         self.requires("bzip2/1.0.8")
         self.requires("expat/2.7.1")
         self.requires("libsquish/1.15")
-        self.requires("libgeotiff/1.7.1")
+        self.requires("libgeotiff/1.7.4")
         self.requires("proj/9.6.0", force=True)
         self.requires("freetype/2.13.3", force=True)
         self.requires("libtiff/4.7.0", force=True)
