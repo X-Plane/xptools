@@ -5377,10 +5377,26 @@ int WED_DoConvertToJW(WED_Airport* apt, int statistics[4])
 		vector<struct jw_info> jw_serving_us;
 
 		r->GetLocation(gis_Geo, ramp_loc);
+		Vector2 dir_vec;
+		NorthHeading2VectorDegs(ramp_loc, ramp_loc, r->GetHeading() - 90.0, dir_vec);  // correct for door location
+		switch(r->GetWidth())
+		{
+			case width_F:
+			case width_E:
+				dir_vec *= 3.0 * MTR_TO_DEG_LAT;
+				break;
+			case width_D:
+				dir_vec *= 2.5 * MTR_TO_DEG_LAT;
+				break;
+			default:
+				dir_vec *= 2.0 * MTR_TO_DEG_LAT;
+		}
+		ramp_loc += dir_vec;
+
 		for (auto f : jw_facs)
 		{
 			// find ALL close jw that face us, i.e. are intended to serve this ramp.
-			if (f->HasDockingCabin())
+			if (f->HasDockingCabin() == 1)   // ignore the door2 serving jw - don't disable those !!!!
 			{
 				jw_info jw;
 				jw.f = f;
@@ -5413,20 +5429,17 @@ int WED_DoConvertToJW(WED_Airport* apt, int statistics[4])
 					closest_jw = jw;
 				}
 			}
-			if (closest_cabin_dist < 100)
+			for (auto& jw : jw_serving_us)
 			{
-				for (auto jw : jw_serving_us)
+				if (jw.f != closest_jw.f)
 				{
-					if (jw.f != closest_jw.f)
-					{
-						auto last_node = dynamic_cast<WED_FacadeNode*>(jw.ps->GetNthPoint(jw.last_pt));
-						last_node->SetWallType(39);
-						JW_inactive++;
-					}
+					auto last_node = dynamic_cast<WED_FacadeNode*>(jw.ps->GetNthPoint(jw.last_pt));
+					last_node->SetWallType(39);             // leave JW other than dock_1st_door alone
+					JW_inactive++;
 				}
-				jw_serving_us.clear();
-				jw_serving_us.push_back(closest_jw);
 			}
+			jw_serving_us.clear();
+			jw_serving_us.push_back(closest_jw);
 		}
 
 		if(jw_serving_us.size() > 0)
@@ -5450,16 +5463,16 @@ int WED_DoConvertToJW(WED_Airport* apt, int statistics[4])
 						double tun_len = LonLatDistMeters(jw_serving_us[0].cabin_loc, jw_serving_us[0].tunnel_orig);
 						switch (t.size_code)        // deliberately test for shorter range - allows some margin for actual cabin door locations
 						{
-						case 0:	tunnel_is_short = tun_dist > 20.0; 
+						case 0:	tunnel_is_short = tun_dist > 25.0;
 								break;
-						case 1:	tunnel_is_short = tun_dist > 26.0; 
-								tunnel_is_long = tun_len < 14.0 || tun_dist < 19.0;
+						case 1:	tunnel_is_short = tun_dist > 30.0;
+								tunnel_is_long = tun_len < 13.0 || tun_dist < 16.0;
 								break;
-						case 2:	tunnel_is_short = tun_dist > 36.0; 
-								tunnel_is_long = tun_len < 17.0 || tun_dist < 22.0;
+						case 2:	tunnel_is_short = tun_dist > 38.0;
+								tunnel_is_long = tun_len < 16.0 || tun_dist < 19.0;
 								break;
 						case 3:	// tunnel_is_short = tun_dist > 40.0; break; // would have to move the tunnel base !! to make it reach further.
-								tunnel_is_long = tun_len < 20.0 || tun_dist < 25.0;
+								tunnel_is_long = tun_len < 19.0 || tun_dist < 22.0;
 								break;
 						}
 						if (tunnel_is_short)

@@ -89,6 +89,7 @@ public:
 	bool		IsResourceDeprecatedOrPrivate(const string& r) const;
 	bool		IsSeasonal(const string& r) const;
 	bool		IsRegional(const string& r) const;
+	bool		IsCustomized(const string& r) const;  // default LR path, but customized by 3rd party export 
 
 	string		CreateLocalResourcePath(const string& r);
 
@@ -121,7 +122,7 @@ private:
 	struct	res_info_t {
 		set<int>	packages;       // points out if same items is exported by multiple libraries
 		vector<string> real_paths;  // holds all the variants causeed by multiple EXPORTS commands
-		unsigned    res_type : 4, status : 4, is_backup : 1, is_default : 1, has_seasons : 1, has_regions : 1;
+		unsigned    res_type : 4, status : 4, is_backup : 1, is_default : 1, has_seasons : 1, has_regions : 1, is_customized : 1;
 	};
 
 	typedef map<string,res_info_t>	res_map_t;

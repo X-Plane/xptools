@@ -62,10 +62,6 @@
 	This is sort of a hack: we can turn off and on some global flags here to try experimental features that we might otherwise not want.
 */
 
-// I am beta testing CGAL's polygon simplifier (which is a freaking AWESOME package btw) but can't check the code in until they release it.  So this
-// #ifs out code that depends on the module.
-#define	CGAL_BETA_SIMPLIFIER 0
-
 // Road-grid editor - this if good for editing XP11 style road networks with vroads, only
 #define ROAD_EDITING 1
 
@@ -159,8 +155,13 @@
 	#include <set>
 	#include <algorithm>
 	#include <iterator>
-	
 	#include <unordered_map>
+	#include <thread>
+	#include <functional>
+	#include <list>
+	#include <stdexcept>
+	#include <ostream>
+
 	#define hash_map      unordered_map
 	#define hash_multimap unordered_multimap
 	#define HASH_MAP_NAMESPACE_START namespace std {
@@ -170,32 +171,68 @@
 
 	#if SAFE_VECTORS && DEV
 		// This goo hacks vector to bounds check ALL array accesses...not fast, but a nice way to catch stupid out of bounds conditions.
-		namespace std
+		template <class T, class Allocator = allocator<T> >
+		class dev_vector : public vector<T, Allocator>
 		{
-			template <class T, class Allocator = allocator<T> >
-			class __dev_vector : public vector<T, Allocator>
-			{
-				public:
-					typedef vector<T,Allocator>					base_type;
-					typedef typename base_type::size_type		size_type;
-					typedef typename base_type::reference		reference;
-					typedef typename base_type::const_reference	const_reference;
+			public:
+				typedef vector<T,Allocator>					base_type;
+				typedef typename base_type::size_type		size_type;
+				typedef typename base_type::reference		reference;
+				typedef typename base_type::const_reference	const_reference;
 
-					explicit __dev_vector(									const Allocator& a = Allocator()) : base_type(		  a	){}
-					explicit __dev_vector(size_type n, const T& value = T(),const Allocator& a = Allocator()) : base_type(n,value,a	){}
+				explicit __dev_vector(									const Allocator& a = Allocator()) : base_type(		  a	){}
+				explicit __dev_vector(size_type n, const T& value = T(),const Allocator& a = Allocator()) : base_type(n,value,a	){}
 
-					template <class InputIterator>
-						__dev_vector(InputIterator first, InputIterator last,const Allocator& a = Allocator()) : base_type(first,last, a){}
-						__dev_vector(const __dev_vector& x													 ) : base_type(x			){}
+				template <class InputIterator>
+					__dev_vector(InputIterator first, InputIterator last,const Allocator& a = Allocator()) : base_type(first,last, a){}
+					__dev_vector(const __dev_vector& x													 ) : base_type(x			){}
 
-					inline 	     reference operator[](size_type n)		 {assert(n>=0 && n<base_type::size()); return base_type::operator[](n);}
-					inline const_reference operator[](size_type n) const {assert(n>=0 && n<base_type::size()); return base_type::operator[](n);}
-			};
-		}
-		#define vector __dev_vector
+				inline 	     reference operator[](size_type n)		 {assert(n>=0 && n<base_type::size()); return base_type::operator[](n);}
+				inline const_reference operator[](size_type n) const {assert(n>=0 && n<base_type::size()); return base_type::operator[](n);}
+		};
+
+		template<typename T>
+		using vector = dev_vector<T>;
+		#define vector dev_vector
+	#else
+		using std::vector;
 	#endif
 
-	using namespace std;
+	using std::map;
+	using std::set;
+	using std::list;
+	using std::string;
+	using std::stringstream;
+	using std::to_string;
+	using std::basic_string;
+	using std::basic_ostream;
+	using std::basic_ofstream;
+	using std::basic_filebuf;
+	using std::ostream;
+	using std::istreambuf_iterator;
+	using std::swap;
+	using std::less;
+	using std::sort;
+	using std::transform;
+	using std::thread;
+	using std::iterator;
+	using std::pair;
+	using std::make_pair;
+	using std::multimap;
+	using std::multiset;
+	using std::unordered_multimap;
+	using std::unordered_map;
+	using std::forward_iterator_tag;
+	using std::output_iterator_tag;
+	using std::char_traits;
+	using std::new_handler;
+	using std::set_new_handler;
+	using std::bad_alloc;
+	using std::exception;
+	using std::runtime_error;
+	using std::max;
+	using std::min;
+	using std::endl;
 #endif
 
 #include <stdio.h>

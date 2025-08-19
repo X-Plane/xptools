@@ -1,5 +1,5 @@
-/* exe icon */
-100 				ICON 		WED.ico
+/* exe icon. For reasons that are entirely unclear to me, this has to be called 1.ico or resource compiler will complain it can't find 1.ico */
+100  			ICON		1.ico
 
 /* core UI resources */
 sans.ttf			GUI_RES		sans.ttf
@@ -78,7 +78,8 @@ property_bar.png		GUI_RES		tables\property_bar.png
 arrows.png			GUI_RES		tables\arrows.png
 seasons.png			GUI_RES		tables\seasons.png
 regions.png			GUI_RES		tables\regions.png
-variants.png			GUI_RES		tables\variants.png
+variants.png		GUI_RES		tables\variants.png
+customized.png		GUI_RES		tables\customized.png
 
 /* world map */
 worldmap.jpg			GUI_RES		worldmap.jpg

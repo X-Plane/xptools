@@ -16,6 +16,9 @@ callgrind.out.*
 *.moc.cpp
 *.swp
 Uninstall/
+cmake-build-*
+.idea/
+WED_Log.txt
 
 #kDiff files
 *.orig
@@ -194,6 +197,9 @@ nohup.out
 *.swm
 *.swn
 *.swo
+/conan_provider.cmake
+/conandata.yml
 
 # Cristiano files
 MIEI
+/vs_build

@@ -274,12 +274,12 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 	int added_country_codes = 0;
 	int grass_statistics[4] = { 0 };
 
-	auto t0 = chrono::high_resolution_clock::now();
+	auto t0 = std::chrono::high_resolution_clock::now();
 
 	wrl->StartCommand("Gateway upgrade heuristics");
 	for (auto apt_itr = apts.begin(); apt_itr != apts.end(); ++apt_itr)
 	{
-		auto t2 = chrono::high_resolution_clock::now();
+		auto t2 = std::chrono::high_resolution_clock::now();
 		string ICAO_code;
 
 		//-- Erase implausible ICAO and now undesired closed tags (the [X] in the name is now official) ----
@@ -732,8 +732,8 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 	LOG_MSG("Prefixed %d country meta data with iso3166 codes\n", added_country_codes);
 	LOG_MSG("Mowed %d polys %d lines %d spots %d patches\n", grass_statistics[0], grass_statistics[1],grass_statistics[2],grass_statistics[3]);
 
-	auto t1 = chrono::high_resolution_clock::now();
-	chrono::duration<double> elapsed = t1 - t0;
+	auto t1 = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<double> elapsed = t1 - t0;
 	LOG_MSG("I/exp Done with upgrade heuristics on %d apts, took %lf sec\n", (int) apts.size(), elapsed.count());
 	LOG_FLUSH();
 }

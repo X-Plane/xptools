@@ -12,7 +12,6 @@
 #include "ITexMgr.h"
 #include "WED_ToolUtils.h"
 #include "WED_Ring.h"
-#include "WED_TextureNode.h"
 #include "WED_TextureBezierNode.h"
 #include "WED_SimpleBoundaryNode.h"
 #include "WED_DrapedOrthophoto.h"

@@ -558,11 +558,7 @@ void		MemFile_Close(MFMemFile * inFile)
 #else // IBM
 	if (inFile->mUnmap)
 	{
-#if MINGW_BUILD
-		UnmapViewOfFile(const_cast<void*>(reinterpret_cast<const void*>(inFile->mBegin)));
-#else
 		UnmapViewOfFile(inFile->mBegin);
-#endif
 		CloseHandle(inFile->mWinFileMapping);
 		CloseHandle(inFile->mWinFile);
 	}

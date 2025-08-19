@@ -678,16 +678,6 @@ struct AptInfo_t {
 	AptNetwork_t		taxi_route;
 
 	Bbox2				bounds;
-
-#if OPENGL_MAP
-	struct AptLineLoop_t {
-		float			rgb[3];
-		Polygon2		pts;
-	};
-	vector<AptLineLoop_t>	ogl;
-#endif
-
-
 };
 
 typedef vector<AptInfo_t>	AptVector;

@@ -219,8 +219,8 @@ private:
 
 		struct cache_t {
 			string vpath;
-			unsigned isDir : 1, isOpen : 1, hasSeasons : 1, hasRegions : 1, variants : 1;
-			cache_t(string s) : vpath(s), isDir(0), isOpen(0), hasSeasons(0), hasRegions(0), variants(0) {};
+			unsigned isDir : 1, isOpen : 1, hasSeasons : 1, hasRegions : 1, variants : 1, customized : 1;
+			cache_t(string s) : vpath(s), isDir(0), isOpen(0), hasSeasons(0), hasRegions(0), variants(0), customized(0) {};
 		};
 		vector<cache_t>		mCache, newCache;
 

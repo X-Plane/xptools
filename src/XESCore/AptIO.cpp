@@ -22,7 +22,6 @@
  */
 
 #include "AptIO.h"
-#include "ParamDefs.h"
 #include "MemFileUtils.h"
 #include "XESConstants.h"
 #include "GISUtils.h"

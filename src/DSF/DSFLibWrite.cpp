@@ -211,6 +211,7 @@ public:
 		int					type;
 		int					pool;
 		int					param;
+		bool				is_forest;
 		int					depth;
 		int					hash_depth;
 		int					filter;
@@ -1796,19 +1797,21 @@ void 	DSFFileWriterImp::BeginPolygon(
 				int				inDepth,
 				void *			inRef)
 {
-	bool has_bezier = (inDepth == 4 && inParam != 65535) || inDepth == 8;
+	bool has_bezier = (inDepth == 4 && inParam < 65535) || inDepth == 8;
 	bool has_st = (inDepth == 4 && inParam == 65535) || inDepth == 8;
-	int hash_depth = inDepth + (has_bezier ? 100 : 0) + (has_st ? 200 : 0);
 
 	REF(inRef)->polygons.push_back(PolygonSpec());
 	REF(inRef)->accum_poly = &(REF(inRef)->polygons.back());
+	REF(inRef)->accum_poly->is_forest = inDepth > 10;
+	if(inDepth > 10) inDepth -= 10;
+	int hash_depth = inDepth + (has_bezier ? 100 : 0) + (has_st ? 200 : 0);
+
 	REF(inRef)->accum_poly_winding.clear();
 	REF(inRef)->accum_poly->filter = REF(inRef)->mCurrentFilter;
 	REF(inRef)->accum_poly->type = inPolygonType;
 	REF(inRef)->accum_poly->depth = inDepth;
 	REF(inRef)->accum_poly->hash_depth = hash_depth;
 	REF(inRef)->accum_poly->param = inParam;
-//	REF(inRef)->accum_poly_depth = inDepth;
 }
 
 void 	DSFFileWriterImp::BeginPolygonWinding(
@@ -1858,34 +1861,36 @@ void	DSFFileWriterImp::EndPolygon(
 		pts.insert(pts.end(), i->begin(), i->end());
 
 	int depth = REF(inRef)->accum_poly->depth;
-	int param = REF(inRef)->accum_poly->param;
 	bool has_bezier = (depth == 4 && REF(inRef)->accum_poly->param != 65535) || depth == 8;
-	bool has_st = (depth == 4 && param == 65535) || depth == 8;
-	int hash_depth = depth + (has_bezier ? 100 : 0) + (has_st ? 200 : 0);
-	
+	bool is_forest = (depth == 4 && REF(inRef)->accum_poly->is_forest);
+
 	DSFPointPoolLoc	loc = REF(inRef)->polygonPools[REF(inRef)->accum_poly->hash_depth].AccumulatePoints(pts);
 	if (loc.first == -1 || loc.second == -1)
 	{
 		double	ll_extent[4] = { 180.0, 90.0, -180.0, -90.0 };
 		double	st_extent[4] = { 0.0, 0.0, 1.0, 1.0 };
-		for(DSFTupleVector::iterator p = pts.begin(); p != pts.end(); ++p)
+		for(auto& p : pts)
 		{
-			extend_box(ll_extent,(*p)[0],(*p)[1]);			
-			if(has_st && has_bezier)
+			extend_box(ll_extent,p[0] ,p[1]);
+			switch(depth)
 			{
-				extend_box(ll_extent,(*p)[2],(*p)[3]);
-				extend_box(st_extent,(*p)[4],(*p)[5]);
-				extend_box(st_extent,(*p)[6],(*p)[7]);
-			} 
-			
-			if(hash_depth == 5)
-			{
-				extend_box(ll_extent,(*p)[3],(*p)[4]);
-			}			
-			else if(has_bezier)
-				extend_box(ll_extent,(*p)[2],(*p)[3]);
-			else if (has_st)
-				extend_box(st_extent,(*p)[2],(*p)[3]);								
+				case 4:
+					if(is_forest)
+						break;
+					else if(has_bezier)
+						extend_box(ll_extent, p[2], p[3]);
+					else
+						extend_box(st_extent, p[2], p[3]);
+					break;
+				case 5:
+					extend_box(ll_extent, p[3], p[4]);
+					break;
+				case 8:
+					extend_box(ll_extent, p[2], p[3]);
+					extend_box(st_extent, p[4], p[5]);
+					extend_box(st_extent, p[6], p[7]);
+					break;
+			}
 		}
 		
 		float n;
@@ -1913,65 +1918,64 @@ void	DSFFileWriterImp::EndPolygon(
 		// the same) and the DSF encode explodes.  This happens exactly once in the entire US render.  Sigh.  Increase the box max
 		// to the next gridline to avoid chaos - the box is by definition precise enough.
 		if(ll_extent[0] == ll_extent[2])
-		{
 			ll_extent[2] += 1.0 / n;
-		}
+
 		if(ll_extent[1] == ll_extent[3])
-		{
 			ll_extent[3] += 1.0 / n;
-		}
-		
 
 		DSFTuple	polyRangeMin, polyRangeMax;
 
-		if(hash_depth == 6)
+		polyRangeMin.push_back(ll_extent[0]);		polyRangeMax.push_back(ll_extent[2]);
+		polyRangeMin.push_back(ll_extent[1]);		polyRangeMax.push_back(ll_extent[3]);
+
+		switch(depth)
 		{
-			// Legacy beaches: lonh lat ele, normal DX/DZ, beach type
-			polyRangeMin.push_back(ll_extent[0]);		polyRangeMax.push_back(ll_extent[2]);
-			polyRangeMin.push_back(ll_extent[1]);		polyRangeMax.push_back(ll_extent[3]);
-			polyRangeMin.push_back(REF(inRef)->mElevMin);	polyRangeMax.push_back(REF(inRef)->mElevMax);
-			polyRangeMin.push_back(-1.0);					polyRangeMax.push_back(1.0);
-			polyRangeMin.push_back(-1.0);					polyRangeMax.push_back(1.0);					
-			polyRangeMin.push_back(0.0);					polyRangeMax.push_back(0.0);											
-		}
-		else if(hash_depth == 5)
-		{
-			// Bezier Facade with wall: lon lat wall_type clon clat
-			polyRangeMin.push_back(ll_extent[0]);		polyRangeMax.push_back(ll_extent[2]);
-			polyRangeMin.push_back(ll_extent[1]);		polyRangeMax.push_back(ll_extent[3]);
-			polyRangeMin.push_back(0.0);					polyRangeMax.push_back(0.0);											
-			polyRangeMin.push_back(ll_extent[0]);		polyRangeMax.push_back(ll_extent[2]);
-			polyRangeMin.push_back(ll_extent[1]);		polyRangeMax.push_back(ll_extent[3]);
-		}
-		else if(hash_depth == 3)
-		{
-			// Flat facade with wall: lon lat wall_type
-			// v10 beach: lon lat beach type
-			polyRangeMin.push_back(ll_extent[0]);		polyRangeMax.push_back(ll_extent[2]);
-			polyRangeMin.push_back(ll_extent[1]);		polyRangeMax.push_back(ll_extent[3]);
-			polyRangeMin.push_back(0.0);					polyRangeMax.push_back(0.0);											
-		}
-		else
-		{
-			// All combos of UV-mapped and/or bezier polygons....
-			polyRangeMin.push_back(ll_extent[0]);		polyRangeMax.push_back(ll_extent[2]);
-			polyRangeMin.push_back(ll_extent[1]);		polyRangeMax.push_back(ll_extent[3]);
-			if(has_bezier)
-			{
-				polyRangeMin.push_back(ll_extent[0]);		polyRangeMax.push_back(ll_extent[2]);
-				polyRangeMin.push_back(ll_extent[1]);		polyRangeMax.push_back(ll_extent[3]);
-			}
-			if(has_st)
-			{
-				polyRangeMin.push_back(st_extent[0]);		polyRangeMax.push_back(st_extent[2]);
-				polyRangeMin.push_back(st_extent[1]);		polyRangeMax.push_back(st_extent[3]);
-				if(has_bezier)
+			case 2:
+				break;
+			case 3:
+				// Flat facade with wall: lon lat wall_type
+				// v10 beach: lon lat beach type
+				polyRangeMin.push_back(0.0);					polyRangeMax.push_back(0.0);
+				break;
+			case 4:
+				if(is_forest)
+				{
+					polyRangeMin.push_back(0.0);				polyRangeMax.push_back(65535.0/8.0);           //  1/8m resolution is plenty ! What if someone plays with bigger trees ?
+					polyRangeMin.push_back(-1000.0);			polyRangeMax.push_back(65535.0/8.0-1000.0);    //  safe to say - no trees above 7192m elevation and 1/8m resolution is enough
+				}
+				else if(has_bezier)
+				{
+					polyRangeMin.push_back(ll_extent[0]);		polyRangeMax.push_back(ll_extent[2]);
+					polyRangeMin.push_back(ll_extent[1]);		polyRangeMax.push_back(ll_extent[3]);
+				}
+				else
 				{
 					polyRangeMin.push_back(st_extent[0]);		polyRangeMax.push_back(st_extent[2]);
 					polyRangeMin.push_back(st_extent[1]);		polyRangeMax.push_back(st_extent[3]);
 				}
-			}
-			
+				break;
+			case 5:
+				// Bezier Facade with wall: lon lat wall_type clon clat
+				polyRangeMin.push_back(0.0);					polyRangeMax.push_back(0.0);
+				polyRangeMin.push_back(ll_extent[0]);		polyRangeMax.push_back(ll_extent[2]);
+				polyRangeMin.push_back(ll_extent[1]);		polyRangeMax.push_back(ll_extent[3]);
+				break;
+			case 6:
+				// Legacy beaches: lonh lat ele, normal DX/DZ, beach type
+				polyRangeMin.push_back(REF(inRef)->mElevMin);	polyRangeMax.push_back(REF(inRef)->mElevMax);
+				polyRangeMin.push_back(-1.0);					polyRangeMax.push_back(1.0);
+				polyRangeMin.push_back(-1.0);					polyRangeMax.push_back(1.0);
+				polyRangeMin.push_back(0.0);					polyRangeMax.push_back(0.0);
+				break;
+			case 8:
+				// uv-mapped bezier poly
+				polyRangeMin.push_back(ll_extent[0]);		polyRangeMax.push_back(ll_extent[2]);
+				polyRangeMin.push_back(ll_extent[1]);		polyRangeMax.push_back(ll_extent[3]);
+				polyRangeMin.push_back(st_extent[0]);		polyRangeMax.push_back(st_extent[2]);
+				polyRangeMin.push_back(st_extent[1]);		polyRangeMax.push_back(st_extent[3]);
+				polyRangeMin.push_back(st_extent[0]);		polyRangeMax.push_back(st_extent[2]);
+				polyRangeMin.push_back(st_extent[1]);		polyRangeMax.push_back(st_extent[3]);
+				break;
 		}
 
 //		printf("Adding pool for: %d\n   ", REF(inRef)->accum_poly->hash_depth);

@@ -24,6 +24,8 @@
 #include "WED_GISChain.h"
 #include "WED_AirportNode.h"
 #include "WED_FacadeNode.h"
+#include "WED_FacadeRing.h"
+#include "WED_FacadePlacement.h"
 
 TRIVIAL_COPY(WED_GISChain, WED_Entity)
 
@@ -178,7 +180,7 @@ IGISPoint *	WED_GISChain::SplitSide   (const Point2& p, double dist)
 		WED_Thing * np = dynamic_cast<WED_Thing*>(GetNthChild(best)->Clone());
 		IGISPoint * npp = dynamic_cast<IGISPoint *>(np);
 		IGISPoint_Bezier * nppb = dynamic_cast<IGISPoint_Bezier*>(np);
-		
+
 		if(is_b)
 		{
 			DebugAssert(nppb);
@@ -205,7 +207,7 @@ IGISPoint *	WED_GISChain::SplitSide   (const Point2& p, double dist)
 		}
 		// Why wait?  Cuz...Getside on old side will USE this as soon as we are its parent!
 		np->SetParent(this, best+1);
-		
+
 		return npp;
 	}
 	return NULL;
@@ -291,7 +293,7 @@ void WED_GISChain::RebuildCache(int flags) const
 		mCachePts.reserve(nc);
 		mCachePtsBezier.reserve(nc);
 		mHasUV = nc > 0;
-		
+
 		int n;
 		for (n = 0; n < nc; ++n)
 		{
@@ -322,7 +324,7 @@ void WED_GISChain::RebuildCache(int flags) const
 		//
 		// What would be better would be to have the cache flags SPECIFIC to certain operations so
 		// that it was unambiguous that GetBounds() is the right call to address a particular flag.
-		
+
 		int m = GetNumPoints();
 		for(int mm = 0; mm < m; ++mm)
 		{
@@ -332,11 +334,11 @@ void WED_GISChain::RebuildCache(int flags) const
 			if(p)
 				p->GetBounds(gis_Geo, temp);
 		}
-		
+
 		int n = GetNumSides();			// We MUST ensure that this only builds topo cache or we are dead dead dead!!
 		mCacheBounds = Bbox2();
 		mCacheBoundsUV = Bbox2();
-		
+
 		for (int i = 0; i < n; ++i)
 		{
 			Bezier2 b;
@@ -353,7 +355,7 @@ void WED_GISChain::RebuildCache(int flags) const
 				mCacheBoundsUV += bb;
 			}
 		}
-	
+
 	}
 }
 
@@ -361,20 +363,20 @@ void WED_GISChain::Reverse(GISLayer_t l)
 {
 	RebuildCache(CacheBuild(cache_Topological));
 	int n,t,np = GetNumPoints();
-	
+
 	// Sanity checking: our point count, and our cache really should
 	// be in size sync.  Then make sure that we are CONSISTENT in our
 	// having or not having beziers.  Heterogeneous _types_ of points
 	// are not what we want!
 	DebugAssert(mCachePtsBezier.size() == mCachePts.size());
 	DebugAssert(mCachePtsBezier.size() == np);
-	
+
 	bool has_bezier = mCachePtsBezier[0] != NULL;
 	for(n = 1; n < np; ++n)
 	{
 		Assert(has_bezier == (mCachePtsBezier[n] != NULL));
 	}
-	
+
 	vector<Point2>	p(np);
 	vector<Point2>	p_l(np);
 	vector<Point2>	p_h(np);
@@ -397,7 +399,7 @@ void WED_GISChain::Reverse(GISLayer_t l)
 	{
 		t = np - n - 1;
 		mCachePts[t]->SetLocation(l, p[n]);
-		
+
 		if(has_bezier)
 		{
 			mCachePtsBezier[t]->SetSplit(split[n]);
@@ -409,10 +411,10 @@ void WED_GISChain::Reverse(GISLayer_t l)
 			else			mCachePtsBezier[t]->DeleteHandleLo();
 		}
 	}
-	
+
     // On Airport Lines and Taxiways, we want to preserve the line/light properties of each segment, effectivly ONLY reversing the node sequence.
     // Very usefull when reversing airport lines with differently tagged segments. It effectively brings the blue taxiway edge lights to the other side ONLY.
-    
+
 	if (dynamic_cast <WED_AirportNode *> (GetNthChild(0)))
 	{
 		for(n = 0; n < np/2; ++n)    // directly swap the attributes of the nodes. No need to first build a local copy and then write it back in reverse order.
@@ -421,7 +423,7 @@ void WED_GISChain::Reverse(GISLayer_t l)
 			WED_AirportNode * a_n = dynamic_cast <WED_AirportNode *> (GetNthChild(n));  // note to self: mCache would yield no speedup here, as we dynamic_cast every point only once
 			WED_AirportNode * a_t = dynamic_cast <WED_AirportNode *> (GetNthChild(t));  // thus we get away with NOT expanding RebuildCache to work for 'gis_Apt" layers :)
 			set<int>	tmp1, tmp2;
-			
+
 			a_n->GetAttributes(tmp1);
 			a_t->GetAttributes(tmp2);
 			a_n->SetAttributes(tmp2);
@@ -436,30 +438,30 @@ void WED_GISChain::Reverse(GISLayer_t l)
 			WED_FacadeNode * a_n = dynamic_cast <WED_FacadeNode *> (GetNthChild(n));  // note to self: mCache would yield no speedup here, as we dynamic_cast every point only once
 			WED_FacadeNode * a_t = dynamic_cast <WED_FacadeNode *> (GetNthChild(t));  // thus we get away with NOT expanding RebuildCache to work for 'gis_Apt" layers :)
 			int	tmp1, tmp2;
-			
+
 			tmp1 = a_n->GetWallType();
 			tmp2 = a_t->GetWallType();
 			a_n->SetWallType(tmp2);
 			a_t->SetWallType(tmp1);
 		}
 	}
-	
+
 }
 
 void WED_GISChain::Shuffle(GISLayer_t l)
 {
 	RebuildCache(CacheBuild(cache_Topological));
 	int n,t,np = GetNumPoints();
-	
+
 	DebugAssert(mCachePtsBezier.size() == mCachePts.size());
 	DebugAssert(mCachePtsBezier.size() == np);
-	
+
 	bool has_bezier = mCachePtsBezier[0] != NULL;
 	for(n = 1; n < np; ++n)
 	{
 		Assert(has_bezier == (mCachePtsBezier[n] != NULL));
 	}
-	
+
 	vector<Point2>	p(np);
 	vector<Point2>	p_l(np);
 	vector<Point2>	p_h(np);
@@ -477,7 +479,7 @@ void WED_GISChain::Shuffle(GISLayer_t l)
 			split[n] = mCachePtsBezier[n]->IsSplit();
 		}
 	}
-	
+
 	for(n = 0; n < np; ++n)
 	{
 		t = (n + 1) % np;
@@ -491,10 +493,30 @@ void WED_GISChain::Shuffle(GISLayer_t l)
 
 			if (has_hi[n])	mCachePtsBezier[t]->SetControlHandleHi(l, p_h[n]);
 			else			mCachePtsBezier[t]->DeleteHandleHi();
-		}	
+		}
+	}
+	// For facades, it makes more sense to keep the wall type in its position and only move the segments so that the very first segment is in the right place.
+	// Users use this mainly to relocate the “ground contact point” of the facade.  w.r.t cache same as for Reverse function above
+
+	WED_FacadeNode * fn = dynamic_cast <WED_FacadeNode *> (GetNthChild(np-1));
+	if (fn)
+	{
+		WED_FacadeRing * fr 	= dynamic_cast <WED_FacadeRing *> (fn->GetParent());
+		WED_FacadePlacement * f = dynamic_cast <WED_FacadePlacement *> (fr->GetParent());
+
+		if(f->HasCustomWalls())
+		{
+			int tmp1,tmp2 = fn->GetWallType();
+			for(n = 0; n < np ; ++n)
+			{
+				fn = dynamic_cast <WED_FacadeNode *> (GetNthChild(n));
+				tmp1 = fn->GetWallType();
+				fn->SetWallType(tmp2);
+				tmp2 = tmp1;
+			}
+		}
 	}
 }
-
 
 
 int				WED_GISChain::GetNumEntities(void ) const

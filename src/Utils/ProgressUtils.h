@@ -34,11 +34,5 @@ typedef	bool (* ProgressFunc)(
 						const char *	inCurrentStageName,
 						float			inProgress);
 
-bool	ConsoleProgressFunc(
-						int				inCurrentStage,
-						int				inCurrentStageCount,
-						const char *	inCurrentStageName,
-						float			inProgress);
-
 #endif
 

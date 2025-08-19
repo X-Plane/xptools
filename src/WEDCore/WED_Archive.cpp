@@ -97,7 +97,10 @@ void		WED_Archive::RemoveObject(WED_Persistent * inObject)
 {
 	if (mDying) return;
 	++mCacheKey;
-	mObjects.erase(inObject->GetID());
+	auto iter = mObjects.find(inObject->GetID());
+	Assert(iter != mObjects.end());
+	iter->second = NULL;
+
 #if WITHNWLINK
 	if (mNWAdapter) mNWAdapter->ObjectDestroyed(inObject);
 #endif

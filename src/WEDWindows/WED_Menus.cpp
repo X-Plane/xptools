@@ -78,7 +78,7 @@ static const GUI_MenuItem_t kExportTargetMenu[] = {
 {	"X-Plane 11.00",		0,		0,								0,	wed_Export1100,		},
 {	"X-Plane 11.30",		0,		0,								0,	wed_Export1130,		},
 {	"X-Plane 12.00",		0,		0,								0,	wed_Export1200,		},
-{	"X-Plane 12.1.1",		0,		0,								0,	wed_Export1211,		},
+{	"X-Plane 12.1.2",		0,		0,								0,	wed_Export1212,		},
 {	"Airport Scenery Gateway",0,	0,								0,	wed_ExportGateway	},
 {	NULL,					0,		0,								0,	0					}
 };
@@ -166,7 +166,7 @@ static const GUI_MenuItem_t kViewMenu[] = {
 {	"Toggle &Navaids",			0,	0,										0,	wed_ToggleNavaidMap	},
 {	"Toggle Terrain",			0,	0,										0,	wed_ToggleTerrainMap},
 {	"S&lippy Map",				0,	0,										0,	0                   },
-{	"To&ggle Preview",			0,	0,										0,	wed_TogglePreview	},
+{	"To&ggle Preview",			'P',gui_ControlFlag,						0,	wed_TogglePreview	},
 #if WITHNWLINK
 {	"Toggle LiveMode",		    0,	0,										0,	wed_ToggleLiveView },
 #endif

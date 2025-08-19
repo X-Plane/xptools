@@ -23,11 +23,6 @@
 #ifndef GISUTILS_H
 #define GISUTILS_H
 
-#include <math.h>
-#if !NO_CGAL
-#include "CGALDefs.h"
-#endif
-
 struct	Polygon2;
 struct	Vector2;
 struct	Point2;
@@ -72,13 +67,6 @@ double	LonLatDistMetersWithScale(double lon1, double lat1, double lon2, double l
 void	CreateTranslatorForPolygon(
 					const Polygon2&		inPolygon,
 					CoordTranslator2&	outTranslator);
-					
-#if !NO_CGAL
-void	CreateTranslatorForBounds(
-					const Point_2&		inSrcMin,
-					const Point_2&		inSrcMax,
-					CoordTranslator_2&	outTranslator);
-#endif					
 
 void	CreateTranslatorForBounds(
 					const Bbox2&		inBounds,
