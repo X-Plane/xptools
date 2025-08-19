@@ -62,10 +62,6 @@
 	This is sort of a hack: we can turn off and on some global flags here to try experimental features that we might otherwise not want.
 */
 
-// I am beta testing CGAL's polygon simplifier (which is a freaking AWESOME package btw) but can't check the code in until they release it.  So this
-// #ifs out code that depends on the module.
-#define	CGAL_BETA_SIMPLIFIER 0
-
 // Road-grid editor - this if good for editing XP11 style road networks with vroads, only
 #define ROAD_EDITING 1
 

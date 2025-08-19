@@ -54,7 +54,6 @@ set (WED_SOURCES
 	src/WEDCore/WED_UndoMgr.cpp
 	src/WEDCore/WED_Assert.cpp
 	src/WEDCore/WED_ResourceMgr.cpp
-	#src/WEDCore/WED_Routing.cpp
 	src/WEDCore/WED_Sign_Parser.cpp
 	src/WEDCore/WED_GISUtils.cpp
 	src/WEDCore/WED_Orthophoto.cpp
@@ -471,7 +470,6 @@ target_compile_definitions(WED PRIVATE
     USE_JPEG=1
     USE_TIF=1
     WED=1
-    NO_CGAL=1
 )
 
 if(MSVC)

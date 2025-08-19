@@ -314,24 +314,6 @@ void	CreateTranslatorForPolygon(
 	CreateTranslatorForBounds(bounds, trans);
 }
 
-#if !NO_CGAL
-void	CreateTranslatorForBounds(
-					const Point_2&		inSrcMin,
-					const Point_2&		inSrcMax,
-					CoordTranslator_2&	trans)
-{
-	struct deg2mtr scale(0.5 * CGAL_NTS to_double(inSrcMin.y() +inSrcMax.y()));
-
-	trans.mSrcMin = inSrcMin;
-	trans.mSrcMax = inSrcMax;
-
-	trans.mDstMin = Point_2(0,0);
-	trans.mDstMax = Point_2(
-				(trans.mSrcMax.x() - trans.mSrcMin.x()) * scale.lon,
-				(trans.mSrcMax.y() - trans.mSrcMin.y()) * scale.lat);
-}
-#endif
-
 void	CreateTranslatorForBounds(
 					const Bbox2&		inBounds,
 					CoordTranslator2&	trans)
