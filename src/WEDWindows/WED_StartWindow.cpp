@@ -223,7 +223,7 @@ void	WED_StartWindow::Draw(GUI_GraphState * state)
 		GUI_DrawCentered(state,"startup_bkgnd.png", me, 0, 1, kTileAll, NULL, NULL);
 
 		const char * main_text[] = {
-			"WorldEditor " WED_VERSION_STRING_SHORT,
+			"WorldEditor " WED_VERSION_STRING,
 			WED_COPYRIGHT_STRING,
 			0
 		};

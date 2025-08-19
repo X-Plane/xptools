@@ -60,7 +60,7 @@ void		WED_AboutBox::Draw(GUI_GraphState * state)
 	float * color = WED_Color_RGBA(wed_Table_Text);
 
 	const char * main_text[] = {
-		"WorldEditor " WED_VERSION_STRING_SHORT,
+		"WorldEditor " WED_VERSION_STRING,
 		WED_COPYRIGHT_STRING,
 		"",
 		"This software is available under an open license,",
@@ -103,8 +103,8 @@ void		WED_AboutBox::Draw(GUI_GraphState * state)
 
 	const char * credits[] = {
 		//Sorted alphabetically, no exceptions
-		"Thanks to Ben Supnik, Ted Greene, Janos Laube, Christiano Maggi,",
-		"Michael Minnhaar, Mathias Roedel, Tyler Young, Martin Boehme",
+		"Thanks to Ben Supnik, Cristiano Maggi, Janos Laube, Marco Auer, ",
+		"Mathias Roedel, Martin Boehme, Michael Minnhaar, Tyler Young, Ted Greene, ",
 		"and everyone else who has contributed to WorldEditor's development.",
 		0 };
 	n = 0;

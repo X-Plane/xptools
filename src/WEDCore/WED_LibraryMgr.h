@@ -110,6 +110,8 @@ public:
 	bool		GetSurfVpath(int surf, string& vpath);
 	int			GetSurfEnum(const string& vpath);
 
+    static bool CheckFlattenPolygon(std::string_view r);
+
 private:
 
 	void			Rescan();

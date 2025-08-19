@@ -16,6 +16,7 @@ CHANGE HISTORY
 WED 2.7.0-a1
    Bug fix:
    - Some minor bug fixes
+   - Allow flatten polygons
 
 WED 2.6.0r2 10/23/24
    Bug fix:
