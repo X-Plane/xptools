@@ -50,6 +50,11 @@
 #endif
 
 /*
+ * This initializes the AppKit to use dialogs such as the file picker
+ */
+extern "C" void InitMacAppKit();
+
+/*
 * This routine returns a fully qualified path to the application.
 *
 */

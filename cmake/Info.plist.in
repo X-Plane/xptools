@@ -1,0 +1,8 @@
+<key>CFBundleIdentifier</key>
+<string>@BUNDLE_ID@</string>
+<key>CFBundleShortVersionString</key>
+<string>@WED_VERSION_STRING@</string>
+<key>CFBundleVersion</key>
+<string>@WED_VERSION_NUMERIC@</string>
+<key>NSHumanReadableCopyright</key>
+<string>@WED_COPYRIGHT_STRING@</string>

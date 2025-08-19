@@ -150,12 +150,14 @@ int main(int argc, char * argv[])
 	gInstance = hInstance;
 	SetErrorMode(SEM_NOOPENFILEERRORBOX|SEM_FAILCRITICALERRORS);
 #endif
+#if APL
+    InitMacAppKit();
+#endif
 	GUI_MemoryHog::InstallNewHandler();
 	GUI_InitClipboard();
 #if LIN
 	Initializer linit(&argc, &argv, false);
 #endif // LIN
-
 	gLogFile = fopen((FILE_get_dir_name(GetApplicationPath()) + "WED_Log.txt").c_str(), "w");
 	if (gLogFile)
 	{

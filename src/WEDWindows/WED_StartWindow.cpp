@@ -102,8 +102,6 @@ WED_StartWindow::WED_StartWindow(GUI_Commander * cmder) : GUI_Window("WED", xwin
 	mNew->SetParent(this);
 	mOpen->SetParent(this);
 	mChange->SetParent(this);
-//	mNew->Show();
-//	mOpen->Show();
 	mNew->AddListener(this);						// We listen to all 3 buttons for clicks
 	mOpen->AddListener(this);
 	mChange->AddListener(this);
@@ -136,22 +134,16 @@ WED_StartWindow::WED_StartWindow(GUI_Commander * cmder) : GUI_Window("WED", xwin
 	mTextTable->AddListener(mTable);			// Table listens to text table to find out when content changed due to syntactic stuff
 	mPackageList->AddListener(mTable);			// Table listens to package list ot find out when content changed due to semantic stuff
 	mPackageList->AddListener(this);			// We listen to package list to know when content changes - recompute buttons then
-//	mTextTable->SetImage("property_bar.png", 2);
 
 	mTable->Show();
 	mTable->SetParent(mScroller);
 	mScroller->SetContent(mTable);
 	mScroller->PositionInContentArea(mTable);
-//	table->AddListener(mScroller);				// Not needed - scroller listens to contents automatically
 
 	mScroller->SetImage("gradient.png");
 
 	gPackageMgr->AddListener(this);				// We listen to package mgr to know when x-system folder changed - hide whole list if needed.
 	mTextTable->FocusChain(false);
-
-	//#if DEV
-	//	PrintDebugInfo(0);
-	//#endif
 }
 
 WED_StartWindow::~WED_StartWindow()

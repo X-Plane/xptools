@@ -540,9 +540,16 @@ elseif (APPLE)
 	)
 
 	mac_copy_bundle_files(WED Resources "${WED_RESOURCE_FILES}")
+
+	configure_file(
+			${CMAKE_SOURCE_DIR}/cmake/Info.plist.in
+			${CMAKE_BINARY_DIR}/Info.plist
+			@ONLY
+	)
+
 	set_target_properties(WED PROPERTIES
-		MACOSX_BUNDLE TRUE
-		MACOSX_FRAMEWORK_IDENTIFIER org.LaminarResearch.WED
+			MACOSX_BUNDLE_INFO_PLIST ${CMAKE_BINARY_DIR}/Info.plist
+			MACOSX_BUNDLE_GUI_IDENTIFIER org.LaminarResearch.WED
 	)
 elseif (LINUX)
 	function(embed_resource target input_file)

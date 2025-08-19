@@ -6043,7 +6043,7 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 						{
 							auto obj = WED_ObjPlacement::CreateTyped(apt->GetArchive());
 							obj->SetParent(art_grp, 0);
-							if (rand() & 3 > 0)
+							if ((rand() & 3) > 0)
 								obj->SetResource("lib/airport/ground/terrain_FX/lawn_tracks/single_6.obj");
 							else
 							{

@@ -13,6 +13,10 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 2.7.0-a1
+   Bug fix:
+   - Some minor bug fixes
+
 WED 2.6.0r2 10/23/24
    Bug fix:
    - fix crash when reverting to existing scenery
