@@ -1,5 +1,6 @@
 add_executable(DSFTool
     src/DSF/DSFLib.cpp
+    src/DSF/DSFLib_Print.cpp
     src/DSF/DSFLibWrite.cpp
     src/DSF/DSFPointPool.cpp
     src/DSFTools/DSFToolCmdLine.cpp
@@ -7,6 +8,7 @@ add_executable(DSFTool
     src/Utils/AssertUtils.cpp
     src/Utils/EndianUtils.c
     src/Utils/FileUtils.cpp
+	src/Utils/MemFileUtils.cpp
     src/GUI/GUI_Unicode.cpp
     src/Utils/md5.c
     src/Utils/zip.c
