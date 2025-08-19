@@ -119,13 +119,13 @@ function Install-ConanDependencies {
         }
 
         # Verify that the toolchain was generated in the build directory
-        if (-not (Test-Path "conan_toolchain.cmake")) {
-            Write-Error "conan_toolchain.cmake was not generated in the build directory"
+        if (-not (Test-Path "build/generators/conan_toolchain.cmake")) {
+            Write-Error "conan_toolchain.cmake was not generated"
             exit 1
         }
 
         Write-Info "Conan 2 dependencies installed for Debug, Release, and RelWithDebInfo"
-        Write-Info "Generated conan_toolchain.cmake in build directory"
+        Write-Info "Generated conan_toolchain.cmake"
     }
     finally {
         Pop-Location
@@ -144,20 +144,14 @@ function Invoke-CMakeGenerate {
             "-G", "Visual Studio 17 2022",
             "-A", "x64",
             "-DCMAKE_BUILD_TYPE=$BuildType",
-            "-DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake"
+            "-DCMAKE_TOOLCHAIN_FILE=build/generators/conan_toolchain.cmake"
         )
 
         if ($Verbose) {
             $cmakeArgs += "--verbose"
         }
 
-        # Verify Conan toolchain exists
-        if (-not (Test-Path "conan_toolchain.cmake")) {
-            Write-Error "Conan toolchain file not found. Make sure Conan install completed successfully."
-            exit 1
-        }
-
-        Write-Info "Using Conan 2 toolchain: conan_toolchain.cmake"
+        Write-Info "Using Conan 2 toolchain: build/generators/conan_toolchain.cmake"
         Write-Info "Running: cmake $($cmakeArgs -join ' ')"
         & cmake @cmakeArgs
 

@@ -2,16 +2,20 @@
 add_executable(gen_roads        src/OneOffs/gen_roads.cpp)
 add_executable(genpath          src/OneOffs/genpath.c)
 add_executable(gen_tiles        src/OneOffs/gen_tiles.c)
-add_executable(make_fill_rules  src/OneOffs/make_fill_rules.c)
-add_executable(osm_tile         src/OneOffs/osm_tile.c)
 add_executable(osm2shape        src/OneOffs/osm2shape.c)
 add_executable(SplitImage       src/OneOffs/SplitImage.c)
 add_executable(GenTerrain       src/OneOffs/GenTerrain.c)
 add_executable(shape2xon        src/OneOffs/shape2xon.cpp)
 
-target_link_libraries(osm_tile  PRIVATE expat::expat ZLIB::ZLIB)
+if (NOT WIN32)
+    add_executable(make_fill_rules  src/OneOffs/make_fill_rules.c)
+    add_executable(osm_tile         src/OneOffs/osm_tile.c)
+    target_link_libraries(osm_tile  PRIVATE expat::expat ZLIB::ZLIB)
+endif()
+
 target_link_libraries(osm2shape PRIVATE expat::expat ZLIB::ZLIB shapelib::shp)
 target_link_libraries(shape2xon PRIVATE shapelib::shp)
+
 if (LINUX)
     target_link_libraries(gen_tiles PRIVATE m)
 endif()
