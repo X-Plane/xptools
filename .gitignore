@@ -19,6 +19,7 @@ Uninstall/
 cmake-build-*
 .idea/
 WED_Log.txt
+CMakeUserPresets.json
 
 #kDiff files
 *.orig
