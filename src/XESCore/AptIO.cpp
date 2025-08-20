@@ -143,7 +143,7 @@ static void	parse_linear_codes(const string& codes, set<int> * attributes)
 {
 	attributes->clear();
 	MFScanner scanner;
-	MFS_init(&scanner, &*codes.begin(), &*codes.end());
+	MFS_init(&scanner, codes.data(), codes.data() + codes.size());
 	int code;
 	while (!MFS_done(&scanner) && ((code = MFS_int(&scanner)) != 0))
 		attributes->insert(code);

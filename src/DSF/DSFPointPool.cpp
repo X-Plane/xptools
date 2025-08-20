@@ -721,7 +721,7 @@ void DSFOptimizePrimitives(
 
 	vector<unsigned short> pure_tris;
 
-	unsigned short * s = &*indices.begin(), * e = &*indices.end();
+	unsigned short * s = indices.data(), * e = indices.data() + indices.size();
 	while(s != e)
 	{
 		unsigned short * b = strip_break(s,e);

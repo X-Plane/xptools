@@ -336,12 +336,12 @@ int			WED_ToolInfoAdapter::GetCellWidth(int n)
 	case prop_TaxiSign:		return 150;
 //		mTool->GetNthPropertyDict(n / 2, dict);
 //		for(PropertyDict_t::iterator d = dict.begin(); d != dict.end(); ++d)
-//			w = max(w,(int) GUI_MeasureRange(OUR_FONT, &*d->second.begin(),&*d->second.end())+20);
+//			w = max(w,(int) GUI_MeasureRange(OUR_FONT, d->second.data(), d->second.data() + d->second.size())+20);
 //		return w;
 	default:				return 50;
 	}
 	else
-		return GUI_MeasureRange(OUR_FONT, &*inf.prop_name.begin(), &*inf.prop_name.end()) + 18;
+		return GUI_MeasureRange(OUR_FONT, inf.prop_name.data(), inf.prop_name.data() + inf.prop_name.size()) + 18;
 }
 
 int			WED_ToolInfoAdapter::GetCellBottom(int n)

@@ -247,7 +247,7 @@ int			GUI_TextField::HandleCommand(int command)
 			if (GUI_GetTextFromClipboard(txt))
 			{
 				GetSelection(&s1, &s2);
-				DoReplaceText(s1, s2, &*txt.begin(), &*txt.end());
+				DoReplaceText(s1, s2, txt.data(), txt.data() + txt.size());
 				SetSelection(s1+txt.size(),s1+txt.size());
 			}
 		}
@@ -399,8 +399,8 @@ void			GUI_TextField::GetText(
 						const char **	end_p)
 {
 	GetDescriptor(mText);
-	*start_p = &*mText.begin();
-	*end_p = &*mText.end();
+	*start_p = mText.data();
+	*end_p = mText.data() + mText.size();
 }
 
 void			GUI_TextField::ReplaceText(

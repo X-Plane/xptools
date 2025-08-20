@@ -1056,7 +1056,7 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(const string& json_
 	vector<char> outString = vector<char>(zipString.length());
 
 	char * outP;
-	decode(&*zipString.begin(),&*zipString.end(),&*outString.begin(),&outP);
+	decode(zipString.data(),zipString.data() + zipString.size(), outString.data(), &outP);
 
 	//Fixes the terrible vector padding bug by shrinking it back down to precisely the correct size
 	outString.resize(outP - &*outString.begin());
