@@ -532,7 +532,10 @@ target_link_libraries(WED PRIVATE
 if (WIN32)
 	target_link_libraries(WED PRIVATE
 	    comctl32
-	)
+		secur32
+		crypt32
+		wldap32
+	    )
 elseif (APPLE)
 	target_link_libraries(WED PRIVATE
 		${CARBON_FRAMEWORK}

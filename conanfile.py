@@ -36,9 +36,10 @@ class XPToolsRecipe(ConanFile):
         self.options["libpng"].with_zlib = True
         self.options["glew"].shared = False
         self.options["glew"].with_glu = "system"
+        self.options["proj"].build_executables = False
 
         if self.settings.os == "Windows":
-            self.options["libcurl"].with_ssl = "openssl"
+            self.options["libcurl"].with_ssl = "schannel"
 
     def layout(self):
         cmake_layout(self)
