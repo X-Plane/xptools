@@ -24,8 +24,6 @@ class XPToolsRecipe(ConanFile):
         self.requires("libcurl/8.15.0")
         self.requires("glew/2.2.0")
         self.requires("jsoncpp/1.9.6")
-        if self.settings.os == "Windows":
-            self.requires("openssl/3.3.2")
         if self.settings.os == "Linux":
             self.requires("fltk/1.4.1")
             self.requires("egl/system")
