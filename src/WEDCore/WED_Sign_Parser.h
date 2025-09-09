@@ -110,6 +110,7 @@ enum parser_glyph_t {
 	glyph_7,
 	glyph_8,
 	glyph_9,
+	glyph_meters,
 	glyph_dash,				// Hyphen -
 	glyph_dot,				// dot is * in sign code
 	glyph_period,

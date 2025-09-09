@@ -65,7 +65,7 @@ static const glyph_tex_info k_tex_syms[] = {
 	glyph_hazard,sign_color_independent,10,0,2,
 	glyph_safety,sign_color_independent,12,0,2,
 	glyph_critical,sign_color_independent,14,0,2,
-	
+
 	glyph_0,	sign_color_location,	0,	1,	1,
 	glyph_1,	sign_color_location,	1,	1,	1,
 	glyph_2,	sign_color_location,	2,	1,	1,
@@ -220,7 +220,9 @@ static const glyph_tex_info k_tex_syms[] = {
 	glyph_separator,sign_color_location,15,	9,	1,
 	
 	glyph_separator,sign_color_yellow,	0,	10,	1,
-	glyph_separator,sign_color_red,		1,	10,	1	
+	glyph_separator,sign_color_red,		1,	10,	1,
+	glyph_meters,   sign_color_yellow,	8,	10,	1,
+	glyph_meters,   sign_color_black,	9,	10,	1
 };
 
 static const int k_tex_syms_size = sizeof(k_tex_syms) / sizeof(k_tex_syms[0]);

@@ -59,6 +59,7 @@ static const glyph_info_t	k_glyph_metadata[] = {
 	glyph_space,	"_",		"_",			1,	1,	0,	0,	0,
 	glyph_separator,"|",		"|",			1,	1,	1,	0,	0,
 	glyph_comma,	"comma",	",",			1,	1,	0,	0,	0,
+	glyph_meters,	"m",	    "m",			1,	0,	0,	1,	0,
 	
 	glyph_up,		"^u",		NULL,			1,	1,	0,	0,	0,
 	glyph_down,		"^d",		NULL,			1,	1,	0,	0,	0,
