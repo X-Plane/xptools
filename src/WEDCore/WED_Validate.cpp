@@ -1652,10 +1652,29 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 
 	vector<string> all_keys;
 
+    if(who->ContainsMetaDataKey(wed_AddMetaDataAltimeterSetting))
+    {
+        string altimeter_setting = who->GetMetaDataValue(wed_AddMetaDataAltimeterSetting);
+
+        if (!altimeter_setting.empty())
+        {
+            string error_content;
+
+            if (altimeter_setting != "QNH" && altimeter_setting != "QFE")
+            {
+                error_content = "Altimeter Setting must be either QNH or QFE. Leave blank if unsure.";
+            }
+
+            if (!error_content.empty())
+                add_formated_metadata_error(error_template, wed_AddMetaDataAltimeterSetting, error_content, who, msgs, apt);
+        }
+        all_keys.push_back(altimeter_setting);
+    }
+
 	if(who->ContainsMetaDataKey(wed_AddMetaDataCity))
 	{
 		string city = who->GetMetaDataValue(wed_AddMetaDataCity);
-		if (city.empty() == false)
+		if (!city.empty())
 		{
 			string error_content;
 
@@ -1663,16 +1682,12 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 			//Yes, thats a real name, and its probably filled with people named Mr. Null and Ms. Error and their son Bobby Tables
 			if (!(city == "Nan" &&  who->GetMetaDataValue(wed_AddMetaDataCountry) == "Thailand"))
 			{
-				if (is_a_number(city) == true)
-				{
+				if (is_a_number(city))
 					error_content = "City cannot be a number";
-				}
 			}
 
-			if (error_content.empty() == false)
-			{
+			if (!error_content.empty())
 				add_formated_metadata_error(error_template, wed_AddMetaDataCity, error_content, who, msgs, apt);
-			}
 		}
 		all_keys.push_back(city);
 	}
