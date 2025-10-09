@@ -711,8 +711,8 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		double percent_done = (double)distance(apts.begin(), apt_itr) / apts.size() * 100;
 		printf("%0.0lf%% through heuristic at %s\n", percent_done, ICAO_code.c_str());
 
-		auto t1 = chrono::high_resolution_clock::now();
-		chrono::duration<double> elapsed = t1 - t2;
+		auto t1 = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> elapsed = t1 - t2;
 		if(elapsed.count() > 10.0e-3)
 			LOG_MSG("Update %s took %.0lf msec\n", ICAO_code.c_str(), 1000.0 * elapsed.count());
 		t2 = t1;
