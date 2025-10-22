@@ -3,32 +3,33 @@
 #include "AssertUtils.h"
 
 // How to add a new Metadata Key:
-// Go into WED_Menus.h and add a entry (keep alphabetically organized)
+// Go into WED_Menus.h and add an entry (keep alphabetically organized)
 // Add the corresponding entry in known_keys
 // All display names and keys must be unique, key names must not include commas
 
 const MetaDataKey known_keys[] = {
 // wed_AddMetaDataBegin
-{	"City|Locality",   "city"        },         // wed_AddMetaDataCity
-{	"Closed Circuits", "allows_circuits" },     // wed_AddMetaDataCircuits
-{	"Country",         "country"     },         // wed_AddMetaDataCountry
+{   "Altimeter Setting",    "altimeter_setting"     },          // wed_AddMetaDataAltimeterSetting
+{	"City|Locality",        "city"                  },          // wed_AddMetaDataCity
+{	"Closed Circuits",      "allows_circuits"       },          // wed_AddMetaDataCircuits
+{	"Country",              "country"               },          // wed_AddMetaDataCountry
 #if GATEWAY_IMPORT_FEATURES
-{	"Credits",		    "gw_credits"},          // wed_AddMetaDataCredits
+{	"Credits",              "gw_credits"            },          // wed_AddMetaDataCredits
 #endif
-{	"Datum Latitude",  "datum_lat"   },         // wed_AddMetaDataDatumLat
-{	"Datum Longitude", "datum_lon"   },         // wed_AddMetaDataDatumLon
-{	"FAA Code",        "faa_code"    },         // wed_AddMetaDataFAA
-{	"GUI Label",       "gui_label"   },         // wed_AddMetaDataGuiLabel
-{	"IATA Code",       "iata_code"   },         // wed_AddMetaDataIATA
-{	"ICAO Code",       "icao_code"   },         // wed_AddMetaDataICAO
-{	"Local Code",      "local_code"  },         // wed_AddMetaDataLocal
-{	"Local Authorithy","local_authority" },     // wed_AddMetaDataLocAuth
-{	"Oilrig",          "is_oilrig"   },         // wed_AddMetaDataOilrig
-{	"Region Code",     "region_code" },         // wed_AddMetaDataRegionCode
-{	"State|Province",  "state"       },         // wed_AddMetaDataState
-{	"Tower Services",  "tower_service_type" }, // wed_AddMetaDataTowerCaps
-{	"Transition Altitude", "transition_alt"  }, // wed_AddMetaDataTransitionAlt
-{	"Transition Level",    "transition_level"}  // wed_AddMetaDataTransitionLevel
+{	"Datum Latitude",       "datum_lat"             },          // wed_AddMetaDataDatumLat
+{	"Datum Longitude",      "datum_lon"             },          // wed_AddMetaDataDatumLon
+{	"FAA Code",             "faa_code"              },          // wed_AddMetaDataFAA
+{	"GUI Label",            "gui_label"             },          // wed_AddMetaDataGuiLabel
+{	"IATA Code",            "iata_code"             },          // wed_AddMetaDataIATA
+{	"ICAO Code",            "icao_code"             },          // wed_AddMetaDataICAO
+{	"Local Code",           "local_code"            },          // wed_AddMetaDataLocal
+{	"Local Authority",      "local_authority"       },          // wed_AddMetaDataLocAuth
+{	"Oilrig",               "is_oilrig"             },          // wed_AddMetaDataOilrig
+{	"Region Code",          "region_code"           },          // wed_AddMetaDataRegionCode
+{	"State|Province",       "state"                 },          // wed_AddMetaDataState
+{	"Tower Services",       "tower_service_type"    },          // wed_AddMetaDataTowerCaps
+{	"Transition Altitude",  "transition_alt"        },          // wed_AddMetaDataTransitionAlt
+{	"Transition Level",     "transition_level"      }           // wed_AddMetaDataTransitionLevel
 // wed_AddMetaDataEnd
 };
 

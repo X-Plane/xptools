@@ -164,6 +164,7 @@ enum {
 	//-- Add Metadata Keys Menu--
 	//Organized by alphabetical order - MUST EXACTLY MATCH definition of known_keys[] in WED_MetaDataKeys.cpp
 	wed_AddMetaDataBegin,//WARNING: DO NOT USE!
+    wed_AddMetaDataAltimeterSetting, // new in 12.3.1
 	wed_AddMetaDataCity,// or Locality
 	wed_AddMetaDataCircuits, // new in 1200
 	wed_AddMetaDataCountry,

@@ -13,10 +13,15 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 2.7.0-a2
+  Features:
+   - Added new metadata property to define the altimeter setting for the airport (QNH/QFE)
+
 WED 2.7.0-a1
+   Features:
+   - Allow flatten polygons
    Bug fix:
    - Some minor bug fixes
-   - Allow flatten polygons
 
 WED 2.6.0r2 10/23/24
    Bug fix:

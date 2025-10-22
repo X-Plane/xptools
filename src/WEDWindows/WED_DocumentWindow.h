@@ -27,12 +27,6 @@
 #include "GUI_Window.h"
 #include "GUI_Listener.h"
 
-//class WED_ObjectLayers;
-//class WED_LayerGroup;
-//class WED_LayerTable;
-//class WED_LayerTableGeometry;
-
-
 class	WED_MapPane;
 class	WED_MapPreviewPane;
 class	WED_MapPreviewWindow;
@@ -40,12 +34,10 @@ class	WED_TCEPane;
 class	WED_Document;
 class	WED_PropertyPane;
 class	WED_PropertyTable;
-class	WED_PropertyTableHeader;
 class	GUI_Splitter;
 
 class	WED_DocumentWindow : public GUI_Window, public GUI_Listener {
 public:
-
 				 WED_DocumentWindow(
 				 		const char * 	inTitle,
 				 		GUI_Commander * inCommander,
