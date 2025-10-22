@@ -45,13 +45,10 @@
 #include "WED_DrapedOrthophoto.h"
 #include "WED_TerPlacement.h"
 #include "WED_OverlayImage.h"
-#include "WED_FacadeNode.h"
 #include "WED_RampPosition.h"
 #include "WED_RoadEdge.h"
-#include "WED_RoadNode.h"
 #include "WED_Taxiway.h"
 #include "WED_TaxiRoute.h"
-#include "WED_TerPlacement.h"
 #include "WED_TruckDestination.h"
 #include "WED_TruckParkingLocation.h"
 #include "WED_TowerViewpoint.h"
@@ -74,7 +71,6 @@
 #include "WED_MetaDataKeys.h"
 #include "WED_MetaDataDefaults.h"
 
-#include "IResolver.h"
 #include "ILibrarian.h"
 #include "WED_LibraryMgr.h"
 #include "WED_PackageMgr.h"
@@ -606,7 +602,7 @@ static void ValidateOnePolygon(WED_GISPolygon* who, validation_error_vector& msg
 static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, validation_error_vector& msgs, WED_Airport * parent_apt)
 {
 	// Don't validate hidden stuff - we won't export it!
-	WED_Entity * ee = dynamic_cast<WED_Entity *>(who);
+	auto * ee = dynamic_cast<WED_Entity *>(who);
 	if(ee && ee->GetHidden())
 		return;
 
@@ -616,14 +612,14 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 		ValidateOneForestPlacement(who, msgs, parent_apt);
 	else if (who->GetClass() == WED_StringPlacement::sClass)
 	{
-		auto str = static_cast<WED_StringPlacement*>(who);
+		auto str = dynamic_cast<WED_StringPlacement*>(who);
 		if(str->GetSpacing() < 1.0)
 			msgs.push_back(validation_error_t("Object string spacing must be grater than zero.", err_string_zero_spaceing, who, parent_apt));
 
 	}
 	else if (who->GetClass() == WED_ExclusionPoly::sClass)
 	{
-		auto xcl = static_cast<WED_ExclusionPoly*>(who);
+		auto xcl = dynamic_cast<WED_ExclusionPoly*>(who);
 		if (xcl->GetNumHoles() > 0)
 			msgs.push_back(validation_error_t("Exclusion Polygons may not have holes in them.", err_exclusion_polys_no_holes, who, parent_apt));
 		set<int> ex;
@@ -634,7 +630,7 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 	}
 	else if(who->GetClass() == WED_ObjPlacement::sClass)
 	{
-		auto obj = static_cast<WED_ObjPlacement *>(who);
+		auto obj = dynamic_cast<WED_ObjPlacement *>(who);
 		if (int t = obj->HasCustomMSL())
 		{
 			double hgt = obj->GetCustomMSL();
@@ -690,9 +686,9 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* lib_mgr, valid
 	}
 
 	//--Validate resources-----------------------------------------------------
-	IHasResource* who_hasRes = dynamic_cast<IHasResource*>(who);
+	auto* who_hasRes = dynamic_cast<IHasResource*>(who);
 
-	if(who_hasRes != NULL)
+	if(who_hasRes != nullptr)
 	{
 		string res;
 		who_hasRes->GetResource(res);
