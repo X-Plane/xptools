@@ -29,8 +29,7 @@
 
 // These versions are used in about boxes, resources, info boxes, etc.
 
-//#define	WED_VERSION				2.7.0-a1
-#define	WED_VERSION_STRING		"2.7.0-a1"
+#define	WED_VERSION_STRING		"2.7.0-a2"
 #define	WED_VERSION_STRING_SHORT	"2.7"			// omit beta/release number and trailing zero's
 
 #define	WED_COPYRIGHT_STRING	"(C) Copyright 2007-2025, Laminar Research."
