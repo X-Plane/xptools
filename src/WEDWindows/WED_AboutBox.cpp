@@ -27,7 +27,6 @@
 #include "WED_Colors.h"
 #include "WED_Globals.h"
 #include "GUI_Resources.h"
-#include "BitmapUtils.h"
 #include "WED_Version.h"
 
 static int aboutbox_bounds[4] = { 0, 0, 600, 420};
@@ -36,18 +35,16 @@ WED_AboutBox::WED_AboutBox(GUI_Commander * cmdr) : GUI_Window("About WED", xwin_
 {
 }
 
-WED_AboutBox::~WED_AboutBox()
-{
-}
 
-bool	WED_AboutBox::Closed(void)
+bool WED_AboutBox::Closed()
 {
 	Hide();
 	Stop();
     return false;
 }
 
-void		WED_AboutBox::Draw(GUI_GraphState * state)
+
+void WED_AboutBox::Draw(GUI_GraphState * state)
 {
 	int bounds[4];
 	int tile_sel[4] = { 0, 0, 1, 1 };
@@ -88,8 +85,8 @@ void		WED_AboutBox::Draw(GUI_GraphState * state)
 	}
 
 	const char * info = "WorldEditor " WED_VERSION_STRING ", compiled on " __DATE__ " " __TIME__
-#if TYLER_MODE
-	" with TYLER_MODE"
+#if GATEWAY_IMPORT_MODE
+	" - GATEWAY IMPORT MODE enabled"
 #endif
 	;
 
@@ -119,18 +116,21 @@ void		WED_AboutBox::Draw(GUI_GraphState * state)
 	}
 }
 
-int			WED_AboutBox::MouseDown(int x, int y, int button)
+
+int	WED_AboutBox::MouseDown(int x, int y, int button)
 {
 	return 1;
 }
 
-void		WED_AboutBox::MouseUp  (int x, int y, int button)
+
+void WED_AboutBox::MouseUp(int x, int y, int button)
 {
 	Stop();
 	Hide();
 }
 
-void		WED_AboutBox::TimerFired(void)
+
+void WED_AboutBox::TimerFired()
 {
 	Stop();
 	Hide();

@@ -4456,7 +4456,7 @@ void	WED_DoReplaceVehicleObj(IResolver* resolver, WED_Airport* apt)
 		root->StartOperation("Replace Objects");
 		map<string,vehicle_replacement_info> table = build_replacement_table();
 
-#if !TYLER_MODE
+#if !GATEWAY_IMPORT_MODE
 		ISelection * sel = WED_GetSelect(resolver);
 		sel->Clear();
 #endif
@@ -4487,7 +4487,7 @@ void	WED_DoReplaceVehicleObj(IResolver* resolver, WED_Airport* apt)
 				replace_count++;
 				(*itr)->SetParent(NULL, 0);
 				(*itr)->Delete();
-#if !TYLER_MODE
+#if !GATEWAY_IMPORT_MODE
 				sel->Insert(parking_loc);
 #endif
 			}
@@ -4495,25 +4495,25 @@ void	WED_DoReplaceVehicleObj(IResolver* resolver, WED_Airport* apt)
 
 		if(replace_count == 0)
 		{
-#if !TYLER_MODE
+#if !GATEWAY_IMPORT_MODE
 			sel->Clear();
 #endif
 			root->AbortOperation();
-#if !TYLER_MODE
+#if !GATEWAY_IMPORT_MODE
 			DoUserAlert("Nothing to replace");
 #endif
 		}
 		else
 		{
 			root->CommitOperation();
-#if !TYLER_MODE
+#if !GATEWAY_IMPORT_MODE
 			stringstream ss;
 			ss << "Replaced " << replace_count << " objects";
 			DoUserAlert(ss.str().c_str());
 #endif
 		}
 	}
-#if !TYLER_MODE
+#if !GATEWAY_IMPORT_MODE
 	else
 		DoUserAlert("Nothing to replace");
 #endif

@@ -87,7 +87,7 @@
 #endif
 
 // set this to one to leave the master zip blobs on disk for later examination
-#define KEEP_UPLOAD_MASTER_ZIP (TYLER_MODE)
+#define KEEP_UPLOAD_MASTER_ZIP (GATEWAY_IMPORT_MODE)
 
 // write out lots of airports as .json files on disk - allows multi-select, no user interaction, for bulk import.
 #define BULK_SPLAT_IO 0

@@ -1670,7 +1670,7 @@ static int	DSF_ExportTileRecursive(
 					if (!pts.empty())
 					{
 						++real_thingies;
-#if !TYLER_MODE
+#if !GATEWAY_IMPORT_MODE
 						bool elevated = false;
 						// get DEM
 						Bbox2 bnds;
@@ -2237,7 +2237,7 @@ int DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, se
 
 	for (int y = tile_south; y < tile_north; ++y)
 	{
-#if TYLER_MODE
+#if GATEWAY_IMPORT_MODE
 		printf("Exporting DSF's at lattitude %d\n", y);
 #endif
 		for (int x = tile_west; x < tile_east; ++x)

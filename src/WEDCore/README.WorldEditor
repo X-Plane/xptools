@@ -199,8 +199,8 @@ WED 2.5.0b2 5/30/22
    - bump resolution for ESRI slippy maps below 60 deg lattitude by one ZL
    - validation warning on TOWER_VIEWPOINT height not matching with #viewpoint_height tags
    - use actual XP textures for run/taxiway and helipd previews in map, if available
-   - apply jetway upgrades, remove large terrain polygons at export (tyler_mode only)
-   - add 3-letter iso3166 country prefixes to airport meta data (tyler_mode only)
+   - apply jetway upgrades, remove large terrain polygons at export (gateway_import_mode only)
+   - add 3-letter iso3166 country prefixes to airport meta data (gateway_import_mode only)
    - validation exeption to make KSEA, LOWI gateway legal
    - validate taxiways for zero-length segments
    - show multi-layered forests correctly in the preview window
