@@ -62,7 +62,6 @@ float	GUI_MeasureRange(
 				int 							inFontID,
 				const char *					inCharStart,
 				const char *					inCharEnd);
-
 int		GUI_FitForward(
 				int 							inFontID,
 				const char *					inCharStart,
@@ -74,7 +73,7 @@ int		GUI_FitForward(
 				std::string::const_iterator		inStart,
 				std::string::const_iterator		inEnd,
 				float							width
-					);
+);
 
 int		GUI_FitReverse(
 				int 							inFontID,

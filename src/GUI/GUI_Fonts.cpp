@@ -428,25 +428,6 @@ int GUI_FitForward(int inFontID, const char* inStart, const char* inEnd,float wi
 	return (const char *) p - inStart;
 }
 
-
-int GUI_FitForward(int inFontID, std::string::const_iterator inStart, std::string::const_iterator inEnd, float width)
-{
-	if (inStart == inEnd) return 0;
-	TT_establish_font(inFontID);
-	float so_far = 0.0;
-	auto p = inStart;
-	auto e = inEnd;
-	while (p < e)
-	{
-		UTF32 c = UTF8_decode(reinterpret_cast<const UTF8*>(&*p));
-		so_far += tt_font[inFontID]->require_char(c, 1.0f);
-		if (so_far > width)
-			break;
-		p = std::next(p); // Move to next character
-	}
-	return std::distance(inStart, p);
-}
-
 int GUI_FitReverse(int inFontID, const char* inStart, const char* inEnd,float width)
 {
 	if(inStart == inEnd) return 0;
@@ -489,9 +470,10 @@ float	GUI_GetLineAscent(int inFontID)
 }
 
 void	GUI_TruncateText(
-				string&							ioText,
-				int								inFontID,
-				float							inSpace)
+			string& ioText,
+			int								inFontID,
+			float							inSpace
+		)
 {
 	if (ioText.empty()) return;
 
@@ -503,9 +485,9 @@ void	GUI_TruncateText(
 		ioText.erase(chars + 1);   // dont cut too much, three dots are narrower than two letters
 	else
 		ioText.erase(chars);
-	if (ioText.length() > 0)	ioText[ioText.length()-1] = '.';
-	if (ioText.length() > 1)	ioText[ioText.length()-2] = '.';
-	if (ioText.length() > 2)	ioText[ioText.length()-3] = '.';
+	if (ioText.length() > 0)	ioText[ioText.length() - 1] = '.';
+	if (ioText.length() > 1)	ioText[ioText.length() - 2] = '.';
+	if (ioText.length() > 2)	ioText[ioText.length() - 3] = '.';
 
 }
 
