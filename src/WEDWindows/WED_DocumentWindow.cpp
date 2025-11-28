@@ -49,6 +49,7 @@
 #include "WED_GroupCommands.h"
 #include "WED_GatewayExport.h"
 #include "WED_GatewayImport.h"
+#include "WED_SceneryImport.h"
 #include "WED_MetadataUpdate.h"
 #include "WED_SceneryPackExport.h"
 #include "WED_Validate.h"
@@ -57,6 +58,7 @@
 #include "WED_ForestPlacement.h"
 #include "WED_LinePlacement.h"
 #include "WED_PolygonPlacement.h"
+#include "WED_ShapePlacement.h"
 #include "WED_StringPlacement.h"
 #include "WED_Taxiway.h"
 #include "WED_Thing.h"
@@ -426,6 +428,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_ConvertToLine:		WED_DoConvertTo(mDocument, &CreateThing<WED_LinePlacement>);	return 1;
 	case wed_ConvertToString:	WED_DoConvertTo(mDocument, &CreateThing<WED_StringPlacement>);	return 1;
 	case wed_ConvertToForest:	WED_DoConvertToForest(mDocument); return 1;
+	case wed_ConvertToShape:	WED_DoConvertTo(mDocument, &CreateThing<WED_ShapePlacement>); return 1;
 
 	case wed_MoveFirst:	WED_DoReorder(mDocument,-1,1);	return 1;
 	case wed_MovePrev:	WED_DoReorder(mDocument,-1,0);	return 1;
@@ -480,27 +483,34 @@ int	WED_DocumentWindow::HandleCommand(int command)
 #endif
 	case wed_ImportApt:		WED_DoImportApt(mDocument,mDocument->GetArchive(), mMapPane); return 1;
 	case wed_ImportDSF:		WED_DoImportDSF(mDocument); return 1;
+	case wed_ImportScenery:	WED_DoImportScenery(mDocument); return 1;
 #if ROAD_EDITING
 	case wed_ImportRoads:	WED_DoImportRoads(mDocument); return 1;
 #endif
 	case wed_ImportOrtho:
+	case wed_ImportDem:
 		mMapPane->Map_HandleCommand(command);
 		return 1;
 #if HAS_GATEWAY
-	case wed_ImportGateway: WED_DoImportFromGateway(mDocument, mMapPane); return 1;
+	case wed_ImportGateway: WED_DoImportFromGateway(mDocument, mMapPane, mPropPane); return 1;
 #endif
 #if GATEWAY_IMPORT_FEATURES
-	case wed_ImportGatewayExtract:	WED_DoImportDSFText(mDocument); return 1;
+	case wed_ImportGatewayExtract:	WED_DoImportExtracts(mDocument); return 1;
 #endif
-	case wed_Validate:		if (WED_ValidateApt(mDocument, mMapPane) == validation_clean) DoUserAlert("Your layout is valid - no problems were found."); return 1;
-
-	case wed_Export900:	 if (gExportTarget != wet_xplane_900) { gExportTarget = wet_xplane_900; mDocument->SetDirty(); Refresh(); } return 1;
-	case wed_Export1000: if (gExportTarget != wet_xplane_1000) { gExportTarget = wet_xplane_1000; mDocument->SetDirty(); Refresh(); } return 1;
-	case wed_Export1021: if (gExportTarget != wet_xplane_1021) { gExportTarget = wet_xplane_1021; mDocument->SetDirty(); Refresh(); } return 1;
-	case wed_Export1050: if (gExportTarget != wet_xplane_1050) { gExportTarget = wet_xplane_1050; mDocument->SetDirty(); Refresh(); } return 1;
-	case wed_Export1100: if (gExportTarget != wet_xplane_1100) { gExportTarget = wet_xplane_1100; mDocument->SetDirty(); Refresh(); } return 1;
-	case wed_Export1130: if (gExportTarget != wet_xplane_1130) { gExportTarget = wet_xplane_1130; mDocument->SetDirty(); Refresh(); } return 1;
-	case wed_Export1200: if (gExportTarget != wet_xplane_1200) { gExportTarget = wet_xplane_1200; mDocument->SetDirty(); Refresh(); } return 1;
+	case wed_Validate:	if (WED_ValidateApt(mDocument, mMapPane) == validation_clean)
+							DoUserAlert("Your layout is valid - no problems were found.");
+						return 1;
+	case wed_Export900:
+	case wed_Export1000: case wed_Export1021: case wed_Export1050:
+	case wed_Export1100: case wed_Export1130:
+	case wed_Export1200: case wed_Export1212:
+		if (gExportTarget != wet_xplane_900 + command - wed_Export900)
+		{
+			gExportTarget = (WED_Export_Target) (wet_xplane_900 + command - wed_Export900);
+			mDocument->SetDirty();
+			Refresh();
+		}
+		return 1;
 	case wed_ExportGateway:if (gExportTarget != wet_gateway) { gExportTarget = wet_gateway; mDocument->SetDirty(); Refresh(); } return 1;
 
 #if WITHNWLINK
@@ -561,6 +571,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_ConvertToLine:		return WED_CanConvertTo(mDocument, WED_LinePlacement::sClass);
 	case wed_ConvertToString:	return WED_CanConvertTo(mDocument, WED_StringPlacement::sClass);
 	case wed_ConvertToForest:	return WED_CanConvertTo(mDocument, WED_ForestPlacement::sClass);
+	case wed_ConvertToShape:	return WED_CanConvertTo(mDocument, WED_ShapePlacement::sClass);
 
 	case wed_TogglePreviewWindow:	ioCheck = mMapPreviewWindow->IsVisible(); return 1;
 	case wed_ShowMapAreaInPreviewWindow:	return 1;
@@ -608,15 +619,17 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_SelectMissingObjects:	return 1;
 
 	case wed_ExportApt:		return WED_CanExportApt(mDocument);
-	case wed_ExportPack:	return WED_CanExportPack(mDocument);
+	case wed_ExportPack:	return WED_CanExportPack(mDocument, ioName);
 #if HAS_GATEWAY
 	case wed_ExportToGateway:	return WED_CanExportToGateway(mDocument);
 #endif
 	case wed_ImportApt:		return WED_CanImportApt(mDocument);
 	case wed_ImportDSF:		return WED_CanImportDSF(mDocument);
+	case wed_ImportScenery:	return 1;
 #if ROAD_EDITING
 	case wed_ImportRoads:	return WED_CanImportRoads(mDocument);
 #endif
+	case wed_ImportDem:
 	case wed_ImportOrtho:	return 1;
 #if HAS_GATEWAY
 	case wed_ImportGateway:	return WED_CanImportFromGateway(mDocument);
@@ -626,14 +639,11 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 #endif
 	case wed_Validate:		return 1;
 
-	case wed_Export900:	ioCheck = gExportTarget == wet_xplane_900;	return 1;
-	case wed_Export1000:ioCheck = gExportTarget == wet_xplane_1000;	return 1;
-	case wed_Export1021:ioCheck = gExportTarget == wet_xplane_1021;	return 1;
-	case wed_Export1050:ioCheck = gExportTarget == wet_xplane_1050;	return 1;
-	case wed_Export1100:ioCheck = gExportTarget == wet_xplane_1100;	return 1;
-	case wed_Export1130:ioCheck = gExportTarget == wet_xplane_1130;	return 1;
-	case wed_Export1200:ioCheck = gExportTarget == wet_xplane_1200;	return 1;
-
+	case wed_Export900:
+	case wed_Export1000: case wed_Export1021: case wed_Export1050:
+	case wed_Export1100: case wed_Export1130:
+	case wed_Export1200: case wed_Export1212:
+		ioCheck = (command - wed_Export900) == (gExportTarget - wet_xplane_900); return 1;
 	case wed_ExportGateway:ioCheck = gExportTarget == wet_gateway;	return 1;
 
 #if WITHNWLINK

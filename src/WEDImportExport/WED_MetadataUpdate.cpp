@@ -305,7 +305,6 @@ void	WED_DoInvisibleUpdateMetadata(WED_Airport * apt)
 	}
 	else
 	{
-		LOG_MSG("I/MDUi %s\n", "Filling metadata with defaults\n");
 		bool success = fill_in_airport_metadata_defaults(*apt, s_csv);
 	}
 }

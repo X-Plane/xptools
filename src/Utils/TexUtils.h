@@ -64,4 +64,11 @@ bool LoadTextureFromDDS(
 				int *			outWidth,
 				int *			outHeight);
 
+bool LoadTextureFromKTX2(
+				char*			mem_start,
+				char*			mem_end,
+				int				in_tex_num,
+				int				inFlags,
+				int*			outWidth,
+				int*			outHeight);
 #endif

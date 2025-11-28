@@ -415,6 +415,11 @@ struct	Bbox2 {
 						p.x() < xmin() ? xmin() : (p.x() > xmax() ? xmax() : p.x()),
 						p.y() < ymin() ? ymin() : (p.y() > ymax() ? ymax() : p.y())); };
 
+	Bbox2		clamp(const Bbox2& b) const {
+		return Bbox2(
+			max(b.xmin(), xmin()), max(b.ymin(), ymin()),
+			min(b.xmax(), xmax()), min(b.ymax(), ymax())); };
+
 	double		rescale_to_x (const Bbox2& new_box, double x) const;
 	double		rescale_to_x_projected (const Bbox2& new_box, double x) const;
 	double		rescale_to_y (const Bbox2& new_box, double y) const;

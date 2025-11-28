@@ -24,44 +24,48 @@
 
 #include "WED_GatewayImport.h"
 #include "WED_GatewayExport.h"
+#include "WED_DSFImport.h"
 
 #if HAS_GATEWAY
 #include "MemFileUtils.h"
 #include "FileUtils.h"
-
 #include "PlatformUtils.h"
-#include "GUI_Resources.h"
 #include "curl_http.h"
 #include <curl/curl.h>
 #include <json/json.h>
 #include "RAII_Classes.h"
 
 #include <sstream>
-#include<thread>
+#include <thread>
 
 #include "WED_Document.h"
-#include "WED_PackageMgr.h"
-#include "WED_MapPane.h"
-#include "WED_Url.h"
 #include "WED_Globals.h"
+#include "WED_GroupCommands.h"
+#include "WED_MapPane.h"
+#include "WED_PackageMgr.h"
+#include "WED_PropertyPane.h"
+#include "WED_Url.h"
+#include "WED_UIDefs.h"
 
 #include "GUI_Application.h"
-#include "GUI_Window.h"
-#include "GUI_Packer.h"
-#include "GUI_Timer.h"
-#include "GUI_Label.h"
-#include "GUI_FilterBar.h"
 #include "GUI_Button.h"
+#include "GUI_FilterBar.h"
+#include "GUI_Label.h"
+#include "GUI_Packer.h"
+#include "GUI_Resources.h"
+#include "GUI_Timer.h"
+#include "GUI_Window.h"
 
 #include "WED_Messages.h"
-//--DSF/AptImport
 #include "WED_AptIE.h"
 #include "WED_ToolUtils.h"
+#include "WED_HierarchyUtils.h"
 #include "WED_Airport.h"
-#include "WED_DSFImport.h"
+#include "WED_ExclusionZone.h"
 #include "WED_Group.h"
 #include "WED_MetadataUpdate.h"
-#include "WED_UIDefs.h"
+#include "WED_MetaDataDefaults.h"
+
 //---------------
 
 //--Table Code------------
@@ -196,7 +200,7 @@ typedef vector<char> JSON_BUF;
 class WED_GatewayImportDialog : public GUI_Window, public GUI_Listener, public GUI_Timer, public GUI_Destroyable
 {
 public:
-	WED_GatewayImportDialog(WED_Document * resolver, WED_MapPane * pane, GUI_Commander * cmdr);
+	WED_GatewayImportDialog(WED_Document * resolver, WED_MapPane * pane, GUI_Commander * cmdr, WED_PropertyPane* prop_pane);
 	~WED_GatewayImportDialog();
 
 private:
@@ -223,6 +227,7 @@ private:
 
 	WED_Document *		mResolver;
 	WED_MapPane *		mMapPane;
+	WED_PropertyPane *	mPropPane;
 
 	//The cache request info struct for requesting files
 	WED_file_cache_request	mCacheRequest;
@@ -316,10 +321,11 @@ int WED_GatewayImportDialog::import_bounds_default[4] = { 0, 0, 800, 500 };
 
 
 //--Implemation of WED_GateWayImportDialog class-------------------------------
-WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_MapPane * pane, GUI_Commander * cmdr) :
+WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_MapPane * pane, GUI_Commander * cmdr, WED_PropertyPane * prop_pane):
 	GUI_Window("Import from Gateway",xwin_style_visible|xwin_style_centered|xwin_style_resizable|xwin_style_modal,import_bounds_default,cmdr),
 	mResolver(resolver),
 	mMapPane(pane),
+	mPropPane(prop_pane),
 	mPhase(imp_dialog_download_airport_metadata),
 	mICAO_AptProvider(&mICAO_Apts, gModeratorMode ? "Date Accepted" : "Locked until", gModeratorMode ? "User Name": "by Artist"),
 	mICAO_TextTable(this,100,0),
@@ -461,7 +467,7 @@ void WED_GatewayImportDialog::Next()
 					mVersions_Vers.push_back(v);
 					mVersions_VersionsSelected.insert(mVersions_Vers.size()-1);
 				}
-				if(!--max_imports) 
+				if(!--max_imports)
 				{
 					DoUserAlert("Stopped after importing 500 airports, large gateway downloads are unsupported.");
 					break;
@@ -528,6 +534,8 @@ void WED_GatewayImportDialog::Back()
 	}
 	DecorateGUIWindow();//Decorate once we're in the correct place
 }
+
+static void dummyPrintf(void* ref, const char* fmt, ...) { return; }
 
 extern "C" void decode( const char * startP, const char * endP, char * destP, char ** out);
 void WED_GatewayImportDialog::TimerFired()
@@ -606,13 +614,32 @@ void WED_GatewayImportDialog::TimerFired()
 						for (int i = 0; i < mSpecificBufs.size(); i++)
 						{
 							last_imported = ImportSpecificVersion(mSpecificBufs[i]);
-
 							//We completely abort if _anything_ goes wrong
 							if(last_imported == NULL)
 							{
 								wrl->AbortOperation();
 								this->AsyncDestroy();//All done!
 								return;
+							}
+							add_iso3166_country_metadata(*last_imported);
+							if (last_imported->GetSceneryID() < 94010)
+							{
+								if (ConfirmMessage("Existing X-Plane 11 Exclusion Zones and Flatten properties must be removed and re-evaluated for X-Plane 12 gateway submissions", "Delete as recommended", "Keep all") == 1)
+								{
+									set<WED_Thing*> ex_set;
+									CollectRecursive(last_imported, inserter(ex_set, ex_set.begin()), IgnoreVisiblity, TakeAlways,
+										WED_ExclusionZone::sClass, 2);
+									WED_RecursiveDelete(ex_set);
+
+									AptInfo_t apt_info;
+									last_imported->Export(apt_info);
+									auto it = std::find(apt_info.meta_data.begin(), apt_info.meta_data.end(), make_pair(string("flatten"), string("1")));
+									if (it != apt_info.meta_data.end())
+									{
+										apt_info.meta_data.erase(it);
+										last_imported->Import(apt_info, dummyPrintf, nullptr);
+									}
+								}
 							}
 						}
 
@@ -623,11 +650,9 @@ void WED_GatewayImportDialog::TimerFired()
 						ISelection * sel = WED_GetSelect(mResolver);
 						sel->Clear();
 						sel->Insert(last_imported);
-
-						//Zoom to the airport
 						mMapPane->ZoomShowSel();
-
 						wrl->CommitOperation();
+
 						this->AsyncDestroy();//All done!
 						return;
 					}
@@ -709,7 +734,7 @@ void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
 			}
 			cur_airport.meta_data.push_back(make_pair("IcaoFaaLocal", code));   // pseudo-tag to support selection by ANY of these 3 tags
 			cur_airport.kind_code = 0;                                          // scenery-ID of not deprecated, recommended version, if any
-			
+
 			if(gModeratorMode)
 			{
 				if (tmp["AcceptedSceneryCount"].asInt() > tmp["ApprovedSceneryCount"].asInt())
@@ -725,7 +750,7 @@ void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
 					{
 						if(res.out_status == cache_status_downloading)
 						{
-							this_thread::sleep_for(chrono::milliseconds(100));
+							std::this_thread::sleep_for(std::chrono::milliseconds(100));
 							res = gFileCache.request_file(mCacheRequest);
 						}
 					}
@@ -749,7 +774,7 @@ void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
 							if(curScenery["Status"].asString() == "Accepted")
 							{
 								AcceptDate = curScenery.operator[]("dateAccepted").asString();
-								if (AcceptDate == "") 
+								if (AcceptDate == "")
 									AcceptDate = "Unknown";
 								Artist = curScenery.operator[]("userName").asString();
 								cur_airport.kind_code = curScenery.operator[]("sceneryId").asInt();
@@ -863,17 +888,16 @@ void WED_GatewayImportDialog::SelectWithFile()
 
 		mICAO_AptProvider.SelectionStart(1);
 		mICAO_AptProvider.SelectGetLimits(low_x, low_y, high_x, high_y);
-		while (!feof(fn))
+		while (fgets(c, sizeof(c), fn))
 		{
-			fgets(c, sizeof(c), fn);
 			icao = c;
 			for(int i = 0; i < sizeof(c)-12; ++i)
 				if (c[i] == ' ') ++icao;
 				else break;
-				
+
 			icao[10] = 0;
 			for(int i = 0; i < 10; ++i)
-				if (icao[i] < '0' || (icao[i] > '9' && icao[i] < 'A') || icao[i] > 'Z') 
+				if (icao[i] < '0' || (icao[i] > '9' && icao[i] < 'A') || icao[i] > 'Z')
 				{
 					icao[i] = 0;
 					break;
@@ -1123,6 +1147,14 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(const string& json_
 	{
 		WED_ImportText(dsfTextPath.c_str(), (WED_Thing *) g);
 	}
+
+	// the auto-created groups are at this point always the children of the airport. Close them all.
+	// for(auto c_ID ; )
+	set<int> cat_list;
+	int n_child = g->CountChildren();
+	for (int c = 0; c < n_child; c++)
+		cat_list.insert(g->GetNthChild(c)->GetID());
+	mPropPane->SetClosed(cat_list);
 
 	if(!out_apt.empty())
 		WED_DoInvisibleUpdateMetadata(out_apt[0]);  // this also sets GUI 2D/3D metadata - so do it only after dsf contents has been added
@@ -1377,107 +1409,15 @@ void WED_GatewayImportDialog::MakeVersionsTable(int bounds[4])
 }
 //-------------------------------------------------------------
 
-//----------------------------------------------------------------------
 int	WED_CanImportFromGateway(IResolver * resolver)
 {
 	return 1;
 }
 
-void WED_DoImportFromGateway(WED_Document * resolver, WED_MapPane * pane)
+void WED_DoImportFromGateway(WED_Document * resolver, WED_MapPane * pane, WED_PropertyPane* prop_pane)
 {
-	new WED_GatewayImportDialog(resolver, pane,gApplication);
+	new WED_GatewayImportDialog(resolver, pane, gApplication, prop_pane);
 	return;
 }
 
-#if GATEWAY_IMPORT_FEATURES
-
-static WED_Thing * find_airport_by_icao_recursive(const string& icao, WED_Thing * who)
-{
-	if(WED_Airport::sClass == who->GetClass())
-	{
-		WED_Airport * apt = dynamic_cast<WED_Airport *>(who);
-		DebugAssert(apt);
-		string aicao;
-		apt->GetICAO(aicao);
-		
-		if(aicao == icao)
-			return apt;
-		else
-			return NULL;
-	}
-	else
-	{
-		int n, nn = who->CountChildren();
-		for(n = 0; n < nn; ++n)
-		{
-			WED_Thing * found_it = find_airport_by_icao_recursive(icao, who->GetNthChild(n));
-			if(found_it) return found_it;
-		}
-	}
-	return NULL;
-}
-
-static const string get_airport_id_from_gateway_file_path(const char * file_path)
-{
-	string tname(file_path);
-	string::size_type p = tname.find_last_of("\\/");
-	if(p != tname.npos)
-		tname = tname.substr(p+1);
-	p = tname.find_last_of(".");
-	if(p != tname.npos)
-		tname = tname.substr(0,p);
-	return tname;
-}
-
-WED_Thing * get_airport_from_gateway_file_path(const char * file_path, WED_Thing * wrl)
-{
-	return find_airport_by_icao_recursive(get_airport_id_from_gateway_file_path(file_path), wrl);
-}
-
-//This is from an older method of importing things which involved manually getting the files from the hard drive
-void	WED_DoImportDSFText(IResolver * resolver)
-{
-	WED_Thing * wrl = WED_GetWorld(resolver);
-
-	char dir_path[200];
-	bool success = GetFilePathFromUser(getFile_PickFolder, "Import all files in directory...", "Import", FILE_DIALOG_IMPORT_DSF, dir_path, sizeof(dir_path));
-	const string dir = string(dir_path) + '/';
-	if(success)
-	{
-		wrl->StartOperation("Import DSF");
-		
-		vector<string> all_files;
-		FILE_get_directory(dir, &all_files, NULL);
-		
-		for(auto& it : all_files)                  // first pass is all XXXX.dat files, i.e. the apt.dat's
-		{
-			if(it.find(".dat") != string::npos)
-			{
-				const string path = dir + it;
-				WED_ImportOneAptFile(path, wrl, NULL);
-				WED_DoInvisibleUpdateMetadata(SAFE_CAST(WED_Airport, get_airport_from_gateway_file_path(path.c_str(), wrl)));
-			}
-		}
-		
-		for(auto& it : all_files)                 // seconds pass is all other XXX.* files, thats presumed the DSF's, in text format
-		{
-			if(it.find(".dat") == string::npos)
-			{
-				const string path = dir + it;
-				WED_Thing * g = get_airport_from_gateway_file_path(path.c_str(), wrl);
-				if(g == NULL)
-				{
-					g = WED_Group::CreateTyped(wrl->GetArchive());
-					g->SetName(path);
-					g->SetParent(wrl,wrl->CountChildren());
-				}
-				WED_ImportText(path.c_str(), g);
-			}
-		}
-		
-		wrl->CommitOperation();
-	}
-}
-
-#endif /* GATEWAY_IMPORT_FEATURES */
 #endif /* HAS_GATEWAY */

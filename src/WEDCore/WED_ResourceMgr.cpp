@@ -31,11 +31,14 @@
 
 #include "MemFileUtils.h"
 #include "XObjReadWrite.h"
-//#include "ObjConvert.h"
 #include "FileUtils.h"
 #include "WED_PackageMgr.h"
 #include "CompGeomDefs2.h"
 #include "MathUtils.h"
+#include "BitmapUtils.h"
+
+#include "DEMDefs.h"
+#include "WED_OrthoExport.h"
 
 #if IBM
 #define DIR_CHAR '\\'
@@ -122,6 +125,18 @@ void	WED_ResourceMgr::Purge(void)
 	mFac.clear();
 	mStr.clear();
 	mAGP.clear();
+	mDem.clear();
+}
+
+void	WED_ResourceMgr::Purge(const string& vpath)
+{
+	auto i = mObj.find(vpath);
+	if (i != mObj.end())
+	{
+		for (auto j : (*i).second)
+			delete j;
+		mObj.erase(i);
+	}
 }
 
 bool	WED_ResourceMgr::GetAllInDir(const string& vdir, vector<pair<string, int> >& vpaths)
@@ -134,6 +149,30 @@ bool	WED_ResourceMgr::GetAllInDir(const string& vdir, vector<pair<string, int> >
 
 	return names.size();
 }
+
+bool	WED_ResourceMgr::GetDem(const string& path, dem_info_t const*& info)
+{
+	auto i = mDem.find(path);
+	if (i != mDem.end())
+	{
+		info = &i->second;
+		return true;
+	}
+	dem_info_t* out_info = &mDem[path];
+
+	out_info->mWidth = 0;
+	out_info->mHeight = 0;
+
+	string rpath = mLibrary->CreateLocalResourcePath(path);
+	if (WED_ExtractGeoTiff(*out_info, rpath.c_str(), 0))
+	{
+		info = out_info;
+		return true;
+	}
+	else
+		return false;
+}
+
 
 XObj8 * WED_ResourceMgr::LoadObj(const string& abspath)
 {
@@ -492,11 +531,13 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t const*& info)
 	pol->mUVBox = Bbox2();
 
 	pol->base_tex.clear();
-	pol->hasDecal=false;
+	pol->decal.clear();
 	pol->proj_s=1000;
 	pol->proj_t=1000;
 	pol->kill_alpha=false;
 	pol->wrap=false;
+
+	int isTex = 0;
 
 	while(!MFS_done(&s))
 	{
@@ -528,7 +569,7 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t const*& info)
 		}
 		else if (MFS_string_match(&s,"DECAL_LIB", true))
 		{
-			pol->hasDecal=true;
+			MFS_string(&s, &pol->decal);
 		}
 		else if (MFS_string_match(&s,"NO_ALPHA", true))
 		{
@@ -548,6 +589,62 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t const*& info)
 			if(tmp != "asphalt" && tmp != "concrete" && tmp != "grass" && tmp != "gravel" && tmp != "dirt" && tmp != "snow")
 				LOG_MSG("E/Pol illegal SURFACE type in %s\n", p.c_str());
 		}
+		else if ((isTex = MFS_string_match(&s, "TEXTURE_TILE", false)) || MFS_string_match(&s, "RUNWAY_TILE", false))
+		{
+			string ctrl_tex;
+			pol->tiling.tiles_x = MFS_int(&s);
+			pol->tiling.tiles_y = MFS_int(&s);
+			pol->tiling.pages_x = MFS_int(&s);
+			pol->tiling.pages_y = MFS_int(&s);
+			MFS_string(&s, &ctrl_tex);
+
+			pol->tiling.rwy = isTex == 0;
+
+			if (pol->tiling.tiles_x < 1 || pol->tiling.tiles_y < 1 || pol->tiling.pages_x < 1 || pol->tiling.pages_y < 1)
+			{
+				LOG_MSG("E/Pol impropper TEXTURE_TILE data in %s\n", p.c_str());
+				pol->tiling.tiles_x = pol->tiling.tiles_y = pol->tiling.pages_x = pol->tiling.pages_y = 1;
+			}
+			else
+			{
+	        	if (pol->tiling.pages_x > 16) pol->tiling.pages_x = 16;  // we only ever preview a 3-4 multiples of a texture
+				if (pol->tiling.pages_y > 16) pol->tiling.pages_y = 16;  // so we might well save ourselves some space
+
+				pol->tiling.idx.reserve(pol->tiling.pages_x * pol->tiling.pages_y);
+
+				if (ctrl_tex.size())
+				{
+					process_texture_path(p, ctrl_tex);
+					ImageInfo img;
+					if (LoadBitmapFromAnyFile(ctrl_tex.c_str(), &img))
+					{
+						LOG_MSG("E/Pol can't load control texture %s for %s\n", ctrl_tex.c_str(), p.c_str());
+					}
+					else
+					{
+						for (int y = 0; y < pol->tiling.pages_y; y++)
+							for (int x = 0; x < pol->tiling.pages_x; x++)
+							{
+								int pixel = img.channels * (x + img.width * y);
+								int red = *(img.data + pixel + (img.channels == 2 ? 0 : 2)); // img data is BGR
+								int green = *(img.data + pixel + 1);
+								red   *= (pol->tiling.tiles_x + 128) / 256;
+								green *= (pol->tiling.tiles_y + 128) / 256;
+								pol->tiling.idx.push_back(red);
+								pol->tiling.idx.push_back(green);
+							}
+					}
+					if (img.data) free(img.data);
+				}
+				else
+					for (int x = 0; x < pol->tiling.pages_x; x++)
+						for (int y = 0; y < pol->tiling.pages_y; y++)
+						{
+							pol->tiling.idx.push_back(pol->tiling.tiles_x * rand() / RAND_MAX);
+							pol->tiling.idx.push_back(pol->tiling.tiles_y * rand() / RAND_MAX);
+						}
+			}
+		}
 
 		if (MFS_string_match(&s,"#wed_text", false))
 			MFS_string_eol(&s,&pol->description);
@@ -563,19 +660,17 @@ void WED_ResourceMgr::WritePol(const string& abspath, const pol_info_t& out_info
 {
 	FILE * fi = fopen(abspath.c_str(), "w");
 	if(!fi)	return;
-	fprintf(fi,"A\n850\nDRAPED_POLYGON\n\n");
-	fprintf(fi,"# Created by WED " WED_VERSION_STRING "\n");
+	fprintf(fi,"A\n850 Created by WED " WED_VERSION_STRING "\nDRAPED_POLYGON\n\n");
+	fprintf(fi, "LOAD_CENTER %.5lf %.5lf %.1f %d\n", out_info.latitude, out_info.longitude, out_info.height_Meters, out_info.ddsHeight_Pxls);
 	fprintf(fi,out_info.wrap ? "TEXTURE %s\n" : "TEXTURE_NOWRAP %s\n", out_info.base_tex.c_str());
+	if (!out_info.decal.empty())
+		fprintf(fi, "DECAL_LIB %s\n", out_info.decal.c_str());
 	fprintf(fi,"SCALE %.1lf %.1lf\n",out_info.proj_s,out_info.proj_t);
-	fprintf(fi,"LOAD_CENTER %lf %lf %.1f %d\n", out_info.latitude, out_info.longitude,out_info.height_Meters,out_info.ddsHeight_Pxls);
 	if(out_info.kill_alpha)
 		fprintf(fi,"NO_ALPHA\n");
 	if(!out_info.group.empty())
 		fprintf(fi,"LAYER_GROUP %s %d\n",out_info.group.c_str(), out_info.group_offset);
-//	if(has_decal)
-//		fprintf(fi,"DECAL_LIB lib/g10/decals/grass_and_stony_dirt_1.dcl");
 	fclose(fi);
-	gPackageMgr->Rescan(true);  // a full rescan of LibraryMgr can take a LOT of time on large systems. Find a way to only add/update this one polygon.
 }
 
 
@@ -965,6 +1060,16 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 					tpl->objs.back().xyzr[1] =MFS_double(&s);
 					tpl->objs.back().xyzr[2] =MFS_double(&s);
 					tpl->objs.back().xyzr[3] =MFS_double(&s);
+					if (MFS_has_word(&s))
+					{
+						tpl->objs.back().show[0] = MFS_int(&s);
+						tpl->objs.back().show[1] = MFS_int(&s);
+					}
+					else
+					{
+						tpl->objs.back().show[0] = 1;
+						tpl->objs.back().show[1] = 1;
+					}
 				}
 				else if(MFS_string_match(&s,"SPELLING", false))
 				{
@@ -1173,7 +1278,7 @@ bool	WED_ResourceMgr::GetFor(const string& path, for_info_t const *& info)
 	float scale_x=256, scale_y=256, space_x=30, space_y=30, rand_x=0, rand_y=0;
 	string tex, tex_3d;
 	bool shader_2d = true;
-	double max_height = 0.0;
+	fst->max_height = 0.0;
 	int layer = 0;
 
 	struct tree_mesh {
@@ -1243,7 +1348,7 @@ bool	WED_ResourceMgr::GetFor(const string& path, for_info_t const *& info)
 			t.pct = MFS_double(&s);
 			t.hmin = MFS_double(&s);
 			t.hmax = MFS_double(&s);
-			if (max_height < t.hmax) max_height = t.hmax;
+			if (fst->max_height < t.hmax) fst->max_height = t.hmax;
 			if (is_tree2)                                // new optional format in XP12, per Sidney
 			{
 				MFS_double(&s);
@@ -1300,7 +1405,7 @@ bool	WED_ResourceMgr::GetFor(const string& path, for_info_t const *& info)
 	const int TPR = fst->trees.begin()->second.size() < 4 ? 3 : TREES_PER_ROW;
 
 	fst->description += to_string(tot_varieties) + string(" different trees, ");
-	fst->description += string("max h=") + to_string(intround(max_height / (gIsFeet ? 0.3048 : 1.0))) + string(gIsFeet ? "ft" : "m");
+	fst->description += string("max h=") + to_string(intround(fst->max_height / (gIsFeet ? 0.3048 : 1.0))) + string(gIsFeet ? "ft" : "m");
 
 	XObj8 *new_obj = new XObj8, *new_obj_3d = nullptr;
 	XObjCmd8 cmd;

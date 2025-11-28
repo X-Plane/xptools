@@ -239,7 +239,8 @@ void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 
 		while(*path)
 		{
-			WED_Ring * rng = WED_RingfromImage(path, arch, zoomer, false);
+			//WED_Ring * rng = WED_RingfromImage(path, arch, zoomer, false);
+			WED_Ring* rng = WED_RingfromImage(path, arch, zoomer, nullptr, nullptr);
 			if (rng)
 			{
 				WED_OverlayImage * img = WED_OverlayImage::CreateTyped(arch);
@@ -5719,7 +5720,8 @@ vector<WED_LinePlacement*> MakeEdgesFromVPoly2(WED_Thing* parent, const vector<P
 	for (auto p : polys)
 		sel->Insert(p);
 
-	WED_ConvertTo(WED_GetLibraryMgr(resolver), sel, &CreateThing<WED_LinePlacement>);
+	//WED_ConvertTo(WED_GetLibraryMgr(resolver), sel, &CreateThing<WED_LinePlacement>);
+	WED_ConvertTo(WED_GetLibraryMgr(resolver), sel, [](WED_Archive* parent) { return ::CreateThing<WED_LinePlacement>(parent); });
 
 	vector<WED_LinePlacement*> lines;
 	int n_sel = sel->GetSelectionCount();

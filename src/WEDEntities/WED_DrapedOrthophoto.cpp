@@ -32,6 +32,7 @@ TRIVIAL_COPY(WED_DrapedOrthophoto,WED_GISPolygon)
 
 WED_DrapedOrthophoto::WED_DrapedOrthophoto(WED_Archive * a, int i) : WED_GISPolygon(a,i),
 	resource(this,PROP_Name("Resource",       XML_Name("draped_orthophoto","resource")),  ""),
+	decal	(this,PROP_Name("Decal",          XML_Name("draped_orthophoto","decal")), ""),
 	heading (this,PROP_Name("Texture Heading",XML_Name("draped_orthophoto","heading")),   0.0,5,1),
 	top     (this,PROP_Name("Texture Top",    XML_Name("draped_orthophoto","tex_top")),   0.0,6,4),
 	bottom  (this,PROP_Name("Texture Bottom", XML_Name("draped_orthophoto","tex_bottom")),0.0,6,4),
@@ -69,7 +70,7 @@ void WED_DrapedOrthophoto::SetHeading(double h)
 // Its important, as orthophoto's are allowed to directly refer to the image. In such cases,
 // the .POL, along with a .DDS version of the image, is created when writing the .DSF
 
-bool WED_DrapedOrthophoto::IsNew(string * out_suffix) 
+bool WED_DrapedOrthophoto::IsNew(string * out_suffix) const
 {
 	string ext = FILE_get_file_extension(resource.value);
 	
@@ -238,3 +239,21 @@ void  WED_DrapedOrthophoto::PropEditCallback(int before)
 	                          // Since we're here in a callback called from a property update, we would get into a infinite reciursive call loop
 #endif
 }
+
+void	WED_DrapedOrthophoto::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
+{
+	if (n == PropertyItemNumber(&decal) && !IsNew())
+	{
+		info.prop_name = ".";
+		info.can_edit = 0;
+		info.can_delete = 0;
+	}
+	else
+		WED_GISPolygon::GetNthPropertyInfo(n, info);
+}
+
+string	WED_DrapedOrthophoto::GetDecal() const
+{
+	return decal.value;
+}
+

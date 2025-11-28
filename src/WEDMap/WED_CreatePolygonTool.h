@@ -34,13 +34,16 @@ enum CreateTool_t {
 	create_Boundary,
 	create_Marks,
 	create_Hole,
-	create_Facade,
+	create_Shape,
 
+	create_ExcludePol,
+	create_Facade,
 	create_Forest,
 	create_String,
 	create_Line,
+
 	create_Autogen,
-	create_Polygon
+	create_Polygon,
 };
 
 class	WED_CreatePolygonTool : public WED_CreateToolBase {
@@ -77,9 +80,12 @@ protected:
 
 		WED_PropDoubleTextMeters		mSpacing;
 		WED_PropDoubleTextMeters		mAgsHght;
+		WED_PropIntEnumSet				mExclude;
 
 		WED_PropBoolText				mUVMap;
 		WED_PropBoolText				mPickWalls;
+
+		WED_PropStringText				mShapeText;
 
 	virtual	void		AcceptPath(
 							const vector<Point2>&	pts,

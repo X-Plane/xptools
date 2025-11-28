@@ -504,7 +504,9 @@ void WED_HandleToolBase::ProcessSelection(
 			{
 				if( ((*i)->GetGISClass() ==  gis_Polygon || (*i)->GetGISClass() ==  gis_Composite) && (
 					strcmp((*i)->GetGISSubtype(), "WED_ForestPlacement") == 0 ||
-					strcmp((*i)->GetGISSubtype(), "WED_FacadePlacement") == 0 ) ) { printf("Forest/Facade\n"); keeper = *i;  break; }
+					strcmp((*i)->GetGISSubtype(), "WED_ExclusionPoly") == 0 ||              // take whole exclusion rather than outer ring
+					strcmp((*i)->GetGISSubtype(), "WED_FacadePlacement") == 0 ) )
+				{ printf("Forest/Facade\n"); keeper = *i;  break; }
 			}
 		if(!keeper)
 			for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)     // then any kind of line-type objects
@@ -512,14 +514,16 @@ void WED_HandleToolBase::ProcessSelection(
 				if( (*i)->GetGISClass() ==  gis_Line ||
 					(*i)->GetGISClass() ==  gis_Edge ||
 					(*i)->GetGISClass() ==  gis_Ring ||                                      // APT Boundaries, but only the ring part, not the inner area
-					(*i)->GetGISClass() ==  gis_Chain   ) { printf("Line\n");  keeper = *i;  break; }
+					(*i)->GetGISClass() ==  gis_Chain   )
+				{ printf("Line\n");  keeper = *i;  break; }
 			}
 		if(!keeper)
 			for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)     // now the polygons, in similar order as typical LAYER_GROUP assignments
 			{
 				if( ((*i)->GetGISClass() ==  gis_Polygon || (*i)->GetGISClass() ==  gis_Composite) && (
 					strcmp((*i)->GetGISSubtype(),"WED_PolygonPlacement") == 0 ||                           // Textured Polys
-					strcmp((*i)->GetGISSubtype(),"WED_DrapedOrthophoto") == 0 ) ) { printf("Polygon\n"); keeper = *i;  break; } // Draped Polys - also Ground Painted Signs
+					strcmp((*i)->GetGISSubtype(),"WED_DrapedOrthophoto") == 0 ) )
+				{ printf("Polygon\n"); keeper = *i;  break; }                                // Draped Polys - also Ground Painted Signs
 			}
 		if(!keeper)
 			for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)     // Runways
@@ -792,7 +796,7 @@ void		WED_HandleToolBase::HandleClickUp			(int inX, int inY, int inButton, GUI_K
 			int includes_airport = sel->IterateSelectionOr(Iterate_IsClass, (void*) WED_Airport::sClass);
 			if (includes_airport)
 			{
-				if(ConfirmMessage("This will move a whole Airport !", "Yes, move it", "No, cancel move"))
+				if(ConfirmMessage("This will move a whole Airport !", "Move it", "Cancel"))
 					op->CommitOperation();
 				else
 					op->AbortOperation();
@@ -820,6 +824,7 @@ void		WED_HandleToolBase::HandleClickUp			(int inX, int inY, int inButton, GUI_K
 				mDragType == drag_Ent)
 	{
 		mHandles->EndEdit();
+		mHandleIndex = -1;
 	} else if ( mDragType == drag_Create )
 		this->CreationUp(
 					GetZoomer()->PixelToLL(Point2(mDragX, mDragY)),
@@ -891,6 +896,12 @@ void		WED_HandleToolBase::DrawStructure			(bool inCurrent, GUI_GraphState * g)
 
 				LinkType_t lt;
 				mHandles->GetNthLinkInfo(eid,l,NULL, &lt);
+
+				if(lt == link_None && mDragType == drag_Links && eid == mHandleEntity && l == mHandleIndex)
+				{
+				   lt = link_Handle;
+				}
+
 				if (lt != link_None)
 				{
 					switch(lt) {
@@ -898,6 +909,8 @@ void		WED_HandleToolBase::DrawStructure			(bool inCurrent, GUI_GraphState * g)
 					case link_BezierCtrl:	glColor4fv(WED_Color_RGBA(wed_ControlLink));	break;
 					case link_Ghost:		glColor4fv(WED_Color_RGBA(wed_GhostLink));		break;
 					case link_Marquee:		glColor4fv(WED_Color_RGBA(wed_Marquee));		break;
+					case link_Handle:		glColor4fv(WED_Color_RGBA(wed_ControlHandle));	break;
+
 					}
 					if (ControlLinkToCurve(mHandles,eid,l,b,s,GetZoomer()))
 					{

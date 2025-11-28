@@ -55,9 +55,10 @@ static const GUI_MenuItem_t	kFileMenu[] = {
 {	"Import Roads (+AutoGen)",0,	0,								0,	wed_ImportRoads		},
 #endif
 {	"Import Ortho&photo...", 0,		0,								0,	wed_ImportOrtho		},
+{	"Import Digital Elevation Raster...", 0, 0,						0,	wed_ImportDem		},
 {	"Export Scenery Pac&k",	'B',	gui_ControlFlag,				0,	wed_ExportPack		},
 #if HAS_GATEWAY
-{	"Export to Airport Scenery Gateway...",0,	0,					0,	wed_ExportToGateway	},
+{	"Submit to Airport Scenery Gateway...",0,	0,					0,	wed_ExportToGateway	},
 #endif
 {	"Advanced ...",			0,		0,								0,	0					},
 #if IBM || LIN
@@ -77,17 +78,27 @@ static const GUI_MenuItem_t kExportTargetMenu[] = {
 {	"X-Plane 11.00",		0,		0,								0,	wed_Export1100,		},
 {	"X-Plane 11.30",		0,		0,								0,	wed_Export1130,		},
 {	"X-Plane 12.00",		0,		0,								0,	wed_Export1200,		},
+{	"X-Plane 12.1.2",		0,		0,								0,	wed_Export1212,		},
 {	"Airport Scenery Gateway",0,	0,								0,	wed_ExportGateway	},
 {	NULL,					0,		0,								0,	0					}
 };
 
+string WED_GetTargetMenuName(int target)
+{
+	if (target >= 0 && target <= wed_ExportGateway - wed_Export900)
+		return kExportTargetMenu[target].name;
+	else
+		return string();
+}
+
 static const GUI_MenuItem_t kAdvancedMenu[] = {
-{	"&Import apt.dat...",	'I',	gui_ControlFlag + gui_ShiftFlag,0,	wed_ImportApt		},
+{	"&Import apt.dat...",	0,		0,								0,	wed_ImportApt		},
 {	"Import DS&F...",		0,		0,								0,	wed_ImportDSF		},
+{	"Import Scenery...",	0,		0,								0,	wed_ImportScenery	},
 #if GATEWAY_IMPORT_FEATURES
-{	"Import Scenery Gateway Extracts...",0,0,						0,	wed_ImportGatewayExtract },
+{	"Import Gateway Extracts...",0, 0,      						0,	wed_ImportGatewayExtract },
 #endif
-{	"&Export apt.dat...",	'S',	gui_ControlFlag + gui_ShiftFlag,0,	wed_ExportApt		},
+{	"&Export apt.dat...",	0,		0,								0,	wed_ExportApt		},
 {	NULL,					0,		0,								0,	0					},
 };
 
@@ -136,6 +147,7 @@ static const GUI_MenuItem_t kConvertToMenu[] = {
 {	"&Line",					0,	0,							0,	wed_ConvertToLine		},
 {	"&Object String",			0,	0,							0,	wed_ConvertToString		},
 {	"&Forest Points",			0,	0,							0,	wed_ConvertToForest		},
+{	"Shape Points",				0,	0,							0,	wed_ConvertToShape		},
 {	NULL,						0,	0,							0,	0						}
 };
 
@@ -154,7 +166,7 @@ static const GUI_MenuItem_t kViewMenu[] = {
 {	"Toggle &Navaids",			0,	0,										0,	wed_ToggleNavaidMap	},
 {	"Toggle Terrain",			0,	0,										0,	wed_ToggleTerrainMap},
 {	"S&lippy Map",				0,	0,										0,	0                   },
-{	"To&ggle Preview",			0,	0,										0,	wed_TogglePreview	},
+{	"To&ggle Preview",			'P',gui_ControlFlag,						0,	wed_TogglePreview	},
 #if WITHNWLINK
 {	"Toggle LiveMode",		    0,	0,										0,	wed_ToggleLiveView },
 #endif
@@ -190,12 +202,12 @@ static const GUI_MenuItem_t kPavementMenu[] = {
 };
 
 static const GUI_MenuItem_t kObjDensityMenu[] = {
-{	"&1 Default",				'1',	gui_ControlFlag,		0,	wed_ObjDensity1		},
-{	"&2 A Lot",					'2',	gui_ControlFlag,		0,	wed_ObjDensity2		},
-{	"&3 Tons",					'3',	gui_ControlFlag,		0,	wed_ObjDensity3		},
-{	"&4 Mega Tons",				'4',	gui_ControlFlag,		0,	wed_ObjDensity4		},
-{	"&5 Too Many",				'5',	gui_ControlFlag,		0,	wed_ObjDensity5		},
-{	"&6 Totally Insane",		'6',	gui_ControlFlag,		0,	wed_ObjDensity6		},
+{	"&1 Default/Minimum",		'1',	gui_ControlFlag,		0,	wed_ObjDensity1		},
+{	"&2",						'2',	gui_ControlFlag,		0,	wed_ObjDensity2		},
+{	"&3",						'3',	gui_ControlFlag,		0,	wed_ObjDensity3		},
+{	"&4",						'4',	gui_ControlFlag,		0,	wed_ObjDensity4		},
+{	"&5",						'5',	gui_ControlFlag,		0,	wed_ObjDensity5		},
+{	"&6 Insane/Maximum",		'6',	gui_ControlFlag,		0,	wed_ObjDensity6		},
 {	NULL,						0,		gui_ControlFlag,		0,	0					}
 };
 
@@ -234,6 +246,7 @@ static const GUI_MenuItem_t kAirportMenu[] = {
 {	"-",						0,		0,									0,	0			},
 {	"Upgrade Ramps",			0,		0,									0,	wed_UpgradeRamps},
 {	"Upgrade Jetways",			0,		0,									0,	wed_UpgradeJetways},
+{	"Upgrade Art",				0,		0,									0,	wed_UpgradeArt},
 {	"Age Pavement",				0,		0,									0,	wed_AgePavement},
 {	"Edge Pavement",			0,		0,									0,	wed_EdgePavement},
 {	"Mow Grass",				0,		0,									0,	wed_MowGrass},
@@ -298,7 +311,7 @@ void WED_MakeMenus(GUI_Application * inApp)
 		"Target X-Plane Version", kExportTargetMenu, file_menu, 9);
 
 	GUI_Menu advanced_menu = inApp->CreateMenu(
-		"Advanced ...", kAdvancedMenu, file_menu, 13 + 2 * HAS_GATEWAY + ROAD_EDITING );
+		"Advanced ...", kAdvancedMenu, file_menu, 14 + 2 * HAS_GATEWAY + ROAD_EDITING );
 
 	GUI_Menu edit_menu = inApp->CreateMenu(
 		"&Edit", kEditMenu, inApp->GetMenuBar(), 0);

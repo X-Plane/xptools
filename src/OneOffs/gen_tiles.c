@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <time.h>
 
 // Define 4 to allow diagonal repeats in the 2-d case
 #define NUM_NEIGHBORS 8

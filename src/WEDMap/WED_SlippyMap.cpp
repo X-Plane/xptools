@@ -336,6 +336,38 @@ void	WED_SlippyMap::GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_abou
 	draw_ent_v = draw_ent_s = cares_about_sel = wants_clicks = 0;
 }
 
+static bool is_ESRI_blank(const string& path, const ImageInfo& info)
+{
+	bool same_grey = false;           // ESRI sends a mostly solid grey image with embedded error text if image isn't available
+
+	if(path.find("arcgisonline.com") != string::npos)
+		if (info.channels == 3 && info.width > 6 && info.height > 6)
+		{
+			int line_stride = info.channels * (info.width + info.pad);
+
+			auto pixel = info.data + 2 * line_stride + 6;  // 3rd row, 3rd pixel
+			auto color = *pixel;
+			same_grey = true;
+
+			for (int x = info.width - 4; x > 0; x--)
+				if (color != *(pixel++) || color != *(pixel++) || color != *(pixel++))
+				{
+					same_grey = false;
+					break;
+				}
+
+			pixel = info.data + (info.height - 3) * line_stride + 6; // 3rd last row, 3rd pixel
+			for (int x = info.width - 4; x > 0; x--)
+				if (color != *(pixel++) || color != *(pixel++) || color != *(pixel++))
+				{
+					same_grey = false;
+					break;
+				}
+		}
+
+	return same_grey;
+}
+
 void	WED_SlippyMap::finish_loading_tile()
 {
 	if (m_cache_request != NULL)
@@ -347,30 +379,36 @@ void	WED_SlippyMap::finish_loading_tile()
 			int r = CreateBitmapFromPNG(res.out_path.c_str(), &info, false, 0);
 			if(r != 0)
 				r = CreateBitmapFromJPEG(res.out_path.c_str(), &info);
-			if(r == 0)
+			if (r == 0)
 			{
 				if (info.channels == 3)                                                        // apply to color changes
-					for (int x = 0; x < info.height * (info.width+info.pad) * info.channels; x += info.channels)
-						{
-							double BRIGHTNESS = -20;
-							double SATURATION = 1.0;
-							if(mMapMode == 1) { BRIGHTNESS = -140.0; SATURATION = 0.4; }
+					for (int x = 0; x < info.height * (info.width + info.pad) * info.channels; x += info.channels)
+					{
+						double BRIGHTNESS = -20;
+						double SATURATION = 1.0;
+						if (mMapMode == 1) { BRIGHTNESS = -140.0; SATURATION = 0.4; }
 
-							int val = 0.3 * info.data[x] + 0.6 * info.data[x+1] + 0.1 * info.data[x+2];  // deliberately not HSV weighing - want red's brighter
-							for (int c = 0; c < info.channels; ++c)
-								info.data[x+c] = intlim((1.0-SATURATION) * val + SATURATION * info.data[x+c] + BRIGHTNESS, 0, 255);
-						}
-
-				GLuint tex_id;
-				glGenTextures(1, &tex_id);
-				if (LoadTextureFromImage(info, tex_id, tex_Linear, NULL, NULL, NULL, NULL))
+						int val = 0.3 * info.data[x] + 0.6 * info.data[x + 1] + 0.1 * info.data[x + 2];  // deliberately not HSV weighing - want red's brighter
+						for (int c = 0; c < info.channels; ++c)
+							info.data[x + c] = intlim((1.0 - SATURATION) * val + SATURATION * info.data[x + c] + BRIGHTNESS, 0, 255);
+					}
+				if (is_ESRI_blank(res.out_path, info))
 				{
-					m_cache[res.out_path] = tex_id;
+					m_cache[res.out_path] = 0;
 				}
 				else
 				{
-					LOG_MSG("E/Sli bad png or JPG in %s\n", res.out_path.c_str());
-					m_cache[res.out_path] = 0;
+					GLuint tex_id;
+					glGenTextures(1, &tex_id);
+					if (LoadTextureFromImage(info, tex_id, tex_Linear, NULL, NULL, NULL, NULL))
+					{
+						m_cache[res.out_path] = tex_id;
+					}
+					else
+					{
+						LOG_MSG("E/Sli bad png or JPG in %s\n", res.out_path.c_str());
+						m_cache[res.out_path] = 0;
+					}
 				}
 			}
 			else

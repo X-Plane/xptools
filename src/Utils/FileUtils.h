@@ -122,6 +122,9 @@ int FILE_get_directory_recursive(const string& path, vector<string>& out_files, 
 
 int FILE_compress_dir(const string& src_path, const string& dst_path, const string& prefix);
 
+// find all plausible DSF files, searches all surdirectories
+set<string> FILE_find_dsfs(const string& path);
+
 enum date_cmpr_result_t
 {
 	dcr_firstIsNew = -1,

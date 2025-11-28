@@ -3,7 +3,7 @@
  *  SceneryTools
  *
  *  Created by bsupnik on 5/27/09.
- *  Copyright 2009 __MyCompanyName__. All rights reserved.
+ *  Copyright 2009 Laminar Research. All rights reserved.
  *
  */
 
@@ -338,7 +338,6 @@ void BezierPointSeqFromTriple(InputIterator s, InputIterator e, OutputIterator o
 		*o = p;
 }
 
-
-
+float MagneticDeviation(float lon, float lat);
 
 #endif

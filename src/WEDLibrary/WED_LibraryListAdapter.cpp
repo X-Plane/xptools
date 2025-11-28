@@ -34,7 +34,7 @@
 static int kDefCols[] = { 220, 20 };
 
 WED_LibraryListAdapter::WED_LibraryListAdapter(WED_LibraryMgr* who) :
-	GUI_SimpleTableGeometry(1, kDefCols),
+	GUI_SimpleTableGeometry(GetColCount(), kDefCols),
 	mCacheValid(false), mLibrary(who),
 	mFilterChanged(false),
 	mMap(NULL),
@@ -115,6 +115,11 @@ void	WED_LibraryListAdapter::GetCellContent(
 		{
 			if (c.text_val.length()) c.text_val += ",";
 			c.text_val += "regions.png";
+		}
+		if (mCache[cell_y].customized)
+		{
+			if (c.text_val.length()) c.text_val += ",";
+			c.text_val += "customized.png";
 		}
 		if (c.text_val.length())
 			c.string_is_resource = 1;
@@ -425,6 +430,7 @@ void	WED_LibraryListAdapter::RebuildCacheRecursive(const string& vpath, int pack
 		newCache.back().hasSeasons = mLibrary->IsSeasonal(vpath);
 		newCache.back().hasRegions = mLibrary->IsRegional(vpath);
 		newCache.back().variants   = mLibrary->GetNumVariants(vpath) > 1; // for now WED is reading all regions, regardless. So you get fake variants ...
+		newCache.back().customized = mLibrary->IsCustomized(vpath);
 	}
 }
 

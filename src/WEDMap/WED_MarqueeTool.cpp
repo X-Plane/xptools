@@ -127,7 +127,7 @@ void	WED_MarqueeTool::EndEdit(void)
 
 		if (has_airport)
 		{
-			if(ConfirmMessage("Really move whole Airport ?", "Yes, move it", "No, cancel move"))
+			if(ConfirmMessage("Really move whole Airport ?", "Move it", "Cancel"))
 				op->CommitOperation();
 			else
 				op->AbortOperation();
@@ -183,7 +183,7 @@ void	WED_MarqueeTool::GetNthControlHandle(intptr_t id, int n, bool * active, Han
 			if (p)
 			{
 				if (!GetTotalBounds())
-					*p = Point2(); return;
+				{ *p = Point2(); return; }
 
 				p->x_ = mCacheBounds.p1.x() * kControlsX1[8] + mCacheBounds.p2.x() * kControlsX2[8];
 				p->y_ = mCacheBounds.p1.y() * kControlsY1[8] + mCacheBounds.p2.y() * kControlsY2[8];

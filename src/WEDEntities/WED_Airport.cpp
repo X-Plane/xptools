@@ -514,9 +514,11 @@ void			WED_Airport::StartElement(
 		{
 			//Will be something like "name_es, Talavera la Real Badajoz Airport"
 			const string entry_string = string(entry_value);
-
-			const string key = entry_string.substr( 0, entry_string.find_first_of(','));
+			      string key = entry_string.substr( 0, entry_string.find_first_of(','));
 			const string value = entry_string.substr(entry_string.find_first_of(',') + 1);
+#if FIX_META_TAGS
+			if (key == "allows_ciruits") key = "allows_circuits";
+#endif
 			meta_data_vec_map.push_back(meta_data_entry(key, value));
 		}
 		else

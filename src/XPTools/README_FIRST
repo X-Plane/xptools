@@ -5,7 +5,7 @@
 
 
 -------------------------------------------------------------------------------
-SCENERY TOOLS FEBRURARY 12
+SCENERY TOOLS APRIL 2023
 -------------------------------------------------------------------------------
 
 This is the second release of the combined X-Plane scenery tools.  This 
@@ -13,7 +13,6 @@ distribution combines the following tools into one package:
 
 - DSFTool
 - DDSTool
-- ObjConverter
 - ObjView
 - XGrinder
 

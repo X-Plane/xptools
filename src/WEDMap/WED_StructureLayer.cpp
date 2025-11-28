@@ -51,6 +51,7 @@
 #include "WED_TruckDestination.h"
 #include "WED_Airport.h"
 #include "WED_RampPosition.h"
+#include "WED_ExclusionPoly.h"
 #include "WED_FacadePlacement.h"
 #include "WED_FacadeRing.h"
 #include "WED_Windsock.h"
@@ -65,6 +66,8 @@
 #include "WED_ATCLayer.h"
 #include "WED_LinePlacement.h"
 #include "WED_ResourceMgr.h"
+#include "WED_ShapePlacement.h"
+#include "WED_TerPlacement.h"
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -98,7 +101,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 
 	WED_Color struct_color = selected ? (locked ? wed_StructureLockedSelected : wed_StructureSelected) :
 										(locked ? wed_StructureLocked		 : wed_Structure);
-	
+
 	float * colorf = WED_Color_RGBA(struct_color);
 	glColor4fv(colorf);
 
@@ -106,6 +109,92 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 	const char *	sub_class	= entity->GetGISSubtype();
 
 	float							storage[4];
+
+	if (selected && sub_class == WED_TerPlacement::sClass)
+	{
+		Bbox2	dem_bounds, map_bounds;
+		auto ter = dynamic_cast<WED_TerPlacement *>(entity);
+
+		string dem_file;
+		ter->GetResource(dem_file);
+		auto rmgr = WED_GetResourceMgr(GetResolver());
+
+		const dem_info_t* ter_dem;
+		if ((rmgr->GetDem(dem_file, ter_dem)))
+		{
+			double left, right, top, bot;
+			auto z = GetZoomer();
+			z->GetPixelBounds(left, bot, right, top);
+
+			Point2 p[4];
+			p[0] = z->LLToPixel({ ter_dem->mWest, ter_dem->mSouth });
+			p[1] = z->LLToPixel({ ter_dem->mEast, ter_dem->mSouth });
+			p[2] = z->LLToPixel({ ter_dem->mEast, ter_dem->mNorth });
+			p[3] = z->LLToPixel({ ter_dem->mWest, ter_dem->mNorth });
+
+			for (int i = 0; i < sizeof(p)/sizeof(Point2); i++)
+			{
+				if (p[i].x_ < left)  p[i].x_ = left + 1;
+				if (p[i].x_ > right) p[i].x_ = right - 1;
+				if (p[i].y_ > top)  p[i].y_ = top - 1;
+				if (p[i].y_ < bot)  p[i].y_ = bot + 1;
+			}
+
+			glLineStipple(1, 0xF0F0);
+			glEnable(GL_LINE_STIPPLE);
+			glBegin(GL_LINE_LOOP);
+				glVertex2v(p, sizeof(p)/sizeof(Point2));
+			glEnd();
+			glDisable(GL_LINE_STIPPLE);
+
+			double dem_dx = (ter_dem->mEast - ter_dem->mWest) / (ter_dem->mWidth - 1);
+			double dem_dy = (ter_dem->mNorth - ter_dem->mSouth) / (ter_dem->mHeight - 1);
+
+			IGISPointSequence * ps = ter->GetOuterRing();
+			int n = ps->GetNumSides();
+			Polygon2 poly;
+			for (int i = 0; i < n; i++)
+			{
+				Point2 pt;
+				ps->GetNthPoint(i)->GetLocation(gis_Geo, pt);
+				poly.push_back(pt);
+			}
+
+			Bbox2 bnds;
+			ter->GetBounds(gis_Geo, bnds);
+
+			int x1 = intlim((bnds.p1.x() - ter_dem->mWest)  / dem_dx,     0, ter_dem->mWidth);
+			int x2 = intlim((bnds.p2.x() - ter_dem->mWest)  / dem_dx + 1, 0, ter_dem->mWidth);
+			int y1 = intlim((bnds.p1.y() - ter_dem->mSouth) / dem_dy,     0, ter_dem->mHeight);
+			int y2 = intlim((bnds.p2.y() - ter_dem->mSouth) / dem_dy + 1, 0, ter_dem->mHeight);
+
+			glPointSize(3.0);
+			glBegin(GL_POINTS);
+			Point2 loc;
+			int inc = ter->GetSamplingFactor();
+			for (int x = x1; x < x2; x+=inc)
+			{
+				loc.x_ = ter_dem->mWest  + x * dem_dx;
+				loc.y_ = ter_dem->mSouth + y1 * dem_dy;
+				for (int y = y1; y <= y2; y+=inc)
+				{
+					if (poly.inside(loc))
+					{
+						if(ter_dem->get(x,y) < -999.0f)     // actually, no data signaling in DEM's may be almost anything ...
+						{
+							glColor3f(1,0,1);
+							glVertex2(z->LLToPixel(loc));
+							glColor3fv(colorf);
+						}
+						else
+							glVertex2(z->LLToPixel(loc));
+					}
+					loc.y_ += dem_dy * inc;
+				}
+			}
+			glEnd();
+		}
+	}
 
 	if (sub_class == WED_Airport::sClass)
 	{
@@ -354,6 +443,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 		{
 			if (auto ps = dynamic_cast<IGISPointSequence *>(entity))
 			{
+				WED_MapZoomerNew* z = GetZoomer();
 				if (sub_class == WED_TaxiRoute::sClass && !locked)
 				{
 					auto tr = dynamic_cast<WED_TaxiRoute*>(entity);
@@ -367,8 +457,28 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 
 					glColor4fv(WED_Color_RGBA(struct_color));
 				}
+				else if (kind == gis_Ring)
+				{
+					auto parent = dynamic_cast<WED_Thing*>(entity)->GetParent();
+					if (parent->GetClass() == WED_ExclusionPoly::sClass)
+					{
+						glColor4fv(WED_Color_RGBA_Alpha((locked || selected) ? struct_color : wed_Link, 1.0, storage));
+						//glColor4fv(WED_Color_RGBA_Alpha(struct_color, 1.0, storage));
+						if (gExportTarget < wet_xplane_1200)
+						{
+							Bbox2 bnds;
+							entity->GetBounds(gis_Geo, bnds);
+							vector<Point2> pix;
+							BoxToPoints(bnds.p1, bnds.p2, z, pix);
 
-				WED_MapZoomerNew* z = GetZoomer();
+							glBegin(GL_LINE_LOOP);
+								glVertex2v(pix.data(), pix.size());
+							glEnd();
+							glLineStipple(1, 0x0f0f);
+							glEnable(GL_LINE_STIPPLE);
+						}
+					}
+				}
 				bool showRealLines = mRealLines && z->GetPPM() * 0.4 <= MIN_PIXELS_PREVIEW;
 
 				if(sub_class == WED_LinePlacement::sClass && showRealLines)
@@ -395,7 +505,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 								glShape2v(GL_LINES, &*pts.begin(), pts.size());
 								glLineWidth(1);
 							}
-							glColor4fv(WED_Color_RGBA(struct_color));
+							glColor4fv(colorf);
 						}
 				}
 
@@ -439,14 +549,14 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 							mp = b.p1 + Vector2(b.p1, b.p2) * 0.5;  // facade ground contact / 1st segment marker
 						}
 					}
-					if (i == 0 && sub_class == WED_FacadeRing::sClass && Vector2(b.p1,b.p2).squared_length() > 20 * 20)
+					if (i == 0 && !locked && sub_class == WED_FacadeRing::sClass && Vector2(b.p1,b.p2).squared_length() > 20 * 20)
 					{                                     	// facade ground contact / 1st segment marker
 						glColor4fv(WED_Color_RGBA(wed_pure_white));
 						GUI_PlotIcon(g, "handle_closeloop.png", mp.x(), mp.y(), 0.0, 0.7);
 						g->SetTexUnits(0);
 						glColor4fv(WED_Color_RGBA(struct_color));
 					}
-					if(sub_class == WED_FacadeRing::sClass)
+					if(!locked && sub_class == WED_FacadeRing::sClass)
 					{
 						const float colors[18] = { 1, 0, 0,	 1, 1, 0,  0, 1, 0,    // red, yellow, green
 												   0, 1, 1,  0, 0, 1,  1, 0, 1,};  // aqua, blue, cyan
@@ -498,12 +608,21 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 						//	glColor4fv(WED_Color_RGBA(struct_color));  // Do this if green EdgeNdodes when unselected are desired
 						glBegin(GL_POINTS);
 						glVertex2(b.p1);
-						if(i == n - 1)
+						if (i == n - 1)
+						{
 							glVertex2(b.p2);
+						}
 						glEnd();
+					}
+					if (sub_class == WED_ShapePlacement::sClass && i == n - 1 - ps->IsClosed())
+					{
+						Vector2 orient1(b.p1, b.p2);
+						GUI_PlotIcon(g, "ArrowHeadRoadE.png", b.p2.x(), b.p2.y(), atan2(orient1.dx, orient1.dy) * RAD_TO_DEG, 1);
+						g->SetTexUnits(0);
 					}
 				}
 				glPointSize(1);
+				glDisable(GL_LINE_STIPPLE);
 			}
 		}
 		break;
@@ -563,7 +682,18 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 		break;
 
 	case gis_Composite:
-		if(sub_class != WED_AirportBoundary::sClass)      // boundaries are not down-clickable in the interior, but still get a highlighted interior
+		if(sub_class == WED_FacadePlacement::sClass)
+		{
+			if(auto poly = dynamic_cast<IGISPolygon*>(entity))
+			{
+				this->DrawEntityStructure(inCurrent, poly->GetOuterRing(), g, selected, locked);
+				int n = poly->GetNumHoles();
+				for (int c = 0; c < n; ++c)
+					this->DrawEntityStructure(inCurrent, poly->GetNthHole(c), g, selected, locked);
+			}
+			return false;
+		}
+		if(sub_class != WED_AirportBoundary::sClass && sub_class != WED_ExclusionPoly::sClass)    // not down-clickable in interior, but still highlighted interior
 			break;
 	case gis_Polygon:
 		/******************************************************************************************************************************************************
@@ -572,10 +702,18 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 		{
 			if(auto poly = dynamic_cast<IGISPolygon*>(entity))
 			{
-				this->DrawEntityStructure(inCurrent, poly->GetOuterRing(), g, selected, locked);
-				int n = poly->GetNumHoles();
-				for (int c = 0; c < n; ++c)
-					this->DrawEntityStructure(inCurrent, poly->GetNthHole(c), g, selected, locked);
+				if(sub_class != WED_ExclusionPoly::sClass)
+				{
+					ISelection * sel = SAFE_CAST(ISelection, WED_GetSelect(GetResolver()));
+					IGISPointSequence * ps = poly->GetOuterRing();
+					this->DrawEntityStructure(inCurrent, ps, g, selected || (sel && sel->IsSelected(ps)), locked);
+					int n = poly->GetNumHoles();
+					for (int c = 0; c < n; ++c)
+					{
+						ps = poly->GetNthHole(c);
+						this->DrawEntityStructure(inCurrent, ps, g, selected || (sel && sel->IsSelected(ps)), locked);
+					}
+				}
 
 				if(selected)
 				{
@@ -589,12 +727,14 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 						hole_starts.push_back(pts.size());
 						PointSequenceToVector(poly->GetNthHole(i), GetZoomer(), pts, false);
 					}
-
 					glColor4fv(WED_Color_RGBA_Alpha(struct_color, HILIGHT_ALPHA, storage));
 					glFrontFace(GL_CCW);
 					glPolygon2(pts, false, hole_starts, false);
 					glFrontFace(GL_CW);
 				}
+
+				if(sub_class == WED_AirportBoundary::sClass)
+					return false;
 			}
 		}
 		break;
@@ -641,22 +781,24 @@ bool		WED_StructureLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity *
 					glDisable(GL_CULL_FACE);
 					glColor4f(1,1,1,overlay->GetAlpha());
 					auto gcp = overlay->GetGcpMat();
-					if(gcp->size() > 3)                                  // draw a propperly projected/warped image
+					if(gcp->pts.size() > 3)                                  // draw a propperly projected/warped image
 					{
-						const int divs = intround(sqrt(gcp->size())) - 1;
-						for(int x = 0; x < divs; x++)
+						int divs_x = gcp->size_x - 1;
+						int divs_y = gcp->size_y - 1;
+
+						for(int x = 0; x < divs_x; x++)
 						{
-							const float df = 1.0f / (float) divs;
-							const float x0 = x * df;
+							const float x0 = (float) x / divs_x;
+							const float x1 = (float) (x+1) / divs_x;
 							glBegin(GL_TRIANGLE_STRIP);
-							for(int y = 0; y <= divs; y++)
+							for(int y = 0; y <= divs_y; y++)
 							{
-								int idx = x + (divs+1) * y;
-								float y0 = y * df;
+								int idx = x + gcp->size_x * y;
+								float y0 = (float) y / divs_y;
 								glTexCoord2f(x0, y0);
-								glVertex2(GetZoomer()->LLToPixel(gcp->at(idx)));
-								glTexCoord2f(x0+df, y0);
-								glVertex2(GetZoomer()->LLToPixel(gcp->at(idx+1)));
+								glVertex2(GetZoomer()->LLToPixel(gcp->pts.at(idx)));
+								glTexCoord2f(x1, y0);
+								glVertex2(GetZoomer()->LLToPixel(gcp->pts.at(idx+1)));
 							}
 							glEnd();
 						}

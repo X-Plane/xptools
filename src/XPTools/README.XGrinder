@@ -7,6 +7,10 @@
 -------------------------------------------------------------------------------
 CHANGE HISTORY:
 -------------------------------------------------------------------------------
+Version 1.3   5/07/24
+    - remember last settings between sessions (via log.txt)
+Version 1.2b1 4/06/22
+	- fix windows version not showing tool error messages
 Version 1.2b1 3/22/19
 	- 64bit binaries on all platforms
 Version 1.1 3/30/15
@@ -30,14 +34,14 @@ SYSTEM REQUIREMENTS AND INSTALLATION
 
 XGrinder will run on any system that can run X-Plane; minimum operating systems
 are:
- - OS X 10.9
- - Windows 7 or 10
- - Linux with glibc-2.23 (Ubuntu 16.04 or most othher 2016+ released distros)
+ - OS X 10.12 Catalina, x86_64 or M1 architectures
+ - Windows 10 or 11
+ - Linux with glibc-2.28 (Ubuntu 18.04 or most othher 2018+ released distros)
  
-IMPORTANT: X-Grinder needs to sit in the same directory as the command-line
-tools that it will provide access to!  If you unzip the basic tools
-installation, this will already be the case.  If you move XGrinder, be sure to
-move the tools too!
+IMPORTANT: X-Grinder needs to sit in a directory alomng with a subdirectory 'tools'
+with all the command-line tools that it will provide access to!  If you unzip the 
+basic tools installation, this will already be the case.  If you move XGrinder,
+be sure to move the tools too!
 
 -------------------------------------------------------------------------------
 USING XGRINDER

@@ -69,10 +69,10 @@ int		GUI_FitForward(
 				float							inSpace);
 
 int		GUI_FitForward(
-	int inFontID,
-	std::string::const_iterator inStart,
-	std::string::const_iterator inEnd,
-	float width
+				int								inFontID,
+				std::string::const_iterator		inStart,
+				std::string::const_iterator		inEnd,
+				float							width
 );
 
 int		GUI_FitReverse(

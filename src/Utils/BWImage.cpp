@@ -21,7 +21,6 @@
  *
  */
 #include "BWImage.h"
-//#include "CGALTypes.h"
 #include "PolyRasterUtils.h"
 #if APL
 #include <OpenGL/gl.h>

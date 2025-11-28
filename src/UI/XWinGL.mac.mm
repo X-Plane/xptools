@@ -79,6 +79,8 @@ XWinGL::XWinGL(int default_dnd, XWinGL * inShare) :
 	NSView * parent = [mWindow contentView];
 	my_glview * gl_view = [[[my_glview alloc] initWithFrame:[parent frame] pixelFormat:pf] autorelease];
 
+	[gl_view setWantsBestResolutionOpenGLSurface:FALSE];
+
 	// If our context is shared, we go throw out the context NS made an replace it with one with resource sharing.
 	if(inShare)
 	{
@@ -126,6 +128,8 @@ XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX,
 
 	NSView * parent = [mWindow contentView];
 	my_glview * gl_view = [[[my_glview alloc] initWithFrame:[parent frame] pixelFormat:pf] autorelease];
+
+	[gl_view setWantsBestResolutionOpenGLSurface:FALSE];
 
 	if(inShare)
 	{

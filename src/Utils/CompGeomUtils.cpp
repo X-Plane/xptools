@@ -967,7 +967,7 @@ void	ReducePolygon(Polygon2& ioPolygon, double tolerance, double angle, double m
 }
 #endif
 
-#if 0
+#if 1
 
 // HACK UTILIITY: is this point an edge of a DSF
 inline bool IsIntegral(const Point2& p)
@@ -982,7 +982,7 @@ inline bool IsCorner(const Point2& p)
 	return (p.x() == (double) (int) p.x() &&
 			p.y() == (double) (int) p.y());
 }
-
+#endif
 // UTILITY: give na span of points in a polygon defined by P and deltas from
 // it, calculate the max error any point between the two edges in terms of
 // a deviation from the line from the end points.
@@ -1133,7 +1133,7 @@ void	MidpointSimplifyPolygon(Polygon2& ioPolygon)
 	}
 }
 
-
+#if 0
 // Polygon smoothing
 //
 // Basically go through and iterate across a bezier curve for any point exceeding the
@@ -1330,15 +1330,27 @@ static void PmwxToPoly(const Pmwx& inMap, Polygon2& outPoly)
 
 Point2	CoordTranslator2::Forward(const Point2& input) const
 {
-	return Point2(
-				  mDstMin.x() + (input.x() - mSrcMin.x()) * (mDstMax.x() - mDstMin.x()) / (mSrcMax.x() - mSrcMin.x()),
-				  mDstMin.y() + (input.y() - mSrcMin.y()) * (mDstMax.y() - mDstMin.y()) / (mSrcMax.y() - mSrcMin.y()));
+	double x = mDstMin.x();
+	if (mSrcMax.x() != mSrcMin.x())
+		x += (input.x() - mSrcMin.x()) * (mDstMax.x() - mDstMin.x()) / (mSrcMax.x() - mSrcMin.x());
+
+	double y = mDstMin.y();
+	if (mSrcMax.y() != mSrcMin.y())
+		y += (input.y() - mSrcMin.y()) * (mDstMax.y() - mDstMin.y()) / (mSrcMax.y() - mSrcMin.y());
+
+	return Point2(x, y);
 }
 Point2	CoordTranslator2::Reverse(const Point2& input) const
 {
-	return Point2(
-				  mSrcMin.x() + (input.x() - mDstMin.x()) * (mSrcMax.x() - mSrcMin.x()) / (mDstMax.x() - mDstMin.x()),
-				  mSrcMin.y() + (input.y() - mDstMin.y()) * (mSrcMax.y() - mSrcMin.y()) / (mDstMax.y() - mDstMin.y()));
+	double x = mSrcMin.x();
+	if (mDstMax.x() != mDstMin.x())
+		x += (input.x() - mDstMin.x()) * (mSrcMax.x() - mSrcMin.x()) / (mDstMax.x() - mDstMin.x());
+
+	double y = mSrcMin.y();
+	if (mDstMax.y() != mDstMin.y())
+		y += (input.y() - mDstMin.y()) * (mSrcMax.y() - mSrcMin.y()) / (mDstMax.y() - mDstMin.y());
+
+	return Point2(x, y);
 }
 
 
@@ -1389,6 +1401,8 @@ vector<Polygon2> PolygonIntersect(const vector<Polygon2>& mpolyA, const vector<P
 			for (int i = start; i < last; i++)
 				mpoly.back().push_back(Point2(verts[i * 2], verts[i * 2 + 1]));
 			Polygon2cleaner(mpoly.back());
+			if (mpoly.back().empty())
+				mpoly.pop_back();
 		}
 	}
 	tessDeleteTess(tess);
@@ -1400,7 +1414,7 @@ vector<Polygon2> PolygonUnion(const vector<Polygon2>& mpolyA, const vector<Polyg
 {
 	vector<Polygon2> mpoly;
 	TESStesselator * tess = tessNewTess(NULL);
-	
+
 	for(auto& poly : mpolyA)
 		tessAddContour(tess, 2, poly.data(), 2 * sizeof(TESSreal), poly.size());
 
@@ -1421,6 +1435,9 @@ vector<Polygon2> PolygonUnion(const vector<Polygon2>& mpolyA, const vector<Polyg
 			mpoly.back().reserve(last - start);
 			for (int i = start; i < last; i++)
 				mpoly.back().push_back(Point2(verts[i * 2], verts[i * 2 + 1]));
+			Polygon2cleaner(mpoly.back());
+			if (mpoly.back().empty())
+				mpoly.pop_back();
 		}
 	}
 	tessDeleteTess(tess);
@@ -1462,6 +1479,8 @@ vector<Polygon2> PolygonCut(const vector<Polygon2>& mpolyA, const vector<Polygon
 				mpoly.back().push_back(Point2(verts[i * 2], verts[i * 2 + 1]));
 //if(mpoly.back().is_ccw()) printf("O CCW %d\n",mpoly.back().size()); else printf("O CW %d\n",mpoly.back().size());
 			Polygon2cleaner(mpoly.back());
+			if (mpoly.back().empty())
+				mpoly.pop_back();
 		}
 	}
 	tessDeleteTess(tess);

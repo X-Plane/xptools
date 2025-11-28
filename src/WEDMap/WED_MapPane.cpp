@@ -40,6 +40,7 @@
 #include "WED_CreateLineTool.h"
 #include "WED_StructureLayer.h"
 #include "WED_ATCLayer.h"
+#include "WED_BoundaryLayer.h"
 #include "WED_WorldMapLayer.h"
 #include "WED_NavaidLayer.h"
 #include "WED_TerrainLayer.h"
@@ -162,6 +163,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	mLayers.push_back(mPreview =		new WED_PreviewLayer(mMap, mMap, resolver));
 	mLayers.push_back(mNavaidMap =		new WED_NavaidLayer(mMap, mMap, resolver));
 	mLayers.push_back(mTerrainMap =		new WED_TerrainLayer(mMap, mMap, resolver));
+	mLayers.push_back(mBdyLayer =		new WED_BoundaryLayer(mMap, mMap, resolver));
 	mLayers.push_back(					new WED_DebugLayer(mMap, mMap, resolver));
 #if WITHNWLINK
 	WED_NWLinkAdapter * nwlink = (dynamic_cast<WED_Document *>(resolver))->GetNWLink();
@@ -173,20 +175,20 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 #endif
 	// TOOLS
 	mTools.push_back(					NULL);
-	mTools.push_back(					NULL);
+	mTools.push_back(					new WED_CreatePolygonTool("Shapes", mMap, mMap, resolver, archive, create_Shape));
 
-	mTools.push_back(					NULL); // icon for JetWay placement
+#if ROAD_EDITING
+	mTools.push_back(mNetTool = new WED_CreateEdgeTool("Roads", mMap, mMap, resolver, archive, create_Road));
+#else
+	mTools.push_back(NULL);
+#endif
 	mTools.push_back(mAgsTool=			new WED_CreatePolygonTool("Autogen",mMap, mMap, resolver, archive, create_Autogen));
 
 	mTools.push_back(					new WED_CreatePointTool("Truck Parking", mMap, mMap, resolver, archive, create_TruckParking));
 	mTools.push_back(					new WED_CreatePointTool("Truck Destination", mMap, mMap, resolver, archive, create_TruckDestination));
 
-	mTools.push_back(					new WED_CreateBoxTool("Exclusions",mMap, mMap, resolver, archive, create_Exclusion));
-#if ROAD_EDITING
-	mTools.push_back(mNetTool=			new WED_CreateEdgeTool("Roads",mMap, mMap, resolver, archive, create_Road));
-#else
-	mTools.push_back(					NULL);
-#endif
+	mTools.push_back(					new WED_CreateBoxTool("Exclusion Zones",mMap, mMap, resolver, archive, create_Exclusion));
+	mTools.push_back(					new WED_CreatePolygonTool("Exclusion Polys",mMap, mMap, resolver, archive, create_ExcludePol));
 
 	mTools.push_back(mLinTool=			new WED_CreatePolygonTool("Lines",mMap, mMap, resolver, archive, create_Line));
 	mTools.push_back(mPolTool=			new WED_CreatePolygonTool("Polygons",mMap, mMap, resolver, archive, create_Polygon));
@@ -314,7 +316,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	// This is a band-aid.  We don't restore the current tab in the tab hierarchy (as of WED 1.5) so we don't get a tab changed message.  Instead we just
 	// are always in the selection tab.  So mostly that means the defaults for things like filters are fine, but for the ATC layer it needs to be off!
 	mATCLayer->ToggleVisible();
-
+	mBdyLayer->ToggleVisible();
 }
 
 GUI_Pane *	WED_MapPane::GetTopBar(void)
@@ -415,6 +417,7 @@ int		WED_MapPane::Map_HandleCommand(int command)
 
 	switch(command) {
 	case wed_ImportOrtho:	WED_MakeOrthos(mResolver, mMap); return 1;
+	case wed_ImportDem:		WED_MakeTerrain(mResolver, mMap); return 1;
 	case wed_PickOverlay:	WED_DoMakeNewOverlay(mResolver, mMap); return 1;
 	case wed_ToggleWorldMap:mWorldMap->ToggleVisible(); return 1;
 	case wed_ToggleNavaidMap:mNavaidMap->ToggleVisible(); return 1;
@@ -663,6 +666,7 @@ void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
 #include "WED_Ring.h"
 #include "WED_AirportNode.h"
 #include "WED_AirportSign.h"
+#include "WED_AutogenPlacement.h"
 #include "WED_Group.h"
 #include "WED_Helipad.h"
 #include "WED_KeyObjects.h"
@@ -690,6 +694,7 @@ void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
 #include "WED_PolygonPlacement.h"
 #include "WED_DrapedOrthophoto.h"
 #include "WED_ExclusionZone.h"
+#include "WED_ExclusionPoly.h"
 #include "WED_ForestRing.h"
 #include "WED_FacadeRing.h"
 #include "WED_FacadeNode.h"
@@ -730,6 +735,7 @@ void hide_all_persistents(MapFilter_t& hide_list)
 	//hide_list.push_back(WED_Ring::sClass);
 	//hide_list.push_back(WED_AirportNode::sClass);
 	hide_list.push_back(WED_Helipad::sClass);
+	hide_list.push_back(WED_AutogenPlacement::sClass);
 	hide_list.push_back(WED_KeyObjects::sClass);
 	hide_list.push_back(WED_LightFixture::sClass);
 	hide_list.push_back(WED_ObjPlacement::sClass);
@@ -755,6 +761,7 @@ void hide_all_persistents(MapFilter_t& hide_list)
 	hide_list.push_back(WED_PolygonPlacement::sClass);
 	hide_list.push_back(WED_DrapedOrthophoto::sClass);
 	hide_list.push_back(WED_ExclusionZone::sClass);
+	hide_list.push_back(WED_ExclusionPoly::sClass);
 	//hide_list.push_back(WED_ForestRing::sClass);
 	//hide_list.push_back(WED_FacadeRing::sClass);
 	//hide_list.push_back(WED_FacadeNode::sClass);
@@ -813,6 +820,7 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 
 	hide_all_persistents(hide_list);
 	mATCLayer->SetVisible(false);
+	mBdyLayer->SetVisible(false);
 
 	//Add to lock_list for Map Dead
 	//unhide_persistent for Map Live
@@ -845,6 +853,8 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 		lock_list.push_back(WED_Taxiway::sClass);
 		lock_list.push_back(k_show_taxiline_chain);
 		lock_list.push_back(WED_LinePlacement::sClass);
+		lock_list.push_back(WED_RoadEdge::sClass);
+		lock_list.push_back(WED_RoadNode::sClass);
 
 		mATCLayer->SetVisible(true);
 		unhide_persistent(hide_list, lock_list);
@@ -885,6 +895,7 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 		lock_list.push_back(WED_Taxiway::sClass);
 
 		unhide_persistent(hide_list, lock_list);
+		unhide_persistent(hide_list, WED_AutogenPlacement::sClass);
 		unhide_persistent(hide_list, WED_FacadePlacement::sClass);
 		unhide_persistent(hide_list, WED_ForestPlacement::sClass);
 		unhide_persistent(hide_list, WED_ObjPlacement::sClass);
@@ -902,8 +913,10 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 		lock_list.push_back(WED_Runway::sClass);
 		lock_list.push_back(WED_Taxiway::sClass);
 
+		mBdyLayer->SetVisible(true);
 		unhide_persistent(hide_list, lock_list);
 		unhide_persistent(hide_list, WED_ExclusionZone::sClass);
+		unhide_persistent(hide_list, WED_ExclusionPoly::sClass);
 		unhide_persistent(hide_list, WED_AirportBoundary::sClass);
 		unhide_persistent(hide_list, k_show_boundary_chain);
 		unhide_persistent(hide_list, k_show_boundary_nodes);

@@ -105,20 +105,20 @@ bool fill_in_airport_metadata_defaults(WED_Airport & airport, const CSVParser::C
 extern vector<vector<const char*> > iso3166_codes = {
 
 {"ABW",  "ARUBA",},			{"AFG",  "AFGHANISTAN",},	{"AGO",  "ANGOLA",},		{"AIA",  "ANGUILLA",},
-{"ALA",  "≈LAND",},			{"ALB",  "ALBANIA",},		{"AND",  "ANDORRA",},		{"ARE",  "EMIRATES",},
+{"ALA",  "\303\205LAND", "ALAND ISLAND"},	{"ALB",  "ALBANIA",},		{"AND",  "ANDORRA",},		{"ARE",  "EMIRATES",},
 {"ARG",  "ARGENTINA",},		{"ARM",  "ARMENIA",},		{"ASM",  "SAMOA",},			{"ATA",  "ANTARCTIC",},
 {"ATF",  "FRENCH SOUTHERN",},			{"ATG",  "ANTIGUA", "BARBUDA",},			{"AUS",  "AUSTRALIA",},
 {"AUT",  "AUSTRIA",},		{"AZE",  "AZERBAIJAN",},	{"BDI",  "BURUNDI",},		{"BEL",  "BELGIUM",},
 {"BEN",  "BENIN",},			{"BES",  "BONAIRE", "SABA",},							{"BFA",  "BURKINA",},
 {"BGD",  "BANGLADESH",},	{"BGR",  "BULGARIA",},		{"BHR",  "BAHRAIN",},		{"BHS",  "BAHAMAS",},
-{"BIH",  "BOSNIA",},		{"BLM",  "BARTHÈLEMY", "BARTHÈLEMY",},					{"BLR",  "BELARUS",},
+{"BIH",  "BOSNIA",},		{"BLM",  "BARTHELEMY"},									{"BLR",  "BELARUS",},
 {"BLZ",  "BELIZE",},		{"BMU",  "BERMUDA",},		{"BOL",  "BOLIVIA",},		{"BRA",  "BRAZIL",},
 {"BRB",  "BARBADOS",},		{"BRN",  "BRUNEI",},		{"BTN",  "BHUTAN",},		{"BVT",  "BOUVET",},
 {"BWA",  "BOTSWANA",},		{"CAF",  "CENTRAL AFRICAN",},							{"CAN",  "CANADA",},
 {"CCK",  "COCOS",},			{"CHE",  "SWITZERLAND", "SWISS",},						{"CHL",  "CHILE",},
 {"CHN",  "CHINA",},			{"CIV",  "IVOIRE", "IVORY"},{"CMR",  "CAMEROON",},		{"COD",  "CONGO DEMO",},
 {"COG",  "CONGO",},			{"COK",  "COOK",},			{"COL",  "COLOMBIA",},		{"COM",  "COMOROS",},
-{"CPV",  "CABO VERDE",},	{"CRI",  "COSTA RICA",},	{"CUB",  "CUBA",},			{"CUW",  "CURAÁAO",	"CURACAO"},
+{"CPV",  "CABO VERDE",},	{"CRI",  "COSTA RICA",},	{"CUB",  "CUBA",},			{"CUW",  "CURACAO"},
 {"CXR",  "CHRISTMAS",},		{"CYM",  "CAYMAN",},		{"CYP",  "CYPRUS",},		{"CZE",  "CZECHIA",},
 {"DEU",  "GERMANY",},		{"DJI",  "DJIBOUTI",},		{"DMA",  "DOMINICA ",},		{"DNK",  "DENMARK",},
 {"DOM",  "DOMINICAN R",},								{"DZA",  "ALGERIA",},		{"ECU",  "ECUADOR",},
@@ -152,7 +152,7 @@ extern vector<vector<const char*> > iso3166_codes = {
 {"PAN",  "PANAMA",},		{"PCN",  "PITCAIRN",},		{"PER",  "PERU",},			{"PHL",  "PHILIPPINES",},
 {"PLW",  "PALAU",},			{"PNG",  "PAPUA", "NEW GUINEA",},						{"POL",  "POLAND",},
 {"PRI",  "PUERTO RICO",},	{"PRK",  "NORTH KOREA",},	{"PRT",  "PORTUGAL",},		{"PRY",  "PARAGUAY",},
-{"PSE",  "PALESTINE",},		{"PYF",  "POLYNESIA",},		{"QAT",  "QATAR",},			{"REU",  "RÈUNION",},
+{"PSE",  "PALESTINE",},		{"PYF",  "POLYNESIA",},		{"QAT",  "QATAR",},			{"REU",  "REUNION",},
 {"ROU",  "ROMANIA",},		{"RUS",  "RUSSIA",},		{"RWA",  "RWANDA",},
 {"SAU",  "SAUDI ARABIA",},	{"SDN",  "SUDAN",},			{"SEN",  "SENEGAL",},		{"SGP",  "SINGAPORE",},
 {"SGS",  "H GEORGIA", "SANDWICH",},						{"SHN",  "HELENA", "ASCENSION", "TRISTAN",},
@@ -184,7 +184,7 @@ bool add_iso3166_country_metadata(WED_Airport & apt)
 	{
 		country = apt.GetMetaDataValue(wed_AddMetaDataCountry);
 
-		bool has_iso = country.size() >= 3;
+		has_iso = country.size() >= 3;
 		for (int i = 0; i < 3 && has_iso; i++)
 			has_iso &= (bool)isalpha(country[i]);
 		if (country.size() > 3)
@@ -290,9 +290,7 @@ bool add_iso3166_country_metadata(WED_Airport & apt)
 		if (matches > 1)
 			LOG_MSG("'%s' matches %dx using %s\n", country.c_str(), matches, code3.c_str());
 
-		apt.StartCommand("Add country code");
 		apt.AddMetaDataKey(META_KeyName(wed_AddMetaDataCountry), code3 + country);
-		apt.CommitCommand();
 		return true;
 	}
 

@@ -44,7 +44,7 @@
 
 #else
 
-	#define DebugAssert(__Condition)
+	#define DebugAssert(__Condition) do {} while (false)
 
 #endif
 

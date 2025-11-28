@@ -40,10 +40,12 @@ enum {
 	wed_ExportToGateway,
 #endif
 	wed_ImportDSF,
+	wed_ImportScenery,
 #if ROAD_EDITING
 	wed_ImportRoads,
 #endif
 	wed_ImportOrtho,
+	wed_ImportDem,
 #if HAS_GATEWAY
 	wed_ImportGateway,
 #endif
@@ -58,6 +60,7 @@ enum {
 	wed_Export1100,
 	wed_Export1130,
 	wed_Export1200,
+	wed_Export1212,
 	wed_ExportGateway,
 	// Edit Menu,
 	wed_Group,
@@ -85,6 +88,7 @@ enum {
 	wed_ConvertToLine,
 	wed_ConvertToString,
 	wed_ConvertToForest,
+	wed_ConvertToShape,
 	// Pavement menu
 	wed_Pavement0,
 	wed_Pavement25,
@@ -152,15 +156,20 @@ enum {
 	wed_AddATCWindRule,
 	wed_UpgradeRamps,
 	wed_UpgradeJetways,
+	wed_UpgradeArt,
 	wed_AgePavement,
 	wed_EdgePavement,
 	wed_MowGrass,
 	wed_AlignApt,
 	//-- Add Metadata Keys Menu--
-	//Organized by alphabetical order
+	//Organized by alphabetical order - MUST EXACTLY MATCH definition of known_keys[] in WED_MetaDataKeys.cpp
 	wed_AddMetaDataBegin,//WARNING: DO NOT USE!
 	wed_AddMetaDataCity,// or Locality
+	wed_AddMetaDataCircuits, // new in 1200
 	wed_AddMetaDataCountry,
+#if GATEWAY_IMPORT_FEATURES
+	wed_AddMetaDataCredits,  // new in 12.1.0
+#endif
 	wed_AddMetaDataDatumLat,
 	wed_AddMetaDataDatumLon,
 	wed_AddMetaDataFAA,
@@ -169,8 +178,10 @@ enum {
 	wed_AddMetaDataICAO,
 	wed_AddMetaDataLocal,
 	wed_AddMetaDataLocAuth,
+	wed_AddMetaDataOilrig,   // new in 1204
 	wed_AddMetaDataRegionCode,
 	wed_AddMetaDataState,// or Province
+	wed_AddMetaDataTowerCaps, // new in 1200
 	wed_AddMetaDataTransitionAlt,//Altitude
 	wed_AddMetaDataTransitionLevel,
 	wed_AddMetaDataEnd,//WARNING: DO NOT USE!
@@ -189,5 +200,7 @@ enum {
 class	GUI_Application;
 
 void WED_MakeMenus(GUI_Application * inApp);
+
+string WED_GetTargetMenuName(int target);
 
 #endif

@@ -56,45 +56,25 @@ string	WED_XMLReader::ReadFile(const char * filename, bool * exists)
 	XML_SetUserData(parser, reinterpret_cast<void*>(this));
 
 	FILE * fi = fopen(filename,"rb");
+	if(exists) *exists = (fi != NULL);
 
-	//If it does exist
-	if(exists)
-	{
-		//Something like it the file pointer
-		*exists = (fi != NULL);
-	}
-	//If the file does not exist
 	if(!fi)
-	{
 		return string("Unable to open file:") + string(filename);
-	}
-	char buf[1024];
 
-	//While there is something left to read
 	while(!feof(fi))
 	{
-		//len is the amount of read in this loop
-		int len = fread(buf,1,sizeof(buf),fi);
-		if(len > 0)
-		if(XML_Parse(parser, buf, len, 0) == XML_STATUS_ERROR)
+		void* const buf = XML_GetBuffer(parser, 4 * 1024);
+		int len = fread(buf, 1, 4 * 1024, fi);
+		if(XML_ParseBuffer(parser, len, feof(fi)) == XML_STATUS_ERROR)
 		{
-			XML_Error e = XML_GetErrorCode(parser);
-			if(err.empty())
-				err = XML_ErrorString(e);
 			LOG_MSG("E/XML %s At: %d,%d\n", err.c_str(), (int) XML_GetCurrentLineNumber(parser), (int) XML_GetCurrentColumnNumber(parser));
 			break;
 		}
-		//if total read == 0
 	}
-	//It reads it again so it can finish off any last pieces remaining
-	XML_Parse(parser, buf, 0, 1);
 	XML_Error result = XML_GetErrorCode(parser);
-	 
-	//If the err string is empty and there is some kind of error
 	if(err.empty() &&  result != XML_ERROR_NONE)
-	{
 		err = XML_ErrorString(result);
-	}
+
 	fclose(fi);
 
 	return err;

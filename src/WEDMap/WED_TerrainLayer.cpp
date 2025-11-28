@@ -207,7 +207,7 @@ void WED_TerrainLayer::LoadTerrain(Bbox2& bounds)
 	}
 
 	set<string> vpaths;
-	add_all_global_DSF(bounds, vpaths);
+	DSF_find_global(bounds, vpaths);
 
 	DSFCallbacks_t cb = { NextPass, AcceptTerrainDef, AcceptObjectDef, AcceptPolygonDef, AcceptNetworkDef, AcceptRasterDef, AcceptProperty,
 					BeginPatch, BeginPrimitive, AddPatchVertex, EndPrimitive, EndPatch,

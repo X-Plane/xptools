@@ -23,7 +23,6 @@
 
 #include "WED_OverlayImage.h"
 #include "WED_ToolUtils.h"
-#include "GISUtils.h"
 #include "DEMIO.h"
 
 DEFINE_PERSISTENT(WED_OverlayImage)
@@ -58,12 +57,12 @@ void	WED_OverlayImage::SetImage(const string& image_file)
 {
 	// evict old img from texMgr
 	mImageFile = image_file;
-	mGcp.clear();
+	mGcp.pts.clear();
 }
 
 const gcp_t * WED_OverlayImage::GetGcpMat(void)
 {
-	if(!mGcp.size())
+	if(!mGcp.pts.size())
 	{
 		ILibrarian *   lib = WED_GetLibrarian(GetArchive()->GetResolver());
 		string s(mImageFile.value);
@@ -72,7 +71,7 @@ const gcp_t * WED_OverlayImage::GetGcpMat(void)
 		double dummy[8];
 		int post_pos = dem_want_Area;
 		if(!FetchTIFFCorners(s.c_str(), dummy, post_pos, &mGcp))
-			mGcp.push_back(Point2());   // single point only indicates we tried, but failed
+			mGcp.pts.push_back(Point2());   // single point only indicates we tried, but failed
 	}
 	return &mGcp;
 }

@@ -66,9 +66,9 @@ int		GetFilePathFromUserInternal(
 					const char *		inDefaultFileName,
 					int					inID,
 					int					inMulti,
-					vector<string>&		outFiles)
+					vector<string>&		outFiles,
+					const char *		initialPath)
 {
-    int return_val = 0;
     if(inType == getFile_Open || inType == getFile_PickFolder)
     {
         NSOpenPanel * panel = [NSOpenPanel openPanel];
@@ -78,14 +78,18 @@ int		GetFilePathFromUserInternal(
         [panel setCanCreateDirectories:(inType == getFile_PickFolder || inType == getFile_Save)];
         [panel setPrompt:[NSString stringWithUTF8String:inAction]]; // NOT A TYPO: NSOpenPanel calls the button text the "prompt" and the text on the window the "message"
         [panel setMessage:[NSString stringWithUTF8String:inPrompt]]; // NOT A TYPO: NSOpenPanel calls the button text the "prompt" and the text on the window the "message"
-        if([panel runModal] == NSFileHandlingPanelOKButton)
+		if(initialPath)
+		{
+			[panel setDirectoryURL:[NSURL fileURLWithPath:[NSString stringWithUTF8String:initialPath] isDirectory:true]];
+		}
+		if([panel runModal] == NSFileHandlingPanelOKButton)
         {
             NSArray * urls = [panel URLs];
             for(NSURL * url in urls)
             {
                 outFiles.push_back(string([[url path] UTF8String]));
             }
-            return_val = 1;
+            return 1;
         }
     }
     else // in_type == getFile_Save
@@ -98,11 +102,11 @@ int		GetFilePathFromUserInternal(
         {
             NSURL * url = [panel URL];
             outFiles.push_back(string([[url path] UTF8String]));
-            return_val = 1;
+            return 1;
         }
     }
 
-	return return_val;
+	return 0;
 }
 
 int		GetFilePathFromUser(
@@ -111,11 +115,11 @@ int		GetFilePathFromUser(
 					const char *		inAction,
 					int					inID,
 					char * 				outFileName,
-					int					inBufSize)
+					int					inBufSize,
+					const char *		initialPath)
 {
 	vector<string> files;
-	int result = GetFilePathFromUserInternal(inType,inPrompt,inAction, outFileName, inID, 0, files);
-	if(!result)
+	if(!GetFilePathFromUserInternal(inType,inPrompt,inAction, outFileName, inID, 0, files, initialPath))
 		return 0;
 	if(files.size() != 1)
 		return 0;
@@ -126,11 +130,11 @@ int		GetFilePathFromUser(
 char *	GetMultiFilePathFromUser(
 					const char * 		inPrompt,
 					const char *		inAction,
-					int					inID)
+					int					inID,
+					const char *		initialPath)
 {
 	vector<string> files;
-	int result = GetFilePathFromUserInternal(getFile_Open,inPrompt,inAction, "", inID, 1, files);
-	if(!result)
+	if(!GetFilePathFromUserInternal(getFile_Open,inPrompt,inAction, "", inID, 1, files, initialPath))
 		return NULL;
 	if(files.size() < 1)
 		return NULL;
@@ -167,17 +171,22 @@ void	DoUserAlert(const char * inMsg)
 	[alert release];
 }
 
-int		ConfirmMessage(const char * inMsg, const char * proceedBtn, const char * cancelBtn)
+int		ConfirmMessage(const char* inMsg, const char* proceedBtn, const char* cancelBtn, const char* optionBtn)
 {
-	LOG_MSG("I/Confirm %s\n",inMsg);
 	NSAlert *alert = [[NSAlert alloc] init];;
 	[alert setMessageText:[NSString stringWithUTF8String:inMsg]];
 	[alert addButtonWithTitle:[NSString stringWithUTF8String:proceedBtn]];
+	if (optionBtn)
+		[alert addButtonWithTitle:[NSString stringWithUTF8String:optionBtn]];
 	[alert addButtonWithTitle:[NSString stringWithUTF8String:cancelBtn]];
 	int r = [alert runModal];
 	[alert release];
 
-	return (r == NSAlertFirstButtonReturn);
+	if (r == NSAlertFirstButtonReturn)
+		return 1;
+	if (optionBtn && r == NSAlertSecondButtonReturn)
+		return 2;
+	return 0;
 }
 
 int DoSaveDiscardDialog(const char * inMessage1, const char * inMessage2)
@@ -187,7 +196,7 @@ int DoSaveDiscardDialog(const char * inMessage1, const char * inMessage2)
 	[alert setInformativeText:[NSString stringWithUTF8String:inMessage2]];
 	[alert addButtonWithTitle:[NSString stringWithUTF8String:"Save"]];
 	[alert addButtonWithTitle:[NSString stringWithUTF8String:"Cancel"]];
-	[alert addButtonWithTitle:[NSString stringWithUTF8String:"Don't Save"]];
+	[alert addButtonWithTitle:[NSString stringWithUTF8String:"Discard"]];
 	int r = [alert runModal];
 	[alert release];
 

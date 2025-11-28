@@ -488,22 +488,24 @@ float	GUI_GetLineAscent(int inFontID)
 }
 
 void	GUI_TruncateText(
-				string&							ioText,
-				int								inFontID,
-				float							inSpace)
+			string& ioText,
+			int								inFontID,
+			float							inSpace
+		)
 {
 	if (ioText.empty()) return;
 
-	int chars = GUI_FitForward(inFontID, &*ioText.begin(), &*ioText.end(), inSpace);
+	//int chars = GUI_FitForward(inFontID, &*ioText.begin(), &*ioText.end(), inSpace);
+	int chars = GUI_FitForward(inFontID, ioText.begin(), ioText.end(), inSpace);
 	if (chars == ioText.length()) return;
 	if (chars < 0) { ioText.clear(); return; }
 	if (chars > 2)
 		ioText.erase(chars + 1);   // dont cut too much, three dots are narrower than two letters
 	else
 		ioText.erase(chars);
-	if (ioText.length() > 0)	ioText[ioText.length()-1] = '.';
-	if (ioText.length() > 1)	ioText[ioText.length()-2] = '.';
-	if (ioText.length() > 2)	ioText[ioText.length()-3] = '.';
+	if (ioText.length() > 0)	ioText[ioText.length() - 1] = '.';
+	if (ioText.length() > 1)	ioText[ioText.length() - 2] = '.';
+	if (ioText.length() > 2)	ioText[ioText.length() - 3] = '.';
 
 }
 

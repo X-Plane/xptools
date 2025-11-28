@@ -67,6 +67,9 @@ public:
 	void	PurgeUndo(void);
 	void	PurgeRedo(void);
 
+	void	MarkUndo(void);
+	bool 	UndoToMark(void);     // undo ALL ops done since last mark was set
+
 	// From GUI_MemoryHog
 	virtual	bool	ReleaseMemory(void);
 
@@ -76,6 +79,8 @@ private:
 
 	LayerList 		mUndo;
 	LayerList		mRedo;
+
+	int				mUndoSinceMark;
 
 	WED_UndoLayer *				mCommand;
 	WED_Archive *				mArchive;

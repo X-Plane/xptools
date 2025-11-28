@@ -98,10 +98,11 @@ private:
 	WED_PropBoolText		center_lites;
 	WED_PropIntEnum			edge_lites;
 	WED_PropBoolText		remaining_signs;
+#if ROWCODE_105
 	WED_PropBoolText		line_color;
 	WED_PropIntEnum			line_size;
 	WED_PropDoubleTextMeters	number_size;
-
+#endif
 	WED_PropDoubleTextMeters	disp1;
 	WED_PropDoubleTextMeters	blas1;
 	WED_PropIntEnum				mark1;
@@ -115,10 +116,12 @@ private:
 	WED_PropIntEnum				appl2;
 	WED_PropBoolText			tdzl2;
 	WED_PropIntEnum				reil2;
+#if ROWCODE_105
 	WED_PropDoubleText			skids1;
 	WED_PropDoubleText			skid_len1;
 	WED_PropDoubleText			skids2;
 	WED_PropDoubleText			skid_len2;
+#endif
 };
 
 #endif /* WED_RUNWAY_H */

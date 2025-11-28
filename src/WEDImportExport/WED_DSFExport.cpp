@@ -22,16 +22,11 @@
  */
 
 #include "WED_DSFExport.h"
-#include "DSFLib.h"
-#include "FileUtils.h"
+#include "WED_OrthoExport.h"
+
 #include "WED_Entity.h"
-#include "PlatformUtils.h"
-#include "CompGeomDefs2.h"
 #include "WED_Group.h"
-#include "WED_Version.h"
-#include "WED_ToolUtils.h"
 #include "WED_TextureNode.h"
-#include "ILibrarian.h"
 #include "WED_ObjPlacement.h"
 #include "WED_FacadePlacement.h"
 #include "WED_ForestPlacement.h"
@@ -39,26 +34,31 @@
 #include "WED_AutogenPlacement.h"
 #include "WED_LinePlacement.h"
 #include "WED_PolygonPlacement.h"
+#include "WED_TerPlacement.h"
 #include "WED_DrapedOrthophoto.h"
 #include "WED_ExclusionZone.h"
-#include "WED_EnumSystem.h"
+#include "WED_ExclusionPoly.h"
+#include "WED_RoadEdge.h"
 #include "WED_Airport.h"
-#include "WED_GISUtils.h"
-#include "WED_Group.h"
-#include "WED_Validate.h"
+
+#include "IResolver.h"
+#include "WED_HierarchyUtils.h"
+#include "WED_ToolUtils.h"
+#include "WED_ResourceMgr.h"
+
+#include "PlatformUtils.h"
+#include "FileUtils.h"
 #include "MathUtils.h"
-#include "DSF2Text.h"
+#include "GISUtils.h"
+#include "CompGeomDefs2.h"
+#include "WED_Version.h"
+#include "WED_EnumSystem.h"
 #include "WED_Clipping.h"
+#include "DSFLib.h"
+#include "DSF2Text.h"
 #include "zip.h"
 #include <stdarg.h>
-#include "IResolver.h"
-#include "ITexMgr.h"
-#include "WED_ResourceMgr.h"
-#include "BitmapUtils.h"
-#include "GISUtils.h"
-#include <time.h>
-#include "STLUtils.h"
-#include "WED_RoadEdge.h"
+
 
 #if DEV
 #include "PerfUtils.h"
@@ -71,20 +71,6 @@
 // If we lose a bit or 2 in the DSF encoder, we won't have written
 // something on the ragged edge.
 #define DSF_EXTRA_1021 0.25
-
-// various pieces of information about the currently running export
-
-struct DSF_export_info_t
-{
-	ImageInfo	orthoImg;      // in case an orthoimage is to be converted/exported, store its info, so it does not need to be loaded it repeatedly
-	string		orthoFile;     // path to last orthoImage - so we know if there is a 2nd one to deal with - in which case we drop the first
-
-	bool		DockingJetways;
-
-	DSF_export_info_t() : DockingJetways(true) { orthoImg.data = NULL; }
-};
-
-extern int gOrthoExport;
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 
@@ -102,7 +88,7 @@ int zip_printf(void * fi, const char * fmt, ...)
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 
-static unsigned int encode_heading(double h)
+static unsigned int encode_heading(double h)     // draped polygons have 1/128th degree roation encoded in integer headings
 {
 	double          wrapped = dobwrap(h, 0.0, 360.0);
 	unsigned int  whole_deg = wrapped;
@@ -111,13 +97,20 @@ static unsigned int encode_heading(double h)
 	return whole_deg + 360u * (unsigned int)(128.0 * frac_deg);
 }
 
-// stolen from GISUtils - I got annoyed with having to grab all of CGAL for a modulo function.
-/*inline int	latlon_bucket(int p)
+static unsigned int encode_spacing(double s)     // object strings have 1/128th resolution encoded in integer spacing
 {
-	if (p > 0) return (p / 10) * 10;
-	else return ((-p + 9) / 10) * -10;
-}*/
-
+	if (gExportTarget > wet_xplane_1200 && s < 433.8)
+	{
+		unsigned int nearest = round(s);
+		double ratio = nearest == 0 ? 0.0 : s / (double) nearest;
+		if (ratio > 0.98 && ratio < 1.02)        // really close to full meters, keep using plain int, best XP11 compatibility
+			return nearest;
+		else
+			return 10000u + (unsigned int) round(128.0 * s);
+	}
+	else
+		return s;
+}
 
 template <class __Iterator>
 __Iterator find_contiguous_beziers(__Iterator b, __Iterator e)
@@ -171,36 +164,6 @@ bool bad_match(const T& s1, const T& s2)
 	return s1.p1 != s2.p2;
 }
 
-static bool is_dir_sep(char c) { return c == '/' || c == ':' || c == '\\'; }
-
-static bool is_backout_path(const string& p)
-{
-	vector<string> comps;
-	tokenize_string_func(p.begin(), p.end(), back_inserter(comps), is_dir_sep);
-
-	comps.erase(remove(comps.begin(),comps.end(),string(".")),comps.end());
-
-	bool did_work = false;
-	do {
-		did_work = false;
-		for(int i = 1; i < comps.size(); ++i)
-		if(comps[i] == string(".."))
-		if(comps[i-1] != string(".."))
-		{
-			comps.erase(comps.begin()+i-1,comps.begin()+i+1);
-			did_work = true;
-			break;
-		}
-	} while(did_work);
-
-	for(int i = 0; i < comps.size(); ++i)
-	{
-		if(comps[i] == string(".."))
-			return true;
-	}
-	return false;
-}
-
 struct kill_zero_length_segment {
 
 	bool operator()(const Segment2& s) const { return s.p1 == s.p2; }
@@ -212,24 +175,6 @@ template<class Segment>
 void remove_all_zero_length_segments(vector<Segment> &in_out_chain)
 {
 	in_out_chain.erase(remove_if(in_out_chain.begin(), in_out_chain.end(), kill_zero_length_segment()), in_out_chain.end());
-}
-
-static bool hasPartialTransparency(ImageInfo * info)
-{
-	if(info->channels < 4) return false;
-	int semiTransPixels = 0;
-
-	unsigned char * src = info->data + 3;
-	for(int y = info->height; y > 0; y--)
-	{
-		for(int x = info->width; x > 0; x--)
-		{
-			if(*src < 250 && *src > 0) semiTransPixels++; // deliberately ignore almost opaque pixels. Some tools create such
-			src += 4;
-		}
-		src += 4 * info->pad;
-	}
-	return semiTransPixels > 10; // even ignore if there are just a very few stray semi-transparent pixels
 }
 
 /************************************************************************************************************************************************
@@ -1182,6 +1127,13 @@ static int	DSF_HeightRangeRecursive(WED_Thing * what, double& out_msl_min, doubl
 		}
 	}
 
+	if (c == WED_TerPlacement::sClass)
+	{
+		auto ter = static_cast<WED_TerPlacement*>(what);
+		out_msl_min = out_msl_max = ter->GetCustomMSL();
+		return 1;
+	}
+
 	int found = 0;		// true if we found at least 1 min/max
 	int any_inside = 0;	// true if we found ANYTHING inside at all?
 
@@ -1217,6 +1169,24 @@ static int	DSF_HeightRangeRecursive(WED_Thing * what, double& out_msl_min, doubl
 
 	return found ? 1 : (any_inside ? 0 : -1);
 }
+
+static const char * get_exclusion_text(int i)
+{
+	switch (i) {
+	case exclude_Obj:	return "sim/exclude_obj";
+	case exclude_Fac:	return "sim/exclude_fac";
+	case exclude_For:	return "sim/exclude_for";
+	case exclude_Bch:	return "sim/exclude_bch";
+	case exclude_Net:	return "sim/exclude_net";
+
+	case exclude_Lin:	return "sim/exclude_lin";
+	case exclude_Pol:	return "sim/exclude_pol";
+	case exclude_Str:	return "sim/exclude_str";
+	default: return nullptr;
+	}
+
+}
+
 
 //Returns -1 for abort, or n where n > 0 for the number of
 static int	DSF_ExportTileRecursive(
@@ -1268,20 +1238,42 @@ static int	DSF_ExportTileRecursive(
 			obj->GetLocation(gis_Geo,p);
 			if(cull_bounds.contains(p))
 			{
-				double xyrz[4] = { p.x(), p.y(), 0.0 };
 				float heading = obj->GetHeading();
 				while(heading < 0) heading += 360.0;
 				while(heading >= 360.0) heading -= 360.0;
 				++real_thingies;
-				xyrz[2] = heading;
 
+				double xyrz[4] = { p.x(), p.y(), heading, 0.0 };
 				if(obj->HasCustomMSL())
 				{
-					xyrz[3] = obj->GetCustomMSL();
+					xyrz[3] = doblim(obj->GetCustomMSL(), -500.0, +10000.0);   // XPD-15378 rendering engine may freak out
 					cbs->AddObjectWithMode_f(idx, xyrz, (obj_elev_mode) obj->HasCustomMSL(), writer);
 				}
 				else
 					cbs->AddObjectWithMode_f(idx, xyrz, obj_ModeDraped, writer);
+			}
+		}
+		return real_thingies;
+	}
+
+	if (c == WED_TerPlacement::sClass)
+	{
+		auto ter = static_cast<WED_TerPlacement*>(what);
+		if (show_level == ter->GetShowLevel())
+		{
+			Bbox2 b;
+			ter->GetBounds(gis_Geo, b);
+			Point2 obj_loc = b.centroid();
+			if (cull_bounds.contains(obj_loc))
+			{
+				if (int result = WED_ExportTerrObj(ter, resolver, pkg, r) < 0)
+					return result;
+				export_info->resourcesAdded = true;
+
+				idx = io_table.accum_obj(r, show_level);
+				double xyrz[4] = { obj_loc.x(), obj_loc.y(), 0.0, ter->GetCustomMSL() };
+				cbs->AddObjectWithMode_f(idx, xyrz, (obj_elev_mode) ter->GetMSLType(), writer);
+				++real_thingies;
 			}
 		}
 		return real_thingies;
@@ -1543,26 +1535,56 @@ static int	DSF_ExportTileRecursive(
 			if(minp.x_ > maxp.x_)	swap(minp.x_, maxp.x_);
 			if(minp.y_ > maxp.y_)	swap(minp.y_, maxp.y_);
 
-			for(set<int>::iterator xt = xtypes.begin(); xt != xtypes.end(); ++xt)
+			for(auto xt : xtypes)
 			{
-				const char * pname = NULL;
-				switch(*xt) {
-				case exclude_Obj:	pname = "sim/exclude_obj";	break;
-				case exclude_Fac:	pname = "sim/exclude_fac";	break;
-				case exclude_For:	pname = "sim/exclude_for";	break;
-				case exclude_Bch:	pname = "sim/exclude_bch";	break;
-				case exclude_Net:	pname = "sim/exclude_net";	break;
-
-				case exclude_Lin:	pname = "sim/exclude_lin";	break;
-				case exclude_Pol:	pname = "sim/exclude_pol";	break;
-				case exclude_Str:	pname = "sim/exclude_str";	break;
-				}
-				if(pname)
+				if(auto pname = get_exclusion_text(xt))
 				{
-					char valbuf[512];
+					char valbuf[64];
 					sprintf(valbuf,"%.6lf/%.6lf/%.6lf/%.6lf",minp.x(),minp.y(),maxp.x(),maxp.y());
 					++real_thingies;
 					io_table.accum_exclusion(pname, valbuf);
+				}
+			}
+			return real_thingies;
+		}
+
+		else if (c == WED_ExclusionPoly::sClass)
+		{
+			auto xcl = static_cast<WED_ExclusionPoly*>(what);
+			set<int> xtypes;
+			xcl->GetExclusions(xtypes);
+			Bbox2 bounds;
+			xcl->GetBounds(gis_Geo, bounds);
+
+			for (auto xt : xtypes)
+			{
+				if (auto pname = get_exclusion_text(xt))
+				{
+					char valbuf[64];
+					sprintf(valbuf, "%.6lf/%.6lf/%.6lf/%.6lf;", bounds.p1.x(), bounds.p1.y(), bounds.p2.x(), bounds.p2.y());
+					++real_thingies;
+					string excbuf(valbuf);
+
+					vector<Polygon2>	xcl_area;
+					Assert(WED_PolygonWithHolesForPolygon(xcl, xcl_area));
+
+					vector<vector<Polygon2> >	xcl_clipped;
+					if (!clip_polygon(xcl_area, xcl_clipped, cull_bounds))
+					{
+						xcl_clipped.clear();
+						problem_children.insert(what);
+					}
+					for (const auto& pol_vec : xcl_clipped)
+						for (const auto& pol : pol_vec)
+							for (const auto& pt : pol)
+							{
+								sprintf(valbuf, "%.6lf/%.6lf,", pt.x(), pt.y());
+								excbuf += valbuf;
+							}
+
+					if (excbuf.back() == ',')
+						excbuf.pop_back();
+					io_table.accum_exclusion(pname, excbuf);
 				}
 			}
 			return real_thingies;
@@ -1572,7 +1594,7 @@ static int	DSF_ExportTileRecursive(
 		// FOREST EXPORTER
 		//------------------------------------------------------------------------------------------------------------
 
-		if(c == WED_ForestPlacement::sClass)
+		else if(c == WED_ForestPlacement::sClass)
 		{
 			auto fst = static_cast<WED_ForestPlacement *>(what);
 			fst->GetResource(r);
@@ -1627,24 +1649,72 @@ static int	DSF_ExportTileRecursive(
 				}
 				break;
 			case dsf_fill_points:
-				for(int h = -1; h < fst->GetNumHoles(); ++h)
 				{
-					IGISPointSequence * seq = (h == -1) ? fst->GetOuterRing() : fst->GetNthHole(h);
 					vector<Point2>	pts;
 
-					for(int p = 0; p < seq->GetNumPoints(); ++p)
+					for (int h = -1; h < fst->GetNumHoles(); ++h)             // allow holes in point mode ???
 					{
-						Point2 x;
-						seq->GetNthPoint(p)->GetLocation(gis_Geo,x);
-						if(safe_bounds.contains(x))
+						IGISPointSequence* seq = (h == -1) ? fst->GetOuterRing() : fst->GetNthHole(h);
+
+						for (int p = 0; p < seq->GetNumPoints(); ++p)
 						{
-							pts.push_back(x);
+							Point2 x;
+							seq->GetNthPoint(p)->GetLocation(gis_Geo, x);
+							if (safe_bounds.contains(x))
+							{
+								pts.push_back(x);
+							}
 						}
 					}
-					if(!pts.empty())
+
+					if (!pts.empty())
 					{
 						++real_thingies;
-						DSF_AccumPts(pts.begin(),pts.end(), safe_bounds, cbs,writer, idx, param);
+#if !TYLER_MODE
+						bool elevated = false;
+						// get DEM
+						Bbox2 bnds;
+						double ter_msl = 0;
+						fst->GetBounds(gis_Geo, bnds);
+						vector<WED_TerPlacement*> ters;
+						CollectRecursive(WED_GetWorld(resolver), back_inserter(ters), EntityNotHidden, TakeAlways, WED_TerPlacement::sClass);
+
+						const dem_info_t* dem_info = nullptr;
+						for(auto t : ters)
+							if (t->Cull(bnds))
+							{
+								string dem_file;
+								t->GetResource(dem_file);
+								if (!(!WED_GetResourceMgr(resolver)->GetDem(dem_file, dem_info)))
+									elevated = true;
+								if (t->GetMSLType() == obj_ModeMSL)
+									ter_msl = t->GetCustomMSL();
+								break;
+							}
+						// get height ranges
+						const for_info_t * fst_info = nullptr;
+						if (!WED_GetResourceMgr(resolver)->GetFor(r, fst_info))
+							elevated = false;
+						if(elevated)
+						{
+							cbs->BeginPolygon_f(idx, param, 4 + 10, writer);   // really means 4 data planes, but signals PointPool scaling needs to suit forests with height, msl
+							cbs->BeginPolygonWinding_f(writer);
+							double c[4];
+							for (auto& p : pts)
+							{
+								c[0] = p.x();
+								c[1] = p.y();
+								c[2] = 0.8 * fst_info->max_height;       // random (min_height, max_height);
+								c[3] = dem_info->xy_nearest(p.x(), p.y()) + ter_msl;
+
+								cbs->AddPolygonPoint_f(c, writer);
+							}
+							cbs->EndPolygonWinding_f(writer);
+							cbs->EndPolygon_f(writer);
+						}
+						else
+#endif
+							DSF_AccumPts(pts.begin(), pts.end(), safe_bounds, cbs, writer, idx, param);
 					}
 				}
 				break;
@@ -1656,7 +1726,7 @@ static int	DSF_ExportTileRecursive(
 		// OBJ STRING EXPORTER
 		//------------------------------------------------------------------------------------------------------------
 
-		if(c == WED_StringPlacement::sClass)
+		else if(c == WED_StringPlacement::sClass)
 		{
 			auto str = static_cast<WED_StringPlacement *>(what);
 			str->GetResource(r);
@@ -1672,7 +1742,7 @@ static int	DSF_ExportTileRecursive(
 				if(!chain.empty())
 				{
 					++real_thingies;
-					DSF_AccumChainBezier(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, str->GetSpacing(), 0);
+					DSF_AccumChainBezier(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, encode_spacing(str->GetSpacing()), 0);
 				}
 			}
 			else
@@ -1686,7 +1756,7 @@ static int	DSF_ExportTileRecursive(
 				if(!chain.empty())
 				{
 					++real_thingies;
-					DSF_AccumChain(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, str->GetSpacing(), 0);
+					DSF_AccumChain(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, encode_spacing(str->GetSpacing()), 0);
 				}
 			}
 			return real_thingies;
@@ -1696,7 +1766,7 @@ static int	DSF_ExportTileRecursive(
 		// AUTOGEN STRING EXPORTER
 		//------------------------------------------------------------------------------------------------------------
 
-		if(c == WED_AutogenPlacement::sClass)
+		else if(c == WED_AutogenPlacement::sClass)
 		{
 			auto ags = static_cast<WED_AutogenPlacement *>(what);
 			ags->GetResource(r);
@@ -1742,7 +1812,7 @@ static int	DSF_ExportTileRecursive(
 								p2p.param = false;
 					}
 
-					if(p2p.param != last_pt_spawn)
+					if((p2p.param != 0) != last_pt_spawn)
 					{
 						if(last_pt_spawn)
 						{
@@ -1795,7 +1865,7 @@ static int	DSF_ExportTileRecursive(
 		// OBJ LINE EXPORTER
 		//------------------------------------------------------------------------------------------------------------
 
-		if(c == WED_LinePlacement::sClass)
+		else if(c == WED_LinePlacement::sClass)
 		{
 			auto lin = static_cast<WED_LinePlacement *>(what);
 			lin->GetResource(r);
@@ -1879,7 +1949,7 @@ static int	DSF_ExportTileRecursive(
 		// DRAPED POLYGON
 		//------------------------------------------------------------------------------------------------------------
 
-		if(c == WED_PolygonPlacement::sClass)
+		else if(c == WED_PolygonPlacement::sClass)
 		{
 			auto pol = static_cast<WED_PolygonPlacement *>(what);
 			pol->GetResource(r);
@@ -1935,239 +2005,16 @@ static int	DSF_ExportTileRecursive(
 		// UV-MAPPED DRAPED POLYGON
 		//------------------------------------------------------------------------------------------------------------
 
-		if(c == WED_DrapedOrthophoto::sClass)
+		else if(c == WED_DrapedOrthophoto::sClass)
 		{
 			auto orth = static_cast<WED_DrapedOrthophoto *>(what);
 			orth->GetResource(r);
 #if WED
-			if(orth->IsNew())
+			if (orth->IsNew())
 			{
-				string msg;
-				what->GetName(msg);
-
-				// can't use the image name any more to determine the .pol/.dds names, as the same image could be used for multiple Orthos.
-				// So we assume the 'Name" contains the image name plus some suffix to make it unique
-
-				string relativePath(FILE_get_dir_name(r) + FILE_get_file_name_wo_extensions(msg));
-
-				string relativePathDDS = relativePath + ( gOrthoExport ? ".dds" : ".png");
-				string relativePathPOL = relativePath + ".pol";
-
-				msg = string("The polygon '") + msg + "' cannot be converted to an orthophoto: ";
-
-				if(is_backout_path(relativePath) || is_dir_sep(relativePath[0]) || relativePath[1] == ':')
-				{
-					DoUserAlert((msg + "The image resource must be a relative path to a location inside the sceneries directory, aborting DSF Export.").c_str());
-					return -1;
-				}
-
-				string absPathIMG = pkg + r;
-				string absPathDDS = pkg + relativePathDDS;
-				string absPathPOL = pkg + relativePathPOL;
-
-				if(absPathDDS == absPathIMG)
-				{
-					DoUserAlert((msg + "Output DDS file would overwrite source file, aborting DSF Export. Change polygon name.").c_str());
-					return -1;
-				}
-
-				Bbox2 UVbounds; orth->GetBounds(gis_UV, UVbounds);
-				Bbox2 UVbounds_used(0,0,1,1);                            // we may end up not using all of the texture
-				WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
-
-				date_cmpr_result_t date_cmpr_res = FILE_date_cmpr(absPathIMG.c_str(),absPathDDS.c_str());
-				//-----------------
-				/* How to export a orthophoto
-				* If it is a orthophoto and the image is newer than the DDS (avoid unnecissary DDS creation),
-				* Create a Bitmap from whatever file format is being used.
-				* Use the number of channels to decide the compression level
-				* Create a DDS from that file format
-				* Create the .pol with the file format in mind
-				* Enjoy your new orthophoto
-				*/
-
-				if(date_cmpr_res == dcr_firstIsNew || date_cmpr_res == dcr_same)
-				{
-	#if DEV
-					StElapsedTime	etime("DDS export time");
-	#endif
-					if(export_info->orthoFile != absPathIMG)
-					{
-						if(!export_info->orthoFile.empty())
-						{
-							Assert(export_info->orthoImg.data);
-							free(export_info->orthoImg.data);
-							export_info->orthoImg.data = NULL;
-							export_info->orthoFile = "";
-						}
-						if(LoadBitmapFromAnyFile(absPathIMG.c_str(),&export_info->orthoImg)) // to cut into pieces, only. Make sure its not forcibly rescaled
-						{
-							DoUserAlert((msg + "Unable to convert the image file '" + absPathIMG + "'to a DDS file, aborting DSF Export.").c_str());
-							return -1;
-						}
-						else
-						{
-							export_info->orthoFile = absPathIMG;
-
-							// force reload of texture from disk - for visual confirmation that WED realized the image had changed
-							ITexMgr * tman = WED_GetTexMgr(resolver);
-							string relImgPath;
-							orth->GetResource(relImgPath);
-							tman->DropTexture(relImgPath.c_str());
-						}
-					}
-					ImageInfo imgInfo(export_info->orthoImg);
-					ImageInfo DDSInfo;
-
-					int UVMleft   = intround(imgInfo.width * UVbounds.xmin());
-					int UVMright  = intround(imgInfo.width * UVbounds.xmax());
-					int UVMtop    = intround(imgInfo.height * UVbounds.ymax());
-					int UVMbottom = intround(imgInfo.height * UVbounds.ymin());
-
-					/* If the source image is a multiple of 1k pix/side - we want to avoid scaling the subtextures as much as possible.
-					   So in case the UV coords are a tiny bit off - rather round towards a size that allows keeping 1:1 pixel ratio.
-					*/
-					bool is1Ksource = imgInfo.width % 1024 == 0 && imgInfo.height % 1024 == 0;
-
-					if(is1Ksource)
-					{
-						if(UVMleft   % 512 == 1) UVMleft -= 1;   else if(UVMleft   % 512 == 511) UVMleft += 1;
-						if(UVMright  % 512 == 1) UVMright -= 1;  else if(UVMright  % 512 == 511) UVMright += 1;
-						if(UVMtop    % 512 == 1) UVMtop -= 1;    else if(UVMtop    % 512 == 511) UVMtop += 1;
-						if(UVMbottom % 512 == 1) UVMbottom -= 1; else if(UVMbottom % 512 == 511) UVMbottom += 1;
-					}
-
-					int UVMwidth  = UVMright - UVMleft;
-					int UVMheight = UVMtop - UVMbottom;
-
-					int DDSwidth = 4;
-					int DDSheight = 4;
-
-					while(DDSwidth < UVMwidth && DDSwidth < 2048) DDSwidth <<= 1;      // round up dimensions under 2k to a power of 2 AND limit to 2k
-					while(DDSheight < UVMheight && DDSheight < 2048) DDSheight <<= 1;
-
-					/* we may end up with a 'partial' tile - i.e. the polygon was reshaped and now the UVbounds don't cover a full tile
-					    any more. Normally - we would upscale the exact part of the source image needed to make it a power of 2.
-					    But - we may not have to: *if* the source image is large enough - we just grab a 1:1 copy of the next larger pow2 size
-					    and the only use a part of it.
-					*/
-					if(is1Ksource)
-					{
-						if(DDSwidth > UVMwidth)
-						{
-							if(UVbounds.ymin() > 0.0 && UVMright % 512 == 0)
-							{
-								double desired_left = UVMright - DDSwidth;
-								if(desired_left >= 0)
-								{
-									UVMleft = desired_left;
-									UVbounds_used.p1.x_ = 1.0 - ((double) UVMwidth) / DDSwidth;
-									LOG_MSG("I/DSF save a scale: using w=%d/%d pix, leaving some unused on left\n", UVMwidth, DDSwidth);
-									UVMwidth = DDSwidth;
-								}
-							}
-							else
-							{
-								double desired_right = UVMleft + DDSwidth;
-								if(desired_right <= imgInfo.width)
-								{
-									UVMright = desired_right;
-									UVbounds_used.p2.x_ = ((double) UVMwidth) / DDSwidth;
-									LOG_MSG("I/DSF save a scale: using w=%d/%d pix, leaving some unused on right\n", UVMwidth, DDSwidth);
-									UVMwidth = DDSwidth;
-								}
-							}
-						}
-						if(DDSheight > UVMheight)
-						{
-							if(UVbounds.xmin() > 0.0 && UVMtop % 512 == 0)
-							{
-								double desired_bottom = UVMtop - DDSheight;
-								if(desired_bottom >= 0)
-								{
-									UVMbottom = desired_bottom;
-									UVbounds_used.p1.y_ = 1.0 - ((double) UVMheight) / DDSheight;
-									LOG_MSG("I/DSF save a scale: using h=%d/%d pix, leaving some unused on bottom\n", UVMheight, DDSheight);
-									UVMheight = DDSheight;
-								}
-							}
-							else
-							{
-								double desired_top = UVMbottom + DDSheight;
-								if(desired_top <= imgInfo.height)
-								{
-									UVMtop = desired_top;
-									UVbounds_used.p2.y_ = ((double) UVMheight) / DDSheight;
-									LOG_MSG("I/DSF save a scale: using h=%d/%d pix, leaving some unused on top\n", UVMheight, DDSheight);
-									UVMheight = DDSheight;
-								}
-							}
-						}
-					}
-					else
-					{
-						if (UVMwidth < UVMheight * 0.7)        // avoid up-rezzing too much, 1025x2047 texture would otherwise grow to 2048x2048
-							if (DDSwidth >= DDSheight) DDSwidth = DDSheight / 2;
-						if (UVMheight < UVMwidth * 0.7)
-							if (DDSheight >= DDSwidth) DDSheight = DDSwidth / 2;
-					}
-
-					if (CreateNewBitmap(DDSwidth, DDSheight, imgInfo.channels, &DDSInfo) == 0)       // create array to hold upsized image
-					{
-						if(UVMwidth == DDSwidth && UVMheight == DDSheight)
-						{
-							CopyBitmapSectionDirect(imgInfo, DDSInfo, UVMleft, UVMbottom, 0, 0, DDSwidth, DDSheight);
-							LOG_MSG("I/DSF exporting ortho tile %s at 1:1 scale\n", absPathDDS.c_str());
-						}
-						else
-						{
-							CopyBitmapSectionSharp(imgInfo, DDSInfo, UVMleft, UVMbottom, UVMright, UVMtop,
-																				0, 0, DDSwidth, DDSheight);
-							LOG_MSG("I/DSF exporting ortho tile %s scaled\n", absPathDDS.c_str());
-						}
-						if(gOrthoExport)
-						{
-							if(DDSInfo.channels == 3)
-								ConvertBitmapToAlpha(&DDSInfo,false);
-							int DXTMethod = hasPartialTransparency(&DDSInfo) ? 5 : 1;
-							WriteBitmapToDDS_MT(DDSInfo, DXTMethod, absPathDDS.c_str());
-						}
-						else
-							WriteBitmapToPNG(&DDSInfo, absPathDDS.c_str(), NULL, 0, 2.2);
-					}
-				}
-				else if(date_cmpr_res == dcr_error)
-				{
-					string msg = string("The file '") + absPathIMG + string("' is missing, aborting DSF Export.");
-					DoUserAlert(msg.c_str());
-					return -1;
-				}
-
-				if(!FILE_exists(absPathPOL.c_str()))
-				{
-					ImageInfo DDSInfo;
-					if(CreateBitmapFromDDS(absPathDDS.c_str(), &DDSInfo) == 0)
-					{
-						Bbox2 b;
-						orth->GetBounds(gis_Geo, b);
-						Point2 center = b.centroid();
-						//-------------------------------------------
-						pol_info_t out_info = { FILE_get_file_name(relativePathDDS), false,
-							/*SCALE*/ (float) LonLatDistMeters(b.p1,Point2(b.p2.x(), b.p1.y())), (float) LonLatDistMeters(b.p1,Point2(b.p1.x(), b.p2.y())),  // althought its irrelevant here
-							false, false,
-							/*LAYER_GROUP*/ "TERRAIN", +1,
-							/*LOAD_CENTER*/ (float) center.y(), (float) center.x(), (float) LonLatDistMeters(b.p1,b.p2), intmax2(DDSInfo.height,DDSInfo.width) };
-						rmgr->WritePol(absPathPOL, out_info);
-						DestroyBitmap(&DDSInfo);
-					}
-				}
-
-				what->StartOperation("Norm Ortho");
-				orth->Rescale(gis_UV, UVbounds, UVbounds_used);
-				r = relativePathPOL;		// Resource name comes from the pol no matter what we compress to disk.
-#if IBM
-				std::replace(r.begin(), r.end(), '\\', '/');  // improve backward comp. with older WED versions that don't (yet) convert these to '/' at import. XP is fine with either.
-#endif
+				if (auto result = WED_ExportOrtho(orth, resolver, pkg, export_info, r) < 0)
+					return result;
+				export_info->resourcesAdded = true;
 			}
 #endif
 			idx = io_table.accum_pol(r,show_level);
@@ -2226,7 +2073,7 @@ static int	DSF_ExportTileRecursive(
 		// ROAD EXPORTER
 		//------------------------------------------------------------------------------------------------------------
 
-		if (c == WED_RoadEdge::sClass)
+		else if (c == WED_RoadEdge::sClass)
 		{
 			auto roa = static_cast<WED_RoadEdge*>(what);
 			string asset;
@@ -2343,6 +2190,9 @@ int DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& pkg, in
 
 		snprintf(buffer, 255, "%sEarth nav data" DIR_STR "%+03d%+04d" DIR_STR "%+03d%+04d.dsf", pkg.c_str(), latlon_bucket(y), latlon_bucket(x), y, x);
 		DSFWriteToFile(buffer, writer);
+
+		snprintf(buffer, 255, "%+03d%+04d" DIR_STR "%+03d%+04d.dsf", latlon_bucket(y), latlon_bucket(x), y, x);
+		export_info->mark_written(buffer);
 	}
 
 	/*
@@ -2382,7 +2232,7 @@ int DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, se
 
 	int DSF_export_tile_res = 0;
 
-	DSF_export_info_t DSF_export_info;   // We kept the last loaded orthoimage open, so it does not have to be loaded repeatedly. This gates parallel DSF exports.
+	DSF_export_info_t DSF_export_info(resolver);   // We kept the last loaded orthoimage open, so it does not have to be loaded repeatedly. This gates parallel DSF exports.
 	DSF_export_info.DockingJetways = gExportTarget >= wet_xplane_1200;
 
 	for (int y = tile_south; y < tile_north; ++y)
@@ -2396,10 +2246,6 @@ int DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, se
 			if (DSF_export_tile_res == -1) break;
 		}
 		if (DSF_export_tile_res == -1) break;
-	}
-	if (DSF_export_info.orthoImg.data)
-	{
-		free(DSF_export_info.orthoImg.data);
 	}
 	if (g_dropped_pts)
 	{
