@@ -522,17 +522,68 @@ void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
 		op->AbortOperation();
 }
 
-void	WED_DoConvertToForest(IResolver* resolver)
+//void	WED_DoConvertToForest(IResolver* resolver)
+//{
+//	auto sel = WED_GetSelect(resolver);
+//	auto op = dynamic_cast<IOperation*>(sel);
+//	set<WED_Thing*> to_delete;
+//
+//	auto where = dynamic_cast<WED_Thing*>(sel->GetNthSelection(0));
+//	if(!where)
+//		return;
+//
+//	op->StartOperation("Convert to Forest Points");
+//	auto fst = WED_ForestPlacement::CreateTyped(where->GetArchive());
+//	fst->SetParent(where->GetParent(), where->GetMyPosition());
+//	fst->SetDensity(1.0);
+//	fst->SetResource("lib/vegetation/trees/deciduous/maple_medium.for");
+//	fst->SetName("maple_medium.for");
+//	fst->SetFillMode(dsf_fill_points);
+//
+//	auto rng = WED_ForestRing::CreateTyped(where->GetArchive());
+//	rng->SetParent(fst, 0);
+//	rng->SetName("Forest Boundary");
+//
+//	for (size_t i = 0; i < sel->GetSelectionCount(); ++i)
+//	{
+//		if (auto src = dynamic_cast<WED_ObjPlacement*>(sel->GetNthSelection(i)))
+//		{
+//			auto dst = WED_SimpleBoundaryNode::CreateTyped(where->GetArchive());
+//			dst->SetParent(rng, i);
+//			Point2 pt;
+//			src->GetLocation(gis_Geo, pt);
+//			dst->SetLocation(gis_Geo, pt);
+//			dst->SetName(string("Tree ") + to_string(i));
+//			to_delete.insert(src);
+//		}
+//	}
+//
+//	if (rng->CountChildren() >= 3)
+//	{
+//		WED_RecursiveDelete(to_delete);
+//		sel->Clear();
+//		sel->Insert(fst);
+//		op->CommitOperation();
+//	}
+//	else
+//		op->AbortOperation();
+//}
+
+
+
+void WED_DoConvertToForest(IResolver* resolver, bool in_cmd)
 {
 	auto sel = WED_GetSelect(resolver);
 	auto op = dynamic_cast<IOperation*>(sel);
 	set<WED_Thing*> to_delete;
 
 	auto where = dynamic_cast<WED_Thing*>(sel->GetNthSelection(0));
-	if(!where)
+	if (!where)
 		return;
 
-	op->StartOperation("Convert to Forest Points");
+	if (in_cmd)
+		op->StartOperation("Convert to Forest Points");
+
 	auto fst = WED_ForestPlacement::CreateTyped(where->GetArchive());
 	fst->SetParent(where->GetParent(), where->GetMyPosition());
 	fst->SetDensity(1.0);
@@ -563,8 +614,9 @@ void	WED_DoConvertToForest(IResolver* resolver)
 		WED_RecursiveDelete(to_delete);
 		sel->Clear();
 		sel->Insert(fst);
-		op->CommitOperation();
+		if (in_cmd)
+			op->CommitOperation();
 	}
-	else
+	else if (in_cmd)
 		op->AbortOperation();
 }
