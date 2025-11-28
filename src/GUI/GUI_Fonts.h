@@ -68,6 +68,13 @@ int		GUI_FitForward(
 				const char *					inCharEnd,
 				float							inSpace);
 
+int		GUI_FitForward(
+	int inFontID,
+	std::string::const_iterator inStart,
+	std::string::const_iterator inEnd,
+	float width
+);
+
 int		GUI_FitReverse(
 				int 							inFontID,
 				const char *					inCharStart,

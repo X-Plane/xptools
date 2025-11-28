@@ -428,6 +428,24 @@ int GUI_FitForward(int inFontID, const char* inStart, const char* inEnd,float wi
 	return (const char *) p - inStart;
 }
 
+int GUI_FitForward(int inFontID, std::string::const_iterator inStart, std::string::const_iterator inEnd, float width)
+{
+	if (inStart == inEnd) return 0;
+	TT_establish_font(inFontID);
+	float so_far = 0.0;
+	auto p = inStart;
+	auto e = inEnd;
+	while (p < e)
+	{
+		UTF32 c = UTF8_decode(reinterpret_cast<const UTF8*>(&*p));
+		so_far += tt_font[inFontID]->require_char(c, 1.0f);
+		if (so_far > width)
+			break;
+		p = std::next(p); // Move to next character
+	}
+	return std::distance(inStart, p);
+}
+
 int GUI_FitReverse(int inFontID, const char* inStart, const char* inEnd,float width)
 {
 	if(inStart == inEnd) return 0;
