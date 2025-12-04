@@ -495,7 +495,6 @@ void	GUI_TruncateText(
 {
 	if (ioText.empty()) return;
 
-	//int chars = GUI_FitForward(inFontID, &*ioText.begin(), &*ioText.end(), inSpace);
 	int chars = GUI_FitForward(inFontID, ioText.begin(), ioText.end(), inSpace);
 	if (chars == ioText.length()) return;
 	if (chars < 0) { ioText.clear(); return; }

@@ -184,7 +184,6 @@ void	WED_MakeOrthos(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 			if (base_tex.find(" ") == base_tex.npos && img_path[0] != '.' && img_path[0] != DIR_CHAR && img_path[1] != ':')
 			{
 				gcp_t gcp;
-				//WED_Ring * rng0 = WED_RingfromImage(path, arch, zoomer, &CreateThing<WED_TextureBezierNode>, &gcp);
 				WED_Ring* rng0 = WED_RingfromImage(path, arch, zoomer, &CreateThing<WED_TextureBezierNode>, &gcp);
 				if (rng0)
 				{
@@ -331,7 +330,6 @@ void	WED_MakeTerrain(IResolver* inResolver, WED_MapZoomerNew* zoomer)
 			if (base_tex.find(" ") == base_tex.npos && img_path[0] != '.' && img_path[0] != DIR_CHAR && img_path[1] != ':')
 			{
 				gcp_t gcp;
-				//WED_Ring* rng = WED_RingfromImage(path, arch, zoomer, &CreateThing<WED_SimpleBoundaryNode>, &gcp);
 				WED_Ring* rng = WED_RingfromImage(path, arch, zoomer, &CreateThing<WED_SimpleBoundaryNode>, &gcp);
 
 
