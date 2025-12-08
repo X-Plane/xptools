@@ -152,6 +152,7 @@ void	WED_PropertyTable::GetCellContent(
 {
 	char buf[100], fmt[16];
 
+
 	// By the end of this we need to have filled the_content out with
 	//  1. Abilities - can_edit, can_disclose, can_drag, etc...
 	//  2. State - is_disclosed, is_selected, indent_level

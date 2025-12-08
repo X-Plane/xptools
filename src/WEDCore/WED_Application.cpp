@@ -169,29 +169,42 @@ void WED_Settings::ReceiveMessage(
 }
 
 
-WED_Settings::WED_Settings(GUI_Commander * cmdr) : GUI_Window("WED Preferences", xwin_style_movable | xwin_style_centered | xwin_style_popup, settings_bounds, cmdr)
+WED_Settings::WED_Settings(GUI_Commander* cmdr) : GUI_Window("WED Preferences", xwin_style_movable | xwin_style_centered | xwin_style_popup, settings_bounds, cmdr)
 {
-	GUI_Packer * packer = new GUI_Packer;
+	GUI_Packer* packer = new GUI_Packer;
 	packer->SetParent(this);
 	packer->Show();
 	packer->SetBounds(settings_bounds);
 	packer->SetBkgkndImage("about.png");
 
-	RadioButton(220, 350 , this, &gIsFeet, "Length Units", "Meters", "Feet");
-	RadioButton(220, 300 , this, &gInfoDMS, "Info Bar\nCoordinates", "DD.DDDDD", "DD MM SS");
+	RadioButton(220, 350, this, &gIsFeet, "Length Units", "Meters", "Feet");
+	RadioButton(220, 300, this, &gInfoDMS, "Info Bar\nCoordinates", "DD.DDDDD", "DD MM SS");
 
 	int k_yes[4] = { 0, 1, 1, 3 };
-	int k_no[4]  = { 0, 2, 1, 3 };
+	int k_no[4] = { 0, 2, 1, 3 };
 
-	float * white = WED_Color_RGBA(wed_Table_Text);
+	float* white = WED_Color_RGBA(wed_Table_Text);
 
-	GUI_Button * moderator_btn = new GUI_Button("check_buttons.png",btn_Check,k_no, k_no, k_yes, k_yes);
-	moderator_btn->SetBounds(340,255,510,255+GUI_GetImageResourceHeight("check_buttons.png")/3);
+	GUI_Button* moderator_btn = new GUI_Button("check_buttons.png", btn_Check, k_no, k_no, k_yes, k_yes);
+	moderator_btn->SetBounds(340, 255, 510, 255 + GUI_GetImageResourceHeight("check_buttons.png") / 3);
 	moderator_btn->Show();
 	moderator_btn->SetDescriptor("Moderator Mode");
 	moderator_btn->SetParent(this);
 	moderator_btn->AddListener(this);
-	moderator_btn->SetMsg((intptr_t) &gModeratorMode, (intptr_t) moderator_btn);
+	moderator_btn->SetMsg((intptr_t)&gModeratorMode, (intptr_t)moderator_btn);
+
+
+	// TESTING ...
+	/*GUI_Label* mod_label = new GUI_Label();
+
+	mod_label->SetBounds(20, 50, 100, 162);
+	mod_label->SetColors(white);
+	mod_label->SetParent(this);
+	mod_label->SetDescriptor(std::to_string(moderator_btn->GetValue()));
+	mod_label->Show();*/
+	
+	// ...
+
 
 	GUI_Button * png_btn = new GUI_Button("check_buttons.png",btn_Check,k_no, k_no, k_yes, k_yes);
 	png_btn->SetBounds(340,230,510,230+GUI_GetImageResourceHeight("check_buttons.png")/3);

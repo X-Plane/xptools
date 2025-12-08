@@ -136,7 +136,7 @@ WED_PropertyPane::WED_PropertyPane(
 	}
 
 	#if BENTODO
-		this is real arbitrary - would be nice if we did not have to just KNOW all the braodcaster reelatoinships outside the impls
+		this is real arbitrary - would be nice if we did not have to just KNOW all the braodcaster reelatoinships outside the im pls
 	#endif
 
 	if (horizontal)	mTextTableHeader.AddListener(mHeader);		// Header listens to text table to know when to refresh on col resize
@@ -155,6 +155,8 @@ WED_PropertyPane::WED_PropertyPane(
 	if (horizontal)	mScroller->PositionHeaderPane(mHeader);
 
 	archive_broadcaster->AddListener(&mPropertyTable);
+
+
 
 }
 
