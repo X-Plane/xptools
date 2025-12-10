@@ -192,7 +192,7 @@ WED_Settings::WED_Settings(GUI_Commander* cmdr) : GUI_Window("WED Preferences", 
 	moderator_btn->SetParent(this);
 	moderator_btn->AddListener(this);
 	moderator_btn->SetMsg((intptr_t)&gModeratorMode, (intptr_t)moderator_btn);
-	moderator_btn->SetValue(0.0);
+	moderator_btn->SetValue(1.0);
 
 	GUI_Button * png_btn = new GUI_Button("check_buttons.png",btn_Check,k_no, k_no, k_yes, k_yes);
 	png_btn->SetBounds(340,230,510,230+GUI_GetImageResourceHeight("check_buttons.png")/3);

@@ -1204,14 +1204,17 @@ void WED_PropertyTable::Resort()
 
 bool WED_PropertyTable::GetOpen(int id)
 {
-	if (gModeratorMode == 1)
+
+	if (gModeratorMode == 1) {
 		return mOpen.count(id) != 0 && mOpen[id] != 0;
+	}
 	else
 		return mOpen.count(id) == 0 || mOpen[id] != 0;
 }
 
 void WED_PropertyTable::ToggleOpen(int id)
 {
+
 	if (mSearchFilter.empty() == true)
 	{
 		int old_val = GetOpen(id);
