@@ -192,19 +192,7 @@ WED_Settings::WED_Settings(GUI_Commander* cmdr) : GUI_Window("WED Preferences", 
 	moderator_btn->SetParent(this);
 	moderator_btn->AddListener(this);
 	moderator_btn->SetMsg((intptr_t)&gModeratorMode, (intptr_t)moderator_btn);
-
-
-	// TESTING ...
-	/*GUI_Label* mod_label = new GUI_Label();
-
-	mod_label->SetBounds(20, 50, 100, 162);
-	mod_label->SetColors(white);
-	mod_label->SetParent(this);
-	mod_label->SetDescriptor(std::to_string(moderator_btn->GetValue()));
-	mod_label->Show();*/
-	
-	// ...
-
+	moderator_btn->SetValue(0.0);
 
 	GUI_Button * png_btn = new GUI_Button("check_buttons.png",btn_Check,k_no, k_no, k_yes, k_yes);
 	png_btn->SetBounds(340,230,510,230+GUI_GetImageResourceHeight("check_buttons.png")/3);
@@ -224,7 +212,7 @@ WED_Settings::WED_Settings(GUI_Commander* cmdr) : GUI_Window("WED Preferences", 
 	label->SetBounds(20,142,300,162);
 	mCustom_box->SetWidth(1000);
 	mCustom_box->SetParent(this);
-	mCustom_box->AddListener(this);
+	mCustom_box->AddListener(this); 
 	mCustom_box->SetKeyMsg((intptr_t) &gCustomSlippyMap, (intptr_t) mCustom_box);
 	mCustom_box->SetDescriptor(gCustomSlippyMap);
 	mCustom_box->Show();
@@ -233,8 +221,10 @@ WED_Settings::WED_Settings(GUI_Commander* cmdr) : GUI_Window("WED Preferences", 
 	mCustom_box->SetKeyAllowed('\\', false);
 	label->SetColors(white);
 	label->SetParent(this);
-	label->SetDescriptor("Tile Server Custom URL");
+	//label->SetDescriptor("Tile Server Custom URL");
+	label->SetDescriptor(std::to_string(gModeratorMode));
 	label->Show();
+
 
 	mFont_box = new GUI_TextField(false, this);
 	GUI_Label * label2 = new GUI_Label();

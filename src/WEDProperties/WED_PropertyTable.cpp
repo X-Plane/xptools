@@ -433,13 +433,17 @@ void	WED_PropertyTable::AcceptEdit(
 	if (started) started->CommitCommand();
 }
 
+
+
 void	WED_PropertyTable::ToggleDisclose(
-						int							cell_x,
-						int							cell_y)
+						int					cell_x,
+						int					cell_y)
 {
 	WED_Thing * t = FetchNth(mVertical ? cell_x : cell_y);
+
 	if (t)
 		ToggleOpen(t->GetID());
+
 	mCacheValid = false;
 	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);
 }
@@ -1092,6 +1096,8 @@ void WED_PropertyTable::GetClosed(set<int>& closed_list)
 	}
 }
 
+
+
 //--IFilterable----------------------------------------------------------------
 void WED_PropertyTable::SetFilter(const string & filter)
 {
@@ -1195,9 +1201,13 @@ void WED_PropertyTable::Resort()
 // easily map "no entry" to open.  This makes new entities default to open, which seems to be preferable.  It'd be easy to customize
 // the behavior.
 
+
 bool WED_PropertyTable::GetOpen(int id)
 {
-	return mOpen.count(id) == 0 || mOpen[id] != 0;
+	if (gModeratorMode == 1)
+		return mOpen.count(id) != 0 && mOpen[id] != 0;
+	else
+		return mOpen.count(id) == 0 || mOpen[id] != 0;
 }
 
 void WED_PropertyTable::ToggleOpen(int id)

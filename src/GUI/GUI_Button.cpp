@@ -84,6 +84,7 @@ void		GUI_Button::SetValue(float inValue)
 	Refresh();
 }
 
+
 int		GUI_Button::MouseMove(int x, int y)
 {
 	if (mBehavior == btn_Web)
