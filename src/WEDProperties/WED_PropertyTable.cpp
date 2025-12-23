@@ -21,6 +21,9 @@
  *
  */
 
+#include "WED_MapLayer.h"
+#include "WED_Taxiway.h"
+#include "WED_Select.h"
 #include "WED_PropertyTable.h"
 #include "WED_Archive.h"
 #include "WED_Thing.h"
@@ -56,6 +59,8 @@
 #include "WED_TruckDestination.h"
 #include "WED_TruckParkingLocation.h"
 #include "WED_Runway.h"
+#include "WED_MapPane.h"
+#include "WED_PackageListAdapter.h"
 
 inline int count_strs(const char ** p) { if (!p) return 0; int n = 0; while(*p) ++p, ++n; return n; }
 
@@ -488,6 +493,12 @@ int		WED_PropertyTable::SelectGetExtent(
 						int&						high_x,
 						int&						high_y)
 {
+
+	if ( gModeratorMode == 1 )
+	{
+		return 0;
+	}
+
 	#if OPTIMIZE
 		speed of this sux
 	#endif
@@ -711,12 +722,15 @@ int		WED_PropertyTable::TabAdvance(
 	return 0;
 }
 
-int		WED_PropertyTable::DoubleClickCell(
-						int							cell_x,
-						int							cell_y)
+
+int WED_PropertyTable::DoubleClickCell(int cell_x, int cell_y)
 {
-	return 0;
+		return 1;
 }
+
+
+
+
 
 void					WED_PropertyTable::GetLegalDropOperations(
 							int&						allow_between_col,
@@ -939,6 +953,7 @@ void WED_PropertyTable::RebuildCache(void)
 	if (root)
 		RebuildCacheRecursive(root,sel,mSelOnly ? &all_sel : NULL);
 }
+
 
 WED_Thing *	WED_PropertyTable::FetchNth(int row)
 {
@@ -1263,3 +1278,42 @@ void		WED_PropertyTable::GetFilterStatus(WED_Thing * what, ISelection * sel,
 	}
 //	if(!mVertical && IsGraphNode(what)) visible = 0;  // this allows to drag taxiroutes into a subgroup and leave the (invisible) nodes behind. Then lock that group and the nodes are still selectable. No good.
 }
+
+
+//int WED_PropertyTable::GetItemCount()
+//{
+//	return mThingCache.size();
+//}
+//
+//int WED_PropertyTable::ShowOnlyTaxiway()
+//{
+//	if (!gModeratorMode)
+//		return 0;
+//
+//	WED_Thing* taxiwayFolder = nullptr;
+//
+//	// Find the folder named "Taxiways"
+//	for (int i = 0; i < GetItemCount(); ++i)
+//	{
+//		WED_Thing* thing = WED_PropertyTable::FetchNth(i);
+//
+//		string name;
+//		thing->GetName(name);
+//
+//		if (!thing) return 0;
+//
+//		if (name == "Taxiways")  return 2;
+//
+//	}
+//
+//	if (!taxiwayFolder)
+//		return 0;
+//
+//	return 1;
+//}
+
+
+
+
+
+

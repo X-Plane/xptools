@@ -21,6 +21,7 @@
  *
  */
 
+#include "WED_PropertyTable.h"
 #include "GUI_TextField.h"
 #include "GUI_TextTable.h"
 #include "GUI_GraphState.h"
@@ -34,6 +35,8 @@
 #include "GUI_Resources.h"
 #include "AssertUtils.h"
 #include "WED_Sign_Editor.h"
+#include "WED_Globals.h"
+#include "WED_Taxiway.h"
 
 #if WED
 #define USE_LINE_SELECTOR_POPUP 1
@@ -506,6 +509,7 @@ int GUI_TextTable::CreateMenuFromDict(vector<GUI_MenuItem_t>& items, vector<int>
 	return current_sel;
 }
 
+
 int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button, GUI_KeyFlags flags, int& want_lock)
 {
 	want_lock = 1;
@@ -550,7 +554,6 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 		mCellResize = cell_x;
 		return 1;
 	}
-
 
 	if (!mContent)
 	{
@@ -599,7 +602,7 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 		}
 	}
 
-	if(mEditInfo.is_disclosed || mEditInfo.can_disclose)
+	if (mEditInfo.is_disclosed || mEditInfo.can_disclose)
 	{
 		//Regardless of state, if it is able to we're going to toggle
 		//the button
@@ -705,13 +708,89 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 	case gui_Cell_Double:
 		if (mParent)
 		{
-			cell_bounds[0] -= mEditInfo.indent_level * mCellIndent;	// clean out bounds...will get changed again later anyway
-			CreateEdit(cell_bounds);
-			mClickCellX = cell_x;
-			mClickCellY = cell_y;
+			if (gModeratorMode)
+			{
+				mClickCellX = cell_x;
+				mClickCellY = cell_y;
+
+				GUI_CellContent cellContent;
+
+				WED_PropertyTable* mContent_WED = dynamic_cast<WED_PropertyTable*>(mContent);
+				mContent_WED->GetCellContent(cell_x, cell_y, cellContent);
+
+				if (cellContent.content_type == gui_Cell_EditText ||
+					cellContent.content_type == gui_Cell_TaxiText)
+				{
+					std::string cellName = cellContent.text_val;
+
+					// Get the clicked WED_Thing directly
+					WED_Thing* clickedThing = mContent_WED->GetThingAt(cell_y);
+
+					if (clickedThing)
+					{
+						std::string name;
+						clickedThing->GetName(name);
+
+						if (name == "Taxiways")
+						{
+							// Hide everything first
+							for (int i = 0; i < mContent_WED->GetRowCount(); i++)
+							{
+								WED_Thing* thing = mContent_WED->GetThingAt(i);
+								int hp = thing->FindProperty("Hidden");
+								if (hp != -1)
+								{
+									PropertyVal_t pv;
+									pv.prop_kind = prop_Bool;
+									pv.int_val = 1; // hide
+									thing->SetNthProperty(hp, pv);
+								}
+							}
+
+							// Unhide clicked Taxiways and its children
+							std::vector<WED_Thing*> stack;
+							stack.push_back(clickedThing);
+
+							while (!stack.empty())
+							{
+								WED_Thing* cur = stack.back();
+								stack.pop_back();
+
+								int hp = cur->FindProperty("Hidden");
+								if (hp != -1)
+								{
+									PropertyVal_t pv;
+									pv.prop_kind = prop_Bool;
+									pv.int_val = 0; // unhide
+									cur->SetNthProperty(hp, pv);
+								}
+
+								int nc = cur->CountChildren();
+								for (int i = 0; i < nc; ++i)
+									stack.push_back(cur->GetNthChild(i));
+							}
+						}
+					}
+
+					mContent->ToggleDisclose(cell_x, cell_y);
+				}
+				else
+				{
+					cell_bounds[0] -= mEditInfo.indent_level * mCellIndent;
+					CreateEdit(cell_bounds);
+					mClickCellX = cell_x;
+					mClickCellY = cell_y;
+				}
+			}
+
 			return 1;
 		}
 		break;
+
+
+
+
+
 	case gui_Cell_RoadType:
 	case gui_Cell_Enum:
 		{
@@ -1788,3 +1867,6 @@ int			GUI_TextTableSide::SideGetHelpTip(int cell_bounds[4], int cell_y, int mous
 	tip = c.title;
 	return 1;
 }
+
+
+

@@ -180,6 +180,10 @@ typedef	map<int, pair<string, bool> >	GUI_EnumDictionary;	// For each enum: what
 class	GUI_TextTableProvider {
 public:
 
+	
+
+	//virtual int		ShowOnlyTaxiway() = 0;
+
 	virtual void	GetCellContent(
 						int							cell_x,
 						int							cell_y,
@@ -281,7 +285,6 @@ public:
 											GUI_DragOperation			allowed,
 											GUI_DragOperation			recommended)=0;
 
-
 };
 
 class	GUI_TextTableHeaderProvider {
@@ -306,6 +309,7 @@ public:
 						 GUI_TextTable(GUI_Commander * parent, int indent, int live_edit);
 	virtual				~GUI_TextTable();
 
+			
 			void		SetProvider(GUI_TextTableProvider * content);
 			void		SetGeometry(GUI_TableGeometry * geometry);
 			void		SetParentTable(GUI_Table * parent);

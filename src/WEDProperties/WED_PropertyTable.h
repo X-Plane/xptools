@@ -50,9 +50,15 @@ public:
 									int						dynamic_cols,
 									int						sel_only,
 									const char **			filter
-);
+									);
 
 	virtual			~WED_PropertyTable();
+
+
+
+	WED_Thing* GetThingAt(int index) {
+		return FetchNth(index);
+	}
 
 	virtual    void	GetCellContent(
 						int							cell_x,
@@ -112,6 +118,7 @@ public:
 	virtual	int		DoubleClickCell(
 						int							cell_x,
 						int							cell_y);
+
 
 	virtual	void					GetLegalDropOperations(
 											int&						allow_between_col,
@@ -175,6 +182,8 @@ public:
 	virtual	void    GetClosed(		set<int>& closed_list);
 
 	void	SetFilter(const string& filter);
+
+
 
 private:
 

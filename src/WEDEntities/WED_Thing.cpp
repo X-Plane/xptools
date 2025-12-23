@@ -284,6 +284,8 @@ void	WED_Thing::GetName(string& n) const
 	n = name.value;
 }
 
+
+
 void	WED_Thing::SetName(const string& n)
 {
 	name = n;
