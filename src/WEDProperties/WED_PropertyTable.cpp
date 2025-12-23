@@ -725,12 +725,59 @@ int		WED_PropertyTable::TabAdvance(
 
 int WED_PropertyTable::DoubleClickCell(int cell_x, int cell_y)
 {
-		return 1;
+	// Only act on moderator mode double-clicks
+	if (!gModeratorMode) return 0;
+
+	// Map to the row/thing index depending on orientation
+	WED_Thing* clicked = FetchNth(mVertical ? cell_x : cell_y);
+	if (!clicked) return 0;
+
+	// Only act when the Name column was double-clicked
+	if (mColNames[mVertical ? cell_y : cell_x] != "Name") return 0;
+
+	string name;
+	clicked->GetName(name);
+	if (name != "Taxiways") return 0;
+
+	// Helper to test descendant
+	auto is_descendant = [](WED_Thing* ancestor, WED_Thing* node) {
+		if (!ancestor || !node) return false;
+		while (node) {
+			if (node == ancestor) return true;
+			node = node->GetParent();
+		}
+		return false;
+	};
+
+	// Begin a single undoable command on the world (group all changes)
+	WED_Thing* world = WED_GetWorld(mResolver);
+	if (world) world->StartCommand("Show only Taxiways");
+
+	// Iterate all items in the table and set Hidden appropriately
+	int rows = GetRowCount();
+	for (int i = 0; i < rows; ++i)
+	{
+		WED_Thing* t = FetchNth(i);
+		if (!t) continue;
+		// skip the world itself
+		if (t == world) continue;
+
+		int hp = t->FindProperty("Hidden");
+		if (hp == -1) continue;
+
+		PropertyVal_t pv;
+		pv.prop_kind = prop_Bool;
+		// hide everything that is not the Taxiways folder or its descendant
+		if (!is_descendant(clicked, t)) pv.int_val = 1; else pv.int_val = 0;
+		t->SetNthProperty(hp, pv);
+	}
+
+	if (world) world->CommitCommand();
+
+	mCacheValid = false;
+	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED, 0);
+	return 1;
 }
-
-
-
-
 
 void					WED_PropertyTable::GetLegalDropOperations(
 							int&						allow_between_col,
@@ -1311,9 +1358,4 @@ void		WED_PropertyTable::GetFilterStatus(WED_Thing * what, ISelection * sel,
 //
 //	return 1;
 //}
-
-
-
-
-
 

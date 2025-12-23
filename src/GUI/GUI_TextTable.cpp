@@ -747,28 +747,13 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 								}
 							}
 
-							// Unhide clicked Taxiways and its children
-							std::vector<WED_Thing*> stack;
-							stack.push_back(clickedThing);
-
-							while (!stack.empty())
-							{
-								WED_Thing* cur = stack.back();
-								stack.pop_back();
-
-								int hp = cur->FindProperty("Hidden");
-								if (hp != -1)
-								{
-									PropertyVal_t pv;
-									pv.prop_kind = prop_Bool;
-									pv.int_val = 0; // unhide
-									cur->SetNthProperty(hp, pv);
-								}
-
-								int nc = cur->CountChildren();
-								for (int i = 0; i < nc; ++i)
-									stack.push_back(cur->GetNthChild(i));
-							}
+							clickedThing->FindProperty("Hidden");
+							int hp = clickedThing->FindProperty("Hidden");
+							PropertyVal_t pv;
+							pv.prop_kind = prop_Bool;
+							pv.int_val = -1; // hide
+							clickedThing->SetNthProperty(hp, pv);
+							
 						}
 					}
 
