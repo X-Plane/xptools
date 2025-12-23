@@ -20,7 +20,8 @@
  * THE SOFTWARE.
  *
  */
-
+#include "WED_Menus.h"
+#include "WED_MapPane.h"
 #include "WED_PropertyTable.h"
 #include "GUI_TextField.h"
 #include "GUI_TextTable.h"
@@ -723,7 +724,6 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 				{
 					std::string cellName = cellContent.text_val;
 
-					// Get the clicked WED_Thing directly
 					WED_Thing* clickedThing = mContent_WED->GetThingAt(cell_y);
 
 					if (clickedThing)
@@ -733,7 +733,6 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 
 						if (name == "Taxiways")
 						{
-							// Hide everything first
 							for (int i = 0; i < mContent_WED->GetRowCount(); i++)
 							{
 								WED_Thing* thing = mContent_WED->GetThingAt(i);
@@ -742,41 +741,120 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 								{
 									PropertyVal_t pv;
 									pv.prop_kind = prop_Bool;
-									pv.int_val = 1; // hide
+									pv.int_val = 1;
 									thing->SetNthProperty(hp, pv);
 								}
 							}
 
-							clickedThing->FindProperty("Hidden");
-							int hp = clickedThing->FindProperty("Hidden");
-							PropertyVal_t pv;
-							pv.prop_kind = prop_Bool;
-							pv.int_val = 0; // hide
-							clickedThing->SetNthProperty(hp, pv);
+							WED_Thing* thingCursor = clickedThing;
+
+							while (thingCursor)
+							{
+								std::string name;
+								thingCursor->GetName(name);
+
+								int hp = thingCursor->FindProperty("Hidden");
+								if (hp != -1)
+								{
+									PropertyVal_t pv;
+									pv.prop_kind = prop_Bool;
+									pv.int_val = 0; // unhide
+									thingCursor->SetNthProperty(hp, pv);
+								}
+
+								if (name == "world") break;
+
+								thingCursor = thingCursor->GetParent();
+							}
+
+
+							DispatchHandleCommand(wed_SlippyMapNone);
+
+						}
+
+						if (name == "Draped Polygons")
+						{
+							for (int i = 0; i < mContent_WED->GetRowCount(); i++)
+							{
+								WED_Thing* thing = mContent_WED->GetThingAt(i);
+								int hp = thing->FindProperty("Hidden");
+								if (hp != -1)
+								{
+									PropertyVal_t pv;
+									pv.prop_kind = prop_Bool;
+									pv.int_val = 1;
+									thing->SetNthProperty(hp, pv);
+								}
+							}
+
+
+							WED_Thing* thingCursor = clickedThing;
+
+							while (thingCursor)
+							{
+								std::string name;
+								thingCursor->GetName(name);
+
+								int hp = thingCursor->FindProperty("Hidden");
+								if (hp != -1)
+								{
+									PropertyVal_t pv;
+									pv.prop_kind = prop_Bool;
+									pv.int_val = 0; // unhide
+									thingCursor->SetNthProperty(hp, pv);
+								}
+
+								if (name == "world") break;
+
+								thingCursor = thingCursor->GetParent();
+							}
+
+
+							DispatchHandleCommand(wed_SlippyMapNone);
+
+						}
+
+						if (name == "Ground Vehicles")
+						{
+							for (int i = 0; i < mContent_WED->GetRowCount(); i++)
+							{
+								WED_Thing* thing = mContent_WED->GetThingAt(i);
+								int hp = thing->FindProperty("Hidden");
+								if (hp != -1)
+								{
+									PropertyVal_t pv;
+									pv.prop_kind = prop_Bool;
+									pv.int_val = 1;
+									thing->SetNthProperty(hp, pv);
+								}
+							}
 
 
 
-							WED_Thing* parent = clickedThing->GetParent();
+							WED_Thing* thingCursor = clickedThing;
 
+							while (thingCursor)
+							{
+								std::string name;
+								thingCursor->GetName(name);
 
-							parent->FindProperty("Hidden");
-							int hpParent = parent->FindProperty("Hidden");
-							PropertyVal_t pvParent;
-							pvParent.prop_kind = prop_Bool;
-							pvParent.int_val =0; // hide
-							parent->SetNthProperty(hpParent, pvParent);
+								int hp = thingCursor->FindProperty("Hidden");
+								if (hp != -1)
+								{
+									PropertyVal_t pv;
+									pv.prop_kind = prop_Bool;
+									pv.int_val = 0; // unhide
+									thingCursor->SetNthProperty(hp, pv);
+								}
 
+								if (name == "world") break;
 
-							WED_Thing* parent2 = parent->GetParent();
+								thingCursor = thingCursor->GetParent();
+							}
 
-
-							parent2->FindProperty("Hidden");
-							int hpParent2 = parent2->FindProperty("Hidden");
-							PropertyVal_t pvParent2;
-							pvParent2.prop_kind = prop_Bool;
-							pvParent2.int_val = 0; // hide
-							parent2->SetNthProperty(hpParent2, pvParent2);
-
+							DispatchHandleCommand(wed_SlippyMapNone);
+							//DispatchHandleCommand(wed_MapATC);
+							//SetTabFilterMode(wed_MapATC);
 						}
 					}
 

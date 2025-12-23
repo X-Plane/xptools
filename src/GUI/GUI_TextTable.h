@@ -182,7 +182,6 @@ public:
 
 	
 
-	//virtual int		ShowOnlyTaxiway() = 0;
 
 	virtual void	GetCellContent(
 						int							cell_x,
