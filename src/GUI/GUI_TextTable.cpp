@@ -682,6 +682,8 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 
 	int	all_edit = mParent->GetModifiersNow() & (gui_OptionAltFlag | gui_ControlFlag);
 
+
+
 	switch(mEditInfo.content_type) {
 	case gui_Cell_FileText:
 		{
@@ -707,167 +709,188 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 	case gui_Cell_TaxiText:
 	case gui_Cell_Integer:
 	case gui_Cell_Double:
-		if (mParent)
 		{
-			if (gModeratorMode)
-			{
-				mClickCellX = cell_x;
-				mClickCellY = cell_y;
+			if (mParent == nullptr) break;
+			if (gModeratorMode == 0) break;
 
-				GUI_CellContent cellContent;
+			mClickCellX = cell_x;
+			mClickCellY = cell_y;
 
-				WED_PropertyTable* mContent_WED = dynamic_cast<WED_PropertyTable*>(mContent);
-				mContent_WED->GetCellContent(cell_x, cell_y, cellContent);
+			GUI_CellContent cellContent;
 
-				if (cellContent.content_type == gui_Cell_EditText ||
-					cellContent.content_type == gui_Cell_TaxiText)
+			WED_PropertyTable* mContent_WED = dynamic_cast<WED_PropertyTable*>(mContent);
+			mContent_WED->GetCellContent(cell_x, cell_y, cellContent);
+
+			this->firstDoubleClick = !firstDoubleClick;
+
+			if (cellContent.content_type != gui_Cell_EditText && cellContent.content_type != gui_Cell_TaxiText) break;
+
+			if (this->firstDoubleClick) {
+				std::string cellName = cellContent.text_val;
+
+				WED_Thing* clickedThing = mContent_WED->GetThingAt(cell_y);
+
+				if (clickedThing == nullptr) break;
+
+				std::string name;
+				clickedThing->GetName(name);
+
+				if (name == "Taxiways")
 				{
-					std::string cellName = cellContent.text_val;
-
-					WED_Thing* clickedThing = mContent_WED->GetThingAt(cell_y);
-
-					if (clickedThing)
+					for (int i = 0; i < mContent_WED->GetRowCount(); i++)
 					{
-						std::string name;
-						clickedThing->GetName(name);
-
-						if (name == "Taxiways")
+						WED_Thing* thing = mContent_WED->GetThingAt(i);
+						int hp = thing->FindProperty("Hidden");
+						if (hp != -1)
 						{
-							for (int i = 0; i < mContent_WED->GetRowCount(); i++)
-							{
-								WED_Thing* thing = mContent_WED->GetThingAt(i);
-								int hp = thing->FindProperty("Hidden");
-								if (hp != -1)
-								{
-									PropertyVal_t pv;
-									pv.prop_kind = prop_Bool;
-									pv.int_val = 1;
-									thing->SetNthProperty(hp, pv);
-								}
-							}
-
-							WED_Thing* thingCursor = clickedThing;
-
-							while (thingCursor)
-							{
-								std::string name;
-								thingCursor->GetName(name);
-
-								int hp = thingCursor->FindProperty("Hidden");
-								if (hp != -1)
-								{
-									PropertyVal_t pv;
-									pv.prop_kind = prop_Bool;
-									pv.int_val = 0; // unhide
-									thingCursor->SetNthProperty(hp, pv);
-								}
-
-								if (name == "world") break;
-
-								thingCursor = thingCursor->GetParent();
-							}
-
-
-							DispatchHandleCommand(wed_SlippyMapNone);
-
-						}
-
-						if (name == "Draped Polygons")
-						{
-							for (int i = 0; i < mContent_WED->GetRowCount(); i++)
-							{
-								WED_Thing* thing = mContent_WED->GetThingAt(i);
-								int hp = thing->FindProperty("Hidden");
-								if (hp != -1)
-								{
-									PropertyVal_t pv;
-									pv.prop_kind = prop_Bool;
-									pv.int_val = 1;
-									thing->SetNthProperty(hp, pv);
-								}
-							}
-
-
-							WED_Thing* thingCursor = clickedThing;
-
-							while (thingCursor)
-							{
-								std::string name;
-								thingCursor->GetName(name);
-
-								int hp = thingCursor->FindProperty("Hidden");
-								if (hp != -1)
-								{
-									PropertyVal_t pv;
-									pv.prop_kind = prop_Bool;
-									pv.int_val = 0; // unhide
-									thingCursor->SetNthProperty(hp, pv);
-								}
-
-								if (name == "world") break;
-
-								thingCursor = thingCursor->GetParent();
-							}
-
-
-							DispatchHandleCommand(wed_SlippyMapNone);
-
-						}
-
-						if (name == "Ground Vehicles")
-						{
-							for (int i = 0; i < mContent_WED->GetRowCount(); i++)
-							{
-								WED_Thing* thing = mContent_WED->GetThingAt(i);
-								int hp = thing->FindProperty("Hidden");
-								if (hp != -1)
-								{
-									PropertyVal_t pv;
-									pv.prop_kind = prop_Bool;
-									pv.int_val = 1;
-									thing->SetNthProperty(hp, pv);
-								}
-							}
-
-
-
-							WED_Thing* thingCursor = clickedThing;
-
-							while (thingCursor)
-							{
-								std::string name;
-								thingCursor->GetName(name);
-
-								int hp = thingCursor->FindProperty("Hidden");
-								if (hp != -1)
-								{
-									PropertyVal_t pv;
-									pv.prop_kind = prop_Bool;
-									pv.int_val = 0; // unhide
-									thingCursor->SetNthProperty(hp, pv);
-								}
-
-								if (name == "world") break;
-
-								thingCursor = thingCursor->GetParent();
-							}
-
-							DispatchHandleCommand(wed_SlippyMapNone);
-							//DispatchHandleCommand(wed_MapATC);
-							//SetTabFilterMode(wed_MapATC);
+							PropertyVal_t pv;
+							pv.prop_kind = prop_Bool;
+							pv.int_val = 1;
+							thing->SetNthProperty(hp, pv);
 						}
 					}
 
+					WED_Thing* thingCursor = clickedThing;
+
+					while (thingCursor)
+					{
+						std::string name;
+						thingCursor->GetName(name);
+
+						int hp = thingCursor->FindProperty("Hidden");
+						if (hp != -1)
+						{
+							PropertyVal_t pv;
+							pv.prop_kind = prop_Bool;
+							pv.int_val = 0; // unhide
+							thingCursor->SetNthProperty(hp, pv);
+						}
+
+						if (name == "world") break;
+
+						thingCursor = thingCursor->GetParent();
+					}
+
+
+					DispatchHandleCommand(wed_SlippyMapESRI);
+				}
+
+				if (name == "Draped Polygons")
+				{
+					for (int i = 0; i < mContent_WED->GetRowCount(); i++)
+					{
+						WED_Thing* thing = mContent_WED->GetThingAt(i);
+						int hp = thing->FindProperty("Hidden");
+						if (hp != -1)
+						{
+							PropertyVal_t pv;
+							pv.prop_kind = prop_Bool;
+							pv.int_val = 1;
+							thing->SetNthProperty(hp, pv);
+						}
+					}
+
+
+					WED_Thing* thingCursor = clickedThing;
+
+					while (thingCursor)
+					{
+						std::string name;
+						thingCursor->GetName(name);
+
+						int hp = thingCursor->FindProperty("Hidden");
+						if (hp != -1)
+						{
+							PropertyVal_t pv;
+							pv.prop_kind = prop_Bool;
+							pv.int_val = 0; // unhide
+							thingCursor->SetNthProperty(hp, pv);
+						}
+
+						if (name == "world") break;
+
+						thingCursor = thingCursor->GetParent();
+					}
+
+
+					DispatchHandleCommand(wed_SlippyMapNone);
+
+				}
+
+				if (name == "Ground Vehicles")
+				{
+					for (int i = 0; i < mContent_WED->GetRowCount(); i++)
+					{
+						WED_Thing* thing = mContent_WED->GetThingAt(i);
+						int hp = thing->FindProperty("Hidden");
+						if (hp != -1)
+						{
+							PropertyVal_t pv;
+							pv.prop_kind = prop_Bool;
+							pv.int_val = 1;
+							thing->SetNthProperty(hp, pv);
+						}
+					}
+
+
+
+					WED_Thing* thingCursor = clickedThing;
+
+					while (thingCursor)
+					{
+						std::string name;
+						thingCursor->GetName(name);
+
+						int hp = thingCursor->FindProperty("Hidden");
+						if (hp != -1)
+						{
+							PropertyVal_t pv;
+							pv.prop_kind = prop_Bool;
+							pv.int_val = 0; // unhide
+							thingCursor->SetNthProperty(hp, pv);
+						}
+
+						if (name == "world") break;
+
+						thingCursor = thingCursor->GetParent();
+					}
+
+					DispatchHandleCommand(wed_SlippyMapNone);
+					//DispatchHandleCommand(wed_MapATC);
+					//SetTabFilterMode(wed_MapATC);
+				}
+
+
+				mContent->ToggleDisclose(cell_x, cell_y);
+			}
+
+			if (!this->firstDoubleClick) {
+				if (!mContent_WED) break;  // protect against failed dynamic_cast
+
+				for (int i = 0; i < mContent_WED->GetRowCount(); i++) {
+					WED_Thing* thing = mContent_WED->GetThingAt(i);
+					if (!thing) continue;  // skip null rows
+
+					int hp = thing->FindProperty("Hidden");
+					if (hp != -1) {
+						PropertyVal_t pv;
+						pv.prop_kind = prop_Bool;
+						pv.int_val = 0;
+						thing->SetNthProperty(hp, pv);
+					}
+				}
+
+				if (mContent) {
 					mContent->ToggleDisclose(cell_x, cell_y);
 				}
-				else
-				{
-					cell_bounds[0] -= mEditInfo.indent_level * mCellIndent;
-					CreateEdit(cell_bounds);
-					mClickCellX = cell_x;
-					mClickCellY = cell_y;
-				}
 			}
+
+
+			cell_bounds[0] -= mEditInfo.indent_level * mCellIndent;
+			CreateEdit(cell_bounds);
+			mClickCellX = cell_x;
+			mClickCellY = cell_y;
+
 
 			return 1;
 		}

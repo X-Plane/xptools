@@ -427,6 +427,8 @@ private:
 	string					mImage;
 	int						mAlternate;
 
+	bool					firstDoubleClick = false;
+
 };
 
 
