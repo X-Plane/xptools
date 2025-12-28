@@ -239,7 +239,7 @@ void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 
 		while(*path)
 		{
-			WED_Ring * rng = WED_RingfromImage(path, arch, zoomer, false);
+			WED_Ring * rng = WED_RingfromImage(path, arch, zoomer, nullptr, nullptr);
 			if (rng)
 			{
 				WED_OverlayImage * img = WED_OverlayImage::CreateTyped(arch);
@@ -5688,14 +5688,7 @@ vector<Polygon2> MakeOneVPoly2(const vector<WED_Thing*>& pave_src)
 	return out_vpoly2;
 }
 
-namespace
-{
-	template<class T>
-	WED_Thing* CreateThing(WED_Archive* parent)
-	{
-		return T::CreateTyped(parent);
-	}
-}
+
 
 vector<WED_LinePlacement*> MakeEdgesFromVPoly2(WED_Thing* parent, const vector<Polygon2>& pavement, vector<WED_Thing*> pave_src, IResolver * resolver)
 {

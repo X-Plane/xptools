@@ -511,7 +511,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			sel->Clear();
 			sel->Insert(vector<ISelectable*>(tree_objs.begin(), tree_objs.end()));
 //			wrl->CommitCommand();
-			WED_DoConvertToForest(resolver, false);
+			WED_DoConvertToForest(resolver);
 //			wrl->StartCommand("Restart after Forest");
 			LOG_MSG("Converted Trees into Forests at %s\n", ICAO_code.c_str());
 		}
