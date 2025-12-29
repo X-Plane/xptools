@@ -2,9 +2,7 @@
 set -euo pipefail
 
 # --- Configuration ---
-BUILD_DIR="build"
 PROFILE="default"   # Change to your Conan profile name if needed
-BUILD_TYPE="Release" # Or "Debug"
 
 # --- Determine default generator ---
 OS_NAME="$(uname -s)"
@@ -19,7 +17,9 @@ GENERATOR="${GENERATOR:-${1:-$DEFAULT_GENERATOR}}"
 
 echo "Using CMake generator: $GENERATOR"
 
-mkdir -p "${BUILD_DIR}"
+mkdir -p "build_Debug"
+mkdir -p "build_RelWithDebInfo"
+mkdir -p "build_Release"
 
 # --- Step 1: Install Conan dependencies ---
 echo "Installing Conan Debug build type dependencies..."
@@ -27,29 +27,41 @@ echo "Installing Conan Debug build type dependencies..."
 conan install . \
     --profile "${PROFILE}" \
     --build=missing \
-    --output-folder="${BUILD_DIR}" \
+    --output-folder="build_Debug" \
     --settings build_type="Debug"
 
 echo "Installing Conan RelWithDebInfo build type dependencies..."
 conan install . \
     --profile "${PROFILE}" \
     --build=missing \
-    --output-folder="${BUILD_DIR}" \
+    --output-folder="build_RelWithDebInfo" \
     --settings build_type="RelWithDebInfo"
 
 echo "Installing Conan Release build type dependencies..."
 conan install . \
     --profile "${PROFILE}" \
     --build=missing \
-    --output-folder="${BUILD_DIR}" \
+    --output-folder="build_Release" \
     --settings build_type="Release"
 
 # --- Step 3: Run CMake ---
 echo "Generating project with ${GENERATOR}..."
-cmake -S . -B "${BUILD_DIR}" \
+cmake -S . -B "build_Debug" \
     -G "${GENERATOR}" \
-    -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
-    -DCMAKE_TOOLCHAIN_FILE=${BUILD_DIR}/${BUILD_TYPE}/generators/conan_toolchain.cmake
+    -DCMAKE_BUILD_TYPE=Debug \
+	-DCMAKE_CONFIGURATION_TYPES=Debug \
+    -DCMAKE_TOOLCHAIN_FILE=build_Debug/build/Debug/generators/conan_toolchain.cmake
 
-echo "✅ Project generated in ${BUILD_DIR} using ${GENERATOR}"
+cmake -S . -B "build_RelWithDebInfo" \
+    -G "${GENERATOR}" \
+    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+	-DCMAKE_CONFIGURATION_TYPES=RelWithDebInfo \
+    -DCMAKE_TOOLCHAIN_FILE=build_RelWithDebInfo/build/RelWithDebInfo/generators/conan_toolchain.cmake
 
+cmake -S . -B "build_Release" \
+    -G "${GENERATOR}" \
+    -DCMAKE_BUILD_TYPE=Release \
+	-DCMAKE_CONFIGURATION_TYPES=Release \
+    -DCMAKE_TOOLCHAIN_FILE=build_Release/build/Release/generators/conan_toolchain.cmake
+
+echo "Project generated using ${GENERATOR}"
