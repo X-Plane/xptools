@@ -5572,7 +5572,6 @@ int WED_DoAgePavement(WED_Airport* apt, int age)  // age 1 = older
 	CollectRecursive(apt, back_inserter(twys));
 	CollectRecursive(apt, back_inserter(pols));
 
-	// int changes = 0;
 
 	for (auto r : rwys)
 	{
@@ -5659,7 +5658,6 @@ void WED_AgePavement(IResolver* resolver)
 
 	wrl->StartOperation("Age Pavement");
 
-	// int count = 0;
 	for (auto a : all_apts)
 		count += WED_DoAgePavement(a, age);
 	if (count > 0)
@@ -6558,7 +6556,6 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 	if(apt_boundary.size() == 0) return 0;
 
 	// prevent mowing the water e.g. at Juneau
-	// vector<WED_Sealane*> sealn;
 	CollectRecursive(apt, back_inserter(sealn), WED_Sealane::sClass);
 	for (auto s : sealn)
 	{
@@ -6781,7 +6778,6 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 	}
 
 	// paved pads and mowing swirls underneath signs and some lights
-	// vector<WED_AirportSign *> signs;
 	CollectRecursive(apt, back_inserter(signs), WED_AirportSign::sClass);
 	
 	for(auto s : signs)
@@ -6848,7 +6844,6 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 	}
 	
 	// mow around all winsocks - also enhances their visibility
-	// vector<WED_Windsock *> socks;
 	CollectRecursive(apt, back_inserter(socks), WED_Windsock::sClass);
 	for(auto s : socks)
 	{
