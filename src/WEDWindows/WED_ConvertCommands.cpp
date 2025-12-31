@@ -574,3 +574,74 @@ void	WED_DoConvertToForest(IResolver* resolver, bool in_cmd)
 	else
 		if (in_cmd) op->AbortOperation();
 }
+
+bool WED_ConvertTo(WED_LibraryMgr * lmgr, ISelection * sel, CreateThingFunc create)
+{
+	vector<ISelectable*> to_convert;
+	sel->GetSelectionVector(to_convert);
+
+	set<WED_Thing*> to_delete;
+
+	for (const auto tc : to_convert)
+	{
+		auto src = dynamic_cast<WED_Thing*>(tc);
+
+		vector<WED_GISChain*> chains;
+		get_chains(src, chains);
+		if (chains.empty())
+		{
+			DoUserAlert("No chains");
+			return false;
+		}
+
+		WED_Thing* dst = create(src->GetArchive());
+		bool dst_is_polygon = dynamic_cast<WED_GISPolygon*>(dst) != NULL;
+
+		if (dst_is_polygon)
+		{
+			add_chains(dst, chains);
+
+			string name;
+			src->GetName(name);
+			dst->SetName(name);
+
+			copy_heading(src, dst);
+			set_style(dst, get_style(src), lmgr);
+
+			sel->Insert(dst);
+			dst->SetParent(src->GetParent(), src->GetMyPosition() + 1);
+		}
+		else
+		{
+			if (dynamic_cast<IHasAttr*>(src) && dynamic_cast<IHasAttr*>(dst) == nullptr)
+				split_chains_by_attribute(chains, to_delete, src, dst);
+
+			for (int i = 0; i < chains.size(); ++i)
+			{
+				if (chains[i]->GetNumPoints() < 2)
+					continue;
+
+				if (i > 0) dst = create(src->GetArchive());
+
+				string name;
+				src->GetName(name);
+				dst->SetName(name);
+
+				set_closed(dst, chains[i]->IsClosed());
+				move_points(chains[i], dst);
+				auto style = get_style(dynamic_cast<WED_Thing*>(chains[i]));
+				set_style(dst, style, lmgr);
+
+				sel->Insert(dst);
+				dst->SetParent(src->GetParent(), src->GetMyPosition() + 1 + i);
+			}
+		}
+
+		sel->Erase(src);
+		src->SetParent(NULL, 0);
+		to_delete.insert(src);
+	}
+
+	WED_RecursiveDelete(to_delete);
+	return true;
+}

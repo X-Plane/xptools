@@ -5572,7 +5572,7 @@ int WED_DoAgePavement(WED_Airport* apt, int age)  // age 1 = older
 	CollectRecursive(apt, back_inserter(twys));
 	CollectRecursive(apt, back_inserter(pols));
 
-	int changes = 0;
+	// int changes = 0;
 
 	for (auto r : rwys)
 	{
@@ -5659,7 +5659,7 @@ void WED_AgePavement(IResolver* resolver)
 
 	wrl->StartOperation("Age Pavement");
 
-	int count = 0;
+	// int count = 0;
 	for (auto a : all_apts)
 		count += WED_DoAgePavement(a, age);
 	if (count > 0)
@@ -5775,14 +5775,6 @@ vector<Polygon2> MakeOneVPoly2(const vector<WED_Thing*>& pave_src)
 	return out_vpoly2;
 }
 
-namespace
-{
-	template<class T>
-	WED_Thing* CreateThing(WED_Archive* parent)
-	{
-		return T::CreateTyped(parent);
-	}
-}
 
 vector<WED_LinePlacement*> MakeEdgesFromVPoly2(WED_Thing* parent, const vector<Polygon2>& pavement, vector<WED_Thing*> pave_src, IResolver * resolver)
 {
@@ -6487,7 +6479,6 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 	vector<WED_AirportSign *> signs;
 	vector<WED_Windsock *> socks;
 	vector<WED_PolygonPlacement*> polys;
-	vector<WED_AirportBoundary*> bdys;
 
 	typedef vector<Polygon2> vPoly2;
 	vPoly2 apt_boundary, all_grass_poly, all_pave_poly;
@@ -6567,7 +6558,7 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 	if(apt_boundary.size() == 0) return 0;
 
 	// prevent mowing the water e.g. at Juneau
-	vector<WED_Sealane*> sealn;
+	// vector<WED_Sealane*> sealn;
 	CollectRecursive(apt, back_inserter(sealn), WED_Sealane::sClass);
 	for (auto s : sealn)
 	{
@@ -6790,7 +6781,7 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 	}
 
 	// paved pads and mowing swirls underneath signs and some lights
-	vector<WED_AirportSign *> signs;
+	// vector<WED_AirportSign *> signs;
 	CollectRecursive(apt, back_inserter(signs), WED_AirportSign::sClass);
 	
 	for(auto s : signs)
@@ -6857,7 +6848,7 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 	}
 	
 	// mow around all winsocks - also enhances their visibility
-	vector<WED_Windsock *> socks;
+	// vector<WED_Windsock *> socks;
 	CollectRecursive(apt, back_inserter(socks), WED_Windsock::sClass);
 	for(auto s : socks)
 	{

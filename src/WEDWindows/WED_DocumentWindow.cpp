@@ -422,13 +422,13 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_CopyToAirport:	WED_DoCopyToAirport(mDocument);  mMapPane->ZoomShowSel(2.0); return 1;
 	case wed_Group:		WED_DoGroup(mDocument); return 1;
 	case wed_Ungroup:	WED_DoUngroup(mDocument); return 1;
-	case wed_ConvertToPolygon:	WED_DoConvertTo(mDocument, &CreateThing<WED_PolygonPlacement>);	return 1;
-	case wed_ConvertToTaxiway:	WED_DoConvertTo(mDocument, &CreateThing<WED_Taxiway>);	return 1;
-	case wed_ConvertToTaxiline:	WED_DoConvertTo(mDocument, &CreateThing<WED_AirportChain>);	return 1;
-	case wed_ConvertToLine:		WED_DoConvertTo(mDocument, &CreateThing<WED_LinePlacement>);	return 1;
-	case wed_ConvertToString:	WED_DoConvertTo(mDocument, &CreateThing<WED_StringPlacement>);	return 1;
+	case wed_ConvertToPolygon:	WED_DoConvertTo(mDocument, &CreateThing<WED_PolygonPlacement>, true);	return 1;
+	case wed_ConvertToTaxiway:	WED_DoConvertTo(mDocument, &CreateThing<WED_Taxiway>, true);	return 1;
+	case wed_ConvertToTaxiline:	WED_DoConvertTo(mDocument, &CreateThing<WED_AirportChain>, true);	return 1;
+	case wed_ConvertToLine:		WED_DoConvertTo(mDocument, &CreateThing<WED_LinePlacement>, true);	return 1;
+	case wed_ConvertToString:	WED_DoConvertTo(mDocument, &CreateThing<WED_StringPlacement>, true);	return 1;
 	case wed_ConvertToForest:	WED_DoConvertToForest(mDocument); return 1;
-	case wed_ConvertToShape:	WED_DoConvertTo(mDocument, &CreateThing<WED_ShapePlacement>); return 1;
+	case wed_ConvertToShape:	WED_DoConvertTo(mDocument, &CreateThing<WED_ShapePlacement>, true); return 1;
 
 	case wed_MoveFirst:	WED_DoReorder(mDocument,-1,1);	return 1;
 	case wed_MovePrev:	WED_DoReorder(mDocument,-1,0);	return 1;
