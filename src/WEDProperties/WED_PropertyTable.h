@@ -52,7 +52,11 @@ public:
 									const char **			filter
 );
 
+
 	virtual			~WED_PropertyTable();
+
+
+	WED_Thing* GetThingAt(int index) { return FetchNth(index); }
 
 	virtual    void	GetCellContent(
 						int							cell_x,
@@ -174,7 +178,9 @@ public:
 	virtual	void    SetClosed(const set<int>& closed_list);
 	virtual	void    GetClosed(		set<int>& closed_list);
 
-	void	SetFilter(const string& filter);
+	void			SetFilter(const string& filter);
+
+
 
 private:
 
