@@ -433,14 +433,14 @@ void	WED_PropertyTable::AcceptEdit(
 }
 
 void	WED_PropertyTable::ToggleDisclose(
-						int							cell_x,
-						int							cell_y)
+	int							cell_x,
+	int							cell_y)
 {
-	WED_Thing * t = FetchNth(mVertical ? cell_x : cell_y);
+	WED_Thing* t = FetchNth(mVertical ? cell_x : cell_y);
 	if (t)
 		ToggleOpen(t->GetID());
 	mCacheValid = false;
-	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);
+	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED, 0);
 }
 
 void	WED_PropertyTable::DoDeleteCell(

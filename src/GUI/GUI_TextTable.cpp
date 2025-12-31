@@ -136,6 +136,10 @@ GUI_TextTable::GUI_TextTable(GUI_Commander * parent, int indent, int live_edit) 
 	mTFColorBox[0] = 0.3;		mTFColorBox[1] = 0.5;		mTFColorBox[2] = 1.0;		mTFColorBox[3] = 1.0;
 
 	mDiscloseIndent = GUI_GetImageResourceWidth("disclose.png") / 2;
+
+	mLastClickTime = std::chrono::steady_clock::time_point();
+	mLastClickCellX = -1;
+	mLastClickCellY = -1;
 }
 
 GUI_TextTable::~GUI_TextTable()
@@ -513,35 +517,43 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 	mSelStartX = mSelStartY = -1;
 	mCellResize = -1;
 
-	static int last_cell_x = -1;
-	static int last_cell_y = -1;
-	static int last_mouse_x = -1;
-	static int last_mouse_y = -1;
-	static float last_time_now = -1.0;
-	float time_now = mParent->GetTimeNow();
-	bool did_double = false;
-	if (mContent &&
-		last_cell_x == cell_x &&
-		last_cell_y == cell_y &&
-		fabs((float)(last_mouse_x - mouse_x)) < 3.0 &&
-		fabs((float)(last_mouse_y - mouse_y)) < 3.0 &&
-		time_now - last_time_now < 0.1)
+	// double-click detection moved to steady_clock-based tracker
+	if (button == 0 && mContent)
 	{
-		did_double = mContent->DoubleClickCell(cell_x,cell_y);
+		auto now = std::chrono::steady_clock::now();
+		const int DOUBLE_CLICK_MS = 400;
+		if (mLastClickCellX == cell_x && mLastClickCellY == cell_y)
+		{
+			auto dt = std::chrono::duration_cast<std::chrono::milliseconds>(now - mLastClickTime).count();
+			if (dt <= DOUBLE_CLICK_MS)
+			{
+				if (mContent->DoubleClickCell(cell_x, cell_y))
+					return 1;
+				// reset tracker
+				mLastClickTime = std::chrono::steady_clock::time_point();
+				mLastClickCellX = -1;
+				mLastClickCellY = -1;
+			}
+			else
+			{
+				mLastClickTime = now;
+				mLastClickCellX = cell_x;
+				mLastClickCellY = cell_y;
+			}
+		}
+		else
+		{
+			mLastClickTime = now;
+			mLastClickCellX = cell_x;
+			mLastClickCellY = cell_y;
+		}
 	}
 
-	last_cell_x = cell_x;
-	last_cell_y = cell_y;
-	last_mouse_x = mouse_x;
-	last_mouse_y = mouse_y;
-	last_time_now = time_now;
-
-	if (did_double) return 1;
 
 	if (mGeometry && abs(mouse_x - cell_bounds[0]) < RESIZE_MARGIN && cell_x > 0)
 	{
 		mLastX = mouse_x;
-		mCellResize = cell_x -1;
+		mCellResize = cell_x - 1;
 		return 1;
 	}
 	if (mGeometry && abs(mouse_x - cell_bounds[2]) < RESIZE_MARGIN && cell_x < mGeometry->GetColCount())
@@ -574,14 +586,14 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 
 	//Fill mEditInfo so we can make decisions based on the cell's
 	//Abilities, Status, and Content
-	mContent->GetCellContent(cell_x,cell_y,mEditInfo);
+	mContent->GetCellContent(cell_x, cell_y, mEditInfo);
 
 	mClickCellX = -1;
 	mClickCellY = -1;
 
 	cell_bounds[0] += (mEditInfo.indent_level * mCellIndent);
 
-//	if (mouse_x < cell_bounds[0])	{ mEditInfo.content_type = gui_Cell_None; return 1; }
+	//	if (mouse_x < cell_bounds[0])	{ mEditInfo.content_type = gui_Cell_None; return 1; }
 
 	if (mEditInfo.can_delete == true)
 	{
@@ -599,7 +611,7 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 		}
 	}
 
-	if(mEditInfo.is_disclosed || mEditInfo.can_disclose)
+	if (mEditInfo.is_disclosed || mEditInfo.can_disclose)
 	{
 		//Regardless of state, if it is able to we're going to toggle
 		//the button
@@ -626,51 +638,51 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 		cell_bounds[0] += mDiscloseIndent;
 	}
 
-	if ((!mEditInfo.is_selected || (mModifiers & (gui_ShiftFlag+gui_ControlFlag))) && mEditInfo.can_select)
+	if ((!mEditInfo.is_selected || (mModifiers & (gui_ShiftFlag + gui_ControlFlag))) && mEditInfo.can_select)
 	{
 		mSelStartX = cell_x;
 		mSelStartY = cell_y;
 		want_lock = 0;
 
-		int old_x1,old_y1,old_x2,old_y2;
-		if ((mModifiers & gui_ShiftFlag) && mContent->SelectGetExtent(old_x1,old_y1,old_x2,old_y2))
+		int old_x1, old_y1, old_x2, old_y2;
+		if ((mModifiers & gui_ShiftFlag) && mContent->SelectGetExtent(old_x1, old_y1, old_x2, old_y2))
 		{
-			if (cell_x < ((old_x1 + old_x2)/2))		mSelStartX = old_x2;
+			if (cell_x < ((old_x1 + old_x2) / 2))		mSelStartX = old_x2;
 			else									mSelStartX = old_x1;
-			if (cell_y < ((old_y1 + old_y2)/2))		mSelStartY = old_y2;
+			if (cell_y < ((old_y1 + old_y2) / 2))		mSelStartY = old_y2;
 			else									mSelStartY = old_y1;
 
 			mContent->SelectionStart(1);
 		}
 		else
-			mContent->SelectionStart((mModifiers & (gui_ShiftFlag+gui_ControlFlag)) == 0);
+			mContent->SelectionStart((mModifiers & (gui_ShiftFlag + gui_ControlFlag)) == 0);
 
 
-		mContent->SelectRange(	min(mSelStartX,cell_x),
-								min(mSelStartY,cell_y),
-								max(mSelStartX,cell_x),
-								max(mSelStartY,cell_y),
-								(mModifiers & gui_ControlFlag) ? 1 : 0);
+		mContent->SelectRange(min(mSelStartX, cell_x),
+			min(mSelStartY, cell_y),
+			max(mSelStartX, cell_x),
+			max(mSelStartY, cell_y),
+			(mModifiers & gui_ControlFlag) ? 1 : 0);
 		mEditInfo.content_type = gui_Cell_None;
 		BroadcastMessage(GUI_TABLE_CONTENT_CHANGED, 0);
 
-		if (mEditInfo.can_drag && mParent->IsDragClick(mouse_x,mouse_y,button))
+		if (mEditInfo.can_drag && mParent->IsDragClick(mouse_x, mouse_y, button))
 		{
 			mContent->SelectionEnd();
-			mContent->DoDrag(mParent, mouse_x,mouse_y,button,cell_bounds);
+			mContent->DoDrag(mParent, mouse_x, mouse_y, button, cell_bounds);
 			return 0;
 		}
 
 		return 1;
 	}
 
-	if (mEditInfo.can_drag && mParent->IsDragClick(mouse_x,mouse_y,button))
+	if (mEditInfo.can_drag && mParent->IsDragClick(mouse_x, mouse_y, button))
 	{
-		mContent->DoDrag(mParent, mouse_x,mouse_y,button,cell_bounds);
+		mContent->DoDrag(mParent, mouse_x, mouse_y, button, cell_bounds);
 		return 0;
 	}
 
-	if (mouse_x < cell_bounds[0])	{ mEditInfo.content_type = gui_Cell_None; return 1; }
+	if (mouse_x < cell_bounds[0]) { mEditInfo.content_type = gui_Cell_None; return 1; }
 
 
 
@@ -678,27 +690,27 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 
 	int	all_edit = mParent->GetModifiersNow() & (gui_OptionAltFlag | gui_ControlFlag);
 
-	switch(mEditInfo.content_type) {
+	switch (mEditInfo.content_type) {
 	case gui_Cell_FileText:
-		{
-			mContent->AcceptEdit(cell_x, cell_y, mEditInfo, all_edit);
-			mEditInfo.content_type = gui_Cell_None;
-		}
-		break;
+	{
+		mContent->AcceptEdit(cell_x, cell_y, mEditInfo, all_edit);
+		mEditInfo.content_type = gui_Cell_None;
+	}
+	break;
 	case gui_Cell_CheckBox:
+	{
+		mTrackLeft = cell_bounds[0];
+		mTrackRight = cell_bounds[2];
+		if (mouse_x >= mTrackLeft && mouse_x < mTrackRight)
 		{
-			mTrackLeft = cell_bounds[0];
-			mTrackRight = cell_bounds[2];
-			if (mouse_x >= mTrackLeft && mouse_x < mTrackRight)
-			{
-				mClickCellX = cell_x;
-				mClickCellY = cell_y;
-				mInBounds = 1;
-				BroadcastMessage(GUI_TABLE_CONTENT_CHANGED, 0);
-				return 1;
-			}
+			mClickCellX = cell_x;
+			mClickCellY = cell_y;
+			mInBounds = 1;
+			BroadcastMessage(GUI_TABLE_CONTENT_CHANGED, 0);
+			return 1;
 		}
-		break;
+	}
+	break;
 	case gui_Cell_EditText:
 	case gui_Cell_TaxiText:
 	case gui_Cell_Integer:
@@ -714,74 +726,74 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 		break;
 	case gui_Cell_RoadType:
 	case gui_Cell_Enum:
+	{
+		GUI_EnumDictionary	dict;
+		mContent->GetEnumDictionary(cell_x, cell_y, dict);
+		if (!dict.empty())
 		{
-			GUI_EnumDictionary	dict;
-			mContent->GetEnumDictionary(cell_x, cell_y,dict);
-			if (!dict.empty())
-			{
 #if USE_LINE_SELECTOR_POPUP
-				if(mEditInfo.content_type == gui_Cell_LineEnumSet || mEditInfo.content_type == gui_Cell_RoadType)
-				{
-					cell_bounds[0] -= mEditInfo.indent_level * mCellIndent;	// clean out bounds...will get changed again later anyway
-					CreateEdit(cell_bounds, &dict);
-					mClickCellX = cell_x;
-					mClickCellY = cell_y;
-					return 1;
-				}
-				else
+			if (mEditInfo.content_type == gui_Cell_LineEnumSet || mEditInfo.content_type == gui_Cell_RoadType)
+			{
+				cell_bounds[0] -= mEditInfo.indent_level * mCellIndent;	// clean out bounds...will get changed again later anyway
+				CreateEdit(cell_bounds, &dict);
+				mClickCellX = cell_x;
+				mClickCellY = cell_y;
+				return 1;
+			}
+			else
 #endif
+			{
+				vector<GUI_MenuItem_t>	items(dict.size() + 1);
+				vector<int>				enum_vals(dict.size());
+				int cur = CreateMenuFromDict(items, enum_vals, dict);
+				int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0], cell_bounds[3], button, cur);
+				if (choice >= 0 && choice < enum_vals.size())
 				{
-					vector<GUI_MenuItem_t>	items(dict.size()+1);
-					vector<int>				enum_vals(dict.size());
-					int cur = CreateMenuFromDict(items, enum_vals, dict);
-					int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0],cell_bounds[3],button, cur);
-					if (choice >= 0 && choice < enum_vals.size())
-					{
-						mEditInfo.int_val = enum_vals[choice];
-						mContent->AcceptEdit(cell_x, cell_y, mEditInfo, all_edit);
-					}
+					mEditInfo.int_val = enum_vals[choice];
+					mContent->AcceptEdit(cell_x, cell_y, mEditInfo, all_edit);
 				}
 			}
-			mEditInfo.content_type = gui_Cell_None;
 		}
-		break;
+		mEditInfo.content_type = gui_Cell_None;
+	}
+	break;
 	case gui_Cell_EnumSet:
 	case gui_Cell_LineEnumSet:
+	{
+		GUI_EnumDictionary	dict;
+		mContent->GetEnumDictionary(cell_x, cell_y, dict);
+		if (!dict.empty())
 		{
-			GUI_EnumDictionary	dict;
-			mContent->GetEnumDictionary(cell_x, cell_y,dict);
-			if (!dict.empty())
-			{
 #if USE_LINE_SELECTOR_POPUP
-				if(mEditInfo.content_type == gui_Cell_LineEnumSet || mEditInfo.content_type == gui_Cell_RoadType)
-				{
-					cell_bounds[0] -= mEditInfo.indent_level * mCellIndent;	// clean out bounds...will get changed again later anyway
-					CreateEdit(cell_bounds, &dict);
-					mClickCellX = cell_x;
-					mClickCellY = cell_y;
-					return 1;
-				}
-				else
+			if (mEditInfo.content_type == gui_Cell_LineEnumSet || mEditInfo.content_type == gui_Cell_RoadType)
+			{
+				cell_bounds[0] -= mEditInfo.indent_level * mCellIndent;	// clean out bounds...will get changed again later anyway
+				CreateEdit(cell_bounds, &dict);
+				mClickCellX = cell_x;
+				mClickCellY = cell_y;
+				return 1;
+			}
+			else
 #endif
+			{
+				vector<GUI_MenuItem_t>	items(dict.size() + 1);
+				vector<int>				enum_vals(dict.size());
+				int cur = CreateMenuFromDict(items, enum_vals, dict);
+				int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0], cell_bounds[3], button, cur);
+				if (choice >= 0 && choice < enum_vals.size())
 				{
-					vector<GUI_MenuItem_t>	items(dict.size()+1);
-					vector<int>				enum_vals(dict.size());
-					int cur = CreateMenuFromDict(items, enum_vals, dict);
-					int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0],cell_bounds[3],button, cur);
-					if (choice >= 0 && choice < enum_vals.size())
-					{
-						mEditInfo.int_val=enum_vals[choice];
-						if(mEditInfo.int_set_val.count(enum_vals[choice]) > 0)
-							mEditInfo.int_set_val.erase(enum_vals[choice]);
-						else
-							mEditInfo.int_set_val.insert(enum_vals[choice]);
-						mContent->AcceptEdit(cell_x, cell_y, mEditInfo, all_edit);
-					}
+					mEditInfo.int_val = enum_vals[choice];
+					if (mEditInfo.int_set_val.count(enum_vals[choice]) > 0)
+						mEditInfo.int_set_val.erase(enum_vals[choice]);
+					else
+						mEditInfo.int_set_val.insert(enum_vals[choice]);
+					mContent->AcceptEdit(cell_x, cell_y, mEditInfo, all_edit);
 				}
 			}
-			mEditInfo.content_type = gui_Cell_None;
 		}
-		break;
+		mEditInfo.content_type = gui_Cell_None;
+	}
+	break;
 	}
 	return 1;
 }
@@ -845,67 +857,189 @@ void		GUI_TextTable::CellMouseDrag(int cell_bounds[4], int cell_x, int cell_y, i
 void		GUI_TextTable::CellMouseUp  (int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button)
 {
 	if (mCellResize >= 0 && mGeometry)
+
+
+
 	{
+
+
 		mouse_x = max(mouse_x, (mLastX - mGeometry->GetCellWidth(mCellResize) + MIN_CELL_WIDTH));
-		mGeometry->SetCellWidth(mCellResize,mouse_x - mLastX + mGeometry->GetCellWidth(mCellResize));
+
+
+		mGeometry->SetCellWidth(mCellResize, mouse_x - mLastX + mGeometry->GetCellWidth(mCellResize));
+
+
 		mCellResize = -1;
-		BroadcastMessage(GUI_TABLE_SHAPE_RESIZED,0);
+
+
+		BroadcastMessage(GUI_TABLE_SHAPE_RESIZED, 0);
+
+
 		return;
+
+
 	}
 
 	if (mSelStartX != -1 && mSelStartY != -1)
+
+
 	{
+
+
 		int x1, y1, x2, y2;
-		if (mContent->SelectGetLimits(x1,y1,x2,y2))
+
+
+		if (mContent->SelectGetLimits(x1, y1, x2, y2))
+
+
 		{
+
+
 			if (cell_x < x1) cell_x = x1;
+
+
 			if (cell_x > x2) cell_x = x2;
+
+
 			if (cell_y < y1) cell_y = y1;
+
+
 			if (cell_y > y2) cell_y = y2;
+
+
+
+
 
 			if (mParent) mParent->RevealCell(cell_x, cell_y);
 
-			mContent->SelectRange(min(mSelStartX,cell_x),
-								  min(mSelStartY,cell_y),
-								  max(mSelStartX,cell_x),
-								  max(mSelStartY,cell_y),
-								  mModifiers & gui_ControlFlag);
+
+
+
+
+			mContent->SelectRange(min(mSelStartX, cell_x),
+
+
+				min(mSelStartY, cell_y),
+
+
+				max(mSelStartX, cell_x),
+
+
+				max(mSelStartY, cell_y),
+
+
+				mModifiers & gui_ControlFlag);
+
+
 			mContent->SelectionEnd();
+
+
 			BroadcastMessage(GUI_TABLE_CONTENT_CHANGED, 0);
+
+
 			mSelStartX = -1;
+
+
 			mSelStartY = -1;
+
+
 		}
+
+
 	}
 
 	int	all_edit = mParent->GetModifiersNow() & (gui_OptionAltFlag | gui_ControlFlag);
 
-	switch(mEditInfo.content_type) {
+	switch (mEditInfo.content_type) {
+
+
 	case gui_Cell_Disclose:
+
+
 		mInBounds = (mouse_x >= mTrackLeft && mouse_x < mTrackRight &&
-				  mouse_y >= cell_bounds[1] && mouse_y <= cell_bounds[3]);
+
+
+			mouse_y >= cell_bounds[1] && mouse_y <= cell_bounds[3]);
+
+
 		if (mInBounds)
+
+
 		{
+
+
 			if (all_edit)
+
+
 			{
+
+
 				GUI_CellContent content;
+
+
 				mContent->GetCellContent(cell_x, cell_y, content);
+
+
 				mContent->SelectDisclose(content.is_disclosed ? 0 : 1, 0);
+
+
 			}
+
+
 			else
+
+
 				mContent->ToggleDisclose(cell_x, cell_y);
+
+
 		}
+
+
 		BroadcastMessage(GUI_TABLE_CONTENT_CHANGED, 0);
+
+
 		break;
+
+
 	case gui_Cell_CheckBox:
+
+
 		mInBounds = (mouse_x >= mTrackLeft && mouse_x < mTrackRight &&
-				  mouse_y >= cell_bounds[1] && mouse_y <= cell_bounds[3]);
+
+
+			mouse_y >= cell_bounds[1] && mouse_y <= cell_bounds[3]);
+
+
 		if (mInBounds)
+
+
 		{
+
+
 			mEditInfo.int_val = 1 - mEditInfo.int_val;
-			mContent->AcceptEdit(cell_x,cell_y, mEditInfo, all_edit);
+
+
+			mContent->AcceptEdit(cell_x, cell_y, mEditInfo, all_edit);
+
+
 			BroadcastMessage(GUI_TABLE_CONTENT_CHANGED, 0);
+
+
 		}
+
+
 		break;
+
+
+	}
+
+	if (button == 0 && mEditInfo.content_type == gui_Cell_None && mEditInfo.can_disclose && mEditInfo.can_select)
+
+
+	{
+		// perform the toggle (provider will handle moderator / recursive expansion as appropriate)
+		mContent->ToggleDisclose(cell_x, cell_y);
+		BroadcastMessage(GUI_TABLE_CONTENT_CHANGED, 0);
 	}
 	if (!HasEdit())
 	{

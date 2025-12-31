@@ -424,6 +424,11 @@ private:
 	string					mImage;
 	int						mAlternate;
 
+
+	std::chrono::steady_clock::time_point mLastClickTime;
+	int mLastClickCellX;
+	int mLastClickCellY;
+
 };
 
 
