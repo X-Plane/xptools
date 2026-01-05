@@ -69,3 +69,5 @@ include(cmake/ObjView.cmake)
 include(cmake/WED.cmake)
 include(cmake/XGrinder.cmake)
 include(cmake/OneOffs.cmake)
+
+source_group(TREE "${PROJECT_SOURCE_DIR}")
