@@ -22,7 +22,6 @@
  */
 
 #include "AptIO.h"
-#include "ParamDefs.h"
 #include "MemFileUtils.h"
 #include "XESConstants.h"
 #include "GISUtils.h"
@@ -182,13 +181,25 @@ static void	print_apt_poly(int (*fprintf)(void * fi, const char * fmt, ...), voi
 	}
 }
 
-static int XP11_pave_type(int xp12_type)
+static int backport_pave_type(int xp12_type, int version)
 {
+	if (version >= 1200) return  xp12_type;
+
 	xp12_type = xp12_type % 100;
-	if (xp12_type >= 20 && xp12_type <= 39)
+	if (xp12_type >= 20 && xp12_type <= 39)      // XP11 has only basic asphalt
 		return 1;
-	else if (xp12_type >= 50 && xp12_type <= 59)
+	else if (xp12_type >= 50 && xp12_type <= 59) // XP11 has only basic concrete
 		return 2;
+	else
+		return xp12_type;
+}
+
+static int backport_marking_type(int xp12_type, int version)
+{
+	if (version >= 1200) return  xp12_type;
+
+	if (xp12_type == 6 || xp12_type == 7)    // XP11 has no ESA style markings
+		return xp12_type - 4;
 	else
 		return xp12_type;
 }
@@ -792,12 +803,14 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				string key = full_entry_text.substr(0, full_entry_text.find_first_of(" "));
 				string value = full_entry_text.substr(full_entry_text.find_first_of(" ") + 1);
 
+#if FIX_META_TAGS
 				// Before the first public 10.50 beta, we were using "faa_id" as a key,
 				// but that obviously didn't fit with the "_code" suffix for the rest of the identifiers,
 				// so we changed it to match.
-				if(key == "faa_id")
-					key = "faa_code";
-
+				if (key == "faa_id")	key = "faa_code";
+				// some typo present in WED 2.5.1 and 2.5.2
+				else if (key == "allows_ciruits") key = "allows_circuits";
+#endif
 				outApts.back().meta_data.push_back(std::pair<string,string>(key,value));
 				break;
 			}
@@ -1061,7 +1074,6 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 			else if (outApts.back().truck_parking.empty()) ok = "Error: custom truck without preceeding truck parking";
 			else
 			{
-				Jetway_t j;
 				if (TextScanner_FormatScan(s, "iTT|",
 					&rec_code,
 					&outApts.back().truck_parking.back().vpath) < 2)
@@ -1138,6 +1150,18 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 					&j.parked_cab_heading) < 9)
 				{
 					ok = "Error: Illegal jetway";
+				}
+
+				j.docking_type = Jetway_t::door1_only;
+				if (j.size_code >= 10)
+				{
+					if (j.size_code < 20)
+					{
+						j.size_code -= 10;
+						j.docking_type = Jetway_t::door2_only;
+					}
+					else
+						ok = "Error: Illegal jetway size code";
 				}
 
 				outApts.back().jetways.push_back(j);
@@ -1265,7 +1289,6 @@ bool	WriteAptFile(const char * inFileName, const AptVector& inApts, int version)
 	return ok;
 }
 
-
 bool	WriteAptFileOpen(FILE * fi, const AptVector& inApts, int version)
 {
 	return WriteAptFileProcs((int (*)(void *, const char *,...))fprintf,fi,inApts,version);
@@ -1318,15 +1341,15 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 						"%3s" LLFMT " %.0f %.0f %d %d %d %d "
 						"%s" LLFMT " %.0f %.0f %d %d %d %d" CRLF,
 						apt_rwy_new, rwy->width_mtr,
-						version >= 1200 ? rwy->surf_code : XP11_pave_type(rwy->surf_code),
-						version >= 1200 ? rwy->shoulder_code : XP11_pave_type(rwy->shoulder_code), rwy->roughness_ratio,
+						backport_pave_type(rwy->surf_code, version),
+						backport_pave_type(rwy->shoulder_code, version), rwy->roughness_ratio,
 						rwy->has_centerline, rwy->edge_light_code, rwy->has_distance_remaining,
 						rwy->id[0].c_str(),CGAL2DOUBLE(rwy->ends.source().y()),CGAL2DOUBLE(rwy->ends.source().x()), rwy->disp_mtr[0], rwy->blas_mtr[0],
-						rwy->marking_code[0], rwy->app_light_code[0], rwy->has_tdzl[0],
-						(version < 1200 && rwy->reil_code[0] <= 2) ? rwy->reil_code[0] : 0,
+						backport_marking_type(rwy->marking_code[0], version), rwy->app_light_code[0], rwy->has_tdzl[0],
+						(version >= 1200 || rwy->reil_code[0] <= 2) ? rwy->reil_code[0] : 0,
 						rwy->id[1].c_str(),CGAL2DOUBLE(rwy->ends.target().y()),CGAL2DOUBLE(rwy->ends.target().x()), rwy->disp_mtr[1], rwy->blas_mtr[1],
-						rwy->marking_code[1], rwy->app_light_code[1], rwy->has_tdzl[1],
-						(version < 1200 && rwy->reil_code[1] <= 2) ? rwy->reil_code[1] : 0);
+						backport_marking_type(rwy->marking_code[1], version), rwy->app_light_code[1], rwy->has_tdzl[1],
+						(version >= 1200 || rwy->reil_code[1] <= 2) ? rwy->reil_code[1] : 0);
 
 			if(version >= 1200 && rwy->has_105)
 				fprintf(fi,"%d %d %d %.1f %4.2f %4.2f %4.2f %4.2f" CRLF, apt_rwy_skids,
@@ -1368,14 +1391,14 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 		{
 			fprintf(fi,"%d %s" LLFMT " %.1lf %.2f %.2f %d %d %d %.2f %d" CRLF,
 				apt_heli_new, heli->id.c_str(), CGAL2DOUBLE(heli->location.y()), CGAL2DOUBLE(heli->location.x()), heli->heading, heli->length_mtr, heli->width_mtr,
-						version >= 1200 ? heli->surface_code : XP11_pave_type(heli->surface_code), heli->marking_code,
-						version >= 1200 ? heli->shoulder_code : XP11_pave_type(heli->shoulder_code), heli->roughness_ratio, heli->edge_light_code);
+						backport_pave_type(heli->surface_code, version), heli->marking_code,
+						backport_pave_type(heli->shoulder_code, version), heli->roughness_ratio, heli->edge_light_code);
 		}
 
 		for (AptTaxiwayVector::const_iterator taxi = apt->taxiways.begin(); taxi != apt->taxiways.end(); ++taxi)
 		{
 			fprintf(fi, "%d %d %.2f %.1f" NFMT CRLF, apt_taxi_new, 
-			version >= 1200 ? taxi->surface_code : XP11_pave_type(taxi->surface_code), taxi->roughness_ratio, taxi->heading N(taxi));
+			backport_pave_type(taxi->surface_code, version), taxi->roughness_ratio, taxi->heading N(taxi));
 			print_apt_poly(fprintf,fi,taxi->area, version);
 		}
 
@@ -1393,8 +1416,12 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 
 		for (AptLightVector::const_iterator light = apt->lights.begin(); light != apt->lights.end(); ++light)
 		{
+			int l(light->light_code);
+			if (version < 1200 && l >= apt_gls_apapi_left)
+				l -= apt_gls_apapi_left - apt_gls_papi_left;
+
 			fprintf(fi,"%d" LLFMT " %d %.1lf %.2f" NFMT CRLF,
-					apt_papi, CGAL2DOUBLE(light->location.y()), CGAL2DOUBLE(light->location.x()), light->light_code,
+					apt_papi, CGAL2DOUBLE(light->location.y()), CGAL2DOUBLE(light->location.x()), l,
 					light->heading, light->angle N(light));
 		}
 
@@ -1629,7 +1656,7 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 				{
 					fprintf(fi, "%d" LLFMT " %4.1f %d %d %.1f %4.2f %.1f" CRLF,
 						apt_jetway, jetway.location.y(), jetway.location.x(), jetway.install_heading,
-						jetway.style_code, jetway.size_code, jetway.parked_tunnel_heading,
+						jetway.style_code, jetway.size_code + (jetway.docking_type == Jetway_t::door2_only ? 10 : 0), jetway.parked_tunnel_heading,
 						jetway.parked_tunnel_length, jetway.parked_cab_heading);
 					if (!jetway.vpath.empty())
 						fprintf(fi, "%d %s" CRLF,
@@ -1682,7 +1709,10 @@ static void CalcPavementOGL(
 					float			blas1_mtr,
 					float			blas2_mtr,
 					float			disp1_mtr,
-					float			disp2_mtr)
+					float			disp2_mtr,
+					float			r,
+					float			g,
+					float			b)
 {
 	double	aspect = cos(ends.midpoint().y() * DEG_TO_RAD);
 	double MTR_TO_DEG_LON = MTR_TO_DEG_LAT / aspect;
@@ -1712,9 +1742,7 @@ static void CalcPavementOGL(
 	pts[2] = ends.p2 + rwy_right;
 	pts[3] = ends.p1 + rwy_right;
 
-		 if (io_airport->kind_code == apt_seaport) 	OGL_push_quad(io_airport, 0.0,0.0,0.6, pts);
-	else if (io_airport->kind_code == apt_heliport)	OGL_push_quad(io_airport, 0.6,0.0,0.3, pts);
-	else											OGL_push_quad(io_airport, 0.6,0.6,0.6, pts);
+	OGL_push_quad(io_airport, r,g,b,pts);
 
 	if (blas1_mtr != 0.0)
 	{
@@ -1754,8 +1782,72 @@ static void CalcPavementHelipad(AptInfo_t * io_airport, const POINT2& c, float h
 {
 	SEGMENT2	e;
 	CenterToEnds(c,h,rwy_len,e);
-	CalcPavementOGL(io_airport,e,w,0,0,0,0);
+	CalcPavementOGL(io_airport,e,w,0,0,0,0,0.5,0.5,0);
 }
+
+enum {
+	col_water,
+	col_grass,
+	col_unpaved,
+	col_paved,
+	col_marked,
+	col_lit,
+	col_heli
+};
+float cols[] = {
+	0,0,1,
+	0,1,0,
+	0.3,0.3,0.3,
+	0.6,0.6,0.6,
+	1.0,1.0,1.0,
+	1.0,1.0,0.4,
+	0.5, 0.5, 0
+};
+
+static int runway_color_code(int apt_kind, const AptRunway_t& r)
+{
+	if(apt_kind == apt_seaport)	return col_water;
+	if(apt_kind == apt_heliport) return col_heli;
+
+	// Any major lights _will_ get put down by X-Plane.  If these are incorrectly set on,
+	// this is an authoring error and we expect people to see it and fix it. So honor
+	// these.
+	if(r.app_light_code[0] != apt_app_none || r.app_light_code[1] != apt_app_none)
+		return col_lit;
+	if(r.edge_light_code != apt_edge_none || r.has_centerline)
+		return col_lit;
+	if(r.has_tdzl[0] || r.has_tdzl[1])
+		return col_lit;
+
+	// Markings are ignored for non-paved runways, so there are lots of wrongly "non-precision
+	// marked" grass runways.  I don't trust REILs to be caught either, so now eliminate by surface.
+	
+	if (r.surf_code == apt_surf_grass)
+		return col_grass;
+
+	if(r.surf_code == apt_surf_water)
+		return col_water;
+		
+	if(r.surf_code == apt_surf_dirt ||
+		r.surf_code == apt_surf_gravel ||
+		r.surf_code == apt_surf_dry_lake ||
+		r.surf_code == apt_surf_ice)
+	{
+		return col_unpaved;
+	}
+
+	if(r.marking_code[0] != apt_mark_none || r.marking_code[1] != apt_mark_none)
+		return col_marked;
+
+	if(r.reil_code[0] != apt_reil_none || r.reil_code[1] != apt_reil_none)
+		return col_marked;
+
+	
+	return col_paved;
+}
+
+
+
 
 
 void	GenerateOGL(AptInfo_t * a)
@@ -1768,24 +1860,27 @@ void	GenerateOGL(AptInfo_t * a)
 		CalcPavementBezier(&*a, &b->area,1.0,0.5,0.5,0.0);
 
 	for(AptRunwayVector::iterator r = a->runways.begin(); r != a->runways.end(); ++r)
+	{
+		int cc = runway_color_code(a->kind_code, *r);
 		CalcPavementOGL(a, r->ends,
 							r->width_mtr,
 							r->blas_mtr[0],
 							r->blas_mtr[1],
 							r->disp_mtr[0],
-							r->disp_mtr[1]);
-
+							r->disp_mtr[1],
+							cols[cc*3],cols[cc*3+1],cols[cc*3+2]);
+	}
 	for (AptPavementVector::iterator p = a->pavements.begin(); p != a->pavements.end(); ++p)
 		CalcPavementOGL(a, p->ends,
 							p->width_ft * FT_TO_MTR,
 							p->blast1_ft * FT_TO_MTR,
 							p->blast2_ft * FT_TO_MTR,
 							p->disp1_ft * FT_TO_MTR,
-							p->disp2_ft * FT_TO_MTR);
+							p->disp2_ft * FT_TO_MTR,0.3,0.3,0.3);
 
 	for(AptSealaneVector::iterator s = a->sealanes.begin(); s != a->sealanes.end(); ++s)
 		CalcPavementOGL(a, s->ends,
-								s->width_mtr,0,0,0,0);
+								s->width_mtr,0,0,0,0,0,0,1);
 
 	for(AptHelipadVector::iterator h = a->helipads.begin(); h != a->helipads.end(); ++h)
 			CalcPavementHelipad(a,h->location,

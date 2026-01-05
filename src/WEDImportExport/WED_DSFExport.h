@@ -27,7 +27,7 @@
 class	IResolver;
 class	WED_Thing;
 class	WED_Airport;
-struct	DSF_export_info_t;
+class	DSF_export_info_t;
 
 // You will need the IResolver in case you're handling a orthophoto
 int DSF_Export(WED_Thing * base, IResolver * resolver, const string& in_package, set<WED_Thing *>& problem_items);

@@ -158,6 +158,8 @@ enum {
 	apt_gls_papi_20,
 	apt_gls_vasi_tricolor,
 	apt_gls_wigwag,
+	apt_gls_apapi_left,
+	apt_gls_apapi_right,
 	// VASI codes (810)
 	apt_gls_none_810 = 1,
 	apt_gls_vasi_810,
@@ -628,14 +630,17 @@ struct AptTruckDestination_t {
 typedef vector<AptTruckDestination_t> AptTruckDestinationVector;
 
 struct Jetway_t {
+
 	Point2						location;
 	float						install_heading;
 	int							style_code;	// enum
 	int							size_code;	// enum
+	enum dock_t { door1_only, door2_only }
+		 						docking_type;
 	float						parked_tunnel_heading;
 	float						parked_tunnel_length;
 	float						parked_cab_heading;
-	string						vpath;          // optional
+	string						vpath;          // optional, only for full custom jW
 };
 typedef vector<Jetway_t> JetwayVector;
 
@@ -673,16 +678,6 @@ struct AptInfo_t {
 	AptNetwork_t		taxi_route;
 
 	Bbox2				bounds;
-
-#if OPENGL_MAP
-	struct AptLineLoop_t {
-		float			rgb[3];
-		Polygon2		pts;
-	};
-	vector<AptLineLoop_t>	ogl;
-#endif
-
-
 };
 
 typedef vector<AptInfo_t>	AptVector;

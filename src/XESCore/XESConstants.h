@@ -38,21 +38,16 @@ const float 	kStdLapseRate = -2.0 / 304.8;
 #endif
 
 // spherical earth or ellipsoid mean radius
-#define DEG_TO_MTR_LAT		(6371100 * M_PI / 180.0)
-#define MTR_TO_DEG_LAT		(180.0 / 6371100 * M_1_PI)
+#define EARTH_MEAN_RADIUS	6371008.0
+#define DEG_TO_MTR_LAT		(DEG_TO_RAD * EARTH_MEAN_RADIUS)
+#define MTR_TO_DEG_LAT		(RAD_TO_DEG / EARTH_MEAN_RADIUS)
 
-// once XP transitions to WGS84 ellipsoid, there are 2 relevant radii and conversions
+// X-Plane 12+ uses a GRS80 ellipsoid, there are 2 relevant radii
 // https://en.wikipedia.org/wiki/Geographical_distance#Ellipsoidal_Earth_projected_to_a_plane
 // https://en.wikipedia.org/wiki/Earth_radius#/media/File:EarthEllipRadii.jpg
-//
-// to/from lattitude: prime vertical radius N, some 6378 to 6400 km
-// to/from longitude: meridional radius M (use *cos(lat) as usual) 6335 to 6400 km
-//
-// to avoid trigonometric calculations, these two conversions can be aproximated to
-// witin 0.06% error (to 60 deg lat) by linear interpolation
 
-#define DEG_LAT_TO_MTR(lat) (6388000.0 + (lat-45.0)/45.0 * 11000.0)
-#define DEG_LON_TO_MTR(lat) (6367000.0 + (lat-45.0)/45.0 * 35000.0)
+#define EARTH_EQ_RADIUS		6378137.0
+#define EARTH_EPS2			0.0066945
 
 enum rf_region {
 	rf_usa = 0,

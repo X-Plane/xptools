@@ -883,7 +883,17 @@ void		GUI_TextTable::CellMouseUp  (int cell_bounds[4], int cell_x, int cell_y, i
 	case gui_Cell_Disclose:
 		mInBounds = (mouse_x >= mTrackLeft && mouse_x < mTrackRight &&
 				  mouse_y >= cell_bounds[1] && mouse_y <= cell_bounds[3]);
-		if (mInBounds) mContent->ToggleDisclose(cell_x,cell_y);
+		if (mInBounds)
+		{
+			if (all_edit)
+			{
+				GUI_CellContent content;
+				mContent->GetCellContent(cell_x, cell_y, content);
+				mContent->SelectDisclose(content.is_disclosed ? 0 : 1, 0);
+			}
+			else
+				mContent->ToggleDisclose(cell_x, cell_y);
+		}
 		BroadcastMessage(GUI_TABLE_CONTENT_CHANGED, 0);
 		break;
 	case gui_Cell_CheckBox:

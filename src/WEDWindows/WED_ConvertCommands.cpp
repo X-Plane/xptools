@@ -24,26 +24,27 @@
 #include "WED_GroupCommands.h"
 
 #include "ISelection.h"
-
 #include "AssertUtils.h"
 #include "PlatformUtils.h"
 #include "WED_EnumSystem.h"
 #include "WED_LibraryMgr.h"
 #include "WED_ToolUtils.h"
 
-#include "WED_AirportChain.h"
-#include "WED_AirportNode.h"
+#include "WED_AirportBoundary.h"
 #include "WED_ForestPlacement.h"
-#include "WED_ForestRing.h"
 #include "WED_LinePlacement.h"
+#include "WED_ObjPlacement.h"
 #include "WED_PolygonPlacement.h"
+#include "WED_StringPlacement.h"
+#include "WED_ShapePlacement.h"
+#include "WED_Taxiway.h"
 #include "WED_Ring.h"
+#include "WED_ForestRing.h"
+#include "WED_AirportChain.h"
 #include "WED_SimpleBoundaryNode.h"
 #include "WED_SimpleBezierBoundaryNode.h"
-#include "WED_StringPlacement.h"
-#include "WED_Taxiway.h"
-#include "WED_ObjPlacement.h"
-
+#include "WED_AirportNode.h"
+#include "WED_ShapeNode.h"
 
 
 int		WED_CanConvertTo(IResolver * resolver, const char* DstClass)
@@ -67,6 +68,8 @@ int		WED_CanConvertTo(IResolver * resolver, const char* DstClass)
 			SrcClass != WED_AirportChain::sClass &&
 			SrcClass != WED_LinePlacement::sClass &&
 			SrcClass != WED_StringPlacement::sClass &&
+			SrcClass != WED_AirportBoundary::sClass &&
+			SrcClass != WED_ShapePlacement::sClass &&
 			SrcClass != WED_ObjPlacement::sClass) return 0;
 
 		if (DstClass == WED_ForestPlacement::sClass)
@@ -85,6 +88,9 @@ int		WED_CanConvertTo(IResolver * resolver, const char* DstClass)
 		auto chain = dynamic_cast<WED_GISChain*>(src);
 		if (chain  && dstIsPolygon)
 			if (!chain->IsClosed() || chain->GetNumPoints() < 3) return 0;
+
+		if (DstClass == WED_Taxiway::sClass || DstClass == WED_AirportChain::sClass)
+			if (WED_GetParentAirport(src) == nullptr) return 0;
 	}
 
 	return 1;
@@ -126,11 +132,13 @@ static void move_points(WED_Thing * src, WED_Thing * dst)
 	}
 
 	bool want_apt_nodes = (dynamic_cast<WED_AirportChain*>(dst) != NULL);
+	bool want_shp_nodes = (dynamic_cast<WED_ShapePlacement*>(dst) != NULL);
 
 	for (int i = 0; i < points.size(); ++i)
 	{
 		bool have_apt_node = (dynamic_cast<WED_AirportNode*>(points[i]) != NULL);
-		if (have_apt_node == want_apt_nodes)
+		bool have_shp_nodes = (dynamic_cast<WED_ShapeNode*>(points[i]) != NULL);
+		if (have_apt_node == want_apt_nodes && want_shp_nodes == have_shp_nodes)
 		{
 			points[i]->SetParent(dst, i);
 		}
@@ -144,7 +152,11 @@ static void move_points(WED_Thing * src, WED_Thing * dst)
 				dst_bezier = WED_AirportNode::CreateTyped(dst->GetArchive());
 				dst_node = dst_bezier;
 			}
-			else if (src_bezier)
+			else if (want_shp_nodes)
+			{
+				dst_node = WED_ShapeNode::CreateTyped(dst->GetArchive());
+			}
+			else if (src_bezier || have_shp_nodes)
 			{
 				dst_bezier = WED_SimpleBezierBoundaryNode::CreateTyped(dst->GetArchive());
 				dst_node = dst_bezier;
@@ -221,7 +233,7 @@ typedef pair<int, vector<int> > style_t;
 
 static style_t get_style(WED_Thing * t)
 {
-	int surf_type;
+	int surf_type = surf_Asphalt;
 	vector<int> line_style;
 
 	if (t->GetClass() == WED_Taxiway::sClass)
@@ -343,6 +355,8 @@ static void set_closed(WED_Thing * t, bool closed)
 		static_cast<WED_LinePlacement*>(t)->SetClosed(closed);
 	if (t->GetClass() == WED_StringPlacement::sClass)
 		static_cast<WED_StringPlacement*>(t)->SetClosed(closed);
+	if (t->GetClass() == WED_ShapePlacement::sClass)
+		static_cast<WED_ShapePlacement*>(t)->SetClosed(closed);
 }
 
 static bool needs_apt(WED_Thing* t)
@@ -508,21 +522,27 @@ bool WED_ConvertTo(WED_LibraryMgr * lmgr, ISelection * sel, CreateThingFunc crea
 	return true;
 }
 
-void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
+void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create, bool in_cmd)
 {
 	auto lmgr = WED_GetLibraryMgr(resolver);
 	auto sel = WED_GetSelect(resolver);
 	IOperation* op = dynamic_cast<IOperation*>(sel);
 
-	op->StartOperation((string("Convert to ") /* + dst->HumanReadableType() */).c_str());
+	if (in_cmd)
+		op->StartOperation((string("Convert to ") /* + dst->HumanReadableType() */).c_str());
 
-	if (WED_ConvertTo(lmgr, sel, create))
-		op->CommitOperation();
-	else
-		op->AbortOperation();
+	bool result = WED_ConvertTo(lmgr, sel, create);
+
+	if (in_cmd)
+	{
+		if (result)
+			op->CommitOperation();
+		else
+			op->AbortOperation();
+	}
 }
 
-void	WED_DoConvertToForest(IResolver* resolver)
+void	WED_DoConvertToForest(IResolver* resolver, bool in_cmd)
 {
 	auto sel = WED_GetSelect(resolver);
 	auto op = dynamic_cast<IOperation*>(sel);
@@ -532,7 +552,7 @@ void	WED_DoConvertToForest(IResolver* resolver)
 	if(!where)
 		return;
 
-	op->StartOperation("Convert to Forest Points");
+	if (in_cmd) op->StartOperation("Convert to Forest Points");
 	auto fst = WED_ForestPlacement::CreateTyped(where->GetArchive());
 	fst->SetParent(where->GetParent(), where->GetMyPosition());
 	fst->SetDensity(1.0);
@@ -563,8 +583,8 @@ void	WED_DoConvertToForest(IResolver* resolver)
 		WED_RecursiveDelete(to_delete);
 		sel->Clear();
 		sel->Insert(fst);
-		op->CommitOperation();
+		if (in_cmd) op->CommitOperation();
 	}
 	else
-		op->AbortOperation();
+		if (in_cmd) op->AbortOperation();
 }

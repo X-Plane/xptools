@@ -254,10 +254,10 @@ public:
 
 
 
-tex_info	railroad = { "railroad.dds" , "//"				 , 0, 1, 30, 8.5, 512  ,{0.1,0.1,0.1}};
-tex_info	local 	 = { "local.dds"    , "//"				 , 1, 3, 15, 8.5, 512  ,{0.4,0.4,0.4}};
-tex_info	secondary= { "secondary.dds", "secondary_LIT.dds", 2, 2, 30, 8.5, 1024 ,{0.5,0.5,0.5}};
-tex_info	highway  = { "highway.dds"  , "highway_LIT.dds"	 , 3, 1, 30, 8.5, 1024 ,{0.6,0.6,0.6}};
+tex_info	railroad = { "railroad.dds" , "//"				 , 0, 1, 30, (int)8.5, 512  ,{0.1,0.1,0.1}};
+tex_info	local 	 = { "local.dds"    , "//"				 , 1, 3, 15, (int)8.5, 512  ,{0.4,0.4,0.4}};
+tex_info	secondary= { "secondary.dds", "secondary_LIT.dds", 2, 2, 30, (int)8.5, 1024 ,{0.5,0.5,0.5}};
+tex_info	highway  = { "highway.dds"  , "highway_LIT.dds"	 , 3, 1, 30, (int)8.5, 1024 ,{0.6,0.6,0.6}};
 
 
 vector<road_container *>	road_stack;

@@ -185,10 +185,23 @@ struct	DSFCallbacks_t {
 					void *				data,
 					void *				inRef);
 
+	/* this filters out entities unless the airport in the apt.dat
+	 * in this scenery is active.
+	 * This allows to auto-exclude all items if an airport is superceeded
+	 * by some other airport */
 	void (* SetFilter_f)(
 					int					inFilterIndex,
 					void *				inRef);
 
+	/* This delivers information about point pool scaling factors and
+	* partitioning */
+
+	void (* PointPoolInfo_f)(
+					int				divisions,
+					double			hgt_scale,
+					double			hgt_offset,
+					vector<string>&	info,
+					void *			inRef);
 };
 
 /************************************************************

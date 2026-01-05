@@ -85,14 +85,13 @@ void WED_Persistent::PostCtor()
 	mArchive->AddObject(this);
 }
 
-static hash_map<string, WED_Persistent::CTOR_f>	sStaticCtors;
+static unordered_map<string, WED_Persistent::CTOR_f>	sStaticCtors;
 
 void WED_Persistent::Register(
 							const char * 	id,
 							CTOR_f 			ctor)
 {
-	string ids(id);
-	hash_map<string, WED_Persistent::CTOR_f>::iterator i = sStaticCtors.find(ids);
+	auto i = sStaticCtors.find(id);
 	DebugAssert(i == sStaticCtors.end());
 	if (i != sStaticCtors.end())
 		Assert(i->second == ctor);
@@ -102,8 +101,10 @@ void WED_Persistent::Register(
 
 WED_Persistent * WED_Persistent::CreateByClass(const char * class_id, WED_Archive * parent, int id)
 {
-	if(sStaticCtors.count(class_id) == 0) return NULL;
-	WED_Persistent * ret = sStaticCtors[class_id](parent, id);
+	auto i = sStaticCtors.find(class_id);
+	if (i == sStaticCtors.end())
+		return nullptr;
+	auto ret = i->second(parent, id);
 	ret->PostCtor();
 	return ret;
 }

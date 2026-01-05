@@ -25,7 +25,7 @@
 #include <geotiffio.h>
 #include <geo_normalize.h>
 #define PVALUE LIBPROJ_PVALUE
-#include <proj_api.h>
+#include <proj.h>
 #include <cpl_serv.h>
 #include <xtiffio.h>
 #endif
@@ -46,8 +46,28 @@ void	make_cache_file_path(const char * cache_base, int west, int south, const ch
 	sprintf(path, "%s%s%+03d%+04d%s%+03d%+04d.%s.txt", cache_base, DIR_STR, latlon_bucket (south), latlon_bucket (west), DIR_STR, (int) south, (int) west, cache_name);
 }
 
+int	latlon_bucket(int p)
+{
+	if (p > 0) return (p / 10) * 10;
+	else return ((-p + 9) / 10) * -10;
+}
+
+double round_by_parts(double c, int parts)
+{
+	double fparts = parts;
+	return round(c * fparts) / fparts;
+}
+
+double round_by_parts_guess(double c, int parts)
+{
+	if (parts % 2)
+		return round_by_parts(c, parts - 1);
+	else
+		return round_by_parts(c, parts);
+}
+
 #if USE_TIF
-static	bool	TransformTiffCorner(GTIF * gtif, GTIFDefn * defn, double x, double y, double& outLon, double& outLat)
+bool	TransformTiffCorner(GTIF * gtif, GTIFDefn * defn, double x, double y, double& outLon, double& outLat)
 {
     /* Try to transform the coordinate into PCS space */
     if( !GTIFImageToPCS( gtif, &x, &y ) )
@@ -78,7 +98,7 @@ static	bool	TransformTiffCorner(GTIF * gtif, GTIFDefn * defn, double x, double y
 }
 #endif
 
-bool	FetchTIFFCorners(const char * inFileName, double corners[8], int& post_pos, vector<Point2> * gcp)
+bool	FetchTIFFCorners(const char * inFileName, double corners[8], int& post_pos, gcp_t * gcp)
 {
 	bool retVal = false;
 #if USE_TIF
@@ -105,7 +125,7 @@ static int GTIFPrintFunc(char * txt, void *a)
 	return 0;
 }
 
-bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos, vector<Point2> * gcp)
+bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos, gcp_t * gcp)
 {
 	bool retVal = false;
 #if USE_TIF
@@ -167,18 +187,24 @@ bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos,
 	        	retVal = true;
 	        }
 	        
-	        if(gcp) gcp->clear();
-			if(gcp && (xsize > 1536 || ysize > 1536)) // calculate control points for map warping/projection, if texture has high resolution
-	        {
-				const int divs = intlim(max((xsize+512) / 1024, (ysize+512) / 1024),2,10);
-				for(int y = 0; y <= divs; y++)
-					for(int x = 0; x <= divs; x++)
-					{
-						double lon, lat;
-						if (TransformTiffCorner(gtif, &defn, dx + x * xsize / divs, ysize - y * ysize / divs - dy, lon, lat))
-							gcp->push_back(Point2(lon,lat));
-					}
-	        }
+			if (gcp)
+			{
+				gcp->pts.clear();
+				gcp->size_x = 1;
+				gcp->size_y = 1;
+				if (xsize > 1536 || ysize > 1536)  // calculate control points for map warping/projection, if texture has high resolution
+				{
+					gcp->size_x = intlim(roundf((double) xsize / 1024.0), 2, 10) + 1;
+					gcp->size_y = intlim(roundf((double) ysize / 1024.0), 2, 10) + 1;
+					for (int y = 0; y < gcp->size_y; y++)
+						for (int x = 0; x < gcp->size_x; x++)
+						{
+							double lon, lat;
+							if (TransformTiffCorner(gtif, &defn, dx + x * xsize / (gcp->size_x - 1), ysize - y * ysize / (gcp->size_y - 1) - dy, lon, lat))
+								gcp->pts.push_back(Point2(lon, lat));
+						}
+				}
+			}
 		}
 		GTIFFree(gtif);
 	}
@@ -187,46 +213,41 @@ bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos,
 }
 
 #if USE_TIF
-hash_map<int, projPJ>	sUTMProj;
+hash_map<int, PJ*>	sUTMProj;
 struct CTABLE *		sNADGrid = NULL;
 
 static	void	SetupUTMMap(int inZone)
 {
 	if (sUTMProj.find(inZone) != sUTMProj.end()) return;
 
-	char ** args;
 	char	argString[512];
-	projPJ	proj;
+	PJ*	proj;
 
 //	sprintf(argString,"+units=m +proj=utm +zone=%d +ellps=WGS84 ", inZone);
 	sprintf(argString,"+units=m +proj=utm +zone=%d +ellps=clrk66 ", inZone);
 
-	args = CSLTokenizeStringComplex(argString, " +", TRUE, FALSE);
-	proj = pj_init(CSLCount(args), args);
-	CSLDestroy(args);
+	proj = proj_create(PJ_DEFAULT_CTX, argString);
 	if (proj != NULL)
-		sUTMProj.insert(hash_map<int, projPJ>::value_type(inZone, proj));
+		sUTMProj.insert(hash_map<int, PJ*>::value_type(inZone, proj));
 
 //	sNADGrid = nad_init("conus.bin");
 }
 
+// WARNING: This function was updated to use proj_trans() instead of pj_inv(), but that change is completely untested.
+// As far as I can tell, this is actually dead code.
 void	UTMToLonLat(double x, double y, int zone, double * outLon, double * outLat)
 {
 	SetupUTMMap(zone);
 	if (sUTMProj.find(zone) == sUTMProj.end())
 		return;
 
-      projUV	sUV;
+	PJ_COORD coord;
+	coord.xy.x = x;
+	coord.xy.y = y;
+	coord = proj_trans(sUTMProj[zone], PJ_INV, coord);//pj_inv( sUV, sUTMProj[zone]);
 
-    sUV.u = x;
-    sUV.v = y;
-
-//    sUV = nad_cvt(sUV, false, sNADGrid);
-
-	sUV = pj_inv( sUV, sUTMProj[zone]);
-
-	if (outLon) *outLon = sUV.u * RAD_TO_DEG;
-	if (outLat) *outLat = sUV.v * RAD_TO_DEG;
+	if (outLon) *outLon = coord.uv.u * RAD_TO_DEG;
+	if (outLat) *outLat = coord.uv.v * RAD_TO_DEG;
 }
 #endif
 
@@ -256,55 +277,63 @@ double	LonLatDistMetersWithScale(double lon1, double lat1, double lon2, double l
 
 }
 
+struct deg2mtr {
+	double lon;
+	double lat;
+	deg2mtr(double latitude) {
+
+		// https://en.wikipedia.org/wiki/Earth_radius#Principal_radii_of_curvature
+
+		const double a = 6378137.0;
+		const double b = 6356752.3;
+		const double eps_sqr = 1.0 - (b * b) / (a * a);
+
+		double phi = latitude * DEG_TO_RAD;
+		double sin_phi = sin(phi);
+		double cos_phi = cos(phi);
+
+		double N = a / sqrt(1.0 - eps_sqr * sin_phi * sin_phi);
+		double M = (1.0 - eps_sqr) / (a * a) * N * N * N;
+
+		lon = N * 2.0 * M_PI / 360.0 * cos_phi;
+		lat = M * 2.0 * M_PI / 360.0;
+	}
+};
 
 void	CreateTranslatorForPolygon(
 					const Polygon2&		poly,
 					CoordTranslator2&	trans)
 {
 	if (poly.empty()) return;
-	trans.mSrcMin = poly[0];
-	trans.mSrcMax = poly[0];
-	for (int n = 1; n < poly.size(); ++n)
+
+	Bbox2 bounds;
+	for (int n = 0; n < poly.size(); ++n)
 	{
-		trans.mSrcMin.x_ = min(trans.mSrcMin.x(), poly[n].x());
-		trans.mSrcMin.y_ = min(trans.mSrcMin.y(), poly[n].y());
-		trans.mSrcMax.x_ = max(trans.mSrcMax.x(), poly[n].x());
-		trans.mSrcMax.y_ = max(trans.mSrcMax.y(), poly[n].y());
+		bounds += poly[n];
 	}
-
-	trans.mDstMin.x_ = 0.0;
-	trans.mDstMax.y_ = 0.0;
-	trans.mDstMax.x_ = (trans.mSrcMax.x() - trans.mSrcMin.x()) * DEG_TO_MTR_LAT * cos((trans.mSrcMin.y() + trans.mSrcMax.y()) * 0.5 * DEG_TO_RAD);
-	trans.mDstMax.y_ = (trans.mSrcMax.y() - trans.mSrcMin.y()) * DEG_TO_MTR_LAT;
+	CreateTranslatorForBounds(bounds, trans);
 }
-
-#if !NO_CGAL
-void	CreateTranslatorForBounds(
-					const Point_2&		inSrcMin,
-					const Point_2&		inSrcMax,
-					CoordTranslator_2&	trans)
-{
-	trans.mSrcMin = inSrcMin;
-	trans.mSrcMax = inSrcMax;
-
-	trans.mDstMin = Point_2(0,0);
-	trans.mDstMax = Point_2(
-					(trans.mSrcMax.x() - trans.mSrcMin.x()) * DEG_TO_MTR_LAT * cos(to_double((trans.mSrcMin.y() + trans.mSrcMax.y())) * 0.5 * DEG_TO_RAD),
-					(trans.mSrcMax.y() - trans.mSrcMin.y()) * DEG_TO_MTR_LAT);
-}
-#endif
 
 void	CreateTranslatorForBounds(
 					const Bbox2&		inBounds,
 					CoordTranslator2&	trans)
 {
+	// This accounts for the unequal lon/latitude scales due to a ellipsoid earth model first used in X-Plane 12.
+	struct deg2mtr scale(inBounds.centroid().y());
+
+	// But this still does not bring the coord translator to the same level of accuracy as the rest of WED's map:
+	// Earth curvature also means scale varies with lattitude and y-meters vary with longitudinal difference 
+	// from the reference point. Basically a gnomometric-like projection would be required to at least keep errors 
+	// for relatively small objects at bay.
+	// Improving on this would require using better than linear interpolation in CompGeomUtils.cpp
+
 	trans.mSrcMin = inBounds.p1;
 	trans.mSrcMax = inBounds.p2;
 
 	trans.mDstMin = Point2(0,0);
 	trans.mDstMax = Point2(
-					(trans.mSrcMax.x() - trans.mSrcMin.x()) * DEG_TO_MTR_LAT * cos(((trans.mSrcMin.y() + trans.mSrcMax.y())) * 0.5 * DEG_TO_RAD),
-					(trans.mSrcMax.y() - trans.mSrcMin.y()) * DEG_TO_MTR_LAT);
+					(trans.mSrcMax.x() - trans.mSrcMin.x()) * scale.lon,
+					(trans.mSrcMax.y() - trans.mSrcMin.y()) * scale.lat);
 }
 
 

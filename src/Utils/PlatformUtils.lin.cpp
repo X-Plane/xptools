@@ -100,13 +100,15 @@ int		GetFilePathFromUser(
 					const char *		inAction,
 					int					inID,
 					char * 				outFileName,
-					int					inBufSize)
+					int					inBufSize,
+					const char*			initialPath)
 {
     int ret = 0;
 
     Fl_Native_File_Chooser * mFileDialog = new Fl_Native_File_Chooser();
 
     mFileDialog->title(inPrompt);
+	if (initialPath) mFileDialog->directory(initialPath);
 
 	switch(inType)
 	{
@@ -124,7 +126,6 @@ int		GetFilePathFromUser(
        ret = 1;
     }
 
-
     if(mFileDialog) delete mFileDialog;
     return ret ;
 }
@@ -132,13 +133,15 @@ int		GetFilePathFromUser(
 char *	GetMultiFilePathFromUser(
 					const char * 		inPrompt,
 					const char *		inAction,
-					int					inID)
+					int					inID,
+					const char *		initialPath)
 {
     char * ret = NULL;
     Fl_Native_File_Chooser * mFileDialog = new Fl_Native_File_Chooser();
 
     mFileDialog->title(inPrompt);
     mFileDialog->type(Fl_Native_File_Chooser::BROWSE_MULTI_FILE);
+	if (initialPath) mFileDialog->directory(initialPath);
 
     if(mFileDialog->show() == 0)
     {
@@ -180,27 +183,23 @@ void DoUserAlert(const char * inMsg)
 	fl_alert(inMsg);
 }
 
-void ShowProgressMessage(const char * inMsg, float * inProgress)
+int		ConfirmMessage(const char* inMsg, const char* proceedBtn, const char* cancelBtn, const char* optionBtn)
 {
-	if(inProgress)	fprintf(stderr,"%s: %f\n",inMsg,100.0f * *inProgress);
-	else			fprintf(stderr,"%s\n",inMsg);
-}
-
-int ConfirmMessage(const char * inMsg, const char * proceedBtn, const char * cancelBtn)
-{
-	LOG_MSG("I/Confirm %s\n",inMsg);
 	fl_message_hotspot(false);
 
-	int result = 0;
-	switch (fl_choice(inMsg,proceedBtn,cancelBtn,0))
-	{
-	  case 0: result = 1; break; // proceedBtn
-	  case 1: result = 0; break; // cancelBtn (default)
-	}
+	int result;
+	if(optionBtn)
+		result = fl_choice(inMsg, proceedBtn, optionBtn, cancelBtn, 0);
+	else
+		result = fl_choice(inMsg, proceedBtn, cancelBtn, 0);
 
-	if(Fl::event_key(FL_Escape)) result = 0;
+	if (Fl::event_key(FL_Escape)) result = 0;
 
-	return result;
+	if (result == 0)
+		return 1;          // proceedBtn
+	if (optionBtn && result == 1)
+			return 2;      // optionBtn
+	return 0;              // cancelBtn
 }
 
 

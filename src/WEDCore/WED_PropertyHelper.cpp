@@ -404,7 +404,30 @@ bool		WED_PropDoubleText::WantsAttribute(const char * ele, const char * att_name
 	if(strcmp(GetXmlName(),ele)==0)
 	if(strcmp(GetXmlAttrName(),att_name)==0)
 	{
+#if 0
 		value = atof(att_value);
+#else   // above atof() is 7.5% of total xml reading time. xml is also written with similar code, NOT printf
+		const char* p = att_value;
+		value = 0.0;
+		double sign_mult = 1.0;
+		if (*p == '-') { sign_mult = -1.0; p++; }
+		else if (*p == '+') p++;
+
+		while (*p >= '0' && *p <= '9')
+		{
+			value = (10.0 * value) + (*p) - '0';
+			p++;
+		}
+		if (*p == '.') p++;
+		double decimals = 0.1;
+		while (*p >= '0' && *p <= '9')
+		{
+			value += ((*p) - '0') * decimals;
+			decimals *= 0.1;
+			p++;
+		}
+		value *= sign_mult;
+#endif
 		return true;
 	}
 	return false;

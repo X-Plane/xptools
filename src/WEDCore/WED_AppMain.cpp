@@ -79,10 +79,14 @@
 	_R(WED_AutogenPlacement) \
 	_R(WED_AutogenNode) \
 	_R(WED_ForestPlacement) \
+	_R(WED_ShapePlacement) \
+	_R(WED_ShapeNode) \
 	_R(WED_FacadePlacement) \
 	_R(WED_PolygonPlacement) \
+	_R(WED_TerPlacement) \
 	_R(WED_DrapedOrthophoto) \
 	_R(WED_ExclusionZone) \
+	_R(WED_ExclusionPoly) \
 	_R(WED_ForestRing) \
 	_R(WED_FacadeRing) \
 	_R(WED_FacadeNode)
@@ -161,8 +165,19 @@ int main(int argc, char * argv[])
 #else
 		struct utsname uts;
 		uname(&uts);
-		LOG_MSG("log.txt for WordEditor " WED_VERSION_STRING " ( %s %s )\n", uts.sysname, uts.release);
-		LOG_MSG(" compiled on " __DATE__ " " __TIME__ " with " __VERSION__ "\n");
+		LOG_MSG("log.txt for WordEditor " WED_VERSION_STRING " ( %s %s %s )\n", uts.sysname, uts.release, uts.machine);
+		LOG_MSG(" compiled on " __DATE__ " " __TIME__ " with "
+#if defined(__GNUC__) && !defined(__clang__)
+			"gcc "
+#endif
+			__VERSION__
+#if __x86_64__
+			" for x86_64\n");
+#elif __aarch64__
+			" for arm64\n");
+#else
+			"\n");
+#endif
 #endif
 		time_t now = time(0);
 		char * now_s = ctime(&now);

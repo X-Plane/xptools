@@ -154,7 +154,7 @@ public:
 	{
 		unsigned long long stopTime = query_hpc();
 		unsigned long long delta = stopTime - mStartTime;
-		printf("%s - %lf seconds.\n", mName, hpc_to_microseconds(delta) / 1000000.0);
+		LOG_MSG("%s - %lf seconds.\n", mName, hpc_to_microseconds(delta) / 1000000.0);
 	}
 };
 

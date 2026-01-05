@@ -1,13 +1,13 @@
 Title:  WorldEditor Manual  
 Template: manual
 Home: http://developer.x-plane.com/docs/scenery/  
-Version: 2.3
+Version: 2.5
 
 ## Introduction and Setup ##
 
 **About This Manual**
 
-This is version 2.3 of the manual for WorldEditor. To use this manual, you can jump to a section by clicking its title in the table of contents on the side.  Clicking on terms highlighted in blue [like this][1] will take you directly to the relevant text or section. To search for a specific term or set of words, press "ctrl" ("command" on a Mac) + "f" to type the term and be taken to it anywhere in the document. For a PDF version of this manual, use an HTML to PDF converter such as [pdfcrowd.com][2].
+This is version 2.5 of the manual for WorldEditor. To use this manual, you can jump to a section by clicking its title in the table of contents on the side.  Clicking on terms highlighted in blue [like this][1] will take you directly to the relevant text or section. To search for a specific term or set of words, press "ctrl" ("command" on a Mac) + "f" to type the term and be taken to it anywhere in the document. For a PDF version of this manual, use an HTML to PDF converter such as [pdfcrowd.com][2].
 
 ### Introduction to Scenery Development in X-Plane ###
 
@@ -62,7 +62,7 @@ To use WorldEditor, do the following:
 
 1.  [Visit the X-Plane Developer WorldEditor page][13] and download the version of WED for your operating system. Save it to a location you will be able to find it, like the Desktop.
 
-2.  Extract the WED executable from the ZIP file you just downloaded and save it somewhere you will be able to find it later (you can put it in your X-Plane directory, but this is not strictly necessary). WED is a single-executable file only, so no installer or other special installation procedures are required.
+2.  Extract the WED executable from the ZIP file you just downloaded and save it somewhere you will be able to find it later (you can put it in your X-Plane directory, but this is not strictly necessary). WED is a single-executable file only, so no installer or other special installation procedures are required, but the folder WED is placed into should be writable, so WED can create its logfile there. WED can work with any X-Plane installation, so it does not have to be placed into any particular location. 
 
 3.  Launch WED by double-clicking on it.
 
@@ -73,33 +73,36 @@ To use WorldEditor, do the following:
 <p class="cap"><strong>Figure 1</strong>: A first launch of WorldEditor, with all options disabled except for "Choose X-Plane Folder"</p>
 
 WED will verify the selected folder as a valid X‑Plane installation by testing for the presence of the "Resources/default scenery/" and "Custom Scenery/" folders inside that location. After that the remaining “New” and “Open” buttons will be enabled, and WED is ready to be used.
+For users with multiple X-Plane installations, WED can be switched to work with any of those by executing this procedure again.
 
 ### X-Plane Scenery Concepts ###
 
-X-Plane scenery comes in "packs." A scenery pack is simply a self-contained folder with all elements of a scenery. These can include:
+X-Plane scenery comes in "packs." A scenery pack is simply a self-contained folder with all elements of a scenery. These can include one or more of:
 
-*   DSF files, which contain the location of 3D scenery elements,
-*   apt.dat files, which contain airport taxiway and ATC shapes,
+*   DSF files, which contain the locations of 2D and 3D scenery elements,
+*   apt.dat files, which contain basic airport runway, taxiways,
 *   art assets, which define how things look, and
-*   an optional library.txt file, which makes these art assets available for use by other scenery packs as well.
+*   a library.txt file, which makes these art assets in this pack for use by other scenery packs as well.
 
 For more information on the contents of a scenery package, see the appendix [Anatomy of the X-Plane Scenery System][15].
 
-WorldEditor creates its own file, called `earth.wed.xml`, in the folder that represents your scenery pack. All of your work in WED is saved in this file. You then "export" your work, which creates the final scenery in a format usable by X-Plane. This workflow is quite similar to creating on a multi-layer Photoshop document, then saving a copy as a PNG for use outside Photoshop (emailing, posting to a website, etc.). Just like in Photoshop, the format used for _editing_ a scenery file includes more information (and takes up more space) than the format used as output for an end-user.
+X-Plane sceneries can not be directly edited, as they contain binary, compiled and compressed information.
 
-WED's own files have the advantage of letting WED save scenery information that isn't normally present in a scenery package: hierarchy information, object names, and window positions. However, it has a few major impacts on your work:
+But WorldEditor does not directly edit these files. It rather stores scenery design information in a different format, in a file called `earth.wed.xml`, located in the toplevel of the folder that represents your scenery pack. All of your work in WED is saved in this file.
 
-1.  You must "build" your scenery pack (which exports all of your work to the X-Plane file formats) before you will see anything in X-Plane. Doing a normal "save" in WED won't create real X-Plane scenery. To export a scenery pack, open the File menu and click **Export Scenery Pack**, or press Ctrl+B on the keyboard (Command+B on a Mac).  In addition, you can export directly to the Airport Scenery Gateway. We discuss this more in the section [Exporting the Scenery][16].
+WED's own database has the advantage of letting WED save scenery information that isn't normally present in a scenery package: hierarchy information, object names, and window positions. However, it has a few major impacts on your work:
+
+1.  You must "export" your scenery pack to create the scenery files readable by X-Plane before you can see the results in X-Plane. This is different and separate from "saveing" a scenery to WED own files. Saving won't create X-Plane scenery. To export a scenery pack, open the File menu and click **Export Scenery Pack**, or press Ctrl+B on the keyboard (Command+B on a Mac).  In addition, you can export directly to the Airport Scenery Gateway. We discuss this more in the section [Exporting the Scenery][16].
 
 2.  Exporting scenery does a "compile" of your scenery pack with WED's latest work---this can overwrite and destroy existing scenery if you already have a package in your Custom Scenery folder with the same name (e.g., if you have previously exported this scenery package).
 
-3.  Because WED _only_ opens earth.wed.xml files, if you have created scenery packs in other programs like Overlay Editor, or if you want to open scenery packs for which you don't have the earth.wed.xml file, that scenery must be _imported_ before you can edit them. See the section [Synchronizing with Other Editors][17] for details on how to do this.
+3.  Because WED _only_ opens earth.wed.xml files, if you have created scenery packs in other programs like Overlay Editor, or if you want to open scenery packs for which you don't have the earth.wed.xml file, that scenery must be "Imported" first before you can see or edit them in WED. See the section [Synchronizing with Other Editors][17] for details on how to do this.
 
-4.  You must set an export target.  Basically the export target sets the oldest version of X-Plane that can use the output scenery pack (though you also have the option of setting the Global Airport Database as your target.)  When the export target is set older, the relevant new features in WED are then _not_ exported.  For example, if you set an export target of X-Plane 10.50, then you will not see any ground support vehicles in any version of X-Plane, as these features were not compatible with that X-Plane version.  
+4.  WED can create sceneries for many different X-Plane versions, as well as for upload to the Airport Scenery gateway. All of these purposes impose different requirements on scenery. WED has to be specifically told for which target the scenery is intended for, which is done by setting the "Export target" in the "File" menu accordingly. When the export target is set to older X-Plane versions, any features in the scenery only understood by newer X-Plane versions are _not_ exported, to keep the resulting scenery compatible with those X-Plane versions. Additional rules apply to sceneries intended for uploads to the Airport Scenery Gateway.  
 
 	The **Validate** command, which you can access either through the file 	menu, or by pressing Shift-Ctrl-V on the keyboard (Shift-Command-V on a 	Mac) checks the WED file based on the current export target.
 
-	Note that the export target of "Gateway" is special: these sceneries are always intended and exported for the latest version of X-Plane supported by your WED version and are subject to additional validation checks only applicable for sceneries intended for upload to the Airport Scenery Gateway.
+	Note that the export target of "Gateway" is special: these sceneries are always intended and exported for the latest version of X-Plane supported by your WED version and are subject to additional validation checks only applicable for sceneries intended for upload to the Airport Scenery Gateway. If you intend to crate scenery for puposes other than uploading to the gateway, so not select the gateway as export target. But rather select the specific X-Plane version the scenery is intended for. 
 
 ## Using the WorldEditor Interface ##
 
@@ -118,7 +121,7 @@ The second column shows some information about the contents of each scenery:
 -   “WED Airport” indicates a earth.wed.xml file is included in the pack and the scenery is ready for immediate editing in WED.
 -   “Airport” indicates there are one or more X‑Plane airport definitions included in the pack. But the contents of the scenery pack will need to be “imported” into WED before the contents are visible or editable in WED.
 -   If the middle column is empty, the pack may contain base mesh scenery, not editable by WED, or may be an empty pack / folder created by the “New” button.
--   A “Library” usually only contains art asset definitions intended for use by other scenery packs. These packs are not editable in WED.
+-   A “Library” usually only contains art asset definitions intended for use by other scenery packs. These packs are usually not editable in WED.
 
 The third column is the name of the folder that holds the scenery pack or library. The name has no relevance to X-Plane or WED and can be changed any time without affecting the scenery packs functionality.
 
@@ -306,9 +309,14 @@ The toolbar, numbered 3 in [Figure 3](#wedwindow) above and seen in [Figure 4][2
     Used to place location where ground service vehicle are parked while
     waiting to calls to service aircraft.
 
-25. **Truck destination tool**  
+25. **Truck Destination tool**  
     Used to place desination to create additional random ground service
     vehicle movements, aka "joyrides".
+
+25. **Autogen Polygon tool**  
+    Used to place polygon creating autogen buildings (from .ags and .agb art assets)
+    There are currently no such assets provided for 3rd party scenery design.   
+
 
 For more detail on the tools described above, see the chapter [Editing Using the Map Tools][29].
 
@@ -429,21 +437,29 @@ Now is a good time to save your work, and to get into the habit of saving often!
 
 We will now set up the airport that X-Plane will use. A scenery package does not _need_ to be associated with an airport, but it is generally the case that people create scenery packages around some airport.
 
-You have two options regarding the airport data used in your package: you can either use a default airport (and modify it if necessary), or create a new one from scratch. The airport data included with X-Plane by default is generally of high quality, even in cases where only the main runways are included, so it is most common to import the existing data.
+The best case is to start with a scenery that comes with the WED design file "earth.wed.xml" included. These can be opened directly with WED.
+
+if not, you have multiple options regarding the airport data used in your package: you can either start with downloading a default airport (and modify it if necessary), import data from an existing scenery pack (but please be sure to comply with any copyright limitations) or create a new one from scratch. The airports included with X-Plane by default are generally of high quality, even in cases where only the main runways are included, so it is most common to import the existing data from the Airport Scenery Gateway.
 
 #### Importing Airport Data ####
 
 Scenery artists can import airport data from the Airport Scenery Gateway database as well. First, select the option "Import from Airport Scenery Gateway" from within the File menu. The window that opens will download the airports currently available in the database, so you must be connected to the Internet to use the feature. 
 
-You can search by ICAO in the Filter field, or scroll through the list to see if any scenery for an airport exists. Click "ICAO" to sort the list by identifier or "Name" for alphabetical sort. Data in the "Checked Out Until" and "Artist" columns indicates other Gateway artists reporting via the Airport Scenery Gateway website that they are currently working on updates for that airport. Such tags will not affect the ability to down or even upload modified airports, but can be used to avoid duplicate efforts.
+You can search by airport ID, Name or ICAO/Local identifiers ivia the "Seach:" field, or scroll through the list to see if any scenery for an airport exists. Click "ICAO" to sort the list by identifier or "Name" for alphabetical sort. Data in the "Checked Out Until" and "Artist" columns indicates other Gateway artists reporting via the Airport Scenery Gateway website that they are currently working on updates for that airport. Such tags will not affect the ability to down or even upload modified airports, but can be used to avoid duplicate efforts.
 
-Highlight the airport line then click **Next** to see all of the submissions of that airport in the database. Notes are included for each submission letting you know what user submitted it, how old it is, its status (such as whether it's the recommended version), and any comments included by the creator. Pick which version(s) you'd like to import and click the **Import Pack(s)** button. 
+Highlight the airport line, then click **Next** to see all of the submissions of that airport in the database. Notes are included for each submission letting you know what user submitted it, how old it is, its status (such as whether it's the recommended version), and any comments included by the creator. Pick which version(s) you'd like to import and click the **Import Pack(s)** button. 
 
 Multiple submissions of the same airport can be imported at one time, however we suggest that you only import the version labeled "Recommended" to avoid confusion between packs, and to work with the most complete data for the airport. Alternately multiple airports can be highlighted in the initial selection list, in which case the recommended version for each airport is imported without further user input.
 
-You can import airport data saved on your computer via the File menu > **Import apt.dat**. Navigate to the apt.dat file you wish to import from in the next window. Then WED will ask which airports within the file to actually import. Type the ICAO identifier of your airport in the text box labeled Filter (found at the top of the dialog box), click your airport to select it (or hold Control/Command and click multiple airports to select them all), and click Import. At this point, all existing data on your airport is present in your project.
+Multiple airports can be selected as well, but in this case only the most recent, recommended version for each airport is imported.
 
-In most scenery packs, additional 2-D and 3-D airport scenery is stored in DSF files, which have to be imported separately with the "Import DSF" function in the File menu. Note the DSF format is a lossy, compressed format (similar to .jpg images), so the precision is less than when importing from the Airport Scenery Gateway or using an earth.wed.xml file, if available. This imported DSF data will show up in a separate group named after the path of the DSF file imported. At this point it is **not** associated with any airport previously imported from the apt.dat file. This group must be dragged in the Hierarchy Pane into the hierarchy of the intended airport to restore all functionality of this scenery in X-Plane.
+The button "Select with File" allows to download a predetermined set of airport using an external text file containing one or more Airport IDs, one per line. 
+
+For sceneries coming only in "ready to use form", i.e. only containing the binary files read by X-Plane, the data must be extracted and recombined in WED to create a single, editable scenery.
+
+For this you start with importing airport data saved on your computer via the **File > Advanced > Import apt.dat**. Navigate to the apt.dat file you wish to import from in the next window. Then WED will ask which airports within the file to actually import. Type the Airport ID of your airport in the text box labeled Filter (found at the top of the dialog box), click your airport to select it (or hold Control/Command and click multiple airports to select them all), and click Import. At this point, all existing data on your airport is present in your project.
+
+In most scenery packs, additional 2-D and 3-D airport scenery is stored in one or multiple DSF files, which have to be imported separately with the **File > Advanced > Import DSF** function. Note the DSF format is a lossy, compressed format (similar to .jpg images), so the precision is less than when importing from the Airport Scenery Gateway or using an earth.wed.xml file, if available. This imported DSF data will show up in a separate group named after the path of the DSF file imported. At this point it is **not** associated with any airport previously imported from the apt.dat file. This group must be dragged in the Hierarchy Pane into the hierarchy of the intended airport to restore most functionality of this scenery in X-Plane.
 
 #### Creating an Airport From Scratch ####
 
@@ -457,13 +473,13 @@ With the newly created airport selected, we can enter some basic information abo
 
 #### Airport information basics ####
 
-Whether you are creating an airport from scratch or importing an existing one, there are some data fields that should be filled out for all airports, such as the name, type, elevation, ATC, and ICAO. The scenery ID field relates to Gateway imports and should usually be left alone.
+Whether you are creating an airport from scratch or importing from scenery files, there are some data fields that should be filled out for all airports, such as the name, type, elevation, ATC, and ICAO. The scenery ID field relates to Gateway imports and should usually be left alone.
 
 ![1.5 metadata](images/updates/metadata.png)
 
-You can specify whether base mesh flattening will be applied to only this airport with the "Always Flatten" option. In addition, up to 11 "Meta Tags" can define many properties important for ATC and navigation functions associated with a given airport. These can be automatically filled in for new airports by choosing **Update Metadata** from the Airport menu. You can manually add metadata fields by choosing **Add metadata** then the appropriate option if the automatic update doesn't return any results.
+You can specify whether base mesh flattening will be applied to only this airport with the "Always Flatten" option. In addition, up to 11 "Meta Tags" can define many properties important for ATC and navigation functions associated with a given airport. These can be automatically filled in for new airports by choosing **Update Metadata** from the Airport menu, but do **NOT** do this when the airport was imported from the Scenery gateway. You can also manually add metadata fields by choosing **Add metadata** then the appropriate option if the automatic update doesn't return any results.
 
-The most frequently edited meta tags are the "ICAO code," "FAA code" and "Local Code" meta tags. The airport selection windows in X-Plane, all GPS and FMC navigation use these meta tags _only_ to display the airport's identifier. The "Airport ID" property in WED or as used on the Airport Scenery Gateway is no longer used to determine the airport identifier in the X-Plane user interface and may therefore differ from the Airport ID. If an ICAO or otherwise locally issued identifier changes, the relevant meta tags are to be edited to reflect the new identifier, while the Airport ID in WED, on the Gateway and in all scenery files must <em>never</em> change once assigned.
+The most frequently edited meta tags are the "ICAO code," "FAA code" and "Local Code" meta tags. The airport selection windows in X-Plane, all GPS and FMC navigation use these meta tags _only_ to display the airport's codes. The "Airport ID" property in WED or as used on the Airport Scenery Gateway is no longer used to determine the airport identifier in the X-Plane user interface and may therefore differ from the Airport ID. If an ICAO or otherwise locally issued identifier changes, the relevant meta tags are to be edited to reflect the new identifier, while the Airport ID in WED, on the Gateway and in all scenery files must <em>never</em> change once assigned.
 
 #### Setting the Default Airport for Editing ####
 
@@ -780,9 +796,9 @@ The truck destination tool is used to place a location that will randomly call t
 
 ### Exporting the Scenery ###
 
-When you have finished customizing the airport, open the File menu and select **Validate**. This command will check the WED file for errors based on the current export target. You can change the export target by selecting **Target X-Plane Version** from under the File menu. The Scenery Gateway validation target is a much more stringent validation process. This is intended to make sure the scenery is useable with low end or older computers, and to ensure no 3rd party add on libraries are required. Remember that selecting an older version will disable newer features, such as ground traffic which does not exist in versions prior to X-Plane 11.00. 
+When you have finished customizing the airport, open the File menu and select **Validate**. This command will check the WED file for errors based on the current export target. You can change the export target by selecting **Target X-Plane Version** from under the File menu. The Scenery Gateway validation target is a much more stringent validation process and may cause a great number of error messages to bring the scenery up to these standards. If this is unintended, rather select a particular X-Plane version as the export target. Remember that selecting an older version will disable newer features, such as ground traffic which does not exist in versions prior to X-Plane 11.00. 
 
-If there any scenery errors when you validate or export your scenery, WED will show you a window of all issues, which can range from warnings to major errors that prevent an export. Clicking on one of the lines in this pop up box will allow you to go directly to that issue, or you may select multiple issues at once to fix them all in one action. A "validation_report.txt" file will also be placed in the scenery folder. Use either of these resources to correct the errors before completing the export.
+If there any scenery errors when you validate or export your scenery, WED will show you a window of all issues, which can range from warnings (which do not stop export) to errors that prevent an export to scenery. Clicking on one of the lines in this pop up box will allow you to go directly to that issue, or you may select multiple issues at once to fix them all in one action. A "validation_report.txt" file will also be placed in the scenery folder. Use either of these resources to correct the errors before completing the export.
 
 If no errors are present, select **Export Scenery Pack** from the File menu. If orthophotos were used, the .dsf and .pol file will be automatically created and placed in the scenery folder. The new scenery will be visible the next time you load the area in X-Plane. 
 
@@ -855,15 +871,15 @@ Tools used in WorldEditor can be categorized as follows:
 	- [Linear Tools][]
 		- Runway tool
 		- Sealane tool
+		- Boundary tool
 		- Exclusion tool
+		- Forest tool
 		- Taxi routes tool
 	- [Bezier Path Tools][]
 		- Taxiway tool
 		- Hole tool
 		- Taxiline tool
-		- Boundary tool
 		- Facade tool
-		- Forest tool
 		- String tool
 		- Line tool
 		- Polygon tool
@@ -912,6 +928,8 @@ Directional point tools include the following:
 *   Light fixture tool
 *   Ramp start tool
 *   Object tool
+*   Truck Parking tool
+*   Truck Destination tool
 
 A directional point tool will allow you to place an entity and set its direction by clicking and dragging when placing the entity. If a single click with no dragging is used to place a directional entity, the entity will be placed with a heading of 0.00 degrees. The heading can be changed by either
 
@@ -934,10 +952,13 @@ Non-directional entities are simply placed by clicking in the map window where y
 
 Linear tools include the following:
 
+*	Boundary tool
 *   Runway tool
 *   Sealane tool
 *   Exclusion tool
--   Taxi route tool
+*	Forest tool
+*   Taxi route tool
+*	Road tool   
 
 A linear tool is defined by two endpoints, though the scenery entities created may later be scaled and rotated as though they were defined as a box. Placement of runways and sealanes can be accomplished with either
 
@@ -960,11 +981,9 @@ You cannot click and drag with the taxi routes tool; you must click to place the
 Bezier path tools include the following:
 
 - Taxiway tool
-- Hole tool
 - Taxiline tool
-- Boundary tool
+- Hole tool
 - Facade tool
-- Forest tool
 - String tool
 - Line tool
 - Polygon tool
@@ -1050,7 +1069,6 @@ There is one important disadvantage of repeated import/export cycles: the DSF fi
 
 Note also that WorldEditor will not automatically import projects from older versions. You can, however, import your project manually. Simply point WED's opening screen to the appropriate X-Plane folder and choose the applicable scenery pack from the Custom Scenery folder.
 
-
 ### Replacing Default Airports ###
 
 The X-Plane scenery system uses globally unique identifiers called Airport IDs to identify every individual airport. These are also used to determine if any  airport in Custom Scenery should remove, or "exclude," the corresponding airport included in default scenery or otherwise installed. These identifiers are separate from, and in many cases _different_ than, the more commonly known ICAO codes. To make this mechanism work, every airport must use the same Airport ID as X-Plane uses for its own airport in the same place. Set the WED property "Airport ID" in the airport's properties according to the section "[Creating an Airport From Scratch][]."
@@ -1063,10 +1081,32 @@ Some older sceneries may use different Airport IDs. To find the correct, current
 
 This layer will show VFR-map-style all airports, heliports and seaports in the default X-Plane database along with the officially assigned Airport ID for each.
 
+### Auto-upgrading airport with X-Plane 12 features ###
+
+When the Global Airports scenery is created by Laminar from the airport sceneries in the Airport Scenery Gateway database, some upgrade heuristics are used to update existing X-Plane 11 airport to showcase new X-Plane 12 feature, like animated jetways, moved airport grass etc. Starting with WED 2.5, only when the export target is set "gateway", all these heuristic upgrades are also applied when exporting to X-Plane scenery. This allows to preview the final appearance of the scenery prior to submission to the scenery gateway.
+
+In order to get a head-start in applying these upgrades to existing X-Plane custom sceneries, most of these heuristic upgrades can also be applied by WED to the current scenery. Each allows to further customize the added entities:
+
+The menu entry **Airport > Upgrade Jetways** will first search for .agp groups depicting airport gates and break these up into discrete objects. Then it will gather all discrete objects depicting jetway tunnels and extensions and replace them with jetway facades. But only if these objects are somewhat near a ramp start.
+
+Next it will the properties of all jetway facades near ramp starts to have auto-docking functionality. If there are two or more such facades near any one ramp start, all but the closest jetway are set to not-auto docking as X-Plane 12 does not yet have the capability to animate more than one jetway per parked aircraft.
+
+Last it will check if all auto-docking jetway have a tunnel length suitable to reach the parked aircraft selected. If the tunnel length selected appears to long or to short, it will change it to the next longer/shorter tunnel size.          
+
+Existing X-Plane 11 sceneries already using facade based jetways to not benefit from running this function - all existing facade placements already default to docking jetways. 
+
+The menu entry **Airport > Mow Grass** will first gather all runways and paved surfaces (either taxiways, polygons or lines depiting paved paths) within the airport boundary. Then it will add polygons, lines and objects from the lib/airport/ground/terrain_FX category and create a grass moving pattern that is following runway direction, plus some meaningfull circular and linear patterns outlining all paved surfaces. These will be placed in a new group named "twerain_FX". Repeated execution of the function will create new groups of this name and not overwrite any prior group created.
+ 
+Then it will gather all 3D taxiways signs, windsocks and other point objects near runways and add more circular mowing patterns around these. Taxiway signs also get a concrete patch matching the size and orientation of these signs added. These patches are places in a group labelled "pavement_FX".
+
+These placements are intended as a starting point for more manual customization of the moving patterns. Or as a good example what can be archived with these art assets. 
+
+When exporting to the gateway export target (or when Laminar creates the global airports), any airport including one or more art asset from the lib/airport/ground/terrain_FX or lib/airport/ground/pavement_FX library catories will NOT have these upgrade heuristics applied. So it is possible to prevent the automatic addition of this grass mowing by adding a single (small, hard to see) item of one of these categories somewhere within the airport. The manually triggered menu functions for these upgrades are not conditional on these presence tests, though. 
+
 ### Improving Performance of WorldEditor ###
 
-If you have performance issues with WED, you can turn off the visual preview of objects. To do so, open the View menu and click **Toggle Preview**.
-Initial scenery load time is increased notably by the NAVAID layer, which can also be toggled off in the view menu.
+If you have performance issues with WED, you can turn off the visual preview of objects, terrain or nadvaid layers. To do so, open the View menu and click **Toggle Preview**, **Toggle Terrain** or **Toggle Navaids**.
+Initial scenery load time is also increased notably by the navaid or terrain layers.
 
 ### Recovering from a Crash ###
 
@@ -1107,15 +1147,20 @@ To file a bug report, please visit the [Airport Scenery Gateway][75] and create 
 | Save                      | Saves the current sessions                            |
 | Revert to Saved           | Reloads the package from disk, going back to the last saved version. Note that you can undo a revert-to-saved by using the "undo" function under the Edit menu. 
 | Validate                  | Checks a scenery pack for errors and problems.        |
-| Target X-Plane Version | Sets the oldest version of X-Plane that can use the scenery pack. Note: setting this to older versions may not allow newer WED features to export. |
-| Import apt.dat            | Imports an `apt.dat` file. This brings up a list of airports in the apt.dat file to select from. Note that the default `apt.dat` is located in `X-Plane 10/Resources/default scenery/default apt dat/Earth nav data/`. You will have the option of only importing *some* of the airports contained in the file. Hold Ctrl and click (Command+click on Macs) to select multiple airports, then hit the **Import** button.  |
-| Import DSF                | Imports a DSF file from disk.                         |
-| Import Orthophoto | Imports selected file from disk. Note building a scenery pack will turn this file into orthophoto scenery. |
+| Target X-Plane Version    | Sets the oldest version of X-Plane that can use the scenery pack. Note: setting this to older versions may not allow newer WED features to export. |
+| Import Roads              | Imports road networks from the Global Scenery to match the selected exclusion zone for road networks. |
+| Import Orthophoto         | Imports selected file from disk. Note building a scenery pack will turn this file into orthophoto scenery. |
 | Import from Airport Scenery Gateway | Imports an `apt.dat` file, as described above, from the Airport Scenery Gateway database instead of the local disk. |
-| Export apt.dat            | Exports only `apt.dat` data into a single `apt.dat` file. |
 | Export Scenery Pack       | Exports the entire scenery pack, DSFs and `apt.dat`s into your scenery pack, so you can fly it in X-Plane. |
-| Export to Airport Scenery Gateway | Automatically exports and uploads the selected scenery pack to the Gateway |
+| Submit to Airport Scenery Gateway | Automatically exports and uploads the selected scenery pack to the Gateway |
+| Preferences               | Configures system-wide user preference like using metric or imperial units. |
 | Exit (Windows/Linux only) | Quits WED.                                            |
+
+#### The File > Advanced Menu ###
+
+| Import apt.dat            | Imports an `apt.dat` file. This brings up a list of airports in the apt.dat file to select from. Note that the default `apt.dat` is located in `X-Plane 10/Resources/default scenery/default apt dat/Earth nav data/`. You will have the option of only importing *some* of the airports contained in the file. Hold Ctrl and click (Command+click on Macs) to select multiple airports, then hit the **Import** button.  |
+| Import DSF                | Imports a DSF file from disk in either binary, 7z compresssed binary or text formats (requires .txt suffix) |
+| Export apt.dat            | Exports only `apt.dat` data into a single `apt.dat` file. |
 
 ### The Edit Menu ###
 
@@ -1152,6 +1197,7 @@ To file a bug report, please visit the [Airport Scenery Gateway][75] and create 
 | Object Density            | Shows a preview of the objects that a user would see at a given object density (set in the Rendering Options window in X-Plane). |
 | Pick Overlay Image        | Creates a new overlay image from disk for reference purposes only. |
 | Toggle World Map          | Turns the low-resolution background world map on or off. When checked, the background map is enabled. |
+| Toggle Terrain            | Toggles background layer of the terrain mesh data from the Global Scenery data files of X-Plane |
 | Toggle Navaids            | Toggles background layer with airport icons and NAVAID locations. |
 | Slippy Map | Toggles OpenStreetMap or ESRI map information. |
 | Toggle Preview            | Toggles semi-realistic preview of objects, AGPs, facades and most other art assets. When checked, these previews are enabled. |
@@ -1185,7 +1231,10 @@ To file a bug report, please visit the [Airport Scenery Gateway][75] and create 
 | Update Metadata | Downloads new, missing metadata (if available) for the airport. |
 | Edit Airport *[airport]*  | Changes the current airport to the selected one.      |
 | Upgrade Ramps | Auto-update pre X-Plane 10.50 style ramp starts with useful defaults. |
-| Align Airports | Mass-move airports to bring runways into CIFP compliance. |
+| Upgrade Jetways | Auto-update pre X-Plane 11 style jetways using discrete objects to X-Plane 11/12 style jetway facades. This is a requirement to create animated, auto-docking jetways in X-Plane 12 |
+| Age Pavement              | Changes all default X-Plane 11 run and taxiways to x-Plane 12 surface types that look either more worn/older or brand new |
+| Mow grass                 | Adds polygons and 2D objects looking like mowed grass to bare-earth surfaces with the airport boundary |
+| Align Airports | Mass-move airports to bring runways into CIFP compliance, for LR internal use only. |
 | Replace Vehicle Objects   | Replace static ground service .objs with X-Plane 11 ground service functions. |
 
 ## Property Reference ##
@@ -1195,26 +1244,26 @@ The following is a list of object types with descriptions of the properties asso
 | Property name   | Description                                                    |
 | --------------- | -------------------------------------------------------------- |
 |                               **Airport**                                       ||
-| Type            | Seaports and Heliport do not support "Always flatten"          |
+| Type            | Airport, Seaports or Heliport                                  |
 | Field Elevation | Elevation to use when Airport terrain is flattened at run-time |
 | Has ATC         | Property specifying ATC availability (X-Plane 9 only)          |
-| Airport ID      | Handle used to idenify and disambuguate airport sceneries. NOT used in user facing displays in X-Plane 10.45 and later |
-| Always Flatten  | Flatten terrain completely to elev. specified in Field Elevation |
-| Left Hand Driving | Ground Service Vehicles drive on left side of centerline     |
+| Airport ID      | Handle used to identify and disambiguate airport sceneries. NOT used in user facing displays in X-Plane 10.45 and later |
+| Always Flatten  | Flatten terrain completely to elev. specified in Field Elevation. In X-Plane only effective for Airports, not for Heliports. |
+| Left Hand Driving | Ground Service Vehicles drive on left side of centerlines    |
 | Scenery ID      | For Scenery Gateway internal revision control purposes, only.  |
 |                               **Airport Beacon**                                ||
-| Type            | The type of beacon at this location.                    |
+| Type            | The type of beacon at this location.                           |
 |                             **Airport Boundary**                                ||
-| Markings           | The pavement line markings attached to this boundary, set on a per-point basis.     |
+| Markings        | The pavement line markings attached to this boundary, set on a per-point basis.     |
 | Lights          | The lights attached to this boundary, set on a per-point basis.    |
-|                             **Airport Lines**                                   ||
-| Lines           | The pavement line markings attached to this line, which may be set either at the level of a line or its points.                 |
-| Lights          | The airport lights attached to this line, which may be set either at the level of a line or its points.                 |
+|                             **Airport Line Markings**                           ||
+| Lines           | The pavement line markings attached to this line, which may be set either at the level of a line or its points. |
+| Lights          | The airport lights attached to this line, which may be set either at the level of a line or its points.  |
 |                             **Airport Sign**                                    ||
 | Name            | Interpreted as a sign code for these entities. See the `apt.dat` [1000 file specification][78] for the meaning of the sign codes.   |
-| Heading | Specifies the direction the front of the sign faces. |
-| Size | Size of the sign, defined as one of several preset sizes. |
-|                             **ATC Flow** (X-Plane 10 only)                      ||
+| Heading         | Specifies the direction the front of the sign faces.           |
+| Size            | Size of the sign, defined as one of several preset sizes.      |
+|                             **ATC Flow** (X-Plane 10+ only)                     ||
 | METAR ICAO            | The METAR ICAO code of the airport whose weather determines the use of this flow. For smaller airports, their flow may be dictated by a nearer larger airport, so this ICAO may not be the ICAO of the airport that contains the flow!     |
 | Minimum ceiling | The minimum ceiling in feet/meters at which this flow can be used. |
 | Minimum visibility | The minimum visibility in sm at which this flow can be used. |
@@ -1223,102 +1272,107 @@ The following is a list of object types with descriptions of the properties asso
 |                             **ATC Frequency**                                   ||
 | Type           | The type of frequency (e.g. ground, delivery, etc.)             |
 | Frequency      | The actual frequency or 8.33kHz channel number, in MHz.         |
-|                             **ATC Runway Use** (X-Plane 10 only)                ||
+|                             **ATC Runway Use** (X-Plane 10+ only)               ||
 | Runway         | The runway to use                                               |
-| Departure Frequency | The actual departure frequency, in MHz. |
+| Departure Frequency | The actual departure frequency, in MHz.                    |
 | Traffic type   | A set of aircraft categories (e.g., prop, jet) that can operate on the runway.  |
 | Operations     | The type of operation (e.g. departure, arrival) that can operate on the runway. |
 | Legal on-course hdg min/max | This defines the range of headings that the first waypoint for the departure can still be in to receive this runway. |
 | ATC assigned heading min/max | Defines the range of headings ATC can give the aircraft on takeoff from this runway.  |
-|                             **ATC Time Rule** (X-Plane 10 only)                ||
-| Start time     | The earliest time this flow can be used, in Greenwich mean time (GMT), or Zulu time.   |
-| End time       | The latest time this flow can be used, in Greenwich mean time (GMT), or Zulu time.    |
-|                             **ATC Wind Rule** (X-Plane 10 only)                ||
-| METAR ICAO           | The ICAO of the airport whose wind is being measured. Like ceilings, the airport whose weather determines flow may not be the same as the airport you are currently working with; small airports must often do what big airports dictate.    |
+|                             **ATC Time Rule** (X-Plane 10+ only)               ||
+| Start time     | The earliest time this flow can be used, in GMT or Zulu time.  |
+| End time       | The latest time this flow can be used, in GMT or Zulu time.    |
+|                             **ATC Wind Rule** (X-Plane 10+ only)               ||
+| METAR ICAO     | The ICAO of the airport whose wind is being measured. Like ceilings, the airport whose weather determines flow may not be the same as the airport you are currently working with; small airports must often do what big airports dictate.    |
 |Direction from/to | Defines the range the wind must come from for the flow to be used. |
-| Max speed (knots) | The maximum wind speed for which this rule is in effect. |
-|                             **Draped Orthophoto**                        ||
+| Max speed (knots) | The maximum wind speed for which this rule is in effect.    |
+|                             **Draped Orthophoto**                              ||
 | Resource       | The file name of the `.pol` file that defines the texture for the draped orthophoto                 |
 | Texture Top, Bottom, Left, Right| UV texture bounds used for automatic re-calculation of texture UV coordinates when polygon geometric shape changes. 1,0,0,1 results in the full texture being stretched to cover polygon shape. 0,0,0,0 or Top==Bottom or Left==Right disables automatic coordinate calculation |
 |                             **Exclusion Zone**                                  ||
-| Exclusions | These define what types of 3-D entities are excluded below this rectangle. The OBJ exclusion excludes objects and auto-generated X-Plane 10 elements.  |
+| Exclusions     | These define what types of 3-D entities are excluded below this rectangle. The OBJ exclusion excludes objects and auto-generated X-Plane 10 elements. |
 |                             **Facade**                                          ||
-| Height | Height of the facade in X-Plane |
+| Height         | Height of the facade in X-Plane                                 |
 | Resource       | The file name of the `.fac` file that defines the look of this facade.   |
-| Pick walls     | Check this box to define the wall types on a per-node basis (available in X-Plane 10 only).    |
-| Show with     |  The minimum rendering settings at which this object is guaranteed to appear. By picking higher rendering settings in this popup, you allow X-Plane to drop your facade when the user's rendering settings are low.  If you pick default, your facade will always appear.  |
+| Pick walls     | Check this box to define the wall types on a per-node basis (X-Plane 10+ only).    |
+| Show with      |  The minimum rendering settings at which this object is guaranteed to appear. By picking higher rendering settings in this popup, you allow X-Plane to drop your facade when the user's rendering settings are low.  If you pick default, your facade will always appear.  |
 |                            **Forest Placement**                                ||
 | Density        | The vegetation density in this forest stand as a ratio, where 0.0 is none and 1.0 is maximum density.  |
 | Resource       | The name of the `.for` file that defines the look of this forest. |
-| Fill mode      | Defines whether the forest has trees filling the area, around the edges (linear), or just at corners (points)    |
+| Fill mode      | Defines whether the forest has trees filling the area, around the edges (linear), or just at corners (points) |
 |                             **Helipad**                                         ||
-| Width/Length | Defines the size and shape of the helipad; square by default. |
+| Width/Length   | Defines the size and shape of the helipad; square by default.   |
 | Surface        | The appearance of the surface of the pad, such as concrete or asphalt.  |
-| Markings       | Markings on the helipad itself. Only "default" currently available.                                |
-| Shoulder       | The type of shoulder around the helipad.                         |
-| Roughness      | A ratio of roughness, currently ignored by X-Plane.              |
-| Lights    | The type of lights around the edge of the pad.                   |
+| Markings       | Markings on the helipad itself. Only "default" currently available. |
+| Shoulder       | The type of shoulder around the helipad.                        |
+| Roughness      | A ratio of roughness, currently ignored by X-Plane.             |
+| Lights         | The type of lights around the edge of the pad.                  |
 |                             **Light Fixture**                                   ||
-| Type           | The type of lighting fixture.  Non-operational fixtures like apron lights can be placed as library elements.     |
-| Angle          | The glide slope that shows correct descent for PAPIs and VASIs.  |
-|                             **Line Placement**                                   ||
-| Resource       | The path to the `.lin` file that defines the look of this line.  |
+| Type           | The type of lighting fixture.  Non-operational fixtures like apron lights can be placed as library elements.  |
+| Angle          | The glide slope that shows correct descent for PAPIs and VASIs. |
+|                             **Line Placement**                                  ||
+| Resource       | The path to the `.lin` file that defines the look of this line. |
 | Closed         | When checked, WED will automatically close the line to make a loop.  |
 | = Airport Line | Virtual property to invoke the Line Style Selector GUI, offering to select a resource that matches the appearance of the choices available for Airport Line Markings |
-|                             **Object Placement**                                 ||
+|                             **Object Placement**                                ||
 | Elevation Mode  | Select to place the object either at ground level "None", at an height relative to ground level "set_AGL" or at an absolute elevation "set_MSL". Set_MSL is available starting with XP10, set_AGL requires XP11.50 or later. |
-| Elevation      | Height in MSL or AGL as per Elevation Mode property.             |
+| Elevation      | Height in MSL or AGL as per Elevation Mode property.            |
 | Resource       | The path to the `.obj` or `.agp` file that defines the look of this object placement.  |
 | Show level     | The minimum rendering settings at which this object is guaranteed to appear.  By picking higher rendering settings in this menu, you allow X-Plane to not display your object when the user's rendering settings are low.  If you pick "default", your facade will always appear.  |
-|                             **Polygon Placement**                                ||
+|                             **Polygon Placement**                               ||
 | Heading        | The heading, in degrees, to which the draped polygon's texture is rotated. |
 | Resource       | The path to the `.pol` file that defines the look of this draped polygon. |
-|                             **Ramp Position**                                    ||
-| Ramp start type      | The type of parking spot (available in X-Plane 10 only).          |
-| Equipment      | Selects all airplane classes that can legally park at this spot (available in X-Plane 10 only).  |
-| Size           | Largest size of aircraft to use the position (X-Plane 10.45+ only) |
+| = Taxi Surface | Virtual property to select a resource that matches in appearance the run/taxiway surface types |                             |                             **Ramp Position**                                   ||
+| Ramp start type | The [type](https://developer.x-plane.com/article/guide-to-ramp-starts) of parking spot (X-Plane 10+ only) [. |
+| Equipment      | Selects all airplane classes that can legally park at this spot (X-Plane 10+ only).  |
+| Size           | Largest ICAO size class of aircraft to use the position (X-Plane 10.45+ only) |
 | Ramp Operation Type | Types of aircraft that park to use the position (X-Plane 10.45+ only) |
 | Airlines       | List of 3-letter airline codes to specify liveries for parked aircraft (X-Plane 10.45+ only) |
-|                             **Runway**                                           ||
-| Width | Change the default width. |
-| Surface        | The material the runway itself is built out of.                  |
+|                             **Runway**                                          ||
+| Width          | Change the default width.                                       |
+| Surface        | The material the runway itself is built out of.                 |
 | Shoulder       | The material the shoulder of the runway is built out of, if there is one. |
-| Roughness      | A ratio for how bumpy the runway is (currently ignored by X-Plane). |
-| Centerline lights  | A check box to enable centerline lights on the runway.           |
+| Shoulder Width | Width of the shoulders, 0 for default with (X-Plane 12 only)    |
+| Roughness      | (currently ignored by X-Plane).                                 |
+| Centerline lights  | A check box to enable centerline lights on the runway.      |
 | Edge lights    | The type of edge lights.  Note that X-Plane does not vary brightness between MIRL, HIRL and LIRL.  |
 | Distance signs | Check this box to have X-Plane generate distance remaining signs every 1000 feet. |
 | Displaced threshold (at each end) | The number of meters to displace the landing threshold from the end of the runway.  |
-| Blast pad  (at each end) | The number of meters of blast pad next to the runway. |
+| Blast pad  (at each end) | The number of meters of blast pad next to the runway .|
 | Markings (at each end) | The touch down markings for this end of the runway.     |
 | Approach lights  (at each end) | The type of approach lights for this end of the runway. |
 | TDZ lights  (at each end) | Check this to enable touch down zone lights on this end of the runway. |
-| REIL lights  (at each end) | The type of runway end identifier lights---pick unidirectional, omnidirectional, or none. |
+| REIL strobes (at each end) | The type of runway end identifier lights---pick unidirectional, omnidirectional, or none. |
+|                             **Roads**                                           ||
+| Start Layer    | Level above ground at the beginning of segment. 0 for on-gound  |
+| End Layer      | Level above ground at the end of segment. 0 for on-gound        |
+| Type           | Sub-type of roads as defined in network resouce. Includes railroad and powerline types. |
 |                             **Sealane**                                         ||
-| Width | Change the default width. |
-| Show buoys          | Check this to have X-Plane generate buoys along the sealane.    |
+| Width          | Change the default width. |
+| Show buoys     | Check this to have X-Plane generate buoys along the sealane.    |
 |                             **String Placement**                                ||
 | Resource       | The path to the `.str` file that defines the look of this object string. |
-| Spacing        | The distance between object placements in meters.               |
+| Spacing        | The distance between object placements in integral meters.      |
 | Closed         | Check this to make a closed loop rather than an open line.      |
-|                             **Taxi Route**                                   ||
-| Split | Cannot (and should not) be changed. |
+|                             **Taxi Route**                                      ||
+| Split          | Cannot (and should not) be changed. |
 | One way        | Check this if traffic on this route should only flow in one direction.  Be careful with this property, as it puts pressure on ATC to make circuitous routes.  |
 | Size           | Maximum size / wingspan of aircraft per [ICAO classification](https://developer.x-plane.com/article/atc-taxi-route-authoring) allowed to traveling the segment |
-| Allowed Vehicles | Type of traffic handled by route: Aircraft or Ground Vehicles |
-| Runway         | Select which runway the ATC taxi route is on.                |
+| Allowed Vehicles | [Type](https://developer.x-plane.com/article/atc-taxi-route-authoring) of traffic handled by route: Aircraft or Ground Vehicles |
+| Runway         | Select which runway the ATC taxi route is on.                   |
 | Departures     | A set of all runways that this route intersects with for the purpose of departures. This can include an intersection between the route and the airspace after the departure end of the runway.  |
 | Arrivals       | A set of all runways that this route intersects with for the purpose of arrivals. This can include an intersection of the route with the airspace before the touchdown zone or after the departure end.      |
 | ILS precision area | A set of all runways whose ILS precision areas intersects this route.  |
 |                             **Taxiway**                                         ||
 | Surface        | The material that makes up the surface of this taxiway.         |
 | Roughness      | A ratio for how bumpy the runway is (currently ignored by X-Plane). |
-| Texture heading        | The direction of the "grain" of the surface, in true degrees.   |
-| Line attributes          | The pavement line markings attached to this taxiway---may be set on the entire taxiway or on segments by selecting individual points.    |
-| Light attributes         | The airport lights attached to this taxiway---may be set on the entire taxiway or on its points.  |
+| Texture heading | The direction of the "grain" of the surface, in true degrees.   |
+| Line attributes | The pavement line markings attached to this taxiway---may be set on the entire taxiway or on segments by selecting individual points.    |
+| Light attributes | The airport lights attached to this taxiway---may be set on the entire taxiway or on its points.  |
 |                             **Tower Viewpoint**                                 ||
 | Height         | The viewpoint's height above the ground when using the tower view in X-Plane.  Note that this simply controls where the camera is placed in tower view mode---it does not create a control tower.  Place a control tower object using a library object. |
 |                             **Windsock**                                        ||
-| Lit            | Check this for the windsock to be lit at night.                |
+| Lit            | Check this for the windsock to be lit at night.                 |
 
 ## Appendix: Anatomy of the X-Plane Scenery System ##
 
@@ -1403,12 +1457,16 @@ A quick cheat sheet to art asset file types:
 *   `.obj` – OBJect---that is, a 3-d model/mesh. This is not the same format as an Alias/Wavefront OBJ files.
 *   `.fac` – Facade definition; the file describes how to extrude a building from a footprint using a texture.
 *   `.for` – Forest definition; the file describes how to build trees from a texture for placement within a polyogn.
-*   `.bch` – Beach definition; the file describes how to tile a beach from a texture.
+*   `.bch` – Beach definition; the file describes how to tile a beach from a texture. Not supported by WED, only used in base mesh scenery currently.
 *   `.net` – Road network definition; the file describes how to build 3-d roads and place traffic for several road types from several textures.
 *   `.pol` – Draped polygon; describes how to texture a polygon that is "draped" over the existing mesh using a texture.
 *   `.str` – Object string; describes how to place a number of OBJ files along a line.
 *   `.lin` – Line; describes how to paint a line along the mesh.
-
+*   `.agp` – Autogen Point; a file specifying .obj, .fac, .for entities and an optional draped ground texture. A sort of a "mini scenery', placing obentities in tangent space relative to each other.
+*   `.ags' – Autogen String; a definition to place polygons lined at the perimeter with .agp or .obj entities in context sensitive, complex, randomized patterns.
+*   `.agb' – Autogen Block; a definition usable with 4-vertex, retangular polygons only. Places a .agp or .obj entities in context sensitive, complex, randomized bit grided patterns.
+*   
+    
 Note that `.pol` (draped polygons) can be used in an overlay, while `.ter` (base mesh terrain) can only be used in base meshes. Base mesh performance is significantly faster than draped polygons; draped polygons should only be used to customize _small_ areas of the world, like an airport surface area. These files are not appropriate for large-scale orthophoto scenery!
 
 Art asset "primary" files (e.g. OBJ, FAC, etc) can be in any location within a scenery package---they are defined by relative paths. So you can organize your art assets as desired. The dependent ("secondary") files like DDS textures should be in the same folder as the art asset. An example:
@@ -1443,8 +1501,7 @@ For further reading, see the [DSF Usage by X-Plane][83] article.
 
 #### Road Networks ####
 
-Road networks may be specified in overlay files, but they require MSL elevation (that is, their altitude is predefined). The lack of on-the-fly elevation adjustment for overlay road networks is a problem for making add-on road packs; fixing this limitation is an area of ongoing development.
-
+Road networks may be specified in overlay files starting with X-Plane 10. But the format for X_plane 10 roads (that require MSL elevation) is not supported by WED. WED only support the X-Plane 11+ road styles, which uses virtual roads types a layer for elevated sections (bridges)
 For further reading, see the [.net File Specification][84] article on the X-Plane Developer site.
 
 #### Library ####
@@ -1502,10 +1559,9 @@ Airport definitions do not use any specific art assets; the file format models a
 
 However, all of the types of drawing that are possible in an airport (pavement, lines, lights) can be created using DSF overlay data. The intention is for authors who want to truly customize the look of their airport to use DSF overlays.
 
-*   `.pol` files have the same functionality as taxiway and runway pavement.
-*   `.lin` files have the same functionality as taxiway lines.
+*   `.pol` files work similar to taxiway and runway pavement, but do not have the same functionalty wrt smoothing the terrain, recessing lights. 
+*   `.lin` files have the same basic functionality as taxiway lines.
 *   `.str` files have the same functionality as taxiway lights.
-*   `.obj` files are actually used to build the lights that are placed in an airport–each runway light is actually an OBJ!
 
 Some of X-Plane's art assets for airports are available via the library.
 
@@ -1562,12 +1618,7 @@ Someday X-Plane may feature seasonal textures; when this happens, the TEXTURE\_L
 
 ### Customizing Roads ###
 
-X-Plane uses exactly one road definition (a `.net` file) for all roads in a given DSF. One `.net` file may define many road types, so subtypes within the road file are used to create variety. This means you must include all of the textures and objects for your entire set of roads.
-
-### Customizing Beaches ###
-
-All default beaches in X-Plane exist in one image file and are referenced via one `.bch` file. So you must provide all beach definitions if you are going to provide any. Only one beach definition (a `.bch` file) may be used per DSF. Subtypes within the beach are used to create variety.
-
+X-Plane uses exactly one road definition (a `.net` file) for all roads in a given DSF. One `.net` file may define many road types, so subtypes within the road file are used to create variety. This means you must include all of the textures and objects for your entire set of roads when providing a custom network definition (the .net file) as part of the scenery or library.
 
 ###### links and images ######
 

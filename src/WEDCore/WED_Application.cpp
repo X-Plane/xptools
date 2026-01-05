@@ -333,6 +333,9 @@ void	WED_Application::Preferences(void)
 {
 	if(!mSettingsWin) mSettingsWin = new WED_Settings( this );
 	mSettingsWin->Show();
+#if APL
+	mSettingsWin->Refresh();
+#endif
 }
 
 bool	WED_Application::CanQuit(void)

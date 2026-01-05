@@ -409,8 +409,8 @@ void		WED_PackageMgr::Rescan(bool alwaysBroadcast)
 		size_t v_pos = logfile_contents.find("X-Plane");  // version string is the one behind the X-plane keyword
 		if (v_pos != string::npos && v_pos < 100)
 		{
-			char v[16];
-			sscanf(logfile_contents.c_str()+v_pos+8,"%15s",v);
+			char v[64];
+			sscanf(logfile_contents.c_str()+v_pos+8,"%63s",v);
 			XPversion = v;
 		}
 	}
@@ -469,6 +469,9 @@ string		WED_PackageMgr::ReducePath(const string& package, const string& full_fil
 		prefix.erase(0,chop+1);
 		partial = string("../") + partial;
 	}
+#if IBM
+	std::replace(partial.begin(), partial.end(), DIR_CHAR, '/');
+#endif
 	return partial;
 }
 

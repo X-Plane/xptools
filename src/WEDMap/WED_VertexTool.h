@@ -79,7 +79,7 @@ public:
 	virtual	const char *		GetStatusText(void) { return NULL; }
 
 	virtual	void		DrawSelected			(bool inCurrent, GUI_GraphState * g);
-
+	virtual	void		DrawStructure			(bool inCurrent, GUI_GraphState * g);
 
 //	virtual void *		QueryInterface(const char * class_id);
 
@@ -99,6 +99,7 @@ private:
 		int						mIsTaxiSpin;
 		mutable Point2			mRotateCtr;
 		mutable Point2			mTaxiDest;
+		mutable vector<Point2>	mSnapPoints;
 		mutable double			mRotateOffset;
 		mutable	int				mRotateIndex;
 		mutable	Vector2			mPointOffset1;
@@ -111,6 +112,7 @@ private:
 		vector<BezierPoint2>	mSrcBezier;
 
 		WED_PropBoolText		mSnapToGrid;
+		WED_PropBoolText		mShowNodeNum;
 
 		mutable vector<IGISEntity *>	mEntityCache;
 		mutable long long				mEntityCacheKeyArchive;
@@ -120,7 +122,7 @@ private:
 		mutable long long								mSnapCacheKeyArchive;
 		mutable long long								mSnapCacheKeyZoomer;
 
-		mutable IGISEntity *	last_en;     
+		mutable IGISEntity *	last_en;
 		mutable intptr_t		last_ptr; // cache for dynamic_cast<>(en) in GetNthHandle(), as its called repeatedly for the same entities
 };
 

@@ -1,0 +1,209 @@
+#!/usr/bin/env powershell
+
+# C++ Project Build Script with Conan and CMake
+# This script sets up a Visual Studio build environment for a C++ project
+
+param(
+    [string]$BuildType = "Release",
+    [string]$ConanProfile = "default",
+    [switch]$Clean = $false,
+    [switch]$Verbose = $false
+)
+
+# Script configuration
+$BuildDir = "vs_build"
+$ProjectRoot = Get-Location
+$ConanFile = "conanfile.py"
+$CMakeLists = "CMakeLists.txt"
+
+# Color output functions
+function Write-Info { param($Message) Write-Host "INFO: $Message" -ForegroundColor Green }
+function Write-Warning { param($Message) Write-Host "WARNING: $Message" -ForegroundColor Yellow }
+function Write-Error { param($Message) Write-Host "ERROR: $Message" -ForegroundColor Red }
+
+# Check prerequisites
+function Test-Prerequisites {
+    Write-Info "Checking prerequisites..."
+
+    # Check if conan is installed
+    try {
+        $conanVersion = & conan --version 2>$null
+        Write-Info "Found Conan: $conanVersion"
+    }
+    catch {
+        Write-Error "Conan is not installed or not in PATH"
+        Write-Host "Please install Conan: pip install conan"
+        exit 1
+    }
+
+    # Check if cmake is installed
+    try {
+        $cmakeVersion = & cmake --version 2>$null | Select-Object -First 1
+        Write-Info "Found CMake: $cmakeVersion"
+    }
+    catch {
+        Write-Error "CMake is not installed or not in PATH"
+        Write-Host "Please install CMake from https://cmake.org/download/"
+        exit 1
+    }
+
+    # Check if conanfile exists (conanfile.py or conanfile.txt)
+    if (-not (Test-Path "conanfile.py") -and -not (Test-Path "conanfile.txt")) {
+        Write-Error "conanfile.py or conanfile.txt not found in current directory"
+        Write-Host "Please ensure you're in the project root with a Conan recipe file"
+        exit 1
+    }
+
+    # Check if CMakeLists.txt exists
+    if (-not (Test-Path $CMakeLists)) {
+        Write-Error "CMakeLists.txt not found in current directory"
+        Write-Host "Please ensure you're in the project root with a CMakeLists.txt"
+        exit 1
+    }
+
+    Write-Info "All prerequisites satisfied"
+}
+
+# Clean build directory if requested
+function Clear-BuildDirectory {
+    if ($Clean -and (Test-Path $BuildDir)) {
+        Write-Info "Cleaning build directory: $BuildDir"
+        Remove-Item -Recurse -Force $BuildDir
+    }
+}
+
+# Create build directory
+function New-BuildDirectory {
+    if (-not (Test-Path $BuildDir)) {
+        Write-Info "Creating build directory: $BuildDir"
+        New-Item -ItemType Directory -Path $BuildDir | Out-Null
+    } else {
+        Write-Info "Build directory already exists: $BuildDir"
+    }
+}
+
+# Install dependencies with Conan 2 for both Debug and Release
+function Install-ConanDependencies {
+    Write-Info "Installing Conan 2 dependencies for Debug, Release, and RelWithDebInfo builds..."
+
+    Push-Location $BuildDir
+    try {
+        # Define build types to install
+        $buildTypes = @("Debug", "Release", "RelWithDebInfo")
+
+        foreach ($buildType in $buildTypes) {
+            Write-Info "Installing $buildType dependencies..."
+            $conanArgs = @(
+                "install",
+                "..",
+                "--build=missing",
+                "--profile:build=$ConanProfile",
+                "--profile:host=$ConanProfile",
+                "-s", "build_type=$buildType",
+                "--output-folder=."
+            )
+
+            if ($Verbose) {
+                $conanArgs += "-v"
+            }
+
+            Write-Info "Running: conan $($conanArgs -join ' ')"
+            & conan @conanArgs
+
+            if ($LASTEXITCODE -ne 0) {
+                Write-Error "Conan install for $buildType failed with exit code: $LASTEXITCODE"
+                exit $LASTEXITCODE
+            }
+
+            Write-Info "$buildType dependencies installed successfully"
+        }
+
+        # Verify that the toolchain was generated in the build directory
+        if (-not (Test-Path "build/generators/conan_toolchain.cmake")) {
+            Write-Error "conan_toolchain.cmake was not generated"
+            exit 1
+        }
+
+        Write-Info "Conan 2 dependencies installed for Debug, Release, and RelWithDebInfo"
+        Write-Info "Generated conan_toolchain.cmake"
+    }
+    finally {
+        Pop-Location
+    }
+}
+
+# Generate Visual Studio project files with CMake
+function Invoke-CMakeGenerate {
+    Write-Info "Generating Visual Studio project files with CMake..."
+
+    Push-Location $BuildDir
+    try {
+        # CMake arguments for Visual Studio generator with Conan 2 toolchain
+        $cmakeArgs = @(
+            "..",
+            "-G", "Visual Studio 17 2022",
+            "-A", "x64",
+            "-DCMAKE_BUILD_TYPE=$BuildType",
+            "-DCMAKE_TOOLCHAIN_FILE=build/generators/conan_toolchain.cmake"
+        )
+
+        if ($Verbose) {
+            $cmakeArgs += "--verbose"
+        }
+
+        Write-Info "Using Conan 2 toolchain: build/generators/conan_toolchain.cmake"
+        Write-Info "Running: cmake $($cmakeArgs -join ' ')"
+        & cmake @cmakeArgs
+
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "CMake generation failed with exit code: $LASTEXITCODE"
+            exit $LASTEXITCODE
+        }
+
+        Write-Info "Visual Studio project files generated successfully"
+    }
+    finally {
+        Pop-Location
+    }
+}
+
+# Display success message with next steps
+function Show-CompletionMessage {
+    Write-Host "`n" -NoNewline
+    Write-Info "Build setup completed successfully!"
+    Write-Host "`nNext steps:" -ForegroundColor Cyan
+    Write-Host "  1. Open the generated .sln file in Visual Studio:" -ForegroundColor White
+    Write-Host "     $BuildDir\*.sln" -ForegroundColor Gray
+    Write-Host "  2. Or build Debug from command line:" -ForegroundColor White
+    Write-Host "     cmake --build $BuildDir --config Debug" -ForegroundColor Gray
+    Write-Host "  3. Or build Release from command line:" -ForegroundColor White
+    Write-Host "     cmake --build $BuildDir --config Release" -ForegroundColor Gray
+    Write-Host "  4. Or use MSBuild directly:" -ForegroundColor White
+    Write-Host "     msbuild $BuildDir\*.sln /p:Configuration=Debug" -ForegroundColor Gray
+    Write-Host "     msbuild $BuildDir\*.sln /p:Configuration=Release" -ForegroundColor Gray
+    Write-Host "`nBoth Debug and Release dependencies are now available!" -ForegroundColor Green
+}
+
+# Main execution
+function Main {
+    Write-Info "Starting C++ project build setup..."
+    Write-Info "Conan Profile: $ConanProfile"
+    Write-Info "Project Root: $ProjectRoot"
+    Write-Info "Installing dependencies for both Debug and Release configurations"
+
+    try {
+        Test-Prerequisites
+        Clear-BuildDirectory
+        New-BuildDirectory
+        Install-ConanDependencies
+        Invoke-CMakeGenerate
+        Show-CompletionMessage
+    }
+    catch {
+        Write-Error "Build setup failed: $_"
+        exit 1
+    }
+}
+
+# Run main function
+Main

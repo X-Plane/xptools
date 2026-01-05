@@ -31,7 +31,7 @@ TRIVIAL_COPY(WED_StringPlacement,WED_GISChain)
 
 WED_StringPlacement::WED_StringPlacement(WED_Archive * a, int i) : WED_GISChain(a,i),
 	closed  (this,PROP_Name("Closed",  XML_Name("string_placement","closed")),0),
-	spacing (this,PROP_Name("Spacing", XML_Name("string_placement","spacing")),10.0,3,1),
+	spacing (this,PROP_Name("Spacing", XML_Name("string_placement","spacing")),10.0,5,2),
 	resource(this,PROP_Name("Resource",XML_Name("string_placement","resource")), "")
 {
 }

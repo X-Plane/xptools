@@ -89,6 +89,7 @@ public:
 	bool		IsResourceDeprecatedOrPrivate(const string& r) const;
 	bool		IsSeasonal(const string& r) const;
 	bool		IsRegional(const string& r) const;
+	bool		IsCustomized(const string& r) const;  // default LR path, but customized by 3rd party export 
 
 	string		CreateLocalResourcePath(const string& r);
 
@@ -104,6 +105,8 @@ public:
 				// gets the vpath of the resource used to dar apt.dat liner markings
 	bool		GetLineVpath(int lt, string& vpath);
 				// look up apt.dat surface types and matching public .pol vpaths
+				// returns if there is a public polygon equivalent or not.
+	            // even if there isnt - may still return a vpath if there is at least a public surface
 	bool		GetSurfVpath(int surf, string& vpath);
 	int			GetSurfEnum(const string& vpath);
 
@@ -119,7 +122,7 @@ private:
 	struct	res_info_t {
 		set<int>	packages;       // points out if same items is exported by multiple libraries
 		vector<string> real_paths;  // holds all the variants causeed by multiple EXPORTS commands
-		unsigned    res_type : 4, status : 4, is_backup : 1, is_default : 1, has_seasons : 1, has_regions : 1;
+		unsigned    res_type : 4, status : 4, is_backup : 1, is_default : 1, has_seasons : 1, has_regions : 1, is_customized : 1;
 	};
 
 	typedef map<string,res_info_t>	res_map_t;
@@ -128,7 +131,7 @@ private:
 
 	string				local_package;
 	map<int, string>	default_lines;        // list of art assets for sim default lines
-	map<int, string>	default_surfaces;
+	map<int, pair<string, bool> >	default_surfaces;
 
 	friend class WED_JWFacades;
 };

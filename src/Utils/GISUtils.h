@@ -23,11 +23,6 @@
 #ifndef GISUTILS_H
 #define GISUTILS_H
 
-#include <math.h>
-#if !NO_CGAL
-#include "CGALDefs.h"
-#endif
-
 struct	Polygon2;
 struct	Vector2;
 struct	Point2;
@@ -45,8 +40,18 @@ typedef	struct tiff TIFF;
 // Pass the pointer to the vector and get it filled with coordinates of evenly spaced points to perfectly warp/project 
 // the texture to the WED stereographic map. Also used for accurate placement of orthophoto subtextures upon import.
 
-bool	FetchTIFFCorners(const char * inFileName, double corners[8], int& post_pos, vector<Point2> * gcp=nullptr);
-bool	FetchTIFFCornersWithTIFF(TIFF * inTiff, double corners[8], int& post_pos, vector<Point2> * gcp=nullptr);
+struct gcp_t {
+	int size_x;
+	int size_y;
+	vector<Point2> pts;
+};
+
+#include <geotiffio.h>
+#include <geo_normalize.h>
+
+bool	FetchTIFFCorners(const char * inFileName, double corners[8], int& post_pos, gcp_t * gcp=nullptr);
+bool	FetchTIFFCornersWithTIFF(TIFF * inTiff, double corners[8], int& post_pos, gcp_t * gcp=nullptr);
+bool	TransformTiffCorner(GTIF* gtif, GTIFDefn* defn, double x, double y, double& outLon, double& outLat);
 
 // This routine converts UTM to lat/lon coordinates.  X and Y should be
 // in meters.  Zone should be positive 1-60 for north or -1-60 for south.
@@ -62,46 +67,25 @@ double	LonLatDistMetersWithScale(double lon1, double lat1, double lon2, double l
 void	CreateTranslatorForPolygon(
 					const Polygon2&		inPolygon,
 					CoordTranslator2&	outTranslator);
-					
-#if !NO_CGAL
-void	CreateTranslatorForBounds(
-					const Point_2&		inSrcMin,
-					const Point_2&		inSrcMax,
-					CoordTranslator_2&	outTranslator);
-#endif					
 
 void	CreateTranslatorForBounds(
 					const Bbox2&		inBounds,
 					CoordTranslator2&	outTranslator);
 
-inline int	latlon_bucket(int p)
-{
-	if (p > 0) return (p / 10) * 10;
-	else return ((-p + 9) / 10) * -10;
-}
+int	latlon_bucket(int p);
 
 void	make_cache_file_path(const char * cache_base, int lon, int lat, const char * cache_name, char path[1024]);
 
 // Round a floating point number to fall as closely as possible onto a grid of N parts. 
 // We use this to try to clean up screwed up DEM coordinates...1/1200 = floating point
 // rounding error!
-inline double round_by_parts(double c, int parts)
-{
-	double fparts=parts;
-	return round(c * fparts) / fparts;
-}
+double round_by_parts(double c, int parts);
 
 // Given a DEM of parts wide, this tries to round.  The trick is: we will round based on
 // EITHER "point pixels" or "area pixels".  But how to know which one?  Well, most DEM
 // samplings are even post spacings, e.g. 120, 1200, 3600, etc.  So if we see an odd number,
 // assume that we have pixel-center and subtract.  If we see even, assume area center and add.
-inline double round_by_parts_guess(double c, int parts)
-{
-	if(parts % 2)
-		return round_by_parts(c, parts-1);	
-	else
-		return round_by_parts(c, parts  );	
-}
+double round_by_parts_guess(double c, int parts);
 
 void NorthHeading2VectorMeters(const Point2& ref, const Point2& p, double heading, Vector2& dir);
 double VectorMeters2NorthHeading(const Point2& ref, const Point2& p, const Vector2& dir);

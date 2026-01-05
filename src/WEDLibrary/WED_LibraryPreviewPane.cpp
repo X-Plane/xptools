@@ -134,7 +134,7 @@ void		WED_LibraryPreviewPane::ReceiveMessage(GUI_Broadcaster * inSrc, intptr_t i
 		else
 			mVariant = 0;
 
-		char s[16]; 
+		char s[16];
 		if(mType == res_Forest)
 			sprintf(s, "%dD", mVariant + 2);
 		else
@@ -185,7 +185,7 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type, int vari
 	{
 		const for_info_t* fst;
 		if (mResMgr->GetFor(mRes, fst) && fst->has_3D)
-		{ 
+		{
 			mInfoButton->SetDescriptor("3D");
 			mVariant = 1;
 			mNumVariants = 2;
@@ -320,9 +320,9 @@ int	WED_LibraryPreviewPane::MouseDown(int x, int y, int button)
 			float prev_space = min(b[2]-b[0],b[3]-b[1]);
 
 			TexRef	tref = mTexMgr->LookupTexture(pol->base_tex.c_str(),true, pol->wrap ? (tex_Compress_Ok|tex_Wrap) : tex_Compress_Ok);
-			int tex_x, tex_y;
-			mTexMgr->GetTexInfo(tref, &tex_x, &tex_y, NULL, NULL, NULL, NULL);
-			float tex_aspect = float(pol->proj_s * tex_x) / float(pol->proj_t * tex_y);
+//			int tex_x, tex_y;
+//			mTexMgr->GetTexInfo(tref, &tex_x, &tex_y, NULL, NULL, NULL, NULL);
+			float tex_aspect = float(pol->proj_s) / float(pol->proj_t);
 			float ds = prev_space / mZoom * (tex_aspect > 1.0 ? 1.0 : tex_aspect);
 			float dt = prev_space / mZoom * (tex_aspect > 1.0 ? 1.0/tex_aspect : 1.0);
 
@@ -474,19 +474,33 @@ void	WED_LibraryPreviewPane::begin3d(const int *b, double radius_m)
 		glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH_COMPONENT, dx, dy); CHECK_GL_ERR
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, mDepthBuf); CHECK_GL_ERR
 
+		bool disable_MSAA = false;
 		if(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
 		{
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mFBO); CHECK_GL_ERR // copy the background - since we dont use any
-	                                                                   // blend mode when Bliting buffer back at the end
+			                                                           // blend mode when Bliting buffer back at the end
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-			glBlitFramebuffer(b[0], b[1], b[2], b[3], 0, 0, dx, dy, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT, GL_NEAREST); CHECK_GL_ERR
-			glBindFramebuffer(GL_FRAMEBUFFER, mFBO);      CHECK_GL_ERR
-			glViewport(0, 0, dx, dy);                     CHECK_GL_ERR
-
+			glBlitFramebuffer(b[0], b[1], b[2], b[3], 0, 0, dx, dy, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+			int glerr = glGetError();
+			if(glerr != GL_NONE)//TODO:mroe: seen GL_INVALID_OPERATION Error due format mismatch of GL_DEPTH_BUFFER_BIT size , cancel MSAA at this point for now
+			{
+				LOG_MSG("E/Lpp BlitFramebuffer failed %d %d %s\n", mColBuf, mDepthBuf, gluErrorString(glerr));
+				disable_MSAA = true;
+			}
+			else
+			{
+				glBindFramebuffer(GL_FRAMEBUFFER, mFBO);      CHECK_GL_ERR
+				glViewport(0, 0, dx, dy);                     CHECK_GL_ERR
+			}
 		}
 		else
 		{
 			LOG_MSG("E/Lpp FBO incomplete %d %d %s %s\n", mColBuf, mDepthBuf, gluErrorString(glGetError()), gluErrorString(glGetError()));
+			disable_MSAA = true;
+		}
+
+		if(disable_MSAA)
+		{
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			glDeleteFramebuffers(1, &mFBO);
 			glDeleteRenderbuffers(1, &mColBuf);
@@ -494,10 +508,10 @@ void	WED_LibraryPreviewPane::begin3d(const int *b, double radius_m)
 			mMSAA = 0;
 			glViewport(b[0], b[1], dx, dy);
 		}
-	}
-	else
+    }
+    else
 #endif
-	glViewport(b[0], b[1], dx, dy);
+        glViewport(b[0], b[1], dx, dy);
 
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
@@ -524,8 +538,8 @@ void	WED_LibraryPreviewPane::end3d(const int *b)
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 
-#if USE_2X2MSAA
 	glPopAttrib();
+#if USE_2X2MSAA
 	if(mMSAA)
 	{
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);      CHECK_GL_ERR
@@ -539,9 +553,8 @@ void	WED_LibraryPreviewPane::end3d(const int *b)
 		glDeleteRenderbuffers(1, &mColBuf);
 		glDeleteRenderbuffers(1, &mDepthBuf);
 	}
-	glDisable(GL_LIGHTING);
 #endif
-
+	glDisable(GL_LIGHTING);
 }
 
 void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
@@ -595,50 +608,88 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, int b[4], 
 		case res_Polygon:
 			if(mResMgr->GetPol(res,pol))
 			{
-				TexRef	tref = mTexMgr->LookupTexture(pol->base_tex.c_str(),true, pol->wrap ? (tex_Compress_Ok|tex_Wrap) : tex_Compress_Ok);
-				if(tref != NULL)
+				if(auto tref = mTexMgr->LookupTexture(pol->base_tex.c_str(),true, tex_Compress_Ok+tex_Linear+tex_Mipmap+pol->wrap*tex_Wrap))
 				{
-					int tex_x, tex_y;
-					mTexMgr->GetTexInfo(tref, &tex_x, &tex_y, NULL, NULL, NULL, NULL);
-					float tex_aspect = float(pol->proj_s * tex_x) / float(pol->proj_t * tex_y);
-					float Ds = tex_aspect > 1.0 ? 1.0 : tex_aspect;
-					float Dt = tex_aspect > 1.0 ? 1.0/tex_aspect : 1.0;
-
-					int tex_id = mTexMgr->GetTexID(tref);
-
-					if (tex_id != 0)
+					if(int tex_id = mTexMgr->GetTexID(tref))
 					{
 						g->SetState(false,1,false,!pol->kill_alpha,!pol->kill_alpha,false,false);
 						g->BindTex(tex_id,0);
+						glScissor(b[0], b[1], b[2] - b[0], b[3] - b[1]);
 
-						float prev_space = min(b[2]-b[0],b[3]-b[1]);
+						float tex_aspect = (float(pol->proj_s)) / (float(pol->proj_t));
+						float Ds = tex_aspect > 1.0 ? 1.0              : tex_aspect;
+						float Dt = tex_aspect > 1.0 ? 1.0 / tex_aspect : 1.0;
+
+						float prev_space = min(b[2]-b[0], b[3]-b[1]);
 						float ds = prev_space / mZoom * Ds;
 						float dt = prev_space / mZoom * Dt;
-						float dx = b[2] - b[0];
-						float dy = b[3] - b[1];
-						float x1 = (dx - ds) /2;
-						float x2 = (dx + ds) /2;
-						float y1 = (dy - dt) /2;
-						float y2 = (dy + dt) /2;
+						float x1 = (b[2] + b[0]) / 2 - ds / 2;
+						float y1 = (b[3] + b[1]) / 2 - dt / 2;
 
-						glBegin(GL_QUADS);
-						if(pol->wrap)
+						if (pol->wrap)
 						{
-							glTexCoord2f(extrap(x1,0,x2,1,b[0]), extrap(y1,0,y2,1,b[1]));	glVertex2f(b[0],b[1]);
-							glTexCoord2f(extrap(x1,0,x2,1,b[0]), extrap(y1,0,y2,1,b[3]));	glVertex2f(b[0],b[3]);
-							glTexCoord2f(extrap(x1,0,x2,1,b[2]), extrap(y1,0,y2,1,b[3]));	glVertex2f(b[2],b[3]);
-							glTexCoord2f(extrap(x1,0,x2,1,b[2]), extrap(y1,0,y2,1,b[1]));	glVertex2f(b[2],b[1]);
+							int range_s = (b[2] - b[0]) / ds;
+							int range_t = (b[3] - b[1]) / dt;
+
+							float step_s = 1.0f / pol->tiling.tiles_x;
+							float step_t = 1.0f / pol->tiling.tiles_y;
+
+							int page_y = pol->tiling.pages_y - 1 - (range_t * pol->tiling.tiles_y) % pol->tiling.pages_y;
+							for (int t = -range_t; t <= range_t; t++)
+								for (int tile_y = 0; tile_y < pol->tiling.tiles_y; tile_y++)
+								{
+									int page_x = pol->tiling.pages_x - 1 - (range_s * pol->tiling.tiles_x) % pol->tiling.pages_x;
+									for (int s = -range_s; s <= range_s; s++)
+										for (int tile_x = 0; tile_x < pol->tiling.tiles_x; tile_x++)
+										{
+											int tile_ind_x = 0;
+											int tile_ind_y = 0;
+											int p = 2 * (page_x + pol->tiling.pages_x * page_y);
+											if (!pol->tiling.idx.empty() && p + 1 < pol->tiling.idx.size())
+											{
+												tile_ind_x = pol->tiling.idx[p];
+												tile_ind_y = pol->tiling.idx[p + 1];
+											}
+											float s0 = step_s * tile_ind_x;
+											float t0 = step_t * tile_ind_y;
+											float x0 = x1 + ds * (step_s * tile_x + s);
+											float y0 = y1 + dt * (step_t * tile_y + t);
+
+											glBegin(GL_TRIANGLE_FAN);
+											glTexCoord2f(s0,          t0);          glVertex2f(x0,               y0);
+											glTexCoord2f(s0,          t0 + step_t); glVertex2f(x0,               y0 + dt * step_t);
+											glTexCoord2f(s0 + step_s, t0 + step_t); glVertex2f(x0 + ds * step_s, y0 + dt * step_t);
+											glTexCoord2f(s0 + step_s, t0);          glVertex2f(x0 + ds * step_s, y0);
+											glEnd();
+
+											if (pol->tiling.rwy)
+											{
+												glColor4f(1, 1, 1, 0.5);
+												t0 = t0 - 0.5;         // likely wrong, a scheme this simple would not increase randomization
+												glBegin(GL_TRIANGLE_FAN);
+												glTexCoord2f(s0,          t0);          glVertex2f(x0,               y0);
+												glTexCoord2f(s0,          t0 + step_t); glVertex2f(x0,               y0 + dt * step_t);
+												glTexCoord2f(s0 + step_s, t0 + step_t); glVertex2f(x0 + ds * step_s, y0 + dt * step_t);
+												glTexCoord2f(s0 + step_s, t0);          glVertex2f(x0 + ds * step_s, y0);
+												glEnd();
+												glColor4f(1, 1, 1, 1.0);
+											}
+											page_x++;
+											if (page_x >= pol->tiling.pages_x) page_x = 0;
+										}
+									page_y++;
+									if (page_y >= pol->tiling.pages_y) page_y = 0;
+								}
 						}
 						else
 						{
-							x1 += b[0]; x2 += b[0];
-							y1 += b[1]; y2 += b[1];
-							glTexCoord2f(0,0); glVertex2f(x1,y1);
-							glTexCoord2f(0,1); glVertex2f(x1,y2);
-							glTexCoord2f(1,1); glVertex2f(x2,y2);
-							glTexCoord2f(1,0); glVertex2f(x2,y1);
+							glBegin(GL_TRIANGLE_FAN);
+							glTexCoord2f(0,0); glVertex2f(x1,      y1);
+							glTexCoord2f(0,1); glVertex2f(x1,      y1 + dt);
+							glTexCoord2f(1,1); glVertex2f(x1 + ds, y1 + dt);
+							glTexCoord2f(1,0); glVertex2f(x1 + ds, y1);
+							glEnd();
 						}
-						glEnd();
 
 						if (!pol->mUVBox.is_null())                   // draw a box around the selected texture area
 						{
@@ -802,13 +853,31 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, int b[4], 
 				double row_offs = 0.0;
 				for(int i = 0; i < n_tiles; i++)
 				{
-					int tile_idx = (int)(i + mWid * 0.2) % agp->tiles.size();
+					int tile_idx = intlim(i + mWid * 0.2, 0, agp->tiles.size() - 1);
 					auto ti = agp->tiles[tile_idx];
 					xyz_off[0] = -(ti.xyz_max[0] + ti.xyz_min[0]) * 0.5;
 //					xyz_off[1] = -(ti.xyz_max[1] + ti.xyz_min[1]) * 0.5; // align them vertically all the same
 					xyz_off[2] =  (ti.xyz_max[2] + ti.xyz_min[2]) * 0.5;
-					row_offs += (ti.xyz_max[0] - ti.xyz_min[0]) * (i == 0 ? i - ((int)mWid % 5) * 0.2 : 1.1);
+//					row_offs += (ti.xyz_max[0] - ti.xyz_min[0]) * (i == 0 ? i - ((int)mWid % 5) * 0.2 : 1.1);
+					row_offs += n_tiles > 1 ? (ti.xyz_max[0] - ti.xyz_min[0]) * (i - 0.8) : 0.0;
 					draw_agp_at_xyz(mTexMgr, agp, xyz_off[0] + row_offs, xyz_off[1], xyz_off[2], mHgt, 0, g, tile_idx);
+				}
+				if (agp->has_scp)
+				{
+					// draw "ground" plane
+					g->SetTexUnits(0);
+					glColor4f(0.2, 0.4, 0.2, 0.7);   // green lawn, almost opaque
+					g->EnableLighting(false);
+					g->EnableAlpha(true, true);
+					glDisable(GL_CULL_FACE);
+					glBegin(GL_POLYGON);
+						auto wl = real_radius * 0.3;
+						glVertex3f(-wl, xyz_off[1], -wl);
+						glVertex3f(-wl, xyz_off[1], +wl);
+						glVertex3f(+wl, xyz_off[1], +wl);
+						glVertex3f(+wl, xyz_off[1], -wl);
+					glEnd();
+					glColor4f(1, 1, 1, 1);
 				}
 				end3d(b);
 			}
@@ -919,7 +988,7 @@ void	WED_LibraryPreviewPane::DrawOneItem(int type, const string& res, int b[4], 
 				break;
 			case res_Polygon:
 				if(pol)
-					snprintf(buf1, sizeof(buf1), "%s %s", pol->description.c_str(), pol->hasDecal ? "(decal not shown)" : "");
+					snprintf(buf1, sizeof(buf1), "%s %s", pol->description.c_str(), pol->decal.empty() ? "" : "(decal not shown)");
 				if (pol && pol->mSubBoxes.size())
 					sprintf(buf2, "Select desired part of texture by clicking on it");
 				break;
