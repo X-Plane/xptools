@@ -162,5 +162,10 @@ friend class WED_AirportSign;
 
 };
 
+template<class T>
+WED_Thing * CreateThing(WED_Archive * parent)
+{
+	return T::CreateTyped(parent);
+}
 
 #endif /* WED_THING_H */

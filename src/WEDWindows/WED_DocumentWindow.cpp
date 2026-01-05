@@ -69,15 +69,6 @@
 
 #define ONE_BIG_GRADIENT 0   // define his if wanting a single gradient for map + both sidepanes
 
-namespace
-{
-	template<class T>
-	WED_Thing * CreateThing(WED_Archive * parent)
-	{
-		return T::CreateTyped(parent);
-	}
-}
-
 int kDefaultDocSize[4] = { 0, 0, 1024, 768 };
 
 WED_DocumentWindow::WED_DocumentWindow(

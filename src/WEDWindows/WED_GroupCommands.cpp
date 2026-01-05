@@ -5772,15 +5772,6 @@ vector<Polygon2> MakeOneVPoly2(const vector<WED_Thing*>& pave_src)
 	return out_vpoly2;
 }
 
-namespace
-{
-	template<class T>
-	WED_Thing* CreateThing(WED_Archive* parent)
-	{
-		return T::CreateTyped(parent);
-	}
-}
-
 vector<WED_LinePlacement*> MakeEdgesFromVPoly2(WED_Thing* parent, const vector<Polygon2>& pavement, vector<WED_Thing*> pave_src, IResolver * resolver)
 {
 	// match each point in the polygon to a WED_Polygon and vertex in it
