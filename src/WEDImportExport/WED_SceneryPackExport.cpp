@@ -426,52 +426,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		if (int count = WED_DoConvertToJW(*apt_itr))
 			LOG_MSG("Upgraded %d JW at %s\n", count, ICAO_code.c_str());
 
-#if GATEWAY_IMPORT_MODE == 11
-		// translate new pavement polygons into XP11 equivalents (run/taxiways have that done in aptio.cpp)
-		// as well as a few essential and well known new XP12 objects. These "back-translations" 
-		// of new art assets will some day get out of hand and backporting to XP11 will end ...
-		#define XP12PATH  "lib/airport/ground/"
-		#define XP12N  strlen(XP12PATH)
-		vector<IHasResource*> xp12_art;
-		CollectRecursive(*apt_itr, back_inserter(xp12_art), IgnoreVisiblity, [](WED_Thing* t)->bool 
-			{
-				if(auto r = dynamic_cast<IHasResource*>(t))
-				{
-					string res;
-					r->GetResource(res);
-					return res.compare(0, XP12N, XP12PATH) == 0 || 
-						   res.compare(0, strlen("lib/vehicles/"), "lib/vehicles/") == 0 ||
-						   res.compare(0, strlen("lib/airport/control_towers/"), "lib/airport/control_towers/") == 0;
-				}
-				return false;
-			}, "", 2);
-
-		if (xp12_art.size())
-		{
-			for (auto p : xp12_art)
-			{
-				string res;
-				p->GetResource(res);
-				if      (res.compare(XP12N, strlen("pavement/asphalt_L"), "pavement/asphalt_L") == 0)
-					res = "lib/airport/pavement/asphalt_1L.pol";
-				else if (res.compare(XP12N, strlen("pavement/asphalt_D"), "pavement/asphalt_D") == 0)
-					res = "lib/airport/pavement/asphalt_1D.pol";
-				else if (res.compare(XP12N, strlen("pavement/asphalt"), "pavement/asphalt") == 0)
-					res = "lib/airport/pavement/asphalt_3D.pol";
-				else if (res.compare(XP12N, strlen("pavement/concrete_L"), "pavement/concrete_L") == 0)
-					res = "lib/airport/pavement/concrete_1L.pol";
-				else if (res.compare(XP12N, strlen("pavement/concrete"), "pavement/concrete") == 0)
-					res = "lib/airport/pavement/concrete_1D.pol";
-				else if (res.compare(0, strlen("lib/vehicles/static/trucks/"), "lib/vehicles/static/trucks/") == 0)
-					res = "lib/airport/Common_Elements/Vehicles/Cargo_Trailer.obj";
-				else if (res.compare(0, strlen("lib/airport/control_towers/"), "lib/airport/control_towers/") == 0)
-					res = "lib/airport/Modern_Airports/Control_Towers/Modern_Tower_1.agp";
-				else 
-					continue;
-				p->SetResource(res);
-			}
-		}
-#else
+#if GATEWAY_IMPORT_MODE
 		// mow the grass
 		vector<WED_Thing*> terFX;
 		CollectRecursive(*apt_itr, back_inserter(terFX), IgnoreVisiblity, [](WED_Thing* t)->bool 
@@ -716,17 +671,10 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		if(elapsed.count() > 10.0e-3)
 			LOG_MSG("Update %s took %.0lf msec\n", ICAO_code.c_str(), 1000.0 * elapsed.count());
 		t2 = t1;
-//		if(distance(apts.begin(), apt_itr) == 15) break;  // for quick testing, only upgrade a few airports
 #endif
 	}
 	wrl->CommitCommand();
 
-#if GATEWAY_IMPORT_MODE == 11
-	// Remove all remaining new XP12 stuff - so this needs to be run in an XP11 installation. 
-	// Or items be copied to be local items in the Global Airports Scenery.
-	WED_DoSelectMissingObjects(resolver);
-	WED_DoClear(resolver);
-#endif		
 	LOG_MSG("Deleted %d illicit ICAO meta tags\n", deleted_illicit_icao);
 	LOG_MSG("Added %d local code metas to prevent Airport_ID getting taken for ICAO\n", added_local_codes);
 	LOG_MSG("Prefixed %d country meta data with iso3166 codes\n", added_country_codes);
