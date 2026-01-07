@@ -1,14 +1,24 @@
 set(XGRINDER_SOURCES
     src/Utils/EndianUtils.c
+    src/Utils/EndianUtils.h
     src/Utils/zip.c
+    src/Utils/zip.h
     src/Utils/AssertUtils.cpp
+    src/Utils/AssertUtils.h
     src/UI/XGrinderApp.cpp
+    src/UI/XGrinderApp.h
     src/Utils/XUtils.cpp
+    src/Utils/XUtils.h
     src/Utils/MemFileUtils.cpp
+    src/Utils/MemFileUtils.h
     src/Utils/FileUtils.cpp
+    src/Utils/FileUtils.h
     src/GUI/GUI_Unicode.cpp
+    src/GUI/GUI_Unicode.h
     src/Utils/unzip.c
+    src/Utils/unzip.h
     src/XPTools/XGrinderShell.cpp
+    src/XPTools/XGrinderShell.h
 )
 
 if (APPLE)
