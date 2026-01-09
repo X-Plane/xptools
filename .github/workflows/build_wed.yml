@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   build-windows:
-    runs-on: windows-2022
+    runs-on: windows-2025
     steps:
     - name: Checkout repo
       uses: actions/checkout@main
@@ -19,12 +19,12 @@ jobs:
         submodules: true
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1.1
-    - name: Build .exe
+    - name: Build WorldEditor
       working-directory: ${{env.GITHUB_WORKSPACE}}
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference 
       run: |
-        msbuild /m /p:Configuration=Release /p:Platform="x64" /t:WorldEditor msvc\XPTools.sln
+        cmake.ps1
     - name: Archive build result
       uses: actions/upload-artifact@main
       with:
@@ -32,7 +32,7 @@ jobs:
         path: msvc/WorldEditor/Release/WorldEditor.exe
           
   build-mac:
-    runs-on: macos-12
+    runs-on: macos-15
     env:
       APPLE_ID: ${{ secrets.APPLE_ID }}
       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
@@ -41,24 +41,15 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@main
         with:
-          submodules: no
+          submodules: true
       - name: Setup Credentials
         uses: apple-actions/import-codesign-certs@v2
         with: 
           p12-file-base64: ${{ secrets.APPLE_DEV_CERTIFICATE }}
           p12-password: ${{ secrets.APPLE_DEV_CERTIFICATE_PASSWORD }}
-      - name: Build Libs
+      - name: Build WorldEditor
         run: |
-          git submodule init libs
-          git submodule update libs
-          cd libs
-          make -j$(sysctl -n hw.logicalcpu)
-      - name: Build App
-        env:
-          scheme: "WED"
-          config: "Release"
-        run: |
-          xcodebuild -scheme "$scheme" -config "$config" -project SceneryTools.xcodeproj -archivePath build/WED.xcarchive CODE_SIGN_STYLE="Manual" CODE_SIGN_IDENTITY="Developer ID Application: Laminar Research (LPH4NFE92D)" archive | xcpretty && exit ${PIPESTATUS[0]}
+          cmake.sh
       - name: Notarize App
         run: |
           ./scripts/notarization.sh WED.zip build/WED.xcarchive/Products/Applications/WED.app staple
@@ -69,7 +60,7 @@ jobs:
           path: build/WED.xcarchive/Products/Applications
           
   build-linux:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     # we need fltk-dev and python 2.7
     container:
         image: ghcr.io/x-plane/xptools_builder:latest
@@ -78,16 +69,9 @@ jobs:
         uses: actions/checkout@main
         with:
           submodules: no
-      - name: Build Libs
+      - name: Build WorldEditor
         run: |
-          git config --global --add safe.directory /__w/xptools/xptools
-          git submodule init libs
-          git submodule update libs
-          cd libs
-          make -j$(nproc)
-      - name: Build binary
-        run: |
-          make -s -C . conf=release_opt -j$(nproc) WED
+          cmake.sh
       - name: Archive build result
         uses: actions/upload-artifact@main
         with:

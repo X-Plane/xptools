@@ -38,11 +38,10 @@ CMakeUserPresets.json
 *.sln.docstates
 
 # Build results
-
 [Dd]ebug/
 [Rr]elease/
 x64/
-build/
+build*/
 [Bb]in/
 *.obj
 
