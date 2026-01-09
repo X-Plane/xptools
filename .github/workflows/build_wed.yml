@@ -17,8 +17,20 @@ jobs:
       uses: actions/checkout@main
       with:
         submodules: true
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+    - name: Install Conan
+      run: |
+        pip install conan
+        conan --version
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1.1
+    - name: Install Conan dependencies
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: |
+        conan install . --build=missing
     - name: Build WorldEditor
       working-directory: ${{env.GITHUB_WORKSPACE}}
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
@@ -42,11 +54,22 @@ jobs:
         uses: actions/checkout@main
         with:
           submodules: true
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Install Conan
+        run: |
+          pip install conan
+          conan --version
       - name: Setup Credentials
         uses: apple-actions/import-codesign-certs@v2
         with: 
           p12-file-base64: ${{ secrets.APPLE_DEV_CERTIFICATE }}
           p12-password: ${{ secrets.APPLE_DEV_CERTIFICATE_PASSWORD }}
+      - name: Install Conan dependencies
+        run: |
+          conan install . --build=missing
       - name: Build WorldEditor
         run: |
           ./cmake.sh
@@ -68,7 +91,14 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@main
         with:
-          submodules: no
+          submodules: yes
+      - name: Install Conan
+        run: |
+          pip3 install conan
+          conan --version
+      - name: Install Conan dependencies
+        run: |
+          conan install . --build=missing
       - name: Build WorldEditor
         run: |
           ./cmake.sh
