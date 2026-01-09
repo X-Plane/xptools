@@ -29,10 +29,6 @@ jobs:
       run: conan profile detect --force
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1.1
-    - name: Install Conan dependencies
-      working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: |
-        conan install . --build=missing
     - name: Build WorldEditor
       working-directory: ${{env.GITHUB_WORKSPACE}}
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
@@ -71,9 +67,6 @@ jobs:
         with: 
           p12-file-base64: ${{ secrets.APPLE_DEV_CERTIFICATE }}
           p12-password: ${{ secrets.APPLE_DEV_CERTIFICATE_PASSWORD }}
-      - name: Install Conan dependencies
-        run: |
-          conan install . --build=missing
       - name: Build WorldEditor
         run: |
           ./cmake.sh
@@ -98,13 +91,10 @@ jobs:
           submodules: yes
       - name: Install Conan
         run: |
-          pip3 install conan
+          pip install conan
           conan --version
       - name: Create Conan profile
         run: conan profile detect --force
-      - name: Install Conan dependencies
-        run: |
-          conan install . --build=missing
       - name: Build WorldEditor
         run: |
           ./cmake.sh
