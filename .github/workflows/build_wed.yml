@@ -24,7 +24,7 @@ jobs:
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference 
       run: |
-        cmake.ps1
+        ./cmake.ps1
     - name: Archive build result
       uses: actions/upload-artifact@main
       with:
@@ -49,7 +49,7 @@ jobs:
           p12-password: ${{ secrets.APPLE_DEV_CERTIFICATE_PASSWORD }}
       - name: Build WorldEditor
         run: |
-          cmake.sh
+          ./cmake.sh
       - name: Notarize App
         run: |
           ./scripts/notarization.sh WED.zip build/WED.xcarchive/Products/Applications/WED.app staple
@@ -71,7 +71,7 @@ jobs:
           submodules: no
       - name: Build WorldEditor
         run: |
-          cmake.sh
+          ./cmake.sh
       - name: Archive build result
         uses: actions/upload-artifact@main
         with:
