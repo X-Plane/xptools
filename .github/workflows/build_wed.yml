@@ -25,6 +25,8 @@ jobs:
       run: |
         pip install conan
         conan --version
+    - name: Create Conan profile
+      run: conan profile detect --force
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1.1
     - name: Install Conan dependencies
@@ -62,6 +64,8 @@ jobs:
         run: |
           pip install conan
           conan --version
+      - name: Create Conan profile
+        run: conan profile detect --force
       - name: Setup Credentials
         uses: apple-actions/import-codesign-certs@v2
         with: 
@@ -96,6 +100,8 @@ jobs:
         run: |
           pip3 install conan
           conan --version
+      - name: Create Conan profile
+        run: conan profile detect --force
       - name: Install Conan dependencies
         run: |
           conan install . --build=missing
