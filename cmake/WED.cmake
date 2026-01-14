@@ -23,8 +23,6 @@ elseif(LINUX)
 	set(WED_PLATFORM_SOURCES
 		src/linuxinit/initializer.cpp
 		src/Utils/PlatformUtils.lin.cpp
-		#src/Network/PCSBSocket.lin.cpp
-		#src/Network/PCSBSocketUDP.lin.cpp
 		src/UI/XWin.lin.cpp
 		src/UI/XWinGL.lin.cpp
 		src/Utils/glew.c
@@ -307,7 +305,6 @@ set (WED_SOURCES
 	src/WEDMap/WED_PerspectiveCamera.h
 	src/WEDMap/WED_StructureLayer.cpp
 	src/WEDMap/WED_StructureLayer.h
-	#src/WEDMap/WED_TerraserverLayer.cpp
 	src/WEDMap/WED_ToolInfoAdapter.cpp
 	src/WEDMap/WED_ToolInfoAdapter.h
 	src/WEDMap/WED_ToolUtils.cpp
@@ -332,12 +329,8 @@ set (WED_SOURCES
 	src/WEDMap/WED_BoundaryLayer.h
 	src/WEDMap/WED_SlippyMap.cpp
 	src/WEDMap/WED_SlippyMap.h
-	#src/WEDNetwork/WED_Connection.cpp
-	#src/WEDNetwork/WED_NWInfoLayer.cpp
-	#src/WEDNetwork/WED_NWLinkAdapter.cpp
 	src/WEDNetwork/RAII_Classes.cpp
 	src/WEDNetwork/RAII_Classes.h
-	#src/WEDNetwork/WED_Server.cpp
 	src/WEDTCE/WED_TCE.cpp
 	src/WEDTCE/WED_TCE.h
 	src/WEDCore/WED_TCEDebugLayer.cpp
@@ -704,7 +697,11 @@ set(WED_RESOURCE_FILES
 )
 
 if (APPLE)
-	add_executable(WED MACOSX_BUNDLE ${WED_SOURCES})
+	set(MACOSX_BUNDLE_ICON_FILE WED.icns)
+	set(APP_ICON_MACOSX ${CMAKE_CURRENT_SOURCE_DIR}/src/WEDResources/WED.icns)
+	set_source_files_properties(${APP_ICON_MACOSX} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
+
+	add_executable(WED MACOSX_BUNDLE ${WED_SOURCES} ${APP_ICON_MACOSX})
 
 	add_custom_command(
 		TARGET WED POST_BUILD
@@ -796,15 +793,17 @@ elseif (APPLE)
 
 	mac_copy_bundle_files(WED Resources "${WED_RESOURCE_FILES}")
 
-	configure_file(
-			${CMAKE_SOURCE_DIR}/cmake/Info.plist.in
-			${CMAKE_BINARY_DIR}/Info.plist
-			@ONLY
-	)
+#	configure_file(
+#			${CMAKE_SOURCE_DIR}/cmake/Info.plist.in
+#			${CMAKE_BINARY_DIR}/Info.plist
+#			@ONLY
+#	)
 
 	set_target_properties(WED PROPERTIES
-			MACOSX_BUNDLE_INFO_PLIST ${CMAKE_BINARY_DIR}/Info.plist
-			MACOSX_BUNDLE_GUI_IDENTIFIER org.LaminarResearch.WED
+			MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Info.plist.in
+			MACOSX_BUNDLE_ICON_FILE WED.icns
+			MACOSX_BUNDLE_GUI_IDENTIFIER "org.LaminarResearch.WED"
+			MACOSX_BUNDLE_BUNDLE_NAME "WorldEditor"
 	)
 elseif (LINUX)
 	function(embed_resource target input_file)
