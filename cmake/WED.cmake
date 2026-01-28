@@ -23,8 +23,6 @@ elseif(LINUX)
 	set(WED_PLATFORM_SOURCES
 		src/linuxinit/initializer.cpp
 		src/Utils/PlatformUtils.lin.cpp
-		#src/Network/PCSBSocket.lin.cpp
-		#src/Network/PCSBSocketUDP.lin.cpp
 		src/UI/XWin.lin.cpp
 		src/UI/XWinGL.lin.cpp
 		src/Utils/glew.c
@@ -36,274 +34,521 @@ set (WED_SOURCES
 
 	src/WEDCore/WED_AppMain.cpp
 	src/WEDCore/WED_Application.cpp
-	src/WEDCore/WED_PackageMgr.cpp
+	src/WEDCore/WED_Application.h
 	src/WEDCore/WED_Archive.cpp
+	src/WEDCore/WED_Archive.h
+	src/WEDCore/WED_PackageMgr.cpp
+	src/WEDCore/WED_PackageMgr.h
 	src/WEDCore/WED_Buffer.cpp
+	src/WEDCore/WED_Buffer.h
 	src/WEDCore/WED_Clipping.cpp
+	src/WEDCore/WED_Clipping.h
 	src/WEDCore/WED_Document.cpp
+	src/WEDCore/WED_Document.h
 	src/WEDCore/WED_EnumSystem.cpp
+	src/WEDCore/WED_EnumSystem.h
 	src/WEDCore/WED_Errors.cpp
+	src/WEDCore/WED_Errors.h
 	src/WEDCore/WED_FastBuffer.cpp
+	src/WEDCore/WED_FastBuffer.h
 	src/WEDCore/WED_Globals.cpp
+	src/WEDCore/WED_Globals.h
 	src/WEDCore/WED_HierarchyUtils.cpp
+	src/WEDCore/WED_HierarchyUtils.h
 	src/WEDCore/WED_LibraryMgr.cpp
+	src/WEDCore/WED_LibraryMgr.h
 	src/WEDCore/WED_Persistent.cpp
+	src/WEDCore/WED_Persistent.h
 	src/WEDCore/WED_PropertyHelper.cpp
+	src/WEDCore/WED_PropertyHelper.h
 	src/WEDCore/WED_TexMgr.cpp
+	src/WEDCore/WED_TexMgr.h
 	src/WEDCore/WED_UndoLayer.cpp
+	src/WEDCore/WED_UndoLayer.h
 	src/WEDCore/WED_UndoMgr.cpp
+	src/WEDCore/WED_UndoMgr.h
 	src/WEDCore/WED_Assert.cpp
+	src/WEDCore/WED_Assert.h
 	src/WEDCore/WED_ResourceMgr.cpp
+	src/WEDCore/WED_ResourceMgr.h
 	src/WEDCore/WED_Sign_Parser.cpp
+	src/WEDCore/WED_Sign_Parser.h
 	src/WEDCore/WED_GISUtils.cpp
+	src/WEDCore/WED_GISUtils.h
 	src/WEDCore/WED_Orthophoto.cpp
+	src/WEDCore/WED_Orthophoto.h
 	src/WEDCore/WED_Validate.cpp
+	src/WEDCore/WED_Validate.h
 	src/WEDCore/WED_ValidateATCRunwayChecks.cpp
+	src/WEDCore/WED_ValidateATCRunwayChecks.h
 	src/WEDCore/WED_ValidateList.cpp
+	src/WEDCore/WED_ValidateList.h
 	src/WEDCore/WED_XMLReader.cpp
+	src/WEDCore/WED_XMLReader.h
 	src/WEDCore/WED_XMLWriter.cpp
+	src/WEDCore/WED_XMLWriter.h
 	src/WEDEntities/WED_AirportBeacon.cpp
+	src/WEDEntities/WED_AirportBeacon.h
 	src/WEDEntities/WED_AirportBoundary.cpp
+	src/WEDEntities/WED_AirportBoundary.h
 	src/WEDEntities/WED_AirportChain.cpp
+	src/WEDEntities/WED_AirportChain.h
 	src/WEDEntities/WED_Airport.cpp
+	src/WEDEntities/WED_Airport.h
 	src/WEDEntities/WED_AirportNode.cpp
+	src/WEDEntities/WED_AirportNode.h
 	src/WEDEntities/WED_AirportSign.cpp
+	src/WEDEntities/WED_AirportSign.h
 	src/WEDEntities/WED_AutogenPlacement.cpp
+	src/WEDEntities/WED_AutogenPlacement.h
 	src/WEDEntities/WED_AutogenNode.cpp
+	src/WEDEntities/WED_AutogenNode.h
 	src/WEDEntities/WED_ATCFlow.cpp
+	src/WEDEntities/WED_ATCFlow.h
 	src/WEDEntities/WED_ATCFrequency.cpp
+	src/WEDEntities/WED_ATCFrequency.h
 	src/WEDEntities/WED_ATCRunwayUse.cpp
+	src/WEDEntities/WED_ATCRunwayUse.h
 	src/WEDEntities/WED_ATCTimeRule.cpp
+	src/WEDEntities/WED_ATCTimeRule.h
 	src/WEDEntities/WED_ATCWindRule.cpp
+	src/WEDEntities/WED_ATCWindRule.h
 	src/WEDEntities/WED_DrapedOrthophoto.cpp
+	src/WEDEntities/WED_DrapedOrthophoto.h
 	src/WEDEntities/WED_ExclusionPoly.cpp
+	src/WEDEntities/WED_ExclusionPoly.h
 	src/WEDEntities/WED_ExclusionZone.cpp
+	src/WEDEntities/WED_ExclusionZone.h
 	src/WEDEntities/WED_TextureBezierNode.cpp
+	src/WEDEntities/WED_TextureBezierNode.h
 	src/WEDEntities/WED_TruckDestination.cpp
+	src/WEDEntities/WED_TruckDestination.h
 	src/WEDEntities/WED_TruckParkingLocation.cpp
+	src/WEDEntities/WED_TruckParkingLocation.h
 	src/WEDEntities/WED_TerPlacement.cpp
+	src/WEDEntities/WED_TerPlacement.h
 	src/WEDEntities/WED_GISBoundingBox.cpp
+	src/WEDEntities/WED_GISBoundingBox.h
 	src/WEDEntities/WED_Entity.cpp
+	src/WEDEntities/WED_Entity.h
 	src/WEDEntities/WED_FacadeNode.cpp
+	src/WEDEntities/WED_FacadeNode.h
 	src/WEDEntities/WED_FacadePlacement.cpp
+	src/WEDEntities/WED_FacadePlacement.h
 	src/WEDEntities/WED_FacadeRing.cpp
+	src/WEDEntities/WED_FacadeRing.h
 	src/WEDEntities/WED_FacadePreview.cpp
+	src/WEDEntities/WED_FacadePreview.h
 	src/WEDEntities/WED_ForestPlacement.cpp
+	src/WEDEntities/WED_ForestPlacement.h
 	src/WEDEntities/WED_ForestRing.cpp
+	src/WEDEntities/WED_ForestRing.h
 	src/WEDEntities/WED_GISChain.cpp
+	src/WEDEntities/WED_GISChain.h
 	src/WEDEntities/WED_GISComposite.cpp
+	src/WEDEntities/WED_GISComposite.h
 	src/WEDEntities/WED_GISEdge.cpp
+	src/WEDEntities/WED_GISEdge.h
 	src/WEDEntities/WED_GISLine.cpp
+	src/WEDEntities/WED_GISLine.h
 	src/WEDEntities/WED_GISLine_Width.cpp
+	src/WEDEntities/WED_GISLine_Width.h
 	src/WEDEntities/WED_GISPoint_Bezier.cpp
+	src/WEDEntities/WED_GISPoint_Bezier.h
 	src/WEDEntities/WED_GISPoint.cpp
+	src/WEDEntities/WED_GISPoint.h
 	src/WEDEntities/WED_GISPoint_Heading.cpp
+	src/WEDEntities/WED_GISPoint_Heading.h
 	src/WEDEntities/WED_GISPoint_HeadingWidthLength.cpp
+	src/WEDEntities/WED_GISPoint_HeadingWidthLength.h
 	src/WEDEntities/WED_GISPolygon.cpp
+	src/WEDEntities/WED_GISPolygon.h
 	src/WEDEntities/WED_Group.cpp
+	src/WEDEntities/WED_Group.h
 	src/WEDEntities/WED_Helipad.cpp
+	src/WEDEntities/WED_Helipad.h
 	src/WEDEntities/WED_KeyObjects.cpp
+	src/WEDEntities/WED_KeyObjects.h
 	src/WEDEntities/WED_LightFixture.cpp
+	src/WEDEntities/WED_LightFixture.h
 	src/WEDEntities/WED_LinePlacement.cpp
+	src/WEDEntities/WED_LinePlacement.h
 	src/WEDEntities/WED_ObjPlacement.cpp
+	src/WEDEntities/WED_ObjPlacement.h
 	src/WEDEntities/WED_TerPlacement.cpp
+	src/WEDEntities/WED_TerPlacement.h
 	src/WEDEntities/WED_OverlayImage.cpp
+	src/WEDEntities/WED_OverlayImage.h
 	src/WEDEntities/WED_PolygonPlacement.cpp
+	src/WEDEntities/WED_PolygonPlacement.h
 	src/WEDEntities/WED_RampPosition.cpp
+	src/WEDEntities/WED_RampPosition.h
 	src/WEDEntities/WED_Ring.cpp
+	src/WEDEntities/WED_Ring.h
 	src/WEDEntities/WED_RoadEdge.cpp
+	src/WEDEntities/WED_RoadEdge.h
 	src/WEDEntities/WED_RoadNode.cpp
+	src/WEDEntities/WED_RoadNode.h
 	src/WEDEntities/WED_Root.cpp
+	src/WEDEntities/WED_Root.h
 	src/WEDEntities/WED_Runway.cpp
+	src/WEDEntities/WED_Runway.h
 	src/WEDEntities/WED_RunwayNode.cpp
+	src/WEDEntities/WED_RunwayNode.h
 	src/WEDEntities/WED_Sealane.cpp
+	src/WEDEntities/WED_Sealane.h
 	src/WEDEntities/WED_Select.cpp
+	src/WEDEntities/WED_Select.h
 	src/WEDEntities/WED_SimpleBezierBoundaryNode.cpp
+	src/WEDEntities/WED_SimpleBezierBoundaryNode.h
 	src/WEDEntities/WED_SimpleBoundaryNode.cpp
+	src/WEDEntities/WED_SimpleBoundaryNode.h
 	src/WEDEntities/WED_StringPlacement.cpp
+	src/WEDEntities/WED_StringPlacement.h
 	src/WEDEntities/WED_ShapePlacement.cpp
+	src/WEDEntities/WED_ShapePlacement.h
 	src/WEDEntities/WED_ShapeNode.cpp
+	src/WEDEntities/WED_ShapeNode.h
 	src/WEDEntities/WED_TaxiRoute.cpp
+	src/WEDEntities/WED_TaxiRoute.h
 	src/WEDEntities/WED_TaxiRouteNode.cpp
+	src/WEDEntities/WED_TaxiRouteNode.h
 	src/WEDEntities/WED_Taxiway.cpp
+	src/WEDEntities/WED_Taxiway.h
 	src/WEDEntities/WED_TextureNode.cpp
+	src/WEDEntities/WED_TextureNode.h
 	src/WEDEntities/WED_Thing.cpp
+	src/WEDEntities/WED_Thing.h
 	src/WEDEntities/WED_TowerViewpoint.cpp
+	src/WEDEntities/WED_TowerViewpoint.h
 	src/WEDEntities/WED_Windsock.cpp
+	src/WEDEntities/WED_Windsock.h
 	src/WEDFileCache/CACHE_CacheObject.cpp
+	src/WEDFileCache/CACHE_CacheObject.h
 	src/WEDFileCache/CACHE_DomainPolicy.cpp
+	src/WEDFileCache/CACHE_DomainPolicy.h
 	src/WEDFileCache/WED_FileCache.cpp
+	src/WEDFileCache/WED_FileCache.h
 	src/WEDImportExport/WED_AptIE.cpp
+	src/WEDImportExport/WED_AptIE.h
 	src/WEDImportExport/WED_AptImportDialog.cpp
+	src/WEDImportExport/WED_AptImportDialog.h
 	src/WEDImportExport/WED_AptTable.cpp
+	src/WEDImportExport/WED_AptTable.h
 	src/WEDImportExport/WED_DSFExport.cpp
+	src/WEDImportExport/WED_DSFExport.h
 	src/WEDImportExport/WED_DSFImport.cpp
+	src/WEDImportExport/WED_DSFImport.h
 	src/WEDImportExport/WED_GatewayExport.cpp
+	src/WEDImportExport/WED_GatewayExport.h
 	src/WEDImportExport/WED_GatewayImport.cpp
+	src/WEDImportExport/WED_GatewayImport.h
 	src/WEDImportExport/WED_ICAOTable.cpp
+	src/WEDImportExport/WED_ICAOTable.h
 	src/WEDImportExport/WED_MetaDataDefaults.cpp
+	src/WEDImportExport/WED_MetaDataDefaults.h
 	src/WEDImportExport/WED_MetaDataKeys.cpp
+	src/WEDImportExport/WED_MetaDataKeys.h
 	src/WEDImportExport/WED_MetadataUpdate.cpp
+	src/WEDImportExport/WED_MetadataUpdate.h
 	src/WEDImportExport/WED_OrthoExport.cpp
+	src/WEDImportExport/WED_OrthoExport.h
 	src/WEDImportExport/WED_SceneryImport.cpp
+	src/WEDImportExport/WED_SceneryImport.h
 	src/WEDImportExport/WED_SceneryPackExport.cpp
+	src/WEDImportExport/WED_SceneryPackExport.h
 	src/WEDImportExport/WED_VerTable.cpp
+	src/WEDImportExport/WED_VerTable.h
 	src/WEDLibrary/WED_LibraryListAdapter.cpp
+	src/WEDLibrary/WED_LibraryListAdapter.h
 	src/WEDLibrary/WED_LibraryPreviewPane.cpp
+	src/WEDLibrary/WED_LibraryPreviewPane.h
 	src/WEDLibrary/WED_LibraryPane.cpp
+	src/WEDLibrary/WED_LibraryPane.h
 	src/WEDMap/WED_Colors.cpp
+	src/WEDMap/WED_Colors.h
 	src/WEDMap/WED_CreateEdgeTool.cpp
+	src/WEDMap/WED_CreateEdgeTool.h
 	src/WEDMap/WED_CreateLineTool.cpp
+	src/WEDMap/WED_CreateLineTool.h
 	src/WEDMap/WED_CreatePointTool.cpp
+	src/WEDMap/WED_CreatePointTool.h
 	src/WEDMap/WED_CreatePolygonTool.cpp
+	src/WEDMap/WED_CreatePolygonTool.h
 	src/WEDMap/WED_CreateToolBase.cpp
+	src/WEDMap/WED_CreateToolBase.h
 	src/WEDMap/WED_CreateBoxTool.cpp
+	src/WEDMap/WED_CreateBoxTool.h
 	src/WEDMap/WED_DebugLayer.cpp
+	src/WEDMap/WED_DebugLayer.h
 	src/WEDMap/WED_HandleToolBase.cpp
+	src/WEDMap/WED_HandleToolBase.h
 	src/WEDMap/WED_Map.cpp
+	src/WEDMap/WED_Map.h
 	src/WEDMap/WED_MapBkgnd.cpp
+	src/WEDMap/WED_MapBkgnd.h
 	src/WEDMap/WED_MapLayer.cpp
+	src/WEDMap/WED_MapLayer.h
 	src/WEDMap/WED_MapPane.cpp
+	src/WEDMap/WED_MapPane.h
 	src/WEDMap/WED_MapPreviewPane.cpp
+	src/WEDMap/WED_MapPreviewPane.h
 	src/WEDMap/WED_MapPreviewWindow.cpp
+	src/WEDMap/WED_MapPreviewWindow.h
 	src/WEDMap/WED_MapToolNew.cpp
+	src/WEDMap/WED_MapToolNew.h
 	src/WEDMap/WED_MapZoomerNew.cpp
+	src/WEDMap/WED_MapZoomerNew.h
 	src/WEDMap/WED_MarqueeTool.cpp
+	src/WEDMap/WED_MarqueeTool.h
 	src/WEDMap/WED_PerspectiveCamera.cpp
+	src/WEDMap/WED_PerspectiveCamera.h
 	src/WEDMap/WED_StructureLayer.cpp
-	#src/WEDMap/WED_TerraserverLayer.cpp
+	src/WEDMap/WED_StructureLayer.h
 	src/WEDMap/WED_ToolInfoAdapter.cpp
+	src/WEDMap/WED_ToolInfoAdapter.h
 	src/WEDMap/WED_ToolUtils.cpp
+	src/WEDMap/WED_ToolUtils.h
 	src/WEDMap/WED_UIMeasurements.cpp
+	src/WEDMap/WED_UIMeasurements.h
 	src/WEDMap/WED_VertexTool.cpp
+	src/WEDMap/WED_VertexTool.h
 	src/WEDMap/WED_WorldMapLayer.cpp
+	src/WEDMap/WED_WorldMapLayer.h
 	src/WEDMap/WED_NavaidLayer.cpp
+	src/WEDMap/WED_NavaidLayer.h
 	src/WEDMap/WED_TerrainLayer.cpp
+	src/WEDMap/WED_TerrainLayer.h
 	src/WEDMap/WED_DrawUtils.cpp
+	src/WEDMap/WED_DrawUtils.h
 	src/WEDMap/WED_PreviewLayer.cpp
+	src/WEDMap/WED_PreviewLayer.h
 	src/WEDMap/WED_ATCLayer.cpp
+	src/WEDMap/WED_ATCLayer.h
 	src/WEDMap/WED_BoundaryLayer.cpp
+	src/WEDMap/WED_BoundaryLayer.h
 	src/WEDMap/WED_SlippyMap.cpp
-	#src/WEDNetwork/WED_Connection.cpp
-	#src/WEDNetwork/WED_NWInfoLayer.cpp
-	#src/WEDNetwork/WED_NWLinkAdapter.cpp
+	src/WEDMap/WED_SlippyMap.h
 	src/WEDNetwork/RAII_Classes.cpp
-	#src/WEDNetwork/WED_Server.cpp
+	src/WEDNetwork/RAII_Classes.h
 	src/WEDTCE/WED_TCE.cpp
+	src/WEDTCE/WED_TCE.h
 	src/WEDCore/WED_TCEDebugLayer.cpp
+	src/WEDCore/WED_TCEDebugLayer.h
 	src/WEDTCE/WED_TCELayer.cpp
+	src/WEDTCE/WED_TCELayer.h
 	src/WEDTCE/WED_TCEPane.cpp
+	src/WEDTCE/WED_TCEPane.h
 	src/WEDTCE/WED_TCEToolAdapter.cpp
+	src/WEDTCE/WED_TCEToolAdapter.h
 	src/WEDTCE/WED_TCEToolNew.cpp
+	src/WEDTCE/WED_TCEToolNew.h
 	src/WEDTCE/WED_TCEMarqueeTool.cpp
+	src/WEDTCE/WED_TCEMarqueeTool.h
 	src/WEDTCE/WED_TCEVertexTool.cpp
+	src/WEDTCE/WED_TCEVertexTool.h
 	src/WEDProperties/WED_PropertyPane.cpp
+	src/WEDProperties/WED_PropertyPane.h
 	src/WEDProperties/WED_PropertyTable.cpp
+	src/WEDProperties/WED_PropertyTable.h
 	src/WEDWindows/WED_AboutBox.cpp
+	src/WEDWindows/WED_AboutBox.h
 	src/WEDWindows/WED_DocumentWindow.cpp
+	src/WEDWindows/WED_DocumentWindow.h
 	src/WEDWindows/WED_LibraryFilterBar.cpp
+	src/WEDWindows/WED_LibraryFilterBar.h
 	src/WEDWindows/WED_ConvertCommands.cpp
+	src/WEDWindows/WED_ConvertCommands.h
 	src/WEDWindows/WED_GroupCommands.cpp
+	src/WEDWindows/WED_GroupCommands.h
 	src/WEDWindows/WED_Menus.cpp
+	src/WEDWindows/WED_Menus.h
 	src/WEDWindows/WED_PackageListAdapter.cpp
+	src/WEDWindows/WED_PackageListAdapter.h
 	src/WEDWindows/WED_StartWindow.cpp
+	src/WEDWindows/WED_StartWindow.h
 	src/WEDWindows/WED_Sign_Editor.cpp
+	src/WEDWindows/WED_Sign_Editor.h
 	src/WEDWindows/WED_Line_Selector.cpp
+	src/WEDWindows/WED_Line_Selector.h
 	src/WEDWindows/WED_Road_Selector.cpp
+	src/WEDWindows/WED_Road_Selector.h
 	src/GUI/GUI_Broadcaster.cpp
+	src/GUI/GUI_Broadcaster.h
 	src/GUI/GUI_Button.cpp
+	src/GUI/GUI_Button.h
 	src/GUI/GUI_ChangeView.cpp
+	src/GUI/GUI_ChangeView.h
 	src/GUI/GUI_Commander.cpp
+	src/GUI/GUI_Commander.h
 	src/GUI/GUI_Control.cpp
+	src/GUI/GUI_Control.h
 	src/GUI/GUI_Destroyable.cpp
+	src/GUI/GUI_Destroyable.h
 	src/GUI/GUI_DrawUtils.cpp
+	src/GUI/GUI_DrawUtils.h
 	src/GUI/GUI_FilterBar.cpp
+	src/GUI/GUI_FilterBar.h
 	src/GUI/GUI_Fonts.cpp
+	src/GUI/GUI_Fonts.h
 	src/GUI/GUI_FormWindow.cpp
+	src/GUI/GUI_FormWindow.h
 	src/GUI/GUI_Label.cpp
+	src/GUI/GUI_Label.h
 	src/GUI/GUI_GraphState.cpp
+	src/GUI/GUI_GraphState.h
 	src/GUI/GUI_Listener.cpp
+	src/GUI/GUI_Listener.h
 	src/GUI/GUI_MemoryHog.cpp
+	src/GUI/GUI_MemoryHog.h
 	src/GUI/GUI_Packer.cpp
+	src/GUI/GUI_Packer.h
 	src/GUI/GUI_PopupButton.cpp
+	src/GUI/GUI_PopupButton.h
 	src/GUI/GUI_Prefs.cpp
+	src/GUI/GUI_Prefs.h
 	src/GUI/GUI_Resources.cpp
+	src/GUI/GUI_Resources.h
 	src/GUI/GUI_ScrollBar.cpp
+	src/GUI/GUI_ScrollBar.h
 	src/GUI/GUI_ScrollerPane.cpp
+	src/GUI/GUI_ScrollerPane.h
 	src/GUI/GUI_SimpleScroller.cpp
+	src/GUI/GUI_SimpleScroller.h
 	src/GUI/GUI_SimpleTableGeometry.cpp
+	src/GUI/GUI_SimpleTableGeometry.h
 	src/GUI/GUI_Splitter.cpp
+	src/GUI/GUI_Splitter.h
 	src/GUI/GUI_TabControl.cpp
+	src/GUI/GUI_TabControl.h
 	src/GUI/GUI_Table.cpp
+	src/GUI/GUI_Table.h
 	src/GUI/GUI_TabPane.cpp
+	src/GUI/GUI_TabPane.h
 	src/GUI/GUI_TextField.cpp
+	src/GUI/GUI_TextField.h
 	src/GUI/GUI_TextTable.cpp
+	src/GUI/GUI_TextTable.h
 	src/GUI/GUI_Timer.cpp
+	src/GUI/GUI_Timer.h
 	src/GUI/GUI_ToolBar.cpp
+	src/GUI/GUI_ToolBar.h
 	src/GUI/GUI_Window.cpp
+	src/GUI/GUI_Window.h
 	src/GUI/GUI_Pane.cpp
+	src/GUI/GUI_Pane.h
 	src/GUI/GUI_Help.cpp
+	src/GUI/GUI_Help.h
 	src/GUI/GUI_Clipboard.cpp
+	src/GUI/GUI_Clipboard.h
 	src/GUI/GUI_Unicode.cpp
+	src/GUI/GUI_Unicode.h
 	src/GUI/GUI_Application.cpp
+	src/GUI/GUI_Application.h
 	src/Utils/AssertUtils.cpp
+	src/Utils/AssertUtils.h
 	src/Utils/CmdLine.cpp
+	src/Utils/CmdLine.h
 	src/Utils/MemFileUtils.cpp
+	src/Utils/MemFileUtils.h
 	src/Utils/FileUtils.cpp
+	src/Utils/FileUtils.h
 	src/Utils/GISUtils.cpp
+	src/Utils/GISUtils.h
 	src/Utils/BitmapUtils.cpp
+	src/Utils/BitmapUtils.h
 	src/Utils/TexUtils.cpp
+	src/Utils/TexUtils.h
 	src/Utils/EndianUtils.c
+	src/Utils/EndianUtils.h
 	src/Utils/md5.c
+	src/Utils/md5.h
 	src/Utils/XChunkyFileUtils.cpp
+	src/Utils/XChunkyFileUtils.h
 	src/Utils/CompGeomUtils.cpp
+	src/Utils/CompGeomUtils.h
 	src/Utils/zip.c
+	src/Utils/zip.h
 	src/Utils/unzip.c
+	src/Utils/unzip.h
 	src/Utils/BWImage.cpp
+	src/Utils/BWImage.h
 	src/Utils/ObjUtils.cpp
+	src/Utils/ObjUtils.h
 	src/Utils/MatrixUtils.cpp
+	src/Utils/MatrixUtils.h
 	src/Utils/CSVParser.cpp
+	src/Utils/CSVParser.h
 	src/Utils/STLUtils.cpp
+	src/Utils/STLUtils.h
 	src/Obj/ObjPointPool.cpp
+	src/Obj/ObjPointPool.h
 	src/Obj/XObjDefs.cpp
+	src/Obj/XObjDefs.h
 	src/Obj/XObjReadWrite.cpp
+	src/Obj/XObjReadWrite.h
 	src/Obj/ObjDraw.cpp
+	src/Obj/ObjDraw.h
 	src/Network/b64.c
 	src/Network/curl_http.cpp
+	src/Network/curl_http.h
 	src/DSF/DSFLib.cpp
+	src/DSF/DSFLib.h
 	src/DSF/DSFLibWrite.cpp
 	src/DSF/DSFPointPool.cpp
+	src/DSF/DSFPointPool.h
 	src/DSF/tri_stripper_101/tri_stripper.cpp
+	src/DSF/tri_stripper_101/tri_stripper.h
 	src/DSFTools/DSF2Text.cpp
+	src/DSFTools/DSF2Text.h
 	src/OGLE/ogle.cpp
+	src/OGLE/ogle.h
 	src/XESCore/AptIO.cpp
+	src/XESCore/AptIO.h
 	src/XESCore/DEMDefs.cpp
+	src/XESCore/DEMDefs.h
 
 	src/lzma19/C/7zArcIn.c
 	src/lzma19/C/7zAlloc.c
+	src/lzma19/C/7zAlloc.h
 	src/lzma19/C/7zBuf.c
+	src/lzma19/C/7zBuf.h
 	src/lzma19/C/7zCrc.c
+	src/lzma19/C/7zCrc.h
 	src/lzma19/C/7zCrcOpt.c
 	src/lzma19/C/7zDec.c
 	src/lzma19/C/7zFile.c
+	src/lzma19/C/7zFile.h
 	src/lzma19/C/7zStream.c
 	src/lzma19/C/Bcj2.c
+	src/lzma19/C/Bcj2.h
 	src/lzma19/C/Bra.c
+	src/lzma19/C/Bra.h
 	src/lzma19/C/Bra86.c
 	src/lzma19/C/BraIA64.c
 	src/lzma19/C/CpuArch.c
+	src/lzma19/C/CpuArch.h
 	src/lzma19/C/Delta.c
+	src/lzma19/C/Delta.h
 	src/lzma19/C/LzmaDec.c
+	src/lzma19/C/LzmaDec.h
 	src/lzma19/C/Lzma2Dec.c
+	src/lzma19/C/Lzma2Dec.h
 
 	SDK/libtess2/Source/tess.c
+	SDK/libtess2/Source/tess.h
 	SDK/libtess2/Source/bucketalloc.c
+	SDK/libtess2/Source/bucketalloc.h
 	SDK/libtess2/Source/dict.c
+	SDK/libtess2/Source/dict.h
 	SDK/libtess2/Source/mesh.c
+	SDK/libtess2/Source/mesh.h
 	SDK/libtess2/Source/priorityq.c
+	SDK/libtess2/Source/priorityq.h
 	SDK/libtess2/Source/sweep.c
+	SDK/libtess2/Source/sweep.h
 	SDK/libtess2/Source/geom.c
-)
+	SDK/libtess2/Source/geom.h)
 
 if (APPLE)
 	set(PLATFORM_RESOURCE_FILES
@@ -452,7 +697,11 @@ set(WED_RESOURCE_FILES
 )
 
 if (APPLE)
-	add_executable(WED MACOSX_BUNDLE ${WED_SOURCES})
+	set(MACOSX_BUNDLE_ICON_FILE WED.icns)
+	set(APP_ICON_MACOSX ${CMAKE_CURRENT_SOURCE_DIR}/src/WEDResources/WED.icns)
+	set_source_files_properties(${APP_ICON_MACOSX} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
+
+	add_executable(WED MACOSX_BUNDLE ${WED_SOURCES} ${APP_ICON_MACOSX})
 
 	add_custom_command(
 		TARGET WED POST_BUILD
@@ -544,15 +793,17 @@ elseif (APPLE)
 
 	mac_copy_bundle_files(WED Resources "${WED_RESOURCE_FILES}")
 
-	configure_file(
-			${CMAKE_SOURCE_DIR}/cmake/Info.plist.in
-			${CMAKE_BINARY_DIR}/Info.plist
-			@ONLY
-	)
+#	configure_file(
+#			${CMAKE_SOURCE_DIR}/cmake/Info.plist.in
+#			${CMAKE_BINARY_DIR}/Info.plist
+#			@ONLY
+#	)
 
 	set_target_properties(WED PROPERTIES
-			MACOSX_BUNDLE_INFO_PLIST ${CMAKE_BINARY_DIR}/Info.plist
-			MACOSX_BUNDLE_GUI_IDENTIFIER org.LaminarResearch.WED
+			MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Info.plist.in
+			MACOSX_BUNDLE_ICON_FILE WED.icns
+			MACOSX_BUNDLE_GUI_IDENTIFIER "org.LaminarResearch.WED"
+			MACOSX_BUNDLE_BUNDLE_NAME "WorldEditor"
 	)
 elseif (LINUX)
 	function(embed_resource target input_file)

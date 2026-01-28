@@ -13,6 +13,12 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 2.7.0-r1
+   Features:
+   - Updated user interface
+   Bug fix:
+   - Allow heading >360 for flatten polygons
+
 WED 2.7.0-a2
   Features:
    - Added new metadata property to define the altimeter setting for the airport (QNH/QFE)

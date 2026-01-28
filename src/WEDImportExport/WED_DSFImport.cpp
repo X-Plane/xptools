@@ -56,6 +56,7 @@
 #include "WED_TextureNode.h"
 #include "WED_SimpleBezierBoundaryNode.h"
 #include "WED_SimpleBoundaryNode.h"
+#include "WED_LibraryMgr.h"
 #if ROAD_EDITING
 #include "WED_RoadNode.h"
 #include "WED_RoadEdge.h"
@@ -772,7 +773,12 @@ public:
 			{
 				WED_PolygonPlacement * pol = WED_PolygonPlacement::CreateTyped(me->archive);
 				me->poly = pol;
-				pol->SetHeading( 1.0/128.0 * (int) (inParam / 360) + inParam % 360 );
+
+				if (WED_LibraryMgr::CheckFlattenPolygon(r))
+					pol->SetHeading(inParam);
+				else
+					pol->SetHeading( 1.0/128.0 * (int) (inParam / 360) + inParam % 360 );
+
 				pol->SetResource(r);
 				cat = dsf_cat_draped_poly;
 			}

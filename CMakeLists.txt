@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.10)
 cmake_policy(SET CMP0091 NEW) # Required by conan 2
+
+if(APPLE)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING
+    "Minimum macOS deployment version")
+endif()
+
 project(xptools)
 
 if (APPLE)
@@ -69,3 +75,5 @@ include(cmake/ObjView.cmake)
 include(cmake/WED.cmake)
 include(cmake/XGrinder.cmake)
 include(cmake/OneOffs.cmake)
+
+source_group(TREE "${PROJECT_SOURCE_DIR}")
