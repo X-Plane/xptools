@@ -893,11 +893,6 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 		}
 
 
-		cell_bounds[0] -= mEditInfo.indent_level * mCellIndent;
-		CreateEdit(cell_bounds);
-		mClickCellX = cell_x;
-		mClickCellY = cell_y;
-
 
 		return 1;
 	}
