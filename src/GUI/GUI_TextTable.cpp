@@ -713,7 +713,13 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 	case gui_Cell_Double:
 	{
 		if (mParent == nullptr) break;
-		if (gModeratorMode == 0) break;
+		if (gModeratorMode == 0) {
+			cell_bounds[0] -= mEditInfo.indent_level * mCellIndent;	// clean out bounds...will get changed again later anyway
+			CreateEdit(cell_bounds);
+			mClickCellX = cell_x;
+			mClickCellY = cell_y;
+			return 1;
+		}
 
 		mClickCellX = cell_x;
 		mClickCellY = cell_y;
