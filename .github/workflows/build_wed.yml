@@ -1,11 +1,11 @@
 name: build WED
 
-on: 
+on:
   push:
     branches:
-    - 'wed_2*_release'
+      - "wed_2*_release"
   workflow_dispatch:
-        
+
 permissions:
   contents: read
 
@@ -13,35 +13,35 @@ jobs:
   build-windows:
     runs-on: windows-2025
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@main
-      with:
-        submodules: true
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.x'
-    - name: Install Conan
-      run: |
-        pip install conan
-        conan --version
-    - name: Create Conan profile
-      run: conan profile detect --force
-    - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v1.1
-    - name: Build WorldEditor
-      working-directory: ${{env.GITHUB_WORKSPACE}}
-      # Add additional options to the MSBuild command line here (like platform or verbosity level).
-      # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference 
-      run: |
-        ./cmake.ps1
-        cmake --build vs_build --config Release
-    - name: Archive build result
-      uses: actions/upload-artifact@main
-      with:
-        name: artifact-win
-        path: vs_build/Release/WED.exe
-          
+      - name: Checkout repo
+        uses: actions/checkout@main
+        with:
+          submodules: true
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Install Conan
+        run: |
+          pip install conan
+          conan --version
+      - name: Create Conan profile
+        run: conan profile detect --force
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v1.1
+      - name: Build WorldEditor
+        working-directory: ${{env.GITHUB_WORKSPACE}}
+        # Add additional options to the MSBuild command line here (like platform or verbosity level).
+        # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
+        run: |
+          ./cmake.ps1
+          cmake --build vs_build --config Release
+      - name: Archive build result
+        uses: actions/upload-artifact@main
+        with:
+          name: artifact-win
+          path: vs_build/Release/WED.exe
+
   build-mac:
     runs-on: macos-15
     env:
@@ -56,7 +56,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: "3.x"
       - name: Install Conan
         run: |
           pip install conan
@@ -65,7 +65,7 @@ jobs:
         run: conan profile detect --force
       - name: Setup Credentials
         uses: apple-actions/import-codesign-certs@v2
-        with: 
+        with:
           p12-file-base64: ${{ secrets.APPLE_DEV_CERTIFICATE }}
           p12-password: ${{ secrets.APPLE_DEV_CERTIFICATE_PASSWORD }}
       - name: Build WorldEditor
@@ -79,21 +79,21 @@ jobs:
         with:
           name: artifact-osx
           path: build/WED.xcarchive/Products/Applications
-          
+
   build-linux:
     runs-on: ubuntu-24.04
     # we need fltk-dev and python 2.7
     container:
-        image: ghcr.io/x-plane/xptools_builder:latest
+      image: ghcr.io/x-plane/xptools_builder:latest
     steps:
       - name: Checkout repo
         uses: actions/checkout@main
         with:
           submodules: yes
-      - name: Install Python and pip
+      - name: Install Python, pip and additional dependencies
         run: |
           apt-get update
-          apt-get install -y python3 python3-pip
+          apt-get install -y python3 python3-pip pkg-config
       - name: Install Conan
         run: |
           pip3 install conan
@@ -116,15 +116,15 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-windows, build-mac, build-linux]
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@main
-    - name: get build results
-      uses: actions/download-artifact@main
-      with:
-        pattern: artifact-*
-        merge-multiple: true
-    - name: zip files
-      run: |
+      - name: Checkout repo
+        uses: actions/checkout@main
+      - name: get build results
+        uses: actions/download-artifact@main
+        with:
+          pattern: artifact-*
+          merge-multiple: true
+      - name: zip files
+        run: |
           ls -l
           version=$(awk '/WED_VERSION[\s\t]/ {gsub(/\./,""); print $3}' <src/WEDCore/WED_Version.h)
           echo $version
@@ -134,16 +134,16 @@ jobs:
           zip -r wed_lin_$version README.WorldEditor WED
           chmod a+x WED.app/Contents/MacOS/WED
           zip -r wed_mac_$version README.WorldEditor WED.app
-#    - name: copy to server           # run this conditional on being a "Release" or a special trigger
-#      uses: appleboy/scp-action@master
-#      with:
-#        host: files.x-plane.com
-#        username: ${{ secrets.USERNAME }}
-#        key: ${{ secrets.KEY }}      # private ssh key, public key goes on host
-#        source: wed_*.zip            # scp will overwrite target. find a way to check & NOT overwrite
-#        target: "public/wed/"
-    - name: Archive zipfiles
-      uses: actions/upload-artifact@main
-      with:
-        name: wed_release_build
-        path: ./wed_*.zip
+      #    - name: copy to server           # run this conditional on being a "Release" or a special trigger
+      #      uses: appleboy/scp-action@master
+      #      with:
+      #        host: files.x-plane.com
+      #        username: ${{ secrets.USERNAME }}
+      #        key: ${{ secrets.KEY }}      # private ssh key, public key goes on host
+      #        source: wed_*.zip            # scp will overwrite target. find a way to check & NOT overwrite
+      #        target: "public/wed/"
+      - name: Archive zipfiles
+        uses: actions/upload-artifact@main
+        with:
+          name: wed_release_build
+          path: ./wed_*.zip
