@@ -93,7 +93,7 @@ jobs:
       - name: Install Python, pip and additional dependencies
         run: |
           apt-get update
-          apt-get install -y python3 python3-pip pkg-config
+          apt-get install -y python3 python3-pip pkg-config m4 autoconf automake libtool
       - name: Install Conan
         run: |
           pip3 install conan
