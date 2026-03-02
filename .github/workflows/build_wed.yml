@@ -98,6 +98,9 @@ jobs:
         run: |
           pip3 install conan
           conan --version
+      - name: Set up environment
+        run: |
+          echo "/usr/bin" >> $GITHUB_PATH
       - name: Create Conan profile
         run: conan profile detect --force
       - name: Install Conan dependencies
