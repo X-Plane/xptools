@@ -81,7 +81,7 @@ jobs:
           path: build/WED.xcarchive/Products/Applications
 
   build-linux:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # we need fltk-dev and python 2.7
     #container:
     #  image: ghcr.io/x-plane/xptools_builder:latest
@@ -104,7 +104,7 @@ jobs:
       - name: Create Conan profile
         run: |
           conan profile detect --force
-          conan remove --c "*"
+          conan remove --confirm "*"
       - name: Install Conan dependencies
         run: |
           conan install . --build=missing -c tools.system.package_manager:mode=install -c tools.system.package_manager:sudo=True -c tools.build:skip=True
