@@ -107,7 +107,7 @@ jobs:
           conan remove --confirm "*"
       - name: Install Conan dependencies
         run: |
-          conan install . --build=missing -c tools.system.package_manager:mode=install -c tools.system.package_manager:sudo=True -c tools.build:skip=True
+          conan install . --build=missing -c tools.system.package_manager:mode=install -c tools.system.package_manager:sudo=True
       - name: Build WorldEditor
         run: |
           ./cmake.sh
