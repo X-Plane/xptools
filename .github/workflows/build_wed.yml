@@ -142,11 +142,13 @@ jobs:
           version=$(awk '/WED_VERSION[\s\t]/ {gsub(/\./,""); print $3}' <src/WEDCore/WED_Version.h)
           echo $version
           cp src/WEDCore/README.WorldEditor .
-          zip -r wed_win_$version README.WorldEditor WorldEditor.exe
+          zip -r wed_win_$version README.WorldEditor WED.exe
           chmod a+x WED
           zip -r wed_lin_$version README.WorldEditor WED
           chmod a+x WED.app/Contents/MacOS/WED
           zip -r wed_mac_$version README.WorldEditor WED.app
+          ls -la
+          find . -maxdepth 3 -type f
       #    - name: copy to server           # run this conditional on being a "Release" or a special trigger
       #      uses: appleboy/scp-action@master
       #      with:
