@@ -70,15 +70,22 @@ jobs:
           p12-password: ${{ secrets.APPLE_DEV_CERTIFICATE_PASSWORD }}
       - name: Build WorldEditor
         run: |
-          ./cmake.sh
+          GENERATOR=Ninja ./cmake.sh
+          cmake --build build_Release --config Release
+      - name: Sign App
+        run: |
+          codesign --deep --force --verify --verbose \
+            --sign "Developer ID Application: Laminar Research (LPH4NFE92D)" \
+            --options runtime \
+            build_Release/WED.app
       - name: Notarize App
         run: |
-          ./scripts/notarization.sh WED.zip build/WED.xcarchive/Products/Applications/WED.app staple
+          ./scripts/notarization.sh WED.zip build_Release/WED.app staple
       - name: Archive build result
         uses: actions/upload-artifact@main
         with:
           name: artifact-osx
-          path: build/WED.xcarchive/Products/Applications
+          path: build_Release/WED.app
 
   build-linux:
     runs-on: ubuntu-24.04
@@ -112,13 +119,11 @@ jobs:
         run: |
           ./cmake.sh
           cmake --build build_Release --config Release
-      - name: Check build output
-        run: find build_Release -name "WED" -type f
       - name: Archive build result
         uses: actions/upload-artifact@main
         with:
           name: artifact-lin
-          path: build/Linux/release_opt/WED
+          path: build_Release/WED
 
   make-zips:
     runs-on: ubuntu-latest
