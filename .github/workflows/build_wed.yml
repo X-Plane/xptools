@@ -153,7 +153,7 @@ jobs:
 
           # MacOS
           unzip artifact-mac.zip
-          chmod -R a+x WED.app/Contents/MacOS/
+          chmod -R a+x build_release/WED.app/Contents/MacOS/
           zip -r wed_mac_$version.zip README.WorldEditor WED.app
 
       #    - name: copy to server           # run this conditional on being a "Release" or a special trigger
