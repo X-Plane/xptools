@@ -85,6 +85,8 @@ jobs:
     # we need fltk-dev and python 2.7
     container:
       image: ghcr.io/x-plane/xptools_builder:latest
+    env:
+      PATH: /usr/bin:$PATH
     steps:
       - name: Checkout repo
         uses: actions/checkout@main
@@ -102,10 +104,12 @@ jobs:
         run: |
           echo "/usr/bin" >> $GITHUB_PATH
       - name: Create Conan profile
-        run: conan profile detect --force
+        run: |
+          conan profile detect --force
+          conan remove --force "*"
       - name: Install Conan dependencies
         run: |
-          conan install . --build=missing -c tools.system.package_manager:mode=install
+          conan install . --build=missing -c tools.system.package_manager:mode=install -c tools.system.package_manager:sudo=True -c tools.build:skip=True
       - name: Build WorldEditor
         run: |
           ./cmake.sh
