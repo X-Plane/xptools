@@ -154,6 +154,7 @@ jobs:
           # MacOS
           unzip artifact-mac.zip
           chmod -R a+x build_Release/WED.app/Contents/MacOS/
+          cp README.WorldEditor build_Release/
           cd build_Release
           zip -r ../wed_mac_$version.zip README.WorldEditor WED.app
           cd ..
