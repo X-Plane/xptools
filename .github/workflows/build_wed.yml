@@ -140,7 +140,7 @@ jobs:
           merge-multiple: true
       - name: zip files
         run: |
-          version=$(grep 'define WED_VERSION_STRING\b' src/WEDCore/WED_Version.h | awk '{gsub(/"/, "", $3); print $3}')
+          version=$(grep 'WED_VERSION_FILENAME' src/WEDCore/WED_Version.h | awk -F'"' '{print $2}')
           echo "Version found: '$version'"
           cp src/WEDCore/README.WorldEditor .
 
@@ -155,7 +155,7 @@ jobs:
           unzip artifact-mac.zip
           chmod -R a+x build_Release/WED.app/Contents/MacOS/
           cd build_Release
-          zip -r ../wed_mac_$version.zip ../README.WorldEditor WED.app
+          zip -r ../wed_mac_$version.zip README.WorldEditor WED.app
           cd ..
 
       #    - name: copy to server           # run this conditional on being a "Release" or a special trigger
