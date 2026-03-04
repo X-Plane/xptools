@@ -11,9 +11,13 @@ http://developer.x-plane.com/tools/worldeditor/
 WorldEditor's user's manual is online; pick "WED User's Guide" from the help
 menu to view it online.
 
-CHANGE HISTORY
+CHANGE HISTORY:
 
 WED 2.7.0-r1
+  Features:
+   - Adjusted new user interface for better experience
+
+WED 2.7.0-b1
    Features:
    - Updated user interface
    Bug fix:
