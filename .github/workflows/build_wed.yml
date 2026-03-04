@@ -140,7 +140,7 @@ jobs:
           merge-multiple: true
       - name: zip files
         run: |
-          version=$(grep 'WED_VERSION_STRING\b' src/WEDCore/WED_Version.h | awk '{gsub(/"/, "", $3); print $3}')
+          version=$(grep 'define WED_VERSION_STRING\b' src/WEDCore/WED_Version.h | awk '{gsub(/"/, "", $3); print $3}')
           echo "Version found: '$version'"
           cp src/WEDCore/README.WorldEditor .
 
