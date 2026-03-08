@@ -29,6 +29,11 @@
 #if USE_PVRTC
 #include "PVRTTriStrip.h"
 #else
+// The tri_stripper headers pull in <fstream>; keep XDefs' fopen shim out of
+// that include path so libc++ can resolve std::fopen normally.
+#ifdef fopen
+#undef fopen
+#endif
 #include "stdafx.h"
 #include "tri_stripper.h"
 using namespace	triangle_stripper;
@@ -765,4 +770,3 @@ void DSFOptimizePrimitives(
 #endif
 	swap(io_primitives,out_prims);
 }
-

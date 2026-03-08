@@ -289,7 +289,9 @@ static set<int> GetAllPools(XAtomPackedData& cmdsAtom, bool overlay)
 			currentPool = cmdsAtom.ReadUInt16();
 			break;
 		case dsf_Cmd_ObjectRange:
-			if (!overlay) ptPools.insert(currentPool);
+			if (!overlay && currentPool != 0xFFFF) ptPools.insert(currentPool);
+			cmdsAtom.Advance(4);
+			break;
 		case dsf_Cmd_NetworkChainRange:
 		case dsf_Cmd_JunctionOffsetSelect:
 		case dsf_Cmd_SetDefinition32:
@@ -300,9 +302,11 @@ static set<int> GetAllPools(XAtomPackedData& cmdsAtom, bool overlay)
 			cmdsAtom.Advance(1);
 			break;
 		case dsf_Cmd_SetDefinition16:
+			cmdsAtom.Advance(2);
+			break;
 		case dsf_Cmd_Object:
 			cmdsAtom.Advance(2);
-			if (!overlay) ptPools.insert(currentPool);
+			if (!overlay && currentPool != 0xFFFF) ptPools.insert(currentPool);
 			break;
 		case dsf_Cmd_NetworkChain:
 			count = cmdsAtom.ReadUInt8();
