@@ -90,7 +90,7 @@ jobs:
           path: artifact-mac.zip
 
   build-linux:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     # we need fltk-dev and python 2.7
     #container:
     #  image: ghcr.io/x-plane/xptools_builder:latest
@@ -102,7 +102,7 @@ jobs:
       - name: Install Python, pip and additional dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3 python3-pip pkg-config m4 autoconf automake libtool
+          sudo apt-get install -y python3 python3-pip pkg-config m4 autoconf automake libtool libglu1-mesa-dev libgl1-mesa-dev
       - name: Set up environment
         run: |
           echo "PATH=/usr/bin:$PATH" >> $GITHUB_PATH
