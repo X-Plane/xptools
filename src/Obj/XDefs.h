@@ -79,7 +79,7 @@
 // be able to get the gateway extracts INTO WED.
 // Any non-zero value will do - but 11 (eleven) will enable some "backwards compatibility" transformations and deletions
 // to make XP11 compatible Global Airports from a database that already includes xp12 art
-#define GATEWAY_IMPORT_MODE 0
+#define GATEWAY_IMPORT_MODE 1
 
 // After running ATC Runway Validation, show the hitboxes used for hot zone tests
 // 0 = never, 1 = only those causing a violation, 2 = always show all
