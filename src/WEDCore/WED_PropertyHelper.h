@@ -78,14 +78,14 @@ class	WED_XMLElement;
    pointing from each property back to the WED_Thing a full pointer and not just an 8 bit relative pointer.
 
    Using some more clever vector like LLVM's SmallVector or boosts small_vector would eliminate the
-   need for a fixed array here. In that case - an inline size of 16 elements would suffice to hold 
-   the relaive offsets for all entities except runways - only those have more properties. So that saves 
+   need for a fixed array here. In that case - an inline size of 16 elements would suffice to hold
+   the relaive offsets for all entities except runways - only those have more properties. So that saves
    even more memory and reduced any need in the future to re-adjust this fixed array for increased couunts !
    There are a LOT less runways than vertices and other entities - so loosing some optimizations for that
    entity type is not causing any notable drawbacks.
 */
 
-#define PROP_PTR_OPT 32
+#define PROP_PTR_OPT 0
 
 class	WED_PropertyItem {
 public:
