@@ -77,6 +77,7 @@ XWin::XWin(
 	mDragging    =-1;
 	mWantFakeUp  = 0;
 	mBlockEvents = 0;
+	mBlockMouseReleaseEvent = 0;
 	mMouse.x     = 0;
 	mMouse.y     = 0;
 	mTimer=0;
@@ -105,6 +106,7 @@ XWin::XWin(int default_dnd) : Fl_Window(100,100),
 	mDragging    =-1;
 	mWantFakeUp  = 0;
 	mBlockEvents = 0;
+	mBlockMouseReleaseEvent = 0;
 	mMouse.x     = 0;
 	mMouse.y     = 0;
 	mTimer=0;
@@ -226,7 +228,7 @@ int XWin::handle(int e)
 		mMouse.x = Fl::event_x();
 		mMouse.y = Fl::event_y();
 
-		if(mBlockEvents) return 1;
+		if(mBlockEvents || mBlockMouseReleaseEvent) return 1;
 
 		if(mDragging == btn)
 		{

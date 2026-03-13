@@ -272,6 +272,7 @@ protected:
 	int		mDragging; // Button being dragged or -1 if none ;
 	int		mWantFakeUp;
 	int		mBlockEvents;
+	int     mBlockMouseReleaseEvent;
     double	mTimer;
 	POINT	mMouse;
 	bool	mUpdateCallbackActive;

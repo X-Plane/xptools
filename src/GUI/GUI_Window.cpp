@@ -696,7 +696,9 @@ void			GUI_Window::ClickDown(int inX, int inY, int inButton)
 {
 	DebugAssert(mMouseFocusPane[inButton] == NULL);
 	this->GetRootForCommander()->BeginDefer();
+	mBlockMouseReleaseEvent = 1;
 	mMouseFocusPane[inButton] = InternalMouseDown(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow), inButton);
+	mBlockMouseReleaseEvent = 0;
 
 //		Ben says - we should not need to poll on mouse clickig...turn off for now
 //					until we find out what the hell needed this!
