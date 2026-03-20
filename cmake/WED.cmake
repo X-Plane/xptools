@@ -719,6 +719,7 @@ target_compile_definitions(WED PRIVATE
     USE_JPEG=1
     USE_TIF=1
     WED=1
+    $<$<BOOL:${LINUX}>:GLEW_EGL>
 )
 
 if(MSVC)
@@ -832,6 +833,6 @@ elseif (LINUX)
 		embed_resource(WED ${res})
 	endforeach()
 
-	target_link_libraries(WED PRIVATE fltk::fltk egl::egl)
+	target_link_libraries(WED PRIVATE fltk::fltk egl::egl PkgConfig::CAIRO PkgConfig::WAYLAND_CLIENT PkgConfig::WAYLAND_EGL PkgConfig::DBUS PkgConfig::GTK3 PkgConfig::PANGO PkgConfig::XKBCOMMON)
 	target_link_options(WED PRIVATE -rdynamic)
 endif()

@@ -60,7 +60,13 @@ static bool ClipTo(int pane[4], int cell[4])
 	int h = clip[3] - clip[1];
 	if (w <= 0 || h <= 0) return false;
 
+#if LIN
+	extern float gGUIPixelScale;
+	glScissor((int)(clip[0]*gGUIPixelScale), (int)(clip[1]*gGUIPixelScale),
+	          (int)(w*gGUIPixelScale), (int)(h*gGUIPixelScale));
+#else
 	glScissor(clip[0], clip[1], w, h);
+#endif
 	return true;
 }
 

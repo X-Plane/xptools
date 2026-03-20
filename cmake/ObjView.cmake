@@ -113,5 +113,5 @@ if (APPLE)
 		${APPKIT_FRAMEWORK}
 	)
 elseif(LINUX)
-	target_link_libraries(ObjView PRIVATE fltk::fltk egl::egl)
+	target_link_libraries(ObjView PRIVATE fltk::fltk egl::egl PkgConfig::CAIRO PkgConfig::WAYLAND_CLIENT PkgConfig::WAYLAND_EGL PkgConfig::DBUS PkgConfig::GTK3 PkgConfig::PANGO PkgConfig::XKBCOMMON)
 endif()

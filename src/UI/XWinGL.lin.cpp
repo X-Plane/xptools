@@ -106,6 +106,11 @@ XWinGL::~XWinGL()
 {
 }
 
+float XWinGL::GetPixelScale() const
+{
+	return mGlWidget->pixels_per_unit();
+}
+
 void XWinGL::Resized(int w, int h)
 {
 	GLReshaped(w,h);

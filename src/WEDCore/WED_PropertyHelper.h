@@ -85,7 +85,13 @@ class	WED_XMLElement;
    entity type is not causing any notable drawbacks.
 */
 
+// PIE binaries on Linux place string literals above 2^44, breaking the
+// bit-packing scheme that assumes constants are in the low 45-bit address range.
+#if defined(__linux__)
+#define PROP_PTR_OPT 0
+#else
 #define PROP_PTR_OPT 32
+#endif
 
 class	WED_PropertyItem {
 public:

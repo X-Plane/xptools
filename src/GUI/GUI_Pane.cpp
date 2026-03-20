@@ -605,7 +605,13 @@ void		GUI_Pane::InternalDraw(GUI_GraphState * state)
 		this->GetVisibleBounds(vb);
 		if (vb[0] >= vb[2] ||
 			vb[1] >= vb[3])			return;
+#if LIN
+		extern float gGUIPixelScale;
+		glScissor((int)(vb[0]*gGUIPixelScale), (int)(vb[1]*gGUIPixelScale),
+		          (int)((vb[2]-vb[0])*gGUIPixelScale), (int)((vb[3]-vb[1])*gGUIPixelScale));
+#else
 		glScissor(vb[0], vb[1], vb[2]-vb[0], vb[3]-vb[1]);
+#endif
 
 		this->Draw(state);
 		for (vector<GUI_Pane *>::iterator c = mChildren.begin(); c != mChildren.end(); ++c)

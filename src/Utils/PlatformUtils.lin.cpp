@@ -30,7 +30,7 @@
 #include <linux/limits.h>
 #include <FL/Fl.H>
 #include <FL/fl_ask.H>
-#include <FL/Fl_Native_File_Chooser.H>
+#include <FL/Fl_File_Chooser.H>
 
 string GetApplicationPath()
 {
@@ -103,31 +103,27 @@ int		GetFilePathFromUser(
 					int					inBufSize,
 					const char*			initialPath)
 {
-    int ret = 0;
-
-    Fl_Native_File_Chooser * mFileDialog = new Fl_Native_File_Chooser();
-
-    mFileDialog->title(inPrompt);
-	if (initialPath) mFileDialog->directory(initialPath);
+	const char * result = nullptr;
 
 	switch(inType)
 	{
-		case getFile_Open:       mFileDialog->type(Fl_Native_File_Chooser::BROWSE_FILE);      break;
-		case getFile_Save:       mFileDialog->type(Fl_Native_File_Chooser::BROWSE_SAVE_FILE); break;
-		case getFile_PickFolder: mFileDialog->type(Fl_Native_File_Chooser::BROWSE_DIRECTORY); break;
+		case getFile_Open:
+		case getFile_Save:
+			result = fl_file_chooser(inPrompt, "*", initialPath);
+			break;
+		case getFile_PickFolder:
+			result = fl_dir_chooser(inPrompt, initialPath);
+			break;
+		default:
+			return 0;
+	}
 
-        default: { if(mFileDialog) delete mFileDialog;  return ret;}
-    }
-
-
-    if(mFileDialog->show() == 0)
-    {
-        ::strncpy(outFileName,mFileDialog->filename(),inBufSize);
-       ret = 1;
-    }
-
-    if(mFileDialog) delete mFileDialog;
-    return ret ;
+	if(result)
+	{
+		::strncpy(outFileName, result, inBufSize);
+		return 1;
+	}
+	return 0;
 }
 
 char *	GetMultiFilePathFromUser(
@@ -136,44 +132,40 @@ char *	GetMultiFilePathFromUser(
 					int					inID,
 					const char *		initialPath)
 {
-    char * ret = NULL;
-    Fl_Native_File_Chooser * mFileDialog = new Fl_Native_File_Chooser();
+	char * ret = NULL;
+	Fl_File_Chooser * mFileDialog = new Fl_File_Chooser(
+		initialPath ? initialPath : ".", "*", Fl_File_Chooser::MULTI, inPrompt);
 
-    mFileDialog->title(inPrompt);
-    mFileDialog->type(Fl_Native_File_Chooser::BROWSE_MULTI_FILE);
-	if (initialPath) mFileDialog->directory(initialPath);
+	mFileDialog->show();
+	while(mFileDialog->shown()) Fl::wait();
 
-    if(mFileDialog->show() == 0)
-    {
-        int file_cnt(mFileDialog->count());
-        if(file_cnt == 0 ){ if(mFileDialog) delete mFileDialog; return ret;}
+	int file_cnt = mFileDialog->count();
+	if(file_cnt > 0)
+	{
+		vector<string> outFiles;
+		for(int i = 1; i <= file_cnt; ++i)
+		{
+			const char * fn = mFileDialog->value(i);
+			if(fn && strlen(fn) > 0)
+				outFiles.push_back(fn);
+		}
 
-        vector<string> outFiles;
-        for (int i=0; i < file_cnt; ++i )
-        {
-            if(strlen(mFileDialog->filename(i)) > 0)
-                outFiles.push_back(mFileDialog->filename(i));
-        }
+		int buf_size = 1;
+		for(int i = 0; i < outFiles.size(); ++i)
+			buf_size += (outFiles[i].size() + 1);
 
-        int buf_size = 1;
-        for(int i = 0; i < outFiles.size(); ++i)
-        {
-            buf_size += (outFiles[i].size() + 1);
-        }
+		ret = (char *) malloc(buf_size);
+		char * p = ret;
+		for(int i = 0; i < outFiles.size(); ++i)
+		{
+			strcpy(p, outFiles[i].c_str());
+			p += (outFiles[i].size() + 1);
+		}
+		*p = 0;
+	}
 
-        ret = (char *) malloc(buf_size);
-        char * p = ret;
-
-        for(int i = 0; i < outFiles.size(); ++i)
-        {
-            strcpy(p, outFiles[i].c_str());
-            p += (outFiles[i].size() + 1);
-        }
-        *p = 0;
-    }
-
-    if(mFileDialog) delete mFileDialog;
-    return ret ;
+	delete mFileDialog;
+	return ret;
 }
 
 void DoUserAlert(const char * inMsg)

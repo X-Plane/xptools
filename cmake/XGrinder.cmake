@@ -70,5 +70,5 @@ if (APPLE)
 		${APPKIT_FRAMEWORK}
 	)
 elseif (LINUX)
-	target_link_libraries(XGrinder PRIVATE fltk::fltk)
+	target_link_libraries(XGrinder PRIVATE fltk::fltk PkgConfig::CAIRO PkgConfig::WAYLAND_CLIENT PkgConfig::WAYLAND_EGL PkgConfig::DBUS PkgConfig::GTK3 PkgConfig::PANGO PkgConfig::XKBCOMMON)
 endif()

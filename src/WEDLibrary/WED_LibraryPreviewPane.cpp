@@ -99,6 +99,9 @@ WED_LibraryPreviewPane::WED_LibraryPreviewPane(GUI_Commander * cmdr, WED_Resourc
 		mInfoButton->Hide();
 
 		mMSAA = 1;
+#if !LIN
+		// On Linux/Wayland there is no current GL context during construction,
+		// so defer this check to Draw() time.
 		GLint tmp;
 		glGetIntegerv(GL_SAMPLES, &tmp);
 		if(tmp > 1)
@@ -106,6 +109,7 @@ WED_LibraryPreviewPane::WED_LibraryPreviewPane(GUI_Commander * cmdr, WED_Resourc
 			mMSAA = 0;
 			LOG_MSG("I/Lpp MSAA externally overridden already\n");
 		}
+#endif
 #if APL
 		const char * ext_str = (const char *)glGetString(GL_EXTENSIONS);
 		if(strstr(ext_str, "GL_ARB_framebuffer_object") == nullptr)

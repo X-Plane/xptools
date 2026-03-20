@@ -103,6 +103,7 @@ private:
 public:
 	bool			mGLInited;
 	bool			mCtxValid;
+	float			GetPixelScale() const;
 #endif
 
 };

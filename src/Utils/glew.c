@@ -38,7 +38,7 @@
 #  define GLAPI extern
 #  include <GL/osmesa.h>
 #elif defined(GLEW_EGL)
-#  include <GL/eglew.h>
+#  include "eglew.h"
 #elif defined(_WIN32)
 /*
  * If NOGDI is defined, wingdi.h won't be included by windows.h, and thus

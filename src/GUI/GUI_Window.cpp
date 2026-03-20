@@ -66,6 +66,8 @@ inline int OGL2Client_Y(int y, HWND w) { RECT c; GetClientRect(w,&c); return c.b
 #define mWindow 0
 #define DEBUG_DND 0
 
+float gGUIPixelScale = 1.0f;
+
 inline int GUI_Window::Client2OGL_X(int x, void* w) { return x; }
 inline int GUI_Window::Client2OGL_Y(int y, void* w) { return (this->h() - y ); }
 inline int GUI_Window::OGL2Client_X(int x, void* w) { return x; }
@@ -816,7 +818,12 @@ void			GUI_Window::GLDraw(void)
 #endif
 	int	w, h;
 	XWinGL::GetBounds(&w, &h);
+#if LIN
+	gGUIPixelScale = GetPixelScale();
+	glViewport(0, 0, (int)(w * gGUIPixelScale), (int)(h * gGUIPixelScale));
+#else
 	glViewport(0, 0, w, h);
+#endif
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
