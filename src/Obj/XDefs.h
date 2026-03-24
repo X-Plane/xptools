@@ -305,6 +305,8 @@
 	// This is to put an case-insensitive fopen in place, see in FileUtils.cpp
 	#ifdef __cplusplus
 		extern "C" FILE* x_fopen(const char * _Filename, const char * _Mode);
+		// Inject x_fopen into std namespace for C++ standard library compatibility
+		namespace std { using ::x_fopen; }
 	#else
 		extern FILE* x_fopen(const char * _Filename, const char * _Mode);
 	#endif
