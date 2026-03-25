@@ -1,17 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
- "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-	<dict>
-		<key>CFBundleIdentifier</key>
-		<string>@BUNDLE_ID@</string>
-		<key>CFBundleShortVersionString</key>
-		<string>@WED_VERSION_STRING@</string>
-		<key>CFBundleVersion</key>
-		<string>@WED_VERSION_NUMERIC@</string>
-		<key>NSHumanReadableCopyright</key>
-		<string>@WED_COPYRIGHT_STRING@</string>
-		<key>CFBundleIconFile</key>
-        <string>WED.icns</string>
-	</dict>
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleExecutable</key>
+	<string>WED</string>
+	<key>CFBundleGetInfoString</key>
+	<string>WED @WED_VERSION_STRING@ Copyright 2016, Laminar Research</string>
+	<key>CFBundleIconFile</key>
+	<string>WED.icns</string>
+	<key>CFBundleIdentifier</key>
+	<string>org.LaminarResearch.WED</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>WED</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>@WED_VERSION_STRING@</string>
+	<key>CFBundleVersion</key>
+	<string>@WED_VERSION_NUMERIC@</string>
+    <key>LSHasLocalizedDisplayName</key>
+	<false/>
+	<key>NSHumanReadableCopyright</key>
+	<string>@WED_COPYRIGHT_STRING@</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>10.13</string>
+</dict>
 </plist>

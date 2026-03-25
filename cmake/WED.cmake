@@ -793,6 +793,15 @@ elseif (APPLE)
 
 	mac_copy_bundle_files(WED Resources "${WED_RESOURCE_FILES}")
 
+	# Extract version info from WED_Version.h
+	file(READ "${CMAKE_SOURCE_DIR}/src/WEDCore/WED_Version.h" WED_VERSION_HEADER)
+	string(REGEX MATCH "#define[ \t]+WED_VERSION_STRING[ \t]+\"([^\"]+)\"" _ ${WED_VERSION_HEADER})
+	set(WED_VERSION_STRING ${CMAKE_MATCH_1})
+	string(REGEX MATCH "#define[ \t]+WED_COPYRIGHT_STRING[ \t]+\"([^\"]+)\"" _ ${WED_VERSION_HEADER})
+	set(WED_COPYRIGHT_STRING ${CMAKE_MATCH_1})
+	string(REGEX MATCH "#define[ \t]+WED_VERSION_NUMERIC[ \t]+([0-9]+)" _ ${WED_VERSION_HEADER})
+	set(WED_VERSION_NUMERIC ${CMAKE_MATCH_1})
+
 #	configure_file(
 #			${CMAKE_SOURCE_DIR}/cmake/Info.plist.in
 #			${CMAKE_BINARY_DIR}/Info.plist
