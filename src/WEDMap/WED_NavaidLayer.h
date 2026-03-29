@@ -56,8 +56,10 @@ private:
 					navaid_list();
 		auto		empty() const { return nav_list.empty(); }
 		auto		cbegin() const { return nav_list.cbegin(); }
+		const vector<navaid_t>& items() const { return nav_list; }
 		vector<navaid_t>::const_iterator cbegin(double longitude);   // starts iterating at first navaid >= longitude
 		auto		cend() const { return nav_list.cend(); }
+		void		assign(vector<navaid_t> aids) { nav_list.swap(aids); best_begin = -1; }
 		void		insert(const navaid_t& aid);
 		void		replace(vector<navaid_t>::const_iterator which, const navaid_t& aid);
 

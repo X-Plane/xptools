@@ -44,6 +44,8 @@ public:
 	void StorePreparedTexture(const std::string& source_path, int flags, const PreparedTextureImage& image);
 	bool LoadCompressedTexture(const std::string& source_path, int flags, CompressedTextureImage& out_image, WED_ResourceCachePreparedTextureLoadPerf * out_perf = nullptr);
 	void StoreCompressedTexture(const std::string& source_path, int flags, const CompressedTextureImage& image);
+	bool LoadNavaidIndex(const std::string& source_signature, std::vector<unsigned char>& out_payload);
+	void StoreNavaidIndex(const std::string& source_signature, const std::vector<unsigned char>& payload);
 
 private:
 	WED_ResourceCache();
@@ -55,7 +57,8 @@ private:
 		artifact_ObjMeta = 1,
 		artifact_ObjGeom = 2,
 		artifact_TexPrepared = 3,
-		artifact_TexCompressed = 4
+		artifact_TexCompressed = 4,
+		artifact_NavaidIndex = 5
 	};
 
 	struct SourceFingerprint {
@@ -85,6 +88,7 @@ private:
 	bool EnsureSchemaLocked();
 	bool ResetStorageLocked();
 	SourceFingerprint MakeFingerprint(const std::string& source_path) const;
+	SourceFingerprint MakeVirtualFingerprint(const std::string& source_identity) const;
 	std::string BuildCacheKey(ArtifactKind kind, const SourceFingerprint& fp, int flags, int schema_version) const;
 	bool LookupArtifactLocked(ArtifactKind kind, const std::string& cache_key, ArtifactRecord& out_record);
 	bool ReadArtifactLocked(ArtifactKind kind, const ArtifactRecord& record, std::vector<unsigned char>& out_payload);

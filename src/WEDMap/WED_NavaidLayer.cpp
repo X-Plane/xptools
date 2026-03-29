@@ -32,9 +32,14 @@
 #include "WED_Colors.h"
 #include "WED_MapZoomerNew.h"
 #include "WED_PackageMgr.h"
+#include "WED_ResourceCache.h"
+#include "FileUtils.h"
 #include "MemFileUtils.h"
 #include "PlatformUtils.h"
 #include "GISUtils.h"
+
+#include <cstring>
+#include <utility>
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -52,6 +57,232 @@
 #define COMPARE_GW_TO_APTDAT  0       // loads list of all airports from gateway and comares it to local apt.dat data
 
 #define NAVAID_EXTRA_RANGE  GLOBAL_WED_ART_ASSET_FUDGE_FACTOR  // degree's lon/lat, shows ILS beams even if ILS outside of map window
+
+namespace {
+
+struct NavaidBlobWriter {
+	vector<unsigned char> data;
+
+	template <typename T>
+	void WritePod(const T& value)
+	{
+		const unsigned char * begin = reinterpret_cast<const unsigned char *>(&value);
+		data.insert(data.end(), begin, begin + sizeof(T));
+	}
+};
+
+struct NavaidBlobReader {
+	const unsigned char * cur;
+	const unsigned char * end;
+
+	NavaidBlobReader(const vector<unsigned char>& payload) : cur(payload.data()), end(payload.data() + payload.size()) {}
+
+	template <typename T>
+	bool ReadPod(T& value)
+	{
+		if (static_cast<size_t>(end - cur) < sizeof(T))
+			return false;
+		memcpy(&value, cur, sizeof(T));
+		cur += sizeof(T);
+		return true;
+	}
+
+	bool Done() const
+	{
+		return cur == end;
+	}
+};
+
+static void WriteString(NavaidBlobWriter& writer, const string& value)
+{
+	unsigned int len = static_cast<unsigned int>(value.size());
+	writer.WritePod(len);
+	if (len)
+	{
+		const unsigned char * begin = reinterpret_cast<const unsigned char *>(value.data());
+		writer.data.insert(writer.data.end(), begin, begin + len);
+	}
+}
+
+static bool ReadString(NavaidBlobReader& reader, string& value)
+{
+	unsigned int len = 0;
+	if (!reader.ReadPod(len))
+		return false;
+	if (static_cast<size_t>(reader.end - reader.cur) < len)
+		return false;
+	value.assign(reinterpret_cast<const char *>(reader.cur), reinterpret_cast<const char *>(reader.cur + len));
+	reader.cur += len;
+	return true;
+}
+
+static void WritePoint2(NavaidBlobWriter& writer, const Point2& point)
+{
+	const double x = point.x();
+	const double y = point.y();
+	writer.WritePod(x);
+	writer.WritePod(y);
+}
+
+static bool ReadPoint2(NavaidBlobReader& reader, Point2& point)
+{
+	double x = 0.0;
+	double y = 0.0;
+	if (!reader.ReadPod(x) || !reader.ReadPod(y))
+		return false;
+	point = Point2(x, y);
+	return true;
+}
+
+static vector<unsigned char> SerializeNavaids(const vector<navaid_t>& navaids)
+{
+	NavaidBlobWriter writer;
+	const unsigned int count = static_cast<unsigned int>(navaids.size());
+	writer.WritePod(count);
+	for (const auto& aid : navaids)
+	{
+		writer.WritePod(aid.type);
+		WritePoint2(writer, aid.lonlat);
+		writer.WritePod(aid.heading);
+		WriteString(writer, aid.name);
+		WriteString(writer, aid.icao);
+		writer.WritePod(aid.freq);
+		WriteString(writer, aid.rwy);
+		const unsigned int shape_count = static_cast<unsigned int>(aid.shape.size());
+		writer.WritePod(shape_count);
+		for (const auto& polygon : aid.shape)
+		{
+			const unsigned int point_count = static_cast<unsigned int>(polygon.size());
+			writer.WritePod(point_count);
+			for (const auto& point : polygon)
+				WritePoint2(writer, point);
+		}
+	}
+	return writer.data;
+}
+
+static bool DeserializeNavaids(const vector<unsigned char>& payload, vector<navaid_t>& out_navaids)
+{
+	NavaidBlobReader reader(payload);
+	unsigned int count = 0;
+	if (!reader.ReadPod(count))
+		return false;
+
+	vector<navaid_t> decoded;
+	decoded.resize(count);
+	for (unsigned int i = 0; i < count; ++i)
+	{
+		navaid_t& aid = decoded[i];
+		if (!reader.ReadPod(aid.type) ||
+			!ReadPoint2(reader, aid.lonlat) ||
+			!reader.ReadPod(aid.heading) ||
+			!ReadString(reader, aid.name) ||
+			!ReadString(reader, aid.icao) ||
+			!reader.ReadPod(aid.freq) ||
+			!ReadString(reader, aid.rwy))
+		{
+			return false;
+		}
+
+		unsigned int shape_count = 0;
+		if (!reader.ReadPod(shape_count))
+			return false;
+		aid.shape.resize(shape_count);
+		for (unsigned int poly_index = 0; poly_index < shape_count; ++poly_index)
+		{
+			unsigned int point_count = 0;
+			if (!reader.ReadPod(point_count))
+				return false;
+			Polygon2 polygon(static_cast<int>(point_count));
+			for (unsigned int point_index = 0; point_index < point_count; ++point_index)
+			{
+				if (!ReadPoint2(reader, polygon[point_index]))
+					return false;
+			}
+			aid.shape[poly_index] = polygon;
+		}
+	}
+
+	if (!reader.Done())
+		return false;
+
+	out_navaids.swap(decoded);
+	return true;
+}
+
+static void AppendFileFingerprint(const char * label, const string& path, string& io_signature)
+{
+	io_signature += label;
+	io_signature += "=";
+	if (!path.empty())
+	{
+		struct stat meta_data = { 0 };
+		if (FILE_get_file_meta_data(path, meta_data) == 0)
+		{
+			io_signature += path;
+			io_signature += "|";
+			io_signature += std::to_string(static_cast<long long>(meta_data.st_size));
+			io_signature += "|";
+			io_signature += std::to_string(static_cast<long long>(meta_data.st_mtime));
+		}
+		else
+		{
+			io_signature += "stat_failed:";
+			io_signature += path;
+		}
+	}
+	else
+	{
+		io_signature += "missing";
+	}
+	io_signature += "\n";
+}
+
+static string FirstExistingPath(const vector<string>& candidates)
+{
+	for (const auto& candidate : candidates)
+	{
+		if (FILE_exists(candidate.c_str()))
+			return candidate;
+	}
+	return string();
+}
+
+static string BuildNavaidSourceSignature(const string& resourcePath)
+{
+	string signature("xplane_root=");
+	signature += resourcePath;
+	signature += "\n";
+
+	const string default_navaids = resourcePath + DIR_STR "Resources" DIR_STR "default data" DIR_STR "earth_nav.dat";
+	const string global_navaids = FirstExistingPath({
+		resourcePath + DIR_STR "Global Scenery" DIR_STR "Global Airports" DIR_STR "Earth nav data" DIR_STR "earth_nav.dat",
+		resourcePath + DIR_STR "Custom Scenery" DIR_STR "Global Airports" DIR_STR "Earth nav data" DIR_STR "earth_nav.dat"
+	});
+	const string atc_data = FirstExistingPath({
+		resourcePath + DIR_STR "Resources" DIR_STR "default scenery" DIR_STR "default atc dat" DIR_STR "Earth nav data" DIR_STR "atc.dat",
+		resourcePath + DIR_STR "Resources" DIR_STR "default scenery" DIR_STR "default atc" DIR_STR "Earth nav data" DIR_STR "atc.dat",
+		resourcePath + DIR_STR "Resources" DIR_STR "default scenery" DIR_STR "1200 atc data" DIR_STR "Earth nav data" DIR_STR "atc.dat"
+	});
+
+	AppendFileFingerprint("default_nav", default_navaids, signature);
+	AppendFileFingerprint("global_nav", global_navaids, signature);
+	AppendFileFingerprint("atc", atc_data, signature);
+
+#if SHOW_APTS_FROM_APTDAT
+	const string default_apts = resourcePath + DIR_STR "Resources" DIR_STR "default scenery" DIR_STR "default apt dat" DIR_STR "Earth nav data" DIR_STR "apt.dat";
+	const string global_apts = FirstExistingPath({
+		resourcePath + DIR_STR "Global Scenery" DIR_STR "Global Airports" DIR_STR "Earth nav data" DIR_STR "apt.dat",
+		resourcePath + DIR_STR "Custom Scenery" DIR_STR "Global Airports" DIR_STR "Earth nav data" DIR_STR "apt.dat"
+	});
+	AppendFileFingerprint("default_apt", default_apts, signature);
+	AppendFileFingerprint("global_apt", global_apts, signature);
+#endif
+
+	return signature;
+}
+
+}
 
 #if COMPARE_GW_TO_APTDAT
 
@@ -488,6 +719,16 @@ void WED_NavaidLayer::LoadNavaids(void)
 // ToDo: move this into PackageMgr, so its updated when XPlaneFolder changes and re-used when another scenery is opened
 	string resourcePath;
 	gPackageMgr->GetXPlaneFolder(resourcePath);
+	const string navaid_signature = BuildNavaidSourceSignature(resourcePath);
+
+	vector<unsigned char> cached_payload;
+	vector<navaid_t> decoded_navaids;
+	if (WED_ResourceCache::Get().LoadNavaidIndex(navaid_signature, cached_payload) &&
+		DeserializeNavaids(cached_payload, decoded_navaids))
+	{
+		mNavaids.assign(std::move(decoded_navaids));
+		return;
+	}
 
 	// deliberately ignoring any Custom Data/earth_424.dat or Custom Data/earth_nav.dat files that a user may have ... to avoid confusion
 	string defaultNavaids  = resourcePath + DIR_STR "Resources" DIR_STR "default data" DIR_STR "earth_nav.dat";
@@ -561,6 +802,7 @@ void WED_NavaidLayer::LoadNavaids(void)
 
 // Todo: speedup drawing by sorting mNavaids into longitude buckets, so the preview function only have to go through a smalller part of the overall list.
 //       although for now Navaid map drawing is under 1 msec on a 3.6 GHz CPU at all times == good enough
+	WED_ResourceCache::Get().StoreNavaidIndex(navaid_signature, SerializeNavaids(mNavaids.items()));
 }
 
 void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)

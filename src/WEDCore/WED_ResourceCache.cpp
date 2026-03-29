@@ -36,6 +36,7 @@ static const int kObjMetaSchemaVersion = 1;
 static const int kObjGeomSchemaVersion = 1;
 static const int kTexPreparedSchemaVersion = 1;
 static const int kTexCompressedSchemaVersion = 1;
+static const int kNavaidIndexSchemaVersion = 1;
 static const int kCacheLayoutVersion = 3;
 static const unsigned int kPackMagic = 0x32524357;  // WCR2
 static const long long kSegmentSizeBytes = 1LL << 30;
@@ -1085,6 +1086,16 @@ WED_ResourceCache::SourceFingerprint WED_ResourceCache::MakeFingerprint(const st
 	return fp;
 }
 
+WED_ResourceCache::SourceFingerprint WED_ResourceCache::MakeVirtualFingerprint(const std::string& source_identity) const
+{
+	SourceFingerprint fp;
+	fp.normalized_path = NormalizePathForKey(std::string("virtual:") + source_identity);
+	fp.size = 0;
+	fp.mtime = 0;
+	fp.valid = !source_identity.empty();
+	return fp;
+}
+
 std::string WED_ResourceCache::BuildCacheKey(ArtifactKind kind, const SourceFingerprint& fp, int flags, int schema_version) const
 {
 	std::string key_material = fp.normalized_path;
@@ -1590,4 +1601,25 @@ void WED_ResourceCache::StoreCompressedTexture(const std::string& source_path, i
 	if (!fp.valid)
 		return;
 	StoreArtifactLocked(artifact_TexCompressed, fp, flags, kTexCompressedSchemaVersion, SerializeCompressedTexture(image));
+}
+
+bool WED_ResourceCache::LoadNavaidIndex(const std::string& source_signature, std::vector<unsigned char>& out_payload)
+{
+	std::lock_guard<std::mutex> guard(mMutex);
+	const SourceFingerprint fp = MakeVirtualFingerprint(source_signature);
+	if (!fp.valid)
+		return false;
+	const std::string cache_key = BuildCacheKey(artifact_NavaidIndex, fp, 0, kNavaidIndexSchemaVersion);
+	ArtifactRecord record;
+	return LookupArtifactLocked(artifact_NavaidIndex, cache_key, record) &&
+		ReadArtifactLocked(artifact_NavaidIndex, record, out_payload);
+}
+
+void WED_ResourceCache::StoreNavaidIndex(const std::string& source_signature, const std::vector<unsigned char>& payload)
+{
+	std::lock_guard<std::mutex> guard(mMutex);
+	const SourceFingerprint fp = MakeVirtualFingerprint(source_signature);
+	if (!fp.valid)
+		return;
+	StoreArtifactLocked(artifact_NavaidIndex, fp, 0, kNavaidIndexSchemaVersion, payload);
 }
