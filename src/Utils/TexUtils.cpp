@@ -23,6 +23,7 @@
 #include "TexUtils.h"
 #include "AssertUtils.h"
 #include "BitmapUtils.h"
+#include <vector>
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -99,6 +100,70 @@ static void init_gl_info(gl_info_t * i)
 	LOG_FLUSH();
 }
 
+void EnsureTextureUploadCapsInitializedOnDrawThread()
+{
+	INIT_GL_INFO
+}
+
+bool TextureUploadCapsReady()
+{
+	return gl_info.gl_major_version != 0;
+}
+
+static int PreparedTextureStorageBytes(int width, int height, int channels, int level_count)
+{
+	int total = 0;
+	int level_width = width;
+	int level_height = height;
+	for (int level = 0; level < level_count; ++level)
+	{
+		total += level_width * level_height * channels;
+		if (level_width == 1 && level_height == 1)
+			break;
+		if (level_width > 1) level_width >>= 1;
+		if (level_height > 1) level_height >>= 1;
+	}
+	return total;
+}
+
+static void ConfigureTextureSampling(int inFlags)
+{
+	if (inFlags & tex_Linear) {
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (inFlags & tex_Mipmap) ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
+	} else {
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (inFlags & tex_Mipmap) ? GL_NEAREST_MIPMAP_NEAREST : GL_LINEAR);
+	}
+	if(inFlags & tex_Wrap) {
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT );
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT );
+	}
+	else {
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	}
+}
+
+void DestroyPreparedTextureImage(PreparedTextureImage * image)
+{
+	if (image == nullptr)
+		return;
+	free(image->data);
+	image->data = nullptr;
+	image->data_size = 0;
+	image->width = 0;
+	image->height = 0;
+	image->channels = 0;
+	image->level_count = 0;
+	image->org_x = 0;
+	image->org_y = 0;
+	image->act_x = 0;
+	image->act_y = 0;
+	image->vis_x = 0;
+	image->vis_y = 0;
+}
+
 /*****************************************************************************************
  * UTILS
  *****************************************************************************************/
@@ -122,6 +187,148 @@ void UnpadImage(ImageInfo * im)
 			memmove(dst,src,im->width * im->channels);
 	}
 	im->pad = 0;
+}
+
+bool PrepareTextureImageForUpload(ImageInfo& im, int inFlags, PreparedTextureImage * outPrepared)
+{
+	if (outPrepared == nullptr || !TextureUploadCapsReady())
+		return false;
+
+	DestroyPreparedTextureImage(outPrepared);
+
+	if (inFlags & tex_MagentaAlpha)	ConvertBitmapToAlpha(&im, true);
+	if (im.pad != 0)
+		UnpadImage(&im);
+
+	int non_pots = ((inFlags & tex_Always_Pad) == 0) && gl_info.has_non_pots;
+	int res_x = non_pots ? min((int) im.width, gl_info.max_tex_size) : NextPowerOf2(im.width);
+	int res_y = non_pots ? min((int) im.height, gl_info.max_tex_size) : NextPowerOf2(im.height);
+	bool resize = (res_x != im.width || res_y != im.height);
+	bool rescale = resize && (inFlags & tex_Rescale);
+	if (im.width > res_x || im.height > res_y)
+		rescale = true;
+
+	ImageInfo * useIt = &im;
+	ImageInfo rescaleBits = { 0 };
+	float out_s = 1.0f;
+	float out_t = 1.0f;
+
+	if (resize)
+	{
+		if (CreateNewBitmap(res_x, res_y, im.channels, &rescaleBits) != 0)
+			return false;
+
+		useIt = &rescaleBits;
+		if (rescale)
+		{
+			CopyBitmapSection(&im, &rescaleBits, 0, 0, im.width, im.height, 0, 0, rescaleBits.width, rescaleBits.height);
+		}
+		else
+		{
+			CopyBitmapSectionDirect(im, rescaleBits, 0, 0, 0, 0, im.width, im.height);
+			if (im.width < rescaleBits.width)
+				CopyBitmapSectionDirect(im, rescaleBits, im.width - 1, 0, im.width, 0, 1, im.height);
+			if (im.height < rescaleBits.height)
+				CopyBitmapSectionDirect(im, rescaleBits, 0, im.height - 1, 0, im.height, im.width, 1);
+			if (im.height < rescaleBits.height && im.width < rescaleBits.width)
+				CopyBitmapSectionDirect(im, rescaleBits, im.width - 1, im.height - 1, im.width, im.height, 1, 1);
+			out_s = (float) im.width / (float) rescaleBits.width;
+			out_t = (float) im.height / (float) rescaleBits.height;
+		}
+	}
+
+	outPrepared->org_x = im.width;
+	outPrepared->org_y = im.height;
+	outPrepared->act_x = useIt->width;
+	outPrepared->act_y = useIt->height;
+	outPrepared->vis_x = static_cast<int>(static_cast<float>(useIt->width) * out_s);
+	outPrepared->vis_y = static_cast<int>(static_cast<float>(useIt->height) * out_t);
+	outPrepared->width = useIt->width;
+	outPrepared->height = useIt->height;
+	outPrepared->channels = useIt->channels;
+	outPrepared->level_count = (inFlags & tex_Mipmap) ? MakeMipmapStack(useIt) : 1;
+	outPrepared->data = useIt->data;
+	outPrepared->data_size = PreparedTextureStorageBytes(outPrepared->width, outPrepared->height, outPrepared->channels, outPrepared->level_count);
+	useIt->data = nullptr;
+
+	if (resize)
+	{
+		DestroyBitmap(&im);
+		im.data = nullptr;
+		im.width = 0;
+		im.height = 0;
+		im.pad = 0;
+		im.channels = 0;
+	}
+
+	return outPrepared->data != nullptr;
+}
+
+bool LoadTextureFromPreparedImage(const PreparedTextureImage& prepared, int inTexNum, int inFlags)
+{
+	EnsureTextureUploadCapsInitializedOnDrawThread();
+	if (prepared.data == nullptr || prepared.width <= 0 || prepared.height <= 0 || prepared.channels <= 0)
+		return false;
+
+	glBindTexture(GL_TEXTURE_2D, inTexNum);  CHECK_GL_ERR
+
+	int iformat;
+	int glformat;
+	if (prepared.channels == 1)
+	{
+		iformat = glformat = GL_ALPHA;
+	}
+	else if (gl_info.has_bgra)
+	{
+		iformat = GL_RGB;
+		glformat = GL_BGR;
+		if (prepared.channels == 4)
+		{
+			iformat = GL_RGBA;
+			glformat = GL_BGRA;
+		}
+	}
+	else
+	{
+		iformat = glformat = GL_RGB;
+		if (prepared.channels == 4)
+			iformat = glformat = GL_RGBA;
+	}
+
+	if (gl_info.has_tex_compression && (inFlags & tex_Compress_Ok))
+	{
+		switch (iformat) {
+		case GL_RGB:	iformat = GL_COMPRESSED_RGB;	break;
+		case GL_RGBA:	iformat = GL_COMPRESSED_RGBA;	break;
+		}
+	}
+
+	std::vector<unsigned char> converted;
+	const unsigned char * upload_data = prepared.data;
+	if (!gl_info.has_bgra && prepared.channels >= 3)
+	{
+		converted.assign(prepared.data, prepared.data + prepared.data_size);
+		for (int offset = 0; offset < prepared.data_size; offset += prepared.channels)
+			swap(converted[offset + 0], converted[offset + 2]);
+		upload_data = converted.data();
+	}
+
+	int level_width = prepared.width;
+	int level_height = prepared.height;
+	int byte_offset = 0;
+	for (int level = 0; level < prepared.level_count; ++level)
+	{
+		const int level_size = level_width * level_height * prepared.channels;
+		glTexImage2D(GL_TEXTURE_2D, level, iformat, level_width, level_height, 0, glformat, GL_UNSIGNED_BYTE, upload_data + byte_offset); CHECK_GL_ERR
+		byte_offset += level_size;
+		if (level_width == 1 && level_height == 1)
+			break;
+		if (level_width > 1) level_width >>= 1;
+		if (level_height > 1) level_height >>= 1;
+	}
+
+	ConfigureTextureSampling(inFlags);
+	return true;
 }
 
 /*****************************************************************************************

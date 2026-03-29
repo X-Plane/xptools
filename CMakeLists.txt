@@ -30,6 +30,8 @@ find_package(CURL REQUIRED)
 find_package(opengl_system REQUIRED)
 find_package(glew REQUIRED)
 find_package(jsoncpp REQUIRED)
+find_package(SQLite3 REQUIRED)
+find_path(WED_SQLITE3_INCLUDE_DIR sqlite3.h REQUIRED)
 
 if (APPLE)
 	find_library(CARBON_FRAMEWORK Carbon REQUIRED)

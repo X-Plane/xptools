@@ -71,6 +71,8 @@ set (WED_SOURCES
 	src/WEDCore/WED_Assert.h
 	src/WEDCore/WED_ResourceMgr.cpp
 	src/WEDCore/WED_ResourceMgr.h
+	src/WEDCore/WED_ResourceCache.cpp
+	src/WEDCore/WED_ResourceCache.h
 	src/WEDCore/WED_Sign_Parser.cpp
 	src/WEDCore/WED_Sign_Parser.h
 	src/WEDCore/WED_GISUtils.cpp
@@ -760,6 +762,7 @@ target_include_directories(WED PRIVATE
 	src/Tiger
 	src/SDTS
 	src/linuxinit
+	${WED_SQLITE3_INCLUDE_DIR}
 )
 
 target_link_libraries(WED PRIVATE
@@ -776,6 +779,7 @@ target_link_libraries(WED PRIVATE
 	opengl::opengl
 	GLEW::glew_s
 	JsonCpp::JsonCpp
+	SQLite::SQLite3
 )
 
 if (WIN32)

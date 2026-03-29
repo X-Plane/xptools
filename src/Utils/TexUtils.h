@@ -24,6 +24,36 @@
 #define TEXUTILS_H
 
 struct	ImageInfo;
+struct	PreparedTextureImage {
+	PreparedTextureImage() :
+		data(nullptr),
+		data_size(0),
+		width(0),
+		height(0),
+		channels(0),
+		level_count(0),
+		org_x(0),
+		org_y(0),
+		act_x(0),
+		act_y(0),
+		vis_x(0),
+		vis_y(0)
+	{
+	}
+
+	unsigned char *	data;
+	int				data_size;
+	int				width;
+	int				height;
+	int				channels;
+	int				level_count;
+	int				org_x;
+	int				org_y;
+	int				act_x;
+	int				act_y;
+	int				vis_x;
+	int				vis_y;
+};
 
 enum {
 
@@ -55,6 +85,18 @@ bool LoadTextureFromImage(
 				int * 			outHeight,
 				float *			outS,
 				float *			outT);
+
+void EnsureTextureUploadCapsInitializedOnDrawThread();
+bool TextureUploadCapsReady();
+bool PrepareTextureImageForUpload(
+				ImageInfo&					inInfo,
+				int							inFlags,
+				PreparedTextureImage *		outPrepared);
+bool LoadTextureFromPreparedImage(
+				const PreparedTextureImage&	inPrepared,
+				int							inTexNum,
+				int							inFlags);
+void DestroyPreparedTextureImage(PreparedTextureImage * image);
 
 bool LoadTextureFromDDS(
 				char *			mem_start,

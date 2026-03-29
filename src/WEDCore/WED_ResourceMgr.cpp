@@ -28,6 +28,7 @@
 #include "WED_LibraryMgr.h"
 #include "WED_Globals.h"
 #include "WED_Version.h"
+#include "WED_ResourceCache.h"
 
 #include "MemFileUtils.h"
 #include "XObjReadWrite.h"
@@ -36,6 +37,7 @@
 #include "CompGeomDefs2.h"
 #include "MathUtils.h"
 #include "BitmapUtils.h"
+#include <utility>
 
 #include "DEMDefs.h"
 #include "WED_OrthoExport.h"
@@ -176,12 +178,20 @@ bool	WED_ResourceMgr::GetDem(const string& path, dem_info_t const*& info)
 
 XObj8 * WED_ResourceMgr::LoadObj(const string& abspath)
 {
-	XObj8 * new_obj = new XObj8;
-	if(!XObj8Read(abspath.c_str(),*new_obj))
+	XObj8 * new_obj = nullptr;
+	XObj8 cached_obj;
+	if (WED_ResourceCache::Get().LoadObjGeom(abspath, cached_obj))
 	{
-		delete new_obj;
-		return nullptr;
+		new_obj = new XObj8(std::move(cached_obj));
 	}
+	else
+	{
+		new_obj = new XObj8;
+		if(!XObj8Read(abspath.c_str(),*new_obj))
+		{
+			delete new_obj;
+			return nullptr;
+		}
 	for (auto& l : new_obj->lods)  // balance begin/end_annimation in broken assets to fix display artefacts due to imbalanced glPush/PopMatrix()
 	{
 		int num_anims = 0;
@@ -208,6 +218,8 @@ XObj8 * WED_ResourceMgr::LoadObj(const string& abspath)
 	}
 	else
 		new_obj->texture_draped = new_obj->texture;
+		WED_ResourceCache::Get().StoreObjGeom(abspath, *new_obj);
+	}
 
 	return new_obj;
 }

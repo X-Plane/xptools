@@ -1,0 +1,82 @@
+/*
+ * Copyright (c) 2026
+ */
+
+#ifndef WED_ResourceCache_H
+#define WED_ResourceCache_H
+
+#include "TexUtils.h"
+#include "XObjDefs.h"
+#include <mutex>
+#include <string>
+#include <vector>
+
+struct WED_ResourceCacheObjMeta {
+	float fixed_heading = -1.0f;
+	float viewpoint_height = -1.0f;
+	float xyz_min[3] = { 0.0f, 0.0f, 0.0f };
+	float xyz_max[3] = { 0.0f, 0.0f, 0.0f };
+};
+
+class WED_ResourceCache {
+public:
+	static WED_ResourceCache& Get();
+
+	bool Enabled() const;
+	std::string GetRootPath() const;
+
+	bool LoadObjMeta(const std::string& source_path, WED_ResourceCacheObjMeta& out_meta);
+	void StoreObjMeta(const std::string& source_path, const WED_ResourceCacheObjMeta& meta);
+
+	bool LoadObjGeom(const std::string& source_path, XObj8& out_obj);
+	void StoreObjGeom(const std::string& source_path, const XObj8& obj);
+
+	bool LoadPreparedTexture(const std::string& source_path, int flags, PreparedTextureImage& out_image);
+	void StorePreparedTexture(const std::string& source_path, int flags, const PreparedTextureImage& image);
+
+private:
+	WED_ResourceCache();
+	~WED_ResourceCache();
+	WED_ResourceCache(const WED_ResourceCache&) = delete;
+	WED_ResourceCache& operator=(const WED_ResourceCache&) = delete;
+
+	enum ArtifactKind {
+		artifact_ObjMeta = 1,
+		artifact_ObjGeom = 2,
+		artifact_TexPrepared = 3
+	};
+
+	struct SourceFingerprint {
+		std::string normalized_path;
+		long long size = 0;
+		long long mtime = 0;
+		bool valid = false;
+	};
+
+	struct ArtifactRecord {
+		std::string pack_name;
+		long long offset = 0;
+		long long size = 0;
+		bool valid = false;
+	};
+
+	bool EnsureOpenLocked();
+	void CloseLocked();
+	SourceFingerprint MakeFingerprint(const std::string& source_path) const;
+	std::string BuildCacheKey(ArtifactKind kind, const SourceFingerprint& fp, int flags, int schema_version) const;
+	bool LookupArtifactLocked(ArtifactKind kind, const std::string& cache_key, ArtifactRecord& out_record);
+	bool ReadArtifactLocked(ArtifactKind kind, const ArtifactRecord& record, std::vector<unsigned char>& out_payload);
+	void StoreArtifactLocked(ArtifactKind kind, const SourceFingerprint& fp, int flags, int schema_version, const std::vector<unsigned char>& payload);
+
+	mutable std::mutex mMutex;
+	bool mEnabled;
+	bool mInitAttempted;
+	bool mOpenOk;
+	std::string mRootPath;
+	std::string mDbPath;
+	std::string mPackDirPath;
+	std::string mActivePackName;
+	struct sqlite3 * mDb;
+};
+
+#endif
