@@ -31,6 +31,8 @@ public:
 
 	bool Enabled() const;
 	std::string GetRootPath() const;
+	void SetEnabled(bool enabled);
+	bool Clear();
 
 	bool LoadObjMeta(const std::string& source_path, WED_ResourceCacheObjMeta& out_meta);
 	void StoreObjMeta(const std::string& source_path, const WED_ResourceCacheObjMeta& meta);
@@ -70,13 +72,32 @@ private:
 		bool valid = false;
 	};
 
+	struct SegmentRecord {
+		std::string pack_name;
+		long long sequence = 0;
+		long long total_bytes = 0;
+		bool sealed = false;
+		bool valid = false;
+	};
+
 	bool EnsureOpenLocked();
 	void CloseLocked();
+	bool EnsureSchemaLocked();
+	bool ResetStorageLocked();
 	SourceFingerprint MakeFingerprint(const std::string& source_path) const;
 	std::string BuildCacheKey(ArtifactKind kind, const SourceFingerprint& fp, int flags, int schema_version) const;
 	bool LookupArtifactLocked(ArtifactKind kind, const std::string& cache_key, ArtifactRecord& out_record);
 	bool ReadArtifactLocked(ArtifactKind kind, const ArtifactRecord& record, std::vector<unsigned char>& out_payload);
 	void StoreArtifactLocked(ArtifactKind kind, const SourceFingerprint& fp, int flags, int schema_version, const std::vector<unsigned char>& payload);
+	bool EnsureCapacityForWriteLocked(long long entry_size);
+	bool EnsureActivePackLocked();
+	bool CreateNewActivePackLocked();
+	void SealActivePackLocked();
+	bool FindOldestSealedPackLocked(SegmentRecord& out_record);
+	bool DeletePackLocked(const SegmentRecord& record);
+	long long QueryTotalSegmentBytesLocked() const;
+	long long ComputeEffectiveHardCapBytesLocked(long long current_total_bytes) const;
+	long long ComputePruneTargetBytesLocked(long long effective_hard_cap_bytes) const;
 
 	mutable std::mutex mMutex;
 	bool mEnabled;
@@ -86,6 +107,8 @@ private:
 	std::string mDbPath;
 	std::string mPackDirPath;
 	std::string mActivePackName;
+	long long mActivePackSize;
+	long long mNextPackSequence;
 	struct sqlite3 * mDb;
 };
 

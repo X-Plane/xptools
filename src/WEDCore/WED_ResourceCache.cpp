@@ -5,6 +5,7 @@
 #include "WED_ResourceCache.h"
 
 #include "FileUtils.h"
+#include "GUI_Prefs.h"
 #include "MemFileUtils.h"
 #include "PlatformUtils.h"
 
@@ -19,6 +20,12 @@
 #include <cstring>
 #include <sys/stat.h>
 
+#if IBM
+#include <windows.h>
+#else
+#include <sys/statvfs.h>
+#endif
+
 extern "C" {
 #include "sqlite3.h"
 }
@@ -29,8 +36,15 @@ static const int kObjMetaSchemaVersion = 1;
 static const int kObjGeomSchemaVersion = 1;
 static const int kTexPreparedSchemaVersion = 1;
 static const int kTexCompressedSchemaVersion = 1;
-static const char * kPackFileName = "artifacts.pack";
+static const int kCacheLayoutVersion = 3;
 static const unsigned int kPackMagic = 0x32524357;  // WCR2
+static const long long kSegmentSizeBytes = 1LL << 30;
+static const long long kConfiguredHardCapBytes = 16LL << 30;
+static const long long kPruneSlackBytes = 2LL << 30;
+static const long long kMinFreeReserveBytes = 4LL << 30;
+static const long long kMaxFreeReserveBytes = 16LL << 30;
+static const char * kPerformancePrefSection = "performance";
+static const char * kPerformanceCacheArtifactKey = "cache_artifact";
 
 struct PackEntryHeader {
 	unsigned int magic;
@@ -146,6 +160,39 @@ static std::string HexU64(unsigned long long value)
 static long long NowUnixSeconds()
 {
 	return static_cast<long long>(time(nullptr));
+}
+
+static bool ReadArtifactCacheEnabledPref()
+{
+	return atoi(GUI_GetPrefString(kPerformancePrefSection, kPerformanceCacheArtifactKey, "1")) != 0;
+}
+
+static std::string MakeSegmentFileName(long long sequence)
+{
+	char buf[64] = { 0 };
+	snprintf(buf, sizeof(buf), "pack-%06lld.dat", sequence);
+	return std::string(buf);
+}
+
+static bool QueryVolumeSpace(const std::string& path, unsigned long long& out_free_bytes, unsigned long long& out_total_bytes)
+{
+#if IBM
+	ULARGE_INTEGER free_bytes = { 0 };
+	ULARGE_INTEGER total_bytes = { 0 };
+	ULARGE_INTEGER total_free_bytes = { 0 };
+	if (!GetDiskFreeSpaceExA(path.c_str(), &free_bytes, &total_bytes, &total_free_bytes))
+		return false;
+	out_free_bytes = free_bytes.QuadPart;
+	out_total_bytes = total_bytes.QuadPart;
+	return true;
+#else
+	struct statvfs fs = { 0 };
+	if (statvfs(path.c_str(), &fs) != 0)
+		return false;
+	out_free_bytes = static_cast<unsigned long long>(fs.f_bavail) * static_cast<unsigned long long>(fs.f_frsize);
+	out_total_bytes = static_cast<unsigned long long>(fs.f_blocks) * static_cast<unsigned long long>(fs.f_frsize);
+	return true;
+#endif
 }
 
 static void WriteString(BlobWriter& writer, const std::string& value)
@@ -749,10 +796,11 @@ WED_ResourceCache& WED_ResourceCache::Get()
 }
 
 WED_ResourceCache::WED_ResourceCache() :
-	mEnabled(EnvFlagEnabledOrDefault("WED_RESOURCE_CACHE_V2", true)),
+	mEnabled(EnvFlagEnabledOrDefault("WED_RESOURCE_CACHE_V2", ReadArtifactCacheEnabledPref())),
 	mInitAttempted(false),
 	mOpenOk(false),
-	mActivePackName(kPackFileName),
+	mActivePackSize(0),
+	mNextPackSequence(1),
 	mDb(nullptr)
 {
 	const char * local_app_data = getenv("LOCALAPPDATA");
@@ -780,6 +828,28 @@ std::string WED_ResourceCache::GetRootPath() const
 	return mRootPath;
 }
 
+void WED_ResourceCache::SetEnabled(bool enabled)
+{
+	std::lock_guard<std::mutex> guard(mMutex);
+	mEnabled = enabled;
+	CloseLocked();
+	mInitAttempted = false;
+	mActivePackName.clear();
+	mActivePackSize = 0;
+	mNextPackSequence = 1;
+}
+
+bool WED_ResourceCache::Clear()
+{
+	std::lock_guard<std::mutex> guard(mMutex);
+	CloseLocked();
+	mInitAttempted = false;
+	mActivePackName.clear();
+	mActivePackSize = 0;
+	mNextPackSequence = 1;
+	return ResetStorageLocked();
+}
+
 bool WED_ResourceCache::EnsureOpenLocked()
 {
 	if (!mEnabled)
@@ -788,6 +858,8 @@ bool WED_ResourceCache::EnsureOpenLocked()
 		return mOpenOk;
 
 	mInitAttempted = true;
+	if (FILE_make_dir_exist(mRootPath.c_str()) != 0)
+		return false;
 	if (FILE_make_dir_exist(mPackDirPath.c_str()) != 0)
 		return false;
 
@@ -802,6 +874,58 @@ bool WED_ResourceCache::EnsureOpenLocked()
 	ExecSql(mDb, "PRAGMA journal_mode=WAL;");
 	ExecSql(mDb, "PRAGMA synchronous=NORMAL;");
 	ExecSql(mDb, "PRAGMA temp_store=MEMORY;");
+	if (!EnsureSchemaLocked())
+	{
+		CloseLocked();
+		return false;
+	}
+
+	ExecSql(mDb, "UPDATE segments SET sealed = 1;");
+	mActivePackName.clear();
+	mActivePackSize = 0;
+
+	const long long current_total = QueryTotalSegmentBytesLocked();
+	const long long effective_cap = ComputeEffectiveHardCapBytesLocked(current_total);
+	if (current_total > effective_cap)
+	{
+		const long long prune_target = ComputePruneTargetBytesLocked(effective_cap);
+		while (QueryTotalSegmentBytesLocked() > prune_target)
+		{
+			SegmentRecord record;
+			if (!FindOldestSealedPackLocked(record))
+				break;
+			if (!DeletePackLocked(record))
+				break;
+		}
+	}
+
+	mOpenOk = true;
+	return true;
+}
+
+void WED_ResourceCache::CloseLocked()
+{
+	if (mDb != nullptr)
+	{
+		sqlite3_close(mDb);
+		mDb = nullptr;
+	}
+	mOpenOk = false;
+	mActivePackName.clear();
+	mActivePackSize = 0;
+}
+
+bool WED_ResourceCache::EnsureSchemaLocked()
+{
+	if (!ExecSql(mDb,
+		"CREATE TABLE IF NOT EXISTS meta ("
+		"key TEXT PRIMARY KEY,"
+		"value INTEGER NOT NULL"
+		");"))
+	{
+		return false;
+	}
+
 	if (!ExecSql(mDb,
 		"CREATE TABLE IF NOT EXISTS artifacts ("
 		"cache_key TEXT PRIMARY KEY,"
@@ -819,22 +943,133 @@ bool WED_ResourceCache::EnsureOpenLocked()
 		"hit_count INTEGER NOT NULL DEFAULT 0"
 		");"))
 	{
-		CloseLocked();
 		return false;
 	}
 
-	mOpenOk = true;
+	if (!ExecSql(mDb,
+		"CREATE TABLE IF NOT EXISTS segments ("
+		"pack_name TEXT PRIMARY KEY,"
+		"sequence INTEGER NOT NULL,"
+		"created_at INTEGER NOT NULL,"
+		"total_bytes INTEGER NOT NULL,"
+		"sealed INTEGER NOT NULL"
+		");"))
+	{
+		return false;
+	}
+
+	ExecSql(mDb, "CREATE INDEX IF NOT EXISTS idx_artifacts_pack_name ON artifacts(pack_name);");
+	ExecSql(mDb, "CREATE INDEX IF NOT EXISTS idx_segments_sequence ON segments(sequence);");
+
+	long long layout_version = 0;
+	sqlite3_stmt * meta_stmt = nullptr;
+	const bool has_meta_value =
+		sqlite3_prepare_v2(mDb, "SELECT value FROM meta WHERE key = 'layout_version';", -1, &meta_stmt, nullptr) == SQLITE_OK &&
+		sqlite3_step(meta_stmt) == SQLITE_ROW;
+	if (has_meta_value)
+		layout_version = sqlite3_column_int64(meta_stmt, 0);
+	if (meta_stmt != nullptr)
+		sqlite3_finalize(meta_stmt);
+
+	if (!has_meta_value || layout_version != kCacheLayoutVersion)
+	{
+		CloseLocked();
+		if (!ResetStorageLocked())
+			return false;
+		if (sqlite3_open(mDbPath.c_str(), &mDb) != SQLITE_OK)
+		{
+			if (mDb)
+				sqlite3_close(mDb);
+			mDb = nullptr;
+			return false;
+		}
+		ExecSql(mDb, "PRAGMA journal_mode=WAL;");
+		ExecSql(mDb, "PRAGMA synchronous=NORMAL;");
+		ExecSql(mDb, "PRAGMA temp_store=MEMORY;");
+		if (!ExecSql(mDb,
+			"CREATE TABLE IF NOT EXISTS meta ("
+			"key TEXT PRIMARY KEY,"
+			"value INTEGER NOT NULL"
+			");") ||
+			!ExecSql(mDb,
+			"CREATE TABLE IF NOT EXISTS artifacts ("
+			"cache_key TEXT PRIMARY KEY,"
+			"kind INTEGER NOT NULL,"
+			"schema_version INTEGER NOT NULL,"
+			"flags INTEGER NOT NULL,"
+			"source_path TEXT NOT NULL,"
+			"source_size INTEGER NOT NULL,"
+			"source_mtime INTEGER NOT NULL,"
+			"pack_name TEXT NOT NULL,"
+			"pack_offset INTEGER NOT NULL,"
+			"pack_size INTEGER NOT NULL,"
+			"created_at INTEGER NOT NULL,"
+			"last_access INTEGER NOT NULL,"
+			"hit_count INTEGER NOT NULL DEFAULT 0"
+			");") ||
+			!ExecSql(mDb,
+			"CREATE TABLE IF NOT EXISTS segments ("
+			"pack_name TEXT PRIMARY KEY,"
+			"sequence INTEGER NOT NULL,"
+			"created_at INTEGER NOT NULL,"
+			"total_bytes INTEGER NOT NULL,"
+			"sealed INTEGER NOT NULL"
+			");"))
+		{
+			return false;
+		}
+		ExecSql(mDb, "CREATE INDEX IF NOT EXISTS idx_artifacts_pack_name ON artifacts(pack_name);");
+		ExecSql(mDb, "CREATE INDEX IF NOT EXISTS idx_segments_sequence ON segments(sequence);");
+		sqlite3_stmt * insert_stmt = nullptr;
+		if (sqlite3_prepare_v2(mDb, "INSERT OR REPLACE INTO meta (key, value) VALUES ('layout_version', ?1), ('next_pack_sequence', ?2);", -1, &insert_stmt, nullptr) == SQLITE_OK)
+		{
+			sqlite3_bind_int64(insert_stmt, 1, kCacheLayoutVersion);
+			sqlite3_bind_int64(insert_stmt, 2, 1);
+			sqlite3_step(insert_stmt);
+			sqlite3_finalize(insert_stmt);
+		}
+		mNextPackSequence = 1;
+		return true;
+	}
+
+	sqlite3_stmt * seq_stmt = nullptr;
+	if (sqlite3_prepare_v2(mDb, "SELECT value FROM meta WHERE key = 'next_pack_sequence';", -1, &seq_stmt, nullptr) == SQLITE_OK &&
+		sqlite3_step(seq_stmt) == SQLITE_ROW)
+	{
+		mNextPackSequence = sqlite3_column_int64(seq_stmt, 0);
+	}
+	else
+	{
+		mNextPackSequence = 1;
+		sqlite3_stmt * insert_stmt = nullptr;
+		if (sqlite3_prepare_v2(mDb, "INSERT OR REPLACE INTO meta (key, value) VALUES ('next_pack_sequence', ?1);", -1, &insert_stmt, nullptr) == SQLITE_OK)
+		{
+			sqlite3_bind_int64(insert_stmt, 1, mNextPackSequence);
+			sqlite3_step(insert_stmt);
+			sqlite3_finalize(insert_stmt);
+		}
+	}
+	if (seq_stmt != nullptr)
+		sqlite3_finalize(seq_stmt);
 	return true;
 }
 
-void WED_ResourceCache::CloseLocked()
+bool WED_ResourceCache::ResetStorageLocked()
 {
-	if (mDb != nullptr)
+	if (FILE_exists(mRootPath.c_str()))
 	{
-		sqlite3_close(mDb);
-		mDb = nullptr;
+		const string delete_path = mRootPath + DIR_STR;
+		const int delete_rc = FILE_delete_dir_recursive(delete_path);
+		if (delete_rc != 0)
+			return false;
 	}
-	mOpenOk = false;
+	const int mk_root_rc = FILE_make_dir_exist(mRootPath.c_str());
+	if (mk_root_rc != 0)
+		return false;
+	const int mk_pack_rc = FILE_make_dir_exist(mPackDirPath.c_str());
+	if (mk_pack_rc != 0)
+		return false;
+	return true;
 }
 
 WED_ResourceCache::SourceFingerprint WED_ResourceCache::MakeFingerprint(const std::string& source_path) const
@@ -866,6 +1101,216 @@ std::string WED_ResourceCache::BuildCacheKey(ArtifactKind kind, const SourceFing
 	return HexU64(Fnv1a64(key_material));
 }
 
+bool WED_ResourceCache::EnsureActivePackLocked()
+{
+	if (!mActivePackName.empty())
+		return true;
+	return CreateNewActivePackLocked();
+}
+
+bool WED_ResourceCache::CreateNewActivePackLocked()
+{
+	const std::string pack_name = MakeSegmentFileName(mNextPackSequence);
+	sqlite3_stmt * stmt = nullptr;
+	if (sqlite3_prepare_v2(
+			mDb,
+			"INSERT INTO segments (pack_name, sequence, created_at, total_bytes, sealed) VALUES (?1, ?2, ?3, 0, 0);",
+			-1,
+			&stmt,
+			nullptr) != SQLITE_OK)
+	{
+		return false;
+	}
+
+	const long long now = NowUnixSeconds();
+	sqlite3_bind_text(stmt, 1, pack_name.c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_int64(stmt, 2, mNextPackSequence);
+	sqlite3_bind_int64(stmt, 3, now);
+	const bool ok = sqlite3_step(stmt) == SQLITE_DONE;
+	sqlite3_finalize(stmt);
+	if (!ok)
+		return false;
+
+	sqlite3_stmt * meta_stmt = nullptr;
+	if (sqlite3_prepare_v2(mDb, "INSERT OR REPLACE INTO meta (key, value) VALUES ('next_pack_sequence', ?1);", -1, &meta_stmt, nullptr) == SQLITE_OK)
+	{
+		sqlite3_bind_int64(meta_stmt, 1, mNextPackSequence + 1);
+		sqlite3_step(meta_stmt);
+		sqlite3_finalize(meta_stmt);
+	}
+	++mNextPackSequence;
+
+	const std::string pack_path = mPackDirPath + DIR_STR + pack_name;
+	FILE * file = fopen(pack_path.c_str(), "ab");
+	if (file == nullptr)
+		return false;
+	fclose(file);
+
+	mActivePackName = pack_name;
+	mActivePackSize = 0;
+	return true;
+}
+
+void WED_ResourceCache::SealActivePackLocked()
+{
+	if (mActivePackName.empty())
+		return;
+
+	sqlite3_stmt * stmt = nullptr;
+	if (sqlite3_prepare_v2(mDb, "UPDATE segments SET sealed = 1 WHERE pack_name = ?1;", -1, &stmt, nullptr) == SQLITE_OK)
+	{
+		sqlite3_bind_text(stmt, 1, mActivePackName.c_str(), -1, SQLITE_TRANSIENT);
+		sqlite3_step(stmt);
+		sqlite3_finalize(stmt);
+	}
+	mActivePackName.clear();
+	mActivePackSize = 0;
+}
+
+bool WED_ResourceCache::FindOldestSealedPackLocked(SegmentRecord& out_record)
+{
+	out_record = SegmentRecord();
+	sqlite3_stmt * stmt = nullptr;
+	if (sqlite3_prepare_v2(
+			mDb,
+			"SELECT pack_name, sequence, total_bytes, sealed FROM segments WHERE sealed = 1 ORDER BY sequence ASC LIMIT 1;",
+			-1,
+			&stmt,
+			nullptr) != SQLITE_OK)
+	{
+		return false;
+	}
+
+	if (sqlite3_step(stmt) != SQLITE_ROW)
+	{
+		sqlite3_finalize(stmt);
+		return false;
+	}
+
+	const unsigned char * pack_name_text = sqlite3_column_text(stmt, 0);
+	out_record.pack_name = pack_name_text ? reinterpret_cast<const char *>(pack_name_text) : "";
+	out_record.sequence = sqlite3_column_int64(stmt, 1);
+	out_record.total_bytes = sqlite3_column_int64(stmt, 2);
+	out_record.sealed = sqlite3_column_int(stmt, 3) != 0;
+	out_record.valid = !out_record.pack_name.empty();
+	sqlite3_finalize(stmt);
+	return out_record.valid;
+}
+
+bool WED_ResourceCache::DeletePackLocked(const SegmentRecord& record)
+{
+	if (!record.valid || record.pack_name.empty())
+		return false;
+
+	const std::string pack_path = mPackDirPath + DIR_STR + record.pack_name;
+	if (FILE_exists(pack_path.c_str()) && FILE_delete_file(pack_path.c_str(), false) != 0)
+		return false;
+
+	ExecSql(mDb, "BEGIN IMMEDIATE TRANSACTION;");
+
+	bool ok = true;
+	sqlite3_stmt * delete_artifacts = nullptr;
+	if (sqlite3_prepare_v2(mDb, "DELETE FROM artifacts WHERE pack_name = ?1;", -1, &delete_artifacts, nullptr) == SQLITE_OK)
+	{
+		sqlite3_bind_text(delete_artifacts, 1, record.pack_name.c_str(), -1, SQLITE_TRANSIENT);
+		ok = sqlite3_step(delete_artifacts) == SQLITE_DONE;
+		sqlite3_finalize(delete_artifacts);
+	}
+	else
+	{
+		ok = false;
+	}
+
+	sqlite3_stmt * delete_segment = nullptr;
+	if (ok && sqlite3_prepare_v2(mDb, "DELETE FROM segments WHERE pack_name = ?1;", -1, &delete_segment, nullptr) == SQLITE_OK)
+	{
+		sqlite3_bind_text(delete_segment, 1, record.pack_name.c_str(), -1, SQLITE_TRANSIENT);
+		ok = sqlite3_step(delete_segment) == SQLITE_DONE;
+		sqlite3_finalize(delete_segment);
+	}
+	else if (ok)
+	{
+		ok = false;
+	}
+
+	ExecSql(mDb, ok ? "COMMIT;" : "ROLLBACK;");
+	return ok;
+}
+
+long long WED_ResourceCache::QueryTotalSegmentBytesLocked() const
+{
+	sqlite3_stmt * stmt = nullptr;
+	long long total_bytes = 0;
+	if (sqlite3_prepare_v2(mDb, "SELECT COALESCE(SUM(total_bytes), 0) FROM segments;", -1, &stmt, nullptr) == SQLITE_OK)
+	{
+		if (sqlite3_step(stmt) == SQLITE_ROW)
+			total_bytes = sqlite3_column_int64(stmt, 0);
+		sqlite3_finalize(stmt);
+	}
+	return total_bytes;
+}
+
+long long WED_ResourceCache::ComputeEffectiveHardCapBytesLocked(long long current_total_bytes) const
+{
+	unsigned long long free_bytes = 0;
+	unsigned long long total_bytes = 0;
+	if (!QueryVolumeSpace(mRootPath, free_bytes, total_bytes))
+		return kConfiguredHardCapBytes;
+
+	const long long reserve_bytes = std::max<long long>(
+		kMinFreeReserveBytes,
+		std::min<long long>(kMaxFreeReserveBytes, static_cast<long long>(total_bytes / 20)));
+	const long long volume_limited_cap = std::max<long long>(
+		0,
+		current_total_bytes + static_cast<long long>(free_bytes) - reserve_bytes);
+	return std::min<long long>(kConfiguredHardCapBytes, volume_limited_cap);
+}
+
+long long WED_ResourceCache::ComputePruneTargetBytesLocked(long long effective_hard_cap_bytes) const
+{
+	return std::max<long long>(0, effective_hard_cap_bytes - kPruneSlackBytes);
+}
+
+bool WED_ResourceCache::EnsureCapacityForWriteLocked(long long entry_size)
+{
+	if (entry_size <= 0 || entry_size > kSegmentSizeBytes)
+		return false;
+	if (!EnsureActivePackLocked())
+		return false;
+
+	if (mActivePackSize + entry_size > kSegmentSizeBytes)
+	{
+		SealActivePackLocked();
+		if (!CreateNewActivePackLocked())
+			return false;
+	}
+
+	long long current_total = QueryTotalSegmentBytesLocked();
+	long long effective_hard_cap = ComputeEffectiveHardCapBytesLocked(current_total);
+	if (current_total + entry_size <= effective_hard_cap)
+		return true;
+
+	const long long prune_target = ComputePruneTargetBytesLocked(effective_hard_cap);
+	const long long target_before_write = std::min<long long>(
+		prune_target,
+		std::max<long long>(0, effective_hard_cap - entry_size));
+
+	while (current_total > target_before_write)
+	{
+		SegmentRecord record;
+		if (!FindOldestSealedPackLocked(record))
+			break;
+		if (!DeletePackLocked(record))
+			break;
+		current_total = QueryTotalSegmentBytesLocked();
+		effective_hard_cap = ComputeEffectiveHardCapBytesLocked(current_total);
+	}
+
+	current_total = QueryTotalSegmentBytesLocked();
+	effective_hard_cap = ComputeEffectiveHardCapBytesLocked(current_total);
+	return current_total + entry_size <= effective_hard_cap;
+}
+
 bool WED_ResourceCache::LookupArtifactLocked(ArtifactKind kind, const std::string& cache_key, ArtifactRecord& out_record)
 {
 	if (!EnsureOpenLocked())
@@ -891,15 +1336,6 @@ bool WED_ResourceCache::LookupArtifactLocked(ArtifactKind kind, const std::strin
 	out_record.size = sqlite3_column_int64(stmt, 2);
 	out_record.valid = true;
 	sqlite3_finalize(stmt);
-
-	sqlite3_stmt * touch = nullptr;
-	if (sqlite3_prepare_v2(mDb, "UPDATE artifacts SET last_access = ?2, hit_count = hit_count + 1 WHERE cache_key = ?1;", -1, &touch, nullptr) == SQLITE_OK)
-	{
-		sqlite3_bind_text(touch, 1, cache_key.c_str(), -1, SQLITE_TRANSIENT);
-		sqlite3_bind_int64(touch, 2, NowUnixSeconds());
-		sqlite3_step(touch);
-		sqlite3_finalize(touch);
-	}
 
 	return true;
 }
@@ -948,6 +1384,10 @@ void WED_ResourceCache::StoreArtifactLocked(ArtifactKind kind, const SourceFinge
 	if (!EnsureOpenLocked())
 		return;
 
+	const long long entry_size = static_cast<long long>(sizeof(PackEntryHeader) + payload.size());
+	if (!EnsureCapacityForWriteLocked(entry_size))
+		return;
+
 	const std::string pack_path = mPackDirPath + DIR_STR + mActivePackName;
 	FILE * file = fopen(pack_path.c_str(), "ab");
 	if (file == nullptr)
@@ -965,7 +1405,11 @@ void WED_ResourceCache::StoreArtifactLocked(ArtifactKind kind, const SourceFinge
 	if (!wrote_header || !wrote_payload)
 		return;
 
+	mActivePackSize += entry_size;
+
 	const std::string cache_key = BuildCacheKey(kind, fp, flags, schema_version);
+	ExecSql(mDb, "BEGIN IMMEDIATE TRANSACTION;");
+
 	sqlite3_stmt * stmt = nullptr;
 	if (sqlite3_prepare_v2(
 		mDb,
@@ -975,6 +1419,7 @@ void WED_ResourceCache::StoreArtifactLocked(ArtifactKind kind, const SourceFinge
 		&stmt,
 		nullptr) != SQLITE_OK)
 	{
+		ExecSql(mDb, "ROLLBACK;");
 		return;
 	}
 
@@ -990,8 +1435,26 @@ void WED_ResourceCache::StoreArtifactLocked(ArtifactKind kind, const SourceFinge
 	sqlite3_bind_int64(stmt, 9, offset);
 	sqlite3_bind_int64(stmt, 10, static_cast<sqlite3_int64>(sizeof(header) + payload.size()));
 	sqlite3_bind_int64(stmt, 11, now);
-	sqlite3_step(stmt);
+	const bool insert_ok = sqlite3_step(stmt) == SQLITE_DONE;
 	sqlite3_finalize(stmt);
+	if (!insert_ok)
+	{
+		ExecSql(mDb, "ROLLBACK;");
+		return;
+	}
+
+	sqlite3_stmt * segment_stmt = nullptr;
+	if (sqlite3_prepare_v2(mDb, "UPDATE segments SET total_bytes = ?2 WHERE pack_name = ?1;", -1, &segment_stmt, nullptr) != SQLITE_OK)
+	{
+		ExecSql(mDb, "ROLLBACK;");
+		return;
+	}
+
+	sqlite3_bind_text(segment_stmt, 1, mActivePackName.c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_int64(segment_stmt, 2, mActivePackSize);
+	const bool segment_ok = sqlite3_step(segment_stmt) == SQLITE_DONE;
+	sqlite3_finalize(segment_stmt);
+	ExecSql(mDb, segment_ok ? "COMMIT;" : "ROLLBACK;");
 }
 
 bool WED_ResourceCache::LoadObjMeta(const std::string& source_path, WED_ResourceCacheObjMeta& out_meta)

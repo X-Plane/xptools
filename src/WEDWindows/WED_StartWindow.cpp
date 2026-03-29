@@ -40,6 +40,7 @@
 #include "WED_UIDefs.h"
 #include "WED_Document.h"
 #include "WED_DocumentWindow.h"
+#include "WED_ResourceCache.h"
 #include "WED_Version.h"
 #include "GUI_Prefs.h"
 #include "GUI_Application.h"
@@ -330,7 +331,20 @@ int			WED_StartWindow::HandleCommand(int command)
 {
 	char buf[1024];
 
-	switch(command) {
+switch(command) {
+	case wed_ToggleArtifactCache:
+		{
+			const bool enabled = !WED_ResourceCache::Get().Enabled();
+			GUI_SetPrefString("performance", "cache_artifact", enabled ? "1" : "0");
+			WED_ResourceCache::Get().SetEnabled(enabled);
+		}
+		return 1;
+	case wed_ClearArtifactCache:
+		if (WED_ResourceCache::Get().Clear())
+			DoUserAlert("Artifact cache cleared.");
+		else
+			DoUserAlert("Could not clear artifact cache.");
+		return 1;
 	case wed_ChangeSystem:
 		if (GetFilePathFromUser(getFile_PickFolder, "Please select your X-Plane folder", "Select", FILE_DIALOG_PICK_XSYSTEM, buf, sizeof(buf) ))
 		{
@@ -388,7 +402,9 @@ int			WED_StartWindow::HandleCommand(int command)
 
 int			WED_StartWindow::CanHandleCommand(int command, string& ioName, int& ioCheck)
 {
-	switch(command) {
+switch(command) {
+	case wed_ToggleArtifactCache:	ioCheck = WED_ResourceCache::Get().Enabled() ? 1 : 0; return 1;
+	case wed_ClearArtifactCache:	return 1;
 	case wed_NewPackage:	return gPackageMgr->HasSystemFolder();
 	case wed_ChangeSystem:	return 1;
 	case wed_OpenPackage:	return gPackageMgr->HasSystemFolder() && mPackageList->HasSelection();
