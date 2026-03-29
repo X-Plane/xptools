@@ -28,6 +28,7 @@ namespace {
 static const int kObjMetaSchemaVersion = 1;
 static const int kObjGeomSchemaVersion = 1;
 static const int kTexPreparedSchemaVersion = 1;
+static const int kTexCompressedSchemaVersion = 1;
 static const char * kPackFileName = "artifacts.pack";
 static const unsigned int kPackMagic = 0x32524357;  // WCR2
 
@@ -662,6 +663,67 @@ static bool DeserializePreparedTexture(const std::vector<unsigned char>& bytes, 
 	return reader.Done();
 }
 
+static std::vector<unsigned char> SerializeCompressedTexture(const CompressedTextureImage& image)
+{
+	BlobWriter writer;
+	writer.WritePod(image.data_size);
+	writer.WritePod(image.internal_format);
+	writer.WritePod(image.width);
+	writer.WritePod(image.height);
+	writer.WritePod(image.level_count);
+	writer.WritePod(image.org_x);
+	writer.WritePod(image.org_y);
+	writer.WritePod(image.act_x);
+	writer.WritePod(image.act_y);
+	writer.WritePod(image.vis_x);
+	writer.WritePod(image.vis_y);
+	WriteIntVector(writer, image.level_sizes);
+	if (image.data_size > 0 && image.data != nullptr)
+		writer.WriteBytes(image.data, image.data_size);
+	return writer.data;
+}
+
+static bool DeserializeCompressedTexture(const std::vector<unsigned char>& bytes, CompressedTextureImage& out_image)
+{
+	DestroyCompressedTextureImage(&out_image);
+	BlobReader reader(bytes.data(), bytes.data() + bytes.size());
+	if (!reader.ReadPod(out_image.data_size) ||
+		!reader.ReadPod(out_image.internal_format) ||
+		!reader.ReadPod(out_image.width) ||
+		!reader.ReadPod(out_image.height) ||
+		!reader.ReadPod(out_image.level_count) ||
+		!reader.ReadPod(out_image.org_x) ||
+		!reader.ReadPod(out_image.org_y) ||
+		!reader.ReadPod(out_image.act_x) ||
+		!reader.ReadPod(out_image.act_y) ||
+		!reader.ReadPod(out_image.vis_x) ||
+		!reader.ReadPod(out_image.vis_y) ||
+		!ReadIntVector(reader, out_image.level_sizes))
+		return false;
+
+	if (out_image.data_size <= 0 ||
+		out_image.internal_format == 0 ||
+		out_image.width <= 0 ||
+		out_image.height <= 0 ||
+		out_image.level_count <= 0 ||
+		static_cast<int>(out_image.level_sizes.size()) != out_image.level_count)
+	{
+		DestroyCompressedTextureImage(&out_image);
+		return false;
+	}
+
+	out_image.data = reinterpret_cast<unsigned char *>(malloc(out_image.data_size));
+	if (out_image.data == nullptr)
+		return false;
+	if (!reader.ReadBytes(out_image.data, out_image.data_size))
+	{
+		DestroyCompressedTextureImage(&out_image);
+		return false;
+	}
+
+	return reader.Done();
+}
+
 static bool ExecSql(sqlite3 * db, const char * sql)
 {
 	return sqlite3_exec(db, sql, nullptr, nullptr, nullptr) == SQLITE_OK;
@@ -979,18 +1041,39 @@ void WED_ResourceCache::StoreObjGeom(const std::string& source_path, const XObj8
 	StoreArtifactLocked(artifact_ObjMeta, fp, 0, kObjMetaSchemaVersion, SerializeObjMeta(ExtractObjMeta(obj)));
 }
 
-bool WED_ResourceCache::LoadPreparedTexture(const std::string& source_path, int flags, PreparedTextureImage& out_image)
+bool WED_ResourceCache::LoadPreparedTexture(const std::string& source_path, int flags, PreparedTextureImage& out_image, WED_ResourceCachePreparedTextureLoadPerf * out_perf)
 {
 	std::lock_guard<std::mutex> guard(mMutex);
+	if (out_perf != nullptr)
+		*out_perf = WED_ResourceCachePreparedTextureLoadPerf();
+
+	const auto total_begin = out_perf != nullptr ? std::chrono::steady_clock::now() : std::chrono::steady_clock::time_point();
 	const SourceFingerprint fp = MakeFingerprint(source_path);
 	if (!fp.valid)
 		return false;
 	const std::string cache_key = BuildCacheKey(artifact_TexPrepared, fp, flags, kTexPreparedSchemaVersion);
 	ArtifactRecord record;
-	if (!LookupArtifactLocked(artifact_TexPrepared, cache_key, record))
+	const auto lookup_begin = out_perf != nullptr ? std::chrono::steady_clock::now() : std::chrono::steady_clock::time_point();
+	const bool found = LookupArtifactLocked(artifact_TexPrepared, cache_key, record);
+	if (out_perf != nullptr)
+		out_perf->lookup_seconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - lookup_begin).count();
+	if (!found)
 		return false;
 	std::vector<unsigned char> payload;
-	return ReadArtifactLocked(artifact_TexPrepared, record, payload) && DeserializePreparedTexture(payload, out_image);
+	const auto read_begin = out_perf != nullptr ? std::chrono::steady_clock::now() : std::chrono::steady_clock::time_point();
+	const bool read_ok = ReadArtifactLocked(artifact_TexPrepared, record, payload);
+	if (out_perf != nullptr)
+		out_perf->read_seconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - read_begin).count();
+	if (!read_ok)
+		return false;
+	const auto deserialize_begin = out_perf != nullptr ? std::chrono::steady_clock::now() : std::chrono::steady_clock::time_point();
+	const bool deserialize_ok = DeserializePreparedTexture(payload, out_image);
+	if (out_perf != nullptr)
+	{
+		out_perf->deserialize_seconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - deserialize_begin).count();
+		out_perf->total_seconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - total_begin).count();
+	}
+	return deserialize_ok;
 }
 
 void WED_ResourceCache::StorePreparedTexture(const std::string& source_path, int flags, const PreparedTextureImage& image)
@@ -1000,4 +1083,48 @@ void WED_ResourceCache::StorePreparedTexture(const std::string& source_path, int
 	if (!fp.valid)
 		return;
 	StoreArtifactLocked(artifact_TexPrepared, fp, flags, kTexPreparedSchemaVersion, SerializePreparedTexture(image));
+}
+
+bool WED_ResourceCache::LoadCompressedTexture(const std::string& source_path, int flags, CompressedTextureImage& out_image, WED_ResourceCachePreparedTextureLoadPerf * out_perf)
+{
+	std::lock_guard<std::mutex> guard(mMutex);
+	if (out_perf != nullptr)
+		*out_perf = WED_ResourceCachePreparedTextureLoadPerf();
+
+	const auto total_begin = out_perf != nullptr ? std::chrono::steady_clock::now() : std::chrono::steady_clock::time_point();
+	const SourceFingerprint fp = MakeFingerprint(source_path);
+	if (!fp.valid)
+		return false;
+	const std::string cache_key = BuildCacheKey(artifact_TexCompressed, fp, flags, kTexCompressedSchemaVersion);
+	ArtifactRecord record;
+	const auto lookup_begin = out_perf != nullptr ? std::chrono::steady_clock::now() : std::chrono::steady_clock::time_point();
+	const bool found = LookupArtifactLocked(artifact_TexCompressed, cache_key, record);
+	if (out_perf != nullptr)
+		out_perf->lookup_seconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - lookup_begin).count();
+	if (!found)
+		return false;
+	std::vector<unsigned char> payload;
+	const auto read_begin = out_perf != nullptr ? std::chrono::steady_clock::now() : std::chrono::steady_clock::time_point();
+	const bool read_ok = ReadArtifactLocked(artifact_TexCompressed, record, payload);
+	if (out_perf != nullptr)
+		out_perf->read_seconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - read_begin).count();
+	if (!read_ok)
+		return false;
+	const auto deserialize_begin = out_perf != nullptr ? std::chrono::steady_clock::now() : std::chrono::steady_clock::time_point();
+	const bool deserialize_ok = DeserializeCompressedTexture(payload, out_image);
+	if (out_perf != nullptr)
+	{
+		out_perf->deserialize_seconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - deserialize_begin).count();
+		out_perf->total_seconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - total_begin).count();
+	}
+	return deserialize_ok;
+}
+
+void WED_ResourceCache::StoreCompressedTexture(const std::string& source_path, int flags, const CompressedTextureImage& image)
+{
+	std::lock_guard<std::mutex> guard(mMutex);
+	const SourceFingerprint fp = MakeFingerprint(source_path);
+	if (!fp.valid)
+		return;
+	StoreArtifactLocked(artifact_TexCompressed, fp, flags, kTexCompressedSchemaVersion, SerializeCompressedTexture(image));
 }

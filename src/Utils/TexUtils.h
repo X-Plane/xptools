@@ -23,6 +23,8 @@
 #ifndef TEXUTILS_H
 #define TEXUTILS_H
 
+#include <vector>
+
 struct	ImageInfo;
 struct	PreparedTextureImage {
 	PreparedTextureImage() :
@@ -53,6 +55,65 @@ struct	PreparedTextureImage {
 	int				act_y;
 	int				vis_x;
 	int				vis_y;
+};
+
+struct CompressedTextureImage {
+	CompressedTextureImage() :
+		data(nullptr),
+		data_size(0),
+		internal_format(0),
+		width(0),
+		height(0),
+		level_count(0),
+		org_x(0),
+		org_y(0),
+		act_x(0),
+		act_y(0),
+		vis_x(0),
+		vis_y(0)
+	{
+	}
+
+	unsigned char *		data;
+	int					data_size;
+	int					internal_format;
+	int					width;
+	int					height;
+	int					level_count;
+	int					org_x;
+	int					org_y;
+	int					act_x;
+	int					act_y;
+	int					vis_x;
+	int					vis_y;
+	std::vector<int>	level_sizes;
+};
+
+struct PreparedTextureUploadPerf {
+	PreparedTextureUploadPerf() :
+		convert_seconds(0.0),
+		upload_seconds(0.0),
+		configure_seconds(0.0),
+		total_seconds(0.0),
+		data_size(0),
+		width(0),
+		height(0),
+		channels(0),
+		level_count(0),
+		compress_ok(0)
+	{
+	}
+
+	double			convert_seconds;
+	double			upload_seconds;
+	double			configure_seconds;
+	double			total_seconds;
+	int				data_size;
+	int				width;
+	int				height;
+	int				channels;
+	int				level_count;
+	int				compress_ok;
 };
 
 enum {
@@ -95,8 +156,18 @@ bool PrepareTextureImageForUpload(
 bool LoadTextureFromPreparedImage(
 				const PreparedTextureImage&	inPrepared,
 				int							inTexNum,
-				int							inFlags);
+				int							inFlags,
+				PreparedTextureUploadPerf *	outPerf = nullptr);
 void DestroyPreparedTextureImage(PreparedTextureImage * image);
+bool CaptureCompressedTextureFromBoundTexture(
+				const PreparedTextureImage&	inPrepared,
+				CompressedTextureImage *	outCompressed);
+bool LoadTextureFromCompressedImage(
+				const CompressedTextureImage&	inCompressed,
+				int								inTexNum,
+				int								inFlags,
+				PreparedTextureUploadPerf *		outPerf = nullptr);
+void DestroyCompressedTextureImage(CompressedTextureImage * image);
 
 bool LoadTextureFromDDS(
 				char *			mem_start,

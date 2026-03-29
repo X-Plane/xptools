@@ -29,7 +29,9 @@
 #include "TexUtils.h"
 #include "WED_ResourceCache.h"
 #include "WED_PackageMgr.h"
+#include <chrono>
 #include <cctype>
+#include <cstdlib>
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -38,6 +40,40 @@
 #endif
 
 namespace {
+
+static bool PerfOpenAnalysisEnabled()
+{
+	static const bool enabled = []() {
+		const char * raw_value = getenv("WED_PERF_OPEN_ANALYSIS");
+		if (raw_value == nullptr || raw_value[0] == '\0')
+			return false;
+
+		string value(raw_value);
+		for (char& ch : value)
+			ch = static_cast<char>(tolower(static_cast<unsigned char>(ch)));
+
+		return value != "0" && value != "false" && value != "off" && value != "no";
+	}();
+	return enabled;
+}
+
+static bool EnvFlagEnabled(const char * name)
+{
+	const char * raw_value = getenv(name);
+	if (raw_value == nullptr || raw_value[0] == '\0')
+		return false;
+
+	string value(raw_value);
+	for (char& ch : value)
+		ch = static_cast<char>(tolower(static_cast<unsigned char>(ch)));
+
+	return value != "0" && value != "false" && value != "off" && value != "no";
+}
+
+static int EffectiveTextureFlags(int flags)
+{
+	return EnvFlagEnabled("WED_PERF_DISABLE_TEX_COMPRESS_OK") ? (flags & ~tex_Compress_Ok) : flags;
+}
 
 static bool IsDirectCompressedTexturePath(const string& path)
 {
@@ -113,8 +149,11 @@ void		WED_TexMgr::GetTexInfo(
 
 WED_TexMgr::TexInfo *	WED_TexMgr::LoadTexture(const char * path, bool is_absolute, int flags)
 {
+	const bool perf_enabled = PerfOpenAnalysisEnabled();
+	const auto perf_begin = perf_enabled ? std::chrono::steady_clock::now() : std::chrono::steady_clock::time_point();
 	string fpath(is_absolute ? path : gPackageMgr->ComputePath(mPackage, path));
 	TexInfo * inf = NULL;
+	const char * perf_mode = "source_prepare";
 
 	GLuint tn;
 	glGenTextures(1,&tn);
@@ -125,6 +164,7 @@ WED_TexMgr::TexInfo *	WED_TexMgr::LoadTexture(const char * path, bool is_absolut
 	{
 		if (strncmp(c, "DDS ",4) == 0)
 		{
+			perf_mode = "direct_compressed";
 			fseek(file, 0, SEEK_END);
 			int fileLength = ftell(file);
 			fseek(file, 0, SEEK_SET);
@@ -150,6 +190,7 @@ WED_TexMgr::TexInfo *	WED_TexMgr::LoadTexture(const char * path, bool is_absolut
 #if LOAD_KTX2_DIRECT
 		else if (strncmp(c, "\253KTX 20\273", 8) == 0)
 		{
+			perf_mode = "direct_compressed";
 			fseek(file, 0, SEEK_END);
 			int fileLength = ftell(file);
 			fseek(file, 0, SEEK_SET);
@@ -185,46 +226,138 @@ WED_TexMgr::TexInfo *	WED_TexMgr::LoadTexture(const char * path, bool is_absolut
 	{
 		EnsureTextureUploadCapsInitializedOnDrawThread();
 		PreparedTextureImage prepared;
+		CompressedTextureImage compressed;
+		PreparedTextureUploadPerf upload_perf;
+		WED_ResourceCachePreparedTextureLoadPerf cache_perf;
 		int siz_x = 0;
 		int siz_y = 0;
 		float s = 1.0f;
 		float t = 1.0f;
 		bool loaded = false;
-		if (!IsDirectCompressedTexturePath(fpath) && WED_ResourceCache::Get().LoadPreparedTexture(fpath, flags, prepared))
+		const int effective_flags = EffectiveTextureFlags(flags);
+		const bool allow_compressed_cache = !IsDirectCompressedTexturePath(fpath) && ((effective_flags & tex_Compress_Ok) != 0);
+		auto maybe_store_compressed_cache = [&]() {
+			if (!allow_compressed_cache || upload_perf.compress_ok == 0)
+				return;
+
+			CompressedTextureImage captured;
+			if (CaptureCompressedTextureFromBoundTexture(prepared, &captured))
+				WED_ResourceCache::Get().StoreCompressedTexture(fpath, flags, captured);
+			DestroyCompressedTextureImage(&captured);
+		};
+
+		if (allow_compressed_cache && WED_ResourceCache::Get().LoadCompressedTexture(fpath, flags, compressed, &cache_perf))
 		{
-			loaded = LoadTextureFromPreparedImage(prepared, tn, flags);
+			loaded = LoadTextureFromCompressedImage(compressed, tn, flags, &upload_perf);
 			if (loaded)
 			{
-				siz_x = prepared.act_x;
-				siz_y = prepared.act_y;
-				s = prepared.act_x > 0 ? static_cast<float>(prepared.vis_x) / static_cast<float>(prepared.act_x) : 1.0f;
-				t = prepared.act_y > 0 ? static_cast<float>(prepared.vis_y) / static_cast<float>(prepared.act_y) : 1.0f;
+				perf_mode = "compressed_cache_hit";
+				siz_x = compressed.act_x;
+				siz_y = compressed.act_y;
+				s = compressed.act_x > 0 ? static_cast<float>(compressed.vis_x) / static_cast<float>(compressed.act_x) : 1.0f;
+				t = compressed.act_y > 0 ? static_cast<float>(compressed.vis_y) / static_cast<float>(compressed.act_y) : 1.0f;
+				if (perf_enabled)
+				{
+					LOG_MSG(
+						"I/Perf CompressedTextureHot path=%s compress_ok=%d cache_lookup=%.3lf s cache_read=%.3lf s cache_deserialize=%.3lf s cache_total=%.3lf s upload_gl=%.3lf s upload_configure=%.3lf s upload_total=%.3lf s bytes=%d levels=%d size=%dx%d internal_format=0x%X\n",
+						fpath.c_str(),
+						upload_perf.compress_ok,
+						cache_perf.lookup_seconds,
+						cache_perf.read_seconds,
+						cache_perf.deserialize_seconds,
+						cache_perf.total_seconds,
+						upload_perf.upload_seconds,
+						upload_perf.configure_seconds,
+						upload_perf.total_seconds,
+						upload_perf.data_size,
+						upload_perf.level_count,
+						upload_perf.width,
+						upload_perf.height,
+						compressed.internal_format);
+				}
 			}
+			DestroyCompressedTextureImage(&compressed);
 		}
-		else
-		{
-			ImageInfo im = { 0 };
-			if (LoadBitmapFromAnyFile(fpath.c_str(), &im) == 0)
-			{
-				if (PrepareTextureImageForUpload(im, flags, &prepared))
-				{
-					loaded = LoadTextureFromPreparedImage(prepared, tn, flags);
-					if (loaded)
-					{
-						siz_x = prepared.act_x;
-						siz_y = prepared.act_y;
-						s = prepared.act_x > 0 ? static_cast<float>(prepared.vis_x) / static_cast<float>(prepared.act_x) : 1.0f;
-						t = prepared.act_y > 0 ? static_cast<float>(prepared.vis_y) / static_cast<float>(prepared.act_y) : 1.0f;
-						WED_ResourceCache::Get().StorePreparedTexture(fpath, flags, prepared);
-					}
-				}
-				else
-				{
-					loaded = LoadTextureFromImage(im, tn, flags, &siz_x, &siz_y, &s, &t);
-				}
 
-				if (im.data != nullptr)
-					DestroyBitmap(&im);
+		if (!loaded)
+		{
+			if (!IsDirectCompressedTexturePath(fpath) && WED_ResourceCache::Get().LoadPreparedTexture(fpath, flags, prepared, &cache_perf))
+			{
+				perf_mode = "prepared_cache_hit";
+				loaded = LoadTextureFromPreparedImage(prepared, tn, flags, &upload_perf);
+				if (loaded)
+				{
+					siz_x = prepared.act_x;
+					siz_y = prepared.act_y;
+					s = prepared.act_x > 0 ? static_cast<float>(prepared.vis_x) / static_cast<float>(prepared.act_x) : 1.0f;
+					t = prepared.act_y > 0 ? static_cast<float>(prepared.vis_y) / static_cast<float>(prepared.act_y) : 1.0f;
+					maybe_store_compressed_cache();
+				}
+				if (perf_enabled)
+				{
+					LOG_MSG(
+						"I/Perf PreparedTextureHot path=%s compress_ok=%d cache_lookup=%.3lf s cache_read=%.3lf s cache_deserialize=%.3lf s cache_total=%.3lf s upload_convert=%.3lf s upload_gl=%.3lf s upload_configure=%.3lf s upload_total=%.3lf s bytes=%d levels=%d size=%dx%d channels=%d\n",
+						fpath.c_str(),
+						upload_perf.compress_ok,
+						cache_perf.lookup_seconds,
+						cache_perf.read_seconds,
+						cache_perf.deserialize_seconds,
+						cache_perf.total_seconds,
+						upload_perf.convert_seconds,
+						upload_perf.upload_seconds,
+						upload_perf.configure_seconds,
+						upload_perf.total_seconds,
+						upload_perf.data_size,
+						upload_perf.level_count,
+						upload_perf.width,
+						upload_perf.height,
+						upload_perf.channels);
+				}
+			}
+
+			if (!loaded)
+			{
+				ImageInfo im = { 0 };
+				if (LoadBitmapFromAnyFile(fpath.c_str(), &im) == 0)
+				{
+					if (PrepareTextureImageForUpload(im, flags, &prepared))
+					{
+						loaded = LoadTextureFromPreparedImage(prepared, tn, flags, &upload_perf);
+						if (loaded)
+						{
+							siz_x = prepared.act_x;
+							siz_y = prepared.act_y;
+							s = prepared.act_x > 0 ? static_cast<float>(prepared.vis_x) / static_cast<float>(prepared.act_x) : 1.0f;
+							t = prepared.act_y > 0 ? static_cast<float>(prepared.vis_y) / static_cast<float>(prepared.act_y) : 1.0f;
+							WED_ResourceCache::Get().StorePreparedTexture(fpath, flags, prepared);
+							maybe_store_compressed_cache();
+						}
+						if (perf_enabled)
+						{
+							LOG_MSG(
+								"I/Perf PreparedTextureSource path=%s compress_ok=%d upload_convert=%.3lf s upload_gl=%.3lf s upload_configure=%.3lf s upload_total=%.3lf s bytes=%d levels=%d size=%dx%d channels=%d\n",
+								fpath.c_str(),
+								upload_perf.compress_ok,
+								upload_perf.convert_seconds,
+								upload_perf.upload_seconds,
+								upload_perf.configure_seconds,
+								upload_perf.total_seconds,
+								upload_perf.data_size,
+								upload_perf.level_count,
+								upload_perf.width,
+								upload_perf.height,
+								upload_perf.channels);
+						}
+					}
+					else
+					{
+						perf_mode = "source_direct_fallback";
+						loaded = LoadTextureFromImage(im, tn, flags, &siz_x, &siz_y, &s, &t);
+					}
+
+					if (im.data != nullptr)
+						DestroyBitmap(&im);
+				}
 			}
 		}
 		if (loaded)
@@ -259,6 +392,11 @@ WED_TexMgr::TexInfo *	WED_TexMgr::LoadTexture(const char * path, bool is_absolut
 #if !NEW_TEX_LOAD_STRATEGY
 		DestroyBitmap(&im);
 #endif
+	}
+	if (perf_enabled)
+	{
+		const double elapsed = std::chrono::duration<double>(std::chrono::steady_clock::now() - perf_begin).count();
+		LOG_MSG("I/Perf LoadTexture mode=%s path=%s elapsed=%.3lf s\n", perf_mode, fpath.c_str(), elapsed);
 	}
 	return inf;
 }

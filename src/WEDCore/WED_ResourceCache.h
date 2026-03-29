@@ -18,6 +18,13 @@ struct WED_ResourceCacheObjMeta {
 	float xyz_max[3] = { 0.0f, 0.0f, 0.0f };
 };
 
+struct WED_ResourceCachePreparedTextureLoadPerf {
+	double lookup_seconds = 0.0;
+	double read_seconds = 0.0;
+	double deserialize_seconds = 0.0;
+	double total_seconds = 0.0;
+};
+
 class WED_ResourceCache {
 public:
 	static WED_ResourceCache& Get();
@@ -31,8 +38,10 @@ public:
 	bool LoadObjGeom(const std::string& source_path, XObj8& out_obj);
 	void StoreObjGeom(const std::string& source_path, const XObj8& obj);
 
-	bool LoadPreparedTexture(const std::string& source_path, int flags, PreparedTextureImage& out_image);
+	bool LoadPreparedTexture(const std::string& source_path, int flags, PreparedTextureImage& out_image, WED_ResourceCachePreparedTextureLoadPerf * out_perf = nullptr);
 	void StorePreparedTexture(const std::string& source_path, int flags, const PreparedTextureImage& image);
+	bool LoadCompressedTexture(const std::string& source_path, int flags, CompressedTextureImage& out_image, WED_ResourceCachePreparedTextureLoadPerf * out_perf = nullptr);
+	void StoreCompressedTexture(const std::string& source_path, int flags, const CompressedTextureImage& image);
 
 private:
 	WED_ResourceCache();
@@ -43,7 +52,8 @@ private:
 	enum ArtifactKind {
 		artifact_ObjMeta = 1,
 		artifact_ObjGeom = 2,
-		artifact_TexPrepared = 3
+		artifact_TexPrepared = 3,
+		artifact_TexCompressed = 4
 	};
 
 	struct SourceFingerprint {

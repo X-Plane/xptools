@@ -23,6 +23,10 @@
 #include "TexUtils.h"
 #include "AssertUtils.h"
 #include "BitmapUtils.h"
+#include <cctype>
+#include <chrono>
+#include <cstdlib>
+#include <string>
 #include <vector>
 
 #if APL
@@ -51,6 +55,19 @@ struct  gl_info_t {
 };
 
 static gl_info_t gl_info = { 0 };
+
+static bool EnvFlagEnabled(const char * name)
+{
+	const char * raw = getenv(name);
+	if (raw == nullptr || raw[0] == '\0')
+		return false;
+
+	std::string lowered(raw);
+	for (char& ch : lowered)
+		ch = static_cast<char>(tolower(static_cast<unsigned char>(ch)));
+
+	return lowered != "0" && lowered != "false" && lowered != "off" && lowered != "no";
+}
 
 #define INIT_GL_INFO		if(gl_info.gl_major_version == 0) init_gl_info(&gl_info);
 
@@ -164,6 +181,26 @@ void DestroyPreparedTextureImage(PreparedTextureImage * image)
 	image->vis_y = 0;
 }
 
+void DestroyCompressedTextureImage(CompressedTextureImage * image)
+{
+	if (image == nullptr)
+		return;
+	free(image->data);
+	image->data = nullptr;
+	image->data_size = 0;
+	image->internal_format = 0;
+	image->width = 0;
+	image->height = 0;
+	image->level_count = 0;
+	image->org_x = 0;
+	image->org_y = 0;
+	image->act_x = 0;
+	image->act_y = 0;
+	image->vis_x = 0;
+	image->vis_y = 0;
+	image->level_sizes.clear();
+}
+
 /*****************************************************************************************
  * UTILS
  *****************************************************************************************/
@@ -264,11 +301,26 @@ bool PrepareTextureImageForUpload(ImageInfo& im, int inFlags, PreparedTextureIma
 	return outPrepared->data != nullptr;
 }
 
-bool LoadTextureFromPreparedImage(const PreparedTextureImage& prepared, int inTexNum, int inFlags)
+bool LoadTextureFromPreparedImage(const PreparedTextureImage& prepared, int inTexNum, int inFlags, PreparedTextureUploadPerf * outPerf)
 {
 	EnsureTextureUploadCapsInitializedOnDrawThread();
 	if (prepared.data == nullptr || prepared.width <= 0 || prepared.height <= 0 || prepared.channels <= 0)
 		return false;
+
+	const int effective_flags = EnvFlagEnabled("WED_PERF_DISABLE_TEX_COMPRESS_OK") ? (inFlags & ~tex_Compress_Ok) : inFlags;
+
+	if (outPerf != nullptr)
+	{
+		*outPerf = PreparedTextureUploadPerf();
+		outPerf->data_size = prepared.data_size;
+		outPerf->width = prepared.width;
+		outPerf->height = prepared.height;
+		outPerf->channels = prepared.channels;
+		outPerf->level_count = prepared.level_count;
+		outPerf->compress_ok = (effective_flags & tex_Compress_Ok) ? 1 : 0;
+	}
+
+	const auto total_begin = outPerf != nullptr ? std::chrono::steady_clock::now() : std::chrono::steady_clock::time_point();
 
 	glBindTexture(GL_TEXTURE_2D, inTexNum);  CHECK_GL_ERR
 
@@ -295,7 +347,7 @@ bool LoadTextureFromPreparedImage(const PreparedTextureImage& prepared, int inTe
 			iformat = glformat = GL_RGBA;
 	}
 
-	if (gl_info.has_tex_compression && (inFlags & tex_Compress_Ok))
+	if (gl_info.has_tex_compression && (effective_flags & tex_Compress_Ok))
 	{
 		switch (iformat) {
 		case GL_RGB:	iformat = GL_COMPRESSED_RGB;	break;
@@ -307,15 +359,19 @@ bool LoadTextureFromPreparedImage(const PreparedTextureImage& prepared, int inTe
 	const unsigned char * upload_data = prepared.data;
 	if (!gl_info.has_bgra && prepared.channels >= 3)
 	{
+		const auto convert_begin = outPerf != nullptr ? std::chrono::steady_clock::now() : std::chrono::steady_clock::time_point();
 		converted.assign(prepared.data, prepared.data + prepared.data_size);
 		for (int offset = 0; offset < prepared.data_size; offset += prepared.channels)
 			swap(converted[offset + 0], converted[offset + 2]);
 		upload_data = converted.data();
+		if (outPerf != nullptr)
+			outPerf->convert_seconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - convert_begin).count();
 	}
 
 	int level_width = prepared.width;
 	int level_height = prepared.height;
 	int byte_offset = 0;
+	const auto upload_begin = outPerf != nullptr ? std::chrono::steady_clock::now() : std::chrono::steady_clock::time_point();
 	for (int level = 0; level < prepared.level_count; ++level)
 	{
 		const int level_size = level_width * level_height * prepared.channels;
@@ -326,8 +382,150 @@ bool LoadTextureFromPreparedImage(const PreparedTextureImage& prepared, int inTe
 		if (level_width > 1) level_width >>= 1;
 		if (level_height > 1) level_height >>= 1;
 	}
+	if (outPerf != nullptr)
+		outPerf->upload_seconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - upload_begin).count();
 
-	ConfigureTextureSampling(inFlags);
+	const auto configure_begin = outPerf != nullptr ? std::chrono::steady_clock::now() : std::chrono::steady_clock::time_point();
+	ConfigureTextureSampling(effective_flags);
+	if (outPerf != nullptr)
+	{
+		outPerf->configure_seconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - configure_begin).count();
+		outPerf->total_seconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - total_begin).count();
+	}
+	return true;
+}
+
+bool CaptureCompressedTextureFromBoundTexture(const PreparedTextureImage& prepared, CompressedTextureImage * outCompressed)
+{
+	EnsureTextureUploadCapsInitializedOnDrawThread();
+	if (outCompressed == nullptr || !gl_info.has_tex_compression)
+		return false;
+
+	DestroyCompressedTextureImage(outCompressed);
+
+	GLint level_zero_compressed = GL_FALSE;
+	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_COMPRESSED, &level_zero_compressed); CHECK_GL_ERR
+	if (level_zero_compressed != GL_TRUE)
+		return false;
+
+	GLint internal_format = 0;
+	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT, &internal_format); CHECK_GL_ERR
+	if (internal_format == 0)
+		return false;
+
+	outCompressed->internal_format = internal_format;
+	outCompressed->width = prepared.width;
+	outCompressed->height = prepared.height;
+	outCompressed->level_count = prepared.level_count;
+	outCompressed->org_x = prepared.org_x;
+	outCompressed->org_y = prepared.org_y;
+	outCompressed->act_x = prepared.act_x;
+	outCompressed->act_y = prepared.act_y;
+	outCompressed->vis_x = prepared.vis_x;
+	outCompressed->vis_y = prepared.vis_y;
+	outCompressed->level_sizes.reserve(prepared.level_count);
+
+	int total_size = 0;
+	int level_width = prepared.width;
+	int level_height = prepared.height;
+	for (int level = 0; level < prepared.level_count; ++level)
+	{
+		GLint level_compressed = GL_FALSE;
+		GLint level_size = 0;
+		glGetTexLevelParameteriv(GL_TEXTURE_2D, level, GL_TEXTURE_COMPRESSED, &level_compressed); CHECK_GL_ERR
+		glGetTexLevelParameteriv(GL_TEXTURE_2D, level, GL_TEXTURE_COMPRESSED_IMAGE_SIZE, &level_size); CHECK_GL_ERR
+		if (level_compressed != GL_TRUE || level_size <= 0)
+		{
+			DestroyCompressedTextureImage(outCompressed);
+			return false;
+		}
+		outCompressed->level_sizes.push_back(level_size);
+		total_size += level_size;
+		if (level_width == 1 && level_height == 1)
+			break;
+		if (level_width > 1) level_width >>= 1;
+		if (level_height > 1) level_height >>= 1;
+	}
+
+	outCompressed->level_count = static_cast<int>(outCompressed->level_sizes.size());
+	outCompressed->data_size = total_size;
+	if (total_size <= 0)
+	{
+		DestroyCompressedTextureImage(outCompressed);
+		return false;
+	}
+
+	outCompressed->data = reinterpret_cast<unsigned char *>(malloc(static_cast<size_t>(total_size)));
+	if (outCompressed->data == nullptr)
+	{
+		DestroyCompressedTextureImage(outCompressed);
+		return false;
+	}
+
+	int byte_offset = 0;
+	for (int level = 0; level < outCompressed->level_count; ++level)
+	{
+		glGetCompressedTexImage(GL_TEXTURE_2D, level, outCompressed->data + byte_offset); CHECK_GL_ERR
+		byte_offset += outCompressed->level_sizes[level];
+	}
+
+	return true;
+}
+
+bool LoadTextureFromCompressedImage(const CompressedTextureImage& compressed, int inTexNum, int inFlags, PreparedTextureUploadPerf * outPerf)
+{
+	EnsureTextureUploadCapsInitializedOnDrawThread();
+	if (compressed.data == nullptr ||
+		compressed.data_size <= 0 ||
+		compressed.internal_format == 0 ||
+		compressed.width <= 0 ||
+		compressed.height <= 0 ||
+		compressed.level_count <= 0 ||
+		static_cast<int>(compressed.level_sizes.size()) != compressed.level_count)
+		return false;
+
+	const int effective_flags = EnvFlagEnabled("WED_PERF_DISABLE_TEX_COMPRESS_OK") ? (inFlags & ~tex_Compress_Ok) : inFlags;
+
+	if (outPerf != nullptr)
+	{
+		*outPerf = PreparedTextureUploadPerf();
+		outPerf->data_size = compressed.data_size;
+		outPerf->width = compressed.width;
+		outPerf->height = compressed.height;
+		outPerf->channels = 0;
+		outPerf->level_count = compressed.level_count;
+		outPerf->compress_ok = 1;
+	}
+
+	const auto total_begin = outPerf != nullptr ? std::chrono::steady_clock::now() : std::chrono::steady_clock::time_point();
+
+	glBindTexture(GL_TEXTURE_2D, inTexNum); CHECK_GL_ERR
+
+	int byte_offset = 0;
+	int level_width = compressed.width;
+	int level_height = compressed.height;
+	const auto upload_begin = outPerf != nullptr ? std::chrono::steady_clock::now() : std::chrono::steady_clock::time_point();
+	for (int level = 0; level < compressed.level_count; ++level)
+	{
+		const int level_size = compressed.level_sizes[level];
+		glCompressedTexImage2D(GL_TEXTURE_2D, level, compressed.internal_format, level_width, level_height, 0, level_size, compressed.data + byte_offset); CHECK_GL_ERR
+		byte_offset += level_size;
+		if (level_width == 1 && level_height == 1)
+			break;
+		if (level_width > 1) level_width >>= 1;
+		if (level_height > 1) level_height >>= 1;
+	}
+	if (outPerf != nullptr)
+		outPerf->upload_seconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - upload_begin).count();
+
+	const auto configure_begin = outPerf != nullptr ? std::chrono::steady_clock::now() : std::chrono::steady_clock::time_point();
+	ConfigureTextureSampling(effective_flags);
+	if (outPerf != nullptr)
+	{
+		outPerf->configure_seconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - configure_begin).count();
+		outPerf->total_seconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - total_begin).count();
+	}
+
 	return true;
 }
 
