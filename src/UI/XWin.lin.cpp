@@ -210,7 +210,6 @@ int XWin::handle(int e)
 
 			 if(mWantFakeUp)
 			 {
-				int btn = mDragging;
 				mDragging = -1;
 				ClickUp(mMouse.x, mMouse.y, btn);
 				mWantFakeUp = 0;
