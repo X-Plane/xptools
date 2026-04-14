@@ -348,7 +348,7 @@ static set<int> GetAllPools(XAtomPackedData& cmdsAtom, bool overlay)
 		case dsf_Cmd_TerrainPatchFlags:
 			cmdsAtom.Advance(1);
 		case dsf_Cmd_TerrainPatch:
-			if(overlay) ptPools.insert(currentPool);
+			if(overlay && currentPool != 0xFFFF) ptPools.insert(currentPool);
 			break;
 		case dsf_Cmd_Triangle:
 		case dsf_Cmd_TriangleStrip:
