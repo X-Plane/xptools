@@ -13,6 +13,11 @@ menu to view it online.
 
 CHANGE HISTORY:
 
+WED 2.7.1-r1:
+  Bugfixes:
+   - Fixed an error where the file picker dialog did no longer work on macOS
+   - Fixed a crash on Linux when using drag&drop in the objects hierarchy
+
 WED 2.7.0-r1
   Features:
    - Adjusted new user interface for better experience
@@ -20,7 +25,7 @@ WED 2.7.0-r1
 WED 2.7.0-b1
    Features:
    - Updated user interface
-   Bug fix:
+   Bugfixes:
    - Allow heading >360 for flatten polygons
 
 WED 2.7.0-a2
@@ -30,17 +35,17 @@ WED 2.7.0-a2
 WED 2.7.0-a1
    Features:
    - Allow flatten polygons
-   Bug fix:
+   Bugfixes:
    - Some minor bug fixes
 
 WED 2.6.0r2 10/23/24
-   Bug fix:
+   Bugfixes:
    - fix crash when reverting to existing scenery
    - support longer X-Plane version strings
    - WED-1524 forests on terrain models not elevated by set_MSL
 
 WED 2.6.0r1 8/16/24
-   Bug fix:
+   Bugfixes:
    - improve GW upgrade heuristics to change less JW lengths
    - chnage GW export target to be XP 12.1.2
 
@@ -49,7 +54,7 @@ WED 2.6.0b3 7/5/24
    - force default dir for most file open dialogs to be current scenery pack
    - make ToolTips in LibraryList more meaningful
    - support jw docking to the 2nd door of the aircraft for XP 12.1.2+
-   Bug fix:
+   Bugfixes:
    - minor accuracy improvement in map projection for very large objetcs
    - fix duplicated exclusion zones at full scenery import
    - WED-1507 fix exclusion polygons still green when locked
@@ -58,7 +63,7 @@ WED 2.6.0b2 6/3/24
    Features:
    - full scenery import menu function
    - new export target 12.1.2 to distinuish string spacing behavior
-   Bug fix:
+   Bugfixes:
    - minor speed improvements for scenery load, export and upgrade heuristics
    - remove some old XP11 wording in object density menu
 
@@ -80,7 +85,7 @@ WED 2.6.0b1 5/20/24
    - option to recover from backup with broken .xml files
    - XPD-15379 validate set_AGL, set_MSL within -1000 ... 10,000m, for GW +/-100m
    - improved string spacing resolution for XP 12.1.2+
-   Bug fix:
+   Bugfixes:
    - fix Obj8 drawing not recognizing ATTR_no_blend threshold values
    - validate ObjectString spacing parameter to be non-zero
    - validate transition level & altitude meta tags more thoroughly
@@ -96,7 +101,7 @@ WED 2.6.0b1 5/20/24
    - validate APAPI not exportable to X-Plane 11 and earlier
 
 WED 2.5.1r1 3/20/23
-   Bug fix:
+   Bugfixes:
    - WED-1461 fix align function
    - relax network validations to warning for non-gateway use
    - age pavement not converting all XP11+12 pavement polygons
@@ -104,7 +109,7 @@ WED 2.5.1r1 3/20/23
    - WED-1463 fix 'Import Roads' missing some roads
 
 WED 2.5.1b1 3/2/23
-   Bug fix:
+   Bugfixes:
    - WED-1454 fix slight shift in world map layer at high zoom levels
    - skip placeholder images ESRI is sending for unavailable slippy maps
    - fix crash with some line type facades that go exactly E-W or N-S
@@ -119,7 +124,7 @@ WED 2.5.1b1 3/2/23
 WED 2.5.0r3 1/7/23
    Features for all X-Plane versions:
    - validate meta tag "Country" to be free of extraneous prefixes created by earlier betas
-   Bug fix:
+   Bugfixes:
    - fix heuristics for gateway export to reliably detect presence of terrain_FX items in scenery
    - change run/taxiway textures to hardcoded map to isolate against X-Plane library changes
    - prevent conversion to taxiways/airport lines for entities outside airport hierachy's
@@ -128,7 +133,7 @@ WED 2.5.0r2 12/21/22
    LR internal use only
 
 WED 2.5.0r1 12/21/22
-   Bug fix:
+   Bugfixes:
    - fix Linux w/Mesa driver not showing Library previews
    - enable KTX2 loader
    - fix ATTR_layer_group ordering for offsets of +5 and larger
@@ -140,7 +145,7 @@ WED 2.5.0r1 12/21/22
    - submit roads tag to gateway to support special moderation
 
 WED 2.5.0b5 11/27/22
-   Bug fix:
+   Bugfixes:
    - rendering objects with LINES followd by TRIS in the same LOD caused artefacts
    - fix library list non-expandable items, missing 2nd column on macOS
    - fix white-out in preferences window on macOS
@@ -149,7 +154,7 @@ WED 2.5.0b5 11/27/22
    - apply the scenery gateway upgrade heuristics when exporting to scenery for the gateway target
 
 WED 2.5.0b4 9/21/22
-   Bug fix:
+   Bugfixes:
    - some meta data validation messages spelling out wrong names
    - add missing texture for light colored gradients to linux binary
    Features for all X-Plane versions:
@@ -163,13 +168,13 @@ WED 2.5.0b4 9/21/22
 WED 2.5.0b3 9/3/22
    X-Plane 12 features:
    - add meta tags for ATC fisa and closed circuit ops
-   Bug fix:
+   Bugfixes:
    - some moving jetway objects not upgraded by GW heuristics 
    Features for all X-Plane versions:
    - auto-upgrade country meta tags ISO3366 code upon import from gateway
 
 WED 2.5.0b2 5/30/22
-   Bug Fix:
+   Bugfixes:
    - fix .agp scraper display mismatch for some heights
    - fix gridded preview for 3D objects only showing partially on OSX w/AMD graphics
    - WED-1390 fix crash in preview window for .net definitions that reference no textures at all
@@ -230,14 +235,14 @@ WED 2.4.0rc2 5/29/21
    - renamed gateway import "Checkout until" into "Locked by" for consistency
 
 WED 2.4.0rc1 5/8/21
-   Bug Fix:
+   Bugfixes:
    - move forest layering in map to above polygons, below roads/objects
    - fix distorted previews for lines with ALIGN and END_CAP attributes
    - WED-1380 clean out orphaned road nodes from .xml database
    - WED-1374 improve libcurl compatibility on Debian/Linux
 	
 WED 2.4.0b2 4/13/21
-   Bug Fix:
+   Bugfixes:
    - fix scaled down window contents on OSX Big Sur with Retina displays
    - disable MSAA for library previews on retina macs
    - fixes to editing/splitting/merging closed road loops
@@ -256,7 +261,7 @@ WED 2.4.0b1 3/25/21
    - WED-1359: change OOW mouse click for LineEditor from accept to cancel edit
    - automatically change ExportTarget at GW import, avoid inheriting unexpected values
    - support import of text format DSF files
-   Bug Fix:
+   Bugfixes:
    - Partial fix of long standing OGLE bugs
       - disappearing content when select numeric edit fields,
       - mess with vertical scrolling,
@@ -272,13 +277,13 @@ WED 2.4.0b1 3/25/21
 WED 2.3.1r1 12/22/20
    Features:
     - reload Orthophoto at export when image has changed and new DDS were created
-    Bug Fix:
+    Bugfixes:
     - WED-1341 fix (linux only) uncommanded exclusion zone changes when canceling edits
 
 WED 2.3.1b1  12/12/20
    Features:
     - support metadata tag 'closed', dereive from [X] in airport name at GW im/export
-    Bug Fix:
+   Bugfixes:
     - improve Log.txt completeness when crashing
     - WED-1332 fix (linux only) selection of ATC taxiroute runway tags
     - WED-1333 fix library preview visibility when AA settings overridden by video drivers
@@ -287,12 +292,12 @@ WED 2.3.1b1  12/12/20
     - fix false alarms in ramp start validation for export targets older than XP10.45
 
 WED 2.3.0r2 10/19/20
-    Bug Fix:
+    Bugfixes:
     - fix Orthophoto export to only run if image file is newer than textures on disk
     - fix temporary files after gateway import not removed
 
 WED 2.3.0r1 10/7/20
-    Bug Fix:
+    Bugfixes:
     - WED-1324: for XP1000+ targets export has_ATC in apt.dat rowcode 1 always as 0
     - fix validation for far-off-airport items to skip hidden items
     - fix OSX not resolving symbolic links at Orthophoto Import
@@ -303,7 +308,7 @@ WED 2.3.0r1 10/7/20
     - Linux version based on FLTK
 
 WED 2.3.0b3 9/9/20
-    Bug Fix:
+    Bugfixes:
     - fix facade roof object appearance in facade preview
     - fix facade roofs not showing in map without "pick walls" property
     - fix false warning opening pre-WED 2.0 files in WED 2.0+ after use of WED-2.3 beta
@@ -312,14 +317,14 @@ WED 2.3.0b3 9/9/20
     - WED-338: Write all messages and information to a WED_Log.txt
 
 WED 2.3.0b2 8/26/20
-   Bug Fix:
+   Bugfixes:
    - fix crash when viewing objects with lines in map
    - fix overzealous ATC taxiway name validations
    - fix some facade roof not showing as expected
    - fix ESRI slippy map not showing at very high zoom levels in some places
 
 WED 2.3.0b1 8/24/20
-   Bug Fix:
+   Bugfixes:
    - fix endcaps for bezier curved lines not following curve in map
    - fix validation not checking GT routes intersecting runways win some airports
    - WED-1277: make error messages when saving xml files more particular
@@ -350,16 +355,16 @@ WED 2.3.0b1 8/24/20
    - support new XP11.50 earth_nav.dat format, fixes navaids missing in NAVAID layer
 
 WED 2.2.1r1 5/27/20
-   Bug Fix:
+   Bugfixes:
    - make runway CIFP validation ignore apts tagged only with local_code
    - make meta data update use same ICAO resolution logic as CIFP validation.
 
 WED 2.2.0r3 2/19/20
-   Bug Fix:
+   Bugfixes:
    - fix resource names on windows for local objects and orthophotos after import from DSF
 
 WED 2.2.0r2 2/3/20
-   Bug Fix:
+   Bugfixes:
    - fix crash when .agp specifying non-existent annotations are visible in the map
    - fix some underground scenery parts becoming visible when map is tilted
 
@@ -367,7 +372,7 @@ WED 2.2.0r1 1/16/20
    Features:
    - add searchable column for ICAO/FAA/Local codes in gateway import dialog
    - add cmdline debugging option for gateway testing
-   Bug Fixes:
+   Bugfixes:
    - fix (Windows only) scenery window changing size when dragged, can't be resized via frame
 
 WED 2.2.0b2 1/03/20
@@ -377,7 +382,7 @@ WED 2.2.0b2 1/03/20
    - add ability for Library/Property panes to auto open/close, when set narrow enough
    - map drawing w/large amounts of .agp (e.g. KATL parking lots - 13k cars !!) 5x faster
    - add searchable column for ICAO/FAA/Local codes in gateway import dialog
-   Bug Fixes:
+   Bugfixes:
    - fix wall for type 1 facades not displayed using specific names, if available
    - fix tall objects, e.g. towers, not centered in library preview window
    - WED-1252: fix severe distortions in all windows when previewing certain .agp
@@ -403,7 +408,7 @@ WED 2.2.0b1 17/12/19
    - allow GUI-based resource selection for "Lines", same as for "Airport Line Markings"
    - WED-1219: Make it more obvious to user when export was aborted due to errors
    - Translate new X-Plane 11.26+ lines into "traditional" equivalents for targets < X-Plane 11.30
-   Bug Fixes:
+   Bugfixes:
    - WED-1225: show apts with only declined submissions in Gateway import dialog
    - WED-1235: fix crash when processing OOB indices in bad .agp definitions
    - try harder to keep 1:1 pixel mapping when splitting orthophotos into tiles
@@ -412,7 +417,7 @@ WED 2.2.0b1 17/12/19
    - WED-1248: fix crash when libray.txt path includes trailing non-ASCII characters
 
 WED 2.1.0r1 7/22/19
-   Bug Fixes:
+   Bugfixes:
    - fix rotation lock acting on unrestricted/normal obj's
 
 WED 2.1.0b2 7/11/19
@@ -420,7 +425,7 @@ WED 2.1.0b2 7/11/19
 	- WED-1209: validate facades only chooses walls that exist in facade resource
 	- increase number of facade walls supported to 40
 	- warn if curved segments used in type 1 facades
-   Bug Fixes:
+   Bugfixes:
    - fix broken z-ordering for .agp previews in the Library Preview Pane
    - fix crashes if facade file can not be found or is not valid
    - fix navaid layer locations of seaport and runway-only WEDbot airports
@@ -442,7 +447,7 @@ WED 2.1.0b1 6/3/19
 	- WED-1149: Improve download cache size management, reduces WED startup time
 	- XPD-10080: Add meta tag to classify airport as 2D or 3D
 
-   Bug Fixes:
+   Bugfixes:
 	- WED-1201: Fix typo in airline code validation error message
 	- WED-1199: fix potential segfault when reading files
 	- WED-1198: fix approach light depiction to start at threshold of runway
@@ -454,19 +459,19 @@ WED 2.1.0b1 6/3/19
 	- WED-432: Fix WED window positioning when using multiple monitors under Linux
 
 WED 2.0.0r4 4/07/19
-	Bug Fixes:
+	Bugfixes:
 	- WED-1178: Fix X-Plane 11.30 format apt.dat importing ATC frequencies always as "tower"
 	- WED-1172: Distinguish GT routes vs Aircraft routes in ATC runway validations
 
 WED 2.0.0r3 3/25/19
-	Bug Fixes:
+	Bugfixes:
 	- WED-1164: Fix duplication of ATC hotzone validation errors
 	- WED 1160: Exempt Niue from validation against ICAO codes in Airport names
 	- Fix some .agp objects disappearing from map when partially off screen
 	- add missing TCE editor vertex/marquee tool icons under Windows
 
 WED 2.0.0r2 4/13/19
-	Bug Fixes:
+	Bugfixes:
 	- WED-1117: Color first segment of facades always white
 	- WED-1151: Make cursor in gateway submission forms always visible
 	- WED-1152: Make 1st column in property pane a bit wider
@@ -478,7 +483,7 @@ WED 2.0.0r2 4/13/19
 WED 2.0.0b2 2/5/19
 	Features:
 	- Add warning when opening xml files created with future/incompatible WED versions
-	Bug Fixes:
+	Bugfixes:
 	- WED-1131: fix illegal taxi signs not editable/deleteable with bare text editor
 	- Fix listing of non-TaxiRouteNodes connected to TaxiRoutes in HierachyPane
 	- Make slippy map zoom range scale better with latitude
@@ -513,7 +518,7 @@ WED 2.0.0b1 1/24/19
 	- WED-1105: Moderator mode improvements
 	- Show more particular pictograms for X-Plane 11.25--added yellow line types
 	- WED-939: Warn about "silly" large ramp starts at airports with too small runways
-	Bug Fixes:
+	Bugfixes:
 	- Fix incorrect line style stipples, add stipples for more line types
 	- WED-271: fix PropertyPane not showing all available Columns upon startup
 	- WED-1123: Prevent Custom Libs from elevating visibilities of LR default lib items
@@ -604,7 +609,7 @@ WED 1.6.1r1 12/11/17
 	- WED-837: Add new Library Filter "Newly Release Items", hide libraries w/no public resources
 	- WED-825: Add meta-tags and validation for 'local_code' and 'local_authorithy'
 	- WED-899: Add category 'SEMI-DEPRECATED' for library.txt
-	Bug fixes:
+	Bugfixes:
 	- XSG-3343: Stop changing ATC taxi runway segment width, when already set, upon Gateway/apt.dat import
 	- WED 888: Make "Vehicles Drive on Left" airport property readable
 	- WED-855: Fix taxi sign editor problems with separator glyphs
@@ -614,7 +619,7 @@ WED 1.6.1r1 12/11/17
 	- Increase number of different facade walls selectable from 10 to 16
 
 WED 1.6r1 6/7/17
-	Bug fixes
+	Bugfixes:
 	- WED-787: Prevent apt.dat read in from deleting co-located non-bezier nodes
 	- WED-872: Validation test to ensure that if there are truck parking location(s), there are also ground truck taxi routes present
 	- WED-854: Hierarchy search filter now also searches and matches object's resources
@@ -632,7 +637,7 @@ WED 1.6r1 6/7/17
 	- Added validation to detect corrupt UV-map coordinates on orthophotos.
 
 WED 1.6b2 5/1/17
-	Bug fixes:
+	Bugfixes:
 	- WED-766: extend validation error message to clarify corrective action
 	- WED-767: prevent uncommanded rotation of OrthoPhotos placed in WED 1.5
 	- WED-758: recognize .jpeg and .tiff as valid image suffixes
@@ -647,14 +652,14 @@ WED 1.6b2 5/1/17
 	- Fixed uninvited data in vertex tool. Prevented random data in fields could cause very long delays when clicking
 
 WED 1.6.0a3 12/17/16
-	Bug fixes:
+	Bugfixes:
 	- WED-746: Split algorithm is buggy, was replaced
 	- WED-728: No more crash in rare undo of edge split
 	- Updates the about box with better formatted credits
 	- WED-762: Remove strange characters when previewing .obj definitions
 
 WED 1.6.0a2 12/13/16
-	Bug fixes:
+	Bugfixes:
 	- WED-748: TaxiRouteNode Merge does handle "near" merge case
 	- WED-716: Orthophoto DSF export no longer causes endless DoUserAlerts
 
@@ -662,7 +667,7 @@ WED 1.6.0a2 12/13/16
 		wet_latest_xplane set to wet_xplane_1100
 
 WED 1.6.0a1 12/02/16
-	Bug fixes:
+	Bugfixes:
 	- WED-740,741,743,744,730,736,747,753: internal issues during WED 1.6 development
 	- WED-726: enable processing of library.txt file paths including spaces
 	- WED-724: Prevent cursor in TaxiSignEditor changing due to items in windows underneath it
@@ -703,20 +708,20 @@ WED 1.6.0a1 12/02/16
 	- objects placed with a point-click have headings per tool presets, optionaly randomized
 
 WED 1.5.1r1 10/11/16
-	Bug fixes:
+	Bugfixes:
 	- WED-698: Fixed import of apt.dat losing ramp operation type data
 	- WED-691: Text changed to “undo vertex modification”
 	- WED-690: Adding nodes to taxi routes added a ramp
 	- WED-586, 526: Validate selects vertices of zero length sides to be deleted
 
 WED 1.5r3 9/26/16
-	Bug fixes:
+	Bugfixes:
 	- WED-686: error margin for "Taxi route is not joined to a destination route" set to 1m
 	- WED-683: crash when clicking at extreme zoom levels
 	- WED-685: taxi sign creation tool uses clipboard
 
 WED 1.5r2 9/24/16
-	Bug fixes:
+	Bugfixes:
 	- WED-679: Crash validating ramp positions with no airlines on Windows
 
 WED 1.5r1 9/23/16
@@ -726,7 +731,7 @@ WED 1.5r1 9/23/16
 	- Validation includes error codes
 	- Faster when using ATC tab
 
-	Bug fixes:
+	Bugfixes:
 	- WED-669: Resource suffixes no longer case sensitive
 	- WED-663: Fixed crash when resource string is empty
 	- WED-660: Fixed crash when adding vertex to a circle
@@ -735,14 +740,14 @@ WED 1.5r1 9/23/16
 
 WED 1.5b4 9/19/16
 
-	Bug fixes:
+	Bugfixes:
 	- WED-660: Fixes crash sub-dividing the final segment of a closed-loop line.
 	- WED-641: Fixed selected color on runway taxi-route segments when ATC tab is not being used.
 	- Lowered hot zone distance requirement off the end of runways - fixes cases like KSBP runway 25.
 
 WED 1.5b3 9/14/16
 
-	Bug fixes:
+	Bugfixes:
 	- WED-651: Fixes preview of size A taxi route segments
 	- WED-648, WED-645, WED-643: Nodes in taxi routes no longer incorrectly flagged as T-junctions
 	- WED-637, WED-640: Fixed crashes due to taxi route node types
@@ -759,8 +764,7 @@ WED 1.5b2 8/31/16
 	- Coloring of taxi routes in ATC tab layer
 	- New validation of ATC frequencies
 
-
-	Bug fixes:
+	Bugfixes:
 	- WED-620: Disallow curves in boundary tool
 	- WED-618: Large arrowhead for ATC one way
 	- WED-616: Fixed edge tool crash when ATC window is open and flow selected. Fixes merging lines within an airport with sub-groups and tools create map items outside ATC flows.
@@ -791,7 +795,7 @@ WED 1.5b1 7/13/16
 	- Visualization of parking spots & ATC widths
 	- WYSIWYG taxi sign editor
 
-	Bug fixes:
+	Bugfixes:
 	- WED-544: Two decimal digits on PAPI export
 	- WED-538: Removed black line from 9 glyph
 	- WED-530: Validation code catches airport flow with no runways in use
@@ -828,7 +832,7 @@ WED 1.4.1r1 12/17/15
 	- Runway roughness out of 0..1 range
 	- Incorrect use of | in taxi signs
 
-	Bug fixes:
+	Bugfixes:
 	WED-506: Line and light types accessible on airport boundaries
 	XSG-1219: WED will fix airports where the buoy flag contains junk
 
