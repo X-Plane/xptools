@@ -91,6 +91,8 @@ void		WED_PropertyHelper::SetNthProperty(int n, const PropertyVal_t& val)
 }
 
 #if PROP_PTR_OPT
+uintptr_t WED_PropertyItem::s_rodata_hi_bits = 0;
+
 WED_PropertyItem * relPtr::operator [] (int n) const
 {
 	DebugAssert(n < mItemsCount);
@@ -134,6 +136,7 @@ WED_PropertyItem::WED_PropertyItem(WED_PropertyHelper * pops, const char * title
 	if (pops)
 	{
 #if PROP_PTR_OPT
+		s_rodata_hi_bits = reinterpret_cast<uintptr_t>(title) & (3ULL << 45);
 		ptrdiff_t offs = reinterpret_cast<char *>(this) - reinterpret_cast<char *>(pops);
 		DebugAssert( (offset & 0xFF) < 32 );
 		DebugAssert( ((offset >> 8) & 0xFF) < 64 );
