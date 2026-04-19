@@ -9,7 +9,7 @@ OS_NAME="$(uname -s)"
 if [[ "$OS_NAME" == "Darwin" ]]; then
     DEFAULT_GENERATOR="Xcode"
 else [[ "$OS_NAME" == "Linux" ]];
-    DEFAULT_GENERATOR="Ninja"
+    DEFAULT_GENERATOR="Unix Makefiles"
 fi
 
 # Allow override via env var or first CLI argument
