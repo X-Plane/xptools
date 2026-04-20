@@ -25,7 +25,7 @@ class XPToolsRecipe(ConanFile):
         self.requires("glew/2.2.0")
         self.requires("jsoncpp/1.9.6")
         if self.settings.os == "Linux":
-            self.requires("fltk/1.4.1")
+            self.requires("fltk/1.3.9")
             self.requires("egl/system")
 
     def configure(self):
