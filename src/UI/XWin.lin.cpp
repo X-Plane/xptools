@@ -210,9 +210,16 @@ int XWin::handle(int e)
 
 			 if(mWantFakeUp)
 			 {
-				mDragging = -1;
-				ClickUp(mMouse.x, mMouse.y, btn);
 				mWantFakeUp = 0;
+				if(mDragging != -1)
+				{
+					// mDragging is still set: FL_RELEASE did not fire re-entrantly during
+					// ClickDown (e.g. DnD ate the up-click), so we issue the fake up here.
+					mDragging = -1;
+					ClickUp(mMouse.x, mMouse.y, btn);
+				}
+				// else: re-entrant FL_RELEASE already called ClickUp and EndDefer -
+				// calling it again would underflow mDeferLevel and assert.
 			}
 		}
 	}

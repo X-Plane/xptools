@@ -111,16 +111,18 @@ private:
 #if PROP_PTR_OPT
 	#define PTR_CLR(x)  (x & (1ULL << 45) - 1ULL)
 	/*
-	Unfortunately we need 2 more bits as we have 'unused' bits in the 47 bit pointers. So we clear two more bits, but need
-	to put them back later to restore the exact pointer.
-	Under Linux and OSX - that's easy: All constants are at the bottom of the 47bit virtual address space - so UNLESS the
-	pointer is refering to the heap - those other more significant bits are all zero.
-	But under windows - the constants are mapped at the very top, i.e. right below 0x7FFFFFFFFFFF. So we look at the
-	45th bit - the highest one we didn't clobber and copy that to the 46 and 47th bits. This restores the exact pointer
-	if pointimng to either in the top 32TB OR bottom 32TB of the 128TB / 47 bit virtual address space.
+	We need bits 45 and 46 of the original pointer back when reconstructing it (PTR_CLR strips them to make
+	room for the parent offset). All string literals live in .rodata, which occupies one contiguous region, so
+	bits 45-46 are identical for every title pointer in the process. We capture them once from the first
+	constructor call and store them in s_rodata_hi_bits. PTR_FIX then simply ORs those bits back in.
+
+	The previous approach (sign-extending bit 44) only worked for addresses in [0, 16TB) or [64TB, 128TB).
+	With high-entropy ASLR (e.g. ArchLinux with vm.mmap_rnd_bits=32), the binary can land in [16TB, 64TB)
+	where bits 44-46 are not all equal, causing PTR_FIX to produce an unmapped address and crash.
 	*/
-	#define PTR_FIX(x)  (PTR_CLR(x) | (x & (1ULL << 44)) << 1 | (x & (1ULL << 44)) << 2)
+	#define PTR_FIX(x)  (PTR_CLR(x) | WED_PropertyItem::s_rodata_hi_bits)
 	uintptr_t			mTitle;      // this now holds THREE tightly packed offsets in its 19 MSBits to save even more memory
+	static uintptr_t	s_rodata_hi_bits;  // bits 45-46 of .rodata address, same for all instances in a process
   #if DEV
 	WED_PropertyHelper*	mParent;     // only to verify the relative pointer calculated from the 8 bits is identical to the real pointer
   #endif
