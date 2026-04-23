@@ -38,9 +38,15 @@ public:
 
 	virtual void 		GetResource(string& r) const;
 
+	virtual	void	GetLocation		   (GISLayer_t l,      Point2& p) const;
+	virtual	bool	GetControlHandleLo (GISLayer_t l,       Point2& p) const;
+	virtual	bool	GetControlHandleHi (GISLayer_t l,       Point2& p) const;
+
 	virtual const char *	HumanReadableType(void) const { return "Airport Line Node"; }
 
 private:
+
+	int	GetExportedAttributeProxy() const;
 
 	WED_PropIntEnumSet			attrs;
 	WED_PropIntEnumSetFilterVal	lines;

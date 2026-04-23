@@ -91,8 +91,10 @@ WED_Ring * WED_RingfromImage(char * path, WED_Archive * arch, WED_MapZoomerNew *
 		coords[3] = zoomer->PixelToLL(center + Vector2(-pix_w, +pix_h));
 	}
 
+
 	WED_Ring * rng = WED_Ring::CreateTyped(arch);
 	rng->SetName("Image Boundary");
+
 	for (int i=0; i<4; ++i)
 	{
 		char s[12];

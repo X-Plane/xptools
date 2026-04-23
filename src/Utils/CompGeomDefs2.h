@@ -561,6 +561,16 @@ struct	Bezier2 {
 	bool	intersect(const Bezier2& rhs, int d, Point2& p) const;					// True if curves intersect except at end-points , provides crossing point
 	bool	is_near(const Point2& p, double distance) const;
 	
+	// By convention, we represent a zero-control point bezier by making c1 and c2 colocate (bit-wise) with p1 and p2.  This isn't great; a better design would
+	// have been to have a variable number of control points, at which point lines are simply zero-control point beziers and everythign Just Works(tm).
+	// But since the entire scenery ecosystem is based on cubics, we use "degenerate" control points as a hack because we can bit-wise determine that this really
+	// is a line segment.
+	//
+	// A more mathematically correct solution of having c1 and c2 be colinear with p1->p2 would have the benefit of just working always, but we can't detect the
+	// special case due to colinear tests being imprecise for non-purely-vertical/horizontal lines.
+	//
+	// Instead, we check for this case, and special case it basically eveywhere. This is a little icky but it gives us some nice properties: the subdivision of
+	// a linear bezier is another linear bezier (no information lost), parametric intersections are exact, etc.
 	bool		is_segment(void) const { return p1 == c1 && p2 == c2; }
 	Segment2	as_segment(void) const { return Segment2(p1,p2); }
 
@@ -1213,6 +1223,11 @@ inline	Bezier2::Bezier2(const Point2& ip1, const Point2& ic, const Point2& ip2) 
 
 inline	Point2	Bezier2::midpoint(double t) const
 {
+	// If we are a segment, use line-segment interpolation; otherwise
+	// fractional T's aren't linearly spaced, which is probably NOT what we want.
+	if(is_segment())
+		return as_segment().midpoint(t);
+		
 	// A bezier curve is just a cubic interpolation
 	// between four points weighted via a cub equation,
 	// hence A(1-t)^3 + 3B(1-t)^2t + 3C(1-t)t^2 + Dt^3
@@ -1228,6 +1243,11 @@ inline	Point2	Bezier2::midpoint(double t) const
 
 inline Vector2 Bezier2::derivative(double t) const
 {
+	// If we are segment, our derivative over T is constant and is just a vector from p1 to p2
+	// (since we get the  ein 1.0 T's)
+	if(is_segment())
+		return Vector2(p1,p2);
+	
 	// Derivative taking by putting the formula in Ax^3+Bx^2+Cx+D form and taking 1st derivative.
 	if(t == 0.0)
 		return Vector2(-3.0 * p1.x_ + 3.0 * c1.x_,
@@ -1277,16 +1297,37 @@ inline void	Bezier2::partition(Bezier2& lhs, Bezier2& rhs, double t) const
 	rhs.p2 = p2;
 
 	Point2 m = Segment2(c1,c2).midpoint(t);
-
-	lhs.c1 = Segment2(p1,c1).midpoint(t);
-	rhs.c2 = Segment2(c2,p2).midpoint(t);
-	lhs.c2 = Segment2(lhs.c1,m).midpoint(t);
-	rhs.c1 = Segment2(m,rhs.c2).midpoint(t);
-	lhs.p2 = rhs.p1 = Segment2(lhs.c2,rhs.c1).midpoint(t);
+	
+	if(is_segment())
+	{
+		// Special case for segment: keep the control points attached to p1/m/p2 so that
+		// our subsegments...are also segments.
+		lhs.c1 = p1;
+		lhs.c2 = lhs.p2 = m;
+		rhs.c1 = rhs.p1 = m;
+		rhs.c2 = p2;
+	}
+	else
+	{
+		lhs.c1 = Segment2(p1,c1).midpoint(t);
+		rhs.c2 = Segment2(c2,p2).midpoint(t);
+		lhs.c2 = Segment2(lhs.c1,m).midpoint(t);
+		rhs.c1 = Segment2(m,rhs.c2).midpoint(t);
+		lhs.p2 = rhs.p1 = Segment2(lhs.c2,rhs.c1).midpoint(t);
+	}
 }
 
 inline void	Bezier2::partition(Bezier2& lhs, Bezier2& rhs) const
 {
+	if(is_segment())
+	{
+		// Special case for segment: keep the control points attached to p1/m/p2 so that
+		// our subsegments...are also segments.
+		lhs.p1 = lhs.c1 = p1;
+		lhs.p2 = lhs.c2 = rhs.p1 = rhs.c1 = Segment2(p1,p2).midpoint();
+		rhs.p2 = rhs.c2 = p2;
+		return;
+	}
 	// specialization for t=0.5 - uses faster midpoint() implementation
 	lhs.p1 = p1;
 	rhs.p2 = p2;
@@ -1330,6 +1371,8 @@ inline void Bezier2::bounds_fast(Bbox2& bounds) const
 
 inline int		Bezier2::x_monotone(void) const
 {
+	if(is_segment())
+		return 1;
 	// The weighting of the control points is for (1-t) and t...
 	// this gives us an explicit equation in terms of x = At^3 + Bt^2 + Ct + D.
 	double A =       -p1.x_ + 3.0 * c1.x_ - 3.0 * c2.x_ + p2.x_;
@@ -1351,6 +1394,8 @@ inline int		Bezier2::x_monotone(void) const
 
 inline int		Bezier2::y_monotone(void) const
 {
+	if(is_segment())
+		return 1;
 	// The weighting of the control points is for (1-t) and t...
 	// this gives us an explicit equation in terms of x = At^3 + Bt^2 + Ct + D.
 	double A =     -p1.y_ + 3 * c1.y_ - 3 * c2.y_ + p2.y_;
@@ -1518,6 +1563,9 @@ inline bool	Bezier2::self_intersect(int d) const
 
 inline int		Bezier2::monotone_regions(double times[4]) const
 {
+	if(is_segment())
+		return 0;
+		
 	// Basic idea: we do two derivatives - one of the X cubic and one of the Y.
 	// These are quadratic and have up to 2 roots each.  This gives us any
 	// point the curve changes directions.
@@ -1551,6 +1599,9 @@ inline int		Bezier2::monotone_regions(double times[4]) const
 
 inline int		Bezier2::x_monotone_regions(double times[2]) const
 {
+	if(is_segment())
+		return 0;
+
 	double Ax =       -p1.x_ + 3.0 * c1.x_ - 3.0 * c2.x_ + p2.x_;
 	double Bx =  3.0 * p1.x_ - 6.0 * c1.x_ + 3.0 * c2.x_;
 	double Cx = -3.0 * p1.x_ + 3.0 * c1.x_;
@@ -1568,6 +1619,9 @@ inline int		Bezier2::x_monotone_regions(double times[2]) const
 
 inline int Bezier2::y_monotone_regions(double times[2]) const
 {
+	if(is_segment())
+		return 0;
+
 	double Ay =       -p1.y_ + 3.0 * c1.y_ - 3.0 * c2.y_ + p2.y_;
 	double By =  3.0 * p1.y_ - 6.0 * c1.y_ + 3.0 * c2.y_;
 	double Cy = -3.0 * p1.y_ + 3.0 * c1.y_;
@@ -1596,6 +1650,9 @@ inline void	Bezier2::bounds(Bbox2& bounds) const
 
 inline double	Bezier2::y_at_x(double x) const
 {
+	if(is_segment())
+		return as_segment().y_at_x(x);
+
 	double Ax =       -p1.x_ + 3.0 * c1.x_ - 3.0 * c2.x_ + p2.x_;
 	double Bx =  3.0 * p1.x_ - 6.0 * c1.x_ + 3.0 * c2.x_;
 	double Cx = -3.0 * p1.x_ + 3.0 * c1.x_;
@@ -1621,6 +1678,9 @@ inline double	Bezier2::y_at_x(double x) const
 
 inline double	Bezier2::x_at_y(double y) const
 {
+	if(is_segment())
+		return as_segment().x_at_y(y);
+
 	// These are the cubic equation coefficients for X and Y in terms of T, as in
 	// x = At^3 + Bt^2 + C^t + D.
 	// In other words, we've taken the control points and merged them into coefficients so we can use
