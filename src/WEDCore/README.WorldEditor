@@ -13,6 +13,10 @@ menu to view it online.
 
 CHANGE HISTORY:
 
+WED 2.7.2-r2:
+  Bugfixes:
+   - Fixed a crash on Linux when loading certain custom sceneries
+
 WED 2.7.1-r1:
   Bugfixes:
    - Fixed an error where the file picker dialog did no longer work on macOS
@@ -158,7 +162,7 @@ WED 2.5.0b4 9/21/22
    - some meta data validation messages spelling out wrong names
    - add missing texture for light colored gradients to linux binary
    Features for all X-Plane versions:
-   - walk back new facade validation to warnings only for the GW target 
+   - walk back new facade validation to warnings only for the GW target
    - let facade height validation pass single-height and low absolute height items, e.g. fences
    - add green groundplane for preview of adjustable height .agp
    X-Plane 12 features:
@@ -169,7 +173,7 @@ WED 2.5.0b3 9/3/22
    X-Plane 12 features:
    - add meta tags for ATC fisa and closed circuit ops
    Bugfixes:
-   - some moving jetway objects not upgraded by GW heuristics 
+   - some moving jetway objects not upgraded by GW heuristics
    Features for all X-Plane versions:
    - auto-upgrade country meta tags ISO3366 code upon import from gateway
 
@@ -240,7 +244,7 @@ WED 2.4.0rc1 5/8/21
    - fix distorted previews for lines with ALIGN and END_CAP attributes
    - WED-1380 clean out orphaned road nodes from .xml database
    - WED-1374 improve libcurl compatibility on Debian/Linux
-	
+
 WED 2.4.0b2 4/13/21
    Bugfixes:
    - fix scaled down window contents on OSX Big Sur with Retina displays
