@@ -24,6 +24,7 @@
 #include "WED_Validate.h"
 #include "WED_ValidateList.h"
 #include "WED_ValidateATCRunwayChecks.h"
+#include "WED_TruckNetworkValidate.h"
 
 #include "WED_Globals.h"
 #include "WED_Sign_Parser.h"
@@ -2861,6 +2862,8 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 
 	if(GT_routes.size() && truck_parking_locs.empty())
 		msgs.push_back(validation_error_t("Ground routes are defined, but no service vehicle starts. This disables all ground traffic, including auto generated pushback vehicles.", warn_truckroutes_but_no_starts, apt,apt));
+
+	WED_DoTruckNetworkReachability(apt, msgs, GT_routes, truck_parking_locs, truck_destinations, ramps);
 
 	if(gExportTarget == wet_gateway)
 	{

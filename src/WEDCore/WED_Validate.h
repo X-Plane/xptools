@@ -189,6 +189,8 @@ enum validate_error_t
 	warn_net_hard_turn,
 	warn_object_custom_elev,
 	warn_taxi_route_name_unusual,
+	warn_truck_consumer_unreachable_in_radius,
+	warn_truck_endpoint_off_network,
 	warn_truckroutes_but_no_starts,
 	warn_ramp_start_size_implausible,
 	warn_runway_matching_cifp_mislocated,
