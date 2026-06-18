@@ -4802,10 +4802,11 @@ int wed_upgrade_ramps(WED_Thing* who)
 				
 				if(new_codes.empty() || !old_codes_good_enough)
 					new_codes += regional_codes;
+
+				std::transform(new_codes.begin(), new_codes.end(), new_codes.begin(), [](unsigned char c) {return toupper(c);} );
+				r->SetAirlines(new_codes);
+				did_work = 1;
 			}
-			std::transform(new_codes.begin(), new_codes.end(), new_codes.begin(), [](unsigned char c) {return toupper(c);} );
-			r->SetAirlines(new_codes);
-			did_work = 1;
 		}
 	}
 	// nuke static aircraft objects near ramps

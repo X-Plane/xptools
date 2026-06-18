@@ -13,6 +13,11 @@ menu to view it online.
 
 CHANGE HISTORY:
 
+WED 2.7.3-r1:
+  Bugfixes:
+   - Fixed author-defined airline codes being erased on half of the wide-body
+     (size D and larger) ramp starts when generating ATC flow / ramp data
+
 WED 2.7.2-r2:
   Bugfixes:
    - Fixed a crash on Linux when loading certain custom sceneries
