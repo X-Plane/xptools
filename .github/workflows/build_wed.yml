@@ -26,7 +26,16 @@ jobs:
           pip install conan
           conan --version
       - name: Create Conan profile
-        run: conan profile detect --force
+        shell: pwsh
+        run: |
+          conan profile detect --force
+          # The windows-2025 runner image ships MSVC 19.5 (VS 2026, toolset v18),
+          # which Conan maps to the "Visual Studio 18 2026" generator that the
+          # installed CMake does not know yet, and for which no prebuilt
+          # dependency binaries exist. Pin to v194 (VS 2022) so dependency builds
+          # use the VS 17 2022 generator cmake.ps1 already targets and prebuilt
+          # packages are available.
+          (Get-Content "$env:USERPROFILE\.conan2\profiles\default") -replace 'compiler\.version=195','compiler.version=194' | Set-Content "$env:USERPROFILE\.conan2\profiles\default"
       - name: Add MSBuild to PATH
         uses: microsoft/setup-msbuild@v1.1
       - name: Build WorldEditor
