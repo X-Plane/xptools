@@ -191,6 +191,9 @@ enum {
 	wed_autoOpenLibPane,
 	wed_autoOpenPropPane,
 	wed_autoClosePane,
+	// Performance Menu
+	wed_ToggleArtifactCache,
+	wed_ClearArtifactCache,
 	// Help Menu
 	wed_HelpManual,
 	wed_HelpScenery,

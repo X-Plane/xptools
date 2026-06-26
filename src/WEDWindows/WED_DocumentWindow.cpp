@@ -36,10 +36,12 @@
 #include "WED_MapPreviewWindow.h"
 #include "WED_PropertyHelper.h"
 #include "WED_PropertyPane.h"
+#include "WED_ResourceCache.h"
 #include "WED_Menus.h"
 #include "WED_Colors.h"
 #include "WED_Version.h"
 #include "WED_ToolUtils.h"
+#include "GUI_Prefs.h"
 #include "GUI_Splitter.h"
 #include "GUI_Menus.h"
 #include "GUI_TabPane.h"
@@ -345,6 +347,19 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	//------------------------------------------//
 
 	switch(command) {
+	case wed_ToggleArtifactCache:
+		{
+			const bool enabled = !WED_ResourceCache::Get().Enabled();
+			GUI_SetPrefString("performance", "cache_artifact", enabled ? "1" : "0");
+			WED_ResourceCache::Get().SetEnabled(enabled);
+		}
+		return 1;
+	case wed_ClearArtifactCache:
+		if (WED_ResourceCache::Get().Clear())
+			DoUserAlert("Artifact cache cleared.");
+		else
+			DoUserAlert("Could not clear artifact cache.");
+		return 1;
 	case wed_RestorePanes:
 		{
 			int zw[2];
@@ -538,6 +553,8 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	//------------------------------------------//
 
 	switch(command) {
+	case wed_ToggleArtifactCache:	ioCheck = WED_ResourceCache::Get().Enabled() ? 1 : 0; return 1;
+	case wed_ClearArtifactCache:	return 1;
 	case wed_autoOpenLibPane:
 	case wed_autoOpenPropPane:
 	case wed_autoClosePane:

@@ -255,6 +255,12 @@ static const GUI_MenuItem_t kAirportMenu[] = {
 {	NULL,						0,		0,										0, 0,				}
 };
 
+static const GUI_MenuItem_t kPerformanceMenu[] = {
+{	"&Cache Artifact",			0,		0,										0,	wed_ToggleArtifactCache	},
+{	"Clear Artifact Cache",		0,		0,										0,	wed_ClearArtifactCache	},
+{	NULL,						0,		0,										0,	0					}
+};
+
 // end-begin?  YES!  Since begin is before the beginnined and end is AFTER the end this gives us ONE extra slot.
 // We NEED that slot to be the null terminator for the menu list.
 static GUI_MenuItem_t kAddMetaDataMenu[wed_AddMetaDataEnd-wed_AddMetaDataBegin] = { 0 };
@@ -358,6 +364,8 @@ void WED_MakeMenus(GUI_Application * inApp)
 	GUI_Menu	airport_add_meta_data_menu = inApp->CreateMenu(
 		"Add &Meta Data", kAddMetaDataMenu, airport_menu, 6);//This hardcoded 6 is a reference to
 															 //kAirportMenu[6]
+	GUI_Menu	performance_menu = inApp->CreateMenu(
+		"&Performance", kPerformanceMenu, inApp->GetMenuBar(), 0);
 	GUI_Menu	help_menu = inApp->CreateMenu(
 		"&Help", kHelpMenu, inApp->GetMenuBar(), 0);
 }
