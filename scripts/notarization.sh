@@ -1,7 +1,13 @@
 #!/bin/bash
-# 
-# The running machine must have Apple ID credentials pre-registered in the key chain under
-# the KC item AC_PASSWORD
+#
+# Notarizes (and optionally staples) a mac binary.
+#
+# Credentials, in order of preference:
+#   1. App Store Connect API key via env: APPLE_NOTARY_KEY (the .p8 contents),
+#      APPLE_NOTARY_KEY_ID, APPLE_NOTARY_ISSUER_ID. This is what CI uses --
+#      API keys survive Apple ID password rotations, app-specific passwords don't.
+#   2. A keychain profile named AC_PASSWORD (for manual runs on a dev Mac,
+#      set up once with `xcrun notarytool store-credentials "AC_PASSWORD" ...`).
 
 # Note: this only works on macOS, since it relies on Apple tools.
 
@@ -24,18 +30,23 @@ staple=$3
 rm "$zip_path"
 zip -rq --symlink "$zip_path" "$app_path"
 
-if [ -z $APP_SPECIFIC_PASSWORD ]; then
-    echo "APP_SPECIFIC_PASSWORD or APPLE_TEAM_ID is not set. Using Keychain for credentials"
+if [ -n "$APPLE_NOTARY_KEY_ID" ]; then
+    echo "Using App Store Connect API key for credentials"
+    key_file="${RUNNER_TEMP:-${TMPDIR:-/tmp}}/notary_key.p8"
+    printf '%s' "$APPLE_NOTARY_KEY" > "$key_file"
     xcrun notarytool submit "$zip_path" \
-                   --keychain-profile "AC_PASSWORD" \
+                   --key "$key_file" \
+                   --key-id "$APPLE_NOTARY_KEY_ID" \
+                   --issuer "$APPLE_NOTARY_ISSUER_ID" \
                    --wait \
                    --timeout 10m
+    result=$?
+    rm -f "$key_file"
+    [ $result -eq 0 ] || exit $result
 else
-    echo "Using username, password and team-id for credentials"
+    echo "APPLE_NOTARY_KEY_ID is not set. Using Keychain for credentials"
     xcrun notarytool submit "$zip_path" \
-                   --apple-id "${APPLE_ID}" \
-                   --team-id "${APPLE_TEAM_ID}" \
-                   --password "${APP_SPECIFIC_PASSWORD}" \
+                   --keychain-profile "AC_PASSWORD" \
                    --wait \
                    --timeout 10m
 fi
