@@ -34,9 +34,11 @@ jobs:
   build-mac:
     runs-on: macos-12
     env:
-      APPLE_ID: ${{ secrets.APPLE_ID }}
-      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-      APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+      # Notarization auths with an App Store Connect API key (see scripts/notarization.sh).
+      # Unlike an Apple ID + app-specific password, the key survives password rotations.
+      APPLE_NOTARY_KEY: ${{ secrets.APPLE_NOTARY_KEY }}
+      APPLE_NOTARY_KEY_ID: ${{ secrets.APPLE_NOTARY_KEY_ID }}
+      APPLE_NOTARY_ISSUER_ID: ${{ secrets.APPLE_NOTARY_ISSUER_ID }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@main
