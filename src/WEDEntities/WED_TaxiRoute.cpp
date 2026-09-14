@@ -91,6 +91,11 @@ void		WED_TaxiRoute::SetOneway(int d)
 void		WED_TaxiRoute::SetRunway(int r)
 {
 	runway = r;
+	// Runway segments don't have a real width outside of WED - normalize it here so any
+	// segment freshly tagged as a runway route (by a tool, not just the property panel)
+	// can't start life already narrowed to dodge the ATC length validation.
+	if(r != atc_rwy_None)
+		width = width_E;
 }
 
 void		WED_TaxiRoute::SetHotDepart(const set<int>& rwys)
@@ -319,6 +324,16 @@ void		WED_TaxiRoute::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 			info.can_delete = false;
 		}
 	}
+
+	// Runway segments don't actually have a width outside of WED - they are always
+	// exported/imported as the full runway width (size E). Letting users narrow this
+	// in the GUI only causes confusion (and was being (ab)used to dodge the minimum
+	// taxi-route-length validation, since that check is keyed off this same "width").
+	if (IsRunway() && n == PropertyItemNumber(&width))
+	{
+		info.can_edit = false;
+		info.can_delete = false;
+	}
 }
 
 void		WED_TaxiRoute::GetNthProperty(int n, PropertyVal_t& val) const
@@ -459,5 +474,9 @@ void  WED_TaxiRoute::PropEditCallback(int before)
 	else if(old_rwy_tag != runway.value)
 	{
 		SetName(string(ENUM_Desc(runway.value)));
+		// Same normalization as SetRunway() - this callback fires after the property panel
+		// (not SetRunway()) changes "Runway", so it needs its own copy of this safeguard.
+		if(runway.value != atc_rwy_None && width.value != width_E)
+			width = width_E;
 	}
 }

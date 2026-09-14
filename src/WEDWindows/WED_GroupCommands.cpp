@@ -68,6 +68,7 @@
 #include "WED_Sealane.h"
 #include "WED_SimpleBezierBoundaryNode.h"
 #include "WED_TextureNode.h"
+#include "WED_TaxiRoute.h"
 #include "WED_TaxiRouteNode.h"
 #include "WED_Taxiway.h"
 #include "WED_TruckParkingLocation.h"
@@ -2479,6 +2480,38 @@ static bool get_matching_handle(const BezierHandle & h1, WED_GISPoint_Bezier * p
 	return false;
 }
 
+static void get_handle_location(const BezierHandle & h, Point2 & location)
+{
+	if (h.side == BezierHandle::LO)
+		h.p->GetControlHandleLo(gis_Geo, location);
+	else
+		h.p->GetControlHandleHi(gis_Geo, location);
+}
+
+// It's common for more than one Bezier point to end up snapped to the same node -
+// e.g. a pavement polygon plus one or more .lin edge effects all sharing the same
+// nodes. In that case get_matching_handle() finds a match against *each* of them, so
+// there's more than one candidate handle instead of exactly one. If all candidates
+// agree on the handle's location, there's no real ambiguity and it's safe to use any
+// of them; only bail out if they actually disagree.
+static bool get_common_handle(const vector<BezierHandle> & matches, BezierHandle & out)
+{
+	if (matches.empty())
+		return false;
+
+	Point2 first_loc;
+	get_handle_location(matches.front(), first_loc);
+	for (size_t i = 1; i < matches.size(); ++i)
+	{
+		Point2 loc;
+		get_handle_location(matches[i], loc);
+		if (loc != first_loc)
+			return false;
+	}
+	out = matches.front();
+	return true;
+}
+
 // Copies the location of one Bezier handle to another.
 static void copy_bezier_handle(const struct BezierHandle & dst, const struct BezierHandle & src)
 {
@@ -2536,21 +2569,25 @@ void	WED_DoMatchBezierHandles(IResolver * resolver)
 				hi_matches.push_back(handle);
 		}
 
-		if (lo_matches.empty() && hi_matches.empty())
+		BezierHandle lo_handle, hi_handle;
+		bool have_lo = get_common_handle(lo_matches, lo_handle);
+		bool have_hi = get_common_handle(hi_matches, hi_handle);
+
+		if (!have_lo && !have_hi)
 			continue;
 
 		// If we matched with handles of the same point on both sides, our
 		// splitness is equal to the splitness of that point. Otherwise, we're
 		// definitely split.
-		if (lo_matches.size() == 1 && hi_matches.size() == 1 && lo_matches.front().p == hi_matches.front().p)
-			points[i]->SetSplit(lo_matches.front().p->IsSplit());
+		if (have_lo && have_hi && lo_handle.p == hi_handle.p)
+			points[i]->SetSplit(lo_handle.p->IsSplit());
 		else
 			points[i]->SetSplit(true);
 
-		if (lo_matches.size() == 1)
-			copy_bezier_handle(BezierHandle(points[i], BezierHandle::LO), lo_matches.front());
-		if (hi_matches.size() == 1)
-			copy_bezier_handle(BezierHandle(points[i], BezierHandle::HI), hi_matches.front());
+		if (have_lo)
+			copy_bezier_handle(BezierHandle(points[i], BezierHandle::LO), lo_handle);
+		if (have_hi)
+			copy_bezier_handle(BezierHandle(points[i], BezierHandle::HI), hi_handle);
 	}
 
 	op->CommitOperation();
@@ -6182,9 +6219,40 @@ void WED_MowGrass(IResolver* resolver)
 		msg += to_string(statistics[1]) + " Grass Lines\n";
 		msg += to_string(statistics[2]) + " Grass Objects\n";
 		msg += to_string(statistics[3]) + " Paved Pads\n";
-		
+
 		DoUserAlert(msg.c_str());
 	}
 	else
 		wrl->AbortOperation();
+}
+
+void WED_FixLegacyRunwayWidths(IResolver * resolver)
+{
+	WED_Thing * wrl = WED_GetWorld(resolver);
+	vector<WED_TaxiRoute *> all_routes;
+	CollectRecursiveNoNesting(wrl, back_inserter(all_routes), WED_TaxiRoute::sClass);
+
+	wrl->StartOperation("Fix Legacy Runway ATC Widths");
+
+	int fixed = 0;
+	for (auto r : all_routes)
+		if (r->IsRunway() && r->GetWidth() != width_E)
+		{
+			r->SetWidth(width_E);
+			++fixed;
+		}
+
+	if (fixed > 0)
+	{
+		wrl->CommitOperation();
+		string msg = "Normalized " + to_string(fixed) + " runway ATC route segment(s) to size E.\n\n"
+			"Re-run Validation - any segment that is still reported as too short is a genuine"
+			" geometry problem, not a leftover from the old size A/B validation workaround.";
+		DoUserAlert(msg.c_str());
+	}
+	else
+	{
+		wrl->AbortOperation();
+		DoUserAlert("No runway ATC route segments needed fixing.");
+	}
 }

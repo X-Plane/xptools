@@ -167,6 +167,10 @@ int		WED_DoConvertToJW(WED_Airport* apt, int statistics[4] = nullptr);
 void	WED_MowGrass(IResolver* resolver);
 bool	WED_DoMowGrass(WED_Airport* apt, int statistics[4] = nullptr);
 
+// Moderator-only utility: normalizes the (WED-internal-only) width of any ATC taxi route
+// segment tagged as a runway to size E, undoing the historical A/B-width validation dodge.
+void	WED_FixLegacyRunwayWidths(IResolver * resolver);
+
 void WED_AgePavement(IResolver* mDocument);
 void WED_AlignAirports(IResolver * resolver);
 
