@@ -29,19 +29,31 @@
 
 // These versions are used in about boxes, resources, info boxes, etc.
 
-#define	WED_VERSION_STRING          "2.7.3-r1"
-#define	WED_VERSION_STRING_SHORT    "2.7"			// omit beta/release number and trailing zero's
+// Bump the version here - everything below is derived from these 5 fields, so
+// STRING/BIN/NUMERIC/etc. can't drift out of sync with each other anymore.
+// Keep these 5 as plain literals (not expressions) - a couple of build scripts
+// (cmake/WED.cmake, .github/workflows/build_wed.yml) grep this file as text.
+#define WED_VERSION_MAJOR   2
+#define WED_VERSION_MINOR   7
+#define WED_VERSION_PATCH   3
+#define WED_VERSION_BUILD   0      // only bump for another alpha/beta/rc of the same x.y.z
+#define WED_VERSION_STAGE   "r1"   // a1, a2, b1, r1, r2, ...
 
-#define WED_VERSION_FILENAME        "2.7.3-r1"
+#define WED_VERSION_STR2(x) #x
+#define WED_VERSION_STR(x)  WED_VERSION_STR2(x)
+
+#define	WED_VERSION_STRING          WED_VERSION_STR(WED_VERSION_MAJOR) "." WED_VERSION_STR(WED_VERSION_MINOR) "." WED_VERSION_STR(WED_VERSION_PATCH) "-" WED_VERSION_STAGE
+#define	WED_VERSION_STRING_SHORT    WED_VERSION_STR(WED_VERSION_MAJOR) "." WED_VERSION_STR(WED_VERSION_MINOR)			// omit beta/release number and trailing zero's
+
+#define WED_VERSION_FILENAME        WED_VERSION_STRING
 
 #define	WED_COPYRIGHT_STRING        "(C) Copyright 2007-2026, Laminar Research."
 
 #define	WED_VERSION_RES	            WED_VERSION_STRING
-#define	WED_VERSION_BIN	            2,7,3,0
+#define	WED_VERSION_BIN	            WED_VERSION_MAJOR,WED_VERSION_MINOR,WED_VERSION_PATCH,WED_VERSION_BUILD
 
-// This numeric is used by the gateway to understand if our WED is up-to-date.
-// Format 1 digit major + 2 digit middle + 1 digit minor version + last digit
-// last digit is 0 for all beta versions or matches release version
-#define WED_VERSION_NUMERIC		    20730
+// Sent to the gateway so it knows if our WED is up-to-date.
+// major*10000 + minor*100 + patch*10 + build
+#define WED_VERSION_NUMERIC		    (WED_VERSION_MAJOR*10000 + WED_VERSION_MINOR*100 + WED_VERSION_PATCH*10 + WED_VERSION_BUILD)
 
 #endif /* WED_Version_H */
