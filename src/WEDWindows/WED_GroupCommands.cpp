@@ -1603,8 +1603,9 @@ static bool is_chain_split(ISelection * sel, chain_split_info_t * info)
 	if(c)
 	if(c->IsClosed())
 	{
-		// If the chain is closed, it must be a WED_AirportChain, and its parent must not be a WED_GISPolygon.
-		if (!dynamic_cast<WED_AirportChain *>(c) || dynamic_cast<WED_GISPolygon *>(c->GetParent()))
+		// If the chain is closed, it must be a WED_AirportChain or WED_LinePlacement (both support
+		// un-closing themselves via SetClosed()), and its parent must not be a WED_GISPolygon.
+		if ((!dynamic_cast<WED_AirportChain *>(c) && !dynamic_cast<WED_LinePlacement *>(c)) || dynamic_cast<WED_GISPolygon *>(c->GetParent()))
 			return false;
 	}
 	else
@@ -1738,7 +1739,8 @@ static void do_chain_split(ISelection * sel, const chain_split_info_t & info)
 	else if (info.c->IsClosed())
 	{
 		WED_AirportChain * ac = dynamic_cast<WED_AirportChain *>(info.c);
-		if (!ac)
+		WED_LinePlacement * lp = dynamic_cast<WED_LinePlacement *>(info.c);
+		if (!ac && !lp)
 		{
 			op->AbortOperation();
 			return;
@@ -1746,21 +1748,22 @@ static void do_chain_split(ISelection * sel, const chain_split_info_t & info)
 
 		for (int i = 0; i < pos; ++i)
 		{
-			WED_Thing * t = ac->GetNthChild(0);
+			WED_Thing * t = info.c->GetNthChild(0);
 			t->SetParent(NULL, 0);
-			t->SetParent(ac, ac->CountChildren());
+			t->SetParent(info.c, info.c->CountChildren());
 		}
 
-		WED_Thing * clone = dynamic_cast<WED_Thing *>(ac->GetNthChild(0)->Clone());
+		WED_Thing * clone = dynamic_cast<WED_Thing *>(info.c->GetNthChild(0)->Clone());
 		if (clone)
 		{
-			clone->SetParent(ac, ac->CountChildren());
+			clone->SetParent(info.c, info.c->CountChildren());
 			sel->Insert(clone);
 		}
-		else
-			clone->Delete();
 
-		ac->SetClosed(0);
+		if (ac)
+			ac->SetClosed(0);
+		else
+			lp->SetClosed(0);
 	}
 	else
 	{

@@ -81,11 +81,13 @@ bool fill_in_airport_metadata_defaults(WED_Airport & airport, const CSVParser::C
 			const KeyEnum key_enum = META_KeyEnumFromName(key);
 			if(key_enum > wed_AddMetaDataBegin && key_enum < wed_AddMetaDataEnd) // We *only* want to insert keys we recognize
 			{
-				// The ICAO code is used above just to look up which row of defaults to apply -
-				// it must never be written back. Otherwise a user who deliberately clears (or never
-				// had) the ICAO metadata key gets it silently reconstructed on every Gateway export,
-				// making it impossible to actually remove.
-				if(key_enum == wed_AddMetaDataICAO)
+				// ICAO/IATA/FAA/Local are only used above to look up which row of defaults to
+				// apply - none of them must be written back. Otherwise a user who deliberately
+				// clears (or never had) one of these identifier codes gets it silently
+				// reconstructed on every Gateway export, making it impossible to actually
+				// remove (see issue #58 - reported for IATA specifically).
+				if(key_enum == wed_AddMetaDataICAO || key_enum == wed_AddMetaDataIATA ||
+				   key_enum == wed_AddMetaDataFAA  || key_enum == wed_AddMetaDataLocal)
 					continue;
 
 				//For every of our column do They (airport) have this?
