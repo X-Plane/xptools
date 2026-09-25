@@ -37,7 +37,9 @@
 #include "WED_DSFImport.h"
 #include "WED_Document.h"
 #include "WED_GatewayExport.h"
+#include "WED_Globals.h"
 #include "WED_Group.h"
+#include "WED_NextgenExport.h"
 
 #include "WED_ShapePlacement.h"
 #include "WED_ShapeNode.h"
@@ -200,6 +202,9 @@ void	WED_ExportPackToPath(WED_Thing * root, IResolver * resolver, const string& 
 	int result = DSF_Export(root, resolver, in_path, problem_children);
 	if (result == -1)
 		return;
+
+	if (gExportTarget == wet_xplane_nextgen)
+		WED_ExportNextgenTiles(root, resolver, in_path);
 
 	string	apt = in_path + "Earth nav data" DIR_STR "apt.dat";
 	string	apt_dir = in_path + "Earth nav data";

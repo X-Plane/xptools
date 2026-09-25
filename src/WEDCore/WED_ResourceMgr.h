@@ -55,6 +55,17 @@
 class	WED_LibraryMgr;
 typedef struct DEMGeo dem_info_t;
 
+struct	dem_tex_info_t {
+	unsigned int	mTexID;       // GL texture name (0 = none)
+	float			mTexS;        // usable S range on the texture (NPOT padding)
+	float			mTexT;        // usable T range on the texture
+	double			mWest;        // geographic bounds of the source DEM
+	double			mSouth;
+	double			mEast;
+	double			mNorth;
+	dem_tex_info_t(void) : mTexID(0), mTexS(1.f), mTexT(1.f), mWest(0), mSouth(0), mEast(0), mNorth(0) { }
+};
+
 struct tile_info {
 	int			tiles_x;
 	int			tiles_y;
@@ -285,6 +296,7 @@ public:
 			bool	GetAGP(const string& path, agp_t const *& info);
 			bool	GetRoad(const string& path, const road_info_t *& out_info);
 			bool	GetDem(const string& path, dem_info_t const*& info);
+			bool	GetDemTex(const string& path, dem_tex_info_t const*& info);
 
 	virtual	void	ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
@@ -305,6 +317,7 @@ private:
 	unordered_map<string,vector<const XObj8 *> > mObj;
 	unordered_map<string,agp_t>				mAGP;
 	unordered_map<string, dem_info_t>		mDem;
+	unordered_map<string, dem_tex_info_t>	mDemTex;
 #if ROAD_EDITING
 	unordered_map<string,road_info_t>		mRoad;
 #endif

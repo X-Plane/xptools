@@ -508,6 +508,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 		}
 		return 1;
 	case wed_ExportGateway:if (gExportTarget != wet_gateway) { gExportTarget = wet_gateway; mDocument->SetDirty(); Refresh(); } return 1;
+	case wed_ExportNextgen:if (gExportTarget != wet_xplane_nextgen) { gExportTarget = wet_xplane_nextgen; mDocument->SetDirty(); Refresh(); } return 1;
 
 #if WITHNWLINK
 	case wed_ToggleLiveView :
@@ -641,6 +642,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_Export1200: case wed_Export1212:
 		ioCheck = (command - wed_Export900) == (gExportTarget - wet_xplane_900); return 1;
 	case wed_ExportGateway:ioCheck = gExportTarget == wet_gateway;	return 1;
+	case wed_ExportNextgen:ioCheck = gExportTarget == wet_xplane_nextgen;	return 1;
 
 #if WITHNWLINK
 	case wed_ToggleLiveView :
@@ -711,7 +713,7 @@ void	WED_DocumentWindow::ReceiveMessage(
 		gExportTarget = wet_latest_xplane;
 	#else
 		gExportTarget = (WED_Export_Target) mDocument->ReadIntPref("doc/export_target",gExportTarget);
-		if (gExportTarget > wet_latest_xplane && gExportTarget != wet_gateway)
+		if (gExportTarget > wet_latest_xplane && gExportTarget != wet_gateway && gExportTarget != wet_xplane_nextgen)
 			gExportTarget = wet_latest_xplane;
 	#endif
 		XWin::SetFilePath(NULL,mDocument->IsDirty());

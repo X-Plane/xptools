@@ -39,6 +39,14 @@
 
 #include "DEMDefs.h"
 #include "WED_OrthoExport.h"
+#include "WED_DEMGraphics.h"
+#include "TexUtils.h"
+
+#if APL
+	#include <OpenGL/gl.h>
+#else
+	#include <GL/gl.h>
+#endif
 
 #if IBM
 #define DIR_CHAR '\\'
@@ -126,6 +134,14 @@ void	WED_ResourceMgr::Purge(void)
 	mStr.clear();
 	mAGP.clear();
 	mDem.clear();
+
+	for (auto& i : mDemTex)
+		if (i.second.mTexID)
+		{
+			GLuint id = i.second.mTexID;
+			glDeleteTextures(1, &id);
+		}
+	mDemTex.clear();
 }
 
 void	WED_ResourceMgr::Purge(const string& vpath)
@@ -136,6 +152,17 @@ void	WED_ResourceMgr::Purge(const string& vpath)
 		for (auto j : (*i).second)
 			delete j;
 		mObj.erase(i);
+	}
+
+	auto t = mDemTex.find(vpath);
+	if (t != mDemTex.end())
+	{
+		if (t->second.mTexID)
+		{
+			GLuint id = t->second.mTexID;
+			glDeleteTextures(1, &id);
+		}
+		mDemTex.erase(t);
 	}
 }
 
@@ -171,6 +198,64 @@ bool	WED_ResourceMgr::GetDem(const string& path, dem_info_t const*& info)
 	}
 	else
 		return false;
+}
+
+bool	WED_ResourceMgr::GetDemTex(const string& path, dem_tex_info_t const*& info)
+{
+	auto i = mDemTex.find(path);
+	if (i != mDemTex.end())
+	{
+		// Failed bakes are remembered (mTexID=0) so we don't retry every frame.
+		if (i->second.mTexID == 0) return false;
+		info = &i->second;
+		return true;
+	}
+
+	dem_tex_info_t& slot = mDemTex[path];  // insert empty (mTexID=0) up-front
+
+	const dem_info_t * dem = nullptr;
+	if (!GetDem(path, dem) || dem == nullptr || dem->mWidth < 1 || dem->mHeight < 1)
+		return false;
+
+	// Cap the texture at GL_MAX_TEXTURE_SIZE (and a sanity cap of 4096).
+	GLint maxDim = 0;
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxDim);
+	if (maxDim <= 0)  maxDim = 2048;
+	if (maxDim > 4096) maxDim = 4096;
+
+	int target_w = dem->mWidth  < maxDim ? dem->mWidth  : maxDim;
+	int target_h = dem->mHeight < maxDim ? dem->mHeight : maxDim;
+
+	ImageInfo image = { 0, 0, 0, 0, 0 };
+	if (DEMToShadedSectionalBitmap(*dem, target_w, target_h, 0.f, image) != 0)
+		return false;
+
+	GLuint tex = 0;
+	glGenTextures(1, &tex);
+	if (tex == 0)
+	{
+		DestroyBitmap(&image);
+		return false;
+	}
+
+	float s = 1.f, t = 1.f;
+	if (!LoadTextureFromImage(image, (int) tex, tex_Linear, NULL, NULL, &s, &t))
+	{
+		DestroyBitmap(&image);
+		glDeleteTextures(1, &tex);
+		return false;
+	}
+	DestroyBitmap(&image);
+
+	slot.mTexID = tex;
+	slot.mTexS  = s;
+	slot.mTexT  = t;
+	slot.mWest  = dem->mWest;
+	slot.mSouth = dem->mSouth;
+	slot.mEast  = dem->mEast;
+	slot.mNorth = dem->mNorth;
+	info = &slot;
+	return true;
 }
 
 

@@ -101,6 +101,7 @@ static int get_apt_export_version()
 		break;
 	case wet_xplane_1200:
 	case wet_xplane_1212:
+	case wet_xplane_nextgen:
 		version = 1200;
 		break;
 	default:

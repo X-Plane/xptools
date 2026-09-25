@@ -13,6 +13,8 @@ set(XGRINDER_SOURCES
     src/Utils/MemFileUtils.h
     src/Utils/FileUtils.cpp
     src/Utils/FileUtils.h
+    src/Utils/ProcessUtils.cpp
+    src/Utils/ProcessUtils.h
     src/GUI/GUI_Unicode.cpp
     src/GUI/GUI_Unicode.h
     src/Utils/unzip.c

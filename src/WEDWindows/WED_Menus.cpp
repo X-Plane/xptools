@@ -80,12 +80,13 @@ static const GUI_MenuItem_t kExportTargetMenu[] = {
 {	"X-Plane 12.00",		0,		0,								0,	wed_Export1200,		},
 {	"X-Plane 12.1.2",		0,		0,								0,	wed_Export1212,		},
 {	"Airport Scenery Gateway",0,	0,								0,	wed_ExportGateway	},
+{	"X-Plane next-gen (tiles)",0,	0,								0,	wed_ExportNextgen	},
 {	NULL,					0,		0,								0,	0					}
 };
 
 string WED_GetTargetMenuName(int target)
 {
-	if (target >= 0 && target <= wed_ExportGateway - wed_Export900)
+	if (target >= 0 && target <= wed_ExportNextgen - wed_Export900)
 		return kExportTargetMenu[target].name;
 	else
 		return string();

@@ -62,6 +62,7 @@ enum {
 	wed_Export1200,
 	wed_Export1212,
 	wed_ExportGateway,
+	wed_ExportNextgen,
 	// Edit Menu,
 	wed_Group,
 	wed_Ungroup,

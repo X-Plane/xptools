@@ -1258,6 +1258,11 @@ static int	DSF_ExportTileRecursive(
 
 	if (c == WED_TerPlacement::sClass)
 	{
+		// In nextgen mode, ter placements are baked into the elevation tile
+		// pyramid by WED_ExportNextgenTiles; nothing goes into the DSF.
+		if (gExportTarget == wet_xplane_nextgen)
+			return real_thingies;
+
 		auto ter = static_cast<WED_TerPlacement*>(what);
 		if (show_level == ter->GetShowLevel())
 		{
@@ -2013,6 +2018,13 @@ static int	DSF_ExportTileRecursive(
 		{
 			auto orth = static_cast<WED_DrapedOrthophoto *>(what);
 			orth->GetResource(r);
+			// In nextgen mode, new-style orthos (direct image references) are
+			// baked into the albedo tile pyramid by WED_ExportNextgenTiles
+			// and skipped here. Old-style library .pol orthos still flow
+			// through as draped polygons because they have no source image
+			// for the tiler to consume.
+			if (gExportTarget == wet_xplane_nextgen && orth->IsNew())
+				return real_thingies;
 #if WED
 			if (orth->IsNew())
 			{

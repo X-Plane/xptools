@@ -68,6 +68,7 @@
 #include "WED_ResourceMgr.h"
 #include "WED_ShapePlacement.h"
 #include "WED_TerPlacement.h"
+#include "PolyRasterUtils.h"
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -78,6 +79,38 @@
 #endif
 
 #define HILIGHT_ALPHA 0.33           // transparency of highlighting for selected itemss area
+
+// FAA sectional-style elevation tint table, elevation in feet -> RGB.
+// Smooth linear interpolation between adjacent bands, clamped at endpoints.
+struct ter_band_t { float ft; float r, g, b; };
+static const ter_band_t kTerBands[] = {
+	{     0.f, 0.55f, 0.72f, 0.45f },   // light green
+	{   500.f, 0.70f, 0.80f, 0.48f },
+	{  1000.f, 0.83f, 0.85f, 0.55f },   // yellow-green
+	{  2000.f, 0.92f, 0.86f, 0.62f },   // pale yellow
+	{  3000.f, 0.92f, 0.78f, 0.55f },   // tan
+	{  5000.f, 0.88f, 0.66f, 0.45f },   // light brown
+	{  7000.f, 0.78f, 0.52f, 0.35f },   // medium brown
+	{  9000.f, 0.65f, 0.42f, 0.28f },   // dark brown
+	{ 12000.f, 0.50f, 0.32f, 0.22f },   // very dark brown
+	{ 14000.f, 0.42f, 0.30f, 0.32f },   // brown-gray
+};
+
+static void ter_sectional_color(float elev_ft, float& r, float& g, float& b)
+{
+	const int n = sizeof(kTerBands) / sizeof(kTerBands[0]);
+	if (elev_ft <= kTerBands[0].ft)     { r = kTerBands[0].r;   g = kTerBands[0].g;   b = kTerBands[0].b;   return; }
+	if (elev_ft >= kTerBands[n-1].ft)   { r = kTerBands[n-1].r; g = kTerBands[n-1].g; b = kTerBands[n-1].b; return; }
+	for (int i = 1; i < n; ++i)
+		if (elev_ft <= kTerBands[i].ft)
+		{
+			float t = (elev_ft - kTerBands[i-1].ft) / (kTerBands[i].ft - kTerBands[i-1].ft);
+			r = kTerBands[i-1].r + t * (kTerBands[i].r - kTerBands[i-1].r);
+			g = kTerBands[i-1].g + t * (kTerBands[i].g - kTerBands[i-1].g);
+			b = kTerBands[i-1].b + t * (kTerBands[i].b - kTerBands[i-1].b);
+			return;
+		}
+}
 
 
 WED_StructureLayer::WED_StructureLayer(GUI_Pane * h, WED_MapZoomerNew * zoomer, IResolver * resolver) :
@@ -110,89 +143,213 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 
 	float							storage[4];
 
-	if (selected && sub_class == WED_TerPlacement::sClass)
+	if (sub_class == WED_TerPlacement::sClass)
 	{
-		Bbox2	dem_bounds, map_bounds;
 		auto ter = dynamic_cast<WED_TerPlacement *>(entity);
 
 		string dem_file;
 		ter->GetResource(dem_file);
 		auto rmgr = WED_GetResourceMgr(GetResolver());
 
-		const dem_info_t* ter_dem;
-		if ((rmgr->GetDem(dem_file, ter_dem)))
+		const dem_info_t*     ter_dem = nullptr;
+		const dem_tex_info_t* ter_tex = nullptr;
+		bool have_dem = rmgr->GetDem   (dem_file, ter_dem);
+		bool have_tex = have_dem && rmgr->GetDemTex(dem_file, ter_tex);
+
+		if (have_dem)
 		{
-			double left, right, top, bot;
 			auto z = GetZoomer();
-			z->GetPixelBounds(left, bot, right, top);
 
-			Point2 p[4];
-			p[0] = z->LLToPixel({ ter_dem->mWest, ter_dem->mSouth });
-			p[1] = z->LLToPixel({ ter_dem->mEast, ter_dem->mSouth });
-			p[2] = z->LLToPixel({ ter_dem->mEast, ter_dem->mNorth });
-			p[3] = z->LLToPixel({ ter_dem->mWest, ter_dem->mNorth });
-
-			for (int i = 0; i < sizeof(p)/sizeof(Point2); i++)
+			// Selected: dashed bbox outline of the DEM extent, clipped to viewport.
+			if (selected)
 			{
-				if (p[i].x_ < left)  p[i].x_ = left + 1;
-				if (p[i].x_ > right) p[i].x_ = right - 1;
-				if (p[i].y_ > top)  p[i].y_ = top - 1;
-				if (p[i].y_ < bot)  p[i].y_ = bot + 1;
-			}
+				double left, right, top, bot;
+				z->GetPixelBounds(left, bot, right, top);
 
-			glLineStipple(1, 0xF0F0);
-			glEnable(GL_LINE_STIPPLE);
-			glBegin(GL_LINE_LOOP);
-				glVertex2v(p, sizeof(p)/sizeof(Point2));
-			glEnd();
-			glDisable(GL_LINE_STIPPLE);
+				Point2 p[4];
+				p[0] = z->LLToPixel({ ter_dem->mWest, ter_dem->mSouth });
+				p[1] = z->LLToPixel({ ter_dem->mEast, ter_dem->mSouth });
+				p[2] = z->LLToPixel({ ter_dem->mEast, ter_dem->mNorth });
+				p[3] = z->LLToPixel({ ter_dem->mWest, ter_dem->mNorth });
 
-			double dem_dx = (ter_dem->mEast - ter_dem->mWest) / (ter_dem->mWidth - 1);
-			double dem_dy = (ter_dem->mNorth - ter_dem->mSouth) / (ter_dem->mHeight - 1);
-
-			IGISPointSequence * ps = ter->GetOuterRing();
-			int n = ps->GetNumSides();
-			Polygon2 poly;
-			for (int i = 0; i < n; i++)
-			{
-				Point2 pt;
-				ps->GetNthPoint(i)->GetLocation(gis_Geo, pt);
-				poly.push_back(pt);
-			}
-
-			Bbox2 bnds;
-			ter->GetBounds(gis_Geo, bnds);
-
-			int x1 = intlim((bnds.p1.x() - ter_dem->mWest)  / dem_dx,     0, ter_dem->mWidth);
-			int x2 = intlim((bnds.p2.x() - ter_dem->mWest)  / dem_dx + 1, 0, ter_dem->mWidth);
-			int y1 = intlim((bnds.p1.y() - ter_dem->mSouth) / dem_dy,     0, ter_dem->mHeight);
-			int y2 = intlim((bnds.p2.y() - ter_dem->mSouth) / dem_dy + 1, 0, ter_dem->mHeight);
-
-			glPointSize(3.0);
-			glBegin(GL_POINTS);
-			Point2 loc;
-			int inc = ter->GetSamplingFactor();
-			for (int x = x1; x < x2; x+=inc)
-			{
-				loc.x_ = ter_dem->mWest  + x * dem_dx;
-				loc.y_ = ter_dem->mSouth + y1 * dem_dy;
-				for (int y = y1; y <= y2; y+=inc)
+				for (int i = 0; i < sizeof(p)/sizeof(Point2); i++)
 				{
-					if (poly.inside(loc))
+					if (p[i].x_ < left)  p[i].x_ = left + 1;
+					if (p[i].x_ > right) p[i].x_ = right - 1;
+					if (p[i].y_ > top)  p[i].y_ = top - 1;
+					if (p[i].y_ < bot)  p[i].y_ = bot + 1;
+				}
+
+				glLineStipple(1, 0xF0F0);
+				glEnable(GL_LINE_STIPPLE);
+				glBegin(GL_LINE_LOOP);
+					glVertex2v(p, sizeof(p)/sizeof(Point2));
+				glEnd();
+				glDisable(GL_LINE_STIPPLE);
+			}
+
+			// PART 1 -- texture-filled polygon, baked relief + sectional color.
+			// The texture covers the DEM's geographic bbox; texgen plane equations
+			// map pixel-space vertices back to [0, mTexS]x[0, mTexT] tex coords.
+			if (have_tex && ter_tex->mTexID != 0)
+			{
+				Point2 sw = z->LLToPixel({ ter_dem->mWest, ter_dem->mSouth });
+				Point2 ne = z->LLToPixel({ ter_dem->mEast, ter_dem->mNorth });
+				double dx = ne.x() - sw.x();
+				double dy = ne.y() - sw.y();
+				if (fabs(dx) > 1e-9 && fabs(dy) > 1e-9)
+				{
+					GLdouble s_plane[4] = { ter_tex->mTexS / dx, 0.0, 0.0, -sw.x() * ter_tex->mTexS / dx };
+					GLdouble t_plane[4] = { 0.0, ter_tex->mTexT / dy, 0.0, -sw.y() * ter_tex->mTexT / dy };
+
+					g->SetState(false, 1, false, false, false, false, false);
+					glDisable(GL_CULL_FACE);
+					glColor4f(1.f, 1.f, 1.f, 1.f);
+					g->BindTex((int) ter_tex->mTexID, 0);
+
+					glEnable(GL_TEXTURE_GEN_S);
+					glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
+					glTexGendv(GL_S, GL_OBJECT_PLANE, s_plane);
+					glEnable(GL_TEXTURE_GEN_T);
+					glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
+					glTexGendv(GL_T, GL_OBJECT_PLANE, t_plane);
+
+					vector<Point2> pts;
+					vector<int>    extra_contours;
+					IGISPolygon * gp = dynamic_cast<IGISPolygon *>(entity);
+					if (gp)
 					{
-						if(ter_dem->get(x,y) < -999.0f)     // actually, no data signaling in DEM's may be almost anything ...
+						PointSequenceToVector(gp->GetOuterRing(), z, pts, false);
+						int nh = gp->GetNumHoles();
+						for (int h = 0; h < nh; ++h)
 						{
-							glColor3f(1,0,1);
-							glVertex2(z->LLToPixel(loc));
-							glColor3fv(colorf);
+							extra_contours.push_back((int) pts.size());
+							PointSequenceToVector(gp->GetNthHole(h), z, pts, false);
 						}
-						else
-							glVertex2(z->LLToPixel(loc));
 					}
-					loc.y_ += dem_dy * inc;
+
+					glPolygon2(pts, false, extra_contours, true);
+
+					glDisable(GL_TEXTURE_GEN_S);
+					glDisable(GL_TEXTURE_GEN_T);
+					g->SetState(false, 0, false, false, false, false, false);
+					glColor4fv(colorf);
 				}
 			}
-			glEnd();
+
+			// PART 2 -- when zoomed in past ~6 screen px per drawn DEM post, scatter
+			// small black markers at each DEM cell that's both inside the polygon and
+			// on screen.  Uses PolyRasterizer so we don't pay an O(N) point-in-poly
+			// test per cell.
+			double dem_dx = (ter_dem->mEast - ter_dem->mWest) / (ter_dem->mWidth - 1);
+			double dem_dy = (ter_dem->mNorth - ter_dem->mSouth) / (ter_dem->mHeight - 1);
+			int inc = ter->GetSamplingFactor();
+			if (inc < 1) inc = 1;
+
+			Point2 sa = z->LLToPixel({ ter_dem->mWest,                 ter_dem->mSouth                });
+			Point2 sb = z->LLToPixel({ ter_dem->mWest + dem_dx * inc,  ter_dem->mSouth + dem_dy * inc });
+			double pp = fmax(fabs(sb.x() - sa.x()), fabs(sb.y() - sa.y()));
+
+			if (pp >= 6.0)
+			{
+				PolyRasterizer<double> raster;
+				IGISPolygon * gp = dynamic_cast<IGISPolygon *>(entity);
+				if (gp)
+				{
+					auto add_ring = [&](IGISPointSequence * ps) {
+						int np = ps->GetNumPoints();
+						if (np < 2) return;
+						for (int i = 0; i < np; ++i)
+						{
+							Point2 a, b;
+							ps->GetNthPoint(i)->GetLocation(gis_Geo, a);
+							ps->GetNthPoint((i + 1) % np)->GetLocation(gis_Geo, b);
+							double ax = ter_dem->lon_to_x(a.x());
+							double ay = ter_dem->lat_to_y(a.y());
+							double bx = ter_dem->lon_to_x(b.x());
+							double by = ter_dem->lat_to_y(b.y());
+							raster.AddEdge(ax, ay, bx, by);
+						}
+					};
+					add_ring(gp->GetOuterRing());
+					int nh = gp->GetNumHoles();
+					for (int h = 0; h < nh; ++h)
+						add_ring(gp->GetNthHole(h));
+				}
+				raster.SortMasters();
+
+				if (!raster.masters.empty())
+				{
+					// On-screen DEM cell rect: viewport (lon/lat) -> DEM cell coords.
+					double left_px, right_px, top_px, bot_px;
+					z->GetPixelBounds(left_px, bot_px, right_px, top_px);
+					Point2 vw_sw = z->PixelToLL(Point2(left_px,  bot_px));
+					Point2 vw_ne = z->PixelToLL(Point2(right_px, top_px));
+					double vx0 = ter_dem->lon_to_x(vw_sw.x());
+					double vx1 = ter_dem->lon_to_x(vw_ne.x());
+					double vy0 = ter_dem->lat_to_y(vw_sw.y());
+					double vy1 = ter_dem->lat_to_y(vw_ne.y());
+					if (vx0 > vx1) { double t = vx0; vx0 = vx1; vx1 = t; }
+					if (vy0 > vy1) { double t = vy0; vy0 = vy1; vy1 = t; }
+
+					int sx0 = (int) floor(fmax(0.0,                       vx0));
+					int sx1 = (int) ceil (fmin((double) ter_dem->mWidth,  vx1));
+					int sy0 = (int) floor(fmax((double) raster.bounds[1], vy0));
+					int sy1 = (int) ceil (fmin((double) raster.bounds[3], vy1));
+					if (sy0 < 0)                 sy0 = 0;
+					if (sy1 > ter_dem->mHeight)  sy1 = ter_dem->mHeight;
+
+					if (sx0 < sx1 && sy0 < sy1)
+					{
+						float clip_m = static_cast<float>(ter->MSLClip());
+
+						g->SetState(false, 0, false, false, false, false, false);
+						glPointSize(2.f);
+						glColor4f(0.f, 0.f, 0.f, 1.f);
+						glBegin(GL_POINTS);
+
+						// Snap to a derez-aligned scanline so the visible point grid
+						// is stable as the viewport pans.
+						int y = sy0;
+						if (inc > 1)
+						{
+							int r = y % inc;
+							if (r != 0) y += (inc - r);
+						}
+						raster.StartScanline((double) y);
+						while (!raster.DoneScan() && y < sy1)
+						{
+							int rx1, rx2;
+							while (raster.GetRange(rx1, rx2))
+							{
+								int xa = rx1 > sx0 ? rx1 : sx0;
+								int xb = rx2 < sx1 ? rx2 : sx1;
+								if (inc > 1)
+								{
+									int r = xa % inc;
+									if (r != 0) xa += (inc - r);
+								}
+								Point2 loc;
+								loc.y_ = ter_dem->mSouth + y * dem_dy;
+								for (int x = xa; x < xb; x += inc)
+								{
+									float elev = ter_dem->get(x, y);
+									if (elev != DEM_NO_DATA && elev > clip_m)
+									{
+										loc.x_ = ter_dem->mWest + x * dem_dx;
+										glVertex2(z->LLToPixel(loc));
+									}
+								}
+							}
+							y += inc;
+							if (y >= sy1) break;
+							raster.AdvanceScanline((double) y);
+						}
+						glEnd();
+						glColor4fv(colorf);
+					}
+				}
+			}
 		}
 	}
 

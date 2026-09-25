@@ -251,6 +251,8 @@ set (WED_SOURCES
 	src/WEDImportExport/WED_MetaDataKeys.h
 	src/WEDImportExport/WED_MetadataUpdate.cpp
 	src/WEDImportExport/WED_MetadataUpdate.h
+	src/WEDImportExport/WED_NextgenExport.cpp
+	src/WEDImportExport/WED_NextgenExport.h
 	src/WEDImportExport/WED_OrthoExport.cpp
 	src/WEDImportExport/WED_OrthoExport.h
 	src/WEDImportExport/WED_SceneryImport.cpp
@@ -321,6 +323,8 @@ set (WED_SOURCES
 	src/WEDMap/WED_TerrainLayer.h
 	src/WEDMap/WED_DrawUtils.cpp
 	src/WEDMap/WED_DrawUtils.h
+	src/WEDMap/WED_DEMGraphics.cpp
+	src/WEDMap/WED_DEMGraphics.h
 	src/WEDMap/WED_PreviewLayer.cpp
 	src/WEDMap/WED_PreviewLayer.h
 	src/WEDMap/WED_ATCLayer.cpp
@@ -453,10 +457,14 @@ set (WED_SOURCES
 	src/Utils/MemFileUtils.h
 	src/Utils/FileUtils.cpp
 	src/Utils/FileUtils.h
+	src/Utils/GeoTIFFWrite.cpp
+	src/Utils/GeoTIFFWrite.h
 	src/Utils/GISUtils.cpp
 	src/Utils/GISUtils.h
 	src/Utils/BitmapUtils.cpp
 	src/Utils/BitmapUtils.h
+	src/Utils/ProcessUtils.cpp
+	src/Utils/ProcessUtils.h
 	src/Utils/TexUtils.cpp
 	src/Utils/TexUtils.h
 	src/Utils/EndianUtils.c

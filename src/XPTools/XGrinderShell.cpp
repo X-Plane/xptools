@@ -36,92 +36,15 @@
 #include "XGrinderApp.h"
 #include "MemFileUtils.h"
 #include "PlatformUtils.h"
+#include "ProcessUtils.h"
 #include <string>
 #include <vector>
 #include <sys/stat.h>
 #include <errno.h>
 
 #if IBM
-#include <fcntl.h>
-#include <io.h>
 #define popen xpt_popen
 #define pclose xpt_pclose
-
-HANDLE stdout_read, stdout_write;
-HANDLE stderr_read, stderr_write;
-HANDLE stdin_read, stdin_write;
-HANDLE pipe_process;
-
-int spawn_process(char* cmdline)
-{
-	DWORD e = 0;
-	STARTUPINFO si = {};
-	PROCESS_INFORMATION pi = {};
-
-	si.cb = sizeof(STARTUPINFO);
-	si.hStdOutput = stdout_write;		// Child writes to stdout
-	si.hStdInput = stdin_read;			// Reads from stdin
-	si.hStdError = stderr_write;		// and writes to stderr.
-	si.dwFlags = STARTF_USESTDHANDLES;
-
-	CreateProcess(0, cmdline, 0, 0, 1, DETACHED_PROCESS, 0, 0, &si, &pi);
-	pipe_process = pi.hProcess;
-
-	return e;
-}
-
-FILE* xpt_popen(const char *command, const char *mode)
-{
-	SECURITY_ATTRIBUTES sa;
-	DWORD nread;
-	char buf[4096] = {};
-
-	if (strcmp(mode, "r"))
-		return 0;
-	sa.nLength = sizeof(SECURITY_ATTRIBUTES);
-	sa.bInheritHandle = 1;
-	sa.lpSecurityDescriptor = 0;
-
-	// We are going to make 3 unix-style connections with our client: stdin, stdout, and stderr.
-	// CreatePipe gives us TWO handles for each side" of the pipe.
-
-	CreatePipe(&stdout_read, &stdout_write, &sa, 0);
-	SetHandleInformation(stdout_read, HANDLE_FLAG_INHERIT, 0);
-	CreatePipe(&stdin_read, &stdin_write, &sa, 0);
-	SetHandleInformation(stdin_write, HANDLE_FLAG_INHERIT, 0);
-	CreatePipe(&stderr_read, &stderr_write, &sa, 0);
-	SetHandleInformation(stderr_read, HANDLE_FLAG_INHERIT, 0);
-
-	spawn_process(const_cast<char*>(command));
-
-	// Spawn process has given these 3 handles to our child.  We no longer need our copies.  We close them now;
-	// for example, we are not going to put data down the child's stdout pipe - we READ from the other side.
-
-/* close child-side handles */
-	CloseHandle(stdout_write);
-	CloseHandle(stdin_read);
-	CloseHandle(stderr_write);
-
-	return _fdopen( _open_osfhandle((intptr_t)stdout_read, _O_RDONLY), "r");
-}
-
-int xpt_pclose(FILE *stream)
-{
-
-	fclose(stream);		// This closes stdout_read FOR US.
-
-	// When we close our connection to the child process, we close the other halves of the pipes - OUR halves that
-	// we were using. Since stream wraps an FD, which wraps a HANDLE, closing our stream closes stdout_read for us.
-
-	// We didn't ever wrap stdin or stderr (our side) so we close those directly.
-	CloseHandle(stdin_write);
-	CloseHandle(stderr_read);
-
-	DWORD pipe_exit_code;
-	GetExitCodeProcess(pipe_process, &pipe_exit_code);
-	return pipe_exit_code;
-}
-
 #endif
 
 using std::string;
