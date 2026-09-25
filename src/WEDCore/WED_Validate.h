@@ -29,7 +29,7 @@ class	WED_Airport;
 class	WED_MapPane;
 class	WED_Document;
 
-//Keep this enum strictly organized by alphabetical order and sub catagory. Make this collection easily grep-able
+//Keep this enum strictly organized by alphabetical order and sub category. Make this collection easily grep-able
 enum validate_error_t
 {
 	err_agb_poly_has_holes,

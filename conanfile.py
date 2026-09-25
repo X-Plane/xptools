@@ -25,7 +25,7 @@ class XPToolsRecipe(ConanFile):
         self.requires("glew/2.2.0")
         self.requires("jsoncpp/1.9.6")
         if self.settings.os == "Linux":
-            self.requires("fltk/1.4.1")
+            self.requires("fltk/1.3.9")
             self.requires("egl/system")
 
     def configure(self):
@@ -34,6 +34,10 @@ class XPToolsRecipe(ConanFile):
         self.options["libpng"].with_zlib = True
         self.options["glew"].shared = False
         self.options["glew"].with_glu = "system"
+        self.options["proj"].build_executables = False
+
+        if self.settings.os == "Windows":
+            self.options["libcurl"].with_ssl = "schannel"
 
     def layout(self):
         cmake_layout(self)

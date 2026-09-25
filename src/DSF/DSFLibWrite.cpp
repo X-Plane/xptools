@@ -1175,7 +1175,7 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 		vectorPoolCurved.WriteScaleAtoms(fi, def_PointScale32Atom);
 	}
 
-#if ENCODING_STATS && !TYLER_MODE
+#if ENCODING_STATS && !GATEWAY_IMPORT_MODE
 	printf("3-d Objs pool starts at: %d\n", offset_to_3d_objs);
 	for (TPDOM::iterator i = offset_to_terrain_pool_of_depth.begin(); i != offset_to_terrain_pool_of_depth.end(); ++i)
 		printf("Terrain pool depth %d starts at %d\n", i->first, i->second);

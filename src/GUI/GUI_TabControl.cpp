@@ -83,11 +83,11 @@ void		GUI_TabControl::SetDescriptor(const string& inDesc)
 		if(pos > 0 && pos < mItems[n].length())
 		{
 			int w1 = GUI_MeasureRange(font_UI_Basic, mItems[n].c_str(), mItems[n].c_str() + pos);
-			int w2 = GUI_MeasureRange(font_UI_Basic, mItems[n].c_str() + pos + 1,&* mItems[n].end() );
+			int w2 = GUI_MeasureRange(font_UI_Basic, mItems[n].c_str() + pos + 1, mItems[n].data() + mItems[n].size() );
 			mWidths[n] = max(w1, w2)  + TAB_PADDING * 2;
 		}
 		else
-			mWidths[n] = GUI_MeasureRange(font_UI_Basic, &*mItems[n].begin(), &*mItems[n].end()) + TAB_PADDING * 2;
+			mWidths[n] = GUI_MeasureRange(font_UI_Basic, &*mItems[n].begin(), mItems[n].data() + mItems[n].size()) + TAB_PADDING * 2;
 	}
 
 	SetMax(mItems.size());
@@ -137,7 +137,7 @@ void		GUI_TabControl::Draw(GUI_GraphState * state)
 			y += 0.5 * h;
 			GUI_FontDrawScaled(state, font_UI_Basic, mTextColor, x, y, 0, y+h, mItems[n].c_str(), mItems[n].c_str() + pos, align_Left);
 			y -= h;
-			GUI_FontDrawScaled(state, font_UI_Basic, mTextColor, x, y, 0, y+h, mItems[n].c_str() + pos + 1, &*mItems[n].end(), align_Left);
+			GUI_FontDrawScaled(state, font_UI_Basic, mTextColor, x, y, 0, y+h, mItems[n].c_str() + pos + 1, mItems[n].data() + mItems[n].size(), align_Left);
 		}
 		else
 			GUI_FontDraw(state, font_UI_Basic, mTextColor, x, y, mItems[n].c_str());

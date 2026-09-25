@@ -299,9 +299,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	mMapPreviewPane->FromPrefs(inDocument);
 	mPropPane->FromPrefs(inDocument,0);
 	// doc/use_feet and doc/InfoDMS are global only preferences now, not read from each document any more
-#if TYLER_MODE == 11
-	gExportTarget = wet_xplane_1130;
-#elif TYLER_MODE
+#if GATEWAY_IMPORT_MODE
 	gExportTarget = wet_latest_xplane;
 #else
 	gExportTarget = (WED_Export_Target) inDocument->ReadIntPref("doc/export_target",gExportTarget);
@@ -632,7 +630,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 #if HAS_GATEWAY
 	case wed_ImportGateway:	return WED_CanImportFromGateway(mDocument);
 #if GATEWAY_IMPORT_FEATURES
-	case wed_ImportGatewayExtract: return gModeratorMode || TYLER_MODE;
+	case wed_ImportGatewayExtract: return gModeratorMode || GATEWAY_IMPORT_MODE;
 #endif
 #endif
 	case wed_Validate:		return 1;
@@ -709,9 +707,7 @@ void	WED_DocumentWindow::ReceiveMessage(
 		mPropPane->FromPrefs(prefs,0);
 
 		// doc/use_feet and doc/InfoDMS are global only preferences now, not read from each document any more
-	#if TYLER_MODE == 11
-		gExportTarget = wet_xplane_1130;
-	#elif TYLER_MODE
+	#if GATEWAY_IMPORT_MODE
 		gExportTarget = wet_latest_xplane;
 	#else
 		gExportTarget = (WED_Export_Target) mDocument->ReadIntPref("doc/export_target",gExportTarget);

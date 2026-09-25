@@ -1324,7 +1324,7 @@ bool HasMissingResource(WED_Thing * t)
 	string r;
 	if(!get_any_resource_for_thing(t,r))
 		return false;
-	if (r == "::FLATTEN::.pol")
+    if (WED_LibraryMgr::CheckFlattenPolygon(r))
 		return false;
 	return mgr->GetResourceType(r) == res_None;
 }
@@ -4456,7 +4456,7 @@ void	WED_DoReplaceVehicleObj(IResolver* resolver, WED_Airport* apt)
 		root->StartOperation("Replace Objects");
 		map<string,vehicle_replacement_info> table = build_replacement_table();
 
-#if !TYLER_MODE
+#if !GATEWAY_IMPORT_MODE
 		ISelection * sel = WED_GetSelect(resolver);
 		sel->Clear();
 #endif
@@ -4487,7 +4487,7 @@ void	WED_DoReplaceVehicleObj(IResolver* resolver, WED_Airport* apt)
 				replace_count++;
 				(*itr)->SetParent(NULL, 0);
 				(*itr)->Delete();
-#if !TYLER_MODE
+#if !GATEWAY_IMPORT_MODE
 				sel->Insert(parking_loc);
 #endif
 			}
@@ -4495,25 +4495,25 @@ void	WED_DoReplaceVehicleObj(IResolver* resolver, WED_Airport* apt)
 
 		if(replace_count == 0)
 		{
-#if !TYLER_MODE
+#if !GATEWAY_IMPORT_MODE
 			sel->Clear();
 #endif
 			root->AbortOperation();
-#if !TYLER_MODE
+#if !GATEWAY_IMPORT_MODE
 			DoUserAlert("Nothing to replace");
 #endif
 		}
 		else
 		{
 			root->CommitOperation();
-#if !TYLER_MODE
+#if !GATEWAY_IMPORT_MODE
 			stringstream ss;
 			ss << "Replaced " << replace_count << " objects";
 			DoUserAlert(ss.str().c_str());
 #endif
 		}
 	}
-#if !TYLER_MODE
+#if !GATEWAY_IMPORT_MODE
 	else
 		DoUserAlert("Nothing to replace");
 #endif
@@ -4802,10 +4802,11 @@ int wed_upgrade_ramps(WED_Thing* who)
 				
 				if(new_codes.empty() || !old_codes_good_enough)
 					new_codes += regional_codes;
+
+				std::transform(new_codes.begin(), new_codes.end(), new_codes.begin(), [](unsigned char c) {return toupper(c);} );
+				r->SetAirlines(new_codes);
+				did_work = 1;
 			}
-			std::transform(new_codes.begin(), new_codes.end(), new_codes.begin(), [](unsigned char c) {return toupper(c);} );
-			r->SetAirlines(new_codes);
-			did_work = 1;
 		}
 	}
 	// nuke static aircraft objects near ramps
@@ -6043,7 +6044,7 @@ bool WED_DoMowGrass(WED_Airport* apt, int statistics[4])
 						{
 							auto obj = WED_ObjPlacement::CreateTyped(apt->GetArchive());
 							obj->SetParent(art_grp, 0);
-							if (rand() & 3 > 0)
+							if ((rand() & 3) > 0)
 								obj->SetResource("lib/airport/ground/terrain_FX/lawn_tracks/single_6.obj");
 							else
 							{

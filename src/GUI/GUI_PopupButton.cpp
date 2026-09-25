@@ -89,7 +89,7 @@ void		GUI_PopupButton::Draw(GUI_GraphState * state)
 	if (i >= 0 && i < mItems.size())
 	{
 		float c[4] = { 0,0,0,1 };
-		float w = GUI_MeasureRange(font_UI_Basic, &*mItems[i].begin(), &*mItems[i].end());
+		float w = GUI_MeasureRange(font_UI_Basic, mItems[i].data(), mItems[i].data() + mItems[i].size());
 		GUI_FontDraw(state,font_UI_Basic, c, (bounds[0]+bounds[2]-w) /2, bounds[1], mItems[i].c_str());
 	}
 }

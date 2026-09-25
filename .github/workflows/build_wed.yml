@@ -1,38 +1,53 @@
 name: build WED
 
-on: 
+on:
   push:
     branches:
-    - 'wed_2*_release'
+      - "wed_2*_release"
   workflow_dispatch:
-        
+
 permissions:
   contents: read
 
 jobs:
   build-windows:
+    # windows-2025 dropped the VS 2022 toolset and ships only VS 2026 (toolset
+    # v18), which the installed CMake cannot target and which has no prebuilt
+    # Conan dependency binaries. Stay on windows-2022 until the toolchain catches
+    # up (matches build_xptools.yml).
     runs-on: windows-2022
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@main
-      with:
-        submodules: true
-    - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v1.1
-    - name: Build .exe
-      working-directory: ${{env.GITHUB_WORKSPACE}}
-      # Add additional options to the MSBuild command line here (like platform or verbosity level).
-      # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference 
-      run: |
-        msbuild /m /p:Configuration=Release /p:Platform="x64" /t:WorldEditor msvc\XPTools.sln
-    - name: Archive build result
-      uses: actions/upload-artifact@main
-      with:
-        name: artifact-win
-        path: msvc/WorldEditor/Release/WorldEditor.exe
-          
+      - name: Checkout repo
+        uses: actions/checkout@main
+        with:
+          submodules: true
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Install Conan
+        run: |
+          pip install conan
+          conan --version
+      - name: Create Conan profile
+        run: conan profile detect --force
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v1.1
+      - name: Build WorldEditor
+        working-directory: ${{env.GITHUB_WORKSPACE}}
+        # Add additional options to the MSBuild command line here (like platform or verbosity level).
+        # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
+        run: |
+          ./cmake.ps1
+          cmake --build vs_build --config Release
+      - name: Archive build result
+        uses: actions/upload-artifact@main
+        with:
+          name: artifact-win
+          path: vs_build/Release/WED.exe
+
   build-mac:
-    runs-on: macos-12
+    runs-on: macos-15
     env:
       APPLE_ID: ${{ secrets.APPLE_ID }}
       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
@@ -41,91 +56,123 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@main
         with:
-          submodules: no
+          submodules: true
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Install Conan
+        run: |
+          pip install conan
+          conan --version
+      - name: Create Conan profile
+        run: conan profile detect --force
       - name: Setup Credentials
         uses: apple-actions/import-codesign-certs@v2
-        with: 
+        with:
           p12-file-base64: ${{ secrets.APPLE_DEV_CERTIFICATE }}
           p12-password: ${{ secrets.APPLE_DEV_CERTIFICATE_PASSWORD }}
-      - name: Build Libs
+      - name: Build WorldEditor
         run: |
-          git submodule init libs
-          git submodule update libs
-          cd libs
-          make -j$(sysctl -n hw.logicalcpu)
-      - name: Build App
-        env:
-          scheme: "WED"
-          config: "Release"
+          GENERATOR=Ninja ./cmake.sh
+          cmake --build build_Release --config Release
+      - name: Sign App
         run: |
-          xcodebuild -scheme "$scheme" -config "$config" -project SceneryTools.xcodeproj -archivePath build/WED.xcarchive CODE_SIGN_STYLE="Manual" CODE_SIGN_IDENTITY="Developer ID Application: Laminar Research (LPH4NFE92D)" archive | xcpretty && exit ${PIPESTATUS[0]}
+          codesign --deep --force --verify --verbose \
+            --sign "Developer ID Application: Laminar Research (LPH4NFE92D)" \
+            --options runtime \
+            build_Release/WED.app
       - name: Notarize App
         run: |
-          ./scripts/notarization.sh WED.zip build/WED.xcarchive/Products/Applications/WED.app staple
+          ./scripts/notarization.sh WED.zip build_Release/WED.app staple
       - name: Archive build result
+        run: zip -r artifact-mac.zip build_Release/WED.app
+      - name: Upload artifact
         uses: actions/upload-artifact@main
         with:
-          name: artifact-osx
-          path: build/WED.xcarchive/Products/Applications
-          
+          name: artifact-mac
+          path: artifact-mac.zip
+
   build-linux:
     runs-on: ubuntu-22.04
     # we need fltk-dev and python 2.7
-    container:
-        image: ghcr.io/x-plane/xptools_builder:latest
+    #container:
+    #  image: ghcr.io/x-plane/xptools_builder:latest
     steps:
       - name: Checkout repo
         uses: actions/checkout@main
         with:
-          submodules: no
-      - name: Build Libs
+          submodules: true
+      - name: Install Python, pip and additional dependencies
         run: |
-          git config --global --add safe.directory /__w/xptools/xptools
-          git submodule init libs
-          git submodule update libs
-          cd libs
-          make -j$(nproc)
-      - name: Build binary
+          sudo apt-get update
+          sudo apt-get install -y python3 python3-pip pkg-config m4 autoconf automake libtool libglu1-mesa-dev libgl1-mesa-dev
+      - name: Set up environment
         run: |
-          make -s -C . conf=release_opt -j$(nproc) WED
+          echo "PATH=/usr/bin:$PATH" >> $GITHUB_PATH
+      - name: Install Conan
+        run: |
+          pip3 install conan
+          conan --version
+      - name: Create Conan profile
+        run: |
+          conan profile detect --force
+          conan remove --confirm "*"
+      - name: Install Conan dependencies
+        run: |
+          conan install . --build=missing -c tools.system.package_manager:mode=install -c tools.system.package_manager:sudo=True
+      - name: Build WorldEditor
+        run: |
+          ./cmake.sh
+          cmake --build build_Release --config Release
       - name: Archive build result
         uses: actions/upload-artifact@main
         with:
           name: artifact-lin
-          path: build/Linux/release_opt/WED
+          path: build_Release/WED
 
-  make-zips:
+  create-zip-files:
     runs-on: ubuntu-latest
     needs: [build-windows, build-mac, build-linux]
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@main
-    - name: get build results
-      uses: actions/download-artifact@main
-      with:
-        pattern: artifact-*
-        merge-multiple: true
-    - name: zip files
-      run: |
-          ls -l
-          version=$(awk '/WED_VERSION[\s\t]/ {gsub(/\./,""); print $3}' <src/WEDCore/WED_Version.h)
-          echo $version
+      - name: Checkout repo
+        uses: actions/checkout@main
+      - name: get build results
+        uses: actions/download-artifact@main
+        with:
+          pattern: artifact-*
+          merge-multiple: true
+      - name: zip files
+        run: |
+          version=$(grep 'WED_VERSION_FILENAME' src/WEDCore/WED_Version.h | awk -F'"' '{print $2}')
+          echo "Version found: '$version'"
           cp src/WEDCore/README.WorldEditor .
-          zip -r wed_win_$version README.WorldEditor WorldEditor.exe
+
+          # Windows
+          zip -r wed_win_$version.zip README.WorldEditor WED.exe
+
+          # Linux
           chmod a+x WED
-          zip -r wed_lin_$version README.WorldEditor WED
-          chmod a+x WED.app/Contents/MacOS/WED
-          zip -r wed_mac_$version README.WorldEditor WED.app
-#    - name: copy to server           # run this conditional on being a "Release" or a special trigger
-#      uses: appleboy/scp-action@master
-#      with:
-#        host: files.x-plane.com
-#        username: ${{ secrets.USERNAME }}
-#        key: ${{ secrets.KEY }}      # private ssh key, public key goes on host
-#        source: wed_*.zip            # scp will overwrite target. find a way to check & NOT overwrite
-#        target: "public/wed/"
-    - name: Archive zipfiles
-      uses: actions/upload-artifact@main
-      with:
-        name: wed_release_build
-        path: ./wed_*.zip
+          zip -r wed_lin_$version.zip README.WorldEditor WED
+
+          # MacOS
+          unzip artifact-mac.zip
+          chmod -R a+x build_Release/WED.app/Contents/MacOS/
+          cp README.WorldEditor build_Release/
+          cd build_Release
+          zip -r ../wed_mac_$version.zip README.WorldEditor WED.app
+          cd ..
+
+      #    - name: copy to server           # run this conditional on being a "Release" or a special trigger
+      #      uses: appleboy/scp-action@master
+      #      with:
+      #        host: files.x-plane.com
+      #        username: ${{ secrets.USERNAME }}
+      #        key: ${{ secrets.KEY }}      # private ssh key, public key goes on host
+      #        source: wed_*.zip            # scp will overwrite target. find a way to check & NOT overwrite
+      #        target: "public/wed/"
+      - name: Archive zipfiles
+        uses: actions/upload-artifact@main
+        with:
+          name: wed_release_build
+          path: ./wed_*.zip

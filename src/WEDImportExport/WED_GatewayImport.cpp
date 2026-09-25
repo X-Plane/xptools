@@ -74,7 +74,7 @@
 #include "WED_Colors.h"
 
 #define ALLOW_MULTI_IMPORT 1                       // set this if you want to allow to import multiple airports at a time
-#define MULTI_MAX_FILES TYLER_MODE ? 50000 : 300   // Prevent too many files to be downloaded in one swoop - its REALLY slow
+#define MULTI_MAX_FILES GATEWAY_IMPORT_MODE ? 50000 : 300   // Prevent too many files to be downloaded in one swoop - its REALLY slow
 
 #if ALLOW_MULTI_IMPORT
 	#include "WED_AptTable.h"
@@ -1056,7 +1056,7 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(const string& json_
 	vector<char> outString = vector<char>(zipString.length());
 
 	char * outP;
-	decode(&*zipString.begin(),&*zipString.end(),&*outString.begin(),&outP);
+	decode(zipString.data(),zipString.data() + zipString.size(), outString.data(), &outP);
 
 	//Fixes the terrible vector padding bug by shrinking it back down to precisely the correct size
 	outString.resize(outP - &*outString.begin());

@@ -220,6 +220,9 @@ string		WED_LibraryMgr::GetResourcePath(const string& r, int variant)
 
 bool	WED_LibraryMgr::IsResourceDefault(const string& r) const
 {
+    if (CheckFlattenPolygon(r))
+        return true;
+
 	auto me = res_table.find(r);
 	if (me==res_table.end()) return false;
 	return me->second.is_default;
@@ -234,14 +237,17 @@ bool	WED_LibraryMgr::IsResourceLocal(const string& r) const
 
 bool	WED_LibraryMgr::IsResourceLibrary(const string& r) const
 {
-	auto me = res_table.find(r);
+    auto me = res_table.find(r);
 	if (me==res_table.end()) return false;
 	return !me->second.packages.count(pack_Local) || me->second.packages.size() > 1;
 }
 
 bool	WED_LibraryMgr::IsResourceDeprecatedOrPrivate(const string& r) const
 {
-	auto me = res_table.find(r);
+    if (CheckFlattenPolygon(r))
+        return false;
+
+    auto me = res_table.find(r);
 	if (me==res_table.end()) return true;              // library list == never public exported = not public !
 	return me->second.status < status_SemiDeprecated;  // status "Yellow' is still deemed public wrt validation, i.e. allowed on the gateway
 }
@@ -746,6 +752,13 @@ int WED_LibraryMgr::GetSurfEnum(const string &res)
 	return -1;
 }
 
+bool WED_LibraryMgr::CheckFlattenPolygon(std::string_view r)
+{
+    if (r == "::FLATTEN::.pol")
+        return true;
+    else
+        return false;
+}
 
 void WED_LibraryMgr::AccumResource(const string& path, int package, const string& rpath, bool is_default, 
 			res_status status, bool is_backup, bool is_seasonal, bool is_regional)

@@ -167,7 +167,7 @@ void		GUI_Button::Draw(GUI_GraphState * state)
 
 			if (!desc.empty())
 			{
-				w = GUI_MeasureRange(font_UI_Basic, &*desc.begin(), &*desc.end());
+				w = GUI_MeasureRange(font_UI_Basic, desc.data(), desc.data() + desc.size());
 				w = (bounds[2] - bounds[0] - w) / 2;
 				h = GUI_GetLineAscent(font_UI_Basic);
 				h = (bounds[3] - bounds[1] - h) / 2;

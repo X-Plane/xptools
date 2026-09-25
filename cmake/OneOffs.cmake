@@ -1,4 +1,4 @@
-#add_executable(gen_roads10     src/OneOffs/gen_roads10.cpp)
+#add_executable(gen_roads10     src/OneOffs/gen_roads10.cpp src/OneOffs/gen_roads10.h)
 add_executable(gen_roads        src/OneOffs/gen_roads.cpp)
 add_executable(genpath          src/OneOffs/genpath.c)
 add_executable(gen_tiles        src/OneOffs/gen_tiles.c)

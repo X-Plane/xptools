@@ -48,13 +48,9 @@ WED_PropertyPane::WED_PropertyPane(
 	int vertical = pane_style == propPane_Selection || pane_style == propPane_FilteredVertical;
 	int horizontal = pane_style == propPane_Filtered;
 	int bounds[4] = { 0, 0, 100, 100 };
-//	SetBounds(bounds);
 	mScroller = new GUI_ScrollerPane(1,1);
-
-//	mScroller->SetImage("gradient.png");
 	mScroller->SetParent(this);
 	mScroller->Show();
-//	mScroller->SetBounds(bounds);
 	mScroller->SetSticky(1,1,1,1);
 
 	mTextTable.SetProvider(&mPropertyTable);
@@ -183,7 +179,7 @@ void	WED_PropertyPane::FromPrefs(IDocPrefs * prefs,int id)
 {
 	char buf[256];
 	string key = "PropertyPane";
-	sprintf(buf,"%d/Closed",id);
+	snprintf(buf, sizeof(buf), "%d/Closed", id);
 	key += buf;
 
 	set<int> mClosedList;
@@ -195,7 +191,7 @@ void	WED_PropertyPane::ToPrefs(IDocPrefs * prefs,int id)
 {
 	char buf[256];
 	string key = "PropertyPane";
-	sprintf(buf,"%d/Closed",id);
+	snprintf(buf, sizeof(buf), "%d/Closed", id);
 	key += buf;
 
 	set<int> mClosedList;

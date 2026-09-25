@@ -58,7 +58,7 @@
 #include "DSF2Text.h"
 #include "zip.h"
 #include <stdarg.h>
-
+#include "WED_LibraryMgr.h"
 
 #if DEV
 #include "PerfUtils.h"
@@ -88,7 +88,7 @@ int zip_printf(void * fi, const char * fmt, ...)
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 
-static unsigned int encode_heading(double h)     // draped polygons have 1/128th degree roation encoded in integer headings
+static unsigned int encode_heading(double h)     // draped polygons have 1/128th degree rotation encoded in integer headings
 {
 	double          wrapped = dobwrap(h, 0.0, 360.0);
 	unsigned int  whole_deg = wrapped;
@@ -1670,7 +1670,7 @@ static int	DSF_ExportTileRecursive(
 					if (!pts.empty())
 					{
 						++real_thingies;
-#if !TYLER_MODE
+#if !GATEWAY_IMPORT_MODE
 						bool elevated = false;
 						// get DEM
 						Bbox2 bnds;
@@ -1993,8 +1993,12 @@ static int	DSF_ExportTileRecursive(
 				for(vector<vector<Polygon2> >::iterator i = pol_cuts.begin(); i != pol_cuts.end(); ++i)
 				{
 					++real_thingies;
-					cbs->BeginPolygon_f(idx, encode_heading(pol->GetHeading()),bez ? 4 : 2,writer);
-					DSF_AccumPolygonWithHoles(*i, safe_bounds, cbs, writer);
+                    if (WED_LibraryMgr::CheckFlattenPolygon(r))
+                        cbs->BeginPolygon_f(idx, pol->GetHeading(), bez ? 4 : 2, writer);
+                    else
+					    cbs->BeginPolygon_f(idx, encode_heading(pol->GetHeading()), bez ? 4 : 2, writer);
+
+                    DSF_AccumPolygonWithHoles(*i, safe_bounds, cbs, writer);
 					cbs->EndPolygon_f(writer);
 				}
 			}
@@ -2237,7 +2241,7 @@ int DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, se
 
 	for (int y = tile_south; y < tile_north; ++y)
 	{
-#if TYLER_MODE
+#if GATEWAY_IMPORT_MODE
 		printf("Exporting DSF's at lattitude %d\n", y);
 #endif
 		for (int x = tile_west; x < tile_east; ++x)

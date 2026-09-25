@@ -29,15 +29,14 @@
 
 class WED_AboutBox : public GUI_Window, public GUI_Timer {
 public:
-						 WED_AboutBox(GUI_Commander * cmdr);
-	virtual				~WED_AboutBox();
+    explicit WED_AboutBox(GUI_Commander * cmdr);
+	~WED_AboutBox() override = default;
 
-	virtual	bool		Closed(void);
-	virtual	void		Draw(GUI_GraphState * state);
-	virtual	int			MouseDown(int x, int y, int button);
-	virtual	void		MouseUp  (int x, int y, int button);
-	virtual	void		TimerFired(void);
-
+	bool Closed() override;
+	void Draw(GUI_GraphState * state) override;
+	int	 MouseDown(int x, int y, int button) override;
+	void MouseUp(int x, int y, int button) override;
+	void TimerFired() override;
 };
 
 #endif /* WED_AboutBox_H */

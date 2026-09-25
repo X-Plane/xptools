@@ -23,7 +23,12 @@
 #include "PlatformUtils.h"
 #include <string.h>
 #import <AppKit/AppKit.h>
+#import <Cocoa/Cocoa.h>
 
+extern "C" void InitMacAppKit()
+{
+    [NSApplication sharedApplication];
+}
 
 string GetApplicationPath()
 {

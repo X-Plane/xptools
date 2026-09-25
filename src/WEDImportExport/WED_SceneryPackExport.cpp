@@ -207,7 +207,7 @@ void	WED_ExportPackToPath(WED_Thing * root, IResolver * resolver, const string& 
 	FILE_make_dir_exist(apt_dir.c_str());
 	WED_AptExport(root, apt.c_str());
 
-#if !TYLER_MODE
+#if !GATEWAY_IMPORT_MODE
 	string kml = in_path + "doc.kml";
 	KmlExport(root, kml);
 	string osm = in_path + "doc.osm";
@@ -426,64 +426,19 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		if (int count = WED_DoConvertToJW(*apt_itr))
 			LOG_MSG("Upgraded %d JW at %s\n", count, ICAO_code.c_str());
 
-#if TYLER_MODE == 11
-		// translate new pavement polygons into XP11 equivalents (run/taxiways have that done in aptio.cpp)
-		// as well as a few essential and well known new XP12 objects. These "back-translations" 
-		// of new art assets will some day get out of hand and backporting to XP11 will end ...
-		#define XP12PATH  "lib/airport/ground/"
-		#define XP12N  strlen(XP12PATH)
-		vector<IHasResource*> xp12_art;
-		CollectRecursive(*apt_itr, back_inserter(xp12_art), IgnoreVisiblity, [](WED_Thing* t)->bool 
-			{
-				if(auto r = dynamic_cast<IHasResource*>(t))
-				{
-					string res;
-					r->GetResource(res);
-					return res.compare(0, XP12N, XP12PATH) == 0 || 
-						   res.compare(0, strlen("lib/vehicles/"), "lib/vehicles/") == 0 ||
-						   res.compare(0, strlen("lib/airport/control_towers/"), "lib/airport/control_towers/") == 0;
-				}
-				return false;
-			}, "", 2);
-
-		if (xp12_art.size())
-		{
-			for (auto p : xp12_art)
-			{
-				string res;
-				p->GetResource(res);
-				if      (res.compare(XP12N, strlen("pavement/asphalt_L"), "pavement/asphalt_L") == 0)
-					res = "lib/airport/pavement/asphalt_1L.pol";
-				else if (res.compare(XP12N, strlen("pavement/asphalt_D"), "pavement/asphalt_D") == 0)
-					res = "lib/airport/pavement/asphalt_1D.pol";
-				else if (res.compare(XP12N, strlen("pavement/asphalt"), "pavement/asphalt") == 0)
-					res = "lib/airport/pavement/asphalt_3D.pol";
-				else if (res.compare(XP12N, strlen("pavement/concrete_L"), "pavement/concrete_L") == 0)
-					res = "lib/airport/pavement/concrete_1L.pol";
-				else if (res.compare(XP12N, strlen("pavement/concrete"), "pavement/concrete") == 0)
-					res = "lib/airport/pavement/concrete_1D.pol";
-				else if (res.compare(0, strlen("lib/vehicles/static/trucks/"), "lib/vehicles/static/trucks/") == 0)
-					res = "lib/airport/Common_Elements/Vehicles/Cargo_Trailer.obj";
-				else if (res.compare(0, strlen("lib/airport/control_towers/"), "lib/airport/control_towers/") == 0)
-					res = "lib/airport/Modern_Airports/Control_Towers/Modern_Tower_1.agp";
-				else 
-					continue;
-				p->SetResource(res);
-			}
-		}
-#else
+#if GATEWAY_IMPORT_MODE
 		// mow the grass
 		vector<WED_Thing*> terFX;
 		CollectRecursive(*apt_itr, back_inserter(terFX), IgnoreVisiblity, [](WED_Thing* t)->bool 
 			{
 				string res;
-#if TYLER_MODE
+#if GATEWAY_IMPORT_MODE
 				t->GetName(res);
 				return res == "Terrain FX";
 			},
 			WED_Group::sClass, 1);
 #else
-				if (auto tr = dynamic_cast<IHasResource*>(t))  // thats pretty slow - the reason why in TYLER_MODE we go for the group only
+				if (auto tr = dynamic_cast<IHasResource*>(t))  // thats pretty slow - the reason why in GATEWAY_IMPORT_MODE we go for the group only
 				{                                              // but for user exports we can't rely on that group to already exist.
 					tr->GetResource(res);
 					return res.find("terrain_FX") != string::npos;
@@ -579,7 +534,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		//  measureds by the scenery ID (i.e. a cutoff point in time after which ONLY Xp12 ready sceneries were accepted) 
 		// or presence of certain, XP12 only art assets
 		//
-#if TYLER_MODE
+#if GATEWAY_IMPORT_MODE
 		if ((*apt_itr)->GetSceneryID() < 94010 && terFX.empty() && pavFX.empty())
 #else   // artists exporting to GW target at home. They want to see what happens AFTER their scenery is submitted., i.e. when its a "X-Plane 12 submission".
 		// we likely want to do these deletions when IMPORTING from the GW or even on the GW itself - so this GUNK doesn't get reintroduced by ignorant artists
@@ -674,7 +629,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 				LOG_MSG("I/XP12 Deleted Always Flatten at %s\n", ICAO_code.c_str());
 			}
 			// get the 3D meta tag right
-			if (gExportTarget == wet_gateway || TYLER_MODE)
+			if (gExportTarget == wet_gateway || GATEWAY_IMPORT_MODE)
 			{
 				Enforce_MetaDataGuiLabel(*apt_itr);
 			}
@@ -707,26 +662,19 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			break;
 		}
 #endif
-#if TYLER_MODE
+#if GATEWAY_IMPORT_MODE
 		double percent_done = (double)distance(apts.begin(), apt_itr) / apts.size() * 100;
 		printf("%0.0lf%% through heuristic at %s\n", percent_done, ICAO_code.c_str());
 
-		auto t1 = chrono::high_resolution_clock::now();
-		chrono::duration<double> elapsed = t1 - t2;
+		auto t1 = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> elapsed = t1 - t2;
 		if(elapsed.count() > 10.0e-3)
 			LOG_MSG("Update %s took %.0lf msec\n", ICAO_code.c_str(), 1000.0 * elapsed.count());
 		t2 = t1;
-//		if(distance(apts.begin(), apt_itr) == 15) break;  // for quick testing, only upgrade a few airports
 #endif
 	}
 	wrl->CommitCommand();
 
-#if TYLER_MODE == 11
-	// Remove all remaining new XP12 stuff - so this needs to be run in an XP11 installation. 
-	// Or items be copied to be local items in the Global Airports Scenery.
-	WED_DoSelectMissingObjects(resolver);
-	WED_DoClear(resolver);
-#endif		
 	LOG_MSG("Deleted %d illicit ICAO meta tags\n", deleted_illicit_icao);
 	LOG_MSG("Added %d local code metas to prevent Airport_ID getting taken for ICAO\n", added_local_codes);
 	LOG_MSG("Prefixed %d country meta data with iso3166 codes\n", added_country_codes);
@@ -749,7 +697,7 @@ int		WED_CanExportPack(IResolver* resolver, string& ioname)
 
 void	WED_DoExportPack(WED_Document * resolver, WED_MapPane * pane)
 {
-#if TYLER_MODE
+#if GATEWAY_IMPORT_MODE
     // do any pre-export modifications here.
 	DoHueristicAnalysisAndAutoUpgrade(resolver);
 #else
@@ -777,7 +725,7 @@ void	WED_DoExportPack(WED_Document * resolver, WED_MapPane * pane)
 
 	WED_ExportPackToPath(g, resolver, pack_base, problem_children);
 
-#if !TYLER_MODE
+#if !GATEWAY_IMPORT_MODE
 	if (gExportTarget == wet_gateway)
 	{
 		if (uMgr->UndoToMark())
