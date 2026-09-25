@@ -356,6 +356,8 @@ void	WED_Document::Revert(void)
 	mDocPrefs.clear();
 	auto t0 = std::chrono::high_resolution_clock::now();
 
+	WED_BeginLoadDiagnostics();
+
 	try {
 		mUndo.__StartCommand("Revert from Saved.", __FILE__, __LINE__);
 		bool xml_exists;
@@ -446,6 +448,10 @@ void	WED_Document::Revert(void)
 		DoUserAlert(msg.c_str());
 		mUndo.PurgeUndo();
 	}
+
+	if (WED_GetLoadDiagnosticCount() > 0)
+		DoUserAlert("Some values in your hierarchy were corrupt and have been reset to their default values. "
+					"See WED_Log.txt for details.");
 
 	BroadcastMessage(msg_DocLoaded, reinterpret_cast<uintptr_t>(static_cast<IDocPrefs *>(this)));
 }

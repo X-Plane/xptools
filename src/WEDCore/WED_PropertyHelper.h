@@ -197,6 +197,14 @@ public:
 	friend class		WED_PropertyItem;
 };
 
+// XML load-time diagnostics. Bracket a project XML load with WED_BeginLoadDiagnostics() / WED_GetLoadDiagnosticCount().
+// Enum property loaders call WED_NoteCorruptEnumValue() when they encounter a descriptor that doesn't resolve in the
+// declared domain; the bad value is logged to WED_Log.txt and the property keeps its constructor default.
+// Callers pass GetWedName() / GetParent() from within their own class so they can reach the protected GetParent().
+void   WED_BeginLoadDiagnostics();
+void   WED_NoteCorruptEnumValue(const char * prop_name, const WED_PropertyHelper * parent, int domain, const char * bad_value);
+int    WED_GetLoadDiagnosticCount();
+
 // ------------------------------ A LIBRARY OF HANDY MEMBER VARIABLES ------------------------------------
 
 // An integer value entered as text.
@@ -367,8 +375,7 @@ public:
 						operator int() const { return value; }
 	WED_PropIntEnum& operator=(int v);
 
-	WED_PropIntEnum(WED_PropertyHelper * parent, const char * title, int offset, int idomain, int initial) :
-		WED_PropertyItem(parent, title, offset), value(initial), domain(idomain) { }
+	WED_PropIntEnum(WED_PropertyHelper * parent, const char * title, int offset, int idomain, int initial);
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);

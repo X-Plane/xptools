@@ -32,7 +32,7 @@ WED_TerPlacement::WED_TerPlacement(WED_Archive * a, int i) : WED_GISPolygon(a,i)
 	derez     (this, PROP_Name("Sample Factor",  XML_Name("ter_placement", "derez")), 1, 2),
 	skirt     (this, PROP_Name("Skirt Depth",    XML_Name("ter_placement", "skirt")), 1, 3, 0),
 	clip      (this, PROP_Name("Elev. Clipping", XML_Name("ter_placement", "clip")), -999.0, 4, 1),
-	has_msl   (this, PROP_Name("Elevation Mode", XML_Name("ter_placement", "custom_msl")), TerElevationType, obj_setMSL),
+	has_msl   (this, PROP_Name("Elevation Mode", XML_Name("ter_placement", "custom_msl")), TerElevationType, ter_setMSL),
 	msl       (this, PROP_Name("Elevation",      XML_Name("ter_placement", "msl")), 0, 5, 2),
 	show_level(this, PROP_Name("Show with",      XML_Name("ter_placement", "show_level")), ShowLevel, show_Level1),
 	hard	  (this, PROP_Name("Attr hard",      XML_Name("ter_placement", "hard")), 0)

@@ -67,7 +67,34 @@ double round_by_parts_guess(double c, int parts)
 }
 
 #if USE_TIF
-bool	TransformTiffCorner(GTIF * gtif, GTIFDefn * defn, double x, double y, double& outLon, double& outLat)
+// Build a PROJ pipeline that takes the file's projected PCS coordinates (metres
+// or whatever unit the projection emits) and returns WGS84 (lon, lat). Returns
+// NULL if defn->PCS isn't a usable EPSG code -- caller should fall back to
+// libgeotiff's GTIFProj4ToLatLong path. Returned PJ * must be proj_destroy()'d.
+//
+// Why this exists: libgeotiff's GTIFGetProj4Defn builds a PROJ string from the
+// raw GeoTIFF keys and does not special-case EPSG:3857, which requires +a=+b=
+// sphere parameters. The result for 3857 files is an ellipsoidal Mercator
+// inverse, ~0.19 deg of latitude error at mid-latitudes. Resolving the EPSG
+// code directly through PROJ uses the proper definition from its embedded
+// proj.db.
+static PJ * make_pj_pcs_to_wgs84(const GTIFDefn * defn)
+{
+	if (defn == NULL)                          return NULL;
+	if (defn->Model != ModelTypeProjected)     return NULL;
+	if (defn->PCS == 0 || defn->PCS == KvUserDefined) return NULL;
+
+	char src[32];
+	snprintf(src, sizeof(src), "EPSG:%d", defn->PCS);
+	PJ * P = proj_create_crs_to_crs(NULL, src, "EPSG:4326", NULL);
+	if (P == NULL) return NULL;
+	// Force (lon, lat) output regardless of EPSG:4326's declared axis order.
+	PJ * P_norm = proj_normalize_for_visualization(NULL, P);
+	proj_destroy(P);
+	return P_norm;
+}
+
+bool	TransformTiffCorner(GTIF * gtif, GTIFDefn * defn, double x, double y, double& outLon, double& outLat, PJ * preferred_xform)
 {
     /* Try to transform the coordinate into PCS space */
     if( !GTIFImageToPCS( gtif, &x, &y ) )
@@ -82,18 +109,29 @@ bool	TransformTiffCorner(GTIF * gtif, GTIFDefn * defn, double x, double y, doubl
     	outLat = y;
     	return true;
     }
-    else
+
+	if (preferred_xform)
 	{
-        if( GTIFProj4ToLatLong( defn, 1, &x, &y ) )
-        {
-			outLon = x;
-			outLat = y;
-			LOG_MSG("  Proj4 worked: %lf %lf\n",x,y);
+		PJ_COORD c = proj_coord(x, y, 0, 0);
+		c = proj_trans(preferred_xform, PJ_FWD, c);
+		if (c.xy.x != HUGE_VAL && c.xy.y != HUGE_VAL)
+		{
+			outLon = c.xy.x;
+			outLat = c.xy.y;
+			LOG_MSG("  EPSG xform worked: %lf %lf\n", outLon, outLat);
 			return true;
 		}
-		else
-			LOG_MSG("  Proj4 failed\n");
+		LOG_MSG("  EPSG xform failed, falling back to Proj4 path\n");
 	}
+
+	if( GTIFProj4ToLatLong( defn, 1, &x, &y ) )
+	{
+		outLon = x;
+		outLat = y;
+		LOG_MSG("  Proj4 worked: %lf %lf\n",x,y);
+		return true;
+	}
+	LOG_MSG("  Proj4 failed\n");
 	return false;
 }
 #endif
@@ -179,14 +217,21 @@ bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos,
 			if(post_pos == dem_want_File)
 				post_pos = (pixel_type==RasterPixelIsPoint) ? dem_want_Post : dem_want_Area;
 
-        	if (TransformTiffCorner(gtif, &defn,	   dx, ysize-dy, corners[0], corners[1]) &&
-	        	TransformTiffCorner(gtif, &defn, xsize-dx, ysize-dy, corners[2], corners[3]) &&
-	        	TransformTiffCorner(gtif, &defn,	   dx,		 dy, corners[4], corners[5]) &&
-	        	TransformTiffCorner(gtif, &defn, xsize-dx,		 dy, corners[6], corners[7]))
+			// Primary path: resolve the file's EPSG PCS through PROJ directly,
+			// since libgeotiff's proj4 string mishandles EPSG:3857 (and any other
+			// projection whose EPSG definition differs from the keys-derived
+			// proj4 form). NULL means "no usable EPSG code"; TransformTiffCorner
+			// then transparently uses the libgeotiff Proj4 fallback.
+			PJ * pj_pcs = make_pj_pcs_to_wgs84(&defn);
+
+        	if (TransformTiffCorner(gtif, &defn,	   dx, ysize-dy, corners[0], corners[1], pj_pcs) &&
+	        	TransformTiffCorner(gtif, &defn, xsize-dx, ysize-dy, corners[2], corners[3], pj_pcs) &&
+	        	TransformTiffCorner(gtif, &defn,	   dx,		 dy, corners[4], corners[5], pj_pcs) &&
+	        	TransformTiffCorner(gtif, &defn, xsize-dx,		 dy, corners[6], corners[7], pj_pcs))
 	        {
 	        	retVal = true;
 	        }
-	        
+
 			if (gcp)
 			{
 				gcp->pts.clear();
@@ -200,11 +245,13 @@ bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos,
 						for (int x = 0; x < gcp->size_x; x++)
 						{
 							double lon, lat;
-							if (TransformTiffCorner(gtif, &defn, dx + x * xsize / (gcp->size_x - 1), ysize - y * ysize / (gcp->size_y - 1) - dy, lon, lat))
+							if (TransformTiffCorner(gtif, &defn, dx + x * xsize / (gcp->size_x - 1), ysize - y * ysize / (gcp->size_y - 1) - dy, lon, lat, pj_pcs))
 								gcp->pts.push_back(Point2(lon, lat));
 						}
 				}
 			}
+
+			if (pj_pcs) proj_destroy(pj_pcs);
 		}
 		GTIFFree(gtif);
 	}

@@ -26,12 +26,50 @@
 #include "WED_Globals.h"
 #include "WED_XMLWriter.h"
 #include "WED_EnumSystem.h"
+#include "WED_Persistent.h"
 #include "AssertUtils.h"
 #include "IODefs.h"
 #include "STLUtils.h"
 #include "MathUtils.h"
 #include "XESConstants.h"
+#include "XDefs.h"
 #include <algorithm>
+
+// ---------------- XML load-time diagnostics ----------------
+// Counter is reset by WED_BeginLoadDiagnostics() at the start of each document load. Each enum property loader that
+// encounters an unresolvable descriptor calls WED_NoteCorruptEnumValue() with the offending value; that bumps the
+// counter and emits a single detail line to WED_Log.txt. WED_Document checks the counter after the load and surfaces
+// one user-visible modal if it is non-zero.
+
+static int s_load_corrupt_count = 0;
+
+void WED_BeginLoadDiagnostics()
+{
+	s_load_corrupt_count = 0;
+}
+
+int WED_GetLoadDiagnosticCount()
+{
+	return s_load_corrupt_count;
+}
+
+void WED_NoteCorruptEnumValue(const char * prop_name, const WED_PropertyHelper * parent, int domain, const char * bad_value)
+{
+	++s_load_corrupt_count;
+
+	const char * cls = "<unknown>";
+	if (const WED_Persistent * pers = dynamic_cast<const WED_Persistent *>(parent))
+		cls = pers->GetClass();
+
+	const char * dom = DOMAIN_Desc(domain);
+	if (!dom) dom = "<unknown>";
+
+	LOG_MSG("W/Prop corrupt enum value: class=%s prop=%s domain=%s value=\"%s\"\n",
+			cls,
+			prop_name ? prop_name : "<unknown>",
+			dom,
+			bad_value ? bad_value : "");
+}
 
 template<typename T>
 inline void CallEditCallback(WED_PropertyHelper* P, T& value, const T& v) 
@@ -47,6 +85,14 @@ WED_PropBoolText&     WED_PropBoolText::operator=(int v)    { CallEditCallback<i
 WED_PropDoubleText& WED_PropDoubleText::operator=(double v) { CallEditCallback<double>(GetParent(), value, v); return *this; }
 WED_PropStringText& WED_PropStringText::operator=(const string& v)  { CallEditCallback<string>(GetParent(), value, v); return *this; }
 WED_PropFileText&     WED_PropFileText::operator=(const string& v)  { CallEditCallback<string>(GetParent(), value, v); return *this; }
+
+WED_PropIntEnum::WED_PropIntEnum(WED_PropertyHelper * parent, const char * title, int offset, int idomain, int initial) :
+	WED_PropertyItem(parent, title, offset), value(initial), domain(idomain)
+{
+	// If this hits, go look at your instance of WED_PropIntEnum and fix the default values - you've asked for an
+	// enum from the wrong domain, and it's going to cause WED to trash documents later.
+	DebugAssert(ENUM_Domain(initial) == idomain);
+}
 
 WED_PropIntEnum&                 WED_PropIntEnum::operator=(int v)             { CallEditCallback<int>(GetParent(), value, v); return *this; }
 WED_PropIntEnumSet&           WED_PropIntEnumSet::operator=(const set<int>& v) { CallEditCallback<set<int> >(GetParent(), value, v); return *this; }
@@ -683,7 +729,8 @@ void		WED_PropIntEnum::GetPropertyDict(PropertyDict_t& dict)
 
 void		WED_PropIntEnum::GetPropertyDictItem(int e, string& item)
 {
-	item = ENUM_Desc(e);
+	const char * ed = ENUM_Desc(e);
+	item = ed ? ed : "";
 }
 
 void		WED_PropIntEnum::GetProperty(PropertyVal_t& val) const
@@ -727,7 +774,13 @@ bool		WED_PropIntEnum::WantsAttribute(const char * ele, const char * att_name, c
 	if(strcmp(GetXmlName(),ele)==0)
 	if(strcmp(GetXmlAttrName(),att_name)==0)
 	{
-		value = ENUM_LookupDesc(domain,att_value);
+		int v = ENUM_LookupDesc(domain,att_value);
+		if (v < 0)
+			// Unknown descriptor for this domain. Keep the constructor-supplied default already sitting in `value`
+			// (loads happen against a freshly-constructed Thing) and report it so the user sees a single end-of-load alert.
+			WED_NoteCorruptEnumValue(GetWedName(), GetParent(), domain, att_value);
+		else
+			value = v;
 		return true;
 	}
 	return false;
@@ -841,10 +894,12 @@ void		WED_PropIntEnumSet::StartElement(
 		else
 		{
 			int i = ENUM_LookupDesc(domain,v);
-			// If asked to add enum of unknown name to set, just ignore it silently.
-			// If we were to add "-1" to the set instead, the set would become un-modifyable and 'save file' would bomb.
+			// If asked to add enum of unknown name to set, drop it (adding -1 would make the set un-modifyable and
+			// break save) but record the data loss so the end-of-load diagnostic alert fires.
 			if (i >= 0)
 				value.insert(i);
+			else
+				WED_NoteCorruptEnumValue(GetWedName(), GetParent(), domain, v);
 		}
 	}
 }
@@ -935,6 +990,10 @@ bool		WED_PropIntEnumBitfield::WantsAttribute(const char * ele, const char * att
 	{
 		int bf = atoi(att_value);
 		ENUM_ImportSet(domain, bf, value);
+		// ENUM_ImportSet silently drops bits that don't map in this domain. Re-export the resulting set; any difference
+		// from the input bitfield means at least one bit was lost. Report once per attribute, not per bit.
+		if (ENUM_ExportSet(value) != bf)
+			WED_NoteCorruptEnumValue(GetWedName(), GetParent(), domain, att_value);
 		return true;
 	}
 	return false;

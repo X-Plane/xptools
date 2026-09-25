@@ -618,16 +618,11 @@ void	 WED_GISEdge::RebuildCache(int flags) const
 
 	if (flags & cache_Spatial)
 	{
-		int m = GetNumPoints();
-		for (int mm = 0; mm < m; ++mm)
-		{
-			Bbox2 temp;
-			WED_Thing* c = GetNthChild(mm);
-			IGISEntity* p = dynamic_cast<IGISEntity*>(c);
-			if (p)
-				p->GetBounds(gis_Geo, temp);
-		}
-
+		// This code used to incorrectly call GetLocation on each child but using the point count, which would
+		// ALWAYS go off the end of the array. If this didn't seg fault the junk IDs would be thrown out when
+		// etiher FetchID or dynamic_cast failed.
+		// But we don't need this because GetSide will pull point locations correctly.
+		
 		int n = GetNumSides();			// We MUST ensure that this only builds topo cache or we are dead dead dead!!
 		mCacheBounds = Bbox2();
 

@@ -49,9 +49,12 @@ struct gcp_t {
 #include <geotiffio.h>
 #include <geo_normalize.h>
 
+struct PJconsts;
+typedef struct PJconsts PJ;
+
 bool	FetchTIFFCorners(const char * inFileName, double corners[8], int& post_pos, gcp_t * gcp=nullptr);
 bool	FetchTIFFCornersWithTIFF(TIFF * inTiff, double corners[8], int& post_pos, gcp_t * gcp=nullptr);
-bool	TransformTiffCorner(GTIF* gtif, GTIFDefn* defn, double x, double y, double& outLon, double& outLat);
+bool	TransformTiffCorner(GTIF* gtif, GTIFDefn* defn, double x, double y, double& outLon, double& outLat, PJ * preferred_xform = nullptr);
 
 // This routine converts UTM to lat/lon coordinates.  X and Y should be
 // in meters.  Zone should be positive 1-60 for north or -1-60 for south.
