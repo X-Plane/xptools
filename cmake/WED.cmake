@@ -77,6 +77,8 @@ set (WED_SOURCES
 	src/WEDCore/WED_GISUtils.h
 	src/WEDCore/WED_Orthophoto.cpp
 	src/WEDCore/WED_Orthophoto.h
+	src/WEDCore/WED_TruckNetworkValidate.cpp
+	src/WEDCore/WED_TruckNetworkValidate.h
 	src/WEDCore/WED_Validate.cpp
 	src/WEDCore/WED_Validate.h
 	src/WEDCore/WED_ValidateATCRunwayChecks.cpp
