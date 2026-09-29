@@ -75,6 +75,7 @@ struct	WED_MCPTool {
 // Tool groups - each appends its tools.
 void	WED_MCP_RegisterAppTools(vector<WED_MCPTool>& tools);
 void	WED_MCP_RegisterDocTools(vector<WED_MCPTool>& tools);
+void	WED_MCP_RegisterMapTools(vector<WED_MCPTool>& tools);
 
 // Run step on the main thread on each server tick (~10 ms) until it returns true.  For async tools: the job stays
 // running, and so holds the queue, until step calls Reply/Error on its WED_MCPCall.

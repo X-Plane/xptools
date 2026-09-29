@@ -6,9 +6,9 @@ usage: test_phase1.py <path to the WED executable>
 
 Runs WED against a throwaway X-Plane folder and prefs file, so your own setup is never touched.
 """
-import json, os, subprocess, sys, tempfile, time
+import json, os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from wed_mcp import call, rpc, ToolError
+from wed_mcp import call, launch, quit, ToolError
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 failures = 0
@@ -18,18 +18,7 @@ def check(label, ok):
     failures += 0 if ok else 1
 
 def main(wed):
-    scratch = tempfile.mkdtemp(prefix="wed_mcp_")
-    xp = os.path.join(scratch, "xp")
-    os.makedirs(os.path.join(xp, "Custom Scenery"))
-    os.makedirs(os.path.join(xp, "Resources", "default scenery"))
-    proc = subprocess.Popen([wed, "--mcp", "--prefs=" + os.path.join(scratch, "test.prefs"), "--xsystem=" + xp],
-                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    for _ in range(60):
-        try:
-            rpc("ping", timeout=2); break
-        except Exception:
-            if proc.poll() is not None: sys.exit("WED exited during startup (port 8087 in use?)")
-            time.sleep(0.5)
+    proc, scratch = launch(wed)
 
     call("new_package", name="MCP E2E")
     r = call("execute_command", name="wed_CreateApt")
@@ -86,11 +75,7 @@ def main(wed):
           call("dump_document", ids=False, file_precision=True)["root"] == saved)
     call("close_document")
 
-    call("execute_command", name="gui_Quit")
-    try:
-        proc.wait(timeout=20); check("WED exits on gui_Quit", True)
-    except subprocess.TimeoutExpired:
-        proc.kill(); check("WED exits on gui_Quit", False)
+    check("WED exits on gui_Quit", quit(proc))
     check("test prefs were written (not the user's)", os.path.exists(os.path.join(scratch, "test.prefs")))
     print("%d failure(s); scratch folder %s" % (failures, scratch))
     sys.exit(1 if failures else 0)

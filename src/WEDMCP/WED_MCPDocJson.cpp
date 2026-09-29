@@ -55,8 +55,10 @@ static bool	is_persisted(WED_PropertyItem * item, PropertyInfo_t& info)
 	return !info.synthetic;
 }
 
-static string	prop_key(WED_PropertyItem * item)
+static string	prop_key(WED_PropertyItem * item, bool display = false)
 {
+	if (display)
+		return item->GetWedName();
 	string key(item->GetXmlName());
 	const char * attr = item->GetXmlAttrName();
 	if (attr && *attr)
@@ -281,7 +283,7 @@ static bool	injectable_class(const string& c)
 	return c != WED_Root::sClass && c != WED_Select::sClass && c != WED_KeyObjects::sClass;
 }
 
-bool	WED_MCP_SetProperties(WED_Thing * t, const Json::Value& props, WED_MCPError& err)
+static bool	set_items(WED_PropertyHelper * t, const char * what, bool display, const Json::Value& props, WED_MCPError& err)
 {
 	meters_please m;
 	if (!props.isObject())
@@ -301,7 +303,7 @@ bool	WED_MCP_SetProperties(WED_Thing * t, const Json::Value& props, WED_MCPError
 			PropertyInfo_t info;
 			if (!is_persisted(t->mItems[n], info))
 				continue;
-			string k = prop_key(t->mItems[n]);
+			string k = prop_key(t->mItems[n], display);
 			valid.append(k);
 			if (k == key)
 			{
@@ -312,7 +314,7 @@ bool	WED_MCP_SetProperties(WED_Thing * t, const Json::Value& props, WED_MCPError
 		if (!found)
 		{
 			err.code = "unknown_property";
-			err.message = string(t->GetClass()) + " has no property '" + key + "'";
+			err.message = string(what) + " has no property '" + key + "'";
 			err.extra["valid"] = valid;
 			return false;
 		}
@@ -322,6 +324,33 @@ bool	WED_MCP_SetProperties(WED_Thing * t, const Json::Value& props, WED_MCPError
 		found->SetProperty(val, t);
 	}
 	return true;
+}
+
+bool	WED_MCP_SetProperties(WED_Thing * t, const Json::Value& props, WED_MCPError& err)
+{
+	return set_items(t, t->GetClass(), false, props, err);
+}
+
+bool	WED_MCP_SetDisplayProperties(WED_PropertyHelper * obj, const char * what, const Json::Value& props, WED_MCPError& err)
+{
+	return set_items(obj, what, true, props, err);
+}
+
+Json::Value	WED_MCP_DumpDisplayProperties(WED_PropertyHelper * obj)
+{
+	meters_please m;
+	Json::Value props(Json::objectValue);
+	for(int n = 0; n < obj->mItems.size(); ++n)
+	{
+		WED_PropertyItem * item = obj->mItems[n];
+		PropertyInfo_t info;
+		if (!is_persisted(item, info))
+			continue;
+		PropertyVal_t val;
+		item->GetProperty(val);
+		props[prop_key(item, true)] = value_to_json(info, val, false);
+	}
+	return props;
 }
 
 struct	pending_sources_t {

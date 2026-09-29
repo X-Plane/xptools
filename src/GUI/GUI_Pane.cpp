@@ -46,8 +46,19 @@ using std::find;
 
 
 
+static bool			sModifiersOverride = false;
+static GUI_KeyFlags	sModifiersOverrideFlags = 0;
+
+void	GUI_Pane::SetModifiersOverride(bool active, GUI_KeyFlags flags)
+{
+	sModifiersOverride = active;
+	sModifiersOverrideFlags = flags;
+}
+
 GUI_KeyFlags GUI_Pane::GetModifiersNow(void)
 {
+	if (sModifiersOverride)
+		return sModifiersOverrideFlags;
 #if APL
 
 	GUI_KeyFlags	flags = 0;

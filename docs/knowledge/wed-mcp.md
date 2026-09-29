@@ -122,6 +122,39 @@ compiled into every build, Release included.
 - **Opening a package goes through `WED_StartWindow::OpenPackage`**, which reuses the start window's `sDocs` / lock
   bookkeeping. Don't construct `WED_Document` / `WED_DocumentWindow` directly.
 
+### Screenshots and synthetic input (`WED_MCPToolsMap`)
+
+- **Two coordinate systems.**
+  - Agents see window pixels with a **top-left** origin, as in screenshots.
+  - Panes, events and `WED_Map`'s pixel space use GL coordinates with a **bottom-left** origin (`WED_Map::SetBounds` →
+    `SetPixelBounds`, so `LLToPixel` returns window GL coordinates).
+  - Convert with `img_y = win_h - gl_y`, where the window size comes from its *pane* bounds.
+  - `GUI_Window` inherits `GetBounds` from both `XWin` and `GUI_Pane`, so cast to `GUI_Pane*`.
+- **Capture reads the back buffer at the end of `GUI_Window::GLDraw`, before the platform swap**
+  (`GUI_Window::RequestCapture`).
+  - It forces a refresh and completes asynchronously on the next draw. A hidden or minimized window never draws,
+    so the tool times out.
+  - The capture is WED's own GL rendering: native menus, OS dialogs and tooltips aren't in it.
+  - Mac renders at 1×, so framebuffer = points.
+- **Mouse gestures go through `GUI_Window::SynthMouse`**, which calls the real `ClickDown/Drag/Up/Move` with client
+  coordinates, so `BeginDefer`/`EndDefer`, mouse capture and tool dispatch behave exactly as for real events.
+  - The tool sends **one event per server tick** and holds the job queue until the up.
+  - A drag is interpolated (`steps`), because tools react to motion.
+  - While a synthetic gesture is under way, `GUI_Window::GetMouseLocNow` returns the synthetic position.
+- **Modifiers:** every map tool reads them through `GUI_Pane::GetModifiersNow`, which `SetModifiersOverride`
+  replaces. It is global, so during a gesture it also masks the real keyboard.
+- **Key presses must carry `gui_DownFlag`.** Real keys arrive as a down event and an up event, and the create tools
+  (`WED_CreateToolBase::HandleToolKeyPress`: Return to finish, Escape, Delete) ignore anything that isn't a down.
+  The `key` tool sends both.
+- **Create tools commit only on emit.** Points clicked with a create tool are tool state, not document state: no
+  undo step appears until Return (or a double-click) emits the object. Leftover points from an earlier gesture carry
+  over into the next one, so press Escape first to be safe.
+- **Double-click detection uses `GUI_Pane::GetTimeNow`**, which is `clock()` (CPU time) on Mac and Windows. Two
+  synthetic clicks close together in space can count as a double-click even seconds apart, and that emits the shape.
+- **Picking a tool:** `WED_MapPane::SetCurrentTool` calls the toolbar's `SetValue`, the same path as clicking the
+  button. Tool settings are the tool's `WED_PropertyHelper` items, keyed by display name. They aren't document state,
+  so changing them opens no command.
+
 ### Isolation flags (`WED_AppMain.cpp`)
 
 - `--prefs=<file>` → `GUI_Prefs_SetFileOverride`: all prefs reads and writes go to that file.
@@ -138,6 +171,7 @@ compiled into every build, Release included.
 | `WED_MCPTools` | `WED_MCPCall` (reply once), tool table type, `WED_MCP_FindDocument`, argument helpers, `WED_MCP_RunLater` |
 | `WED_MCPToolsApp` | state, packages, open/new/close, list/execute commands, alerts and dialog answers, logs |
 | `WED_MCPToolsDoc` | dump_document, inject_fixture, set_properties, set_selection, search_library |
+| `WED_MCPToolsMap` | capture_screenshot, get/set_viewport, list_tools, set_tool, mouse, key |
 | `WED_MCPDocJson` | document ↔ JSON (dump and inject share the schema) |
 | `WED_MCPHeadless` | modal hooks and the alert log |
 | `WED_MCPCommandNames` | command name ↔ enum table |
@@ -156,7 +190,8 @@ lookup, e.g. `unknown_property` lists `valid` keys and `invalid_enum_value` list
   - Reply exactly once, or use `WED_MCP_RunLater` if the reply has to wait.
 - **Run it:** `WED --mcp --prefs=/tmp/t.prefs --xsystem=/tmp/xp`, then point the client at
   `http://localhost:8087/mcp`. The repo's `.mcp.json` does this for Claude Code.
-  - `test/mcp/` has a Python client and the Phase 1 end-to-end test (`test_phase1.py`).
+  - `test/mcp/` has a Python client (`wed_mcp.py`, including `launch()` for a scratch X-Plane folder) and
+    end-to-end tests: `test_phase1.py` (documents) and `test_phase2.py` (map and input).
 
 ## Connections to Other Systems
 
@@ -165,4 +200,5 @@ lookup, e.g. `unknown_property` lists `valid` keys and `invalid_enum_value` list
 - Property items, persisted names and enums → [wed-entities.md](wed-entities.md),
   [wed-core-services.md](wed-core-services.md).
 - Menu dispatch and focus chain → [wed-ui-panes.md](wed-ui-panes.md), [gui-framework.md](gui-framework.md).
+- Map tools, handles and the drag state machine the mouse tool drives → [wed-map-and-tce.md](wed-map-and-tce.md).
 - Library search → [wed-core-services.md](wed-core-services.md).

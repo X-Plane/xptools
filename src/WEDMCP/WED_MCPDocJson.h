@@ -76,4 +76,9 @@ bool	WED_MCP_InjectObjects(WED_Thing * parent, int position, const Json::Value& 
 // Set properties ({key: value}) on one object.  MUST be called inside an open undo command.
 bool	WED_MCP_SetProperties(WED_Thing * thing, const Json::Value& props, WED_MCPError& err);
 
+// Non-persisted property helpers (map tool settings), keyed by their display names.  No undo involved.
+class	WED_PropertyHelper;
+Json::Value	WED_MCP_DumpDisplayProperties(WED_PropertyHelper * obj);
+bool	WED_MCP_SetDisplayProperties(WED_PropertyHelper * obj, const char * what, const Json::Value& props, WED_MCPError& err);
+
 #endif /* WED_MCPDocJson_H */

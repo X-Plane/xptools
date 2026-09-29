@@ -31,7 +31,7 @@ Paths are relative to `src/`.
 | WEDImportExport | 30 | [wed-import-export.md](wed-import-export.md) |
 | WEDFileCache | 6 | [wed-network-and-filecache.md](wed-network-and-filecache.md) |
 | WEDNetwork (mostly compiled out) | 11 | [wed-network-and-filecache.md](wed-network-and-filecache.md) |
-| WEDMCP — MCP server for automated testing (`--mcp`) | 12 | [wed-mcp.md](wed-mcp.md) |
+| WEDMCP — MCP server for automated testing (`--mcp`) | 13 | [wed-mcp.md](wed-mcp.md) |
 | WEDResources (art, no code) | 0 | — |
 | WEDDocs (user manual source) | 0 | — not developer docs |
 | *(cross-cutting)* design rules | | [wed-design-principles.md](wed-design-principles.md) |
@@ -101,6 +101,7 @@ Paths are relative to `src/`.
 - Headless modals (`gPlatformModalHooks`) → [wed-mcp.md](wed-mcp.md#modals-are-answered-automatically-wed_mcpheadless)
 - Command names ↔ enums (keep `WED_MCPCommandNames.cpp` in sync) → [wed-mcp.md](wed-mcp.md#commands-and-documents)
 - Save/reopen double precision, raw property items vs IPropertyObject → [wed-mcp.md](wed-mcp.md#the-json-schema-reads-raw-property-items-not-ipropertyobject)
+- Screenshots, synthetic mouse/key input, window vs GL coordinates → [wed-mcp.md](wed-mcp.md#screenshots-and-synthetic-input-wed_mcptoolsmap)
 
 ### Startup, documents, managers
 - Startup / initialization order → [wed-core-services.md](wed-core-services.md#startup-order-wed_appmaincpp-main)

@@ -98,7 +98,25 @@ public:
 	virtual	void			GLReshaped(int inWidth, int inHeight);
 	virtual	void			GLDraw(void);
 
+	// Automation (synthetic input).  Coordinates are window GL coordinates (origin bottom left, like pane bounds).
+	// The events go through the same ClickDown/Drag/Up/Move path as real ones; always pair a down with an up.
+	// After a synthetic down, drag or move, GetMouseLocNow reports the synthetic position (not the real mouse)
+	// until the next synthetic up.
+	enum { synth_down, synth_drag, synth_up, synth_move };
+			void			SynthMouse(int kind, int x, int y, int button);
+
+	// Automation (screen capture): the next time the window draws, read back the frame and call cb with its size
+	// and RGBA pixels, rows bottom-up.  Forces a redraw.  If the window never draws (hidden), cb is never called.
+	typedef std::function<void(int w, int h, const vector<unsigned char>& rgba)>	CaptureFunc;
+			void			RequestCapture(CaptureFunc cb);
+
 private:
+
+	bool			mSynthMouse = false;
+	int				mSynthMouseX = 0;
+	int				mSynthMouseY = 0;
+	CaptureFunc		mCapture;
+
 
 	friend class GUI_Application;
 #if IBM

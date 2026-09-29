@@ -253,6 +253,7 @@ WED_MCPServer::WED_MCPServer(WED_StartWindow * start_window) : mStartWindow(star
 {
 	WED_MCP_RegisterAppTools(mTools);
 	WED_MCP_RegisterDocTools(mTools);
+	WED_MCP_RegisterMapTools(mTools);
 
 	for(int t = 0; t < mTools.size(); ++t)
 	{

@@ -85,6 +85,13 @@ public:
 
 			GUI_Pane *	GetTopBar(void);
 
+			// The map itself (its pixel space is window GL coordinates) and the toolbar's tools, for automation.
+			WED_Map *			GetMap(void) { return mMap; }
+			int					CountTools(void) const { return mTools.size(); }
+			WED_MapToolNew *	GetNthTool(int n) const { return mTools[n]; }	// NULL for empty toolbar slots
+			int					GetCurrentTool(void) const;
+			void				SetCurrentTool(int n);							// as if its toolbar button was clicked
+
 			int				Map_KeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)	 	;
 			int				Map_HandleCommand(int command) 									;
 			int				Map_CanHandleCommand(int command, string& ioName, int& ioCheck) ;

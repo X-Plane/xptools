@@ -832,6 +832,39 @@ void			GUI_Window::GLDraw(void)
 	glEnable(GL_SCISSOR_TEST);
 	InternalDraw(&mState);
 	glDisable(GL_SCISSOR_TEST);
+
+	if (mCapture)
+	{
+		// Read the back buffer before the platform code swaps it.
+		CaptureFunc cb;
+		cb.swap(mCapture);
+		vector<unsigned char> rgba((size_t) w * h * 4);
+		glReadBuffer(GL_BACK);
+		glPixelStorei(GL_PACK_ALIGNMENT, 1);
+		glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, rgba.data());
+		cb(w, h, rgba);
+	}
+}
+
+void		GUI_Window::RequestCapture(CaptureFunc cb)
+{
+	mCapture = cb;
+	Refresh();
+}
+
+void		GUI_Window::SynthMouse(int kind, int x, int y, int button)
+{
+	mSynthMouse = (kind != synth_up);
+	mSynthMouseX = x;
+	mSynthMouseY = y;
+	int cx = OGL2Client_X(x, mWindow);
+	int cy = OGL2Client_Y(y, mWindow);
+	switch(kind) {
+	case synth_down:	ClickDown(cx, cy, button);	break;
+	case synth_drag:	ClickDrag(cx, cy, button);	break;
+	case synth_up:		ClickUp(cx, cy, button);	break;
+	case synth_move:	ClickMove(cx, cy);			break;
+	}
 }
 
 void		GUI_Window::Refresh(void)
@@ -1210,6 +1243,12 @@ void		GUI_Window::Timer(void)
 
 void		GUI_Window::GetMouseLocNow(int * out_x, int * out_y)
 {
+	if (mSynthMouse)
+	{
+		if (out_x) *out_x = mSynthMouseX;
+		if (out_y) *out_y = mSynthMouseY;
+		return;
+	}
 	int x, y;
 	XWinGL::GetMouseLoc(&x, &y);
 	if (out_x) *out_x = Client2OGL_X(x, mWindow);

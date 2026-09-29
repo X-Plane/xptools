@@ -56,6 +56,8 @@ public:
 
 	virtual	bool	Closed(void);
 
+	WED_MapPane *	GetMapPane(void) { return mMapPane; }
+
 private:
 
 	WED_Document *				mDocument;

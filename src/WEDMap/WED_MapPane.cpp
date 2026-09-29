@@ -385,6 +385,16 @@ void WED_MapPane::ZoomShowSel(double scale)   // by default show just a bit more
 	mMap->Refresh();
 }
 
+int		WED_MapPane::GetCurrentTool(void) const
+{
+	return mToolbar->GetValue();
+}
+
+void	WED_MapPane::SetCurrentTool(int n)
+{
+	mToolbar->SetValue(n);
+}
+
 void WED_MapPane::CenterOnPoint(const Point2& centerLL)
 {
 	double west, south, east, north;

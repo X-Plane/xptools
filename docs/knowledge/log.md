@@ -44,3 +44,4 @@
 2026-09-25 | ingest | raw/ben-design-principles-2026-09-25.md (Ben's answers on 10 design questions) → wed-design-principles.md; back-links added; principle violations (export-target leak, GUI→WED includes, WED_GIS* casts) → punch list
 2026-09-29 | compile | WEDMCP (new MCP server, Phases 0-1) → wed-mcp.md; back-links in wed-object-model, wed-ui-panes (menu-command recipe step), gui-framework (timer self-delete, NSApp stop from timer); wed-design-principles rule 1 gains "all mutations incl. selection are undoable" (Ben)
 2026-09-29 | fix | WED_Document ctor apt.dat-scan off-by-one (started at CountCustomPackages, skipped 0) found via MCP tests with an empty X-System folder; stop_app() posts a wake event so Quit works from timers
+2026-09-29 | update | wed-mcp.md: Phase 2 (screenshots, viewport, map tools, synthetic mouse/key) - coordinate systems, capture-before-swap, key down flag, create-tool emit, clock() double-click; back-link from wed-map-and-tce

@@ -145,6 +145,8 @@ The steps below were checked against the current code but have not been built.
 
 ## Connections to Other Systems
 
+- [wed-mcp.md](wed-mcp.md): the MCP `mouse`/`key`/`set_tool` tools drive map tools through synthetic `GUI_Window` events and `WED_MapPane::SetCurrentTool`; create tools need key-down flags and commit only on emit.
+
 - **Design rules** ([wed-design-principles.md](wed-design-principles.md)): the stated rules for new code and reviews that this subsystem's conventions should follow — command ownership, pointer vs ID, class vs interface casts, error handling, layering, per-doc prefs, platform reference.
 - **Undo and archive** ([wed-object-model.md](wed-object-model.md)): `WED_Archive::StartCommand/CommitCommand`, `CacheKey()`, and the `msg_ArchiveChanged`/`msg_ArchiveChangedEphemerally` broadcasts. The per-document managers the layers draw from (`WED_ResourceMgr`, `WED_TexMgr`) are in [wed-core-services.md](wed-core-services.md). `WED_ToolUtils` (`WED_GetSelect`, `WED_GetWorld`, `WED_GetCurrentAirport`, `WED_GetCreateHost`, the `Iterate_*` helpers) lives here but is included from WEDEntities, WEDImportExport, WEDWindows, WEDCore and WEDProperties. It is a general resolver-lookup utility, not something specific to the map.
 - **Entity model** ([wed-object-model.md](wed-object-model.md), [wed-entities.md](wed-entities.md)): drawing and hit-testing go only through `IGIS*` (`Cull`, `GetBounds`, `PtWithin`, `PtOnFrame`, `WithinBox`, `Rescale`, `Rotate`). Per-type code in the preview and vertex tool switches on `GetGISSubtype()`/`GetClass()` compared with `sClass` pointers. Entity `Cull` implementations add their own slop, e.g. `WED_ObjPlacement` uses its visible radius.

@@ -183,6 +183,8 @@ public:
 							void *					ref);
 
 			GUI_KeyFlags	GetModifiersNow(void);
+	// Automation (synthetic input): while active, GetModifiersNow reports these flags instead of the keyboard's.
+	static	void			SetModifiersOverride(bool active, GUI_KeyFlags flags = 0);
 	virtual	void			GetMouseLocNow(int * out_x, int * out_y);
 	virtual bool			IsKeyPressedNow(int virtualKey);
 			float			GetTimeNow(void);
