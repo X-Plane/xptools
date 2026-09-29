@@ -213,10 +213,38 @@ lookup, e.g. `unknown_property` lists `valid` keys and `invalid_enum_value` list
   - If the tool edits a document, open one command, commit on success and abort on error.
   - Reply exactly once, or use `WED_MCP_RunLater` if the reply has to wait.
 - **Run it:** `WED --mcp --prefs=/tmp/t.prefs --xsystem=/tmp/xp`, then point the client at
-  `http://localhost:8087/mcp`. The repo's `.mcp.json` does this for Claude Code.
+  `http://127.0.0.1:8087/mcp`. The repo's `.mcp.json` does this for Claude Code. See "Connecting from Claude Code"
+  below.
   - `test/mcp/` has a Python client (`wed_mcp.py`, including `launch()` for a scratch X-Plane folder) and
     end-to-end tests: `test_phase1.py` (documents), `test_phase2.py` (map and input) and `test_phase3.py`
     (validation and export). Each takes the path to a WED executable.
+
+## Connecting from Claude Code
+
+The agent launches WED; the procedure is in CLAUDE.md. What goes wrong:
+
+- **Use `127.0.0.1`, not `localhost`, in the URL.** The server binds IPv4 loopback only. Node (and so Claude Code)
+  often resolves `localhost` to `::1` first, and gets connection refused.
+- **The server has to be up when the client connects.** Claude Code connects to HTTP MCP servers at session start.
+  If WED isn't running yet, the `WED` server shows as failed and its tools are missing until the user runs `/mcp`
+  to reconnect. The agent can't reconnect on its own, so either start WED before the session, or fall back to
+  `test/mcp/wed_mcp.py`. That is the same JSON-RPC over plain HTTP, callable from Bash, with the same tool names and
+  arguments.
+- **Quitting or restarting WED drops the connection the same way.** The server keeps no session, so reconnecting
+  just works.
+- **The project `.mcp.json` asks each user to approve the server once** (Claude Code's trust prompt for project MCP
+  servers).
+- **Output size.**
+  - Claude Code truncates or refuses MCP results over about 25k tokens by default (`MAX_MCP_OUTPUT_TOKENS`).
+  - A full `dump_document` of a real airport is far bigger. Use `path` (then read the file with jq or grep),
+    `root_id` or `max_depth`.
+  - `list_commands` without a `filter` is also sizeable.
+  - Screenshots default to 1280 px wide; `region: "map"` and a smaller `max_width` save more.
+- **Time.** Tool calls block the HTTP request until WED finishes. A big `export_pack` or a Gateway `validate` that
+  fetches CIFP data can take a while, so if the client times out, raise its tool timeout (`MCP_TOOL_TIMEOUT` in
+  Claude Code). The server's own cap is 300 s for a started job and 10 s to reach a safe point (then `busy`).
+- **One WED per port.** A second `--mcp` instance on the same port exits with code 2 rather than sharing it. To run
+  several WEDs, give each its own `--mcp_port` and a matching `.mcp.json` entry.
 
 ## Connections to Other Systems
 

@@ -2,7 +2,7 @@
   "mcpServers": {
     "WED": {
       "type": "http",
-      "url": "http://localhost:8087/mcp"
+      "url": "http://127.0.0.1:8087/mcp"
     }
   }
 }

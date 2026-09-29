@@ -76,11 +76,40 @@ Windows:        ./cmake.ps1
 There is no unit-test target. `test/` holds fixture files (DSF, images, TIFFs) for manual
 round-trip checks.
 
-**Driving WED from an agent:** launch `WED --mcp --prefs=<scratch>/t.prefs --xsystem=<scratch X-Plane folder>` and
-use the `WED` MCP server in `.mcp.json` (`http://localhost:8087/mcp`). It can run menu commands, dump the document
-as JSON, inject fixtures, edit properties and the selection (all undoably), take screenshots, drive map tools with
-synthetic mouse and key input, and validate and export. The flags keep the user's prefs and
-X-Plane folder untouched. See `docs/knowledge/wed-mcp.md`; `test/mcp/` has a client and an end-to-end test.
+**Driving WED from an agent (MCP).** WED has a built-in MCP server; the `WED` entry in `.mcp.json` points at
+`http://127.0.0.1:8087/mcp`. It can:
+- run menu commands;
+- dump the document as JSON and inject fixtures;
+- edit properties and the selection, all undoably;
+- take screenshots and drive map tools with synthetic mouse and key input;
+- validate and export.
+
+The agent launches WED itself:
+
+1. **Build** WED (see Build above). On macOS the binary is `build_<Config>/<Config>/WED.app/Contents/MacOS/WED`.
+2. **Make a scratch X-Plane folder** containing `Custom Scenery/` and `Resources/default scenery/` (empty is fine), or
+   use a copy of a real install for real library art. Never point it at the user's own X-Plane folder: WED writes
+   packages there.
+3. **Launch in the background:**
+   `WED --mcp --prefs=<scratch>/wed.prefs --xsystem=<scratch>/xp`
+   - `--prefs` and `--xsystem` keep the user's WED prefs and X-Plane folder untouched.
+   - WED is ready when a JSON-RPC `ping` POSTed to the URL answers.
+   - If port 8087 is taken, WED prints an error and exits with code 2. Use `--mcp_port=N` (then use that port in the
+     URL).
+4. **Connect.**
+   - If WED was running when the Claude Code session started, the `mcp__WED__*` tools are already there.
+   - Otherwise the user runs `/mcp` to reconnect; an agent can't do that itself.
+   - Without the MCP connection, use the same tools over HTTP with `test/mcp/wed_mcp.py` (`call("get_state")`) from
+     Bash.
+5. **Start with `get_state`**, then `new_package` / `open_package`.
+6. **Finish** with `close_document` (`if_dirty: "discard"`), then `execute_command gui_Quit`.
+
+Keep tool output small:
+- `dump_document` of a real airport can exceed Claude Code's MCP output limit (~25k tokens). Use `path`, `root_id`
+  or `max_depth`.
+- Screenshots default to 1280 px wide.
+
+Details and gotchas: `docs/knowledge/wed-mcp.md`. `test/mcp/test_phase*.py` are end-to-end checks.
 
 ## Conditional Compilation — Not Dead Code
 

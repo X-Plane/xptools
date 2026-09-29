@@ -301,8 +301,8 @@ void	WED_MCP_RegisterDocTools(vector<WED_MCPTool>& tools)
 		"The document (default: the whole 'world' tree) as JSON, for diffing state. Each object: id, class, props keyed by their "
 		"persisted earth.wed.xml names (e.g. \"hierarchy.name\"; enums as strings; lengths in meters), extra (airport meta_data, "
 		"chain closed), sources, children. With ids:false, IDs are replaced by refs (o1, o2... in tree order) so dumps from "
-		"different sessions compare equal and the output can be fed to inject_fixture. Big airports are MBs: pass 'path' to write "
-		"the dump to a file instead, or limit max_depth.",
+		"different sessions compare equal and the output can be fed to inject_fixture. A real airport dumps to MBs, far over "
+		"MCP client output limits: pass 'path' to write the dump to a file (then query it with jq/grep), or use root_id / max_depth.",
 		R"({"type":"object","properties":{"doc":{"type":"string","description":"Package name; default: the active or only document."},)"
 		R"("root_id":{"type":"integer","description":"Dump only this object's subtree."},)"
 		R"("max_depth":{"type":"integer","description":"Levels of children to include; deeper objects show child_count."},)"

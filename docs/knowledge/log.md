@@ -46,3 +46,4 @@
 2026-09-29 | fix | WED_Document ctor apt.dat-scan off-by-one (started at CountCustomPackages, skipped 0) found via MCP tests with an empty X-System folder; stop_app() posts a wake event so Quit works from timers
 2026-09-29 | update | wed-mcp.md: Phase 2 (screenshots, viewport, map tools, synthetic mouse/key) - coordinate systems, capture-before-swap, key down flag, create-tool emit, clock() double-click; back-link from wed-map-and-tce
 2026-09-29 | update | wed-mcp.md: Phase 3 (validate, export_apt, export_pack); wed-validation.md recipe step for MCP code names; fixed WED_ValidateApt fclose(NULL) → removed from punch list
+2026-09-29 | update | wed-mcp.md: "Connecting from Claude Code" (127.0.0.1 not localhost, connect-at-startup and /mcp, output-size and timeout limits); CLAUDE.md agent launch procedure
