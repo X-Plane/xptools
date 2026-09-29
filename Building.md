@@ -8,12 +8,10 @@ The X-Plane Scenery Tools are available as source code, as well as binaries. Thi
     - [Linux](#linux)
 - [Getting the Source Code](#getting-the-source-code)
 - [Compiling the Program](#compiling-the-program)
-    - [Building Libraries (Mac, Linux, and MinGW only)](#building-libraries-mac-linux-and-mingw-only)
-    - [Getting the libraries (windows-only)](#getting-the-libraries-windows-only)
-    - [Building the Applications from the command line on Linux or macOS](#building-the-applications-from-the-command-line-on-linux-or-macos)
-    - [Building on Windows Using Visual Studio](#building-on-windows-using-visual-studio)
-    - [Building on macOS Using XCode](#building-on-macos-using-xcode)
-    - [Building on Linux Using Code::Blocks](#building-on-linux-using-codeblocks)
+    - [Generating projects](#generating-projects)
+    - [Building from the command line](#building-from-the-command-line)
+    - [Build configurations and DEV](#build-configurations-and-dev)
+    - [Available tools](#available-tools)
 
 
 ## Setting Up Your Build Environment
@@ -57,49 +55,48 @@ If you don’t want a complete clone of the code, you can of course use GitHub t
 
 The scenery tools source code depends on a large number of third party libraries; to make cross-platform development easier, we are using Conan to install those for you.
 
-### Building the Applications from the command line on Linux or macOS
+### Generating projects
 
-Go to the Scenery Tools root directory (same dir as where these instructions can be found) and run 
-
-Windows (Powershell):
-    `cmake.ps1`
+Go to the Scenery Tools root directory (same dir as these instructions) and run:
 
 Linux / macOS:
-    `cmake.sh`
 
-This will build the tool using default options for debugging. After awhile, the output can be found under
+    ./cmake.sh
 
-    [xptools dir]/build/[platform]/[configuration]
+Windows (PowerShell):
 
-The platform is determined automatically (when building on Linux it is Linux of course). The configuration defaults to `debug_opt`. You can specify the configuration when building the tools this way:
+    ./cmake.ps1
 
-    make conf=[configuration]
+`cmake.sh` runs `conan install` and CMake for three configurations, each in its own directory:
+`build_Debug`, `build_RelWithDebInfo` and `build_Release`. The generator defaults to Xcode on
+macOS and Ninja on Linux; override it with `GENERATOR=Ninja ./cmake.sh` (or pass it as the first
+argument).
 
-where `[configuration]` can be one of the following:
+`cmake.ps1` installs Conan dependencies for all three configurations and generates a single
+Visual Studio 2022 solution in `vs_build`. Pass `-BuildType Debug` to configure a debug build
+(the default is `Release`), `-Clean` to start over, and `-ConanProfile <name>` to use a non-default
+Conan profile.
 
-* `release`
-* `release_opt`
-* `debug`
-* `debug_opt`
+### Building from the command line
 
-The `release` configuration is built with maximum optimizations `-Ofast -flto`, `debug` with no optimization at all '-O0' and when no configuration is specified, optimizations suitable for most debugging tasks (platform dependent) are used.
+    cmake --build build_Release --config Release --target WED       # macOS / Linux
+    cmake --build vs_build --config Release --target WED            # Windows
 
-The `release` configuration are built with `-DDEV=0` set, while `debug` and default variants have `-DDEV=1`.
+Omit `--target` to build every tool. On macOS you can instead open the generated Xcode project in
+`build_<Config>`; on Windows, open the solution in `vs_build`.
 
-To clean the tree you can do:
+### Build configurations and DEV
 
-* `make clean`, this just deletes the `build` directory
-* `make distclean`, this deletes the `build` directory and the built 3rd-party libraries located in `libs/local`
+`DEV=1` (debug checks and asserts) is set when the *configured* `CMAKE_BUILD_TYPE` is `Debug`;
+every other configuration gets `DEV=0`. On macOS and Linux that means `build_Debug` is the DEV
+build. On Windows `vs_build` is configured once with `-BuildType`, so choosing "Debug" inside
+Visual Studio does not turn on `DEV` — re-run `./cmake.ps1 -BuildType Debug` for that.
 
-You can also build a single tool or a set of tools like this:
+### Available tools
 
-    conf=release_opt make [tool_1] [tool_2] [...tool_n]
-
-Available tools are:
-
-* `DDSTool`
-* `DSFTool`
-* `ObjView`
-* `OneOffs`
 * `WED`
+* `DSFTool`
+* `DDSTool`
+* `ObjView`
 * `XGrinder`
+* the `OneOffs` utilities (see `cmake/OneOffs.cmake`)
