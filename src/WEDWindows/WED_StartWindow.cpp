@@ -386,6 +386,29 @@ int			WED_StartWindow::HandleCommand(int command)
 
 }
 
+bool		WED_StartWindow::OpenPackage(const string& name)
+{
+	if (mPackageList->SelectPackage(name) == -1)
+		return false;
+	HandleCommand(wed_OpenPackage);
+	for(int i = 0; i < sDocs.size(); ++i)
+		if (sDocs[i].n == name)
+			return true;
+	return false;
+}
+
+int		WED_StartWindow::CountOpenDocuments(void)
+{
+	return sDocs.size();
+}
+
+void	WED_StartWindow::GetNthOpenDocument(int n, WED_Document *& out_doc, WED_DocumentWindow *& out_window, string& out_package)
+{
+	out_doc = sDocs[n].d;
+	out_window = sDocs[n].w;
+	out_package = sDocs[n].n;
+}
+
 int			WED_StartWindow::CanHandleCommand(int command, string& ioName, int& ioCheck)
 {
 	switch(command) {

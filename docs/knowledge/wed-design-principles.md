@@ -17,6 +17,11 @@ rule disagree, the rule describes the intent — flag the code, don't copy it.
   [wed-object-model.md](wed-object-model.md#things-that-will-bite-you)).
 - If a function both needs to be a top-level action *and* reusable, split it: a `WED_Do*`
   wrapper that opens the command, and a helper that assumes one.
+- **Every document mutation happens inside an undoable command, including selection changes.**
+  `WED_Select` is a persisted `WED_Thing`, so a selection change dirties the document and must be undoable like
+  any other edit. This applies to automation too: each mutating MCP tool is an outermost action and opens exactly
+  one command ([wed-mcp.md](wed-mcp.md)). A mutation made with no command open is a WED bug to fix, not something to
+  wrap after the fact. (Ben, 2026-09-29.)
 - Known deviation: `DoHueristicAnalysisAndAutoUpgrade` (`WED_SceneryPackExport.cpp`) opens its
   own command internally.
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, Laminar Research.
+ * Copyright (c) 2026, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,18 +21,18 @@
  *
  */
 
-#ifndef GUI_Prefs_H
-#define GUI_Prefs_H
+#ifndef WED_MCPCommandNames_H
+#define WED_MCPCommandNames_H
 
-void			GUI_Prefs_Read(const char * app_name);
-void			GUI_Prefs_Write(const char * app_name);
-// Use this file instead of the per-user prefs file for all reads and writes (e.g. for automated test runs). Call before GUI_Prefs_Read.
-void			GUI_Prefs_SetFileOverride(const char * path);
+struct WED_MCPCommandName {
+	const char *	name;	// the enum name, e.g. "wed_Group"
+	int				cmd;
+};
 
-const char *	GUI_GetPrefString(const char * section, const char * key, const char * def);
-void			GUI_SetPrefString(const char * section, const char * key, const char * value);
-void			GUI_EnumSection(const char * section, void (* cb)(const char * key, const char * value, void * ref), void * ref);
+// Null-terminated table of all menu commands.
+const WED_MCPCommandName *	WED_MCP_GetCommandNames(void);
 
-bool			GUI_GetPrefsDir(string& path);
+// Returns 0 if there is no command by that name.
+int		WED_MCP_FindCommand(const string& name);
 
-#endif /* GUI_Prefs_H */
+#endif /* WED_MCPCommandNames_H */

@@ -329,6 +329,18 @@ set (WED_SOURCES
 	src/WEDMap/WED_BoundaryLayer.h
 	src/WEDMap/WED_SlippyMap.cpp
 	src/WEDMap/WED_SlippyMap.h
+	src/WEDMCP/WED_MCPCommandNames.h
+	src/WEDMCP/WED_MCPServer.cpp
+	src/WEDMCP/WED_MCPServer.h
+	src/WEDMCP/WED_MCPHeadless.cpp
+	src/WEDMCP/WED_MCPHeadless.h
+	src/WEDMCP/WED_MCPTools.cpp
+	src/WEDMCP/WED_MCPTools.h
+	src/WEDMCP/WED_MCPToolsApp.cpp
+	src/WEDMCP/WED_MCPToolsDoc.cpp
+	src/WEDMCP/WED_MCPDocJson.cpp
+	src/WEDMCP/WED_MCPDocJson.h
+	src/WEDMCP/WED_MCPCommandNames.cpp
 	src/WEDNetwork/RAII_Classes.cpp
 	src/WEDNetwork/RAII_Classes.h
 	src/WEDTCE/WED_TCE.cpp
@@ -747,6 +759,7 @@ target_include_directories(WED PRIVATE
 	src/WEDImportExport
 	src/WEDLibrary
 	src/WEDMap
+	src/WEDMCP
 	src/WEDNetwork
 	src/WEDProperties
 	${CMAKE_SOURCE_DIR}/src/WEDResources
@@ -776,6 +789,7 @@ target_link_libraries(WED PRIVATE
 	opengl::opengl
 	GLEW::glew_s
 	JsonCpp::JsonCpp
+	httplib::httplib
 )
 
 if (WIN32)

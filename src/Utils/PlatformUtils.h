@@ -120,4 +120,18 @@ enum {
 
 int DoSaveDiscardDialog(const char * inMessage1, const char * inMessage2);
 
+/* Optional replacement for all of the modal dialogs above, e.g. to run unattended under automation.
+ * While set, every call goes to the hook with the same arguments and return contract, and no OS dialog is shown.
+ * Set and cleared on the main thread only.
+ */
+struct PlatformModalHooks {
+	int		(* get_file_path)(int inType, const char * inPrompt, const char * inAction, char * outFileName, int inBufSize, const char * initialPath);
+	char *	(* get_multi_file_path)(const char * inPrompt, const char * inAction, const char * initialPath);
+	void	(* user_alert)(const char * inMsg);
+	int		(* confirm_message)(const char * inMsg, const char * proceedBtn, const char * cancelBtn, const char * optionBtn);
+	int		(* save_discard)(const char * inMessage1, const char * inMessage2);
+};
+
+inline const PlatformModalHooks * gPlatformModalHooks = nullptr;
+
 #endif

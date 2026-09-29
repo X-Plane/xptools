@@ -62,6 +62,9 @@ public:
 	//Gets the size of the Meta Data Vector
 	int			CountMetaDataKeys();
 
+	//All key/value pairs, in stored (alphabetical) order
+	const vector<meta_data_entry>&	GetMetaData() const { return meta_data_vec_map; }
+
 	//Returns the key's value, key MUST be in the metadata vector already
 	string		GetMetaDataValue(const string& key) const;
 	string		GetMetaDataValue(int meta_data_enum) const;

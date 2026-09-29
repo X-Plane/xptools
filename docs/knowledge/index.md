@@ -31,6 +31,7 @@ Paths are relative to `src/`.
 | WEDImportExport | 30 | [wed-import-export.md](wed-import-export.md) |
 | WEDFileCache | 6 | [wed-network-and-filecache.md](wed-network-and-filecache.md) |
 | WEDNetwork (mostly compiled out) | 11 | [wed-network-and-filecache.md](wed-network-and-filecache.md) |
+| WEDMCP — MCP server for automated testing (`--mcp`) | 12 | [wed-mcp.md](wed-mcp.md) |
 | WEDResources (art, no code) | 0 | — |
 | WEDDocs (user manual source) | 0 | — not developer docs |
 | *(cross-cutting)* design rules | | [wed-design-principles.md](wed-design-principles.md) |
@@ -93,6 +94,13 @@ Paths are relative to `src/`.
 - Adding an entity type or a property → [wed-entities.md](wed-entities.md#recipes)
 - Property edits and undo in the property pane → [wed-ui-panes.md](wed-ui-panes.md#property-edits-are-wrapped-in-undo-explicitly-not-automatically)
 - Tool undo during drags (`BeginEdit`/`EndEdit` vs `AcceptPath`) → [wed-map-and-tce.md](wed-map-and-tce.md#things-that-will-bite-you)
+
+### Automation (MCP server)
+- Launching WED for agents (`--mcp`, `--prefs`, `--xsystem`), tools, JSON dump/fixture schema → [wed-mcp.md](wed-mcp.md)
+- Main-thread handoff and the "safe point"; one job at a time → [wed-mcp.md](wed-mcp.md#threading-and-the-safe-point)
+- Headless modals (`gPlatformModalHooks`) → [wed-mcp.md](wed-mcp.md#modals-are-answered-automatically-wed_mcpheadless)
+- Command names ↔ enums (keep `WED_MCPCommandNames.cpp` in sync) → [wed-mcp.md](wed-mcp.md#commands-and-documents)
+- Save/reopen double precision, raw property items vs IPropertyObject → [wed-mcp.md](wed-mcp.md#the-json-schema-reads-raw-property-items-not-ipropertyobject)
 
 ### Startup, documents, managers
 - Startup / initialization order → [wed-core-services.md](wed-core-services.md#startup-order-wed_appmaincpp-main)

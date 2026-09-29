@@ -103,14 +103,14 @@ WED_Document::WED_Document(
 	if (!mOnDisk)
 	{
 		int this_pkg;
-		for (this_pkg = gPackageMgr->CountCustomPackages(); this_pkg > 0; this_pkg--)
+		for (this_pkg = gPackageMgr->CountCustomPackages() - 1; this_pkg >= 0; this_pkg--)
 		{
 			string tmp;
 			gPackageMgr->GetNthPackageName(this_pkg, tmp);
 			if (tmp == package)
 				break;
 		}
-		if (this_pkg > 0 && gPackageMgr->HasAPT(this_pkg))
+		if (this_pkg >= 0 && gPackageMgr->HasAPT(this_pkg))
 		{
 			if (ConfirmMessage("This scenery package does not include the WED design files.\n"
 				               "But it does include already exported X-Plane scenery.\n"

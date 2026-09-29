@@ -24,6 +24,7 @@ class XPToolsRecipe(ConanFile):
         self.requires("libcurl/8.15.0")
         self.requires("glew/2.2.0")
         self.requires("jsoncpp/1.9.6")
+        self.requires("cpp-httplib/0.56.0")
         if self.settings.os == "Linux":
             self.requires("fltk/1.3.9")
             self.requires("egl/system")
@@ -35,6 +36,9 @@ class XPToolsRecipe(ConanFile):
         self.options["glew"].shared = False
         self.options["glew"].with_glu = "system"
         self.options["proj"].build_executables = False
+        # WED's MCP server only listens on localhost: no TLS, compression, or async DNS needed.
+        self.options["cpp-httplib"].use_non_blocking_getaddrinfo = False
+        self.options["cpp-httplib"].use_macos_keychain_certs = False
 
         if self.settings.os == "Windows":
             self.options["libcurl"].with_ssl = "schannel"

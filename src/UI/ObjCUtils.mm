@@ -119,6 +119,11 @@ void stop_app()
 {
 	NSApplication * me = [NSApplication sharedApplication];
 	[me stop:nil];
+	// -stop: only takes effect after the run loop finishes processing an event.  Quitting from a menu pick is an
+	// event, but quitting from a timer callback (e.g. an MCP request) isn't - so post one to wake the loop.
+	NSEvent * wake = [NSEvent otherEventWithType:NSEventTypeApplicationDefined location:NSZeroPoint modifierFlags:0
+									   timestamp:0 windowNumber:0 context:nil subtype:0 data1:0 data2:0];
+	[me postEvent:wake atStart:NO];
 }
 
 int run_event_tracking_until_move_or_up(int button)

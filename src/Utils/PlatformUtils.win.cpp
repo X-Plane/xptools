@@ -75,6 +75,7 @@ int		GetFilePathFromUser(
 					int					inBufSize,
 					const char*			initialPath)
 {
+	if (gPlatformModalHooks) return gPlatformModalHooks->get_file_path(inType, inPrompt, inAction, outFileName, inBufSize, initialPath);
 	OPENFILENAMEW	ofn = { 0 };
 	ofn.lStructSize = sizeof(ofn);
 
@@ -146,6 +147,7 @@ char *	GetMultiFilePathFromUser(
 					int					inID,
 					const char *		initialPath)
 {
+	if (gPlatformModalHooks) return gPlatformModalHooks->get_multi_file_path(inPrompt, inAction, initialPath);
 	OPENFILENAMEW	ofn = { 0 };
 	ofn.lStructSize = sizeof(ofn);
 	WCHAR * buf = (WCHAR *) malloc(1024 * 1024);
@@ -221,6 +223,7 @@ char *	GetMultiFilePathFromUser(
 void	DoUserAlert(const char * inMsg)
 {
 	LOG_MSG("I/Alert %s\n",inMsg);
+	if (gPlatformModalHooks) { gPlatformModalHooks->user_alert(inMsg); return; }
 	HWND thisWin = GetForegroundWindow();
 	MessageBoxW(thisWin, convert_str_to_utf16(inMsg).c_str(), L"Alert", MB_OK | MB_ICONWARNING | MB_TOPMOST |MB_TASKMODAL);
 }
@@ -244,6 +247,7 @@ LRESULT CALLBACK ConfirmMessageProc(int message, WPARAM wParam, LPARAM lParam)
 
 int		ConfirmMessage(const char* inMsg, const char* proceedBtn, const char* cancelBtn, const char* optionBtn)
 {
+	if (gPlatformModalHooks) return gPlatformModalHooks->confirm_message(inMsg, proceedBtn, cancelBtn, optionBtn);
 	yes_text = proceedBtn;
 	if (optionBtn)
 	{
@@ -277,6 +281,7 @@ int		ConfirmMessage(const char* inMsg, const char* proceedBtn, const char* cance
 
 int DoSaveDiscardDialog(const char * inMessage1, const char * inMessage2)
 {
+	if (gPlatformModalHooks) return gPlatformModalHooks->save_discard(inMessage1, inMessage2);
 	HWND thisWin = GetForegroundWindow();
 	int result = MessageBoxW(
 			thisWin,

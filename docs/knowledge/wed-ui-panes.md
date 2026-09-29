@@ -325,13 +325,16 @@ target). This recipe has not been build-tested.
 6. **Do function.** Wrap every mutation in `StartCommand("My Command")` … `CommitCommand()` (or
    `AbortCommand`), or use `StartOperation` on the selection. Run modal dialogs and alerts
    **outside** the open command. Re-check preconditions. See [wed-object-model.md](wed-object-model.md).
-7. **New files.** List them explicitly in `cmake/WED.cmake`. Historic commits also touch the Xcode,
+7. **MCP name.** Add `C(wed_MyCmd)` to `WEDMCP/WED_MCPCommandNames.cpp` at the same position and under the same
+   `#if` guards. DEV builds assert at startup if the table has a gap. See [wed-mcp.md](wed-mcp.md).
+8. **New files.** List them explicitly in `cmake/WED.cmake`. Historic commits also touch the Xcode,
    MSVC, and Code::Blocks project files.
-8. **Test.** Test on each OS if you can. The shortcut paths (Windows accelerators, Mac key
+9. **Test.** Test on each OS if you can. The shortcut paths (Windows accelerators, Mac key
    equivalents, FLTK shortcuts) and label refresh differ. [Needs Runtime]
 
 ## Connections to Other Systems
 
+- [wed-mcp.md](wed-mcp.md): the MCP server runs menu commands by name through the same focus chain (`FocusChain(1)` on the document window, then `gApplication->DispatchHandleCommand`).
 - [gui-framework.md](gui-framework.md): `GUI_Commander` (focus chain, defer), `GUI_Application`/`GUI_Window` menu plumbing, `GUI_TextTable`, `GUI_Broadcaster` lifetime semantics.
 - [wed-core-services.md](wed-core-services.md): `WED_Document` lifetime (`TryClose`, prefs messages), `msg_*` ids, `WED_PackageMgr`, `WED_LibraryMgr`, `WED_ResourceMgr`.
 - [wed-object-model.md](wed-object-model.md): `WED_UndoMgr` and command nesting, `WED_Select` as persistent state, change-mask bits.

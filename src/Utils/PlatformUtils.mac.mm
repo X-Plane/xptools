@@ -123,6 +123,7 @@ int		GetFilePathFromUser(
 					int					inBufSize,
 					const char *		initialPath)
 {
+	if (gPlatformModalHooks) return gPlatformModalHooks->get_file_path(inType, inPrompt, inAction, outFileName, inBufSize, initialPath);
 	vector<string> files;
 	if(!GetFilePathFromUserInternal(inType,inPrompt,inAction, outFileName, inID, 0, files, initialPath))
 		return 0;
@@ -138,6 +139,7 @@ char *	GetMultiFilePathFromUser(
 					int					inID,
 					const char *		initialPath)
 {
+	if (gPlatformModalHooks) return gPlatformModalHooks->get_multi_file_path(inPrompt, inAction, initialPath);
 	vector<string> files;
 	if(!GetFilePathFromUserInternal(getFile_Open,inPrompt,inAction, "", inID, 1, files, initialPath))
 		return NULL;
@@ -170,6 +172,7 @@ char *	GetMultiFilePathFromUser(
 void	DoUserAlert(const char * inMsg)
 {
 	LOG_MSG("I/Alert %s\n",inMsg);
+	if (gPlatformModalHooks) { gPlatformModalHooks->user_alert(inMsg); return; }
 	NSAlert *alert = [[NSAlert alloc] init];;
 	[alert setMessageText:[NSString stringWithUTF8String:inMsg]];
 	[alert runModal];
@@ -178,6 +181,7 @@ void	DoUserAlert(const char * inMsg)
 
 int		ConfirmMessage(const char* inMsg, const char* proceedBtn, const char* cancelBtn, const char* optionBtn)
 {
+	if (gPlatformModalHooks) return gPlatformModalHooks->confirm_message(inMsg, proceedBtn, cancelBtn, optionBtn);
 	NSAlert *alert = [[NSAlert alloc] init];;
 	[alert setMessageText:[NSString stringWithUTF8String:inMsg]];
 	[alert addButtonWithTitle:[NSString stringWithUTF8String:proceedBtn]];
@@ -196,6 +200,7 @@ int		ConfirmMessage(const char* inMsg, const char* proceedBtn, const char* cance
 
 int DoSaveDiscardDialog(const char * inMessage1, const char * inMessage2)
 {
+	if (gPlatformModalHooks) return gPlatformModalHooks->save_discard(inMessage1, inMessage2);
 	NSAlert *alert = [[NSAlert alloc] init];;
 	[alert setMessageText:[NSString stringWithUTF8String:inMessage1]];
 	[alert setInformativeText:[NSString stringWithUTF8String:inMessage2]];

@@ -76,6 +76,11 @@ Windows:        ./cmake.ps1
 There is no unit-test target. `test/` holds fixture files (DSF, images, TIFFs) for manual
 round-trip checks.
 
+**Driving WED from an agent:** launch `WED --mcp --prefs=<scratch>/t.prefs --xsystem=<scratch X-Plane folder>` and
+use the `WED` MCP server in `.mcp.json` (`http://localhost:8087/mcp`). It can run menu commands, dump the document
+as JSON, inject fixtures, and edit properties and the selection, all undoably. The flags keep the user's prefs and
+X-Plane folder untouched. See `docs/knowledge/wed-mcp.md`; `test/mcp/` has a client and an end-to-end test.
+
 ## Conditional Compilation — Not Dead Code
 
 - `APL` / `IBM` / `LIN` — macOS / Windows / Linux; exactly one is 1 (set in top-level `CMakeLists.txt` as `BASIC_PLATFORM_DEFINES`)

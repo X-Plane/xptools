@@ -103,6 +103,7 @@ int		GetFilePathFromUser(
 					int					inBufSize,
 					const char*			initialPath)
 {
+	if (gPlatformModalHooks) return gPlatformModalHooks->get_file_path(inType, inPrompt, inAction, outFileName, inBufSize, initialPath);
     int ret = 0;
 
     Fl_Native_File_Chooser * mFileDialog = new Fl_Native_File_Chooser();
@@ -136,6 +137,7 @@ char *	GetMultiFilePathFromUser(
 					int					inID,
 					const char *		initialPath)
 {
+	if (gPlatformModalHooks) return gPlatformModalHooks->get_multi_file_path(inPrompt, inAction, initialPath);
     char * ret = NULL;
     Fl_Native_File_Chooser * mFileDialog = new Fl_Native_File_Chooser();
 
@@ -179,12 +181,14 @@ char *	GetMultiFilePathFromUser(
 void DoUserAlert(const char * inMsg)
 {
 	LOG_MSG("I/Alert %s\n",inMsg);
+	if (gPlatformModalHooks) { gPlatformModalHooks->user_alert(inMsg); return; }
 	fl_message_hotspot(false);
 	fl_alert(inMsg);
 }
 
 int		ConfirmMessage(const char* inMsg, const char* proceedBtn, const char* cancelBtn, const char* optionBtn)
 {
+	if (gPlatformModalHooks) return gPlatformModalHooks->confirm_message(inMsg, proceedBtn, cancelBtn, optionBtn);
 	fl_message_hotspot(false);
 
 	int result;
@@ -205,6 +209,7 @@ int		ConfirmMessage(const char* inMsg, const char* proceedBtn, const char* cance
 
 int DoSaveDiscardDialog(const char * inMessage1, const char * inMessage2)
 {
+	if (gPlatformModalHooks) return gPlatformModalHooks->save_discard(inMessage1, inMessage2);
 	fl_message_hotspot(false);
 
 	int result = close_Cancel;

@@ -85,6 +85,7 @@ public:
 			
 			void			BeginDefer(void);
 			void			EndDefer(void);
+			bool			IsDeferring(void) const { return mDeferLevel > 0; }
 
 	static	void			RegisterNotifiable(GUI_Commander_Notifiable * notif);
 	static	void			UnregisterNotifiable(GUI_Commander_Notifiable * notif);

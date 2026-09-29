@@ -112,6 +112,32 @@ bool			GUI_GetPrefsDir(string& path)
 	#endif
 }
 
+static string	sPrefsFileOverride;
+
+void			GUI_Prefs_SetFileOverride(const char * path)
+{
+	sPrefsFileOverride = path ? path : "";
+}
+
+static bool		GUI_GetPrefsFilePath(const char * app_name, string& path)
+{
+	if (!sPrefsFileOverride.empty())
+	{
+		path = sPrefsFileOverride;
+		return true;
+	}
+	if (!GUI_GetPrefsDir(path)) return false;
+	path += DIR_STR;
+    #if LIN
+    path += ".";
+    path +=  app_name;
+    #else
+	path += app_name;
+    #endif
+	path += ".prefs";
+	return true;
+}
+
 inline bool	is_eol(const char p) { return p == '\r' || p == '\n'; }
 inline bool	is_spc(const char p) { return p == '\t' || p == ' '; }
 inline void	skip_space(const char *&p, const char * e) { while(p<e && is_spc(*p)) ++p; }
@@ -124,16 +150,8 @@ void			GUI_Prefs_Read(const char *app_name)
 {
 	sPrefs.clear();
 	string pref_dir;
-	if (!GUI_GetPrefsDir(pref_dir)) return;
-	pref_dir += DIR_STR;
-    #if LIN
-    pref_dir += ".";
-    pref_dir +=  app_name;
-    #else
-	pref_dir += app_name;
-    #endif
-	pref_dir += ".prefs";
-	
+	if (!GUI_GetPrefsFilePath(app_name, pref_dir)) return;
+
 	MFMemFile* f = MemFile_Open(pref_dir.c_str());
 	GUI_PrefSection_t * cur=NULL;
 	if(f)
@@ -205,15 +223,7 @@ void			GUI_Prefs_Read(const char *app_name)
 void			GUI_Prefs_Write(const char * app_name)
 {
 	string pref_dir;
-	if (!GUI_GetPrefsDir(pref_dir)) { DoUserAlert("Warning: preferences file could not be written - preferences directory not found."); return; }
-	pref_dir += DIR_STR;
-    #if LIN
-    pref_dir += ".";
-    pref_dir +=  app_name;
-    #else
-	pref_dir += app_name;
-    #endif
-	pref_dir += ".prefs";
+	if (!GUI_GetPrefsFilePath(app_name, pref_dir)) { DoUserAlert("Warning: preferences file could not be written - preferences directory not found."); return; }
 
 	FILE * fi = fopen(pref_dir.c_str(), "w");
 	if (fi == NULL) { DoUserAlert("Warning: preferences file could not be written - could not write file."); return; }

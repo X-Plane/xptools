@@ -30,6 +30,7 @@ find_package(CURL REQUIRED)
 find_package(opengl_system REQUIRED)
 find_package(glew REQUIRED)
 find_package(jsoncpp REQUIRED)
+find_package(httplib REQUIRED)
 
 if (APPLE)
 	find_library(CARBON_FRAMEWORK Carbon REQUIRED)

@@ -60,6 +60,9 @@ public:
 	bool	HasRedo(void) const;
 	string	GetUndoName(void) const;
 	string	GetRedoName(void) const;
+	bool	IsCommandOpen(void) const { return mCommand != NULL; }
+	void	GetUndoNames(vector<string>& out_names) const;	// most recent first, without the "&Undo " prefix
+	void	GetRedoNames(vector<string>& out_names) const;	// next redo first
 
 	void	Undo(void);
 	void	Redo(void);

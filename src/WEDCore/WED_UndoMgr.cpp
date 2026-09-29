@@ -170,6 +170,20 @@ string	WED_UndoMgr::GetRedoName(void) const
 	return "&Redo " + mRedo.front()->GetName();
 }
 
+void	WED_UndoMgr::GetUndoNames(vector<string>& out_names) const
+{
+	out_names.clear();
+	for(LayerList::const_reverse_iterator l = mUndo.rbegin(); l != mUndo.rend(); ++l)
+		out_names.push_back((*l)->GetName());
+}
+
+void	WED_UndoMgr::GetRedoNames(vector<string>& out_names) const
+{
+	out_names.clear();
+	for(LayerList::const_iterator l = mRedo.begin(); l != mRedo.end(); ++l)
+		out_names.push_back((*l)->GetName());
+}
+
 void	WED_UndoMgr::Undo(void)
 {
 	DebugAssert(!mUndo.empty());

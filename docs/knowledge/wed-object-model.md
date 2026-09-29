@@ -326,6 +326,9 @@ The `WED_Get*` helpers in `WEDMap/WED_ToolUtils.cpp` wrap these lookups. The nam
   export uses `MarkUndo`/`UndoToMark` to undo the upgrade heuristics.
 - [wed-validation.md](wed-validation.md): validation selects offending objects inside a
   command ("Select Invalid").
+- [wed-mcp.md](wed-mcp.md): the MCP server opens one command per mutating tool, only at a "safe point" (no command
+  open, mouse up), and checks afterwards that none was left open; its JSON dump reads property items directly
+  (persisted XML names) and must not use `SaveToXML`, which clears dirtiness.
 - [gui-framework.md](gui-framework.md): `GUI_Broadcaster`/`GUI_Listener` (synchronous
   delivery over a copy of the listener set), `GUI_MemoryHog`.
 - [utils-platform-and-files.md](utils-platform-and-files.md): which file calls are UTF-8-safe

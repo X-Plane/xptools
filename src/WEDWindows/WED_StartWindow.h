@@ -32,6 +32,8 @@ class	GUI_ScrollerPane;
 class	GUI_TextTable;
 class	GUI_Table;
 class	WED_PackageListAdapter;
+class	WED_Document;
+class	WED_DocumentWindow;
 
 class WED_StartWindow : public GUI_Window, public GUI_Listener  {
 public:
@@ -40,6 +42,14 @@ public:
 	virtual			~WED_StartWindow();
 
 			void	ShowMessage(const string& msg);
+
+			// Programmatic equivalent of picking a package in the list and clicking Open.
+			// Returns false if there is no such package or it failed to open (the error was already shown to the user).
+			bool	OpenPackage(const string& name);
+
+	// The currently open documents, in the order they were opened.
+	static	int		CountOpenDocuments(void);
+	static	void	GetNthOpenDocument(int n, WED_Document *& out_doc, WED_DocumentWindow *& out_window, string& out_package);
 
 	virtual	bool	Closed(void);
 

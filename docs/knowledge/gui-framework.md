@@ -86,6 +86,13 @@ the `GUI_Destroyable` reaper, can run inside your `MouseDown` while it waits in
 handler returns". [Needs Runtime] to confirm the reaper actually fires inside each of these
 loops on each platform.
 
+Two more timer traps, both hit while building the MCP server ([wed-mcp.md](wed-mcp.md)):
+- **Don't delete a `GUI_Timer` inside its own `TimerFired`.** On Linux, `GUI_Timer::timeout_cb` reads `me->mTimer`
+  afterwards to re-arm, so that is a use-after-free.
+- **Quitting from a timer callback on Mac:** `[NSApp stop:]` takes effect only after the run loop processes an
+  event. `stop_app()` now posts an app-defined event so `GUI_Application::Quit` works from a timer. Win and Linux
+  check `mDone` after every message or wait anyway.
+
 These loops eat mouse-ups, so every backend has a **fake-up protocol**:
 - `TrackPopupCommands` or the DnD code sets `mWantFakeUp`, and the XWin layer then issues
   `ClickUp` itself.
@@ -432,6 +439,8 @@ A change to `XWin` affects ObjView and XGrinder as well as WED. A change to `GUI
 affects every tool.
 
 ## Connections to Other Systems
+
+- [wed-mcp.md](wed-mcp.md): uses a `GUI_Timer` as its main-thread queue, `GUI_Commander::IsDeferring` for its safe point, and the modal hooks in `Utils/PlatformUtils.h`.
 
 - **Design rules** ([wed-design-principles.md](wed-design-principles.md)): the stated rules for new code and reviews that this subsystem's conventions should follow — command ownership, pointer vs ID, class vs interface casts, error handling, layering, per-doc prefs, platform reference.
 - [wed-ui-panes.md](wed-ui-panes.md): WED windows, the document-window layout

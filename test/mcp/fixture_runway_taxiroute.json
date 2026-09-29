@@ -1,0 +1,9 @@
+{"objects":[
+ {"class":"WED_Runway","props":{"hierarchy.name":"09/27","line.width":45.0,"runway.surface":"Asphalt"},
+  "children":[
+   {"class":"WED_RunwayNode","props":{"point.latitude":42.0,"point.longitude":-71.01}},
+   {"class":"WED_RunwayNode","props":{"point.latitude":42.0,"point.longitude":-70.99}}]},
+ {"class":"WED_TaxiRouteNode","ref":"a","props":{"hierarchy.name":"A1","point.latitude":42.001,"point.longitude":-71.0}},
+ {"class":"WED_TaxiRouteNode","ref":"b","props":{"hierarchy.name":"A2","point.latitude":42.002,"point.longitude":-71.0}},
+ {"class":"WED_TaxiRoute","props":{"hierarchy.name":"A"},"sources":["a","b"]}
+]}

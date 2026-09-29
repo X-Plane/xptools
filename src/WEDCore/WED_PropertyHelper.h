@@ -103,10 +103,10 @@ public:
 	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value)=0;
 
 	const char *		GetWedName(void) const;
-protected:
-	WED_PropertyHelper* GetParent(void) const;
 	const char *		GetXmlName(void) const;
 	const char *		GetXmlAttrName(void) const;
+protected:
+	WED_PropertyHelper* GetParent(void) const;
 private:
 #if PROP_PTR_OPT
 	#define PTR_CLR(x)  (x & (1ULL << 45) - 1ULL)

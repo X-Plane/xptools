@@ -33,6 +33,7 @@
 #include "WED_Document.h"
 #include "FileUtils.h"
 #include "WED_FileCache.h"
+#include "WED_MCPServer.h"
 #include "WED_Menus.h"
 #include "WED_PackageMgr.h"
 #include "WED_StartWindow.h"
@@ -222,6 +223,15 @@ int main(int argc, char * argv[])
 	// sustain OpenGL.
 	// mroe: this first window is the StartWindow now
 
+	// For automated runs: keep the user's prefs and X-Plane folder out of it.
+	//   --prefs=<file>    read and write this prefs file instead of the user's
+	//   --xsystem=<path>  use this X-Plane folder for this run only - it's never saved
+	//   --mcp, --mcp_port=<n>   start the MCP server (see WED_MCPServer.h)
+	string prefs_override = app.args.get_value("--prefs");
+	string xsys_override = app.args.get_value("--xsystem");
+	if (!prefs_override.empty())
+		GUI_Prefs_SetFileOverride(prefs_override.c_str());
+
 	GUI_Prefs_Read("WED");
 	WED_Document::ReadGlobalPrefs();
 
@@ -236,7 +246,8 @@ int main(int argc, char * argv[])
 	start->Show();
 
 	start->ShowMessage("Scanning X-System Folder...");
-	pMgr.SetXPlaneFolder(GUI_GetPrefString("packages","xsystem",""));
+	string xsys_pref = GUI_GetPrefString("packages","xsystem","");
+	pMgr.SetXPlaneFolder(xsys_override.empty() ? xsys_pref : xsys_override);
 	pMgr.SetRecentName(GUI_GetPrefString("packages","Recent",""));
 
 	start->ShowMessage("Initializing WED File Cache");
@@ -252,10 +263,22 @@ int main(int argc, char * argv[])
 	REGISTER_LIST_ATC
 	#undef _R
 
+	// Before ShowMessage(""), which may auto-open --package: under MCP that must already be headless.
+	if (app.args.has_option("--mcp") || app.args.has_option("--mcp_port"))
+	{
+		int port = WED_MCP_DEFAULT_PORT;
+		if (app.args.has_option("--mcp_port"))
+			port = atoi(app.args.get_value("--mcp_port").c_str());
+		if (!WED_MCP_Start(port, start))
+			return 2;		// without touching prefs; the caller asked for MCP and can't have it
+	}
+
 	start->ShowMessage(string());
 
 	LOG_MSG("I/MAIN initializations done, run app now ...\n"); LOG_FLUSH();
 	app.Run();
+
+	WED_MCP_Stop();
 
 	delete start;
 
@@ -264,7 +287,7 @@ int main(int argc, char * argv[])
 	string xsys,name;
 	pMgr.GetXPlaneFolder(xsys);
 	pMgr.GetRecentName(name);
-	GUI_SetPrefString("packages","xsystem",xsys.c_str());
+	GUI_SetPrefString("packages","xsystem",xsys_override.empty() ? xsys.c_str() : xsys_pref.c_str());
 	GUI_SetPrefString("packages","Recent",name.c_str());
 
 	WED_Document::WriteGlobalPrefs();
