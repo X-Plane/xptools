@@ -189,8 +189,6 @@ special-cased as default, public, and existing (`CheckFlattenPolygon`, added in
   guarantee DSF export succeeds.
 
 ### Small crashers to know about
-- `WED_ValidateApt` calls `fclose(fi)` even when `fopen` returned NULL. If the local
-  package folder cannot be written, this is undefined behaviour. [Needs Runtime]
 - `validation_error_t` needs at least one entry in `bad_objects`. The dialog passes them to
   `ISelection::Insert` without checking. Where a helper can return NULL,
   `dynamic_cast<WED_Thing*>(ps)` needs a fallback, as the taxiway-hole case has with
@@ -263,6 +261,8 @@ next validation run clears them.
    error and below for a warning, in alphabetical position. If the severity depends on the
    target, add both `err_` and `warn_` codes and choose between them with a ternary where you
    push the message.
+   Add every new code to `WEDMCP/WED_MCPValidateNames.cpp` as well. A `static_assert` fails the
+   build if the count doesn't match; see [wed-mcp.md](wed-mcp.md).
 2. **Put the check where the objects already are.**
    - Airport-scoped entities: use the typed vectors in `ValidateOneAirport`. If your class
      is not collected yet, add a `COLLECT(WED_Foo, foos)` line before the final `else`.
@@ -306,6 +306,8 @@ next validation run clears them.
   `d9a604731` allowed them near airports), forest exclusions.
 
 ## Connections to Other Systems
+
+- [wed-mcp.md](wed-mcp.md): the MCP `validate` / `export_*` tools call `WED_ValidateApt` with `skipErrorDialog` and the `out_msgs` parameter (messages keyed by `validate_error_t` name via `WEDMCP/WED_MCPValidateNames.cpp`, which must track the enum - a `static_assert` checks the count).
 
 - **Design rules** ([wed-design-principles.md](wed-design-principles.md)): the stated rules for new code and reviews that this subsystem's conventions should follow — command ownership, pointer vs ID, class vs interface casts, error handling, layering, per-doc prefs, platform reference.
 - [wed-import-export.md](wed-import-export.md): every export entry point calls validation

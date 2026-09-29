@@ -400,9 +400,6 @@ See [utils-platform-and-files.md](knowledge/utils-platform-and-files.md).
 If the install folder isn't writable, logging silently stops.
 See [utils-platform-and-files.md](knowledge/utils-platform-and-files.md).
 
-### `WED_ValidateApt` `fclose`s a failed `fopen`
-See [wed-validation.md](knowledge/wed-validation.md).
-
 ### Library "new until" date is off by a month
 Uses 0-based `tm_mon` as if 1-based.
 See [wed-core-services.md](knowledge/wed-core-services.md).

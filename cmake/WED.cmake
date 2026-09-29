@@ -339,6 +339,8 @@ set (WED_SOURCES
 	src/WEDMCP/WED_MCPToolsApp.cpp
 	src/WEDMCP/WED_MCPToolsDoc.cpp
 	src/WEDMCP/WED_MCPToolsMap.cpp
+	src/WEDMCP/WED_MCPToolsExport.cpp
+	src/WEDMCP/WED_MCPValidateNames.cpp
 	src/WEDMCP/WED_MCPDocJson.cpp
 	src/WEDMCP/WED_MCPDocJson.h
 	src/WEDMCP/WED_MCPCommandNames.cpp

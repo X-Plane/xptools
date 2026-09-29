@@ -695,7 +695,7 @@ int		WED_CanExportPack(IResolver* resolver, string& ioname)
 	return 1;
 }
 
-void	WED_DoExportPack(WED_Document * resolver, WED_MapPane * pane)
+bool	WED_DoExportPack(WED_Document * resolver, WED_MapPane * pane, bool skipErrorDialog, vector<validation_error_t> * out_msgs)
 {
 #if GATEWAY_IMPORT_MODE
     // do any pre-export modifications here.
@@ -704,8 +704,8 @@ void	WED_DoExportPack(WED_Document * resolver, WED_MapPane * pane)
 	// Just don't ever export if we are invalid.  Avoid the case where we write junk to a file!
 	// Special case: in Tyler's bulk-Gateway-export-mode, the suitability for export is to be established with other means,
 	// ... and if the export blows up or something, it's Tyler's fault :(
-	if(!WED_ValidateApt(resolver, pane))
-		return;
+	if(!WED_ValidateApt(resolver, pane, NULL, skipErrorDialog, "Dismiss", out_msgs))
+		return false;
 
 	auto uMgr = resolver->GetUndoMgr();
 	if (gExportTarget == wet_gateway)
@@ -742,4 +742,5 @@ void	WED_DoExportPack(WED_Document * resolver, WED_MapPane * pane)
 			sel->Insert(*p);
 		(*problem_children.begin())->CommitOperation();
 	}
+	return true;
 }

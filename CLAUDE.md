@@ -78,7 +78,8 @@ round-trip checks.
 
 **Driving WED from an agent:** launch `WED --mcp --prefs=<scratch>/t.prefs --xsystem=<scratch X-Plane folder>` and
 use the `WED` MCP server in `.mcp.json` (`http://localhost:8087/mcp`). It can run menu commands, dump the document
-as JSON, inject fixtures, and edit properties and the selection, all undoably. The flags keep the user's prefs and
+as JSON, inject fixtures, edit properties and the selection (all undoably), take screenshots, drive map tools with
+synthetic mouse and key input, and validate and export. The flags keep the user's prefs and
 X-Plane folder untouched. See `docs/knowledge/wed-mcp.md`; `test/mcp/` has a client and an end-to-end test.
 
 ## Conditional Compilation — Not Dead Code

@@ -3009,7 +3009,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	ValidateDSFRecursive(apt, lib_mgr, msgs, apt);
 }
 
-validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * wrl, bool skipErrorDialog, const char * abortMsg)
+validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * wrl, bool skipErrorDialog, const char * abortMsg, validation_error_vector * out_msgs)
 {
 #if DEBUG_VIS_LINES
 	//Clear the previously drawn lines before every validation
@@ -3100,7 +3100,10 @@ validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane,
 		if (fi)	fprintf(fi, "%s: %s %s\n", aname.c_str(), v.msg.c_str(), warn);
 //		fprintf(stdout, "%s: %s %s\n", aname.c_str(), v.msg.c_str(), warn);
 	}
-	fclose(fi);
+	if (fi) fclose(fi);
+
+	if (out_msgs)
+		*out_msgs = msgs;
 
 	if(!msgs.empty())
 	{

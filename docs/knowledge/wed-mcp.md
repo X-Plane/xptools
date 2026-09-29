@@ -155,6 +155,28 @@ compiled into every build, Release included.
   button. Tool settings are the tool's `WED_PropertyHelper` items, keyed by display name. They aren't document state,
   so changing them opens no command.
 
+### Validation and export (`WED_MCPToolsExport`)
+
+- **All three tools call WED's own validation with `skipErrorDialog=true`** and pass the new `out_msgs` parameter of
+  `WED_ValidateApt`. `WED_ValidateDialog` isn't an OS modal, so the headless hooks can't catch it; the only way to
+  keep it closed is not to open it. `pane` is NULL on this path, which is safe only because the dialog is skipped.
+  See [wed-validation.md](wed-validation.md).
+- **Validation doesn't change the document** (only the results dialog selects things), so `validate` is marked
+  read-only and DEV verifies that. It still writes `validation_report.txt` into the package, as WED always does.
+- **Codes are reported by name** via `WED_MCPValidateNames.cpp`, generated from `validate_error_t`. The numbers shift
+  whenever the enum changes. A `static_assert` checks the table's count against `warn_viewpoint_mislocated`, the last
+  code; if a new code goes last, update the assert too.
+- **`export_pack` is `WED_DoExportPack` itself**, now with pass-through `skipErrorDialog` / `out_msgs` parameters and a
+  `bool` return. That keeps the Gateway `MarkUndo` → heuristics → `UndoToMark` flow and the problem-object selection
+  identical to the menu command.
+  - It inherits that command's known bug: the `problem_children` pointers are used after `UndoToMark`
+    ([punch list](../bug-punch-list.md)).
+  - "Written" and "deleted" files are a before/after diff of the package folder by mtime and size.
+- **`export_apt` is the three lines of `WED_DoExportApt`** (validate, then `WED_AptExport`), minus the file dialog.
+- **A `target` argument applies for the one call only** (the `target_override` RAII guard), per design rule 9. Pass
+  `target: "gateway"` to see Gateway rules without flipping the document's target. Validating against the gateway
+  target reads CIFP data (`ReadCIFP`).
+
 ### Isolation flags (`WED_AppMain.cpp`)
 
 - `--prefs=<file>` → `GUI_Prefs_SetFileOverride`: all prefs reads and writes go to that file.
@@ -172,6 +194,8 @@ compiled into every build, Release included.
 | `WED_MCPToolsApp` | state, packages, open/new/close, list/execute commands, alerts and dialog answers, logs |
 | `WED_MCPToolsDoc` | dump_document, inject_fixture, set_properties, set_selection, search_library |
 | `WED_MCPToolsMap` | capture_screenshot, get/set_viewport, list_tools, set_tool, mouse, key |
+| `WED_MCPToolsExport` | validate, export_apt, export_pack |
+| `WED_MCPValidateNames` | `validate_error_t` code ↔ name table |
 | `WED_MCPDocJson` | document ↔ JSON (dump and inject share the schema) |
 | `WED_MCPHeadless` | modal hooks and the alert log |
 | `WED_MCPCommandNames` | command name ↔ enum table |
@@ -191,7 +215,8 @@ lookup, e.g. `unknown_property` lists `valid` keys and `invalid_enum_value` list
 - **Run it:** `WED --mcp --prefs=/tmp/t.prefs --xsystem=/tmp/xp`, then point the client at
   `http://localhost:8087/mcp`. The repo's `.mcp.json` does this for Claude Code.
   - `test/mcp/` has a Python client (`wed_mcp.py`, including `launch()` for a scratch X-Plane folder) and
-    end-to-end tests: `test_phase1.py` (documents) and `test_phase2.py` (map and input).
+    end-to-end tests: `test_phase1.py` (documents), `test_phase2.py` (map and input) and `test_phase3.py`
+    (validation and export). Each takes the path to a WED executable.
 
 ## Connections to Other Systems
 

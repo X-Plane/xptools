@@ -236,6 +236,7 @@ enum validation_result_t {
 
 // Collection primitives - these recursively walk the composition and pull out all entities of a given type.
 validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * root = NULL,
-	bool skipErrorDialog = false, const char * abortMsg = "Dismiss");	// if root not null, only do this sub-tree
+	bool skipErrorDialog = false, const char * abortMsg = "Dismiss",	// if root not null, only do this sub-tree
+	validation_error_vector * out_msgs = NULL);							// if not null, gets every message (e.g. for automation)
 
 #endif

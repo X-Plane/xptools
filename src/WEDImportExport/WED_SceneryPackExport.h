@@ -29,11 +29,14 @@ class	WED_Group;
 class	IResolver;
 class 	WED_MapPane;
 class	WED_Document;
+struct	validation_error_t;
 
 void	WED_ExportPackToPath(WED_Thing * root, IResolver * resolver, const string& in_path, set<WED_Thing *>& problem_children);
 
 // Top level commands for WED.
 int		WED_CanExportPack(IResolver * resolver, string& ioname);
-void	WED_DoExportPack(WED_Document * resolver, WED_MapPane * pane);
+// Returns false if validation errors stopped the export.  skipErrorDialog and out_msgs are passed to WED_ValidateApt
+// (for automation: no results window, messages returned instead).
+bool	WED_DoExportPack(WED_Document * resolver, WED_MapPane * pane, bool skipErrorDialog = false, vector<validation_error_t> * out_msgs = NULL);
 
 #endif /* WED_SceneryPackExport_H */
