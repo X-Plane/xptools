@@ -81,7 +81,6 @@ enum {
 	wed_MoveLast,
 	wed_BreakApartAgps,
 	wed_ReplaceVehicleObj,
-	wed_FixLegacyRunwayWidths,
 	// Convert To menu
 	wed_ConvertToPolygon,
 	wed_ConvertToTaxiway,

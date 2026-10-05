@@ -17,10 +17,8 @@ WED 2.7.3-r1:
   Bugfixes:
    - Fixed author-defined airline codes being erased on half of the wide-body
      (size D and larger) ramp starts when generating ATC flow / ramp data
-   - Fixed runway-tagged ATC route segments being editable to a narrower
-     "Size" than their real (full runway) width, a historical workaround for
-     the short-segment validation check; the check is now moderator-mode-only
-     for existing data, with a bulk "Fix Legacy Runway ATC Widths" command
+   - Runway ATC route segments are always size E, as in X-Plane: their "Size"
+     can no longer be narrowed, which hid short segments from validation
 
 WED 2.7.2-r2:
   Bugfixes:

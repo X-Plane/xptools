@@ -68,7 +68,6 @@
 #include "WED_Sealane.h"
 #include "WED_SimpleBezierBoundaryNode.h"
 #include "WED_TextureNode.h"
-#include "WED_TaxiRoute.h"
 #include "WED_TaxiRouteNode.h"
 #include "WED_Taxiway.h"
 #include "WED_TruckParkingLocation.h"
@@ -6188,35 +6187,4 @@ void WED_MowGrass(IResolver* resolver)
 	}
 	else
 		wrl->AbortOperation();
-}
-
-void WED_FixLegacyRunwayWidths(IResolver * resolver)
-{
-	WED_Thing * wrl = WED_GetWorld(resolver);
-	vector<WED_TaxiRoute *> all_routes;
-	CollectRecursiveNoNesting(wrl, back_inserter(all_routes), WED_TaxiRoute::sClass);
-
-	wrl->StartOperation("Fix Legacy Runway ATC Widths");
-
-	int fixed = 0;
-	for (auto r : all_routes)
-		if (r->IsRunway() && r->GetWidth() != width_E)
-		{
-			r->SetWidth(width_E);
-			++fixed;
-		}
-
-	if (fixed > 0)
-	{
-		wrl->CommitOperation();
-		string msg = "Normalized " + to_string(fixed) + " runway ATC route segment(s) to size E.\n\n"
-			"Re-run Validation - any segment that is still reported as too short is a genuine"
-			" geometry problem, not a leftover from the old size A/B validation workaround.";
-		DoUserAlert(msg.c_str());
-	}
-	else
-	{
-		wrl->AbortOperation();
-		DoUserAlert("No runway ATC route segments needed fixing.");
-	}
 }

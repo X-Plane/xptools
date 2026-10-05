@@ -434,7 +434,6 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_MoveLast:	WED_DoReorder(mDocument, 1,1);	return 1;
 	case wed_BreakApartAgps: WED_DoBreakApartAgps(mDocument); return 1;
 	case wed_ReplaceVehicleObj:  WED_DoReplaceVehicleObj(mDocument); return 1;
-	case wed_FixLegacyRunwayWidths: WED_FixLegacyRunwayWidths(mDocument); return 1;
 	case wed_AddATCFreq:WED_DoMakeNewATCFreq(mDocument); return 1;
 	case wed_AddATCFlow: WED_DoMakeNewATCFlow(mDocument); return 1;
 	case wed_AddATCRunwayUse:WED_DoMakeNewATCRunwayUse(mDocument); return 1;
@@ -595,7 +594,6 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_MoveLast:	return WED_CanReorder(mDocument, 1,1);
 	case wed_BreakApartAgps: return WED_CanBreakApartAgps(mDocument);
 	case wed_ReplaceVehicleObj:  return WED_CanReplaceVehicleObj(WED_GetCurrentAirport(mDocument));
-	case wed_FixLegacyRunwayWidths: return gModeratorMode != 0;
 	case gui_Save:		return mDocument->IsDirty();
 	case gui_Revert:	return mDocument->IsDirty() && mDocument->IsOnDisk();
 

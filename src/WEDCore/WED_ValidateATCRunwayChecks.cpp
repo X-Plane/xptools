@@ -949,7 +949,7 @@ static void TJunctionCrossingTest(const TaxiRouteInfoVec_t& all_taxiroutes, vali
 	#define SHORT_THRESHOLD_AC_LG	20.0
 	#define STR(s) #s
 	
-	set<WED_TaxiRoute *> crossing_edges, short_edgesAB, short_edgesC, short_edgesDEF, short_edgesT, short_edgesRwyLegacy;
+	set<WED_TaxiRoute *> crossing_edges, short_edgesAB, short_edgesC, short_edgesDEF, short_edgesT;
 	auto grievance = gExportTarget == wet_gateway ? err_atc_taxi_short : warn_atc_taxi_short;
 
 	for (auto tr_a = all_taxiroutes.cbegin(); tr_a != all_taxiroutes.cend(); ++tr_a)
@@ -958,27 +958,7 @@ static void TJunctionCrossingTest(const TaxiRouteInfoVec_t& all_taxiroutes, vali
 		double length_sq = edge_a.squared_length();
 		if (tr_a->is_aircraft_route)
 		{
-			if (tr_a->ptr->IsRunway())
-			{
-				// Runway segments don't have a real "width" outside of WED - they are always
-				// the full runway (size E) width once exported/interpreted by X-Plane. Some
-				// Gateway artists narrowed this to size A/B purely to dodge this length check,
-				// which had zero effect on the scenery/X-Plane but caused the airport to fail
-				// re-validation once round tripped through the Gateway (which always re-imports
-				// these as size E). Regular authors can no longer even edit this width (it's
-				// locked once a segment is tagged as a runway route), so only bother a moderator
-				// reviewing a Gateway submission with this - a stored width other than E is a
-				// clear sign of the historical workaround and should be fixed and re-checked
-				// rather than reported as an ordinary short-segment error.
-				if (gModeratorMode && length_sq < SHORT_THRESHOLD_AC_LG * SHORT_THRESHOLD_AC_LG)
-				{
-					if (tr_a->ptr->GetWidth() != width_E)
-						short_edgesRwyLegacy.insert(tr_a->ptr);
-					else
-						short_edgesDEF.insert(tr_a->ptr);
-				}
-			}
-			else switch (tr_a->ptr->GetWidth())
+			switch (tr_a->ptr->GetWidth())
 			{
 				case width_A:
 				case width_B:
@@ -1092,12 +1072,6 @@ static void TJunctionCrossingTest(const TaxiRouteInfoVec_t& all_taxiroutes, vali
 			grievance, e, apt));
 	for (auto e : short_edgesDEF)
 		msgs.push_back(validation_error_t(string("Airport contains short (<") + to_string((int) SHORT_THRESHOLD_AC_LG) + "m) Taxi route segment(s).",
-			grievance, e, apt));
-	for (auto e : short_edgesRwyLegacy)
-		msgs.push_back(validation_error_t(string("Runway ATC route segment is shorter than ") + to_string((int)SHORT_THRESHOLD_AC_LG) +
-			"m even at full runway width. Its stored width is narrower than 'E', a sign of a historical workaround for this same"
-			" check - use 'Fix Legacy Runway ATC Widths' to normalize it, then re-validate to confirm whether this is a genuine"
-			" short-segment problem.",
 			grievance, e, apt));
 	for (auto e : short_edgesT)
 		msgs.push_back(validation_error_t(string("Airport contains short (<") + to_string((int) SHORT_THRESHOLD_TRUCKS) + "m) Truck route segment(s).",

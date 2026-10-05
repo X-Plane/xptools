@@ -252,7 +252,6 @@ static const GUI_MenuItem_t kAirportMenu[] = {
 {	"Mow Grass",				0,		0,									0,	wed_MowGrass},
 {	"Align Airports",			0,		0,									0,	wed_AlignApt},
 {	"Replace Vehicle Objects",	0,		0,									0,  wed_ReplaceVehicleObj	},
-{	"Fix Legacy Runway ATC Widths",0,	0,									0,	wed_FixLegacyRunwayWidths},
 {	NULL,						0,		0,										0, 0,				}
 };
 
