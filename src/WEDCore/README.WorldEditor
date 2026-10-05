@@ -21,13 +21,6 @@ WED 2.7.3-r1:
      "Size" than their real (full runway) width, a historical workaround for
      the short-segment validation check; the check is now moderator-mode-only
      for existing data, with a bulk "Fix Legacy Runway ATC Widths" command
-   - Fixed "Match Bezier Handles" not working when more than one Bezier point
-     (e.g. two .lin edge effects) was snapped to the same node
-   - Fixed facade wall width/height limits in the Library Preview pane showing
-     unreadable placeholder values (e.g. "1e+03", "0.2") instead of "any"/a
-     readable range
-   - Fixed Split not working on a closed .lin (Line) placement
-   - Fixed a crash when Split failed to clone a chain's node
 
 WED 2.7.2-r2:
   Bugfixes:

@@ -858,24 +858,8 @@ bool	WED_ResourceMgr::GetFac(const string& vpath, fac_info_t const *& info, int 
 							fac->wallName.push_back(string("#") + to_string(fac->floors.back().walls.size()));
 					}
 				}
-				// Some authors use extreme placeholder values (e.g. min=0.2, max=1000) in the .fac
-				// file to mean "don't care" / "no real limit" for a wall's width. Printing those
-				// raw with %g produced unreadable output like "w=0.2 to 1e+03m" - show "any"/"+"
-				// instead of the sentinel value(s).
 				char c[64];
-				bool unlimited_min = min_width <= 0.5;
-				bool unlimited_max = max_width >= 900.0;
-				double lo = min_width / (gIsFeet ? 0.3048 : 1.0);
-				double hi = max_width / (gIsFeet ? 0.3048 : 1.0);
-				char unit = gIsFeet ? '\'' : 'm';
-				if(unlimited_min && unlimited_max)
-					snprintf(c, 64, "w=any");
-				else if(unlimited_max)
-					snprintf(c, 64, "w=%.1f%c+", lo, unit);
-				else if(unlimited_min)
-					snprintf(c, 64, "w=up to %.1f%c", hi, unit);
-				else
-					snprintf(c, 64, "w=%.1f to %.1f%c", lo, hi, unit);
+				snprintf(c, 64, "w=%.3g to %.3g%c", min_width / (gIsFeet ? 0.3048 : 1.0 ), max_width / (gIsFeet ? 0.3048 : 1.0 ), gIsFeet ? '\'' : 'm') ;
 				fac->wallUse.push_back(c);
 			}
 			else if (MFS_string_match(&s,"RING", false))
