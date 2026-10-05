@@ -26,8 +26,6 @@ WED 2.7.3-r1:
    - Fixed facade wall width/height limits in the Library Preview pane showing
      unreadable placeholder values (e.g. "1e+03", "0.2") instead of "any"/a
      readable range
-   - Fixed deleted ICAO/IATA/FAA/Local airport identifier metadata being
-     silently re-added on Gateway export (issue #58)
    - Fixed Split not working on a closed .lin (Line) placement
    - Fixed a crash when Split failed to clone a chain's node
 
