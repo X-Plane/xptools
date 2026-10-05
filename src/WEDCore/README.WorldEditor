@@ -19,9 +19,9 @@ WED 2.7.3-r1:
      (size D and larger) ramp starts when generating ATC flow / ramp data
    - Fixed "Match Bezier Handles" not working when more than one Bezier point
      (e.g. two .lin edge effects) was snapped to the same node
-   - Fixed facade wall width/height limits in the Library Preview pane showing
-     unreadable placeholder values (e.g. "1e+03", "0.2") instead of "any"/a
-     readable range
+   - Fixed facade wall widths in the Library Preview pane showing placeholder
+     limits as "1e+03" instead of "any" or a readable range, and single-floor
+     facades showing a part's height (e.g. "h=0.2m") instead of the roof's
    - Fixed Split not working on a closed .lin (Line) placement
    - Fixed a crash when Split failed to clone a chain's node
 
