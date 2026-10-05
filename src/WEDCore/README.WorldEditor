@@ -17,6 +17,13 @@ WED 2.7.3-r1:
   Bugfixes:
    - Fixed author-defined airline codes being erased on half of the wide-body
      (size D and larger) ramp starts when generating ATC flow / ramp data
+   - Fixed "Match Bezier Handles" not working when more than one Bezier point
+     (e.g. two .lin edge effects) was snapped to the same node
+   - Fixed facade wall width/height limits in the Library Preview pane showing
+     unreadable placeholder values (e.g. "1e+03", "0.2") instead of "any"/a
+     readable range
+   - Fixed Split not working on a closed .lin (Line) placement
+   - Fixed a crash when Split failed to clone a chain's node
 
 WED 2.7.2-r2:
   Bugfixes:
