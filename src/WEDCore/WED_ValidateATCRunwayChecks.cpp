@@ -943,40 +943,20 @@ static void TJunctionCrossingTest(const TaxiRouteInfoVec_t& all_taxiroutes, vali
 	#define TJUNCTION_THRESHOLD_TRUCKS  5.0
 	#define TJUNCTION_THRESHOLD_AC_REL  0.6
 
-	#define SHORT_THRESHOLD_TRUCKS   5.0
-	#define SHORT_THRESHOLD_AC_SM	 7.0
-	#define SHORT_THRESHOLD_AC		10.0
-	#define SHORT_THRESHOLD_AC_LG	20.0
+	// Only a route segment of next to no length is an error. There is no minimum
+	// length by aircraft size: short segments work in X-Plane, and such a check
+	// flagged thousands of Gateway airports.
+	#define ZERO_LENGTH_THRESHOLD	1.0
 	#define STR(s) #s
 	
-	set<WED_TaxiRoute *> crossing_edges, short_edgesAB, short_edgesC, short_edgesDEF, short_edgesT;
-	auto grievance = gExportTarget == wet_gateway ? err_atc_taxi_short : warn_atc_taxi_short;
+	set<WED_TaxiRoute *> crossing_edges, zero_length_edges;
 
 	for (auto tr_a = all_taxiroutes.cbegin(); tr_a != all_taxiroutes.cend(); ++tr_a)
 	{
 		Segment2 edge_a = tr_a->segment_m;
 		double length_sq = edge_a.squared_length();
-		if (tr_a->is_aircraft_route)
-		{
-			switch (tr_a->ptr->GetWidth())
-			{
-				case width_A:
-				case width_B:
-					if (length_sq < SHORT_THRESHOLD_AC_SM * SHORT_THRESHOLD_AC_SM)
-						short_edgesAB.insert(tr_a->ptr);
-					break;
-				case width_C:
-					if (length_sq < SHORT_THRESHOLD_AC * SHORT_THRESHOLD_AC)
-						short_edgesC.insert(tr_a->ptr);
-					break;
-				default:
-					if (length_sq < SHORT_THRESHOLD_AC_LG * SHORT_THRESHOLD_AC_LG)
-						short_edgesDEF.insert(tr_a->ptr);
-					break;
-			}
-		}
-		else if (length_sq < SHORT_THRESHOLD_TRUCKS * SHORT_THRESHOLD_TRUCKS)
-					short_edgesT.insert(tr_a->ptr);
+		if (length_sq < ZERO_LENGTH_THRESHOLD * ZERO_LENGTH_THRESHOLD)
+			zero_length_edges.insert(tr_a->ptr);
 
 		for (auto tr_b = tr_a + 1; tr_b != all_taxiroutes.end(); ++tr_b)
 		{
@@ -1064,18 +1044,9 @@ static void TJunctionCrossingTest(const TaxiRouteInfoVec_t& all_taxiroutes, vali
 	for(auto e : crossing_edges)
 		msgs.push_back(validation_error_t("Airport contains crossing ATC routing lines with no node at the crossing point."
 										  " Split the lines and join the nodes.", err_airport_ATC_network, e, apt));
-	for (auto e : short_edgesAB)
-		msgs.push_back(validation_error_t(string("Airport contains short (<") + to_string((int)SHORT_THRESHOLD_AC_SM) + "m) Taxi route segment(s).",
-			grievance, e, apt));
-	for (auto e : short_edgesC)
-			msgs.push_back(validation_error_t(string("Airport contains short (<") + to_string((int) SHORT_THRESHOLD_AC) + "m) Taxi route segment(s).",
-			grievance, e, apt));
-	for (auto e : short_edgesDEF)
-		msgs.push_back(validation_error_t(string("Airport contains short (<") + to_string((int) SHORT_THRESHOLD_AC_LG) + "m) Taxi route segment(s).",
-			grievance, e, apt));
-	for (auto e : short_edgesT)
-		msgs.push_back(validation_error_t(string("Airport contains short (<") + to_string((int) SHORT_THRESHOLD_TRUCKS) + "m) Truck route segment(s).",
-			grievance, e, apt));
+	for (auto e : zero_length_edges)
+		msgs.push_back(validation_error_t("Airport contains zero-length ATC routing lines. These should be deleted.",
+			err_taxi_route_zero_length, e, apt));
 }
 
 static void TestInvalidHotZOneTags(const TaxiRouteInfoVec_t& taxi_routes, const set<int>& legal_rwy_oneway, const set<int>& legal_rwy_twoway,
