@@ -4715,7 +4715,7 @@ static string get_xplane_codes(int width_enum, const set<int>& eq, int ops_type,
 	return out;
 }
 
-int wed_upgrade_ramps(WED_Thing* who)
+int wed_upgrade_ramps(WED_Thing* who, bool fill_op_types)
 {
 	auto rmgr = WED_GetResourceMgr(who->GetArchive()->GetResolver());
 	auto lmgr = WED_GetLibraryMgr(who->GetArchive()->GetResolver());
@@ -4739,15 +4739,17 @@ int wed_upgrade_ramps(WED_Thing* who)
 
 	for (auto r : ramps)
 	{
-		if (r->GetRampOperationType() == ramp_operation_None)
+		// Only Airport > Upgrade Ramps fills in operation types for pre-10.50
+		// ramps. Export leaves None alone, as an artist may have set it on purpose;
+		// Gateway validation warns about None gates and tie-downs instead.
+		if (fill_op_types && r->GetRampOperationType() == ramp_operation_None)
 		{
-			// fill in ops types
 			switch(r->GetType())
 			{
 				case atc_Ramp_Gate:
 					r->SetRampOperationType(ramp_operation_Airline);
 					did_work = 1;
-					break;			
+					break;
 				case atc_Ramp_TieDown:
 				{
 					set<int> eq;
@@ -4836,7 +4838,7 @@ static int wed_upgrade_airports_recursive(WED_Thing * who, WED_ResourceMgr * rmg
 	int did_work = 0;
 	if(who->GetClass() == WED_Airport::sClass)
 	{
-		did_work = wed_upgrade_ramps(who);
+		did_work = wed_upgrade_ramps(who, true);
 	}
 	int nn = who->CountChildren();
 	for(int n = 0; n < nn; ++n)

@@ -356,7 +356,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		added_country_codes += add_iso3166_country_metadata(**apt_itr);
 
 		//-- upgrade Ramp Positions with XP10.45 data to get parked A/C -------------
-		wed_upgrade_ramps(*apt_itr);
+		wed_upgrade_ramps(*apt_itr, false);
 
 #if 0  // this was good in 10.45, but not needed any for gateway airports as of 2022
 		//-- Agp and obj upgrades to create more ground traffic --------------------------------
