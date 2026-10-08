@@ -649,6 +649,12 @@ void height_desc_for_facade(const fac_info_t& info, string& h_decription)
 			if(is_range) h_decription += to_string(last_height);
 			 h_decription += "m";
 		}
+		else if(heights.size() == 1)
+		{
+			// one floor: its roof is the height - its first template can be any part
+			snprintf(c,63,"h=%dm (fixed)", heights.front());
+			h_decription = c;
+		}
 		else if(info.floors.size() && info.floors.front().templates.size())
 		{
 			snprintf(c,63,"h=%.1fm (fixed)", info.floors.back().templates.front().bounds[1]);

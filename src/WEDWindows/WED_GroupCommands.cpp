@@ -1602,8 +1602,9 @@ static bool is_chain_split(ISelection * sel, chain_split_info_t * info)
 	if(c)
 	if(c->IsClosed())
 	{
-		// If the chain is closed, it must be a WED_AirportChain, and its parent must not be a WED_GISPolygon.
-		if (!dynamic_cast<WED_AirportChain *>(c) || dynamic_cast<WED_GISPolygon *>(c->GetParent()))
+		// If the chain is closed, it must be a WED_AirportChain or WED_LinePlacement (both support
+		// un-closing themselves via SetClosed()), and its parent must not be a WED_GISPolygon.
+		if ((!dynamic_cast<WED_AirportChain *>(c) && !dynamic_cast<WED_LinePlacement *>(c)) || dynamic_cast<WED_GISPolygon *>(c->GetParent()))
 			return false;
 	}
 	else
@@ -1737,7 +1738,8 @@ static void do_chain_split(ISelection * sel, const chain_split_info_t & info)
 	else if (info.c->IsClosed())
 	{
 		WED_AirportChain * ac = dynamic_cast<WED_AirportChain *>(info.c);
-		if (!ac)
+		WED_LinePlacement * lp = dynamic_cast<WED_LinePlacement *>(info.c);
+		if (!ac && !lp)
 		{
 			op->AbortOperation();
 			return;
@@ -1745,21 +1747,22 @@ static void do_chain_split(ISelection * sel, const chain_split_info_t & info)
 
 		for (int i = 0; i < pos; ++i)
 		{
-			WED_Thing * t = ac->GetNthChild(0);
+			WED_Thing * t = info.c->GetNthChild(0);
 			t->SetParent(NULL, 0);
-			t->SetParent(ac, ac->CountChildren());
+			t->SetParent(info.c, info.c->CountChildren());
 		}
 
-		WED_Thing * clone = dynamic_cast<WED_Thing *>(ac->GetNthChild(0)->Clone());
+		WED_Thing * clone = dynamic_cast<WED_Thing *>(info.c->GetNthChild(0)->Clone());
 		if (clone)
 		{
-			clone->SetParent(ac, ac->CountChildren());
+			clone->SetParent(info.c, info.c->CountChildren());
 			sel->Insert(clone);
 		}
-		else
-			clone->Delete();
 
-		ac->SetClosed(0);
+		if (ac)
+			ac->SetClosed(0);
+		else
+			lp->SetClosed(0);
 	}
 	else
 	{
@@ -2479,6 +2482,38 @@ static bool get_matching_handle(const BezierHandle & h1, WED_GISPoint_Bezier * p
 	return false;
 }
 
+static void get_handle_location(const BezierHandle & h, Point2 & location)
+{
+	if (h.side == BezierHandle::LO)
+		h.p->GetControlHandleLo(gis_Geo, location);
+	else
+		h.p->GetControlHandleHi(gis_Geo, location);
+}
+
+// It's common for more than one Bezier point to end up snapped to the same node -
+// e.g. a pavement polygon plus one or more .lin edge effects all sharing the same
+// nodes. In that case get_matching_handle() finds a match against *each* of them, so
+// there's more than one candidate handle instead of exactly one. If all candidates
+// agree on the handle's location, there's no real ambiguity and it's safe to use any
+// of them; only bail out if they actually disagree.
+static bool get_common_handle(const vector<BezierHandle> & matches, BezierHandle & out)
+{
+	if (matches.empty())
+		return false;
+
+	Point2 first_loc;
+	get_handle_location(matches.front(), first_loc);
+	for (size_t i = 1; i < matches.size(); ++i)
+	{
+		Point2 loc;
+		get_handle_location(matches[i], loc);
+		if (loc != first_loc)
+			return false;
+	}
+	out = matches.front();
+	return true;
+}
+
 // Copies the location of one Bezier handle to another.
 static void copy_bezier_handle(const struct BezierHandle & dst, const struct BezierHandle & src)
 {
@@ -2536,21 +2571,25 @@ void	WED_DoMatchBezierHandles(IResolver * resolver)
 				hi_matches.push_back(handle);
 		}
 
-		if (lo_matches.empty() && hi_matches.empty())
+		BezierHandle lo_handle, hi_handle;
+		bool have_lo = get_common_handle(lo_matches, lo_handle);
+		bool have_hi = get_common_handle(hi_matches, hi_handle);
+
+		if (!have_lo && !have_hi)
 			continue;
 
 		// If we matched with handles of the same point on both sides, our
 		// splitness is equal to the splitness of that point. Otherwise, we're
 		// definitely split.
-		if (lo_matches.size() == 1 && hi_matches.size() == 1 && lo_matches.front().p == hi_matches.front().p)
-			points[i]->SetSplit(lo_matches.front().p->IsSplit());
+		if (have_lo && have_hi && lo_handle.p == hi_handle.p)
+			points[i]->SetSplit(lo_handle.p->IsSplit());
 		else
 			points[i]->SetSplit(true);
 
-		if (lo_matches.size() == 1)
-			copy_bezier_handle(BezierHandle(points[i], BezierHandle::LO), lo_matches.front());
-		if (hi_matches.size() == 1)
-			copy_bezier_handle(BezierHandle(points[i], BezierHandle::HI), hi_matches.front());
+		if (have_lo)
+			copy_bezier_handle(BezierHandle(points[i], BezierHandle::LO), lo_handle);
+		if (have_hi)
+			copy_bezier_handle(BezierHandle(points[i], BezierHandle::HI), hi_handle);
 	}
 
 	op->CommitOperation();

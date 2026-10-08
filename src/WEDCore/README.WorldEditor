@@ -27,6 +27,13 @@ WED 2.7.3-b1:
    - Removed the minimum length check for ATC taxi and truck route segments
      (7 to 20 m by aircraft size, 5 m for trucks); only a segment shorter than
      1 m is still an error
+   - Fixed "Match Bezier Handles" not working when more than one Bezier point
+     (e.g. two .lin edge effects) was snapped to the same node
+   - Fixed facade wall widths in the Library Preview pane showing placeholder
+     limits as "1e+03" instead of "any" or a readable range, and single-floor
+     facades showing a part's height (e.g. "h=0.2m") instead of the roof's
+   - Fixed Split not working on a closed .lin (Line) placement
+   - Fixed a crash when Split failed to clone a chain's node
 
 WED 2.7.2-r2:
   Bugfixes:
