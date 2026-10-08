@@ -297,7 +297,7 @@ void		WED_TaxiRoute::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 {
 	WED_GISEdge::GetNthPropertyInfo(n, info);
 	if(runway.value != atc_rwy_None)
-	if(n == PropertyItemNumber(&name))
+	if(n == PropertyItemNumber(&name) || n == PropertyItemNumber(&width))
 	{
 		info.can_delete = false;
 		info.can_edit = false;
@@ -330,6 +330,9 @@ void		WED_TaxiRoute::GetNthProperty(int n, PropertyVal_t& val) const
 		{
 			val.string_val = ENUM_Desc(runway.value);		
 		}
+
+		if(n == PropertyItemNumber(&width))
+			val.int_val = width_E;
 		
 		if(n == PropertyItemNumber(&hot_depart) ||
 		n == PropertyItemNumber(&hot_arrive) ||
@@ -420,7 +423,8 @@ int		WED_TaxiRoute::GetRunway(void) const
 
 int		WED_TaxiRoute::GetWidth(void) const
 {
-	return width.value;
+	// apt.dat stores no width for a runway segment: it is the full runway, size E
+	return runway.value != atc_rwy_None ? width_E : width.value;
 }
 
 WED_Thing *		WED_TaxiRoute::CreateSplitNode()
