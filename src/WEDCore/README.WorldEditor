@@ -13,15 +13,20 @@ menu to view it online.
 
 CHANGE HISTORY:
 
-WED 2.7.3-r1:
+WED 2.7.3-b1:
+  Features:
+   - Gateway validation warns about gates and tie-downs with operation type
+     None, as X-Plane parks no static aircraft there
   Bugfixes:
    - Fixed author-defined airline codes being erased on half of the wide-body
      (size D and larger) ramp starts when generating ATC flow / ramp data
+   - Fixed Gateway export changing ramp starts with operation type None to
+     Airline or General Aviation, so X-Plane parked aircraft there anyway
    - Runway ATC route segments are always size E, as in X-Plane: their "Size"
      can no longer be narrowed
    - Removed the minimum length check for ATC taxi and truck route segments
-     (7 to 20 m by aircraft size, 5 m for trucks); only a zero-length segment is
-     still an error
+     (7 to 20 m by aircraft size, 5 m for trucks); only a segment shorter than
+     1 m is still an error
 
 WED 2.7.2-r2:
   Bugfixes:
