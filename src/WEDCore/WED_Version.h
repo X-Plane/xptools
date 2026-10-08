@@ -29,10 +29,10 @@
 
 // These versions are used in about boxes, resources, info boxes, etc.
 
-#define	WED_VERSION_STRING          "2.7.3-r1"
+#define	WED_VERSION_STRING          "2.7.3-b1"
 #define	WED_VERSION_STRING_SHORT    "2.7"			// omit beta/release number and trailing zero's
 
-#define WED_VERSION_FILENAME        "2.7.3-r1"
+#define WED_VERSION_FILENAME        "2.7.3-b1"
 
 #define	WED_COPYRIGHT_STRING        "(C) Copyright 2007-2026, Laminar Research."
 

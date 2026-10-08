@@ -1204,6 +1204,13 @@ static int ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vect
 		if(g.type == atc_ramp_gate || g.type == atc_ramp_tie_down)
 			is_ai_capable = 1;
 
+		// Export leaves None alone (wed_upgrade_ramps), so say it here: on purpose
+		// for a float plane dock, an oversight for a gate.
+		if (gExportTarget == wet_gateway && (g.type == atc_ramp_gate || g.type == atc_ramp_tie_down) &&
+			g.ramp_op_type == ramp_operation_none)
+			msgs.push_back(validation_error_t("Ramp start operation type is None, so X-Plane parks no static aircraft here. Set an operation type unless that is intended.",
+											  warn_ramp_start_op_type_none, ramp, apt));
+
 		string airlines_str = WED_RampPosition::CorrectAirlinesString(g.airlines);
 		string orig_airlines_str = ramp->GetAirlines();
 
