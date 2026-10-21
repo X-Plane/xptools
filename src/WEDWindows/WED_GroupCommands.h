@@ -38,6 +38,7 @@ class	WED_Thing;
 class	WED_Airport;
 class	WED_GISEdge;
 class	WED_ObjPlacement;
+class	WED_RampPosition;
 class	WED_ResourceMgr;
 
 typedef WED_ObjPlacement WED_AgpPlacement;
@@ -160,6 +161,7 @@ int		WED_CanReplaceVehicleObj(WED_Airport* apt);
 void	WED_DoReplaceVehicleObj(IResolver* resolver, WED_Airport* apt = NULL);
 
 int		wed_upgrade_ramps(WED_Thing* who, bool fill_op_types);
+void	wed_static_aircraft_near_ramps(WED_Airport* apt, vector<pair<WED_ObjPlacement *, WED_RampPosition *> >& out_conflicts);	// objects wed_upgrade_ramps deletes
 void	WED_UpgradeRampStarts(IResolver * resolver);
 void	WED_UpgradeJetways(IResolver* resolver);
 int		WED_DoConvertToJW(WED_Airport* apt, int statistics[4] = nullptr);
