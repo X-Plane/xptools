@@ -21,7 +21,7 @@ class XPToolsRecipe(ConanFile):
         self.requires("zlib/1.3.1")
         self.requires("libpng/1.6.50")
         self.requires("shapelib/1.6.1")
-        self.requires("libcurl/8.15.0")
+        self.requires("libcurl/8.23.0")    # 8.23 is the first to build against the macOS 27 SDK (pipe2)
         self.requires("glew/2.2.0")
         self.requires("jsoncpp/1.9.6")
         if self.settings.os == "Linux":
