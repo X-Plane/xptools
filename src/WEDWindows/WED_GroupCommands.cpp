@@ -93,20 +93,6 @@
 
 #define DEBUG_EDGE_CROSSING 0
 
-namespace std
-{
-	template <> struct less<Point2>
-	{
-		bool operator()(const Point2 & lhs, const Point2 & rhs) const
-		{
-			if (lhs.x() != rhs.x())
-				return lhs.x() < rhs.x();
-			else
-				return lhs.y() < rhs.y();
-		}
-	};
-}
-
 int		WED_CanGroup(IResolver * inResolver)
 {
 	ISelection * sel = WED_GetSelect(inResolver);
@@ -2373,7 +2359,7 @@ int		WED_CanMatchBezierHandles(IResolver * resolver)
 
 // Implementation helper for get_snapped_bezier_points().
 static void get_snapped_bezier_points_impl(WED_Thing * t, const set<WED_GISPoint_Bezier *> & ignore,
-	const set<Point2> & points, const Bbox2 & bounds, multimap<Point2, WED_GISPoint_Bezier *> & snapped)
+	const set<Point2, lesser_x_then_y> & points, const Bbox2 & bounds, multimap<Point2, WED_GISPoint_Bezier *, lesser_x_then_y> & snapped)
 {
 	IGISEntity * ent = dynamic_cast<IGISEntity *>(t);
 	if (!ent || !ent->IntersectsBox(gis_Geo, bounds))
@@ -2398,10 +2384,10 @@ static void get_snapped_bezier_points_impl(WED_Thing * t, const set<WED_GISPoint
 // points.
 static void get_snapped_bezier_points(WED_Thing * wrl,
 	const vector<WED_GISPoint_Bezier *> & points,
-	multimap<Point2, WED_GISPoint_Bezier *> & snapped)
+	multimap<Point2, WED_GISPoint_Bezier *, lesser_x_then_y> & snapped)
 {
 	set<WED_GISPoint_Bezier *> points_set;
-	set<Point2> locations;
+	set<Point2, lesser_x_then_y> locations;
 	Bbox2 bounds;
 	for (size_t i = 0; i < points.size(); ++i)
 	{
@@ -2548,7 +2534,7 @@ void	WED_DoMatchBezierHandles(IResolver * resolver)
 		get_bezier_points(t, points);
 	}
 
-	typedef multimap<Point2, WED_GISPoint_Bezier *> Snapped_t;
+	typedef multimap<Point2, WED_GISPoint_Bezier *, lesser_x_then_y> Snapped_t;
 	Snapped_t snapped;
 	get_snapped_bezier_points(wrl, points, snapped);
 
@@ -3264,7 +3250,7 @@ static bool ring_info_from_chains(const vector<ISelectable*> selected, vector<ri
 	}
 
 	// For all points in the first chain, create a map from location to index.
-	map<Point2, int> points_0;
+	map<Point2, int, lesser_x_then_y> points_0;
 	for (int i = 0; i < chains[0]->GetNumPoints(); ++i)
 	{
 		Point2 p;
@@ -3278,7 +3264,7 @@ static bool ring_info_from_chains(const vector<ISelectable*> selected, vector<ri
 	{
 		Point2 p;
 		chains[1]->GetNthPoint(i)->GetLocation(gis_Geo, p);
-		map<Point2, int>::iterator iter = points_0.find(p);
+		map<Point2, int, lesser_x_then_y>::iterator iter = points_0.find(p);
 		if (iter != points_0.end())
 		{
 			idx[0].insert(iter->second);
