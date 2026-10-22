@@ -34,6 +34,7 @@ WED 2.7.3-b1:
      facades showing a part's height (e.g. "h=0.2m") instead of the roof's
    - Fixed Split not working on a closed .lin (Line) placement
    - Fixed a crash when Split failed to clone a chain's node
+   - Fixed building with Xcode 27 (macOS 27 SDK); libcurl updated to 8.23.0
 
 WED 2.7.2-r2:
   Bugfixes:
