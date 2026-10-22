@@ -2797,6 +2797,24 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	for(auto r : ramps)
 		ai_useable_ramps += ValidateOneRampPosition(r, msgs, apt, runways);
 
+	// Gateway export silently deletes these (wed_upgrade_ramps), as a flight started on the ramp would sit inside them
+	if (gExportTarget == wet_gateway)
+	{
+		vector<pair<WED_ObjPlacement *, WED_RampPosition *> > conflicts;
+		wed_static_aircraft_near_ramps(apt, conflicts);
+		for (auto& c : conflicts)
+		{
+			if (c.first->GetHidden()) continue;
+			string obj_name, ramp_name;
+			c.first->GetName(obj_name);
+			c.second->GetName(ramp_name);
+			vector<WED_Thing *> parts = { c.first, c.second };
+			msgs.push_back(validation_error_t("Static aircraft object '" + obj_name + "' overlaps ramp start '" + ramp_name +
+											  "' and will not appear in X-Plane, move them apart.",
+											  warn_static_aircraft_on_ramp_start, parts, apt));
+		}
+	}
+
 	set<set<WED_FacadePlacement*> > double_door2_jws;
 	for (auto& j1 : jetways)
 	{

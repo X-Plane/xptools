@@ -196,6 +196,7 @@ enum validate_error_t
 	warn_rwy_misaligned_with_name,
 	warn_viewpoint_mislocated,
 	warn_ramp_start_op_type_none,		// Gateway: a gate or tie-down set to None parks no static aircraft
+	warn_static_aircraft_on_ramp_start,	// Gateway: export deletes a static aircraft object overlapping a ramp start
 };
 
 // The validation error record stores a single validation problem for reporting.

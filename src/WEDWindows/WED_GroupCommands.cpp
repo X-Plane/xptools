@@ -4631,6 +4631,35 @@ static void collect_ramps_recursive(WED_Thing * who, vector<WED_RampPosition *>&
 	}
 }
 
+// Pairs each static aircraft object with the first ramp start it overlaps
+static void find_static_aircraft_near_ramps(const vector<WED_RampPosition *>& ramps, const vector<obj_conflict_info>& objs,
+											vector<pair<WED_ObjPlacement *, WED_RampPosition *> >& out_conflicts)
+{
+	for(auto& o : objs)
+	{
+		for(auto r : ramps)
+		{
+			Point2 rp; double rs;
+			center_and_radius_for_ramp_start(r, rp, rs);
+
+			if(LonLatDistMeters(rp, o.loc_ll) < (o.approx_radius_m + rs))
+			{
+				//debug_mesh_line(rp, o.loc_ll, 1,0,0,1,0,0);
+				out_conflicts.push_back(make_pair(o.obj, r));
+				break;
+			}
+		}
+	}
+}
+
+void wed_static_aircraft_near_ramps(WED_Airport* apt, vector<pair<WED_ObjPlacement *, WED_RampPosition *> >& out_conflicts)
+{
+	vector<WED_RampPosition *> ramps;
+	vector<obj_conflict_info> objs;
+	collect_ramps_recursive(apt, ramps, objs, WED_GetResourceMgr(apt->GetArchive()->GetResolver()));
+	find_static_aircraft_near_ramps(ramps, objs, out_conflicts);
+}
+
 static const vector<Point2> canada {{-135,50}, {-123.3,48.2}, {-123.2,49}, {-94.5,49}, {-83.1,46}, {-81.8,43.6}, {-83.14,42.13}, {-82,41.7}, {-74.8,45},
 									{-72,45}, {-68,47}, {-67,45}, {-66,42}, {-40,50}, {-73,77}, {-50,84}, {-141,84}, {-141,60}, {-135,60}, {-130,56}};
 
@@ -4836,24 +4865,15 @@ int wed_upgrade_ramps(WED_Thing* who, bool fill_op_types)
 			}
 		}
 	}
-	// nuke static aircraft objects near ramps
-	for(auto& o : objs)
+	// nuke static aircraft objects near ramps - Gateway validation warns about these
+	vector<pair<WED_ObjPlacement *, WED_RampPosition *> > conflicts;
+	find_static_aircraft_near_ramps(ramps, objs, conflicts);
+	for(auto& c : conflicts)
 	{
-		for(auto r : ramps)
-		{
-			Point2 rp; double rs;
-			center_and_radius_for_ramp_start(r, rp, rs);
-
-			if(LonLatDistMeters(rp, o.loc_ll) < (o.approx_radius_m + rs))
-			{
-				//debug_mesh_line(rp, o.loc_ll, 1,0,0,1,0,0);
-				sel->Erase(o.obj);
-				o.obj->SetParent(NULL, 0);
-				o.obj->Delete();
-				did_work = 1;
-				break;
-			}
-		}
+		sel->Erase(c.first);
+		c.first->SetParent(NULL, 0);
+		c.first->Delete();
+		did_work = 1;
 	}
 	return did_work;
 }

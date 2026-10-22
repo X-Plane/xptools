@@ -17,6 +17,8 @@ WED 2.7.3-b1:
   Features:
    - Gateway validation warns about gates and tie-downs with operation type
      None, as X-Plane parks no static aircraft there
+   - Gateway validation warns about static aircraft objects overlapping a ramp
+     start, which the Gateway export (and Global Airports) removes
   Bugfixes:
    - Fixed author-defined airline codes being erased on half of the wide-body
      (size D and larger) ramp starts when generating ATC flow / ramp data
