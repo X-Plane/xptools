@@ -38,7 +38,7 @@ WED 2.7.3-b1:
    - Fixed a crash when Split failed to clone a chain's node
    - Fixed building with Xcode 27 (macOS 27 SDK); libcurl updated to 8.23.0
 
-WED 2.7.2-r2:
+WED 2.7.2-r1:
   Bugfixes:
    - Fixed a crash on Linux when loading certain custom sceneries
 
