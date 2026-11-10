@@ -2809,8 +2809,8 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 			c.first->GetName(obj_name);
 			c.second->GetName(ramp_name);
 			vector<WED_Thing *> parts = { c.first, c.second };
-			msgs.push_back(validation_error_t("Static aircraft object '" + obj_name + "' overlaps ramp start '" + ramp_name +
-											  "' and will not appear in X-Plane, move them apart.",
+			msgs.push_back(validation_error_t("Static aircraft object '" + obj_name + "' is close to ramp start '" + ramp_name +
+											  "' and may not appear in X-Plane.",
 											  warn_static_aircraft_on_ramp_start, parts, apt));
 		}
 	}
